@@ -16,6 +16,10 @@ function fmt(n) {
   return Number(n).toLocaleString('en-US')
 }
 
+function mdBold(text) {
+  return (text || '').replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+}
+
 function delta(score, prev) { return +(score - prev).toFixed(1) }
 
 function deltaHtml(d, size = 15, mom = false) {
@@ -153,7 +157,7 @@ function insightBlockHtml(insight, showInsight, howToRead, showHowToRead) {
           <tr>
             <td style="padding:10px 14px;">
               <p style="margin:0 0 4px;font-size:11px;font-weight:700;color:${EM_RED};font-family:${EM_FONT};">INSIGHT</p>
-              <p style="margin:0;font-size:13px;color:#1A1A1A;line-height:1.75;font-family:${EM_FONT};">${insight}</p>
+              <p style="margin:0;font-size:13px;color:#1A1A1A;line-height:1.75;font-family:${EM_FONT};white-space:pre-line;">${mdBold(insight)}</p>
             </td>
           </tr>
         </table>
@@ -168,7 +172,7 @@ function insightBlockHtml(insight, showInsight, howToRead, showHowToRead) {
           <tr>
             <td style="padding:10px 14px;">
               <p style="margin:0 0 4px;font-size:11px;font-weight:700;color:#64748B;font-family:${EM_FONT};">HOW TO READ</p>
-              <p style="margin:0;font-size:13px;color:#475569;line-height:1.75;font-family:${EM_FONT};">${howToRead}</p>
+              <p style="margin:0;font-size:13px;color:#475569;line-height:1.75;font-family:${EM_FONT};white-space:pre-line;">${mdBold(howToRead)}</p>
             </td>
           </tr>
         </table>
@@ -441,7 +445,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {})
               <tr>
                 <td style="background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;padding:12px 16px;">
                   <p style="margin:0 0 4px;font-size:13px;font-weight:700;color:${EM_RED};font-family:${EM_FONT};">Notice</p>
-                  <p style="margin:0;font-size:13px;color:#1A1A1A;font-family:${EM_FONT};line-height:1.6;white-space:pre-line;">${(meta.noticeText || '').replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')}</p>
+                  <p style="margin:0;font-size:13px;color:#1A1A1A;font-family:${EM_FONT};line-height:1.6;white-space:pre-line;">${mdBold(meta.noticeText)}</p>
                 </td>
               </tr>
             </table>` : ''}
@@ -508,7 +512,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {})
                           <tr>
                             <td style="padding:14px 16px;background:rgba(207,6,82,0.12);border:1px solid rgba(207,6,82,0.25);border-radius:10px;">
                               <p style="margin:0 0 6px;font-size:12px;font-weight:700;color:${EM_RED};text-transform:uppercase;font-family:${EM_FONT};">GEO 전략 인사이트</p>
-                              <p style="margin:0;font-size:14px;color:#FFFFFF;line-height:1.8;font-family:${EM_FONT};">${meta.totalInsight}</p>
+                              <p style="margin:0;font-size:14px;color:#FFFFFF;line-height:1.8;font-family:${EM_FONT};white-space:pre-line;">${mdBold(meta.totalInsight)}</p>
                             </td>
                           </tr>
                         </table>` : ''}

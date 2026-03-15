@@ -687,10 +687,11 @@ function Sidebar({ meta, total, products, citations, dotcom, setMeta, setTotal, 
         <textarea
           value={meta.totalInsight}
           onChange={e => setMeta(m => ({ ...m, totalInsight: e.target.value }))}
-          rows={6}
+          rows={12}
           placeholder="전체 GEO 가시성 카드에 표시할 전략 인사이트를 입력하세요..."
-          style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6, marginBottom: 10 }}
+          style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6, marginBottom: 4 }}
         />
+        <p style={{ margin: '0 0 10px', fontSize: 8, color: '#475569', fontFamily: FONT }}>**텍스트** → <strong>볼드</strong> · 줄바꿈 지원</p>
 
         {/* 제품 섹션 인사이트 */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
@@ -715,7 +716,7 @@ function Sidebar({ meta, total, products, citations, dotcom, setMeta, setTotal, 
         <textarea
           value={meta.productInsight}
           onChange={e => setMeta(m => ({ ...m, productInsight: e.target.value }))}
-          rows={2}
+          rows={4}
           placeholder="제품 섹션 인사이트를 입력하세요... (AI 생성 버튼으로 자동 작성 가능)"
           style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6, marginBottom: 8 }}
         />
@@ -743,7 +744,7 @@ function Sidebar({ meta, total, products, citations, dotcom, setMeta, setTotal, 
         <textarea
           value={meta.productHowToRead}
           onChange={e => setMeta(m => ({ ...m, productHowToRead: e.target.value }))}
-          rows={2}
+          rows={4}
           placeholder="제품 섹션 How to Read 설명을 입력하세요... (AI 생성 버튼으로 자동 작성 가능)"
           style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6, marginBottom: 8 }}
         />
@@ -771,7 +772,7 @@ function Sidebar({ meta, total, products, citations, dotcom, setMeta, setTotal, 
         <textarea
           value={meta.citationInsight}
           onChange={e => setMeta(m => ({ ...m, citationInsight: e.target.value }))}
-          rows={2}
+          rows={4}
           placeholder="Citation 섹션 인사이트를 입력하세요... (AI 생성 버튼으로 자동 작성 가능)"
           style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6, marginBottom: 8 }}
         />
@@ -799,7 +800,7 @@ function Sidebar({ meta, total, products, citations, dotcom, setMeta, setTotal, 
         <textarea
           value={meta.citationHowToRead}
           onChange={e => setMeta(m => ({ ...m, citationHowToRead: e.target.value }))}
-          rows={2}
+          rows={4}
           placeholder="Citation How to Read 설명을 입력하세요... (AI 생성 버튼으로 자동 작성 가능)"
           style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6, marginBottom: 8 }}
         />
@@ -827,7 +828,7 @@ function Sidebar({ meta, total, products, citations, dotcom, setMeta, setTotal, 
         <textarea
           value={meta.dotcomInsight}
           onChange={e => setMeta(m => ({ ...m, dotcomInsight: e.target.value }))}
-          rows={2}
+          rows={4}
           placeholder="닷컴 Citation 인사이트를 입력하세요... (AI 생성 버튼으로 자동 작성 가능)"
           style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6, marginBottom: 8 }}
         />
@@ -855,7 +856,7 @@ function Sidebar({ meta, total, products, citations, dotcom, setMeta, setTotal, 
         <textarea
           value={meta.dotcomHowToRead}
           onChange={e => setMeta(m => ({ ...m, dotcomHowToRead: e.target.value }))}
-          rows={2}
+          rows={4}
           placeholder="닷컴 Citation How to Read 설명을 입력하세요... (AI 생성 버튼으로 자동 작성 가능)"
           style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6, marginBottom: 16 }}
         />
