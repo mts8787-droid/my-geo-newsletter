@@ -843,7 +843,7 @@ function Sidebar({ meta, total, products, citations, dotcom, setMeta, setTotal, 
         <textarea
           value={meta.productHowToRead}
           onChange={e => setMeta(m => ({ ...m, productHowToRead: e.target.value }))}
-          rows={12}
+          rows={4}
           placeholder="제품 섹션 How to Read 설명을 입력하세요... (AI 생성 버튼으로 자동 작성 가능)"
           style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6, marginBottom: 8 }}
         />
@@ -899,7 +899,7 @@ function Sidebar({ meta, total, products, citations, dotcom, setMeta, setTotal, 
         <textarea
           value={meta.citationHowToRead}
           onChange={e => setMeta(m => ({ ...m, citationHowToRead: e.target.value }))}
-          rows={12}
+          rows={4}
           placeholder="Citation How to Read 설명을 입력하세요... (AI 생성 버튼으로 자동 작성 가능)"
           style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6, marginBottom: 8 }}
         />
@@ -955,7 +955,7 @@ function Sidebar({ meta, total, products, citations, dotcom, setMeta, setTotal, 
         <textarea
           value={meta.dotcomHowToRead}
           onChange={e => setMeta(m => ({ ...m, dotcomHowToRead: e.target.value }))}
-          rows={12}
+          rows={4}
           placeholder="닷컴 Citation How to Read 설명을 입력하세요... (AI 생성 버튼으로 자동 작성 가능)"
           style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6, marginBottom: 16 }}
         />
