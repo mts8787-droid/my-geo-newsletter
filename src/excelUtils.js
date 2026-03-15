@@ -118,14 +118,14 @@ export function downloadTemplate(meta, total, products, citations, dotcom = {}) 
 export function parseSheetRows(sheetName, rows) {
   if (sheetName === 'meta') {
     const obj = {}
-    const boolKeys = ['showNotice','showProductInsight','showProductHowToRead','showCitationInsight','showCitationHowToRead','showDotcomInsight','showDotcomHowToRead']
+    const allowedKeys = ['period','team','reportNo','reportType','title','titleFontSize','titleColor','dateLine']
     const numKeys = ['titleFontSize']
     rows.forEach(r => {
       if (!r[0] || String(r[0]).startsWith('[') || String(r[0]).startsWith('※') || r[0] === 'key') return
       const k = String(r[0])
+      if (!allowedKeys.includes(k)) return
       const v = r[1] ?? ''
-      if (boolKeys.includes(k)) obj[k] = String(v).toUpperCase() === 'Y'
-      else if (numKeys.includes(k)) obj[k] = parseInt(v) || 24
+      if (numKeys.includes(k)) obj[k] = parseInt(v) || 24
       else obj[k] = String(v)
     })
     return Object.keys(obj).length ? { meta: obj } : {}
