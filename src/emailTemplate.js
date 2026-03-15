@@ -479,7 +479,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
 
         <!-- ══ 헤더 상단 레드 바 ══ -->
         <tr>
-          <td style="background:${EM_RED};padding:9px 12px;">
+          <td style="background:${EM_RED};padding:9px 20px;">
             <table border="0" cellpadding="0" cellspacing="0" width="100%">
               <tr>
                 <td style="font-size:13px;font-weight:700;color:rgba(255,255,255,0.75);font-family:${EM_FONT};">LG ELECTRONICS</td>
@@ -491,7 +491,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
 
         <!-- ══ 헤더 타이틀 ══ -->
         <tr>
-          <td style="background:#FFFFFF;padding:22px 12px 14px;">
+          <td style="background:#FFFFFF;padding:22px 20px 14px;">
             <table border="0" cellpadding="0" cellspacing="0" width="100%">
               <tr>
                 <td style="font-size:12px;color:#94A3B8;font-family:${EM_FONT};font-weight:400;">${meta.reportType || (lang === 'en' ? 'GEO Monthly Performance Report' : 'GEO 월간 성과 분석 리포트')}</td>
@@ -517,7 +517,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
         </tr>
         <!-- 구분선 (직선) -->
         <tr>
-          <td style="background:#FFFFFF;padding:20px 12px 0;">
+          <td style="background:#FFFFFF;padding:20px 20px 0;">
             <table border="0" cellpadding="0" cellspacing="0" width="100%">
               <tr>
                 <td height="2" style="background:${EM_RED};font-size:0;line-height:0;">&nbsp;</td>
@@ -528,7 +528,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
 
         <!-- ══ 본문 ══ -->
         <tr>
-          <td style="background:#F8FAFC;padding:24px 12px;">
+          <td style="background:#F8FAFC;padding:24px 20px;">
             <table border="0" cellpadding="0" cellspacing="0" width="100%">
 
               <!-- ── 전체 GEO 가시성 지수 ── -->
@@ -536,7 +536,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                 <td style="padding-bottom:20px;">
                   <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#0F172A;border-radius:14px;overflow:hidden;">
                     <tr>
-                      <td style="padding:20px 10px 18px;">
+                      <td style="padding:20px 16px 18px;">
                         <table border="0" cellpadding="0" cellspacing="0" width="100%">
                           <tr>
                             <td style="font-size:22px;font-weight:700;color:#FFFFFF;text-transform:uppercase;font-family:${EM_FONT};">LG GEO Visibility %</td>
@@ -697,7 +697,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
 
         <!-- ══ 푸터 ══ -->
         <tr>
-          <td style="background:#1A1A1A;padding:14px 12px;">
+          <td style="background:#1A1A1A;padding:14px 20px;">
             <table border="0" cellpadding="0" cellspacing="0" width="100%">
               <tr>
                 <td>
