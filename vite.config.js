@@ -2,7 +2,8 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import nodemailer from 'nodemailer'
 import dotenv from 'dotenv'
-import { readFileSync } from 'fs'
+import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'fs'
+import { resolve } from 'path'
 
 const pkg = JSON.parse(readFileSync('./package.json', 'utf-8'))
 
@@ -52,11 +53,66 @@ function emailApiPlugin() {
   }
 }
 
+// ─── Vite 플러그인: /api/snapshots 엔드포인트 ─────────────────────────────
+function snapshotsApiPlugin() {
+  const DATA_DIR = resolve('data')
+  const SNAP_FILE = resolve('data/snapshots.json')
+  if (!existsSync(DATA_DIR)) mkdirSync(DATA_DIR, { recursive: true })
+
+  const read = () => { try { return JSON.parse(readFileSync(SNAP_FILE, 'utf-8')) } catch { return [] } }
+  const write = list => writeFileSync(SNAP_FILE, JSON.stringify(list, null, 2))
+
+  return {
+    name: 'snapshots-api',
+    configureServer(server) {
+      server.middlewares.use('/api/snapshots', (req, res) => {
+        // GET
+        if (req.method === 'GET') {
+          res.setHeader('Content-Type', 'application/json')
+          res.end(JSON.stringify(read()))
+          return
+        }
+        // POST
+        if (req.method === 'POST') {
+          let body = ''
+          req.on('data', c => (body += c))
+          req.on('end', () => {
+            try {
+              const { name, data } = JSON.parse(body)
+              if (!name || !data) throw new Error('name, data 필수')
+              const snap = { name, ts: Date.now(), data }
+              const list = [snap, ...read()].slice(0, 50)
+              write(list)
+              res.setHeader('Content-Type', 'application/json')
+              res.end(JSON.stringify({ ok: true, snapshots: list }))
+            } catch (err) {
+              res.statusCode = 400
+              res.setHeader('Content-Type', 'application/json')
+              res.end(JSON.stringify({ ok: false, error: err.message }))
+            }
+          })
+          return
+        }
+        // DELETE — path: /api/snapshots/1234567890
+        if (req.method === 'DELETE') {
+          const ts = parseInt(req.url.replace(/^\//, ''))
+          const list = read().filter(s => s.ts !== ts)
+          write(list)
+          res.setHeader('Content-Type', 'application/json')
+          res.end(JSON.stringify({ ok: true, snapshots: list }))
+          return
+        }
+        res.statusCode = 405; res.end()
+      })
+    },
+  }
+}
+
 export default defineConfig({
   define: {
     __APP_VERSION__: JSON.stringify(pkg.version),
   },
-  plugins: [react(), emailApiPlugin()],
+  plugins: [react(), emailApiPlugin(), snapshotsApiPlugin()],
   server: {
     proxy: {
       '/gsheets-proxy': {

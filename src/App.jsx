@@ -20,13 +20,26 @@ function saveCache(data) {
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...data, _v: CACHE_VERSION })) } catch {}
 }
 
-// ─── 버전 스냅샷 ──────────────────────────────────────────────────────────────
-const SNAPSHOTS_KEY = 'geo-newsletter-snapshots'
-function loadSnapshots() {
-  try { return JSON.parse(localStorage.getItem(SNAPSHOTS_KEY) || '[]') } catch { return [] }
+// ─── 버전 스냅샷 (서버 저장) ─────────────────────────────────────────────────
+async function fetchSnapshots() {
+  try { const r = await fetch('/api/snapshots'); return r.ok ? await r.json() : [] } catch { return [] }
 }
-function saveSnapshots(list) {
-  try { localStorage.setItem(SNAPSHOTS_KEY, JSON.stringify(list)) } catch {}
+async function postSnapshot(name, data) {
+  try {
+    const r = await fetch('/api/snapshots', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, data }),
+    })
+    const j = await r.json()
+    return j.ok ? j.snapshots : null
+  } catch { return null }
+}
+async function deleteSnapshot(ts) {
+  try {
+    const r = await fetch(`/api/snapshots/${ts}`, { method: 'DELETE' })
+    const j = await r.json()
+    return j.ok ? j.snapshots : null
+  } catch { return null }
 }
 
 // ─── AI 인사이트 자동 생성 ──────────────────────────────────────────────────────
@@ -1061,22 +1074,24 @@ export default function App() {
   const [citations, setCitations] = useState(cache?.citations ?? INIT_CITATIONS)
   const [dotcom,    setDotcom]    = useState((cache?.dotcom && cache.dotcom.lg) ? cache.dotcom : INIT_DOTCOM)
   const [activeTab, setActiveTab] = useState('preview') // 'preview' | 'code'
-  const [snapshots, setSnapshots] = useState(loadSnapshots)
+  const [snapshots, setSnapshots] = useState([])
   const [snapName,  setSnapName]  = useState('')
   const [snapOpen,  setSnapOpen]  = useState(false)
   const [snapMsg,   setSnapMsg]   = useState('')
+
+  // 서버에서 스냅샷 목록 로드
+  useEffect(() => { fetchSnapshots().then(setSnapshots) }, [])
 
   // 상태 변경 시 localStorage에 자동 저장
   useEffect(() => {
     saveCache({ meta, total, products, citations, dotcom })
   }, [meta, total, products, citations, dotcom])
 
-  function handleSnapSave() {
+  async function handleSnapSave() {
     const name = snapName.trim() || `${meta.period || 'Untitled'} — ${new Date().toLocaleString('ko-KR')}`
-    const snap = { name, ts: Date.now(), data: { meta, total, products, citations, dotcom } }
-    const next = [snap, ...snapshots].slice(0, 20)
-    setSnapshots(next); saveSnapshots(next); setSnapName('')
-    setSnapMsg('저장 완료!'); setTimeout(() => setSnapMsg(''), 2000)
+    const result = await postSnapshot(name, { meta, total, products, citations, dotcom })
+    if (result) { setSnapshots(result); setSnapName('') }
+    setSnapMsg(result ? '저장 완료!' : '저장 실패'); setTimeout(() => setSnapMsg(''), 2000)
   }
   function handleSnapLoad(snap) {
     const d = snap.data
@@ -1087,9 +1102,11 @@ export default function App() {
     if (d.dotcom)    setDotcom(d.dotcom)
     setSnapMsg(`"${snap.name}" 불러옴`); setTimeout(() => setSnapMsg(''), 2000)
   }
-  function handleSnapDelete(idx) {
-    const next = snapshots.filter((_, i) => i !== idx)
-    setSnapshots(next); saveSnapshots(next)
+  async function handleSnapDelete(idx) {
+    const snap = snapshots[idx]
+    if (!snap) return
+    const result = await deleteSnapshot(snap.ts)
+    if (result) setSnapshots(result)
   }
 
   return (

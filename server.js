@@ -2,6 +2,7 @@ import express from 'express'
 import nodemailer from 'nodemailer'
 import { fileURLToPath } from 'url'
 import { dirname, join } from 'path'
+import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'fs'
 import dotenv from 'dotenv'
 
 dotenv.config()
@@ -9,6 +10,18 @@ dotenv.config()
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const app = express()
 const PORT = process.env.PORT || 3000
+
+// ─── Snapshots file storage ──────────────────────────────────────────────────
+const DATA_DIR = join(__dirname, 'data')
+const SNAP_FILE = join(DATA_DIR, 'snapshots.json')
+if (!existsSync(DATA_DIR)) mkdirSync(DATA_DIR, { recursive: true })
+
+function readSnapshots() {
+  try { return JSON.parse(readFileSync(SNAP_FILE, 'utf-8')) } catch { return [] }
+}
+function writeSnapshots(list) {
+  writeFileSync(SNAP_FILE, JSON.stringify(list, null, 2))
+}
 
 // ─── JSON body parser ────────────────────────────────────────────────────────
 app.use(express.json({ limit: '5mb' }))
@@ -70,6 +83,27 @@ app.post('/api/send-email', (req, res) => {
       console.error('[EMAIL] Send error:', err.message)
       res.status(500).json({ ok: false, error: err.message })
     })
+})
+
+// ─── Snapshots API ───────────────────────────────────────────────────────────
+app.get('/api/snapshots', (req, res) => {
+  res.json(readSnapshots())
+})
+
+app.post('/api/snapshots', (req, res) => {
+  const { name, data } = req.body || {}
+  if (!name || !data) return res.status(400).json({ ok: false, error: 'name, data 필수' })
+  const snap = { name, ts: Date.now(), data }
+  const list = [snap, ...readSnapshots()].slice(0, 50)
+  writeSnapshots(list)
+  res.json({ ok: true, snapshots: list })
+})
+
+app.delete('/api/snapshots/:ts', (req, res) => {
+  const ts = parseInt(req.params.ts)
+  const list = readSnapshots().filter(s => s.ts !== ts)
+  writeSnapshots(list)
+  res.json({ ok: true, snapshots: list })
 })
 
 // ─── Static files ────────────────────────────────────────────────────────────

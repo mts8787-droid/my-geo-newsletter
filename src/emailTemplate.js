@@ -493,9 +493,10 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {})
                               <span style="font-size:13px;color:#64748B;font-family:${EM_FONT};"> MoM</span>
                             </td>
                             <td align="right" style="vertical-align:bottom;padding-bottom:8px;">
-                              ${compAvg > 0 ? `<span style="font-size:11px;color:#94A3B8;font-family:${EM_FONT};">vs Comp Avg</span>
-                              <span style="font-size:13px;font-weight:700;color:#94A3B8;font-family:${EM_FONT};">&nbsp;${compAvg}%</span>
-                              <br/><span style="font-size:11px;color:${lgVsComp >= 0 ? '#16A34A' : '#DC2626'};font-weight:700;font-family:${EM_FONT};">Gap ${lgVsComp >= 0 ? '+' : ''}${lgVsComp}%p</span>` : ''}
+                              ${compAvg > 0 ? `<span style="font-size:14px;color:#3B82F6;font-weight:800;font-family:${EM_FONT};">SAMSUNG</span>
+                              <span style="font-size:14px;color:#94A3B8;font-weight:500;font-family:${EM_FONT};">&nbsp;${compAvg}%</span>
+                              <span style="font-size:12px;color:#64748B;font-family:${EM_FONT};">&nbsp;&nbsp;|&nbsp;&nbsp;</span>
+                              <span style="font-size:14px;font-weight:800;color:${lgVsComp >= 0 ? '#16A34A' : '#DC2626'};font-family:${EM_FONT};">Gap ${lgVsComp >= 0 ? '+' : ''}${lgVsComp}%p</span>` : ''}
                             </td>
                           </tr>
                         </table>
