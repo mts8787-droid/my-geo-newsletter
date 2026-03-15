@@ -107,6 +107,7 @@ const INIT_META  = {
   citationHowToRead: '', showCitationHowToRead: true,
   dotcomInsight: '', showDotcomInsight: true,
   dotcomHowToRead: '', showDotcomHowToRead: true,
+  noticeText: '', showNotice: false,
 }
 const INIT_TOTAL = { score: 42.7, prev: 42.2, rank: 1, totalBrands: 12 }
 
@@ -616,6 +617,22 @@ function Sidebar({ meta, total, products, citations, dotcom, setMeta, setTotal, 
         <p style={{ margin: '0 0 3px', fontSize: 9, color: '#64748B', fontFamily: FONT }}>기준 텍스트 <span style={{ color: '#334155' }}>(팀명 아래)</span></p>
         <input value={meta.dateLine} onChange={e => setMeta(m => ({ ...m, dateLine: e.target.value }))}
           style={{ ...inputStyle, marginBottom: 10 }} />
+
+        {/* Notice */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+          <p style={{ margin: 0, fontSize: 9, color: '#64748B', fontFamily: FONT }}>Notice</p>
+          <button onClick={() => setMeta(m => ({ ...m, showNotice: !m.showNotice }))}
+            style={{ background: meta.showNotice ? LG_RED : '#334155', border: 'none', borderRadius: 8,
+              width: 32, height: 16, cursor: 'pointer', position: 'relative', padding: 0, transition: 'background 0.2s' }}>
+            <span style={{ position: 'absolute', top: 2, left: meta.showNotice ? 17 : 3,
+              width: 12, height: 12, borderRadius: '50%', background: '#FFFFFF', transition: 'left 0.2s' }} />
+          </button>
+        </div>
+        {meta.showNotice && (
+          <textarea value={meta.noticeText} onChange={e => setMeta(m => ({ ...m, noticeText: e.target.value }))}
+            rows={4} placeholder="Notice 내용을 입력하세요..."
+            style={{ ...inputStyle, marginBottom: 10, resize: 'vertical' }} />
+        )}
 
         {/* 폰트 크기 */}
         <div style={{ marginBottom: 10 }}>
