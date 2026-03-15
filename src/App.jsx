@@ -140,6 +140,7 @@ const INIT_META  = {
   dotcomInsight: '', showDotcomInsight: true,
   dotcomHowToRead: '', showDotcomHowToRead: true,
   noticeText: '', showNotice: false,
+  todoText: '', showTodo: false,
 }
 const INIT_TOTAL = { score: 42.7, prev: 42.2, rank: 1, totalBrands: 12 }
 
@@ -526,6 +527,7 @@ function Sidebar({ meta, total, products, citations, dotcom, setMeta, setTotal, 
         meta.productInsight || '', meta.productHowToRead || '',
         meta.citationInsight || '', meta.citationHowToRead || '',
         meta.dotcomInsight || '', meta.dotcomHowToRead || '',
+        meta.todoText || '',
       ]
       const productNames = products.map(p => p.kr || '')
       const allTexts = [...metaTexts, ...productNames].map(t => t || ' ')
@@ -551,6 +553,7 @@ function Sidebar({ meta, total, products, citations, dotcom, setMeta, setTotal, 
         citationHowToRead: tr[8] || meta.citationHowToRead,
         dotcomInsight: tr[9] || meta.dotcomInsight,
         dotcomHowToRead: tr[10] || meta.dotcomHowToRead,
+        todoText: tr[11] || meta.todoText,
       }
       const newProducts = products.map((p, i) => ({ ...p, kr: tr[metaTexts.length + i] || p.kr }))
 
@@ -812,7 +815,7 @@ function Sidebar({ meta, total, products, citations, dotcom, setMeta, setTotal, 
         <textarea
           value={meta.productInsight}
           onChange={e => setMeta(m => ({ ...m, productInsight: e.target.value }))}
-          rows={4}
+          rows={12}
           placeholder="제품 섹션 인사이트를 입력하세요... (AI 생성 버튼으로 자동 작성 가능)"
           style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6, marginBottom: 8 }}
         />
@@ -840,7 +843,7 @@ function Sidebar({ meta, total, products, citations, dotcom, setMeta, setTotal, 
         <textarea
           value={meta.productHowToRead}
           onChange={e => setMeta(m => ({ ...m, productHowToRead: e.target.value }))}
-          rows={4}
+          rows={12}
           placeholder="제품 섹션 How to Read 설명을 입력하세요... (AI 생성 버튼으로 자동 작성 가능)"
           style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6, marginBottom: 8 }}
         />
@@ -868,7 +871,7 @@ function Sidebar({ meta, total, products, citations, dotcom, setMeta, setTotal, 
         <textarea
           value={meta.citationInsight}
           onChange={e => setMeta(m => ({ ...m, citationInsight: e.target.value }))}
-          rows={4}
+          rows={12}
           placeholder="Citation 섹션 인사이트를 입력하세요... (AI 생성 버튼으로 자동 작성 가능)"
           style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6, marginBottom: 8 }}
         />
@@ -896,7 +899,7 @@ function Sidebar({ meta, total, products, citations, dotcom, setMeta, setTotal, 
         <textarea
           value={meta.citationHowToRead}
           onChange={e => setMeta(m => ({ ...m, citationHowToRead: e.target.value }))}
-          rows={4}
+          rows={12}
           placeholder="Citation How to Read 설명을 입력하세요... (AI 생성 버튼으로 자동 작성 가능)"
           style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6, marginBottom: 8 }}
         />
@@ -924,7 +927,7 @@ function Sidebar({ meta, total, products, citations, dotcom, setMeta, setTotal, 
         <textarea
           value={meta.dotcomInsight}
           onChange={e => setMeta(m => ({ ...m, dotcomInsight: e.target.value }))}
-          rows={4}
+          rows={12}
           placeholder="닷컴 Citation 인사이트를 입력하세요... (AI 생성 버튼으로 자동 작성 가능)"
           style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6, marginBottom: 8 }}
         />
@@ -952,10 +955,30 @@ function Sidebar({ meta, total, products, citations, dotcom, setMeta, setTotal, 
         <textarea
           value={meta.dotcomHowToRead}
           onChange={e => setMeta(m => ({ ...m, dotcomHowToRead: e.target.value }))}
-          rows={4}
+          rows={12}
           placeholder="닷컴 Citation How to Read 설명을 입력하세요... (AI 생성 버튼으로 자동 작성 가능)"
           style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6, marginBottom: 16 }}
         />
+
+        {/* To-do List 섹션 */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+          <p style={{ margin: 0, fontSize: 9, color: '#64748B', fontFamily: FONT }}>To-do List 섹션</p>
+          <button onClick={() => setMeta(m => ({ ...m, showTodo: !m.showTodo }))}
+            style={{ padding: '2px 8px', borderRadius: 4, border: 'none', cursor: 'pointer',
+              background: meta.showTodo ? LG_RED : '#1E293B',
+              color: meta.showTodo ? '#FFFFFF' : '#475569',
+              fontSize: 9, fontWeight: 700, fontFamily: FONT }}>
+            {meta.showTodo ? 'ON' : 'OFF'}
+          </button>
+        </div>
+        <textarea
+          value={meta.todoText}
+          onChange={e => setMeta(m => ({ ...m, todoText: e.target.value }))}
+          rows={12}
+          placeholder="To-do 항목을 입력하세요...&#10;예: - Citation Optimization 전략 수립&#10;- 구조화 데이터 업데이트"
+          style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6, marginBottom: 4 }}
+        />
+        <p style={{ margin: '0 0 16px', fontSize: 8, color: '#475569', fontFamily: FONT }}>**텍스트** → <strong>볼드</strong> · 줄바꿈 지원</p>
 
         <div style={{ height: 1, background: '#1E293B', marginBottom: 16 }} />
 

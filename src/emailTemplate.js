@@ -27,6 +27,7 @@ const T = {
     howToRead: 'HOW TO READ',
     notice: 'Notice',
     geoInsight: 'Executive Summary',
+    todoTitle: 'To-do List',
     footer: '해외영업본부 D2C해외영업그룹 D2C마케팅담당 D2C디지털마케팅팀',
   },
   en: {
@@ -49,6 +50,7 @@ const T = {
     howToRead: 'HOW TO READ',
     notice: 'Notice',
     geoInsight: 'Executive Summary',
+    todoTitle: 'To-do List',
     footer: 'Overseas Sales HQ · D2C Overseas Sales Group · D2C Marketing · D2C Digital Marketing Team',
   },
 }
@@ -661,6 +663,30 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
               </tr>
 
               ${dotcomSectionHtml(dotcom, meta, lang)}
+
+              ${meta.showTodo && meta.todoText ? `
+              <!-- ══ To-do List ══ -->
+              <tr>
+                <td style="padding-bottom:20px;">
+                  <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFFFFF;border-radius:16px;border:1.5px solid #E8EDF2;overflow:hidden;">
+                    <tr>
+                      <td style="padding:18px 20px 16px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;">
+                        <table border="0" cellpadding="0" cellspacing="0">
+                          <tr>
+                            <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
+                            <td style="padding-left:8px;font-size:17px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${t.todoTitle}</td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="padding:16px 20px;">
+                        <p style="margin:0;font-size:13px;color:#1A1A1A;line-height:1.8;font-family:${EM_FONT};white-space:pre-line;">${mdBold(meta.todoText)}</p>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>` : ''}
 
             </table>
           </td>
