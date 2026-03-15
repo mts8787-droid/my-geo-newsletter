@@ -214,7 +214,7 @@ function insightBlockHtml(insight, showInsight, howToRead, showHowToRead, lang =
           <tr>
             <td style="padding:10px 14px;">
               <p style="margin:0 0 4px;font-size:11px;font-weight:700;color:${EM_RED};font-family:${EM_FONT};">${t.insight}</p>
-              <p style="margin:0;font-size:13px;color:#1A1A1A;line-height:24px;font-family:${EM_FONT};">${mdBold(insight)}</p>
+              <p style="margin:0;font-size:12px;color:#1A1A1A;line-height:22px;font-family:${EM_FONT};">${mdBold(insight)}</p>
             </td>
           </tr>
         </table>
@@ -229,7 +229,7 @@ function insightBlockHtml(insight, showInsight, howToRead, showHowToRead, lang =
           <tr>
             <td style="padding:10px 14px;">
               <p style="margin:0 0 4px;font-size:11px;font-weight:700;color:#64748B;font-family:${EM_FONT};">${t.howToRead}</p>
-              <p style="margin:0;font-size:13px;color:#475569;line-height:24px;font-family:${EM_FONT};">${mdBold(howToRead)}</p>
+              <p style="margin:0;font-size:12px;color:#475569;line-height:22px;font-family:${EM_FONT};">${mdBold(howToRead)}</p>
             </td>
           </tr>
         </table>
@@ -509,7 +509,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
               <tr>
                 <td style="background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;padding:12px 16px;">
                   <p style="margin:0 0 4px;font-size:13px;font-weight:700;color:${EM_RED};font-family:${EM_FONT};">${t.notice}</p>
-                  <p style="margin:0;font-size:13px;color:#1A1A1A;font-family:${EM_FONT};line-height:22px;">${mdBold(meta.noticeText)}</p>
+                  <p style="margin:0;font-size:12px;color:#1A1A1A;font-family:${EM_FONT};line-height:21px;">${mdBold(meta.noticeText)}</p>
                 </td>
               </tr>
             </table>` : ''}
@@ -581,7 +581,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                           <tr>
                             <td style="padding:14px 16px;background:rgba(207,6,82,0.12);border:1px solid rgba(207,6,82,0.25);border-radius:10px;">
                               <p style="margin:0 0 6px;font-size:12px;font-weight:700;color:${EM_RED};text-transform:uppercase;font-family:${EM_FONT};">${t.geoInsight}</p>
-                              <p style="margin:0;font-size:14px;color:#FFFFFF;line-height:26px;font-family:${EM_FONT};">${mdBold(meta.totalInsight)}</p>
+                              <p style="margin:0;font-size:13px;color:#FFFFFF;line-height:24px;font-family:${EM_FONT};">${mdBold(meta.totalInsight)}</p>
                             </td>
                           </tr>
                         </table>` : ''}
@@ -684,7 +684,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                     </tr>
                     <tr>
                       <td style="padding:16px 20px;">
-                        <p style="margin:0;font-size:13px;color:#1A1A1A;line-height:24px;font-family:${EM_FONT};">${mdBold(meta.todoText)}</p>
+                        <p style="margin:0;font-size:12px;color:#1A1A1A;line-height:22px;font-family:${EM_FONT};">${mdBold(meta.todoText)}</p>
                       </td>
                     </tr>
                   </table>
