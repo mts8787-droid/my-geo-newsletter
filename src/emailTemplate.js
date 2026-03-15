@@ -246,20 +246,20 @@ function citationRowHtml(c, isLast, maxScore) {
 
   return `
   <tr style="background:#FFFFFF;${isLast ? '' : 'border-bottom:1px solid #F8FAFC;'}">
-    <td style="padding:10px 12px 10px 16px;width:${LABEL_WIDTH}px;vertical-align:top;">
+    <td style="padding:6px 8px 6px 10px;width:${LABEL_WIDTH}px;vertical-align:top;">
       <table border="0" cellpadding="0" cellspacing="0">
         <tr>
           <td style="vertical-align:top;padding-top:1px;">
             <span style="display:inline-block;width:22px;height:22px;background:${rankBg};color:${rankColor};border-radius:50%;font-size:11px;font-weight:800;text-align:center;line-height:22px;font-family:${EM_FONT};">${c.rank}</span>
           </td>
-          <td style="padding-left:7px;vertical-align:top;">
-            <div style="font-size:13px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};line-height:24px;">${c.source}</div>
-            <div style="font-size:11px;color:#94A3B8;background:#F8FAFC;border-radius:4px;padding:1px 5px;display:inline-block;margin-top:3px;font-family:${EM_FONT};">${c.category}</div>
+          <td style="padding-left:5px;vertical-align:top;">
+            <div style="font-size:13px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};line-height:20px;">${c.source}</div>
+            <div style="font-size:11px;color:#94A3B8;background:#F8FAFC;border-radius:4px;padding:1px 5px;display:inline-block;margin-top:1px;font-family:${EM_FONT};">${c.category}</div>
           </td>
         </tr>
       </table>
     </td>
-    <td style="padding:10px 16px 10px 0;vertical-align:top;">
+    <td style="padding:6px 16px 6px 0;vertical-align:top;">
       <table border="0" cellpadding="0" cellspacing="0" width="100%">
         <tr>
           <td width="${barPct}%" style="background:${EM_RED};border-radius:6px;height:24px;font-size:0;">&nbsp;</td>
