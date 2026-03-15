@@ -13,7 +13,7 @@ const app = express()
 const PORT = process.env.PORT || 3000
 
 // ─── Snapshots file storage ──────────────────────────────────────────────────
-const DATA_DIR = join(__dirname, 'data')
+const DATA_DIR = process.env.DATA_DIR || join(__dirname, 'data')
 const SNAP_FILE = join(DATA_DIR, 'snapshots.json')
 if (!existsSync(DATA_DIR)) mkdirSync(DATA_DIR, { recursive: true })
 
