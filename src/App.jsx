@@ -554,7 +554,7 @@ function Sidebar({ meta, total, products, citations, dotcom, setMeta, setTotal, 
   }
 
   return (
-    <div style={{ width: 260, minWidth: 260, borderRight: '1px solid #1E293B',
+    <div style={{ width: 520, minWidth: 520, borderRight: '1px solid #1E293B',
       background: '#0F172A', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
 
       {/* 로고 */}
