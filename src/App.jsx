@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react'
-import { ChevronLeft, ChevronRight, TrendingUp, TrendingDown, Minus, Copy, Download, RefreshCw, Check, Send, Sparkles } from 'lucide-react'
+import { ChevronLeft, ChevronRight, TrendingUp, TrendingDown, Minus, Copy, Download, RefreshCw, Check, Send, Sparkles, Save, FolderOpen, Trash2 } from 'lucide-react'
 import { downloadTemplate } from './excelUtils'
 import { extractSheetId, syncFromGoogleSheets } from './googleSheetsUtils'
 import { generateEmailHTML } from './emailTemplate'
@@ -18,6 +18,15 @@ function loadCache() {
 }
 function saveCache(data) {
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...data, _v: CACHE_VERSION })) } catch {}
+}
+
+// ─── 버전 스냅샷 ──────────────────────────────────────────────────────────────
+const SNAPSHOTS_KEY = 'geo-newsletter-snapshots'
+function loadSnapshots() {
+  try { return JSON.parse(localStorage.getItem(SNAPSHOTS_KEY) || '[]') } catch { return [] }
+}
+function saveSnapshots(list) {
+  try { localStorage.setItem(SNAPSHOTS_KEY, JSON.stringify(list)) } catch {}
 }
 
 // ─── AI 인사이트 자동 생성 ──────────────────────────────────────────────────────
@@ -1052,11 +1061,36 @@ export default function App() {
   const [citations, setCitations] = useState(cache?.citations ?? INIT_CITATIONS)
   const [dotcom,    setDotcom]    = useState((cache?.dotcom && cache.dotcom.lg) ? cache.dotcom : INIT_DOTCOM)
   const [activeTab, setActiveTab] = useState('preview') // 'preview' | 'code'
+  const [snapshots, setSnapshots] = useState(loadSnapshots)
+  const [snapName,  setSnapName]  = useState('')
+  const [snapOpen,  setSnapOpen]  = useState(false)
+  const [snapMsg,   setSnapMsg]   = useState('')
 
   // 상태 변경 시 localStorage에 자동 저장
   useEffect(() => {
     saveCache({ meta, total, products, citations, dotcom })
   }, [meta, total, products, citations, dotcom])
+
+  function handleSnapSave() {
+    const name = snapName.trim() || `${meta.period || 'Untitled'} — ${new Date().toLocaleString('ko-KR')}`
+    const snap = { name, ts: Date.now(), data: { meta, total, products, citations, dotcom } }
+    const next = [snap, ...snapshots].slice(0, 20)
+    setSnapshots(next); saveSnapshots(next); setSnapName('')
+    setSnapMsg('저장 완료!'); setTimeout(() => setSnapMsg(''), 2000)
+  }
+  function handleSnapLoad(snap) {
+    const d = snap.data
+    if (d.meta)      setMeta({ ...INIT_META, ...d.meta })
+    if (d.total)     setTotal(d.total)
+    if (d.products)  setProducts(d.products)
+    if (d.citations) setCitations(d.citations)
+    if (d.dotcom)    setDotcom(d.dotcom)
+    setSnapMsg(`"${snap.name}" 불러옴`); setTimeout(() => setSnapMsg(''), 2000)
+  }
+  function handleSnapDelete(idx) {
+    const next = snapshots.filter((_, i) => i !== idx)
+    setSnapshots(next); saveSnapshots(next)
+  }
 
   return (
     <div style={{ display: 'flex', height: '100vh', background: '#0A0F1C', fontFamily: FONT }}>
@@ -1086,9 +1120,57 @@ export default function App() {
               </button>
             ))}
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#22C55E' }} />
-            <span style={{ fontSize: 10, color: '#22C55E', fontFamily: FONT }}>미리보기 활성</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            {snapMsg && <span style={{ fontSize: 10, color: '#22C55E', fontFamily: FONT }}>{snapMsg}</span>}
+            <input value={snapName} onChange={e => setSnapName(e.target.value)}
+              placeholder="버전 이름..."
+              onKeyDown={e => e.key === 'Enter' && handleSnapSave()}
+              style={{ width: 140, background: '#1E293B', border: '1px solid #334155', borderRadius: 6,
+                padding: '4px 8px', fontSize: 10, color: '#E2E8F0', fontFamily: FONT, outline: 'none' }} />
+            <button onClick={handleSnapSave} title="현재 상태 저장"
+              style={{ padding: '4px 10px', borderRadius: 6, border: 'none', cursor: 'pointer',
+                background: '#1D4ED8', color: '#FFFFFF', fontSize: 10, fontWeight: 700, fontFamily: FONT,
+                display: 'flex', alignItems: 'center', gap: 4 }}>
+              <Save size={11} /> 저장
+            </button>
+            <div style={{ position: 'relative' }}>
+              <button onClick={() => setSnapOpen(!snapOpen)} title="저장된 버전 불러오기"
+                style={{ padding: '4px 10px', borderRadius: 6, border: 'none', cursor: 'pointer',
+                  background: snapOpen ? '#334155' : '#1E293B', color: '#E2E8F0', fontSize: 10, fontWeight: 700, fontFamily: FONT,
+                  display: 'flex', alignItems: 'center', gap: 4 }}>
+                <FolderOpen size={11} /> 불러오기 {snapshots.length > 0 && <span style={{ fontSize: 9, color: '#94A3B8' }}>({snapshots.length})</span>}
+              </button>
+              {snapOpen && (
+                <div style={{ position: 'absolute', top: 32, right: 0, width: 320, maxHeight: 360, overflowY: 'auto',
+                  background: '#1E293B', border: '1px solid #334155', borderRadius: 10, zIndex: 100, padding: 8,
+                  boxShadow: '0 8px 24px rgba(0,0,0,0.4)' }}>
+                  {snapshots.length === 0 ? (
+                    <p style={{ margin: 0, padding: 12, fontSize: 10, color: '#64748B', fontFamily: FONT, textAlign: 'center' }}>저장된 버전이 없습니다</p>
+                  ) : snapshots.map((snap, i) => (
+                    <div key={snap.ts} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 10px',
+                      borderRadius: 7, marginBottom: 2, background: '#0F172A' }}>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <p style={{ margin: 0, fontSize: 11, fontWeight: 700, color: '#E2E8F0', fontFamily: FONT,
+                          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{snap.name}</p>
+                        <p style={{ margin: 0, fontSize: 9, color: '#64748B', fontFamily: FONT }}>
+                          {new Date(snap.ts).toLocaleString('ko-KR')}
+                        </p>
+                      </div>
+                      <button onClick={() => { handleSnapLoad(snap); setSnapOpen(false) }}
+                        style={{ padding: '3px 8px', borderRadius: 5, border: 'none', cursor: 'pointer',
+                          background: '#166534', color: '#FFFFFF', fontSize: 9, fontWeight: 700, fontFamily: FONT }}>
+                        적용
+                      </button>
+                      <button onClick={() => handleSnapDelete(i)}
+                        style={{ padding: '3px 5px', borderRadius: 5, border: 'none', cursor: 'pointer',
+                          background: '#7F1D1D', color: '#FCA5A5', fontSize: 9, display: 'flex' }}>
+                        <Trash2 size={10} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
