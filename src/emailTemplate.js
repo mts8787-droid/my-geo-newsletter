@@ -26,7 +26,7 @@ const T = {
     insight: 'INSIGHT',
     howToRead: 'HOW TO READ',
     notice: 'Notice',
-    geoInsight: 'GEO 전략 인사이트',
+    geoInsight: 'Executive Summary',
     footer: '해외영업본부 D2C해외영업그룹 D2C마케팅담당 D2C디지털마케팅팀',
   },
   en: {
@@ -48,7 +48,7 @@ const T = {
     insight: 'INSIGHT',
     howToRead: 'HOW TO READ',
     notice: 'Notice',
-    geoInsight: 'GEO Strategic Insight',
+    geoInsight: 'Executive Summary',
     footer: 'Overseas Sales HQ · D2C Overseas Sales Group · D2C Marketing · D2C Digital Marketing Team',
   },
 }
