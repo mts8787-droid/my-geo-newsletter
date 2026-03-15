@@ -147,7 +147,7 @@ function productCardHtml(p, globalMax, globalMin, lang = 'ko') {
         <td style="padding:0 13px 12px;">
           <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#F8FAFC;border-radius:6px;">
             <tr>
-              <td style="padding:6px 8px;font-size:13px;color:#1A1A1A;">${p.compName} ${t.vsComp}</td>
+              <td style="padding:6px 8px;font-size:13px;color:#1A1A1A;">${lang === 'en' ? `${t.vsComp} ${p.compName}` : `${p.compName} ${t.vsComp}`}</td>
               <td align="right" style="padding:6px 8px;font-size:13px;font-weight:700;color:${(p.compRatio || 0) >= 100 ? '#15803D' : (p.compRatio || 0) >= 80 ? '#E8910C' : '#BE123C'};">
                 ${p.compRatio || Math.round(p.vsComp > 0 ? (p.score / p.vsComp) * 100 : 100)}%
               </td>
