@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react'
-import { ChevronLeft, ChevronRight, TrendingUp, TrendingDown, Minus, Copy, Download, RefreshCw, Check, Send, Sparkles, Save, FolderOpen, Trash2 } from 'lucide-react'
+import { ChevronLeft, ChevronRight, TrendingUp, TrendingDown, Minus, Copy, Download, RefreshCw, Check, Send, Sparkles, Save, FolderOpen, Trash2, Languages } from 'lucide-react'
 import { downloadTemplate } from './excelUtils'
 import { extractSheetId, syncFromGoogleSheets } from './googleSheetsUtils'
 import { generateEmailHTML } from './emailTemplate'
@@ -486,7 +486,7 @@ const inputStyle = {
   fontFamily: FONT, outline: 'none', boxSizing: 'border-box',
 }
 
-function Sidebar({ meta, total, products, citations, dotcom, setMeta, setTotal, setProducts, setCitations, setDotcom }) {
+function Sidebar({ meta, total, products, citations, dotcom, setMeta, setTotal, setProducts, setCitations, setDotcom, previewLang, setPreviewLang, snapshots, setSnapshots }) {
   const [gsUrl,     setGsUrl]     = useState('https://docs.google.com/spreadsheets/d/1fTciJRUAqU5lhkPCb39mzv1Y4kNBslF8EuHjZ5H3JY0/edit?gid=1331469350#gid=1331469350')
   const [gsSyncing, setGsSyncing] = useState(false)
   const [gsStatus,  setGsStatus]  = useState(null)
@@ -494,6 +494,70 @@ function Sidebar({ meta, total, products, citations, dotcom, setMeta, setTotal, 
   const [copied,    setCopied]    = useState(false)
   const [toEmail,   setToEmail]   = useState('')
   const [mailSent,  setMailSent]  = useState(false)
+  const [showTranslatePopup, setShowTranslatePopup] = useState(false)
+  const [translating, setTranslating] = useState(false)
+
+  async function handleTranslate() {
+    if (previewLang !== 'en') {
+      alert('EN 탭에서만 AI 번역 기능을 사용할 수 있습니다.\n상단에서 "뉴스레터미리보기 (EN)" 탭을 먼저 선택해주세요.')
+      return
+    }
+    setShowTranslatePopup(true)
+  }
+
+  async function executeTranslate() {
+    setShowTranslatePopup(false)
+    setTranslating(true)
+    try {
+      // 번역할 텍스트 수집
+      const metaTexts = [
+        meta.title || '', meta.dateLine || '', meta.noticeText || '',
+        meta.totalInsight || '', meta.reportType || '',
+        meta.productInsight || '', meta.productHowToRead || '',
+        meta.citationInsight || '', meta.citationHowToRead || '',
+        meta.dotcomInsight || '', meta.dotcomHowToRead || '',
+      ]
+      const productNames = products.map(p => p.kr || '')
+      const allTexts = [...metaTexts, ...productNames].map(t => t || ' ')
+
+      const res = await fetch('/api/translate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ texts: allTexts, from: 'ko', to: 'en' }),
+      })
+      const data = await res.json()
+      if (!data.ok) throw new Error(data.error || '번역 실패')
+
+      const tr = data.translated
+      const newMeta = { ...meta,
+        title: tr[0] || meta.title,
+        dateLine: tr[1] || meta.dateLine,
+        noticeText: tr[2] || meta.noticeText,
+        totalInsight: tr[3] || meta.totalInsight,
+        reportType: tr[4] || meta.reportType,
+        productInsight: tr[5] || meta.productInsight,
+        productHowToRead: tr[6] || meta.productHowToRead,
+        citationInsight: tr[7] || meta.citationInsight,
+        citationHowToRead: tr[8] || meta.citationHowToRead,
+        dotcomInsight: tr[9] || meta.dotcomInsight,
+        dotcomHowToRead: tr[10] || meta.dotcomHowToRead,
+      }
+      const newProducts = products.map((p, i) => ({ ...p, kr: tr[metaTexts.length + i] || p.kr }))
+
+      setMeta(newMeta)
+      setProducts(newProducts)
+
+      // 스냅샷 저장
+      const snapName = `[EN] ${meta.period || 'Untitled'} — ${new Date().toLocaleString('ko-KR')}`
+      const snapRes = await postSnapshot(snapName, { meta: newMeta, total, products: newProducts, citations, dotcom })
+      if (snapRes) setSnapshots(snapRes)
+
+      setTranslating(false)
+    } catch (err) {
+      alert('번역 오류: ' + err.message)
+      setTranslating(false)
+    }
+  }
 
   async function handleCopyHtml() {
     const html = generateEmailHTML(meta, total, products, citations, dotcom)
@@ -885,6 +949,48 @@ function Sidebar({ meta, total, products, citations, dotcom, setMeta, setTotal, 
 
         <div style={{ height: 1, background: '#1E293B', marginBottom: 16 }} />
 
+        {/* AI 번역 */}
+        <button onClick={handleTranslate} disabled={translating} style={{
+          width: '100%', padding: '9px 0', background: translating ? '#1E293B' : '#4F46E5', border: '1px solid #6366F133',
+          borderRadius: 8, fontSize: 11, fontWeight: 700, color: '#E0E7FF', fontFamily: FONT,
+          cursor: translating ? 'wait' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, marginBottom: 12,
+          opacity: translating ? 0.6 : 1,
+        }}>
+          <Languages size={13} /> {translating ? '번역 중...' : 'AI 번역 (EN)'}
+        </button>
+
+        {/* 번역 확인 팝업 */}
+        {showTranslatePopup && (
+          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 9999,
+            display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ background: '#1E293B', border: '1px solid #334155', borderRadius: 14,
+              padding: '24px 28px', maxWidth: 380, width: '90%', boxShadow: '0 20px 60px rgba(0,0,0,0.5)' }}>
+              <p style={{ margin: '0 0 6px', fontSize: 15, fontWeight: 700, color: '#FFFFFF', fontFamily: FONT }}>
+                AI 번역 확인
+              </p>
+              <p style={{ margin: '0 0 20px', fontSize: 12, color: '#94A3B8', lineHeight: 1.6, fontFamily: FONT }}>
+                좌측 패널의 모든 텍스트를 영어로 번역하고,<br/>
+                영어 버전 스냅샷을 자동 저장합니다.<br/>
+                진행하시겠습니까?
+              </p>
+              <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+                <button onClick={() => setShowTranslatePopup(false)} style={{
+                  padding: '8px 20px', borderRadius: 8, border: '1px solid #334155', background: 'transparent',
+                  color: '#94A3B8', fontSize: 12, fontWeight: 600, fontFamily: FONT, cursor: 'pointer' }}>
+                  아니오
+                </button>
+                <button onClick={executeTranslate} style={{
+                  padding: '8px 20px', borderRadius: 8, border: 'none', background: '#4F46E5',
+                  color: '#FFFFFF', fontSize: 12, fontWeight: 700, fontFamily: FONT, cursor: 'pointer' }}>
+                  예, 번역하기
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div style={{ height: 1, background: '#1E293B', marginBottom: 16 }} />
+
         {/* 데이터 연동 */}
         <p style={{ margin: '0 0 10px 2px', fontSize: 10, fontWeight: 700, color: '#475569',
           textTransform: 'uppercase', letterSpacing: 1, fontFamily: FONT }}>
@@ -1115,6 +1221,7 @@ export default function App() {
       <Sidebar
         meta={meta} total={total} products={products} citations={citations} dotcom={dotcom}
         setMeta={setMeta} setTotal={setTotal} setProducts={setProducts} setCitations={setCitations} setDotcom={setDotcom}
+        previewLang={previewLang} setPreviewLang={setPreviewLang} snapshots={snapshots} setSnapshots={setSnapshots}
       />
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         {/* 탑바 */}

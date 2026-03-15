@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import nodemailer from 'nodemailer'
+import translate from 'google-translate-api-x'
 import dotenv from 'dotenv'
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'fs'
 import { resolve } from 'path'
@@ -42,6 +43,34 @@ function emailApiPlugin() {
 
             res.setHeader('Content-Type', 'application/json')
             res.end(JSON.stringify({ ok: true }))
+          } catch (err) {
+            res.statusCode = 500
+            res.setHeader('Content-Type', 'application/json')
+            res.end(JSON.stringify({ ok: false, error: err.message }))
+          }
+        })
+      })
+    },
+  }
+}
+
+// ─── Vite 플러그인: /api/translate 엔드포인트 ──────────────────────────────
+function translateApiPlugin() {
+  return {
+    name: 'translate-api',
+    configureServer(server) {
+      server.middlewares.use('/api/translate', (req, res) => {
+        if (req.method !== 'POST') { res.statusCode = 405; res.end(); return }
+        let body = ''
+        req.on('data', c => (body += c))
+        req.on('end', async () => {
+          try {
+            const { texts, from, to } = JSON.parse(body)
+            if (!texts || !Array.isArray(texts) || !to) throw new Error('texts (array), to 필수')
+            const results = await translate(texts, { from: from || 'ko', to })
+            const translated = results.map(r => r.text)
+            res.setHeader('Content-Type', 'application/json')
+            res.end(JSON.stringify({ ok: true, translated }))
           } catch (err) {
             res.statusCode = 500
             res.setHeader('Content-Type', 'application/json')
@@ -112,7 +141,7 @@ export default defineConfig({
   define: {
     __APP_VERSION__: JSON.stringify(pkg.version),
   },
-  plugins: [react(), emailApiPlugin(), snapshotsApiPlugin()],
+  plugins: [react(), emailApiPlugin(), translateApiPlugin(), snapshotsApiPlugin()],
   server: {
     proxy: {
       '/gsheets-proxy': {

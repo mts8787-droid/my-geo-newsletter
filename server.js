@@ -1,5 +1,6 @@
 import express from 'express'
 import nodemailer from 'nodemailer'
+import translate from 'google-translate-api-x'
 import { fileURLToPath } from 'url'
 import { dirname, join } from 'path'
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'fs'
@@ -104,6 +105,22 @@ app.delete('/api/snapshots/:ts', (req, res) => {
   const list = readSnapshots().filter(s => s.ts !== ts)
   writeSnapshots(list)
   res.json({ ok: true, snapshots: list })
+})
+
+// ─── Translate API ───────────────────────────────────────────────────────────
+app.post('/api/translate', async (req, res) => {
+  const { texts, from, to } = req.body || {}
+  if (!texts || !Array.isArray(texts) || !to) {
+    return res.status(400).json({ ok: false, error: 'texts (array), to 필수' })
+  }
+  try {
+    const results = await translate(texts, { from: from || 'ko', to })
+    const translated = results.map(r => r.text)
+    res.json({ ok: true, translated })
+  } catch (err) {
+    console.error('[TRANSLATE] Error:', err.message)
+    res.status(500).json({ ok: false, error: err.message })
+  }
 })
 
 // ─── Static files ────────────────────────────────────────────────────────────
