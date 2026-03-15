@@ -1044,7 +1044,7 @@ function HtmlCodeViewer({ meta, total, products, citations, dotcom }) {
 // ─── 메인 앱 ──────────────────────────────────────────────────────────────────
 export default function App() {
   const cache = useRef(loadCache()).current
-  const [meta,      setMeta]      = useState(cache?.meta      ?? INIT_META)
+  const [meta,      setMeta]      = useState({ ...INIT_META, ...(cache?.meta ?? {}) })
   const [total,     setTotal]     = useState(cache?.total     ?? INIT_TOTAL)
   const [products,  setProducts]  = useState(cache?.products  ?? INIT_PRODUCTS)
   const [citations, setCitations] = useState(cache?.citations ?? INIT_CITATIONS)
