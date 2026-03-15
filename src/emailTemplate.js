@@ -70,7 +70,8 @@ function fmt(n) {
 function mdBold(text) {
   return (text || '')
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\n/g, '<br/>')
+    .replace(/\r\n/g, '<br>')
+    .replace(/\n/g, '<br>')
 }
 
 function delta(score, prev) { return +(score - prev).toFixed(1) }
