@@ -21,11 +21,31 @@ export function downloadTemplate(meta, total, products, citations, dotcom = {}) 
     ['※ key 열은 수정하지 마세요. value 열(B열)만 수정하세요.'],
     [''],
     ['key', 'value', '설명'],
-    ['period',   meta.period,   '보고서 기간 (예: 2026년 3월)'],
-    ['team',     meta.team,     '담당 팀명'],
-    ['reportNo', meta.reportNo, '보고서 번호 (예: Vol.03)'],
+    ['period',            meta.period,            '보고서 기간 (예: 2026년 3월)'],
+    ['team',              meta.team,              '담당 팀명'],
+    ['reportNo',          meta.reportNo,          '보고서 번호 (예: Vol.03)'],
+    ['reportType',        meta.reportType,        '리포트 유형 (예: GEO 월간 성과 분석 리포트)'],
+    ['title',             meta.title,             '리포트 제목'],
+    ['titleFontSize',     meta.titleFontSize,     '제목 폰트 크기 (숫자, 예: 24)'],
+    ['titleColor',        meta.titleColor,        '제목 색상 (HEX, 예: #1A1A1A)'],
+    ['dateLine',          meta.dateLine,          '기준 텍스트 (예: 2026년 3월 기준)'],
+    ['showNotice',        meta.showNotice ? 'Y' : 'N', 'Notice 표시 여부 (Y/N)'],
+    ['noticeText',        meta.noticeText,        'Notice 내용'],
+    ['totalInsight',      meta.totalInsight,      'GEO 전략 인사이트'],
+    ['productInsight',    meta.productInsight,    '제품별 GEO 인사이트'],
+    ['showProductInsight', meta.showProductInsight ? 'Y' : 'N', '제품별 인사이트 표시 (Y/N)'],
+    ['productHowToRead',  meta.productHowToRead,  '제품별 읽는 법'],
+    ['showProductHowToRead', meta.showProductHowToRead ? 'Y' : 'N', '제품별 읽는 법 표시 (Y/N)'],
+    ['citationInsight',   meta.citationInsight,   'Citation 인사이트'],
+    ['showCitationInsight', meta.showCitationInsight ? 'Y' : 'N', 'Citation 인사이트 표시 (Y/N)'],
+    ['citationHowToRead', meta.citationHowToRead, 'Citation 읽는 법'],
+    ['showCitationHowToRead', meta.showCitationHowToRead ? 'Y' : 'N', 'Citation 읽는 법 표시 (Y/N)'],
+    ['dotcomInsight',     meta.dotcomInsight,     '닷컴 Citation 인사이트'],
+    ['showDotcomInsight', meta.showDotcomInsight ? 'Y' : 'N', '닷컴 인사이트 표시 (Y/N)'],
+    ['dotcomHowToRead',   meta.dotcomHowToRead,   '닷컴 읽는 법'],
+    ['showDotcomHowToRead', meta.showDotcomHowToRead ? 'Y' : 'N', '닷컴 읽는 법 표시 (Y/N)'],
   ])
-  wsMeta['!cols'] = [{ wch: 12 }, { wch: 24 }, { wch: 36 }]
+  wsMeta['!cols'] = [{ wch: 24 }, { wch: 50 }, { wch: 40 }]
   XLSX.utils.book_append_sheet(wb, wsMeta, SHEET_NAMES.meta)
 
   // ── total ─────────────────────────────────────────────────────────────────
@@ -71,10 +91,10 @@ export function downloadTemplate(meta, total, products, citations, dotcom = {}) 
     ['[GEO Newsletter] AI Citation 현황 시트'],
     ['※ 생성형 AI가 LG 제품을 언급할 때 인용하는 출처(Source)와 그 기여 점수를 입력하세요.'],
     ['  rank: 순위(정수)  |  source: 출처명(사이트/매체명)  |  category: 관련 제품 카테고리'],
-    ['  score: Citation 기여 점수(0~100)  |  delta: 전월 대비 증감(%p, 음수=하락)'],
+    ['  score: Citation 건수  |  delta: 전월 대비 증감(%p, 음수=하락)  |  ratio: 비율(%)'],
     [''],
-    ['rank', 'source', 'category', 'score', 'delta'],
-    ...citations.map(c => [c.rank, c.source, c.category, c.score, c.delta]),
+    ['rank', 'source', 'category', 'score', 'delta', 'ratio'],
+    ...citations.map(c => [c.rank, c.source, c.category, c.score, c.delta, c.ratio ?? 0]),
   ])
   wsCitations['!cols'] = [{ wch: 6 }, { wch: 18 }, { wch: 12 }, { wch: 8 }, { wch: 8 }]
   XLSX.utils.book_append_sheet(wb, wsCitations, SHEET_NAMES.citations)
@@ -98,7 +118,16 @@ export function downloadTemplate(meta, total, products, citations, dotcom = {}) 
 export function parseSheetRows(sheetName, rows) {
   if (sheetName === 'meta') {
     const obj = {}
-    rows.forEach(r => { if (r[0] && !String(r[0]).startsWith('[') && !String(r[0]).startsWith('※') && r[0] !== 'key') obj[String(r[0])] = String(r[1] ?? '') })
+    const boolKeys = ['showNotice','showProductInsight','showProductHowToRead','showCitationInsight','showCitationHowToRead','showDotcomInsight','showDotcomHowToRead']
+    const numKeys = ['titleFontSize']
+    rows.forEach(r => {
+      if (!r[0] || String(r[0]).startsWith('[') || String(r[0]).startsWith('※') || r[0] === 'key') return
+      const k = String(r[0])
+      const v = r[1] ?? ''
+      if (boolKeys.includes(k)) obj[k] = String(v).toUpperCase() === 'Y'
+      else if (numKeys.includes(k)) obj[k] = parseInt(v) || 24
+      else obj[k] = String(v)
+    })
     return Object.keys(obj).length ? { meta: obj } : {}
   }
   if (sheetName === 'total') {
