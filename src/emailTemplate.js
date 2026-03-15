@@ -190,9 +190,12 @@ function buSectionHtml(buKey, buProducts, globalMax, globalMin, lang = 'ko') {
       <table border="0" cellpadding="0" cellspacing="0" width="100%">
         <tr>
           <td style="background:#F1F5F9;border-radius:7px;padding:7px 12px;">
-            <span style="display:inline-block;width:6px;height:6px;background:#94A3B8;border-radius:50%;vertical-align:middle;margin-right:6px;"></span>
-            <span style="font-size:15px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${buKey}</span>
-            <span style="font-size:14px;color:#94A3B8;font-family:${EM_FONT};float:right;">${buProducts.length}${t.categories}</span>
+            <table border="0" cellpadding="0" cellspacing="0" width="100%">
+              <tr>
+                <td style="font-size:15px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${buKey}</td>
+                <td align="right" style="font-size:14px;color:#94A3B8;font-family:${EM_FONT};">${buProducts.length}${t.categories}</td>
+              </tr>
+            </table>
           </td>
         </tr>
       </table>
