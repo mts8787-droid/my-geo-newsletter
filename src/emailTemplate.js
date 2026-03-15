@@ -5,11 +5,60 @@ const EM_RED  = '#CF0652'
 const EM_DARK = '#A0003E'
 const EM_FONT = "'LG Smart', 'Arial Narrow', Arial, sans-serif"
 
-function statusInfo(status) {
-  if (status === 'lead')     return { bg: '#F0FDF4', border: '#BBF7D0', color: '#15803D', label: '선도' }
-  if (status === 'behind')   return { bg: '#FFFBEB', border: '#FDE68A', color: '#B45309', label: '추격' }
-  if (status === 'critical') return { bg: '#FFF1F2', border: '#FECDD3', color: '#BE123C', label: '취약' }
-  return                            { bg: '#F8FAFC', border: '#E2E8F0', color: '#475569', label: '보통' }
+// ─── 다국어 번역 ─────────────────────────────────────────────────────────────
+const T = {
+  ko: {
+    lead: '선도', behind: '추격', critical: '취약', normal: '보통',
+    weekTrend: '4주 트렌드',
+    vsComp: '대비',
+    categories: '개 카테고리',
+    productTitle: '제품별 GEO Visibility 현황',
+    legendLead: '선도 ≥100%', legendBehind: '추격 ≥80%', legendCritical: '취약 <80%',
+    lgBasis: 'LG/1위 기준',
+    citationTitle: '도메인별 Citation 현황',
+    citationLegend: 'Citation Score (MoM 증감)',
+    dotcomTitle: '닷컴 Citation (경쟁사대비)',
+    dotcomTTL: 'TTL (전체)',
+    dotcomLgOnly: '— (LG only)',
+    dotcomLgWin: 'LG 우위',
+    dotcomSsWin: 'SS 우위',
+    dotcomNone: '없음',
+    insight: 'INSIGHT',
+    howToRead: 'HOW TO READ',
+    notice: 'Notice',
+    geoInsight: 'GEO 전략 인사이트',
+    footer: '해외영업본부 D2C해외영업그룹 D2C마케팅담당 D2C디지털마케팅팀',
+  },
+  en: {
+    lead: 'Lead', behind: 'Behind', critical: 'Critical', normal: 'Normal',
+    weekTrend: '4-Week Trend',
+    vsComp: 'vs',
+    categories: ' Categories',
+    productTitle: 'GEO Visibility by Product',
+    legendLead: 'Lead ≥100%', legendBehind: 'Behind ≥80%', legendCritical: 'Critical <80%',
+    lgBasis: 'LG/Top 1 Basis',
+    citationTitle: 'Citation by Domain',
+    citationLegend: 'Citation Score (MoM Change)',
+    dotcomTitle: 'Dotcom Citation (vs Competitor)',
+    dotcomTTL: 'TTL (Total)',
+    dotcomLgOnly: '— (LG only)',
+    dotcomLgWin: 'LG Leads',
+    dotcomSsWin: 'SS Leads',
+    dotcomNone: 'None',
+    insight: 'INSIGHT',
+    howToRead: 'HOW TO READ',
+    notice: 'Notice',
+    geoInsight: 'GEO Strategic Insight',
+    footer: 'Overseas Sales HQ · D2C Overseas Sales Group · D2C Marketing · D2C Digital Marketing Team',
+  },
+}
+
+function statusInfo(status, lang = 'ko') {
+  const t = T[lang] || T.ko
+  if (status === 'lead')     return { bg: '#F0FDF4', border: '#BBF7D0', color: '#15803D', label: t.lead }
+  if (status === 'behind')   return { bg: '#FFFBEB', border: '#FDE68A', color: '#B45309', label: t.behind }
+  if (status === 'critical') return { bg: '#FFF1F2', border: '#FECDD3', color: '#BE123C', label: t.critical }
+  return                            { bg: '#F8FAFC', border: '#E2E8F0', color: '#475569', label: t.normal }
 }
 
 function fmt(n) {
@@ -51,8 +100,9 @@ function weeklyTrendHtml(weekly, color, globalMax, globalMin) {
 }
 
 // ─── 제품 카드 (이메일용) ──────────────────────────────────────────────────────
-function productCardHtml(p, globalMax, globalMin) {
-  const st  = statusInfo(p.status)
+function productCardHtml(p, globalMax, globalMin, lang = 'ko') {
+  const t   = T[lang] || T.ko
+  const st  = statusInfo(p.status, lang)
   const d   = delta(p.score, p.prev)
   const trendArr = p.weekly || []
   const sparkColor = p.status === 'critical' ? '#BE123C' : p.status === 'behind' ? '#E8910C' : '#15803D'
@@ -81,7 +131,7 @@ function productCardHtml(p, globalMax, globalMin) {
                 <span style="font-size:14px;color:#94A3B8;"> %</span>
               </td>
               <td align="right" style="vertical-align:top;padding-top:2px;">
-                <div style="font-size:10px;color:#94A3B8;text-align:right;margin-bottom:2px;">4주 트렌드</div>
+                <div style="font-size:10px;color:#94A3B8;text-align:right;margin-bottom:2px;">${t.weekTrend}</div>
                 ${weeklyTrendHtml(trendArr, sparkColor, globalMax, globalMin)}
               </td>
             </tr>
@@ -95,7 +145,7 @@ function productCardHtml(p, globalMax, globalMin) {
         <td style="padding:0 13px 12px;">
           <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#F8FAFC;border-radius:6px;">
             <tr>
-              <td style="padding:6px 8px;font-size:13px;color:#1A1A1A;">${p.compName} 대비</td>
+              <td style="padding:6px 8px;font-size:13px;color:#1A1A1A;">${t.vsComp} ${p.compName}</td>
               <td align="right" style="padding:6px 8px;font-size:13px;font-weight:700;color:${(p.compRatio || 0) >= 100 ? '#15803D' : (p.compRatio || 0) >= 80 ? '#E8910C' : '#BE123C'};">
                 ${p.compRatio || Math.round(p.vsComp > 0 ? (p.score / p.vsComp) * 100 : 100)}%
               </td>
@@ -108,7 +158,8 @@ function productCardHtml(p, globalMax, globalMin) {
 }
 
 // ─── BU 섹션 ──────────────────────────────────────────────────────────────────
-function buSectionHtml(buKey, buProducts, globalMax, globalMin) {
+function buSectionHtml(buKey, buProducts, globalMax, globalMin, lang = 'ko') {
+  const t = T[lang] || T.ko
   const rows = []
   for (let i = 0; i < buProducts.length; i += 3) {
     const rowProducts = buProducts.slice(i, i + 3)
@@ -118,7 +169,7 @@ function buSectionHtml(buKey, buProducts, globalMax, globalMin) {
 
   const rowsHtml = rows.map(row => `
     <tr>
-      ${row.map(p => p ? productCardHtml(p, globalMax, globalMin) : '<td width="33%" style="padding:5px;"></td>').join('')}
+      ${row.map(p => p ? productCardHtml(p, globalMax, globalMin, lang) : '<td width="33%" style="padding:5px;"></td>').join('')}
     </tr>`).join('')
 
   return `
@@ -130,7 +181,7 @@ function buSectionHtml(buKey, buProducts, globalMax, globalMin) {
           <td style="background:#F1F5F9;border-radius:7px;padding:7px 12px;">
             <span style="display:inline-block;width:6px;height:6px;background:#94A3B8;border-radius:50%;vertical-align:middle;margin-right:6px;"></span>
             <span style="font-size:15px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${buKey}</span>
-            <span style="font-size:14px;color:#94A3B8;font-family:${EM_FONT};float:right;">${buProducts.length}개 카테고리</span>
+            <span style="font-size:14px;color:#94A3B8;font-family:${EM_FONT};float:right;">${buProducts.length}${t.categories}</span>
           </td>
         </tr>
       </table>
@@ -147,7 +198,8 @@ function buSectionHtml(buKey, buProducts, globalMax, globalMin) {
 }
 
 // ─── Insight / HowToRead 블록 (이메일용) ────────────────────────────────────
-function insightBlockHtml(insight, showInsight, howToRead, showHowToRead) {
+function insightBlockHtml(insight, showInsight, howToRead, showHowToRead, lang = 'ko') {
+  const t = T[lang] || T.ko
   let html = ''
   if (showInsight && insight) {
     html += `
@@ -156,7 +208,7 @@ function insightBlockHtml(insight, showInsight, howToRead, showHowToRead) {
         <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border-radius:8px;background:#FFF4F7;border:1px solid rgba(207,6,82,0.15);">
           <tr>
             <td style="padding:10px 14px;">
-              <p style="margin:0 0 4px;font-size:11px;font-weight:700;color:${EM_RED};font-family:${EM_FONT};">INSIGHT</p>
+              <p style="margin:0 0 4px;font-size:11px;font-weight:700;color:${EM_RED};font-family:${EM_FONT};">${t.insight}</p>
               <p style="margin:0;font-size:13px;color:#1A1A1A;line-height:1.75;font-family:${EM_FONT};white-space:pre-line;">${mdBold(insight)}</p>
             </td>
           </tr>
@@ -171,7 +223,7 @@ function insightBlockHtml(insight, showInsight, howToRead, showHowToRead) {
         <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border-radius:8px;background:#F8FAFC;border:1px solid #E2E8F0;">
           <tr>
             <td style="padding:10px 14px;">
-              <p style="margin:0 0 4px;font-size:11px;font-weight:700;color:#64748B;font-family:${EM_FONT};">HOW TO READ</p>
+              <p style="margin:0 0 4px;font-size:11px;font-weight:700;color:#64748B;font-family:${EM_FONT};">${t.howToRead}</p>
               <p style="margin:0;font-size:13px;color:#475569;line-height:1.75;font-family:${EM_FONT};white-space:pre-line;">${mdBold(howToRead)}</p>
             </td>
           </tr>
@@ -226,8 +278,9 @@ function citationRowHtml(c, isLast, maxScore) {
 const DC_DETAIL_COLS = ['PLP','Microsites','PDP','Newsroom','Support','Buying-guide','Experience']
 const DC_SAM_COLS    = ['PLP','Microsites','PDP','Newsroom','Support','Buying-guide']
 
-function dotcomSectionHtml(dotcom, meta) {
+function dotcomSectionHtml(dotcom, meta, lang = 'ko') {
   if (!dotcom || !dotcom.lg) return ''
+  const t = T[lang] || T.ko
 
   const lg = dotcom.lg, sam = dotcom.samsung || {}
 
@@ -278,7 +331,7 @@ function dotcomSectionHtml(dotcom, meta) {
     return `
     <tr style="${rowBg}${rowBorder}">
       <td style="padding:7px 8px 7px 16px;width:${LABEL_WIDTH}px;vertical-align:middle;">
-        <span style="${labelStyle}">${isTTL ? 'TTL (전체)' : col}</span>${badge}
+        <span style="${labelStyle}">${isTTL ? t.dotcomTTL : col}</span>${badge}
       </td>
       <td style="padding:5px 16px 5px 0;vertical-align:middle;">
         <table border="0" cellpadding="0" cellspacing="0" width="100%">
@@ -299,7 +352,7 @@ function dotcomSectionHtml(dotcom, meta) {
                   ${hasSam
                     ? `<td width="${samPct}%" style="height:${barH}px;background:#3B82F6;border-radius:3px;font-size:0;">&nbsp;</td>
                        <td style="padding-left:6px;${numStyle}color:${samWin ? '#3B82F6' : '#94A3B8'};font-family:${EM_FONT};white-space:nowrap;">${fmt(samVal)}</td>`
-                    : `<td style="padding-left:0;font-size:13px;color:#CBD5E1;font-family:${EM_FONT};">— (LG only)</td>`
+                    : `<td style="padding-left:0;font-size:13px;color:#CBD5E1;font-family:${EM_FONT};">${t.dotcomLgOnly}</td>`
                   }
                 </tr>
               </table>
@@ -317,14 +370,14 @@ function dotcomSectionHtml(dotcom, meta) {
         <table border="0" cellpadding="0" cellspacing="0" width="100%">
           <tr>
             <td style="padding:4px 0;vertical-align:top;">
-              <span style="display:inline-block;background:${EM_RED};color:#FFFFFF;font-size:13px;font-weight:700;border-radius:4px;padding:2px 8px;font-family:${EM_FONT};">LG 우위 (${lgWinCols.length})</span>
-              <span style="font-size:13px;color:#64748B;font-family:${EM_FONT};margin-left:6px;">${lgWinCols.length ? lgWinCols.join(', ') : '없음'}</span>
+              <span style="display:inline-block;background:${EM_RED};color:#FFFFFF;font-size:13px;font-weight:700;border-radius:4px;padding:2px 8px;font-family:${EM_FONT};">${t.dotcomLgWin} (${lgWinCols.length})</span>
+              <span style="font-size:13px;color:#64748B;font-family:${EM_FONT};margin-left:6px;">${lgWinCols.length ? lgWinCols.join(', ') : t.dotcomNone}</span>
             </td>
           </tr>
           <tr>
             <td style="padding:4px 0;vertical-align:top;">
-              <span style="display:inline-block;background:#3B82F6;color:#FFFFFF;font-size:13px;font-weight:700;border-radius:4px;padding:2px 8px;font-family:${EM_FONT};">SS 우위 (${samWinCols.length})</span>
-              <span style="font-size:13px;color:#64748B;font-family:${EM_FONT};margin-left:6px;">${samWinCols.length ? samWinCols.join(', ') : '없음'}</span>
+              <span style="display:inline-block;background:#3B82F6;color:#FFFFFF;font-size:13px;font-weight:700;border-radius:4px;padding:2px 8px;font-family:${EM_FONT};">${t.dotcomSsWin} (${samWinCols.length})</span>
+              <span style="font-size:13px;color:#64748B;font-family:${EM_FONT};margin-left:6px;">${samWinCols.length ? samWinCols.join(', ') : t.dotcomNone}</span>
             </td>
           </tr>
         </table>
@@ -344,7 +397,7 @@ function dotcomSectionHtml(dotcom, meta) {
                               <table border="0" cellpadding="0" cellspacing="0">
                                 <tr>
                                   <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
-                                  <td style="padding-left:8px;font-size:17px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">닷컴 Citation (경쟁사대비)</td>
+                                  <td style="padding-left:8px;font-size:17px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${t.dotcomTitle}</td>
                                 </tr>
                               </table>
                             </td>
@@ -356,7 +409,7 @@ function dotcomSectionHtml(dotcom, meta) {
                         </table>
                       </td>
                     </tr>
-                    ${insightBlockHtml(meta.dotcomInsight, meta.showDotcomInsight, meta.dotcomHowToRead, meta.showDotcomHowToRead)}
+                    ${insightBlockHtml(meta.dotcomInsight, meta.showDotcomInsight, meta.dotcomHowToRead, meta.showDotcomHowToRead, lang)}
                     <tr>
                       <td style="padding:8px 20px 16px;">
                         <table border="0" cellpadding="0" cellspacing="0" width="100%">
@@ -371,7 +424,8 @@ function dotcomSectionHtml(dotcom, meta) {
 }
 
 // ─── 메인 생성 함수 ───────────────────────────────────────────────────────────
-export function generateEmailHTML(meta, total, products, citations, dotcom = {}) {
+export function generateEmailHTML(meta, total, products, citations, dotcom = {}, lang = 'ko') {
+  const t = T[lang] || T.ko
   const totalDelta = delta(total.score, total.prev)
   const scoreBarW  = Math.round(total.score)
 
@@ -388,7 +442,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {})
   const BU_ORDER = ['MS', 'HS', 'ES']
   const buSections = BU_ORDER.map(buKey => {
     const buProducts = products.filter(p => p.bu === buKey)
-    return buProducts.length ? buSectionHtml(buKey, buProducts, globalMax, globalMin) : ''
+    return buProducts.length ? buSectionHtml(buKey, buProducts, globalMax, globalMin, lang) : ''
   }).join('')
 
   const citationList = citations.slice(0, 10)
@@ -435,21 +489,21 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {})
           <td style="background:#FFFFFF;padding:22px 28px 14px;">
             <table border="0" cellpadding="0" cellspacing="0" width="100%">
               <tr>
-                <td style="font-size:12px;color:#94A3B8;font-family:${EM_FONT};font-weight:400;">${meta.reportType || 'GEO 월간 성과 분석 리포트'}</td>
+                <td style="font-size:12px;color:#94A3B8;font-family:${EM_FONT};font-weight:400;">${meta.reportType || (lang === 'en' ? 'GEO Monthly Performance Report' : 'GEO 월간 성과 분석 리포트')}</td>
                 <td align="right" style="font-size:12px;color:#94A3B8;font-family:${EM_FONT};font-weight:400;">${meta.team}</td>
               </tr>
             </table>
             <p style="margin:16px 0 10px;text-align:center;line-height:1.2;">
-              <span style="font-size:${meta.titleFontSize || 24}px;font-weight:700;color:${meta.titleColor || '#1A1A1A'};font-family:${EM_FONT};">${meta.title || '생성형 AI 엔진 가시성(Visibility) 성과 분석'}</span>
+              <span style="font-size:${meta.titleFontSize || 24}px;font-weight:700;color:${meta.titleColor || '#1A1A1A'};font-family:${EM_FONT};">${meta.title || (lang === 'en' ? 'Generative AI Engine Visibility Performance Analysis' : '생성형 AI 엔진 가시성(Visibility) 성과 분석')}</span>
             </p>
             <p style="margin:0;text-align:center;">
-              <span style="font-size:16px;color:#475569;font-family:${EM_FONT};font-weight:400;">${meta.dateLine || meta.period + ' 기준'}</span>
+              <span style="font-size:16px;color:#475569;font-family:${EM_FONT};font-weight:400;">${meta.dateLine || (lang === 'en' ? 'As of ' + meta.period : meta.period + ' 기준')}</span>
             </p>
             ${meta.showNotice && meta.noticeText ? `
             <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin:14px auto 0;">
               <tr>
                 <td style="background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;padding:12px 16px;">
-                  <p style="margin:0 0 4px;font-size:13px;font-weight:700;color:${EM_RED};font-family:${EM_FONT};">Notice</p>
+                  <p style="margin:0 0 4px;font-size:13px;font-weight:700;color:${EM_RED};font-family:${EM_FONT};">${t.notice}</p>
                   <p style="margin:0;font-size:13px;color:#1A1A1A;font-family:${EM_FONT};line-height:1.6;white-space:pre-line;">${mdBold(meta.noticeText)}</p>
                 </td>
               </tr>
@@ -521,7 +575,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {})
                         <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-top:16px;">
                           <tr>
                             <td style="padding:14px 16px;background:rgba(207,6,82,0.12);border:1px solid rgba(207,6,82,0.25);border-radius:10px;">
-                              <p style="margin:0 0 6px;font-size:12px;font-weight:700;color:${EM_RED};text-transform:uppercase;font-family:${EM_FONT};">GEO 전략 인사이트</p>
+                              <p style="margin:0 0 6px;font-size:12px;font-weight:700;color:${EM_RED};text-transform:uppercase;font-family:${EM_FONT};">${t.geoInsight}</p>
                               <p style="margin:0;font-size:14px;color:#FFFFFF;line-height:1.8;font-family:${EM_FONT};white-space:pre-line;">${mdBold(meta.totalInsight)}</p>
                             </td>
                           </tr>
@@ -544,21 +598,21 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {})
                               <table border="0" cellpadding="0" cellspacing="0">
                                 <tr>
                                   <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
-                                  <td style="padding-left:8px;font-size:17px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">제품별 GEO Visibility 현황</td>
+                                  <td style="padding-left:8px;font-size:17px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${t.productTitle}</td>
                                 </tr>
                               </table>
                             </td>
                             <td align="right" style="vertical-align:middle;font-size:11px;color:#94A3B8;font-family:${EM_FONT};">
-                              LG/1위 기준 &nbsp;
-                              <span style="color:#15803D;">●</span> 선도 ≥100% &nbsp;
-                              <span style="color:#E8910C;">●</span> 추격 ≥80% &nbsp;
-                              <span style="color:#BE123C;">●</span> 취약 &lt;80%
+                              ${t.lgBasis} &nbsp;
+                              <span style="color:#15803D;">●</span> ${t.legendLead} &nbsp;
+                              <span style="color:#E8910C;">●</span> ${t.legendBehind} &nbsp;
+                              <span style="color:#BE123C;">●</span> ${t.legendCritical}
                             </td>
                           </tr>
                         </table>
                       </td>
                     </tr>
-                    ${insightBlockHtml(meta.productInsight, meta.showProductInsight, meta.productHowToRead, meta.showProductHowToRead)}
+                    ${insightBlockHtml(meta.productInsight, meta.showProductInsight, meta.productHowToRead, meta.showProductHowToRead, lang)}
                     <tr>
                       <td style="padding:16px 20px;">
                         <table border="0" cellpadding="0" cellspacing="0" width="100%">
@@ -582,19 +636,19 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {})
                               <table border="0" cellpadding="0" cellspacing="0">
                                 <tr>
                                   <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
-                                  <td style="padding-left:8px;font-size:17px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">도메인별 Citation 현황</td>
+                                  <td style="padding-left:8px;font-size:17px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${t.citationTitle}</td>
                                 </tr>
                               </table>
                             </td>
                             <td align="right" style="vertical-align:middle;font-size:11px;color:#94A3B8;font-family:${EM_FONT};">
                               <span style="display:inline-block;width:14px;height:5px;border-radius:3px;background:${EM_RED};vertical-align:middle;margin-right:4px;"></span>
-                              Citation Score (MoM 증감)
+                              ${t.citationLegend}
                             </td>
                           </tr>
                         </table>
                       </td>
                     </tr>
-                    ${insightBlockHtml(meta.citationInsight, meta.showCitationInsight, meta.citationHowToRead, meta.showCitationHowToRead)}
+                    ${insightBlockHtml(meta.citationInsight, meta.showCitationInsight, meta.citationHowToRead, meta.showCitationHowToRead, lang)}
                     <tr>
                       <td style="padding:16px 20px;">
                         <table border="0" cellpadding="0" cellspacing="0" width="100%">
@@ -606,7 +660,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {})
                 </td>
               </tr>
 
-              ${dotcomSectionHtml(dotcom, meta)}
+              ${dotcomSectionHtml(dotcom, meta, lang)}
 
             </table>
           </td>
@@ -618,7 +672,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {})
             <table border="0" cellpadding="0" cellspacing="0" width="100%">
               <tr>
                 <td>
-                  <p style="margin:0;font-size:11px;font-weight:700;color:#FFFFFF;font-family:${EM_FONT};">LG Electronics &nbsp;<span style="font-weight:400;color:#94A3B8;">해외영업본부 D2C해외영업그룹 D2C마케팅담당 D2C디지털마케팅팀</span></p>
+                  <p style="margin:0;font-size:11px;font-weight:700;color:#FFFFFF;font-family:${EM_FONT};">LG Electronics &nbsp;<span style="font-weight:400;color:#94A3B8;">${t.footer}</span></p>
                 </td>
                 <td align="right">
                   <p style="margin:0;font-size:9px;color:#FFFFFF;font-family:${EM_FONT};">© 2026 LG Electronics Inc. All Rights Reserved.</p>

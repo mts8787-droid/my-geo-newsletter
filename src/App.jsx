@@ -443,9 +443,9 @@ function InsightBlock({ insight, showInsight, howToRead, showHowToRead }) {
 }
 
 // ─── 뉴스레터 캔버스 ──────────────────────────────────────────────────────────
-function NewsletterPreview({ meta, total, products, citations, dotcom }) {
+function NewsletterPreview({ meta, total, products, citations, dotcom, lang = 'ko' }) {
   const iframeRef = useRef(null)
-  const html = generateEmailHTML(meta, total, products, citations, dotcom)
+  const html = generateEmailHTML(meta, total, products, citations, dotcom, lang)
 
   React.useEffect(() => {
     const iframe = iframeRef.current
@@ -1011,9 +1011,9 @@ function Sidebar({ meta, total, products, citations, dotcom, setMeta, setTotal, 
 }
 
 // ─── HTML 코드 뷰어 ───────────────────────────────────────────────────────────
-function HtmlCodeViewer({ meta, total, products, citations, dotcom }) {
+function HtmlCodeViewer({ meta, total, products, citations, dotcom, lang = 'ko' }) {
   const [copied, setCopied] = useState(false)
-  const html = generateEmailHTML(meta, total, products, citations, dotcom)
+  const html = generateEmailHTML(meta, total, products, citations, dotcom, lang)
 
   async function handleCopy() {
     try {
@@ -1074,6 +1074,7 @@ export default function App() {
   const [citations, setCitations] = useState(cache?.citations ?? INIT_CITATIONS)
   const [dotcom,    setDotcom]    = useState((cache?.dotcom && cache.dotcom.lg) ? cache.dotcom : INIT_DOTCOM)
   const [activeTab, setActiveTab] = useState('preview') // 'preview' | 'code'
+  const [previewLang, setPreviewLang] = useState('ko') // 'ko' | 'en'
   const [snapshots, setSnapshots] = useState([])
   const [snapName,  setSnapName]  = useState('')
   const [snapOpen,  setSnapOpen]  = useState(false)
@@ -1121,21 +1122,25 @@ export default function App() {
           background: 'rgba(15,23,42,0.95)', backdropFilter: 'blur(8px)',
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           padding: '0 22px', flexShrink: 0 }}>
-          <div style={{ display: 'flex', gap: 3 }}>
+          <div style={{ display: 'flex', gap: 3, alignItems: 'center' }}>
             {[
-              { key: 'preview', label: '뉴스레터 미리보기' },
-              { key: 'code',    label: 'HTML 내보내기' },
-            ].map(({ key, label }) => (
-              <button key={key} onClick={() => setActiveTab(key)} style={{
-                padding: '5px 12px', borderRadius: 7, border: 'none',
-                background: activeTab === key ? '#1E293B' : 'transparent',
-                color: activeTab === key ? '#FFFFFF' : '#475569',
-                fontSize: 11, fontWeight: activeTab === key ? 700 : 500,
-                fontFamily: FONT, cursor: 'pointer',
-              }}>
-                {label}
-              </button>
-            ))}
+              { key: 'preview-ko', tab: 'preview', lang: 'ko', label: '뉴스레터미리보기 (KO)' },
+              { key: 'preview-en', tab: 'preview', lang: 'en', label: '뉴스레터미리보기 (EN)' },
+              { key: 'code',       tab: 'code',    lang: null, label: 'HTML 내보내기' },
+            ].map(({ key, tab, lang, label }) => {
+              const isActive = tab === 'code' ? activeTab === 'code' : (activeTab === 'preview' && previewLang === lang)
+              return (
+                <button key={key} onClick={() => { setActiveTab(tab); if (lang) setPreviewLang(lang) }} style={{
+                  padding: '5px 12px', borderRadius: 7, border: 'none',
+                  background: isActive ? '#1E293B' : 'transparent',
+                  color: isActive ? '#FFFFFF' : '#475569',
+                  fontSize: 11, fontWeight: isActive ? 700 : 500,
+                  fontFamily: FONT, cursor: 'pointer',
+                }}>
+                  {label}
+                </button>
+              )
+            })}
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             {snapMsg && <span style={{ fontSize: 10, color: '#22C55E', fontFamily: FONT }}>{snapMsg}</span>}
@@ -1196,11 +1201,11 @@ export default function App() {
           <div style={{ flex: 1, overflowY: 'auto', padding: '28px 36px',
             background: 'linear-gradient(180deg, #0A0F1C 0%, #0F172A 100%)' }}>
             <div style={{ maxWidth: 720, margin: '0 auto' }}>
-              <NewsletterPreview meta={meta} total={total} products={products} citations={citations} dotcom={dotcom} />
+              <NewsletterPreview meta={meta} total={total} products={products} citations={citations} dotcom={dotcom} lang={previewLang} />
             </div>
           </div>
         ) : (
-          <HtmlCodeViewer meta={meta} total={total} products={products} citations={citations} dotcom={dotcom} />
+          <HtmlCodeViewer meta={meta} total={total} products={products} citations={citations} dotcom={dotcom} lang={previewLang} />
         )}
       </div>
     </div>
