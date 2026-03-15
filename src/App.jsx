@@ -565,7 +565,7 @@ function Sidebar({ meta, total, products, citations, dotcom, setMeta, setTotal, 
             <span style={{ fontSize: 11, fontWeight: 900, color: '#FFFFFF', fontFamily: FONT }}>LG</span>
           </div>
           <div>
-            <p style={{ margin: 0, fontSize: 11, fontWeight: 700, color: '#FFFFFF', fontFamily: FONT }}>GEO Builder</p>
+            <p style={{ margin: 0, fontSize: 11, fontWeight: 700, color: '#FFFFFF', fontFamily: FONT }}>GEO Builder <span style={{ fontSize: 9, fontWeight: 400, color: '#64748B' }}>v{__APP_VERSION__}</span></p>
             <p style={{ margin: 0, fontSize: 9, color: '#475569', fontFamily: FONT }}>뉴스레터 생성기</p>
           </div>
         </div>
