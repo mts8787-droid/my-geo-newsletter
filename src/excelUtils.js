@@ -168,7 +168,7 @@ export function parseSheetRows(sheetName, rows) {
       category: String(r[2]      || ''),
       score:    parseFloat(String(r[3] || '').replace(/,/g, '')) || 0,
       delta:    String(r[4] || '-') === '-' ? 0 : parseFloat(r[4]) || 0,
-      ratio:    parseFloat(String(r[5] || '').replace('%', '')) || 0,
+      ratio:    (() => { const n = parseFloat(String(r[5] || '').replace('%', '')) || 0; return Math.abs(n) < 1 ? +(n * 100).toFixed(2) : n })(),
     })) }
   }
   if (sheetName === 'dotcom') {
