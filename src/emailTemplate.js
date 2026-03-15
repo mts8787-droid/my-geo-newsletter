@@ -93,15 +93,21 @@ function weeklyTrendHtml(weekly, color, globalMax, globalMin) {
 
   const bars = weekly.map((v, i) => {
     const h = Math.round(((v - globalMin) / range) * MAX_H) + 4
-    return `<td style="vertical-align:bottom;text-align:center;padding:0 1px;height:${MAX_H + 14}px;">
-      <div style="width:10px;height:${h}px;background:${color};border-radius:2px;margin:0 auto;"></div>
-      <div style="font-size:9px;color:#94A3B8;font-family:${EM_FONT};margin-top:2px;">${labels[i] || ''}</div>
+    const spacer = MAX_H - h
+    return `<td style="vertical-align:bottom;text-align:center;padding:0 1px;">
+      <table border="0" cellpadding="0" cellspacing="0" align="center" style="margin:0 auto;">
+        ${spacer > 0 ? `<tr><td height="${spacer}" style="font-size:0;line-height:0;">&nbsp;</td></tr>` : ''}
+        <tr><td width="10" height="${h}" style="background:${color};font-size:0;line-height:0;">&nbsp;</td></tr>
+        <tr><td style="font-size:9px;color:#94A3B8;font-family:${EM_FONT};padding-top:2px;">${labels[i] || ''}</td></tr>
+      </table>
     </td>`
   }).join('')
 
-  return `<table border="0" cellpadding="0" cellspacing="0" style="display:inline-table;">
+  return `<!--[if mso]><table border="0" cellpadding="0" cellspacing="0"><tr><td><![endif]-->
+  <table border="0" cellpadding="0" cellspacing="0" style="display:inline-table;">
     <tr>${bars}</tr>
-  </table>`
+  </table>
+  <!--[if mso]></td></tr></table><![endif]-->`
 }
 
 // ─── 제품 카드 (이메일용) ──────────────────────────────────────────────────────
