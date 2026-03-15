@@ -441,7 +441,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {})
               <tr>
                 <td style="background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;padding:12px 16px;">
                   <p style="margin:0 0 4px;font-size:13px;font-weight:700;color:${EM_RED};font-family:${EM_FONT};">Notice</p>
-                  <p style="margin:0;font-size:13px;color:#1A1A1A;font-family:${EM_FONT};line-height:1.6;white-space:pre-line;">${meta.noticeText}</p>
+                  <p style="margin:0;font-size:13px;color:#1A1A1A;font-family:${EM_FONT};line-height:1.6;white-space:pre-line;">${(meta.noticeText || '').replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')}</p>
                 </td>
               </tr>
             </table>` : ''}

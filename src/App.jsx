@@ -628,11 +628,12 @@ function Sidebar({ meta, total, products, citations, dotcom, setMeta, setTotal, 
               width: 12, height: 12, borderRadius: '50%', background: '#FFFFFF', transition: 'left 0.2s' }} />
           </button>
         </div>
-        {meta.showNotice && (
+        {meta.showNotice && (<>
           <textarea value={meta.noticeText} onChange={e => setMeta(m => ({ ...m, noticeText: e.target.value }))}
             rows={4} placeholder="Notice 내용을 입력하세요..."
-            style={{ ...inputStyle, marginBottom: 10, resize: 'vertical' }} />
-        )}
+            style={{ ...inputStyle, marginBottom: 4, resize: 'vertical' }} />
+          <p style={{ margin: '0 0 10px', fontSize: 8, color: '#475569', fontFamily: FONT }}>**텍스트** → <strong>볼드</strong></p>
+        </>)}
 
         {/* 폰트 크기 */}
         <div style={{ marginBottom: 10 }}>
