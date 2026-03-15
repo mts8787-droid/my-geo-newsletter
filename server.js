@@ -100,6 +100,15 @@ app.post('/api/snapshots', (req, res) => {
   res.json({ ok: true, snapshots: list })
 })
 
+app.put('/api/snapshots/:ts', (req, res) => {
+  const ts = parseInt(req.params.ts)
+  const { data } = req.body || {}
+  if (!data) return res.status(400).json({ ok: false, error: 'data 필수' })
+  const list = readSnapshots().map(s => s.ts === ts ? { ...s, data, updatedAt: Date.now() } : s)
+  writeSnapshots(list)
+  res.json({ ok: true, snapshots: list })
+})
+
 app.delete('/api/snapshots/:ts', (req, res) => {
   const ts = parseInt(req.params.ts)
   const list = readSnapshots().filter(s => s.ts !== ts)

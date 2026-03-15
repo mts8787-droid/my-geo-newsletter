@@ -122,6 +122,27 @@ function snapshotsApiPlugin() {
           })
           return
         }
+        // PUT — path: /api/snapshots/1234567890
+        if (req.method === 'PUT') {
+          let body = ''
+          req.on('data', c => (body += c))
+          req.on('end', () => {
+            try {
+              const ts = parseInt(req.url.replace(/^\//, ''))
+              const { data } = JSON.parse(body)
+              if (!data) throw new Error('data 필수')
+              const list = read().map(s => s.ts === ts ? { ...s, data, updatedAt: Date.now() } : s)
+              write(list)
+              res.setHeader('Content-Type', 'application/json')
+              res.end(JSON.stringify({ ok: true, snapshots: list }))
+            } catch (err) {
+              res.statusCode = 400
+              res.setHeader('Content-Type', 'application/json')
+              res.end(JSON.stringify({ ok: false, error: err.message }))
+            }
+          })
+          return
+        }
         // DELETE — path: /api/snapshots/1234567890
         if (req.method === 'DELETE') {
           const ts = parseInt(req.url.replace(/^\//, ''))

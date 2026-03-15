@@ -34,6 +34,16 @@ async function postSnapshot(name, data) {
     return j.ok ? j.snapshots : null
   } catch { return null }
 }
+async function updateSnapshot(ts, data) {
+  try {
+    const r = await fetch(`/api/snapshots/${ts}`, {
+      method: 'PUT', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ data }),
+    })
+    const j = await r.json()
+    return j.ok ? j.snapshots : null
+  } catch { return null }
+}
 async function deleteSnapshot(ts) {
   try {
     const r = await fetch(`/api/snapshots/${ts}`, { method: 'DELETE' })
@@ -1181,10 +1191,11 @@ export default function App() {
   const [dotcom,    setDotcom]    = useState((cache?.dotcom && cache.dotcom.lg) ? cache.dotcom : INIT_DOTCOM)
   const [activeTab, setActiveTab] = useState('preview') // 'preview' | 'code'
   const [previewLang, setPreviewLang] = useState('ko') // 'ko' | 'en'
-  const [snapshots, setSnapshots] = useState([])
-  const [snapName,  setSnapName]  = useState('')
-  const [snapOpen,  setSnapOpen]  = useState(false)
-  const [snapMsg,   setSnapMsg]   = useState('')
+  const [snapshots,  setSnapshots]  = useState([])
+  const [snapName,   setSnapName]   = useState('')
+  const [snapOpen,   setSnapOpen]   = useState(false)
+  const [snapMsg,    setSnapMsg]    = useState('')
+  const [activeSnap, setActiveSnap] = useState(null) // 현재 불러온 스냅샷 (ts 기준)
 
   // 서버에서 스냅샷 목록 로드
   useEffect(() => { fetchSnapshots().then(setSnapshots) }, [])
@@ -1194,11 +1205,20 @@ export default function App() {
     saveCache({ meta, total, products, citations, dotcom })
   }, [meta, total, products, citations, dotcom])
 
-  async function handleSnapSave() {
+  // 저장 (기존 스냅샷 덮어쓰기)
+  async function handleSnapOverwrite() {
+    if (!activeSnap) return
+    const data = { meta, total, products, citations, dotcom }
+    const result = await updateSnapshot(activeSnap, data)
+    if (result) setSnapshots(result)
+    setSnapMsg(result ? '저장 완료!' : '저장 실패'); setTimeout(() => setSnapMsg(''), 2000)
+  }
+  // 새로 저장
+  async function handleSnapSaveNew() {
     const name = snapName.trim() || `${meta.period || 'Untitled'} — ${new Date().toLocaleString('ko-KR')}`
     const result = await postSnapshot(name, { meta, total, products, citations, dotcom })
-    if (result) { setSnapshots(result); setSnapName('') }
-    setSnapMsg(result ? '저장 완료!' : '저장 실패'); setTimeout(() => setSnapMsg(''), 2000)
+    if (result) { setSnapshots(result); setSnapName(''); setActiveSnap(result[0]?.ts || null) }
+    setSnapMsg(result ? '새로 저장 완료!' : '저장 실패'); setTimeout(() => setSnapMsg(''), 2000)
   }
   function handleSnapLoad(snap) {
     const d = snap.data
@@ -1207,6 +1227,7 @@ export default function App() {
     if (d.products)  setProducts(d.products)
     if (d.citations) setCitations(d.citations)
     if (d.dotcom)    setDotcom(d.dotcom)
+    setActiveSnap(snap.ts)
     setSnapMsg(`"${snap.name}" 불러옴`); setTimeout(() => setSnapMsg(''), 2000)
   }
   async function handleSnapDelete(idx) {
@@ -1214,6 +1235,7 @@ export default function App() {
     if (!snap) return
     const result = await deleteSnapshot(snap.ts)
     if (result) setSnapshots(result)
+    if (activeSnap === snap.ts) setActiveSnap(null)
   }
 
   return (
@@ -1249,19 +1271,30 @@ export default function App() {
               )
             })}
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             {snapMsg && <span style={{ fontSize: 10, color: '#22C55E', fontFamily: FONT }}>{snapMsg}</span>}
-            <input value={snapName} onChange={e => setSnapName(e.target.value)}
-              placeholder="버전 이름..."
-              onKeyDown={e => e.key === 'Enter' && handleSnapSave()}
-              style={{ width: 140, background: '#1E293B', border: '1px solid #334155', borderRadius: 6,
-                padding: '4px 8px', fontSize: 10, color: '#E2E8F0', fontFamily: FONT, outline: 'none' }} />
-            <button onClick={handleSnapSave} title="현재 상태 저장"
-              style={{ padding: '4px 10px', borderRadius: 6, border: 'none', cursor: 'pointer',
-                background: '#1D4ED8', color: '#FFFFFF', fontSize: 10, fontWeight: 700, fontFamily: FONT,
-                display: 'flex', alignItems: 'center', gap: 4 }}>
+            {/* 저장 — activeSnap이 있을 때만 활성 */}
+            <button onClick={handleSnapOverwrite} disabled={!activeSnap}
+              title={activeSnap ? '현재 버전에 덮어쓰기' : '불러온 버전이 없습니다'}
+              style={{ padding: '4px 10px', borderRadius: 6, border: 'none', cursor: activeSnap ? 'pointer' : 'default',
+                background: activeSnap ? '#1D4ED8' : '#1E293B', color: activeSnap ? '#FFFFFF' : '#475569',
+                fontSize: 10, fontWeight: 700, fontFamily: FONT,
+                display: 'flex', alignItems: 'center', gap: 4, opacity: activeSnap ? 1 : 0.5 }}>
               <Save size={11} /> 저장
             </button>
+            {/* 새로 저장 */}
+            <input value={snapName} onChange={e => setSnapName(e.target.value)}
+              placeholder="버전 이름..."
+              onKeyDown={e => e.key === 'Enter' && handleSnapSaveNew()}
+              style={{ width: 120, background: '#1E293B', border: '1px solid #334155', borderRadius: 6,
+                padding: '4px 8px', fontSize: 10, color: '#E2E8F0', fontFamily: FONT, outline: 'none' }} />
+            <button onClick={handleSnapSaveNew} title="새 버전으로 저장"
+              style={{ padding: '4px 10px', borderRadius: 6, border: 'none', cursor: 'pointer',
+                background: '#166534', color: '#86EFAC', fontSize: 10, fontWeight: 700, fontFamily: FONT,
+                display: 'flex', alignItems: 'center', gap: 4 }}>
+              <Save size={11} /> 새로 저장
+            </button>
+            {/* 불러오기 */}
             <div style={{ position: 'relative' }}>
               <button onClick={() => setSnapOpen(!snapOpen)} title="저장된 버전 불러오기"
                 style={{ padding: '4px 10px', borderRadius: 6, border: 'none', cursor: 'pointer',
@@ -1272,12 +1305,14 @@ export default function App() {
               {snapOpen && (
                 <div style={{ position: 'absolute', top: 32, right: 0, width: 320, maxHeight: 360, overflowY: 'auto',
                   background: '#1E293B', border: '1px solid #334155', borderRadius: 10, zIndex: 100, padding: 8,
-                  boxShadow: '0 8px 24px rgba(0,0,0,0.4)' }}>
+                  boxShadow: '0 8px 24px rgba(0,0,0,0.4)' }}
+                  onClick={e => e.stopPropagation()}>
                   {snapshots.length === 0 ? (
                     <p style={{ margin: 0, padding: 12, fontSize: 10, color: '#64748B', fontFamily: FONT, textAlign: 'center' }}>저장된 버전이 없습니다</p>
                   ) : snapshots.map((snap, i) => (
                     <div key={snap.ts} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 10px',
-                      borderRadius: 7, marginBottom: 2, background: '#0F172A' }}>
+                      borderRadius: 7, marginBottom: 2, background: activeSnap === snap.ts ? '#1E3A5F' : '#0F172A',
+                      border: activeSnap === snap.ts ? '1px solid #3B82F6' : '1px solid transparent' }}>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <p style={{ margin: 0, fontSize: 11, fontWeight: 700, color: '#E2E8F0', fontFamily: FONT,
                           overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{snap.name}</p>
