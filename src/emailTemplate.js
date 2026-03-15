@@ -437,11 +437,11 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {})
               <span style="font-size:16px;color:#475569;font-family:${EM_FONT};font-weight:400;">${meta.dateLine || meta.period + ' 기준'}</span>
             </p>
             ${meta.showNotice && meta.noticeText ? `
-            <table border="0" cellpadding="0" cellspacing="0" width="90%" style="margin:14px auto 0;">
+            <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin:14px auto 0;">
               <tr>
                 <td style="background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;padding:12px 16px;">
                   <p style="margin:0 0 4px;font-size:13px;font-weight:700;color:${EM_RED};font-family:${EM_FONT};">Notice</p>
-                  <p style="margin:0;font-size:13px;color:#64748B;font-family:${EM_FONT};line-height:1.6;white-space:pre-line;">${meta.noticeText}</p>
+                  <p style="margin:0;font-size:13px;color:#1A1A1A;font-family:${EM_FONT};line-height:1.6;white-space:pre-line;">${meta.noticeText}</p>
                 </td>
               </tr>
             </table>` : ''}
