@@ -60,13 +60,10 @@ function productCardHtml(p, globalMax, globalMin) {
         <td style="padding:12px 13px 6px;">
           <table border="0" cellpadding="0" cellspacing="0" width="100%">
             <tr>
-              <td style="font-size:13px;color:#94A3B8;">카테고리</td>
-              <td align="right">
-                <span style="background:${st.bg};color:${st.color};border:1px solid ${st.border};border-radius:10px;padding:2px 7px;font-size:11px;font-weight:700;">${st.label}</span>
+              <td style="font-size:17px;font-weight:900;color:#1A1A1A;line-height:22px;vertical-align:middle;">${p.kr}</td>
+              <td align="right" style="vertical-align:middle;">
+                <span style="background:${st.bg};color:${st.color};border:1px solid ${st.border};border-radius:10px;padding:2px 7px;font-size:11px;font-weight:700;line-height:22px;">${st.label}</span>
               </td>
-            </tr>
-            <tr>
-              <td colspan="2" style="padding-top:2px;font-size:17px;font-weight:900;color:#1A1A1A;">${p.kr}</td>
             </tr>
           </table>
         </td>
@@ -94,7 +91,7 @@ function productCardHtml(p, globalMax, globalMin) {
         <td style="padding:0 13px 12px;">
           <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#F8FAFC;border-radius:6px;">
             <tr>
-              <td style="padding:6px 8px;font-size:13px;color:#94A3B8;">${p.compName} 대비</td>
+              <td style="padding:6px 8px;font-size:13px;color:#1A1A1A;">${p.compName} 대비</td>
               <td align="right" style="padding:6px 8px;font-size:13px;font-weight:700;color:${(p.compRatio || 0) >= 100 ? '#15803D' : (p.compRatio || 0) >= 80 ? '#E8910C' : '#BE123C'};">
                 ${p.compRatio || Math.round(p.vsComp > 0 ? (p.score / p.vsComp) * 100 : 100)}%
               </td>
@@ -193,20 +190,20 @@ function citationRowHtml(c, isLast, maxScore) {
 
   return `
   <tr style="background:#FFFFFF;${isLast ? '' : 'border-bottom:1px solid #F8FAFC;'}">
-    <td style="padding:10px 12px 10px 16px;width:${LABEL_WIDTH}px;vertical-align:middle;">
+    <td style="padding:10px 12px 10px 16px;width:${LABEL_WIDTH}px;vertical-align:top;">
       <table border="0" cellpadding="0" cellspacing="0">
         <tr>
-          <td style="vertical-align:middle;">
+          <td style="vertical-align:top;padding-top:1px;">
             <span style="display:inline-block;width:22px;height:22px;background:${rankBg};color:${rankColor};border-radius:50%;font-size:11px;font-weight:800;text-align:center;line-height:22px;font-family:${EM_FONT};">${c.rank}</span>
           </td>
-          <td style="padding-left:7px;vertical-align:middle;">
-            <div style="font-size:13px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${c.source}</div>
-            <div style="font-size:13px;color:#94A3B8;background:#F8FAFC;border-radius:4px;padding:1px 5px;display:inline-block;margin-top:2px;font-family:${EM_FONT};">${c.category}</div>
+          <td style="padding-left:7px;vertical-align:top;">
+            <div style="font-size:13px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};line-height:24px;">${c.source}</div>
+            <div style="font-size:11px;color:#94A3B8;background:#F8FAFC;border-radius:4px;padding:1px 5px;display:inline-block;margin-top:3px;font-family:${EM_FONT};">${c.category}</div>
           </td>
         </tr>
       </table>
     </td>
-    <td style="padding:10px 16px 10px 0;vertical-align:middle;">
+    <td style="padding:10px 16px 10px 0;vertical-align:top;">
       <table border="0" cellpadding="0" cellspacing="0" width="100%">
         <tr>
           <td width="${barPct}%" style="background:${EM_RED};border-radius:6px;height:24px;font-size:0;">&nbsp;</td>
@@ -533,7 +530,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {})
                               <table border="0" cellpadding="0" cellspacing="0">
                                 <tr>
                                   <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
-                                  <td style="padding-left:8px;font-size:17px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">제품별 GEO 가시성 현황</td>
+                                  <td style="padding-left:8px;font-size:17px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">제품별 GEO Visibility 현황</td>
                                 </tr>
                               </table>
                             </td>
@@ -607,10 +604,10 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {})
             <table border="0" cellpadding="0" cellspacing="0" width="100%">
               <tr>
                 <td>
-                  <p style="margin:0;font-size:13px;font-weight:700;color:#FFFFFF;font-family:${EM_FONT};">LG Electronics &nbsp;<span style="font-weight:400;color:#94A3B8;">해외영업본부 D2C해외영업그룹 D2C마케팅담당 D2C디지털마케팅팀</span></p>
+                  <p style="margin:0;font-size:11px;font-weight:700;color:#FFFFFF;font-family:${EM_FONT};">LG Electronics &nbsp;<span style="font-weight:400;color:#94A3B8;">해외영업본부 D2C해외영업그룹 D2C마케팅담당 D2C디지털마케팅팀</span></p>
                 </td>
                 <td align="right">
-                  <p style="margin:0;font-size:11px;color:#FFFFFF;font-family:${EM_FONT};">© 2026 LG Electronics Inc. All Rights Reserved.</p>
+                  <p style="margin:0;font-size:9px;color:#FFFFFF;font-family:${EM_FONT};">© 2026 LG Electronics Inc. All Rights Reserved.</p>
                 </td>
               </tr>
             </table>
