@@ -960,9 +960,9 @@ function Sidebar({ meta, total, products, citations, dotcom, setMeta, setTotal, 
           style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6, marginBottom: 16 }}
         />
 
-        {/* To-do List 섹션 */}
+        {/* Action Plan 섹션 */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-          <p style={{ margin: 0, fontSize: 9, color: '#64748B', fontFamily: FONT }}>To-do List 섹션</p>
+          <p style={{ margin: 0, fontSize: 9, color: '#64748B', fontFamily: FONT }}>Action Plan 섹션</p>
           <button onClick={() => setMeta(m => ({ ...m, showTodo: !m.showTodo }))}
             style={{ padding: '2px 8px', borderRadius: 4, border: 'none', cursor: 'pointer',
               background: meta.showTodo ? LG_RED : '#1E293B',
@@ -975,7 +975,7 @@ function Sidebar({ meta, total, products, citations, dotcom, setMeta, setTotal, 
           value={meta.todoText}
           onChange={e => setMeta(m => ({ ...m, todoText: e.target.value }))}
           rows={12}
-          placeholder="To-do 항목을 입력하세요...&#10;예: - Citation Optimization 전략 수립&#10;- 구조화 데이터 업데이트"
+          placeholder="Action Plan을 입력하세요...&#10;예: - Citation Optimization 전략 수립&#10;- 구조화 데이터 업데이트"
           style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6, marginBottom: 4 }}
         />
         <p style={{ margin: '0 0 16px', fontSize: 8, color: '#475569', fontFamily: FONT }}>**텍스트** → <strong>볼드</strong> · 줄바꿈 지원</p>

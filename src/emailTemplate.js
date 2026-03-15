@@ -27,7 +27,7 @@ const T = {
     howToRead: 'HOW TO READ',
     notice: 'Notice',
     geoInsight: 'Executive Summary',
-    todoTitle: 'To-do List',
+    todoTitle: 'Action Plan',
     footer: '해외영업본부 D2C해외영업그룹 D2C마케팅담당 D2C디지털마케팅팀',
   },
   en: {
@@ -50,7 +50,7 @@ const T = {
     howToRead: 'HOW TO READ',
     notice: 'Notice',
     geoInsight: 'Executive Summary',
-    todoTitle: 'To-do List',
+    todoTitle: 'Action Plan',
     footer: 'Overseas Sales HQ · D2C Overseas Sales Group · D2C Marketing · D2C Digital Marketing Team',
   },
 }
