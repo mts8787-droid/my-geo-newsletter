@@ -477,6 +477,7 @@ function NewsletterPreview({ meta, total, products, citations, dotcom, lang = 'k
     setTimeout(adjust, 150)
     setTimeout(adjust, 400)
     setTimeout(adjust, 1000)
+    setTimeout(adjust, 2000)
   }, [html])
 
   return (
