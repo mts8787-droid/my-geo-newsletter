@@ -375,6 +375,11 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {})
   const totalDelta = delta(total.score, total.prev)
   const scoreBarW  = Math.round(total.score)
 
+  // 경쟁사 평균 visibility (products의 vsComp 평균)
+  const compProducts = products.filter(p => p.vsComp > 0)
+  const compAvg = compProducts.length ? +(compProducts.reduce((s, p) => s + p.vsComp, 0) / compProducts.length).toFixed(1) : 0
+  const lgVsComp = +(total.score - compAvg).toFixed(1)
+
   // 주간 트렌드 전역 min/max 계산 (모든 제품 동일 스케일)
   const allWeekly = products.flatMap(p => p.weekly || [])
   const globalMax = allWeekly.length ? Math.max(...allWeekly) : 100
@@ -487,7 +492,11 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {})
                               &nbsp;&nbsp;${total.prev ? deltaHtml(totalDelta, 16) : `<span style="color:#94A3B8;font-size:16px;">—</span>`}
                               <span style="font-size:13px;color:#64748B;font-family:${EM_FONT};"> MoM</span>
                             </td>
-                            <td>&nbsp;</td>
+                            <td align="right" style="vertical-align:bottom;padding-bottom:8px;">
+                              ${compAvg > 0 ? `<span style="font-size:11px;color:#94A3B8;font-family:${EM_FONT};">vs Comp Avg</span>
+                              <span style="font-size:13px;font-weight:700;color:#94A3B8;font-family:${EM_FONT};">&nbsp;${compAvg}%</span>
+                              <br/><span style="font-size:11px;color:${lgVsComp >= 0 ? '#16A34A' : '#DC2626'};font-weight:700;font-family:${EM_FONT};">Gap ${lgVsComp >= 0 ? '+' : ''}${lgVsComp}%p</span>` : ''}
+                            </td>
                           </tr>
                         </table>
                         <!-- 게이지 바 -->
