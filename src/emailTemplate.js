@@ -475,7 +475,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
     <td align="center" style="padding:24px 12px;">
 
       <!-- 메인 컨테이너 -->
-      <table border="0" cellpadding="0" cellspacing="0" width="720" style="max-width:720px;background:#FFFFFF;border-radius:16px;font-family:${EM_FONT};">
+      <table border="0" cellpadding="0" cellspacing="0" width="680" style="max-width:680px;background:#FFFFFF;border-radius:16px;font-family:${EM_FONT};">
 
         <!-- ══ 헤더 상단 레드 바 ══ -->
         <tr>
