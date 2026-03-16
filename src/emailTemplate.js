@@ -296,14 +296,14 @@ function countryProductSectionHtml(productName, rows, lang) {
     const gapColor = gap >= 0 ? '#15803D' : '#BE123C'
     const gapStr   = (gap >= 0 ? '+' : '') + gap + '%p'
 
-    return `<td width="${colWidth}%" style="vertical-align:bottom;text-align:center;padding:0 1px;">
-      <table border="0" cellpadding="0" cellspacing="0" align="center" style="margin:0 auto;">
+    return `<td width="${colWidth}%" style="vertical-align:bottom;text-align:center;padding:0 1px;overflow:hidden;">
+      <table border="0" cellpadding="0" cellspacing="0" align="center" style="margin:0 auto;table-layout:fixed;width:100%;">
         ${spacerH > 0 ? `<tr><td height="${spacerH}" style="font-size:0;line-height:0;">&nbsp;</td></tr>` : ''}
-        <tr><td width="26" height="${barH}" style="background:${barColor};border-radius:3px 3px 0 0;font-size:0;line-height:0;">&nbsp;</td></tr>
-        <tr><td style="font-size:11px;font-weight:800;color:${barColor};font-family:${EM_FONT};padding-top:3px;white-space:nowrap;">${r.score.toFixed(1)}</td></tr>
-        <tr><td style="font-size:10px;color:#475569;font-family:${EM_FONT};padding-top:2px;white-space:nowrap;">${r.country}</td></tr>
-        <tr><td style="font-size:9px;color:#94A3B8;font-family:${EM_FONT};padding-top:2px;white-space:nowrap;">${r.compName} ${r.compScore.toFixed(1)}</td></tr>
-        <tr><td style="font-size:9px;font-weight:700;color:${gapColor};font-family:${EM_FONT};padding-top:1px;white-space:nowrap;">${gapStr}</td></tr>
+        <tr><td height="${barH}" style="font-size:0;line-height:0;"><table border="0" cellpadding="0" cellspacing="0" align="center"><tr><td width="26" height="${barH}" style="background:${barColor};border-radius:3px 3px 0 0;font-size:0;line-height:0;">&nbsp;</td></tr></table></td></tr>
+        <tr><td style="font-size:11px;font-weight:800;color:${barColor};font-family:${EM_FONT};padding-top:3px;white-space:nowrap;overflow:hidden;">${r.score.toFixed(1)}</td></tr>
+        <tr><td style="font-size:10px;color:#475569;font-family:${EM_FONT};padding-top:2px;white-space:nowrap;overflow:hidden;">${r.country}</td></tr>
+        <tr><td style="font-size:9px;color:#94A3B8;font-family:${EM_FONT};padding-top:2px;white-space:nowrap;overflow:hidden;">${r.compName} ${r.compScore.toFixed(1)}</td></tr>
+        <tr><td style="font-size:9px;font-weight:700;color:${gapColor};font-family:${EM_FONT};padding-top:1px;white-space:nowrap;overflow:hidden;">${gapStr}</td></tr>
       </table>
     </td>`
   }).join('')
@@ -329,7 +329,7 @@ function countryProductSectionHtml(productName, rows, lang) {
   </tr>
   <tr>
     <td style="padding:0 4px 12px;">
-      <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;">
         <tr>${barCols}</tr>
       </table>
     </td>
@@ -406,10 +406,12 @@ function citationDomainSectionHtml(citationsCnty, meta, lang) {
   if (!ttlRows.length) return ''
 
   const maxScore = Math.max(...ttlRows.map(r => r.citations), 1)
+  const totalCitations = ttlRows.reduce((s, r) => s + r.citations, 0)
   const fmtN = n => Number(n).toLocaleString('en-US')
 
   const rows = ttlRows.map((c, i) => {
-    const barW = Math.round((c.citations / maxScore) * 100)
+    const barPct = Math.min(Math.round((c.citations / maxScore) * 70), 70)
+    const ratio = totalCitations > 0 ? ((c.citations / totalCitations) * 100).toFixed(1) : '0.0'
     return `<tr>
       <td style="border-bottom:${i < ttlRows.length - 1 ? '1px solid #F8FAFC' : 'none'};">
         <table border="0" cellpadding="0" cellspacing="0" width="100%">
@@ -423,12 +425,13 @@ function citationDomainSectionHtml(citationsCnty, meta, lang) {
                 </td>
               </tr></table>
             </td>
-            <td style="padding:10px 16px 10px 0;vertical-align:middle;">
-              <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#F8FAFC;border-radius:7px;height:26px;">
+            <td style="padding:10px 16px 10px 0;vertical-align:top;">
+              <table border="0" cellpadding="0" cellspacing="0" width="100%">
                 <tr>
-                  <td width="${barW}%" style="background:linear-gradient(90deg,${EM_DARK},${EM_RED});border-radius:7px;font-size:0;">&nbsp;</td>
-                  <td style="text-align:right;padding-right:8px;">
-                    <span style="font-size:12px;font-weight:800;color:${EM_RED};font-family:${EM_FONT};">${fmtN(c.citations)}</span>
+                  <td width="${barPct}%" style="background:${EM_RED};border-radius:6px;height:24px;font-size:0;">&nbsp;</td>
+                  <td style="height:24px;padding-left:8px;white-space:nowrap;vertical-align:middle;">
+                    <span style="font-size:13px;font-weight:700;color:${EM_RED};font-family:${EM_FONT};">${fmtN(c.citations)}</span>
+                    <span style="font-size:13px;color:#64748B;font-family:${EM_FONT};">&nbsp;(${ratio}%)</span>
                   </td>
                 </tr>
               </table>
@@ -495,9 +498,9 @@ function citationCntyCountryHtml(cntyCode, rows, lang) {
       <table border="0" cellpadding="0" cellspacing="0" align="center" style="margin:0 auto;table-layout:fixed;width:100%;">
         ${spacerH > 0 ? `<tr><td height="${spacerH}" style="font-size:0;line-height:0;">&nbsp;</td></tr>` : ''}
         <tr><td height="${barH}" style="font-size:0;line-height:0;"><table border="0" cellpadding="0" cellspacing="0" align="center"><tr><td width="22" height="${barH}" style="background:${EM_RED};border-radius:3px 3px 0 0;font-size:0;line-height:0;">&nbsp;</td></tr></table></td></tr>
-        <tr><td style="font-size:9px;font-weight:800;color:${EM_RED};font-family:${EM_FONT};padding-top:3px;white-space:nowrap;overflow:hidden;">${fmtN(r.citations)}</td></tr>
-        <tr><td style="font-size:8px;color:#1A1A1A;font-family:${EM_FONT};padding-top:2px;white-space:nowrap;overflow:hidden;font-weight:600;">${domainShort}</td></tr>
-        <tr><td style="font-size:8px;color:#94A3B8;font-family:${EM_FONT};padding-top:1px;white-space:nowrap;overflow:hidden;">${r.type}</td></tr>
+        <tr><td style="font-size:11px;font-weight:800;color:${EM_RED};font-family:${EM_FONT};padding-top:3px;white-space:nowrap;overflow:hidden;">${fmtN(r.citations)}</td></tr>
+        <tr><td style="font-size:11px;color:#1A1A1A;font-family:${EM_FONT};padding-top:2px;white-space:nowrap;overflow:hidden;font-weight:600;">${domainShort}</td></tr>
+        <tr><td style="font-size:11px;color:#94A3B8;font-family:${EM_FONT};padding-top:1px;white-space:nowrap;overflow:hidden;">${r.type}</td></tr>
       </table>
     </td>`
   }).join('')
