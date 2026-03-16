@@ -3,7 +3,7 @@ import nodemailer from 'nodemailer'
 import translate from 'google-translate-api-x'
 import { fileURLToPath } from 'url'
 import { dirname, join } from 'path'
-import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'fs'
+import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync, unlinkSync } from 'fs'
 import dotenv from 'dotenv'
 
 dotenv.config()
@@ -15,7 +15,9 @@ const PORT = process.env.PORT || 3000
 // ─── Snapshots file storage ──────────────────────────────────────────────────
 const DATA_DIR = process.env.DATA_DIR || join(__dirname, 'data')
 const SNAP_FILE = join(DATA_DIR, 'snapshots.json')
+const PUB_DIR = join(DATA_DIR, 'published')
 if (!existsSync(DATA_DIR)) mkdirSync(DATA_DIR, { recursive: true })
+if (!existsSync(PUB_DIR)) mkdirSync(PUB_DIR, { recursive: true })
 
 function readSnapshots() {
   try { return JSON.parse(readFileSync(SNAP_FILE, 'utf-8')) } catch { return [] }
@@ -153,6 +155,48 @@ app.post('/api/translate', async (req, res) => {
     console.error('[TRANSLATE] Error:', err.message)
     res.status(500).json({ ok: false, error: err.message })
   }
+})
+
+// ─── Publish API ────────────────────────────────────────────────────────────
+const PUB_INDEX = join(DATA_DIR, 'published.json')
+function readPublished() {
+  try { return JSON.parse(readFileSync(PUB_INDEX, 'utf-8')) } catch { return [] }
+}
+function writePublished(list) {
+  writeFileSync(PUB_INDEX, JSON.stringify(list, null, 2))
+}
+
+app.post('/api/publish', (req, res) => {
+  const { title, html, lang } = req.body || {}
+  if (!html) return res.status(400).json({ ok: false, error: 'html 필수' })
+  const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 6)
+  const fileName = `${id}.html`
+  writeFileSync(join(PUB_DIR, fileName), html)
+  const entry = { id, title: title || 'Untitled', lang: lang || 'ko', ts: Date.now() }
+  const list = [entry, ...readPublished()].slice(0, 100)
+  writePublished(list)
+  console.log('[PUBLISH]', entry.title, '->', `/p/${id}`)
+  res.json({ ok: true, id, url: `/p/${id}`, published: list })
+})
+
+app.get('/api/published', (req, res) => {
+  res.json(readPublished())
+})
+
+app.delete('/api/published/:id', (req, res) => {
+  const { id } = req.params
+  const file = join(PUB_DIR, `${id}.html`)
+  try { unlinkSync(file) } catch {}
+  const list = readPublished().filter(p => p.id !== id)
+  writePublished(list)
+  res.json({ ok: true, published: list })
+})
+
+app.get('/p/:id', (req, res) => {
+  const file = join(PUB_DIR, `${req.params.id}.html`)
+  if (!existsSync(file)) return res.status(404).send('Not found')
+  res.set('Content-Type', 'text/html; charset=utf-8')
+  res.send(readFileSync(file, 'utf-8'))
 })
 
 // ─── Static files ────────────────────────────────────────────────────────────

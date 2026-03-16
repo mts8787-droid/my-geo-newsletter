@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react'
-import { ChevronLeft, ChevronRight, TrendingUp, TrendingDown, Minus, Copy, Download, RefreshCw, Check, Send, Sparkles, Save, FolderOpen, Trash2, Languages } from 'lucide-react'
+import { ChevronLeft, ChevronRight, TrendingUp, TrendingDown, Minus, Copy, Download, RefreshCw, Check, Send, Sparkles, Save, FolderOpen, Trash2, Languages, Globe, ExternalLink, Link2 } from 'lucide-react'
 import { downloadTemplate } from './excelUtils'
 import { extractSheetId, syncFromGoogleSheets } from './googleSheetsUtils'
 import { generateEmailHTML } from './emailTemplate'
@@ -748,6 +748,48 @@ function Sidebar({ meta, setMeta, metaKo, setMetaKo, total, setTotal, products, 
   const [scriptUrl, setScriptUrl] = useState(localStorage.getItem('geo-script-url') || '')
   const [exporting, setExporting] = useState(false)
   const [exportMsg, setExportMsg] = useState('')
+  const [publishing, setPublishing] = useState(false)
+  const [publishedList, setPublishedList] = useState([])
+  const [publishMsg, setPublishMsg] = useState('')
+  const [showPublished, setShowPublished] = useState(false)
+
+  // 게시 목록 로드
+  useEffect(() => {
+    fetch('/api/published').then(r => r.ok ? r.json() : []).then(setPublishedList).catch(() => {})
+  }, [])
+
+  async function handlePublish() {
+    if (publishing) return
+    setPublishing(true); setPublishMsg('')
+    try {
+      const html = generateEmailHTML(meta, total, resolved.products, resolved.citations, dotcom, previewLang, resolved.productsCnty, resolved.citationsCnty)
+      const title = `${meta.period || ''} ${meta.title || 'Newsletter'}`.trim()
+      const res = await fetch('/api/publish', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, html, lang: previewLang }),
+      })
+      const data = await res.json()
+      if (!data.ok) throw new Error(data.error || '게시 실패')
+      setPublishedList(data.published)
+      const fullUrl = `${window.location.origin}${data.url}`
+      try { await navigator.clipboard.writeText(fullUrl) } catch {}
+      setPublishMsg(fullUrl)
+    } catch (err) {
+      setPublishMsg('ERROR:' + err.message)
+    } finally {
+      setPublishing(false)
+      setTimeout(() => setPublishMsg(''), 15000)
+    }
+  }
+
+  async function handleDeletePublished(id) {
+    try {
+      const res = await fetch(`/api/published/${id}`, { method: 'DELETE' })
+      const data = await res.json()
+      if (data.ok) setPublishedList(data.published)
+    } catch {}
+  }
 
   async function handleTranslate() {
     if (previewLang !== 'en') {
@@ -1755,6 +1797,82 @@ function Sidebar({ meta, setMeta, metaKo, setMetaKo, total, setTotal, products, 
           textTransform: 'uppercase', letterSpacing: 1, fontFamily: FONT }}>
           출력
         </p>
+
+        {/* 웹 게시 */}
+        <button onClick={handlePublish} disabled={publishing} style={{
+          width: '100%', padding: '9px 0',
+          background: publishing ? '#1E293B' : '#7C3AED',
+          border: 'none', borderRadius: 8, fontSize: 11, fontWeight: 700,
+          color: publishing ? '#94A3B8' : '#FFFFFF',
+          fontFamily: FONT, cursor: publishing ? 'wait' : 'pointer',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5,
+          marginBottom: 8, transition: 'all 0.2s',
+        }}>
+          <Globe size={12} />
+          {publishing ? '게시 중...' : `웹사이트 게시 (${previewLang.toUpperCase()})`}
+        </button>
+
+        {publishMsg && (
+          <div style={{
+            padding: '8px 10px', borderRadius: 7, fontSize: 11, fontFamily: FONT, lineHeight: 1.6,
+            background: publishMsg.startsWith('ERROR:') ? '#450A0A' : '#14532D',
+            color: publishMsg.startsWith('ERROR:') ? '#FCA5A5' : '#86EFAC',
+            border: `1px solid ${publishMsg.startsWith('ERROR:') ? '#EF444433' : '#22C55E33'}`,
+            marginBottom: 8, wordBreak: 'break-all',
+          }}>
+            {publishMsg.startsWith('ERROR:') ? publishMsg.slice(6) : (
+              <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                <Link2 size={11} /> {publishMsg} <span style={{ color: '#64748B' }}>(복사됨)</span>
+              </span>
+            )}
+          </div>
+        )}
+
+        {/* 게시 목록 */}
+        <div style={{ position: 'relative', marginBottom: 12 }}>
+          <button onClick={() => setShowPublished(!showPublished)} style={{
+            width: '100%', padding: '7px 0', background: 'transparent',
+            border: `1px solid ${showPublished ? '#7C3AED44' : '#334155'}`,
+            borderRadius: 7, fontSize: 11, fontWeight: 600,
+            color: '#64748B', fontFamily: FONT, cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5,
+          }}>
+            <ExternalLink size={11} /> 게시 목록 {publishedList.length > 0 && <span style={{ color: '#94A3B8' }}>({publishedList.length})</span>}
+          </button>
+          {showPublished && (
+            <div style={{ marginTop: 6, background: '#1E293B', border: '1px solid #334155',
+              borderRadius: 8, maxHeight: 240, overflowY: 'auto', padding: 6 }}>
+              {publishedList.length === 0 ? (
+                <p style={{ margin: 0, padding: 10, fontSize: 11, color: '#64748B', fontFamily: FONT, textAlign: 'center' }}>게시된 페이지가 없습니다</p>
+              ) : publishedList.map(p => (
+                <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '6px 8px',
+                  borderRadius: 6, marginBottom: 2, background: '#0F172A' }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <a href={`/p/${p.id}`} target="_blank" rel="noopener noreferrer"
+                      style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#A78BFA', fontFamily: FONT,
+                        overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textDecoration: 'none' }}>
+                      {p.title}
+                    </a>
+                    <span style={{ fontSize: 10, color: '#475569', fontFamily: FONT }}>
+                      {p.lang?.toUpperCase()} · {new Date(p.ts).toLocaleString('ko-KR')}
+                    </span>
+                  </div>
+                  <button onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/p/${p.id}`); }}
+                    title="URL 복사"
+                    style={{ padding: '2px 5px', borderRadius: 4, border: 'none', cursor: 'pointer',
+                      background: '#334155', color: '#94A3B8', fontSize: 10, display: 'flex' }}>
+                    <Link2 size={10} />
+                  </button>
+                  <button onClick={() => handleDeletePublished(p.id)}
+                    style={{ padding: '2px 5px', borderRadius: 4, border: 'none', cursor: 'pointer',
+                      background: '#7F1D1D', color: '#FCA5A5', fontSize: 10, display: 'flex' }}>
+                    <Trash2 size={10} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
 
         {/* HTML 복사 */}
         <button onClick={handleCopyHtml} style={{
