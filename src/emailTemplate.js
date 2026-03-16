@@ -392,6 +392,11 @@ function countryVisibilitySectionHtml(productsCnty, meta, lang) {
               </tr>`
 }
 
+// ─── 도메인 표시명 (TLD 제거) ─────────────────────────────────────────────────
+function stripDomain(domain) {
+  return (domain || '').replace(/\.(com|org|net|co\.uk|com\.br|com\.au|com\.vn|com\.mx|co\.kr|de|es|fr|ca|in|vn)$/i, '')
+}
+
 // ─── 도메인별 Citation (TTL top 10) ──────────────────────────────────────────
 function citationDomainSectionHtml(citationsCnty, meta, lang) {
   if (!citationsCnty || !citationsCnty.length) return ''
@@ -411,9 +416,9 @@ function citationDomainSectionHtml(citationsCnty, meta, lang) {
           <tr>
             <td width="150" style="padding:10px 12px 10px 16px;vertical-align:middle;">
               <table border="0" cellpadding="0" cellspacing="0"><tr>
-                <td width="22" height="22" align="center" style="background:${c.rank <= 3 ? EM_RED : '#F1F5F9'};border-radius:50%;font-size:11px;font-weight:800;color:${c.rank <= 3 ? '#FFFFFF' : '#94A3B8'};font-family:${EM_FONT};">${c.rank}</td>
+                <td width="22" height="22" align="center" style="background:${c.rank <= 3 ? EM_RED : '#F1F5F9'};border-radius:4px;font-size:11px;font-weight:800;color:${c.rank <= 3 ? '#FFFFFF' : '#94A3B8'};font-family:${EM_FONT};line-height:22px;">${c.rank}</td>
                 <td style="padding-left:7px;vertical-align:middle;">
-                  <p style="margin:0;font-size:12px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${c.domain}</p>
+                  <p style="margin:0;font-size:12px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${stripDomain(c.domain)}</p>
                   <span style="font-size:10px;color:#94A3B8;font-family:${EM_FONT};background:#F8FAFC;border-radius:4px;padding:1px 5px;">${c.type}</span>
                 </td>
               </tr></table>
@@ -484,14 +489,15 @@ function citationCntyCountryHtml(cntyCode, rows, lang) {
   const barCols = rows.map(r => {
     const barH = Math.max(Math.round((r.citations / maxScore) * BAR_MAX), 3)
     const spacerH = BAR_MAX - barH
+    const domainShort = stripDomain(r.domain)
 
-    return `<td width="${colWidth}%" style="vertical-align:bottom;text-align:center;padding:0 1px;">
-      <table border="0" cellpadding="0" cellspacing="0" align="center" style="margin:0 auto;">
+    return `<td width="${colWidth}%" style="vertical-align:bottom;text-align:center;padding:0 1px;overflow:hidden;">
+      <table border="0" cellpadding="0" cellspacing="0" align="center" style="margin:0 auto;table-layout:fixed;width:100%;">
         ${spacerH > 0 ? `<tr><td height="${spacerH}" style="font-size:0;line-height:0;">&nbsp;</td></tr>` : ''}
-        <tr><td width="26" height="${barH}" style="background:${EM_RED};border-radius:3px 3px 0 0;font-size:0;line-height:0;">&nbsp;</td></tr>
-        <tr><td style="font-size:10px;font-weight:800;color:${EM_RED};font-family:${EM_FONT};padding-top:3px;white-space:nowrap;">${fmtN(r.citations)}</td></tr>
-        <tr><td style="font-size:10px;color:#1A1A1A;font-family:${EM_FONT};padding-top:2px;white-space:nowrap;font-weight:600;">${r.domain}</td></tr>
-        <tr><td style="font-size:9px;color:#94A3B8;font-family:${EM_FONT};padding-top:1px;white-space:nowrap;">${r.type}</td></tr>
+        <tr><td height="${barH}" style="font-size:0;line-height:0;"><table border="0" cellpadding="0" cellspacing="0" align="center"><tr><td width="22" height="${barH}" style="background:${EM_RED};border-radius:3px 3px 0 0;font-size:0;line-height:0;">&nbsp;</td></tr></table></td></tr>
+        <tr><td style="font-size:9px;font-weight:800;color:${EM_RED};font-family:${EM_FONT};padding-top:3px;white-space:nowrap;overflow:hidden;">${fmtN(r.citations)}</td></tr>
+        <tr><td style="font-size:8px;color:#1A1A1A;font-family:${EM_FONT};padding-top:2px;white-space:nowrap;overflow:hidden;font-weight:600;">${domainShort}</td></tr>
+        <tr><td style="font-size:8px;color:#94A3B8;font-family:${EM_FONT};padding-top:1px;white-space:nowrap;overflow:hidden;">${r.type}</td></tr>
       </table>
     </td>`
   }).join('')
@@ -515,7 +521,7 @@ function citationCntyCountryHtml(cntyCode, rows, lang) {
   </tr>
   <tr>
     <td style="padding:0 4px 12px;">
-      <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;">
         <tr>${barCols}</tr>
       </table>
     </td>
