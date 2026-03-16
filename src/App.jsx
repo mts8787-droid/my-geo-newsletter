@@ -725,7 +725,7 @@ function Sidebar({ meta, total, products, citations, dotcom, productsCnty, citat
     setShowTranslatePopup(false)
     setTranslating(true)
     try {
-      // 번역할 텍스트 수집
+      // 번역할 텍스트 수집 — meta 필드
       const metaTexts = [
         meta.title || '', meta.dateLine || '', meta.noticeText || '',
         meta.totalInsight || '', meta.reportType || '',
@@ -736,9 +736,16 @@ function Sidebar({ meta, total, products, citations, dotcom, productsCnty, citat
         meta.cntyInsight || '', meta.cntyHowToRead || '',
         meta.citDomainInsight || '', meta.citDomainHowToRead || '',
         meta.citCntyInsight || '', meta.citCntyHowToRead || '',
+        meta.period || '', meta.team || '', meta.reportNo || '',
       ]
-      const productNames = products.map(p => p.kr || '')
-      const allTexts = [...metaTexts, ...productNames].map(t => t || ' ')
+      // 제품명 + 경쟁사명
+      const productKrTexts = products.map(p => p.kr || '')
+      const productCompTexts = products.map(p => p.compName || '')
+      // Citation source + category
+      const citSourceTexts = citations.map(c => c.source || '')
+      const citCategoryTexts = citations.map(c => c.category || '')
+
+      const allTexts = [...metaTexts, ...productKrTexts, ...productCompTexts, ...citSourceTexts, ...citCategoryTexts].map(t => t || ' ')
 
       const res = await fetch('/api/translate', {
         method: 'POST',
@@ -749,35 +756,52 @@ function Sidebar({ meta, total, products, citations, dotcom, productsCnty, citat
       if (!data.ok) throw new Error(data.error || '번역 실패')
 
       const tr = data.translated
+      let idx = 0
       const newMeta = { ...meta,
-        title: tr[0] || meta.title,
-        dateLine: tr[1] || meta.dateLine,
-        noticeText: tr[2] || meta.noticeText,
-        totalInsight: tr[3] || meta.totalInsight,
-        reportType: tr[4] || meta.reportType,
-        productInsight: tr[5] || meta.productInsight,
-        productHowToRead: tr[6] || meta.productHowToRead,
-        citationInsight: tr[7] || meta.citationInsight,
-        citationHowToRead: tr[8] || meta.citationHowToRead,
-        dotcomInsight: tr[9] || meta.dotcomInsight,
-        dotcomHowToRead: tr[10] || meta.dotcomHowToRead,
-        todoText: tr[11] || meta.todoText,
-        kpiLogicText: tr[12] || meta.kpiLogicText,
-        cntyInsight: tr[13] || meta.cntyInsight,
-        cntyHowToRead: tr[14] || meta.cntyHowToRead,
-        citDomainInsight: tr[15] || meta.citDomainInsight,
-        citDomainHowToRead: tr[16] || meta.citDomainHowToRead,
-        citCntyInsight: tr[17] || meta.citCntyInsight,
-        citCntyHowToRead: tr[18] || meta.citCntyHowToRead,
+        title: tr[idx++] || meta.title,
+        dateLine: tr[idx++] || meta.dateLine,
+        noticeText: tr[idx++] || meta.noticeText,
+        totalInsight: tr[idx++] || meta.totalInsight,
+        reportType: tr[idx++] || meta.reportType,
+        productInsight: tr[idx++] || meta.productInsight,
+        productHowToRead: tr[idx++] || meta.productHowToRead,
+        citationInsight: tr[idx++] || meta.citationInsight,
+        citationHowToRead: tr[idx++] || meta.citationHowToRead,
+        dotcomInsight: tr[idx++] || meta.dotcomInsight,
+        dotcomHowToRead: tr[idx++] || meta.dotcomHowToRead,
+        todoText: tr[idx++] || meta.todoText,
+        kpiLogicText: tr[idx++] || meta.kpiLogicText,
+        cntyInsight: tr[idx++] || meta.cntyInsight,
+        cntyHowToRead: tr[idx++] || meta.cntyHowToRead,
+        citDomainInsight: tr[idx++] || meta.citDomainInsight,
+        citDomainHowToRead: tr[idx++] || meta.citDomainHowToRead,
+        citCntyInsight: tr[idx++] || meta.citCntyInsight,
+        citCntyHowToRead: tr[idx++] || meta.citCntyHowToRead,
+        period: tr[idx++] || meta.period,
+        team: tr[idx++] || meta.team,
+        reportNo: tr[idx++] || meta.reportNo,
       }
-      const newProducts = products.map((p, i) => ({ ...p, kr: tr[metaTexts.length + i] || p.kr }))
+      // 제품명 + 경쟁사명 번역 적용
+      const newProducts = products.map((p, i) => ({
+        ...p,
+        kr: tr[idx + i] || p.kr,
+        compName: tr[idx + productKrTexts.length + i] || p.compName,
+      }))
+      idx += productKrTexts.length + productCompTexts.length
+      // Citation source + category 번역 적용
+      const newCitations = citations.map((c, i) => ({
+        ...c,
+        source: tr[idx + i] || c.source,
+        category: tr[idx + citSourceTexts.length + i] || c.category,
+      }))
 
       setMeta(newMeta)
       setProducts(newProducts)
+      setCitations(newCitations)
 
       // 스냅샷 저장
       const snapName = `[EN] ${meta.period || 'Untitled'} — ${new Date().toLocaleString('ko-KR')}`
-      const snapRes = await postSnapshot(snapName, { meta: newMeta, total, products: newProducts, citations, dotcom })
+      const snapRes = await postSnapshot(snapName, { meta: newMeta, total, products: newProducts, citations: newCitations, dotcom })
       if (snapRes) setSnapshots(snapRes)
 
       setTranslating(false)
