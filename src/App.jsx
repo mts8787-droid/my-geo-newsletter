@@ -734,6 +734,8 @@ function Sidebar({ meta, total, products, citations, dotcom, productsCnty, citat
         meta.dotcomInsight || '', meta.dotcomHowToRead || '',
         meta.todoText || '', meta.kpiLogicText || '',
         meta.cntyInsight || '', meta.cntyHowToRead || '',
+        meta.citDomainInsight || '', meta.citDomainHowToRead || '',
+        meta.citCntyInsight || '', meta.citCntyHowToRead || '',
       ]
       const productNames = products.map(p => p.kr || '')
       const allTexts = [...metaTexts, ...productNames].map(t => t || ' ')
@@ -763,6 +765,10 @@ function Sidebar({ meta, total, products, citations, dotcom, productsCnty, citat
         kpiLogicText: tr[12] || meta.kpiLogicText,
         cntyInsight: tr[13] || meta.cntyInsight,
         cntyHowToRead: tr[14] || meta.cntyHowToRead,
+        citDomainInsight: tr[15] || meta.citDomainInsight,
+        citDomainHowToRead: tr[16] || meta.citDomainHowToRead,
+        citCntyInsight: tr[17] || meta.citCntyInsight,
+        citCntyHowToRead: tr[18] || meta.citCntyHowToRead,
       }
       const newProducts = products.map((p, i) => ({ ...p, kr: tr[metaTexts.length + i] || p.kr }))
 
