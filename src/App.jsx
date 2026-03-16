@@ -744,8 +744,12 @@ function Sidebar({ meta, total, products, citations, dotcom, productsCnty, citat
       // Citation source + category
       const citSourceTexts = citations.map(c => c.source || '')
       const citCategoryTexts = citations.map(c => c.category || '')
+      // 국가별 Visibility — 고유 country, product, compName
+      const cntyCountries = [...new Set(productsCnty.map(r => r.country || ''))]
+      const cntyProducts = [...new Set(productsCnty.map(r => r.product || ''))]
+      const cntyCompNames = [...new Set(productsCnty.map(r => r.compName || ''))]
 
-      const allTexts = [...metaTexts, ...productKrTexts, ...productCompTexts, ...citSourceTexts, ...citCategoryTexts].map(t => t || ' ')
+      const allTexts = [...metaTexts, ...productKrTexts, ...productCompTexts, ...citSourceTexts, ...citCategoryTexts, ...cntyCountries, ...cntyProducts, ...cntyCompNames].map(t => t || ' ')
 
       const res = await fetch('/api/translate', {
         method: 'POST',
@@ -794,14 +798,33 @@ function Sidebar({ meta, total, products, citations, dotcom, productsCnty, citat
         source: tr[idx + i] || c.source,
         category: tr[idx + citSourceTexts.length + i] || c.category,
       }))
+      idx += citSourceTexts.length + citCategoryTexts.length
+
+      // 국가별 Visibility 번역 매핑 (고유값 → 번역값 맵)
+      const countryMap = {}
+      cntyCountries.forEach((v, i) => { countryMap[v] = tr[idx + i] || v })
+      idx += cntyCountries.length
+      const cntyProductMap = {}
+      cntyProducts.forEach((v, i) => { cntyProductMap[v] = tr[idx + i] || v })
+      idx += cntyProducts.length
+      const cntyCompMap = {}
+      cntyCompNames.forEach((v, i) => { cntyCompMap[v] = tr[idx + i] || v })
+
+      const newProductsCnty = productsCnty.map(r => ({
+        ...r,
+        country: countryMap[r.country] || r.country,
+        product: cntyProductMap[r.product] || r.product,
+        compName: cntyCompMap[r.compName] || r.compName,
+      }))
 
       setMeta(newMeta)
       setProducts(newProducts)
       setCitations(newCitations)
+      setProductsCnty(newProductsCnty)
 
       // 스냅샷 저장
       const snapName = `[EN] ${meta.period || 'Untitled'} — ${new Date().toLocaleString('ko-KR')}`
-      const snapRes = await postSnapshot(snapName, { meta: newMeta, total, products: newProducts, citations: newCitations, dotcom })
+      const snapRes = await postSnapshot(snapName, { meta: newMeta, total, products: newProducts, citations: newCitations, dotcom, productsCnty: newProductsCnty })
       if (snapRes) setSnapshots(snapRes)
 
       setTranslating(false)
