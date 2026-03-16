@@ -197,7 +197,7 @@ const INIT_META  = {
   showDotcom: true,
   cntyProductFilter: {},
 }
-const INIT_TOTAL = { score: 42.7, prev: 42.2, rank: 1, totalBrands: 12 }
+const INIT_TOTAL = { score: 42.7, prev: 42.2, vsComp: 42.2, rank: 1, totalBrands: 12 }
 
 const BU_CONFIG = {
   MS: { label: 'MS', color: '#94A3B8', bg: 'rgba(148,163,184,0.07)', border: 'rgba(148,163,184,0.18)' },

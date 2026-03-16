@@ -58,6 +58,7 @@ export function downloadTemplate(meta, total, products, citations, dotcom = {}) 
     ['key', 'value', '설명'],
     ['score',       total.score,       '이번 달 전체 GEO 점수 (0~100, 소수점 가능)'],
     ['prev',        total.prev,        '전월 GEO 점수 — 전월 대비 증감 자동 계산'],
+    ['vsComp',      total.vsComp,      '삼성전자 전체 GEO 점수 (0~100, 소수점 가능)'],
     ['rank',        total.rank,        '전체 브랜드 중 LG전자 순위 (정수)'],
     ['totalBrands', total.totalBrands, '비교 대상 전체 브랜드 수 (정수)'],
   ])

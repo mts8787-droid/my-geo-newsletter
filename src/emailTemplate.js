@@ -787,9 +787,8 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
   const totalDelta = delta(total.score, total.prev)
   const scoreBarW  = Math.round(total.score)
 
-  // 경쟁사 평균 visibility (products의 vsComp 평균)
-  const compProducts = products.filter(p => p.vsComp > 0)
-  const compAvg = compProducts.length ? +(compProducts.reduce((s, p) => s + p.vsComp, 0) / compProducts.length).toFixed(1) : 0
+  // 삼성전자 전체 GEO 점수 (total 시트의 vsComp)
+  const compAvg = total.vsComp || 0
   const lgVsComp = +(total.score - compAvg).toFixed(1)
 
   // 주간 트렌드 전역 min/max 계산 (모든 제품 동일 스케일)
