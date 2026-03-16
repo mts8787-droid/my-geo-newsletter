@@ -398,7 +398,7 @@ function stripDomain(domain) {
 }
 
 // ─── 도메인별 Citation (TTL top 10) ──────────────────────────────────────────
-function citationDomainSectionHtml(citationsCnty, meta, lang) {
+function citationDomainSectionHtml(citationsCnty, meta, lang, citations) {
   if (!citationsCnty || !citationsCnty.length) return ''
   const t = T[lang] || T.ko
 
@@ -407,7 +407,8 @@ function citationDomainSectionHtml(citationsCnty, meta, lang) {
   if (!ttlRows.length) return ''
 
   const maxScore = Math.max(...ttlRows.map(r => r.citations), 1)
-  const totalCitations = ttlRows.reduce((s, r) => s + r.citations, 0)
+  // 분모: 카테고리 Citation 전체 합계
+  const totalCitations = (citations && citations.length) ? citations.reduce((s, c) => s + c.score, 0) : ttlRows.reduce((s, r) => s + r.citations, 0)
   const fmtN = n => Number(n).toLocaleString('en-US')
 
   const rows = ttlRows.map((c, i) => {
@@ -904,7 +905,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                         <table border="0" cellpadding="0" cellspacing="0" width="100%">
                           <tr>
                             <td style="font-size:22px;font-weight:700;color:#FFFFFF;text-transform:uppercase;font-family:${EM_FONT};">LG GEO Visibility %</td>
-                            <td align="right" style="font-size:12px;color:#94A3B8;font-family:${EM_FONT};">Model : ChatGPT, ChatGPT Search, Gemini<br/>Subsidiary : US, CA, UK, DE, ES, BR, MX, IN, AU, VN</td>
+                            <td align="right" style="font-size:12px;color:#94A3B8;font-family:${EM_FONT};">Model : ChatGPT, ChatGPT Search, Gemini, Perplexity<br/>Subsidiary : US, CA, UK, DE, ES, BR, MX, IN, AU, VN</td>
                           </tr>
                         </table>
                         <table border="0" cellpadding="0" cellspacing="0" width="100%">
@@ -1060,7 +1061,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                 </td>
               </tr>` : ''}
 
-              ${meta.showCitDomain !== false ? citationDomainSectionHtml(citationsCnty, meta, lang) : ''}
+              ${meta.showCitDomain !== false ? citationDomainSectionHtml(citationsCnty, meta, lang, citations) : ''}
 
               ${meta.showCitCnty !== false ? citationCntySectionHtml(citationsCnty, meta, lang) : ''}
 
