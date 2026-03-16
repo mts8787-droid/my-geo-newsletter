@@ -546,6 +546,9 @@ function Sidebar({ meta, total, products, citations, dotcom, productsCnty, setMe
   const [mailSent,  setMailSent]  = useState(false)
   const [showTranslatePopup, setShowTranslatePopup] = useState(false)
   const [translating, setTranslating] = useState(false)
+  const [scriptUrl, setScriptUrl] = useState(localStorage.getItem('geo-script-url') || '')
+  const [exporting, setExporting] = useState(false)
+  const [exportMsg, setExportMsg] = useState('')
 
   async function handleTranslate() {
     if (previewLang !== 'en') {
@@ -693,6 +696,48 @@ function Sidebar({ meta, total, products, citations, dotcom, productsCnty, setMe
     } finally {
       setGsSyncing(false)
       setTimeout(() => { setGsStatus(null); setGsMsg('') }, 4000)
+    }
+  }
+
+  async function handleExportMeta() {
+    if (exporting || !scriptUrl.trim()) return
+    setExporting(true); setExportMsg('')
+    localStorage.setItem('geo-script-url', scriptUrl.trim())
+    try {
+      const exportData = {
+        action: 'writeMeta',
+        meta: {
+          period: meta.period, team: meta.team, reportNo: meta.reportNo,
+          reportType: meta.reportType, title: meta.title,
+          titleFontSize: meta.titleFontSize, titleColor: meta.titleColor,
+          dateLine: meta.dateLine, totalInsight: meta.totalInsight,
+          productInsight: meta.productInsight, productHowToRead: meta.productHowToRead,
+          citationInsight: meta.citationInsight, citationHowToRead: meta.citationHowToRead,
+          dotcomInsight: meta.dotcomInsight, dotcomHowToRead: meta.dotcomHowToRead,
+          cntyInsight: meta.cntyInsight, cntyHowToRead: meta.cntyHowToRead,
+          kpiLogicText: meta.kpiLogicText,
+          noticeText: meta.noticeText,
+          showNotice: meta.showNotice, showKpiLogic: meta.showKpiLogic,
+          showProductInsight: meta.showProductInsight, showProductHowToRead: meta.showProductHowToRead,
+          showCitationInsight: meta.showCitationInsight, showCitationHowToRead: meta.showCitationHowToRead,
+          showDotcomInsight: meta.showDotcomInsight, showDotcomHowToRead: meta.showDotcomHowToRead,
+          showCntyInsight: meta.showCntyInsight, showCntyHowToRead: meta.showCntyHowToRead,
+        },
+        total,
+      }
+      const res = await fetch('/api/gsheet-export', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ scriptUrl: scriptUrl.trim(), data: exportData }),
+      })
+      const result = await res.json()
+      if (!result.ok) throw new Error(result.error || '내보내기 실패')
+      setExportMsg('✓ 구글 시트 내보내기 완료!')
+    } catch (err) {
+      setExportMsg('✗ ' + err.message)
+    } finally {
+      setExporting(false)
+      setTimeout(() => setExportMsg(''), 5000)
     }
   }
 
@@ -1239,6 +1284,58 @@ function Sidebar({ meta, total, products, citations, dotcom, productsCnty, setMe
             {gsMsg}
           </div>
         )}
+
+        {/* ── 구글 시트 내보내기 ── */}
+        <div style={{ height: 1, background: '#1E293B', margin: '16px 0' }} />
+        <p style={{ margin: '0 0 10px 2px', fontSize: 11, fontWeight: 700, color: '#475569',
+          textTransform: 'uppercase', letterSpacing: 1, fontFamily: FONT }}>
+          구글 시트 내보내기
+        </p>
+
+        <p style={{ margin: '0 0 4px', fontSize: 11, color: '#475569', fontFamily: FONT }}>Apps Script 웹앱 URL</p>
+        <input
+          value={scriptUrl}
+          onChange={e => setScriptUrl(e.target.value)}
+          placeholder="https://script.google.com/macros/s/.../exec"
+          style={{ ...inputStyle, fontSize: 11, padding: '7px 9px', marginBottom: 8 }}
+        />
+
+        <button onClick={handleExportMeta} disabled={exporting || !scriptUrl.trim()} style={{
+          width: '100%', padding: '9px 0', borderRadius: 8, border: 'none',
+          cursor: (exporting || !scriptUrl.trim()) ? 'not-allowed' : 'pointer',
+          background: exporting ? '#1E293B' : !scriptUrl.trim() ? '#1E293B' : '#1D4ED8',
+          color: exporting ? '#94A3B8' : !scriptUrl.trim() ? '#334155' : '#FFFFFF',
+          fontSize: 11, fontWeight: 700, fontFamily: FONT,
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5,
+          marginBottom: 8, transition: 'all 0.2s',
+        }}>
+          <RefreshCw size={12} style={{ animation: exporting ? 'spin 1s linear infinite' : 'none' }} />
+          {exporting ? '내보내는 중...' : 'MetaData 내보내기'}
+        </button>
+
+        {exportMsg && (
+          <div style={{
+            padding: '8px 10px', borderRadius: 7, fontSize: 11, fontFamily: FONT, lineHeight: 1.6,
+            background: exportMsg.startsWith('✓') ? '#14532D' : '#450A0A',
+            color: exportMsg.startsWith('✓') ? '#86EFAC' : '#FCA5A5',
+            border: `1px solid ${exportMsg.startsWith('✓') ? '#22C55E33' : '#EF444433'}`,
+            marginBottom: 8,
+          }}>
+            {exportMsg}
+          </div>
+        )}
+
+        {/* Apps Script 설정 안내 */}
+        <div style={{ background: '#1E293B', borderRadius: 8, padding: '10px 12px', marginBottom: 8 }}>
+          <p style={{ margin: '0 0 6px', fontSize: 11, fontWeight: 700, color: '#64748B', fontFamily: FONT,
+            textTransform: 'uppercase', letterSpacing: 0.8 }}>Apps Script 설정</p>
+          <p style={{ margin: 0, fontSize: 11, color: '#475569', fontFamily: FONT, lineHeight: 1.8 }}>
+            ① Google Sheets → 확장 프로그램 → Apps Script<br />
+            ② 코드 붙여넣기 후 배포 → 웹 앱<br />
+            ③ 액세스: <span style={{ color: '#94A3B8' }}>모든 사용자</span><br />
+            ④ 배포 URL 붙여넣기
+          </p>
+        </div>
 
         <div style={{ height: 1, background: '#1E293B', margin: '16px 0' }} />
 

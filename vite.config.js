@@ -158,11 +158,46 @@ function snapshotsApiPlugin() {
   }
 }
 
+// ─── Vite 플러그인: /api/gsheet-export 엔드포인트 ─────────────────────────
+function gsheetExportPlugin() {
+  return {
+    name: 'gsheet-export-api',
+    configureServer(server) {
+      server.middlewares.use('/api/gsheet-export', (req, res) => {
+        if (req.method !== 'POST') { res.statusCode = 405; res.end(); return }
+        let body = ''
+        req.on('data', c => (body += c))
+        req.on('end', async () => {
+          try {
+            const { scriptUrl, data } = JSON.parse(body)
+            if (!scriptUrl || !data) throw new Error('scriptUrl, data 필수')
+            const gRes = await fetch(scriptUrl, {
+              method: 'POST',
+              headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+              body: JSON.stringify(data),
+              redirect: 'follow',
+            })
+            const text = await gRes.text()
+            let result
+            try { result = JSON.parse(text) } catch { result = { ok: false, error: text } }
+            res.setHeader('Content-Type', 'application/json')
+            res.end(JSON.stringify(result))
+          } catch (err) {
+            res.statusCode = 500
+            res.setHeader('Content-Type', 'application/json')
+            res.end(JSON.stringify({ ok: false, error: err.message }))
+          }
+        })
+      })
+    },
+  }
+}
+
 export default defineConfig({
   define: {
     __APP_VERSION__: JSON.stringify(pkg.version),
   },
-  plugins: [react(), emailApiPlugin(), translateApiPlugin(), snapshotsApiPlugin()],
+  plugins: [react(), emailApiPlugin(), translateApiPlugin(), snapshotsApiPlugin(), gsheetExportPlugin()],
   server: {
     proxy: {
       '/gsheets-proxy': {

@@ -116,6 +116,29 @@ app.delete('/api/snapshots/:ts', (req, res) => {
   res.json({ ok: true, snapshots: list })
 })
 
+// ─── Google Sheet Export (Apps Script proxy) ────────────────────────────────
+app.post('/api/gsheet-export', async (req, res) => {
+  const { scriptUrl, data } = req.body || {}
+  if (!scriptUrl || !data) {
+    return res.status(400).json({ ok: false, error: 'scriptUrl, data 필수' })
+  }
+  try {
+    const gRes = await fetch(scriptUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(data),
+      redirect: 'follow',
+    })
+    const text = await gRes.text()
+    let result
+    try { result = JSON.parse(text) } catch { result = { ok: false, error: text } }
+    res.json(result)
+  } catch (err) {
+    console.error('[GSHEET-EXPORT] Error:', err.message)
+    res.status(500).json({ ok: false, error: err.message })
+  }
+})
+
 // ─── Translate API ───────────────────────────────────────────────────────────
 app.post('/api/translate', async (req, res) => {
   const { texts, from, to } = req.body || {}
