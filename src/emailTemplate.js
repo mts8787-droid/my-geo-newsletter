@@ -18,6 +18,8 @@ const T = {
     cntyTitle: '국가별 GEO Visibility 현황',
     cntyComp: '1위 경쟁사',
     citationTitle: '도메인 카테고리별 Citation 현황',
+    citationDomainTitle: '도메인별 Citation 현황',
+    citationCntyTitle: '국가별 Citation 도메인',
     citationLegend: 'Citation Score (MoM 증감)',
     dotcomTitle: '닷컴 Citation (경쟁사대비)',
     dotcomTTL: 'TTL (전체)',
@@ -44,6 +46,8 @@ const T = {
     cntyTitle: 'GEO Visibility by Country',
     cntyComp: 'Top 1 Competitor',
     citationTitle: 'Citation by Domain Category',
+    citationDomainTitle: 'Citation by Domain',
+    citationCntyTitle: 'Citation Domain by Country',
     citationLegend: 'Citation Score (MoM Change)',
     dotcomTitle: 'Dotcom Citation (vs Competitor)',
     dotcomTTL: 'TTL (Total)',
@@ -388,6 +392,188 @@ function countryVisibilitySectionHtml(productsCnty, meta, lang) {
               </tr>`
 }
 
+// ─── 도메인별 Citation (TTL top 10) ──────────────────────────────────────────
+function citationDomainSectionHtml(citationsCnty, meta, lang) {
+  if (!citationsCnty || !citationsCnty.length) return ''
+  const t = T[lang] || T.ko
+
+  const ttlRows = citationsCnty.filter(r => r.cnty === 'TTL').sort((a, b) => a.rank - b.rank).slice(0, 10)
+  if (!ttlRows.length) return ''
+
+  const maxScore = Math.max(...ttlRows.map(r => r.citations), 1)
+  const fmtN = n => Number(n).toLocaleString('en-US')
+
+  const rows = ttlRows.map((c, i) => {
+    const barW = Math.round((c.citations / maxScore) * 100)
+    return `<tr>
+      <td style="border-bottom:${i < ttlRows.length - 1 ? '1px solid #F8FAFC' : 'none'};">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%">
+          <tr>
+            <td width="150" style="padding:10px 12px 10px 16px;vertical-align:middle;">
+              <table border="0" cellpadding="0" cellspacing="0"><tr>
+                <td width="22" height="22" align="center" style="background:${c.rank <= 3 ? EM_RED : '#F1F5F9'};border-radius:50%;font-size:11px;font-weight:800;color:${c.rank <= 3 ? '#FFFFFF' : '#94A3B8'};font-family:${EM_FONT};">${c.rank}</td>
+                <td style="padding-left:7px;vertical-align:middle;">
+                  <p style="margin:0;font-size:12px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${c.domain}</p>
+                  <span style="font-size:10px;color:#94A3B8;font-family:${EM_FONT};background:#F8FAFC;border-radius:4px;padding:1px 5px;">${c.type}</span>
+                </td>
+              </tr></table>
+            </td>
+            <td style="padding:10px 16px 10px 0;vertical-align:middle;">
+              <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#F8FAFC;border-radius:7px;height:26px;">
+                <tr>
+                  <td width="${barW}%" style="background:linear-gradient(90deg,${EM_DARK},${EM_RED});border-radius:7px;font-size:0;">&nbsp;</td>
+                  <td style="text-align:right;padding-right:8px;">
+                    <span style="font-size:12px;font-weight:800;color:${EM_RED};font-family:${EM_FONT};">${fmtN(c.citations)}</span>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>`
+  }).join('')
+
+  return `
+              <!-- ══ 도메인별 Citation ══ -->
+              <tr>
+                <td style="padding-bottom:20px;">
+                  <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFFFFF;border-radius:16px;border:2px solid #E8EDF2;">
+                    <tr>
+                      <td style="padding:18px 20px 16px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;">
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                          <tr>
+                            <td style="vertical-align:middle;">
+                              <table border="0" cellpadding="0" cellspacing="0">
+                                <tr>
+                                  <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
+                                  <td style="padding-left:8px;font-size:17px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${t.citationDomainTitle}</td>
+                                </tr>
+                              </table>
+                            </td>
+                            <td align="right" style="vertical-align:middle;">
+                              <table border="0" cellpadding="0" cellspacing="0" align="right"><tr>
+                                <td width="14" height="5" style="background:${EM_RED};border-radius:3px;font-size:0;">&nbsp;</td>
+                                <td style="padding-left:4px;font-size:11px;color:#94A3B8;font-family:${EM_FONT};">Top 10 Domains (TTL)</td>
+                              </tr></table>
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                    ${insightBlockHtml(meta.citDomainInsight, meta.showCitDomainInsight, meta.citDomainHowToRead, meta.showCitDomainHowToRead, lang)}
+                    <tr>
+                      <td style="padding:0;">
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                          ${rows}
+                        </table>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>`
+}
+
+// ─── 국가별 Citation 도메인 (세로 막대 차트) ─────────────────────────────────
+function citationCntyCountryHtml(cntyCode, rows, lang) {
+  const maxScore = Math.max(...rows.map(r => r.citations), 1)
+  const BAR_MAX = 44
+  const fmtN = n => Number(n).toLocaleString('en-US')
+  const colWidth = Math.floor(100 / rows.length)
+
+  const barCols = rows.map(r => {
+    const barH = Math.max(Math.round((r.citations / maxScore) * BAR_MAX), 3)
+    const spacerH = BAR_MAX - barH
+
+    return `<td width="${colWidth}%" style="vertical-align:bottom;text-align:center;padding:0 1px;">
+      <table border="0" cellpadding="0" cellspacing="0" align="center" style="margin:0 auto;">
+        ${spacerH > 0 ? `<tr><td height="${spacerH}" style="font-size:0;line-height:0;">&nbsp;</td></tr>` : ''}
+        <tr><td width="26" height="${barH}" style="background:${EM_RED};border-radius:3px 3px 0 0;font-size:0;line-height:0;">&nbsp;</td></tr>
+        <tr><td style="font-size:10px;font-weight:800;color:${EM_RED};font-family:${EM_FONT};padding-top:3px;white-space:nowrap;">${fmtN(r.citations)}</td></tr>
+        <tr><td style="font-size:10px;color:#1A1A1A;font-family:${EM_FONT};padding-top:2px;white-space:nowrap;font-weight:600;">${r.domain}</td></tr>
+        <tr><td style="font-size:9px;color:#94A3B8;font-family:${EM_FONT};padding-top:1px;white-space:nowrap;">${r.type}</td></tr>
+      </table>
+    </td>`
+  }).join('')
+
+  return `
+  <tr>
+    <td style="padding:8px 0 4px;">
+      <table border="0" cellpadding="0" cellspacing="0" width="100%">
+        <tr>
+          <td style="background:#F1F5F9;border-radius:7px;padding:7px 12px;">
+            <table border="0" cellpadding="0" cellspacing="0" width="100%">
+              <tr>
+                <td style="font-size:14px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${cntyCode}</td>
+                <td align="right" style="font-size:11px;color:#94A3B8;font-family:${EM_FONT};">Top ${rows.length}</td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+  <tr>
+    <td style="padding:0 4px 12px;">
+      <table border="0" cellpadding="0" cellspacing="0" width="100%">
+        <tr>${barCols}</tr>
+      </table>
+    </td>
+  </tr>`
+}
+
+function citationCntySectionHtml(citationsCnty, meta, lang) {
+  if (!citationsCnty || !citationsCnty.length) return ''
+  const t = T[lang] || T.ko
+
+  const cntyMap = new Map()
+  citationsCnty.forEach(row => {
+    if (row.cnty === 'TTL') return
+    if (!cntyMap.has(row.cnty)) cntyMap.set(row.cnty, [])
+    cntyMap.get(row.cnty).push(row)
+  })
+
+  const countrySections = [...cntyMap.entries()]
+    .map(([cnty, rows]) => {
+      const top10 = rows.sort((a, b) => a.rank - b.rank).slice(0, 10)
+      return citationCntyCountryHtml(cnty, top10, lang)
+    })
+    .join('')
+
+  return `
+              <!-- ══ 국가별 Citation 도메인 ══ -->
+              <tr>
+                <td style="padding-bottom:20px;">
+                  <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFFFFF;border-radius:16px;border:2px solid #E8EDF2;">
+                    <tr>
+                      <td style="padding:18px 20px 16px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;">
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                          <tr>
+                            <td style="vertical-align:middle;">
+                              <table border="0" cellpadding="0" cellspacing="0">
+                                <tr>
+                                  <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
+                                  <td style="padding-left:8px;font-size:17px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${t.citationCntyTitle}</td>
+                                </tr>
+                              </table>
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                    ${insightBlockHtml(meta.citCntyInsight, meta.showCitCntyInsight, meta.citCntyHowToRead, meta.showCitCntyHowToRead, lang)}
+                    <tr>
+                      <td style="padding:16px 20px;">
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                          ${countrySections}
+                        </table>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>`
+}
+
 // ─── Citation 행 ──────────────────────────────────────────────────────────────
 const LABEL_WIDTH = 150
 
@@ -586,7 +772,7 @@ function dotcomSectionHtml(dotcom, meta, lang = 'ko') {
 }
 
 // ─── 메인 생성 함수 ───────────────────────────────────────────────────────────
-export function generateEmailHTML(meta, total, products, citations, dotcom = {}, lang = 'ko', productsCnty = []) {
+export function generateEmailHTML(meta, total, products, citations, dotcom = {}, lang = 'ko', productsCnty = [], citationsCnty = []) {
   const t = T[lang] || T.ko
   const totalDelta = delta(total.score, total.prev)
   const scoreBarW  = Math.round(total.score)
@@ -838,6 +1024,10 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                   </table>
                 </td>
               </tr>` : ''}
+
+              ${meta.showCitDomain !== false ? citationDomainSectionHtml(citationsCnty, meta, lang) : ''}
+
+              ${meta.showCitCnty !== false ? citationCntySectionHtml(citationsCnty, meta, lang) : ''}
 
               ${meta.showDotcom !== false ? dotcomSectionHtml(dotcom, meta, lang) : ''}
 

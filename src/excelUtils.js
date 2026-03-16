@@ -8,6 +8,7 @@ export const SHEET_NAMES = {
   citations:     'citations',
   dotcom:        'dotcom',
   products_cnty: 'Products_CNTY',
+  citations_cnty: 'citations_CNTY',
 }
 
 export const DOTCOM_LG_COLS   = ['TTL','PLP','Microsites','PDP','Newsroom','Support','Buying-guide','Experience']
@@ -187,6 +188,20 @@ export function parseSheetRows(sheetName, rows) {
       compName:  String(r[3] || ''),
       compScore: pct(r[4]),
       gap:       pct(r[5]),
+    })) }
+  }
+  if (sheetName === 'citations_CNTY') {
+    const data = rows.filter(r =>
+      r[0] && !String(r[0]).startsWith('[') && !String(r[0]).startsWith('※') &&
+      String(r[0]) !== 'CNTY' && String(r[0]) !== 'key'
+    )
+    if (!data.length) return {}
+    return { citationsCnty: data.map(r => ({
+      cnty:     String(r[0] || ''),
+      rank:     parseInt(r[1]) || 0,
+      domain:   String(r[2] || ''),
+      type:     String(r[3] || ''),
+      citations: parseFloat(String(r[4] || '').replace(/,/g, '')) || 0,
     })) }
   }
   if (sheetName === 'dotcom') {

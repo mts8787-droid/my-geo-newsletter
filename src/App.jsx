@@ -142,9 +142,15 @@ const INIT_META  = {
   cntyInsight: '', showCntyInsight: true,
   cntyHowToRead: '', showCntyHowToRead: true,
   kpiLogicText: '', showKpiLogic: false,
+  citDomainInsight: '', showCitDomainInsight: true,
+  citDomainHowToRead: '', showCitDomainHowToRead: true,
+  citCntyInsight: '', showCitCntyInsight: true,
+  citCntyHowToRead: '', showCitCntyHowToRead: true,
   noticeText: '', showNotice: false,
   todoText: '', showTodo: false,
-  showTotal: true, showProducts: true, showCnty: true, showCitations: true, showDotcom: true,
+  showTotal: true, showProducts: true, showCnty: true, showCitations: true,
+  showCitDomain: true, showCitCnty: true,
+  showDotcom: true,
   cntyProductFilter: {},
 }
 const INIT_TOTAL = { score: 42.7, prev: 42.2, rank: 1, totalBrands: 12 }
@@ -207,6 +213,119 @@ const INIT_PRODUCTS_CNTY = [
   { product:'냉장고', country:'호주', score:45.8, compName:'', compScore:0, gap:1.3 },
   { product:'냉장고', country:'베트남', score:48.8, compName:'', compScore:0, gap:2.2 },
   { product:'냉장고', country:'캐나다', score:39.2, compName:'', compScore:0, gap:1.6 },
+]
+
+const INIT_CITATIONS_CNTY = [
+  { cnty:'TTL', rank:1, domain:'reddit.com', type:'Community', citations:209008 },
+  { cnty:'TTL', rank:2, domain:'youtube.com', type:'SNS', citations:143718 },
+  { cnty:'TTL', rank:3, domain:'rtings.com', type:'Review', citations:74054 },
+  { cnty:'TTL', rank:4, domain:'bestbuy.com', type:'Retail', citations:72185 },
+  { cnty:'TTL', rank:5, domain:'consumerreports.org', type:'Review', citations:66544 },
+  { cnty:'TTL', rank:6, domain:'lg.com', type:'Brand/Manufacturer', citations:52190 },
+  { cnty:'TTL', rank:7, domain:'tomsguide.com', type:'Review', citations:43815 },
+  { cnty:'TTL', rank:8, domain:'techradar.com', type:'Review', citations:40717 },
+  { cnty:'TTL', rank:9, domain:'homedepot.com', type:'Retail', citations:37577 },
+  { cnty:'TTL', rank:10, domain:'samsung.com', type:'Brand/Manufacturer', citations:37144 },
+  { cnty:'US', rank:1, domain:'reddit.com', type:'Community', citations:209008 },
+  { cnty:'US', rank:2, domain:'youtube.com', type:'SNS', citations:143718 },
+  { cnty:'US', rank:3, domain:'rtings.com', type:'Review', citations:74054 },
+  { cnty:'US', rank:4, domain:'bestbuy.com', type:'Retail', citations:72185 },
+  { cnty:'US', rank:5, domain:'consumerreports.org', type:'Review', citations:66544 },
+  { cnty:'US', rank:6, domain:'lg.com', type:'Brand/Manufacturer', citations:52190 },
+  { cnty:'US', rank:7, domain:'tomsguide.com', type:'Review', citations:43815 },
+  { cnty:'US', rank:8, domain:'techradar.com', type:'Review', citations:40717 },
+  { cnty:'US', rank:9, domain:'homedepot.com', type:'Retail', citations:37577 },
+  { cnty:'US', rank:10, domain:'samsung.com', type:'Brand/Manufacturer', citations:37144 },
+  { cnty:'CA', rank:1, domain:'reddit.com', type:'Community', citations:59466 },
+  { cnty:'CA', rank:2, domain:'bestbuy.ca', type:'Retail', citations:41998 },
+  { cnty:'CA', rank:3, domain:'youtube.com', type:'SNS', citations:26500 },
+  { cnty:'CA', rank:4, domain:'lg.com', type:'Brand/Manufacturer', citations:14999 },
+  { cnty:'CA', rank:5, domain:'samsung.com', type:'Brand/Manufacturer', citations:13439 },
+  { cnty:'CA', rank:6, domain:'rtings.com', type:'Review', citations:12627 },
+  { cnty:'CA', rank:7, domain:'consumerreports.org', type:'Review', citations:12212 },
+  { cnty:'CA', rank:8, domain:'homedepot.ca', type:'Retail', citations:11769 },
+  { cnty:'CA', rank:9, domain:'canadianappliance.ca', type:'Retail', citations:9861 },
+  { cnty:'CA', rank:10, domain:'bestbuy.com', type:'Retail', citations:8150 },
+  { cnty:'UK', rank:1, domain:'reddit.com', type:'Community', citations:131755 },
+  { cnty:'UK', rank:2, domain:'youtube.com', type:'SNS', citations:73974 },
+  { cnty:'UK', rank:3, domain:'rtings.com', type:'Review', citations:55309 },
+  { cnty:'UK', rank:4, domain:'lg.com', type:'Brand/Manufacturer', citations:50213 },
+  { cnty:'UK', rank:5, domain:'techradar.com', type:'Review', citations:45964 },
+  { cnty:'UK', rank:6, domain:'samsung.com', type:'Brand/Manufacturer', citations:42969 },
+  { cnty:'UK', rank:7, domain:'which.co.uk', type:'Review', citations:39853 },
+  { cnty:'UK', rank:8, domain:'appliancesdirect.co.uk', type:'Retail', citations:32901 },
+  { cnty:'UK', rank:9, domain:'whathifi.com', type:'Review', citations:29891 },
+  { cnty:'UK', rank:10, domain:'expertreviews.co.uk', type:'Review', citations:26351 },
+  { cnty:'DE', rank:1, domain:'youtube.com', type:'SNS', citations:97202 },
+  { cnty:'DE', rank:2, domain:'chip.de', type:'Review', citations:65528 },
+  { cnty:'DE', rank:3, domain:'reddit.com', type:'Community', citations:63371 },
+  { cnty:'DE', rank:4, domain:'idealo.de', type:'Comparison', citations:43501 },
+  { cnty:'DE', rank:5, domain:'mediamarkt.de', type:'Retail', citations:34355 },
+  { cnty:'DE', rank:6, domain:'lg.com', type:'Brand/Manufacturer', citations:31262 },
+  { cnty:'DE', rank:7, domain:'testsieger.de', type:'Comparison', citations:28953 },
+  { cnty:'DE', rank:8, domain:'samsung.com', type:'Brand/Manufacturer', citations:25570 },
+  { cnty:'DE', rank:9, domain:'hifi.de', type:'Review', citations:24035 },
+  { cnty:'DE', rank:10, domain:'otto.de', type:'Retail', citations:22910 },
+  { cnty:'ES', rank:1, domain:'youtube.com', type:'SNS', citations:50561 },
+  { cnty:'ES', rank:2, domain:'reddit.com', type:'Community', citations:16846 },
+  { cnty:'ES', rank:3, domain:'lg.com', type:'Brand/Manufacturer', citations:16675 },
+  { cnty:'ES', rank:4, domain:'ocu.org', type:'Information', citations:14782 },
+  { cnty:'ES', rank:5, domain:'pccomponentes.com', type:'Retail', citations:14455 },
+  { cnty:'ES', rank:6, domain:'samsung.com', type:'Brand/Manufacturer', citations:13560 },
+  { cnty:'ES', rank:7, domain:'elcorteingles.es', type:'Retail', citations:12732 },
+  { cnty:'ES', rank:8, domain:'xataka.com', type:'Review', citations:9762 },
+  { cnty:'ES', rank:9, domain:'leroymerlin.es', type:'Retail', citations:7951 },
+  { cnty:'ES', rank:10, domain:'idealo.es', type:'Comparison', citations:7281 },
+  { cnty:'BR', rank:1, domain:'youtube.com', type:'SNS', citations:58026 },
+  { cnty:'BR', rank:2, domain:'reddit.com', type:'Community', citations:27019 },
+  { cnty:'BR', rank:3, domain:'buscape.com.br', type:'Comparison', citations:25459 },
+  { cnty:'BR', rank:4, domain:'lg.com', type:'Brand/Manufacturer', citations:16497 },
+  { cnty:'BR', rank:5, domain:'zoom.com.br', type:'Comparison', citations:16435 },
+  { cnty:'BR', rank:6, domain:'magazineluiza.com.br', type:'Retail', citations:15170 },
+  { cnty:'BR', rank:7, domain:'samsung.com', type:'Brand/Manufacturer', citations:13731 },
+  { cnty:'BR', rank:8, domain:'promobit.com.br', type:'Comparison', citations:10504 },
+  { cnty:'BR', rank:9, domain:'br.my-best.com', type:'Comparison', citations:7635 },
+  { cnty:'BR', rank:10, domain:'ubuy.com.br', type:'Retail', citations:7016 },
+  { cnty:'MX', rank:1, domain:'youtube.com', type:'SNS', citations:61023 },
+  { cnty:'MX', rank:2, domain:'reddit.com', type:'Community', citations:30060 },
+  { cnty:'MX', rank:3, domain:'lg.com', type:'Brand/Manufacturer', citations:20344 },
+  { cnty:'MX', rank:4, domain:'samsung.com', type:'Brand/Manufacturer', citations:18068 },
+  { cnty:'MX', rank:5, domain:'translate.google.com', type:'etc.', citations:9052 },
+  { cnty:'MX', rank:6, domain:'pccomponentes.com', type:'Retail', citations:7868 },
+  { cnty:'MX', rank:7, domain:'consumerreports.org', type:'Review', citations:6966 },
+  { cnty:'MX', rank:8, domain:'ocu.org', type:'Information', citations:6127 },
+  { cnty:'MX', rank:9, domain:'xataka.com', type:'Review', citations:5869 },
+  { cnty:'MX', rank:10, domain:'mejoresmarcas.com.mx', type:'Comparison', citations:5473 },
+  { cnty:'IN', rank:1, domain:'reddit.com', type:'Community', citations:47458 },
+  { cnty:'IN', rank:2, domain:'youtube.com', type:'SNS', citations:41583 },
+  { cnty:'IN', rank:3, domain:'samsung.com', type:'Brand/Manufacturer', citations:17434 },
+  { cnty:'IN', rank:4, domain:'lg.com', type:'Brand/Manufacturer', citations:15525 },
+  { cnty:'IN', rank:5, domain:'croma.com', type:'Retail', citations:14224 },
+  { cnty:'IN', rank:6, domain:'bajajfinserv.in', type:'Service', citations:12098 },
+  { cnty:'IN', rank:7, domain:'rtings.com', type:'Review', citations:10664 },
+  { cnty:'IN', rank:8, domain:'shop.haierindia.com', type:'Brand/Manufacturer', citations:8871 },
+  { cnty:'IN', rank:9, domain:'flipkart.com', type:'Retail', citations:7886 },
+  { cnty:'IN', rank:10, domain:'timesofindia.indiatimes.com', type:'News', citations:7048 },
+  { cnty:'AU', rank:1, domain:'reddit.com', type:'Community', citations:49142 },
+  { cnty:'AU', rank:2, domain:'appliancesonline.com.au', type:'Retail', citations:31543 },
+  { cnty:'AU', rank:3, domain:'choice.com.au', type:'Review', citations:24167 },
+  { cnty:'AU', rank:4, domain:'youtube.com', type:'SNS', citations:21724 },
+  { cnty:'AU', rank:5, domain:'thegoodguys.com.au', type:'Retail', citations:20874 },
+  { cnty:'AU', rank:6, domain:'samsung.com', type:'Brand/Manufacturer', citations:16161 },
+  { cnty:'AU', rank:7, domain:'lg.com', type:'Brand/Manufacturer', citations:13313 },
+  { cnty:'AU', rank:8, domain:'techradar.com', type:'Review', citations:13296 },
+  { cnty:'AU', rank:9, domain:'rtings.com', type:'Review', citations:11385 },
+  { cnty:'AU', rank:10, domain:'productreview.com.au', type:'Community', citations:9370 },
+  { cnty:'VN', rank:1, domain:'youtube.com', type:'SNS', citations:42020 },
+  { cnty:'VN', rank:2, domain:'dienmayxanh.com', type:'Retail', citations:25059 },
+  { cnty:'VN', rank:3, domain:'fptshop.com.vn', type:'Retail', citations:21174 },
+  { cnty:'VN', rank:4, domain:'dienmaycholon.com', type:'Retail', citations:18112 },
+  { cnty:'VN', rank:5, domain:'lg.com', type:'Brand/Manufacturer', citations:11371 },
+  { cnty:'VN', rank:6, domain:'samsung.com', type:'Brand/Manufacturer', citations:11193 },
+  { cnty:'VN', rank:7, domain:'reddit.com', type:'Community', citations:10238 },
+  { cnty:'VN', rank:8, domain:'panasonic.com', type:'Brand/Manufacturer', citations:8453 },
+  { cnty:'VN', rank:9, domain:'cellphones.com.vn', type:'Retail', citations:8176 },
+  { cnty:'VN', rank:10, domain:'dienmaythienphu.vn', type:'Retail', citations:8070 },
 ]
 
 const INIT_CITATIONS = [
@@ -492,9 +611,9 @@ function InsightBlock({ insight, showInsight, howToRead, showHowToRead }) {
 }
 
 // ─── 뉴스레터 캔버스 ──────────────────────────────────────────────────────────
-function NewsletterPreview({ meta, total, products, citations, dotcom, productsCnty = [], lang = 'ko' }) {
+function NewsletterPreview({ meta, total, products, citations, dotcom, productsCnty = [], citationsCnty = [], lang = 'ko' }) {
   const iframeRef = useRef(null)
-  const html = generateEmailHTML(meta, total, products, citations, dotcom, lang, productsCnty)
+  const html = generateEmailHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty)
 
   React.useEffect(() => {
     const iframe = iframeRef.current
@@ -536,7 +655,7 @@ const inputStyle = {
   fontFamily: FONT, outline: 'none', boxSizing: 'border-box',
 }
 
-function Sidebar({ meta, total, products, citations, dotcom, productsCnty, setMeta, setTotal, setProducts, setCitations, setDotcom, setProductsCnty, previewLang, setPreviewLang, snapshots, setSnapshots }) {
+function Sidebar({ meta, total, products, citations, dotcom, productsCnty, citationsCnty, setMeta, setTotal, setProducts, setCitations, setDotcom, setProductsCnty, setCitationsCnty, previewLang, setPreviewLang, snapshots, setSnapshots }) {
   const [gsUrl,     setGsUrl]     = useState('https://docs.google.com/spreadsheets/d/1fTciJRUAqU5lhkPCb39mzv1Y4kNBslF8EuHjZ5H3JY0/edit?gid=1331469350#gid=1331469350')
   const [gsSyncing, setGsSyncing] = useState(false)
   const [gsStatus,  setGsStatus]  = useState(null)
@@ -619,7 +738,7 @@ function Sidebar({ meta, total, products, citations, dotcom, productsCnty, setMe
   }
 
   async function handleCopyHtml() {
-    const html = generateEmailHTML(meta, total, products, citations, dotcom, 'ko', productsCnty)
+    const html = generateEmailHTML(meta, total, products, citations, dotcom, 'ko', productsCnty, citationsCnty)
     try {
       await navigator.clipboard.writeText(html)
     } catch {
@@ -643,7 +762,7 @@ function Sidebar({ meta, total, products, citations, dotcom, productsCnty, setMe
     if (mailSent === 'sending') return
     setMailSent('sending')
     try {
-      const html    = generateEmailHTML(meta, total, products, citations, dotcom, 'ko', productsCnty)
+      const html    = generateEmailHTML(meta, total, products, citations, dotcom, 'ko', productsCnty, citationsCnty)
       const subject = `[LG GEO] ${meta.title} · ${meta.period}`
       const res = await fetch('/api/send-email', {
         method: 'POST',
@@ -676,6 +795,7 @@ function Sidebar({ meta, total, products, citations, dotcom, productsCnty, setMe
       if (parsed.citations)    setCitations(parsed.citations)
       if (parsed.dotcom)       setDotcom(d => ({ ...d, ...parsed.dotcom }))
       setProductsCnty(parsed.productsCnty ?? [])
+      setCitationsCnty(parsed.citationsCnty ?? [])
       if (parsed.productsPartial || parsed.weeklyMap) {
         setProducts(prev => prev.map(p => {
           const part   = parsed.productsPartial?.find(x => x.id === p.id)
@@ -892,6 +1012,8 @@ function Sidebar({ meta, total, products, citations, dotcom, productsCnty, setMe
             { key: 'showProducts',  label: '제품별' },
             { key: 'showCnty',      label: '국가별' },
             { key: 'showCitations', label: 'Citation' },
+            { key: 'showCitDomain', label: '도메인별 Citation' },
+            { key: 'showCitCnty',   label: '국가별 Citation' },
             { key: 'showDotcom',    label: '닷컴' },
             { key: 'showTodo',      label: 'Action Plan' },
           ].map(({ key, label }) => (
@@ -1152,6 +1274,82 @@ function Sidebar({ meta, total, products, citations, dotcom, productsCnty, setMe
           onChange={e => setMeta(m => ({ ...m, dotcomHowToRead: e.target.value }))}
           rows={4}
           placeholder="닷컴 Citation How to Read 설명을 입력하세요... (AI 생성 버튼으로 자동 작성 가능)"
+          style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6, marginBottom: 8 }}
+        />
+
+        {/* 도메인별 Citation 인사이트 */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+          <p style={{ margin: 0, fontSize: 11, color: '#64748B', fontFamily: FONT }}>도메인별 Citation 인사이트</p>
+          <button onClick={() => setMeta(m => ({ ...m, showCitDomainInsight: !m.showCitDomainInsight }))}
+            style={{ padding: '2px 8px', borderRadius: 4, border: 'none', cursor: 'pointer',
+              background: meta.showCitDomainInsight ? LG_RED : '#1E293B',
+              color: meta.showCitDomainInsight ? '#FFFFFF' : '#475569',
+              fontSize: 11, fontWeight: 700, fontFamily: FONT }}>
+            {meta.showCitDomainInsight ? 'ON' : 'OFF'}
+          </button>
+        </div>
+        <textarea
+          value={meta.citDomainInsight}
+          onChange={e => setMeta(m => ({ ...m, citDomainInsight: e.target.value }))}
+          rows={8}
+          placeholder="도메인별 Citation 인사이트를 입력하세요..."
+          style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6, marginBottom: 8 }}
+        />
+
+        {/* 도메인별 Citation How to Read */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+          <p style={{ margin: 0, fontSize: 11, color: '#64748B', fontFamily: FONT }}>도메인별 Citation How to Read</p>
+          <button onClick={() => setMeta(m => ({ ...m, showCitDomainHowToRead: !m.showCitDomainHowToRead }))}
+            style={{ padding: '2px 8px', borderRadius: 4, border: 'none', cursor: 'pointer',
+              background: meta.showCitDomainHowToRead ? LG_RED : '#1E293B',
+              color: meta.showCitDomainHowToRead ? '#FFFFFF' : '#475569',
+              fontSize: 11, fontWeight: 700, fontFamily: FONT }}>
+            {meta.showCitDomainHowToRead ? 'ON' : 'OFF'}
+          </button>
+        </div>
+        <textarea
+          value={meta.citDomainHowToRead}
+          onChange={e => setMeta(m => ({ ...m, citDomainHowToRead: e.target.value }))}
+          rows={4}
+          placeholder="도메인별 Citation How to Read 설명을 입력하세요..."
+          style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6, marginBottom: 8 }}
+        />
+
+        {/* 국가별 Citation 인사이트 */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+          <p style={{ margin: 0, fontSize: 11, color: '#64748B', fontFamily: FONT }}>국가별 Citation 인사이트</p>
+          <button onClick={() => setMeta(m => ({ ...m, showCitCntyInsight: !m.showCitCntyInsight }))}
+            style={{ padding: '2px 8px', borderRadius: 4, border: 'none', cursor: 'pointer',
+              background: meta.showCitCntyInsight ? LG_RED : '#1E293B',
+              color: meta.showCitCntyInsight ? '#FFFFFF' : '#475569',
+              fontSize: 11, fontWeight: 700, fontFamily: FONT }}>
+            {meta.showCitCntyInsight ? 'ON' : 'OFF'}
+          </button>
+        </div>
+        <textarea
+          value={meta.citCntyInsight}
+          onChange={e => setMeta(m => ({ ...m, citCntyInsight: e.target.value }))}
+          rows={8}
+          placeholder="국가별 Citation 인사이트를 입력하세요..."
+          style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6, marginBottom: 8 }}
+        />
+
+        {/* 국가별 Citation How to Read */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+          <p style={{ margin: 0, fontSize: 11, color: '#64748B', fontFamily: FONT }}>국가별 Citation How to Read</p>
+          <button onClick={() => setMeta(m => ({ ...m, showCitCntyHowToRead: !m.showCitCntyHowToRead }))}
+            style={{ padding: '2px 8px', borderRadius: 4, border: 'none', cursor: 'pointer',
+              background: meta.showCitCntyHowToRead ? LG_RED : '#1E293B',
+              color: meta.showCitCntyHowToRead ? '#FFFFFF' : '#475569',
+              fontSize: 11, fontWeight: 700, fontFamily: FONT }}>
+            {meta.showCitCntyHowToRead ? 'ON' : 'OFF'}
+          </button>
+        </div>
+        <textarea
+          value={meta.citCntyHowToRead}
+          onChange={e => setMeta(m => ({ ...m, citCntyHowToRead: e.target.value }))}
+          rows={4}
+          placeholder="국가별 Citation How to Read 설명을 입력하세요..."
           style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6, marginBottom: 16 }}
         />
 
@@ -1397,9 +1595,9 @@ function Sidebar({ meta, total, products, citations, dotcom, productsCnty, setMe
 }
 
 // ─── HTML 코드 뷰어 ───────────────────────────────────────────────────────────
-function HtmlCodeViewer({ meta, total, products, citations, dotcom, productsCnty = [], lang = 'ko' }) {
+function HtmlCodeViewer({ meta, total, products, citations, dotcom, productsCnty = [], citationsCnty = [], lang = 'ko' }) {
   const [copied, setCopied] = useState(false)
-  const html = generateEmailHTML(meta, total, products, citations, dotcom, lang, productsCnty)
+  const html = generateEmailHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty)
 
   async function handleCopy() {
     try {
@@ -1460,6 +1658,7 @@ export default function App() {
   const [citations, setCitations] = useState(cache?.citations ?? INIT_CITATIONS)
   const [dotcom,    setDotcom]    = useState((cache?.dotcom && cache.dotcom.lg) ? cache.dotcom : INIT_DOTCOM)
   const [productsCnty, setProductsCnty] = useState(cache?.productsCnty ?? INIT_PRODUCTS_CNTY)
+  const [citationsCnty, setCitationsCnty] = useState(cache?.citationsCnty ?? INIT_CITATIONS_CNTY)
   const [activeTab, setActiveTab] = useState('preview') // 'preview' | 'code'
   const [previewLang, setPreviewLang] = useState('ko') // 'ko' | 'en'
   const [snapshots,  setSnapshots]  = useState([])
@@ -1473,8 +1672,8 @@ export default function App() {
 
   // 상태 변경 시 localStorage에 자동 저장
   useEffect(() => {
-    saveCache({ meta, total, products, citations, dotcom, productsCnty })
-  }, [meta, total, products, citations, dotcom, productsCnty])
+    saveCache({ meta, total, products, citations, dotcom, productsCnty, citationsCnty })
+  }, [meta, total, products, citations, dotcom, productsCnty, citationsCnty])
 
   // 저장 (기존 스냅샷 덮어쓰기)
   async function handleSnapOverwrite() {
@@ -1512,8 +1711,8 @@ export default function App() {
   return (
     <div style={{ display: 'flex', height: '100vh', background: '#0A0F1C', fontFamily: FONT }}>
       <Sidebar
-        meta={meta} total={total} products={products} citations={citations} dotcom={dotcom} productsCnty={productsCnty}
-        setMeta={setMeta} setTotal={setTotal} setProducts={setProducts} setCitations={setCitations} setDotcom={setDotcom} setProductsCnty={setProductsCnty}
+        meta={meta} total={total} products={products} citations={citations} dotcom={dotcom} productsCnty={productsCnty} citationsCnty={citationsCnty}
+        setMeta={setMeta} setTotal={setTotal} setProducts={setProducts} setCitations={setCitations} setDotcom={setDotcom} setProductsCnty={setProductsCnty} setCitationsCnty={setCitationsCnty}
         previewLang={previewLang} setPreviewLang={setPreviewLang} snapshots={snapshots} setSnapshots={setSnapshots}
       />
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
@@ -1614,11 +1813,11 @@ export default function App() {
           <div style={{ flex: 1, overflowY: 'auto', padding: '28px 36px',
             background: 'linear-gradient(180deg, #0A0F1C 0%, #0F172A 100%)' }}>
             <div style={{ maxWidth: 720, margin: '0 auto' }}>
-              <NewsletterPreview meta={meta} total={total} products={products} citations={citations} dotcom={dotcom} productsCnty={productsCnty} lang={previewLang} />
+              <NewsletterPreview meta={meta} total={total} products={products} citations={citations} dotcom={dotcom} productsCnty={productsCnty} citationsCnty={citationsCnty} lang={previewLang} />
             </div>
           </div>
         ) : (
-          <HtmlCodeViewer meta={meta} total={total} products={products} citations={citations} dotcom={dotcom} productsCnty={productsCnty} lang={previewLang} />
+          <HtmlCodeViewer meta={meta} total={total} products={products} citations={citations} dotcom={dotcom} productsCnty={productsCnty} citationsCnty={citationsCnty} lang={previewLang} />
         )}
       </div>
     </div>
