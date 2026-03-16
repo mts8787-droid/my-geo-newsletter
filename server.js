@@ -270,6 +270,12 @@ a.btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.3)}
 </html>`)
 })
 
+// ─── Catch-all: redirect unknown paths to landing page ──────────────────────
+app.use((req, res, next) => {
+  if (req.method === 'GET' || req.method === 'HEAD') return res.redirect('/')
+  next()
+})
+
 // ─── Error handler ───────────────────────────────────────────────────────────
 app.use((err, req, res, _next) => {
   console.error('[SERVER] Error:', err.message)
