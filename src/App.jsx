@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback, useEffect } from 'react'
+import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react'
 import { ChevronLeft, ChevronRight, TrendingUp, TrendingDown, Minus, Copy, Download, RefreshCw, Check, Send, Sparkles, Save, FolderOpen, Trash2, Languages } from 'lucide-react'
 import { downloadTemplate } from './excelUtils'
 import { extractSheetId, syncFromGoogleSheets } from './googleSheetsUtils'
@@ -6,12 +6,18 @@ import { generateEmailHTML } from './emailTemplate'
 
 // ─── localStorage 캐시 ─────────────────────────────────────────────────────────
 const STORAGE_KEY = 'geo-newsletter-cache'
-const CACHE_VERSION = 2
+const CACHE_VERSION = 3
 function loadCache() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (!raw) return null
     const parsed = JSON.parse(raw)
+    if (parsed._v === 2) {
+      // v2 → v3 마이그레이션: meta → metaKo
+      return { metaKo: parsed.meta, metaEn: null, total: parsed.total, products: parsed.products,
+        citations: parsed.citations, dotcom: parsed.dotcom, productsCnty: parsed.productsCnty,
+        citationsCnty: parsed.citationsCnty, _v: 3 }
+    }
     if (parsed._v !== CACHE_VERSION) { localStorage.removeItem(STORAGE_KEY); return null }
     return parsed
   } catch { return null }
@@ -161,6 +167,36 @@ function generateCitCntyInsight(citationsCnty) {
 
 function generateCitCntyHowToRead() {
   return '국가별 Citation 도메인은 각 국가에서 생성형 AI가 LG 관련 답변 시 가장 많이 인용하는 도메인 Top 10을 보여줍니다. 국가별로 인용 패턴이 다르므로, 각 시장에 맞는 Citation Optimization 전략 수립에 활용할 수 있습니다.'
+}
+
+// ─── 한/영 이름 매핑 (기본 번역 폴백) ──────────────────────────────────────────
+const CNTY_EN = { '미국':'US','영국':'UK','독일':'Germany','브라질':'Brazil','인도':'India','멕시코':'Mexico','스페인':'Spain','호주':'Australia','베트남':'Vietnam','캐나다':'Canada' }
+const PROD_EN = { 'TV':'TV','세탁기':'Washing Machine','냉장고':'Refrigerator','모니터':'Monitor','오디오':'Audio','Cooking':'Cooking','식기세척기':'Dishwasher','청소기':'Vacuum Cleaner','RAC':'RAC','Aircare':'Aircare' }
+const COMP_EN = { '삼성':'Samsung','삼성전자':'Samsung','보쉬':'Bosch','다이슨':'Dyson','소니':'Sony' }
+
+function resolveDataForLang(products, productsCnty, citations, citationsCnty, lang) {
+  if (lang !== 'en') return { products, productsCnty, citations, citationsCnty }
+  return {
+    products: products.map(p => ({
+      ...p,
+      kr: p.en || PROD_EN[p.kr] || p.kr,
+      compName: p.compNameEn || COMP_EN[p.compName] || p.compName,
+    })),
+    productsCnty: productsCnty.map(r => ({
+      ...r,
+      country: r.countryEn || CNTY_EN[r.country] || r.country,
+      product: r.productEn || PROD_EN[r.product] || r.product,
+      compName: r.compNameEn || COMP_EN[r.compName] || r.compName,
+    })),
+    citations: citations.map(c => ({
+      ...c,
+      category: c.categoryEn || PROD_EN[c.category] || c.category,
+    })),
+    citationsCnty: citationsCnty.map(r => ({
+      ...r,
+      cnty: r.cntyEn || r.cnty,
+    })),
+  }
 }
 
 // ─── 브랜드 토큰 ──────────────────────────────────────────────────────────────
@@ -699,7 +735,7 @@ const inputStyle = {
   fontFamily: FONT, outline: 'none', boxSizing: 'border-box',
 }
 
-function Sidebar({ meta, total, products, citations, dotcom, productsCnty, citationsCnty, setMeta, setTotal, setProducts, setCitations, setDotcom, setProductsCnty, setCitationsCnty, previewLang, setPreviewLang, snapshots, setSnapshots }) {
+function Sidebar({ meta, setMeta, metaKo, setMetaKo, total, setTotal, products, setProducts, citations, setCitations, dotcom, setDotcom, productsCnty, setProductsCnty, citationsCnty, setCitationsCnty, resolved, previewLang, setPreviewLang, snapshots, setSnapshots }) {
   const [gsUrl,     setGsUrl]     = useState('https://docs.google.com/spreadsheets/d/1fTciJRUAqU5lhkPCb39mzv1Y4kNBslF8EuHjZ5H3JY0/edit?gid=1331469350#gid=1331469350')
   const [gsSyncing, setGsSyncing] = useState(false)
   const [gsStatus,  setGsStatus]  = useState(null)
@@ -725,33 +761,33 @@ function Sidebar({ meta, total, products, citations, dotcom, productsCnty, citat
     setShowTranslatePopup(false)
     setTranslating(true)
     try {
-      // 번역할 텍스트 수집 — meta 필드
+      // 번역 소스는 항상 한글(metaKo)
+      const src = metaKo
       const metaTexts = [
-        meta.title || '', meta.dateLine || '', meta.noticeText || '',
-        meta.totalInsight || '', meta.reportType || '',
-        meta.productInsight || '', meta.productHowToRead || '',
-        meta.citationInsight || '', meta.citationHowToRead || '',
-        meta.dotcomInsight || '', meta.dotcomHowToRead || '',
-        meta.todoText || '', meta.kpiLogicText || '',
-        meta.cntyInsight || '', meta.cntyHowToRead || '',
-        meta.citDomainInsight || '', meta.citDomainHowToRead || '',
-        meta.citCntyInsight || '', meta.citCntyHowToRead || '',
-        meta.period || '', meta.team || '', meta.reportNo || '',
+        src.title || '', src.dateLine || '', src.noticeText || '',
+        src.totalInsight || '', src.reportType || '',
+        src.productInsight || '', src.productHowToRead || '',
+        src.citationInsight || '', src.citationHowToRead || '',
+        src.dotcomInsight || '', src.dotcomHowToRead || '',
+        src.todoText || '', src.kpiLogicText || '',
+        src.cntyInsight || '', src.cntyHowToRead || '',
+        src.citDomainInsight || '', src.citDomainHowToRead || '',
+        src.citCntyInsight || '', src.citCntyHowToRead || '',
+        src.period || '', src.team || '', src.reportNo || '',
       ]
-      // 제품명 + 경쟁사명
+      // 제품명 + 경쟁사명 (한글 원본)
       const productKrTexts = products.map(p => p.kr || '')
       const productCompTexts = products.map(p => p.compName || '')
-      // Citation source + category
-      const citSourceTexts = citations.map(c => c.source || '')
+      // Citation category
       const citCategoryTexts = citations.map(c => c.category || '')
-      // 국가별 Visibility — 고유 country, product, compName
+      // 국가별 — 고유 country, product, compName
       const cntyCountries = [...new Set(productsCnty.map(r => r.country || ''))]
       const cntyProducts = [...new Set(productsCnty.map(r => r.product || ''))]
       const cntyCompNames = [...new Set(productsCnty.map(r => r.compName || ''))]
-      // 국가별 Citation 도메인 — 고유 cnty
+      // 국가별 Citation — 고유 cnty
       const citCntyNames = [...new Set(citationsCnty.map(r => r.cnty || '').filter(c => c && c !== 'TTL'))]
 
-      const allTexts = [...metaTexts, ...productKrTexts, ...productCompTexts, ...citSourceTexts, ...citCategoryTexts, ...cntyCountries, ...cntyProducts, ...cntyCompNames, ...citCntyNames].map(t => t || ' ')
+      const allTexts = [...metaTexts, ...productKrTexts, ...productCompTexts, ...citCategoryTexts, ...cntyCountries, ...cntyProducts, ...cntyCompNames, ...citCntyNames].map(t => t || ' ')
 
       const res = await fetch('/api/translate', {
         method: 'POST',
@@ -763,47 +799,51 @@ function Sidebar({ meta, total, products, citations, dotcom, productsCnty, citat
 
       const tr = data.translated
       let idx = 0
-      const newMeta = { ...meta,
-        title: tr[idx++] || meta.title,
-        dateLine: tr[idx++] || meta.dateLine,
-        noticeText: tr[idx++] || meta.noticeText,
-        totalInsight: tr[idx++] || meta.totalInsight,
-        reportType: tr[idx++] || meta.reportType,
-        productInsight: tr[idx++] || meta.productInsight,
-        productHowToRead: tr[idx++] || meta.productHowToRead,
-        citationInsight: tr[idx++] || meta.citationInsight,
-        citationHowToRead: tr[idx++] || meta.citationHowToRead,
-        dotcomInsight: tr[idx++] || meta.dotcomInsight,
-        dotcomHowToRead: tr[idx++] || meta.dotcomHowToRead,
-        todoText: tr[idx++] || meta.todoText,
-        kpiLogicText: tr[idx++] || meta.kpiLogicText,
-        cntyInsight: tr[idx++] || meta.cntyInsight,
-        cntyHowToRead: tr[idx++] || meta.cntyHowToRead,
-        citDomainInsight: tr[idx++] || meta.citDomainInsight,
-        citDomainHowToRead: tr[idx++] || meta.citDomainHowToRead,
-        citCntyInsight: tr[idx++] || meta.citCntyInsight,
-        citCntyHowToRead: tr[idx++] || meta.citCntyHowToRead,
-        period: tr[idx++] || meta.period,
-        team: tr[idx++] || meta.team,
-        reportNo: tr[idx++] || meta.reportNo,
+      // EN meta = 현재 EN 토글/설정 유지 + 번역된 텍스트 덮어쓰기
+      const newMetaEn = { ...meta,
+        title: tr[idx++] || src.title,
+        dateLine: tr[idx++] || src.dateLine,
+        noticeText: tr[idx++] || src.noticeText,
+        totalInsight: tr[idx++] || src.totalInsight,
+        reportType: tr[idx++] || src.reportType,
+        productInsight: tr[idx++] || src.productInsight,
+        productHowToRead: tr[idx++] || src.productHowToRead,
+        citationInsight: tr[idx++] || src.citationInsight,
+        citationHowToRead: tr[idx++] || src.citationHowToRead,
+        dotcomInsight: tr[idx++] || src.dotcomInsight,
+        dotcomHowToRead: tr[idx++] || src.dotcomHowToRead,
+        todoText: tr[idx++] || src.todoText,
+        kpiLogicText: tr[idx++] || src.kpiLogicText,
+        cntyInsight: tr[idx++] || src.cntyInsight,
+        cntyHowToRead: tr[idx++] || src.cntyHowToRead,
+        citDomainInsight: tr[idx++] || src.citDomainInsight,
+        citDomainHowToRead: tr[idx++] || src.citDomainHowToRead,
+        citCntyInsight: tr[idx++] || src.citCntyInsight,
+        citCntyHowToRead: tr[idx++] || src.citCntyHowToRead,
+        period: tr[idx++] || src.period,
+        team: tr[idx++] || src.team,
+        reportNo: tr[idx++] || src.reportNo,
       }
-      // 제품명 + 경쟁사명 번역 적용 (제품명 첫글자 대문자)
+
       const capitalize = s => s ? s.replace(/\b\w/g, c => c.toUpperCase()) : s
+      const ssReplace = s => (s || '').replace(/samsung\s*(electronics)?/gi, 'SS').replace(/삼성전자/g, 'SS').replace(/삼성/g, 'SS')
+
+      // 제품 EN 필드 설정 (kr, compName 한글 원본 유지)
       const newProducts = products.map((p, i) => ({
         ...p,
-        kr: capitalize(tr[idx + i] || p.kr),
-        compName: tr[idx + productKrTexts.length + i] || p.compName,
+        en: capitalize(tr[idx + i] || p.kr),
+        compNameEn: ssReplace(tr[idx + productKrTexts.length + i] || p.compName),
       }))
       idx += productKrTexts.length + productCompTexts.length
-      // Citation source + category 번역 적용
+
+      // Citation categoryEn 설정
       const newCitations = citations.map((c, i) => ({
         ...c,
-        source: tr[idx + i] || c.source,
-        category: tr[idx + citSourceTexts.length + i] || c.category,
+        categoryEn: capitalize(tr[idx + i] || c.category),
       }))
-      idx += citSourceTexts.length + citCategoryTexts.length
+      idx += citCategoryTexts.length
 
-      // 국가별 Visibility 번역 매핑 (고유값 → 번역값 맵)
+      // 국가별 매핑
       const countryMap = {}
       cntyCountries.forEach((v, i) => { countryMap[v] = tr[idx + i] || v })
       idx += cntyCountries.length
@@ -813,37 +853,30 @@ function Sidebar({ meta, total, products, citations, dotcom, productsCnty, citat
       const cntyCompMap = {}
       cntyCompNames.forEach((v, i) => { cntyCompMap[v] = tr[idx + i] || v })
       idx += cntyCompNames.length
-      // 국가별 Citation 도메인 cnty 번역 매핑
       const citCntyMap = {}
       citCntyNames.forEach((v, i) => { citCntyMap[v] = tr[idx + i] || v })
 
-      // 후처리: 삼성전자 → SS, 국가명 첫글자 대문자
-      const ssReplace = s => (s || '').replace(/samsung\s*(electronics)?/gi, 'SS').replace(/삼성전자/g, 'SS').replace(/삼성/g, 'SS')
-
       const newProductsCnty = productsCnty.map(r => ({
         ...r,
-        country: capitalize(countryMap[r.country] || r.country),
-        product: capitalize(cntyProductMap[r.product] || r.product),
-        compName: ssReplace(cntyCompMap[r.compName] || r.compName),
+        countryEn: capitalize(countryMap[r.country] || r.country),
+        productEn: capitalize(cntyProductMap[r.product] || r.product),
+        compNameEn: ssReplace(cntyCompMap[r.compName] || r.compName),
       }))
 
       const newCitationsCnty = citationsCnty.map(r => ({
         ...r,
-        cnty: r.cnty === 'TTL' ? 'TTL' : capitalize(citCntyMap[r.cnty] || r.cnty),
+        cntyEn: r.cnty === 'TTL' ? 'TTL' : capitalize(citCntyMap[r.cnty] || r.cnty),
       }))
 
-      // 제품 compName도 SS 치환
-      newProducts.forEach(p => { p.compName = ssReplace(p.compName) })
-
-      setMeta(newMeta)
+      setMeta(newMetaEn)
       setProducts(newProducts)
       setCitations(newCitations)
       setProductsCnty(newProductsCnty)
       setCitationsCnty(newCitationsCnty)
 
-      // 스냅샷 저장
-      const snapName = `[EN] ${meta.period || 'Untitled'} — ${new Date().toLocaleString('ko-KR')}`
-      const snapRes = await postSnapshot(snapName, { meta: newMeta, total, products: newProducts, citations: newCitations, dotcom, productsCnty: newProductsCnty, citationsCnty: newCitationsCnty })
+      // 스냅샷 저장 (한/영 meta 모두 포함)
+      const snapName = `[EN] ${metaKo.period || 'Untitled'} — ${new Date().toLocaleString('ko-KR')}`
+      const snapRes = await postSnapshot(snapName, { metaKo, metaEn: newMetaEn, total, products: newProducts, citations: newCitations, dotcom, productsCnty: newProductsCnty, citationsCnty: newCitationsCnty })
       if (snapRes) setSnapshots(snapRes)
 
       setTranslating(false)
@@ -854,7 +887,7 @@ function Sidebar({ meta, total, products, citations, dotcom, productsCnty, citat
   }
 
   async function handleCopyHtml() {
-    const html = generateEmailHTML(meta, total, products, citations, dotcom, 'ko', productsCnty, citationsCnty)
+    const html = generateEmailHTML(meta, total, resolved.products, resolved.citations, dotcom, previewLang, resolved.productsCnty, resolved.citationsCnty)
     try {
       await navigator.clipboard.writeText(html)
     } catch {
@@ -878,7 +911,7 @@ function Sidebar({ meta, total, products, citations, dotcom, productsCnty, citat
     if (mailSent === 'sending') return
     setMailSent('sending')
     try {
-      const html    = generateEmailHTML(meta, total, products, citations, dotcom, 'ko', productsCnty, citationsCnty)
+      const html    = generateEmailHTML(meta, total, resolved.products, resolved.citations, dotcom, previewLang, resolved.productsCnty, resolved.citationsCnty)
       const subject = `[LG GEO] ${meta.title} · ${meta.period}`
       const res = await fetch('/api/send-email', {
         method: 'POST',
@@ -906,7 +939,7 @@ function Sidebar({ meta, total, products, citations, dotcom, productsCnty, citat
     setGsSyncing(true); setGsStatus(null); setGsMsg('')
     try {
       const parsed = await syncFromGoogleSheets(sheetId, msg => setGsMsg(msg))
-      if (parsed.meta)        setMeta(m => ({ ...m, ...parsed.meta }))
+      if (parsed.meta)        setMetaKo(m => ({ ...m, ...parsed.meta }))
       if (parsed.total)       setTotal(t => ({ ...t, ...parsed.total }))
       if (parsed.citations)    setCitations(parsed.citations)
       if (parsed.dotcom)       setDotcom(d => ({ ...d, ...parsed.dotcom }))
@@ -1192,7 +1225,7 @@ function Sidebar({ meta, total, products, citations, dotcom, productsCnty, citat
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
           <p style={{ margin: 0, fontSize: 11, color: '#64748B', fontFamily: FONT }}>제품 섹션 인사이트</p>
           <div style={{ display: 'flex', gap: 4 }}>
-            <button onClick={() => setMeta(m => ({ ...m, productInsight: generateProductInsight(products) }))}
+            <button onClick={() => setMeta(m => ({ ...m, productInsight: generateProductInsight(resolved.products) }))}
               title="AI 인사이트 자동생성"
               style={{ padding: '2px 6px', borderRadius: 4, border: 'none', cursor: 'pointer',
                 background: '#4F46E5', color: '#FFFFFF',
@@ -1284,7 +1317,7 @@ function Sidebar({ meta, total, products, citations, dotcom, productsCnty, citat
 
         {/* 국가별 제품군 ON/OFF */}
         {productsCnty.length > 0 && (() => {
-          const productNames = [...new Set(productsCnty.map(r => r.product))]
+          const productNames = [...new Set(resolved.productsCnty.map(r => r.product))]
           return (
             <div style={{ marginBottom: 8 }}>
               <p style={{ margin: '0 0 6px', fontSize: 11, color: '#64748B', fontFamily: FONT }}>국가별 제품군 표시</p>
@@ -1313,7 +1346,7 @@ function Sidebar({ meta, total, products, citations, dotcom, productsCnty, citat
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
           <p style={{ margin: 0, fontSize: 11, color: '#64748B', fontFamily: FONT }}>Citation 섹션 인사이트</p>
           <div style={{ display: 'flex', gap: 4 }}>
-            <button onClick={() => setMeta(m => ({ ...m, citationInsight: generateCitationInsight(citations) }))}
+            <button onClick={() => setMeta(m => ({ ...m, citationInsight: generateCitationInsight(resolved.citations) }))}
               title="AI 인사이트 자동생성"
               style={{ padding: '2px 6px', borderRadius: 4, border: 'none', cursor: 'pointer',
                 background: '#4F46E5', color: '#FFFFFF',
@@ -1425,7 +1458,7 @@ function Sidebar({ meta, total, products, citations, dotcom, productsCnty, citat
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
           <p style={{ margin: 0, fontSize: 11, color: '#64748B', fontFamily: FONT }}>도메인별 Citation 인사이트</p>
           <div style={{ display: 'flex', gap: 4 }}>
-            <button onClick={() => setMeta(m => ({ ...m, citDomainInsight: generateCitDomainInsight(citationsCnty) }))}
+            <button onClick={() => setMeta(m => ({ ...m, citDomainInsight: generateCitDomainInsight(resolved.citationsCnty) }))}
               title="AI 인사이트 자동생성"
               style={{ padding: '2px 6px', borderRadius: 4, border: 'none', cursor: 'pointer',
                 background: '#4F46E5', color: '#FFFFFF',
@@ -1481,7 +1514,7 @@ function Sidebar({ meta, total, products, citations, dotcom, productsCnty, citat
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
           <p style={{ margin: 0, fontSize: 11, color: '#64748B', fontFamily: FONT }}>국가별 Citation 인사이트</p>
           <div style={{ display: 'flex', gap: 4 }}>
-            <button onClick={() => setMeta(m => ({ ...m, citCntyInsight: generateCitCntyInsight(citationsCnty) }))}
+            <button onClick={() => setMeta(m => ({ ...m, citCntyInsight: generateCitCntyInsight(resolved.citationsCnty) }))}
               title="AI 인사이트 자동생성"
               style={{ padding: '2px 6px', borderRadius: 4, border: 'none', cursor: 'pointer',
                 background: '#4F46E5', color: '#FFFFFF',
@@ -1832,7 +1865,8 @@ function HtmlCodeViewer({ meta, total, products, citations, dotcom, productsCnty
 // ─── 메인 앱 ──────────────────────────────────────────────────────────────────
 export default function App() {
   const cache = useRef(loadCache()).current
-  const [meta,      setMeta]      = useState({ ...INIT_META, ...(cache?.meta ?? {}) })
+  const [metaKo,    setMetaKo]    = useState({ ...INIT_META, ...(cache?.metaKo ?? cache?.meta ?? {}) })
+  const [metaEn,    setMetaEn]    = useState({ ...INIT_META, ...(cache?.metaEn ?? {}) })
   const [total,     setTotal]     = useState(cache?.total     ?? INIT_TOTAL)
   const [products,  setProducts]  = useState(cache?.products  ?? INIT_PRODUCTS)
   const [citations, setCitations] = useState(cache?.citations ?? INIT_CITATIONS)
@@ -1847,18 +1881,28 @@ export default function App() {
   const [snapMsg,    setSnapMsg]    = useState('')
   const [activeSnap, setActiveSnap] = useState(null) // 현재 불러온 스냅샷 (ts 기준)
 
+  // 현재 언어에 따른 meta 선택
+  const meta    = previewLang === 'en' ? metaEn : metaKo
+  const setMeta = previewLang === 'en' ? setMetaEn : setMetaKo
+
+  // 현재 언어에 맞게 데이터 해상도 적용 (제품명·국가명 등)
+  const resolved = useMemo(
+    () => resolveDataForLang(products, productsCnty, citations, citationsCnty, previewLang),
+    [products, productsCnty, citations, citationsCnty, previewLang]
+  )
+
   // 서버에서 스냅샷 목록 로드
   useEffect(() => { fetchSnapshots().then(setSnapshots) }, [])
 
   // 상태 변경 시 localStorage에 자동 저장
   useEffect(() => {
-    saveCache({ meta, total, products, citations, dotcom, productsCnty, citationsCnty })
-  }, [meta, total, products, citations, dotcom, productsCnty, citationsCnty])
+    saveCache({ metaKo, metaEn, total, products, citations, dotcom, productsCnty, citationsCnty })
+  }, [metaKo, metaEn, total, products, citations, dotcom, productsCnty, citationsCnty])
 
   // 저장 (기존 스냅샷 덮어쓰기)
   async function handleSnapOverwrite() {
     if (!activeSnap) return
-    const data = { meta, total, products, citations, dotcom }
+    const data = { metaKo, metaEn, total, products, citations, dotcom, productsCnty, citationsCnty }
     const result = await updateSnapshot(activeSnap, data)
     if (result) setSnapshots(result)
     setSnapMsg(result ? '저장 완료!' : '저장 실패'); setTimeout(() => setSnapMsg(''), 2000)
@@ -1866,17 +1910,20 @@ export default function App() {
   // 새로 저장
   async function handleSnapSaveNew() {
     const name = snapName.trim() || `${meta.period || 'Untitled'} — ${new Date().toLocaleString('ko-KR')}`
-    const result = await postSnapshot(name, { meta, total, products, citations, dotcom })
+    const result = await postSnapshot(name, { metaKo, metaEn, total, products, citations, dotcom, productsCnty, citationsCnty })
     if (result) { setSnapshots(result); setSnapName(''); setActiveSnap(result[0]?.ts || null) }
     setSnapMsg(result ? '새로 저장 완료!' : '저장 실패'); setTimeout(() => setSnapMsg(''), 2000)
   }
   function handleSnapLoad(snap) {
     const d = snap.data
-    if (d.meta)      setMeta({ ...INIT_META, ...d.meta })
+    setMetaKo({ ...INIT_META, ...(d.metaKo || d.meta || {}) })
+    setMetaEn({ ...INIT_META, ...(d.metaEn || {}) })
     if (d.total)     setTotal(d.total)
     if (d.products)  setProducts(d.products)
     if (d.citations) setCitations(d.citations)
     if (d.dotcom)    setDotcom(d.dotcom)
+    if (d.productsCnty)  setProductsCnty(d.productsCnty)
+    if (d.citationsCnty) setCitationsCnty(d.citationsCnty)
     setActiveSnap(snap.ts)
     setSnapMsg(`"${snap.name}" 불러옴`); setTimeout(() => setSnapMsg(''), 2000)
   }
@@ -1891,9 +1938,16 @@ export default function App() {
   return (
     <div style={{ display: 'flex', height: '100vh', background: '#0A0F1C', fontFamily: FONT }}>
       <Sidebar
-        meta={meta} total={total} products={products} citations={citations} dotcom={dotcom} productsCnty={productsCnty} citationsCnty={citationsCnty}
-        setMeta={setMeta} setTotal={setTotal} setProducts={setProducts} setCitations={setCitations} setDotcom={setDotcom} setProductsCnty={setProductsCnty} setCitationsCnty={setCitationsCnty}
-        previewLang={previewLang} setPreviewLang={setPreviewLang} snapshots={snapshots} setSnapshots={setSnapshots}
+        meta={meta} setMeta={setMeta} metaKo={metaKo} setMetaKo={setMetaKo}
+        total={total} setTotal={setTotal}
+        products={products} setProducts={setProducts}
+        citations={citations} setCitations={setCitations}
+        dotcom={dotcom} setDotcom={setDotcom}
+        productsCnty={productsCnty} setProductsCnty={setProductsCnty}
+        citationsCnty={citationsCnty} setCitationsCnty={setCitationsCnty}
+        resolved={resolved}
+        previewLang={previewLang} setPreviewLang={setPreviewLang}
+        snapshots={snapshots} setSnapshots={setSnapshots}
       />
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         {/* 탑바 */}
@@ -1993,11 +2047,11 @@ export default function App() {
           <div style={{ flex: 1, overflowY: 'auto', padding: '28px 36px',
             background: 'linear-gradient(180deg, #0A0F1C 0%, #0F172A 100%)' }}>
             <div style={{ maxWidth: 860, margin: '0 auto' }}>
-              <NewsletterPreview meta={meta} total={total} products={products} citations={citations} dotcom={dotcom} productsCnty={productsCnty} citationsCnty={citationsCnty} lang={previewLang} />
+              <NewsletterPreview meta={meta} total={total} products={resolved.products} citations={resolved.citations} dotcom={dotcom} productsCnty={resolved.productsCnty} citationsCnty={resolved.citationsCnty} lang={previewLang} />
             </div>
           </div>
         ) : (
-          <HtmlCodeViewer meta={meta} total={total} products={products} citations={citations} dotcom={dotcom} productsCnty={productsCnty} citationsCnty={citationsCnty} lang={previewLang} />
+          <HtmlCodeViewer meta={meta} total={total} products={resolved.products} citations={resolved.citations} dotcom={dotcom} productsCnty={resolved.productsCnty} citationsCnty={resolved.citationsCnty} lang={previewLang} />
         )}
       </div>
     </div>
