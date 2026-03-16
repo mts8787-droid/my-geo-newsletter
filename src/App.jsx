@@ -748,8 +748,10 @@ function Sidebar({ meta, total, products, citations, dotcom, productsCnty, citat
       const cntyCountries = [...new Set(productsCnty.map(r => r.country || ''))]
       const cntyProducts = [...new Set(productsCnty.map(r => r.product || ''))]
       const cntyCompNames = [...new Set(productsCnty.map(r => r.compName || ''))]
+      // 국가별 Citation 도메인 — 고유 cnty
+      const citCntyNames = [...new Set(citationsCnty.map(r => r.cnty || '').filter(c => c && c !== 'TTL'))]
 
-      const allTexts = [...metaTexts, ...productKrTexts, ...productCompTexts, ...citSourceTexts, ...citCategoryTexts, ...cntyCountries, ...cntyProducts, ...cntyCompNames].map(t => t || ' ')
+      const allTexts = [...metaTexts, ...productKrTexts, ...productCompTexts, ...citSourceTexts, ...citCategoryTexts, ...cntyCountries, ...cntyProducts, ...cntyCompNames, ...citCntyNames].map(t => t || ' ')
 
       const res = await fetch('/api/translate', {
         method: 'POST',
@@ -809,22 +811,39 @@ function Sidebar({ meta, total, products, citations, dotcom, productsCnty, citat
       idx += cntyProducts.length
       const cntyCompMap = {}
       cntyCompNames.forEach((v, i) => { cntyCompMap[v] = tr[idx + i] || v })
+      idx += cntyCompNames.length
+      // 국가별 Citation 도메인 cnty 번역 매핑
+      const citCntyMap = {}
+      citCntyNames.forEach((v, i) => { citCntyMap[v] = tr[idx + i] || v })
+
+      // 후처리: 삼성전자 → SS, 국가명 첫글자 대문자
+      const capitalize = s => s ? s.replace(/\b\w/g, c => c.toUpperCase()) : s
+      const ssReplace = s => (s || '').replace(/samsung\s*(electronics)?/gi, 'SS').replace(/삼성전자/g, 'SS').replace(/삼성/g, 'SS')
 
       const newProductsCnty = productsCnty.map(r => ({
         ...r,
-        country: countryMap[r.country] || r.country,
+        country: capitalize(countryMap[r.country] || r.country),
         product: cntyProductMap[r.product] || r.product,
-        compName: cntyCompMap[r.compName] || r.compName,
+        compName: ssReplace(cntyCompMap[r.compName] || r.compName),
       }))
+
+      const newCitationsCnty = citationsCnty.map(r => ({
+        ...r,
+        cnty: r.cnty === 'TTL' ? 'TTL' : capitalize(citCntyMap[r.cnty] || r.cnty),
+      }))
+
+      // 제품 compName도 SS 치환
+      newProducts.forEach(p => { p.compName = ssReplace(p.compName) })
 
       setMeta(newMeta)
       setProducts(newProducts)
       setCitations(newCitations)
       setProductsCnty(newProductsCnty)
+      setCitationsCnty(newCitationsCnty)
 
       // 스냅샷 저장
       const snapName = `[EN] ${meta.period || 'Untitled'} — ${new Date().toLocaleString('ko-KR')}`
-      const snapRes = await postSnapshot(snapName, { meta: newMeta, total, products: newProducts, citations: newCitations, dotcom, productsCnty: newProductsCnty })
+      const snapRes = await postSnapshot(snapName, { meta: newMeta, total, products: newProducts, citations: newCitations, dotcom, productsCnty: newProductsCnty, citationsCnty: newCitationsCnty })
       if (snapRes) setSnapshots(snapRes)
 
       setTranslating(false)
