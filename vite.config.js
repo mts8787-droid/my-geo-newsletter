@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react'
 import nodemailer from 'nodemailer'
 import translate from 'google-translate-api-x'
 import dotenv from 'dotenv'
-import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'fs'
+import { readFileSync, writeFileSync, mkdirSync, existsSync, unlinkSync } from 'fs'
 import { resolve } from 'path'
 
 const pkg = JSON.parse(readFileSync('./package.json', 'utf-8'))
@@ -193,11 +193,96 @@ function gsheetExportPlugin() {
   }
 }
 
+// ─── Vite 플러그인: /api/publish 엔드포인트 (KO+EN 동시 게시) ─────────────
+function publishApiPlugin() {
+  const DATA_DIR = resolve('data')
+  const PUB_DIR = resolve('data/published')
+  const PUB_META = resolve('data/publish-meta.json')
+  const KO_SLUG = 'GEO-Monthly-Report-KO'
+  const EN_SLUG = 'GEO-Monthly-Report-EN'
+  if (!existsSync(DATA_DIR)) mkdirSync(DATA_DIR, { recursive: true })
+  if (!existsSync(PUB_DIR)) mkdirSync(PUB_DIR, { recursive: true })
+
+  const readMeta = () => { try { return JSON.parse(readFileSync(PUB_META, 'utf-8')) } catch { return null } }
+
+  function langBarHtml(activeLang) {
+    const btn = (lang, label, href) => {
+      const active = lang === activeLang
+      return `<a href="${href}" style="display:inline-block;font-size:13px;text-decoration:none;padding:6px 18px;border-radius:20px;margin:0 4px;color:${active ? '#FFFFFF' : '#94A3B8'};font-weight:${active ? '700' : '500'};background:${active ? '#CF0652' : 'rgba(255,255,255,0.08)'};">${label}</a>`
+    }
+    return `<div style="background:#0F172A;padding:12px 0;text-align:center;font-family:'LG Smart','Arial Narrow',Arial,sans-serif;">${btn('ko','한국어','/p/'+KO_SLUG)}${btn('en','English','/p/'+EN_SLUG)}</div>`
+  }
+
+  function injectLangBar(html, lang) {
+    const bar = langBarHtml(lang)
+    if (html.match(/<body[^>]*>/i)) return html.replace(/(<body[^>]*>)/i, `$1${bar}`)
+    return bar + html
+  }
+
+  return {
+    name: 'publish-api',
+    configureServer(server) {
+      // GET /api/publish — status
+      server.middlewares.use('/api/publish', (req, res, next) => {
+        if (req.method === 'GET') {
+          const meta = readMeta()
+          const ko = existsSync(resolve(PUB_DIR, `${KO_SLUG}.html`))
+          const en = existsSync(resolve(PUB_DIR, `${EN_SLUG}.html`))
+          res.setHeader('Content-Type', 'application/json')
+          res.end(JSON.stringify({ published: ko && en, ko, en, ...(meta || {}), urls: { ko: `/p/${KO_SLUG}`, en: `/p/${EN_SLUG}` } }))
+          return
+        }
+        // POST /api/publish
+        if (req.method === 'POST') {
+          let body = ''
+          req.on('data', c => (body += c))
+          req.on('end', () => {
+            try {
+              const { htmlKo, htmlEn, title } = JSON.parse(body)
+              if (!htmlKo || !htmlEn) throw new Error('htmlKo, htmlEn 필수')
+              writeFileSync(resolve(PUB_DIR, `${KO_SLUG}.html`), injectLangBar(htmlKo, 'ko'))
+              writeFileSync(resolve(PUB_DIR, `${EN_SLUG}.html`), injectLangBar(htmlEn, 'en'))
+              const meta = { title: title || 'GEO Monthly Report', ts: Date.now() }
+              writeFileSync(PUB_META, JSON.stringify(meta, null, 2))
+              res.setHeader('Content-Type', 'application/json')
+              res.end(JSON.stringify({ ok: true, urls: { ko: `/p/${KO_SLUG}`, en: `/p/${EN_SLUG}` }, ...meta }))
+            } catch (err) {
+              res.statusCode = 400
+              res.setHeader('Content-Type', 'application/json')
+              res.end(JSON.stringify({ ok: false, error: err.message }))
+            }
+          })
+          return
+        }
+        // DELETE /api/publish
+        if (req.method === 'DELETE') {
+          try { unlinkSync(resolve(PUB_DIR, `${KO_SLUG}.html`)) } catch {}
+          try { unlinkSync(resolve(PUB_DIR, `${EN_SLUG}.html`)) } catch {}
+          try { unlinkSync(PUB_META) } catch {}
+          res.setHeader('Content-Type', 'application/json')
+          res.end(JSON.stringify({ ok: true }))
+          return
+        }
+        res.statusCode = 405; res.end()
+      })
+      // GET /p/:slug — serve published pages
+      server.middlewares.use('/p', (req, res, next) => {
+        const slug = req.url.replace(/^\//, '').replace(/\?.*$/, '')
+        const file = resolve(PUB_DIR, `${slug}.html`)
+        if (!existsSync(file)) { res.statusCode = 404; res.end('Not found'); return }
+        res.setHeader('Content-Type', 'text/html; charset=utf-8')
+        res.end(readFileSync(file, 'utf-8'))
+      })
+    },
+  }
+}
+
 export default defineConfig({
+  base: '/admin/newsletter/',
   define: {
     __APP_VERSION__: JSON.stringify(pkg.version),
   },
-  plugins: [react(), emailApiPlugin(), translateApiPlugin(), snapshotsApiPlugin(), gsheetExportPlugin()],
+  plugins: [react(), emailApiPlugin(), translateApiPlugin(), snapshotsApiPlugin(), gsheetExportPlugin(), publishApiPlugin()],
   server: {
     proxy: {
       '/gsheets-proxy': {
