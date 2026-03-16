@@ -402,7 +402,8 @@ function citationDomainSectionHtml(citationsCnty, meta, lang) {
   if (!citationsCnty || !citationsCnty.length) return ''
   const t = T[lang] || T.ko
 
-  const ttlRows = citationsCnty.filter(r => r.cnty === 'TTL').sort((a, b) => a.rank - b.rank).slice(0, 10)
+  const domTopN = meta.citDomainTopN || 10
+  const ttlRows = citationsCnty.filter(r => r.cnty === 'TTL').sort((a, b) => a.rank - b.rank).slice(0, domTopN)
   if (!ttlRows.length) return ''
 
   const maxScore = Math.max(...ttlRows.map(r => r.citations), 1)
@@ -462,7 +463,7 @@ function citationDomainSectionHtml(citationsCnty, meta, lang) {
                             <td align="right" style="vertical-align:middle;">
                               <table border="0" cellpadding="0" cellspacing="0" align="right"><tr>
                                 <td width="14" height="5" style="background:${EM_RED};border-radius:3px;font-size:0;">&nbsp;</td>
-                                <td style="padding-left:4px;font-size:11px;color:#94A3B8;font-family:${EM_FONT};">Top 10 Domains (TTL)</td>
+                                <td style="padding-left:4px;font-size:11px;color:#94A3B8;font-family:${EM_FONT};">Top ${domTopN} Domains (TTL)</td>
                               </tr></table>
                             </td>
                           </tr>
@@ -471,7 +472,7 @@ function citationDomainSectionHtml(citationsCnty, meta, lang) {
                     </tr>
                     ${insightBlockHtml(meta.citDomainInsight, meta.showCitDomainInsight, meta.citDomainHowToRead, meta.showCitDomainHowToRead, lang)}
                     <tr>
-                      <td style="padding:0;">
+                      <td style="padding:20px 28px;">
                         <table border="0" cellpadding="0" cellspacing="0" width="100%">
                           ${rows}
                         </table>
@@ -802,7 +803,8 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
     return buProducts.length ? buSectionHtml(buKey, buProducts, globalMax, globalMin, lang) : ''
   }).join('')
 
-  const citationList = citations.slice(0, 10)
+  const citTopN = meta.citationTopN || 10
+  const citationList = citations.slice(0, citTopN)
   const citMaxScore = citationList.length ? Math.max(...citationList.map(c => c.score)) : 100
   const citationRows = citationList.map((c, i) => citationRowHtml(c, i === citationList.length - 1, citMaxScore)).join('')
 

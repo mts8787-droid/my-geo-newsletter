@@ -193,6 +193,7 @@ const INIT_META  = {
   todoText: '', showTodo: false,
   showTotal: true, showProducts: true, showCnty: true, showCitations: true,
   showCitDomain: true, showCitCnty: true,
+  citationTopN: 10, citDomainTopN: 10,
   showDotcom: true,
   cntyProductFilter: {},
 }
@@ -1066,6 +1067,34 @@ function Sidebar({ meta, total, products, citations, dotcom, productsCnty, citat
                 color: meta[key] ? '#FFFFFF' : '#475569',
                 fontSize: 11, fontWeight: 700, fontFamily: FONT }}>
               {label}
+            </button>
+          ))}
+        </div>
+
+        {/* Top N 설정 */}
+        <p style={{ margin: '0 0 6px 2px', fontSize: 11, fontWeight: 700, color: '#475569',
+          textTransform: 'uppercase', letterSpacing: 1, fontFamily: FONT }}>
+          표시 개수
+        </p>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16, alignItems: 'center' }}>
+          <span style={{ fontSize: 11, color: '#64748B', fontFamily: FONT }}>카테고리 Citation</span>
+          {[5, 10].map(n => (
+            <button key={`citN${n}`} onClick={() => setMeta(m => ({ ...m, citationTopN: n }))}
+              style={{ padding: '4px 10px', borderRadius: 12, border: 'none', cursor: 'pointer',
+                background: meta.citationTopN === n ? LG_RED : '#1E293B',
+                color: meta.citationTopN === n ? '#FFFFFF' : '#475569',
+                fontSize: 11, fontWeight: 700, fontFamily: FONT }}>
+              Top {n}
+            </button>
+          ))}
+          <span style={{ fontSize: 11, color: '#64748B', fontFamily: FONT, marginLeft: 8 }}>도메인 Citation</span>
+          {[5, 10].map(n => (
+            <button key={`domN${n}`} onClick={() => setMeta(m => ({ ...m, citDomainTopN: n }))}
+              style={{ padding: '4px 10px', borderRadius: 12, border: 'none', cursor: 'pointer',
+                background: meta.citDomainTopN === n ? LG_RED : '#1E293B',
+                color: meta.citDomainTopN === n ? '#FFFFFF' : '#475569',
+                fontSize: 11, fontWeight: 700, fontFamily: FONT }}>
+              Top {n}
             </button>
           ))}
         </div>
