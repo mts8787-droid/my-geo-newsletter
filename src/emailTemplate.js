@@ -926,11 +926,12 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                         </table>
                         <!-- 게이지 바 -->
                         <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                          <tr><td height="14" style="font-size:0;line-height:0;">&nbsp;</td></tr>
+                          <tr><td height="14" colspan="2" style="font-size:0;line-height:0;">&nbsp;</td></tr>
                           <tr>
                             <td style="font-size:11px;color:#64748B;font-family:${EM_FONT};">0%</td>
                             <td align="right" style="font-size:11px;color:#64748B;font-family:${EM_FONT};">100%</td>
                           </tr>
+                          <!-- LG 바 -->
                           <tr>
                             <td colspan="2" style="padding-top:4px;">
                               <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#1E2433;border-radius:8px;height:10px;">
@@ -939,6 +940,30 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                                   <td></td>
                                 </tr>
                               </table>
+                            </td>
+                          </tr>
+                          ${compAvg > 0 ? `<!-- Samsung 바 -->
+                          <tr>
+                            <td colspan="2" style="padding-top:5px;">
+                              <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#1E2433;border-radius:8px;height:10px;">
+                                <tr>
+                                  <td width="${Math.round(compAvg)}%" style="background:#3B82F6;border-radius:8px;height:10px;font-size:0;">&nbsp;</td>
+                                  <td></td>
+                                </tr>
+                              </table>
+                            </td>
+                          </tr>` : ''}
+                          <!-- 범례 -->
+                          <tr>
+                            <td colspan="2" style="padding-top:8px;">
+                              <table border="0" cellpadding="0" cellspacing="0"><tr>
+                                <td width="10" height="10" style="background:${EM_RED};border-radius:5px;font-size:0;">&nbsp;</td>
+                                <td style="padding-left:5px;font-size:11px;color:#94A3B8;font-family:${EM_FONT};">LG ${total.score}%</td>
+                                ${compAvg > 0 ? `<td style="padding-left:14px;" width="10" height="10"><table border="0" cellpadding="0" cellspacing="0"><tr><td width="10" height="10" style="background:#3B82F6;border-radius:5px;font-size:0;">&nbsp;</td></tr></table></td>
+                                <td style="padding-left:5px;font-size:11px;color:#94A3B8;font-family:${EM_FONT};">Samsung ${compAvg}%</td>` : ''}
+                                <td style="padding-left:14px;" width="2" height="10"><table border="0" cellpadding="0" cellspacing="0"><tr><td width="2" height="10" style="background:#475569;border-radius:2px;font-size:0;">&nbsp;</td></tr></table></td>
+                                <td style="padding-left:5px;font-size:11px;color:#94A3B8;font-family:${EM_FONT};">prev ${total.prev}%</td>
+                              </tr></table>
                             </td>
                           </tr>
                         </table>
