@@ -1,15 +1,21 @@
 import * as XLSX from 'xlsx'
 import { SHEET_NAMES, parseSheetRows } from './excelUtils'
 
+// 시트 이름 → GID 매핑 (gviz name 파라미터가 안 먹히는 시트용)
+const SHEET_GIDS = {
+  'Products_CNTY': '2045887690',
+}
+
 export function extractSheetId(url) {
   const match = url.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/)
   return match ? match[1] : null
 }
 
 async function fetchSheet(sheetId, sheetName) {
-  const encoded = encodeURIComponent(sheetName)
   const rid = `${Date.now()}_${Math.random().toString(36).slice(2,8)}`
-  const url = `/gsheets-proxy/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv;reqId:${rid}&sheet=${encoded}`
+  const gid = SHEET_GIDS[sheetName]
+  const sheetParam = gid ? `gid=${gid}` : `sheet=${encodeURIComponent(sheetName)}`
+  const url = `/gsheets-proxy/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv;reqId:${rid}&${sheetParam}`
   const res = await fetch(url, {
     cache: 'no-store',
     headers: { 'Cache-Control': 'no-cache, no-store', 'Pragma': 'no-cache' },

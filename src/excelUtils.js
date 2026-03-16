@@ -1,12 +1,13 @@
 import * as XLSX from 'xlsx'
 
 export const SHEET_NAMES = {
-  meta:        'meta',
-  total:       'total',
-  products:    'products',
-  weekly:      'weekly',
-  citations:   'citations',
-  dotcom:      'dotcom',
+  meta:          'meta',
+  total:         'total',
+  products:      'products',
+  weekly:        'weekly',
+  citations:     'citations',
+  dotcom:        'dotcom',
+  products_cnty: 'Products_CNTY',
 }
 
 export const DOTCOM_LG_COLS   = ['TTL','PLP','Microsites','PDP','Newsroom','Support','Buying-guide','Experience']
@@ -118,7 +119,8 @@ export function downloadTemplate(meta, total, products, citations, dotcom = {}) 
 export function parseSheetRows(sheetName, rows) {
   if (sheetName === 'meta') {
     const obj = {}
-    const allowedKeys = ['period','team','reportNo','reportType','title','titleFontSize','titleColor','dateLine']
+    const allowedKeys = ['period','team','reportNo','reportType','title','titleFontSize','titleColor','dateLine',
+      'cntyInsight','cntyHowToRead']
     const numKeys = ['titleFontSize']
     rows.forEach(r => {
       if (!r[0] || String(r[0]).startsWith('[') || String(r[0]).startsWith('※') || r[0] === 'key') return
@@ -169,6 +171,22 @@ export function parseSheetRows(sheetName, rows) {
       score:    parseFloat(String(r[3] || '').replace(/,/g, '')) || 0,
       delta:    String(r[4] || '-') === '-' ? 0 : parseFloat(r[4]) || 0,
       ratio:    (() => { const n = parseFloat(String(r[5] || '').replace('%', '')) || 0; return Math.abs(n) < 1 ? +(n * 100).toFixed(2) : n })(),
+    })) }
+  }
+  if (sheetName === 'Products_CNTY') {
+    const data = rows.filter(r =>
+      r[0] && !String(r[0]).startsWith('[') && !String(r[0]).startsWith('※') &&
+      r[0] !== '제품명' && r[0] !== 'key'
+    )
+    if (!data.length) return {}
+    const pct = v => { const n = parseFloat(String(v).replace('%', '')) || 0; return Math.abs(n) < 1 ? +(n * 100).toFixed(2) : n }
+    return { productsCnty: data.map(r => ({
+      product:   String(r[0] || ''),
+      country:   String(r[1] || ''),
+      score:     pct(r[2]),
+      compName:  String(r[3] || ''),
+      compScore: pct(r[4]),
+      gap:       pct(r[5]),
     })) }
   }
   if (sheetName === 'dotcom') {

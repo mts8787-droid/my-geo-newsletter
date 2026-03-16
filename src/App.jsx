@@ -139,8 +139,11 @@ const INIT_META  = {
   citationHowToRead: '', showCitationHowToRead: true,
   dotcomInsight: '', showDotcomInsight: true,
   dotcomHowToRead: '', showDotcomHowToRead: true,
+  cntyInsight: '', showCntyInsight: true,
+  cntyHowToRead: '', showCntyHowToRead: true,
   noticeText: '', showNotice: false,
   todoText: '', showTodo: false,
+  showTotal: true, showProducts: true, showCnty: true, showCitations: true, showDotcom: true,
 }
 const INIT_TOTAL = { score: 42.7, prev: 42.2, rank: 1, totalBrands: 12 }
 
@@ -170,6 +173,39 @@ const INIT_DOTCOM = {
   lg:      { TTL:222447, PLP:52378, Microsites:24075, PDP:46880, Newsroom:21131, Support:15666, 'Buying-guide':14471, Experience:47846 },
   samsung: { TTL:199180, PLP:34177, Microsites:14708, PDP:35709, Newsroom:43152, Support:39144, 'Buying-guide':32290 },
 }
+
+const INIT_PRODUCTS_CNTY = [
+  { product:'TV', country:'미국', score:87.1, compName:'삼성', compScore:87.2, gap:-5.5 },
+  { product:'TV', country:'영국', score:87.2, compName:'삼성', compScore:86.3, gap:-1.7 },
+  { product:'TV', country:'독일', score:85.3, compName:'삼성', compScore:84.2, gap:-1.5 },
+  { product:'TV', country:'브라질', score:85.7, compName:'삼성', compScore:86.3, gap:-6.6 },
+  { product:'TV', country:'인도', score:84.7, compName:'삼성', compScore:85.2, gap:-5.1 },
+  { product:'TV', country:'멕시코', score:84.8, compName:'삼성', compScore:84.7, gap:0.7 },
+  { product:'TV', country:'스페인', score:83.7, compName:'삼성', compScore:82.7, gap:-1.5 },
+  { product:'TV', country:'호주', score:87.4, compName:'삼성', compScore:87.3, gap:1.4 },
+  { product:'TV', country:'베트남', score:83.8, compName:'삼성', compScore:84.4, gap:-2.5 },
+  { product:'TV', country:'캐나다', score:86.1, compName:'삼성', compScore:86.2, gap:-0.9 },
+  { product:'세탁기', country:'미국', score:44.7, compName:'', compScore:0, gap:-0.6 },
+  { product:'세탁기', country:'영국', score:36.8, compName:'', compScore:0, gap:3.5 },
+  { product:'세탁기', country:'독일', score:19.0, compName:'', compScore:0, gap:-9.8 },
+  { product:'세탁기', country:'브라질', score:37.7, compName:'', compScore:0, gap:3.1 },
+  { product:'세탁기', country:'인도', score:50.0, compName:'', compScore:0, gap:0.8 },
+  { product:'세탁기', country:'멕시코', score:43.4, compName:'', compScore:0, gap:-0.8 },
+  { product:'세탁기', country:'스페인', score:35.5, compName:'', compScore:0, gap:1.4 },
+  { product:'세탁기', country:'호주', score:49.3, compName:'', compScore:0, gap:0.6 },
+  { product:'세탁기', country:'베트남', score:51.3, compName:'', compScore:0, gap:1.4 },
+  { product:'세탁기', country:'캐나다', score:46.1, compName:'', compScore:0, gap:-0.4 },
+  { product:'냉장고', country:'미국', score:43.6, compName:'', compScore:0, gap:3.3 },
+  { product:'냉장고', country:'영국', score:42.6, compName:'', compScore:0, gap:2.5 },
+  { product:'냉장고', country:'독일', score:35.8, compName:'', compScore:0, gap:-6.4 },
+  { product:'냉장고', country:'브라질', score:33.3, compName:'', compScore:0, gap:-2.2 },
+  { product:'냉장고', country:'인도', score:52.9, compName:'', compScore:0, gap:1.9 },
+  { product:'냉장고', country:'멕시코', score:50.2, compName:'', compScore:0, gap:-2.3 },
+  { product:'냉장고', country:'스페인', score:36.9, compName:'', compScore:0, gap:1.4 },
+  { product:'냉장고', country:'호주', score:45.8, compName:'', compScore:0, gap:1.3 },
+  { product:'냉장고', country:'베트남', score:48.8, compName:'', compScore:0, gap:2.2 },
+  { product:'냉장고', country:'캐나다', score:39.2, compName:'', compScore:0, gap:1.6 },
+]
 
 const INIT_CITATIONS = [
   { rank: 1, source: 'TechRadar',       category: '모니터',     score: 87, delta: +5.2, ratio: 18.5 },
@@ -219,7 +255,7 @@ function SectionTitle({ label, sub, right }) {
         </div>
         {right && <div style={{ display: 'flex', alignItems: 'center' }}>{right}</div>}
       </div>
-      {sub && <p style={{ margin: '4px 0 0 11px', fontSize: 10, color: '#94A3B8', fontFamily: FONT }}>{sub}</p>}
+      {sub && <p style={{ margin: '4px 0 0 11px', fontSize: 11, color: '#94A3B8', fontFamily: FONT }}>{sub}</p>}
     </div>
   )
 }
@@ -270,7 +306,7 @@ function TotalSection({ total, totalInsight }) {
           textTransform: 'uppercase', fontFamily: FONT }}>
           LG GEO Visibility %
         </p>
-        <span style={{ fontSize: 10, color: '#94A3B8', fontFamily: FONT, textAlign: 'right' }}>Model : ChatGPT, ChatGPT Search, Gemini<br/>Subsidiary : US, CA, UK, DE, ES, BR, MX, IN, AU, VN</span>
+        <span style={{ fontSize: 11, color: '#94A3B8', fontFamily: FONT, textAlign: 'right' }}>Model : ChatGPT, ChatGPT Search, Gemini<br/>Subsidiary : US, CA, UK, DE, ES, BR, MX, IN, AU, VN</span>
       </div>
       <div style={{ display: 'flex', alignItems: 'flex-end', gap: 14, marginBottom: 16, flexWrap: 'wrap' }}>
         <div>
@@ -281,20 +317,20 @@ function TotalSection({ total, totalInsight }) {
         </div>
         <div style={{ paddingBottom: 8 }}>
           <DeltaBadge delta={delta} size="lg" noPrev={!total.prev} />
-          <p style={{ margin: '3px 0 0', fontSize: 10, color: '#64748B', fontFamily: FONT }}>MoM</p>
+          <p style={{ margin: '3px 0 0', fontSize: 11, color: '#64748B', fontFamily: FONT }}>MoM</p>
         </div>
         <div style={{ marginLeft: 'auto', paddingBottom: 6, textAlign: 'right' }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5,
             background: 'rgba(207,6,82,0.18)', border: `1px solid ${LG_RED}55`, borderRadius: 8, padding: '6px 12px' }}>
             <span style={{ fontSize: 18, fontWeight: 900, color: LG_RED, fontFamily: FONT }}>{total.rank}위</span>
-            <span style={{ fontSize: 10, color: '#94A3B8', fontFamily: FONT }}>/ {total.totalBrands}개 브랜드 중</span>
+            <span style={{ fontSize: 11, color: '#94A3B8', fontFamily: FONT }}>/ {total.totalBrands}개 브랜드 중</span>
           </div>
         </div>
       </div>
       <div>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-          <span style={{ fontSize: 10, color: '#64748B', fontFamily: FONT }}>0%</span>
-          <span style={{ fontSize: 10, color: '#64748B', fontFamily: FONT }}>100%</span>
+          <span style={{ fontSize: 11, color: '#64748B', fontFamily: FONT }}>0%</span>
+          <span style={{ fontSize: 11, color: '#64748B', fontFamily: FONT }}>100%</span>
         </div>
         <div style={{ position: 'relative', height: 10, background: 'rgba(255,255,255,0.1)', borderRadius: 10 }}>
           <div style={{ position: 'absolute', left: `${total.prev}%`, top: -4, bottom: -4,
@@ -306,12 +342,12 @@ function TotalSection({ total, totalInsight }) {
             border: `3px solid ${LG_RED}`, borderRadius: '50%', boxShadow: `0 0 0 3px ${LG_RED}33` }} />
         </div>
         <div style={{ display: 'flex', gap: 16, marginTop: 8 }}>
-          <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 10, color: '#94A3B8', fontFamily: FONT }}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: '#94A3B8', fontFamily: FONT }}>
             <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#FFFFFF',
               border: `2px solid ${LG_RED}`, display: 'inline-block' }} />
             LG전자 {total.score}%
           </span>
-          <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 10, color: '#94A3B8', fontFamily: FONT }}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: '#94A3B8', fontFamily: FONT }}>
             <span style={{ width: 2, height: 10, background: '#475569', display: 'inline-block', borderRadius: 2 }} />
             prev {total.prev}%
           </span>
@@ -319,7 +355,7 @@ function TotalSection({ total, totalInsight }) {
       </div>
       {totalInsight && (
         <div style={{ marginTop: 18, borderTop: '1px solid rgba(255,255,255,0.07)', paddingTop: 16 }}>
-          <p style={{ margin: '0 0 6px', fontSize: 10, fontWeight: 700, color: LG_RED,
+          <p style={{ margin: '0 0 6px', fontSize: 11, fontWeight: 700, color: LG_RED,
             textTransform: 'uppercase', letterSpacing: 1.5, fontFamily: FONT }}>GEO 전략 인사이트</p>
           <p style={{ margin: 0, fontSize: 11, color: '#CBD5E1', lineHeight: 1.8, fontFamily: FONT }}>
             {totalInsight}
@@ -340,13 +376,13 @@ function ProductCard({ product, buColor }) {
       borderRadius: 12, padding: '14px 16px', overflow: 'hidden' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
         <div>
-          <p style={{ margin: 0, fontSize: 9, color: '#94A3B8', fontFamily: FONT, marginBottom: 2 }}>카테고리</p>
+          <p style={{ margin: 0, fontSize: 11, color: '#94A3B8', fontFamily: FONT, marginBottom: 2 }}>카테고리</p>
           <h3 style={{ margin: 0, fontSize: 14, fontWeight: 800, color: '#1A1A1A', fontFamily: FONT }}>
             {product.kr}
           </h3>
         </div>
         <span style={{ background: st.bg, color: st.text, border: `1px solid ${st.border}`,
-          borderRadius: 20, padding: '2px 8px', fontSize: 9, fontWeight: 700, fontFamily: FONT }}>
+          borderRadius: 20, padding: '2px 8px', fontSize: 11, fontWeight: 700, fontFamily: FONT }}>
           {st.badge}
         </span>
       </div>
@@ -361,7 +397,7 @@ function ProductCard({ product, buColor }) {
           <div style={{ marginTop: 4 }}><DeltaBadge delta={delta} mom noPrev={!product.prev} /></div>
         </div>
         <div style={{ flexShrink: 0 }}>
-          <div style={{ fontSize: 9, color: '#94A3B8', fontFamily: FONT, marginBottom: 3, textAlign: 'right' }}>4주 트렌드</div>
+          <div style={{ fontSize: 11, color: '#94A3B8', fontFamily: FONT, marginBottom: 3, textAlign: 'right' }}>4주 트렌드</div>
           <Sparkline data={product.weekly} color={sparkColor} width={100} height={32} />
         </div>
       </div>
@@ -394,13 +430,13 @@ function CitationSection({ citations }) {
                 <span style={{ width: 20, height: 20, borderRadius: '50%', flexShrink: 0,
                   background: c.rank <= 3 ? LG_RED : '#F1F5F9',
                   color: c.rank <= 3 ? '#FFFFFF' : '#94A3B8',
-                  fontSize: 9, fontWeight: 800, fontFamily: FONT,
+                  fontSize: 11, fontWeight: 800, fontFamily: FONT,
                   display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   {c.rank}
                 </span>
                 <div>
                   <p style={{ margin: 0, fontSize: 11, fontWeight: 700, color: '#1A1A1A', fontFamily: FONT }}>{c.source}</p>
-                  <span style={{ fontSize: 9, color: '#94A3B8', fontFamily: FONT,
+                  <span style={{ fontSize: 11, color: '#94A3B8', fontFamily: FONT,
                     background: '#F8FAFC', borderRadius: 4, padding: '1px 5px', display: 'inline-block', marginTop: 2 }}>
                     {c.category}
                   </span>
@@ -437,14 +473,14 @@ function InsightBlock({ insight, showInsight, howToRead, showHowToRead }) {
       {hasInsight && (
         <div style={{ borderRadius: 8, background: '#FFF4F7', border: `1px solid ${LG_RED}25`,
           padding: '10px 14px', marginBottom: hasHowToRead ? 8 : 0 }}>
-          <p style={{ margin: '0 0 4px', fontSize: 9, fontWeight: 700, color: LG_RED,
+          <p style={{ margin: '0 0 4px', fontSize: 11, fontWeight: 700, color: LG_RED,
             letterSpacing: 1.3, fontFamily: FONT }}>INSIGHT</p>
           <p style={{ margin: 0, fontSize: 11, color: '#1A1A1A', lineHeight: 1.75, fontFamily: FONT }}>{insight}</p>
         </div>
       )}
       {hasHowToRead && (
         <div style={{ borderRadius: 8, background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '10px 14px' }}>
-          <p style={{ margin: '0 0 4px', fontSize: 9, fontWeight: 700, color: '#64748B',
+          <p style={{ margin: '0 0 4px', fontSize: 11, fontWeight: 700, color: '#64748B',
             letterSpacing: 1.3, fontFamily: FONT }}>HOW TO READ</p>
           <p style={{ margin: 0, fontSize: 11, color: '#475569', lineHeight: 1.75, fontFamily: FONT }}>{howToRead}</p>
         </div>
@@ -454,9 +490,9 @@ function InsightBlock({ insight, showInsight, howToRead, showHowToRead }) {
 }
 
 // ─── 뉴스레터 캔버스 ──────────────────────────────────────────────────────────
-function NewsletterPreview({ meta, total, products, citations, dotcom, lang = 'ko' }) {
+function NewsletterPreview({ meta, total, products, citations, dotcom, productsCnty = [], lang = 'ko' }) {
   const iframeRef = useRef(null)
-  const html = generateEmailHTML(meta, total, products, citations, dotcom, lang)
+  const html = generateEmailHTML(meta, total, products, citations, dotcom, lang, productsCnty)
 
   React.useEffect(() => {
     const iframe = iframeRef.current
@@ -498,7 +534,7 @@ const inputStyle = {
   fontFamily: FONT, outline: 'none', boxSizing: 'border-box',
 }
 
-function Sidebar({ meta, total, products, citations, dotcom, setMeta, setTotal, setProducts, setCitations, setDotcom, previewLang, setPreviewLang, snapshots, setSnapshots }) {
+function Sidebar({ meta, total, products, citations, dotcom, productsCnty, setMeta, setTotal, setProducts, setCitations, setDotcom, setProductsCnty, previewLang, setPreviewLang, snapshots, setSnapshots }) {
   const [gsUrl,     setGsUrl]     = useState('https://docs.google.com/spreadsheets/d/1fTciJRUAqU5lhkPCb39mzv1Y4kNBslF8EuHjZ5H3JY0/edit?gid=1331469350#gid=1331469350')
   const [gsSyncing, setGsSyncing] = useState(false)
   const [gsStatus,  setGsStatus]  = useState(null)
@@ -574,7 +610,7 @@ function Sidebar({ meta, total, products, citations, dotcom, setMeta, setTotal, 
   }
 
   async function handleCopyHtml() {
-    const html = generateEmailHTML(meta, total, products, citations, dotcom)
+    const html = generateEmailHTML(meta, total, products, citations, dotcom, 'ko', productsCnty)
     try {
       await navigator.clipboard.writeText(html)
     } catch {
@@ -598,7 +634,7 @@ function Sidebar({ meta, total, products, citations, dotcom, setMeta, setTotal, 
     if (mailSent === 'sending') return
     setMailSent('sending')
     try {
-      const html    = generateEmailHTML(meta, total, products, citations, dotcom)
+      const html    = generateEmailHTML(meta, total, products, citations, dotcom, 'ko', productsCnty)
       const subject = `[LG GEO] ${meta.title} · ${meta.period}`
       const res = await fetch('/api/send-email', {
         method: 'POST',
@@ -628,8 +664,9 @@ function Sidebar({ meta, total, products, citations, dotcom, setMeta, setTotal, 
       const parsed = await syncFromGoogleSheets(sheetId, msg => setGsMsg(msg))
       if (parsed.meta)        setMeta(m => ({ ...m, ...parsed.meta }))
       if (parsed.total)       setTotal(t => ({ ...t, ...parsed.total }))
-      if (parsed.citations)   setCitations(parsed.citations)
-      if (parsed.dotcom)      setDotcom(d => ({ ...d, ...parsed.dotcom }))
+      if (parsed.citations)    setCitations(parsed.citations)
+      if (parsed.dotcom)       setDotcom(d => ({ ...d, ...parsed.dotcom }))
+      setProductsCnty(parsed.productsCnty ?? [])
       if (parsed.productsPartial || parsed.weeklyMap) {
         setProducts(prev => prev.map(p => {
           const part   = parsed.productsPartial?.find(x => x.id === p.id)
@@ -665,8 +702,8 @@ function Sidebar({ meta, total, products, citations, dotcom, setMeta, setTotal, 
             <span style={{ fontSize: 11, fontWeight: 900, color: '#FFFFFF', fontFamily: FONT }}>LG</span>
           </div>
           <div>
-            <p style={{ margin: 0, fontSize: 11, fontWeight: 700, color: '#FFFFFF', fontFamily: FONT }}>GEO Builder <span style={{ fontSize: 9, fontWeight: 400, color: '#64748B' }}>v{__APP_VERSION__}</span></p>
-            <p style={{ margin: 0, fontSize: 9, color: '#475569', fontFamily: FONT }}>뉴스레터 생성기</p>
+            <p style={{ margin: 0, fontSize: 11, fontWeight: 700, color: '#FFFFFF', fontFamily: FONT }}>GEO Builder <span style={{ fontSize: 11, fontWeight: 400, color: '#64748B' }}>v{__APP_VERSION__}</span></p>
+            <p style={{ margin: 0, fontSize: 11, color: '#475569', fontFamily: FONT }}>뉴스레터 생성기</p>
           </div>
         </div>
       </div>
@@ -675,32 +712,32 @@ function Sidebar({ meta, total, products, citations, dotcom, setMeta, setTotal, 
       <div style={{ padding: '16px 14px', flex: 1, overflowY: 'auto' }}>
 
         {/* ── 헤더 편집 ── */}
-        <p style={{ margin: '0 0 10px 2px', fontSize: 10, fontWeight: 700, color: '#475569',
+        <p style={{ margin: '0 0 10px 2px', fontSize: 11, fontWeight: 700, color: '#475569',
           textTransform: 'uppercase', letterSpacing: 1, fontFamily: FONT }}>
           헤더 편집
         </p>
 
         {/* 리포트 유형 (좌상단) */}
-        <p style={{ margin: '0 0 3px', fontSize: 9, color: '#64748B', fontFamily: FONT }}>리포트 유형 <span style={{ color: '#334155' }}>(좌상단)</span></p>
+        <p style={{ margin: '0 0 3px', fontSize: 11, color: '#64748B', fontFamily: FONT }}>리포트 유형 <span style={{ color: '#334155' }}>(좌상단)</span></p>
         <input value={meta.reportType} onChange={e => setMeta(m => ({ ...m, reportType: e.target.value }))}
           style={{ ...inputStyle, marginBottom: 8 }} />
 
         {/* 보고서 번호 + 기간 (레드바) */}
         <div style={{ display: 'flex', gap: 6, marginBottom: 8 }}>
           <div style={{ flex: 1 }}>
-            <p style={{ margin: '0 0 3px', fontSize: 9, color: '#64748B', fontFamily: FONT }}>보고서 번호</p>
+            <p style={{ margin: '0 0 3px', fontSize: 11, color: '#64748B', fontFamily: FONT }}>보고서 번호</p>
             <input value={meta.reportNo} onChange={e => setMeta(m => ({ ...m, reportNo: e.target.value }))}
               style={{ ...inputStyle }} />
           </div>
           <div style={{ flex: 1.4 }}>
-            <p style={{ margin: '0 0 3px', fontSize: 9, color: '#64748B', fontFamily: FONT }}>기간 <span style={{ color: '#334155' }}>(레드바)</span></p>
+            <p style={{ margin: '0 0 3px', fontSize: 11, color: '#64748B', fontFamily: FONT }}>기간 <span style={{ color: '#334155' }}>(레드바)</span></p>
             <input value={meta.period} onChange={e => setMeta(m => ({ ...m, period: e.target.value }))}
               style={{ ...inputStyle }} />
           </div>
         </div>
 
         {/* 제목 텍스트 */}
-        <p style={{ margin: '0 0 3px', fontSize: 9, color: '#64748B', fontFamily: FONT }}>제목 텍스트</p>
+        <p style={{ margin: '0 0 3px', fontSize: 11, color: '#64748B', fontFamily: FONT }}>제목 텍스트</p>
         <textarea
           value={meta.title}
           onChange={e => setMeta(m => ({ ...m, title: e.target.value }))}
@@ -709,18 +746,18 @@ function Sidebar({ meta, total, products, citations, dotcom, setMeta, setTotal, 
         />
 
         {/* 팀명 (우하단 첫째줄) */}
-        <p style={{ margin: '0 0 3px', fontSize: 9, color: '#64748B', fontFamily: FONT }}>팀명 <span style={{ color: '#334155' }}>(우하단)</span></p>
+        <p style={{ margin: '0 0 3px', fontSize: 11, color: '#64748B', fontFamily: FONT }}>팀명 <span style={{ color: '#334155' }}>(우하단)</span></p>
         <input value={meta.team} onChange={e => setMeta(m => ({ ...m, team: e.target.value }))}
           style={{ ...inputStyle, marginBottom: 8 }} />
 
         {/* 기준 텍스트 (팀명 바로 아래 우하단) */}
-        <p style={{ margin: '0 0 3px', fontSize: 9, color: '#64748B', fontFamily: FONT }}>기준 텍스트 <span style={{ color: '#334155' }}>(팀명 아래)</span></p>
+        <p style={{ margin: '0 0 3px', fontSize: 11, color: '#64748B', fontFamily: FONT }}>기준 텍스트 <span style={{ color: '#334155' }}>(팀명 아래)</span></p>
         <input value={meta.dateLine} onChange={e => setMeta(m => ({ ...m, dateLine: e.target.value }))}
           style={{ ...inputStyle, marginBottom: 10 }} />
 
         {/* Notice */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-          <p style={{ margin: 0, fontSize: 9, color: '#64748B', fontFamily: FONT }}>Notice</p>
+          <p style={{ margin: 0, fontSize: 11, color: '#64748B', fontFamily: FONT }}>Notice</p>
           <button onClick={() => setMeta(m => ({ ...m, showNotice: !m.showNotice }))}
             style={{ background: meta.showNotice ? LG_RED : '#334155', border: 'none', borderRadius: 8,
               width: 32, height: 16, cursor: 'pointer', position: 'relative', padding: 0, transition: 'background 0.2s' }}>
@@ -732,14 +769,14 @@ function Sidebar({ meta, total, products, citations, dotcom, setMeta, setTotal, 
           <textarea value={meta.noticeText} onChange={e => setMeta(m => ({ ...m, noticeText: e.target.value }))}
             rows={4} placeholder="Notice 내용을 입력하세요..."
             style={{ ...inputStyle, marginBottom: 4, resize: 'vertical' }} />
-          <p style={{ margin: '0 0 10px', fontSize: 8, color: '#475569', fontFamily: FONT }}>**텍스트** → <strong>볼드</strong></p>
+          <p style={{ margin: '0 0 10px', fontSize: 11, color: '#475569', fontFamily: FONT }}>**텍스트** → <strong>볼드</strong></p>
         </>)}
 
         {/* 폰트 크기 */}
         <div style={{ marginBottom: 10 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-            <p style={{ margin: 0, fontSize: 9, color: '#64748B', fontFamily: FONT }}>폰트 크기</p>
-            <p style={{ margin: 0, fontSize: 9, color: '#94A3B8', fontFamily: FONT, fontWeight: 700 }}>
+            <p style={{ margin: 0, fontSize: 11, color: '#64748B', fontFamily: FONT }}>폰트 크기</p>
+            <p style={{ margin: 0, fontSize: 11, color: '#94A3B8', fontFamily: FONT, fontWeight: 700 }}>
               {meta.titleFontSize}px
             </p>
           </div>
@@ -753,7 +790,7 @@ function Sidebar({ meta, total, products, citations, dotcom, setMeta, setTotal, 
 
         {/* 색상 */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-          <p style={{ margin: 0, fontSize: 9, color: '#64748B', fontFamily: FONT, flex: 1 }}>제목 색상</p>
+          <p style={{ margin: 0, fontSize: 11, color: '#64748B', fontFamily: FONT, flex: 1 }}>제목 색상</p>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <input
               type="color"
@@ -762,7 +799,7 @@ function Sidebar({ meta, total, products, citations, dotcom, setMeta, setTotal, 
               style={{ width: 32, height: 26, border: '1px solid #334155', borderRadius: 5,
                 background: 'none', cursor: 'pointer', padding: 2 }}
             />
-            <span style={{ fontSize: 9, color: '#475569', fontFamily: FONT }}>{meta.titleColor}</span>
+            <span style={{ fontSize: 11, color: '#475569', fontFamily: FONT }}>{meta.titleColor}</span>
             {/* 빠른 색상 프리셋 */}
             {[['#1A1A1A','다크'],['#CF0652','LG 레드'],['#1D4ED8','블루'],['#FFFFFF','화이트']].map(([c, label]) => (
               <button key={c} onClick={() => setMeta(m => ({ ...m, titleColor: c }))}
@@ -776,14 +813,38 @@ function Sidebar({ meta, total, products, citations, dotcom, setMeta, setTotal, 
 
         <div style={{ height: 1, background: '#1E293B', marginBottom: 16 }} />
 
+        {/* 섹션 표시/숨김 토글 */}
+        <p style={{ margin: '0 0 8px 2px', fontSize: 11, fontWeight: 700, color: '#475569',
+          textTransform: 'uppercase', letterSpacing: 1, fontFamily: FONT }}>
+          섹션 표시
+        </p>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginBottom: 16 }}>
+          {[
+            { key: 'showTotal',     label: 'GEO 지수' },
+            { key: 'showProducts',  label: '제품별' },
+            { key: 'showCnty',      label: '국가별' },
+            { key: 'showCitations', label: 'Citation' },
+            { key: 'showDotcom',    label: '닷컴' },
+            { key: 'showTodo',      label: 'Action Plan' },
+          ].map(({ key, label }) => (
+            <button key={key} onClick={() => setMeta(m => ({ ...m, [key]: !m[key] }))}
+              style={{ padding: '5px 12px', borderRadius: 20, border: 'none', cursor: 'pointer',
+                background: meta[key] ? LG_RED : '#1E293B',
+                color: meta[key] ? '#FFFFFF' : '#475569',
+                fontSize: 11, fontWeight: 700, fontFamily: FONT }}>
+              {label}
+            </button>
+          ))}
+        </div>
+
         {/* ── 콘텐츠 편집 ── */}
-        <p style={{ margin: '0 0 10px 2px', fontSize: 10, fontWeight: 700, color: '#475569',
+        <p style={{ margin: '0 0 10px 2px', fontSize: 11, fontWeight: 700, color: '#475569',
           textTransform: 'uppercase', letterSpacing: 1, fontFamily: FONT }}>
           콘텐츠 편집
         </p>
 
         {/* GEO 전략 인사이트 */}
-        <p style={{ margin: '0 0 3px', fontSize: 9, color: '#64748B', fontFamily: FONT }}>GEO 전략 인사이트</p>
+        <p style={{ margin: '0 0 3px', fontSize: 11, color: '#64748B', fontFamily: FONT }}>GEO 전략 인사이트</p>
         <textarea
           value={meta.totalInsight}
           onChange={e => setMeta(m => ({ ...m, totalInsight: e.target.value }))}
@@ -791,24 +852,24 @@ function Sidebar({ meta, total, products, citations, dotcom, setMeta, setTotal, 
           placeholder="전체 GEO 가시성 카드에 표시할 전략 인사이트를 입력하세요..."
           style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6, marginBottom: 4 }}
         />
-        <p style={{ margin: '0 0 10px', fontSize: 8, color: '#475569', fontFamily: FONT }}>**텍스트** → <strong>볼드</strong> · 줄바꿈 지원</p>
+        <p style={{ margin: '0 0 10px', fontSize: 11, color: '#475569', fontFamily: FONT }}>**텍스트** → <strong>볼드</strong> · 줄바꿈 지원</p>
 
         {/* 제품 섹션 인사이트 */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-          <p style={{ margin: 0, fontSize: 9, color: '#64748B', fontFamily: FONT }}>제품 섹션 인사이트</p>
+          <p style={{ margin: 0, fontSize: 11, color: '#64748B', fontFamily: FONT }}>제품 섹션 인사이트</p>
           <div style={{ display: 'flex', gap: 4 }}>
             <button onClick={() => setMeta(m => ({ ...m, productInsight: generateProductInsight(products) }))}
               title="AI 인사이트 자동생성"
               style={{ padding: '2px 6px', borderRadius: 4, border: 'none', cursor: 'pointer',
                 background: '#4F46E5', color: '#FFFFFF',
-                fontSize: 9, fontWeight: 700, fontFamily: FONT, display: 'flex', alignItems: 'center', gap: 3 }}>
+                fontSize: 11, fontWeight: 700, fontFamily: FONT, display: 'flex', alignItems: 'center', gap: 3 }}>
               <Sparkles size={9} /> AI 생성
             </button>
             <button onClick={() => setMeta(m => ({ ...m, showProductInsight: !m.showProductInsight }))}
               style={{ padding: '2px 8px', borderRadius: 4, border: 'none', cursor: 'pointer',
                 background: meta.showProductInsight ? LG_RED : '#1E293B',
                 color: meta.showProductInsight ? '#FFFFFF' : '#475569',
-                fontSize: 9, fontWeight: 700, fontFamily: FONT }}>
+                fontSize: 11, fontWeight: 700, fontFamily: FONT }}>
               {meta.showProductInsight ? 'ON' : 'OFF'}
             </button>
           </div>
@@ -823,20 +884,20 @@ function Sidebar({ meta, total, products, citations, dotcom, setMeta, setTotal, 
 
         {/* 제품 섹션 How to Read */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-          <p style={{ margin: 0, fontSize: 9, color: '#64748B', fontFamily: FONT }}>제품 섹션 How to Read</p>
+          <p style={{ margin: 0, fontSize: 11, color: '#64748B', fontFamily: FONT }}>제품 섹션 How to Read</p>
           <div style={{ display: 'flex', gap: 4 }}>
             <button onClick={() => setMeta(m => ({ ...m, productHowToRead: generateProductHowToRead() }))}
               title="AI 인사이트 자동생성"
               style={{ padding: '2px 6px', borderRadius: 4, border: 'none', cursor: 'pointer',
                 background: '#4F46E5', color: '#FFFFFF',
-                fontSize: 9, fontWeight: 700, fontFamily: FONT, display: 'flex', alignItems: 'center', gap: 3 }}>
+                fontSize: 11, fontWeight: 700, fontFamily: FONT, display: 'flex', alignItems: 'center', gap: 3 }}>
               <Sparkles size={9} /> AI 생성
             </button>
             <button onClick={() => setMeta(m => ({ ...m, showProductHowToRead: !m.showProductHowToRead }))}
               style={{ padding: '2px 8px', borderRadius: 4, border: 'none', cursor: 'pointer',
                 background: meta.showProductHowToRead ? LG_RED : '#1E293B',
                 color: meta.showProductHowToRead ? '#FFFFFF' : '#475569',
-                fontSize: 9, fontWeight: 700, fontFamily: FONT }}>
+                fontSize: 11, fontWeight: 700, fontFamily: FONT }}>
               {meta.showProductHowToRead ? 'ON' : 'OFF'}
             </button>
           </div>
@@ -849,22 +910,60 @@ function Sidebar({ meta, total, products, citations, dotcom, setMeta, setTotal, 
           style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6, marginBottom: 8 }}
         />
 
+        {/* 국가별 섹션 인사이트 */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+          <p style={{ margin: 0, fontSize: 11, color: '#64748B', fontFamily: FONT }}>국가별 섹션 인사이트</p>
+          <button onClick={() => setMeta(m => ({ ...m, showCntyInsight: !m.showCntyInsight }))}
+            style={{ padding: '2px 8px', borderRadius: 4, border: 'none', cursor: 'pointer',
+              background: meta.showCntyInsight ? LG_RED : '#1E293B',
+              color: meta.showCntyInsight ? '#FFFFFF' : '#475569',
+              fontSize: 11, fontWeight: 700, fontFamily: FONT }}>
+            {meta.showCntyInsight ? 'ON' : 'OFF'}
+          </button>
+        </div>
+        <textarea
+          value={meta.cntyInsight}
+          onChange={e => setMeta(m => ({ ...m, cntyInsight: e.target.value }))}
+          rows={8}
+          placeholder="국가별 섹션 인사이트를 입력하세요..."
+          style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6, marginBottom: 8 }}
+        />
+
+        {/* 국가별 How to Read */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+          <p style={{ margin: 0, fontSize: 11, color: '#64748B', fontFamily: FONT }}>국가별 How to Read</p>
+          <button onClick={() => setMeta(m => ({ ...m, showCntyHowToRead: !m.showCntyHowToRead }))}
+            style={{ padding: '2px 8px', borderRadius: 4, border: 'none', cursor: 'pointer',
+              background: meta.showCntyHowToRead ? LG_RED : '#1E293B',
+              color: meta.showCntyHowToRead ? '#FFFFFF' : '#475569',
+              fontSize: 11, fontWeight: 700, fontFamily: FONT }}>
+            {meta.showCntyHowToRead ? 'ON' : 'OFF'}
+          </button>
+        </div>
+        <textarea
+          value={meta.cntyHowToRead}
+          onChange={e => setMeta(m => ({ ...m, cntyHowToRead: e.target.value }))}
+          rows={4}
+          placeholder="국가별 How to Read 설명을 입력하세요..."
+          style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6, marginBottom: 8 }}
+        />
+
         {/* Citation 인사이트 */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-          <p style={{ margin: 0, fontSize: 9, color: '#64748B', fontFamily: FONT }}>Citation 섹션 인사이트</p>
+          <p style={{ margin: 0, fontSize: 11, color: '#64748B', fontFamily: FONT }}>Citation 섹션 인사이트</p>
           <div style={{ display: 'flex', gap: 4 }}>
             <button onClick={() => setMeta(m => ({ ...m, citationInsight: generateCitationInsight(citations) }))}
               title="AI 인사이트 자동생성"
               style={{ padding: '2px 6px', borderRadius: 4, border: 'none', cursor: 'pointer',
                 background: '#4F46E5', color: '#FFFFFF',
-                fontSize: 9, fontWeight: 700, fontFamily: FONT, display: 'flex', alignItems: 'center', gap: 3 }}>
+                fontSize: 11, fontWeight: 700, fontFamily: FONT, display: 'flex', alignItems: 'center', gap: 3 }}>
               <Sparkles size={9} /> AI 생성
             </button>
             <button onClick={() => setMeta(m => ({ ...m, showCitationInsight: !m.showCitationInsight }))}
               style={{ padding: '2px 8px', borderRadius: 4, border: 'none', cursor: 'pointer',
                 background: meta.showCitationInsight ? LG_RED : '#1E293B',
                 color: meta.showCitationInsight ? '#FFFFFF' : '#475569',
-                fontSize: 9, fontWeight: 700, fontFamily: FONT }}>
+                fontSize: 11, fontWeight: 700, fontFamily: FONT }}>
               {meta.showCitationInsight ? 'ON' : 'OFF'}
             </button>
           </div>
@@ -879,20 +978,20 @@ function Sidebar({ meta, total, products, citations, dotcom, setMeta, setTotal, 
 
         {/* Citation How to Read */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-          <p style={{ margin: 0, fontSize: 9, color: '#64748B', fontFamily: FONT }}>Citation How to Read</p>
+          <p style={{ margin: 0, fontSize: 11, color: '#64748B', fontFamily: FONT }}>Citation How to Read</p>
           <div style={{ display: 'flex', gap: 4 }}>
             <button onClick={() => setMeta(m => ({ ...m, citationHowToRead: generateCitationHowToRead() }))}
               title="AI 인사이트 자동생성"
               style={{ padding: '2px 6px', borderRadius: 4, border: 'none', cursor: 'pointer',
                 background: '#4F46E5', color: '#FFFFFF',
-                fontSize: 9, fontWeight: 700, fontFamily: FONT, display: 'flex', alignItems: 'center', gap: 3 }}>
+                fontSize: 11, fontWeight: 700, fontFamily: FONT, display: 'flex', alignItems: 'center', gap: 3 }}>
               <Sparkles size={9} /> AI 생성
             </button>
             <button onClick={() => setMeta(m => ({ ...m, showCitationHowToRead: !m.showCitationHowToRead }))}
               style={{ padding: '2px 8px', borderRadius: 4, border: 'none', cursor: 'pointer',
                 background: meta.showCitationHowToRead ? LG_RED : '#1E293B',
                 color: meta.showCitationHowToRead ? '#FFFFFF' : '#475569',
-                fontSize: 9, fontWeight: 700, fontFamily: FONT }}>
+                fontSize: 11, fontWeight: 700, fontFamily: FONT }}>
               {meta.showCitationHowToRead ? 'ON' : 'OFF'}
             </button>
           </div>
@@ -907,20 +1006,20 @@ function Sidebar({ meta, total, products, citations, dotcom, setMeta, setTotal, 
 
         {/* 닷컴 Citation 인사이트 */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-          <p style={{ margin: 0, fontSize: 9, color: '#64748B', fontFamily: FONT }}>닷컴 Citation 인사이트</p>
+          <p style={{ margin: 0, fontSize: 11, color: '#64748B', fontFamily: FONT }}>닷컴 Citation 인사이트</p>
           <div style={{ display: 'flex', gap: 4 }}>
             <button onClick={() => setMeta(m => ({ ...m, dotcomInsight: generateDotcomInsight(dotcom) }))}
               title="AI 인사이트 자동생성"
               style={{ padding: '2px 6px', borderRadius: 4, border: 'none', cursor: 'pointer',
                 background: '#4F46E5', color: '#FFFFFF',
-                fontSize: 9, fontWeight: 700, fontFamily: FONT, display: 'flex', alignItems: 'center', gap: 3 }}>
+                fontSize: 11, fontWeight: 700, fontFamily: FONT, display: 'flex', alignItems: 'center', gap: 3 }}>
               <Sparkles size={9} /> AI 생성
             </button>
             <button onClick={() => setMeta(m => ({ ...m, showDotcomInsight: !m.showDotcomInsight }))}
               style={{ padding: '2px 8px', borderRadius: 4, border: 'none', cursor: 'pointer',
                 background: meta.showDotcomInsight ? LG_RED : '#1E293B',
                 color: meta.showDotcomInsight ? '#FFFFFF' : '#475569',
-                fontSize: 9, fontWeight: 700, fontFamily: FONT }}>
+                fontSize: 11, fontWeight: 700, fontFamily: FONT }}>
               {meta.showDotcomInsight ? 'ON' : 'OFF'}
             </button>
           </div>
@@ -935,20 +1034,20 @@ function Sidebar({ meta, total, products, citations, dotcom, setMeta, setTotal, 
 
         {/* 닷컴 Citation How to Read */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-          <p style={{ margin: 0, fontSize: 9, color: '#64748B', fontFamily: FONT }}>닷컴 Citation How to Read</p>
+          <p style={{ margin: 0, fontSize: 11, color: '#64748B', fontFamily: FONT }}>닷컴 Citation How to Read</p>
           <div style={{ display: 'flex', gap: 4 }}>
             <button onClick={() => setMeta(m => ({ ...m, dotcomHowToRead: generateDotcomHowToRead() }))}
               title="AI 인사이트 자동생성"
               style={{ padding: '2px 6px', borderRadius: 4, border: 'none', cursor: 'pointer',
                 background: '#4F46E5', color: '#FFFFFF',
-                fontSize: 9, fontWeight: 700, fontFamily: FONT, display: 'flex', alignItems: 'center', gap: 3 }}>
+                fontSize: 11, fontWeight: 700, fontFamily: FONT, display: 'flex', alignItems: 'center', gap: 3 }}>
               <Sparkles size={9} /> AI 생성
             </button>
             <button onClick={() => setMeta(m => ({ ...m, showDotcomHowToRead: !m.showDotcomHowToRead }))}
               style={{ padding: '2px 8px', borderRadius: 4, border: 'none', cursor: 'pointer',
                 background: meta.showDotcomHowToRead ? LG_RED : '#1E293B',
                 color: meta.showDotcomHowToRead ? '#FFFFFF' : '#475569',
-                fontSize: 9, fontWeight: 700, fontFamily: FONT }}>
+                fontSize: 11, fontWeight: 700, fontFamily: FONT }}>
               {meta.showDotcomHowToRead ? 'ON' : 'OFF'}
             </button>
           </div>
@@ -963,12 +1062,12 @@ function Sidebar({ meta, total, products, citations, dotcom, setMeta, setTotal, 
 
         {/* Action Plan 섹션 */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-          <p style={{ margin: 0, fontSize: 9, color: '#64748B', fontFamily: FONT }}>Action Plan 섹션</p>
+          <p style={{ margin: 0, fontSize: 11, color: '#64748B', fontFamily: FONT }}>Action Plan 섹션</p>
           <button onClick={() => setMeta(m => ({ ...m, showTodo: !m.showTodo }))}
             style={{ padding: '2px 8px', borderRadius: 4, border: 'none', cursor: 'pointer',
               background: meta.showTodo ? LG_RED : '#1E293B',
               color: meta.showTodo ? '#FFFFFF' : '#475569',
-              fontSize: 9, fontWeight: 700, fontFamily: FONT }}>
+              fontSize: 11, fontWeight: 700, fontFamily: FONT }}>
             {meta.showTodo ? 'ON' : 'OFF'}
           </button>
         </div>
@@ -979,7 +1078,7 @@ function Sidebar({ meta, total, products, citations, dotcom, setMeta, setTotal, 
           placeholder="Action Plan을 입력하세요...&#10;예: - Citation Optimization 전략 수립&#10;- 구조화 데이터 업데이트"
           style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6, marginBottom: 4 }}
         />
-        <p style={{ margin: '0 0 16px', fontSize: 8, color: '#475569', fontFamily: FONT }}>**텍스트** → <strong>볼드</strong> · 줄바꿈 지원</p>
+        <p style={{ margin: '0 0 16px', fontSize: 11, color: '#475569', fontFamily: FONT }}>**텍스트** → <strong>볼드</strong> · 줄바꿈 지원</p>
 
         <div style={{ height: 1, background: '#1E293B', marginBottom: 16 }} />
 
@@ -1026,7 +1125,7 @@ function Sidebar({ meta, total, products, citations, dotcom, setMeta, setTotal, 
         <div style={{ height: 1, background: '#1E293B', marginBottom: 16 }} />
 
         {/* 데이터 연동 */}
-        <p style={{ margin: '0 0 10px 2px', fontSize: 10, fontWeight: 700, color: '#475569',
+        <p style={{ margin: '0 0 10px 2px', fontSize: 11, fontWeight: 700, color: '#475569',
           textTransform: 'uppercase', letterSpacing: 1, fontFamily: FONT }}>
           데이터 연동
         </p>
@@ -1042,9 +1141,9 @@ function Sidebar({ meta, total, products, citations, dotcom, setMeta, setTotal, 
 
         {/* 사용 방법 */}
         <div style={{ background: '#1E293B', borderRadius: 8, padding: '10px 12px', marginBottom: 12 }}>
-          <p style={{ margin: '0 0 6px', fontSize: 9, fontWeight: 700, color: '#64748B', fontFamily: FONT,
+          <p style={{ margin: '0 0 6px', fontSize: 11, fontWeight: 700, color: '#64748B', fontFamily: FONT,
             textTransform: 'uppercase', letterSpacing: 0.8 }}>연동 방법</p>
-          <p style={{ margin: 0, fontSize: 9, color: '#475569', fontFamily: FONT, lineHeight: 1.8 }}>
+          <p style={{ margin: 0, fontSize: 11, color: '#475569', fontFamily: FONT, lineHeight: 1.8 }}>
             ① 템플릿 다운로드 (.xlsx)<br />
             ② Google Sheets → 파일 → 가져오기<br />
             ③ 공유 → <span style={{ color: '#94A3B8' }}>링크가 있는 모든 사용자 (뷰어)</span><br />
@@ -1053,12 +1152,12 @@ function Sidebar({ meta, total, products, citations, dotcom, setMeta, setTotal, 
         </div>
 
         {/* URL 입력 */}
-        <p style={{ margin: '0 0 4px', fontSize: 9, color: '#475569', fontFamily: FONT }}>Google Sheets URL</p>
+        <p style={{ margin: '0 0 4px', fontSize: 11, color: '#475569', fontFamily: FONT }}>Google Sheets URL</p>
         <input
           value={gsUrl}
           onChange={e => setGsUrl(e.target.value)}
           placeholder="https://docs.google.com/spreadsheets/d/..."
-          style={{ ...inputStyle, fontSize: 9, padding: '7px 9px', marginBottom: 8,
+          style={{ ...inputStyle, fontSize: 11, padding: '7px 9px', marginBottom: 8,
             color: gsUrl ? '#E2E8F0' : '#334155' }}
         />
 
@@ -1081,7 +1180,7 @@ function Sidebar({ meta, total, products, citations, dotcom, setMeta, setTotal, 
         {/* 상태 메시지 */}
         {(gsStatus || (gsSyncing && gsMsg)) && (
           <div style={{
-            padding: '8px 10px', borderRadius: 7, fontSize: 9, fontFamily: FONT, lineHeight: 1.6,
+            padding: '8px 10px', borderRadius: 7, fontSize: 11, fontFamily: FONT, lineHeight: 1.6,
             background: gsStatus === 'ok' ? '#14532D' : gsStatus === 'error' ? '#450A0A' : '#1E293B',
             color:      gsStatus === 'ok' ? '#86EFAC' : gsStatus === 'error' ? '#FCA5A5' : '#94A3B8',
             border: `1px solid ${gsStatus === 'ok' ? '#22C55E33' : gsStatus === 'error' ? '#EF444433' : '#334155'}`,
@@ -1094,7 +1193,7 @@ function Sidebar({ meta, total, products, citations, dotcom, setMeta, setTotal, 
         <div style={{ height: 1, background: '#1E293B', margin: '16px 0' }} />
 
         {/* 출력 */}
-        <p style={{ margin: '0 0 10px 2px', fontSize: 10, fontWeight: 700, color: '#475569',
+        <p style={{ margin: '0 0 10px 2px', fontSize: 11, fontWeight: 700, color: '#475569',
           textTransform: 'uppercase', letterSpacing: 1, fontFamily: FONT }}>
           출력
         </p>
@@ -1113,13 +1212,13 @@ function Sidebar({ meta, total, products, citations, dotcom, setMeta, setTotal, 
         </button>
 
         {/* 메일 발송 */}
-        <p style={{ margin: '0 0 4px', fontSize: 9, color: '#64748B', fontFamily: FONT }}>수신 이메일 주소</p>
+        <p style={{ margin: '0 0 4px', fontSize: 11, color: '#64748B', fontFamily: FONT }}>수신 이메일 주소</p>
         <input
           type="email"
           value={toEmail}
           onChange={e => setToEmail(e.target.value)}
           placeholder="recipient@example.com"
-          style={{ ...inputStyle, fontSize: 10, marginBottom: 8 }}
+          style={{ ...inputStyle, fontSize: 11, marginBottom: 8 }}
         />
         <button
           onClick={handleSendMail}
@@ -1142,7 +1241,7 @@ function Sidebar({ meta, total, products, citations, dotcom, setMeta, setTotal, 
 
       {/* 폰트 안내 */}
       <div style={{ padding: '10px 14px', borderTop: '1px solid #1E293B' }}>
-        <p style={{ margin: 0, fontSize: 9, color: '#1E293B', fontFamily: FONT, lineHeight: 1.6 }}>
+        <p style={{ margin: 0, fontSize: 11, color: '#1E293B', fontFamily: FONT, lineHeight: 1.6 }}>
           LG 스마트체 · Arial Narrow
         </p>
       </div>
@@ -1151,9 +1250,9 @@ function Sidebar({ meta, total, products, citations, dotcom, setMeta, setTotal, 
 }
 
 // ─── HTML 코드 뷰어 ───────────────────────────────────────────────────────────
-function HtmlCodeViewer({ meta, total, products, citations, dotcom, lang = 'ko' }) {
+function HtmlCodeViewer({ meta, total, products, citations, dotcom, productsCnty = [], lang = 'ko' }) {
   const [copied, setCopied] = useState(false)
-  const html = generateEmailHTML(meta, total, products, citations, dotcom, lang)
+  const html = generateEmailHTML(meta, total, products, citations, dotcom, lang, productsCnty)
 
   async function handleCopy() {
     try {
@@ -1176,7 +1275,7 @@ function HtmlCodeViewer({ meta, total, products, citations, dotcom, lang = 'ko' 
           <span style={{ fontSize: 11, fontWeight: 700, color: '#94A3B8', fontFamily: FONT }}>
             이메일 HTML 코드
           </span>
-          <span style={{ fontSize: 9, color: '#334155', fontFamily: FONT, marginLeft: 10 }}>
+          <span style={{ fontSize: 11, color: '#334155', fontFamily: FONT, marginLeft: 10 }}>
             table 기반 · 인라인 스타일 · 이메일 클라이언트 호환
           </span>
         </div>
@@ -1213,6 +1312,7 @@ export default function App() {
   const [products,  setProducts]  = useState(cache?.products  ?? INIT_PRODUCTS)
   const [citations, setCitations] = useState(cache?.citations ?? INIT_CITATIONS)
   const [dotcom,    setDotcom]    = useState((cache?.dotcom && cache.dotcom.lg) ? cache.dotcom : INIT_DOTCOM)
+  const [productsCnty, setProductsCnty] = useState(cache?.productsCnty ?? INIT_PRODUCTS_CNTY)
   const [activeTab, setActiveTab] = useState('preview') // 'preview' | 'code'
   const [previewLang, setPreviewLang] = useState('ko') // 'ko' | 'en'
   const [snapshots,  setSnapshots]  = useState([])
@@ -1226,8 +1326,8 @@ export default function App() {
 
   // 상태 변경 시 localStorage에 자동 저장
   useEffect(() => {
-    saveCache({ meta, total, products, citations, dotcom })
-  }, [meta, total, products, citations, dotcom])
+    saveCache({ meta, total, products, citations, dotcom, productsCnty })
+  }, [meta, total, products, citations, dotcom, productsCnty])
 
   // 저장 (기존 스냅샷 덮어쓰기)
   async function handleSnapOverwrite() {
@@ -1265,8 +1365,8 @@ export default function App() {
   return (
     <div style={{ display: 'flex', height: '100vh', background: '#0A0F1C', fontFamily: FONT }}>
       <Sidebar
-        meta={meta} total={total} products={products} citations={citations} dotcom={dotcom}
-        setMeta={setMeta} setTotal={setTotal} setProducts={setProducts} setCitations={setCitations} setDotcom={setDotcom}
+        meta={meta} total={total} products={products} citations={citations} dotcom={dotcom} productsCnty={productsCnty}
+        setMeta={setMeta} setTotal={setTotal} setProducts={setProducts} setCitations={setCitations} setDotcom={setDotcom} setProductsCnty={setProductsCnty}
         previewLang={previewLang} setPreviewLang={setPreviewLang} snapshots={snapshots} setSnapshots={setSnapshots}
       />
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
@@ -1296,13 +1396,13 @@ export default function App() {
             })}
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            {snapMsg && <span style={{ fontSize: 10, color: '#22C55E', fontFamily: FONT }}>{snapMsg}</span>}
+            {snapMsg && <span style={{ fontSize: 11, color: '#22C55E', fontFamily: FONT }}>{snapMsg}</span>}
             {/* 저장 — activeSnap이 있을 때만 활성 */}
             <button onClick={handleSnapOverwrite} disabled={!activeSnap}
               title={activeSnap ? '현재 버전에 덮어쓰기' : '불러온 버전이 없습니다'}
               style={{ padding: '4px 10px', borderRadius: 6, border: 'none', cursor: activeSnap ? 'pointer' : 'default',
                 background: activeSnap ? '#1D4ED8' : '#1E293B', color: activeSnap ? '#FFFFFF' : '#475569',
-                fontSize: 10, fontWeight: 700, fontFamily: FONT,
+                fontSize: 11, fontWeight: 700, fontFamily: FONT,
                 display: 'flex', alignItems: 'center', gap: 4, opacity: activeSnap ? 1 : 0.5 }}>
               <Save size={11} /> 저장
             </button>
@@ -1311,10 +1411,10 @@ export default function App() {
               placeholder="버전 이름..."
               onKeyDown={e => e.key === 'Enter' && handleSnapSaveNew()}
               style={{ width: 120, background: '#1E293B', border: '1px solid #334155', borderRadius: 6,
-                padding: '4px 8px', fontSize: 10, color: '#E2E8F0', fontFamily: FONT, outline: 'none' }} />
+                padding: '4px 8px', fontSize: 11, color: '#E2E8F0', fontFamily: FONT, outline: 'none' }} />
             <button onClick={handleSnapSaveNew} title="새 버전으로 저장"
               style={{ padding: '4px 10px', borderRadius: 6, border: 'none', cursor: 'pointer',
-                background: '#166534', color: '#86EFAC', fontSize: 10, fontWeight: 700, fontFamily: FONT,
+                background: '#166534', color: '#86EFAC', fontSize: 11, fontWeight: 700, fontFamily: FONT,
                 display: 'flex', alignItems: 'center', gap: 4 }}>
               <Save size={11} /> 새로 저장
             </button>
@@ -1322,9 +1422,9 @@ export default function App() {
             <div style={{ position: 'relative' }}>
               <button onClick={() => setSnapOpen(!snapOpen)} title="저장된 버전 불러오기"
                 style={{ padding: '4px 10px', borderRadius: 6, border: 'none', cursor: 'pointer',
-                  background: snapOpen ? '#334155' : '#1E293B', color: '#E2E8F0', fontSize: 10, fontWeight: 700, fontFamily: FONT,
+                  background: snapOpen ? '#334155' : '#1E293B', color: '#E2E8F0', fontSize: 11, fontWeight: 700, fontFamily: FONT,
                   display: 'flex', alignItems: 'center', gap: 4 }}>
-                <FolderOpen size={11} /> 불러오기 {snapshots.length > 0 && <span style={{ fontSize: 9, color: '#94A3B8' }}>({snapshots.length})</span>}
+                <FolderOpen size={11} /> 불러오기 {snapshots.length > 0 && <span style={{ fontSize: 11, color: '#94A3B8' }}>({snapshots.length})</span>}
               </button>
               {snapOpen && (
                 <div style={{ position: 'absolute', top: 32, right: 0, width: 320, maxHeight: 360, overflowY: 'auto',
@@ -1332,7 +1432,7 @@ export default function App() {
                   boxShadow: '0 8px 24px rgba(0,0,0,0.4)' }}
                   onClick={e => e.stopPropagation()}>
                   {snapshots.length === 0 ? (
-                    <p style={{ margin: 0, padding: 12, fontSize: 10, color: '#64748B', fontFamily: FONT, textAlign: 'center' }}>저장된 버전이 없습니다</p>
+                    <p style={{ margin: 0, padding: 12, fontSize: 11, color: '#64748B', fontFamily: FONT, textAlign: 'center' }}>저장된 버전이 없습니다</p>
                   ) : snapshots.map((snap, i) => (
                     <div key={snap.ts} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 10px',
                       borderRadius: 7, marginBottom: 2, background: activeSnap === snap.ts ? '#1E3A5F' : '#0F172A',
@@ -1340,18 +1440,18 @@ export default function App() {
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <p style={{ margin: 0, fontSize: 11, fontWeight: 700, color: '#E2E8F0', fontFamily: FONT,
                           overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{snap.name}</p>
-                        <p style={{ margin: 0, fontSize: 9, color: '#64748B', fontFamily: FONT }}>
+                        <p style={{ margin: 0, fontSize: 11, color: '#64748B', fontFamily: FONT }}>
                           {new Date(snap.ts).toLocaleString('ko-KR')}
                         </p>
                       </div>
                       <button onClick={() => { handleSnapLoad(snap); setSnapOpen(false) }}
                         style={{ padding: '3px 8px', borderRadius: 5, border: 'none', cursor: 'pointer',
-                          background: '#166534', color: '#FFFFFF', fontSize: 9, fontWeight: 700, fontFamily: FONT }}>
+                          background: '#166534', color: '#FFFFFF', fontSize: 11, fontWeight: 700, fontFamily: FONT }}>
                         적용
                       </button>
                       <button onClick={() => handleSnapDelete(i)}
                         style={{ padding: '3px 5px', borderRadius: 5, border: 'none', cursor: 'pointer',
-                          background: '#7F1D1D', color: '#FCA5A5', fontSize: 9, display: 'flex' }}>
+                          background: '#7F1D1D', color: '#FCA5A5', fontSize: 11, display: 'flex' }}>
                         <Trash2 size={10} />
                       </button>
                     </div>
@@ -1367,11 +1467,11 @@ export default function App() {
           <div style={{ flex: 1, overflowY: 'auto', padding: '28px 36px',
             background: 'linear-gradient(180deg, #0A0F1C 0%, #0F172A 100%)' }}>
             <div style={{ maxWidth: 720, margin: '0 auto' }}>
-              <NewsletterPreview meta={meta} total={total} products={products} citations={citations} dotcom={dotcom} lang={previewLang} />
+              <NewsletterPreview meta={meta} total={total} products={products} citations={citations} dotcom={dotcom} productsCnty={productsCnty} lang={previewLang} />
             </div>
           </div>
         ) : (
-          <HtmlCodeViewer meta={meta} total={total} products={products} citations={citations} dotcom={dotcom} lang={previewLang} />
+          <HtmlCodeViewer meta={meta} total={total} products={products} citations={citations} dotcom={dotcom} productsCnty={productsCnty} lang={previewLang} />
         )}
       </div>
     </div>

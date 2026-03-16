@@ -15,6 +15,8 @@ const T = {
     productTitle: '제품별 GEO Visibility 현황',
     legendLead: '선도 ≥100%', legendBehind: '추격 ≥80%', legendCritical: '취약 <80%',
     lgBasis: 'LG/1위 기준',
+    cntyTitle: '국가별 GEO Visibility 현황',
+    cntyComp: '1위 경쟁사',
     citationTitle: '도메인 카테고리별 Citation 현황',
     citationLegend: 'Citation Score (MoM 증감)',
     dotcomTitle: '닷컴 Citation (경쟁사대비)',
@@ -38,6 +40,8 @@ const T = {
     productTitle: 'GEO Visibility by Product',
     legendLead: 'Lead ≥100%', legendBehind: 'Behind ≥80%', legendCritical: 'Critical <80%',
     lgBasis: 'LG/Top 1 Basis',
+    cntyTitle: 'GEO Visibility by Country',
+    cntyComp: 'Top 1 Competitor',
     citationTitle: 'Citation by Domain Category',
     citationLegend: 'Citation Score (MoM Change)',
     dotcomTitle: 'Dotcom Citation (vs Competitor)',
@@ -250,6 +254,135 @@ function insightBlockHtml(insight, showInsight, howToRead, showHowToRead, lang =
   return html
 }
 
+// ─── 국가별 Visibility ────────────────────────────────────────────────────────
+function cntyStatus(score, compScore) {
+  if (compScore <= 0) return 'lead'
+  const ratio = score / compScore * 100
+  if (ratio >= 100) return 'lead'
+  if (ratio >= 80)  return 'behind'
+  return 'critical'
+}
+
+function countryProductSectionHtml(productName, rows, lang) {
+  const t = T[lang] || T.ko
+  const maxScore = Math.max(...rows.map(r => Math.max(r.score, r.compScore)), 1)
+  const BAR_MAX = 44
+
+  const statuses      = rows.map(r => cntyStatus(r.score, r.compScore))
+  const leadCount     = statuses.filter(s => s === 'lead').length
+  const behindCount   = statuses.filter(s => s === 'behind').length
+  const criticalCount = statuses.filter(s => s === 'critical').length
+
+  const summaryParts = []
+  if (leadCount)     summaryParts.push(`<span style="color:#15803D;font-weight:700;font-family:${EM_FONT};">${t.lead} ${leadCount}</span>`)
+  if (behindCount)   summaryParts.push(`<span style="color:#E8910C;font-weight:700;font-family:${EM_FONT};">${t.behind} ${behindCount}</span>`)
+  if (criticalCount) summaryParts.push(`<span style="color:#BE123C;font-weight:700;font-family:${EM_FONT};">${t.critical} ${criticalCount}</span>`)
+
+  const colWidth = Math.floor(100 / rows.length)
+
+  // 세로 바 컬럼들
+  const barCols = rows.map(r => {
+    const status   = cntyStatus(r.score, r.compScore)
+    const barColor = status === 'lead' ? '#15803D' : status === 'behind' ? '#E8910C' : '#BE123C'
+    const barH     = Math.max(Math.round((r.score / maxScore) * BAR_MAX), 3)
+    const spacerH  = BAR_MAX - barH
+    const gap      = +(r.score - r.compScore).toFixed(1)
+    const gapColor = gap >= 0 ? '#15803D' : '#BE123C'
+    const gapStr   = (gap >= 0 ? '+' : '') + gap + '%p'
+
+    return `<td width="${colWidth}%" style="vertical-align:bottom;text-align:center;padding:0 1px;">
+      <table border="0" cellpadding="0" cellspacing="0" align="center" style="margin:0 auto;">
+        ${spacerH > 0 ? `<tr><td height="${spacerH}" style="font-size:0;line-height:0;">&nbsp;</td></tr>` : ''}
+        <tr><td width="26" height="${barH}" style="background:${barColor};border-radius:3px 3px 0 0;font-size:0;line-height:0;">&nbsp;</td></tr>
+        <tr><td style="font-size:11px;font-weight:800;color:${barColor};font-family:${EM_FONT};padding-top:3px;white-space:nowrap;">${r.score.toFixed(1)}</td></tr>
+        <tr><td style="font-size:10px;color:#475569;font-family:${EM_FONT};padding-top:2px;white-space:nowrap;">${r.country}</td></tr>
+        <tr><td style="font-size:9px;color:#94A3B8;font-family:${EM_FONT};padding-top:2px;white-space:nowrap;">${r.compName} ${r.compScore.toFixed(1)}</td></tr>
+        <tr><td style="font-size:9px;font-weight:700;color:${gapColor};font-family:${EM_FONT};padding-top:1px;white-space:nowrap;">${gapStr}</td></tr>
+      </table>
+    </td>`
+  }).join('')
+
+  return `
+  <tr>
+    <td style="padding:8px 0 4px;">
+      <table border="0" cellpadding="0" cellspacing="0" width="100%">
+        <tr>
+          <td style="background:#F1F5F9;border-radius:7px;padding:7px 12px;">
+            <table border="0" cellpadding="0" cellspacing="0" width="100%">
+              <tr>
+                <td style="font-size:14px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${productName}</td>
+                <td align="right" style="font-size:11px;">
+                  ${summaryParts.join(`<span style="color:#CBD5E1;font-family:${EM_FONT};"> &nbsp;·&nbsp; </span>`)}
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+  <tr>
+    <td style="padding:0 4px 12px;">
+      <table border="0" cellpadding="0" cellspacing="0" width="100%">
+        <tr>${barCols}</tr>
+      </table>
+    </td>
+  </tr>`
+}
+
+function countryVisibilitySectionHtml(productsCnty, meta, lang) {
+  if (!productsCnty || !productsCnty.length) return ''
+  const t = T[lang] || T.ko
+
+  const productMap = new Map()
+  productsCnty.forEach(row => {
+    if (!productMap.has(row.product)) productMap.set(row.product, [])
+    productMap.get(row.product).push(row)
+  })
+
+  const productSections = [...productMap.entries()]
+    .map(([name, rows]) => countryProductSectionHtml(name, rows, lang))
+    .join('')
+
+  return `
+              <!-- ══ 국가별 GEO Visibility ══ -->
+              <tr>
+                <td style="padding-bottom:20px;">
+                  <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFFFFF;border-radius:16px;border:2px solid #E8EDF2;">
+                    <tr>
+                      <td style="padding:18px 20px 16px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;">
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                          <tr>
+                            <td style="vertical-align:middle;">
+                              <table border="0" cellpadding="0" cellspacing="0">
+                                <tr>
+                                  <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
+                                  <td style="padding-left:8px;font-size:17px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${t.cntyTitle}</td>
+                                </tr>
+                              </table>
+                            </td>
+                            <td align="right" style="vertical-align:middle;font-size:11px;color:#94A3B8;font-family:${EM_FONT};">
+                              <span style="color:#15803D;">●</span> ${t.legendLead} &nbsp;
+                              <span style="color:#E8910C;">●</span> ${t.legendBehind} &nbsp;
+                              <span style="color:#BE123C;">●</span> ${t.legendCritical}
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                    ${insightBlockHtml(meta.cntyInsight, meta.showCntyInsight, meta.cntyHowToRead, meta.showCntyHowToRead, lang)}
+                    <tr>
+                      <td style="padding:16px 20px;">
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                          ${productSections}
+                        </table>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>`
+}
+
 // ─── Citation 행 ──────────────────────────────────────────────────────────────
 const LABEL_WIDTH = 150
 
@@ -448,7 +581,7 @@ function dotcomSectionHtml(dotcom, meta, lang = 'ko') {
 }
 
 // ─── 메인 생성 함수 ───────────────────────────────────────────────────────────
-export function generateEmailHTML(meta, total, products, citations, dotcom = {}, lang = 'ko') {
+export function generateEmailHTML(meta, total, products, citations, dotcom = {}, lang = 'ko', productsCnty = []) {
   const t = T[lang] || T.ko
   const totalDelta = delta(total.score, total.prev)
   const scoreBarW  = Math.round(total.score)
@@ -551,7 +684,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
           <td style="background:#F8FAFC;padding:24px 20px;">
             <table border="0" cellpadding="0" cellspacing="0" width="100%">
 
-              <!-- ── 전체 GEO 가시성 지수 ── -->
+              ${meta.showTotal !== false ? `<!-- ── 전체 GEO 가시성 지수 ── -->
               <tr>
                 <td style="padding-bottom:20px;">
                   <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#0F172A;border-radius:14px;">
@@ -611,9 +744,9 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                     </tr>
                   </table>
                 </td>
-              </tr>
+              </tr>` : ''}
 
-              <!-- ══ 제품별 현황 (통합 카드) ══ -->
+              ${meta.showProducts !== false ? `<!-- ══ 제품별 현황 (통합 카드) ══ -->
               <tr>
                 <td style="padding-bottom:20px;">
                   <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFFFFF;border-radius:16px;border:2px solid #E8EDF2;">
@@ -649,9 +782,11 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                     </tr>
                   </table>
                 </td>
-              </tr>
+              </tr>` : ''}
 
-              <!-- ══ 도메인별 Citation 현황 (통합 카드) ══ -->
+              ${meta.showCnty !== false ? countryVisibilitySectionHtml(productsCnty, meta, lang) : ''}
+
+              ${meta.showCitations !== false ? `<!-- ══ 도메인별 Citation 현황 (통합 카드) ══ -->
               <tr>
                 <td style="padding-bottom:8px;">
                   <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFFFFF;border-radius:16px;border:2px solid #E8EDF2;">
@@ -687,9 +822,9 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                     </tr>
                   </table>
                 </td>
-              </tr>
+              </tr>` : ''}
 
-              ${dotcomSectionHtml(dotcom, meta, lang)}
+              ${meta.showDotcom !== false ? dotcomSectionHtml(dotcom, meta, lang) : ''}
 
               ${meta.showTodo && meta.todoText ? `
               <!-- ══ To-do List ══ -->
