@@ -120,7 +120,7 @@ export function parseSheetRows(sheetName, rows) {
   if (sheetName === 'meta') {
     const obj = {}
     const allowedKeys = ['period','team','reportNo','reportType','title','titleFontSize','titleColor','dateLine',
-      'cntyInsight','cntyHowToRead']
+      'cntyInsight','cntyHowToRead','kpiLogicText']
     const numKeys = ['titleFontSize']
     rows.forEach(r => {
       if (!r[0] || String(r[0]).startsWith('[') || String(r[0]).startsWith('※') || r[0] === 'key') return

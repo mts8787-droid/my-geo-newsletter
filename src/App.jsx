@@ -141,9 +141,11 @@ const INIT_META  = {
   dotcomHowToRead: '', showDotcomHowToRead: true,
   cntyInsight: '', showCntyInsight: true,
   cntyHowToRead: '', showCntyHowToRead: true,
+  kpiLogicText: '', showKpiLogic: false,
   noticeText: '', showNotice: false,
   todoText: '', showTodo: false,
   showTotal: true, showProducts: true, showCnty: true, showCitations: true, showDotcom: true,
+  cntyProductFilter: {},
 }
 const INIT_TOTAL = { score: 42.7, prev: 42.2, rank: 1, totalBrands: 12 }
 
@@ -564,7 +566,8 @@ function Sidebar({ meta, total, products, citations, dotcom, productsCnty, setMe
         meta.productInsight || '', meta.productHowToRead || '',
         meta.citationInsight || '', meta.citationHowToRead || '',
         meta.dotcomInsight || '', meta.dotcomHowToRead || '',
-        meta.todoText || '',
+        meta.todoText || '', meta.kpiLogicText || '',
+        meta.cntyInsight || '', meta.cntyHowToRead || '',
       ]
       const productNames = products.map(p => p.kr || '')
       const allTexts = [...metaTexts, ...productNames].map(t => t || ' ')
@@ -591,6 +594,9 @@ function Sidebar({ meta, total, products, citations, dotcom, productsCnty, setMe
         dotcomInsight: tr[9] || meta.dotcomInsight,
         dotcomHowToRead: tr[10] || meta.dotcomHowToRead,
         todoText: tr[11] || meta.todoText,
+        kpiLogicText: tr[12] || meta.kpiLogicText,
+        cntyInsight: tr[13] || meta.cntyInsight,
+        cntyHowToRead: tr[14] || meta.cntyHowToRead,
       }
       const newProducts = products.map((p, i) => ({ ...p, kr: tr[metaTexts.length + i] || p.kr }))
 
@@ -772,6 +778,23 @@ function Sidebar({ meta, total, products, citations, dotcom, productsCnty, setMe
           <p style={{ margin: '0 0 10px', fontSize: 11, color: '#475569', fontFamily: FONT }}>**텍스트** → <strong>볼드</strong></p>
         </>)}
 
+        {/* KPI Logic */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+          <p style={{ margin: 0, fontSize: 11, color: '#64748B', fontFamily: FONT }}>KPI Logic</p>
+          <button onClick={() => setMeta(m => ({ ...m, showKpiLogic: !m.showKpiLogic }))}
+            style={{ background: meta.showKpiLogic ? LG_RED : '#334155', border: 'none', borderRadius: 8,
+              width: 32, height: 16, cursor: 'pointer', position: 'relative', padding: 0, transition: 'background 0.2s' }}>
+            <span style={{ position: 'absolute', top: 2, left: meta.showKpiLogic ? 17 : 3,
+              width: 12, height: 12, borderRadius: '50%', background: '#FFFFFF', transition: 'left 0.2s' }} />
+          </button>
+        </div>
+        {meta.showKpiLogic && (<>
+          <textarea value={meta.kpiLogicText} onChange={e => setMeta(m => ({ ...m, kpiLogicText: e.target.value }))}
+            rows={4} placeholder="KPI Logic 내용을 입력하세요..."
+            style={{ ...inputStyle, marginBottom: 4, resize: 'vertical' }} />
+          <p style={{ margin: '0 0 10px', fontSize: 11, color: '#475569', fontFamily: FONT }}>**텍스트** → <strong>볼드</strong></p>
+        </>)}
+
         {/* 폰트 크기 */}
         <div style={{ marginBottom: 10 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
@@ -947,6 +970,33 @@ function Sidebar({ meta, total, products, citations, dotcom, productsCnty, setMe
           placeholder="국가별 How to Read 설명을 입력하세요..."
           style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6, marginBottom: 8 }}
         />
+
+        {/* 국가별 제품군 ON/OFF */}
+        {productsCnty.length > 0 && (() => {
+          const productNames = [...new Set(productsCnty.map(r => r.product))]
+          return (
+            <div style={{ marginBottom: 8 }}>
+              <p style={{ margin: '0 0 6px', fontSize: 11, color: '#64748B', fontFamily: FONT }}>국가별 제품군 표시</p>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
+                {productNames.map(name => {
+                  const isOn = (meta.cntyProductFilter || {})[name] !== false
+                  return (
+                    <button key={name} onClick={() => setMeta(m => ({
+                      ...m,
+                      cntyProductFilter: { ...(m.cntyProductFilter || {}), [name]: !isOn }
+                    }))}
+                      style={{ padding: '4px 10px', borderRadius: 16, border: 'none', cursor: 'pointer',
+                        background: isOn ? '#166534' : '#1E293B',
+                        color: isOn ? '#86EFAC' : '#475569',
+                        fontSize: 11, fontWeight: 700, fontFamily: FONT }}>
+                      {name}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          )
+        })()}
 
         {/* Citation 인사이트 */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>

@@ -28,6 +28,7 @@ const T = {
     insight: 'INSIGHT',
     howToRead: 'HOW TO READ',
     notice: 'Notice',
+    kpiLogic: 'KPI Logic',
     geoInsight: 'Executive Summary',
     todoTitle: 'Action Plan',
     footer: '해외영업본부 D2C해외영업그룹 D2C마케팅담당 D2C디지털마케팅팀',
@@ -53,6 +54,7 @@ const T = {
     insight: 'INSIGHT',
     howToRead: 'HOW TO READ',
     notice: 'Notice',
+    kpiLogic: 'KPI Logic',
     geoInsight: 'Executive Summary',
     todoTitle: 'Action Plan',
     footer: 'Overseas Sales HQ · D2C Overseas Sales Group · D2C Marketing · D2C Digital Marketing Team',
@@ -340,7 +342,10 @@ function countryVisibilitySectionHtml(productsCnty, meta, lang) {
     productMap.get(row.product).push(row)
   })
 
+  // 제품별 on/off 필터 적용
+  const filter = meta.cntyProductFilter || {}
   const productSections = [...productMap.entries()]
+    .filter(([name]) => filter[name] !== false)
     .map(([name, rows]) => countryProductSectionHtml(name, rows, lang))
     .join('')
 
@@ -663,6 +668,16 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                 <td style="background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;padding:12px 16px;">
                   <p style="margin:0 0 4px;font-size:13px;font-weight:700;color:${EM_RED};font-family:${EM_FONT};">${t.notice}</p>
                   <p style="margin:0;font-size:12px;color:#1A1A1A;font-family:${EM_FONT};line-height:21px;">${mdBold(meta.noticeText)}</p>
+                </td>
+              </tr>
+            </table>` : ''}
+            ${meta.showKpiLogic && meta.kpiLogicText ? `
+            <table border="0" cellpadding="0" cellspacing="0" width="100%">
+              <tr><td height="14" style="font-size:0;line-height:0;">&nbsp;</td></tr>
+              <tr>
+                <td style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;padding:12px 16px;">
+                  <p style="margin:0 0 4px;font-size:11px;font-weight:700;color:#64748B;font-family:${EM_FONT};">${t.kpiLogic}</p>
+                  <p style="margin:0;font-size:12px;color:#475569;font-family:${EM_FONT};line-height:22px;">${mdBold(meta.kpiLogicText)}</p>
                 </td>
               </tr>
             </table>` : ''}
