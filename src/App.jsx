@@ -787,10 +787,11 @@ function Sidebar({ meta, total, products, citations, dotcom, productsCnty, citat
         team: tr[idx++] || meta.team,
         reportNo: tr[idx++] || meta.reportNo,
       }
-      // 제품명 + 경쟁사명 번역 적용
+      // 제품명 + 경쟁사명 번역 적용 (제품명 첫글자 대문자)
+      const capitalize = s => s ? s.replace(/\b\w/g, c => c.toUpperCase()) : s
       const newProducts = products.map((p, i) => ({
         ...p,
-        kr: tr[idx + i] || p.kr,
+        kr: capitalize(tr[idx + i] || p.kr),
         compName: tr[idx + productKrTexts.length + i] || p.compName,
       }))
       idx += productKrTexts.length + productCompTexts.length
@@ -817,13 +818,12 @@ function Sidebar({ meta, total, products, citations, dotcom, productsCnty, citat
       citCntyNames.forEach((v, i) => { citCntyMap[v] = tr[idx + i] || v })
 
       // 후처리: 삼성전자 → SS, 국가명 첫글자 대문자
-      const capitalize = s => s ? s.replace(/\b\w/g, c => c.toUpperCase()) : s
       const ssReplace = s => (s || '').replace(/samsung\s*(electronics)?/gi, 'SS').replace(/삼성전자/g, 'SS').replace(/삼성/g, 'SS')
 
       const newProductsCnty = productsCnty.map(r => ({
         ...r,
         country: capitalize(countryMap[r.country] || r.country),
-        product: cntyProductMap[r.product] || r.product,
+        product: capitalize(cntyProductMap[r.product] || r.product),
         compName: ssReplace(cntyCompMap[r.compName] || r.compName),
       }))
 
