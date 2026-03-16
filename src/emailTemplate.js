@@ -230,7 +230,7 @@ function insightBlockHtml(insight, showInsight, howToRead, showHowToRead, lang =
   if (showInsight && insight) {
     html += `
     <tr>
-      <td style="padding:8px 20px;">
+      <td style="padding:10px 28px;">
         <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border-radius:8px;background:#FFF4F7;border:1px solid #F5CCD8;">
           <tr>
             <td style="padding:10px 14px;">
@@ -245,7 +245,7 @@ function insightBlockHtml(insight, showInsight, howToRead, showHowToRead, lang =
   if (showHowToRead && howToRead) {
     html += `
     <tr>
-      <td style="padding:0 20px 8px;">
+      <td style="padding:0 28px 10px;">
         <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border-radius:8px;background:#F8FAFC;border:1px solid #E2E8F0;">
           <tr>
             <td style="padding:10px 14px;">
@@ -356,10 +356,10 @@ function countryVisibilitySectionHtml(productsCnty, meta, lang) {
   return `
               <!-- ══ 국가별 GEO Visibility ══ -->
               <tr>
-                <td style="padding-bottom:20px;">
+                <td style="padding-bottom:28px;">
                   <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFFFFF;border-radius:16px;border:2px solid #E8EDF2;">
                     <tr>
-                      <td style="padding:18px 20px 16px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;">
+                      <td style="padding:22px 28px 18px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;">
                         <table border="0" cellpadding="0" cellspacing="0" width="100%">
                           <tr>
                             <td style="vertical-align:middle;">
@@ -381,7 +381,7 @@ function countryVisibilitySectionHtml(productsCnty, meta, lang) {
                     </tr>
                     ${insightBlockHtml(meta.cntyInsight, meta.showCntyInsight, meta.cntyHowToRead, meta.showCntyHowToRead, lang)}
                     <tr>
-                      <td style="padding:16px 20px;">
+                      <td style="padding:20px 28px;">
                         <table border="0" cellpadding="0" cellspacing="0" width="100%">
                           ${productSections}
                         </table>
@@ -442,10 +442,10 @@ function citationDomainSectionHtml(citationsCnty, meta, lang) {
   return `
               <!-- ══ 도메인별 Citation ══ -->
               <tr>
-                <td style="padding-bottom:20px;">
+                <td style="padding-bottom:28px;">
                   <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFFFFF;border-radius:16px;border:2px solid #E8EDF2;">
                     <tr>
-                      <td style="padding:18px 20px 16px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;">
+                      <td style="padding:22px 28px 18px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;">
                         <table border="0" cellpadding="0" cellspacing="0" width="100%">
                           <tr>
                             <td style="vertical-align:middle;">
@@ -549,10 +549,10 @@ function citationCntySectionHtml(citationsCnty, meta, lang) {
   return `
               <!-- ══ 국가별 Citation 도메인 ══ -->
               <tr>
-                <td style="padding-bottom:20px;">
+                <td style="padding-bottom:28px;">
                   <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFFFFF;border-radius:16px;border:2px solid #E8EDF2;">
                     <tr>
-                      <td style="padding:18px 20px 16px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;">
+                      <td style="padding:22px 28px 18px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;">
                         <table border="0" cellpadding="0" cellspacing="0" width="100%">
                           <tr>
                             <td style="vertical-align:middle;">
@@ -569,7 +569,7 @@ function citationCntySectionHtml(citationsCnty, meta, lang) {
                     </tr>
                     ${insightBlockHtml(meta.citCntyInsight, meta.showCitCntyInsight, meta.citCntyHowToRead, meta.showCitCntyHowToRead, lang)}
                     <tr>
-                      <td style="padding:16px 20px;">
+                      <td style="padding:20px 28px;">
                         <table border="0" cellpadding="0" cellspacing="0" width="100%">
                           ${countrySections}
                         </table>
@@ -737,10 +737,10 @@ function dotcomSectionHtml(dotcom, meta, lang = 'ko') {
   return `
               <!-- ══ 닷컴 Citation (경쟁사대비) ══ -->
               <tr>
-                <td style="padding-bottom:20px;">
+                <td style="padding-bottom:28px;">
                   <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFFFFF;border-radius:16px;border:2px solid #E8EDF2;">
                     <tr>
-                      <td style="padding:18px 20px 16px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;">
+                      <td style="padding:22px 28px 18px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;">
                         <table border="0" cellpadding="0" cellspacing="0" width="100%">
                           <tr>
                             <td style="vertical-align:middle;">
@@ -765,7 +765,7 @@ function dotcomSectionHtml(dotcom, meta, lang = 'ko') {
                     </tr>
                     ${insightBlockHtml(meta.dotcomInsight, meta.showDotcomInsight, meta.dotcomHowToRead, meta.showDotcomHowToRead, lang)}
                     <tr>
-                      <td style="padding:8px 20px 16px;">
+                      <td style="padding:12px 28px 20px;">
                         <table border="0" cellpadding="0" cellspacing="0" width="100%">
                           ${barRows}
                           ${summaryRow}
@@ -824,11 +824,11 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
     <td align="center" style="padding:24px 12px;">
 
       <!-- 메인 컨테이너 -->
-      <table border="0" cellpadding="0" cellspacing="0" width="680" style="max-width:680px;background:#FFFFFF;border-radius:16px;font-family:${EM_FONT};">
+      <table border="0" cellpadding="0" cellspacing="0" width="820" style="max-width:820px;background:#FFFFFF;border-radius:16px;font-family:${EM_FONT};">
 
         <!-- ══ 헤더 상단 레드 바 ══ -->
         <tr>
-          <td style="background:${EM_RED};padding:9px 20px;">
+          <td style="background:${EM_RED};padding:10px 28px;">
             <table border="0" cellpadding="0" cellspacing="0" width="100%">
               <tr>
                 <td style="font-size:13px;font-weight:700;color:#FFCCD8;font-family:${EM_FONT};">LG ELECTRONICS</td>
@@ -840,7 +840,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
 
         <!-- ══ 헤더 타이틀 ══ -->
         <tr>
-          <td style="background:#FFFFFF;padding:22px 20px 14px;">
+          <td style="background:#FFFFFF;padding:26px 28px 16px;">
             <table border="0" cellpadding="0" cellspacing="0" width="100%">
               <tr>
                 <td style="font-size:12px;color:#94A3B8;font-family:${EM_FONT};font-weight:400;">${meta.reportType || (lang === 'en' ? 'GEO Monthly Performance Report' : 'GEO 월간 성과 분석 리포트')}</td>
@@ -857,7 +857,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
             <table border="0" cellpadding="0" cellspacing="0" width="100%">
               <tr><td height="14" style="font-size:0;line-height:0;">&nbsp;</td></tr>
               <tr>
-                <td style="background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;padding:12px 16px;">
+                <td style="background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;padding:14px 20px;">
                   <p style="margin:0 0 4px;font-size:13px;font-weight:700;color:${EM_RED};font-family:${EM_FONT};">${t.notice}</p>
                   <p style="margin:0;font-size:12px;color:#1A1A1A;font-family:${EM_FONT};line-height:21px;">${mdBold(meta.noticeText)}</p>
                 </td>
@@ -867,7 +867,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
             <table border="0" cellpadding="0" cellspacing="0" width="100%">
               <tr><td height="14" style="font-size:0;line-height:0;">&nbsp;</td></tr>
               <tr>
-                <td style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;padding:12px 16px;">
+                <td style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;padding:14px 20px;">
                   <p style="margin:0 0 4px;font-size:11px;font-weight:700;color:#64748B;font-family:${EM_FONT};">${t.kpiLogic}</p>
                   <p style="margin:0;font-size:12px;color:#475569;font-family:${EM_FONT};line-height:22px;">${mdBold(meta.kpiLogicText)}</p>
                 </td>
@@ -877,7 +877,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
         </tr>
         <!-- 구분선 (직선) -->
         <tr>
-          <td style="background:#FFFFFF;padding:20px 20px 0;">
+          <td style="background:#FFFFFF;padding:24px 28px 0;">
             <table border="0" cellpadding="0" cellspacing="0" width="100%">
               <tr>
                 <td height="2" style="background:${EM_RED};font-size:0;line-height:0;">&nbsp;</td>
@@ -888,15 +888,15 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
 
         <!-- ══ 본문 ══ -->
         <tr>
-          <td style="background:#F8FAFC;padding:24px 20px;">
+          <td style="background:#F8FAFC;padding:28px 28px;">
             <table border="0" cellpadding="0" cellspacing="0" width="100%">
 
               ${meta.showTotal !== false ? `<!-- ── 전체 GEO 가시성 지수 ── -->
               <tr>
-                <td style="padding-bottom:20px;">
+                <td style="padding-bottom:28px;">
                   <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#0F172A;border-radius:14px;">
                     <tr>
-                      <td style="padding:20px 16px 18px;">
+                      <td style="padding:24px 24px 22px;">
                         <table border="0" cellpadding="0" cellspacing="0" width="100%">
                           <tr>
                             <td style="font-size:22px;font-weight:700;color:#FFFFFF;text-transform:uppercase;font-family:${EM_FONT};">LG GEO Visibility %</td>
@@ -955,10 +955,10 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
 
               ${meta.showProducts !== false ? `<!-- ══ 제품별 현황 (통합 카드) ══ -->
               <tr>
-                <td style="padding-bottom:20px;">
+                <td style="padding-bottom:28px;">
                   <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFFFFF;border-radius:16px;border:2px solid #E8EDF2;">
                     <tr>
-                      <td style="padding:18px 20px 16px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;">
+                      <td style="padding:22px 28px 18px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;">
                         <table border="0" cellpadding="0" cellspacing="0" width="100%">
                           <tr>
                             <td style="vertical-align:middle;">
@@ -981,7 +981,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                     </tr>
                     ${insightBlockHtml(meta.productInsight, meta.showProductInsight, meta.productHowToRead, meta.showProductHowToRead, lang)}
                     <tr>
-                      <td style="padding:16px 20px;">
+                      <td style="padding:20px 28px;">
                         <table border="0" cellpadding="0" cellspacing="0" width="100%">
                           ${buSections}
                         </table>
@@ -995,10 +995,10 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
 
               ${meta.showCitations !== false ? `<!-- ══ 도메인별 Citation 현황 (통합 카드) ══ -->
               <tr>
-                <td style="padding-bottom:8px;">
+                <td style="padding-bottom:28px;">
                   <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFFFFF;border-radius:16px;border:2px solid #E8EDF2;">
                     <tr>
-                      <td style="padding:18px 20px 16px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;">
+                      <td style="padding:22px 28px 18px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;">
                         <table border="0" cellpadding="0" cellspacing="0" width="100%">
                           <tr>
                             <td style="vertical-align:middle;">
@@ -1021,7 +1021,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                     </tr>
                     ${insightBlockHtml(meta.citationInsight, meta.showCitationInsight, meta.citationHowToRead, meta.showCitationHowToRead, lang)}
                     <tr>
-                      <td style="padding:16px 20px;">
+                      <td style="padding:20px 28px;">
                         <table border="0" cellpadding="0" cellspacing="0" width="100%">
                           ${citationRows}
                         </table>
@@ -1040,10 +1040,10 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
               ${meta.showTodo && meta.todoText ? `
               <!-- ══ To-do List ══ -->
               <tr>
-                <td style="padding-bottom:20px;">
+                <td style="padding-bottom:28px;">
                   <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFFFFF;border-radius:16px;border:2px solid #E8EDF2;">
                     <tr>
-                      <td style="padding:18px 20px 16px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;">
+                      <td style="padding:22px 28px 18px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;">
                         <table border="0" cellpadding="0" cellspacing="0">
                           <tr>
                             <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
@@ -1053,7 +1053,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                       </td>
                     </tr>
                     <tr>
-                      <td style="padding:16px 20px;">
+                      <td style="padding:20px 28px;">
                         <p style="margin:0;font-size:12px;color:#1A1A1A;line-height:22px;font-family:${EM_FONT};">${mdBold(meta.todoText)}</p>
                       </td>
                     </tr>
@@ -1067,7 +1067,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
 
         <!-- ══ 푸터 ══ -->
         <tr>
-          <td style="background:#1A1A1A;padding:14px 20px;">
+          <td style="background:#1A1A1A;padding:16px 28px;">
             <table border="0" cellpadding="0" cellspacing="0" width="100%">
               <tr>
                 <td>
