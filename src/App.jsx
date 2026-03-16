@@ -735,7 +735,7 @@ const inputStyle = {
   fontFamily: FONT, outline: 'none', boxSizing: 'border-box',
 }
 
-function Sidebar({ meta, setMeta, metaKo, setMetaKo, total, setTotal, products, setProducts, citations, setCitations, dotcom, setDotcom, productsCnty, setProductsCnty, citationsCnty, setCitationsCnty, resolved, previewLang, setPreviewLang, snapshots, setSnapshots }) {
+function Sidebar({ meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, total, setTotal, products, setProducts, citations, setCitations, dotcom, setDotcom, productsCnty, setProductsCnty, citationsCnty, setCitationsCnty, resolved, previewLang, setPreviewLang, snapshots, setSnapshots }) {
   const [gsUrl,     setGsUrl]     = useState('https://docs.google.com/spreadsheets/d/1fTciJRUAqU5lhkPCb39mzv1Y4kNBslF8EuHjZ5H3JY0/edit?gid=1331469350#gid=1331469350')
   const [gsSyncing, setGsSyncing] = useState(false)
   const [gsStatus,  setGsStatus]  = useState(null)
@@ -2039,7 +2039,7 @@ export default function App() {
   return (
     <div style={{ display: 'flex', height: '100vh', background: '#0A0F1C', fontFamily: FONT }}>
       <Sidebar
-        meta={meta} setMeta={setMeta} metaKo={metaKo} setMetaKo={setMetaKo}
+        meta={meta} setMeta={setMeta} metaKo={metaKo} setMetaKo={setMetaKo} metaEn={metaEn} setMetaEn={setMetaEn}
         total={total} setTotal={setTotal}
         products={products} setProducts={setProducts}
         citations={citations} setCitations={setCitations}
