@@ -120,6 +120,49 @@ function generateDotcomHowToRead() {
   return '닷컴 Citation은 생성형 AI가 답변 시 LG·Samsung 공식 사이트의 각 페이지 유형(TTL, PLP, PDP 등)을 인용하는 빈도를 나타냅니다. TTL은 전체 합계, PLP는 카테고리 목록, PDP는 제품 상세, Microsites는 캠페인 페이지 인용 수입니다.'
 }
 
+function generateCitDomainInsight(citationsCnty) {
+  if (!citationsCnty || !citationsCnty.length) return ''
+  const fmtN = n => Number(n).toLocaleString('en-US')
+  const ttlRows = citationsCnty.filter(r => r.cnty === 'TTL').sort((a, b) => a.rank - b.rank)
+  if (!ttlRows.length) return ''
+  const total = ttlRows.reduce((s, r) => s + r.citations, 0)
+  const top3 = ttlRows.slice(0, 3)
+  const top3Sum = top3.reduce((s, r) => s + r.citations, 0)
+  const top3Pct = total > 0 ? ((top3Sum / total) * 100).toFixed(1) : 0
+  const lines = []
+  lines.push(`전체 도메인 Citation ${fmtN(total)}건 중 상위 3개 도메인(${top3.map(r => r.domain).join(', ')})이 ${fmtN(top3Sum)}건으로 전체의 ${top3Pct}%를 차지합니다.`)
+  lines.push(`1위 ${top3[0].domain}은(는) ${fmtN(top3[0].citations)}건으로 가장 높은 인용 빈도를 보이며, ${top3[1].domain} ${fmtN(top3[1].citations)}건, ${top3[2].domain} ${fmtN(top3[2].citations)}건이 뒤를 잇고 있습니다.`)
+  return lines.join(' ')
+}
+
+function generateCitDomainHowToRead() {
+  return '도메인별 Citation은 생성형 AI가 LG 관련 답변 시 인용하는 외부 도메인(웹사이트)의 빈도를 나타냅니다. 도메인 유형(Review, Media, Retailer 등)에 따라 AI 답변 내 인용 패턴을 파악할 수 있으며, 비중(%)은 전체 Citation 대비 해당 도메인의 기여도를 의미합니다.'
+}
+
+function generateCitCntyInsight(citationsCnty) {
+  if (!citationsCnty || !citationsCnty.length) return ''
+  const fmtN = n => Number(n).toLocaleString('en-US')
+  const cntyMap = new Map()
+  citationsCnty.filter(r => r.cnty !== 'TTL').forEach(r => {
+    if (!cntyMap.has(r.cnty)) cntyMap.set(r.cnty, [])
+    cntyMap.get(r.cnty).push(r)
+  })
+  const cntySums = [...cntyMap.entries()].map(([cnty, rows]) => ({
+    cnty, total: rows.reduce((s, r) => s + r.citations, 0), top: rows.sort((a, b) => b.citations - a.citations)[0]
+  })).sort((a, b) => b.total - a.total)
+  if (!cntySums.length) return ''
+  const lines = []
+  const topCnty = cntySums[0]
+  const botCnty = cntySums[cntySums.length - 1]
+  lines.push(`${cntySums.length}개 국가 중 Citation이 가장 많은 국가는 ${topCnty.cnty}(${fmtN(topCnty.total)}건)이며, 가장 적은 국가는 ${botCnty.cnty}(${fmtN(botCnty.total)}건)입니다.`)
+  lines.push(`${topCnty.cnty}에서는 ${topCnty.top.domain}이(가) ${fmtN(topCnty.top.citations)}건으로 1위를 차지하고 있습니다.`)
+  return lines.join(' ')
+}
+
+function generateCitCntyHowToRead() {
+  return '국가별 Citation 도메인은 각 국가에서 생성형 AI가 LG 관련 답변 시 가장 많이 인용하는 도메인 Top 10을 보여줍니다. 국가별로 인용 패턴이 다르므로, 각 시장에 맞는 Citation Optimization 전략 수립에 활용할 수 있습니다.'
+}
+
 // ─── 브랜드 토큰 ──────────────────────────────────────────────────────────────
 const LG_RED  = '#CF0652'
 const LG_DARK = '#A0003E'
@@ -1280,13 +1323,22 @@ function Sidebar({ meta, total, products, citations, dotcom, productsCnty, citat
         {/* 도메인별 Citation 인사이트 */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
           <p style={{ margin: 0, fontSize: 11, color: '#64748B', fontFamily: FONT }}>도메인별 Citation 인사이트</p>
-          <button onClick={() => setMeta(m => ({ ...m, showCitDomainInsight: !m.showCitDomainInsight }))}
-            style={{ padding: '2px 8px', borderRadius: 4, border: 'none', cursor: 'pointer',
-              background: meta.showCitDomainInsight ? LG_RED : '#1E293B',
-              color: meta.showCitDomainInsight ? '#FFFFFF' : '#475569',
-              fontSize: 11, fontWeight: 700, fontFamily: FONT }}>
-            {meta.showCitDomainInsight ? 'ON' : 'OFF'}
-          </button>
+          <div style={{ display: 'flex', gap: 4 }}>
+            <button onClick={() => setMeta(m => ({ ...m, citDomainInsight: generateCitDomainInsight(citationsCnty) }))}
+              title="AI 인사이트 자동생성"
+              style={{ padding: '2px 6px', borderRadius: 4, border: 'none', cursor: 'pointer',
+                background: '#4F46E5', color: '#FFFFFF',
+                fontSize: 11, fontWeight: 700, fontFamily: FONT, display: 'flex', alignItems: 'center', gap: 3 }}>
+              <Sparkles size={9} /> AI 생성
+            </button>
+            <button onClick={() => setMeta(m => ({ ...m, showCitDomainInsight: !m.showCitDomainInsight }))}
+              style={{ padding: '2px 8px', borderRadius: 4, border: 'none', cursor: 'pointer',
+                background: meta.showCitDomainInsight ? LG_RED : '#1E293B',
+                color: meta.showCitDomainInsight ? '#FFFFFF' : '#475569',
+                fontSize: 11, fontWeight: 700, fontFamily: FONT }}>
+              {meta.showCitDomainInsight ? 'ON' : 'OFF'}
+            </button>
+          </div>
         </div>
         <textarea
           value={meta.citDomainInsight}
@@ -1299,13 +1351,22 @@ function Sidebar({ meta, total, products, citations, dotcom, productsCnty, citat
         {/* 도메인별 Citation How to Read */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
           <p style={{ margin: 0, fontSize: 11, color: '#64748B', fontFamily: FONT }}>도메인별 Citation How to Read</p>
-          <button onClick={() => setMeta(m => ({ ...m, showCitDomainHowToRead: !m.showCitDomainHowToRead }))}
-            style={{ padding: '2px 8px', borderRadius: 4, border: 'none', cursor: 'pointer',
-              background: meta.showCitDomainHowToRead ? LG_RED : '#1E293B',
-              color: meta.showCitDomainHowToRead ? '#FFFFFF' : '#475569',
-              fontSize: 11, fontWeight: 700, fontFamily: FONT }}>
-            {meta.showCitDomainHowToRead ? 'ON' : 'OFF'}
-          </button>
+          <div style={{ display: 'flex', gap: 4 }}>
+            <button onClick={() => setMeta(m => ({ ...m, citDomainHowToRead: generateCitDomainHowToRead() }))}
+              title="AI 인사이트 자동생성"
+              style={{ padding: '2px 6px', borderRadius: 4, border: 'none', cursor: 'pointer',
+                background: '#4F46E5', color: '#FFFFFF',
+                fontSize: 11, fontWeight: 700, fontFamily: FONT, display: 'flex', alignItems: 'center', gap: 3 }}>
+              <Sparkles size={9} /> AI 생성
+            </button>
+            <button onClick={() => setMeta(m => ({ ...m, showCitDomainHowToRead: !m.showCitDomainHowToRead }))}
+              style={{ padding: '2px 8px', borderRadius: 4, border: 'none', cursor: 'pointer',
+                background: meta.showCitDomainHowToRead ? LG_RED : '#1E293B',
+                color: meta.showCitDomainHowToRead ? '#FFFFFF' : '#475569',
+                fontSize: 11, fontWeight: 700, fontFamily: FONT }}>
+              {meta.showCitDomainHowToRead ? 'ON' : 'OFF'}
+            </button>
+          </div>
         </div>
         <textarea
           value={meta.citDomainHowToRead}
@@ -1318,13 +1379,22 @@ function Sidebar({ meta, total, products, citations, dotcom, productsCnty, citat
         {/* 국가별 Citation 인사이트 */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
           <p style={{ margin: 0, fontSize: 11, color: '#64748B', fontFamily: FONT }}>국가별 Citation 인사이트</p>
-          <button onClick={() => setMeta(m => ({ ...m, showCitCntyInsight: !m.showCitCntyInsight }))}
-            style={{ padding: '2px 8px', borderRadius: 4, border: 'none', cursor: 'pointer',
-              background: meta.showCitCntyInsight ? LG_RED : '#1E293B',
-              color: meta.showCitCntyInsight ? '#FFFFFF' : '#475569',
-              fontSize: 11, fontWeight: 700, fontFamily: FONT }}>
-            {meta.showCitCntyInsight ? 'ON' : 'OFF'}
-          </button>
+          <div style={{ display: 'flex', gap: 4 }}>
+            <button onClick={() => setMeta(m => ({ ...m, citCntyInsight: generateCitCntyInsight(citationsCnty) }))}
+              title="AI 인사이트 자동생성"
+              style={{ padding: '2px 6px', borderRadius: 4, border: 'none', cursor: 'pointer',
+                background: '#4F46E5', color: '#FFFFFF',
+                fontSize: 11, fontWeight: 700, fontFamily: FONT, display: 'flex', alignItems: 'center', gap: 3 }}>
+              <Sparkles size={9} /> AI 생성
+            </button>
+            <button onClick={() => setMeta(m => ({ ...m, showCitCntyInsight: !m.showCitCntyInsight }))}
+              style={{ padding: '2px 8px', borderRadius: 4, border: 'none', cursor: 'pointer',
+                background: meta.showCitCntyInsight ? LG_RED : '#1E293B',
+                color: meta.showCitCntyInsight ? '#FFFFFF' : '#475569',
+                fontSize: 11, fontWeight: 700, fontFamily: FONT }}>
+              {meta.showCitCntyInsight ? 'ON' : 'OFF'}
+            </button>
+          </div>
         </div>
         <textarea
           value={meta.citCntyInsight}
@@ -1337,13 +1407,22 @@ function Sidebar({ meta, total, products, citations, dotcom, productsCnty, citat
         {/* 국가별 Citation How to Read */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
           <p style={{ margin: 0, fontSize: 11, color: '#64748B', fontFamily: FONT }}>국가별 Citation How to Read</p>
-          <button onClick={() => setMeta(m => ({ ...m, showCitCntyHowToRead: !m.showCitCntyHowToRead }))}
-            style={{ padding: '2px 8px', borderRadius: 4, border: 'none', cursor: 'pointer',
-              background: meta.showCitCntyHowToRead ? LG_RED : '#1E293B',
-              color: meta.showCitCntyHowToRead ? '#FFFFFF' : '#475569',
-              fontSize: 11, fontWeight: 700, fontFamily: FONT }}>
-            {meta.showCitCntyHowToRead ? 'ON' : 'OFF'}
-          </button>
+          <div style={{ display: 'flex', gap: 4 }}>
+            <button onClick={() => setMeta(m => ({ ...m, citCntyHowToRead: generateCitCntyHowToRead() }))}
+              title="AI 인사이트 자동생성"
+              style={{ padding: '2px 6px', borderRadius: 4, border: 'none', cursor: 'pointer',
+                background: '#4F46E5', color: '#FFFFFF',
+                fontSize: 11, fontWeight: 700, fontFamily: FONT, display: 'flex', alignItems: 'center', gap: 3 }}>
+              <Sparkles size={9} /> AI 생성
+            </button>
+            <button onClick={() => setMeta(m => ({ ...m, showCitCntyHowToRead: !m.showCitCntyHowToRead }))}
+              style={{ padding: '2px 8px', borderRadius: 4, border: 'none', cursor: 'pointer',
+                background: meta.showCitCntyHowToRead ? LG_RED : '#1E293B',
+                color: meta.showCitCntyHowToRead ? '#FFFFFF' : '#475569',
+                fontSize: 11, fontWeight: 700, fontFamily: FONT }}>
+              {meta.showCitCntyHowToRead ? 'ON' : 'OFF'}
+            </button>
+          </div>
         </div>
         <textarea
           value={meta.citCntyHowToRead}
