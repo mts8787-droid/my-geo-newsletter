@@ -496,13 +496,13 @@ function citationCntyCountryHtml(cntyCode, rows, lang) {
     const spacerH = BAR_MAX - barH
     const domainShort = stripDomain(r.domain)
 
-    return `<td width="${colWidth}%" style="vertical-align:bottom;text-align:center;padding:0 1px;overflow:hidden;">
+    return `<td width="${colWidth}%" style="vertical-align:top;text-align:center;padding:0 1px;">
       <table border="0" cellpadding="0" cellspacing="0" align="center" style="margin:0 auto;table-layout:fixed;width:100%;">
         ${spacerH > 0 ? `<tr><td height="${spacerH}" style="font-size:0;line-height:0;">&nbsp;</td></tr>` : ''}
         <tr><td height="${barH}" style="font-size:0;line-height:0;"><table border="0" cellpadding="0" cellspacing="0" align="center"><tr><td width="22" height="${barH}" style="background:${EM_RED};border-radius:3px 3px 0 0;font-size:0;line-height:0;">&nbsp;</td></tr></table></td></tr>
-        <tr><td style="font-size:11px;font-weight:800;color:${EM_RED};font-family:${EM_FONT};padding-top:3px;white-space:nowrap;overflow:hidden;">${fmtN(r.citations)}</td></tr>
-        <tr><td style="font-size:11px;color:#1A1A1A;font-family:${EM_FONT};padding-top:2px;white-space:nowrap;overflow:hidden;font-weight:600;">${domainShort}</td></tr>
-        <tr><td style="font-size:11px;color:#94A3B8;font-family:${EM_FONT};padding-top:1px;white-space:nowrap;overflow:hidden;">${r.type}</td></tr>
+        <tr><td style="font-size:11px;font-weight:800;color:${EM_RED};font-family:${EM_FONT};padding-top:3px;white-space:nowrap;">${fmtN(r.citations)}</td></tr>
+        <tr><td style="font-size:11px;color:#1A1A1A;font-family:${EM_FONT};padding-top:2px;word-break:break-all;font-weight:600;">${domainShort}</td></tr>
+        <tr><td style="font-size:11px;color:#94A3B8;font-family:${EM_FONT};padding-top:1px;word-break:break-all;">${r.type}</td></tr>
       </table>
     </td>`
   }).join('')
@@ -937,7 +937,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                               <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#1E2433;border-radius:8px;height:10px;">
                                 <tr>
                                   <td width="${scoreBarW}%" style="background:${EM_RED};border-radius:8px;height:10px;font-size:0;">&nbsp;</td>
-                                  <td></td>
+                                  <td width="${100 - scoreBarW}%" style="height:10px;font-size:0;line-height:0;">&nbsp;</td>
                                 </tr>
                               </table>
                             </td>
@@ -948,7 +948,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                               <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#1E2433;border-radius:8px;height:10px;">
                                 <tr>
                                   <td width="${Math.round(compAvg)}%" style="background:#3B82F6;border-radius:8px;height:10px;font-size:0;">&nbsp;</td>
-                                  <td></td>
+                                  <td width="${100 - Math.round(compAvg)}%" style="height:10px;font-size:0;line-height:0;">&nbsp;</td>
                                 </tr>
                               </table>
                             </td>
