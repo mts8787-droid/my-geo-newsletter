@@ -934,10 +934,15 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                           <!-- LG 바 -->
                           <tr>
                             <td colspan="2" style="padding-top:4px;">
-                              <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#1E2433;border-radius:8px;height:10px;">
+                              <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#1E2433;border-radius:8px;">
                                 <tr>
-                                  <td width="${scoreBarW}%" style="background:${EM_RED};border-radius:8px;height:10px;font-size:0;">&nbsp;</td>
-                                  <td width="${100 - scoreBarW}%" style="height:10px;font-size:0;line-height:0;">&nbsp;</td>
+                                  <td style="padding:0;">
+                                    <table border="0" cellpadding="0" cellspacing="0" width="${scoreBarW}%" style="width:${scoreBarW}%;max-width:${scoreBarW}%;">
+                                      <tr>
+                                        <td height="10" style="background:${EM_RED};border-radius:8px;height:10px;font-size:0;line-height:0;">&nbsp;</td>
+                                      </tr>
+                                    </table>
+                                  </td>
                                 </tr>
                               </table>
                             </td>
@@ -945,10 +950,15 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                           ${compAvg > 0 ? `<!-- Samsung 바 -->
                           <tr>
                             <td colspan="2" style="padding-top:5px;">
-                              <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#1E2433;border-radius:8px;height:10px;">
+                              <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#1E2433;border-radius:8px;">
                                 <tr>
-                                  <td width="${Math.round(compAvg)}%" style="background:#3B82F6;border-radius:8px;height:10px;font-size:0;">&nbsp;</td>
-                                  <td width="${100 - Math.round(compAvg)}%" style="height:10px;font-size:0;line-height:0;">&nbsp;</td>
+                                  <td style="padding:0;">
+                                    <table border="0" cellpadding="0" cellspacing="0" width="${Math.round(compAvg)}%" style="width:${Math.round(compAvg)}%;max-width:${Math.round(compAvg)}%;">
+                                      <tr>
+                                        <td height="10" style="background:#3B82F6;border-radius:8px;height:10px;font-size:0;line-height:0;">&nbsp;</td>
+                                      </tr>
+                                    </table>
+                                  </td>
                                 </tr>
                               </table>
                             </td>
