@@ -126,6 +126,10 @@ function generateDotcomHowToRead() {
   return '닷컴 Citation은 생성형 AI가 답변 시 LG·Samsung 공식 사이트의 각 페이지 유형(TTL, PLP, PDP 등)을 인용하는 빈도를 나타냅니다. TTL은 전체 합계, PLP는 카테고리 목록, PDP는 제품 상세, Microsites는 캠페인 페이지 인용 수입니다.'
 }
 
+function generateCntyHowToRead() {
+  return '국가별 GEO 가시성은 각 법인(미국, 영국, 독일 등)에서 생성형 AI 엔진이 해당 제품 카테고리 질문 시 LG를 언급·추천하는 비율입니다. 막대 색상은 경쟁사 대비 상대 점수를 나타내며, 녹색(선도)·주황(추격)·빨강(취약)으로 구분됩니다. 하단 수치는 1위 경쟁사 점수와 LG와의 격차(%p)입니다.'
+}
+
 function generateCitDomainInsight(citationsCnty) {
   if (!citationsCnty || !citationsCnty.length) return ''
   const fmtN = n => Number(n).toLocaleString('en-US')
@@ -1029,6 +1033,8 @@ function Sidebar({ meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, total, s
           citationInsight: meta.citationInsight, citationHowToRead: meta.citationHowToRead,
           dotcomInsight: meta.dotcomInsight, dotcomHowToRead: meta.dotcomHowToRead,
           cntyInsight: meta.cntyInsight, cntyHowToRead: meta.cntyHowToRead,
+          citDomainInsight: meta.citDomainInsight, citDomainHowToRead: meta.citDomainHowToRead,
+          citCntyInsight: meta.citCntyInsight, citCntyHowToRead: meta.citCntyHowToRead,
           kpiLogicText: meta.kpiLogicText,
           noticeText: meta.noticeText,
           showNotice: meta.showNotice, showKpiLogic: meta.showKpiLogic,
@@ -1036,6 +1042,8 @@ function Sidebar({ meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, total, s
           showCitationInsight: meta.showCitationInsight, showCitationHowToRead: meta.showCitationHowToRead,
           showDotcomInsight: meta.showDotcomInsight, showDotcomHowToRead: meta.showDotcomHowToRead,
           showCntyInsight: meta.showCntyInsight, showCntyHowToRead: meta.showCntyHowToRead,
+          showCitDomainInsight: meta.showCitDomainInsight, showCitDomainHowToRead: meta.showCitDomainHowToRead,
+          showCitCntyInsight: meta.showCitCntyInsight, showCitCntyHowToRead: meta.showCitCntyHowToRead,
         },
         total,
       }
@@ -1344,13 +1352,22 @@ function Sidebar({ meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, total, s
         {/* 국가별 How to Read */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
           <p style={{ margin: 0, fontSize: 11, color: '#64748B', fontFamily: FONT }}>국가별 How to Read</p>
-          <button onClick={() => setMeta(m => ({ ...m, showCntyHowToRead: !m.showCntyHowToRead }))}
-            style={{ padding: '2px 8px', borderRadius: 4, border: 'none', cursor: 'pointer',
-              background: meta.showCntyHowToRead ? LG_RED : '#1E293B',
-              color: meta.showCntyHowToRead ? '#FFFFFF' : '#475569',
-              fontSize: 11, fontWeight: 700, fontFamily: FONT }}>
-            {meta.showCntyHowToRead ? 'ON' : 'OFF'}
-          </button>
+          <div style={{ display: 'flex', gap: 4 }}>
+            <button onClick={() => setMeta(m => ({ ...m, cntyHowToRead: generateCntyHowToRead() }))}
+              title="AI 인사이트 자동생성"
+              style={{ padding: '2px 6px', borderRadius: 4, border: 'none', cursor: 'pointer',
+                background: '#4F46E5', color: '#FFFFFF',
+                fontSize: 11, fontWeight: 700, fontFamily: FONT, display: 'flex', alignItems: 'center', gap: 3 }}>
+              <Sparkles size={9} /> AI 생성
+            </button>
+            <button onClick={() => setMeta(m => ({ ...m, showCntyHowToRead: !m.showCntyHowToRead }))}
+              style={{ padding: '2px 8px', borderRadius: 4, border: 'none', cursor: 'pointer',
+                background: meta.showCntyHowToRead ? LG_RED : '#1E293B',
+                color: meta.showCntyHowToRead ? '#FFFFFF' : '#475569',
+                fontSize: 11, fontWeight: 700, fontFamily: FONT }}>
+              {meta.showCntyHowToRead ? 'ON' : 'OFF'}
+            </button>
+          </div>
         </div>
         <textarea
           value={meta.cntyHowToRead}
