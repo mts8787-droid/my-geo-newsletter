@@ -284,4 +284,11 @@ app.use((err, req, res, _next) => {
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
+  console.log(`DATA_DIR = ${DATA_DIR}`)
+  console.log(`SNAP_FILE = ${SNAP_FILE}`)
+  console.log(`SNAP_FILE exists = ${existsSync(SNAP_FILE)}`)
+  try {
+    const snaps = readSnapshots()
+    console.log(`Snapshots count = ${snaps.length}`)
+  } catch (e) { console.log(`Snapshots read error: ${e.message}`) }
 })
