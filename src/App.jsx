@@ -1499,62 +1499,6 @@ function Sidebar({ meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, total, s
           style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6, marginBottom: 8 }}
         />
 
-        {/* 닷컴 Citation 인사이트 */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-          <p style={{ margin: 0, fontSize: 11, color: '#64748B', fontFamily: FONT }}>닷컴 Citation 인사이트</p>
-          <div style={{ display: 'flex', gap: 4 }}>
-            <button onClick={() => setMeta(m => ({ ...m, dotcomInsight: generateDotcomInsight(dotcom) }))}
-              title="AI 인사이트 자동생성"
-              style={{ padding: '2px 6px', borderRadius: 4, border: 'none', cursor: 'pointer',
-                background: '#4F46E5', color: '#FFFFFF',
-                fontSize: 11, fontWeight: 700, fontFamily: FONT, display: 'flex', alignItems: 'center', gap: 3 }}>
-              <Sparkles size={9} /> AI 생성
-            </button>
-            <button onClick={() => setMeta(m => ({ ...m, showDotcomInsight: !m.showDotcomInsight }))}
-              style={{ padding: '2px 8px', borderRadius: 4, border: 'none', cursor: 'pointer',
-                background: meta.showDotcomInsight ? LG_RED : '#1E293B',
-                color: meta.showDotcomInsight ? '#FFFFFF' : '#475569',
-                fontSize: 11, fontWeight: 700, fontFamily: FONT }}>
-              {meta.showDotcomInsight ? 'ON' : 'OFF'}
-            </button>
-          </div>
-        </div>
-        <textarea
-          value={meta.dotcomInsight}
-          onChange={e => setMeta(m => ({ ...m, dotcomInsight: e.target.value }))}
-          rows={12}
-          placeholder="닷컴 Citation 인사이트를 입력하세요... (AI 생성 버튼으로 자동 작성 가능)"
-          style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6, marginBottom: 8 }}
-        />
-
-        {/* 닷컴 Citation How to Read */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-          <p style={{ margin: 0, fontSize: 11, color: '#64748B', fontFamily: FONT }}>닷컴 Citation How to Read</p>
-          <div style={{ display: 'flex', gap: 4 }}>
-            <button onClick={() => setMeta(m => ({ ...m, dotcomHowToRead: generateDotcomHowToRead() }))}
-              title="AI 인사이트 자동생성"
-              style={{ padding: '2px 6px', borderRadius: 4, border: 'none', cursor: 'pointer',
-                background: '#4F46E5', color: '#FFFFFF',
-                fontSize: 11, fontWeight: 700, fontFamily: FONT, display: 'flex', alignItems: 'center', gap: 3 }}>
-              <Sparkles size={9} /> AI 생성
-            </button>
-            <button onClick={() => setMeta(m => ({ ...m, showDotcomHowToRead: !m.showDotcomHowToRead }))}
-              style={{ padding: '2px 8px', borderRadius: 4, border: 'none', cursor: 'pointer',
-                background: meta.showDotcomHowToRead ? LG_RED : '#1E293B',
-                color: meta.showDotcomHowToRead ? '#FFFFFF' : '#475569',
-                fontSize: 11, fontWeight: 700, fontFamily: FONT }}>
-              {meta.showDotcomHowToRead ? 'ON' : 'OFF'}
-            </button>
-          </div>
-        </div>
-        <textarea
-          value={meta.dotcomHowToRead}
-          onChange={e => setMeta(m => ({ ...m, dotcomHowToRead: e.target.value }))}
-          rows={4}
-          placeholder="닷컴 Citation How to Read 설명을 입력하세요... (AI 생성 버튼으로 자동 작성 가능)"
-          style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6, marginBottom: 8 }}
-        />
-
         {/* 국가별 Citation 인사이트 */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
           <p style={{ margin: 0, fontSize: 11, color: '#64748B', fontFamily: FONT }}>국가별 Citation 인사이트</p>
@@ -1608,6 +1552,62 @@ function Sidebar({ meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, total, s
           onChange={e => setMeta(m => ({ ...m, citCntyHowToRead: e.target.value }))}
           rows={4}
           placeholder="국가별 Citation How to Read 설명을 입력하세요..."
+          style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6, marginBottom: 8 }}
+        />
+
+        {/* 닷컴 Citation 인사이트 */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+          <p style={{ margin: 0, fontSize: 11, color: '#64748B', fontFamily: FONT }}>닷컴 Citation 인사이트</p>
+          <div style={{ display: 'flex', gap: 4 }}>
+            <button onClick={() => setMeta(m => ({ ...m, dotcomInsight: generateDotcomInsight(dotcom) }))}
+              title="AI 인사이트 자동생성"
+              style={{ padding: '2px 6px', borderRadius: 4, border: 'none', cursor: 'pointer',
+                background: '#4F46E5', color: '#FFFFFF',
+                fontSize: 11, fontWeight: 700, fontFamily: FONT, display: 'flex', alignItems: 'center', gap: 3 }}>
+              <Sparkles size={9} /> AI 생성
+            </button>
+            <button onClick={() => setMeta(m => ({ ...m, showDotcomInsight: !m.showDotcomInsight }))}
+              style={{ padding: '2px 8px', borderRadius: 4, border: 'none', cursor: 'pointer',
+                background: meta.showDotcomInsight ? LG_RED : '#1E293B',
+                color: meta.showDotcomInsight ? '#FFFFFF' : '#475569',
+                fontSize: 11, fontWeight: 700, fontFamily: FONT }}>
+              {meta.showDotcomInsight ? 'ON' : 'OFF'}
+            </button>
+          </div>
+        </div>
+        <textarea
+          value={meta.dotcomInsight}
+          onChange={e => setMeta(m => ({ ...m, dotcomInsight: e.target.value }))}
+          rows={12}
+          placeholder="닷컴 Citation 인사이트를 입력하세요... (AI 생성 버튼으로 자동 작성 가능)"
+          style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6, marginBottom: 8 }}
+        />
+
+        {/* 닷컴 Citation How to Read */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+          <p style={{ margin: 0, fontSize: 11, color: '#64748B', fontFamily: FONT }}>닷컴 Citation How to Read</p>
+          <div style={{ display: 'flex', gap: 4 }}>
+            <button onClick={() => setMeta(m => ({ ...m, dotcomHowToRead: generateDotcomHowToRead() }))}
+              title="AI 인사이트 자동생성"
+              style={{ padding: '2px 6px', borderRadius: 4, border: 'none', cursor: 'pointer',
+                background: '#4F46E5', color: '#FFFFFF',
+                fontSize: 11, fontWeight: 700, fontFamily: FONT, display: 'flex', alignItems: 'center', gap: 3 }}>
+              <Sparkles size={9} /> AI 생성
+            </button>
+            <button onClick={() => setMeta(m => ({ ...m, showDotcomHowToRead: !m.showDotcomHowToRead }))}
+              style={{ padding: '2px 8px', borderRadius: 4, border: 'none', cursor: 'pointer',
+                background: meta.showDotcomHowToRead ? LG_RED : '#1E293B',
+                color: meta.showDotcomHowToRead ? '#FFFFFF' : '#475569',
+                fontSize: 11, fontWeight: 700, fontFamily: FONT }}>
+              {meta.showDotcomHowToRead ? 'ON' : 'OFF'}
+            </button>
+          </div>
+        </div>
+        <textarea
+          value={meta.dotcomHowToRead}
+          onChange={e => setMeta(m => ({ ...m, dotcomHowToRead: e.target.value }))}
+          rows={4}
+          placeholder="닷컴 Citation How to Read 설명을 입력하세요... (AI 생성 버튼으로 자동 작성 가능)"
           style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6, marginBottom: 16 }}
         />
 
