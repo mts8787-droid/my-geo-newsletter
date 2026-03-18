@@ -1,52 +1,65 @@
-import { MONTHS, STAKEHOLDERS } from './constants'
-
 /**
- * Normalize cell value: trim strings, parse numbers
+ * Normalize cell value: trim strings, parse numbers/percentages
  */
 function norm(v) {
   if (v === null || v === undefined || v === '') return ''
   if (typeof v === 'number') return v
   const s = String(v).trim()
-  // Percentage: "45%" → 45
   if (/^-?\d+(\.\d+)?%$/.test(s)) return parseFloat(s)
-  // Number with commas: "1,234" → 1234
   const n = s.replace(/,/g, '')
   if (/^-?\d+(\.\d+)?$/.test(n)) return parseFloat(n)
   return s
 }
 
-/**
- * Check if a row is mostly empty (section separator)
- */
 function isEmptyRow(row) {
   return row.every(c => norm(c) === '')
 }
 
 /**
- * Check if a row looks like a section header (1-2 non-empty cells, first cell has text)
+ * Remove columns that are entirely empty across all rows.
+ * Returns { rows, keptIndices } where keptIndices maps new col → original col index.
  */
-function isSectionHeader(row) {
-  const filled = row.filter(c => norm(c) !== '')
-  return filled.length >= 1 && filled.length <= 2 && typeof norm(row[0]) === 'string' && norm(row[0]).length > 0
+function stripEmptyColumns(rows) {
+  if (!rows || rows.length === 0) return { rows: [], keptIndices: [] }
+
+  const maxCols = Math.max(...rows.map(r => r.length))
+  const keptIndices = []
+
+  for (let c = 0; c < maxCols; c++) {
+    const hasValue = rows.some(r => r[c] !== undefined && r[c] !== null && String(r[c]).trim() !== '')
+    if (hasValue) keptIndices.push(c)
+  }
+
+  const cleaned = rows.map(r => keptIndices.map(c => r[c] ?? ''))
+  return { rows: cleaned, keptIndices }
 }
 
 /**
- * Parse the Overview or HS sheet into structured sections.
- * These sheets have a pattern:
- *   Section Header Row
- *   Column Headers Row
- *   Data Rows...
- *   Empty Row(s)
- *   Next Section...
+ * Parse the Overview or HS sheet.
+ *
+ * Actual structure (from the real Google Sheet):
+ *   Row 0:   Title + "0. 정량 과제 Summary"
+ *   Rows 1-2:  구분 | 3월 | 연간 진척도 | ... | 구분 | 3월 | 4월 | ... | 12월
+ *              (left: cumulative totals, right: monthly breakdown)
+ *   Rows ~4-11:  Task descriptions / per-task lines
+ *   Rows ~12-27: Stakeholder rows (HS, MS, ES, PR, 고가혁, 브랜드, D2C — 목표/현황 pairs)
+ *   "연간 진척율" header
+ *   Chart data rows
+ *   "월별 달성률" header
+ *   Chart data rows
+ *   "정량 과제 목표" table (header + data)
+ *   "정량 과제 현황" table (header + data)
+ *   "정성 과제" section
+ *
+ * We return the stripped rows as-is so the dashboard can render raw tables,
+ * plus we extract key aggregates where detectable.
  */
-export function parseProgressSheet(rows) {
+export function parseProgressSheet(rawRows) {
+  const { rows } = stripEmptyColumns(rawRows)
+
   const result = {
     totalProgress: { total: 0, quantitative: 0, qualitative: 0 },
-    stakeholders: [],
-    annualProgress: [],
-    monthlyAchievement: [],
-    quantitativeTasks: [],
-    qualitativeTasks: [],
+    sections: [],   // { title, headerRow, dataRows }
     raw: rows,
   }
 
@@ -55,147 +68,75 @@ export function parseProgressSheet(rows) {
   let i = 0
   const len = rows.length
 
-  // Helper: find the next non-empty row starting from index
-  const skipEmpty = (from) => {
-    while (from < len && isEmptyRow(rows[from])) from++
-    return from
-  }
-
-  // Helper: collect data rows until empty row or section header
-  const collectDataRows = (from, headerRow) => {
-    const data = []
-    let j = from
-    while (j < len && !isEmptyRow(rows[j])) {
-      const row = rows[j]
-      // Stop if this looks like a new section header (no numbers, short text)
-      if (j > from && isSectionHeader(row) && data.length > 0) break
-      const obj = {}
-      headerRow.forEach((h, idx) => {
-        if (h) obj[h] = norm(row[idx])
-      })
-      data.push(obj)
-      j++
+  // Detect total progress from first few rows
+  for (let r = 0; r < Math.min(5, len); r++) {
+    const row = rows[r]
+    for (let c = 0; c < row.length; c++) {
+      const label = String(norm(row[c])).trim()
+      const val = norm(row[c + 1])
+      if (/^전체$/i.test(label) && typeof val === 'number') result.totalProgress.total = val
+      else if (/^정량$/i.test(label) && typeof val === 'number') result.totalProgress.quantitative = val
+      else if (/^정성$/i.test(label) && typeof val === 'number') result.totalProgress.qualitative = val
     }
-    return { data, nextIndex: j }
   }
 
-  // Scan through the sheet looking for known section markers
+  // Now scan for section headers and build sections
   while (i < len) {
-    i = skipEmpty(i)
+    // Skip empty rows
+    while (i < len && isEmptyRow(rows[i])) i++
     if (i >= len) break
 
     const row = rows[i]
     const firstCell = String(norm(row[0])).trim()
 
-    // ─── Total Progress Section ───
-    if (/진척률|진척율|progress/i.test(firstCell) && /전체|total|overall/i.test(firstCell)) {
+    // Detect section headers: rows where first cell has a known keyword
+    // and most other cells are empty
+    const filledCount = row.filter(c => norm(c) !== '').length
+    const isHeader = filledCount <= 3 && firstCell.length > 1 && (
+      /진척|달성|과제|summary|progress|목표|현황|연간|월별|정량|정성|stakeholder/i.test(firstCell)
+    )
+
+    if (isHeader) {
+      const title = firstCell
       i++
-      // Look for rows like: "전체 45%" or header + data pattern
-      while (i < len && !isEmptyRow(rows[i])) {
+      // Skip empty rows after header
+      while (i < len && isEmptyRow(rows[i])) i++
+      if (i >= len) { result.sections.push({ title, headerRow: [], dataRows: [] }); break }
+
+      // Next non-empty row = column headers
+      const headerRow = rows[i].map(c => String(norm(c)).trim())
+      i++
+
+      // Collect data rows until next empty row or next section header
+      const dataRows = []
+      while (i < len) {
+        if (isEmptyRow(rows[i])) break
         const r = rows[i]
-        const label = String(norm(r[0])).trim()
-        const val = norm(r[1])
-        if (/전체|total/i.test(label)) result.totalProgress.total = typeof val === 'number' ? val : 0
-        else if (/정량|quantit/i.test(label)) result.totalProgress.quantitative = typeof val === 'number' ? val : 0
-        else if (/정성|qualit/i.test(label)) result.totalProgress.qualitative = typeof val === 'number' ? val : 0
+        const fc = String(norm(r[0])).trim()
+        const fc_filled = r.filter(c => norm(c) !== '').length
+        // If this row looks like another section header, stop
+        if (fc_filled <= 3 && fc.length > 1 && /진척|달성|과제|summary|progress|목표|현황|연간|월별|정량|정성/i.test(fc)) break
+        dataRows.push(r.map(c => norm(c)))
         i++
       }
+
+      result.sections.push({ title, headerRow, dataRows })
       continue
     }
 
-    // ─── Stakeholder / Department Section ───
-    if (/부서|담당|stakeholder|department/i.test(firstCell)) {
+    // Non-header row: could be the first table (summary) without explicit section title
+    // Collect it as an unnamed section
+    const headerRow = row.map(c => String(norm(c)).trim())
+    const hasMultipleHeaders = headerRow.filter(h => h && typeof h === 'string' && h.length > 0).length >= 3
+    if (hasMultipleHeaders) {
       i++
-      i = skipEmpty(i)
-      if (i >= len) break
-      const headerRow = rows[i].map(c => String(norm(c)).trim())
-      i++
-      const { data, nextIndex } = collectDataRows(i, headerRow)
-      result.stakeholders = data
-      i = nextIndex
-      continue
-    }
-
-    // ─── Annual Progress Section ───
-    if (/연간|annual|yearly/i.test(firstCell) && /진척|progress/i.test(firstCell)) {
-      i++
-      i = skipEmpty(i)
-      if (i >= len) break
-      const headerRow = rows[i].map(c => String(norm(c)).trim())
-      i++
-      const { data, nextIndex } = collectDataRows(i, headerRow)
-      result.annualProgress = data
-      i = nextIndex
-      continue
-    }
-
-    // ─── Monthly Achievement Section ───
-    if (/월별|monthly/i.test(firstCell) && /달성|achieve/i.test(firstCell)) {
-      i++
-      i = skipEmpty(i)
-      if (i >= len) break
-      const headerRow = rows[i].map(c => String(norm(c)).trim())
-      i++
-      const { data, nextIndex } = collectDataRows(i, headerRow)
-      result.monthlyAchievement = data
-      i = nextIndex
-      continue
-    }
-
-    // ─── Quantitative Tasks Section ───
-    if (/정량|quantit/i.test(firstCell) && /과제|task/i.test(firstCell)) {
-      i++
-      i = skipEmpty(i)
-      if (i >= len) break
-      const headerRow = rows[i].map(c => String(norm(c)).trim())
-      i++
-      const { data, nextIndex } = collectDataRows(i, headerRow)
-      result.quantitativeTasks = data
-      i = nextIndex
-      continue
-    }
-
-    // ─── Qualitative Tasks Section ───
-    if (/정성|qualit/i.test(firstCell) && /과제|task/i.test(firstCell)) {
-      i++
-      i = skipEmpty(i)
-      if (i >= len) break
-      const headerRow = rows[i].map(c => String(norm(c)).trim())
-      i++
-      const { data, nextIndex } = collectDataRows(i, headerRow)
-      result.qualitativeTasks = data
-      i = nextIndex
-      continue
-    }
-
-    // ─── Fallback: try to detect a table by checking if next row has headers ───
-    // If first cell doesn't match known sections, try to parse as a generic table
-    if (!isEmptyRow(row)) {
-      // Check if this could be a header row (multiple string cells)
-      const stringCells = row.filter(c => typeof norm(c) === 'string' && norm(c) !== '')
-      if (stringCells.length >= 3) {
-        // This might be a header row for an unlabeled section
-        const headerRow = row.map(c => String(norm(c)).trim())
+      const dataRows = []
+      while (i < len && !isEmptyRow(rows[i])) {
+        dataRows.push(rows[i].map(c => norm(c)))
         i++
-        const { data, nextIndex } = collectDataRows(i, headerRow)
-        // Try to categorize based on column names
-        const headerStr = headerRow.join(' ').toLowerCase()
-        if (/목표.*달성|target.*actual/i.test(headerStr)) {
-          if (headerStr.includes('부서') || headerStr.includes('담당') || STAKEHOLDERS.some(s => headerStr.includes(s.toLowerCase()))) {
-            result.stakeholders = data
-          } else {
-            result.monthlyAchievement = data
-          }
-        } else if (/과제|task/i.test(headerStr)) {
-          if (/정성|qualit/i.test(headerStr)) {
-            result.qualitativeTasks = data
-          } else {
-            result.quantitativeTasks = data
-          }
-        }
-        i = nextIndex
-        continue
       }
+      result.sections.push({ title: '', headerRow, dataRows })
+      continue
     }
 
     i++
@@ -205,39 +146,53 @@ export function parseProgressSheet(rows) {
 }
 
 /**
- * Parse HS 관리 sheet (flat data mart table).
- * First row = headers, rest = data rows.
+ * Parse HS 관리 sheet — strip empty columns, keep as flat table.
+ * The sheet has sub-sections (e.g. "1-4.구조화된 콘텐츠 작성" and "1-7.신규 콘텐츠 제작")
+ * with their own sub-headers. We merge them into one flat table where possible.
  */
-export function parseDataMartSheet(rows) {
-  if (!rows || rows.length < 2) return { headers: [], data: [], summary: {} }
+export function parseDataMartSheet(rawRows) {
+  if (!rawRows || rawRows.length < 2) return { headers: [], data: [], summary: {}, filterOptions: {} }
+
+  const { rows } = stripEmptyColumns(rawRows)
 
   // First row is the header
-  const headers = rows[0].map(c => String(norm(c)).trim()).filter(h => h)
-  const data = []
+  const rawHeaders = rows[0].map(c => String(norm(c)).trim())
 
+  // Deduplicate header names (append index for duplicates)
+  const headerCount = {}
+  const headers = rawHeaders.map(h => {
+    if (!h) return ''
+    headerCount[h] = (headerCount[h] || 0) + 1
+    return headerCount[h] > 1 ? `${h}_${headerCount[h]}` : h
+  }).filter(h => h)
+
+  // Map header index for data extraction
+  const headerIndices = []
+  rawHeaders.forEach((h, idx) => { if (h) headerIndices.push(idx) })
+
+  const data = []
   for (let i = 1; i < rows.length; i++) {
     if (isEmptyRow(rows[i])) continue
     const obj = {}
-    headers.forEach((h, idx) => {
-      obj[h] = norm(rows[i][idx])
+    headers.forEach((h, j) => {
+      obj[h] = norm(rows[i][headerIndices[j]])
     })
-    // Skip rows where all values are empty
     if (Object.values(obj).every(v => v === '')) continue
     data.push(obj)
   }
 
-  // Compute summary
+  // Summary
   const totalUrls = data.length
-  const passField = headers.find(h => /^P[-\/]?F$|pass.*fail|결과|판정/i.test(h)) || 'P/F'
+  const passField = headers.find(h => /^P[-\/]?F/i.test(h)) || 'P/F'
   const passCount = data.filter(r => /^P$|pass|통과|적합/i.test(String(r[passField]))).length
   const failCount = data.filter(r => /^F$|fail|미통과|부적합/i.test(String(r[passField]))).length
   const passRate = totalUrls > 0 ? Math.round((passCount / totalUrls) * 100) : 0
 
-  // Collect unique values for filters
+  // Filter options (columns with 2-50 unique values)
   const filterOptions = {}
   headers.forEach(h => {
     const unique = [...new Set(data.map(r => String(r[h] ?? '')).filter(v => v !== ''))]
-    if (unique.length > 0 && unique.length <= 100) {
+    if (unique.length >= 2 && unique.length <= 50) {
       filterOptions[h] = unique.sort()
     }
   })

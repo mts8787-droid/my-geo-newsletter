@@ -1,11 +1,49 @@
 import React from 'react'
 import ProgressRing from './ProgressRing'
-import { AnnualAreaChart, MonthlyBarChart } from './MonthlyChart'
-import { QuantitativeTable, QualitativeTable } from './TaskTable'
-import { COLORS } from '../utils/constants'
 import { Loader2, AlertCircle } from 'lucide-react'
 
-const TASK_COLORS = ['#CF0652', '#3B82F6', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899']
+function SectionTable({ title, headerRow, dataRows }) {
+  const colIndices = []
+  for (let c = 0; c < headerRow.length; c++) {
+    const headerFilled = headerRow[c] && headerRow[c].trim() !== ''
+    const dataFilled = dataRows.some(r => r[c] !== '' && r[c] !== undefined && r[c] !== null)
+    if (headerFilled || dataFilled) colIndices.push(c)
+  }
+
+  if (colIndices.length === 0) return null
+
+  return (
+    <div className="bg-slate-800 border border-slate-700 rounded-xl p-5 overflow-x-auto">
+      {title && <h3 className="text-sm font-bold text-slate-200 mb-3">{title}</h3>}
+      <table className="w-full text-xs border-collapse">
+        <thead>
+          <tr>
+            {colIndices.map(c => (
+              <th key={c} className="text-left text-slate-400 font-semibold px-2 py-1.5 border-b border-slate-700 whitespace-nowrap">
+                {headerRow[c] || ''}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {dataRows.map((row, i) => (
+            <tr key={i} className="border-b border-slate-700/40 hover:bg-slate-700/20">
+              {colIndices.map(c => {
+                const val = row[c]
+                const isNum = typeof val === 'number'
+                return (
+                  <td key={c} className={`px-2 py-1.5 whitespace-nowrap ${isNum ? 'text-slate-200 tabular-nums' : 'text-slate-400'}`}>
+                    {val === '' || val === undefined || val === null ? '-' : isNum ? val.toLocaleString() : String(val)}
+                  </td>
+                )
+              })}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+}
 
 export default function HSDashboard({ data, loading, error }) {
   if (loading) {
@@ -34,96 +72,42 @@ export default function HSDashboard({ data, loading, error }) {
     )
   }
 
-  const { totalProgress, annualProgress, monthlyAchievement, quantitativeTasks, qualitativeTasks } = data
-
-  // Extract per-task progress rings from quantitative tasks
-  const taskRings = quantitativeTasks.map((task, idx) => {
-    const keys = Object.keys(task)
-    const nameKey = keys.find(k => /과제|task|이름|name/i.test(k)) || keys[0]
-    const name = task[nameKey]
-
-    // Calculate total target and actual across months
-    let totalTarget = 0, totalActual = 0
-    keys.forEach(k => {
-      if (/목표|target/i.test(k) && typeof task[k] === 'number') totalTarget += task[k]
-      if (/달성|actual|현황/i.test(k) && typeof task[k] === 'number') totalActual += task[k]
-    })
-    const pct = totalTarget > 0 ? Math.round((totalActual / totalTarget) * 100) : 0
-    return { name: String(name), pct, color: TASK_COLORS[idx % TASK_COLORS.length] }
-  })
-
-  // Transform chart data
-  const annualChartData = annualProgress.map(row => {
-    const keys = Object.keys(row)
-    const monthKey = keys.find(k => /월|month/i.test(k)) || keys[0]
-    const targetKey = keys.find(k => /목표|target/i.test(k))
-    const actualKey = keys.find(k => /달성|actual/i.test(k))
-    return {
-      month: row[monthKey],
-      target: typeof row[targetKey] === 'number' ? row[targetKey] : 0,
-      actual: typeof row[actualKey] === 'number' ? row[actualKey] : 0,
-    }
-  })
-
-  const monthlyChartData = monthlyAchievement.map(row => {
-    const keys = Object.keys(row)
-    const monthKey = keys.find(k => /월|month/i.test(k)) || keys[0]
-    const targetKey = keys.find(k => /목표|target/i.test(k))
-    const actualKey = keys.find(k => /달성|actual/i.test(k))
-    return {
-      month: row[monthKey],
-      target: typeof row[targetKey] === 'number' ? row[targetKey] : 0,
-      actual: typeof row[actualKey] === 'number' ? row[actualKey] : 0,
-    }
-  })
+  const { totalProgress, sections } = data
 
   return (
     <div className="space-y-6">
-      {/* Total + Task Progress Rings */}
-      <div className="bg-slate-800 border border-slate-700 rounded-xl p-6">
-        <h3 className="text-sm font-bold text-slate-200 mb-5">HS Progress</h3>
-        <div className="flex justify-center gap-8 flex-wrap">
-          <ProgressRing value={totalProgress.total} label="전체" color="#CF0652" size={160} />
-          <ProgressRing value={totalProgress.quantitative} label="정량" color="#3B82F6" />
-          <ProgressRing value={totalProgress.qualitative} label="정성" color="#10B981" />
-        </div>
-      </div>
-
-      {/* Per-task progress rings */}
-      {taskRings.length > 0 && (
+      {/* Total Progress Rings */}
+      {(totalProgress.total > 0 || totalProgress.quantitative > 0 || totalProgress.qualitative > 0) && (
         <div className="bg-slate-800 border border-slate-700 rounded-xl p-6">
-          <h3 className="text-sm font-bold text-slate-200 mb-5">과제별 진척</h3>
-          <div className="flex justify-center gap-6 flex-wrap">
-            {taskRings.map((t, i) => (
-              <ProgressRing key={i} value={t.pct} label={t.name} color={t.color} size={120} />
-            ))}
+          <h3 className="text-sm font-bold text-slate-200 mb-5">HS Progress</h3>
+          <div className="flex justify-center gap-10 flex-wrap">
+            <ProgressRing value={totalProgress.total} label="전체" color="#CF0652" />
+            <ProgressRing value={totalProgress.quantitative} label="정량" color="#3B82F6" />
+            <ProgressRing value={totalProgress.qualitative} label="정성" color="#10B981" />
           </div>
         </div>
       )}
 
-      {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <AnnualAreaChart data={annualChartData} />
-        <MonthlyBarChart data={monthlyChartData} />
-      </div>
+      {/* Sections as raw tables */}
+      {sections.map((sec, i) => (
+        <SectionTable
+          key={i}
+          title={sec.title}
+          headerRow={sec.headerRow}
+          dataRows={sec.dataRows}
+        />
+      ))}
 
-      {/* Task Tables */}
-      <QuantitativeTable tasks={quantitativeTasks} />
-      <QualitativeTable tasks={qualitativeTasks} />
-
-      {/* Raw data fallback */}
-      {data.raw && data.quantitativeTasks.length === 0 && data.stakeholders.length === 0 && (
+      {/* Fallback */}
+      {sections.length === 0 && data.raw && data.raw.length > 0 && (
         <div className="bg-slate-800 border border-slate-700 rounded-xl p-5">
-          <h3 className="text-sm font-bold text-slate-200 mb-3">Raw Data (파서가 섹션을 감지하지 못함)</h3>
-          <p className="text-xs text-slate-400 mb-3">
-            시트 구조가 예상과 다릅니다. 아래는 원본 데이터의 처음 20행입니다.
-          </p>
+          <h3 className="text-sm font-bold text-slate-200 mb-3">Raw Data</h3>
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
               <tbody>
-                {data.raw.slice(0, 20).map((row, i) => (
+                {data.raw.slice(0, 30).map((row, i) => (
                   <tr key={i} className="border-b border-slate-700/40">
-                    <td className="px-2 py-1 text-slate-600">{i + 1}</td>
+                    <td className="px-2 py-1 text-slate-600 w-8">{i + 1}</td>
                     {row.map((cell, j) => (
                       <td key={j} className="px-2 py-1 text-slate-400 whitespace-nowrap max-w-[200px] truncate">
                         {cell === '' ? <span className="text-slate-700">-</span> : String(cell)}
