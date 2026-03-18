@@ -5,12 +5,30 @@ import { readFileSync } from 'fs'
 
 const pkg = JSON.parse(readFileSync('./package.json', 'utf-8'))
 
+function serveDashboardHtml() {
+  return {
+    name: 'serve-dashboard-html',
+    configureServer(server) {
+      // Runs BEFORE Vite's internal middleware
+      server.middlewares.use((req, res, next) => {
+        const url = req.url.split('?')[0]
+        // Rewrite /admin/dashboard/ (and SPA sub-paths) → /dashboard.html
+        if (url === '/admin/dashboard/' || url === '/admin/dashboard' ||
+            (url.startsWith('/admin/dashboard/') && !url.includes('.'))) {
+          req.url = '/admin/dashboard/dashboard.html'
+        }
+        next()
+      })
+    },
+  }
+}
+
 export default defineConfig({
   base: '/admin/dashboard/',
   define: {
     __APP_VERSION__: JSON.stringify(pkg.version),
   },
-  plugins: [react()],
+  plugins: [serveDashboardHtml(), react()],
   build: {
     outDir: 'dist-dashboard',
     emptyOutDir: true,
