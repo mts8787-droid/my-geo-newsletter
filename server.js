@@ -160,7 +160,7 @@ app.post('/api/auth/logout', (req, res) => {
 
 // ─── Auth Middleware ─────────────────────────────────────────────────────────
 app.use((req, res, next) => {
-  if (req.path === '/' || req.path.startsWith('/p/')) return next()
+  if (req.path.startsWith('/p/') || req.path === '/') return next()
   if (req.path === '/admin/login') return next()
   if (req.path.startsWith('/api/auth/')) return next()
 
@@ -534,6 +534,11 @@ app.get('/admin/newsletter/*', (req, res) => {
   res.sendFile(join(__dirname, 'dist', 'index.html'))
 })
 app.get('/', (req, res) => {
+  if (!isIpAllowed(req.ip)) {
+    res.status(403)
+    res.set('Content-Type', 'text/html; charset=utf-8')
+    return res.send(`<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Access Denied</title><style>*{margin:0;padding:0;box-sizing:border-box}body{min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0F172A;font-family:'LG Smart','Arial Narrow',Arial,sans-serif;color:#E2E8F0}.w{text-align:center;padding:40px 24px}h1{font-size:48px;font-weight:700;color:#334155;margin-bottom:16px}p{font-size:15px;color:#64748B}</style></head><body><div class="w"><h1>403</h1><p>접근이 허용되지 않은 IP입니다.</p></div></body></html>`)
+  }
   const meta = readPubMeta()
   const title = meta?.title || 'GEO Monthly Report'
   const ts = meta?.ts ? new Date(meta.ts).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' }) : ''
