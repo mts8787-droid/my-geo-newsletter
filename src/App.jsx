@@ -758,7 +758,8 @@ function Sidebar({ meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, total, s
   // 게시 상태 로드
   const [publishInfo, setPublishInfo] = useState(null)
   useEffect(() => {
-    fetch('/api/publish').then(r => r.ok ? r.json() : null).then(setPublishInfo).catch(() => {})
+    const ep = window.__PUBLISH_API__ || '/api/publish'
+    fetch(ep).then(r => r.ok ? r.json() : null).then(setPublishInfo).catch(() => {})
   }, [])
 
   async function handlePublish() {
@@ -770,7 +771,8 @@ function Sidebar({ meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, total, s
       const htmlKo = generateEmailHTML(metaKo, total, resolvedKo.products, resolvedKo.citations, dotcom, 'ko', resolvedKo.productsCnty, resolvedKo.citationsCnty)
       const htmlEn = generateEmailHTML(metaEn, total, resolvedEn.products, resolvedEn.citations, dotcom, 'en', resolvedEn.productsCnty, resolvedEn.citationsCnty)
       const title = `${metaKo.period || ''} ${metaKo.title || 'Newsletter'}`.trim()
-      const res = await fetch('/api/publish', {
+      const ep = window.__PUBLISH_API__ || '/api/publish'
+      const res = await fetch(ep, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ title, htmlKo, htmlEn }),
@@ -792,7 +794,8 @@ function Sidebar({ meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, total, s
 
   async function handleUnpublish() {
     try {
-      const res = await fetch('/api/publish', { method: 'DELETE' })
+      const ep = window.__PUBLISH_API__ || '/api/publish'
+      const res = await fetch(ep, { method: 'DELETE' })
       const data = await res.json()
       if (data.ok) setPublishInfo(null)
     } catch {}
