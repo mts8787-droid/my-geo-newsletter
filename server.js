@@ -1,4 +1,5 @@
 import express from 'express'
+import crypto from 'crypto'
 import nodemailer from 'nodemailer'
 import translate from 'google-translate-api-x'
 import { fileURLToPath } from 'url'
@@ -12,12 +13,64 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 const app = express()
 const PORT = process.env.PORT || 3000
 
+app.set('trust proxy', true)
+
 // ─── Snapshots file storage ──────────────────────────────────────────────────
 const DATA_DIR = process.env.DATA_DIR || join(__dirname, 'data')
 const SNAP_FILE = join(DATA_DIR, 'snapshots.json')
 const PUB_DIR = join(DATA_DIR, 'published')
 if (!existsSync(DATA_DIR)) mkdirSync(DATA_DIR, { recursive: true })
 if (!existsSync(PUB_DIR)) mkdirSync(PUB_DIR, { recursive: true })
+
+// ─── IP Allowlist storage ────────────────────────────────────────────────────
+const IP_FILE = join(DATA_DIR, 'ip-allowlist.json')
+
+function readIpAllowlist() {
+  try { return JSON.parse(readFileSync(IP_FILE, 'utf-8')) } catch { return [] }
+}
+function writeIpAllowlist(list) {
+  writeFileSync(IP_FILE, JSON.stringify(list, null, 2))
+}
+
+function extractIPv4(ip) {
+  if (!ip) return null
+  if (ip.startsWith('::ffff:')) return ip.slice(7)
+  if (/^\d{1,3}(\.\d{1,3}){3}$/.test(ip)) return ip
+  return null
+}
+
+function ipToNum(ip) {
+  return ip.split('.').reduce((sum, octet) => (sum << 8) + parseInt(octet), 0) >>> 0
+}
+
+function ipMatchesCidr(ip, cidr) {
+  const ipv4 = extractIPv4(ip)
+  if (!ipv4) return false
+  const [range, bitsStr] = cidr.split('/')
+  const rangeIpv4 = extractIPv4(range)
+  if (!rangeIpv4) return false
+  const bits = bitsStr ? parseInt(bitsStr) : 32
+  if (bits === 0) return true
+  const mask = (~0 << (32 - bits)) >>> 0
+  return (ipToNum(ipv4) & mask) === (ipToNum(rangeIpv4) & mask)
+}
+
+function isIpAllowed(ip) {
+  const list = readIpAllowlist()
+  if (list.length === 0) return true
+  return list.some(entry => ipMatchesCidr(ip, entry.cidr))
+}
+
+// ─── Admin Auth ──────────────────────────────────────────────────────────────
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'changeme'
+const activeSessions = new Set()
+
+function getSessionToken(req) {
+  const cookie = req.headers.cookie
+  if (!cookie) return null
+  const match = cookie.split(';').map(c => c.trim()).find(c => c.startsWith('admin_token='))
+  return match ? match.split('=')[1] : null
+}
 
 function readSnapshots() {
   try { return JSON.parse(readFileSync(SNAP_FILE, 'utf-8')) } catch { return [] }
@@ -28,6 +81,98 @@ function writeSnapshots(list) {
 
 // ─── JSON body parser ────────────────────────────────────────────────────────
 app.use(express.json({ limit: '5mb' }))
+
+// ─── Admin Login Page ────────────────────────────────────────────────────────
+app.get('/admin/login', (req, res) => {
+  const token = getSessionToken(req)
+  if (token && activeSessions.has(token)) return res.redirect('/admin/')
+  res.set('Content-Type', 'text/html; charset=utf-8')
+  res.send(`<!DOCTYPE html>
+<html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Admin Login</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0F172A;font-family:'LG Smart','Arial Narrow',Arial,sans-serif;color:#E2E8F0}
+.card{background:#1E293B;border:1px solid #334155;border-radius:16px;padding:40px 36px;width:100%;max-width:400px}
+h1{font-size:20px;font-weight:700;color:#F8FAFC;margin-bottom:8px;text-align:center}
+.sub{font-size:13px;color:#64748B;text-align:center;margin-bottom:28px}
+label{display:block;font-size:12px;color:#94A3B8;margin-bottom:6px;font-weight:600}
+input{width:100%;padding:12px 14px;border-radius:8px;border:1px solid #334155;background:#0F172A;color:#E2E8F0;font-size:14px;outline:none;transition:border-color .2s}
+input:focus{border-color:#CF0652}
+button{width:100%;margin-top:20px;padding:14px;border:none;border-radius:10px;background:#CF0652;color:#fff;font-size:14px;font-weight:700;cursor:pointer;transition:opacity .15s}
+button:hover{opacity:.9}button:disabled{opacity:.5;cursor:not-allowed}
+.err{color:#F87171;font-size:12px;margin-top:12px;text-align:center;display:none}
+</style></head><body>
+<div class="card">
+  <h1>Admin Login</h1>
+  <p class="sub">GEO Newsletter Management</p>
+  <form id="f">
+    <label for="pw">Password</label>
+    <input type="password" id="pw" placeholder="관리자 비밀번호 입력" autofocus>
+    <button type="submit">로그인</button>
+    <p class="err" id="err"></p>
+  </form>
+</div>
+<script>
+document.getElementById('f').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  var btn = e.target.querySelector('button');
+  var err = document.getElementById('err');
+  btn.disabled = true; err.style.display = 'none';
+  try {
+    var r = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({password: document.getElementById('pw').value})
+    });
+    var j = await r.json();
+    if (j.ok) { location.href = '/admin/'; }
+    else { err.textContent = j.error; err.style.display = 'block'; }
+  } catch(ex) { err.textContent = '서버 연결 실패'; err.style.display = 'block'; }
+  btn.disabled = false;
+});
+</script></body></html>`)
+})
+
+// ─── Auth API ────────────────────────────────────────────────────────────────
+app.post('/api/auth/login', (req, res) => {
+  const { password } = req.body || {}
+  if (password !== ADMIN_PASSWORD) {
+    return res.status(401).json({ ok: false, error: '비밀번호가 올바르지 않습니다.' })
+  }
+  const token = crypto.randomBytes(32).toString('hex')
+  activeSessions.add(token)
+  res.cookie('admin_token', token, {
+    httpOnly: true,
+    sameSite: 'lax',
+    maxAge: 24 * 60 * 60 * 1000,
+    path: '/',
+  })
+  res.json({ ok: true })
+})
+
+app.post('/api/auth/logout', (req, res) => {
+  const token = getSessionToken(req)
+  if (token) activeSessions.delete(token)
+  res.clearCookie('admin_token', { path: '/' })
+  res.json({ ok: true })
+})
+
+// ─── Auth Middleware ─────────────────────────────────────────────────────────
+app.use((req, res, next) => {
+  if (req.path === '/' || req.path.startsWith('/p/')) return next()
+  if (req.path === '/admin/login') return next()
+  if (req.path.startsWith('/api/auth/')) return next()
+
+  if (req.path.startsWith('/admin') || req.path.startsWith('/api/')) {
+    const token = getSessionToken(req)
+    if (!token || !activeSessions.has(token)) {
+      if (req.path.startsWith('/api/')) return res.status(401).json({ ok: false, error: 'Unauthorized' })
+      return res.redirect('/admin/login')
+    }
+  }
+  next()
+})
 
 // ─── Google Sheets proxy (fetch-based) ──────────────────────────────────────
 app.get('/gsheets-proxy/*', async (req, res) => {
@@ -157,6 +302,34 @@ app.post('/api/translate', async (req, res) => {
   }
 })
 
+// ─── IP Allowlist API ────────────────────────────────────────────────────────
+app.get('/api/ip-allowlist', (req, res) => {
+  res.json(readIpAllowlist())
+})
+
+app.post('/api/ip-allowlist', (req, res) => {
+  const { cidr, label } = req.body || {}
+  if (!cidr) return res.status(400).json({ ok: false, error: 'cidr 필수' })
+  const m = cidr.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})(\/(\d{1,2}))?$/)
+  if (!m || [m[1],m[2],m[3],m[4]].some(o => parseInt(o) > 255) || (m[6] && parseInt(m[6]) > 32)) {
+    return res.status(400).json({ ok: false, error: 'CIDR 형식이 올바르지 않습니다 (예: 192.168.0.0/16)' })
+  }
+  const entry = { id: crypto.randomBytes(8).toString('hex'), cidr, label: label || '', createdAt: Date.now() }
+  const list = [...readIpAllowlist(), entry]
+  writeIpAllowlist(list)
+  res.json({ ok: true, list })
+})
+
+app.delete('/api/ip-allowlist/:id', (req, res) => {
+  const list = readIpAllowlist().filter(e => e.id !== req.params.id)
+  writeIpAllowlist(list)
+  res.json({ ok: true, list })
+})
+
+app.get('/api/my-ip', (req, res) => {
+  res.json({ ip: req.ip })
+})
+
 // ─── Publish API (KO+EN 동시 게시, 고정 URL) ────────────────────────────────
 const KO_SLUG = 'GEO-Monthly-Report-KO'
 const EN_SLUG = 'GEO-Monthly-Report-EN'
@@ -206,10 +379,148 @@ app.delete('/api/publish', (req, res) => {
 })
 
 app.get('/p/:slug', (req, res) => {
+  if (!isIpAllowed(req.ip)) {
+    res.status(403)
+    res.set('Content-Type', 'text/html; charset=utf-8')
+    return res.send(`<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Access Denied</title><style>*{margin:0;padding:0;box-sizing:border-box}body{min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0F172A;font-family:'LG Smart','Arial Narrow',Arial,sans-serif;color:#E2E8F0}.w{text-align:center;padding:40px 24px}h1{font-size:48px;font-weight:700;color:#334155;margin-bottom:16px}p{font-size:15px;color:#64748B}</style></head><body><div class="w"><h1>403</h1><p>접근이 허용되지 않은 IP입니다.</p></div></body></html>`)
+  }
   const file = join(PUB_DIR, `${req.params.slug}.html`)
   if (!existsSync(file)) return res.status(404).send('Not found')
   res.set('Content-Type', 'text/html; charset=utf-8')
   res.send(readFileSync(file, 'utf-8'))
+})
+
+// ─── Admin Dashboard ─────────────────────────────────────────────────────────
+app.get('/admin/', (req, res) => {
+  res.set('Content-Type', 'text/html; charset=utf-8')
+  res.send(`<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>GEO Newsletter Admin</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0F172A;font-family:'LG Smart','Arial Narrow',Arial,sans-serif;color:#E2E8F0}
+.wrap{text-align:center;padding:40px 24px;max-width:540px;width:100%}
+.logo{font-size:11px;font-weight:700;letter-spacing:3px;color:#64748B;text-transform:uppercase;margin-bottom:28px}
+h1{font-size:24px;font-weight:700;color:#F8FAFC;margin-bottom:32px}
+.cards{display:flex;flex-direction:column;gap:14px;margin-bottom:32px}
+a.card{display:block;background:#1E293B;border:1px solid #334155;border-radius:12px;padding:24px;text-decoration:none;text-align:left;transition:border-color .2s,transform .15s}
+a.card:hover{border-color:#CF0652;transform:translateY(-2px)}
+.card-title{font-size:16px;font-weight:700;color:#F8FAFC;margin-bottom:4px}
+.card-desc{font-size:13px;color:#94A3B8}
+.logout{background:none;border:1px solid #334155;color:#64748B;padding:10px 24px;border-radius:8px;font-size:13px;cursor:pointer}
+.logout:hover{border-color:#64748B;color:#94A3B8}
+</style></head><body>
+<div class="wrap">
+  <div class="logo">GEO Newsletter</div>
+  <h1>Admin Dashboard</h1>
+  <div class="cards">
+    <a class="card" href="/admin/newsletter">
+      <div class="card-title">Newsletter Generator</div>
+      <div class="card-desc">GEO 모니터링 리포트 생성, 편집 및 발송</div>
+    </a>
+    <a class="card" href="/admin/ip-manager">
+      <div class="card-title">IP Access Manager</div>
+      <div class="card-desc">게시된 리포트 열람 허용 IP 대역 관리</div>
+    </a>
+  </div>
+  <button class="logout" onclick="fetch('/api/auth/logout',{method:'POST'}).then(function(){location.href='/admin/login'})">로그아웃</button>
+</div></body></html>`)
+})
+
+// ─── IP Access Manager UI ────────────────────────────────────────────────────
+app.get('/admin/ip-manager', (req, res) => {
+  res.set('Content-Type', 'text/html; charset=utf-8')
+  res.send(`<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>IP Access Manager</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0F172A;font-family:'LG Smart','Arial Narrow',Arial,sans-serif;color:#E2E8F0;padding:32px 24px}
+.container{max-width:720px;margin:0 auto}
+.top{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.back{color:#64748B;text-decoration:none;font-size:13px}.back:hover{color:#94A3B8}
+.logout{background:none;border:1px solid #334155;color:#64748B;padding:6px 16px;border-radius:6px;font-size:12px;cursor:pointer}.logout:hover{border-color:#64748B;color:#94A3B8}
+h1{font-size:22px;font-weight:700;color:#F8FAFC;margin-bottom:6px}
+.desc{font-size:13px;color:#64748B;margin-bottom:24px}
+.info{background:#1E3A5F;border:1px solid #2563EB;border-radius:8px;padding:12px 16px;font-size:12px;color:#93C5FD;margin-bottom:24px;line-height:1.7}
+.info strong{color:#BFDBFE}
+.section{background:#1E293B;border:1px solid #334155;border-radius:12px;padding:24px;margin-bottom:20px}
+.section h2{font-size:15px;font-weight:700;margin-bottom:16px;color:#F8FAFC}
+.form-row{display:flex;gap:10px;margin-bottom:12px}
+.form-row input{flex:1;padding:10px 12px;border-radius:8px;border:1px solid #334155;background:#0F172A;color:#E2E8F0;font-size:13px;outline:none}
+.form-row input:focus{border-color:#CF0652}
+.add-btn{padding:10px 20px;border:none;border-radius:8px;background:#CF0652;color:#fff;font-weight:700;font-size:13px;cursor:pointer;white-space:nowrap}
+.add-btn:hover{opacity:.9}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;color:#64748B;font-weight:600;padding:8px 12px;border-bottom:1px solid #334155}
+td{padding:10px 12px;border-bottom:1px solid rgba(51,65,85,.5)}
+code{background:#0F172A;padding:2px 8px;border-radius:4px;font-size:12px;color:#7DD3FC}
+.empty{text-align:center;padding:24px;color:#64748B;font-size:13px}
+.del-btn{background:none;border:1px solid #EF4444;color:#EF4444;padding:4px 12px;border-radius:6px;font-size:12px;cursor:pointer}
+.del-btn:hover{background:#EF4444;color:#fff}
+.status{font-size:12px;margin-top:8px;min-height:18px}.status.ok{color:#4ADE80}.status.err{color:#F87171}
+</style></head><body>
+<div class="container">
+  <div class="top">
+    <a class="back" href="/admin/">&#8592; Admin Dashboard</a>
+    <button class="logout" onclick="fetch('/api/auth/logout',{method:'POST'}).then(function(){location.href='/admin/login'})">로그아웃</button>
+  </div>
+  <h1>IP Access Manager</h1>
+  <p class="desc">게시된 리포트(/p/*)에 접근할 수 있는 IP 대역을 관리합니다.</p>
+  <div class="info">
+    허용 목록이 비어있으면 <strong>모든 IP에서 접근 가능</strong>합니다.<br>
+    하나 이상 등록하면 등록된 IP 대역에서만 접근할 수 있습니다.<br>
+    현재 접속 IP: <strong id="myip">확인 중...</strong>
+  </div>
+  <div class="section">
+    <h2>IP 대역 추가</h2>
+    <div class="form-row">
+      <input type="text" id="cidr" placeholder="CIDR (예: 192.168.0.0/16 또는 10.0.0.1/32)">
+      <input type="text" id="label" placeholder="설명 (예: 사무실)" style="max-width:180px">
+      <button class="add-btn" onclick="addEntry()">추가</button>
+    </div>
+    <p class="status" id="status"></p>
+  </div>
+  <div class="section">
+    <h2>허용 목록</h2>
+    <div id="list"></div>
+  </div>
+</div>
+<script>
+var list=[];
+async function load(){
+  var r=await fetch('/api/ip-allowlist');
+  if(r.status===401){location.href='/admin/login';return}
+  list=await r.json();render();
+  fetch('/api/my-ip').then(function(r){return r.json()}).then(function(j){document.getElementById('myip').textContent=j.ip});
+}
+function esc(s){var d=document.createElement('div');d.textContent=s;return d.innerHTML}
+function render(){
+  var el=document.getElementById('list');
+  if(list.length===0){el.innerHTML='<p class="empty">등록된 IP 대역이 없습니다. 모든 IP에서 접근 가능합니다.</p>';return}
+  var h='<table><thead><tr><th>CIDR</th><th>설명</th><th>등록일</th><th></th></tr></thead><tbody>';
+  for(var i=0;i<list.length;i++){var e=list[i];var d=new Date(e.createdAt).toLocaleDateString('ko-KR');
+    h+='<tr><td><code>'+esc(e.cidr)+'</code></td><td>'+esc(e.label||'-')+'</td><td>'+d+'</td><td><button class="del-btn" data-id="'+e.id+'">삭제</button></td></tr>'}
+  h+='</tbody></table>';el.innerHTML=h;
+}
+async function addEntry(){
+  var cidr=document.getElementById('cidr').value.trim();
+  var label=document.getElementById('label').value.trim();
+  var st=document.getElementById('status');
+  if(!cidr){st.textContent='CIDR을 입력하세요';st.className='status err';return}
+  var r=await fetch('/api/ip-allowlist',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cidr:cidr,label:label})});
+  var j=await r.json();
+  if(j.ok){list=j.list;render();document.getElementById('cidr').value='';document.getElementById('label').value='';st.textContent='추가되었습니다';st.className='status ok'}
+  else{st.textContent=j.error;st.className='status err'}
+}
+async function del(id){
+  if(!confirm('삭제하시겠습니까?'))return;
+  var r=await fetch('/api/ip-allowlist/'+id,{method:'DELETE'});var j=await r.json();
+  if(j.ok){list=j.list;render()}
+}
+document.addEventListener('click',function(e){if(e.target.classList.contains('del-btn'))del(e.target.dataset.id)});
+load();
+</script></body></html>`)
 })
 
 // ─── Static files (admin UI at /admin/newsletter) ───────────────────────────
@@ -287,6 +598,7 @@ app.listen(PORT, () => {
   console.log(`DATA_DIR = ${DATA_DIR}`)
   console.log(`SNAP_FILE = ${SNAP_FILE}`)
   console.log(`SNAP_FILE exists = ${existsSync(SNAP_FILE)}`)
+  if (ADMIN_PASSWORD === 'changeme') console.log('[WARN] Using default admin password. Set ADMIN_PASSWORD env var.')
   try {
     const snaps = readSnapshots()
     console.log(`Snapshots count = ${snaps.length}`)
