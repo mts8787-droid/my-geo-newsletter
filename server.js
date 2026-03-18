@@ -308,13 +308,13 @@ app.get('/api/ip-allowlist', (req, res) => {
 })
 
 app.post('/api/ip-allowlist', (req, res) => {
-  const { cidr, label } = req.body || {}
+  const { cidr, country, label } = req.body || {}
   if (!cidr) return res.status(400).json({ ok: false, error: 'cidr 필수' })
   const m = cidr.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})(\/(\d{1,2}))?$/)
   if (!m || [m[1],m[2],m[3],m[4]].some(o => parseInt(o) > 255) || (m[6] && parseInt(m[6]) > 32)) {
     return res.status(400).json({ ok: false, error: 'CIDR 형식이 올바르지 않습니다 (예: 192.168.0.0/16)' })
   }
-  const entry = { id: crypto.randomBytes(8).toString('hex'), cidr, label: label || '', createdAt: Date.now() }
+  const entry = { id: crypto.randomBytes(8).toString('hex'), cidr, country: country || '', label: label || '', createdAt: Date.now() }
   const list = [...readIpAllowlist(), entry]
   writeIpAllowlist(list)
   res.json({ ok: true, list })
@@ -475,8 +475,9 @@ code{background:#0F172A;padding:2px 8px;border-radius:4px;font-size:12px;color:#
   <div class="section">
     <h2>IP 대역 추가</h2>
     <div class="form-row">
-      <input type="text" id="cidr" placeholder="CIDR (예: 192.168.0.0/16 또는 10.0.0.1/32)">
-      <input type="text" id="label" placeholder="설명 (예: 사무실)" style="max-width:180px">
+      <input type="text" id="cidr" placeholder="CIDR (예: 192.168.0.0/16)">
+      <input type="text" id="country" placeholder="국가 (예: KR)" style="max-width:100px">
+      <input type="text" id="label" placeholder="설명 (예: 사무실)" style="max-width:160px">
       <button class="add-btn" onclick="addEntry()">추가</button>
     </div>
     <p class="status" id="status"></p>
@@ -498,19 +499,20 @@ function esc(s){var d=document.createElement('div');d.textContent=s;return d.inn
 function render(){
   var el=document.getElementById('list');
   if(list.length===0){el.innerHTML='<p class="empty">등록된 IP 대역이 없습니다. 모든 IP에서 접근 가능합니다.</p>';return}
-  var h='<table><thead><tr><th>CIDR</th><th>설명</th><th>등록일</th><th></th></tr></thead><tbody>';
+  var h='<table><thead><tr><th>CIDR</th><th>국가</th><th>설명</th><th>등록일</th><th></th></tr></thead><tbody>';
   for(var i=0;i<list.length;i++){var e=list[i];var d=new Date(e.createdAt).toLocaleDateString('ko-KR');
-    h+='<tr><td><code>'+esc(e.cidr)+'</code></td><td>'+esc(e.label||'-')+'</td><td>'+d+'</td><td><button class="del-btn" data-id="'+e.id+'">삭제</button></td></tr>'}
+    h+='<tr><td><code>'+esc(e.cidr)+'</code></td><td>'+esc(e.country||'-')+'</td><td>'+esc(e.label||'-')+'</td><td>'+d+'</td><td><button class="del-btn" data-id="'+e.id+'">삭제</button></td></tr>'}
   h+='</tbody></table>';el.innerHTML=h;
 }
 async function addEntry(){
   var cidr=document.getElementById('cidr').value.trim();
+  var country=document.getElementById('country').value.trim();
   var label=document.getElementById('label').value.trim();
   var st=document.getElementById('status');
   if(!cidr){st.textContent='CIDR을 입력하세요';st.className='status err';return}
-  var r=await fetch('/api/ip-allowlist',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cidr:cidr,label:label})});
+  var r=await fetch('/api/ip-allowlist',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cidr:cidr,country:country,label:label})});
   var j=await r.json();
-  if(j.ok){list=j.list;render();document.getElementById('cidr').value='';document.getElementById('label').value='';st.textContent='추가되었습니다';st.className='status ok'}
+  if(j.ok){list=j.list;render();document.getElementById('cidr').value='';document.getElementById('country').value='';document.getElementById('label').value='';st.textContent='추가되었습니다';st.className='status ok'}
   else{st.textContent=j.error;st.className='status err'}
 }
 async function del(id){
