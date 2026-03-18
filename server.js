@@ -418,6 +418,10 @@ a.card:hover{border-color:#CF0652;transform:translateY(-2px)}
       <div class="card-title">Newsletter Generator</div>
       <div class="card-desc">GEO 모니터링 리포트 생성, 편집 및 발송</div>
     </a>
+    <a class="card" href="/admin/progress-tracker">
+      <div class="card-title">Progress Tracker</div>
+      <div class="card-desc">GEO 과제 진행 현황 대시보드</div>
+    </a>
     <a class="card" href="/admin/ip-manager">
       <div class="card-title">IP Access Manager</div>
       <div class="card-desc">게시된 리포트 열람 허용 IP 대역 관리</div>
@@ -532,6 +536,15 @@ app.get('/admin/newsletter', (req, res) => {
 })
 app.get('/admin/newsletter/*', (req, res) => {
   res.sendFile(join(__dirname, 'dist', 'index.html'))
+})
+
+// ─── Static files (Progress Tracker at /admin/progress-tracker) ─────────────
+app.use('/admin/progress-tracker', express.static(join(__dirname, 'dist-tracker')))
+app.get('/admin/progress-tracker', (req, res) => {
+  res.sendFile(join(__dirname, 'dist-tracker', 'tracker.html'))
+})
+app.get('/admin/progress-tracker/*', (req, res) => {
+  res.sendFile(join(__dirname, 'dist-tracker', 'tracker.html'))
 })
 app.get('/', (req, res) => {
   if (!isIpAllowed(req.ip)) {
