@@ -3,9 +3,14 @@ import { ChevronLeft, ChevronRight, TrendingUp, TrendingDown, Minus, Copy, Downl
 import { downloadTemplate } from './excelUtils'
 import { extractSheetId, syncFromGoogleSheets } from './googleSheetsUtils'
 import { generateEmailHTML } from './emailTemplate'
+let generateDashboardHTML = null
+if (window.__DASHBOARD_MODE__) {
+  import('./dashboard/dashboardTemplate.js').then(m => { generateDashboardHTML = m.generateDashboardHTML })
+}
 
 // ─── localStorage 캐시 ─────────────────────────────────────────────────────────
-const STORAGE_KEY = 'geo-newsletter-cache'
+const IS_DASHBOARD = !!window.__DASHBOARD_MODE__
+const STORAGE_KEY = IS_DASHBOARD ? 'geo-dashboard-cache' : 'geo-newsletter-cache'
 const CACHE_VERSION = 3
 function loadCache() {
   try {
@@ -768,9 +773,16 @@ function Sidebar({ meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, total, s
     try {
       const resolvedKo = resolveDataForLang(products, productsCnty, citations, citationsCnty, 'ko')
       const resolvedEn = resolveDataForLang(products, productsCnty, citations, citationsCnty, 'en')
-      const htmlKo = generateEmailHTML(metaKo, total, resolvedKo.products, resolvedKo.citations, dotcom, 'ko', resolvedKo.productsCnty, resolvedKo.citationsCnty)
-      const htmlEn = generateEmailHTML(metaEn, total, resolvedEn.products, resolvedEn.citations, dotcom, 'en', resolvedEn.productsCnty, resolvedEn.citationsCnty)
-      const title = `${metaKo.period || ''} ${metaKo.title || 'Newsletter'}`.trim()
+      let htmlKo, htmlEn, title
+      if (IS_DASHBOARD && generateDashboardHTML) {
+        htmlKo = generateDashboardHTML(metaKo, total, resolvedKo.products, resolvedKo.citations, dotcom, 'ko', resolvedKo.productsCnty, resolvedKo.citationsCnty)
+        htmlEn = generateDashboardHTML(metaEn, total, resolvedEn.products, resolvedEn.citations, dotcom, 'en', resolvedEn.productsCnty, resolvedEn.citationsCnty)
+        title = `${metaKo.period || ''} ${metaKo.title || 'KPI Dashboard'}`.trim()
+      } else {
+        htmlKo = generateEmailHTML(metaKo, total, resolvedKo.products, resolvedKo.citations, dotcom, 'ko', resolvedKo.productsCnty, resolvedKo.citationsCnty)
+        htmlEn = generateEmailHTML(metaEn, total, resolvedEn.products, resolvedEn.citations, dotcom, 'en', resolvedEn.productsCnty, resolvedEn.citationsCnty)
+        title = `${metaKo.period || ''} ${metaKo.title || 'Newsletter'}`.trim()
+      }
       const ep = window.__PUBLISH_API__ || '/api/publish'
       const res = await fetch(ep, {
         method: 'POST',
@@ -1011,7 +1023,12 @@ function Sidebar({ meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, total, s
           return next
         }))
       }
-      setGsStatus('ok'); setGsMsg('동기화 완료!')
+      setGsStatus('ok'); setGsMsg(IS_DASHBOARD ? '동기화 완료! EN 자동 번역 중...' : '동기화 완료!')
+      // Dashboard mode: auto-translate after sync
+      if (IS_DASHBOARD) {
+        try { await executeTranslate() } catch {}
+        setGsMsg('동기화 + 번역 완료!')
+      }
     } catch (err) {
       setGsStatus('error'); setGsMsg(err.message)
     } finally {
@@ -1994,7 +2011,7 @@ export default function App() {
   const [dotcom,    setDotcom]    = useState((cache?.dotcom && cache.dotcom.lg) ? cache.dotcom : INIT_DOTCOM)
   const [productsCnty, setProductsCnty] = useState(cache?.productsCnty ?? INIT_PRODUCTS_CNTY)
   const [citationsCnty, setCitationsCnty] = useState(cache?.citationsCnty ?? INIT_CITATIONS_CNTY)
-  const [activeTab, setActiveTab] = useState('preview') // 'preview' | 'code'
+  const [activeTab, setActiveTab] = useState(IS_DASHBOARD ? 'visibility' : 'preview')
   const [previewLang, setPreviewLang] = useState('ko') // 'ko' | 'en'
   const [snapshots,  setSnapshots]  = useState([])
   const [snapName,   setSnapName]   = useState('')
@@ -2077,12 +2094,18 @@ export default function App() {
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           padding: '0 22px', flexShrink: 0 }}>
           <div style={{ display: 'flex', gap: 3, alignItems: 'center' }}>
-            {[
+            {(IS_DASHBOARD ? [
+              { key: 'visibility', tab: 'visibility', lang: null, label: 'Visibility' },
+              { key: 'citation',   tab: 'citation',   lang: null, label: 'Citation' },
+              { key: 'progress',   tab: 'progress',   lang: null, label: 'Progress Tracker' },
+            ] : [
               { key: 'preview-ko', tab: 'preview', lang: 'ko', label: '뉴스레터미리보기 (KO)' },
               { key: 'preview-en', tab: 'preview', lang: 'en', label: '뉴스레터미리보기 (EN)' },
               { key: 'code',       tab: 'code',    lang: null, label: 'HTML 내보내기' },
-            ].map(({ key, tab, lang, label }) => {
-              const isActive = tab === 'code' ? activeTab === 'code' : (activeTab === 'preview' && previewLang === lang)
+            ]).map(({ key, tab, lang, label }) => {
+              const isActive = IS_DASHBOARD
+                ? activeTab === tab
+                : (tab === 'code' ? activeTab === 'code' : (activeTab === 'preview' && previewLang === lang))
               return (
                 <button key={key} onClick={() => { setActiveTab(tab); if (lang) setPreviewLang(lang) }} style={{
                   padding: '5px 12px', borderRadius: 7, border: 'none',
@@ -2095,6 +2118,18 @@ export default function App() {
                 </button>
               )
             })}
+            {IS_DASHBOARD && (activeTab === 'visibility' || activeTab === 'citation') && (
+              <div style={{ display: 'flex', gap: 2, marginLeft: 8, background: '#0F172A', borderRadius: 6, padding: 2 }}>
+                {['ko', 'en'].map(l => (
+                  <button key={l} onClick={() => setPreviewLang(l)} style={{
+                    padding: '3px 10px', borderRadius: 5, border: 'none',
+                    background: previewLang === l ? LG_RED : 'transparent',
+                    color: previewLang === l ? '#FFFFFF' : '#64748B',
+                    fontSize: 10, fontWeight: 700, fontFamily: FONT, cursor: 'pointer',
+                  }}>{l.toUpperCase()}</button>
+                ))}
+              </div>
+            )}
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             {snapMsg && <span style={{ fontSize: 11, color: '#22C55E', fontFamily: FONT }}>{snapMsg}</span>}
@@ -2164,15 +2199,42 @@ export default function App() {
         </div>
 
         {/* 컨텐츠 영역 */}
-        {activeTab === 'preview' ? (
-          <div style={{ flex: 1, overflowY: 'auto', padding: '28px 36px',
-            background: 'linear-gradient(180deg, #0A0F1C 0%, #0F172A 100%)' }}>
-            <div style={{ maxWidth: 860, margin: '0 auto' }}>
-              <NewsletterPreview meta={meta} total={total} products={resolved.products} citations={resolved.citations} dotcom={dotcom} productsCnty={resolved.productsCnty} citationsCnty={resolved.citationsCnty} lang={previewLang} />
+        {IS_DASHBOARD ? (
+          activeTab === 'visibility' ? (
+            <div style={{ flex: 1, overflowY: 'auto', padding: '28px 36px',
+              background: 'linear-gradient(180deg, #0A0F1C 0%, #0F172A 100%)' }}>
+              <div style={{ maxWidth: 860, margin: '0 auto' }}>
+                <NewsletterPreview meta={{ ...meta, showCitations: false, showCitDomain: false, showCitCnty: false, showDotcom: false }} total={total} products={resolved.products} citations={[]} dotcom={{}} productsCnty={resolved.productsCnty} citationsCnty={[]} lang={previewLang} />
+              </div>
             </div>
-          </div>
+          ) : activeTab === 'citation' ? (
+            <div style={{ flex: 1, overflowY: 'auto', padding: '28px 36px',
+              background: 'linear-gradient(180deg, #0A0F1C 0%, #0F172A 100%)' }}>
+              <div style={{ maxWidth: 860, margin: '0 auto' }}>
+                <NewsletterPreview meta={{ ...meta, showTotal: false, showProducts: false, showCnty: false }} total={total} products={[]} citations={resolved.citations} dotcom={dotcom} productsCnty={[]} citationsCnty={resolved.citationsCnty} lang={previewLang} />
+              </div>
+            </div>
+          ) : (
+            <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: 'linear-gradient(180deg, #0A0F1C 0%, #0F172A 100%)' }}>
+              <div style={{ textAlign: 'center', padding: 40 }}>
+                <div style={{ fontSize: 48, marginBottom: 16, opacity: 0.3 }}>📊</div>
+                <p style={{ fontSize: 18, fontWeight: 700, color: '#F8FAFC', fontFamily: FONT, marginBottom: 8 }}>Progress Tracker</p>
+                <p style={{ fontSize: 14, color: '#64748B', fontFamily: FONT }}>4월 업데이트 예정</p>
+              </div>
+            </div>
+          )
         ) : (
-          <HtmlCodeViewer meta={meta} total={total} products={resolved.products} citations={resolved.citations} dotcom={dotcom} productsCnty={resolved.productsCnty} citationsCnty={resolved.citationsCnty} lang={previewLang} />
+          activeTab === 'preview' ? (
+            <div style={{ flex: 1, overflowY: 'auto', padding: '28px 36px',
+              background: 'linear-gradient(180deg, #0A0F1C 0%, #0F172A 100%)' }}>
+              <div style={{ maxWidth: 860, margin: '0 auto' }}>
+                <NewsletterPreview meta={meta} total={total} products={resolved.products} citations={resolved.citations} dotcom={dotcom} productsCnty={resolved.productsCnty} citationsCnty={resolved.citationsCnty} lang={previewLang} />
+              </div>
+            </div>
+          ) : (
+            <HtmlCodeViewer meta={meta} total={total} products={resolved.products} citations={resolved.citations} dotcom={dotcom} productsCnty={resolved.productsCnty} citationsCnty={resolved.citationsCnty} lang={previewLang} />
+          )
         )}
       </div>
     </div>
