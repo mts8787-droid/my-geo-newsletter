@@ -847,9 +847,14 @@ function Sidebar({ meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, total, s
     setShowTranslatePopup(true)
   }
 
-  async function executeTranslate() {
+  async function executeTranslate(overrides) {
     setShowTranslatePopup(false)
     setTranslating(true)
+    // overrides로 최신 데이터를 직접 받을 수 있음 (동기화 직후 state가 아직 반영 안 된 경우)
+    const _products = overrides?.products ?? products
+    const _productsCnty = overrides?.productsCnty ?? productsCnty
+    const _citations = overrides?.citations ?? citations
+    const _citationsCnty = overrides?.citationsCnty ?? citationsCnty
     try {
       // 번역 소스는 항상 한글(metaKo)
       const src = metaKo
@@ -866,16 +871,16 @@ function Sidebar({ meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, total, s
         src.period || '', src.team || '', src.reportNo || '',
       ]
       // 제품명 + 경쟁사명 (한글 원본)
-      const productKrTexts = products.map(p => p.kr || '')
-      const productCompTexts = products.map(p => p.compName || '')
+      const productKrTexts = _products.map(p => p.kr || '')
+      const productCompTexts = _products.map(p => p.compName || '')
       // Citation category
-      const citCategoryTexts = citations.map(c => c.category || '')
+      const citCategoryTexts = _citations.map(c => c.category || '')
       // 국가별 — 고유 country, product, compName
-      const cntyCountries = [...new Set(productsCnty.map(r => r.country || ''))]
-      const cntyProducts = [...new Set(productsCnty.map(r => r.product || ''))]
-      const cntyCompNames = [...new Set(productsCnty.map(r => r.compName || ''))]
+      const cntyCountries = [...new Set(_productsCnty.map(r => r.country || ''))]
+      const cntyProducts = [...new Set(_productsCnty.map(r => r.product || ''))]
+      const cntyCompNames = [...new Set(_productsCnty.map(r => r.compName || ''))]
       // 국가별 Citation — 고유 cnty
-      const citCntyNames = [...new Set(citationsCnty.map(r => r.cnty || '').filter(c => c && c !== 'TTL'))]
+      const citCntyNames = [...new Set(_citationsCnty.map(r => r.cnty || '').filter(c => c && c !== 'TTL'))]
 
       const allTexts = [...metaTexts, ...productKrTexts, ...productCompTexts, ...citCategoryTexts, ...cntyCountries, ...cntyProducts, ...cntyCompNames, ...citCntyNames].map(t => t || ' ')
 
@@ -919,7 +924,7 @@ function Sidebar({ meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, total, s
       const ssReplace = s => (s || '').replace(/samsung\s*(electronics)?/gi, 'SS').replace(/삼성전자/g, 'SS').replace(/삼성/g, 'SS')
 
       // 제품 EN 필드 설정 (kr, compName 한글 원본 유지)
-      const newProducts = products.map((p, i) => ({
+      const newProducts = _products.map((p, i) => ({
         ...p,
         en: capitalize(tr[idx + i] || p.kr),
         compNameEn: ssReplace(tr[idx + productKrTexts.length + i] || p.compName),
@@ -927,7 +932,7 @@ function Sidebar({ meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, total, s
       idx += productKrTexts.length + productCompTexts.length
 
       // Citation categoryEn 설정
-      const newCitations = citations.map((c, i) => ({
+      const newCitations = _citations.map((c, i) => ({
         ...c,
         categoryEn: capitalize(tr[idx + i] || c.category),
       }))
@@ -946,14 +951,14 @@ function Sidebar({ meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, total, s
       const citCntyMap = {}
       citCntyNames.forEach((v, i) => { citCntyMap[v] = tr[idx + i] || v })
 
-      const newProductsCnty = productsCnty.map(r => ({
+      const newProductsCnty = _productsCnty.map(r => ({
         ...r,
         countryEn: capitalize(countryMap[r.country] || r.country),
         productEn: capitalize(cntyProductMap[r.product] || r.product),
         compNameEn: ssReplace(cntyCompMap[r.compName] || r.compName),
       }))
 
-      const newCitationsCnty = citationsCnty.map(r => ({
+      const newCitationsCnty = _citationsCnty.map(r => ({
         ...r,
         cntyEn: r.cnty === 'TTL' ? 'TTL' : capitalize(citCntyMap[r.cnty] || r.cnty),
       }))
@@ -1050,9 +1055,17 @@ function Sidebar({ meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, total, s
         }))
       }
       setGsStatus('ok'); setGsMsg(IS_DASHBOARD ? '동기화 완료! EN 자동 번역 중...' : '동기화 완료!')
-      // Dashboard mode: auto-translate after sync
+      // Dashboard mode: auto-translate after sync (pass fresh data to avoid stale closure)
       if (IS_DASHBOARD) {
-        try { await executeTranslate() } catch {}
+        try { await executeTranslate({
+          products: parsed.productsPartial ? products.map(p => {
+            const part = parsed.productsPartial.find(x => x.id === p.id)
+            return part ? { ...p, ...part } : p
+          }) : products,
+          productsCnty: parsed.productsCnty ?? productsCnty,
+          citations: parsed.citations ?? citations,
+          citationsCnty: parsed.citationsCnty ?? citationsCnty,
+        }) } catch {}
         setGsMsg('동기화 + 번역 완료!')
       }
     } catch (err) {
