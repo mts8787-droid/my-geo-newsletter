@@ -178,18 +178,18 @@ export function parseSheetRows(sheetName, rows) {
   if (sheetName === 'Products_CNTY') {
     const data = rows.filter(r =>
       r[0] && !String(r[0]).startsWith('[') && !String(r[0]).startsWith('※') &&
-      r[0] !== '제품명' && r[0] !== 'key' && r[0] !== 'product_code'
+      r[0] !== '제품명' && r[0] !== 'key'
     )
     if (!data.length) return {}
     const pct = v => { const n = parseFloat(String(v).replace('%', '')) || 0; return Math.abs(n) < 1 ? +(n * 100).toFixed(2) : n }
-    // 시트 컬럼: 제품코드(0) | 제품명(1) | 국가(2) | LG점수(3) | 경쟁사명(4) | 경쟁사점수(5) | gap(6)
+    // 시트 컬럼: 제품명(0) | 국가(1) | 자사수치(2) | 1위경쟁사(3) | 경쟁사수치(4) | Gap(5)
     return { productsCnty: data.map(r => ({
-      product:   String(r[1] || r[0] || ''),
-      country:   String(r[2] || ''),
-      score:     pct(r[3]),
-      compName:  String(r[4] || ''),
-      compScore: pct(r[5]),
-      gap:       pct(r[6]),
+      product:   String(r[0] || ''),
+      country:   String(r[1] || ''),
+      score:     pct(r[2]),
+      compName:  String(r[3] || ''),
+      compScore: pct(r[4]),
+      gap:       pct(r[5]),
     })) }
   }
   if (sheetName === 'citations_CNTY') {
