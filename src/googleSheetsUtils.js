@@ -3,7 +3,7 @@ import { SHEET_NAMES, parseSheetRows } from './excelUtils'
 
 // 시트 이름 → GID 매핑 (gviz name 파라미터가 안 먹히는 시트용)
 const SHEET_GIDS = {
-  'Products_CNTY': '2045887690',
+  'Products_CNTY': '1897422935',
 }
 
 export function extractSheetId(url) {
