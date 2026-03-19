@@ -702,8 +702,7 @@ function InsightBlock({ insight, showInsight, howToRead, showHowToRead }) {
 // ─── 뉴스레터 캔버스 ──────────────────────────────────────────────────────────
 function NewsletterPreview({ meta, total, products, citations, dotcom, productsCnty = [], citationsCnty = [], lang = 'ko' }) {
   const iframeRef = useRef(null)
-  const options = IS_DASHBOARD ? { containerWidth: 1400, showTrendTabs: true } : {}
-  const html = generateEmailHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, options)
+  const html = generateEmailHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty)
 
   React.useEffect(() => {
     const iframe = iframeRef.current
@@ -733,7 +732,33 @@ function NewsletterPreview({ meta, total, products, citations, dotcom, productsC
       title="newsletter-preview"
       scrolling="no"
       style={{ width: '100%', border: 'none', minHeight: 800, background: '#F1F5F9', overflow: 'hidden' }}
-      sandbox={IS_DASHBOARD ? 'allow-same-origin allow-scripts' : 'allow-same-origin'}
+      sandbox="allow-same-origin"
+    />
+  )
+}
+
+// ─── 대시보드 미리보기 (SVG 차트 기반 독립 시각화) ──────────────────────────────
+function DashboardPreview({ meta, total, products, citations, dotcom, productsCnty = [], citationsCnty = [], lang = 'ko' }) {
+  const iframeRef = useRef(null)
+  const html = generateDashboardHTML
+    ? generateDashboardHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty)
+    : '<!DOCTYPE html><html><body style="background:#F1F5F9;display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;color:#64748B"><p>Loading dashboard...</p></body></html>'
+
+  React.useEffect(() => {
+    const iframe = iframeRef.current
+    if (!iframe) return
+    const doc = iframe.contentDocument || iframe.contentWindow.document
+    doc.open()
+    doc.write(html)
+    doc.close()
+  }, [html])
+
+  return (
+    <iframe
+      ref={iframeRef}
+      title="dashboard-preview"
+      style={{ width: '100%', height: '100%', border: 'none', background: '#F1F5F9' }}
+      sandbox="allow-same-origin allow-scripts"
     />
   )
 }
@@ -2095,18 +2120,12 @@ export default function App() {
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           padding: '0 22px', flexShrink: 0 }}>
           <div style={{ display: 'flex', gap: 3, alignItems: 'center' }}>
-            {(IS_DASHBOARD ? [
-              { key: 'visibility', tab: 'visibility', lang: null, label: 'Visibility' },
-              { key: 'citation',   tab: 'citation',   lang: null, label: 'Citation' },
-              { key: 'progress',   tab: 'progress',   lang: null, label: 'Progress Tracker' },
-            ] : [
+            {(IS_DASHBOARD ? [] : [
               { key: 'preview-ko', tab: 'preview', lang: 'ko', label: '뉴스레터미리보기 (KO)' },
               { key: 'preview-en', tab: 'preview', lang: 'en', label: '뉴스레터미리보기 (EN)' },
               { key: 'code',       tab: 'code',    lang: null, label: 'HTML 내보내기' },
             ]).map(({ key, tab, lang, label }) => {
-              const isActive = IS_DASHBOARD
-                ? activeTab === tab
-                : (tab === 'code' ? activeTab === 'code' : (activeTab === 'preview' && previewLang === lang))
+              const isActive = tab === 'code' ? activeTab === 'code' : (activeTab === 'preview' && previewLang === lang)
               return (
                 <button key={key} onClick={() => { setActiveTab(tab); if (lang) setPreviewLang(lang) }} style={{
                   padding: '5px 12px', borderRadius: 7, border: 'none',
@@ -2119,8 +2138,8 @@ export default function App() {
                 </button>
               )
             })}
-            {IS_DASHBOARD && (activeTab === 'visibility' || activeTab === 'citation') && (
-              <div style={{ display: 'flex', gap: 2, marginLeft: 8, background: '#0F172A', borderRadius: 6, padding: 2 }}>
+            {IS_DASHBOARD && (
+              <div style={{ display: 'flex', gap: 2, background: '#0F172A', borderRadius: 6, padding: 2 }}>
                 {['ko', 'en'].map(l => (
                   <button key={l} onClick={() => setPreviewLang(l)} style={{
                     padding: '3px 10px', borderRadius: 5, border: 'none',
@@ -2201,30 +2220,9 @@ export default function App() {
 
         {/* 컨텐츠 영역 */}
         {IS_DASHBOARD ? (
-          activeTab === 'visibility' ? (
-            <div style={{ flex: 1, overflowY: 'auto', padding: '20px 24px',
-              background: 'linear-gradient(180deg, #0A0F1C 0%, #0F172A 100%)' }}>
-              <div style={{ maxWidth: 1480, margin: '0 auto' }}>
-                <NewsletterPreview meta={{ ...meta, showCitations: false, showCitDomain: false, showCitCnty: false, showDotcom: false }} total={total} products={resolved.products} citations={[]} dotcom={{}} productsCnty={resolved.productsCnty} citationsCnty={[]} lang={previewLang} />
-              </div>
-            </div>
-          ) : activeTab === 'citation' ? (
-            <div style={{ flex: 1, overflowY: 'auto', padding: '20px 24px',
-              background: 'linear-gradient(180deg, #0A0F1C 0%, #0F172A 100%)' }}>
-              <div style={{ maxWidth: 1480, margin: '0 auto' }}>
-                <NewsletterPreview meta={{ ...meta, showTotal: false, showProducts: false, showCnty: false }} total={total} products={[]} citations={resolved.citations} dotcom={dotcom} productsCnty={[]} citationsCnty={resolved.citationsCnty} lang={previewLang} />
-              </div>
-            </div>
-          ) : (
-            <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
-              background: 'linear-gradient(180deg, #0A0F1C 0%, #0F172A 100%)' }}>
-              <div style={{ textAlign: 'center', padding: 40 }}>
-                <div style={{ fontSize: 48, marginBottom: 16, opacity: 0.3 }}>📊</div>
-                <p style={{ fontSize: 18, fontWeight: 700, color: '#F8FAFC', fontFamily: FONT, marginBottom: 8 }}>Progress Tracker</p>
-                <p style={{ fontSize: 14, color: '#64748B', fontFamily: FONT }}>4월 업데이트 예정</p>
-              </div>
-            </div>
-          )
+          <div style={{ flex: 1, overflow: 'hidden' }}>
+            <DashboardPreview meta={meta} total={total} products={resolved.products} citations={resolved.citations} dotcom={dotcom} productsCnty={resolved.productsCnty} citationsCnty={resolved.citationsCnty} lang={previewLang} />
+          </div>
         ) : (
           activeTab === 'preview' ? (
             <div style={{ flex: 1, overflowY: 'auto', padding: '28px 36px',
