@@ -7,6 +7,8 @@ const T = {
     lead: '선도', behind: '추격', critical: '취약',
     weeklyTab: '주별', monthlyTab: '월별',
     vsComp: '대비', categories: '개 카테고리',
+    byProduct: '제품별', byCountry: '국가별',
+    allProducts: '전체 제품', allCountries: '전체 국가',
     productTitle: '제품별 GEO Visibility 현황',
     cntyTitle: '국가별 GEO Visibility 현황',
     citationTitle: '도메인 카테고리별 Citation 현황',
@@ -28,6 +30,8 @@ const T = {
     lead: 'Lead', behind: 'Behind', critical: 'Critical',
     weeklyTab: 'Weekly', monthlyTab: 'Monthly',
     vsComp: 'vs', categories: ' Categories',
+    byProduct: 'By Product', byCountry: 'By Country',
+    allProducts: 'All Products', allCountries: 'All Countries',
     productTitle: 'GEO Visibility by Product',
     cntyTitle: 'GEO Visibility by Country',
     citationTitle: 'Citation by Domain Category',
@@ -214,20 +218,55 @@ function cntyStatus(sc, comp) {
   const r = sc / comp * 100
   return r >= 100 ? 'lead' : r >= 80 ? 'behind' : 'critical'
 }
+function cntyBarHtml(r, maxScore) {
+  const st = cntyStatus(r.score, r.compScore)
+  const barColor = st === 'lead' ? '#15803D' : st === 'behind' ? '#D97706' : '#BE123C'
+  const gap = +(r.score - r.compScore).toFixed(1)
+  const gapColor = gap >= 0 ? '#15803D' : '#BE123C'
+  return `<div class="cnty-row" data-product="${r.product}" data-country="${r.country}">
+    <span class="cnty-name">${r.country}</span>
+    <div class="cnty-bars">
+      <div class="cnty-bar-wrap">
+        <div class="cnty-bar" style="width:${(r.score/maxScore*100).toFixed(1)}%;background:${barColor}"></div>
+        <span class="cnty-val" style="color:${barColor}">${r.score.toFixed(1)}</span>
+      </div>
+      ${r.compScore > 0 ? `<div class="cnty-bar-wrap comp">
+        <div class="cnty-bar" style="width:${(r.compScore/maxScore*100).toFixed(1)}%;background:#3B82F6;opacity:.5"></div>
+        <span class="cnty-val" style="color:#64748B">${r.compName} ${r.compScore.toFixed(1)}</span>
+      </div>` : ''}
+    </div>
+    <span class="cnty-gap" style="color:${gapColor}">${gap >= 0 ? '+' : ''}${gap}%p</span>
+  </div>`
+}
 function countrySectionHtml(productsCnty, meta, t, lang) {
   if (!productsCnty || !productsCnty.length) return ''
+
+  // Collect unique products and countries
+  const productNames = [...new Set(productsCnty.map(r => r.product))]
+  const countryNames = [...new Set(productsCnty.map(r => r.country))]
+
+  // ── View 1: 제품별 (By Product) ──
   const productMap = new Map()
   productsCnty.forEach(r => { if (!productMap.has(r.product)) productMap.set(r.product, []); productMap.get(r.product).push(r) })
   const filter = meta.cntyProductFilter || {}
-  const sections = [...productMap.entries()].filter(([n]) => filter[n] !== false).map(([name, rows]) => {
+  const byProductHtml = [...productMap.entries()].filter(([n]) => filter[n] !== false).map(([name, rows]) => {
+    const maxScore = Math.max(...rows.map(r => Math.max(r.score, r.compScore)), 1)
+    const bars = rows.map(r => cntyBarHtml(r, maxScore)).join('')
+    return `<div class="cnty-product" data-group-product="${name}"><div class="bu-header"><span class="bu-label">${name}</span><span class="bu-count">${rows.length}</span></div>${bars}</div>`
+  }).join('')
+
+  // ── View 2: 국가별 (By Country) ──
+  const countryMap = new Map()
+  productsCnty.forEach(r => { if (!countryMap.has(r.country)) countryMap.set(r.country, []); countryMap.get(r.country).push(r) })
+  const byCountryHtml = [...countryMap.entries()].map(([cnty, rows]) => {
     const maxScore = Math.max(...rows.map(r => Math.max(r.score, r.compScore)), 1)
     const bars = rows.map(r => {
       const st = cntyStatus(r.score, r.compScore)
       const barColor = st === 'lead' ? '#15803D' : st === 'behind' ? '#D97706' : '#BE123C'
       const gap = +(r.score - r.compScore).toFixed(1)
       const gapColor = gap >= 0 ? '#15803D' : '#BE123C'
-      return `<div class="cnty-row">
-        <span class="cnty-name">${r.country}</span>
+      return `<div class="cnty-row" data-product="${r.product}" data-country="${r.country}">
+        <span class="cnty-name">${r.product}</span>
         <div class="cnty-bars">
           <div class="cnty-bar-wrap">
             <div class="cnty-bar" style="width:${(r.score/maxScore*100).toFixed(1)}%;background:${barColor}"></div>
@@ -241,14 +280,41 @@ function countrySectionHtml(productsCnty, meta, t, lang) {
         <span class="cnty-gap" style="color:${gapColor}">${gap >= 0 ? '+' : ''}${gap}%p</span>
       </div>`
     }).join('')
-    return `<div class="cnty-product"><div class="bu-header"><span class="bu-label">${name}</span><span class="bu-count">${rows.length}</span></div>${bars}</div>`
+    return `<div class="cnty-product" data-group-country="${cnty}"><div class="bu-header"><span class="bu-label">${cnty}</span><span class="bu-count">${rows.length}</span></div>${bars}</div>`
   }).join('')
-  return `<div class="section-card">
-    <div class="section-header"><div class="section-title">${t.cntyTitle}</div>
-      <span class="legend"><i style="background:#15803D"></i>${t.legendLead} <i style="background:#D97706"></i>${t.legendBehind} <i style="background:#BE123C"></i>${t.legendCritical}</span>
+
+  // ── Filter chips ──
+  const productChips = productNames.map(n =>
+    `<button class="filter-chip active" data-filter-type="product" data-filter-value="${n}" onclick="toggleCntyFilter(this)">${n}</button>`
+  ).join('')
+  const countryChips = countryNames.map(n =>
+    `<button class="filter-chip active" data-filter-type="country" data-filter-value="${n}" onclick="toggleCntyFilter(this)">${n}</button>`
+  ).join('')
+
+  return `<div class="section-card" id="cnty-section">
+    <div class="section-header">
+      <div class="section-title">${t.cntyTitle}</div>
+      <div class="section-header-right">
+        <div class="trend-tabs">
+          <button class="cnty-view-tab active" onclick="switchCntyView('product')">${t.byProduct}</button>
+          <button class="cnty-view-tab" onclick="switchCntyView('country')">${t.byCountry}</button>
+        </div>
+        <span class="legend"><i style="background:#15803D"></i>${t.legendLead} <i style="background:#D97706"></i>${t.legendBehind} <i style="background:#BE123C"></i>${t.legendCritical}</span>
+      </div>
     </div>
     ${insightHtml(meta.cntyInsight, meta.showCntyInsight, meta.cntyHowToRead, meta.showCntyHowToRead, t)}
-    <div class="section-body">${sections}</div>
+    <div class="cnty-filters">
+      <div class="filter-group" id="cnty-filter-products">
+        <span class="filter-label">${t.allProducts}</span>${productChips}
+      </div>
+      <div class="filter-group" id="cnty-filter-countries">
+        <span class="filter-label">${t.allCountries}</span>${countryChips}
+      </div>
+    </div>
+    <div class="section-body">
+      <div id="cnty-view-product">${byProductHtml}</div>
+      <div id="cnty-view-country" style="display:none">${byCountryHtml}</div>
+    </div>
   </div>`
 }
 
@@ -489,6 +555,7 @@ body{background:#F1F5F9;font-family:${FONT};min-width:1200px;color:#1A1A1A}
 .cnty-product{margin-bottom:20px}
 .cnty-row{display:flex;align-items:center;gap:12px;padding:6px 0;border-bottom:1px solid #F8FAFC}
 .cnty-row:last-child{border-bottom:none}
+.cnty-row.hidden{display:none}
 .cnty-name{font-size:13px;font-weight:600;color:#1A1A1A;min-width:60px}
 .cnty-bars{flex:1}
 .cnty-bar-wrap{display:flex;align-items:center;gap:8px;height:20px}
@@ -496,6 +563,17 @@ body{background:#F1F5F9;font-family:${FONT};min-width:1200px;color:#1A1A1A}
 .cnty-bar{height:100%;border-radius:4px;min-width:2px;transition:width .3s}
 .cnty-val{font-size:12px;font-weight:700;white-space:nowrap}
 .cnty-gap{font-size:12px;font-weight:700;min-width:60px;text-align:right}
+/* ── 국가 뷰탭 ── */
+.cnty-view-tab{padding:5px 16px;border:none;border-radius:6px;font-size:12px;font-weight:700;font-family:${FONT};cursor:pointer;background:transparent;color:#64748B;transition:all .15s}
+.cnty-view-tab.active{background:${RED};color:#fff}
+.cnty-view-tab:hover{opacity:.85}
+/* ── 필터 칩 ── */
+.cnty-filters{padding:12px 28px 0;display:flex;flex-wrap:wrap;gap:10px}
+.filter-group{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.filter-label{font-size:11px;font-weight:700;color:#64748B;margin-right:4px;white-space:nowrap}
+.filter-chip{padding:4px 12px;border-radius:14px;border:1px solid #E2E8F0;font-size:11px;font-weight:600;font-family:${FONT};cursor:pointer;background:#fff;color:#64748B;transition:all .15s}
+.filter-chip.active{background:#0F172A;color:#fff;border-color:#0F172A}
+.filter-chip:hover{border-color:#94A3B8}
 /* ── Citation ── */
 .cit-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #F8FAFC}
 .cit-row:last-child{border-bottom:none}
@@ -582,6 +660,48 @@ function switchTrend(mode){
     var isW=mode==='weekly'&&(btn.textContent.match(/(주별|Weekly)/));
     var isM=mode==='monthly'&&(btn.textContent.match(/(월별|Monthly)/));
     if(isW||isM){btn.classList.add('active')}else{btn.classList.remove('active')}
+  });
+}
+function switchCntyView(mode){
+  var vp=document.getElementById('cnty-view-product');
+  var vc=document.getElementById('cnty-view-country');
+  if(vp)vp.style.display=mode==='product'?'':'none';
+  if(vc)vc.style.display=mode==='country'?'':'none';
+  document.querySelectorAll('.cnty-view-tab').forEach(function(btn){btn.classList.remove('active')});
+  var tabs=document.querySelectorAll('.cnty-view-tab');
+  if(mode==='product'&&tabs[0])tabs[0].classList.add('active');
+  if(mode==='country'&&tabs[1])tabs[1].classList.add('active');
+  applyCntyFilters();
+}
+function toggleCntyFilter(btn){
+  btn.classList.toggle('active');
+  applyCntyFilters();
+}
+function applyCntyFilters(){
+  var activeProducts={};var activeCountries={};
+  document.querySelectorAll('#cnty-filter-products .filter-chip.active').forEach(function(c){activeProducts[c.getAttribute('data-filter-value')]=true});
+  document.querySelectorAll('#cnty-filter-countries .filter-chip.active').forEach(function(c){activeCountries[c.getAttribute('data-filter-value')]=true});
+  var pCount=Object.keys(activeProducts).length;
+  var cCount=Object.keys(activeCountries).length;
+  // product view: filter rows by country, hide empty product groups
+  document.querySelectorAll('#cnty-view-product .cnty-row').forEach(function(row){
+    var p=row.getAttribute('data-product');var c=row.getAttribute('data-country');
+    var show=(pCount===0||activeProducts[p])&&(cCount===0||activeCountries[c]);
+    row.classList.toggle('hidden',!show);
+  });
+  document.querySelectorAll('#cnty-view-product .cnty-product').forEach(function(grp){
+    var vis=grp.querySelectorAll('.cnty-row:not(.hidden)').length;
+    grp.style.display=vis>0?'':'none';
+  });
+  // country view: filter rows by product, hide empty country groups
+  document.querySelectorAll('#cnty-view-country .cnty-row').forEach(function(row){
+    var p=row.getAttribute('data-product');var c=row.getAttribute('data-country');
+    var show=(pCount===0||activeProducts[p])&&(cCount===0||activeCountries[c]);
+    row.classList.toggle('hidden',!show);
+  });
+  document.querySelectorAll('#cnty-view-country .cnty-product').forEach(function(grp){
+    var vis=grp.querySelectorAll('.cnty-row:not(.hidden)').length;
+    grp.style.display=vis>0?'':'none';
   });
 }
 </script>
