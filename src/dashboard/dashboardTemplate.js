@@ -226,12 +226,19 @@ function cntyColHtml(r, maxScore, label) {
   const hPct = (r.score / maxScore * 100).toFixed(1)
   const cPct = r.compScore > 0 ? (r.compScore / maxScore * 100).toFixed(1) : 0
   return `<div class="vbar-item" data-product="${r.product}" data-country="${r.country}">
-    <span class="vbar-val" style="color:${barColor}">${r.score.toFixed(1)}</span>
+    <span class="vbar-val lg" style="color:${barColor}">${r.score.toFixed(1)}</span>
+    ${r.compScore > 0 ? `<span class="vbar-val comp-val" style="color:#3B82F6">${r.compScore.toFixed(1)}</span>` : ''}
     <div class="vbar-cols">
-      <div class="vbar-col" style="height:${hPct}%;background:${barColor}" title="LG ${r.score.toFixed(1)}"></div>
-      ${r.compScore > 0 ? `<div class="vbar-col comp" style="height:${cPct}%;background:#3B82F6;opacity:.55" title="${r.compName} ${r.compScore.toFixed(1)}"></div>` : ''}
+      <div class="vbar-col-wrap">
+        <div class="vbar-col" style="height:${hPct}%;background:${barColor}"></div>
+        <span class="vbar-col-name">LG</span>
+      </div>
+      ${r.compScore > 0 ? `<div class="vbar-col-wrap">
+        <div class="vbar-col" style="height:${cPct}%;background:#3B82F6;opacity:.55"></div>
+        <span class="vbar-col-name">${r.compName}</span>
+      </div>` : ''}
     </div>
-    <span class="vbar-gap" style="color:${gapColor}">${gap >= 0 ? '+' : ''}${gap}</span>
+    <span class="vbar-gap" style="color:${gapColor}">${gap >= 0 ? '+' : ''}${gap}%p</span>
     <span class="vbar-label">${label}</span>
   </div>`
 }
@@ -324,55 +331,48 @@ function citationSectionHtml(citations, meta, t) {
   </div>`
 }
 
-// ─── 도메인별 Citation ──────────────────────────────────────────────────────
-function citDomainSectionHtml(citationsCnty, meta, t, citations) {
+// ─── 도메인별 Citation (국가 필터 통합) ────────────────────────────────────
+function citDomainSectionHtml(citationsCnty, meta, t, citations, lang) {
   if (!citationsCnty || !citationsCnty.length) return ''
   const topN = meta.citDomainTopN || 10
-  const ttl = citationsCnty.filter(r => r.cnty === 'TTL').sort((a, b) => a.rank - b.rank).slice(0, topN)
-  if (!ttl.length) return ''
-  const maxScore = Math.max(...ttl.map(r => r.citations), 1)
-  const totalCit = (citations && citations.length) ? citations.reduce((s, c) => s + c.score, 0) : ttl.reduce((s, r) => s + r.citations, 0)
-  const rows = ttl.map((c, i) => {
-    const pct = (c.citations / maxScore * 100).toFixed(1)
-    const ratio = totalCit > 0 ? ((c.citations / totalCit) * 100).toFixed(1) : '0.0'
-    return `<div class="cit-row">
-      <span class="cit-rank ${i < 3 ? 'top' : ''}">${c.rank}</span>
-      <div class="cit-info"><span class="cit-source">${stripDomain(c.domain)}</span><span class="cit-cat">${c.type}</span></div>
-      <div class="cit-bar-wrap"><div class="cit-bar" style="width:${pct}%"></div></div>
-      <span class="cit-score">${fmt(c.citations)}</span>
-      <span class="cit-ratio">(${ratio}%)</span>
-    </div>`
-  }).join('')
-  return `<div class="section-card">
-    <div class="section-header"><div class="section-title">${t.citDomainTitle}</div><span class="legend">Top ${topN} Domains (TTL)</span></div>
-    ${insightHtml(meta.citDomainInsight, meta.showCitDomainInsight, meta.citDomainHowToRead, meta.showCitDomainHowToRead, t)}
-    <div class="section-body">${rows}</div>
-  </div>`
-}
+  // 국가 목록 (TTL 포함)
+  const cntyNames = ['TTL', ...([...new Set(citationsCnty.map(r => r.cnty))].filter(c => c !== 'TTL'))]
 
-// ─── 국가별 Citation 도메인 ─────────────────────────────────────────────────
-function citCntySectionHtml(citationsCnty, meta, t) {
-  if (!citationsCnty || !citationsCnty.length) return ''
-  const cntyMap = new Map()
-  citationsCnty.filter(r => r.cnty !== 'TTL').forEach(r => { if (!cntyMap.has(r.cnty)) cntyMap.set(r.cnty, []); cntyMap.get(r.cnty).push(r) })
-  const sections = [...cntyMap.entries()].map(([cnty, rows]) => {
-    const top10 = rows.sort((a, b) => a.rank - b.rank).slice(0, 10)
-    const maxScore = Math.max(...top10.map(r => r.citations), 1)
-    const bars = top10.map((c, i) => {
+  // 각 국가별 도메인 리스트 HTML 생성
+  const panels = cntyNames.map(cnty => {
+    const rows = citationsCnty.filter(r => r.cnty === cnty).sort((a, b) => a.rank - b.rank).slice(0, topN)
+    if (!rows.length) return ''
+    const maxScore = Math.max(...rows.map(r => r.citations), 1)
+    const totalCit = cnty === 'TTL' && citations && citations.length
+      ? citations.reduce((s, c) => s + c.score, 0)
+      : rows.reduce((s, r) => s + r.citations, 0)
+    const html = rows.map((c, i) => {
       const pct = (c.citations / maxScore * 100).toFixed(1)
-      return `<div class="cit-row compact">
+      const ratio = totalCit > 0 ? ((c.citations / totalCit) * 100).toFixed(1) : '0.0'
+      return `<div class="cit-row">
         <span class="cit-rank ${i < 3 ? 'top' : ''}">${c.rank}</span>
         <div class="cit-info"><span class="cit-source">${stripDomain(c.domain)}</span><span class="cit-cat">${c.type}</span></div>
         <div class="cit-bar-wrap"><div class="cit-bar" style="width:${pct}%"></div></div>
         <span class="cit-score">${fmt(c.citations)}</span>
+        <span class="cit-ratio">(${ratio}%)</span>
       </div>`
     }).join('')
-    return `<div class="cnty-product"><div class="bu-header"><span class="bu-label">${cnty}</span><span class="bu-count">Top ${top10.length}</span></div>${bars}</div>`
+    return `<div class="cit-cnty-panel" data-cit-cnty="${cnty}" style="${cnty !== 'TTL' ? 'display:none' : ''}">${html}</div>`
   }).join('')
-  return `<div class="section-card">
-    <div class="section-header"><div class="section-title">${t.citCntyTitle}</div></div>
-    ${insightHtml(meta.citCntyInsight, meta.showCitCntyInsight, meta.citCntyHowToRead, meta.showCitCntyHowToRead, t)}
-    <div class="section-body">${sections}</div>
+
+  // 국가 필터 칩
+  const chips = cntyNames.map(c =>
+    `<button class="filter-chip ${c === 'TTL' ? 'active' : ''}" data-cit-cnty-val="${c}" onclick="switchCitCnty(this)">${c === 'TTL' ? t.dotcomTTL.replace(/ \(.*/, '') || 'TTL' : c}</button>`
+  ).join('')
+
+  return `<div class="section-card" id="cit-domain-section">
+    <div class="section-header">
+      <div class="section-title">${t.citDomainTitle}</div>
+      <span class="legend">Top ${topN} Domains</span>
+    </div>
+    ${insightHtml(meta.citDomainInsight, meta.showCitDomainInsight, meta.citDomainHowToRead, meta.showCitDomainHowToRead, t)}
+    <div class="cnty-filters"><div class="filter-group" id="cit-cnty-chips"><span class="filter-label">${lang === 'ko' ? '국가' : 'Country'}</span>${chips}</div></div>
+    <div class="section-body">${panels}</div>
   </div>`
 }
 
@@ -436,8 +436,7 @@ export function generateDashboardHTML(meta, total, products, citations, dotcom, 
   ].join('')
   const citContent = [
     meta.showCitations !== false ? citationSectionHtml(citations, meta, t) : '',
-    meta.showCitDomain !== false ? citDomainSectionHtml(citationsCnty, meta, t, citations) : '',
-    meta.showCitCnty !== false ? citCntySectionHtml(citationsCnty, meta, t) : '',
+    (meta.showCitDomain !== false || meta.showCitCnty !== false) ? citDomainSectionHtml(citationsCnty, meta, t, citations, lang) : '',
     meta.showDotcom !== false ? dotcomSectionHtml(dotcom, meta, t) : '',
   ].join('')
 
@@ -529,16 +528,18 @@ body{background:#F1F5F9;font-family:${FONT};min-width:1200px;color:#1A1A1A}
 .prod-comp-bar{height:100%;border-radius:3px;transition:width .3s}
 .prod-comp-pct{font-size:13px;font-weight:700;min-width:40px;text-align:right}
 /* ── 국가 (세로 막대) ── */
-.cnty-product{margin-bottom:24px}
-.vbar-chart{display:flex;align-items:flex-end;gap:6px;padding:8px 0 0;min-height:180px;overflow-x:auto}
-.vbar-item{display:flex;flex-direction:column;align-items:center;flex:1;min-width:48px;max-width:90px}
+.cnty-product{margin-bottom:28px}
+.vbar-chart{display:flex;align-items:flex-end;gap:16px;padding:12px 8px 0;min-height:220px;overflow-x:auto}
+.vbar-item{display:flex;flex-direction:column;align-items:center;flex:1;min-width:70px;max-width:120px}
 .vbar-item.hidden{display:none}
-.vbar-val{font-size:10px;font-weight:700;white-space:nowrap;margin-bottom:4px}
-.vbar-cols{display:flex;align-items:flex-end;gap:3px;height:120px;width:100%}
-.vbar-col{flex:1;border-radius:4px 4px 0 0;min-height:3px;transition:height .3s}
-.vbar-col.comp{max-width:14px}
-.vbar-gap{font-size:9px;font-weight:700;margin-top:3px;white-space:nowrap}
-.vbar-label{font-size:10px;font-weight:600;color:#64748B;margin-top:2px;text-align:center;word-break:keep-all;line-height:1.2}
+.vbar-val{font-size:11px;font-weight:700;white-space:nowrap;margin-bottom:2px}
+.vbar-val.comp-val{font-size:11px;font-weight:600;margin-bottom:4px}
+.vbar-cols{display:flex;align-items:flex-end;gap:4px;height:130px;width:100%}
+.vbar-col-wrap{flex:1;display:flex;flex-direction:column;align-items:center;height:100%;justify-content:flex-end}
+.vbar-col{width:100%;border-radius:4px 4px 0 0;min-height:3px;transition:height .3s}
+.vbar-col-name{font-size:11px;font-weight:600;color:#94A3B8;margin-top:3px;white-space:nowrap}
+.vbar-gap{font-size:11px;font-weight:700;margin-top:4px;white-space:nowrap}
+.vbar-label{font-size:11px;font-weight:600;color:#475569;margin-top:4px;text-align:center;word-break:keep-all;line-height:1.3}
 /* ── 국가 뷰탭 ── */
 .cnty-view-tab{padding:5px 16px;border:none;border-radius:6px;font-size:12px;font-weight:700;font-family:${FONT};cursor:pointer;background:transparent;color:#64748B;transition:all .15s}
 .cnty-view-tab.active{background:${RED};color:#fff}
@@ -558,7 +559,7 @@ body{background:#F1F5F9;font-family:${FONT};min-width:1200px;color:#1A1A1A}
 .cit-rank.top{background:${RED};color:#fff}
 .cit-info{min-width:140px;flex-shrink:0}
 .cit-source{display:block;font-size:13px;font-weight:700;color:#1A1A1A}
-.cit-cat{font-size:10px;color:#94A3B8;background:#F8FAFC;border-radius:4px;padding:1px 5px}
+.cit-cat{font-size:11px;color:#94A3B8;background:#F8FAFC;border-radius:4px;padding:1px 5px}
 .cit-bar-wrap{flex:1;height:24px;background:#F8FAFC;border-radius:6px;overflow:hidden}
 .cit-bar{height:100%;background:${RED};border-radius:6px;transition:width .3s}
 .cit-score{font-size:13px;font-weight:700;color:${RED};min-width:70px;text-align:right}
@@ -678,6 +679,14 @@ function applyCntyFilters(){
   document.querySelectorAll('#cnty-view-country .cnty-product').forEach(function(grp){
     var vis=grp.querySelectorAll('.vbar-item:not(.hidden)').length;
     grp.style.display=vis>0?'':'none';
+  });
+}
+function switchCitCnty(btn){
+  document.querySelectorAll('#cit-cnty-chips .filter-chip').forEach(function(c){c.classList.remove('active')});
+  btn.classList.add('active');
+  var sel=btn.getAttribute('data-cit-cnty-val');
+  document.querySelectorAll('.cit-cnty-panel').forEach(function(p){
+    p.style.display=p.getAttribute('data-cit-cnty')=== sel?'':'none';
   });
 }
 </script>
