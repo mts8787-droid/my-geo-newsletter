@@ -1,6 +1,7 @@
 // ─── GEO KPI 대시보드 — 독립 시각화 (이메일 템플릿 미사용) ─────────────────────
 const FONT = "'LG Smart','Arial Narrow',Arial,sans-serif"
 const RED = '#CF0652'
+const COMP = '#94A3B8' // 경쟁사 공통 회색
 
 const T = {
   ko: {
@@ -89,8 +90,8 @@ function svgLine(data, labels, w, h, color) {
     <path d="${area}" fill="url(#lg${id})"/>
     <path d="${line}" stroke="${color}" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
     ${pts.map(p => `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="3.5" fill="#fff" stroke="${color}" stroke-width="2"/>`).join('')}
-    ${pts.map(p => `<text x="${p.x.toFixed(1)}" y="${Math.max(p.y - 7, 12)}" text-anchor="middle" font-size="10" font-weight="700" fill="${color}" font-family="${FONT}">${p.v.toFixed(1)}</text>`).join('')}
-    ${pts.map((p, i) => `<text x="${p.x.toFixed(1)}" y="${pad.t+ch+14}" text-anchor="middle" font-size="9" fill="#94A3B8" font-family="${FONT}">${labels[i]||''}</text>`).join('')}
+    ${pts.map(p => `<text x="${p.x.toFixed(1)}" y="${Math.max(p.y - 7, 12)}" text-anchor="middle" font-size="12" font-weight="700" fill="${color}" font-family="${FONT}">${p.v.toFixed(1)}</text>`).join('')}
+    ${pts.map((p, i) => `<text x="${p.x.toFixed(1)}" y="${pad.t+ch+14}" text-anchor="middle" font-size="12" fill="#94A3B8" font-family="${FONT}">${labels[i]||''}</text>`).join('')}
   </svg>`
 }
 
@@ -127,11 +128,11 @@ function heroHtml(total, meta, t) {
             <div class="hero-gauge-bar" style="width:${Math.min(total.score, 100)}%;background:${RED}"></div>
           </div>
           ${compAvg > 0 ? `<div class="hero-gauge-track" style="margin-top:6px">
-            <div class="hero-gauge-bar" style="width:${Math.min(compAvg, 100)}%;background:#3B82F6"></div>
+            <div class="hero-gauge-bar" style="width:${Math.min(compAvg, 100)}%;background:${COMP}"></div>
           </div>` : ''}
           <div class="hero-legend">
             <span><i style="background:${RED}"></i> LG ${total.score}%</span>
-            ${compAvg > 0 ? `<span><i style="background:#3B82F6"></i> Samsung ${compAvg}%</span>` : ''}
+            ${compAvg > 0 ? `<span><i style="background:${COMP}"></i> Samsung ${compAvg}%</span>` : ''}
             <span><i style="background:#475569"></i> prev ${total.prev}%</span>
           </div>
         </div>
@@ -223,18 +224,19 @@ function cntyColHtml(r, maxScore, label) {
   const barColor = st === 'lead' ? '#15803D' : st === 'behind' ? '#D97706' : '#BE123C'
   const gap = +(r.score - r.compScore).toFixed(1)
   const gapColor = gap >= 0 ? '#15803D' : '#BE123C'
-  const hPct = (r.score / maxScore * 100).toFixed(1)
-  const cPct = r.compScore > 0 ? (r.compScore / maxScore * 100).toFixed(1) : 0
+  const BAR_H = 130
+  const hPx = Math.max(3, Math.round(r.score / maxScore * BAR_H))
+  const cPx = r.compScore > 0 ? Math.max(3, Math.round(r.compScore / maxScore * BAR_H)) : 0
   return `<div class="vbar-item" data-product="${r.product}" data-country="${r.country}">
-    <span class="vbar-val lg" style="color:${barColor}">${r.score.toFixed(1)}</span>
-    ${r.compScore > 0 ? `<span class="vbar-val comp-val" style="color:#3B82F6">${r.compScore.toFixed(1)}</span>` : ''}
     <div class="vbar-cols">
       <div class="vbar-col-wrap">
-        <div class="vbar-col" style="height:${hPct}%;background:${barColor}"></div>
+        <span class="vbar-val" style="color:${barColor}">${r.score.toFixed(1)}</span>
+        <div class="vbar-col" style="height:${hPx}px;background:${barColor}"></div>
         <span class="vbar-col-name">LG</span>
       </div>
       ${r.compScore > 0 ? `<div class="vbar-col-wrap">
-        <div class="vbar-col" style="height:${cPct}%;background:#3B82F6;opacity:.55"></div>
+        <span class="vbar-val comp-val" style="color:${COMP}">${r.compScore.toFixed(1)}</span>
+        <div class="vbar-col" style="height:${cPx}px;background:${COMP}"></div>
         <span class="vbar-col-name">${r.compName}</span>
       </div>` : ''}
     </div>
@@ -283,7 +285,7 @@ function countrySectionHtml(productsCnty, meta, t, lang) {
           <button class="cnty-view-tab active" onclick="switchCntyView('product')">${t.byProduct}</button>
           <button class="cnty-view-tab" onclick="switchCntyView('country')">${t.byCountry}</button>
         </div>
-        <span class="legend"><i style="background:#15803D"></i>${t.legendLead} <i style="background:#D97706"></i>${t.legendBehind} <i style="background:#BE123C"></i>${t.legendCritical} <i style="background:#3B82F6;opacity:.55"></i>Comp.</span>
+        <span class="legend"><i style="background:#15803D"></i>${t.legendLead} <i style="background:#D97706"></i>${t.legendBehind} <i style="background:#BE123C"></i>${t.legendCritical} <i style="background:${COMP}"></i>Comp.</span>
       </div>
     </div>
     ${insightHtml(meta.cntyInsight, meta.showCntyInsight, meta.cntyHowToRead, meta.showCntyHowToRead, t)}
@@ -410,7 +412,7 @@ function dotcomSectionHtml(dotcom, meta, t) {
   }).join('')
   return `<div class="section-card">
     <div class="section-header"><div class="section-title">${t.dotcomTitle}</div>
-      <span class="legend"><i style="background:${RED}"></i>LG <i style="background:#3B82F6"></i>SS</span>
+      <span class="legend"><i style="background:${RED}"></i>LG <i style="background:${COMP}"></i>SS</span>
     </div>
     ${insightHtml(meta.dotcomInsight, meta.showDotcomInsight, meta.dotcomHowToRead, meta.showDotcomHowToRead, t)}
     <div class="section-body">
@@ -475,13 +477,13 @@ body{background:#F1F5F9;font-family:${FONT};min-width:1200px;color:#1A1A1A}
 .hero-gauge{margin-top:8px}
 .hero-gauge-track{height:10px;background:#1E2433;border-radius:8px;overflow:hidden}
 .hero-gauge-bar{height:100%;border-radius:8px;transition:width .5s}
-.hero-legend{display:flex;gap:16px;margin-top:10px;font-size:11px;color:#94A3B8}
+.hero-legend{display:flex;gap:16px;margin-top:10px;font-size:12px;color:#94A3B8}
 .hero-legend i{display:inline-block;width:10px;height:10px;border-radius:5px;margin-right:4px;vertical-align:-1px}
 .hero-comp{margin-top:12px}
-.hero-comp-label{font-size:14px;font-weight:800;color:#3B82F6}
+.hero-comp-label{font-size:14px;font-weight:800;color:${COMP}}
 .hero-comp-score{font-size:14px;color:#94A3B8}
 .hero-comp-gap{font-size:14px;font-weight:800;margin-left:8px}
-.hero-info{font-size:11px;color:#64748B;margin-top:12px;line-height:1.6}
+.hero-info{font-size:12px;color:#64748B;margin-top:12px;line-height:1.6}
 .hero-insight{margin-top:20px;padding:16px;background:#1E0F18;border:1px solid #3D1528;border-radius:10px}
 .hero-insight-label{display:block;font-size:12px;font-weight:700;color:${RED};text-transform:uppercase;margin-bottom:6px}
 .hero-insight-text{font-size:13px;color:#fff;line-height:1.8}
@@ -492,14 +494,14 @@ body{background:#F1F5F9;font-family:${FONT};min-width:1200px;color:#1A1A1A}
 .section-title::before{content:'';width:3px;height:20px;background:${RED};border-radius:2px;flex-shrink:0}
 .section-header-right{display:flex;align-items:center;gap:16px}
 .section-body{padding:24px 28px}
-.legend{font-size:11px;color:#94A3B8;display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+.legend{font-size:12px;color:#94A3B8;display:flex;align-items:center;gap:4px;flex-wrap:wrap}
 .legend i{display:inline-block;width:8px;height:8px;border-radius:50%;margin:0 2px 0 8px;vertical-align:0}
 /* ── Insight / HowToRead ── */
 .insight-box{margin:0 28px;padding:12px 16px;background:#FFF4F7;border:1px solid #F5CCD8;border-radius:8px;margin-top:12px}
-.insight-label{display:block;font-size:11px;font-weight:700;color:${RED};margin-bottom:4px}
+.insight-label{display:block;font-size:12px;font-weight:700;color:${RED};margin-bottom:4px}
 .insight-text{font-size:12px;color:#1A1A1A;line-height:1.8}
 .howto-box{margin:0 28px;padding:12px 16px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;margin-top:8px}
-.howto-label{display:block;font-size:11px;font-weight:700;color:#64748B;margin-bottom:4px}
+.howto-label{display:block;font-size:12px;font-weight:700;color:#64748B;margin-bottom:4px}
 .howto-text{font-size:12px;color:#475569;line-height:1.8}
 /* ── 트렌드 탭 ── */
 .trend-tabs{display:inline-flex;background:#F1F5F9;border-radius:8px;padding:3px}
@@ -516,7 +518,7 @@ body{background:#F1F5F9;font-family:${FONT};min-width:1200px;color:#1A1A1A}
 .prod-card:hover{border-color:#CBD5E1}
 .prod-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
 .prod-name{font-size:17px;font-weight:900;color:#1A1A1A}
-.prod-badge{font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;border:1px solid}
+.prod-badge{font-size:12px;font-weight:700;padding:2px 8px;border-radius:10px;border:1px solid}
 .prod-score-row{display:flex;align-items:baseline;gap:10px;margin-bottom:4px}
 .prod-score{font-size:28px;font-weight:900;color:#1A1A1A}
 .prod-score small{font-size:14px;color:#94A3B8;font-weight:400}
@@ -528,18 +530,18 @@ body{background:#F1F5F9;font-family:${FONT};min-width:1200px;color:#1A1A1A}
 .prod-comp-bar{height:100%;border-radius:3px;transition:width .3s}
 .prod-comp-pct{font-size:13px;font-weight:700;min-width:40px;text-align:right}
 /* ── 국가 (세로 막대) ── */
-.cnty-product{margin-bottom:28px}
-.vbar-chart{display:flex;align-items:flex-end;gap:16px;padding:12px 8px 0;min-height:220px;overflow-x:auto}
+.cnty-product{margin-bottom:40px}
+.vbar-chart{display:flex;align-items:flex-end;gap:18px;padding:12px 8px 0;min-height:220px;overflow-x:auto}
 .vbar-item{display:flex;flex-direction:column;align-items:center;flex:1;min-width:70px;max-width:120px}
 .vbar-item.hidden{display:none}
-.vbar-val{font-size:11px;font-weight:700;white-space:nowrap;margin-bottom:2px}
-.vbar-val.comp-val{font-size:11px;font-weight:600;margin-bottom:4px}
-.vbar-cols{display:flex;align-items:flex-end;gap:4px;height:130px;width:100%}
-.vbar-col-wrap{flex:1;display:flex;flex-direction:column;align-items:center;height:100%;justify-content:flex-end}
+.vbar-val{font-size:12px;font-weight:700;white-space:nowrap;margin-bottom:3px}
+.vbar-val.comp-val{font-size:12px;font-weight:600}
+.vbar-cols{display:flex;gap:4px;width:100%;align-items:flex-end}
+.vbar-col-wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end}
 .vbar-col{width:100%;border-radius:4px 4px 0 0;min-height:3px;transition:height .3s}
-.vbar-col-name{font-size:11px;font-weight:600;color:#94A3B8;margin-top:3px;white-space:nowrap}
-.vbar-gap{font-size:11px;font-weight:700;margin-top:4px;white-space:nowrap}
-.vbar-label{font-size:11px;font-weight:600;color:#475569;margin-top:4px;text-align:center;word-break:keep-all;line-height:1.3}
+.vbar-col-name{font-size:12px;font-weight:600;color:#94A3B8;margin-top:3px;white-space:nowrap}
+.vbar-gap{font-size:12px;font-weight:700;margin-top:4px;white-space:nowrap}
+.vbar-label{font-size:12px;font-weight:600;color:#475569;margin-top:4px;text-align:center;word-break:keep-all;line-height:1.3}
 /* ── 국가 뷰탭 ── */
 .cnty-view-tab{padding:5px 16px;border:none;border-radius:6px;font-size:12px;font-weight:700;font-family:${FONT};cursor:pointer;background:transparent;color:#64748B;transition:all .15s}
 .cnty-view-tab.active{background:${RED};color:#fff}
@@ -547,19 +549,19 @@ body{background:#F1F5F9;font-family:${FONT};min-width:1200px;color:#1A1A1A}
 /* ── 필터 칩 ── */
 .cnty-filters{padding:12px 28px 0;display:flex;flex-wrap:wrap;gap:10px}
 .filter-group{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-.filter-label{font-size:11px;font-weight:700;color:#64748B;margin-right:4px;white-space:nowrap}
-.filter-chip{padding:4px 12px;border-radius:14px;border:1px solid #E2E8F0;font-size:11px;font-weight:600;font-family:${FONT};cursor:pointer;background:#fff;color:#64748B;transition:all .15s}
+.filter-label{font-size:12px;font-weight:700;color:#64748B;margin-right:4px;white-space:nowrap}
+.filter-chip{padding:4px 12px;border-radius:14px;border:1px solid #E2E8F0;font-size:12px;font-weight:600;font-family:${FONT};cursor:pointer;background:#fff;color:#64748B;transition:all .15s}
 .filter-chip.active{background:#0F172A;color:#fff;border-color:#0F172A}
 .filter-chip:hover{border-color:#94A3B8}
 /* ── Citation ── */
 .cit-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #F8FAFC}
 .cit-row:last-child{border-bottom:none}
 .cit-row.compact{padding:5px 0}
-.cit-rank{width:24px;height:24px;border-radius:5px;background:#F1F5F9;font-size:11px;font-weight:800;color:#94A3B8;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.cit-rank{width:24px;height:24px;border-radius:5px;background:#F1F5F9;font-size:12px;font-weight:800;color:#94A3B8;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .cit-rank.top{background:${RED};color:#fff}
 .cit-info{min-width:140px;flex-shrink:0}
 .cit-source{display:block;font-size:13px;font-weight:700;color:#1A1A1A}
-.cit-cat{font-size:11px;color:#94A3B8;background:#F8FAFC;border-radius:4px;padding:1px 5px}
+.cit-cat{font-size:12px;color:#94A3B8;background:#F8FAFC;border-radius:4px;padding:1px 5px}
 .cit-bar-wrap{flex:1;height:24px;background:#F8FAFC;border-radius:6px;overflow:hidden}
 .cit-bar{height:100%;background:${RED};border-radius:6px;transition:width .3s}
 .cit-score{font-size:13px;font-weight:700;color:${RED};min-width:70px;text-align:right}
@@ -574,17 +576,17 @@ body{background:#F1F5F9;font-family:${FONT};min-width:1200px;color:#1A1A1A}
 .dc-bar-pair{display:flex;align-items:center;gap:8px;margin:2px 0}
 .dc-bar{height:14px;border-radius:4px;min-width:2px;transition:width .3s}
 .dc-bar.lg{background:${RED}}
-.dc-bar.ss{background:#3B82F6}
+.dc-bar.ss{background:${COMP}}
 .dc-val{font-size:13px;font-weight:700;color:#94A3B8;white-space:nowrap}
 .dc-val.win{color:#1A1A1A}
 .dc-val.muted{color:#CBD5E1;font-weight:400}
-.dc-badge{font-size:10px;font-weight:800;padding:1px 6px;border-radius:3px}
+.dc-badge{font-size:12px;font-weight:800;padding:1px 6px;border-radius:3px}
 .dc-badge.lg{background:#FFF1F2;color:${RED}}
-.dc-badge.ss{background:#EFF6FF;color:#3B82F6}
+.dc-badge.ss{background:#F1F5F9;color:#64748B}
 .dc-summary{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;padding-top:16px;border-top:1px solid #E8EDF2;align-items:center}
 .dc-sum-item{font-size:13px;font-weight:700;color:#fff;padding:3px 10px;border-radius:5px}
 .dc-sum-item.lg{background:${RED}}
-.dc-sum-item.ss{background:#3B82F6}
+.dc-sum-item.ss{background:${COMP}}
 .dc-sum-list{font-size:13px;color:#64748B;margin-right:16px}
 /* ── Progress ── */
 .progress-placeholder{min-height:60vh;display:flex;align-items:center;justify-content:center}
@@ -594,7 +596,7 @@ body{background:#F1F5F9;font-family:${FONT};min-width:1200px;color:#1A1A1A}
 .progress-placeholder p{font-size:14px;color:#64748B}
 /* ── Footer ── */
 .dash-footer{background:#1A1A1A;padding:16px 40px;display:flex;justify-content:space-between;align-items:center;margin-top:auto}
-.dash-footer span{font-size:11px;color:#94A3B8}
+.dash-footer span{font-size:12px;color:#94A3B8}
 .dash-footer strong{color:#fff;font-weight:700}
 </style>
 </head>

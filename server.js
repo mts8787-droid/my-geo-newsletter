@@ -263,6 +263,31 @@ app.delete('/api/snapshots/:ts', (req, res) => {
   res.json({ ok: true, snapshots: list })
 })
 
+// ─── Sync Data (Google Sheets 동기화 데이터 서버 저장) ────────────────────────
+const SYNC_FILE = join(DATA_DIR, 'sync-data.json')
+
+function readSyncData() {
+  try { return JSON.parse(readFileSync(SYNC_FILE, 'utf-8')) } catch { return null }
+}
+function writeSyncData(data) {
+  writeFileSync(SYNC_FILE, JSON.stringify(data, null, 2))
+}
+
+app.get('/api/sync-data', (req, res) => {
+  const data = readSyncData()
+  if (!data) return res.json({ ok: false, data: null })
+  res.json({ ok: true, data })
+})
+
+app.post('/api/sync-data', (req, res) => {
+  const { data } = req.body || {}
+  if (!data) return res.status(400).json({ ok: false, error: 'data 필수' })
+  const payload = { ...data, savedAt: Date.now() }
+  writeSyncData(payload)
+  console.log('[SYNC-DATA] Saved at', new Date().toISOString())
+  res.json({ ok: true })
+})
+
 // ─── Google Sheet Export (Apps Script proxy) ────────────────────────────────
 app.post('/api/gsheet-export', async (req, res) => {
   const { scriptUrl, data } = req.body || {}

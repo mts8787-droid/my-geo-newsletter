@@ -118,37 +118,66 @@ export function downloadTemplate(meta, total, products, citations, dotcom = {}) 
 }
 
 // ─── 파싱 공통 (Excel & Google Sheets 양쪽에서 재사용) ─────────────────────────
+
+// 퍼센트 변환: 구글시트 %셀은 0.45 형태로 내보냄 → ×100 변환
+// 1 미만이면 소수 퍼센트로 판단 (GEO 점수는 최소 1% 이상이므로 안전)
+function pct(v) {
+  const s = String(v ?? '').replace(/%/g, '').replace(/,/g, '').trim()
+  const n = parseFloat(s) || 0
+  return Math.abs(n) < 1 && n !== 0 ? +(n * 100).toFixed(2) : +n.toFixed(2)
+}
+
+// Gap은 ±%p 값으로 소수일 수 있음 (예: -0.5%p). 절대값이 아닌 원본 유지.
+// 구글시트에서 %셀이면 0.033 (=3.3%p), 일반숫자면 3.3
+function pctGap(v) {
+  const s = String(v ?? '').replace(/%/g, '').replace(/,/g, '').trim()
+  const n = parseFloat(s) || 0
+  // Gap은 보통 ±수십%p 범위. |n| < 0.5 이면 소수 퍼센트로 판단
+  return Math.abs(n) < 0.5 && n !== 0 ? +(n * 100).toFixed(2) : +n.toFixed(2)
+}
+
 export function parseSheetRows(sheetName, rows) {
   if (sheetName === 'meta') {
     const obj = {}
-    const allowedKeys = ['period','team','reportNo','reportType','title','titleFontSize','titleColor','dateLine',
-      'cntyInsight','cntyHowToRead','kpiLogicText']
-    const numKeys = ['titleFontSize']
+    const numKeys = ['titleFontSize', 'citationTopN', 'citDomainTopN']
+    const boolKeys = ['showNotice', 'showKpiLogic', 'showTotal', 'showProducts', 'showCnty',
+      'showCitations', 'showCitDomain', 'showCitCnty', 'showDotcom',
+      'showProductInsight', 'showProductHowToRead',
+      'showCitationInsight', 'showCitationHowToRead',
+      'showDotcomInsight', 'showDotcomHowToRead',
+      'showCntyInsight', 'showCntyHowToRead',
+      'showCitDomainInsight', 'showCitDomainHowToRead',
+      'showCitCntyInsight', 'showCitCntyHowToRead',
+      'showTodo']
     rows.forEach(r => {
       if (!r[0] || String(r[0]).startsWith('[') || String(r[0]).startsWith('※') || r[0] === 'key') return
-      const k = String(r[0])
-      if (!allowedKeys.includes(k)) return
+      const k = String(r[0]).trim()
       const v = r[1] ?? ''
-      if (numKeys.includes(k)) obj[k] = parseInt(v) || 24
+      if (numKeys.includes(k)) obj[k] = parseInt(v) || (k === 'titleFontSize' ? 24 : 10)
+      else if (boolKeys.includes(k)) {
+        const sv = String(v).trim().toLowerCase()
+        obj[k] = sv === 'y' || sv === 'yes' || sv === 'true' || sv === '1'
+      }
       else obj[k] = String(v)
     })
     return Object.keys(obj).length ? { meta: obj } : {}
   }
   if (sheetName === 'total') {
     const obj = {}
+    const intKeys = ['rank', 'totalBrands']
+    const pctKeys = ['score', 'prev', 'vsComp']
     rows.forEach(r => {
       if (!r[0] || String(r[0]).startsWith('[') || String(r[0]).startsWith('※') || r[0] === 'key') return
-      const k = String(r[0])
-      if (k === 'rank' || k === 'totalBrands') { obj[k] = parseInt(r[1]) || 0 }
-      else { const n = parseFloat(r[1]) || 0; obj[k] = (k === 'score' || k === 'prev') && Math.abs(n) < 1 ? +(n * 100).toFixed(2) : n }
+      const k = String(r[0]).trim()
+      if (intKeys.includes(k)) { obj[k] = parseInt(r[1]) || 0 }
+      else if (pctKeys.includes(k)) { obj[k] = pct(r[1]) }
+      else { obj[k] = parseFloat(r[1]) || 0 }
     })
     return Object.keys(obj).length ? { total: obj } : {}
   }
   if (sheetName === 'products') {
     const data = rows.filter(r => r[0] && r[0] !== 'id' && !String(r[0]).startsWith('[') && !String(r[0]).startsWith('※') && !String(r[0]).startsWith(' '))
     if (!data.length) return {}
-    // 구글시트 %셀은 0.45 형태로 내보냄 → ×100 변환 (1 미만이면 % 소수로 판단)
-    const pct = v => { const n = parseFloat(v) || 0; return Math.abs(n) < 1 ? +(n * 100).toFixed(2) : n }
     return { productsPartial: data.map(r => ({
       id: String(r[0]), bu: String(r[1]), kr: String(r[2]),
       score: pct(r[3]), prev: pct(r[4]),
@@ -159,7 +188,6 @@ export function parseSheetRows(sheetName, rows) {
     const data = rows.filter(r => r[0] && r[0] !== 'id' && !String(r[0]).startsWith('[') && !String(r[0]).startsWith('※') && !String(r[0]).startsWith(' '))
     if (!data.length) return {}
     const weeklyMap = {}
-    const pct = v => { const n = parseFloat(v) || 0; return Math.abs(n) < 1 ? +(n * 100).toFixed(2) : n }
     data.forEach(r => { weeklyMap[String(r[0])] = [r[2],r[3],r[4],r[5]].map(pct) })
     return { weeklyMap }
   }
@@ -172,7 +200,7 @@ export function parseSheetRows(sheetName, rows) {
       category: String(r[2]      || ''),
       score:    parseFloat(String(r[3] || '').replace(/,/g, '')) || 0,
       delta:    String(r[4] || '-') === '-' ? 0 : parseFloat(r[4]) || 0,
-      ratio:    (() => { const n = parseFloat(String(r[5] || '').replace('%', '')) || 0; return Math.abs(n) < 1 ? +(n * 100).toFixed(2) : n })(),
+      ratio:    pct(r[5]),
     })) }
   }
   if (sheetName === 'Products_CNTY') {
@@ -181,7 +209,6 @@ export function parseSheetRows(sheetName, rows) {
       r[0] !== '제품명' && r[0] !== 'key'
     )
     if (!data.length) return {}
-    const pct = v => { const n = parseFloat(String(v).replace('%', '')) || 0; return Math.abs(n) < 1 ? +(n * 100).toFixed(2) : n }
     // 시트 컬럼: 제품명(0) | 국가(1) | 자사수치(2) | 1위경쟁사(3) | 경쟁사수치(4) | Gap(5)
     return { productsCnty: data.map(r => ({
       product:   String(r[0] || ''),
@@ -189,7 +216,7 @@ export function parseSheetRows(sheetName, rows) {
       score:     pct(r[2]),
       compName:  String(r[3] || ''),
       compScore: pct(r[4]),
-      gap:       pct(r[5]),
+      gap:       pctGap(r[5]),
     })) }
   }
   if (sheetName === 'citations_CNTY') {

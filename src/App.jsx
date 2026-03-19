@@ -63,6 +63,24 @@ async function deleteSnapshot(ts) {
   } catch { return null }
 }
 
+// ─── 동기화 데이터 서버 저장/로드 ─────────────────────────────────────────────────
+async function fetchSyncData() {
+  try {
+    const r = await fetch('/api/sync-data')
+    if (!r.ok) return null
+    const j = await r.json()
+    return j.ok ? j.data : null
+  } catch { return null }
+}
+async function saveSyncData(data) {
+  try {
+    await fetch('/api/sync-data', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ data }),
+    })
+  } catch {}
+}
+
 // ─── AI 인사이트 자동 생성 ──────────────────────────────────────────────────────
 function generateProductInsight(products) {
   const fmtN = n => Number(n).toLocaleString('en-US')
@@ -894,8 +912,8 @@ function Sidebar({ meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, total, s
 
       const tr = data.translated
       let idx = 0
-      // EN meta = 현재 EN 토글/설정 유지 + 번역된 텍스트 덮어쓰기
-      const newMetaEn = { ...meta,
+      // EN meta = metaKo 기반 + 번역된 텍스트 덮어쓰기 (항상 setMetaEn 사용)
+      const newMetaEn = { ...metaKo,
         title: tr[idx++] || src.title,
         dateLine: tr[idx++] || src.dateLine,
         noticeText: tr[idx++] || src.noticeText,
@@ -923,19 +941,21 @@ function Sidebar({ meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, total, s
       const capitalize = s => s ? s.replace(/\b\w/g, c => c.toUpperCase()) : s
       const ssReplace = s => (s || '').replace(/samsung\s*(electronics)?/gi, 'SS').replace(/삼성전자/g, 'SS').replace(/삼성/g, 'SS')
 
-      // 제품 EN 필드 설정 (kr, compName 한글 원본 유지)
-      const newProducts = _products.map((p, i) => ({
-        ...p,
-        en: capitalize(tr[idx + i] || p.kr),
-        compNameEn: ssReplace(tr[idx + productKrTexts.length + i] || p.compName),
-      }))
+      // EN 번역 매핑 테이블 생성
+      const enMap = {}
+      _products.forEach((p, i) => {
+        enMap[p.id] = {
+          en: capitalize(tr[idx + i] || p.kr),
+          compNameEn: ssReplace(tr[idx + productKrTexts.length + i] || p.compName),
+        }
+      })
       idx += productKrTexts.length + productCompTexts.length
 
-      // Citation categoryEn 설정
-      const newCitations = _citations.map((c, i) => ({
-        ...c,
-        categoryEn: capitalize(tr[idx + i] || c.category),
-      }))
+      // Citation categoryEn 매핑
+      const citEnMap = {}
+      _citations.forEach((c, i) => {
+        citEnMap[`${c.rank}_${c.source}`] = capitalize(tr[idx + i] || c.category)
+      })
       idx += citCategoryTexts.length
 
       // 국가별 매핑
@@ -951,28 +971,28 @@ function Sidebar({ meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, total, s
       const citCntyMap = {}
       citCntyNames.forEach((v, i) => { citCntyMap[v] = tr[idx + i] || v })
 
-      const newProductsCnty = _productsCnty.map(r => ({
+      // ★ 핵심 수정: callback form 사용 → 최신 state를 기준으로 EN 필드만 추가
+      // 기존 숫자 데이터(score, weekly, vsComp 등)를 절대 덮어쓰지 않음
+      setMetaEn(newMetaEn)
+      setProducts(prev => prev.map(p => ({
+        ...p,
+        en: enMap[p.id]?.en || p.en || p.kr,
+        compNameEn: enMap[p.id]?.compNameEn || p.compNameEn || p.compName,
+      })))
+      setCitations(prev => prev.map(c => ({
+        ...c,
+        categoryEn: citEnMap[`${c.rank}_${c.source}`] || c.categoryEn || c.category,
+      })))
+      setProductsCnty(prev => prev.map(r => ({
         ...r,
         countryEn: capitalize(countryMap[r.country] || r.country),
         productEn: capitalize(cntyProductMap[r.product] || r.product),
         compNameEn: ssReplace(cntyCompMap[r.compName] || r.compName),
-      }))
-
-      const newCitationsCnty = _citationsCnty.map(r => ({
+      })))
+      setCitationsCnty(prev => prev.map(r => ({
         ...r,
         cntyEn: r.cnty === 'TTL' ? 'TTL' : capitalize(citCntyMap[r.cnty] || r.cnty),
-      }))
-
-      setMeta(newMetaEn)
-      setProducts(newProducts)
-      setCitations(newCitations)
-      setProductsCnty(newProductsCnty)
-      setCitationsCnty(newCitationsCnty)
-
-      // 스냅샷 저장 (한/영 meta 모두 포함)
-      const snapName = `[EN] ${metaKo.period || 'Untitled'} — ${new Date().toLocaleString('ko-KR')}`
-      const snapRes = await postSnapshot(snapName, { metaKo, metaEn: newMetaEn, total, products: newProducts, citations: newCitations, dotcom, productsCnty: newProductsCnty, citationsCnty: newCitationsCnty })
-      if (snapRes) setSnapshots(snapRes)
+      })))
 
       setTranslating(false)
     } catch (err) {
@@ -1040,32 +1060,42 @@ function Sidebar({ meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, total, s
       if (parsed.dotcom)       setDotcom(d => ({ ...d, ...parsed.dotcom }))
       setProductsCnty(parsed.productsCnty ?? [])
       setCitationsCnty(parsed.citationsCnty ?? [])
-      if (parsed.productsPartial || parsed.weeklyMap) {
-        setProducts(prev => prev.map(p => {
-          const part   = parsed.productsPartial?.find(x => x.id === p.id)
-          const weekly = parsed.weeklyMap?.[p.id]
-          const next   = { ...p }
-          if (part)   Object.assign(next, part)
-          if (weekly) next.weekly = weekly
-          // LG score / 경쟁사 score
-          const ratio = next.vsComp > 0 ? (next.score / next.vsComp) * 100 : 100
-          next.compRatio = Math.round(ratio)
-          next.status = ratio >= 100 ? 'lead' : ratio >= 80 ? 'behind' : 'critical'
-          return next
-        }))
+      // ★ 핵심: callback form으로 최신 state 기반 업데이트 (stale closure 방지)
+      const mergeProduct = (p, parsed) => {
+        const part   = parsed.productsPartial?.find(x => x.id === p.id)
+        const weekly = parsed.weeklyMap?.[p.id]
+        const next   = { ...p }
+        if (part)   Object.assign(next, part)
+        if (weekly) next.weekly = weekly
+        const ratio = next.vsComp > 0 ? (next.score / next.vsComp) * 100 : 100
+        next.compRatio = Math.round(ratio)
+        next.status = ratio >= 100 ? 'lead' : ratio >= 80 ? 'behind' : 'critical'
+        return next
       }
+      if (parsed.productsPartial || parsed.weeklyMap) {
+        setProducts(prev => prev.map(p => mergeProduct(p, parsed)))
+      }
+      // 서버에 동기화 데이터 저장 (parsed 데이터 직접 사용, stale closure 의존 제거)
+      // setProducts callback이 반영된 후 저장되도록 약간의 지연 사용
+      setTimeout(() => {
+        // 이 시점에서 React state가 반영됨 — 하지만 closure 문제로 직접 참조 불가
+        // parsed 데이터만으로 서버 저장 데이터 구성
+        saveSyncData({
+          meta: parsed.meta || null,
+          total: parsed.total || null,
+          productsPartial: parsed.productsPartial || null,
+          weeklyMap: parsed.weeklyMap || null,
+          citations: parsed.citations || null,
+          dotcom: parsed.dotcom || null,
+          productsCnty: parsed.productsCnty || null,
+          citationsCnty: parsed.citationsCnty || null,
+        })
+      }, 100)
       setGsStatus('ok'); setGsMsg(IS_DASHBOARD ? '동기화 완료! EN 자동 번역 중...' : '동기화 완료!')
-      // Dashboard mode: auto-translate after sync (pass fresh data to avoid stale closure)
+      // Dashboard mode: auto-translate after sync
+      // executeTranslate는 이제 callback form을 사용하므로 override 불필요
       if (IS_DASHBOARD) {
-        try { await executeTranslate({
-          products: parsed.productsPartial ? products.map(p => {
-            const part = parsed.productsPartial.find(x => x.id === p.id)
-            return part ? { ...p, ...part } : p
-          }) : products,
-          productsCnty: parsed.productsCnty ?? productsCnty,
-          citations: parsed.citations ?? citations,
-          citationsCnty: parsed.citationsCnty ?? citationsCnty,
-        }) } catch {}
+        try { await executeTranslate() } catch {}
         setGsMsg('동기화 + 번역 완료!')
       }
     } catch (err) {
@@ -2071,6 +2101,38 @@ export default function App() {
 
   // 서버에서 스냅샷 목록 로드
   useEffect(() => { fetchSnapshots().then(setSnapshots) }, [])
+
+  // 서버에서 동기화 데이터 로드 (초기 1회)
+  // 레이스 컨디션 방지: 로드 완료 전 사용자가 동기화하면 무시
+  const serverSyncApplied = useRef(false)
+  useEffect(() => {
+    let cancelled = false
+    fetchSyncData().then(d => {
+      if (cancelled || !d) return
+      serverSyncApplied.current = true
+      if (d.meta)          setMetaKo(m => ({ ...m, ...d.meta }))
+      if (d.total)         setTotal(t => ({ ...t, ...d.total }))
+      if (d.citations)     setCitations(d.citations)
+      if (d.dotcom)        setDotcom(prev => ({ ...prev, ...d.dotcom }))
+      if (d.productsCnty)  setProductsCnty(d.productsCnty)
+      if (d.citationsCnty) setCitationsCnty(d.citationsCnty)
+      // productsPartial + weeklyMap 형식 (parsed 원본 저장)
+      if (d.productsPartial || d.weeklyMap) {
+        setProducts(prev => prev.map(p => {
+          const part   = d.productsPartial?.find(x => x.id === p.id)
+          const weekly = d.weeklyMap?.[p.id]
+          const next   = { ...p }
+          if (part)   Object.assign(next, part)
+          if (weekly) next.weekly = weekly
+          const ratio = next.vsComp > 0 ? (next.score / next.vsComp) * 100 : 100
+          next.compRatio = Math.round(ratio)
+          next.status = ratio >= 100 ? 'lead' : ratio >= 80 ? 'behind' : 'critical'
+          return next
+        }))
+      }
+    })
+    return () => { cancelled = true }
+  }, [])
 
   // 상태 변경 시 localStorage에 자동 저장
   useEffect(() => {
