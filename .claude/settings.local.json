@@ -28,7 +28,8 @@
       "Bash(git stash:*)",
       "Bash(git revert:*)",
       "Bash(npx vite:*)",
-      "Bash(pkill:*)"
+      "Bash(pkill:*)",
+      "Bash(GIT_EDITOR=true git rebase --continue)"
     ]
   }
 }

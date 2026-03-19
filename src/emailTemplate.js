@@ -10,6 +10,9 @@ const T = {
   ko: {
     lead: '선도', behind: '추격', critical: '취약', normal: '보통',
     weekTrend: '4주 트렌드',
+    monthTrend: '월별 트렌드',
+    weeklyTab: '주별',
+    monthlyTab: '월별',
     vsComp: '대비',
     categories: '개 카테고리',
     productTitle: '제품별 GEO Visibility 현황',
@@ -38,6 +41,9 @@ const T = {
   en: {
     lead: 'Lead', behind: 'Behind', critical: 'Critical', normal: 'Normal',
     weekTrend: '4-Week Trend',
+    monthTrend: 'Monthly Trend',
+    weeklyTab: 'Weekly',
+    monthlyTab: 'Monthly',
     vsComp: 'vs',
     categories: ' Categories',
     productTitle: 'GEO Visibility by Product',
@@ -120,13 +126,54 @@ function weeklyTrendHtml(weekly, color, globalMax, globalMin) {
   <!--[if mso]></td></tr></table><![endif]-->`
 }
 
+// ─── 월별 트렌드 바 차트 (대시보드용, 균일 최대 높이) ─────────────────────────
+function monthlyTrendHtml(monthly, color, globalMax, globalMin) {
+  if (!monthly || monthly.length === 0) return ''
+  const range = globalMax - globalMin || 1
+  const MAX_H = 24
+  const cnt = monthly.length
+  const labels = cnt <= 4
+    ? ['M-3', 'M-2', 'M-1', 'M0'].slice(-cnt)
+    : monthly.map((_, i) => `M${i + 1}`)
+
+  const bars = monthly.map((v, i) => {
+    const h = Math.round(((v - globalMin) / range) * MAX_H) + 4
+    const spacer = MAX_H - h
+    return `<td style="vertical-align:bottom;text-align:center;padding:0 1px;">
+      <table border="0" cellpadding="0" cellspacing="0" align="center" style="margin:0 auto;">
+        ${spacer > 0 ? `<tr><td height="${spacer}" style="font-size:0;line-height:0;">&nbsp;</td></tr>` : ''}
+        <tr><td width="10" height="${h}" style="background:${color};font-size:0;line-height:0;">&nbsp;</td></tr>
+        <tr><td style="font-size:9px;color:#94A3B8;font-family:${EM_FONT};padding-top:2px;">${labels[i] || ''}</td></tr>
+      </table>
+    </td>`
+  }).join('')
+
+  return `<!--[if mso]><table border="0" cellpadding="0" cellspacing="0"><tr><td><![endif]-->
+  <table border="0" cellpadding="0" cellspacing="0" style="display:inline-table;">
+    <tr>${bars}</tr>
+  </table>
+  <!--[if mso]></td></tr></table><![endif]-->`
+}
+
 // ─── 제품 카드 (이메일용) ──────────────────────────────────────────────────────
-function productCardHtml(p, globalMax, globalMin, lang = 'ko') {
+function productCardHtml(p, globalMax, globalMin, lang = 'ko', opts = {}) {
   const t   = T[lang] || T.ko
   const st  = statusInfo(p.status, lang)
   const d   = delta(p.score, p.prev)
+  const { showTrendTabs = false, monthlyGlobalMax = 100, monthlyGlobalMin = 0 } = opts
   const trendArr = p.weekly || []
+  const monthlyArr = p.monthly || (p.prev ? [p.prev, p.score] : [])
   const sparkColor = p.status === 'critical' ? '#BE123C' : p.status === 'behind' ? '#E8910C' : '#15803D'
+
+  // 트렌드 영역: 대시보드 모드일 때 주별/월별 모두 생성
+  const weeklyContent = `<table border="0" cellpadding="0" cellspacing="0" width="100%"><tr><td align="right" style="font-size:10px;color:#94A3B8;padding-bottom:2px;font-family:${EM_FONT};">${t.weekTrend}</td></tr></table>
+                ${weeklyTrendHtml(trendArr, sparkColor, globalMax, globalMin)}`
+  const monthlyContent = `<table border="0" cellpadding="0" cellspacing="0" width="100%"><tr><td align="right" style="font-size:10px;color:#94A3B8;padding-bottom:2px;font-family:${EM_FONT};">${t.monthTrend}</td></tr></table>
+                ${monthlyTrendHtml(monthlyArr, sparkColor, monthlyGlobalMax, monthlyGlobalMin)}`
+
+  const trendCell = showTrendTabs
+    ? `<div class="trend-weekly">${weeklyContent}</div><div class="trend-monthly" style="display:none;">${monthlyContent}</div>`
+    : weeklyContent
 
   return `
   <td width="33%" style="padding:5px;vertical-align:top;height:180px;">
@@ -154,8 +201,7 @@ function productCardHtml(p, globalMax, globalMin, lang = 'ko') {
                 <span style="font-size:14px;color:#94A3B8;"> %</span>
               </td>
               <td align="right" style="vertical-align:top;padding-top:2px;">
-                <table border="0" cellpadding="0" cellspacing="0" width="100%"><tr><td align="right" style="font-size:10px;color:#94A3B8;padding-bottom:2px;font-family:${EM_FONT};">${t.weekTrend}</td></tr></table>
-                ${weeklyTrendHtml(trendArr, sparkColor, globalMax, globalMin)}
+                ${trendCell}
               </td>
             </tr>
             <tr>
@@ -181,7 +227,7 @@ function productCardHtml(p, globalMax, globalMin, lang = 'ko') {
 }
 
 // ─── BU 섹션 ──────────────────────────────────────────────────────────────────
-function buSectionHtml(buKey, buProducts, globalMax, globalMin, lang = 'ko') {
+function buSectionHtml(buKey, buProducts, globalMax, globalMin, lang = 'ko', opts = {}) {
   const t = T[lang] || T.ko
   const rows = []
   for (let i = 0; i < buProducts.length; i += 3) {
@@ -192,7 +238,7 @@ function buSectionHtml(buKey, buProducts, globalMax, globalMin, lang = 'ko') {
 
   const rowsHtml = rows.map(row => `
     <tr>
-      ${row.map(p => p ? productCardHtml(p, globalMax, globalMin, lang) : '<td width="33%" style="padding:5px;"></td>').join('')}
+      ${row.map(p => p ? productCardHtml(p, globalMax, globalMin, lang, opts) : '<td width="33%" style="padding:5px;"></td>').join('')}
     </tr>`).join('')
 
   return `
@@ -783,7 +829,8 @@ function dotcomSectionHtml(dotcom, meta, lang = 'ko') {
 }
 
 // ─── 메인 생성 함수 ───────────────────────────────────────────────────────────
-export function generateEmailHTML(meta, total, products, citations, dotcom = {}, lang = 'ko', productsCnty = [], citationsCnty = []) {
+export function generateEmailHTML(meta, total, products, citations, dotcom = {}, lang = 'ko', productsCnty = [], citationsCnty = [], options = {}) {
+  const { containerWidth = 820, showTrendTabs = false } = options
   const t = T[lang] || T.ko
   const totalDelta = delta(total.score, total.prev)
   const scoreBarW  = Math.round(total.score)
@@ -797,10 +844,17 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
   const globalMax = allWeekly.length ? Math.max(...allWeekly) : 100
   const globalMin = allWeekly.length ? Math.min(...allWeekly) : 0
 
+  // 월별 트렌드 전역 min/max 계산
+  const allMonthly = products.flatMap(p => p.monthly || (p.prev ? [p.prev, p.score] : []))
+  const monthlyGlobalMax = allMonthly.length ? Math.max(...allMonthly) : 100
+  const monthlyGlobalMin = allMonthly.length ? Math.min(...allMonthly) : 0
+
+  const trendOpts = { showTrendTabs, monthlyGlobalMax, monthlyGlobalMin }
+
   const BU_ORDER = ['MS', 'HS', 'ES']
   const buSections = BU_ORDER.map(buKey => {
     const buProducts = products.filter(p => p.bu === buKey)
-    return buProducts.length ? buSectionHtml(buKey, buProducts, globalMax, globalMin, lang) : ''
+    return buProducts.length ? buSectionHtml(buKey, buProducts, globalMax, globalMin, lang, trendOpts) : ''
   }).join('')
 
   const citTopN = meta.citationTopN || 10
@@ -829,7 +883,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
     <td align="center" style="padding:24px 12px;">
 
       <!-- 메인 컨테이너 -->
-      <table border="0" cellpadding="0" cellspacing="0" width="820" style="max-width:820px;background:#FFFFFF;border-radius:16px;font-family:${EM_FONT};">
+      <table border="0" cellpadding="0" cellspacing="0" width="${containerWidth}" style="max-width:${containerWidth}px;background:#FFFFFF;border-radius:16px;font-family:${EM_FONT};">
 
         <!-- ══ 헤더 상단 레드 바 ══ -->
         <tr>
@@ -1020,6 +1074,14 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                       </td>
                     </tr>
                     ${insightBlockHtml(meta.productInsight, meta.showProductInsight, meta.productHowToRead, meta.showProductHowToRead, lang)}
+                    ${showTrendTabs ? `<tr>
+                      <td style="padding:12px 28px 0;">
+                        <div class="trend-tab-bar" style="display:inline-flex;gap:0;background:#F1F5F9;border-radius:8px;padding:3px;">
+                          <button class="trend-tab-btn active" onclick="switchTrendMode('weekly')" style="padding:5px 16px;border-radius:6px;border:none;font-size:12px;font-weight:700;font-family:${EM_FONT};cursor:pointer;background:${EM_RED};color:#FFFFFF;transition:all .15s;">${t.weeklyTab}</button>
+                          <button class="trend-tab-btn" onclick="switchTrendMode('monthly')" style="padding:5px 16px;border-radius:6px;border:none;font-size:12px;font-weight:700;font-family:${EM_FONT};cursor:pointer;background:transparent;color:#64748B;transition:all .15s;">${t.monthlyTab}</button>
+                        </div>
+                      </td>
+                    </tr>` : ''}
                     <tr>
                       <td style="padding:20px 28px;">
                         <table border="0" cellpadding="0" cellspacing="0" width="100%">

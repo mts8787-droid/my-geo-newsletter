@@ -378,6 +378,54 @@ app.delete('/api/publish', (req, res) => {
   res.json({ ok: true })
 })
 
+// ─── Dashboard Publish API (별도 슬러그) ─────────────────────────────────────
+const DASH_KO_SLUG = 'GEO-KPI-Dashboard-KO'
+const DASH_EN_SLUG = 'GEO-KPI-Dashboard-EN'
+const DASH_META = join(DATA_DIR, 'dashboard-meta.json')
+
+function readDashMeta() {
+  try { return JSON.parse(readFileSync(DASH_META, 'utf-8')) } catch { return null }
+}
+
+function dashLangBarHtml(activeLang) {
+  const btn = (lang, label, href) => {
+    const active = lang === activeLang
+    return `<a href="${href}" style="display:inline-block;font-size:13px;text-decoration:none;padding:6px 18px;border-radius:20px;margin:0 4px;color:${active ? '#FFFFFF' : '#94A3B8'};font-weight:${active ? '700' : '500'};background:${active ? '#CF0652' : 'rgba(255,255,255,0.08)'};">${label}</a>`
+  }
+  return `<div style="background:#0F172A;padding:12px 0;text-align:center;font-family:'LG Smart','Arial Narrow',Arial,sans-serif;">${btn('ko','한국어','/p/'+DASH_KO_SLUG)}${btn('en','English','/p/'+DASH_EN_SLUG)}</div>`
+}
+
+function injectDashLangBar(html, lang) {
+  const bar = dashLangBarHtml(lang)
+  if (html.match(/<body[^>]*>/i)) return html.replace(/(<body[^>]*>)/i, `$1${bar}`)
+  return bar + html
+}
+
+app.post('/api/publish-dashboard', (req, res) => {
+  const { htmlKo, htmlEn, title } = req.body || {}
+  if (!htmlKo || !htmlEn) return res.status(400).json({ ok: false, error: 'htmlKo, htmlEn 필수' })
+  writeFileSync(join(PUB_DIR, `${DASH_KO_SLUG}.html`), injectDashLangBar(htmlKo, 'ko'))
+  writeFileSync(join(PUB_DIR, `${DASH_EN_SLUG}.html`), injectDashLangBar(htmlEn, 'en'))
+  const meta = { title: title || 'GEO KPI Dashboard', ts: Date.now() }
+  writeFileSync(DASH_META, JSON.stringify(meta, null, 2))
+  console.log('[PUBLISH-DASH]', meta.title, `-> /p/${DASH_KO_SLUG}, /p/${DASH_EN_SLUG}`)
+  res.json({ ok: true, urls: { ko: `/p/${DASH_KO_SLUG}`, en: `/p/${DASH_EN_SLUG}` }, ...meta })
+})
+
+app.get('/api/publish-dashboard', (req, res) => {
+  const meta = readDashMeta()
+  const ko = existsSync(join(PUB_DIR, `${DASH_KO_SLUG}.html`))
+  const en = existsSync(join(PUB_DIR, `${DASH_EN_SLUG}.html`))
+  res.json({ published: ko && en, ko, en, ...(meta || {}), urls: { ko: `/p/${DASH_KO_SLUG}`, en: `/p/${DASH_EN_SLUG}` } })
+})
+
+app.delete('/api/publish-dashboard', (req, res) => {
+  try { unlinkSync(join(PUB_DIR, `${DASH_KO_SLUG}.html`)) } catch {}
+  try { unlinkSync(join(PUB_DIR, `${DASH_EN_SLUG}.html`)) } catch {}
+  try { unlinkSync(DASH_META) } catch {}
+  res.json({ ok: true })
+})
+
 app.get('/p/:slug', (req, res) => {
   if (!isIpAllowed(req.ip)) {
     res.status(403)
@@ -417,6 +465,14 @@ a.card:hover{border-color:#CF0652;transform:translateY(-2px)}
     <a class="card" href="/admin/newsletter">
       <div class="card-title">Newsletter Generator</div>
       <div class="card-desc">GEO 모니터링 리포트 생성, 편집 및 발송</div>
+    </a>
+    <a class="card" href="/admin/dashboard">
+      <div class="card-title">KPI Dashboard Builder</div>
+      <div class="card-desc">GEO KPI 대시보드 생성 및 게시</div>
+    </a>
+    <a class="card" href="/admin/progress-tracker">
+      <div class="card-title">Progress Tracker</div>
+      <div class="card-desc">GEO 과제 진행 현황 대시보드</div>
     </a>
     <a class="card" href="/admin/ip-manager">
       <div class="card-title">IP Access Manager</div>
@@ -533,6 +589,24 @@ app.get('/admin/newsletter', (req, res) => {
 app.get('/admin/newsletter/*', (req, res) => {
   res.sendFile(join(__dirname, 'dist', 'index.html'))
 })
+
+// ─── Static files (KPI Dashboard at /admin/dashboard) ───────────────────────
+app.use('/admin/dashboard', express.static(join(__dirname, 'dist-dashboard')))
+app.get('/admin/dashboard', (req, res) => {
+  res.sendFile(join(__dirname, 'dist-dashboard', 'dashboard.html'))
+})
+app.get('/admin/dashboard/*', (req, res) => {
+  res.sendFile(join(__dirname, 'dist-dashboard', 'dashboard.html'))
+})
+
+// ─── Static files (Progress Tracker at /admin/progress-tracker) ─────────────
+app.use('/admin/progress-tracker', express.static(join(__dirname, 'dist-tracker')))
+app.get('/admin/progress-tracker', (req, res) => {
+  res.sendFile(join(__dirname, 'dist-tracker', 'tracker.html'))
+})
+app.get('/admin/progress-tracker/*', (req, res) => {
+  res.sendFile(join(__dirname, 'dist-tracker', 'tracker.html'))
+})
 app.get('/', (req, res) => {
   if (!isIpAllowed(req.ip)) {
     res.status(403)
@@ -565,6 +639,7 @@ a.btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.3)}
 .btn-en{background:#1E293B;color:#E2E8F0;border:1px solid #334155}
 .btn-en:hover{border-color:#64748B}
 .flag{font-size:18px}
+.section-label{font-size:11px;font-weight:700;letter-spacing:1px;color:#64748B;text-transform:uppercase;margin-top:20px;margin-bottom:8px}
 </style>
 </head>
 <body>
@@ -580,8 +655,12 @@ a.btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.3)}
     <p>또한 경쟁사와의 비교 분석을 통해 카테고리별·국가별 개선 영역을 도출하고 실질적인 전략 인사이트를 확보할 수 있도록 구성했습니다.</p>
   </div>
   <div class="links">
+    <p class="section-label">Newsletter</p>
     <a class="btn btn-ko" href="/p/${KO_SLUG}"><span class="flag">🇰🇷</span> 한국어 리포트</a>
     <a class="btn btn-en" href="/p/${EN_SLUG}"><span class="flag">🇺🇸</span> English Report</a>
+    <p class="section-label">KPI Dashboard</p>
+    <a class="btn btn-ko" href="/p/${DASH_KO_SLUG}"><span class="flag">🇰🇷</span> 한국어 대시보드</a>
+    <a class="btn btn-en" href="/p/${DASH_EN_SLUG}"><span class="flag">🇺🇸</span> English Dashboard</a>
   </div>
 </div>
 </body>

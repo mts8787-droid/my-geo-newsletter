@@ -1,11 +1,15 @@
 {
   "name": "geo-newsletter",
   "private": true,
-  "version": "1.61.0",
+  "version": "1.71.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "dev:dashboard": "vite --config vite.dashboard.config.js",
+    "dev:tracker": "vite --config vite.tracker.config.js",
+    "build": "vite build && vite build --config vite.dashboard.config.js && vite build --config vite.tracker.config.js",
+    "build:dashboard": "vite build --config vite.dashboard.config.js",
+    "build:tracker": "vite build --config vite.tracker.config.js",
     "preview": "vite preview",
     "start": "node server.js"
   },
