@@ -1143,6 +1143,46 @@ function Sidebar({ meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, total, s
       {/* 메인 영역 */}
       <div style={{ padding: '16px 14px', flex: 1, overflowY: 'auto' }}>
 
+        {/* ── 구글 시트 동기화 (최상단) ── */}
+        <p style={{ margin: '0 0 8px 2px', fontSize: 11, fontWeight: 700, color: '#475569',
+          textTransform: 'uppercase', letterSpacing: 1, fontFamily: FONT }}>
+          구글 시트 동기화
+        </p>
+        <p style={{ margin: '0 0 4px', fontSize: 11, color: '#475569', fontFamily: FONT }}>Google Sheets URL</p>
+        <input
+          value={gsUrl}
+          onChange={e => setGsUrl(e.target.value)}
+          placeholder="https://docs.google.com/spreadsheets/d/..."
+          style={{ ...inputStyle, fontSize: 11, padding: '7px 9px', marginBottom: 8,
+            color: gsUrl ? '#E2E8F0' : '#334155' }}
+        />
+        <button
+          onClick={handleGsSync}
+          style={{
+            width: '100%', padding: '10px 0', borderRadius: 8, border: 'none',
+            cursor: gsSyncing ? 'wait' : 'pointer',
+            background: gsSyncing ? '#1E293B' : LG_RED,
+            fontSize: 12, fontWeight: 700,
+            color: gsSyncing ? '#94A3B8' : '#FFFFFF',
+            fontFamily: FONT, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+            marginBottom: 8, transition: 'all 0.2s',
+          }}>
+          <RefreshCw size={13} style={{ animation: gsSyncing ? 'spin 1s linear infinite' : 'none' }} />
+          {gsSyncing ? '동기화 중...' : '구글 시트 동기화'}
+        </button>
+        {(gsStatus || (gsSyncing && gsMsg)) && (
+          <div style={{
+            padding: '8px 10px', borderRadius: 7, fontSize: 11, fontFamily: FONT, lineHeight: 1.6,
+            background: gsStatus === 'ok' ? '#14532D' : gsStatus === 'error' ? '#450A0A' : '#1E293B',
+            color:      gsStatus === 'ok' ? '#86EFAC' : gsStatus === 'error' ? '#FCA5A5' : '#94A3B8',
+            border: `1px solid ${gsStatus === 'ok' ? '#22C55E33' : gsStatus === 'error' ? '#EF444433' : '#334155'}`,
+            marginBottom: 8,
+          }}>
+            {gsMsg}
+          </div>
+        )}
+        <div style={{ height: 1, background: '#1E293B', marginBottom: 16 }} />
+
         {/* ── 헤더 편집 ── */}
         <p style={{ margin: '0 0 10px 2px', fontSize: 11, fontWeight: 700, color: '#475569',
           textTransform: 'uppercase', letterSpacing: 1, fontFamily: FONT }}>
@@ -1777,45 +1817,6 @@ function Sidebar({ meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, total, s
             ④ URL 붙여넣기 후 동기화
           </p>
         </div>
-
-        {/* URL 입력 */}
-        <p style={{ margin: '0 0 4px', fontSize: 11, color: '#475569', fontFamily: FONT }}>Google Sheets URL</p>
-        <input
-          value={gsUrl}
-          onChange={e => setGsUrl(e.target.value)}
-          placeholder="https://docs.google.com/spreadsheets/d/..."
-          style={{ ...inputStyle, fontSize: 11, padding: '7px 9px', marginBottom: 8,
-            color: gsUrl ? '#E2E8F0' : '#334155' }}
-        />
-
-        {/* 동기화 버튼 — 항상 클릭 가능 (유효성은 핸들러에서 검사) */}
-        <button
-          onClick={handleGsSync}
-          style={{
-            width: '100%', padding: '10px 0', borderRadius: 8, border: 'none',
-            cursor: gsSyncing ? 'wait' : 'pointer',
-            background: gsSyncing ? '#1E293B' : LG_RED,
-            fontSize: 12, fontWeight: 700,
-            color: gsSyncing ? '#94A3B8' : '#FFFFFF',
-            fontFamily: FONT, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-            marginBottom: 8, transition: 'all 0.2s',
-          }}>
-          <RefreshCw size={13} style={{ animation: gsSyncing ? 'spin 1s linear infinite' : 'none' }} />
-          {gsSyncing ? '동기화 중...' : '구글 시트 동기화'}
-        </button>
-
-        {/* 상태 메시지 */}
-        {(gsStatus || (gsSyncing && gsMsg)) && (
-          <div style={{
-            padding: '8px 10px', borderRadius: 7, fontSize: 11, fontFamily: FONT, lineHeight: 1.6,
-            background: gsStatus === 'ok' ? '#14532D' : gsStatus === 'error' ? '#450A0A' : '#1E293B',
-            color:      gsStatus === 'ok' ? '#86EFAC' : gsStatus === 'error' ? '#FCA5A5' : '#94A3B8',
-            border: `1px solid ${gsStatus === 'ok' ? '#22C55E33' : gsStatus === 'error' ? '#EF444433' : '#334155'}`,
-            marginBottom: 8,
-          }}>
-            {gsMsg}
-          </div>
-        )}
 
         {/* ── 구글 시트 내보내기 ── */}
         <div style={{ height: 1, background: '#1E293B', margin: '16px 0' }} />

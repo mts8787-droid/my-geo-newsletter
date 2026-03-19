@@ -218,30 +218,26 @@ function cntyStatus(sc, comp) {
   const r = sc / comp * 100
   return r >= 100 ? 'lead' : r >= 80 ? 'behind' : 'critical'
 }
-function cntyBarHtml(r, maxScore) {
+function cntyColHtml(r, maxScore, label) {
   const st = cntyStatus(r.score, r.compScore)
   const barColor = st === 'lead' ? '#15803D' : st === 'behind' ? '#D97706' : '#BE123C'
   const gap = +(r.score - r.compScore).toFixed(1)
   const gapColor = gap >= 0 ? '#15803D' : '#BE123C'
-  return `<div class="cnty-row" data-product="${r.product}" data-country="${r.country}">
-    <span class="cnty-name">${r.country}</span>
-    <div class="cnty-bars">
-      <div class="cnty-bar-wrap">
-        <div class="cnty-bar" style="width:${(r.score/maxScore*100).toFixed(1)}%;background:${barColor}"></div>
-        <span class="cnty-val" style="color:${barColor}">${r.score.toFixed(1)}</span>
-      </div>
-      ${r.compScore > 0 ? `<div class="cnty-bar-wrap comp">
-        <div class="cnty-bar" style="width:${(r.compScore/maxScore*100).toFixed(1)}%;background:#3B82F6;opacity:.5"></div>
-        <span class="cnty-val" style="color:#64748B">${r.compName} ${r.compScore.toFixed(1)}</span>
-      </div>` : ''}
+  const hPct = (r.score / maxScore * 100).toFixed(1)
+  const cPct = r.compScore > 0 ? (r.compScore / maxScore * 100).toFixed(1) : 0
+  return `<div class="vbar-item" data-product="${r.product}" data-country="${r.country}">
+    <span class="vbar-val" style="color:${barColor}">${r.score.toFixed(1)}</span>
+    <div class="vbar-cols">
+      <div class="vbar-col" style="height:${hPct}%;background:${barColor}" title="LG ${r.score.toFixed(1)}"></div>
+      ${r.compScore > 0 ? `<div class="vbar-col comp" style="height:${cPct}%;background:#3B82F6;opacity:.55" title="${r.compName} ${r.compScore.toFixed(1)}"></div>` : ''}
     </div>
-    <span class="cnty-gap" style="color:${gapColor}">${gap >= 0 ? '+' : ''}${gap}%p</span>
+    <span class="vbar-gap" style="color:${gapColor}">${gap >= 0 ? '+' : ''}${gap}</span>
+    <span class="vbar-label">${label}</span>
   </div>`
 }
 function countrySectionHtml(productsCnty, meta, t, lang) {
   if (!productsCnty || !productsCnty.length) return ''
 
-  // Collect unique products and countries
   const productNames = [...new Set(productsCnty.map(r => r.product))]
   const countryNames = [...new Set(productsCnty.map(r => r.country))]
 
@@ -251,8 +247,8 @@ function countrySectionHtml(productsCnty, meta, t, lang) {
   const filter = meta.cntyProductFilter || {}
   const byProductHtml = [...productMap.entries()].filter(([n]) => filter[n] !== false).map(([name, rows]) => {
     const maxScore = Math.max(...rows.map(r => Math.max(r.score, r.compScore)), 1)
-    const bars = rows.map(r => cntyBarHtml(r, maxScore)).join('')
-    return `<div class="cnty-product" data-group-product="${name}"><div class="bu-header"><span class="bu-label">${name}</span><span class="bu-count">${rows.length}</span></div>${bars}</div>`
+    const bars = rows.map(r => cntyColHtml(r, maxScore, r.country)).join('')
+    return `<div class="cnty-product" data-group-product="${name}"><div class="bu-header"><span class="bu-label">${name}</span><span class="bu-count">${rows.length}</span></div><div class="vbar-chart">${bars}</div></div>`
   }).join('')
 
   // ── View 2: 국가별 (By Country) ──
@@ -260,27 +256,8 @@ function countrySectionHtml(productsCnty, meta, t, lang) {
   productsCnty.forEach(r => { if (!countryMap.has(r.country)) countryMap.set(r.country, []); countryMap.get(r.country).push(r) })
   const byCountryHtml = [...countryMap.entries()].map(([cnty, rows]) => {
     const maxScore = Math.max(...rows.map(r => Math.max(r.score, r.compScore)), 1)
-    const bars = rows.map(r => {
-      const st = cntyStatus(r.score, r.compScore)
-      const barColor = st === 'lead' ? '#15803D' : st === 'behind' ? '#D97706' : '#BE123C'
-      const gap = +(r.score - r.compScore).toFixed(1)
-      const gapColor = gap >= 0 ? '#15803D' : '#BE123C'
-      return `<div class="cnty-row" data-product="${r.product}" data-country="${r.country}">
-        <span class="cnty-name">${r.product}</span>
-        <div class="cnty-bars">
-          <div class="cnty-bar-wrap">
-            <div class="cnty-bar" style="width:${(r.score/maxScore*100).toFixed(1)}%;background:${barColor}"></div>
-            <span class="cnty-val" style="color:${barColor}">${r.score.toFixed(1)}</span>
-          </div>
-          ${r.compScore > 0 ? `<div class="cnty-bar-wrap comp">
-            <div class="cnty-bar" style="width:${(r.compScore/maxScore*100).toFixed(1)}%;background:#3B82F6;opacity:.5"></div>
-            <span class="cnty-val" style="color:#64748B">${r.compName} ${r.compScore.toFixed(1)}</span>
-          </div>` : ''}
-        </div>
-        <span class="cnty-gap" style="color:${gapColor}">${gap >= 0 ? '+' : ''}${gap}%p</span>
-      </div>`
-    }).join('')
-    return `<div class="cnty-product" data-group-country="${cnty}"><div class="bu-header"><span class="bu-label">${cnty}</span><span class="bu-count">${rows.length}</span></div>${bars}</div>`
+    const bars = rows.map(r => cntyColHtml(r, maxScore, r.product)).join('')
+    return `<div class="cnty-product" data-group-country="${cnty}"><div class="bu-header"><span class="bu-label">${cnty}</span><span class="bu-count">${rows.length}</span></div><div class="vbar-chart">${bars}</div></div>`
   }).join('')
 
   // ── Filter chips ──
@@ -299,7 +276,7 @@ function countrySectionHtml(productsCnty, meta, t, lang) {
           <button class="cnty-view-tab active" onclick="switchCntyView('product')">${t.byProduct}</button>
           <button class="cnty-view-tab" onclick="switchCntyView('country')">${t.byCountry}</button>
         </div>
-        <span class="legend"><i style="background:#15803D"></i>${t.legendLead} <i style="background:#D97706"></i>${t.legendBehind} <i style="background:#BE123C"></i>${t.legendCritical}</span>
+        <span class="legend"><i style="background:#15803D"></i>${t.legendLead} <i style="background:#D97706"></i>${t.legendBehind} <i style="background:#BE123C"></i>${t.legendCritical} <i style="background:#3B82F6;opacity:.55"></i>Comp.</span>
       </div>
     </div>
     ${insightHtml(meta.cntyInsight, meta.showCntyInsight, meta.cntyHowToRead, meta.showCntyHowToRead, t)}
@@ -551,18 +528,17 @@ body{background:#F1F5F9;font-family:${FONT};min-width:1200px;color:#1A1A1A}
 .prod-comp-bar-wrap{flex:1;height:6px;background:#E8EDF2;border-radius:3px;overflow:hidden}
 .prod-comp-bar{height:100%;border-radius:3px;transition:width .3s}
 .prod-comp-pct{font-size:13px;font-weight:700;min-width:40px;text-align:right}
-/* ── 국가 ── */
-.cnty-product{margin-bottom:20px}
-.cnty-row{display:flex;align-items:center;gap:12px;padding:6px 0;border-bottom:1px solid #F8FAFC}
-.cnty-row:last-child{border-bottom:none}
-.cnty-row.hidden{display:none}
-.cnty-name{font-size:13px;font-weight:600;color:#1A1A1A;min-width:60px}
-.cnty-bars{flex:1}
-.cnty-bar-wrap{display:flex;align-items:center;gap:8px;height:20px}
-.cnty-bar-wrap.comp{height:14px}
-.cnty-bar{height:100%;border-radius:4px;min-width:2px;transition:width .3s}
-.cnty-val{font-size:12px;font-weight:700;white-space:nowrap}
-.cnty-gap{font-size:12px;font-weight:700;min-width:60px;text-align:right}
+/* ── 국가 (세로 막대) ── */
+.cnty-product{margin-bottom:24px}
+.vbar-chart{display:flex;align-items:flex-end;gap:6px;padding:8px 0 0;min-height:180px;overflow-x:auto}
+.vbar-item{display:flex;flex-direction:column;align-items:center;flex:1;min-width:48px;max-width:90px}
+.vbar-item.hidden{display:none}
+.vbar-val{font-size:10px;font-weight:700;white-space:nowrap;margin-bottom:4px}
+.vbar-cols{display:flex;align-items:flex-end;gap:3px;height:120px;width:100%}
+.vbar-col{flex:1;border-radius:4px 4px 0 0;min-height:3px;transition:height .3s}
+.vbar-col.comp{max-width:14px}
+.vbar-gap{font-size:9px;font-weight:700;margin-top:3px;white-space:nowrap}
+.vbar-label{font-size:10px;font-weight:600;color:#64748B;margin-top:2px;text-align:center;word-break:keep-all;line-height:1.2}
 /* ── 국가 뷰탭 ── */
 .cnty-view-tab{padding:5px 16px;border:none;border-radius:6px;font-size:12px;font-weight:700;font-family:${FONT};cursor:pointer;background:transparent;color:#64748B;transition:all .15s}
 .cnty-view-tab.active{background:${RED};color:#fff}
@@ -683,24 +659,24 @@ function applyCntyFilters(){
   document.querySelectorAll('#cnty-filter-countries .filter-chip.active').forEach(function(c){activeCountries[c.getAttribute('data-filter-value')]=true});
   var pCount=Object.keys(activeProducts).length;
   var cCount=Object.keys(activeCountries).length;
-  // product view: filter rows by country, hide empty product groups
-  document.querySelectorAll('#cnty-view-product .cnty-row').forEach(function(row){
-    var p=row.getAttribute('data-product');var c=row.getAttribute('data-country');
+  // product view
+  document.querySelectorAll('#cnty-view-product .vbar-item').forEach(function(item){
+    var p=item.getAttribute('data-product');var c=item.getAttribute('data-country');
     var show=(pCount===0||activeProducts[p])&&(cCount===0||activeCountries[c]);
-    row.classList.toggle('hidden',!show);
+    item.classList.toggle('hidden',!show);
   });
   document.querySelectorAll('#cnty-view-product .cnty-product').forEach(function(grp){
-    var vis=grp.querySelectorAll('.cnty-row:not(.hidden)').length;
+    var vis=grp.querySelectorAll('.vbar-item:not(.hidden)').length;
     grp.style.display=vis>0?'':'none';
   });
-  // country view: filter rows by product, hide empty country groups
-  document.querySelectorAll('#cnty-view-country .cnty-row').forEach(function(row){
-    var p=row.getAttribute('data-product');var c=row.getAttribute('data-country');
+  // country view
+  document.querySelectorAll('#cnty-view-country .vbar-item').forEach(function(item){
+    var p=item.getAttribute('data-product');var c=item.getAttribute('data-country');
     var show=(pCount===0||activeProducts[p])&&(cCount===0||activeCountries[c]);
-    row.classList.toggle('hidden',!show);
+    item.classList.toggle('hidden',!show);
   });
   document.querySelectorAll('#cnty-view-country .cnty-product').forEach(function(grp){
-    var vis=grp.querySelectorAll('.cnty-row:not(.hidden)').length;
+    var vis=grp.querySelectorAll('.vbar-item:not(.hidden)').length;
     grp.style.display=vis>0?'':'none';
   });
 }
