@@ -624,7 +624,7 @@ body{background:#F1F5F9;font-family:${FONT};min-width:1200px;color:#1A1A1A}
   </div></div>
 </div>
 <div id="tab-progress" class="tab-panel">
-  <iframe src="/admin/progress-tracker/" style="width:100%;min-height:calc(100vh - 60px);border:none;background:#0A0F1E" title="Progress Tracker"></iframe>
+  <iframe src="/p/progress-tracker/" style="width:100%;min-height:calc(100vh - 60px);border:none;background:#0A0F1E" title="Progress Tracker"></iframe>
 </div>
 <div class="dash-footer">
   <span><strong>LG Electronics</strong> ${t.footer}</span>

@@ -7,6 +7,9 @@ import StakeholderRanking from './components/StakeholderRanking'
 import DetailTable from './components/DetailTable'
 import { MONTHS } from './utils/constants'
 
+// /p/progress-tracker/ → 게시된 읽기전용 모드
+const IS_PUBLIC = window.location.pathname.startsWith('/p/')
+
 function parseRate(v) {
   if (typeof v === 'string' && v.endsWith('%')) return parseFloat(v)
   if (typeof v === 'number') return v
@@ -18,7 +21,6 @@ function computeDashboard(data, month) {
   const actuals = data.quantitativeResults
   const rates = data.quantitativeRates
 
-  // Zip rows by index (tables have 1:1 correspondence)
   const tasks = goals.rows.map((g, i) => {
     const a = actuals.rows[i] || {}
     const r = rates.rows[i] || {}
@@ -38,14 +40,10 @@ function computeDashboard(data, month) {
     }
   })
 
-  // 이번 달 종합 달성률
   const validRates = tasks.map(t => t.rate).filter(r => r !== null)
   const avgRate = validRates.length ? validRates.reduce((s, r) => s + r, 0) / validRates.length : 0
-
-  // 주의 필요 과제 수 (80% 미만)
   const warningCount = validRates.filter(r => r < 80).length
 
-  // 누적 실적 합계 (선택된 월까지)
   const monthIdx = MONTHS.indexOf(month)
   let cumulativeActual = 0
   tasks.forEach(t => {
@@ -55,14 +53,12 @@ function computeDashboard(data, month) {
     }
   })
 
-  // 월별 합계 (목표 vs 실적)
   const monthlyTotals = MONTHS.map(m => ({
     month: m,
     goal: tasks.reduce((s, t) => s + (typeof t.goalMonthly?.[m] === 'number' ? t.goalMonthly[m] : 0), 0),
     actual: tasks.reduce((s, t) => s + (typeof t.actualMonthly?.[m] === 'number' ? t.actualMonthly[m] : 0), 0),
   }))
 
-  // 누적 진척도
   let cumActual = 0
   const cumulative = monthlyTotals.map(mt => {
     cumActual += mt.actual
@@ -70,7 +66,6 @@ function computeDashboard(data, month) {
   })
   const annualTarget = tasks.reduce((s, t) => s + t.goalAnnual, 0)
 
-  // 스테이크홀더별 성과
   const stakeholderNames = [...new Set(tasks.map(t => t.stakeholder))]
   const stakeholders = stakeholderNames.map(sh => {
     const shTasks = tasks.filter(t => t.stakeholder === sh)
@@ -84,7 +79,6 @@ function computeDashboard(data, month) {
     }
   }).sort((a, b) => b.avgRate - a.avgRate)
 
-  // Totals row
   const totalsRate = parseRate(rates.totals?.monthly?.[month])
 
   return {
@@ -101,7 +95,7 @@ function computeDashboard(data, month) {
 }
 
 export default function App() {
-  const { data, loading, error, load, refresh } = useSheetData()
+  const { data, loading, error, load, refresh } = useSheetData(IS_PUBLIC ? 'snapshot' : 'live')
   const [selectedMonth, setSelectedMonth] = useState('3월')
 
   useEffect(() => { load() }, [load])
@@ -111,13 +105,53 @@ export default function App() {
     return computeDashboard(data, selectedMonth)
   }, [data, selectedMonth])
 
+  // 게시 기능 (관리자 전용)
+  const [publishing, setPublishing] = useState(false)
+  const [publishInfo, setPublishInfo] = useState(null)
+
+  useEffect(() => {
+    if (IS_PUBLIC) return
+    fetch('/api/publish-tracker').then(r => r.ok ? r.json() : null).then(setPublishInfo).catch(() => {})
+  }, [])
+
+  async function handlePublish() {
+    if (!data || publishing) return
+    setPublishing(true)
+    try {
+      const res = await fetch('/api/publish-tracker', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ data }),
+      })
+      const j = await res.json()
+      if (!j.ok) throw new Error(j.error || '게시 실패')
+      setPublishInfo({ published: true, ...j })
+    } catch (err) {
+      alert('게시 실패: ' + err.message)
+    } finally {
+      setPublishing(false)
+    }
+  }
+
+  async function handleUnpublish() {
+    try {
+      await fetch('/api/publish-tracker', { method: 'DELETE' })
+      setPublishInfo(null)
+    } catch {}
+  }
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100">
       <Header
-        onRefresh={refresh}
+        onRefresh={IS_PUBLIC ? null : refresh}
         loading={loading}
         selectedMonth={selectedMonth}
         setSelectedMonth={setSelectedMonth}
+        isPublic={IS_PUBLIC}
+        onPublish={handlePublish}
+        publishing={publishing}
+        publishInfo={publishInfo}
+        onUnpublish={handleUnpublish}
       />
 
       <main className="max-w-[1400px] mx-auto px-4 py-6 space-y-6">
@@ -145,19 +179,16 @@ export default function App() {
               annualTarget={dashboard.annualTarget}
               month={selectedMonth}
             />
-
             <PerformanceCharts
               monthlyTotals={dashboard.monthlyTotals}
               cumulative={dashboard.cumulative}
               annualTarget={dashboard.annualTarget}
               selectedMonth={selectedMonth}
             />
-
             <StakeholderRanking
               stakeholders={dashboard.stakeholders}
               month={selectedMonth}
             />
-
             <DetailTable
               tasks={dashboard.tasks}
               month={selectedMonth}

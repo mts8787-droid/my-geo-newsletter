@@ -163,6 +163,7 @@ app.use((req, res, next) => {
   if (req.path.startsWith('/p/') || req.path === '/') return next()
   if (req.path === '/admin/login') return next()
   if (req.path.startsWith('/api/auth/')) return next()
+  if (req.path === '/api/tracker-snapshot') return next()
 
   if (req.path.startsWith('/admin') || req.path.startsWith('/api/')) {
     const token = getSessionToken(req)
@@ -463,6 +464,63 @@ app.delete('/api/publish-dashboard', (req, res) => {
   try { unlinkSync(join(PUB_DIR, `${DASH_EN_SLUG}.html`)) } catch {}
   try { unlinkSync(DASH_META) } catch {}
   res.json({ ok: true })
+})
+
+// ─── Progress Tracker Publish (데이터 스냅샷 게시) ────────────────────────────
+const TRACKER_SNAP = join(DATA_DIR, 'tracker-snapshot.json')
+const TRACKER_META = join(DATA_DIR, 'tracker-meta.json')
+
+function readTrackerMeta() {
+  try { return JSON.parse(readFileSync(TRACKER_META, 'utf-8')) } catch { return null }
+}
+
+app.post('/api/publish-tracker', (req, res) => {
+  const { data } = req.body || {}
+  if (!data) return res.status(400).json({ ok: false, error: 'data 필수' })
+  writeFileSync(TRACKER_SNAP, JSON.stringify(data, null, 2))
+  const meta = { title: 'GEO KPI Progress Tracker', ts: Date.now() }
+  writeFileSync(TRACKER_META, JSON.stringify(meta, null, 2))
+  console.log('[PUBLISH-TRACKER]', new Date().toISOString())
+  res.json({ ok: true, ...meta, url: '/p/progress-tracker/' })
+})
+
+app.get('/api/publish-tracker', (req, res) => {
+  const meta = readTrackerMeta()
+  const hasData = existsSync(TRACKER_SNAP)
+  res.json({ published: !!meta && hasData, ...(meta || {}), url: '/p/progress-tracker/' })
+})
+
+app.delete('/api/publish-tracker', (req, res) => {
+  try { unlinkSync(TRACKER_SNAP) } catch {}
+  try { unlinkSync(TRACKER_META) } catch {}
+  res.json({ ok: true })
+})
+
+// ─── Tracker Snapshot (공개, 인증 불필요) ─────────────────────────────────────
+app.get('/api/tracker-snapshot', (req, res) => {
+  try {
+    const data = JSON.parse(readFileSync(TRACKER_SNAP, 'utf-8'))
+    res.json({ ok: true, data })
+  } catch {
+    res.json({ ok: false, data: null })
+  }
+})
+
+// ─── Public Progress Tracker (게시된 버전, IP 체크) ──────────────────────────
+app.use('/p/progress-tracker', (req, res, next) => {
+  if (!isIpAllowed(req.ip)) {
+    res.status(403)
+    res.set('Content-Type', 'text/html; charset=utf-8')
+    return res.send('<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body style="background:#0F172A;display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;color:#64748B"><p>403 — Access Denied</p></body></html>')
+  }
+  next()
+})
+app.use('/p/progress-tracker', express.static(join(__dirname, 'dist-tracker')))
+app.get('/p/progress-tracker', (req, res) => {
+  res.sendFile(join(__dirname, 'dist-tracker', 'tracker.html'))
+})
+app.get('/p/progress-tracker/*', (req, res) => {
+  res.sendFile(join(__dirname, 'dist-tracker', 'tracker.html'))
 })
 
 app.get('/p/:slug', (req, res) => {

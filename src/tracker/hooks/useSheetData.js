@@ -40,13 +40,26 @@ async function fetchSheet() {
   return XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' })
 }
 
-export function useSheetData() {
+async function fetchSnapshot() {
+  const res = await fetch('/api/tracker-snapshot')
+  if (!res.ok) throw new Error('게시된 데이터가 없습니다')
+  const j = await res.json()
+  if (!j.ok || !j.data) throw new Error('게시된 데이터가 없습니다')
+  return j.data
+}
+
+/**
+ * @param {'live'|'snapshot'} mode
+ *   live     — Google Sheets에서 실시간 데이터 로드 (관리자 모드)
+ *   snapshot — 서버에 게시된 스냅샷 로드 (공개 모드)
+ */
+export function useSheetData(mode = 'live') {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
   const load = useCallback(async (skipCache = false) => {
-    if (!skipCache) {
+    if (mode === 'live' && !skipCache) {
       const cached = getCached()
       if (cached) { setData(cached); return }
     }
@@ -55,17 +68,22 @@ export function useSheetData() {
     setError(null)
 
     try {
-      const rows = await fetchSheet()
-      const parsed = parseKPISheet(rows)
-      setData(parsed)
-      setCache(parsed)
+      if (mode === 'snapshot') {
+        const snapshot = await fetchSnapshot()
+        setData(snapshot)
+      } else {
+        const rows = await fetchSheet()
+        const parsed = parseKPISheet(rows)
+        setData(parsed)
+        setCache(parsed)
+      }
     } catch (err) {
       console.error('[useSheetData] error:', err)
       setError(err.message)
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [mode])
 
   const refresh = useCallback(() => {
     localStorage.removeItem(CACHE_KEY)
