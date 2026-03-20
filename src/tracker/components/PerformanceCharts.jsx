@@ -28,7 +28,7 @@ export default function PerformanceCharts({ monthlyTotals, cumulative, annualTar
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
       {/* 월별 목표 대비 실적 */}
       <div style={{ background: '#fff', border: '1px solid #E2E8F0', borderRadius: 12, padding: 20, boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
-        <span style={{ display: 'inline-block', width: 3, height: 16, borderRadius: 8, background: '#CF0652', marginRight: 8, verticalAlign: 'middle' }} /><h3 style={{ display: 'inline', fontSize: 15, fontWeight: 700, color: '#111827', marginBottom: 2 }}>월별 목표 대비 실적</h3>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}><span style={{ width: 3, height: 16, borderRadius: 8, background: '#CF0652', flexShrink: 0 }} /><h3 style={{ fontSize: 15, fontWeight: 700, color: '#111827', margin: 0 }}>월별 목표 대비 실적</h3></div>
         <p style={{ fontSize: 12, color: '#64748B', marginBottom: 16 }}>실적 (Bar) · 목표 (Line)</p>
         <ResponsiveContainer width="100%" height={280}>
           <ComposedChart data={monthlyTotals} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
@@ -47,7 +47,7 @@ export default function PerformanceCharts({ monthlyTotals, cumulative, annualTar
       <div style={{ background: '#fff', border: '1px solid #E2E8F0', borderRadius: 12, padding: 20, boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
           <div>
-            <span style={{ display: 'inline-block', width: 3, height: 16, borderRadius: 8, background: '#CF0652', marginRight: 8, verticalAlign: 'middle' }} /><h3 style={{ display: 'inline', fontSize: 15, fontWeight: 700, color: '#111827', marginBottom: 2 }}>연간 누적 목표대비 실적</h3>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}><span style={{ width: 3, height: 16, borderRadius: 8, background: '#CF0652', flexShrink: 0 }} /><h3 style={{ fontSize: 15, fontWeight: 700, color: '#111827', margin: 0 }}>연간 누적 목표대비 실적</h3></div>
             <p style={{ fontSize: 12, color: '#64748B' }}>Goal (Line) · Actual (Bar)</p>
           </div>
           <span style={{ fontSize: 12, color: '#475569', background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '3px 8px', borderRadius: 4 }}>

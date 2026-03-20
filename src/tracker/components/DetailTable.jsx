@@ -2,9 +2,9 @@ import { STAKEHOLDER_COLORS } from '../utils/constants'
 
 function statusOf(rate) {
   if (rate === null) return { color: '#94A3B8', dot: '#CBD5E1' }
-  if (rate >= 100) return { color: '#15803D', dot: '#22C55E' }
-  if (rate >= 80)  return { color: '#B45309', dot: '#F59E0B' }
-  return { color: '#BE123C', dot: '#EF4444' }
+  if (rate >= 100) return { color: '#15803D', dot: '#15803D' }
+  if (rate >= 80)  return { color: '#D97706', dot: '#D97706' }
+  return { color: '#BE123C', dot: '#BE123C' }
 }
 
 function fmtRate(rate) {
@@ -16,7 +16,7 @@ export default function DetailTable({ tasks, month }) {
   return (
     <div style={{ background: '#fff', border: '1px solid #E2E8F0', borderRadius: 12, overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
       <div style={{ padding: '16px 20px', borderBottom: '1px solid #E2E8F0' }}>
-        <span style={{ display: 'inline-block', width: 3, height: 16, borderRadius: 8, background: '#CF0652', marginRight: 8, verticalAlign: 'middle' }} /><h3 style={{ display: 'inline', fontSize: 15, fontWeight: 700, color: '#111827', margin: 0, marginBottom: 2 }}>정량 과제 현황</h3>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}><span style={{ width: 3, height: 16, borderRadius: 8, background: '#CF0652', flexShrink: 0 }} /><h3 style={{ fontSize: 15, fontWeight: 700, color: '#111827', margin: 0 }}>정량 과제 현황</h3></div>
         <p style={{ fontSize: 12, color: '#64748B', margin: 0 }}>{month} 기준 · {tasks.length}개 과제</p>
       </div>
 

@@ -534,17 +534,17 @@ body{background:#F1F5F9;font-family:${FONT};min-width:1200px;color:#1A1A1A}
 .prod-comp-pct{font-size:13px;font-weight:700;min-width:40px;text-align:right}
 /* ── 국가 (세로 막대) ── */
 .cnty-product{margin-bottom:40px}
-.vbar-chart{display:flex;align-items:flex-end;gap:18px;padding:12px 8px 0;min-height:220px;overflow-x:auto}
-.vbar-item{display:flex;flex-direction:column;align-items:center;flex:1;min-width:70px;max-width:120px}
+.vbar-chart{display:flex;align-items:flex-end;gap:28px;padding:12px 8px 0;min-height:220px;overflow-x:auto}
+.vbar-item{display:flex;flex-direction:column;align-items:center;flex:1;min-width:60px;max-width:90px}
 .vbar-item.hidden{display:none}
-.vbar-val{font-size:12px;font-weight:700;white-space:nowrap;margin-bottom:3px}
-.vbar-val.comp-val{font-size:12px;font-weight:600}
+.vbar-val{font-size:13px;font-weight:700;white-space:nowrap;margin-bottom:3px}
+.vbar-val.comp-val{font-size:13px;font-weight:600}
 .vbar-cols{display:flex;gap:4px;width:100%;align-items:flex-end}
 .vbar-col-wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end}
 .vbar-col{width:100%;border-radius:4px 4px 0 0;min-height:3px;transition:height .3s}
-.vbar-col-name{font-size:12px;font-weight:600;color:#94A3B8;margin-top:3px;white-space:nowrap}
-.vbar-gap{font-size:12px;font-weight:700;margin-top:4px;white-space:nowrap}
-.vbar-label{font-size:12px;font-weight:600;color:#475569;margin-top:4px;text-align:center;word-break:keep-all;line-height:1.3}
+.vbar-col-name{font-size:13px;font-weight:600;color:#94A3B8;margin-top:3px;white-space:nowrap}
+.vbar-gap{font-size:13px;font-weight:700;margin-top:4px;white-space:nowrap}
+.vbar-label{font-size:13px;font-weight:600;color:#475569;margin-top:4px;text-align:center;word-break:keep-all;line-height:1.3}
 /* ── 국가 뷰탭 ── */
 .cnty-view-tab{padding:5px 16px;border:none;border-radius:6px;font-size:12px;font-weight:700;font-family:${FONT};cursor:pointer;background:transparent;color:#64748B;transition:all .15s}
 .cnty-view-tab.active{background:${RED};color:#fff}

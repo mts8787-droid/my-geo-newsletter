@@ -3,9 +3,9 @@ import { MONTHS, STAKEHOLDER_COLORS } from '../utils/constants'
 function statusDot(val) {
   if (!val || val === '') return { dot: '#CBD5E1', label: '\u2014' }
   const s = String(val).trim().toUpperCase()
-  if (s === 'O' || s === 'Y' || s === 'YES' || s === '완료' || s === '달성') return { dot: '#22C55E', label: val }
-  if (s === 'X' || s === 'N' || s === 'NO' || s === '미달성') return { dot: '#EF4444', label: val }
-  if (s === '진행중' || s === '진행' || s === 'WIP') return { dot: '#F59E0B', label: val }
+  if (s === 'O' || s === 'Y' || s === 'YES' || s === '완료' || s === '달성') return { dot: '#15803D', label: val }
+  if (s === 'X' || s === 'N' || s === 'NO' || s === '미달성') return { dot: '#BE123C', label: val }
+  if (s === '진행중' || s === '진행' || s === 'WIP') return { dot: '#D97706', label: val }
   return { dot: '#94A3B8', label: val }
 }
 
@@ -17,7 +17,7 @@ export default function QualitativeTable({ goals, results, selectedSH, month }) 
   return (
     <div style={{ background: '#fff', border: '1px solid #E2E8F0', borderRadius: 12, overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
       <div style={{ padding: '16px 20px', borderBottom: '1px solid #E2E8F0' }}>
-        <span style={{ display: 'inline-block', width: 3, height: 16, borderRadius: 8, background: '#CF0652', marginRight: 8, verticalAlign: 'middle' }} /><h3 style={{ display: 'inline', fontSize: 15, fontWeight: 700, color: '#111827', margin: 0, marginBottom: 2 }}>정성 과제 현황</h3>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}><span style={{ width: 3, height: 16, borderRadius: 8, background: '#CF0652', flexShrink: 0 }} /><h3 style={{ fontSize: 15, fontWeight: 700, color: '#111827', margin: 0 }}>정성 과제 현황</h3></div>
         <p style={{ fontSize: 12, color: '#64748B', margin: 0 }}>{month} 기준</p>
       </div>
 
@@ -68,7 +68,7 @@ export default function QualitativeTable({ goals, results, selectedSH, month }) 
                     <td style={{ padding: '9px 12px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
                         <span style={{ width: 9, height: 9, borderRadius: '50%', background: st.dot, display: 'inline-block' }} />
-                        <span style={{ color: st.dot === '#CBD5E1' ? '#94A3B8' : st.dot === '#22C55E' ? '#15803D' : st.dot === '#EF4444' ? '#BE123C' : '#B45309', fontWeight: 600 }}>
+                        <span style={{ color: st.dot === '#CBD5E1' ? '#94A3B8' : st.dot, fontWeight: 600 }}>
                           {st.label}
                         </span>
                       </div>

@@ -1,9 +1,9 @@
 import { STAKEHOLDER_COLORS } from '../utils/constants'
 
 function statusOf(rate) {
-  if (rate >= 100) return { color: '#15803D', dot: '#22C55E' }
-  if (rate >= 80)  return { color: '#B45309', dot: '#F59E0B' }
-  return { color: '#BE123C', dot: '#EF4444' }
+  if (rate >= 100) return { color: '#15803D', dot: '#15803D' }
+  if (rate >= 80)  return { color: '#D97706', dot: '#D97706' }
+  return { color: '#BE123C', dot: '#BE123C' }
 }
 
 function fmt(n) { return Number(n).toLocaleString('en-US') }
@@ -18,7 +18,7 @@ export default function StakeholderRanking({ stakeholders, month, selectedSH }) 
       {/* Header */}
       <div style={{ padding: '16px 20px', borderBottom: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <span style={{ display: 'inline-block', width: 3, height: 16, borderRadius: 8, background: '#CF0652', marginRight: 8, verticalAlign: 'middle' }} /><h3 style={{ display: 'inline', fontSize: 15, fontWeight: 700, color: '#111827', margin: 0 }}>Stakeholders별 달성률</h3>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}><span style={{ width: 3, height: 16, borderRadius: 8, background: '#CF0652', flexShrink: 0 }} /><h3 style={{ fontSize: 15, fontWeight: 700, color: '#111827', margin: 0 }}>Stakeholders별 달성률</h3></div>
           {totalWarnings > 0 && (
             <span style={{ fontSize: 12, fontWeight: 700, color: '#BE123C', background: '#FFF1F2', border: '1px solid #FECDD3', padding: '2px 8px', borderRadius: 4 }}>
               미달성 과제 {totalWarnings}건
@@ -26,9 +26,9 @@ export default function StakeholderRanking({ stakeholders, month, selectedSH }) 
           )}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: 11, color: '#64748B' }}>
-          <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 8, height: 8, borderRadius: '50%', background: '#22C55E', display: 'inline-block' }} /> ≥100%</span>
-          <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 8, height: 8, borderRadius: '50%', background: '#F59E0B', display: 'inline-block' }} /> ≥80%</span>
-          <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 8, height: 8, borderRadius: '50%', background: '#EF4444', display: 'inline-block' }} /> {'<80%'}</span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 8, height: 8, borderRadius: '50%', background: '#15803D', display: 'inline-block' }} /> ≥100%</span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 8, height: 8, borderRadius: '50%', background: '#D97706', display: 'inline-block' }} /> ≥80%</span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 8, height: 8, borderRadius: '50%', background: '#BE123C', display: 'inline-block' }} /> {'<80%'}</span>
         </div>
       </div>
 
