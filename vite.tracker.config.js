@@ -26,7 +26,12 @@ export default defineConfig({
     {
       name: 'serve-tracker-html',
       configureServer(server) {
-        server.middlewares.use((req, _res, next) => {
+        server.middlewares.use((req, res, next) => {
+          if (req.url === '/' || req.url === '') {
+            res.writeHead(302, { Location: '/admin/progress-tracker/' })
+            res.end()
+            return
+          }
           if (req.url === '/admin/progress-tracker/' || req.url === '/admin/progress-tracker') {
             req.url = '/tracker.html'
           }

@@ -20,7 +20,7 @@ async function fetchSheet(sheetId, sheetName) {
   const csv = await res.text()
   const wb  = XLSX.read(csv, { type: 'string' })
   const ws  = wb.Sheets[wb.SheetNames[0]]
-  return XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' }).slice(1)
+  return XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' })
 }
 
 export async function syncFromGoogleSheets(sheetId, onProgress) {
