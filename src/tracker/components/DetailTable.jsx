@@ -1,23 +1,10 @@
-import { Sparkles } from 'lucide-react'
 import { STAKEHOLDER_COLORS } from '../utils/constants'
 
-function TrafficDot({ rate }) {
-  if (rate === null) return <span className="w-3 h-3 rounded-full bg-gray-300" />
-  if (rate >= 100) return (
-    <span className="flex items-center gap-0.5">
-      <span className="w-3 h-3 rounded-full bg-emerald-500" />
-      {rate >= 150 && <Sparkles size={12} className="text-amber-500" />}
-    </span>
-  )
-  if (rate >= 80) return <span className="w-3 h-3 rounded-full bg-amber-500" />
-  return <span className="w-3 h-3 rounded-full bg-red-500" />
-}
-
-function rateClass(rate) {
-  if (rate === null) return 'text-gray-400'
-  if (rate >= 100) return 'text-emerald-600 font-bold'
-  if (rate >= 80) return 'text-amber-600 font-semibold'
-  return 'text-red-600 font-bold'
+function statusOf(rate) {
+  if (rate === null) return { color: '#94A3B8', dot: '#CBD5E1' }
+  if (rate >= 100) return { color: '#15803D', dot: '#22C55E' }
+  if (rate >= 80)  return { color: '#B45309', dot: '#F59E0B' }
+  return { color: '#BE123C', dot: '#EF4444' }
 }
 
 function fmtRate(rate) {
@@ -27,68 +14,63 @@ function fmtRate(rate) {
 
 export default function DetailTable({ tasks, month }) {
   return (
-    <div className="bg-white rounded-xl border border-[#E8EDF2] overflow-hidden shadow-sm">
-      <div className="px-5 py-4 border-b border-[#E8EDF2]">
-        <h3 className="text-lg font-bold text-black">상세 과제 현황</h3>
-        <p className="text-sm text-[#64748B] mt-0.5">{month} 기준 · {tasks.length}개 과제</p>
+    <div style={{ background: '#fff', border: '1px solid #E2E8F0', borderRadius: 12, overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+      <div style={{ padding: '16px 20px', borderBottom: '1px solid #E2E8F0' }}>
+        <h3 style={{ fontSize: 15, fontWeight: 700, color: '#111827', margin: 0, marginBottom: 2 }}>상세 과제 현황</h3>
+        <p style={{ fontSize: 12, color: '#64748B', margin: 0 }}>{month} 기준 · {tasks.length}개 과제</p>
       </div>
 
       <div className="overflow-x-auto">
-        <table className="w-full text-sm">
+        <table style={{ width: '100%', fontSize: 13, borderCollapse: 'collapse' }}>
           <thead>
-            <tr className="bg-gray-50 text-sm text-gray-500 uppercase tracking-wider">
-              <th className="px-3 py-3 text-left sticky left-0 z-10 bg-gray-50 min-w-[80px]">
-                Stakeholder
-              </th>
-              <th className="px-3 py-3 text-left min-w-[160px]">과제</th>
-              <th className="px-3 py-3 text-left min-w-[90px]">Page Type</th>
-              <th className="px-3 py-3 text-left min-w-[180px]">목표 상세</th>
-              <th className="px-3 py-3 text-right min-w-[70px]">목표</th>
-              <th className="px-3 py-3 text-right min-w-[70px]">실적</th>
-              <th className="px-3 py-3 text-center min-w-[100px]">달성률</th>
-              <th className="px-3 py-3 text-right min-w-[70px]">연간목표</th>
+            <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
+              <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 11, fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', position: 'sticky', left: 0, zIndex: 10, background: '#F8FAFC', minWidth: 80 }}>Stakeholder</th>
+              <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 11, fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', minWidth: 150 }}>과제</th>
+              <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 11, fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', minWidth: 80 }}>Page Type</th>
+              <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 11, fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', minWidth: 160 }}>목표 상세</th>
+              <th style={{ padding: '10px 12px', textAlign: 'right', fontSize: 11, fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', minWidth: 60 }}>목표</th>
+              <th style={{ padding: '10px 12px', textAlign: 'right', fontSize: 11, fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', minWidth: 60 }}>실적</th>
+              <th style={{ padding: '10px 12px', textAlign: 'center', fontSize: 11, fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', minWidth: 90 }}>달성률</th>
+              <th style={{ padding: '10px 12px', textAlign: 'right', fontSize: 11, fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', minWidth: 60 }}>연간목표</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100">
+          <tbody>
             {tasks.map((t, i) => {
               const color = STAKEHOLDER_COLORS[t.stakeholder] || '#94A3B8'
+              const st = statusOf(t.rate)
               return (
-                <tr key={i} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-3 py-2.5 sticky left-0 z-10 bg-white">
-                    <span
-                      className="inline-block px-2 py-0.5 rounded text-xs font-bold whitespace-nowrap"
-                      style={{ backgroundColor: color + '18', color, border: `1px solid ${color}30` }}
-                    >
+                <tr key={i} style={{ borderBottom: '1px solid #F1F5F9' }} className="hover:bg-[#F8FAFC] transition-colors">
+                  <td style={{ padding: '9px 12px', position: 'sticky', left: 0, zIndex: 10, background: '#fff' }}>
+                    <span style={{ display: 'inline-block', padding: '2px 8px', borderRadius: 4, fontSize: 11, fontWeight: 700, background: color + '18', color, border: `1px solid ${color}30` }}>
                       {t.stakeholder}
                     </span>
                   </td>
-                  <td className="px-3 py-2.5 text-gray-900 font-medium">{t.task}</td>
-                  <td className="px-3 py-2.5 text-gray-500">{t.pageType}</td>
-                  <td className="px-3 py-2.5 text-gray-700 max-w-[300px]">
-                    <span className="block truncate" title={t.detail}>{t.detail}</span>
+                  <td style={{ padding: '9px 12px', color: '#1E293B', fontWeight: 500 }}>{t.task}</td>
+                  <td style={{ padding: '9px 12px', color: '#64748B' }}>{t.pageType}</td>
+                  <td style={{ padding: '9px 12px', color: '#475569', maxWidth: 280 }}>
+                    <span style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={t.detail}>{t.detail}</span>
                   </td>
-                  <td className="px-3 py-2.5 text-right text-gray-500 tabular-nums">
+                  <td style={{ padding: '9px 12px', textAlign: 'right', color: '#64748B', fontVariantNumeric: 'tabular-nums' }}>
                     {typeof t.goal === 'number' && t.goal > 0 ? t.goal.toLocaleString() : '\u2014'}
                   </td>
-                  <td className="px-3 py-2.5 text-right text-gray-900 font-semibold tabular-nums">
+                  <td style={{ padding: '9px 12px', textAlign: 'right', color: '#1E293B', fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>
                     {typeof t.actual === 'number' && t.actual > 0 ? t.actual.toLocaleString() : '\u2014'}
                   </td>
-                  <td className="px-3 py-2.5">
-                    <div className="flex items-center justify-center gap-1.5">
-                      <TrafficDot rate={t.rate} />
-                      <span className={`tabular-nums ${rateClass(t.rate)}`}>{fmtRate(t.rate)}</span>
+                  <td style={{ padding: '9px 12px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                      <span style={{ width: 9, height: 9, borderRadius: '50%', background: st.dot, display: 'inline-block' }} />
+                      <span style={{ fontWeight: t.rate !== null ? 700 : 400, color: st.color, fontVariantNumeric: 'tabular-nums' }}>{fmtRate(t.rate)}</span>
                     </div>
                   </td>
-                  <td className="px-3 py-2.5 text-right text-gray-400 tabular-nums">
+                  <td style={{ padding: '9px 12px', textAlign: 'right', color: '#94A3B8', fontVariantNumeric: 'tabular-nums' }}>
                     {t.goalAnnual > 0 ? t.goalAnnual.toLocaleString() : '\u2014'}
                   </td>
                 </tr>
               )
             })}
-
             {tasks.length === 0 && (
               <tr>
-                <td colSpan={8} className="px-3 py-8 text-center text-gray-400 text-base">
+                <td colSpan={8} style={{ padding: '32px 12px', textAlign: 'center', color: '#94A3B8', fontSize: 13 }}>
                   해당 스테이크홀더의 과제가 없습니다.
                 </td>
               </tr>
