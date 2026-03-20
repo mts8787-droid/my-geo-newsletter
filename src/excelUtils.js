@@ -1,14 +1,32 @@
 import * as XLSX from 'xlsx'
 
+// ─── 시트 이름 (Google Sheets 동기화용 — 새 데이터 원천) ─────────────────────────
 export const SHEET_NAMES = {
-  meta:          'meta',
-  total:         'total',
-  products:      'products',
-  weekly:        'weekly',
-  citations:     'citations',
-  dotcom:        'dotcom',
-  products_cnty: 'Products_CNTY',
-  citations_cnty: 'citations_CNTY',
+  meta:           'meta',
+  visSummary:     'Monthly Visibility Summary',
+  productMS:      'Monthly Visibility Product_CNTY_MS',
+  productHS:      'Monthly Visibility Product_CNTY_HS',
+  productES:      'Monthly Visibility Product_CNTY_ES',
+  weeklyMS:       'Weekly MS Visibility',
+  weeklyHS:       'Weekly HS Visibility',
+  weeklyES:       'Weekly ES Visibility',
+  citPageType:    'Citation-Page Type',
+  citTouchPoints: 'Citation-Touch Points',
+  citDomain:      'Citation-Domain',
+}
+
+// ─── 카테고리 ID/KR 매핑 ──────────────────────────────────────────────────────
+const CATEGORY_ID_MAP = {
+  'TV': 'tv', 'Monitor': 'monitor', 'Audio': 'audio',
+  'WM': 'washer', 'REF': 'fridge', 'DW': 'dw',
+  'VC': 'vacuum', 'Cooking': 'cooking',
+  'RAC': 'rac', 'Aircare': 'aircare',
+}
+const CATEGORY_KR_MAP = {
+  'TV': 'TV', 'Monitor': '모니터', 'Audio': '오디오',
+  'WM': '세탁기', 'REF': '냉장고', 'DW': '식기세척기',
+  'VC': '청소기', 'Cooking': 'Cooking',
+  'RAC': 'RAC', 'Aircare': 'Aircare',
 }
 
 export const DOTCOM_LG_COLS   = ['TTL','PLP','Microsites','PDP','Newsroom','Support','Buying-guide','Experience']
@@ -48,7 +66,7 @@ export function downloadTemplate(meta, total, products, citations, dotcom = {}) 
     ['showDotcomHowToRead', meta.showDotcomHowToRead ? 'Y' : 'N', '닷컴 읽는 법 표시 (Y/N)'],
   ])
   wsMeta['!cols'] = [{ wch: 24 }, { wch: 50 }, { wch: 40 }]
-  XLSX.utils.book_append_sheet(wb, wsMeta, SHEET_NAMES.meta)
+  XLSX.utils.book_append_sheet(wb, wsMeta, 'meta')
 
   // ── total ─────────────────────────────────────────────────────────────────
   const wsTotal = XLSX.utils.aoa_to_sheet([
@@ -63,7 +81,7 @@ export function downloadTemplate(meta, total, products, citations, dotcom = {}) 
     ['totalBrands', total.totalBrands, '비교 대상 전체 브랜드 수 (정수)'],
   ])
   wsTotal['!cols'] = [{ wch: 14 }, { wch: 10 }, { wch: 44 }]
-  XLSX.utils.book_append_sheet(wb, wsTotal, SHEET_NAMES.total)
+  XLSX.utils.book_append_sheet(wb, wsTotal, 'total')
 
   // ── products ──────────────────────────────────────────────────────────────
   const wsProducts = XLSX.utils.aoa_to_sheet([
@@ -75,7 +93,7 @@ export function downloadTemplate(meta, total, products, citations, dotcom = {}) 
     ...products.map(p => [p.id, p.bu, p.kr, p.score, p.prev, p.vsComp, p.compName]),
   ])
   wsProducts['!cols'] = [{ wch: 10 }, { wch: 6 }, { wch: 12 }, { wch: 8 }, { wch: 8 }, { wch: 10 }, { wch: 12 }]
-  XLSX.utils.book_append_sheet(wb, wsProducts, SHEET_NAMES.products)
+  XLSX.utils.book_append_sheet(wb, wsProducts, 'products')
 
   // ── weekly ────────────────────────────────────────────────────────────────
   const wsWeekly = XLSX.utils.aoa_to_sheet([
@@ -87,7 +105,7 @@ export function downloadTemplate(meta, total, products, citations, dotcom = {}) 
     ...products.map(p => [p.id, p.kr, ...p.weekly]),
   ])
   wsWeekly['!cols'] = [{ wch: 10 }, { wch: 12 }, { wch: 8 }, { wch: 8 }, { wch: 8 }, { wch: 8 }, { wch: 8 }, { wch: 8 }]
-  XLSX.utils.book_append_sheet(wb, wsWeekly, SHEET_NAMES.weekly)
+  XLSX.utils.book_append_sheet(wb, wsWeekly, 'weekly')
 
   // ── citations ─────────────────────────────────────────────────────────────
   const wsCitations = XLSX.utils.aoa_to_sheet([
@@ -100,7 +118,7 @@ export function downloadTemplate(meta, total, products, citations, dotcom = {}) 
     ...citations.map(c => [c.rank, c.source, c.category, c.score, c.delta, c.ratio ?? 0]),
   ])
   wsCitations['!cols'] = [{ wch: 6 }, { wch: 18 }, { wch: 12 }, { wch: 8 }, { wch: 8 }]
-  XLSX.utils.book_append_sheet(wb, wsCitations, SHEET_NAMES.citations)
+  XLSX.utils.book_append_sheet(wb, wsCitations, 'citations')
 
   // ── dotcom ───────────────────────────────────────────────────────────────
   const lg = dotcom?.lg || {}; const sam = dotcom?.samsung || {}
@@ -112,143 +130,373 @@ export function downloadTemplate(meta, total, products, citations, dotcom = {}) 
     [...DOTCOM_LG_COLS.map(c => lg[c] ?? 0), ...DOTCOM_SAM_COLS.map(c => sam[c] ?? 0)],
   ])
   wsDotcom['!cols'] = Array(15).fill({ wch: 14 })
-  XLSX.utils.book_append_sheet(wb, wsDotcom, SHEET_NAMES.dotcom)
+  XLSX.utils.book_append_sheet(wb, wsDotcom, 'dotcom')
 
   XLSX.writeFile(wb, 'GEO_Newsletter_템플릿.xlsx')
 }
 
-// ─── 파싱 공통 (Excel & Google Sheets 양쪽에서 재사용) ─────────────────────────
+// ─── 파싱 공통 ──────────────────────────────────────────────────────────────────
 
-// 퍼센트 변환: 구글시트 %셀은 0.45 형태로 내보냄 → ×100 변환
-// 1 미만이면 소수 퍼센트로 판단 (GEO 점수는 최소 1% 이상이므로 안전)
 function pct(v) {
   const s = String(v ?? '').replace(/%/g, '').replace(/,/g, '').trim()
   const n = parseFloat(s) || 0
   return Math.abs(n) < 1 && n !== 0 ? +(n * 100).toFixed(2) : +n.toFixed(2)
 }
 
-// Gap은 ±%p 값으로 소수일 수 있음 (예: -0.5%p). 절대값이 아닌 원본 유지.
-// 구글시트에서 %셀이면 0.033 (=3.3%p), 일반숫자면 3.3
-function pctGap(v) {
-  const s = String(v ?? '').replace(/%/g, '').replace(/,/g, '').trim()
-  const n = parseFloat(s) || 0
-  // Gap은 보통 ±수십%p 범위. |n| < 0.5 이면 소수 퍼센트로 판단
-  return Math.abs(n) < 0.5 && n !== 0 ? +(n * 100).toFixed(2) : +n.toFixed(2)
+function numVal(v) {
+  return parseFloat(String(v ?? '').replace(/,/g, '').replace(/%/g, '').trim()) || 0
 }
 
-export function parseSheetRows(sheetName, rows) {
-  if (sheetName === 'meta') {
-    const obj = {}
-    const numKeys = ['titleFontSize', 'citationTopN', 'citDomainTopN']
-    const boolKeys = ['showNotice', 'showKpiLogic', 'showTotal', 'showProducts', 'showCnty',
-      'showCitations', 'showCitDomain', 'showCitCnty', 'showDotcom',
-      'showProductInsight', 'showProductHowToRead',
-      'showCitationInsight', 'showCitationHowToRead',
-      'showDotcomInsight', 'showDotcomHowToRead',
-      'showCntyInsight', 'showCntyHowToRead',
-      'showCitDomainInsight', 'showCitDomainHowToRead',
-      'showCitCntyInsight', 'showCitCntyHowToRead',
-      'showTodo']
-    rows.forEach(r => {
-      if (!r[0] || String(r[0]).startsWith('[') || String(r[0]).startsWith('※') || r[0] === 'key') return
-      const k = String(r[0]).trim()
-      const v = r[1] ?? ''
-      if (numKeys.includes(k)) obj[k] = parseInt(v) || (k === 'titleFontSize' ? 24 : 10)
-      else if (boolKeys.includes(k)) {
-        const sv = String(v).trim().toLowerCase()
-        obj[k] = sv === 'y' || sv === 'yes' || sv === 'true' || sv === '1'
+// ─── 개별 시트 파서 ──────────────────────────────────────────────────────────────
+
+function parseMeta(rows) {
+  const obj = {}
+  const numKeys = ['titleFontSize', 'citationTopN', 'citDomainTopN']
+  const boolKeys = ['showNotice', 'showKpiLogic', 'showTotal', 'showProducts', 'showCnty',
+    'showCitations', 'showCitDomain', 'showCitCnty', 'showDotcom',
+    'showProductInsight', 'showProductHowToRead',
+    'showCitationInsight', 'showCitationHowToRead',
+    'showDotcomInsight', 'showDotcomHowToRead',
+    'showCntyInsight', 'showCntyHowToRead',
+    'showCitDomainInsight', 'showCitDomainHowToRead',
+    'showCitCntyInsight', 'showCitCntyHowToRead',
+    'showTodo']
+  rows.forEach(r => {
+    if (!r[0] || String(r[0]).startsWith('[') || String(r[0]).startsWith('※') || r[0] === 'key') return
+    const k = String(r[0]).trim()
+    const v = r[1] ?? ''
+    if (numKeys.includes(k)) obj[k] = parseInt(v) || (k === 'titleFontSize' ? 24 : 10)
+    else if (boolKeys.includes(k)) {
+      const sv = String(v).trim().toLowerCase()
+      obj[k] = sv === 'y' || sv === 'yes' || sv === 'true' || sv === '1'
+    }
+    else obj[k] = String(v)
+  })
+  return Object.keys(obj).length ? { meta: obj } : {}
+}
+
+function parseVisSummary(rows) {
+  // 1) key-value 형식 (이전 total 시트 호환)
+  const intKeys = ['rank', 'totalBrands']
+  const pctKeys = ['score', 'prev', 'vsComp']
+  const kvObj = {}
+  let isKV = false
+  rows.forEach(r => {
+    if (!r[0] || String(r[0]).startsWith('[') || String(r[0]).startsWith('※') || r[0] === 'key') return
+    const k = String(r[0]).trim()
+    if (pctKeys.includes(k) || intKeys.includes(k)) {
+      isKV = true
+      if (intKeys.includes(k)) kvObj[k] = parseInt(r[1]) || 0
+      else kvObj[k] = pct(r[1])
+    }
+  })
+  if (isKV && Object.keys(kvObj).length >= 2) return { total: kvObj }
+
+  // 2) 테이블 형식: Country/Date + LG + SAMSUNG 컬럼
+  const headerIdx = rows.findIndex(r =>
+    r.some(c => String(c || '').trim().toUpperCase() === 'LG') &&
+    r.some(c => { const s = String(c || '').trim().toLowerCase(); return s === 'country' || s === 'date' || s === 'div' })
+  )
+  if (headerIdx < 0) return {}
+
+  const header = rows[headerIdx]
+  const lgCol = header.findIndex(c => String(c || '').trim().toUpperCase() === 'LG')
+  const ssCol = header.findIndex(c => String(c || '').trim().toUpperCase() === 'SAMSUNG')
+  const countryCol = header.findIndex(c => String(c || '').trim().toLowerCase() === 'country')
+
+  const data = rows.slice(headerIdx + 1).filter(r => r.some(c => c != null && String(c).trim()))
+  const ttlRows = data.filter(r => {
+    if (countryCol < 0) return true
+    const v = String(r[countryCol] || '').replace(/[()]/g, '').trim().toUpperCase()
+    return v === 'TTL' || v === 'TOTAL'
+  })
+  if (!ttlRows.length) return {}
+
+  const last = ttlRows[ttlRows.length - 1]
+  const prevRow = ttlRows.length > 1 ? ttlRows[ttlRows.length - 2] : null
+  const score = lgCol >= 0 ? pct(last[lgCol]) : 0
+  const vsComp = ssCol >= 0 ? pct(last[ssCol]) : 0
+  const prev = prevRow && lgCol >= 0 ? pct(prevRow[lgCol]) : score
+  return { total: { score, prev, vsComp, rank: score >= vsComp ? 1 : 2, totalBrands: 12 } }
+}
+
+function parseProductCnty(rows) {
+  // 헤더: Div, Date, Country, Category, LG, SAMSUNG, Comp3, ...
+  const headerIdx = rows.findIndex(r => {
+    const c0 = String(r[0] || '').trim().toLowerCase()
+    return c0 === 'div' || c0 === 'division'
+  })
+  if (headerIdx < 0) return {}
+
+  const header = rows[headerIdx]
+  const lgIdx = header.findIndex((c, i) => i >= 4 && String(c || '').trim().toUpperCase() === 'LG')
+  if (lgIdx < 0) return {}
+
+  // 경쟁사 컬럼 수집 (LG 제외)
+  const competitors = []
+  for (let i = 4; i < header.length; i++) {
+    const name = String(header[i] || '').trim()
+    if (name && name.toUpperCase() !== 'LG') competitors.push({ name, col: i })
+  }
+
+  const data = rows.slice(headerIdx + 1).filter(r => {
+    const c0 = String(r[0] || '').trim()
+    return c0 && !c0.startsWith('[') && !c0.startsWith('※')
+  })
+
+  const productsPartial = []
+  const productsCnty = []
+
+  data.forEach(r => {
+    const div = String(r[0]).trim()
+    const country = String(r[2]).trim()
+    const category = String(r[3]).trim()
+    const lgScore = pct(r[lgIdx])
+
+    const compScores = competitors
+      .map(c => ({ name: c.name, score: pct(r[c.col]) }))
+      .filter(c => c.score > 0)
+    const topComp = [...compScores].sort((a, b) => b.score - a.score)[0] || { name: '', score: 0 }
+    const gap = +(lgScore - topComp.score).toFixed(2)
+
+    if (country === 'TTL') {
+      const id = CATEGORY_ID_MAP[category] || category.toLowerCase()
+      const kr = CATEGORY_KR_MAP[category] || category
+      productsPartial.push({ id, bu: div, kr, score: lgScore, prev: 0, vsComp: topComp.score, compName: topComp.name })
+    } else {
+      productsCnty.push({ product: category, country, score: lgScore, compName: topComp.name, compScore: topComp.score, gap })
+    }
+  })
+
+  return {
+    ...(productsPartial.length ? { productsPartial } : {}),
+    ...(productsCnty.length ? { productsCnty } : {}),
+  }
+}
+
+function parseWeekly(rows) {
+  const headerIdx = rows.findIndex(r => {
+    const cells = r.map(c => String(c || '').trim().toLowerCase())
+    return cells.includes('category') || cells.includes('lg') || cells.some(c => /^w\d+$/i.test(c))
+  })
+  if (headerIdx < 0) return {}
+
+  const header = rows[headerIdx]
+  const data = rows.slice(headerIdx + 1).filter(r => r[0] != null && String(r[0]).trim())
+  const weeklyMap = {}
+
+  const lgIdx = header.findIndex(c => String(c || '').trim().toUpperCase() === 'LG')
+
+  if (lgIdx >= 0) {
+    // Format: Div, Week/Date, Country, Category, LG, ... → 여러 행을 카테고리별 그룹핑
+    const catIdx = header.findIndex(c => String(c || '').trim().toLowerCase() === 'category')
+    const countryIdx = header.findIndex(c => String(c || '').trim().toLowerCase() === 'country')
+    const byCategory = {}
+    data.forEach(r => {
+      const country = countryIdx >= 0 ? String(r[countryIdx] || '').trim() : 'TTL'
+      if (country !== 'TTL') return
+      const cat = String(r[catIdx >= 0 ? catIdx : 3] || '').trim()
+      if (!cat) return
+      byCategory[cat] = byCategory[cat] || []
+      byCategory[cat].push(pct(r[lgIdx]))
+    })
+    Object.entries(byCategory).forEach(([cat, vals]) => {
+      weeklyMap[CATEGORY_ID_MAP[cat] || cat.toLowerCase()] = vals.slice(-4)
+    })
+  } else {
+    // Format: Category, W1, W2, W3, W4
+    const catIdx = header.findIndex(c => String(c || '').trim().toLowerCase() === 'category')
+    const wCols = []
+    for (let i = 0; i < header.length; i++) {
+      if (/^W\d+$/i.test(String(header[i] || '').trim())) wCols.push(i)
+    }
+    if (!wCols.length) {
+      const start = (catIdx >= 0 ? catIdx : 0) + 1
+      for (let i = start; i < Math.min(start + 6, header.length); i++) wCols.push(i)
+    }
+    data.forEach(r => {
+      const cat = String(r[catIdx >= 0 ? catIdx : 0] || '').trim()
+      if (!cat) return
+      weeklyMap[CATEGORY_ID_MAP[cat] || cat.toLowerCase()] = wCols.map(c => pct(r[c]))
+    })
+  }
+
+  return Object.keys(weeklyMap).length ? { weeklyMap } : {}
+}
+
+function parseCitPageType(rows) {
+  // 헤더: Country, Page Type, Feb LG, Feb SS, Mar LG, Mar SS, ...
+  const headerIdx = rows.findIndex(r =>
+    r.some(c => { const s = String(c || '').trim().toLowerCase(); return s.includes('page type') || s === 'country' })
+  )
+  if (headerIdx < 0) return {}
+
+  const header = rows[headerIdx]
+
+  // LG/SS 컬럼 페어 찾기
+  const monthPairs = []
+  for (let i = 2; i < header.length; i++) {
+    const h = String(header[i] || '').trim()
+    if (/\bLG\b/i.test(h)) {
+      const ssCol = i + 1
+      if (ssCol < header.length && /\bSS\b|\bSAMSUNG\b/i.test(String(header[ssCol] || ''))) {
+        monthPairs.push({ lg: i, ss: ssCol })
       }
-      else obj[k] = String(v)
-    })
-    return Object.keys(obj).length ? { meta: obj } : {}
+    }
   }
-  if (sheetName === 'total') {
-    const obj = {}
-    const intKeys = ['rank', 'totalBrands']
-    const pctKeys = ['score', 'prev', 'vsComp']
-    rows.forEach(r => {
-      if (!r[0] || String(r[0]).startsWith('[') || String(r[0]).startsWith('※') || r[0] === 'key') return
-      const k = String(r[0]).trim()
-      if (intKeys.includes(k)) { obj[k] = parseInt(r[1]) || 0 }
-      else if (pctKeys.includes(k)) { obj[k] = pct(r[1]) }
-      else { obj[k] = parseFloat(r[1]) || 0 }
-    })
-    return Object.keys(obj).length ? { total: obj } : {}
+  if (!monthPairs.length) monthPairs.push({ lg: 2, ss: 3 })
+
+  const data = rows.slice(headerIdx + 1).filter(r => r[0] != null && String(r[0]).trim())
+
+  // 최신 월 데이터가 있는 페어 찾기
+  let bestPair = monthPairs[0]
+  for (let i = monthPairs.length - 1; i >= 0; i--) {
+    if (data.some(r => numVal(r[monthPairs[i].lg]) > 0)) { bestPair = monthPairs[i]; break }
   }
-  if (sheetName === 'products') {
-    const data = rows.filter(r => r[0] && r[0] !== 'id' && !String(r[0]).startsWith('[') && !String(r[0]).startsWith('※') && !String(r[0]).startsWith(' '))
-    if (!data.length) return {}
-    return { productsPartial: data.map(r => ({
-      id: String(r[0]), bu: String(r[1]), kr: String(r[2]),
-      score: pct(r[3]), prev: pct(r[4]),
-      vsComp: pct(r[5]), compName: String(r[6] || ''),
-    })) }
+
+  const lg = {}, samsung = {}
+  data.forEach(r => {
+    const country = String(r[0] || '').replace(/[()]/g, '').trim()
+    const pageType = String(r[1] || '').replace(/[()]/g, '').trim()
+    const lgVal = numVal(r[bestPair.lg])
+    const ssVal = numVal(r[bestPair.ss])
+
+    if (country.toLowerCase() === 'total' || country.toUpperCase() === 'TTL') {
+      const key = /page total|^ttl$/i.test(pageType) ? 'TTL' : pageType
+      lg[key] = lgVal
+      samsung[key] = ssVal
+    }
+  })
+
+  return (lg.TTL || Object.keys(lg).length) ? { dotcom: { lg, samsung } } : {}
+}
+
+function parseCitTouchPoints(rows) {
+  // 헤더: (empty), Country, Channel, Feb, Mar, ... 또는 Country, Channel, Feb, ...
+  const headerIdx = rows.findIndex(r =>
+    r.some(c => { const s = String(c || '').trim().toLowerCase(); return s === 'channel' || s === 'country' })
+  )
+  const header = headerIdx >= 0 ? rows[headerIdx] : []
+  const startRow = (headerIdx >= 0 ? headerIdx : 0) + 1
+
+  // 컬럼 레이아웃
+  let countryCol = -1, channelCol = -1, dataStartCol = 2
+  for (let i = 0; i < header.length; i++) {
+    const s = String(header[i] || '').trim().toLowerCase()
+    if (s === 'country' && countryCol < 0) countryCol = i
+    if (s === 'channel' && channelCol < 0) channelCol = i
   }
-  if (sheetName === 'weekly') {
-    const data = rows.filter(r => r[0] && r[0] !== 'id' && !String(r[0]).startsWith('[') && !String(r[0]).startsWith('※') && !String(r[0]).startsWith(' '))
-    if (!data.length) return {}
-    const weeklyMap = {}
-    data.forEach(r => { weeklyMap[String(r[0])] = [r[2],r[3],r[4],r[5]].map(pct) })
-    return { weeklyMap }
+  if (countryCol >= 0 && channelCol >= 0) {
+    dataStartCol = Math.max(countryCol, channelCol) + 1
+  } else {
+    // 첫 열이 비어있으면 col0=empty, col1=country, col2=channel, col3+=data
+    const firstDataRow = rows[startRow]
+    if (firstDataRow && !String(firstDataRow[0] || '').trim()) {
+      countryCol = 1; channelCol = 2; dataStartCol = 3
+    } else {
+      countryCol = 0; channelCol = 1; dataStartCol = 2
+    }
   }
-  if (sheetName === 'citations') {
-    const data = rows.filter(r => r[0] !== '' && r[0] !== 'rank' && !String(r[0]).startsWith('[') && !String(r[0]).startsWith('※') && !String(r[0]).startsWith(' '))
-    if (!data.length) return {}
-    return { citations: data.map(r => ({
-      rank:     parseInt(r[0])    || 0,
-      source:   String(r[1]      || ''),
-      category: String(r[2]      || ''),
-      score:    parseFloat(String(r[3] || '').replace(/,/g, '')) || 0,
-      delta:    String(r[4] || '-') === '-' ? 0 : parseFloat(r[4]) || 0,
-      ratio:    pct(r[5]),
-    })) }
+
+  const data = rows.slice(startRow).filter(r => r.some(c => c != null && String(c).trim()))
+  const citations = []
+
+  data.forEach(r => {
+    const country = String(r[countryCol] || '').replace(/[()]/g, '').trim().toUpperCase()
+    const channel = String(r[channelCol] || '').replace(/[()]/g, '').trim()
+    if (country !== 'TTL' || channel.toLowerCase() === 'total') return
+
+    // 최신 월 데이터 찾기
+    let score = 0
+    for (let i = r.length - 1; i >= dataStartCol; i--) {
+      const val = numVal(r[i])
+      if (val > 0) { score = val; break }
+    }
+    if (score > 0) citations.push({ source: channel, category: '', score, delta: 0, ratio: 0 })
+  })
+
+  const total = citations.reduce((s, c) => s + c.score, 0)
+  citations.sort((a, b) => b.score - a.score)
+  citations.forEach((c, i) => {
+    c.rank = i + 1
+    c.ratio = total > 0 ? +((c.score / total) * 100).toFixed(1) : 0
+  })
+
+  return citations.length > 0 ? { citations } : {}
+}
+
+function parseCitDomain(rows) {
+  const COUNTRIES = ['US','CA','UK','DE','ES','BR','MX','IN','AU','VN']
+
+  // 헤더/설명 행 건너뛰기 → 도메인 데이터 시작점 찾기
+  let startIdx = 0
+  for (let i = 0; i < Math.min(rows.length, 10); i++) {
+    const c0 = String(rows[i]?.[0] || '').trim()
+    if (c0.includes('.') && c0.length > 3) { startIdx = i; break }
+    if (c0.toLowerCase() === 'domain' || c0 === '' || c0.startsWith('[') || c0.startsWith('※')) {
+      startIdx = i + 1
+    }
   }
-  if (sheetName === 'Products_CNTY') {
-    const data = rows.filter(r =>
-      r[0] && !String(r[0]).startsWith('[') && !String(r[0]).startsWith('※') &&
-      r[0] !== '제품명' && r[0] !== 'key'
-    )
-    if (!data.length) return {}
-    // 시트 컬럼: 제품명(0) | 국가(1) | 자사수치(2) | 1위경쟁사(3) | 경쟁사수치(4) | Gap(5)
-    return { productsCnty: data.map(r => ({
-      product:   String(r[0] || ''),
-      country:   String(r[1] || ''),
-      score:     pct(r[2]),
-      compName:  String(r[3] || ''),
-      compScore: pct(r[4]),
-      gap:       pctGap(r[5]),
-    })) }
+
+  const result = []
+  let currentCnty = 'TTL'
+  let rank = 0
+
+  for (let i = startIdx; i < rows.length; i++) {
+    const r = rows[i]
+    const c0 = String(r[0] || '').trim()
+    const c1 = String(r[1] || '').trim()
+    if (!c0) continue
+
+    // 국가 마커 감지
+    if (COUNTRIES.includes(c0.toUpperCase()) && (!c1 || c1 === '')) {
+      currentCnty = c0.toUpperCase()
+      rank = 0
+      continue
+    }
+
+    if (c0.toLowerCase() === 'domain' || c0.startsWith('[') || c0.startsWith('※')) continue
+
+    const domain = c0
+    const type = c1
+
+    // 최신 월 데이터 찾기
+    let citations = 0
+    for (let j = r.length - 1; j >= 2; j--) {
+      const raw = String(r[j] || '').replace(/,/g, '').trim()
+      if (!raw) continue
+      const val = parseFloat(raw)
+      if (!isNaN(val) && val > 0) { citations = val; break }
+    }
+
+    if (citations > 0) {
+      rank++
+      result.push({ cnty: currentCnty, rank, domain, type, citations })
+    }
   }
-  if (sheetName === 'citations_CNTY') {
-    const data = rows.filter(r =>
-      r[0] && !String(r[0]).startsWith('[') && !String(r[0]).startsWith('※') &&
-      String(r[0]) !== 'CNTY' && String(r[0]) !== 'key'
-    )
-    if (!data.length) return {}
-    return { citationsCnty: data.map(r => ({
-      cnty:     String(r[0] || ''),
-      rank:     parseInt(r[1]) || 0,
-      domain:   String(r[2] || ''),
-      type:     String(r[3] || ''),
-      citations: parseFloat(String(r[4] || '').replace(/,/g, '')) || 0,
-    })) }
-  }
-  if (sheetName === 'dotcom') {
-    // 헤더 행 찾기: "LG_TTL"이 포함된 행
-    const headerIdx = rows.findIndex(r => r.some(cell => String(cell).includes('LG_TTL') || String(cell).includes('TTL')))
-    if (headerIdx < 0) return {}
-    const data = rows.slice(headerIdx + 1).filter(r => r.some(cell => cell !== '' && cell != null && !String(cell).startsWith('[') && !String(cell).startsWith('※')))
-    if (!data.length) return {}
-    const r = data[0]
-    const lg = {}; DOTCOM_LG_COLS.forEach((c, i) => {
-      const raw = String(r[i] ?? '').replace(/,/g, '')
-      lg[c] = parseFloat(raw) || 0
-    })
-    const samsung = {}; DOTCOM_SAM_COLS.forEach((c, i) => {
-      const raw = String(r[DOTCOM_LG_COLS.length + i] ?? '').replace(/,/g, '')
-      samsung[c] = parseFloat(raw) || 0
-    })
-    return { dotcom: { lg, samsung } }
-  }
+
+  return result.length > 0 ? { citationsCnty: result } : {}
+}
+
+// ─── 메인 파서 라우터 ──────────────────────────────────────────────────────────
+export function parseSheetRows(sheetName, rows) {
+  if (sheetName === SHEET_NAMES.meta) return parseMeta(rows)
+
+  if (sheetName === SHEET_NAMES.visSummary) return parseVisSummary(rows)
+
+  if (sheetName === SHEET_NAMES.productMS ||
+      sheetName === SHEET_NAMES.productHS ||
+      sheetName === SHEET_NAMES.productES) return parseProductCnty(rows)
+
+  if (sheetName === SHEET_NAMES.weeklyMS ||
+      sheetName === SHEET_NAMES.weeklyHS ||
+      sheetName === SHEET_NAMES.weeklyES) return parseWeekly(rows)
+
+  if (sheetName === SHEET_NAMES.citPageType) return parseCitPageType(rows)
+
+  if (sheetName === SHEET_NAMES.citTouchPoints) return parseCitTouchPoints(rows)
+
+  if (sheetName === SHEET_NAMES.citDomain) return parseCitDomain(rows)
+
   return {}
 }

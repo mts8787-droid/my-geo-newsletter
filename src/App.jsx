@@ -1054,26 +1054,34 @@ function Sidebar({ meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, total, s
     setGsSyncing(true); setGsStatus(null); setGsMsg('')
     try {
       const parsed = await syncFromGoogleSheets(sheetId, msg => setGsMsg(msg))
-      if (parsed.meta)        setMetaKo(m => ({ ...m, ...parsed.meta }))
-      if (parsed.total)       setTotal(t => ({ ...t, ...parsed.total }))
+      if (parsed.meta)         setMetaKo(m => ({ ...m, ...parsed.meta }))
       if (parsed.citations)    setCitations(parsed.citations)
       if (parsed.dotcom)       setDotcom(d => ({ ...d, ...parsed.dotcom }))
-      setProductsCnty(parsed.productsCnty ?? [])
-      setCitationsCnty(parsed.citationsCnty ?? [])
-      // ★ 핵심: callback form으로 최신 state 기반 업데이트 (stale closure 방지)
-      const mergeProduct = (p, parsed) => {
-        const part   = parsed.productsPartial?.find(x => x.id === p.id)
-        const weekly = parsed.weeklyMap?.[p.id]
-        const next   = { ...p }
-        if (part)   Object.assign(next, part)
-        if (weekly) next.weekly = weekly
-        const ratio = next.vsComp > 0 ? (next.score / next.vsComp) * 100 : 100
-        next.compRatio = Math.round(ratio)
-        next.status = ratio >= 100 ? 'lead' : ratio >= 80 ? 'behind' : 'critical'
-        return next
+      if (parsed.productsCnty) setProductsCnty(parsed.productsCnty)
+      if (parsed.citationsCnty) setCitationsCnty(parsed.citationsCnty)
+      // 제품: productsPartial이 있으면 새로 생성, 없으면 weeklyMap만 병합
+      if (parsed.productsPartial) {
+        const newProducts = parsed.productsPartial.map(p => {
+          const weekly = parsed.weeklyMap?.[p.id] || []
+          const ratio = p.vsComp > 0 ? (p.score / p.vsComp) * 100 : 100
+          return { ...p, weekly, monthly: [], compRatio: Math.round(ratio),
+            status: ratio >= 100 ? 'lead' : ratio >= 80 ? 'behind' : 'critical' }
+        })
+        setProducts(newProducts)
+      } else if (parsed.weeklyMap) {
+        setProducts(prev => prev.map(p => {
+          const weekly = parsed.weeklyMap?.[p.id]
+          return weekly ? { ...p, weekly } : p
+        }))
       }
-      if (parsed.productsPartial || parsed.weeklyMap) {
-        setProducts(prev => prev.map(p => mergeProduct(p, parsed)))
+      // total: visSummary에서 왔으면 사용, 없으면 productsPartial에서 계산
+      if (parsed.total) {
+        setTotal(t => ({ ...t, ...parsed.total }))
+      } else if (parsed.productsPartial && parsed.productsPartial.length > 0) {
+        const pp = parsed.productsPartial
+        const lgAvg = +(pp.reduce((s, p) => s + p.score, 0) / pp.length).toFixed(1)
+        const compAvg = +(pp.reduce((s, p) => s + (p.vsComp || 0), 0) / pp.length).toFixed(1)
+        setTotal(t => ({ ...t, score: lgAvg, vsComp: compAvg, rank: lgAvg >= compAvg ? 1 : 2 }))
       }
       // 서버에 동기화 데이터 저장 (parsed 데이터 직접 사용, stale closure 의존 제거)
       // setProducts callback이 반영된 후 저장되도록 약간의 지연 사용
@@ -2116,18 +2124,18 @@ export default function App() {
       if (d.dotcom)        setDotcom(prev => ({ ...prev, ...d.dotcom }))
       if (d.productsCnty)  setProductsCnty(d.productsCnty)
       if (d.citationsCnty) setCitationsCnty(d.citationsCnty)
-      // productsPartial + weeklyMap 형식 (parsed 원본 저장)
-      if (d.productsPartial || d.weeklyMap) {
+      // productsPartial → 새로 생성, weeklyMap → 병합
+      if (d.productsPartial) {
+        setProducts(d.productsPartial.map(p => {
+          const weekly = d.weeklyMap?.[p.id] || []
+          const ratio = p.vsComp > 0 ? (p.score / p.vsComp) * 100 : 100
+          return { ...p, weekly, monthly: [], compRatio: Math.round(ratio),
+            status: ratio >= 100 ? 'lead' : ratio >= 80 ? 'behind' : 'critical' }
+        }))
+      } else if (d.weeklyMap) {
         setProducts(prev => prev.map(p => {
-          const part   = d.productsPartial?.find(x => x.id === p.id)
           const weekly = d.weeklyMap?.[p.id]
-          const next   = { ...p }
-          if (part)   Object.assign(next, part)
-          if (weekly) next.weekly = weekly
-          const ratio = next.vsComp > 0 ? (next.score / next.vsComp) * 100 : 100
-          next.compRatio = Math.round(ratio)
-          next.status = ratio >= 100 ? 'lead' : ratio >= 80 ? 'behind' : 'critical'
-          return next
+          return weekly ? { ...p, weekly } : p
         }))
       }
     })
