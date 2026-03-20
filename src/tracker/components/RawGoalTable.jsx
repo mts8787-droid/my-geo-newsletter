@@ -1,7 +1,15 @@
 import { MONTHS, STAKEHOLDER_COLORS } from '../utils/constants'
 
-export default function RawGoalTable({ rows, totals, selectedSH }) {
+export default function RawGoalTable({ rows, selectedSH }) {
   const filtered = selectedSH === '전체' ? rows : rows.filter(r => r.stakeholder === selectedSH)
+
+  // 필터된 행 기준으로 합계 계산
+  const computedTotals = {
+    monthly: Object.fromEntries(MONTHS.map(m => [
+      m, filtered.reduce((s, r) => s + (typeof r.monthly?.[m] === 'number' ? r.monthly[m] : 0), 0)
+    ])),
+    annual: filtered.reduce((s, r) => s + (typeof r.annual === 'number' ? r.annual : 0), 0),
+  }
 
   return (
     <div style={{ background: '#fff', border: '1px solid #E2E8F0', borderRadius: 12, overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
@@ -49,19 +57,19 @@ export default function RawGoalTable({ rows, totals, selectedSH }) {
               )
             })}
 
-            {totals && (
+            {filtered.length > 0 && (
               <tr style={{ background: '#F8FAFC', borderTop: '2px solid #CBD5E1' }}>
                 <td style={{ padding: '9px 12px', position: 'sticky', left: 0, zIndex: 10, background: '#F8FAFC', fontWeight: 700, color: '#111827' }} colSpan={3}>합계</td>
                 {MONTHS.map(m => {
-                  const v = totals.monthly?.[m]
+                  const v = computedTotals.monthly[m]
                   return (
                     <td key={m} style={{ padding: '9px 8px', textAlign: 'right', fontVariantNumeric: 'tabular-nums', fontWeight: 700, color: '#111827' }}>
-                      {typeof v === 'number' && v > 0 ? v.toLocaleString() : '\u2014'}
+                      {v > 0 ? v.toLocaleString() : '\u2014'}
                     </td>
                   )
                 })}
                 <td style={{ padding: '9px 12px', textAlign: 'right', fontVariantNumeric: 'tabular-nums', fontWeight: 700, color: '#111827' }}>
-                  {typeof totals.annual === 'number' && totals.annual > 0 ? totals.annual.toLocaleString() : '\u2014'}
+                  {computedTotals.annual > 0 ? computedTotals.annual.toLocaleString() : '\u2014'}
                 </td>
               </tr>
             )}

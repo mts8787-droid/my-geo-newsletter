@@ -268,7 +268,6 @@ export default function App() {
             {data && (
               <RawGoalTable
                 rows={data.quantitativeGoals.rows}
-                totals={data.quantitativeGoals.totals}
                 selectedSH={selectedSH}
               />
             )}
