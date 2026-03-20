@@ -16,7 +16,7 @@ export default function DetailTable({ tasks, month }) {
   return (
     <div style={{ background: '#fff', border: '1px solid #E2E8F0', borderRadius: 12, overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
       <div style={{ padding: '16px 20px', borderBottom: '1px solid #E2E8F0' }}>
-        <h3 style={{ fontSize: 15, fontWeight: 700, color: '#111827', margin: 0, marginBottom: 2 }}>상세 과제 현황</h3>
+        <h3 style={{ fontSize: 15, fontWeight: 700, color: '#111827', margin: 0, marginBottom: 2 }}>정량 과제 현황</h3>
         <p style={{ fontSize: 12, color: '#64748B', margin: 0 }}>{month} 기준 · {tasks.length}개 과제</p>
       </div>
 

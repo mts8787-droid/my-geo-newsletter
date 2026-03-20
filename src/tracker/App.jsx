@@ -5,6 +5,7 @@ import SummaryCards from './components/SummaryCards'
 import PerformanceCharts from './components/PerformanceCharts'
 import StakeholderRanking from './components/StakeholderRanking'
 import DetailTable from './components/DetailTable'
+import QualitativeTable from './components/QualitativeTable'
 import RawGoalTable from './components/RawGoalTable'
 import { MONTHS } from './utils/constants'
 
@@ -264,6 +265,15 @@ export default function App() {
               tasks={dashboard.tasks}
               month={selectedMonth}
             />
+
+            {data && (
+              <QualitativeTable
+                goals={data.qualitativeGoals.rows}
+                results={data.qualitativeResults.rows}
+                selectedSH={selectedSH}
+                month={selectedMonth}
+              />
+            )}
 
             {data && (
               <RawGoalTable
