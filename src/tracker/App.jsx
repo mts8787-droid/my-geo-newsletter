@@ -68,10 +68,14 @@ export default function App() {
               <KPITable
                 title="표4. 정성과제 목표"
                 rows={data.qualitativeGoals.rows}
+                showMonthly
+                isQualitative
               />
               <KPITable
                 title="표5. 정성과제 달성여부"
                 rows={data.qualitativeResults.rows}
+                showMonthly
+                isQualitative
               />
             </section>
           </>

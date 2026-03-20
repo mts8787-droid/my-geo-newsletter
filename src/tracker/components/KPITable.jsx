@@ -23,7 +23,7 @@ function StakeholderBadge({ name }) {
   )
 }
 
-export default function KPITable({ title, rows, totals, showMonthly = false }) {
+export default function KPITable({ title, rows, totals, showMonthly = false, isQualitative = false }) {
   if (!rows || rows.length === 0) return null
 
   return (
@@ -47,11 +47,13 @@ export default function KPITable({ title, rows, totals, showMonthly = false }) {
               <th className="px-3 py-2.5 text-left min-w-[200px]">목표 상세</th>
               {showMonthly && (
                 <>
-                  <th className="px-3 py-2.5 text-right min-w-[70px] bg-slate-700/20 border-l border-slate-700/30">
-                    연간
-                  </th>
+                  {!isQualitative && (
+                    <th className="px-3 py-2.5 text-right min-w-[70px] bg-slate-700/20 border-l border-slate-700/30">
+                      연간
+                    </th>
+                  )}
                   {MONTHS.map(m => (
-                    <th key={m} className="px-3 py-2.5 text-right min-w-[55px]">{m}</th>
+                    <th key={m} className={`px-3 py-2.5 text-right min-w-[55px] ${isQualitative ? 'min-w-[80px]' : ''}`}>{m}</th>
                   ))}
                 </>
               )}
@@ -70,12 +72,14 @@ export default function KPITable({ title, rows, totals, showMonthly = false }) {
                 </td>
                 {showMonthly && (
                   <>
-                    <td className="px-3 py-2 text-right font-semibold text-slate-200 bg-slate-800/10 border-l border-slate-700/20">
-                      {formatCell(row.annual)}
-                    </td>
+                    {!isQualitative && (
+                      <td className="px-3 py-2 text-right font-semibold text-slate-200 bg-slate-800/10 border-l border-slate-700/20">
+                        {formatCell(row.annual)}
+                      </td>
+                    )}
                     {MONTHS.map(m => (
                       <td key={m} className="px-3 py-2 text-right text-slate-300">
-                        {formatCell(row.monthly[m])}
+                        {formatCell(row.monthly?.[m])}
                       </td>
                     ))}
                   </>

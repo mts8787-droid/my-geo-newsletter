@@ -444,6 +444,20 @@ app.get('/api/publish-dashboard', (req, res) => {
   res.json({ published: ko && en, ko, en, ...(meta || {}), urls: { ko: `/p/${DASH_KO_SLUG}`, en: `/p/${DASH_EN_SLUG}` } })
 })
 
+// ─── Publish History (Newsletter + Dashboard 통합 조회) ──────────────────────
+app.get('/api/publish-history', (req, res) => {
+  const newsletter = readPubMeta()
+  const dashboard = readDashMeta()
+  const nlKo = existsSync(join(PUB_DIR, `${KO_SLUG}.html`))
+  const nlEn = existsSync(join(PUB_DIR, `${EN_SLUG}.html`))
+  const dashKo = existsSync(join(PUB_DIR, `${DASH_KO_SLUG}.html`))
+  const dashEn = existsSync(join(PUB_DIR, `${DASH_EN_SLUG}.html`))
+  res.json({
+    newsletter: newsletter ? { ...newsletter, published: nlKo && nlEn, urls: { ko: `/p/${KO_SLUG}`, en: `/p/${EN_SLUG}` } } : null,
+    dashboard: dashboard ? { ...dashboard, published: dashKo && dashEn, urls: { ko: `/p/${DASH_KO_SLUG}`, en: `/p/${DASH_EN_SLUG}` } } : null,
+  })
+})
+
 app.delete('/api/publish-dashboard', (req, res) => {
   try { unlinkSync(join(PUB_DIR, `${DASH_KO_SLUG}.html`)) } catch {}
   try { unlinkSync(join(PUB_DIR, `${DASH_EN_SLUG}.html`)) } catch {}
