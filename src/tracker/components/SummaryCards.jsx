@@ -50,6 +50,27 @@ export default function SummaryCards({ avgRate, cumulativeActual, cumulativeGoal
           </div>
         </div>
 
+        {/* 연간 진척률 — 누적 달성률 기반 신호등 */}
+        {(() => {
+          const cs = statusOf(cumRate)
+          return (
+            <div className="rounded-xl p-5" style={{ background: cs.bg, border: `1px solid ${cs.border}` }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                <span style={{ fontSize: 15, fontWeight: 700, color: '#111827' }}>연간 진척률</span>
+                <span style={{ width: 12, height: 12, borderRadius: '50%', background: cs.dot, display: 'inline-block', boxShadow: `0 0 6px ${cs.dot}55` }} />
+              </div>
+              <div className="flex items-baseline gap-1">
+                <span className="text-3xl font-black" style={{ color: cs.text }}>{progressPct.toFixed(1)}</span>
+                <span style={{ fontSize: 16, color: '#94A3B8' }}>%</span>
+              </div>
+              <div style={{ marginTop: 8, height: 6, background: 'rgba(255,255,255,0.6)', borderRadius: 3, overflow: 'hidden' }}>
+                <div style={{ height: '100%', borderRadius: 3, background: cs.bar, width: `${progressPct}%`, transition: 'width 0.5s' }} />
+              </div>
+              <p style={{ fontSize: 12, color: '#64748B', marginTop: 4 }}>{fmt(cumulativeActual)} / {fmt(annualTarget)} · 누적 달성률 {cumRate.toFixed(1)}%</p>
+            </div>
+          )
+        })()}
+
         {/* 누적 실적 / 목표 */}
         <div className="rounded-xl p-5" style={{ background: '#fff', border: '1px solid #E2E8F0' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
@@ -63,24 +84,6 @@ export default function SummaryCards({ avgRate, cumulativeActual, cumulativeGoal
             <span style={{ fontSize: 14, color: '#94A3B8' }}>/ {fmt(cumulativeGoal)}</span>
           </div>
           <p style={{ fontSize: 12, color: '#64748B', marginTop: 4 }}>~{month} 누적 달성률 {cumRate.toFixed(1)}%</p>
-        </div>
-
-        {/* 연간 진척률 */}
-        <div className="rounded-xl p-5" style={{ background: '#fff', border: '1px solid #E2E8F0' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-            <span style={{ fontSize: 15, fontWeight: 700, color: '#111827' }}>연간 진척률</span>
-            <div style={{ width: 28, height: 28, borderRadius: 8, background: '#F5F3FF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Target size={14} color="#7C3AED" />
-            </div>
-          </div>
-          <div className="flex items-baseline gap-1">
-            <span className="text-3xl font-black" style={{ color: '#6D28D9' }}>{progressPct.toFixed(1)}</span>
-            <span style={{ fontSize: 16, color: '#94A3B8' }}>%</span>
-          </div>
-          <div style={{ marginTop: 8, height: 6, background: '#F1F5F9', borderRadius: 3, overflow: 'hidden' }}>
-            <div style={{ height: '100%', borderRadius: 3, background: '#7C3AED', width: `${progressPct}%`, transition: 'width 0.5s' }} />
-          </div>
-          <p style={{ fontSize: 12, color: '#64748B', marginTop: 4 }}>{fmt(cumulativeActual)} / {fmt(annualTarget)}</p>
         </div>
 
         {/* 주의 필요 과제 */}
