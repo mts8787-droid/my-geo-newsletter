@@ -246,6 +246,7 @@ export default function App() {
               warningCount={dashboard.warningCount}
               annualTarget={dashboard.annualTarget}
               month={selectedMonth}
+              selectedSH={selectedSH}
             />
 
             <PerformanceCharts

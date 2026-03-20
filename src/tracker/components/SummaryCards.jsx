@@ -1,92 +1,110 @@
 import { TrendingUp, AlertTriangle, BarChart3, Target } from 'lucide-react'
+import { STAKEHOLDER_COLORS } from '../utils/constants'
 
 function fmt(n) { return Number(n).toLocaleString('en-US') }
 
 function statusOf(rate) {
-  if (rate >= 100) return { text: '#15803D', bg: '#ECFDF5', border: '#A7F3D0', bar: '#22C55E' }
-  if (rate >= 80)  return { text: '#B45309', bg: '#FFFBEB', border: '#FDE68A', bar: '#F59E0B' }
-  return { text: '#BE123C', bg: '#FFF1F2', border: '#FECDD3', bar: '#EF4444' }
+  if (rate >= 100) return { text: '#15803D', bg: '#ECFDF5', border: '#A7F3D0', bar: '#22C55E', label: '달성', dot: '#22C55E' }
+  if (rate >= 80)  return { text: '#B45309', bg: '#FFFBEB', border: '#FDE68A', bar: '#F59E0B', label: '추격', dot: '#F59E0B' }
+  return { text: '#BE123C', bg: '#FFF1F2', border: '#FECDD3', bar: '#EF4444', label: '취약', dot: '#EF4444' }
 }
 
-export default function SummaryCards({ avgRate, cumulativeActual, cumulativeGoal, warningCount, annualTarget, month }) {
+export default function SummaryCards({ avgRate, cumulativeActual, cumulativeGoal, warningCount, annualTarget, month, selectedSH }) {
   const s = statusOf(avgRate)
   const progressPct = annualTarget > 0 ? Math.min((cumulativeActual / annualTarget) * 100, 100) : 0
   const cumRate = cumulativeGoal > 0 ? (cumulativeActual / cumulativeGoal) * 100 : 0
+  const shColor = selectedSH !== '전체' ? (STAKEHOLDER_COLORS[selectedSH] || '#64748B') : null
+  const shLabel = selectedSH !== '전체' ? selectedSH : null
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-      {/* 종합 달성률 */}
-      <div className="rounded-xl p-5" style={{ background: s.bg, border: `1px solid ${s.border}` }}>
-        <div className="flex items-center justify-between mb-3">
-          <span className="text-xs font-semibold text-[#475569] uppercase tracking-wider">{month} 종합 달성률</span>
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: s.border + '60' }}>
-            <TrendingUp size={16} style={{ color: s.text }} />
-          </div>
-        </div>
-        <div className="flex items-baseline gap-1">
-          <span className="text-3xl font-black" style={{ color: s.text }}>{avgRate.toFixed(1)}</span>
-          <span className="text-base text-[#94A3B8]">%</span>
-        </div>
-        <div className="mt-2 h-1.5 bg-white/60 rounded-full overflow-hidden">
-          <div className="h-full rounded-full transition-all duration-500" style={{ width: `${Math.min(avgRate, 100)}%`, background: s.bar }} />
+    <div>
+      {/* Stakeholder indicator + Traffic light status bar */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+        {shLabel ? (
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 12px', borderRadius: 6, fontSize: 13, fontWeight: 700, background: shColor + '18', color: shColor, border: `1px solid ${shColor}30` }}>
+            {shLabel}
+          </span>
+        ) : (
+          <span style={{ fontSize: 13, fontWeight: 600, color: '#64748B' }}>전체 Stakeholders</span>
+        )}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span style={{ width: 14, height: 14, borderRadius: '50%', background: s.dot, display: 'inline-block', boxShadow: `0 0 8px ${s.dot}55` }} />
+          <span style={{ fontSize: 13, fontWeight: 800, color: s.text }}>{s.label}</span>
+          <span style={{ fontSize: 13, color: '#64748B' }}>({avgRate.toFixed(1)}%)</span>
         </div>
       </div>
 
-      {/* 누적 실적 / 목표 */}
-      <div className="rounded-xl p-5" style={{ background: '#FFFFFF', border: '1px solid #E2E8F0' }}>
-        <div className="flex items-center justify-between mb-3">
-          <span className="text-xs font-semibold text-[#475569] uppercase tracking-wider">누적 실적 / 목표</span>
-          <div className="w-8 h-8 rounded-lg bg-[#EFF6FF] flex items-center justify-center">
-            <BarChart3 size={16} className="text-[#3B82F6]" />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* 종합 달성률 */}
+        <div className="rounded-xl p-5" style={{ background: s.bg, border: `1px solid ${s.border}` }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+            <span style={{ fontSize: 13, fontWeight: 700, color: '#111827' }}>{month} 종합 달성률</span>
+            <span style={{ width: 12, height: 12, borderRadius: '50%', background: s.dot, display: 'inline-block', boxShadow: `0 0 6px ${s.dot}55` }} />
+          </div>
+          <div className="flex items-baseline gap-1">
+            <span className="text-3xl font-black" style={{ color: s.text }}>{avgRate.toFixed(1)}</span>
+            <span style={{ fontSize: 16, color: '#94A3B8' }}>%</span>
+          </div>
+          <div style={{ marginTop: 8, height: 6, background: 'rgba(255,255,255,0.6)', borderRadius: 3, overflow: 'hidden' }}>
+            <div style={{ height: '100%', borderRadius: 3, width: `${Math.min(avgRate, 100)}%`, background: s.bar, transition: 'width 0.5s' }} />
           </div>
         </div>
-        <div className="flex items-baseline gap-1">
-          <span className="text-3xl font-black text-[#1E40AF]">{fmt(cumulativeActual)}</span>
-          <span className="text-sm text-[#94A3B8]">/ {fmt(cumulativeGoal)}</span>
-        </div>
-        <p className="text-xs text-[#64748B] mt-1">~{month} 누적 달성률 {cumRate.toFixed(1)}%</p>
-      </div>
 
-      {/* 연간 진척률 */}
-      <div className="rounded-xl p-5" style={{ background: '#FFFFFF', border: '1px solid #E2E8F0' }}>
-        <div className="flex items-center justify-between mb-3">
-          <span className="text-xs font-semibold text-[#475569] uppercase tracking-wider">연간 진척률</span>
-          <div className="w-8 h-8 rounded-lg bg-[#F5F3FF] flex items-center justify-center">
-            <Target size={16} className="text-[#7C3AED]" />
+        {/* 누적 실적 / 목표 */}
+        <div className="rounded-xl p-5" style={{ background: '#fff', border: '1px solid #E2E8F0' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+            <span style={{ fontSize: 13, fontWeight: 700, color: '#111827' }}>누적 실적 / 목표</span>
+            <div style={{ width: 28, height: 28, borderRadius: 8, background: '#EFF6FF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <BarChart3 size={14} color="#3B82F6" />
+            </div>
           </div>
+          <div className="flex items-baseline gap-1">
+            <span className="text-3xl font-black" style={{ color: '#1E40AF' }}>{fmt(cumulativeActual)}</span>
+            <span style={{ fontSize: 14, color: '#94A3B8' }}>/ {fmt(cumulativeGoal)}</span>
+          </div>
+          <p style={{ fontSize: 12, color: '#64748B', marginTop: 4 }}>~{month} 누적 달성률 {cumRate.toFixed(1)}%</p>
         </div>
-        <div className="flex items-baseline gap-1">
-          <span className="text-3xl font-black text-[#6D28D9]">{progressPct.toFixed(1)}</span>
-          <span className="text-base text-[#94A3B8]">%</span>
-        </div>
-        <div className="mt-2 h-1.5 bg-[#F1F5F9] rounded-full overflow-hidden">
-          <div className="h-full rounded-full bg-[#7C3AED] transition-all duration-500" style={{ width: `${progressPct}%` }} />
-        </div>
-        <p className="text-xs text-[#64748B] mt-1">{fmt(cumulativeActual)} / {fmt(annualTarget)}</p>
-      </div>
 
-      {/* 주의 필요 과제 */}
-      {(() => {
-        const w = warningCount > 0
-        return (
-          <div className="rounded-xl p-5" style={{
-            background: w ? '#FFF1F2' : '#ECFDF5',
-            border: `1px solid ${w ? '#FECDD3' : '#A7F3D0'}`,
-          }}>
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-semibold text-[#475569] uppercase tracking-wider">주의 필요 과제</span>
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: w ? '#FECDD360' : '#A7F3D060' }}>
-                <AlertTriangle size={16} style={{ color: w ? '#BE123C' : '#15803D' }} />
+        {/* 연간 진척률 */}
+        <div className="rounded-xl p-5" style={{ background: '#fff', border: '1px solid #E2E8F0' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+            <span style={{ fontSize: 13, fontWeight: 700, color: '#111827' }}>연간 진척률</span>
+            <div style={{ width: 28, height: 28, borderRadius: 8, background: '#F5F3FF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Target size={14} color="#7C3AED" />
+            </div>
+          </div>
+          <div className="flex items-baseline gap-1">
+            <span className="text-3xl font-black" style={{ color: '#6D28D9' }}>{progressPct.toFixed(1)}</span>
+            <span style={{ fontSize: 16, color: '#94A3B8' }}>%</span>
+          </div>
+          <div style={{ marginTop: 8, height: 6, background: '#F1F5F9', borderRadius: 3, overflow: 'hidden' }}>
+            <div style={{ height: '100%', borderRadius: 3, background: '#7C3AED', width: `${progressPct}%`, transition: 'width 0.5s' }} />
+          </div>
+          <p style={{ fontSize: 12, color: '#64748B', marginTop: 4 }}>{fmt(cumulativeActual)} / {fmt(annualTarget)}</p>
+        </div>
+
+        {/* 주의 필요 과제 */}
+        {(() => {
+          const w = warningCount > 0
+          const wDot = w ? '#EF4444' : '#22C55E'
+          return (
+            <div className="rounded-xl p-5" style={{
+              background: w ? '#FFF1F2' : '#ECFDF5',
+              border: `1px solid ${w ? '#FECDD3' : '#A7F3D0'}`,
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                <span style={{ fontSize: 13, fontWeight: 700, color: '#111827' }}>주의 필요 과제</span>
+                <span style={{ width: 12, height: 12, borderRadius: '50%', background: wDot, display: 'inline-block', boxShadow: `0 0 6px ${wDot}55` }} />
               </div>
+              <div className="flex items-baseline gap-1">
+                <span className="text-3xl font-black" style={{ color: w ? '#BE123C' : '#15803D' }}>{warningCount}</span>
+                <span style={{ fontSize: 14, color: '#94A3B8' }}>건</span>
+              </div>
+              <p style={{ fontSize: 12, color: '#64748B', marginTop: 4 }}>달성률 80% 미만</p>
             </div>
-            <div className="flex items-baseline gap-1">
-              <span className="text-3xl font-black" style={{ color: w ? '#BE123C' : '#15803D' }}>{warningCount}</span>
-              <span className="text-sm text-[#94A3B8]">건</span>
-            </div>
-            <p className="text-xs text-[#64748B] mt-1">달성률 80% 미만</p>
-          </div>
-        )
-      })()}
+          )
+        })()}
+      </div>
     </div>
   )
 }
