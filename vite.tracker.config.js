@@ -4,7 +4,20 @@ import { resolve } from 'path'
 
 export default defineConfig({
   base: '/admin/progress-tracker/',
-  plugins: [react()],
+  plugins: [
+    react(),
+    {
+      name: 'serve-tracker-html',
+      configureServer(server) {
+        server.middlewares.use((req, _res, next) => {
+          if (req.url === '/admin/progress-tracker/' || req.url === '/admin/progress-tracker') {
+            req.url = '/tracker.html'
+          }
+          next()
+        })
+      },
+    },
+  ],
   build: {
     outDir: 'dist-tracker',
     emptyOutDir: true,
