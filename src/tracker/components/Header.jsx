@@ -12,7 +12,7 @@ export default function Header({
         {/* Left: title */}
         <div className="flex items-center gap-3">
           <span className="w-2 h-6 rounded-full bg-[#CF0652]" />
-          <h1 className="text-lg font-bold text-gray-900 tracking-tight">GEO KPI Tracker</h1>
+          <h1 className="text-lg font-bold text-black tracking-tight">Stakeholders별 Action Item Progress Tracker</h1>
           {isPublic
             ? <span className="text-xs text-emerald-600 font-medium ml-1 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">Published</span>
             : <span className="text-xs text-gray-400 font-medium ml-1">Admin</span>

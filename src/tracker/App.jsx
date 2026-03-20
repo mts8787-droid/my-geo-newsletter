@@ -70,13 +70,16 @@ function computeDashboard(data, month, stakeholderFilter) {
     actual: tasks.reduce((s, t) => s + (typeof t.actualMonthly?.[m] === 'number' ? t.actualMonthly[m] : 0), 0),
   }))
 
-  // 누적 진척 (해당 월까지만)
+  // 누적 진척 — 목표는 12월까지, 실적은 해당 월까지만
   let cumA = 0, cumG = 0
-  const cumulative = MONTHS.slice(0, monthIdx + 1).map(m => {
+  const cumulative = MONTHS.map((m, idx) => {
     const mt = monthlyTotals.find(t => t.month === m)
-    cumA += mt?.actual || 0
     cumG += mt?.goal || 0
-    return { month: m, cumActual: cumA, cumGoal: cumG }
+    if (idx <= monthIdx) {
+      cumA += mt?.actual || 0
+      return { month: m, cumActual: cumA, cumGoal: cumG }
+    }
+    return { month: m, cumActual: null, cumGoal: cumG }
   })
 
   const annualTarget = tasks.reduce((s, t) => s + t.goalAnnual, 0)

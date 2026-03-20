@@ -27,10 +27,10 @@ function fmtRate(rate) {
 
 export default function DetailTable({ tasks, month }) {
   return (
-    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
-      <div className="px-5 py-4 border-b border-gray-200">
-        <h3 className="text-lg font-bold text-gray-900">상세 과제 현황</h3>
-        <p className="text-sm text-gray-400 mt-0.5">{month} 기준 · {tasks.length}개 과제</p>
+    <div className="bg-white rounded-xl border border-[#E8EDF2] overflow-hidden shadow-sm">
+      <div className="px-5 py-4 border-b border-[#E8EDF2]">
+        <h3 className="text-lg font-bold text-black">상세 과제 현황</h3>
+        <p className="text-sm text-[#64748B] mt-0.5">{month} 기준 · {tasks.length}개 과제</p>
       </div>
 
       <div className="overflow-x-auto">

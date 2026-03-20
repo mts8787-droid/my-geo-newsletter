@@ -4,10 +4,10 @@ export default function RawGoalTable({ rows, totals, selectedSH }) {
   const filtered = selectedSH === '전체' ? rows : rows.filter(r => r.stakeholder === selectedSH)
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
-      <div className="px-5 py-4 border-b border-gray-200">
-        <h3 className="text-lg font-bold text-gray-900">스테이크홀더별 월간 목표 원본 데이터</h3>
-        <p className="text-sm text-gray-400 mt-0.5">표1 — 정량 목표 · {filtered.length}건</p>
+    <div className="bg-white rounded-xl border border-[#E8EDF2] overflow-hidden shadow-sm">
+      <div className="px-5 py-4 border-b border-[#E8EDF2]">
+        <h3 className="text-lg font-bold text-black">Stakeholders별 월간 목표 원본 데이터</h3>
+        <p className="text-sm text-[#64748B] mt-0.5">표1 — 정량 목표 · {filtered.length}건</p>
       </div>
 
       <div className="overflow-x-auto">
