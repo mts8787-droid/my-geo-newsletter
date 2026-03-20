@@ -12,15 +12,23 @@ function TrafficLight({ rate }) {
   return <span className="w-3.5 h-3.5 rounded-full inline-block flex-shrink-0" style={{ background: s.dot, boxShadow: `0 0 6px ${s.dot}66` }} />
 }
 
-export default function StakeholderRanking({ stakeholders, month }) {
-  const maxRate = Math.max(...stakeholders.map(s => Math.max(s.monthRate, s.cumRate)), 100)
+function fmt(n) { return Number(n).toLocaleString('en-US') }
+
+export default function StakeholderRanking({ stakeholders, month, selectedSH }) {
+  const filtered = selectedSH === '전체' ? stakeholders : stakeholders.filter(s => s.name === selectedSH)
+  const totalWarnings = filtered.reduce((s, sh) => s + sh.warnings, 0)
+  const maxRate = Math.max(...filtered.map(s => Math.max(s.monthRate, s.cumRate)), 100)
 
   return (
     <div className="bg-white rounded-xl border border-[#E8EDF2] overflow-hidden shadow-sm">
       <div className="px-5 py-4 border-b border-[#E8EDF2] flex items-center justify-between">
-        <div>
+        <div className="flex items-center gap-3">
           <h3 className="text-lg font-bold text-black">Stakeholders별 달성률</h3>
-          <p className="text-sm text-[#64748B] mt-0.5">{month} 기준</p>
+          {totalWarnings > 0 && (
+            <span className="text-sm font-bold text-[#BE123C] bg-[#FFF1F2] border border-[#FECDD3] px-2 py-0.5 rounded">
+              미달성 과제 {totalWarnings}건
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-4 text-xs text-[#64748B]">
           <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full" style={{ background: '#22C55E' }} /> ≥100%</span>
@@ -36,7 +44,7 @@ export default function StakeholderRanking({ stakeholders, month }) {
       </div>
 
       <div className="px-5 pb-5 space-y-3">
-        {stakeholders.map(sh => {
+        {filtered.map(sh => {
           const color = STAKEHOLDER_COLORS[sh.name] || '#94A3B8'
           const mSt = statusStyle(sh.monthRate)
           const cSt = statusStyle(sh.cumRate)
@@ -45,7 +53,7 @@ export default function StakeholderRanking({ stakeholders, month }) {
 
           return (
             <div key={sh.name}>
-              {/* Stakeholder name + traffic lights */}
+              {/* Stakeholder name + traffic light */}
               <div className="flex items-center gap-2 mb-1.5">
                 <span
                   className="inline-block px-2.5 py-0.5 rounded text-sm font-bold whitespace-nowrap"
@@ -62,42 +70,56 @@ export default function StakeholderRanking({ stakeholders, month }) {
               {/* Dual bar: left = month, right = cumulative */}
               <div className="grid grid-cols-2 gap-4">
                 {/* Month rate */}
-                <div className="flex items-center gap-2">
-                  <div className="flex-1 h-7 bg-[#F1F5F9] rounded-md overflow-hidden relative">
-                    <div
-                      className="h-full rounded-md transition-all duration-700 ease-out"
-                      style={{ width: `${monthBarW}%`, background: mSt.dot }}
-                    />
-                    <div
-                      className="absolute top-0 h-full w-px bg-[#CBD5E1]"
-                      style={{ left: `${Math.min(100 / maxRate * 100, 100)}%` }}
-                    />
+                <div>
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1 h-7 bg-[#F1F5F9] rounded-md overflow-hidden relative">
+                      <div
+                        className="h-full rounded-md transition-all duration-700 ease-out"
+                        style={{ width: `${monthBarW}%`, background: mSt.dot }}
+                      />
+                      <div
+                        className="absolute top-0 h-full w-px bg-[#CBD5E1]"
+                        style={{ left: `${Math.min(100 / maxRate * 100, 100)}%` }}
+                      />
+                    </div>
+                    <span className="text-base font-black tabular-nums min-w-[60px] text-right" style={{ color: mSt.color }}>
+                      {sh.monthRate.toFixed(1)}%
+                    </span>
                   </div>
-                  <span className="text-base font-black tabular-nums min-w-[60px] text-right" style={{ color: mSt.color }}>
-                    {sh.monthRate.toFixed(1)}%
-                  </span>
+                  <p className="text-xs text-[#94A3B8] mt-0.5 text-right pr-[68px]">
+                    실적 {fmt(sh.monthActual)} / 목표 {fmt(sh.monthGoal)}
+                  </p>
                 </div>
 
                 {/* Cumulative rate */}
-                <div className="flex items-center gap-2">
-                  <div className="flex-1 h-7 bg-[#F1F5F9] rounded-md overflow-hidden relative">
-                    <div
-                      className="h-full rounded-md transition-all duration-700 ease-out"
-                      style={{ width: `${cumBarW}%`, background: cSt.dot }}
-                    />
-                    <div
-                      className="absolute top-0 h-full w-px bg-[#CBD5E1]"
-                      style={{ left: `${Math.min(100 / maxRate * 100, 100)}%` }}
-                    />
+                <div>
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1 h-7 bg-[#F1F5F9] rounded-md overflow-hidden relative">
+                      <div
+                        className="h-full rounded-md transition-all duration-700 ease-out"
+                        style={{ width: `${cumBarW}%`, background: cSt.dot }}
+                      />
+                      <div
+                        className="absolute top-0 h-full w-px bg-[#CBD5E1]"
+                        style={{ left: `${Math.min(100 / maxRate * 100, 100)}%` }}
+                      />
+                    </div>
+                    <span className="text-base font-black tabular-nums min-w-[60px] text-right" style={{ color: cSt.color }}>
+                      {sh.cumRate.toFixed(1)}%
+                    </span>
                   </div>
-                  <span className="text-base font-black tabular-nums min-w-[60px] text-right" style={{ color: cSt.color }}>
-                    {sh.cumRate.toFixed(1)}%
-                  </span>
+                  <p className="text-xs text-[#94A3B8] mt-0.5 text-right pr-[68px]">
+                    실적 {fmt(sh.cumActual)} / 목표 {fmt(sh.cumGoal)}
+                  </p>
                 </div>
               </div>
             </div>
           )
         })}
+
+        {filtered.length === 0 && (
+          <p className="text-center text-[#94A3B8] py-4">해당 스테이크홀더가 없습니다.</p>
+        )}
       </div>
     </div>
   )

@@ -6,8 +6,7 @@ export default function RawGoalTable({ rows, totals, selectedSH }) {
   return (
     <div className="bg-white rounded-xl border border-[#E8EDF2] overflow-hidden shadow-sm">
       <div className="px-5 py-4 border-b border-[#E8EDF2]">
-        <h3 className="text-lg font-bold text-black">Stakeholders별 월간 목표 원본 데이터</h3>
-        <p className="text-sm text-[#64748B] mt-0.5">표1 — 정량 목표 · {filtered.length}건</p>
+        <h3 className="text-lg font-bold text-black">[참고] Stakeholders별 월간 목표 원본 데이터</h3>
       </div>
 
       <div className="overflow-x-auto">

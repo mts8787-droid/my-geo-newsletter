@@ -101,6 +101,15 @@ function computeDashboard(data, month, stakeholderFilter) {
     const shRates = shTasks.map(t => t.rate).filter(r => r !== null)
     const monthAvg = shRates.length ? shRates.reduce((s, r) => s + r, 0) / shRates.length : 0
 
+    // 해당 월 실적/목표 합계
+    let monthAct = 0, monthGoalSh = 0
+    shTasks.forEach(t => {
+      const av = t.actualMonthly?.[month]
+      const gv = t.goalMonthly?.[month]
+      if (typeof av === 'number') monthAct += av
+      if (typeof gv === 'number') monthGoalSh += gv
+    })
+
     let cumAct = 0, cumGoalSh = 0
     shTasks.forEach(t => {
       for (let i = 0; i <= monthIdx; i++) {
@@ -117,6 +126,10 @@ function computeDashboard(data, month, stakeholderFilter) {
       name: sh,
       monthRate: Math.round(monthAvg * 10) / 10,
       cumRate: Math.round(cumRate * 10) / 10,
+      monthActual: monthAct,
+      monthGoal: monthGoalSh,
+      cumActual: cumAct,
+      cumGoal: cumGoalSh,
       taskCount: shTasks.length,
       warnings: shRates.filter(r => r < 80).length,
     }
@@ -244,6 +257,7 @@ export default function App() {
             <StakeholderRanking
               stakeholders={dashboard.stakeholders}
               month={selectedMonth}
+              selectedSH={selectedSH}
             />
 
             <DetailTable
