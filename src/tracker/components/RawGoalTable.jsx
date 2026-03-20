@@ -14,7 +14,7 @@ export default function RawGoalTable({ rows, selectedSH }) {
   return (
     <div style={{ background: '#fff', border: '1px solid #E2E8F0', borderRadius: 12, overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
       <div style={{ padding: '16px 20px', borderBottom: '1px solid #E2E8F0' }}>
-        <h3 style={{ fontSize: 15, fontWeight: 700, color: '#111827', margin: 0 }}>[참고] Stakeholders별 월간 목표 원본 데이터</h3>
+        <span style={{ display: 'inline-block', width: 3, height: 16, borderRadius: 8, background: '#CF0652', marginRight: 8, verticalAlign: 'middle' }} /><h3 style={{ display: 'inline', fontSize: 15, fontWeight: 700, color: '#111827', margin: 0 }}>[참고] Stakeholders별 월간 목표 원본 데이터</h3>
       </div>
 
       <div className="overflow-x-auto">

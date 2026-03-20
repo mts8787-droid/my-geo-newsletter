@@ -18,7 +18,7 @@ export default function StakeholderRanking({ stakeholders, month, selectedSH }) 
       {/* Header */}
       <div style={{ padding: '16px 20px', borderBottom: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <h3 style={{ fontSize: 15, fontWeight: 700, color: '#111827', margin: 0 }}>Stakeholders별 달성률</h3>
+          <span style={{ display: 'inline-block', width: 3, height: 16, borderRadius: 8, background: '#CF0652', marginRight: 8, verticalAlign: 'middle' }} /><h3 style={{ display: 'inline', fontSize: 15, fontWeight: 700, color: '#111827', margin: 0 }}>Stakeholders별 달성률</h3>
           {totalWarnings > 0 && (
             <span style={{ fontSize: 12, fontWeight: 700, color: '#BE123C', background: '#FFF1F2', border: '1px solid #FECDD3', padding: '2px 8px', borderRadius: 4 }}>
               미달성 과제 {totalWarnings}건

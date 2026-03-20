@@ -38,7 +38,7 @@ export default function SummaryCards({ avgRate, cumulativeActual, cumulativeGoal
         {/* 종합 달성률 */}
         <div className="rounded-xl p-5" style={{ background: s.bg, border: `1px solid ${s.border}` }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-            <span style={{ fontSize: 15, fontWeight: 700, color: '#111827' }}>{month} 종합 달성률</span>
+            <span style={{ width: 3, height: 14, borderRadius: 8, background: '#CF0652', flexShrink: 0, display: 'inline-block' }} /><span style={{ fontSize: 15, fontWeight: 700, color: '#111827', marginLeft: 6 }}>{month} 종합 달성률</span>
             <span style={{ width: 12, height: 12, borderRadius: '50%', background: s.dot, display: 'inline-block', boxShadow: `0 0 6px ${s.dot}55` }} />
           </div>
           <div className="flex items-baseline gap-1">
@@ -53,7 +53,7 @@ export default function SummaryCards({ avgRate, cumulativeActual, cumulativeGoal
         {/* 누적 실적 / 목표 */}
         <div className="rounded-xl p-5" style={{ background: '#fff', border: '1px solid #E2E8F0' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-            <span style={{ fontSize: 15, fontWeight: 700, color: '#111827' }}>누적 실적 / 목표</span>
+            <span style={{ width: 3, height: 14, borderRadius: 8, background: '#CF0652', flexShrink: 0, display: 'inline-block' }} /><span style={{ fontSize: 15, fontWeight: 700, color: '#111827', marginLeft: 6 }}>누적 실적 / 목표</span>
             <div style={{ width: 28, height: 28, borderRadius: 8, background: '#EFF6FF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <BarChart3 size={14} color="#3B82F6" />
             </div>
@@ -68,7 +68,7 @@ export default function SummaryCards({ avgRate, cumulativeActual, cumulativeGoal
         {/* 연간 진척률 */}
         <div className="rounded-xl p-5" style={{ background: '#fff', border: '1px solid #E2E8F0' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-            <span style={{ fontSize: 15, fontWeight: 700, color: '#111827' }}>연간 진척률</span>
+            <span style={{ width: 3, height: 14, borderRadius: 8, background: '#CF0652', flexShrink: 0, display: 'inline-block' }} /><span style={{ fontSize: 15, fontWeight: 700, color: '#111827', marginLeft: 6 }}>연간 진척률</span>
             <div style={{ width: 28, height: 28, borderRadius: 8, background: '#F5F3FF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <Target size={14} color="#7C3AED" />
             </div>
@@ -93,7 +93,7 @@ export default function SummaryCards({ avgRate, cumulativeActual, cumulativeGoal
               border: `1px solid ${w ? '#FECDD3' : '#A7F3D0'}`,
             }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-                <span style={{ fontSize: 15, fontWeight: 700, color: '#111827' }}>주의 필요 과제</span>
+                <span style={{ width: 3, height: 14, borderRadius: 8, background: '#CF0652', flexShrink: 0, display: 'inline-block' }} /><span style={{ fontSize: 15, fontWeight: 700, color: '#111827', marginLeft: 6 }}>주의 필요 과제</span>
                 <span style={{ width: 12, height: 12, borderRadius: '50%', background: wDot, display: 'inline-block', boxShadow: `0 0 6px ${wDot}55` }} />
               </div>
               <div className="flex items-baseline gap-1">
