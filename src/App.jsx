@@ -756,10 +756,10 @@ function NewsletterPreview({ meta, total, products, citations, dotcom, productsC
 }
 
 // ─── 대시보드 미리보기 (SVG 차트 기반 독립 시각화) ──────────────────────────────
-function DashboardPreview({ meta, total, products, citations, dotcom, productsCnty = [], citationsCnty = [], lang = 'ko', publishData = null }) {
+function DashboardPreview({ meta, total, products, citations, dotcom, productsCnty = [], citationsCnty = [], lang = 'ko' }) {
   const iframeRef = useRef(null)
   const html = generateDashboardHTML
-    ? generateDashboardHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, publishData)
+    ? generateDashboardHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty)
     : '<!DOCTYPE html><html><body style="background:#F1F5F9;display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;color:#64748B"><p>Loading dashboard...</p></body></html>'
 
   React.useEffect(() => {
@@ -788,7 +788,7 @@ const inputStyle = {
   fontFamily: FONT, outline: 'none', boxSizing: 'border-box',
 }
 
-function Sidebar({ meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, total, setTotal, products, setProducts, citations, setCitations, dotcom, setDotcom, productsCnty, setProductsCnty, citationsCnty, setCitationsCnty, resolved, previewLang, setPreviewLang, snapshots, setSnapshots, publishData, onPublishChange }) {
+function Sidebar({ meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, total, setTotal, products, setProducts, citations, setCitations, dotcom, setDotcom, productsCnty, setProductsCnty, citationsCnty, setCitationsCnty, resolved, previewLang, setPreviewLang, snapshots, setSnapshots }) {
   const [gsUrl,     setGsUrl]     = useState('https://docs.google.com/spreadsheets/d/1fTciJRUAqU5lhkPCb39mzv1Y4kNBslF8EuHjZ5H3JY0/edit?gid=1331469350#gid=1331469350')
   const [gsSyncing, setGsSyncing] = useState(false)
   const [gsStatus,  setGsStatus]  = useState(null)
@@ -819,8 +819,8 @@ function Sidebar({ meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, total, s
       const resolvedEn = resolveDataForLang(products, productsCnty, citations, citationsCnty, 'en')
       let htmlKo, htmlEn, title
       if (IS_DASHBOARD && generateDashboardHTML) {
-        htmlKo = generateDashboardHTML(metaKo, total, resolvedKo.products, resolvedKo.citations, dotcom, 'ko', resolvedKo.productsCnty, resolvedKo.citationsCnty, publishData)
-        htmlEn = generateDashboardHTML(metaEn, total, resolvedEn.products, resolvedEn.citations, dotcom, 'en', resolvedEn.productsCnty, resolvedEn.citationsCnty, publishData)
+        htmlKo = generateDashboardHTML(metaKo, total, resolvedKo.products, resolvedKo.citations, dotcom, 'ko', resolvedKo.productsCnty, resolvedKo.citationsCnty)
+        htmlEn = generateDashboardHTML(metaEn, total, resolvedEn.products, resolvedEn.citations, dotcom, 'en', resolvedEn.productsCnty, resolvedEn.citationsCnty)
         title = `${metaKo.period || ''} ${metaKo.title || 'KPI Dashboard'}`.trim()
       } else {
         htmlKo = generateEmailHTML(metaKo, total, resolvedKo.products, resolvedKo.citations, dotcom, 'ko', resolvedKo.productsCnty, resolvedKo.citationsCnty)
@@ -836,7 +836,6 @@ function Sidebar({ meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, total, s
       const data = await res.json()
       if (!data.ok) throw new Error(data.error || '게시 실패')
       setPublishInfo({ ...data, published: true })
-      if (onPublishChange) onPublishChange()
       const koUrl = `${window.location.origin}${data.urls.ko}`
       const enUrl = `${window.location.origin}${data.urls.en}`
       try { await navigator.clipboard.writeText(koUrl + '\n' + enUrl) } catch {}
@@ -2103,16 +2102,6 @@ export default function App() {
   // 서버에서 스냅샷 목록 로드
   useEffect(() => { fetchSnapshots().then(setSnapshots) }, [])
 
-  // 게시 이력 (Progress Tracker용)
-  const [publishHistory, setPublishHistory] = useState(null)
-  const fetchPublishHistory = useCallback(async () => {
-    try {
-      const res = await fetch('/api/publish-history')
-      if (res.ok) setPublishHistory(await res.json())
-    } catch {}
-  }, [])
-  useEffect(() => { if (IS_DASHBOARD) fetchPublishHistory() }, [fetchPublishHistory])
-
   // 서버에서 동기화 데이터 로드 (초기 1회)
   // 레이스 컨디션 방지: 로드 완료 전 사용자가 동기화하면 무시
   const serverSyncApplied = useRef(false)
@@ -2199,7 +2188,6 @@ export default function App() {
         resolved={resolved}
         previewLang={previewLang} setPreviewLang={setPreviewLang}
         snapshots={snapshots} setSnapshots={setSnapshots}
-        publishData={publishHistory} onPublishChange={fetchPublishHistory}
       />
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         {/* 탑바 */}
@@ -2309,7 +2297,7 @@ export default function App() {
         {/* 컨텐츠 영역 */}
         {IS_DASHBOARD ? (
           <div style={{ flex: 1, overflow: 'hidden' }}>
-            <DashboardPreview meta={meta} total={total} products={resolved.products} citations={resolved.citations} dotcom={dotcom} productsCnty={resolved.productsCnty} citationsCnty={resolved.citationsCnty} lang={previewLang} publishData={publishHistory} />
+            <DashboardPreview meta={meta} total={total} products={resolved.products} citations={resolved.citations} dotcom={dotcom} productsCnty={resolved.productsCnty} citationsCnty={resolved.citationsCnty} lang={previewLang} />
           </div>
         ) : (
           activeTab === 'preview' ? (

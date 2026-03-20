@@ -27,13 +27,6 @@ const T = {
     citLegend: 'Citation Score 건수 (비중)',
     progressMsg: '4월 업데이트 예정',
     readabilityMsg: '4월 업데이트 예정',
-    publishHistory: '게시 이력',
-    publishType: '유형',
-    publishTitle: '제목',
-    publishDate: '게시일시',
-    publishStatus: '상태',
-    published: '게시됨',
-    noPublished: '게시된 리포트가 없습니다',
   },
   en: {
     lead: 'Lead', behind: 'Behind', critical: 'Critical',
@@ -58,13 +51,6 @@ const T = {
     citLegend: 'Citation Score Count (Ratio)',
     progressMsg: 'Coming in April update',
     readabilityMsg: 'Coming in April update',
-    publishHistory: 'Publish History',
-    publishType: 'Type',
-    publishTitle: 'Title',
-    publishDate: 'Published',
-    publishStatus: 'Status',
-    published: 'Published',
-    noPublished: 'No published reports',
   },
 }
 
@@ -441,50 +427,11 @@ function dotcomSectionHtml(dotcom, meta, t) {
   </div>`
 }
 
-// ─── Progress Tracker 컨텐츠 ────────────────────────────────────────────────
-function progressContentHtml(publishData, t, lang) {
-  const items = []
-  if (publishData?.newsletter?.published) items.push({ type: 'Newsletter', ...publishData.newsletter })
-  if (publishData?.dashboard?.published) items.push({ type: 'Dashboard', ...publishData.dashboard })
-
-  if (!items.length) {
-    return `<div class="progress-placeholder"><div class="inner">
-      <div class="icon">📊</div>
-      <h2>Progress Tracker</h2>
-      <p>${t.noPublished}</p>
-    </div></div>`
-  }
-
-  const fmtDate = ts => ts ? new Date(ts).toLocaleString(lang === 'en' ? 'en-US' : 'ko-KR', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—'
-  const rows = items.map(it => `<tr style="border-bottom:1px solid #E8EDF2">
-    <td style="padding:12px 16px;font-weight:700">${it.type}</td>
-    <td style="padding:12px 16px">${it.title || '—'}</td>
-    <td style="padding:12px 16px;color:#64748B">${fmtDate(it.ts)}</td>
-    <td style="padding:12px 16px"><span style="display:inline-block;padding:3px 10px;border-radius:10px;font-size:12px;font-weight:700;background:#ECFDF5;color:#15803D;border:1px solid #A7F3D0">${t.published}</span></td>
-    <td style="padding:12px 16px"><a href="${it.urls?.ko || '#'}" style="color:${RED};font-weight:600;text-decoration:none;font-size:12px" target="_blank">KO</a> / <a href="${it.urls?.en || '#'}" style="color:${RED};font-weight:600;text-decoration:none;font-size:12px" target="_blank">EN</a></td>
-  </tr>`).join('')
-
-  return `<div class="dash-container"><div class="section-card">
-    <div class="section-header"><div class="section-title">${t.publishHistory}</div></div>
-    <div class="section-body" style="padding:0">
-      <table style="width:100%;border-collapse:collapse;font-size:13px;font-family:${FONT}">
-        <thead><tr style="background:#FAFBFC;border-bottom:2px solid #E2E8F0">
-          <th style="text-align:left;padding:10px 16px;color:#64748B;font-weight:700;font-size:12px">${t.publishType}</th>
-          <th style="text-align:left;padding:10px 16px;color:#64748B;font-weight:700;font-size:12px">${t.publishTitle}</th>
-          <th style="text-align:left;padding:10px 16px;color:#64748B;font-weight:700;font-size:12px">${t.publishDate}</th>
-          <th style="text-align:left;padding:10px 16px;color:#64748B;font-weight:700;font-size:12px">${t.publishStatus}</th>
-          <th style="text-align:left;padding:10px 16px;color:#64748B;font-weight:700;font-size:12px">URL</th>
-        </tr></thead>
-        <tbody>${rows}</tbody>
-      </table>
-    </div>
-  </div></div>`
-}
 
 // ═══════════════════════════════════════════════════════════════════════════
 // 메인 생성 함수
 // ═══════════════════════════════════════════════════════════════════════════
-export function generateDashboardHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, publishData) {
+export function generateDashboardHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty) {
   _sid = 0
   const t = T[lang] || T.ko
   const visContent = [
@@ -677,7 +624,6 @@ body{background:#F1F5F9;font-family:${FONT};min-width:1200px;color:#1A1A1A}
   </div></div>
 </div>
 <div id="tab-progress" class="tab-panel">
-  ${progressContentHtml(publishData, t, lang)}
   <iframe src="/admin/progress-tracker/" style="width:100%;min-height:calc(100vh - 60px);border:none;background:#0A0F1E" title="Progress Tracker"></iframe>
 </div>
 <div class="dash-footer">
