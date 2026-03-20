@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { resolve } from 'path'
-import { readFileSync } from 'fs'
+import { readFileSync, existsSync, createReadStream } from 'fs'
 
 const pkg = JSON.parse(readFileSync('./package.json', 'utf-8'))
 
@@ -23,12 +23,27 @@ function serveDashboardHtml() {
   }
 }
 
+function serveFontsPlugin() {
+  return {
+    name: 'serve-fonts',
+    configureServer(server) {
+      server.middlewares.use('/font', (req, res, next) => {
+        const file = resolve('font', decodeURIComponent(req.url).replace(/^\//, '').split('?')[0])
+        if (!existsSync(file)) return next()
+        res.setHeader('Content-Type', 'font/ttf')
+        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable')
+        createReadStream(file).pipe(res)
+      })
+    },
+  }
+}
+
 export default defineConfig({
   base: '/admin/dashboard/',
   define: {
     __APP_VERSION__: JSON.stringify(pkg.version),
   },
-  plugins: [serveDashboardHtml(), react()],
+  plugins: [serveDashboardHtml(), serveFontsPlugin(), react()],
   build: {
     outDir: 'dist-dashboard',
     emptyOutDir: true,

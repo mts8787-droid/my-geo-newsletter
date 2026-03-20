@@ -506,6 +506,9 @@ app.get('/api/tracker-snapshot', (req, res) => {
   }
 })
 
+// ─── Font static files ──────────────────────────────────────────────────────
+app.use('/font', express.static(join(__dirname, 'font'), { maxAge: '1y', immutable: true }))
+
 // ─── Public Progress Tracker (게시된 버전, IP 체크) ──────────────────────────
 app.use('/p/progress-tracker', (req, res, next) => {
   if (!isIpAllowed(req.ip)) {

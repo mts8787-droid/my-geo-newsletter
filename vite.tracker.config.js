@@ -1,11 +1,28 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { resolve } from 'path'
+import { existsSync, createReadStream } from 'fs'
+
+function serveFontsPlugin() {
+  return {
+    name: 'serve-fonts',
+    configureServer(server) {
+      server.middlewares.use('/font', (req, res, next) => {
+        const file = resolve('font', decodeURIComponent(req.url).replace(/^\//, '').split('?')[0])
+        if (!existsSync(file)) return next()
+        res.setHeader('Content-Type', 'font/ttf')
+        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable')
+        createReadStream(file).pipe(res)
+      })
+    },
+  }
+}
 
 export default defineConfig({
   base: '/admin/progress-tracker/',
   plugins: [
     react(),
+    serveFontsPlugin(),
     {
       name: 'serve-tracker-html',
       configureServer(server) {
