@@ -820,8 +820,8 @@ function Sidebar({ meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, total, s
       const resolvedEn = resolveDataForLang(products, productsCnty, citations, citationsCnty, 'en')
       let htmlKo, htmlEn, title
       if (IS_DASHBOARD && generateDashboardHTML) {
-        htmlKo = generateDashboardHTML(metaKo, total, resolvedKo.products, resolvedKo.citations, dotcom, 'ko', resolvedKo.productsCnty, resolvedKo.citationsCnty, weeklyLabels)
-        htmlEn = generateDashboardHTML(metaEn, total, resolvedEn.products, resolvedEn.citations, dotcom, 'en', resolvedEn.productsCnty, resolvedEn.citationsCnty, weeklyLabels)
+        htmlKo = generateDashboardHTML(metaKo, total, resolvedKo.products, resolvedKo.citations, dotcom, 'ko', resolvedKo.productsCnty, resolvedKo.citationsCnty, weeklyLabels, weeklyAll)
+        htmlEn = generateDashboardHTML(metaEn, total, resolvedEn.products, resolvedEn.citations, dotcom, 'en', resolvedEn.productsCnty, resolvedEn.citationsCnty, weeklyLabels, weeklyAll)
         title = `${metaKo.period || ''} ${metaKo.title || 'KPI Dashboard'}`.trim()
       } else {
         htmlKo = generateEmailHTML(metaKo, total, resolvedKo.products, resolvedKo.citations, dotcom, 'ko', resolvedKo.productsCnty, resolvedKo.citationsCnty)

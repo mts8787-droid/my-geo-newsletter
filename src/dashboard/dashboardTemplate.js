@@ -247,7 +247,7 @@ function insightHtml(insight, showInsight, howToRead, showHowToRead, t) {
 }
 
 // ─── Hero KPI ───────────────────────────────────────────────────────────────
-function heroHtml(total, meta, t) {
+function heroHtml(total, meta, t, lang) {
   const d = +(total.score - total.prev).toFixed(1)
   const compAvg = total.vsComp || 0
   const gap = +(total.score - compAvg).toFixed(1)
@@ -624,7 +624,7 @@ export function generateDashboardHTML(meta, total, products, citations, dotcom, 
   </div>`
 
   const visContent = [
-    meta.showTotal !== false ? heroHtml(total, meta, t) : '',
+    meta.showTotal !== false ? heroHtml(total, meta, t, lang) : '',
     meta.showProducts !== false ? productSectionHtml(products, meta, t, lang, weeklyLabels) : '',
     `<div id="trend-container">${trendDetailHtml(products, weeklyAll, weeklyLabels, t, lang)}</div>`,
     meta.showCnty !== false ? countrySectionHtml(productsCnty, meta, t, lang) : '',
