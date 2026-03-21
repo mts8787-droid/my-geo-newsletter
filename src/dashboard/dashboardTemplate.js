@@ -128,13 +128,13 @@ function svgMultiLine(brandData, labels, w, h) {
     const y = pt + (i / gridCount) * ch
     const val = mx - (i / gridCount) * rng
     gridLines += `<line x1="${pl}" y1="${y.toFixed(1)}" x2="${w - pr}" y2="${y.toFixed(1)}" stroke="#E8EDF2" stroke-width="1"/>`
-    gridLines += `<text x="${pl - 6}" y="${(y + 4).toFixed(1)}" text-anchor="end" font-size="11" fill="#94A3B8" font-family="${FONT}">${val.toFixed(0)}%</text>`
+    gridLines += `<text x="${pl - 6}" y="${(y + 4).toFixed(1)}" text-anchor="end" font-size="13" fill="#94A3B8" font-family="${FONT}">${val.toFixed(0)}%</text>`
   }
   // X labels
   let xLabels = ''
   labels.forEach((l, i) => {
     const x = pl + (i / Math.max(labels.length - 1, 1)) * cw
-    xLabels += `<text x="${x.toFixed(1)}" y="${pt + ch + 16}" text-anchor="middle" font-size="11" fill="#94A3B8" font-family="${FONT}">${l}</text>`
+    xLabels += `<text x="${x.toFixed(1)}" y="${pt + ch + 16}" text-anchor="middle" font-size="13" fill="#94A3B8" font-family="${FONT}">${l}</text>`
   })
   // Brand lines
   let lines = ''
@@ -185,7 +185,7 @@ function trendDetailHtml(products, weeklyAll, weeklyLabels, t, lang) {
       const legend = brands.map((b, i) => {
         const c = brandColor(b, i)
         const isLG = b === 'LG'
-        return `<span style="display:inline-flex;align-items:center;gap:3px;margin-right:12px"><i style="display:inline-block;width:10px;height:3px;border-radius:1px;background:${c};opacity:${isLG ? 1 : 0.7}"></i><span style="font-size:11px;color:${isLG ? '#1A1A1A' : '#94A3B8'};font-weight:${isLG ? 700 : 400}">${b}</span></span>`
+        return `<span style="display:inline-flex;align-items:center;gap:3px;margin-right:12px"><i style="display:inline-block;width:10px;height:3px;border-radius:1px;background:${c};opacity:${isLG ? 1 : 0.7}"></i><span style="font-size:13px;color:${isLG ? '#1A1A1A' : '#94A3B8'};font-weight:${isLG ? 700 : 400}">${b}</span></span>`
       }).join('')
       // Data table
       const thead = `<tr><th style="text-align:left;padding:5px 10px;font-size:12px;color:#94A3B8;font-weight:600;border-bottom:1px solid #F1F5F9">Brand</th>${wLabels.map(w => `<th style="text-align:right;padding:5px 8px;font-size:12px;color:#94A3B8;font-weight:600;border-bottom:1px solid #F1F5F9">${w}</th>`).join('')}</tr>`
@@ -203,9 +203,9 @@ function trendDetailHtml(products, weeklyAll, weeklyLabels, t, lang) {
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
           <span style="width:3px;height:16px;border-radius:2px;background:${RED};flex-shrink:0"></span>
           <span style="font-size:15px;font-weight:700;color:#1A1A1A">${p.kr}</span>
-          <span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;background:${st.bg};color:${st.color};border:1px solid ${st.border}">${st.label}</span>
+          <span style="font-size:13px;font-weight:700;padding:2px 8px;border-radius:10px;background:${st.bg};color:${st.color};border:1px solid ${st.border}">${st.label}</span>
           ${lgLatest != null ? `<span style="font-size:13px;font-weight:700;color:#1A1A1A">LG ${lgLatest.toFixed(1)}%</span>` : ''}
-          ${p.compName ? `<span style="font-size:11px;color:#94A3B8">vs ${p.compName} ${p.compRatio || ''}%</span>` : ''}
+          ${p.compName ? `<span style="font-size:13px;color:#94A3B8">vs ${p.compName} ${p.compRatio || ''}%</span>` : ''}
         </div>
         <div style="background:#fff;border:1px solid #E8EDF2;border-radius:10px;padding:12px 12px 4px 0">${svgMultiLine(data, wLabels, 900, 200)}</div>
         <div style="padding:6px 4px 0">${legend}</div>
@@ -214,7 +214,7 @@ function trendDetailHtml(products, weeklyAll, weeklyLabels, t, lang) {
     }).join('')
 
     if (!rows) return ''
-    return `<div class="bu-group" style="margin-bottom:20px">
+    return `<div class="bu-group" data-bu="${bu}" style="margin-bottom:20px">
       <div class="bu-header"><span class="bu-label">${bu}</span></div>
       ${rows}
     </div>`
@@ -326,7 +326,7 @@ function productSectionHtml(products, meta, t, lang, weeklyLabels) {
         </div>
       </div>`
     }).join('')
-    return `<div class="bu-group">
+    return `<div class="bu-group" data-bu="${bu}">
       <div class="bu-header"><span class="bu-label">${bu}</span><span class="bu-count">${prods.length}${t.categories}</span></div>
       <div class="prod-grid">${cards}</div>
     </div>`
@@ -335,13 +335,7 @@ function productSectionHtml(products, meta, t, lang, weeklyLabels) {
   return `<div class="section-card">
     <div class="section-header">
       <div class="section-title">${t.productTitle}</div>
-      <div class="section-header-right">
-        <div class="trend-tabs">
-          <button class="trend-tab active" onclick="switchTrend('weekly')">${t.weeklyTab}</button>
-          <button class="trend-tab" onclick="switchTrend('monthly')">${t.monthlyTab}</button>
-        </div>
-        <span class="legend"><i style="background:#15803D"></i>${t.legendLead} <i style="background:#D97706"></i>${t.legendBehind} <i style="background:#BE123C"></i>${t.legendCritical}</span>
-      </div>
+      <span class="legend"><i style="background:#15803D"></i>${t.legendLead} <i style="background:#D97706"></i>${t.legendBehind} <i style="background:#BE123C"></i>${t.legendCritical}</span>
     </div>
     ${insightHtml(meta.productInsight, meta.showProductInsight, meta.productHowToRead, meta.showProductHowToRead, t)}
     <div class="section-body">${buGroups}</div>
@@ -567,10 +561,37 @@ function dotcomSectionHtml(dotcom, meta, t) {
 export function generateDashboardHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, weeklyAll) {
   _sid = 0
   const t = T[lang] || T.ko
+  // 국가 목록 추출
+  const countries = new Set(['Total'])
+  if (weeklyAll) Object.values(weeklyAll).forEach(byC => Object.keys(byC).forEach(c => countries.add(c)))
+  const countryList = ['Total', ...[...countries].filter(c => c !== 'Total').sort()]
+  const filterBar = `<div class="vis-filter-bar">
+    <div class="vis-filter-group">
+      <label class="vis-filter-label">${lang === 'en' ? 'Period' : '기간'}</label>
+      <div class="trend-tabs" style="margin:0">
+        <button class="trend-tab active" onclick="switchTrend('weekly')">${t.weeklyTab}</button>
+        <button class="trend-tab" onclick="switchTrend('monthly')">${t.monthlyTab}</button>
+      </div>
+    </div>
+    <div class="vis-filter-group">
+      <label class="vis-filter-label">${lang === 'en' ? 'Division' : '본부'}</label>
+      <select class="vis-filter-select" onchange="filterBU(this.value)">
+        <option value="ALL">${lang === 'en' ? 'All' : '전체'}</option>
+        <option value="MS">MS</option><option value="HS">HS</option><option value="ES">ES</option>
+      </select>
+    </div>
+    <div class="vis-filter-group">
+      <label class="vis-filter-label">${lang === 'en' ? 'Country' : '국가'}</label>
+      <select class="vis-filter-select" id="vis-country-select" onchange="filterCountry(this.value)">
+        ${countryList.map(c => `<option value="${c}">${c === 'Total' ? (lang === 'en' ? 'All (Total)' : '전체 (Total)') : c}</option>`).join('')}
+      </select>
+    </div>
+  </div>`
   const visContent = [
+    filterBar,
     meta.showTotal !== false ? heroHtml(total, meta, t) : '',
     meta.showProducts !== false ? productSectionHtml(products, meta, t, lang, weeklyLabels) : '',
-    trendDetailHtml(products, weeklyAll, weeklyLabels, t, lang),
+    `<div id="trend-container">${trendDetailHtml(products, weeklyAll, weeklyLabels, t, lang)}</div>`,
     meta.showCnty !== false ? countrySectionHtml(productsCnty, meta, t, lang) : '',
   ].join('')
   const citContent = [
@@ -597,6 +618,12 @@ body{background:#F1F5F9;font-family:${FONT};min-width:1200px;color:#1A1A1A}
 .tab-panel{display:none}
 .tab-panel.active{display:block}
 .dash-container{max-width:1400px;margin:0 auto;padding:28px 40px}
+/* ── 필터바 ── */
+.vis-filter-bar{display:flex;align-items:center;gap:20px;padding:14px 24px;background:#fff;border-radius:12px;border:1px solid #E8EDF2;margin-bottom:24px;flex-wrap:wrap}
+.vis-filter-group{display:flex;align-items:center;gap:8px}
+.vis-filter-label{font-size:13px;font-weight:700;color:#64748B;white-space:nowrap}
+.vis-filter-select{padding:6px 12px;border-radius:8px;border:1px solid #E2E8F0;font-size:13px;font-weight:600;font-family:${FONT};color:#1A1A1A;background:#F8FAFC;cursor:pointer;outline:none;min-width:100px}
+.vis-filter-select:focus{border-color:${RED}}
 /* ── Hero ── */
 .hero{background:#0F172A;border-radius:16px;padding:28px 32px;margin-bottom:24px;color:#fff}
 .hero-top{display:flex;justify-content:space-between;margin-bottom:20px}
@@ -831,6 +858,79 @@ function switchCitCnty(btn){
   document.querySelectorAll('.cit-cnty-panel').forEach(function(p){
     p.style.display=p.getAttribute('data-cit-cnty')=== sel?'':'none';
   });
+}
+function filterBU(val){
+  document.querySelectorAll('.bu-group[data-bu]').forEach(function(g){
+    g.style.display=(val==='ALL'||g.getAttribute('data-bu')===val)?'':'none';
+  });
+}
+var _weeklyAll=${weeklyAll ? JSON.stringify(weeklyAll) : '{}'};
+var _products=${JSON.stringify(products.map(p => ({ id: p.id, bu: p.bu, kr: p.kr, status: p.status, compName: p.compName, compRatio: p.compRatio })))};
+var _wLabels=${JSON.stringify((weeklyLabels && weeklyLabels.length) ? weeklyLabels : ['W1','W2','W3','W4'])};
+var _lang='${lang}';
+var _BRAND_COLORS=${JSON.stringify(BRAND_COLORS)};
+var _FALLBACK=['#94A3B8','#64748B','#475569','#CBD5E1','#E2E8F0'];
+var _RED='${RED}';
+var _FONT="${FONT}";
+function _bc(n,i){return _BRAND_COLORS[n]||_FALLBACK[i%_FALLBACK.length]}
+function _statusInfo(s){
+  if(s==='lead')return{bg:'#ECFDF5',border:'#A7F3D0',color:'#15803D',label:_lang==='en'?'Lead':'선도'};
+  if(s==='behind')return{bg:'#FFFBEB',border:'#FDE68A',color:'#B45309',label:_lang==='en'?'Behind':'추격'};
+  if(s==='critical')return{bg:'#FFF1F2',border:'#FECDD3',color:'#BE123C',label:_lang==='en'?'Critical':'취약'};
+  return{bg:'#F8FAFC',border:'#E2E8F0',color:'#475569',label:'—'};
+}
+function _svgML(bd,labels,w,h){
+  var brands=Object.keys(bd);if(!brands.length||!labels.length)return'';
+  var mn=Infinity,mx=-Infinity;
+  brands.forEach(function(b){(bd[b]||[]).forEach(function(v){if(v!=null){if(v<mn)mn=v;if(v>mx)mx=v}})});
+  if(!isFinite(mn))return'';
+  var pad=Math.max((mx-mn)*0.15,2);mn=Math.max(0,mn-pad);mx=Math.min(100,mx+pad);var rng=mx-mn||1;
+  var pl=40,pr=16,pt=12,pb=24,cw=w-pl-pr,ch=h-pt-pb;
+  var g='';
+  for(var i=0;i<=4;i++){var y=pt+(i/4)*ch;var val=mx-(i/4)*rng;
+    g+='<line x1="'+pl+'" y1="'+y.toFixed(1)+'" x2="'+(w-pr)+'" y2="'+y.toFixed(1)+'" stroke="#E8EDF2" stroke-width="1"/>';
+    g+='<text x="'+(pl-6)+'" y="'+(y+4).toFixed(1)+'" text-anchor="end" font-size="13" fill="#94A3B8" font-family="'+_FONT+'">'+val.toFixed(0)+'%</text>';
+  }
+  labels.forEach(function(l,i){var x=pl+(i/Math.max(labels.length-1,1))*cw;
+    g+='<text x="'+x.toFixed(1)+'" y="'+(pt+ch+16)+'" text-anchor="middle" font-size="13" fill="#94A3B8" font-family="'+_FONT+'">'+l+'</text>';
+  });
+  brands.forEach(function(b,bi){var vals=bd[b]||[];var c=_bc(b,bi);var isLG=b==='LG';var sw=isLG?2.5:1.5;var op=isLG?1:0.7;var pts=[];
+    vals.forEach(function(v,i){if(v==null)return;var x=pl+(i/Math.max(labels.length-1,1))*cw;var y=pt+(1-(v-mn)/rng)*ch;pts.push({x:x,y:y,v:v})});
+    if(pts.length<2)return;
+    var d=pts.map(function(p,i){return(i?'L':'M')+p.x.toFixed(1)+','+p.y.toFixed(1)}).join(' ');
+    g+='<path d="'+d+'" stroke="'+c+'" fill="none" stroke-width="'+sw+'" stroke-linecap="round" stroke-linejoin="round" opacity="'+op+'"/>';
+    pts.forEach(function(p){g+='<circle cx="'+p.x.toFixed(1)+'" cy="'+p.y.toFixed(1)+'" r="'+(isLG?3.5:2.5)+'" fill="#fff" stroke="'+c+'" stroke-width="'+(isLG?2:1.5)+'" opacity="'+op+'"/>'});
+  });
+  return '<svg viewBox="0 0 '+w+' '+h+'" width="100%" height="'+h+'" xmlns="http://www.w3.org/2000/svg" style="display:block;background:#fff;border-radius:8px">'+g+'</svg>';
+}
+function filterCountry(cnty){
+  var container=document.getElementById('trend-container');if(!container)return;
+  var BU=['MS','HS','ES'];var html='';
+  var buFilter=document.querySelector('.vis-filter-select');var buVal=buFilter?buFilter.value:'ALL';
+  var hasTrend=false;
+  BU.forEach(function(bu){
+    var prods=_products.filter(function(p){return p.bu===bu});if(!prods.length)return;
+    var rows='';
+    prods.forEach(function(p){
+      var data=(_weeklyAll[p.id]||{})[cnty]||{};
+      var brands=Object.keys(data).sort(function(a,b){if(a==='LG')return -1;if(b==='LG')return 1;var la=(data[a]||[])[data[a].length-1]||0;var lb=(data[b]||[])[data[b].length-1]||0;return lb-la});
+      if(!brands.length)return;
+      var st=_statusInfo(p.status);var lgL=data.LG?data.LG[data.LG.length-1]:null;
+      var legend=brands.map(function(b,i){var c=_bc(b,i);var isLG=b==='LG';return'<span style="display:inline-flex;align-items:center;gap:3px;margin-right:12px"><i style="display:inline-block;width:10px;height:3px;border-radius:1px;background:'+c+';opacity:'+(isLG?1:0.7)+'"></i><span style="font-size:13px;color:'+(isLG?'#1A1A1A':'#94A3B8')+';font-weight:'+(isLG?700:400)+'">'+b+'</span></span>'}).join('');
+      var thead='<tr><th style="text-align:left;padding:5px 10px;font-size:14px;color:#94A3B8;font-weight:600;border-bottom:1px solid #F1F5F9">Brand</th>'+_wLabels.map(function(w){return'<th style="text-align:right;padding:5px 8px;font-size:14px;color:#94A3B8;font-weight:600;border-bottom:1px solid #F1F5F9">'+w+'</th>'}).join('')+'</tr>';
+      var tbody=brands.map(function(b,i){var c=_bc(b,i);var isLG=b==='LG';var cells=_wLabels.map(function(_,wi){var val=data[b]?data[b][wi]:null;return'<td style="text-align:right;padding:5px 8px;font-size:14px;color:'+(val!=null?(isLG?'#1A1A1A':'#475569'):'#CBD5E1')+';font-weight:'+(isLG?700:400)+';border-bottom:1px solid #F8FAFC;font-variant-numeric:tabular-nums">'+(val!=null?val.toFixed(1):'—')+'</td>'}).join('');return'<tr style="background:'+(isLG?'#FFF8F9':i%2===0?'#fff':'#FAFBFC')+'"><td style="padding:5px 10px;font-size:14px;font-weight:'+(isLG?700:500)+';color:'+c+';border-bottom:1px solid #F8FAFC;white-space:nowrap"><i style="display:inline-block;width:6px;height:6px;border-radius:50%;background:'+c+';margin-right:5px;vertical-align:0"></i>'+b+'</td>'+cells+'</tr>'}).join('');
+      rows+='<div class="trend-row" style="margin-bottom:24px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><span style="width:3px;height:16px;border-radius:2px;background:'+_RED+';flex-shrink:0"></span><span style="font-size:15px;font-weight:700;color:#1A1A1A">'+p.kr+'</span><span style="font-size:13px;font-weight:700;padding:2px 8px;border-radius:10px;background:'+st.bg+';color:'+st.color+';border:1px solid '+st.border+'">'+st.label+'</span>'+(lgL!=null?'<span style="font-size:13px;font-weight:700;color:#1A1A1A">LG '+lgL.toFixed(1)+'%</span>':'')+(p.compName?'<span style="font-size:13px;color:#94A3B8">vs '+p.compName+' '+(p.compRatio||'')+'%</span>':'')+'</div><div style="background:#fff;border:1px solid #E8EDF2;border-radius:10px;padding:12px 12px 4px 0">'+_svgML(data,_wLabels,900,200)+'</div><div style="padding:6px 4px 0">'+legend+'</div><div style="margin-top:6px;border:1px solid #E8EDF2;border-radius:8px;overflow:hidden"><table style="width:100%;border-collapse:collapse;font-family:'+_FONT+'"><thead>'+thead+'</thead><tbody>'+tbody+'</tbody></table></div></div>';
+    });
+    if(!rows)return;
+    hasTrend=true;
+    var disp=(buVal==='ALL'||buVal===bu)?'':'display:none';
+    html+='<div class="bu-group" data-bu="'+bu+'" style="margin-bottom:20px;'+disp+'"><div class="bu-header"><span class="bu-label">'+bu+'</span></div>'+rows+'</div>';
+  });
+  if(!hasTrend){container.innerHTML='';return}
+  var title=_lang==='en'?'Weekly Competitor Trend':'주간 경쟁사 트렌드';
+  var sub=_wLabels[0]+'–'+_wLabels[_wLabels.length-1]+' ('+_wLabels.length+(_lang==='en'?' weeks':'주')+')';
+  var cntyLabel=cnty==='Total'?'':' — '+cnty;
+  container.innerHTML='<div class="section-card"><div class="section-header"><div class="section-title">'+title+cntyLabel+'</div><span class="legend">'+sub+'</span></div><div class="section-body">'+html+'</div></div>';
 }
 </script>
 </body>
