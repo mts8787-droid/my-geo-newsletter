@@ -1061,9 +1061,14 @@ function Sidebar({ meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, total, s
       if (parsed.citationsCnty) setCitationsCnty(parsed.citationsCnty)
       if (parsed.weeklyLabels) setWeeklyLabels(parsed.weeklyLabels)
       // 제품: productsPartial이 있으면 새로 생성, 없으면 weeklyMap만 병합
+      console.log('[SYNC] parsed keys:', Object.keys(parsed))
+      console.log('[SYNC] weeklyMap?', parsed.weeklyMap ? Object.keys(parsed.weeklyMap) : 'NONE')
+      console.log('[SYNC] productsPartial?', parsed.productsPartial?.length || 0, 'items, IDs:', parsed.productsPartial?.map(p => p.id))
       if (parsed.productsPartial) {
         const newProducts = parsed.productsPartial.map(p => {
           const weekly = parsed.weeklyMap?.[p.id] || []
+          if (!weekly.length) console.warn(`[SYNC] product "${p.id}" has NO weekly data`)
+          else console.log(`[SYNC] product "${p.id}" weekly:`, weekly)
           const ratio = p.vsComp > 0 ? (p.score / p.vsComp) * 100 : 100
           return { ...p, weekly, monthly: [], compRatio: Math.round(ratio),
             status: ratio >= 100 ? 'lead' : ratio >= 80 ? 'behind' : 'critical' }
