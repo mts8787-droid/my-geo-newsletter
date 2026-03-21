@@ -8,8 +8,9 @@ export function extractSheetId(url) {
 
 async function fetchSheet(sheetId, sheetName) {
   const rid = `${Date.now()}_${Math.random().toString(36).slice(2,8)}`
-  const sheetParam = `sheet=${encodeURIComponent(sheetName)}`
-  const url = `/gsheets-proxy/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv;reqId:${rid}&${sheetParam}`
+  // sheet 파라미터를 &headers=1과 함께 전달 — gviz는 sheet 이름으로 탭 선택
+  const url = `/gsheets-proxy/spreadsheets/d/${sheetId}/gviz/tq?sheet=${encodeURIComponent(sheetName)}&tqx=out:csv;reqId:${rid}&headers=1`
+  console.log(`[fetchSheet] "${sheetName}" → URL:`, url)
   const res = await fetch(url, {
     cache: 'no-store',
     headers: { 'Cache-Control': 'no-cache, no-store', 'Pragma': 'no-cache' },
@@ -18,6 +19,7 @@ async function fetchSheet(sheetId, sheetName) {
     `"${sheetName}" 시트를 가져올 수 없습니다 (HTTP ${res.status}).`
   )
   const csv = await res.text()
+  console.log(`[fetchSheet] "${sheetName}" CSV (first 300):`, csv.slice(0, 300))
   const wb  = XLSX.read(csv, { type: 'string' })
   const ws  = wb.Sheets[wb.SheetNames[0]]
   return XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' })
