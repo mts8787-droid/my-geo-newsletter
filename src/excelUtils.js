@@ -194,32 +194,25 @@ function parseVisSummary(rows) {
   })
   if (isKV && Object.keys(kvObj).length >= 2) return { total: kvObj }
 
-  // 2) 테이블 형식: Country/Date + LG + SAMSUNG 컬럼
-  const headerIdx = rows.findIndex(r =>
-    r.some(c => String(c || '').trim().toUpperCase() === 'LG') &&
-    r.some(c => { const s = String(c || '').trim().toLowerCase(); return s.includes('countr') || s.includes('date') || s.includes('div') })
+  // 2) TOTAL 행 직접 탐색: Countries/Divisions 가 "TOTAL"인 행의 E(4), F(5) 컬럼
+  //    헤더에 LG/Samsung 이름이 없으므로 컬럼 위치(E=LG, F=Samsung)를 직접 사용
+  const ttlRow = rows.find(r =>
+    r.some(c => String(c || '').trim().toUpperCase() === 'TOTAL')
   )
-  if (headerIdx < 0) return {}
+  if (!ttlRow) return {}
 
-  const header = rows[headerIdx]
-  const lgCol = header.findIndex(c => String(c || '').trim().toUpperCase() === 'LG')
-  const ssCol = header.findIndex(c => { const s = String(c || '').trim().toUpperCase(); return s === 'SAMSUNG' || s === 'SAMSUMG' })
-  const countryCol = header.findIndex(c => { const s = String(c || '').trim().toLowerCase(); return s.includes('countr') })
+  // LG=col4(E), Samsung=col5(F) — 헤더에 LG가 있으면 그 위치 사용, 없으면 고정 인덱스
+  const headerRow = rows.find(r => r.some(c => String(c || '').trim().toUpperCase() === 'LG'))
+  const lgCol = headerRow ? headerRow.findIndex(c => String(c || '').trim().toUpperCase() === 'LG') : 4
+  const ssCol = headerRow
+    ? headerRow.findIndex(c => { const s = String(c || '').trim().toUpperCase(); return s === 'SAMSUNG' || s === 'SAMSUMG' })
+    : 5
+  const actualSsCol = ssCol >= 0 ? ssCol : lgCol + 1
 
-  const data = rows.slice(headerIdx + 1).filter(r => r.some(c => c != null && String(c).trim()))
-  const ttlRows = data.filter(r => {
-    if (countryCol < 0) return true
-    const v = String(r[countryCol] || '').replace(/[()]/g, '').trim().toUpperCase()
-    return v === 'TTL' || v === 'TOTAL'
-  })
-  if (!ttlRows.length) return {}
-
-  const last = ttlRows[ttlRows.length - 1]
-  const prevRow = ttlRows.length > 1 ? ttlRows[ttlRows.length - 2] : null
-  const score = lgCol >= 0 ? pct(last[lgCol]) : 0
-  const vsComp = ssCol >= 0 ? pct(last[ssCol]) : 0
-  const prev = prevRow && lgCol >= 0 ? pct(prevRow[lgCol]) : score
-  return { total: { score, prev, vsComp, rank: score >= vsComp ? 1 : 2, totalBrands: 12 } }
+  const score = pct(ttlRow[lgCol])
+  const vsComp = pct(ttlRow[actualSsCol])
+  console.log(`[parseVisSummary] TOTAL row found: LG(col${lgCol})=${score}, SS(col${actualSsCol})=${vsComp}`)
+  return { total: { score, prev: score, vsComp, rank: score >= vsComp ? 1 : 2, totalBrands: 12 } }
 }
 
 function parseProductCnty(rows) {
