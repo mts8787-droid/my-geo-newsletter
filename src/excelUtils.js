@@ -283,6 +283,20 @@ function parseProductCntyFromRow(rows, headerIdx) {
   }
 }
 
+// 시트 rows에서 W숫자 패턴 라벨을 스캔
+function findWeekLabels(rows, startRow = 0, endRow) {
+  const end = endRow ?? rows.length
+  for (let i = startRow; i < end; i++) {
+    const labels = []
+    for (const cell of (rows[i] || [])) {
+      const s = String(cell || '').trim()
+      if (/^W\d+$/i.test(s)) labels.push(s.toUpperCase())
+    }
+    if (labels.length >= 2) return labels
+  }
+  return null
+}
+
 const DASH_CAT_BY_DIV = {
   MS: { TV: 'tv', Monitor: 'monitor', AV: 'audio' },
   ES: { RAC: 'rac', Aircare: 'aircare' },
@@ -315,8 +329,10 @@ function parseDashboardLayout(rows, div) {
     if (vals.length) weeklyMap[id] = vals.slice(-4)
   }
   if (!Object.keys(weeklyMap).length) return {}
-  console.log('[parseWeekly] dashboard layout result:', Object.keys(weeklyMap))
-  return { weeklyMap, weeklyLabels: ['W1', 'W2', 'W3', 'W4'] }
+  const weeklyLabels = findWeekLabels(rows, catRowIdx, ttlRowIdx)
+    || Object.values(weeklyMap)[0]?.map((_, i) => `W${i + 1}`) || []
+  console.log('[parseWeekly] dashboard layout result:', Object.keys(weeklyMap), '| labels:', weeklyLabels)
+  return { weeklyMap, weeklyLabels }
 }
 
 function parseWeekly(rows, div) {
@@ -369,7 +385,7 @@ function parseWeekly(rows, div) {
           if (v) wCols.push(i)
           else if (wCols.length) break
         }
-        weeklyLabels = wCols.map((_, i) => `W${i + 1}`)
+        weeklyLabels = findWeekLabels(rows, 0, headerIdx + 1) || wCols.map((_, i) => `W${i + 1}`)
       }
     }
     // Format: Product, Country, B/NB, Brand, w5, w6, w7, w8
