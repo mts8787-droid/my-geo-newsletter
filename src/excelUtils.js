@@ -283,12 +283,16 @@ function parseProductCntyFromRow(rows, headerIdx) {
   }
 }
 
-function parseDashboardLayout(rows) {
+const DASH_CAT_BY_DIV = {
+  MS: { TV: 'tv', Monitor: 'monitor', AV: 'audio' },
+  ES: { RAC: 'rac', Aircare: 'aircare' },
+}
+
+function parseDashboardLayout(rows, div) {
   // 대시보드 레이아웃: 카테고리 이름이 열 헤더로 배치, TTL 행에 주간 값
-  const DASH_CAT_MAP = {
-    TV: 'tv', Monitor: 'monitor', AV: 'audio',
-    RAC: 'rac', Aircare: 'aircare',
-  }
+  const DASH_CAT_MAP = div ? (DASH_CAT_BY_DIV[div] || {})
+    : { ...DASH_CAT_BY_DIV.MS, ...DASH_CAT_BY_DIV.ES }
+  if (!Object.keys(DASH_CAT_MAP).length) return {}
   const catRowIdx = rows.findIndex(r =>
     r.some(c => String(c || '').trim() in DASH_CAT_MAP)
   )
@@ -315,7 +319,7 @@ function parseDashboardLayout(rows) {
   return { weeklyMap, weeklyLabels: ['W1', 'W2', 'W3', 'W4'] }
 }
 
-function parseWeekly(rows) {
+function parseWeekly(rows, div) {
   console.log('[parseWeekly] rows count:', rows.length, '| first row:', JSON.stringify(rows[0]?.slice(0, 10)))
   const weeklyMap = {}
   let weeklyLabels = []
@@ -326,7 +330,7 @@ function parseWeekly(rows) {
   })
   if (headerIdx < 0) {
     console.log('[parseWeekly] standard header not found, trying dashboard layout...')
-    return parseDashboardLayout(rows)
+    return parseDashboardLayout(rows, div)
   }
 
   const header = rows[headerIdx]
@@ -418,7 +422,7 @@ function parseWeekly(rows) {
   }
   // 표준 파싱 실패 시 대시보드 레이아웃 fallback
   console.log('[parseWeekly] standard parsing empty, trying dashboard layout...')
-  return parseDashboardLayout(rows)
+  return parseDashboardLayout(rows, div)
 }
 
 function parseCitPageType(rows) {
@@ -599,9 +603,9 @@ export function parseSheetRows(sheetName, rows) {
       sheetName === SHEET_NAMES.productHS ||
       sheetName === SHEET_NAMES.productES) return parseProductCnty(rows)
 
-  if (sheetName === SHEET_NAMES.weeklyMS ||
-      sheetName === SHEET_NAMES.weeklyHS ||
-      sheetName === SHEET_NAMES.weeklyES) return parseWeekly(rows)
+  if (sheetName === SHEET_NAMES.weeklyMS) return parseWeekly(rows, 'MS')
+  if (sheetName === SHEET_NAMES.weeklyHS) return parseWeekly(rows, 'HS')
+  if (sheetName === SHEET_NAMES.weeklyES) return parseWeekly(rows, 'ES')
 
   if (sheetName === SHEET_NAMES.citPageType) return parseCitPageType(rows)
 
