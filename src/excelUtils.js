@@ -283,6 +283,38 @@ function parseProductCntyFromRow(rows, headerIdx) {
   }
 }
 
+function parseDashboardLayout(rows) {
+  // 대시보드 레이아웃: 카테고리 이름이 열 헤더로 배치, TTL 행에 주간 값
+  const DASH_CAT_MAP = {
+    TV: 'tv', Monitor: 'monitor', AV: 'audio',
+    RAC: 'rac', Aircare: 'aircare',
+  }
+  const catRowIdx = rows.findIndex(r =>
+    r.some(c => String(c || '').trim() in DASH_CAT_MAP)
+  )
+  if (catRowIdx < 0) return {}
+  const catRow = rows[catRowIdx]
+  const ttlRowIdx = rows.findIndex((r, i) =>
+    i > catRowIdx && r.some(c => String(c || '').trim() === 'TTL')
+  )
+  if (ttlRowIdx < 0) return {}
+  const ttlRow = rows[ttlRowIdx]
+  const weeklyMap = {}
+  for (const [name, id] of Object.entries(DASH_CAT_MAP)) {
+    const ci = catRow.findIndex(c => String(c || '').trim() === name)
+    if (ci < 0) continue
+    const vals = []
+    for (let j = ci + 1; j < ci + 12 && j < ttlRow.length; j++) {
+      const v = pct(ttlRow[j])
+      if (v > 0) vals.push(v)
+    }
+    if (vals.length) weeklyMap[id] = vals.slice(-4)
+  }
+  if (!Object.keys(weeklyMap).length) return {}
+  console.log('[parseWeekly] dashboard layout result:', Object.keys(weeklyMap))
+  return { weeklyMap, weeklyLabels: ['W1', 'W2', 'W3', 'W4'] }
+}
+
 function parseWeekly(rows) {
   console.log('[parseWeekly] rows count:', rows.length, '| first row:', JSON.stringify(rows[0]?.slice(0, 10)))
   const weeklyMap = {}
@@ -293,31 +325,8 @@ function parseWeekly(rows) {
     return cells.includes('category') || cells.includes('product') || cells.includes('lg') || cells.some(c => /^w\d+$/i.test(c))
   })
   if (headerIdx < 0) {
-    // MS 시트: 대시보드 레이아웃 — TV/Monitor/AV 카테고리 블록의 TTL 행 파싱
     console.log('[parseWeekly] standard header not found, trying dashboard layout...')
-    const catRowIdx = rows.findIndex(r => r.some(c => String(c || '').trim() === 'TV'))
-    if (catRowIdx < 0) { console.warn('[parseWeekly] no header or dashboard layout found'); return {} }
-    const catRow = rows[catRowIdx]
-    const ttlRowIdx = rows.findIndex((r, i) => i > catRowIdx && r.some(c => String(c || '').trim() === 'TTL'))
-    if (ttlRowIdx < 0) return {}
-    const ttlRow = rows[ttlRowIdx]
-    const catMap = { TV: 'tv', Monitor: 'monitor', AV: 'audio' }
-    for (const [name, id] of Object.entries(catMap)) {
-      const ci = catRow.findIndex(c => String(c || '').trim() === name)
-      if (ci < 0) continue
-      const vals = []
-      for (let j = ci + 1; j < ci + 12 && j < ttlRow.length; j++) {
-        const v = pct(ttlRow[j])
-        if (v > 0) vals.push(v)
-      }
-      if (vals.length) weeklyMap[id] = vals.slice(-4)
-    }
-    if (Object.keys(weeklyMap).length) weeklyLabels = ['W1', 'W2', 'W3', 'W4']
-    console.log('[parseWeekly] dashboard layout result:', Object.keys(weeklyMap), weeklyLabels)
-    const result = {}
-    if (Object.keys(weeklyMap).length) result.weeklyMap = weeklyMap
-    if (weeklyLabels.length) result.weeklyLabels = weeklyLabels
-    return Object.keys(result).length ? result : {}
+    return parseDashboardLayout(rows)
   }
 
   const header = rows[headerIdx]
@@ -402,10 +411,14 @@ function parseWeekly(rows) {
   }
 
   console.log('[parseWeekly] weeklyMap keys:', Object.keys(weeklyMap), '| weeklyLabels:', weeklyLabels)
-  const result = {}
-  if (Object.keys(weeklyMap).length) result.weeklyMap = weeklyMap
-  if (weeklyLabels.length) result.weeklyLabels = weeklyLabels
-  return Object.keys(result).length ? result : {}
+  if (Object.keys(weeklyMap).length) {
+    const result = { weeklyMap }
+    if (weeklyLabels.length) result.weeklyLabels = weeklyLabels
+    return result
+  }
+  // 표준 파싱 실패 시 대시보드 레이아웃 fallback
+  console.log('[parseWeekly] standard parsing empty, trying dashboard layout...')
+  return parseDashboardLayout(rows)
 }
 
 function parseCitPageType(rows) {
