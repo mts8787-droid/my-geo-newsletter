@@ -173,6 +173,12 @@ function parseMeta(rows) {
     }
     else obj[k] = String(v)
   })
+  // weeklyLabels: "W5,W6,W7,W8" 형태 → 배열로 변환
+  if (obj.weeklyLabels) {
+    const labels = String(obj.weeklyLabels).split(',').map(s => s.trim()).filter(Boolean)
+    if (labels.length) obj.weeklyLabels = labels
+    else delete obj.weeklyLabels
+  }
   return Object.keys(obj).length ? { meta: obj } : {}
 }
 
@@ -312,11 +318,17 @@ function parseDashboardLayout(rows, div) {
   )
   if (catRowIdx < 0) return {}
   const catRow = rows[catRowIdx]
+  console.log('[dashLayout] div:', div, '| catRow idx:', catRowIdx, '| catRow:', JSON.stringify(catRow))
+  // catRow와 ttlRow 사이의 모든 행 덤프
   const ttlRowIdx = rows.findIndex((r, i) =>
     i > catRowIdx && r.some(c => String(c || '').trim() === 'TTL')
   )
   if (ttlRowIdx < 0) return {}
   const ttlRow = rows[ttlRowIdx]
+  console.log('[dashLayout] ttlRow idx:', ttlRowIdx, '| ttlRow:', JSON.stringify(ttlRow))
+  for (let i = catRowIdx + 1; i < ttlRowIdx; i++) {
+    console.log(`[dashLayout] row ${i}:`, JSON.stringify(rows[i]))
+  }
   const weeklyMap = {}
   for (const [name, id] of Object.entries(DASH_CAT_MAP)) {
     const ci = catRow.findIndex(c => String(c || '').trim() === name)
@@ -325,10 +337,15 @@ function parseDashboardLayout(rows, div) {
     for (let j = ci + 1; j < ci + 12 && j < ttlRow.length; j++) {
       const v = pct(ttlRow[j])
       if (v > 0) vals.push(v)
+      else if (vals.length) break // 빈 셀 만나면 중단 — 연속 주간 값만 수집
     }
+    console.log(`[dashLayout] "${name}" col:${ci}, raw ttlRow[ci+1..]:`, JSON.stringify(ttlRow.slice(ci + 1, ci + 13)), '→ vals:', vals)
     if (vals.length) weeklyMap[id] = vals.slice(-4)
   }
-  if (!Object.keys(weeklyMap).length) return {}
+  if (!Object.keys(weeklyMap).length) {
+    console.log('[dashLayout] no weekly data found for div:', div)
+    return {}
+  }
   const weeklyLabels = findWeekLabels(rows, catRowIdx, ttlRowIdx)
     || Object.values(weeklyMap)[0]?.map((_, i) => `W${i + 1}`) || []
   console.log('[parseWeekly] dashboard layout result:', Object.keys(weeklyMap), '| labels:', weeklyLabels)
@@ -337,6 +354,12 @@ function parseDashboardLayout(rows, div) {
 
 function parseWeekly(rows, div) {
   console.log('[parseWeekly] rows count:', rows.length, '| first row:', JSON.stringify(rows[0]?.slice(0, 10)))
+  // 시트 전체 구조 덤프 (디버그)
+  for (let i = 0; i < Math.min(rows.length, 35); i++) {
+    const r = rows[i]
+    const nonEmpty = r?.map((c, j) => [j, c]).filter(([, c]) => c != null && String(c).trim() !== '')
+    if (nonEmpty?.length) console.log(`[parseWeekly] ROW ${i}:`, JSON.stringify(nonEmpty))
+  }
   const weeklyMap = {}
   let weeklyLabels = []
 
@@ -350,7 +373,8 @@ function parseWeekly(rows, div) {
   }
 
   const header = rows[headerIdx]
-  console.log('[parseWeekly] header at row', headerIdx, ':', JSON.stringify(header?.slice(0, 10)))
+  console.log('[parseWeekly] header at row', headerIdx, '| FULL:', JSON.stringify(header))
+  if (headerIdx > 0) console.log('[parseWeekly] row above header:', JSON.stringify(rows[headerIdx - 1]))
   const data = rows.slice(headerIdx + 1).filter(r => r[0] != null && String(r[0]).trim())
 
   const catIdx = header.findIndex(c => {
@@ -375,10 +399,22 @@ function parseWeekly(rows, div) {
     return c === 'TOTAL' || c === 'TTL' || c === ''
   }
 
+  // B/NB 필터 — NonBrand만 사용 (Brand는 브랜드 검색 쿼리라 점수가 과도하게 높음)
+  const bnbIdx = header.findIndex(c => {
+    const s = String(c || '').trim().toLowerCase()
+    return s === 'b/nb' || s === 'bnb' || s === 'brand/nonbrand'
+  })
+  function isNonBrand(r) {
+    if (bnbIdx < 0) return true
+    return String(r[bnbIdx] || '').trim().toLowerCase() === 'nonbrand'
+  }
+
   if (brandIdx >= 0) {
-    // wCols가 비어있으면 첫 LG 데이터 행에서 데이터 컬럼 자동 감지
+    // wCols가 비어있으면 첫 LG NonBrand 데이터 행에서 데이터 컬럼 자동 감지
     if (!wCols.length) {
-      const firstLg = data.find(r => String(r[brandIdx] || '').trim().toUpperCase() === 'LG')
+      const firstLg = data.find(r =>
+        String(r[brandIdx] || '').trim().toUpperCase() === 'LG' && isNonBrand(r)
+      )
       if (firstLg) {
         for (let i = brandIdx + 1; i < firstLg.length; i++) {
           const v = String(firstLg[i] || '').trim()
@@ -392,6 +428,7 @@ function parseWeekly(rows, div) {
     data.forEach(r => {
       const brand = String(r[brandIdx] || '').trim().toUpperCase()
       if (brand !== 'LG') return
+      if (!isNonBrand(r)) return
       if (!isTotal(r)) return
       const cat = String(r[catIdx >= 0 ? catIdx : 0] || '').trim()
       if (!cat) return

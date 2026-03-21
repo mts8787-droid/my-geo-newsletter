@@ -1059,7 +1059,9 @@ function Sidebar({ meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, total, s
       if (parsed.dotcom)       setDotcom(d => ({ ...d, ...parsed.dotcom }))
       if (parsed.productsCnty) setProductsCnty(parsed.productsCnty)
       if (parsed.citationsCnty) setCitationsCnty(parsed.citationsCnty)
-      if (parsed.weeklyLabels) setWeeklyLabels(parsed.weeklyLabels)
+      // meta.weeklyLabels 우선, 없으면 시트에서 파싱된 weeklyLabels 사용
+      const wl = parsed.meta?.weeklyLabels || parsed.weeklyLabels
+      if (wl) setWeeklyLabels(wl)
       // 제품: productsPartial이 있으면 새로 생성, 없으면 weeklyMap만 병합
       console.log('[SYNC] parsed keys:', Object.keys(parsed))
       console.log('[SYNC] weeklyMap?', parsed.weeklyMap ? Object.keys(parsed.weeklyMap) : 'NONE')
