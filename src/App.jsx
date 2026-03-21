@@ -789,7 +789,7 @@ const inputStyle = {
 }
 
 function Sidebar({ meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, total, setTotal, products, setProducts, citations, setCitations, dotcom, setDotcom, productsCnty, setProductsCnty, citationsCnty, setCitationsCnty, resolved, previewLang, setPreviewLang, snapshots, setSnapshots }) {
-  const [gsUrl,     setGsUrl]     = useState('https://docs.google.com/spreadsheets/d/1fTciJRUAqU5lhkPCb39mzv1Y4kNBslF8EuHjZ5H3JY0/edit?gid=1331469350#gid=1331469350')
+  const [gsUrl,     setGsUrl]     = useState('https://docs.google.com/spreadsheets/d/1v4V7ZsHNFXXqbAWqvyVkgNIeXx188hSZ9l7FDsRYy2Y/edit')
   const [gsSyncing, setGsSyncing] = useState(false)
   const [gsStatus,  setGsStatus]  = useState(null)
   const [gsMsg,     setGsMsg]     = useState('')
