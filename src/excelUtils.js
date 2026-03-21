@@ -285,17 +285,44 @@ function parseProductCntyFromRow(rows, headerIdx) {
 
 function parseWeekly(rows) {
   console.log('[parseWeekly] rows count:', rows.length, '| first row:', JSON.stringify(rows[0]?.slice(0, 10)))
+  const weeklyMap = {}
+  let weeklyLabels = []
+
   const headerIdx = rows.findIndex(r => {
     const cells = r.map(c => String(c || '').trim().toLowerCase())
     return cells.includes('category') || cells.includes('product') || cells.includes('lg') || cells.some(c => /^w\d+$/i.test(c))
   })
-  if (headerIdx < 0) { console.warn('[parseWeekly] header not found'); return {} }
+  if (headerIdx < 0) {
+    // MS 시트: 대시보드 레이아웃 — TV/Monitor/AV 카테고리 블록의 TTL 행 파싱
+    console.log('[parseWeekly] standard header not found, trying dashboard layout...')
+    const catRowIdx = rows.findIndex(r => r.some(c => String(c || '').trim() === 'TV'))
+    if (catRowIdx < 0) { console.warn('[parseWeekly] no header or dashboard layout found'); return {} }
+    const catRow = rows[catRowIdx]
+    const ttlRowIdx = rows.findIndex((r, i) => i > catRowIdx && r.some(c => String(c || '').trim() === 'TTL'))
+    if (ttlRowIdx < 0) return {}
+    const ttlRow = rows[ttlRowIdx]
+    const catMap = { TV: 'tv', Monitor: 'monitor', AV: 'audio' }
+    for (const [name, id] of Object.entries(catMap)) {
+      const ci = catRow.findIndex(c => String(c || '').trim() === name)
+      if (ci < 0) continue
+      const vals = []
+      for (let j = ci + 1; j < ci + 12 && j < ttlRow.length; j++) {
+        const v = pct(ttlRow[j])
+        if (v > 0) vals.push(v)
+      }
+      if (vals.length) weeklyMap[id] = vals.slice(-4)
+    }
+    if (Object.keys(weeklyMap).length) weeklyLabels = ['W1', 'W2', 'W3', 'W4']
+    console.log('[parseWeekly] dashboard layout result:', Object.keys(weeklyMap), weeklyLabels)
+    const result = {}
+    if (Object.keys(weeklyMap).length) result.weeklyMap = weeklyMap
+    if (weeklyLabels.length) result.weeklyLabels = weeklyLabels
+    return Object.keys(result).length ? result : {}
+  }
 
   const header = rows[headerIdx]
   console.log('[parseWeekly] header at row', headerIdx, ':', JSON.stringify(header?.slice(0, 10)))
   const data = rows.slice(headerIdx + 1).filter(r => r[0] != null && String(r[0]).trim())
-  const weeklyMap = {}
-  let weeklyLabels = []
 
   const catIdx = header.findIndex(c => {
     const s = String(c || '').trim().toLowerCase()
@@ -319,7 +346,19 @@ function parseWeekly(rows) {
     return c === 'TOTAL' || c === 'TTL' || c === ''
   }
 
-  if (brandIdx >= 0 && wCols.length) {
+  if (brandIdx >= 0) {
+    // wCols가 비어있으면 첫 LG 데이터 행에서 데이터 컬럼 자동 감지
+    if (!wCols.length) {
+      const firstLg = data.find(r => String(r[brandIdx] || '').trim().toUpperCase() === 'LG')
+      if (firstLg) {
+        for (let i = brandIdx + 1; i < firstLg.length; i++) {
+          const v = String(firstLg[i] || '').trim()
+          if (v) wCols.push(i)
+          else if (wCols.length) break
+        }
+        weeklyLabels = wCols.map((_, i) => `W${i + 1}`)
+      }
+    }
     // Format: Product, Country, B/NB, Brand, w5, w6, w7, w8
     data.forEach(r => {
       const brand = String(r[brandIdx] || '').trim().toUpperCase()
