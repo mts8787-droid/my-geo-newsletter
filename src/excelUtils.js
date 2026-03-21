@@ -294,7 +294,7 @@ function parseWeekly(rows) {
   console.log('[parseWeekly] rows count:', rows.length, '| first row:', JSON.stringify(rows[0]?.slice(0, 10)))
   const headerIdx = rows.findIndex(r => {
     const cells = r.map(c => String(c || '').trim().toLowerCase())
-    return cells.includes('category') || cells.includes('lg') || cells.some(c => /^w\d+$/i.test(c))
+    return cells.includes('category') || cells.includes('product') || cells.includes('lg') || cells.some(c => /^w\d+$/i.test(c))
   })
   if (headerIdx < 0) { console.warn('[parseWeekly] header not found'); return {} }
 
@@ -304,64 +304,65 @@ function parseWeekly(rows) {
   const weeklyMap = {}
   let weeklyLabels = []
 
+  const catIdx = header.findIndex(c => {
+    const s = String(c || '').trim().toLowerCase()
+    return s === 'category' || s === 'product'
+  })
+  const countryIdx = header.findIndex(c => String(c || '').trim().toLowerCase() === 'country')
+  const brandIdx = header.findIndex(c => String(c || '').trim().toLowerCase() === 'brand')
   const lgIdx = header.findIndex(c => String(c || '').trim().toUpperCase() === 'LG')
 
-  if (lgIdx >= 0) {
-    // Format: Div, Week/Date, Country, Category, LG, ... → 여러 행을 카테고리별 그룹핑
-    const catIdx = header.findIndex(c => String(c || '').trim().toLowerCase() === 'category')
-    const countryIdx = header.findIndex(c => String(c || '').trim().toLowerCase() === 'country')
-    // Date/Week 컬럼 찾기 — 실제 주차 라벨 추출용
+  // 주차 컬럼 찾기
+  const wCols = []
+  for (let i = 0; i < header.length; i++) {
+    if (/^w\d+$/i.test(String(header[i] || '').trim())) wCols.push(i)
+  }
+  weeklyLabels = wCols.map(i => String(header[i] || '').trim())
+
+  // Country 필터 헬퍼 — (Total), TTL 모두 허용
+  function isTotal(r) {
+    if (countryIdx < 0) return true
+    const c = String(r[countryIdx] || '').replace(/[()]/g, '').trim().toUpperCase()
+    return c === 'TOTAL' || c === 'TTL' || c === ''
+  }
+
+  if (brandIdx >= 0 && wCols.length) {
+    // Format: Product, Country, B/NB, Brand, w5, w6, w7, w8
+    data.forEach(r => {
+      const brand = String(r[brandIdx] || '').trim().toUpperCase()
+      if (brand !== 'LG') return
+      if (!isTotal(r)) return
+      const cat = String(r[catIdx >= 0 ? catIdx : 0] || '').trim()
+      if (!cat) return
+      weeklyMap[CATEGORY_ID_MAP[cat] || cat.toLowerCase()] = wCols.map(c => pct(r[c]))
+    })
+  } else if (lgIdx >= 0) {
+    // Format: Div, Week/Date, Country, Category, LG, ...
     const dateIdx = header.findIndex(c => {
       const s = String(c || '').trim().toLowerCase()
       return s === 'date' || s === 'week' || s === 'period'
     })
     const byCategory = {}
     const weekLabelOrder = []
-
     data.forEach(r => {
-      const country = countryIdx >= 0 ? String(r[countryIdx] || '').trim() : 'TTL'
-      if (country !== 'TTL') return
+      if (!isTotal(r)) return
       const cat = String(r[catIdx >= 0 ? catIdx : 3] || '').trim()
       if (!cat) return
-
-      // 주차 라벨 수집
       if (dateIdx >= 0) {
         const wl = String(r[dateIdx] || '').trim()
         if (wl && !weekLabelOrder.includes(wl)) weekLabelOrder.push(wl)
       }
-
       byCategory[cat] = byCategory[cat] || []
       byCategory[cat].push(pct(r[lgIdx]))
     })
     Object.entries(byCategory).forEach(([cat, vals]) => {
       weeklyMap[CATEGORY_ID_MAP[cat] || cat.toLowerCase()] = vals.slice(-4)
     })
-    weeklyLabels = weekLabelOrder.slice(-4)
-  } else {
-    // Format: Category, [week columns...]
-    const catIdx = header.findIndex(c => String(c || '').trim().toLowerCase() === 'category')
-    const countryIdx = header.findIndex(c => String(c || '').trim().toLowerCase() === 'country')
-    const wCols = []
-    for (let i = 0; i < header.length; i++) {
-      if (/^W\d+$/i.test(String(header[i] || '').trim())) wCols.push(i)
-    }
-    if (!wCols.length) {
-      // W1/W2 패턴 없으면 country/category 이후 컬럼을 주차 데이터로 간주
-      const start = Math.max(catIdx >= 0 ? catIdx : 0, countryIdx >= 0 ? countryIdx : 0) + 1
-      for (let i = start; i < header.length; i++) {
-        const h = String(header[i] || '').trim()
-        if (h) wCols.push(i)
-      }
-    }
-    // 헤더에서 실제 주차 라벨 추출
-    weeklyLabels = wCols.map(i => String(header[i] || '').trim())
-
+    if (weekLabelOrder.length) weeklyLabels = weekLabelOrder.slice(-4)
+  } else if (wCols.length) {
+    // Format: Category, w1, w2, w3, w4
     data.forEach(r => {
-      // Country 컬럼이 있으면 TTL만 필터
-      if (countryIdx >= 0) {
-        const country = String(r[countryIdx] || '').trim()
-        if (country && country !== 'TTL') return
-      }
+      if (!isTotal(r)) return
       const cat = String(r[catIdx >= 0 ? catIdx : 0] || '').trim()
       if (!cat) return
       weeklyMap[CATEGORY_ID_MAP[cat] || cat.toLowerCase()] = wCols.map(c => pct(r[c]))
@@ -413,9 +414,11 @@ function parseCitPageType(rows) {
     const ssVal = numVal(r[bestPair.ss])
 
     if (country.toLowerCase() === 'total' || country.toUpperCase() === 'TTL') {
-      const key = /page total|^ttl$/i.test(pageType) ? 'TTL' : pageType
-      lg[key] = lgVal
-      samsung[key] = ssVal
+      // Microsite → Microsites 정규화 (시트 vs 코드 이름 차이 맞춤)
+      let key = /page total|^ttl$/i.test(pageType) ? 'TTL' : pageType
+      if (key.toLowerCase() === 'microsite') key = 'Microsites'
+      lg[key] = (lg[key] || 0) + lgVal
+      samsung[key] = (samsung[key] || 0) + ssVal
     }
   })
 
@@ -478,13 +481,22 @@ function parseCitTouchPoints(rows) {
 
 function parseCitDomain(rows) {
   const COUNTRIES = ['US','CA','UK','DE','ES','BR','MX','IN','AU','VN']
+  const CNTY_KR = { '미국':'US','캐나다':'CA','영국':'UK','독일':'DE','스페인':'ES','브라질':'BR','멕시코':'MX','인도':'IN','호주':'AU','베트남':'VN' }
 
-  // 헤더/설명 행 건너뛰기 → 도메인 데이터 시작점 찾기
+  // 데이터 컬럼 오프셋 감지: column 0이 비어있으면 offset=1
+  let off = 0
+  for (let i = 0; i < Math.min(rows.length, 5); i++) {
+    const c0 = String(rows[i]?.[0] || '').trim()
+    const c1 = String(rows[i]?.[1] || '').trim()
+    if (!c0 && (c1.includes('.') || c1.includes('[') || COUNTRIES.includes(c1.toUpperCase()))) { off = 1; break }
+  }
+
+  // 헤더/설명 행 건너뛰기
   let startIdx = 0
   for (let i = 0; i < Math.min(rows.length, 10); i++) {
-    const c0 = String(rows[i]?.[0] || '').trim()
-    if (c0.includes('.') && c0.length > 3) { startIdx = i; break }
-    if (c0.toLowerCase() === 'domain' || c0 === '' || c0.startsWith('[') || c0.startsWith('※')) {
+    const cv = String(rows[i]?.[off] || '').trim()
+    if (cv.includes('.') && cv.length > 3) { startIdx = i; break }
+    if (/domain|domian/i.test(cv) || cv === '' || cv.startsWith('[') || cv.startsWith('※')) {
       startIdx = i + 1
     }
   }
@@ -495,25 +507,27 @@ function parseCitDomain(rows) {
 
   for (let i = startIdx; i < rows.length; i++) {
     const r = rows[i]
-    const c0 = String(r[0] || '').trim()
-    const c1 = String(r[1] || '').trim()
-    if (!c0) continue
+    const cv = String(r[off] || '').trim()      // domain or country
+    const ct = String(r[off + 1] || '').trim()   // type
+    if (!cv) continue
 
-    // 국가 마커 감지
-    if (COUNTRIES.includes(c0.toUpperCase()) && (!c1 || c1 === '')) {
-      currentCnty = c0.toUpperCase()
+    // 국가 마커 감지 (영문 코드 또는 한글)
+    const cntyCode = COUNTRIES.includes(cv.toUpperCase()) ? cv.toUpperCase() : CNTY_KR[cv] || null
+    if (cntyCode && (!ct || ct === '')) {
+      currentCnty = cntyCode
       rank = 0
       continue
     }
 
-    if (c0.toLowerCase() === 'domain' || c0.startsWith('[') || c0.startsWith('※')) continue
+    // 헤더/설명 행 건너뛰기
+    if (/domain|domian|^feb$|^mar$|^apr$/i.test(cv) || cv.startsWith('[') || cv.startsWith('※')) continue
 
-    const domain = c0
-    const type = c1
+    const domain = cv
+    const type = ct
 
-    // 최신 월 데이터 찾기
+    // 최신 월 데이터 찾기 (오른쪽에서부터)
     let citations = 0
-    for (let j = r.length - 1; j >= 2; j--) {
+    for (let j = r.length - 1; j >= off + 2; j--) {
       const raw = String(r[j] || '').replace(/,/g, '').trim()
       if (!raw) continue
       const val = parseFloat(raw)
@@ -526,6 +540,7 @@ function parseCitDomain(rows) {
     }
   }
 
+  console.log('[parseCitDomain] result count:', result.length, '| countries:', [...new Set(result.map(r => r.cnty))])
   return result.length > 0 ? { citationsCnty: result } : {}
 }
 
