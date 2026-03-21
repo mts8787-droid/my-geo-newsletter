@@ -109,6 +109,14 @@ const BRAND_COLORS = {
 const FALLBACK_COLORS = ['#94A3B8','#64748B','#475569','#CBD5E1','#E2E8F0']
 function brandColor(name, idx) { return BRAND_COLORS[name] || FALLBACK_COLORS[idx % FALLBACK_COLORS.length] }
 
+// ─── Region 매핑 ────────────────────────────────────────────────────────────
+const REGIONS = {
+  NA:    { label: '북미',   labelEn: 'North America',  countries: ['US', 'CA'] },
+  EU:    { label: '유럽',   labelEn: 'Europe',         countries: ['UK', 'DE', 'ES'] },
+  LATAM: { label: '중남미', labelEn: 'Latin America',   countries: ['BR', 'MX'] },
+  APAC:  { label: '아태',   labelEn: 'Asia Pacific',    countries: ['IN', 'AU', 'VN'] },
+}
+
 function svgMultiLine(brandData, labels, w, h) {
   const brands = Object.keys(brandData)
   if (!brands.length || !labels.length) return ''
@@ -245,10 +253,15 @@ function heroHtml(total, meta, t) {
   const gap = +(total.score - compAvg).toFixed(1)
   const dArrow = d > 0 ? '▲' : d < 0 ? '▼' : '─'
   const dColor = d > 0 ? '#22C55E' : d < 0 ? '#EF4444' : '#94A3B8'
-  return `<div class="hero">
+  return `<div class="hero" id="hero-section">
     <div class="hero-top">
       <div><span class="hero-brand">LG ELECTRONICS</span></div>
-      <div><span class="hero-meta">${meta.reportNo || ''} · ${meta.period || ''}</span></div>
+      <div class="hero-ctx" id="hero-ctx">
+        <span class="hero-ctx-badge">${meta.period || ''}</span>
+        <span class="hero-ctx-badge">${lang === 'en' ? 'All Divisions' : '전체 본부'}</span>
+        <span class="hero-ctx-badge">${lang === 'en' ? 'All Products' : '전체 제품'}</span>
+        <span class="hero-ctx-badge">${lang === 'en' ? 'All Countries' : '전체 국가'}</span>
+      </div>
     </div>
     <div class="hero-body">
       <div class="hero-left">
@@ -561,34 +574,56 @@ function dotcomSectionHtml(dotcom, meta, t) {
 export function generateDashboardHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, weeklyAll) {
   _sid = 0
   const t = T[lang] || T.ko
-  // 국가 목록 추출
-  const countries = new Set(['Total'])
-  if (weeklyAll) Object.values(weeklyAll).forEach(byC => Object.keys(byC).forEach(c => countries.add(c)))
-  const countryList = ['Total', ...[...countries].filter(c => c !== 'Total').sort()]
-  const filterBar = `<div class="vis-filter-bar">
-    <div class="vis-filter-group">
-      <label class="vis-filter-label">${lang === 'en' ? 'Period' : '기간'}</label>
-      <div class="trend-tabs" style="margin:0">
-        <button class="trend-tab active" onclick="switchTrend('weekly')">${t.weeklyTab}</button>
-        <button class="trend-tab" onclick="switchTrend('monthly')">${t.monthlyTab}</button>
-      </div>
+  // 국가 목록 추출 (weeklyAll + productsCnty)
+  const countries = new Set()
+  if (weeklyAll) Object.values(weeklyAll).forEach(byC => Object.keys(byC).forEach(c => { if (c !== 'Total') countries.add(c) }))
+  if (productsCnty) productsCnty.forEach(r => { if (r.country && r.country !== 'TTL') countries.add(r.country) })
+  const countryList = [...countries].sort()
+
+  // ─── Filter Layer HTML ───
+  const allLabel = lang === 'en' ? 'All' : '전체'
+  const filterLayerHtml = `<div class="filter-layer" id="filter-layer">
+    <div class="fl-group">
+      <label class="fl-label">${lang === 'en' ? 'Period' : '기간'}</label>
+      <select class="fl-select" id="f-period">
+        <option value="current">${meta.period || '—'}</option>
+      </select>
     </div>
-    <div class="vis-filter-group">
-      <label class="vis-filter-label">${lang === 'en' ? 'Division' : '본부'}</label>
-      <select class="vis-filter-select" onchange="filterBU(this.value)">
-        <option value="ALL">${lang === 'en' ? 'All' : '전체'}</option>
+    <div class="fl-divider"></div>
+    <div class="fl-group">
+      <label class="fl-label">${lang === 'en' ? 'Division' : '본부'}</label>
+      <select class="fl-select" id="f-bu" onchange="onFilterChange()">
+        <option value="ALL">${allLabel}</option>
         <option value="MS">MS</option><option value="HS">HS</option><option value="ES">ES</option>
       </select>
     </div>
-    <div class="vis-filter-group">
-      <label class="vis-filter-label">${lang === 'en' ? 'Country' : '국가'}</label>
-      <select class="vis-filter-select" id="vis-country-select" onchange="filterCountry(this.value)">
-        ${countryList.map(c => `<option value="${c}">${c === 'Total' ? (lang === 'en' ? 'All (Total)' : '전체 (Total)') : c}</option>`).join('')}
+    <div class="fl-divider"></div>
+    <div class="fl-group">
+      <label class="fl-label">${lang === 'en' ? 'Product' : '제품'}</label>
+      <select class="fl-select" id="f-product" onchange="onFilterChange()">
+        <option value="ALL">${allLabel}</option>
+        ${products.map(p => `<option value="${p.id}" data-bu="${p.bu}">${p.kr}</option>`).join('')}
+      </select>
+    </div>
+    <div class="fl-divider"></div>
+    <div class="fl-group">
+      <label class="fl-label">Region</label>
+      <select class="fl-select" id="f-region" onchange="onFilterChange()">
+        <option value="ALL">${allLabel}</option>
+        ${Object.entries(REGIONS).map(([k, v]) => `<option value="${k}">${k} (${lang === 'en' ? v.labelEn : v.label})</option>`).join('')}
+      </select>
+    </div>
+    <div class="fl-divider"></div>
+    <div class="fl-group">
+      <label class="fl-label">${lang === 'en' ? 'Country' : '국가'}</label>
+      <select class="fl-select" id="f-country" onchange="onFilterChange()">
+        <option value="ALL">${lang === 'en' ? 'All (Total)' : '전체 (Total)'}</option>
+        ${countryList.map(c => `<option value="${c}">${c}</option>`).join('')}
       </select>
     </div>
   </div>`
+
   const visContent = [
-    filterBar,
     meta.showTotal !== false ? heroHtml(total, meta, t) : '',
     meta.showProducts !== false ? productSectionHtml(products, meta, t, lang, weeklyLabels) : '',
     `<div id="trend-container">${trendDetailHtml(products, weeklyAll, weeklyLabels, t, lang)}</div>`,
@@ -618,12 +653,15 @@ body{background:#F1F5F9;font-family:${FONT};min-width:1200px;color:#1A1A1A}
 .tab-panel{display:none}
 .tab-panel.active{display:block}
 .dash-container{max-width:1400px;margin:0 auto;padding:28px 40px}
-/* ── 필터바 ── */
-.vis-filter-bar{display:flex;align-items:center;gap:20px;padding:14px 24px;background:#fff;border-radius:12px;border:1px solid #E8EDF2;margin-bottom:24px;flex-wrap:wrap}
-.vis-filter-group{display:flex;align-items:center;gap:8px}
-.vis-filter-label{font-size:13px;font-weight:700;color:#64748B;white-space:nowrap}
-.vis-filter-select{padding:6px 12px;border-radius:8px;border:1px solid #E2E8F0;font-size:13px;font-weight:600;font-family:${FONT};color:#1A1A1A;background:#F8FAFC;cursor:pointer;outline:none;min-width:100px}
-.vis-filter-select:focus{border-color:${RED}}
+/* ── 필터 레이어 ── */
+.filter-layer{position:sticky;top:53px;z-index:90;background:#fff;border-bottom:2px solid #E8EDF2;padding:12px 40px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.fl-group{display:flex;align-items:center;gap:6px}
+.fl-label{font-size:13px;font-weight:700;color:#64748B;white-space:nowrap}
+.fl-select{padding:5px 10px;border-radius:8px;border:1px solid #E2E8F0;font-size:13px;font-weight:600;font-family:${FONT};color:#1A1A1A;background:#F8FAFC;cursor:pointer;outline:none;min-width:80px;appearance:auto}
+.fl-select:focus{border-color:${RED}}
+.fl-divider{width:1px;height:24px;background:#E8EDF2;flex-shrink:0}
+.hero-ctx{display:flex;gap:8px;flex-wrap:wrap}
+.hero-ctx-badge{font-size:12px;font-weight:600;padding:3px 10px;border-radius:6px;background:rgba(255,255,255,.12);color:#FFB0C0;border:1px solid rgba(255,255,255,.08)}
 /* ── Hero ── */
 .hero{background:#0F172A;border-radius:16px;padding:28px 32px;margin-bottom:24px;color:#fff}
 .hero-top{display:flex;justify-content:space-between;margin-bottom:20px}
@@ -772,6 +810,7 @@ body{background:#F1F5F9;font-family:${FONT};min-width:1200px;color:#1A1A1A}
   <button class="tab-btn" onclick="switchTab('progress')">Progress Tracker</button>
 </div>
 <div id="tab-visibility" class="tab-panel active">
+  ${filterLayerHtml}
   <div class="dash-container">${visContent}</div>
 </div>
 <div id="tab-citation" class="tab-panel">
@@ -859,19 +898,23 @@ function switchCitCnty(btn){
     p.style.display=p.getAttribute('data-cit-cnty')=== sel?'':'none';
   });
 }
-function filterBU(val){
-  document.querySelectorAll('.bu-group[data-bu]').forEach(function(g){
-    g.style.display=(val==='ALL'||g.getAttribute('data-bu')===val)?'':'none';
-  });
-}
+// ─── Embedded Data ───
 var _weeklyAll=${weeklyAll ? JSON.stringify(weeklyAll) : '{}'};
-var _products=${JSON.stringify(products.map(p => ({ id: p.id, bu: p.bu, kr: p.kr, status: p.status, compName: p.compName, compRatio: p.compRatio })))};
+var _products=${JSON.stringify(products.map(p => ({ id: p.id, bu: p.bu, kr: p.kr, en: p.en || p.kr, status: p.status, score: p.score || 0, prev: p.prev || 0, vsComp: p.vsComp || 0, compName: p.compName || '', compRatio: p.compRatio || 0 })))};
+var _productsCnty=${JSON.stringify(productsCnty || [])};
+var _total=${JSON.stringify(total)};
+var _meta={period:'${(meta.period || '').replace(/'/g, "\\'")}',reportNo:'${(meta.reportNo || '').replace(/'/g, "\\'")}',totalInsight:${JSON.stringify(meta.totalInsight || '')}};
 var _wLabels=${JSON.stringify((weeklyLabels && weeklyLabels.length) ? weeklyLabels : ['W1','W2','W3','W4'])};
 var _lang='${lang}';
 var _BRAND_COLORS=${JSON.stringify(BRAND_COLORS)};
 var _FALLBACK=['#94A3B8','#64748B','#475569','#CBD5E1','#E2E8F0'];
 var _RED='${RED}';
 var _FONT="${FONT}";
+var _COMP='${COMP}';
+var _REGIONS={NA:['US','CA'],EU:['UK','DE','ES'],LATAM:['BR','MX'],APAC:['IN','AU','VN']};
+var _REGION_LABELS={NA:'${lang==='en'?'North America':'북미'}',EU:'${lang==='en'?'Europe':'유럽'}',LATAM:'${lang==='en'?'Latin America':'중남미'}',APAC:'${lang==='en'?'Asia Pacific':'아태'}'};
+
+// ─── Helpers ───
 function _bc(n,i){return _BRAND_COLORS[n]||_FALLBACK[i%_FALLBACK.length]}
 function _statusInfo(s){
   if(s==='lead')return{bg:'#ECFDF5',border:'#A7F3D0',color:'#15803D',label:_lang==='en'?'Lead':'선도'};
@@ -903,34 +946,152 @@ function _svgML(bd,labels,w,h){
   });
   return '<svg viewBox="0 0 '+w+' '+h+'" width="100%" height="'+h+'" xmlns="http://www.w3.org/2000/svg" style="display:block;background:#fff;border-radius:8px">'+g+'</svg>';
 }
-function filterCountry(cnty){
+
+// ─── Cascading Filter Logic ───
+function onFilterChange(){
+  var bu=document.getElementById('f-bu').value;
+  var prod=document.getElementById('f-product').value;
+  var region=document.getElementById('f-region').value;
+  var country=document.getElementById('f-country').value;
+  // Cascade: BU → Product options
+  var pSel=document.getElementById('f-product');
+  var opts=pSel.querySelectorAll('option[data-bu]');
+  opts.forEach(function(o){o.style.display=(bu==='ALL'||o.getAttribute('data-bu')===bu)?'':'none'});
+  if(prod!=='ALL'){var cur=pSel.querySelector('option[value="'+prod+'"]');if(cur&&cur.style.display==='none'){pSel.value='ALL';prod='ALL'}}
+  // Cascade: Region → Country options
+  var cSel=document.getElementById('f-country');
+  var regionCountries=region!=='ALL'?_REGIONS[region]:null;
+  cSel.querySelectorAll('option').forEach(function(o){
+    if(o.value==='ALL'){o.style.display='';return}
+    o.style.display=(!regionCountries||regionCountries.indexOf(o.value)>=0)?'':'none';
+  });
+  if(country!=='ALL'){var cc=cSel.querySelector('option[value="'+country+'"]');if(cc&&cc.style.display==='none'){cSel.value='ALL';country='ALL'}}
+  country=cSel.value;
+  // Apply all filters
+  filterBU(bu);
+  filterProducts(prod);
+  filterTrend(bu,country);
+  updateHero(bu,prod,region,country);
+}
+function filterBU(val){
+  document.querySelectorAll('.bu-group[data-bu]').forEach(function(g){
+    g.style.display=(val==='ALL'||g.getAttribute('data-bu')===val)?'':'none';
+  });
+}
+function filterProducts(prodId){
+  document.querySelectorAll('.prod-card').forEach(function(c){c.style.display=''});
+  if(prodId==='ALL')return;
+  var p=_products.find(function(x){return x.id===prodId});
+  if(!p)return;
+  document.querySelectorAll('.prod-card').forEach(function(c){
+    var name=c.querySelector('.prod-name');
+    if(name&&name.textContent!==p.kr)c.style.display='none';
+  });
+}
+function filterTrend(bu,cnty){
+  var trendCnty=cnty==='ALL'?'Total':cnty;
   var container=document.getElementById('trend-container');if(!container)return;
-  var BU=['MS','HS','ES'];var html='';
-  var buFilter=document.querySelector('.vis-filter-select');var buVal=buFilter?buFilter.value:'ALL';
-  var hasTrend=false;
-  BU.forEach(function(bu){
-    var prods=_products.filter(function(p){return p.bu===bu});if(!prods.length)return;
+  var BU=['MS','HS','ES'];var html='';var hasTrend=false;
+  BU.forEach(function(b){
+    var prods=_products.filter(function(p){return p.bu===b});if(!prods.length)return;
     var rows='';
     prods.forEach(function(p){
-      var data=(_weeklyAll[p.id]||{})[cnty]||{};
-      var brands=Object.keys(data).sort(function(a,b){if(a==='LG')return -1;if(b==='LG')return 1;var la=(data[a]||[])[data[a].length-1]||0;var lb=(data[b]||[])[data[b].length-1]||0;return lb-la});
+      var data=(_weeklyAll[p.id]||{})[trendCnty]||{};
+      var brands=Object.keys(data).sort(function(a,b2){if(a==='LG')return -1;if(b2==='LG')return 1;var la=(data[a]||[])[data[a].length-1]||0;var lb=(data[b2]||[])[data[b2].length-1]||0;return lb-la});
       if(!brands.length)return;
       var st=_statusInfo(p.status);var lgL=data.LG?data.LG[data.LG.length-1]:null;
-      var legend=brands.map(function(b,i){var c=_bc(b,i);var isLG=b==='LG';return'<span style="display:inline-flex;align-items:center;gap:3px;margin-right:12px"><i style="display:inline-block;width:10px;height:3px;border-radius:1px;background:'+c+';opacity:'+(isLG?1:0.7)+'"></i><span style="font-size:13px;color:'+(isLG?'#1A1A1A':'#94A3B8')+';font-weight:'+(isLG?700:400)+'">'+b+'</span></span>'}).join('');
-      var thead='<tr><th style="text-align:left;padding:5px 10px;font-size:14px;color:#94A3B8;font-weight:600;border-bottom:1px solid #F1F5F9">Brand</th>'+_wLabels.map(function(w){return'<th style="text-align:right;padding:5px 8px;font-size:14px;color:#94A3B8;font-weight:600;border-bottom:1px solid #F1F5F9">'+w+'</th>'}).join('')+'</tr>';
-      var tbody=brands.map(function(b,i){var c=_bc(b,i);var isLG=b==='LG';var cells=_wLabels.map(function(_,wi){var val=data[b]?data[b][wi]:null;return'<td style="text-align:right;padding:5px 8px;font-size:14px;color:'+(val!=null?(isLG?'#1A1A1A':'#475569'):'#CBD5E1')+';font-weight:'+(isLG?700:400)+';border-bottom:1px solid #F8FAFC;font-variant-numeric:tabular-nums">'+(val!=null?val.toFixed(1):'—')+'</td>'}).join('');return'<tr style="background:'+(isLG?'#FFF8F9':i%2===0?'#fff':'#FAFBFC')+'"><td style="padding:5px 10px;font-size:14px;font-weight:'+(isLG?700:500)+';color:'+c+';border-bottom:1px solid #F8FAFC;white-space:nowrap"><i style="display:inline-block;width:6px;height:6px;border-radius:50%;background:'+c+';margin-right:5px;vertical-align:0"></i>'+b+'</td>'+cells+'</tr>'}).join('');
+      var legend=brands.map(function(br,i){var c=_bc(br,i);var isLG=br==='LG';return'<span style="display:inline-flex;align-items:center;gap:3px;margin-right:12px"><i style="display:inline-block;width:10px;height:3px;border-radius:1px;background:'+c+';opacity:'+(isLG?1:0.7)+'"></i><span style="font-size:13px;color:'+(isLG?'#1A1A1A':'#94A3B8')+';font-weight:'+(isLG?700:400)+'">'+br+'</span></span>'}).join('');
+      var thead='<tr><th style="text-align:left;padding:5px 10px;font-size:13px;color:#94A3B8;font-weight:600;border-bottom:1px solid #F1F5F9">Brand</th>'+_wLabels.map(function(w){return'<th style="text-align:right;padding:5px 8px;font-size:13px;color:#94A3B8;font-weight:600;border-bottom:1px solid #F1F5F9">'+w+'</th>'}).join('')+'</tr>';
+      var tbody=brands.map(function(br,i){var c=_bc(br,i);var isLG=br==='LG';var cells=_wLabels.map(function(_,wi){var val=data[br]?data[br][wi]:null;return'<td style="text-align:right;padding:5px 8px;font-size:13px;color:'+(val!=null?(isLG?'#1A1A1A':'#475569'):'#CBD5E1')+';font-weight:'+(isLG?700:400)+';border-bottom:1px solid #F8FAFC;font-variant-numeric:tabular-nums">'+(val!=null?val.toFixed(1):'—')+'</td>'}).join('');return'<tr style="background:'+(isLG?'#FFF8F9':i%2===0?'#fff':'#FAFBFC')+'"><td style="padding:5px 10px;font-size:13px;font-weight:'+(isLG?700:500)+';color:'+c+';border-bottom:1px solid #F8FAFC;white-space:nowrap"><i style="display:inline-block;width:6px;height:6px;border-radius:50%;background:'+c+';margin-right:5px;vertical-align:0"></i>'+br+'</td>'+cells+'</tr>'}).join('');
       rows+='<div class="trend-row" style="margin-bottom:24px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><span style="width:3px;height:16px;border-radius:2px;background:'+_RED+';flex-shrink:0"></span><span style="font-size:15px;font-weight:700;color:#1A1A1A">'+p.kr+'</span><span style="font-size:13px;font-weight:700;padding:2px 8px;border-radius:10px;background:'+st.bg+';color:'+st.color+';border:1px solid '+st.border+'">'+st.label+'</span>'+(lgL!=null?'<span style="font-size:13px;font-weight:700;color:#1A1A1A">LG '+lgL.toFixed(1)+'%</span>':'')+(p.compName?'<span style="font-size:13px;color:#94A3B8">vs '+p.compName+' '+(p.compRatio||'')+'%</span>':'')+'</div><div style="background:#fff;border:1px solid #E8EDF2;border-radius:10px;padding:12px 12px 4px 0">'+_svgML(data,_wLabels,900,200)+'</div><div style="padding:6px 4px 0">'+legend+'</div><div style="margin-top:6px;border:1px solid #E8EDF2;border-radius:8px;overflow:hidden"><table style="width:100%;border-collapse:collapse;font-family:'+_FONT+'"><thead>'+thead+'</thead><tbody>'+tbody+'</tbody></table></div></div>';
     });
-    if(!rows)return;
-    hasTrend=true;
-    var disp=(buVal==='ALL'||buVal===bu)?'':'display:none';
-    html+='<div class="bu-group" data-bu="'+bu+'" style="margin-bottom:20px;'+disp+'"><div class="bu-header"><span class="bu-label">'+bu+'</span></div>'+rows+'</div>';
+    if(!rows)return;hasTrend=true;
+    var disp=(bu==='ALL'||bu===b)?'':'display:none';
+    html+='<div class="bu-group" data-bu="'+b+'" style="margin-bottom:20px;'+disp+'"><div class="bu-header"><span class="bu-label">'+b+'</span></div>'+rows+'</div>';
   });
   if(!hasTrend){container.innerHTML='';return}
   var title=_lang==='en'?'Weekly Competitor Trend':'주간 경쟁사 트렌드';
   var sub=_wLabels[0]+'–'+_wLabels[_wLabels.length-1]+' ('+_wLabels.length+(_lang==='en'?' weeks':'주')+')';
-  var cntyLabel=cnty==='Total'?'':' — '+cnty;
+  var cntyLabel=trendCnty==='Total'?'':' — '+trendCnty;
   container.innerHTML='<div class="section-card"><div class="section-header"><div class="section-title">'+title+cntyLabel+'</div><span class="legend">'+sub+'</span></div><div class="section-body">'+html+'</div></div>';
+}
+
+// ─── Hero / Executive Summary 동적 업데이트 ───
+function updateHero(bu,prodId,region,country){
+  var hero=document.getElementById('hero-section');if(!hero)return;
+  var ctx=document.getElementById('hero-ctx');
+  var allL=_lang==='en'?'All':'전체';
+  // Context badges
+  var badges='<span class="hero-ctx-badge">'+_meta.period+'</span>';
+  badges+='<span class="hero-ctx-badge">'+(bu==='ALL'?(allL+(_lang==='en'?' Divisions':' 본부')):bu)+'</span>';
+  var prodName=allL+(_lang==='en'?' Products':' 제품');
+  if(prodId!=='ALL'){var pObj=_products.find(function(x){return x.id===prodId});if(pObj)prodName=pObj.kr}
+  badges+='<span class="hero-ctx-badge">'+prodName+'</span>';
+  var regionLabel='';
+  if(region!=='ALL')regionLabel=region+' ('+(_REGION_LABELS[region]||'')+')';
+  if(country!=='ALL')badges+='<span class="hero-ctx-badge">'+country+'</span>';
+  else if(region!=='ALL')badges+='<span class="hero-ctx-badge">'+regionLabel+'</span>';
+  else badges+='<span class="hero-ctx-badge">'+(allL+(_lang==='en'?' Countries':' 국가'))+'</span>';
+  if(ctx)ctx.innerHTML=badges;
+  // Calculate filtered scores
+  var result=calcFilteredData(bu,prodId,region,country);
+  if(!result)return;
+  var sc=result.score;var comp=result.vsComp;var compName=result.compName||'Competitor';
+  var d=+(sc-(result.prev||sc)).toFixed(1);
+  var gap=+(sc-comp).toFixed(1);
+  var dArrow=d>0?'▲':d<0?'▼':'─';
+  var dColor=d>0?'#22C55E':d<0?'#EF4444':'#94A3B8';
+  // Update score area
+  var scoreRow=hero.querySelector('.hero-score-row');
+  if(scoreRow)scoreRow.innerHTML='<span class="hero-score">'+sc.toFixed(1)+'</span><span class="hero-pct">%</span><span class="hero-delta" style="color:'+dColor+'">'+dArrow+' '+Math.abs(d).toFixed(1)+'%p</span><span class="hero-mom">MoM</span>';
+  // Update gauge
+  var tracks=hero.querySelectorAll('.hero-gauge-track');
+  if(tracks[0]){var bar=tracks[0].querySelector('.hero-gauge-bar');if(bar)bar.style.width=Math.min(sc,100)+'%'}
+  if(tracks[1]){var bar2=tracks[1].querySelector('.hero-gauge-bar');if(bar2)bar2.style.width=Math.min(comp,100)+'%'}
+  // Update legend
+  var legend=hero.querySelector('.hero-legend');
+  if(legend)legend.innerHTML='<span><i style="background:'+_RED+'"></i> LG '+sc.toFixed(1)+'%</span>'+(comp>0?'<span><i style="background:'+_COMP+'"></i> '+compName+' '+comp.toFixed(1)+'%</span>':'')+'<span><i style="background:#475569"></i> prev '+(result.prev||sc).toFixed(1)+'%</span>';
+  // Update competitor panel
+  var compDiv=hero.querySelector('.hero-comp');
+  if(compDiv&&comp>0){compDiv.innerHTML='<span class="hero-comp-label">'+compName.toUpperCase()+'</span> <span class="hero-comp-score">'+comp.toFixed(1)+'%</span><span class="hero-comp-gap" style="color:'+(gap>=0?'#22C55E':'#EF4444')+'">Gap '+(gap>=0?'+':'')+gap.toFixed(1)+'%p</span>'}
+}
+function calcFilteredData(bu,prodId,region,country){
+  // Specific country selected → use productsCnty
+  if(country!=='ALL'){
+    var cntyData=_productsCnty.filter(function(r){return r.country===country});
+    if(bu!=='ALL')cntyData=cntyData.filter(function(r){return _products.some(function(p){return p.kr===r.product&&p.bu===bu})});
+    if(prodId!=='ALL'){var pObj=_products.find(function(p){return p.id===prodId});if(pObj)cntyData=cntyData.filter(function(r){return r.product===pObj.kr})}
+    if(!cntyData.length)return _total;
+    var lgAvg=cntyData.reduce(function(s,r){return s+r.score},0)/cntyData.length;
+    var compAvg=cntyData.reduce(function(s,r){return s+r.compScore},0)/cntyData.length;
+    return{score:+lgAvg.toFixed(1),prev:+lgAvg.toFixed(1),vsComp:+compAvg.toFixed(1),compName:cntyData[0].compName||''}
+  }
+  // Region selected → aggregate countries in region
+  if(region!=='ALL'){
+    var rCountries=_REGIONS[region]||[];
+    var rData=_productsCnty.filter(function(r){return rCountries.indexOf(r.country)>=0});
+    if(bu!=='ALL')rData=rData.filter(function(r){return _products.some(function(p){return p.kr===r.product&&p.bu===bu})});
+    if(prodId!=='ALL'){var pObj2=_products.find(function(p){return p.id===prodId});if(pObj2)rData=rData.filter(function(r){return r.product===pObj2.kr})}
+    if(!rData.length)return _total;
+    var lgAvg2=rData.reduce(function(s,r){return s+r.score},0)/rData.length;
+    var compAvg2=rData.reduce(function(s,r){return s+r.compScore},0)/rData.length;
+    return{score:+lgAvg2.toFixed(1),prev:+lgAvg2.toFixed(1),vsComp:+compAvg2.toFixed(1),compName:rData[0].compName||''}
+  }
+  // Specific product
+  if(prodId!=='ALL'){
+    var pObj3=_products.find(function(p){return p.id===prodId});
+    if(pObj3)return{score:pObj3.score,prev:pObj3.prev,vsComp:pObj3.vsComp,compName:pObj3.compName};
+    return _total;
+  }
+  // Specific BU
+  if(bu!=='ALL'){
+    var buProds=_products.filter(function(p){return p.bu===bu});
+    if(!buProds.length)return _total;
+    var lgA=buProds.reduce(function(s,p){return s+p.score},0)/buProds.length;
+    var cA=buProds.reduce(function(s,p){return s+p.vsComp},0)/buProds.length;
+    return{score:+lgA.toFixed(1),prev:+lgA.toFixed(1),vsComp:+cA.toFixed(1),compName:''}
+  }
+  return _total;
 }
 </script>
 </body>
