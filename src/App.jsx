@@ -757,10 +757,10 @@ function NewsletterPreview({ meta, total, products, citations, dotcom, productsC
 }
 
 // ─── 대시보드 미리보기 (SVG 차트 기반 독립 시각화) ──────────────────────────────
-function DashboardPreview({ meta, total, products, citations, dotcom, productsCnty = [], citationsCnty = [], lang = 'ko', weeklyLabels }) {
+function DashboardPreview({ meta, total, products, citations, dotcom, productsCnty = [], citationsCnty = [], lang = 'ko', weeklyLabels, weeklyAll = {} }) {
   const iframeRef = useRef(null)
   const html = generateDashboardHTML
-    ? generateDashboardHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels)
+    ? generateDashboardHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, weeklyAll)
     : '<!DOCTYPE html><html><body style="background:#F1F5F9;display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;color:#64748B"><p>Loading dashboard...</p></body></html>'
 
   React.useEffect(() => {
@@ -2239,10 +2239,9 @@ export default function App() {
             {(IS_DASHBOARD ? [] : [
               { key: 'preview-ko', tab: 'preview', lang: 'ko', label: '뉴스레터미리보기 (KO)' },
               { key: 'preview-en', tab: 'preview', lang: 'en', label: '뉴스레터미리보기 (EN)' },
-              { key: 'trend',      tab: 'trend',   lang: null, label: '차트 분석' },
               { key: 'code',       tab: 'code',    lang: null, label: 'HTML 내보내기' },
             ]).map(({ key, tab, lang, label }) => {
-              const isActive = tab === 'code' ? activeTab === 'code' : tab === 'trend' ? activeTab === 'trend' : (activeTab === 'preview' && previewLang === lang)
+              const isActive = tab === 'code' ? activeTab === 'code' : (activeTab === 'preview' && previewLang === lang)
               return (
                 <button key={key} onClick={() => { setActiveTab(tab); if (lang) setPreviewLang(lang) }} style={{
                   padding: '5px 12px', borderRadius: 7, border: 'none',
@@ -2256,33 +2255,15 @@ export default function App() {
               )
             })}
             {IS_DASHBOARD && (
-              <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-                <div style={{ display: 'flex', gap: 2, background: '#0F172A', borderRadius: 6, padding: 2 }}>
-                  <button onClick={() => setActiveTab('visibility')} style={{
+              <div style={{ display: 'flex', gap: 2, background: '#0F172A', borderRadius: 6, padding: 2 }}>
+                {['ko', 'en'].map(l => (
+                  <button key={l} onClick={() => setPreviewLang(l)} style={{
                     padding: '3px 10px', borderRadius: 5, border: 'none',
-                    background: activeTab !== 'trend' ? '#1E293B' : 'transparent',
-                    color: activeTab !== 'trend' ? '#FFFFFF' : '#64748B',
+                    background: previewLang === l ? LG_RED : 'transparent',
+                    color: previewLang === l ? '#FFFFFF' : '#64748B',
                     fontSize: 10, fontWeight: 700, fontFamily: FONT, cursor: 'pointer',
-                  }}>대시보드</button>
-                  <button onClick={() => setActiveTab('trend')} style={{
-                    padding: '3px 10px', borderRadius: 5, border: 'none',
-                    background: activeTab === 'trend' ? '#1E293B' : 'transparent',
-                    color: activeTab === 'trend' ? '#FFFFFF' : '#64748B',
-                    fontSize: 10, fontWeight: 700, fontFamily: FONT, cursor: 'pointer',
-                  }}>차트 분석</button>
-                </div>
-                {activeTab !== 'trend' && (
-                  <div style={{ display: 'flex', gap: 2, background: '#0F172A', borderRadius: 6, padding: 2 }}>
-                    {['ko', 'en'].map(l => (
-                      <button key={l} onClick={() => setPreviewLang(l)} style={{
-                        padding: '3px 10px', borderRadius: 5, border: 'none',
-                        background: previewLang === l ? LG_RED : 'transparent',
-                        color: previewLang === l ? '#FFFFFF' : '#64748B',
-                        fontSize: 10, fontWeight: 700, fontFamily: FONT, cursor: 'pointer',
-                      }}>{l.toUpperCase()}</button>
-                    ))}
-                  </div>
-                )}
+                  }}>{l.toUpperCase()}</button>
+                ))}
               </div>
             )}
           </div>
@@ -2355,13 +2336,9 @@ export default function App() {
 
         {/* 컨텐츠 영역 */}
         {IS_DASHBOARD ? (
-          activeTab === 'trend' ? (
-            <WeeklyTrendView weeklyAll={weeklyAll} products={products} weeklyLabels={weeklyLabels} />
-          ) : (
-            <div style={{ flex: 1, overflow: 'hidden' }}>
-              <DashboardPreview meta={meta} total={total} products={resolved.products} citations={resolved.citations} dotcom={dotcom} productsCnty={resolved.productsCnty} citationsCnty={resolved.citationsCnty} lang={previewLang} weeklyLabels={weeklyLabels} />
-            </div>
-          )
+          <div style={{ flex: 1, overflow: 'hidden' }}>
+            <DashboardPreview meta={meta} total={total} products={resolved.products} citations={resolved.citations} dotcom={dotcom} productsCnty={resolved.productsCnty} citationsCnty={resolved.citationsCnty} lang={previewLang} weeklyLabels={weeklyLabels} weeklyAll={weeklyAll} />
+          </div>
         ) : (
           activeTab === 'preview' ? (
             <div style={{ flex: 1, overflowY: 'auto', padding: '28px 36px',
@@ -2370,8 +2347,6 @@ export default function App() {
                 <NewsletterPreview meta={meta} total={total} products={resolved.products} citations={resolved.citations} dotcom={dotcom} productsCnty={resolved.productsCnty} citationsCnty={resolved.citationsCnty} lang={previewLang} />
               </div>
             </div>
-          ) : activeTab === 'trend' ? (
-            <WeeklyTrendView weeklyAll={weeklyAll} products={products} weeklyLabels={weeklyLabels} />
           ) : (
             <HtmlCodeViewer meta={meta} total={total} products={resolved.products} citations={resolved.citations} dotcom={dotcom} productsCnty={resolved.productsCnty} citationsCnty={resolved.citationsCnty} lang={previewLang} />
           )

@@ -97,6 +97,139 @@ function svgLine(data, labels, w, h, color) {
   </svg>`
 }
 
+// ─── Multi-brand SVG 라인 차트 ─────────────────────────────────────────────
+const BRAND_COLORS = {
+  LG: RED, Samsung: '#3B82F6', Sony: '#7C3AED', Hisense: '#059669',
+  TCL: '#D97706', Asus: '#0EA5E9', Dell: '#6366F1', MSI: '#EF4444',
+  JBL: '#F97316', Bose: '#8B5CF6', Bosch: '#14B8A6', Whirlpool: '#06B6D4',
+  Haier: '#22C55E', Miele: '#A855F7', Dyson: '#EC4899', Xiaomi: '#F59E0B',
+  Shark: '#6B7280', Daikin: '#2563EB', Mitsubishi: '#DC2626', Media: '#10B981',
+  Panasonic: '#0D9488', Blueair: '#0284C7', Philips: '#7C3AED',
+}
+const FALLBACK_COLORS = ['#94A3B8','#64748B','#475569','#CBD5E1','#E2E8F0']
+function brandColor(name, idx) { return BRAND_COLORS[name] || FALLBACK_COLORS[idx % FALLBACK_COLORS.length] }
+
+function svgMultiLine(brandData, labels, w, h) {
+  const brands = Object.keys(brandData)
+  if (!brands.length || !labels.length) return ''
+  // Y축 범위 계산
+  let mn = Infinity, mx = -Infinity
+  brands.forEach(b => (brandData[b] || []).forEach(v => { if (v != null) { if (v < mn) mn = v; if (v > mx) mx = v } }))
+  if (!isFinite(mn)) return ''
+  const pad = Math.max((mx - mn) * 0.15, 2)
+  mn = Math.max(0, mn - pad); mx = Math.min(100, mx + pad)
+  const rng = mx - mn || 1
+  const pl = 40, pr = 16, pt = 12, pb = 24
+  const cw = w - pl - pr, ch = h - pt - pb
+  // Grid lines
+  const gridCount = 4
+  let gridLines = ''
+  for (let i = 0; i <= gridCount; i++) {
+    const y = pt + (i / gridCount) * ch
+    const val = mx - (i / gridCount) * rng
+    gridLines += `<line x1="${pl}" y1="${y.toFixed(1)}" x2="${w - pr}" y2="${y.toFixed(1)}" stroke="#E8EDF2" stroke-width="1"/>`
+    gridLines += `<text x="${pl - 6}" y="${(y + 4).toFixed(1)}" text-anchor="end" font-size="11" fill="#94A3B8" font-family="${FONT}">${val.toFixed(0)}%</text>`
+  }
+  // X labels
+  let xLabels = ''
+  labels.forEach((l, i) => {
+    const x = pl + (i / Math.max(labels.length - 1, 1)) * cw
+    xLabels += `<text x="${x.toFixed(1)}" y="${pt + ch + 16}" text-anchor="middle" font-size="11" fill="#94A3B8" font-family="${FONT}">${l}</text>`
+  })
+  // Brand lines
+  let lines = ''
+  brands.forEach((b, bi) => {
+    const vals = brandData[b] || []
+    const color = brandColor(b, bi)
+    const isLG = b === 'LG'
+    const sw = isLG ? 2.5 : 1.5
+    const opacity = isLG ? 1 : 0.7
+    const pts = []
+    vals.forEach((v, i) => {
+      if (v == null) return
+      const x = pl + (i / Math.max(labels.length - 1, 1)) * cw
+      const y = pt + (1 - (v - mn) / rng) * ch
+      pts.push({ x, y, v })
+    })
+    if (pts.length < 2) return
+    const d = pts.map((p, i) => `${i ? 'L' : 'M'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ')
+    lines += `<path d="${d}" stroke="${color}" fill="none" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round" opacity="${opacity}"/>`
+    pts.forEach(p => {
+      lines += `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${isLG ? 3.5 : 2.5}" fill="#fff" stroke="${color}" stroke-width="${isLG ? 2 : 1.5}" opacity="${opacity}"/>`
+    })
+  })
+  return `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}" xmlns="http://www.w3.org/2000/svg" style="display:block;background:#fff;border-radius:8px">${gridLines}${xLabels}${lines}</svg>`
+}
+
+// ─── 경쟁사 트렌드 섹션 ────────────────────────────────────────────────────
+function trendDetailHtml(products, weeklyAll, weeklyLabels, t, lang) {
+  if (!weeklyAll || !Object.keys(weeklyAll).length) return ''
+  const wLabels = (weeklyLabels && weeklyLabels.length) ? weeklyLabels : ['W1', 'W2', 'W3', 'W4']
+  const BU_ORDER = ['MS', 'HS', 'ES']
+
+  const buGroups = BU_ORDER.map(bu => {
+    const prods = products.filter(p => p.bu === bu)
+    if (!prods.length) return ''
+    const rows = prods.map(p => {
+      const data = weeklyAll[p.id]?.['Total'] || {}
+      const brands = Object.keys(data).sort((a, b) => {
+        if (a === 'LG') return -1; if (b === 'LG') return 1
+        const la = data[a]?.[data[a].length - 1] || 0
+        const lb = data[b]?.[data[b].length - 1] || 0
+        return lb - la
+      })
+      if (!brands.length) return ''
+      const st = statusInfo(p.status, lang)
+      const lgLatest = data.LG?.[data.LG.length - 1]
+      // Legend
+      const legend = brands.map((b, i) => {
+        const c = brandColor(b, i)
+        const isLG = b === 'LG'
+        return `<span style="display:inline-flex;align-items:center;gap:3px;margin-right:12px"><i style="display:inline-block;width:10px;height:3px;border-radius:1px;background:${c};opacity:${isLG ? 1 : 0.7}"></i><span style="font-size:11px;color:${isLG ? '#1A1A1A' : '#94A3B8'};font-weight:${isLG ? 700 : 400}">${b}</span></span>`
+      }).join('')
+      // Data table
+      const thead = `<tr><th style="text-align:left;padding:5px 10px;font-size:12px;color:#94A3B8;font-weight:600;border-bottom:1px solid #F1F5F9">Brand</th>${wLabels.map(w => `<th style="text-align:right;padding:5px 8px;font-size:12px;color:#94A3B8;font-weight:600;border-bottom:1px solid #F1F5F9">${w}</th>`).join('')}</tr>`
+      const tbody = brands.map((b, i) => {
+        const c = brandColor(b, i)
+        const isLG = b === 'LG'
+        const cells = wLabels.map((_, wi) => {
+          const val = data[b]?.[wi]
+          return `<td style="text-align:right;padding:5px 8px;font-size:12px;color:${val != null ? (isLG ? '#1A1A1A' : '#475569') : '#CBD5E1'};font-weight:${isLG ? 700 : 400};border-bottom:1px solid #F8FAFC;font-variant-numeric:tabular-nums">${val != null ? val.toFixed(1) : '—'}</td>`
+        }).join('')
+        return `<tr style="background:${isLG ? '#FFF8F9' : i % 2 === 0 ? '#fff' : '#FAFBFC'}"><td style="padding:5px 10px;font-size:12px;font-weight:${isLG ? 700 : 500};color:${c};border-bottom:1px solid #F8FAFC;white-space:nowrap"><i style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${c};margin-right:5px;vertical-align:0"></i>${b}</td>${cells}</tr>`
+      }).join('')
+
+      return `<div class="trend-row" style="margin-bottom:24px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+          <span style="width:3px;height:16px;border-radius:2px;background:${RED};flex-shrink:0"></span>
+          <span style="font-size:15px;font-weight:700;color:#1A1A1A">${p.kr}</span>
+          <span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;background:${st.bg};color:${st.color};border:1px solid ${st.border}">${st.label}</span>
+          ${lgLatest != null ? `<span style="font-size:13px;font-weight:700;color:#1A1A1A">LG ${lgLatest.toFixed(1)}%</span>` : ''}
+          ${p.compName ? `<span style="font-size:11px;color:#94A3B8">vs ${p.compName} ${p.compRatio || ''}%</span>` : ''}
+        </div>
+        <div style="background:#fff;border:1px solid #E8EDF2;border-radius:10px;padding:12px 12px 4px 0">${svgMultiLine(data, wLabels, 900, 200)}</div>
+        <div style="padding:6px 4px 0">${legend}</div>
+        <div style="margin-top:6px;border:1px solid #E8EDF2;border-radius:8px;overflow:hidden"><table style="width:100%;border-collapse:collapse;font-family:${FONT}"><thead>${thead}</thead><tbody>${tbody}</tbody></table></div>
+      </div>`
+    }).join('')
+
+    if (!rows) return ''
+    return `<div class="bu-group" style="margin-bottom:20px">
+      <div class="bu-header"><span class="bu-label">${bu}</span></div>
+      ${rows}
+    </div>`
+  }).join('')
+
+  if (!buGroups.trim()) return ''
+  return `<div class="section-card">
+    <div class="section-header">
+      <div class="section-title">${lang === 'en' ? 'Weekly Competitor Trend' : '주간 경쟁사 트렌드'}</div>
+      <span class="legend">${wLabels[0]}–${wLabels[wLabels.length - 1]} (${wLabels.length}${lang === 'en' ? ' weeks' : '주'})</span>
+    </div>
+    <div class="section-body">${buGroups}</div>
+  </div>`
+}
+
 // ─── Insight / HowToRead ────────────────────────────────────────────────────
 function insightHtml(insight, showInsight, howToRead, showHowToRead, t) {
   let h = ''
@@ -431,12 +564,13 @@ function dotcomSectionHtml(dotcom, meta, t) {
 // ═══════════════════════════════════════════════════════════════════════════
 // 메인 생성 함수
 // ═══════════════════════════════════════════════════════════════════════════
-export function generateDashboardHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels) {
+export function generateDashboardHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, weeklyAll) {
   _sid = 0
   const t = T[lang] || T.ko
   const visContent = [
     meta.showTotal !== false ? heroHtml(total, meta, t) : '',
     meta.showProducts !== false ? productSectionHtml(products, meta, t, lang, weeklyLabels) : '',
+    trendDetailHtml(products, weeklyAll, weeklyLabels, t, lang),
     meta.showCnty !== false ? countrySectionHtml(productsCnty, meta, t, lang) : '',
   ].join('')
   const citContent = [
