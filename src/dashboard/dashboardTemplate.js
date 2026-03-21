@@ -239,7 +239,7 @@ function cntyColHtml(r, maxScore, label) {
       ${r.compScore > 0 ? `<div class="vbar-col-wrap">
         <span class="vbar-val comp-val" style="color:${COMP}">${r.compScore.toFixed(1)}</span>
         <div class="vbar-col" style="height:${cPx}px;background:${COMP}"></div>
-        <span class="vbar-col-name">${r.compName}</span>
+        <span class="vbar-col-name">${r.compName.toUpperCase() === 'SAMSUNG' ? 'SS' : r.compName}</span>
       </div>` : ''}
     </div>
     <span class="vbar-gap" style="color:${gapColor}">${gap >= 0 ? '+' : ''}${gap}%p</span>
@@ -540,9 +540,9 @@ body{background:#F1F5F9;font-family:${FONT};min-width:1200px;color:#1A1A1A}
 .vbar-val{font-size:13px;font-weight:700;white-space:nowrap;margin-bottom:3px}
 .vbar-val.comp-val{font-size:13px;font-weight:600}
 .vbar-cols{display:flex;gap:4px;width:100%;align-items:flex-end}
-.vbar-col-wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end}
+.vbar-col-wrap{flex:0 0 36px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end}
 .vbar-col{width:100%;border-radius:4px 4px 0 0;min-height:3px;transition:height .3s}
-.vbar-col-name{font-size:13px;font-weight:600;color:#94A3B8;margin-top:3px;white-space:nowrap}
+.vbar-col-name{font-size:13px;font-weight:600;color:#94A3B8;margin-top:3px;white-space:nowrap;width:36px;text-align:center;overflow:hidden;text-overflow:clip;letter-spacing:-0.5px}
 .vbar-gap{font-size:13px;font-weight:700;margin-top:4px;white-space:nowrap}
 .vbar-label{font-size:13px;font-weight:600;color:#475569;margin-top:4px;text-align:center;word-break:keep-all;line-height:1.3}
 /* ── 국가 뷰탭 ── */

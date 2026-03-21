@@ -197,14 +197,14 @@ function parseVisSummary(rows) {
   // 2) 테이블 형식: Country/Date + LG + SAMSUNG 컬럼
   const headerIdx = rows.findIndex(r =>
     r.some(c => String(c || '').trim().toUpperCase() === 'LG') &&
-    r.some(c => { const s = String(c || '').trim().toLowerCase(); return s === 'country' || s === 'date' || s === 'div' })
+    r.some(c => { const s = String(c || '').trim().toLowerCase(); return s.includes('countr') || s.includes('date') || s.includes('div') })
   )
   if (headerIdx < 0) return {}
 
   const header = rows[headerIdx]
   const lgCol = header.findIndex(c => String(c || '').trim().toUpperCase() === 'LG')
-  const ssCol = header.findIndex(c => String(c || '').trim().toUpperCase() === 'SAMSUNG')
-  const countryCol = header.findIndex(c => String(c || '').trim().toLowerCase() === 'country')
+  const ssCol = header.findIndex(c => { const s = String(c || '').trim().toUpperCase(); return s === 'SAMSUNG' || s === 'SAMSUMG' })
+  const countryCol = header.findIndex(c => { const s = String(c || '').trim().toLowerCase(); return s.includes('countr') })
 
   const data = rows.slice(headerIdx + 1).filter(r => r.some(c => c != null && String(c).trim()))
   const ttlRows = data.filter(r => {
