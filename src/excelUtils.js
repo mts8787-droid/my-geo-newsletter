@@ -152,7 +152,7 @@ function numVal(v) {
 function parseMeta(rows) {
   console.log('[parseMeta] rows count:', rows.length)
   const obj = {}
-  const numKeys = ['titleFontSize', 'citationTopN', 'citDomainTopN']
+  const numKeys = ['titleFontSize', 'citationTopN', 'citDomainTopN', 'weekStart']
   const boolKeys = ['showNotice', 'showKpiLogic', 'showTotal', 'showProducts', 'showCnty',
     'showCitations', 'showCitDomain', 'showCitCnty', 'showDotcom',
     'showProductInsight', 'showProductHowToRead',

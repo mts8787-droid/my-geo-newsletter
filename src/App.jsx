@@ -1059,8 +1059,12 @@ function Sidebar({ meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, total, s
       if (parsed.dotcom)       setDotcom(d => ({ ...d, ...parsed.dotcom }))
       if (parsed.productsCnty) setProductsCnty(parsed.productsCnty)
       if (parsed.citationsCnty) setCitationsCnty(parsed.citationsCnty)
-      // meta.weeklyLabels 우선, 없으면 시트에서 파싱된 weeklyLabels 사용
-      const wl = parsed.meta?.weeklyLabels || parsed.weeklyLabels
+      // 주차 라벨: meta.weekStart 기반 자동 생성, 없으면 시트 파싱 값 사용
+      const weekCount = parsed.weeklyMap ? Math.max(...Object.values(parsed.weeklyMap).map(a => a.length), 0) : 0
+      const ws = parsed.meta?.weekStart
+      const wl = ws && weekCount
+        ? Array.from({ length: weekCount }, (_, i) => `W${ws + i}`)
+        : (parsed.meta?.weeklyLabels || parsed.weeklyLabels)
       if (wl) setWeeklyLabels(wl)
       // 제품: productsPartial이 있으면 새로 생성, 없으면 weeklyMap만 병합
       console.log('[SYNC] parsed keys:', Object.keys(parsed))
