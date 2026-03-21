@@ -1118,6 +1118,7 @@ function Sidebar({ meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, total, s
           productsPartial: parsed.productsPartial || null,
           weeklyMap: parsed.weeklyMap || null,
           weeklyLabels: parsed.weeklyLabels || null,
+          weeklyAll: parsed.weeklyAll || null,
           citations: parsed.citations || null,
           dotcom: parsed.dotcom || null,
           productsCnty: parsed.productsCnty || null,
@@ -2115,7 +2116,7 @@ export default function App() {
   const [productsCnty, setProductsCnty] = useState(cache?.productsCnty ?? INIT_PRODUCTS_CNTY)
   const [citationsCnty, setCitationsCnty] = useState(cache?.citationsCnty ?? INIT_CITATIONS_CNTY)
   const [weeklyLabels, setWeeklyLabels] = useState(cache?.weeklyLabels ?? null)
-  const [weeklyAll, setWeeklyAll] = useState({})
+  const [weeklyAll, setWeeklyAll] = useState(cache?.weeklyAll ?? {})
   const [activeTab, setActiveTab] = useState(IS_DASHBOARD ? 'visibility' : 'preview')
   const [previewLang, setPreviewLang] = useState('ko') // 'ko' | 'en'
   const [snapshots,  setSnapshots]  = useState([])
@@ -2152,6 +2153,7 @@ export default function App() {
       if (d.productsCnty)  setProductsCnty(d.productsCnty)
       if (d.citationsCnty) setCitationsCnty(d.citationsCnty)
       if (d.weeklyLabels)  setWeeklyLabels(d.weeklyLabels)
+      if (d.weeklyAll)     setWeeklyAll(prev => ({ ...prev, ...d.weeklyAll }))
       // productsPartial → 새로 생성, weeklyMap → 병합
       if (d.productsPartial) {
         setProducts(d.productsPartial.map(p => {
@@ -2172,8 +2174,8 @@ export default function App() {
 
   // 상태 변경 시 localStorage에 자동 저장
   useEffect(() => {
-    saveCache({ metaKo, metaEn, total, products, citations, dotcom, productsCnty, citationsCnty, weeklyLabels })
-  }, [metaKo, metaEn, total, products, citations, dotcom, productsCnty, citationsCnty])
+    saveCache({ metaKo, metaEn, total, products, citations, dotcom, productsCnty, citationsCnty, weeklyLabels, weeklyAll })
+  }, [metaKo, metaEn, total, products, citations, dotcom, productsCnty, citationsCnty, weeklyAll])
 
   // 저장 (기존 스냅샷 덮어쓰기)
   async function handleSnapOverwrite() {
