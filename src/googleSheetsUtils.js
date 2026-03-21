@@ -37,9 +37,12 @@ export async function syncFromGoogleSheets(sheetId, onProgress) {
       console.log(`[sync] "${name}" → ${rows.length} rows, first:`, JSON.stringify(rows[0]?.slice(0, 6)))
       const parsed = parseSheetRows(name, rows)
       console.log(`[sync] "${name}" → parsed keys:`, Object.keys(parsed))
-      // 스마트 병합: 배열은 합치고, 객체는 병합, 나머지는 덮어쓰기
+      // 스마트 병합: 배열은 합치고(단 weeklyLabels는 덮어쓰기), 객체는 병합, 나머지는 덮어쓰기
       for (const [key, val] of Object.entries(parsed)) {
-        if (Array.isArray(val) && Array.isArray(result[key])) {
+        if (key === 'weeklyLabels') {
+          // weeklyLabels는 여러 weekly 시트에서 중복 → 첫 번째 값만 유지
+          if (!result[key]) result[key] = val
+        } else if (Array.isArray(val) && Array.isArray(result[key])) {
           result[key] = [...result[key], ...val]
         } else if (val && typeof val === 'object' && !Array.isArray(val) &&
                    result[key] && typeof result[key] === 'object' && !Array.isArray(result[key])) {

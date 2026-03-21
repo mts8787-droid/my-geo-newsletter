@@ -17,16 +17,16 @@ export const SHEET_NAMES = {
 
 // ─── 카테고리 ID/KR 매핑 ──────────────────────────────────────────────────────
 const CATEGORY_ID_MAP = {
-  'TV': 'tv', 'Monitor': 'monitor', 'Audio': 'audio',
+  'TV': 'tv', 'Monitor': 'monitor', 'IT': 'monitor', 'Audio': 'audio', 'AV': 'audio',
   'WM': 'washer', 'REF': 'fridge', 'DW': 'dw',
   'VC': 'vacuum', 'Cooking': 'cooking',
-  'RAC': 'rac', 'Aircare': 'aircare',
+  'RAC': 'rac', 'Aircare': 'aircare', 'Air Care': 'aircare',
 }
 const CATEGORY_KR_MAP = {
-  'TV': 'TV', 'Monitor': '모니터', 'Audio': '오디오',
+  'TV': 'TV', 'Monitor': '모니터', 'IT': '모니터', 'Audio': '오디오', 'AV': '오디오',
   'WM': '세탁기', 'REF': '냉장고', 'DW': '식기세척기',
   'VC': '청소기', 'Cooking': 'Cooking',
-  'RAC': 'RAC', 'Aircare': 'Aircare',
+  'RAC': 'RAC', 'Aircare': 'Aircare', 'Air Care': 'Aircare',
 }
 
 export const DOTCOM_LG_COLS   = ['TTL','PLP','Microsites','PDP','Newsroom','Support','Buying-guide','Experience']
@@ -309,7 +309,7 @@ const DASH_CAT_BY_DIV = {
 }
 
 function parseDashboardLayout(rows, div) {
-  // 대시보드 레이아웃: 카테고리 이름이 열 헤더로 배치, TTL 행에 주간 값
+  // 대시보드 레이아웃: 카테고리 이름이 열 헤더로 배치, 브랜드별 행에 주간 값
   const DASH_CAT_MAP = div ? (DASH_CAT_BY_DIV[div] || {})
     : { ...DASH_CAT_BY_DIV.MS, ...DASH_CAT_BY_DIV.ES }
   if (!Object.keys(DASH_CAT_MAP).length) return {}
@@ -319,43 +319,72 @@ function parseDashboardLayout(rows, div) {
   if (catRowIdx < 0) return {}
   const catRow = rows[catRowIdx]
   console.log('[dashLayout] div:', div, '| catRow idx:', catRowIdx, '| catRow:', JSON.stringify(catRow))
-  // catRow와 ttlRow 사이의 모든 행 덤프
+
+  // TTL 행 찾기 (섹션 경계)
   const ttlRowIdx = rows.findIndex((r, i) =>
     i > catRowIdx && r.some(c => String(c || '').trim() === 'TTL')
   )
-  if (ttlRowIdx < 0) return {}
-  const ttlRow = rows[ttlRowIdx]
-  console.log('[dashLayout] ttlRow idx:', ttlRowIdx, '| ttlRow:', JSON.stringify(ttlRow))
-  for (let i = catRowIdx + 1; i < ttlRowIdx; i++) {
+  const sectionEnd = ttlRowIdx > 0 ? ttlRowIdx + 1 : Math.min(catRowIdx + 20, rows.length)
+
+  // catRow ~ sectionEnd 사이 행 덤프 (디버그)
+  for (let i = catRowIdx + 1; i < sectionEnd; i++) {
     console.log(`[dashLayout] row ${i}:`, JSON.stringify(rows[i]))
   }
+
+  // ── LG 행 탐색 (TTL 대신 LG 브랜드 행에서 값 추출) ──
+  // NonBrand(NB) LG 행 우선, 없으면 첫 LG 행, 최종 fallback은 TTL
+  let lgNbRowIdx = -1, lgRowIdx = -1
+  for (let i = catRowIdx + 1; i < sectionEnd; i++) {
+    const r = rows[i]
+    const hasLG = r.some(c => String(c || '').trim().toUpperCase() === 'LG')
+    if (!hasLG) continue
+    if (lgRowIdx < 0) lgRowIdx = i  // 첫 LG 행
+    const hasNB = r.some(c => {
+      const v = String(c || '').trim().toLowerCase().replace(/[\s_-]/g, '')
+      return v === 'nonbrand' || v === 'nb'
+    })
+    if (hasNB) { lgNbRowIdx = i; break }
+  }
+  const dataRowIdx = lgNbRowIdx >= 0 ? lgNbRowIdx : lgRowIdx >= 0 ? lgRowIdx : ttlRowIdx
+  if (dataRowIdx < 0) return {}
+  const dataRow = rows[dataRowIdx]
+  const dataRowLabel = lgNbRowIdx >= 0 ? 'LG-NB' : lgRowIdx >= 0 ? 'LG' : 'TTL'
+  console.log(`[dashLayout] using ${dataRowLabel} row at idx ${dataRowIdx}:`, JSON.stringify(dataRow))
+
   const weeklyMap = {}
+  // 다음 카테고리 시작 컬럼 계산 (범위 제한용)
+  const catPositions = Object.keys(DASH_CAT_MAP).map(name =>
+    catRow.findIndex(c => String(c || '').trim() === name)
+  ).filter(i => i >= 0).sort((a, b) => a - b)
+
   for (const [name, id] of Object.entries(DASH_CAT_MAP)) {
     const ci = catRow.findIndex(c => String(c || '').trim() === name)
     if (ci < 0) continue
+    // 다음 카테고리까지 또는 최대 20컬럼 내에서 스캔
+    const nextCatCol = catPositions.find(p => p > ci) || (ci + 20)
     const vals = []
-    for (let j = ci + 1; j < ci + 12 && j < ttlRow.length; j++) {
-      const v = pct(ttlRow[j])
+    for (let j = ci + 1; j < nextCatCol && j < dataRow.length; j++) {
+      const v = pct(dataRow[j])
       if (v > 0) vals.push(v)
-      else if (vals.length) break // 빈 셀 만나면 중단 — 연속 주간 값만 수집
+      // 빈 셀은 건너뜀 (MoM 컬럼 등 사이에 빈 셀 있음)
     }
-    console.log(`[dashLayout] "${name}" col:${ci}, raw ttlRow[ci+1..]:`, JSON.stringify(ttlRow.slice(ci + 1, ci + 13)), '→ vals:', vals)
+    console.log(`[dashLayout] "${name}" col:${ci}, nextCat:${nextCatCol}, raw dataRow[ci+1..]:`, JSON.stringify(dataRow.slice(ci + 1, nextCatCol)), '→ vals:', vals)
     if (vals.length) weeklyMap[id] = vals.slice(-4)
   }
   if (!Object.keys(weeklyMap).length) {
     console.log('[dashLayout] no weekly data found for div:', div)
     return {}
   }
-  const weeklyLabels = findWeekLabels(rows, catRowIdx, ttlRowIdx)
+  const weeklyLabels = findWeekLabels(rows, catRowIdx, sectionEnd)
     || Object.values(weeklyMap)[0]?.map((_, i) => `W${i + 1}`) || []
   console.log('[parseWeekly] dashboard layout result:', Object.keys(weeklyMap), '| labels:', weeklyLabels)
   return { weeklyMap, weeklyLabels }
 }
 
 function parseWeekly(rows, div) {
-  console.log('[parseWeekly] rows count:', rows.length, '| first row:', JSON.stringify(rows[0]?.slice(0, 10)))
+  console.log('[parseWeekly] div:', div, '| rows count:', rows.length, '| first row:', JSON.stringify(rows[0]?.slice(0, 10)))
   // 시트 전체 구조 덤프 (디버그)
-  for (let i = 0; i < Math.min(rows.length, 35); i++) {
+  for (let i = 0; i < Math.min(rows.length, 60); i++) {
     const r = rows[i]
     const nonEmpty = r?.map((c, j) => [j, c]).filter(([, c]) => c != null && String(c).trim() !== '')
     if (nonEmpty?.length) console.log(`[parseWeekly] ROW ${i}:`, JSON.stringify(nonEmpty))
@@ -363,10 +392,29 @@ function parseWeekly(rows, div) {
   const weeklyMap = {}
   let weeklyLabels = []
 
-  const headerIdx = rows.findIndex(r => {
-    const cells = r.map(c => String(c || '').trim().toLowerCase())
-    return cells.includes('category') || cells.includes('product') || cells.includes('lg') || cells.some(c => /^w\d+$/i.test(c))
+  // 1차: 'product' 또는 'category'가 앞 4컬럼에 있는 행 (표준 테이블 헤더)
+  let headerIdx = rows.findIndex(r => {
+    const first5 = r.slice(0, 5).map(c => String(c || '').trim().toLowerCase())
+    return first5.includes('category') || first5.includes('product')
   })
+  // 2차: W패턴 컬럼이 있는 행
+  if (headerIdx < 0) {
+    headerIdx = rows.findIndex(r =>
+      r.some(c => /^w\d+$/i.test(String(c || '').trim()))
+    )
+  }
+  // 3차: 'lg' 컬럼 (앞 10컬럼 + 문자열 셀 3개 이상 — 대시보드 브랜드 행 오감지 방지)
+  if (headerIdx < 0) {
+    headerIdx = rows.findIndex(r => {
+      let hasLG = false, textCount = 0
+      for (let i = 0; i < Math.min(r.length, 10); i++) {
+        const s = String(r[i] || '').trim()
+        if (s.toUpperCase() === 'LG') { hasLG = true; textCount++ }
+        else if (s && isNaN(parseFloat(s))) textCount++
+      }
+      return hasLG && textCount >= 3
+    })
+  }
   if (headerIdx < 0) {
     console.log('[parseWeekly] standard header not found, trying dashboard layout...')
     return parseDashboardLayout(rows, div)
@@ -401,14 +449,16 @@ function parseWeekly(rows, div) {
 
   // B/NB 필터 — NonBrand만 사용 (Brand는 브랜드 검색 쿼리라 점수가 과도하게 높음)
   const bnbIdx = header.findIndex(c => {
-    const s = String(c || '').trim().toLowerCase()
+    const s = String(c || '').trim().toLowerCase().replace(/[\s_-]/g, '')
     return s === 'b/nb' || s === 'bnb' || s === 'brand/nonbrand'
   })
   function isNonBrand(r) {
     if (bnbIdx < 0) return true
-    return String(r[bnbIdx] || '').trim().toLowerCase() === 'nonbrand'
+    const v = String(r[bnbIdx] || '').trim().toLowerCase().replace(/[\s_-]/g, '')
+    return v === 'nonbrand' || v === 'nb'
   }
 
+  const weeklyAll = {}
   if (brandIdx >= 0) {
     // wCols가 비어있으면 첫 LG NonBrand 데이터 행에서 데이터 컬럼 자동 감지
     if (!wCols.length) {
@@ -424,7 +474,21 @@ function parseWeekly(rows, div) {
         weeklyLabels = findWeekLabels(rows, 0, headerIdx + 1) || wCols.map((_, i) => `W${i + 1}`)
       }
     }
-    // Format: Product, Country, B/NB, Brand, w5, w6, w7, w8
+    // 모든 브랜드 NonBrand 데이터 수집 (트렌드 차트용)
+    data.forEach(r => {
+      if (!isNonBrand(r)) return
+      const brand = String(r[brandIdx] || '').trim()
+      if (!brand) return
+      const cat = String(r[catIdx >= 0 ? catIdx : 0] || '').trim()
+      if (!cat) return
+      const prodId = CATEGORY_ID_MAP[cat] || cat.toLowerCase()
+      const country = countryIdx >= 0 ? String(r[countryIdx] || '').replace(/[()]/g, '').trim() : 'Total'
+      const cnty = country.toUpperCase() === 'TOTAL' || country.toUpperCase() === 'TTL' || !country ? 'Total' : country
+      if (!weeklyAll[prodId]) weeklyAll[prodId] = {}
+      if (!weeklyAll[prodId][cnty]) weeklyAll[prodId][cnty] = {}
+      weeklyAll[prodId][cnty][brand] = wCols.map(c => pct(r[c]))
+    })
+    // LG Total만 추출 (기존 weeklyMap 호환)
     data.forEach(r => {
       const brand = String(r[brandIdx] || '').trim().toUpperCase()
       if (brand !== 'LG') return
@@ -467,10 +531,12 @@ function parseWeekly(rows, div) {
     })
   }
 
-  console.log('[parseWeekly] weeklyMap keys:', Object.keys(weeklyMap), '| weeklyLabels:', weeklyLabels)
+  console.log('[parseWeekly] weeklyMap keys:', Object.keys(weeklyMap), '| weeklyLabels:', weeklyLabels,
+    '| weeklyAll products:', Object.keys(weeklyAll))
   if (Object.keys(weeklyMap).length) {
     const result = { weeklyMap }
     if (weeklyLabels.length) result.weeklyLabels = weeklyLabels
+    if (Object.keys(weeklyAll).length) result.weeklyAll = weeklyAll
     return result
   }
   // 표준 파싱 실패 시 대시보드 레이아웃 fallback

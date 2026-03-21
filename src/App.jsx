@@ -3,6 +3,7 @@ import { ChevronLeft, ChevronRight, TrendingUp, TrendingDown, Minus, Copy, Downl
 import { downloadTemplate } from './excelUtils'
 import { extractSheetId, syncFromGoogleSheets } from './googleSheetsUtils'
 import { generateEmailHTML } from './emailTemplate'
+import WeeklyTrendView from './WeeklyTrendView'
 let generateDashboardHTML = null
 if (window.__DASHBOARD_MODE__) {
   import('./dashboard/dashboardTemplate.js').then(m => { generateDashboardHTML = m.generateDashboardHTML })
@@ -788,7 +789,7 @@ const inputStyle = {
   fontFamily: FONT, outline: 'none', boxSizing: 'border-box',
 }
 
-function Sidebar({ meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, total, setTotal, products, setProducts, citations, setCitations, dotcom, setDotcom, productsCnty, setProductsCnty, citationsCnty, setCitationsCnty, resolved, previewLang, setPreviewLang, snapshots, setSnapshots, setWeeklyLabels }) {
+function Sidebar({ meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, total, setTotal, products, setProducts, citations, setCitations, dotcom, setDotcom, productsCnty, setProductsCnty, citationsCnty, setCitationsCnty, resolved, previewLang, setPreviewLang, snapshots, setSnapshots, setWeeklyLabels, setWeeklyAll }) {
   const [gsUrl,     setGsUrl]     = useState('https://docs.google.com/spreadsheets/d/1v4V7ZsHNFXXqbAWqvyVkgNIeXx188hSZ9l7FDsRYy2Y/edit')
   const [gsSyncing, setGsSyncing] = useState(false)
   const [gsStatus,  setGsStatus]  = useState(null)
@@ -1066,14 +1067,25 @@ function Sidebar({ meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, total, s
         ? Array.from({ length: weekCount }, (_, i) => `W${ws + i}`)
         : (parsed.meta?.weeklyLabels || parsed.weeklyLabels)
       if (wl) setWeeklyLabels(wl)
+      if (parsed.weeklyAll) setWeeklyAll(prev => ({ ...prev, ...parsed.weeklyAll }))
       // 제품: productsPartial이 있으면 새로 생성, 없으면 weeklyMap만 병합
       console.log('[SYNC] parsed keys:', Object.keys(parsed))
-      console.log('[SYNC] weeklyMap?', parsed.weeklyMap ? Object.keys(parsed.weeklyMap) : 'NONE')
-      console.log('[SYNC] productsPartial?', parsed.productsPartial?.length || 0, 'items, IDs:', parsed.productsPartial?.map(p => p.id))
+      const wmKeys = parsed.weeklyMap ? Object.keys(parsed.weeklyMap) : []
+      const ppIds  = parsed.productsPartial?.map(p => p.id) || []
+      console.log('[SYNC] weeklyMap keys:', wmKeys.length ? wmKeys : 'NONE')
+      console.log('[SYNC] productsPartial IDs:', ppIds.length ? ppIds : 'NONE')
+      // ── 진단: ID 불일치 감지 ──
+      if (wmKeys.length && ppIds.length) {
+        const missingWeekly = ppIds.filter(id => !wmKeys.includes(id))
+        const orphanWeekly  = wmKeys.filter(k => !ppIds.includes(k))
+        if (missingWeekly.length) console.warn('[SYNC] ⚠ 제품에 weekly 없음:', missingWeekly)
+        if (orphanWeekly.length)  console.warn('[SYNC] ⚠ weekly에 제품 없음:', orphanWeekly)
+        if (!missingWeekly.length && !orphanWeekly.length) console.log('[SYNC] ✓ 모든 제품-weekly ID 일치')
+      }
       if (parsed.productsPartial) {
         const newProducts = parsed.productsPartial.map(p => {
           const weekly = parsed.weeklyMap?.[p.id] || []
-          if (!weekly.length) console.warn(`[SYNC] product "${p.id}" has NO weekly data`)
+          if (!weekly.length) console.warn(`[SYNC] product "${p.id}" (bu:${p.bu}) has NO weekly data — weeklyMap has: [${wmKeys}]`)
           else console.log(`[SYNC] product "${p.id}" weekly:`, weekly)
           const ratio = p.vsComp > 0 ? (p.score / p.vsComp) * 100 : 100
           return { ...p, weekly, monthly: [], compRatio: Math.round(ratio),
@@ -2103,6 +2115,7 @@ export default function App() {
   const [productsCnty, setProductsCnty] = useState(cache?.productsCnty ?? INIT_PRODUCTS_CNTY)
   const [citationsCnty, setCitationsCnty] = useState(cache?.citationsCnty ?? INIT_CITATIONS_CNTY)
   const [weeklyLabels, setWeeklyLabels] = useState(cache?.weeklyLabels ?? null)
+  const [weeklyAll, setWeeklyAll] = useState({})
   const [activeTab, setActiveTab] = useState(IS_DASHBOARD ? 'visibility' : 'preview')
   const [previewLang, setPreviewLang] = useState('ko') // 'ko' | 'en'
   const [snapshots,  setSnapshots]  = useState([])
@@ -2212,6 +2225,7 @@ export default function App() {
         previewLang={previewLang} setPreviewLang={setPreviewLang}
         snapshots={snapshots} setSnapshots={setSnapshots}
         setWeeklyLabels={setWeeklyLabels}
+        setWeeklyAll={setWeeklyAll}
       />
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         {/* 탑바 */}
@@ -2223,9 +2237,10 @@ export default function App() {
             {(IS_DASHBOARD ? [] : [
               { key: 'preview-ko', tab: 'preview', lang: 'ko', label: '뉴스레터미리보기 (KO)' },
               { key: 'preview-en', tab: 'preview', lang: 'en', label: '뉴스레터미리보기 (EN)' },
+              { key: 'trend',      tab: 'trend',   lang: null, label: '차트 분석' },
               { key: 'code',       tab: 'code',    lang: null, label: 'HTML 내보내기' },
             ]).map(({ key, tab, lang, label }) => {
-              const isActive = tab === 'code' ? activeTab === 'code' : (activeTab === 'preview' && previewLang === lang)
+              const isActive = tab === 'code' ? activeTab === 'code' : tab === 'trend' ? activeTab === 'trend' : (activeTab === 'preview' && previewLang === lang)
               return (
                 <button key={key} onClick={() => { setActiveTab(tab); if (lang) setPreviewLang(lang) }} style={{
                   padding: '5px 12px', borderRadius: 7, border: 'none',
@@ -2239,15 +2254,33 @@ export default function App() {
               )
             })}
             {IS_DASHBOARD && (
-              <div style={{ display: 'flex', gap: 2, background: '#0F172A', borderRadius: 6, padding: 2 }}>
-                {['ko', 'en'].map(l => (
-                  <button key={l} onClick={() => setPreviewLang(l)} style={{
+              <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                <div style={{ display: 'flex', gap: 2, background: '#0F172A', borderRadius: 6, padding: 2 }}>
+                  <button onClick={() => setActiveTab('visibility')} style={{
                     padding: '3px 10px', borderRadius: 5, border: 'none',
-                    background: previewLang === l ? LG_RED : 'transparent',
-                    color: previewLang === l ? '#FFFFFF' : '#64748B',
+                    background: activeTab !== 'trend' ? '#1E293B' : 'transparent',
+                    color: activeTab !== 'trend' ? '#FFFFFF' : '#64748B',
                     fontSize: 10, fontWeight: 700, fontFamily: FONT, cursor: 'pointer',
-                  }}>{l.toUpperCase()}</button>
-                ))}
+                  }}>대시보드</button>
+                  <button onClick={() => setActiveTab('trend')} style={{
+                    padding: '3px 10px', borderRadius: 5, border: 'none',
+                    background: activeTab === 'trend' ? '#1E293B' : 'transparent',
+                    color: activeTab === 'trend' ? '#FFFFFF' : '#64748B',
+                    fontSize: 10, fontWeight: 700, fontFamily: FONT, cursor: 'pointer',
+                  }}>차트 분석</button>
+                </div>
+                {activeTab !== 'trend' && (
+                  <div style={{ display: 'flex', gap: 2, background: '#0F172A', borderRadius: 6, padding: 2 }}>
+                    {['ko', 'en'].map(l => (
+                      <button key={l} onClick={() => setPreviewLang(l)} style={{
+                        padding: '3px 10px', borderRadius: 5, border: 'none',
+                        background: previewLang === l ? LG_RED : 'transparent',
+                        color: previewLang === l ? '#FFFFFF' : '#64748B',
+                        fontSize: 10, fontWeight: 700, fontFamily: FONT, cursor: 'pointer',
+                      }}>{l.toUpperCase()}</button>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -2320,9 +2353,13 @@ export default function App() {
 
         {/* 컨텐츠 영역 */}
         {IS_DASHBOARD ? (
-          <div style={{ flex: 1, overflow: 'hidden' }}>
-            <DashboardPreview meta={meta} total={total} products={resolved.products} citations={resolved.citations} dotcom={dotcom} productsCnty={resolved.productsCnty} citationsCnty={resolved.citationsCnty} lang={previewLang} weeklyLabels={weeklyLabels} />
-          </div>
+          activeTab === 'trend' ? (
+            <WeeklyTrendView weeklyAll={weeklyAll} products={products} weeklyLabels={weeklyLabels} />
+          ) : (
+            <div style={{ flex: 1, overflow: 'hidden' }}>
+              <DashboardPreview meta={meta} total={total} products={resolved.products} citations={resolved.citations} dotcom={dotcom} productsCnty={resolved.productsCnty} citationsCnty={resolved.citationsCnty} lang={previewLang} weeklyLabels={weeklyLabels} />
+            </div>
+          )
         ) : (
           activeTab === 'preview' ? (
             <div style={{ flex: 1, overflowY: 'auto', padding: '28px 36px',
@@ -2331,6 +2368,8 @@ export default function App() {
                 <NewsletterPreview meta={meta} total={total} products={resolved.products} citations={resolved.citations} dotcom={dotcom} productsCnty={resolved.productsCnty} citationsCnty={resolved.citationsCnty} lang={previewLang} />
               </div>
             </div>
+          ) : activeTab === 'trend' ? (
+            <WeeklyTrendView weeklyAll={weeklyAll} products={products} weeklyLabels={weeklyLabels} />
           ) : (
             <HtmlCodeViewer meta={meta} total={total} products={resolved.products} citations={resolved.citations} dotcom={dotcom} productsCnty={resolved.productsCnty} citationsCnty={resolved.citationsCnty} lang={previewLang} />
           )
