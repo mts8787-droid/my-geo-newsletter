@@ -150,6 +150,7 @@ function numVal(v) {
 // ─── 개별 시트 파서 ──────────────────────────────────────────────────────────────
 
 function parseMeta(rows) {
+  console.log('[parseMeta] rows count:', rows.length)
   const obj = {}
   const numKeys = ['titleFontSize', 'citationTopN', 'citDomainTopN']
   const boolKeys = ['showNotice', 'showKpiLogic', 'showTotal', 'showProducts', 'showCnty',
@@ -176,6 +177,7 @@ function parseMeta(rows) {
 }
 
 function parseVisSummary(rows) {
+  console.log('[parseVisSummary] rows count:', rows.length, '| first row:', JSON.stringify(rows[0]?.slice(0, 8)))
   // 1) key-value 형식 (이전 total 시트 호환)
   const intKeys = ['rank', 'totalBrands']
   const pctKeys = ['score', 'prev', 'vsComp']
@@ -222,15 +224,26 @@ function parseVisSummary(rows) {
 
 function parseProductCnty(rows) {
   // 헤더: Div, Date, Country, Category, LG, SAMSUNG, Comp3, ...
+  console.log('[parseProductCnty] rows count:', rows.length, '| first row:', JSON.stringify(rows[0]?.slice(0, 8)))
   const headerIdx = rows.findIndex(r => {
     const c0 = String(r[0] || '').trim().toLowerCase()
     return c0 === 'div' || c0 === 'division'
   })
-  if (headerIdx < 0) return {}
+  if (headerIdx < 0) {
+    // fallback: LG 컬럼이 있는 행을 헤더로 사용
+    const altIdx = rows.findIndex(r => r.some((c, i) => i >= 3 && String(c || '').trim().toUpperCase() === 'LG'))
+    if (altIdx < 0) { console.warn('[parseProductCnty] header not found'); return {} }
+    console.log('[parseProductCnty] using fallback header at row', altIdx, ':', JSON.stringify(rows[altIdx]?.slice(0, 8)))
+    return parseProductCntyFromRow(rows, altIdx)
+  }
+  console.log('[parseProductCnty] header at row', headerIdx, ':', JSON.stringify(rows[headerIdx]?.slice(0, 8)))
+  return parseProductCntyFromRow(rows, headerIdx)
+}
 
+function parseProductCntyFromRow(rows, headerIdx) {
   const header = rows[headerIdx]
-  const lgIdx = header.findIndex((c, i) => i >= 4 && String(c || '').trim().toUpperCase() === 'LG')
-  if (lgIdx < 0) return {}
+  const lgIdx = header.findIndex((c, i) => i >= 3 && String(c || '').trim().toUpperCase() === 'LG')
+  if (lgIdx < 0) { console.warn('[parseProductCnty] LG column not found'); return {} }
 
   // 경쟁사 컬럼 수집 (LG 제외)
   const competitors = []
@@ -268,6 +281,9 @@ function parseProductCnty(rows) {
     }
   })
 
+  console.log('[parseProductCnty] productsPartial:', productsPartial.length, '| productsCnty:', productsCnty.length)
+  if (productsPartial.length) console.log('[parseProductCnty] sample product:', JSON.stringify(productsPartial[0]))
+
   return {
     ...(productsPartial.length ? { productsPartial } : {}),
     ...(productsCnty.length ? { productsCnty } : {}),
@@ -275,15 +291,18 @@ function parseProductCnty(rows) {
 }
 
 function parseWeekly(rows) {
+  console.log('[parseWeekly] rows count:', rows.length, '| first row:', JSON.stringify(rows[0]?.slice(0, 10)))
   const headerIdx = rows.findIndex(r => {
     const cells = r.map(c => String(c || '').trim().toLowerCase())
     return cells.includes('category') || cells.includes('lg') || cells.some(c => /^w\d+$/i.test(c))
   })
-  if (headerIdx < 0) return {}
+  if (headerIdx < 0) { console.warn('[parseWeekly] header not found'); return {} }
 
   const header = rows[headerIdx]
+  console.log('[parseWeekly] header at row', headerIdx, ':', JSON.stringify(header?.slice(0, 10)))
   const data = rows.slice(headerIdx + 1).filter(r => r[0] != null && String(r[0]).trim())
   const weeklyMap = {}
+  let weeklyLabels = []
 
   const lgIdx = header.findIndex(c => String(c || '').trim().toUpperCase() === 'LG')
 
@@ -291,37 +310,69 @@ function parseWeekly(rows) {
     // Format: Div, Week/Date, Country, Category, LG, ... → 여러 행을 카테고리별 그룹핑
     const catIdx = header.findIndex(c => String(c || '').trim().toLowerCase() === 'category')
     const countryIdx = header.findIndex(c => String(c || '').trim().toLowerCase() === 'country')
+    // Date/Week 컬럼 찾기 — 실제 주차 라벨 추출용
+    const dateIdx = header.findIndex(c => {
+      const s = String(c || '').trim().toLowerCase()
+      return s === 'date' || s === 'week' || s === 'period'
+    })
     const byCategory = {}
+    const weekLabelOrder = []
+
     data.forEach(r => {
       const country = countryIdx >= 0 ? String(r[countryIdx] || '').trim() : 'TTL'
       if (country !== 'TTL') return
       const cat = String(r[catIdx >= 0 ? catIdx : 3] || '').trim()
       if (!cat) return
+
+      // 주차 라벨 수집
+      if (dateIdx >= 0) {
+        const wl = String(r[dateIdx] || '').trim()
+        if (wl && !weekLabelOrder.includes(wl)) weekLabelOrder.push(wl)
+      }
+
       byCategory[cat] = byCategory[cat] || []
       byCategory[cat].push(pct(r[lgIdx]))
     })
     Object.entries(byCategory).forEach(([cat, vals]) => {
       weeklyMap[CATEGORY_ID_MAP[cat] || cat.toLowerCase()] = vals.slice(-4)
     })
+    weeklyLabels = weekLabelOrder.slice(-4)
   } else {
-    // Format: Category, W1, W2, W3, W4
+    // Format: Category, [week columns...]
     const catIdx = header.findIndex(c => String(c || '').trim().toLowerCase() === 'category')
+    const countryIdx = header.findIndex(c => String(c || '').trim().toLowerCase() === 'country')
     const wCols = []
     for (let i = 0; i < header.length; i++) {
       if (/^W\d+$/i.test(String(header[i] || '').trim())) wCols.push(i)
     }
     if (!wCols.length) {
-      const start = (catIdx >= 0 ? catIdx : 0) + 1
-      for (let i = start; i < Math.min(start + 6, header.length); i++) wCols.push(i)
+      // W1/W2 패턴 없으면 country/category 이후 컬럼을 주차 데이터로 간주
+      const start = Math.max(catIdx >= 0 ? catIdx : 0, countryIdx >= 0 ? countryIdx : 0) + 1
+      for (let i = start; i < header.length; i++) {
+        const h = String(header[i] || '').trim()
+        if (h) wCols.push(i)
+      }
     }
+    // 헤더에서 실제 주차 라벨 추출
+    weeklyLabels = wCols.map(i => String(header[i] || '').trim())
+
     data.forEach(r => {
+      // Country 컬럼이 있으면 TTL만 필터
+      if (countryIdx >= 0) {
+        const country = String(r[countryIdx] || '').trim()
+        if (country && country !== 'TTL') return
+      }
       const cat = String(r[catIdx >= 0 ? catIdx : 0] || '').trim()
       if (!cat) return
       weeklyMap[CATEGORY_ID_MAP[cat] || cat.toLowerCase()] = wCols.map(c => pct(r[c]))
     })
   }
 
-  return Object.keys(weeklyMap).length ? { weeklyMap } : {}
+  console.log('[parseWeekly] weeklyMap keys:', Object.keys(weeklyMap), '| weeklyLabels:', weeklyLabels)
+  const result = {}
+  if (Object.keys(weeklyMap).length) result.weeklyMap = weeklyMap
+  if (weeklyLabels.length) result.weeklyLabels = weeklyLabels
+  return Object.keys(result).length ? result : {}
 }
 
 function parseCitPageType(rows) {

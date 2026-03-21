@@ -756,10 +756,10 @@ function NewsletterPreview({ meta, total, products, citations, dotcom, productsC
 }
 
 // ─── 대시보드 미리보기 (SVG 차트 기반 독립 시각화) ──────────────────────────────
-function DashboardPreview({ meta, total, products, citations, dotcom, productsCnty = [], citationsCnty = [], lang = 'ko' }) {
+function DashboardPreview({ meta, total, products, citations, dotcom, productsCnty = [], citationsCnty = [], lang = 'ko', weeklyLabels }) {
   const iframeRef = useRef(null)
   const html = generateDashboardHTML
-    ? generateDashboardHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty)
+    ? generateDashboardHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels)
     : '<!DOCTYPE html><html><body style="background:#F1F5F9;display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;color:#64748B"><p>Loading dashboard...</p></body></html>'
 
   React.useEffect(() => {
@@ -819,8 +819,8 @@ function Sidebar({ meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, total, s
       const resolvedEn = resolveDataForLang(products, productsCnty, citations, citationsCnty, 'en')
       let htmlKo, htmlEn, title
       if (IS_DASHBOARD && generateDashboardHTML) {
-        htmlKo = generateDashboardHTML(metaKo, total, resolvedKo.products, resolvedKo.citations, dotcom, 'ko', resolvedKo.productsCnty, resolvedKo.citationsCnty)
-        htmlEn = generateDashboardHTML(metaEn, total, resolvedEn.products, resolvedEn.citations, dotcom, 'en', resolvedEn.productsCnty, resolvedEn.citationsCnty)
+        htmlKo = generateDashboardHTML(metaKo, total, resolvedKo.products, resolvedKo.citations, dotcom, 'ko', resolvedKo.productsCnty, resolvedKo.citationsCnty, weeklyLabels)
+        htmlEn = generateDashboardHTML(metaEn, total, resolvedEn.products, resolvedEn.citations, dotcom, 'en', resolvedEn.productsCnty, resolvedEn.citationsCnty, weeklyLabels)
         title = `${metaKo.period || ''} ${metaKo.title || 'KPI Dashboard'}`.trim()
       } else {
         htmlKo = generateEmailHTML(metaKo, total, resolvedKo.products, resolvedKo.citations, dotcom, 'ko', resolvedKo.productsCnty, resolvedKo.citationsCnty)
@@ -1059,6 +1059,7 @@ function Sidebar({ meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, total, s
       if (parsed.dotcom)       setDotcom(d => ({ ...d, ...parsed.dotcom }))
       if (parsed.productsCnty) setProductsCnty(parsed.productsCnty)
       if (parsed.citationsCnty) setCitationsCnty(parsed.citationsCnty)
+      if (parsed.weeklyLabels) setWeeklyLabels(parsed.weeklyLabels)
       // 제품: productsPartial이 있으면 새로 생성, 없으면 weeklyMap만 병합
       if (parsed.productsPartial) {
         const newProducts = parsed.productsPartial.map(p => {
@@ -1093,6 +1094,7 @@ function Sidebar({ meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, total, s
           total: parsed.total || null,
           productsPartial: parsed.productsPartial || null,
           weeklyMap: parsed.weeklyMap || null,
+          weeklyLabels: parsed.weeklyLabels || null,
           citations: parsed.citations || null,
           dotcom: parsed.dotcom || null,
           productsCnty: parsed.productsCnty || null,
@@ -2089,6 +2091,7 @@ export default function App() {
   const [dotcom,    setDotcom]    = useState((cache?.dotcom && cache.dotcom.lg) ? cache.dotcom : INIT_DOTCOM)
   const [productsCnty, setProductsCnty] = useState(cache?.productsCnty ?? INIT_PRODUCTS_CNTY)
   const [citationsCnty, setCitationsCnty] = useState(cache?.citationsCnty ?? INIT_CITATIONS_CNTY)
+  const [weeklyLabels, setWeeklyLabels] = useState(cache?.weeklyLabels ?? null)
   const [activeTab, setActiveTab] = useState(IS_DASHBOARD ? 'visibility' : 'preview')
   const [previewLang, setPreviewLang] = useState('ko') // 'ko' | 'en'
   const [snapshots,  setSnapshots]  = useState([])
@@ -2124,6 +2127,7 @@ export default function App() {
       if (d.dotcom)        setDotcom(prev => ({ ...prev, ...d.dotcom }))
       if (d.productsCnty)  setProductsCnty(d.productsCnty)
       if (d.citationsCnty) setCitationsCnty(d.citationsCnty)
+      if (d.weeklyLabels)  setWeeklyLabels(d.weeklyLabels)
       // productsPartial → 새로 생성, weeklyMap → 병합
       if (d.productsPartial) {
         setProducts(d.productsPartial.map(p => {
@@ -2144,7 +2148,7 @@ export default function App() {
 
   // 상태 변경 시 localStorage에 자동 저장
   useEffect(() => {
-    saveCache({ metaKo, metaEn, total, products, citations, dotcom, productsCnty, citationsCnty })
+    saveCache({ metaKo, metaEn, total, products, citations, dotcom, productsCnty, citationsCnty, weeklyLabels })
   }, [metaKo, metaEn, total, products, citations, dotcom, productsCnty, citationsCnty])
 
   // 저장 (기존 스냅샷 덮어쓰기)
@@ -2305,7 +2309,7 @@ export default function App() {
         {/* 컨텐츠 영역 */}
         {IS_DASHBOARD ? (
           <div style={{ flex: 1, overflow: 'hidden' }}>
-            <DashboardPreview meta={meta} total={total} products={resolved.products} citations={resolved.citations} dotcom={dotcom} productsCnty={resolved.productsCnty} citationsCnty={resolved.citationsCnty} lang={previewLang} />
+            <DashboardPreview meta={meta} total={total} products={resolved.products} citations={resolved.citations} dotcom={dotcom} productsCnty={resolved.productsCnty} citationsCnty={resolved.citationsCnty} lang={previewLang} weeklyLabels={weeklyLabels} />
           </div>
         ) : (
           activeTab === 'preview' ? (

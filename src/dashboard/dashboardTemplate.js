@@ -152,10 +152,10 @@ function heroHtml(total, meta, t) {
 }
 
 // ─── 제품 섹션 ──────────────────────────────────────────────────────────────
-function productSectionHtml(products, meta, t, lang) {
+function productSectionHtml(products, meta, t, lang, weeklyLabels) {
   if (!products.length) return ''
   const BU_ORDER = ['MS', 'HS', 'ES']
-  const wLabels = ['W1', 'W2', 'W3', 'W4']
+  const wLabels = (weeklyLabels && weeklyLabels.length) ? weeklyLabels : ['W1', 'W2', 'W3', 'W4']
 
   const buGroups = BU_ORDER.map(bu => {
     const prods = products.filter(p => p.bu === bu)
@@ -431,12 +431,12 @@ function dotcomSectionHtml(dotcom, meta, t) {
 // ═══════════════════════════════════════════════════════════════════════════
 // 메인 생성 함수
 // ═══════════════════════════════════════════════════════════════════════════
-export function generateDashboardHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty) {
+export function generateDashboardHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels) {
   _sid = 0
   const t = T[lang] || T.ko
   const visContent = [
     meta.showTotal !== false ? heroHtml(total, meta, t) : '',
-    meta.showProducts !== false ? productSectionHtml(products, meta, t, lang) : '',
+    meta.showProducts !== false ? productSectionHtml(products, meta, t, lang, weeklyLabels) : '',
     meta.showCnty !== false ? countrySectionHtml(productsCnty, meta, t, lang) : '',
   ].join('')
   const citContent = [

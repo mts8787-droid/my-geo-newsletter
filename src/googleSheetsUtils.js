@@ -32,7 +32,9 @@ export async function syncFromGoogleSheets(sheetId, onProgress) {
     onProgress?.(`"${name}" 시트 불러오는 중... (${i + 1}/${names.length})`)
     try {
       const rows   = await fetchSheet(sheetId, name)
+      console.log(`[sync] "${name}" → ${rows.length} rows, first:`, JSON.stringify(rows[0]?.slice(0, 6)))
       const parsed = parseSheetRows(name, rows)
+      console.log(`[sync] "${name}" → parsed keys:`, Object.keys(parsed))
       // 스마트 병합: 배열은 합치고, 객체는 병합, 나머지는 덮어쓰기
       for (const [key, val] of Object.entries(parsed)) {
         if (Array.isArray(val) && Array.isArray(result[key])) {
