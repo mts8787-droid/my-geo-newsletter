@@ -198,7 +198,7 @@ function citCategoryBumpChartHtml(citTouchPointsTrend, citTrendMonths, meta, t, 
 
   const W = Math.max(months.length * 120, 600)
   const H = Math.max(maxRank * 40 + 60, 200)
-  const padL = 40, padR = 40, padT = 30, padB = 30
+  const padL = 40, padR = 120, padT = 30, padB = 30
   const chartW = W - padL - padR
   const chartH = H - padT - padB
 
