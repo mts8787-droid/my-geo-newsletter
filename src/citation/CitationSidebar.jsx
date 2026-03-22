@@ -1,0 +1,354 @@
+import React, { useState, useEffect } from 'react'
+import { RefreshCw, Globe, Link2, Sparkles, Languages } from 'lucide-react'
+import { extractSheetId, syncFromGoogleSheets } from '../googleSheetsUtils'
+import { LG_RED, FONT } from '../shared/constants.js'
+import { inputStyle } from '../shared/components.jsx'
+import { resolveDataForLang } from '../shared/utils.js'
+import { saveSyncData } from '../shared/api.js'
+import { generateDotcomInsight, generateDotcomHowToRead } from '../shared/insights.js'
+import CitationConditionPanel from '../shared/CitationConditionPanel.jsx'
+
+export default function CitationSidebar({
+  mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn,
+  citations, setCitations, citationsCnty, setCitationsCnty, dotcom, setDotcom,
+  resolved, previewLang, setPreviewLang, generateHTML,
+}) {
+  const [gsUrl,     setGsUrl]     = useState('https://docs.google.com/spreadsheets/d/1v4V7ZsHNFXXqbAWqvyVkgNIeXx188hSZ9l7FDsRYy2Y/edit')
+  const [gsSyncing, setGsSyncing] = useState(false)
+  const [gsStatus,  setGsStatus]  = useState(null)
+  const [gsMsg,     setGsMsg]     = useState('')
+  const [publishing, setPublishing] = useState(false)
+  const [publishMsg, setPublishMsg] = useState('')
+  const [publishInfo, setPublishInfo] = useState(null)
+  const [showTranslatePopup, setShowTranslatePopup] = useState(false)
+  const [translating, setTranslating] = useState(false)
+
+  // 게시 상태 로드
+  useEffect(() => {
+    fetch('/api/publish-citation')
+      .then(r => r.ok ? r.json() : null)
+      .then(setPublishInfo)
+      .catch(() => {})
+  }, [])
+
+  async function handleGsSync() {
+    if (gsSyncing) return
+    const sheetId = extractSheetId(gsUrl.trim())
+    if (!sheetId) {
+      setGsStatus('error'); setGsMsg('올바른 Google Sheets URL을 입력하세요.')
+      setTimeout(() => setGsStatus(null), 3000); return
+    }
+    setGsSyncing(true); setGsStatus(null); setGsMsg('')
+    try {
+      const parsed = await syncFromGoogleSheets(sheetId, msg => setGsMsg(msg))
+      if (parsed.meta)          setMetaKo(m => ({ ...m, ...parsed.meta }))
+      if (parsed.citations)     setCitations(parsed.citations)
+      if (parsed.dotcom)        setDotcom(d => ({ ...d, ...parsed.dotcom }))
+      if (parsed.citationsCnty) setCitationsCnty(parsed.citationsCnty)
+
+      // 서버에 동기화 데이터 저장
+      setTimeout(() => {
+        saveSyncData(mode, {
+          meta: parsed.meta || null,
+          citations: parsed.citations || null,
+          dotcom: parsed.dotcom || null,
+          citationsCnty: parsed.citationsCnty || null,
+        })
+      }, 100)
+
+      setGsStatus('ok'); setGsMsg('동기화 완료!')
+    } catch (err) {
+      setGsStatus('error'); setGsMsg(err.message)
+    } finally {
+      setGsSyncing(false)
+      setTimeout(() => { setGsStatus(null); setGsMsg('') }, 4000)
+    }
+  }
+
+  async function handlePublish() {
+    if (publishing) return
+    setPublishing(true); setPublishMsg('')
+    try {
+      const resolvedKo = resolveDataForLang([], [], citations, citationsCnty, 'ko')
+      const resolvedEn = resolveDataForLang([], [], citations, citationsCnty, 'en')
+      const htmlKo = generateHTML(metaKo, null, [], resolvedKo.citations, dotcom, 'ko', [], resolvedKo.citationsCnty)
+      const htmlEn = generateHTML(metaEn, null, [], resolvedEn.citations, dotcom, 'en', [], resolvedEn.citationsCnty)
+      const title = `${metaKo.period || ''} Citation Dashboard`.trim()
+      const res = await fetch('/api/publish-citation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, htmlKo, htmlEn }),
+      })
+      const data = await res.json()
+      if (!data.ok) throw new Error(data.error || '게시 실패')
+      setPublishInfo({ ...data, published: true })
+      const koUrl = `${window.location.origin}${data.urls.ko}`
+      const enUrl = `${window.location.origin}${data.urls.en}`
+      try { await navigator.clipboard.writeText(koUrl + '\n' + enUrl) } catch {}
+      setPublishMsg(`KO: ${koUrl}\nEN: ${enUrl}`)
+    } catch (err) {
+      setPublishMsg('ERROR: ' + err.message)
+    } finally {
+      setPublishing(false)
+      setTimeout(() => setPublishMsg(''), 20000)
+    }
+  }
+
+  async function handleUnpublish() {
+    try {
+      const res = await fetch('/api/publish-citation', { method: 'DELETE' })
+      const data = await res.json()
+      if (data.ok) setPublishInfo(null)
+    } catch {}
+  }
+
+  async function handleTranslate() {
+    if (previewLang !== 'en') {
+      alert('EN 탭에서만 AI 번역 기능을 사용할 수 있습니다.')
+      return
+    }
+    setShowTranslatePopup(true)
+  }
+
+  async function executeTranslate() {
+    setShowTranslatePopup(false)
+    setTranslating(true)
+    try {
+      const src = metaKo
+      const metaTexts = [
+        src.citationInsight || '', src.citationHowToRead || '',
+        src.citDomainInsight || '', src.citDomainHowToRead || '',
+        src.citCntyInsight || '', src.citCntyHowToRead || '',
+        src.dotcomInsight || '', src.dotcomHowToRead || '',
+      ]
+      const res = await fetch('/api/translate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ texts: metaTexts, to: 'en' }),
+      })
+      const data = await res.json()
+      if (!data.ok) throw new Error(data.error || '번역 실패')
+      const tr = data.translated
+      let idx = 0
+      setMetaEn(m => ({
+        ...m,
+        citationInsight: tr[idx++] || '', citationHowToRead: tr[idx++] || '',
+        citDomainInsight: tr[idx++] || '', citDomainHowToRead: tr[idx++] || '',
+        citCntyInsight: tr[idx++] || '', citCntyHowToRead: tr[idx++] || '',
+        dotcomInsight: tr[idx++] || '', dotcomHowToRead: tr[idx++] || '',
+      }))
+    } catch (err) {
+      alert('번역 오류: ' + err.message)
+    } finally {
+      setTranslating(false)
+    }
+  }
+
+  return (
+    <div style={{ width: 520, minWidth: 520, borderRight: '1px solid #1E293B',
+      background: '#0F172A', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+
+      {/* 로고 */}
+      <div style={{ padding: '16px 18px 14px', borderBottom: '1px solid #1E293B' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
+          <div style={{ width: 28, height: 28, borderRadius: 7, background: LG_RED,
+            display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <span style={{ fontSize: 11, fontWeight: 900, color: '#FFFFFF', fontFamily: FONT }}>LG</span>
+          </div>
+          <div>
+            <p style={{ margin: 0, fontSize: 11, fontWeight: 700, color: '#FFFFFF', fontFamily: FONT }}>
+              GEO Citation <span style={{ fontSize: 11, fontWeight: 400, color: '#64748B' }}>v{__APP_VERSION__}</span>
+            </p>
+            <p style={{ margin: 0, fontSize: 11, color: '#475569', fontFamily: FONT }}>Citation 대시보드</p>
+          </div>
+        </div>
+      </div>
+
+      {/* 메인 영역 */}
+      <div style={{ padding: '16px 14px', flex: 1, overflowY: 'auto' }}>
+
+        {/* ── 구글 시트 동기화 ── */}
+        <p style={{ margin: '0 0 8px 2px', fontSize: 11, fontWeight: 700, color: '#475569',
+          textTransform: 'uppercase', letterSpacing: 1, fontFamily: FONT }}>
+          구글 시트 동기화
+        </p>
+        <p style={{ margin: '0 0 4px', fontSize: 11, color: '#475569', fontFamily: FONT }}>Google Sheets URL</p>
+        <input
+          value={gsUrl}
+          onChange={e => setGsUrl(e.target.value)}
+          placeholder="https://docs.google.com/spreadsheets/d/..."
+          style={{ ...inputStyle, fontSize: 11, padding: '7px 9px', marginBottom: 8,
+            color: gsUrl ? '#E2E8F0' : '#334155' }}
+        />
+        <button onClick={handleGsSync}
+          style={{ width: '100%', padding: '10px 0', borderRadius: 8, border: 'none',
+            cursor: gsSyncing ? 'wait' : 'pointer',
+            background: gsSyncing ? '#1E293B' : LG_RED,
+            fontSize: 12, fontWeight: 700,
+            color: gsSyncing ? '#94A3B8' : '#FFFFFF',
+            fontFamily: FONT, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+            marginBottom: 8, transition: 'all 0.2s' }}>
+          <RefreshCw size={13} style={{ animation: gsSyncing ? 'spin 1s linear infinite' : 'none' }} />
+          {gsSyncing ? '동기화 중...' : '구글 시트 동기화'}
+        </button>
+        {(gsStatus || (gsSyncing && gsMsg)) && (
+          <div style={{
+            padding: '8px 10px', borderRadius: 7, fontSize: 11, fontFamily: FONT, lineHeight: 1.6,
+            background: gsStatus === 'ok' ? '#14532D' : gsStatus === 'error' ? '#450A0A' : '#1E293B',
+            color:      gsStatus === 'ok' ? '#86EFAC' : gsStatus === 'error' ? '#FCA5A5' : '#94A3B8',
+            border: `1px solid ${gsStatus === 'ok' ? '#22C55E33' : gsStatus === 'error' ? '#EF444433' : '#334155'}`,
+            marginBottom: 8,
+          }}>
+            {gsMsg}
+          </div>
+        )}
+
+        <div style={{ height: 1, background: '#1E293B', marginBottom: 16 }} />
+
+        {/* ── Citation 조건 패널 ── */}
+        <CitationConditionPanel meta={meta} setMeta={setMeta} resolved={resolved} />
+
+        {/* ── 닷컴 Citation 인사이트 ── */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+          <p style={{ margin: 0, fontSize: 11, color: '#64748B', fontFamily: FONT }}>닷컴 Citation 인사이트</p>
+          <div style={{ display: 'flex', gap: 4 }}>
+            <button onClick={() => setMeta(m => ({ ...m, dotcomInsight: generateDotcomInsight(dotcom) }))}
+              title="AI 인사이트 자동생성"
+              style={{ padding: '2px 6px', borderRadius: 4, border: 'none', cursor: 'pointer',
+                background: '#4F46E5', color: '#FFFFFF',
+                fontSize: 11, fontWeight: 700, fontFamily: FONT, display: 'flex', alignItems: 'center', gap: 3 }}>
+              <Sparkles size={9} /> AI 생성
+            </button>
+            <button onClick={() => setMeta(m => ({ ...m, showDotcomInsight: !m.showDotcomInsight }))}
+              style={{ padding: '2px 8px', borderRadius: 4, border: 'none', cursor: 'pointer',
+                background: meta.showDotcomInsight ? LG_RED : '#1E293B',
+                color: meta.showDotcomInsight ? '#FFFFFF' : '#475569',
+                fontSize: 11, fontWeight: 700, fontFamily: FONT }}>
+              {meta.showDotcomInsight ? 'ON' : 'OFF'}
+            </button>
+          </div>
+        </div>
+        <textarea
+          value={meta.dotcomInsight}
+          onChange={e => setMeta(m => ({ ...m, dotcomInsight: e.target.value }))}
+          rows={12}
+          placeholder="닷컴 Citation 인사이트를 입력하세요..."
+          style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6, marginBottom: 8 }}
+        />
+
+        {/* 닷컴 Citation How to Read */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+          <p style={{ margin: 0, fontSize: 11, color: '#64748B', fontFamily: FONT }}>닷컴 Citation How to Read</p>
+          <div style={{ display: 'flex', gap: 4 }}>
+            <button onClick={() => setMeta(m => ({ ...m, dotcomHowToRead: generateDotcomHowToRead() }))}
+              title="AI 인사이트 자동생성"
+              style={{ padding: '2px 6px', borderRadius: 4, border: 'none', cursor: 'pointer',
+                background: '#4F46E5', color: '#FFFFFF',
+                fontSize: 11, fontWeight: 700, fontFamily: FONT, display: 'flex', alignItems: 'center', gap: 3 }}>
+              <Sparkles size={9} /> AI 생성
+            </button>
+            <button onClick={() => setMeta(m => ({ ...m, showDotcomHowToRead: !m.showDotcomHowToRead }))}
+              style={{ padding: '2px 8px', borderRadius: 4, border: 'none', cursor: 'pointer',
+                background: meta.showDotcomHowToRead ? LG_RED : '#1E293B',
+                color: meta.showDotcomHowToRead ? '#FFFFFF' : '#475569',
+                fontSize: 11, fontWeight: 700, fontFamily: FONT }}>
+              {meta.showDotcomHowToRead ? 'ON' : 'OFF'}
+            </button>
+          </div>
+        </div>
+        <textarea
+          value={meta.dotcomHowToRead}
+          onChange={e => setMeta(m => ({ ...m, dotcomHowToRead: e.target.value }))}
+          rows={4}
+          placeholder="닷컴 Citation How to Read 설명을 입력하세요..."
+          style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6, marginBottom: 16 }}
+        />
+
+        <div style={{ height: 1, background: '#1E293B', marginBottom: 16 }} />
+
+        {/* AI 번역 */}
+        <button onClick={handleTranslate} disabled={translating} style={{
+          width: '100%', padding: '9px 0', background: translating ? '#1E293B' : '#4F46E5', border: '1px solid #6366F133',
+          borderRadius: 8, fontSize: 11, fontWeight: 700, color: '#E0E7FF', fontFamily: FONT,
+          cursor: translating ? 'wait' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, marginBottom: 12,
+          opacity: translating ? 0.6 : 1,
+        }}>
+          <Languages size={13} /> {translating ? '번역 중...' : 'AI 번역 (EN)'}
+        </button>
+
+        {/* 번역 확인 팝업 */}
+        {showTranslatePopup && (
+          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 9999,
+            display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ background: '#1E293B', border: '1px solid #334155', borderRadius: 14,
+              padding: '24px 28px', maxWidth: 380, width: '90%', boxShadow: '0 20px 60px rgba(0,0,0,0.5)' }}>
+              <p style={{ margin: '0 0 6px', fontSize: 15, fontWeight: 700, color: '#FFFFFF', fontFamily: FONT }}>
+                AI 번역 확인
+              </p>
+              <p style={{ margin: '0 0 20px', fontSize: 12, color: '#94A3B8', lineHeight: 1.6, fontFamily: FONT }}>
+                Citation 관련 텍스트를 영어로 번역합니다.<br/>진행하시겠습니까?
+              </p>
+              <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+                <button onClick={() => setShowTranslatePopup(false)} style={{
+                  padding: '8px 20px', borderRadius: 8, border: '1px solid #334155', background: 'transparent',
+                  color: '#94A3B8', fontSize: 12, fontWeight: 600, fontFamily: FONT, cursor: 'pointer' }}>
+                  아니오
+                </button>
+                <button onClick={executeTranslate} style={{
+                  padding: '8px 20px', borderRadius: 8, border: 'none', background: '#4F46E5',
+                  color: '#FFFFFF', fontSize: 12, fontWeight: 700, fontFamily: FONT, cursor: 'pointer' }}>
+                  예, 번역하기
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div style={{ height: 1, background: '#1E293B', marginBottom: 16 }} />
+
+        {/* ── 웹 게시 ── */}
+        <p style={{ margin: '0 0 10px 2px', fontSize: 11, fontWeight: 700, color: '#475569',
+          textTransform: 'uppercase', letterSpacing: 1, fontFamily: FONT }}>
+          웹 게시
+        </p>
+        <button onClick={handlePublish} disabled={publishing}
+          style={{ width: '100%', padding: '10px 0', borderRadius: 8, border: 'none',
+            background: publishing ? '#1E293B' : '#166534', color: publishing ? '#94A3B8' : '#86EFAC',
+            fontSize: 12, fontWeight: 700, fontFamily: FONT, cursor: publishing ? 'wait' : 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginBottom: 8 }}>
+          <Globe size={13} /> {publishing ? '게시 중...' : '웹 게시 (KO + EN)'}
+        </button>
+        {publishMsg && (
+          <div style={{ padding: '8px 10px', borderRadius: 7, fontSize: 11, fontFamily: FONT, lineHeight: 1.6,
+            background: publishMsg.startsWith('ERROR') ? '#450A0A' : '#14532D',
+            color: publishMsg.startsWith('ERROR') ? '#FCA5A5' : '#86EFAC',
+            marginBottom: 8, whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
+            {publishMsg}
+          </div>
+        )}
+        {publishInfo?.published && (
+          <div style={{ display: 'flex', gap: 4, marginBottom: 8 }}>
+            <a href={publishInfo.urls?.ko} target="_blank" rel="noopener noreferrer"
+              style={{ flex: 1, textAlign: 'center', padding: '6px 0', borderRadius: 6,
+                background: '#0F172A', border: '1px solid #334155', color: '#94A3B8',
+                fontSize: 10, fontFamily: FONT, textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 3 }}>
+              <Link2 size={10} /> KO
+            </a>
+            <a href={publishInfo.urls?.en} target="_blank" rel="noopener noreferrer"
+              style={{ flex: 1, textAlign: 'center', padding: '6px 0', borderRadius: 6,
+                background: '#0F172A', border: '1px solid #334155', color: '#94A3B8',
+                fontSize: 10, fontFamily: FONT, textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 3 }}>
+              <Link2 size={10} /> EN
+            </a>
+            <button onClick={handleUnpublish}
+              style={{ padding: '6px 10px', borderRadius: 6, border: 'none', cursor: 'pointer',
+                background: '#7F1D1D', color: '#FCA5A5', fontSize: 10, fontWeight: 700, fontFamily: FONT }}>
+              게시 해제
+            </button>
+          </div>
+        )}
+
+      </div>
+    </div>
+  )
+}
