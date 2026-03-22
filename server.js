@@ -22,6 +22,12 @@ const PUB_DIR = join(DATA_DIR, 'published')
 if (!existsSync(DATA_DIR)) mkdirSync(DATA_DIR, { recursive: true })
 if (!existsSync(PUB_DIR)) mkdirSync(PUB_DIR, { recursive: true })
 
+// ─── Mode-specific file paths (newsletter / dashboard 분리 저장) ─────────────
+const NL_SNAP_FILE = join(DATA_DIR, 'newsletter-snapshots.json')
+const DB_SNAP_FILE = join(DATA_DIR, 'dashboard-snapshots.json')
+const NL_SYNC_FILE = join(DATA_DIR, 'newsletter-sync-data.json')
+const DB_SYNC_FILE = join(DATA_DIR, 'dashboard-sync-data.json')
+
 // ─── IP Allowlist storage ────────────────────────────────────────────────────
 const IP_FILE = join(DATA_DIR, 'ip-allowlist.json')
 
@@ -286,6 +292,80 @@ app.post('/api/sync-data', (req, res) => {
   const payload = { ...data, savedAt: Date.now() }
   writeSyncData(payload)
   console.log('[SYNC-DATA] Saved at', new Date().toISOString())
+  res.json({ ok: true })
+})
+
+// ─── Mode-specific Snapshots & Sync Data (newsletter / dashboard 분리) ──────
+function modeSnapFile(mode) {
+  return mode === 'dashboard' ? DB_SNAP_FILE : NL_SNAP_FILE
+}
+function modeSyncFile(mode) {
+  return mode === 'dashboard' ? DB_SYNC_FILE : NL_SYNC_FILE
+}
+function readModeSnapshots(mode) {
+  try { return JSON.parse(readFileSync(modeSnapFile(mode), 'utf-8')) } catch { return [] }
+}
+function writeModeSnapshots(mode, list) {
+  writeFileSync(modeSnapFile(mode), JSON.stringify(list, null, 2))
+}
+function readModeSyncData(mode) {
+  try { return JSON.parse(readFileSync(modeSyncFile(mode), 'utf-8')) } catch { return null }
+}
+function writeModeSyncData(mode, data) {
+  writeFileSync(modeSyncFile(mode), JSON.stringify(data, null, 2))
+}
+
+// Snapshots — /api/:mode/snapshots
+app.get('/api/:mode/snapshots', (req, res) => {
+  const { mode } = req.params
+  if (mode !== 'newsletter' && mode !== 'dashboard') return res.status(400).json({ ok: false, error: 'invalid mode' })
+  res.json(readModeSnapshots(mode))
+})
+app.post('/api/:mode/snapshots', (req, res) => {
+  const { mode } = req.params
+  if (mode !== 'newsletter' && mode !== 'dashboard') return res.status(400).json({ ok: false, error: 'invalid mode' })
+  const { name, data } = req.body || {}
+  if (!name || !data) return res.status(400).json({ ok: false, error: 'name, data 필수' })
+  const snap = { name, ts: Date.now(), data }
+  const list = [snap, ...readModeSnapshots(mode)].slice(0, 50)
+  writeModeSnapshots(mode, list)
+  res.json({ ok: true, snapshots: list })
+})
+app.put('/api/:mode/snapshots/:ts', (req, res) => {
+  const { mode, ts: tsStr } = req.params
+  if (mode !== 'newsletter' && mode !== 'dashboard') return res.status(400).json({ ok: false, error: 'invalid mode' })
+  const ts = parseInt(tsStr)
+  const { data } = req.body || {}
+  if (!data) return res.status(400).json({ ok: false, error: 'data 필수' })
+  const list = readModeSnapshots(mode).map(s => s.ts === ts ? { ...s, data, updatedAt: Date.now() } : s)
+  writeModeSnapshots(mode, list)
+  res.json({ ok: true, snapshots: list })
+})
+app.delete('/api/:mode/snapshots/:ts', (req, res) => {
+  const { mode, ts: tsStr } = req.params
+  if (mode !== 'newsletter' && mode !== 'dashboard') return res.status(400).json({ ok: false, error: 'invalid mode' })
+  const ts = parseInt(tsStr)
+  const list = readModeSnapshots(mode).filter(s => s.ts !== ts)
+  writeModeSnapshots(mode, list)
+  res.json({ ok: true, snapshots: list })
+})
+
+// Sync Data — /api/:mode/sync-data
+app.get('/api/:mode/sync-data', (req, res) => {
+  const { mode } = req.params
+  if (mode !== 'newsletter' && mode !== 'dashboard') return res.status(400).json({ ok: false, error: 'invalid mode' })
+  const data = readModeSyncData(mode)
+  if (!data) return res.json({ ok: false, data: null })
+  res.json({ ok: true, data })
+})
+app.post('/api/:mode/sync-data', (req, res) => {
+  const { mode } = req.params
+  if (mode !== 'newsletter' && mode !== 'dashboard') return res.status(400).json({ ok: false, error: 'invalid mode' })
+  const { data } = req.body || {}
+  if (!data) return res.status(400).json({ ok: false, error: 'data 필수' })
+  const payload = { ...data, savedAt: Date.now() }
+  writeModeSyncData(mode, payload)
+  console.log(`[SYNC-DATA:${mode}] Saved at`, new Date().toISOString())
   res.json({ ok: true })
 })
 
