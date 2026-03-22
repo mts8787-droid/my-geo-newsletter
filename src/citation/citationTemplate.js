@@ -172,14 +172,222 @@ const REGIONS = {
   APAC:  { countries: ['IN', 'AU', 'VN'] },
 }
 
-export function generateCitationHTML(meta, _total, _products, citations, dotcom, lang, _productsCnty, citationsCnty) {
-  const t = T[lang] || T.ko
+// ─── 도메인 카테고리 범프차트 (월간 트렌드) ─────────────────────────────────
+function citCategoryBumpChartHtml(citTouchPointsTrend, citTrendMonths, meta, t, lang) {
+  if (!citTouchPointsTrend || !citTrendMonths || citTrendMonths.length < 2) return ''
+  const months = citTrendMonths
+  const entries = Object.entries(citTouchPointsTrend)
+  if (!entries.length) return ''
 
-  const content = [
+  // 월별 순위 계산
+  const rankings = {}
+  months.forEach(m => {
+    const scored = entries.map(([name, data]) => ({ name, score: data[m] || 0 }))
+      .filter(e => e.score > 0)
+      .sort((a, b) => b.score - a.score)
+    scored.forEach((e, i) => {
+      if (!rankings[e.name]) rankings[e.name] = {}
+      rankings[e.name][m] = i + 1
+    })
+  })
+
+  const names = Object.keys(rankings)
+  if (!names.length) return ''
+  const maxRank = Math.max(...names.map(n => Math.max(...Object.values(rankings[n]))), 1)
+  const COLORS = ['#CF0652','#3B82F6','#22C55E','#F59E0B','#8B5CF6','#EC4899','#14B8A6','#F97316','#6366F1','#EF4444','#06B6D4','#84CC16']
+
+  const W = Math.max(months.length * 120, 600)
+  const H = Math.max(maxRank * 40 + 60, 200)
+  const padL = 40, padR = 40, padT = 30, padB = 30
+  const chartW = W - padL - padR
+  const chartH = H - padT - padB
+
+  // SVG 생성
+  let svg = `<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" style="font-family:${FONT}">`
+
+  // 월 라벨 (x축)
+  months.forEach((m, i) => {
+    const x = padL + (i / (months.length - 1)) * chartW
+    svg += `<text x="${x}" y="${padT - 10}" text-anchor="middle" fill="#64748B" font-size="11" font-weight="700">${m}</text>`
+    svg += `<line x1="${x}" y1="${padT}" x2="${x}" y2="${padT + chartH}" stroke="#E2E8F0" stroke-width="1" stroke-dasharray="3,3"/>`
+  })
+
+  // 각 카테고리 라인
+  names.forEach((name, ni) => {
+    const color = COLORS[ni % COLORS.length]
+    const points = []
+    months.forEach((m, i) => {
+      const rank = rankings[name][m]
+      if (rank != null) {
+        const x = padL + (i / (months.length - 1)) * chartW
+        const y = padT + ((rank - 1) / (maxRank - 1 || 1)) * chartH
+        points.push({ x, y, rank, month: m })
+      }
+    })
+    if (points.length < 2) return
+    // 라인
+    const pathD = points.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x},${p.y}`).join(' ')
+    svg += `<path d="${pathD}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>`
+    // 포인트 + 순위 텍스트
+    points.forEach(p => {
+      svg += `<circle cx="${p.x}" cy="${p.y}" r="10" fill="${color}" stroke="#fff" stroke-width="2"/>`
+      svg += `<text x="${p.x}" y="${p.y + 4}" text-anchor="middle" fill="#fff" font-size="9" font-weight="800">${p.rank}</text>`
+    })
+    // 마지막 포인트에 이름 라벨
+    const last = points[points.length - 1]
+    svg += `<text x="${last.x + 16}" y="${last.y + 4}" fill="${color}" font-size="11" font-weight="700">${name}</text>`
+  })
+  svg += '</svg>'
+
+  // 하단 실수치 테이블
+  let table = `<table class="trend-table"><thead><tr><th>${lang === 'ko' ? '카테고리' : 'Category'}</th>`
+  months.forEach(m => { table += `<th>${m}</th>` })
+  table += '</tr></thead><tbody>'
+  names.forEach((name, ni) => {
+    const color = COLORS[ni % COLORS.length]
+    table += `<tr><td><span class="trend-dot" style="background:${color}"></span>${name}</td>`
+    months.forEach(m => {
+      const val = citTouchPointsTrend[name]?.[m]
+      const rank = rankings[name]?.[m]
+      table += `<td>${val != null ? `<span class="trend-val">${fmt(val)}</span><span class="trend-rank">#${rank}</span>` : '—'}</td>`
+    })
+    table += '</tr>'
+  })
+  table += '</tbody></table>'
+
+  return `<div class="section-card">
+    <div class="section-header"><div class="section-title">${t.citationTitle} — ${lang === 'ko' ? '월간 트렌드' : 'Monthly Trend'}</div></div>
+    <div class="section-body">
+      <div class="bump-chart-wrap">${svg}</div>
+      ${table}
+    </div>
+  </div>`
+}
+
+// ─── 도메인별 범프차트 (월간 트렌드) ──────────────────────────────────────────
+function citDomainBumpChartHtml(citDomainTrend, citDomainMonths, meta, t, lang) {
+  if (!citDomainTrend || !citDomainMonths || citDomainMonths.length < 2) return ''
+  const months = citDomainMonths
+  const topN = meta.citDomainTopN || 10
+
+  // TTL 국가의 도메인만 사용
+  const entries = Object.entries(citDomainTrend)
+    .filter(([key]) => key.startsWith('TTL|'))
+    .map(([key, val]) => ({ domain: val.domain, type: val.type, months: val.months }))
+
+  if (!entries.length) return ''
+
+  // 마지막 월 기준으로 정렬 후 Top N
+  const lastMonth = months[months.length - 1]
+  entries.sort((a, b) => (b.months[lastMonth] || 0) - (a.months[lastMonth] || 0))
+  const topEntries = entries.slice(0, topN)
+
+  // 월별 순위 계산
+  const rankings = {}
+  months.forEach(m => {
+    const scored = topEntries.map(e => ({ domain: e.domain, score: e.months[m] || 0 }))
+      .filter(e => e.score > 0)
+      .sort((a, b) => b.score - a.score)
+    scored.forEach((e, i) => {
+      if (!rankings[e.domain]) rankings[e.domain] = {}
+      rankings[e.domain][m] = i + 1
+    })
+  })
+
+  const domains = Object.keys(rankings)
+  if (!domains.length) return ''
+  const maxRank = Math.max(...domains.map(d => Math.max(...Object.values(rankings[d]))), 1)
+  const COLORS = ['#CF0652','#3B82F6','#22C55E','#F59E0B','#8B5CF6','#EC4899','#14B8A6','#F97316','#6366F1','#EF4444','#06B6D4','#84CC16']
+
+  const W = Math.max(months.length * 120, 600)
+  const H = Math.max(maxRank * 40 + 60, 200)
+  const padL = 40, padR = 120, padT = 30, padB = 30
+  const chartW = W - padL - padR
+  const chartH = H - padT - padB
+
+  let svg = `<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" style="font-family:${FONT}">`
+  months.forEach((m, i) => {
+    const x = padL + (i / (months.length - 1)) * chartW
+    svg += `<text x="${x}" y="${padT - 10}" text-anchor="middle" fill="#64748B" font-size="11" font-weight="700">${m}</text>`
+    svg += `<line x1="${x}" y1="${padT}" x2="${x}" y2="${padT + chartH}" stroke="#E2E8F0" stroke-width="1" stroke-dasharray="3,3"/>`
+  })
+
+  domains.forEach((domain, di) => {
+    const color = COLORS[di % COLORS.length]
+    const points = []
+    months.forEach((m, i) => {
+      const rank = rankings[domain][m]
+      if (rank != null) {
+        const x = padL + (i / (months.length - 1)) * chartW
+        const y = padT + ((rank - 1) / (maxRank - 1 || 1)) * chartH
+        points.push({ x, y, rank, month: m })
+      }
+    })
+    if (points.length < 2) return
+    const pathD = points.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x},${p.y}`).join(' ')
+    svg += `<path d="${pathD}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>`
+    points.forEach(p => {
+      svg += `<circle cx="${p.x}" cy="${p.y}" r="10" fill="${color}" stroke="#fff" stroke-width="2"/>`
+      svg += `<text x="${p.x}" y="${p.y + 4}" text-anchor="middle" fill="#fff" font-size="9" font-weight="800">${p.rank}</text>`
+    })
+    const last = points[points.length - 1]
+    svg += `<text x="${last.x + 16}" y="${last.y + 4}" fill="${color}" font-size="11" font-weight="700">${stripDomain(domain)}</text>`
+  })
+  svg += '</svg>'
+
+  // 하단 실수치 테이블
+  let table = `<table class="trend-table"><thead><tr><th>${lang === 'ko' ? '도메인' : 'Domain'}</th><th>Type</th>`
+  months.forEach(m => { table += `<th>${m}</th>` })
+  table += '</tr></thead><tbody>'
+  topEntries.forEach((entry, di) => {
+    const color = COLORS[di % COLORS.length]
+    const domain = entry.domain
+    table += `<tr><td><span class="trend-dot" style="background:${color}"></span>${stripDomain(domain)}</td><td class="trend-type">${entry.type}</td>`
+    months.forEach(m => {
+      const val = entry.months[m]
+      const rank = rankings[domain]?.[m]
+      table += `<td>${val != null ? `<span class="trend-val">${fmt(val)}</span><span class="trend-rank">#${rank}</span>` : '—'}</td>`
+    })
+    table += '</tr>'
+  })
+  table += '</tbody></table>'
+
+  return `<div class="section-card">
+    <div class="section-header"><div class="section-title">${t.citDomainTitle} — ${lang === 'ko' ? '월간 트렌드' : 'Monthly Trend'}</div></div>
+    <div class="section-body">
+      <div class="bump-chart-wrap">${svg}</div>
+      ${table}
+    </div>
+  </div>`
+}
+
+export function generateCitationHTML(meta, _total, _products, citations, dotcom, lang, _productsCnty, citationsCnty, trendData) {
+  const t = T[lang] || T.ko
+  const { citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths } = trendData || {}
+
+  // 월간 탭 콘텐츠
+  const monthlyContent = [
     meta.showCitations !== false ? citationSectionHtml(citations, meta, t) : '',
     (meta.showCitDomain !== false || meta.showCitCnty !== false) ? citDomainSectionHtml(citationsCnty, meta, t, citations, lang) : '',
     meta.showDotcom !== false ? dotcomSectionHtml(dotcom, meta, t) : '',
   ].join('')
+
+  // 월간 트렌드 탭 콘텐츠
+  const trendContent = [
+    citCategoryBumpChartHtml(citTouchPointsTrend, citTrendMonths, meta, t, lang),
+    citDomainBumpChartHtml(citDomainTrend, citDomainMonths, meta, t, lang),
+  ].join('')
+
+  const hasTrend = !!(citTrendMonths?.length >= 2 || citDomainMonths?.length >= 2)
+
+  const content = hasTrend
+    ? `<div class="sub-tabs">
+        <button class="sub-tab active" data-tab="monthly" onclick="switchSubTab(this,'monthly')">${lang === 'ko' ? '월간' : 'Monthly'}</button>
+        <button class="sub-tab" data-tab="trend" onclick="switchSubTab(this,'trend')">${lang === 'ko' ? '월간 트렌드' : 'Monthly Trend'}</button>
+      </div>
+      <div class="sub-tab-panel" data-panel="monthly">${monthlyContent}</div>
+      <div class="sub-tab-panel" data-panel="trend" style="display:none">${trendContent}</div>`
+    : monthlyContent
 
   // 국가 목록 추출 (citationsCnty에서)
   const countries = new Set()
@@ -303,6 +511,21 @@ body{background:#F1F5F9;font-family:${FONT};min-width:1200px;color:#1A1A1A}
 .dash-footer{background:#1A1A1A;padding:16px 40px;display:flex;justify-content:space-between;align-items:center;margin-top:auto}
 .dash-footer span{font-size:12px;color:#94A3B8}
 .dash-footer strong{color:#fff;font-weight:700}
+/* ── 서브탭 ── */
+.sub-tabs{display:flex;gap:4px;margin-bottom:20px;background:#F1F5F9;border-radius:10px;padding:4px}
+.sub-tab{flex:1;padding:10px 20px;border:none;border-radius:8px;font-size:14px;font-weight:700;font-family:${FONT};cursor:pointer;background:transparent;color:#64748B;transition:all .2s}
+.sub-tab.active{background:#0F172A;color:#fff;box-shadow:0 2px 8px rgba(0,0,0,0.15)}
+.sub-tab:hover:not(.active){background:#E2E8F0}
+/* ── 범프차트 ── */
+.bump-chart-wrap{overflow-x:auto;padding:8px 0 16px;margin-bottom:16px}
+.trend-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:4px}
+.trend-table th{padding:8px 10px;text-align:left;font-weight:700;color:#64748B;border-bottom:2px solid #E2E8F0;font-size:11px;white-space:nowrap}
+.trend-table td{padding:7px 10px;border-bottom:1px solid #F1F5F9;white-space:nowrap;vertical-align:middle}
+.trend-table tbody tr:hover{background:#F8FAFC}
+.trend-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:middle;flex-shrink:0}
+.trend-val{font-weight:700;color:#1A1A1A;margin-right:4px}
+.trend-rank{font-size:10px;color:#94A3B8;font-weight:600}
+.trend-type{color:#94A3B8;font-size:11px}
 </style>
 </head>
 <body>
@@ -325,6 +548,13 @@ ${filterLayerHtml}
   <span>© 2026 LG Electronics Inc. All Rights Reserved.</span>
 </div>
 <script>
+function switchSubTab(btn,tab){
+  document.querySelectorAll('.sub-tab').forEach(function(t){t.classList.remove('active')});
+  btn.classList.add('active');
+  document.querySelectorAll('.sub-tab-panel').forEach(function(p){
+    p.style.display=p.getAttribute('data-panel')===tab?'':'none';
+  });
+}
 var _REGIONS={NA:['US','CA'],EU:['UK','DE','ES'],LATAM:['BR','MX'],APAC:['IN','AU','VN']};
 function switchCitCnty(btn){
   var sec=btn.closest('.section-card')||document.getElementById('cit-domain-section');
