@@ -639,6 +639,28 @@ export function generateDashboardHTML(meta, total, products, citations, dotcom, 
     </div>
   </div>`
 
+  // Citation 탭 전용 필터: 기간 + 리전/국가만 (본부/제품/주간·월간 제외)
+  const citFilterLayerHtml = `<div class="filter-layer" id="filter-layer-cit">
+    <div class="fl-row">
+      <div class="fl-group">
+        <span class="fl-label">${lang === 'en' ? 'Period' : '기간'}</span>
+        <span class="fl-badge">${meta.period || '—'}</span>
+      </div>
+      <div class="fl-divider"></div>
+      <div class="fl-group">
+        <span class="fl-label">Region</span>
+        <label class="fl-chk-label fl-all-label"><input type="checkbox" class="fl-chk-all" data-target="region" checked onchange="toggleAll(this,'region')"><span>${allLabel}</span></label>
+        ${regionCheckboxes}
+      </div>
+      <div class="fl-divider"></div>
+      <div class="fl-group">
+        <span class="fl-label">${lang === 'en' ? 'Country' : '국가'}</span>
+        <label class="fl-chk-label fl-all-label"><input type="checkbox" class="fl-chk-all" data-target="country" checked onchange="toggleAll(this,'country')"><span>${allLabel}</span></label>
+        ${countryCheckboxes}
+      </div>
+    </div>
+  </div>`
+
   const visContent = [
     meta.showTotal !== false ? heroHtml(total, meta, t, lang) : '',
     meta.showProducts !== false ? productSectionHtml(products, meta, t, lang, weeklyLabels) : '',
@@ -835,7 +857,7 @@ body{background:#F1F5F9;font-family:${FONT};min-width:1200px;color:#1A1A1A}
   <div class="dash-container">${visContent}</div>
 </div>
 <div id="tab-citation" class="tab-panel">
-  ${filterLayerHtml.replace('id="filter-layer"', 'id="filter-layer-cit" class="filter-layer"')}
+  ${citFilterLayerHtml}
   <div class="dash-container">${citContent}</div>
 </div>
 <div id="tab-readability" class="tab-panel">

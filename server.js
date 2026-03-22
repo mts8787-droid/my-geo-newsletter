@@ -525,6 +525,54 @@ app.get('/api/publish-dashboard', (req, res) => {
   res.json({ published: ko && en, ko, en, ...(meta || {}), urls: { ko: `/p/${DASH_KO_SLUG}`, en: `/p/${DASH_EN_SLUG}` } })
 })
 
+// ─── Citation Publish API (별도 슬러그) ──────────────────────────────────────
+const CIT_KO_SLUG = 'GEO-Citation-Dashboard-KO'
+const CIT_EN_SLUG = 'GEO-Citation-Dashboard-EN'
+const CIT_META = join(DATA_DIR, 'citation-meta.json')
+
+function readCitMeta() {
+  try { return JSON.parse(readFileSync(CIT_META, 'utf-8')) } catch { return null }
+}
+
+function citLangBarHtml(activeLang) {
+  const btn = (lang, label, href) => {
+    const active = lang === activeLang
+    return `<a href="${href}" style="display:inline-block;font-size:13px;text-decoration:none;padding:6px 18px;border-radius:20px;margin:0 4px;color:${active ? '#FFFFFF' : '#94A3B8'};font-weight:${active ? '700' : '500'};background:${active ? '#CF0652' : 'rgba(255,255,255,0.08)'};">${label}</a>`
+  }
+  return `<div style="background:#0F172A;padding:12px 0;text-align:center;font-family:'LG Smart','Arial Narrow',Arial,sans-serif;">${btn('ko','한국어','/p/'+CIT_KO_SLUG)}${btn('en','English','/p/'+CIT_EN_SLUG)}</div>`
+}
+
+function injectCitLangBar(html, lang) {
+  const bar = citLangBarHtml(lang)
+  if (html.match(/<body[^>]*>/i)) return html.replace(/(<body[^>]*>)/i, `$1${bar}`)
+  return bar + html
+}
+
+app.post('/api/publish-citation', (req, res) => {
+  const { htmlKo, htmlEn, title } = req.body || {}
+  if (!htmlKo || !htmlEn) return res.status(400).json({ ok: false, error: 'htmlKo, htmlEn 필수' })
+  writeFileSync(join(PUB_DIR, `${CIT_KO_SLUG}.html`), injectCitLangBar(htmlKo, 'ko'))
+  writeFileSync(join(PUB_DIR, `${CIT_EN_SLUG}.html`), injectCitLangBar(htmlEn, 'en'))
+  const meta = { title: title || 'GEO Citation Dashboard', ts: Date.now() }
+  writeFileSync(CIT_META, JSON.stringify(meta, null, 2))
+  console.log('[PUBLISH-CIT]', meta.title, `-> /p/${CIT_KO_SLUG}, /p/${CIT_EN_SLUG}`)
+  res.json({ ok: true, urls: { ko: `/p/${CIT_KO_SLUG}`, en: `/p/${CIT_EN_SLUG}` }, ...meta })
+})
+
+app.get('/api/publish-citation', (req, res) => {
+  const meta = readCitMeta()
+  const ko = existsSync(join(PUB_DIR, `${CIT_KO_SLUG}.html`))
+  const en = existsSync(join(PUB_DIR, `${CIT_EN_SLUG}.html`))
+  res.json({ published: ko && en, ko, en, ...(meta || {}), urls: { ko: `/p/${CIT_KO_SLUG}`, en: `/p/${CIT_EN_SLUG}` } })
+})
+
+app.delete('/api/publish-citation', (req, res) => {
+  try { unlinkSync(join(PUB_DIR, `${CIT_KO_SLUG}.html`)) } catch {}
+  try { unlinkSync(join(PUB_DIR, `${CIT_EN_SLUG}.html`)) } catch {}
+  try { unlinkSync(CIT_META) } catch {}
+  res.json({ ok: true })
+})
+
 // ─── Publish History (Newsletter + Dashboard 통합 조회) ──────────────────────
 app.get('/api/publish-history', (req, res) => {
   const newsletter = readPubMeta()
@@ -649,6 +697,10 @@ a.card:hover{border-color:#CF0652;transform:translateY(-2px)}
     <a class="card" href="/admin/dashboard">
       <div class="card-title">KPI Dashboard Builder</div>
       <div class="card-desc">GEO KPI 대시보드 생성 및 게시</div>
+    </a>
+    <a class="card" href="/admin/citation">
+      <div class="card-title">Citation Dashboard</div>
+      <div class="card-desc">Citation 분석 대시보드 (도메인/국가/닷컴)</div>
     </a>
     <a class="card" href="/admin/progress-tracker">
       <div class="card-title">Progress Tracker</div>
@@ -777,6 +829,15 @@ app.get('/admin/dashboard', (req, res) => {
 })
 app.get('/admin/dashboard/*', (req, res) => {
   res.sendFile(join(__dirname, 'dist-dashboard', 'dashboard.html'))
+})
+
+// ─── Static files (Citation Dashboard at /admin/citation) ───────────────────
+app.use('/admin/citation', express.static(join(__dirname, 'dist-citation')))
+app.get('/admin/citation', (req, res) => {
+  res.sendFile(join(__dirname, 'dist-citation', 'citation.html'))
+})
+app.get('/admin/citation/*', (req, res) => {
+  res.sendFile(join(__dirname, 'dist-citation', 'citation.html'))
 })
 
 // ─── Static files (Progress Tracker at /admin/progress-tracker) ─────────────
