@@ -1421,33 +1421,6 @@ function Sidebar({ meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, total, s
           ))}
         </div>
 
-        {/* 도메인 Citation 국가 표시 ON/OFF */}
-        {citationsCnty.length > 0 && (() => {
-          const cntyNames = [...new Set(resolved.citationsCnty.filter(r => r.cnty && r.cnty !== 'TTL').map(r => r.cnty))]
-          return cntyNames.length > 0 ? (
-            <div style={{ marginBottom: 12 }}>
-              <p style={{ margin: '0 0 6px', fontSize: 11, color: '#64748B', fontFamily: FONT }}>도메인 Citation 국가 표시</p>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
-                {cntyNames.map(name => {
-                  const isOn = (meta.citCntyDomainFilter || {})[name] !== false
-                  return (
-                    <button key={name} onClick={() => setMeta(m => ({
-                      ...m,
-                      citCntyDomainFilter: { ...(m.citCntyDomainFilter || {}), [name]: !isOn }
-                    }))}
-                      style={{ padding: '4px 10px', borderRadius: 16, border: 'none', cursor: 'pointer',
-                        background: isOn ? '#166534' : '#1E293B',
-                        color: isOn ? '#86EFAC' : '#475569',
-                        fontSize: 11, fontWeight: 700, fontFamily: FONT }}>
-                      {name}
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
-          ) : null
-        })()}
-
         {/* ── 콘텐츠 편집 ── */}
         <p style={{ margin: '0 0 10px 2px', fontSize: 11, fontWeight: 700, color: '#475569',
           textTransform: 'uppercase', letterSpacing: 1, fontFamily: FONT }}>

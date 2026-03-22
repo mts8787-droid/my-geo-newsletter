@@ -484,7 +484,7 @@ function citationDomainCntyRowsHtml(cntyRows, domTopN) {
   }).join('')
 }
 
-// ─── 도메인별 Citation (TTL + 국가별) ──────────────────────────────────────────
+// ─── 도메인별 Citation (TTL + 국가별 인터랙티브 탭) ──────────────────────────
 function citationDomainSectionHtml(citationsCnty, meta, lang, citations) {
   if (!citationsCnty || !citationsCnty.length) return ''
   const t = T[lang] || T.ko
@@ -493,11 +493,7 @@ function citationDomainSectionHtml(citationsCnty, meta, lang, citations) {
   const ttlRows = citationsCnty.filter(r => r.cnty === 'TTL').sort((a, b) => a.rank - b.rank).slice(0, domTopN)
   if (!ttlRows.length) return ''
 
-  // TTL 영역 (기존)
-  const ttlHtml = citationDomainCntyRowsHtml(ttlRows, domTopN)
-
-  // 국가별 Citation 도메인 영역
-  const cntyFilter = meta.citCntyDomainFilter || {}
+  // 국가 목록 수집
   const cntyMap = new Map()
   citationsCnty.forEach(row => {
     if (row.cnty === 'TTL') return
@@ -505,47 +501,51 @@ function citationDomainSectionHtml(citationsCnty, meta, lang, citations) {
     cntyMap.get(row.cnty).push(row)
   })
   const cntyKeys = [...cntyMap.keys()]
-  const visibleCntyKeys = cntyKeys.filter(c => cntyFilter[c] !== false)
+  const allTabs = ['TTL', ...cntyKeys]
 
-  // 국가 탭 pills
+  // TTL 데이터 HTML
+  const ttlHtml = citationDomainCntyRowsHtml(ttlRows, domTopN)
+
+  // 국가별 데이터 HTML (각각 div로 감싸서 토글 가능)
+  const cntyPanelsHtml = cntyKeys.map(cnty => {
+    const rows = cntyMap.get(cnty).sort((a, b) => a.rank - b.rank)
+    const rowsHtml = citationDomainCntyRowsHtml(rows, domTopN)
+    return `<tr class="cit-cnty-panel" data-cit-cnty="${cnty}" style="display:none;">
+                          <td>
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                              ${rowsHtml}
+                            </table>
+                          </td>
+                        </tr>`
+  }).join('')
+
+  // 국가 탭 pills (인터랙티브)
   const cntyPillsHtml = cntyKeys.length > 0 ? `
                     <tr>
                       <td style="padding:12px 28px 0;">
-                        <table border="0" cellpadding="0" cellspacing="0">
-                          <tr>
-                            <td style="padding:2px 8px;border-radius:12px;background:${EM_RED};font-size:11px;font-weight:700;color:#FFFFFF;font-family:${EM_FONT};">TTL</td>
-                            ${cntyKeys.map(c => {
-                              const isOn = cntyFilter[c] !== false
-                              return `<td style="padding-left:4px;"><table border="0" cellpadding="0" cellspacing="0"><tr><td style="padding:2px 8px;border-radius:12px;background:${isOn ? '#1E293B' : '#F1F5F9'};font-size:11px;font-weight:700;color:${isOn ? '#FFFFFF' : '#94A3B8'};font-family:${EM_FONT};">${c}</td></tr></table></td>`
-                            }).join('')}
-                          </tr>
-                        </table>
+                        <div style="display:inline-flex;gap:4px;flex-wrap:wrap;">
+                          ${allTabs.map(c => {
+                            const isActive = c === 'TTL'
+                            return `<button class="cit-cnty-tab" data-cit-tab="${c}" onclick="switchCitCnty('${c}')" style="padding:4px 12px;border-radius:14px;border:none;font-size:11px;font-weight:700;font-family:${EM_FONT};cursor:pointer;transition:all .15s;background:${isActive ? EM_RED : '#F1F5F9'};color:${isActive ? '#FFFFFF' : '#64748B'};">${c}</button>`
+                          }).join('')}
+                        </div>
                       </td>
                     </tr>` : ''
 
-  // 국가별 서브섹션 (가로 바 형식)
-  const cntySectionsHtml = visibleCntyKeys.map(cnty => {
-    const rows = cntyMap.get(cnty).sort((a, b) => a.rank - b.rank)
-    const rowsHtml = citationDomainCntyRowsHtml(rows, domTopN)
-    return `
-                      <tr>
-                        <td style="padding:16px 0 0;">
-                          <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                            <tr>
-                              <td style="background:#F1F5F9;border-radius:7px;padding:7px 12px;">
-                                <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                                  <tr>
-                                    <td style="font-size:14px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${cnty}</td>
-                                    <td align="right" style="font-size:11px;color:#94A3B8;font-family:${EM_FONT};">Top ${Math.min(domTopN, rows.length)}</td>
-                                  </tr>
-                                </table>
-                              </td>
-                            </tr>
-                          </table>
-                        </td>
-                      </tr>
-                      ${rowsHtml}`
-  }).join('')
+  // 인터랙티브 JS
+  const scriptHtml = cntyKeys.length > 0 ? `
+                    <script>
+                    function switchCitCnty(cnty){
+                      document.querySelectorAll('.cit-cnty-panel').forEach(function(el){el.style.display='none'});
+                      document.querySelector('.cit-cnty-panel-ttl').style.display=cnty==='TTL'?'':'none';
+                      if(cnty!=='TTL'){var p=document.querySelector('.cit-cnty-panel[data-cit-cnty="'+cnty+'"]');if(p)p.style.display='';}
+                      document.querySelectorAll('.cit-cnty-tab').forEach(function(btn){
+                        var isActive=btn.getAttribute('data-cit-tab')===cnty;
+                        btn.style.background=isActive?'${EM_RED}':'#F1F5F9';
+                        btn.style.color=isActive?'#FFFFFF':'#64748B';
+                      });
+                    }
+                    </script>` : ''
 
   return `
               <!-- ══ 도메인별 Citation ══ -->
@@ -579,12 +579,19 @@ function citationDomainSectionHtml(citationsCnty, meta, lang, citations) {
                     <tr>
                       <td style="padding:20px 28px;">
                         <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                          ${ttlHtml}
-                          ${cntySectionsHtml}
+                          <tr class="cit-cnty-panel-ttl">
+                            <td>
+                              <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                ${ttlHtml}
+                              </table>
+                            </td>
+                          </tr>
+                          ${cntyPanelsHtml}
                         </table>
                       </td>
                     </tr>
                   </table>
+                  ${scriptHtml}
                 </td>
               </tr>`
 }
