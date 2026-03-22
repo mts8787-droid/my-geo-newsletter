@@ -75,32 +75,23 @@ function citationSectionHtml(citations, meta, t) {
 function citDomainSectionHtml(citationsCnty, meta, t, citations, lang) {
   if (!citationsCnty || !citationsCnty.length) return ''
   const topN = meta.citDomainTopN || 10
-  const cntyNames = ['TTL', ...([...new Set(citationsCnty.map(r => r.cnty))].filter(c => c !== 'TTL'))]
-
-  const panels = cntyNames.map(cnty => {
-    const rows = citationsCnty.filter(r => r.cnty === cnty).sort((a, b) => a.rank - b.rank).slice(0, topN)
-    if (!rows.length) return ''
-    const maxScore = Math.max(...rows.map(r => r.citations), 1)
-    const totalCit = cnty === 'TTL' && citations && citations.length
-      ? citations.reduce((s, c) => s + c.score, 0)
-      : rows.reduce((s, r) => s + r.citations, 0)
-    const html = rows.map((c, i) => {
-      const pct = (c.citations / maxScore * 100).toFixed(1)
-      const ratio = totalCit > 0 ? ((c.citations / totalCit) * 100).toFixed(1) : '0.0'
-      return `<div class="cit-row">
-        <span class="cit-rank ${i < 3 ? 'top' : ''}">${c.rank}</span>
-        <div class="cit-info"><span class="cit-source">${stripDomain(c.domain)}</span><span class="cit-cat">${c.type}</span></div>
-        <div class="cit-bar-wrap"><div class="cit-bar" style="width:${pct}%"></div></div>
-        <span class="cit-score">${fmt(c.citations)}</span>
-        <span class="cit-ratio">(${ratio}%)</span>
-      </div>`
-    }).join('')
-    return `<div class="cit-cnty-panel" data-cit-cnty="${cnty}" style="${cnty !== 'TTL' ? 'display:none' : ''}">${html}</div>`
+  const rows = citationsCnty.filter(r => r.cnty === 'TTL').sort((a, b) => a.rank - b.rank).slice(0, topN)
+  if (!rows.length) return ''
+  const maxScore = Math.max(...rows.map(r => r.citations), 1)
+  const totalCit = citations && citations.length
+    ? citations.reduce((s, c) => s + c.score, 0)
+    : rows.reduce((s, r) => s + r.citations, 0)
+  const html = rows.map((c, i) => {
+    const pct = (c.citations / maxScore * 100).toFixed(1)
+    const ratio = totalCit > 0 ? ((c.citations / totalCit) * 100).toFixed(1) : '0.0'
+    return `<div class="cit-row">
+      <span class="cit-rank ${i < 3 ? 'top' : ''}">${c.rank}</span>
+      <div class="cit-info"><span class="cit-source">${stripDomain(c.domain)}</span><span class="cit-cat">${c.type}</span></div>
+      <div class="cit-bar-wrap"><div class="cit-bar" style="width:${pct}%"></div></div>
+      <span class="cit-score">${fmt(c.citations)}</span>
+      <span class="cit-ratio">(${ratio}%)</span>
+    </div>`
   }).join('')
-
-  const chips = cntyNames.map(c =>
-    `<button class="filter-chip ${c === 'TTL' ? 'active' : ''}" data-cit-cnty-val="${c}" onclick="switchCitCnty(this)">${c === 'TTL' ? t.dotcomTTL.replace(/ \(.*/, '') || 'TTL' : c}</button>`
-  ).join('')
 
   return `<div class="section-card" id="cit-domain-section">
     <div class="section-header">
@@ -108,8 +99,7 @@ function citDomainSectionHtml(citationsCnty, meta, t, citations, lang) {
       <span class="legend">Top ${topN} Domains</span>
     </div>
     ${insightHtml(meta.citDomainInsight, meta.showCitDomainInsight, meta.citDomainHowToRead, meta.showCitDomainHowToRead, t)}
-    <div class="cnty-filters"><div class="filter-group" id="cit-cnty-chips"><span class="filter-label">${lang === 'ko' ? '국가' : 'Country'}</span>${chips}</div></div>
-    <div class="section-body">${panels}</div>
+    <div class="section-body">${html}</div>
   </div>`
 }
 
@@ -166,9 +156,9 @@ function dotcomSectionHtml(dotcom, meta, t) {
 // ═══════════════════════════════════════════════════════════════════════════
 // ─── Region 매핑 ────────────────────────────────────────────────────────────
 const REGIONS = {
-  NA:    { countries: ['US', 'CA', 'MX'] },
+  NA:    { countries: ['US', 'CA'] },
   EU:    { countries: ['UK', 'DE'] },
-  LATAM: { countries: ['BR'] },
+  LATAM: { countries: ['MX', 'BR'] },
   APAC:  { countries: ['IN', 'AU', 'VN'] },
 }
 
@@ -365,10 +355,19 @@ export function generateCitationHTML(meta, _total, _products, citations, dotcom,
   const t = T[lang] || T.ko
   const { citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths } = trendData || {}
 
+  // 국가 필터 적용: 선택된 국가만 포함 (TTL은 항상 포함)
+  const cntyFilter = meta.citCntyFilter || {}
+  const isCountryOn = (code) => cntyFilter[code] !== false
+  const allCountryCodes = Object.values(REGIONS).flatMap(r => r.countries)
+  const enabledCountries = allCountryCodes.filter(c => isCountryOn(c))
+  const filteredCitCnty = citationsCnty
+    ? citationsCnty.filter(r => r.cnty === 'TTL' || enabledCountries.includes(r.cnty))
+    : []
+
   // 월간 탭 콘텐츠
   const monthlyContent = [
     meta.showCitations !== false ? citationSectionHtml(citations, meta, t) : '',
-    (meta.showCitDomain !== false || meta.showCitCnty !== false) ? citDomainSectionHtml(citationsCnty, meta, t, citations, lang) : '',
+    (meta.showCitDomain !== false || meta.showCitCnty !== false) ? citDomainSectionHtml(filteredCitCnty, meta, t, citations, lang) : '',
     meta.showDotcom !== false ? dotcomSectionHtml(dotcom, meta, t) : '',
   ].join('')
 
@@ -388,17 +387,19 @@ export function generateCitationHTML(meta, _total, _products, citations, dotcom,
     <div class="sub-tab-panel" data-panel="monthly">${monthlyContent}</div>
     <div class="sub-tab-panel" data-panel="trend" style="display:none">${finalTrend}</div>`
 
-  // 국가 목록 추출 (citationsCnty에서)
+  // 국가 목록 추출 (데이터에 존재하는 국가만)
   const countries = new Set()
   if (citationsCnty) citationsCnty.forEach(r => { if (r.cnty && r.cnty !== 'TTL') countries.add(r.cnty) })
   const countryList = [...countries].sort()
+  const allOn = allCountryCodes.every(c => isCountryOn(c))
 
   const allLabel = lang === 'en' ? 'All' : '전체'
-  const regionCheckboxes = Object.entries(REGIONS).map(([k]) =>
-    `<label class="fl-chk-label"><input type="checkbox" class="fl-chk" data-filter="region" value="${k}" checked onchange="onRegionChange('${k}')"><span>${k}</span></label>`
-  ).join('')
+  const regionCheckboxes = Object.entries(REGIONS).map(([k, v]) => {
+    const regionOn = v.countries.every(c => isCountryOn(c))
+    return `<label class="fl-chk-label"><input type="checkbox" class="fl-chk" data-filter="region" value="${k}" ${regionOn ? 'checked' : ''} onchange="onRegionChange('${k}')"><span>${k}</span></label>`
+  }).join('')
   const countryCheckboxes = countryList.map(c =>
-    `<label class="fl-chk-label"><input type="checkbox" class="fl-chk" data-filter="country" value="${c}" checked onchange="onFilterChange()"><span>${c}</span></label>`
+    `<label class="fl-chk-label"><input type="checkbox" class="fl-chk" data-filter="country" value="${c}" ${isCountryOn(c) ? 'checked' : ''} onchange="onFilterChange()"><span>${c}</span></label>`
   ).join('')
 
   const filterLayerHtml = `<div class="filter-layer" id="filter-layer">
@@ -410,13 +411,13 @@ export function generateCitationHTML(meta, _total, _products, citations, dotcom,
       <div class="fl-divider"></div>
       <div class="fl-group">
         <span class="fl-label">Region</span>
-        <label class="fl-chk-label fl-all-label"><input type="checkbox" class="fl-chk-all" data-target="region" checked onchange="toggleAll(this,'region')"><span>${allLabel}</span></label>
+        <label class="fl-chk-label fl-all-label"><input type="checkbox" class="fl-chk-all" data-target="region" ${allOn ? 'checked' : ''} onchange="toggleAll(this,'region')"><span>${allLabel}</span></label>
         ${regionCheckboxes}
       </div>
       <div class="fl-divider"></div>
       <div class="fl-group">
         <span class="fl-label">${lang === 'en' ? 'Country' : '국가'}</span>
-        <label class="fl-chk-label fl-all-label"><input type="checkbox" class="fl-chk-all" data-target="country" checked onchange="toggleAll(this,'country')"><span>${allLabel}</span></label>
+        <label class="fl-chk-label fl-all-label"><input type="checkbox" class="fl-chk-all" data-target="country" ${allOn ? 'checked' : ''} onchange="toggleAll(this,'country')"><span>${allLabel}</span></label>
         ${countryCheckboxes}
       </div>
     </div>
@@ -465,13 +466,6 @@ body{background:#F1F5F9;font-family:${FONT};min-width:1200px;color:#1A1A1A}
 .howto-box{margin:0 28px;padding:12px 16px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;margin-top:8px}
 .howto-label{display:block;font-size:12px;font-weight:700;color:#64748B;margin-bottom:4px}
 .howto-text{font-size:12px;color:#475569;line-height:1.8}
-/* ── 필터 칩 ── */
-.cnty-filters{padding:12px 28px 0;display:flex;flex-wrap:wrap;gap:10px}
-.filter-group{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-.filter-label{font-size:12px;font-weight:700;color:#64748B;margin-right:4px;white-space:nowrap}
-.filter-chip{padding:4px 12px;border-radius:14px;border:1px solid #E2E8F0;font-size:12px;font-weight:600;font-family:${FONT};cursor:pointer;background:#fff;color:#64748B;transition:all .15s}
-.filter-chip.active{background:#0F172A;color:#fff;border-color:#0F172A}
-.filter-chip:hover{border-color:#94A3B8}
 /* ── Citation ── */
 .cit-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #F8FAFC}
 .cit-row:last-child{border-bottom:none}
@@ -554,23 +548,7 @@ function switchSubTab(btn,tab){
     p.style.display=p.getAttribute('data-panel')===tab?'':'none';
   });
 }
-var _REGIONS={NA:['US','CA','MX'],EU:['UK','DE'],LATAM:['BR'],APAC:['IN','AU','VN']};
-function switchCitCnty(btn){
-  var sec=btn.closest('.section-card')||document.getElementById('cit-domain-section');
-  sec.querySelectorAll('.filter-chip').forEach(function(c){c.classList.remove('active')});
-  btn.classList.add('active');
-  var val=btn.getAttribute('data-cit-cnty-val');
-  sec.querySelectorAll('.cit-cnty-panel').forEach(function(p){
-    p.style.display=p.getAttribute('data-cit-cnty')===val?'':'none';
-  });
-}
-function getCheckedValues(filterName){
-  var vals={};var total=0;var checked=0;
-  document.querySelectorAll('#filter-layer .fl-chk[data-filter="'+filterName+'"]').forEach(function(c){
-    total++;if(c.checked){vals[c.value]=true;checked++}
-  });
-  return{vals:vals,total:total,checked:checked,isAll:total===checked};
-}
+var _REGIONS={NA:['US','CA'],EU:['UK','DE'],LATAM:['MX','BR'],APAC:['IN','AU','VN']};
 function updateAllCheckbox(target){
   var all=document.querySelectorAll('.fl-chk[data-filter="'+target+'"]');
   var allChecked=true;
@@ -601,46 +579,11 @@ function onRegionChange(region){
 function onFilterChange(){
   updateAllCheckbox('region');
   updateAllCheckbox('country');
-  filterCitationByCountry(getCheckedValues('country'));
-}
-function filterCitationByCountry(selCountry){
-  var sec=document.getElementById('cit-domain-section');if(!sec)return;
-  var chips=sec.querySelectorAll('.filter-chip[data-cit-cnty-val]');
-  if(!chips.length)return;
-  var selKeys=selCountry.isAll?[]:Object.keys(selCountry.vals);
-  if(selCountry.isAll||selKeys.length!==1){
-    chips.forEach(function(c){c.classList.remove('active')});
-    var ttlChip=sec.querySelector('.filter-chip[data-cit-cnty-val="TTL"]');
-    if(ttlChip)ttlChip.classList.add('active');
-    sec.querySelectorAll('.cit-cnty-panel').forEach(function(p){
-      p.style.display=p.getAttribute('data-cit-cnty')==='TTL'?'':'none';
-    });
-    chips.forEach(function(c){
-      var v=c.getAttribute('data-cit-cnty-val');
-      if(selCountry.isAll){c.style.display='';return}
-      c.style.display=(v==='TTL'||selCountry.vals[v])?'':'none';
-    });
-  } else {
-    var cnty=selKeys[0];
-    var target=sec.querySelector('.filter-chip[data-cit-cnty-val="'+cnty+'"]');
-    chips.forEach(function(c){
-      c.classList.remove('active');
-      var v=c.getAttribute('data-cit-cnty-val');
-      c.style.display=(v==='TTL'||v===cnty)?'':'none';
-    });
-    if(target){
-      target.classList.add('active');
-      sec.querySelectorAll('.cit-cnty-panel').forEach(function(p){
-        p.style.display=p.getAttribute('data-cit-cnty')===cnty?'':'none';
-      });
-    } else {
-      var ttl=sec.querySelector('.filter-chip[data-cit-cnty-val="TTL"]');
-      if(ttl)ttl.classList.add('active');
-      sec.querySelectorAll('.cit-cnty-panel').forEach(function(p){
-        p.style.display=p.getAttribute('data-cit-cnty')==='TTL'?'':'none';
-      });
-    }
-  }
+  var filter={};
+  document.querySelectorAll('#filter-layer .fl-chk[data-filter="country"]').forEach(function(c){
+    filter[c.value]=c.checked;
+  });
+  parent.postMessage({type:'citCntyFilter',filter:filter},'*');
 }
 </script>
 </body>

@@ -11,7 +11,7 @@ const MODE = 'citation'
 const STORAGE_KEY = 'geo-citation-cache'
 
 // ─── Citation 대시보드 미리보기 ─────────────────────────────────────────────
-function CitationPreview({ meta, citations, dotcom, citationsCnty = [], lang = 'ko', citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths }) {
+function CitationPreview({ meta, setMeta, citations, dotcom, citationsCnty = [], lang = 'ko', citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths }) {
   const iframeRef = useRef(null)
   const html = generateCitationHTML(meta, null, [], citations, dotcom, lang, [], citationsCnty, { citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths })
 
@@ -23,6 +23,16 @@ function CitationPreview({ meta, citations, dotcom, citationsCnty = [], lang = '
     doc.write(html)
     doc.close()
   }, [html])
+
+  React.useEffect(() => {
+    function onMsg(e) {
+      if (e.data?.type === 'citCntyFilter') {
+        setMeta(m => ({ ...m, citCntyFilter: e.data.filter }))
+      }
+    }
+    window.addEventListener('message', onMsg)
+    return () => window.removeEventListener('message', onMsg)
+  }, [setMeta])
 
   return (
     <iframe
@@ -240,7 +250,7 @@ export default function App() {
 
         {/* 컨텐츠 영역 */}
         <div style={{ flex: 1, overflow: 'hidden' }}>
-          <CitationPreview meta={meta} citations={resolved.citations} dotcom={dotcom} citationsCnty={resolved.citationsCnty} lang={previewLang} citTouchPointsTrend={citTouchPointsTrend} citTrendMonths={citTrendMonths} citDomainTrend={citDomainTrend} citDomainMonths={citDomainMonths} />
+          <CitationPreview meta={meta} setMeta={setMeta} citations={resolved.citations} dotcom={dotcom} citationsCnty={resolved.citationsCnty} lang={previewLang} citTouchPointsTrend={citTouchPointsTrend} citTrendMonths={citTrendMonths} citDomainTrend={citDomainTrend} citDomainMonths={citDomainMonths} />
         </div>
         <div style={{ height: 28, borderTop: '1px solid #1E293B', background: 'rgba(15,23,42,0.95)',
           display: 'flex', alignItems: 'center', justifyContent: 'flex-end', padding: '0 16px', flexShrink: 0 }}>

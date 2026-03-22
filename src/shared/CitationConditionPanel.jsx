@@ -6,10 +6,10 @@ import { generateCitationInsight, generateCitationHowToRead, generateCitDomainIn
 
 // ── 리전/국가 매핑 ──────────────────────────────────────────────────────────
 export const CITATION_REGIONS = [
-  { key: 'NA',    label: 'North America', countries: ['US', 'CA', 'MX'] },
+  { key: 'NA',    label: 'North America', countries: ['US', 'CA'] },
   { key: 'EU',    label: 'Europe',        countries: ['UK', 'DE'] },
   { key: 'APAC',  label: 'Asia Pacific',  countries: ['IN', 'AU', 'VN'] },
-  { key: 'LATAM', label: 'Latin America', countries: ['BR'] },
+  { key: 'LATAM', label: 'Latin America', countries: ['MX', 'BR'] },
 ]
 
 export const CITATION_COUNTRY_LABELS = {
