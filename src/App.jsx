@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react'
-import { ChevronLeft, ChevronRight, TrendingUp, TrendingDown, Minus, Copy, Download, RefreshCw, Check, Send, Sparkles, Save, FolderOpen, Trash2, Languages, Globe, ExternalLink, Link2 } from 'lucide-react'
+import { ChevronLeft, ChevronRight, TrendingUp, TrendingDown, Minus, Copy, Download, RefreshCw, Check, Send, Sparkles, Save, FolderOpen, Trash2, Languages, Globe, ExternalLink, Link2, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
 import { downloadTemplate } from './excelUtils'
 import { extractSheetId, syncFromGoogleSheets } from './googleSheetsUtils'
 import { generateEmailHTML } from './emailTemplate'
@@ -2124,6 +2124,7 @@ export default function App() {
   const [snapOpen,   setSnapOpen]   = useState(false)
   const [snapMsg,    setSnapMsg]    = useState('')
   const [activeSnap, setActiveSnap] = useState(null) // 현재 불러온 스냅샷 (ts 기준)
+  const [sidebarOpen, setSidebarOpen] = useState(true)
 
   // 현재 언어에 따른 meta 선택
   const meta    = previewLang === 'en' ? metaEn : metaKo
@@ -2215,20 +2216,22 @@ export default function App() {
 
   return (
     <div style={{ display: 'flex', height: '100vh', background: '#0A0F1C', fontFamily: FONT }}>
-      <Sidebar
-        meta={meta} setMeta={setMeta} metaKo={metaKo} setMetaKo={setMetaKo} metaEn={metaEn} setMetaEn={setMetaEn}
-        total={total} setTotal={setTotal}
-        products={products} setProducts={setProducts}
-        citations={citations} setCitations={setCitations}
-        dotcom={dotcom} setDotcom={setDotcom}
-        productsCnty={productsCnty} setProductsCnty={setProductsCnty}
-        citationsCnty={citationsCnty} setCitationsCnty={setCitationsCnty}
-        resolved={resolved}
-        previewLang={previewLang} setPreviewLang={setPreviewLang}
-        snapshots={snapshots} setSnapshots={setSnapshots}
-        setWeeklyLabels={setWeeklyLabels}
-        setWeeklyAll={setWeeklyAll}
-      />
+      {sidebarOpen && (
+        <Sidebar
+          meta={meta} setMeta={setMeta} metaKo={metaKo} setMetaKo={setMetaKo} metaEn={metaEn} setMetaEn={setMetaEn}
+          total={total} setTotal={setTotal}
+          products={products} setProducts={setProducts}
+          citations={citations} setCitations={setCitations}
+          dotcom={dotcom} setDotcom={setDotcom}
+          productsCnty={productsCnty} setProductsCnty={setProductsCnty}
+          citationsCnty={citationsCnty} setCitationsCnty={setCitationsCnty}
+          resolved={resolved}
+          previewLang={previewLang} setPreviewLang={setPreviewLang}
+          snapshots={snapshots} setSnapshots={setSnapshots}
+          setWeeklyLabels={setWeeklyLabels}
+          setWeeklyAll={setWeeklyAll}
+        />
+      )}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         {/* 탑바 */}
         <div style={{ height: 48, borderBottom: '1px solid #1E293B',
@@ -2236,6 +2239,12 @@ export default function App() {
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           padding: '0 22px', flexShrink: 0 }}>
           <div style={{ display: 'flex', gap: 3, alignItems: 'center' }}>
+            <button onClick={() => setSidebarOpen(v => !v)} title={sidebarOpen ? '패널 닫기' : '패널 열기'}
+              style={{ padding: '4px 6px', borderRadius: 6, border: 'none', cursor: 'pointer',
+                background: 'transparent', color: '#94A3B8', display: 'flex', alignItems: 'center',
+                marginRight: 4 }}>
+              {sidebarOpen ? <PanelLeftClose size={16} /> : <PanelLeftOpen size={16} />}
+            </button>
             {(IS_DASHBOARD ? [] : [
               { key: 'preview-ko', tab: 'preview', lang: 'ko', label: '뉴스레터미리보기 (KO)' },
               { key: 'preview-en', tab: 'preview', lang: 'en', label: '뉴스레터미리보기 (EN)' },
