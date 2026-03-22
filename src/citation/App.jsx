@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react'
 import { Save, FolderOpen, Trash2, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
-import { generateDashboardHTML } from '../dashboard/dashboardTemplate.js'
+import { generateCitationHTML } from './citationTemplate.js'
 import { INIT_META, INIT_CITATIONS, INIT_CITATIONS_CNTY, INIT_DOTCOM, FONT, LG_RED } from '../shared/constants.js'
 import { loadCache, saveCache } from '../shared/cache.js'
 import { fetchSnapshots, postSnapshot, updateSnapshot, deleteSnapshot, fetchSyncData } from '../shared/api.js'
@@ -14,7 +14,7 @@ const STORAGE_KEY = 'geo-citation-cache'
 function CitationPreview({ meta, citations, dotcom, citationsCnty = [], lang = 'ko' }) {
   const iframeRef = useRef(null)
   // Citation 전용: total/products/productsCnty는 빈값으로 전달
-  const html = generateDashboardHTML(meta, null, [], citations, dotcom, lang, [], citationsCnty, null, {})
+  const html = generateCitationHTML(meta, null, [], citations, dotcom, lang, [], citationsCnty, null, {})
 
   React.useEffect(() => {
     const iframe = iframeRef.current
@@ -122,7 +122,7 @@ export default function App() {
           dotcom={dotcom} setDotcom={setDotcom}
           resolved={resolved}
           previewLang={previewLang} setPreviewLang={setPreviewLang}
-          generateHTML={generateDashboardHTML}
+          generateHTML={generateCitationHTML}
         />
       )}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
