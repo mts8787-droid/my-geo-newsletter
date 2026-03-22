@@ -378,16 +378,15 @@ export function generateCitationHTML(meta, _total, _products, citations, dotcom,
     citDomainBumpChartHtml(citDomainTrend, citDomainMonths, meta, t, lang),
   ].join('')
 
-  const hasTrend = !!(citTrendMonths?.length >= 2 || citDomainMonths?.length >= 2)
+  const noTrendMsg = `<div class="section-card"><div class="section-body" style="text-align:center;padding:60px 28px;color:#94A3B8;font-size:14px">${lang === 'ko' ? '월간 트렌드 데이터가 없습니다.<br>구글 시트에 2개월 이상의 데이터가 필요합니다.' : 'No monthly trend data available.<br>At least 2 months of data is required.'}</div></div>`
+  const finalTrend = trendContent || noTrendMsg
 
-  const content = hasTrend
-    ? `<div class="sub-tabs">
-        <button class="sub-tab active" data-tab="monthly" onclick="switchSubTab(this,'monthly')">${lang === 'ko' ? '월간' : 'Monthly'}</button>
-        <button class="sub-tab" data-tab="trend" onclick="switchSubTab(this,'trend')">${lang === 'ko' ? '월간 트렌드' : 'Monthly Trend'}</button>
-      </div>
-      <div class="sub-tab-panel" data-panel="monthly">${monthlyContent}</div>
-      <div class="sub-tab-panel" data-panel="trend" style="display:none">${trendContent}</div>`
-    : monthlyContent
+  const content = `<div class="sub-tabs">
+      <button class="sub-tab active" data-tab="monthly" onclick="switchSubTab(this,'monthly')">${lang === 'ko' ? '월간' : 'Monthly'}</button>
+      <button class="sub-tab" data-tab="trend" onclick="switchSubTab(this,'trend')">${lang === 'ko' ? '월간 트렌드' : 'Monthly Trend'}</button>
+    </div>
+    <div class="sub-tab-panel" data-panel="monthly">${monthlyContent}</div>
+    <div class="sub-tab-panel" data-panel="trend" style="display:none">${finalTrend}</div>`
 
   // 국가 목록 추출 (citationsCnty에서)
   const countries = new Set()
