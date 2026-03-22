@@ -19,6 +19,7 @@ export default function CitationSidebar({
   const [gsSyncing, setGsSyncing] = useState(false)
   const [gsStatus,  setGsStatus]  = useState(null)
   const [gsMsg,     setGsMsg]     = useState('')
+  const [debugLog,  setDebugLog]  = useState('')
   const [publishing, setPublishing] = useState(false)
   const [publishMsg, setPublishMsg] = useState('')
   const [publishInfo, setPublishInfo] = useState(null)
@@ -40,15 +41,22 @@ export default function CitationSidebar({
       setGsStatus('error'); setGsMsg('올바른 Google Sheets URL을 입력하세요.')
       setTimeout(() => setGsStatus(null), 3000); return
     }
-    setGsSyncing(true); setGsStatus(null); setGsMsg('')
+    setGsSyncing(true); setGsStatus(null); setGsMsg(''); setDebugLog('')
+    const _log = []
     try {
       const parsed = await syncFromGoogleSheets(sheetId, msg => setGsMsg(msg))
-      console.log('[Citation Sync] parsed keys:', Object.keys(parsed))
-      console.log('[Citation Sync] citations count:', parsed.citations?.length ?? 0)
-      console.log('[Citation Sync] citationsCnty count:', parsed.citationsCnty?.length ?? 0)
-      console.log('[Citation Sync] dotcom:', parsed.dotcom ? Object.keys(parsed.dotcom) : 'none')
-      console.log('[Citation Sync] citTouchPointsTrend:', parsed.citTouchPointsTrend ? Object.keys(parsed.citTouchPointsTrend) : 'none')
-      console.log('[Citation Sync] citDomainTrend:', parsed.citDomainTrend ? Object.keys(parsed.citDomainTrend).length + ' entries' : 'none')
+      _log.push(`[Sync] parsed keys: ${Object.keys(parsed).join(', ') || '(없음)'}`)
+      _log.push(`[Sync] meta keys: ${parsed.meta ? Object.keys(parsed.meta).join(', ') : '(없음)'}`)
+      _log.push(`[Sync] citations: ${parsed.citations?.length ?? 0}건`)
+      if (parsed.citations?.length) _log.push(`  → top: ${parsed.citations.slice(0, 3).map(c => `${c.source}(${c.score})`).join(', ')}`)
+      _log.push(`[Sync] citationsCnty: ${parsed.citationsCnty?.length ?? 0}건`)
+      if (parsed.citationsCnty?.length) _log.push(`  → countries: ${[...new Set(parsed.citationsCnty.map(r => r.cnty))].join(', ')}`)
+      _log.push(`[Sync] dotcom: ${parsed.dotcom ? `lg=${JSON.stringify(parsed.dotcom.lg?.TTL ?? 'none')}, ss=${JSON.stringify(parsed.dotcom.samsung?.TTL ?? 'none')}` : '(없음)'}`)
+      _log.push(`[Sync] citTouchPointsTrend: ${parsed.citTouchPointsTrend ? Object.keys(parsed.citTouchPointsTrend).join(', ') : '(없음)'}`)
+      _log.push(`[Sync] citTrendMonths: ${parsed.citTrendMonths?.join(', ') || '(없음)'}`)
+      _log.push(`[Sync] citDomainTrend: ${parsed.citDomainTrend ? Object.keys(parsed.citDomainTrend).length + '건' : '(없음)'}`)
+      _log.push(`[Sync] citDomainMonths: ${parsed.citDomainMonths?.join(', ') || '(없음)'}`)
+      console.log(_log.join('\n'))
 
       if (parsed.meta) {
         // Citation 대시보드에서는 Citation 관련 섹션을 항상 표시
@@ -91,11 +99,14 @@ export default function CitationSidebar({
       }, 100)
 
       setGsStatus('ok'); setGsMsg(`동기화 완료! (${summary || '데이터 없음'})`)
+      setDebugLog(_log.join('\n'))
     } catch (err) {
+      _log.push(`[ERROR] ${err.message}`)
       setGsStatus('error'); setGsMsg(err.message)
+      setDebugLog(_log.join('\n'))
     } finally {
       setGsSyncing(false)
-      setTimeout(() => { setGsStatus(null); setGsMsg('') }, 4000)
+      setTimeout(() => { setGsStatus(null); setGsMsg('') }, 6000)
     }
   }
 
@@ -235,6 +246,30 @@ export default function CitationSidebar({
             marginBottom: 8,
           }}>
             {gsMsg}
+          </div>
+        )}
+        {debugLog && (
+          <div style={{
+            padding: '8px 10px', borderRadius: 7, fontSize: 10, fontFamily: 'monospace', lineHeight: 1.7,
+            background: '#0F172A', color: '#94A3B8',
+            border: '1px solid #1E293B', marginBottom: 8,
+            whiteSpace: 'pre-wrap', wordBreak: 'break-all', maxHeight: 200, overflowY: 'auto',
+          }}>
+            {debugLog}
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText(debugLog).then(() => {
+                  const btn = document.getElementById('debug-copy-btn')
+                  if (btn) { btn.textContent = '복사됨!'; setTimeout(() => { btn.textContent = '로그 복사' }, 1500) }
+                })
+              }}
+              id="debug-copy-btn"
+              style={{
+                display: 'block', marginTop: 6, padding: '4px 10px', borderRadius: 5,
+                border: '1px solid #334155', background: '#1E293B', color: '#94A3B8',
+                fontSize: 10, fontWeight: 700, fontFamily: FONT, cursor: 'pointer',
+              }}
+            >로그 복사</button>
           </div>
         )}
 
