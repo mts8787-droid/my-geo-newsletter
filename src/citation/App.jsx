@@ -96,14 +96,14 @@ export default function App() {
   // 스냅샷 관리
   async function handleSnapOverwrite() {
     if (!activeSnap) return
-    const data = { metaKo, metaEn, citations, citationsCnty, dotcom }
+    const data = { metaKo, metaEn, citations, citationsCnty, dotcom, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths }
     const result = await updateSnapshot(MODE, activeSnap, data)
     if (result) setSnapshots(result)
     setSnapMsg(result ? '저장 완료!' : '저장 실패'); setTimeout(() => setSnapMsg(''), 2000)
   }
   async function handleSnapSaveNew() {
     const name = snapName.trim() || `${meta.period || 'Untitled'} Citation — ${new Date().toLocaleString('ko-KR')}`
-    const result = await postSnapshot(MODE, name, { metaKo, metaEn, citations, citationsCnty, dotcom })
+    const result = await postSnapshot(MODE, name, { metaKo, metaEn, citations, citationsCnty, dotcom, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths })
     if (result) { setSnapshots(result); setSnapName(''); setActiveSnap(result[0]?.ts || null) }
     setSnapMsg(result ? '새로 저장 완료!' : '저장 실패'); setTimeout(() => setSnapMsg(''), 2000)
   }
@@ -114,6 +114,10 @@ export default function App() {
     if (d.citations)     setCitations(d.citations)
     if (d.citationsCnty) setCitationsCnty(d.citationsCnty)
     if (d.dotcom)        setDotcom(d.dotcom)
+    if (d.citTouchPointsTrend) setCitTouchPointsTrend(d.citTouchPointsTrend)
+    if (d.citTrendMonths)      setCitTrendMonths(d.citTrendMonths)
+    if (d.citDomainTrend)      setCitDomainTrend(d.citDomainTrend)
+    if (d.citDomainMonths)     setCitDomainMonths(d.citDomainMonths)
     setActiveSnap(snap.ts)
     setSnapMsg(`"${snap.name}" 불러옴`); setTimeout(() => setSnapMsg(''), 2000)
   }

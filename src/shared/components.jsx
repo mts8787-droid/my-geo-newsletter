@@ -39,6 +39,7 @@ export function SectionTitle({ label, sub, right }) {
 }
 
 export function Sparkline({ data, color, width = 100, height = 32 }) {
+  if (!data || data.length === 0) return <svg width={width} height={height} />
   const min = Math.min(...data)
   const max = Math.max(...data)
   const range = max - min || 1

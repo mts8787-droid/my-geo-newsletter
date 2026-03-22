@@ -666,7 +666,9 @@ app.get('/p/:slug', (req, res) => {
     res.set('Content-Type', 'text/html; charset=utf-8')
     return res.send(`<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Access Denied</title><style>*{margin:0;padding:0;box-sizing:border-box}body{min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0F172A;font-family:'LG Smart','Arial Narrow',Arial,sans-serif;color:#E2E8F0}.w{text-align:center;padding:40px 24px}h1{font-size:48px;font-weight:700;color:#334155;margin-bottom:16px}p{font-size:15px;color:#64748B}</style></head><body><div class="w"><h1>403</h1><p>접근이 허용되지 않은 IP입니다.</p></div></body></html>`)
   }
-  const file = join(PUB_DIR, `${req.params.slug}.html`)
+  const slug = req.params.slug
+  if (!/^[a-zA-Z0-9\-]+$/.test(slug)) return res.status(400).send('Invalid slug')
+  const file = join(PUB_DIR, `${slug}.html`)
   if (!existsSync(file)) return res.status(404).send('Not found')
   res.set('Content-Type', 'text/html; charset=utf-8')
   res.send(readFileSync(file, 'utf-8'))

@@ -347,10 +347,21 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
         })
       }, 100)
       setGsStatus('ok'); setGsMsg(mode === 'dashboard' ? '동기화 완료! EN 자동 번역 중...' : '동기화 완료!')
-      // Dashboard mode: auto-translate after sync
-      // executeTranslate는 이제 callback form을 사용하므로 override 불필요
+      // Dashboard mode: auto-translate after sync (overrides로 최신 parsed 데이터 전달)
       if (mode === 'dashboard') {
-        try { await executeTranslate() } catch {}
+        const overrides = {}
+        if (parsed.productsPartial) {
+          overrides.products = parsed.productsPartial.map(p => {
+            const weekly = parsed.weeklyMap?.[p.id] || []
+            const ratio = p.vsComp > 0 ? (p.score / p.vsComp) * 100 : 100
+            return { ...p, weekly, monthly: [], compRatio: Math.round(ratio),
+              status: ratio >= 100 ? 'lead' : ratio >= 80 ? 'behind' : 'critical' }
+          })
+        }
+        if (parsed.productsCnty) overrides.productsCnty = parsed.productsCnty
+        if (parsed.citations) overrides.citations = parsed.citations
+        if (parsed.citationsCnty) overrides.citationsCnty = parsed.citationsCnty
+        try { await executeTranslate(overrides) } catch {}
         setGsMsg('동기화 + 번역 완료!')
       }
     } catch (err) {

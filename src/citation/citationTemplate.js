@@ -166,9 +166,9 @@ function dotcomSectionHtml(dotcom, meta, t) {
 // ═══════════════════════════════════════════════════════════════════════════
 // ─── Region 매핑 ────────────────────────────────────────────────────────────
 const REGIONS = {
-  NA:    { countries: ['US', 'CA'] },
-  EU:    { countries: ['UK', 'DE', 'ES'] },
-  LATAM: { countries: ['BR', 'MX'] },
+  NA:    { countries: ['US', 'CA', 'MX'] },
+  EU:    { countries: ['UK', 'DE'] },
+  LATAM: { countries: ['BR'] },
   APAC:  { countries: ['IN', 'AU', 'VN'] },
 }
 
@@ -554,7 +554,7 @@ function switchSubTab(btn,tab){
     p.style.display=p.getAttribute('data-panel')===tab?'':'none';
   });
 }
-var _REGIONS={NA:['US','CA'],EU:['UK','DE','ES'],LATAM:['BR','MX'],APAC:['IN','AU','VN']};
+var _REGIONS={NA:['US','CA','MX'],EU:['UK','DE'],LATAM:['BR'],APAC:['IN','AU','VN']};
 function switchCitCnty(btn){
   var sec=btn.closest('.section-card')||document.getElementById('cit-domain-section');
   sec.querySelectorAll('.filter-chip').forEach(function(c){c.classList.remove('active')});
