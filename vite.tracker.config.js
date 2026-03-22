@@ -1,7 +1,9 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { resolve } from 'path'
-import { existsSync, createReadStream } from 'fs'
+import { readFileSync, existsSync, createReadStream } from 'fs'
+
+const pkg = JSON.parse(readFileSync('./package.json', 'utf-8'))
 
 function serveFontsPlugin() {
   return {
@@ -20,6 +22,9 @@ function serveFontsPlugin() {
 
 export default defineConfig({
   base: '/admin/progress-tracker/',
+  define: {
+    __APP_VERSION__: JSON.stringify(pkg.version),
+  },
   plugins: [
     react(),
     serveFontsPlugin(),

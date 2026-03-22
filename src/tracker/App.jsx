@@ -285,6 +285,9 @@ export default function App() {
           </>
         )}
       </main>
+      <footer style={{ padding: '8px 16px', textAlign: 'right', borderTop: '1px solid #e2e8f0', flexShrink: 0 }}>
+        <span style={{ fontSize: 10, color: '#94a3b8' }}>v{__APP_VERSION__}</span>
+      </footer>
     </div>
   )
 }

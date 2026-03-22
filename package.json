@@ -1,7 +1,7 @@
 {
   "name": "geo-newsletter",
   "private": true,
-  "version": "1.119.0",
+  "version": "2.0.03",
   "type": "module",
   "scripts": {
     "dev": "vite",
