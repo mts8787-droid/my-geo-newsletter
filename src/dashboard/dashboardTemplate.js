@@ -1023,12 +1023,58 @@ function applyCntyFilters(){
   });
 }
 function switchCitCnty(btn){
-  document.querySelectorAll('#cit-cnty-chips .filter-chip').forEach(function(c){c.classList.remove('active')});
+  var sec=btn.closest('.section-card')||document.getElementById('cit-domain-section');
+  sec.querySelectorAll('.filter-chip').forEach(function(c){c.classList.remove('active')});
   btn.classList.add('active');
   var sel=btn.getAttribute('data-cit-cnty-val');
-  document.querySelectorAll('.cit-cnty-panel').forEach(function(p){
-    p.style.display=p.getAttribute('data-cit-cnty')=== sel?'':'none';
+  sec.querySelectorAll('.cit-cnty-panel').forEach(function(p){
+    p.style.display=p.getAttribute('data-cit-cnty')===sel?'':'none';
   });
+}
+function filterCitationByCountry(selCountry){
+  // Citation 탭의 도메인별 Citation 국가 칩: 선택된 국가에 맞춰 자동 전환
+  var sec=document.getElementById('cit-domain-section');if(!sec)return;
+  var chips=sec.querySelectorAll('.filter-chip[data-cit-cnty-val]');
+  if(!chips.length)return;
+  // 선택된 국가 키
+  var selKeys=selCountry.isAll?[]:Object.keys(selCountry.vals);
+  // 전체 선택 또는 다수 선택 → TTL 표시
+  if(selCountry.isAll||selKeys.length!==1){
+    chips.forEach(function(c){c.classList.remove('active')});
+    var ttlChip=sec.querySelector('.filter-chip[data-cit-cnty-val="TTL"]');
+    if(ttlChip)ttlChip.classList.add('active');
+    sec.querySelectorAll('.cit-cnty-panel').forEach(function(p){
+      p.style.display=p.getAttribute('data-cit-cnty')==='TTL'?'':'none';
+    });
+    // 칩 가시성: 전체 선택이면 모두 표시, 다수면 선택된 국가+TTL만
+    chips.forEach(function(c){
+      var v=c.getAttribute('data-cit-cnty-val');
+      if(selCountry.isAll){c.style.display='';return}
+      c.style.display=(v==='TTL'||selCountry.vals[v])?'':'none';
+    });
+  } else {
+    // 단일 국가 선택 → 해당 국가 패널 표시
+    var cnty=selKeys[0];
+    var target=sec.querySelector('.filter-chip[data-cit-cnty-val="'+cnty+'"]');
+    chips.forEach(function(c){
+      c.classList.remove('active');
+      var v=c.getAttribute('data-cit-cnty-val');
+      c.style.display=(v==='TTL'||v===cnty)?'':'none';
+    });
+    // 해당 국가 칩이 있으면 활성화, 없으면 TTL
+    if(target){
+      target.classList.add('active');
+      sec.querySelectorAll('.cit-cnty-panel').forEach(function(p){
+        p.style.display=p.getAttribute('data-cit-cnty')===cnty?'':'none';
+      });
+    } else {
+      var ttl=sec.querySelector('.filter-chip[data-cit-cnty-val="TTL"]');
+      if(ttl)ttl.classList.add('active');
+      sec.querySelectorAll('.cit-cnty-panel').forEach(function(p){
+        p.style.display=p.getAttribute('data-cit-cnty')==='TTL'?'':'none';
+      });
+    }
+  }
 }
 // ─── Embedded Data ───
 var _weeklyAll=${weeklyAll ? JSON.stringify(weeklyAll) : '{}'};
@@ -1096,6 +1142,7 @@ function onFilterChange(){
   filterTrend(selBU,selProd,selCountry);
   applyCntyFilters();
   updateHeroFromCheckboxes();
+  filterCitationByCountry(selCountry);
 }
 function filterBU(selBU){
   document.querySelectorAll('.bu-group[data-bu]').forEach(function(g){

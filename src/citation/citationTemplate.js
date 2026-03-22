@@ -164,6 +164,14 @@ function dotcomSectionHtml(dotcom, meta, t) {
 // ═══════════════════════════════════════════════════════════════════════════
 // Citation 전용 HTML 생성
 // ═══════════════════════════════════════════════════════════════════════════
+// ─── Region 매핑 ────────────────────────────────────────────────────────────
+const REGIONS = {
+  NA:    { countries: ['US', 'CA'] },
+  EU:    { countries: ['UK', 'DE', 'ES'] },
+  LATAM: { countries: ['BR', 'MX'] },
+  APAC:  { countries: ['IN', 'AU', 'VN'] },
+}
+
 export function generateCitationHTML(meta, _total, _products, citations, dotcom, lang, _productsCnty, citationsCnty) {
   const t = T[lang] || T.ko
 
@@ -172,6 +180,40 @@ export function generateCitationHTML(meta, _total, _products, citations, dotcom,
     (meta.showCitDomain !== false || meta.showCitCnty !== false) ? citDomainSectionHtml(citationsCnty, meta, t, citations, lang) : '',
     meta.showDotcom !== false ? dotcomSectionHtml(dotcom, meta, t) : '',
   ].join('')
+
+  // 국가 목록 추출 (citationsCnty에서)
+  const countries = new Set()
+  if (citationsCnty) citationsCnty.forEach(r => { if (r.cnty && r.cnty !== 'TTL') countries.add(r.cnty) })
+  const countryList = [...countries].sort()
+
+  const allLabel = lang === 'en' ? 'All' : '전체'
+  const regionCheckboxes = Object.entries(REGIONS).map(([k]) =>
+    `<label class="fl-chk-label"><input type="checkbox" class="fl-chk" data-filter="region" value="${k}" checked onchange="onRegionChange('${k}')"><span>${k}</span></label>`
+  ).join('')
+  const countryCheckboxes = countryList.map(c =>
+    `<label class="fl-chk-label"><input type="checkbox" class="fl-chk" data-filter="country" value="${c}" checked onchange="onFilterChange()"><span>${c}</span></label>`
+  ).join('')
+
+  const filterLayerHtml = `<div class="filter-layer" id="filter-layer">
+    <div class="fl-row">
+      <div class="fl-group">
+        <span class="fl-label">${lang === 'en' ? 'Period' : '기간'}</span>
+        <span class="fl-badge">${meta.period || '—'}</span>
+      </div>
+      <div class="fl-divider"></div>
+      <div class="fl-group">
+        <span class="fl-label">Region</span>
+        <label class="fl-chk-label fl-all-label"><input type="checkbox" class="fl-chk-all" data-target="region" checked onchange="toggleAll(this,'region')"><span>${allLabel}</span></label>
+        ${regionCheckboxes}
+      </div>
+      <div class="fl-divider"></div>
+      <div class="fl-group">
+        <span class="fl-label">${lang === 'en' ? 'Country' : '국가'}</span>
+        <label class="fl-chk-label fl-all-label"><input type="checkbox" class="fl-chk-all" data-target="country" checked onchange="toggleAll(this,'country')"><span>${allLabel}</span></label>
+        ${countryCheckboxes}
+      </div>
+    </div>
+  </div>`
 
   return `<!DOCTYPE html>
 <html lang="${lang === 'en' ? 'en' : 'ko'}">
@@ -188,6 +230,18 @@ body{background:#F1F5F9;font-family:${FONT};min-width:1200px;color:#1A1A1A}
 .cit-header-title .logo{width:28px;height:28px;border-radius:7px;background:${RED};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:#fff}
 .cit-header-meta{display:flex;align-items:center;gap:12px}
 .cit-header-badge{font-size:12px;font-weight:600;color:#FFB0C0;padding:4px 12px;border-radius:6px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.06)}
+/* ── 필터 레이어 ── */
+.filter-layer{position:sticky;top:53px;z-index:90;background:#fff;border-bottom:2px solid #E8EDF2;padding:8px 40px}
+.fl-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:4px 0}
+.fl-group{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.fl-label{font-size:13px;font-weight:700;color:#64748B;white-space:nowrap;margin-right:4px}
+.fl-badge{font-size:13px;font-weight:600;color:#1A1A1A;padding:3px 10px;border-radius:6px;background:#F1F5F9}
+.fl-chk-label{display:inline-flex;align-items:center;gap:3px;padding:3px 8px;border-radius:6px;font-size:12px;font-weight:600;color:#475569;cursor:pointer;transition:all .15s;background:#F8FAFC;border:1px solid #E2E8F0;white-space:nowrap;user-select:none}
+.fl-chk-label:hover{border-color:#94A3B8}
+.fl-chk-label:has(input:checked){background:#0F172A;color:#fff;border-color:#0F172A}
+.fl-chk{width:12px;height:12px;margin:0;cursor:pointer;accent-color:${RED}}
+.fl-all-label{font-weight:700}
+.fl-divider{width:1px;height:24px;background:#E8EDF2;flex-shrink:0;align-self:center}
 .dash-container{max-width:1400px;margin:0 auto;padding:28px 40px}
 /* ── 섹션 카드 ── */
 .section-card{background:#fff;border-radius:16px;border:1px solid #E8EDF2;margin-bottom:24px;overflow:hidden}
@@ -262,6 +316,7 @@ body{background:#F1F5F9;font-family:${FONT};min-width:1200px;color:#1A1A1A}
     <span class="cit-header-badge">${lang === 'en' ? 'Citation Analysis' : 'Citation 분석'}</span>
   </div>
 </div>
+${filterLayerHtml}
 <div class="dash-container">
   ${content}
 </div>
@@ -270,14 +325,93 @@ body{background:#F1F5F9;font-family:${FONT};min-width:1200px;color:#1A1A1A}
   <span>© 2026 LG Electronics Inc. All Rights Reserved.</span>
 </div>
 <script>
+var _REGIONS={NA:['US','CA'],EU:['UK','DE','ES'],LATAM:['BR','MX'],APAC:['IN','AU','VN']};
 function switchCitCnty(btn){
-  var val=btn.getAttribute('data-cit-cnty-val');
   var sec=btn.closest('.section-card')||document.getElementById('cit-domain-section');
   sec.querySelectorAll('.filter-chip').forEach(function(c){c.classList.remove('active')});
   btn.classList.add('active');
+  var val=btn.getAttribute('data-cit-cnty-val');
   sec.querySelectorAll('.cit-cnty-panel').forEach(function(p){
     p.style.display=p.getAttribute('data-cit-cnty')===val?'':'none';
   });
+}
+function getCheckedValues(filterName){
+  var vals={};var total=0;var checked=0;
+  document.querySelectorAll('#filter-layer .fl-chk[data-filter="'+filterName+'"]').forEach(function(c){
+    total++;if(c.checked){vals[c.value]=true;checked++}
+  });
+  return{vals:vals,total:total,checked:checked,isAll:total===checked};
+}
+function updateAllCheckbox(target){
+  var all=document.querySelectorAll('.fl-chk[data-filter="'+target+'"]');
+  var allChecked=true;
+  all.forEach(function(c){if(!c.checked)allChecked=false});
+  document.querySelectorAll('.fl-chk-all[data-target="'+target+'"]').forEach(function(c){c.checked=allChecked});
+}
+function toggleAll(el,target){
+  var checked=el.checked;
+  document.querySelectorAll('.fl-chk[data-filter="'+target+'"]').forEach(function(c){c.checked=checked});
+  if(target==='region'){
+    document.querySelectorAll('.fl-chk[data-filter="country"]').forEach(function(c){c.checked=checked});
+    document.querySelectorAll('.fl-chk-all[data-target="country"]').forEach(function(c){c.checked=checked});
+  }
+  onFilterChange();
+}
+function onRegionChange(region){
+  var chk=document.querySelector('.fl-chk[data-filter="region"][value="'+region+'"]');
+  if(!chk)return;
+  var isChecked=chk.checked;
+  var rc=_REGIONS[region]||[];
+  rc.forEach(function(c){
+    document.querySelectorAll('.fl-chk[data-filter="country"][value="'+c+'"]').forEach(function(cb){cb.checked=isChecked});
+  });
+  updateAllCheckbox('region');
+  updateAllCheckbox('country');
+  onFilterChange();
+}
+function onFilterChange(){
+  updateAllCheckbox('region');
+  updateAllCheckbox('country');
+  filterCitationByCountry(getCheckedValues('country'));
+}
+function filterCitationByCountry(selCountry){
+  var sec=document.getElementById('cit-domain-section');if(!sec)return;
+  var chips=sec.querySelectorAll('.filter-chip[data-cit-cnty-val]');
+  if(!chips.length)return;
+  var selKeys=selCountry.isAll?[]:Object.keys(selCountry.vals);
+  if(selCountry.isAll||selKeys.length!==1){
+    chips.forEach(function(c){c.classList.remove('active')});
+    var ttlChip=sec.querySelector('.filter-chip[data-cit-cnty-val="TTL"]');
+    if(ttlChip)ttlChip.classList.add('active');
+    sec.querySelectorAll('.cit-cnty-panel').forEach(function(p){
+      p.style.display=p.getAttribute('data-cit-cnty')==='TTL'?'':'none';
+    });
+    chips.forEach(function(c){
+      var v=c.getAttribute('data-cit-cnty-val');
+      if(selCountry.isAll){c.style.display='';return}
+      c.style.display=(v==='TTL'||selCountry.vals[v])?'':'none';
+    });
+  } else {
+    var cnty=selKeys[0];
+    var target=sec.querySelector('.filter-chip[data-cit-cnty-val="'+cnty+'"]');
+    chips.forEach(function(c){
+      c.classList.remove('active');
+      var v=c.getAttribute('data-cit-cnty-val');
+      c.style.display=(v==='TTL'||v===cnty)?'':'none';
+    });
+    if(target){
+      target.classList.add('active');
+      sec.querySelectorAll('.cit-cnty-panel').forEach(function(p){
+        p.style.display=p.getAttribute('data-cit-cnty')===cnty?'':'none';
+      });
+    } else {
+      var ttl=sec.querySelector('.filter-chip[data-cit-cnty-val="TTL"]');
+      if(ttl)ttl.classList.add('active');
+      sec.querySelectorAll('.cit-cnty-panel').forEach(function(p){
+        p.style.display=p.getAttribute('data-cit-cnty')==='TTL'?'':'none';
+      });
+    }
+  }
 }
 </script>
 </body>
