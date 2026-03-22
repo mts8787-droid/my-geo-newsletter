@@ -127,8 +127,10 @@ export default function App() {
           citations={citations} setCitations={setCitations}
           citationsCnty={citationsCnty} setCitationsCnty={setCitationsCnty}
           dotcom={dotcom} setDotcom={setDotcom}
-          setCitTouchPointsTrend={setCitTouchPointsTrend} setCitTrendMonths={setCitTrendMonths}
-          setCitDomainTrend={setCitDomainTrend} setCitDomainMonths={setCitDomainMonths}
+          citTouchPointsTrend={citTouchPointsTrend} setCitTouchPointsTrend={setCitTouchPointsTrend}
+          citTrendMonths={citTrendMonths} setCitTrendMonths={setCitTrendMonths}
+          citDomainTrend={citDomainTrend} setCitDomainTrend={setCitDomainTrend}
+          citDomainMonths={citDomainMonths} setCitDomainMonths={setCitDomainMonths}
           resolved={resolved}
           previewLang={previewLang} setPreviewLang={setPreviewLang}
           generateHTML={generateCitationHTML}

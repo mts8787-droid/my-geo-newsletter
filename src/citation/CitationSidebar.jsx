@@ -11,7 +11,8 @@ import CitationConditionPanel from '../shared/CitationConditionPanel.jsx'
 export default function CitationSidebar({
   mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn,
   citations, setCitations, citationsCnty, setCitationsCnty, dotcom, setDotcom,
-  setCitTouchPointsTrend, setCitTrendMonths, setCitDomainTrend, setCitDomainMonths,
+  citTouchPointsTrend, setCitTouchPointsTrend, citTrendMonths, setCitTrendMonths,
+  citDomainTrend, setCitDomainTrend, citDomainMonths, setCitDomainMonths,
   resolved, previewLang, setPreviewLang, generateHTML,
 }) {
   const [gsUrl,     setGsUrl]     = useState('https://docs.google.com/spreadsheets/d/1v4V7ZsHNFXXqbAWqvyVkgNIeXx188hSZ9l7FDsRYy2Y/edit')
@@ -80,8 +81,9 @@ export default function CitationSidebar({
     try {
       const resolvedKo = resolveDataForLang([], [], citations, citationsCnty, 'ko')
       const resolvedEn = resolveDataForLang([], [], citations, citationsCnty, 'en')
-      const htmlKo = generateHTML(metaKo, null, [], resolvedKo.citations, dotcom, 'ko', [], resolvedKo.citationsCnty)
-      const htmlEn = generateHTML(metaEn, null, [], resolvedEn.citations, dotcom, 'en', [], resolvedEn.citationsCnty)
+      const trendData = { citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths }
+      const htmlKo = generateHTML(metaKo, null, [], resolvedKo.citations, dotcom, 'ko', [], resolvedKo.citationsCnty, trendData)
+      const htmlEn = generateHTML(metaEn, null, [], resolvedEn.citations, dotcom, 'en', [], resolvedEn.citationsCnty, trendData)
       const title = `${metaKo.period || ''} Citation Dashboard`.trim()
       const res = await fetch('/api/publish-citation', {
         method: 'POST',
