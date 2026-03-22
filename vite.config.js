@@ -5,8 +5,12 @@ import translate from 'google-translate-api-x'
 import dotenv from 'dotenv'
 import { readFileSync, writeFileSync, mkdirSync, existsSync, unlinkSync, createReadStream } from 'fs'
 import { resolve } from 'path'
+import { execSync } from 'child_process'
 
 const pkg = JSON.parse(readFileSync('./package.json', 'utf-8'))
+const [major, minor] = pkg.version.split('.')
+const patch = (() => { try { return execSync('git rev-list --count HEAD', { encoding: 'utf-8' }).trim() } catch { return '0' } })()
+const appVersion = `${major}.${minor}.${patch}`
 
 dotenv.config()
 
@@ -296,7 +300,7 @@ function publishApiPlugin() {
 export default defineConfig({
   base: '/admin/newsletter/',
   define: {
-    __APP_VERSION__: JSON.stringify(pkg.version),
+    __APP_VERSION__: JSON.stringify(appVersion),
   },
   plugins: [react(), serveFontsPlugin(), emailApiPlugin(), translateApiPlugin(), snapshotsApiPlugin(), gsheetExportPlugin(), publishApiPlugin()],
   server: {
