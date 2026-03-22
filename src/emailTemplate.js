@@ -443,25 +443,18 @@ function stripDomain(domain) {
   return (domain || '').replace(/\.(com|org|net|co\.uk|com\.br|com\.au|com\.vn|com\.mx|co\.kr|de|es|fr|ca|in|vn)$/i, '')
 }
 
-// ─── 도메인별 Citation (TTL top 10) ──────────────────────────────────────────
-function citationDomainSectionHtml(citationsCnty, meta, lang, citations) {
-  if (!citationsCnty || !citationsCnty.length) return ''
-  const t = T[lang] || T.ko
-
-  const domTopN = meta.citDomainTopN || 10
-  const ttlRows = citationsCnty.filter(r => r.cnty === 'TTL').sort((a, b) => a.rank - b.rank).slice(0, domTopN)
-  if (!ttlRows.length) return ''
-
-  const maxScore = Math.max(...ttlRows.map(r => r.citations), 1)
-  // 분모: 카테고리 Citation 전체 합계
-  const totalCitations = (citations && citations.length) ? citations.reduce((s, c) => s + c.score, 0) : ttlRows.reduce((s, r) => s + r.citations, 0)
+// ─── 도메인별 Citation 국가 서브섹션 (가로 바) ─────────────────────────────────
+function citationDomainCntyRowsHtml(cntyRows, domTopN) {
+  if (!cntyRows.length) return ''
+  const maxScore = Math.max(...cntyRows.map(r => r.citations), 1)
+  const totalCit = cntyRows.reduce((s, r) => s + r.citations, 0)
   const fmtN = n => Number(n).toLocaleString('en-US')
 
-  const rows = ttlRows.map((c, i) => {
+  return cntyRows.slice(0, domTopN).map((c, i, arr) => {
     const barPct = Math.min(Math.round((c.citations / maxScore) * 70), 70)
-    const ratio = totalCitations > 0 ? ((c.citations / totalCitations) * 100).toFixed(1) : '0.0'
+    const ratio = totalCit > 0 ? ((c.citations / totalCit) * 100).toFixed(1) : '0.0'
     return `<tr>
-      <td style="border-bottom:${i < ttlRows.length - 1 ? '1px solid #F8FAFC' : 'none'};">
+      <td style="border-bottom:${i < arr.length - 1 ? '1px solid #F8FAFC' : 'none'};">
         <table border="0" cellpadding="0" cellspacing="0" width="100%">
           <tr>
             <td width="150" style="padding:10px 12px 10px 16px;vertical-align:middle;">
@@ -489,6 +482,70 @@ function citationDomainSectionHtml(citationsCnty, meta, lang, citations) {
       </td>
     </tr>`
   }).join('')
+}
+
+// ─── 도메인별 Citation (TTL + 국가별) ──────────────────────────────────────────
+function citationDomainSectionHtml(citationsCnty, meta, lang, citations) {
+  if (!citationsCnty || !citationsCnty.length) return ''
+  const t = T[lang] || T.ko
+
+  const domTopN = meta.citDomainTopN || 10
+  const ttlRows = citationsCnty.filter(r => r.cnty === 'TTL').sort((a, b) => a.rank - b.rank).slice(0, domTopN)
+  if (!ttlRows.length) return ''
+
+  // TTL 영역 (기존)
+  const ttlHtml = citationDomainCntyRowsHtml(ttlRows, domTopN)
+
+  // 국가별 Citation 도메인 영역
+  const cntyFilter = meta.citCntyDomainFilter || {}
+  const cntyMap = new Map()
+  citationsCnty.forEach(row => {
+    if (row.cnty === 'TTL') return
+    if (!cntyMap.has(row.cnty)) cntyMap.set(row.cnty, [])
+    cntyMap.get(row.cnty).push(row)
+  })
+  const cntyKeys = [...cntyMap.keys()]
+  const visibleCntyKeys = cntyKeys.filter(c => cntyFilter[c] !== false)
+
+  // 국가 탭 pills
+  const cntyPillsHtml = cntyKeys.length > 0 ? `
+                    <tr>
+                      <td style="padding:12px 28px 0;">
+                        <table border="0" cellpadding="0" cellspacing="0">
+                          <tr>
+                            <td style="padding:2px 8px;border-radius:12px;background:${EM_RED};font-size:11px;font-weight:700;color:#FFFFFF;font-family:${EM_FONT};">TTL</td>
+                            ${cntyKeys.map(c => {
+                              const isOn = cntyFilter[c] !== false
+                              return `<td style="padding-left:4px;"><table border="0" cellpadding="0" cellspacing="0"><tr><td style="padding:2px 8px;border-radius:12px;background:${isOn ? '#1E293B' : '#F1F5F9'};font-size:11px;font-weight:700;color:${isOn ? '#FFFFFF' : '#94A3B8'};font-family:${EM_FONT};">${c}</td></tr></table></td>`
+                            }).join('')}
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>` : ''
+
+  // 국가별 서브섹션 (가로 바 형식)
+  const cntySectionsHtml = visibleCntyKeys.map(cnty => {
+    const rows = cntyMap.get(cnty).sort((a, b) => a.rank - b.rank)
+    const rowsHtml = citationDomainCntyRowsHtml(rows, domTopN)
+    return `
+                      <tr>
+                        <td style="padding:16px 0 0;">
+                          <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                            <tr>
+                              <td style="background:#F1F5F9;border-radius:7px;padding:7px 12px;">
+                                <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                  <tr>
+                                    <td style="font-size:14px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${cnty}</td>
+                                    <td align="right" style="font-size:11px;color:#94A3B8;font-family:${EM_FONT};">Top ${Math.min(domTopN, rows.length)}</td>
+                                  </tr>
+                                </table>
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                      ${rowsHtml}`
+  }).join('')
 
   return `
               <!-- ══ 도메인별 Citation ══ -->
@@ -510,18 +567,20 @@ function citationDomainSectionHtml(citationsCnty, meta, lang, citations) {
                             <td align="right" style="vertical-align:middle;">
                               <table border="0" cellpadding="0" cellspacing="0" align="right"><tr>
                                 <td width="14" height="5" style="background:${EM_RED};border-radius:3px;font-size:0;">&nbsp;</td>
-                                <td style="padding-left:4px;font-size:11px;color:#94A3B8;font-family:${EM_FONT};">Top ${domTopN} Domains (TTL)</td>
+                                <td style="padding-left:4px;font-size:11px;color:#94A3B8;font-family:${EM_FONT};">Top ${domTopN} Domains</td>
                               </tr></table>
                             </td>
                           </tr>
                         </table>
                       </td>
                     </tr>
+                    ${cntyPillsHtml}
                     ${insightBlockHtml(meta.citDomainInsight, meta.showCitDomainInsight, meta.citDomainHowToRead, meta.showCitDomainHowToRead, lang)}
                     <tr>
                       <td style="padding:20px 28px;">
                         <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                          ${rows}
+                          ${ttlHtml}
+                          ${cntySectionsHtml}
                         </table>
                       </td>
                     </tr>
