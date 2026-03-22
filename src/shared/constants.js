@@ -32,6 +32,7 @@ export const INIT_META  = {
   showDotcom: true,
   cntyProductFilter: {},
   citCntyDomainFilter: {},
+  citCntyFilter: {},
 }
 
 export const INIT_TOTAL = { score: 42.7, prev: 42.2, vsComp: 42.2, rank: 1, totalBrands: 12 }

@@ -6,7 +6,8 @@ import { LG_RED, FONT } from './constants.js'
 import { inputStyle } from './components.jsx'
 import { resolveDataForLang } from './utils.js'
 import { saveSyncData } from './api.js'
-import { generateProductInsight, generateCitationInsight, generateProductHowToRead, generateCitationHowToRead, generateDotcomInsight, generateDotcomHowToRead, generateCntyHowToRead, generateCitDomainInsight, generateCitDomainHowToRead, generateCitCntyInsight, generateCitCntyHowToRead } from './insights.js'
+import { generateProductInsight, generateProductHowToRead, generateDotcomInsight, generateDotcomHowToRead, generateCntyHowToRead } from './insights.js'
+import CitationConditionPanel from './CitationConditionPanel.jsx'
 
 export default
 function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, total, setTotal, products, setProducts, citations, setCitations, dotcom, setDotcom, productsCnty, setProductsCnty, citationsCnty, setCitationsCnty, resolved, previewLang, setPreviewLang, snapshots, setSnapshots, setWeeklyLabels, setWeeklyAll, weeklyLabels, weeklyAll, generateHTML }) {
@@ -596,9 +597,6 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
             { key: 'showTotal',     label: 'GEO 지수' },
             { key: 'showProducts',  label: '제품별' },
             { key: 'showCnty',      label: '국가별' },
-            { key: 'showCitations', label: 'Citation' },
-            { key: 'showCitDomain', label: '도메인별 Citation' },
-            { key: 'showCitCnty',   label: '국가별 Citation' },
             { key: 'showDotcom',    label: '닷컴' },
             { key: 'showTodo',      label: 'Action Plan' },
           ].map(({ key, label }) => (
@@ -608,34 +606,6 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
                 color: meta[key] ? '#FFFFFF' : '#475569',
                 fontSize: 11, fontWeight: 700, fontFamily: FONT }}>
               {label}
-            </button>
-          ))}
-        </div>
-
-        {/* Top N 설정 */}
-        <p style={{ margin: '0 0 6px 2px', fontSize: 11, fontWeight: 700, color: '#475569',
-          textTransform: 'uppercase', letterSpacing: 1, fontFamily: FONT }}>
-          표시 개수
-        </p>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16, alignItems: 'center' }}>
-          <span style={{ fontSize: 11, color: '#64748B', fontFamily: FONT }}>카테고리 Citation</span>
-          {[5, 10].map(n => (
-            <button key={`citN${n}`} onClick={() => setMeta(m => ({ ...m, citationTopN: n }))}
-              style={{ padding: '4px 10px', borderRadius: 12, border: 'none', cursor: 'pointer',
-                background: meta.citationTopN === n ? LG_RED : '#1E293B',
-                color: meta.citationTopN === n ? '#FFFFFF' : '#475569',
-                fontSize: 11, fontWeight: 700, fontFamily: FONT }}>
-              Top {n}
-            </button>
-          ))}
-          <span style={{ fontSize: 11, color: '#64748B', fontFamily: FONT, marginLeft: 8 }}>도메인 Citation</span>
-          {[5, 10].map(n => (
-            <button key={`domN${n}`} onClick={() => setMeta(m => ({ ...m, citDomainTopN: n }))}
-              style={{ padding: '4px 10px', borderRadius: 12, border: 'none', cursor: 'pointer',
-                background: meta.citDomainTopN === n ? LG_RED : '#1E293B',
-                color: meta.citDomainTopN === n ? '#FFFFFF' : '#475569',
-                fontSize: 11, fontWeight: 700, fontFamily: FONT }}>
-              Top {n}
             </button>
           ))}
         </div>
@@ -787,173 +757,10 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
           )
         })()}
 
-        {/* Citation 인사이트 */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-          <p style={{ margin: 0, fontSize: 11, color: '#64748B', fontFamily: FONT }}>Citation 섹션 인사이트</p>
-          <div style={{ display: 'flex', gap: 4 }}>
-            <button onClick={() => setMeta(m => ({ ...m, citationInsight: generateCitationInsight(resolved.citations) }))}
-              title="AI 인사이트 자동생성"
-              style={{ padding: '2px 6px', borderRadius: 4, border: 'none', cursor: 'pointer',
-                background: '#4F46E5', color: '#FFFFFF',
-                fontSize: 11, fontWeight: 700, fontFamily: FONT, display: 'flex', alignItems: 'center', gap: 3 }}>
-              <Sparkles size={9} /> AI 생성
-            </button>
-            <button onClick={() => setMeta(m => ({ ...m, showCitationInsight: !m.showCitationInsight }))}
-              style={{ padding: '2px 8px', borderRadius: 4, border: 'none', cursor: 'pointer',
-                background: meta.showCitationInsight ? LG_RED : '#1E293B',
-                color: meta.showCitationInsight ? '#FFFFFF' : '#475569',
-                fontSize: 11, fontWeight: 700, fontFamily: FONT }}>
-              {meta.showCitationInsight ? 'ON' : 'OFF'}
-            </button>
-          </div>
-        </div>
-        <textarea
-          value={meta.citationInsight}
-          onChange={e => setMeta(m => ({ ...m, citationInsight: e.target.value }))}
-          rows={12}
-          placeholder="Citation 섹션 인사이트를 입력하세요... (AI 생성 버튼으로 자동 작성 가능)"
-          style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6, marginBottom: 8 }}
-        />
-
-        {/* Citation How to Read */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-          <p style={{ margin: 0, fontSize: 11, color: '#64748B', fontFamily: FONT }}>Citation How to Read</p>
-          <div style={{ display: 'flex', gap: 4 }}>
-            <button onClick={() => setMeta(m => ({ ...m, citationHowToRead: generateCitationHowToRead() }))}
-              title="AI 인사이트 자동생성"
-              style={{ padding: '2px 6px', borderRadius: 4, border: 'none', cursor: 'pointer',
-                background: '#4F46E5', color: '#FFFFFF',
-                fontSize: 11, fontWeight: 700, fontFamily: FONT, display: 'flex', alignItems: 'center', gap: 3 }}>
-              <Sparkles size={9} /> AI 생성
-            </button>
-            <button onClick={() => setMeta(m => ({ ...m, showCitationHowToRead: !m.showCitationHowToRead }))}
-              style={{ padding: '2px 8px', borderRadius: 4, border: 'none', cursor: 'pointer',
-                background: meta.showCitationHowToRead ? LG_RED : '#1E293B',
-                color: meta.showCitationHowToRead ? '#FFFFFF' : '#475569',
-                fontSize: 11, fontWeight: 700, fontFamily: FONT }}>
-              {meta.showCitationHowToRead ? 'ON' : 'OFF'}
-            </button>
-          </div>
-        </div>
-        <textarea
-          value={meta.citationHowToRead}
-          onChange={e => setMeta(m => ({ ...m, citationHowToRead: e.target.value }))}
-          rows={4}
-          placeholder="Citation How to Read 설명을 입력하세요... (AI 생성 버튼으로 자동 작성 가능)"
-          style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6, marginBottom: 8 }}
-        />
-
-        {/* 도메인별 Citation 인사이트 */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-          <p style={{ margin: 0, fontSize: 11, color: '#64748B', fontFamily: FONT }}>도메인별 Citation 인사이트</p>
-          <div style={{ display: 'flex', gap: 4 }}>
-            <button onClick={() => setMeta(m => ({ ...m, citDomainInsight: generateCitDomainInsight(resolved.citationsCnty) }))}
-              title="AI 인사이트 자동생성"
-              style={{ padding: '2px 6px', borderRadius: 4, border: 'none', cursor: 'pointer',
-                background: '#4F46E5', color: '#FFFFFF',
-                fontSize: 11, fontWeight: 700, fontFamily: FONT, display: 'flex', alignItems: 'center', gap: 3 }}>
-              <Sparkles size={9} /> AI 생성
-            </button>
-            <button onClick={() => setMeta(m => ({ ...m, showCitDomainInsight: !m.showCitDomainInsight }))}
-              style={{ padding: '2px 8px', borderRadius: 4, border: 'none', cursor: 'pointer',
-                background: meta.showCitDomainInsight ? LG_RED : '#1E293B',
-                color: meta.showCitDomainInsight ? '#FFFFFF' : '#475569',
-                fontSize: 11, fontWeight: 700, fontFamily: FONT }}>
-              {meta.showCitDomainInsight ? 'ON' : 'OFF'}
-            </button>
-          </div>
-        </div>
-        <textarea
-          value={meta.citDomainInsight}
-          onChange={e => setMeta(m => ({ ...m, citDomainInsight: e.target.value }))}
-          rows={8}
-          placeholder="도메인별 Citation 인사이트를 입력하세요..."
-          style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6, marginBottom: 8 }}
-        />
-
-        {/* 도메인별 Citation How to Read */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-          <p style={{ margin: 0, fontSize: 11, color: '#64748B', fontFamily: FONT }}>도메인별 Citation How to Read</p>
-          <div style={{ display: 'flex', gap: 4 }}>
-            <button onClick={() => setMeta(m => ({ ...m, citDomainHowToRead: generateCitDomainHowToRead() }))}
-              title="AI 인사이트 자동생성"
-              style={{ padding: '2px 6px', borderRadius: 4, border: 'none', cursor: 'pointer',
-                background: '#4F46E5', color: '#FFFFFF',
-                fontSize: 11, fontWeight: 700, fontFamily: FONT, display: 'flex', alignItems: 'center', gap: 3 }}>
-              <Sparkles size={9} /> AI 생성
-            </button>
-            <button onClick={() => setMeta(m => ({ ...m, showCitDomainHowToRead: !m.showCitDomainHowToRead }))}
-              style={{ padding: '2px 8px', borderRadius: 4, border: 'none', cursor: 'pointer',
-                background: meta.showCitDomainHowToRead ? LG_RED : '#1E293B',
-                color: meta.showCitDomainHowToRead ? '#FFFFFF' : '#475569',
-                fontSize: 11, fontWeight: 700, fontFamily: FONT }}>
-              {meta.showCitDomainHowToRead ? 'ON' : 'OFF'}
-            </button>
-          </div>
-        </div>
-        <textarea
-          value={meta.citDomainHowToRead}
-          onChange={e => setMeta(m => ({ ...m, citDomainHowToRead: e.target.value }))}
-          rows={4}
-          placeholder="도메인별 Citation How to Read 설명을 입력하세요..."
-          style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6, marginBottom: 8 }}
-        />
-
-        {/* 국가별 Citation 인사이트 */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-          <p style={{ margin: 0, fontSize: 11, color: '#64748B', fontFamily: FONT }}>국가별 Citation 인사이트</p>
-          <div style={{ display: 'flex', gap: 4 }}>
-            <button onClick={() => setMeta(m => ({ ...m, citCntyInsight: generateCitCntyInsight(resolved.citationsCnty) }))}
-              title="AI 인사이트 자동생성"
-              style={{ padding: '2px 6px', borderRadius: 4, border: 'none', cursor: 'pointer',
-                background: '#4F46E5', color: '#FFFFFF',
-                fontSize: 11, fontWeight: 700, fontFamily: FONT, display: 'flex', alignItems: 'center', gap: 3 }}>
-              <Sparkles size={9} /> AI 생성
-            </button>
-            <button onClick={() => setMeta(m => ({ ...m, showCitCntyInsight: !m.showCitCntyInsight }))}
-              style={{ padding: '2px 8px', borderRadius: 4, border: 'none', cursor: 'pointer',
-                background: meta.showCitCntyInsight ? LG_RED : '#1E293B',
-                color: meta.showCitCntyInsight ? '#FFFFFF' : '#475569',
-                fontSize: 11, fontWeight: 700, fontFamily: FONT }}>
-              {meta.showCitCntyInsight ? 'ON' : 'OFF'}
-            </button>
-          </div>
-        </div>
-        <textarea
-          value={meta.citCntyInsight}
-          onChange={e => setMeta(m => ({ ...m, citCntyInsight: e.target.value }))}
-          rows={8}
-          placeholder="국가별 Citation 인사이트를 입력하세요..."
-          style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6, marginBottom: 8 }}
-        />
-
-        {/* 국가별 Citation How to Read */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-          <p style={{ margin: 0, fontSize: 11, color: '#64748B', fontFamily: FONT }}>국가별 Citation How to Read</p>
-          <div style={{ display: 'flex', gap: 4 }}>
-            <button onClick={() => setMeta(m => ({ ...m, citCntyHowToRead: generateCitCntyHowToRead() }))}
-              title="AI 인사이트 자동생성"
-              style={{ padding: '2px 6px', borderRadius: 4, border: 'none', cursor: 'pointer',
-                background: '#4F46E5', color: '#FFFFFF',
-                fontSize: 11, fontWeight: 700, fontFamily: FONT, display: 'flex', alignItems: 'center', gap: 3 }}>
-              <Sparkles size={9} /> AI 생성
-            </button>
-            <button onClick={() => setMeta(m => ({ ...m, showCitCntyHowToRead: !m.showCitCntyHowToRead }))}
-              style={{ padding: '2px 8px', borderRadius: 4, border: 'none', cursor: 'pointer',
-                background: meta.showCitCntyHowToRead ? LG_RED : '#1E293B',
-                color: meta.showCitCntyHowToRead ? '#FFFFFF' : '#475569',
-                fontSize: 11, fontWeight: 700, fontFamily: FONT }}>
-              {meta.showCitCntyHowToRead ? 'ON' : 'OFF'}
-            </button>
-          </div>
-        </div>
-        <textarea
-          value={meta.citCntyHowToRead}
-          onChange={e => setMeta(m => ({ ...m, citCntyHowToRead: e.target.value }))}
-          rows={4}
-          placeholder="국가별 Citation How to Read 설명을 입력하세요..."
-          style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6, marginBottom: 8 }}
-        />
+        {/* ── Citation 조건 패널 (별도 컴포넌트) ── */}
+        <div style={{ height: 1, background: '#1E293B', marginBottom: 16 }} />
+        <CitationConditionPanel meta={meta} setMeta={setMeta} resolved={resolved} />
+        <div style={{ height: 1, background: '#1E293B', marginBottom: 16 }} />
 
         {/* 닷컴 Citation 인사이트 */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
