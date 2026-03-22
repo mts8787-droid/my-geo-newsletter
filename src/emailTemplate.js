@@ -484,7 +484,7 @@ function citationDomainCntyRowsHtml(cntyRows, domTopN) {
   }).join('')
 }
 
-// ─── 도메인별 Citation (TTL + 국가별 인터랙티브 탭) ──────────────────────────
+// ─── 도메인별 Citation (TTL + 국가별 CSS-only 탭) ───────────────────────────
 function citationDomainSectionHtml(citationsCnty, meta, lang, citations) {
   if (!citationsCnty || !citationsCnty.length) return ''
   const t = T[lang] || T.ko
@@ -503,52 +503,10 @@ function citationDomainSectionHtml(citationsCnty, meta, lang, citations) {
   const cntyKeys = [...cntyMap.keys()]
   const allTabs = ['TTL', ...cntyKeys]
 
-  // TTL 데이터 HTML
-  const ttlHtml = citationDomainCntyRowsHtml(ttlRows, domTopN)
-
-  // 국가별 데이터 HTML (각각 div로 감싸서 토글 가능)
-  const cntyPanelsHtml = cntyKeys.map(cnty => {
-    const rows = cntyMap.get(cnty).sort((a, b) => a.rank - b.rank)
-    const rowsHtml = citationDomainCntyRowsHtml(rows, domTopN)
-    return `<tr class="cit-cnty-panel" data-cit-cnty="${cnty}" style="display:none;">
-                          <td>
-                            <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                              ${rowsHtml}
-                            </table>
-                          </td>
-                        </tr>`
-  }).join('')
-
-  // 국가 탭 pills (인터랙티브)
-  const cntyPillsHtml = cntyKeys.length > 0 ? `
-                    <tr>
-                      <td style="padding:12px 28px 0;">
-                        <div style="display:inline-flex;gap:4px;flex-wrap:wrap;">
-                          ${allTabs.map(c => {
-                            const isActive = c === 'TTL'
-                            return `<button class="cit-cnty-tab" data-cit-tab="${c}" onclick="switchCitCnty('${c}')" style="padding:4px 12px;border-radius:14px;border:none;font-size:11px;font-weight:700;font-family:${EM_FONT};cursor:pointer;transition:all .15s;background:${isActive ? EM_RED : '#F1F5F9'};color:${isActive ? '#FFFFFF' : '#64748B'};">${c}</button>`
-                          }).join('')}
-                        </div>
-                      </td>
-                    </tr>` : ''
-
-  // 인터랙티브 JS
-  const scriptHtml = cntyKeys.length > 0 ? `
-                    <script>
-                    function switchCitCnty(cnty){
-                      document.querySelectorAll('.cit-cnty-panel').forEach(function(el){el.style.display='none'});
-                      document.querySelector('.cit-cnty-panel-ttl').style.display=cnty==='TTL'?'':'none';
-                      if(cnty!=='TTL'){var p=document.querySelector('.cit-cnty-panel[data-cit-cnty="'+cnty+'"]');if(p)p.style.display='';}
-                      document.querySelectorAll('.cit-cnty-tab').forEach(function(btn){
-                        var isActive=btn.getAttribute('data-cit-tab')===cnty;
-                        btn.style.background=isActive?'${EM_RED}':'#F1F5F9';
-                        btn.style.color=isActive?'#FFFFFF':'#64748B';
-                      });
-                    }
-                    </script>` : ''
-
-  return `
-              <!-- ══ 도메인별 Citation ══ -->
+  // 국가 탭이 없으면 TTL만 표시
+  if (cntyKeys.length === 0) {
+    const ttlHtml = citationDomainCntyRowsHtml(ttlRows, domTopN)
+    return `
               <tr>
                 <td style="padding-bottom:28px;">
                   <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFFFFF;border-radius:16px;border:2px solid #E8EDF2;">
@@ -564,34 +522,86 @@ function citationDomainSectionHtml(citationsCnty, meta, lang, citations) {
                                 </tr>
                               </table>
                             </td>
-                            <td align="right" style="vertical-align:middle;">
-                              <table border="0" cellpadding="0" cellspacing="0" align="right"><tr>
-                                <td width="14" height="5" style="background:${EM_RED};border-radius:3px;font-size:0;">&nbsp;</td>
-                                <td style="padding-left:4px;font-size:11px;color:#94A3B8;font-family:${EM_FONT};">Top ${domTopN} Domains</td>
-                              </tr></table>
-                            </td>
                           </tr>
                         </table>
                       </td>
                     </tr>
-                    ${cntyPillsHtml}
                     ${insightBlockHtml(meta.citDomainInsight, meta.showCitDomainInsight, meta.citDomainHowToRead, meta.showCitDomainHowToRead, lang)}
-                    <tr>
-                      <td style="padding:20px 28px;">
-                        <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                          <tr class="cit-cnty-panel-ttl">
-                            <td>
-                              <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                                ${ttlHtml}
-                              </table>
-                            </td>
-                          </tr>
-                          ${cntyPanelsHtml}
-                        </table>
-                      </td>
-                    </tr>
+                    <tr><td style="padding:20px 28px;"><table border="0" cellpadding="0" cellspacing="0" width="100%">${ttlHtml}</table></td></tr>
                   </table>
-                  ${scriptHtml}
+                </td>
+              </tr>`
+  }
+
+  // ── CSS-only 탭 전환 (radio input + :checked, JS 불필요) ──
+  const uid = 'cd' + Math.random().toString(36).slice(2, 6)
+
+  // CSS: 선택된 탭 label 하이라이트 + 해당 패널만 표시
+  const cssRules = allTabs.map(c => {
+    const rid = `${uid}-${c.replace(/[^a-zA-Z0-9]/g, '')}`
+    return `#${rid}:checked ~ .${uid}-tabs label[for="${rid}"]{background:${EM_RED}!important;color:#fff!important}
+#${rid}:checked ~ .${uid}-body .${uid}-p-${c.replace(/[^a-zA-Z0-9]/g, '')}{display:block!important}`
+  }).join('\n')
+
+  // hidden radio inputs
+  const radioInputs = allTabs.map((c, i) => {
+    const rid = `${uid}-${c.replace(/[^a-zA-Z0-9]/g, '')}`
+    return `<input type="radio" name="${uid}" id="${rid}"${i === 0 ? ' checked' : ''} style="position:absolute;opacity:0;pointer-events:none;">`
+  }).join('')
+
+  // tab labels
+  const tabLabels = allTabs.map(c => {
+    const rid = `${uid}-${c.replace(/[^a-zA-Z0-9]/g, '')}`
+    return `<label for="${rid}" style="padding:4px 12px;border-radius:14px;font-size:11px;font-weight:700;font-family:${EM_FONT};cursor:pointer;background:#F1F5F9;color:#64748B;display:inline-block;margin:0 2px 4px 0;transition:all .15s;">${c}</label>`
+  }).join('')
+
+  // content panels (display:none by default, CSS :checked reveals active)
+  const panels = allTabs.map(c => {
+    const rows = c === 'TTL' ? ttlRows : (cntyMap.get(c) || []).sort((a, b) => a.rank - b.rank)
+    const rowsHtml = citationDomainCntyRowsHtml(rows, domTopN)
+    const cls = `${uid}-p-${c.replace(/[^a-zA-Z0-9]/g, '')}`
+    return `<div class="${cls}" style="display:none;">
+              <table border="0" cellpadding="0" cellspacing="0" width="100%">${rowsHtml}</table>
+            </div>`
+  }).join('')
+
+  return `
+              <!-- ══ 도메인별 Citation (국가별 탭) ══ -->
+              <tr>
+                <td style="padding-bottom:28px;">
+                  <style>${cssRules}</style>
+                  <div style="background:#FFFFFF;border-radius:16px;border:2px solid #E8EDF2;position:relative;">
+                    ${radioInputs}
+                    <div style="padding:22px 28px 18px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;border-radius:16px 16px 0 0;">
+                      <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                        <tr>
+                          <td style="vertical-align:middle;">
+                            <table border="0" cellpadding="0" cellspacing="0">
+                              <tr>
+                                <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
+                                <td style="padding-left:8px;font-size:17px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${t.citationDomainTitle}</td>
+                              </tr>
+                            </table>
+                          </td>
+                          <td align="right" style="vertical-align:middle;">
+                            <table border="0" cellpadding="0" cellspacing="0" align="right"><tr>
+                              <td width="14" height="5" style="background:${EM_RED};border-radius:3px;font-size:0;">&nbsp;</td>
+                              <td style="padding-left:4px;font-size:11px;color:#94A3B8;font-family:${EM_FONT};">Top ${domTopN} Domains</td>
+                            </tr></table>
+                          </td>
+                        </tr>
+                      </table>
+                    </div>
+                    <div class="${uid}-tabs" style="padding:12px 28px 4px;display:flex;flex-wrap:wrap;gap:0;">
+                      ${tabLabels}
+                    </div>
+                    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                      ${insightBlockHtml(meta.citDomainInsight, meta.showCitDomainInsight, meta.citDomainHowToRead, meta.showCitDomainHowToRead, lang)}
+                    </table>
+                    <div class="${uid}-body" style="padding:20px 28px 24px;">
+                      ${panels}
+                    </div>
+                  </div>
                 </td>
               </tr>`
 }
