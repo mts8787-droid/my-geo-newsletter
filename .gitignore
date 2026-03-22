@@ -2,5 +2,6 @@ node_modules
 dist
 dist-dashboard
 dist-tracker
+dist-citation
 .env
 data/
