@@ -580,46 +580,62 @@ export function generateDashboardHTML(meta, total, products, citations, dotcom, 
   if (productsCnty) productsCnty.forEach(r => { if (r.country && r.country !== 'TTL') countries.add(r.country) })
   const countryList = [...countries].sort()
 
-  // ─── Filter Layer HTML ───
+  // ─── Filter Layer HTML (체크박스 형태) ───
   const allLabel = lang === 'en' ? 'All' : '전체'
+  const BU_LIST = ['MS', 'HS', 'ES']
+  const productCheckboxes = products.map(p =>
+    `<label class="fl-chk-label"><input type="checkbox" class="fl-chk" data-filter="product" data-bu="${p.bu}" value="${p.id}" checked onchange="onFilterChange()"><span>${p.kr}</span></label>`
+  ).join('')
+  const buCheckboxes = BU_LIST.map(bu =>
+    `<label class="fl-chk-label"><input type="checkbox" class="fl-chk" data-filter="bu" value="${bu}" checked onchange="onBuChange('${bu}')"><span>${bu}</span></label>`
+  ).join('')
+  const countryCheckboxes = countryList.map(c =>
+    `<label class="fl-chk-label"><input type="checkbox" class="fl-chk" data-filter="country" value="${c}" checked onchange="onFilterChange()"><span>${c}</span></label>`
+  ).join('')
+  const regionCheckboxes = Object.entries(REGIONS).map(([k, v]) =>
+    `<label class="fl-chk-label"><input type="checkbox" class="fl-chk" data-filter="region" value="${k}" checked onchange="onRegionChange('${k}')"><span>${k}</span></label>`
+  ).join('')
+
   const filterLayerHtml = `<div class="filter-layer" id="filter-layer">
-    <div class="fl-group">
-      <label class="fl-label">${lang === 'en' ? 'Period' : '기간'}</label>
-      <select class="fl-select" id="f-period">
-        <option value="current">${meta.period || '—'}</option>
-      </select>
+    <div class="fl-row">
+      <div class="fl-group">
+        <span class="fl-label">${lang === 'en' ? 'Period' : '기간'}</span>
+        <span class="fl-badge">${meta.period || '—'}</span>
+      </div>
+      <div class="fl-divider"></div>
+      <div class="fl-group">
+        <span class="fl-label">${lang === 'en' ? 'View' : '조회'}</span>
+        <div class="trend-tabs" id="period-toggle">
+          <button class="trend-tab active" onclick="switchPeriodMode('weekly')">${lang === 'en' ? 'Weekly' : '주간'}</button>
+          <button class="trend-tab" onclick="switchPeriodMode('monthly')">${lang === 'en' ? 'Monthly' : '월간'}</button>
+        </div>
+      </div>
     </div>
-    <div class="fl-divider"></div>
-    <div class="fl-group">
-      <label class="fl-label">${lang === 'en' ? 'Division' : '본부'}</label>
-      <select class="fl-select" id="f-bu" onchange="onFilterChange()">
-        <option value="ALL">${allLabel}</option>
-        <option value="MS">MS</option><option value="HS">HS</option><option value="ES">ES</option>
-      </select>
+    <div class="fl-row">
+      <div class="fl-group">
+        <span class="fl-label">${lang === 'en' ? 'Division' : '본부'}</span>
+        <label class="fl-chk-label fl-all-label"><input type="checkbox" class="fl-chk-all" data-target="bu" checked onchange="toggleAll(this,'bu')"><span>${allLabel}</span></label>
+        ${buCheckboxes}
+      </div>
+      <div class="fl-divider"></div>
+      <div class="fl-group">
+        <span class="fl-label">${lang === 'en' ? 'Product' : '제품'}</span>
+        <label class="fl-chk-label fl-all-label"><input type="checkbox" class="fl-chk-all" data-target="product" checked onchange="toggleAll(this,'product')"><span>${allLabel}</span></label>
+        ${productCheckboxes}
+      </div>
     </div>
-    <div class="fl-divider"></div>
-    <div class="fl-group">
-      <label class="fl-label">${lang === 'en' ? 'Product' : '제품'}</label>
-      <select class="fl-select" id="f-product" onchange="onFilterChange()">
-        <option value="ALL">${allLabel}</option>
-        ${products.map(p => `<option value="${p.id}" data-bu="${p.bu}">${p.kr}</option>`).join('')}
-      </select>
-    </div>
-    <div class="fl-divider"></div>
-    <div class="fl-group">
-      <label class="fl-label">Region</label>
-      <select class="fl-select" id="f-region" onchange="onFilterChange()">
-        <option value="ALL">${allLabel}</option>
-        ${Object.entries(REGIONS).map(([k, v]) => `<option value="${k}">${k} (${lang === 'en' ? v.labelEn : v.label})</option>`).join('')}
-      </select>
-    </div>
-    <div class="fl-divider"></div>
-    <div class="fl-group">
-      <label class="fl-label">${lang === 'en' ? 'Country' : '국가'}</label>
-      <select class="fl-select" id="f-country" onchange="onFilterChange()">
-        <option value="ALL">${lang === 'en' ? 'All (Total)' : '전체 (Total)'}</option>
-        ${countryList.map(c => `<option value="${c}">${c}</option>`).join('')}
-      </select>
+    <div class="fl-row">
+      <div class="fl-group">
+        <span class="fl-label">Region</span>
+        <label class="fl-chk-label fl-all-label"><input type="checkbox" class="fl-chk-all" data-target="region" checked onchange="toggleAll(this,'region')"><span>${allLabel}</span></label>
+        ${regionCheckboxes}
+      </div>
+      <div class="fl-divider"></div>
+      <div class="fl-group">
+        <span class="fl-label">${lang === 'en' ? 'Country' : '국가'}</span>
+        <label class="fl-chk-label fl-all-label"><input type="checkbox" class="fl-chk-all" data-target="country" checked onchange="toggleAll(this,'country')"><span>${allLabel}</span></label>
+        ${countryCheckboxes}
+      </div>
     </div>
   </div>`
 
@@ -654,12 +670,17 @@ body{background:#F1F5F9;font-family:${FONT};min-width:1200px;color:#1A1A1A}
 .tab-panel.active{display:block}
 .dash-container{max-width:1400px;margin:0 auto;padding:28px 40px}
 /* ── 필터 레이어 ── */
-.filter-layer{position:sticky;top:53px;z-index:90;background:#fff;border-bottom:2px solid #E8EDF2;padding:12px 40px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
-.fl-group{display:flex;align-items:center;gap:6px}
-.fl-label{font-size:13px;font-weight:700;color:#64748B;white-space:nowrap}
-.fl-select{padding:5px 10px;border-radius:8px;border:1px solid #E2E8F0;font-size:13px;font-weight:600;font-family:${FONT};color:#1A1A1A;background:#F8FAFC;cursor:pointer;outline:none;min-width:80px;appearance:auto}
-.fl-select:focus{border-color:${RED}}
-.fl-divider{width:1px;height:24px;background:#E8EDF2;flex-shrink:0}
+.filter-layer{position:sticky;top:53px;z-index:90;background:#fff;border-bottom:2px solid #E8EDF2;padding:8px 40px}
+.fl-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:4px 0}
+.fl-group{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.fl-label{font-size:13px;font-weight:700;color:#64748B;white-space:nowrap;margin-right:4px}
+.fl-badge{font-size:13px;font-weight:600;color:#1A1A1A;padding:3px 10px;border-radius:6px;background:#F1F5F9}
+.fl-chk-label{display:inline-flex;align-items:center;gap:3px;padding:3px 8px;border-radius:6px;font-size:12px;font-weight:600;color:#475569;cursor:pointer;transition:all .15s;background:#F8FAFC;border:1px solid #E2E8F0;white-space:nowrap;user-select:none}
+.fl-chk-label:hover{border-color:#94A3B8}
+.fl-chk-label:has(input:checked){background:#0F172A;color:#fff;border-color:#0F172A}
+.fl-chk{width:12px;height:12px;margin:0;cursor:pointer;accent-color:${RED}}
+.fl-all-label{font-weight:700}
+.fl-divider{width:1px;height:24px;background:#E8EDF2;flex-shrink:0;align-self:center}
 .hero-ctx{display:flex;gap:8px;flex-wrap:wrap}
 .hero-ctx-badge{font-size:12px;font-weight:600;padding:3px 10px;border-radius:6px;background:rgba(255,255,255,.12);color:#FFB0C0;border:1px solid rgba(255,255,255,.08)}
 /* ── Hero ── */
@@ -814,6 +835,7 @@ body{background:#F1F5F9;font-family:${FONT};min-width:1200px;color:#1A1A1A}
   <div class="dash-container">${visContent}</div>
 </div>
 <div id="tab-citation" class="tab-panel">
+  ${filterLayerHtml.replace('id="filter-layer"', 'id="filter-layer-cit" class="filter-layer"')}
   <div class="dash-container">${citContent}</div>
 </div>
 <div id="tab-readability" class="tab-panel">
@@ -831,6 +853,7 @@ body{background:#F1F5F9;font-family:${FONT};min-width:1200px;color:#1A1A1A}
   <span>© 2026 LG Electronics Inc. All Rights Reserved.</span>
 </div>
 <script>
+var _periodMode='weekly';
 function switchTab(id){
   document.querySelectorAll('.tab-panel').forEach(function(p){p.classList.remove('active')});
   document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active')});
@@ -839,14 +862,88 @@ function switchTab(id){
   var map={visibility:0,citation:1,readability:2,progress:3};
   if(map[id]!==undefined)btns[map[id]].classList.add('active');
 }
-function switchTrend(mode){
+function switchPeriodMode(mode){
+  _periodMode=mode;
+  // Update all period toggles
+  document.querySelectorAll('#period-toggle .trend-tab, #filter-layer-cit #period-toggle .trend-tab').forEach(function(btn){
+    var isW=mode==='weekly'&&btn.textContent.match(/(주간|Weekly)/);
+    var isM=mode==='monthly'&&btn.textContent.match(/(월간|Monthly)/);
+    if(isW||isM)btn.classList.add('active');else btn.classList.remove('active');
+  });
+  // Toggle product card trends
   document.querySelectorAll('.trend-weekly').forEach(function(el){el.style.display=mode==='weekly'?'':'none'});
   document.querySelectorAll('.trend-monthly').forEach(function(el){el.style.display=mode==='monthly'?'':'none'});
-  document.querySelectorAll('.trend-tab').forEach(function(btn){
-    var isW=mode==='weekly'&&(btn.textContent.match(/(주별|Weekly)/));
-    var isM=mode==='monthly'&&(btn.textContent.match(/(월별|Monthly)/));
-    if(isW||isM){btn.classList.add('active')}else{btn.classList.remove('active')}
+  onFilterChange();
+}
+function switchTrend(mode){switchPeriodMode(mode)}
+function toggleAll(el, target){
+  var checked=el.checked;
+  // Update all filter layers
+  document.querySelectorAll('.fl-chk[data-filter="'+target+'"]').forEach(function(c){c.checked=checked});
+  // If toggling BU, also toggle related products
+  if(target==='bu'){
+    document.querySelectorAll('.fl-chk[data-filter="product"]').forEach(function(c){c.checked=checked});
+    document.querySelectorAll('.fl-chk-all[data-target="product"]').forEach(function(c){c.checked=checked});
+  }
+  // If toggling region, also toggle related countries
+  if(target==='region'){
+    document.querySelectorAll('.fl-chk[data-filter="country"]').forEach(function(c){c.checked=checked});
+    document.querySelectorAll('.fl-chk-all[data-target="country"]').forEach(function(c){c.checked=checked});
+  }
+  syncAllFilterLayers();
+  onFilterChange();
+}
+function onBuChange(bu){
+  var chk=document.querySelector('.fl-chk[data-filter="bu"][value="'+bu+'"]');
+  if(!chk)return;
+  var isChecked=chk.checked;
+  // Toggle products under this BU
+  document.querySelectorAll('.fl-chk[data-filter="product"][data-bu="'+bu+'"]').forEach(function(c){c.checked=isChecked});
+  updateAllCheckbox('bu');
+  updateAllCheckbox('product');
+  syncAllFilterLayers();
+  onFilterChange();
+}
+function onRegionChange(region){
+  var chk=document.querySelector('.fl-chk[data-filter="region"][value="'+region+'"]');
+  if(!chk)return;
+  var isChecked=chk.checked;
+  var rc=_REGIONS[region]||[];
+  rc.forEach(function(c){
+    document.querySelectorAll('.fl-chk[data-filter="country"][value="'+c+'"]').forEach(function(cb){cb.checked=isChecked});
   });
+  updateAllCheckbox('region');
+  updateAllCheckbox('country');
+  syncAllFilterLayers();
+  onFilterChange();
+}
+function updateAllCheckbox(target){
+  var all=document.querySelectorAll('.fl-chk[data-filter="'+target+'"]');
+  var allChecked=true;
+  all.forEach(function(c){if(!c.checked)allChecked=false});
+  document.querySelectorAll('.fl-chk-all[data-target="'+target+'"]').forEach(function(c){c.checked=allChecked});
+}
+function syncAllFilterLayers(){
+  // Sync filter-layer → filter-layer-cit (and vice versa)
+  var src=document.getElementById('filter-layer');
+  var dst=document.getElementById('filter-layer-cit');
+  if(!src||!dst)return;
+  ['bu','product','region','country'].forEach(function(target){
+    src.querySelectorAll('.fl-chk[data-filter="'+target+'"]').forEach(function(srcCb){
+      var dstCb=dst.querySelector('.fl-chk[data-filter="'+target+'"][value="'+srcCb.value+'"]');
+      if(dstCb)dstCb.checked=srcCb.checked;
+    });
+    var srcAll=src.querySelector('.fl-chk-all[data-target="'+target+'"]');
+    var dstAll=dst.querySelector('.fl-chk-all[data-target="'+target+'"]');
+    if(srcAll&&dstAll)dstAll.checked=srcAll.checked;
+  });
+}
+function getCheckedValues(filterName){
+  var vals={};var total=0;var checked=0;
+  document.querySelectorAll('#filter-layer .fl-chk[data-filter="'+filterName+'"]').forEach(function(c){
+    total++;if(c.checked){vals[c.value]=true;checked++}
+  });
+  return{vals:vals,total:total,checked:checked,isAll:total===checked};
 }
 function switchCntyView(mode){
   var vp=document.getElementById('cnty-view-product');
@@ -864,30 +961,43 @@ function toggleCntyFilter(btn){
   applyCntyFilters();
 }
 function applyCntyFilters(){
-  var activeProducts={};var activeCountries={};
-  document.querySelectorAll('#cnty-filter-products .filter-chip.active').forEach(function(c){activeProducts[c.getAttribute('data-filter-value')]=true});
-  document.querySelectorAll('#cnty-filter-countries .filter-chip.active').forEach(function(c){activeCountries[c.getAttribute('data-filter-value')]=true});
-  var pCount=Object.keys(activeProducts).length;
-  var cCount=Object.keys(activeCountries).length;
+  var selProducts=getCheckedValues('product');
+  var selCountries=getCheckedValues('country');
+  // Get product names from selected IDs
+  var activeProductNames={};
+  _products.forEach(function(p){if(selProducts.isAll||selProducts.vals[p.id])activeProductNames[p.kr]=true});
   // product view
   document.querySelectorAll('#cnty-view-product .vbar-item').forEach(function(item){
     var p=item.getAttribute('data-product');var c=item.getAttribute('data-country');
-    var show=(pCount===0||activeProducts[p])&&(cCount===0||activeCountries[c]);
+    var show=(selProducts.isAll||activeProductNames[p])&&(selCountries.isAll||selCountries.vals[c]);
     item.classList.toggle('hidden',!show);
   });
   document.querySelectorAll('#cnty-view-product .cnty-product').forEach(function(grp){
+    var gp=grp.getAttribute('data-group-product');
     var vis=grp.querySelectorAll('.vbar-item:not(.hidden)').length;
-    grp.style.display=vis>0?'':'none';
+    var show=vis>0&&(selProducts.isAll||activeProductNames[gp]);
+    grp.style.display=show?'':'none';
   });
   // country view
   document.querySelectorAll('#cnty-view-country .vbar-item').forEach(function(item){
     var p=item.getAttribute('data-product');var c=item.getAttribute('data-country');
-    var show=(pCount===0||activeProducts[p])&&(cCount===0||activeCountries[c]);
+    var show=(selProducts.isAll||activeProductNames[p])&&(selCountries.isAll||selCountries.vals[c]);
     item.classList.toggle('hidden',!show);
   });
   document.querySelectorAll('#cnty-view-country .cnty-product').forEach(function(grp){
+    var gc=grp.getAttribute('data-group-country');
     var vis=grp.querySelectorAll('.vbar-item:not(.hidden)').length;
-    grp.style.display=vis>0?'':'none';
+    var show=vis>0&&(selCountries.isAll||selCountries.vals[gc]);
+    grp.style.display=show?'':'none';
+  });
+  // Also sync cnty-filter chips with top filter
+  document.querySelectorAll('#cnty-filter-products .filter-chip').forEach(function(chip){
+    var v=chip.getAttribute('data-filter-value');
+    chip.classList.toggle('active',!!activeProductNames[v]);
+  });
+  document.querySelectorAll('#cnty-filter-countries .filter-chip').forEach(function(chip){
+    var v=chip.getAttribute('data-filter-value');
+    chip.classList.toggle('active',selCountries.isAll||!!selCountries.vals[v]);
   });
 }
 function switchCitCnty(btn){
@@ -947,53 +1057,56 @@ function _svgML(bd,labels,w,h){
   return '<svg viewBox="0 0 '+w+' '+h+'" width="100%" height="'+h+'" xmlns="http://www.w3.org/2000/svg" style="display:block;background:#fff;border-radius:8px">'+g+'</svg>';
 }
 
-// ─── Cascading Filter Logic ───
+// ─── Checkbox-based Filter Logic ───
 function onFilterChange(){
-  var bu=document.getElementById('f-bu').value;
-  var prod=document.getElementById('f-product').value;
-  var region=document.getElementById('f-region').value;
-  var country=document.getElementById('f-country').value;
-  // Cascade: BU → Product options
-  var pSel=document.getElementById('f-product');
-  var opts=pSel.querySelectorAll('option[data-bu]');
-  opts.forEach(function(o){o.style.display=(bu==='ALL'||o.getAttribute('data-bu')===bu)?'':'none'});
-  if(prod!=='ALL'){var cur=pSel.querySelector('option[value="'+prod+'"]');if(cur&&cur.style.display==='none'){pSel.value='ALL';prod='ALL'}}
-  // Cascade: Region → Country options
-  var cSel=document.getElementById('f-country');
-  var regionCountries=region!=='ALL'?_REGIONS[region]:null;
-  cSel.querySelectorAll('option').forEach(function(o){
-    if(o.value==='ALL'){o.style.display='';return}
-    o.style.display=(!regionCountries||regionCountries.indexOf(o.value)>=0)?'':'none';
-  });
-  if(country!=='ALL'){var cc=cSel.querySelector('option[value="'+country+'"]');if(cc&&cc.style.display==='none'){cSel.value='ALL';country='ALL'}}
-  country=cSel.value;
-  // Apply all filters
-  filterBU(bu);
-  filterProducts(prod);
-  filterTrend(bu,country);
-  updateHero(bu,prod,region,country);
+  var selBU=getCheckedValues('bu');
+  var selProd=getCheckedValues('product');
+  var selCountry=getCheckedValues('country');
+  // Update "All" checkboxes
+  updateAllCheckbox('bu');
+  updateAllCheckbox('product');
+  updateAllCheckbox('region');
+  updateAllCheckbox('country');
+  syncAllFilterLayers();
+  // Apply filters
+  filterBU(selBU);
+  filterProducts(selProd);
+  filterTrend(selBU,selProd,selCountry);
+  applyCntyFilters();
+  updateHeroFromCheckboxes();
 }
-function filterBU(val){
+function filterBU(selBU){
   document.querySelectorAll('.bu-group[data-bu]').forEach(function(g){
-    g.style.display=(val==='ALL'||g.getAttribute('data-bu')===val)?'':'none';
+    var bu=g.getAttribute('data-bu');
+    g.style.display=(selBU.isAll||selBU.vals[bu])?'':'none';
   });
 }
-function filterProducts(prodId){
-  document.querySelectorAll('.prod-card').forEach(function(c){c.style.display=''});
-  if(prodId==='ALL')return;
-  var p=_products.find(function(x){return x.id===prodId});
-  if(!p)return;
+function filterProducts(selProd){
+  if(selProd.isAll){
+    document.querySelectorAll('.prod-card').forEach(function(c){c.style.display=''});
+    return;
+  }
+  var selectedNames={};
+  _products.forEach(function(p){if(selProd.vals[p.id])selectedNames[p.kr]=true});
   document.querySelectorAll('.prod-card').forEach(function(c){
     var name=c.querySelector('.prod-name');
-    if(name&&name.textContent!==p.kr)c.style.display='none';
+    c.style.display=(name&&selectedNames[name.textContent])?'':'none';
   });
 }
-function filterTrend(bu,cnty){
-  var trendCnty=cnty==='ALL'?'Total':cnty;
+function filterTrend(selBU,selProd,selCountry){
+  // Determine country for trend data
+  var trendCnty='Total';
+  if(!selCountry.isAll){
+    var cKeys=Object.keys(selCountry.vals);
+    if(cKeys.length===1)trendCnty=cKeys[0];
+  }
   var container=document.getElementById('trend-container');if(!container)return;
   var BU=['MS','HS','ES'];var html='';var hasTrend=false;
+  // Selected product IDs
+  var selectedProdIds=selProd.isAll?null:selProd.vals;
   BU.forEach(function(b){
-    var prods=_products.filter(function(p){return p.bu===b});if(!prods.length)return;
+    if(!selBU.isAll&&!selBU.vals[b])return;
+    var prods=_products.filter(function(p){return p.bu===b&&(!selectedProdIds||selectedProdIds[p.id])});if(!prods.length)return;
     var rows='';
     prods.forEach(function(p){
       var data=(_weeklyAll[p.id]||{})[trendCnty]||{};
@@ -1006,8 +1119,7 @@ function filterTrend(bu,cnty){
       rows+='<div class="trend-row" style="margin-bottom:24px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><span style="width:3px;height:16px;border-radius:2px;background:'+_RED+';flex-shrink:0"></span><span style="font-size:15px;font-weight:700;color:#1A1A1A">'+p.kr+'</span><span style="font-size:13px;font-weight:700;padding:2px 8px;border-radius:10px;background:'+st.bg+';color:'+st.color+';border:1px solid '+st.border+'">'+st.label+'</span>'+(lgL!=null?'<span style="font-size:13px;font-weight:700;color:#1A1A1A">LG '+lgL.toFixed(1)+'%</span>':'')+(p.compName?'<span style="font-size:13px;color:#94A3B8">vs '+p.compName+' '+(p.compRatio||'')+'%</span>':'')+'</div><div style="background:#fff;border:1px solid #E8EDF2;border-radius:10px;padding:12px 12px 4px 0">'+_svgML(data,_wLabels,900,200)+'</div><div style="padding:6px 4px 0">'+legend+'</div><div style="margin-top:6px;border:1px solid #E8EDF2;border-radius:8px;overflow:hidden"><table style="width:100%;border-collapse:collapse;font-family:'+_FONT+'"><thead>'+thead+'</thead><tbody>'+tbody+'</tbody></table></div></div>';
     });
     if(!rows)return;hasTrend=true;
-    var disp=(bu==='ALL'||bu===b)?'':'display:none';
-    html+='<div class="bu-group" data-bu="'+b+'" style="margin-bottom:20px;'+disp+'"><div class="bu-header"><span class="bu-label">'+b+'</span></div>'+rows+'</div>';
+    html+='<div class="bu-group" data-bu="'+b+'" style="margin-bottom:20px"><div class="bu-header"><span class="bu-label">'+b+'</span></div>'+rows+'</div>';
   });
   if(!hasTrend){container.innerHTML='';return}
   var title=_lang==='en'?'Weekly Competitor Trend':'주간 경쟁사 트렌드';
@@ -1016,80 +1128,71 @@ function filterTrend(bu,cnty){
   container.innerHTML='<div class="section-card"><div class="section-header"><div class="section-title">'+title+cntyLabel+'</div><span class="legend">'+sub+'</span></div><div class="section-body">'+html+'</div></div>';
 }
 
-// ─── Hero / Executive Summary 동적 업데이트 ───
-function updateHero(bu,prodId,region,country){
+// ─── Hero / Executive Summary 동적 업데이트 (체크박스 기반) ───
+function updateHeroFromCheckboxes(){
+  var selBU=getCheckedValues('bu');
+  var selProd=getCheckedValues('product');
+  var selRegion=getCheckedValues('region');
+  var selCountry=getCheckedValues('country');
   var hero=document.getElementById('hero-section');if(!hero)return;
   var ctx=document.getElementById('hero-ctx');
   var allL=_lang==='en'?'All':'전체';
   // Context badges
   var badges='<span class="hero-ctx-badge">'+_meta.period+'</span>';
-  badges+='<span class="hero-ctx-badge">'+(bu==='ALL'?(allL+(_lang==='en'?' Divisions':' 본부')):bu)+'</span>';
-  var prodName=allL+(_lang==='en'?' Products':' 제품');
-  if(prodId!=='ALL'){var pObj=_products.find(function(x){return x.id===prodId});if(pObj)prodName=pObj.kr}
-  badges+='<span class="hero-ctx-badge">'+prodName+'</span>';
-  var regionLabel='';
-  if(region!=='ALL')regionLabel=region+' ('+(_REGION_LABELS[region]||'')+')';
-  if(country!=='ALL')badges+='<span class="hero-ctx-badge">'+country+'</span>';
-  else if(region!=='ALL')badges+='<span class="hero-ctx-badge">'+regionLabel+'</span>';
-  else badges+='<span class="hero-ctx-badge">'+(allL+(_lang==='en'?' Countries':' 국가'))+'</span>';
+  var buLabel=selBU.isAll?(allL+(_lang==='en'?' Divisions':' 본부')):Object.keys(selBU.vals).join(', ');
+  badges+='<span class="hero-ctx-badge">'+buLabel+'</span>';
+  var prodLabel=selProd.isAll?(allL+(_lang==='en'?' Products':' 제품')):_products.filter(function(p){return selProd.vals[p.id]}).map(function(p){return p.kr}).join(', ');
+  badges+='<span class="hero-ctx-badge">'+prodLabel+'</span>';
+  var cntyLabel=selCountry.isAll?(allL+(_lang==='en'?' Countries':' 국가')):Object.keys(selCountry.vals).join(', ');
+  badges+='<span class="hero-ctx-badge">'+cntyLabel+'</span>';
   if(ctx)ctx.innerHTML=badges;
   // Calculate filtered scores
-  var result=calcFilteredData(bu,prodId,region,country);
+  var result=calcFilteredDataCB(selBU,selProd,selCountry);
   if(!result)return;
   var sc=result.score;var comp=result.vsComp;var compName=result.compName||'Competitor';
   var d=+(sc-(result.prev||sc)).toFixed(1);
   var gap=+(sc-comp).toFixed(1);
   var dArrow=d>0?'▲':d<0?'▼':'─';
   var dColor=d>0?'#22C55E':d<0?'#EF4444':'#94A3B8';
-  // Update score area
   var scoreRow=hero.querySelector('.hero-score-row');
   if(scoreRow)scoreRow.innerHTML='<span class="hero-score">'+sc.toFixed(1)+'</span><span class="hero-pct">%</span><span class="hero-delta" style="color:'+dColor+'">'+dArrow+' '+Math.abs(d).toFixed(1)+'%p</span><span class="hero-mom">MoM</span>';
-  // Update gauge
   var tracks=hero.querySelectorAll('.hero-gauge-track');
   if(tracks[0]){var bar=tracks[0].querySelector('.hero-gauge-bar');if(bar)bar.style.width=Math.min(sc,100)+'%'}
   if(tracks[1]){var bar2=tracks[1].querySelector('.hero-gauge-bar');if(bar2)bar2.style.width=Math.min(comp,100)+'%'}
-  // Update legend
   var legend=hero.querySelector('.hero-legend');
   if(legend)legend.innerHTML='<span><i style="background:'+_RED+'"></i> LG '+sc.toFixed(1)+'%</span>'+(comp>0?'<span><i style="background:'+_COMP+'"></i> '+compName+' '+comp.toFixed(1)+'%</span>':'')+'<span><i style="background:#475569"></i> prev '+(result.prev||sc).toFixed(1)+'%</span>';
-  // Update competitor panel
   var compDiv=hero.querySelector('.hero-comp');
   if(compDiv&&comp>0){compDiv.innerHTML='<span class="hero-comp-label">'+compName.toUpperCase()+'</span> <span class="hero-comp-score">'+comp.toFixed(1)+'%</span><span class="hero-comp-gap" style="color:'+(gap>=0?'#22C55E':'#EF4444')+'">Gap '+(gap>=0?'+':'')+gap.toFixed(1)+'%p</span>'}
 }
-function calcFilteredData(bu,prodId,region,country){
-  // Specific country selected → use productsCnty
-  if(country!=='ALL'){
-    var cntyData=_productsCnty.filter(function(r){return r.country===country});
-    if(bu!=='ALL')cntyData=cntyData.filter(function(r){return _products.some(function(p){return p.kr===r.product&&p.bu===bu})});
-    if(prodId!=='ALL'){var pObj=_products.find(function(p){return p.id===prodId});if(pObj)cntyData=cntyData.filter(function(r){return r.product===pObj.kr})}
+function calcFilteredDataCB(selBU,selProd,selCountry){
+  // Get selected product names
+  var selectedProdNames={};
+  _products.forEach(function(p){if(selProd.isAll||selProd.vals[p.id])selectedProdNames[p.kr]=true});
+  // If specific countries selected → use productsCnty
+  if(!selCountry.isAll){
+    var cntyData=_productsCnty.filter(function(r){return selCountry.vals[r.country]});
+    if(!selBU.isAll)cntyData=cntyData.filter(function(r){return _products.some(function(p){return p.kr===r.product&&selBU.vals[p.bu]})});
+    if(!selProd.isAll)cntyData=cntyData.filter(function(r){return selectedProdNames[r.product]});
     if(!cntyData.length)return _total;
     var lgAvg=cntyData.reduce(function(s,r){return s+r.score},0)/cntyData.length;
     var compAvg=cntyData.reduce(function(s,r){return s+r.compScore},0)/cntyData.length;
     return{score:+lgAvg.toFixed(1),prev:+lgAvg.toFixed(1),vsComp:+compAvg.toFixed(1),compName:cntyData[0].compName||''}
   }
-  // Region selected → aggregate countries in region
-  if(region!=='ALL'){
-    var rCountries=_REGIONS[region]||[];
-    var rData=_productsCnty.filter(function(r){return rCountries.indexOf(r.country)>=0});
-    if(bu!=='ALL')rData=rData.filter(function(r){return _products.some(function(p){return p.kr===r.product&&p.bu===bu})});
-    if(prodId!=='ALL'){var pObj2=_products.find(function(p){return p.id===prodId});if(pObj2)rData=rData.filter(function(r){return r.product===pObj2.kr})}
-    if(!rData.length)return _total;
-    var lgAvg2=rData.reduce(function(s,r){return s+r.score},0)/rData.length;
-    var compAvg2=rData.reduce(function(s,r){return s+r.compScore},0)/rData.length;
-    return{score:+lgAvg2.toFixed(1),prev:+lgAvg2.toFixed(1),vsComp:+compAvg2.toFixed(1),compName:rData[0].compName||''}
-  }
-  // Specific product
-  if(prodId!=='ALL'){
-    var pObj3=_products.find(function(p){return p.id===prodId});
-    if(pObj3)return{score:pObj3.score,prev:pObj3.prev,vsComp:pObj3.vsComp,compName:pObj3.compName};
-    return _total;
+  // Specific products
+  if(!selProd.isAll){
+    var fProds=_products.filter(function(p){return selProd.vals[p.id]&&(selBU.isAll||selBU.vals[p.bu])});
+    if(!fProds.length)return _total;
+    var lgA=fProds.reduce(function(s,p){return s+p.score},0)/fProds.length;
+    var cA=fProds.reduce(function(s,p){return s+p.vsComp},0)/fProds.length;
+    return{score:+lgA.toFixed(1),prev:+lgA.toFixed(1),vsComp:+cA.toFixed(1),compName:fProds.length===1?fProds[0].compName:''}
   }
   // Specific BU
-  if(bu!=='ALL'){
-    var buProds=_products.filter(function(p){return p.bu===bu});
+  if(!selBU.isAll){
+    var buProds=_products.filter(function(p){return selBU.vals[p.bu]});
     if(!buProds.length)return _total;
-    var lgA=buProds.reduce(function(s,p){return s+p.score},0)/buProds.length;
-    var cA=buProds.reduce(function(s,p){return s+p.vsComp},0)/buProds.length;
-    return{score:+lgA.toFixed(1),prev:+lgA.toFixed(1),vsComp:+cA.toFixed(1),compName:''}
+    var lgA2=buProds.reduce(function(s,p){return s+p.score},0)/buProds.length;
+    var cA2=buProds.reduce(function(s,p){return s+p.vsComp},0)/buProds.length;
+    return{score:+lgA2.toFixed(1),prev:+lgA2.toFixed(1),vsComp:+cA2.toFixed(1),compName:''}
   }
   return _total;
 }

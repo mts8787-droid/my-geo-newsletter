@@ -90,6 +90,12 @@ function mdBold(text) {
     .replace(/\n/g, '<br>')
 }
 
+// ─── 삼성 → SS 치환 ─────────────────────────────────────────────────────────
+function ssName(name) {
+  if (!name) return name
+  return name.replace(/삼성전자/g, 'SS').replace(/삼성/g, 'SS').replace(/Samsung/gi, 'SS')
+}
+
 function delta(score, prev) { return +(score - prev).toFixed(1) }
 
 function deltaHtml(d, size = 15, mom = false) {
@@ -214,7 +220,7 @@ function productCardHtml(p, globalMax, globalMin, lang = 'ko', opts = {}) {
         <td style="padding:0 13px 12px;">
           <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#F8FAFC;border-radius:6px;">
             <tr>
-              <td style="padding:6px 8px;font-size:13px;color:#1A1A1A;">${lang === 'en' ? `${t.vsComp} ${p.compName}` : `${p.compName} ${t.vsComp}`}</td>
+              <td style="padding:6px 8px;font-size:13px;color:#1A1A1A;">${lang === 'en' ? `${t.vsComp} ${ssName(p.compName)}` : `${ssName(p.compName)} ${t.vsComp}`}</td>
               <td align="right" style="padding:6px 8px;font-size:13px;font-weight:700;color:${(p.compRatio || 0) >= 100 ? '#15803D' : (p.compRatio || 0) >= 80 ? '#E8910C' : '#BE123C'};">
                 ${p.compRatio || Math.round(p.vsComp > 0 ? (p.score / p.vsComp) * 100 : 100)}%
               </td>
@@ -348,7 +354,7 @@ function countryProductSectionHtml(productName, rows, lang) {
         <tr><td height="${barH}" style="font-size:0;line-height:0;"><table border="0" cellpadding="0" cellspacing="0" align="center"><tr><td width="26" height="${barH}" style="background:${barColor};border-radius:3px 3px 0 0;font-size:0;line-height:0;">&nbsp;</td></tr></table></td></tr>
         <tr><td style="font-size:11px;font-weight:800;color:${barColor};font-family:${EM_FONT};padding-top:3px;white-space:nowrap;overflow:hidden;">${r.score.toFixed(1)}</td></tr>
         <tr><td style="font-size:10px;color:#475569;font-family:${EM_FONT};padding-top:2px;white-space:nowrap;overflow:hidden;">${r.country}</td></tr>
-        <tr><td style="font-size:9px;color:#94A3B8;font-family:${EM_FONT};padding-top:2px;white-space:nowrap;overflow:hidden;">${r.compName} ${r.compScore.toFixed(1)}</td></tr>
+        <tr><td style="font-size:9px;color:#94A3B8;font-family:${EM_FONT};padding-top:2px;white-space:nowrap;overflow:hidden;">${ssName(r.compName)} ${r.compScore.toFixed(1)}</td></tr>
         <tr><td style="font-size:9px;font-weight:700;color:${gapColor};font-family:${EM_FONT};padding-top:1px;white-space:nowrap;overflow:hidden;">${gapStr}</td></tr>
       </table>
     </td>`
@@ -494,18 +500,8 @@ function citationDomainSectionHtml(citationsCnty, meta, lang, citations) {
   const ttlRows = citationsCnty.filter(r => r.cnty === 'TTL').sort((a, b) => a.rank - b.rank).slice(0, domTopN)
   if (!ttlRows.length) return { html: '', css: '' }
 
-  // 국가 목록 수집
-  const cntyMap = new Map()
-  citationsCnty.forEach(row => {
-    if (row.cnty === 'TTL') return
-    if (!cntyMap.has(row.cnty)) cntyMap.set(row.cnty, [])
-    cntyMap.get(row.cnty).push(row)
-  })
-  const cntyKeys = [...cntyMap.keys()]
-  const allTabs = ['TTL', ...cntyKeys]
-
-  // 국가 탭이 없으면 TTL만 표시
-  if (cntyKeys.length === 0) {
+  // 이메일은 동적 컨텐츠 불가 → TTL만 표시
+  {
     const ttlHtml = citationDomainCntyRowsHtml(ttlRows, domTopN)
     return { css: '', html: `
               <tr>
@@ -533,83 +529,6 @@ function citationDomainSectionHtml(citationsCnty, meta, lang, citations) {
                 </td>
               </tr>` }
   }
-
-  // ── CSS-only 탭 전환 (radio input + :checked) ──
-  const uid = 'cd' + Math.random().toString(36).slice(2, 6)
-  const safe = c => c.replace(/[^a-zA-Z0-9]/g, '')
-
-  // CSS: 기본 숨김 + 선택된 탭만 표시
-  const hideAll = `.${uid}-body > div { display:none; }`
-  const tabHighlights = allTabs.map(c => {
-    const rid = `${uid}-${safe(c)}`
-    return `#${rid}:checked ~ .${uid}-tabs label[for="${rid}"]{background:${EM_RED};color:#fff}`
-  }).join('\n')
-  const panelShows = allTabs.map(c => {
-    const rid = `${uid}-${safe(c)}`
-    return `#${rid}:checked ~ .${uid}-body .${uid}-p-${safe(c)}{display:block}`
-  }).join('\n')
-  const cssRules = `${hideAll}\n${tabHighlights}\n${panelShows}`
-
-  // hidden radio inputs (형제 관계 유지를 위해 container div 직접 자식)
-  const radioInputs = allTabs.map((c, i) => {
-    const rid = `${uid}-${safe(c)}`
-    return `<input type="radio" name="${uid}" id="${rid}"${i === 0 ? ' checked' : ''} style="position:absolute;opacity:0;pointer-events:none;">`
-  }).join('\n')
-
-  // tab labels
-  const tabLabels = allTabs.map(c => {
-    const rid = `${uid}-${safe(c)}`
-    return `<label for="${rid}" style="padding:4px 12px;border-radius:14px;font-size:11px;font-weight:700;font-family:${EM_FONT};cursor:pointer;background:#F1F5F9;color:#64748B;display:inline-block;margin:0 2px 4px 0;">${c}</label>`
-  }).join('\n')
-
-  // content panels (NO inline display:none — CSS에서 제어)
-  const panels = allTabs.map(c => {
-    const rows = c === 'TTL' ? ttlRows : (cntyMap.get(c) || []).sort((a, b) => a.rank - b.rank)
-    const rowsHtml = citationDomainCntyRowsHtml(rows, domTopN)
-    return `<div class="${uid}-p-${safe(c)}">
-              <table border="0" cellpadding="0" cellspacing="0" width="100%">${rowsHtml}</table>
-            </div>`
-  }).join('\n')
-
-  const sectionHtml = `
-              <!-- ══ 도메인별 Citation (국가별 탭) ══ -->
-              <tr>
-                <td style="padding-bottom:28px;">
-                  <div style="background:#FFFFFF;border-radius:16px;border:2px solid #E8EDF2;position:relative;">
-${radioInputs}
-                    <div style="padding:22px 28px 18px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;border-radius:16px 16px 0 0;">
-                      <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                        <tr>
-                          <td style="vertical-align:middle;">
-                            <table border="0" cellpadding="0" cellspacing="0">
-                              <tr>
-                                <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
-                                <td style="padding-left:8px;font-size:17px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${t.citationDomainTitle}</td>
-                              </tr>
-                            </table>
-                          </td>
-                          <td align="right" style="vertical-align:middle;">
-                            <table border="0" cellpadding="0" cellspacing="0" align="right"><tr>
-                              <td width="14" height="5" style="background:${EM_RED};border-radius:3px;font-size:0;">&nbsp;</td>
-                              <td style="padding-left:4px;font-size:11px;color:#94A3B8;font-family:${EM_FONT};">Top ${domTopN} Domains</td>
-                            </tr></table>
-                          </td>
-                        </tr>
-                      </table>
-                    </div>
-                    <div class="${uid}-tabs" style="padding:12px 28px 4px;display:flex;flex-wrap:wrap;gap:0;">
-${tabLabels}
-                    </div>
-                    <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                      ${insightBlockHtml(meta.citDomainInsight, meta.showCitDomainInsight, meta.citDomainHowToRead, meta.showCitDomainHowToRead, lang)}
-                    </table>
-                    <div class="${uid}-body" style="padding:20px 28px 24px;">
-${panels}
-                    </div>
-                  </div>
-                </td>
-              </tr>`
-  return { html: sectionHtml, css: cssRules }
 }
 
 // ─── 국가별 Citation 도메인 (세로 막대 차트) ─────────────────────────────────
@@ -1112,7 +1031,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                                 <td width="10" height="10" style="background:${EM_RED};border-radius:5px;font-size:0;">&nbsp;</td>
                                 <td style="padding-left:5px;font-size:11px;color:#94A3B8;font-family:${EM_FONT};">LG ${total.score}%</td>
                                 ${compAvg > 0 ? `<td style="padding-left:14px;" width="10" height="10"><table border="0" cellpadding="0" cellspacing="0"><tr><td width="10" height="10" style="background:#3B82F6;border-radius:5px;font-size:0;">&nbsp;</td></tr></table></td>
-                                <td style="padding-left:5px;font-size:11px;color:#94A3B8;font-family:${EM_FONT};">Samsung ${compAvg}%</td>` : ''}
+                                <td style="padding-left:5px;font-size:11px;color:#94A3B8;font-family:${EM_FONT};">SS ${compAvg}%</td>` : ''}
                                 <td style="padding-left:14px;" width="2" height="10"><table border="0" cellpadding="0" cellspacing="0"><tr><td width="2" height="10" style="background:#475569;border-radius:2px;font-size:0;">&nbsp;</td></tr></table></td>
                                 <td style="padding-left:5px;font-size:11px;color:#94A3B8;font-family:${EM_FONT};">prev ${total.prev}%</td>
                               </tr></table>
