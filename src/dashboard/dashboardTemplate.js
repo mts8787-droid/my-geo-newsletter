@@ -515,6 +515,7 @@ function citDomainSectionHtml(citationsCnty, meta, t, citations, lang) {
       <span class="legend">Top ${topN} Domains</span>
     </div>
     ${insightHtml(meta.citDomainInsight, meta.showCitDomainInsight, meta.citDomainHowToRead, meta.showCitDomainHowToRead, t)}
+    ${insightHtml(meta.citCntyInsight, meta.showCitCntyInsight, meta.citCntyHowToRead, meta.showCitCntyHowToRead, t)}
     <div class="cnty-filters"><div class="filter-group" id="cit-cnty-chips"><span class="filter-label">${lang === 'ko' ? '국가' : 'Country'}</span>${chips}</div></div>
     <div class="section-body">${panels}</div>
   </div>`

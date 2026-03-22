@@ -833,8 +833,11 @@ function dotcomSectionHtml(dotcom, meta, lang = 'ko') {
 export function generateEmailHTML(meta, total, products, citations, dotcom = {}, lang = 'ko', productsCnty = [], citationsCnty = [], options = {}) {
   const { containerWidth = 820, showTrendTabs = false } = options
   const t = T[lang] || T.ko
+  total = total || { score: 0, prev: 0, vsComp: 0, rank: 1, totalBrands: 12 }
+  products = products || []
+  citations = citations || []
   const totalDelta = delta(total.score, total.prev)
-  const scoreBarW  = Math.round(total.score)
+  const scoreBarW  = Math.round(total.score || 0)
 
   // 삼성전자 전체 GEO 점수 (total 시트의 vsComp)
   const compAvg = total.vsComp || 0
@@ -859,7 +862,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
   }).join('')
 
   const citTopN = meta.citationTopN || 10
-  const citationList = citations.slice(0, citTopN)
+  const citationList = (citations || []).slice(0, citTopN)
   const citMaxScore = citationList.length ? Math.max(...citationList.map(c => c.score)) : 100
   const citationRows = citationList.map((c, i) => citationRowHtml(c, i === citationList.length - 1, citMaxScore)).join('')
 
