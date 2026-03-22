@@ -620,8 +620,17 @@ function parseCitTouchPoints(rows) {
     }
   }
 
+  // 월 라벨 추출
+  const monthLabels = []
+  for (let i = dataStartCol; i < header.length; i++) {
+    const h = String(header[i] || '').trim()
+    if (h) monthLabels.push({ col: i, label: h })
+  }
+
   const data = rows.slice(startRow).filter(r => r.some(c => c != null && String(c).trim()))
   const citations = []
+  // 월간 트렌드 데이터: { channelName: { month1: score, month2: score, ... } }
+  const citTouchPointsTrend = {}
 
   data.forEach(r => {
     const country = String(r[countryCol] || '').replace(/[()]/g, '').trim().toUpperCase()
@@ -635,6 +644,16 @@ function parseCitTouchPoints(rows) {
       if (val > 0) { score = val; break }
     }
     if (score > 0) citations.push({ source: channel, category: '', score, delta: 0, ratio: 0 })
+
+    // 모든 월별 데이터 수집 (트렌드용)
+    const monthData = {}
+    monthLabels.forEach(({ col, label }) => {
+      const val = numVal(r[col])
+      if (val > 0) monthData[label] = val
+    })
+    if (Object.keys(monthData).length > 0) {
+      citTouchPointsTrend[channel] = monthData
+    }
   })
 
   const total = citations.reduce((s, c) => s + c.score, 0)
@@ -644,7 +663,18 @@ function parseCitTouchPoints(rows) {
     c.ratio = total > 0 ? +((c.score / total) * 100).toFixed(1) : 0
   })
 
-  return citations.length > 0 ? { citations } : {}
+  // 유효한 월 라벨만 필터링 (데이터가 있는 월)
+  const validMonths = monthLabels.map(m => m.label).filter(label =>
+    Object.values(citTouchPointsTrend).some(d => d[label] > 0)
+  )
+
+  const result = {}
+  if (citations.length > 0) result.citations = citations
+  if (Object.keys(citTouchPointsTrend).length > 0) {
+    result.citTouchPointsTrend = citTouchPointsTrend
+    result.citTrendMonths = validMonths
+  }
+  return result
 }
 
 function parseCitDomain(rows) {
@@ -659,17 +689,34 @@ function parseCitDomain(rows) {
     if (!c0 && (c1.includes('.') || c1.includes('[') || COUNTRIES.includes(c1.toUpperCase()))) { off = 1; break }
   }
 
-  // 헤더/설명 행 건너뛰기
+  // 헤더 행 찾기 (월 라벨 추출용)
+  let headerRow = null
   let startIdx = 0
   for (let i = 0; i < Math.min(rows.length, 10); i++) {
     const cv = String(rows[i]?.[off] || '').trim()
+    if (/domain|domian/i.test(cv)) {
+      headerRow = rows[i]
+      startIdx = i + 1
+      break
+    }
     if (cv.includes('.') && cv.length > 3) { startIdx = i; break }
-    if (/domain|domian/i.test(cv) || cv === '' || cv.startsWith('[') || cv.startsWith('※')) {
+    if (cv === '' || cv.startsWith('[') || cv.startsWith('※')) {
       startIdx = i + 1
     }
   }
 
+  // 월 라벨 추출 (헤더에서)
+  const domainMonthLabels = []
+  if (headerRow) {
+    for (let i = off + 2; i < headerRow.length; i++) {
+      const h = String(headerRow[i] || '').trim()
+      if (h && !/domain|domian|type/i.test(h)) domainMonthLabels.push({ col: i, label: h })
+    }
+  }
+
   const result = []
+  // 월간 트렌드: { "cnty|domain": { month1: val, month2: val } }
+  const citDomainTrend = {}
   let currentCnty = 'TTL'
   let rank = 0
 
@@ -702,6 +749,20 @@ function parseCitDomain(rows) {
       if (!isNaN(val) && val > 0) { citations = val; break }
     }
 
+    // 모든 월별 데이터 수집 (트렌드용)
+    if (domainMonthLabels.length > 0) {
+      const monthData = {}
+      domainMonthLabels.forEach(({ col, label }) => {
+        const raw = String(r[col] || '').replace(/,/g, '').trim()
+        const val = parseFloat(raw)
+        if (!isNaN(val) && val > 0) monthData[label] = val
+      })
+      if (Object.keys(monthData).length > 0) {
+        const key = `${currentCnty}|${domain}`
+        citDomainTrend[key] = { cnty: currentCnty, domain, type, months: monthData }
+      }
+    }
+
     if (citations > 0) {
       rank++
       result.push({ cnty: currentCnty, rank, domain, type, citations })
@@ -709,7 +770,18 @@ function parseCitDomain(rows) {
   }
 
   console.log('[parseCitDomain] result count:', result.length, '| countries:', [...new Set(result.map(r => r.cnty))])
-  return result.length > 0 ? { citationsCnty: result } : {}
+
+  const output = {}
+  if (result.length > 0) output.citationsCnty = result
+  if (Object.keys(citDomainTrend).length > 0) {
+    output.citDomainTrend = citDomainTrend
+    // 유효한 월 라벨
+    const validMonths = domainMonthLabels.map(m => m.label).filter(label =>
+      Object.values(citDomainTrend).some(d => d.months[label] > 0)
+    )
+    output.citDomainMonths = validMonths
+  }
+  return output
 }
 
 // ─── 메인 파서 라우터 ──────────────────────────────────────────────────────────

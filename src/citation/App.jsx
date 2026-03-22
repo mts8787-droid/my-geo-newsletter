@@ -11,10 +11,9 @@ const MODE = 'citation'
 const STORAGE_KEY = 'geo-citation-cache'
 
 // ─── Citation 대시보드 미리보기 ─────────────────────────────────────────────
-function CitationPreview({ meta, citations, dotcom, citationsCnty = [], lang = 'ko' }) {
+function CitationPreview({ meta, citations, dotcom, citationsCnty = [], lang = 'ko', citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths }) {
   const iframeRef = useRef(null)
-  // Citation 전용: total/products/productsCnty는 빈값으로 전달
-  const html = generateCitationHTML(meta, null, [], citations, dotcom, lang, [], citationsCnty, null, {})
+  const html = generateCitationHTML(meta, null, [], citations, dotcom, lang, [], citationsCnty, { citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths })
 
   React.useEffect(() => {
     const iframe = iframeRef.current
@@ -43,6 +42,10 @@ export default function App() {
   const [citations,     setCitations]     = useState(cache?.citations ?? INIT_CITATIONS)
   const [citationsCnty, setCitationsCnty] = useState(cache?.citationsCnty ?? INIT_CITATIONS_CNTY)
   const [dotcom,        setDotcom]        = useState((cache?.dotcom && cache.dotcom.lg) ? cache.dotcom : INIT_DOTCOM)
+  const [citTouchPointsTrend, setCitTouchPointsTrend] = useState(cache?.citTouchPointsTrend ?? {})
+  const [citTrendMonths, setCitTrendMonths] = useState(cache?.citTrendMonths ?? [])
+  const [citDomainTrend, setCitDomainTrend] = useState(cache?.citDomainTrend ?? {})
+  const [citDomainMonths, setCitDomainMonths] = useState(cache?.citDomainMonths ?? [])
   const [previewLang,   setPreviewLang]   = useState('ko')
   const [snapshots,     setSnapshots]     = useState([])
   const [snapName,      setSnapName]      = useState('')
@@ -70,14 +73,18 @@ export default function App() {
       if (d.citations)     setCitations(d.citations)
       if (d.dotcom)        setDotcom(prev => ({ ...prev, ...d.dotcom }))
       if (d.citationsCnty) setCitationsCnty(d.citationsCnty)
+      if (d.citTouchPointsTrend) setCitTouchPointsTrend(d.citTouchPointsTrend)
+      if (d.citTrendMonths) setCitTrendMonths(d.citTrendMonths)
+      if (d.citDomainTrend) setCitDomainTrend(d.citDomainTrend)
+      if (d.citDomainMonths) setCitDomainMonths(d.citDomainMonths)
     })
     return () => { cancelled = true }
   }, [])
 
   // 캐시 저장
   useEffect(() => {
-    saveCache(STORAGE_KEY, { metaKo, metaEn, citations, citationsCnty, dotcom })
-  }, [metaKo, metaEn, citations, citationsCnty, dotcom])
+    saveCache(STORAGE_KEY, { metaKo, metaEn, citations, citationsCnty, dotcom, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths })
+  }, [metaKo, metaEn, citations, citationsCnty, dotcom, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths])
 
   // 스냅샷 관리
   async function handleSnapOverwrite() {
@@ -120,6 +127,8 @@ export default function App() {
           citations={citations} setCitations={setCitations}
           citationsCnty={citationsCnty} setCitationsCnty={setCitationsCnty}
           dotcom={dotcom} setDotcom={setDotcom}
+          setCitTouchPointsTrend={setCitTouchPointsTrend} setCitTrendMonths={setCitTrendMonths}
+          setCitDomainTrend={setCitDomainTrend} setCitDomainMonths={setCitDomainMonths}
           resolved={resolved}
           previewLang={previewLang} setPreviewLang={setPreviewLang}
           generateHTML={generateCitationHTML}
@@ -218,7 +227,7 @@ export default function App() {
 
         {/* 컨텐츠 영역 */}
         <div style={{ flex: 1, overflow: 'hidden' }}>
-          <CitationPreview meta={meta} citations={resolved.citations} dotcom={dotcom} citationsCnty={resolved.citationsCnty} lang={previewLang} />
+          <CitationPreview meta={meta} citations={resolved.citations} dotcom={dotcom} citationsCnty={resolved.citationsCnty} lang={previewLang} citTouchPointsTrend={citTouchPointsTrend} citTrendMonths={citTrendMonths} citDomainTrend={citDomainTrend} citDomainMonths={citDomainMonths} />
         </div>
         <div style={{ height: 28, borderTop: '1px solid #1E293B', background: 'rgba(15,23,42,0.95)',
           display: 'flex', alignItems: 'center', justifyContent: 'flex-end', padding: '0 16px', flexShrink: 0 }}>

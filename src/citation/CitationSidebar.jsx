@@ -11,6 +11,7 @@ import CitationConditionPanel from '../shared/CitationConditionPanel.jsx'
 export default function CitationSidebar({
   mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn,
   citations, setCitations, citationsCnty, setCitationsCnty, dotcom, setDotcom,
+  setCitTouchPointsTrend, setCitTrendMonths, setCitDomainTrend, setCitDomainMonths,
   resolved, previewLang, setPreviewLang, generateHTML,
 }) {
   const [gsUrl,     setGsUrl]     = useState('https://docs.google.com/spreadsheets/d/1v4V7ZsHNFXXqbAWqvyVkgNIeXx188hSZ9l7FDsRYy2Y/edit')
@@ -45,6 +46,10 @@ export default function CitationSidebar({
       if (parsed.citations)     setCitations(parsed.citations)
       if (parsed.dotcom)        setDotcom(d => ({ ...d, ...parsed.dotcom }))
       if (parsed.citationsCnty) setCitationsCnty(parsed.citationsCnty)
+      if (parsed.citTouchPointsTrend) setCitTouchPointsTrend(parsed.citTouchPointsTrend)
+      if (parsed.citTrendMonths) setCitTrendMonths(parsed.citTrendMonths)
+      if (parsed.citDomainTrend) setCitDomainTrend(parsed.citDomainTrend)
+      if (parsed.citDomainMonths) setCitDomainMonths(parsed.citDomainMonths)
 
       // 서버에 동기화 데이터 저장
       setTimeout(() => {
@@ -53,6 +58,10 @@ export default function CitationSidebar({
           citations: parsed.citations || null,
           dotcom: parsed.dotcom || null,
           citationsCnty: parsed.citationsCnty || null,
+          citTouchPointsTrend: parsed.citTouchPointsTrend || null,
+          citTrendMonths: parsed.citTrendMonths || null,
+          citDomainTrend: parsed.citDomainTrend || null,
+          citDomainMonths: parsed.citDomainMonths || null,
         })
       }, 100)
 
