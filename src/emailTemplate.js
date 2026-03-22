@@ -485,13 +485,14 @@ function citationDomainCntyRowsHtml(cntyRows, domTopN) {
 }
 
 // ─── 도메인별 Citation (TTL + 국가별 CSS-only 탭) ───────────────────────────
+// returns { html, css } — css는 <head>에 삽입
 function citationDomainSectionHtml(citationsCnty, meta, lang, citations) {
-  if (!citationsCnty || !citationsCnty.length) return ''
+  if (!citationsCnty || !citationsCnty.length) return { html: '', css: '' }
   const t = T[lang] || T.ko
 
   const domTopN = meta.citDomainTopN || 10
   const ttlRows = citationsCnty.filter(r => r.cnty === 'TTL').sort((a, b) => a.rank - b.rank).slice(0, domTopN)
-  if (!ttlRows.length) return ''
+  if (!ttlRows.length) return { html: '', css: '' }
 
   // 국가 목록 수집
   const cntyMap = new Map()
@@ -506,7 +507,7 @@ function citationDomainSectionHtml(citationsCnty, meta, lang, citations) {
   // 국가 탭이 없으면 TTL만 표시
   if (cntyKeys.length === 0) {
     const ttlHtml = citationDomainCntyRowsHtml(ttlRows, domTopN)
-    return `
+    return { css: '', html: `
               <tr>
                 <td style="padding-bottom:28px;">
                   <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFFFFF;border-radius:16px;border:2px solid #E8EDF2;">
@@ -530,7 +531,7 @@ function citationDomainSectionHtml(citationsCnty, meta, lang, citations) {
                     <tr><td style="padding:20px 28px;"><table border="0" cellpadding="0" cellspacing="0" width="100%">${ttlHtml}</table></td></tr>
                   </table>
                 </td>
-              </tr>`
+              </tr>` }
   }
 
   // ── CSS-only 탭 전환 (radio input + :checked) ──
@@ -570,11 +571,10 @@ function citationDomainSectionHtml(citationsCnty, meta, lang, citations) {
             </div>`
   }).join('\n')
 
-  return `
+  const sectionHtml = `
               <!-- ══ 도메인별 Citation (국가별 탭) ══ -->
               <tr>
                 <td style="padding-bottom:28px;">
-                  <style>${cssRules}</style>
                   <div style="background:#FFFFFF;border-radius:16px;border:2px solid #E8EDF2;position:relative;">
 ${radioInputs}
                     <div style="padding:22px 28px 18px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;border-radius:16px 16px 0 0;">
@@ -609,6 +609,7 @@ ${panels}
                   </div>
                 </td>
               </tr>`
+  return { html: sectionHtml, css: cssRules }
 }
 
 // ─── 국가별 Citation 도메인 (세로 막대 차트) ─────────────────────────────────
@@ -943,6 +944,11 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
   const citMaxScore = citationList.length ? Math.max(...citationList.map(c => c.score)) : 100
   const citationRows = citationList.map((c, i) => citationRowHtml(c, i === citationList.length - 1, citMaxScore)).join('')
 
+  // 도메인별 Citation 섹션 (CSS는 <head>에 삽입)
+  const citDomainResult = meta.showCitDomain !== false
+    ? citationDomainSectionHtml(citationsCnty, meta, lang, citations)
+    : { html: '', css: '' }
+
   return `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -956,6 +962,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
     td { font-family: 'LG Smart', Arial, sans-serif; }
   </style>
   <![endif]-->
+  ${citDomainResult.css ? `<style type="text/css">${citDomainResult.css}</style>` : ''}
 </head>
 <body style="margin:0;padding:0;background-color:#F1F5F9;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;">
 
@@ -1214,7 +1221,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                 </td>
               </tr>` : ''}
 
-              ${meta.showCitDomain !== false ? citationDomainSectionHtml(citationsCnty, meta, lang, citations) : ''}
+              ${citDomainResult.html}
 
               ${meta.showCitCnty !== false ? citationCntySectionHtml(citationsCnty, meta, lang) : ''}
 
