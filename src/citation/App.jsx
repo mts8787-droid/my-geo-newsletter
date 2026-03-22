@@ -69,7 +69,14 @@ export default function App() {
     let cancelled = false
     fetchSyncData(MODE).then(d => {
       if (cancelled || !d) return
-      if (d.meta)          setMetaKo(m => ({ ...m, ...d.meta }))
+      if (d.meta) {
+        const citMeta = { ...d.meta }
+        delete citMeta.showCitations
+        delete citMeta.showCitDomain
+        delete citMeta.showCitCnty
+        delete citMeta.showDotcom
+        setMetaKo(m => ({ ...m, ...citMeta }))
+      }
       if (d.citations)     setCitations(d.citations)
       if (d.dotcom)        setDotcom(prev => ({ ...prev, ...d.dotcom }))
       if (d.citationsCnty) setCitationsCnty(d.citationsCnty)

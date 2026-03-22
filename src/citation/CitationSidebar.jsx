@@ -43,7 +43,23 @@ export default function CitationSidebar({
     setGsSyncing(true); setGsStatus(null); setGsMsg('')
     try {
       const parsed = await syncFromGoogleSheets(sheetId, msg => setGsMsg(msg))
-      if (parsed.meta)          setMetaKo(m => ({ ...m, ...parsed.meta }))
+      console.log('[Citation Sync] parsed keys:', Object.keys(parsed))
+      console.log('[Citation Sync] citations count:', parsed.citations?.length ?? 0)
+      console.log('[Citation Sync] citationsCnty count:', parsed.citationsCnty?.length ?? 0)
+      console.log('[Citation Sync] dotcom:', parsed.dotcom ? Object.keys(parsed.dotcom) : 'none')
+      console.log('[Citation Sync] citTouchPointsTrend:', parsed.citTouchPointsTrend ? Object.keys(parsed.citTouchPointsTrend) : 'none')
+      console.log('[Citation Sync] citDomainTrend:', parsed.citDomainTrend ? Object.keys(parsed.citDomainTrend).length + ' entries' : 'none')
+
+      if (parsed.meta) {
+        // Citation 대시보드에서는 Citation 관련 섹션을 항상 표시
+        // (meta 시트에서 showCitations=N 등으로 설정되어 있어도 무시)
+        const citMeta = { ...parsed.meta }
+        delete citMeta.showCitations
+        delete citMeta.showCitDomain
+        delete citMeta.showCitCnty
+        delete citMeta.showDotcom
+        setMetaKo(m => ({ ...m, ...citMeta }))
+      }
       if (parsed.citations)     setCitations(parsed.citations)
       if (parsed.dotcom)        setDotcom(d => ({ ...d, ...parsed.dotcom }))
       if (parsed.citationsCnty) setCitationsCnty(parsed.citationsCnty)
@@ -51,6 +67,14 @@ export default function CitationSidebar({
       if (parsed.citTrendMonths) setCitTrendMonths(parsed.citTrendMonths)
       if (parsed.citDomainTrend) setCitDomainTrend(parsed.citDomainTrend)
       if (parsed.citDomainMonths) setCitDomainMonths(parsed.citDomainMonths)
+
+      // 파싱 결과 요약을 상태 메시지에 표시
+      const summary = [
+        parsed.citations?.length ? `카테고리 ${parsed.citations.length}건` : '',
+        parsed.citationsCnty?.length ? `도메인 ${parsed.citationsCnty.length}건` : '',
+        parsed.dotcom ? '닷컴 OK' : '',
+        parsed.citTouchPointsTrend ? `트렌드 ${Object.keys(parsed.citTouchPointsTrend).length}건` : '',
+      ].filter(Boolean).join(', ')
 
       // 서버에 동기화 데이터 저장
       setTimeout(() => {
@@ -66,7 +90,7 @@ export default function CitationSidebar({
         })
       }, 100)
 
-      setGsStatus('ok'); setGsMsg('동기화 완료!')
+      setGsStatus('ok'); setGsMsg(`동기화 완료! (${summary || '데이터 없음'})`)
     } catch (err) {
       setGsStatus('error'); setGsMsg(err.message)
     } finally {
