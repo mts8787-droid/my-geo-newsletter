@@ -533,37 +533,42 @@ function citationDomainSectionHtml(citationsCnty, meta, lang, citations) {
               </tr>`
   }
 
-  // ── CSS-only 탭 전환 (radio input + :checked, JS 불필요) ──
+  // ── CSS-only 탭 전환 (radio input + :checked) ──
   const uid = 'cd' + Math.random().toString(36).slice(2, 6)
+  const safe = c => c.replace(/[^a-zA-Z0-9]/g, '')
 
-  // CSS: 선택된 탭 label 하이라이트 + 해당 패널만 표시
-  const cssRules = allTabs.map(c => {
-    const rid = `${uid}-${c.replace(/[^a-zA-Z0-9]/g, '')}`
-    return `#${rid}:checked ~ .${uid}-tabs label[for="${rid}"]{background:${EM_RED}!important;color:#fff!important}
-#${rid}:checked ~ .${uid}-body .${uid}-p-${c.replace(/[^a-zA-Z0-9]/g, '')}{display:block!important}`
+  // CSS: 기본 숨김 + 선택된 탭만 표시
+  const hideAll = `.${uid}-body > div { display:none; }`
+  const tabHighlights = allTabs.map(c => {
+    const rid = `${uid}-${safe(c)}`
+    return `#${rid}:checked ~ .${uid}-tabs label[for="${rid}"]{background:${EM_RED};color:#fff}`
   }).join('\n')
+  const panelShows = allTabs.map(c => {
+    const rid = `${uid}-${safe(c)}`
+    return `#${rid}:checked ~ .${uid}-body .${uid}-p-${safe(c)}{display:block}`
+  }).join('\n')
+  const cssRules = `${hideAll}\n${tabHighlights}\n${panelShows}`
 
-  // hidden radio inputs
+  // hidden radio inputs (형제 관계 유지를 위해 container div 직접 자식)
   const radioInputs = allTabs.map((c, i) => {
-    const rid = `${uid}-${c.replace(/[^a-zA-Z0-9]/g, '')}`
+    const rid = `${uid}-${safe(c)}`
     return `<input type="radio" name="${uid}" id="${rid}"${i === 0 ? ' checked' : ''} style="position:absolute;opacity:0;pointer-events:none;">`
-  }).join('')
+  }).join('\n')
 
   // tab labels
   const tabLabels = allTabs.map(c => {
-    const rid = `${uid}-${c.replace(/[^a-zA-Z0-9]/g, '')}`
-    return `<label for="${rid}" style="padding:4px 12px;border-radius:14px;font-size:11px;font-weight:700;font-family:${EM_FONT};cursor:pointer;background:#F1F5F9;color:#64748B;display:inline-block;margin:0 2px 4px 0;transition:all .15s;">${c}</label>`
-  }).join('')
+    const rid = `${uid}-${safe(c)}`
+    return `<label for="${rid}" style="padding:4px 12px;border-radius:14px;font-size:11px;font-weight:700;font-family:${EM_FONT};cursor:pointer;background:#F1F5F9;color:#64748B;display:inline-block;margin:0 2px 4px 0;">${c}</label>`
+  }).join('\n')
 
-  // content panels (display:none by default, CSS :checked reveals active)
+  // content panels (NO inline display:none — CSS에서 제어)
   const panels = allTabs.map(c => {
     const rows = c === 'TTL' ? ttlRows : (cntyMap.get(c) || []).sort((a, b) => a.rank - b.rank)
     const rowsHtml = citationDomainCntyRowsHtml(rows, domTopN)
-    const cls = `${uid}-p-${c.replace(/[^a-zA-Z0-9]/g, '')}`
-    return `<div class="${cls}" style="display:none;">
+    return `<div class="${uid}-p-${safe(c)}">
               <table border="0" cellpadding="0" cellspacing="0" width="100%">${rowsHtml}</table>
             </div>`
-  }).join('')
+  }).join('\n')
 
   return `
               <!-- ══ 도메인별 Citation (국가별 탭) ══ -->
@@ -571,7 +576,7 @@ function citationDomainSectionHtml(citationsCnty, meta, lang, citations) {
                 <td style="padding-bottom:28px;">
                   <style>${cssRules}</style>
                   <div style="background:#FFFFFF;border-radius:16px;border:2px solid #E8EDF2;position:relative;">
-                    ${radioInputs}
+${radioInputs}
                     <div style="padding:22px 28px 18px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;border-radius:16px 16px 0 0;">
                       <table border="0" cellpadding="0" cellspacing="0" width="100%">
                         <tr>
@@ -593,13 +598,13 @@ function citationDomainSectionHtml(citationsCnty, meta, lang, citations) {
                       </table>
                     </div>
                     <div class="${uid}-tabs" style="padding:12px 28px 4px;display:flex;flex-wrap:wrap;gap:0;">
-                      ${tabLabels}
+${tabLabels}
                     </div>
                     <table border="0" cellpadding="0" cellspacing="0" width="100%">
                       ${insightBlockHtml(meta.citDomainInsight, meta.showCitDomainInsight, meta.citDomainHowToRead, meta.showCitDomainHowToRead, lang)}
                     </table>
                     <div class="${uid}-body" style="padding:20px 28px 24px;">
-                      ${panels}
+${panels}
                     </div>
                   </div>
                 </td>
