@@ -72,15 +72,29 @@ function citationSectionHtml(citations, meta, t) {
 }
 
 // ─── 도메인별 Citation ──────────────────────────────────────────────────────
-function citDomainSectionHtml(citationsCnty, meta, t, citations, lang) {
+function citDomainSectionHtml(citationsCnty, meta, t, citations, lang, useAggregated) {
   if (!citationsCnty || !citationsCnty.length) return ''
   const topN = meta.citDomainTopN || 10
-  const rows = citationsCnty.filter(r => r.cnty === 'TTL').sort((a, b) => a.rank - b.rank).slice(0, topN)
+
+  let rows
+  if (useAggregated) {
+    // 선택된 국가 데이터를 도메인별로 합산
+    const countryRows = citationsCnty.filter(r => r.cnty !== 'TTL')
+    const domainMap = {}
+    countryRows.forEach(r => {
+      const key = r.domain
+      if (!domainMap[key]) domainMap[key] = { domain: r.domain, type: r.type, citations: 0 }
+      domainMap[key].citations += r.citations
+    })
+    rows = Object.values(domainMap).sort((a, b) => b.citations - a.citations).slice(0, topN)
+    rows.forEach((r, i) => { r.rank = i + 1 })
+  } else {
+    rows = citationsCnty.filter(r => r.cnty === 'TTL').sort((a, b) => a.rank - b.rank).slice(0, topN)
+  }
   if (!rows.length) return ''
+
   const maxScore = Math.max(...rows.map(r => r.citations), 1)
-  const totalCit = citations && citations.length
-    ? citations.reduce((s, c) => s + c.score, 0)
-    : rows.reduce((s, r) => s + r.citations, 0)
+  const totalCit = rows.reduce((s, r) => s + r.citations, 0)
   const html = rows.map((c, i) => {
     const pct = (c.citations / maxScore * 100).toFixed(1)
     const ratio = totalCit > 0 ? ((c.citations / totalCit) * 100).toFixed(1) : '0.0'
@@ -360,6 +374,7 @@ export function generateCitationHTML(meta, _total, _products, citations, dotcom,
   const isCountryOn = (code) => cntyFilter[code] !== false
   const allCountryCodes = Object.values(REGIONS).flatMap(r => r.countries)
   const enabledCountries = allCountryCodes.filter(c => isCountryOn(c))
+  const allSelected = enabledCountries.length === allCountryCodes.length
   const filteredCitCnty = citationsCnty
     ? citationsCnty.filter(r => r.cnty === 'TTL' || enabledCountries.includes(r.cnty))
     : []
@@ -367,7 +382,7 @@ export function generateCitationHTML(meta, _total, _products, citations, dotcom,
   // 월간 탭 콘텐츠
   const monthlyContent = [
     meta.showCitations !== false ? citationSectionHtml(citations, meta, t) : '',
-    (meta.showCitDomain !== false || meta.showCitCnty !== false) ? citDomainSectionHtml(filteredCitCnty, meta, t, citations, lang) : '',
+    (meta.showCitDomain !== false || meta.showCitCnty !== false) ? citDomainSectionHtml(filteredCitCnty, meta, t, citations, lang, !allSelected) : '',
     meta.showDotcom !== false ? dotcomSectionHtml(dotcom, meta, t) : '',
   ].join('')
 
