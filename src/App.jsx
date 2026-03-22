@@ -752,7 +752,7 @@ function NewsletterPreview({ meta, total, products, citations, dotcom, productsC
       title="newsletter-preview"
       scrolling="no"
       style={{ width: '100%', border: 'none', minHeight: 800, background: '#F1F5F9', overflow: 'hidden' }}
-      sandbox="allow-same-origin"
+      sandbox="allow-same-origin allow-scripts"
     />
   )
 }
