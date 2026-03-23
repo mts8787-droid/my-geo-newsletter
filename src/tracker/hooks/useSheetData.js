@@ -37,6 +37,12 @@ async function fetchSheet() {
   })
   if (!res.ok) throw new Error(`시트를 가져올 수 없습니다 (HTTP ${res.status})`)
   const csv = await res.text()
+  // DEBUG: CSV 마지막 15줄 저장
+  const csvLines = csv.split('\n')
+  window.__DEBUG_CSV_TAIL = csvLines.slice(-15).map((line, i) => `[${csvLines.length - 15 + i}] ${line}`)
+  window.__DEBUG_CSV_TOTAL_LINES = csvLines.length
+  console.log('[DEBUG] CSV total lines:', csvLines.length)
+  console.log('[DEBUG] CSV last 15 lines:', window.__DEBUG_CSV_TAIL)
   const wb = XLSX.read(csv, { type: 'string' })
   const ws = wb.Sheets[wb.SheetNames[0]]
   return XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' })

@@ -35,8 +35,13 @@ export default function QualitativeTable({ goals, results, selectedSH, month, de
 
       {/* DEBUG: 표5 이후 RAW ROWS (CSV에서 직접) */}
       <div style={{ background: '#FFFBEB', border: '1px solid #F59E0B', borderRadius: 8, margin: '8px 12px', padding: 12, fontSize: 10, fontFamily: 'monospace', maxHeight: 500, overflow: 'auto', wordBreak: 'break-all' }}>
-        <b>DEBUG: 총 {debugInfo?.totalRows}행</b><br/>
+        <b>DEBUG: 총 {debugInfo?.totalRows}행 | CSV lines: {typeof window !== 'undefined' && window.__DEBUG_CSV_TOTAL_LINES}</b><br/>
         <b>마커 위치: {JSON.stringify(debugInfo?.markers)}</b><br/>
+        <b>CSV TAIL (원본):</b><br/>
+        {typeof window !== 'undefined' && window.__DEBUG_CSV_TAIL?.map((line, i) => (
+          <div key={`csv-${i}`} style={{ background: '#FEF3C7', padding: 2, margin: 1, whiteSpace: 'pre-wrap' }}>{line}</div>
+        ))}
+        <br/>
         <b>RAW ROWS ({debugRawRows?.length || 0}개):</b>
         {debugRawRows?.map((r, ri) => (
           <div key={ri} style={{ marginTop: 6, borderTop: ri > 0 ? '1px solid #ddd' : 'none', paddingTop: 4 }}>
