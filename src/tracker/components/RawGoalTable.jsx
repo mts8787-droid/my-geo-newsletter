@@ -20,7 +20,7 @@ export default function RawGoalTable({ rows, selectedSH }) {
         <table style={{ width: '100%', fontSize: 16, borderCollapse: 'collapse' }}>
           <thead>
             <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
-              <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 16, fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', position: 'sticky', left: 0, zIndex: 10, background: '#F8FAFC', minWidth: 80 }}>Stakeholder</th>
+              <th style={{ padding: '10px 12px', textAlign: 'center', fontSize: 16, fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', position: 'sticky', left: 0, zIndex: 10, background: '#F8FAFC', minWidth: 80 }}>Stakeholder</th>
               <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 16, fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', minWidth: 130 }}>과제</th>
               <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 16, fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', minWidth: 70 }}>Page Type</th>
               {MONTHS.map(m => (
@@ -34,7 +34,7 @@ export default function RawGoalTable({ rows, selectedSH }) {
               const color = STAKEHOLDER_COLORS[r.stakeholder] || '#94A3B8'
               return (
                 <tr key={i} style={{ borderBottom: '1px solid #F1F5F9' }} className="hover:bg-[#F8FAFC] transition-colors">
-                  <td style={{ padding: '9px 12px', position: 'sticky', left: 0, zIndex: 10, background: '#fff' }}>
+                  <td style={{ padding: '9px 12px', position: 'sticky', left: 0, zIndex: 10, background: '#fff', textAlign: 'center' }}>
                     <span style={{ display: 'inline-block', padding: '2px 8px', borderRadius: 4, fontSize: 16, fontWeight: 700, background: color + '18', color: '#111827', border: `1px solid ${color}30` }}>
                       {r.stakeholder}
                     </span>

@@ -32,6 +32,14 @@ export default function StakeholderRanking({ stakeholders, month, selectedSH }) 
         </div>
       </div>
 
+      {/* Column headers */}
+      <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr 200px 200px', gap: 12, padding: '10px 20px', borderBottom: '1px solid #E2E8F0', background: '#F8FAFC' }}>
+        <span style={{ fontSize: 16, fontWeight: 600, color: '#475569', textAlign: 'center', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Stakeholder</span>
+        <span style={{ fontSize: 16, fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em' }}>과제 현황</span>
+        <span style={{ fontSize: 16, fontWeight: 600, color: '#475569', textAlign: 'center', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{month} 달성률</span>
+        <span style={{ fontSize: 16, fontWeight: 600, color: '#475569', textAlign: 'center', textTransform: 'uppercase', letterSpacing: '0.05em' }}>누적 달성률</span>
+      </div>
+
       {/* Stakeholder rows */}
       <div style={{ padding: '0 20px 12px' }}>
         {filtered.map(sh => {
