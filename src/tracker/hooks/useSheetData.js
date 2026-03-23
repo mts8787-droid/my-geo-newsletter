@@ -23,7 +23,9 @@ function getCached() {
 function setCache(data) {
   try {
     localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), data }))
-  } catch { /* localStorage full */ }
+  } catch (e) {
+    console.warn('[useSheetData] cache save failed (localStorage full?):', e.message)
+  }
 }
 
 async function fetchSheet() {
