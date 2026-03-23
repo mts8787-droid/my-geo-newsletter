@@ -62,9 +62,11 @@ function computeDashboard(data, month, stakeholderFilter) {
     tasks = tasks.filter(t => t.stakeholder === stakeholderFilter)
   }
 
-  // 이번 달 종합 달성률
+  // 이번 달 종합 달성률 (가중 평균: 총 실적 / 총 목표)
+  const totalMonthActual = tasks.reduce((s, t) => s + (typeof t.actual === 'number' ? t.actual : 0), 0)
+  const totalMonthGoal = tasks.reduce((s, t) => s + (typeof t.goal === 'number' ? t.goal : 0), 0)
+  const avgRate = totalMonthGoal > 0 ? (totalMonthActual / totalMonthGoal) * 100 : 0
   const validRates = tasks.map(t => t.rate).filter(r => r !== null)
-  const avgRate = validRates.length ? validRates.reduce((s, r) => s + r, 0) / validRates.length : 0
   const warningCount = validRates.filter(r => r < 80).length
 
   // 누적 실적 + 누적 목표
