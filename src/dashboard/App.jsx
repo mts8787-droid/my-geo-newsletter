@@ -15,7 +15,7 @@ const IFRAME_PATHS = {
 }
 
 const EDITOR_LINKS = {
-  visibility:  '/admin/newsletter',
+  visibility:  '/admin/visibility',
   citation:    '/admin/citation',
   readability: null,
   tracker:     '/admin/progress-tracker',

@@ -709,9 +709,13 @@ a.card:hover{border-color:#CF0652;transform:translateY(-2px)}
       <div class="card-title">Dashboard Viewer</div>
       <div class="card-desc">Visibility · Citation · Readability · Tracker 통합 뷰어</div>
     </a>
+    <a class="card" href="/admin/visibility">
+      <div class="card-title">Visibility Editor</div>
+      <div class="card-desc">GEO Visibility KPI 대시보드 편집기</div>
+    </a>
     <a class="card" href="/admin/citation">
-      <div class="card-title">Citation Dashboard</div>
-      <div class="card-desc">Citation 분석 대시보드 편집</div>
+      <div class="card-title">Citation Editor</div>
+      <div class="card-desc">Citation 분석 대시보드 편집기</div>
     </a>
     <a class="card" href="/admin/progress-tracker">
       <div class="card-title">Progress Tracker</div>
@@ -850,6 +854,16 @@ app.get('/admin/citation', (req, res) => {
 })
 app.get('/admin/citation/*', (req, res) => {
   res.sendFile(join(__dirname, 'dist-citation', 'citation.html'))
+})
+
+// ─── Static files (Visibility Editor at /admin/visibility) ──────────────────
+app.use('/admin/visibility', express.static(join(__dirname, 'dist-visibility')))
+app.get('/admin/visibility', (req, res) => {
+  res.sendFile(join(__dirname, 'dist-visibility', 'visibility.html'))
+})
+app.get('/admin/visibility/*', (req, res) => {
+  res.sendFile(join(__dirname, 'dist-visibility', 'visibility.html'))
+})
 })
 
 // ─── Static files (Progress Tracker at /admin/progress-tracker) ─────────────
