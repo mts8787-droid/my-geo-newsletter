@@ -80,10 +80,10 @@ export default function StakeholderRanking({ stakeholders, month, selectedSH }) 
 
                 {/* Month rate column */}
                 <div>
-                  <div style={{ fontSize: 16, color: '#64748B', marginBottom: 3, textAlign: 'center' }}>
-                    {month} <strong style={{ color: '#111827' }}>{fmt(sh.monthActual)}</strong>/<strong style={{ color: '#111827' }}>{fmt(sh.monthGoal)}</strong>
-                  </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span style={{ fontSize: 16, color: '#64748B', whiteSpace: 'nowrap' }}>
+                      <strong style={{ color: '#111827' }}>{fmt(sh.monthActual)}</strong>/<strong style={{ color: '#111827' }}>{fmt(sh.monthGoal)}</strong>
+                    </span>
                     <div style={{ flex: 1, height: 20, background: '#F1F5F9', borderRadius: 5, overflow: 'hidden', position: 'relative' }}>
                       <div style={{ height: '100%', borderRadius: 5, width: `${monthBarW}%`, background: mSt.dot, transition: 'width 0.7s ease-out' }} />
                       <div style={{ position: 'absolute', top: 0, height: '100%', width: 1, background: '#CBD5E1', left: `${Math.min(100 / maxVal * 100, 100)}%` }} />
@@ -96,10 +96,10 @@ export default function StakeholderRanking({ stakeholders, month, selectedSH }) 
 
                 {/* Cumulative rate column */}
                 <div>
-                  <div style={{ fontSize: 16, color: '#64748B', marginBottom: 3, textAlign: 'center' }}>
-                    누적 <strong style={{ color: '#111827' }}>{fmt(sh.cumActual)}</strong>/<strong style={{ color: '#111827' }}>{fmt(sh.cumGoal)}</strong>
-                  </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span style={{ fontSize: 16, color: '#64748B', whiteSpace: 'nowrap' }}>
+                      <strong style={{ color: '#111827' }}>{fmt(sh.cumActual)}</strong>/<strong style={{ color: '#111827' }}>{fmt(sh.cumGoal)}</strong>
+                    </span>
                     <div style={{ flex: 1, height: 20, background: '#F1F5F9', borderRadius: 5, overflow: 'hidden', position: 'relative' }}>
                       <div style={{ height: '100%', borderRadius: 5, width: `${cumBarW}%`, background: cSt.dot, transition: 'width 0.7s ease-out' }} />
                       <div style={{ position: 'absolute', top: 0, height: '100%', width: 1, background: '#CBD5E1', left: `${Math.min(100 / maxVal * 100, 100)}%` }} />

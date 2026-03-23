@@ -13,8 +13,7 @@ function statusDot(val) {
 }
 
 export default function QualitativeTable({ goals, results, selectedSH, month }) {
-  // Use STAKEHOLDERS constant to ensure all stakeholders appear
-  const allSH = STAKEHOLDERS.filter(sh => {
+  const allSH = [...new Set(goals.map(g => g.stakeholder))].filter(sh => {
     if (selectedSH !== '전체') return sh === selectedSH
     return true
   })
@@ -48,16 +47,7 @@ export default function QualitativeTable({ goals, results, selectedSH, month }) 
               const shGoals = goals.filter(g => g.stakeholder === sh)
               const shResults = results.filter(r => r.stakeholder === sh)
 
-              if (shGoals.length === 0) {
-                return (
-                  <tr key={sh} style={{ borderBottom: '1px solid #F1F5F9' }}>
-                    <td style={{ padding: '9px 12px', textAlign: 'center' }}>
-                      <span style={{ display: 'inline-block', padding: '2px 8px', borderRadius: 4, fontSize: 16, fontWeight: 700, background: color + '18', color: '#111827', border: `1px solid ${color}30` }}>{sh}</span>
-                    </td>
-                    <td colSpan={4} style={{ padding: '9px 12px', color: '#94A3B8', fontStyle: 'italic' }}>없음</td>
-                  </tr>
-                )
-              }
+              if (shGoals.length === 0) return null
 
               return shGoals.map((g, gi) => {
                 // Match result by task name for accuracy
@@ -67,9 +57,7 @@ export default function QualitativeTable({ goals, results, selectedSH, month }) 
                 return (
                   <tr key={`${sh}-${gi}`} style={{ borderBottom: '1px solid #F1F5F9' }} className="hover:bg-[#F8FAFC] transition-colors">
                     <td style={{ padding: '9px 12px', textAlign: 'center' }}>
-                      {gi === 0 && (
-                        <span style={{ display: 'inline-block', padding: '2px 8px', borderRadius: 4, fontSize: 16, fontWeight: 700, background: color + '18', color: '#111827', border: `1px solid ${color}30` }}>{sh}</span>
-                      )}
+                      <span style={{ display: 'inline-block', padding: '2px 8px', borderRadius: 4, fontSize: 16, fontWeight: 700, background: color + '18', color: '#111827', border: `1px solid ${color}30` }}>{sh}</span>
                     </td>
                     <td style={{ padding: '9px 12px', color: '#1E293B', fontWeight: 500 }}>{g.task}</td>
                     <td style={{ padding: '9px 12px', color: '#64748B' }}>{g.pageType}</td>
