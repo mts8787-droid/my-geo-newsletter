@@ -945,7 +945,7 @@ app.use((err, req, res, _next) => {
   res.status(500).json({ ok: false, error: err.message })
 })
 
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}`)
   console.log(`DATA_DIR = ${DATA_DIR}`)
   console.log(`SNAP_FILE = ${SNAP_FILE}`)
