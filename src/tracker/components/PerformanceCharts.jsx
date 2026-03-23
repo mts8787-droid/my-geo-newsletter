@@ -4,7 +4,7 @@ import {
 
 const FONT = "'LG Smart','Arial Narrow',Arial,sans-serif"
 const RED = '#CF0652'
-const BLUE = '#3B82F6'
+const BLUE = '#475569'
 
 function CustomTooltip({ active, payload, label }) {
   if (!active || !payload?.length) return null

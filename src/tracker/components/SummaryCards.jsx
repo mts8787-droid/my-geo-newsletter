@@ -75,12 +75,12 @@ export default function SummaryCards({ avgRate, cumulativeActual, cumulativeGoal
         <div className="rounded-xl p-5" style={{ background: '#fff', border: '1px solid #E2E8F0' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
             <span style={{ fontSize: 20, fontWeight: 700, color: '#111827' }}>누적 실적 / 목표</span>
-            <div style={{ width: 28, height: 28, borderRadius: 8, background: '#EFF6FF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <BarChart3 size={14} color="#3B82F6" />
+            <div style={{ width: 28, height: 28, borderRadius: 8, background: '#F1F5F9', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <BarChart3 size={14} color="#475569" />
             </div>
           </div>
           <div className="flex items-baseline gap-1">
-            <span className="text-4xl font-black" style={{ color: '#1E40AF' }}>{fmt(cumulativeActual)}</span>
+            <span className="text-4xl font-black" style={{ color: '#334155' }}>{fmt(cumulativeActual)}</span>
             <span style={{ fontSize: 19, color: '#94A3B8' }}>/ {fmt(cumulativeGoal)}</span>
           </div>
           <p style={{ fontSize: 17, color: '#64748B', marginTop: 4 }}>~{month} 누적 달성률 {cumRate.toFixed(1)}%</p>

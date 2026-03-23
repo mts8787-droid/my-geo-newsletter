@@ -7,7 +7,7 @@ export const STAKEHOLDERS = ['MS', 'HS', 'ES', '고가혁', '브랜드', 'D2C', 
 
 export const STAKEHOLDER_COLORS = {
   'HS': '#CF0652',
-  'MS': '#3B82F6',
+  'MS': '#475569',
   'ES': '#10B981',
   'PR': '#F59E0B',
   '고가혁': '#8B5CF6',
