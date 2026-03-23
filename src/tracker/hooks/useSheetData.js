@@ -29,20 +29,40 @@ function setCache(data) {
 }
 
 async function fetchSheet() {
-  const rid = `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
-  const url = `/gsheets-proxy/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv;reqId:${rid}&gid=${SHEET_GID}`
-  const res = await fetch(url, {
-    cache: 'no-store',
-    headers: { 'Cache-Control': 'no-cache, no-store', Pragma: 'no-cache' },
-  })
-  if (!res.ok) throw new Error(`시트를 가져올 수 없습니다 (HTTP ${res.status})`)
-  const csv = await res.text()
+  // 1차: export?format=csv (수식 결과값 포함)
+  // 2차 fallback: gviz/tq (수식 못 읽는 경우 있음)
+  const exportUrl = `/gsheets-proxy/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${SHEET_GID}&_t=${Date.now()}`
+  let csv
+  let method = 'export'
+
+  try {
+    const res = await fetch(exportUrl, {
+      cache: 'no-store',
+      headers: { 'Cache-Control': 'no-cache, no-store', Pragma: 'no-cache' },
+    })
+    if (!res.ok) throw new Error(`export HTTP ${res.status}`)
+    csv = await res.text()
+  } catch (e) {
+    console.warn('[fetchSheet] export endpoint failed, falling back to gviz:', e.message)
+    method = 'gviz'
+    const rid = `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
+    const gvizUrl = `/gsheets-proxy/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv;reqId:${rid}&gid=${SHEET_GID}`
+    const res = await fetch(gvizUrl, {
+      cache: 'no-store',
+      headers: { 'Cache-Control': 'no-cache, no-store', Pragma: 'no-cache' },
+    })
+    if (!res.ok) throw new Error(`시트를 가져올 수 없습니다 (HTTP ${res.status})`)
+    csv = await res.text()
+  }
+
   // DEBUG: CSV 마지막 15줄 저장
   const csvLines = csv.split('\n')
   window.__DEBUG_CSV_TAIL = csvLines.slice(-15).map((line, i) => `[${csvLines.length - 15 + i}] ${line}`)
   window.__DEBUG_CSV_TOTAL_LINES = csvLines.length
-  console.log('[DEBUG] CSV total lines:', csvLines.length)
+  window.__DEBUG_CSV_METHOD = method
+  console.log(`[DEBUG] CSV method: ${method}, total lines: ${csvLines.length}`)
   console.log('[DEBUG] CSV last 15 lines:', window.__DEBUG_CSV_TAIL)
+
   const wb = XLSX.read(csv, { type: 'string' })
   const ws = wb.Sheets[wb.SheetNames[0]]
   return XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' })
