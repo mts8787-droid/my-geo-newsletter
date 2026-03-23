@@ -47,13 +47,9 @@ export default function StakeholderRanking({ stakeholders, month, selectedSH }) 
               {/* Single row: Badge | Tasks | Month Rate | Cum Rate */}
               <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr 200px 200px', gap: 12, alignItems: 'center' }}>
                 {/* Stakeholder badge */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <span style={{ display: 'inline-block', padding: '4px 10px', borderRadius: 5, fontSize: 16, fontWeight: 700, background: color + '18', color: '#111827', border: `1px solid ${color}30`, textAlign: 'center' }}>
                     {sh.name}
-                  </span>
-                  <span style={{ fontSize: 16, color: '#64748B', textAlign: 'center' }}>
-                    {sh.taskCount}건
-                    {sh.warnings > 0 && <span style={{ color: '#BE123C' }}> · {sh.warnings}주의</span>}
                   </span>
                 </div>
 
@@ -63,7 +59,7 @@ export default function StakeholderRanking({ stakeholders, month, selectedSH }) 
                     const tdSt = td.rate !== null ? statusOf(td.rate) : { color: '#94A3B8', dot: '#CBD5E1' }
                     return (
                       <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '2px 8px', background: '#F8FAFC', borderRadius: 4, border: '1px solid #F1F5F9' }}>
-                        <span style={{ width: 7, height: 7, borderRadius: '50%', background: tdSt.dot, display: 'inline-block', flexShrink: 0 }} />
+                        <span style={{ width: 14, height: 14, borderRadius: '50%', background: tdSt.dot, display: 'inline-block', flexShrink: 0 }} />
                         <span style={{ color: '#111827', fontWeight: 500, maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={td.task}>{td.task}</span>
                         <span style={{ color: '#64748B' }}>{fmt(td.monthActual)}/{fmt(td.monthGoal)}</span>
                         {td.rate !== null && (
