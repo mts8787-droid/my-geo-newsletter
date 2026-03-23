@@ -3,7 +3,7 @@ services:
     name: geo-newsletter
     runtime: node
     plan: starter
-    branch: claude/code-review-YXIaE
+    branch: claude/setup-remote-control-mac-cOFCB
     buildCommand: git fetch --unshallow || true && npm install && npm run build
     startCommand: node server.js
     healthCheckPath: /admin/login
