@@ -583,13 +583,17 @@ app.delete('/api/publish-citation', (req, res) => {
 app.get('/api/publish-history', (req, res) => {
   const newsletter = readPubMeta()
   const dashboard = readDashMeta()
+  const citation = readCitMeta()
   const nlKo = existsSync(join(PUB_DIR, `${KO_SLUG}.html`))
   const nlEn = existsSync(join(PUB_DIR, `${EN_SLUG}.html`))
   const dashKo = existsSync(join(PUB_DIR, `${DASH_KO_SLUG}.html`))
   const dashEn = existsSync(join(PUB_DIR, `${DASH_EN_SLUG}.html`))
+  const citKo = existsSync(join(PUB_DIR, `${CIT_KO_SLUG}.html`))
+  const citEn = existsSync(join(PUB_DIR, `${CIT_EN_SLUG}.html`))
   res.json({
     newsletter: newsletter ? { ...newsletter, published: nlKo && nlEn, urls: { ko: `/p/${KO_SLUG}`, en: `/p/${EN_SLUG}` } } : null,
     dashboard: dashboard ? { ...dashboard, published: dashKo && dashEn, urls: { ko: `/p/${DASH_KO_SLUG}`, en: `/p/${DASH_EN_SLUG}` } } : null,
+    citation: citation ? { ...citation, published: citKo && citEn, urls: { ko: `/p/${CIT_KO_SLUG}`, en: `/p/${CIT_EN_SLUG}` } } : null,
   })
 })
 

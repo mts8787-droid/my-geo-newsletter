@@ -5,7 +5,7 @@ export function apiPaths(mode) {
   return {
     snapshots: `/api/${mode}/snapshots`,
     syncData: `/api/${mode}/sync-data`,
-    publish: mode === 'dashboard' ? '/api/publish-dashboard' : '/api/publish',
+    publish: mode === 'dashboard' ? '/api/publish-dashboard' : mode === 'citation' ? '/api/publish-citation' : '/api/publish',
   }
 }
 

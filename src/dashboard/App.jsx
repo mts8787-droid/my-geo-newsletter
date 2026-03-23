@@ -63,9 +63,13 @@ export default function App() {
     const key = tabKey === 'visibility' ? 'dashboard' : 'citation'
     const entry = publishData[key]
     if (!entry) return { published: false, urls: [] }
+    const u = entry.urls
+    const urlList = u && typeof u === 'object' && !Array.isArray(u)
+      ? Object.values(u)
+      : Array.isArray(u) ? u : (entry.url ? [entry.url] : [])
     return {
       published: !!entry.published,
-      urls: entry.urls || (entry.url ? [entry.url] : []),
+      urls: urlList,
     }
   }
 
