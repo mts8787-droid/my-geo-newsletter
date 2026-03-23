@@ -4,8 +4,8 @@ function fmt(n) { return Number(n).toLocaleString('en-US') }
 
 function statusOf(rate) {
   if (rate >= 100) return { text: '#15803D', bg: '#ECFDF5', border: '#A7F3D0', bar: '#15803D', label: '달성', dot: '#15803D' }
-  if (rate >= 80)  return { text: '#D97706', bg: '#FFFBEB', border: '#FDE68A', bar: '#D97706', label: '추격', dot: '#D97706' }
-  return { text: '#BE123C', bg: '#FFF1F2', border: '#FECDD3', bar: '#BE123C', label: '취약', dot: '#BE123C' }
+  if (rate >= 80)  return { text: '#D97706', bg: '#FFFBEB', border: '#FDE68A', bar: '#D97706', label: '추진', dot: '#D97706' }
+  return { text: '#BE123C', bg: '#FFF1F2', border: '#FECDD3', bar: '#BE123C', label: '미달성', dot: '#BE123C' }
 }
 
 export default function SummaryCards({ avgRate, cumulativeActual, cumulativeGoal, monthActual, monthGoal, warningCount, annualTarget, month, selectedSH }) {
