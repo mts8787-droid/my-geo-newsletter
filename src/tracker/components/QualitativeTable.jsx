@@ -33,6 +33,18 @@ export default function QualitativeTable({ goals, results, selectedSH, month }) 
         </div>
       </div>
 
+      {/* DEBUG: 화면에 파싱 데이터 표시 */}
+      <div style={{ background: '#FFFBEB', border: '1px solid #F59E0B', borderRadius: 8, margin: '8px 12px', padding: 12, fontSize: 13, fontFamily: 'monospace', maxHeight: 200, overflow: 'auto' }}>
+        <b>DEBUG (results: {results.length}건, month: {month})</b>
+        {results.slice(0, 3).map((r, i) => (
+          <div key={i} style={{ marginTop: 4 }}>
+            [{i}] {r.stakeholder} / {r.task} → <b style={{ color: r.monthly?.[month] ? 'green' : 'red' }}>"{r.monthly?.[month] ?? 'undefined'}"</b>
+            <br/>monthly keys: {JSON.stringify(Object.keys(r.monthly || {}))}
+            <br/>monthly vals: {JSON.stringify(r.monthly)}
+          </div>
+        ))}
+      </div>
+
       <div className="overflow-x-auto">
         <table style={{ width: '100%', fontSize: 16, borderCollapse: 'collapse' }}>
           <thead>
