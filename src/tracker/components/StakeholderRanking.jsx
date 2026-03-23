@@ -33,11 +33,11 @@ export default function StakeholderRanking({ stakeholders, month, selectedSH }) 
       </div>
 
       {/* Column headers — all center aligned */}
-      <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr 260px 260px', gap: 8, padding: '10px 20px', borderBottom: '1px solid #E2E8F0', background: '#F8FAFC' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr 230px 230px', gap: 8, padding: '10px 20px', borderBottom: '1px solid #E2E8F0', background: '#F8FAFC' }}>
         <span style={{ fontSize: 16, fontWeight: 600, color: '#475569', textAlign: 'center', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Stakeholder</span>
         <span style={{ fontSize: 16, fontWeight: 600, color: '#475569', textAlign: 'center', textTransform: 'uppercase', letterSpacing: '0.05em' }}>과제 현황</span>
         <span style={{ fontSize: 16, fontWeight: 600, color: '#475569', textAlign: 'center', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{month} 달성률</span>
-        <span style={{ fontSize: 16, fontWeight: 600, color: '#475569', textAlign: 'center', textTransform: 'uppercase', letterSpacing: '0.05em', borderLeft: '2px solid #E2E8F0', paddingLeft: 8 }}>누적 달성률</span>
+        <span style={{ fontSize: 16, fontWeight: 600, color: '#475569', textAlign: 'center', textTransform: 'uppercase', letterSpacing: '0.05em' }}>누적 달성률</span>
       </div>
 
       {/* Stakeholder rows */}
@@ -51,7 +51,7 @@ export default function StakeholderRanking({ stakeholders, month, selectedSH }) 
 
           return (
             <div key={sh.name} style={{ borderBottom: '1px solid #F1F5F9', padding: '14px 0' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr 260px 260px', gap: 8, alignItems: 'center' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr 230px 230px', gap: 8, alignItems: 'center' }}>
                 {/* Stakeholder badge */}
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <span style={{ display: 'inline-block', padding: '4px 10px', borderRadius: 5, fontSize: 16, fontWeight: 700, background: color + '18', color: '#111827', border: `1px solid ${color}30`, textAlign: 'center' }}>
@@ -77,27 +77,27 @@ export default function StakeholderRanking({ stakeholders, month, selectedSH }) 
                 </div>
 
                 {/* Month rate column: [bar] [실적/목표] [달성율] */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <div style={{ flex: 1, height: 18, background: '#F1F5F9', borderRadius: 4, overflow: 'hidden', position: 'relative', minWidth: 60 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <div style={{ flex: 1, height: 18, background: '#F1F5F9', borderRadius: 4, overflow: 'hidden', position: 'relative', minWidth: 50 }}>
                     <div style={{ height: '100%', borderRadius: 4, width: `${monthBarW}%`, background: mSt.dot, transition: 'width 0.7s ease-out' }} />
                   </div>
-                  <span style={{ fontSize: 14, color: '#475569', whiteSpace: 'nowrap', minWidth: 70, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
+                  <span style={{ fontSize: 13, color: '#475569', whiteSpace: 'nowrap', textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
                     {fmt(sh.monthActual)}/{fmt(sh.monthGoal)}
                   </span>
-                  <span style={{ fontSize: 15, fontWeight: 900, color: mSt.color, minWidth: 56, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
+                  <span style={{ fontSize: 14, fontWeight: 900, color: mSt.color, minWidth: 48, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
                     {sh.monthRate.toFixed(1)}%
                   </span>
                 </div>
 
                 {/* Cumulative rate column: [bar] [실적/목표] [달성율] */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, borderLeft: '2px solid #E2E8F0', paddingLeft: 8 }}>
-                  <div style={{ flex: 1, height: 18, background: '#F1F5F9', borderRadius: 4, overflow: 'hidden', position: 'relative', minWidth: 60 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <div style={{ flex: 1, height: 18, background: '#F1F5F9', borderRadius: 4, overflow: 'hidden', position: 'relative', minWidth: 50 }}>
                     <div style={{ height: '100%', borderRadius: 4, width: `${cumBarW}%`, background: cSt.dot, transition: 'width 0.7s ease-out' }} />
                   </div>
-                  <span style={{ fontSize: 14, color: '#475569', whiteSpace: 'nowrap', minWidth: 70, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
+                  <span style={{ fontSize: 13, color: '#475569', whiteSpace: 'nowrap', textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
                     {fmt(sh.cumActual)}/{fmt(sh.cumGoal)}
                   </span>
-                  <span style={{ fontSize: 15, fontWeight: 900, color: cSt.color, minWidth: 56, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
+                  <span style={{ fontSize: 14, fontWeight: 900, color: cSt.color, minWidth: 48, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
                     {sh.cumRate.toFixed(1)}%
                   </span>
                 </div>
