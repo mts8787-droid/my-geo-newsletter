@@ -105,6 +105,11 @@ export function parseKPISheet(rawRows) {
         result[currentKey].rows.push(parsed)
       }
     } else {
+      // DEBUG: log first qualitative row to verify column positions
+      if (result[currentKey].rows.length === 0) {
+        console.log(`[DEBUG] ${currentKey} first data row:`, JSON.stringify(row.slice(0, 16)))
+        console.log(`[DEBUG] row[5]="${row[5]}" row[6]="${row[6]}" row[7]="${row[7]}"`)
+      }
       const parsed = parseQualitativeRow(row)
       if (!parsed.stakeholder) continue
       result[currentKey].rows.push(parsed)
