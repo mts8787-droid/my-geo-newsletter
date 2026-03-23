@@ -53,6 +53,7 @@ export default function QualitativeTable({ goals, results, selectedSH, month }) 
 
               return shResults.map((r, ri) => {
                 const resultVal = r.monthly?.[month] ?? ''
+                if (ri === 0) console.log(`[DEBUG QT] sh=${sh}, month=${month}, resultVal="${resultVal}", monthly=`, JSON.stringify(r.monthly))
                 const st = statusDot(resultVal)
                 // Supplement with goal info if available
                 const g = goals.find(g => g.stakeholder === sh && g.task === r.task)
