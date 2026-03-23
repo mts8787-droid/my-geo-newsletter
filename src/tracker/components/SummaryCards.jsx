@@ -71,21 +71,21 @@ export default function SummaryCards({ avgRate, cumulativeActual, cumulativeGoal
           )
         })()}
 
-        {/* 연간 진척률 */}
+        {/* 연간 진척률 — 신호등은 누적 달성률 기준 */}
         {(() => {
-          const ps = statusOf(progressPct)
+          const cs = statusOf(cumRate)
           return (
-            <div className="rounded-xl p-5" style={{ background: ps.bg, border: `1px solid ${ps.border}` }}>
+            <div className="rounded-xl p-5" style={{ background: cs.bg, border: `1px solid ${cs.border}` }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
                 <span style={{ fontSize: 20, fontWeight: 700, color: '#111827' }}>연간 진척률</span>
-                <span style={{ width: 12, height: 12, borderRadius: '50%', background: ps.dot, display: 'inline-block', boxShadow: `0 0 6px ${ps.dot}55` }} />
+                <span style={{ width: 12, height: 12, borderRadius: '50%', background: cs.dot, display: 'inline-block', boxShadow: `0 0 6px ${cs.dot}55` }} />
               </div>
               <div className="flex items-baseline gap-1">
-                <span className="text-4xl font-black" style={{ color: ps.text }}>{progressPct.toFixed(1)}</span>
+                <span className="text-4xl font-black" style={{ color: cs.text }}>{progressPct.toFixed(1)}</span>
                 <span style={{ fontSize: 21, color: '#94A3B8' }}>%</span>
               </div>
               <div style={{ marginTop: 8, height: 6, background: 'rgba(255,255,255,0.6)', borderRadius: 3, overflow: 'hidden' }}>
-                <div style={{ height: '100%', borderRadius: 3, background: ps.bar, width: `${progressPct}%`, transition: 'width 0.5s' }} />
+                <div style={{ height: '100%', borderRadius: 3, background: cs.bar, width: `${progressPct}%`, transition: 'width 0.5s' }} />
               </div>
               <p style={{ fontSize: 17, color: '#64748B', marginTop: 4 }}>{fmt(cumulativeActual)} / {fmt(annualTarget)}</p>
             </div>
