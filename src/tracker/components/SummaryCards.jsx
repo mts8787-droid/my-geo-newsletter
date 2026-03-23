@@ -38,7 +38,7 @@ export default function SummaryCards({ avgRate, cumulativeActual, cumulativeGoal
         {/* 종합 달성률 */}
         <div className="rounded-xl p-5" style={{ background: s.bg, border: `1px solid ${s.border}` }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-            <span style={{ fontSize: 20, fontWeight: 700, color: '#111827' }}>{month} 종합 달성률</span>
+            <span style={{ fontSize: 20, fontWeight: 700, color: '#111827' }}>{month} 달성률</span>
             <span style={{ width: 12, height: 12, borderRadius: '50%', background: s.dot, display: 'inline-block', boxShadow: `0 0 6px ${s.dot}55` }} />
           </div>
           <div className="flex items-baseline gap-1">

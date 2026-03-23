@@ -270,7 +270,7 @@ export default function App() {
         {dashboard && (
           <>
             <SummaryCards
-              avgRate={dashboard.totalsRate ?? dashboard.avgRate}
+              avgRate={selectedSH === '전체' ? (dashboard.totalsRate ?? dashboard.avgRate) : dashboard.avgRate}
               cumulativeActual={dashboard.cumulativeActual}
               cumulativeGoal={dashboard.cumulativeGoal}
               warningCount={dashboard.warningCount}
