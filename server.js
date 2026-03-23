@@ -864,7 +864,6 @@ app.get('/admin/visibility', (req, res) => {
 app.get('/admin/visibility/*', (req, res) => {
   res.sendFile(join(__dirname, 'dist-visibility', 'visibility.html'))
 })
-})
 
 // ─── Static files (Progress Tracker at /admin/progress-tracker) ─────────────
 app.use('/admin/progress-tracker', express.static(join(__dirname, 'dist-tracker')))
