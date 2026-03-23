@@ -3,7 +3,7 @@ services:
     name: geo-newsletter
     runtime: node
     plan: starter
-    buildCommand: npm install && npm run build
+    buildCommand: git fetch --unshallow || true && npm install && npm run build
     startCommand: npm start
     disk:
       name: geo-data
