@@ -15,7 +15,7 @@ function StakeholderBadge({ name }) {
   const color = STAKEHOLDER_COLORS[name] || '#94A3B8'
   return (
     <span
-      className="inline-block px-2 py-0.5 rounded text-[16px] font-bold whitespace-nowrap"
+      className="inline-block px-2 py-0.5 rounded text-[11px] font-bold whitespace-nowrap"
       style={{ backgroundColor: color + '18', color: '#111827', border: `1px solid ${color}30` }}
     >
       {name}
@@ -30,15 +30,15 @@ export default function KPITable({ title, rows, totals, showMonthly = false, isQ
     <section className="bg-slate-900 rounded-xl border border-slate-800 overflow-hidden">
       {/* Header */}
       <div className="px-5 py-3 border-b border-slate-800 flex items-center justify-between">
-        <h2 className="text-[19px] font-bold text-white">{title}</h2>
-        <span className="text-[16px] text-slate-500">{rows.length}개 항목</span>
+        <h2 className="text-sm font-bold text-white">{title}</h2>
+        <span className="text-[11px] text-slate-500">{rows.length}개 항목</span>
       </div>
 
       {/* Table */}
       <div className="overflow-x-auto">
-        <table className="w-full text-[17px]">
+        <table className="w-full text-xs">
           <thead>
-            <tr className="bg-slate-800/50 text-[16px] text-slate-400 uppercase tracking-wider">
+            <tr className="bg-slate-800/50 text-[11px] text-slate-400 uppercase tracking-wider">
               <th className="px-3 py-2.5 text-left sticky left-0 z-10 bg-slate-800/90 backdrop-blur min-w-[80px]">
                 Stakeholder
               </th>
