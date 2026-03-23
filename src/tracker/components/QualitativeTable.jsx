@@ -12,7 +12,7 @@ function statusDot(val) {
   return { dot: '#94A3B8', label: val, bg: 'transparent' }
 }
 
-export default function QualitativeTable({ goals, results, selectedSH, month, debugHeaders }) {
+export default function QualitativeTable({ goals, results, selectedSH, month, debugHeaders, debugRawRows }) {
   // Use results (표5) as the primary data source
   const allSH = [...new Set(results.map(r => r.stakeholder))].filter(sh => {
     if (selectedSH !== '전체') return sh === selectedSH
@@ -33,26 +33,15 @@ export default function QualitativeTable({ goals, results, selectedSH, month, de
         </div>
       </div>
 
-      {/* DEBUG: RAW ROW 데이터 표시 */}
-      <div style={{ background: '#FFFBEB', border: '1px solid #F59E0B', borderRadius: 8, margin: '8px 12px', padding: 12, fontSize: 11, fontFamily: 'monospace', maxHeight: 400, overflow: 'auto', wordBreak: 'break-all' }}>
-        <b>DEBUG (results: {results.length}건, month: {month})</b>
-        {debugHeaders && (
-          <div style={{ marginTop: 4, background: '#FEF3C7', padding: 4 }}>
-            <b>표5 HEADER ROW:</b><br/>
-            {debugHeaders.map((cell, ci) => (
-              <span key={ci} style={{ display: 'inline-block', border: '1px solid #999', margin: 1, padding: '1px 3px', background: '#fff', fontSize: 10 }}>
-                [{ci}]{cell || '(empty)'}
-              </span>
-            ))}
-          </div>
-        )}
-        {results.slice(0, 1).map((r, i) => (
-          <div key={i} style={{ marginTop: 8 }}>
-            <b>[{i}] {r.stakeholder} / {r.task}</b>
-            <br/>RAW (col 0~29):
-            {r._raw?.map((cell, ci) => (
-              <span key={ci} style={{ display: 'inline-block', border: '1px solid #999', margin: 1, padding: '1px 3px', background: cell && cell !== '(empty)' ? '#BBF7D0' : '#fff', fontSize: 10 }}>
-                [{ci}]{cell || '(empty)'}
+      {/* DEBUG: 표5 이후 RAW ROWS (CSV에서 직접) */}
+      <div style={{ background: '#FFFBEB', border: '1px solid #F59E0B', borderRadius: 8, margin: '8px 12px', padding: 12, fontSize: 10, fontFamily: 'monospace', maxHeight: 500, overflow: 'auto', wordBreak: 'break-all' }}>
+        <b>DEBUG: 표5 이후 RAW CSV ROWS ({debugRawRows?.length || 0}개)</b>
+        {debugRawRows?.map((r, ri) => (
+          <div key={ri} style={{ marginTop: 6, borderTop: ri > 0 ? '1px solid #ddd' : 'none', paddingTop: 4 }}>
+            <b>row[{r.idx}] (len={r.len})</b><br/>
+            {r.cells.map((cell, ci) => (
+              <span key={ci} style={{ display: 'inline-block', border: '1px solid #999', margin: 1, padding: '1px 2px', background: cell ? '#BBF7D0' : '#FEE2E2', fontSize: 9 }}>
+                <b>{ci}</b>:{cell || '∅'}
               </span>
             ))}
           </div>

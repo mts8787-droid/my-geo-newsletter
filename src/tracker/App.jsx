@@ -313,6 +313,7 @@ export default function App() {
                 selectedSH={selectedSH}
                 month={selectedMonth}
                 debugHeaders={data._debugHeaders?.qualitativeResults}
+                debugRawRows={data._debugRawRows}
               />
             )}
 
