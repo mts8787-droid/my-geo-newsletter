@@ -1,16 +1,15 @@
 import React, { useState, useEffect } from 'react'
-import { RefreshCw, Globe, Link2, Sparkles, Languages } from 'lucide-react'
+import { RefreshCw, Globe, Link2, Languages } from 'lucide-react'
 import { extractSheetId, syncFromGoogleSheets } from '../googleSheetsUtils'
 import { LG_RED, FONT } from '../shared/constants.js'
 import { inputStyle } from '../shared/components.jsx'
 import { resolveDataForLang } from '../shared/utils.js'
 import { saveSyncData } from '../shared/api.js'
-import { generateDotcomInsight, generateDotcomHowToRead } from '../shared/insights.js'
-import CitationConditionPanel from '../shared/CitationConditionPanel.jsx'
 
 export default function CitationSidebar({
   mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn,
   citations, setCitations, citationsCnty, setCitationsCnty, dotcom, setDotcom,
+  citationsByCnty, setCitationsByCnty, dotcomByCnty, setDotcomByCnty,
   citTouchPointsTrend, setCitTouchPointsTrend, citTrendMonths, setCitTrendMonths,
   citDomainTrend, setCitDomainTrend, citDomainMonths, setCitDomainMonths,
   resolved, previewLang, setPreviewLang, generateHTML,
@@ -69,7 +68,9 @@ export default function CitationSidebar({
         setMetaKo(m => ({ ...m, ...citMeta }))
       }
       if (parsed.citations)     setCitations(parsed.citations)
+      if (parsed.citationsByCnty) setCitationsByCnty(parsed.citationsByCnty)
       if (parsed.dotcom)        setDotcom(d => ({ ...d, ...parsed.dotcom }))
+      if (parsed.dotcomByCnty)  setDotcomByCnty(parsed.dotcomByCnty)
       if (parsed.citationsCnty) setCitationsCnty(parsed.citationsCnty)
       if (parsed.citTouchPointsTrend) setCitTouchPointsTrend(parsed.citTouchPointsTrend)
       if (parsed.citTrendMonths) setCitTrendMonths(parsed.citTrendMonths)
@@ -89,7 +90,9 @@ export default function CitationSidebar({
         saveSyncData(mode, {
           meta: parsed.meta || null,
           citations: parsed.citations || null,
+          citationsByCnty: parsed.citationsByCnty || null,
           dotcom: parsed.dotcom || null,
+          dotcomByCnty: parsed.dotcomByCnty || null,
           citationsCnty: parsed.citationsCnty || null,
           citTouchPointsTrend: parsed.citTouchPointsTrend || null,
           citTrendMonths: parsed.citTrendMonths || null,
@@ -272,67 +275,6 @@ export default function CitationSidebar({
             >로그 복사</button>
           </div>
         )}
-
-        <div style={{ height: 1, background: '#1E293B', marginBottom: 16 }} />
-
-        {/* ── Citation 조건 패널 ── */}
-        <CitationConditionPanel meta={meta} setMeta={setMeta} resolved={resolved} />
-
-        {/* ── 닷컴 Citation 인사이트 ── */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-          <p style={{ margin: 0, fontSize: 11, color: '#64748B', fontFamily: FONT }}>닷컴 Citation 인사이트</p>
-          <div style={{ display: 'flex', gap: 4 }}>
-            <button onClick={() => setMeta(m => ({ ...m, dotcomInsight: generateDotcomInsight(dotcom) }))}
-              title="AI 인사이트 자동생성"
-              style={{ padding: '2px 6px', borderRadius: 4, border: 'none', cursor: 'pointer',
-                background: '#4F46E5', color: '#FFFFFF',
-                fontSize: 11, fontWeight: 700, fontFamily: FONT, display: 'flex', alignItems: 'center', gap: 3 }}>
-              <Sparkles size={9} /> AI 생성
-            </button>
-            <button onClick={() => setMeta(m => ({ ...m, showDotcomInsight: !m.showDotcomInsight }))}
-              style={{ padding: '2px 8px', borderRadius: 4, border: 'none', cursor: 'pointer',
-                background: meta.showDotcomInsight ? LG_RED : '#1E293B',
-                color: meta.showDotcomInsight ? '#FFFFFF' : '#475569',
-                fontSize: 11, fontWeight: 700, fontFamily: FONT }}>
-              {meta.showDotcomInsight ? 'ON' : 'OFF'}
-            </button>
-          </div>
-        </div>
-        <textarea
-          value={meta.dotcomInsight}
-          onChange={e => setMeta(m => ({ ...m, dotcomInsight: e.target.value }))}
-          rows={12}
-          placeholder="닷컴 Citation 인사이트를 입력하세요..."
-          style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6, marginBottom: 8 }}
-        />
-
-        {/* 닷컴 Citation How to Read */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-          <p style={{ margin: 0, fontSize: 11, color: '#64748B', fontFamily: FONT }}>닷컴 Citation How to Read</p>
-          <div style={{ display: 'flex', gap: 4 }}>
-            <button onClick={() => setMeta(m => ({ ...m, dotcomHowToRead: generateDotcomHowToRead() }))}
-              title="AI 인사이트 자동생성"
-              style={{ padding: '2px 6px', borderRadius: 4, border: 'none', cursor: 'pointer',
-                background: '#4F46E5', color: '#FFFFFF',
-                fontSize: 11, fontWeight: 700, fontFamily: FONT, display: 'flex', alignItems: 'center', gap: 3 }}>
-              <Sparkles size={9} /> AI 생성
-            </button>
-            <button onClick={() => setMeta(m => ({ ...m, showDotcomHowToRead: !m.showDotcomHowToRead }))}
-              style={{ padding: '2px 8px', borderRadius: 4, border: 'none', cursor: 'pointer',
-                background: meta.showDotcomHowToRead ? LG_RED : '#1E293B',
-                color: meta.showDotcomHowToRead ? '#FFFFFF' : '#475569',
-                fontSize: 11, fontWeight: 700, fontFamily: FONT }}>
-              {meta.showDotcomHowToRead ? 'ON' : 'OFF'}
-            </button>
-          </div>
-        </div>
-        <textarea
-          value={meta.dotcomHowToRead}
-          onChange={e => setMeta(m => ({ ...m, dotcomHowToRead: e.target.value }))}
-          rows={4}
-          placeholder="닷컴 Citation How to Read 설명을 입력하세요..."
-          style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6, marginBottom: 16 }}
-        />
 
         <div style={{ height: 1, background: '#1E293B', marginBottom: 16 }} />
 

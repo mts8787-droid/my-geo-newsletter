@@ -11,9 +11,9 @@ const MODE = 'citation'
 const STORAGE_KEY = 'geo-citation-cache'
 
 // ─── Citation 대시보드 미리보기 ─────────────────────────────────────────────
-function CitationPreview({ meta, setMeta, citations, dotcom, citationsCnty = [], lang = 'ko', citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths }) {
+function CitationPreview({ meta, setMeta, citations, dotcom, citationsCnty = [], citationsByCnty = {}, dotcomByCnty = {}, lang = 'ko', citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths }) {
   const iframeRef = useRef(null)
-  const html = generateCitationHTML(meta, null, [], citations, dotcom, lang, [], citationsCnty, { citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths })
+  const html = generateCitationHTML(meta, null, [], citations, dotcom, lang, [], citationsCnty, { citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths }, citationsByCnty, dotcomByCnty)
 
   React.useEffect(() => {
     const iframe = iframeRef.current
@@ -52,6 +52,8 @@ export default function App() {
   const [citations,     setCitations]     = useState(cache?.citations ?? INIT_CITATIONS)
   const [citationsCnty, setCitationsCnty] = useState(cache?.citationsCnty ?? INIT_CITATIONS_CNTY)
   const [dotcom,        setDotcom]        = useState((cache?.dotcom && cache.dotcom.lg) ? cache.dotcom : INIT_DOTCOM)
+  const [citationsByCnty, setCitationsByCnty] = useState(cache?.citationsByCnty ?? {})
+  const [dotcomByCnty,    setDotcomByCnty]    = useState(cache?.dotcomByCnty ?? {})
   const [citTouchPointsTrend, setCitTouchPointsTrend] = useState(cache?.citTouchPointsTrend ?? {})
   const [citTrendMonths, setCitTrendMonths] = useState(cache?.citTrendMonths ?? [])
   const [citDomainTrend, setCitDomainTrend] = useState(cache?.citDomainTrend ?? {})
@@ -88,7 +90,9 @@ export default function App() {
         setMetaKo(m => ({ ...m, ...citMeta }))
       }
       if (d.citations)     setCitations(d.citations)
+      if (d.citationsByCnty) setCitationsByCnty(d.citationsByCnty)
       if (d.dotcom)        setDotcom(prev => ({ ...prev, ...d.dotcom }))
+      if (d.dotcomByCnty)  setDotcomByCnty(d.dotcomByCnty)
       if (d.citationsCnty) setCitationsCnty(d.citationsCnty)
       if (d.citTouchPointsTrend) setCitTouchPointsTrend(d.citTouchPointsTrend)
       if (d.citTrendMonths) setCitTrendMonths(d.citTrendMonths)
@@ -100,20 +104,20 @@ export default function App() {
 
   // 캐시 저장
   useEffect(() => {
-    saveCache(STORAGE_KEY, { metaKo, metaEn, citations, citationsCnty, dotcom, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths })
-  }, [metaKo, metaEn, citations, citationsCnty, dotcom, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths])
+    saveCache(STORAGE_KEY, { metaKo, metaEn, citations, citationsCnty, dotcom, citationsByCnty, dotcomByCnty, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths })
+  }, [metaKo, metaEn, citations, citationsCnty, dotcom, citationsByCnty, dotcomByCnty, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths])
 
   // 스냅샷 관리
   async function handleSnapOverwrite() {
     if (!activeSnap) return
-    const data = { metaKo, metaEn, citations, citationsCnty, dotcom, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths }
+    const data = { metaKo, metaEn, citations, citationsCnty, dotcom, citationsByCnty, dotcomByCnty, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths }
     const result = await updateSnapshot(MODE, activeSnap, data)
     if (result) setSnapshots(result)
     setSnapMsg(result ? '저장 완료!' : '저장 실패'); setTimeout(() => setSnapMsg(''), 2000)
   }
   async function handleSnapSaveNew() {
     const name = snapName.trim() || `${meta.period || 'Untitled'} Citation — ${new Date().toLocaleString('ko-KR')}`
-    const result = await postSnapshot(MODE, name, { metaKo, metaEn, citations, citationsCnty, dotcom, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths })
+    const result = await postSnapshot(MODE, name, { metaKo, metaEn, citations, citationsCnty, dotcom, citationsByCnty, dotcomByCnty, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths })
     if (result) { setSnapshots(result); setSnapName(''); setActiveSnap(result[0]?.ts || null) }
     setSnapMsg(result ? '새로 저장 완료!' : '저장 실패'); setTimeout(() => setSnapMsg(''), 2000)
   }
@@ -124,6 +128,8 @@ export default function App() {
     if (d.citations)     setCitations(d.citations)
     if (d.citationsCnty) setCitationsCnty(d.citationsCnty)
     if (d.dotcom)        setDotcom(d.dotcom)
+    if (d.citationsByCnty) setCitationsByCnty(d.citationsByCnty)
+    if (d.dotcomByCnty)    setDotcomByCnty(d.dotcomByCnty)
     if (d.citTouchPointsTrend) setCitTouchPointsTrend(d.citTouchPointsTrend)
     if (d.citTrendMonths)      setCitTrendMonths(d.citTrendMonths)
     if (d.citDomainTrend)      setCitDomainTrend(d.citDomainTrend)
@@ -148,6 +154,8 @@ export default function App() {
           citations={citations} setCitations={setCitations}
           citationsCnty={citationsCnty} setCitationsCnty={setCitationsCnty}
           dotcom={dotcom} setDotcom={setDotcom}
+          citationsByCnty={citationsByCnty} setCitationsByCnty={setCitationsByCnty}
+          dotcomByCnty={dotcomByCnty} setDotcomByCnty={setDotcomByCnty}
           citTouchPointsTrend={citTouchPointsTrend} setCitTouchPointsTrend={setCitTouchPointsTrend}
           citTrendMonths={citTrendMonths} setCitTrendMonths={setCitTrendMonths}
           citDomainTrend={citDomainTrend} setCitDomainTrend={setCitDomainTrend}
@@ -250,7 +258,7 @@ export default function App() {
 
         {/* 컨텐츠 영역 */}
         <div style={{ flex: 1, overflow: 'hidden' }}>
-          <CitationPreview meta={meta} setMeta={setMeta} citations={resolved.citations} dotcom={dotcom} citationsCnty={resolved.citationsCnty} lang={previewLang} citTouchPointsTrend={citTouchPointsTrend} citTrendMonths={citTrendMonths} citDomainTrend={citDomainTrend} citDomainMonths={citDomainMonths} />
+          <CitationPreview meta={meta} setMeta={setMeta} citations={resolved.citations} dotcom={dotcom} citationsCnty={resolved.citationsCnty} citationsByCnty={citationsByCnty} dotcomByCnty={dotcomByCnty} lang={previewLang} citTouchPointsTrend={citTouchPointsTrend} citTrendMonths={citTrendMonths} citDomainTrend={citDomainTrend} citDomainMonths={citDomainMonths} />
         </div>
         <div style={{ height: 28, borderTop: '1px solid #1E293B', background: 'rgba(15,23,42,0.95)',
           display: 'flex', alignItems: 'center', justifyContent: 'flex-end', padding: '0 16px', flexShrink: 0 }}>

@@ -575,22 +575,32 @@ function parseCitPageType(rows) {
   }
 
   const lg = {}, samsung = {}
+  const dotcomByCnty = {}  // { cnty: { lg: {...}, samsung: {...} } }
+  const CNTY_ALIAS = { 'TOTAL':'TTL', '미국':'US', '캐나다':'CA', '영국':'UK', '독일':'DE', '스페인':'ES', '브라질':'BR', '멕시코':'MX', '인도':'IN', '호주':'AU', '베트남':'VN' }
   data.forEach(r => {
-    const country = String(r[0] || '').replace(/[()]/g, '').trim()
+    const rawCountry = String(r[0] || '').replace(/[()]/g, '').trim()
     const pageType = String(r[1] || '').replace(/[()]/g, '').trim()
     const lgVal = numVal(r[bestPair.lg])
     const ssVal = numVal(r[bestPair.ss])
 
-    if (country.toLowerCase() === 'total' || country.toUpperCase() === 'TTL') {
-      // Microsite → Microsites 정규화 (시트 vs 코드 이름 차이 맞춤)
-      let key = /page total|^ttl$/i.test(pageType) ? 'TTL' : pageType
-      if (key.toLowerCase() === 'microsite') key = 'Microsites'
+    let key = /page total|^ttl$/i.test(pageType) ? 'TTL' : pageType
+    if (key.toLowerCase() === 'microsite') key = 'Microsites'
+
+    const cnty = CNTY_ALIAS[rawCountry] || rawCountry.toUpperCase()
+    if (cnty === 'TTL') {
       lg[key] = (lg[key] || 0) + lgVal
       samsung[key] = (samsung[key] || 0) + ssVal
+    } else {
+      if (!dotcomByCnty[cnty]) dotcomByCnty[cnty] = { lg: {}, samsung: {} }
+      dotcomByCnty[cnty].lg[key] = (dotcomByCnty[cnty].lg[key] || 0) + lgVal
+      dotcomByCnty[cnty].samsung[key] = (dotcomByCnty[cnty].samsung[key] || 0) + ssVal
     }
   })
 
-  return (lg.TTL || Object.keys(lg).length) ? { dotcom: { lg, samsung } } : {}
+  const result = {}
+  if (lg.TTL || Object.keys(lg).length) result.dotcom = { lg, samsung }
+  if (Object.keys(dotcomByCnty).length) result.dotcomByCnty = dotcomByCnty
+  return result
 }
 
 function parseCitTouchPoints(rows) {
@@ -632,10 +642,13 @@ function parseCitTouchPoints(rows) {
   // 월간 트렌드 데이터: { channelName: { month1: score, month2: score, ... } }
   const citTouchPointsTrend = {}
 
+  // 국가별 카테고리 Citation 수집
+  const citationsByCnty = {}   // { cnty: [{ source, score, ... }] }
+
   data.forEach(r => {
     const country = String(r[countryCol] || '').replace(/[()]/g, '').trim().toUpperCase()
     const channel = String(r[channelCol] || '').replace(/[()]/g, '').trim()
-    if (country !== 'TTL' || channel.toLowerCase() === 'total') return
+    if (channel.toLowerCase() === 'total') return
 
     // 최신 월 데이터 찾기
     let score = 0
@@ -643,16 +656,21 @@ function parseCitTouchPoints(rows) {
       const val = numVal(r[i])
       if (val > 0) { score = val; break }
     }
-    if (score > 0) citations.push({ source: channel, category: '', score, delta: 0, ratio: 0 })
 
-    // 모든 월별 데이터 수집 (트렌드용)
-    const monthData = {}
-    monthLabels.forEach(({ col, label }) => {
-      const val = numVal(r[col])
-      if (val > 0) monthData[label] = val
-    })
-    if (Object.keys(monthData).length > 0) {
-      citTouchPointsTrend[channel] = monthData
+    if (country === 'TTL') {
+      if (score > 0) citations.push({ source: channel, category: '', score, delta: 0, ratio: 0 })
+      // 모든 월별 데이터 수집 (트렌드용)
+      const monthData = {}
+      monthLabels.forEach(({ col, label }) => {
+        const val = numVal(r[col])
+        if (val > 0) monthData[label] = val
+      })
+      if (Object.keys(monthData).length > 0) {
+        citTouchPointsTrend[channel] = monthData
+      }
+    } else if (score > 0) {
+      if (!citationsByCnty[country]) citationsByCnty[country] = []
+      citationsByCnty[country].push({ source: channel, category: '', score, delta: 0, ratio: 0 })
     }
   })
 
@@ -663,6 +681,16 @@ function parseCitTouchPoints(rows) {
     c.ratio = total > 0 ? +((c.score / total) * 100).toFixed(1) : 0
   })
 
+  // 국가별 citations도 순위 계산
+  for (const [cnty, list] of Object.entries(citationsByCnty)) {
+    const cntyTotal = list.reduce((s, c) => s + c.score, 0)
+    list.sort((a, b) => b.score - a.score)
+    list.forEach((c, i) => {
+      c.rank = i + 1
+      c.ratio = cntyTotal > 0 ? +((c.score / cntyTotal) * 100).toFixed(1) : 0
+    })
+  }
+
   // 유효한 월 라벨만 필터링 (데이터가 있는 월)
   const validMonths = monthLabels.map(m => m.label).filter(label =>
     Object.values(citTouchPointsTrend).some(d => d[label] > 0)
@@ -670,6 +698,7 @@ function parseCitTouchPoints(rows) {
 
   const result = {}
   if (citations.length > 0) result.citations = citations
+  if (Object.keys(citationsByCnty).length > 0) result.citationsByCnty = citationsByCnty
   if (Object.keys(citTouchPointsTrend).length > 0) {
     result.citTouchPointsTrend = citTouchPointsTrend
     result.citTrendMonths = validMonths

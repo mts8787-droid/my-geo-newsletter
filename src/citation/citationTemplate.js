@@ -365,11 +365,13 @@ function citDomainBumpChartHtml(citDomainTrend, citDomainMonths, meta, t, lang) 
   </div>`
 }
 
-export function generateCitationHTML(meta, _total, _products, citations, dotcom, lang, _productsCnty, citationsCnty, trendData) {
+export function generateCitationHTML(meta, _total, _products, citations, dotcom, lang, _productsCnty, citationsCnty, trendData, citationsByCnty, dotcomByCnty) {
   const t = T[lang] || T.ko
   const { citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths } = trendData || {}
+  citationsByCnty = citationsByCnty || {}
+  dotcomByCnty = dotcomByCnty || {}
 
-  // 국가 필터 적용: 선택된 국가만 포함 (TTL은 항상 포함)
+  // 국가 필터 적용
   const cntyFilter = meta.citCntyFilter || {}
   const isCountryOn = (code) => cntyFilter[code] !== false
   const allCountryCodes = Object.values(REGIONS).flatMap(r => r.countries)
@@ -379,11 +381,42 @@ export function generateCitationHTML(meta, _total, _products, citations, dotcom,
     ? citationsCnty.filter(r => r.cnty === 'TTL' || enabledCountries.includes(r.cnty))
     : []
 
+  // 카테고리별 Citation: 국가 필터 반영
+  let filteredCitations = citations
+  if (!allSelected && Object.keys(citationsByCnty).length > 0) {
+    // 선택된 국가의 카테고리별 데이터를 합산
+    const catMap = {}
+    enabledCountries.forEach(cnty => {
+      const list = citationsByCnty[cnty] || []
+      list.forEach(c => {
+        if (!catMap[c.source]) catMap[c.source] = { source: c.source, category: c.category, score: 0, delta: 0 }
+        catMap[c.source].score += c.score
+      })
+    })
+    const merged = Object.values(catMap).sort((a, b) => b.score - a.score)
+    const total = merged.reduce((s, c) => s + c.score, 0)
+    merged.forEach((c, i) => { c.rank = i + 1; c.ratio = total > 0 ? +((c.score / total) * 100).toFixed(1) : 0 })
+    if (merged.length > 0) filteredCitations = merged
+  }
+
+  // 닷컴 Citation: 국가 필터 반영
+  let filteredDotcom = dotcom
+  if (!allSelected && Object.keys(dotcomByCnty).length > 0) {
+    const lg = {}, samsung = {}
+    enabledCountries.forEach(cnty => {
+      const d = dotcomByCnty[cnty]
+      if (!d) return
+      for (const [k, v] of Object.entries(d.lg || {})) { lg[k] = (lg[k] || 0) + v }
+      for (const [k, v] of Object.entries(d.samsung || {})) { samsung[k] = (samsung[k] || 0) + v }
+    })
+    if (Object.keys(lg).length > 0) filteredDotcom = { lg, samsung }
+  }
+
   // 월간 탭 콘텐츠
   const monthlyContent = [
-    meta.showCitations !== false ? citationSectionHtml(citations, meta, t) : '',
-    (meta.showCitDomain !== false || meta.showCitCnty !== false) ? citDomainSectionHtml(filteredCitCnty, meta, t, citations, lang, !allSelected) : '',
-    meta.showDotcom !== false ? dotcomSectionHtml(dotcom, meta, t) : '',
+    meta.showCitations !== false ? citationSectionHtml(filteredCitations, meta, t) : '',
+    (meta.showCitDomain !== false || meta.showCitCnty !== false) ? citDomainSectionHtml(filteredCitCnty, meta, t, filteredCitations, lang, !allSelected) : '',
+    meta.showDotcom !== false ? dotcomSectionHtml(filteredDotcom, meta, t) : '',
   ].join('')
 
   // 월간 트렌드 탭 콘텐츠

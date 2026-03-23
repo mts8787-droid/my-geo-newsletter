@@ -6,8 +6,7 @@ import { LG_RED, FONT } from './constants.js'
 import { inputStyle } from './components.jsx'
 import { resolveDataForLang } from './utils.js'
 import { saveSyncData } from './api.js'
-import { generateProductInsight, generateProductHowToRead, generateDotcomInsight, generateDotcomHowToRead, generateCntyHowToRead } from './insights.js'
-import CitationConditionPanel from './CitationConditionPanel.jsx'
+import { generateProductInsight, generateProductHowToRead, generateCntyHowToRead } from './insights.js'
 
 export default
 function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, total, setTotal, products, setProducts, citations, setCitations, dotcom, setDotcom, productsCnty, setProductsCnty, citationsCnty, setCitationsCnty, resolved, previewLang, setPreviewLang, snapshots, setSnapshots, setWeeklyLabels, setWeeklyAll, weeklyLabels, weeklyAll, generateHTML }) {
@@ -15,14 +14,12 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
   const [gsSyncing, setGsSyncing] = useState(false)
   const [gsStatus,  setGsStatus]  = useState(null)
   const [gsMsg,     setGsMsg]     = useState('')
+  const [debugLog,  setDebugLog]  = useState('')
   const [copied,    setCopied]    = useState(false)
   const [toEmail,   setToEmail]   = useState('')
   const [mailSent,  setMailSent]  = useState(false)
   const [showTranslatePopup, setShowTranslatePopup] = useState(false)
   const [translating, setTranslating] = useState(false)
-  const [scriptUrl, setScriptUrl] = useState(localStorage.getItem('geo-script-url') || '')
-  const [exporting, setExporting] = useState(false)
-  const [exportMsg, setExportMsg] = useState('')
   const [publishing, setPublishing] = useState(false)
   const [publishMsg, setPublishMsg] = useState('')
 
@@ -273,9 +270,17 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
       setGsStatus('error'); setGsMsg('올바른 Google Sheets URL을 입력하세요.')
       setTimeout(() => setGsStatus(null), 3000); return
     }
-    setGsSyncing(true); setGsStatus(null); setGsMsg('')
+    setGsSyncing(true); setGsStatus(null); setGsMsg(''); setDebugLog('')
+    const _log = []
     try {
       const parsed = await syncFromGoogleSheets(sheetId, msg => setGsMsg(msg))
+      _log.push(`[Sync] parsed keys: ${Object.keys(parsed).join(', ') || '(없음)'}`)
+      if (parsed.meta) _log.push(`[Sync] meta keys: ${Object.keys(parsed.meta).join(', ')}`)
+      if (parsed.productsPartial) _log.push(`[Sync] products: ${parsed.productsPartial.length}건`)
+      _log.push(`[Sync] citations: ${parsed.citations?.length ?? 0}건`)
+      _log.push(`[Sync] citationsCnty: ${parsed.citationsCnty?.length ?? 0}건`)
+      _log.push(`[Sync] dotcom: ${parsed.dotcom ? 'OK' : '(없음)'}`)
+      _log.push(`[Sync] productsCnty: ${parsed.productsCnty?.length ?? 0}건`)
       if (parsed.meta)         setMetaKo(m => ({ ...m, ...parsed.meta }))
       if (parsed.citations)    setCitations(parsed.citations)
       if (parsed.dotcom)       setDotcom(d => ({ ...d, ...parsed.dotcom }))
@@ -346,6 +351,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
           citationsCnty: parsed.citationsCnty || null,
         })
       }, 100)
+      setDebugLog(_log.join('\n'))
       setGsStatus('ok'); setGsMsg(mode === 'dashboard' ? '동기화 완료! EN 자동 번역 중...' : '동기화 완료!')
       // Dashboard mode: auto-translate after sync (overrides로 최신 parsed 데이터 전달)
       if (mode === 'dashboard') {
@@ -365,56 +371,12 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
         setGsMsg('동기화 + 번역 완료!')
       }
     } catch (err) {
+      _log.push(`[ERROR] ${err.message}`)
       setGsStatus('error'); setGsMsg(err.message)
+      setDebugLog(_log.join('\n'))
     } finally {
       setGsSyncing(false)
       setTimeout(() => { setGsStatus(null); setGsMsg('') }, 4000)
-    }
-  }
-
-  async function handleExportMeta() {
-    if (exporting || !scriptUrl.trim()) return
-    setExporting(true); setExportMsg('')
-    localStorage.setItem('geo-script-url', scriptUrl.trim())
-    try {
-      const exportData = {
-        action: 'writeMeta',
-        meta: {
-          period: meta.period, team: meta.team, reportNo: meta.reportNo,
-          reportType: meta.reportType, title: meta.title,
-          titleFontSize: meta.titleFontSize, titleColor: meta.titleColor,
-          dateLine: meta.dateLine, totalInsight: meta.totalInsight,
-          productInsight: meta.productInsight, productHowToRead: meta.productHowToRead,
-          citationInsight: meta.citationInsight, citationHowToRead: meta.citationHowToRead,
-          dotcomInsight: meta.dotcomInsight, dotcomHowToRead: meta.dotcomHowToRead,
-          cntyInsight: meta.cntyInsight, cntyHowToRead: meta.cntyHowToRead,
-          citDomainInsight: meta.citDomainInsight, citDomainHowToRead: meta.citDomainHowToRead,
-          citCntyInsight: meta.citCntyInsight, citCntyHowToRead: meta.citCntyHowToRead,
-          kpiLogicText: meta.kpiLogicText,
-          noticeText: meta.noticeText,
-          showNotice: meta.showNotice, showKpiLogic: meta.showKpiLogic,
-          showProductInsight: meta.showProductInsight, showProductHowToRead: meta.showProductHowToRead,
-          showCitationInsight: meta.showCitationInsight, showCitationHowToRead: meta.showCitationHowToRead,
-          showDotcomInsight: meta.showDotcomInsight, showDotcomHowToRead: meta.showDotcomHowToRead,
-          showCntyInsight: meta.showCntyInsight, showCntyHowToRead: meta.showCntyHowToRead,
-          showCitDomainInsight: meta.showCitDomainInsight, showCitDomainHowToRead: meta.showCitDomainHowToRead,
-          showCitCntyInsight: meta.showCitCntyInsight, showCitCntyHowToRead: meta.showCitCntyHowToRead,
-        },
-        total,
-      }
-      const res = await fetch('/api/gsheet-export', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ scriptUrl: scriptUrl.trim(), data: exportData }),
-      })
-      const result = await res.json()
-      if (!result.ok) throw new Error(result.error || '내보내기 실패')
-      setExportMsg('✓ 구글 시트 내보내기 완료!')
-    } catch (err) {
-      setExportMsg('✗ ' + err.message)
-    } finally {
-      setExporting(false)
-      setTimeout(() => setExportMsg(''), 5000)
     }
   }
 
@@ -477,6 +439,138 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
             {gsMsg}
           </div>
         )}
+        {debugLog && (
+          <div style={{
+            padding: '8px 10px', borderRadius: 7, fontSize: 10, fontFamily: 'monospace', lineHeight: 1.7,
+            background: '#0F172A', color: '#94A3B8',
+            border: '1px solid #1E293B', marginBottom: 8,
+            whiteSpace: 'pre-wrap', wordBreak: 'break-all', maxHeight: 200, overflowY: 'auto',
+          }}>
+            {debugLog}
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText(debugLog).then(() => {
+                  const btn = document.getElementById('vis-debug-copy-btn')
+                  if (btn) { btn.textContent = '복사됨!'; setTimeout(() => { btn.textContent = '로그 복사' }, 1500) }
+                })
+              }}
+              id="vis-debug-copy-btn"
+              style={{
+                display: 'block', marginTop: 6, padding: '4px 10px', borderRadius: 5,
+                border: '1px solid #334155', background: '#1E293B', color: '#94A3B8',
+                fontSize: 10, fontWeight: 700, fontFamily: FONT, cursor: 'pointer',
+              }}
+            >로그 복사</button>
+          </div>
+        )}
+
+        <div style={{ height: 1, background: '#1E293B', marginBottom: 16 }} />
+
+        {/* AI 번역 */}
+        <button onClick={handleTranslate} disabled={translating} style={{
+          width: '100%', padding: '9px 0', background: translating ? '#1E293B' : '#4F46E5', border: '1px solid #6366F133',
+          borderRadius: 8, fontSize: 11, fontWeight: 700, color: '#E0E7FF', fontFamily: FONT,
+          cursor: translating ? 'wait' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, marginBottom: 12,
+          opacity: translating ? 0.6 : 1,
+        }}>
+          <Languages size={13} /> {translating ? '번역 중...' : 'AI 번역 (EN)'}
+        </button>
+
+        {/* 번역 확인 팝업 */}
+        {showTranslatePopup && (
+          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 9999,
+            display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ background: '#1E293B', border: '1px solid #334155', borderRadius: 14,
+              padding: '24px 28px', maxWidth: 380, width: '90%', boxShadow: '0 20px 60px rgba(0,0,0,0.5)' }}>
+              <p style={{ margin: '0 0 6px', fontSize: 15, fontWeight: 700, color: '#FFFFFF', fontFamily: FONT }}>
+                AI 번역 확인
+              </p>
+              <p style={{ margin: '0 0 20px', fontSize: 12, color: '#94A3B8', lineHeight: 1.6, fontFamily: FONT }}>
+                좌측 패널의 모든 텍스트를 영어로 번역하고,<br/>
+                영어 버전 스냅샷을 자동 저장합니다.<br/>
+                진행하시겠습니까?
+              </p>
+              <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+                <button onClick={() => setShowTranslatePopup(false)} style={{
+                  padding: '8px 20px', borderRadius: 8, border: '1px solid #334155', background: 'transparent',
+                  color: '#94A3B8', fontSize: 12, fontWeight: 600, fontFamily: FONT, cursor: 'pointer' }}>
+                  아니오
+                </button>
+                <button onClick={executeTranslate} style={{
+                  padding: '8px 20px', borderRadius: 8, border: 'none', background: '#4F46E5',
+                  color: '#FFFFFF', fontSize: 12, fontWeight: 700, fontFamily: FONT, cursor: 'pointer' }}>
+                  예, 번역하기
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 구글 시트 템플릿 다운로드 */}
+        <button onClick={handleDownload} style={{
+          width: '100%', padding: '9px 0', background: '#166534', border: '1px solid #22C55E33',
+          borderRadius: 8, fontSize: 11, fontWeight: 700, color: '#86EFAC', fontFamily: FONT,
+          cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, marginBottom: 12,
+        }}>
+          <Download size={12} /> 구글 시트 템플릿 다운로드
+        </button>
+
+        {/* 웹 게시 (KO+EN 동시) */}
+        <button onClick={handlePublish} disabled={publishing} style={{
+          width: '100%', padding: '9px 0',
+          background: publishing ? '#1E293B' : '#7C3AED',
+          border: 'none', borderRadius: 8, fontSize: 11, fontWeight: 700,
+          color: publishing ? '#94A3B8' : '#FFFFFF',
+          fontFamily: FONT, cursor: publishing ? 'wait' : 'pointer',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5,
+          marginBottom: 8, transition: 'all 0.2s',
+        }}>
+          <Globe size={12} />
+          {publishing ? '게시 중...' : '웹사이트 게시 (KO + EN)'}
+        </button>
+
+        {publishMsg && (
+          <div style={{
+            padding: '8px 10px', borderRadius: 7, fontSize: 11, fontFamily: FONT, lineHeight: 1.8,
+            background: publishMsg.startsWith('ERROR:') ? '#450A0A' : '#14532D',
+            color: publishMsg.startsWith('ERROR:') ? '#FCA5A5' : '#86EFAC',
+            border: `1px solid ${publishMsg.startsWith('ERROR:') ? '#EF444433' : '#22C55E33'}`,
+            marginBottom: 8, wordBreak: 'break-all', whiteSpace: 'pre-line',
+          }}>
+            {publishMsg.startsWith('ERROR:') ? publishMsg.slice(6) : (
+              <span style={{ display: 'flex', alignItems: 'flex-start', gap: 5 }}>
+                <Link2 size={11} style={{ marginTop: 3, flexShrink: 0 }} /> <span>{publishMsg}<br/><span style={{ color: '#64748B' }}>(복사됨)</span></span>
+              </span>
+            )}
+          </div>
+        )}
+
+        {/* 게시 상태 */}
+        {publishInfo?.published && (
+          <div style={{ background: '#1E293B', borderRadius: 8, padding: '8px 10px', marginBottom: 12 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+              <span style={{ fontSize: 10, fontWeight: 700, color: '#64748B', fontFamily: FONT, textTransform: 'uppercase', letterSpacing: 0.8 }}>게시 중</span>
+              <button onClick={handleUnpublish} style={{ padding: '2px 8px', borderRadius: 4, border: 'none', cursor: 'pointer',
+                background: '#7F1D1D', color: '#FCA5A5', fontSize: 10, fontFamily: FONT, fontWeight: 600 }}>삭제</button>
+            </div>
+            {[{ label: 'KO', url: publishInfo.urls.ko }, { label: 'EN', url: publishInfo.urls.en }].map(({ label, url }) => (
+              <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 3 }}>
+                <a href={url} target="_blank" rel="noopener noreferrer"
+                  style={{ flex: 1, fontSize: 11, color: '#A78BFA', fontFamily: FONT, textDecoration: 'none', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {label}: {url}
+                </a>
+                <button onClick={() => navigator.clipboard.writeText(`${window.location.origin}${url}`)} title="URL 복사"
+                  style={{ padding: '2px 5px', borderRadius: 4, border: 'none', cursor: 'pointer', background: '#334155', color: '#94A3B8', fontSize: 10, display: 'flex' }}>
+                  <Link2 size={10} />
+                </button>
+              </div>
+            ))}
+            <span style={{ fontSize: 10, color: '#475569', fontFamily: FONT }}>
+              {publishInfo.ts ? new Date(publishInfo.ts).toLocaleString('ko-KR') : ''}
+            </span>
+          </div>
+        )}
+
         <div style={{ height: 1, background: '#1E293B', marginBottom: 16 }} />
 
         {/* ── 헤더 편집 ── */}
@@ -768,67 +862,6 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
           )
         })()}
 
-        {/* ── Citation 조건 패널 (별도 컴포넌트) ── */}
-        <div style={{ height: 1, background: '#1E293B', marginBottom: 16 }} />
-        <CitationConditionPanel meta={meta} setMeta={setMeta} resolved={resolved} />
-        <div style={{ height: 1, background: '#1E293B', marginBottom: 16 }} />
-
-        {/* 닷컴 Citation 인사이트 */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-          <p style={{ margin: 0, fontSize: 11, color: '#64748B', fontFamily: FONT }}>닷컴 Citation 인사이트</p>
-          <div style={{ display: 'flex', gap: 4 }}>
-            <button onClick={() => setMeta(m => ({ ...m, dotcomInsight: generateDotcomInsight(dotcom) }))}
-              title="AI 인사이트 자동생성"
-              style={{ padding: '2px 6px', borderRadius: 4, border: 'none', cursor: 'pointer',
-                background: '#4F46E5', color: '#FFFFFF',
-                fontSize: 11, fontWeight: 700, fontFamily: FONT, display: 'flex', alignItems: 'center', gap: 3 }}>
-              <Sparkles size={9} /> AI 생성
-            </button>
-            <button onClick={() => setMeta(m => ({ ...m, showDotcomInsight: !m.showDotcomInsight }))}
-              style={{ padding: '2px 8px', borderRadius: 4, border: 'none', cursor: 'pointer',
-                background: meta.showDotcomInsight ? LG_RED : '#1E293B',
-                color: meta.showDotcomInsight ? '#FFFFFF' : '#475569',
-                fontSize: 11, fontWeight: 700, fontFamily: FONT }}>
-              {meta.showDotcomInsight ? 'ON' : 'OFF'}
-            </button>
-          </div>
-        </div>
-        <textarea
-          value={meta.dotcomInsight}
-          onChange={e => setMeta(m => ({ ...m, dotcomInsight: e.target.value }))}
-          rows={12}
-          placeholder="닷컴 Citation 인사이트를 입력하세요... (AI 생성 버튼으로 자동 작성 가능)"
-          style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6, marginBottom: 8 }}
-        />
-
-        {/* 닷컴 Citation How to Read */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-          <p style={{ margin: 0, fontSize: 11, color: '#64748B', fontFamily: FONT }}>닷컴 Citation How to Read</p>
-          <div style={{ display: 'flex', gap: 4 }}>
-            <button onClick={() => setMeta(m => ({ ...m, dotcomHowToRead: generateDotcomHowToRead() }))}
-              title="AI 인사이트 자동생성"
-              style={{ padding: '2px 6px', borderRadius: 4, border: 'none', cursor: 'pointer',
-                background: '#4F46E5', color: '#FFFFFF',
-                fontSize: 11, fontWeight: 700, fontFamily: FONT, display: 'flex', alignItems: 'center', gap: 3 }}>
-              <Sparkles size={9} /> AI 생성
-            </button>
-            <button onClick={() => setMeta(m => ({ ...m, showDotcomHowToRead: !m.showDotcomHowToRead }))}
-              style={{ padding: '2px 8px', borderRadius: 4, border: 'none', cursor: 'pointer',
-                background: meta.showDotcomHowToRead ? LG_RED : '#1E293B',
-                color: meta.showDotcomHowToRead ? '#FFFFFF' : '#475569',
-                fontSize: 11, fontWeight: 700, fontFamily: FONT }}>
-              {meta.showDotcomHowToRead ? 'ON' : 'OFF'}
-            </button>
-          </div>
-        </div>
-        <textarea
-          value={meta.dotcomHowToRead}
-          onChange={e => setMeta(m => ({ ...m, dotcomHowToRead: e.target.value }))}
-          rows={4}
-          placeholder="닷컴 Citation How to Read 설명을 입력하세요... (AI 생성 버튼으로 자동 작성 가능)"
-          style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6, marginBottom: 16 }}
-        />
-
         {/* Action Plan 섹션 */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
           <p style={{ margin: 0, fontSize: 11, color: '#64748B', fontFamily: FONT }}>Action Plan 섹션</p>
@@ -850,191 +883,6 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
         <p style={{ margin: '0 0 16px', fontSize: 11, color: '#475569', fontFamily: FONT }}>**텍스트** → <strong>볼드</strong> · 줄바꿈 지원</p>
 
         <div style={{ height: 1, background: '#1E293B', marginBottom: 16 }} />
-
-        {/* AI 번역 */}
-        <button onClick={handleTranslate} disabled={translating} style={{
-          width: '100%', padding: '9px 0', background: translating ? '#1E293B' : '#4F46E5', border: '1px solid #6366F133',
-          borderRadius: 8, fontSize: 11, fontWeight: 700, color: '#E0E7FF', fontFamily: FONT,
-          cursor: translating ? 'wait' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, marginBottom: 12,
-          opacity: translating ? 0.6 : 1,
-        }}>
-          <Languages size={13} /> {translating ? '번역 중...' : 'AI 번역 (EN)'}
-        </button>
-
-        {/* 번역 확인 팝업 */}
-        {showTranslatePopup && (
-          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 9999,
-            display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <div style={{ background: '#1E293B', border: '1px solid #334155', borderRadius: 14,
-              padding: '24px 28px', maxWidth: 380, width: '90%', boxShadow: '0 20px 60px rgba(0,0,0,0.5)' }}>
-              <p style={{ margin: '0 0 6px', fontSize: 15, fontWeight: 700, color: '#FFFFFF', fontFamily: FONT }}>
-                AI 번역 확인
-              </p>
-              <p style={{ margin: '0 0 20px', fontSize: 12, color: '#94A3B8', lineHeight: 1.6, fontFamily: FONT }}>
-                좌측 패널의 모든 텍스트를 영어로 번역하고,<br/>
-                영어 버전 스냅샷을 자동 저장합니다.<br/>
-                진행하시겠습니까?
-              </p>
-              <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-                <button onClick={() => setShowTranslatePopup(false)} style={{
-                  padding: '8px 20px', borderRadius: 8, border: '1px solid #334155', background: 'transparent',
-                  color: '#94A3B8', fontSize: 12, fontWeight: 600, fontFamily: FONT, cursor: 'pointer' }}>
-                  아니오
-                </button>
-                <button onClick={executeTranslate} style={{
-                  padding: '8px 20px', borderRadius: 8, border: 'none', background: '#4F46E5',
-                  color: '#FFFFFF', fontSize: 12, fontWeight: 700, fontFamily: FONT, cursor: 'pointer' }}>
-                  예, 번역하기
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        <div style={{ height: 1, background: '#1E293B', marginBottom: 16 }} />
-
-        {/* 데이터 연동 */}
-        <p style={{ margin: '0 0 10px 2px', fontSize: 11, fontWeight: 700, color: '#475569',
-          textTransform: 'uppercase', letterSpacing: 1, fontFamily: FONT }}>
-          데이터 연동
-        </p>
-
-        {/* 템플릿 다운로드 */}
-        <button onClick={handleDownload} style={{
-          width: '100%', padding: '9px 0', background: '#166534', border: '1px solid #22C55E33',
-          borderRadius: 8, fontSize: 11, fontWeight: 700, color: '#86EFAC', fontFamily: FONT,
-          cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, marginBottom: 12,
-        }}>
-          <Download size={12} /> 구글 시트 템플릿 다운로드
-        </button>
-
-        {/* 사용 방법 */}
-        <div style={{ background: '#1E293B', borderRadius: 8, padding: '10px 12px', marginBottom: 12 }}>
-          <p style={{ margin: '0 0 6px', fontSize: 11, fontWeight: 700, color: '#64748B', fontFamily: FONT,
-            textTransform: 'uppercase', letterSpacing: 0.8 }}>연동 방법</p>
-          <p style={{ margin: 0, fontSize: 11, color: '#475569', fontFamily: FONT, lineHeight: 1.8 }}>
-            ① 템플릿 다운로드 (.xlsx)<br />
-            ② Google Sheets → 파일 → 가져오기<br />
-            ③ 공유 → <span style={{ color: '#94A3B8' }}>링크가 있는 모든 사용자 (뷰어)</span><br />
-            ④ URL 붙여넣기 후 동기화
-          </p>
-        </div>
-
-        {/* ── 구글 시트 내보내기 ── */}
-        <div style={{ height: 1, background: '#1E293B', margin: '16px 0' }} />
-        <p style={{ margin: '0 0 10px 2px', fontSize: 11, fontWeight: 700, color: '#475569',
-          textTransform: 'uppercase', letterSpacing: 1, fontFamily: FONT }}>
-          구글 시트 내보내기
-        </p>
-
-        <p style={{ margin: '0 0 4px', fontSize: 11, color: '#475569', fontFamily: FONT }}>Apps Script 웹앱 URL</p>
-        <input
-          value={scriptUrl}
-          onChange={e => setScriptUrl(e.target.value)}
-          placeholder="https://script.google.com/macros/s/.../exec"
-          style={{ ...inputStyle, fontSize: 11, padding: '7px 9px', marginBottom: 8 }}
-        />
-
-        <button onClick={handleExportMeta} disabled={exporting || !scriptUrl.trim()} style={{
-          width: '100%', padding: '9px 0', borderRadius: 8, border: 'none',
-          cursor: (exporting || !scriptUrl.trim()) ? 'not-allowed' : 'pointer',
-          background: exporting ? '#1E293B' : !scriptUrl.trim() ? '#1E293B' : '#1D4ED8',
-          color: exporting ? '#94A3B8' : !scriptUrl.trim() ? '#334155' : '#FFFFFF',
-          fontSize: 11, fontWeight: 700, fontFamily: FONT,
-          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5,
-          marginBottom: 8, transition: 'all 0.2s',
-        }}>
-          <RefreshCw size={12} style={{ animation: exporting ? 'spin 1s linear infinite' : 'none' }} />
-          {exporting ? '내보내는 중...' : 'MetaData 내보내기'}
-        </button>
-
-        {exportMsg && (
-          <div style={{
-            padding: '8px 10px', borderRadius: 7, fontSize: 11, fontFamily: FONT, lineHeight: 1.6,
-            background: exportMsg.startsWith('✓') ? '#14532D' : '#450A0A',
-            color: exportMsg.startsWith('✓') ? '#86EFAC' : '#FCA5A5',
-            border: `1px solid ${exportMsg.startsWith('✓') ? '#22C55E33' : '#EF444433'}`,
-            marginBottom: 8,
-          }}>
-            {exportMsg}
-          </div>
-        )}
-
-        {/* Apps Script 설정 안내 */}
-        <div style={{ background: '#1E293B', borderRadius: 8, padding: '10px 12px', marginBottom: 8 }}>
-          <p style={{ margin: '0 0 6px', fontSize: 11, fontWeight: 700, color: '#64748B', fontFamily: FONT,
-            textTransform: 'uppercase', letterSpacing: 0.8 }}>Apps Script 설정</p>
-          <p style={{ margin: 0, fontSize: 11, color: '#475569', fontFamily: FONT, lineHeight: 1.8 }}>
-            ① Google Sheets → 확장 프로그램 → Apps Script<br />
-            ② 코드 붙여넣기 후 배포 → 웹 앱<br />
-            ③ 액세스: <span style={{ color: '#94A3B8' }}>모든 사용자</span><br />
-            ④ 배포 URL 붙여넣기
-          </p>
-        </div>
-
-        <div style={{ height: 1, background: '#1E293B', margin: '16px 0' }} />
-
-        {/* 출력 */}
-        <p style={{ margin: '0 0 10px 2px', fontSize: 11, fontWeight: 700, color: '#475569',
-          textTransform: 'uppercase', letterSpacing: 1, fontFamily: FONT }}>
-          출력
-        </p>
-
-        {/* 웹 게시 (KO+EN 동시) */}
-        <button onClick={handlePublish} disabled={publishing} style={{
-          width: '100%', padding: '9px 0',
-          background: publishing ? '#1E293B' : '#7C3AED',
-          border: 'none', borderRadius: 8, fontSize: 11, fontWeight: 700,
-          color: publishing ? '#94A3B8' : '#FFFFFF',
-          fontFamily: FONT, cursor: publishing ? 'wait' : 'pointer',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5,
-          marginBottom: 8, transition: 'all 0.2s',
-        }}>
-          <Globe size={12} />
-          {publishing ? '게시 중...' : '웹사이트 게시 (KO + EN)'}
-        </button>
-
-        {publishMsg && (
-          <div style={{
-            padding: '8px 10px', borderRadius: 7, fontSize: 11, fontFamily: FONT, lineHeight: 1.8,
-            background: publishMsg.startsWith('ERROR:') ? '#450A0A' : '#14532D',
-            color: publishMsg.startsWith('ERROR:') ? '#FCA5A5' : '#86EFAC',
-            border: `1px solid ${publishMsg.startsWith('ERROR:') ? '#EF444433' : '#22C55E33'}`,
-            marginBottom: 8, wordBreak: 'break-all', whiteSpace: 'pre-line',
-          }}>
-            {publishMsg.startsWith('ERROR:') ? publishMsg.slice(6) : (
-              <span style={{ display: 'flex', alignItems: 'flex-start', gap: 5 }}>
-                <Link2 size={11} style={{ marginTop: 3, flexShrink: 0 }} /> <span>{publishMsg}<br/><span style={{ color: '#64748B' }}>(복사됨)</span></span>
-              </span>
-            )}
-          </div>
-        )}
-
-        {/* 게시 상태 */}
-        {publishInfo?.published && (
-          <div style={{ background: '#1E293B', borderRadius: 8, padding: '8px 10px', marginBottom: 12 }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-              <span style={{ fontSize: 10, fontWeight: 700, color: '#64748B', fontFamily: FONT, textTransform: 'uppercase', letterSpacing: 0.8 }}>게시 중</span>
-              <button onClick={handleUnpublish} style={{ padding: '2px 8px', borderRadius: 4, border: 'none', cursor: 'pointer',
-                background: '#7F1D1D', color: '#FCA5A5', fontSize: 10, fontFamily: FONT, fontWeight: 600 }}>삭제</button>
-            </div>
-            {[{ label: 'KO', url: publishInfo.urls.ko }, { label: 'EN', url: publishInfo.urls.en }].map(({ label, url }) => (
-              <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 3 }}>
-                <a href={url} target="_blank" rel="noopener noreferrer"
-                  style={{ flex: 1, fontSize: 11, color: '#A78BFA', fontFamily: FONT, textDecoration: 'none', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {label}: {url}
-                </a>
-                <button onClick={() => navigator.clipboard.writeText(`${window.location.origin}${url}`)} title="URL 복사"
-                  style={{ padding: '2px 5px', borderRadius: 4, border: 'none', cursor: 'pointer', background: '#334155', color: '#94A3B8', fontSize: 10, display: 'flex' }}>
-                  <Link2 size={10} />
-                </button>
-              </div>
-            ))}
-            <span style={{ fontSize: 10, color: '#475569', fontFamily: FONT }}>
-              {publishInfo.ts ? new Date(publishInfo.ts).toLocaleString('ko-KR') : ''}
-            </span>
-          </div>
-        )}
 
         {/* HTML 복사 */}
         <button onClick={handleCopyHtml} style={{
