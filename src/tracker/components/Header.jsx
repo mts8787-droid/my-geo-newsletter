@@ -24,7 +24,7 @@ export default function Header({
           <select
             value={selectedMonth}
             onChange={e => setSelectedMonth(e.target.value)}
-            className="appearance-none bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg px-3 py-1.5 pr-8 text-[18px] font-bold text-[#111827] cursor-pointer hover:border-[#CBD5E1] focus:outline-none focus:border-[#CF0652] transition-colors"
+            className="appearance-none bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg px-3 py-1.5 pr-8 text-[16px] font-bold text-[#111827] cursor-pointer hover:border-[#CBD5E1] focus:outline-none focus:border-[#CF0652] transition-colors"
           >
             {MONTHS.map(m => (
               <option key={m} value={m}>{m}</option>
@@ -58,7 +58,7 @@ export default function Header({
               <button
                 onClick={onRefresh}
                 disabled={loading}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[18px] text-[#64748B] hover:text-[#111827] hover:bg-[#F1F5F9] transition-colors disabled:opacity-40"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[16px] text-[#64748B] hover:text-[#111827] hover:bg-[#F1F5F9] transition-colors disabled:opacity-40"
               >
                 <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
                 새로고침
@@ -67,7 +67,7 @@ export default function Header({
               <button
                 onClick={onPublish}
                 disabled={publishing}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[18px] font-bold bg-[#CF0652] hover:bg-[#B8044A] text-white transition-colors disabled:opacity-50"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[16px] font-bold bg-[#CF0652] hover:bg-[#B8044A] text-white transition-colors disabled:opacity-50"
               >
                 <Globe size={16} className={publishing ? 'animate-spin' : ''} />
                 {publishing ? '게시 중...' : '웹 게시'}
@@ -76,7 +76,7 @@ export default function Header({
               {publishInfo?.published && (
                 <button
                   onClick={onUnpublish}
-                  className="flex items-center gap-1 px-2 py-1.5 rounded-md text-[18px] text-[#BE123C] hover:bg-[#FFF1F2] transition-colors"
+                  className="flex items-center gap-1 px-2 py-1.5 rounded-md text-[16px] text-[#BE123C] hover:bg-[#FFF1F2] transition-colors"
                   title="게시 취소"
                 >
                   <Trash2 size={16} />

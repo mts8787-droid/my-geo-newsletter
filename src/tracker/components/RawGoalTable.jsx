@@ -17,7 +17,7 @@ export default function RawGoalTable({ rows, selectedSH }) {
       </div>
 
       <div className="overflow-x-auto">
-        <table style={{ width: '100%', fontSize: 18, borderCollapse: 'collapse' }}>
+        <table style={{ width: '100%', fontSize: 16, borderCollapse: 'collapse' }}>
           <thead>
             <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
               <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 16, fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', position: 'sticky', left: 0, zIndex: 10, background: '#F8FAFC', minWidth: 80 }}>Stakeholder</th>
@@ -75,7 +75,7 @@ export default function RawGoalTable({ rows, selectedSH }) {
 
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={3 + MONTHS.length + 1} style={{ padding: '32px 12px', textAlign: 'center', color: '#94A3B8', fontSize: 18 }}>
+                <td colSpan={3 + MONTHS.length + 1} style={{ padding: '32px 12px', textAlign: 'center', color: '#94A3B8', fontSize: 16 }}>
                   해당 스테이크홀더의 데이터가 없습니다.
                 </td>
               </tr>

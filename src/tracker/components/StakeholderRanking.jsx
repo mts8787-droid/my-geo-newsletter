@@ -20,7 +20,7 @@ export default function StakeholderRanking({ stakeholders, month, selectedSH }) 
           <span style={{ width: 3, height: 16, borderRadius: 8, background: '#CF0652', flexShrink: 0 }} />
           <h3 style={{ fontSize: 20, fontWeight: 700, color: '#111827', margin: 0 }}>Stakeholders별 달성률</h3>
           {totalWarnings > 0 && (
-            <span style={{ fontSize: 17, fontWeight: 700, color: '#BE123C', background: '#FFF1F2', border: '1px solid #FECDD3', padding: '2px 8px', borderRadius: 4 }}>
+            <span style={{ fontSize: 16, fontWeight: 700, color: '#BE123C', background: '#FFF1F2', border: '1px solid #FECDD3', padding: '2px 8px', borderRadius: 4 }}>
               미달성 과제 {totalWarnings}건
             </span>
           )}
@@ -48,17 +48,17 @@ export default function StakeholderRanking({ stakeholders, month, selectedSH }) 
               <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr 200px 200px', gap: 12, alignItems: 'center' }}>
                 {/* Stakeholder badge */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                  <span style={{ display: 'inline-block', padding: '4px 10px', borderRadius: 5, fontSize: 17, fontWeight: 700, background: color + '18', color: '#111827', border: `1px solid ${color}30`, textAlign: 'center' }}>
+                  <span style={{ display: 'inline-block', padding: '4px 10px', borderRadius: 5, fontSize: 16, fontWeight: 700, background: color + '18', color: '#111827', border: `1px solid ${color}30`, textAlign: 'center' }}>
                     {sh.name}
                   </span>
-                  <span style={{ fontSize: 14, color: '#64748B', textAlign: 'center' }}>
+                  <span style={{ fontSize: 16, color: '#64748B', textAlign: 'center' }}>
                     {sh.taskCount}건
                     {sh.warnings > 0 && <span style={{ color: '#BE123C' }}> · {sh.warnings}주의</span>}
                   </span>
                 </div>
 
                 {/* Task details — individual tasks inline */}
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px 16px', fontSize: 14, color: '#475569' }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px 16px', fontSize: 16, color: '#475569' }}>
                   {(sh.taskDetails || []).map((td, i) => {
                     const tdSt = td.rate !== null ? statusOf(td.rate) : { color: '#94A3B8', dot: '#CBD5E1' }
                     return (
@@ -76,7 +76,7 @@ export default function StakeholderRanking({ stakeholders, month, selectedSH }) 
 
                 {/* Month rate column */}
                 <div>
-                  <div style={{ fontSize: 14, color: '#64748B', marginBottom: 3, textAlign: 'center' }}>
+                  <div style={{ fontSize: 16, color: '#64748B', marginBottom: 3, textAlign: 'center' }}>
                     {month} <strong style={{ color: '#111827' }}>{fmt(sh.monthActual)}</strong>/<strong style={{ color: '#111827' }}>{fmt(sh.monthGoal)}</strong>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -84,7 +84,7 @@ export default function StakeholderRanking({ stakeholders, month, selectedSH }) 
                       <div style={{ height: '100%', borderRadius: 5, width: `${monthBarW}%`, background: mSt.dot, transition: 'width 0.7s ease-out' }} />
                       <div style={{ position: 'absolute', top: 0, height: '100%', width: 1, background: '#CBD5E1', left: `${Math.min(100 / maxVal * 100, 100)}%` }} />
                     </div>
-                    <span style={{ fontSize: 18, fontWeight: 900, color: mSt.color, minWidth: 60, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
+                    <span style={{ fontSize: 16, fontWeight: 900, color: mSt.color, minWidth: 60, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
                       {sh.monthRate.toFixed(1)}%
                     </span>
                   </div>
@@ -92,7 +92,7 @@ export default function StakeholderRanking({ stakeholders, month, selectedSH }) 
 
                 {/* Cumulative rate column */}
                 <div>
-                  <div style={{ fontSize: 14, color: '#64748B', marginBottom: 3, textAlign: 'center' }}>
+                  <div style={{ fontSize: 16, color: '#64748B', marginBottom: 3, textAlign: 'center' }}>
                     누적 <strong style={{ color: '#111827' }}>{fmt(sh.cumActual)}</strong>/<strong style={{ color: '#111827' }}>{fmt(sh.cumGoal)}</strong>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -100,7 +100,7 @@ export default function StakeholderRanking({ stakeholders, month, selectedSH }) 
                       <div style={{ height: '100%', borderRadius: 5, width: `${cumBarW}%`, background: cSt.dot, transition: 'width 0.7s ease-out' }} />
                       <div style={{ position: 'absolute', top: 0, height: '100%', width: 1, background: '#CBD5E1', left: `${Math.min(100 / maxVal * 100, 100)}%` }} />
                     </div>
-                    <span style={{ fontSize: 18, fontWeight: 900, color: cSt.color, minWidth: 60, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
+                    <span style={{ fontSize: 16, fontWeight: 900, color: cSt.color, minWidth: 60, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
                       {sh.cumRate.toFixed(1)}%
                     </span>
                   </div>
@@ -111,7 +111,7 @@ export default function StakeholderRanking({ stakeholders, month, selectedSH }) 
         })}
 
         {filtered.length === 0 && (
-          <p style={{ textAlign: 'center', color: '#94A3B8', padding: '16px 0', fontSize: 18 }}>해당 스테이크홀더가 없습니다.</p>
+          <p style={{ textAlign: 'center', color: '#94A3B8', padding: '16px 0', fontSize: 16 }}>해당 스테이크홀더가 없습니다.</p>
         )}
       </div>
     </div>

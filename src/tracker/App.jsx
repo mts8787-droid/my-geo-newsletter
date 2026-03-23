@@ -253,14 +253,14 @@ export default function App() {
 
       <main className="max-w-[1400px] mx-auto px-4 py-6 space-y-6">
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-600 text-[21px]">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-600 text-[16px]">
             {error}
           </div>
         )}
 
         {loading && !data && (
           <div className="flex items-center justify-center py-24">
-            <div className="flex items-center gap-3 text-gray-400 text-[21px]">
+            <div className="flex items-center gap-3 text-gray-400 text-[16px]">
               <div className="w-5 h-5 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
               데이터를 불러오는 중...
             </div>

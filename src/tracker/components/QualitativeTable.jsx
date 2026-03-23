@@ -17,11 +17,11 @@ export default function QualitativeTable({ goals, results, selectedSH, month }) 
     <div style={{ background: '#fff', border: '1px solid #E2E8F0', borderRadius: 12, overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
       <div style={{ padding: '16px 20px', borderBottom: '1px solid #E2E8F0' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}><span style={{ width: 3, height: 16, borderRadius: 8, background: '#CF0652', flexShrink: 0 }} /><h3 style={{ fontSize: 20, fontWeight: 700, color: '#111827', margin: 0 }}>정성 과제 현황</h3></div>
-        <p style={{ fontSize: 17, color: '#64748B', margin: 0 }}>{month} 기준</p>
+        <p style={{ fontSize: 16, color: '#64748B', margin: 0 }}>{month} 기준</p>
       </div>
 
       <div className="overflow-x-auto">
-        <table style={{ width: '100%', fontSize: 18, borderCollapse: 'collapse' }}>
+        <table style={{ width: '100%', fontSize: 16, borderCollapse: 'collapse' }}>
           <thead>
             <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
               <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 16, fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', minWidth: 80 }}>Stakeholder</th>
@@ -79,7 +79,7 @@ export default function QualitativeTable({ goals, results, selectedSH, month }) 
 
             {shList.length === 0 && (
               <tr>
-                <td colSpan={5} style={{ padding: '32px 12px', textAlign: 'center', color: '#94A3B8', fontSize: 18 }}>
+                <td colSpan={5} style={{ padding: '32px 12px', textAlign: 'center', color: '#94A3B8', fontSize: 16 }}>
                   해당 스테이크홀더의 정성 과제가 없습니다.
                 </td>
               </tr>
