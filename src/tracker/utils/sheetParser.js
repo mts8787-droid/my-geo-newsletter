@@ -36,13 +36,14 @@ function parseQuantitativeRow(row) {
 function parseQualitativeRow(row) {
   const monthly = {}
   MONTHS.forEach((m, idx) => {
-    monthly[m] = norm(row[5 + idx])
+    monthly[m] = norm(row[6 + idx])
   })
   return {
     stakeholder: String(row[1] || '').trim(),
     task: String(row[2] || '').trim(),
     pageType: String(row[3] || '').trim(),
     detail: String(row[4] || '').trim(),
+    annual: norm(row[5]),
     monthly,
   }
 }
