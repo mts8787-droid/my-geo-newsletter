@@ -44,6 +44,7 @@ function parseQualitativeRow(row) {
     pageType: String(row[3] || '').trim(),
     detail: String(row[4] || '').trim(),
     monthly,
+    _raw: row.slice(0, 18).map(c => String(c ?? '')),
   }
 }
 
