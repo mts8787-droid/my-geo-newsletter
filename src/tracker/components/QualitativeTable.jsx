@@ -12,7 +12,7 @@ function statusDot(val) {
   return { dot: '#94A3B8', label: val, bg: 'transparent' }
 }
 
-export default function QualitativeTable({ goals, results, selectedSH, month, debugHeaders, debugRawRows, debugInfo }) {
+export default function QualitativeTable({ goals, results, selectedSH, month }) {
   // Use results (표5) as the primary data source
   const allSH = [...new Set(results.map(r => r.stakeholder))].filter(sh => {
     if (selectedSH !== '전체') return sh === selectedSH
@@ -31,28 +31,6 @@ export default function QualitativeTable({ goals, results, selectedSH, month, de
           <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 8, height: 8, borderRadius: '50%', background: '#D97706', display: 'inline-block' }} /> 추진</span>
           <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 8, height: 8, borderRadius: '50%', background: '#BE123C', display: 'inline-block' }} /> 미달성</span>
         </div>
-      </div>
-
-      {/* DEBUG: 표5 이후 RAW ROWS (CSV에서 직접) */}
-      <div style={{ background: '#FFFBEB', border: '1px solid #F59E0B', borderRadius: 8, margin: '8px 12px', padding: 12, fontSize: 10, fontFamily: 'monospace', maxHeight: 500, overflow: 'auto', wordBreak: 'break-all' }}>
-        <b>DEBUG: 총 {debugInfo?.totalRows}행 | CSV lines: {typeof window !== 'undefined' && window.__DEBUG_CSV_TOTAL_LINES} | method: {typeof window !== 'undefined' && window.__DEBUG_CSV_METHOD}</b><br/>
-        <b>마커 위치: {JSON.stringify(debugInfo?.markers)}</b><br/>
-        <b>CSV TAIL (원본):</b><br/>
-        {typeof window !== 'undefined' && window.__DEBUG_CSV_TAIL?.map((line, i) => (
-          <div key={`csv-${i}`} style={{ background: '#FEF3C7', padding: 2, margin: 1, whiteSpace: 'pre-wrap' }}>{line}</div>
-        ))}
-        <br/>
-        <b>RAW ROWS ({debugRawRows?.length || 0}개):</b>
-        {debugRawRows?.map((r, ri) => (
-          <div key={ri} style={{ marginTop: 6, borderTop: ri > 0 ? '1px solid #ddd' : 'none', paddingTop: 4 }}>
-            <b>row[{r.idx}] ({r.src}, len={r.len})</b><br/>
-            {r.cells.map((cell, ci) => (
-              <span key={ci} style={{ display: 'inline-block', border: '1px solid #999', margin: 1, padding: '1px 2px', background: cell ? '#BBF7D0' : '#FEE2E2', fontSize: 9 }}>
-                <b>{ci}</b>:{cell || '∅'}
-              </span>
-            ))}
-          </div>
-        ))}
       </div>
 
       <div className="overflow-x-auto">
@@ -75,9 +53,7 @@ export default function QualitativeTable({ goals, results, selectedSH, month, de
 
               return shResults.map((r, ri) => {
                 const resultVal = r.monthly?.[month] ?? ''
-                if (ri === 0) console.log(`[DEBUG QT] sh=${sh}, month=${month}, resultVal="${resultVal}", monthly=`, JSON.stringify(r.monthly))
                 const st = statusDot(resultVal)
-                // Supplement with goal info if available
                 const g = goals.find(g => g.stakeholder === sh && g.task === r.task)
                 return (
                   <tr key={`${sh}-${ri}`} style={{ borderBottom: '1px solid #F1F5F9' }} className="hover:bg-[#F8FAFC] transition-colors">

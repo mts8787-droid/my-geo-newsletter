@@ -44,7 +44,6 @@ function parseQualitativeRow(row) {
     pageType: String(row[3] || '').trim(),
     detail: String(row[4] || '').trim(),
     monthly,
-    _raw: row.slice(0, 30).map(c => String(c ?? '')),
   }
 }
 
@@ -76,10 +75,6 @@ export function parseKPISheet(rawRows) {
   ]
 
   let currentKey = null
-  // DEBUG: 전체 raw rows 정보 + 표 마커 위치
-  result._debugRawRows = []
-  result._debugInfo = { totalRows: rawRows.length, markers: [] }
-  let capture = false
 
   for (let i = 0; i < rawRows.length; i++) {
     const row = rawRows[i]
@@ -91,29 +86,11 @@ export function parseKPISheet(rawRows) {
     const marker = TABLE_MAP.find(t => firstCell.startsWith(t.prefix))
     if (marker) {
       currentKey = marker.key
-      result._debugInfo.markers.push({ row: i, prefix: marker.prefix, key: marker.key })
-      if (marker.key === 'qualitativeResults') capture = true
       continue
     }
 
-    // DEBUG: capture raw rows after 표5 + rows around 75-82
-    if (capture && result._debugRawRows.length < 6) {
-      result._debugRawRows.push({ idx: i, src: '표5후', len: row.length, cells: row.slice(0, 20).map(c => String(c ?? '')) })
-    }
-    if (i >= 74 && i <= 82 && !result._debugRawRows.find(r => r.idx === i)) {
-      result._debugRawRows.push({ idx: i, src: '행75~83', len: row.length, cells: row.slice(0, 20).map(c => String(c ?? '')) })
-    }
-
-    // Skip sub-header rows (e.g. "지표 구분", "Stakeholders", ...)
-    // But save header for debug
-    if (firstCell === '지표 구분') {
-      if (currentKey && currentKey.startsWith('qualitative')) {
-        result._debugHeaders = result._debugHeaders || {}
-        result._debugHeaders[currentKey] = row.slice(0, 30).map(c => String(c ?? ''))
-      }
-      continue
-    }
-
+    // Skip sub-header rows
+    if (firstCell === '지표 구분') continue
     if (!currentKey) continue
 
     const isQuantitative = currentKey.startsWith('quantitative')
@@ -127,11 +104,6 @@ export function parseKPISheet(rawRows) {
         result[currentKey].rows.push(parsed)
       }
     } else {
-      // DEBUG: log first qualitative row to verify column positions
-      if (result[currentKey].rows.length === 0) {
-        console.log(`[DEBUG] ${currentKey} first data row:`, JSON.stringify(row.slice(0, 16)))
-        console.log(`[DEBUG] row[5]="${row[5]}" row[6]="${row[6]}" row[7]="${row[7]}"`)
-      }
       const parsed = parseQualitativeRow(row)
       if (!parsed.stakeholder) continue
       result[currentKey].rows.push(parsed)
