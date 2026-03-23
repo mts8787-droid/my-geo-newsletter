@@ -13,20 +13,20 @@ export default function RawGoalTable({ rows, selectedSH }) {
   return (
     <div style={{ background: '#fff', border: '1px solid #E2E8F0', borderRadius: 12, overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
       <div style={{ padding: '16px 20px', borderBottom: '1px solid #E2E8F0' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}><span style={{ width: 3, height: 16, borderRadius: 8, background: '#CF0652', flexShrink: 0 }} /><h3 style={{ fontSize: 20, fontWeight: 700, color: '#111827', margin: 0 }}>[참고] Stakeholders별 월간 목표 원본 데이터</h3></div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}><span style={{ width: 3, height: 16, borderRadius: 8, background: '#CF0652', flexShrink: 0 }} /><h3 style={{ fontSize: 25, fontWeight: 700, color: '#111827', margin: 0 }}>[참고] Stakeholders별 월간 목표 원본 데이터</h3></div>
       </div>
 
       <div className="overflow-x-auto">
-        <table style={{ width: '100%', fontSize: 18, borderCollapse: 'collapse' }}>
+        <table style={{ width: '100%', fontSize: 23, borderCollapse: 'collapse' }}>
           <thead>
             <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
-              <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 16, fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', position: 'sticky', left: 0, zIndex: 10, background: '#F8FAFC', minWidth: 80 }}>Stakeholder</th>
-              <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 16, fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', minWidth: 130 }}>과제</th>
-              <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 16, fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', minWidth: 70 }}>Page Type</th>
+              <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 21, fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', position: 'sticky', left: 0, zIndex: 10, background: '#F8FAFC', minWidth: 80 }}>Stakeholder</th>
+              <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 21, fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', minWidth: 130 }}>과제</th>
+              <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 21, fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', minWidth: 70 }}>Page Type</th>
               {MONTHS.map(m => (
-                <th key={m} style={{ padding: '10px 8px', textAlign: 'right', fontSize: 16, fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', minWidth: 52 }}>{m}</th>
+                <th key={m} style={{ padding: '10px 8px', textAlign: 'right', fontSize: 21, fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', minWidth: 52 }}>{m}</th>
               ))}
-              <th style={{ padding: '10px 12px', textAlign: 'right', fontSize: 16, fontWeight: 800, color: '#111827', textTransform: 'uppercase', letterSpacing: '0.05em', minWidth: 60 }}>연간</th>
+              <th style={{ padding: '10px 12px', textAlign: 'right', fontSize: 21, fontWeight: 800, color: '#111827', textTransform: 'uppercase', letterSpacing: '0.05em', minWidth: 60 }}>연간</th>
             </tr>
           </thead>
           <tbody>
@@ -35,7 +35,7 @@ export default function RawGoalTable({ rows, selectedSH }) {
               return (
                 <tr key={i} style={{ borderBottom: '1px solid #F1F5F9' }} className="hover:bg-[#F8FAFC] transition-colors">
                   <td style={{ padding: '9px 12px', position: 'sticky', left: 0, zIndex: 10, background: '#fff' }}>
-                    <span style={{ display: 'inline-block', padding: '2px 8px', borderRadius: 4, fontSize: 16, fontWeight: 700, background: color + '18', color: '#111827', border: `1px solid ${color}30` }}>
+                    <span style={{ display: 'inline-block', padding: '2px 8px', borderRadius: 4, fontSize: 21, fontWeight: 700, background: color + '18', color: '#111827', border: `1px solid ${color}30` }}>
                       {r.stakeholder}
                     </span>
                   </td>
@@ -75,7 +75,7 @@ export default function RawGoalTable({ rows, selectedSH }) {
 
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={3 + MONTHS.length + 1} style={{ padding: '32px 12px', textAlign: 'center', color: '#94A3B8', fontSize: 18 }}>
+                <td colSpan={3 + MONTHS.length + 1} style={{ padding: '32px 12px', textAlign: 'center', color: '#94A3B8', fontSize: 23 }}>
                   해당 스테이크홀더의 데이터가 없습니다.
                 </td>
               </tr>

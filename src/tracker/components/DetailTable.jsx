@@ -16,22 +16,22 @@ export default function DetailTable({ tasks, month }) {
   return (
     <div style={{ background: '#fff', border: '1px solid #E2E8F0', borderRadius: 12, overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
       <div style={{ padding: '16px 20px', borderBottom: '1px solid #E2E8F0' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}><span style={{ width: 3, height: 16, borderRadius: 8, background: '#CF0652', flexShrink: 0 }} /><h3 style={{ fontSize: 20, fontWeight: 700, color: '#111827', margin: 0 }}>정량 과제 현황</h3></div>
-        <p style={{ fontSize: 17, color: '#64748B', margin: 0 }}>{month} 기준 · {tasks.length}개 과제</p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}><span style={{ width: 3, height: 16, borderRadius: 8, background: '#CF0652', flexShrink: 0 }} /><h3 style={{ fontSize: 25, fontWeight: 700, color: '#111827', margin: 0 }}>정량 과제 현황</h3></div>
+        <p style={{ fontSize: 22, color: '#64748B', margin: 0 }}>{month} 기준 · {tasks.length}개 과제</p>
       </div>
 
       <div className="overflow-x-auto">
-        <table style={{ width: '100%', fontSize: 18, borderCollapse: 'collapse' }}>
+        <table style={{ width: '100%', fontSize: 23, borderCollapse: 'collapse' }}>
           <thead>
             <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
-              <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 16, fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', position: 'sticky', left: 0, zIndex: 10, background: '#F8FAFC', minWidth: 80 }}>Stakeholder</th>
-              <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 16, fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', minWidth: 150 }}>과제</th>
-              <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 16, fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', minWidth: 80 }}>Page Type</th>
-              <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 16, fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', minWidth: 160 }}>목표 상세</th>
-              <th style={{ padding: '10px 12px', textAlign: 'right', fontSize: 16, fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', minWidth: 60 }}>목표</th>
-              <th style={{ padding: '10px 12px', textAlign: 'right', fontSize: 16, fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', minWidth: 60 }}>실적</th>
-              <th style={{ padding: '10px 12px', textAlign: 'center', fontSize: 16, fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', minWidth: 90 }}>달성률</th>
-              <th style={{ padding: '10px 12px', textAlign: 'right', fontSize: 16, fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', minWidth: 60 }}>연간목표</th>
+              <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 21, fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', position: 'sticky', left: 0, zIndex: 10, background: '#F8FAFC', minWidth: 80 }}>Stakeholder</th>
+              <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 21, fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', minWidth: 150 }}>과제</th>
+              <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 21, fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', minWidth: 80 }}>Page Type</th>
+              <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 21, fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', minWidth: 160 }}>목표 상세</th>
+              <th style={{ padding: '10px 12px', textAlign: 'right', fontSize: 21, fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', minWidth: 60 }}>목표</th>
+              <th style={{ padding: '10px 12px', textAlign: 'right', fontSize: 21, fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', minWidth: 60 }}>실적</th>
+              <th style={{ padding: '10px 12px', textAlign: 'center', fontSize: 21, fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', minWidth: 90 }}>달성률</th>
+              <th style={{ padding: '10px 12px', textAlign: 'right', fontSize: 21, fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', minWidth: 60 }}>연간목표</th>
             </tr>
           </thead>
           <tbody>
@@ -41,7 +41,7 @@ export default function DetailTable({ tasks, month }) {
               return (
                 <tr key={i} style={{ borderBottom: '1px solid #F1F5F9' }} className="hover:bg-[#F8FAFC] transition-colors">
                   <td style={{ padding: '9px 12px', position: 'sticky', left: 0, zIndex: 10, background: '#fff' }}>
-                    <span style={{ display: 'inline-block', padding: '2px 8px', borderRadius: 4, fontSize: 16, fontWeight: 700, background: color + '18', color: '#111827', border: `1px solid ${color}30` }}>
+                    <span style={{ display: 'inline-block', padding: '2px 8px', borderRadius: 4, fontSize: 21, fontWeight: 700, background: color + '18', color: '#111827', border: `1px solid ${color}30` }}>
                       {t.stakeholder}
                     </span>
                   </td>
@@ -70,7 +70,7 @@ export default function DetailTable({ tasks, month }) {
             })}
             {tasks.length === 0 && (
               <tr>
-                <td colSpan={8} style={{ padding: '32px 12px', textAlign: 'center', color: '#94A3B8', fontSize: 18 }}>
+                <td colSpan={8} style={{ padding: '32px 12px', textAlign: 'center', color: '#94A3B8', fontSize: 23 }}>
                   해당 스테이크홀더의 과제가 없습니다.
                 </td>
               </tr>
