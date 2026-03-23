@@ -60,16 +60,16 @@ export default function StakeholderRanking({ stakeholders, month, selectedSH }) 
                 </div>
 
                 {/* Task details */}
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px 10px', fontSize: 15, color: '#475569' }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px 10px', fontSize: 16, color: '#475569' }}>
                   {(sh.taskDetails || []).map((td, i) => {
                     const tdSt = td.rate !== null ? statusOf(td.rate) : { color: '#94A3B8', dot: '#CBD5E1' }
                     return (
                       <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '2px 6px', background: '#F8FAFC', borderRadius: 4, border: '1px solid #F1F5F9' }}>
                         <span style={{ width: 10, height: 10, borderRadius: '50%', background: tdSt.dot, display: 'inline-block', flexShrink: 0 }} />
-                        <span style={{ color: '#111827', fontWeight: 500, maxWidth: 140, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 14 }} title={td.task}>{td.task}</span>
-                        <span style={{ fontSize: 12, color: '#64748B', whiteSpace: 'nowrap' }}>{fmt(td.monthActual)}/{fmt(td.monthGoal)}</span>
+                        <span style={{ color: '#111827', fontWeight: 500, maxWidth: 140, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 16 }} title={td.task}>{td.task}</span>
+                        <span style={{ fontSize: 14, color: '#64748B', whiteSpace: 'nowrap' }}>{fmt(td.monthActual)}/{fmt(td.monthGoal)}</span>
                         {td.rate !== null && (
-                          <span style={{ fontWeight: 700, color: tdSt.color, fontSize: 14 }}>{td.rate.toFixed(0)}%</span>
+                          <span style={{ fontWeight: 700, color: tdSt.color, fontSize: 16 }}>{td.rate.toFixed(0)}%</span>
                         )}
                       </div>
                     )
@@ -81,10 +81,10 @@ export default function StakeholderRanking({ stakeholders, month, selectedSH }) 
                   <div style={{ flex: 1, height: 18, background: '#F1F5F9', borderRadius: 4, overflow: 'hidden', position: 'relative', minWidth: 50 }}>
                     <div style={{ height: '100%', borderRadius: 4, width: `${monthBarW}%`, background: mSt.dot, transition: 'width 0.7s ease-out' }} />
                   </div>
-                  <span style={{ fontSize: 13, color: '#475569', whiteSpace: 'nowrap', textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
+                  <span style={{ fontSize: 14, color: '#475569', whiteSpace: 'nowrap', textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
                     {fmt(sh.monthActual)}/{fmt(sh.monthGoal)}
                   </span>
-                  <span style={{ fontSize: 14, fontWeight: 900, color: mSt.color, minWidth: 48, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
+                  <span style={{ fontSize: 16, fontWeight: 900, color: mSt.color, minWidth: 48, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
                     {sh.monthRate.toFixed(1)}%
                   </span>
                 </div>
@@ -94,10 +94,10 @@ export default function StakeholderRanking({ stakeholders, month, selectedSH }) 
                   <div style={{ flex: 1, height: 18, background: '#F1F5F9', borderRadius: 4, overflow: 'hidden', position: 'relative', minWidth: 50 }}>
                     <div style={{ height: '100%', borderRadius: 4, width: `${cumBarW}%`, background: cSt.dot, transition: 'width 0.7s ease-out' }} />
                   </div>
-                  <span style={{ fontSize: 13, color: '#475569', whiteSpace: 'nowrap', textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
+                  <span style={{ fontSize: 14, color: '#475569', whiteSpace: 'nowrap', textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
                     {fmt(sh.cumActual)}/{fmt(sh.cumGoal)}
                   </span>
-                  <span style={{ fontSize: 14, fontWeight: 900, color: cSt.color, minWidth: 48, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
+                  <span style={{ fontSize: 16, fontWeight: 900, color: cSt.color, minWidth: 48, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
                     {sh.cumRate.toFixed(1)}%
                   </span>
                 </div>
