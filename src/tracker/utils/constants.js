@@ -11,8 +11,8 @@ export const STAKEHOLDER_COLORS = {
   'ES': '#10B981',
   'PR': '#F59E0B',
   '고가혁': '#8B5CF6',
-  '브랜드': '#EC4899',
-  'D2C': '#06B6D4',
+  '브랜드': '#065F46',
+  'D2C': '#92400E',
   'Total': '#94A3B8',
 }
 
