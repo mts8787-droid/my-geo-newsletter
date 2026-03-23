@@ -75,27 +75,27 @@ export default function StakeholderRanking({ stakeholders, month, selectedSH }) 
                   })}
                 </div>
 
-                {/* Month rate column: 59/59 [===bar===] 100.0% */}
+                {/* Month rate column: [bar] [실적/목표] [달성율] */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <span style={{ fontSize: 14, color: '#475569', whiteSpace: 'nowrap', minWidth: 70, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
-                    {fmt(sh.monthActual)}/{fmt(sh.monthGoal)}
-                  </span>
                   <div style={{ flex: 1, height: 18, background: '#F1F5F9', borderRadius: 4, overflow: 'hidden', position: 'relative', minWidth: 60 }}>
                     <div style={{ height: '100%', borderRadius: 4, width: `${monthBarW}%`, background: mSt.dot, transition: 'width 0.7s ease-out' }} />
                   </div>
+                  <span style={{ fontSize: 14, color: '#475569', whiteSpace: 'nowrap', minWidth: 70, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
+                    {fmt(sh.monthActual)}/{fmt(sh.monthGoal)}
+                  </span>
                   <span style={{ fontSize: 15, fontWeight: 900, color: mSt.color, minWidth: 56, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
                     {sh.monthRate.toFixed(1)}%
                   </span>
                 </div>
 
-                {/* Cumulative rate column */}
+                {/* Cumulative rate column: [bar] [실적/목표] [달성율] */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <span style={{ fontSize: 14, color: '#475569', whiteSpace: 'nowrap', minWidth: 70, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
-                    {fmt(sh.cumActual)}/{fmt(sh.cumGoal)}
-                  </span>
                   <div style={{ flex: 1, height: 18, background: '#F1F5F9', borderRadius: 4, overflow: 'hidden', position: 'relative', minWidth: 60 }}>
                     <div style={{ height: '100%', borderRadius: 4, width: `${cumBarW}%`, background: cSt.dot, transition: 'width 0.7s ease-out' }} />
                   </div>
+                  <span style={{ fontSize: 14, color: '#475569', whiteSpace: 'nowrap', minWidth: 70, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
+                    {fmt(sh.cumActual)}/{fmt(sh.cumGoal)}
+                  </span>
                   <span style={{ fontSize: 15, fontWeight: 900, color: cSt.color, minWidth: 56, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
                     {sh.cumRate.toFixed(1)}%
                   </span>
