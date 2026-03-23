@@ -123,9 +123,10 @@ function computeDashboard(data, month, stakeholderFilter) {
     })
     const cumRate = cumGoalSh > 0 ? (cumAct / cumGoalSh) * 100 : (cumAct > 0 ? 100 : 0)
 
+    const monthRate = monthGoalSh > 0 ? (monthAct / monthGoalSh) * 100 : (monthAct > 0 ? 100 : 0)
     return {
       name: sh,
-      monthRate: Math.round(monthAvg * 10) / 10,
+      monthRate: Math.round(monthRate * 10) / 10,
       cumRate: Math.round(cumRate * 10) / 10,
       monthActual: monthAct,
       monthGoal: monthGoalSh,
@@ -223,14 +224,14 @@ export default function App() {
 
       <main className="max-w-[1400px] mx-auto px-4 py-6 space-y-6">
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-600 text-base">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-600 text-[21px]">
             {error}
           </div>
         )}
 
         {loading && !data && (
           <div className="flex items-center justify-center py-24">
-            <div className="flex items-center gap-3 text-gray-400 text-base">
+            <div className="flex items-center gap-3 text-gray-400 text-[21px]">
               <div className="w-5 h-5 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
               데이터를 불러오는 중...
             </div>
@@ -286,7 +287,7 @@ export default function App() {
         )}
       </main>
       <footer style={{ padding: '8px 16px', textAlign: 'right', borderTop: '1px solid #e2e8f0', flexShrink: 0 }}>
-        <span style={{ fontSize: 10, color: '#94a3b8' }}>v{__APP_VERSION__}</span>
+        <span style={{ fontSize: 15, color: '#94a3b8' }}>v{__APP_VERSION__}</span>
       </footer>
     </div>
   )
