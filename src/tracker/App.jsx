@@ -17,15 +17,25 @@ function parseRate(v) {
   return null
 }
 
+function buildLookup(rows) {
+  const map = {}
+  rows.forEach(r => { map[`${r.stakeholder}|${r.task}`] = r })
+  return map
+}
+
 function computeDashboard(data, month, stakeholderFilter) {
   const goals = data.quantitativeGoals
   const actuals = data.quantitativeResults
   const rates = data.quantitativeRates
   const monthIdx = MONTHS.indexOf(month)
 
-  let tasks = goals.rows.map((g, i) => {
-    const a = actuals.rows[i] || {}
-    const r = rates.rows[i] || {}
+  const actualMap = buildLookup(actuals.rows)
+  const rateMap = buildLookup(rates.rows)
+
+  let tasks = goals.rows.map((g) => {
+    const key = `${g.stakeholder}|${g.task}`
+    const a = actualMap[key] || {}
+    const r = rateMap[key] || {}
     return {
       stakeholder: g.stakeholder,
       task: g.task,
@@ -86,11 +96,13 @@ function computeDashboard(data, month, stakeholderFilter) {
   const annualTarget = tasks.reduce((s, t) => s + t.goalAnnual, 0)
 
   // 스테이크홀더별 (항상 전체 기준으로 계산 — 필터 무관)
-  const allTasks = goals.rows.map((g, i) => {
-    const a = actuals.rows[i] || {}
-    const r = rates.rows[i] || {}
+  const allTasks = goals.rows.map((g) => {
+    const key = `${g.stakeholder}|${g.task}`
+    const a = actualMap[key] || {}
+    const r = rateMap[key] || {}
     return {
       stakeholder: g.stakeholder,
+      task: g.task,
       rate: parseRate(r.monthly?.[month]),
       goalMonthly: g.monthly,
       actualMonthly: a.monthly,
@@ -99,16 +111,23 @@ function computeDashboard(data, month, stakeholderFilter) {
   const shNames = [...new Set(allTasks.map(t => t.stakeholder))]
   const stakeholders = shNames.map(sh => {
     const shTasks = allTasks.filter(t => t.stakeholder === sh)
-    const shRates = shTasks.map(t => t.rate).filter(r => r !== null)
-    const monthAvg = shRates.length ? shRates.reduce((s, r) => s + r, 0) / shRates.length : 0
 
     // 해당 월 실적/목표 합계
     let monthAct = 0, monthGoalSh = 0
+    const taskDetails = []
     shTasks.forEach(t => {
       const av = t.actualMonthly?.[month]
       const gv = t.goalMonthly?.[month]
+      const actualVal = typeof av === 'number' ? av : 0
+      const goalVal = typeof gv === 'number' ? gv : 0
       if (typeof av === 'number') monthAct += av
       if (typeof gv === 'number') monthGoalSh += gv
+      taskDetails.push({
+        task: t.task,
+        monthActual: actualVal,
+        monthGoal: goalVal,
+        rate: t.rate,
+      })
     })
 
     let cumAct = 0, cumGoalSh = 0
@@ -133,7 +152,8 @@ function computeDashboard(data, month, stakeholderFilter) {
       cumActual: cumAct,
       cumGoal: cumGoalSh,
       taskCount: shTasks.length,
-      warnings: shRates.filter(r => r < 80).length,
+      warnings: taskDetails.filter(td => td.rate !== null && td.rate < 80).length,
+      taskDetails,
     }
   }).sort((a, b) => b.monthRate - a.monthRate)
 
