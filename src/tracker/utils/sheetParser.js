@@ -44,7 +44,7 @@ function parseQualitativeRow(row) {
     pageType: String(row[3] || '').trim(),
     detail: String(row[4] || '').trim(),
     monthly,
-    _raw: row.slice(0, 18).map(c => String(c ?? '')),
+    _raw: row.slice(0, 30).map(c => String(c ?? '')),
   }
 }
 
@@ -91,7 +91,14 @@ export function parseKPISheet(rawRows) {
     }
 
     // Skip sub-header rows (e.g. "지표 구분", "Stakeholders", ...)
-    if (firstCell === '지표 구분') continue
+    // But save header for debug
+    if (firstCell === '지표 구분') {
+      if (currentKey && currentKey.startsWith('qualitative')) {
+        result._debugHeaders = result._debugHeaders || {}
+        result._debugHeaders[currentKey] = row.slice(0, 30).map(c => String(c ?? ''))
+      }
+      continue
+    }
 
     if (!currentKey) continue
 

@@ -12,7 +12,7 @@ function statusDot(val) {
   return { dot: '#94A3B8', label: val, bg: 'transparent' }
 }
 
-export default function QualitativeTable({ goals, results, selectedSH, month }) {
+export default function QualitativeTable({ goals, results, selectedSH, month, debugHeaders }) {
   // Use results (표5) as the primary data source
   const allSH = [...new Set(results.map(r => r.stakeholder))].filter(sh => {
     if (selectedSH !== '전체') return sh === selectedSH
@@ -34,18 +34,27 @@ export default function QualitativeTable({ goals, results, selectedSH, month }) 
       </div>
 
       {/* DEBUG: RAW ROW 데이터 표시 */}
-      <div style={{ background: '#FFFBEB', border: '1px solid #F59E0B', borderRadius: 8, margin: '8px 12px', padding: 12, fontSize: 11, fontFamily: 'monospace', maxHeight: 300, overflow: 'auto', wordBreak: 'break-all' }}>
+      <div style={{ background: '#FFFBEB', border: '1px solid #F59E0B', borderRadius: 8, margin: '8px 12px', padding: 12, fontSize: 11, fontFamily: 'monospace', maxHeight: 400, overflow: 'auto', wordBreak: 'break-all' }}>
         <b>DEBUG (results: {results.length}건, month: {month})</b>
-        {results.slice(0, 2).map((r, i) => (
-          <div key={i} style={{ marginTop: 8, borderTop: i > 0 ? '1px solid #F59E0B' : 'none', paddingTop: 4 }}>
-            <b>[{i}] {r.stakeholder} / {r.task}</b>
-            <br/>RAW row (col 0~17):
-            {r._raw?.map((cell, ci) => (
-              <span key={ci} style={{ display: 'inline-block', border: '1px solid #999', margin: 1, padding: '1px 3px', background: ci >= 5 && ci <= 14 ? '#FEF3C7' : '#fff', fontSize: 10 }}>
+        {debugHeaders && (
+          <div style={{ marginTop: 4, background: '#FEF3C7', padding: 4 }}>
+            <b>표5 HEADER ROW:</b><br/>
+            {debugHeaders.map((cell, ci) => (
+              <span key={ci} style={{ display: 'inline-block', border: '1px solid #999', margin: 1, padding: '1px 3px', background: '#fff', fontSize: 10 }}>
                 [{ci}]{cell || '(empty)'}
               </span>
             ))}
-            <br/>parsed monthly[3월]: <b style={{ color: r.monthly?.['3월'] ? 'green' : 'red' }}>"{r.monthly?.['3월'] ?? 'undefined'}"</b>
+          </div>
+        )}
+        {results.slice(0, 1).map((r, i) => (
+          <div key={i} style={{ marginTop: 8 }}>
+            <b>[{i}] {r.stakeholder} / {r.task}</b>
+            <br/>RAW (col 0~29):
+            {r._raw?.map((cell, ci) => (
+              <span key={ci} style={{ display: 'inline-block', border: '1px solid #999', margin: 1, padding: '1px 3px', background: cell && cell !== '(empty)' ? '#BBF7D0' : '#fff', fontSize: 10 }}>
+                [{ci}]{cell || '(empty)'}
+              </span>
+            ))}
           </div>
         ))}
       </div>
