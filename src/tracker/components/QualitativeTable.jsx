@@ -3,12 +3,12 @@ import { STAKEHOLDER_COLORS } from '../utils/constants'
 function statusDot(val) {
   if (!val || val === '') return { dot: '#CBD5E1', label: '\u2014', bg: 'transparent' }
   const s = String(val).trim().toUpperCase()
-  // Pass (green)
-  if (s === 'PASS' || s === 'O' || s === 'Y' || s === 'YES' || s === '완료' || s === '달성') return { dot: '#15803D', label: 'Pass', bg: '#ECFDF5' }
-  // Non-Pass (red)
-  if (s === 'NON-PASS' || s === 'NONPASS' || s === 'X' || s === 'N' || s === 'NO' || s === '미달성') return { dot: '#BE123C', label: 'Non-Pass', bg: '#FFF1F2' }
-  // 진행중 (orange)
-  if (s === '진행중' || s === '진행' || s === 'WIP' || s === 'ING') return { dot: '#D97706', label: '진행중', bg: '#FFFBEB' }
+  // 달성 (green)
+  if (s === 'PASS' || s === 'O' || s === 'Y' || s === 'YES' || s === '완료' || s === '달성') return { dot: '#15803D', label: '달성', bg: '#ECFDF5' }
+  // 미달성 (red)
+  if (s === 'NON-PASS' || s === 'NONPASS' || s === 'X' || s === 'N' || s === 'NO' || s === '미달성') return { dot: '#BE123C', label: '미달성', bg: '#FFF1F2' }
+  // 추진 (orange)
+  if (s === '진행중' || s === '진행' || s === 'WIP' || s === 'ING' || s === '추진') return { dot: '#D97706', label: '추진', bg: '#FFFBEB' }
   return { dot: '#94A3B8', label: val, bg: 'transparent' }
 }
 
@@ -27,9 +27,9 @@ export default function QualitativeTable({ goals, results, selectedSH, month }) 
           <h3 style={{ fontSize: 20, fontWeight: 700, color: '#111827', margin: 0 }}>정성 과제 현황</h3>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: 16, color: '#64748B' }}>
-          <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 8, height: 8, borderRadius: '50%', background: '#15803D', display: 'inline-block' }} /> Pass</span>
-          <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 8, height: 8, borderRadius: '50%', background: '#D97706', display: 'inline-block' }} /> 진행중</span>
-          <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 8, height: 8, borderRadius: '50%', background: '#BE123C', display: 'inline-block' }} /> Non-Pass</span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 8, height: 8, borderRadius: '50%', background: '#15803D', display: 'inline-block' }} /> 달성</span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 8, height: 8, borderRadius: '50%', background: '#D97706', display: 'inline-block' }} /> 추진</span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 8, height: 8, borderRadius: '50%', background: '#BE123C', display: 'inline-block' }} /> 미달성</span>
         </div>
       </div>
 
