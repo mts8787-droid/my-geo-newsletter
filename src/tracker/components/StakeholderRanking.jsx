@@ -66,7 +66,7 @@ export default function StakeholderRanking({ stakeholders, month, selectedSH }) 
                     return (
                       <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '2px 6px', background: '#F8FAFC', borderRadius: 4, border: '1px solid #F1F5F9' }}>
                         <span style={{ width: 10, height: 10, borderRadius: '50%', background: tdSt.dot, display: 'inline-block', flexShrink: 0 }} />
-                        <span style={{ color: '#111827', fontWeight: 500, maxWidth: 140, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 16 }} title={td.task}>{td.task}</span>
+                        <span style={{ color: '#111827', fontWeight: 500, maxWidth: 150, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 16 }} title={td.task}>{td.task}</span>
                         <span style={{ fontSize: 14, color: '#64748B', whiteSpace: 'nowrap' }}>{fmt(td.monthActual)}/{fmt(td.monthGoal)}</span>
                         {td.rate !== null && (
                           <span style={{ fontWeight: 700, color: tdSt.color, fontSize: 16 }}>{td.rate.toFixed(0)}%</span>

@@ -56,7 +56,7 @@ export default function SummaryCards({ avgRate, cumulativeActual, cumulativeGoal
           return (
             <div className="rounded-xl p-5" style={{ background: cs.bg, border: `1px solid ${cs.border}` }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-                <span style={{ fontSize: 20, fontWeight: 700, color: '#111827' }}>누적 실적 / 목표</span>
+                <span style={{ fontSize: 20, fontWeight: 700, color: '#111827' }}>누적 달성률</span>
                 <span style={{ width: 12, height: 12, borderRadius: '50%', background: cs.dot, display: 'inline-block', boxShadow: `0 0 6px ${cs.dot}55` }} />
               </div>
               <div className="flex items-baseline gap-1">
