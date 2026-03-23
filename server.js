@@ -691,6 +691,7 @@ a.card{display:block;background:#1E293B;border:1px solid #334155;border-radius:1
 a.card:hover{border-color:#CF0652;transform:translateY(-2px)}
 .card-title{font-size:16px;font-weight:700;color:#F8FAFC;margin-bottom:4px}
 .card-desc{font-size:13px;color:#94A3B8}
+.section-title{font-size:13px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:2px;margin:24px 0 12px}
 .logout{background:none;border:1px solid #334155;color:#64748B;padding:10px 24px;border-radius:8px;font-size:13px;cursor:pointer}
 .logout:hover{border-color:#64748B;color:#94A3B8}
 </style></head><body>
@@ -698,22 +699,25 @@ a.card:hover{border-color:#CF0652;transform:translateY(-2px)}
   <div class="logo">GEO Newsletter</div>
   <h1>Admin Dashboard</h1>
   <div class="cards">
+    <div class="section-title" style="margin-top:0">뉴스레터 관리</div>
     <a class="card" href="/admin/newsletter">
       <div class="card-title">Newsletter Generator</div>
       <div class="card-desc">GEO 모니터링 리포트 생성, 편집 및 발송</div>
     </a>
+    <div class="section-title">대시보드 관리</div>
     <a class="card" href="/admin/dashboard">
-      <div class="card-title">KPI Dashboard Builder</div>
-      <div class="card-desc">GEO KPI 대시보드 생성 및 게시</div>
+      <div class="card-title">Dashboard Viewer</div>
+      <div class="card-desc">Visibility · Citation · Readability · Tracker 통합 뷰어</div>
     </a>
     <a class="card" href="/admin/citation">
       <div class="card-title">Citation Dashboard</div>
-      <div class="card-desc">Citation 분석 대시보드 (도메인/국가/닷컴)</div>
+      <div class="card-desc">Citation 분석 대시보드 편집</div>
     </a>
     <a class="card" href="/admin/progress-tracker">
       <div class="card-title">Progress Tracker</div>
       <div class="card-desc">GEO 과제 진행 현황 대시보드</div>
     </a>
+    <div class="section-title">공통 인프라</div>
     <a class="card" href="/admin/ip-manager">
       <div class="card-title">IP Access Manager</div>
       <div class="card-desc">게시된 리포트 열람 허용 IP 대역 관리</div>

@@ -1,259 +1,241 @@
-import React, { useState, useRef, useEffect, useMemo } from 'react'
-import { Save, FolderOpen, Trash2, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
-import { generateDashboardHTML } from './dashboardTemplate.js'
-import { INIT_META, INIT_TOTAL, INIT_PRODUCTS, INIT_DOTCOM, INIT_PRODUCTS_CNTY, INIT_CITATIONS_CNTY, INIT_CITATIONS, FONT, LG_RED } from '../shared/constants.js'
-import { loadCache, saveCache } from '../shared/cache.js'
-import { fetchSnapshots, postSnapshot, updateSnapshot, deleteSnapshot, fetchSyncData } from '../shared/api.js'
-import { resolveDataForLang } from '../shared/utils.js'
-import Sidebar from '../shared/Sidebar.jsx'
+import React, { useState, useEffect } from 'react'
+import { FONT, LG_RED } from '../shared/constants.js'
 
-const MODE = 'dashboard'
-const STORAGE_KEY = 'geo-dashboard-cache'
+const TABS = [
+  { key: 'visibility', label: 'Visibility' },
+  { key: 'citation',   label: 'Citation' },
+  { key: 'readability', label: 'Readability' },
+  { key: 'tracker',    label: 'Progress Tracker' },
+]
 
-// ─── 대시보드 미리보기 (SVG 차트 기반 독립 시각화) ──────────────────────────────
-function DashboardPreview({ meta, total, products, citations, dotcom, productsCnty = [], citationsCnty = [], lang = 'ko', weeklyLabels, weeklyAll = {} }) {
-  const iframeRef = useRef(null)
-  const html = generateDashboardHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, weeklyAll)
-
-  React.useEffect(() => {
-    const iframe = iframeRef.current
-    if (!iframe) return
-    const doc = iframe.contentDocument || iframe.contentWindow.document
-    doc.open()
-    doc.write(html)
-    doc.close()
-  }, [html])
-
-  return (
-    <iframe
-      ref={iframeRef}
-      title="dashboard-preview"
-      style={{ width: '100%', height: '100%', border: 'none', background: '#F1F5F9' }}
-      sandbox="allow-same-origin allow-scripts"
-    />
-  )
+const IFRAME_PATHS = {
+  visibility: { ko: '/p/GEO-KPI-Dashboard-KO', en: '/p/GEO-KPI-Dashboard-EN' },
+  citation:   { ko: '/p/GEO-Citation-Dashboard-KO', en: '/p/GEO-Citation-Dashboard-EN' },
+  tracker:    '/p/progress-tracker/',
 }
+
+const EDITOR_LINKS = {
+  visibility:  '/admin/newsletter',
+  citation:    '/admin/citation',
+  readability: null,
+  tracker:     '/admin/progress-tracker',
+}
+
+// ─── 스타일 토큰 ──────────────────────────────────────────────────────────────
+const BG        = '#0F172A'
+const CARD_BG   = '#1E293B'
+const BORDER    = '#334155'
+const TEXT       = '#E2E8F0'
+const TEXT_DIM   = '#94A3B8'
+const TEXT_MUTED = '#64748B'
 
 // ─── 메인 앱 ──────────────────────────────────────────────────────────────────
 export default function App() {
-  const cache = useRef(loadCache(STORAGE_KEY)).current
-  const [metaKo,    setMetaKo]    = useState({ ...INIT_META, ...(cache?.metaKo ?? cache?.meta ?? {}) })
-  const [metaEn,    setMetaEn]    = useState({ ...INIT_META, ...(cache?.metaEn ?? {}) })
-  const [total,     setTotal]     = useState(cache?.total     ?? INIT_TOTAL)
-  const [products,  setProducts]  = useState(cache?.products  ?? INIT_PRODUCTS)
-  const [citations, setCitations] = useState(cache?.citations ?? INIT_CITATIONS)
-  const [dotcom,    setDotcom]    = useState((cache?.dotcom && cache.dotcom.lg) ? cache.dotcom : INIT_DOTCOM)
-  const [productsCnty, setProductsCnty] = useState(cache?.productsCnty ?? INIT_PRODUCTS_CNTY)
-  const [citationsCnty, setCitationsCnty] = useState(cache?.citationsCnty ?? INIT_CITATIONS_CNTY)
-  const [weeklyLabels, setWeeklyLabels] = useState(cache?.weeklyLabels ?? null)
-  const [weeklyAll, setWeeklyAll] = useState(cache?.weeklyAll ?? {})
-  const [previewLang, setPreviewLang] = useState('ko')
-  const [snapshots,  setSnapshots]  = useState([])
-  const [snapName,   setSnapName]   = useState('')
-  const [snapOpen,   setSnapOpen]   = useState(false)
-  const [snapMsg,    setSnapMsg]    = useState('')
-  const [activeSnap, setActiveSnap] = useState(null)
-  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [activeTab, setActiveTab] = useState('visibility')
+  const [lang, setLang] = useState('ko')
+  const [publishData, setPublishData] = useState(null)
+  const [trackerData, setTrackerData] = useState(null)
 
-  const meta    = previewLang === 'en' ? metaEn : metaKo
-  const setMeta = previewLang === 'en' ? setMetaEn : setMetaKo
-
-  const resolved = useMemo(
-    () => resolveDataForLang(products, productsCnty, citations, citationsCnty, previewLang),
-    [products, productsCnty, citations, citationsCnty, previewLang]
-  )
-
-  useEffect(() => { fetchSnapshots(MODE).then(setSnapshots) }, [])
-
-  const serverSyncApplied = useRef(false)
+  // Fetch publish statuses
   useEffect(() => {
-    let cancelled = false
-    fetchSyncData(MODE).then(d => {
-      if (cancelled || !d) return
-      serverSyncApplied.current = true
-      if (d.meta)          setMetaKo(m => ({ ...m, ...d.meta }))
-      if (d.total)         setTotal(t => ({ ...t, ...d.total }))
-      if (d.citations)     setCitations(d.citations)
-      if (d.dotcom)        setDotcom(prev => ({ ...prev, ...d.dotcom }))
-      if (d.productsCnty)  setProductsCnty(d.productsCnty)
-      if (d.citationsCnty) setCitationsCnty(d.citationsCnty)
-      if (d.weeklyLabels)  setWeeklyLabels(d.weeklyLabels)
-      if (d.weeklyAll)     setWeeklyAll(prev => ({ ...prev, ...d.weeklyAll }))
-      if (d.productsPartial) {
-        setProducts(d.productsPartial.map(p => {
-          const weekly = d.weeklyMap?.[p.id] || []
-          const ratio = p.vsComp > 0 ? (p.score / p.vsComp) * 100 : 100
-          return { ...p, weekly, monthly: [], compRatio: Math.round(ratio),
-            status: ratio >= 100 ? 'lead' : ratio >= 80 ? 'behind' : 'critical' }
-        }))
-      } else if (d.weeklyMap) {
-        setProducts(prev => prev.map(p => {
-          const weekly = d.weeklyMap?.[p.id]
-          return weekly ? { ...p, weekly } : p
-        }))
-      }
-    })
-    return () => { cancelled = true }
+    fetch('/api/publish-history')
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d) setPublishData(d) })
+      .catch(() => {})
+
+    fetch('/api/publish-tracker')
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d) setTrackerData(d) })
+      .catch(() => {})
   }, [])
 
-  useEffect(() => {
-    saveCache(STORAGE_KEY, { metaKo, metaEn, total, products, citations, dotcom, productsCnty, citationsCnty, weeklyLabels, weeklyAll })
-  }, [metaKo, metaEn, total, products, citations, dotcom, productsCnty, citationsCnty, weeklyLabels, weeklyAll])
+  // Derive status for active tab
+  function getTabStatus(tabKey) {
+    if (tabKey === 'readability') return { published: false, urls: [] }
+    if (tabKey === 'tracker') {
+      if (!trackerData) return { published: false, urls: [] }
+      return {
+        published: !!trackerData.published,
+        urls: trackerData.urls || (trackerData.url ? [trackerData.url] : []),
+      }
+    }
+    if (!publishData) return { published: false, urls: [] }
+    const key = tabKey === 'visibility' ? 'dashboard' : 'citation'
+    const entry = publishData[key]
+    if (!entry) return { published: false, urls: [] }
+    return {
+      published: !!entry.published,
+      urls: entry.urls || (entry.url ? [entry.url] : []),
+    }
+  }
 
-  async function handleSnapOverwrite() {
-    if (!activeSnap) return
-    const data = { metaKo, metaEn, total, products, citations, dotcom, productsCnty, citationsCnty, weeklyLabels, weeklyAll }
-    const result = await updateSnapshot(MODE, activeSnap, data)
-    if (result) setSnapshots(result)
-    setSnapMsg(result ? '저장 완료!' : '저장 실패'); setTimeout(() => setSnapMsg(''), 2000)
-  }
-  async function handleSnapSaveNew() {
-    const name = snapName.trim() || `${meta.period || 'Untitled'} — ${new Date().toLocaleString('ko-KR')}`
-    const result = await postSnapshot(MODE, name, { metaKo, metaEn, total, products, citations, dotcom, productsCnty, citationsCnty, weeklyLabels, weeklyAll })
-    if (result) { setSnapshots(result); setSnapName(''); setActiveSnap(result[0]?.ts || null) }
-    setSnapMsg(result ? '새로 저장 완료!' : '저장 실패'); setTimeout(() => setSnapMsg(''), 2000)
-  }
-  function handleSnapLoad(snap) {
-    const d = snap.data
-    setMetaKo({ ...INIT_META, ...(d.metaKo || d.meta || {}) })
-    setMetaEn({ ...INIT_META, ...(d.metaEn || {}) })
-    if (d.total)     setTotal(d.total)
-    if (d.products)  setProducts(d.products)
-    if (d.citations) setCitations(d.citations)
-    if (d.dotcom)    setDotcom(d.dotcom)
-    if (d.productsCnty)  setProductsCnty(d.productsCnty)
-    if (d.citationsCnty) setCitationsCnty(d.citationsCnty)
-    if (d.weeklyLabels)  setWeeklyLabels(d.weeklyLabels)
-    if (d.weeklyAll)     setWeeklyAll(d.weeklyAll)
-    setActiveSnap(snap.ts)
-    setSnapMsg(`"${snap.name}" 불러옴`); setTimeout(() => setSnapMsg(''), 2000)
-  }
-  async function handleSnapDelete(idx) {
-    const snap = snapshots[idx]
-    if (!snap) return
-    const result = await deleteSnapshot(MODE, snap.ts)
-    if (result) setSnapshots(result)
-    if (activeSnap === snap.ts) setActiveSnap(null)
+  const status = getTabStatus(activeTab)
+  const hasLangToggle = activeTab === 'visibility' || activeTab === 'citation'
+  const editorLink = EDITOR_LINKS[activeTab]
+
+  // Build iframe src
+  let iframeSrc = null
+  if (activeTab === 'visibility' || activeTab === 'citation') {
+    iframeSrc = IFRAME_PATHS[activeTab][lang]
+  } else if (activeTab === 'tracker') {
+    iframeSrc = IFRAME_PATHS.tracker
   }
 
   return (
-    <div style={{ display: 'flex', height: '100vh', background: '#0A0F1C', fontFamily: FONT }}>
-      {sidebarOpen && (
-        <Sidebar
-          mode={MODE}
-          meta={meta} setMeta={setMeta} metaKo={metaKo} setMetaKo={setMetaKo} metaEn={metaEn} setMetaEn={setMetaEn}
-          total={total} setTotal={setTotal}
-          products={products} setProducts={setProducts}
-          citations={citations} setCitations={setCitations}
-          dotcom={dotcom} setDotcom={setDotcom}
-          productsCnty={productsCnty} setProductsCnty={setProductsCnty}
-          citationsCnty={citationsCnty} setCitationsCnty={setCitationsCnty}
-          resolved={resolved}
-          previewLang={previewLang} setPreviewLang={setPreviewLang}
-          snapshots={snapshots} setSnapshots={setSnapshots}
-          setWeeklyLabels={setWeeklyLabels}
-          setWeeklyAll={setWeeklyAll}
-          weeklyLabels={weeklyLabels}
-          weeklyAll={weeklyAll}
-          generateHTML={generateDashboardHTML}
-        />
-      )}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-        {/* 탑바 */}
-        <div style={{ height: 48, borderBottom: '1px solid #1E293B',
-          background: 'rgba(15,23,42,0.95)', backdropFilter: 'blur(8px)',
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: '0 22px', flexShrink: 0 }}>
-          <div style={{ display: 'flex', gap: 3, alignItems: 'center' }}>
-            <button onClick={() => setSidebarOpen(v => !v)} title={sidebarOpen ? '패널 닫기' : '패널 열기'}
-              style={{ padding: '4px 6px', borderRadius: 6, border: 'none', cursor: 'pointer',
-                background: 'transparent', color: '#94A3B8', display: 'flex', alignItems: 'center',
-                marginRight: 4 }}>
-              {sidebarOpen ? <PanelLeftClose size={16} /> : <PanelLeftOpen size={16} />}
-            </button>
-            <div style={{ display: 'flex', gap: 2, background: '#0F172A', borderRadius: 6, padding: 2 }}>
-              {['ko', 'en'].map(l => (
-                <button key={l} onClick={() => setPreviewLang(l)} style={{
-                  padding: '3px 10px', borderRadius: 5, border: 'none',
-                  background: previewLang === l ? LG_RED : 'transparent',
-                  color: previewLang === l ? '#FFFFFF' : '#64748B',
-                  fontSize: 10, fontWeight: 700, fontFamily: FONT, cursor: 'pointer',
-                }}>{l.toUpperCase()}</button>
-              ))}
-            </div>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            {snapMsg && <span style={{ fontSize: 11, color: '#22C55E', fontFamily: FONT }}>{snapMsg}</span>}
-            <button onClick={handleSnapOverwrite} disabled={!activeSnap}
-              title={activeSnap ? '현재 버전에 덮어쓰기' : '불러온 버전이 없습니다'}
-              style={{ padding: '4px 10px', borderRadius: 6, border: 'none', cursor: activeSnap ? 'pointer' : 'default',
-                background: activeSnap ? '#1D4ED8' : '#1E293B', color: activeSnap ? '#FFFFFF' : '#475569',
-                fontSize: 11, fontWeight: 700, fontFamily: FONT,
-                display: 'flex', alignItems: 'center', gap: 4, opacity: activeSnap ? 1 : 0.5 }}>
-              <Save size={11} /> 저장
-            </button>
-            <input value={snapName} onChange={e => setSnapName(e.target.value)}
-              placeholder="버전 이름..."
-              onKeyDown={e => e.key === 'Enter' && handleSnapSaveNew()}
-              style={{ width: 120, background: '#1E293B', border: '1px solid #334155', borderRadius: 6,
-                padding: '4px 8px', fontSize: 11, color: '#E2E8F0', fontFamily: FONT, outline: 'none' }} />
-            <button onClick={handleSnapSaveNew} title="새 버전으로 저장"
-              style={{ padding: '4px 10px', borderRadius: 6, border: 'none', cursor: 'pointer',
-                background: '#166534', color: '#86EFAC', fontSize: 11, fontWeight: 700, fontFamily: FONT,
-                display: 'flex', alignItems: 'center', gap: 4 }}>
-              <Save size={11} /> 새로 저장
-            </button>
-            <div style={{ position: 'relative' }}>
-              <button onClick={() => setSnapOpen(!snapOpen)} title="저장된 버전 불러오기"
-                style={{ padding: '4px 10px', borderRadius: 6, border: 'none', cursor: 'pointer',
-                  background: snapOpen ? '#334155' : '#1E293B', color: '#E2E8F0', fontSize: 11, fontWeight: 700, fontFamily: FONT,
-                  display: 'flex', alignItems: 'center', gap: 4 }}>
-                <FolderOpen size={11} /> 불러오기 {snapshots.length > 0 && <span style={{ fontSize: 11, color: '#94A3B8' }}>({snapshots.length})</span>}
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: BG, fontFamily: FONT, color: TEXT }}>
+
+      {/* ─── Top Bar: Tabs + Language Toggle ─── */}
+      <div style={{
+        height: 48, flexShrink: 0,
+        borderBottom: `1px solid ${BORDER}`,
+        background: 'rgba(15,23,42,0.95)', backdropFilter: 'blur(8px)',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '0 20px',
+      }}>
+        {/* Tabs */}
+        <div style={{ display: 'flex', gap: 2 }}>
+          {TABS.map(tab => {
+            const isActive = activeTab === tab.key
+            return (
+              <button key={tab.key} onClick={() => setActiveTab(tab.key)} style={{
+                padding: '6px 16px', borderRadius: 6, border: 'none', cursor: 'pointer',
+                background: isActive ? LG_RED : 'transparent',
+                color: isActive ? '#FFFFFF' : TEXT_MUTED,
+                fontSize: 12, fontWeight: 700, fontFamily: FONT,
+                transition: 'background 0.15s, color 0.15s',
+              }}>
+                {tab.label}
               </button>
-              {snapOpen && (
-                <div style={{ position: 'absolute', top: 32, right: 0, width: 320, maxHeight: 360, overflowY: 'auto',
-                  background: '#1E293B', border: '1px solid #334155', borderRadius: 10, zIndex: 100, padding: 8,
-                  boxShadow: '0 8px 24px rgba(0,0,0,0.4)' }}
-                  onClick={e => e.stopPropagation()}>
-                  {snapshots.length === 0 ? (
-                    <p style={{ margin: 0, padding: 12, fontSize: 11, color: '#64748B', fontFamily: FONT, textAlign: 'center' }}>저장된 버전이 없습니다</p>
-                  ) : snapshots.map((snap, i) => (
-                    <div key={snap.ts} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 10px',
-                      borderRadius: 7, marginBottom: 2, background: activeSnap === snap.ts ? '#1E3A5F' : '#0F172A',
-                      border: activeSnap === snap.ts ? '1px solid #3B82F6' : '1px solid transparent' }}>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <p style={{ margin: 0, fontSize: 11, fontWeight: 700, color: '#E2E8F0', fontFamily: FONT,
-                          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{snap.name}</p>
-                        <p style={{ margin: 0, fontSize: 11, color: '#64748B', fontFamily: FONT }}>
-                          {new Date(snap.ts).toLocaleString('ko-KR')}
-                        </p>
-                      </div>
-                      <button onClick={() => { handleSnapLoad(snap); setSnapOpen(false) }}
-                        style={{ padding: '3px 8px', borderRadius: 5, border: 'none', cursor: 'pointer',
-                          background: '#166534', color: '#FFFFFF', fontSize: 11, fontWeight: 700, fontFamily: FONT }}>
-                        적용
-                      </button>
-                      <button onClick={() => handleSnapDelete(i)}
-                        style={{ padding: '3px 5px', borderRadius: 5, border: 'none', cursor: 'pointer',
-                          background: '#7F1D1D', color: '#FCA5A5', fontSize: 11, display: 'flex' }}>
-                        <Trash2 size={10} />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
+            )
+          })}
         </div>
 
-        {/* 컨텐츠 영역 */}
-        <div style={{ flex: 1, overflow: 'hidden' }}>
-          <DashboardPreview meta={meta} total={total} products={resolved.products} citations={resolved.citations} dotcom={dotcom} productsCnty={resolved.productsCnty} citationsCnty={resolved.citationsCnty} lang={previewLang} weeklyLabels={weeklyLabels} weeklyAll={weeklyAll} />
+        {/* Language Toggle */}
+        {hasLangToggle && (
+          <div style={{ display: 'flex', gap: 2, background: BG, borderRadius: 6, padding: 2 }}>
+            {['ko', 'en'].map(l => (
+              <button key={l} onClick={() => setLang(l)} style={{
+                padding: '3px 10px', borderRadius: 5, border: 'none',
+                background: lang === l ? LG_RED : 'transparent',
+                color: lang === l ? '#FFFFFF' : TEXT_MUTED,
+                fontSize: 10, fontWeight: 700, fontFamily: FONT, cursor: 'pointer',
+              }}>
+                {l.toUpperCase()}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* ─── Body: Sidebar + Main ─── */}
+      <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+
+        {/* ─── Left Sidebar ─── */}
+        <div style={{
+          width: 300, flexShrink: 0,
+          borderRight: `1px solid ${BORDER}`,
+          background: BG, overflowY: 'auto',
+          padding: 20, display: 'flex', flexDirection: 'column', gap: 20,
+        }}>
+          {/* Tab Title */}
+          <h2 style={{ margin: 0, fontSize: 18, fontWeight: 800, color: TEXT }}>
+            {TABS.find(t => t.key === activeTab)?.label}
+          </h2>
+
+          {/* Readability placeholder */}
+          {activeTab === 'readability' ? (
+            <div style={{
+              background: CARD_BG, borderRadius: 10, padding: 24,
+              textAlign: 'center', color: TEXT_DIM, fontSize: 14,
+            }}>
+              준비 중
+            </div>
+          ) : (
+            <>
+              {/* Published Status */}
+              <div style={{
+                background: CARD_BG, borderRadius: 10, padding: 16,
+                display: 'flex', flexDirection: 'column', gap: 12,
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: TEXT_DIM }}>발행 상태</span>
+                  <span style={{
+                    padding: '2px 8px', borderRadius: 4, fontSize: 10, fontWeight: 700,
+                    background: status.published ? '#166534' : '#7F1D1D',
+                    color: status.published ? '#86EFAC' : '#FCA5A5',
+                  }}>
+                    {status.published ? 'Published' : 'Unpublished'}
+                  </span>
+                </div>
+
+                {/* Published URLs */}
+                {status.urls.length > 0 && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: TEXT_DIM }}>발행 URL</span>
+                    {status.urls.map((url, i) => (
+                      <a key={i} href={url} target="_blank" rel="noopener noreferrer" style={{
+                        fontSize: 11, color: '#60A5FA', wordBreak: 'break-all',
+                        textDecoration: 'none',
+                      }}
+                        onMouseEnter={e => e.target.style.textDecoration = 'underline'}
+                        onMouseLeave={e => e.target.style.textDecoration = 'none'}
+                      >
+                        {url}
+                      </a>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Editor Link */}
+              <a
+                href={editorLink || '#'}
+                onClick={e => { if (!editorLink) e.preventDefault() }}
+                style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  padding: '10px 16px', borderRadius: 8, border: 'none',
+                  background: editorLink ? '#1D4ED8' : CARD_BG,
+                  color: editorLink ? '#FFFFFF' : TEXT_MUTED,
+                  fontSize: 13, fontWeight: 700, fontFamily: FONT,
+                  textDecoration: 'none',
+                  cursor: editorLink ? 'pointer' : 'default',
+                  opacity: editorLink ? 1 : 0.5,
+                }}>
+                편집기 열기
+              </a>
+            </>
+          )}
         </div>
-        <div style={{ height: 28, borderTop: '1px solid #1E293B', background: 'rgba(15,23,42,0.95)',
-          display: 'flex', alignItems: 'center', justifyContent: 'flex-end', padding: '0 16px', flexShrink: 0 }}>
-          <span style={{ fontSize: 10, color: '#475569', fontFamily: FONT }}>v{__APP_VERSION__}</span>
+
+        {/* ─── Main Content Area ─── */}
+        <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+          {activeTab === 'readability' ? (
+            <div style={{
+              flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: TEXT_DIM, fontSize: 20, fontWeight: 700,
+            }}>
+              Coming Soon
+            </div>
+          ) : iframeSrc ? (
+            <iframe
+              key={`${activeTab}-${lang}`}
+              src={iframeSrc}
+              title={`${activeTab}-viewer`}
+              style={{ width: '100%', height: '100%', border: 'none', background: '#F1F5F9' }}
+            />
+          ) : null}
         </div>
+      </div>
+
+      {/* ─── Version Footer ─── */}
+      <div style={{
+        height: 28, flexShrink: 0,
+        borderTop: `1px solid ${BORDER}`,
+        background: 'rgba(15,23,42,0.95)',
+        display: 'flex', alignItems: 'center', justifyContent: 'flex-end',
+        padding: '0 16px',
+      }}>
+        <span style={{ fontSize: 10, color: TEXT_MUTED, fontFamily: FONT }}>v{__APP_VERSION__}</span>
       </div>
     </div>
   )
