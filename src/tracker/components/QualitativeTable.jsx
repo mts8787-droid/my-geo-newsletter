@@ -1,4 +1,4 @@
-import { MONTHS, STAKEHOLDERS, STAKEHOLDER_COLORS } from '../utils/constants'
+import { STAKEHOLDER_COLORS } from '../utils/constants'
 
 function statusDot(val) {
   if (!val || val === '') return { dot: '#CBD5E1', label: '\u2014', bg: 'transparent' }
@@ -13,18 +13,19 @@ function statusDot(val) {
 }
 
 export default function QualitativeTable({ goals, results, selectedSH, month }) {
-  const allSH = [...new Set(goals.map(g => g.stakeholder))].filter(sh => {
+  // Use results (표5) as the primary data source
+  const allSH = [...new Set(results.map(r => r.stakeholder))].filter(sh => {
     if (selectedSH !== '전체') return sh === selectedSH
     return true
   })
 
   return (
     <div style={{ background: '#fff', border: '1px solid #E2E8F0', borderRadius: 12, overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
-      <div style={{ padding: '16px 20px', borderBottom: '1px solid #E2E8F0' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}><span style={{ width: 3, height: 16, borderRadius: 8, background: '#CF0652', flexShrink: 0 }} /><h3 style={{ fontSize: 20, fontWeight: 700, color: '#111827', margin: 0 }}>정성 과제 현황</h3></div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 6 }}>
-          <span style={{ fontSize: 16, color: '#64748B' }}>{month} 기준</span>
-          <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 16 }}><span style={{ width: 8, height: 8, borderRadius: '50%', background: '#15803D', display: 'inline-block' }} /> Pass</span>
+      <div style={{ padding: '16px 20px', borderBottom: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ width: 3, height: 16, borderRadius: 8, background: '#CF0652', flexShrink: 0 }} />
+          <h3 style={{ fontSize: 20, fontWeight: 700, color: '#111827', margin: 0 }}>정성 과제 현황</h3>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 16, marginLeft: 8 }}><span style={{ width: 8, height: 8, borderRadius: '50%', background: '#15803D', display: 'inline-block' }} /> Pass</span>
           <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 16 }}><span style={{ width: 8, height: 8, borderRadius: '50%', background: '#D97706', display: 'inline-block' }} /> 진행중</span>
           <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 16 }}><span style={{ width: 8, height: 8, borderRadius: '50%', background: '#BE123C', display: 'inline-block' }} /> Non-Pass</span>
         </div>
@@ -44,25 +45,24 @@ export default function QualitativeTable({ goals, results, selectedSH, month }) 
           <tbody>
             {allSH.map(sh => {
               const color = STAKEHOLDER_COLORS[sh] || '#94A3B8'
-              const shGoals = goals.filter(g => g.stakeholder === sh)
               const shResults = results.filter(r => r.stakeholder === sh)
 
-              if (shGoals.length === 0) return null
+              if (shResults.length === 0) return null
 
-              return shGoals.map((g, gi) => {
-                // Match result by task name for accuracy
-                const r = shResults.find(sr => sr.task === g.task) || shResults[gi]
-                const resultVal = r?.monthly?.[month] ?? ''
+              return shResults.map((r, ri) => {
+                const resultVal = r.monthly?.[month] ?? ''
                 const st = statusDot(resultVal)
+                // Supplement with goal info if available
+                const g = goals.find(g => g.stakeholder === sh && g.task === r.task)
                 return (
-                  <tr key={`${sh}-${gi}`} style={{ borderBottom: '1px solid #F1F5F9' }} className="hover:bg-[#F8FAFC] transition-colors">
+                  <tr key={`${sh}-${ri}`} style={{ borderBottom: '1px solid #F1F5F9' }} className="hover:bg-[#F8FAFC] transition-colors">
                     <td style={{ padding: '9px 12px', textAlign: 'center' }}>
                       <span style={{ display: 'inline-block', padding: '2px 8px', borderRadius: 4, fontSize: 16, fontWeight: 700, background: color + '18', color: '#111827', border: `1px solid ${color}30` }}>{sh}</span>
                     </td>
-                    <td style={{ padding: '9px 12px', color: '#1E293B', fontWeight: 500 }}>{g.task}</td>
-                    <td style={{ padding: '9px 12px', color: '#64748B' }}>{g.pageType}</td>
+                    <td style={{ padding: '9px 12px', color: '#1E293B', fontWeight: 500 }}>{r.task}</td>
+                    <td style={{ padding: '9px 12px', color: '#64748B' }}>{r.pageType || g?.pageType || ''}</td>
                     <td style={{ padding: '9px 12px', color: '#475569', maxWidth: 300 }}>
-                      <span style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={g.detail}>{g.detail}</span>
+                      <span style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={r.detail || g?.detail || ''}>{r.detail || g?.detail || ''}</span>
                     </td>
                     <td style={{ padding: '9px 12px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
