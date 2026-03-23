@@ -314,6 +314,7 @@ export default function App() {
                 month={selectedMonth}
                 debugHeaders={data._debugHeaders?.qualitativeResults}
                 debugRawRows={data._debugRawRows}
+                debugInfo={data._debugInfo}
               />
             )}
 

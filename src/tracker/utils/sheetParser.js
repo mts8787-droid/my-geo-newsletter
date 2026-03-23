@@ -76,8 +76,9 @@ export function parseKPISheet(rawRows) {
   ]
 
   let currentKey = null
-  // DEBUG: 표5 이후 모든 raw rows 저장
+  // DEBUG: 전체 raw rows 정보 + 표 마커 위치
   result._debugRawRows = []
+  result._debugInfo = { totalRows: rawRows.length, markers: [] }
   let capture = false
 
   for (let i = 0; i < rawRows.length; i++) {
@@ -90,13 +91,17 @@ export function parseKPISheet(rawRows) {
     const marker = TABLE_MAP.find(t => firstCell.startsWith(t.prefix))
     if (marker) {
       currentKey = marker.key
+      result._debugInfo.markers.push({ row: i, prefix: marker.prefix, key: marker.key })
       if (marker.key === 'qualitativeResults') capture = true
       continue
     }
 
-    // DEBUG: capture raw rows after 표5
+    // DEBUG: capture raw rows after 표5 + rows around 75-82
     if (capture && result._debugRawRows.length < 6) {
-      result._debugRawRows.push({ idx: i, len: row.length, cells: row.slice(0, 30).map(c => String(c ?? '')) })
+      result._debugRawRows.push({ idx: i, src: '표5후', len: row.length, cells: row.slice(0, 20).map(c => String(c ?? '')) })
+    }
+    if (i >= 74 && i <= 82 && !result._debugRawRows.find(r => r.idx === i)) {
+      result._debugRawRows.push({ idx: i, src: '행75~83', len: row.length, cells: row.slice(0, 20).map(c => String(c ?? '')) })
     }
 
     // Skip sub-header rows (e.g. "지표 구분", "Stakeholders", ...)

@@ -12,7 +12,7 @@ function statusDot(val) {
   return { dot: '#94A3B8', label: val, bg: 'transparent' }
 }
 
-export default function QualitativeTable({ goals, results, selectedSH, month, debugHeaders, debugRawRows }) {
+export default function QualitativeTable({ goals, results, selectedSH, month, debugHeaders, debugRawRows, debugInfo }) {
   // Use results (표5) as the primary data source
   const allSH = [...new Set(results.map(r => r.stakeholder))].filter(sh => {
     if (selectedSH !== '전체') return sh === selectedSH
@@ -35,10 +35,12 @@ export default function QualitativeTable({ goals, results, selectedSH, month, de
 
       {/* DEBUG: 표5 이후 RAW ROWS (CSV에서 직접) */}
       <div style={{ background: '#FFFBEB', border: '1px solid #F59E0B', borderRadius: 8, margin: '8px 12px', padding: 12, fontSize: 10, fontFamily: 'monospace', maxHeight: 500, overflow: 'auto', wordBreak: 'break-all' }}>
-        <b>DEBUG: 표5 이후 RAW CSV ROWS ({debugRawRows?.length || 0}개)</b>
+        <b>DEBUG: 총 {debugInfo?.totalRows}행</b><br/>
+        <b>마커 위치: {JSON.stringify(debugInfo?.markers)}</b><br/>
+        <b>RAW ROWS ({debugRawRows?.length || 0}개):</b>
         {debugRawRows?.map((r, ri) => (
           <div key={ri} style={{ marginTop: 6, borderTop: ri > 0 ? '1px solid #ddd' : 'none', paddingTop: 4 }}>
-            <b>row[{r.idx}] (len={r.len})</b><br/>
+            <b>row[{r.idx}] ({r.src}, len={r.len})</b><br/>
             {r.cells.map((cell, ci) => (
               <span key={ci} style={{ display: 'inline-block', border: '1px solid #999', margin: 1, padding: '1px 2px', background: cell ? '#BBF7D0' : '#FEE2E2', fontSize: 9 }}>
                 <b>{ci}</b>:{cell || '∅'}
