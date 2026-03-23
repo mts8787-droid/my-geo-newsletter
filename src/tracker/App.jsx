@@ -167,6 +167,9 @@ function computeDashboard(data, month, stakeholderFilter) {
   }).sort((a, b) => b.monthRate - a.monthRate)
 
   const totalsRate = parseRate(rates.totals?.monthly?.[month])
+  const currentMT = monthlyTotals.find(t => t.month === month)
+  const monthActual = currentMT?.actual || 0
+  const monthGoal = currentMT?.goal || 0
 
   return {
     tasks,
@@ -175,6 +178,8 @@ function computeDashboard(data, month, stakeholderFilter) {
     warningCount,
     cumulativeActual,
     cumulativeGoal,
+    monthActual,
+    monthGoal,
     monthlyTotals,
     cumulative,
     annualTarget,
@@ -273,6 +278,8 @@ export default function App() {
               avgRate={selectedSH === '전체' ? (dashboard.totalsRate ?? dashboard.avgRate) : dashboard.avgRate}
               cumulativeActual={dashboard.cumulativeActual}
               cumulativeGoal={dashboard.cumulativeGoal}
+              monthActual={dashboard.monthActual}
+              monthGoal={dashboard.monthGoal}
               warningCount={dashboard.warningCount}
               annualTarget={dashboard.annualTarget}
               month={selectedMonth}

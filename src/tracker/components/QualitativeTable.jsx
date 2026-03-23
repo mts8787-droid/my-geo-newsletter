@@ -25,9 +25,11 @@ export default function QualitativeTable({ goals, results, selectedSH, month }) 
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <span style={{ width: 3, height: 16, borderRadius: 8, background: '#CF0652', flexShrink: 0 }} />
           <h3 style={{ fontSize: 20, fontWeight: 700, color: '#111827', margin: 0 }}>정성 과제 현황</h3>
-          <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 16, marginLeft: 8 }}><span style={{ width: 8, height: 8, borderRadius: '50%', background: '#15803D', display: 'inline-block' }} /> Pass</span>
-          <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 16 }}><span style={{ width: 8, height: 8, borderRadius: '50%', background: '#D97706', display: 'inline-block' }} /> 진행중</span>
-          <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 16 }}><span style={{ width: 8, height: 8, borderRadius: '50%', background: '#BE123C', display: 'inline-block' }} /> Non-Pass</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: 16, color: '#64748B' }}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 8, height: 8, borderRadius: '50%', background: '#15803D', display: 'inline-block' }} /> Pass</span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 8, height: 8, borderRadius: '50%', background: '#D97706', display: 'inline-block' }} /> 진행중</span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 8, height: 8, borderRadius: '50%', background: '#BE123C', display: 'inline-block' }} /> Non-Pass</span>
         </div>
       </div>
 
