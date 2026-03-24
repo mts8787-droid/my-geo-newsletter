@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
+import { LineChart, Line, XAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
 
 const FONT = "'LG Smart','Arial Narrow',Arial,sans-serif"
 const LG_RED = '#CF0652'
@@ -53,19 +53,6 @@ function ProductTrend({ product, brandData, labels, allBrands }) {
       return point
     })
   }, [brandData, labels, allBrands])
-
-  // Y축 범위 계산
-  const { yMin, yMax } = useMemo(() => {
-    let min = Infinity, max = -Infinity
-    allBrands.forEach(b => {
-      (brandData[b] || []).forEach(v => {
-        if (v != null) { if (v < min) min = v; if (v > max) max = v }
-      })
-    })
-    if (!isFinite(min)) return { yMin: 0, yMax: 100 }
-    const pad = Math.max((max - min) * 0.15, 2)
-    return { yMin: Math.max(0, Math.floor(min - pad)), yMax: Math.min(100, Math.ceil(max + pad)) }
-  }, [brandData, allBrands])
 
   const lgLatest = brandData.LG?.[brandData.LG.length - 1]
 
