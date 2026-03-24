@@ -566,6 +566,13 @@ function dotcomSectionHtml(dotcom, meta, t) {
 export function generateDashboardHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, weeklyAll) {
   _sid = 0
   const t = T[lang] || T.ko
+
+  // 대시보드에서는 인사이트 HTML을 항상 렌더링 (CSS로 토글)
+  meta.showProductInsight = true; meta.showProductHowToRead = true
+  meta.showCntyInsight = true; meta.showCntyHowToRead = true
+  meta.showCitationInsight = true; meta.showCitationHowToRead = true
+  meta.showDotcomInsight = true; meta.showDotcomHowToRead = true
+
   // 국가 목록 추출 (weeklyAll + productsCnty)
   const countries = new Set()
   if (weeklyAll) Object.values(weeklyAll).forEach(byC => Object.keys(byC).forEach(c => { if (c !== 'Total') countries.add(c) }))
@@ -627,6 +634,11 @@ export function generateDashboardHTML(meta, total, products, citations, dotcom, 
         <span class="fl-label">${lang === 'en' ? 'Country' : '국가'}</span>
         <label class="fl-chk-label fl-all-label"><input type="checkbox" class="fl-chk-all" data-target="country" checked onchange="toggleAll(this,'country')"><span>${allLabel}</span></label>
         ${countryCheckboxes}
+      </div>
+      <div class="fl-divider"></div>
+      <div class="fl-group">
+        <span class="fl-label">${lang === 'en' ? 'Display' : '표시'}</span>
+        <label class="fl-chk-label"><input type="checkbox" id="toggle-insights" onchange="toggleInsights(this.checked)"><span>${lang === 'en' ? 'GEO Insights' : 'GEO 인사이트'}</span></label>
       </div>
     </div>
   </div>`
@@ -734,6 +746,10 @@ body{background:#F1F5F9;font-family:${FONT};min-width:1200px;color:#1A1A1A}
 .legend{font-size:12px;color:#94A3B8;display:flex;align-items:center;gap:4px;flex-wrap:wrap}
 .legend i{display:inline-block;width:8px;height:8px;border-radius:50%;margin:0 2px 0 8px;vertical-align:0}
 /* ── Insight / HowToRead ── */
+.hero-insight,.insight-box,.howto-box{display:none}
+body.show-insights .hero-insight{display:block}
+body.show-insights .insight-box{display:block}
+body.show-insights .howto-box{display:block}
 .insight-box{margin:0 28px;padding:12px 16px;background:#FFF4F7;border:1px solid #F5CCD8;border-radius:8px;margin-top:12px}
 .insight-label{display:block;font-size:12px;font-weight:700;color:${RED};margin-bottom:4px}
 .insight-text{font-size:12px;color:#1A1A1A;line-height:1.8}
@@ -890,6 +906,9 @@ function switchPeriodMode(mode){
   onFilterChange();
 }
 function switchTrend(mode){switchPeriodMode(mode)}
+function toggleInsights(on){
+  document.body.classList.toggle('show-insights',on);
+}
 function toggleAll(el, target){
   var checked=el.checked;
   // Update all filter layers
