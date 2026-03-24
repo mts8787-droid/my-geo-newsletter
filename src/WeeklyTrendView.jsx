@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { LineChart, Line, XAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
+import { LineChart, Line, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
 
 const FONT = "'LG Smart','Arial Narrow',Arial,sans-serif"
 const LG_RED = '#CF0652'
@@ -80,50 +80,54 @@ function ProductTrend({ product, brandData, labels, allBrands }) {
         )}
       </div>
 
-      {/* Chart — marginLeft로 테이블 Brand 컬럼과 X축 정렬 */}
-      <div style={{ marginLeft: BRAND_COL, background: '#0F172A', borderRadius: 10,
-        border: '1px solid #1E293B', padding: '16px 0 4px 0' }}>
-        <ResponsiveContainer width="100%" height={220}>
-          <LineChart data={chartData} margin={{ top: 8, right: 0, left: 0, bottom: 4 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#1E293B" />
-            <XAxis dataKey="week" tick={{ fill: '#64748B', fontSize: 11, fontFamily: FONT }}
-              axisLine={{ stroke: '#1E293B' }} tickLine={false} />
-            <Tooltip content={<CustomTooltip />} />
-            {allBrands.map((brand, i) => (
-              <Line key={brand} type="monotone" dataKey={brand}
-                stroke={brandColor(brand, i)}
-                strokeWidth={brand === 'LG' ? 3 : 1.5}
-                dot={{ r: brand === 'LG' ? 4 : 2.5, fill: brandColor(brand, i), strokeWidth: 0 }}
-                activeDot={{ r: 5, strokeWidth: 2, stroke: '#0F172A' }}
-                opacity={brand === 'LG' ? 1 : 0.7}
-                connectNulls />
-            ))}
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
-
-      {/* Legend */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px 14px', padding: '8px 4px 0' }}>
-        {allBrands.map((brand, i) => (
-          <div key={brand} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-            <span style={{ width: 10, height: 3, borderRadius: 1, background: brandColor(brand, i),
-              opacity: brand === 'LG' ? 1 : 0.7 }} />
-            <span style={{ fontSize: 10, color: brand === 'LG' ? '#E2E8F0' : '#64748B',
-              fontWeight: brand === 'LG' ? 700 : 400, fontFamily: FONT }}>{brand}</span>
-          </div>
-        ))}
-      </div>
-
-      {/* Data Table — table-layout:fixed + colgroup으로 차트와 동일 X축 정렬 */}
-      <div style={{ marginTop: 8, borderRadius: 8, overflow: 'hidden', border: '1px solid #1E293B' }}>
+      {/* 차트+표 통합: colgroup 공유로 X축 정렬 보장 */}
+      <div style={{ borderRadius: 10, overflow: 'hidden', border: '1px solid #1E293B' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed',
           fontFamily: FONT, fontSize: 11 }}>
           <colgroup>
             <col style={{ width: BRAND_COL }} />
             {labels.map(w => <col key={w} />)}
           </colgroup>
-          <thead>
-            <tr style={{ background: '#0F172A' }}>
+          <tbody>
+            {/* Chart row */}
+            <tr>
+              <td style={{ padding: 0, border: 0 }} />
+              <td colSpan={labels.length} style={{ padding: '8px 0', border: 0, background: '#0F172A' }}>
+                <ResponsiveContainer width="100%" height={200}>
+                  <LineChart data={chartData} margin={{ top: 8, right: 0, left: 0, bottom: 4 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#1E293B" />
+                    <Tooltip content={<CustomTooltip />} />
+                    {allBrands.map((brand, i) => (
+                      <Line key={brand} type="monotone" dataKey={brand}
+                        stroke={brandColor(brand, i)}
+                        strokeWidth={brand === 'LG' ? 3 : 1.5}
+                        dot={{ r: brand === 'LG' ? 4 : 2.5, fill: brandColor(brand, i), strokeWidth: 0 }}
+                        activeDot={{ r: 5, strokeWidth: 2, stroke: '#0F172A' }}
+                        opacity={brand === 'LG' ? 1 : 0.7}
+                        connectNulls />
+                    ))}
+                  </LineChart>
+                </ResponsiveContainer>
+              </td>
+            </tr>
+            {/* Legend row */}
+            <tr>
+              <td style={{ padding: 0, border: 0 }} />
+              <td colSpan={labels.length} style={{ padding: '4px 4px 6px', border: 0 }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px 14px' }}>
+                  {allBrands.map((brand, i) => (
+                    <div key={brand} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                      <span style={{ width: 10, height: 3, borderRadius: 1, background: brandColor(brand, i),
+                        opacity: brand === 'LG' ? 1 : 0.7 }} />
+                      <span style={{ fontSize: 10, color: brand === 'LG' ? '#E2E8F0' : '#64748B',
+                        fontWeight: brand === 'LG' ? 700 : 400, fontFamily: FONT }}>{brand}</span>
+                    </div>
+                  ))}
+                </div>
+              </td>
+            </tr>
+            {/* Header row */}
+            <tr style={{ borderTop: '1px solid #1E293B' }}>
               <th style={{ padding: '6px 6px', textAlign: 'left', color: '#64748B', fontWeight: 600,
                 borderBottom: '1px solid #1E293B' }}>Brand</th>
               {labels.map(w => (
@@ -131,8 +135,7 @@ function ProductTrend({ product, brandData, labels, allBrands }) {
                   fontWeight: 600, borderBottom: '1px solid #1E293B' }}>{w}</th>
               ))}
             </tr>
-          </thead>
-          <tbody>
+            {/* Data rows */}
             {allBrands.map((brand, i) => (
               <tr key={brand} style={{
                 background: brand === 'LG' ? '#1a0a1a' : i % 2 === 0 ? '#0F172A' : '#131C2E' }}>
