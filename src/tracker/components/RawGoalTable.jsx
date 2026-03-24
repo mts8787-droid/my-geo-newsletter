@@ -21,8 +21,8 @@ export default function RawGoalTable({ rows, selectedSH }) {
           <thead>
             <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
               <th style={{ padding: '10px 12px', textAlign: 'center', fontSize: 16, fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', position: 'sticky', left: 0, zIndex: 10, background: '#F8FAFC', width: 100, minWidth: 100 }}>Stakeholder</th>
-              <th style={{ padding: '10px 12px', textAlign: 'center', fontSize: 16, fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', width: 100, minWidth: 100 }}>과제 구분</th>
-              <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 16, fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', width: 250, minWidth: 250 }}>과제</th>
+              <th style={{ padding: '10px 12px', textAlign: 'center', fontSize: 16, fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', width: 110, minWidth: 110 }}>과제 구분</th>
+              <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 16, fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', width: 240, minWidth: 240 }}>과제</th>
               <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 16, fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', width: 140, minWidth: 140 }}>Page Type</th>
               {MONTHS.map(m => (
                 <th key={m} style={{ padding: '10px 8px', textAlign: 'right', fontSize: 16, fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', minWidth: 52 }}>{m}</th>
