@@ -21,14 +21,15 @@ function isEmptyRow(row) {
 function parseQuantitativeRow(row) {
   const monthly = {}
   MONTHS.forEach((m, idx) => {
-    monthly[m] = norm(row[6 + idx])
+    monthly[m] = norm(row[7 + idx])
   })
   return {
     stakeholder: String(row[1] || '').trim(),
-    task: String(row[2] || '').trim(),
-    pageType: String(row[3] || '').trim(),
-    detail: String(row[4] || '').trim(),
-    annual: norm(row[5]),
+    taskCategory: String(row[2] || '').trim(),
+    task: String(row[3] || '').trim(),
+    pageType: String(row[4] || '').trim(),
+    detail: String(row[5] || '').trim(),
+    annual: norm(row[6]),
     monthly,
   }
 }
@@ -36,13 +37,14 @@ function parseQuantitativeRow(row) {
 function parseQualitativeRow(row) {
   const monthly = {}
   MONTHS.forEach((m, idx) => {
-    monthly[m] = norm(row[5 + idx])
+    monthly[m] = norm(row[6 + idx])
   })
   return {
     stakeholder: String(row[1] || '').trim(),
-    task: String(row[2] || '').trim(),
-    pageType: String(row[3] || '').trim(),
-    detail: String(row[4] || '').trim(),
+    taskCategory: String(row[2] || '').trim(),
+    task: String(row[3] || '').trim(),
+    pageType: String(row[4] || '').trim(),
+    detail: String(row[5] || '').trim(),
     monthly,
   }
 }
