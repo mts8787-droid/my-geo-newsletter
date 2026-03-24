@@ -82,7 +82,7 @@ export default function StakeholderRanking({ stakeholders, month, selectedSH }) 
                   <div style={{ flex: 1, height: 18, background: '#F1F5F9', borderRadius: 4, overflow: 'hidden', position: 'relative', minWidth: 50 }}>
                     <div style={{ height: '100%', borderRadius: 4, width: `${monthBarW}%`, background: mSt.dot, transition: 'width 0.7s ease-out' }} />
                   </div>
-                  <span style={{ fontSize: 14, color: '#475569', whiteSpace: 'nowrap', textAlign: 'right', fontVariantNumeric: 'tabular-nums', width: 70, flexShrink: 0 }}>
+                  <span style={{ fontSize: 14, color: '#475569', whiteSpace: 'nowrap', textAlign: 'left', fontVariantNumeric: 'tabular-nums', width: 70, flexShrink: 0 }}>
                     {fmt(sh.monthActual)}/{fmt(sh.monthGoal)}
                   </span>
                   <span style={{ fontSize: 16, fontWeight: 900, color: mSt.color, width: 50, flexShrink: 0, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
@@ -98,7 +98,7 @@ export default function StakeholderRanking({ stakeholders, month, selectedSH }) 
                   <div style={{ flex: 1, height: 18, background: '#F1F5F9', borderRadius: 4, overflow: 'hidden', position: 'relative', minWidth: 50 }}>
                     <div style={{ height: '100%', borderRadius: 4, width: `${cumBarW}%`, background: cSt.dot, transition: 'width 0.7s ease-out' }} />
                   </div>
-                  <span style={{ fontSize: 14, color: '#475569', whiteSpace: 'nowrap', textAlign: 'right', fontVariantNumeric: 'tabular-nums', width: 70, flexShrink: 0 }}>
+                  <span style={{ fontSize: 14, color: '#475569', whiteSpace: 'nowrap', textAlign: 'left', fontVariantNumeric: 'tabular-nums', width: 70, flexShrink: 0 }}>
                     {fmt(sh.cumActual)}/{fmt(sh.cumGoal)}
                   </span>
                   <span style={{ fontSize: 16, fontWeight: 900, color: cSt.color, width: 50, flexShrink: 0, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
