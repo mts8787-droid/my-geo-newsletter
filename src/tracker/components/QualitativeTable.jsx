@@ -38,6 +38,7 @@ export default function QualitativeTable({ goals, results, selectedSH, month }) 
           <thead>
             <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
               <th style={{ padding: '10px 12px', textAlign: 'center', fontSize: 16, fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', width: 100, minWidth: 100 }}>Stakeholder</th>
+              <th style={{ padding: '10px 12px', textAlign: 'center', fontSize: 16, fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', width: 100, minWidth: 100 }}>과제 구분</th>
               <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 16, fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', width: 250, minWidth: 250 }}>과제</th>
               <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 16, fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', width: 140, minWidth: 140 }}>Page Type</th>
               <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 16, fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', minWidth: 160 }}>목표 상세</th>
@@ -60,6 +61,7 @@ export default function QualitativeTable({ goals, results, selectedSH, month }) 
                     <td style={{ padding: '9px 12px', textAlign: 'center' }}>
                       <span style={{ display: 'inline-block', padding: '2px 8px', borderRadius: 4, fontSize: 16, fontWeight: 700, background: color + '18', color: '#111827', border: `1px solid ${color}30` }}>{sh}</span>
                     </td>
+                    <td style={{ padding: '9px 12px', textAlign: 'center', color: '#64748B' }}>{r.taskCategory || g?.taskCategory || ''}</td>
                     <td style={{ padding: '9px 12px', color: '#1E293B', fontWeight: 500 }}>{r.task}</td>
                     <td style={{ padding: '9px 12px', color: '#64748B' }}>{r.pageType || g?.pageType || ''}</td>
                     <td style={{ padding: '9px 12px', color: '#475569', maxWidth: 300 }}>
@@ -80,7 +82,7 @@ export default function QualitativeTable({ goals, results, selectedSH, month }) 
 
             {allSH.length === 0 && (
               <tr>
-                <td colSpan={5} style={{ padding: '32px 12px', textAlign: 'center', color: '#94A3B8', fontSize: 16 }}>
+                <td colSpan={6} style={{ padding: '32px 12px', textAlign: 'center', color: '#94A3B8', fontSize: 16 }}>
                   해당 스테이크홀더의 정성 과제가 없습니다.
                 </td>
               </tr>
