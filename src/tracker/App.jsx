@@ -6,6 +6,7 @@ import PerformanceCharts from './components/PerformanceCharts'
 import StakeholderRanking from './components/StakeholderRanking'
 import DetailTable from './components/DetailTable'
 import QualitativeTable from './components/QualitativeTable'
+import CategorySummary from './components/CategorySummary'
 import RawGoalTable from './components/RawGoalTable'
 import { MONTHS } from './utils/constants'
 
@@ -43,6 +44,7 @@ function computeDashboard(data, month, stakeholderFilter) {
     const computedRate = goal > 0 ? Math.round((actual / goal) * 1000) / 10 : null
     return {
       stakeholder: g.stakeholder,
+      taskCategory: g.taskCategory,
       task: g.task,
       pageType: g.pageType,
       detail: g.detail,
@@ -168,6 +170,33 @@ function computeDashboard(data, month, stakeholderFilter) {
     }
   }).sort((a, b) => b.monthRate - a.monthRate)
 
+  // 과제구분별 달성률 (전체 tasks 기준)
+  const categoryNames = [...new Set(allTasks.map(t => {
+    const g = goals.rows.find(r => r.stakeholder === t.stakeholder && r.task === t.task)
+    return g?.taskCategory || ''
+  }).filter(Boolean))]
+
+  const categoryStats = categoryNames.map(cat => {
+    const catGoals = goals.rows.filter(g => g.taskCategory === cat)
+    let mAct = 0, mGoal = 0, cAct = 0, cGoal = 0
+    catGoals.forEach(g => {
+      const key = `${g.stakeholder}|${g.task}`
+      const a = actualMap[key] || {}
+      const gv = typeof g.monthly?.[month] === 'number' ? g.monthly[month] : 0
+      const av = typeof a.monthly?.[month] === 'number' ? a.monthly[month] : 0
+      mGoal += gv
+      mAct += av
+      for (let i = 0; i <= monthIdx; i++) {
+        const m = MONTHS[i]
+        if (typeof g.monthly?.[m] === 'number') cGoal += g.monthly[m]
+        if (typeof a.monthly?.[m] === 'number') cAct += a.monthly[m]
+      }
+    })
+    const monthRate = mGoal > 0 ? Math.round((mAct / mGoal) * 1000) / 10 : 0
+    const cumRate = cGoal > 0 ? Math.round((cAct / cGoal) * 1000) / 10 : 0
+    return { category: cat, taskCount: catGoals.length, monthRate, cumRate, monthActual: mAct, monthGoal: mGoal, cumActual: cAct, cumGoal: cGoal }
+  })
+
   const totalsRate = parseRate(rates.totals?.monthly?.[month])
   const currentMT = monthlyTotals.find(t => t.month === month)
   const monthActual = currentMT?.actual || 0
@@ -186,6 +215,7 @@ function computeDashboard(data, month, stakeholderFilter) {
     cumulative,
     annualTarget,
     stakeholders,
+    categoryStats,
   }
 }
 
@@ -276,6 +306,13 @@ export default function App() {
 
         {dashboard && (
           <>
+            {selectedSH === '전체' && dashboard.categoryStats.length > 0 && (
+              <CategorySummary
+                categories={dashboard.categoryStats}
+                month={selectedMonth}
+              />
+            )}
+
             <SummaryCards
               avgRate={dashboard.avgRate}
               cumulativeActual={dashboard.cumulativeActual}
