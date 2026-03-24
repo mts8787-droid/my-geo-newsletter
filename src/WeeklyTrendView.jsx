@@ -3,6 +3,7 @@ import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianG
 
 const FONT = "'LG Smart','Arial Narrow',Arial,sans-serif"
 const LG_RED = '#CF0652'
+const BRAND_COL = 90
 
 const BRAND_COLORS = {
   LG: LG_RED, Samsung: '#3B82F6', Sony: '#7C3AED', Hisense: '#059669',
@@ -92,17 +93,14 @@ function ProductTrend({ product, brandData, labels, allBrands }) {
         )}
       </div>
 
-      {/* Chart */}
-      <div style={{ background: '#0F172A', borderRadius: 10, border: '1px solid #1E293B',
-        padding: '16px 8px 4px 0' }}>
+      {/* Chart — marginLeft로 테이블 Brand 컬럼과 X축 정렬 */}
+      <div style={{ marginLeft: BRAND_COL, background: '#0F172A', borderRadius: 10,
+        border: '1px solid #1E293B', padding: '16px 0 4px 0' }}>
         <ResponsiveContainer width="100%" height={220}>
-          <LineChart data={chartData} margin={{ top: 8, right: 20, left: 0, bottom: 4 }}>
+          <LineChart data={chartData} margin={{ top: 8, right: 0, left: 0, bottom: 4 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#1E293B" />
             <XAxis dataKey="week" tick={{ fill: '#64748B', fontSize: 11, fontFamily: FONT }}
               axisLine={{ stroke: '#1E293B' }} tickLine={false} />
-            <YAxis domain={[yMin, yMax]} tick={{ fill: '#475569', fontSize: 10, fontFamily: FONT }}
-              axisLine={false} tickLine={false} width={36}
-              tickFormatter={v => `${v}%`} />
             <Tooltip content={<CustomTooltip />} />
             {allBrands.map((brand, i) => (
               <Line key={brand} type="monotone" dataKey={brand}
@@ -129,15 +127,20 @@ function ProductTrend({ product, brandData, labels, allBrands }) {
         ))}
       </div>
 
-      {/* Data Table */}
+      {/* Data Table — table-layout:fixed + colgroup으로 차트와 동일 X축 정렬 */}
       <div style={{ marginTop: 8, borderRadius: 8, overflow: 'hidden', border: '1px solid #1E293B' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: FONT, fontSize: 11 }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed',
+          fontFamily: FONT, fontSize: 11 }}>
+          <colgroup>
+            <col style={{ width: BRAND_COL }} />
+            {labels.map(w => <col key={w} />)}
+          </colgroup>
           <thead>
             <tr style={{ background: '#0F172A' }}>
-              <th style={{ padding: '6px 12px', textAlign: 'left', color: '#64748B', fontWeight: 600,
-                borderBottom: '1px solid #1E293B', width: 90 }}>Brand</th>
+              <th style={{ padding: '6px 6px', textAlign: 'left', color: '#64748B', fontWeight: 600,
+                borderBottom: '1px solid #1E293B' }}>Brand</th>
               {labels.map(w => (
-                <th key={w} style={{ padding: '6px 8px', textAlign: 'right', color: '#64748B',
+                <th key={w} style={{ padding: '6px 2px', textAlign: 'center', color: '#64748B',
                   fontWeight: 600, borderBottom: '1px solid #1E293B' }}>{w}</th>
               ))}
             </tr>
@@ -146,17 +149,17 @@ function ProductTrend({ product, brandData, labels, allBrands }) {
             {allBrands.map((brand, i) => (
               <tr key={brand} style={{
                 background: brand === 'LG' ? '#1a0a1a' : i % 2 === 0 ? '#0F172A' : '#131C2E' }}>
-                <td style={{ padding: '5px 12px', color: brandColor(brand, i),
+                <td style={{ padding: '5px 6px', color: brandColor(brand, i),
                   fontWeight: brand === 'LG' ? 700 : 500, borderBottom: '1px solid #1E293B',
-                  display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <span style={{ width: 6, height: 6, borderRadius: '50%',
-                    background: brandColor(brand, i), flexShrink: 0 }} />
+                  whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  <span style={{ display: 'inline-block', width: 6, height: 6, borderRadius: '50%',
+                    background: brandColor(brand, i), marginRight: 4, verticalAlign: 'middle' }} />
                   {brand}
                 </td>
                 {labels.map((w, wi) => {
                   const val = brandData[brand]?.[wi]
                   return (
-                    <td key={w} style={{ padding: '5px 8px', textAlign: 'right',
+                    <td key={w} style={{ padding: '5px 2px', textAlign: 'center',
                       color: val != null ? (brand === 'LG' ? '#F1F5F9' : '#CBD5E1') : '#334155',
                       fontWeight: brand === 'LG' ? 700 : 400,
                       borderBottom: '1px solid #1E293B', fontVariantNumeric: 'tabular-nums' }}>
