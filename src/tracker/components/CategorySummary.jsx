@@ -58,7 +58,7 @@ export default function CategorySummary({ categories, month }) {
 
               {/* 조직 네임택 */}
               {cat.stakeholders && cat.stakeholders.length > 0 && (
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 3 }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 20 }}>
                   {cat.stakeholders.map(sh => {
                     const st = statusOf(sh.rate)
                     const baseColor = STAKEHOLDER_COLORS[sh.name] || '#94A3B8'
