@@ -194,7 +194,20 @@ function computeDashboard(data, month, stakeholderFilter) {
     })
     const monthRate = mGoal > 0 ? Math.round((mAct / mGoal) * 1000) / 10 : 0
     const cumRate = cGoal > 0 ? Math.round((cAct / cGoal) * 1000) / 10 : 0
-    return { category: cat, taskCount: catGoals.length, monthRate, cumRate, monthActual: mAct, monthGoal: mGoal, cumActual: cAct, cumGoal: cGoal }
+    // per-stakeholder breakdown
+    const shNames = [...new Set(catGoals.map(g => g.stakeholder))]
+    const stakeholders = shNames.map(sh => {
+      let smAct = 0, smGoal = 0
+      catGoals.filter(g => g.stakeholder === sh).forEach(g => {
+        const key = `${g.stakeholder}|${g.task}`
+        const a = actualMap[key] || {}
+        smGoal += typeof g.monthly?.[month] === 'number' ? g.monthly[month] : 0
+        smAct += typeof a.monthly?.[month] === 'number' ? a.monthly[month] : 0
+      })
+      const rate = smGoal > 0 ? Math.round((smAct / smGoal) * 1000) / 10 : 0
+      return { name: sh, rate }
+    })
+    return { category: cat, taskCount: catGoals.length, monthRate, cumRate, monthActual: mAct, monthGoal: mGoal, cumActual: cAct, cumGoal: cGoal, stakeholders }
   })
 
   const totalsRate = parseRate(rates.totals?.monthly?.[month])
