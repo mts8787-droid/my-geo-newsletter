@@ -395,8 +395,11 @@ export function generateCitationHTML(meta, _total, _products, citations, dotcom,
     : []
 
   // 카테고리별 Citation: 국가 필터 반영
+  const noneSelected = enabledCountries.length === 0
   let filteredCitations = citations
-  if (!allSelected && Object.keys(citationsByCnty).length > 0) {
+  if (noneSelected) {
+    filteredCitations = []
+  } else if (!allSelected && Object.keys(citationsByCnty).length > 0) {
     // 선택된 국가의 카테고리별 데이터를 합산
     const catMap = {}
     enabledCountries.forEach(cnty => {
@@ -414,7 +417,9 @@ export function generateCitationHTML(meta, _total, _products, citations, dotcom,
 
   // 닷컴 Citation: 국가 필터 반영
   let filteredDotcom = dotcom
-  if (!allSelected && Object.keys(dotcomByCnty).length > 0) {
+  if (noneSelected) {
+    filteredDotcom = null
+  } else if (!allSelected && Object.keys(dotcomByCnty).length > 0) {
     const lg = {}, samsung = {}
     enabledCountries.forEach(cnty => {
       const d = dotcomByCnty[cnty]
