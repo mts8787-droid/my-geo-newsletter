@@ -29,7 +29,7 @@ export default function CategorySummary({ categories, month }) {
               {/* 월 달성률 */}
               <div style={{ marginBottom: 10 }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-                  <span style={{ fontSize: 13, color: '#64748B', width: 72, flexShrink: 0 }}>{month} 달성률</span>
+                  <span style={{ fontSize: 13, color: '#64748B', width: 82, flexShrink: 0 }}>{month} 달성률</span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 4, width: 70, flexShrink: 0, justifyContent: 'flex-end' }}>
                     <span style={{ width: 8, height: 8, borderRadius: '50%', background: ms.dot, display: 'inline-block' }} />
                     <span style={{ fontSize: 15, fontWeight: 700, color: ms.text }}>{cat.monthRate}%</span>
@@ -43,7 +43,7 @@ export default function CategorySummary({ categories, month }) {
               {/* 누적 달성률 */}
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-                  <span style={{ fontSize: 13, color: '#64748B', width: 72, flexShrink: 0 }}>누적 달성률</span>
+                  <span style={{ fontSize: 13, color: '#64748B', width: 82, flexShrink: 0 }}>누적 달성률</span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 4, width: 70, flexShrink: 0, justifyContent: 'flex-end' }}>
                     <span style={{ width: 8, height: 8, borderRadius: '50%', background: cs.dot, display: 'inline-block' }} />
                     <span style={{ fontSize: 15, fontWeight: 700, color: cs.text }}>{cat.cumRate}%</span>
