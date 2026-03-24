@@ -91,21 +91,25 @@ function citDomainSectionHtml(citationsCnty, meta, t, citations, lang, useAggreg
   } else {
     rows = citationsCnty.filter(r => r.cnty === 'TTL').sort((a, b) => a.rank - b.rank).slice(0, topN)
   }
-  if (!rows.length) return ''
-
-  const maxScore = Math.max(...rows.map(r => r.citations), 1)
-  const totalCit = rows.reduce((s, r) => s + r.citations, 0)
-  const html = rows.map((c, i) => {
-    const pct = (c.citations / maxScore * 100).toFixed(1)
-    const ratio = totalCit > 0 ? ((c.citations / totalCit) * 100).toFixed(1) : '0.0'
-    return `<div class="cit-row">
-      <span class="cit-rank ${i < 3 ? 'top' : ''}">${c.rank}</span>
-      <div class="cit-info"><span class="cit-source">${stripDomain(c.domain)}</span><span class="cit-cat">${c.type}</span></div>
-      <div class="cit-bar-wrap"><div class="cit-bar" style="width:${pct}%"></div></div>
-      <span class="cit-score">${fmt(c.citations)}</span>
-      <span class="cit-ratio">(${ratio}%)</span>
-    </div>`
-  }).join('')
+  let bodyHtml
+  if (!rows.length) {
+    const noDataMsg = lang === 'en' ? 'No data available for the selected filter.' : '선택된 필터에 해당하는 데이터가 없습니다.'
+    bodyHtml = `<div style="text-align:center;padding:40px 20px;color:#94A3B8;font-size:13px">${noDataMsg}</div>`
+  } else {
+    const maxScore = Math.max(...rows.map(r => r.citations), 1)
+    const totalCit = rows.reduce((s, r) => s + r.citations, 0)
+    bodyHtml = rows.map((c, i) => {
+      const pct = (c.citations / maxScore * 100).toFixed(1)
+      const ratio = totalCit > 0 ? ((c.citations / totalCit) * 100).toFixed(1) : '0.0'
+      return `<div class="cit-row">
+        <span class="cit-rank ${i < 3 ? 'top' : ''}">${c.rank}</span>
+        <div class="cit-info"><span class="cit-source">${stripDomain(c.domain)}</span><span class="cit-cat">${c.type}</span></div>
+        <div class="cit-bar-wrap"><div class="cit-bar" style="width:${pct}%"></div></div>
+        <span class="cit-score">${fmt(c.citations)}</span>
+        <span class="cit-ratio">(${ratio}%)</span>
+      </div>`
+    }).join('')
+  }
 
   return `<div class="section-card" id="cit-domain-section">
     <div class="section-header">
@@ -113,7 +117,7 @@ function citDomainSectionHtml(citationsCnty, meta, t, citations, lang, useAggreg
       <span class="legend">Top ${topN} Domains</span>
     </div>
     ${insightHtml(meta.citDomainInsight, meta.showCitDomainInsight, meta.citDomainHowToRead, meta.showCitDomainHowToRead, t)}
-    <div class="section-body">${html}</div>
+    <div class="section-body">${bodyHtml}</div>
   </div>`
 }
 
