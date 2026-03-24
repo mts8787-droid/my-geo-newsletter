@@ -369,7 +369,7 @@ function parseDashboardLayout(rows, div) {
       // 빈 셀은 건너뜀 (MoM 컬럼 등 사이에 빈 셀 있음)
     }
     console.log(`[dashLayout] "${name}" col:${ci}, nextCat:${nextCatCol}, raw dataRow[ci+1..]:`, JSON.stringify(dataRow.slice(ci + 1, nextCatCol)), '→ vals:', vals)
-    if (vals.length) weeklyMap[id] = vals.slice(-4)
+    if (vals.length) weeklyMap[id] = vals
   }
   if (!Object.keys(weeklyMap).length) {
     console.log('[dashLayout] no weekly data found for div:', div)
@@ -518,9 +518,9 @@ function parseWeekly(rows, div) {
       byCategory[cat].push(pct(r[lgIdx]))
     })
     Object.entries(byCategory).forEach(([cat, vals]) => {
-      weeklyMap[CATEGORY_ID_MAP[cat] || cat.toLowerCase()] = vals.slice(-4)
+      weeklyMap[CATEGORY_ID_MAP[cat] || cat.toLowerCase()] = vals
     })
-    if (weekLabelOrder.length) weeklyLabels = weekLabelOrder.slice(-4)
+    if (weekLabelOrder.length) weeklyLabels = weekLabelOrder
   } else if (wCols.length) {
     // Format: Category, w1, w2, w3, w4
     data.forEach(r => {
@@ -529,6 +529,57 @@ function parseWeekly(rows, div) {
       if (!cat) return
       weeklyMap[CATEGORY_ID_MAP[cat] || cat.toLowerCase()] = wCols.map(c => pct(r[c]))
     })
+  }
+
+  // ── 앞쪽 빈 주차 제거 & 최대 12주 제한 ──
+  // weeklyAll 기준: 모든 브랜드에서 첫 데이터가 있는 주차 인덱스 찾기
+  if (weeklyLabels.length > 0) {
+    let firstDataIdx = weeklyLabels.length
+    // weeklyAll에서 탐색
+    for (const prod of Object.values(weeklyAll)) {
+      for (const cnty of Object.values(prod)) {
+        for (const vals of Object.values(cnty)) {
+          const idx = vals.findIndex(v => v != null)
+          if (idx >= 0 && idx < firstDataIdx) firstDataIdx = idx
+        }
+      }
+    }
+    // weeklyMap에서도 탐색 (weeklyAll이 비어있을 수 있으므로)
+    for (const vals of Object.values(weeklyMap)) {
+      const idx = vals.findIndex(v => v != null)
+      if (idx >= 0 && idx < firstDataIdx) firstDataIdx = idx
+    }
+    if (firstDataIdx > 0 && firstDataIdx < weeklyLabels.length) {
+      console.log('[parseWeekly] trimming leading empty weeks:', firstDataIdx, '| labels before:', weeklyLabels.slice(0, firstDataIdx))
+      weeklyLabels = weeklyLabels.slice(firstDataIdx)
+      for (const prod of Object.values(weeklyAll)) {
+        for (const cnty of Object.values(prod)) {
+          for (const [brand, vals] of Object.entries(cnty)) {
+            cnty[brand] = vals.slice(firstDataIdx)
+          }
+        }
+      }
+      for (const [key, vals] of Object.entries(weeklyMap)) {
+        weeklyMap[key] = vals.slice(firstDataIdx)
+      }
+    }
+    // 최대 12주로 제한 (뒤쪽 12주)
+    const MAX_WEEKS = 12
+    if (weeklyLabels.length > MAX_WEEKS) {
+      const trimStart = weeklyLabels.length - MAX_WEEKS
+      console.log('[parseWeekly] limiting to last', MAX_WEEKS, 'weeks, trimming:', trimStart)
+      weeklyLabels = weeklyLabels.slice(trimStart)
+      for (const prod of Object.values(weeklyAll)) {
+        for (const cnty of Object.values(prod)) {
+          for (const [brand, vals] of Object.entries(cnty)) {
+            cnty[brand] = vals.slice(trimStart)
+          }
+        }
+      }
+      for (const [key, vals] of Object.entries(weeklyMap)) {
+        weeklyMap[key] = vals.slice(trimStart)
+      }
+    }
   }
 
   console.log('[parseWeekly] weeklyMap keys:', Object.keys(weeklyMap), '| weeklyLabels:', weeklyLabels,

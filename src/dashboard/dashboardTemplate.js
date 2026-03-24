@@ -172,7 +172,7 @@ function svgMultiLine(brandData, labels, w, h) {
 // ─── 경쟁사 트렌드 섹션 ────────────────────────────────────────────────────
 function trendDetailHtml(products, weeklyAll, weeklyLabels, t, lang) {
   if (!weeklyAll || !Object.keys(weeklyAll).length) return ''
-  const wLabels = (weeklyLabels && weeklyLabels.length) ? weeklyLabels : ['W1', 'W2', 'W3', 'W4']
+  const wLabels = (weeklyLabels && weeklyLabels.length) ? weeklyLabels : Array.from({ length: 12 }, (_, i) => `W${i + 1}`)
   const BU_ORDER = ['MS', 'HS', 'ES']
 
   const buGroups = BU_ORDER.map(bu => {
@@ -301,7 +301,7 @@ function heroHtml(total, meta, t, lang) {
 function productSectionHtml(products, meta, t, lang, weeklyLabels) {
   if (!products.length) return ''
   const BU_ORDER = ['MS', 'HS', 'ES']
-  const wLabels = (weeklyLabels && weeklyLabels.length) ? weeklyLabels : ['W1', 'W2', 'W3', 'W4']
+  const wLabels = (weeklyLabels && weeklyLabels.length) ? weeklyLabels : Array.from({ length: 12 }, (_, i) => `W${i + 1}`)
 
   const buGroups = BU_ORDER.map(bu => {
     const prods = products.filter(p => p.bu === bu)
@@ -1083,7 +1083,7 @@ var _products=${JSON.stringify(products.map(p => ({ id: p.id, bu: p.bu, kr: p.kr
 var _productsCnty=${JSON.stringify(productsCnty || [])};
 var _total=${JSON.stringify(total)};
 var _meta={period:'${(meta.period || '').replace(/'/g, "\\'")}',reportNo:'${(meta.reportNo || '').replace(/'/g, "\\'")}',totalInsight:${JSON.stringify(meta.totalInsight || '')}};
-var _wLabels=${JSON.stringify((weeklyLabels && weeklyLabels.length) ? weeklyLabels : ['W1','W2','W3','W4'])};
+var _wLabels=${JSON.stringify((weeklyLabels && weeklyLabels.length) ? weeklyLabels : Array.from({ length: 12 }, (_, i) => 'W' + (i + 1)))};
 var _lang='${lang}';
 var _BRAND_COLORS=${JSON.stringify(BRAND_COLORS)};
 var _FALLBACK=['#94A3B8','#64748B','#475569','#CBD5E1','#E2E8F0'];

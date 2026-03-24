@@ -200,7 +200,7 @@ export default function WeeklyTrendView({ weeklyAll, products, weeklyLabels }) {
   // country 변경 시 유효성 검사
   const country = countries.includes(selectedCountry) ? selectedCountry : 'Total'
 
-  const labels = weeklyLabels || ['W1', 'W2', 'W3', 'W4']
+  const labels = (weeklyLabels && weeklyLabels.length) ? weeklyLabels : Array.from({ length: 12 }, (_, i) => `W${i + 1}`)
 
   return (
     <div style={{ flex: 1, overflowY: 'auto', padding: '20px 28px',
