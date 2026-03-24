@@ -596,7 +596,7 @@ function switchSubTab(btn,tab){
     p.style.display=p.getAttribute('data-panel')===tab?'':'none';
   });
 }
-var _REGIONS={NA:['US','CA'],EU:['UK','DE'],LATAM:['MX','BR'],APAC:['IN','AU','VN']};
+var _REGIONS={NA:['US','CA'],EU:['UK','DE','ES'],LATAM:['MX','BR'],APAC:['IN','AU','VN']};
 function updateAllCheckbox(target){
   var all=document.querySelectorAll('.fl-chk[data-filter="'+target+'"]');
   var allChecked=true;
