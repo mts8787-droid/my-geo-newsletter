@@ -171,7 +171,7 @@ function dotcomSectionHtml(dotcom, meta, t) {
 // ─── Region 매핑 ────────────────────────────────────────────────────────────
 const REGIONS = {
   NA:    { countries: ['US', 'CA'] },
-  EU:    { countries: ['UK', 'DE'] },
+  EU:    { countries: ['UK', 'DE', 'ES'] },
   LATAM: { countries: ['MX', 'BR'] },
   APAC:  { countries: ['IN', 'AU', 'VN'] },
 }
