@@ -47,7 +47,7 @@ export default function SummaryCards({ avgRate, cumulativeActual, cumulativeGoal
           <div style={{ marginTop: 8, height: 6, background: 'rgba(255,255,255,0.6)', borderRadius: 3, overflow: 'hidden' }}>
             <div style={{ height: '100%', borderRadius: 3, width: `${Math.min(avgRate, 100)}%`, background: s.bar, transition: 'width 0.5s' }} />
           </div>
-          <p style={{ fontSize: 17, color: '#64748B', marginTop: 4 }}>{fmt(monthActual)} / {fmt(monthGoal)}</p>
+          <p style={{ fontSize: 17, color: '#64748B', marginTop: 3 }}>{fmt(monthActual)} / {fmt(monthGoal)}</p>
         </div>
 
         {/* 누적 실적 / 목표 — 신호등 적용 */}
@@ -66,7 +66,7 @@ export default function SummaryCards({ avgRate, cumulativeActual, cumulativeGoal
               <div style={{ marginTop: 8, height: 6, background: 'rgba(255,255,255,0.6)', borderRadius: 3, overflow: 'hidden' }}>
                 <div style={{ height: '100%', borderRadius: 3, background: cs.bar, width: `${Math.min(cumRate, 100)}%`, transition: 'width 0.5s' }} />
               </div>
-              <p style={{ fontSize: 17, color: '#64748B', marginTop: 4 }}>{fmt(cumulativeActual)} / {fmt(cumulativeGoal)}</p>
+              <p style={{ fontSize: 17, color: '#64748B', marginTop: 3 }}>{fmt(cumulativeActual)} / {fmt(cumulativeGoal)}</p>
             </div>
           )
         })()}
@@ -87,7 +87,7 @@ export default function SummaryCards({ avgRate, cumulativeActual, cumulativeGoal
               <div style={{ marginTop: 8, height: 6, background: 'rgba(255,255,255,0.6)', borderRadius: 3, overflow: 'hidden' }}>
                 <div style={{ height: '100%', borderRadius: 3, background: cs.bar, width: `${progressPct}%`, transition: 'width 0.5s' }} />
               </div>
-              <p style={{ fontSize: 17, color: '#64748B', marginTop: 4 }}>{fmt(cumulativeActual)} / {fmt(annualTarget)}</p>
+              <p style={{ fontSize: 17, color: '#64748B', marginTop: 3 }}>{fmt(cumulativeActual)} / {fmt(annualTarget)}</p>
             </div>
           )
         })()}
@@ -109,7 +109,7 @@ export default function SummaryCards({ avgRate, cumulativeActual, cumulativeGoal
                 <span className="text-4xl font-black" style={{ color: w ? '#BE123C' : '#15803D' }}>{warningCount}</span>
                 <span style={{ fontSize: 19, color: '#94A3B8' }}>건</span>
               </div>
-              <p style={{ fontSize: 17, color: '#64748B', marginTop: 4 }}>달성률 80% 미만</p>
+              <p style={{ fontSize: 17, color: '#64748B', marginTop: 3 }}>달성률 80% 미만</p>
             </div>
           )
         })()}
