@@ -1,4 +1,4 @@
-import { RefreshCw, Globe, Trash2, X } from 'lucide-react'
+import { RefreshCw, Globe, Trash2 } from 'lucide-react'
 import { MONTHS, STAKEHOLDER_COLORS } from '../utils/constants'
 import { t } from '../../shared/i18n.js'
 
@@ -6,7 +6,7 @@ export default function Header({
   onRefresh, loading, selectedMonth, setSelectedMonth,
   selectedSH, setSelectedSH, stakeholderList,
   isPublic, onPublish, publishing, publishInfo, onUnpublish,
-  lang = 'ko', selectedCategory, onClearCategory,
+  lang = 'ko', selectedCategory, setSelectedCategory, categoryList = [], onClearCategory,
 }) {
   return (
     <header className="sticky top-0 z-30 bg-white/95 backdrop-blur border-b border-[#E2E8F0] shadow-sm">
@@ -53,22 +53,28 @@ export default function Header({
             })}
           </div>
 
-          {/* Active category filter badge */}
-          {selectedCategory && (
-            <span style={{
-              display: 'inline-flex', alignItems: 'center', gap: 4,
-              padding: '4px 10px', borderRadius: 6, fontSize: 14, fontWeight: 700,
-              background: '#EEF2FF', color: '#4338CA', border: '1px solid #C7D2FE',
-            }}>
-              {selectedCategory}
-              <button
-                onClick={onClearCategory}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', color: '#6366F1' }}
-                title={t(lang, 'clearFilter')}
-              >
-                <X size={14} />
-              </button>
-            </span>
+          {/* Category filter buttons */}
+          {categoryList.length > 0 && (
+            <>
+              <span style={{ width: 1, height: 20, background: '#E2E8F0', margin: '0 4px' }} />
+              <div className="flex items-center gap-1 flex-wrap">
+                {categoryList.map(cat => {
+                  const isActive = selectedCategory === cat
+                  return (
+                    <button
+                      key={cat}
+                      onClick={() => setSelectedCategory?.(isActive ? null : cat)}
+                      className={`px-2.5 py-1 rounded-md text-[16px] font-bold transition-all ${
+                        isActive ? 'text-white shadow-sm' : 'text-[#111827] hover:text-[#1E293B] hover:bg-[#F1F5F9]'
+                      }`}
+                      style={isActive ? { backgroundColor: '#CF0652' } : undefined}
+                    >
+                      {cat}
+                    </button>
+                  )
+                })}
+              </div>
+            </>
           )}
         </div>
 

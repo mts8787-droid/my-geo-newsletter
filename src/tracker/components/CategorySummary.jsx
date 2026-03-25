@@ -13,12 +13,16 @@ function fmt(n) { return Number(n).toLocaleString('en-US') }
 function CategoryTooltip({ cat, lang }) {
   return (
     <div style={{
-      position: 'absolute', bottom: 'calc(100% + 8px)', left: '50%', transform: 'translateX(-50%)',
+      position: 'absolute', top: 'calc(100% + 8px)', left: 0, right: 0,
       background: '#1E293B', color: '#E2E8F0', borderRadius: 8, padding: '12px 16px',
-      fontSize: 13, lineHeight: 1.7, zIndex: 50, minWidth: 220, maxWidth: 300,
+      fontSize: 13, lineHeight: 1.7, zIndex: 50,
       boxShadow: '0 8px 24px rgba(0,0,0,0.25)', pointerEvents: 'none',
       whiteSpace: 'normal',
     }}>
+      <div style={{
+        position: 'absolute', top: -6, left: '50%', transform: 'translateX(-50%)',
+        width: 0, height: 0, borderLeft: '6px solid transparent', borderRight: '6px solid transparent', borderBottom: '6px solid #1E293B',
+      }} />
       <div style={{ fontWeight: 700, marginBottom: 6, color: '#F8FAFC' }}>{cat.category}</div>
       <div style={{ color: '#94A3B8' }}>{t(lang, 'tooltipTaskCount', cat.taskCount)}</div>
       <div style={{ color: '#94A3B8' }}>{t(lang, 'monthlyRate', '')} {cat.monthRate}% ({fmt(cat.monthActual)} / {fmt(cat.monthGoal)})</div>
@@ -35,10 +39,6 @@ function CategoryTooltip({ cat, lang }) {
           </div>
         </div>
       )}
-      <div style={{
-        position: 'absolute', bottom: -6, left: '50%', transform: 'translateX(-50%)',
-        width: 0, height: 0, borderLeft: '6px solid transparent', borderRight: '6px solid transparent', borderTop: '6px solid #1E293B',
-      }} />
     </div>
   )
 }
@@ -74,14 +74,14 @@ export default function CategorySummary({ categories, month, lang = 'ko', select
               onMouseEnter={() => setHoveredCat(cat.category)}
               onMouseLeave={() => setHoveredCat(null)}
               style={{
-                border: isSelected ? '2px solid #4338CA' : `1px solid ${ms.border}`,
-                background: isSelected ? '#EEF2FF' : ms.bg,
+                border: isSelected ? `2px solid ${ms.dot}` : `1px solid ${ms.border}`,
+                background: ms.bg,
                 padding: isSelected ? 15 : 16,
                 cursor: 'pointer',
                 position: 'relative',
                 transition: 'all 0.15s ease',
                 transform: isSelected ? 'scale(1.02)' : 'none',
-                boxShadow: isSelected ? '0 4px 12px rgba(67,56,202,0.15)' : 'none',
+                boxShadow: isSelected ? `0 4px 12px ${ms.dot}25` : 'none',
               }}
             >
               {/* Tooltip */}

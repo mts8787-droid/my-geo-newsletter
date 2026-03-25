@@ -10,11 +10,14 @@ function statusDot(val, lang) {
   return { dot: '#94A3B8', label: val, bg: 'transparent' }
 }
 
-export default function QualitativeTable({ goals, results, selectedSH, month, lang = 'ko' }) {
-  const allSH = [...new Set(results.map(r => r.stakeholder))].filter(sh => {
-    if (selectedSH !== '전체') return sh === selectedSH
-    return true
+export default function QualitativeTable({ goals, results, selectedSH, selectedCategory, month, lang = 'ko' }) {
+  let filtered = results
+  if (selectedSH !== '전체') filtered = filtered.filter(r => r.stakeholder === selectedSH)
+  if (selectedCategory) filtered = filtered.filter(r => {
+    const cat = r.taskCategory || goals.find(g => g.stakeholder === r.stakeholder && g.task === r.task)?.taskCategory
+    return cat === selectedCategory
   })
+  const allSH = [...new Set(filtered.map(r => r.stakeholder))]
 
   return (
     <div style={{ background: '#fff', border: '1px solid #E2E8F0', borderRadius: 12, overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
@@ -45,7 +48,7 @@ export default function QualitativeTable({ goals, results, selectedSH, month, la
           <tbody>
             {allSH.map(sh => {
               const color = STAKEHOLDER_COLORS[sh] || '#94A3B8'
-              const shResults = results.filter(r => r.stakeholder === sh)
+              const shResults = filtered.filter(r => r.stakeholder === sh)
 
               if (shResults.length === 0) return null
 

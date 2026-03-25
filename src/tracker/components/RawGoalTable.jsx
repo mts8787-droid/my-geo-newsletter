@@ -1,8 +1,9 @@
 import { MONTHS, STAKEHOLDER_COLORS } from '../utils/constants'
 import { t } from '../../shared/i18n.js'
 
-export default function RawGoalTable({ rows, selectedSH, lang = 'ko' }) {
-  const filtered = selectedSH === '전체' ? rows : rows.filter(r => r.stakeholder === selectedSH)
+export default function RawGoalTable({ rows, selectedSH, selectedCategory, lang = 'ko' }) {
+  let filtered = selectedSH === '전체' ? rows : rows.filter(r => r.stakeholder === selectedSH)
+  if (selectedCategory) filtered = filtered.filter(r => r.taskCategory === selectedCategory)
 
   const computedTotals = {
     monthly: Object.fromEntries(MONTHS.map(m => [

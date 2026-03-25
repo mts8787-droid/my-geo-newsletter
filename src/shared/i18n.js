@@ -13,7 +13,7 @@ const T = {
 
     // Filters
     all: '전체',
-    allStakeholders: '전체 Stakeholders',
+    allStakeholders: '전체 조직',
 
     // CategorySummary
     categorySummary: '과제 구분별 달성률',

@@ -254,6 +254,11 @@ export default function App() {
     return [...new Set(data.quantitativeGoals.rows.map(r => r.stakeholder))]
   }, [data])
 
+  const categoryList = useMemo(() => {
+    if (!data) return []
+    return [...new Set(data.quantitativeGoals.rows.map(r => r.taskCategory).filter(Boolean))]
+  }, [data])
+
   const dashboard = useMemo(() => {
     if (!data) return null
     return computeDashboard(data, selectedMonth, selectedSH, selectedCategory)
@@ -311,6 +316,8 @@ export default function App() {
         onUnpublish={handleUnpublish}
         lang={lang}
         selectedCategory={selectedCategory}
+        setSelectedCategory={setSelectedCategory}
+        categoryList={categoryList}
         onClearCategory={() => setSelectedCategory(null)}
       />
 
@@ -381,6 +388,7 @@ export default function App() {
                 goals={data.qualitativeGoals.rows}
                 results={data.qualitativeResults.rows}
                 selectedSH={selectedSH}
+                selectedCategory={selectedCategory}
                 month={selectedMonth}
                 lang={lang}
               />
@@ -390,6 +398,7 @@ export default function App() {
               <RawGoalTable
                 rows={data.quantitativeGoals.rows}
                 selectedSH={selectedSH}
+                selectedCategory={selectedCategory}
                 lang={lang}
               />
             )}

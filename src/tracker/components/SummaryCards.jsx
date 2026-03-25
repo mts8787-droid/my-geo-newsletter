@@ -21,11 +21,11 @@ export default function SummaryCards({ avgRate, cumulativeActual, cumulativeGoal
       {/* Stakeholder indicator + Traffic light status bar */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
         {shLabel ? (
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '5px 14px', borderRadius: 6, fontSize: 21, fontWeight: 700, background: shColor + '18', color: '#111827', border: `1px solid ${shColor}30` }}>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '5px 14px', borderRadius: 6, fontSize: 21, fontWeight: 700, background: shColor + '18', color: '#111827', border: `1px solid ${shColor}30`, height: 38, boxSizing: 'border-box' }}>
             {shLabel}
           </span>
         ) : (
-          <span style={{ fontSize: 21, fontWeight: 700, color: '#111827' }}>{t(lang, 'allStakeholders')}</span>
+          <span style={{ display: 'inline-flex', alignItems: 'center', fontSize: 21, fontWeight: 700, color: '#111827', height: 38 }}>{t(lang, 'allStakeholders')}</span>
         )}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <span style={{ width: 16, height: 16, borderRadius: '50%', background: s.dot, display: 'inline-block', boxShadow: `0 0 10px ${s.dot}55` }} />
