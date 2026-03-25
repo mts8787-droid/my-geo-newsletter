@@ -110,8 +110,8 @@ function computeDashboard(data, month, stakeholderFilter, categoryFilter) {
 
   const annualTarget = tasks.reduce((s, t) => s + t.goalAnnual, 0)
 
-  // 스테이크홀더별 (항상 전체 기준으로 계산 — 필터 무관)
-  const allTasks = goals.rows.map((g) => {
+  // 스테이크홀더별 (카테고리 필터 적용)
+  let allTasks = goals.rows.map((g) => {
     const key = `${g.stakeholder}|${g.task}`
     const a = actualMap[key] || {}
     const r = rateMap[key] || {}
@@ -128,6 +128,9 @@ function computeDashboard(data, month, stakeholderFilter, categoryFilter) {
       actualMonthly: a.monthly,
     }
   })
+  if (categoryFilter) {
+    allTasks = allTasks.filter(t => t.taskCategory === categoryFilter)
+  }
   const shNames = [...new Set(allTasks.map(t => t.stakeholder))]
   const stakeholders = shNames.map(sh => {
     const shTasks = allTasks.filter(t => t.stakeholder === sh)
