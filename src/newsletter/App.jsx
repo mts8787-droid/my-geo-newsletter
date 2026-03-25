@@ -13,7 +13,10 @@ const STORAGE_KEY = 'geo-newsletter-cache'
 // ─── 뉴스레터 미리보기 (iframe) ──────────────────────────────────────────────
 function NewsletterPreview({ meta, total, products, citations, dotcom, productsCnty = [], citationsCnty = [], lang = 'ko' }) {
   const iframeRef = useRef(null)
-  const html = generateEmailHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty)
+  const html = useMemo(
+    () => generateEmailHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty),
+    [meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty]
+  )
 
   React.useEffect(() => {
     const iframe = iframeRef.current

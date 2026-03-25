@@ -43,31 +43,36 @@ function insightHtml(insight, showInsight, howToRead, showHowToRead, t) {
 }
 
 // ─── Citation 섹션 ───────────────────────────────────────────────────────────
-function citationSectionHtml(citations, meta, t) {
-  if (!citations || !citations.length) return ''
+function citationSectionHtml(citations, meta, t, lang) {
   const topN = meta.citationTopN || 10
-  const list = citations.slice(0, topN)
-  const maxScore = Math.max(...list.map(c => c.score), 1)
-  const totalScore = citations.reduce((s, c) => s + c.score, 0)
-  const rows = list.map((c, i) => {
-    const pct = (c.score / maxScore * 100).toFixed(1)
-    const ratio = totalScore > 0 ? ((c.score / totalScore) * 100).toFixed(1) : '0.0'
-    const d = c.delta || 0
-    const dArrow = d > 0 ? '▲' : d < 0 ? '▼' : ''
-    const dColor = d > 0 ? '#22C55E' : d < 0 ? '#EF4444' : '#94A3B8'
-    return `<div class="cit-row">
-      <span class="cit-rank ${i < 3 ? 'top' : ''}">${c.rank || i+1}</span>
-      <div class="cit-info"><span class="cit-source">${c.source}</span><span class="cit-cat">${c.category}</span></div>
-      <div class="cit-bar-wrap"><div class="cit-bar" style="width:${pct}%"></div></div>
-      <span class="cit-score">${fmt(c.score)}</span>
-      <span class="cit-ratio">(${ratio}%)</span>
-      ${d ? `<span class="cit-delta" style="color:${dColor}">${dArrow} ${Math.abs(d).toFixed(1)}</span>` : ''}
-    </div>`
-  }).join('')
+  let bodyHtml
+  if (!citations || !citations.length) {
+    const noDataMsg = lang === 'en' ? 'No data available for the selected filter.' : '선택된 필터에 해당하는 데이터가 없습니다.'
+    bodyHtml = `<div style="text-align:center;padding:40px 20px;color:#94A3B8;font-size:13px">${noDataMsg}</div>`
+  } else {
+    const list = citations.slice(0, topN)
+    const maxScore = Math.max(...list.map(c => c.score), 1)
+    const totalScore = citations.reduce((s, c) => s + c.score, 0)
+    bodyHtml = list.map((c, i) => {
+      const pct = (c.score / maxScore * 100).toFixed(1)
+      const ratio = totalScore > 0 ? ((c.score / totalScore) * 100).toFixed(1) : '0.0'
+      const d = c.delta || 0
+      const dArrow = d > 0 ? '▲' : d < 0 ? '▼' : ''
+      const dColor = d > 0 ? '#22C55E' : d < 0 ? '#EF4444' : '#94A3B8'
+      return `<div class="cit-row">
+        <span class="cit-rank ${i < 3 ? 'top' : ''}">${c.rank || i+1}</span>
+        <div class="cit-info"><span class="cit-source">${c.source}</span><span class="cit-cat">${c.category}</span></div>
+        <div class="cit-bar-wrap"><div class="cit-bar" style="width:${pct}%"></div></div>
+        <span class="cit-score">${fmt(c.score)}</span>
+        <span class="cit-ratio">(${ratio}%)</span>
+        ${d ? `<span class="cit-delta" style="color:${dColor}">${dArrow} ${Math.abs(d).toFixed(1)}</span>` : ''}
+      </div>`
+    }).join('')
+  }
   return `<div class="section-card">
     <div class="section-header"><div class="section-title">${t.citationTitle}</div><span class="legend">${t.citLegend}</span></div>
     ${insightHtml(meta.citationInsight, meta.showCitationInsight, meta.citationHowToRead, meta.showCitationHowToRead, t)}
-    <div class="section-body">${rows}</div>
+    <div class="section-body">${bodyHtml}</div>
   </div>`
 }
 
@@ -91,21 +96,25 @@ function citDomainSectionHtml(citationsCnty, meta, t, citations, lang, useAggreg
   } else {
     rows = citationsCnty.filter(r => r.cnty === 'TTL').sort((a, b) => a.rank - b.rank).slice(0, topN)
   }
-  if (!rows.length) return ''
-
-  const maxScore = Math.max(...rows.map(r => r.citations), 1)
-  const totalCit = rows.reduce((s, r) => s + r.citations, 0)
-  const html = rows.map((c, i) => {
-    const pct = (c.citations / maxScore * 100).toFixed(1)
-    const ratio = totalCit > 0 ? ((c.citations / totalCit) * 100).toFixed(1) : '0.0'
-    return `<div class="cit-row">
-      <span class="cit-rank ${i < 3 ? 'top' : ''}">${c.rank}</span>
-      <div class="cit-info"><span class="cit-source">${stripDomain(c.domain)}</span><span class="cit-cat">${c.type}</span></div>
-      <div class="cit-bar-wrap"><div class="cit-bar" style="width:${pct}%"></div></div>
-      <span class="cit-score">${fmt(c.citations)}</span>
-      <span class="cit-ratio">(${ratio}%)</span>
-    </div>`
-  }).join('')
+  let bodyHtml
+  if (!rows.length) {
+    const noDataMsg = lang === 'en' ? 'No data available for the selected filter.' : '선택된 필터에 해당하는 데이터가 없습니다.'
+    bodyHtml = `<div style="text-align:center;padding:40px 20px;color:#94A3B8;font-size:13px">${noDataMsg}</div>`
+  } else {
+    const maxScore = Math.max(...rows.map(r => r.citations), 1)
+    const totalCit = rows.reduce((s, r) => s + r.citations, 0)
+    bodyHtml = rows.map((c, i) => {
+      const pct = (c.citations / maxScore * 100).toFixed(1)
+      const ratio = totalCit > 0 ? ((c.citations / totalCit) * 100).toFixed(1) : '0.0'
+      return `<div class="cit-row">
+        <span class="cit-rank ${i < 3 ? 'top' : ''}">${c.rank}</span>
+        <div class="cit-info"><span class="cit-source">${stripDomain(c.domain)}</span><span class="cit-cat">${c.type}</span></div>
+        <div class="cit-bar-wrap"><div class="cit-bar" style="width:${pct}%"></div></div>
+        <span class="cit-score">${fmt(c.citations)}</span>
+        <span class="cit-ratio">(${ratio}%)</span>
+      </div>`
+    }).join('')
+  }
 
   return `<div class="section-card" id="cit-domain-section">
     <div class="section-header">
@@ -113,54 +122,58 @@ function citDomainSectionHtml(citationsCnty, meta, t, citations, lang, useAggreg
       <span class="legend">Top ${topN} Domains</span>
     </div>
     ${insightHtml(meta.citDomainInsight, meta.showCitDomainInsight, meta.citDomainHowToRead, meta.showCitDomainHowToRead, t)}
-    <div class="section-body">${html}</div>
+    <div class="section-body">${bodyHtml}</div>
   </div>`
 }
 
 // ─── 닷컴 Citation 비교 ────────────────────────────────────────────────────
 const DC_COLS = ['TTL','PLP','Microsites','PDP','Newsroom','Support','Buying-guide','Experience']
 const DC_SAM  = ['TTL','PLP','Microsites','PDP','Newsroom','Support','Buying-guide']
-function dotcomSectionHtml(dotcom, meta, t) {
-  if (!dotcom || !dotcom.lg) return ''
-  const lg = dotcom.lg, sam = dotcom.samsung || {}
-  const maxVal = Math.max(...DC_COLS.map(c => Math.max(lg[c]||0, sam[c]||0)), 1)
-  const lgWins = DC_SAM.filter(c => (lg[c]||0) > (sam[c]||0))
-  const samWins = DC_SAM.filter(c => (sam[c]||0) > (lg[c]||0))
-  const rows = DC_COLS.map(col => {
-    const lv = lg[col]||0, sv = sam[col]||0
-    const hasSam = col !== 'Experience'
-    const isTTL = col === 'TTL'
-    const lgPct = (lv/maxVal*100).toFixed(1), samPct = (sv/maxVal*100).toFixed(1)
-    const diff = lv - sv
-    let badge = ''
-    if (diff > 0) badge = `<span class="dc-badge lg">LG +${fmt(diff)}</span>`
-    else if (diff < 0 && hasSam) badge = `<span class="dc-badge ss">SS +${fmt(Math.abs(diff))}</span>`
-    return `<div class="dc-row ${isTTL ? 'ttl' : ''}">
-      <span class="dc-label">${isTTL ? t.dotcomTTL : col}${badge}</span>
-      <div class="dc-bars">
-        <div class="dc-bar-pair">
-          <div class="dc-bar lg" style="width:${lgPct}%"></div>
-          <span class="dc-val ${lv >= sv ? 'win' : ''}">${fmt(lv)}</span>
+function dotcomSectionHtml(dotcom, meta, t, lang) {
+  let bodyHtml
+  if (!dotcom || !dotcom.lg) {
+    const noDataMsg = lang === 'en' ? 'No data available for the selected filter.' : '선택된 필터에 해당하는 데이터가 없습니다.'
+    bodyHtml = `<div style="text-align:center;padding:40px 20px;color:#94A3B8;font-size:13px">${noDataMsg}</div>`
+  } else {
+    const lg = dotcom.lg, sam = dotcom.samsung || {}
+    const maxVal = Math.max(...DC_COLS.map(c => Math.max(lg[c]||0, sam[c]||0)), 1)
+    const lgWins = DC_SAM.filter(c => (lg[c]||0) > (sam[c]||0))
+    const samWins = DC_SAM.filter(c => (sam[c]||0) > (lg[c]||0))
+    const rows = DC_COLS.map(col => {
+      const lv = lg[col]||0, sv = sam[col]||0
+      const hasSam = col !== 'Experience'
+      const isTTL = col === 'TTL'
+      const lgPct = (lv/maxVal*100).toFixed(1), samPct = (sv/maxVal*100).toFixed(1)
+      const diff = lv - sv
+      let badge = ''
+      if (diff > 0) badge = `<span class="dc-badge lg">LG +${fmt(diff)}</span>`
+      else if (diff < 0 && hasSam) badge = `<span class="dc-badge ss">SS +${fmt(Math.abs(diff))}</span>`
+      return `<div class="dc-row ${isTTL ? 'ttl' : ''}">
+        <span class="dc-label">${isTTL ? t.dotcomTTL : col}${badge}</span>
+        <div class="dc-bars">
+          <div class="dc-bar-pair">
+            <div class="dc-bar lg" style="width:${lgPct}%"></div>
+            <span class="dc-val ${lv >= sv ? 'win' : ''}">${fmt(lv)}</span>
+          </div>
+          ${hasSam ? `<div class="dc-bar-pair">
+            <div class="dc-bar ss" style="width:${samPct}%"></div>
+            <span class="dc-val ${sv > lv ? 'win' : ''}">${fmt(sv)}</span>
+          </div>` : `<div class="dc-bar-pair"><span class="dc-val muted">${t.dotcomLgOnly}</span></div>`}
         </div>
-        ${hasSam ? `<div class="dc-bar-pair">
-          <div class="dc-bar ss" style="width:${samPct}%"></div>
-          <span class="dc-val ${sv > lv ? 'win' : ''}">${fmt(sv)}</span>
-        </div>` : `<div class="dc-bar-pair"><span class="dc-val muted">${t.dotcomLgOnly}</span></div>`}
-      </div>
-    </div>`
-  }).join('')
+      </div>`
+    }).join('')
+    bodyHtml = `${rows}
+      <div class="dc-summary">
+        <span class="dc-sum-item lg">${t.dotcomLgWin} (${lgWins.length})</span> <span class="dc-sum-list">${lgWins.length ? lgWins.join(', ') : t.dotcomNone}</span>
+        <span class="dc-sum-item ss">${t.dotcomSsWin} (${samWins.length})</span> <span class="dc-sum-list">${samWins.length ? samWins.join(', ') : t.dotcomNone}</span>
+      </div>`
+  }
   return `<div class="section-card">
     <div class="section-header"><div class="section-title">${t.dotcomTitle}</div>
       <span class="legend"><i style="background:${RED}"></i>LG <i style="background:${COMP}"></i>SS</span>
     </div>
     ${insightHtml(meta.dotcomInsight, meta.showDotcomInsight, meta.dotcomHowToRead, meta.showDotcomHowToRead, t)}
-    <div class="section-body">
-      ${rows}
-      <div class="dc-summary">
-        <span class="dc-sum-item lg">${t.dotcomLgWin} (${lgWins.length})</span> <span class="dc-sum-list">${lgWins.length ? lgWins.join(', ') : t.dotcomNone}</span>
-        <span class="dc-sum-item ss">${t.dotcomSsWin} (${samWins.length})</span> <span class="dc-sum-list">${samWins.length ? samWins.join(', ') : t.dotcomNone}</span>
-      </div>
-    </div>
+    <div class="section-body">${bodyHtml}</div>
   </div>`
 }
 
@@ -171,7 +184,7 @@ function dotcomSectionHtml(dotcom, meta, t) {
 // ─── Region 매핑 ────────────────────────────────────────────────────────────
 const REGIONS = {
   NA:    { countries: ['US', 'CA'] },
-  EU:    { countries: ['UK', 'DE'] },
+  EU:    { countries: ['UK', 'DE', 'ES'] },
   LATAM: { countries: ['MX', 'BR'] },
   APAC:  { countries: ['IN', 'AU', 'VN'] },
 }
@@ -382,8 +395,11 @@ export function generateCitationHTML(meta, _total, _products, citations, dotcom,
     : []
 
   // 카테고리별 Citation: 국가 필터 반영
+  const noneSelected = enabledCountries.length === 0
   let filteredCitations = citations
-  if (!allSelected && Object.keys(citationsByCnty).length > 0) {
+  if (noneSelected) {
+    filteredCitations = []
+  } else if (!allSelected && Object.keys(citationsByCnty).length > 0) {
     // 선택된 국가의 카테고리별 데이터를 합산
     const catMap = {}
     enabledCountries.forEach(cnty => {
@@ -401,7 +417,9 @@ export function generateCitationHTML(meta, _total, _products, citations, dotcom,
 
   // 닷컴 Citation: 국가 필터 반영
   let filteredDotcom = dotcom
-  if (!allSelected && Object.keys(dotcomByCnty).length > 0) {
+  if (noneSelected) {
+    filteredDotcom = null
+  } else if (!allSelected && Object.keys(dotcomByCnty).length > 0) {
     const lg = {}, samsung = {}
     enabledCountries.forEach(cnty => {
       const d = dotcomByCnty[cnty]
@@ -414,9 +432,9 @@ export function generateCitationHTML(meta, _total, _products, citations, dotcom,
 
   // 월간 탭 콘텐츠
   const monthlyContent = [
-    meta.showCitations !== false ? citationSectionHtml(filteredCitations, meta, t) : '',
+    meta.showCitations !== false ? citationSectionHtml(filteredCitations, meta, t, lang) : '',
     (meta.showCitDomain !== false || meta.showCitCnty !== false) ? citDomainSectionHtml(filteredCitCnty, meta, t, filteredCitations, lang, !allSelected) : '',
-    meta.showDotcom !== false ? dotcomSectionHtml(filteredDotcom, meta, t) : '',
+    meta.showDotcom !== false ? dotcomSectionHtml(filteredDotcom, meta, t, lang) : '',
   ].join('')
 
   // 월간 트렌드 탭 콘텐츠
@@ -596,7 +614,7 @@ function switchSubTab(btn,tab){
     p.style.display=p.getAttribute('data-panel')===tab?'':'none';
   });
 }
-var _REGIONS={NA:['US','CA'],EU:['UK','DE'],LATAM:['MX','BR'],APAC:['IN','AU','VN']};
+var _REGIONS={NA:['US','CA'],EU:['UK','DE','ES'],LATAM:['MX','BR'],APAC:['IN','AU','VN']};
 function updateAllCheckbox(target){
   var all=document.querySelectorAll('.fl-chk[data-filter="'+target+'"]');
   var allChecked=true;

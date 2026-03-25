@@ -117,35 +117,25 @@ const REGIONS = {
   APAC:  { label: '아태',   labelEn: 'Asia Pacific',    countries: ['IN', 'AU', 'VN'] },
 }
 
+const TREND_BRAND_COL = 90
+
+// SVG 라인 차트 (X 라벨 없음 — 테이블 헤더가 대체)
 function svgMultiLine(brandData, labels, w, h) {
   const brands = Object.keys(brandData)
   if (!brands.length || !labels.length) return ''
-  // Y축 범위 계산
   let mn = Infinity, mx = -Infinity
   brands.forEach(b => (brandData[b] || []).forEach(v => { if (v != null) { if (v < mn) mn = v; if (v > mx) mx = v } }))
   if (!isFinite(mn)) return ''
   const pad = Math.max((mx - mn) * 0.15, 2)
   mn = Math.max(0, mn - pad); mx = Math.min(100, mx + pad)
   const rng = mx - mn || 1
-  const pl = 40, pr = 16, pt = 12, pb = 24
-  const cw = w - pl - pr, ch = h - pt - pb
-  // Grid lines
-  const gridCount = 4
-  let gridLines = ''
-  for (let i = 0; i <= gridCount; i++) {
-    const y = pt + (i / gridCount) * ch
-    const val = mx - (i / gridCount) * rng
-    gridLines += `<line x1="${pl}" y1="${y.toFixed(1)}" x2="${w - pr}" y2="${y.toFixed(1)}" stroke="#E8EDF2" stroke-width="1"/>`
-    gridLines += `<text x="${pl - 6}" y="${(y + 4).toFixed(1)}" text-anchor="end" font-size="13" fill="#94A3B8" font-family="${FONT}">${val.toFixed(0)}%</text>`
+  const N = labels.length
+  const pt = 8, pb = 8, ch = h - pt - pb
+  let g = ''
+  for (let i = 0; i <= 4; i++) {
+    const y = pt + (i / 4) * ch
+    g += `<line x1="0" y1="${y.toFixed(1)}" x2="${w}" y2="${y.toFixed(1)}" stroke="#E8EDF2" stroke-width="1"/>`
   }
-  // X labels
-  let xLabels = ''
-  labels.forEach((l, i) => {
-    const x = pl + (i / Math.max(labels.length - 1, 1)) * cw
-    xLabels += `<text x="${x.toFixed(1)}" y="${pt + ch + 16}" text-anchor="middle" font-size="13" fill="#94A3B8" font-family="${FONT}">${l}</text>`
-  })
-  // Brand lines
-  let lines = ''
   brands.forEach((b, bi) => {
     const vals = brandData[b] || []
     const color = brandColor(b, bi)
@@ -155,24 +145,24 @@ function svgMultiLine(brandData, labels, w, h) {
     const pts = []
     vals.forEach((v, i) => {
       if (v == null) return
-      const x = pl + (i / Math.max(labels.length - 1, 1)) * cw
+      const x = ((i + 0.5) / N) * w
       const y = pt + (1 - (v - mn) / rng) * ch
       pts.push({ x, y, v })
     })
     if (pts.length < 2) return
     const d = pts.map((p, i) => `${i ? 'L' : 'M'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ')
-    lines += `<path d="${d}" stroke="${color}" fill="none" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round" opacity="${opacity}"/>`
+    g += `<path d="${d}" stroke="${color}" fill="none" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round" opacity="${opacity}"/>`
     pts.forEach(p => {
-      lines += `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${isLG ? 3.5 : 2.5}" fill="#fff" stroke="${color}" stroke-width="${isLG ? 2 : 1.5}" opacity="${opacity}"/>`
+      g += `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${isLG ? 3.5 : 2.5}" fill="#fff" stroke="${color}" stroke-width="${isLG ? 2 : 1.5}" opacity="${opacity}"/>`
     })
   })
-  return `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}" xmlns="http://www.w3.org/2000/svg" style="display:block;background:#fff;border-radius:8px">${gridLines}${xLabels}${lines}</svg>`
+  return `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}" xmlns="http://www.w3.org/2000/svg" style="display:block">${g}</svg>`
 }
 
 // ─── 경쟁사 트렌드 섹션 ────────────────────────────────────────────────────
 function trendDetailHtml(products, weeklyAll, weeklyLabels, t, lang) {
   if (!weeklyAll || !Object.keys(weeklyAll).length) return ''
-  const wLabels = (weeklyLabels && weeklyLabels.length) ? weeklyLabels : ['W1', 'W2', 'W3', 'W4']
+  const wLabels = (weeklyLabels && weeklyLabels.length) ? weeklyLabels : Array.from({ length: 12 }, (_, i) => `W${i + 1}`)
   const BU_ORDER = ['MS', 'HS', 'ES']
 
   const buGroups = BU_ORDER.map(bu => {
@@ -189,22 +179,25 @@ function trendDetailHtml(products, weeklyAll, weeklyLabels, t, lang) {
       if (!brands.length) return ''
       const st = statusInfo(p.status, lang)
       const lgLatest = data.LG?.[data.LG.length - 1]
-      // Legend
       const legend = brands.map((b, i) => {
         const c = brandColor(b, i)
         const isLG = b === 'LG'
         return `<span style="display:inline-flex;align-items:center;gap:3px;margin-right:12px"><i style="display:inline-block;width:10px;height:3px;border-radius:1px;background:${c};opacity:${isLG ? 1 : 0.7}"></i><span style="font-size:13px;color:${isLG ? '#1A1A1A' : '#94A3B8'};font-weight:${isLG ? 700 : 400}">${b}</span></span>`
       }).join('')
-      // Data table
-      const thead = `<tr><th style="text-align:left;padding:5px 10px;font-size:12px;color:#94A3B8;font-weight:600;border-bottom:1px solid #F1F5F9">Brand</th>${wLabels.map(w => `<th style="text-align:right;padding:5px 8px;font-size:12px;color:#94A3B8;font-weight:600;border-bottom:1px solid #F1F5F9">${w}</th>`).join('')}</tr>`
+      // 차트+표 통합 테이블: colgroup 공유로 X축 정렬 보장
+      const N = wLabels.length
+      const colgroup = `<colgroup><col style="width:${TREND_BRAND_COL}px">${wLabels.map(() => '<col>').join('')}</colgroup>`
+      const chartRow = `<tr><td style="padding:0;border:0"></td><td colspan="${N}" style="padding:8px 0;border:0">${svgMultiLine(data, wLabels, 900, 180)}</td></tr>`
+      const legendRow = `<tr><td style="padding:0;border:0"></td><td colspan="${N}" style="padding:4px 0 6px;border:0">${legend}</td></tr>`
+      const thead = `<tr style="border-top:1px solid #E8EDF2"><th style="text-align:left;padding:5px 6px;font-size:13px;color:#94A3B8;font-weight:600;border-bottom:1px solid #F1F5F9">Brand</th>${wLabels.map(w => `<th style="text-align:center;padding:5px 2px;font-size:13px;color:#94A3B8;font-weight:600;border-bottom:1px solid #F1F5F9">${w}</th>`).join('')}</tr>`
       const tbody = brands.map((b, i) => {
         const c = brandColor(b, i)
         const isLG = b === 'LG'
         const cells = wLabels.map((_, wi) => {
           const val = data[b]?.[wi]
-          return `<td style="text-align:right;padding:5px 8px;font-size:12px;color:${val != null ? (isLG ? '#1A1A1A' : '#475569') : '#CBD5E1'};font-weight:${isLG ? 700 : 400};border-bottom:1px solid #F8FAFC;font-variant-numeric:tabular-nums">${val != null ? val.toFixed(1) : '—'}</td>`
+          return `<td style="text-align:center;padding:5px 2px;font-size:13px;color:${val != null ? (isLG ? '#1A1A1A' : '#475569') : '#CBD5E1'};font-weight:${isLG ? 700 : 400};border-bottom:1px solid #F8FAFC;font-variant-numeric:tabular-nums">${val != null ? val.toFixed(1) : '—'}</td>`
         }).join('')
-        return `<tr style="background:${isLG ? '#FFF8F9' : i % 2 === 0 ? '#fff' : '#FAFBFC'}"><td style="padding:5px 10px;font-size:12px;font-weight:${isLG ? 700 : 500};color:${c};border-bottom:1px solid #F8FAFC;white-space:nowrap"><i style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${c};margin-right:5px;vertical-align:0"></i>${b}</td>${cells}</tr>`
+        return `<tr style="background:${isLG ? '#FFF8F9' : i % 2 === 0 ? '#fff' : '#FAFBFC'}"><td style="padding:5px 6px;font-size:13px;font-weight:${isLG ? 700 : 500};color:${c};border-bottom:1px solid #F8FAFC;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><i style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${c};margin-right:4px;vertical-align:0"></i>${b}</td>${cells}</tr>`
       }).join('')
 
       return `<div class="trend-row" style="margin-bottom:24px">
@@ -215,9 +208,7 @@ function trendDetailHtml(products, weeklyAll, weeklyLabels, t, lang) {
           ${lgLatest != null ? `<span style="font-size:13px;font-weight:700;color:#1A1A1A">LG ${lgLatest.toFixed(1)}%</span>` : ''}
           ${p.compName ? `<span style="font-size:13px;color:#94A3B8">vs ${p.compName} ${p.compRatio || ''}%</span>` : ''}
         </div>
-        <div style="background:#fff;border:1px solid #E8EDF2;border-radius:10px;padding:12px 12px 4px 0">${svgMultiLine(data, wLabels, 900, 200)}</div>
-        <div style="padding:6px 4px 0">${legend}</div>
-        <div style="margin-top:6px;border:1px solid #E8EDF2;border-radius:8px;overflow:hidden"><table style="width:100%;border-collapse:collapse;font-family:${FONT}"><thead>${thead}</thead><tbody>${tbody}</tbody></table></div>
+        <div style="border:1px solid #E8EDF2;border-radius:10px;overflow:hidden"><table style="width:100%;border-collapse:collapse;table-layout:fixed;font-family:${FONT}">${colgroup}<tbody>${chartRow}${legendRow}${thead}${tbody}</tbody></table></div>
       </div>`
     }).join('')
 
@@ -301,7 +292,7 @@ function heroHtml(total, meta, t, lang) {
 function productSectionHtml(products, meta, t, lang, weeklyLabels) {
   if (!products.length) return ''
   const BU_ORDER = ['MS', 'HS', 'ES']
-  const wLabels = (weeklyLabels && weeklyLabels.length) ? weeklyLabels : ['W1', 'W2', 'W3', 'W4']
+  const wLabels = (weeklyLabels && weeklyLabels.length) ? weeklyLabels : Array.from({ length: 12 }, (_, i) => `W${i + 1}`)
 
   const buGroups = BU_ORDER.map(bu => {
     const prods = products.filter(p => p.bu === bu)
@@ -575,6 +566,13 @@ function dotcomSectionHtml(dotcom, meta, t) {
 export function generateDashboardHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, weeklyAll) {
   _sid = 0
   const t = T[lang] || T.ko
+
+  // 대시보드에서는 인사이트 HTML을 항상 렌더링 (CSS로 토글)
+  meta.showProductInsight = true; meta.showProductHowToRead = true
+  meta.showCntyInsight = true; meta.showCntyHowToRead = true
+  meta.showCitationInsight = true; meta.showCitationHowToRead = true
+  meta.showDotcomInsight = true; meta.showDotcomHowToRead = true
+
   // 국가 목록 추출 (weeklyAll + productsCnty)
   const countries = new Set()
   if (weeklyAll) Object.values(weeklyAll).forEach(byC => Object.keys(byC).forEach(c => { if (c !== 'Total') countries.add(c) }))
@@ -636,6 +634,11 @@ export function generateDashboardHTML(meta, total, products, citations, dotcom, 
         <span class="fl-label">${lang === 'en' ? 'Country' : '국가'}</span>
         <label class="fl-chk-label fl-all-label"><input type="checkbox" class="fl-chk-all" data-target="country" checked onchange="toggleAll(this,'country')"><span>${allLabel}</span></label>
         ${countryCheckboxes}
+      </div>
+      <div class="fl-divider"></div>
+      <div class="fl-group">
+        <span class="fl-label">${lang === 'en' ? 'Display' : '표시'}</span>
+        <label class="fl-chk-label"><input type="checkbox" id="toggle-insights" onchange="toggleInsights(this.checked)"><span>${lang === 'en' ? 'GEO Insights' : 'GEO 인사이트'}</span></label>
       </div>
     </div>
   </div>`
@@ -743,6 +746,10 @@ body{background:#F1F5F9;font-family:${FONT};min-width:1200px;color:#1A1A1A}
 .legend{font-size:12px;color:#94A3B8;display:flex;align-items:center;gap:4px;flex-wrap:wrap}
 .legend i{display:inline-block;width:8px;height:8px;border-radius:50%;margin:0 2px 0 8px;vertical-align:0}
 /* ── Insight / HowToRead ── */
+.hero-insight,.insight-box,.howto-box{display:none}
+body.show-insights .hero-insight{display:block}
+body.show-insights .insight-box{display:block}
+body.show-insights .howto-box{display:block}
 .insight-box{margin:0 28px;padding:12px 16px;background:#FFF4F7;border:1px solid #F5CCD8;border-radius:8px;margin-top:12px}
 .insight-label{display:block;font-size:12px;font-weight:700;color:${RED};margin-bottom:4px}
 .insight-text{font-size:12px;color:#1A1A1A;line-height:1.8}
@@ -899,6 +906,9 @@ function switchPeriodMode(mode){
   onFilterChange();
 }
 function switchTrend(mode){switchPeriodMode(mode)}
+function toggleInsights(on){
+  document.body.classList.toggle('show-insights',on);
+}
 function toggleAll(el, target){
   var checked=el.checked;
   // Update all filter layers
@@ -1083,7 +1093,7 @@ var _products=${JSON.stringify(products.map(p => ({ id: p.id, bu: p.bu, kr: p.kr
 var _productsCnty=${JSON.stringify(productsCnty || [])};
 var _total=${JSON.stringify(total)};
 var _meta={period:'${(meta.period || '').replace(/'/g, "\\'")}',reportNo:'${(meta.reportNo || '').replace(/'/g, "\\'")}',totalInsight:${JSON.stringify(meta.totalInsight || '')}};
-var _wLabels=${JSON.stringify((weeklyLabels && weeklyLabels.length) ? weeklyLabels : ['W1','W2','W3','W4'])};
+var _wLabels=${JSON.stringify((weeklyLabels && weeklyLabels.length) ? weeklyLabels : Array.from({ length: 12 }, (_, i) => 'W' + (i + 1)))};
 var _lang='${lang}';
 var _BRAND_COLORS=${JSON.stringify(BRAND_COLORS)};
 var _FALLBACK=['#94A3B8','#64748B','#475569','#CBD5E1','#E2E8F0'];
@@ -1101,29 +1111,26 @@ function _statusInfo(s){
   if(s==='critical')return{bg:'#FFF1F2',border:'#FECDD3',color:'#BE123C',label:_lang==='en'?'Critical':'취약'};
   return{bg:'#F8FAFC',border:'#E2E8F0',color:'#475569',label:'—'};
 }
+var _TREND_BC=${TREND_BRAND_COL};
 function _svgML(bd,labels,w,h){
   var brands=Object.keys(bd);if(!brands.length||!labels.length)return'';
-  var mn=Infinity,mx=-Infinity;
+  var mn=Infinity,mx=-Infinity;var N=labels.length;
   brands.forEach(function(b){(bd[b]||[]).forEach(function(v){if(v!=null){if(v<mn)mn=v;if(v>mx)mx=v}})});
   if(!isFinite(mn))return'';
   var pad=Math.max((mx-mn)*0.15,2);mn=Math.max(0,mn-pad);mx=Math.min(100,mx+pad);var rng=mx-mn||1;
-  var pl=40,pr=16,pt=12,pb=24,cw=w-pl-pr,ch=h-pt-pb;
+  var pt=8,pb=8,ch=h-pt-pb;
   var g='';
-  for(var i=0;i<=4;i++){var y=pt+(i/4)*ch;var val=mx-(i/4)*rng;
-    g+='<line x1="'+pl+'" y1="'+y.toFixed(1)+'" x2="'+(w-pr)+'" y2="'+y.toFixed(1)+'" stroke="#E8EDF2" stroke-width="1"/>';
-    g+='<text x="'+(pl-6)+'" y="'+(y+4).toFixed(1)+'" text-anchor="end" font-size="13" fill="#94A3B8" font-family="'+_FONT+'">'+val.toFixed(0)+'%</text>';
+  for(var i=0;i<=4;i++){var y=pt+(i/4)*ch;
+    g+='<line x1="0" y1="'+y.toFixed(1)+'" x2="'+w+'" y2="'+y.toFixed(1)+'" stroke="#E8EDF2" stroke-width="1"/>';
   }
-  labels.forEach(function(l,i){var x=pl+(i/Math.max(labels.length-1,1))*cw;
-    g+='<text x="'+x.toFixed(1)+'" y="'+(pt+ch+16)+'" text-anchor="middle" font-size="13" fill="#94A3B8" font-family="'+_FONT+'">'+l+'</text>';
-  });
   brands.forEach(function(b,bi){var vals=bd[b]||[];var c=_bc(b,bi);var isLG=b==='LG';var sw=isLG?2.5:1.5;var op=isLG?1:0.7;var pts=[];
-    vals.forEach(function(v,i){if(v==null)return;var x=pl+(i/Math.max(labels.length-1,1))*cw;var y=pt+(1-(v-mn)/rng)*ch;pts.push({x:x,y:y,v:v})});
+    vals.forEach(function(v,i){if(v==null)return;var x=((i+0.5)/N)*w;var y=pt+(1-(v-mn)/rng)*ch;pts.push({x:x,y:y,v:v})});
     if(pts.length<2)return;
     var d=pts.map(function(p,i){return(i?'L':'M')+p.x.toFixed(1)+','+p.y.toFixed(1)}).join(' ');
     g+='<path d="'+d+'" stroke="'+c+'" fill="none" stroke-width="'+sw+'" stroke-linecap="round" stroke-linejoin="round" opacity="'+op+'"/>';
     pts.forEach(function(p){g+='<circle cx="'+p.x.toFixed(1)+'" cy="'+p.y.toFixed(1)+'" r="'+(isLG?3.5:2.5)+'" fill="#fff" stroke="'+c+'" stroke-width="'+(isLG?2:1.5)+'" opacity="'+op+'"/>'});
   });
-  return '<svg viewBox="0 0 '+w+' '+h+'" width="100%" height="'+h+'" xmlns="http://www.w3.org/2000/svg" style="display:block;background:#fff;border-radius:8px">'+g+'</svg>';
+  return '<svg viewBox="0 0 '+w+' '+h+'" width="100%" height="'+h+'" xmlns="http://www.w3.org/2000/svg" style="display:block">'+g+'</svg>';
 }
 
 // ─── Checkbox-based Filter Logic ───
@@ -1184,9 +1191,13 @@ function filterTrend(selBU,selProd,selCountry){
       if(!brands.length)return;
       var st=_statusInfo(p.status);var lgL=data.LG?data.LG[data.LG.length-1]:null;
       var legend=brands.map(function(br,i){var c=_bc(br,i);var isLG=br==='LG';return'<span style="display:inline-flex;align-items:center;gap:3px;margin-right:12px"><i style="display:inline-block;width:10px;height:3px;border-radius:1px;background:'+c+';opacity:'+(isLG?1:0.7)+'"></i><span style="font-size:13px;color:'+(isLG?'#1A1A1A':'#94A3B8')+';font-weight:'+(isLG?700:400)+'">'+br+'</span></span>'}).join('');
-      var thead='<tr><th style="text-align:left;padding:5px 10px;font-size:13px;color:#94A3B8;font-weight:600;border-bottom:1px solid #F1F5F9">Brand</th>'+_wLabels.map(function(w){return'<th style="text-align:right;padding:5px 8px;font-size:13px;color:#94A3B8;font-weight:600;border-bottom:1px solid #F1F5F9">'+w+'</th>'}).join('')+'</tr>';
-      var tbody=brands.map(function(br,i){var c=_bc(br,i);var isLG=br==='LG';var cells=_wLabels.map(function(_,wi){var val=data[br]?data[br][wi]:null;return'<td style="text-align:right;padding:5px 8px;font-size:13px;color:'+(val!=null?(isLG?'#1A1A1A':'#475569'):'#CBD5E1')+';font-weight:'+(isLG?700:400)+';border-bottom:1px solid #F8FAFC;font-variant-numeric:tabular-nums">'+(val!=null?val.toFixed(1):'—')+'</td>'}).join('');return'<tr style="background:'+(isLG?'#FFF8F9':i%2===0?'#fff':'#FAFBFC')+'"><td style="padding:5px 10px;font-size:13px;font-weight:'+(isLG?700:500)+';color:'+c+';border-bottom:1px solid #F8FAFC;white-space:nowrap"><i style="display:inline-block;width:6px;height:6px;border-radius:50%;background:'+c+';margin-right:5px;vertical-align:0"></i>'+br+'</td>'+cells+'</tr>'}).join('');
-      rows+='<div class="trend-row" style="margin-bottom:24px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><span style="width:3px;height:16px;border-radius:2px;background:'+_RED+';flex-shrink:0"></span><span style="font-size:15px;font-weight:700;color:#1A1A1A">'+p.kr+'</span><span style="font-size:13px;font-weight:700;padding:2px 8px;border-radius:10px;background:'+st.bg+';color:'+st.color+';border:1px solid '+st.border+'">'+st.label+'</span>'+(lgL!=null?'<span style="font-size:13px;font-weight:700;color:#1A1A1A">LG '+lgL.toFixed(1)+'%</span>':'')+(p.compName?'<span style="font-size:13px;color:#94A3B8">vs '+p.compName+' '+(p.compRatio||'')+'%</span>':'')+'</div><div style="background:#fff;border:1px solid #E8EDF2;border-radius:10px;padding:12px 12px 4px 0">'+_svgML(data,_wLabels,900,200)+'</div><div style="padding:6px 4px 0">'+legend+'</div><div style="margin-top:6px;border:1px solid #E8EDF2;border-radius:8px;overflow:hidden"><table style="width:100%;border-collapse:collapse;font-family:'+_FONT+'"><thead>'+thead+'</thead><tbody>'+tbody+'</tbody></table></div></div>';
+      var N=_wLabels.length;
+      var colgroup='<colgroup><col style="width:'+_TREND_BC+'px">'+_wLabels.map(function(){return'<col>'}).join('')+'</colgroup>';
+      var chartRow='<tr><td style="padding:0;border:0"></td><td colspan="'+N+'" style="padding:8px 0;border:0">'+_svgML(data,_wLabels,900,180)+'</td></tr>';
+      var legendRow='<tr><td style="padding:0;border:0"></td><td colspan="'+N+'" style="padding:4px 0 6px;border:0">'+legend+'</td></tr>';
+      var thead='<tr style="border-top:1px solid #E8EDF2"><th style="text-align:left;padding:5px 6px;font-size:13px;color:#94A3B8;font-weight:600;border-bottom:1px solid #F1F5F9">Brand</th>'+_wLabels.map(function(w){return'<th style="text-align:center;padding:5px 2px;font-size:13px;color:#94A3B8;font-weight:600;border-bottom:1px solid #F1F5F9">'+w+'</th>'}).join('')+'</tr>';
+      var tbody=brands.map(function(br,i){var c=_bc(br,i);var isLG=br==='LG';var cells=_wLabels.map(function(_,wi){var val=data[br]?data[br][wi]:null;return'<td style="text-align:center;padding:5px 2px;font-size:13px;color:'+(val!=null?(isLG?'#1A1A1A':'#475569'):'#CBD5E1')+';font-weight:'+(isLG?700:400)+';border-bottom:1px solid #F8FAFC;font-variant-numeric:tabular-nums">'+(val!=null?val.toFixed(1):'—')+'</td>'}).join('');return'<tr style="background:'+(isLG?'#FFF8F9':i%2===0?'#fff':'#FAFBFC')+'"><td style="padding:5px 6px;font-size:13px;font-weight:'+(isLG?700:500)+';color:'+c+';border-bottom:1px solid #F8FAFC;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><i style="display:inline-block;width:6px;height:6px;border-radius:50%;background:'+c+';margin-right:4px;vertical-align:0"></i>'+br+'</td>'+cells+'</tr>'}).join('');
+      rows+='<div class="trend-row" style="margin-bottom:24px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><span style="width:3px;height:16px;border-radius:2px;background:'+_RED+';flex-shrink:0"></span><span style="font-size:15px;font-weight:700;color:#1A1A1A">'+p.kr+'</span><span style="font-size:13px;font-weight:700;padding:2px 8px;border-radius:10px;background:'+st.bg+';color:'+st.color+';border:1px solid '+st.border+'">'+st.label+'</span>'+(lgL!=null?'<span style="font-size:13px;font-weight:700;color:#1A1A1A">LG '+lgL.toFixed(1)+'%</span>':'')+(p.compName?'<span style="font-size:13px;color:#94A3B8">vs '+p.compName+' '+(p.compRatio||'')+'%</span>':'')+'</div><div style="border:1px solid #E8EDF2;border-radius:10px;overflow:hidden"><table style="width:100%;border-collapse:collapse;table-layout:fixed;font-family:'+_FONT+'">'+colgroup+'<tbody>'+chartRow+legendRow+thead+tbody+'</tbody></table></div></div>';
     });
     if(!rows)return;hasTrend=true;
     html+='<div class="bu-group" data-bu="'+b+'" style="margin-bottom:20px"><div class="bu-header"><span class="bu-label">'+b+'</span></div>'+rows+'</div>';

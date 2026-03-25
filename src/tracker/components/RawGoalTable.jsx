@@ -1,7 +1,9 @@
 import { MONTHS, STAKEHOLDER_COLORS } from '../utils/constants'
+import { t } from '../../shared/i18n.js'
 
-export default function RawGoalTable({ rows, selectedSH }) {
-  const filtered = selectedSH === '전체' ? rows : rows.filter(r => r.stakeholder === selectedSH)
+export default function RawGoalTable({ rows, selectedSH, selectedCategory, lang = 'ko' }) {
+  let filtered = selectedSH === '전체' ? rows : rows.filter(r => r.stakeholder === selectedSH)
+  if (selectedCategory) filtered = filtered.filter(r => r.taskCategory === selectedCategory)
 
   const computedTotals = {
     monthly: Object.fromEntries(MONTHS.map(m => [
@@ -13,20 +15,21 @@ export default function RawGoalTable({ rows, selectedSH }) {
   return (
     <div style={{ background: '#fff', border: '1px solid #E2E8F0', borderRadius: 12, overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
       <div style={{ padding: '16px 20px', borderBottom: '1px solid #E2E8F0' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}><span style={{ width: 3, height: 16, borderRadius: 8, background: '#CF0652', flexShrink: 0 }} /><h3 style={{ fontSize: 20, fontWeight: 700, color: '#111827', margin: 0 }}>[참고] Stakeholders별 월간 목표 원본 데이터</h3></div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}><span style={{ width: 3, height: 16, borderRadius: 8, background: '#CF0652', flexShrink: 0 }} /><h3 style={{ fontSize: 20, fontWeight: 700, color: '#111827', margin: 0 }}>{t(lang, 'rawGoalTitle')}</h3></div>
       </div>
 
       <div className="overflow-x-auto">
         <table style={{ width: '100%', fontSize: 16, borderCollapse: 'collapse' }}>
           <thead>
             <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
-              <th style={{ padding: '10px 12px', textAlign: 'center', fontSize: 16, fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', position: 'sticky', left: 0, zIndex: 10, background: '#F8FAFC', width: 100, minWidth: 100 }}>Stakeholder</th>
-              <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 16, fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', width: 250, minWidth: 250 }}>과제</th>
+              <th style={{ padding: '10px 12px', textAlign: 'center', fontSize: 16, fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', position: 'sticky', left: 0, zIndex: 10, background: '#F8FAFC', width: 100, minWidth: 100 }}>{t(lang, 'org')}</th>
+              <th style={{ padding: '10px 12px', textAlign: 'center', fontSize: 16, fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', width: 160, minWidth: 160 }}>{t(lang, 'taskCategory')}</th>
+              <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 16, fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', width: 240, minWidth: 240 }}>{t(lang, 'task')}</th>
               <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 16, fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', width: 140, minWidth: 140 }}>Page Type</th>
               {MONTHS.map(m => (
                 <th key={m} style={{ padding: '10px 8px', textAlign: 'right', fontSize: 16, fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', minWidth: 52 }}>{m}</th>
               ))}
-              <th style={{ padding: '10px 12px', textAlign: 'right', fontSize: 16, fontWeight: 800, color: '#111827', textTransform: 'uppercase', letterSpacing: '0.05em', minWidth: 60 }}>연간</th>
+              <th style={{ padding: '10px 12px', textAlign: 'right', fontSize: 16, fontWeight: 800, color: '#111827', textTransform: 'uppercase', letterSpacing: '0.05em', minWidth: 60 }}>{t(lang, 'annual')}</th>
             </tr>
           </thead>
           <tbody>
@@ -39,6 +42,7 @@ export default function RawGoalTable({ rows, selectedSH }) {
                       {r.stakeholder}
                     </span>
                   </td>
+                  <td style={{ padding: '9px 12px', textAlign: 'center', color: '#64748B' }}>{r.taskCategory}</td>
                   <td style={{ padding: '9px 12px', color: '#1E293B', fontWeight: 500 }}>{r.task}</td>
                   <td style={{ padding: '9px 12px', color: '#64748B' }}>{r.pageType}</td>
                   {MONTHS.map(m => {
@@ -58,7 +62,7 @@ export default function RawGoalTable({ rows, selectedSH }) {
 
             {filtered.length > 0 && (
               <tr style={{ background: '#F8FAFC', borderTop: '2px solid #CBD5E1' }}>
-                <td style={{ padding: '9px 12px', position: 'sticky', left: 0, zIndex: 10, background: '#F8FAFC', fontWeight: 700, color: '#111827' }} colSpan={3}>합계</td>
+                <td style={{ padding: '9px 12px', position: 'sticky', left: 0, zIndex: 10, background: '#F8FAFC', fontWeight: 700, color: '#111827' }} colSpan={4}>{t(lang, 'total')}</td>
                 {MONTHS.map(m => {
                   const v = computedTotals.monthly[m]
                   return (
@@ -75,8 +79,8 @@ export default function RawGoalTable({ rows, selectedSH }) {
 
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={3 + MONTHS.length + 1} style={{ padding: '32px 12px', textAlign: 'center', color: '#94A3B8', fontSize: 16 }}>
-                  해당 스테이크홀더의 데이터가 없습니다.
+                <td colSpan={4 + MONTHS.length + 1} style={{ padding: '32px 12px', textAlign: 'center', color: '#94A3B8', fontSize: 16 }}>
+                  {t(lang, 'noDataForSH')}
                 </td>
               </tr>
             )}

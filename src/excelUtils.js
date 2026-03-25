@@ -369,7 +369,7 @@ function parseDashboardLayout(rows, div) {
       // 빈 셀은 건너뜀 (MoM 컬럼 등 사이에 빈 셀 있음)
     }
     console.log(`[dashLayout] "${name}" col:${ci}, nextCat:${nextCatCol}, raw dataRow[ci+1..]:`, JSON.stringify(dataRow.slice(ci + 1, nextCatCol)), '→ vals:', vals)
-    if (vals.length) weeklyMap[id] = vals.slice(-4)
+    if (vals.length) weeklyMap[id] = vals
   }
   if (!Object.keys(weeklyMap).length) {
     console.log('[dashLayout] no weekly data found for div:', div)
@@ -379,6 +379,19 @@ function parseDashboardLayout(rows, div) {
     || Object.values(weeklyMap)[0]?.map((_, i) => `W${i + 1}`) || []
   console.log('[parseWeekly] dashboard layout result:', Object.keys(weeklyMap), '| labels:', weeklyLabels)
   return { weeklyMap, weeklyLabels }
+}
+
+function sliceWeeklyData(weeklyAll, weeklyMap, start) {
+  for (const prod of Object.values(weeklyAll)) {
+    for (const cnty of Object.values(prod)) {
+      for (const [brand, vals] of Object.entries(cnty)) {
+        cnty[brand] = vals.slice(start)
+      }
+    }
+  }
+  for (const [key, vals] of Object.entries(weeklyMap)) {
+    weeklyMap[key] = vals.slice(start)
+  }
 }
 
 function parseWeekly(rows, div) {
@@ -518,9 +531,9 @@ function parseWeekly(rows, div) {
       byCategory[cat].push(pct(r[lgIdx]))
     })
     Object.entries(byCategory).forEach(([cat, vals]) => {
-      weeklyMap[CATEGORY_ID_MAP[cat] || cat.toLowerCase()] = vals.slice(-4)
+      weeklyMap[CATEGORY_ID_MAP[cat] || cat.toLowerCase()] = vals
     })
-    if (weekLabelOrder.length) weeklyLabels = weekLabelOrder.slice(-4)
+    if (weekLabelOrder.length) weeklyLabels = weekLabelOrder
   } else if (wCols.length) {
     // Format: Category, w1, w2, w3, w4
     data.forEach(r => {
@@ -529,6 +542,34 @@ function parseWeekly(rows, div) {
       if (!cat) return
       weeklyMap[CATEGORY_ID_MAP[cat] || cat.toLowerCase()] = wCols.map(c => pct(r[c]))
     })
+  }
+
+  // ── 앞쪽 빈 주차 제거 & 최대 12주 제한 (단일 패스) ──
+  if (weeklyLabels.length > 0) {
+    // 첫 데이터가 있는 주차 인덱스 탐색
+    let firstDataIdx = weeklyLabels.length
+    for (const prod of Object.values(weeklyAll)) {
+      for (const cnty of Object.values(prod)) {
+        for (const vals of Object.values(cnty)) {
+          const idx = vals.findIndex(v => v != null)
+          if (idx >= 0 && idx < firstDataIdx) firstDataIdx = idx
+        }
+      }
+    }
+    for (const vals of Object.values(weeklyMap)) {
+      const idx = vals.findIndex(v => v != null)
+      if (idx >= 0 && idx < firstDataIdx) firstDataIdx = idx
+    }
+
+    // 최종 슬라이스 범위 계산: leading trim + 12주 제한 합산
+    const MAX_WEEKS = 12
+    const trimmedLen = weeklyLabels.length - firstDataIdx
+    const start = trimmedLen > MAX_WEEKS ? weeklyLabels.length - MAX_WEEKS : firstDataIdx
+    if (start > 0 && start < weeklyLabels.length) {
+      console.log('[parseWeekly] trimming weeks: start=' + start + ', from ' + weeklyLabels.length + ' → ' + (weeklyLabels.length - start))
+      weeklyLabels = weeklyLabels.slice(start)
+      sliceWeeklyData(weeklyAll, weeklyMap, start)
+    }
   }
 
   console.log('[parseWeekly] weeklyMap keys:', Object.keys(weeklyMap), '| weeklyLabels:', weeklyLabels,
@@ -577,6 +618,8 @@ function parseCitPageType(rows) {
   const lg = {}, samsung = {}
   const dotcomByCnty = {}  // { cnty: { lg: {...}, samsung: {...} } }
   const CNTY_ALIAS = { 'TOTAL':'TTL', '미국':'US', '캐나다':'CA', '영국':'UK', '독일':'DE', '스페인':'ES', '브라질':'BR', '멕시코':'MX', '인도':'IN', '호주':'AU', '베트남':'VN' }
+  console.log(`[parseCitPageType] headerIdx=${headerIdx}, bestPair=lg:${bestPair.lg}/ss:${bestPair.ss}, dataRows=${data.length}`)
+  const _ptSeenCountries = new Set()
   data.forEach(r => {
     const rawCountry = String(r[0] || '').replace(/[()]/g, '').trim()
     const pageType = String(r[1] || '').replace(/[()]/g, '').trim()
@@ -587,6 +630,7 @@ function parseCitPageType(rows) {
     if (key.toLowerCase() === 'microsite') key = 'Microsites'
 
     const cnty = CNTY_ALIAS[rawCountry] || rawCountry.toUpperCase()
+    _ptSeenCountries.add(cnty)
     if (cnty === 'TTL') {
       lg[key] = (lg[key] || 0) + lgVal
       samsung[key] = (samsung[key] || 0) + ssVal
@@ -596,6 +640,9 @@ function parseCitPageType(rows) {
       dotcomByCnty[cnty].samsung[key] = (dotcomByCnty[cnty].samsung[key] || 0) + ssVal
     }
   })
+
+  console.log('[parseCitPageType] seen countries:', [..._ptSeenCountries])
+  console.log('[parseCitPageType] TTL lg:', JSON.stringify(lg), '| byCnty keys:', Object.keys(dotcomByCnty))
 
   const result = {}
   if (lg.TTL || Object.keys(lg).length) result.dotcom = { lg, samsung }
@@ -645,10 +692,14 @@ function parseCitTouchPoints(rows) {
   // 국가별 카테고리 Citation 수집
   const citationsByCnty = {}   // { cnty: [{ source, score, ... }] }
 
+  console.log(`[parseCitTouchPoints] headerIdx=${headerIdx}, countryCol=${countryCol}, channelCol=${channelCol}, dataStartCol=${dataStartCol}, dataRows=${data.length}, monthLabels=${monthLabels.length}`)
+  const _seenCountries = new Set()
+
   data.forEach(r => {
     const country = String(r[countryCol] || '').replace(/[()]/g, '').trim().toUpperCase()
     const channel = String(r[channelCol] || '').replace(/[()]/g, '').trim()
     if (channel.toLowerCase() === 'total') return
+    _seenCountries.add(country)
 
     // 최신 월 데이터 찾기
     let score = 0
@@ -695,6 +746,12 @@ function parseCitTouchPoints(rows) {
   const validMonths = monthLabels.map(m => m.label).filter(label =>
     Object.values(citTouchPointsTrend).some(d => d[label] > 0)
   )
+
+  console.log('[parseCitTouchPoints] seen countries:', [..._seenCountries])
+  console.log('[parseCitTouchPoints] TTL citations:', citations.length, '| byCnty keys:', Object.keys(citationsByCnty))
+  for (const [cnty, list] of Object.entries(citationsByCnty)) {
+    console.log(`[parseCitTouchPoints]   ${cnty}: ${list.length} channels, top=${list[0]?.source}(${list[0]?.score})`)
+  }
 
   const result = {}
   if (citations.length > 0) result.citations = citations
@@ -749,6 +806,8 @@ function parseCitDomain(rows) {
   let currentCnty = 'TTL'
   let rank = 0
 
+  console.log(`[parseCitDomain] startIdx=${startIdx}, offset=${off}, totalRows=${rows.length}, headerRow=${headerRow ? 'found' : 'none'}, monthLabels=${domainMonthLabels.length}`)
+
   for (let i = startIdx; i < rows.length; i++) {
     const r = rows[i]
     const cv = String(r[off] || '').trim()      // domain or country
@@ -757,10 +816,15 @@ function parseCitDomain(rows) {
 
     // 국가 마커 감지 (영문 코드 또는 한글)
     const cntyCode = COUNTRIES.includes(cv.toUpperCase()) ? cv.toUpperCase() : CNTY_KR[cv] || null
-    if (cntyCode && (!ct || ct === '')) {
-      currentCnty = cntyCode
-      rank = 0
-      continue
+    if (cntyCode) {
+      if (!ct || ct === '') {
+        console.log(`[parseCitDomain] ✓ country marker detected: row=${i}, cv="${cv}" → ${cntyCode}`)
+        currentCnty = cntyCode
+        rank = 0
+        continue
+      } else {
+        console.log(`[parseCitDomain] ✗ country code "${cv}"(→${cntyCode}) skipped: type column not empty, ct="${ct}" (row=${i})`)
+      }
     }
 
     // 헤더/설명 행 건너뛰기
@@ -798,7 +862,15 @@ function parseCitDomain(rows) {
     }
   }
 
+  // 국가별 결과 상세 로그
+  const cntyStats = {}
+  result.forEach(r => { cntyStats[r.cnty] = (cntyStats[r.cnty] || 0) + 1 })
   console.log('[parseCitDomain] result count:', result.length, '| countries:', [...new Set(result.map(r => r.cnty))])
+  console.log('[parseCitDomain] per-country counts:', JSON.stringify(cntyStats))
+  if (Object.keys(citDomainTrend).length) {
+    const trendCnties = [...new Set(Object.values(citDomainTrend).map(d => d.cnty))]
+    console.log('[parseCitDomain] trend countries:', trendCnties)
+  }
 
   const output = {}
   if (result.length > 0) output.citationsCnty = result

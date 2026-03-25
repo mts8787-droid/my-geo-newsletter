@@ -6,10 +6,13 @@ import PerformanceCharts from './components/PerformanceCharts'
 import StakeholderRanking from './components/StakeholderRanking'
 import DetailTable from './components/DetailTable'
 import QualitativeTable from './components/QualitativeTable'
+import CategorySummary from './components/CategorySummary'
 import RawGoalTable from './components/RawGoalTable'
 import { MONTHS } from './utils/constants'
+import { t } from '../shared/i18n.js'
 
 const IS_PUBLIC = window.location.pathname.startsWith('/p/')
+const URL_LANG = new URLSearchParams(window.location.search).get('lang')
 
 function parseRate(v) {
   if (typeof v === 'string' && v.endsWith('%')) return parseFloat(v)
@@ -23,7 +26,7 @@ function buildLookup(rows) {
   return map
 }
 
-function computeDashboard(data, month, stakeholderFilter) {
+function computeDashboard(data, month, stakeholderFilter, categoryFilter) {
   const goals = data.quantitativeGoals
   const actuals = data.quantitativeResults
   const rates = data.quantitativeRates
@@ -38,11 +41,11 @@ function computeDashboard(data, month, stakeholderFilter) {
     const r = rateMap[key] || {}
     const goal = typeof g.monthly?.[month] === 'number' ? g.monthly[month] : 0
     const actual = typeof a.monthly?.[month] === 'number' ? a.monthly[month] : 0
-    // 달성률: 실적/목표에서 직접 계산 (표3 데이터는 폴백으로만 사용)
     const sheetRate = parseRate(r.monthly?.[month])
     const computedRate = goal > 0 ? Math.round((actual / goal) * 1000) / 10 : null
     return {
       stakeholder: g.stakeholder,
+      taskCategory: g.taskCategory,
       task: g.task,
       pageType: g.pageType,
       detail: g.detail,
@@ -60,6 +63,11 @@ function computeDashboard(data, month, stakeholderFilter) {
   // Stakeholder filter
   if (stakeholderFilter !== '전체') {
     tasks = tasks.filter(t => t.stakeholder === stakeholderFilter)
+  }
+
+  // Category filter
+  if (categoryFilter) {
+    tasks = tasks.filter(t => t.taskCategory === categoryFilter)
   }
 
   // 이번 달 종합 달성률 (가중 평균: 총 실적 / 총 목표)
@@ -102,8 +110,8 @@ function computeDashboard(data, month, stakeholderFilter) {
 
   const annualTarget = tasks.reduce((s, t) => s + t.goalAnnual, 0)
 
-  // 스테이크홀더별 (항상 전체 기준으로 계산 — 필터 무관)
-  const allTasks = goals.rows.map((g) => {
+  // 스테이크홀더별 (카테고리 필터 적용)
+  let allTasks = goals.rows.map((g) => {
     const key = `${g.stakeholder}|${g.task}`
     const a = actualMap[key] || {}
     const r = rateMap[key] || {}
@@ -113,17 +121,20 @@ function computeDashboard(data, month, stakeholderFilter) {
     const computedRate = gv > 0 ? Math.round((av / gv) * 1000) / 10 : null
     return {
       stakeholder: g.stakeholder,
+      taskCategory: g.taskCategory,
       task: g.task,
       rate: computedRate !== null ? computedRate : sheetRate,
       goalMonthly: g.monthly,
       actualMonthly: a.monthly,
     }
   })
+  if (categoryFilter) {
+    allTasks = allTasks.filter(t => t.taskCategory === categoryFilter)
+  }
   const shNames = [...new Set(allTasks.map(t => t.stakeholder))]
   const stakeholders = shNames.map(sh => {
     const shTasks = allTasks.filter(t => t.stakeholder === sh)
 
-    // 해당 월 실적/목표 합계
     let monthAct = 0, monthGoalSh = 0
     const taskDetails = []
     shTasks.forEach(t => {
@@ -168,6 +179,45 @@ function computeDashboard(data, month, stakeholderFilter) {
     }
   }).sort((a, b) => b.monthRate - a.monthRate)
 
+  // 과제구분별 달성률 (전체 tasks 기준 — 카테고리 필터 미적용)
+  const categoryNames = [...new Set(allTasks.map(t => {
+    const g = goals.rows.find(r => r.stakeholder === t.stakeholder && r.task === t.task)
+    return g?.taskCategory || ''
+  }).filter(Boolean))]
+
+  const categoryStats = categoryNames.map(cat => {
+    const catGoals = goals.rows.filter(g => g.taskCategory === cat)
+    let mAct = 0, mGoal = 0, cAct = 0, cGoal = 0
+    catGoals.forEach(g => {
+      const key = `${g.stakeholder}|${g.task}`
+      const a = actualMap[key] || {}
+      const gv = typeof g.monthly?.[month] === 'number' ? g.monthly[month] : 0
+      const av = typeof a.monthly?.[month] === 'number' ? a.monthly[month] : 0
+      mGoal += gv
+      mAct += av
+      for (let i = 0; i <= monthIdx; i++) {
+        const m = MONTHS[i]
+        if (typeof g.monthly?.[m] === 'number') cGoal += g.monthly[m]
+        if (typeof a.monthly?.[m] === 'number') cAct += a.monthly[m]
+      }
+    })
+    const monthRate = mGoal > 0 ? Math.round((mAct / mGoal) * 1000) / 10 : 0
+    const cumRate = cGoal > 0 ? Math.round((cAct / cGoal) * 1000) / 10 : 0
+    const shNames = [...new Set(catGoals.map(g => g.stakeholder))]
+    const stakeholders = shNames.map(sh => {
+      let smAct = 0, smGoal = 0
+      catGoals.filter(g => g.stakeholder === sh).forEach(g => {
+        const key = `${g.stakeholder}|${g.task}`
+        const a = actualMap[key] || {}
+        smGoal += typeof g.monthly?.[month] === 'number' ? g.monthly[month] : 0
+        smAct += typeof a.monthly?.[month] === 'number' ? a.monthly[month] : 0
+      })
+      const rate = smGoal > 0 ? Math.round((smAct / smGoal) * 1000) / 10 : 0
+      return { name: sh, rate }
+    })
+    return { category: cat, taskCount: catGoals.length, monthRate, cumRate, monthActual: mAct, monthGoal: mGoal, cumActual: cAct, cumGoal: cGoal, stakeholders }
+  })
+
   const totalsRate = parseRate(rates.totals?.monthly?.[month])
   const currentMT = monthlyTotals.find(t => t.month === month)
   const monthActual = currentMT?.actual || 0
@@ -186,25 +236,36 @@ function computeDashboard(data, month, stakeholderFilter) {
     cumulative,
     annualTarget,
     stakeholders,
+    categoryStats,
   }
 }
 
 export default function App() {
+  const lang = URL_LANG === 'en' ? 'en' : 'ko'
   const { data, loading, error, load, refresh } = useSheetData(IS_PUBLIC ? 'snapshot' : 'live')
   const [selectedMonth, setSelectedMonth] = useState('3월')
   const [selectedSH, setSelectedSH] = useState('전체')
+  const [selectedCategory, setSelectedCategory] = useState(null)
 
   useEffect(() => { load() }, [load])
+
+  // Reset category filter when stakeholder changes
+  useEffect(() => { setSelectedCategory(null) }, [selectedSH])
 
   const stakeholderList = useMemo(() => {
     if (!data) return []
     return [...new Set(data.quantitativeGoals.rows.map(r => r.stakeholder))]
   }, [data])
 
+  const categoryList = useMemo(() => {
+    if (!data) return []
+    return [...new Set(data.quantitativeGoals.rows.map(r => r.taskCategory).filter(Boolean))]
+  }, [data])
+
   const dashboard = useMemo(() => {
     if (!data) return null
-    return computeDashboard(data, selectedMonth, selectedSH)
-  }, [data, selectedMonth, selectedSH])
+    return computeDashboard(data, selectedMonth, selectedSH, selectedCategory)
+  }, [data, selectedMonth, selectedSH, selectedCategory])
 
   // 게시 기능
   const [publishing, setPublishing] = useState(false)
@@ -256,6 +317,11 @@ export default function App() {
         publishing={publishing}
         publishInfo={publishInfo}
         onUnpublish={handleUnpublish}
+        lang={lang}
+        selectedCategory={selectedCategory}
+        setSelectedCategory={setSelectedCategory}
+        categoryList={categoryList}
+        onClearCategory={() => setSelectedCategory(null)}
       />
 
       <main className="max-w-[1400px] mx-auto px-4 py-6 space-y-6">
@@ -269,13 +335,23 @@ export default function App() {
           <div className="flex items-center justify-center py-24">
             <div className="flex items-center gap-3 text-gray-400 text-[16px]">
               <div className="w-5 h-5 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
-              데이터를 불러오는 중...
+              {t(lang, 'loadingData')}
             </div>
           </div>
         )}
 
         {dashboard && (
           <>
+            {selectedSH === '전체' && dashboard.categoryStats.length > 0 && (
+              <CategorySummary
+                categories={dashboard.categoryStats}
+                month={selectedMonth}
+                lang={lang}
+                selectedCategory={selectedCategory}
+                onSelectCategory={setSelectedCategory}
+              />
+            )}
+
             <SummaryCards
               avgRate={dashboard.avgRate}
               cumulativeActual={dashboard.cumulativeActual}
@@ -286,6 +362,7 @@ export default function App() {
               annualTarget={dashboard.annualTarget}
               month={selectedMonth}
               selectedSH={selectedSH}
+              lang={lang}
             />
 
             <PerformanceCharts
@@ -293,17 +370,20 @@ export default function App() {
               cumulative={dashboard.cumulative}
               annualTarget={dashboard.annualTarget}
               selectedMonth={selectedMonth}
+              lang={lang}
             />
 
             <StakeholderRanking
               stakeholders={dashboard.stakeholders}
               month={selectedMonth}
               selectedSH={selectedSH}
+              lang={lang}
             />
 
             <DetailTable
               tasks={dashboard.tasks}
               month={selectedMonth}
+              lang={lang}
             />
 
             {data && (
@@ -311,7 +391,9 @@ export default function App() {
                 goals={data.qualitativeGoals.rows}
                 results={data.qualitativeResults.rows}
                 selectedSH={selectedSH}
+                selectedCategory={selectedCategory}
                 month={selectedMonth}
+                lang={lang}
               />
             )}
 
@@ -319,6 +401,8 @@ export default function App() {
               <RawGoalTable
                 rows={data.quantitativeGoals.rows}
                 selectedSH={selectedSH}
+                selectedCategory={selectedCategory}
+                lang={lang}
               />
             )}
           </>

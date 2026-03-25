@@ -13,7 +13,10 @@ const STORAGE_KEY = 'geo-dashboard-cache'
 // ─── 대시보드 미리보기 ──────────────────────────────────────────────────────────
 function DashboardPreview({ meta, total, products, citations, dotcom, productsCnty = [], citationsCnty = [], lang = 'ko', weeklyLabels, weeklyAll = {} }) {
   const iframeRef = useRef(null)
-  const html = generateDashboardHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, weeklyAll)
+  const html = useMemo(
+    () => generateDashboardHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, weeklyAll),
+    [meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, weeklyAll]
+  )
 
   React.useEffect(() => {
     const iframe = iframeRef.current

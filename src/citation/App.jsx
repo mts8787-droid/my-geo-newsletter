@@ -13,7 +13,10 @@ const STORAGE_KEY = 'geo-citation-cache'
 // ─── Citation 대시보드 미리보기 ─────────────────────────────────────────────
 function CitationPreview({ meta, setMeta, citations, dotcom, citationsCnty = [], citationsByCnty = {}, dotcomByCnty = {}, lang = 'ko', citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths }) {
   const iframeRef = useRef(null)
-  const html = generateCitationHTML(meta, null, [], citations, dotcom, lang, [], citationsCnty, { citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths }, citationsByCnty, dotcomByCnty)
+  const html = useMemo(
+    () => generateCitationHTML(meta, null, [], citations, dotcom, lang, [], citationsCnty, { citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths }, citationsByCnty, dotcomByCnty),
+    [meta, citations, dotcom, lang, citationsCnty, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, citationsByCnty, dotcomByCnty]
+  )
 
   React.useEffect(() => {
     const iframe = iframeRef.current
