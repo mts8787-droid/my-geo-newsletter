@@ -173,6 +173,7 @@ app.use((req, res, next) => {
   if (req.path.startsWith('/api/auth/')) return next()
   if (req.path === '/api/tracker-snapshot') return next()
 
+  if (req.path.startsWith('/admin/progress-tracker/assets/')) return next()
   if (req.path.startsWith('/admin') || req.path.startsWith('/api/')) {
     const token = getSessionToken(req)
     if (!token || !activeSessions.has(token)) {
