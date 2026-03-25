@@ -4,20 +4,20 @@ import { resolve } from 'path'
 import { appVersion, serveFontsPlugin, serveHtmlPlugin, gsheetsProxy, apiProxy } from './vite.shared.js'
 
 export default defineConfig({
-  base: '/admin/dashboard/',
+  base: '/admin/visibility/',
   define: {
     __APP_VERSION__: JSON.stringify(appVersion),
   },
-  plugins: [serveHtmlPlugin('dashboard', '/admin/dashboard/', 'dashboard.html'), serveFontsPlugin(), react()],
+  plugins: [serveHtmlPlugin('visibility', '/admin/visibility/', 'visibility.html'), serveFontsPlugin(), react()],
   build: {
-    outDir: 'dist-dashboard',
+    outDir: 'dist-visibility',
     emptyOutDir: true,
     rollupOptions: {
-      input: resolve(__dirname, 'dashboard.html'),
+      input: resolve(__dirname, 'visibility.html'),
     },
   },
   server: {
-    port: 5176,
+    port: 5178,
     proxy: {
       ...gsheetsProxy,
       ...apiProxy,

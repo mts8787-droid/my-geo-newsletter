@@ -16,7 +16,7 @@ function StakeholderBadge({ name }) {
   return (
     <span
       className="inline-block px-2 py-0.5 rounded text-[11px] font-bold whitespace-nowrap"
-      style={{ backgroundColor: color + '18', color, border: `1px solid ${color}30` }}
+      style={{ backgroundColor: color + '18', color: '#111827', border: `1px solid ${color}30` }}
     >
       {name}
     </span>

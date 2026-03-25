@@ -5,6 +5,17 @@ const EM_RED  = '#CF0652'
 const EM_DARK = '#A0003E'
 const EM_FONT = "'LG Smart', 'Arial Narrow', Arial, sans-serif"
 
+// ─── HTML Sanitization (XSS 방지) ──────────────────────────────────────────
+function escapeHtml(str) {
+  if (typeof str !== 'string') return String(str ?? '')
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
 // ─── 다국어 번역 ─────────────────────────────────────────────────────────────
 const T = {
   ko: {
@@ -84,10 +95,16 @@ function fmt(n) {
 }
 
 function mdBold(text) {
-  return (text || '')
+  return escapeHtml(text || '')
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
     .replace(/\r\n/g, '<br>')
     .replace(/\n/g, '<br>')
+}
+
+// ─── 삼성 → SS 치환 ─────────────────────────────────────────────────────────
+function ssName(name) {
+  if (!name) return ''
+  return escapeHtml(name.replace(/삼성전자/g, 'SS').replace(/삼성/g, 'SS').replace(/Samsung/gi, 'SS'))
 }
 
 function delta(score, prev) { return +(score - prev).toFixed(1) }
@@ -182,7 +199,7 @@ function productCardHtml(p, globalMax, globalMin, lang = 'ko', opts = {}) {
         <td style="padding:12px 13px 6px;">
           <table border="0" cellpadding="0" cellspacing="0" width="100%">
             <tr>
-              <td style="font-size:17px;font-weight:900;color:#1A1A1A;line-height:22px;vertical-align:middle;">${p.kr}</td>
+              <td style="font-size:17px;font-weight:900;color:#1A1A1A;line-height:22px;vertical-align:middle;">${escapeHtml(p.kr)}</td>
               <td align="right" style="vertical-align:middle;">
                 <table border="0" cellpadding="0" cellspacing="0" align="right"><tr>
                   <td style="background:${st.bg};color:${st.color};border:1px solid ${st.border};border-radius:10px;padding:2px 7px;font-size:11px;font-weight:700;line-height:22px;font-family:${EM_FONT};">${st.label}</td>
@@ -214,7 +231,7 @@ function productCardHtml(p, globalMax, globalMin, lang = 'ko', opts = {}) {
         <td style="padding:0 13px 12px;">
           <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#F8FAFC;border-radius:6px;">
             <tr>
-              <td style="padding:6px 8px;font-size:13px;color:#1A1A1A;">${lang === 'en' ? `${t.vsComp} ${p.compName}` : `${p.compName} ${t.vsComp}`}</td>
+              <td style="padding:6px 8px;font-size:13px;color:#1A1A1A;">${lang === 'en' ? `${t.vsComp} ${ssName(p.compName)}` : `${ssName(p.compName)} ${t.vsComp}`}</td>
               <td align="right" style="padding:6px 8px;font-size:13px;font-weight:700;color:${(p.compRatio || 0) >= 100 ? '#15803D' : (p.compRatio || 0) >= 80 ? '#E8910C' : '#BE123C'};">
                 ${p.compRatio || Math.round(p.vsComp > 0 ? (p.score / p.vsComp) * 100 : 100)}%
               </td>
@@ -348,7 +365,7 @@ function countryProductSectionHtml(productName, rows, lang) {
         <tr><td height="${barH}" style="font-size:0;line-height:0;"><table border="0" cellpadding="0" cellspacing="0" align="center"><tr><td width="26" height="${barH}" style="background:${barColor};border-radius:3px 3px 0 0;font-size:0;line-height:0;">&nbsp;</td></tr></table></td></tr>
         <tr><td style="font-size:11px;font-weight:800;color:${barColor};font-family:${EM_FONT};padding-top:3px;white-space:nowrap;overflow:hidden;">${r.score.toFixed(1)}</td></tr>
         <tr><td style="font-size:10px;color:#475569;font-family:${EM_FONT};padding-top:2px;white-space:nowrap;overflow:hidden;">${r.country}</td></tr>
-        <tr><td style="font-size:9px;color:#94A3B8;font-family:${EM_FONT};padding-top:2px;white-space:nowrap;overflow:hidden;">${r.compName} ${r.compScore.toFixed(1)}</td></tr>
+        <tr><td style="font-size:9px;color:#94A3B8;font-family:${EM_FONT};padding-top:2px;white-space:nowrap;overflow:hidden;">${ssName(r.compName)} ${r.compScore.toFixed(1)}</td></tr>
         <tr><td style="font-size:9px;font-weight:700;color:${gapColor};font-family:${EM_FONT};padding-top:1px;white-space:nowrap;overflow:hidden;">${gapStr}</td></tr>
       </table>
     </td>`
@@ -443,25 +460,18 @@ function stripDomain(domain) {
   return (domain || '').replace(/\.(com|org|net|co\.uk|com\.br|com\.au|com\.vn|com\.mx|co\.kr|de|es|fr|ca|in|vn)$/i, '')
 }
 
-// ─── 도메인별 Citation (TTL top 10) ──────────────────────────────────────────
-function citationDomainSectionHtml(citationsCnty, meta, lang, citations) {
-  if (!citationsCnty || !citationsCnty.length) return ''
-  const t = T[lang] || T.ko
-
-  const domTopN = meta.citDomainTopN || 10
-  const ttlRows = citationsCnty.filter(r => r.cnty === 'TTL').sort((a, b) => a.rank - b.rank).slice(0, domTopN)
-  if (!ttlRows.length) return ''
-
-  const maxScore = Math.max(...ttlRows.map(r => r.citations), 1)
-  // 분모: 카테고리 Citation 전체 합계
-  const totalCitations = (citations && citations.length) ? citations.reduce((s, c) => s + c.score, 0) : ttlRows.reduce((s, r) => s + r.citations, 0)
+// ─── 도메인별 Citation 국가 서브섹션 (가로 바) ─────────────────────────────────
+function citationDomainCntyRowsHtml(cntyRows, domTopN) {
+  if (!cntyRows.length) return ''
+  const maxScore = Math.max(...cntyRows.map(r => r.citations), 1)
+  const totalCit = cntyRows.reduce((s, r) => s + r.citations, 0)
   const fmtN = n => Number(n).toLocaleString('en-US')
 
-  const rows = ttlRows.map((c, i) => {
+  return cntyRows.slice(0, domTopN).map((c, i, arr) => {
     const barPct = Math.min(Math.round((c.citations / maxScore) * 70), 70)
-    const ratio = totalCitations > 0 ? ((c.citations / totalCitations) * 100).toFixed(1) : '0.0'
+    const ratio = totalCit > 0 ? ((c.citations / totalCit) * 100).toFixed(1) : '0.0'
     return `<tr>
-      <td style="border-bottom:${i < ttlRows.length - 1 ? '1px solid #F8FAFC' : 'none'};">
+      <td style="border-bottom:${i < arr.length - 1 ? '1px solid #F8FAFC' : 'none'};">
         <table border="0" cellpadding="0" cellspacing="0" width="100%">
           <tr>
             <td width="150" style="padding:10px 12px 10px 16px;vertical-align:middle;">
@@ -489,9 +499,22 @@ function citationDomainSectionHtml(citationsCnty, meta, lang, citations) {
       </td>
     </tr>`
   }).join('')
+}
 
-  return `
-              <!-- ══ 도메인별 Citation ══ -->
+// ─── 도메인별 Citation (TTL + 국가별 CSS-only 탭) ───────────────────────────
+// returns { html, css } — css는 <head>에 삽입
+function citationDomainSectionHtml(citationsCnty, meta, lang, citations) {
+  if (!citationsCnty || !citationsCnty.length) return { html: '', css: '' }
+  const t = T[lang] || T.ko
+
+  const domTopN = meta.citDomainTopN || 10
+  const ttlRows = citationsCnty.filter(r => r.cnty === 'TTL').sort((a, b) => a.rank - b.rank).slice(0, domTopN)
+  if (!ttlRows.length) return { html: '', css: '' }
+
+  // 이메일은 동적 컨텐츠 불가 → TTL만 표시
+  {
+    const ttlHtml = citationDomainCntyRowsHtml(ttlRows, domTopN)
+    return { css: '', html: `
               <tr>
                 <td style="padding-bottom:28px;">
                   <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFFFFF;border-radius:16px;border:2px solid #E8EDF2;">
@@ -507,27 +530,16 @@ function citationDomainSectionHtml(citationsCnty, meta, lang, citations) {
                                 </tr>
                               </table>
                             </td>
-                            <td align="right" style="vertical-align:middle;">
-                              <table border="0" cellpadding="0" cellspacing="0" align="right"><tr>
-                                <td width="14" height="5" style="background:${EM_RED};border-radius:3px;font-size:0;">&nbsp;</td>
-                                <td style="padding-left:4px;font-size:11px;color:#94A3B8;font-family:${EM_FONT};">Top ${domTopN} Domains (TTL)</td>
-                              </tr></table>
-                            </td>
                           </tr>
                         </table>
                       </td>
                     </tr>
                     ${insightBlockHtml(meta.citDomainInsight, meta.showCitDomainInsight, meta.citDomainHowToRead, meta.showCitDomainHowToRead, lang)}
-                    <tr>
-                      <td style="padding:20px 28px;">
-                        <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                          ${rows}
-                        </table>
-                      </td>
-                    </tr>
+                    <tr><td style="padding:20px 28px;"><table border="0" cellpadding="0" cellspacing="0" width="100%">${ttlHtml}</table></td></tr>
                   </table>
                 </td>
-              </tr>`
+              </tr>` }
+  }
 }
 
 // ─── 국가별 Citation 도메인 (세로 막대 차트) ─────────────────────────────────
@@ -829,11 +841,16 @@ function dotcomSectionHtml(dotcom, meta, lang = 'ko') {
 }
 
 // ─── 메인 생성 함수 ───────────────────────────────────────────────────────────
+export { escapeHtml }
+
 export function generateEmailHTML(meta, total, products, citations, dotcom = {}, lang = 'ko', productsCnty = [], citationsCnty = [], options = {}) {
   const { containerWidth = 820, showTrendTabs = false } = options
   const t = T[lang] || T.ko
+  total = total || { score: 0, prev: 0, vsComp: 0, rank: 1, totalBrands: 12 }
+  products = products || []
+  citations = citations || []
   const totalDelta = delta(total.score, total.prev)
-  const scoreBarW  = Math.round(total.score)
+  const scoreBarW  = Math.round(total.score || 0)
 
   // 삼성전자 전체 GEO 점수 (total 시트의 vsComp)
   const compAvg = total.vsComp || 0
@@ -858,16 +875,21 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
   }).join('')
 
   const citTopN = meta.citationTopN || 10
-  const citationList = citations.slice(0, citTopN)
+  const citationList = (citations || []).slice(0, citTopN)
   const citMaxScore = citationList.length ? Math.max(...citationList.map(c => c.score)) : 100
   const citationRows = citationList.map((c, i) => citationRowHtml(c, i === citationList.length - 1, citMaxScore)).join('')
+
+  // 도메인별 Citation 섹션 (CSS는 <head>에 삽입)
+  const citDomainResult = meta.showCitDomain !== false
+    ? citationDomainSectionHtml(citationsCnty, meta, lang, citations)
+    : { html: '', css: '' }
 
   return `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>LG GEO Newsletter ${meta.period}</title>
+  <title>LG GEO Newsletter ${escapeHtml(meta.period)}</title>
   <link href="https://fonts.cdnfonts.com/css/lg-smart" rel="stylesheet" />
   <!--[if mso]>
   <style type="text/css">
@@ -875,6 +897,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
     td { font-family: 'LG Smart', Arial, sans-serif; }
   </style>
   <![endif]-->
+  ${citDomainResult.css ? `<style type="text/css">${citDomainResult.css}</style>` : ''}
 </head>
 <body style="margin:0;padding:0;background-color:#F1F5F9;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;">
 
@@ -891,7 +914,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
             <table border="0" cellpadding="0" cellspacing="0" width="100%">
               <tr>
                 <td style="font-size:13px;font-weight:700;color:#FFCCD8;font-family:${EM_FONT};">LG ELECTRONICS</td>
-                <td align="right" style="font-size:12px;color:#FFB0C0;font-family:${EM_FONT};">${meta.reportNo} · ${meta.period}</td>
+                <td align="right" style="font-size:12px;color:#FFB0C0;font-family:${EM_FONT};">${escapeHtml(meta.reportNo)} · ${escapeHtml(meta.period)}</td>
               </tr>
             </table>
           </td>
@@ -902,15 +925,15 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
           <td style="background:#FFFFFF;padding:26px 28px 16px;">
             <table border="0" cellpadding="0" cellspacing="0" width="100%">
               <tr>
-                <td style="font-size:12px;color:#94A3B8;font-family:${EM_FONT};font-weight:400;">${meta.reportType || (lang === 'en' ? 'GEO Monthly Performance Report' : 'GEO 월간 성과 분석 리포트')}</td>
-                <td align="right" style="font-size:12px;color:#94A3B8;font-family:${EM_FONT};font-weight:400;">${meta.team}</td>
+                <td style="font-size:12px;color:#94A3B8;font-family:${EM_FONT};font-weight:400;">${escapeHtml(meta.reportType || (lang === 'en' ? 'GEO Monthly Performance Report' : 'GEO 월간 성과 분석 리포트'))}</td>
+                <td align="right" style="font-size:12px;color:#94A3B8;font-family:${EM_FONT};font-weight:400;">${escapeHtml(meta.team)}</td>
               </tr>
             </table>
             <p style="margin:16px 0 10px;text-align:center;line-height:1.2;">
-              <span style="font-size:${meta.titleFontSize || 24}px;font-weight:700;color:${meta.titleColor || '#1A1A1A'};font-family:${EM_FONT};">${meta.title || (lang === 'en' ? 'Generative AI Engine Visibility Performance Analysis' : '생성형 AI 엔진 가시성(Visibility) 성과 분석')}</span>
+              <span style="font-size:${meta.titleFontSize || 24}px;font-weight:700;color:${meta.titleColor || '#1A1A1A'};font-family:${EM_FONT};">${escapeHtml(meta.title || (lang === 'en' ? 'Generative AI Engine Visibility Performance Analysis' : '생성형 AI 엔진 가시성(Visibility) 성과 분석'))}</span>
             </p>
             <p style="margin:0;text-align:center;">
-              <span style="font-size:16px;color:#475569;font-family:${EM_FONT};font-weight:400;">${meta.dateLine || (lang === 'en' ? 'As of ' + meta.period : meta.period + ' 기준')}</span>
+              <span style="font-size:16px;color:#475569;font-family:${EM_FONT};font-weight:400;">${escapeHtml(meta.dateLine || (lang === 'en' ? 'As of ' + meta.period : meta.period + ' 기준'))}</span>
             </p>
             ${meta.showNotice && meta.noticeText ? `
             <table border="0" cellpadding="0" cellspacing="0" width="100%">
@@ -1024,7 +1047,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                                 <td width="10" height="10" style="background:${EM_RED};border-radius:5px;font-size:0;">&nbsp;</td>
                                 <td style="padding-left:5px;font-size:11px;color:#94A3B8;font-family:${EM_FONT};">LG ${total.score}%</td>
                                 ${compAvg > 0 ? `<td style="padding-left:14px;" width="10" height="10"><table border="0" cellpadding="0" cellspacing="0"><tr><td width="10" height="10" style="background:#3B82F6;border-radius:5px;font-size:0;">&nbsp;</td></tr></table></td>
-                                <td style="padding-left:5px;font-size:11px;color:#94A3B8;font-family:${EM_FONT};">Samsung ${compAvg}%</td>` : ''}
+                                <td style="padding-left:5px;font-size:11px;color:#94A3B8;font-family:${EM_FONT};">SS ${compAvg}%</td>` : ''}
                                 <td style="padding-left:14px;" width="2" height="10"><table border="0" cellpadding="0" cellspacing="0"><tr><td width="2" height="10" style="background:#475569;border-radius:2px;font-size:0;">&nbsp;</td></tr></table></td>
                                 <td style="padding-left:5px;font-size:11px;color:#94A3B8;font-family:${EM_FONT};">prev ${total.prev}%</td>
                               </tr></table>
@@ -1133,7 +1156,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                 </td>
               </tr>` : ''}
 
-              ${meta.showCitDomain !== false ? citationDomainSectionHtml(citationsCnty, meta, lang, citations) : ''}
+              ${citDomainResult.html}
 
               ${meta.showCitCnty !== false ? citationCntySectionHtml(citationsCnty, meta, lang) : ''}
 

@@ -369,7 +369,7 @@ function parseDashboardLayout(rows, div) {
       // 빈 셀은 건너뜀 (MoM 컬럼 등 사이에 빈 셀 있음)
     }
     console.log(`[dashLayout] "${name}" col:${ci}, nextCat:${nextCatCol}, raw dataRow[ci+1..]:`, JSON.stringify(dataRow.slice(ci + 1, nextCatCol)), '→ vals:', vals)
-    if (vals.length) weeklyMap[id] = vals.slice(-4)
+    if (vals.length) weeklyMap[id] = vals
   }
   if (!Object.keys(weeklyMap).length) {
     console.log('[dashLayout] no weekly data found for div:', div)
@@ -379,6 +379,19 @@ function parseDashboardLayout(rows, div) {
     || Object.values(weeklyMap)[0]?.map((_, i) => `W${i + 1}`) || []
   console.log('[parseWeekly] dashboard layout result:', Object.keys(weeklyMap), '| labels:', weeklyLabels)
   return { weeklyMap, weeklyLabels }
+}
+
+function sliceWeeklyData(weeklyAll, weeklyMap, start) {
+  for (const prod of Object.values(weeklyAll)) {
+    for (const cnty of Object.values(prod)) {
+      for (const [brand, vals] of Object.entries(cnty)) {
+        cnty[brand] = vals.slice(start)
+      }
+    }
+  }
+  for (const [key, vals] of Object.entries(weeklyMap)) {
+    weeklyMap[key] = vals.slice(start)
+  }
 }
 
 function parseWeekly(rows, div) {
@@ -518,9 +531,9 @@ function parseWeekly(rows, div) {
       byCategory[cat].push(pct(r[lgIdx]))
     })
     Object.entries(byCategory).forEach(([cat, vals]) => {
-      weeklyMap[CATEGORY_ID_MAP[cat] || cat.toLowerCase()] = vals.slice(-4)
+      weeklyMap[CATEGORY_ID_MAP[cat] || cat.toLowerCase()] = vals
     })
-    if (weekLabelOrder.length) weeklyLabels = weekLabelOrder.slice(-4)
+    if (weekLabelOrder.length) weeklyLabels = weekLabelOrder
   } else if (wCols.length) {
     // Format: Category, w1, w2, w3, w4
     data.forEach(r => {
@@ -529,6 +542,34 @@ function parseWeekly(rows, div) {
       if (!cat) return
       weeklyMap[CATEGORY_ID_MAP[cat] || cat.toLowerCase()] = wCols.map(c => pct(r[c]))
     })
+  }
+
+  // ── 앞쪽 빈 주차 제거 & 최대 12주 제한 (단일 패스) ──
+  if (weeklyLabels.length > 0) {
+    // 첫 데이터가 있는 주차 인덱스 탐색
+    let firstDataIdx = weeklyLabels.length
+    for (const prod of Object.values(weeklyAll)) {
+      for (const cnty of Object.values(prod)) {
+        for (const vals of Object.values(cnty)) {
+          const idx = vals.findIndex(v => v != null)
+          if (idx >= 0 && idx < firstDataIdx) firstDataIdx = idx
+        }
+      }
+    }
+    for (const vals of Object.values(weeklyMap)) {
+      const idx = vals.findIndex(v => v != null)
+      if (idx >= 0 && idx < firstDataIdx) firstDataIdx = idx
+    }
+
+    // 최종 슬라이스 범위 계산: leading trim + 12주 제한 합산
+    const MAX_WEEKS = 12
+    const trimmedLen = weeklyLabels.length - firstDataIdx
+    const start = trimmedLen > MAX_WEEKS ? weeklyLabels.length - MAX_WEEKS : firstDataIdx
+    if (start > 0 && start < weeklyLabels.length) {
+      console.log('[parseWeekly] trimming weeks: start=' + start + ', from ' + weeklyLabels.length + ' → ' + (weeklyLabels.length - start))
+      weeklyLabels = weeklyLabels.slice(start)
+      sliceWeeklyData(weeklyAll, weeklyMap, start)
+    }
   }
 
   console.log('[parseWeekly] weeklyMap keys:', Object.keys(weeklyMap), '| weeklyLabels:', weeklyLabels,
@@ -575,22 +616,38 @@ function parseCitPageType(rows) {
   }
 
   const lg = {}, samsung = {}
+  const dotcomByCnty = {}  // { cnty: { lg: {...}, samsung: {...} } }
+  const CNTY_ALIAS = { 'TOTAL':'TTL', '미국':'US', '캐나다':'CA', '영국':'UK', '독일':'DE', '스페인':'ES', '브라질':'BR', '멕시코':'MX', '인도':'IN', '호주':'AU', '베트남':'VN' }
+  console.log(`[parseCitPageType] headerIdx=${headerIdx}, bestPair=lg:${bestPair.lg}/ss:${bestPair.ss}, dataRows=${data.length}`)
+  const _ptSeenCountries = new Set()
   data.forEach(r => {
-    const country = String(r[0] || '').replace(/[()]/g, '').trim()
+    const rawCountry = String(r[0] || '').replace(/[()]/g, '').trim()
     const pageType = String(r[1] || '').replace(/[()]/g, '').trim()
     const lgVal = numVal(r[bestPair.lg])
     const ssVal = numVal(r[bestPair.ss])
 
-    if (country.toLowerCase() === 'total' || country.toUpperCase() === 'TTL') {
-      // Microsite → Microsites 정규화 (시트 vs 코드 이름 차이 맞춤)
-      let key = /page total|^ttl$/i.test(pageType) ? 'TTL' : pageType
-      if (key.toLowerCase() === 'microsite') key = 'Microsites'
+    let key = /page total|^ttl$/i.test(pageType) ? 'TTL' : pageType
+    if (key.toLowerCase() === 'microsite') key = 'Microsites'
+
+    const cnty = CNTY_ALIAS[rawCountry] || rawCountry.toUpperCase()
+    _ptSeenCountries.add(cnty)
+    if (cnty === 'TTL') {
       lg[key] = (lg[key] || 0) + lgVal
       samsung[key] = (samsung[key] || 0) + ssVal
+    } else {
+      if (!dotcomByCnty[cnty]) dotcomByCnty[cnty] = { lg: {}, samsung: {} }
+      dotcomByCnty[cnty].lg[key] = (dotcomByCnty[cnty].lg[key] || 0) + lgVal
+      dotcomByCnty[cnty].samsung[key] = (dotcomByCnty[cnty].samsung[key] || 0) + ssVal
     }
   })
 
-  return (lg.TTL || Object.keys(lg).length) ? { dotcom: { lg, samsung } } : {}
+  console.log('[parseCitPageType] seen countries:', [..._ptSeenCountries])
+  console.log('[parseCitPageType] TTL lg:', JSON.stringify(lg), '| byCnty keys:', Object.keys(dotcomByCnty))
+
+  const result = {}
+  if (lg.TTL || Object.keys(lg).length) result.dotcom = { lg, samsung }
+  if (Object.keys(dotcomByCnty).length) result.dotcomByCnty = dotcomByCnty
+  return result
 }
 
 function parseCitTouchPoints(rows) {
@@ -620,13 +677,29 @@ function parseCitTouchPoints(rows) {
     }
   }
 
+  // 월 라벨 추출
+  const monthLabels = []
+  for (let i = dataStartCol; i < header.length; i++) {
+    const h = String(header[i] || '').trim()
+    if (h) monthLabels.push({ col: i, label: h })
+  }
+
   const data = rows.slice(startRow).filter(r => r.some(c => c != null && String(c).trim()))
   const citations = []
+  // 월간 트렌드 데이터: { channelName: { month1: score, month2: score, ... } }
+  const citTouchPointsTrend = {}
+
+  // 국가별 카테고리 Citation 수집
+  const citationsByCnty = {}   // { cnty: [{ source, score, ... }] }
+
+  console.log(`[parseCitTouchPoints] headerIdx=${headerIdx}, countryCol=${countryCol}, channelCol=${channelCol}, dataStartCol=${dataStartCol}, dataRows=${data.length}, monthLabels=${monthLabels.length}`)
+  const _seenCountries = new Set()
 
   data.forEach(r => {
     const country = String(r[countryCol] || '').replace(/[()]/g, '').trim().toUpperCase()
     const channel = String(r[channelCol] || '').replace(/[()]/g, '').trim()
-    if (country !== 'TTL' || channel.toLowerCase() === 'total') return
+    if (channel.toLowerCase() === 'total') return
+    _seenCountries.add(country)
 
     // 최신 월 데이터 찾기
     let score = 0
@@ -634,7 +707,22 @@ function parseCitTouchPoints(rows) {
       const val = numVal(r[i])
       if (val > 0) { score = val; break }
     }
-    if (score > 0) citations.push({ source: channel, category: '', score, delta: 0, ratio: 0 })
+
+    if (country === 'TTL') {
+      if (score > 0) citations.push({ source: channel, category: '', score, delta: 0, ratio: 0 })
+      // 모든 월별 데이터 수집 (트렌드용)
+      const monthData = {}
+      monthLabels.forEach(({ col, label }) => {
+        const val = numVal(r[col])
+        if (val > 0) monthData[label] = val
+      })
+      if (Object.keys(monthData).length > 0) {
+        citTouchPointsTrend[channel] = monthData
+      }
+    } else if (score > 0) {
+      if (!citationsByCnty[country]) citationsByCnty[country] = []
+      citationsByCnty[country].push({ source: channel, category: '', score, delta: 0, ratio: 0 })
+    }
   })
 
   const total = citations.reduce((s, c) => s + c.score, 0)
@@ -644,7 +732,35 @@ function parseCitTouchPoints(rows) {
     c.ratio = total > 0 ? +((c.score / total) * 100).toFixed(1) : 0
   })
 
-  return citations.length > 0 ? { citations } : {}
+  // 국가별 citations도 순위 계산
+  for (const [cnty, list] of Object.entries(citationsByCnty)) {
+    const cntyTotal = list.reduce((s, c) => s + c.score, 0)
+    list.sort((a, b) => b.score - a.score)
+    list.forEach((c, i) => {
+      c.rank = i + 1
+      c.ratio = cntyTotal > 0 ? +((c.score / cntyTotal) * 100).toFixed(1) : 0
+    })
+  }
+
+  // 유효한 월 라벨만 필터링 (데이터가 있는 월)
+  const validMonths = monthLabels.map(m => m.label).filter(label =>
+    Object.values(citTouchPointsTrend).some(d => d[label] > 0)
+  )
+
+  console.log('[parseCitTouchPoints] seen countries:', [..._seenCountries])
+  console.log('[parseCitTouchPoints] TTL citations:', citations.length, '| byCnty keys:', Object.keys(citationsByCnty))
+  for (const [cnty, list] of Object.entries(citationsByCnty)) {
+    console.log(`[parseCitTouchPoints]   ${cnty}: ${list.length} channels, top=${list[0]?.source}(${list[0]?.score})`)
+  }
+
+  const result = {}
+  if (citations.length > 0) result.citations = citations
+  if (Object.keys(citationsByCnty).length > 0) result.citationsByCnty = citationsByCnty
+  if (Object.keys(citTouchPointsTrend).length > 0) {
+    result.citTouchPointsTrend = citTouchPointsTrend
+    result.citTrendMonths = validMonths
+  }
+  return result
 }
 
 function parseCitDomain(rows) {
@@ -659,19 +775,38 @@ function parseCitDomain(rows) {
     if (!c0 && (c1.includes('.') || c1.includes('[') || COUNTRIES.includes(c1.toUpperCase()))) { off = 1; break }
   }
 
-  // 헤더/설명 행 건너뛰기
+  // 헤더 행 찾기 (월 라벨 추출용)
+  let headerRow = null
   let startIdx = 0
   for (let i = 0; i < Math.min(rows.length, 10); i++) {
     const cv = String(rows[i]?.[off] || '').trim()
+    if (/domain|domian/i.test(cv)) {
+      headerRow = rows[i]
+      startIdx = i + 1
+      break
+    }
     if (cv.includes('.') && cv.length > 3) { startIdx = i; break }
-    if (/domain|domian/i.test(cv) || cv === '' || cv.startsWith('[') || cv.startsWith('※')) {
+    if (cv === '' || cv.startsWith('[') || cv.startsWith('※')) {
       startIdx = i + 1
     }
   }
 
+  // 월 라벨 추출 (헤더에서)
+  const domainMonthLabels = []
+  if (headerRow) {
+    for (let i = off + 2; i < headerRow.length; i++) {
+      const h = String(headerRow[i] || '').trim()
+      if (h && !/domain|domian|type/i.test(h)) domainMonthLabels.push({ col: i, label: h })
+    }
+  }
+
   const result = []
+  // 월간 트렌드: { "cnty|domain": { month1: val, month2: val } }
+  const citDomainTrend = {}
   let currentCnty = 'TTL'
   let rank = 0
+
+  console.log(`[parseCitDomain] startIdx=${startIdx}, offset=${off}, totalRows=${rows.length}, headerRow=${headerRow ? 'found' : 'none'}, monthLabels=${domainMonthLabels.length}`)
 
   for (let i = startIdx; i < rows.length; i++) {
     const r = rows[i]
@@ -681,10 +816,15 @@ function parseCitDomain(rows) {
 
     // 국가 마커 감지 (영문 코드 또는 한글)
     const cntyCode = COUNTRIES.includes(cv.toUpperCase()) ? cv.toUpperCase() : CNTY_KR[cv] || null
-    if (cntyCode && (!ct || ct === '')) {
-      currentCnty = cntyCode
-      rank = 0
-      continue
+    if (cntyCode) {
+      if (!ct || ct === '') {
+        console.log(`[parseCitDomain] ✓ country marker detected: row=${i}, cv="${cv}" → ${cntyCode}`)
+        currentCnty = cntyCode
+        rank = 0
+        continue
+      } else {
+        console.log(`[parseCitDomain] ✗ country code "${cv}"(→${cntyCode}) skipped: type column not empty, ct="${ct}" (row=${i})`)
+      }
     }
 
     // 헤더/설명 행 건너뛰기
@@ -702,14 +842,47 @@ function parseCitDomain(rows) {
       if (!isNaN(val) && val > 0) { citations = val; break }
     }
 
+    // 모든 월별 데이터 수집 (트렌드용)
+    if (domainMonthLabels.length > 0) {
+      const monthData = {}
+      domainMonthLabels.forEach(({ col, label }) => {
+        const raw = String(r[col] || '').replace(/,/g, '').trim()
+        const val = parseFloat(raw)
+        if (!isNaN(val) && val > 0) monthData[label] = val
+      })
+      if (Object.keys(monthData).length > 0) {
+        const key = `${currentCnty}|${domain}`
+        citDomainTrend[key] = { cnty: currentCnty, domain, type, months: monthData }
+      }
+    }
+
     if (citations > 0) {
       rank++
       result.push({ cnty: currentCnty, rank, domain, type, citations })
     }
   }
 
+  // 국가별 결과 상세 로그
+  const cntyStats = {}
+  result.forEach(r => { cntyStats[r.cnty] = (cntyStats[r.cnty] || 0) + 1 })
   console.log('[parseCitDomain] result count:', result.length, '| countries:', [...new Set(result.map(r => r.cnty))])
-  return result.length > 0 ? { citationsCnty: result } : {}
+  console.log('[parseCitDomain] per-country counts:', JSON.stringify(cntyStats))
+  if (Object.keys(citDomainTrend).length) {
+    const trendCnties = [...new Set(Object.values(citDomainTrend).map(d => d.cnty))]
+    console.log('[parseCitDomain] trend countries:', trendCnties)
+  }
+
+  const output = {}
+  if (result.length > 0) output.citationsCnty = result
+  if (Object.keys(citDomainTrend).length > 0) {
+    output.citDomainTrend = citDomainTrend
+    // 유효한 월 라벨
+    const validMonths = domainMonthLabels.map(m => m.label).filter(label =>
+      Object.values(citDomainTrend).some(d => d.months[label] > 0)
+    )
+    output.citDomainMonths = validMonths
+  }
+  return output
 }
 
 // ─── 메인 파서 라우터 ──────────────────────────────────────────────────────────

@@ -22,6 +22,14 @@ const PUB_DIR = join(DATA_DIR, 'published')
 if (!existsSync(DATA_DIR)) mkdirSync(DATA_DIR, { recursive: true })
 if (!existsSync(PUB_DIR)) mkdirSync(PUB_DIR, { recursive: true })
 
+// ─── Mode-specific file paths (newsletter / dashboard 분리 저장) ─────────────
+const NL_SNAP_FILE = join(DATA_DIR, 'newsletter-snapshots.json')
+const DB_SNAP_FILE = join(DATA_DIR, 'dashboard-snapshots.json')
+const CT_SNAP_FILE = join(DATA_DIR, 'citation-snapshots.json')
+const NL_SYNC_FILE = join(DATA_DIR, 'newsletter-sync-data.json')
+const DB_SYNC_FILE = join(DATA_DIR, 'dashboard-sync-data.json')
+const CT_SYNC_FILE = join(DATA_DIR, 'citation-sync-data.json')
+
 // ─── IP Allowlist storage ────────────────────────────────────────────────────
 const IP_FILE = join(DATA_DIR, 'ip-allowlist.json')
 
@@ -165,6 +173,7 @@ app.use((req, res, next) => {
   if (req.path.startsWith('/api/auth/')) return next()
   if (req.path === '/api/tracker-snapshot') return next()
 
+  if (req.path.startsWith('/admin/progress-tracker/assets/')) return next()
   if (req.path.startsWith('/admin') || req.path.startsWith('/api/')) {
     const token = getSessionToken(req)
     if (!token || !activeSessions.has(token)) {
@@ -289,6 +298,74 @@ app.post('/api/sync-data', (req, res) => {
   res.json({ ok: true })
 })
 
+// ─── Mode-specific Snapshots & Sync Data (newsletter / dashboard 분리) ──────
+function modeSnapFile(mode) {
+  if (mode === 'dashboard') return DB_SNAP_FILE
+  if (mode === 'citation') return CT_SNAP_FILE
+  return NL_SNAP_FILE
+}
+function modeSyncFile(mode) {
+  if (mode === 'dashboard') return DB_SYNC_FILE
+  if (mode === 'citation') return CT_SYNC_FILE
+  return NL_SYNC_FILE
+}
+function readModeSnapshots(mode) {
+  try { return JSON.parse(readFileSync(modeSnapFile(mode), 'utf-8')) } catch { return [] }
+}
+function writeModeSnapshots(mode, list) {
+  writeFileSync(modeSnapFile(mode), JSON.stringify(list, null, 2))
+}
+function readModeSyncData(mode) {
+  try { return JSON.parse(readFileSync(modeSyncFile(mode), 'utf-8')) } catch { return null }
+}
+function writeModeSyncData(mode, data) {
+  writeFileSync(modeSyncFile(mode), JSON.stringify(data, null, 2))
+}
+
+// Snapshots — /api/:mode/snapshots (validateMode 미들웨어로 검증 통합)
+app.get('/api/:mode/snapshots', validateMode, (req, res) => {
+  res.json(readModeSnapshots(req.params.mode))
+})
+app.post('/api/:mode/snapshots', validateMode, (req, res) => {
+  const { mode } = req.params
+  const { name, data } = req.body || {}
+  if (!name || !data) return res.status(400).json({ ok: false, error: 'name, data 필수' })
+  const snap = { name, ts: Date.now(), data }
+  const list = [snap, ...readModeSnapshots(mode)].slice(0, 50)
+  writeModeSnapshots(mode, list)
+  res.json({ ok: true, snapshots: list })
+})
+app.put('/api/:mode/snapshots/:ts', validateMode, (req, res) => {
+  const ts = parseInt(req.params.ts)
+  const { data } = req.body || {}
+  if (!data) return res.status(400).json({ ok: false, error: 'data 필수' })
+  const list = readModeSnapshots(req.params.mode).map(s => s.ts === ts ? { ...s, data, updatedAt: Date.now() } : s)
+  writeModeSnapshots(req.params.mode, list)
+  res.json({ ok: true, snapshots: list })
+})
+app.delete('/api/:mode/snapshots/:ts', validateMode, (req, res) => {
+  const ts = parseInt(req.params.ts)
+  const list = readModeSnapshots(req.params.mode).filter(s => s.ts !== ts)
+  writeModeSnapshots(req.params.mode, list)
+  res.json({ ok: true, snapshots: list })
+})
+
+// Sync Data — /api/:mode/sync-data (validateMode 미들웨어로 검증 통합)
+app.get('/api/:mode/sync-data', validateMode, (req, res) => {
+  const data = readModeSyncData(req.params.mode)
+  if (!data) return res.json({ ok: false, data: null })
+  res.json({ ok: true, data })
+})
+app.post('/api/:mode/sync-data', validateMode, (req, res) => {
+  const { mode } = req.params
+  const { data } = req.body || {}
+  if (!data) return res.status(400).json({ ok: false, error: 'data 필수' })
+  const payload = { ...data, savedAt: Date.now() }
+  writeModeSyncData(mode, payload)
+  console.log(`[SYNC-DATA:${mode}] Saved at`, new Date().toISOString())
+  res.json({ ok: true })
+})
+
 // ─── Google Sheet Export (Apps Script proxy) ────────────────────────────────
 app.post('/api/gsheet-export', async (req, res) => {
   const { scriptUrl, data } = req.body || {}
@@ -356,51 +433,67 @@ app.get('/api/my-ip', (req, res) => {
   res.json({ ip: req.ip })
 })
 
+// ─── 공통 언어 전환 바 (Newsletter / Dashboard / Citation 공용) ───────────────
+function makeLangBarHtml(activeLang, koSlug, enSlug) {
+  const btn = (lang, label, href) => {
+    const active = lang === activeLang
+    return `<a href="${href}" style="display:inline-block;font-size:13px;text-decoration:none;padding:6px 18px;border-radius:20px;margin:0 4px;color:${active ? '#FFFFFF' : '#94A3B8'};font-weight:${active ? '700' : '500'};background:${active ? '#CF0652' : 'rgba(255,255,255,0.08)'};">${label}</a>`
+  }
+  return `<div style="background:#0F172A;padding:12px 0;text-align:center;font-family:'LG Smart','Arial Narrow',Arial,sans-serif;">${btn('ko','한국어','/p/'+koSlug)}${btn('en','English','/p/'+enSlug)}</div>`
+}
+
+function injectLangBar(html, lang, koSlug, enSlug) {
+  const bar = makeLangBarHtml(lang, koSlug, enSlug)
+  if (html.match(/<body[^>]*>/i)) return html.replace(/(<body[^>]*>)/i, `$1${bar}`)
+  return bar + html
+}
+
+// ─── 공통 Publish 메타 읽기 ─────────────────────────────────────────────────
+function readMetaFile(metaPath) {
+  try { return JSON.parse(readFileSync(metaPath, 'utf-8')) } catch { return null }
+}
+
+// ─── 모드 검증 미들웨어 ──────────────────────────────────────────────────────
+const VALID_MODES = ['newsletter', 'dashboard', 'citation']
+function validateMode(req, res, next) {
+  if (!VALID_MODES.includes(req.params.mode)) {
+    return res.status(400).json({ ok: false, error: `invalid mode: ${req.params.mode}. allowed: ${VALID_MODES.join(', ')}` })
+  }
+  next()
+}
+
 // ─── Publish API (KO+EN 동시 게시, 고정 URL) ────────────────────────────────
 const KO_SLUG = 'GEO-Monthly-Report-KO'
 const EN_SLUG = 'GEO-Monthly-Report-EN'
 const PUB_META = join(DATA_DIR, 'publish-meta.json')
 
-function readPubMeta() {
-  try { return JSON.parse(readFileSync(PUB_META, 'utf-8')) } catch { return null }
-}
-
-function langBarHtml(activeLang) {
-  const btn = (lang, label, href) => {
-    const active = lang === activeLang
-    return `<a href="${href}" style="display:inline-block;font-size:13px;text-decoration:none;padding:6px 18px;border-radius:20px;margin:0 4px;color:${active ? '#FFFFFF' : '#94A3B8'};font-weight:${active ? '700' : '500'};background:${active ? '#CF0652' : 'rgba(255,255,255,0.08)'};">${label}</a>`
-  }
-  return `<div style="background:#0F172A;padding:12px 0;text-align:center;font-family:'LG Smart','Arial Narrow',Arial,sans-serif;">${btn('ko','한국어','/p/'+KO_SLUG)}${btn('en','English','/p/'+EN_SLUG)}</div>`
-}
-
-function injectLangBar(html, lang) {
-  const bar = langBarHtml(lang)
-  if (html.match(/<body[^>]*>/i)) return html.replace(/(<body[^>]*>)/i, `$1${bar}`)
-  return bar + html
-}
-
 app.post('/api/publish', (req, res) => {
   const { htmlKo, htmlEn, title } = req.body || {}
   if (!htmlKo || !htmlEn) return res.status(400).json({ ok: false, error: 'htmlKo, htmlEn 필수' })
-  writeFileSync(join(PUB_DIR, `${KO_SLUG}.html`), injectLangBar(htmlKo, 'ko'))
-  writeFileSync(join(PUB_DIR, `${EN_SLUG}.html`), injectLangBar(htmlEn, 'en'))
-  const meta = { title: title || 'GEO Monthly Report', ts: Date.now() }
-  writeFileSync(PUB_META, JSON.stringify(meta, null, 2))
-  console.log('[PUBLISH]', meta.title, `-> /p/${KO_SLUG}, /p/${EN_SLUG}`)
-  res.json({ ok: true, urls: { ko: `/p/${KO_SLUG}`, en: `/p/${EN_SLUG}` }, ...meta })
+  try {
+    writeFileSync(join(PUB_DIR, `${KO_SLUG}.html`), injectLangBar(htmlKo, 'ko', KO_SLUG, EN_SLUG))
+    writeFileSync(join(PUB_DIR, `${EN_SLUG}.html`), injectLangBar(htmlEn, 'en', KO_SLUG, EN_SLUG))
+    const meta = { title: title || 'GEO Monthly Report', ts: Date.now() }
+    writeFileSync(PUB_META, JSON.stringify(meta, null, 2))
+    console.log('[PUBLISH]', meta.title, `-> /p/${KO_SLUG}, /p/${EN_SLUG}`)
+    res.json({ ok: true, urls: { ko: `/p/${KO_SLUG}`, en: `/p/${EN_SLUG}` }, ...meta })
+  } catch (err) {
+    console.error('[PUBLISH] Write error:', err.message)
+    res.status(500).json({ ok: false, error: '파일 저장 실패: ' + err.message })
+  }
 })
 
 app.get('/api/publish', (req, res) => {
-  const meta = readPubMeta()
+  const meta = readMetaFile(PUB_META)
   const ko = existsSync(join(PUB_DIR, `${KO_SLUG}.html`))
   const en = existsSync(join(PUB_DIR, `${EN_SLUG}.html`))
   res.json({ published: ko && en, ko, en, ...(meta || {}), urls: { ko: `/p/${KO_SLUG}`, en: `/p/${EN_SLUG}` } })
 })
 
 app.delete('/api/publish', (req, res) => {
-  try { unlinkSync(join(PUB_DIR, `${KO_SLUG}.html`)) } catch {}
-  try { unlinkSync(join(PUB_DIR, `${EN_SLUG}.html`)) } catch {}
-  try { unlinkSync(PUB_META) } catch {}
+  try { unlinkSync(join(PUB_DIR, `${KO_SLUG}.html`)) } catch (e) { if (e.code !== 'ENOENT') console.error('[PUBLISH] Delete KO error:', e.message) }
+  try { unlinkSync(join(PUB_DIR, `${EN_SLUG}.html`)) } catch (e) { if (e.code !== 'ENOENT') console.error('[PUBLISH] Delete EN error:', e.message) }
+  try { unlinkSync(PUB_META) } catch (e) { if (e.code !== 'ENOENT') console.error('[PUBLISH] Delete meta error:', e.message) }
   res.json({ ok: true })
 })
 
@@ -409,60 +502,86 @@ const DASH_KO_SLUG = 'GEO-KPI-Dashboard-KO'
 const DASH_EN_SLUG = 'GEO-KPI-Dashboard-EN'
 const DASH_META = join(DATA_DIR, 'dashboard-meta.json')
 
-function readDashMeta() {
-  try { return JSON.parse(readFileSync(DASH_META, 'utf-8')) } catch { return null }
-}
-
-function dashLangBarHtml(activeLang) {
-  const btn = (lang, label, href) => {
-    const active = lang === activeLang
-    return `<a href="${href}" style="display:inline-block;font-size:13px;text-decoration:none;padding:6px 18px;border-radius:20px;margin:0 4px;color:${active ? '#FFFFFF' : '#94A3B8'};font-weight:${active ? '700' : '500'};background:${active ? '#CF0652' : 'rgba(255,255,255,0.08)'};">${label}</a>`
-  }
-  return `<div style="background:#0F172A;padding:12px 0;text-align:center;font-family:'LG Smart','Arial Narrow',Arial,sans-serif;">${btn('ko','한국어','/p/'+DASH_KO_SLUG)}${btn('en','English','/p/'+DASH_EN_SLUG)}</div>`
-}
-
-function injectDashLangBar(html, lang) {
-  const bar = dashLangBarHtml(lang)
-  if (html.match(/<body[^>]*>/i)) return html.replace(/(<body[^>]*>)/i, `$1${bar}`)
-  return bar + html
-}
-
 app.post('/api/publish-dashboard', (req, res) => {
   const { htmlKo, htmlEn, title } = req.body || {}
   if (!htmlKo || !htmlEn) return res.status(400).json({ ok: false, error: 'htmlKo, htmlEn 필수' })
-  writeFileSync(join(PUB_DIR, `${DASH_KO_SLUG}.html`), injectDashLangBar(htmlKo, 'ko'))
-  writeFileSync(join(PUB_DIR, `${DASH_EN_SLUG}.html`), injectDashLangBar(htmlEn, 'en'))
-  const meta = { title: title || 'GEO KPI Dashboard', ts: Date.now() }
-  writeFileSync(DASH_META, JSON.stringify(meta, null, 2))
-  console.log('[PUBLISH-DASH]', meta.title, `-> /p/${DASH_KO_SLUG}, /p/${DASH_EN_SLUG}`)
-  res.json({ ok: true, urls: { ko: `/p/${DASH_KO_SLUG}`, en: `/p/${DASH_EN_SLUG}` }, ...meta })
+  try {
+    writeFileSync(join(PUB_DIR, `${DASH_KO_SLUG}.html`), injectLangBar(htmlKo, 'ko', DASH_KO_SLUG, DASH_EN_SLUG))
+    writeFileSync(join(PUB_DIR, `${DASH_EN_SLUG}.html`), injectLangBar(htmlEn, 'en', DASH_KO_SLUG, DASH_EN_SLUG))
+    const meta = { title: title || 'GEO KPI Dashboard', ts: Date.now() }
+    writeFileSync(DASH_META, JSON.stringify(meta, null, 2))
+    console.log('[PUBLISH-DASH]', meta.title, `-> /p/${DASH_KO_SLUG}, /p/${DASH_EN_SLUG}`)
+    res.json({ ok: true, urls: { ko: `/p/${DASH_KO_SLUG}`, en: `/p/${DASH_EN_SLUG}` }, ...meta })
+  } catch (err) {
+    console.error('[PUBLISH-DASH] Write error:', err.message)
+    res.status(500).json({ ok: false, error: '파일 저장 실패: ' + err.message })
+  }
 })
 
 app.get('/api/publish-dashboard', (req, res) => {
-  const meta = readDashMeta()
+  const meta = readMetaFile(DASH_META)
   const ko = existsSync(join(PUB_DIR, `${DASH_KO_SLUG}.html`))
   const en = existsSync(join(PUB_DIR, `${DASH_EN_SLUG}.html`))
   res.json({ published: ko && en, ko, en, ...(meta || {}), urls: { ko: `/p/${DASH_KO_SLUG}`, en: `/p/${DASH_EN_SLUG}` } })
 })
 
+// ─── Citation Publish API (별도 슬러그) ──────────────────────────────────────
+const CIT_KO_SLUG = 'GEO-Citation-Dashboard-KO'
+const CIT_EN_SLUG = 'GEO-Citation-Dashboard-EN'
+const CIT_META = join(DATA_DIR, 'citation-meta.json')
+
+app.post('/api/publish-citation', (req, res) => {
+  const { htmlKo, htmlEn, title } = req.body || {}
+  if (!htmlKo || !htmlEn) return res.status(400).json({ ok: false, error: 'htmlKo, htmlEn 필수' })
+  try {
+    writeFileSync(join(PUB_DIR, `${CIT_KO_SLUG}.html`), injectLangBar(htmlKo, 'ko', CIT_KO_SLUG, CIT_EN_SLUG))
+    writeFileSync(join(PUB_DIR, `${CIT_EN_SLUG}.html`), injectLangBar(htmlEn, 'en', CIT_KO_SLUG, CIT_EN_SLUG))
+    const meta = { title: title || 'GEO Citation Dashboard', ts: Date.now() }
+    writeFileSync(CIT_META, JSON.stringify(meta, null, 2))
+    console.log('[PUBLISH-CIT]', meta.title, `-> /p/${CIT_KO_SLUG}, /p/${CIT_EN_SLUG}`)
+    res.json({ ok: true, urls: { ko: `/p/${CIT_KO_SLUG}`, en: `/p/${CIT_EN_SLUG}` }, ...meta })
+  } catch (err) {
+    console.error('[PUBLISH-CIT] Write error:', err.message)
+    res.status(500).json({ ok: false, error: '파일 저장 실패: ' + err.message })
+  }
+})
+
+app.get('/api/publish-citation', (req, res) => {
+  const meta = readMetaFile(CIT_META)
+  const ko = existsSync(join(PUB_DIR, `${CIT_KO_SLUG}.html`))
+  const en = existsSync(join(PUB_DIR, `${CIT_EN_SLUG}.html`))
+  res.json({ published: ko && en, ko, en, ...(meta || {}), urls: { ko: `/p/${CIT_KO_SLUG}`, en: `/p/${CIT_EN_SLUG}` } })
+})
+
+app.delete('/api/publish-citation', (req, res) => {
+  try { unlinkSync(join(PUB_DIR, `${CIT_KO_SLUG}.html`)) } catch (e) { if (e.code !== 'ENOENT') console.error('[PUBLISH-CIT] Delete error:', e.message) }
+  try { unlinkSync(join(PUB_DIR, `${CIT_EN_SLUG}.html`)) } catch (e) { if (e.code !== 'ENOENT') console.error('[PUBLISH-CIT] Delete error:', e.message) }
+  try { unlinkSync(CIT_META) } catch (e) { if (e.code !== 'ENOENT') console.error('[PUBLISH-CIT] Delete meta error:', e.message) }
+  res.json({ ok: true })
+})
+
 // ─── Publish History (Newsletter + Dashboard 통합 조회) ──────────────────────
 app.get('/api/publish-history', (req, res) => {
-  const newsletter = readPubMeta()
-  const dashboard = readDashMeta()
+  const newsletter = readMetaFile(PUB_META)
+  const dashboard = readMetaFile(DASH_META)
+  const citation = readMetaFile(CIT_META)
   const nlKo = existsSync(join(PUB_DIR, `${KO_SLUG}.html`))
   const nlEn = existsSync(join(PUB_DIR, `${EN_SLUG}.html`))
   const dashKo = existsSync(join(PUB_DIR, `${DASH_KO_SLUG}.html`))
   const dashEn = existsSync(join(PUB_DIR, `${DASH_EN_SLUG}.html`))
+  const citKo = existsSync(join(PUB_DIR, `${CIT_KO_SLUG}.html`))
+  const citEn = existsSync(join(PUB_DIR, `${CIT_EN_SLUG}.html`))
   res.json({
     newsletter: newsletter ? { ...newsletter, published: nlKo && nlEn, urls: { ko: `/p/${KO_SLUG}`, en: `/p/${EN_SLUG}` } } : null,
     dashboard: dashboard ? { ...dashboard, published: dashKo && dashEn, urls: { ko: `/p/${DASH_KO_SLUG}`, en: `/p/${DASH_EN_SLUG}` } } : null,
+    citation: citation ? { ...citation, published: citKo && citEn, urls: { ko: `/p/${CIT_KO_SLUG}`, en: `/p/${CIT_EN_SLUG}` } } : null,
   })
 })
 
 app.delete('/api/publish-dashboard', (req, res) => {
-  try { unlinkSync(join(PUB_DIR, `${DASH_KO_SLUG}.html`)) } catch {}
-  try { unlinkSync(join(PUB_DIR, `${DASH_EN_SLUG}.html`)) } catch {}
-  try { unlinkSync(DASH_META) } catch {}
+  try { unlinkSync(join(PUB_DIR, `${DASH_KO_SLUG}.html`)) } catch (e) { if (e.code !== 'ENOENT') console.error('[PUBLISH-DASH] Delete error:', e.message) }
+  try { unlinkSync(join(PUB_DIR, `${DASH_EN_SLUG}.html`)) } catch (e) { if (e.code !== 'ENOENT') console.error('[PUBLISH-DASH] Delete error:', e.message) }
+  try { unlinkSync(DASH_META) } catch (e) { if (e.code !== 'ENOENT') console.error('[PUBLISH-DASH] Delete meta error:', e.message) }
   res.json({ ok: true })
 })
 
@@ -470,29 +589,30 @@ app.delete('/api/publish-dashboard', (req, res) => {
 const TRACKER_SNAP = join(DATA_DIR, 'tracker-snapshot.json')
 const TRACKER_META = join(DATA_DIR, 'tracker-meta.json')
 
-function readTrackerMeta() {
-  try { return JSON.parse(readFileSync(TRACKER_META, 'utf-8')) } catch { return null }
-}
-
 app.post('/api/publish-tracker', (req, res) => {
   const { data } = req.body || {}
   if (!data) return res.status(400).json({ ok: false, error: 'data 필수' })
-  writeFileSync(TRACKER_SNAP, JSON.stringify(data, null, 2))
-  const meta = { title: 'GEO KPI Progress Tracker', ts: Date.now() }
-  writeFileSync(TRACKER_META, JSON.stringify(meta, null, 2))
-  console.log('[PUBLISH-TRACKER]', new Date().toISOString())
-  res.json({ ok: true, ...meta, url: '/p/progress-tracker/' })
+  try {
+    writeFileSync(TRACKER_SNAP, JSON.stringify(data, null, 2))
+    const meta = { title: 'GEO KPI Progress Tracker', ts: Date.now() }
+    writeFileSync(TRACKER_META, JSON.stringify(meta, null, 2))
+    console.log('[PUBLISH-TRACKER]', new Date().toISOString())
+    res.json({ ok: true, ...meta, url: '/p/progress-tracker/' })
+  } catch (err) {
+    console.error('[PUBLISH-TRACKER] Write error:', err.message)
+    res.status(500).json({ ok: false, error: '파일 저장 실패: ' + err.message })
+  }
 })
 
 app.get('/api/publish-tracker', (req, res) => {
-  const meta = readTrackerMeta()
+  const meta = readMetaFile(TRACKER_META)
   const hasData = existsSync(TRACKER_SNAP)
   res.json({ published: !!meta && hasData, ...(meta || {}), url: '/p/progress-tracker/' })
 })
 
 app.delete('/api/publish-tracker', (req, res) => {
-  try { unlinkSync(TRACKER_SNAP) } catch {}
-  try { unlinkSync(TRACKER_META) } catch {}
+  try { unlinkSync(TRACKER_SNAP) } catch (e) { if (e.code !== 'ENOENT') console.error('[PUBLISH-TRACKER] Delete error:', e.message) }
+  try { unlinkSync(TRACKER_META) } catch (e) { if (e.code !== 'ENOENT') console.error('[PUBLISH-TRACKER] Delete meta error:', e.message) }
   res.json({ ok: true })
 })
 
@@ -532,7 +652,9 @@ app.get('/p/:slug', (req, res) => {
     res.set('Content-Type', 'text/html; charset=utf-8')
     return res.send(`<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Access Denied</title><style>*{margin:0;padding:0;box-sizing:border-box}body{min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0F172A;font-family:'LG Smart','Arial Narrow',Arial,sans-serif;color:#E2E8F0}.w{text-align:center;padding:40px 24px}h1{font-size:48px;font-weight:700;color:#334155;margin-bottom:16px}p{font-size:15px;color:#64748B}</style></head><body><div class="w"><h1>403</h1><p>접근이 허용되지 않은 IP입니다.</p></div></body></html>`)
   }
-  const file = join(PUB_DIR, `${req.params.slug}.html`)
+  const slug = req.params.slug
+  if (!/^[a-zA-Z0-9\-]+$/.test(slug)) return res.status(400).send('Invalid slug')
+  const file = join(PUB_DIR, `${slug}.html`)
   if (!existsSync(file)) return res.status(404).send('Not found')
   res.set('Content-Type', 'text/html; charset=utf-8')
   res.send(readFileSync(file, 'utf-8'))
@@ -555,6 +677,7 @@ a.card{display:block;background:#1E293B;border:1px solid #334155;border-radius:1
 a.card:hover{border-color:#CF0652;transform:translateY(-2px)}
 .card-title{font-size:16px;font-weight:700;color:#F8FAFC;margin-bottom:4px}
 .card-desc{font-size:13px;color:#94A3B8}
+.section-title{font-size:13px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:2px;margin:24px 0 12px}
 .logout{background:none;border:1px solid #334155;color:#64748B;padding:10px 24px;border-radius:8px;font-size:13px;cursor:pointer}
 .logout:hover{border-color:#64748B;color:#94A3B8}
 </style></head><body>
@@ -562,18 +685,29 @@ a.card:hover{border-color:#CF0652;transform:translateY(-2px)}
   <div class="logo">GEO Newsletter</div>
   <h1>Admin Dashboard</h1>
   <div class="cards">
+    <div class="section-title" style="margin-top:0">뉴스레터 관리</div>
     <a class="card" href="/admin/newsletter">
       <div class="card-title">Newsletter Generator</div>
       <div class="card-desc">GEO 모니터링 리포트 생성, 편집 및 발송</div>
     </a>
+    <div class="section-title">대시보드 관리</div>
     <a class="card" href="/admin/dashboard">
-      <div class="card-title">KPI Dashboard Builder</div>
-      <div class="card-desc">GEO KPI 대시보드 생성 및 게시</div>
+      <div class="card-title">Dashboard Viewer</div>
+      <div class="card-desc">Visibility · Citation · Readability · Tracker 통합 뷰어</div>
+    </a>
+    <a class="card" href="/admin/visibility">
+      <div class="card-title">Visibility Editor</div>
+      <div class="card-desc">GEO Visibility KPI 대시보드 편집기</div>
+    </a>
+    <a class="card" href="/admin/citation">
+      <div class="card-title">Citation Editor</div>
+      <div class="card-desc">Citation 분석 대시보드 편집기</div>
     </a>
     <a class="card" href="/admin/progress-tracker">
       <div class="card-title">Progress Tracker</div>
       <div class="card-desc">GEO 과제 진행 현황 대시보드</div>
     </a>
+    <div class="section-title">공통 인프라</div>
     <a class="card" href="/admin/ip-manager">
       <div class="card-title">IP Access Manager</div>
       <div class="card-desc">게시된 리포트 열람 허용 IP 대역 관리</div>
@@ -699,6 +833,24 @@ app.get('/admin/dashboard/*', (req, res) => {
   res.sendFile(join(__dirname, 'dist-dashboard', 'dashboard.html'))
 })
 
+// ─── Static files (Citation Dashboard at /admin/citation) ───────────────────
+app.use('/admin/citation', express.static(join(__dirname, 'dist-citation')))
+app.get('/admin/citation', (req, res) => {
+  res.sendFile(join(__dirname, 'dist-citation', 'citation.html'))
+})
+app.get('/admin/citation/*', (req, res) => {
+  res.sendFile(join(__dirname, 'dist-citation', 'citation.html'))
+})
+
+// ─── Static files (Visibility Editor at /admin/visibility) ──────────────────
+app.use('/admin/visibility', express.static(join(__dirname, 'dist-visibility')))
+app.get('/admin/visibility', (req, res) => {
+  res.sendFile(join(__dirname, 'dist-visibility', 'visibility.html'))
+})
+app.get('/admin/visibility/*', (req, res) => {
+  res.sendFile(join(__dirname, 'dist-visibility', 'visibility.html'))
+})
+
 // ─── Static files (Progress Tracker at /admin/progress-tracker) ─────────────
 app.use('/admin/progress-tracker', express.static(join(__dirname, 'dist-tracker')))
 app.get('/admin/progress-tracker', (req, res) => {
@@ -713,7 +865,7 @@ app.get('/', (req, res) => {
     res.set('Content-Type', 'text/html; charset=utf-8')
     return res.send(`<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Access Denied</title><style>*{margin:0;padding:0;box-sizing:border-box}body{min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0F172A;font-family:'LG Smart','Arial Narrow',Arial,sans-serif;color:#E2E8F0}.w{text-align:center;padding:40px 24px}h1{font-size:48px;font-weight:700;color:#334155;margin-bottom:16px}p{font-size:15px;color:#64748B}</style></head><body><div class="w"><h1>403</h1><p>접근이 허용되지 않은 IP입니다.</p></div></body></html>`)
   }
-  const meta = readPubMeta()
+  const meta = readMetaFile(PUB_META)
   const title = meta?.title || 'GEO Monthly Report'
   const ts = meta?.ts ? new Date(meta.ts).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' }) : ''
   res.set('Content-Type', 'text/html; charset=utf-8')
@@ -779,7 +931,7 @@ app.use((err, req, res, _next) => {
   res.status(500).json({ ok: false, error: err.message })
 })
 
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}`)
   console.log(`DATA_DIR = ${DATA_DIR}`)
   console.log(`SNAP_FILE = ${SNAP_FILE}`)
