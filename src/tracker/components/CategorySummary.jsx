@@ -15,7 +15,7 @@ function CategoryTooltip({ cat, lang }) {
     <div style={{
       position: 'absolute', top: 'calc(100% + 8px)', left: 0, right: 0,
       background: '#1E293B', color: '#E2E8F0', borderRadius: 8, padding: '12px 16px',
-      fontSize: 13, lineHeight: 1.7, zIndex: 50,
+      fontSize: 13, lineHeight: 1.7, zIndex: 9999,
       boxShadow: '0 8px 24px rgba(0,0,0,0.25)', pointerEvents: 'none',
       whiteSpace: 'normal',
     }}>
@@ -49,13 +49,13 @@ export default function CategorySummary({ categories, month, lang = 'ko', select
   if (!categories || categories.length === 0) return null
 
   return (
-    <div style={{ background: '#fff', border: '1px solid #E2E8F0', borderRadius: 12, overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+    <div style={{ background: '#fff', border: '1px solid #E2E8F0', borderRadius: 12, boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
       <div style={{ padding: '16px 20px', borderBottom: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', gap: 8 }}>
         <span style={{ width: 3, height: 16, borderRadius: 8, background: '#CF0652', flexShrink: 0 }} />
         <h3 style={{ fontSize: 20, fontWeight: 700, color: '#111827', margin: 0 }}>{t(lang, 'categorySummary')}</h3>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" style={{ padding: 16 }}>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" style={{ padding: 16, overflow: 'visible' }}>
         {categories.map(cat => {
           const ms = statusOf(cat.monthRate)
           const cs = statusOf(cat.cumRate)
@@ -79,6 +79,7 @@ export default function CategorySummary({ categories, month, lang = 'ko', select
                 padding: isSelected ? 15 : 16,
                 cursor: 'pointer',
                 position: 'relative',
+                zIndex: isHovered ? 100 : 'auto',
                 transition: 'all 0.15s ease',
                 transform: isSelected ? 'scale(1.02)' : 'none',
                 boxShadow: isSelected ? `0 4px 12px ${ms.dot}25` : 'none',
