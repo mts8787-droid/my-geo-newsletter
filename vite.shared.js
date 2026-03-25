@@ -5,7 +5,7 @@ import { execSync } from 'child_process'
 
 // ─── 앱 버전 (package.json + git commit count) ──────────────────────────────
 const pkg = JSON.parse(readFileSync('./package.json', 'utf-8'))
-const [major, minor] = pkg.version.split('.')
+const [major, minor] = (pkg.version || '0.0').split('.')
 const patch = (() => { try { return execSync('git rev-list --count HEAD', { encoding: 'utf-8' }).trim() } catch { return '0' } })()
 export const appVersion = `${major}.${minor}.${patch}`
 
