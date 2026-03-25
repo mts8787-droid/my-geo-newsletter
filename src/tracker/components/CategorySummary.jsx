@@ -1,19 +1,58 @@
+import { useState } from 'react'
 import { STAKEHOLDER_COLORS } from '../utils/constants'
+import { t } from '../../shared/i18n.js'
 
 function statusOf(rate) {
-  if (rate >= 100) return { text: '#15803D', bg: '#ECFDF5', border: '#A7F3D0', bar: '#15803D', dot: '#15803D', label: '달성' }
-  if (rate >= 80)  return { text: '#D97706', bg: '#FFFBEB', border: '#FDE68A', bar: '#D97706', dot: '#D97706', label: '추진' }
-  return { text: '#BE123C', bg: '#FFF1F2', border: '#FECDD3', bar: '#BE123C', dot: '#BE123C', label: '미달성' }
+  if (rate >= 100) return { text: '#15803D', bg: '#ECFDF5', border: '#A7F3D0', bar: '#15803D', dot: '#15803D', label: 'achieved' }
+  if (rate >= 80)  return { text: '#D97706', bg: '#FFFBEB', border: '#FDE68A', bar: '#D97706', dot: '#D97706', label: 'inProgress' }
+  return { text: '#BE123C', bg: '#FFF1F2', border: '#FECDD3', bar: '#BE123C', dot: '#BE123C', label: 'notAchieved' }
 }
 
-export default function CategorySummary({ categories, month }) {
+function fmt(n) { return Number(n).toLocaleString('en-US') }
+
+function CategoryTooltip({ cat, lang }) {
+  return (
+    <div style={{
+      position: 'absolute', bottom: 'calc(100% + 8px)', left: '50%', transform: 'translateX(-50%)',
+      background: '#1E293B', color: '#E2E8F0', borderRadius: 8, padding: '12px 16px',
+      fontSize: 13, lineHeight: 1.7, zIndex: 50, minWidth: 220, maxWidth: 300,
+      boxShadow: '0 8px 24px rgba(0,0,0,0.25)', pointerEvents: 'none',
+      whiteSpace: 'normal',
+    }}>
+      <div style={{ fontWeight: 700, marginBottom: 6, color: '#F8FAFC' }}>{cat.category}</div>
+      <div style={{ color: '#94A3B8' }}>{t(lang, 'tooltipTaskCount', cat.taskCount)}</div>
+      <div style={{ color: '#94A3B8' }}>{t(lang, 'monthlyRate', '')} {cat.monthRate}% ({fmt(cat.monthActual)} / {fmt(cat.monthGoal)})</div>
+      <div style={{ color: '#94A3B8' }}>{t(lang, 'cumulativeRate')} {cat.cumRate}% ({fmt(cat.cumActual)} / {fmt(cat.cumGoal)})</div>
+      {cat.stakeholders && cat.stakeholders.length > 0 && (
+        <div style={{ marginTop: 6 }}>
+          <span style={{ color: '#94A3B8', fontSize: 12 }}>{t(lang, 'tooltipOrgs')}:</span>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 4 }}>
+            {cat.stakeholders.map(sh => (
+              <span key={sh.name} style={{ padding: '1px 6px', borderRadius: 3, fontSize: 11, fontWeight: 600, background: '#334155', color: '#CBD5E1' }}>
+                {sh.name} {sh.rate}%
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+      <div style={{
+        position: 'absolute', bottom: -6, left: '50%', transform: 'translateX(-50%)',
+        width: 0, height: 0, borderLeft: '6px solid transparent', borderRight: '6px solid transparent', borderTop: '6px solid #1E293B',
+      }} />
+    </div>
+  )
+}
+
+export default function CategorySummary({ categories, month, lang = 'ko', selectedCategory, onSelectCategory }) {
+  const [hoveredCat, setHoveredCat] = useState(null)
+
   if (!categories || categories.length === 0) return null
 
   return (
     <div style={{ background: '#fff', border: '1px solid #E2E8F0', borderRadius: 12, overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
       <div style={{ padding: '16px 20px', borderBottom: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', gap: 8 }}>
         <span style={{ width: 3, height: 16, borderRadius: 8, background: '#CF0652', flexShrink: 0 }} />
-        <h3 style={{ fontSize: 20, fontWeight: 700, color: '#111827', margin: 0 }}>과제 구분별 달성률</h3>
+        <h3 style={{ fontSize: 20, fontWeight: 700, color: '#111827', margin: 0 }}>{t(lang, 'categorySummary')}</h3>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" style={{ padding: 16 }}>
@@ -21,20 +60,46 @@ export default function CategorySummary({ categories, month }) {
           const ms = statusOf(cat.monthRate)
           const cs = statusOf(cat.cumRate)
           const shCount = cat.stakeholders ? cat.stakeholders.length : 0
+          const isSelected = selectedCategory === cat.category
+          const isHovered = hoveredCat === cat.category
+
           return (
-            <div key={cat.category} className="rounded-xl" style={{ border: `1px solid ${ms.border}`, background: ms.bg, padding: 16 }}>
+            <div
+              key={cat.category}
+              className="rounded-xl"
+              role="button"
+              tabIndex={0}
+              onClick={() => onSelectCategory?.(isSelected ? null : cat.category)}
+              onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelectCategory?.(isSelected ? null : cat.category) } }}
+              onMouseEnter={() => setHoveredCat(cat.category)}
+              onMouseLeave={() => setHoveredCat(null)}
+              style={{
+                border: isSelected ? '2px solid #4338CA' : `1px solid ${ms.border}`,
+                background: isSelected ? '#EEF2FF' : ms.bg,
+                padding: isSelected ? 15 : 16,
+                cursor: 'pointer',
+                position: 'relative',
+                transition: 'all 0.15s ease',
+                transform: isSelected ? 'scale(1.02)' : 'none',
+                boxShadow: isSelected ? '0 4px 12px rgba(67,56,202,0.15)' : 'none',
+              }}
+            >
+              {/* Tooltip */}
+              {isHovered && <CategoryTooltip cat={cat} lang={lang} />}
+
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
                 <span style={{ fontSize: 17, fontWeight: 700, color: '#111827' }}>{cat.category}</span>
-                <span style={{ fontSize: 13, color: '#94A3B8' }}>유관조직 {shCount}개</span>
+                <span style={{ fontSize: 13, color: '#94A3B8' }}>{t(lang, 'stakeholderCount', shCount)}</span>
               </div>
 
               {/* 월 달성률 */}
               <div style={{ marginBottom: 10 }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-                  <span style={{ fontSize: 13, color: '#64748B', width: 82, flexShrink: 0 }}>{month} 달성률</span>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 4, width: 70, flexShrink: 0, justifyContent: 'flex-end' }}>
+                  <span style={{ fontSize: 13, color: '#64748B', width: 82, flexShrink: 0 }}>{t(lang, 'monthlyRate', month)}</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0, justifyContent: 'flex-end' }}>
                     <span style={{ width: 8, height: 8, borderRadius: '50%', background: ms.dot, display: 'inline-block' }} />
                     <span style={{ fontSize: 15, fontWeight: 700, color: ms.text }}>{cat.monthRate}%</span>
+                    <span style={{ fontSize: 12, color: '#64748B' }}>{fmt(cat.monthActual)} / {fmt(cat.monthGoal)}</span>
                   </div>
                 </div>
                 <div style={{ height: 5, background: 'rgba(255,255,255,0.7)', borderRadius: 3, overflow: 'hidden' }}>
@@ -45,10 +110,11 @@ export default function CategorySummary({ categories, month }) {
               {/* 누적 달성률 */}
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-                  <span style={{ fontSize: 13, color: '#64748B', width: 82, flexShrink: 0 }}>누적 달성률</span>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 4, width: 70, flexShrink: 0, justifyContent: 'flex-end' }}>
+                  <span style={{ fontSize: 13, color: '#64748B', width: 82, flexShrink: 0 }}>{t(lang, 'cumulativeRate')}</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0, justifyContent: 'flex-end' }}>
                     <span style={{ width: 8, height: 8, borderRadius: '50%', background: cs.dot, display: 'inline-block' }} />
                     <span style={{ fontSize: 15, fontWeight: 700, color: cs.text }}>{cat.cumRate}%</span>
+                    <span style={{ fontSize: 12, color: '#64748B' }}>{fmt(cat.cumActual)} / {fmt(cat.cumGoal)}</span>
                   </div>
                 </div>
                 <div style={{ height: 5, background: 'rgba(255,255,255,0.7)', borderRadius: 3, overflow: 'hidden' }}>
@@ -61,7 +127,6 @@ export default function CategorySummary({ categories, month }) {
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 20 }}>
                   {cat.stakeholders.map(sh => {
                     const st = statusOf(sh.rate)
-                    const baseColor = STAKEHOLDER_COLORS[sh.name] || '#94A3B8'
                     return (
                       <span key={sh.name} style={{
                         display: 'inline-block',

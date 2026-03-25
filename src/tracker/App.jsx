@@ -9,8 +9,10 @@ import QualitativeTable from './components/QualitativeTable'
 import CategorySummary from './components/CategorySummary'
 import RawGoalTable from './components/RawGoalTable'
 import { MONTHS } from './utils/constants'
+import { t } from '../shared/i18n.js'
 
 const IS_PUBLIC = window.location.pathname.startsWith('/p/')
+const URL_LANG = new URLSearchParams(window.location.search).get('lang')
 
 function parseRate(v) {
   if (typeof v === 'string' && v.endsWith('%')) return parseFloat(v)
@@ -24,7 +26,7 @@ function buildLookup(rows) {
   return map
 }
 
-function computeDashboard(data, month, stakeholderFilter) {
+function computeDashboard(data, month, stakeholderFilter, categoryFilter) {
   const goals = data.quantitativeGoals
   const actuals = data.quantitativeResults
   const rates = data.quantitativeRates
@@ -39,7 +41,6 @@ function computeDashboard(data, month, stakeholderFilter) {
     const r = rateMap[key] || {}
     const goal = typeof g.monthly?.[month] === 'number' ? g.monthly[month] : 0
     const actual = typeof a.monthly?.[month] === 'number' ? a.monthly[month] : 0
-    // 달성률: 실적/목표에서 직접 계산 (표3 데이터는 폴백으로만 사용)
     const sheetRate = parseRate(r.monthly?.[month])
     const computedRate = goal > 0 ? Math.round((actual / goal) * 1000) / 10 : null
     return {
@@ -62,6 +63,11 @@ function computeDashboard(data, month, stakeholderFilter) {
   // Stakeholder filter
   if (stakeholderFilter !== '전체') {
     tasks = tasks.filter(t => t.stakeholder === stakeholderFilter)
+  }
+
+  // Category filter
+  if (categoryFilter) {
+    tasks = tasks.filter(t => t.taskCategory === categoryFilter)
   }
 
   // 이번 달 종합 달성률 (가중 평균: 총 실적 / 총 목표)
@@ -115,6 +121,7 @@ function computeDashboard(data, month, stakeholderFilter) {
     const computedRate = gv > 0 ? Math.round((av / gv) * 1000) / 10 : null
     return {
       stakeholder: g.stakeholder,
+      taskCategory: g.taskCategory,
       task: g.task,
       rate: computedRate !== null ? computedRate : sheetRate,
       goalMonthly: g.monthly,
@@ -125,7 +132,6 @@ function computeDashboard(data, month, stakeholderFilter) {
   const stakeholders = shNames.map(sh => {
     const shTasks = allTasks.filter(t => t.stakeholder === sh)
 
-    // 해당 월 실적/목표 합계
     let monthAct = 0, monthGoalSh = 0
     const taskDetails = []
     shTasks.forEach(t => {
@@ -170,7 +176,7 @@ function computeDashboard(data, month, stakeholderFilter) {
     }
   }).sort((a, b) => b.monthRate - a.monthRate)
 
-  // 과제구분별 달성률 (전체 tasks 기준)
+  // 과제구분별 달성률 (전체 tasks 기준 — 카테고리 필터 미적용)
   const categoryNames = [...new Set(allTasks.map(t => {
     const g = goals.rows.find(r => r.stakeholder === t.stakeholder && r.task === t.task)
     return g?.taskCategory || ''
@@ -194,7 +200,6 @@ function computeDashboard(data, month, stakeholderFilter) {
     })
     const monthRate = mGoal > 0 ? Math.round((mAct / mGoal) * 1000) / 10 : 0
     const cumRate = cGoal > 0 ? Math.round((cAct / cGoal) * 1000) / 10 : 0
-    // per-stakeholder breakdown
     const shNames = [...new Set(catGoals.map(g => g.stakeholder))]
     const stakeholders = shNames.map(sh => {
       let smAct = 0, smGoal = 0
@@ -233,11 +238,16 @@ function computeDashboard(data, month, stakeholderFilter) {
 }
 
 export default function App() {
+  const lang = URL_LANG === 'en' ? 'en' : 'ko'
   const { data, loading, error, load, refresh } = useSheetData(IS_PUBLIC ? 'snapshot' : 'live')
   const [selectedMonth, setSelectedMonth] = useState('3월')
   const [selectedSH, setSelectedSH] = useState('전체')
+  const [selectedCategory, setSelectedCategory] = useState(null)
 
   useEffect(() => { load() }, [load])
+
+  // Reset category filter when stakeholder changes
+  useEffect(() => { setSelectedCategory(null) }, [selectedSH])
 
   const stakeholderList = useMemo(() => {
     if (!data) return []
@@ -246,8 +256,8 @@ export default function App() {
 
   const dashboard = useMemo(() => {
     if (!data) return null
-    return computeDashboard(data, selectedMonth, selectedSH)
-  }, [data, selectedMonth, selectedSH])
+    return computeDashboard(data, selectedMonth, selectedSH, selectedCategory)
+  }, [data, selectedMonth, selectedSH, selectedCategory])
 
   // 게시 기능
   const [publishing, setPublishing] = useState(false)
@@ -299,6 +309,9 @@ export default function App() {
         publishing={publishing}
         publishInfo={publishInfo}
         onUnpublish={handleUnpublish}
+        lang={lang}
+        selectedCategory={selectedCategory}
+        onClearCategory={() => setSelectedCategory(null)}
       />
 
       <main className="max-w-[1400px] mx-auto px-4 py-6 space-y-6">
@@ -312,7 +325,7 @@ export default function App() {
           <div className="flex items-center justify-center py-24">
             <div className="flex items-center gap-3 text-gray-400 text-[16px]">
               <div className="w-5 h-5 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
-              데이터를 불러오는 중...
+              {t(lang, 'loadingData')}
             </div>
           </div>
         )}
@@ -323,6 +336,9 @@ export default function App() {
               <CategorySummary
                 categories={dashboard.categoryStats}
                 month={selectedMonth}
+                lang={lang}
+                selectedCategory={selectedCategory}
+                onSelectCategory={setSelectedCategory}
               />
             )}
 
@@ -336,6 +352,7 @@ export default function App() {
               annualTarget={dashboard.annualTarget}
               month={selectedMonth}
               selectedSH={selectedSH}
+              lang={lang}
             />
 
             <PerformanceCharts
@@ -343,17 +360,20 @@ export default function App() {
               cumulative={dashboard.cumulative}
               annualTarget={dashboard.annualTarget}
               selectedMonth={selectedMonth}
+              lang={lang}
             />
 
             <StakeholderRanking
               stakeholders={dashboard.stakeholders}
               month={selectedMonth}
               selectedSH={selectedSH}
+              lang={lang}
             />
 
             <DetailTable
               tasks={dashboard.tasks}
               month={selectedMonth}
+              lang={lang}
             />
 
             {data && (
@@ -362,6 +382,7 @@ export default function App() {
                 results={data.qualitativeResults.rows}
                 selectedSH={selectedSH}
                 month={selectedMonth}
+                lang={lang}
               />
             )}
 
@@ -369,6 +390,7 @@ export default function App() {
               <RawGoalTable
                 rows={data.quantitativeGoals.rows}
                 selectedSH={selectedSH}
+                lang={lang}
               />
             )}
           </>

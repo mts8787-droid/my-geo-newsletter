@@ -1,12 +1,16 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { FONT, LG_RED } from '../shared/constants.js'
+import GlossaryPage from './GlossaryPage.jsx'
 
 const TABS = [
   { key: 'visibility', label: 'Visibility' },
   { key: 'citation',   label: 'Citation' },
   { key: 'readability', label: 'Readability' },
   { key: 'tracker',    label: 'Progress Tracker' },
+  { key: 'glossary',   label: 'Glossary' },
 ]
+
+const TAB_KEYS = TABS.map(t => t.key)
 
 const IFRAME_PATHS = {
   visibility: { ko: '/p/GEO-KPI-Dashboard-KO', en: '/p/GEO-KPI-Dashboard-EN' },
@@ -19,6 +23,7 @@ const EDITOR_LINKS = {
   citation:    '/admin/citation',
   readability: null,
   tracker:     '/admin/progress-tracker',
+  glossary:    null,
 }
 
 // ─── 스타일 토큰 ──────────────────────────────────────────────────────────────
@@ -29,12 +34,30 @@ const TEXT       = '#E2E8F0'
 const TEXT_DIM   = '#94A3B8'
 const TEXT_MUTED = '#64748B'
 
+function getTabFromHash() {
+  const hash = window.location.hash.replace('#', '')
+  return TAB_KEYS.includes(hash) ? hash : 'visibility'
+}
+
 // ─── 메인 앱 ──────────────────────────────────────────────────────────────────
 export default function App() {
-  const [activeTab, setActiveTab] = useState('visibility')
+  const [activeTab, setActiveTab] = useState(getTabFromHash)
   const [lang, setLang] = useState('ko')
   const [publishData, setPublishData] = useState(null)
   const [trackerData, setTrackerData] = useState(null)
+
+  // Hash routing
+  useEffect(() => {
+    function onHashChange() {
+      setActiveTab(getTabFromHash())
+    }
+    window.addEventListener('hashchange', onHashChange)
+    return () => window.removeEventListener('hashchange', onHashChange)
+  }, [])
+
+  const navigateTab = useCallback((key) => {
+    window.location.hash = '#' + key
+  }, [])
 
   // Fetch publish statuses
   useEffect(() => {
@@ -51,7 +74,7 @@ export default function App() {
 
   // Derive status for active tab
   function getTabStatus(tabKey) {
-    if (tabKey === 'readability') return { published: false, urls: [] }
+    if (tabKey === 'readability' || tabKey === 'glossary') return { published: false, urls: [] }
     if (tabKey === 'tracker') {
       if (!trackerData) return { published: false, urls: [] }
       return {
@@ -74,7 +97,6 @@ export default function App() {
   }
 
   const status = getTabStatus(activeTab)
-  const hasLangToggle = activeTab === 'visibility' || activeTab === 'citation'
   const editorLink = EDITOR_LINKS[activeTab]
 
   // Build iframe src
@@ -82,7 +104,7 @@ export default function App() {
   if (activeTab === 'visibility' || activeTab === 'citation') {
     iframeSrc = IFRAME_PATHS[activeTab][lang]
   } else if (activeTab === 'tracker') {
-    iframeSrc = IFRAME_PATHS.tracker
+    iframeSrc = IFRAME_PATHS.tracker + '?lang=' + lang
   }
 
   return (
@@ -101,7 +123,7 @@ export default function App() {
           {TABS.map(tab => {
             const isActive = activeTab === tab.key
             return (
-              <button key={tab.key} onClick={() => setActiveTab(tab.key)} style={{
+              <button key={tab.key} onClick={() => navigateTab(tab.key)} style={{
                 padding: '6px 16px', borderRadius: 6, border: 'none', cursor: 'pointer',
                 background: isActive ? LG_RED : 'transparent',
                 color: isActive ? '#FFFFFF' : TEXT_MUTED,
@@ -114,21 +136,19 @@ export default function App() {
           })}
         </div>
 
-        {/* Language Toggle */}
-        {hasLangToggle && (
-          <div style={{ display: 'flex', gap: 2, background: BG, borderRadius: 6, padding: 2 }}>
-            {['ko', 'en'].map(l => (
-              <button key={l} onClick={() => setLang(l)} style={{
-                padding: '3px 10px', borderRadius: 5, border: 'none',
-                background: lang === l ? LG_RED : 'transparent',
-                color: lang === l ? '#FFFFFF' : TEXT_MUTED,
-                fontSize: 10, fontWeight: 700, fontFamily: FONT, cursor: 'pointer',
-              }}>
-                {l.toUpperCase()}
-              </button>
-            ))}
-          </div>
-        )}
+        {/* Language Toggle — always visible */}
+        <div style={{ display: 'flex', gap: 2, background: BG, borderRadius: 6, padding: 2 }}>
+          {['ko', 'en'].map(l => (
+            <button key={l} onClick={() => setLang(l)} style={{
+              padding: '3px 10px', borderRadius: 5, border: 'none',
+              background: lang === l ? LG_RED : 'transparent',
+              color: lang === l ? '#FFFFFF' : TEXT_MUTED,
+              fontSize: 10, fontWeight: 700, fontFamily: FONT, cursor: 'pointer',
+            }}>
+              {l.toUpperCase()}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* ─── Body: Sidebar + Main ─── */}
@@ -146,13 +166,22 @@ export default function App() {
             {TABS.find(t => t.key === activeTab)?.label}
           </h2>
 
-          {/* Readability placeholder */}
-          {activeTab === 'readability' ? (
+          {/* Readability / Glossary placeholder */}
+          {(activeTab === 'readability') ? (
             <div style={{
               background: CARD_BG, borderRadius: 10, padding: 24,
               textAlign: 'center', color: TEXT_DIM, fontSize: 14,
             }}>
-              준비 중
+              {lang === 'en' ? 'Coming Soon' : '준비 중'}
+            </div>
+          ) : activeTab === 'glossary' ? (
+            <div style={{
+              background: CARD_BG, borderRadius: 10, padding: 24,
+              textAlign: 'center', color: TEXT_DIM, fontSize: 14, lineHeight: 1.7,
+            }}>
+              {lang === 'en'
+                ? 'Reference for GEO terminology used across all dashboards.'
+                : 'GEO 대시보드 전반에서 사용되는 주요 용어 설명입니다.'}
             </div>
           ) : (
             <>
@@ -220,6 +249,8 @@ export default function App() {
             }}>
               Coming Soon
             </div>
+          ) : activeTab === 'glossary' ? (
+            <GlossaryPage lang={lang} />
           ) : iframeSrc ? (
             <iframe
               key={`${activeTab}-${lang}`}

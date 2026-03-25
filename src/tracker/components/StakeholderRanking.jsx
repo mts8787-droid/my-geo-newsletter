@@ -1,4 +1,5 @@
 import { STAKEHOLDER_COLORS } from '../utils/constants'
+import { t } from '../../shared/i18n.js'
 
 function statusOf(rate) {
   if (rate >= 100) return { color: '#15803D', dot: '#15803D', bg: '#ECFDF5' }
@@ -8,7 +9,7 @@ function statusOf(rate) {
 
 function fmt(n) { return Number(n).toLocaleString('en-US') }
 
-export default function StakeholderRanking({ stakeholders, month, selectedSH }) {
+export default function StakeholderRanking({ stakeholders, month, selectedSH, lang = 'ko' }) {
   const filtered = selectedSH === '전체' ? stakeholders : stakeholders.filter(s => s.name === selectedSH)
   const totalWarnings = filtered.reduce((s, sh) => s + sh.warnings, 0)
 
@@ -18,10 +19,10 @@ export default function StakeholderRanking({ stakeholders, month, selectedSH }) 
       <div style={{ padding: '16px 20px', borderBottom: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <span style={{ width: 3, height: 16, borderRadius: 8, background: '#CF0652', flexShrink: 0 }} />
-          <h3 style={{ fontSize: 20, fontWeight: 700, color: '#111827', margin: 0 }}>조직별 달성률</h3>
+          <h3 style={{ fontSize: 20, fontWeight: 700, color: '#111827', margin: 0 }}>{t(lang, 'orgRate')}</h3>
           {totalWarnings > 0 && (
             <span style={{ fontSize: 16, fontWeight: 700, color: '#BE123C', background: '#FFF1F2', border: '1px solid #FECDD3', padding: '2px 8px', borderRadius: 4 }}>
-              미달성 과제 {totalWarnings}건
+              {t(lang, 'belowTasks', totalWarnings)}
             </span>
           )}
         </div>
@@ -32,13 +33,13 @@ export default function StakeholderRanking({ stakeholders, month, selectedSH }) 
         </div>
       </div>
 
-      {/* Column headers — all center aligned */}
+      {/* Column headers */}
       <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr 240px 40px 240px', gap: 0, padding: '10px 20px', borderBottom: '1px solid #E2E8F0', background: '#F8FAFC' }}>
-        <span style={{ fontSize: 16, fontWeight: 600, color: '#475569', textAlign: 'center', textTransform: 'uppercase', letterSpacing: '0.05em' }}>조직</span>
-        <span style={{ fontSize: 16, fontWeight: 600, color: '#475569', textAlign: 'center', textTransform: 'uppercase', letterSpacing: '0.05em' }}>과제 현황</span>
-        <span style={{ fontSize: 16, fontWeight: 600, color: '#475569', textAlign: 'center', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{month} 달성률</span>
+        <span style={{ fontSize: 16, fontWeight: 600, color: '#475569', textAlign: 'center', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t(lang, 'org')}</span>
+        <span style={{ fontSize: 16, fontWeight: 600, color: '#475569', textAlign: 'center', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t(lang, 'taskStatus')}</span>
+        <span style={{ fontSize: 16, fontWeight: 600, color: '#475569', textAlign: 'center', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t(lang, 'monthlyRate', month)}</span>
         <span />
-        <span style={{ fontSize: 16, fontWeight: 600, color: '#475569', textAlign: 'center', textTransform: 'uppercase', letterSpacing: '0.05em' }}>누적 달성률</span>
+        <span style={{ fontSize: 16, fontWeight: 600, color: '#475569', textAlign: 'center', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t(lang, 'cumulativeRate')}</span>
       </div>
 
       {/* Stakeholder rows */}
@@ -77,7 +78,7 @@ export default function StakeholderRanking({ stakeholders, month, selectedSH }) 
                   })}
                 </div>
 
-                {/* Month rate column: [bar] [실적/목표] [달성율] */}
+                {/* Month rate column */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
                   <div style={{ flex: 1, height: 18, background: '#F1F5F9', borderRadius: 4, overflow: 'hidden', position: 'relative', minWidth: 50 }}>
                     <div style={{ height: '100%', borderRadius: 4, width: `${monthBarW}%`, background: mSt.dot, transition: 'width 0.7s ease-out' }} />
@@ -90,10 +91,9 @@ export default function StakeholderRanking({ stakeholders, month, selectedSH }) 
                   </span>
                 </div>
 
-                {/* 20px spacer between month rate and cumulative */}
                 <div />
 
-                {/* Cumulative rate column: [bar] [실적/목표] [달성율] */}
+                {/* Cumulative rate column */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
                   <div style={{ flex: 1, height: 18, background: '#F1F5F9', borderRadius: 4, overflow: 'hidden', position: 'relative', minWidth: 50 }}>
                     <div style={{ height: '100%', borderRadius: 4, width: `${cumBarW}%`, background: cSt.dot, transition: 'width 0.7s ease-out' }} />
@@ -111,7 +111,7 @@ export default function StakeholderRanking({ stakeholders, month, selectedSH }) 
         })}
 
         {filtered.length === 0 && (
-          <p style={{ textAlign: 'center', color: '#94A3B8', padding: '16px 0', fontSize: 16 }}>해당 스테이크홀더가 없습니다.</p>
+          <p style={{ textAlign: 'center', color: '#94A3B8', padding: '16px 0', fontSize: 16 }}>{t(lang, 'noStakeholder')}</p>
         )}
       </div>
     </div>
