@@ -28,7 +28,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
   useEffect(() => {
     const ep = mode === 'dashboard' ? '/api/publish-dashboard' : '/api/publish'
     fetch(ep).then(r => r.ok ? r.json() : null).then(setPublishInfo).catch(() => {})
-  }, [])
+  }, [mode])
 
   async function handlePublish() {
     if (publishing) return
@@ -49,7 +49,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
       const ep = mode === 'dashboard' ? '/api/publish-dashboard' : '/api/publish'
       const res = await fetch(ep, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
         body: JSON.stringify({ title, htmlKo, htmlEn }),
       })
       const data = await res.json()
@@ -123,7 +123,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
 
       const res = await fetch('/api/translate', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
         body: JSON.stringify({ texts: allTexts, from: 'ko', to: 'en' }),
       })
       const data = await res.json()
@@ -249,7 +249,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
       const subject = `[LG GEO] ${meta.title} · ${meta.period}`
       const res = await fetch('/api/send-email', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
         body: JSON.stringify({ to: toEmail.trim(), subject, html }),
       })
       const data = await res.json()

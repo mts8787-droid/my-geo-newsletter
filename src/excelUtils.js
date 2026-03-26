@@ -1,4 +1,4 @@
-import * as XLSX from 'xlsx'
+import * as XLSX from 'xlsx-js-style'
 
 // ─── 시트 이름 (Google Sheets 동기화용 — 새 데이터 원천) ─────────────────────────
 export const SHEET_NAMES = {

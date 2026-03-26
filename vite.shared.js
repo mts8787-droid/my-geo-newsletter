@@ -15,7 +15,9 @@ export function serveFontsPlugin() {
     name: 'serve-fonts',
     configureServer(server) {
       server.middlewares.use('/font', (req, res, next) => {
+        const fontDir = resolve('font')
         const file = resolve('font', decodeURIComponent(req.url).replace(/^\//, '').split('?')[0])
+        if (!file.startsWith(fontDir)) return res.writeHead(403).end('Forbidden')
         if (!existsSync(file)) return next()
         res.setHeader('Content-Type', 'font/ttf')
         res.setHeader('Cache-Control', 'public, max-age=31536000, immutable')

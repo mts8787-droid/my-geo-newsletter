@@ -9,11 +9,18 @@ import dotenv from 'dotenv'
 
 dotenv.config()
 
+// ─── HTML Sanitizer (strip <script> tags for published pages) ────────────────
+function sanitizeHtml(html) {
+  return html.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script\s*>/gi, '')
+             .replace(/\son\w+\s*=\s*["'][^"']*["']/gi, '')
+             .replace(/\son\w+\s*=\s*[^\s>]+/gi, '')
+}
+
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const app = express()
 const PORT = process.env.PORT || 3000
 
-app.set('trust proxy', true)
+app.set('trust proxy', 1)  // trust only the first proxy (Render load balancer)
 
 // ─── Snapshots file storage ──────────────────────────────────────────────────
 const DATA_DIR = process.env.DATA_DIR || join(__dirname, 'data')
@@ -33,11 +40,14 @@ const CT_SYNC_FILE = join(DATA_DIR, 'citation-sync-data.json')
 // ─── IP Allowlist storage ────────────────────────────────────────────────────
 const IP_FILE = join(DATA_DIR, 'ip-allowlist.json')
 
+let _ipAllowlistCache = null
 function readIpAllowlist() {
-  try { return JSON.parse(readFileSync(IP_FILE, 'utf-8')) } catch { return [] }
+  if (_ipAllowlistCache) return _ipAllowlistCache
+  try { _ipAllowlistCache = JSON.parse(readFileSync(IP_FILE, 'utf-8')); return _ipAllowlistCache } catch { return [] }
 }
 function writeIpAllowlist(list) {
   writeFileSync(IP_FILE, JSON.stringify(list, null, 2))
+  _ipAllowlistCache = list
 }
 
 function extractIPv4(ip) {
@@ -70,7 +80,11 @@ function isIpAllowed(ip) {
 }
 
 // ─── Admin Auth ──────────────────────────────────────────────────────────────
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'changeme'
+if (!process.env.ADMIN_PASSWORD) {
+  console.error('⚠️  ADMIN_PASSWORD 환경 변수가 설정되지 않았습니다. 서버를 시작할 수 없습니다.')
+  process.exit(1)
+}
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD
 const activeSessions = new Set()
 
 function getSessionToken(req) {
@@ -80,12 +94,32 @@ function getSessionToken(req) {
   return match ? match.split('=')[1] : null
 }
 
+// ─── File lock for concurrent write safety ──────────────────────────────────
+const fileLocks = new Map()
+function withFileLock(file, fn) {
+  const chain = (fileLocks.get(file) || Promise.resolve()).then(fn).catch(fn)
+  fileLocks.set(file, chain.then(() => {}, () => {}))
+  return chain
+}
+
 function readSnapshots() {
   try { return JSON.parse(readFileSync(SNAP_FILE, 'utf-8')) } catch { return [] }
 }
 function writeSnapshots(list) {
   writeFileSync(SNAP_FILE, JSON.stringify(list, null, 2))
 }
+
+// ─── Security Headers ────────────────────────────────────────────────────────
+app.use((req, res, next) => {
+  res.set('X-Content-Type-Options', 'nosniff')
+  res.set('X-Frame-Options', 'SAMEORIGIN')
+  res.set('X-XSS-Protection', '1; mode=block')
+  res.set('Referrer-Policy', 'strict-origin-when-cross-origin')
+  if (process.env.NODE_ENV === 'production') {
+    res.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains')
+  }
+  next()
+})
 
 // ─── JSON body parser ────────────────────────────────────────────────────────
 app.use(express.json({ limit: '5mb' }))
@@ -142,17 +176,34 @@ document.getElementById('f').addEventListener('submit', async function(e) {
 </script></body></html>`)
 })
 
+// ─── Login Rate Limiter ──────────────────────────────────────────────────────
+const loginAttempts = new Map()  // ip -> { count, resetAt }
+const MAX_LOGIN_ATTEMPTS = 5
+const LOGIN_WINDOW_MS = 15 * 60 * 1000  // 15 minutes
+
 // ─── Auth API ────────────────────────────────────────────────────────────────
 app.post('/api/auth/login', (req, res) => {
+  const ip = req.ip
+  const now = Date.now()
+  const attempt = loginAttempts.get(ip)
+  if (attempt && now < attempt.resetAt && attempt.count >= MAX_LOGIN_ATTEMPTS) {
+    const retryAfter = Math.ceil((attempt.resetAt - now) / 1000)
+    return res.status(429).json({ ok: false, error: `너무 많은 로그인 시도. ${retryAfter}초 후 재시도하세요.` })
+  }
   const { password } = req.body || {}
   if (password !== ADMIN_PASSWORD) {
+    const entry = attempt && now < attempt.resetAt ? attempt : { count: 0, resetAt: now + LOGIN_WINDOW_MS }
+    entry.count++
+    loginAttempts.set(ip, entry)
     return res.status(401).json({ ok: false, error: '비밀번호가 올바르지 않습니다.' })
   }
+  loginAttempts.delete(ip)
   const token = crypto.randomBytes(32).toString('hex')
   activeSessions.add(token)
   res.cookie('admin_token', token, {
     httpOnly: true,
     sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production',
     maxAge: 24 * 60 * 60 * 1000,
     path: '/',
   })
@@ -180,6 +231,12 @@ app.use((req, res, next) => {
       if (req.path.startsWith('/api/')) return res.status(401).json({ ok: false, error: 'Unauthorized' })
       return res.redirect('/admin/login')
     }
+    // CSRF protection: state-changing API requests must include X-Requested-With header
+    if (req.path.startsWith('/api/') && ['POST', 'PUT', 'DELETE'].includes(req.method)) {
+      if (req.headers['content-type']?.includes('application/json') && !req.headers['x-requested-with']) {
+        return res.status(403).json({ ok: false, error: 'CSRF 검증 실패' })
+      }
+    }
   }
   next()
 })
@@ -187,6 +244,14 @@ app.use((req, res, next) => {
 // ─── Google Sheets proxy (fetch-based) ──────────────────────────────────────
 app.get('/gsheets-proxy/*', async (req, res) => {
   const target = 'https://docs.google.com' + req.originalUrl.replace('/gsheets-proxy', '')
+  try {
+    const parsed = new URL(target)
+    if (parsed.hostname !== 'docs.google.com') {
+      return res.status(403).json({ error: 'docs.google.com만 프록시 허용' })
+    }
+  } catch {
+    return res.status(400).json({ error: '유효하지 않은 URL' })
+  }
   console.log('[PROXY]', target.slice(0, 120))
   try {
     const gRes = await fetch(target, {
@@ -202,11 +267,27 @@ app.get('/gsheets-proxy/*', async (req, res) => {
     res.send(body)
   } catch (err) {
     console.error('[PROXY] Error:', err.message)
-    res.status(502).json({ error: err.message })
+    res.status(502).json({ error: '프록시 요청 실패' })
   }
 })
 
 // ─── Email API ───────────────────────────────────────────────────────────────
+let _smtpTransporter = null
+function getSmtpTransporter() {
+  if (_smtpTransporter) return _smtpTransporter
+  const host = process.env.SMTP_HOST || 'smtp.gmail.com'
+  const port = parseInt(process.env.SMTP_PORT || '587')
+  const user = process.env.SMTP_USER
+  const pass = process.env.SMTP_PASS
+  if (!user || !pass) return null
+  _smtpTransporter = nodemailer.createTransport({
+    host, port, secure: port === 465,
+    auth: { user, pass },
+    pool: true,
+  })
+  return _smtpTransporter
+}
+
 app.post('/api/send-email', (req, res) => {
   console.log('[EMAIL] Route hit')
   const { to, subject, html } = req.body || {}
@@ -215,22 +296,13 @@ app.post('/api/send-email', (req, res) => {
     return res.status(400).json({ ok: false, error: 'to, subject, html 필수' })
   }
 
-  const host = process.env.SMTP_HOST || 'smtp.gmail.com'
-  const port = parseInt(process.env.SMTP_PORT || '587')
-  const user = process.env.SMTP_USER
-  const pass = process.env.SMTP_PASS
-
-  if (!user || !pass) {
+  const transporter = getSmtpTransporter()
+  if (!transporter) {
     return res.status(500).json({ ok: false, error: 'SMTP 설정이 없습니다.' })
   }
 
-  const transporter = nodemailer.createTransport({
-    host, port, secure: port === 465,
-    auth: { user, pass },
-  })
-
   transporter.sendMail({
-    from: process.env.SMTP_FROM || user,
+    from: process.env.SMTP_FROM || process.env.SMTP_USER,
     to, subject, html,
   })
     .then(() => {
@@ -239,7 +311,7 @@ app.post('/api/send-email', (req, res) => {
     })
     .catch((err) => {
       console.error('[EMAIL] Send error:', err.message)
-      res.status(500).json({ ok: false, error: err.message })
+      res.status(500).json({ ok: false, error: '이메일 전송 실패' })
     })
 })
 
@@ -251,26 +323,32 @@ app.get('/api/snapshots', (req, res) => {
 app.post('/api/snapshots', (req, res) => {
   const { name, data } = req.body || {}
   if (!name || !data) return res.status(400).json({ ok: false, error: 'name, data 필수' })
-  const snap = { name, ts: Date.now(), data }
-  const list = [snap, ...readSnapshots()].slice(0, 50)
-  writeSnapshots(list)
-  res.json({ ok: true, snapshots: list })
+  withFileLock(SNAP_FILE, () => {
+    const snap = { name, ts: Date.now(), data }
+    const list = [snap, ...readSnapshots()].slice(0, 50)
+    writeSnapshots(list)
+    res.json({ ok: true, snapshots: list })
+  })
 })
 
 app.put('/api/snapshots/:ts', (req, res) => {
   const ts = parseInt(req.params.ts)
   const { data } = req.body || {}
   if (!data) return res.status(400).json({ ok: false, error: 'data 필수' })
-  const list = readSnapshots().map(s => s.ts === ts ? { ...s, data, updatedAt: Date.now() } : s)
-  writeSnapshots(list)
-  res.json({ ok: true, snapshots: list })
+  withFileLock(SNAP_FILE, () => {
+    const list = readSnapshots().map(s => s.ts === ts ? { ...s, data, updatedAt: Date.now() } : s)
+    writeSnapshots(list)
+    res.json({ ok: true, snapshots: list })
+  })
 })
 
 app.delete('/api/snapshots/:ts', (req, res) => {
   const ts = parseInt(req.params.ts)
-  const list = readSnapshots().filter(s => s.ts !== ts)
-  writeSnapshots(list)
-  res.json({ ok: true, snapshots: list })
+  withFileLock(SNAP_FILE, () => {
+    const list = readSnapshots().filter(s => s.ts !== ts)
+    writeSnapshots(list)
+    res.json({ ok: true, snapshots: list })
+  })
 })
 
 // ─── Sync Data (Google Sheets 동기화 데이터 서버 저장) ────────────────────────
@@ -372,6 +450,15 @@ app.post('/api/gsheet-export', async (req, res) => {
   if (!scriptUrl || !data) {
     return res.status(400).json({ ok: false, error: 'scriptUrl, data 필수' })
   }
+  const ALLOWED_ORIGINS = ['https://script.google.com', 'https://script.googleusercontent.com']
+  try {
+    const parsed = new URL(scriptUrl)
+    if (!ALLOWED_ORIGINS.some(o => parsed.origin === o)) {
+      return res.status(403).json({ ok: false, error: 'Google Apps Script URL만 허용됩니다' })
+    }
+  } catch {
+    return res.status(400).json({ ok: false, error: '유효하지 않은 URL입니다' })
+  }
   try {
     const gRes = await fetch(scriptUrl, {
       method: 'POST',
@@ -385,7 +472,7 @@ app.post('/api/gsheet-export', async (req, res) => {
     res.json(result)
   } catch (err) {
     console.error('[GSHEET-EXPORT] Error:', err.message)
-    res.status(500).json({ ok: false, error: err.message })
+    res.status(500).json({ ok: false, error: 'Google Sheet 내보내기 실패' })
   }
 })
 
@@ -401,7 +488,7 @@ app.post('/api/translate', async (req, res) => {
     res.json({ ok: true, translated })
   } catch (err) {
     console.error('[TRANSLATE] Error:', err.message)
-    res.status(500).json({ ok: false, error: err.message })
+    res.status(500).json({ ok: false, error: '번역 실패' })
   }
 })
 
@@ -471,8 +558,8 @@ app.post('/api/publish', (req, res) => {
   const { htmlKo, htmlEn, title } = req.body || {}
   if (!htmlKo || !htmlEn) return res.status(400).json({ ok: false, error: 'htmlKo, htmlEn 필수' })
   try {
-    writeFileSync(join(PUB_DIR, `${KO_SLUG}.html`), injectLangBar(htmlKo, 'ko', KO_SLUG, EN_SLUG))
-    writeFileSync(join(PUB_DIR, `${EN_SLUG}.html`), injectLangBar(htmlEn, 'en', KO_SLUG, EN_SLUG))
+    writeFileSync(join(PUB_DIR, `${KO_SLUG}.html`), sanitizeHtml(injectLangBar(htmlKo, 'ko', KO_SLUG, EN_SLUG)))
+    writeFileSync(join(PUB_DIR, `${EN_SLUG}.html`), sanitizeHtml(injectLangBar(htmlEn, 'en', KO_SLUG, EN_SLUG)))
     const meta = { title: title || 'GEO Monthly Report', ts: Date.now() }
     writeFileSync(PUB_META, JSON.stringify(meta, null, 2))
     console.log('[PUBLISH]', meta.title, `-> /p/${KO_SLUG}, /p/${EN_SLUG}`)
@@ -506,8 +593,8 @@ app.post('/api/publish-dashboard', (req, res) => {
   const { htmlKo, htmlEn, title } = req.body || {}
   if (!htmlKo || !htmlEn) return res.status(400).json({ ok: false, error: 'htmlKo, htmlEn 필수' })
   try {
-    writeFileSync(join(PUB_DIR, `${DASH_KO_SLUG}.html`), injectLangBar(htmlKo, 'ko', DASH_KO_SLUG, DASH_EN_SLUG))
-    writeFileSync(join(PUB_DIR, `${DASH_EN_SLUG}.html`), injectLangBar(htmlEn, 'en', DASH_KO_SLUG, DASH_EN_SLUG))
+    writeFileSync(join(PUB_DIR, `${DASH_KO_SLUG}.html`), sanitizeHtml(injectLangBar(htmlKo, 'ko', DASH_KO_SLUG, DASH_EN_SLUG)))
+    writeFileSync(join(PUB_DIR, `${DASH_EN_SLUG}.html`), sanitizeHtml(injectLangBar(htmlEn, 'en', DASH_KO_SLUG, DASH_EN_SLUG)))
     const meta = { title: title || 'GEO KPI Dashboard', ts: Date.now() }
     writeFileSync(DASH_META, JSON.stringify(meta, null, 2))
     console.log('[PUBLISH-DASH]', meta.title, `-> /p/${DASH_KO_SLUG}, /p/${DASH_EN_SLUG}`)
@@ -534,8 +621,8 @@ app.post('/api/publish-citation', (req, res) => {
   const { htmlKo, htmlEn, title } = req.body || {}
   if (!htmlKo || !htmlEn) return res.status(400).json({ ok: false, error: 'htmlKo, htmlEn 필수' })
   try {
-    writeFileSync(join(PUB_DIR, `${CIT_KO_SLUG}.html`), injectLangBar(htmlKo, 'ko', CIT_KO_SLUG, CIT_EN_SLUG))
-    writeFileSync(join(PUB_DIR, `${CIT_EN_SLUG}.html`), injectLangBar(htmlEn, 'en', CIT_KO_SLUG, CIT_EN_SLUG))
+    writeFileSync(join(PUB_DIR, `${CIT_KO_SLUG}.html`), sanitizeHtml(injectLangBar(htmlKo, 'ko', CIT_KO_SLUG, CIT_EN_SLUG)))
+    writeFileSync(join(PUB_DIR, `${CIT_EN_SLUG}.html`), sanitizeHtml(injectLangBar(htmlEn, 'en', CIT_KO_SLUG, CIT_EN_SLUG)))
     const meta = { title: title || 'GEO Citation Dashboard', ts: Date.now() }
     writeFileSync(CIT_META, JSON.stringify(meta, null, 2))
     console.log('[PUBLISH-CIT]', meta.title, `-> /p/${CIT_KO_SLUG}, /p/${CIT_EN_SLUG}`)
@@ -928,7 +1015,7 @@ app.use((req, res, next) => {
 // ─── Error handler ───────────────────────────────────────────────────────────
 app.use((err, req, res, _next) => {
   console.error('[SERVER] Error:', err.message)
-  res.status(500).json({ ok: false, error: err.message })
+  res.status(500).json({ ok: false, error: '서버 내부 오류' })
 })
 
 app.listen(PORT, '0.0.0.0', () => {

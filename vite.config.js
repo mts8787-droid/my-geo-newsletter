@@ -170,6 +170,11 @@ function gsheetExportPlugin() {
           try {
             const { scriptUrl, data } = JSON.parse(body)
             if (!scriptUrl || !data) throw new Error('scriptUrl, data 필수')
+            const ALLOWED_ORIGINS = ['https://script.google.com', 'https://script.googleusercontent.com']
+            const parsed = new URL(scriptUrl)
+            if (!ALLOWED_ORIGINS.some(o => parsed.origin === o)) {
+              throw new Error('Google Apps Script URL만 허용됩니다')
+            }
             const gRes = await fetch(scriptUrl, {
               method: 'POST',
               headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -267,7 +272,10 @@ function publishApiPlugin() {
       // GET /p/:slug — serve published pages
       server.middlewares.use('/p', (req, res, next) => {
         const slug = req.url.replace(/^\//, '').replace(/\?.*$/, '')
+        if (slug.includes('..') || slug.includes('/')) { res.statusCode = 400; res.end('Bad request'); return }
+        const pubDir = resolve(PUB_DIR)
         const file = resolve(PUB_DIR, `${slug}.html`)
+        if (!file.startsWith(pubDir)) { res.statusCode = 403; res.end('Forbidden'); return }
         if (!existsSync(file)) { res.statusCode = 404; res.end('Not found'); return }
         res.setHeader('Content-Type', 'text/html; charset=utf-8')
         res.end(readFileSync(file, 'utf-8'))

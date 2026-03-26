@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import * as XLSX from 'xlsx'
+import * as XLSX from 'xlsx-js-style'
 import { SHEET_ID, SHEET_GID, CACHE_TTL } from '../utils/constants'
 import { parseKPISheet } from '../utils/sheetParser'
 

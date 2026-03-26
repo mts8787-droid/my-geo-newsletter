@@ -1,7 +1,10 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import { resolve } from 'path'
+import { resolve, dirname } from 'path'
+import { fileURLToPath } from 'url'
 import { appVersion, serveFontsPlugin, gsheetsProxy } from './vite.shared.js'
+
+const __dirname = dirname(fileURLToPath(import.meta.url))
 
 export default defineConfig({
   base: '/admin/progress-tracker/',

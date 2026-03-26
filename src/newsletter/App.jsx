@@ -53,7 +53,7 @@ function NewsletterPreview({ meta, total, products, citations, dotcom, productsC
 // ─── HTML 코드 뷰어 ───────────────────────────────────────────────────────────
 function HtmlCodeViewer({ meta, total, products, citations, dotcom, productsCnty = [], citationsCnty = [], lang = 'ko' }) {
   const [copied, setCopied] = useState(false)
-  const html = generateEmailHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty)
+  const html = useMemo(() => generateEmailHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty), [meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty])
 
   async function handleCopy() {
     try {
@@ -135,6 +135,14 @@ export default function App() {
 
   useEffect(() => { fetchSnapshots(MODE).then(setSnapshots) }, [])
 
+  const snapMsgTimer = useRef(null)
+  function showSnapMsg(msg, ms = 2000) {
+    clearTimeout(snapMsgTimer.current)
+    setSnapMsg(msg)
+    snapMsgTimer.current = setTimeout(() => setSnapMsg(''), ms)
+  }
+  useEffect(() => () => clearTimeout(snapMsgTimer.current), [])
+
   const serverSyncApplied = useRef(false)
   useEffect(() => {
     let cancelled = false
@@ -175,13 +183,13 @@ export default function App() {
     const data = { metaKo, metaEn, total, products, citations, dotcom, productsCnty, citationsCnty, weeklyLabels, weeklyAll }
     const result = await updateSnapshot(MODE, activeSnap, data)
     if (result) setSnapshots(result)
-    setSnapMsg(result ? '저장 완료!' : '저장 실패'); setTimeout(() => setSnapMsg(''), 2000)
+    showSnapMsg(result ? '저장 완료!' : '저장 실패')
   }
   async function handleSnapSaveNew() {
     const name = snapName.trim() || `${meta.period || 'Untitled'} — ${new Date().toLocaleString('ko-KR')}`
     const result = await postSnapshot(MODE, name, { metaKo, metaEn, total, products, citations, dotcom, productsCnty, citationsCnty, weeklyLabels, weeklyAll })
     if (result) { setSnapshots(result); setSnapName(''); setActiveSnap(result[0]?.ts || null) }
-    setSnapMsg(result ? '새로 저장 완료!' : '저장 실패'); setTimeout(() => setSnapMsg(''), 2000)
+    showSnapMsg(result ? '새로 저장 완료!' : '저장 실패')
   }
   function handleSnapLoad(snap) {
     const d = snap.data
@@ -196,7 +204,7 @@ export default function App() {
     if (d.weeklyLabels)  setWeeklyLabels(d.weeklyLabels)
     if (d.weeklyAll)     setWeeklyAll(d.weeklyAll)
     setActiveSnap(snap.ts)
-    setSnapMsg(`"${snap.name}" 불러옴`); setTimeout(() => setSnapMsg(''), 2000)
+    showSnapMsg(`"${snap.name}" 불러옴`)
   }
   async function handleSnapDelete(idx) {
     const snap = snapshots[idx]

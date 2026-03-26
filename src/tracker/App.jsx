@@ -110,7 +110,7 @@ function computeDashboard(data, month, stakeholderFilter, categoryFilter) {
 
   const annualTarget = tasks.reduce((s, t) => s + t.goalAnnual, 0)
 
-  // 스테이크홀더별 (카테고리 필터 적용)
+  // 스테이크홀더별 (카테고리 필터 적용, stakeholder 필터 없이 전체 태스크 사용)
   let allTasks = goals.rows.map((g) => {
     const key = `${g.stakeholder}|${g.task}`
     const a = actualMap[key] || {}
@@ -119,14 +119,7 @@ function computeDashboard(data, month, stakeholderFilter, categoryFilter) {
     const av = typeof a.monthly?.[month] === 'number' ? a.monthly[month] : 0
     const sheetRate = parseRate(r.monthly?.[month])
     const computedRate = gv > 0 ? Math.round((av / gv) * 1000) / 10 : null
-    return {
-      stakeholder: g.stakeholder,
-      taskCategory: g.taskCategory,
-      task: g.task,
-      rate: computedRate !== null ? computedRate : sheetRate,
-      goalMonthly: g.monthly,
-      actualMonthly: a.monthly,
-    }
+    return { stakeholder: g.stakeholder, taskCategory: g.taskCategory, task: g.task, rate: computedRate !== null ? computedRate : sheetRate, goalMonthly: g.monthly, actualMonthly: a.monthly }
   })
   if (categoryFilter) {
     allTasks = allTasks.filter(t => t.taskCategory === categoryFilter)
@@ -243,7 +236,11 @@ function computeDashboard(data, month, stakeholderFilter, categoryFilter) {
 export default function App() {
   const lang = URL_LANG === 'en' ? 'en' : 'ko'
   const { data, loading, error, load, refresh } = useSheetData(IS_PUBLIC ? 'snapshot' : 'live')
-  const [selectedMonth, setSelectedMonth] = useState('3월')
+  const [selectedMonth, setSelectedMonth] = useState(() => {
+    const m = new Date().getMonth() + 1  // 1-12
+    const label = `${m}월`
+    return MONTHS.includes(label) ? label : MONTHS[0]
+  })
   const [selectedSH, setSelectedSH] = useState('전체')
   const [selectedCategory, setSelectedCategory] = useState(null)
 
@@ -282,7 +279,7 @@ export default function App() {
     try {
       const res = await fetch('/api/publish-tracker', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
         body: JSON.stringify({ data }),
       })
       const j = await res.json()

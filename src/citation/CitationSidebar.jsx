@@ -125,7 +125,7 @@ export default function CitationSidebar({
       const title = `${metaKo.period || ''} Citation Dashboard`.trim()
       const res = await fetch('/api/publish-citation', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
         body: JSON.stringify({ title, htmlKo, htmlEn }),
       })
       const data = await res.json()
@@ -172,7 +172,7 @@ export default function CitationSidebar({
       ]
       const res = await fetch('/api/translate', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
         body: JSON.stringify({ texts: metaTexts, to: 'en' }),
       })
       const data = await res.json()

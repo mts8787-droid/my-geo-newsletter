@@ -267,7 +267,7 @@ function buSectionHtml(buKey, buProducts, globalMax, globalMin, lang = 'ko', opt
           <td style="background:#F1F5F9;border-radius:7px;padding:7px 12px;">
             <table border="0" cellpadding="0" cellspacing="0" width="100%">
               <tr>
-                <td style="font-size:15px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${buKey}</td>
+                <td style="font-size:15px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${escapeHtml(buKey)}</td>
                 <td align="right" style="font-size:14px;color:#94A3B8;font-family:${EM_FONT};">${buProducts.length}${t.categories}</td>
               </tr>
             </table>
@@ -364,7 +364,7 @@ function countryProductSectionHtml(productName, rows, lang) {
         ${spacerH > 0 ? `<tr><td height="${spacerH}" style="font-size:0;line-height:0;">&nbsp;</td></tr>` : ''}
         <tr><td height="${barH}" style="font-size:0;line-height:0;"><table border="0" cellpadding="0" cellspacing="0" align="center"><tr><td width="26" height="${barH}" style="background:${barColor};border-radius:3px 3px 0 0;font-size:0;line-height:0;">&nbsp;</td></tr></table></td></tr>
         <tr><td style="font-size:11px;font-weight:800;color:${barColor};font-family:${EM_FONT};padding-top:3px;white-space:nowrap;overflow:hidden;">${r.score.toFixed(1)}</td></tr>
-        <tr><td style="font-size:10px;color:#475569;font-family:${EM_FONT};padding-top:2px;white-space:nowrap;overflow:hidden;">${r.country}</td></tr>
+        <tr><td style="font-size:10px;color:#475569;font-family:${EM_FONT};padding-top:2px;white-space:nowrap;overflow:hidden;">${escapeHtml(r.country)}</td></tr>
         <tr><td style="font-size:9px;color:#94A3B8;font-family:${EM_FONT};padding-top:2px;white-space:nowrap;overflow:hidden;">${ssName(r.compName)} ${r.compScore.toFixed(1)}</td></tr>
         <tr><td style="font-size:9px;font-weight:700;color:${gapColor};font-family:${EM_FONT};padding-top:1px;white-space:nowrap;overflow:hidden;">${gapStr}</td></tr>
       </table>
@@ -379,7 +379,7 @@ function countryProductSectionHtml(productName, rows, lang) {
           <td style="background:#F1F5F9;border-radius:7px;padding:7px 12px;">
             <table border="0" cellpadding="0" cellspacing="0" width="100%">
               <tr>
-                <td style="font-size:14px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${productName}</td>
+                <td style="font-size:14px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${escapeHtml(productName)}</td>
                 <td align="right" style="font-size:11px;">
                   ${summaryParts.join(`<span style="color:#CBD5E1;font-family:${EM_FONT};"> &nbsp;·&nbsp; </span>`)}
                 </td>
@@ -478,8 +478,8 @@ function citationDomainCntyRowsHtml(cntyRows, domTopN) {
               <table border="0" cellpadding="0" cellspacing="0"><tr>
                 <td width="22" height="22" align="center" style="background:${c.rank <= 3 ? EM_RED : '#F1F5F9'};border-radius:4px;font-size:11px;font-weight:800;color:${c.rank <= 3 ? '#FFFFFF' : '#94A3B8'};font-family:${EM_FONT};line-height:22px;">${c.rank}</td>
                 <td style="padding-left:7px;vertical-align:middle;">
-                  <p style="margin:0;font-size:12px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${stripDomain(c.domain)}</p>
-                  <span style="font-size:10px;color:#94A3B8;font-family:${EM_FONT};background:#F8FAFC;border-radius:4px;padding:1px 5px;">${c.type}</span>
+                  <p style="margin:0;font-size:12px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${escapeHtml(stripDomain(c.domain))}</p>
+                  <span style="font-size:10px;color:#94A3B8;font-family:${EM_FONT};background:#F8FAFC;border-radius:4px;padding:1px 5px;">${escapeHtml(c.type)}</span>
                 </td>
               </tr></table>
             </td>
@@ -573,7 +573,7 @@ function citationCntyCountryHtml(cntyCode, rows, lang) {
           <td style="background:#F1F5F9;border-radius:7px;padding:7px 12px;">
             <table border="0" cellpadding="0" cellspacing="0" width="100%">
               <tr>
-                <td style="font-size:14px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${cntyCode}</td>
+                <td style="font-size:14px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${escapeHtml(cntyCode)}</td>
                 <td align="right" style="font-size:11px;color:#94A3B8;font-family:${EM_FONT};">Top ${rows.length}</td>
               </tr>
             </table>
@@ -662,8 +662,8 @@ function citationRowHtml(c, isLast, maxScore) {
             <table border="0" cellpadding="0" cellspacing="0"><tr><td width="22" height="22" style="background:${rankBg};color:${rankColor};border-radius:4px;font-size:11px;font-weight:800;text-align:center;line-height:22px;font-family:${EM_FONT};">${c.rank}</td></tr></table>
           </td>
           <td style="padding-left:5px;vertical-align:top;">
-            <table border="0" cellpadding="0" cellspacing="0"><tr><td style="font-size:13px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};line-height:20px;">${c.source}</td></tr></table>
-            <table border="0" cellpadding="0" cellspacing="0"><tr><td style="font-size:11px;color:#94A3B8;background:#F8FAFC;border-radius:4px;padding:1px 5px;font-family:${EM_FONT};">${c.category}</td></tr></table>
+            <table border="0" cellpadding="0" cellspacing="0"><tr><td style="font-size:13px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};line-height:20px;">${escapeHtml(c.source)}</td></tr></table>
+            <table border="0" cellpadding="0" cellspacing="0"><tr><td style="font-size:11px;color:#94A3B8;background:#F8FAFC;border-radius:4px;padding:1px 5px;font-family:${EM_FONT};">${escapeHtml(c.category)}</td></tr></table>
           </td>
         </tr>
       </table>
