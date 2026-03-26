@@ -173,10 +173,17 @@ function computeDashboard(data, month, stakeholderFilter, categoryFilter) {
   }).sort((a, b) => b.monthRate - a.monthRate)
 
   // 과제구분별 달성률 (전체 tasks 기준 — 카테고리 필터 미적용)
-  const categoryNames = [...new Set(allTasks.map(t => {
-    const g = goals.rows.find(r => r.stakeholder === t.stakeholder && r.task === t.task)
-    return g?.taskCategory || ''
-  }).filter(Boolean))]
+  const allTasksUnfiltered = goals.rows.map((g) => {
+    const key = `${g.stakeholder}|${g.task}`
+    const a = actualMap[key] || {}
+    const r = rateMap[key] || {}
+    const gv = typeof g.monthly?.[month] === 'number' ? g.monthly[month] : 0
+    const av = typeof a.monthly?.[month] === 'number' ? a.monthly[month] : 0
+    const sheetRate = parseRate(r.monthly?.[month])
+    const computedRate = gv > 0 ? Math.round((av / gv) * 1000) / 10 : null
+    return { stakeholder: g.stakeholder, taskCategory: g.taskCategory, task: g.task, rate: computedRate !== null ? computedRate : sheetRate, goalMonthly: g.monthly, actualMonthly: a.monthly }
+  })
+  const categoryNames = [...new Set(allTasksUnfiltered.map(t => t.taskCategory).filter(Boolean))]
 
   const categoryStats = categoryNames.map(cat => {
     const catGoals = goals.rows.filter(g => g.taskCategory === cat)
