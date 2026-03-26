@@ -3,7 +3,7 @@ import { RefreshCw, Globe, Link2, Languages } from 'lucide-react'
 import { extractSheetId, syncFromGoogleSheets } from '../googleSheetsUtils'
 import { LG_RED, FONT } from '../shared/constants.js'
 import { inputStyle } from '../shared/components.jsx'
-import { resolveDataForLang } from '../shared/utils.js'
+import { resolveDataForLang, translateTexts } from '../shared/utils.js'
 import { saveSyncData } from '../shared/api.js'
 
 export default function CitationSidebar({
@@ -170,14 +170,7 @@ export default function CitationSidebar({
         src.citCntyInsight || '', src.citCntyHowToRead || '',
         src.dotcomInsight || '', src.dotcomHowToRead || '',
       ]
-      const res = await fetch('/api/translate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-        body: JSON.stringify({ texts: metaTexts, to: 'en' }),
-      })
-      const data = await res.json()
-      if (!data.ok) throw new Error(data.error || '번역 실패')
-      const tr = data.translated
+      const tr = await translateTexts(metaTexts, { from: 'ko', to: 'en' })
       let idx = 0
       setMetaEn(m => ({
         ...m,

@@ -4,7 +4,7 @@ import { downloadTemplate } from '../excelUtils'
 import { extractSheetId, syncFromGoogleSheets } from '../googleSheetsUtils'
 import { LG_RED, FONT } from './constants.js'
 import { inputStyle } from './components.jsx'
-import { resolveDataForLang } from './utils.js'
+import { resolveDataForLang, translateTexts } from './utils.js'
 import { saveSyncData } from './api.js'
 import { generateProductInsight, generateProductHowToRead, generateCntyHowToRead } from './insights.js'
 
@@ -121,15 +121,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
 
       const allTexts = [...metaTexts, ...productKrTexts, ...productCompTexts, ...citCategoryTexts, ...cntyCountries, ...cntyProducts, ...cntyCompNames, ...citCntyNames].map(t => t || ' ')
 
-      const res = await fetch('/api/translate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-        body: JSON.stringify({ texts: allTexts, from: 'ko', to: 'en' }),
-      })
-      const data = await res.json()
-      if (!data.ok) throw new Error(data.error || '번역 실패')
-
-      const tr = data.translated
+      const tr = await translateTexts(allTexts, { from: 'ko', to: 'en' })
       let idx = 0
       // EN meta = metaKo 기반 + 번역된 텍스트 덮어쓰기 (항상 setMetaEn 사용)
       const newMetaEn = { ...metaKo,

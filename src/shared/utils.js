@@ -28,6 +28,25 @@ export function resolveDataForLang(products, productsCnty, citations, citationsC
   }
 }
 
+// ─── 클라이언트 측 Google Translate (비공식 API) ─────────────────────────────
+export async function translateTexts(texts, { from = 'ko', to = 'en' } = {}) {
+  const BATCH = 20
+  const translated = []
+  for (let i = 0; i < texts.length; i += BATCH) {
+    const batch = texts.slice(i, i + BATCH)
+    const results = await Promise.all(batch.map(async (text) => {
+      if (!text || !text.trim()) return text
+      const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${from}&tl=${to}&dt=t&q=${encodeURIComponent(text)}`
+      const res = await fetch(url)
+      if (!res.ok) throw new Error(`번역 실패 (${res.status})`)
+      const data = await res.json()
+      return data[0].map(s => s[0]).join('')
+    }))
+    translated.push(...results)
+  }
+  return translated
+}
+
 export function statusStyle(status) {
   if (status === 'lead')     return { bg: '#F0FDF4', border: '#BBF7D0', text: '#15803D', badge: '선도' }
   if (status === 'behind')   return { bg: '#FFFBEB', border: '#FDE68A', text: '#B45309', badge: '추격' }
