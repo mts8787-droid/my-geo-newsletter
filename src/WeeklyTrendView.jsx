@@ -1,5 +1,4 @@
-import { useState, useMemo } from 'react'
-import { LineChart, Line, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
+import { useState, useMemo, useRef, useEffect, useCallback } from 'react'
 
 const FONT = "'LG Smart','Arial Narrow',Arial,sans-serif"
 const LG_RED = '#CF0652'
@@ -25,35 +24,101 @@ function brandColor(name, idx) {
   return BRAND_COLORS[name] || FALLBACK[idx % FALLBACK.length]
 }
 
-function CustomTooltip({ active, payload, label }) {
-  if (!active || !payload?.length) return null
+function AlignedChart({ brandData, labels, allBrands, height = 200 }) {
+  const containerRef = useRef(null)
+  const [w, setW] = useState(0)
+  const [tooltip, setTooltip] = useState(null)
+
+  const measure = useCallback(() => {
+    if (containerRef.current) setW(containerRef.current.clientWidth)
+  }, [])
+
+  useEffect(() => {
+    measure()
+    const obs = new ResizeObserver(measure)
+    if (containerRef.current) obs.observe(containerRef.current)
+    return () => obs.disconnect()
+  }, [measure])
+
+  const N = labels.length
+  const pt = 12, pb = 8, ch = height - pt - pb
+
+  let mn = Infinity, mx = -Infinity
+  allBrands.forEach(b => (brandData[b] || []).forEach(v => { if (v != null) { if (v < mn) mn = v; if (v > mx) mx = v } }))
+  if (!isFinite(mn)) { mn = 0; mx = 100 }
+  const pad = Math.max((mx - mn) * 0.15, 2)
+  mn = Math.max(0, mn - pad); mx = Math.min(100, mx + pad)
+  const rng = mx - mn || 1
+
+  let gridLines = ''
+  let brandPaths = ''
+  if (w > 0) {
+    for (let i = 0; i <= 4; i++) {
+      const y = pt + (i / 4) * ch
+      gridLines += `<line x1="0" y1="${y.toFixed(1)}" x2="${w}" y2="${y.toFixed(1)}" stroke="#1E293B" stroke-width="1"/>`
+    }
+    allBrands.forEach((b, bi) => {
+      const vals = brandData[b] || []
+      const color = brandColor(b, bi)
+      const isLG = b === 'LG'
+      const sw = isLG ? 3 : 1.5
+      const opacity = isLG ? 1 : 0.7
+      const pts = []
+      vals.forEach((v, i) => {
+        if (v == null || i >= N) return
+        const x = ((i + 0.5) / N) * w
+        const y = pt + (1 - (v - mn) / rng) * ch
+        pts.push({ x, y, v, i })
+      })
+      if (pts.length < 2) return
+      const d = pts.map((p, j) => `${j ? 'L' : 'M'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ')
+      brandPaths += `<path d="${d}" stroke="${color}" fill="none" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round" opacity="${opacity}"/>`
+      pts.forEach(p => {
+        brandPaths += `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${isLG ? 4 : 2.5}" fill="${color}" stroke="#0F172A" stroke-width="${isLG ? 2 : 1}" opacity="${opacity}"/>`
+      })
+    })
+  }
+
+  function handleMouseMove(e) {
+    if (!w || !N) return
+    const rect = containerRef.current.getBoundingClientRect()
+    const mx = e.clientX - rect.left
+    const col = Math.floor((mx / w) * N)
+    if (col < 0 || col >= N) { setTooltip(null); return }
+    const items = allBrands.map((b, i) => ({ brand: b, value: brandData[b]?.[col], color: brandColor(b, i) }))
+      .filter(it => it.value != null).sort((a, b) => b.value - a.value)
+    if (!items.length) { setTooltip(null); return }
+    setTooltip({ x: e.clientX - rect.left, y: e.clientY - rect.top, label: labels[col], items })
+  }
+
   return (
-    <div style={{ background: '#1E293B', border: '1px solid #334155', borderRadius: 8,
-      padding: '10px 14px', fontFamily: FONT, fontSize: 11 }}>
-      <p style={{ margin: '0 0 6px', color: '#94A3B8', fontWeight: 700 }}>{label}</p>
-      {payload.sort((a, b) => (b.value || 0) - (a.value || 0)).map(p => (
-        <div key={p.dataKey} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '1px 0' }}>
-          <span style={{ width: 8, height: 8, borderRadius: '50%', background: p.color, flexShrink: 0 }} />
-          <span style={{ color: '#CBD5E1', minWidth: 70 }}>{p.dataKey}</span>
-          <span style={{ color: '#FFFFFF', fontWeight: 700 }}>{p.value?.toFixed(1)}%</span>
+    <div ref={containerRef} style={{ position: 'relative', width: '100%', height, background: '#0F172A' }}
+      onMouseMove={handleMouseMove} onMouseLeave={() => setTooltip(null)}>
+      {w > 0 && (
+        <svg width={w} height={height} style={{ display: 'block' }}
+          dangerouslySetInnerHTML={{ __html: gridLines + brandPaths }} />
+      )}
+      {tooltip && (
+        <div style={{ position: 'absolute', left: tooltip.x + 12, top: tooltip.y - 10,
+          background: '#1E293B', border: '1px solid #334155', borderRadius: 8,
+          padding: '10px 14px', fontFamily: FONT, fontSize: 11, zIndex: 10, pointerEvents: 'none',
+          transform: tooltip.x > w * 0.7 ? 'translateX(-110%)' : 'none' }}>
+          <p style={{ margin: '0 0 6px', color: '#94A3B8', fontWeight: 700 }}>{tooltip.label}</p>
+          {tooltip.items.map(it => (
+            <div key={it.brand} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '1px 0' }}>
+              <span style={{ width: 8, height: 8, borderRadius: '50%', background: it.color, flexShrink: 0 }} />
+              <span style={{ color: '#CBD5E1', minWidth: 70 }}>{it.brand}</span>
+              <span style={{ color: '#FFFFFF', fontWeight: 700 }}>{it.value.toFixed(1)}%</span>
+            </div>
+          ))}
         </div>
-      ))}
+      )}
     </div>
   )
 }
 
 function ProductTrend({ product, brandData, labels, allBrands }) {
   const st = STATUS[product.status] || STATUS.behind
-
-  const chartData = useMemo(() => {
-    if (!labels?.length) return []
-    return labels.map((week, i) => {
-      const point = { week }
-      allBrands.forEach(b => { point[b] = brandData[b]?.[i] ?? null })
-      return point
-    })
-  }, [brandData, labels, allBrands])
-
   const lgLatest = brandData.LG?.[brandData.LG.length - 1]
 
   return (
@@ -92,22 +157,8 @@ function ProductTrend({ product, brandData, labels, allBrands }) {
             {/* Chart row */}
             <tr>
               <td style={{ padding: 0, border: 0 }} />
-              <td colSpan={labels.length} style={{ padding: '8px 0', border: 0, background: '#0F172A' }}>
-                <ResponsiveContainer width="100%" height={200}>
-                  <LineChart data={chartData} margin={{ top: 8, right: 0, left: 0, bottom: 4 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#1E293B" />
-                    <Tooltip content={<CustomTooltip />} />
-                    {allBrands.map((brand, i) => (
-                      <Line key={brand} type="monotone" dataKey={brand}
-                        stroke={brandColor(brand, i)}
-                        strokeWidth={brand === 'LG' ? 3 : 1.5}
-                        dot={{ r: brand === 'LG' ? 4 : 2.5, fill: brandColor(brand, i), strokeWidth: 0 }}
-                        activeDot={{ r: 5, strokeWidth: 2, stroke: '#0F172A' }}
-                        opacity={brand === 'LG' ? 1 : 0.7}
-                        connectNulls />
-                    ))}
-                  </LineChart>
-                </ResponsiveContainer>
+              <td colSpan={labels.length} style={{ padding: 0, border: 0 }}>
+                <AlignedChart brandData={brandData} labels={labels} allBrands={allBrands} height={200} />
               </td>
             </tr>
             {/* Legend row */}
