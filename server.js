@@ -887,14 +887,14 @@ async function addEntry(){
   var label=document.getElementById('label').value.trim();
   var st=document.getElementById('status');
   if(!cidr){st.textContent='CIDR을 입력하세요';st.className='status err';return}
-  var r=await fetch('/api/ip-allowlist',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cidr:cidr,country:country,label:label})});
+  var r=await fetch('/api/ip-allowlist',{method:'POST',headers:{'Content-Type':'application/json','X-Requested-With':'XMLHttpRequest'},body:JSON.stringify({cidr:cidr,country:country,label:label})});
   var j=await r.json();
   if(j.ok){list=j.list;render();document.getElementById('cidr').value='';document.getElementById('country').value='';document.getElementById('label').value='';st.textContent='추가되었습니다';st.className='status ok'}
   else{st.textContent=j.error;st.className='status err'}
 }
 async function del(id){
   if(!confirm('삭제하시겠습니까?'))return;
-  var r=await fetch('/api/ip-allowlist/'+id,{method:'DELETE'});var j=await r.json();
+  var r=await fetch('/api/ip-allowlist/'+id,{method:'DELETE',headers:{'X-Requested-With':'XMLHttpRequest'}});var j=await r.json();
   if(j.ok){list=j.list;render()}
 }
 document.addEventListener('click',function(e){if(e.target.classList.contains('del-btn'))del(e.target.dataset.id)});
