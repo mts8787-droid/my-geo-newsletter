@@ -73,9 +73,14 @@ function ipMatchesCidr(ip, cidr) {
   return (ipToNum(ipv4) & mask) === (ipToNum(rangeIpv4) & mask)
 }
 
-function isIpAllowed(ip) {
+function getRealIp(req) {
+  return req.headers['cf-connecting-ip'] || req.headers['x-real-ip'] || req.ip
+}
+
+function isIpAllowed(req) {
   const list = readIpAllowlist()
   if (list.length === 0) return true
+  const ip = getRealIp(req)
   return list.some(entry => ipMatchesCidr(ip, entry.cidr))
 }
 
@@ -517,7 +522,7 @@ app.delete('/api/ip-allowlist/:id', (req, res) => {
 })
 
 app.get('/api/my-ip', (req, res) => {
-  res.json({ ip: req.ip })
+  res.json({ ip: getRealIp(req) })
 })
 
 // ─── 공통 언어 전환 바 (Newsletter / Dashboard / Citation 공용) ───────────────
@@ -718,7 +723,7 @@ app.use('/font', express.static(join(__dirname, 'font'), { maxAge: '1y', immutab
 
 // ─── Public Progress Tracker (게시된 버전, IP 체크) ──────────────────────────
 app.use('/p/progress-tracker', (req, res, next) => {
-  if (!isIpAllowed(req.ip)) {
+  if (!isIpAllowed(req)) {
     res.status(403)
     res.set('Content-Type', 'text/html; charset=utf-8')
     return res.send('<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body style="background:#0F172A;display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;color:#64748B"><p>403 — Access Denied</p></body></html>')
@@ -734,7 +739,7 @@ app.get('/p/progress-tracker/*', (req, res) => {
 })
 
 app.get('/p/:slug', (req, res) => {
-  if (!isIpAllowed(req.ip)) {
+  if (!isIpAllowed(req)) {
     res.status(403)
     res.set('Content-Type', 'text/html; charset=utf-8')
     return res.send(`<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Access Denied</title><style>*{margin:0;padding:0;box-sizing:border-box}body{min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0F172A;font-family:'LG Smart','Arial Narrow',Arial,sans-serif;color:#E2E8F0}.w{text-align:center;padding:40px 24px}h1{font-size:48px;font-weight:700;color:#334155;margin-bottom:16px}p{font-size:15px;color:#64748B}</style></head><body><div class="w"><h1>403</h1><p>접근이 허용되지 않은 IP입니다.</p></div></body></html>`)
@@ -947,7 +952,7 @@ app.get('/admin/progress-tracker/*', (req, res) => {
   res.sendFile(join(__dirname, 'dist-tracker', 'tracker.html'))
 })
 app.get('/', (req, res) => {
-  if (!isIpAllowed(req.ip)) {
+  if (!isIpAllowed(req)) {
     res.status(403)
     res.set('Content-Type', 'text/html; charset=utf-8')
     return res.send(`<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Access Denied</title><style>*{margin:0;padding:0;box-sizing:border-box}body{min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0F172A;font-family:'LG Smart','Arial Narrow',Arial,sans-serif;color:#E2E8F0}.w{text-align:center;padding:40px 24px}h1{font-size:48px;font-weight:700;color:#334155;margin-bottom:16px}p{font-size:15px;color:#64748B}</style></head><body><div class="w"><h1>403</h1><p>접근이 허용되지 않은 IP입니다.</p></div></body></html>`)
