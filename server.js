@@ -488,12 +488,19 @@ app.post('/api/translate', async (req, res) => {
     return res.status(400).json({ ok: false, error: 'texts (array), to 필수' })
   }
   try {
-    const results = await translate(texts, { from: from || 'ko', to })
-    const translated = results.map(r => r.text)
+    // 배치 처리: 한 번에 너무 많이 보내면 Google이 차단할 수 있으므로 20개씩 나눠서 번역
+    const BATCH = 20
+    const translated = []
+    for (let i = 0; i < texts.length; i += BATCH) {
+      const batch = texts.slice(i, i + BATCH)
+      const results = await translate(batch, { from: from || 'ko', to })
+      const arr = Array.isArray(results) ? results : [results]
+      translated.push(...arr.map(r => r.text))
+    }
     res.json({ ok: true, translated })
   } catch (err) {
-    console.error('[TRANSLATE] Error:', err.message)
-    res.status(500).json({ ok: false, error: '번역 실패' })
+    console.error('[TRANSLATE] Error:', err.message, err.stack)
+    res.status(500).json({ ok: false, error: '번역 실패: ' + err.message })
   }
 })
 
