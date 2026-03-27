@@ -649,7 +649,8 @@ function onFilterChange(){
   document.querySelectorAll('#filter-layer .fl-chk[data-filter="country"]').forEach(function(c){
     filter[c.value]=c.checked;
   });
-  parent.postMessage({type:'citCntyFilter',filter:filter},'*');
+  try{parent.postMessage({type:'citCntyFilter',filter:filter},'*')}catch(e){}
+  try{if(parent.__citCntyFilterCallback)parent.__citCntyFilterCallback(filter)}catch(e){}
 }
 </script>
 </body>

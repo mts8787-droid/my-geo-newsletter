@@ -34,7 +34,13 @@ function CitationPreview({ meta, setMeta, citations, dotcom, citationsCnty = [],
       }
     }
     window.addEventListener('message', onMsg)
-    return () => window.removeEventListener('message', onMsg)
+    window.__citCntyFilterCallback = (filter) => {
+      setMeta(m => ({ ...m, citCntyFilter: filter }))
+    }
+    return () => {
+      window.removeEventListener('message', onMsg)
+      delete window.__citCntyFilterCallback
+    }
   }, [setMeta])
 
   return (
