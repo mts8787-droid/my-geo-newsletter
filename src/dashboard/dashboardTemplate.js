@@ -563,7 +563,7 @@ function dotcomSectionHtml(dotcom, meta, t) {
 // ═══════════════════════════════════════════════════════════════════════════
 // 메인 생성 함수
 // ═══════════════════════════════════════════════════════════════════════════
-export function generateDashboardHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, weeklyAll) {
+export function generateDashboardHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty) {
   _sid = 0
   const t = T[lang] || T.ko
 
@@ -672,9 +672,9 @@ export function generateDashboardHTML(meta, total, products, citations, dotcom, 
     meta.showCnty !== false ? countrySectionHtml(productsCnty, meta, t, lang) : '',
   ].join('')
   const citContent = [
-    meta.showCitations !== false ? citationSectionHtml(citations, meta, t) : '',
+    meta.showCitations !== false ? `<div id="db-cit-cat-wrap">${citationSectionHtml(citations, meta, t)}</div>` : '',
     (meta.showCitDomain !== false || meta.showCitCnty !== false) ? citDomainSectionHtml(citationsCnty, meta, t, citations, lang) : '',
-    meta.showDotcom !== false ? dotcomSectionHtml(dotcom, meta, t) : '',
+    meta.showDotcom !== false ? `<div id="db-cit-dc-wrap">${dotcomSectionHtml(dotcom, meta, t)}</div>` : '',
   ].join('')
 
   return `<!DOCTYPE html>
@@ -1043,6 +1043,7 @@ function switchCitCnty(btn){
   });
 }
 function filterCitationByCountry(selCountry){
+  _applyCitFilter(selCountry);
   // Citation 탭의 도메인별 Citation 국가 칩: 선택된 국가에 맞춰 자동 전환
   var sec=document.getElementById('cit-domain-section');if(!sec)return;
   var chips=sec.querySelectorAll('.filter-chip[data-cit-cnty-val]');
@@ -1102,8 +1103,78 @@ var _FONT="${FONT}";
 var _COMP='${COMP}';
 var _REGIONS={NA:['US','CA'],EU:['UK','DE','ES'],LATAM:['BR','MX'],APAC:['IN','AU','VN']};
 var _REGION_LABELS={NA:'${lang==='en'?'North America':'북미'}',EU:'${lang==='en'?'Europe':'유럽'}',LATAM:'${lang==='en'?'Latin America':'중남미'}',APAC:'${lang==='en'?'Asia Pacific':'아태'}'};
+var _citations=${JSON.stringify(citations || [])};
+var _citationsByCnty=${JSON.stringify(citationsByCnty || {})};
+var _citationsCntyRaw=${JSON.stringify(citationsCnty || [])};
+var _dotcom=${JSON.stringify(dotcom || null)};
+var _dotcomByCnty=${JSON.stringify(dotcomByCnty || {})};
+var _citMeta=${JSON.stringify({ citationTopN: meta.citationTopN || 10, citDomainTopN: meta.citDomainTopN || 10 })};
+var _t_cit=${JSON.stringify(t)};
+var _DC_COLS=['TTL','PLP','Microsites','PDP','Newsroom','Support','Buying-guide','Experience'];
+var _DC_SAM=['TTL','PLP','Microsites','PDP','Newsroom','Support','Buying-guide'];
+var _noDataMsg=_lang==='en'?'No data available for the selected filter.':'선택된 필터에 해당하는 데이터가 없습니다.';
+function _stripDomain(d){return(d||'').replace(/\\.(com|org|net|co\\.uk|com\\.br|com\\.au|com\\.vn|com\\.mx|co\\.kr|de|es|fr|ca|in|vn)$/i,'')}
+function _renderCitCat(cits){
+  var el=document.getElementById('db-cit-cat-wrap');if(!el)return;
+  if(!cits||!cits.length){el.innerHTML='<div class="section-card"><div class="section-header"><div class="section-title">'+_t_cit.citationTitle+'</div></div><div class="section-body"><div style="text-align:center;padding:40px 20px;color:#94A3B8;font-size:13px">'+_noDataMsg+'</div></div></div>';return}
+  var topN=_citMeta.citationTopN;var list=cits.slice(0,topN);
+  var maxScore=Math.max.apply(null,list.map(function(c){return c.score}).concat([1]));
+  var totalScore=cits.reduce(function(s,c){return s+c.score},0);
+  var rows=list.map(function(c,i){
+    var pct=(c.score/maxScore*100).toFixed(1);var ratio=totalScore>0?((c.score/totalScore)*100).toFixed(1):'0.0';
+    return '<div class="cit-row"><span class="cit-rank '+(i<3?'top':'')+'">'+c.rank+'</span><div class="cit-info"><span class="cit-source">'+c.source+'</span><span class="cit-cat">'+(c.category||'')+'</span></div><div class="cit-bar-wrap"><div class="cit-bar" style="width:'+pct+'%"></div></div><span class="cit-score">'+_fmt(c.score)+'</span><span class="cit-ratio">('+ratio+'%)</span></div>'
+  }).join('');
+  el.innerHTML='<div class="section-card"><div class="section-header"><div class="section-title">'+_t_cit.citationTitle+'</div><span class="legend">'+_t_cit.citLegend+'</span></div><div class="section-body">'+rows+'</div></div>'
+}
+function _renderDotcom(dc){
+  var el=document.getElementById('db-cit-dc-wrap');if(!el)return;
+  if(!dc||!dc.lg){el.innerHTML='<div class="section-card"><div class="section-header"><div class="section-title">'+_t_cit.dotcomTitle+'</div></div><div class="section-body"><div style="text-align:center;padding:40px 20px;color:#94A3B8;font-size:13px">'+_noDataMsg+'</div></div></div>';return}
+  var lg=dc.lg,sam=dc.samsung||{};
+  var maxVal=Math.max.apply(null,_DC_COLS.map(function(c){return Math.max(lg[c]||0,sam[c]||0)}).concat([1]));
+  var lgWins=_DC_SAM.filter(function(c){return(lg[c]||0)>(sam[c]||0)});
+  var samWins=_DC_SAM.filter(function(c){return(sam[c]||0)>(lg[c]||0)});
+  var rows=_DC_COLS.map(function(col){
+    var lv=lg[col]||0,sv=sam[col]||0;var hasSam=col!=='Experience';var isTTL=col==='TTL';
+    var lgPct=(lv/maxVal*100).toFixed(1),samPct=(sv/maxVal*100).toFixed(1);
+    var diff=lv-sv;var badge='';
+    if(diff>0)badge='<span class="dc-badge lg">LG +'+_fmt(diff)+'</span>';
+    else if(diff<0&&hasSam)badge='<span class="dc-badge ss">SS +'+_fmt(Math.abs(diff))+'</span>';
+    var r='<div class="dc-row'+(isTTL?' ttl':'')+'"><span class="dc-label">'+(isTTL?_t_cit.dotcomTTL:col)+badge+'</span><div class="dc-bars"><div class="dc-bar-pair"><div class="dc-bar lg" style="width:'+lgPct+'%"></div><span class="dc-val '+(lv>=sv?'win':'')+'">'+_fmt(lv)+'</span></div>';
+    if(hasSam)r+='<div class="dc-bar-pair"><div class="dc-bar ss" style="width:'+samPct+'%"></div><span class="dc-val '+(sv>lv?'win':'')+'">'+_fmt(sv)+'</span></div>';
+    else r+='<div class="dc-bar-pair"><span class="dc-val muted">'+_t_cit.dotcomLgOnly+'</span></div>';
+    return r+'</div></div>';
+  }).join('');
+  rows+='<div class="dc-summary"><span class="dc-sum-item lg">'+_t_cit.dotcomLgWin+' ('+lgWins.length+')</span> <span class="dc-sum-list">'+(lgWins.length?lgWins.join(', '):_t_cit.dotcomNone)+'</span><span class="dc-sum-item ss">'+_t_cit.dotcomSsWin+' ('+samWins.length+')</span> <span class="dc-sum-list">'+(samWins.length?samWins.join(', '):_t_cit.dotcomNone)+'</span></div>';
+  el.innerHTML='<div class="section-card"><div class="section-header"><div class="section-title">'+_t_cit.dotcomTitle+'</div><span class="legend"><i style="background:'+_RED+'"></i>LG <i style="background:'+_COMP+'"></i>SS</span></div><div class="section-body">'+rows+'</div></div>'
+}
+function _applyCitFilter(selCountry){
+  var allCodes=['US','CA','UK','DE','ES','MX','BR','IN','AU','VN'];
+  var enabled=selCountry.isAll?allCodes:Object.keys(selCountry.vals);
+  var allSelected=selCountry.isAll;
+  var noneSelected=enabled.length===0;
+  // Category
+  var filteredCit=_citations;
+  if(noneSelected){filteredCit=[]}
+  else if(!allSelected&&Object.keys(_citationsByCnty).length>0){
+    var catMap={};enabled.forEach(function(cnty){var list=_citationsByCnty[cnty]||[];list.forEach(function(c){if(!catMap[c.source])catMap[c.source]={source:c.source,category:c.category||'',score:0,delta:0};catMap[c.source].score+=c.score})});
+    var merged=Object.values(catMap).sort(function(a,b){return b.score-a.score});
+    var total=merged.reduce(function(s,c){return s+c.score},0);
+    merged.forEach(function(c,i){c.rank=i+1;c.ratio=total>0?+((c.score/total)*100).toFixed(1):0});
+    if(merged.length>0)filteredCit=merged;
+  }
+  _renderCitCat(filteredCit);
+  // Dotcom
+  var filteredDc=_dotcom;
+  if(noneSelected){filteredDc=null}
+  else if(!allSelected&&Object.keys(_dotcomByCnty).length>0){
+    var lg={},samsung={};enabled.forEach(function(cnty){var d=_dotcomByCnty[cnty];if(!d)return;Object.entries(d.lg||{}).forEach(function(e){lg[e[0]]=(lg[e[0]]||0)+e[1]});Object.entries(d.samsung||{}).forEach(function(e){samsung[e[0]]=(samsung[e[0]]||0)+e[1]})});
+    if(Object.keys(lg).length>0)filteredDc={lg:lg,samsung:samsung};else filteredDc=null;
+  }
+  _renderDotcom(filteredDc);
+}
 
 // ─── Helpers ───
+function _fmt(n){return Number(n).toLocaleString('en-US')}
 function _bc(n,i){return _BRAND_COLORS[n]||_FALLBACK[i%_FALLBACK.length]}
 function _statusInfo(s){
   if(s==='lead')return{bg:'#ECFDF5',border:'#A7F3D0',color:'#15803D',label:_lang==='en'?'Lead':'선도'};

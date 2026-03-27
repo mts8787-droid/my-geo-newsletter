@@ -11,11 +11,11 @@ const MODE = 'dashboard'
 const STORAGE_KEY = 'geo-dashboard-cache'
 
 // ─── 대시보드 미리보기 ──────────────────────────────────────────────────────────
-function DashboardPreview({ meta, total, products, citations, dotcom, productsCnty = [], citationsCnty = [], lang = 'ko', weeklyLabels, weeklyAll = {} }) {
+function DashboardPreview({ meta, total, products, citations, dotcom, productsCnty = [], citationsCnty = [], lang = 'ko', weeklyLabels, weeklyAll = {}, citationsByCnty = {}, dotcomByCnty = {} }) {
   const iframeRef = useRef(null)
   const html = useMemo(
-    () => generateDashboardHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, weeklyAll),
-    [meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, weeklyAll]
+    () => generateDashboardHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty),
+    [meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty]
   )
 
   React.useEffect(() => {
@@ -50,6 +50,8 @@ export default function App() {
   const [citationsCnty, setCitationsCnty] = useState(cache?.citationsCnty ?? INIT_CITATIONS_CNTY)
   const [weeklyLabels, setWeeklyLabels] = useState(cache?.weeklyLabels ?? null)
   const [weeklyAll, setWeeklyAll] = useState(cache?.weeklyAll ?? {})
+  const [citationsByCnty, setCitationsByCnty] = useState(cache?.citationsByCnty ?? {})
+  const [dotcomByCnty, setDotcomByCnty] = useState(cache?.dotcomByCnty ?? {})
   const [previewLang, setPreviewLang] = useState('ko')
   const [snapshots,  setSnapshots]  = useState([])
   const [snapName,   setSnapName]   = useState('')
@@ -80,6 +82,8 @@ export default function App() {
       if (d.dotcom)        setDotcom(prev => ({ ...prev, ...d.dotcom }))
       if (d.productsCnty)  setProductsCnty(d.productsCnty)
       if (d.citationsCnty) setCitationsCnty(d.citationsCnty)
+      if (d.citationsByCnty) setCitationsByCnty(d.citationsByCnty)
+      if (d.dotcomByCnty) setDotcomByCnty(d.dotcomByCnty)
       if (d.weeklyLabels)  setWeeklyLabels(d.weeklyLabels)
       if (d.weeklyAll)     setWeeklyAll(prev => ({ ...prev, ...d.weeklyAll }))
       if (d.productsPartial) {
@@ -100,19 +104,19 @@ export default function App() {
   }, [])
 
   useEffect(() => {
-    saveCache(STORAGE_KEY, { metaKo, metaEn, total, products, citations, dotcom, productsCnty, citationsCnty, weeklyLabels, weeklyAll })
-  }, [metaKo, metaEn, total, products, citations, dotcom, productsCnty, citationsCnty, weeklyLabels, weeklyAll])
+    saveCache(STORAGE_KEY, { metaKo, metaEn, total, products, citations, dotcom, productsCnty, citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty })
+  }, [metaKo, metaEn, total, products, citations, dotcom, productsCnty, citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty])
 
   async function handleSnapOverwrite() {
     if (!activeSnap) return
-    const data = { metaKo, metaEn, total, products, citations, dotcom, productsCnty, citationsCnty, weeklyLabels, weeklyAll }
+    const data = { metaKo, metaEn, total, products, citations, dotcom, productsCnty, citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty }
     const result = await updateSnapshot(MODE, activeSnap, data)
     if (result) setSnapshots(result)
     setSnapMsg(result ? '저장 완료!' : '저장 실패'); setTimeout(() => setSnapMsg(''), 2000)
   }
   async function handleSnapSaveNew() {
     const name = snapName.trim() || `${meta.period || 'Untitled'} — ${new Date().toLocaleString('ko-KR')}`
-    const result = await postSnapshot(MODE, name, { metaKo, metaEn, total, products, citations, dotcom, productsCnty, citationsCnty, weeklyLabels, weeklyAll })
+    const result = await postSnapshot(MODE, name, { metaKo, metaEn, total, products, citations, dotcom, productsCnty, citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty })
     if (result) { setSnapshots(result); setSnapName(''); setActiveSnap(result[0]?.ts || null) }
     setSnapMsg(result ? '새로 저장 완료!' : '저장 실패'); setTimeout(() => setSnapMsg(''), 2000)
   }
@@ -128,6 +132,8 @@ export default function App() {
     if (d.citationsCnty) setCitationsCnty(d.citationsCnty)
     if (d.weeklyLabels)  setWeeklyLabels(d.weeklyLabels)
     if (d.weeklyAll)     setWeeklyAll(d.weeklyAll)
+    if (d.citationsByCnty) setCitationsByCnty(d.citationsByCnty)
+    if (d.dotcomByCnty)  setDotcomByCnty(d.dotcomByCnty)
     setActiveSnap(snap.ts)
     setSnapMsg(`"${snap.name}" 불러옴`); setTimeout(() => setSnapMsg(''), 2000)
   }
@@ -158,6 +164,8 @@ export default function App() {
           setWeeklyAll={setWeeklyAll}
           weeklyLabels={weeklyLabels}
           weeklyAll={weeklyAll}
+          citationsByCnty={citationsByCnty}
+          dotcomByCnty={dotcomByCnty}
           generateHTML={generateDashboardHTML}
         />
       )}
@@ -251,7 +259,7 @@ export default function App() {
 
         {/* 컨텐츠 영역 */}
         <div style={{ flex: 1, overflow: 'hidden' }}>
-          <DashboardPreview meta={meta} total={total} products={resolved.products} citations={resolved.citations} dotcom={dotcom} productsCnty={resolved.productsCnty} citationsCnty={resolved.citationsCnty} lang={previewLang} weeklyLabels={weeklyLabels} weeklyAll={weeklyAll} />
+          <DashboardPreview meta={meta} total={total} products={resolved.products} citations={resolved.citations} dotcom={dotcom} productsCnty={resolved.productsCnty} citationsCnty={resolved.citationsCnty} lang={previewLang} weeklyLabels={weeklyLabels} weeklyAll={weeklyAll} citationsByCnty={citationsByCnty} dotcomByCnty={dotcomByCnty} />
         </div>
         <div style={{ height: 28, borderTop: '1px solid #1E293B', background: 'rgba(15,23,42,0.95)',
           display: 'flex', alignItems: 'center', justifyContent: 'flex-end', padding: '0 16px', flexShrink: 0 }}>
