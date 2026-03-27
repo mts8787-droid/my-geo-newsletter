@@ -956,24 +956,31 @@ function updateAllCheckbox(target){
   all.forEach(function(c){if(!c.checked)allChecked=false});
   document.querySelectorAll('.fl-chk-all[data-target="'+target+'"]').forEach(function(c){c.checked=allChecked});
 }
+function _activeFilterLayer(){
+  var citPanel=document.getElementById('tab-citation');
+  if(citPanel&&citPanel.classList.contains('active'))return document.getElementById('filter-layer-cit');
+  return document.getElementById('filter-layer');
+}
 function syncAllFilterLayers(){
-  // Sync filter-layer → filter-layer-cit (and vice versa)
-  var src=document.getElementById('filter-layer');
-  var dst=document.getElementById('filter-layer-cit');
-  if(!src||!dst)return;
+  // Bidirectional sync between filter-layer and filter-layer-cit
+  var active=_activeFilterLayer();
+  var layers=[document.getElementById('filter-layer'),document.getElementById('filter-layer-cit')];
+  if(!layers[0]||!layers[1])return;
+  var other=active===layers[0]?layers[1]:layers[0];
   ['bu','product','region','country'].forEach(function(target){
-    src.querySelectorAll('.fl-chk[data-filter="'+target+'"]').forEach(function(srcCb){
-      var dstCb=dst.querySelector('.fl-chk[data-filter="'+target+'"][value="'+srcCb.value+'"]');
+    active.querySelectorAll('.fl-chk[data-filter="'+target+'"]').forEach(function(srcCb){
+      var dstCb=other.querySelector('.fl-chk[data-filter="'+target+'"][value="'+srcCb.value+'"]');
       if(dstCb)dstCb.checked=srcCb.checked;
     });
-    var srcAll=src.querySelector('.fl-chk-all[data-target="'+target+'"]');
-    var dstAll=dst.querySelector('.fl-chk-all[data-target="'+target+'"]');
+    var srcAll=active.querySelector('.fl-chk-all[data-target="'+target+'"]');
+    var dstAll=other.querySelector('.fl-chk-all[data-target="'+target+'"]');
     if(srcAll&&dstAll)dstAll.checked=srcAll.checked;
   });
 }
 function getCheckedValues(filterName){
+  var layer=_activeFilterLayer();
   var vals={};var total=0;var checked=0;
-  document.querySelectorAll('#filter-layer .fl-chk[data-filter="'+filterName+'"]').forEach(function(c){
+  layer.querySelectorAll('.fl-chk[data-filter="'+filterName+'"]').forEach(function(c){
     total++;if(c.checked){vals[c.value]=true;checked++}
   });
   return{vals:vals,total:total,checked:checked,isAll:total===checked};
