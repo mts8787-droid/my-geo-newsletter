@@ -27,22 +27,6 @@ function CitationPreview({ meta, setMeta, citations, dotcom, citationsCnty = [],
     doc.close()
   }, [html])
 
-  React.useEffect(() => {
-    function onMsg(e) {
-      if (e.data?.type === 'citCntyFilter') {
-        setMeta(m => ({ ...m, citCntyFilter: e.data.filter }))
-      }
-    }
-    window.addEventListener('message', onMsg)
-    window.__citCntyFilterCallback = (filter) => {
-      setMeta(m => ({ ...m, citCntyFilter: filter }))
-    }
-    return () => {
-      window.removeEventListener('message', onMsg)
-      delete window.__citCntyFilterCallback
-    }
-  }, [setMeta])
-
   return (
     <iframe
       ref={iframeRef}
