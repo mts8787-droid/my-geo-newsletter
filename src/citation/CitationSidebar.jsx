@@ -120,8 +120,8 @@ export default function CitationSidebar({
       const resolvedKo = resolveDataForLang([], [], citations, citationsCnty, 'ko')
       const resolvedEn = resolveDataForLang([], [], citations, citationsCnty, 'en')
       const trendData = { citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths }
-      const htmlKo = generateHTML(metaKo, null, [], resolvedKo.citations, dotcom, 'ko', [], resolvedKo.citationsCnty, trendData)
-      const htmlEn = generateHTML(metaEn, null, [], resolvedEn.citations, dotcom, 'en', [], resolvedEn.citationsCnty, trendData)
+      const htmlKo = generateHTML(metaKo, null, [], resolvedKo.citations, dotcom, 'ko', [], resolvedKo.citationsCnty, trendData, citationsByCnty, dotcomByCnty)
+      const htmlEn = generateHTML(metaEn, null, [], resolvedEn.citations, dotcom, 'en', [], resolvedEn.citationsCnty, trendData, citationsByCnty, dotcomByCnty)
       const title = `${metaKo.period || ''} Citation Dashboard`.trim()
       const res = await fetch('/api/publish-citation', {
         method: 'POST',
