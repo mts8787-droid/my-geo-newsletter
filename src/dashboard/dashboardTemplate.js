@@ -563,7 +563,12 @@ function dotcomSectionHtml(dotcom, meta, t) {
 // ═══════════════════════════════════════════════════════════════════════════
 // 메인 생성 함수
 // ═══════════════════════════════════════════════════════════════════════════
-export function generateDashboardHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty) {
+export function generateVisibilityHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty) {
+  return generateDashboardHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty, { visibilityOnly: true })
+}
+
+export function generateDashboardHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty, opts) {
+  const visibilityOnly = opts?.visibilityOnly || false
   _sid = 0
   const t = T[lang] || T.ko
 
@@ -830,6 +835,10 @@ body.show-insights .howto-box{display:block}
 </style>
 </head>
 <body>
+${visibilityOnly ? `
+${filterLayerHtml.replace('top:53px', 'top:0')}
+<div class="dash-container">${visContent}</div>
+` : `
 <div class="tab-bar">
   <button class="tab-btn active" onclick="switchTab('visibility')">Visibility</button>
   <button class="tab-btn" onclick="switchTab('citation')">Citation</button>
@@ -853,6 +862,7 @@ body.show-insights .howto-box{display:block}
 <div id="tab-progress" class="tab-panel">
   <iframe src="/p/progress-tracker/" style="width:100%;min-height:calc(100vh - 60px);border:none;background:#0A0F1E" title="Progress Tracker"></iframe>
 </div>
+`}
 <div class="dash-footer">
   <span><strong>LG Electronics</strong> ${t.footer}</span>
   <span>© 2026 LG Electronics Inc. All Rights Reserved.</span>

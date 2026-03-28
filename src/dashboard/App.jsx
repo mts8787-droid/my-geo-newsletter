@@ -1,5 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { FONT, LG_RED } from '../shared/constants.js'
+import { generateDashboardHTML } from './dashboardTemplate.js'
+import { resolveDataForLang } from '../shared/utils.js'
+import { fetchSyncData } from '../shared/api.js'
 import GlossaryPage from './GlossaryPage.jsx'
 
 const TABS = [
@@ -13,7 +16,7 @@ const TABS = [
 const TAB_KEYS = TABS.map(t => t.key)
 
 const IFRAME_PATHS = {
-  visibility: { ko: '/p/GEO-KPI-Dashboard-KO', en: '/p/GEO-KPI-Dashboard-EN' },
+  visibility: { ko: '/p/GEO-Visibility-Dashboard-KO', en: '/p/GEO-Visibility-Dashboard-EN' },
   citation:   { ko: '/p/GEO-Citation-Dashboard-KO', en: '/p/GEO-Citation-Dashboard-EN' },
   tracker:    '/p/progress-tracker/',
 }
@@ -45,6 +48,8 @@ export default function App() {
   const [lang, setLang] = useState('ko')
   const [publishData, setPublishData] = useState(null)
   const [trackerData, setTrackerData] = useState(null)
+  const [publishing, setPublishing] = useState(false)
+  const [publishMsg, setPublishMsg] = useState('')
 
   // Hash routing
   useEffect(() => {
@@ -71,6 +76,51 @@ export default function App() {
       .then(d => { if (d) setTrackerData(d) })
       .catch(() => {})
   }, [])
+
+  // 통합 대시보드 게시
+  async function handlePublishCombined() {
+    if (publishing) return
+    setPublishing(true); setPublishMsg('')
+    try {
+      const d = await fetchSyncData('dashboard')
+      if (!d) throw new Error('동기화 데이터를 가져올 수 없습니다. Visibility Editor에서 먼저 구글시트 동기화를 해주세요.')
+      const meta = d.meta || {}
+      const total = d.total || {}
+      let products = d.productsPartial ? d.productsPartial.map(p => {
+        const weekly = d.weeklyMap?.[p.id] || []
+        const ratio = p.vsComp > 0 ? (p.score / p.vsComp) * 100 : 100
+        return { ...p, weekly, monthly: [], compRatio: Math.round(ratio), status: ratio >= 100 ? 'lead' : ratio >= 80 ? 'behind' : 'critical' }
+      }) : []
+      const citations = d.citations || []
+      const dotcom = d.dotcom || {}
+      const productsCnty = d.productsCnty || []
+      const citationsCnty = d.citationsCnty || []
+      const weeklyLabels = d.weeklyLabels || null
+      const weeklyAll = d.weeklyAll || {}
+      const citationsByCnty = d.citationsByCnty || {}
+      const dotcomByCnty = d.dotcomByCnty || {}
+      const resolvedKo = resolveDataForLang(products, productsCnty, citations, citationsCnty, 'ko')
+      const resolvedEn = resolveDataForLang(products, productsCnty, citations, citationsCnty, 'en')
+      const htmlKo = generateDashboardHTML(meta, total, resolvedKo.products, resolvedKo.citations, dotcom, 'ko', resolvedKo.productsCnty, resolvedKo.citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty)
+      const htmlEn = generateDashboardHTML({ ...meta, title: meta.title || 'GEO KPI Dashboard' }, total, resolvedEn.products, resolvedEn.citations, dotcom, 'en', resolvedEn.productsCnty, resolvedEn.citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty)
+      const title = `${meta.period || ''} ${meta.title || 'KPI Dashboard'}`.trim()
+      const res = await fetch('/api/publish-dashboard', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+        body: JSON.stringify({ title, htmlKo, htmlEn }),
+      })
+      const result = await res.json()
+      if (!result.ok) throw new Error(result.error || '게시 실패')
+      setPublishMsg(`게시 완료!\nKO: ${window.location.origin}${result.urls.ko}\nEN: ${window.location.origin}${result.urls.en}`)
+      // Refresh publish status
+      fetch('/api/publish-history').then(r => r.ok ? r.json() : null).then(d => { if (d) setPublishData(d) })
+    } catch (err) {
+      setPublishMsg('ERROR: ' + err.message)
+    } finally {
+      setPublishing(false)
+      setTimeout(() => setPublishMsg(''), 15000)
+    }
+  }
 
   // Derive status for active tab
   function getTabStatus(tabKey) {
@@ -236,6 +286,22 @@ export default function App() {
                 }}>
                 편집기 열기
               </a>
+
+              {/* 통합 대시보드 게시 버튼 */}
+              <button onClick={handlePublishCombined} disabled={publishing}
+                style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  padding: '10px 16px', borderRadius: 8, border: 'none', width: '100%',
+                  background: '#166534', color: '#86EFAC',
+                  fontSize: 13, fontWeight: 700, fontFamily: FONT,
+                  cursor: publishing ? 'wait' : 'pointer',
+                  opacity: publishing ? 0.6 : 1,
+                }}>
+                {publishing ? '게시 중...' : '통합 대시보드 게시'}
+              </button>
+              {publishMsg && (
+                <pre style={{ fontSize: 10, color: publishMsg.startsWith('ERROR') ? '#FCA5A5' : '#86EFAC', whiteSpace: 'pre-wrap', margin: 0, lineHeight: 1.5 }}>{publishMsg}</pre>
+              )}
             </>
           )}
         </div>

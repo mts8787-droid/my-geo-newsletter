@@ -29,7 +29,9 @@
       "Bash(git revert:*)",
       "Bash(npx vite:*)",
       "Bash(pkill:*)",
-      "Bash(GIT_EDITOR=true git rebase --continue)"
+      "Bash(GIT_EDITOR=true git rebase --continue)",
+      "Bash(claude --version)",
+      "Bash(npm uninstall:*)"
     ]
   }
 }

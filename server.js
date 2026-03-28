@@ -659,6 +659,41 @@ app.delete('/api/publish-citation', (req, res) => {
   res.json({ ok: true })
 })
 
+// ─── Visibility Publish API (별도 슬러그) ─────────────────────────────────────
+const VIS_KO_SLUG = 'GEO-Visibility-Dashboard-KO'
+const VIS_EN_SLUG = 'GEO-Visibility-Dashboard-EN'
+const VIS_META = join(DATA_DIR, 'visibility-meta.json')
+
+app.post('/api/publish-visibility', (req, res) => {
+  const { htmlKo, htmlEn, title } = req.body || {}
+  if (!htmlKo || !htmlEn) return res.status(400).json({ ok: false, error: 'htmlKo, htmlEn 필수' })
+  try {
+    writeFileSync(join(PUB_DIR, `${VIS_KO_SLUG}.html`), injectLangBar(htmlKo, 'ko', VIS_KO_SLUG, VIS_EN_SLUG))
+    writeFileSync(join(PUB_DIR, `${VIS_EN_SLUG}.html`), injectLangBar(htmlEn, 'en', VIS_KO_SLUG, VIS_EN_SLUG))
+    const meta = { title: title || 'GEO Visibility Dashboard', ts: Date.now() }
+    writeFileSync(VIS_META, JSON.stringify(meta, null, 2))
+    console.log('[PUBLISH-VIS]', meta.title, `-> /p/${VIS_KO_SLUG}, /p/${VIS_EN_SLUG}`)
+    res.json({ ok: true, urls: { ko: `/p/${VIS_KO_SLUG}`, en: `/p/${VIS_EN_SLUG}` }, ...meta })
+  } catch (err) {
+    console.error('[PUBLISH-VIS] Write error:', err.message)
+    res.status(500).json({ ok: false, error: '파일 저장 실패: ' + err.message })
+  }
+})
+
+app.get('/api/publish-visibility', (req, res) => {
+  const meta = readMetaFile(VIS_META)
+  const ko = existsSync(join(PUB_DIR, `${VIS_KO_SLUG}.html`))
+  const en = existsSync(join(PUB_DIR, `${VIS_EN_SLUG}.html`))
+  res.json({ published: ko && en, ko, en, ...(meta || {}), urls: { ko: `/p/${VIS_KO_SLUG}`, en: `/p/${VIS_EN_SLUG}` } })
+})
+
+app.delete('/api/publish-visibility', (req, res) => {
+  try { unlinkSync(join(PUB_DIR, `${VIS_KO_SLUG}.html`)) } catch (e) { if (e.code !== 'ENOENT') console.error('[PUBLISH-VIS] Delete error:', e.message) }
+  try { unlinkSync(join(PUB_DIR, `${VIS_EN_SLUG}.html`)) } catch (e) { if (e.code !== 'ENOENT') console.error('[PUBLISH-VIS] Delete error:', e.message) }
+  try { unlinkSync(VIS_META) } catch (e) { if (e.code !== 'ENOENT') console.error('[PUBLISH-VIS] Delete meta error:', e.message) }
+  res.json({ ok: true })
+})
+
 // ─── Publish History (Newsletter + Dashboard 통합 조회) ──────────────────────
 app.get('/api/publish-history', (req, res) => {
   const newsletter = readMetaFile(PUB_META)
@@ -792,15 +827,19 @@ a.card:hover{border-color:#CF0652;transform:translateY(-2px)}
     <div class="section-title">대시보드 관리</div>
     <a class="card" href="/admin/dashboard">
       <div class="card-title">Dashboard Viewer</div>
-      <div class="card-desc">Visibility · Citation · Readability · Tracker 통합 뷰어</div>
+      <div class="card-desc">Visibility · Citation · Readability · Tracker 통합 뷰어 — 여기서 통합 대시보드 게시</div>
     </a>
     <a class="card" href="/admin/visibility">
       <div class="card-title">Visibility Editor</div>
-      <div class="card-desc">GEO Visibility KPI 대시보드 편집기</div>
+      <div class="card-desc">GEO Visibility KPI 편집 — Visibility 단독 게시</div>
     </a>
     <a class="card" href="/admin/citation">
       <div class="card-title">Citation Editor</div>
-      <div class="card-desc">Citation 분석 대시보드 편집기</div>
+      <div class="card-desc">Citation 분석 편집 — Citation 단독 게시</div>
+    </a>
+    <a class="card" href="/admin/readability" style="opacity:0.5;pointer-events:none">
+      <div class="card-title">Readability Editor</div>
+      <div class="card-desc">추후 고도화 예정</div>
     </a>
     <a class="card" href="/admin/progress-tracker">
       <div class="card-title">Progress Tracker</div>

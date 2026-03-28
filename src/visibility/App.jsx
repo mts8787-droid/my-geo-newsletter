@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react'
 import { Save, FolderOpen, Trash2, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
-import { generateDashboardHTML } from '../dashboard/dashboardTemplate.js'
+import { generateDashboardHTML, generateVisibilityHTML } from '../dashboard/dashboardTemplate.js'
 import { INIT_META, INIT_TOTAL, INIT_PRODUCTS, INIT_DOTCOM, INIT_PRODUCTS_CNTY, INIT_CITATIONS_CNTY, INIT_CITATIONS, FONT, LG_RED } from '../shared/constants.js'
 import { loadCache, saveCache } from '../shared/cache.js'
 import { fetchSnapshots, postSnapshot, updateSnapshot, deleteSnapshot, fetchSyncData } from '../shared/api.js'
@@ -14,7 +14,7 @@ const STORAGE_KEY = 'geo-dashboard-cache'
 function DashboardPreview({ meta, total, products, citations, dotcom, productsCnty = [], citationsCnty = [], lang = 'ko', weeklyLabels, weeklyAll = {}, citationsByCnty = {}, dotcomByCnty = {} }) {
   const iframeRef = useRef(null)
   const html = useMemo(
-    () => generateDashboardHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty),
+    () => generateVisibilityHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty),
     [meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty]
   )
 
@@ -166,7 +166,8 @@ export default function App() {
           weeklyAll={weeklyAll}
           citationsByCnty={citationsByCnty}
           dotcomByCnty={dotcomByCnty}
-          generateHTML={generateDashboardHTML}
+          generateHTML={generateVisibilityHTML}
+          publishEndpoint="/api/publish-visibility"
         />
       )}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
