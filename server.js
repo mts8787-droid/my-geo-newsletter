@@ -570,8 +570,8 @@ app.post('/api/publish', (req, res) => {
   const { htmlKo, htmlEn, title } = req.body || {}
   if (!htmlKo || !htmlEn) return res.status(400).json({ ok: false, error: 'htmlKo, htmlEn 필수' })
   try {
-    writeFileSync(join(PUB_DIR, `${KO_SLUG}.html`), sanitizeHtml(injectLangBar(htmlKo, 'ko', KO_SLUG, EN_SLUG)))
-    writeFileSync(join(PUB_DIR, `${EN_SLUG}.html`), sanitizeHtml(injectLangBar(htmlEn, 'en', KO_SLUG, EN_SLUG)))
+    writeFileSync(join(PUB_DIR, `${KO_SLUG}.html`), injectLangBar(htmlKo, 'ko', KO_SLUG, EN_SLUG))
+    writeFileSync(join(PUB_DIR, `${EN_SLUG}.html`), injectLangBar(htmlEn, 'en', KO_SLUG, EN_SLUG))
     const meta = { title: title || 'GEO Monthly Report', ts: Date.now() }
     writeFileSync(PUB_META, JSON.stringify(meta, null, 2))
     console.log('[PUBLISH]', meta.title, `-> /p/${KO_SLUG}, /p/${EN_SLUG}`)
@@ -605,8 +605,8 @@ app.post('/api/publish-dashboard', (req, res) => {
   const { htmlKo, htmlEn, title } = req.body || {}
   if (!htmlKo || !htmlEn) return res.status(400).json({ ok: false, error: 'htmlKo, htmlEn 필수' })
   try {
-    writeFileSync(join(PUB_DIR, `${DASH_KO_SLUG}.html`), sanitizeHtml(injectLangBar(htmlKo, 'ko', DASH_KO_SLUG, DASH_EN_SLUG)))
-    writeFileSync(join(PUB_DIR, `${DASH_EN_SLUG}.html`), sanitizeHtml(injectLangBar(htmlEn, 'en', DASH_KO_SLUG, DASH_EN_SLUG)))
+    writeFileSync(join(PUB_DIR, `${DASH_KO_SLUG}.html`), injectLangBar(htmlKo, 'ko', DASH_KO_SLUG, DASH_EN_SLUG))
+    writeFileSync(join(PUB_DIR, `${DASH_EN_SLUG}.html`), injectLangBar(htmlEn, 'en', DASH_KO_SLUG, DASH_EN_SLUG))
     const meta = { title: title || 'GEO KPI Dashboard', ts: Date.now() }
     writeFileSync(DASH_META, JSON.stringify(meta, null, 2))
     console.log('[PUBLISH-DASH]', meta.title, `-> /p/${DASH_KO_SLUG}, /p/${DASH_EN_SLUG}`)
@@ -633,8 +633,8 @@ app.post('/api/publish-citation', (req, res) => {
   const { htmlKo, htmlEn, title } = req.body || {}
   if (!htmlKo || !htmlEn) return res.status(400).json({ ok: false, error: 'htmlKo, htmlEn 필수' })
   try {
-    writeFileSync(join(PUB_DIR, `${CIT_KO_SLUG}.html`), sanitizeHtml(injectLangBar(htmlKo, 'ko', CIT_KO_SLUG, CIT_EN_SLUG)))
-    writeFileSync(join(PUB_DIR, `${CIT_EN_SLUG}.html`), sanitizeHtml(injectLangBar(htmlEn, 'en', CIT_KO_SLUG, CIT_EN_SLUG)))
+    writeFileSync(join(PUB_DIR, `${CIT_KO_SLUG}.html`), injectLangBar(htmlKo, 'ko', CIT_KO_SLUG, CIT_EN_SLUG))
+    writeFileSync(join(PUB_DIR, `${CIT_EN_SLUG}.html`), injectLangBar(htmlEn, 'en', CIT_KO_SLUG, CIT_EN_SLUG))
     const meta = { title: title || 'GEO Citation Dashboard', ts: Date.now() }
     writeFileSync(CIT_META, JSON.stringify(meta, null, 2))
     console.log('[PUBLISH-CIT]', meta.title, `-> /p/${CIT_KO_SLUG}, /p/${CIT_EN_SLUG}`)
