@@ -55,6 +55,7 @@ export default function CitationSidebar({
       _log.push(`[Sync] citTrendMonths: ${parsed.citTrendMonths?.join(', ') || '(없음)'}`)
       _log.push(`[Sync] citDomainTrend: ${parsed.citDomainTrend ? Object.keys(parsed.citDomainTrend).length + '건' : '(없음)'}`)
       _log.push(`[Sync] citDomainMonths: ${parsed.citDomainMonths?.join(', ') || '(없음)'}`)
+      _log.push(`[Sync] (브라우저 콘솔에서 [parseCitTouchPoints], [parseCitDomain] 로그를 확인하세요)`)
       console.log(_log.join('\n'))
 
       if (parsed.meta) {

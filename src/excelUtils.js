@@ -693,6 +693,8 @@ function parseCitTouchPoints(rows) {
   const citationsByCnty = {}   // { cnty: [{ source, score, ... }] }
 
   console.log(`[parseCitTouchPoints] headerIdx=${headerIdx}, countryCol=${countryCol}, channelCol=${channelCol}, dataStartCol=${dataStartCol}, dataRows=${data.length}, monthLabels=${monthLabels.length}`)
+  console.log(`[parseCitTouchPoints] header: ${JSON.stringify(header.slice(0, 10))}`)
+  console.log(`[parseCitTouchPoints] monthLabels: ${JSON.stringify(monthLabels)}`)
   const _seenCountries = new Set()
 
   data.forEach(r => {
@@ -807,6 +809,8 @@ function parseCitDomain(rows) {
   let rank = 0
 
   console.log(`[parseCitDomain] startIdx=${startIdx}, offset=${off}, totalRows=${rows.length}, headerRow=${headerRow ? 'found' : 'none'}, monthLabels=${domainMonthLabels.length}`)
+  if (headerRow) console.log(`[parseCitDomain] header: ${JSON.stringify(headerRow.slice(0, 10))}`)
+  console.log(`[parseCitDomain] domainMonthLabels: ${JSON.stringify(domainMonthLabels)}`)
 
   for (let i = startIdx; i < rows.length; i++) {
     const r = rows[i]
