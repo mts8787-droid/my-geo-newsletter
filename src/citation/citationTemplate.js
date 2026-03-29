@@ -194,29 +194,22 @@ const BUMP_COLORS = ['#CF0652','#3B82F6','#22C55E','#F59E0B','#8B5CF6','#EC4899'
 
 function bumpChartSvg(names, rankings, months, maxRank, labelFn) {
   const ROW_H = 36
-  const W = Math.max(months.length * 200, 600)
-  const H = maxRank * ROW_H + 60
-  const padL = 140, padR = 140, padT = 30, padB = 20
+  const W = Math.max(months.length * 220, 600)
+  const H = maxRank * ROW_H + 80
+  const padL = 20, padR = 20, padT = 20, padB = 40
   const chartW = W - padL - padR
   const chartH = H - padT - padB
-  const ribbonW = ROW_H * 0.55
+  const ribbonW = ROW_H * 0.48
 
   let svg = `<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" style="font-family:${FONT}">`
 
-  // 월 라벨 + 세로 구분선
-  months.forEach((m, i) => {
-    const x = padL + (i / (months.length - 1)) * chartW
-    svg += `<text x="${x}" y="${padT - 10}" text-anchor="middle" fill="#94A3B8" font-size="12" font-weight="700">${m}</text>`
-    svg += `<line x1="${x}" y1="${padT}" x2="${x}" y2="${padT + chartH}" stroke="#F1F5F9" stroke-width="1"/>`
-  })
-
-  // 리본 경로 (뒤에서 앞으로 — 높은 순위가 앞에 오도록)
+  // 리본 경로 (뒤에서 앞으로 — 낮은 순위가 뒤에)
   const sortedNames = [...names].sort((a, b) => {
     const lastM = months[months.length - 1]
     return (rankings[b]?.[lastM] || 999) - (rankings[a]?.[lastM] || 999)
   })
 
-  sortedNames.forEach((name, ni) => {
+  sortedNames.forEach((name) => {
     const color = BUMP_COLORS[names.indexOf(name) % BUMP_COLORS.length]
     const points = []
     months.forEach((m, i) => {
@@ -229,7 +222,6 @@ function bumpChartSvg(names, rankings, months, maxRank, labelFn) {
     })
     if (points.length < 2) return
 
-    // 리본 경로: 베지에 곡선으로 상/하단 경로 생성
     let upper = '', lower = ''
     for (let i = 0; i < points.length; i++) {
       const p = points[i]
@@ -245,27 +237,27 @@ function bumpChartSvg(names, rankings, months, maxRank, labelFn) {
     }
     const last = points[points.length - 1]
     const ribbonPath = upper + ` L${last.x},${last.y + ribbonW}` + lower + ' Z'
-    svg += `<path d="${ribbonPath}" fill="${color}" opacity="0.55" stroke="${color}" stroke-width="0.5" stroke-opacity="0.3"/>`
+    svg += `<path d="${ribbonPath}" fill="${color}" opacity="0.5" stroke="${color}" stroke-width="0.5" stroke-opacity="0.2"/>`
   })
 
-  // 라벨 (왼쪽 + 오른쪽)
+  // 라벨 (리본 안 — 각 월 위치에 텍스트)
   names.forEach((name, ni) => {
     const color = BUMP_COLORS[ni % BUMP_COLORS.length]
     const label = labelFn ? labelFn(name) : name
+    months.forEach((m, i) => {
+      const rank = rankings[name]?.[m]
+      if (rank == null) return
+      const x = padL + (i / (months.length - 1)) * chartW
+      const y = padT + ((rank - 0.5) / maxRank) * chartH
+      svg += `<text x="${x}" y="${y + 4}" text-anchor="middle" fill="#fff" font-size="11" font-weight="700" style="text-shadow:0 0 3px rgba(0,0,0,0.5)">${label}</text>`
+    })
+  })
 
-    // 첫 번째 월 라벨
-    const firstRank = rankings[name]?.[months[0]]
-    if (firstRank != null) {
-      const y = padT + ((firstRank - 0.5) / maxRank) * chartH
-      svg += `<text x="${padL - 10}" y="${y + 4}" text-anchor="end" fill="${color}" font-size="12" font-weight="700">${label}</text>`
-    }
-    // 마지막 월 라벨
-    const lastRank = rankings[name]?.[months[months.length - 1]]
-    if (lastRank != null) {
-      const x = padL + chartW
-      const y = padT + ((lastRank - 0.5) / maxRank) * chartH
-      svg += `<text x="${x + 10}" y="${y + 4}" text-anchor="start" fill="${color}" font-size="12" font-weight="700">${label}</text>`
-    }
+  // 하단 월 라벨
+  months.forEach((m, i) => {
+    const x = padL + (i / (months.length - 1)) * chartW
+    svg += `<line x1="${x}" y1="${padT + chartH + 5}" x2="${x}" y2="${padT + chartH + 12}" stroke="#94A3B8" stroke-width="1.5"/>`
+    svg += `<text x="${x}" y="${padT + chartH + 28}" text-anchor="middle" fill="#475569" font-size="15" font-weight="800">${m}</text>`
   })
 
   svg += '</svg>'
