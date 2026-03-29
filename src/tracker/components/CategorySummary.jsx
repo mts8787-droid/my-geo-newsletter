@@ -1,12 +1,6 @@
 import { useState } from 'react'
-import { STAKEHOLDER_COLORS } from '../utils/constants'
+import { STAKEHOLDER_COLORS, SECTION_BAR, statusOfDark as statusOf } from '../utils/constants'
 import { t } from '../../shared/i18n.js'
-
-function statusOf(rate) {
-  if (rate >= 100) return { text: '#15803D', bg: '#132E20', border: '#15803D55', bar: '#22C55E', dot: '#22C55E', label: 'achieved' }
-  if (rate >= 80)  return { text: '#D97706', bg: '#2A2210', border: '#D9770655', bar: '#FBBF24', dot: '#FBBF24', label: 'inProgress' }
-  return { text: '#BE123C', bg: '#2A1018', border: '#BE123C55', bar: '#FB7185', dot: '#FB7185', label: 'notAchieved' }
-}
 
 function fmt(n) { return Number(n).toLocaleString('en-US') }
 
@@ -51,7 +45,7 @@ export default function CategorySummary({ categories, month, lang = 'ko', select
   return (
     <div style={{ background: '#1E293B', border: '1px solid #334155', borderRadius: 12, boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}>
       <div style={{ padding: '16px 20px', borderBottom: '1px solid #334155', background: '#1E293B', borderRadius: '12px 12px 0 0', display: 'flex', alignItems: 'center', gap: 10 }}>
-        <span style={{ width: 4, height: 22, borderRadius: 4, background: '#CF0652', flexShrink: 0 }} />
+        <span style={SECTION_BAR} />
         <h3 style={{ fontSize: 20, fontWeight: 700, color: '#F1F5F9', margin: 0 }}>{t(lang, 'categorySummary')}</h3>
       </div>
 

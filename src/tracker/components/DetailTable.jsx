@@ -1,12 +1,5 @@
-import { STAKEHOLDER_COLORS } from '../utils/constants'
+import { STAKEHOLDER_COLORS, SECTION_BAR, statusOf } from '../utils/constants'
 import { t } from '../../shared/i18n.js'
-
-function statusOf(rate) {
-  if (rate === null) return { color: '#94A3B8', dot: '#CBD5E1' }
-  if (rate >= 100) return { color: '#15803D', dot: '#15803D' }
-  if (rate >= 80)  return { color: '#D97706', dot: '#D97706' }
-  return { color: '#BE123C', dot: '#BE123C' }
-}
 
 function fmtRate(rate) {
   if (rate === null) return '\u2014'
@@ -17,7 +10,7 @@ export default function DetailTable({ tasks, month, lang = 'ko' }) {
   return (
     <div style={{ background: '#fff', border: '1px solid #E2E8F0', borderRadius: 12, overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
       <div style={{ padding: '16px 20px', borderBottom: '1px solid #E2E8F0' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}><span style={{ width: 4, height: 22, borderRadius: 4, background: '#CF0652', flexShrink: 0 }} /><h3 style={{ fontSize: 20, fontWeight: 700, color: '#111827', margin: 0 }}>{t(lang, 'quantitativeTasks')}</h3></div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}><span style={SECTION_BAR} /><h3 style={{ fontSize: 20, fontWeight: 700, color: '#111827', margin: 0 }}>{t(lang, 'quantitativeTasks')}</h3></div>
       </div>
 
       <div className="overflow-x-auto">
@@ -61,7 +54,7 @@ export default function DetailTable({ tasks, month, lang = 'ko' }) {
                   <td style={{ padding: '9px 12px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
                       <span style={{ width: 9, height: 9, borderRadius: '50%', background: st.dot, display: 'inline-block' }} />
-                      <span style={{ fontWeight: tk.rate !== null ? 700 : 400, color: st.color, fontVariantNumeric: 'tabular-nums' }}>{fmtRate(tk.rate)}</span>
+                      <span style={{ fontWeight: tk.rate !== null ? 700 : 400, color: st.text, fontVariantNumeric: 'tabular-nums' }}>{fmtRate(tk.rate)}</span>
                     </div>
                   </td>
                   <td style={{ padding: '9px 12px', textAlign: 'right', color: '#94A3B8', fontVariantNumeric: 'tabular-nums' }}>

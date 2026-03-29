@@ -1,4 +1,4 @@
-import { STAKEHOLDER_COLORS } from '../utils/constants'
+import { STAKEHOLDER_COLORS, SECTION_BAR } from '../utils/constants'
 import { t } from '../../shared/i18n.js'
 
 function statusDot(val, lang) {
@@ -23,7 +23,7 @@ export default function QualitativeTable({ goals, results, selectedSH, selectedC
     <div style={{ background: '#fff', border: '1px solid #E2E8F0', borderRadius: 12, overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
       <div style={{ padding: '16px 20px', borderBottom: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ width: 4, height: 22, borderRadius: 4, background: '#CF0652', flexShrink: 0 }} />
+          <span style={{ ...SECTION_BAR }} />
           <h3 style={{ fontSize: 20, fontWeight: 700, color: '#111827', margin: 0 }}>{t(lang, 'qualitativeTasks')}</h3>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: 16, color: '#64748B' }}>

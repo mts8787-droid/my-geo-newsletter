@@ -1,6 +1,7 @@
 import {
   ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
 } from 'recharts'
+import { SECTION_BAR } from '../utils/constants'
 import { t } from '../../shared/i18n.js'
 
 const FONT = "'LG Smart','Arial Narrow',Arial,sans-serif"
@@ -29,7 +30,7 @@ export default function PerformanceCharts({ monthlyTotals, cumulative, annualTar
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
       {/* 월별 목표 대비 실적 */}
       <div style={{ background: '#fff', border: '1px solid #E2E8F0', borderRadius: 12, padding: 20, boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}><span style={{ width: 4, height: 22, borderRadius: 4, background: '#CF0652', flexShrink: 0 }} /><h3 style={{ fontSize: 20, fontWeight: 700, color: '#111827', margin: 0 }}>{t(lang, 'monthlyGoalVsActual')}</h3></div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}><span style={SECTION_BAR} /><h3 style={{ fontSize: 20, fontWeight: 700, color: '#111827', margin: 0 }}>{t(lang, 'monthlyGoalVsActual')}</h3></div>
         <ResponsiveContainer width="100%" height={280}>
           <ComposedChart data={monthlyTotals} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" vertical={false} />
@@ -46,7 +47,7 @@ export default function PerformanceCharts({ monthlyTotals, cumulative, annualTar
       {/* 연간 누적 목표대비 실적 */}
       <div style={{ background: '#fff', border: '1px solid #E2E8F0', borderRadius: 12, padding: 20, boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-          <span style={{ width: 4, height: 22, borderRadius: 4, background: '#CF0652', flexShrink: 0 }} />
+          <span style={SECTION_BAR} />
           <h3 style={{ fontSize: 20, fontWeight: 700, color: '#111827', margin: 0 }}>{t(lang, 'cumulativeGoalVsActual')}</h3>
         </div>
         <ResponsiveContainer width="100%" height={280}>

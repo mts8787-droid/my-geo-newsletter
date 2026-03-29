@@ -1,13 +1,7 @@
-import { STAKEHOLDER_COLORS } from '../utils/constants'
+import { STAKEHOLDER_COLORS, statusOf } from '../utils/constants'
 import { t } from '../../shared/i18n.js'
 
 function fmt(n) { return Number(n).toLocaleString('en-US') }
-
-function statusOf(rate) {
-  if (rate >= 100) return { text: '#15803D', bg: '#ECFDF5', border: '#A7F3D0', bar: '#15803D', label: 'achieved', dot: '#15803D' }
-  if (rate >= 80)  return { text: '#D97706', bg: '#FFFBEB', border: '#FDE68A', bar: '#D97706', label: 'inProgress', dot: '#D97706' }
-  return { text: '#BE123C', bg: '#FFF1F2', border: '#FECDD3', bar: '#BE123C', label: 'notAchieved', dot: '#BE123C' }
-}
 
 export default function SummaryCards({ avgRate, cumulativeActual, cumulativeGoal, monthActual, monthGoal, warningCount, annualTarget, month, selectedSH, lang = 'ko' }) {
   const s = statusOf(avgRate)

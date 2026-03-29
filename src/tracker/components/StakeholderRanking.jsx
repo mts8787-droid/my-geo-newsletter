@@ -1,11 +1,5 @@
-import { STAKEHOLDER_COLORS } from '../utils/constants'
+import { STAKEHOLDER_COLORS, SECTION_BAR, statusOf } from '../utils/constants'
 import { t } from '../../shared/i18n.js'
-
-function statusOf(rate) {
-  if (rate >= 100) return { color: '#15803D', dot: '#15803D', bg: '#ECFDF5' }
-  if (rate >= 80)  return { color: '#D97706', dot: '#D97706', bg: '#FFFBEB' }
-  return { color: '#BE123C', dot: '#BE123C', bg: '#FFF1F2' }
-}
 
 function fmt(n) { return Number(n).toLocaleString('en-US') }
 
@@ -18,7 +12,7 @@ export default function StakeholderRanking({ stakeholders, month, selectedSH, la
       {/* Header */}
       <div style={{ padding: '16px 20px', borderBottom: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <span style={{ width: 4, height: 22, borderRadius: 4, background: '#CF0652', flexShrink: 0 }} />
+          <span style={SECTION_BAR} />
           <h3 style={{ fontSize: 20, fontWeight: 700, color: '#111827', margin: 0 }}>{t(lang, 'orgRate')}</h3>
           {totalWarnings > 0 && (
             <span style={{ fontSize: 16, fontWeight: 700, color: '#BE123C', background: '#FFF1F2', border: '1px solid #FECDD3', padding: '2px 8px', borderRadius: 4 }}>
@@ -71,7 +65,7 @@ export default function StakeholderRanking({ stakeholders, month, selectedSH, la
                         <span style={{ color: '#111827', fontWeight: 500, maxWidth: 150, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 16 }} title={td.task}>{td.task}</span>
                         <span style={{ fontSize: 14, color: '#64748B', whiteSpace: 'nowrap' }}>{fmt(td.monthActual)}/{fmt(td.monthGoal)}</span>
                         {td.rate !== null && (
-                          <span style={{ fontWeight: 700, color: tdSt.color, fontSize: 16 }}>{td.rate.toFixed(0)}%</span>
+                          <span style={{ fontWeight: 700, color: tdSt.text, fontSize: 16 }}>{td.rate.toFixed(0)}%</span>
                         )}
                       </div>
                     )
@@ -86,7 +80,7 @@ export default function StakeholderRanking({ stakeholders, month, selectedSH, la
                   <span style={{ fontSize: 14, color: '#475569', whiteSpace: 'nowrap', textAlign: 'center', fontVariantNumeric: 'tabular-nums', width: 60, flexShrink: 0 }}>
                     {fmt(sh.monthActual)}/{fmt(sh.monthGoal)}
                   </span>
-                  <span style={{ fontSize: 16, fontWeight: 900, color: mSt.color, width: 50, flexShrink: 0, textAlign: 'left', fontVariantNumeric: 'tabular-nums' }}>
+                  <span style={{ fontSize: 16, fontWeight: 900, color: mSt.text, width: 50, flexShrink: 0, textAlign: 'left', fontVariantNumeric: 'tabular-nums' }}>
                     {sh.monthRate.toFixed(1)}%
                   </span>
                 </div>
@@ -101,7 +95,7 @@ export default function StakeholderRanking({ stakeholders, month, selectedSH, la
                   <span style={{ fontSize: 14, color: '#475569', whiteSpace: 'nowrap', textAlign: 'center', fontVariantNumeric: 'tabular-nums', width: 60, flexShrink: 0 }}>
                     {fmt(sh.cumActual)}/{fmt(sh.cumGoal)}
                   </span>
-                  <span style={{ fontSize: 16, fontWeight: 900, color: cSt.color, width: 50, flexShrink: 0, textAlign: 'left', fontVariantNumeric: 'tabular-nums' }}>
+                  <span style={{ fontSize: 16, fontWeight: 900, color: cSt.text, width: 50, flexShrink: 0, textAlign: 'left', fontVariantNumeric: 'tabular-nums' }}>
                     {sh.cumRate.toFixed(1)}%
                   </span>
                 </div>
