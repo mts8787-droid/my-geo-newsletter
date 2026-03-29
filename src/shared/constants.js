@@ -3,6 +3,24 @@ export const LG_RED  = '#CF0652'
 export const LG_DARK = '#A0003E'
 export const FONT    = "'LG Smart','Arial Narrow',Arial,sans-serif"
 
+// ─── 디자인 가이드 공통 상수 ─────────────────────────────────────────────────
+export const SECTION_BAR = { width: 4, height: 22, borderRadius: 4, background: LG_RED, flexShrink: 0 }
+
+// 신호등 (라이트 테마)
+export function statusOf(rate) {
+  if (rate === null) return { text: '#94A3B8', bg: '#F8FAFC', border: '#E2E8F0', bar: '#CBD5E1', dot: '#CBD5E1', label: 'none' }
+  if (rate >= 100) return { text: '#15803D', bg: '#ECFDF5', border: '#A7F3D0', bar: '#15803D', dot: '#15803D', label: 'achieved' }
+  if (rate >= 80)  return { text: '#D97706', bg: '#FFFBEB', border: '#FDE68A', bar: '#D97706', dot: '#D97706', label: 'inProgress' }
+  return { text: '#BE123C', bg: '#FFF1F2', border: '#FECDD3', bar: '#BE123C', dot: '#BE123C', label: 'notAchieved' }
+}
+
+// 신호등 (다크 테마)
+export function statusOfDark(rate) {
+  if (rate >= 100) return { text: '#15803D', bg: '#132E20', border: '#15803D55', bar: '#22C55E', dot: '#22C55E', label: 'achieved' }
+  if (rate >= 80)  return { text: '#D97706', bg: '#2A2210', border: '#D9770655', bar: '#FBBF24', dot: '#FBBF24', label: 'inProgress' }
+  return { text: '#BE123C', bg: '#2A1018', border: '#BE123C55', bar: '#FB7185', dot: '#FB7185', label: 'notAchieved' }
+}
+
 // ─── 초기 메타 데이터 ──────────────────────────────────────────────────────────
 export const INIT_META  = {
   period: '2026년 3월', team: 'D2C디지털마케팅팀', reportNo: 'Vol.03',
