@@ -60,12 +60,7 @@ export default function CitationSidebar({
 
       if (parsed.meta) {
         // Citation 대시보드에서는 Citation 관련 섹션을 항상 표시
-        // (meta 시트에서 showCitations=N 등으로 설정되어 있어도 무시)
-        const citMeta = { ...parsed.meta }
-        delete citMeta.showCitations
-        delete citMeta.showCitDomain
-        delete citMeta.showCitCnty
-        delete citMeta.showDotcom
+        const citMeta = { ...parsed.meta, showCitations: true, showCitDomain: true, showCitCnty: true, showDotcom: true }
         setMetaKo(m => ({ ...m, ...citMeta }))
       }
       if (parsed.citations)     setCitations(parsed.citations)
