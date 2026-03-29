@@ -623,10 +623,17 @@ function parseCitPageType(rows) {
   for (let i = monthPairs.length - 1; i >= 0; i--) {
     if (data.some(r => numVal(r[monthPairs[i].lg]) > 0)) { bestPair = monthPairs[i]; break }
   }
+  // 선택된 페어에 데이터가 없으면, 헤더 라벨 없는 컬럼에서 데이터 찾기 (col 2-3 폴백)
+  if (!data.some(r => numVal(r[bestPair.lg]) > 0)) {
+    // 오른쪽에서 왼쪽으로 데이터가 있는 연속 2컬럼 찾기
+    for (let i = Math.min(bestPair.lg, header.length) - 1; i >= 2; i--) {
+      if (data.some(r => numVal(r[i]) > 0)) { bestPair = { lg: i - 1, ss: i }; break }
+    }
+  }
 
   const lg = {}, samsung = {}
   const dotcomByCnty = {}  // { cnty: { lg: {...}, samsung: {...} } }
-  const CNTY_ALIAS = { 'TOTAL':'TTL', '미국':'US', '캐나다':'CA', '영국':'UK', '독일':'DE', '스페인':'ES', '브라질':'BR', '멕시코':'MX', '인도':'IN', '호주':'AU', '베트남':'VN' }
+  const CNTY_ALIAS = { 'TOTAL':'TTL', 'Total':'TTL', '미국':'US', '캐나다':'CA', '영국':'UK', '독일':'DE', '스페인':'ES', '브라질':'BR', '멕시코':'MX', '인도':'IN', '호주':'AU', '베트남':'VN' }
   console.log(`[parseCitPageType] headerIdx=${headerIdx}, bestPair=lg:${bestPair.lg}/ss:${bestPair.ss}, dataRows=${data.length}`)
   const _ptSeenCountries = new Set()
   data.forEach(r => {
@@ -716,6 +723,31 @@ function parseCitTouchPoints(rows) {
     }
   }
   monthLabels.sort((a, b) => a.col - b.col)
+
+  // 라벨 없는 데이터 컬럼에 월 이름 역산 (첫 라벨 월에서 거꾸로 세기)
+  // 예: col 4,5 비어있고 col 6=Apr → col 5=Mar, col 4=Feb
+  if (monthLabels.length > 0) {
+    const MONTHS_ORDER = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+    const firstLabeled = monthLabels[0]
+    const firstMonthIdx = MONTHS_ORDER.findIndex(m => firstLabeled.label.toLowerCase().startsWith(m.toLowerCase()))
+    if (firstMonthIdx > 0 && firstLabeled.col > dataStartCol) {
+      const dataRows = rows.slice(startRow)
+      const unlabeled = []
+      for (let c = dataStartCol; c < firstLabeled.col; c++) {
+        if (dataRows.some(r => { const v = typeof r[c] === 'number' ? r[c] : parseFloat(String(r[c] || '').replace(/,/g, '')); return !isNaN(v) && v > 0 })) {
+          unlabeled.push(c)
+        }
+      }
+      // 가장 가까운 컬럼부터 역산
+      for (let i = unlabeled.length - 1; i >= 0; i--) {
+        const mi = firstMonthIdx - (unlabeled.length - i)
+        if (mi >= 0) {
+          monthLabels.push({ col: unlabeled[i], label: MONTHS_ORDER[mi] })
+        }
+      }
+      monthLabels.sort((a, b) => a.col - b.col)
+    }
+  }
 
   const data = rows.slice(startRow).filter(r => r.some(c => c != null && String(c).trim()))
   const citations = []
