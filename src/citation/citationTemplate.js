@@ -189,6 +189,89 @@ const REGIONS = {
   APAC:  { countries: ['IN', 'AU', 'VN'] },
 }
 
+// ─── 리본형 범프차트 공통 SVG 생성 ─────────────────────────────────────────
+const BUMP_COLORS = ['#CF0652','#3B82F6','#22C55E','#F59E0B','#8B5CF6','#EC4899','#14B8A6','#F97316','#6366F1','#EF4444','#06B6D4','#84CC16']
+
+function bumpChartSvg(names, rankings, months, maxRank, labelFn) {
+  const ROW_H = 36
+  const W = Math.max(months.length * 200, 600)
+  const H = maxRank * ROW_H + 60
+  const padL = 140, padR = 140, padT = 30, padB = 20
+  const chartW = W - padL - padR
+  const chartH = H - padT - padB
+  const ribbonW = ROW_H * 0.55
+
+  let svg = `<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" style="font-family:${FONT}">`
+
+  // 월 라벨 + 세로 구분선
+  months.forEach((m, i) => {
+    const x = padL + (i / (months.length - 1)) * chartW
+    svg += `<text x="${x}" y="${padT - 10}" text-anchor="middle" fill="#94A3B8" font-size="12" font-weight="700">${m}</text>`
+    svg += `<line x1="${x}" y1="${padT}" x2="${x}" y2="${padT + chartH}" stroke="#F1F5F9" stroke-width="1"/>`
+  })
+
+  // 리본 경로 (뒤에서 앞으로 — 높은 순위가 앞에 오도록)
+  const sortedNames = [...names].sort((a, b) => {
+    const lastM = months[months.length - 1]
+    return (rankings[b]?.[lastM] || 999) - (rankings[a]?.[lastM] || 999)
+  })
+
+  sortedNames.forEach((name, ni) => {
+    const color = BUMP_COLORS[names.indexOf(name) % BUMP_COLORS.length]
+    const points = []
+    months.forEach((m, i) => {
+      const rank = rankings[name]?.[m]
+      if (rank != null) {
+        const x = padL + (i / (months.length - 1)) * chartW
+        const y = padT + ((rank - 0.5) / maxRank) * chartH
+        points.push({ x, y, rank, month: m })
+      }
+    })
+    if (points.length < 2) return
+
+    // 리본 경로: 베지에 곡선으로 상/하단 경로 생성
+    let upper = '', lower = ''
+    for (let i = 0; i < points.length; i++) {
+      const p = points[i]
+      if (i === 0) {
+        upper += `M${p.x},${p.y - ribbonW}`
+        lower = `L${p.x},${p.y + ribbonW}`
+      } else {
+        const prev = points[i - 1]
+        const cx = (prev.x + p.x) / 2
+        upper += ` C${cx},${prev.y - ribbonW} ${cx},${p.y - ribbonW} ${p.x},${p.y - ribbonW}`
+        lower = ` C${cx},${p.y + ribbonW} ${cx},${prev.y + ribbonW} ${prev.x},${prev.y + ribbonW}` + lower
+      }
+    }
+    const last = points[points.length - 1]
+    const ribbonPath = upper + ` L${last.x},${last.y + ribbonW}` + lower + ' Z'
+    svg += `<path d="${ribbonPath}" fill="${color}" opacity="0.55" stroke="${color}" stroke-width="0.5" stroke-opacity="0.3"/>`
+  })
+
+  // 라벨 (왼쪽 + 오른쪽)
+  names.forEach((name, ni) => {
+    const color = BUMP_COLORS[ni % BUMP_COLORS.length]
+    const label = labelFn ? labelFn(name) : name
+
+    // 첫 번째 월 라벨
+    const firstRank = rankings[name]?.[months[0]]
+    if (firstRank != null) {
+      const y = padT + ((firstRank - 0.5) / maxRank) * chartH
+      svg += `<text x="${padL - 10}" y="${y + 4}" text-anchor="end" fill="${color}" font-size="12" font-weight="700">${label}</text>`
+    }
+    // 마지막 월 라벨
+    const lastRank = rankings[name]?.[months[months.length - 1]]
+    if (lastRank != null) {
+      const x = padL + chartW
+      const y = padT + ((lastRank - 0.5) / maxRank) * chartH
+      svg += `<text x="${x + 10}" y="${y + 4}" text-anchor="start" fill="${color}" font-size="12" font-weight="700">${label}</text>`
+    }
+  })
+
+  svg += '</svg>'
+  return svg
+}
+
 // ─── 도메인 카테고리 범프차트 (월간 트렌드) ─────────────────────────────────
 function citCategoryBumpChartHtml(citTouchPointsTrend, citTrendMonths, meta, t, lang) {
   if (!citTouchPointsTrend || !citTrendMonths || citTrendMonths.length < 2) return ''
@@ -196,7 +279,6 @@ function citCategoryBumpChartHtml(citTouchPointsTrend, citTrendMonths, meta, t, 
   const entries = Object.entries(citTouchPointsTrend)
   if (!entries.length) return ''
 
-  // 월별 순위 계산
   const rankings = {}
   months.forEach(m => {
     const scored = entries.map(([name, data]) => ({ name, score: data[m] || 0 }))
@@ -211,57 +293,15 @@ function citCategoryBumpChartHtml(citTouchPointsTrend, citTrendMonths, meta, t, 
   const names = Object.keys(rankings)
   if (!names.length) return ''
   const maxRank = Math.max(...names.map(n => Math.max(...Object.values(rankings[n]))), 1)
-  const COLORS = ['#CF0652','#3B82F6','#22C55E','#F59E0B','#8B5CF6','#EC4899','#14B8A6','#F97316','#6366F1','#EF4444','#06B6D4','#84CC16']
 
-  const W = Math.max(months.length * 120, 600)
-  const H = Math.max(maxRank * 40 + 60, 200)
-  const padL = 40, padR = 120, padT = 30, padB = 30
-  const chartW = W - padL - padR
-  const chartH = H - padT - padB
-
-  // SVG 생성
-  let svg = `<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" style="font-family:${FONT}">`
-
-  // 월 라벨 (x축)
-  months.forEach((m, i) => {
-    const x = padL + (i / (months.length - 1)) * chartW
-    svg += `<text x="${x}" y="${padT - 10}" text-anchor="middle" fill="#64748B" font-size="11" font-weight="700">${m}</text>`
-    svg += `<line x1="${x}" y1="${padT}" x2="${x}" y2="${padT + chartH}" stroke="#E2E8F0" stroke-width="1" stroke-dasharray="3,3"/>`
-  })
-
-  // 각 카테고리 라인
-  names.forEach((name, ni) => {
-    const color = COLORS[ni % COLORS.length]
-    const points = []
-    months.forEach((m, i) => {
-      const rank = rankings[name][m]
-      if (rank != null) {
-        const x = padL + (i / (months.length - 1)) * chartW
-        const y = padT + ((rank - 1) / (maxRank - 1 || 1)) * chartH
-        points.push({ x, y, rank, month: m })
-      }
-    })
-    if (points.length < 2) return
-    // 라인
-    const pathD = points.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x},${p.y}`).join(' ')
-    svg += `<path d="${pathD}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>`
-    // 포인트 + 순위 텍스트
-    points.forEach(p => {
-      svg += `<circle cx="${p.x}" cy="${p.y}" r="10" fill="${color}" stroke="#fff" stroke-width="2"/>`
-      svg += `<text x="${p.x}" y="${p.y + 4}" text-anchor="middle" fill="#fff" font-size="9" font-weight="800">${p.rank}</text>`
-    })
-    // 마지막 포인트에 이름 라벨
-    const last = points[points.length - 1]
-    svg += `<text x="${last.x + 16}" y="${last.y + 4}" fill="${color}" font-size="11" font-weight="700">${name}</text>`
-  })
-  svg += '</svg>'
+  const svg = bumpChartSvg(names, rankings, months, maxRank)
 
   // 하단 실수치 테이블
   let table = `<table class="trend-table"><thead><tr><th>${lang === 'ko' ? '카테고리' : 'Category'}</th>`
   months.forEach(m => { table += `<th>${m}</th>` })
   table += '</tr></thead><tbody>'
   names.forEach((name, ni) => {
-    const color = COLORS[ni % COLORS.length]
+    const color = BUMP_COLORS[ni % BUMP_COLORS.length]
     table += `<tr><td><span class="trend-dot" style="background:${color}"></span>${name}</td>`
     months.forEach(m => {
       const val = citTouchPointsTrend[name]?.[m]
@@ -314,50 +354,15 @@ function citDomainBumpChartHtml(citDomainTrend, citDomainMonths, meta, t, lang) 
   const domains = Object.keys(rankings)
   if (!domains.length) return ''
   const maxRank = Math.max(...domains.map(d => Math.max(...Object.values(rankings[d]))), 1)
-  const COLORS = ['#CF0652','#3B82F6','#22C55E','#F59E0B','#8B5CF6','#EC4899','#14B8A6','#F97316','#6366F1','#EF4444','#06B6D4','#84CC16']
 
-  const W = Math.max(months.length * 120, 600)
-  const H = Math.max(maxRank * 40 + 60, 200)
-  const padL = 40, padR = 120, padT = 30, padB = 30
-  const chartW = W - padL - padR
-  const chartH = H - padT - padB
-
-  let svg = `<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" style="font-family:${FONT}">`
-  months.forEach((m, i) => {
-    const x = padL + (i / (months.length - 1)) * chartW
-    svg += `<text x="${x}" y="${padT - 10}" text-anchor="middle" fill="#64748B" font-size="11" font-weight="700">${m}</text>`
-    svg += `<line x1="${x}" y1="${padT}" x2="${x}" y2="${padT + chartH}" stroke="#E2E8F0" stroke-width="1" stroke-dasharray="3,3"/>`
-  })
-
-  domains.forEach((domain, di) => {
-    const color = COLORS[di % COLORS.length]
-    const points = []
-    months.forEach((m, i) => {
-      const rank = rankings[domain][m]
-      if (rank != null) {
-        const x = padL + (i / (months.length - 1)) * chartW
-        const y = padT + ((rank - 1) / (maxRank - 1 || 1)) * chartH
-        points.push({ x, y, rank, month: m })
-      }
-    })
-    if (points.length < 2) return
-    const pathD = points.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x},${p.y}`).join(' ')
-    svg += `<path d="${pathD}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>`
-    points.forEach(p => {
-      svg += `<circle cx="${p.x}" cy="${p.y}" r="10" fill="${color}" stroke="#fff" stroke-width="2"/>`
-      svg += `<text x="${p.x}" y="${p.y + 4}" text-anchor="middle" fill="#fff" font-size="9" font-weight="800">${p.rank}</text>`
-    })
-    const last = points[points.length - 1]
-    svg += `<text x="${last.x + 16}" y="${last.y + 4}" fill="${color}" font-size="11" font-weight="700">${stripDomain(domain)}</text>`
-  })
-  svg += '</svg>'
+  const svg = bumpChartSvg(domains, rankings, months, maxRank, d => stripDomain(d))
 
   // 하단 실수치 테이블
   let table = `<table class="trend-table"><thead><tr><th>${lang === 'ko' ? '도메인' : 'Domain'}</th><th>Type</th>`
   months.forEach(m => { table += `<th>${m}</th>` })
   table += '</tr></thead><tbody>'
   topEntries.forEach((entry, di) => {
-    const color = COLORS[di % COLORS.length]
+    const color = BUMP_COLORS[di % BUMP_COLORS.length]
     const domain = entry.domain
     table += `<tr><td><span class="trend-dot" style="background:${color}"></span>${stripDomain(domain)}</td><td class="trend-type">${entry.type}</td>`
     months.forEach(m => {
