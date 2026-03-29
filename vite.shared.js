@@ -1,14 +1,10 @@
 // ─── Vite 공통 플러그인 및 설정 ──────────────────────────────────────────────
 import { resolve } from 'path'
 import { readFileSync, existsSync, createReadStream } from 'fs'
-import { execSync } from 'child_process'
 
-// ─── 앱 버전 (package.json + git commit count) ──────────────────────────────
+// ─── 앱 버전 (package.json) ─────────────────────────────────────────────────
 const pkg = JSON.parse(readFileSync('./package.json', 'utf-8'))
-const [major, minor] = (pkg.version || '0.0').split('.')
-const PATCH_OFFSET = 278
-const patch = (() => { try { return Math.max(0, parseInt(execSync('git rev-list --count HEAD', { encoding: 'utf-8' }).trim()) - PATCH_OFFSET) } catch { return 0 } })()
-export const appVersion = `${major}.${minor}.${patch}`
+export const appVersion = pkg.version || '0.0.0'
 
 // ─── 공통 플러그인: /font 정적 서빙 ─────────────────────────────────────────
 export function serveFontsPlugin() {
