@@ -682,25 +682,28 @@ function parseCitTouchPoints(rows) {
     }
   }
 
-  // 월 라벨 추출
+  // 유효한 월 이름 패턴 (Jan, Feb, Mar, ..., 1월, 2월, ... 또는 숫자)
+  const MONTH_RE = /^(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|[0-9]{1,2}월)/i
+
+  // 월 라벨 추출 — 헤더 행에서 유효한 월 이름만 수집
   const monthLabels = []
   for (let i = dataStartCol; i < header.length; i++) {
     const h = String(header[i] || '').trim()
-    if (h && !/country|channel|total/i.test(h)) monthLabels.push({ col: i, label: h })
+    if (h && MONTH_RE.test(h)) monthLabels.push({ col: i, label: h })
   }
-  // 헤더에서 월 라벨을 못 찾으면, 헤더 위 행에서 탐색 (반복 그룹 구조)
-  if (monthLabels.length === 0 && headerIdx > 0) {
+  // 헤더에 월 라벨이 부족하면, 헤더 위 행에서 보충 (빈 컬럼이나 비월 라벨 대체)
+  if (headerIdx > 0) {
     const monthRow = rows[headerIdx - 1]
     if (monthRow) {
       for (let i = dataStartCol; i < monthRow.length; i++) {
         const mv = String(monthRow[i] || '').trim()
-        if (mv && !/^\[.*\]$/.test(mv) && !/country|channel/i.test(mv)) {
+        if (mv && MONTH_RE.test(mv) && !monthLabels.some(m => m.col === i)) {
           monthLabels.push({ col: i, label: mv })
         }
       }
-      console.log(`[parseCitTouchPoints] fallback monthRow: ${JSON.stringify(monthRow.slice(0, 10))}`)
     }
   }
+  monthLabels.sort((a, b) => a.col - b.col)
 
   const data = rows.slice(startRow).filter(r => r.some(c => c != null && String(c).trim()))
   const citations = []
@@ -812,37 +815,32 @@ function parseCitDomain(rows) {
   }
 
   // 월 라벨 추출
+  const MONTH_RE = /^(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|[0-9]{1,2}월)/i
   const domainMonthLabels = []
   if (headerRow) {
     // 먼저 헤더 행에서 직접 월 라벨 찾기 (단일 헤더 구조)
     for (let i = off + 2; i < headerRow.length; i++) {
       const h = String(headerRow[i] || '').trim()
-      if (h && !/domain|domian|type|citations/i.test(h)) domainMonthLabels.push({ col: i, label: h })
+      if (h && MONTH_RE.test(h)) domainMonthLabels.push({ col: i, label: h })
     }
-    // 단일 헤더에서 못 찾으면, 반복 그룹 구조 (Domain/Type/Citations × N개월)
-    // 헤더 위 행에서 월 이름을, 헤더 행에서 Citations 컬럼 위치를 매핑
+    // 단일 헤더에서 못 찾으면, 반복 그룹 구조 (Domain/Type/Data × N개월)
+    // 헤더 위 행에서 월 이름을 찾고, 해당 그룹의 데이터 컬럼(월이름+2) 매핑
     if (domainMonthLabels.length === 0) {
       const headerIdx = rows.indexOf(headerRow)
       const monthRow = headerIdx > 0 ? rows[headerIdx - 1] : null
-      // "Citations" 컬럼 위치 수집
-      const citCols = []
-      for (let i = off + 2; i < headerRow.length; i++) {
-        if (/citations/i.test(String(headerRow[i] || '').trim())) citCols.push(i)
-      }
-      if (monthRow && citCols.length > 0) {
-        // 각 Citations 컬럼 근처에서 월 이름 찾기 (해당 그룹의 첫 열)
-        citCols.forEach(citCol => {
-          // 해당 그룹의 시작 컬럼에서 월 이름 찾기 (Citations 컬럼에서 왼쪽으로 탐색)
-          for (let j = citCol; j >= Math.max(0, citCol - 3); j--) {
-            const mv = String(monthRow[j] || '').trim()
-            if (mv && !/^\[.*\]$/.test(mv) && !/domain|domian|type|citations|country/i.test(mv)) {
-              domainMonthLabels.push({ col: citCol, label: mv })
-              break
+      if (monthRow) {
+        for (let i = 0; i < monthRow.length; i++) {
+          const mv = String(monthRow[i] || '').trim()
+          if (mv && MONTH_RE.test(mv)) {
+            // 데이터 컬럼 = 월 이름 컬럼 + 2 (3-column group: Domain, Type, Data)
+            const dataCol = i + 2
+            if (dataCol < headerRow.length) {
+              domainMonthLabels.push({ col: dataCol, label: mv })
             }
           }
-        })
+        }
+        console.log(`[parseCitDomain] multi-column layout: monthRow months=${JSON.stringify(domainMonthLabels)}`)
       }
-      console.log(`[parseCitDomain] multi-column layout detected: citCols=${JSON.stringify(citCols)}, monthRow=${monthRow ? JSON.stringify(monthRow.slice(0, 15)) : 'none'}`)
     }
   }
 
