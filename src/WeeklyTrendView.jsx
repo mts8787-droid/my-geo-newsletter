@@ -101,7 +101,7 @@ function AlignedChart({ brandData, labels, allBrands, height = 200 }) {
       {tooltip && (
         <div style={{ position: 'absolute', left: tooltip.x + 12, top: tooltip.y - 10,
           background: '#1E293B', border: '1px solid #334155', borderRadius: 8,
-          padding: '10px 14px', fontFamily: FONT, fontSize: 11, zIndex: 10, pointerEvents: 'none',
+          padding: '10px 14px', fontFamily: FONT, fontSize: 14, zIndex: 10, pointerEvents: 'none',
           transform: tooltip.x > w * 0.7 ? 'translateX(-110%)' : 'none' }}>
           <p style={{ margin: '0 0 6px', color: '#94A3B8', fontWeight: 700 }}>{tooltip.label}</p>
           {tooltip.items.map(it => (
@@ -125,21 +125,21 @@ function ProductTrend({ product, brandData, labels, allBrands }) {
     <div style={{ marginBottom: 28 }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-        <div style={{ width: 3, height: 16, borderRadius: 2, background: LG_RED, flexShrink: 0 }} />
-        <span style={{ fontSize: 15, fontWeight: 700, color: '#F1F5F9', fontFamily: FONT }}>
+        <div style={{ width: 4, height: 22, borderRadius: 4, background: LG_RED, flexShrink: 0 }} />
+        <span style={{ fontSize: 20, fontWeight: 700, color: '#F1F5F9', fontFamily: FONT }}>
           {product.kr}
         </span>
-        <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 10,
+        <span style={{ fontSize: 14, fontWeight: 700, padding: '2px 8px', borderRadius: 10,
           background: st.bg, color: st.color, border: `1px solid ${st.border}` }}>
           {st.label}
         </span>
         {lgLatest != null && (
-          <span style={{ fontSize: 13, fontWeight: 700, color: '#E2E8F0', fontFamily: FONT }}>
+          <span style={{ fontSize: 16, fontWeight: 700, color: '#E2E8F0', fontFamily: FONT }}>
             LG {lgLatest.toFixed(1)}%
           </span>
         )}
         {product.compName && (
-          <span style={{ fontSize: 11, color: '#64748B', fontFamily: FONT }}>
+          <span style={{ fontSize: 14, color: '#64748B', fontFamily: FONT }}>
             vs {product.compName} {product.compRatio}%
           </span>
         )}
@@ -148,7 +148,7 @@ function ProductTrend({ product, brandData, labels, allBrands }) {
       {/* 차트+표 통합: colgroup 공유로 X축 정렬 보장 */}
       <div style={{ borderRadius: 10, overflow: 'hidden', border: '1px solid #1E293B' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed',
-          fontFamily: FONT, fontSize: 11 }}>
+          fontFamily: FONT, fontSize: 14 }}>
           <colgroup>
             <col style={{ width: BRAND_COL }} />
             {labels.map(w => <col key={w} />)}
@@ -170,7 +170,7 @@ function ProductTrend({ product, brandData, labels, allBrands }) {
                     <div key={brand} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                       <span style={{ width: 10, height: 3, borderRadius: 1, background: brandColor(brand, i),
                         opacity: brand === 'LG' ? 1 : 0.7 }} />
-                      <span style={{ fontSize: 10, color: brand === 'LG' ? '#E2E8F0' : '#64748B',
+                      <span style={{ fontSize: 13, color: brand === 'LG' ? '#E2E8F0' : '#64748B',
                         fontWeight: brand === 'LG' ? 700 : 400, fontFamily: FONT }}>{brand}</span>
                     </div>
                   ))}
@@ -219,7 +219,7 @@ function ProductTrend({ product, brandData, labels, allBrands }) {
 
 const selectStyle = {
   background: '#1E293B', border: '1px solid #334155', borderRadius: 7,
-  padding: '6px 10px', fontSize: 12, color: '#E2E8F0', fontFamily: FONT,
+  padding: '6px 10px', fontSize: 14, color: '#E2E8F0', fontFamily: FONT,
   outline: 'none', cursor: 'pointer', minWidth: 100,
 }
 
@@ -254,24 +254,24 @@ export default function WeeklyTrendView({ weeklyAll, products, weeklyLabels }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20,
           padding: '12px 16px', background: '#0F172A', borderRadius: 10,
           border: '1px solid #1E293B' }}>
-          <div style={{ width: 3, height: 16, borderRadius: 2, background: LG_RED }} />
-          <span style={{ fontSize: 13, fontWeight: 700, color: '#F1F5F9', fontFamily: FONT,
+          <div style={{ width: 4, height: 22, borderRadius: 4, background: LG_RED }} />
+          <span style={{ fontSize: 17, fontWeight: 700, color: '#F1F5F9', fontFamily: FONT,
             marginRight: 8 }}>Weekly Trend</span>
 
-          <label style={{ fontSize: 10, color: '#64748B', fontFamily: FONT }}>본부</label>
+          <label style={{ fontSize: 14, color: '#64748B', fontFamily: FONT }}>본부</label>
           <select value={selectedDiv} onChange={e => { setSelectedDiv(e.target.value); setSelectedCountry('Total') }}
             style={selectStyle}>
             {['MS', 'HS', 'ES'].map(d => <option key={d} value={d}>{d}</option>)}
           </select>
 
-          <label style={{ fontSize: 10, color: '#64748B', fontFamily: FONT }}>국가</label>
+          <label style={{ fontSize: 14, color: '#64748B', fontFamily: FONT }}>국가</label>
           <select value={country} onChange={e => setSelectedCountry(e.target.value)}
             style={selectStyle}>
             {countries.map(c => <option key={c} value={c}>{c === 'Total' ? '전체 (Total)' : c}</option>)}
           </select>
 
           <span style={{ flex: 1 }} />
-          <span style={{ fontSize: 10, color: '#475569', fontFamily: FONT }}>
+          <span style={{ fontSize: 13, color: '#475569', fontFamily: FONT }}>
             {labels[0]}–{labels[labels.length - 1]} ({labels.length}주)
           </span>
         </div>
@@ -294,7 +294,7 @@ export default function WeeklyTrendView({ weeklyAll, products, weeklyLabels }) {
             <div key={product.id} style={{ marginBottom: 20, padding: 16, background: '#0F172A',
               borderRadius: 10, border: '1px solid #1E293B' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <div style={{ width: 3, height: 16, borderRadius: 2, background: LG_RED }} />
+                <div style={{ width: 4, height: 22, borderRadius: 4, background: LG_RED }} />
                 <span style={{ fontSize: 15, fontWeight: 700, color: '#F1F5F9', fontFamily: FONT }}>
                   {product.kr}
                 </span>
