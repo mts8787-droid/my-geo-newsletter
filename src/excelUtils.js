@@ -586,13 +586,22 @@ function parseWeekly(rows, div) {
 }
 
 function parseCitPageType(rows) {
+  console.log(`[parseCitPageType] START: ${rows.length} rows, first 5 rows:`)
+  for (let i = 0; i < Math.min(5, rows.length); i++) {
+    console.log(`[parseCitPageType] row ${i}: ${JSON.stringify((rows[i] || []).slice(0, 8))}`)
+  }
   // 헤더: Country, Page Type, Feb LG, Feb SS, Mar LG, Mar SS, ...
-  const headerIdx = rows.findIndex(r =>
-    r.some(c => { const s = String(c || '').trim().toLowerCase(); return s.includes('page type') || s === 'country' })
-  )
-  if (headerIdx < 0) return {}
+  // [Section Title] 형태의 제목 행은 건너뜀
+  const headerIdx = rows.findIndex(r => {
+    const hasKeyword = r.some(c => { const s = String(c || '').trim().toLowerCase(); return s.includes('page type') || s === 'country' })
+    if (!hasKeyword) return false
+    const isTitleRow = r.some(c => /^\[.*\]$/.test(String(c || '').trim()))
+    return !isTitleRow
+  })
+  if (headerIdx < 0) { console.log('[parseCitPageType] header not found!'); return {} }
 
   const header = rows[headerIdx]
+  console.log(`[parseCitPageType] header row ${headerIdx}: ${JSON.stringify(header.slice(0, 10))}`)
 
   // LG/SS 컬럼 페어 찾기
   const monthPairs = []
@@ -651,7 +660,10 @@ function parseCitPageType(rows) {
 }
 
 function parseCitTouchPoints(rows) {
-  console.log(`[parseCitTouchPoints] START: ${rows.length} rows, first row: ${JSON.stringify((rows[0] || []).slice(0, 8))}`)
+  console.log(`[parseCitTouchPoints] START: ${rows.length} rows`)
+  for (let i = 0; i < Math.min(5, rows.length); i++) {
+    console.log(`[parseCitTouchPoints] row ${i}: ${JSON.stringify((rows[i] || []).slice(0, 10))}`)
+  }
   // 헤더: (empty), Country, Channel, Feb, Mar, ... 또는 Country, Channel, Feb, ...
   // [Section Title] 형태의 제목 행은 건너뜀
   const headerIdx = rows.findIndex(r => {
@@ -787,6 +799,10 @@ function parseCitTouchPoints(rows) {
 }
 
 function parseCitDomain(rows) {
+  console.log(`[parseCitDomain] START: ${rows.length} rows`)
+  for (let i = 0; i < Math.min(8, rows.length); i++) {
+    console.log(`[parseCitDomain] row ${i}: ${JSON.stringify((rows[i] || []).slice(0, 12))}`)
+  }
   const COUNTRIES = ['US','CA','UK','DE','ES','BR','MX','IN','AU','VN']
   const CNTY_KR = { '미국':'US','캐나다':'CA','영국':'UK','독일':'DE','스페인':'ES','브라질':'BR','멕시코':'MX','인도':'IN','호주':'AU','베트남':'VN' }
 
