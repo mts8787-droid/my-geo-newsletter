@@ -652,9 +652,13 @@ function parseCitPageType(rows) {
 
 function parseCitTouchPoints(rows) {
   // 헤더: (empty), Country, Channel, Feb, Mar, ... 또는 Country, Channel, Feb, ...
-  const headerIdx = rows.findIndex(r =>
-    r.some(c => { const s = String(c || '').trim().toLowerCase(); return s === 'channel' || s === 'country' })
-  )
+  // [Section Title] 형태의 제목 행은 건너뜀
+  const headerIdx = rows.findIndex(r => {
+    const hasKeyword = r.some(c => { const s = String(c || '').trim().toLowerCase(); return s === 'channel' || s === 'country' })
+    if (!hasKeyword) return false
+    const isTitleRow = r.some(c => /^\[.*\]$/.test(String(c || '').trim()))
+    return !isTitleRow
+  })
   const header = headerIdx >= 0 ? rows[headerIdx] : []
   const startRow = (headerIdx >= 0 ? headerIdx : 0) + 1
 
@@ -782,7 +786,7 @@ function parseCitDomain(rows) {
   let startIdx = 0
   for (let i = 0; i < Math.min(rows.length, 10); i++) {
     const cv = String(rows[i]?.[off] || '').trim()
-    if (/domain|domian/i.test(cv)) {
+    if (/domain|domian/i.test(cv) && !/^\[.*\]$/.test(cv)) {
       headerRow = rows[i]
       startIdx = i + 1
       break
