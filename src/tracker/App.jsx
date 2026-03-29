@@ -346,7 +346,7 @@ export default function App() {
 
         {dashboard && (
           <>
-            {selectedSH === '전체' && dashboard.categoryStats.length > 0 && (
+            {dashboard.categoryStats.length > 0 && (
               <CategorySummary
                 categories={dashboard.categoryStats}
                 month={selectedMonth}

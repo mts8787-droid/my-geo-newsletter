@@ -18,7 +18,7 @@ export default function StakeholderRanking({ stakeholders, month, selectedSH, la
       {/* Header */}
       <div style={{ padding: '16px 20px', borderBottom: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <span style={{ width: 3, height: 16, borderRadius: 8, background: '#CF0652', flexShrink: 0 }} />
+          <span style={{ width: 4, height: 22, borderRadius: 4, background: '#CF0652', flexShrink: 0 }} />
           <h3 style={{ fontSize: 20, fontWeight: 700, color: '#111827', margin: 0 }}>{t(lang, 'orgRate')}</h3>
           {totalWarnings > 0 && (
             <span style={{ fontSize: 16, fontWeight: 700, color: '#BE123C', background: '#FFF1F2', border: '1px solid #FECDD3', padding: '2px 8px', borderRadius: 4 }}>
