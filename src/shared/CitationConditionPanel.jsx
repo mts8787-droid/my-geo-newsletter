@@ -7,14 +7,14 @@ import { generateCitationInsight, generateCitationHowToRead, generateCitDomainIn
 // ── 리전/국가 매핑 ──────────────────────────────────────────────────────────
 export const CITATION_REGIONS = [
   { key: 'NA',    label: 'North America', countries: ['US', 'CA'] },
-  { key: 'EU',    label: 'Europe',        countries: ['UK', 'DE'] },
+  { key: 'EU',    label: 'Europe',        countries: ['UK', 'DE', 'ES'] },
   { key: 'APAC',  label: 'Asia Pacific',  countries: ['IN', 'AU', 'VN'] },
   { key: 'LATAM', label: 'Latin America', countries: ['MX', 'BR'] },
 ]
 
 export const CITATION_COUNTRY_LABELS = {
   TTL: 'Total', US: '미국', CA: '캐나다', MX: '멕시코',
-  UK: '영국', DE: '독일',
+  UK: '영국', DE: '독일', ES: '스페인',
   IN: '인도', AU: '호주', VN: '베트남',
   BR: '브라질',
 }

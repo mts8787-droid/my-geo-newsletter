@@ -12,9 +12,16 @@ export function loadCache(storageKey) {
     }
     if (parsed._v !== CACHE_VERSION) { localStorage.removeItem(storageKey); return null }
     return parsed
-  } catch { return null }
+  } catch (e) {
+    console.warn('[cache] loadCache error:', e.message)
+    return null
+  }
 }
 
 export function saveCache(storageKey, data) {
-  try { localStorage.setItem(storageKey, JSON.stringify({ ...data, _v: CACHE_VERSION })) } catch {}
+  try {
+    localStorage.setItem(storageKey, JSON.stringify({ ...data, _v: CACHE_VERSION }))
+  } catch (e) {
+    console.warn('[cache] saveCache error (localStorage full?):', e.message)
+  }
 }

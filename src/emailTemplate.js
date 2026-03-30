@@ -5,6 +5,17 @@ const EM_RED  = '#CF0652'
 const EM_DARK = '#A0003E'
 const EM_FONT = "'LG Smart', 'Arial Narrow', Arial, sans-serif"
 
+// ─── HTML Sanitization (XSS 방지) ──────────────────────────────────────────
+function escapeHtml(str) {
+  if (typeof str !== 'string') return String(str ?? '')
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
 // ─── 다국어 번역 ─────────────────────────────────────────────────────────────
 const T = {
   ko: {
@@ -84,7 +95,7 @@ function fmt(n) {
 }
 
 function mdBold(text) {
-  return (text || '')
+  return escapeHtml(text || '')
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
     .replace(/\r\n/g, '<br>')
     .replace(/\n/g, '<br>')
@@ -92,8 +103,8 @@ function mdBold(text) {
 
 // ─── 삼성 → SS 치환 ─────────────────────────────────────────────────────────
 function ssName(name) {
-  if (!name) return name
-  return name.replace(/삼성전자/g, 'SS').replace(/삼성/g, 'SS').replace(/Samsung/gi, 'SS')
+  if (!name) return ''
+  return escapeHtml(name.replace(/삼성전자/g, 'SS').replace(/삼성/g, 'SS').replace(/Samsung/gi, 'SS'))
 }
 
 function delta(score, prev) { return +(score - prev).toFixed(1) }
@@ -188,7 +199,7 @@ function productCardHtml(p, globalMax, globalMin, lang = 'ko', opts = {}) {
         <td style="padding:12px 13px 6px;">
           <table border="0" cellpadding="0" cellspacing="0" width="100%">
             <tr>
-              <td style="font-size:17px;font-weight:900;color:#1A1A1A;line-height:22px;vertical-align:middle;">${p.kr}</td>
+              <td style="font-size:17px;font-weight:900;color:#1A1A1A;line-height:22px;vertical-align:middle;">${escapeHtml(p.kr)}</td>
               <td align="right" style="vertical-align:middle;">
                 <table border="0" cellpadding="0" cellspacing="0" align="right"><tr>
                   <td style="background:${st.bg};color:${st.color};border:1px solid ${st.border};border-radius:10px;padding:2px 7px;font-size:11px;font-weight:700;line-height:22px;font-family:${EM_FONT};">${st.label}</td>
@@ -830,6 +841,8 @@ function dotcomSectionHtml(dotcom, meta, lang = 'ko') {
 }
 
 // ─── 메인 생성 함수 ───────────────────────────────────────────────────────────
+export { escapeHtml }
+
 export function generateEmailHTML(meta, total, products, citations, dotcom = {}, lang = 'ko', productsCnty = [], citationsCnty = [], options = {}) {
   const { containerWidth = 820, showTrendTabs = false } = options
   const t = T[lang] || T.ko
@@ -876,7 +889,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>LG GEO Newsletter ${meta.period}</title>
+  <title>LG GEO Newsletter ${escapeHtml(meta.period)}</title>
   <link href="https://fonts.cdnfonts.com/css/lg-smart" rel="stylesheet" />
   <!--[if mso]>
   <style type="text/css">
@@ -901,7 +914,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
             <table border="0" cellpadding="0" cellspacing="0" width="100%">
               <tr>
                 <td style="font-size:13px;font-weight:700;color:#FFCCD8;font-family:${EM_FONT};">LG ELECTRONICS</td>
-                <td align="right" style="font-size:12px;color:#FFB0C0;font-family:${EM_FONT};">${meta.reportNo} · ${meta.period}</td>
+                <td align="right" style="font-size:12px;color:#FFB0C0;font-family:${EM_FONT};">${escapeHtml(meta.reportNo)} · ${escapeHtml(meta.period)}</td>
               </tr>
             </table>
           </td>
@@ -912,15 +925,15 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
           <td style="background:#FFFFFF;padding:26px 28px 16px;">
             <table border="0" cellpadding="0" cellspacing="0" width="100%">
               <tr>
-                <td style="font-size:12px;color:#94A3B8;font-family:${EM_FONT};font-weight:400;">${meta.reportType || (lang === 'en' ? 'GEO Monthly Performance Report' : 'GEO 월간 성과 분석 리포트')}</td>
-                <td align="right" style="font-size:12px;color:#94A3B8;font-family:${EM_FONT};font-weight:400;">${meta.team}</td>
+                <td style="font-size:12px;color:#94A3B8;font-family:${EM_FONT};font-weight:400;">${escapeHtml(meta.reportType || (lang === 'en' ? 'GEO Monthly Performance Report' : 'GEO 월간 성과 분석 리포트'))}</td>
+                <td align="right" style="font-size:12px;color:#94A3B8;font-family:${EM_FONT};font-weight:400;">${escapeHtml(meta.team)}</td>
               </tr>
             </table>
             <p style="margin:16px 0 10px;text-align:center;line-height:1.2;">
-              <span style="font-size:${meta.titleFontSize || 24}px;font-weight:700;color:${meta.titleColor || '#1A1A1A'};font-family:${EM_FONT};">${meta.title || (lang === 'en' ? 'Generative AI Engine Visibility Performance Analysis' : '생성형 AI 엔진 가시성(Visibility) 성과 분석')}</span>
+              <span style="font-size:${meta.titleFontSize || 24}px;font-weight:700;color:${meta.titleColor || '#1A1A1A'};font-family:${EM_FONT};">${escapeHtml(meta.title || (lang === 'en' ? 'Generative AI Engine Visibility Performance Analysis' : '생성형 AI 엔진 가시성(Visibility) 성과 분석'))}</span>
             </p>
             <p style="margin:0;text-align:center;">
-              <span style="font-size:16px;color:#475569;font-family:${EM_FONT};font-weight:400;">${meta.dateLine || (lang === 'en' ? 'As of ' + meta.period : meta.period + ' 기준')}</span>
+              <span style="font-size:16px;color:#475569;font-family:${EM_FONT};font-weight:400;">${escapeHtml(meta.dateLine || (lang === 'en' ? 'As of ' + meta.period : meta.period + ' 기준'))}</span>
             </p>
             ${meta.showNotice && meta.noticeText ? `
             <table border="0" cellpadding="0" cellspacing="0" width="100%">

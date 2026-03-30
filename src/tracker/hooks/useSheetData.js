@@ -23,18 +23,35 @@ function getCached() {
 function setCache(data) {
   try {
     localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), data }))
-  } catch { /* localStorage full */ }
+  } catch (e) {
+    console.warn('[useSheetData] cache save failed (localStorage full?):', e.message)
+  }
 }
 
 async function fetchSheet() {
-  const rid = `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
-  const url = `/gsheets-proxy/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv;reqId:${rid}&gid=${SHEET_GID}`
-  const res = await fetch(url, {
-    cache: 'no-store',
-    headers: { 'Cache-Control': 'no-cache, no-store', Pragma: 'no-cache' },
-  })
-  if (!res.ok) throw new Error(`시트를 가져올 수 없습니다 (HTTP ${res.status})`)
-  const csv = await res.text()
+  // export?format=csv returns computed formula values (gviz/tq does not for cross-sheet refs)
+  const exportUrl = `/gsheets-proxy/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${SHEET_GID}&_t=${Date.now()}`
+  let csv
+
+  try {
+    const res = await fetch(exportUrl, {
+      cache: 'no-store',
+      headers: { 'Cache-Control': 'no-cache, no-store', Pragma: 'no-cache' },
+    })
+    if (!res.ok) throw new Error(`export HTTP ${res.status}`)
+    csv = await res.text()
+  } catch (e) {
+    console.warn('[fetchSheet] export endpoint failed, falling back to gviz:', e.message)
+    const rid = `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
+    const gvizUrl = `/gsheets-proxy/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv;reqId:${rid}&gid=${SHEET_GID}`
+    const res = await fetch(gvizUrl, {
+      cache: 'no-store',
+      headers: { 'Cache-Control': 'no-cache, no-store', Pragma: 'no-cache' },
+    })
+    if (!res.ok) throw new Error(`시트를 가져올 수 없습니다 (HTTP ${res.status})`)
+    csv = await res.text()
+  }
+
   const wb = XLSX.read(csv, { type: 'string' })
   const ws = wb.Sheets[wb.SheetNames[0]]
   return XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' })
