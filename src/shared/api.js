@@ -60,6 +60,39 @@ export async function fetchSyncData(mode) {
   } catch (err) { console.warn('[API] fetchSyncData failed:', err.message); return null }
 }
 
+export async function publishCombinedDashboard(generateDashboardHTML, resolveDataForLang) {
+  const d = await fetchSyncData('dashboard')
+  if (!d) throw new Error('동기화 데이터가 없습니다. Visibility Editor에서 먼저 동기화해주세요.')
+  const meta = d.meta || {}
+  const total = d.total || {}
+  const products = d.productsPartial ? d.productsPartial.map(p => {
+    const weekly = d.weeklyMap?.[p.id] || []
+    const ratio = p.vsComp > 0 ? (p.score / p.vsComp) * 100 : 100
+    return { ...p, weekly, monthly: [], compRatio: Math.round(ratio), status: ratio >= 100 ? 'lead' : ratio >= 80 ? 'behind' : 'critical' }
+  }) : []
+  const citations = d.citations || []
+  const dotcom = d.dotcom || {}
+  const productsCnty = d.productsCnty || []
+  const citationsCnty = d.citationsCnty || []
+  const weeklyLabels = d.weeklyLabels || null
+  const weeklyAll = d.weeklyAll || {}
+  const citationsByCnty = d.citationsByCnty || {}
+  const dotcomByCnty = d.dotcomByCnty || {}
+  const resolvedKo = resolveDataForLang(products, productsCnty, citations, citationsCnty, 'ko')
+  const resolvedEn = resolveDataForLang(products, productsCnty, citations, citationsCnty, 'en')
+  const htmlKo = generateDashboardHTML(meta, total, resolvedKo.products, resolvedKo.citations, dotcom, 'ko', resolvedKo.productsCnty, resolvedKo.citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty)
+  const htmlEn = generateDashboardHTML({ ...meta, title: meta.title || 'GEO KPI Dashboard' }, total, resolvedEn.products, resolvedEn.citations, dotcom, 'en', resolvedEn.productsCnty, resolvedEn.citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty)
+  const title = `${meta.period || ''} ${meta.title || 'KPI Dashboard'}`.trim()
+  const res = await fetch('/api/publish-dashboard', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+    body: JSON.stringify({ title, htmlKo, htmlEn }),
+  })
+  const result = await res.json()
+  if (!result.ok) throw new Error(result.error || '게시 실패')
+  return result
+}
+
 export async function saveSyncData(mode, data) {
   try {
     const r = await fetch(apiPaths(mode).syncData, {

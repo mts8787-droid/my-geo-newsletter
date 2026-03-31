@@ -5,7 +5,8 @@ import { extractSheetId, syncFromGoogleSheets } from '../googleSheetsUtils'
 import { LG_RED, FONT } from './constants.js'
 import { inputStyle } from './components.jsx'
 import { resolveDataForLang, translateTexts } from './utils.js'
-import { saveSyncData } from './api.js'
+import { saveSyncData, publishCombinedDashboard } from './api.js'
+import { generateDashboardHTML } from '../dashboard/dashboardTemplate.js'
 import { generateProductInsight, generateProductHowToRead, generateCntyHowToRead } from './insights.js'
 
 export default
@@ -22,6 +23,8 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
   const [translating, setTranslating] = useState(false)
   const [publishing, setPublishing] = useState(false)
   const [publishMsg, setPublishMsg] = useState('')
+  const [combPublishing, setCombPublishing] = useState(false)
+  const [combMsg, setCombMsg] = useState('')
 
   // 게시 상태 로드
   const [publishInfo, setPublishInfo] = useState(null)
@@ -64,6 +67,20 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
     } finally {
       setPublishing(false)
       setTimeout(() => setPublishMsg(''), 20000)
+    }
+  }
+
+  async function handleCombinedPublish() {
+    if (combPublishing) return
+    setCombPublishing(true); setCombMsg('')
+    try {
+      const result = await publishCombinedDashboard(generateDashboardHTML, resolveDataForLang)
+      setCombMsg(`통합 게시 완료!\nKO: ${window.location.origin}${result.urls.ko}\nEN: ${window.location.origin}${result.urls.en}`)
+    } catch (err) {
+      setCombMsg('ERROR: ' + err.message)
+    } finally {
+      setCombPublishing(false)
+      setTimeout(() => setCombMsg(''), 15000)
     }
   }
 
@@ -529,6 +546,31 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
           <Globe size={12} />
           {publishing ? '게시 중...' : '웹사이트 게시 (KO + EN)'}
         </button>
+
+        {mode === 'dashboard' && (
+          <>
+            <button onClick={handleCombinedPublish} disabled={combPublishing} style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, width: '100%',
+              padding: '8px 12px', borderRadius: 8, border: 'none',
+              background: combPublishing ? '#1E293B' : '#166534',
+              color: combPublishing ? '#94A3B8' : '#86EFAC',
+              fontSize: 11, fontWeight: 700,
+              fontFamily: FONT, cursor: combPublishing ? 'wait' : 'pointer',
+              marginBottom: 6,
+            }}>
+              <Globe size={12} />
+              {combPublishing ? '통합 게시 중...' : '통합 대시보드 게시'}
+            </button>
+            {combMsg && (
+              <div style={{
+                padding: '8px 10px', borderRadius: 7, fontSize: 11, fontFamily: FONT, lineHeight: 1.8,
+                background: combMsg.startsWith('ERROR') ? '#450A0A' : '#14532D',
+                color: combMsg.startsWith('ERROR') ? '#FCA5A5' : '#86EFAC',
+                marginBottom: 8, wordBreak: 'break-all', whiteSpace: 'pre-line',
+              }}>{combMsg.startsWith('ERROR:') ? combMsg.slice(6) : combMsg}</div>
+            )}
+          </>
+        )}
 
         {publishMsg && (
           <div style={{

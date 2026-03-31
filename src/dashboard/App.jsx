@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react'
 import { FONT, LG_RED } from '../shared/constants.js'
 import { generateDashboardHTML } from './dashboardTemplate.js'
 import { resolveDataForLang } from '../shared/utils.js'
-import { fetchSyncData } from '../shared/api.js'
+import { publishCombinedDashboard } from '../shared/api.js'
 import GlossaryPage from './GlossaryPage.jsx'
 
 const TABS = [
@@ -82,37 +82,8 @@ export default function App() {
     if (publishing) return
     setPublishing(true); setPublishMsg('')
     try {
-      const d = await fetchSyncData('dashboard')
-      if (!d) throw new Error('동기화 데이터를 가져올 수 없습니다. Visibility Editor에서 먼저 구글시트 동기화를 해주세요.')
-      const meta = d.meta || {}
-      const total = d.total || {}
-      let products = d.productsPartial ? d.productsPartial.map(p => {
-        const weekly = d.weeklyMap?.[p.id] || []
-        const ratio = p.vsComp > 0 ? (p.score / p.vsComp) * 100 : 100
-        return { ...p, weekly, monthly: [], compRatio: Math.round(ratio), status: ratio >= 100 ? 'lead' : ratio >= 80 ? 'behind' : 'critical' }
-      }) : []
-      const citations = d.citations || []
-      const dotcom = d.dotcom || {}
-      const productsCnty = d.productsCnty || []
-      const citationsCnty = d.citationsCnty || []
-      const weeklyLabels = d.weeklyLabels || null
-      const weeklyAll = d.weeklyAll || {}
-      const citationsByCnty = d.citationsByCnty || {}
-      const dotcomByCnty = d.dotcomByCnty || {}
-      const resolvedKo = resolveDataForLang(products, productsCnty, citations, citationsCnty, 'ko')
-      const resolvedEn = resolveDataForLang(products, productsCnty, citations, citationsCnty, 'en')
-      const htmlKo = generateDashboardHTML(meta, total, resolvedKo.products, resolvedKo.citations, dotcom, 'ko', resolvedKo.productsCnty, resolvedKo.citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty)
-      const htmlEn = generateDashboardHTML({ ...meta, title: meta.title || 'GEO KPI Dashboard' }, total, resolvedEn.products, resolvedEn.citations, dotcom, 'en', resolvedEn.productsCnty, resolvedEn.citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty)
-      const title = `${meta.period || ''} ${meta.title || 'KPI Dashboard'}`.trim()
-      const res = await fetch('/api/publish-dashboard', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-        body: JSON.stringify({ title, htmlKo, htmlEn }),
-      })
-      const result = await res.json()
-      if (!result.ok) throw new Error(result.error || '게시 실패')
+      const result = await publishCombinedDashboard(generateDashboardHTML, resolveDataForLang)
       setPublishMsg(`게시 완료!\nKO: ${window.location.origin}${result.urls.ko}\nEN: ${window.location.origin}${result.urls.en}`)
-      // Refresh publish status
       fetch('/api/publish-history').then(r => r.ok ? r.json() : null).then(d => { if (d) setPublishData(d) })
     } catch (err) {
       setPublishMsg('ERROR: ' + err.message)

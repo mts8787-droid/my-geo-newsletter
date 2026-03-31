@@ -4,7 +4,8 @@ import { extractSheetId, syncFromGoogleSheets } from '../googleSheetsUtils'
 import { LG_RED, FONT } from '../shared/constants.js'
 import { inputStyle } from '../shared/components.jsx'
 import { resolveDataForLang, translateTexts } from '../shared/utils.js'
-import { saveSyncData } from '../shared/api.js'
+import { saveSyncData, publishCombinedDashboard } from '../shared/api.js'
+import { generateDashboardHTML } from '../dashboard/dashboardTemplate.js'
 
 export default function CitationSidebar({
   mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn,
@@ -21,6 +22,8 @@ export default function CitationSidebar({
   const [debugLog,  setDebugLog]  = useState('')
   const [publishing, setPublishing] = useState(false)
   const [publishMsg, setPublishMsg] = useState('')
+  const [combPublishing, setCombPublishing] = useState(false)
+  const [combMsg, setCombMsg] = useState('')
   const [publishInfo, setPublishInfo] = useState(null)
   const [showTranslatePopup, setShowTranslatePopup] = useState(false)
   const [translating, setTranslating] = useState(false)
@@ -147,6 +150,20 @@ export default function CitationSidebar({
       const data = await res.json()
       if (data.ok) setPublishInfo(null)
     } catch {}
+  }
+
+  async function handleCombinedPublish() {
+    if (combPublishing) return
+    setCombPublishing(true); setCombMsg('')
+    try {
+      const result = await publishCombinedDashboard(generateDashboardHTML, resolveDataForLang)
+      setCombMsg(`통합 게시 완료!\nKO: ${window.location.origin}${result.urls.ko}\nEN: ${window.location.origin}${result.urls.en}`)
+    } catch (err) {
+      setCombMsg('ERROR: ' + err.message)
+    } finally {
+      setCombPublishing(false)
+      setTimeout(() => setCombMsg(''), 15000)
+    }
   }
 
   async function handleTranslate() {
@@ -321,6 +338,19 @@ export default function CitationSidebar({
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginBottom: 8 }}>
           <Globe size={13} /> {publishing ? '게시 중...' : '웹 게시 (KO + EN)'}
         </button>
+        <button onClick={handleCombinedPublish} disabled={combPublishing}
+          style={{ width: '100%', padding: '10px 0', borderRadius: 8, border: 'none',
+            background: combPublishing ? '#1E293B' : '#1D4ED8', color: combPublishing ? '#94A3B8' : '#FFFFFF',
+            fontSize: 12, fontWeight: 700, fontFamily: FONT, cursor: combPublishing ? 'wait' : 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginBottom: 8 }}>
+          <Globe size={13} /> {combPublishing ? '통합 게시 중...' : '통합 대시보드 게시'}
+        </button>
+        {combMsg && (
+          <div style={{ padding: '8px 10px', borderRadius: 7, fontSize: 11, fontFamily: FONT, lineHeight: 1.6,
+            background: combMsg.startsWith('ERROR') ? '#450A0A' : '#14532D',
+            color: combMsg.startsWith('ERROR') ? '#FCA5A5' : '#86EFAC',
+            marginBottom: 8, wordBreak: 'break-all', whiteSpace: 'pre-line' }}>{combMsg.startsWith('ERROR:') ? combMsg.slice(6) : combMsg}</div>
+        )}
         {publishMsg && (
           <div style={{ padding: '8px 10px', borderRadius: 7, fontSize: 11, fontFamily: FONT, lineHeight: 1.6,
             background: publishMsg.startsWith('ERROR') ? '#450A0A' : '#14532D',
