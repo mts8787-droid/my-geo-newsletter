@@ -1187,24 +1187,25 @@ function _parseMonth(d){
 function _renderMonthlyTrend(container,selBU,selProd,trendCnty){
   var ML=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   var html='';var hasTrend=false;
-  // _monthlyVis 데이터: {date,country,division,lg,comp}
-  // division별 월별 LG 스코어 → BU 트렌드
-  var DIVS=['TOTAL','MS','HS','ES'];
-  var byDiv={};// { DIV: { monthIdx: {lg,comp} } }
-  _monthlyVis.forEach(function(r){
-    if(r.country!=='TOTAL')return;// 국가=TOTAL만 (전체 기준)
-    var div=(r.division||'').toUpperCase();
-    if(DIVS.indexOf(div)<0)return;
+  var selectedProdIds=selProd.isAll?null:selProd.vals;
+  // _productsCnty에서 제품별 + date별 TTL 스코어 수집
+  var byProd={};// { CATEGORY: { monthIdx: score } }
+  _productsCnty.forEach(function(r){
+    if((r.country||'')!=='TTL')return;
+    var key=(r.product||'').toUpperCase();
     var mi=_parseMonth(r.date||'');if(mi<0)return;
-    if(!byDiv[div])byDiv[div]={};
-    byDiv[div][mi]={lg:r.lg,comp:r.comp};
+    if(!byProd[key])byProd[key]={};
+    byProd[key][mi]=r.score||0;
   });
-  // TOTAL + 각 BU별 트렌드 표시
-  var items=[{label:'Total (All Divisions)',key:'TOTAL'},{label:'MS',key:'MS'},{label:'HS',key:'HS'},{label:'ES',key:'ES'}];
-  items.forEach(function(item){
-    if(!selBU.isAll&&item.key!=='TOTAL'&&!selBU.vals[item.key])return;
-    var data=byDiv[item.key];if(!data)return;
-    var dataArr=ML.map(function(_,i){return data[i]?data[i].lg:null});
+  var BU=['MS','HS','ES'];
+  BU.forEach(function(b){
+    if(!selBU.isAll&&!selBU.vals[b])return;
+    var prods=_products.filter(function(p){return p.bu===b&&(!selectedProdIds||selectedProdIds[p.id])});
+    if(!prods.length)return;
+    var rows='';
+    prods.forEach(function(p){
+    var pData=byProd[(p.category||'').toUpperCase()]||byProd[p.id.toUpperCase()]||{};
+    var dataArr=ML.map(function(_,i){return pData[i]!=null?pData[i]:null});
     if(!dataArr.some(function(v){return v!=null}))return;
     var N=12;
     var colgroup='<colgroup><col style="width:'+_TREND_BC+'px">'+ML.map(function(){return'<col>'}).join('')+'</colgroup>';
@@ -1230,8 +1231,11 @@ function _renderMonthlyTrend(container,selBU,selProd,trendCnty){
     var thead='<tr style="border-top:1px solid #E8EDF2"><th style="text-align:left;padding:5px 6px;font-size:14px;color:#94A3B8;font-weight:600;border-bottom:1px solid #F1F5F9">Month</th>'+ML.map(function(m){return'<th style="text-align:center;padding:5px 2px;font-size:14px;color:#94A3B8;font-weight:600;border-bottom:1px solid #F1F5F9">'+m+'</th>'}).join('')+'</tr>';
     var cells=ML.map(function(_,mi){var val=dataArr[mi];return'<td style="text-align:center;padding:5px 2px;font-size:14px;color:'+(val!=null?'#1A1A1A':'#CBD5E1')+';font-weight:700;border-bottom:1px solid #F8FAFC;font-variant-numeric:tabular-nums">'+(val!=null?val.toFixed(1):'—')+'</td>'}).join('');
     var tbody='<tr style="background:#FFF8F9"><td style="padding:5px 6px;font-size:14px;font-weight:700;color:'+_RED+';border-bottom:1px solid #F8FAFC">LG</td>'+cells+'</tr>';
-    hasTrend=true;
-    html+='<div class="trend-row" style="margin-bottom:24px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><span style="width:4px;height:22px;border-radius:4px;background:'+_RED+';flex-shrink:0"></span><span style="font-size:20px;font-weight:700;color:#1A1A1A">'+item.label+'</span></div><div style="border:1px solid #E8EDF2;border-radius:10px;overflow:hidden"><table style="width:100%;border-collapse:collapse;table-layout:fixed;font-family:'+_FONT+'">'+colgroup+'<tbody>'+chartRow+thead+tbody+'</tbody></table></div></div>';
+    var st=_statusInfo(p.status);
+    rows+='<div class="trend-row" style="margin-bottom:24px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><span style="width:4px;height:22px;border-radius:4px;background:'+_RED+';flex-shrink:0"></span><span style="font-size:20px;font-weight:700;color:#1A1A1A">'+p.kr+'</span><span style="font-size:14px;font-weight:700;padding:2px 8px;border-radius:10px;background:'+st.bg+';color:'+st.color+';border:1px solid '+st.border+'">'+st.label+'</span></div><div style="border:1px solid #E8EDF2;border-radius:10px;overflow:hidden"><table style="width:100%;border-collapse:collapse;table-layout:fixed;font-family:'+_FONT+'">'+colgroup+'<tbody>'+chartRow+thead+tbody+'</tbody></table></div></div>';
+    });
+    if(!rows)return;hasTrend=true;
+    html+='<div class="bu-group" data-bu="'+b+'" style="margin-bottom:20px"><div class="bu-header"><span class="bu-label">'+b+'</span></div>'+rows+'</div>';
   });
   if(!hasTrend){container.innerHTML='<div class="section-card"><div class="section-body" style="text-align:center;padding:40px;color:#94A3B8;font-size:16px">'+(_lang==='en'?'No monthly data available':'월간 데이터가 없습니다')+'</div></div>';return}
   var title=_lang==='en'?'Monthly Visibility Trend':'월간 Visibility 트렌드';
