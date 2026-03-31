@@ -307,8 +307,16 @@ function productSectionHtml(products, meta, t, lang, wLabels) {
       const wArrow = wd > 0 ? '▲' : wd < 0 ? '▼' : '─'
       const wColor = wd > 0 ? '#22C55E' : wd < 0 ? '#EF4444' : '#94A3B8'
       const sparkColor = p.status === 'critical' ? '#BE123C' : p.status === 'behind' ? '#D97706' : '#15803D'
-      const monthly = p.monthly || (p.prev ? [p.prev, p.score] : [])
-      const mLabels = monthly.length <= 4 ? ['M-3','M-2','M-1','M0'].slice(-monthly.length) : monthly.map((_,i) => `M${i+1}`)
+      // MoM: allScores에서 월별 LG 스코어 추출 → 최근 4개월
+      const allS = p.allScores || {}
+      const lgMonthly = allS.LG != null ? [allS.LG] : []
+      const momD = lgMonthly.length >= 2 ? +(lgMonthly[lgMonthly.length-1] - lgMonthly[lgMonthly.length-2]).toFixed(1) : null
+      const momArrow = momD > 0 ? '▲' : momD < 0 ? '▼' : '─'
+      const momColor = momD > 0 ? '#22C55E' : momD < 0 ? '#EF4444' : '#94A3B8'
+      // 최근 4M 라벨 (현재 1개월 데이터만 있을 수 있음)
+      const ML4 = ['M-3','M-2','M-1','M0']
+      const m4Data = lgMonthly.length >= 4 ? lgMonthly.slice(-4) : lgMonthly
+      const m4Labels = ML4.slice(-m4Data.length)
       const compPct = p.compRatio || (p.vsComp > 0 ? Math.round((p.score / p.vsComp) * 100) : 100)
       const compColor = compPct >= 100 ? '#15803D' : compPct >= 80 ? '#D97706' : '#BE123C'
       return `<div class="prod-card" style="border-color:${st.border}">
@@ -318,11 +326,12 @@ function productSectionHtml(products, meta, t, lang, wLabels) {
         </div>
         <div class="prod-score-row">
           <span class="prod-score">${p.score.toFixed(1)}<small>%</small></span>
-          <span class="prod-delta" style="color:${wColor}">${wd != null ? `WoW ${wArrow} ${Math.abs(wd).toFixed(1)}%p` : 'WoW —'}</span>
+          <span class="prod-delta trend-weekly" style="color:${wColor}">${wd != null ? `WoW ${wArrow} ${Math.abs(wd).toFixed(1)}%p` : 'WoW —'}</span>
+          <span class="prod-delta trend-monthly" style="display:none;color:${momColor}">${momD != null ? `MoM ${momArrow} ${Math.abs(momD).toFixed(1)}%p` : 'MoM —'}</span>
         </div>
         <div class="prod-chart">
           <div class="trend-weekly">${svgLine(weekly, wLabels, 300, 90, sparkColor)}</div>
-          <div class="trend-monthly" style="display:none">${svgLine(monthly, mLabels, 300, 90, sparkColor)}</div>
+          <div class="trend-monthly" style="display:none">${svgLine(m4Data, m4Labels, 300, 90, sparkColor)}</div>
         </div>
         <div class="prod-comp">
           <span class="prod-comp-name">${lang === 'en' ? `vs ${p.compName}` : `${p.compName} ${t.vsComp}`}</span>
