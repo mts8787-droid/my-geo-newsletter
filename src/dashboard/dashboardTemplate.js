@@ -156,17 +156,16 @@ function svgMultiLine(brandData, labels, w, h) {
       g += `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${isLG ? 3.5 : 2.5}" fill="#fff" stroke="${color}" stroke-width="${isLG ? 2 : 1.5}" opacity="${opacity}"/>`
     })
   })
-  return `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}" xmlns="http://www.w3.org/2000/svg" style="display:block">${g}</svg>`
+  return `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" style="display:block">${g}</svg>`
 }
 
 // ─── 경쟁사 트렌드 섹션 ────────────────────────────────────────────────────
 function trendDetailHtml(products, weeklyAll, weeklyLabels, t, lang) {
   if (!weeklyAll || !Object.keys(weeklyAll).length) return ''
-  // 12주 고정 — 실제 데이터 길이에서 시작 주차 역산
-  const dataLen = Math.max(...Object.values(weeklyAll).flatMap(byC => Object.values(byC).flatMap(brands => Object.values(brands).map(arr => arr?.length || 0))), 0)
-  const totalWeeks = Math.max(dataLen, 12)
-  const startWeek = (weeklyLabels && weeklyLabels.length > 0) ? parseInt(weeklyLabels[0].replace(/\D/g, '')) || 1 : Math.max(1, totalWeeks - 11)
-  const wLabels = Array.from({ length: 12 }, (_, i) => `W${startWeek + i}`)
+  // trendDetailHtml은 외부 wLabels를 사용하지 않고 자체 계산
+  const _tdLen = Math.max(...Object.values(weeklyAll).flatMap(byC => Object.values(byC).flatMap(brands => Object.values(brands).map(arr => arr?.length || 0))), 0)
+  const _tdStart = Math.max(1, _tdLen - 11)
+  const wLabels = Array.from({ length: 12 }, (_, i) => `W${_tdStart + i}`)
   const BU_ORDER = ['MS', 'HS', 'ES']
 
   const buGroups = BU_ORDER.map(bu => {
@@ -576,10 +575,10 @@ export function generateDashboardHTML(meta, total, products, citations, dotcom, 
   _sid = 0
   const t = T[lang] || T.ko
 
-  // 12주 고정 라벨 계산
-  const dataLen = weeklyAll ? Math.max(...Object.values(weeklyAll).flatMap(byC => Object.values(byC).flatMap(brands => Object.values(brands).map(arr => arr?.length || 0))), 0) : 0
-  const startWeek = (weeklyLabels && weeklyLabels.length > 0) ? parseInt(weeklyLabels[0].replace(/\D/g, '')) || 1 : Math.max(1, dataLen - 11)
-  const wLabels = Array.from({ length: 12 }, (_, i) => `W${startWeek + i}`)
+  // 12주 고정 라벨 — 데이터 길이 기반으로 시작 주차 결정
+  const _dataLen = weeklyAll ? Math.max(...Object.values(weeklyAll).flatMap(byC => Object.values(byC).flatMap(brands => Object.values(brands).map(arr => arr?.length || 0))), 0) : 0
+  const _startW = Math.max(1, _dataLen - 11)
+  const wLabels = Array.from({ length: 12 }, (_, i) => `W${_startW + i}`)
 
   // 대시보드에서는 인사이트 HTML을 항상 렌더링 (CSS로 토글)
   meta.showProductInsight = true; meta.showProductHowToRead = true
@@ -1064,7 +1063,7 @@ function _svgML(bd,labels,w,h){
     g+='<path d="'+d+'" stroke="'+c+'" fill="none" stroke-width="'+sw+'" stroke-linecap="round" stroke-linejoin="round" opacity="'+op+'"/>';
     pts.forEach(function(p){g+='<circle cx="'+p.x.toFixed(1)+'" cy="'+p.y.toFixed(1)+'" r="'+(isLG?3.5:2.5)+'" fill="#fff" stroke="'+c+'" stroke-width="'+(isLG?2:1.5)+'" opacity="'+op+'"/>'});
   });
-  return '<svg viewBox="0 0 '+w+' '+h+'" width="100%" height="'+h+'" xmlns="http://www.w3.org/2000/svg" style="display:block">'+g+'</svg>';
+  return '<svg viewBox="0 0 '+w+' '+h+'" width="100%" height="'+h+'" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" style="display:block">'+g+'</svg>';
 }
 
 // ─── Checkbox-based Filter Logic ───
