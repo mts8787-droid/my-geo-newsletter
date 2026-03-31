@@ -277,7 +277,10 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
       _log.push(`[Sync] citationsCnty: ${parsed.citationsCnty?.length ?? 0}건`)
       _log.push(`[Sync] dotcom: ${parsed.dotcom ? 'OK' : '(없음)'}`)
       _log.push(`[Sync] productsCnty: ${parsed.productsCnty?.length ?? 0}건`)
-      if (parsed.meta)         setMetaKo(m => ({ ...m, ...parsed.meta }))
+      if (parsed.meta) {
+        setMetaKo(m => ({ ...m, ...parsed.meta }))
+        setMetaEn(m => ({ ...m, period: parsed.meta.period, dateLine: parsed.meta.dateLine, reportNo: parsed.meta.reportNo }))
+      }
       if (parsed.citations)    setCitations(parsed.citations)
       if (parsed.dotcom)       setDotcom(d => ({ ...d, ...parsed.dotcom }))
       if (parsed.productsCnty) setProductsCnty(parsed.productsCnty)
