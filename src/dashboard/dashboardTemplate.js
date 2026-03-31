@@ -73,28 +73,32 @@ function stripDomain(d) {
 // ─── SVG 그래프 ──────────────────────────────────────────────────────────────
 let _sid = 0
 function svgLine(data, labels, w, h, color) {
-  if (!data || data.length < 2) return `<svg width="${w}" height="${h}"></svg>`
+  if (!data || !data.length) return `<svg width="${w}" height="${h}"></svg>`
   const id = _sid++
   const pad = { t: 18, r: 10, b: 20, l: 10 }
   const cw = w - pad.l - pad.r, ch = h - pad.t - pad.b
   const mn = Math.min(...data) - 1, mx = Math.max(...data) + 1, rng = mx - mn || 1
+  const divisor = data.length > 1 ? data.length - 1 : 1
   const pts = data.map((v, i) => ({
-    x: pad.l + (i / (data.length - 1)) * cw,
+    x: pad.l + (data.length === 1 ? cw / 2 : (i / divisor) * cw),
     y: pad.t + (1 - (v - mn) / rng) * ch, v
   }))
-  const line = pts.map((p, i) => `${i ? 'L' : 'M'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ')
-  const area = line + ` L${pts[pts.length-1].x.toFixed(1)},${pad.t+ch} L${pts[0].x.toFixed(1)},${pad.t+ch} Z`
-  return `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}" xmlns="http://www.w3.org/2000/svg" style="display:block;">
-    <defs><linearGradient id="lg${id}" x1="0" y1="0" x2="0" y2="1">
+  let svg = `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}" xmlns="http://www.w3.org/2000/svg" style="display:block;">`
+  if (pts.length >= 2) {
+    const line = pts.map((p, i) => `${i ? 'L' : 'M'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ')
+    const area = line + ` L${pts[pts.length-1].x.toFixed(1)},${pad.t+ch} L${pts[0].x.toFixed(1)},${pad.t+ch} Z`
+    svg += `<defs><linearGradient id="lg${id}" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0%" stop-color="${color}" stop-opacity="0.25"/>
       <stop offset="100%" stop-color="${color}" stop-opacity="0.03"/>
-    </linearGradient></defs>
-    <path d="${area}" fill="url(#lg${id})"/>
-    <path d="${line}" stroke="${color}" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-    ${pts.map(p => `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="3.5" fill="#fff" stroke="${color}" stroke-width="2"/>`).join('')}
-    ${pts.map(p => `<text x="${p.x.toFixed(1)}" y="${Math.max(p.y - 7, 12)}" text-anchor="middle" font-size="12" font-weight="700" fill="${color}" font-family="${FONT}">${p.v.toFixed(1)}</text>`).join('')}
-    ${pts.map((p, i) => `<text x="${p.x.toFixed(1)}" y="${pad.t+ch+14}" text-anchor="middle" font-size="12" fill="#94A3B8" font-family="${FONT}">${labels[i]||''}</text>`).join('')}
-  </svg>`
+    </linearGradient></defs>`
+    svg += `<path d="${area}" fill="url(#lg${id})"/>`
+    svg += `<path d="${line}" stroke="${color}" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`
+  }
+  svg += pts.map(p => `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="3.5" fill="#fff" stroke="${color}" stroke-width="2"/>`).join('')
+  svg += pts.map(p => `<text x="${p.x.toFixed(1)}" y="${Math.max(p.y - 7, 12)}" text-anchor="middle" font-size="12" font-weight="700" fill="${color}" font-family="${FONT}">${p.v.toFixed(1)}</text>`).join('')
+  svg += pts.map((p, i) => `<text x="${p.x.toFixed(1)}" y="${pad.t+ch+14}" text-anchor="middle" font-size="12" fill="#94A3B8" font-family="${FONT}">${labels[i]||''}</text>`).join('')
+  svg += '</svg>'
+  return svg
 }
 
 // ─── Multi-brand SVG 라인 차트 ─────────────────────────────────────────────
@@ -326,8 +330,8 @@ function productSectionHtml(products, meta, t, lang, wLabels) {
         </div>
         <div class="prod-score-row">
           <span class="prod-score">${p.score.toFixed(1)}<small>%</small></span>
-          <span class="prod-delta trend-weekly" style="color:${wColor}">${wd != null ? `WoW ${wArrow} ${Math.abs(wd).toFixed(1)}%p` : 'WoW —'}</span>
-          <span class="prod-delta trend-monthly" style="display:none;color:${momColor}">${momD != null ? `MoM ${momArrow} ${Math.abs(momD).toFixed(1)}%p` : 'MoM —'}</span>
+          <span class="prod-delta prod-wow" style="color:${wColor}">${wd != null ? `WoW ${wArrow} ${Math.abs(wd).toFixed(1)}%p` : 'WoW —'}</span>
+          <span class="prod-delta prod-mom" style="display:none;color:${momColor}">${momD != null ? `MoM ${momArrow} ${Math.abs(momD).toFixed(1)}%p` : 'MoM —'}</span>
         </div>
         <div class="prod-chart">
           <div class="trend-weekly">${svgLine(weekly, wLabels, 300, 90, sparkColor)}</div>
@@ -902,9 +906,11 @@ function switchPeriodMode(mode){
     var isM=mode==='monthly'&&btn.textContent.match(/(월간|Monthly)/);
     if(isW||isM)btn.classList.add('active');else btn.classList.remove('active');
   });
-  // Toggle product card trends
+  // Toggle product card trends + WoW/MoM
   document.querySelectorAll('.trend-weekly').forEach(function(el){el.style.display=mode==='weekly'?'':'none'});
   document.querySelectorAll('.trend-monthly').forEach(function(el){el.style.display=mode==='monthly'?'':'none'});
+  document.querySelectorAll('.prod-wow').forEach(function(el){el.style.display=mode==='weekly'?'':'none'});
+  document.querySelectorAll('.prod-mom').forEach(function(el){el.style.display=mode==='monthly'?'':'none'});
   onFilterChange();
 }
 function switchTrend(mode){switchPeriodMode(mode)}
