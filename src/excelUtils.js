@@ -147,6 +147,11 @@ function numVal(v) {
   return parseFloat(String(v ?? '').replace(/,/g, '').replace(/%/g, '').trim()) || 0
 }
 
+// 국가 코드 정규화: V.N. → VN, U.S. → US 등 (점 제거 + 대문자)
+function normCountry(raw) {
+  return String(raw || '').replace(/[()]/g, '').replace(/\./g, '').trim().toUpperCase()
+}
+
 // ─── 개별 시트 파서 ──────────────────────────────────────────────────────────────
 
 function parseMeta(rows) {
@@ -261,7 +266,7 @@ function parseProductCntyFromRow(rows, headerIdx) {
 
   data.forEach(r => {
     const div = String(r[0]).trim()
-    const country = String(r[2]).trim()
+    const country = normCountry(r[2]) || String(r[2]).trim()
     const category = String(r[3]).trim()
     const lgScore = pct(r[lgIdx])
 
@@ -495,8 +500,8 @@ function parseWeekly(rows, div) {
       const cat = String(r[catIdx >= 0 ? catIdx : 0] || '').trim()
       if (!cat) return
       const prodId = CATEGORY_ID_MAP[cat] || cat.toLowerCase()
-      const country = countryIdx >= 0 ? String(r[countryIdx] || '').replace(/[()]/g, '').trim() : 'Total'
-      const cnty = country.toUpperCase() === 'TOTAL' || country.toUpperCase() === 'TTL' || !country ? 'Total' : country
+      const rawCnty = countryIdx >= 0 ? normCountry(r[countryIdx]) : 'TOTAL'
+      const cnty = rawCnty === 'TOTAL' || rawCnty === 'TTL' || !rawCnty ? 'Total' : rawCnty
       if (!weeklyAll[prodId]) weeklyAll[prodId] = {}
       if (!weeklyAll[prodId][cnty]) weeklyAll[prodId][cnty] = {}
       weeklyAll[prodId][cnty][brand] = wCols.map(c => pct(r[c]))
@@ -633,11 +638,11 @@ function parseCitPageType(rows) {
 
   const lg = {}, samsung = {}
   const dotcomByCnty = {}  // { cnty: { lg: {...}, samsung: {...} } }
-  const CNTY_ALIAS = { 'TOTAL':'TTL', 'Total':'TTL', '미국':'US', '캐나다':'CA', '영국':'UK', '독일':'DE', '스페인':'ES', '브라질':'BR', '멕시코':'MX', '인도':'IN', '호주':'AU', '베트남':'VN' }
+  const CNTY_ALIAS = { 'TOTAL':'TTL', '미국':'US', '캐나다':'CA', '영국':'UK', '독일':'DE', '스페인':'ES', '브라질':'BR', '멕시코':'MX', '인도':'IN', '호주':'AU', '베트남':'VN' }
   console.log(`[parseCitPageType] headerIdx=${headerIdx}, bestPair=lg:${bestPair.lg}/ss:${bestPair.ss}, dataRows=${data.length}`)
   const _ptSeenCountries = new Set()
   data.forEach(r => {
-    const rawCountry = String(r[0] || '').replace(/[()]/g, '').trim()
+    const rawCountry = normCountry(r[0])
     const pageType = String(r[1] || '').replace(/[()]/g, '').trim()
     const lgVal = numVal(r[bestPair.lg])
     const ssVal = numVal(r[bestPair.ss])
@@ -763,7 +768,7 @@ function parseCitTouchPoints(rows) {
   const _seenCountries = new Set()
 
   data.forEach(r => {
-    const country = String(r[countryCol] || '').replace(/[()]/g, '').trim().toUpperCase()
+    const country = normCountry(r[countryCol])
     const channel = String(r[channelCol] || '').replace(/[()]/g, '').trim()
     if (!channel || channel.toLowerCase() === 'total') return
     _seenCountries.add(country)
