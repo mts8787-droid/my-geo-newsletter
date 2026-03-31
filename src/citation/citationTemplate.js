@@ -425,6 +425,8 @@ export function generateCitationHTML(meta, _total, _products, citations, dotcom,
 
   const filterLayerHtml = `<div class="filter-layer" id="filter-layer">
     <div class="fl-row">
+      <div class="fl-group"><div style="display:flex;gap:2px;background:#F1F5F9;border-radius:6px;padding:2px"><button class="lang-btn${lang==='ko'?' active':''}" onclick="switchCitLang('ko')">KO</button><button class="lang-btn${lang==='en'?' active':''}" onclick="switchCitLang('en')">EN</button></div></div>
+      <div class="fl-divider"></div>
       <div class="fl-group">
         <span class="fl-label">${lang === 'en' ? 'Period' : '기간'}</span>
         <span class="fl-badge">${meta.period || '—'}</span>
@@ -468,6 +470,9 @@ body{background:#F1F5F9;font-family:${FONT};min-width:1200px;color:#1A1A1A}
 .fl-chk-label{display:inline-flex;align-items:center;gap:3px;padding:3px 8px;border-radius:6px;font-size:14px;font-weight:600;color:#475569;cursor:pointer;transition:all .15s;background:#F8FAFC;border:1px solid #E2E8F0;white-space:nowrap;user-select:none}
 .fl-chk-label:hover{border-color:#94A3B8}
 .fl-chk-label:has(input:checked){background:#0F172A;color:#fff;border-color:#0F172A}
+.lang-btn{padding:4px 10px;border-radius:5px;border:none;font-size:13px;font-weight:700;cursor:pointer;background:transparent;color:#64748B;font-family:${FONT};transition:all .15s}
+.lang-btn.active{background:${RED};color:#fff}
+.lang-btn:hover:not(.active){color:#1E293B}
 .fl-chk{width:12px;height:12px;margin:0;cursor:pointer;accent-color:${RED}}
 .fl-all-label{font-weight:700}
 .fl-divider{width:1px;height:24px;background:#E8EDF2;flex-shrink:0;align-self:center}
@@ -709,6 +714,13 @@ function onRegionChange(region){
   updateAllCheckbox('region');
   updateAllCheckbox('country');
   onFilterChange();
+}
+function switchCitLang(lang){
+  var path=window.location.pathname;
+  if(path.indexOf('-KO')>0)window.location.href=path.replace('-KO',lang==='en'?'-EN':'-KO');
+  else if(path.indexOf('-EN')>0)window.location.href=path.replace('-EN',lang==='ko'?'-KO':'-EN');
+  // iframe 안에서 호출된 경우 부모에게 알림
+  try{if(window.parent!==window)window.parent.postMessage({type:'switchLang',lang:lang},'*')}catch(e){}
 }
 function onFilterChange(){
   updateAllCheckbox('region');

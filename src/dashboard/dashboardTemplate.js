@@ -641,8 +641,10 @@ export function generateDashboardHTML(meta, total, products, citations, dotcom, 
     `<label class="fl-chk-label"><input type="checkbox" class="fl-chk" data-filter="region" value="${k}" checked onchange="onRegionChange('${k}')"><span>${k}</span></label>`
   ).join('')
 
+  const langToggleHtml = `<div class="fl-group"><div style="display:flex;gap:2px;background:#F1F5F9;border-radius:6px;padding:2px"><button class="lang-btn${lang==='ko'?' active':''}" onclick="switchLang('ko')">KO</button><button class="lang-btn${lang==='en'?' active':''}" onclick="switchLang('en')">EN</button></div></div><div class="fl-divider"></div>`
   const filterLayerHtml = `<div class="filter-layer" id="filter-layer">
     <div class="fl-row">
+      ${langToggleHtml}
       <div class="fl-group">
         <span class="fl-label">${lang === 'en' ? 'Period' : '기간'}</span>
         <span class="fl-badge">${meta.period || '—'}</span>
@@ -710,7 +712,10 @@ export function generateDashboardHTML(meta, total, products, citations, dotcom, 
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#F1F5F9;font-family:${FONT};min-width:1200px;color:#1A1A1A}
 /* ── 탭바 ── */
-.tab-bar{position:sticky;top:0;z-index:100;background:#0F172A;display:flex;align-items:center;justify-content:center;gap:4px;padding:10px 40px;border-bottom:1px solid #1E293B}
+.tab-bar{position:sticky;top:0;z-index:100;background:#0F172A;display:flex;align-items:center;justify-content:space-between;padding:10px 40px;border-bottom:1px solid #1E293B}
+.lang-btn{padding:4px 10px;border-radius:5px;border:none;font-size:13px;font-weight:700;cursor:pointer;background:transparent;color:#64748B;font-family:${FONT};transition:all .15s}
+.lang-btn.active{background:${RED};color:#fff}
+.lang-btn:hover:not(.active){color:#1E293B}
 .tab-btn{padding:8px 24px;border-radius:8px;border:none;font-size:16px;font-weight:600;font-family:${FONT};cursor:pointer;transition:all .15s;color:#94A3B8;background:transparent}
 .tab-btn:hover{color:#E2E8F0}
 .tab-btn.active{background:${RED};color:#fff}
@@ -881,17 +886,23 @@ ${filterLayerHtml.replace('top:53px', 'top:0')}
 <div class="dash-container">${visContent}</div>
 ` : `
 <div class="tab-bar">
-  <button class="tab-btn active" onclick="switchTab('visibility')">Visibility</button>
-  <button class="tab-btn" onclick="switchTab('citation')">Citation</button>
-  <button class="tab-btn" onclick="switchTab('readability')">Readability</button>
-  <button class="tab-btn" onclick="switchTab('progress')">Progress Tracker</button>
+  <div style="display:flex;gap:4px;align-items:center">
+    <button class="tab-btn active" onclick="switchTab('visibility')">Visibility</button>
+    <button class="tab-btn" onclick="switchTab('citation')">Citation</button>
+    <button class="tab-btn" onclick="switchTab('readability')">Readability</button>
+    <button class="tab-btn" onclick="switchTab('progress')">Progress Tracker</button>
+  </div>
+  <div id="lang-toggle" style="display:flex;gap:2px;background:#1E293B;border-radius:6px;padding:2px">
+    <button class="lang-btn${lang === 'ko' ? ' active' : ''}" onclick="switchLang('ko')">KO</button>
+    <button class="lang-btn${lang === 'en' ? ' active' : ''}" onclick="switchLang('en')">EN</button>
+  </div>
 </div>
 <div id="tab-visibility" class="tab-panel active">
   ${filterLayerHtml}
   <div class="dash-container">${visContent}</div>
 </div>
 <div id="tab-citation" class="tab-panel">
-  <iframe src="/p/${lang === 'en' ? 'GEO-Citation-Dashboard-EN' : 'GEO-Citation-Dashboard-KO'}" style="width:100%;min-height:calc(100vh - 60px);border:none;background:#F1F5F9" title="Citation Dashboard"></iframe>
+  <iframe id="cit-iframe" src="/p/${lang === 'en' ? 'GEO-Citation-Dashboard-EN' : 'GEO-Citation-Dashboard-KO'}" style="width:100%;min-height:calc(100vh - 60px);border:none;background:#F1F5F9" title="Citation Dashboard"></iframe>
 </div>
 <div id="tab-readability" class="tab-panel">
   <div class="progress-placeholder"><div class="inner">
@@ -901,7 +912,7 @@ ${filterLayerHtml.replace('top:53px', 'top:0')}
   </div></div>
 </div>
 <div id="tab-progress" class="tab-panel">
-  <iframe src="/p/progress-tracker/" style="width:100%;min-height:calc(100vh - 60px);border:none;background:#0A0F1E" title="Progress Tracker"></iframe>
+  <iframe id="tracker-iframe" src="/p/progress-tracker/?lang=${lang}" style="width:100%;min-height:calc(100vh - 60px);border:none;background:#0A0F1E" title="Progress Tracker"></iframe>
 </div>
 `}
 <div class="dash-footer">
@@ -910,6 +921,25 @@ ${filterLayerHtml.replace('top:53px', 'top:0')}
 </div>
 <script>
 var _periodMode='weekly';
+var _curLang='${lang}';
+// iframe에서 한영 전환 메시지 수신
+window.addEventListener('message',function(e){
+  if(e.data&&e.data.type==='switchLang')switchLang(e.data.lang);
+});
+function switchLang(lang){
+  _curLang=lang;
+  document.querySelectorAll('.lang-btn').forEach(function(b){b.classList.toggle('active',b.textContent.toLowerCase()===lang)});
+  // Citation iframe 전환
+  var citIframe=document.getElementById('cit-iframe');
+  if(citIframe)citIframe.src='/p/'+(lang==='en'?'GEO-Citation-Dashboard-EN':'GEO-Citation-Dashboard-KO');
+  // Tracker iframe 전환
+  var trkIframe=document.getElementById('tracker-iframe');
+  if(trkIframe)trkIframe.src='/p/progress-tracker/?lang='+lang;
+  // KO↔EN 페이지 전환 (게시 페이지는 별도 슬러그)
+  var path=window.location.pathname;
+  if(path.indexOf('-KO')>0)window.location.href=path.replace('-KO',lang==='en'?'-EN':'-KO');
+  else if(path.indexOf('-EN')>0)window.location.href=path.replace('-EN',lang==='ko'?'-KO':'-EN');
+}
 function switchTab(id){
   document.querySelectorAll('.tab-panel').forEach(function(p){p.classList.remove('active')});
   document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active')});
