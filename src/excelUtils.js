@@ -765,14 +765,22 @@ function parseCitTouchPoints(rows) {
   data.forEach(r => {
     const country = String(r[countryCol] || '').replace(/[()]/g, '').trim().toUpperCase()
     const channel = String(r[channelCol] || '').replace(/[()]/g, '').trim()
-    if (channel.toLowerCase() === 'total') return
+    if (!channel || channel.toLowerCase() === 'total') return
     _seenCountries.add(country)
 
-    // 최신 월 데이터 찾기
+    // 최신 월 데이터 찾기 — monthLabels 컬럼만 사용 (역순으로)
     let score = 0
-    for (let i = r.length - 1; i >= dataStartCol; i--) {
-      const val = numVal(r[i])
-      if (val > 0) { score = val; break }
+    if (monthLabels.length > 0) {
+      for (let i = monthLabels.length - 1; i >= 0; i--) {
+        const val = numVal(r[monthLabels[i].col])
+        if (val > 0) { score = val; break }
+      }
+    } else {
+      // monthLabels가 없으면 기존 방식 (dataStartCol부터 역순)
+      for (let i = r.length - 1; i >= dataStartCol; i--) {
+        const val = numVal(r[i])
+        if (val > 0) { score = val; break }
+      }
     }
 
     if (country === 'TTL') {
@@ -927,13 +935,21 @@ function parseCitDomain(rows) {
     const domain = cv
     const type = ct
 
-    // 최신 월 데이터 찾기 (오른쪽에서부터)
+    // 최신 월 데이터 찾기 — domainMonthLabels 컬럼만 역순 탐색
     let citations = 0
-    for (let j = r.length - 1; j >= off + 2; j--) {
-      const raw = String(r[j] || '').replace(/,/g, '').trim()
-      if (!raw) continue
-      const val = parseFloat(raw)
-      if (!isNaN(val) && val > 0) { citations = val; break }
+    if (domainMonthLabels.length > 0) {
+      for (let j = domainMonthLabels.length - 1; j >= 0; j--) {
+        const raw = String(r[domainMonthLabels[j].col] || '').replace(/,/g, '').trim()
+        const val = parseFloat(raw)
+        if (!isNaN(val) && val > 0) { citations = val; break }
+      }
+    } else {
+      for (let j = r.length - 1; j >= off + 2; j--) {
+        const raw = String(r[j] || '').replace(/,/g, '').trim()
+        if (!raw) continue
+        const val = parseFloat(raw)
+        if (!isNaN(val) && val > 0) { citations = val; break }
+      }
     }
 
     // 모든 월별 데이터 수집 (트렌드용)
