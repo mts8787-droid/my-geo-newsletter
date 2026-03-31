@@ -1012,7 +1012,7 @@ function applyCntyFilters(){
   var selCountries=getCheckedValues('country');
   // Get product names from selected IDs
   var activeProductNames={};
-  _products.forEach(function(p){if(selProducts.isAll||selProducts.vals[p.id])activeProductNames[p.kr]=true});
+  _products.forEach(function(p){if(selProducts.isAll||selProducts.vals[p.id]){activeProductNames[p.kr]=true;if(p.category)activeProductNames[p.category]=true}});
   // product view
   document.querySelectorAll('#cnty-view-product .vbar-item').forEach(function(item){
     var p=item.getAttribute('data-product');var c=item.getAttribute('data-country');
@@ -1325,7 +1325,31 @@ function _miniSvg(data,labels,w,h,color){
   pts.forEach(function(p,i){s+='<text x="'+p.x.toFixed(1)+'" y="'+(pt+ch+14)+'" text-anchor="middle" font-size="12" fill="#94A3B8" font-family="'+_FONT+'">'+(labels[i]||'')+'</text>'});
   s+='</svg>';return s;
 }
-function _updateCard(card,score,compPct,weeklyData,wLabels){
+function _miniSvgNullAware(data,labels,w,h,color){
+  var pt=18,pr=10,pb=20,pl=10;var cw=w-pl-pr;var ch=h-pt-pb;
+  var N=data.length;var divisor=N>1?N-1:1;
+  var allX=data.map(function(_,i){return pl+(i/divisor)*cw});
+  var valid=data.filter(function(v){return v!=null});
+  var s='<svg viewBox="0 0 '+w+' '+h+'" width="100%" height="'+h+'" xmlns="http://www.w3.org/2000/svg" style="display:block">';
+  if(valid.length){
+    var mn=Math.min.apply(null,valid)-1;var mx=Math.max.apply(null,valid)+1;var rng=mx-mn||1;
+    var pts=[];
+    data.forEach(function(v,i){if(v!=null)pts.push({x:allX[i],y:pt+(1-(v-mn)/rng)*ch,v:v})});
+    if(pts.length>=2){
+      var id='mn'+Math.random().toString(36).slice(2,6);
+      var line=pts.map(function(p,i){return(i?'L':'M')+p.x.toFixed(1)+','+p.y.toFixed(1)}).join(' ');
+      var area=line+' L'+pts[pts.length-1].x.toFixed(1)+','+(pt+ch)+' L'+pts[0].x.toFixed(1)+','+(pt+ch)+' Z';
+      s+='<defs><linearGradient id="'+id+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="'+color+'" stop-opacity="0.25"/><stop offset="100%" stop-color="'+color+'" stop-opacity="0.03"/></linearGradient></defs>';
+      s+='<path d="'+area+'" fill="url(#'+id+')"/>';
+      s+='<path d="'+line+'" stroke="'+color+'" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>';
+    }
+    pts.forEach(function(p){s+='<circle cx="'+p.x.toFixed(1)+'" cy="'+p.y.toFixed(1)+'" r="3.5" fill="#fff" stroke="'+color+'" stroke-width="2"/>'});
+    pts.forEach(function(p){s+='<text x="'+p.x.toFixed(1)+'" y="'+Math.max(p.y-7,12)+'" text-anchor="middle" font-size="12" font-weight="700" fill="'+color+'" font-family="'+_FONT+'">'+p.v.toFixed(1)+'</text>'});
+  }
+  data.forEach(function(_,i){s+='<text x="'+allX[i].toFixed(1)+'" y="'+(pt+ch+14)+'" text-anchor="middle" font-size="12" fill="#94A3B8" font-family="'+_FONT+'">'+(labels[i]||'')+'</text>'});
+  s+='</svg>';return s;
+}
+function _updateCard(card,score,compPct,weeklyData,wLabels,monthlyLG,mLabels){
   var scoreEl=card.querySelector('.prod-score');
   if(scoreEl)scoreEl.innerHTML=score.toFixed(1)+'<small>%</small>';
   var cc=compPct>=100?'#15803D':compPct>=80?'#D97706':'#BE123C';
@@ -1336,21 +1360,26 @@ function _updateCard(card,score,compPct,weeklyData,wLabels){
   var badge=card.querySelector('.prod-badge');
   if(badge){badge.style.background=st.bg;badge.style.color=st.color;badge.style.borderColor=st.border;badge.textContent=st.label}
   card.style.borderColor=st.border;
+  var sparkColor=status==='critical'?'#BE123C':status==='behind'?'#D97706':'#15803D';
   // WoW 업데이트
-  var deltaEl=card.querySelector('.prod-delta');
-  if(deltaEl&&weeklyData&&weeklyData.length>=2){
+  var wowEl=card.querySelector('.prod-wow');
+  if(wowEl&&weeklyData&&weeklyData.length>=2){
     var wLast=weeklyData[weeklyData.length-1];var wPrev=weeklyData[weeklyData.length-2];
     var wd=+(wLast-wPrev).toFixed(1);
     var wArrow=wd>0?'▲':wd<0?'▼':'─';
     var wc=wd>0?'#22C55E':wd<0?'#EF4444':'#94A3B8';
-    deltaEl.style.color=wc;
-    deltaEl.textContent='WoW '+wArrow+' '+Math.abs(wd).toFixed(1)+'%p';
+    wowEl.style.color=wc;wowEl.textContent='WoW '+wArrow+' '+Math.abs(wd).toFixed(1)+'%p';
   }
-  // 미니 차트 재생성 (주간 데이터 + 신호등 색상)
-  if(weeklyData&&weeklyData.length>=2){
-    var sparkColor=status==='critical'?'#BE123C':status==='behind'?'#D97706':'#15803D';
+  // 주간 미니 차트
+  if(weeklyData&&weeklyData.length>=1){
     var chartWrap=card.querySelector('.trend-weekly');
     if(chartWrap)chartWrap.innerHTML=_miniSvg(weeklyData,wLabels,300,90,sparkColor);
+  }
+  // 월간 미니 차트 (4M: [null,null,null,score])
+  if(mLabels&&mLabels.length){
+    var m4=[null,null,null,monthlyLG!=null?monthlyLG:null];
+    var mChartWrap=card.querySelector('.trend-monthly');
+    if(mChartWrap)mChartWrap.innerHTML=_miniSvgNullAware(m4,mLabels,300,90,sparkColor);
   }
 }
 function _getWeeklyForCountries(prodId,countries){
@@ -1365,6 +1394,12 @@ function _getWeeklyForCountries(prodId,countries){
   }
   return result;
 }
+function _get4MLabels(prod){
+  var ML=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var mi=_parseMonth(prod.date||'');
+  if(mi<0)return['M-3','M-2','M-1','M0'];
+  return[0,1,2,3].map(function(i){return ML[(mi-3+i+12)%12]});
+}
 function updateProductScores(selCountry){
   var countries=selCountry.isAll?null:Object.keys(selCountry.vals);
   if(selCountry.isAll){
@@ -1372,7 +1407,9 @@ function updateProductScores(selCountry){
       var nameEl=card.querySelector('.prod-name');if(!nameEl)return;
       var prod=_products.find(function(p){return p.kr===nameEl.textContent||p.en===nameEl.textContent});if(!prod)return;
       var weekly=((_weeklyAll[prod.id]||{})['Total']||{}).LG||[];
-      _updateCard(card,prod.score,prod.compRatio||100,weekly,_wLabels);
+      var mL=_get4MLabels(prod);
+      var lgScore=prod.allScores?prod.allScores.LG:null;
+      _updateCard(card,prod.score,prod.compRatio||100,weekly,_wLabels,lgScore,mL);
     });
     return;
   }
@@ -1394,7 +1431,8 @@ function updateProductScores(selCountry){
     var comp=avg.compScores.reduce(function(s,v){return s+v},0)/avg.compScores.length;
     var compPct=comp>0?Math.round((score/comp)*100):100;
     var weekly=_getWeeklyForCountries(prod.id,countries);
-    _updateCard(card,score,compPct,Array.isArray(weekly)?weekly:(weekly.LG||[]),_wLabels);
+    var mL=_get4MLabels(prod);
+    _updateCard(card,score,compPct,Array.isArray(weekly)?weekly:(weekly.LG||[]),_wLabels,score,mL);
   });
 }
 
