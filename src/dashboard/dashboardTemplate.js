@@ -618,11 +618,7 @@ export function generateDashboardHTML(meta, total, products, citations, dotcom, 
   const _startW = meta.weekStart || Math.max(1, _dataLen - 11)
   const wLabels = Array.from({ length: 12 }, (_, i) => `W${_startW + i}`)
 
-  // 대시보드에서는 인사이트 HTML을 항상 렌더링 (CSS로 토글)
-  meta.showProductInsight = true; meta.showProductHowToRead = true
-  meta.showCntyInsight = true; meta.showCntyHowToRead = true
-  meta.showCitationInsight = true; meta.showCitationHowToRead = true
-  meta.showDotcomInsight = true; meta.showDotcomHowToRead = true
+  // 인사이트는 meta 설정값을 존중 (강제 true 제거)
 
   // 국가 목록 추출 (weeklyAll + productsCnty)
   const countries = new Set()

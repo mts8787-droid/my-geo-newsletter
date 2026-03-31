@@ -1,4 +1,5 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
+import { PanelLeftClose, PanelLeftOpen } from 'lucide-react'
 import { useSheetData } from './hooks/useSheetData'
 import Header from './components/Header'
 import SummaryCards from './components/SummaryCards'
@@ -246,6 +247,7 @@ export default function App() {
   const [selectedCategory, setSelectedCategory] = useState(null)
   const [taskTranslations, setTaskTranslations] = useState({}) // { 한글: 영어 }
   const [notice, setNotice] = useState({ show: false, text: '' })
+  const [sidebarOpen, setSidebarOpen] = useState(!IS_PUBLIC)
 
   useEffect(() => { load() }, [load])
 
@@ -254,8 +256,22 @@ export default function App() {
     fetch('/api/dashboard/sync-data').then(r => r.ok ? r.json() : null).then(d => {
       if (d?.ok && d.data?.meta) {
         const m = d.data.meta
-        if (m.noticeText) setNotice({ show: !!m.showNotice, text: m.noticeText })
+        setNotice({ show: !!m.showNotice, text: m.noticeText || '' })
       }
+    }).catch(() => {})
+  }, [])
+
+  const saveNotice = useCallback((n) => {
+    setNotice(n)
+    // 서버의 meta에 노티스 저장
+    fetch('/api/dashboard/sync-data').then(r => r.ok ? r.json() : null).then(d => {
+      if (!d?.ok) return
+      const meta = { ...(d.data?.meta || {}), showNotice: n.show, noticeText: n.text }
+      fetch('/api/dashboard/sync-data', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+        body: JSON.stringify({ data: { ...d.data, meta } })
+      }).catch(() => {})
     }).catch(() => {})
   }, [])
 
@@ -352,7 +368,40 @@ export default function App() {
         onClearCategory={() => setSelectedCategory(null)}
       />
 
-      <main className="max-w-[1400px] mx-auto px-4 py-6 space-y-6">
+      <div style={{ display: 'flex' }}>
+      {/* 사이드바 (어드민 전용) */}
+      {!IS_PUBLIC && sidebarOpen && (
+        <div style={{ width: 280, flexShrink: 0, background: '#0F172A', borderRight: '1px solid #1E293B', padding: 16, overflowY: 'auto', maxHeight: 'calc(100vh - 130px)', position: 'sticky', top: 130 }}>
+          <h3 style={{ fontSize: 14, fontWeight: 700, color: '#E2E8F0', marginBottom: 16 }}>Settings</h3>
+
+          {/* 노티스 */}
+          <div style={{ marginBottom: 16 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+              <span style={{ fontSize: 12, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase' }}>Notice</span>
+              <button onClick={() => saveNotice({ ...notice, show: !notice.show })}
+                style={{ padding: '2px 8px', borderRadius: 4, border: 'none', cursor: 'pointer', fontSize: 10, fontWeight: 700,
+                  background: notice.show ? '#166534' : '#1E293B', color: notice.show ? '#86EFAC' : '#64748B' }}>
+                {notice.show ? 'ON' : 'OFF'}
+              </button>
+            </div>
+            <textarea value={notice.text} onChange={e => setNotice(n => ({ ...n, text: e.target.value }))}
+              onBlur={() => saveNotice(notice)}
+              rows={4} placeholder="공지사항 텍스트 (**bold** 지원)"
+              style={{ width: '100%', background: '#1E293B', border: '1px solid #334155', borderRadius: 6, padding: '8px 10px',
+                fontSize: 12, color: '#E2E8F0', resize: 'vertical', outline: 'none', lineHeight: 1.6 }} />
+          </div>
+        </div>
+      )}
+      {!IS_PUBLIC && (
+        <button onClick={() => setSidebarOpen(v => !v)} title={sidebarOpen ? '패널 닫기' : '패널 열기'}
+          style={{ position: 'fixed', bottom: 20, left: 20, zIndex: 50, width: 36, height: 36, borderRadius: '50%',
+            background: '#0F172A', border: '1px solid #334155', color: '#94A3B8', cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          {sidebarOpen ? <PanelLeftClose size={16} /> : <PanelLeftOpen size={16} />}
+        </button>
+      )}
+
+      <main className="flex-1 max-w-[1400px] mx-auto px-4 py-6 space-y-6">
         {notice.show && notice.text && (
           <div style={{ background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: 12, padding: '16px 20px' }}>
             <div style={{ fontSize: 14, fontWeight: 700, color: '#BE123C', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.5 }}>
@@ -449,6 +498,7 @@ export default function App() {
           </>
         )}
       </main>
+      </div>
       <footer style={{ padding: '8px 16px', textAlign: 'right', borderTop: '1px solid #e2e8f0', flexShrink: 0 }}>
         <span style={{ fontSize: 15, color: '#94a3b8' }}>v{__APP_VERSION__}</span>
       </footer>
