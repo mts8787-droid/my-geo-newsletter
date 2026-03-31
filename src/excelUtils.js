@@ -155,7 +155,6 @@ function normCountry(raw) {
 // ─── 개별 시트 파서 ──────────────────────────────────────────────────────────────
 
 function parseMeta(rows) {
-  console.log('[parseMeta] rows count:', rows.length)
   const obj = {}
   const numKeys = ['titleFontSize', 'citationTopN', 'citDomainTopN', 'weekStart']
   const boolKeys = ['showNotice', 'showKpiLogic', 'showTotal', 'showProducts', 'showCnty',
@@ -201,7 +200,6 @@ function parseMeta(rows) {
 }
 
 function parseVisSummary(rows) {
-  console.log('[parseVisSummary] rows count:', rows.length, '| first row:', JSON.stringify(rows[0]?.slice(0, 8)))
   // 1) key-value 형식 (이전 total 시트 호환)
   const intKeys = ['rank', 'totalBrands']
   const pctKeys = ['score', 'prev', 'vsComp']
@@ -235,7 +233,6 @@ function parseVisSummary(rows) {
 
   const score = pct(ttlRow[lgCol])
   const vsComp = pct(ttlRow[actualSsCol])
-  console.log(`[parseVisSummary] TOTAL row found: LG(col${lgCol})=${score}, SS(col${actualSsCol})=${vsComp}`)
 
   // 월간 트렌드 데이터 수집 — 헤더: Date, Region, Countries, Divisions, LG, Samsung, ...
   const dateCol = headerRow ? headerRow.findIndex(c => /date/i.test(String(c || '').trim())) : 0
@@ -255,7 +252,6 @@ function parseVisSummary(rows) {
     const comp = pct(r[actualSsCol])
     if (date && lg > 0) monthlyVis.push({ date, country, division, lg, comp })
   })
-  console.log(`[parseVisSummary] monthlyVis: ${monthlyVis.length} rows, dates: ${[...new Set(monthlyVis.map(r => r.date))].join(', ')}`)
 
   const result = { total: { score, prev: score, vsComp, rank: score >= vsComp ? 1 : 2, totalBrands: 12 } }
   if (monthlyVis.length) result.monthlyVis = monthlyVis
@@ -264,7 +260,6 @@ function parseVisSummary(rows) {
 
 function parseProductCnty(rows) {
   // 헤더: Div, Date, Country, Category, LG, SAMSUNG, Comp3, ...
-  console.log('[parseProductCnty] rows count:', rows.length, '| first row:', JSON.stringify(rows[0]?.slice(0, 8)))
   const headerIdx = rows.findIndex(r => {
     const c0 = String(r[0] || '').trim().toLowerCase()
     return c0 === 'div' || c0 === 'division'
@@ -273,10 +268,8 @@ function parseProductCnty(rows) {
     // fallback: LG 컬럼이 있는 행을 헤더로 사용
     const altIdx = rows.findIndex(r => r.some((c, i) => i >= 3 && String(c || '').trim().toUpperCase() === 'LG'))
     if (altIdx < 0) { console.warn('[parseProductCnty] header not found'); return {} }
-    console.log('[parseProductCnty] using fallback header at row', altIdx, ':', JSON.stringify(rows[altIdx]?.slice(0, 8)))
     return parseProductCntyFromRow(rows, altIdx)
   }
-  console.log('[parseProductCnty] header at row', headerIdx, ':', JSON.stringify(rows[headerIdx]?.slice(0, 8)))
   return parseProductCntyFromRow(rows, headerIdx)
 }
 
@@ -322,8 +315,6 @@ function parseProductCntyFromRow(rows, headerIdx) {
     }
   })
 
-  console.log('[parseProductCnty] productsPartial:', productsPartial.length, '| productsCnty:', productsCnty.length)
-  if (productsPartial.length) console.log('[parseProductCnty] sample product:', JSON.stringify(productsPartial[0]))
 
   return {
     ...(productsPartial.length ? { productsPartial } : {}),
@@ -360,7 +351,6 @@ function parseDashboardLayout(rows, div) {
   )
   if (catRowIdx < 0) return {}
   const catRow = rows[catRowIdx]
-  console.log('[dashLayout] div:', div, '| catRow idx:', catRowIdx, '| catRow:', JSON.stringify(catRow))
 
   // TTL 행 찾기 (섹션 경계)
   const ttlRowIdx = rows.findIndex((r, i) =>
@@ -370,7 +360,6 @@ function parseDashboardLayout(rows, div) {
 
   // catRow ~ sectionEnd 사이 행 덤프 (디버그)
   for (let i = catRowIdx + 1; i < sectionEnd; i++) {
-    console.log(`[dashLayout] row ${i}:`, JSON.stringify(rows[i]))
   }
 
   // ── LG 행 탐색 (TTL 대신 LG 브랜드 행에서 값 추출) ──
@@ -391,7 +380,6 @@ function parseDashboardLayout(rows, div) {
   if (dataRowIdx < 0) return {}
   const dataRow = rows[dataRowIdx]
   const dataRowLabel = lgNbRowIdx >= 0 ? 'LG-NB' : lgRowIdx >= 0 ? 'LG' : 'TTL'
-  console.log(`[dashLayout] using ${dataRowLabel} row at idx ${dataRowIdx}:`, JSON.stringify(dataRow))
 
   const weeklyMap = {}
   // 다음 카테고리 시작 컬럼 계산 (범위 제한용)
@@ -410,16 +398,13 @@ function parseDashboardLayout(rows, div) {
       if (v > 0) vals.push(v)
       // 빈 셀은 건너뜀 (MoM 컬럼 등 사이에 빈 셀 있음)
     }
-    console.log(`[dashLayout] "${name}" col:${ci}, nextCat:${nextCatCol}, raw dataRow[ci+1..]:`, JSON.stringify(dataRow.slice(ci + 1, nextCatCol)), '→ vals:', vals)
     if (vals.length) weeklyMap[id] = vals
   }
   if (!Object.keys(weeklyMap).length) {
-    console.log('[dashLayout] no weekly data found for div:', div)
     return {}
   }
   const weeklyLabels = findWeekLabels(rows, catRowIdx, sectionEnd)
     || Object.values(weeklyMap)[0]?.map((_, i) => `W${i + 1}`) || []
-  console.log('[parseWeekly] dashboard layout result:', Object.keys(weeklyMap), '| labels:', weeklyLabels)
   return { weeklyMap, weeklyLabels }
 }
 
@@ -437,13 +422,6 @@ function sliceWeeklyData(weeklyAll, weeklyMap, start) {
 }
 
 function parseWeekly(rows, div) {
-  console.log('[parseWeekly] div:', div, '| rows count:', rows.length, '| first row:', JSON.stringify(rows[0]?.slice(0, 10)))
-  // 시트 전체 구조 덤프 (디버그)
-  for (let i = 0; i < Math.min(rows.length, 60); i++) {
-    const r = rows[i]
-    const nonEmpty = r?.map((c, j) => [j, c]).filter(([, c]) => c != null && String(c).trim() !== '')
-    if (nonEmpty?.length) console.log(`[parseWeekly] ROW ${i}:`, JSON.stringify(nonEmpty))
-  }
   const weeklyMap = {}
   let weeklyLabels = []
 
@@ -471,13 +449,10 @@ function parseWeekly(rows, div) {
     })
   }
   if (headerIdx < 0) {
-    console.log('[parseWeekly] standard header not found, trying dashboard layout...')
     return parseDashboardLayout(rows, div)
   }
 
   const header = rows[headerIdx]
-  console.log('[parseWeekly] header at row', headerIdx, '| FULL:', JSON.stringify(header))
-  if (headerIdx > 0) console.log('[parseWeekly] row above header:', JSON.stringify(rows[headerIdx - 1]))
   const data = rows.slice(headerIdx + 1).filter(r => r[0] != null && String(r[0]).trim())
 
   const catIdx = header.findIndex(c => {
@@ -608,14 +583,11 @@ function parseWeekly(rows, div) {
     const trimmedLen = weeklyLabels.length - firstDataIdx
     const start = trimmedLen > MAX_WEEKS ? weeklyLabels.length - MAX_WEEKS : firstDataIdx
     if (start > 0 && start < weeklyLabels.length) {
-      console.log('[parseWeekly] trimming weeks: start=' + start + ', from ' + weeklyLabels.length + ' → ' + (weeklyLabels.length - start))
       weeklyLabels = weeklyLabels.slice(start)
       sliceWeeklyData(weeklyAll, weeklyMap, start)
     }
   }
 
-  console.log('[parseWeekly] weeklyMap keys:', Object.keys(weeklyMap), '| weeklyLabels:', weeklyLabels,
-    '| weeklyAll products:', Object.keys(weeklyAll))
   if (Object.keys(weeklyMap).length) {
     const result = { weeklyMap }
     if (weeklyLabels.length) result.weeklyLabels = weeklyLabels
@@ -623,15 +595,10 @@ function parseWeekly(rows, div) {
     return result
   }
   // 표준 파싱 실패 시 대시보드 레이아웃 fallback
-  console.log('[parseWeekly] standard parsing empty, trying dashboard layout...')
   return parseDashboardLayout(rows, div)
 }
 
 function parseCitPageType(rows) {
-  console.log(`[parseCitPageType] START: ${rows.length} rows, first 5 rows:`)
-  for (let i = 0; i < Math.min(5, rows.length); i++) {
-    console.log(`[parseCitPageType] row ${i}: ${JSON.stringify((rows[i] || []).slice(0, 8))}`)
-  }
   // 헤더: Country, Page Type, Feb LG, Feb SS, Mar LG, Mar SS, ...
   // [Section Title] 형태의 제목 행은 건너뜀
   const headerIdx = rows.findIndex(r => {
@@ -640,10 +607,9 @@ function parseCitPageType(rows) {
     const isTitleRow = r.some(c => /^\[.*\]$/.test(String(c || '').trim()))
     return !isTitleRow
   })
-  if (headerIdx < 0) { console.log('[parseCitPageType] header not found!'); return {} }
+  if (headerIdx < 0) return {}
 
   const header = rows[headerIdx]
-  console.log(`[parseCitPageType] header row ${headerIdx}: ${JSON.stringify(header.slice(0, 10))}`)
 
   // LG/SS 컬럼 페어 찾기
   const monthPairs = []
@@ -676,7 +642,6 @@ function parseCitPageType(rows) {
   const lg = {}, samsung = {}
   const dotcomByCnty = {}  // { cnty: { lg: {...}, samsung: {...} } }
   const CNTY_ALIAS = { 'TOTAL':'TTL', '미국':'US', '캐나다':'CA', '영국':'UK', '독일':'DE', '스페인':'ES', '브라질':'BR', '멕시코':'MX', '인도':'IN', '호주':'AU', '베트남':'VN' }
-  console.log(`[parseCitPageType] headerIdx=${headerIdx}, bestPair=lg:${bestPair.lg}/ss:${bestPair.ss}, dataRows=${data.length}`)
   const _ptSeenCountries = new Set()
   data.forEach(r => {
     const rawCountry = normCountry(r[0])
@@ -699,8 +664,6 @@ function parseCitPageType(rows) {
     }
   })
 
-  console.log('[parseCitPageType] seen countries:', [..._ptSeenCountries])
-  console.log('[parseCitPageType] TTL lg:', JSON.stringify(lg), '| byCnty keys:', Object.keys(dotcomByCnty))
 
   const result = {}
   if (lg.TTL || Object.keys(lg).length) result.dotcom = { lg, samsung }
@@ -709,10 +672,6 @@ function parseCitPageType(rows) {
 }
 
 function parseCitTouchPoints(rows) {
-  console.log(`[parseCitTouchPoints] START: ${rows.length} rows`)
-  for (let i = 0; i < Math.min(5, rows.length); i++) {
-    console.log(`[parseCitTouchPoints] row ${i}: ${JSON.stringify((rows[i] || []).slice(0, 10))}`)
-  }
   // 헤더: (empty), Country, Channel, Feb, Mar, ... 또는 Country, Channel, Feb, ...
   // [Section Title] 형태의 제목 행은 건너뜀
   const headerIdx = rows.findIndex(r => {
@@ -799,9 +758,6 @@ function parseCitTouchPoints(rows) {
   // 국가별 카테고리 Citation 수집
   const citationsByCnty = {}   // { cnty: [{ source, score, ... }] }
 
-  console.log(`[parseCitTouchPoints] headerIdx=${headerIdx}, countryCol=${countryCol}, channelCol=${channelCol}, dataStartCol=${dataStartCol}, dataRows=${data.length}, monthLabels=${monthLabels.length}`)
-  console.log(`[parseCitTouchPoints] header: ${JSON.stringify(header.slice(0, 10))}`)
-  console.log(`[parseCitTouchPoints] monthLabels: ${JSON.stringify(monthLabels)}`)
   const _seenCountries = new Set()
 
   data.forEach(r => {
@@ -864,10 +820,7 @@ function parseCitTouchPoints(rows) {
     Object.values(citTouchPointsTrend).some(d => d[label] > 0)
   )
 
-  console.log('[parseCitTouchPoints] seen countries:', [..._seenCountries])
-  console.log('[parseCitTouchPoints] TTL citations:', citations.length, '| byCnty keys:', Object.keys(citationsByCnty))
   for (const [cnty, list] of Object.entries(citationsByCnty)) {
-    console.log(`[parseCitTouchPoints]   ${cnty}: ${list.length} channels, top=${list[0]?.source}(${list[0]?.score})`)
   }
 
   const result = {}
@@ -881,10 +834,6 @@ function parseCitTouchPoints(rows) {
 }
 
 function parseCitDomain(rows) {
-  console.log(`[parseCitDomain] START: ${rows.length} rows`)
-  for (let i = 0; i < Math.min(8, rows.length); i++) {
-    console.log(`[parseCitDomain] row ${i}: ${JSON.stringify((rows[i] || []).slice(0, 12))}`)
-  }
   const COUNTRIES = ['US','CA','UK','DE','ES','BR','MX','IN','AU','VN']
   const CNTY_KR = { '미국':'US','캐나다':'CA','영국':'UK','독일':'DE','스페인':'ES','브라질':'BR','멕시코':'MX','인도':'IN','호주':'AU','베트남':'VN' }
 
@@ -937,7 +886,6 @@ function parseCitDomain(rows) {
             }
           }
         }
-        console.log(`[parseCitDomain] multi-column layout: monthRow months=${JSON.stringify(domainMonthLabels)}`)
       }
     }
   }
@@ -948,9 +896,6 @@ function parseCitDomain(rows) {
   let currentCnty = 'TTL'
   let rank = 0
 
-  console.log(`[parseCitDomain] startIdx=${startIdx}, offset=${off}, totalRows=${rows.length}, headerRow=${headerRow ? 'found' : 'none'}, monthLabels=${domainMonthLabels.length}`)
-  if (headerRow) console.log(`[parseCitDomain] header: ${JSON.stringify(headerRow.slice(0, 10))}`)
-  console.log(`[parseCitDomain] domainMonthLabels: ${JSON.stringify(domainMonthLabels)}`)
 
   for (let i = startIdx; i < rows.length; i++) {
     const r = rows[i]
@@ -962,12 +907,10 @@ function parseCitDomain(rows) {
     const cntyCode = COUNTRIES.includes(cv.toUpperCase()) ? cv.toUpperCase() : CNTY_KR[cv] || null
     if (cntyCode) {
       if (!ct || ct === '') {
-        console.log(`[parseCitDomain] ✓ country marker detected: row=${i}, cv="${cv}" → ${cntyCode}`)
         currentCnty = cntyCode
         rank = 0
         continue
       } else {
-        console.log(`[parseCitDomain] ✗ country code "${cv}"(→${cntyCode}) skipped: type column not empty, ct="${ct}" (row=${i})`)
       }
     }
 
@@ -1017,11 +960,8 @@ function parseCitDomain(rows) {
   // 국가별 결과 상세 로그
   const cntyStats = {}
   result.forEach(r => { cntyStats[r.cnty] = (cntyStats[r.cnty] || 0) + 1 })
-  console.log('[parseCitDomain] result count:', result.length, '| countries:', [...new Set(result.map(r => r.cnty))])
-  console.log('[parseCitDomain] per-country counts:', JSON.stringify(cntyStats))
   if (Object.keys(citDomainTrend).length) {
     const trendCnties = [...new Set(Object.values(citDomainTrend).map(d => d.cnty))]
-    console.log('[parseCitDomain] trend countries:', trendCnties)
   }
 
   const output = {}

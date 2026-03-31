@@ -31,7 +31,8 @@
       "Bash(pkill:*)",
       "Bash(GIT_EDITOR=true git rebase --continue)",
       "Bash(claude --version)",
-      "Bash(npm uninstall:*)"
+      "Bash(npm uninstall:*)",
+      "Bash(perl -ni -e 'print unless /^\\\\s*console\\\\.\\(log|warn\\)\\\\b/' src/excelUtils.js)"
     ]
   }
 }
