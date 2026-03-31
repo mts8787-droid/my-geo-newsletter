@@ -6,7 +6,9 @@ function fmtRate(rate) {
   return `${rate.toFixed(1)}%`
 }
 
-export default function DetailTable({ tasks, month, lang = 'ko' }) {
+function _tr(lang, tr, text) { return lang === 'en' && tr && tr[text] ? tr[text] : text }
+
+export default function DetailTable({ tasks, month, lang = 'ko', tr = {} }) {
   return (
     <div style={{ background: '#fff', border: '1px solid #E2E8F0', borderRadius: 12, overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
       <div style={{ padding: '16px 20px', borderBottom: '1px solid #E2E8F0' }}>
@@ -40,10 +42,10 @@ export default function DetailTable({ tasks, month, lang = 'ko' }) {
                     </span>
                   </td>
                   <td style={{ padding: '9px 12px', textAlign: 'center', color: '#64748B' }}>{tCat(lang, tk.taskCategory)}</td>
-                  <td style={{ padding: '9px 12px', color: '#1E293B', fontWeight: 500 }}>{tk.task}</td>
+                  <td style={{ padding: '9px 12px', color: '#1E293B', fontWeight: 500 }}>{_tr(lang, tr, tk.task)}</td>
                   <td style={{ padding: '9px 12px', color: '#64748B' }}>{tk.pageType}</td>
                   <td style={{ padding: '9px 12px', color: '#475569', maxWidth: 280 }}>
-                    <span style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={tk.detail}>{tk.detail}</span>
+                    <span style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={_tr(lang, tr, tk.detail)}>{_tr(lang, tr, tk.detail)}</span>
                   </td>
                   <td style={{ padding: '9px 12px', textAlign: 'right', color: '#64748B', fontVariantNumeric: 'tabular-nums' }}>
                     {typeof tk.goal === 'number' && tk.goal > 0 ? tk.goal.toLocaleString() : '\u2014'}

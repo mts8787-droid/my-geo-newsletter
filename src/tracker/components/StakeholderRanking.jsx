@@ -3,7 +3,9 @@ import { t, tSH, tMonth } from '../../shared/i18n.js'
 
 function fmt(n) { return Number(n).toLocaleString('en-US') }
 
-export default function StakeholderRanking({ stakeholders, month, selectedSH, lang = 'ko' }) {
+function _tr(lang, tr, text) { return lang === 'en' && tr && tr[text] ? tr[text] : text }
+
+export default function StakeholderRanking({ stakeholders, month, selectedSH, lang = 'ko', tr = {} }) {
   const filtered = selectedSH === '전체' ? stakeholders : stakeholders.filter(s => s.name === selectedSH)
   const totalWarnings = filtered.reduce((s, sh) => s + sh.warnings, 0)
 
@@ -62,7 +64,7 @@ export default function StakeholderRanking({ stakeholders, month, selectedSH, la
                     return (
                       <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '2px 6px', background: '#F8FAFC', borderRadius: 4, border: '1px solid #F1F5F9' }}>
                         <span style={{ width: 10, height: 10, borderRadius: '50%', background: tdSt.dot, display: 'inline-block', flexShrink: 0 }} />
-                        <span style={{ color: '#111827', fontWeight: 500, maxWidth: 150, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 16 }} title={td.task}>{td.task}</span>
+                        <span style={{ color: '#111827', fontWeight: 500, maxWidth: 150, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 16 }} title={_tr(lang, tr, td.task)}>{_tr(lang, tr, td.task)}</span>
                         <span style={{ fontSize: 14, color: '#64748B', whiteSpace: 'nowrap' }}>{fmt(td.monthActual)}/{fmt(td.monthGoal)}</span>
                         {td.rate !== null && (
                           <span style={{ fontWeight: 700, color: tdSt.text, fontSize: 16 }}>{td.rate.toFixed(0)}%</span>

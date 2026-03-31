@@ -10,6 +10,7 @@ import CategorySummary from './components/CategorySummary'
 import RawGoalTable from './components/RawGoalTable'
 import { MONTHS } from './utils/constants'
 import { t } from '../shared/i18n.js'
+import { translateTexts } from '../shared/utils.js'
 
 const IS_PUBLIC = window.location.pathname.startsWith('/p/')
 const URL_LANG = new URLSearchParams(window.location.search).get('lang')
@@ -243,11 +244,29 @@ export default function App() {
   })
   const [selectedSH, setSelectedSH] = useState('전체')
   const [selectedCategory, setSelectedCategory] = useState(null)
+  const [taskTranslations, setTaskTranslations] = useState({}) // { 한글: 영어 }
 
   useEffect(() => { load() }, [load])
 
   // Reset category filter when stakeholder changes
   useEffect(() => { setSelectedCategory(null) }, [selectedSH])
+
+  // EN 모드일 때 과제명/상세 자동 번역
+  useEffect(() => {
+    if (lang !== 'en' || !data) return
+    const goals = data.quantitativeGoals?.rows || []
+    const qualGoals = data.qualitativeGoals?.rows || []
+    const allTexts = new Set()
+    goals.forEach(g => { if (g.task) allTexts.add(g.task); if (g.detail) allTexts.add(g.detail) })
+    qualGoals.forEach(g => { if (g.task) allTexts.add(g.task); if (g.detail) allTexts.add(g.detail) })
+    const toTranslate = [...allTexts].filter(t => t && /[가-힣]/.test(t) && !taskTranslations[t])
+    if (!toTranslate.length) return
+    translateTexts(toTranslate, { from: 'ko', to: 'en' }).then(results => {
+      const map = { ...taskTranslations }
+      toTranslate.forEach((k, i) => { if (results[i]) map[k] = results[i] })
+      setTaskTranslations(map)
+    }).catch(() => {})
+  }, [lang, data])
 
   const stakeholderList = useMemo(() => {
     if (!data) return []
@@ -376,12 +395,14 @@ export default function App() {
               month={selectedMonth}
               selectedSH={selectedSH}
               lang={lang}
+              tr={taskTranslations}
             />
 
             <DetailTable
               tasks={dashboard.tasks}
               month={selectedMonth}
               lang={lang}
+              tr={taskTranslations}
             />
 
             {data && (
@@ -392,6 +413,7 @@ export default function App() {
                 selectedCategory={selectedCategory}
                 month={selectedMonth}
                 lang={lang}
+                tr={taskTranslations}
               />
             )}
 
@@ -401,6 +423,7 @@ export default function App() {
                 selectedSH={selectedSH}
                 selectedCategory={selectedCategory}
                 lang={lang}
+                tr={taskTranslations}
               />
             )}
           </>

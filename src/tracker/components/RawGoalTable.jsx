@@ -1,7 +1,9 @@
 import { MONTHS, STAKEHOLDER_COLORS, SECTION_BAR } from '../utils/constants'
 import { t, tSH, tCat, tMonth } from '../../shared/i18n.js'
 
-export default function RawGoalTable({ rows, selectedSH, selectedCategory, lang = 'ko' }) {
+function _tr(lang, tr, text) { return lang === 'en' && tr && tr[text] ? tr[text] : text }
+
+export default function RawGoalTable({ rows, selectedSH, selectedCategory, lang = 'ko', tr = {} }) {
   let filtered = selectedSH === '전체' ? rows : rows.filter(r => r.stakeholder === selectedSH)
   if (selectedCategory) filtered = filtered.filter(r => r.taskCategory === selectedCategory)
 
@@ -43,7 +45,7 @@ export default function RawGoalTable({ rows, selectedSH, selectedCategory, lang 
                     </span>
                   </td>
                   <td style={{ padding: '9px 12px', textAlign: 'center', color: '#64748B' }}>{tCat(lang, r.taskCategory)}</td>
-                  <td style={{ padding: '9px 12px', color: '#1E293B', fontWeight: 500 }}>{r.task}</td>
+                  <td style={{ padding: '9px 12px', color: '#1E293B', fontWeight: 500 }}>{_tr(lang, tr, r.task)}</td>
                   <td style={{ padding: '9px 12px', color: '#64748B' }}>{r.pageType}</td>
                   {MONTHS.map(m => {
                     const v = r.monthly?.[m]

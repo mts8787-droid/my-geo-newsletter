@@ -10,7 +10,9 @@ function statusDot(val, lang) {
   return { dot: '#94A3B8', label: val, bg: 'transparent' }
 }
 
-export default function QualitativeTable({ goals, results, selectedSH, selectedCategory, month, lang = 'ko' }) {
+function _tr(lang, tr, text) { return lang === 'en' && tr && tr[text] ? tr[text] : text }
+
+export default function QualitativeTable({ goals, results, selectedSH, selectedCategory, month, lang = 'ko', tr = {} }) {
   let filtered = results
   if (selectedSH !== '전체') filtered = filtered.filter(r => r.stakeholder === selectedSH)
   if (selectedCategory) filtered = filtered.filter(r => {
@@ -62,10 +64,10 @@ export default function QualitativeTable({ goals, results, selectedSH, selectedC
                       <span style={{ display: 'inline-block', padding: '2px 8px', borderRadius: 4, fontSize: 16, fontWeight: 700, background: color + '18', color: '#111827', border: `1px solid ${color}30` }}>{tSH(lang, sh)}</span>
                     </td>
                     <td style={{ padding: '9px 12px', textAlign: 'center', color: '#64748B' }}>{tCat(lang, r.taskCategory || g?.taskCategory || '')}</td>
-                    <td style={{ padding: '9px 12px', color: '#1E293B', fontWeight: 500 }}>{r.task}</td>
+                    <td style={{ padding: '9px 12px', color: '#1E293B', fontWeight: 500 }}>{_tr(lang, tr, r.task)}</td>
                     <td style={{ padding: '9px 12px', color: '#64748B' }}>{r.pageType || g?.pageType || ''}</td>
                     <td style={{ padding: '9px 12px', color: '#475569', maxWidth: 300 }}>
-                      <span style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={r.detail || g?.detail || ''}>{r.detail || g?.detail || ''}</span>
+                      <span style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={_tr(lang, tr, r.detail || g?.detail || '')}>{_tr(lang, tr, r.detail || g?.detail || '')}</span>
                     </td>
                     <td style={{ padding: '9px 12px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
