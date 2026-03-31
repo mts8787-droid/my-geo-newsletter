@@ -1024,7 +1024,7 @@ function switchCitCnty(btn){
 }
 // ─── Embedded Data ───
 var _weeklyAll=${weeklyAll ? JSON.stringify(weeklyAll) : '{}'};
-var _products=${JSON.stringify(products.map(p => ({ id: p.id, bu: p.bu, kr: p.kr, en: p.en || p.kr, status: p.status, score: p.score || 0, prev: p.prev || 0, vsComp: p.vsComp || 0, compName: p.compName || '', compRatio: p.compRatio || 0 })))};
+var _products=${JSON.stringify(products.map(p => ({ id: p.id, bu: p.bu, kr: p.kr, en: p.en || p.kr, status: p.status, score: p.score || 0, prev: p.prev || 0, vsComp: p.vsComp || 0, compName: p.compName || '', compRatio: p.compRatio || 0, monthly: p.monthly || [] })))};
 var _productsCnty=${JSON.stringify(productsCnty || [])};
 var _total=${JSON.stringify(total)};
 var _meta={period:'${(meta.period || '').replace(/'/g, "\\'")}',reportNo:'${(meta.reportNo || '').replace(/'/g, "\\'")}',totalInsight:${JSON.stringify(meta.totalInsight || '')}};
@@ -1211,36 +1211,43 @@ function _renderMonthlyTrend(container,selBU,selProd,trendCnty){
 
 // ─── 제품 카드 스코어 국가 필터 업데이트 ───
 function updateProductScores(selCountry){
-  if(selCountry.isAll)return; // 전체 선택 시 기본 스코어 유지
+  // 전체 선택 시 원래 스코어로 복원
+  if(selCountry.isAll){
+    document.querySelectorAll('.prod-card').forEach(function(card){
+      var nameEl=card.querySelector('.prod-name');if(!nameEl)return;
+      var prod=_products.find(function(p){return p.kr===nameEl.textContent||p.en===nameEl.textContent});if(!prod)return;
+      var scoreEl=card.querySelector('.prod-score');if(scoreEl)scoreEl.innerHTML=prod.score.toFixed(1)+'<small>%</small>';
+      var compPct=prod.compRatio||100;
+      var cc=compPct>=100?'#15803D':compPct>=80?'#D97706':'#BE123C';
+      var compBar=card.querySelector('.prod-comp-bar');if(compBar){compBar.style.width=Math.min(compPct,120)+'%';compBar.style.background=cc}
+      var compPctEl=card.querySelector('.prod-comp-pct');if(compPctEl){compPctEl.textContent=compPct+'%';compPctEl.style.color=cc}
+    });
+    return;
+  }
   var cKeys=Object.keys(selCountry.vals);
-  if(cKeys.length!==1)return; // 단일 국가만 지원
+  if(cKeys.length!==1)return;
   var cnty=cKeys[0];
-  // productsCnty에서 해당 국가 데이터 찾기
-  var cntyMap={};
+  // productsCnty.product는 원본명(TV,WM 등), 대소문자 무관 매칭
+  var cntyByProduct={};
   _productsCnty.forEach(function(r){
-    var c=r.country||'';
-    if(c===cnty||c.toUpperCase()===cnty){
-      var cat=(r.category||r.product||'').toLowerCase();
-      cntyMap[cat]=r;
+    if((r.country||'')===cnty){
+      cntyByProduct[(r.product||'').toUpperCase()]=r;
     }
   });
+  console.log('[updateProductScores] cnty='+cnty+', keys='+Object.keys(cntyByProduct).join(','));
   document.querySelectorAll('.prod-card').forEach(function(card){
-    var nameEl=card.querySelector('.prod-name');
-    if(!nameEl)return;
-    var name=nameEl.textContent;
-    var prod=_products.find(function(p){return p.kr===name||p.en===name});
-    if(!prod)return;
-    var cntyRow=cntyMap[prod.id]||cntyMap[prod.kr?.toLowerCase()];
+    var nameEl=card.querySelector('.prod-name');if(!nameEl)return;
+    var prod=_products.find(function(p){return p.kr===nameEl.textContent||p.en===nameEl.textContent});if(!prod)return;
+    var cntyRow=cntyByProduct[prod.id.toUpperCase()]||cntyByProduct[prod.kr.toUpperCase()];
     if(!cntyRow)return;
-    var score=cntyRow.score||cntyRow.LG||cntyRow.lg||0;
-    var comp=cntyRow.compScore||cntyRow.vsComp||0;
+    var score=cntyRow.score||0;
+    var comp=cntyRow.compScore||0;
     var scoreEl=card.querySelector('.prod-score');
     if(scoreEl)scoreEl.innerHTML=score.toFixed(1)+'<small>%</small>';
     var compPct=comp>0?Math.round((score/comp)*100):100;
-    var compBar=card.querySelector('.prod-comp-bar');
-    var compPctEl=card.querySelector('.prod-comp-pct');
-    if(compBar)compBar.style.width=Math.min(compPct,120)+'%';
-    if(compPctEl){compPctEl.textContent=compPct+'%'}
+    var cc=compPct>=100?'#15803D':compPct>=80?'#D97706':'#BE123C';
+    var compBar=card.querySelector('.prod-comp-bar');if(compBar){compBar.style.width=Math.min(compPct,120)+'%';compBar.style.background=cc}
+    var compPctEl=card.querySelector('.prod-comp-pct');if(compPctEl){compPctEl.textContent=compPct+'%';compPctEl.style.color=cc}
   });
 }
 
