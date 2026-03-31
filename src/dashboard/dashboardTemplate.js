@@ -316,8 +316,13 @@ function productSectionHtml(products, meta, t, lang, wLabels) {
     const prods = products.filter(p => p.bu === bu)
     if (!prods.length) return ''
     const cards = prods.map(p => {
-      const st = statusInfo(p.status, lang)
       const weekly = p.weekly || []
+      // 최근 주 스코어로 표시 (없으면 월간 스코어 폴백)
+      const latestScore = weekly.length > 0 ? weekly[weekly.length - 1] : p.score
+      const latestComp = p.vsComp || 0
+      const latestRatio = latestComp > 0 ? Math.round((latestScore / latestComp) * 100) : 100
+      const latestStatus = latestRatio >= 100 ? 'lead' : latestRatio >= 80 ? 'behind' : 'critical'
+      const st = statusInfo(latestStatus, lang)
       // WoW: 마지막 2주 차이
       const wLast = weekly.length >= 2 ? weekly[weekly.length - 1] : null
       const wPrev = weekly.length >= 2 ? weekly[weekly.length - 2] : null
@@ -341,7 +346,7 @@ function productSectionHtml(products, meta, t, lang, wLabels) {
       const momD = null // 이전 월 데이터 없으면 계산 불가
       const momArrow = '─'
       const momColor = '#94A3B8'
-      const compPct = p.compRatio || (p.vsComp > 0 ? Math.round((p.score / p.vsComp) * 100) : 100)
+      const compPct = latestRatio
       const compColor = compPct >= 100 ? '#15803D' : compPct >= 80 ? '#D97706' : '#BE123C'
       return `<div class="prod-card" style="border-color:${st.border}">
         <div class="prod-head">
@@ -349,7 +354,7 @@ function productSectionHtml(products, meta, t, lang, wLabels) {
           <span class="prod-badge" style="background:${st.bg};color:${st.color};border-color:${st.border}">${st.label}</span>
         </div>
         <div class="prod-score-row">
-          <span class="prod-score">${p.score.toFixed(1)}<small>%</small></span>
+          <span class="prod-score">${latestScore.toFixed(1)}<small>%</small></span>
           <span class="prod-delta prod-wow" style="color:${wColor}">${wd != null ? `WoW ${wArrow} ${Math.abs(wd).toFixed(1)}%p` : 'WoW —'}</span>
           <span class="prod-delta prod-mom" style="display:none;color:${momColor}">${momD != null ? `MoM ${momArrow} ${Math.abs(momD).toFixed(1)}%p` : 'MoM —'}</span>
         </div>
