@@ -306,12 +306,16 @@ function parseProductCntyFromRow(rows, headerIdx) {
     const topComp = [...compScores].sort((a, b) => b.score - a.score)[0] || { name: '', score: 0 }
     const gap = +(lgScore - topComp.score).toFixed(2)
 
+    // 전체 경쟁사 스코어 맵: { Samsung: 91.6, Hisense: 42.3, ... }
+    const allScores = { LG: lgScore }
+    compScores.forEach(c => { allScores[c.name] = c.score })
+
     if (country === 'TTL') {
       const id = CATEGORY_ID_MAP[category] || category.toLowerCase()
       const kr = CATEGORY_KR_MAP[category] || category
-      productsPartial.push({ id, bu: div, kr, category, date, score: lgScore, prev: 0, vsComp: topComp.score, compName: topComp.name })
+      productsPartial.push({ id, bu: div, kr, category, date, score: lgScore, prev: 0, vsComp: topComp.score, compName: topComp.name, allScores })
     } else {
-      productsCnty.push({ product: category, country, date, score: lgScore, compName: topComp.name, compScore: topComp.score, gap })
+      productsCnty.push({ product: category, country, date, score: lgScore, compName: topComp.name, compScore: topComp.score, gap, allScores })
     }
   })
 
