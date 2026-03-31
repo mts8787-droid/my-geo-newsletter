@@ -305,6 +305,8 @@ function productSectionHtml(products, meta, t, lang, wLabels) {
       const wArrow = wd > 0 ? '▲' : wd < 0 ? '▼' : '─'
       const wColor = wd > 0 ? '#22C55E' : wd < 0 ? '#EF4444' : '#94A3B8'
       const sparkColor = p.status === 'critical' ? '#BE123C' : p.status === 'behind' ? '#D97706' : '#15803D'
+      const monthly = p.monthly || (p.prev ? [p.prev, p.score] : [])
+      const mLabels = monthly.length <= 4 ? ['M-3','M-2','M-1','M0'].slice(-monthly.length) : monthly.map((_,i) => `M${i+1}`)
       const compPct = p.compRatio || (p.vsComp > 0 ? Math.round((p.score / p.vsComp) * 100) : 100)
       const compColor = compPct >= 100 ? '#15803D' : compPct >= 80 ? '#D97706' : '#BE123C'
       return `<div class="prod-card" style="border-color:${st.border}">
