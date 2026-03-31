@@ -605,8 +605,8 @@ app.post('/api/publish-dashboard', (req, res) => {
   const { htmlKo, htmlEn, title } = req.body || {}
   if (!htmlKo || !htmlEn) return res.status(400).json({ ok: false, error: 'htmlKo, htmlEn 필수' })
   try {
-    writeFileSync(join(PUB_DIR, `${DASH_KO_SLUG}.html`), injectLangBar(htmlKo, 'ko', DASH_KO_SLUG, DASH_EN_SLUG))
-    writeFileSync(join(PUB_DIR, `${DASH_EN_SLUG}.html`), injectLangBar(htmlEn, 'en', DASH_KO_SLUG, DASH_EN_SLUG))
+    writeFileSync(join(PUB_DIR, `${DASH_KO_SLUG}.html`), htmlKo)
+    writeFileSync(join(PUB_DIR, `${DASH_EN_SLUG}.html`), htmlEn)
     const meta = { title: title || 'GEO KPI Dashboard', ts: Date.now() }
     writeFileSync(DASH_META, JSON.stringify(meta, null, 2))
     console.log('[PUBLISH-DASH]', meta.title, `-> /p/${DASH_KO_SLUG}, /p/${DASH_EN_SLUG}`)
@@ -633,8 +633,8 @@ app.post('/api/publish-citation', (req, res) => {
   const { htmlKo, htmlEn, title } = req.body || {}
   if (!htmlKo || !htmlEn) return res.status(400).json({ ok: false, error: 'htmlKo, htmlEn 필수' })
   try {
-    writeFileSync(join(PUB_DIR, `${CIT_KO_SLUG}.html`), injectLangBar(htmlKo, 'ko', CIT_KO_SLUG, CIT_EN_SLUG))
-    writeFileSync(join(PUB_DIR, `${CIT_EN_SLUG}.html`), injectLangBar(htmlEn, 'en', CIT_KO_SLUG, CIT_EN_SLUG))
+    writeFileSync(join(PUB_DIR, `${CIT_KO_SLUG}.html`), htmlKo)
+    writeFileSync(join(PUB_DIR, `${CIT_EN_SLUG}.html`), htmlEn)
     const meta = { title: title || 'GEO Citation Dashboard', ts: Date.now() }
     writeFileSync(CIT_META, JSON.stringify(meta, null, 2))
     console.log('[PUBLISH-CIT]', meta.title, `-> /p/${CIT_KO_SLUG}, /p/${CIT_EN_SLUG}`)
@@ -668,8 +668,8 @@ app.post('/api/publish-visibility', (req, res) => {
   const { htmlKo, htmlEn, title } = req.body || {}
   if (!htmlKo || !htmlEn) return res.status(400).json({ ok: false, error: 'htmlKo, htmlEn 필수' })
   try {
-    writeFileSync(join(PUB_DIR, `${VIS_KO_SLUG}.html`), injectLangBar(htmlKo, 'ko', VIS_KO_SLUG, VIS_EN_SLUG))
-    writeFileSync(join(PUB_DIR, `${VIS_EN_SLUG}.html`), injectLangBar(htmlEn, 'en', VIS_KO_SLUG, VIS_EN_SLUG))
+    writeFileSync(join(PUB_DIR, `${VIS_KO_SLUG}.html`), htmlKo)
+    writeFileSync(join(PUB_DIR, `${VIS_EN_SLUG}.html`), htmlEn)
     const meta = { title: title || 'GEO Visibility Dashboard', ts: Date.now() }
     writeFileSync(VIS_META, JSON.stringify(meta, null, 2))
     console.log('[PUBLISH-VIS]', meta.title, `-> /p/${VIS_KO_SLUG}, /p/${VIS_EN_SLUG}`)

@@ -935,11 +935,15 @@ function switchLang(lang){
   // Tracker iframe 전환
   var trkIframe=document.getElementById('tracker-iframe');
   if(trkIframe)trkIframe.src='/p/progress-tracker/?lang='+lang;
-  // KO↔EN 페이지 전환 (게시 페이지는 별도 슬러그)
+  // KO↔EN 페이지 전환 — 현재 탭을 hash로 유지
   var path=window.location.pathname;
-  if(path.indexOf('-KO')>0)window.location.href=path.replace('-KO',lang==='en'?'-EN':'-KO');
-  else if(path.indexOf('-EN')>0)window.location.href=path.replace('-EN',lang==='ko'?'-KO':'-EN');
+  var activeTab=document.querySelector('.tab-panel.active');
+  var hash=activeTab?'#'+activeTab.id.replace('tab-',''):'';
+  if(path.indexOf('-KO')>0)window.location.href=path.replace('-KO',lang==='en'?'-EN':'-KO')+hash;
+  else if(path.indexOf('-EN')>0)window.location.href=path.replace('-EN',lang==='ko'?'-KO':'-EN')+hash;
 }
+// 페이지 로드 시 hash에서 탭 복원
+(function(){var h=window.location.hash.replace('#','');if(h&&document.getElementById('tab-'+h)){switchTab(h)}})();
 function switchTab(id){
   document.querySelectorAll('.tab-panel').forEach(function(p){p.classList.remove('active')});
   document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active')});
