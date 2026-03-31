@@ -169,9 +169,11 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
       })
       idx += citCategoryTexts.length
 
-      // 국가별 매핑
+      // 국가별 매핑 — 2~3자리 대문자 코드(US, VN, TTL 등)는 번역하지 않음
       const countryMap = {}
-      cntyCountries.forEach((v, i) => { countryMap[v] = tr[idx + i] || v })
+      cntyCountries.forEach((v, i) => {
+        countryMap[v] = /^[A-Z]{2,3}$/.test(v) ? v : (tr[idx + i] || v)
+      })
       idx += cntyCountries.length
       const cntyProductMap = {}
       cntyProducts.forEach((v, i) => { cntyProductMap[v] = tr[idx + i] || v })
@@ -180,7 +182,9 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
       cntyCompNames.forEach((v, i) => { cntyCompMap[v] = tr[idx + i] || v })
       idx += cntyCompNames.length
       const citCntyMap = {}
-      citCntyNames.forEach((v, i) => { citCntyMap[v] = tr[idx + i] || v })
+      citCntyNames.forEach((v, i) => {
+        citCntyMap[v] = /^[A-Z]{2,3}$/.test(v) ? v : (tr[idx + i] || v)
+      })
 
       // ★ 핵심 수정: callback form 사용 → 최신 state를 기준으로 EN 필드만 추가
       // 기존 숫자 데이터(score, weekly, vsComp 등)를 절대 덮어쓰지 않음
