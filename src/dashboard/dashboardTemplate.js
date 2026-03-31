@@ -1181,9 +1181,9 @@ function filterTrend(selBU,selProd,selCountry){
 var _mLabels=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 function _parseMonth(d){
   var ML=['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
-  var m=d.match(/(\d{1,2})월/);if(m)return parseInt(m[1])-1;
+  var m=d.match(/([0-9]{1,2})월/);if(m)return parseInt(m[1])-1;
   var e=d.match(/(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i);if(e)return ML.indexOf(e[1].toLowerCase());
-  var iso=d.match(/\d{4}-(\d{2})/);if(iso)return parseInt(iso[1])-1;
+  var iso=d.match(/[0-9]{4}-([0-9]{2})/);if(iso)return parseInt(iso[1])-1;
   return -1;
 }
 function _getMonthlyBrandData(cat,countries){
