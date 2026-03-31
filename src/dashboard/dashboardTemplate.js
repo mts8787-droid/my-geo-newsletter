@@ -619,8 +619,8 @@ export function generateDashboardHTML(meta, total, products, citations, dotcom, 
       <div class="fl-group">
         <span class="fl-label">${lang === 'en' ? 'View' : '조회'}</span>
         <div class="trend-tabs" id="period-toggle">
-          <button class="trend-tab active" onclick="switchPeriodMode('weekly')">${lang === 'en' ? 'Weekly' : '주간'}</button>
-          <button class="trend-tab" onclick="switchPeriodMode('monthly')">${lang === 'en' ? 'Monthly' : '월간'}</button>
+          <button class="trend-tab active" onclick="switchPeriodMode('weekly')">${lang === 'en' ? 'Weekly Trend' : '주간 트렌드'}</button>
+          <button class="trend-tab" onclick="switchPeriodMode('monthly')">${lang === 'en' ? 'Monthly Trend' : '월간 트렌드'}</button>
         </div>
       </div>
     </div>
@@ -1085,7 +1085,7 @@ function onFilterChange(){
   filterTrend(selBU,selProd,selCountry);
   applyCntyFilters();
   updateHeroFromCheckboxes();
-  // filterCitationByCountry removed — Citation tab uses iframe
+  updateProductScores(selCountry);
 }
 function filterBU(selBU){
   document.querySelectorAll('.bu-group[data-bu]').forEach(function(g){
@@ -1113,6 +1113,13 @@ function filterTrend(selBU,selProd,selCountry){
     if(cKeys.length===1)trendCnty=cKeys[0];
   }
   var container=document.getElementById('trend-container');if(!container)return;
+
+  // 월간 모드: 제품별 월간 스코어 표시
+  if(_periodMode==='monthly'){
+    _renderMonthlyTrend(container,selBU,selProd,trendCnty);
+    return;
+  }
+
   var BU=['MS','HS','ES'];var html='';var hasTrend=false;
   // Selected product IDs
   var selectedProdIds=selProd.isAll?null:selProd.vals;
@@ -1142,6 +1149,99 @@ function filterTrend(selBU,selProd,selCountry){
   var sub=_wLabels[0]+'–'+_wLabels[_wLabels.length-1]+' ('+_wLabels.length+(_lang==='en'?' weeks':'주')+')';
   var cntyLabel=trendCnty==='Total'?'':' — '+trendCnty;
   container.innerHTML='<div class="section-card"><div class="section-header"><div class="section-title">'+title+cntyLabel+'</div><span class="legend">'+sub+'</span></div><div class="section-body">'+html+'</div></div>';
+}
+
+// ─── 월간 트렌드 렌더링 ───
+var _mLabels=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function _renderMonthlyTrend(container,selBU,selProd,trendCnty){
+  var BU=['MS','HS','ES'];var html='';var hasTrend=false;
+  var selectedProdIds=selProd.isAll?null:selProd.vals;
+  // productsCnty에서 국가별/제품별 데이터 수집
+  var cntyData={};
+  _productsCnty.forEach(function(r){
+    var key=r.product||r.category;
+    if(!cntyData[key])cntyData[key]={};
+    cntyData[key][r.country||'Total']=r;
+  });
+  BU.forEach(function(b){
+    if(!selBU.isAll&&!selBU.vals[b])return;
+    var prods=_products.filter(function(p){return p.bu===b&&(!selectedProdIds||selectedProdIds[p.id])});
+    if(!prods.length)return;
+    var rows='';
+    prods.forEach(function(p){
+      // 월간 데이터: p.monthly 배열 또는 빈 배열
+      var monthly=p.monthly||[];
+      if(!monthly.length&&p.prev)monthly=[p.prev,p.score];
+      if(monthly.length<2)return;
+      var N=12;
+      var colgroup='<colgroup><col style="width:'+_TREND_BC+'px">'+_mLabels.map(function(){return'<col>'}).join('')+'</colgroup>';
+      // SVG 라인 차트
+      var mn=Infinity,mx=-Infinity;
+      monthly.forEach(function(v){if(v!=null){if(v<mn)mn=v;if(v>mx)mx=v}});
+      if(!isFinite(mn)){mn=0;mx=100}
+      var pad2=Math.max((mx-mn)*0.15,2);mn=Math.max(0,mn-pad2);mx=Math.min(100,mx+pad2);
+      var rng=mx-mn||1;var svgW=N*80;var svgH=180;var pt2=8;var pb2=8;var ch2=svgH-pt2-pb2;
+      var sg='';
+      for(var gi=0;gi<=4;gi++){var gy=pt2+(gi/4)*ch2;sg+='<line x1="0" y1="'+gy.toFixed(1)+'" x2="'+svgW+'" y2="'+gy.toFixed(1)+'" stroke="#E8EDF2" stroke-width="1"/>';}
+      var pts=[];
+      monthly.forEach(function(v,i){if(v!=null){var x=((i+0.5)/N)*svgW;var y=pt2+(1-(v-mn)/rng)*ch2;pts.push({x:x,y:y,v:v})}});
+      if(pts.length>=2){
+        var c2=p.status==='critical'?'#BE123C':p.status==='behind'?'#D97706':'#15803D';
+        var d2=pts.map(function(pt,i){return(i?'L':'M')+pt.x.toFixed(1)+','+pt.y.toFixed(1)}).join(' ');
+        sg+='<path d="'+d2+'" stroke="'+c2+'" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>';
+        pts.forEach(function(pt){sg+='<circle cx="'+pt.x.toFixed(1)+'" cy="'+pt.y.toFixed(1)+'" r="3.5" fill="#fff" stroke="'+c2+'" stroke-width="2"/>';});
+        pts.forEach(function(pt){sg+='<text x="'+pt.x.toFixed(1)+'" y="'+(Math.max(pt.y-8,14))+'" text-anchor="middle" font-size="11" font-weight="700" fill="'+c2+'" font-family="'+_FONT+'">'+pt.v.toFixed(1)+'</text>';});
+      }
+      var svgStr='<svg viewBox="0 0 '+svgW+' '+svgH+'" width="100%" height="'+svgH+'" xmlns="http://www.w3.org/2000/svg" style="display:block">'+sg+'</svg>';
+      var chartRow='<tr><td style="padding:0;border:0"></td><td colspan="'+N+'" style="padding:8px 0;border:0">'+svgStr+'</td></tr>';
+      var thead='<tr style="border-top:1px solid #E8EDF2"><th style="text-align:left;padding:5px 6px;font-size:14px;color:#94A3B8;font-weight:600;border-bottom:1px solid #F1F5F9">Month</th>'+_mLabels.map(function(m){return'<th style="text-align:center;padding:5px 2px;font-size:14px;color:#94A3B8;font-weight:600;border-bottom:1px solid #F1F5F9">'+m+'</th>'}).join('')+'</tr>';
+      var cells=_mLabels.map(function(_,mi){var val=monthly[mi];return'<td style="text-align:center;padding:5px 2px;font-size:14px;color:'+(val!=null?'#1A1A1A':'#CBD5E1')+';font-weight:700;border-bottom:1px solid #F8FAFC;font-variant-numeric:tabular-nums">'+(val!=null?val.toFixed(1):'—')+'</td>'}).join('');
+      var tbody='<tr style="background:#FFF8F9"><td style="padding:5px 6px;font-size:14px;font-weight:700;color:'+_RED+';border-bottom:1px solid #F8FAFC">LG</td>'+cells+'</tr>';
+      var st=_statusInfo(p.status);
+      rows+='<div class="trend-row" style="margin-bottom:24px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><span style="width:4px;height:22px;border-radius:4px;background:'+_RED+';flex-shrink:0"></span><span style="font-size:20px;font-weight:700;color:#1A1A1A">'+p.kr+'</span><span style="font-size:14px;font-weight:700;padding:2px 8px;border-radius:10px;background:'+st.bg+';color:'+st.color+';border:1px solid '+st.border+'">'+st.label+'</span></div><div style="border:1px solid #E8EDF2;border-radius:10px;overflow:hidden"><table style="width:100%;border-collapse:collapse;table-layout:fixed;font-family:'+_FONT+'">'+colgroup+'<tbody>'+chartRow+thead+tbody+'</tbody></table></div></div>';
+    });
+    if(!rows)return;hasTrend=true;
+    html+='<div class="bu-group" data-bu="'+b+'" style="margin-bottom:20px"><div class="bu-header"><span class="bu-label">'+b+'</span></div>'+rows+'</div>';
+  });
+  if(!hasTrend){container.innerHTML='';return}
+  var title=_lang==='en'?'Monthly Trend':'월간 트렌드';
+  var cntyLabel=trendCnty==='Total'?'':' — '+trendCnty;
+  container.innerHTML='<div class="section-card"><div class="section-header"><div class="section-title">'+title+cntyLabel+'</div><span class="legend">Jan–Dec (12'+(_lang==='en'?' months':'개월')+')</span></div><div class="section-body">'+html+'</div></div>';
+}
+
+// ─── 제품 카드 스코어 국가 필터 업데이트 ───
+function updateProductScores(selCountry){
+  if(selCountry.isAll)return; // 전체 선택 시 기본 스코어 유지
+  var cKeys=Object.keys(selCountry.vals);
+  if(cKeys.length!==1)return; // 단일 국가만 지원
+  var cnty=cKeys[0];
+  // productsCnty에서 해당 국가 데이터 찾기
+  var cntyMap={};
+  _productsCnty.forEach(function(r){
+    var c=r.country||'';
+    if(c===cnty||c.toUpperCase()===cnty){
+      var cat=(r.category||r.product||'').toLowerCase();
+      cntyMap[cat]=r;
+    }
+  });
+  document.querySelectorAll('.prod-card').forEach(function(card){
+    var nameEl=card.querySelector('.prod-name');
+    if(!nameEl)return;
+    var name=nameEl.textContent;
+    var prod=_products.find(function(p){return p.kr===name||p.en===name});
+    if(!prod)return;
+    var cntyRow=cntyMap[prod.id]||cntyMap[prod.kr?.toLowerCase()];
+    if(!cntyRow)return;
+    var score=cntyRow.score||cntyRow.LG||cntyRow.lg||0;
+    var comp=cntyRow.compScore||cntyRow.vsComp||0;
+    var scoreEl=card.querySelector('.prod-score');
+    if(scoreEl)scoreEl.innerHTML=score.toFixed(1)+'<small>%</small>';
+    var compPct=comp>0?Math.round((score/comp)*100):100;
+    var compBar=card.querySelector('.prod-comp-bar');
+    var compPctEl=card.querySelector('.prod-comp-pct');
+    if(compBar)compBar.style.width=Math.min(compPct,120)+'%';
+    if(compPctEl){compPctEl.textContent=compPct+'%'}
+  });
 }
 
 // ─── Hero / Executive Summary 동적 업데이트 (체크박스 기반) ───
