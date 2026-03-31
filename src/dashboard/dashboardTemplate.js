@@ -1188,14 +1188,13 @@ function _renderMonthlyTrend(container,selBU,selProd,trendCnty){
   var ML=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   var html='';var hasTrend=false;
   var selectedProdIds=selProd.isAll?null:selProd.vals;
-  // _productsCnty에서 제품별 + date별 TTL 스코어 수집
+  // _products(TTL)에서 제품별 + date별 스코어 수집
   var byProd={};// { CATEGORY: { monthIdx: score } }
-  _productsCnty.forEach(function(r){
-    if((r.country||'')!=='TTL')return;
-    var key=(r.product||'').toUpperCase();
-    var mi=_parseMonth(r.date||'');if(mi<0)return;
+  _products.forEach(function(p){
+    var key=(p.category||p.id||'').toUpperCase();
+    var mi=_parseMonth(p.date||'');if(mi<0)return;
     if(!byProd[key])byProd[key]={};
-    byProd[key][mi]=r.score||0;
+    byProd[key][mi]=p.score||0;
   });
   var BU=['MS','HS','ES'];
   BU.forEach(function(b){
