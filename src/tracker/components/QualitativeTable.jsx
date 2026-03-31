@@ -1,5 +1,5 @@
 import { STAKEHOLDER_COLORS, SECTION_BAR } from '../utils/constants'
-import { t, tSH } from '../../shared/i18n.js'
+import { t, tSH, tCat, tMonth } from '../../shared/i18n.js'
 
 function statusDot(val, lang) {
   if (!val || val === '') return { dot: '#CBD5E1', label: '\u2014', bg: 'transparent' }
@@ -42,7 +42,7 @@ export default function QualitativeTable({ goals, results, selectedSH, selectedC
               <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 16, fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', width: 240, minWidth: 240 }}>{t(lang, 'task')}</th>
               <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 16, fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', width: 140, minWidth: 140 }}>Page Type</th>
               <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 16, fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', minWidth: 160 }}>{t(lang, 'goalDetail')}</th>
-              <th style={{ padding: '10px 12px', textAlign: 'center', fontSize: 16, fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', minWidth: 90 }}>{t(lang, 'result', month)}</th>
+              <th style={{ padding: '10px 12px', textAlign: 'center', fontSize: 16, fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', minWidth: 90 }}>{t(lang, 'result', tMonth(lang, month))}</th>
             </tr>
           </thead>
           <tbody>
@@ -61,7 +61,7 @@ export default function QualitativeTable({ goals, results, selectedSH, selectedC
                     <td style={{ padding: '9px 12px', textAlign: 'center' }}>
                       <span style={{ display: 'inline-block', padding: '2px 8px', borderRadius: 4, fontSize: 16, fontWeight: 700, background: color + '18', color: '#111827', border: `1px solid ${color}30` }}>{tSH(lang, sh)}</span>
                     </td>
-                    <td style={{ padding: '9px 12px', textAlign: 'center', color: '#64748B' }}>{r.taskCategory || g?.taskCategory || ''}</td>
+                    <td style={{ padding: '9px 12px', textAlign: 'center', color: '#64748B' }}>{tCat(lang, r.taskCategory || g?.taskCategory || '')}</td>
                     <td style={{ padding: '9px 12px', color: '#1E293B', fontWeight: 500 }}>{r.task}</td>
                     <td style={{ padding: '9px 12px', color: '#64748B' }}>{r.pageType || g?.pageType || ''}</td>
                     <td style={{ padding: '9px 12px', color: '#475569', maxWidth: 300 }}>

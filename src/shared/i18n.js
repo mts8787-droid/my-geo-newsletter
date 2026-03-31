@@ -167,6 +167,8 @@ const T = {
       '기술 SEO': 'Technical SEO', '구조화 데이터': 'Structured Data',
       '콘텐츠 최적화': 'Content Optimization', '데이터 분석': 'Data Analysis',
       '전략 수립': 'Strategy Planning', '모니터링': 'Monitoring',
+      '외부채널 관리': 'External Channel Mgmt', '닷컴 기술 개선': 'Dotcom Tech Improvement',
+      '전사 변화 관리': 'Enterprise Change Mgmt',
     },
     _month: {
       '3월':'Mar','4월':'Apr','5월':'May','6월':'Jun','7월':'Jul','8월':'Aug',

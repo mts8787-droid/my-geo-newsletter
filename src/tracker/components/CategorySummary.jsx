@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { STAKEHOLDER_COLORS, SECTION_BAR, statusOfDark as statusOf } from '../utils/constants'
-import { t, tSH, tCat } from '../../shared/i18n.js'
+import { t, tSH, tCat, tMonth } from '../../shared/i18n.js'
 
 function fmt(n) { return Number(n).toLocaleString('en-US') }
 
@@ -90,7 +90,7 @@ export default function CategorySummary({ categories, month, lang = 'ko', select
               {/* 월 달성률 */}
               <div style={{ marginBottom: 10 }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-                  <span style={{ fontSize: 15, color: '#94A3B8', width: 82, flexShrink: 0 }}>{t(lang, 'monthlyRate', month)}</span>
+                  <span style={{ fontSize: 15, color: '#94A3B8', width: 82, flexShrink: 0 }}>{t(lang, 'monthlyRate', tMonth(lang, month))}</span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0, justifyContent: 'flex-end' }}>
                     <span style={{ width: 12, height: 12, borderRadius: '50%', background: ms.dot, display: 'inline-block', boxShadow: `0 0 6px ${ms.dot}55` }} />
                     <span style={{ fontSize: 20, fontWeight: 700, color: ms.text }}>{cat.monthRate}%</span>

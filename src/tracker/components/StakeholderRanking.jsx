@@ -1,5 +1,5 @@
 import { STAKEHOLDER_COLORS, SECTION_BAR, statusOf } from '../utils/constants'
-import { t, tSH } from '../../shared/i18n.js'
+import { t, tSH, tMonth } from '../../shared/i18n.js'
 
 function fmt(n) { return Number(n).toLocaleString('en-US') }
 
@@ -31,7 +31,7 @@ export default function StakeholderRanking({ stakeholders, month, selectedSH, la
       <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr 240px 40px 240px', gap: 0, padding: '10px 20px', borderBottom: '1px solid #E2E8F0', background: '#F8FAFC' }}>
         <span style={{ fontSize: 16, fontWeight: 600, color: '#475569', textAlign: 'center', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t(lang, 'org')}</span>
         <span style={{ fontSize: 16, fontWeight: 600, color: '#475569', textAlign: 'center', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t(lang, 'taskStatus')}</span>
-        <span style={{ fontSize: 16, fontWeight: 600, color: '#475569', textAlign: 'center', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t(lang, 'monthlyRate', month)}</span>
+        <span style={{ fontSize: 16, fontWeight: 600, color: '#475569', textAlign: 'center', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t(lang, 'monthlyRate', tMonth(lang, month))}</span>
         <span />
         <span style={{ fontSize: 16, fontWeight: 600, color: '#475569', textAlign: 'center', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t(lang, 'cumulativeRate')}</span>
       </div>
