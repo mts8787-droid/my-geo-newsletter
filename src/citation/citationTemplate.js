@@ -727,8 +727,11 @@ function onFilterChange(){
   updateAllCheckbox('country');
   applyFilter();
 }
-// iframe 안이면 한영 토글 숨기기 (통합 대시보드에 이미 있음)
-if(window.parent!==window){document.querySelectorAll('.cit-lang-toggle').forEach(function(el){el.style.display='none'})}
+// iframe 안이면 한영 토글 + 헤더 숨기기 (통합 대시보드에 이미 있음)
+try{if(window.self!==window.top){
+  document.querySelectorAll('.cit-lang-toggle').forEach(function(el){el.style.display='none'});
+  var hdr=document.querySelector('.cit-header');if(hdr)hdr.style.display='none';
+}}catch(e){}
 </script>
 </body>
 </html>`
