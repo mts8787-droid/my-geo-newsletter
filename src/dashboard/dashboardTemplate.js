@@ -1496,7 +1496,7 @@ function updateHeroFromCheckboxes(){
   // Calculate filtered scores
   var result=calcFilteredDataCB(selBU,selProd,selCountry);
   if(!result)return;
-  var sc=result.score;var comp=result.vsComp;var compName=result.compName||'Competitor';
+  var sc=result.score;var comp=result.vsComp;var compName='SAMSUNG';
   var d=+(sc-(result.prev||sc)).toFixed(1);
   var gap=+(sc-comp).toFixed(1);
   var dArrow=d>0?'▲':d<0?'▼':'─';
@@ -1511,35 +1511,38 @@ function updateHeroFromCheckboxes(){
   var compDiv=hero.querySelector('.hero-comp');
   if(compDiv&&comp>0){compDiv.innerHTML='<span class="hero-comp-label">'+compName.toUpperCase()+'</span> <span class="hero-comp-score">'+comp.toFixed(1)+'%</span><span class="hero-comp-gap" style="color:'+(gap>=0?'#22C55E':'#EF4444')+'">Gap '+(gap>=0?'+':'')+gap.toFixed(1)+'%p</span>'}
 }
+function _getSamsungScore(item){
+  if(item.allScores){var s=item.allScores.SAMSUNG||item.allScores.Samsung||item.allScores.Samsumg;if(s!=null)return s}
+  return item.compScore||item.vsComp||0;
+}
 function calcFilteredDataCB(selBU,selProd,selCountry){
-  // Get selected product names
   var selectedProdNames={};
-  _products.forEach(function(p){if(selProd.isAll||selProd.vals[p.id])selectedProdNames[p.kr]=true});
+  _products.forEach(function(p){if(selProd.isAll||selProd.vals[p.id]){selectedProdNames[p.kr]=true;if(p.category)selectedProdNames[p.category]=true}});
   // If specific countries selected → use productsCnty
   if(!selCountry.isAll){
     var cntyData=_productsCnty.filter(function(r){return selCountry.vals[r.country]});
-    if(!selBU.isAll)cntyData=cntyData.filter(function(r){return _products.some(function(p){return p.kr===r.product&&selBU.vals[p.bu]})});
+    if(!selBU.isAll)cntyData=cntyData.filter(function(r){return _products.some(function(p){return(p.kr===r.product||p.category===r.product)&&selBU.vals[p.bu]})});
     if(!selProd.isAll)cntyData=cntyData.filter(function(r){return selectedProdNames[r.product]});
     if(!cntyData.length)return _total;
     var lgAvg=cntyData.reduce(function(s,r){return s+r.score},0)/cntyData.length;
-    var compAvg=cntyData.reduce(function(s,r){return s+r.compScore},0)/cntyData.length;
-    return{score:+lgAvg.toFixed(1),prev:+lgAvg.toFixed(1),vsComp:+compAvg.toFixed(1),compName:cntyData[0].compName||''}
+    var ssAvg=cntyData.reduce(function(s,r){return s+_getSamsungScore(r)},0)/cntyData.length;
+    return{score:+lgAvg.toFixed(1),prev:+lgAvg.toFixed(1),vsComp:+ssAvg.toFixed(1),compName:'SAMSUNG'}
   }
   // Specific products
   if(!selProd.isAll){
     var fProds=_products.filter(function(p){return selProd.vals[p.id]&&(selBU.isAll||selBU.vals[p.bu])});
     if(!fProds.length)return _total;
     var lgA=fProds.reduce(function(s,p){return s+p.score},0)/fProds.length;
-    var cA=fProds.reduce(function(s,p){return s+p.vsComp},0)/fProds.length;
-    return{score:+lgA.toFixed(1),prev:+lgA.toFixed(1),vsComp:+cA.toFixed(1),compName:fProds.length===1?fProds[0].compName:''}
+    var ssA=fProds.reduce(function(s,p){return s+_getSamsungScore(p)},0)/fProds.length;
+    return{score:+lgA.toFixed(1),prev:+lgA.toFixed(1),vsComp:+ssA.toFixed(1),compName:'SAMSUNG'}
   }
   // Specific BU
   if(!selBU.isAll){
     var buProds=_products.filter(function(p){return selBU.vals[p.bu]});
     if(!buProds.length)return _total;
     var lgA2=buProds.reduce(function(s,p){return s+p.score},0)/buProds.length;
-    var cA2=buProds.reduce(function(s,p){return s+p.vsComp},0)/buProds.length;
-    return{score:+lgA2.toFixed(1),prev:+lgA2.toFixed(1),vsComp:+cA2.toFixed(1),compName:''}
+    var cA2=buProds.reduce(function(s,p){return s+_getSamsungScore(p)},0)/buProds.length;
+    return{score:+lgA2.toFixed(1),prev:+lgA2.toFixed(1),vsComp:+cA2.toFixed(1),compName:'SAMSUNG'}
   }
   return _total;
 }
