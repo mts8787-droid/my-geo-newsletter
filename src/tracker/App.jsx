@@ -234,7 +234,7 @@ function computeDashboard(data, month, stakeholderFilter, categoryFilter) {
 }
 
 export default function App() {
-  const lang = URL_LANG === 'en' ? 'en' : 'ko'
+  const [lang, setLang] = useState(URL_LANG === 'en' ? 'en' : 'ko')
   const { data, loading, error, load, refresh } = useSheetData(IS_PUBLIC ? 'snapshot' : 'live')
   const [selectedMonth, setSelectedMonth] = useState(() => {
     const m = new Date().getMonth() + 1  // 1-12
@@ -315,6 +315,7 @@ export default function App() {
         publishInfo={publishInfo}
         onUnpublish={handleUnpublish}
         lang={lang}
+        setLang={setLang}
         selectedCategory={selectedCategory}
         setSelectedCategory={setSelectedCategory}
         categoryList={categoryList}

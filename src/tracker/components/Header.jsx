@@ -6,7 +6,7 @@ export default function Header({
   onRefresh, loading, selectedMonth, setSelectedMonth,
   selectedSH, setSelectedSH, stakeholderList,
   isPublic, onPublish, publishing, publishInfo, onUnpublish,
-  lang = 'ko', selectedCategory, setSelectedCategory, categoryList = [], onClearCategory,
+  lang = 'ko', setLang, selectedCategory, setSelectedCategory, categoryList = [], onClearCategory,
 }) {
   return (
     <header className="sticky top-0 z-30 bg-white/95 backdrop-blur border-b border-[#E2E8F0] shadow-sm">
@@ -78,8 +78,17 @@ export default function Header({
           )}
         </div>
 
-        {/* Right: admin buttons */}
+        {/* Right: lang toggle + admin buttons */}
         <div className="flex items-center gap-2">
+          {setLang && (
+            <div className="flex bg-[#F1F5F9] rounded-md p-0.5">
+              {['ko', 'en'].map(l => (
+                <button key={l} onClick={() => setLang(l)}
+                  className={`px-2 py-0.5 rounded text-[14px] font-bold transition-all ${lang === l ? 'bg-[#CF0652] text-white' : 'text-[#64748B] hover:text-[#111827]'}`}
+                >{l.toUpperCase()}</button>
+              ))}
+            </div>
+          )}
           {!isPublic && (
             <>
               <button
