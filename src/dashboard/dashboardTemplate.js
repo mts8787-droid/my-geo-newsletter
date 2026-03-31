@@ -297,13 +297,14 @@ function productSectionHtml(products, meta, t, lang, wLabels) {
     if (!prods.length) return ''
     const cards = prods.map(p => {
       const st = statusInfo(p.status, lang)
-      const d = +(p.score - (p.prev || 0)).toFixed(1)
-      const dArrow = d > 0 ? '▲' : d < 0 ? '▼' : '─'
-      const dColor = d > 0 ? '#22C55E' : d < 0 ? '#EF4444' : '#94A3B8'
-      const sparkColor = p.status === 'critical' ? '#BE123C' : p.status === 'behind' ? '#D97706' : '#15803D'
       const weekly = p.weekly || []
-      const monthly = p.monthly || (p.prev ? [p.prev, p.score] : [])
-      const mLabels = monthly.length <= 4 ? ['M-3','M-2','M-1','M0'].slice(-monthly.length) : monthly.map((_,i) => `M${i+1}`)
+      // WoW: 마지막 2주 차이
+      const wLast = weekly.length >= 2 ? weekly[weekly.length - 1] : null
+      const wPrev = weekly.length >= 2 ? weekly[weekly.length - 2] : null
+      const wd = (wLast != null && wPrev != null) ? +(wLast - wPrev).toFixed(1) : null
+      const wArrow = wd > 0 ? '▲' : wd < 0 ? '▼' : '─'
+      const wColor = wd > 0 ? '#22C55E' : wd < 0 ? '#EF4444' : '#94A3B8'
+      const sparkColor = p.status === 'critical' ? '#BE123C' : p.status === 'behind' ? '#D97706' : '#15803D'
       const compPct = p.compRatio || (p.vsComp > 0 ? Math.round((p.score / p.vsComp) * 100) : 100)
       const compColor = compPct >= 100 ? '#15803D' : compPct >= 80 ? '#D97706' : '#BE123C'
       return `<div class="prod-card" style="border-color:${st.border}">
@@ -313,7 +314,7 @@ function productSectionHtml(products, meta, t, lang, wLabels) {
         </div>
         <div class="prod-score-row">
           <span class="prod-score">${p.score.toFixed(1)}<small>%</small></span>
-          <span class="prod-delta" style="color:${dColor}">${p.prev ? `MoM ${dArrow} ${Math.abs(d).toFixed(1)}%p` : 'MoM —'}</span>
+          <span class="prod-delta" style="color:${wColor}">${wd != null ? `WoW ${wArrow} ${Math.abs(wd).toFixed(1)}%p` : 'WoW —'}</span>
         </div>
         <div class="prod-chart">
           <div class="trend-weekly">${svgLine(weekly, wLabels, 300, 90, sparkColor)}</div>
@@ -1258,6 +1259,16 @@ function _updateCard(card,score,compPct,weeklyData,wLabels){
   var badge=card.querySelector('.prod-badge');
   if(badge){badge.style.background=st.bg;badge.style.color=st.color;badge.style.borderColor=st.border;badge.textContent=st.label}
   card.style.borderColor=st.border;
+  // WoW 업데이트
+  var deltaEl=card.querySelector('.prod-delta');
+  if(deltaEl&&weeklyData&&weeklyData.length>=2){
+    var wLast=weeklyData[weeklyData.length-1];var wPrev=weeklyData[weeklyData.length-2];
+    var wd=+(wLast-wPrev).toFixed(1);
+    var wArrow=wd>0?'▲':wd<0?'▼':'─';
+    var wc=wd>0?'#22C55E':wd<0?'#EF4444':'#94A3B8';
+    deltaEl.style.color=wc;
+    deltaEl.textContent='WoW '+wArrow+' '+Math.abs(wd).toFixed(1)+'%p';
+  }
   // 미니 차트 재생성 (주간 데이터 + 신호등 색상)
   if(weeklyData&&weeklyData.length>=2){
     var sparkColor=status==='critical'?'#BE123C':status==='behind'?'#D97706':'#15803D';
