@@ -160,12 +160,8 @@ function svgMultiLine(brandData, labels, w, h) {
 }
 
 // ─── 경쟁사 트렌드 섹션 ────────────────────────────────────────────────────
-function trendDetailHtml(products, weeklyAll, weeklyLabels, t, lang) {
+function trendDetailHtml(products, weeklyAll, wLabels, t, lang) {
   if (!weeklyAll || !Object.keys(weeklyAll).length) return ''
-  // trendDetailHtml은 외부 wLabels를 사용하지 않고 자체 계산
-  const _tdLen = Math.max(...Object.values(weeklyAll).flatMap(byC => Object.values(byC).flatMap(brands => Object.values(brands).map(arr => arr?.length || 0))), 0)
-  const _tdStart = Math.max(1, _tdLen - 11)
-  const wLabels = Array.from({ length: 12 }, (_, i) => `W${_tdStart + i}`)
   const BU_ORDER = ['MS', 'HS', 'ES']
 
   const buGroups = BU_ORDER.map(bu => {
@@ -292,10 +288,9 @@ function heroHtml(total, meta, t, lang) {
 }
 
 // ─── 제품 섹션 ──────────────────────────────────────────────────────────────
-function productSectionHtml(products, meta, t, lang, weeklyLabels) {
+function productSectionHtml(products, meta, t, lang, wLabels) {
   if (!products.length) return ''
   const BU_ORDER = ['MS', 'HS', 'ES']
-  const wLabels = (weeklyLabels && weeklyLabels.length) ? weeklyLabels : Array.from({ length: 12 }, (_, i) => `W${i + 1}`)
 
   const buGroups = BU_ORDER.map(bu => {
     const prods = products.filter(p => p.bu === bu)
@@ -575,9 +570,9 @@ export function generateDashboardHTML(meta, total, products, citations, dotcom, 
   _sid = 0
   const t = T[lang] || T.ko
 
-  // 12주 고정 라벨 — 데이터 길이 기반으로 시작 주차 결정
+  // 12주 고정 라벨 — meta.weekStart 또는 데이터 길이 기반
   const _dataLen = weeklyAll ? Math.max(...Object.values(weeklyAll).flatMap(byC => Object.values(byC).flatMap(brands => Object.values(brands).map(arr => arr?.length || 0))), 0) : 0
-  const _startW = Math.max(1, _dataLen - 11)
+  const _startW = meta.weekStart || Math.max(1, _dataLen - 11)
   const wLabels = Array.from({ length: 12 }, (_, i) => `W${_startW + i}`)
 
   // 대시보드에서는 인사이트 HTML을 항상 렌더링 (CSS로 토글)
@@ -659,8 +654,8 @@ export function generateDashboardHTML(meta, total, products, citations, dotcom, 
 
   const visContent = [
     meta.showTotal !== false ? heroHtml(total, meta, t, lang) : '',
-    meta.showProducts !== false ? productSectionHtml(products, meta, t, lang, weeklyLabels) : '',
-    `<div id="trend-container">${trendDetailHtml(products, weeklyAll, weeklyLabels, t, lang)}</div>`,
+    meta.showProducts !== false ? productSectionHtml(products, meta, t, lang, wLabels) : '',
+    `<div id="trend-container">${trendDetailHtml(products, weeklyAll, wLabels, t, lang)}</div>`,
     meta.showCnty !== false ? countrySectionHtml(productsCnty, meta, t, lang) : '',
   ].join('')
   // Citation 탭은 iframe으로 별도 사이테이션 페이지를 가져옴
