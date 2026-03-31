@@ -274,7 +274,7 @@ function parseProductCntyFromRow(rows, headerIdx) {
     if (country === 'TTL') {
       const id = CATEGORY_ID_MAP[category] || category.toLowerCase()
       const kr = CATEGORY_KR_MAP[category] || category
-      productsPartial.push({ id, bu: div, kr, score: lgScore, prev: 0, vsComp: topComp.score, compName: topComp.name })
+      productsPartial.push({ id, bu: div, kr, category, score: lgScore, prev: 0, vsComp: topComp.score, compName: topComp.name })
     } else {
       productsCnty.push({ product: category, country, score: lgScore, compName: topComp.name, compScore: topComp.score, gap })
     }

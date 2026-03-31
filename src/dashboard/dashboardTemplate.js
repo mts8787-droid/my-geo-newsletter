@@ -619,8 +619,7 @@ export function generateDashboardHTML(meta, total, products, citations, dotcom, 
       <div class="fl-group">
         <span class="fl-label">${lang === 'en' ? 'View' : '조회'}</span>
         <div class="trend-tabs" id="period-toggle">
-          <button class="trend-tab active" onclick="switchPeriodMode('weekly')">${lang === 'en' ? 'Weekly Trend' : '주간 트렌드'}</button>
-          <button class="trend-tab" onclick="switchPeriodMode('monthly')">${lang === 'en' ? 'Monthly Trend' : '월간 트렌드'}</button>
+          <button class="trend-tab active" onclick="switchPeriodMode('weekly')">${lang === 'en' ? 'Weekly' : '주간'}</button>
         </div>
       </div>
     </div>
@@ -1024,7 +1023,7 @@ function switchCitCnty(btn){
 }
 // ─── Embedded Data ───
 var _weeklyAll=${weeklyAll ? JSON.stringify(weeklyAll) : '{}'};
-var _products=${JSON.stringify(products.map(p => ({ id: p.id, bu: p.bu, kr: p.kr, en: p.en || p.kr, status: p.status, score: p.score || 0, prev: p.prev || 0, vsComp: p.vsComp || 0, compName: p.compName || '', compRatio: p.compRatio || 0, monthly: p.monthly || [] })))};
+var _products=${JSON.stringify(products.map(p => ({ id: p.id, bu: p.bu, kr: p.kr, en: p.en || p.kr, category: p.category || '', status: p.status, score: p.score || 0, prev: p.prev || 0, vsComp: p.vsComp || 0, compName: p.compName || '', compRatio: p.compRatio || 0 })))};
 var _productsCnty=${JSON.stringify(productsCnty || [])};
 var _total=${JSON.stringify(total)};
 var _meta={period:'${(meta.period || '').replace(/'/g, "\\'")}',reportNo:'${(meta.reportNo || '').replace(/'/g, "\\'")}',totalInsight:${JSON.stringify(meta.totalInsight || '')}};
@@ -1238,7 +1237,7 @@ function updateProductScores(selCountry){
   document.querySelectorAll('.prod-card').forEach(function(card){
     var nameEl=card.querySelector('.prod-name');if(!nameEl)return;
     var prod=_products.find(function(p){return p.kr===nameEl.textContent||p.en===nameEl.textContent});if(!prod)return;
-    var cntyRow=cntyByProduct[prod.id.toUpperCase()]||cntyByProduct[prod.kr.toUpperCase()];
+    var cntyRow=cntyByProduct[(prod.category||'').toUpperCase()]||cntyByProduct[prod.id.toUpperCase()]||cntyByProduct[prod.kr.toUpperCase()];
     if(!cntyRow)return;
     var score=cntyRow.score||0;
     var comp=cntyRow.compScore||0;
