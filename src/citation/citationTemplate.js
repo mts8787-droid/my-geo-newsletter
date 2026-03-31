@@ -425,8 +425,8 @@ export function generateCitationHTML(meta, _total, _products, citations, dotcom,
 
   const filterLayerHtml = `<div class="filter-layer" id="filter-layer">
     <div class="fl-row">
-      <div class="fl-group"><div style="display:flex;gap:2px;background:#F1F5F9;border-radius:6px;padding:2px"><button class="lang-btn${lang==='ko'?' active':''}" onclick="switchCitLang('ko')">KO</button><button class="lang-btn${lang==='en'?' active':''}" onclick="switchCitLang('en')">EN</button></div></div>
-      <div class="fl-divider"></div>
+      <div class="fl-group cit-lang-toggle"><div style="display:flex;gap:2px;background:#F1F5F9;border-radius:6px;padding:2px"><button class="lang-btn${lang==='ko'?' active':''}" onclick="switchCitLang('ko')">KO</button><button class="lang-btn${lang==='en'?' active':''}" onclick="switchCitLang('en')">EN</button></div></div>
+      <div class="fl-divider cit-lang-toggle"></div>
       <div class="fl-group">
         <span class="fl-label">${lang === 'en' ? 'Period' : '기간'}</span>
         <span class="fl-badge">${meta.period || '—'}</span>
@@ -727,6 +727,8 @@ function onFilterChange(){
   updateAllCheckbox('country');
   applyFilter();
 }
+// iframe 안이면 한영 토글 숨기기 (통합 대시보드에 이미 있음)
+if(window.parent!==window){document.querySelectorAll('.cit-lang-toggle').forEach(function(el){el.style.display='none'})}
 </script>
 </body>
 </html>`
