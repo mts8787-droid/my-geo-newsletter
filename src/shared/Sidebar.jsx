@@ -144,9 +144,9 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
         citDomainHowToRead: tr[idx++] || src.citDomainHowToRead,
         citCntyInsight: tr[idx++] || src.citCntyInsight,
         citCntyHowToRead: tr[idx++] || src.citCntyHowToRead,
-        period: tr[idx++] || src.period,
+        period: (idx++, src.period),
         team: tr[idx++] || src.team,
-        reportNo: tr[idx++] || src.reportNo,
+        reportNo: (idx++, src.reportNo),
       }
 
       const capitalize = s => s ? s.replace(/\b\w/g, c => c.toUpperCase()) : s
