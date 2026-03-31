@@ -1021,7 +1021,7 @@ function switchCitCnty(btn){
 }
 // ─── Embedded Data ───
 var _weeklyAll=${weeklyAll ? JSON.stringify(weeklyAll) : '{}'};
-var _products=${JSON.stringify(products.map(p => ({ id: p.id, bu: p.bu, kr: p.kr, en: p.en || p.kr, category: p.category || '', status: p.status, score: p.score || 0, prev: p.prev || 0, vsComp: p.vsComp || 0, compName: p.compName || '', compRatio: p.compRatio || 0 })))};
+var _products=${JSON.stringify(products.map(p => ({ id: p.id, bu: p.bu, kr: p.kr, en: p.en || p.kr, category: p.category || '', date: p.date || '', status: p.status, score: p.score || 0, prev: p.prev || 0, vsComp: p.vsComp || 0, compName: p.compName || '', compRatio: p.compRatio || 0 })))};
 var _productsCnty=${JSON.stringify(productsCnty || [])};
 var _total=${JSON.stringify(total)};
 var _meta={period:'${(meta.period || '').replace(/'/g, "\\'")}',reportNo:'${(meta.reportNo || '').replace(/'/g, "\\'")}',totalInsight:${JSON.stringify(meta.totalInsight || '')}};
@@ -1179,13 +1179,23 @@ var _mLabels=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov',
 function _renderMonthlyTrend(container,selBU,selProd,trendCnty){
   var BU=['MS','HS','ES'];var html='';var hasTrend=false;
   var selectedProdIds=selProd.isAll?null:selProd.vals;
-  var COUNTRIES=['US','CA','UK','DE','ES','BR','MX','IN','AU','VN'];
-  // productsCnty를 제품→국가 맵으로 정리
-  var byProd={};
+  var ML=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  // productsCnty + productsPartial(TTL)에서 제품→날짜→스코어 맵 구축
+  var byProd={};// { PRODUCT: { date: {score, compScore} } }
   _productsCnty.forEach(function(r){
     var key=(r.product||'').toUpperCase();
     if(!byProd[key])byProd[key]={};
-    byProd[key][r.country||'']=r;
+    var d=r.date||'';
+    if(!byProd[key][d])byProd[key][d]={scores:[],compScores:[]};
+    byProd[key][d].scores.push(r.score||0);
+    byProd[key][d].compScores.push(r.compScore||0);
+  });
+  // TTL도 추가 (productsPartial)
+  _products.forEach(function(p){
+    var key=(p.category||'').toUpperCase();
+    if(!byProd[key])byProd[key]={};
+    var d=p.date||'';
+    if(d&&!byProd[key]['TTL_'+d])byProd[key]['TTL_'+d]={score:p.score,comp:p.vsComp};
   });
   BU.forEach(function(b){
     if(!selBU.isAll&&!selBU.vals[b])return;
@@ -1194,41 +1204,65 @@ function _renderMonthlyTrend(container,selBU,selProd,trendCnty){
     var rows='';
     prods.forEach(function(p){
       var pData=byProd[(p.category||'').toUpperCase()]||byProd[p.id.toUpperCase()]||{};
-      var cntyList=COUNTRIES.filter(function(c){return pData[c]});
-      if(!cntyList.length)return;
+      // 날짜별 TTL 평균 스코어 → 월 인덱스 매핑
+      var monthMap={};// { monthIdx: score }
+      var dates=Object.keys(pData).filter(function(d){return d&&!d.startsWith('TTL_')});
+      // 날짜에서 월 추출: "Feb", "2026-02", "2월" 등
+      dates.forEach(function(d){
+        var vals=pData[d];if(!vals)return;
+        var avg=vals.scores.reduce(function(s,v){return s+v},0)/vals.scores.length;
+        var mi=-1;
+        var mMatch=d.match(/^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)/i);
+        if(mMatch)mi=ML.findIndex(function(m){return m.toLowerCase()===mMatch[1].toLowerCase()});
+        if(mi<0){var nMatch=d.match(/(\d{1,2})월/);if(nMatch)mi=parseInt(nMatch[1])-1}
+        if(mi<0){var isoMatch=d.match(/\d{4}-(\d{2})/);if(isoMatch)mi=parseInt(isoMatch[1])-1}
+        if(mi>=0&&mi<12)monthMap[mi]=avg;
+      });
+      // TTL 데이터도
+      Object.keys(pData).filter(function(d){return d.startsWith('TTL_')}).forEach(function(d){
+        var raw=d.replace('TTL_','');
+        var mi=-1;
+        var mMatch=raw.match(/^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)/i);
+        if(mMatch)mi=ML.findIndex(function(m){return m.toLowerCase()===mMatch[1].toLowerCase()});
+        if(mi<0){var nMatch=raw.match(/(\d{1,2})월/);if(nMatch)mi=parseInt(nMatch[1])-1}
+        if(mi>=0&&mi<12&&monthMap[mi]==null)monthMap[mi]=pData[d].score;
+      });
+      var dataArr=ML.map(function(_,i){return monthMap[i]!=null?monthMap[i]:null});
+      var hasData=dataArr.some(function(v){return v!=null});
+      if(!hasData)return;
       var st=_statusInfo(p.status);
-      // 국가별 스코어 바 차트
-      var maxScore=Math.max.apply(null,cntyList.map(function(c){return pData[c].score||0}).concat([1]));
-      var barRows=cntyList.map(function(c){
-        var r=pData[c];var sc=r.score||0;var comp=r.compScore||0;
-        var pct=maxScore>0?(sc/maxScore*100).toFixed(1):'0';
-        var ratio=comp>0?Math.round((sc/comp)*100):100;
-        var cc=ratio>=100?'#15803D':ratio>=80?'#D97706':'#BE123C';
-        return'<div style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid #F8FAFC">'+
-          '<span style="width:30px;font-size:14px;font-weight:700;color:#475569;text-align:center">'+c+'</span>'+
-          '<div style="flex:1;height:20px;background:#F1F5F9;border-radius:4px;overflow:hidden"><div style="height:100%;width:'+pct+'%;background:'+cc+';border-radius:4px;transition:width .3s"></div></div>'+
-          '<span style="width:55px;font-size:14px;font-weight:700;color:#1A1A1A;text-align:right">'+sc.toFixed(1)+'</span>'+
-          '<span style="width:45px;font-size:13px;color:'+cc+';text-align:right;font-weight:700">'+ratio+'%</span>'+
-          '</div>';
-      }).join('');
-      rows+='<div class="trend-row" style="margin-bottom:24px">'+
-        '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">'+
-          '<span style="width:4px;height:22px;border-radius:4px;background:'+_RED+';flex-shrink:0"></span>'+
-          '<span style="font-size:20px;font-weight:700;color:#1A1A1A">'+p.kr+'</span>'+
-          '<span style="font-size:14px;font-weight:700;padding:2px 8px;border-radius:10px;background:'+st.bg+';color:'+st.color+';border:1px solid '+st.border+'">'+st.label+'</span>'+
-          '<span style="font-size:16px;font-weight:700;color:#1A1A1A">TTL '+p.score.toFixed(1)+'%</span>'+
-          (p.compName?'<span style="font-size:14px;color:#94A3B8">vs '+p.compName+' '+(p.compRatio||'')+'%</span>':'')+
-        '</div>'+
-        '<div style="border:1px solid #E8EDF2;border-radius:10px;padding:16px 20px">'+barRows+'</div>'+
-      '</div>';
+      var sparkColor=p.status==='critical'?'#BE123C':p.status==='behind'?'#D97706':'#15803D';
+      // SVG + 테이블 (주간 트렌드와 동일 구조)
+      var N=12;
+      var colgroup='<colgroup><col style="width:'+_TREND_BC+'px">'+ML.map(function(){return'<col>'}).join('')+'</colgroup>';
+      var validPts=[];
+      dataArr.forEach(function(v,i){if(v!=null)validPts.push({i:i,v:v})});
+      var mn=Math.min.apply(null,validPts.map(function(p){return p.v}))-2;
+      var mx=Math.max.apply(null,validPts.map(function(p){return p.v}))+2;
+      mn=Math.max(0,mn);mx=Math.min(100,mx);var rng=mx-mn||1;
+      var svgW=N*80;var svgH=180;var pt2=8;var ch2=svgH-pt2-8;
+      var sg='';
+      for(var gi=0;gi<=4;gi++){var gy=pt2+(gi/4)*ch2;sg+='<line x1="0" y1="'+gy.toFixed(1)+'" x2="'+svgW+'" y2="'+gy.toFixed(1)+'" stroke="#E8EDF2" stroke-width="1"/>';}
+      var pts=validPts.map(function(p){return{x:((p.i+0.5)/N)*svgW,y:pt2+(1-(p.v-mn)/rng)*ch2,v:p.v}});
+      if(pts.length>=2){
+        var d2=pts.map(function(pt,i){return(i?'L':'M')+pt.x.toFixed(1)+','+pt.y.toFixed(1)}).join(' ');
+        sg+='<path d="'+d2+'" stroke="'+sparkColor+'" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>';
+      }
+      pts.forEach(function(pt){sg+='<circle cx="'+pt.x.toFixed(1)+'" cy="'+pt.y.toFixed(1)+'" r="3.5" fill="#fff" stroke="'+sparkColor+'" stroke-width="2"/>'});
+      pts.forEach(function(pt){sg+='<text x="'+pt.x.toFixed(1)+'" y="'+Math.max(pt.y-8,14)+'" text-anchor="middle" font-size="11" font-weight="700" fill="'+sparkColor+'" font-family="'+_FONT+'">'+pt.v.toFixed(1)+'</text>'});
+      var svgStr='<svg viewBox="0 0 '+svgW+' '+svgH+'" width="100%" height="'+svgH+'" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" style="display:block">'+sg+'</svg>';
+      var chartRow='<tr><td style="padding:0;border:0"></td><td colspan="'+N+'" style="padding:8px 0;border:0">'+svgStr+'</td></tr>';
+      var thead='<tr style="border-top:1px solid #E8EDF2"><th style="text-align:left;padding:5px 6px;font-size:14px;color:#94A3B8;font-weight:600;border-bottom:1px solid #F1F5F9">Month</th>'+ML.map(function(m){return'<th style="text-align:center;padding:5px 2px;font-size:14px;color:#94A3B8;font-weight:600;border-bottom:1px solid #F1F5F9">'+m+'</th>'}).join('')+'</tr>';
+      var cells=ML.map(function(_,mi){var val=dataArr[mi];return'<td style="text-align:center;padding:5px 2px;font-size:14px;color:'+(val!=null?'#1A1A1A':'#CBD5E1')+';font-weight:700;border-bottom:1px solid #F8FAFC;font-variant-numeric:tabular-nums">'+(val!=null?val.toFixed(1):'—')+'</td>'}).join('');
+      var tbody='<tr style="background:#FFF8F9"><td style="padding:5px 6px;font-size:14px;font-weight:700;color:'+_RED+';border-bottom:1px solid #F8FAFC">LG</td>'+cells+'</tr>';
+      rows+='<div class="trend-row" style="margin-bottom:24px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><span style="width:4px;height:22px;border-radius:4px;background:'+_RED+';flex-shrink:0"></span><span style="font-size:20px;font-weight:700;color:#1A1A1A">'+p.kr+'</span><span style="font-size:14px;font-weight:700;padding:2px 8px;border-radius:10px;background:'+st.bg+';color:'+st.color+';border:1px solid '+st.border+'">'+st.label+'</span></div><div style="border:1px solid #E8EDF2;border-radius:10px;overflow:hidden"><table style="width:100%;border-collapse:collapse;table-layout:fixed;font-family:'+_FONT+'">'+colgroup+'<tbody>'+chartRow+thead+tbody+'</tbody></table></div></div>';
     });
     if(!rows)return;hasTrend=true;
     html+='<div class="bu-group" data-bu="'+b+'" style="margin-bottom:20px"><div class="bu-header"><span class="bu-label">'+b+'</span></div>'+rows+'</div>';
   });
   if(!hasTrend){container.innerHTML='<div class="section-card"><div class="section-body" style="text-align:center;padding:40px;color:#94A3B8;font-size:16px">'+(_lang==='en'?'No monthly data available':'월간 데이터가 없습니다')+'</div></div>';return}
-  var title=_lang==='en'?'Monthly Visibility by Country':'월간 국가별 Visibility';
-  var period=_meta.period||'';
-  container.innerHTML='<div class="section-card"><div class="section-header"><div class="section-title">'+title+'</div><span class="legend">'+period+'</span></div><div class="section-body">'+html+'</div></div>';
+  var title=_lang==='en'?'Monthly Visibility Trend':'월간 Visibility 트렌드';
+  container.innerHTML='<div class="section-card"><div class="section-header"><div class="section-title">'+title+'</div><span class="legend">Jan–Dec</span></div><div class="section-body">'+html+'</div></div>';
 }
 
 // ─── 제품 카드 스코어 국가 필터 업데이트 ───

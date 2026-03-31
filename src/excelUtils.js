@@ -279,6 +279,7 @@ function parseProductCntyFromRow(rows, headerIdx) {
 
   data.forEach(r => {
     const div = String(r[0]).trim()
+    const date = String(r[1] || '').trim()
     const country = normCountry(r[2]) || String(r[2]).trim()
     const category = String(r[3]).trim()
     const lgScore = pct(r[lgIdx])
@@ -292,9 +293,9 @@ function parseProductCntyFromRow(rows, headerIdx) {
     if (country === 'TTL') {
       const id = CATEGORY_ID_MAP[category] || category.toLowerCase()
       const kr = CATEGORY_KR_MAP[category] || category
-      productsPartial.push({ id, bu: div, kr, category, score: lgScore, prev: 0, vsComp: topComp.score, compName: topComp.name })
+      productsPartial.push({ id, bu: div, kr, category, date, score: lgScore, prev: 0, vsComp: topComp.score, compName: topComp.name })
     } else {
-      productsCnty.push({ product: category, country, score: lgScore, compName: topComp.name, compScore: topComp.score, gap })
+      productsCnty.push({ product: category, country, date, score: lgScore, compName: topComp.name, compScore: topComp.score, gap })
     }
   })
 
