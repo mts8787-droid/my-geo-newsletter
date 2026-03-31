@@ -77,12 +77,25 @@ function svgLine(data, labels, w, h, color) {
   const id = _sid++
   const pad = { t: 18, r: 10, b: 20, l: 10 }
   const cw = w - pad.l - pad.r, ch = h - pad.t - pad.b
-  const mn = Math.min(...data) - 1, mx = Math.max(...data) + 1, rng = mx - mn || 1
-  const divisor = data.length > 1 ? data.length - 1 : 1
-  const pts = data.map((v, i) => ({
-    x: pad.l + (data.length === 1 ? cw / 2 : (i / divisor) * cw),
-    y: pad.t + (1 - (v - mn) / rng) * ch, v
-  }))
+  const valid = data.filter(v => v != null)
+  if (!valid.length) {
+    // 데이터 없어도 축 라벨은 표시
+    let svg = `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}" xmlns="http://www.w3.org/2000/svg" style="display:block;">`
+    const N = data.length, divisor = N > 1 ? N - 1 : 1
+    svg += data.map((_, i) => {
+      const x = pad.l + (i / divisor) * cw
+      return `<text x="${x.toFixed(1)}" y="${pad.t+ch+14}" text-anchor="middle" font-size="12" fill="#94A3B8" font-family="${FONT}">${labels[i]||''}</text>`
+    }).join('')
+    svg += '</svg>'
+    return svg
+  }
+  const mn = Math.min(...valid) - 1, mx = Math.max(...valid) + 1, rng = mx - mn || 1
+  const N = data.length, divisor = N > 1 ? N - 1 : 1
+  // 모든 위치의 x좌표 + 라벨 (null 포함)
+  const allX = data.map((_, i) => pad.l + (i / divisor) * cw)
+  // 유효 데이터 포인트만
+  const pts = []
+  data.forEach((v, i) => { if (v != null) pts.push({ x: allX[i], y: pad.t + (1 - (v - mn) / rng) * ch, v }) })
   let svg = `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}" xmlns="http://www.w3.org/2000/svg" style="display:block;">`
   if (pts.length >= 2) {
     const line = pts.map((p, i) => `${i ? 'L' : 'M'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ')
@@ -96,7 +109,8 @@ function svgLine(data, labels, w, h, color) {
   }
   svg += pts.map(p => `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="3.5" fill="#fff" stroke="${color}" stroke-width="2"/>`).join('')
   svg += pts.map(p => `<text x="${p.x.toFixed(1)}" y="${Math.max(p.y - 7, 12)}" text-anchor="middle" font-size="12" font-weight="700" fill="${color}" font-family="${FONT}">${p.v.toFixed(1)}</text>`).join('')
-  svg += pts.map((p, i) => `<text x="${p.x.toFixed(1)}" y="${pad.t+ch+14}" text-anchor="middle" font-size="12" fill="#94A3B8" font-family="${FONT}">${labels[i]||''}</text>`).join('')
+  // 모든 위치에 축 라벨 표시 (null 포함)
+  svg += data.map((_, i) => `<text x="${allX[i].toFixed(1)}" y="${pad.t+ch+14}" text-anchor="middle" font-size="12" fill="#94A3B8" font-family="${FONT}">${labels[i]||''}</text>`).join('')
   svg += '</svg>'
   return svg
 }
@@ -311,16 +325,22 @@ function productSectionHtml(products, meta, t, lang, wLabels) {
       const wArrow = wd > 0 ? '▲' : wd < 0 ? '▼' : '─'
       const wColor = wd > 0 ? '#22C55E' : wd < 0 ? '#EF4444' : '#94A3B8'
       const sparkColor = p.status === 'critical' ? '#BE123C' : p.status === 'behind' ? '#D97706' : '#15803D'
-      // MoM: allScores에서 월별 LG 스코어 추출 → 최근 4개월
+      // MoM: date에서 월 파악 → 최근 4개월 라벨 + 데이터
+      const MLNAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+      const dateStr = p.date || ''
+      const mMatch = dateStr.match(/([0-9]{1,2})월/)
+      const curMonthIdx = mMatch ? parseInt(mMatch[1]) - 1 : -1
+      // 최근 4개월 라벨 (현재 월 포함하여 역산)
+      const m4Labels = curMonthIdx >= 0
+        ? [0,1,2,3].map(i => MLNAMES[(curMonthIdx - 3 + i + 12) % 12])
+        : ['M-3','M-2','M-1','M0']
+      // 데이터: 현재 월 = 마지막, 이전 3개월은 null (아직 없음)
       const allS = p.allScores || {}
-      const lgMonthly = allS.LG != null ? [allS.LG] : []
-      const momD = lgMonthly.length >= 2 ? +(lgMonthly[lgMonthly.length-1] - lgMonthly[lgMonthly.length-2]).toFixed(1) : null
-      const momArrow = momD > 0 ? '▲' : momD < 0 ? '▼' : '─'
-      const momColor = momD > 0 ? '#22C55E' : momD < 0 ? '#EF4444' : '#94A3B8'
-      // 최근 4M 라벨 (현재 1개월 데이터만 있을 수 있음)
-      const ML4 = ['M-3','M-2','M-1','M0']
-      const m4Data = lgMonthly.length >= 4 ? lgMonthly.slice(-4) : lgMonthly
-      const m4Labels = ML4.slice(-m4Data.length)
+      const curLG = allS.LG != null ? allS.LG : null
+      const m4Data = [null, null, null, curLG]
+      const momD = null // 이전 월 데이터 없으면 계산 불가
+      const momArrow = '─'
+      const momColor = '#94A3B8'
       const compPct = p.compRatio || (p.vsComp > 0 ? Math.round((p.score / p.vsComp) * 100) : 100)
       const compColor = compPct >= 100 ? '#15803D' : compPct >= 80 ? '#D97706' : '#BE123C'
       return `<div class="prod-card" style="border-color:${st.border}">
