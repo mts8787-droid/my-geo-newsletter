@@ -245,8 +245,19 @@ export default function App() {
   const [selectedSH, setSelectedSH] = useState('전체')
   const [selectedCategory, setSelectedCategory] = useState(null)
   const [taskTranslations, setTaskTranslations] = useState({}) // { 한글: 영어 }
+  const [notice, setNotice] = useState({ show: false, text: '' })
 
   useEffect(() => { load() }, [load])
+
+  // 서버에서 노티스 가져오기
+  useEffect(() => {
+    fetch('/api/dashboard/sync-data').then(r => r.ok ? r.json() : null).then(d => {
+      if (d?.ok && d.data?.meta) {
+        const m = d.data.meta
+        if (m.noticeText) setNotice({ show: !!m.showNotice, text: m.noticeText })
+      }
+    }).catch(() => {})
+  }, [])
 
   // Reset category filter when stakeholder changes
   useEffect(() => { setSelectedCategory(null) }, [selectedSH])
@@ -342,6 +353,15 @@ export default function App() {
       />
 
       <main className="max-w-[1400px] mx-auto px-4 py-6 space-y-6">
+        {notice.show && notice.text && (
+          <div style={{ background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: 12, padding: '16px 20px' }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: '#BE123C', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+              {lang === 'en' ? 'NOTICE' : '공지사항'}
+            </div>
+            <div style={{ fontSize: 15, color: '#1E293B', lineHeight: 1.8 }}
+              dangerouslySetInnerHTML={{ __html: notice.text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br/>') }} />
+          </div>
+        )}
         {error && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-600 text-[16px]">
             {error}

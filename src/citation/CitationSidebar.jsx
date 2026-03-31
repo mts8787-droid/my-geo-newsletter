@@ -326,6 +326,44 @@ export default function CitationSidebar({
 
         <div style={{ height: 1, background: '#1E293B', marginBottom: 16 }} />
 
+        {/* ── 노티스 ── */}
+        <div style={{ marginBottom: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+            <span style={{ fontSize: 11, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: 1, fontFamily: FONT }}>Notice</span>
+            <button onClick={() => setMeta(m => ({ ...m, showNotice: !m.showNotice }))}
+              style={{ padding: '2px 8px', borderRadius: 4, border: 'none', cursor: 'pointer', fontSize: 10, fontWeight: 700, fontFamily: FONT,
+                background: meta.showNotice ? '#166534' : '#1E293B', color: meta.showNotice ? '#86EFAC' : '#64748B' }}>
+              {meta.showNotice ? 'ON' : 'OFF'}
+            </button>
+          </div>
+          <textarea value={meta.noticeText || ''} onChange={e => setMeta(m => ({ ...m, noticeText: e.target.value }))}
+            rows={3} placeholder="공지사항 텍스트 (**bold** 지원)"
+            style={{ ...inputStyle, fontSize: 11, lineHeight: 1.6 }} />
+        </div>
+
+        {/* ── 인사이트 ── */}
+        <div style={{ marginBottom: 16 }}>
+          <span style={{ fontSize: 11, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: 1, fontFamily: FONT, display: 'block', marginBottom: 8 }}>Insights</span>
+          {[
+            { key: 'citationInsight', label: 'Citation Insight' },
+            { key: 'citationHowToRead', label: 'Citation How to Read' },
+            { key: 'citDomainInsight', label: 'Domain Insight' },
+            { key: 'citDomainHowToRead', label: 'Domain How to Read' },
+            { key: 'citCntyInsight', label: 'Country Insight' },
+            { key: 'citCntyHowToRead', label: 'Country How to Read' },
+            { key: 'dotcomInsight', label: 'Dotcom Insight' },
+            { key: 'dotcomHowToRead', label: 'Dotcom How to Read' },
+          ].map(f => (
+            <div key={f.key} style={{ marginBottom: 8 }}>
+              <label style={{ fontSize: 10, color: '#64748B', fontFamily: FONT, display: 'block', marginBottom: 2 }}>{f.label}</label>
+              <textarea value={meta[f.key] || ''} onChange={e => setMeta(m => ({ ...m, [f.key]: e.target.value }))}
+                rows={2} style={{ ...inputStyle, fontSize: 11, lineHeight: 1.5 }} />
+            </div>
+          ))}
+        </div>
+
+        <div style={{ height: 1, background: '#1E293B', marginBottom: 16 }} />
+
         {/* ── 웹 게시 ── */}
         <p style={{ margin: '0 0 10px 2px', fontSize: 11, fontWeight: 700, color: '#475569',
           textTransform: 'uppercase', letterSpacing: 1, fontFamily: FONT }}>

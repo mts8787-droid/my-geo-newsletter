@@ -385,8 +385,11 @@ export function generateCitationHTML(meta, _total, _products, citations, dotcom,
   const allCountryCodes = Object.values(REGIONS).flatMap(r => r.countries)
   const isCountryOn = () => true
 
+  const citNoticeHtml = meta.showNotice && meta.noticeText ? `<div class="notice-box"><div class="notice-title">${lang === 'en' ? 'NOTICE' : '공지사항'}</div><div class="notice-text">${mdBold(meta.noticeText)}</div></div>` : ''
+
   // 월간 탭 콘텐츠 (초기 렌더: 전체 데이터)
   const monthlyContent = [
+    citNoticeHtml,
     meta.showCitations !== false ? `<div id="cit-cat-wrap">${citationSectionHtml(citations, meta, t, lang)}</div>` : '',
     (meta.showCitDomain !== false || meta.showCitCnty !== false) ? `<div id="cit-dom-wrap">${citDomainSectionHtml(citationsCnty, meta, t, citations, lang, false)}</div>` : '',
     meta.showDotcom !== false ? `<div id="cit-dc-wrap">${dotcomSectionHtml(dotcom, meta, t, lang)}</div>` : '',
@@ -527,6 +530,9 @@ body{background:#F1F5F9;font-family:${FONT};min-width:1200px;color:#1A1A1A}
 .dc-sum-item.ss{background:${COMP}}
 .dc-sum-list{font-size:16px;color:#64748B;margin-right:16px}
 /* ── Footer ── */
+.notice-box{background:#FEF2F2;border:1px solid #FECACA;border-radius:12px;padding:16px 20px;margin-bottom:20px}
+.notice-box .notice-title{font-size:14px;font-weight:700;color:#BE123C;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px}
+.notice-box .notice-text{font-size:15px;color:#1E293B;line-height:1.8}
 .dash-footer{background:#1A1A1A;padding:16px 40px;display:flex;justify-content:space-between;align-items:center;margin-top:auto}
 .dash-footer span{font-size:14px;color:#94A3B8}
 .dash-footer strong{color:#fff;font-weight:700}

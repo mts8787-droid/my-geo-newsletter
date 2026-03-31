@@ -698,7 +698,10 @@ export function generateDashboardHTML(meta, total, products, citations, dotcom, 
 
   // Citation 탭은 iframe으로 별도 페이지 사용 (citFilterLayerHtml 불필요)
 
+  const noticeHtml = meta.showNotice && meta.noticeText ? `<div class="notice-box"><div class="notice-title">${lang === 'en' ? 'NOTICE' : '공지사항'}</div><div class="notice-text">${mdBold(meta.noticeText)}</div></div>` : ''
+
   const visContent = [
+    noticeHtml,
     meta.showTotal !== false ? heroHtml(total, meta, t, lang) : '',
     meta.showProducts !== false ? productSectionHtml(products, meta, t, lang, wLabels) : '',
     `<div id="trend-container">${trendDetailHtml(products, weeklyAll, wLabels, t, lang)}</div>`,
@@ -880,6 +883,9 @@ body.show-insights .howto-box{display:block}
 .progress-placeholder h2{font-size:20px;font-weight:700;color:#1E293B;margin-bottom:8px}
 .progress-placeholder p{font-size:16px;color:#64748B}
 /* ── Footer ── */
+.notice-box{background:#FEF2F2;border:1px solid #FECACA;border-radius:12px;padding:16px 20px;margin-bottom:20px}
+.notice-box .notice-title{font-size:14px;font-weight:700;color:#BE123C;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px}
+.notice-box .notice-text{font-size:15px;color:#1E293B;line-height:1.8}
 .dash-footer{background:#1A1A1A;padding:16px 40px;display:flex;justify-content:space-between;align-items:center;margin-top:auto}
 .dash-footer span{font-size:14px;color:#94A3B8}
 .dash-footer strong{color:#fff;font-weight:700}
