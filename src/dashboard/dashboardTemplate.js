@@ -564,8 +564,8 @@ function dotcomSectionHtml(dotcom, meta, t) {
 // ═══════════════════════════════════════════════════════════════════════════
 // 메인 생성 함수
 // ═══════════════════════════════════════════════════════════════════════════
-export function generateVisibilityHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty) {
-  return generateDashboardHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty, { visibilityOnly: true })
+export function generateVisibilityHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty, monthlyVis) {
+  return generateDashboardHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty, { visibilityOnly: true, monthlyVis })
 }
 
 export function generateDashboardHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty, opts) {
@@ -1023,6 +1023,7 @@ function switchCitCnty(btn){
 var _weeklyAll=${weeklyAll ? JSON.stringify(weeklyAll) : '{}'};
 var _products=${JSON.stringify(products.map(p => ({ id: p.id, bu: p.bu, kr: p.kr, en: p.en || p.kr, category: p.category || '', date: p.date || '', status: p.status, score: p.score || 0, prev: p.prev || 0, vsComp: p.vsComp || 0, compName: p.compName || '', compRatio: p.compRatio || 0 })))};
 var _productsCnty=${JSON.stringify(productsCnty || [])};
+var _monthlyVis=${JSON.stringify(opts?.monthlyVis || [])};
 var _total=${JSON.stringify(total)};
 var _meta={period:'${(meta.period || '').replace(/'/g, "\\'")}',reportNo:'${(meta.reportNo || '').replace(/'/g, "\\'")}',totalInsight:${JSON.stringify(meta.totalInsight || '')}};
 var _wLabels=${JSON.stringify(wLabels)};
@@ -1176,89 +1177,61 @@ function filterTrend(selBU,selProd,selCountry){
 
 // ─── 월간 트렌드 렌더링 ───
 var _mLabels=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function _parseMonth(d){
+  var ML=['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
+  var m=d.match(/(\d{1,2})월/);if(m)return parseInt(m[1])-1;
+  var e=d.match(/(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i);if(e)return ML.indexOf(e[1].toLowerCase());
+  var iso=d.match(/\d{4}-(\d{2})/);if(iso)return parseInt(iso[1])-1;
+  return -1;
+}
 function _renderMonthlyTrend(container,selBU,selProd,trendCnty){
-  var BU=['MS','HS','ES'];var html='';var hasTrend=false;
-  var selectedProdIds=selProd.isAll?null:selProd.vals;
   var ML=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  // productsCnty + productsPartial(TTL)에서 제품→날짜→스코어 맵 구축
-  var byProd={};// { PRODUCT: { date: {score, compScore} } }
-  _productsCnty.forEach(function(r){
-    var key=(r.product||'').toUpperCase();
-    if(!byProd[key])byProd[key]={};
-    var d=r.date||'';
-    if(!byProd[key][d])byProd[key][d]={scores:[],compScores:[]};
-    byProd[key][d].scores.push(r.score||0);
-    byProd[key][d].compScores.push(r.compScore||0);
+  var html='';var hasTrend=false;
+  // _monthlyVis 데이터: {date,country,division,lg,comp}
+  // division별 월별 LG 스코어 → BU 트렌드
+  var DIVS=['TOTAL','MS','HS','ES'];
+  var byDiv={};// { DIV: { monthIdx: {lg,comp} } }
+  _monthlyVis.forEach(function(r){
+    if(r.country!=='TOTAL')return;// 국가=TOTAL만 (전체 기준)
+    var div=(r.division||'').toUpperCase();
+    if(DIVS.indexOf(div)<0)return;
+    var mi=_parseMonth(r.date||'');if(mi<0)return;
+    if(!byDiv[div])byDiv[div]={};
+    byDiv[div][mi]={lg:r.lg,comp:r.comp};
   });
-  // TTL도 추가 (productsPartial)
-  _products.forEach(function(p){
-    var key=(p.category||'').toUpperCase();
-    if(!byProd[key])byProd[key]={};
-    var d=p.date||'';
-    if(d&&!byProd[key]['TTL_'+d])byProd[key]['TTL_'+d]={score:p.score,comp:p.vsComp};
-  });
-  BU.forEach(function(b){
-    if(!selBU.isAll&&!selBU.vals[b])return;
-    var prods=_products.filter(function(p){return p.bu===b&&(!selectedProdIds||selectedProdIds[p.id])});
-    if(!prods.length)return;
-    var rows='';
-    prods.forEach(function(p){
-      var pData=byProd[(p.category||'').toUpperCase()]||byProd[p.id.toUpperCase()]||{};
-      // 날짜별 TTL 평균 스코어 → 월 인덱스 매핑
-      var monthMap={};// { monthIdx: score }
-      var dates=Object.keys(pData).filter(function(d){return d&&!d.startsWith('TTL_')});
-      // 날짜에서 월 추출: "Feb", "2026-02", "2월" 등
-      dates.forEach(function(d){
-        var vals=pData[d];if(!vals)return;
-        var avg=vals.scores.reduce(function(s,v){return s+v},0)/vals.scores.length;
-        var mi=-1;
-        var mMatch=d.match(/^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)/i);
-        if(mMatch)mi=ML.findIndex(function(m){return m.toLowerCase()===mMatch[1].toLowerCase()});
-        if(mi<0){var nMatch=d.match(/(\d{1,2})월/);if(nMatch)mi=parseInt(nMatch[1])-1}
-        if(mi<0){var isoMatch=d.match(/\d{4}-(\d{2})/);if(isoMatch)mi=parseInt(isoMatch[1])-1}
-        if(mi>=0&&mi<12)monthMap[mi]=avg;
-      });
-      // TTL 데이터도
-      Object.keys(pData).filter(function(d){return d.startsWith('TTL_')}).forEach(function(d){
-        var raw=d.replace('TTL_','');
-        var mi=-1;
-        var mMatch=raw.match(/^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)/i);
-        if(mMatch)mi=ML.findIndex(function(m){return m.toLowerCase()===mMatch[1].toLowerCase()});
-        if(mi<0){var nMatch=raw.match(/(\d{1,2})월/);if(nMatch)mi=parseInt(nMatch[1])-1}
-        if(mi>=0&&mi<12&&monthMap[mi]==null)monthMap[mi]=pData[d].score;
-      });
-      var dataArr=ML.map(function(_,i){return monthMap[i]!=null?monthMap[i]:null});
-      var hasData=dataArr.some(function(v){return v!=null});
-      if(!hasData)return;
-      var st=_statusInfo(p.status);
-      var sparkColor=p.status==='critical'?'#BE123C':p.status==='behind'?'#D97706':'#15803D';
-      // SVG + 테이블 (주간 트렌드와 동일 구조)
-      var N=12;
-      var colgroup='<colgroup><col style="width:'+_TREND_BC+'px">'+ML.map(function(){return'<col>'}).join('')+'</colgroup>';
-      var validPts=[];
-      dataArr.forEach(function(v,i){if(v!=null)validPts.push({i:i,v:v})});
-      var mn=Math.min.apply(null,validPts.map(function(p){return p.v}))-2;
-      var mx=Math.max.apply(null,validPts.map(function(p){return p.v}))+2;
-      mn=Math.max(0,mn);mx=Math.min(100,mx);var rng=mx-mn||1;
-      var svgW=N*80;var svgH=180;var pt2=8;var ch2=svgH-pt2-8;
-      var sg='';
-      for(var gi=0;gi<=4;gi++){var gy=pt2+(gi/4)*ch2;sg+='<line x1="0" y1="'+gy.toFixed(1)+'" x2="'+svgW+'" y2="'+gy.toFixed(1)+'" stroke="#E8EDF2" stroke-width="1"/>';}
-      var pts=validPts.map(function(p){return{x:((p.i+0.5)/N)*svgW,y:pt2+(1-(p.v-mn)/rng)*ch2,v:p.v}});
-      if(pts.length>=2){
-        var d2=pts.map(function(pt,i){return(i?'L':'M')+pt.x.toFixed(1)+','+pt.y.toFixed(1)}).join(' ');
-        sg+='<path d="'+d2+'" stroke="'+sparkColor+'" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>';
-      }
-      pts.forEach(function(pt){sg+='<circle cx="'+pt.x.toFixed(1)+'" cy="'+pt.y.toFixed(1)+'" r="3.5" fill="#fff" stroke="'+sparkColor+'" stroke-width="2"/>'});
-      pts.forEach(function(pt){sg+='<text x="'+pt.x.toFixed(1)+'" y="'+Math.max(pt.y-8,14)+'" text-anchor="middle" font-size="11" font-weight="700" fill="'+sparkColor+'" font-family="'+_FONT+'">'+pt.v.toFixed(1)+'</text>'});
-      var svgStr='<svg viewBox="0 0 '+svgW+' '+svgH+'" width="100%" height="'+svgH+'" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" style="display:block">'+sg+'</svg>';
-      var chartRow='<tr><td style="padding:0;border:0"></td><td colspan="'+N+'" style="padding:8px 0;border:0">'+svgStr+'</td></tr>';
-      var thead='<tr style="border-top:1px solid #E8EDF2"><th style="text-align:left;padding:5px 6px;font-size:14px;color:#94A3B8;font-weight:600;border-bottom:1px solid #F1F5F9">Month</th>'+ML.map(function(m){return'<th style="text-align:center;padding:5px 2px;font-size:14px;color:#94A3B8;font-weight:600;border-bottom:1px solid #F1F5F9">'+m+'</th>'}).join('')+'</tr>';
-      var cells=ML.map(function(_,mi){var val=dataArr[mi];return'<td style="text-align:center;padding:5px 2px;font-size:14px;color:'+(val!=null?'#1A1A1A':'#CBD5E1')+';font-weight:700;border-bottom:1px solid #F8FAFC;font-variant-numeric:tabular-nums">'+(val!=null?val.toFixed(1):'—')+'</td>'}).join('');
-      var tbody='<tr style="background:#FFF8F9"><td style="padding:5px 6px;font-size:14px;font-weight:700;color:'+_RED+';border-bottom:1px solid #F8FAFC">LG</td>'+cells+'</tr>';
-      rows+='<div class="trend-row" style="margin-bottom:24px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><span style="width:4px;height:22px;border-radius:4px;background:'+_RED+';flex-shrink:0"></span><span style="font-size:20px;font-weight:700;color:#1A1A1A">'+p.kr+'</span><span style="font-size:14px;font-weight:700;padding:2px 8px;border-radius:10px;background:'+st.bg+';color:'+st.color+';border:1px solid '+st.border+'">'+st.label+'</span></div><div style="border:1px solid #E8EDF2;border-radius:10px;overflow:hidden"><table style="width:100%;border-collapse:collapse;table-layout:fixed;font-family:'+_FONT+'">'+colgroup+'<tbody>'+chartRow+thead+tbody+'</tbody></table></div></div>';
-    });
-    if(!rows)return;hasTrend=true;
-    html+='<div class="bu-group" data-bu="'+b+'" style="margin-bottom:20px"><div class="bu-header"><span class="bu-label">'+b+'</span></div>'+rows+'</div>';
+  // TOTAL + 각 BU별 트렌드 표시
+  var items=[{label:'Total (All Divisions)',key:'TOTAL'},{label:'MS',key:'MS'},{label:'HS',key:'HS'},{label:'ES',key:'ES'}];
+  items.forEach(function(item){
+    if(!selBU.isAll&&item.key!=='TOTAL'&&!selBU.vals[item.key])return;
+    var data=byDiv[item.key];if(!data)return;
+    var dataArr=ML.map(function(_,i){return data[i]?data[i].lg:null});
+    if(!dataArr.some(function(v){return v!=null}))return;
+    var N=12;
+    var colgroup='<colgroup><col style="width:'+_TREND_BC+'px">'+ML.map(function(){return'<col>'}).join('')+'</colgroup>';
+    var validPts=[];
+    dataArr.forEach(function(v,i){if(v!=null)validPts.push({i:i,v:v})});
+    var mn=Math.min.apply(null,validPts.map(function(p){return p.v}))-2;
+    var mx=Math.max.apply(null,validPts.map(function(p){return p.v}))+2;
+    mn=Math.max(0,mn);mx=Math.min(100,mx);var rng=mx-mn||1;
+    var svgW=N*80;var svgH=180;var pt2=8;var ch2=svgH-pt2-8;
+    var sparkColor='#15803D';
+    if(validPts.length){var lastV=validPts[validPts.length-1].v;sparkColor=lastV>=50?'#15803D':lastV>=30?'#D97706':'#BE123C'}
+    var sg='';
+    for(var gi=0;gi<=4;gi++){var gy=pt2+(gi/4)*ch2;sg+='<line x1="0" y1="'+gy.toFixed(1)+'" x2="'+svgW+'" y2="'+gy.toFixed(1)+'" stroke="#E8EDF2" stroke-width="1"/>';}
+    var pts=validPts.map(function(p){return{x:((p.i+0.5)/N)*svgW,y:pt2+(1-(p.v-mn)/rng)*ch2,v:p.v}});
+    if(pts.length>=1){
+      var d2=pts.map(function(pt,i){return(i?'L':'M')+pt.x.toFixed(1)+','+pt.y.toFixed(1)}).join(' ');
+      sg+='<path d="'+d2+'" stroke="'+sparkColor+'" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>';
+    }
+    pts.forEach(function(pt){sg+='<circle cx="'+pt.x.toFixed(1)+'" cy="'+pt.y.toFixed(1)+'" r="3.5" fill="#fff" stroke="'+sparkColor+'" stroke-width="2"/>'});
+    pts.forEach(function(pt){sg+='<text x="'+pt.x.toFixed(1)+'" y="'+Math.max(pt.y-8,14)+'" text-anchor="middle" font-size="11" font-weight="700" fill="'+sparkColor+'" font-family="'+_FONT+'">'+pt.v.toFixed(1)+'</text>'});
+    var svgStr='<svg viewBox="0 0 '+svgW+' '+svgH+'" width="100%" height="'+svgH+'" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" style="display:block">'+sg+'</svg>';
+    var chartRow='<tr><td style="padding:0;border:0"></td><td colspan="'+N+'" style="padding:8px 0;border:0">'+svgStr+'</td></tr>';
+    var thead='<tr style="border-top:1px solid #E8EDF2"><th style="text-align:left;padding:5px 6px;font-size:14px;color:#94A3B8;font-weight:600;border-bottom:1px solid #F1F5F9">Month</th>'+ML.map(function(m){return'<th style="text-align:center;padding:5px 2px;font-size:14px;color:#94A3B8;font-weight:600;border-bottom:1px solid #F1F5F9">'+m+'</th>'}).join('')+'</tr>';
+    var cells=ML.map(function(_,mi){var val=dataArr[mi];return'<td style="text-align:center;padding:5px 2px;font-size:14px;color:'+(val!=null?'#1A1A1A':'#CBD5E1')+';font-weight:700;border-bottom:1px solid #F8FAFC;font-variant-numeric:tabular-nums">'+(val!=null?val.toFixed(1):'—')+'</td>'}).join('');
+    var tbody='<tr style="background:#FFF8F9"><td style="padding:5px 6px;font-size:14px;font-weight:700;color:'+_RED+';border-bottom:1px solid #F8FAFC">LG</td>'+cells+'</tr>';
+    hasTrend=true;
+    html+='<div class="trend-row" style="margin-bottom:24px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><span style="width:4px;height:22px;border-radius:4px;background:'+_RED+';flex-shrink:0"></span><span style="font-size:20px;font-weight:700;color:#1A1A1A">'+item.label+'</span></div><div style="border:1px solid #E8EDF2;border-radius:10px;overflow:hidden"><table style="width:100%;border-collapse:collapse;table-layout:fixed;font-family:'+_FONT+'">'+colgroup+'<tbody>'+chartRow+thead+tbody+'</tbody></table></div></div>';
   });
   if(!hasTrend){container.innerHTML='<div class="section-card"><div class="section-body" style="text-align:center;padding:40px;color:#94A3B8;font-size:16px">'+(_lang==='en'?'No monthly data available':'월간 데이터가 없습니다')+'</div></div>';return}
   var title=_lang==='en'?'Monthly Visibility Trend':'월간 Visibility 트렌드';

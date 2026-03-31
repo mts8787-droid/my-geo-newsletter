@@ -14,8 +14,8 @@ const STORAGE_KEY = 'geo-dashboard-cache'
 function DashboardPreview({ meta, total, products, citations, dotcom, productsCnty = [], citationsCnty = [], lang = 'ko', weeklyLabels, weeklyAll = {}, citationsByCnty = {}, dotcomByCnty = {} }) {
   const iframeRef = useRef(null)
   const html = useMemo(
-    () => generateVisibilityHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty),
-    [meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty]
+    () => generateVisibilityHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty, monthlyVis),
+    [meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty, monthlyVis]
   )
 
   React.useEffect(() => {
@@ -52,6 +52,7 @@ export default function App() {
   const [weeklyAll, setWeeklyAll] = useState(cache?.weeklyAll ?? {})
   const [citationsByCnty, setCitationsByCnty] = useState(cache?.citationsByCnty ?? {})
   const [dotcomByCnty, setDotcomByCnty] = useState(cache?.dotcomByCnty ?? {})
+  const [monthlyVis, setMonthlyVis] = useState(cache?.monthlyVis ?? [])
   const [previewLang, setPreviewLang] = useState('ko')
   const [snapshots,  setSnapshots]  = useState([])
   const [snapName,   setSnapName]   = useState('')
@@ -84,6 +85,7 @@ export default function App() {
       if (d.citationsCnty) setCitationsCnty(d.citationsCnty)
       if (d.citationsByCnty) setCitationsByCnty(d.citationsByCnty)
       if (d.dotcomByCnty) setDotcomByCnty(d.dotcomByCnty)
+      if (d.monthlyVis) setMonthlyVis(d.monthlyVis)
       if (d.weeklyLabels)  setWeeklyLabels(d.weeklyLabels)
       if (d.weeklyAll)     setWeeklyAll(prev => ({ ...prev, ...d.weeklyAll }))
       if (d.productsPartial) {
@@ -104,7 +106,7 @@ export default function App() {
   }, [])
 
   useEffect(() => {
-    saveCache(STORAGE_KEY, { metaKo, metaEn, total, products, citations, dotcom, productsCnty, citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty })
+    saveCache(STORAGE_KEY, { metaKo, metaEn, total, products, citations, dotcom, productsCnty, citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty, monthlyVis })
   }, [metaKo, metaEn, total, products, citations, dotcom, productsCnty, citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty])
 
   async function handleSnapOverwrite() {
@@ -168,6 +170,7 @@ export default function App() {
           dotcomByCnty={dotcomByCnty}
           generateHTML={generateVisibilityHTML}
           publishEndpoint="/api/publish-visibility"
+          setMonthlyVis={setMonthlyVis}
         />
       )}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>

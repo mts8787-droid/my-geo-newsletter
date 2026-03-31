@@ -236,7 +236,30 @@ function parseVisSummary(rows) {
   const score = pct(ttlRow[lgCol])
   const vsComp = pct(ttlRow[actualSsCol])
   console.log(`[parseVisSummary] TOTAL row found: LG(col${lgCol})=${score}, SS(col${actualSsCol})=${vsComp}`)
-  return { total: { score, prev: score, vsComp, rank: score >= vsComp ? 1 : 2, totalBrands: 12 } }
+
+  // 월간 트렌드 데이터 수집 — 헤더: Date, Region, Countries, Divisions, LG, Samsung, ...
+  const dateCol = headerRow ? headerRow.findIndex(c => /date/i.test(String(c || '').trim())) : 0
+  const cntyCol = headerRow ? headerRow.findIndex(c => /countries|country/i.test(String(c || '').trim())) : 2
+  const divCol = headerRow ? headerRow.findIndex(c => /divisions?/i.test(String(c || '').trim())) : 3
+
+  const monthlyVis = [] // { date, country, division, lg, comp }
+  const dataRows = rows.filter(r => {
+    const d = String(r[dateCol >= 0 ? dateCol : 0] || '').trim()
+    return d && !d.startsWith('[') && !d.startsWith('※') && !/^date$/i.test(d) && !/^key$/i.test(d)
+  })
+  dataRows.forEach(r => {
+    const date = String(r[dateCol >= 0 ? dateCol : 0] || '').trim()
+    const country = normCountry(r[cntyCol >= 0 ? cntyCol : 2])
+    const division = String(r[divCol >= 0 ? divCol : 3] || '').trim().toUpperCase()
+    const lg = pct(r[lgCol])
+    const comp = pct(r[actualSsCol])
+    if (date && lg > 0) monthlyVis.push({ date, country, division, lg, comp })
+  })
+  console.log(`[parseVisSummary] monthlyVis: ${monthlyVis.length} rows, dates: ${[...new Set(monthlyVis.map(r => r.date))].join(', ')}`)
+
+  const result = { total: { score, prev: score, vsComp, rank: score >= vsComp ? 1 : 2, totalBrands: 12 } }
+  if (monthlyVis.length) result.monthlyVis = monthlyVis
+  return result
 }
 
 function parseProductCnty(rows) {
