@@ -1116,7 +1116,7 @@ function filterTrend(selBU,selProd,selCountry){
 
   // 월간 모드: 제품별 월간 스코어 표시
   if(_periodMode==='monthly'){
-    _renderMonthlyTrend(container,selBU,selProd,trendCnty);
+    _renderMonthlyTrend(container,selBU,selProd,trendCnty,trendCountries);
     return;
   }
 
@@ -1184,18 +1184,41 @@ function _parseMonth(d){
   var iso=d.match(/\d{4}-(\d{2})/);if(iso)return parseInt(iso[1])-1;
   return -1;
 }
-function _renderMonthlyTrend(container,selBU,selProd,trendCnty){
+function _getMonthlyScore(cat,countries){
+  // 국가 필터에 따라 제품별 월별 스코어 계산
+  var ML_N=12;
+  if(!countries){
+    // 전체: _products(TTL)에서
+    var p=_products.find(function(pr){return(pr.category||'').toUpperCase()===cat||pr.id.toUpperCase()===cat});
+    if(!p)return null;
+    var mi=_parseMonth(p.date||'');
+    if(mi<0)return null;
+    var arr=[];for(var i=0;i<ML_N;i++)arr.push(null);
+    arr[mi]=p.score||0;
+    return arr;
+  }
+  // 국가별: _productsCnty에서 선택 국가 평균
+  var byMonth={};
+  _productsCnty.forEach(function(r){
+    if((r.product||'').toUpperCase()!==cat)return;
+    if(countries.indexOf(r.country||'')<0)return;
+    var mi=_parseMonth(r.date||'');if(mi<0)return;
+    if(!byMonth[mi])byMonth[mi]=[];
+    byMonth[mi].push(r.score||0);
+  });
+  if(!Object.keys(byMonth).length)return null;
+  var arr=[];for(var i=0;i<ML_N;i++){
+    if(byMonth[i]){var s=byMonth[i].reduce(function(a,b){return a+b},0);arr.push(s/byMonth[i].length)}
+    else arr.push(null);
+  }
+  return arr;
+}
+function _renderMonthlyTrend(container,selBU,selProd,trendCnty,trendCountries){
   var ML=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   var html='';var hasTrend=false;
   var selectedProdIds=selProd.isAll?null:selProd.vals;
-  // _products(TTL)에서 제품별 + date별 스코어 수집
-  var byProd={};// { CATEGORY: { monthIdx: score } }
-  _products.forEach(function(p){
-    var key=(p.category||p.id||'').toUpperCase();
-    var mi=_parseMonth(p.date||'');if(mi<0)return;
-    if(!byProd[key])byProd[key]={};
-    byProd[key][mi]=p.score||0;
-  });
+  var countries=trendCountries||null;// null=전체(TTL), 배열=선택 국가
+  if(trendCnty!=='Total'&&!trendCountries)countries=[trendCnty];// 단일 국가
   var BU=['MS','HS','ES'];
   BU.forEach(function(b){
     if(!selBU.isAll&&!selBU.vals[b])return;
@@ -1203,42 +1226,44 @@ function _renderMonthlyTrend(container,selBU,selProd,trendCnty){
     if(!prods.length)return;
     var rows='';
     prods.forEach(function(p){
-    var pData=byProd[(p.category||'').toUpperCase()]||byProd[p.id.toUpperCase()]||{};
-    var dataArr=ML.map(function(_,i){return pData[i]!=null?pData[i]:null});
-    if(!dataArr.some(function(v){return v!=null}))return;
-    var N=12;
-    var colgroup='<colgroup><col style="width:'+_TREND_BC+'px">'+ML.map(function(){return'<col>'}).join('')+'</colgroup>';
-    var validPts=[];
-    dataArr.forEach(function(v,i){if(v!=null)validPts.push({i:i,v:v})});
-    var mn=Math.min.apply(null,validPts.map(function(p){return p.v}))-2;
-    var mx=Math.max.apply(null,validPts.map(function(p){return p.v}))+2;
-    mn=Math.max(0,mn);mx=Math.min(100,mx);var rng=mx-mn||1;
-    var svgW=N*80;var svgH=180;var pt2=8;var ch2=svgH-pt2-8;
-    var sparkColor='#15803D';
-    if(validPts.length){var lastV=validPts[validPts.length-1].v;sparkColor=lastV>=50?'#15803D':lastV>=30?'#D97706':'#BE123C'}
-    var sg='';
-    for(var gi=0;gi<=4;gi++){var gy=pt2+(gi/4)*ch2;sg+='<line x1="0" y1="'+gy.toFixed(1)+'" x2="'+svgW+'" y2="'+gy.toFixed(1)+'" stroke="#E8EDF2" stroke-width="1"/>';}
-    var pts=validPts.map(function(p){return{x:((p.i+0.5)/N)*svgW,y:pt2+(1-(p.v-mn)/rng)*ch2,v:p.v}});
-    if(pts.length>=1){
-      var d2=pts.map(function(pt,i){return(i?'L':'M')+pt.x.toFixed(1)+','+pt.y.toFixed(1)}).join(' ');
-      sg+='<path d="'+d2+'" stroke="'+sparkColor+'" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>';
-    }
-    pts.forEach(function(pt){sg+='<circle cx="'+pt.x.toFixed(1)+'" cy="'+pt.y.toFixed(1)+'" r="3.5" fill="#fff" stroke="'+sparkColor+'" stroke-width="2"/>'});
-    pts.forEach(function(pt){sg+='<text x="'+pt.x.toFixed(1)+'" y="'+Math.max(pt.y-8,14)+'" text-anchor="middle" font-size="11" font-weight="700" fill="'+sparkColor+'" font-family="'+_FONT+'">'+pt.v.toFixed(1)+'</text>'});
-    var svgStr='<svg viewBox="0 0 '+svgW+' '+svgH+'" width="100%" height="'+svgH+'" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" style="display:block">'+sg+'</svg>';
-    var chartRow='<tr><td style="padding:0;border:0"></td><td colspan="'+N+'" style="padding:8px 0;border:0">'+svgStr+'</td></tr>';
-    var thead='<tr style="border-top:1px solid #E8EDF2"><th style="text-align:left;padding:5px 6px;font-size:14px;color:#94A3B8;font-weight:600;border-bottom:1px solid #F1F5F9">Month</th>'+ML.map(function(m){return'<th style="text-align:center;padding:5px 2px;font-size:14px;color:#94A3B8;font-weight:600;border-bottom:1px solid #F1F5F9">'+m+'</th>'}).join('')+'</tr>';
-    var cells=ML.map(function(_,mi){var val=dataArr[mi];return'<td style="text-align:center;padding:5px 2px;font-size:14px;color:'+(val!=null?'#1A1A1A':'#CBD5E1')+';font-weight:700;border-bottom:1px solid #F8FAFC;font-variant-numeric:tabular-nums">'+(val!=null?val.toFixed(1):'—')+'</td>'}).join('');
-    var tbody='<tr style="background:#FFF8F9"><td style="padding:5px 6px;font-size:14px;font-weight:700;color:'+_RED+';border-bottom:1px solid #F8FAFC">LG</td>'+cells+'</tr>';
-    var st=_statusInfo(p.status);
-    rows+='<div class="trend-row" style="margin-bottom:24px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><span style="width:4px;height:22px;border-radius:4px;background:'+_RED+';flex-shrink:0"></span><span style="font-size:20px;font-weight:700;color:#1A1A1A">'+p.kr+'</span><span style="font-size:14px;font-weight:700;padding:2px 8px;border-radius:10px;background:'+st.bg+';color:'+st.color+';border:1px solid '+st.border+'">'+st.label+'</span></div><div style="border:1px solid #E8EDF2;border-radius:10px;overflow:hidden"><table style="width:100%;border-collapse:collapse;table-layout:fixed;font-family:'+_FONT+'">'+colgroup+'<tbody>'+chartRow+thead+tbody+'</tbody></table></div></div>';
+      var cat=(p.category||p.id||'').toUpperCase();
+      var dataArr=_getMonthlyScore(cat,countries);
+      if(!dataArr||!dataArr.some(function(v){return v!=null}))return;
+      var N=12;
+      var colgroup='<colgroup><col style="width:'+_TREND_BC+'px">'+ML.map(function(){return'<col>'}).join('')+'</colgroup>';
+      var validPts=[];
+      dataArr.forEach(function(v,i){if(v!=null)validPts.push({i:i,v:v})});
+      var mn=Math.min.apply(null,validPts.map(function(pt){return pt.v}))-2;
+      var mx=Math.max.apply(null,validPts.map(function(pt){return pt.v}))+2;
+      mn=Math.max(0,mn);mx=Math.min(100,mx);var rng=mx-mn||1;
+      var svgW=N*80;var svgH=180;var pt2=8;var ch2=svgH-pt2-8;
+      var lastV=validPts[validPts.length-1].v;
+      var compRatio=p.vsComp>0?Math.round((lastV/p.vsComp)*100):100;
+      var sparkColor=compRatio>=100?'#15803D':compRatio>=80?'#D97706':'#BE123C';
+      var sg='';
+      for(var gi=0;gi<=4;gi++){var gy=pt2+(gi/4)*ch2;sg+='<line x1="0" y1="'+gy.toFixed(1)+'" x2="'+svgW+'" y2="'+gy.toFixed(1)+'" stroke="#E8EDF2" stroke-width="1"/>';}
+      var pts=validPts.map(function(pt){return{x:((pt.i+0.5)/N)*svgW,y:pt2+(1-(pt.v-mn)/rng)*ch2,v:pt.v}});
+      if(pts.length>=1){
+        var d2=pts.map(function(pt,i){return(i?'L':'M')+pt.x.toFixed(1)+','+pt.y.toFixed(1)}).join(' ');
+        sg+='<path d="'+d2+'" stroke="'+sparkColor+'" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>';
+      }
+      pts.forEach(function(pt){sg+='<circle cx="'+pt.x.toFixed(1)+'" cy="'+pt.y.toFixed(1)+'" r="3.5" fill="#fff" stroke="'+sparkColor+'" stroke-width="2"/>'});
+      pts.forEach(function(pt){sg+='<text x="'+pt.x.toFixed(1)+'" y="'+Math.max(pt.y-8,14)+'" text-anchor="middle" font-size="11" font-weight="700" fill="'+sparkColor+'" font-family="'+_FONT+'">'+pt.v.toFixed(1)+'</text>'});
+      var svgStr='<svg viewBox="0 0 '+svgW+' '+svgH+'" width="100%" height="'+svgH+'" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" style="display:block">'+sg+'</svg>';
+      var chartRow='<tr><td style="padding:0;border:0"></td><td colspan="'+N+'" style="padding:8px 0;border:0">'+svgStr+'</td></tr>';
+      var thead='<tr style="border-top:1px solid #E8EDF2"><th style="text-align:left;padding:5px 6px;font-size:14px;color:#94A3B8;font-weight:600;border-bottom:1px solid #F1F5F9">Month</th>'+ML.map(function(m){return'<th style="text-align:center;padding:5px 2px;font-size:14px;color:#94A3B8;font-weight:600;border-bottom:1px solid #F1F5F9">'+m+'</th>'}).join('')+'</tr>';
+      var cells=ML.map(function(_,mi){var val=dataArr[mi];return'<td style="text-align:center;padding:5px 2px;font-size:14px;color:'+(val!=null?'#1A1A1A':'#CBD5E1')+';font-weight:700;border-bottom:1px solid #F8FAFC;font-variant-numeric:tabular-nums">'+(val!=null?val.toFixed(1):'—')+'</td>'}).join('');
+      var tbody='<tr style="background:#FFF8F9"><td style="padding:5px 6px;font-size:14px;font-weight:700;color:'+_RED+';border-bottom:1px solid #F8FAFC">LG</td>'+cells+'</tr>';
+      var st=_statusInfo(p.status);
+      rows+='<div class="trend-row" style="margin-bottom:24px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><span style="width:4px;height:22px;border-radius:4px;background:'+_RED+';flex-shrink:0"></span><span style="font-size:20px;font-weight:700;color:#1A1A1A">'+p.kr+'</span><span style="font-size:14px;font-weight:700;padding:2px 8px;border-radius:10px;background:'+st.bg+';color:'+st.color+';border:1px solid '+st.border+'">'+st.label+'</span></div><div style="border:1px solid #E8EDF2;border-radius:10px;overflow:hidden"><table style="width:100%;border-collapse:collapse;table-layout:fixed;font-family:'+_FONT+'">'+colgroup+'<tbody>'+chartRow+thead+tbody+'</tbody></table></div></div>';
     });
     if(!rows)return;hasTrend=true;
     html+='<div class="bu-group" data-bu="'+b+'" style="margin-bottom:20px"><div class="bu-header"><span class="bu-label">'+b+'</span></div>'+rows+'</div>';
   });
   if(!hasTrend){container.innerHTML='<div class="section-card"><div class="section-body" style="text-align:center;padding:40px;color:#94A3B8;font-size:16px">'+(_lang==='en'?'No monthly data available':'월간 데이터가 없습니다')+'</div></div>';return}
   var title=_lang==='en'?'Monthly Visibility Trend':'월간 Visibility 트렌드';
-  container.innerHTML='<div class="section-card"><div class="section-header"><div class="section-title">'+title+'</div><span class="legend">Jan–Dec</span></div><div class="section-body">'+html+'</div></div>';
+  var cntyLabel=countries?(countries.length>1?' — '+countries.join(', ')+' avg':' — '+countries[0]):'';
+  container.innerHTML='<div class="section-card"><div class="section-header"><div class="section-title">'+title+cntyLabel+'</div><span class="legend">Jan–Dec</span></div><div class="section-body">'+html+'</div></div>';
 }
 
 // ─── 제품 카드 스코어 국가 필터 업데이트 ───
