@@ -1,6 +1,6 @@
 import { RefreshCw, Globe, Trash2 } from 'lucide-react'
 import { MONTHS, STAKEHOLDER_COLORS } from '../utils/constants'
-import { t } from '../../shared/i18n.js'
+import { t, tSH, tCat, tMonth } from '../../shared/i18n.js'
 
 export default function Header({
   onRefresh, loading, selectedMonth, setSelectedMonth,
@@ -29,7 +29,7 @@ export default function Header({
             className="appearance-none bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg px-3 py-1.5 pr-8 text-[16px] font-bold text-[#111827] cursor-pointer hover:border-[#CBD5E1] focus:outline-none focus:border-[#CF0652] transition-colors"
           >
             {MONTHS.map(m => (
-              <option key={m} value={m}>{m}</option>
+              <option key={m} value={m}>{tMonth(lang, m)}</option>
             ))}
           </select>
 
@@ -47,7 +47,7 @@ export default function Header({
                   }`}
                   style={isActive ? { backgroundColor: color } : undefined}
                 >
-                  {sh}
+                  {i === 0 ? t(lang, 'all') : tSH(lang, sh)}
                 </button>
               )
             })}
@@ -69,7 +69,7 @@ export default function Header({
                       }`}
                       style={isActive ? { backgroundColor: '#CF0652' } : undefined}
                     >
-                      {cat}
+                      {tCat(lang, cat)}
                     </button>
                   )
                 })}

@@ -1,5 +1,5 @@
 import { STAKEHOLDER_COLORS, statusOf } from '../utils/constants'
-import { t } from '../../shared/i18n.js'
+import { t, tSH } from '../../shared/i18n.js'
 
 function fmt(n) { return Number(n).toLocaleString('en-US') }
 
@@ -8,7 +8,7 @@ export default function SummaryCards({ avgRate, cumulativeActual, cumulativeGoal
   const progressPct = annualTarget > 0 ? Math.min((cumulativeActual / annualTarget) * 100, 100) : 0
   const cumRate = cumulativeGoal > 0 ? (cumulativeActual / cumulativeGoal) * 100 : 0
   const shColor = selectedSH !== '전체' ? (STAKEHOLDER_COLORS[selectedSH] || '#64748B') : null
-  const shLabel = selectedSH !== '전체' ? selectedSH : null
+  const shLabel = selectedSH !== '전체' ? tSH(lang, selectedSH) : null
 
   return (
     <div>

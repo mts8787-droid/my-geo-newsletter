@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { STAKEHOLDER_COLORS, SECTION_BAR, statusOfDark as statusOf } from '../utils/constants'
-import { t } from '../../shared/i18n.js'
+import { t, tSH, tCat } from '../../shared/i18n.js'
 
 function fmt(n) { return Number(n).toLocaleString('en-US') }
 
@@ -17,7 +17,7 @@ function CategoryTooltip({ cat, lang }) {
         position: 'absolute', top: -6, left: '50%', transform: 'translateX(-50%)',
         width: 0, height: 0, borderLeft: '6px solid transparent', borderRight: '6px solid transparent', borderBottom: '6px solid #1E293B',
       }} />
-      <div style={{ fontWeight: 700, marginBottom: 6, color: '#F8FAFC' }}>{cat.category}</div>
+      <div style={{ fontWeight: 700, marginBottom: 6, color: '#F8FAFC' }}>{tCat(lang, cat.category)}</div>
       <div style={{ color: '#94A3B8' }}>{t(lang, 'tooltipTaskCount', cat.taskCount)}</div>
       <div style={{ color: '#94A3B8' }}>{t(lang, 'monthlyRate', '')} {cat.monthRate}% ({fmt(cat.monthActual)} / {fmt(cat.monthGoal)})</div>
       <div style={{ color: '#94A3B8' }}>{t(lang, 'cumulativeRate')} {cat.cumRate}% ({fmt(cat.cumActual)} / {fmt(cat.cumGoal)})</div>
@@ -27,7 +27,7 @@ function CategoryTooltip({ cat, lang }) {
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 4 }}>
             {cat.stakeholders.map(sh => (
               <span key={sh.name} style={{ padding: '1px 6px', borderRadius: 3, fontSize: 11, fontWeight: 600, background: '#334155', color: '#CBD5E1' }}>
-                {sh.name} {sh.rate}%
+                {tSH(lang, sh.name)} {sh.rate}%
               </span>
             ))}
           </div>
@@ -83,7 +83,7 @@ export default function CategorySummary({ categories, month, lang = 'ko', select
               {isHovered && <CategoryTooltip cat={cat} lang={lang} />}
 
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-                <span style={{ fontSize: 20, fontWeight: 700, color: '#F1F5F9' }}>{cat.category}</span>
+                <span style={{ fontSize: 20, fontWeight: 700, color: '#F1F5F9' }}>{tCat(lang, cat.category)}</span>
                 <span style={{ fontSize: 14, color: '#64748B' }}>{t(lang, 'stakeholderCount', shCount)}</span>
               </div>
 
@@ -133,7 +133,7 @@ export default function CategorySummary({ categories, month, lang = 'ko', select
                         color: st.text,
                         border: `1px solid ${st.border}`,
                       }}>
-                        {sh.name}
+                        {tSH(lang, sh.name)}
                       </span>
                     )
                   })}

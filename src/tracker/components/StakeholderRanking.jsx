@@ -1,5 +1,5 @@
 import { STAKEHOLDER_COLORS, SECTION_BAR, statusOf } from '../utils/constants'
-import { t } from '../../shared/i18n.js'
+import { t, tSH } from '../../shared/i18n.js'
 
 function fmt(n) { return Number(n).toLocaleString('en-US') }
 
@@ -51,7 +51,7 @@ export default function StakeholderRanking({ stakeholders, month, selectedSH, la
                 {/* Stakeholder badge */}
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <span style={{ display: 'inline-block', padding: '4px 10px', borderRadius: 5, fontSize: 16, fontWeight: 700, background: color + '18', color: '#111827', border: `1px solid ${color}30`, textAlign: 'center' }}>
-                    {sh.name}
+                    {tSH(lang, sh.name)}
                   </span>
                 </div>
 

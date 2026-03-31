@@ -1,5 +1,5 @@
 import { STAKEHOLDER_COLORS, SECTION_BAR, statusOf } from '../utils/constants'
-import { t } from '../../shared/i18n.js'
+import { t, tSH, tCat } from '../../shared/i18n.js'
 
 function fmtRate(rate) {
   if (rate === null) return '\u2014'
@@ -36,10 +36,10 @@ export default function DetailTable({ tasks, month, lang = 'ko' }) {
                 <tr key={i} style={{ borderBottom: '1px solid #F1F5F9' }} className="hover:bg-[#F8FAFC] transition-colors">
                   <td style={{ padding: '9px 12px', position: 'sticky', left: 0, zIndex: 10, background: '#fff', textAlign: 'center' }}>
                     <span style={{ display: 'inline-block', padding: '2px 8px', borderRadius: 4, fontSize: 16, fontWeight: 700, background: color + '18', color: '#111827', border: `1px solid ${color}30` }}>
-                      {tk.stakeholder}
+                      {tSH(lang, tk.stakeholder)}
                     </span>
                   </td>
-                  <td style={{ padding: '9px 12px', textAlign: 'center', color: '#64748B' }}>{tk.taskCategory}</td>
+                  <td style={{ padding: '9px 12px', textAlign: 'center', color: '#64748B' }}>{tCat(lang, tk.taskCategory)}</td>
                   <td style={{ padding: '9px 12px', color: '#1E293B', fontWeight: 500 }}>{tk.task}</td>
                   <td style={{ padding: '9px 12px', color: '#64748B' }}>{tk.pageType}</td>
                   <td style={{ padding: '9px 12px', color: '#475569', maxWidth: 280 }}>

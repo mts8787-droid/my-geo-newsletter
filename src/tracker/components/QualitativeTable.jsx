@@ -1,5 +1,5 @@
 import { STAKEHOLDER_COLORS, SECTION_BAR } from '../utils/constants'
-import { t } from '../../shared/i18n.js'
+import { t, tSH } from '../../shared/i18n.js'
 
 function statusDot(val, lang) {
   if (!val || val === '') return { dot: '#CBD5E1', label: '\u2014', bg: 'transparent' }
@@ -59,7 +59,7 @@ export default function QualitativeTable({ goals, results, selectedSH, selectedC
                 return (
                   <tr key={`${sh}-${ri}`} style={{ borderBottom: '1px solid #F1F5F9' }} className="hover:bg-[#F8FAFC] transition-colors">
                     <td style={{ padding: '9px 12px', textAlign: 'center' }}>
-                      <span style={{ display: 'inline-block', padding: '2px 8px', borderRadius: 4, fontSize: 16, fontWeight: 700, background: color + '18', color: '#111827', border: `1px solid ${color}30` }}>{sh}</span>
+                      <span style={{ display: 'inline-block', padding: '2px 8px', borderRadius: 4, fontSize: 16, fontWeight: 700, background: color + '18', color: '#111827', border: `1px solid ${color}30` }}>{tSH(lang, sh)}</span>
                     </td>
                     <td style={{ padding: '9px 12px', textAlign: 'center', color: '#64748B' }}>{r.taskCategory || g?.taskCategory || ''}</td>
                     <td style={{ padding: '9px 12px', color: '#1E293B', fontWeight: 500 }}>{r.task}</td>

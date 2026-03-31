@@ -82,6 +82,11 @@ const T = {
 
     // Loading
     loadingData: '데이터를 불러오는 중...',
+
+    // Stakeholder/data translation (ko → ko는 그대로)
+    _sh: {},
+    _cat: {},
+    _month: {},
   },
   en: {
     headerTitle: 'Stakeholder Action Item Progress Tracker',
@@ -154,6 +159,19 @@ const T = {
     clearFilter: 'Clear filter',
 
     loadingData: 'Loading data...',
+
+    // Stakeholder/data translation (ko → en)
+    _sh: { '고가혁': 'CVIOs', '브랜드': 'Brand', '전체': 'All' },
+    _cat: {
+      '콘텐츠 수정': 'Content Modification', '신규 콘텐츠 제작': 'New Content Creation',
+      '기술 SEO': 'Technical SEO', '구조화 데이터': 'Structured Data',
+      '콘텐츠 최적화': 'Content Optimization', '데이터 분석': 'Data Analysis',
+      '전략 수립': 'Strategy Planning', '모니터링': 'Monitoring',
+    },
+    _month: {
+      '3월':'Mar','4월':'Apr','5월':'May','6월':'Jun','7월':'Jul','8월':'Aug',
+      '9월':'Sep','10월':'Oct','11월':'Nov','12월':'Dec','1월':'Jan','2월':'Feb',
+    },
   },
 }
 
@@ -161,4 +179,22 @@ export function t(lang, key, ...args) {
   const val = T[lang]?.[key] ?? T.ko[key] ?? key
   if (typeof val === 'function') return val(...args)
   return val
+}
+
+// 조직명 번역
+export function tSH(lang, name) {
+  if (lang === 'ko' || !name) return name
+  return T.en._sh[name] || name
+}
+
+// 과제 구분 번역
+export function tCat(lang, name) {
+  if (lang === 'ko' || !name) return name
+  return T.en._cat[name] || name
+}
+
+// 월 라벨 번역
+export function tMonth(lang, name) {
+  if (lang === 'ko' || !name) return name
+  return T.en._month[name] || name
 }
