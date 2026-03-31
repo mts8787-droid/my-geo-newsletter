@@ -1241,6 +1241,13 @@ function _updateCard(card,score,compPct){
   var badge=card.querySelector('.prod-badge');
   if(badge){badge.style.background=st.bg;badge.style.color=st.color;badge.style.borderColor=st.border;badge.textContent=st.label}
   card.style.borderColor=st.border;
+  // 미니 차트 색상 업데이트 (SVG path/circle/text)
+  var sparkColor=status==='critical'?'#BE123C':status==='behind'?'#D97706':'#15803D';
+  card.querySelectorAll('.prod-chart svg path').forEach(function(p){p.setAttribute('stroke',sparkColor)});
+  card.querySelectorAll('.prod-chart svg circle').forEach(function(c){c.setAttribute('stroke',sparkColor)});
+  card.querySelectorAll('.prod-chart svg text').forEach(function(t){t.setAttribute('fill',sparkColor)});
+  // 그라디언트 색상 업데이트
+  card.querySelectorAll('.prod-chart svg stop').forEach(function(s){s.setAttribute('stop-color',sparkColor)});
 }
 function updateProductScores(selCountry){
   if(selCountry.isAll){
