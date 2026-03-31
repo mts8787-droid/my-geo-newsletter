@@ -52,7 +52,7 @@ export default function GlossaryPage({ lang = 'ko' }) {
     <div style={{ flex: 1, overflowY: 'auto', background: BG, padding: '32px 40px' }}>
       <div style={{ maxWidth: 840, margin: '0 auto' }}>
         <h2 style={{ fontSize: 24, fontWeight: 800, color: TEXT, marginBottom: 6 }}>{title}</h2>
-        <p style={{ fontSize: 13, color: TEXT_DIM, marginBottom: 28 }}>{subtitle}</p>
+        <p style={{ fontSize: 15, color: TEXT_DIM, marginBottom: 28 }}>{subtitle}</p>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {entries.map((e, i) => (
@@ -60,8 +60,8 @@ export default function GlossaryPage({ lang = 'ko' }) {
               background: CARD_BG, border: `1px solid ${BORDER}`, borderRadius: 10,
               padding: '16px 20px',
             }}>
-              <div style={{ fontSize: 14, fontWeight: 700, color: '#F8FAFC', marginBottom: 6 }}>{e.term}</div>
-              <div style={{ fontSize: 13, color: TEXT_DIM, lineHeight: 1.7 }}>{e.def}</div>
+              <div style={{ fontSize: 16, fontWeight: 700, color: '#F8FAFC', marginBottom: 6 }}>{e.term}</div>
+              <div style={{ fontSize: 15, color: TEXT_DIM, lineHeight: 1.7 }}>{e.def}</div>
             </div>
           ))}
         </div>

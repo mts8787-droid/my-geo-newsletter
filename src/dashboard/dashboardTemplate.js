@@ -1107,9 +1107,11 @@ function filterProducts(selProd){
 function filterTrend(selBU,selProd,selCountry){
   // Determine country for trend data
   var trendCnty='Total';
+  var trendCountries=null; // 다중 국가 평균용
   if(!selCountry.isAll){
     var cKeys=Object.keys(selCountry.vals);
     if(cKeys.length===1)trendCnty=cKeys[0];
+    else if(cKeys.length>1)trendCountries=cKeys;
   }
   var container=document.getElementById('trend-container');if(!container)return;
 
@@ -1119,15 +1121,39 @@ function filterTrend(selBU,selProd,selCountry){
     return;
   }
 
+  // 다중 국가 평균 데이터 계산
+  function _avgWeeklyData(prodId){
+    if(!trendCountries)return (_weeklyAll[prodId]||{})[trendCnty]||{};
+    var allBrands={};
+    trendCountries.forEach(function(c){
+      var cData=(_weeklyAll[prodId]||{})[c]||{};
+      Object.keys(cData).forEach(function(brand){
+        if(!allBrands[brand])allBrands[brand]=[];
+        allBrands[brand].push(cData[brand]||[]);
+      });
+    });
+    var avg={};
+    Object.keys(allBrands).forEach(function(brand){
+      var arrays=allBrands[brand];
+      var maxLen=Math.max.apply(null,arrays.map(function(a){return a.length}));
+      avg[brand]=[];
+      for(var i=0;i<maxLen;i++){
+        var sum=0;var cnt=0;
+        arrays.forEach(function(a){if(a[i]!=null){sum+=a[i];cnt++}});
+        avg[brand].push(cnt>0?sum/cnt:null);
+      }
+    });
+    return avg;
+  }
+
   var BU=['MS','HS','ES'];var html='';var hasTrend=false;
-  // Selected product IDs
   var selectedProdIds=selProd.isAll?null:selProd.vals;
   BU.forEach(function(b){
     if(!selBU.isAll&&!selBU.vals[b])return;
     var prods=_products.filter(function(p){return p.bu===b&&(!selectedProdIds||selectedProdIds[p.id])});if(!prods.length)return;
     var rows='';
     prods.forEach(function(p){
-      var data=(_weeklyAll[p.id]||{})[trendCnty]||{};
+      var data=_avgWeeklyData(p.id);
       var brands=Object.keys(data).sort(function(a,b2){if(a==='LG')return -1;if(b2==='LG')return 1;var la=(data[a]||[])[data[a].length-1]||0;var lb=(data[b2]||[])[data[b2].length-1]||0;return lb-la});
       if(!brands.length)return;
       var st=_statusInfo(p.status);var lgL=data.LG?data.LG[data.LG.length-1]:null;
@@ -1146,7 +1172,7 @@ function filterTrend(selBU,selProd,selCountry){
   if(!hasTrend){container.innerHTML='';return}
   var title=_lang==='en'?'Weekly Competitor Trend':'주간 경쟁사 트렌드';
   var sub=_wLabels[0]+'–'+_wLabels[_wLabels.length-1]+' ('+_wLabels.length+(_lang==='en'?' weeks':'주')+')';
-  var cntyLabel=trendCnty==='Total'?'':' — '+trendCnty;
+  var cntyLabel=trendCountries?(' — '+trendCountries.join(', ')+' avg'):(trendCnty==='Total'?'':' — '+trendCnty);
   container.innerHTML='<div class="section-card"><div class="section-header"><div class="section-title">'+title+cntyLabel+'</div><span class="legend">'+sub+'</span></div><div class="section-body">'+html+'</div></div>';
 }
 
@@ -1223,24 +1249,24 @@ function updateProductScores(selCountry){
     });
     return;
   }
-  var cKeys=Object.keys(selCountry.vals);
-  if(cKeys.length!==1)return;
-  var cnty=cKeys[0];
-  // productsCnty.product는 원본명(TV,WM 등), 대소문자 무관 매칭
-  var cntyByProduct={};
+  var selectedCountries=Object.keys(selCountry.vals);
+  if(!selectedCountries.length)return;
+  // 선택된 국가별 제품 데이터 수집 → 제품별 평균 계산
+  var avgByProduct={};
   _productsCnty.forEach(function(r){
-    if((r.country||'')===cnty){
-      cntyByProduct[(r.product||'').toUpperCase()]=r;
-    }
+    if(selectedCountries.indexOf(r.country||'')<0)return;
+    var key=(r.product||'').toUpperCase();
+    if(!avgByProduct[key])avgByProduct[key]={scores:[],compScores:[]};
+    avgByProduct[key].scores.push(r.score||0);
+    avgByProduct[key].compScores.push(r.compScore||0);
   });
-  console.log('[updateProductScores] cnty='+cnty+', keys='+Object.keys(cntyByProduct).join(','));
   document.querySelectorAll('.prod-card').forEach(function(card){
     var nameEl=card.querySelector('.prod-name');if(!nameEl)return;
     var prod=_products.find(function(p){return p.kr===nameEl.textContent||p.en===nameEl.textContent});if(!prod)return;
-    var cntyRow=cntyByProduct[(prod.category||'').toUpperCase()]||cntyByProduct[prod.id.toUpperCase()]||cntyByProduct[prod.kr.toUpperCase()];
-    if(!cntyRow)return;
-    var score=cntyRow.score||0;
-    var comp=cntyRow.compScore||0;
+    var avg=avgByProduct[(prod.category||'').toUpperCase()]||avgByProduct[prod.id.toUpperCase()]||avgByProduct[prod.kr.toUpperCase()];
+    if(!avg||!avg.scores.length)return;
+    var score=avg.scores.reduce(function(s,v){return s+v},0)/avg.scores.length;
+    var comp=avg.compScores.reduce(function(s,v){return s+v},0)/avg.compScores.length;
     var scoreEl=card.querySelector('.prod-score');
     if(scoreEl)scoreEl.innerHTML=score.toFixed(1)+'<small>%</small>';
     var compPct=comp>0?Math.round((score/comp)*100):100;
