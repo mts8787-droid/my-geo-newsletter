@@ -184,6 +184,19 @@ function parseMeta(rows) {
     if (labels.length) obj.weeklyLabels = labels
     else delete obj.weeklyLabels
   }
+  // period 한글 → 영어 자동 변환: "2026년 3월" → "Mar 2026"
+  if (obj.period) {
+    const MONTH_MAP = {'1월':'Jan','2월':'Feb','3월':'Mar','4월':'Apr','5월':'May','6월':'Jun','7월':'Jul','8월':'Aug','9월':'Sep','10월':'Oct','11월':'Nov','12월':'Dec'}
+    const pm = obj.period.match(/(\d{4})년\s*(\d{1,2}월)/)
+    if (pm) obj.period = `${MONTH_MAP[pm[2]] || pm[2]} ${pm[1]}`
+  }
+  if (obj.dateLine) {
+    const dm = obj.dateLine.match(/(\d{4})년\s*(\d{1,2})월/)
+    if (dm) {
+      const MONTHS_EN = ['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+      obj.dateLine = `As of ${MONTHS_EN[parseInt(dm[2])] || dm[2]} ${dm[1]}`
+    }
+  }
   return Object.keys(obj).length ? { meta: obj } : {}
 }
 

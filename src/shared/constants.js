@@ -23,11 +23,11 @@ export function statusOfDark(rate) {
 
 // ─── 초기 메타 데이터 ──────────────────────────────────────────────────────────
 export const INIT_META  = {
-  period: '2026년 3월', team: 'D2C디지털마케팅팀', reportNo: 'Vol.03',
+  period: 'Feb 2026', team: 'D2C디지털마케팅팀', reportNo: 'Vol.03',
   reportType: 'GEO 월간 성과 분석 리포트',
   title: '생성형 AI 엔진 가시성(Visibility) 성과 분석',
   titleFontSize: 24, titleColor: '#1A1A1A',
-  dateLine: '2026년 3월 기준',
+  dateLine: 'As of Feb 2026',
   totalInsight: '권위 있는 인용 출처와 통계 데이터를 활용한 Citation Optimization 전략은 생성형 AI 검색 엔진에서의 가시성을 최대 30~40% 향상시킬 수 있습니다. 청소기·식기세척기 카테고리의 구조화 데이터 강화가 시급히 필요합니다.',
   productInsight: '', showProductInsight: true,
   productHowToRead: '', showProductHowToRead: true,
