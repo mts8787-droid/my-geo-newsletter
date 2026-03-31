@@ -1229,40 +1229,69 @@ function _renderMonthlyTrend(container,selBU,selProd,trendCnty){
 }
 
 // ─── 제품 카드 스코어 국가 필터 업데이트 ───
-function _updateCard(card,score,compPct){
+// 미니 SVG 라인 차트 생성 (클라이언트용)
+function _miniSvg(data,labels,w,h,color){
+  if(!data||data.length<2)return'<svg width="'+w+'" height="'+h+'"></svg>';
+  var pt=18,pr=10,pb=20,pl=10;var cw=w-pl-pr;var ch=h-pt-pb;
+  var mn=Math.min.apply(null,data)-1;var mx=Math.max.apply(null,data)+1;var rng=mx-mn||1;
+  var pts=data.map(function(v,i){return{x:pl+(i/(data.length-1))*cw,y:pt+(1-(v-mn)/rng)*ch,v:v}});
+  var line=pts.map(function(p,i){return(i?'L':'M')+p.x.toFixed(1)+','+p.y.toFixed(1)}).join(' ');
+  var area=line+' L'+pts[pts.length-1].x.toFixed(1)+','+(pt+ch)+' L'+pts[0].x.toFixed(1)+','+(pt+ch)+' Z';
+  var id='ms'+Math.random().toString(36).slice(2,6);
+  var s='<svg viewBox="0 0 '+w+' '+h+'" width="100%" height="'+h+'" xmlns="http://www.w3.org/2000/svg" style="display:block">';
+  s+='<defs><linearGradient id="'+id+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="'+color+'" stop-opacity="0.25"/><stop offset="100%" stop-color="'+color+'" stop-opacity="0.03"/></linearGradient></defs>';
+  s+='<path d="'+area+'" fill="url(#'+id+')"/>';
+  s+='<path d="'+line+'" stroke="'+color+'" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>';
+  pts.forEach(function(p){s+='<circle cx="'+p.x.toFixed(1)+'" cy="'+p.y.toFixed(1)+'" r="3.5" fill="#fff" stroke="'+color+'" stroke-width="2"/>'});
+  pts.forEach(function(p){s+='<text x="'+p.x.toFixed(1)+'" y="'+Math.max(p.y-7,12)+'" text-anchor="middle" font-size="12" font-weight="700" fill="'+color+'" font-family="'+_FONT+'">'+p.v.toFixed(1)+'</text>'});
+  pts.forEach(function(p,i){s+='<text x="'+p.x.toFixed(1)+'" y="'+(pt+ch+14)+'" text-anchor="middle" font-size="12" fill="#94A3B8" font-family="'+_FONT+'">'+(labels[i]||'')+'</text>'});
+  s+='</svg>';return s;
+}
+function _updateCard(card,score,compPct,weeklyData,wLabels){
   var scoreEl=card.querySelector('.prod-score');
   if(scoreEl)scoreEl.innerHTML=score.toFixed(1)+'<small>%</small>';
   var cc=compPct>=100?'#15803D':compPct>=80?'#D97706':'#BE123C';
   var compBar=card.querySelector('.prod-comp-bar');if(compBar){compBar.style.width=Math.min(compPct,120)+'%';compBar.style.background=cc}
   var compPctEl=card.querySelector('.prod-comp-pct');if(compPctEl){compPctEl.textContent=compPct+'%';compPctEl.style.color=cc}
-  // 신호등 배지 + 카드 테두리 업데이트
   var status=compPct>=100?'lead':compPct>=80?'behind':'critical';
   var st=_statusInfo(status);
   var badge=card.querySelector('.prod-badge');
   if(badge){badge.style.background=st.bg;badge.style.color=st.color;badge.style.borderColor=st.border;badge.textContent=st.label}
   card.style.borderColor=st.border;
-  // 미니 차트 색상 업데이트 (SVG path/circle/text)
-  var sparkColor=status==='critical'?'#BE123C':status==='behind'?'#D97706':'#15803D';
-  card.querySelectorAll('.prod-chart svg path').forEach(function(p){p.setAttribute('stroke',sparkColor)});
-  card.querySelectorAll('.prod-chart svg circle').forEach(function(c){c.setAttribute('stroke',sparkColor)});
-  card.querySelectorAll('.prod-chart svg text').forEach(function(t){t.setAttribute('fill',sparkColor)});
-  // 그라디언트 색상 업데이트
-  card.querySelectorAll('.prod-chart svg stop').forEach(function(s){s.setAttribute('stop-color',sparkColor)});
+  // 미니 차트 재생성 (주간 데이터 + 신호등 색상)
+  if(weeklyData&&weeklyData.length>=2){
+    var sparkColor=status==='critical'?'#BE123C':status==='behind'?'#D97706':'#15803D';
+    var chartWrap=card.querySelector('.trend-weekly');
+    if(chartWrap)chartWrap.innerHTML=_miniSvg(weeklyData,wLabels,300,90,sparkColor);
+  }
+}
+function _getWeeklyForCountries(prodId,countries){
+  if(!countries||!countries.length)return (_weeklyAll[prodId]||{})['Total']||{};
+  if(countries.length===1)return (_weeklyAll[prodId]||{})[countries[0]]||{};
+  // 다중 국가 → LG 브랜드 평균
+  var result=[];var maxLen=0;
+  countries.forEach(function(c){var d=((_weeklyAll[prodId]||{})[c]||{}).LG||[];if(d.length>maxLen)maxLen=d.length});
+  for(var i=0;i<maxLen;i++){var sum=0;var cnt=0;
+    countries.forEach(function(c){var v=((_weeklyAll[prodId]||{})[c]||{}).LG;if(v&&v[i]!=null){sum+=v[i];cnt++}});
+    result.push(cnt>0?sum/cnt:null);
+  }
+  return result;
 }
 function updateProductScores(selCountry){
+  var countries=selCountry.isAll?null:Object.keys(selCountry.vals);
   if(selCountry.isAll){
     document.querySelectorAll('.prod-card').forEach(function(card){
       var nameEl=card.querySelector('.prod-name');if(!nameEl)return;
       var prod=_products.find(function(p){return p.kr===nameEl.textContent||p.en===nameEl.textContent});if(!prod)return;
-      _updateCard(card,prod.score,prod.compRatio||100);
+      var weekly=((_weeklyAll[prod.id]||{})['Total']||{}).LG||[];
+      _updateCard(card,prod.score,prod.compRatio||100,weekly,_wLabels);
     });
     return;
   }
-  var selectedCountries=Object.keys(selCountry.vals);
-  if(!selectedCountries.length)return;
+  if(!countries||!countries.length)return;
   var avgByProduct={};
   _productsCnty.forEach(function(r){
-    if(selectedCountries.indexOf(r.country||'')<0)return;
+    if(countries.indexOf(r.country||'')<0)return;
     var key=(r.product||'').toUpperCase();
     if(!avgByProduct[key])avgByProduct[key]={scores:[],compScores:[]};
     avgByProduct[key].scores.push(r.score||0);
@@ -1276,7 +1305,8 @@ function updateProductScores(selCountry){
     var score=avg.scores.reduce(function(s,v){return s+v},0)/avg.scores.length;
     var comp=avg.compScores.reduce(function(s,v){return s+v},0)/avg.compScores.length;
     var compPct=comp>0?Math.round((score/comp)*100):100;
-    _updateCard(card,score,compPct);
+    var weekly=_getWeeklyForCountries(prod.id,countries);
+    _updateCard(card,score,compPct,Array.isArray(weekly)?weekly:(weekly.LG||[]),_wLabels);
   });
 }
 
