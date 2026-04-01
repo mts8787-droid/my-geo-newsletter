@@ -345,17 +345,24 @@ export default function CitationSidebar({
         <div style={{ marginBottom: 16 }}>
           <span style={{ fontSize: 11, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: 1, fontFamily: FONT, display: 'block', marginBottom: 8 }}>Insights</span>
           {[
-            { key: 'citationInsight', label: 'Citation Insight' },
-            { key: 'citationHowToRead', label: 'Citation How to Read' },
-            { key: 'citDomainInsight', label: 'Domain Insight' },
-            { key: 'citDomainHowToRead', label: 'Domain How to Read' },
-            { key: 'citCntyInsight', label: 'Country Insight' },
-            { key: 'citCntyHowToRead', label: 'Country How to Read' },
-            { key: 'dotcomInsight', label: 'Dotcom Insight' },
-            { key: 'dotcomHowToRead', label: 'Dotcom How to Read' },
+            { key: 'citationInsight', show: 'showCitationInsight', label: 'Citation Insight' },
+            { key: 'citationHowToRead', show: 'showCitationHowToRead', label: 'Citation How to Read' },
+            { key: 'citDomainInsight', show: 'showCitDomainInsight', label: 'Domain Insight' },
+            { key: 'citDomainHowToRead', show: 'showCitDomainHowToRead', label: 'Domain How to Read' },
+            { key: 'citCntyInsight', show: 'showCitCntyInsight', label: 'Country Insight' },
+            { key: 'citCntyHowToRead', show: 'showCitCntyHowToRead', label: 'Country How to Read' },
+            { key: 'dotcomInsight', show: 'showDotcomInsight', label: 'Dotcom Insight' },
+            { key: 'dotcomHowToRead', show: 'showDotcomHowToRead', label: 'Dotcom How to Read' },
           ].map(f => (
             <div key={f.key} style={{ marginBottom: 8 }}>
-              <label style={{ fontSize: 10, color: '#64748B', fontFamily: FONT, display: 'block', marginBottom: 2 }}>{f.label}</label>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 2 }}>
+                <label style={{ fontSize: 10, color: '#64748B', fontFamily: FONT }}>{f.label}</label>
+                <button onClick={() => setMeta(m => ({ ...m, [f.show]: !m[f.show] }))}
+                  style={{ padding: '1px 6px', borderRadius: 3, border: 'none', cursor: 'pointer', fontSize: 9, fontWeight: 700, fontFamily: FONT,
+                    background: meta[f.show] ? '#166534' : '#1E293B', color: meta[f.show] ? '#86EFAC' : '#64748B' }}>
+                  {meta[f.show] ? 'ON' : 'OFF'}
+                </button>
+              </div>
               <textarea value={meta[f.key] || ''} onChange={e => setMeta(m => ({ ...m, [f.key]: e.target.value }))}
                 rows={2} style={{ ...inputStyle, fontSize: 11, lineHeight: 1.5 }} />
             </div>
