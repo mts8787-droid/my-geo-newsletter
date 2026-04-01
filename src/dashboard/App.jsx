@@ -4,12 +4,14 @@ import { generateDashboardHTML } from './dashboardTemplate.js'
 import { resolveDataForLang } from '../shared/utils.js'
 import { publishCombinedDashboard } from '../shared/api.js'
 import GlossaryPage from './GlossaryPage.jsx'
+import AppendixPage from './AppendixPage.jsx'
 
 const TABS = [
   { key: 'visibility', label: 'Visibility' },
   { key: 'citation',   label: 'Citation' },
   { key: 'readability', label: 'Readability' },
   { key: 'tracker',    label: 'Progress Tracker' },
+  { key: 'appendix',   label: 'Appendix' },
   { key: 'glossary',   label: 'Glossary' },
 ]
 
@@ -26,6 +28,7 @@ const EDITOR_LINKS = {
   citation:    '/admin/citation',
   readability: null,
   tracker:     '/admin/progress-tracker',
+  appendix:    null,
   glossary:    null,
 }
 
@@ -95,7 +98,7 @@ export default function App() {
 
   // Derive status for active tab
   function getTabStatus(tabKey) {
-    if (tabKey === 'readability' || tabKey === 'glossary') return { published: false, urls: [] }
+    if (tabKey === 'readability' || tabKey === 'glossary' || tabKey === 'appendix') return { published: false, urls: [] }
     if (tabKey === 'tracker') {
       if (!trackerData) return { published: false, urls: [] }
       return {
@@ -204,6 +207,15 @@ export default function App() {
                 ? 'Reference for GEO terminology used across all dashboards.'
                 : 'GEO 대시보드 전반에서 사용되는 주요 용어 설명입니다.'}
             </div>
+          ) : activeTab === 'appendix' ? (
+            <div style={{
+              background: CARD_BG, borderRadius: 10, padding: 24,
+              textAlign: 'center', color: TEXT_DIM, fontSize: 14, lineHeight: 1.7,
+            }}>
+              {lang === 'en'
+                ? 'Full list of prompts used for GEO KPI measurement across all countries and categories.'
+                : 'GEO KPI 측정에 사용되는 전체 프롬프트 목록입니다. 국가/카테고리별 필터링이 가능합니다.'}
+            </div>
           ) : (
             <>
               {/* Published Status */}
@@ -288,6 +300,8 @@ export default function App() {
             </div>
           ) : activeTab === 'glossary' ? (
             <GlossaryPage lang={lang} />
+          ) : activeTab === 'appendix' ? (
+            <AppendixPage lang={lang} />
           ) : iframeSrc ? (
             <iframe
               key={`${activeTab}-${lang}`}

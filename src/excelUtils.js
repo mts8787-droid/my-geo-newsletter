@@ -4,15 +4,20 @@ import * as XLSX from 'xlsx-js-style'
 export const SHEET_NAMES = {
   meta:           'meta',
   visSummary:     'Monthly Visibility Summary',
-  productMS:      'Monthly Visibility Product_CNTY_MS',
-  productHS:      'Monthly Visibility Product_CNTY_HS',
-  productES:      'Monthly Visibility Product_CNTY_ES',
+  productMS:      '시트3',
+  productHS:      'Monthly Visibility Product_CNTY',
+  productES:      '시트4',
   weeklyMS:       'Weekly MS Visibility',
   weeklyHS:       'Weekly HS Visibility',
   weeklyES:       'Weekly ES Visibility',
+  monthlyPR:      'Monthly PR Visibility',
+  weeklyPR:       'Weekly PR Visibility',
+  monthlyBrandPrompt: 'Monthly Brand Prompt Visibility',
+  weeklyBrandPrompt:  'Weekly Brand Prompt Visibility',
   citPageType:    'Citation-Page Type',
   citTouchPoints: 'Citation-Touch Points',
   citDomain:      'Citation-Domain',
+  appendix:       'Appendix.Prompt List',
 }
 
 // ─── 카테고리 ID/KR 매핑 ──────────────────────────────────────────────────────
@@ -838,93 +843,111 @@ function parseCitTouchPoints(rows) {
 }
 
 function parseCitDomain(rows) {
-  const COUNTRIES = ['US','CA','UK','DE','ES','BR','MX','IN','AU','VN']
-  const CNTY_KR = { '미국':'US','캐나다':'CA','영국':'UK','독일':'DE','스페인':'ES','브라질':'BR','멕시코':'MX','인도':'IN','호주':'AU','베트남':'VN' }
+  // 새 구조: No | Region | Domain | Type | Feb | Mar | Apr | ...
+  // Region: Global(=TTL), US, CA, UK 등 인라인 국가
+  const REGION_MAP = { 'GLOBAL': 'TTL', 'TOTAL': 'TTL', '미국':'US','캐나다':'CA','영국':'UK','독일':'DE','스페인':'ES','브라질':'BR','멕시코':'MX','인도':'IN','호주':'AU','베트남':'VN' }
+  const COUNTRIES = ['US','CA','UK','DE','ES','BR','MX','IN','AU','VN','TTL','GLOBAL']
+  const MONTH_RE = /^(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|[0-9]{1,2}월)/i
 
-  // 데이터 컬럼 오프셋 감지: column 0이 비어있으면 offset=1
-  let off = 0
-  for (let i = 0; i < Math.min(rows.length, 5); i++) {
-    const c0 = String(rows[i]?.[0] || '').trim()
-    const c1 = String(rows[i]?.[1] || '').trim()
-    if (!c0 && (c1.includes('.') || c1.includes('[') || COUNTRIES.includes(c1.toUpperCase()))) { off = 1; break }
-  }
-
-  // 헤더 행 찾기 (월 라벨 추출용)
+  // 헤더 행 찾기 — No/Region 또는 Domain 키워드가 있는 행
   let headerRow = null
   let startIdx = 0
+  let noCol = -1, regionCol = -1, domainCol = -1, typeCol = -1, dataStartCol = 4
+
   for (let i = 0; i < Math.min(rows.length, 10); i++) {
-    const cv = String(rows[i]?.[off] || '').trim()
-    if (/domain|domian/i.test(cv) && !/^\[.*\]$/.test(cv)) {
-      headerRow = rows[i]
+    const r = rows[i]
+    if (!r) continue
+    const hasNo = r.some(c => /^no$/i.test(String(c || '').trim()))
+    const hasRegion = r.some(c => /^region$/i.test(String(c || '').trim()))
+    const hasDomain = r.some(c => /domain|domian/i.test(String(c || '').trim()))
+    if (hasNo || hasRegion || hasDomain) {
+      headerRow = r
       startIdx = i + 1
+      for (let j = 0; j < r.length; j++) {
+        const s = String(r[j] || '').trim().toLowerCase()
+        if (s === 'no' && noCol < 0) noCol = j
+        if (s === 'region' && regionCol < 0) regionCol = j
+        if ((s === 'domain' || s === 'domian') && domainCol < 0) domainCol = j
+      }
       break
     }
-    if (cv.includes('.') && cv.length > 3) { startIdx = i; break }
-    if (cv === '' || cv.startsWith('[') || cv.startsWith('※')) {
+    if (String(r[0] || '').trim().startsWith('[') || !String(r[0] || '').trim()) {
       startIdx = i + 1
     }
   }
 
-  // 월 라벨 추출
-  const MONTH_RE = /^(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|[0-9]{1,2}월)/i
-  const domainMonthLabels = []
-  if (headerRow) {
-    // 먼저 헤더 행에서 직접 월 라벨 찾기 (단일 헤더 구조)
-    for (let i = off + 2; i < headerRow.length; i++) {
-      const h = String(headerRow[i] || '').trim()
-      if (h && MONTH_RE.test(h)) domainMonthLabels.push({ col: i, label: h })
-    }
-    // 단일 헤더에서 못 찾으면, 반복 그룹 구조 (Domain/Type/Data × N개월)
-    // 헤더 위 행에서 월 이름을 찾고, 해당 그룹의 데이터 컬럼(월이름+2) 매핑
-    if (domainMonthLabels.length === 0) {
-      const headerIdx = rows.indexOf(headerRow)
-      const monthRow = headerIdx > 0 ? rows[headerIdx - 1] : null
-      if (monthRow) {
-        for (let i = 0; i < monthRow.length; i++) {
-          const mv = String(monthRow[i] || '').trim()
-          if (mv && MONTH_RE.test(mv)) {
-            // 데이터 컬럼 = 월 이름 컬럼 + 2 (3-column group: Domain, Type, Data)
-            const dataCol = i + 2
-            if (dataCol < headerRow.length) {
-              domainMonthLabels.push({ col: dataCol, label: mv })
-            }
-          }
+  // 새 구조 감지: No(col0) + Region(col1) + Domain(col2) + Type(col3) + Data(col4+)
+  // 헤더의 col2가 "Feb" 등 월 라벨이지만 실제로 도메인 이름이 들어감
+  const isNewLayout = noCol >= 0 || regionCol >= 0
+  if (isNewLayout) {
+    // No=0, Region=1, Domain=2, Type=3, Data=4+
+    regionCol = regionCol >= 0 ? regionCol : 1
+    domainCol = 2
+    typeCol = 3
+    dataStartCol = 4
+  } else if (domainCol >= 0) {
+    // 이전 구조: Domain, Type, Data...
+    typeCol = domainCol + 1
+    dataStartCol = domainCol + 2
+  } else {
+    // 폴백: 첫 데이터 행에서 도메인(.포함)을 찾아 위치 결정
+    for (let i = startIdx; i < Math.min(rows.length, startIdx + 5); i++) {
+      const r = rows[i]
+      if (!r) continue
+      for (let j = 0; j < Math.min(r.length, 6); j++) {
+        const v = String(r[j] || '').trim()
+        if (v.includes('.') && v.length > 3 && !MONTH_RE.test(v)) {
+          domainCol = j; typeCol = j + 1; dataStartCol = j + 2
+          break
         }
       }
+      if (domainCol >= 0) break
+    }
+    if (domainCol < 0) { domainCol = 0; typeCol = 1; dataStartCol = 2 }
+  }
+
+  // 월 라벨 추출 — 헤더 행의 dataStartCol 이후에서 월 패턴 탐색
+  const domainMonthLabels = []
+  if (headerRow) {
+    for (let i = dataStartCol; i < headerRow.length; i++) {
+      const h = String(headerRow[i] || '').trim()
+      if (h && MONTH_RE.test(h)) domainMonthLabels.push({ col: i, label: h })
     }
   }
 
   const result = []
-  // 월간 트렌드: { "cnty|domain": { month1: val, month2: val } }
   const citDomainTrend = {}
-  let currentCnty = 'TTL'
-  let rank = 0
-
+  const cntyRanks = {}  // 국가별 순위 카운터
+  let legacyCnty = 'TTL'  // 이전 구조용 국가 추적
 
   for (let i = startIdx; i < rows.length; i++) {
     const r = rows[i]
-    const cv = String(r[off] || '').trim()      // domain or country
-    const ct = String(r[off + 1] || '').trim()   // type
-    if (!cv) continue
+    if (!r) continue
 
-    // 국가 마커 감지 (영문 코드 또는 한글)
-    const cntyCode = COUNTRIES.includes(cv.toUpperCase()) ? cv.toUpperCase() : CNTY_KR[cv] || null
-    if (cntyCode) {
-      if (!ct || ct === '') {
-        currentCnty = cntyCode
-        rank = 0
-        continue
-      } else {
+    const domain = String(r[domainCol] || '').trim()
+    const type = String(r[typeCol] || '').trim()
+
+    // 이전 구조: 도메인 없는 행이 국가 마커일 수 있음
+    if (!isNewLayout && (!domain || !domain.includes('.'))) {
+      const cv = String(r[domainCol] || '').trim().toUpperCase()
+      const cntyCode = REGION_MAP[cv] || (COUNTRIES.includes(cv) ? cv : null)
+      if (cntyCode && (!type || type === '')) {
+        legacyCnty = cntyCode
       }
+      continue
+    }
+    if (!domain || !domain.includes('.')) continue
+
+    // 국가 결정: 새 구조는 인라인 Region, 이전 구조는 구분자 행
+    let cnty = 'TTL'
+    if (isNewLayout && regionCol >= 0) {
+      const rawRegion = String(r[regionCol] || '').trim().toUpperCase()
+      cnty = REGION_MAP[rawRegion] || rawRegion
+    } else if (!isNewLayout) {
+      cnty = legacyCnty
     }
 
-    // 헤더/설명 행 건너뛰기
-    if (/domain|domian|^feb$|^mar$|^apr$/i.test(cv) || cv.startsWith('[') || cv.startsWith('※')) continue
-
-    const domain = cv
-    const type = ct
-
-    // 최신 월 데이터 찾기 — domainMonthLabels 컬럼만 역순 탐색
+    // 최신 월 데이터
     let citations = 0
     if (domainMonthLabels.length > 0) {
       for (let j = domainMonthLabels.length - 1; j >= 0; j--) {
@@ -933,7 +956,7 @@ function parseCitDomain(rows) {
         if (!isNaN(val) && val > 0) { citations = val; break }
       }
     } else {
-      for (let j = r.length - 1; j >= off + 2; j--) {
+      for (let j = r.length - 1; j >= dataStartCol; j--) {
         const raw = String(r[j] || '').replace(/,/g, '').trim()
         if (!raw) continue
         const val = parseFloat(raw)
@@ -941,7 +964,7 @@ function parseCitDomain(rows) {
       }
     }
 
-    // 모든 월별 데이터 수집 (트렌드용)
+    // 월별 트렌드 데이터 수집
     if (domainMonthLabels.length > 0) {
       const monthData = {}
       domainMonthLabels.forEach(({ col, label }) => {
@@ -950,35 +973,196 @@ function parseCitDomain(rows) {
         if (!isNaN(val) && val > 0) monthData[label] = val
       })
       if (Object.keys(monthData).length > 0) {
-        const key = `${currentCnty}|${domain}`
-        citDomainTrend[key] = { cnty: currentCnty, domain, type, months: monthData }
+        const key = `${cnty}|${domain}`
+        citDomainTrend[key] = { cnty, domain, type, months: monthData }
       }
     }
 
     if (citations > 0) {
-      rank++
-      result.push({ cnty: currentCnty, rank, domain, type, citations })
+      cntyRanks[cnty] = (cntyRanks[cnty] || 0) + 1
+      result.push({ cnty, rank: cntyRanks[cnty], domain, type, citations })
     }
-  }
-
-  // 국가별 결과 상세 로그
-  const cntyStats = {}
-  result.forEach(r => { cntyStats[r.cnty] = (cntyStats[r.cnty] || 0) + 1 })
-  if (Object.keys(citDomainTrend).length) {
-    const trendCnties = [...new Set(Object.values(citDomainTrend).map(d => d.cnty))]
   }
 
   const output = {}
   if (result.length > 0) output.citationsCnty = result
   if (Object.keys(citDomainTrend).length > 0) {
     output.citDomainTrend = citDomainTrend
-    // 유효한 월 라벨
     const validMonths = domainMonthLabels.map(m => m.label).filter(label =>
       Object.values(citDomainTrend).some(d => d.months[label] > 0)
     )
     output.citDomainMonths = validMonths
   }
   return output
+}
+
+// ─── PR Visibility 파서 (Monthly/Weekly 공용) ─────────────────────────────────
+// 구조: Type | County | Topic | Brand | Feb/w5 | Mar/w6 | ...
+function parsePRVisibility(rows, mode) {
+  // mode: 'monthly' 또는 'weekly'
+  // 헤더: Type, County, Topic, Brand, data columns...
+  const headerIdx = rows.findIndex(r => {
+    if (!r) return false
+    return r.some(c => /^type$/i.test(String(c || '').trim())) &&
+           r.some(c => /^county|^country$/i.test(String(c || '').trim()))
+  })
+  if (headerIdx < 0) return {}
+
+  const header = rows[headerIdx]
+  let typeCol = -1, countryCol = -1, topicCol = -1, brandCol = -1, dataStartCol = 4
+  for (let i = 0; i < header.length; i++) {
+    const s = String(header[i] || '').trim().toLowerCase()
+    if (s === 'type' && typeCol < 0) typeCol = i
+    if ((s === 'county' || s === 'country') && countryCol < 0) countryCol = i
+    if ((s === 'topic' || s === 'topoc') && topicCol < 0) topicCol = i
+    if (s === 'brand' && brandCol < 0) brandCol = i
+  }
+  dataStartCol = Math.max(typeCol, countryCol, topicCol, brandCol) + 1
+
+  // 데이터 라벨 추출 (월 또는 주차)
+  const MONTH_RE = /^(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|[0-9]{1,2}월)/i
+  const WEEK_RE = /^w\d+$/i
+  const dataLabels = []
+  for (let i = dataStartCol; i < header.length; i++) {
+    const h = String(header[i] || '').trim()
+    if (h && (MONTH_RE.test(h) || WEEK_RE.test(h))) dataLabels.push({ col: i, label: h })
+  }
+
+  const data = rows.slice(headerIdx + 1)
+  const prData = []  // { type, country, topic, brand, scores: {label: val}, latestScore }
+
+  data.forEach(r => {
+    if (!r) return
+    const type = String(r[typeCol] || '').trim()
+    const country = normCountry(r[countryCol])
+    const topic = String(r[topicCol] || '').trim()
+    const brand = String(r[brandCol] || '').trim()
+    if (!topic || !brand) return
+
+    const scores = {}
+    let latestScore = 0
+    dataLabels.forEach(({ col, label }) => {
+      const val = pct(r[col])
+      if (val > 0) {
+        scores[label] = val
+        latestScore = val
+      }
+    })
+
+    if (Object.keys(scores).length > 0 || topic) {
+      prData.push({ type, country, topic, brand, scores, latestScore })
+    }
+  })
+
+  const key = mode === 'weekly' ? 'weeklyPR' : 'monthlyPR'
+  const labelsKey = mode === 'weekly' ? 'weeklyPRLabels' : 'monthlyPRLabels'
+  const result = {}
+  if (prData.length > 0) result[key] = prData
+  if (dataLabels.length > 0) result[labelsKey] = dataLabels.map(d => d.label)
+  return result
+}
+
+// ─── Brand Prompt Visibility 파서 (Monthly/Weekly 공용) ──────────────────────
+// 구조: Steakholders | Type | Country | Topoc | w5/Feb | w6/Mar | ...
+function parseBrandPromptVisibility(rows, mode) {
+  const headerIdx = rows.findIndex(r => {
+    if (!r) return false
+    return r.some(c => /steakholders|stakeholders/i.test(String(c || '').trim())) ||
+           (r.some(c => /^type$/i.test(String(c || '').trim())) &&
+            r.some(c => /topoc|topic/i.test(String(c || '').trim())))
+  })
+  if (headerIdx < 0) return {}
+
+  const header = rows[headerIdx]
+  let stakeholderCol = -1, typeCol = -1, countryCol = -1, topicCol = -1, dataStartCol = 4
+  for (let i = 0; i < header.length; i++) {
+    const s = String(header[i] || '').trim().toLowerCase()
+    if ((s === 'steakholders' || s === 'stakeholders') && stakeholderCol < 0) stakeholderCol = i
+    if (s === 'type' && typeCol < 0) typeCol = i
+    if ((s === 'country' || s === 'county') && countryCol < 0) countryCol = i
+    if ((s === 'topoc' || s === 'topic') && topicCol < 0) topicCol = i
+  }
+  dataStartCol = Math.max(stakeholderCol, typeCol, countryCol, topicCol) + 1
+
+  const MONTH_RE = /^(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|[0-9]{1,2}월)/i
+  const WEEK_RE = /^w\d+$/i
+  const dataLabels = []
+  for (let i = dataStartCol; i < header.length; i++) {
+    const h = String(header[i] || '').trim()
+    if (h && (MONTH_RE.test(h) || WEEK_RE.test(h))) dataLabels.push({ col: i, label: h })
+  }
+
+  const data = rows.slice(headerIdx + 1)
+  const bpData = []
+
+  data.forEach(r => {
+    if (!r) return
+    const stakeholder = String(r[stakeholderCol] || '').trim()
+    const type = String(r[typeCol] || '').trim()
+    const country = normCountry(r[countryCol])
+    const topic = String(r[topicCol] || '').trim()
+    if (!topic || !stakeholder) return
+
+    const scores = {}
+    let latestScore = 0
+    dataLabels.forEach(({ col, label }) => {
+      const val = pct(r[col])
+      if (val > 0) {
+        scores[label] = val
+        latestScore = val
+      }
+    })
+
+    bpData.push({ stakeholder, type, country, topic, scores, latestScore })
+  })
+
+  const key = mode === 'weekly' ? 'weeklyBrandPrompt' : 'monthlyBrandPrompt'
+  const labelsKey = mode === 'weekly' ? 'weeklyBrandPromptLabels' : 'monthlyBrandPromptLabels'
+  const result = {}
+  if (bpData.length > 0) result[key] = bpData
+  if (dataLabels.length > 0) result[labelsKey] = dataLabels.map(d => d.label)
+  return result
+}
+
+// ─── Appendix.Prompt List 파서 ──────────────────────────────────────────────
+// 구조: (빈) | Country | Prompts | Division | Category | launched | Branded | CEJ | Topic
+function parseAppendix(rows) {
+  // 헤더 찾기
+  const headerIdx = rows.findIndex(r => {
+    if (!r) return false
+    return r.some(c => /^prompts?$/i.test(String(c || '').trim())) &&
+           r.some(c => /^country$/i.test(String(c || '').trim()))
+  })
+  if (headerIdx < 0) return {}
+
+  const header = rows[headerIdx]
+  const colMap = {}
+  const FIELDS = ['country', 'prompts', 'division', 'category', 'launched', 'branded', 'cej', 'topic']
+  for (let i = 0; i < header.length; i++) {
+    const s = String(header[i] || '').trim().toLowerCase()
+    if (FIELDS.includes(s) && !colMap[s]) colMap[s] = i
+  }
+
+  const data = rows.slice(headerIdx + 1)
+  const prompts = []
+
+  data.forEach(r => {
+    if (!r) return
+    const prompt = String(r[colMap.prompts] || '').trim()
+    if (!prompt) return
+    prompts.push({
+      country:  normCountry(r[colMap.country]),
+      prompt,
+      division: String(r[colMap.division] || '').trim(),
+      category: String(r[colMap.category] || '').trim(),
+      launched: String(r[colMap.launched] || '').trim(),
+      branded:  String(r[colMap.branded] || '').trim(),
+      cej:      String(r[colMap.cej] || '').trim(),
+      topic:    String(r[colMap.topic] || '').trim(),
+    })
+  })
+
+  return prompts.length > 0 ? { appendixPrompts: prompts } : {}
 }
 
 // ─── 메인 파서 라우터 ──────────────────────────────────────────────────────────
@@ -995,11 +1179,19 @@ export function parseSheetRows(sheetName, rows) {
   if (sheetName === SHEET_NAMES.weeklyHS) return parseWeekly(rows, 'HS')
   if (sheetName === SHEET_NAMES.weeklyES) return parseWeekly(rows, 'ES')
 
+  if (sheetName === SHEET_NAMES.monthlyPR) return parsePRVisibility(rows, 'monthly')
+  if (sheetName === SHEET_NAMES.weeklyPR) return parsePRVisibility(rows, 'weekly')
+
+  if (sheetName === SHEET_NAMES.monthlyBrandPrompt) return parseBrandPromptVisibility(rows, 'monthly')
+  if (sheetName === SHEET_NAMES.weeklyBrandPrompt) return parseBrandPromptVisibility(rows, 'weekly')
+
   if (sheetName === SHEET_NAMES.citPageType) return parseCitPageType(rows)
 
   if (sheetName === SHEET_NAMES.citTouchPoints) return parseCitTouchPoints(rows)
 
   if (sheetName === SHEET_NAMES.citDomain) return parseCitDomain(rows)
+
+  if (sheetName === SHEET_NAMES.appendix) return parseAppendix(rows)
 
   return {}
 }
