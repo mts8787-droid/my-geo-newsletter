@@ -1530,42 +1530,72 @@ function _getMonthlyBrandData(cat,countries){
   // 국가 필터에 따라 제품별 월별 브랜드별 스코어 계산
   // 반환: { LG: [null,...,86,...], Samsung: [null,...,91,...], ... }
   var N=12;
-  if(!countries){
-    // 전체: _products(TTL)에서 allScores 사용
-    var p=_products.find(function(pr){return(pr.category||'').toUpperCase()===cat||pr.id.toUpperCase()===cat});
-    if(!p||!p.allScores)return null;
-    var mi=_parseMonth(p.date||'');if(mi<0)return null;
-    var result={};
-    Object.keys(p.allScores).forEach(function(brand){
-      var arr=[];for(var i=0;i<N;i++)arr.push(null);
-      arr[mi]=p.allScores[brand];
-      result[brand]=arr;
+
+  // 1) _monthlyVis 데이터 활용 (division 기반 — cat은 사실 division에 매핑)
+  //    _monthlyVis: [{ date, country, division, lg, comp }]
+  //    cat을 division이 아닌 product category로 매칭하기 위해 _products에서 division(bu) 찾기
+  var prod=_products.find(function(pr){return(pr.category||'').toUpperCase()===cat||pr.id.toUpperCase()===cat});
+
+  // 2) _monthlyVis에서 해당 제품의 월간 데이터 수집
+  if(_monthlyVis&&_monthlyVis.length>0&&prod){
+    var bu=prod.bu;// MS, HS, ES
+    var byMonth={};// { monthIdx: { lg: [scores], comp: [scores] } }
+    _monthlyVis.forEach(function(r){
+      if(bu&&r.division&&r.division!==bu)return;
+      if(countries&&countries.indexOf(r.country||'')<0)return;
+      var mi=_parseMonth(r.date||'');if(mi<0)return;
+      if(!byMonth[mi])byMonth[mi]={lg:[],comp:[]};
+      byMonth[mi].lg.push(r.lg||0);
+      if(r.comp>0)byMonth[mi].comp.push(r.comp);
     });
-    return result;
+    if(Object.keys(byMonth).length>0){
+      var lgArr=[];var compArr=[];
+      for(var i=0;i<N;i++){
+        var m=byMonth[i];
+        lgArr.push(m&&m.lg.length?m.lg.reduce(function(a,b){return a+b},0)/m.lg.length:null);
+        compArr.push(m&&m.comp.length?m.comp.reduce(function(a,b){return a+b},0)/m.comp.length:null);
+      }
+      var result={LG:lgArr};
+      if(compArr.some(function(v){return v!=null}))result.Samsung=compArr;
+      return result;
+    }
   }
-  // 국가별: _productsCnty에서 선택 국가 평균
-  var byBrandMonth={};// { brand: { monthIdx: [scores] } }
+
+  // 3) 폴백: _products allScores 사용 (단일 월 데이터)
+  if(!countries){
+    if(!prod||!prod.allScores)return null;
+    var mi2=_parseMonth(prod.date||'');if(mi2<0)return null;
+    var result2={};
+    Object.keys(prod.allScores).forEach(function(brand){
+      var arr=[];for(var i=0;i<N;i++)arr.push(null);
+      arr[mi2]=prod.allScores[brand];
+      result2[brand]=arr;
+    });
+    return result2;
+  }
+  // 4) 폴백: _productsCnty에서 선택 국가 평균
+  var byBrandMonth={};
   _productsCnty.forEach(function(r){
     if((r.product||'').toUpperCase()!==cat)return;
     if(countries.indexOf(r.country||'')<0)return;
-    var mi=_parseMonth(r.date||'');if(mi<0)return;
+    var mi3=_parseMonth(r.date||'');if(mi3<0)return;
     if(!r.allScores)return;
     Object.keys(r.allScores).forEach(function(brand){
       if(!byBrandMonth[brand])byBrandMonth[brand]={};
-      if(!byBrandMonth[brand][mi])byBrandMonth[brand][mi]=[];
-      byBrandMonth[brand][mi].push(r.allScores[brand]);
+      if(!byBrandMonth[brand][mi3])byBrandMonth[brand][mi3]=[];
+      byBrandMonth[brand][mi3].push(r.allScores[brand]);
     });
   });
   if(!Object.keys(byBrandMonth).length)return null;
-  var result={};
+  var result3={};
   Object.keys(byBrandMonth).forEach(function(brand){
     var arr=[];for(var i=0;i<N;i++){
       var vals=byBrandMonth[brand][i];
       arr.push(vals?vals.reduce(function(a,b){return a+b},0)/vals.length:null);
     }
-    result[brand]=arr;
+    result3[brand]=arr;
   });
-  return result;
+  return result3;
 }
 function _renderMonthlyTrend(container,selBU,selProd,trendCnty,trendCountries){
   var ML=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];

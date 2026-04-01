@@ -5,7 +5,7 @@ import { extractSheetId, syncFromGoogleSheets } from '../googleSheetsUtils'
 import { LG_RED, FONT } from './constants.js'
 import { inputStyle } from './components.jsx'
 import { resolveDataForLang, translateTexts } from './utils.js'
-import { saveSyncData, publishCombinedDashboard } from './api.js'
+import { saveSyncData, fetchSyncData, publishCombinedDashboard } from './api.js'
 import { generateDashboardHTML } from '../dashboard/dashboardTemplate.js'
 import { generateProductInsight, generateProductHowToRead, generateCntyHowToRead } from './insights.js'
 
@@ -81,12 +81,14 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
     if (combPublishing) return
     setCombPublishing(true); setCombMsg('')
     try {
-      // 게시 전 현재 에디터 state를 sync-data에 저장
+      // 게시 전 현재 에디터 state를 sync-data에 병합 저장 (기존 monthlyVis 등 유지)
+      const existing = await fetchSyncData(mode) || {}
       await saveSyncData(mode, {
+        ...existing,
         meta: metaKo || meta, total, productsPartial: products, products,
-        weeklyMap: null, weeklyLabels, weeklyAll,
+        weeklyMap: existing.weeklyMap || null, weeklyLabels, weeklyAll,
         citations, dotcom, productsCnty, citationsCnty,
-        citationsByCnty, dotcomByCnty, appendixPrompts: null,
+        citationsByCnty, dotcomByCnty,
       })
       const result = await publishCombinedDashboard(generateDashboardHTML, resolveDataForLang)
       setCombMsg(`통합 게시 완료!\nKO: ${window.location.origin}${result.urls.ko}\nEN: ${window.location.origin}${result.urls.en}`)
