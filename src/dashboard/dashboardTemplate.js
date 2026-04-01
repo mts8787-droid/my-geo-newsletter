@@ -900,7 +900,7 @@ export function generateDashboardHTML(meta, total, products, citations, dotcom, 
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#F1F5F9;font-family:${FONT};min-width:1200px;color:#1A1A1A}
 /* ── 탭바 ── */
-.tab-bar{position:sticky;top:0;z-index:100;background:#0F172A;display:flex;align-items:center;justify-content:space-between;padding:10px 40px;border-bottom:1px solid #1E293B}
+.tab-bar{position:sticky;top:0;z-index:100;background:#0F172A;display:flex;align-items:center;justify-content:space-between;padding:10px 40px;border-bottom:none}
 .lang-btn{padding:4px 10px;border-radius:5px;border:none;font-size:13px;font-weight:700;cursor:pointer;background:transparent;color:#64748B;font-family:${FONT};transition:all .15s}
 .lang-btn.active{background:${RED};color:#fff}
 .lang-btn:hover:not(.active){color:#1E293B}
@@ -910,14 +910,14 @@ body{background:#F1F5F9;font-family:${FONT};min-width:1200px;color:#1A1A1A}
 .tab-panel{display:none}
 .tab-panel.active{display:block}
 /* ── GNB 서브메뉴 ── */
-.gnb-sub{display:none;position:sticky;top:53px;z-index:99;background:#1E293B;padding:6px 40px;border-bottom:1px solid #334155}
+.gnb-sub{display:none;position:sticky;top:49px;z-index:99;background:#1E293B;padding:6px 40px;border-bottom:none}
 .gnb-sub.active{display:flex;align-items:center;gap:4px}
 .gnb-sub-btn{padding:6px 18px;border-radius:6px;border:none;font-size:14px;font-weight:600;font-family:${FONT};cursor:pointer;transition:all .15s;color:#94A3B8;background:transparent}
 .gnb-sub-btn:hover{color:#E2E8F0}
 .gnb-sub-btn.active{background:#334155;color:#fff}
 .dash-container{max-width:1400px;margin:0 auto;padding:28px 40px}
 /* ── 필터 레이어 ── */
-.filter-layer{position:sticky;top:96px;z-index:90;background:#fff;border-bottom:2px solid #E8EDF2;padding:8px 40px}
+.filter-layer{position:sticky;top:86px;z-index:90;background:#fff;border-bottom:2px solid #E8EDF2;padding:8px 40px}
 .fl-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:4px 0}
 .fl-group{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .fl-label{font-size:15px;font-weight:700;color:#64748B;white-space:nowrap;margin-right:4px}
