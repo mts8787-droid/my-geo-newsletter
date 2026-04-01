@@ -366,6 +366,9 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
           dotcom: parsed.dotcom || null,
           productsCnty: parsed.productsCnty || null,
           citationsCnty: parsed.citationsCnty || null,
+          citationsByCnty: parsed.citationsByCnty || null,
+          dotcomByCnty: parsed.dotcomByCnty || null,
+          appendixPrompts: parsed.appendixPrompts || null,
           monthlyVis: parsed.monthlyVis || null,
         })
       }, 100)
