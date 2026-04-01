@@ -32,7 +32,13 @@
       "Bash(GIT_EDITOR=true git rebase --continue)",
       "Bash(claude --version)",
       "Bash(npm uninstall:*)",
-      "Bash(perl -ni -e 'print unless /^\\\\s*console\\\\.\\(log|warn\\)\\\\b/' src/excelUtils.js)"
+      "Bash(perl -ni -e 'print unless /^\\\\s*console\\\\.\\(log|warn\\)\\\\b/' src/excelUtils.js)",
+      "Bash(grep -n \"SHEET_NAMES\\\\|SHEET_ID\\\\|SHEET_GID\" /Users/dubaba/my-geo-project/my-geo-newsletter/src/**/*.js)",
+      "Bash(pip3 install:*)",
+      "Bash(tail -1 python3 -c \":*)",
+      "Bash(python3:*)",
+      "Bash(grep -r \"admin\\\\|combined\" /Users/dubaba/my-geo-project/my-geo-newsletter --include=*.json --include=*.html)",
+      "Bash(git fetch:*)"
     ]
   }
 }

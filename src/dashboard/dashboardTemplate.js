@@ -601,6 +601,190 @@ function dotcomSectionHtml(dotcom, meta, t) {
 }
 
 
+// ─── Glossary 탭 HTML ──────────────────────────────────────────────────────
+const GLOSSARY_DATA = {
+  ko: [
+    { term: 'GEO (Generative Engine Optimization)', def: '생성형 AI 검색 엔진(예: ChatGPT, Gemini, Perplexity 등)에서 자사 브랜드 및 제품이 더 잘 노출·추천되도록 콘텐츠를 최적화하는 전략.' },
+    { term: 'Visibility (가시성)', def: 'AI 검색 결과에서 자사 브랜드/제품이 얼마나 자주 등장하는지를 나타내는 지표. 노출 빈도, 순위, 커버리지 등을 포괄한다.' },
+    { term: 'Citation (인용)', def: 'AI 응답 내에서 특정 소스(URL, 도메인)가 참조·링크되는 것. Citation Rate는 자사 도메인이 인용된 비율을 뜻한다.' },
+    { term: 'Readability (가독성)', def: '콘텐츠가 AI 엔진에 의해 얼마나 쉽게 파싱·이해되는지를 평가하는 지표. 구조화된 데이터, 명확한 문장 구조 등이 영향을 미친다.' },
+    { term: 'Progress Tracker (과제 현황)', def: '각 유관조직(Stakeholder)별 GEO 개선 과제의 목표 대비 실적 달성률을 추적하는 대시보드.' },
+    { term: 'Stakeholder (유관조직)', def: 'GEO 개선 활동에 참여하는 조직 단위. 예: MS(MC/BS사업부), HS(H&A사업부), ES(VS사업부), PR, 브랜드 등.' },
+    { term: '과제 구분 (Task Category)', def: '과제의 성격에 따른 분류. 예: 콘텐츠 수정, 신규 콘텐츠 제작, 기술 SEO, 구조화 데이터 등.' },
+    { term: '달성률', def: '해당 월의 실적을 목표로 나눈 백분율. (실적 ÷ 목표) × 100.' },
+    { term: '누적 달성률', def: '연초부터 해당 월까지의 누적 실적을 누적 목표로 나눈 백분율.' },
+    { term: '연간 진척률', def: '연초부터 현재까지의 누적 실적을 연간 총 목표로 나눈 백분율.' },
+    { term: '주의 필요 과제', def: '달성률이 80% 미만인 과제. 즉각적인 관심과 조치가 필요한 항목.' },
+    { term: 'Deep Link (딥링크)', def: '특정 페이지나 섹션으로 직접 이동할 수 있는 URL. 월간 리포트에서 대시보드 특정 탭으로 바로 연결 가능.' },
+    { term: 'KPI (Key Performance Indicator)', def: '핵심 성과 지표. GEO에서는 Visibility, Citation Rate, Readability Score 등이 해당된다.' },
+    { term: 'BU (Business Unit)', def: '사업부 단위. MC/BS(MS), H&A(HS), VS(ES) 등으로 구분된다.' },
+  ],
+  en: [
+    { term: 'GEO (Generative Engine Optimization)', def: 'A strategy to optimize content so that brands and products are better surfaced and recommended by generative AI search engines (e.g., ChatGPT, Gemini, Perplexity).' },
+    { term: 'Visibility', def: 'A metric measuring how frequently a brand/product appears in AI search results. Encompasses exposure frequency, ranking, and coverage.' },
+    { term: 'Citation', def: 'When a specific source (URL, domain) is referenced or linked within an AI response. Citation Rate refers to the percentage of responses that cite a given domain.' },
+    { term: 'Readability', def: 'A metric evaluating how easily content can be parsed and understood by AI engines. Influenced by structured data, clear sentence structure, etc.' },
+    { term: 'Progress Tracker', def: 'A dashboard tracking goal-vs-actual achievement rates for GEO improvement tasks by each stakeholder organization.' },
+    { term: 'Stakeholder', def: 'An organizational unit participating in GEO improvement activities. E.g., MS (MC/BS Division), HS (H&A Division), ES (VS Division), PR, Brand, etc.' },
+    { term: 'Task Category', def: 'Classification of tasks by nature. E.g., Content Modification, New Content Creation, Technical SEO, Structured Data, etc.' },
+    { term: 'Achievement Rate', def: 'Monthly actual performance divided by target, expressed as a percentage. (Actual / Goal) x 100.' },
+    { term: 'Cumulative Achievement Rate', def: 'Year-to-date cumulative actual divided by cumulative goal, expressed as a percentage.' },
+    { term: 'Annual Progress Rate', def: 'Year-to-date cumulative actual divided by the total annual target, expressed as a percentage.' },
+    { term: 'Tasks Needing Attention', def: 'Tasks with an achievement rate below 80%. Items requiring immediate attention and action.' },
+    { term: 'Deep Link', def: 'A URL that navigates directly to a specific page or section. Enables direct linking from monthly reports to specific dashboard tabs.' },
+    { term: 'KPI (Key Performance Indicator)', def: 'Core performance metrics. In GEO, these include Visibility, Citation Rate, Readability Score, etc.' },
+    { term: 'BU (Business Unit)', def: 'Organizational division. Categorized as MC/BS (MS), H&A (HS), VS (ES), etc.' },
+  ],
+}
+
+function glossaryTabHtml(lang) {
+  const entries = GLOSSARY_DATA[lang] || GLOSSARY_DATA.ko
+  const title = lang === 'en' ? 'GEO Glossary' : 'GEO 용어 사전'
+  const subtitle = lang === 'en'
+    ? 'Key terms and definitions used across the GEO dashboards.'
+    : 'GEO 대시보드 전반에서 사용되는 주요 용어와 정의입니다.'
+  return `<div style="max-width:840px;margin:32px auto;padding:0 40px">
+    <h2 style="font-size:24px;font-weight:800;color:#1A1A1A;margin-bottom:6px">${title}</h2>
+    <p style="font-size:15px;color:#64748B;margin-bottom:28px">${subtitle}</p>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      ${entries.map(e => `<div style="background:#fff;border:1px solid #E2E8F0;border-radius:10px;padding:16px 20px">
+        <div style="font-size:16px;font-weight:700;color:#1A1A1A;margin-bottom:6px">${e.term}</div>
+        <div style="font-size:15px;color:#64748B;line-height:1.7">${e.def}</div>
+      </div>`).join('')}
+    </div>
+  </div>`
+}
+
+function promptListTabHtml(appendixPrompts, lang) {
+  if (!appendixPrompts || appendixPrompts.length === 0) {
+    const msg = lang === 'en' ? 'No Prompt data available.' : '프롬프트 데이터가 없습니다.'
+    return `<div style="display:flex;align-items:center;justify-content:center;min-height:400px;color:#64748B;font-size:16px">${msg}</div>`
+  }
+  const title = lang === 'en' ? 'Prompt List' : 'Prompt List'
+  const subtitle = lang === 'en' ? 'List of prompts used for GEO KPI measurement.' : 'GEO KPI 측정에 사용되는 프롬프트 목록입니다.'
+  const allLabel = lang === 'en' ? 'All' : '전체'
+  const totalLabel = lang === 'en' ? 'Total' : '총'
+  const itemsLabel = lang === 'en' ? '' : '개'
+  const clearLabel = lang === 'en' ? 'Clear filters' : '필터 초기화'
+  const cols = [
+    { key: 'country', label: lang === 'en' ? 'Country' : '국가' },
+    { key: 'division', label: 'Division' },
+    { key: 'category', label: lang === 'en' ? 'Category' : '카테고리' },
+    { key: 'branded', label: lang === 'en' ? 'Type' : '유형' },
+    { key: 'cej', label: 'CEJ' },
+    { key: 'topic', label: lang === 'en' ? 'Topic' : '토픽' },
+  ]
+
+  // Build unique options per column
+  const optionsMap = {}
+  cols.forEach(c => {
+    const set = new Set()
+    appendixPrompts.forEach(p => { if (p[c.key]) set.add(p[c.key]) })
+    optionsMap[c.key] = [...set].sort()
+  })
+
+  // Embed data as JSON for client-side filtering
+  const jsonData = JSON.stringify(appendixPrompts).replace(/</g, '\\u003c').replace(/>/g, '\\u003e')
+  const jsonOptions = JSON.stringify(optionsMap).replace(/</g, '\\u003c').replace(/>/g, '\\u003e')
+
+  const divColors = JSON.stringify({ MS: '#3B82F6', HS: '#10B981', ES: '#F59E0B', PR: '#8B5CF6' })
+  const cejColors = JSON.stringify({ Awareness: '#6366F1', Interest: '#3B82F6', Conversion: '#10B981' })
+
+  return `<div style="max-width:1200px;margin:32px auto;padding:0 40px">
+    <h2 style="font-size:24px;font-weight:800;color:#1A1A1A;margin-bottom:6px">${title}</h2>
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
+      <span style="font-size:15px;color:#64748B">${subtitle}</span>
+      <span id="pl-count" style="font-size:12px;color:#94A3B8">${totalLabel} ${appendixPrompts.length}${itemsLabel ? ' ' + itemsLabel : ''}</span>
+      <span id="pl-clear" onclick="_plClear()" style="font-size:11px;color:#3B82F6;cursor:pointer;display:none">${clearLabel}</span>
+    </div>
+    <div style="background:#fff;border:1px solid #E2E8F0;border-radius:10px;overflow:hidden">
+      <table id="pl-table" style="width:100%;border-collapse:collapse;font-size:13px">
+        <thead>
+          <tr style="background:#F8FAFC">
+            <th style="padding:10px 12px;text-align:center;font-size:11px;font-weight:700;color:#64748B">#</th>
+            ${cols.map(c => `<th data-col="${c.key}" onclick="_plToggle('${c.key}')" style="padding:10px 12px;text-align:center;font-size:11px;font-weight:700;color:#64748B;cursor:pointer;position:relative;white-space:nowrap;user-select:none">${c.label} <span id="pl-arrow-${c.key}" style="font-size:9px;color:#94A3B8">▽</span></th>`).join('')}
+            <th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:#64748B;min-width:300px">${lang === 'en' ? 'Prompt' : '프롬프트'}</th>
+          </tr>
+        </thead>
+        <tbody id="pl-body"></tbody>
+      </table>
+    </div>
+    <!-- Filter dropdowns (hidden by default) -->
+    ${cols.map(c => `<div id="pl-dd-${c.key}" style="display:none;position:fixed;z-index:999;background:#fff;border:1px solid #E2E8F0;border-radius:8px;padding:6px;min-width:140px;max-height:240px;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,0.15)">
+      <div onclick="_plFilter('${c.key}','')" style="padding:5px 10px;border-radius:4px;cursor:pointer;font-size:12px;color:#64748B">${allLabel}</div>
+      ${optionsMap[c.key].map(v => `<div onclick="_plFilter('${c.key}','${v.replace(/'/g, "\\'")}')" style="padding:5px 10px;border-radius:4px;cursor:pointer;font-size:12px;color:#64748B">${v}</div>`).join('')}
+    </div>`).join('')}
+  </div>
+  <script>
+  (function(){
+    var _plData=${jsonData};
+    var _plFilters={};
+    var _divC=${divColors};
+    var _cejC=${cejColors};
+    var _openDD=null;
+    function badge(t,c){return '<span style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;background:'+c+'22;color:'+c+';white-space:nowrap">'+t+'</span>';}
+    function render(){
+      var f=_plData.filter(function(p){
+        for(var k in _plFilters){if(_plFilters[k]&&p[k]!==_plFilters[k])return false;}
+        return true;
+      });
+      var html='';
+      f.forEach(function(p,i){
+        html+='<tr style="border-top:1px solid #E2E8F0" onmouseenter="this.style.background=\\'#F8FAFC\\'" onmouseleave="this.style.background=\\'transparent\\'">';
+        html+='<td style="padding:8px 12px;text-align:center;font-size:13px;color:#64748B">'+(i+1)+'</td>';
+        html+='<td style="padding:8px 12px;text-align:center">'+badge(p.country,'#3B82F6')+'</td>';
+        html+='<td style="padding:8px 12px;text-align:center">'+badge(p.division,_divC[p.division]||'#64748B')+'</td>';
+        html+='<td style="padding:8px 12px;text-align:center;font-size:13px;color:#64748B">'+p.category+'</td>';
+        html+='<td style="padding:8px 12px;text-align:center">'+badge(p.branded,p.branded==='Brand'?'#A50034':'#64748B')+'</td>';
+        html+='<td style="padding:8px 12px;text-align:center">'+badge(p.cej,_cejC[p.cej]||'#64748B')+'</td>';
+        html+='<td style="padding:8px 12px;text-align:center;font-size:13px;color:#64748B">'+p.topic+'</td>';
+        html+='<td style="padding:8px 12px;text-align:left;font-size:13px;color:#1A1A1A;font-weight:500">'+p.prompt+'</td>';
+        html+='</tr>';
+      });
+      document.getElementById('pl-body').innerHTML=html;
+      document.getElementById('pl-count').textContent='${totalLabel} '+f.length+'${itemsLabel ? ' ' + itemsLabel : ''}';
+      var hasF=Object.keys(_plFilters).some(function(k){return !!_plFilters[k];});
+      document.getElementById('pl-clear').style.display=hasF?'':'none';
+      // Update arrows
+      ${JSON.stringify(cols.map(c => c.key))}.forEach(function(k){
+        document.getElementById('pl-arrow-'+k).textContent=_plFilters[k]?'▼':'▽';
+        document.getElementById('pl-arrow-'+k).style.color=_plFilters[k]?'#3B82F6':'#94A3B8';
+      });
+    }
+    window._plToggle=function(col){
+      if(_openDD===col){_closeDD();return;}
+      _closeDD();
+      var th=document.querySelector('th[data-col="'+col+'"]');
+      var rect=th.getBoundingClientRect();
+      var dd=document.getElementById('pl-dd-'+col);
+      dd.style.display='block';
+      dd.style.left=rect.left+'px';
+      dd.style.top=rect.bottom+2+'px';
+      // highlight active
+      var children=dd.children;
+      for(var i=0;i<children.length;i++){
+        var isActive=i===0?!_plFilters[col]:children[i].textContent===_plFilters[col];
+        children[i].style.color=isActive?'#3B82F6':'#64748B';
+        children[i].style.fontWeight=isActive?'700':'400';
+        children[i].style.background=isActive?'rgba(59,130,246,0.08)':'transparent';
+      }
+      _openDD=col;
+    };
+    function _closeDD(){
+      if(_openDD){document.getElementById('pl-dd-'+_openDD).style.display='none';_openDD=null;}
+    }
+    window._plFilter=function(col,val){
+      _plFilters[col]=val;_closeDD();render();
+    };
+    window._plClear=function(){_plFilters={};_closeDD();render();};
+    document.addEventListener('click',function(e){
+      if(_openDD&&!e.target.closest('th[data-col]')&&!e.target.closest('[id^="pl-dd-"]'))_closeDD();
+    });
+    render();
+  })();
+  </script>`
+}
+
 // ═══════════════════════════════════════════════════════════════════════════
 // 메인 생성 함수
 // ═══════════════════════════════════════════════════════════════════════════
@@ -608,7 +792,7 @@ export function generateVisibilityHTML(meta, total, products, citations, dotcom,
   return generateDashboardHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty, { visibilityOnly: true, monthlyVis })
 }
 
-export function generateDashboardHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty, opts) {
+export function generateDashboardHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty, opts, extra) {
   const visibilityOnly = opts?.visibilityOnly || false
   _sid = 0
   const t = T[lang] || T.ko
@@ -898,6 +1082,8 @@ ${filterLayerHtml.replace('top:53px', 'top:0')}
     <button class="tab-btn" onclick="switchTab('citation')">Citation</button>
     <button class="tab-btn" onclick="switchTab('readability')">Readability</button>
     <button class="tab-btn" onclick="switchTab('progress')">Progress Tracker</button>
+    <button class="tab-btn" onclick="switchTab('promptlist')">Prompt List</button>
+    <button class="tab-btn" onclick="switchTab('glossary')">Glossary</button>
   </div>
   <div id="lang-toggle" style="display:flex;gap:2px;background:#1E293B;border-radius:6px;padding:2px">
     <button class="lang-btn${lang === 'ko' ? ' active' : ''}" onclick="switchLang('ko')">KO</button>
@@ -920,6 +1106,12 @@ ${filterLayerHtml.replace('top:53px', 'top:0')}
 </div>
 <div id="tab-progress" class="tab-panel">
   <iframe id="tracker-iframe" src="/p/progress-tracker/?lang=${lang}" style="width:100%;min-height:calc(100vh - 60px);border:none;background:#0A0F1E" title="Progress Tracker"></iframe>
+</div>
+<div id="tab-promptlist" class="tab-panel">
+  ${promptListTabHtml(extra?.appendixPrompts, lang)}
+</div>
+<div id="tab-glossary" class="tab-panel">
+  ${glossaryTabHtml(lang)}
 </div>
 `}
 <div class="dash-footer">
@@ -956,7 +1148,7 @@ function switchTab(id){
   document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active')});
   document.getElementById('tab-'+id).classList.add('active');
   var btns=document.querySelectorAll('.tab-btn');
-  var map={visibility:0,citation:1,readability:2,progress:3};
+  var map={visibility:0,citation:1,readability:2,progress:3,promptlist:4,glossary:5};
   if(map[id]!==undefined)btns[map[id]].classList.add('active');
 }
 function switchPeriodMode(mode){

@@ -11,7 +11,7 @@ const TABS = [
   { key: 'citation',   label: 'Citation' },
   { key: 'readability', label: 'Readability' },
   { key: 'tracker',    label: 'Progress Tracker' },
-  { key: 'appendix',   label: 'Appendix' },
+  { key: 'appendix',   label: 'Prompt List' },
   { key: 'glossary',   label: 'Glossary' },
 ]
 
@@ -98,7 +98,17 @@ export default function App() {
 
   // Derive status for active tab
   function getTabStatus(tabKey) {
-    if (tabKey === 'readability' || tabKey === 'glossary' || tabKey === 'appendix') return { published: false, urls: [] }
+    if (tabKey === 'readability') return { published: false, urls: [] }
+    if (tabKey === 'glossary' || tabKey === 'appendix') {
+      // Glossary/Prompt List는 통합 대시보드에 포함되어 게시됨
+      if (!publishData) return { published: false, urls: [] }
+      const entry = publishData['dashboard']
+      if (!entry) return { published: false, urls: [] }
+      const u = entry.urls
+      const urlList = u && typeof u === 'object' && !Array.isArray(u)
+        ? Object.values(u) : Array.isArray(u) ? u : (entry.url ? [entry.url] : [])
+      return { published: !!entry.published, urls: urlList }
+    }
     if (tabKey === 'tracker') {
       if (!trackerData) return { published: false, urls: [] }
       return {
@@ -190,34 +200,38 @@ export default function App() {
             {TABS.find(t => t.key === activeTab)?.label}
           </h2>
 
-          {/* Readability / Glossary placeholder */}
-          {(activeTab === 'readability') ? (
+          {/* Readability placeholder */}
+          {activeTab === 'readability' ? (
             <div style={{
               background: CARD_BG, borderRadius: 10, padding: 24,
               textAlign: 'center', color: TEXT_DIM, fontSize: 14,
             }}>
               {lang === 'en' ? 'Coming Soon' : '준비 중'}
             </div>
-          ) : activeTab === 'glossary' ? (
-            <div style={{
-              background: CARD_BG, borderRadius: 10, padding: 24,
-              textAlign: 'center', color: TEXT_DIM, fontSize: 14, lineHeight: 1.7,
-            }}>
-              {lang === 'en'
-                ? 'Reference for GEO terminology used across all dashboards.'
-                : 'GEO 대시보드 전반에서 사용되는 주요 용어 설명입니다.'}
-            </div>
-          ) : activeTab === 'appendix' ? (
-            <div style={{
-              background: CARD_BG, borderRadius: 10, padding: 24,
-              textAlign: 'center', color: TEXT_DIM, fontSize: 14, lineHeight: 1.7,
-            }}>
-              {lang === 'en'
-                ? 'Full list of prompts used for GEO KPI measurement across all countries and categories.'
-                : 'GEO KPI 측정에 사용되는 전체 프롬프트 목록입니다. 국가/카테고리별 필터링이 가능합니다.'}
-            </div>
           ) : (
             <>
+              {/* 탭 설명 (glossary / appendix) */}
+              {activeTab === 'glossary' && (
+                <div style={{
+                  background: CARD_BG, borderRadius: 10, padding: 16,
+                  color: TEXT_DIM, fontSize: 13, lineHeight: 1.7,
+                }}>
+                  {lang === 'en'
+                    ? 'Reference for GEO terminology used across all dashboards.'
+                    : 'GEO 대시보드 전반에서 사용되는 주요 용어 설명입니다.'}
+                </div>
+              )}
+              {activeTab === 'appendix' && (
+                <div style={{
+                  background: CARD_BG, borderRadius: 10, padding: 16,
+                  color: TEXT_DIM, fontSize: 13, lineHeight: 1.7,
+                }}>
+                  {lang === 'en'
+                    ? 'Full list of prompts used for GEO KPI measurement across all countries and categories.'
+                    : 'GEO KPI 측정에 사용되는 전체 프롬프트 목록입니다. 국가/카테고리별 필터링이 가능합니다.'}
+                </div>
+              )}
+
               {/* Published Status */}
               <div style={{
                 background: CARD_BG, borderRadius: 10, padding: 16,
@@ -254,21 +268,17 @@ export default function App() {
               </div>
 
               {/* Editor Link */}
-              <a
-                href={editorLink || '#'}
-                onClick={e => { if (!editorLink) e.preventDefault() }}
-                style={{
+              {editorLink && (
+                <a href={editorLink} style={{
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   padding: '10px 16px', borderRadius: 8, border: 'none',
-                  background: editorLink ? '#1D4ED8' : CARD_BG,
-                  color: editorLink ? '#FFFFFF' : TEXT_MUTED,
+                  background: '#1D4ED8', color: '#FFFFFF',
                   fontSize: 13, fontWeight: 700, fontFamily: FONT,
-                  textDecoration: 'none',
-                  cursor: editorLink ? 'pointer' : 'default',
-                  opacity: editorLink ? 1 : 0.5,
+                  textDecoration: 'none', cursor: 'pointer',
                 }}>
-                편집기 열기
-              </a>
+                  편집기 열기
+                </a>
+              )}
 
               {/* 통합 대시보드 게시 버튼 */}
               <button onClick={handlePublishCombined} disabled={publishing}

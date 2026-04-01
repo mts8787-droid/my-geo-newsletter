@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useMemo, useRef } from 'react'
 import { fetchSyncData } from '../shared/api.js'
 
 const BG = '#0F172A'
@@ -19,12 +19,8 @@ const CEJ_COLORS = {
 
 const LABELS = {
   ko: {
-    title: 'Appendix — Prompt List',
+    title: 'Prompt List',
     subtitle: 'GEO KPI 측정에 사용되는 프롬프트 목록입니다.',
-    filterCountry: '국가',
-    filterDivision: 'Division',
-    filterBranded: '유형',
-    filterCEJ: 'CEJ',
     all: '전체',
     total: '총',
     items: '개',
@@ -38,12 +34,8 @@ const LABELS = {
     noData: '동기화된 Prompt 데이터가 없습니다.\nVisibility 편집기에서 Google Sheets 동기화를 실행해 주세요.',
   },
   en: {
-    title: 'Appendix — Prompt List',
+    title: 'Prompt List',
     subtitle: 'List of prompts used for GEO KPI measurement.',
-    filterCountry: 'Country',
-    filterDivision: 'Division',
-    filterBranded: 'Type',
-    filterCEJ: 'CEJ',
     all: 'All',
     total: 'Total',
     items: '',
@@ -58,6 +50,16 @@ const LABELS = {
   },
 }
 
+// 필터 가능한 컬럼 정의
+const FILTER_COLUMNS = [
+  { key: 'country',  dataKey: 'country' },
+  { key: 'division', dataKey: 'division' },
+  { key: 'category', dataKey: 'category' },
+  { key: 'branded',  dataKey: 'branded' },
+  { key: 'cej',      dataKey: 'cej' },
+  { key: 'topic',    dataKey: 'topic' },
+]
+
 function Badge({ text, color }) {
   return (
     <span style={{
@@ -68,13 +70,48 @@ function Badge({ text, color }) {
   )
 }
 
+function ColumnFilterDropdown({ options, value, onChange, allLabel, onClose }) {
+  const ref = useRef(null)
+  useEffect(() => {
+    function handleClick(e) { if (ref.current && !ref.current.contains(e.target)) onClose() }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [onClose])
+
+  return (
+    <div ref={ref} style={{
+      position: 'absolute', top: '100%', left: 0, zIndex: 100,
+      background: '#1E293B', border: `1px solid ${BORDER}`, borderRadius: 8,
+      padding: 6, minWidth: 140, maxHeight: 240, overflowY: 'auto',
+      boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
+    }}>
+      <div
+        onClick={() => onChange('')}
+        style={{
+          padding: '5px 10px', borderRadius: 4, cursor: 'pointer', fontSize: 12,
+          color: !value ? '#60A5FA' : TEXT_DIM, fontWeight: !value ? 700 : 400,
+          background: !value ? 'rgba(96,165,250,0.1)' : 'transparent',
+        }}
+      >{allLabel}</div>
+      {options.map(opt => (
+        <div key={opt} onClick={() => onChange(opt)} style={{
+          padding: '5px 10px', borderRadius: 4, cursor: 'pointer', fontSize: 12,
+          color: value === opt ? '#60A5FA' : TEXT_DIM, fontWeight: value === opt ? 700 : 400,
+          background: value === opt ? 'rgba(96,165,250,0.1)' : 'transparent',
+          whiteSpace: 'nowrap',
+        }}>{opt}</div>
+      ))}
+    </div>
+  )
+}
+
 export default function AppendixPage({ lang = 'ko' }) {
   const [prompts, setPrompts] = useState([])
   const [loading, setLoading] = useState(true)
-  const [filters, setFilters] = useState({ country: '', division: '', branded: '', cej: '' })
+  const [filters, setFilters] = useState({})
+  const [openFilter, setOpenFilter] = useState(null) // which column filter is open
   const L = LABELS[lang] || LABELS.ko
 
-  // Fetch appendix data from sync-data
   useEffect(() => {
     setLoading(true)
     fetchSyncData('dashboard')
@@ -83,23 +120,26 @@ export default function AppendixPage({ lang = 'ko' }) {
       .finally(() => setLoading(false))
   }, [])
 
-  // Extract unique values for filters
-  const filterOptions = useMemo(() => ({
-    country:  [...new Set(prompts.map(p => p.country))].filter(Boolean).sort(),
-    division: [...new Set(prompts.map(p => p.division))].filter(Boolean).sort(),
-    branded:  [...new Set(prompts.map(p => p.branded))].filter(Boolean).sort(),
-    cej:      [...new Set(prompts.map(p => p.cej))].filter(Boolean).sort(),
-  }), [prompts])
+  // Extract unique values for each filterable column
+  const filterOptions = useMemo(() => {
+    const opts = {}
+    FILTER_COLUMNS.forEach(col => {
+      opts[col.key] = [...new Set(prompts.map(p => p[col.dataKey]))].filter(Boolean).sort()
+    })
+    return opts
+  }, [prompts])
 
   const filtered = useMemo(() => {
     return prompts.filter(p => {
-      if (filters.country && p.country !== filters.country) return false
-      if (filters.division && p.division !== filters.division) return false
-      if (filters.branded && p.branded !== filters.branded) return false
-      if (filters.cej && p.cej !== filters.cej) return false
+      for (const col of FILTER_COLUMNS) {
+        if (filters[col.key] && p[col.dataKey] !== filters[col.key]) return false
+      }
       return true
     })
   }, [prompts, filters])
+
+  // Count active filters
+  const activeFilterCount = Object.values(filters).filter(Boolean).length
 
   if (loading) {
     return (
@@ -117,38 +157,47 @@ export default function AppendixPage({ lang = 'ko' }) {
     )
   }
 
+  function renderFilterableHeader(colKey, label) {
+    const isOpen = openFilter === colKey
+    const hasFilter = !!filters[colKey]
+    return (
+      <th style={{ ...thStyle, position: 'relative', cursor: 'pointer', userSelect: 'none' }}
+        onClick={() => setOpenFilter(isOpen ? null : colKey)}
+      >
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+          {label}
+          <span style={{ fontSize: 9, color: hasFilter ? '#60A5FA' : '#64748B' }}>
+            {hasFilter ? '▼' : '▽'}
+          </span>
+        </span>
+        {isOpen && (
+          <ColumnFilterDropdown
+            options={filterOptions[colKey] || []}
+            value={filters[colKey] || ''}
+            onChange={val => { setFilters(prev => ({ ...prev, [colKey]: val })); setOpenFilter(null) }}
+            allLabel={L.all}
+            onClose={() => setOpenFilter(null)}
+          />
+        )}
+      </th>
+    )
+  }
+
   return (
     <div style={{ flex: 1, overflowY: 'auto', background: BG, padding: '32px 40px' }}>
       <div style={{ maxWidth: 1100, margin: '0 auto' }}>
         <h2 style={{ fontSize: 24, fontWeight: 800, color: TEXT, marginBottom: 6 }}>{L.title}</h2>
-        <p style={{ fontSize: 15, color: TEXT_DIM, marginBottom: 20 }}>{L.subtitle}</p>
-
-        {/* Filters */}
-        <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
-          {[
-            { key: 'country', label: L.filterCountry },
-            { key: 'division', label: L.filterDivision },
-            { key: 'branded', label: L.filterBranded },
-            { key: 'cej', label: L.filterCEJ },
-          ].map(f => (
-            <div key={f.key} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ fontSize: 11, fontWeight: 700, color: TEXT_MUTED }}>{f.label}</span>
-              <select
-                value={filters[f.key]}
-                onChange={e => setFilters(prev => ({ ...prev, [f.key]: e.target.value }))}
-                style={{
-                  background: CARD_BG, color: TEXT, border: `1px solid ${BORDER}`,
-                  borderRadius: 6, padding: '4px 8px', fontSize: 12,
-                  cursor: 'pointer', outline: 'none',
-                }}
-              >
-                <option value="">{L.all}</option>
-                {filterOptions[f.key].map(v => <option key={v} value={v}>{v}</option>)}
-              </select>
-            </div>
-          ))}
-          <span style={{ fontSize: 12, color: TEXT_MUTED, alignSelf: 'center', marginLeft: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
+          <p style={{ fontSize: 15, color: TEXT_DIM, margin: 0 }}>{L.subtitle}</p>
+          <span style={{ fontSize: 12, color: TEXT_MUTED }}>
             {L.total} {filtered.length}{L.items ? ` ${L.items}` : ''}
+            {activeFilterCount > 0 && (
+              <span onClick={() => setFilters({})} style={{
+                marginLeft: 8, cursor: 'pointer', color: '#60A5FA', fontSize: 11,
+              }}>
+                {lang === 'en' ? 'Clear filters' : '필터 초기화'}
+              </span>
+            )}
           </span>
         </div>
 
@@ -158,13 +207,13 @@ export default function AppendixPage({ lang = 'ko' }) {
             <thead>
               <tr style={{ background: 'rgba(15,23,42,0.6)' }}>
                 <th style={thStyle}>#</th>
-                <th style={thStyle}>{L.country}</th>
+                {renderFilterableHeader('country', L.country)}
                 <th style={{ ...thStyle, textAlign: 'left', minWidth: 300 }}>{L.prompt}</th>
-                <th style={thStyle}>{L.division}</th>
-                <th style={thStyle}>{L.category}</th>
-                <th style={thStyle}>{L.branded}</th>
-                <th style={thStyle}>{L.cej}</th>
-                <th style={thStyle}>{L.topic}</th>
+                {renderFilterableHeader('division', L.division)}
+                {renderFilterableHeader('category', L.category)}
+                {renderFilterableHeader('branded', L.branded)}
+                {renderFilterableHeader('cej', L.cej)}
+                {renderFilterableHeader('topic', L.topic)}
               </tr>
             </thead>
             <tbody>
