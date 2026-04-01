@@ -910,7 +910,7 @@ body{background:#F1F5F9;font-family:${FONT};min-width:1200px;color:#1A1A1A}
 .tab-panel{display:none}
 .tab-panel.active{display:block}
 /* ── GNB 서브메뉴 ── */
-.gnb-sub{display:none;background:#1E293B;padding:6px 40px;border-bottom:1px solid #334155}
+.gnb-sub{display:none;position:sticky;top:53px;z-index:99;background:#1E293B;padding:6px 40px;border-bottom:1px solid #334155}
 .gnb-sub.active{display:flex;align-items:center;gap:4px}
 .gnb-sub-btn{padding:6px 18px;border-radius:6px;border:none;font-size:14px;font-weight:600;font-family:${FONT};cursor:pointer;transition:all .15s;color:#94A3B8;background:transparent}
 .gnb-sub-btn:hover{color:#E2E8F0}
