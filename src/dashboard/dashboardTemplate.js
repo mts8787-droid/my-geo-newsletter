@@ -1226,7 +1226,7 @@ function onBuChange(bu){
   var chk=document.querySelector('.fl-chk[data-filter="bu"][value="'+bu+'"]');
   if(!chk)return;
   var isChecked=chk.checked;
-  // Toggle products under this BU
+  // Toggle products under this BU + uncheck disabled products
   document.querySelectorAll('.fl-chk[data-filter="product"][data-bu="'+bu+'"]').forEach(function(c){c.checked=isChecked});
   updateAllCheckbox('bu');
   updateAllCheckbox('product');
@@ -1253,6 +1253,41 @@ function updateAllCheckbox(target){
   document.querySelectorAll('.fl-chk-all[data-target="'+target+'"]').forEach(function(c){c.checked=allChecked});
 }
 function syncAllFilterLayers(){}
+function _syncDisabledState(){
+  // BU 해제 시 → 해당 BU 소속 제품 disabled
+  var buChks=document.querySelectorAll('#filter-layer .fl-chk[data-filter="bu"]');
+  var activeBU={};
+  buChks.forEach(function(c){if(c.checked)activeBU[c.value]=true});
+  var allBUChecked=Object.keys(activeBU).length===buChks.length;
+  document.querySelectorAll('#filter-layer .fl-chk[data-filter="product"]').forEach(function(c){
+    var bu=c.getAttribute('data-bu');
+    var disabled=!allBUChecked&&!activeBU[bu];
+    c.disabled=disabled;
+    var label=c.closest('.fl-chk-label');
+    if(label){
+      label.style.opacity=disabled?'0.35':'';
+      label.style.pointerEvents=disabled?'none':'';
+    }
+  });
+  // Region 해제 시 → 해당 Region 소속 국가 disabled
+  var regionChks=document.querySelectorAll('#filter-layer .fl-chk[data-filter="region"]');
+  var activeCountries={};
+  regionChks.forEach(function(c){
+    if(c.checked){var rc=_REGIONS[c.value]||[];rc.forEach(function(cn){activeCountries[cn]=true})}
+  });
+  var allRegChecked=true;
+  regionChks.forEach(function(c){if(!c.checked)allRegChecked=false});
+  document.querySelectorAll('#filter-layer .fl-chk[data-filter="country"]').forEach(function(c){
+    var cn=c.value;
+    var disabled=!allRegChecked&&!activeCountries[cn];
+    c.disabled=disabled;
+    var label=c.closest('.fl-chk-label');
+    if(label){
+      label.style.opacity=disabled?'0.35':'';
+      label.style.pointerEvents=disabled?'none':'';
+    }
+  });
+}
 function getCheckedValues(filterName){
   var vals={};var total=0;var checked=0;
   document.querySelectorAll('#filter-layer .fl-chk[data-filter="'+filterName+'"]').forEach(function(c){
@@ -1382,13 +1417,15 @@ function onFilterChange(){
   updateAllCheckbox('region');
   updateAllCheckbox('country');
   syncAllFilterLayers();
+  // 상위 BU/Region 해제 시 하위 항목 disabled 처리
+  _syncDisabledState();
   // Apply filters
   filterBU(selBU);
   filterProducts(selProd);
   filterTrend(selBU,selProd,selCountry);
   applyCntyFilters();
   updateHeroFromCheckboxes();
-  updateProductScores(selCountry);
+  updateProductScores(selCountry,selBU,selProd);
 }
 function filterBU(selBU){
   document.querySelectorAll('.bu-group[data-bu]').forEach(function(g){
@@ -1668,8 +1705,9 @@ function _get4MLabels(prod){
   if(mi<0)return['M-3','M-2','M-1','M0'];
   return[0,1,2,3].map(function(i){return ML[(mi-3+i+12)%12]});
 }
-function updateProductScores(selCountry){
+function updateProductScores(selCountry,selBU,selProd){
   var countries=selCountry.isAll?null:Object.keys(selCountry.vals);
+  // 전체 국가 선택 시 → TTL 데이터 사용
   if(selCountry.isAll){
     document.querySelectorAll('.prod-card').forEach(function(card){
       var nameEl=card.querySelector('.prod-name');if(!nameEl)return;
@@ -1682,21 +1720,30 @@ function updateProductScores(selCountry){
     return;
   }
   if(!countries||!countries.length)return;
-  var avgByProduct={};
+  // 국가 필터 적용 → productsCnty에서 평균 계산
+  // 매칭 키 맵 구축: product → 여러 형태의 키
+  var prodKeyMap={};
+  _products.forEach(function(p){
+    var keys=[(p.category||'').toUpperCase(),p.id.toUpperCase(),(p.kr||'').toUpperCase(),(p.en||'').toUpperCase()];
+    keys.forEach(function(k){if(k)prodKeyMap[k]=p.id});
+  });
+  var avgByProdId={};
   _productsCnty.forEach(function(r){
-    if(countries.indexOf(r.country||'')<0)return;
-    var key=(r.product||'').toUpperCase();
-    if(!avgByProduct[key])avgByProduct[key]={scores:[],compScores:[]};
-    avgByProduct[key].scores.push(r.score||0);
-    avgByProduct[key].compScores.push(r.compScore||0);
+    if(countries.indexOf(r.country||'')<0&&countries.indexOf(r.countryEn||'')<0)return;
+    var rKey=(r.product||'').toUpperCase();
+    var prodId=prodKeyMap[rKey];
+    if(!prodId)return;
+    if(!avgByProdId[prodId])avgByProdId[prodId]={scores:[],compScores:[]};
+    avgByProdId[prodId].scores.push(r.score||0);
+    avgByProdId[prodId].compScores.push(r.compScore||0);
   });
   document.querySelectorAll('.prod-card').forEach(function(card){
     var nameEl=card.querySelector('.prod-name');if(!nameEl)return;
     var prod=_products.find(function(p){return p.kr===nameEl.textContent||p.en===nameEl.textContent});if(!prod)return;
-    var avg=avgByProduct[(prod.category||'').toUpperCase()]||avgByProduct[prod.id.toUpperCase()]||avgByProduct[prod.kr.toUpperCase()];
+    var avg=avgByProdId[prod.id];
     if(!avg||!avg.scores.length)return;
-    var score=avg.scores.reduce(function(s,v){return s+v},0)/avg.scores.length;
-    var comp=avg.compScores.reduce(function(s,v){return s+v},0)/avg.compScores.length;
+    var score=+(avg.scores.reduce(function(s,v){return s+v},0)/avg.scores.length).toFixed(1);
+    var comp=+(avg.compScores.reduce(function(s,v){return s+v},0)/avg.compScores.length).toFixed(1);
     var compPct=comp>0?Math.round((score/comp)*100):100;
     var weekly=_getWeeklyForCountries(prod.id,countries);
     var mL=_get4MLabels(prod);
