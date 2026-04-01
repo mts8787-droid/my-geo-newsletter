@@ -182,6 +182,13 @@ function parseMeta(rows) {
     }
     else obj[k] = String(v)
   })
+  // Notice / HowToRead 토글은 동기화 값과 관계없이 항상 OFF 기본값 유지
+  const alwaysOffKeys = [
+    'showNotice',
+    'showProductHowToRead', 'showCitationHowToRead', 'showDotcomHowToRead',
+    'showCntyHowToRead', 'showCitDomainHowToRead', 'showCitCntyHowToRead',
+  ]
+  alwaysOffKeys.forEach(k => { obj[k] = false })
   // weeklyLabels: "W5,W6,W7,W8" 형태 → 배열로 변환
   if (obj.weeklyLabels) {
     const labels = String(obj.weeklyLabels).split(',').map(s => s.trim()).filter(Boolean)
