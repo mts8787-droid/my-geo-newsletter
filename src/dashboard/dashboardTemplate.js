@@ -909,9 +909,15 @@ body{background:#F1F5F9;font-family:${FONT};min-width:1200px;color:#1A1A1A}
 .tab-btn.active{background:${RED};color:#fff}
 .tab-panel{display:none}
 .tab-panel.active{display:block}
+/* ── GNB 서브메뉴 ── */
+.gnb-sub{display:none;background:#1E293B;padding:6px 40px;border-bottom:1px solid #334155}
+.gnb-sub.active{display:flex;align-items:center;gap:4px}
+.gnb-sub-btn{padding:6px 18px;border-radius:6px;border:none;font-size:14px;font-weight:600;font-family:${FONT};cursor:pointer;transition:all .15s;color:#94A3B8;background:transparent}
+.gnb-sub-btn:hover{color:#E2E8F0}
+.gnb-sub-btn.active{background:#334155;color:#fff}
 .dash-container{max-width:1400px;margin:0 auto;padding:28px 40px}
 /* ── 필터 레이어 ── */
-.filter-layer{position:sticky;top:53px;z-index:90;background:#fff;border-bottom:2px solid #E8EDF2;padding:8px 40px}
+.filter-layer{position:sticky;top:96px;z-index:90;background:#fff;border-bottom:2px solid #E8EDF2;padding:8px 40px}
 .fl-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:4px 0}
 .fl-group{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .fl-label{font-size:15px;font-weight:700;color:#64748B;white-space:nowrap;margin-right:4px}
@@ -1090,9 +1096,26 @@ ${filterLayerHtml.replace('top:53px', 'top:0')}
     <button class="lang-btn${lang === 'en' ? ' active' : ''}" onclick="switchLang('en')">EN</button>
   </div>
 </div>
+<div id="gnb-visibility" class="gnb-sub active">
+  <button class="gnb-sub-btn active" onclick="switchVisSub('bu')">${lang === 'en' ? 'Business Division' : '사업본부'}</button>
+  <button class="gnb-sub-btn" onclick="switchVisSub('pr')">PR</button>
+  <button class="gnb-sub-btn" onclick="switchVisSub('brand')">Brand Comm</button>
+  <button class="gnb-sub-btn" onclick="switchVisSub('premium')">${lang === 'en' ? 'Premium' : '고가혁'}</button>
+</div>
 <div id="tab-visibility" class="tab-panel active">
-  ${filterLayerHtml}
-  <div class="dash-container">${visContent}</div>
+  <div id="vis-sub-bu" class="vis-sub-panel active">
+    ${filterLayerHtml}
+    <div class="dash-container">${visContent}</div>
+  </div>
+  <div id="vis-sub-pr" class="vis-sub-panel" style="display:none">
+    <div style="display:flex;align-items:center;justify-content:center;min-height:calc(100vh - 160px);color:#94A3B8;font-size:16px">${lang === 'en' ? 'PR Visibility — Coming Soon' : 'PR Visibility — 준비 중'}</div>
+  </div>
+  <div id="vis-sub-brand" class="vis-sub-panel" style="display:none">
+    <div style="display:flex;align-items:center;justify-content:center;min-height:calc(100vh - 160px);color:#94A3B8;font-size:16px">${lang === 'en' ? 'Brand Comm Visibility — Coming Soon' : 'Brand Comm Visibility — 준비 중'}</div>
+  </div>
+  <div id="vis-sub-premium" class="vis-sub-panel" style="display:none">
+    <div style="display:flex;align-items:center;justify-content:center;min-height:calc(100vh - 160px);color:#94A3B8;font-size:16px">${lang === 'en' ? 'Premium Visibility — Coming Soon' : '고가혁 Visibility — 준비 중'}</div>
+  </div>
 </div>
 <div id="tab-citation" class="tab-panel">
   <iframe id="cit-iframe" src="/p/${lang === 'en' ? 'GEO-Citation-Dashboard-EN' : 'GEO-Citation-Dashboard-KO'}" style="width:100%;min-height:calc(100vh - 60px);border:none;background:#F1F5F9" title="Citation Dashboard"></iframe>
@@ -1150,6 +1173,18 @@ function switchTab(id){
   var btns=document.querySelectorAll('.tab-btn');
   var map={visibility:0,citation:1,readability:2,progress:3,promptlist:4,glossary:5};
   if(map[id]!==undefined)btns[map[id]].classList.add('active');
+  // GNB 서브메뉴: Visibility 탭일 때만 표시
+  var gnb=document.getElementById('gnb-visibility');
+  if(gnb){if(id==='visibility')gnb.classList.add('active');else gnb.classList.remove('active');}
+}
+function switchVisSub(sub){
+  document.querySelectorAll('.vis-sub-panel').forEach(function(p){p.style.display='none'});
+  document.querySelectorAll('#gnb-visibility .gnb-sub-btn').forEach(function(b){b.classList.remove('active')});
+  var panel=document.getElementById('vis-sub-'+sub);
+  if(panel)panel.style.display='block';
+  var btns=document.querySelectorAll('#gnb-visibility .gnb-sub-btn');
+  var subMap={bu:0,pr:1,brand:2,premium:3};
+  if(subMap[sub]!==undefined&&btns[subMap[sub]])btns[subMap[sub]].classList.add('active');
 }
 function switchPeriodMode(mode){
   _periodMode=mode;

@@ -80,8 +80,9 @@ export async function publishCombinedDashboard(generateDashboardHTML, resolveDat
   const dotcomByCnty = d.dotcomByCnty || {}
   const resolvedKo = resolveDataForLang(products, productsCnty, citations, citationsCnty, 'ko')
   const resolvedEn = resolveDataForLang(products, productsCnty, citations, citationsCnty, 'en')
-  const htmlKo = generateDashboardHTML(meta, total, resolvedKo.products, resolvedKo.citations, dotcom, 'ko', resolvedKo.productsCnty, resolvedKo.citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty)
-  const htmlEn = generateDashboardHTML({ ...meta, title: meta.title || 'GEO KPI Dashboard' }, total, resolvedEn.products, resolvedEn.citations, dotcom, 'en', resolvedEn.productsCnty, resolvedEn.citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty)
+  const extra = { appendixPrompts: d.appendixPrompts || [] }
+  const htmlKo = generateDashboardHTML(meta, total, resolvedKo.products, resolvedKo.citations, dotcom, 'ko', resolvedKo.productsCnty, resolvedKo.citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty, undefined, extra)
+  const htmlEn = generateDashboardHTML({ ...meta, title: meta.title || 'GEO KPI Dashboard' }, total, resolvedEn.products, resolvedEn.citations, dotcom, 'en', resolvedEn.productsCnty, resolvedEn.citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty, undefined, extra)
   const title = `${meta.period || ''} ${meta.title || 'KPI Dashboard'}`.trim()
   const res = await fetch('/api/publish-dashboard', {
     method: 'POST',

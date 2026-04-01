@@ -38,7 +38,9 @@
       "Bash(tail -1 python3 -c \":*)",
       "Bash(python3:*)",
       "Bash(grep -r \"admin\\\\|combined\" /Users/dubaba/my-geo-project/my-geo-newsletter --include=*.json --include=*.html)",
-      "Bash(git fetch:*)"
+      "Bash(git fetch:*)",
+      "Bash(grep -rn \"notice\\\\|howtoread\\\\|howToRead\\\\|how_to_read\" src/dashboard/*.js src/dashboard/*.jsx)",
+      "Bash(grep -rn \"showNotice\\\\|showInsight\\\\|showHowToRead\\\\|notice\\\\|insight\" src/dashboard/*.jsx src/dashboard/*.js src/*.js src/*.jsx)"
     ]
   }
 }
