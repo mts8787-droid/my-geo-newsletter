@@ -57,6 +57,13 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
       })
       const data = await res.json()
       if (!data.ok) throw new Error(data.error || '게시 실패')
+      // 게시 성공 시 sync-data도 현재 state로 업데이트
+      saveSyncData(mode, {
+        meta: metaKo || meta, total, productsPartial: products, products,
+        weeklyMap: null, weeklyLabels, weeklyAll,
+        citations, dotcom, productsCnty, citationsCnty,
+        citationsByCnty, dotcomByCnty, appendixPrompts: null,
+      }).catch(() => {})
       setPublishInfo({ ...data, published: true })
       const koUrl = `${window.location.origin}${data.urls.ko}`
       const enUrl = `${window.location.origin}${data.urls.en}`
@@ -74,6 +81,13 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
     if (combPublishing) return
     setCombPublishing(true); setCombMsg('')
     try {
+      // 게시 전 현재 에디터 state를 sync-data에 저장
+      await saveSyncData(mode, {
+        meta: metaKo || meta, total, productsPartial: products, products,
+        weeklyMap: null, weeklyLabels, weeklyAll,
+        citations, dotcom, productsCnty, citationsCnty,
+        citationsByCnty, dotcomByCnty, appendixPrompts: null,
+      })
       const result = await publishCombinedDashboard(generateDashboardHTML, resolveDataForLang)
       setCombMsg(`통합 게시 완료!\nKO: ${window.location.origin}${result.urls.ko}\nEN: ${window.location.origin}${result.urls.en}`)
     } catch (err) {
