@@ -127,7 +127,7 @@ app.use((req, res, next) => {
 })
 
 // ─── JSON body parser ────────────────────────────────────────────────────────
-app.use(express.json({ limit: '5mb' }))
+app.use(express.json({ limit: '50mb' }))
 
 // ─── Admin Login Page ────────────────────────────────────────────────────────
 app.get('/admin/login', (req, res) => {
