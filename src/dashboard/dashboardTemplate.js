@@ -980,112 +980,93 @@ function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang) {
   </script>`
 }
 
-// ─── Brand Prompt (고가혁) Visibility 탭 HTML ────────────────────────────────
-function brandPromptTabHtml(bpData, bpLabels, lang) {
-  if (!bpData || !bpData.length) {
-    const msg = lang === 'en' ? 'No Brand Prompt Visibility data available.' : 'Brand Prompt Visibility 데이터가 없습니다.'
+// ─── Brand Prompt Visibility 탭 HTML (stakeholder 필터링) ────────────────────
+function brandPromptTabHtml(bpData, bpLabels, lang, stakeholderFilter, tabTitle) {
+  const filtered = (bpData || []).filter(r => !stakeholderFilter || r.stakeholder === stakeholderFilter)
+  if (!filtered.length) {
+    const msg = lang === 'en' ? 'No data available.' : '데이터가 없습니다.'
     return `<div style="display:flex;align-items:center;justify-content:center;min-height:calc(100vh - 160px);color:#94A3B8;font-size:16px">${msg}</div>`
   }
-  const labels = bpLabels || []
-  const topics = [...new Set(bpData.map(r => r.topic))].filter(Boolean)
-  const stakeholders = [...new Set(bpData.map(r => r.stakeholder))].filter(Boolean).sort()
-  const countries = [...new Set(bpData.map(r => r.country))].filter(c => c && c !== 'TTL').sort()
-  const title = lang === 'en' ? 'Brand Prompt Visibility — Weekly Trend' : '고가혁 Visibility — 주간 트렌드'
-  const subtitle = lang === 'en'
-    ? `${topics.length} topics · ${stakeholders.length} stakeholders · ${labels.length} weeks`
-    : `${topics.length}개 토픽 · ${stakeholders.length}개 Stakeholder · ${labels.length}주`
+  // W5부터 12주 고정
+  const W12 = []
+  for (let i = 0; i < 12; i++) W12.push('w' + (5 + i))
+  const topics = [...new Set(filtered.map(r => r.topic))].filter(Boolean)
+  const CW = 72
 
-  const jsonBP = JSON.stringify(bpData).replace(/</g, '\\u003c')
-  const jsonLabels = JSON.stringify(labels)
+  const jsonBP = JSON.stringify(filtered).replace(/</g, '\\u003c')
+  const jsonW12 = JSON.stringify(W12)
   const jsonTopics = JSON.stringify(topics)
-  const jsonStakeholders = JSON.stringify(stakeholders)
-  const jsonCountries = JSON.stringify(countries)
+  const elId = stakeholderFilter ? stakeholderFilter.replace(/[^a-zA-Z]/g, '') : 'bp'
 
-  return `<div style="max-width:1400px;margin:32px auto;padding:0 40px">
-    <h2 style="font-size:24px;font-weight:800;color:#1A1A1A;margin-bottom:6px">${title}</h2>
-    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
-      <span style="font-size:15px;color:#64748B">${subtitle}</span>
+  return `<div style="max-width:1400px;margin:0 auto;padding:28px 40px;font-family:${FONT}">
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-title">${tabTitle || (lang === 'en' ? 'Brand Prompt Visibility' : 'Brand Prompt Visibility')}</div>
+        <span class="legend">W5–W16 (12${lang === 'en' ? ' weeks' : '주'})</span>
+      </div>
+      <div class="section-body" id="${elId}-sections"></div>
     </div>
-    <div id="bp-sections"></div>
   </div>
   <script>
   (function(){
-    var _bpData=${jsonBP};
-    var _bpLabels=${jsonLabels};
-    var _bpTopics=${jsonTopics};
-    var RED='${RED}';
-    var COMP='${COMP}';
-    var SH_COLORS={'MS':'#3B82F6','HS':'#10B981','ES':'#F59E0B','PR':'#8B5CF6','Brand':'#EC4899','Brand Comm':'#EC4899'};
-    var FALLBACK=['#3B82F6','#10B981','#F59E0B','#8B5CF6','#EC4899','#06B6D4','#84CC16','#F97316'];
-    function shColor(name,i){return SH_COLORS[name]||FALLBACK[i%FALLBACK.length]}
-
-    function svgML(brandData,labels,w,h){
-      var brands=Object.keys(brandData);if(!brands.length||!labels.length)return'';
+    var D=${jsonBP},W=${jsonW12},TP=${jsonTopics};
+    var CW=${CW},RED='${RED}';
+    var N=W.length,tblW=CW*N;
+    function svgChart(vals,w,h,color){
+      if(!vals||!vals.length)return'';
+      var pt=12,pb=4,ch=h-pt-pb;
       var mn=Infinity,mx=-Infinity;
-      brands.forEach(function(b){(brandData[b]||[]).forEach(function(v){if(v!=null){if(v<mn)mn=v;if(v>mx)mx=v}})});
+      vals.forEach(function(v){if(v!=null){if(v<mn)mn=v;if(v>mx)mx=v}});
       if(!isFinite(mn)){mn=0;mx=100}
-      var pad=Math.max((mx-mn)*0.1,2);mn-=pad;mx+=pad;var rng=mx-mn||1;
-      var pt=20,pr=10,pb=25,pl=40;var cw=w-pl-pr;var ch=h-pt-pb;
-      var s='<svg viewBox="0 0 '+w+' '+h+'" width="100%" height="'+h+'" xmlns="http://www.w3.org/2000/svg">';
-      for(var g=0;g<=4;g++){var gy=pt+(g/4)*ch;var gv=+(mx-(g/4)*(mx-mn)).toFixed(1);
-        s+='<line x1="'+pl+'" y1="'+gy+'" x2="'+(w-pr)+'" y2="'+gy+'" stroke="#E2E8F0" stroke-width="1"/>';
-        s+='<text x="'+(pl-4)+'" y="'+(gy+4)+'" text-anchor="end" fill="#94A3B8" font-size="11">'+gv+'</text>';
-      }
-      labels.forEach(function(l,i){var x=pl+(i/(labels.length-1||1))*cw;
-        s+='<text x="'+x+'" y="'+(h-5)+'" text-anchor="middle" fill="#94A3B8" font-size="11">'+l+'</text>';
-      });
-      brands.forEach(function(b,bi){
-        var vals=brandData[b]||[];var c=shColor(b,bi);
-        var pts=[];
-        vals.forEach(function(v,i){if(v!=null){var x=pl+(i/(labels.length-1||1))*cw;var y=pt+((mx-v)/rng)*ch;pts.push({x:x,y:y,v:v})}});
-        if(pts.length<1)return;
+      var pad=Math.max((mx-mn)*0.1,1);mn-=pad;mx+=pad;var rng=mx-mn||1;
+      var s='<svg viewBox="0 0 '+w+' '+h+'" width="'+w+'" height="'+h+'" xmlns="http://www.w3.org/2000/svg">';
+      for(var g=0;g<=4;g++){var gy=pt+(g/4)*ch;s+='<line x1="0" y1="'+gy+'" x2="'+w+'" y2="'+gy+'" stroke="#F1F5F9" stroke-width="1"/>';}
+      var pts=[];
+      vals.forEach(function(v,i){if(v!=null){var x=(i+0.5)*(w/N);var y=pt+((mx-v)/rng)*ch;pts.push({x:x,y:y})}});
+      if(pts.length>0){
         var path=pts.map(function(p,i){return(i?'L':'M')+p.x.toFixed(1)+','+p.y.toFixed(1)}).join(' ');
-        s+='<path d="'+path+'" fill="none" stroke="'+c+'" stroke-width="2" opacity="0.8"/>';
-        pts.forEach(function(p){s+='<circle cx="'+p.x.toFixed(1)+'" cy="'+p.y.toFixed(1)+'" r="3.5" fill="'+c+'" opacity="0.8"/>'});
-      });
+        s+='<path d="'+path+'" fill="none" stroke="'+color+'" stroke-width="2.5"/>';
+        pts.forEach(function(p){s+='<circle cx="'+p.x.toFixed(1)+'" cy="'+p.y.toFixed(1)+'" r="4" fill="'+color+'"/>'});
+      }
       s+='</svg>';return s;
     }
-
+    // 신호등 3단
+    function tl(v){
+      if(v==null)return{bg:'#F8FAFC',color:'#94A3B8',border:'#E2E8F0',label:'—'};
+      if(v>=100)return{bg:'#ECFDF5',color:'#15803D',border:'#A7F3D0',label:'${lang==='en'?'Lead':'선도'}'};
+      if(v>=80) return{bg:'#FFFBEB',color:'#B45309',border:'#FDE68A',label:'${lang==='en'?'Behind':'추격'}'};
+      return{bg:'#FFF1F2',color:'#BE123C',border:'#FECDD3',label:'${lang==='en'?'Critical':'취약'}'};
+    }
     function render(){
-      var el=document.getElementById('bp-sections');if(!el)return;
+      var el=document.getElementById('${elId}-sections');if(!el)return;
       var html='';
-      _bpTopics.forEach(function(topic){
-        // TTL 우선, 없으면 전체
-        var ttlRows=_bpData.filter(function(r){return r.topic===topic&&r.country==='TTL'});
-        var rows=ttlRows.length>0?ttlRows:_bpData.filter(function(r){return r.topic===topic});
+      TP.forEach(function(topic){
+        var rows=D.filter(function(r){return r.topic===topic&&r.country==='TTL'});
+        if(!rows.length)rows=D.filter(function(r){return r.topic===topic});
         if(!rows.length)return;
-        // stakeholder별 스코어
-        var shMap={};
-        rows.forEach(function(r){
-          var key=r.stakeholder||r.type||'Unknown';
-          if(!shMap[key])shMap[key]={};
-          _bpLabels.forEach(function(lbl){
-            if(r.scores[lbl]!=null){
-              if(!shMap[key][lbl])shMap[key][lbl]=[];
-              shMap[key][lbl].push(r.scores[lbl]);
-            }
-          });
-        });
-        var shs=Object.keys(shMap).sort();
-        var chartData={};
-        shs.forEach(function(sh){chartData[sh]=_bpLabels.map(function(lbl){var arr=shMap[sh][lbl];return arr?+(arr.reduce(function(s,v){return s+v},0)/arr.length).toFixed(1):null})});
-        var legend=shs.map(function(sh,i){var c=shColor(sh,i);return'<span style="display:inline-flex;align-items:center;gap:3px;margin-right:12px"><i style="display:inline-block;width:10px;height:3px;border-radius:1px;background:'+c+'"></i><span style="font-size:13px;color:#475569;font-weight:600">'+sh+'</span></span>'}).join('');
-        // 테이블
-        var N=_bpLabels.length;
-        var colgroup='<colgroup><col style="width:140px">'+_bpLabels.map(function(){return'<col>'}).join('')+'</colgroup>';
-        var thead='<tr style="border-bottom:1px solid #E8EDF2"><th style="text-align:left;padding:5px 8px;font-size:13px;color:#94A3B8;font-weight:600">Stakeholder</th>'+_bpLabels.map(function(w){return'<th style="text-align:center;padding:5px 4px;font-size:13px;color:#94A3B8;font-weight:600">'+w+'</th>'}).join('')+'</tr>';
-        var tbody=shs.map(function(sh,i){var c=shColor(sh,i);var cells=_bpLabels.map(function(_,wi){var val=chartData[sh][wi];return'<td style="text-align:center;padding:5px 4px;font-size:13px;color:'+(val!=null?'#1A1A1A':'#CBD5E1')+';font-weight:500;font-variant-numeric:tabular-nums">'+(val!=null?val.toFixed(1):'—')+'</td>'}).join('');return'<tr style="background:'+(i%2===0?'#fff':'#FAFBFC')+'"><td style="padding:5px 8px;font-size:13px;font-weight:700;color:'+c+';white-space:nowrap"><i style="display:inline-block;width:6px;height:6px;border-radius:50%;background:'+c+';margin-right:4px;vertical-align:0"></i>'+sh+'</td>'+cells+'</tr>'}).join('');
+        var vals=W.map(function(wk){var r=rows[0];return r&&r.scores[wk]!=null?r.scores[wk]:null});
+        var lastV=null;for(var i=vals.length-1;i>=0;i--){if(vals[i]!=null){lastV=vals[i];break}}
+        var st=tl(lastV);
 
-        html+='<div style="background:#fff;border:1px solid #E8EDF2;border-radius:12px;margin-bottom:20px;overflow:hidden">';
-        html+='<div style="padding:16px 20px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;display:flex;align-items:center;gap:8px;flex-wrap:wrap">';
-        html+='<span style="width:4px;height:20px;border-radius:4px;background:'+RED+';flex-shrink:0"></span>';
+        html+='<div style="border:1px solid #E8EDF2;border-radius:12px;margin-bottom:16px;overflow:hidden">';
+        html+='<div style="padding:14px 20px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;display:flex;align-items:center;gap:10px;flex-wrap:wrap">';
+        html+='<span style="width:4px;height:22px;border-radius:4px;background:'+RED+';flex-shrink:0"></span>';
         html+='<span style="font-size:18px;font-weight:700;color:#1A1A1A">'+topic+'</span>';
-        html+='<span style="margin-left:auto">'+legend+'</span>';
+        html+='<span style="font-size:14px;font-weight:700;padding:2px 10px;border-radius:10px;background:'+st.bg+';color:'+st.color+';border:1px solid '+st.border+'">'+st.label+'</span>';
+        if(lastV!=null)html+='<span style="font-size:15px;font-weight:700;color:#1A1A1A">'+lastV.toFixed(1)+'%</span>';
         html+='</div>';
-        html+='<div style="padding:16px 20px">'+svgML(chartData,_bpLabels,Math.max(N*80,600),200)+'</div>';
-        html+='<div style="padding:0 20px 16px;overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-family:inherit">'+colgroup+thead+tbody+'</table></div></div>';
+        // 차트+테이블
+        html+='<div style="overflow-x:auto;padding:0 16px 12px"><div style="display:flex"><div style="width:120px;flex-shrink:0"></div><div style="width:'+tblW+'px;flex-shrink:0;padding:8px 0">'+svgChart(vals,tblW,120,RED)+'</div></div>';
+        html+='<table style="border-collapse:collapse;table-layout:fixed;width:'+(120+tblW)+'px">';
+        html+='<colgroup><col style="width:120px">';W.forEach(function(){html+='<col style="width:'+CW+'px">'});html+='</colgroup>';
+        html+='<tr style="border-bottom:1px solid #E8EDF2"><th style="text-align:left;padding:5px 8px;font-size:14px;color:#94A3B8;font-weight:600">${lang==='en'?'Week':'주차'}</th>';
+        W.forEach(function(wk){html+='<th style="text-align:center;padding:5px 0;font-size:14px;color:#94A3B8;font-weight:600">'+wk+'</th>'});
+        html+='</tr>';
+        html+='<tr style="background:#FFF8F9"><td style="padding:5px 8px;font-size:14px;font-weight:700;color:'+RED+'">Score</td>';
+        vals.forEach(function(v){html+='<td style="text-align:center;padding:5px 0;font-size:14px;color:'+(v!=null?'#1A1A1A':'#CBD5E1')+';font-weight:700;font-variant-numeric:tabular-nums">'+(v!=null?v.toFixed(1):'—')+'</td>'});
+        html+='</tr></table></div></div>';
       });
-      if(!html)html='<div style="text-align:center;padding:60px;color:#94A3B8;font-size:16px">${lang==='en'?'No data available':'데이터가 없습니다'}</div>';
+      if(!html)html='<div style="text-align:center;padding:60px;color:#94A3B8">${lang==='en'?'No data':'데이터 없음'}</div>';
       el.innerHTML=html;
     }
     render();
@@ -1401,10 +1382,10 @@ ${visibilityOnly ? `
   ${prVisibilityTabHtml(extra?.weeklyPR, extra?.weeklyPRLabels, lang)}
 </div>
 <div id="vis-sub-brand" class="vis-sub-panel" style="display:none">
-  <div style="display:flex;align-items:center;justify-content:center;min-height:calc(100vh - 160px);color:#94A3B8;font-size:16px">${lang === 'en' ? 'Brand Comm Visibility — Coming Soon' : 'Brand Comm Visibility — 준비 중'}</div>
+  ${brandPromptTabHtml(extra?.weeklyBrandPrompt, extra?.weeklyBrandPromptLabels, lang, 'Brand Comm.', lang === 'en' ? 'Brand Comm Visibility' : 'Brand Comm Visibility')}
 </div>
 <div id="vis-sub-premium" class="vis-sub-panel" style="display:none">
-  <div style="display:flex;align-items:center;justify-content:center;min-height:calc(100vh - 160px);color:#94A3B8;font-size:16px">${lang === 'en' ? 'Premium Visibility — Coming Soon' : '고가혁 Visibility — 준비 중'}</div>
+  ${brandPromptTabHtml(extra?.weeklyBrandPrompt, extra?.weeklyBrandPromptLabels, lang, 'CVIOS', lang === 'en' ? 'Premium (CVIOS) Visibility' : '고가혁 (CVIOS) Visibility')}
 </div>
 ` : `
 <div class="tab-bar">
@@ -1436,10 +1417,10 @@ ${visibilityOnly ? `
     ${prVisibilityTabHtml(extra?.weeklyPR, extra?.weeklyPRLabels, lang)}
   </div>
   <div id="vis-sub-brand" class="vis-sub-panel" style="display:none">
-    <div style="display:flex;align-items:center;justify-content:center;min-height:calc(100vh - 160px);color:#94A3B8;font-size:16px">${lang === 'en' ? 'Brand Comm Visibility — Coming Soon' : 'Brand Comm Visibility — 준비 중'}</div>
+    ${brandPromptTabHtml(extra?.weeklyBrandPrompt, extra?.weeklyBrandPromptLabels, lang, 'Brand Comm.', lang === 'en' ? 'Brand Comm Visibility' : 'Brand Comm Visibility')}
   </div>
   <div id="vis-sub-premium" class="vis-sub-panel" style="display:none">
-    ${brandPromptTabHtml(extra?.weeklyBrandPrompt, extra?.weeklyBrandPromptLabels, lang)}
+    ${brandPromptTabHtml(extra?.weeklyBrandPrompt, extra?.weeklyBrandPromptLabels, lang, 'CVIOS', lang === 'en' ? 'Premium (CVIOS) Visibility' : '고가혁 (CVIOS) Visibility')}
   </div>
 </div>
 <div id="tab-citation" class="tab-panel">
