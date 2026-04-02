@@ -11,11 +11,11 @@ const MODE = 'dashboard'
 const STORAGE_KEY = 'geo-dashboard-cache'
 
 // ─── 대시보드 미리보기 ──────────────────────────────────────────────────────────
-function DashboardPreview({ meta, total, products, citations, dotcom, productsCnty = [], citationsCnty = [], lang = 'ko', weeklyLabels, weeklyAll = {}, citationsByCnty = {}, dotcomByCnty = {}, monthlyVis = [] }) {
+function DashboardPreview({ meta, total, products, citations, dotcom, productsCnty = [], citationsCnty = [], lang = 'ko', weeklyLabels, weeklyAll = {}, citationsByCnty = {}, dotcomByCnty = {}, monthlyVis = [], extra }) {
   const iframeRef = useRef(null)
   const html = useMemo(
-    () => generateVisibilityHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty, monthlyVis),
-    [meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty, monthlyVis]
+    () => generateVisibilityHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty, monthlyVis, extra),
+    [meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty, monthlyVis, extra]
   )
 
   React.useEffect(() => {
@@ -53,6 +53,10 @@ export default function App() {
   const [citationsByCnty, setCitationsByCnty] = useState(cache?.citationsByCnty ?? {})
   const [dotcomByCnty, setDotcomByCnty] = useState(cache?.dotcomByCnty ?? {})
   const [monthlyVis, setMonthlyVis] = useState(cache?.monthlyVis ?? [])
+  const [weeklyPR, setWeeklyPR] = useState([])
+  const [weeklyPRLabels, setWeeklyPRLabels] = useState([])
+  const [weeklyBrandPrompt, setWeeklyBrandPrompt] = useState([])
+  const [weeklyBrandPromptLabels, setWeeklyBrandPromptLabels] = useState([])
   const [previewLang, setPreviewLang] = useState('ko')
   const [snapshots,  setSnapshots]  = useState([])
   const [snapName,   setSnapName]   = useState('')
@@ -86,6 +90,10 @@ export default function App() {
       if (d.citationsByCnty) setCitationsByCnty(d.citationsByCnty)
       if (d.dotcomByCnty) setDotcomByCnty(d.dotcomByCnty)
       if (d.monthlyVis) setMonthlyVis(d.monthlyVis)
+      if (d.weeklyPR) setWeeklyPR(d.weeklyPR)
+      if (d.weeklyPRLabels) setWeeklyPRLabels(d.weeklyPRLabels)
+      if (d.weeklyBrandPrompt) setWeeklyBrandPrompt(d.weeklyBrandPrompt)
+      if (d.weeklyBrandPromptLabels) setWeeklyBrandPromptLabels(d.weeklyBrandPromptLabels)
       if (d.weeklyLabels)  setWeeklyLabels(d.weeklyLabels)
       if (d.weeklyAll)     setWeeklyAll(prev => ({ ...prev, ...d.weeklyAll }))
       if (d.productsPartial) {
@@ -171,6 +179,12 @@ export default function App() {
           generateHTML={generateVisibilityHTML}
           publishEndpoint="/api/publish-visibility"
           setMonthlyVis={setMonthlyVis}
+          onSyncExtra={({ weeklyPR, weeklyPRLabels, weeklyBrandPrompt, weeklyBrandPromptLabels }) => {
+            if (weeklyPR) setWeeklyPR(weeklyPR)
+            if (weeklyPRLabels) setWeeklyPRLabels(weeklyPRLabels)
+            if (weeklyBrandPrompt) setWeeklyBrandPrompt(weeklyBrandPrompt)
+            if (weeklyBrandPromptLabels) setWeeklyBrandPromptLabels(weeklyBrandPromptLabels)
+          }}
         />
       )}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
@@ -263,7 +277,7 @@ export default function App() {
 
         {/* 컨텐츠 영역 */}
         <div style={{ flex: 1, overflow: 'hidden' }}>
-          <DashboardPreview meta={meta} total={total} products={resolved.products} citations={resolved.citations} dotcom={dotcom} productsCnty={resolved.productsCnty} citationsCnty={resolved.citationsCnty} lang={previewLang} weeklyLabels={weeklyLabels} weeklyAll={weeklyAll} citationsByCnty={citationsByCnty} dotcomByCnty={dotcomByCnty} monthlyVis={monthlyVis} />
+          <DashboardPreview meta={meta} total={total} products={resolved.products} citations={resolved.citations} dotcom={dotcom} productsCnty={resolved.productsCnty} citationsCnty={resolved.citationsCnty} lang={previewLang} weeklyLabels={weeklyLabels} weeklyAll={weeklyAll} citationsByCnty={citationsByCnty} dotcomByCnty={dotcomByCnty} monthlyVis={monthlyVis} extra={{ weeklyPR, weeklyPRLabels, weeklyBrandPrompt, weeklyBrandPromptLabels }} />
         </div>
         <div style={{ height: 28, borderTop: '1px solid #1E293B', background: 'rgba(15,23,42,0.95)',
           display: 'flex', alignItems: 'center', justifyContent: 'flex-end', padding: '0 16px', flexShrink: 0 }}>

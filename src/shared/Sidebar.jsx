@@ -10,7 +10,7 @@ import { generateDashboardHTML } from '../dashboard/dashboardTemplate.js'
 import { generateProductInsight, generateProductHowToRead, generateCntyHowToRead } from './insights.js'
 
 export default
-function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, total, setTotal, products, setProducts, citations, setCitations, dotcom, setDotcom, productsCnty, setProductsCnty, citationsCnty, setCitationsCnty, resolved, previewLang, setPreviewLang, snapshots, setSnapshots, setWeeklyLabels, setWeeklyAll, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty, generateHTML, publishEndpoint, setMonthlyVis }) {
+function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, total, setTotal, products, setProducts, citations, setCitations, dotcom, setDotcom, productsCnty, setProductsCnty, citationsCnty, setCitationsCnty, resolved, previewLang, setPreviewLang, snapshots, setSnapshots, setWeeklyLabels, setWeeklyAll, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty, generateHTML, publishEndpoint, setMonthlyVis, onSyncExtra }) {
   const [gsUrl,     setGsUrl]     = useState('https://docs.google.com/spreadsheets/d/1v4V7ZsHNFXXqbAWqvyVkgNIeXx188hSZ9l7FDsRYy2Y/edit')
   const [gsSyncing, setGsSyncing] = useState(false)
   const [gsStatus,  setGsStatus]  = useState(null)
@@ -319,6 +319,12 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
       if (parsed.productsCnty) setProductsCnty(parsed.productsCnty)
       if (parsed.citationsCnty) setCitationsCnty(parsed.citationsCnty)
       if (parsed.monthlyVis && setMonthlyVis) setMonthlyVis(parsed.monthlyVis)
+      if (onSyncExtra) onSyncExtra({
+        weeklyPR: parsed.weeklyPR || null,
+        weeklyPRLabels: parsed.weeklyPRLabels || null,
+        weeklyBrandPrompt: parsed.weeklyBrandPrompt || null,
+        weeklyBrandPromptLabels: parsed.weeklyBrandPromptLabels || null,
+      })
       // 주차 라벨: meta.weekStart 기반 자동 생성, 없으면 시트 파싱 값 사용
       const weekCount = parsed.weeklyMap ? Math.max(...Object.values(parsed.weeklyMap).map(a => a.length), 0) : 0
       const ws = parsed.meta?.weekStart
