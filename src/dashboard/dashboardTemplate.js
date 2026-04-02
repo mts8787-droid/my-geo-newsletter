@@ -791,158 +791,181 @@ function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang) {
     const msg = lang === 'en' ? 'No PR Visibility data available.' : 'PR Visibility 데이터가 없습니다.'
     return `<div style="display:flex;align-items:center;justify-content:center;min-height:calc(100vh - 160px);color:#94A3B8;font-size:16px">${msg}</div>`
   }
+  const ALL_COUNTRIES = ['US','CA','UK','DE','ES','BR','MX','IN','AU','VN']
+  const rawLabels = weeklyPRLabels || []
+  // 12주 고정 라벨 생성
+  const last = rawLabels.length > 0 ? parseInt(rawLabels[rawLabels.length - 1].replace(/\D/g, '')) : 12
+  const W12 = []
+  for (let i = 11; i >= 0; i--) W12.push('w' + (last - i))
 
-  const labels = weeklyPRLabels || []
   const topics = [...new Set(weeklyPR.map(r => r.topic))].filter(Boolean)
-  // TTL은 전체 합산 데이터 → 국가 필터에서 제외
-  const countries = [...new Set(weeklyPR.map(r => r.country))].filter(c => c && c !== 'TTL').sort()
-  const title = lang === 'en' ? 'PR Visibility — Weekly Trend' : 'PR Visibility — 주간 트렌드'
-  const subtitle = lang === 'en'
-    ? `${topics.length} topics · ${countries.length} countries · ${labels.length} weeks`
-    : `${topics.length}개 토픽 · ${countries.length}개 국가 · ${labels.length}주`
+  const types = [...new Set(weeklyPR.map(r => r.type))].filter(Boolean)
+  const dataCnts = [...new Set(weeklyPR.map(r => r.country))].filter(c => c && c !== 'TTL')
+  const countries = ALL_COUNTRIES.filter(c => dataCnts.includes(c)).concat(ALL_COUNTRIES.filter(c => !dataCnts.includes(c)))
 
-  // JSON 데이터 임베딩
   const jsonPR = JSON.stringify(weeklyPR).replace(/</g, '\\u003c')
-  const jsonLabels = JSON.stringify(labels)
+  const jsonW12 = JSON.stringify(W12)
   const jsonTopics = JSON.stringify(topics)
+  const jsonTypes = JSON.stringify(types)
   const jsonCountries = JSON.stringify(countries)
+  const CW = 72 // 각 주차 컬럼 고정 너비 (px)
 
-  return `<div style="max-width:1400px;margin:32px auto;padding:0 40px">
-    <h2 style="font-size:24px;font-weight:800;color:#1A1A1A;margin-bottom:6px">${title}</h2>
-    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
-      <span style="font-size:15px;color:#64748B">${subtitle}</span>
-      <span id="pr-filter-info" style="font-size:12px;color:#94A3B8"></span>
+  return `<div style="max-width:1500px;margin:24px auto;padding:0 40px">
+    <h2 style="font-size:24px;font-weight:800;color:#1A1A1A;margin-bottom:16px">${lang === 'en' ? 'PR Visibility — Weekly Trend' : 'PR Visibility — 주간 트렌드'}</h2>
+    <!-- 필터 바 -->
+    <div id="pr-filters" style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin-bottom:20px;padding:12px 16px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px">
+      <div style="display:flex;align-items:center;gap:6px">
+        <span style="font-size:13px;font-weight:700;color:#64748B">${lang === 'en' ? 'Type' : '유형'}</span>
+        <div id="pr-type-chips"></div>
+      </div>
+      <div style="width:1px;height:24px;background:#E2E8F0"></div>
+      <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+        <span style="font-size:13px;font-weight:700;color:#64748B">${lang === 'en' ? 'Country' : '국가'}</span>
+        <div id="pr-cnty-chips" style="display:flex;gap:4px;flex-wrap:wrap"></div>
+      </div>
     </div>
-    <!-- 국가 필터 칩 -->
-    <div id="pr-country-chips" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px"></div>
+    <!-- 상단 요약 매트릭스 -->
+    <div id="pr-matrix" style="margin-bottom:28px"></div>
     <!-- 토픽별 섹션 -->
     <div id="pr-sections"></div>
   </div>
   <script>
   (function(){
-    var _prData=${jsonPR};
-    var _prLabels=${jsonLabels};
-    var _prTopics=${jsonTopics};
-    var _prCountries=${jsonCountries};
-    var _prActiveCountries={};
-    _prCountries.forEach(function(c){_prActiveCountries[c]=true});
-    var RED='${RED}';
-    var BRAND_COLORS={'LG':'${RED}','Samsung':'${COMP}','Google':'#4285F4','Apple':'#A2AAAD','Sony':'#000000','Bosch':'#EA0016','Dyson':'#6B21A8'};
-    var FALLBACK=['#3B82F6','#10B981','#F59E0B','#8B5CF6','#EC4899','#06B6D4','#84CC16','#F97316'];
-
-    function bc(name,i){return BRAND_COLORS[name]||FALLBACK[i%FALLBACK.length]}
-
-    // 국가 칩 렌더
-    function renderChips(){
-      var el=document.getElementById('pr-country-chips');if(!el)return;
-      var allOn=_prCountries.every(function(c){return _prActiveCountries[c]});
-      var h='<span onclick="_prToggleAll()" style="padding:4px 12px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;border:1px solid '+(allOn?'#0F172A':'#E2E8F0')+';background:'+(allOn?'#0F172A':'#F8FAFC')+';color:'+(allOn?'#fff':'#64748B')+'">${lang === 'en' ? 'All' : '전체'}</span>';
-      _prCountries.forEach(function(c){
-        var on=!!_prActiveCountries[c];
-        h+='<span onclick="_prToggleCountry(\\''+c+'\\')" style="padding:4px 12px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;border:1px solid '+(on?'#0F172A':'#E2E8F0')+';background:'+(on?'#0F172A':'#F8FAFC')+';color:'+(on?'#fff':'#64748B')+'">'+c+'</span>';
+    var D=${jsonPR},W=${jsonW12},TP=${jsonTopics},TY=${jsonTypes},CN=${jsonCountries};
+    var CW=${CW};
+    var fType=TY[0]||'non-brand';
+    var fCnty={};CN.forEach(function(c){fCnty[c]=true});
+    var RED='${RED}',COMP='${COMP}';
+    var BC={'LG':RED,'Samsung':COMP,'Google':'#4285F4','Apple':'#A2AAAD','Sony':'#000','Bosch':'#EA0016','Dyson':'#6B21A8'};
+    var FB=['#3B82F6','#10B981','#F59E0B','#8B5CF6','#EC4899','#06B6D4','#84CC16','#F97316'];
+    function bc(n,i){return BC[n]||FB[i%FB.length]}
+    // 신호등: LG/Samsung 비교
+    function tl(lg,ss){if(lg==null)return{bg:'#F8FAFC',color:'#94A3B8'};if(ss==null||ss===0)return{bg:'#F0FDF4',color:'#15803D'};var r=lg/ss*100;if(r>=100)return{bg:'#DCFCE7',color:'#15803D'};if(r>=80)return{bg:'#FEF9C3',color:'#A16207'};if(r>=70)return{bg:'#FFEDD5',color:'#C2410C'};return{bg:'#FEE2E2',color:'#BE123C'}}
+    function chip(txt,on,onclick){return'<span onclick="'+onclick+'" style="padding:3px 10px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid '+(on?'#0F172A':'#E2E8F0')+';background:'+(on?'#0F172A':'#fff')+';color:'+(on?'#fff':'#94A3B8')+'">'+txt+'</span>'}
+    function renderFilters(){
+      var te=document.getElementById('pr-type-chips');if(te)te.innerHTML=TY.map(function(t){return chip(t,fType===t,"_prSetType('"+t+"')")}).join(' ');
+      var ce=document.getElementById('pr-cnty-chips');if(!ce)return;
+      var allOn=CN.every(function(c){return fCnty[c]});
+      ce.innerHTML=chip('${lang==='en'?'All':'전체'}',allOn,'_prCntyAll()')+' '+CN.map(function(c){return chip(c,!!fCnty[c],"_prCntyTog('"+c+"')")}).join(' ');
+    }
+    // 특정 토픽+국가+브랜드의 특정 주 값
+    function val(topic,cnty,brand,wk){
+      var r=D.find(function(x){return x.topic===topic&&x.country===cnty&&x.brand===brand&&x.type===fType});
+      return r&&r.scores[wk]!=null?r.scores[wk]:null;
+    }
+    function lastVal(topic,cnty,brand){for(var i=W.length-1;i>=0;i--){var v=val(topic,cnty,brand,W[i]);if(v!=null)return v}return null}
+    // ── 상단 매트릭스 (토픽×국가, 최근주 기준 신호등) ──
+    function renderMatrix(){
+      var el=document.getElementById('pr-matrix');if(!el)return;
+      var lastW=W[W.length-1];
+      var ac=CN.filter(function(c){return fCnty[c]});
+      // TTL + 선택 국가
+      var cols=['TTL'].concat(ac);
+      var h='<div style="overflow-x:auto"><table style="border-collapse:collapse;font-size:12px;font-family:inherit;width:auto">';
+      h+='<thead><tr><th style="padding:6px 12px;text-align:left;font-weight:700;color:#64748B;border-bottom:2px solid #E2E8F0;white-space:nowrap">${lang==='en'?'Topic':'토픽'} ('+lastW+')</th>';
+      cols.forEach(function(c){h+='<th style="padding:6px 8px;text-align:center;font-weight:700;color:#64748B;border-bottom:2px solid #E2E8F0;min-width:56px">'+c+'</th>'});
+      h+='</tr></thead><tbody>';
+      TP.forEach(function(topic,ti){
+        h+='<tr style="border-bottom:1px solid #F1F5F9">';
+        h+='<td style="padding:6px 12px;font-weight:600;color:#1A1A1A;white-space:nowrap">'+topic+'</td>';
+        cols.forEach(function(cnty){
+          var lg=lastVal(topic,cnty,'LG');
+          var ss=lastVal(topic,cnty,'Samsung');
+          var s=tl(lg,ss);
+          h+='<td style="padding:4px 6px;text-align:center;background:'+s.bg+';color:'+s.color+';font-weight:700;font-variant-numeric:tabular-nums">'+(lg!=null?lg.toFixed(1):'—')+'</td>';
+        });
+        h+='</tr>';
       });
+      h+='</tbody></table></div>';
+      h+='<div style="display:flex;gap:12px;margin-top:8px;font-size:11px;color:#64748B">';
+      h+='<span><i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#DCFCE7;vertical-align:-1px;margin-right:3px"></i>≥100%</span>';
+      h+='<span><i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#FEF9C3;vertical-align:-1px;margin-right:3px"></i>≥80%</span>';
+      h+='<span><i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#FFEDD5;vertical-align:-1px;margin-right:3px"></i>≥70%</span>';
+      h+='<span><i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#FEE2E2;vertical-align:-1px;margin-right:3px"></i>&lt;70%</span>';
+      h+='<span style="margin-left:8px;color:#94A3B8">${lang==='en'?'vs Samsung ratio':'삼성 대비 경쟁비'}</span></div>';
       el.innerHTML=h;
     }
-
-    // SVG 멀티라인 차트
-    function svgMultiLine(brandData,labels,w,h){
-      var brands=Object.keys(brandData);if(!brands.length||!labels.length)return'';
+    // ── SVG 차트 (고정 컬럼 너비로 정렬) ──
+    function svgChart(brandData,w,h){
+      var brands=Object.keys(brandData);if(!brands.length)return'';
+      var N=W.length;var pl=0,pr=0,pt=16,pb=4;var cw=w;var ch=h-pt-pb;
       var mn=Infinity,mx=-Infinity;
       brands.forEach(function(b){(brandData[b]||[]).forEach(function(v){if(v!=null){if(v<mn)mn=v;if(v>mx)mx=v}})});
       if(!isFinite(mn)){mn=0;mx=100}
       var pad=Math.max((mx-mn)*0.1,2);mn-=pad;mx+=pad;var rng=mx-mn||1;
-      var pt=20,pr=10,pb=25,pl=40;var cw=w-pl-pr;var ch=h-pt-pb;
-      var s='<svg viewBox="0 0 '+w+' '+h+'" width="100%" height="'+h+'" xmlns="http://www.w3.org/2000/svg">';
-      // Grid
-      for(var g=0;g<=4;g++){var gy=pt+(g/4)*ch;var gv=+(mx-(g/4)*(mx-mn)).toFixed(1);
-        s+='<line x1="'+pl+'" y1="'+gy+'" x2="'+(w-pr)+'" y2="'+gy+'" stroke="#E2E8F0" stroke-width="1"/>';
-        s+='<text x="'+(pl-4)+'" y="'+(gy+4)+'" text-anchor="end" fill="#94A3B8" font-size="11">'+gv+'</text>';
-      }
-      // X labels
-      labels.forEach(function(l,i){var x=pl+(i/(labels.length-1||1))*cw;
-        s+='<text x="'+x+'" y="'+(h-5)+'" text-anchor="middle" fill="#94A3B8" font-size="11">'+l+'</text>';
-      });
-      // Lines
+      var s='<svg viewBox="0 0 '+w+' '+h+'" width="'+w+'" height="'+h+'" xmlns="http://www.w3.org/2000/svg">';
+      for(var g=0;g<=4;g++){var gy=pt+(g/4)*ch;s+='<line x1="0" y1="'+gy+'" x2="'+w+'" y2="'+gy+'" stroke="#F1F5F9" stroke-width="1"/>';}
       brands.forEach(function(b,bi){
         var vals=brandData[b]||[];var c=bc(b,bi);var isLG=b==='LG';
         var pts=[];
-        vals.forEach(function(v,i){if(v!=null){var x=pl+(i/(labels.length-1||1))*cw;var y=pt+((mx-v)/rng)*ch;pts.push({x:x,y:y,v:v})}});
-        if(pts.length<1)return;
+        vals.forEach(function(v,i){if(v!=null){var x=(i+0.5)*(cw/N);var y=pt+((mx-v)/rng)*ch;pts.push({x:x,y:y})}});
+        if(!pts.length)return;
         var path=pts.map(function(p,i){return(i?'L':'M')+p.x.toFixed(1)+','+p.y.toFixed(1)}).join(' ');
-        s+='<path d="'+path+'" fill="none" stroke="'+c+'" stroke-width="'+(isLG?2.5:1.5)+'" opacity="'+(isLG?1:0.6)+'"/>';
-        pts.forEach(function(p){s+='<circle cx="'+p.x.toFixed(1)+'" cy="'+p.y.toFixed(1)+'" r="'+(isLG?4:3)+'" fill="'+c+'" opacity="'+(isLG?1:0.6)+'"/>'});
+        s+='<path d="'+path+'" fill="none" stroke="'+c+'" stroke-width="'+(isLG?2.5:1.5)+'" opacity="'+(isLG?1:0.5)+'"/>';
+        pts.forEach(function(p){s+='<circle cx="'+p.x.toFixed(1)+'" cy="'+p.y.toFixed(1)+'" r="'+(isLG?4:3)+'" fill="'+c+'" opacity="'+(isLG?1:0.5)+'"/>'});
       });
       s+='</svg>';return s;
     }
-
-    function render(){
+    // ── 토픽별 섹션 렌더 ──
+    function renderSections(){
       var el=document.getElementById('pr-sections');if(!el)return;
-      var activeCntList=_prCountries.filter(function(c){return _prActiveCountries[c]});
-      var info=document.getElementById('pr-filter-info');
-      if(info)info.textContent=activeCntList.length===_prCountries.length?'':'('+activeCntList.length+' ${lang==='en'?'countries selected':'개 국가 선택'})';
-      var html='';
-      _prTopics.forEach(function(topic){
-        // TTL 데이터 = 메인 차트 (전체 합산)
-        var ttlRows=_prData.filter(function(r){return r.topic===topic&&r.country==='TTL'});
-        // 국가별 데이터 = 서브테이블
-        var cntyRows=_prData.filter(function(r){return r.topic===topic&&r.country!=='TTL'&&_prActiveCountries[r.country]});
-        // 메인 차트: TTL 데이터 우선, 없으면 선택 국가 평균
-        var chartRows=ttlRows.length>0?ttlRows:cntyRows;
-        if(!chartRows.length&&!cntyRows.length)return;
-        // 브랜드별 스코어
+      var N=W.length;var tblW=CW*N;var html='';
+      TP.forEach(function(topic){
+        var ttl=D.filter(function(r){return r.topic===topic&&r.country==='TTL'&&r.type===fType});
+        if(!ttl.length)return;
         var brandMap={};
-        chartRows.forEach(function(r){
-          if(!brandMap[r.brand])brandMap[r.brand]={};
-          _prLabels.forEach(function(lbl){
-            if(r.scores[lbl]!=null){
-              if(!brandMap[r.brand][lbl])brandMap[r.brand][lbl]=[];
-              brandMap[r.brand][lbl].push(r.scores[lbl]);
-            }
-          });
-        });
+        ttl.forEach(function(r){if(!brandMap[r.brand])brandMap[r.brand]={}; W.forEach(function(wk){if(r.scores[wk]!=null){brandMap[r.brand][wk]=r.scores[wk]}})});
         var brands=Object.keys(brandMap).sort(function(a,b){if(a==='LG')return -1;if(b==='LG')return 1;return 0});
-        // 차트 데이터
         var chartData={};
-        brands.forEach(function(b){chartData[b]=_prLabels.map(function(lbl){var arr=brandMap[b][lbl];return arr?+(arr.reduce(function(s,v){return s+v},0)/arr.length).toFixed(1):null})});
-        var lgLatest=chartData.LG?chartData.LG.filter(function(v){return v!=null}).pop():null;
-        // 범례
-        var legend=brands.map(function(b,i){var c=bc(b,i);var isLG=b==='LG';return'<span style="display:inline-flex;align-items:center;gap:3px;margin-right:12px"><i style="display:inline-block;width:10px;height:3px;border-radius:1px;background:'+c+';opacity:'+(isLG?1:0.6)+'"></i><span style="font-size:13px;color:'+(isLG?'#1A1A1A':'#94A3B8')+';font-weight:'+(isLG?700:400)+'">'+b+'</span></span>'}).join('');
-        // 테이블
-        var N=_prLabels.length;
-        var colgroup='<colgroup><col style="width:120px">'+_prLabels.map(function(){return'<col>'}).join('')+'</colgroup>';
-        var thead='<tr style="border-bottom:1px solid #E8EDF2"><th style="text-align:left;padding:5px 8px;font-size:13px;color:#94A3B8;font-weight:600">Brand</th>'+_prLabels.map(function(w){return'<th style="text-align:center;padding:5px 4px;font-size:13px;color:#94A3B8;font-weight:600">'+w+'</th>'}).join('')+'</tr>';
-        var tbody=brands.map(function(b,i){var c=bc(b,i);var isLG=b==='LG';var cells=_prLabels.map(function(_,wi){var val=chartData[b][wi];return'<td style="text-align:center;padding:5px 4px;font-size:13px;color:'+(val!=null?(isLG?'#1A1A1A':'#475569'):'#CBD5E1')+';font-weight:'+(isLG?700:400)+';font-variant-numeric:tabular-nums">'+(val!=null?val.toFixed(1):'—')+'</td>'}).join('');return'<tr style="background:'+(isLG?'#FFF8F9':i%2===0?'#fff':'#FAFBFC')+'"><td style="padding:5px 8px;font-size:13px;font-weight:'+(isLG?700:500)+';color:'+c+';white-space:nowrap"><i style="display:inline-block;width:6px;height:6px;border-radius:50%;background:'+c+';margin-right:4px;vertical-align:0"></i>'+b+'</td>'+cells+'</tr>'}).join('');
-        // 국가별 LG 스코어 서브테이블
-        var cntySubRows=activeCntList.map(function(cn){
-          var cr=cntyRows.filter(function(r){return r.country===cn&&r.brand==='LG'});
+        brands.forEach(function(b){chartData[b]=W.map(function(wk){return brandMap[b][wk]!=null?brandMap[b][wk]:null})});
+        var lgLast=chartData.LG?chartData.LG[N-1]:null;
+        var ssLast=chartData.Samsung?chartData.Samsung[N-1]:null;
+        var st=tl(lgLast,ssLast);
+        var legend=brands.map(function(b,i){var c=bc(b,i);var isLG=b==='LG';return'<span style="display:inline-flex;align-items:center;gap:3px;margin-right:10px"><i style="display:inline-block;width:10px;height:3px;border-radius:1px;background:'+c+'"></i><span style="font-size:12px;color:'+(isLG?'#1A1A1A':'#94A3B8')+';font-weight:'+(isLG?700:400)+'">'+b+'</span></span>'}).join('');
+        // 국가별 LG 서브
+        var ac=CN.filter(function(c){return fCnty[c]});
+        var cntyHtml=ac.map(function(cn){
+          var cr=D.filter(function(r){return r.topic===topic&&r.country===cn&&r.brand==='LG'&&r.type===fType});
           if(!cr.length)return'';
-          var cells=_prLabels.map(function(lbl){var match=cr.find(function(r){return r.scores[lbl]!=null});return'<td style="text-align:center;padding:4px;font-size:12px;color:#475569;font-variant-numeric:tabular-nums">'+(match?match.scores[lbl].toFixed(1):'—')+'</td>'}).join('');
-          return'<tr style="border-top:1px solid #F1F5F9"><td style="padding:4px 8px;font-size:12px;font-weight:600;color:#64748B">'+cn+'</td>'+cells+'</tr>';
+          var cells=W.map(function(wk){var v=cr[0]&&cr[0].scores[wk];return'<td style="width:'+CW+'px;min-width:'+CW+'px;max-width:'+CW+'px;text-align:center;padding:3px 0;font-size:12px;color:#475569;font-variant-numeric:tabular-nums">'+(v!=null?v.toFixed(1):'—')+'</td>'}).join('');
+          return'<tr style="border-top:1px solid #F1F5F9"><td style="padding:3px 8px;font-size:12px;font-weight:600;color:#64748B;white-space:nowrap">'+cn+'</td>'+cells+'</tr>';
         }).filter(Boolean).join('');
 
-        html+='<div style="background:#fff;border:1px solid #E8EDF2;border-radius:12px;margin-bottom:20px;overflow:hidden">';
-        html+='<div style="padding:16px 20px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;display:flex;align-items:center;gap:8px;flex-wrap:wrap">';
-        html+='<span style="width:4px;height:20px;border-radius:4px;background:'+RED+';flex-shrink:0"></span>';
-        html+='<span style="font-size:18px;font-weight:700;color:#1A1A1A">'+topic+'</span>';
-        if(lgLatest!=null)html+='<span style="font-size:14px;font-weight:700;color:#1A1A1A">LG '+lgLatest.toFixed(1)+'%</span>';
-        html+='<span style="margin-left:auto">'+legend+'</span>';
-        html+='</div>';
-        html+='<div style="padding:16px 20px">'+svgMultiLine(chartData,_prLabels,Math.max(N*80,600),200)+'</div>';
-        html+='<div style="padding:0 20px 16px;overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-family:inherit">'+colgroup+thead+tbody;
-        if(cntySubRows)html+='<tr><td colspan="'+(N+1)+'" style="padding:8px;font-size:12px;font-weight:700;color:#64748B;background:#F8FAFC;border-top:2px solid #E8EDF2">${lang==='en'?'LG by Country':'LG 국가별'}</td></tr>'+cntySubRows;
+        html+='<div style="background:#fff;border:1px solid #E8EDF2;border-radius:12px;margin-bottom:16px;overflow:hidden">';
+        // 헤더
+        html+='<div style="padding:12px 16px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;display:flex;align-items:center;gap:8px;flex-wrap:wrap">';
+        html+='<span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:'+st.bg+';border:1px solid '+st.color+'"></span>';
+        html+='<span style="font-size:16px;font-weight:700;color:#1A1A1A">'+topic+'</span>';
+        if(lgLast!=null)html+='<span style="font-size:13px;font-weight:700;color:'+st.color+'">LG '+lgLast.toFixed(1)+'%</span>';
+        if(ssLast!=null)html+='<span style="font-size:12px;color:#94A3B8">vs Samsung '+ssLast.toFixed(1)+'%</span>';
+        html+='<span style="margin-left:auto">'+legend+'</span></div>';
+        // 차트+테이블 (같은 너비 정렬)
+        html+='<div style="overflow-x:auto;padding:0 16px 12px"><div style="display:flex"><div style="width:120px;flex-shrink:0"></div><div style="width:'+tblW+'px;flex-shrink:0;padding:8px 0">'+svgChart(chartData,tblW,160)+'</div></div>';
+        // 테이블
+        html+='<table style="border-collapse:collapse;font-family:inherit;table-layout:fixed;width:'+(120+tblW)+'px">';
+        html+='<colgroup><col style="width:120px">';W.forEach(function(){html+='<col style="width:'+CW+'px">'});html+='</colgroup>';
+        html+='<tr style="border-bottom:1px solid #E8EDF2"><th style="text-align:left;padding:4px 8px;font-size:12px;color:#94A3B8;font-weight:600">Brand</th>';
+        W.forEach(function(wk){html+='<th style="text-align:center;padding:4px 0;font-size:12px;color:#94A3B8;font-weight:600">'+wk+'</th>'});
+        html+='</tr>';
+        brands.forEach(function(b,i){
+          var c=bc(b,i);var isLG=b==='LG';
+          html+='<tr style="background:'+(isLG?'#FFF8F9':i%2===0?'#fff':'#FAFBFC')+'"><td style="padding:4px 8px;font-size:12px;font-weight:'+(isLG?700:500)+';color:'+c+';white-space:nowrap"><i style="display:inline-block;width:6px;height:6px;border-radius:50%;background:'+c+';margin-right:3px;vertical-align:0"></i>'+b+'</td>';
+          W.forEach(function(wk,wi){var v=chartData[b][wi];html+='<td style="text-align:center;padding:4px 0;font-size:12px;color:'+(v!=null?(isLG?'#1A1A1A':'#475569'):'#CBD5E1')+';font-weight:'+(isLG?700:400)+';font-variant-numeric:tabular-nums">'+(v!=null?v.toFixed(1):'—')+'</td>'});
+          html+='</tr>';
+        });
+        if(cntyHtml){
+          html+='<tr><td colspan="'+(N+1)+'" style="padding:6px 8px;font-size:11px;font-weight:700;color:#64748B;background:#F8FAFC;border-top:2px solid #E8EDF2">${lang==='en'?'LG by Country':'LG 국가별'}</td></tr>'+cntyHtml;
+        }
         html+='</table></div></div>';
       });
-      if(!html)html='<div style="text-align:center;padding:60px;color:#94A3B8;font-size:16px">${lang==='en'?'No data for selected countries':'선택된 국가의 데이터가 없습니다'}</div>';
+      if(!html)html='<div style="text-align:center;padding:60px;color:#94A3B8">${lang==='en'?'No data':'데이터 없음'}</div>';
       el.innerHTML=html;
     }
-
-    window._prToggleCountry=function(c){_prActiveCountries[c]=!_prActiveCountries[c];renderChips();render()};
-    window._prToggleAll=function(){
-      var allOn=_prCountries.every(function(c){return _prActiveCountries[c]});
-      _prCountries.forEach(function(c){_prActiveCountries[c]=!allOn});
-      renderChips();render();
-    };
-    renderChips();render();
+    function renderAll(){renderFilters();renderMatrix();renderSections()}
+    window._prSetType=function(t){fType=t;renderAll()};
+    window._prCntyTog=function(c){fCnty[c]=!fCnty[c];renderAll()};
+    window._prCntyAll=function(){var on=CN.every(function(c){return fCnty[c]});CN.forEach(function(c){fCnty[c]=!on});renderAll()};
+    renderAll();
   })();
   </script>`
 }
