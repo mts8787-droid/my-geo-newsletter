@@ -119,14 +119,14 @@ export default function App() {
 
   async function handleSnapOverwrite() {
     if (!activeSnap) return
-    const data = { metaKo, metaEn, total, products, citations, dotcom, productsCnty, citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty }
+    const data = { metaKo, metaEn, total, products, citations, dotcom, productsCnty, citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty, monthlyVis }
     const result = await updateSnapshot(MODE, activeSnap, data)
     if (result) setSnapshots(result)
     setSnapMsg(result ? '저장 완료!' : '저장 실패'); setTimeout(() => setSnapMsg(''), 2000)
   }
   async function handleSnapSaveNew() {
     const name = snapName.trim() || `${meta.period || 'Untitled'} — ${new Date().toLocaleString('ko-KR')}`
-    const result = await postSnapshot(MODE, name, { metaKo, metaEn, total, products, citations, dotcom, productsCnty, citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty })
+    const result = await postSnapshot(MODE, name, { metaKo, metaEn, total, products, citations, dotcom, productsCnty, citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty, monthlyVis })
     if (result) { setSnapshots(result); setSnapName(''); setActiveSnap(result[0]?.ts || null) }
     setSnapMsg(result ? '새로 저장 완료!' : '저장 실패'); setTimeout(() => setSnapMsg(''), 2000)
   }

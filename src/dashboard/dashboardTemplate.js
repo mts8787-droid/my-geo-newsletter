@@ -1677,7 +1677,7 @@ var _lang='${lang}';
 var _BRAND_COLORS=${JSON.stringify(BRAND_COLORS)};
 var _FALLBACK=['#94A3B8','#64748B','#475569','#CBD5E1','#E2E8F0'];
 var _RED='${RED}';
-var _FONT="${FONT}";
+var _FONT=${JSON.stringify(FONT)};
 var _COMP='${COMP}';
 var _REGIONS={NA:['US','CA'],EU:['UK','DE','ES'],LATAM:['BR','MX'],APAC:['IN','AU','VN']};
 var _REGION_LABELS={NA:'${lang==='en'?'North America':'북미'}',EU:'${lang==='en'?'Europe':'유럽'}',LATAM:'${lang==='en'?'Latin America':'중남미'}',APAC:'${lang==='en'?'Asia Pacific':'아태'}'};

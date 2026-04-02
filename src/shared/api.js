@@ -63,7 +63,6 @@ export async function fetchSyncData(mode) {
 export async function publishCombinedDashboard(generateDashboardHTML, resolveDataForLang) {
   const d = await fetchSyncData('dashboard')
   if (!d) throw new Error('동기화 데이터가 없습니다. Visibility Editor에서 먼저 동기화해주세요.')
-  console.log('[PUBLISH] sync-data keys:', Object.keys(d), 'productsPartial:', d.productsPartial?.length, 'products:', d.products?.length, 'total:', JSON.stringify(d.total)?.slice(0, 100))
   const meta = d.meta || {}
   const total = d.total || {}
   // productsPartial 우선, 없으면 products(에디터 state) 폴백

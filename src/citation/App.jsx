@@ -107,14 +107,14 @@ export default function App() {
   // 스냅샷 관리
   async function handleSnapOverwrite() {
     if (!activeSnap) return
-    const data = { metaKo, metaEn, citations, citationsCnty, dotcom, citationsByCnty, dotcomByCnty, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths }
+    const data = { metaKo, metaEn, citations, citationsCnty, dotcom, citationsByCnty, dotcomByCnty, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, dotcomTrend, dotcomTrendMonths }
     const result = await updateSnapshot(MODE, activeSnap, data)
     if (result) setSnapshots(result)
     setSnapMsg(result ? '저장 완료!' : '저장 실패'); setTimeout(() => setSnapMsg(''), 2000)
   }
   async function handleSnapSaveNew() {
     const name = snapName.trim() || `${meta.period || 'Untitled'} Citation — ${new Date().toLocaleString('ko-KR')}`
-    const result = await postSnapshot(MODE, name, { metaKo, metaEn, citations, citationsCnty, dotcom, citationsByCnty, dotcomByCnty, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths })
+    const result = await postSnapshot(MODE, name, { metaKo, metaEn, citations, citationsCnty, dotcom, citationsByCnty, dotcomByCnty, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, dotcomTrend, dotcomTrendMonths })
     if (result) { setSnapshots(result); setSnapName(''); setActiveSnap(result[0]?.ts || null) }
     setSnapMsg(result ? '새로 저장 완료!' : '저장 실패'); setTimeout(() => setSnapMsg(''), 2000)
   }
