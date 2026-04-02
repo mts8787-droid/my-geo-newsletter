@@ -390,6 +390,10 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
           weeklyPRLabels: parsed.weeklyPRLabels || null,
           monthlyPR: parsed.monthlyPR || null,
           monthlyPRLabels: parsed.monthlyPRLabels || null,
+          weeklyBrandPrompt: parsed.weeklyBrandPrompt || null,
+          weeklyBrandPromptLabels: parsed.weeklyBrandPromptLabels || null,
+          monthlyBrandPrompt: parsed.monthlyBrandPrompt || null,
+          monthlyBrandPromptLabels: parsed.monthlyBrandPromptLabels || null,
         })
       }, 100)
       setDebugLog(_log.join('\n'))

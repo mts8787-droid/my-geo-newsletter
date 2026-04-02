@@ -947,6 +947,119 @@ function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang) {
   </script>`
 }
 
+// ─── Brand Prompt (고가혁) Visibility 탭 HTML ────────────────────────────────
+function brandPromptTabHtml(bpData, bpLabels, lang) {
+  if (!bpData || !bpData.length) {
+    const msg = lang === 'en' ? 'No Brand Prompt Visibility data available.' : 'Brand Prompt Visibility 데이터가 없습니다.'
+    return `<div style="display:flex;align-items:center;justify-content:center;min-height:calc(100vh - 160px);color:#94A3B8;font-size:16px">${msg}</div>`
+  }
+  const labels = bpLabels || []
+  const topics = [...new Set(bpData.map(r => r.topic))].filter(Boolean)
+  const stakeholders = [...new Set(bpData.map(r => r.stakeholder))].filter(Boolean).sort()
+  const countries = [...new Set(bpData.map(r => r.country))].filter(c => c && c !== 'TTL').sort()
+  const title = lang === 'en' ? 'Brand Prompt Visibility — Weekly Trend' : '고가혁 Visibility — 주간 트렌드'
+  const subtitle = lang === 'en'
+    ? `${topics.length} topics · ${stakeholders.length} stakeholders · ${labels.length} weeks`
+    : `${topics.length}개 토픽 · ${stakeholders.length}개 Stakeholder · ${labels.length}주`
+
+  const jsonBP = JSON.stringify(bpData).replace(/</g, '\\u003c')
+  const jsonLabels = JSON.stringify(labels)
+  const jsonTopics = JSON.stringify(topics)
+  const jsonStakeholders = JSON.stringify(stakeholders)
+  const jsonCountries = JSON.stringify(countries)
+
+  return `<div style="max-width:1400px;margin:32px auto;padding:0 40px">
+    <h2 style="font-size:24px;font-weight:800;color:#1A1A1A;margin-bottom:6px">${title}</h2>
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
+      <span style="font-size:15px;color:#64748B">${subtitle}</span>
+    </div>
+    <div id="bp-sections"></div>
+  </div>
+  <script>
+  (function(){
+    var _bpData=${jsonBP};
+    var _bpLabels=${jsonLabels};
+    var _bpTopics=${jsonTopics};
+    var RED='${RED}';
+    var COMP='${COMP}';
+    var SH_COLORS={'MS':'#3B82F6','HS':'#10B981','ES':'#F59E0B','PR':'#8B5CF6','Brand':'#EC4899','Brand Comm':'#EC4899'};
+    var FALLBACK=['#3B82F6','#10B981','#F59E0B','#8B5CF6','#EC4899','#06B6D4','#84CC16','#F97316'];
+    function shColor(name,i){return SH_COLORS[name]||FALLBACK[i%FALLBACK.length]}
+
+    function svgML(brandData,labels,w,h){
+      var brands=Object.keys(brandData);if(!brands.length||!labels.length)return'';
+      var mn=Infinity,mx=-Infinity;
+      brands.forEach(function(b){(brandData[b]||[]).forEach(function(v){if(v!=null){if(v<mn)mn=v;if(v>mx)mx=v}})});
+      if(!isFinite(mn)){mn=0;mx=100}
+      var pad=Math.max((mx-mn)*0.1,2);mn-=pad;mx+=pad;var rng=mx-mn||1;
+      var pt=20,pr=10,pb=25,pl=40;var cw=w-pl-pr;var ch=h-pt-pb;
+      var s='<svg viewBox="0 0 '+w+' '+h+'" width="100%" height="'+h+'" xmlns="http://www.w3.org/2000/svg">';
+      for(var g=0;g<=4;g++){var gy=pt+(g/4)*ch;var gv=+(mx-(g/4)*(mx-mn)).toFixed(1);
+        s+='<line x1="'+pl+'" y1="'+gy+'" x2="'+(w-pr)+'" y2="'+gy+'" stroke="#E2E8F0" stroke-width="1"/>';
+        s+='<text x="'+(pl-4)+'" y="'+(gy+4)+'" text-anchor="end" fill="#94A3B8" font-size="11">'+gv+'</text>';
+      }
+      labels.forEach(function(l,i){var x=pl+(i/(labels.length-1||1))*cw;
+        s+='<text x="'+x+'" y="'+(h-5)+'" text-anchor="middle" fill="#94A3B8" font-size="11">'+l+'</text>';
+      });
+      brands.forEach(function(b,bi){
+        var vals=brandData[b]||[];var c=shColor(b,bi);
+        var pts=[];
+        vals.forEach(function(v,i){if(v!=null){var x=pl+(i/(labels.length-1||1))*cw;var y=pt+((mx-v)/rng)*ch;pts.push({x:x,y:y,v:v})}});
+        if(pts.length<1)return;
+        var path=pts.map(function(p,i){return(i?'L':'M')+p.x.toFixed(1)+','+p.y.toFixed(1)}).join(' ');
+        s+='<path d="'+path+'" fill="none" stroke="'+c+'" stroke-width="2" opacity="0.8"/>';
+        pts.forEach(function(p){s+='<circle cx="'+p.x.toFixed(1)+'" cy="'+p.y.toFixed(1)+'" r="3.5" fill="'+c+'" opacity="0.8"/>'});
+      });
+      s+='</svg>';return s;
+    }
+
+    function render(){
+      var el=document.getElementById('bp-sections');if(!el)return;
+      var html='';
+      _bpTopics.forEach(function(topic){
+        // TTL 우선, 없으면 전체
+        var ttlRows=_bpData.filter(function(r){return r.topic===topic&&r.country==='TTL'});
+        var rows=ttlRows.length>0?ttlRows:_bpData.filter(function(r){return r.topic===topic});
+        if(!rows.length)return;
+        // stakeholder별 스코어
+        var shMap={};
+        rows.forEach(function(r){
+          var key=r.stakeholder||r.type||'Unknown';
+          if(!shMap[key])shMap[key]={};
+          _bpLabels.forEach(function(lbl){
+            if(r.scores[lbl]!=null){
+              if(!shMap[key][lbl])shMap[key][lbl]=[];
+              shMap[key][lbl].push(r.scores[lbl]);
+            }
+          });
+        });
+        var shs=Object.keys(shMap).sort();
+        var chartData={};
+        shs.forEach(function(sh){chartData[sh]=_bpLabels.map(function(lbl){var arr=shMap[sh][lbl];return arr?+(arr.reduce(function(s,v){return s+v},0)/arr.length).toFixed(1):null})});
+        var legend=shs.map(function(sh,i){var c=shColor(sh,i);return'<span style="display:inline-flex;align-items:center;gap:3px;margin-right:12px"><i style="display:inline-block;width:10px;height:3px;border-radius:1px;background:'+c+'"></i><span style="font-size:13px;color:#475569;font-weight:600">'+sh+'</span></span>'}).join('');
+        // 테이블
+        var N=_bpLabels.length;
+        var colgroup='<colgroup><col style="width:140px">'+_bpLabels.map(function(){return'<col>'}).join('')+'</colgroup>';
+        var thead='<tr style="border-bottom:1px solid #E8EDF2"><th style="text-align:left;padding:5px 8px;font-size:13px;color:#94A3B8;font-weight:600">Stakeholder</th>'+_bpLabels.map(function(w){return'<th style="text-align:center;padding:5px 4px;font-size:13px;color:#94A3B8;font-weight:600">'+w+'</th>'}).join('')+'</tr>';
+        var tbody=shs.map(function(sh,i){var c=shColor(sh,i);var cells=_bpLabels.map(function(_,wi){var val=chartData[sh][wi];return'<td style="text-align:center;padding:5px 4px;font-size:13px;color:'+(val!=null?'#1A1A1A':'#CBD5E1')+';font-weight:500;font-variant-numeric:tabular-nums">'+(val!=null?val.toFixed(1):'—')+'</td>'}).join('');return'<tr style="background:'+(i%2===0?'#fff':'#FAFBFC')+'"><td style="padding:5px 8px;font-size:13px;font-weight:700;color:'+c+';white-space:nowrap"><i style="display:inline-block;width:6px;height:6px;border-radius:50%;background:'+c+';margin-right:4px;vertical-align:0"></i>'+sh+'</td>'+cells+'</tr>'}).join('');
+
+        html+='<div style="background:#fff;border:1px solid #E8EDF2;border-radius:12px;margin-bottom:20px;overflow:hidden">';
+        html+='<div style="padding:16px 20px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;display:flex;align-items:center;gap:8px;flex-wrap:wrap">';
+        html+='<span style="width:4px;height:20px;border-radius:4px;background:'+RED+';flex-shrink:0"></span>';
+        html+='<span style="font-size:18px;font-weight:700;color:#1A1A1A">'+topic+'</span>';
+        html+='<span style="margin-left:auto">'+legend+'</span>';
+        html+='</div>';
+        html+='<div style="padding:16px 20px">'+svgML(chartData,_bpLabels,Math.max(N*80,600),200)+'</div>';
+        html+='<div style="padding:0 20px 16px;overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-family:inherit">'+colgroup+thead+tbody+'</table></div></div>';
+      });
+      if(!html)html='<div style="text-align:center;padding:60px;color:#94A3B8;font-size:16px">${lang==='en'?'No data available':'데이터가 없습니다'}</div>';
+      el.innerHTML=html;
+    }
+    render();
+  })();
+  </script>`
+}
+
 // ═══════════════════════════════════════════════════════════════════════════
 // 메인 생성 함수
 // ═══════════════════════════════════════════════════════════════════════════
@@ -1293,7 +1406,7 @@ ${visibilityOnly ? `
     <div style="display:flex;align-items:center;justify-content:center;min-height:calc(100vh - 160px);color:#94A3B8;font-size:16px">${lang === 'en' ? 'Brand Comm Visibility — Coming Soon' : 'Brand Comm Visibility — 준비 중'}</div>
   </div>
   <div id="vis-sub-premium" class="vis-sub-panel" style="display:none">
-    <div style="display:flex;align-items:center;justify-content:center;min-height:calc(100vh - 160px);color:#94A3B8;font-size:16px">${lang === 'en' ? 'Premium Visibility — Coming Soon' : '고가혁 Visibility — 준비 중'}</div>
+    ${brandPromptTabHtml(extra?.weeklyBrandPrompt, extra?.weeklyBrandPromptLabels, lang)}
   </div>
 </div>
 <div id="tab-citation" class="tab-panel">
