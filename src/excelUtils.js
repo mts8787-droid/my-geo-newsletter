@@ -1032,9 +1032,20 @@ function parsePRVisibility(rows, mode) {
   const MONTH_RE = /^(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|[0-9]{1,2}월)/i
   const WEEK_RE = /^w\d+$/i
   const dataLabels = []
+  // 헤더 행에서 라벨 탐색
   for (let i = dataStartCol; i < header.length; i++) {
     const h = String(header[i] || '').trim()
     if (h && (MONTH_RE.test(h) || WEEK_RE.test(h))) dataLabels.push({ col: i, label: h })
+  }
+  // 헤더 행에 라벨이 없으면 윗 행에서 탐색 (2행 헤더 구조 대응)
+  if (dataLabels.length === 0 && headerIdx > 0) {
+    const prevRow = rows[headerIdx - 1]
+    if (prevRow) {
+      for (let i = dataStartCol; i < prevRow.length; i++) {
+        const h = String(prevRow[i] || '').trim()
+        if (h && (MONTH_RE.test(h) || WEEK_RE.test(h))) dataLabels.push({ col: i, label: h })
+      }
+    }
   }
 
   const data = rows.slice(headerIdx + 1)
