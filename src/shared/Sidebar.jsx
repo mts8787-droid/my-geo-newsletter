@@ -57,12 +57,15 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
       })
       const data = await res.json()
       if (!data.ok) throw new Error(data.error || '게시 실패')
-      // 게시 성공 시 sync-data도 현재 state로 업데이트
-      saveSyncData(mode, {
-        meta: metaKo || meta, total, productsPartial: products, products,
-        weeklyMap: null, weeklyLabels, weeklyAll,
-        citations, dotcom, productsCnty, citationsCnty,
-        citationsByCnty, dotcomByCnty, appendixPrompts: null,
+      // 게시 성공 시 sync-data도 현재 state로 병합 업데이트 (기존 PR/BP/Prompt 유지)
+      fetchSyncData(mode).then(function(ex) {
+        saveSyncData(mode, {
+          ...(ex || {}),
+          meta: metaKo || meta, total, productsPartial: products, products,
+          weeklyMap: (ex || {}).weeklyMap || null, weeklyLabels, weeklyAll,
+          citations, dotcom, productsCnty, citationsCnty,
+          citationsByCnty, dotcomByCnty,
+        })
       }).catch(() => {})
       setPublishInfo({ ...data, published: true })
       const koUrl = `${window.location.origin}${data.urls.ko}`
