@@ -857,7 +857,7 @@ function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang) {
       if(r>=80) return{bg:'#FFFBEB',color:'#B45309',border:'#FDE68A',label:'${lang==='en'?'Behind':'추격'}'};
       return{bg:'#FFF1F2',color:'#BE123C',border:'#FECDD3',label:'${lang==='en'?'Critical':'취약'}'};
     }
-    function chip(txt,on,onclick){return'<span onclick="'+onclick+'" style="padding:3px 10px;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer;border:1px solid '+(on?'#0F172A':'#E2E8F0')+';background:'+(on?'#0F172A':'#F8FAFC')+';color:'+(on?'#fff':'#475569')+';white-space:nowrap;user-select:none;font-family:${FONT}">'+txt+'</span>'}
+    function chip(txt,on,onclick){return'<span onclick="'+onclick+'" style="padding:3px 10px;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer;border:1px solid '+(on?'#0F172A':'#E2E8F0')+';background:'+(on?'#0F172A':'#F8FAFC')+';color:'+(on?'#fff':'#475569')+';white-space:nowrap;user-select:none">'+txt+'</span>'}
     function renderFilters(){
       var te=document.getElementById('pr-type-chips');if(te)te.innerHTML=TY.map(function(t){return chip(t,fType===t,"_prSetType('"+t+"')")}).join(' ');
       var ce=document.getElementById('pr-cnty-chips');if(!ce)return;
@@ -876,7 +876,7 @@ function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang) {
       var lastW=W[W.length-1];
       var ac=CN.filter(function(c){return fCnty[c]});
       var cols=['TTL'].concat(ac);
-      var h='<div style="overflow-x:auto"><table style="border-collapse:collapse;font-family:${FONT};width:auto">';
+      var h='<div style="overflow-x:auto"><table style="border-collapse:collapse;width:auto">';
       h+='<thead><tr><th style="padding:8px 14px;text-align:left;font-size:14px;font-weight:700;color:#64748B;border-bottom:2px solid #E8EDF2;white-space:nowrap">${lang==='en'?'Topic':'토픽'} <span style="font-weight:400;color:#94A3B8">('+lastW+')</span></th>';
       cols.forEach(function(c){h+='<th style="padding:8px 10px;text-align:center;font-size:14px;font-weight:700;color:#64748B;border-bottom:2px solid #E8EDF2;min-width:60px">'+c+'</th>'});
       h+='</tr></thead><tbody>';
@@ -944,7 +944,7 @@ function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang) {
         // 헤더
         html+='<div style="padding:14px 20px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;display:flex;align-items:center;gap:10px;flex-wrap:wrap">';
         html+='<span style="width:4px;height:22px;border-radius:4px;background:'+RED+';flex-shrink:0"></span>';
-        html+='<span style="font-size:18px;font-weight:700;color:#1A1A1A;font-family:${FONT}">'+topic+'</span>';
+        html+='<span style="font-size:18px;font-weight:700;color:#1A1A1A">'+topic+'</span>';
         html+='<span style="font-size:14px;font-weight:700;padding:2px 10px;border-radius:10px;background:'+st.bg+';color:'+st.color+';border:1px solid '+st.border+'">'+st.label+'</span>';
         if(lgLast!=null)html+='<span style="font-size:15px;font-weight:700;color:#1A1A1A">LG '+lgLast.toFixed(1)+'%</span>';
         if(ssLast!=null)html+='<span style="font-size:14px;color:#94A3B8">vs Samsung '+ssLast.toFixed(1)+'%</span>';
@@ -952,7 +952,7 @@ function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang) {
         // 차트+테이블 (같은 너비 정렬)
         html+='<div style="overflow-x:auto;padding:0 16px 12px"><div style="display:flex"><div style="width:120px;flex-shrink:0"></div><div style="width:'+tblW+'px;flex-shrink:0;padding:8px 0">'+svgChart(chartData,tblW,160)+'</div></div>';
         // 테이블
-        html+='<table style="border-collapse:collapse;font-family:${FONT};table-layout:fixed;width:'+(120+tblW)+'px">';
+        html+='<table style="border-collapse:collapse;table-layout:fixed;width:'+(120+tblW)+'px">';
         html+='<colgroup><col style="width:120px">';W.forEach(function(){html+='<col style="width:'+CW+'px">'});html+='</colgroup>';
         html+='<tr style="border-bottom:1px solid #E8EDF2"><th style="text-align:left;padding:5px 8px;font-size:14px;color:#94A3B8;font-weight:600">Brand</th>';
         W.forEach(function(wk){html+='<th style="text-align:center;padding:5px 0;font-size:14px;color:#94A3B8;font-weight:600">'+wk+'</th>'});
