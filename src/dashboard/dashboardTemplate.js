@@ -794,7 +794,8 @@ function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang) {
 
   const labels = weeklyPRLabels || []
   const topics = [...new Set(weeklyPR.map(r => r.topic))].filter(Boolean)
-  const countries = [...new Set(weeklyPR.map(r => r.country))].filter(Boolean).sort()
+  // TTL은 전체 합산 데이터 → 국가 필터에서 제외
+  const countries = [...new Set(weeklyPR.map(r => r.country))].filter(c => c && c !== 'TTL').sort()
   const title = lang === 'en' ? 'PR Visibility — Weekly Trend' : 'PR Visibility — 주간 트렌드'
   const subtitle = lang === 'en'
     ? `${topics.length} topics · ${countries.length} countries · ${labels.length} weeks`
@@ -881,11 +882,16 @@ function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang) {
       if(info)info.textContent=activeCntList.length===_prCountries.length?'':'('+activeCntList.length+' ${lang==='en'?'countries selected':'개 국가 선택'})';
       var html='';
       _prTopics.forEach(function(topic){
-        var rows=_prData.filter(function(r){return r.topic===topic&&_prActiveCountries[r.country]});
-        if(!rows.length)return;
-        // 브랜드별 스코어 평균 (선택 국가)
+        // TTL 데이터 = 메인 차트 (전체 합산)
+        var ttlRows=_prData.filter(function(r){return r.topic===topic&&r.country==='TTL'});
+        // 국가별 데이터 = 서브테이블
+        var cntyRows=_prData.filter(function(r){return r.topic===topic&&r.country!=='TTL'&&_prActiveCountries[r.country]});
+        // 메인 차트: TTL 데이터 우선, 없으면 선택 국가 평균
+        var chartRows=ttlRows.length>0?ttlRows:cntyRows;
+        if(!chartRows.length&&!cntyRows.length)return;
+        // 브랜드별 스코어
         var brandMap={};
-        rows.forEach(function(r){
+        chartRows.forEach(function(r){
           if(!brandMap[r.brand])brandMap[r.brand]={};
           _prLabels.forEach(function(lbl){
             if(r.scores[lbl]!=null){
@@ -907,8 +913,8 @@ function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang) {
         var thead='<tr style="border-bottom:1px solid #E8EDF2"><th style="text-align:left;padding:5px 8px;font-size:13px;color:#94A3B8;font-weight:600">Brand</th>'+_prLabels.map(function(w){return'<th style="text-align:center;padding:5px 4px;font-size:13px;color:#94A3B8;font-weight:600">'+w+'</th>'}).join('')+'</tr>';
         var tbody=brands.map(function(b,i){var c=bc(b,i);var isLG=b==='LG';var cells=_prLabels.map(function(_,wi){var val=chartData[b][wi];return'<td style="text-align:center;padding:5px 4px;font-size:13px;color:'+(val!=null?(isLG?'#1A1A1A':'#475569'):'#CBD5E1')+';font-weight:'+(isLG?700:400)+';font-variant-numeric:tabular-nums">'+(val!=null?val.toFixed(1):'—')+'</td>'}).join('');return'<tr style="background:'+(isLG?'#FFF8F9':i%2===0?'#fff':'#FAFBFC')+'"><td style="padding:5px 8px;font-size:13px;font-weight:'+(isLG?700:500)+';color:'+c+';white-space:nowrap"><i style="display:inline-block;width:6px;height:6px;border-radius:50%;background:'+c+';margin-right:4px;vertical-align:0"></i>'+b+'</td>'+cells+'</tr>'}).join('');
         // 국가별 LG 스코어 서브테이블
-        var cntyRows=activeCntList.map(function(cn){
-          var cr=rows.filter(function(r){return r.country===cn&&r.brand==='LG'});
+        var cntySubRows=activeCntList.map(function(cn){
+          var cr=cntyRows.filter(function(r){return r.country===cn&&r.brand==='LG'});
           if(!cr.length)return'';
           var cells=_prLabels.map(function(lbl){var match=cr.find(function(r){return r.scores[lbl]!=null});return'<td style="text-align:center;padding:4px;font-size:12px;color:#475569;font-variant-numeric:tabular-nums">'+(match?match.scores[lbl].toFixed(1):'—')+'</td>'}).join('');
           return'<tr style="border-top:1px solid #F1F5F9"><td style="padding:4px 8px;font-size:12px;font-weight:600;color:#64748B">'+cn+'</td>'+cells+'</tr>';
@@ -923,7 +929,7 @@ function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang) {
         html+='</div>';
         html+='<div style="padding:16px 20px">'+svgMultiLine(chartData,_prLabels,Math.max(N*80,600),200)+'</div>';
         html+='<div style="padding:0 20px 16px;overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-family:inherit">'+colgroup+thead+tbody;
-        if(cntyRows)html+='<tr><td colspan="'+(N+1)+'" style="padding:8px;font-size:12px;font-weight:700;color:#64748B;background:#F8FAFC;border-top:2px solid #E8EDF2">${lang==='en'?'LG by Country':'LG 국가별'}</td></tr>'+cntyRows;
+        if(cntySubRows)html+='<tr><td colspan="'+(N+1)+'" style="padding:8px;font-size:12px;font-weight:700;color:#64748B;background:#F8FAFC;border-top:2px solid #E8EDF2">${lang==='en'?'LG by Country':'LG 국가별'}</td></tr>'+cntySubRows;
         html+='</table></div></div>';
       });
       if(!html)html='<div style="text-align:center;padding:60px;color:#94A3B8;font-size:16px">${lang==='en'?'No data for selected countries':'선택된 국가의 데이터가 없습니다'}</div>';
@@ -944,8 +950,8 @@ function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang) {
 // ═══════════════════════════════════════════════════════════════════════════
 // 메인 생성 함수
 // ═══════════════════════════════════════════════════════════════════════════
-export function generateVisibilityHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty, monthlyVis) {
-  return generateDashboardHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty, { visibilityOnly: true, monthlyVis })
+export function generateVisibilityHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty, monthlyVis, extra) {
+  return generateDashboardHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty, { visibilityOnly: true, monthlyVis }, extra)
 }
 
 export function generateDashboardHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty, opts, extra) {
@@ -1235,8 +1241,25 @@ body.show-insights .howto-box{display:block}
 </head>
 <body>
 ${visibilityOnly ? `
-${filterLayerHtml.replace('top:53px', 'top:0')}
-<div class="dash-container">${visContent}</div>
+<div id="gnb-visibility" class="gnb-sub active" style="position:sticky;top:0;z-index:99">
+  <button class="gnb-sub-btn active" onclick="switchVisSub('bu')">${lang === 'en' ? 'Business Division' : '사업본부'}</button>
+  <button class="gnb-sub-btn" onclick="switchVisSub('pr')">PR</button>
+  <button class="gnb-sub-btn" onclick="switchVisSub('brand')">Brand Comm</button>
+  <button class="gnb-sub-btn" onclick="switchVisSub('premium')">${lang === 'en' ? 'Premium' : '고가혁'}</button>
+</div>
+<div id="vis-sub-bu" class="vis-sub-panel">
+  ${filterLayerHtml.replace('top:86px', 'top:37px')}
+  <div class="dash-container">${visContent}</div>
+</div>
+<div id="vis-sub-pr" class="vis-sub-panel" style="display:none">
+  ${prVisibilityTabHtml(extra?.weeklyPR, extra?.weeklyPRLabels, lang)}
+</div>
+<div id="vis-sub-brand" class="vis-sub-panel" style="display:none">
+  <div style="display:flex;align-items:center;justify-content:center;min-height:calc(100vh - 160px);color:#94A3B8;font-size:16px">${lang === 'en' ? 'Brand Comm Visibility — Coming Soon' : 'Brand Comm Visibility — 준비 중'}</div>
+</div>
+<div id="vis-sub-premium" class="vis-sub-panel" style="display:none">
+  <div style="display:flex;align-items:center;justify-content:center;min-height:calc(100vh - 160px);color:#94A3B8;font-size:16px">${lang === 'en' ? 'Premium Visibility — Coming Soon' : '고가혁 Visibility — 준비 중'}</div>
+</div>
 ` : `
 <div class="tab-bar">
   <div style="display:flex;gap:4px;align-items:center">
