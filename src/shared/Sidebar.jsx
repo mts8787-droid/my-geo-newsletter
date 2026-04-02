@@ -386,6 +386,10 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
           dotcomByCnty: parsed.dotcomByCnty || null,
           appendixPrompts: parsed.appendixPrompts || null,
           monthlyVis: parsed.monthlyVis || null,
+          weeklyPR: parsed.weeklyPR || null,
+          weeklyPRLabels: parsed.weeklyPRLabels || null,
+          monthlyPR: parsed.monthlyPR || null,
+          monthlyPRLabels: parsed.monthlyPRLabels || null,
         })
       }, 100)
       setDebugLog(_log.join('\n'))
