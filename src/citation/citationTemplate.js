@@ -178,6 +178,72 @@ function dotcomSectionHtml(dotcom, meta, t, lang) {
 }
 
 
+// ─── 닷컴 콘텐츠별 월간 트렌드 차트 ─────────────────────────────────────────
+function dotcomTrendChartHtml(dotcomTrend, dotcomTrendMonths, lang) {
+  if (!dotcomTrend || !dotcomTrendMonths || dotcomTrendMonths.length < 1) return ''
+  const ALL_MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+  const months = ALL_MONTHS // 항상 12개월 표시
+  const pageTypes = Object.keys(dotcomTrend).filter(k => k !== 'TTL')
+  if (!pageTypes.length) return ''
+
+  const title = lang === 'en' ? 'Dotcom Citation — Monthly Trend by Content Type' : '닷컴 Citation — 콘텐츠별 월간 트렌드'
+
+  // 각 콘텐츠별 LG 12개월 데이터
+  const seriesHtml = pageTypes.map(pt => {
+    const mData = dotcomTrend[pt] || {}
+    const vals = months.map(m => mData[m]?.lg ?? null)
+    const lastV = vals.filter(v => v != null).pop()
+
+    // SVG 라인 차트
+    const N = months.length
+    const cw = 72, w = cw * N, h = 120, pad = 12
+    const ch = h - pad * 2
+    const nonNull = vals.filter(v => v != null)
+    const mn = nonNull.length ? Math.min(...nonNull) : 0
+    const mx = nonNull.length ? Math.max(...nonNull) : 100
+    const p = Math.max((mx - mn) * 0.15, 5)
+    const rMin = mn - p, rMax = mx + p, rng = rMax - rMin || 1
+
+    let svg = `<svg viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" xmlns="http://www.w3.org/2000/svg">`
+    for (let g = 0; g <= 4; g++) { const gy = pad + (g / 4) * ch; svg += `<line x1="0" y1="${gy}" x2="${w}" y2="${gy}" stroke="#F1F5F9" stroke-width="1"/>` }
+    const pts = []
+    vals.forEach((v, i) => { if (v != null) pts.push({ x: (i + 0.5) * cw, y: pad + ((rMax - v) / rng) * ch }) })
+    if (pts.length > 0) {
+      const path = pts.map((p, i) => `${i ? 'L' : 'M'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ')
+      svg += `<path d="${path}" fill="none" stroke="${RED}" stroke-width="2.5"/>`
+      pts.forEach(p => { svg += `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="4" fill="${RED}"/>` })
+    }
+    svg += '</svg>'
+
+    // 테이블
+    const colgroup = `<colgroup><col style="width:100px">${months.map(() => `<col style="width:${cw}px">`).join('')}</colgroup>`
+    const thead = `<tr style="border-bottom:1px solid #E8EDF2"><th style="text-align:left;padding:5px 8px;font-size:13px;color:#94A3B8;font-weight:600"></th>${months.map(m => `<th style="text-align:center;padding:5px 0;font-size:13px;color:#94A3B8;font-weight:600">${m}</th>`).join('')}</tr>`
+    const lgRow = `<tr style="background:#FFF8F9"><td style="padding:5px 8px;font-size:13px;font-weight:700;color:${RED}">LG</td>${vals.map(v => `<td style="text-align:center;padding:5px 0;font-size:13px;color:${v != null ? '#1A1A1A' : '#CBD5E1'};font-weight:700;font-variant-numeric:tabular-nums">${v != null ? fmt(v) : '—'}</td>`).join('')}</tr>`
+    const ssVals = months.map(m => mData[m]?.samsung ?? null)
+    const ssRow = `<tr><td style="padding:5px 8px;font-size:13px;font-weight:500;color:${COMP}">Samsung</td>${ssVals.map(v => `<td style="text-align:center;padding:5px 0;font-size:13px;color:${v != null ? '#475569' : '#CBD5E1'};font-variant-numeric:tabular-nums">${v != null ? fmt(v) : '—'}</td>`).join('')}</tr>`
+
+    return `<div style="border:1px solid #E8EDF2;border-radius:12px;margin-bottom:16px;overflow:hidden">
+      <div style="padding:12px 20px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;display:flex;align-items:center;gap:10px">
+        <span style="width:4px;height:20px;border-radius:4px;background:${RED};flex-shrink:0"></span>
+        <span style="font-size:16px;font-weight:700;color:#1A1A1A">${pt}</span>
+        ${lastV != null ? `<span style="font-size:14px;font-weight:700;color:#1A1A1A">${fmt(lastV)}</span>` : ''}
+        <span style="margin-left:auto;font-size:12px;color:#94A3B8"><i style="display:inline-block;width:10px;height:3px;border-radius:1px;background:${RED};margin-right:3px;vertical-align:1px"></i>LG <i style="display:inline-block;width:10px;height:3px;border-radius:1px;background:${COMP};margin-left:8px;margin-right:3px;vertical-align:1px"></i>Samsung</span>
+      </div>
+      <div style="overflow-x:auto;padding:0 16px 12px">
+        <div style="display:flex"><div style="width:100px;flex-shrink:0"></div><div style="width:${w}px;flex-shrink:0;padding:8px 0">${svg}</div></div>
+        <table style="border-collapse:collapse;table-layout:fixed;width:${100 + w}px">${colgroup}${thead}${lgRow}${ssRow}</table>
+      </div>
+    </div>`
+  }).join('')
+
+  return `<div class="section-card" style="margin-top:20px">
+    <div class="section-header"><div class="section-title">${title}</div>
+      <span class="legend">Jan–Dec</span>
+    </div>
+    <div class="section-body">${seriesHtml}</div>
+  </div>`
+}
+
 // ═══════════════════════════════════════════════════════════════════════════
 // Citation 전용 HTML 생성
 // ═══════════════════════════════════════════════════════════════════════════
@@ -377,7 +443,7 @@ function citDomainBumpChartHtml(citDomainTrend, citDomainMonths, meta, t, lang) 
 
 export function generateCitationHTML(meta, _total, _products, citations, dotcom, lang, _productsCnty, citationsCnty, trendData, citationsByCnty, dotcomByCnty) {
   const t = T[lang] || T.ko
-  const { citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths } = trendData || {}
+  const { citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, dotcomTrend, dotcomTrendMonths } = trendData || {}
   citationsByCnty = citationsByCnty || {}
   dotcomByCnty = dotcomByCnty || {}
 
@@ -387,29 +453,27 @@ export function generateCitationHTML(meta, _total, _products, citations, dotcom,
 
   const citNoticeHtml = meta.showNotice && meta.noticeText ? `<div class="notice-box"><div class="notice-title">${lang === 'en' ? 'NOTICE' : '공지사항'}</div><div class="notice-text">${mdBold(meta.noticeText)}</div></div>` : ''
 
-  // 월간 탭 콘텐츠 (초기 렌더: 전체 데이터)
-  const monthlyContent = [
+  // ── 외부접점채널 탭 콘텐츠 ──
+  const touchPointContent = [
     citNoticeHtml,
     meta.showCitations !== false ? `<div id="cit-cat-wrap">${citationSectionHtml(citations, meta, t, lang)}</div>` : '',
     (meta.showCitDomain !== false || meta.showCitCnty !== false) ? `<div id="cit-dom-wrap">${citDomainSectionHtml(citationsCnty, meta, t, citations, lang, false)}</div>` : '',
-    meta.showDotcom !== false ? `<div id="cit-dc-wrap">${dotcomSectionHtml(dotcom, meta, t, lang)}</div>` : '',
-  ].join('')
-
-  // 월간 트렌드 탭 콘텐츠
-  const trendContent = [
     citCategoryBumpChartHtml(citTouchPointsTrend, citTrendMonths, meta, t, lang),
     citDomainBumpChartHtml(citDomainTrend, citDomainMonths, meta, t, lang),
   ].join('')
 
-  const noTrendMsg = `<div class="section-card"><div class="section-body" style="text-align:center;padding:60px 28px;color:#94A3B8;font-size:14px">${lang === 'ko' ? '월간 트렌드 데이터가 없습니다.<br>구글 시트에 2개월 이상의 데이터가 필요합니다.' : 'No monthly trend data available.<br>At least 2 months of data is required.'}</div></div>`
-  const finalTrend = trendContent || noTrendMsg
+  // ── 닷컴 탭 콘텐츠 ──
+  const dotcomContent = [
+    meta.showDotcom !== false ? `<div id="cit-dc-wrap">${dotcomSectionHtml(dotcom, meta, t, lang)}</div>` : '',
+    dotcomTrendChartHtml(dotcomTrend, dotcomTrendMonths, lang),
+  ].join('')
 
   const content = `<div class="sub-tabs">
-      <button class="sub-tab active" data-tab="monthly" onclick="switchSubTab(this,'monthly')">${lang === 'ko' ? '월간' : 'Monthly'}</button>
-      <button class="sub-tab" data-tab="trend" onclick="switchSubTab(this,'trend')">${lang === 'ko' ? '월간 트렌드' : 'Monthly Trend'}</button>
+      <button class="sub-tab active" data-tab="touchpoint" onclick="switchSubTab(this,'touchpoint')">${lang === 'ko' ? '외부접점채널' : 'Touch Points'}</button>
+      <button class="sub-tab" data-tab="dotcom" onclick="switchSubTab(this,'dotcom')">${lang === 'ko' ? '닷컴' : 'Dotcom'}</button>
     </div>
-    <div class="sub-tab-panel" data-panel="monthly">${monthlyContent}</div>
-    <div class="sub-tab-panel" data-panel="trend" style="display:none">${finalTrend}</div>`
+    <div class="sub-tab-panel" data-panel="touchpoint">${touchPointContent}</div>
+    <div class="sub-tab-panel" data-panel="dotcom" style="display:none">${dotcomContent}</div>`
 
   // 국가 목록 추출 (데이터에 존재하는 국가만)
   const countries = new Set()

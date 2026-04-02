@@ -384,6 +384,8 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
           weeklyBrandPromptLabels: parsed.weeklyBrandPromptLabels || null,
           monthlyBrandPrompt: parsed.monthlyBrandPrompt || null,
           monthlyBrandPromptLabels: parsed.monthlyBrandPromptLabels || null,
+          dotcomTrend: parsed.dotcomTrend || null,
+          dotcomTrendMonths: parsed.dotcomTrendMonths || null,
         })
       }, 100)
       setDebugLog(_log.join('\n'))

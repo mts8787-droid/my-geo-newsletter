@@ -13,6 +13,7 @@ export default function CitationSidebar({
   citationsByCnty, setCitationsByCnty, dotcomByCnty, setDotcomByCnty,
   citTouchPointsTrend, setCitTouchPointsTrend, citTrendMonths, setCitTrendMonths,
   citDomainTrend, setCitDomainTrend, citDomainMonths, setCitDomainMonths,
+  dotcomTrend, setDotcomTrend, dotcomTrendMonths, setDotcomTrendMonths,
   resolved, previewLang, setPreviewLang, generateHTML,
 }) {
   const [gsUrl,     setGsUrl]     = useState('https://docs.google.com/spreadsheets/d/1v4V7ZsHNFXXqbAWqvyVkgNIeXx188hSZ9l7FDsRYy2Y/edit')
@@ -77,6 +78,8 @@ export default function CitationSidebar({
       if (parsed.citTrendMonths) setCitTrendMonths(parsed.citTrendMonths)
       if (parsed.citDomainTrend) setCitDomainTrend(parsed.citDomainTrend)
       if (parsed.citDomainMonths) setCitDomainMonths(parsed.citDomainMonths)
+      if (parsed.dotcomTrend && setDotcomTrend) setDotcomTrend(parsed.dotcomTrend)
+      if (parsed.dotcomTrendMonths && setDotcomTrendMonths) setDotcomTrendMonths(parsed.dotcomTrendMonths)
 
       // 파싱 결과 요약을 상태 메시지에 표시
       const summary = [
@@ -99,6 +102,8 @@ export default function CitationSidebar({
           citTrendMonths: parsed.citTrendMonths || null,
           citDomainTrend: parsed.citDomainTrend || null,
           citDomainMonths: parsed.citDomainMonths || null,
+          dotcomTrend: parsed.dotcomTrend || null,
+          dotcomTrendMonths: parsed.dotcomTrendMonths || null,
         })
       }, 100)
 
@@ -120,7 +125,7 @@ export default function CitationSidebar({
     try {
       const resolvedKo = resolveDataForLang([], [], citations, citationsCnty, 'ko')
       const resolvedEn = resolveDataForLang([], [], citations, citationsCnty, 'en')
-      const trendData = { citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths }
+      const trendData = { citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, dotcomTrend, dotcomTrendMonths }
       const htmlKo = generateHTML(metaKo, null, [], resolvedKo.citations, dotcom, 'ko', [], resolvedKo.citationsCnty, trendData, citationsByCnty, dotcomByCnty)
       const htmlEn = generateHTML(metaEn, null, [], resolvedEn.citations, dotcom, 'en', [], resolvedEn.citationsCnty, trendData, citationsByCnty, dotcomByCnty)
       const title = `${metaKo.period || ''} Citation Dashboard`.trim()

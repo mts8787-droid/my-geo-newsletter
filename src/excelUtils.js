@@ -665,17 +665,31 @@ function parseCitPageType(rows) {
   const dotcomByCnty = {}  // { cnty: { lg: {...}, samsung: {...} } }
   const CNTY_ALIAS = { 'TOTAL':'TTL', '미국':'US', '캐나다':'CA', '영국':'UK', '독일':'DE', '스페인':'ES', '브라질':'BR', '멕시코':'MX', '인도':'IN', '호주':'AU', '베트남':'VN' }
   const _ptSeenCountries = new Set()
+
+  // 월 이름 추출: "Feb LG" → "Feb"
+  const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+  const monthLabels = monthPairs.map(mp => {
+    const h = String(header[mp.lg] || '').trim()
+    const m = h.match(/(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)/i)
+    return m ? m[1].charAt(0).toUpperCase() + m[1].slice(1).toLowerCase() : h.replace(/\s*LG\s*/i, '').trim()
+  })
+
+  // dotcom 월간 트렌드: { pageType: { month: { lg: val, samsung: val } } }
+  const dotcomTrend = {}
+
   data.forEach(r => {
     const rawCountry = normCountry(r[0])
     const pageType = String(r[1] || '').replace(/[()]/g, '').trim()
-    const lgVal = numVal(r[bestPair.lg])
-    const ssVal = numVal(r[bestPair.ss])
 
     let key = /page total|^ttl$/i.test(pageType) ? 'TTL' : pageType
     if (key.toLowerCase() === 'microsite') key = 'Microsites'
 
     const cnty = CNTY_ALIAS[rawCountry] || rawCountry.toUpperCase()
     _ptSeenCountries.add(cnty)
+
+    // 최신 월(bestPair)로 기존 dotcom 구성
+    const lgVal = numVal(r[bestPair.lg])
+    const ssVal = numVal(r[bestPair.ss])
     if (cnty === 'TTL') {
       lg[key] = (lg[key] || 0) + lgVal
       samsung[key] = (samsung[key] || 0) + ssVal
@@ -684,12 +698,33 @@ function parseCitPageType(rows) {
       dotcomByCnty[cnty].lg[key] = (dotcomByCnty[cnty].lg[key] || 0) + lgVal
       dotcomByCnty[cnty].samsung[key] = (dotcomByCnty[cnty].samsung[key] || 0) + ssVal
     }
+
+    // 모든 월 트렌드 수집 (TTL만)
+    if (cnty === 'TTL') {
+      if (!dotcomTrend[key]) dotcomTrend[key] = {}
+      monthPairs.forEach((mp, mi) => {
+        const lv = numVal(r[mp.lg])
+        const sv = numVal(r[mp.ss])
+        if (lv > 0 || sv > 0) {
+          const mLabel = monthLabels[mi] || `M${mi + 1}`
+          dotcomTrend[key][mLabel] = { lg: (dotcomTrend[key][mLabel]?.lg || 0) + lv, samsung: (dotcomTrend[key][mLabel]?.samsung || 0) + sv }
+        }
+      })
+    }
   })
 
+  // 유효한 월만 필터 (Jan~Dec 순서 정렬)
+  const allMonths = new Set()
+  Object.values(dotcomTrend).forEach(m => Object.keys(m).forEach(k => allMonths.add(k)))
+  const dotcomTrendMonths = MONTH_NAMES.filter(m => allMonths.has(m))
 
   const result = {}
   if (lg.TTL || Object.keys(lg).length) result.dotcom = { lg, samsung }
   if (Object.keys(dotcomByCnty).length) result.dotcomByCnty = dotcomByCnty
+  if (Object.keys(dotcomTrend).length && dotcomTrendMonths.length) {
+    result.dotcomTrend = dotcomTrend
+    result.dotcomTrendMonths = dotcomTrendMonths
+  }
   return result
 }
 
