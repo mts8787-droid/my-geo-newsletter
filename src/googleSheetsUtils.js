@@ -44,6 +44,7 @@ export async function syncFromGoogleSheets(sheetId, onProgress) {
     try {
       const { rows } = entry.value
       const parsed = parseSheetRows(name, rows)
+      console.log(`[SYNC] "${name}" parsed keys:`, Object.keys(parsed), rows.length + ' rows')
       // 스마트 병합: 배열은 합치고(단 weeklyLabels는 덮어쓰기), 객체는 병합, 나머지는 덮어쓰기
       for (const [key, val] of Object.entries(parsed)) {
         if (key === 'weeklyLabels') {

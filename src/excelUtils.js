@@ -1008,11 +1008,13 @@ function parseCitDomain(rows) {
 function parsePRVisibility(rows, mode) {
   // mode: 'monthly' 또는 'weekly'
   // 헤더: Type, County, Topic, Brand, data columns...
+  console.log(`[parsePRVisibility] mode=${mode}, rows=${rows?.length}, first 3 rows:`, rows?.slice(0, 3)?.map(r => r?.slice(0, 8)))
   const headerIdx = rows.findIndex(r => {
     if (!r) return false
     return r.some(c => /^type$/i.test(String(c || '').trim())) &&
            r.some(c => /^county|^country$/i.test(String(c || '').trim()))
   })
+  console.log(`[parsePRVisibility] headerIdx=${headerIdx}`, headerIdx >= 0 ? rows[headerIdx]?.slice(0, 10) : 'NOT FOUND')
   if (headerIdx < 0) return {}
 
   const header = rows[headerIdx]
@@ -1066,18 +1068,21 @@ function parsePRVisibility(rows, mode) {
   const result = {}
   if (prData.length > 0) result[key] = prData
   if (dataLabels.length > 0) result[labelsKey] = dataLabels.map(d => d.label)
+  console.log(`[parsePRVisibility] result: ${key}=${prData.length}건, labels=${dataLabels.length}개`, dataLabels.map(d => d.label), prData.length > 0 ? prData[0] : 'EMPTY')
   return result
 }
 
 // ─── Brand Prompt Visibility 파서 (Monthly/Weekly 공용) ──────────────────────
 // 구조: Steakholders | Type | Country | Topoc | w5/Feb | w6/Mar | ...
 function parseBrandPromptVisibility(rows, mode) {
+  console.log(`[parseBrandPromptVisibility] mode=${mode}, rows=${rows?.length}, first 3 rows:`, rows?.slice(0, 3)?.map(r => r?.slice(0, 8)))
   const headerIdx = rows.findIndex(r => {
     if (!r) return false
     return r.some(c => /steakholders|stakeholders/i.test(String(c || '').trim())) ||
            (r.some(c => /^type$/i.test(String(c || '').trim())) &&
             r.some(c => /topoc|topic/i.test(String(c || '').trim())))
   })
+  console.log(`[parseBrandPromptVisibility] headerIdx=${headerIdx}`, headerIdx >= 0 ? rows[headerIdx]?.slice(0, 10) : 'NOT FOUND')
   if (headerIdx < 0) return {}
 
   const header = rows[headerIdx]
@@ -1128,6 +1133,7 @@ function parseBrandPromptVisibility(rows, mode) {
   const result = {}
   if (bpData.length > 0) result[key] = bpData
   if (dataLabels.length > 0) result[labelsKey] = dataLabels.map(d => d.label)
+  console.log(`[parseBrandPromptVisibility] result: ${key}=${bpData.length}건, labels=${dataLabels.length}개`, dataLabels.map(d => d.label), bpData.length > 0 ? bpData[0] : 'EMPTY')
   return result
 }
 
