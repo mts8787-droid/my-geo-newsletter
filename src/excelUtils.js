@@ -1008,7 +1008,8 @@ function parseCitDomain(rows) {
 function parsePRVisibility(rows, mode) {
   // mode: 'monthly' 또는 'weekly'
   // 헤더: Type, County, Topic, Brand, data columns...
-  console.log(`[parsePRVisibility] mode=${mode}, rows=${rows?.length}, first 3 rows:`, rows?.slice(0, 3)?.map(r => r?.slice(0, 8)))
+  console.log(`[parsePRVisibility] mode=${mode}, rows=${rows?.length}`)
+  rows?.slice(0, 4).forEach((r, i) => console.log(`  row[${i}]:`, JSON.stringify(r?.slice(0, 12))))
   const headerIdx = rows.findIndex(r => {
     if (!r) return false
     return r.some(c => /^type$/i.test(String(c || '').trim())) &&
@@ -1076,7 +1077,8 @@ function parsePRVisibility(rows, mode) {
   const result = {}
   if (prData.length > 0) result[key] = prData
   if (dataLabels.length > 0) result[labelsKey] = dataLabels.map(d => d.label)
-  console.log(`[parsePRVisibility] result: ${key}=${prData.length}건, labels=${dataLabels.length}개`, dataLabels.map(d => d.label), prData.length > 0 ? prData[0] : 'EMPTY')
+  console.log(`[parsePRVisibility] dataStartCol=${dataStartCol}, typeCol=${typeCol}, countryCol=${countryCol}, topicCol=${topicCol}, brandCol=${brandCol}`)
+  console.log(`[parsePRVisibility] result: ${key}=${prData.length}건, labels=${dataLabels.length}개`, dataLabels.map(d => d.label), prData.length > 0 ? JSON.stringify(prData[0]) : 'EMPTY')
   return result
 }
 
