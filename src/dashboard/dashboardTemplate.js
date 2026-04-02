@@ -936,7 +936,7 @@ function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang) {
         var cntyHtml=ac.map(function(cn){
           var cr=D.filter(function(r){return r.topic===topic&&r.country===cn&&r.brand==='LG'&&r.type===fType});
           if(!cr.length)return'';
-          var cells=W.map(function(wk){var v=cr[0]&&cr[0].scores[wk];return'<td style="width:'+CW+'px;min-width:'+CW+'px;max-width:'+CW+'px;text-align:center;padding:5px 0;font-size:13px;color:#475569;font-variant-numeric:tabular-nums">'+(v!=null?v.toFixed(1):'—')+'</td>'}).join('');
+          var cells=W.map(function(wk){var v=cr[0]&&cr[0].scores[wk];return'<td style="width:'+CW+'px;min-width:'+CW+'px;max-width:'+CW+'px;text-align:center;padding:5px 0;font-size:13px;color:#475569;font-variant-numeric:tabular-nums">'+(v!=null?v.toFixed(1)+'%':'—')+'</td>'}).join('');
           return'<tr style="border-top:1px solid #F1F5F9"><td style="padding:5px 8px;font-size:13px;font-weight:600;color:#64748B;white-space:nowrap">'+cn+'</td>'+cells+'</tr>';
         }).filter(Boolean).join('');
 
@@ -960,7 +960,7 @@ function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang) {
         brands.forEach(function(b,i){
           var c=bc(b,i);var isLG=b==='LG';
           html+='<tr style="background:'+(isLG?'#FFF8F9':i%2===0?'#fff':'#FAFBFC')+'"><td style="padding:5px 8px;font-size:14px;font-weight:'+(isLG?700:500)+';color:'+c+';white-space:nowrap"><i style="display:inline-block;width:6px;height:6px;border-radius:50%;background:'+c+';margin-right:4px;vertical-align:0"></i>'+b+'</td>';
-          W.forEach(function(wk,wi){var v=chartData[b][wi];html+='<td style="text-align:center;padding:5px 0;font-size:14px;color:'+(v!=null?(isLG?'#1A1A1A':'#475569'):'#CBD5E1')+';font-weight:'+(isLG?700:400)+';font-variant-numeric:tabular-nums">'+(v!=null?v.toFixed(1):'—')+'</td>'});
+          W.forEach(function(wk,wi){var v=chartData[b][wi];html+='<td style="text-align:center;padding:5px 0;font-size:14px;color:'+(v!=null?(isLG?'#1A1A1A':'#475569'):'#CBD5E1')+';font-weight:'+(isLG?700:400)+';font-variant-numeric:tabular-nums">'+(v!=null?v.toFixed(1)+'%':'—')+'</td>'});
           html+='</tr>';
         });
         if(cntyHtml){
@@ -1053,7 +1053,7 @@ function brandPromptTabHtml(bpData, bpLabels, lang, stakeholderFilter, tabTitle)
         html+='<span style="width:4px;height:22px;border-radius:4px;background:'+RED+';flex-shrink:0"></span>';
         html+='<span style="font-size:18px;font-weight:700;color:#1A1A1A">'+topic+'</span>';
         html+='<span style="font-size:14px;font-weight:700;padding:2px 10px;border-radius:10px;background:'+st.bg+';color:'+st.color+';border:1px solid '+st.border+'">'+st.label+'</span>';
-        if(lastV!=null)html+='<span style="font-size:15px;font-weight:700;color:#1A1A1A">'+lastV.toFixed(1)+'%</span>';
+        if(lastV!=null)html+='<span style="font-size:15px;font-weight:700;color:'+st.color+'">'+lastV.toFixed(1)+'%</span>';
         html+='</div>';
         // 차트+테이블
         html+='<div style="overflow-x:auto;padding:0 16px 12px"><div style="display:flex"><div style="width:120px;flex-shrink:0"></div><div style="width:'+tblW+'px;flex-shrink:0;padding:8px 0">'+svgChart(vals,tblW,120,RED)+'</div></div>';
@@ -1063,7 +1063,7 @@ function brandPromptTabHtml(bpData, bpLabels, lang, stakeholderFilter, tabTitle)
         W.forEach(function(wk){html+='<th style="text-align:center;padding:5px 0;font-size:14px;color:#94A3B8;font-weight:600">'+wk+'</th>'});
         html+='</tr>';
         html+='<tr style="background:#FFF8F9"><td style="padding:5px 8px;font-size:14px;font-weight:700;color:'+RED+'">Score</td>';
-        vals.forEach(function(v){html+='<td style="text-align:center;padding:5px 0;font-size:14px;color:'+(v!=null?'#1A1A1A':'#CBD5E1')+';font-weight:700;font-variant-numeric:tabular-nums">'+(v!=null?v.toFixed(1):'—')+'</td>'});
+        vals.forEach(function(v){html+='<td style="text-align:center;padding:5px 0;font-size:14px;color:'+(v!=null?'#1A1A1A':'#CBD5E1')+';font-weight:700;font-variant-numeric:tabular-nums">'+(v!=null?v.toFixed(1)+'%':'—')+'</td>'});
         html+='</tr></table></div></div>';
       });
       if(!html)html='<div style="text-align:center;padding:60px;color:#94A3B8">${lang==='en'?'No data':'데이터 없음'}</div>';

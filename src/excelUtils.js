@@ -143,9 +143,15 @@ export function downloadTemplate(meta, total, products, citations, dotcom = {}) 
 // ─── 파싱 공통 ──────────────────────────────────────────────────────────────────
 
 function pct(v) {
-  const s = String(v ?? '').replace(/%/g, '').replace(/,/g, '').trim()
+  const raw = String(v ?? '').trim()
+  const hasPercent = raw.includes('%')
+  const s = raw.replace(/%/g, '').replace(/,/g, '').trim()
   const n = parseFloat(s) || 0
-  return Math.abs(n) < 1 && n !== 0 ? +(n * 100).toFixed(2) : +n.toFixed(2)
+  // '%' 기호가 있으면 이미 퍼센트 값 (예: "75.3%" → 75.3)
+  if (hasPercent) return +n.toFixed(2)
+  // '%' 없이 0~1 사이 소수면 × 100 (예: 0.753 → 75.3)
+  if (Math.abs(n) <= 1 && n !== 0) return +(n * 100).toFixed(2)
+  return +n.toFixed(2)
 }
 
 function numVal(v) {
