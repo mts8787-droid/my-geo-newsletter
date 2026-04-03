@@ -263,14 +263,14 @@ const BUMP_MAX = 10 // 최대 표시 개수
 
 function bumpChartSvg(names, rankings, months, maxRank, labelFn) {
   const fixedRanks = BUMP_MAX
-  const ROW_H = 42
+  const ROW_H = 52 // 리본 간격 (겹침 방지)
   const EXT = 20
   const W = Math.max(months.length * 200, 600) + EXT * 2
-  const H = fixedRanks * ROW_H + 60
-  const padL = 20 + EXT, padR = 20 + EXT, padT = 16, padB = 36
+  const H = fixedRanks * ROW_H + 16 // 상하 여백 최소화
+  const padL = 20 + EXT, padR = 20 + EXT, padT = 4, padB = 40
   const chartW = W - padL - padR
   const chartH = H - padT - padB
-  const ribbonW = ROW_H * 0.55
+  const ribbonW = ROW_H * 0.38 // 리본 두께 (간격 대비 적당히)
 
   let svg = `<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" style="font-family:${FONT}">`
 
@@ -321,15 +321,15 @@ function bumpChartSvg(names, rankings, months, maxRank, labelFn) {
       if (rank == null || rank > fixedRanks) return
       const x = padL + (i / Math.max(months.length - 1, 1)) * chartW
       const y = padT + ((rank - 0.5) / fixedRanks) * chartH
-      svg += `<text x="${x}" y="${y + 5}" text-anchor="middle" fill="#fff" font-size="13" font-weight="700" style="text-shadow:0 1px 3px rgba(0,0,0,0.7)">${label}</text>`
+      svg += `<text x="${x}" y="${y + 6}" text-anchor="middle" fill="#fff" font-size="16" font-weight="700" style="text-shadow:0 1px 3px rgba(0,0,0,0.7)">${label}</text>`
     })
   })
 
   // 하단 월 라벨
   months.forEach((m, i) => {
     const x = padL + (i / Math.max(months.length - 1, 1)) * chartW
-    svg += `<line x1="${x}" y1="${padT + chartH + 4}" x2="${x}" y2="${padT + chartH + 10}" stroke="#94A3B8" stroke-width="1.5"/>`
-    svg += `<text x="${x}" y="${padT + chartH + 26}" text-anchor="middle" fill="#475569" font-size="15" font-weight="800">${m}</text>`
+    svg += `<line x1="${x}" y1="${padT + chartH + 2}" x2="${x}" y2="${padT + chartH + 8}" stroke="#94A3B8" stroke-width="1.5"/>`
+    svg += `<text x="${x}" y="${padT + chartH + 30}" text-anchor="middle" fill="#475569" font-size="20" font-weight="800">${m}</text>`
   })
 
   svg += '</svg>'
@@ -617,7 +617,7 @@ body{background:#F1F5F9;font-family:${FONT};min-width:1200px;color:#1A1A1A}
 .sub-tab.active{background:#0F172A;color:#fff;box-shadow:0 2px 8px rgba(0,0,0,0.15)}
 .sub-tab:hover:not(.active){background:#E2E8F0}
 /* ── 범프차트 ── */
-.bump-chart-wrap{overflow-x:auto;padding:8px 0 16px;margin-bottom:16px}
+.bump-chart-wrap{overflow-x:auto;padding:0;margin-bottom:8px}
 .trend-table{width:100%;border-collapse:collapse;font-size:15px;margin-top:4px}
 .trend-table th{padding:8px 10px;text-align:left;font-weight:700;color:#64748B;border-bottom:2px solid #E2E8F0;font-size:14px;white-space:nowrap}
 .trend-table td{padding:7px 10px;border-bottom:1px solid #F1F5F9;white-space:nowrap;vertical-align:middle}
