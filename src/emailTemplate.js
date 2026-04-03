@@ -851,7 +851,7 @@ function dotcomSectionHtml(dotcom, meta, lang = 'ko') {
 export { escapeHtml }
 
 export function generateEmailHTML(meta, total, products, citations, dotcom = {}, lang = 'ko', productsCnty = [], citationsCnty = [], options = {}) {
-  const { containerWidth = 960, showTrendTabs = false, weeklyLabels } = options
+  const { containerWidth = 820, showTrendTabs = false, weeklyLabels } = options
   const t = T[lang] || T.ko
   total = total || { score: 0, prev: 0, vsComp: 0, rank: 1, totalBrands: 12 }
   products = products || []
