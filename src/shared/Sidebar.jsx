@@ -295,7 +295,21 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
       _log.push(`[Sync] dotcom: ${parsed.dotcom ? 'OK' : '(없음)'}`)
       _log.push(`[Sync] productsCnty: ${parsed.productsCnty?.length ?? 0}건`)
       if (parsed.meta) {
-        setMetaKo(m => ({ ...m, ...parsed.meta }))
+        // 텍스트 칸: 기존 값이 있으면 덮어쓰지 않음 (빈 값인 경우에만 적용)
+        const textKeys = ['totalInsight','productInsight','productHowToRead','citationInsight','citationHowToRead',
+          'dotcomInsight','dotcomHowToRead','cntyInsight','cntyHowToRead','citDomainInsight','citDomainHowToRead',
+          'citCntyInsight','citCntyHowToRead','noticeText','kpiLogicText','todoText']
+        setMetaKo(m => {
+          const merged = { ...m }
+          for (const [k, v] of Object.entries(parsed.meta)) {
+            if (textKeys.includes(k)) {
+              if (!m[k]) merged[k] = v
+            } else {
+              merged[k] = v
+            }
+          }
+          return merged
+        })
         setMetaEn(m => ({ ...m, period: parsed.meta.period, dateLine: parsed.meta.dateLine, reportNo: parsed.meta.reportNo }))
       }
       if (parsed.citations)    setCitations(parsed.citations)
@@ -337,7 +351,8 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
           if (!weekly.length) console.warn(`[SYNC] product "${p.id}" (bu:${p.bu}) has NO weekly data — weeklyMap has: [${wmKeys}]`)
           else console.log(`[SYNC] product "${p.id}" weekly:`, weekly)
           const ratio = p.vsComp > 0 ? (p.score / p.vsComp) * 100 : 100
-          return { ...p, weekly, monthly: [], compRatio: Math.round(ratio),
+          const monthly = p.prev ? [p.prev, p.score] : []
+          return { ...p, weekly, monthly, compRatio: Math.round(ratio),
             status: ratio >= 100 ? 'lead' : ratio >= 80 ? 'behind' : 'critical' }
         })
         setProducts(newProducts)
@@ -397,7 +412,8 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
           overrides.products = parsed.productsPartial.map(p => {
             const weekly = parsed.weeklyMap?.[p.id] || []
             const ratio = p.vsComp > 0 ? (p.score / p.vsComp) * 100 : 100
-            return { ...p, weekly, monthly: [], compRatio: Math.round(ratio),
+            const monthly = p.prev ? [p.prev, p.score] : []
+            return { ...p, weekly, monthly, compRatio: Math.round(ratio),
               status: ratio >= 100 ? 'lead' : ratio >= 80 ? 'behind' : 'critical' }
           })
         }

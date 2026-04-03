@@ -20,7 +20,7 @@ function escapeHtml(str) {
 const T = {
   ko: {
     lead: '선도', behind: '추격', critical: '취약', normal: '보통',
-    weekTrend: '4주 트렌드',
+    weekTrend: '주간 트렌드',
     monthTrend: '월별 트렌드',
     weeklyTab: '주별',
     monthlyTab: '월별',
@@ -51,7 +51,7 @@ const T = {
   },
   en: {
     lead: 'Lead', behind: 'Behind', critical: 'Critical', normal: 'Normal',
-    weekTrend: '4-Week Trend',
+    weekTrend: 'Weekly Trend',
     monthTrend: 'Monthly Trend',
     weeklyTab: 'Weekly',
     monthlyTab: 'Monthly',
@@ -117,21 +117,26 @@ function deltaHtml(d, size = 15, mom = false) {
   return `<span style="color:${color};font-size:${size}px;font-weight:700;">${prefix}${arrow} ${Math.abs(d).toFixed(1)}%p</span>`
 }
 
-// ─── 4주 트렌드 바 차트 (이메일 호환, 균일 최대 높이) ────────────────────────
-function weeklyTrendHtml(weekly, color, globalMax, globalMin) {
+// ─── 주간 트렌드 바 차트 (이메일 호환, 균일 최대 높이) ────────────────────────
+function weeklyTrendHtml(weekly, color, globalMax, globalMin, weeklyLabels) {
   if (!weekly || weekly.length === 0) return ''
   const range = globalMax - globalMin || 1
   const MAX_H = 24
-  const labels = ['W1', 'W2', 'W3', 'W4']
+  // 실제 주차 라벨 사용 (weeklyLabels에서 데이터 길이만큼 뒤에서 가져옴)
+  const fallback = weekly.map((_, i) => `W${i + 1}`)
+  const labels = weeklyLabels && weeklyLabels.length >= weekly.length
+    ? weeklyLabels.slice(weeklyLabels.length - weekly.length)
+    : fallback
 
   const bars = weekly.map((v, i) => {
     const h = Math.round(((v - globalMin) / range) * MAX_H) + 4
     const spacer = MAX_H - h
-    return `<td style="vertical-align:bottom;text-align:center;padding:0 1px;">
+    return `<td style="vertical-align:bottom;text-align:center;padding:0 2px;">
       <table border="0" cellpadding="0" cellspacing="0" align="center" style="margin:0 auto;">
+        <tr><td style="font-size:8px;font-weight:700;color:${color};font-family:${EM_FONT};padding-bottom:1px;">${v.toFixed(1)}</td></tr>
         ${spacer > 0 ? `<tr><td height="${spacer}" style="font-size:0;line-height:0;">&nbsp;</td></tr>` : ''}
         <tr><td width="10" height="${h}" style="background:${color};font-size:0;line-height:0;">&nbsp;</td></tr>
-        <tr><td style="font-size:9px;color:#94A3B8;font-family:${EM_FONT};padding-top:2px;">${labels[i] || ''}</td></tr>
+        <tr><td style="font-size:8px;color:#94A3B8;font-family:${EM_FONT};padding-top:2px;">${labels[i] || ''}</td></tr>
       </table>
     </td>`
   }).join('')
@@ -177,14 +182,16 @@ function productCardHtml(p, globalMax, globalMin, lang = 'ko', opts = {}) {
   const t   = T[lang] || T.ko
   const st  = statusInfo(p.status, lang)
   const d   = delta(p.score, p.prev)
-  const { showTrendTabs = false, monthlyGlobalMax = 100, monthlyGlobalMin = 0 } = opts
+  const { showTrendTabs = false, monthlyGlobalMax = 100, monthlyGlobalMin = 0, weeklyLabels } = opts
   const trendArr = p.weekly || []
   const monthlyArr = p.monthly || (p.prev ? [p.prev, p.score] : [])
   const sparkColor = p.status === 'critical' ? '#BE123C' : p.status === 'behind' ? '#E8910C' : '#15803D'
+  const weekCount = trendArr.length
+  const trendTitle = weekCount > 0 ? (lang === 'en' ? `${weekCount}W Trend` : `${weekCount}주 트렌드`) : t.weekTrend
 
   // 트렌드 영역: 대시보드 모드일 때 주별/월별 모두 생성
-  const weeklyContent = `<table border="0" cellpadding="0" cellspacing="0" width="100%"><tr><td align="right" style="font-size:10px;color:#94A3B8;padding-bottom:2px;font-family:${EM_FONT};">${t.weekTrend}</td></tr></table>
-                ${weeklyTrendHtml(trendArr, sparkColor, globalMax, globalMin)}`
+  const weeklyContent = `<table border="0" cellpadding="0" cellspacing="0" width="100%"><tr><td align="right" style="font-size:10px;color:#94A3B8;padding-bottom:2px;font-family:${EM_FONT};">${trendTitle}</td></tr></table>
+                ${weeklyTrendHtml(trendArr, sparkColor, globalMax, globalMin, weeklyLabels)}`
   const monthlyContent = `<table border="0" cellpadding="0" cellspacing="0" width="100%"><tr><td align="right" style="font-size:10px;color:#94A3B8;padding-bottom:2px;font-family:${EM_FONT};">${t.monthTrend}</td></tr></table>
                 ${monthlyTrendHtml(monthlyArr, sparkColor, monthlyGlobalMax, monthlyGlobalMin)}`
 
@@ -844,7 +851,7 @@ function dotcomSectionHtml(dotcom, meta, lang = 'ko') {
 export { escapeHtml }
 
 export function generateEmailHTML(meta, total, products, citations, dotcom = {}, lang = 'ko', productsCnty = [], citationsCnty = [], options = {}) {
-  const { containerWidth = 820, showTrendTabs = false } = options
+  const { containerWidth = 820, showTrendTabs = false, weeklyLabels } = options
   const t = T[lang] || T.ko
   total = total || { score: 0, prev: 0, vsComp: 0, rank: 1, totalBrands: 12 }
   products = products || []
@@ -866,7 +873,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
   const monthlyGlobalMax = allMonthly.length ? Math.max(...allMonthly) : 100
   const monthlyGlobalMin = allMonthly.length ? Math.min(...allMonthly) : 0
 
-  const trendOpts = { showTrendTabs, monthlyGlobalMax, monthlyGlobalMin }
+  const trendOpts = { showTrendTabs, monthlyGlobalMax, monthlyGlobalMin, weeklyLabels }
 
   const BU_ORDER = ['MS', 'HS', 'ES']
   const buSections = BU_ORDER.map(buKey => {

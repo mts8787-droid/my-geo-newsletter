@@ -163,6 +163,19 @@ function normCountry(raw) {
   return String(raw || '').replace(/[()]/g, '').replace(/\./g, '').trim().toUpperCase()
 }
 
+// 날짜 문자열에서 월 번호 추출: "3월" → 3, "Feb" → 2, "2026-03" → 3
+function parseMonthFromDate(dateStr) {
+  const s = String(dateStr || '').trim()
+  const krMatch = s.match(/(\d{1,2})월/)
+  if (krMatch) return parseInt(krMatch[1])
+  const enMonths = { jan:1, feb:2, mar:3, apr:4, may:5, jun:6, jul:7, aug:8, sep:9, oct:10, nov:11, dec:12 }
+  const enMatch = s.match(/\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i)
+  if (enMatch) return enMonths[enMatch[1].toLowerCase()]
+  const isoMatch = s.match(/\d{4}[-\/](\d{1,2})/)
+  if (isoMatch) return parseInt(isoMatch[1])
+  return 0
+}
+
 // ─── 개별 시트 파서 ──────────────────────────────────────────────────────────────
 
 function parseMeta(rows) {
@@ -308,8 +321,8 @@ function parseProductCntyFromRow(rows, headerIdx) {
     return c0 && !c0.startsWith('[') && !c0.startsWith('※')
   })
 
-  const productsPartial = []
-  const productsCnty = []
+  const ttlByProduct = {} // { id: [{ ...entry }] }
+  const cntyByKey = {}    // { "product|country": [{ ...entry }] }
 
   data.forEach(r => {
     const div = String(r[0]).trim()
@@ -331,12 +344,30 @@ function parseProductCntyFromRow(rows, headerIdx) {
     if (country === 'TTL') {
       const id = CATEGORY_ID_MAP[category] || category.toLowerCase()
       const kr = CATEGORY_KR_MAP[category] || category
-      productsPartial.push({ id, bu: div, kr, category, date, score: lgScore, prev: 0, vsComp: topComp.score, compName: topComp.name, allScores })
+      if (!ttlByProduct[id]) ttlByProduct[id] = []
+      ttlByProduct[id].push({ id, bu: div, kr, category, date, score: lgScore, vsComp: topComp.score, compName: topComp.name, allScores })
     } else {
-      productsCnty.push({ product: category, country, date, score: lgScore, compName: topComp.name, compScore: topComp.score, gap, allScores })
+      const key = `${category}|${country}`
+      if (!cntyByKey[key]) cntyByKey[key] = []
+      cntyByKey[key].push({ product: category, country, date, score: lgScore, compName: topComp.name, compScore: topComp.score, gap, allScores })
     }
   })
 
+  // 제품별 월 데이터를 날짜순 정렬 → 최신월 = score, 이전월 = prev (MoM 계산용)
+  const productsPartial = []
+  for (const entries of Object.values(ttlByProduct)) {
+    entries.sort((a, b) => parseMonthFromDate(a.date) - parseMonthFromDate(b.date))
+    const latest = entries[entries.length - 1]
+    const prev = entries.length >= 2 ? entries[entries.length - 2].score : 0
+    productsPartial.push({ ...latest, prev })
+  }
+
+  // 국가별 데이터: 같은 제품+국가에 여러 월이 있으면 최신월만 사용
+  const productsCnty = []
+  for (const entries of Object.values(cntyByKey)) {
+    entries.sort((a, b) => parseMonthFromDate(a.date) - parseMonthFromDate(b.date))
+    productsCnty.push(entries[entries.length - 1])
+  }
 
   return {
     ...(productsPartial.length ? { productsPartial } : {}),

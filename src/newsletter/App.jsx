@@ -11,11 +11,11 @@ const MODE = 'newsletter'
 const STORAGE_KEY = 'geo-newsletter-cache'
 
 // ─── 뉴스레터 미리보기 (iframe) ──────────────────────────────────────────────
-function NewsletterPreview({ meta, total, products, citations, dotcom, productsCnty = [], citationsCnty = [], lang = 'ko' }) {
+function NewsletterPreview({ meta, total, products, citations, dotcom, productsCnty = [], citationsCnty = [], lang = 'ko', weeklyLabels }) {
   const iframeRef = useRef(null)
   const html = useMemo(
-    () => generateEmailHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty),
-    [meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty]
+    () => generateEmailHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, { weeklyLabels }),
+    [meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels]
   )
 
   React.useEffect(() => {
@@ -51,9 +51,9 @@ function NewsletterPreview({ meta, total, products, citations, dotcom, productsC
 }
 
 // ─── HTML 코드 뷰어 ───────────────────────────────────────────────────────────
-function HtmlCodeViewer({ meta, total, products, citations, dotcom, productsCnty = [], citationsCnty = [], lang = 'ko' }) {
+function HtmlCodeViewer({ meta, total, products, citations, dotcom, productsCnty = [], citationsCnty = [], lang = 'ko', weeklyLabels }) {
   const [copied, setCopied] = useState(false)
-  const html = useMemo(() => generateEmailHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty), [meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty])
+  const html = useMemo(() => generateEmailHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, { weeklyLabels }), [meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels])
 
   async function handleCopy() {
     try {
@@ -337,11 +337,11 @@ export default function App() {
           <div style={{ flex: 1, overflowY: 'auto', padding: '28px 36px',
             background: 'linear-gradient(180deg, #0A0F1C 0%, #0F172A 100%)' }}>
             <div style={{ maxWidth: 860, margin: '0 auto' }}>
-              <NewsletterPreview meta={meta} total={total} products={resolved.products} citations={resolved.citations} dotcom={dotcom} productsCnty={resolved.productsCnty} citationsCnty={resolved.citationsCnty} lang={previewLang} />
+              <NewsletterPreview meta={meta} total={total} products={resolved.products} citations={resolved.citations} dotcom={dotcom} productsCnty={resolved.productsCnty} citationsCnty={resolved.citationsCnty} lang={previewLang} weeklyLabels={weeklyLabels} />
             </div>
           </div>
         ) : (
-          <HtmlCodeViewer meta={meta} total={total} products={resolved.products} citations={resolved.citations} dotcom={dotcom} productsCnty={resolved.productsCnty} citationsCnty={resolved.citationsCnty} lang={previewLang} />
+          <HtmlCodeViewer meta={meta} total={total} products={resolved.products} citations={resolved.citations} dotcom={dotcom} productsCnty={resolved.productsCnty} citationsCnty={resolved.citationsCnty} lang={previewLang} weeklyLabels={weeklyLabels} />
         )}
         <div style={{ height: 28, borderTop: '1px solid #1E293B', background: 'rgba(15,23,42,0.95)',
           display: 'flex', alignItems: 'center', justifyContent: 'flex-end', padding: '0 16px', flexShrink: 0 }}>
