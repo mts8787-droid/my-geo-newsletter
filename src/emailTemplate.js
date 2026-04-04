@@ -117,10 +117,14 @@ function deltaHtml(d, size = 15, mom = false) {
   return `<span style="color:${color};font-size:${size}px;font-weight:700;">${prefix}${arrow} ${Math.abs(d).toFixed(1)}%p</span>`
 }
 
-// ─── 주간 트렌드 바 차트 (이메일 호환, 균일 최대 높이) ────────────────────────
+// ─── 주간 트렌드 바 차트 (이메일 호환, 제품별 상대 스케일) ────────────────────
 function weeklyTrendHtml(weekly, color, globalMax, globalMin, weeklyLabels) {
   if (!weekly || weekly.length === 0) return ''
-  const range = globalMax - globalMin || 1
+  // 제품 자체 min/max 사용 → 작은 증감도 바 높낮이에 반영
+  const valid = weekly.filter(v => v != null)
+  const localMin = valid.length ? Math.min(...valid) : 0
+  const localMax = valid.length ? Math.max(...valid) : 1
+  const range = localMax - localMin || 1
   const MAX_H = 24
   // 실제 주차 라벨 사용 (weeklyLabels에서 데이터 길이만큼 뒤에서 가져옴)
   const fallback = weekly.map((_, i) => `W${i + 1}`)
@@ -130,7 +134,7 @@ function weeklyTrendHtml(weekly, color, globalMax, globalMin, weeklyLabels) {
 
   const bars = weekly.map((v, i) => {
     if (v == null) return ''
-    const h = Math.round(((v - globalMin) / range) * MAX_H) + 4
+    const h = Math.round(((v - localMin) / range) * MAX_H) + 4
     const spacer = MAX_H - h
     return `<td style="vertical-align:bottom;text-align:center;padding:0 2px;">
       <table border="0" cellpadding="0" cellspacing="0" align="center" style="margin:0 auto;">
