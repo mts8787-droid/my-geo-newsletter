@@ -129,6 +129,7 @@ function weeklyTrendHtml(weekly, color, globalMax, globalMin, weeklyLabels) {
     : fallback
 
   const bars = weekly.map((v, i) => {
+    if (v == null) return ''
     const h = Math.round(((v - globalMin) / range) * MAX_H) + 4
     const spacer = MAX_H - h
     return `<td style="vertical-align:bottom;text-align:center;padding:0 2px;">

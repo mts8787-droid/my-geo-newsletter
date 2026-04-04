@@ -2025,17 +2025,17 @@ function _updateCard(card,score,compPct,weeklyData,wLabels,monthlyLG,mLabels){
 }
 function _getWeeklyForCountries(prodId,countries){
   var prodData=_weeklyAll[prodId]||{};
-  var totalFallback=prodData['Total']||{};
-  if(!countries||!countries.length)return totalFallback;
+  var totalLG=(prodData['Total']||{}).LG||[];
+  if(!countries||!countries.length)return totalLG;
   if(countries.length===1){
     var d=prodData[countries[0]];
-    if(d&&(d.LG||d.Samsung))return d;
-    return totalFallback;
+    var lg=d&&d.LG?d.LG:null;
+    return lg&&lg.length?lg:totalLG;
   }
   // 다중 국가 → LG 브랜드 평균
   var result=[];var maxLen=0;
   countries.forEach(function(c){var d=(prodData[c]||{}).LG||[];if(d.length>maxLen)maxLen=d.length});
-  if(!maxLen)return totalFallback;
+  if(!maxLen)return totalLG;
   for(var i=0;i<maxLen;i++){var sum=0;var cnt=0;
     countries.forEach(function(c){var v=(prodData[c]||{}).LG;if(v&&v[i]!=null){sum+=v[i];cnt++}});
     result.push(cnt>0?sum/cnt:null);
@@ -2094,7 +2094,7 @@ function updateProductScores(selCountry,selBU,selProd){
     }
     var weekly=_getWeeklyForCountries(prod.id,countries);
     var mL=_get4MLabels(prod);
-    _updateCard(card,score,compPct,Array.isArray(weekly)?weekly:(weekly.LG||[]),_wLabels,score,mL);
+    _updateCard(card,score,compPct,weekly,_wLabels,score,mL);
   });
 }
 

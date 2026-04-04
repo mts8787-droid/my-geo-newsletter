@@ -163,17 +163,25 @@ function normCountry(raw) {
   return String(raw || '').replace(/[()]/g, '').replace(/\./g, '').trim().toUpperCase()
 }
 
-// 날짜 문자열에서 월 번호 추출: "3월" → 3, "Feb" → 2, "2026-03" → 3
+// 날짜 문자열에서 정렬 가능한 월 값 추출 (연도 경계 안전: year*12+month)
+// "2026년 3월" → 24315, "Mar 2026" → 24315, "2026-03" → 24315, "3월" → 3
 function parseMonthFromDate(dateStr) {
   const s = String(dateStr || '').trim()
-  const krMatch = s.match(/(\d{1,2})월/)
-  if (krMatch) return parseInt(krMatch[1])
   const enMonths = { jan:1, feb:2, mar:3, apr:4, may:5, jun:6, jul:7, aug:8, sep:9, oct:10, nov:11, dec:12 }
-  const enMatch = s.match(/\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i)
-  if (enMatch) return enMonths[enMatch[1].toLowerCase()]
-  const isoMatch = s.match(/\d{4}[-\/](\d{1,2})/)
-  if (isoMatch) return parseInt(isoMatch[1])
-  return 0
+  let month = 0, year = 0
+  const yearMatch = s.match(/(\d{4})/)
+  if (yearMatch) year = parseInt(yearMatch[1])
+  const krMatch = s.match(/(\d{1,2})월/)
+  if (krMatch) { month = parseInt(krMatch[1]) }
+  else {
+    const enMatch = s.match(/\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i)
+    if (enMatch) month = enMonths[enMatch[1].toLowerCase()]
+    else {
+      const isoMatch = s.match(/\d{4}[-\/](\d{1,2})/)
+      if (isoMatch) month = parseInt(isoMatch[1])
+    }
+  }
+  return year ? year * 12 + month : month
 }
 
 // ─── 개별 시트 파서 ──────────────────────────────────────────────────────────────

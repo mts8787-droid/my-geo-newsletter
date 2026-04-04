@@ -351,9 +351,10 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
           if (!weekly.length) console.warn(`[SYNC] product "${p.id}" (bu:${p.bu}) has NO weekly data — weeklyMap has: [${wmKeys}]`)
           else console.log(`[SYNC] product "${p.id}" weekly:`, weekly)
           const ratio = p.vsComp > 0 ? (p.score / p.vsComp) * 100 : 100
-          // prev: 시트에 이전 월 데이터가 없으면 weekly 첫 주 값으로 폴백
-          const prev = p.prev || (weekly.length >= 2 ? weekly[0] : 0)
-          const monthly = prev ? [prev, p.score] : []
+          // prev: 시트에 이전 월 데이터가 없으면 weekly 첫 non-null 값으로 폴백
+          const firstValid = weekly.find(v => v != null && v > 0)
+          const prev = p.prev || firstValid || 0
+          const monthly = prev > 0 ? [prev, p.score] : []
           return { ...p, prev, weekly, monthly, compRatio: Math.round(ratio),
             status: ratio >= 100 ? 'lead' : ratio >= 80 ? 'behind' : 'critical' }
         })
@@ -414,8 +415,9 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
           overrides.products = parsed.productsPartial.map(p => {
             const weekly = parsed.weeklyMap?.[p.id] || []
             const ratio = p.vsComp > 0 ? (p.score / p.vsComp) * 100 : 100
-            const prev = p.prev || (weekly.length >= 2 ? weekly[0] : 0)
-            const monthly = prev ? [prev, p.score] : []
+            const firstValid = weekly.find(v => v != null && v > 0)
+            const prev = p.prev || firstValid || 0
+            const monthly = prev > 0 ? [prev, p.score] : []
             return { ...p, prev, weekly, monthly, compRatio: Math.round(ratio),
               status: ratio >= 100 ? 'lead' : ratio >= 80 ? 'behind' : 'critical' }
           })
