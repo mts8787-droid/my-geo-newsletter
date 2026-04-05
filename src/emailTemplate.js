@@ -271,11 +271,7 @@ function buSectionHtml(buKey, buProducts, globalMax, globalMin, lang = 'ko', opt
       ${row.map(p => p ? productCardHtml(p, globalMax, globalMin, lang, opts) : '<td width="33%" style="padding:5px;"></td>').join('')}
     </tr>`).join('')
 
-  const buScoreHtml = buTotal
-    ? `<span style="font-size:14px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${buTotal.lg.toFixed(1)}%</span>
-       <span style="font-size:12px;color:#94A3B8;font-family:${EM_FONT};margin-left:4px;">${lang === 'en' ? 'vs' : '경쟁'} ${buTotal.comp.toFixed(1)}%</span>
-       <span style="font-size:12px;color:#94A3B8;font-family:${EM_FONT};margin-left:8px;">${buProducts.length}${t.categories}</span>`
-    : `<span style="font-size:14px;color:#94A3B8;font-family:${EM_FONT};">${buProducts.length}${t.categories}</span>`
+  const buScoreHtml = `<span style="font-size:14px;color:#94A3B8;font-family:${EM_FONT};">${buProducts.length}${t.categories}</span>`
 
   return `
   <!-- ${buKey} BU 헤더 -->
