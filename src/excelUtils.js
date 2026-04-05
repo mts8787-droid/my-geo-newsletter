@@ -255,14 +255,7 @@ function parseVisSummary(rows) {
   })
   if (isKV && Object.keys(kvObj).length >= 2) return { total: kvObj }
 
-  // 2) TOTAL 행 직접 탐색: Countries/Divisions 가 "TOTAL"인 행의 E(4), F(5) 컬럼
-  //    헤더에 LG/Samsung 이름이 없으므로 컬럼 위치(E=LG, F=Samsung)를 직접 사용
-  const ttlRow = rows.find(r =>
-    r.some(c => String(c || '').trim().toUpperCase() === 'TOTAL')
-  )
-  if (!ttlRow) return {}
-
-  // LG=col4(E), Samsung=col5(F) — 헤더에 LG가 있으면 그 위치 사용, 없으면 고정 인덱스
+  // 2) 헤더 탐색
   const headerRow = rows.find(r => r.some(c => String(c || '').trim().toUpperCase() === 'LG'))
   const lgCol = headerRow ? headerRow.findIndex(c => String(c || '').trim().toUpperCase() === 'LG') : 4
   const ssCol = headerRow
@@ -270,15 +263,12 @@ function parseVisSummary(rows) {
     : 5
   const actualSsCol = ssCol >= 0 ? ssCol : lgCol + 1
 
-  const score = pct(ttlRow[lgCol])
-  const vsComp = pct(ttlRow[actualSsCol])
-
-  // 월간 트렌드 데이터 수집 — 헤더: Date, Region, Countries, Divisions, LG, Samsung, ...
   const dateCol = headerRow ? headerRow.findIndex(c => /date/i.test(String(c || '').trim())) : 0
   const cntyCol = headerRow ? headerRow.findIndex(c => /countries|country/i.test(String(c || '').trim())) : 2
   const divCol = headerRow ? headerRow.findIndex(c => /divisions?/i.test(String(c || '').trim())) : 3
 
-  const monthlyVis = [] // { date, country, division, lg, comp }
+  // 전체 데이터 행 수집
+  const monthlyVis = []
   const dataRows = rows.filter(r => {
     const d = String(r[dateCol >= 0 ? dateCol : 0] || '').trim()
     return d && !d.startsWith('[') && !d.startsWith('※') && !/^date$/i.test(d) && !/^key$/i.test(d)
@@ -292,7 +282,45 @@ function parseVisSummary(rows) {
     if (date && lg > 0) monthlyVis.push({ date, country, division, lg, comp })
   })
 
-  const result = { total: { score, prev: score, vsComp, rank: score >= vsComp ? 1 : 2, totalBrands: 12 } }
+  // 전체 TOTAL 행 (country=TOTAL, division=TOTAL) → 날짜별 정렬 → 최신월=score, 이전월=prev
+  const totalRows = monthlyVis.filter(r =>
+    (r.country === 'TOTAL' || r.country === 'TTL') &&
+    (r.division === 'TOTAL' || r.division === 'TTL' || r.division === '')
+  )
+  totalRows.sort((a, b) => parseMonthFromDate(a.date) - parseMonthFromDate(b.date))
+  const latestTotal = totalRows[totalRows.length - 1]
+  const prevTotal = totalRows.length >= 2 ? totalRows[totalRows.length - 2] : null
+
+  // 첫번째 TOTAL 행 폴백 (필터링 결과 없을 때)
+  if (!latestTotal) {
+    const ttlRow = rows.find(r => r.some(c => String(c || '').trim().toUpperCase() === 'TOTAL'))
+    if (!ttlRow) return {}
+    const score = pct(ttlRow[lgCol])
+    const vsComp = pct(ttlRow[actualSsCol])
+    const result = { total: { score, prev: score, vsComp, rank: score >= vsComp ? 1 : 2, totalBrands: 12 } }
+    if (monthlyVis.length) result.monthlyVis = monthlyVis
+    return result
+  }
+
+  const score = latestTotal.lg
+  const vsComp = latestTotal.comp
+  const prev = prevTotal ? prevTotal.lg : score
+
+  // 본부별 총합: 최신월의 country=TOTAL, division=MS/HS/ES 행에서 추출
+  const latestDate = latestTotal.date
+  const buTotals = {}
+  monthlyVis.filter(r =>
+    r.date === latestDate &&
+    (r.country === 'TOTAL' || r.country === 'TTL') &&
+    r.division && r.division !== 'TOTAL' && r.division !== 'TTL' && r.division !== ''
+  ).forEach(r => {
+    buTotals[r.division] = { lg: r.lg, comp: r.comp }
+  })
+
+  const result = {
+    total: { score, prev, vsComp, rank: score >= vsComp ? 1 : 2, totalBrands: 12 },
+    ...(Object.keys(buTotals).length ? { buTotals } : {}),
+  }
   if (monthlyVis.length) result.monthlyVis = monthlyVis
   return result
 }

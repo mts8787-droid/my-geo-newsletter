@@ -258,6 +258,7 @@ function productCardHtml(p, globalMax, globalMin, lang = 'ko', opts = {}) {
 // ─── BU 섹션 ──────────────────────────────────────────────────────────────────
 function buSectionHtml(buKey, buProducts, globalMax, globalMin, lang = 'ko', opts = {}) {
   const t = T[lang] || T.ko
+  const buTotal = (opts.buTotals || {})[buKey]
   const rows = []
   for (let i = 0; i < buProducts.length; i += 3) {
     const rowProducts = buProducts.slice(i, i + 3)
@@ -270,6 +271,12 @@ function buSectionHtml(buKey, buProducts, globalMax, globalMin, lang = 'ko', opt
       ${row.map(p => p ? productCardHtml(p, globalMax, globalMin, lang, opts) : '<td width="33%" style="padding:5px;"></td>').join('')}
     </tr>`).join('')
 
+  const buScoreHtml = buTotal
+    ? `<span style="font-size:14px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${buTotal.lg.toFixed(1)}%</span>
+       <span style="font-size:12px;color:#94A3B8;font-family:${EM_FONT};margin-left:4px;">${lang === 'en' ? 'vs' : '경쟁'} ${buTotal.comp.toFixed(1)}%</span>
+       <span style="font-size:12px;color:#94A3B8;font-family:${EM_FONT};margin-left:8px;">${buProducts.length}${t.categories}</span>`
+    : `<span style="font-size:14px;color:#94A3B8;font-family:${EM_FONT};">${buProducts.length}${t.categories}</span>`
+
   return `
   <!-- ${buKey} BU 헤더 -->
   <tr>
@@ -280,7 +287,7 @@ function buSectionHtml(buKey, buProducts, globalMax, globalMin, lang = 'ko', opt
             <table border="0" cellpadding="0" cellspacing="0" width="100%">
               <tr>
                 <td style="font-size:15px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${escapeHtml(buKey)}</td>
-                <td align="right" style="font-size:14px;color:#94A3B8;font-family:${EM_FONT};">${buProducts.length}${t.categories}</td>
+                <td align="right">${buScoreHtml}</td>
               </tr>
             </table>
           </td>
@@ -878,7 +885,8 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
   const monthlyGlobalMax = allMonthly.length ? Math.max(...allMonthly) : 100
   const monthlyGlobalMin = allMonthly.length ? Math.min(...allMonthly) : 0
 
-  const trendOpts = { showTrendTabs, monthlyGlobalMax, monthlyGlobalMin, weeklyLabels }
+  const buTotals = total.buTotals || {}
+  const trendOpts = { showTrendTabs, monthlyGlobalMax, monthlyGlobalMin, weeklyLabels, buTotals }
 
   const BU_ORDER = ['MS', 'HS', 'ES']
   const buSections = BU_ORDER.map(buKey => {

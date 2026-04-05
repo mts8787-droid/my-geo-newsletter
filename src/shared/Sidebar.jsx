@@ -367,7 +367,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
       }
       // total: visSummary에서 왔으면 사용, 없으면 productsPartial에서 계산
       if (parsed.total) {
-        setTotal(t => ({ ...t, ...parsed.total }))
+        setTotal(t => ({ ...t, ...parsed.total, ...(parsed.buTotals ? { buTotals: parsed.buTotals } : {}) }))
       } else if (parsed.productsPartial && parsed.productsPartial.length > 0) {
         const pp = parsed.productsPartial
         const lgAvg = +(pp.reduce((s, p) => s + p.score, 0) / pp.length).toFixed(1)
@@ -381,7 +381,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
         // parsed 데이터만으로 서버 저장 데이터 구성
         saveSyncData(mode, {
           meta: parsed.meta || null,
-          total: parsed.total || null,
+          total: parsed.total ? { ...parsed.total, ...(parsed.buTotals ? { buTotals: parsed.buTotals } : {}) } : null,
           productsPartial: parsed.productsPartial || null,
           weeklyMap: parsed.weeklyMap || null,
           weeklyLabels: parsed.weeklyLabels || null,
