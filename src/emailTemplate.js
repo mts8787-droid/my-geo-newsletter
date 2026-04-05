@@ -1086,15 +1086,14 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                             const momStr = mom != null ? (mom > 0 ? `▲${mom}` : mom < 0 ? `▼${Math.abs(mom)}` : '─') : '—'
                             const momColor = mom > 0 ? '#22C55E' : mom < 0 ? '#EF4444' : '#94A3B8'
                             const gap = +(bt.lg - bt.comp).toFixed(1)
-                            return `<td width="33%" style="padding:3px;">
-                              <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#1E293B;border-radius:8px;border-left:3px solid ${sc};">
-                                <tr><td style="padding:8px 10px;">
-                                  <span style="font-size:12px;font-weight:700;color:#FFFFFF;font-family:${EM_FONT};">${bu}</span>
-                                  <span style="font-size:18px;font-weight:900;color:#FFFFFF;font-family:${EM_FONT};margin-left:6px;">${bt.lg.toFixed(1)}%</span>
-                                  <span style="font-size:10px;color:${momColor};font-family:${EM_FONT};margin-left:4px;">${momStr}</span>
-                                  <br/>
-                                  <span style="font-size:10px;color:#94A3B8;font-family:${EM_FONT};">vs SS ${bt.comp.toFixed(1)}%</span>
-                                  <span style="font-size:10px;color:${gap >= 0 ? '#22C55E' : '#EF4444'};font-family:${EM_FONT};margin-left:4px;">${gap >= 0 ? '+' : ''}${gap}%p</span>
+                            return `<td width="33%" style="padding:2px 3px;">
+                              <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#1E293B;border-radius:6px;border-left:3px solid ${sc};">
+                                <tr><td style="padding:6px 8px;white-space:nowrap;">
+                                  <span style="font-size:11px;font-weight:700;color:#FFFFFF;font-family:${EM_FONT};">${bu}</span>
+                                  <span style="font-size:15px;font-weight:900;color:#FFFFFF;font-family:${EM_FONT};margin-left:4px;">${bt.lg.toFixed(1)}%</span>
+                                  <span style="font-size:9px;color:${momColor};font-family:${EM_FONT};margin-left:3px;">${momStr}</span>
+                                  <span style="font-size:9px;color:#64748B;font-family:${EM_FONT};margin-left:4px;">SS ${bt.comp.toFixed(1)}%</span>
+                                  <span style="font-size:9px;color:${gap >= 0 ? '#22C55E' : '#EF4444'};font-family:${EM_FONT};margin-left:2px;">${gap >= 0 ? '+' : ''}${gap}</span>
                                 </td></tr>
                               </table>
                             </td>`
