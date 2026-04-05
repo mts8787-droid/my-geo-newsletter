@@ -2,6 +2,7 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import nodemailer from 'nodemailer'
 import translate from 'google-translate-api-x'
+import Anthropic from '@anthropic-ai/sdk'
 import dotenv from 'dotenv'
 import { readFileSync, writeFileSync, mkdirSync, existsSync, unlinkSync } from 'fs'
 import { resolve } from 'path'
@@ -71,6 +72,53 @@ function translateApiPlugin() {
             res.setHeader('Content-Type', 'application/json')
             res.end(JSON.stringify({ ok: true, translated }))
           } catch (err) {
+            res.statusCode = 500
+            res.setHeader('Content-Type', 'application/json')
+            res.end(JSON.stringify({ ok: false, error: err.message }))
+          }
+        })
+      })
+    },
+  }
+}
+
+// ─── Vite 플러그인: /api/generate-insight (Claude API) ───────────────────
+function insightApiPlugin() {
+  return {
+    name: 'insight-api',
+    configureServer(server) {
+      server.middlewares.use('/api/generate-insight', (req, res) => {
+        if (req.method !== 'POST') { res.statusCode = 405; res.end(); return }
+        let body = ''
+        req.on('data', c => (body += c))
+        req.on('end', async () => {
+          try {
+            const { type, data, lang } = JSON.parse(body)
+            if (!type || !data) throw new Error('type, data 필수')
+            const apiKey = process.env.ANTHROPIC_API_KEY
+            if (!apiKey) throw new Error('ANTHROPIC_API_KEY가 설정되지 않았습니다. .env 파일에 추가해주세요.')
+            const client = new Anthropic({ apiKey })
+            const systemPrompt = `당신은 LG전자 D2C 디지털마케팅팀의 GEO(Generative Engine Optimization) 데이터 분석 전문가입니다.
+생성형 AI 엔진(ChatGPT, Gemini, Perplexity 등)에서의 LG 브랜드 가시성(Visibility) 데이터를 분석하여 인사이트를 작성합니다.
+
+작성 원칙:
+- 핵심 수치와 트렌드를 먼저 제시하고, 시사점과 액션 아이템을 도출
+- 경쟁사(Samsung 등) 대비 포지셔닝을 반드시 포함
+- 전문적이지만 간결하게 3~5문장으로 작성
+- ${lang === 'en' ? '영어로 작성' : '한국어로 작성 (비즈니스 보고서 톤)'}`
+            const { buildInsightPrompt } = await import('./src/shared/insightPrompts.js')
+            const userPrompt = buildInsightPrompt(type, data)
+            const message = await client.messages.create({
+              model: 'claude-sonnet-4-20250514',
+              max_tokens: 500,
+              system: systemPrompt,
+              messages: [{ role: 'user', content: userPrompt }],
+            })
+            const insight = message.content[0]?.text || ''
+            res.setHeader('Content-Type', 'application/json')
+            res.end(JSON.stringify({ ok: true, insight }))
+          } catch (err) {
+            console.error('[INSIGHT] Error:', err.message)
             res.statusCode = 500
             res.setHeader('Content-Type', 'application/json')
             res.end(JSON.stringify({ ok: false, error: err.message }))
@@ -289,7 +337,7 @@ export default defineConfig({
   define: {
     __APP_VERSION__: JSON.stringify(appVersion),
   },
-  plugins: [react(), serveFontsPlugin(), emailApiPlugin(), translateApiPlugin(), snapshotsApiPlugin(), gsheetExportPlugin(), publishApiPlugin()],
+  plugins: [react(), serveFontsPlugin(), emailApiPlugin(), translateApiPlugin(), insightApiPlugin(), snapshotsApiPlugin(), gsheetExportPlugin(), publishApiPlugin()],
   server: {
     proxy: {
       ...gsheetsProxy,

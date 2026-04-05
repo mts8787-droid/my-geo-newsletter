@@ -51,6 +51,19 @@ export async function deleteSnapshot(mode, ts) {
   } catch (err) { console.warn('[API] deleteSnapshot failed:', err.message); return null }
 }
 
+export async function generateAIInsight(type, data, lang = 'ko') {
+  try {
+    const r = await fetch('/api/generate-insight', {
+      method: 'POST', headers: JSON_HEADERS,
+      body: JSON.stringify({ type, data, lang }),
+    })
+    if (!r.ok) { const j = await r.json().catch(() => ({})); throw new Error(j.error || `HTTP ${r.status}`) }
+    const j = await r.json()
+    if (!j.ok) throw new Error(j.error || 'AI 생성 실패')
+    return j.insight
+  } catch (err) { console.error('[API] generateAIInsight failed:', err.message); throw err }
+}
+
 export async function fetchSyncData(mode) {
   try {
     const r = await fetch(apiPaths(mode).syncData)

@@ -5,7 +5,7 @@ import { extractSheetId, syncFromGoogleSheets } from '../googleSheetsUtils'
 import { LG_RED, FONT } from './constants.js'
 import { inputStyle } from './components.jsx'
 import { resolveDataForLang, translateTexts } from './utils.js'
-import { saveSyncData, fetchSyncData, publishCombinedDashboard } from './api.js'
+import { saveSyncData, fetchSyncData, publishCombinedDashboard, generateAIInsight } from './api.js'
 import { generateDashboardHTML } from '../dashboard/dashboardTemplate.js'
 import { generateProductInsight, generateProductHowToRead, generateCntyHowToRead } from './insights.js'
 
@@ -819,8 +819,14 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
           <p style={{ margin: 0, fontSize: 11, color: '#64748B', fontFamily: FONT }}>제품 섹션 인사이트</p>
           <div style={{ display: 'flex', gap: 4 }}>
-            <button onClick={() => setMeta(m => ({ ...m, productInsight: generateProductInsight(resolved.products) }))}
-              title="AI 인사이트 자동생성"
+            <button onClick={async () => {
+                try {
+                  setMeta(m => ({ ...m, productInsight: '⏳ AI 생성 중...' }))
+                  const insight = await generateAIInsight('product', { products: resolved.products }, previewLang)
+                  setMeta(m => ({ ...m, productInsight: insight }))
+                } catch { setMeta(m => ({ ...m, productInsight: generateProductInsight(resolved.products) })) }
+              }}
+              title="AI 인사이트 자동생성 (Claude)"
               style={{ padding: '2px 6px', borderRadius: 4, border: 'none', cursor: 'pointer',
                 background: '#4F46E5', color: '#FFFFFF',
                 fontSize: 11, fontWeight: 700, fontFamily: FONT, display: 'flex', alignItems: 'center', gap: 3 }}>

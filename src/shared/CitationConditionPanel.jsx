@@ -3,6 +3,7 @@ import { LG_RED, FONT } from './constants.js'
 import { Sparkles } from 'lucide-react'
 import { inputStyle } from './components.jsx'
 import { generateCitationInsight, generateCitationHowToRead, generateCitDomainInsight, generateCitDomainHowToRead, generateCitCntyInsight, generateCitCntyHowToRead } from './insights.js'
+import { generateAIInsight } from './api.js'
 
 // ── 리전/국가 매핑 ──────────────────────────────────────────────────────────
 export const CITATION_REGIONS = [
@@ -213,7 +214,13 @@ export default function CitationConditionPanel({ meta, setMeta, resolved }) {
         showKey="showCitationInsight"
         show={meta.showCitationInsight}
         onToggle={() => setMeta(m => ({ ...m, showCitationInsight: !m.showCitationInsight }))}
-        onGenerate={() => setMeta(m => ({ ...m, citationInsight: generateCitationInsight(resolved.citations) }))}
+        onGenerate={async () => {
+          try {
+            setMeta(m => ({ ...m, citationInsight: '⏳ AI 생성 중...' }))
+            const insight = await generateAIInsight('citation', { citations: resolved.citations })
+            setMeta(m => ({ ...m, citationInsight: insight }))
+          } catch { setMeta(m => ({ ...m, citationInsight: generateCitationInsight(resolved.citations) })) }
+        }}
         rows={12}
       />
 
@@ -237,7 +244,13 @@ export default function CitationConditionPanel({ meta, setMeta, resolved }) {
         showKey="showCitDomainInsight"
         show={meta.showCitDomainInsight}
         onToggle={() => setMeta(m => ({ ...m, showCitDomainInsight: !m.showCitDomainInsight }))}
-        onGenerate={() => setMeta(m => ({ ...m, citDomainInsight: generateCitDomainInsight(resolved.citationsCnty) }))}
+        onGenerate={async () => {
+          try {
+            setMeta(m => ({ ...m, citDomainInsight: '⏳ AI 생성 중...' }))
+            const insight = await generateAIInsight('citDomain', { citationsCnty: resolved.citationsCnty })
+            setMeta(m => ({ ...m, citDomainInsight: insight }))
+          } catch { setMeta(m => ({ ...m, citDomainInsight: generateCitDomainInsight(resolved.citationsCnty) })) }
+        }}
         rows={8}
       />
 
@@ -261,7 +274,13 @@ export default function CitationConditionPanel({ meta, setMeta, resolved }) {
         showKey="showCitCntyInsight"
         show={meta.showCitCntyInsight}
         onToggle={() => setMeta(m => ({ ...m, showCitCntyInsight: !m.showCitCntyInsight }))}
-        onGenerate={() => setMeta(m => ({ ...m, citCntyInsight: generateCitCntyInsight(resolved.citationsCnty) }))}
+        onGenerate={async () => {
+          try {
+            setMeta(m => ({ ...m, citCntyInsight: '⏳ AI 생성 중...' }))
+            const insight = await generateAIInsight('citCnty', { citationsCnty: resolved.citationsCnty })
+            setMeta(m => ({ ...m, citCntyInsight: insight }))
+          } catch { setMeta(m => ({ ...m, citCntyInsight: generateCitCntyInsight(resolved.citationsCnty) })) }
+        }}
         rows={8}
       />
 

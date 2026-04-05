@@ -2,6 +2,8 @@ import express from 'express'
 import crypto from 'crypto'
 import nodemailer from 'nodemailer'
 import translate from 'google-translate-api-x'
+import Anthropic from '@anthropic-ai/sdk'
+import { buildInsightPrompt } from './src/shared/insightPrompts.js'
 import { fileURLToPath } from 'url'
 import { dirname, join } from 'path'
 import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync, unlinkSync } from 'fs'
@@ -501,6 +503,42 @@ app.post('/api/translate', async (req, res) => {
   } catch (err) {
     console.error('[TRANSLATE] Error:', err.message, err.stack)
     res.status(500).json({ ok: false, error: '번역 실패: ' + err.message })
+  }
+})
+
+// ─── AI Insight Generation (Claude API) ─────────────────────────────────────
+app.post('/api/generate-insight', async (req, res) => {
+  const { type, data, lang } = req.body || {}
+  if (!type || !data) {
+    return res.status(400).json({ ok: false, error: 'type, data 필수' })
+  }
+  const apiKey = process.env.ANTHROPIC_API_KEY
+  if (!apiKey) {
+    return res.status(500).json({ ok: false, error: 'ANTHROPIC_API_KEY가 설정되지 않았습니다' })
+  }
+  try {
+    const client = new Anthropic({ apiKey })
+    const systemPrompt = `당신은 LG전자 D2C 디지털마케팅팀의 GEO(Generative Engine Optimization) 데이터 분석 전문가입니다.
+생성형 AI 엔진(ChatGPT, Gemini, Perplexity 등)에서의 LG 브랜드 가시성(Visibility) 데이터를 분석하여 인사이트를 작성합니다.
+
+작성 원칙:
+- 핵심 수치와 트렌드를 먼저 제시하고, 시사점과 액션 아이템을 도출
+- 경쟁사(Samsung 등) 대비 포지셔닝을 반드시 포함
+- 전문적이지만 간결하게 3~5문장으로 작성
+- ${lang === 'en' ? '영어로 작성' : '한국어로 작성 (비즈니스 보고서 톤)'}`
+
+    const userPrompt = buildInsightPrompt(type, data)
+    const message = await client.messages.create({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 500,
+      system: systemPrompt,
+      messages: [{ role: 'user', content: userPrompt }],
+    })
+    const insight = message.content[0]?.text || ''
+    res.json({ ok: true, insight })
+  } catch (err) {
+    console.error('[INSIGHT] Error:', err.message)
+    res.status(500).json({ ok: false, error: 'AI 인사이트 생성 실패: ' + err.message })
   }
 })
 

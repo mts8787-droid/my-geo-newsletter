@@ -18,6 +18,7 @@
     "start": "node server.js"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.82.0",
     "dotenv": "^17.3.1",
     "express": "^4.22.1",
     "google-translate-api-x": "^10.7.2",
