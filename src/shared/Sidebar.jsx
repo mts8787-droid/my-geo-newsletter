@@ -824,7 +824,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
                   setMeta(m => ({ ...m, productInsight: '⏳ AI 생성 중...' }))
                   const insight = await generateAIInsight('product', { products: resolved.products }, previewLang)
                   setMeta(m => ({ ...m, productInsight: insight }))
-                } catch { setMeta(m => ({ ...m, productInsight: generateProductInsight(resolved.products) })) }
+                } catch (err) { console.error('[AI]', err); setMeta(m => ({ ...m, productInsight: `[AI 실패: ${err.message}]\n\n` + generateProductInsight(resolved.products) })) }
               }}
               title="AI 인사이트 자동생성 (Claude)"
               style={{ padding: '2px 6px', borderRadius: 4, border: 'none', cursor: 'pointer',

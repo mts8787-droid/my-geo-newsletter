@@ -219,7 +219,7 @@ export default function CitationConditionPanel({ meta, setMeta, resolved }) {
             setMeta(m => ({ ...m, citationInsight: '⏳ AI 생성 중...' }))
             const insight = await generateAIInsight('citation', { citations: resolved.citations })
             setMeta(m => ({ ...m, citationInsight: insight }))
-          } catch { setMeta(m => ({ ...m, citationInsight: generateCitationInsight(resolved.citations) })) }
+          } catch (err) { console.error('[AI]', err); setMeta(m => ({ ...m, citationInsight: `[AI 실패: ${err.message}]\n\n` + generateCitationInsight(resolved.citations) })) }
         }}
         rows={12}
       />
@@ -249,7 +249,7 @@ export default function CitationConditionPanel({ meta, setMeta, resolved }) {
             setMeta(m => ({ ...m, citDomainInsight: '⏳ AI 생성 중...' }))
             const insight = await generateAIInsight('citDomain', { citationsCnty: resolved.citationsCnty })
             setMeta(m => ({ ...m, citDomainInsight: insight }))
-          } catch { setMeta(m => ({ ...m, citDomainInsight: generateCitDomainInsight(resolved.citationsCnty) })) }
+          } catch (err) { console.error('[AI]', err); setMeta(m => ({ ...m, citDomainInsight: `[AI 실패: ${err.message}]\n\n` + generateCitDomainInsight(resolved.citationsCnty) })) }
         }}
         rows={8}
       />
@@ -279,7 +279,7 @@ export default function CitationConditionPanel({ meta, setMeta, resolved }) {
             setMeta(m => ({ ...m, citCntyInsight: '⏳ AI 생성 중...' }))
             const insight = await generateAIInsight('citCnty', { citationsCnty: resolved.citationsCnty })
             setMeta(m => ({ ...m, citCntyInsight: insight }))
-          } catch { setMeta(m => ({ ...m, citCntyInsight: generateCitCntyInsight(resolved.citationsCnty) })) }
+          } catch (err) { console.error('[AI]', err); setMeta(m => ({ ...m, citCntyInsight: `[AI 실패: ${err.message}]\n\n` + generateCitCntyInsight(resolved.citationsCnty) })) }
         }}
         rows={8}
       />
