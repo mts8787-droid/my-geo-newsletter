@@ -89,5 +89,40 @@ ${summary}
 [분석 포인트: 국가별 인용 패턴 차이, 주요 시장별 핵심 도메인, 국가별 최적화 전략]`
   }
 
+  if (type === 'totalInsight') {
+    const products = data.products || []
+    const avg = products.length ? (products.reduce((s, p) => s + p.score, 0) / products.length).toFixed(1) : 0
+    const leads = products.filter(p => p.status === 'lead').length
+    const criticals = products.filter(p => p.status === 'critical').length
+    return `아래는 전체 GEO Visibility 현황입니다. Executive Summary 수준의 전략 인사이트를 작성해주세요.
+
+전체 ${products.length}개 카테고리, 평균 가시성: ${avg}%
+선도: ${leads}개, 취약: ${criticals}개
+제품별: ${products.map(p => `${p.kr} ${p.score}%`).join(', ')}
+
+[작성 포인트: 전체 가시성 수준 평가, 핵심 성과/리스크, 경쟁사 대비 전략 방향, 우선 액션 1~2개]`
+  }
+
+  if (type === 'howToRead') {
+    const section = data.section || 'general'
+    return `"${section}" 섹션의 How to Read(읽는 법) 가이드를 작성해주세요.
+
+GEO(Generative Engine Optimization)는 생성형 AI 엔진(ChatGPT, Gemini, Perplexity 등)에서 LG 브랜드가 언급/추천되는 빈도를 측정하는 지표입니다.
+
+[작성 포인트: 해당 섹션의 주요 지표가 무엇인지, 수치를 어떻게 해석하는지, 선도/추격/취약 기준, 실무에서 어떻게 활용하는지를 2~3문장으로 간결하게]`
+  }
+
+  if (type === 'todo') {
+    const products = data.products || []
+    const criticals = products.filter(p => p.status === 'critical')
+    const behinds = products.filter(p => p.status === 'behind')
+    return `아래 GEO Visibility 데이터를 기반으로 Action Plan을 작성해주세요.
+
+취약 카테고리: ${criticals.map(p => `${p.kr} ${p.score}%`).join(', ') || '없음'}
+추격 카테고리: ${behinds.map(p => `${p.kr} ${p.score}%`).join(', ') || '없음'}
+
+[작성 형식: 마크다운 불릿 리스트(- )로 3~5개 구체적 액션 아이템. 각 항목은 담당 영역과 기대 효과 포함]`
+  }
+
   return `아래 데이터를 분석하여 인사이트를 작성해주세요:\n${JSON.stringify(data).slice(0, 2000)}`
 }

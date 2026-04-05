@@ -805,7 +805,21 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
         </p>
 
         {/* GEO 전략 인사이트 */}
-        <p style={{ margin: '0 0 3px', fontSize: 11, color: '#64748B', fontFamily: FONT }}>GEO 전략 인사이트</p>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+          <p style={{ margin: 0, fontSize: 11, color: '#64748B', fontFamily: FONT }}>GEO 전략 인사이트</p>
+          <button onClick={async () => {
+              try {
+                setMeta(m => ({ ...m, totalInsight: '⏳ AI 생성 중...' }))
+                const insight = await generateAIInsight('totalInsight', { products: resolved.products }, previewLang)
+                setMeta(m => ({ ...m, totalInsight: insight }))
+              } catch (err) { console.error('[AI]', err); setMeta(m => ({ ...m, totalInsight: `[AI 실패: ${err.message}]` })) }
+            }}
+            style={{ padding: '2px 6px', borderRadius: 4, border: 'none', cursor: 'pointer',
+              background: '#4F46E5', color: '#FFFFFF',
+              fontSize: 11, fontWeight: 700, fontFamily: FONT, display: 'flex', alignItems: 'center', gap: 3 }}>
+            <Sparkles size={9} /> AI 생성
+          </button>
+        </div>
         <textarea
           value={meta.totalInsight}
           onChange={e => setMeta(m => ({ ...m, totalInsight: e.target.value }))}
@@ -853,8 +867,14 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
           <p style={{ margin: 0, fontSize: 11, color: '#64748B', fontFamily: FONT }}>제품 섹션 How to Read</p>
           <div style={{ display: 'flex', gap: 4 }}>
-            <button onClick={() => setMeta(m => ({ ...m, productHowToRead: generateProductHowToRead() }))}
-              title="AI 인사이트 자동생성"
+            <button onClick={async () => {
+                try {
+                  setMeta(m => ({ ...m, productHowToRead: '⏳ AI 생성 중...' }))
+                  const insight = await generateAIInsight('howToRead', { section: '제품별 GEO Visibility' }, previewLang)
+                  setMeta(m => ({ ...m, productHowToRead: insight }))
+                } catch { setMeta(m => ({ ...m, productHowToRead: generateProductHowToRead() })) }
+              }}
+              title="AI How to Read 자동생성"
               style={{ padding: '2px 6px', borderRadius: 4, border: 'none', cursor: 'pointer',
                 background: '#4F46E5', color: '#FFFFFF',
                 fontSize: 11, fontWeight: 700, fontFamily: FONT, display: 'flex', alignItems: 'center', gap: 3 }}>
@@ -880,13 +900,27 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
         {/* 국가별 섹션 인사이트 */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
           <p style={{ margin: 0, fontSize: 11, color: '#64748B', fontFamily: FONT }}>국가별 섹션 인사이트</p>
-          <button onClick={() => setMeta(m => ({ ...m, showCntyInsight: !m.showCntyInsight }))}
-            style={{ padding: '2px 8px', borderRadius: 4, border: 'none', cursor: 'pointer',
-              background: meta.showCntyInsight ? LG_RED : '#1E293B',
-              color: meta.showCntyInsight ? '#FFFFFF' : '#475569',
-              fontSize: 11, fontWeight: 700, fontFamily: FONT }}>
-            {meta.showCntyInsight ? 'ON' : 'OFF'}
-          </button>
+          <div style={{ display: 'flex', gap: 4 }}>
+            <button onClick={async () => {
+                try {
+                  setMeta(m => ({ ...m, cntyInsight: '⏳ AI 생성 중...' }))
+                  const insight = await generateAIInsight('cnty', { productsCnty: resolved.productsCnty }, previewLang)
+                  setMeta(m => ({ ...m, cntyInsight: insight }))
+                } catch (err) { console.error('[AI]', err); setMeta(m => ({ ...m, cntyInsight: `[AI 실패: ${err.message}]` })) }
+              }}
+              style={{ padding: '2px 6px', borderRadius: 4, border: 'none', cursor: 'pointer',
+                background: '#4F46E5', color: '#FFFFFF',
+                fontSize: 11, fontWeight: 700, fontFamily: FONT, display: 'flex', alignItems: 'center', gap: 3 }}>
+              <Sparkles size={9} /> AI 생성
+            </button>
+            <button onClick={() => setMeta(m => ({ ...m, showCntyInsight: !m.showCntyInsight }))}
+              style={{ padding: '2px 8px', borderRadius: 4, border: 'none', cursor: 'pointer',
+                background: meta.showCntyInsight ? LG_RED : '#1E293B',
+                color: meta.showCntyInsight ? '#FFFFFF' : '#475569',
+                fontSize: 11, fontWeight: 700, fontFamily: FONT }}>
+              {meta.showCntyInsight ? 'ON' : 'OFF'}
+            </button>
+          </div>
         </div>
         <textarea
           value={meta.cntyInsight}
@@ -900,8 +934,14 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
           <p style={{ margin: 0, fontSize: 11, color: '#64748B', fontFamily: FONT }}>국가별 How to Read</p>
           <div style={{ display: 'flex', gap: 4 }}>
-            <button onClick={() => setMeta(m => ({ ...m, cntyHowToRead: generateCntyHowToRead() }))}
-              title="AI 인사이트 자동생성"
+            <button onClick={async () => {
+                try {
+                  setMeta(m => ({ ...m, cntyHowToRead: '⏳ AI 생성 중...' }))
+                  const insight = await generateAIInsight('howToRead', { section: '국가별 GEO Visibility' }, previewLang)
+                  setMeta(m => ({ ...m, cntyHowToRead: insight }))
+                } catch { setMeta(m => ({ ...m, cntyHowToRead: generateCntyHowToRead() })) }
+              }}
+              title="AI How to Read 자동생성"
               style={{ padding: '2px 6px', borderRadius: 4, border: 'none', cursor: 'pointer',
                 background: '#4F46E5', color: '#FFFFFF',
                 fontSize: 11, fontWeight: 700, fontFamily: FONT, display: 'flex', alignItems: 'center', gap: 3 }}>
@@ -954,13 +994,27 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
         {/* Action Plan 섹션 */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
           <p style={{ margin: 0, fontSize: 11, color: '#64748B', fontFamily: FONT }}>Action Plan 섹션</p>
-          <button onClick={() => setMeta(m => ({ ...m, showTodo: !m.showTodo }))}
-            style={{ padding: '2px 8px', borderRadius: 4, border: 'none', cursor: 'pointer',
-              background: meta.showTodo ? LG_RED : '#1E293B',
-              color: meta.showTodo ? '#FFFFFF' : '#475569',
-              fontSize: 11, fontWeight: 700, fontFamily: FONT }}>
-            {meta.showTodo ? 'ON' : 'OFF'}
-          </button>
+          <div style={{ display: 'flex', gap: 4 }}>
+            <button onClick={async () => {
+                try {
+                  setMeta(m => ({ ...m, todoText: '⏳ AI 생성 중...' }))
+                  const insight = await generateAIInsight('todo', { products: resolved.products }, previewLang)
+                  setMeta(m => ({ ...m, todoText: insight }))
+                } catch (err) { console.error('[AI]', err); setMeta(m => ({ ...m, todoText: `[AI 실패: ${err.message}]` })) }
+              }}
+              style={{ padding: '2px 6px', borderRadius: 4, border: 'none', cursor: 'pointer',
+                background: '#4F46E5', color: '#FFFFFF',
+                fontSize: 11, fontWeight: 700, fontFamily: FONT, display: 'flex', alignItems: 'center', gap: 3 }}>
+              <Sparkles size={9} /> AI 생성
+            </button>
+            <button onClick={() => setMeta(m => ({ ...m, showTodo: !m.showTodo }))}
+              style={{ padding: '2px 8px', borderRadius: 4, border: 'none', cursor: 'pointer',
+                background: meta.showTodo ? LG_RED : '#1E293B',
+                color: meta.showTodo ? '#FFFFFF' : '#475569',
+                fontSize: 11, fontWeight: 700, fontFamily: FONT }}>
+              {meta.showTodo ? 'ON' : 'OFF'}
+            </button>
+          </div>
         </div>
         <textarea
           value={meta.todoText}

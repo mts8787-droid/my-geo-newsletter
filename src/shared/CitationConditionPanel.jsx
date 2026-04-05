@@ -232,7 +232,13 @@ export default function CitationConditionPanel({ meta, setMeta, resolved }) {
         showKey="showCitationHowToRead"
         show={meta.showCitationHowToRead}
         onToggle={() => setMeta(m => ({ ...m, showCitationHowToRead: !m.showCitationHowToRead }))}
-        onGenerate={() => setMeta(m => ({ ...m, citationHowToRead: generateCitationHowToRead() }))}
+        onGenerate={async () => {
+          try {
+            setMeta(m => ({ ...m, citationHowToRead: '⏳ AI 생성 중...' }))
+            const insight = await generateAIInsight('howToRead', { section: 'Citation 도메인별 현황' })
+            setMeta(m => ({ ...m, citationHowToRead: insight }))
+          } catch { setMeta(m => ({ ...m, citationHowToRead: generateCitationHowToRead() })) }
+        }}
         rows={4}
       />
 
@@ -262,7 +268,13 @@ export default function CitationConditionPanel({ meta, setMeta, resolved }) {
         showKey="showCitDomainHowToRead"
         show={meta.showCitDomainHowToRead}
         onToggle={() => setMeta(m => ({ ...m, showCitDomainHowToRead: !m.showCitDomainHowToRead }))}
-        onGenerate={() => setMeta(m => ({ ...m, citDomainHowToRead: generateCitDomainHowToRead() }))}
+        onGenerate={async () => {
+          try {
+            setMeta(m => ({ ...m, citDomainHowToRead: '⏳ AI 생성 중...' }))
+            const insight = await generateAIInsight('howToRead', { section: '도메인별 Citation 현황' })
+            setMeta(m => ({ ...m, citDomainHowToRead: insight }))
+          } catch { setMeta(m => ({ ...m, citDomainHowToRead: generateCitDomainHowToRead() })) }
+        }}
         rows={4}
       />
 
@@ -292,7 +304,13 @@ export default function CitationConditionPanel({ meta, setMeta, resolved }) {
         showKey="showCitCntyHowToRead"
         show={meta.showCitCntyHowToRead}
         onToggle={() => setMeta(m => ({ ...m, showCitCntyHowToRead: !m.showCitCntyHowToRead }))}
-        onGenerate={() => setMeta(m => ({ ...m, citCntyHowToRead: generateCitCntyHowToRead() }))}
+        onGenerate={async () => {
+          try {
+            setMeta(m => ({ ...m, citCntyHowToRead: '⏳ AI 생성 중...' }))
+            const insight = await generateAIInsight('howToRead', { section: '국가별 Citation 도메인' })
+            setMeta(m => ({ ...m, citCntyHowToRead: insight }))
+          } catch { setMeta(m => ({ ...m, citCntyHowToRead: generateCitCntyHowToRead() })) }
+        }}
         rows={4}
       />
     </div>
