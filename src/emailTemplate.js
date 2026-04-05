@@ -874,6 +874,9 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
   // 삼성전자 전체 GEO 점수 (total 시트의 vsComp)
   const compAvg = total.vsComp || 0
   const lgVsComp = +(total.score - compAvg).toFixed(1)
+  // 전체 신호등: LG/경쟁사 비율 기준
+  const totalRatio = compAvg > 0 ? Math.round((total.score / compAvg) * 100) : 100
+  const totalSignal = totalRatio >= 100 ? '#22C55E' : totalRatio >= 80 ? '#F59E0B' : '#EF4444'
 
   // 주간 트렌드 전역 min/max 계산 (모든 제품 동일 스케일)
   const allWeekly = products.flatMap(p => p.weekly || [])
@@ -998,7 +1001,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                 <td style="padding-bottom:28px;">
                   <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#0F172A;border-radius:14px;">
                     <tr>
-                      <td style="padding:24px 24px 22px;">
+                      <td style="padding:24px 24px 22px;border-top:4px solid ${totalSignal};border-radius:14px;">
                         <table border="0" cellpadding="0" cellspacing="0" width="100%">
                           <tr>
                             <td style="font-size:22px;font-weight:700;color:#FFFFFF;text-transform:uppercase;font-family:${EM_FONT};">LG GEO Visibility %</td>
@@ -1074,6 +1077,39 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                             </td>
                           </tr>
                         </table>
+                        ${(() => {
+                          // ── 본부별 미니 카드 (3열) ──
+                          const buKeys = ['MS', 'HS', 'ES']
+                          const buCards = buKeys.map(bu => {
+                            const bt = buTotals[bu]
+                            if (!bt) return `<td width="33%" style="padding:3px;"></td>`
+                            const ratio = bt.comp > 0 ? Math.round((bt.lg / bt.comp) * 100) : 100
+                            const sc = ratio >= 100 ? '#22C55E' : ratio >= 80 ? '#F59E0B' : '#EF4444'
+                            const prevBt = (total.buPrev || {})[bu]
+                            const mom = prevBt ? +(bt.lg - prevBt.lg).toFixed(1) : null
+                            const momStr = mom != null ? (mom > 0 ? `▲${mom}` : mom < 0 ? `▼${Math.abs(mom)}` : '─') : '—'
+                            const momColor = mom > 0 ? '#22C55E' : mom < 0 ? '#EF4444' : '#94A3B8'
+                            const gap = +(bt.lg - bt.comp).toFixed(1)
+                            return `<td width="33%" style="padding:3px;">
+                              <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#1E293B;border-radius:8px;border-left:3px solid ${sc};">
+                                <tr><td style="padding:8px 10px;">
+                                  <span style="font-size:12px;font-weight:700;color:#FFFFFF;font-family:${EM_FONT};">${bu}</span>
+                                  <span style="font-size:18px;font-weight:900;color:#FFFFFF;font-family:${EM_FONT};margin-left:6px;">${bt.lg.toFixed(1)}%</span>
+                                  <span style="font-size:10px;color:${momColor};font-family:${EM_FONT};margin-left:4px;">${momStr}</span>
+                                  <br/>
+                                  <span style="font-size:10px;color:#94A3B8;font-family:${EM_FONT};">vs SS ${bt.comp.toFixed(1)}%</span>
+                                  <span style="font-size:10px;color:${gap >= 0 ? '#22C55E' : '#EF4444'};font-family:${EM_FONT};margin-left:4px;">${gap >= 0 ? '+' : ''}${gap}%p</span>
+                                </td></tr>
+                              </table>
+                            </td>`
+                          }).join('')
+                          const hasBu = buKeys.some(bu => buTotals[bu])
+                          return hasBu ? `
+                          <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                            <tr><td height="12" style="font-size:0;line-height:0;">&nbsp;</td></tr>
+                            <tr>${buCards}</tr>
+                          </table>` : ''
+                        })()}
                         ${meta.totalInsight ? `
                         <table border="0" cellpadding="0" cellspacing="0" width="100%">
                         <tr><td height="16" style="font-size:0;line-height:0;">&nbsp;</td></tr>
