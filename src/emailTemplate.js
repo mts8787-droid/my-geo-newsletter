@@ -377,9 +377,9 @@ function countryProductSectionHtml(productName, rows, lang) {
     const barColor = status === 'lead' ? '#15803D' : status === 'behind' ? '#E8910C' : '#BE123C'
     const barH     = Math.max(Math.round((r.score / maxScore) * BAR_MAX), 3)
     const spacerH  = BAR_MAX - barH
-    const gap      = +(r.score - r.compScore).toFixed(1)
-    const gapColor = gap >= 0 ? '#15803D' : '#BE123C'
-    const gapStr   = (gap >= 0 ? '+' : '') + gap + '%p'
+    const ratio    = r.compScore > 0 ? Math.round((r.score / r.compScore) * 100) : 100
+    const gapColor = ratio >= 100 ? '#15803D' : ratio >= 80 ? '#E8910C' : '#BE123C'
+    const gapStr   = ratio + '%'
 
     return `<td width="${colWidth}%" style="vertical-align:bottom;text-align:center;padding:0 1px;overflow:hidden;">
       <table border="0" cellpadding="0" cellspacing="0" align="center" style="margin:0 auto;table-layout:fixed;width:100%;">
