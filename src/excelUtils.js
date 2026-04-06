@@ -360,10 +360,14 @@ function parseProductCntyFromRow(rows, headerIdx) {
   const ttlByProduct = {} // { id: [{ ...entry }] }
   const cntyByKey = {}    // { "product|country": [{ ...entry }] }
 
+  // 디버그: 첫 5행 출력
+  data.slice(0, 5).forEach((r, i) => console.log(`[parseProductCnty] row${i}: div="${r[0]}" date="${r[1]}" country="${r[2]}" cat="${r[3]}" LG=${r[lgIdx]}`))
+
   data.forEach(r => {
     const div = String(r[0]).trim()
     const date = String(r[1] || '').trim()
-    const country = normCountry(r[2]) || String(r[2]).trim()
+    const rawCountry = String(r[2] || '').trim()
+    const country = normCountry(r[2]) || rawCountry
     const category = String(r[3]).trim()
     const lgScore = pct(r[lgIdx])
 
@@ -377,7 +381,7 @@ function parseProductCntyFromRow(rows, headerIdx) {
     const allScores = { LG: lgScore }
     compScores.forEach(c => { allScores[c.name] = c.score })
 
-    if (country === 'TTL') {
+    if (country === 'TTL' || country === 'TOTAL') {
       const id = CATEGORY_ID_MAP[category] || category.toLowerCase()
       const kr = CATEGORY_KR_MAP[category] || category
       if (!ttlByProduct[id]) ttlByProduct[id] = []
@@ -390,11 +394,13 @@ function parseProductCntyFromRow(rows, headerIdx) {
   })
 
   // 제품별 월 데이터를 날짜순 정렬 → 최신월 = score, 이전월 = prev (MoM 계산용)
+  console.log(`[parseProductCnty] TTL 제품: ${Object.keys(ttlByProduct).join(', ') || '없음'} / 국가별: ${Object.keys(cntyByKey).length}건`)
   const productsPartial = []
-  for (const entries of Object.values(ttlByProduct)) {
+  for (const [id, entries] of Object.entries(ttlByProduct)) {
     entries.sort((a, b) => parseMonthFromDate(a.date) - parseMonthFromDate(b.date))
     const latest = entries[entries.length - 1]
     const prev = entries.length >= 2 ? entries[entries.length - 2].score : 0
+    console.log(`[parseProductCnty] ${id}: dates=[${entries.map(e => e.date).join(',')}] score=${latest.score} prev=${prev} vsComp=${latest.vsComp}`)
     productsPartial.push({ ...latest, prev })
   }
 
@@ -905,7 +911,7 @@ function parseCitTouchPoints(rows) {
       }
     }
 
-    if (country === 'TTL') {
+    if (country === 'TTL' || country === 'TOTAL') {
       if (score > 0) citations.push({ source: channel, category: '', score, delta: 0, ratio: 0 })
       // 모든 월별 데이터 수집 (트렌드용)
       const monthData = {}
