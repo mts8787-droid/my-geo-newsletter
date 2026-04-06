@@ -550,25 +550,42 @@ app.post('/api/generate-insight', async (req, res) => {
     const client = new Anthropic({ apiKey })
     const aiSettings = readAiSettings()
     const finalRules = rules || aiSettings.promptRules
-    // 아카이브에서 최근 학습 데이터 추출 (최대 2건)
+    // 아카이브에서 학습 템플릿 추출 (최대 12건, 가장 최근 것을 주 템플릿으로)
     const archives = readArchives().slice(0, 12)
-    const exampleBlock = archives.length ? '\n\n과거 리포트 인사이트 (문체와 구조를 참고):\n' +
-      archives.map(a => {
-        const ins = a.insights || {}
-        const relevant = ins[type] || ins.totalInsight || ''
-        return relevant ? `[${a.period}] ${relevant.slice(0, 300)}` : ''
-      }).filter(Boolean).join('\n') : ''
-    const systemPrompt = `당신은 LG전자 D2C 디지털마케팅팀의 GEO(Generative Engine Optimization) 데이터 분석 전문가입니다.
-생성형 AI 엔진(ChatGPT, Gemini, Perplexity 등)에서의 LG 브랜드 가시성(Visibility) 데이터를 분석하여 인사이트를 작성합니다.
+    const latestArchive = archives[0]
+    const latestTemplate = latestArchive?.insights?.[type] || ''
+    // 과거 아카이브들에서 해당 타입의 텍스트 수집
+    const pastExamples = archives.slice(0, 3).map(a => {
+      const text = a.insights?.[type] || ''
+      return text ? `\n--- [${a.period}] ---\n${text}` : ''
+    }).filter(Boolean).join('\n')
+
+    const templateInstruction = latestTemplate
+      ? `\n\n★ 핵심 지시: 아래 "기준 템플릿"의 문장 구조, 포맷, 어투, 볼드 처리, 줄바꿈 패턴을 90% 이상 그대로 유지하세요.
+수치(%, 건수, 비율)와 제품명/국가명만 새 데이터로 교체하세요.
+템플릿에 없는 새로운 문장을 추가하지 마세요. 구조를 변경하지 마세요.
+
+[기준 템플릿 — 이 포맷을 따라 수치만 교체]
+${latestTemplate}
+
+[참고: 과거 리포트들]${pastExamples}`
+      : pastExamples ? `\n\n과거 리포트의 문체와 구조를 90% 이상 유지하고, 수치만 새 데이터로 교체하세요:\n${pastExamples}` : ''
+
+    const systemPrompt = `당신은 LG전자 D2C 디지털마케팅팀의 GEO 리포트 작성자입니다.
+기존 리포트의 포맷과 문체를 충실히 따르면서, 새 데이터의 수치로만 업데이트합니다.
 
 작성 규칙:
 ${finalRules}
-- ${lang === 'en' ? '영어로 작성' : '한국어로 작성 (비즈니스 보고서 톤)'}${exampleBlock}`
+- 기준 템플릿이 있으면 문장 구조·볼드·줄바꿈을 그대로 유지하고 수치만 교체
+- 템플릿의 **볼드 처리 패턴**을 동일하게 적용
+- 새로운 문장이나 해석을 추가하지 말 것
+- 제공된 데이터에 있는 수치만 사용 (추가 계산 금지)
+- ${lang === 'en' ? '영어로 작성' : '한국어로 작성'}${templateInstruction}`
 
     const userPrompt = buildInsightPrompt(type, data)
     const message = await client.messages.create({
       model: aiSettings.model || 'claude-sonnet-4-20250514',
-      max_tokens: aiSettings.maxTokens || 500,
+      max_tokens: aiSettings.maxTokens || 2000,
       system: systemPrompt,
       messages: [{ role: 'user', content: userPrompt }],
     })
