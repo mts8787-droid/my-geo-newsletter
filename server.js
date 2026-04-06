@@ -1124,9 +1124,14 @@ var list=[];var FIELDS=[
   ['todoText','Action Plan'],['noticeText','Notice'],['kpiLogicText','KPI Logic']
 ];
 async function load(){
-  var r=await fetch('/api/archives');
-  if(r.status===401){location.href='/admin/login';return}
-  var j=await r.json();list=j.archives||[];render()
+  try{
+    var r=await fetch('/api/archives');
+    if(r.status===401){location.href='/admin/login';return}
+    var j=await r.json();
+    list=j.archives||[];
+    document.getElementById('list').setAttribute('data-count',list.length);
+    render()
+  }catch(e){document.getElementById('list').innerHTML='<p class="empty">로드 실패: '+e.message+'</p>'}
 }
 function esc(s){var d=document.createElement('div');d.textContent=s;return d.innerHTML}
 function render(){
@@ -1134,11 +1139,13 @@ function render(){
   if(!list.length){el.innerHTML='<p class="empty">아카이빙된 리포트가 없습니다.<br>뉴스레터 편집기에서 완성본을 아카이빙해주세요.</p>';return}
   el.innerHTML=list.map(function(a,i){
     var d=new Date(a.createdAt).toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric'});
+    var cnt=FIELDS.filter(function(f){return(a.insights||{})[f[0]]}).length;
     var fields=FIELDS.map(function(f){
       var v=(a.insights||{})[f[0]];
       return v?'<div class="field"><div class="field-label">'+f[1]+'</div><div class="field-text">'+esc(v)+'</div></div>':''
     }).join('');
-    return '<div class="archive"><div class="archive-head" onclick="toggle('+i+')"><div><span class="archive-title">'+esc(a.period)+'</span></div><div><span class="archive-date">'+d+'</span>&nbsp;&nbsp;<button class="del-btn" onclick="event.stopPropagation();del(\''+a.id+'\')">삭제</button></div></div><div class="archive-body" id="ab'+i+'">'+fields+'</div></div>'
+    var openClass=i===0?' open':'';
+    return '<div class="archive"><div class="archive-head" onclick="toggle('+i+')"><div><span class="archive-title">'+esc(a.period)+'</span><span style="font-size:12px;color:#64748B;margin-left:8px;">'+cnt+'개 필드</span></div><div><span class="archive-date">'+d+'</span>&nbsp;&nbsp;<button class="del-btn" onclick="event.stopPropagation();del(\''+a.id+'\')">삭제</button></div></div><div class="archive-body'+openClass+'" id="ab'+i+'">'+fields+'</div></div>'
   }).join('')
 }
 function toggle(i){document.getElementById('ab'+i).classList.toggle('open')}
