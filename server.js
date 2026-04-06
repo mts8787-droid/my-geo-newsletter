@@ -551,14 +551,36 @@ app.post('/api/generate-insight', async (req, res) => {
     const aiSettings = readAiSettings()
     const finalRules = rules || aiSettings.promptRules
     // 아카이브에서 학습 템플릿 추출 (최대 12건, 가장 최근 것을 주 템플릿으로)
+    // type → 아카이브 키 매핑
+    const ARCHIVE_KEY_MAP = {
+      totalInsight: 'totalInsight',
+      product: 'productInsight', productHowToRead: 'productHowToRead',
+      citation: 'citationInsight', citationHowToRead: 'citationHowToRead',
+      dotcom: 'dotcomInsight', dotcomHowToRead: 'dotcomHowToRead',
+      cnty: 'cntyInsight', cntyHowToRead: 'cntyHowToRead',
+      citDomain: 'citDomainInsight', citDomainHowToRead: 'citDomainHowToRead',
+      citCnty: 'citCntyInsight', citCntyHowToRead: 'citCntyHowToRead',
+      todo: 'todoText', notice: 'noticeText', kpiLogic: 'kpiLogicText',
+    }
+    // howToRead 타입은 섹션명으로 키 결정
+    let archiveKey = ARCHIVE_KEY_MAP[type] || type
+    if (type === 'howToRead' && data.section) {
+      if (data.section.includes('제품')) archiveKey = 'productHowToRead'
+      else if (data.section.includes('국가별 GEO')) archiveKey = 'cntyHowToRead'
+      else if (data.section.includes('도메인별')) archiveKey = 'citDomainHowToRead'
+      else if (data.section.includes('국가별 Citation')) archiveKey = 'citCntyHowToRead'
+      else if (data.section.includes('Citation')) archiveKey = 'citationHowToRead'
+      else if (data.section.includes('닷컴')) archiveKey = 'dotcomHowToRead'
+    }
     const archives = readArchives().slice(0, 12)
     const latestArchive = archives[0]
-    const latestTemplate = latestArchive?.insights?.[type] || ''
+    const latestTemplate = latestArchive?.insights?.[archiveKey] || ''
     // 과거 아카이브들에서 해당 타입의 텍스트 수집
     const pastExamples = archives.slice(0, 3).map(a => {
-      const text = a.insights?.[type] || ''
+      const text = a.insights?.[archiveKey] || ''
       return text ? `\n--- [${a.period}] ---\n${text}` : ''
     }).filter(Boolean).join('\n')
+    console.log(`[INSIGHT] type=${type}, archiveKey=${archiveKey}, hasTemplate=${!!latestTemplate}, pastExamples=${pastExamples.length > 0}`)
 
     const templateInstruction = latestTemplate
       ? `\n\n★ 핵심 지시: 아래 "기준 템플릿"의 문장 구조, 포맷, 어투, 볼드 처리, 줄바꿈 패턴을 90% 이상 그대로 유지하세요.

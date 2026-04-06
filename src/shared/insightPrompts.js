@@ -27,15 +27,15 @@ ${summary}
     const citations = data.citations || []
     const total = citations.reduce((s, c) => s + c.score, 0)
     const list = citations.slice(0, 10).map((c, i) =>
-      `${i + 1}. ${c.source} — ${c.score}건 (${total > 0 ? ((c.score / total) * 100).toFixed(1) : 0}%)`
+      `${i + 1}. ${c.source} (${c.category || ''}) — ${c.score}건 (${total > 0 ? ((c.score / total) * 100).toFixed(1) : 0}%)`
     ).join('\n')
-    return `아래는 생성형 AI가 LG 관련 답변 시 인용하는 외부 도메인별 Citation 현황입니다.
+    return `[섹션: 도메인 카테고리별 Citation 현황]
+이 섹션에는 Retail, Review, SNS, Community 등 도메인 카테고리별 Citation 건수와 비중을 보여주는 수평 바 차트가 있습니다.
+인사이트는 이 차트 아래에 삽입됩니다. 기준 템플릿의 포맷을 따라 수치만 교체하세요.
 
-전체 Citation: ${total}건
-도메인별 순위:
-${list}
-
-[분석 포인트: 상위 도메인 집중도, 도메인 유형별 패턴(리뷰/미디어/리테일러), 인용 다변화 전략]`
+[공식수치] 전체 Citation: ${total}건
+카테고리별:
+${list}`
   }
 
   if (type === 'dotcom') {
@@ -44,35 +44,38 @@ ${list}
     const comparison = cols.map(k =>
       `${k}: LG ${lg[k] || 0}건 vs SS ${sam[k] || 0}건 (${(lg[k] || 0) > (sam[k] || 0) ? 'LG우위' : (sam[k] || 0) > (lg[k] || 0) ? 'SS우위' : '동일'})`
     ).join('\n')
-    return `아래는 LG vs Samsung 공식 사이트의 생성형 AI Citation 비교입니다.
+    return `[섹션: 닷컴 Citation (경쟁사대비)]
+이 섹션에는 LG vs Samsung 공식 사이트의 페이지 유형별(TTL, PLP, PDP, Newsroom, Support 등) Citation 건수를 비교하는 테이블이 있습니다.
+인사이트는 이 테이블 아래에 삽입됩니다. 기준 템플릿의 포맷을 따라 수치만 교체하세요.
 
-전체: LG ${lg.TTL || 0}건 vs SS ${sam.TTL || 0}건
+[공식수치] 전체: LG ${lg.TTL || 0}건 vs SS ${sam.TTL || 0}건
 페이지 유형별:
-${comparison}
-
-[분석 포인트: 전체 우위/열위, 페이지 유형별 강약점, 개선 우선순위]`
+${comparison}`
   }
 
   if (type === 'cnty') {
-    const list = (data.productsCnty || []).slice(0, 20).map(r =>
-      `${r.country} — ${r.product}: LG ${r.score}% vs 경쟁 ${r.compScore || '—'}% (Gap: ${r.gap || '—'}%p)`
+    const list = (data.productsCnty || []).slice(0, 30).map(r =>
+      `${r.country} — ${r.product}: LG ${r.score}% vs 경쟁 ${r.compScore || '—'}% (경쟁비: ${r.compScore > 0 ? Math.round((r.score / r.compScore) * 100) : '—'}%)`
     ).join('\n')
-    return `아래는 국가별 제품 GEO Visibility 현황입니다.
+    return `[섹션: 국가별 GEO Visibility 현황]
+이 섹션에는 제품별로 10개 국가(US,CA,UK,DE,ES,BR,MX,IN,AU,VN)의 LG vs 경쟁사 Visibility를 보여주는 막대 차트가 있습니다.
+경쟁비(%)는 LG/경쟁사*100으로 100% 이상이면 선도, 80% 미만이면 취약입니다.
+인사이트는 이 차트 위에 삽입됩니다. 기준 템플릿의 포맷을 따라 수치만 교체하세요.
 
-${list}
-
-[분석 포인트: 국가별 강약점, 특정 시장의 경쟁사 격차, 지역별 전략 시사점]`
+국가별 데이터:
+${list}`
   }
 
   if (type === 'citDomain') {
     const list = (data.citationsCnty || []).filter(r => r.cnty === 'TTL').slice(0, 10).map((r, i) =>
-      `${i + 1}. ${r.domain} — ${r.citations}건`
+      `${i + 1}. ${r.domain} (${r.type || ''}) — ${r.citations}건`
     ).join('\n')
-    return `아래는 도메인별 Citation 현황입니다.
+    return `[섹션: 도메인별 Citation 현황]
+이 섹션에는 개별 도메인(Reddit, Youtube, lg.com, Amazon 등)별 Citation 건수를 보여주는 막대 차트가 있습니다.
+인사이트는 이 차트 아래에 삽입됩니다. 기준 템플릿의 포맷을 따라 수치만 교체하세요.
 
-${list}
-
-[분석 포인트: 상위 도메인 특성, 도메인 유형 분포, 인용 최적화 전략]`
+도메인별 Top 10:
+${list}`
   }
 
   if (type === 'citCnty') {
@@ -83,11 +86,15 @@ ${list}
     })
     const summary = Object.entries(cntyMap).map(([cnty, rows]) => {
       const total = rows.reduce((s, r) => s + r.citations, 0)
-      const top = rows.sort((a, b) => b.citations - a.citations)[0]
-      return `${cnty}: 전체 ${total}건, 1위 도메인 ${top?.domain} (${top?.citations}건)`
+      const top3 = rows.sort((a, b) => b.citations - a.citations).slice(0, 3)
+      return `${cnty}: 전체 ${total}건 — 1위 ${top3[0]?.domain}(${top3[0]?.citations}건), 2위 ${top3[1]?.domain || ''}(${top3[1]?.citations || ''}건), 3위 ${top3[2]?.domain || ''}(${top3[2]?.citations || ''}건)`
     }).join('\n')
-    return `아래는 국가별 Citation 도메인 현황입니다.
+    return `[섹션: 국가별 Citation 도메인]
+이 섹션에는 국가별로 Top 10 인용 도메인을 보여주는 막대 차트가 있습니다.
+영어권은 Reddit/Review 중심, 비영어권은 Youtube/리테일 중심 패턴이 특징입니다.
+인사이트는 이 차트 아래에 삽입됩니다. 기준 템플릿의 포맷을 따라 수치만 교체하세요.
 
+국가별 상위 도메인:
 ${summary}
 
 [분석 포인트: 국가별 인용 패턴 차이, 주요 시장별 핵심 도메인, 국가별 최적화 전략]`
