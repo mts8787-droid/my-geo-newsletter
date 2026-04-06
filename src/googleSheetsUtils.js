@@ -62,5 +62,39 @@ export async function syncFromGoogleSheets(sheetId, onProgress) {
     }
   }
 
+  // ── 폴백: productsPartial이 없으면 weeklyAll + weeklyMap에서 자동 생성 ──
+  if (!result.productsPartial && result.weeklyAll && result.weeklyMap) {
+    console.log('[SYNC] productsPartial 없음 → weeklyAll에서 자동 생성')
+    const ID_KR = { tv: 'TV', monitor: '모니터', audio: '오디오', washer: '세탁기', fridge: '냉장고', dw: '식기세척기', vacuum: '청소기', cooking: 'Cooking', rac: 'RAC', aircare: 'Aircare' }
+    const ID_BU = { tv: 'MS', monitor: 'MS', audio: 'MS', washer: 'HS', fridge: 'HS', dw: 'HS', vacuum: 'HS', cooking: 'HS', rac: 'ES', aircare: 'ES' }
+    const productsPartial = []
+    for (const [id, byCountry] of Object.entries(result.weeklyAll)) {
+      const total = byCountry['Total'] || byCountry['TTL'] || {}
+      const lgArr = total['LG'] || total['lg'] || []
+      const brands = Object.entries(total).filter(([b]) => b !== 'LG' && b !== 'lg')
+      // 최신 주차 값 사용
+      const score = lgArr.length ? lgArr[lgArr.length - 1] : 0
+      const prev = lgArr.length >= 5 ? lgArr[0] : 0
+      // 최고 경쟁사 찾기
+      let topCompName = '', topCompScore = 0
+      for (const [brand, arr] of brands) {
+        const last = arr.length ? arr[arr.length - 1] : 0
+        if (last > topCompScore) { topCompScore = last; topCompName = brand }
+      }
+      if (score > 0) {
+        productsPartial.push({
+          id, bu: ID_BU[id] || 'HS', kr: ID_KR[id] || id,
+          category: id, date: result.meta?.period || '',
+          score, prev, vsComp: topCompScore, compName: topCompName,
+          allScores: { LG: score, ...(topCompName ? { [topCompName]: topCompScore } : {}) },
+        })
+      }
+    }
+    if (productsPartial.length) {
+      result.productsPartial = productsPartial
+      console.log(`[SYNC] weeklyAll에서 ${productsPartial.length}개 제품 생성:`, productsPartial.map(p => `${p.id}=${p.score}`).join(', '))
+    }
+  }
+
   return result
 }
