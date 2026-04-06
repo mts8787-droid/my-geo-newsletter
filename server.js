@@ -613,7 +613,7 @@ ${finalRules}
     const userPrompt = buildInsightPrompt(type, data)
     const message = await client.messages.create({
       model: aiSettings.model || 'claude-sonnet-4-20250514',
-      max_tokens: aiSettings.maxTokens || 2000,
+      max_tokens: aiSettings.maxTokens || 4096,
       system: systemPrompt,
       messages: [{ role: 'user', content: userPrompt }],
     })
