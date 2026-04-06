@@ -999,6 +999,207 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
           style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6, marginBottom: 8 }}
         />
 
+        {/* ── Citation 인사이트 ── */}
+        <div style={{ height: 1, background: '#1E293B', margin: '12px 0' }} />
+
+        {/* 도메인 카테고리별 Citation 인사이트 */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+          <p style={{ margin: 0, fontSize: 11, color: '#64748B', fontFamily: FONT }}>Citation 카테고리 인사이트</p>
+          <div style={{ display: 'flex', gap: 4 }}>
+            <button onClick={async () => {
+                try {
+                  setMeta(m => ({ ...m, citationInsight: '⏳ AI 생성 중...' }))
+                  const insight = await generateAIInsight('citation', { citations: resolved.citations }, previewLang)
+                  setMeta(m => ({ ...m, citationInsight: insight }))
+                } catch (err) { console.error('[AI]', err); setMeta(m => ({ ...m, citationInsight: `[AI 실패: ${err.message}]` })) }
+              }}
+              style={{ padding: '2px 6px', borderRadius: 4, border: 'none', cursor: 'pointer',
+                background: '#4F46E5', color: '#FFFFFF',
+                fontSize: 11, fontWeight: 700, fontFamily: FONT, display: 'flex', alignItems: 'center', gap: 3 }}>
+              <Sparkles size={9} /> AI 생성
+            </button>
+            <button onClick={() => setMeta(m => ({ ...m, showCitationInsight: !m.showCitationInsight }))}
+              style={{ padding: '2px 8px', borderRadius: 4, border: 'none', cursor: 'pointer',
+                background: meta.showCitationInsight ? LG_RED : '#1E293B',
+                color: meta.showCitationInsight ? '#FFFFFF' : '#475569',
+                fontSize: 11, fontWeight: 700, fontFamily: FONT }}>
+              {meta.showCitationInsight ? 'ON' : 'OFF'}
+            </button>
+          </div>
+        </div>
+        <textarea
+          value={meta.citationInsight}
+          onChange={e => setMeta(m => ({ ...m, citationInsight: e.target.value }))}
+          rows={8}
+          placeholder="Citation 카테고리별 인사이트..."
+          style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6, marginBottom: 8 }}
+        />
+
+        {/* Citation How to Read */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+          <p style={{ margin: 0, fontSize: 11, color: '#64748B', fontFamily: FONT }}>Citation How to Read</p>
+          <div style={{ display: 'flex', gap: 4 }}>
+            <button onClick={async () => {
+                try {
+                  setMeta(m => ({ ...m, citationHowToRead: '⏳ AI 생성 중...' }))
+                  const insight = await generateAIInsight('howToRead', { section: 'Citation 도메인별 현황' }, previewLang)
+                  setMeta(m => ({ ...m, citationHowToRead: insight }))
+                } catch { setMeta(m => ({ ...m, citationHowToRead: '' })) }
+              }}
+              style={{ padding: '2px 6px', borderRadius: 4, border: 'none', cursor: 'pointer',
+                background: '#4F46E5', color: '#FFFFFF',
+                fontSize: 11, fontWeight: 700, fontFamily: FONT, display: 'flex', alignItems: 'center', gap: 3 }}>
+              <Sparkles size={9} /> AI 생성
+            </button>
+            <button onClick={() => setMeta(m => ({ ...m, showCitationHowToRead: !m.showCitationHowToRead }))}
+              style={{ padding: '2px 8px', borderRadius: 4, border: 'none', cursor: 'pointer',
+                background: meta.showCitationHowToRead ? LG_RED : '#1E293B',
+                color: meta.showCitationHowToRead ? '#FFFFFF' : '#475569',
+                fontSize: 11, fontWeight: 700, fontFamily: FONT }}>
+              {meta.showCitationHowToRead ? 'ON' : 'OFF'}
+            </button>
+          </div>
+        </div>
+        <textarea
+          value={meta.citationHowToRead}
+          onChange={e => setMeta(m => ({ ...m, citationHowToRead: e.target.value }))}
+          rows={4}
+          placeholder="Citation How to Read..."
+          style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6, marginBottom: 8 }}
+        />
+
+        {/* 도메인별 Citation 인사이트 */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+          <p style={{ margin: 0, fontSize: 11, color: '#64748B', fontFamily: FONT }}>도메인별 Citation 인사이트</p>
+          <div style={{ display: 'flex', gap: 4 }}>
+            <button onClick={async () => {
+                try {
+                  setMeta(m => ({ ...m, citDomainInsight: '⏳ AI 생성 중...' }))
+                  const insight = await generateAIInsight('citDomain', { citationsCnty: resolved.citationsCnty }, previewLang)
+                  setMeta(m => ({ ...m, citDomainInsight: insight }))
+                } catch (err) { console.error('[AI]', err); setMeta(m => ({ ...m, citDomainInsight: `[AI 실패: ${err.message}]` })) }
+              }}
+              style={{ padding: '2px 6px', borderRadius: 4, border: 'none', cursor: 'pointer',
+                background: '#4F46E5', color: '#FFFFFF',
+                fontSize: 11, fontWeight: 700, fontFamily: FONT, display: 'flex', alignItems: 'center', gap: 3 }}>
+              <Sparkles size={9} /> AI 생성
+            </button>
+            <button onClick={() => setMeta(m => ({ ...m, showCitDomainInsight: !m.showCitDomainInsight }))}
+              style={{ padding: '2px 8px', borderRadius: 4, border: 'none', cursor: 'pointer',
+                background: meta.showCitDomainInsight ? LG_RED : '#1E293B',
+                color: meta.showCitDomainInsight ? '#FFFFFF' : '#475569',
+                fontSize: 11, fontWeight: 700, fontFamily: FONT }}>
+              {meta.showCitDomainInsight ? 'ON' : 'OFF'}
+            </button>
+          </div>
+        </div>
+        <textarea
+          value={meta.citDomainInsight}
+          onChange={e => setMeta(m => ({ ...m, citDomainInsight: e.target.value }))}
+          rows={8}
+          placeholder="도메인별 Citation 인사이트..."
+          style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6, marginBottom: 8 }}
+        />
+
+        {/* 도메인별 How to Read */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+          <p style={{ margin: 0, fontSize: 11, color: '#64748B', fontFamily: FONT }}>도메인별 How to Read</p>
+          <div style={{ display: 'flex', gap: 4 }}>
+            <button onClick={async () => {
+                try {
+                  setMeta(m => ({ ...m, citDomainHowToRead: '⏳ AI 생성 중...' }))
+                  const insight = await generateAIInsight('howToRead', { section: '도메인별 Citation 현황' }, previewLang)
+                  setMeta(m => ({ ...m, citDomainHowToRead: insight }))
+                } catch { setMeta(m => ({ ...m, citDomainHowToRead: '' })) }
+              }}
+              style={{ padding: '2px 6px', borderRadius: 4, border: 'none', cursor: 'pointer',
+                background: '#4F46E5', color: '#FFFFFF',
+                fontSize: 11, fontWeight: 700, fontFamily: FONT, display: 'flex', alignItems: 'center', gap: 3 }}>
+              <Sparkles size={9} /> AI 생성
+            </button>
+            <button onClick={() => setMeta(m => ({ ...m, showCitDomainHowToRead: !m.showCitDomainHowToRead }))}
+              style={{ padding: '2px 8px', borderRadius: 4, border: 'none', cursor: 'pointer',
+                background: meta.showCitDomainHowToRead ? LG_RED : '#1E293B',
+                color: meta.showCitDomainHowToRead ? '#FFFFFF' : '#475569',
+                fontSize: 11, fontWeight: 700, fontFamily: FONT }}>
+              {meta.showCitDomainHowToRead ? 'ON' : 'OFF'}
+            </button>
+          </div>
+        </div>
+        <textarea
+          value={meta.citDomainHowToRead}
+          onChange={e => setMeta(m => ({ ...m, citDomainHowToRead: e.target.value }))}
+          rows={4}
+          placeholder="도메인별 How to Read..."
+          style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6, marginBottom: 8 }}
+        />
+
+        {/* 국가별 Citation 인사이트 */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+          <p style={{ margin: 0, fontSize: 11, color: '#64748B', fontFamily: FONT }}>국가별 Citation 인사이트</p>
+          <div style={{ display: 'flex', gap: 4 }}>
+            <button onClick={async () => {
+                try {
+                  setMeta(m => ({ ...m, citCntyInsight: '⏳ AI 생성 중...' }))
+                  const insight = await generateAIInsight('citCnty', { citationsCnty: resolved.citationsCnty }, previewLang)
+                  setMeta(m => ({ ...m, citCntyInsight: insight }))
+                } catch (err) { console.error('[AI]', err); setMeta(m => ({ ...m, citCntyInsight: `[AI 실패: ${err.message}]` })) }
+              }}
+              style={{ padding: '2px 6px', borderRadius: 4, border: 'none', cursor: 'pointer',
+                background: '#4F46E5', color: '#FFFFFF',
+                fontSize: 11, fontWeight: 700, fontFamily: FONT, display: 'flex', alignItems: 'center', gap: 3 }}>
+              <Sparkles size={9} /> AI 생성
+            </button>
+            <button onClick={() => setMeta(m => ({ ...m, showCitCntyInsight: !m.showCitCntyInsight }))}
+              style={{ padding: '2px 8px', borderRadius: 4, border: 'none', cursor: 'pointer',
+                background: meta.showCitCntyInsight ? LG_RED : '#1E293B',
+                color: meta.showCitCntyInsight ? '#FFFFFF' : '#475569',
+                fontSize: 11, fontWeight: 700, fontFamily: FONT }}>
+              {meta.showCitCntyInsight ? 'ON' : 'OFF'}
+            </button>
+          </div>
+        </div>
+        <textarea
+          value={meta.citCntyInsight}
+          onChange={e => setMeta(m => ({ ...m, citCntyInsight: e.target.value }))}
+          rows={8}
+          placeholder="국가별 Citation 인사이트..."
+          style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6, marginBottom: 8 }}
+        />
+
+        {/* 국가별 Citation How to Read */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+          <p style={{ margin: 0, fontSize: 11, color: '#64748B', fontFamily: FONT }}>국가별 Citation How to Read</p>
+          <div style={{ display: 'flex', gap: 4 }}>
+            <button onClick={async () => {
+                try {
+                  setMeta(m => ({ ...m, citCntyHowToRead: '⏳ AI 생성 중...' }))
+                  const insight = await generateAIInsight('howToRead', { section: '국가별 Citation 도메인' }, previewLang)
+                  setMeta(m => ({ ...m, citCntyHowToRead: insight }))
+                } catch { setMeta(m => ({ ...m, citCntyHowToRead: '' })) }
+              }}
+              style={{ padding: '2px 6px', borderRadius: 4, border: 'none', cursor: 'pointer',
+                background: '#4F46E5', color: '#FFFFFF',
+                fontSize: 11, fontWeight: 700, fontFamily: FONT, display: 'flex', alignItems: 'center', gap: 3 }}>
+              <Sparkles size={9} /> AI 생성
+            </button>
+            <button onClick={() => setMeta(m => ({ ...m, showCitCntyHowToRead: !m.showCitCntyHowToRead }))}
+              style={{ padding: '2px 8px', borderRadius: 4, border: 'none', cursor: 'pointer',
+                background: meta.showCitCntyHowToRead ? LG_RED : '#1E293B',
+                color: meta.showCitCntyHowToRead ? '#FFFFFF' : '#475569',
+                fontSize: 11, fontWeight: 700, fontFamily: FONT }}>
+              {meta.showCitCntyHowToRead ? 'ON' : 'OFF'}
+            </button>
+          </div>
+        </div>
+        <textarea
+          value={meta.citCntyHowToRead}
+          onChange={e => setMeta(m => ({ ...m, citCntyHowToRead: e.target.value }))}
+          rows={4}
+          placeholder="국가별 Citation How to Read..."
+          style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6, marginBottom: 8 }}
+        />
+
         {/* 국가별 제품군 ON/OFF */}
         {productsCnty.length > 0 && (() => {
           const productNames = [...new Set(resolved.productsCnty.map(r => r.product))]
