@@ -1005,6 +1005,14 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                   <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#0F172A;border-radius:14px;">
                     <tr>
                       <td style="padding:24px 24px 22px;border-top:4px solid ${totalSignal};border-radius:14px;">
+                        <!-- Executive Summary 제목 -->
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom:16px;">
+                          <tr>
+                            <td style="padding:10px 16px;background:linear-gradient(135deg,${EM_RED},#A0003E);border-radius:8px;">
+                              <span style="font-size:20px;font-weight:900;color:#FFFFFF;text-transform:uppercase;letter-spacing:2px;font-family:${EM_FONT};">${t.geoInsight}</span>
+                            </td>
+                          </tr>
+                        </table>
                         <table border="0" cellpadding="0" cellspacing="0" width="100%">
                           <tr>
                             <td style="font-size:24px;font-weight:700;color:#FFFFFF;text-transform:uppercase;font-family:${EM_FONT};">LG GEO Visibility %</td>
@@ -1117,11 +1125,42 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                         <tr><td height="16" style="font-size:0;line-height:0;">&nbsp;</td></tr>
                           <tr>
                             <td style="padding:14px 16px;background:#1E0F18;border:1px solid #3D1528;border-radius:10px;">
-                              <p style="margin:0 0 6px;font-size:14px;font-weight:700;color:${EM_RED};text-transform:uppercase;font-family:${EM_FONT};">${t.geoInsight}</p>
+                              <p style="margin:0 0 6px;font-size:14px;font-weight:700;color:${EM_RED};text-transform:uppercase;font-family:${EM_FONT};">INSIGHT</p>
                               <p style="margin:0;font-size:15px;color:#FFFFFF;line-height:24px;font-family:${EM_FONT};">${mdBold(meta.totalInsight)}</p>
                             </td>
                           </tr>
                         </table>` : ''}
+                        <!-- 대시보드 바로가기 -->
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                          <tr><td height="16" style="font-size:0;line-height:0;">&nbsp;</td></tr>
+                          <tr>
+                            <td style="padding:0;">
+                              <table border="0" cellpadding="0" cellspacing="0" width="100%"><tr>
+                                <td width="33%" style="padding:0 4px 0 0;">
+                                  <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border-radius:8px;background:#1E293B;border:1px solid #334155;">
+                                    <tr><td align="center" style="padding:10px 8px;">
+                                      <a href="/p/GEO-KPI-Dashboard-KO" style="color:#F8FAFC;font-size:13px;font-weight:700;font-family:${EM_FONT};text-decoration:none;">📊 Visibility Dashboard</a>
+                                    </td></tr>
+                                  </table>
+                                </td>
+                                <td width="33%" style="padding:0 2px;">
+                                  <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border-radius:8px;background:#1E293B;border:1px solid #334155;">
+                                    <tr><td align="center" style="padding:10px 8px;">
+                                      <a href="/p/GEO-Citation-Dashboard-KO" style="color:#F8FAFC;font-size:13px;font-weight:700;font-family:${EM_FONT};text-decoration:none;">📋 Citation Dashboard</a>
+                                    </td></tr>
+                                  </table>
+                                </td>
+                                <td width="33%" style="padding:0 0 0 4px;">
+                                  <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border-radius:8px;background:#1E293B;border:1px solid #334155;">
+                                    <tr><td align="center" style="padding:10px 8px;">
+                                      <a href="/p/GEO-Progress-Tracker" style="color:#F8FAFC;font-size:13px;font-weight:700;font-family:${EM_FONT};text-decoration:none;">🎯 Action Tracker</a>
+                                    </td></tr>
+                                  </table>
+                                </td>
+                              </tr></table>
+                            </td>
+                          </tr>
+                        </table>
                       </td>
                     </tr>
                   </table>
