@@ -93,18 +93,20 @@ function insightApiPlugin() {
         req.on('data', c => (body += c))
         req.on('end', async () => {
           try {
-            const { type, data, lang } = JSON.parse(body)
+            const { type, data, lang, rules } = JSON.parse(body)
             if (!type || !data) throw new Error('type, data 필수')
             const apiKey = process.env.ANTHROPIC_API_KEY
             if (!apiKey) throw new Error('ANTHROPIC_API_KEY가 설정되지 않았습니다. .env 파일에 추가해주세요.')
             const client = new Anthropic({ apiKey })
+            const defaultRules = `- 제공된 데이터에 있는 수치만 사용 (추가 계산·추정 금지)
+- 리포트에 표시된 제품명, 점수, 경쟁사명을 그대로 인용
+- 존재하지 않는 수치를 만들어내지 말 것`
+            const userRules = rules || defaultRules
             const systemPrompt = `당신은 LG전자 D2C 디지털마케팅팀의 GEO(Generative Engine Optimization) 데이터 분석 전문가입니다.
 생성형 AI 엔진(ChatGPT, Gemini, Perplexity 등)에서의 LG 브랜드 가시성(Visibility) 데이터를 분석하여 인사이트를 작성합니다.
 
-작성 원칙:
-- 핵심 수치와 트렌드를 먼저 제시하고, 시사점과 액션 아이템을 도출
-- 경쟁사(Samsung 등) 대비 포지셔닝을 반드시 포함
-- 전문적이지만 간결하게 3~5문장으로 작성
+작성 규칙:
+${userRules}
 - ${lang === 'en' ? '영어로 작성' : '한국어로 작성 (비즈니스 보고서 톤)'}`
             const { buildInsightPrompt } = await import('./src/shared/insightPrompts.js')
             const userPrompt = buildInsightPrompt(type, data)

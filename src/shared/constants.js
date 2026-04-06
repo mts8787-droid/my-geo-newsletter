@@ -51,6 +51,11 @@ export const INIT_META  = {
   cntyProductFilter: {},
   citCntyDomainFilter: {},
   citCntyFilter: {},
+  aiPromptRules: `- 제공된 데이터에 있는 수치만 사용할 것 (추가 계산·추정 금지)
+- 리포트에 표시된 제품명, 점수, 경쟁사명을 그대로 인용
+- 존재하지 않는 수치를 만들어내지 말 것
+- 전문적이지만 간결하게 3~5문장
+- 비즈니스 보고서 톤 (한국어 작성 시)`,
 }
 
 export const INIT_TOTAL = { score: 42.7, prev: 42.2, vsComp: 42.2, rank: 1, totalBrands: 12 }

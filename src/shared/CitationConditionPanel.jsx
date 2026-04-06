@@ -217,7 +217,7 @@ export default function CitationConditionPanel({ meta, setMeta, resolved }) {
         onGenerate={async () => {
           try {
             setMeta(m => ({ ...m, citationInsight: '⏳ AI 생성 중...' }))
-            const insight = await generateAIInsight('citation', { citations: resolved.citations })
+            const insight = await generateAIInsight('citation', { citations: resolved.citations }, 'ko', meta.aiPromptRules)
             setMeta(m => ({ ...m, citationInsight: insight }))
           } catch (err) { console.error('[AI]', err); setMeta(m => ({ ...m, citationInsight: `[AI 실패: ${err.message}]\n\n` + generateCitationInsight(resolved.citations) })) }
         }}
@@ -235,7 +235,7 @@ export default function CitationConditionPanel({ meta, setMeta, resolved }) {
         onGenerate={async () => {
           try {
             setMeta(m => ({ ...m, citationHowToRead: '⏳ AI 생성 중...' }))
-            const insight = await generateAIInsight('howToRead', { section: 'Citation 도메인별 현황' })
+            const insight = await generateAIInsight('howToRead', { section: 'Citation 도메인별 현황' }, 'ko', meta.aiPromptRules)
             setMeta(m => ({ ...m, citationHowToRead: insight }))
           } catch { setMeta(m => ({ ...m, citationHowToRead: generateCitationHowToRead() })) }
         }}
@@ -253,7 +253,7 @@ export default function CitationConditionPanel({ meta, setMeta, resolved }) {
         onGenerate={async () => {
           try {
             setMeta(m => ({ ...m, citDomainInsight: '⏳ AI 생성 중...' }))
-            const insight = await generateAIInsight('citDomain', { citationsCnty: resolved.citationsCnty })
+            const insight = await generateAIInsight('citDomain', { citationsCnty: resolved.citationsCnty }, 'ko', meta.aiPromptRules)
             setMeta(m => ({ ...m, citDomainInsight: insight }))
           } catch (err) { console.error('[AI]', err); setMeta(m => ({ ...m, citDomainInsight: `[AI 실패: ${err.message}]\n\n` + generateCitDomainInsight(resolved.citationsCnty) })) }
         }}
@@ -271,7 +271,7 @@ export default function CitationConditionPanel({ meta, setMeta, resolved }) {
         onGenerate={async () => {
           try {
             setMeta(m => ({ ...m, citDomainHowToRead: '⏳ AI 생성 중...' }))
-            const insight = await generateAIInsight('howToRead', { section: '도메인별 Citation 현황' })
+            const insight = await generateAIInsight('howToRead', { section: '도메인별 Citation 현황' }, 'ko', meta.aiPromptRules)
             setMeta(m => ({ ...m, citDomainHowToRead: insight }))
           } catch { setMeta(m => ({ ...m, citDomainHowToRead: generateCitDomainHowToRead() })) }
         }}
@@ -289,7 +289,7 @@ export default function CitationConditionPanel({ meta, setMeta, resolved }) {
         onGenerate={async () => {
           try {
             setMeta(m => ({ ...m, citCntyInsight: '⏳ AI 생성 중...' }))
-            const insight = await generateAIInsight('citCnty', { citationsCnty: resolved.citationsCnty })
+            const insight = await generateAIInsight('citCnty', { citationsCnty: resolved.citationsCnty }, 'ko', meta.aiPromptRules)
             setMeta(m => ({ ...m, citCntyInsight: insight }))
           } catch (err) { console.error('[AI]', err); setMeta(m => ({ ...m, citCntyInsight: `[AI 실패: ${err.message}]\n\n` + generateCitCntyInsight(resolved.citationsCnty) })) }
         }}
@@ -307,7 +307,7 @@ export default function CitationConditionPanel({ meta, setMeta, resolved }) {
         onGenerate={async () => {
           try {
             setMeta(m => ({ ...m, citCntyHowToRead: '⏳ AI 생성 중...' }))
-            const insight = await generateAIInsight('howToRead', { section: '국가별 Citation 도메인' })
+            const insight = await generateAIInsight('howToRead', { section: '국가별 Citation 도메인' }, 'ko', meta.aiPromptRules)
             setMeta(m => ({ ...m, citCntyHowToRead: insight }))
           } catch { setMeta(m => ({ ...m, citCntyHowToRead: generateCitCntyHowToRead() })) }
         }}

@@ -51,11 +51,11 @@ export async function deleteSnapshot(mode, ts) {
   } catch (err) { console.warn('[API] deleteSnapshot failed:', err.message); return null }
 }
 
-export async function generateAIInsight(type, data, lang = 'ko') {
+export async function generateAIInsight(type, data, lang = 'ko', rules = '') {
   try {
     const r = await fetch('/api/generate-insight', {
       method: 'POST', headers: JSON_HEADERS,
-      body: JSON.stringify({ type, data, lang }),
+      body: JSON.stringify({ type, data, lang, rules }),
     })
     if (!r.ok) { const j = await r.json().catch(() => ({})); throw new Error(j.error || `HTTP ${r.status}`) }
     const j = await r.json()
