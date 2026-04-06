@@ -1145,7 +1145,7 @@ function render(){
       return v?'<div class="field"><div class="field-label">'+f[1]+'</div><div class="field-text">'+esc(v)+'</div></div>':''
     }).join('');
     var openClass=i===0?' open':'';
-    return '<div class="archive"><div class="archive-head" onclick="toggle('+i+')"><div><span class="archive-title">'+esc(a.period)+'</span><span style="font-size:12px;color:#64748B;margin-left:8px;">'+cnt+'개 필드</span></div><div><span class="archive-date">'+d+'</span>&nbsp;&nbsp;<button class="del-btn" onclick="event.stopPropagation();del(\''+a.id+'\')">삭제</button></div></div><div class="archive-body'+openClass+'" id="ab'+i+'">'+fields+'</div></div>'
+    return '<div class="archive"><div class="archive-head" onclick="toggle('+i+')"><div><span class="archive-title">'+esc(a.period)+'</span><span style="font-size:12px;color:#64748B;margin-left:8px;">'+cnt+'개 필드</span></div><div><span class="archive-date">'+d+'</span>&nbsp;&nbsp;<button class="del-btn" onclick="event.stopPropagation();del(&quot;'+a.id+'&quot;)">삭제</button></div></div><div class="archive-body'+openClass+'" id="ab'+i+'">'+fields+'</div></div>'
   }).join('')
 }
 function toggle(i){document.getElementById('ab'+i).classList.toggle('open')}
