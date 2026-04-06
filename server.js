@@ -53,6 +53,15 @@ function writeAiSettings(settings) {
   writeFileSync(AI_SETTINGS_FILE, JSON.stringify(settings, null, 2))
 }
 
+// ─── Archives storage (AI 학습 데이터) ───────────────────────────────────────
+const ARCHIVES_FILE = join(DATA_DIR, 'archives.json')
+function readArchives() {
+  try { return JSON.parse(readFileSync(ARCHIVES_FILE, 'utf-8')) } catch { return [] }
+}
+function writeArchives(list) {
+  writeFileSync(ARCHIVES_FILE, JSON.stringify(list, null, 2))
+}
+
 // ─── IP Allowlist storage ────────────────────────────────────────────────────
 const IP_FILE = join(DATA_DIR, 'ip-allowlist.json')
 
@@ -534,12 +543,20 @@ app.post('/api/generate-insight', async (req, res) => {
     const client = new Anthropic({ apiKey })
     const aiSettings = readAiSettings()
     const finalRules = rules || aiSettings.promptRules
+    // 아카이브에서 최근 학습 데이터 추출 (최대 2건)
+    const archives = readArchives().slice(0, 2)
+    const exampleBlock = archives.length ? '\n\n과거 리포트 인사이트 (문체와 구조를 참고):\n' +
+      archives.map(a => {
+        const ins = a.insights || {}
+        const relevant = ins[type] || ins.totalInsight || ''
+        return relevant ? `[${a.period}] ${relevant.slice(0, 300)}` : ''
+      }).filter(Boolean).join('\n') : ''
     const systemPrompt = `당신은 LG전자 D2C 디지털마케팅팀의 GEO(Generative Engine Optimization) 데이터 분석 전문가입니다.
 생성형 AI 엔진(ChatGPT, Gemini, Perplexity 등)에서의 LG 브랜드 가시성(Visibility) 데이터를 분석하여 인사이트를 작성합니다.
 
 작성 규칙:
 ${finalRules}
-- ${lang === 'en' ? '영어로 작성' : '한국어로 작성 (비즈니스 보고서 톤)'}`
+- ${lang === 'en' ? '영어로 작성' : '한국어로 작성 (비즈니스 보고서 톤)'}${exampleBlock}`
 
     const userPrompt = buildInsightPrompt(type, data)
     const message = await client.messages.create({
@@ -920,6 +937,10 @@ a.card:hover{border-color:#CF0652;transform:translateY(-2px)}
       <div class="card-title">AI Settings</div>
       <div class="card-desc">AI 인사이트 생성 프롬프트 규칙 · 모델 설정</div>
     </a>
+    <a class="card" href="/admin/archives">
+      <div class="card-title">Archives (학습 데이터)</div>
+      <div class="card-desc">완성본 아카이빙 · AI 인사이트 생성 시 문체 학습 데이터로 활용</div>
+    </a>
   </div>
   <button class="logout" onclick="fetch('/api/auth/logout',{method:'POST'}).then(function(){location.href='/admin/login'})">로그아웃</button>
 </div></body></html>`)
@@ -1020,6 +1041,103 @@ async function del(id){
 }
 document.addEventListener('click',function(e){if(e.target.classList.contains('del-btn'))del(e.target.dataset.id)});
 load();
+</script></body></html>`)
+})
+
+// ─── Archives API (아카이빙 학습 데이터) ─────────────────────────────────────
+app.get('/api/archives', (req, res) => {
+  res.json({ ok: true, archives: readArchives() })
+})
+app.post('/api/archives', (req, res) => {
+  const { period, insights } = req.body || {}
+  if (!period || !insights) return res.status(400).json({ ok: false, error: 'period, insights 필수' })
+  const list = readArchives()
+  // 같은 period가 있으면 덮어쓰기
+  const idx = list.findIndex(a => a.period === period)
+  const entry = { id: crypto.randomBytes(8).toString('hex'), period, insights, createdAt: Date.now() }
+  if (idx >= 0) { entry.id = list[idx].id; list[idx] = entry }
+  else list.unshift(entry)
+  writeArchives(list)
+  res.json({ ok: true, archives: list })
+})
+app.delete('/api/archives/:id', (req, res) => {
+  const list = readArchives().filter(a => a.id !== req.params.id)
+  writeArchives(list)
+  res.json({ ok: true, archives: list })
+})
+
+// ─── Archives UI (학습 데이터 확인) ──────────────────────────────────────────
+app.get('/admin/archives', (req, res) => {
+  res.set('Content-Type', 'text/html; charset=utf-8')
+  res.send(`<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Archives (학습 데이터)</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0F172A;font-family:'LG Smart','Arial Narrow',Arial,sans-serif;color:#E2E8F0;padding:32px 24px}
+.container{max-width:860px;margin:0 auto}
+.top{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.back{color:#64748B;text-decoration:none;font-size:13px}.back:hover{color:#94A3B8}
+.logout{background:none;border:1px solid #334155;color:#64748B;padding:6px 16px;border-radius:6px;font-size:12px;cursor:pointer}.logout:hover{border-color:#64748B;color:#94A3B8}
+h1{font-size:22px;font-weight:700;color:#F8FAFC;margin-bottom:6px}
+.desc{font-size:13px;color:#64748B;margin-bottom:24px;line-height:1.6}
+.archive{background:#1E293B;border:1px solid #334155;border-radius:12px;margin-bottom:16px;overflow:hidden}
+.archive-head{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;cursor:pointer;user-select:none}
+.archive-head:hover{background:#263245}
+.archive-title{font-size:16px;font-weight:700;color:#F8FAFC}
+.archive-date{font-size:12px;color:#64748B}
+.archive-body{display:none;padding:0 20px 20px;border-top:1px solid #334155}
+.archive-body.open{display:block}
+.field{margin-top:14px}
+.field-label{font-size:11px;font-weight:700;color:#CF0652;text-transform:uppercase;margin-bottom:4px}
+.field-text{font-size:13px;color:#CBD5E1;line-height:1.7;white-space:pre-wrap;background:#0F172A;border-radius:8px;padding:10px 14px;max-height:200px;overflow-y:auto}
+.del-btn{background:none;border:1px solid #EF4444;color:#EF4444;padding:4px 12px;border-radius:6px;font-size:12px;cursor:pointer}.del-btn:hover{background:#EF4444;color:#fff}
+.empty{text-align:center;padding:40px;color:#64748B;font-size:14px}
+</style></head><body>
+<div class="container">
+  <div class="top">
+    <a class="back" href="/admin/">&#8592; Admin Dashboard</a>
+    <button class="logout" onclick="fetch('/api/auth/logout',{method:'POST'}).then(function(){location.href='/admin/login'})">로그아웃</button>
+  </div>
+  <h1>Archives (학습 데이터)</h1>
+  <p class="desc">완성본을 아카이빙하면 AI 인사이트 생성 시 문체와 구조의 학습 데이터로 활용됩니다.<br>최근 2건의 아카이브가 AI 프롬프트에 자동 포함됩니다.</p>
+  <div id="list"></div>
+</div>
+<script>
+var list=[];var FIELDS=[
+  ['totalInsight','GEO 전략 인사이트'],['productInsight','제품별 인사이트'],['productHowToRead','제품별 How to Read'],
+  ['cntyInsight','국가별 인사이트'],['cntyHowToRead','국가별 How to Read'],
+  ['citationInsight','Citation 인사이트'],['citationHowToRead','Citation How to Read'],
+  ['citDomainInsight','도메인별 인사이트'],['citDomainHowToRead','도메인별 How to Read'],
+  ['citCntyInsight','국가별 Citation 인사이트'],['citCntyHowToRead','국가별 Citation How to Read'],
+  ['dotcomInsight','닷컴 인사이트'],['dotcomHowToRead','닷컴 How to Read'],
+  ['todoText','Action Plan'],['noticeText','Notice'],['kpiLogicText','KPI Logic']
+];
+async function load(){
+  var r=await fetch('/api/archives');
+  if(r.status===401){location.href='/admin/login';return}
+  var j=await r.json();list=j.archives||[];render()
+}
+function esc(s){var d=document.createElement('div');d.textContent=s;return d.innerHTML}
+function render(){
+  var el=document.getElementById('list');
+  if(!list.length){el.innerHTML='<p class="empty">아카이빙된 리포트가 없습니다.<br>뉴스레터 편집기에서 완성본을 아카이빙해주세요.</p>';return}
+  el.innerHTML=list.map(function(a,i){
+    var d=new Date(a.createdAt).toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric'});
+    var fields=FIELDS.map(function(f){
+      var v=(a.insights||{})[f[0]];
+      return v?'<div class="field"><div class="field-label">'+f[1]+'</div><div class="field-text">'+esc(v)+'</div></div>':''
+    }).join('');
+    return '<div class="archive"><div class="archive-head" onclick="toggle('+i+')"><div><span class="archive-title">'+esc(a.period)+'</span></div><div><span class="archive-date">'+d+'</span>&nbsp;&nbsp;<button class="del-btn" onclick="event.stopPropagation();del(\''+a.id+'\')">삭제</button></div></div><div class="archive-body" id="ab'+i+'">'+fields+'</div></div>'
+  }).join('')
+}
+function toggle(i){document.getElementById('ab'+i).classList.toggle('open')}
+async function del(id){
+  if(!confirm('삭제하시겠습니까?'))return;
+  var r=await fetch('/api/archives/'+id,{method:'DELETE',headers:{'X-Requested-With':'XMLHttpRequest'}});
+  var j=await r.json();if(j.ok){list=j.archives;render()}
+}
+load()
 </script></body></html>`)
 })
 

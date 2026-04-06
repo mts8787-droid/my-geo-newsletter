@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Copy, Download, RefreshCw, Check, Send, Sparkles, Languages, Globe, Link2 } from 'lucide-react'
+import { Copy, Download, RefreshCw, Check, Send, Sparkles, Languages, Globe, Link2, Archive } from 'lucide-react'
 import { downloadTemplate } from '../excelUtils'
 import { extractSheetId, syncFromGoogleSheets } from '../googleSheetsUtils'
 import { LG_RED, FONT } from './constants.js'
@@ -611,6 +611,41 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
             )}
           </>
         )}
+
+        {/* 아카이빙 (AI 학습 데이터) */}
+        <button onClick={async () => {
+          const insights = {
+            totalInsight: meta.totalInsight || '', productInsight: meta.productInsight || '',
+            productHowToRead: meta.productHowToRead || '', cntyInsight: meta.cntyInsight || '',
+            cntyHowToRead: meta.cntyHowToRead || '', citationInsight: meta.citationInsight || '',
+            citationHowToRead: meta.citationHowToRead || '', citDomainInsight: meta.citDomainInsight || '',
+            citDomainHowToRead: meta.citDomainHowToRead || '', citCntyInsight: meta.citCntyInsight || '',
+            citCntyHowToRead: meta.citCntyHowToRead || '', dotcomInsight: meta.dotcomInsight || '',
+            dotcomHowToRead: meta.dotcomHowToRead || '', todoText: meta.todoText || '',
+            noticeText: meta.noticeText || '', kpiLogicText: meta.kpiLogicText || '',
+          }
+          const hasContent = Object.values(insights).some(v => v.trim())
+          if (!hasContent) { alert('아카이빙할 인사이트 콘텐츠가 없습니다.'); return }
+          if (!confirm(`"${meta.period || '현재'}" 리포트를 AI 학습 데이터로 아카이빙하시겠습니까?`)) return
+          try {
+            const r = await fetch('/api/archives', {
+              method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+              body: JSON.stringify({ period: meta.period || 'Unknown', insights }),
+            })
+            const j = await r.json()
+            if (j.ok) alert('아카이빙 완료! AI 생성 시 학습 데이터로 활용됩니다.')
+            else alert('아카이빙 실패: ' + (j.error || ''))
+          } catch (err) { alert('아카이빙 실패: ' + err.message) }
+        }} style={{
+          width: '100%', padding: '9px 0',
+          background: 'transparent', border: '1px solid #334155', borderRadius: 8,
+          fontSize: 11, fontWeight: 700, color: '#94A3B8',
+          fontFamily: FONT, cursor: 'pointer',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5,
+          marginBottom: 8,
+        }}>
+          <Archive size={12} /> 완성본 아카이빙 (AI 학습)
+        </button>
 
         {publishMsg && (
           <div style={{
