@@ -551,7 +551,7 @@ app.post('/api/generate-insight', async (req, res) => {
     const aiSettings = readAiSettings()
     const finalRules = rules || aiSettings.promptRules
     // 아카이브에서 최근 학습 데이터 추출 (최대 2건)
-    const archives = readArchives().slice(0, 2)
+    const archives = readArchives().slice(0, 12)
     const exampleBlock = archives.length ? '\n\n과거 리포트 인사이트 (문체와 구조를 참고):\n' +
       archives.map(a => {
         const ins = a.insights || {}
@@ -1110,7 +1110,7 @@ h1{font-size:22px;font-weight:700;color:#F8FAFC;margin-bottom:6px}
     <button class="logout" onclick="fetch('/api/auth/logout',{method:'POST'}).then(function(){location.href='/admin/login'})">로그아웃</button>
   </div>
   <h1>Archives (학습 데이터)</h1>
-  <p class="desc">완성본을 아카이빙하면 AI 인사이트 생성 시 문체와 구조의 학습 데이터로 활용됩니다.<br>최근 2건의 아카이브가 AI 프롬프트에 자동 포함됩니다.</p>
+  <p class="desc">완성본을 아카이빙하면 AI 인사이트 생성 시 문체와 구조의 학습 데이터로 활용됩니다.<br>최근 12개월치 아카이브가 AI 프롬프트에 자동 포함됩니다.</p>
   <div id="list"></div>
 </div>
 <script>
