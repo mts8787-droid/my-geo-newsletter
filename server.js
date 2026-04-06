@@ -39,6 +39,20 @@ const NL_SYNC_FILE = join(DATA_DIR, 'newsletter-sync-data.json')
 const DB_SYNC_FILE = join(DATA_DIR, 'dashboard-sync-data.json')
 const CT_SYNC_FILE = join(DATA_DIR, 'citation-sync-data.json')
 
+// ─── AI Settings storage ─────────────────────────────────────────────────────
+const AI_SETTINGS_FILE = join(DATA_DIR, 'ai-settings.json')
+const DEFAULT_AI_SETTINGS = {
+  promptRules: `- 제공된 데이터에 있는 수치만 사용할 것 (추가 계산·추정 금지)\n- 리포트에 표시된 제품명, 점수, 경쟁사명을 그대로 인용\n- 존재하지 않는 수치를 만들어내지 말 것\n- 전문적이지만 간결하게 3~5문장\n- 비즈니스 보고서 톤 (한국어 작성 시)`,
+  model: 'claude-sonnet-4-20250514',
+  maxTokens: 500,
+}
+function readAiSettings() {
+  try { return { ...DEFAULT_AI_SETTINGS, ...JSON.parse(readFileSync(AI_SETTINGS_FILE, 'utf-8')) } } catch { return { ...DEFAULT_AI_SETTINGS } }
+}
+function writeAiSettings(settings) {
+  writeFileSync(AI_SETTINGS_FILE, JSON.stringify(settings, null, 2))
+}
+
 // ─── IP Allowlist storage ────────────────────────────────────────────────────
 const IP_FILE = join(DATA_DIR, 'ip-allowlist.json')
 
@@ -518,21 +532,19 @@ app.post('/api/generate-insight', async (req, res) => {
   }
   try {
     const client = new Anthropic({ apiKey })
-    const defaultRules = `- 제공된 데이터에 있는 수치만 사용 (추가 계산·추정 금지)
-- 리포트에 표시된 제품명, 점수, 경쟁사명을 그대로 인용
-- 존재하지 않는 수치를 만들어내지 말 것`
-    const userRules = rules || defaultRules
+    const aiSettings = readAiSettings()
+    const finalRules = rules || aiSettings.promptRules
     const systemPrompt = `당신은 LG전자 D2C 디지털마케팅팀의 GEO(Generative Engine Optimization) 데이터 분석 전문가입니다.
 생성형 AI 엔진(ChatGPT, Gemini, Perplexity 등)에서의 LG 브랜드 가시성(Visibility) 데이터를 분석하여 인사이트를 작성합니다.
 
 작성 규칙:
-${userRules}
+${finalRules}
 - ${lang === 'en' ? '영어로 작성' : '한국어로 작성 (비즈니스 보고서 톤)'}`
 
     const userPrompt = buildInsightPrompt(type, data)
     const message = await client.messages.create({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 500,
+      model: aiSettings.model || 'claude-sonnet-4-20250514',
+      max_tokens: aiSettings.maxTokens || 500,
       system: systemPrompt,
       messages: [{ role: 'user', content: userPrompt }],
     })
@@ -570,6 +582,20 @@ app.delete('/api/ip-allowlist/:id', (req, res) => {
 
 app.get('/api/my-ip', (req, res) => {
   res.json({ ip: getRealIp(req) })
+})
+
+// ─── AI Settings API ─────────────────────────────────────────────────────────
+app.get('/api/ai-settings', (req, res) => {
+  res.json({ ok: true, settings: readAiSettings() })
+})
+app.put('/api/ai-settings', (req, res) => {
+  const current = readAiSettings()
+  const { promptRules, model, maxTokens } = req.body || {}
+  if (promptRules !== undefined) current.promptRules = promptRules
+  if (model !== undefined) current.model = model
+  if (maxTokens !== undefined) current.maxTokens = parseInt(maxTokens) || 500
+  writeAiSettings(current)
+  res.json({ ok: true, settings: current })
 })
 
 // ─── 공통 언어 전환 바 (Newsletter / Dashboard / Citation 공용) ───────────────
@@ -890,6 +916,10 @@ a.card:hover{border-color:#CF0652;transform:translateY(-2px)}
       <div class="card-title">IP Access Manager</div>
       <div class="card-desc">게시된 리포트 열람 허용 IP 대역 관리</div>
     </a>
+    <a class="card" href="/admin/ai-settings">
+      <div class="card-title">AI Settings</div>
+      <div class="card-desc">AI 인사이트 생성 프롬프트 규칙 · 모델 설정</div>
+    </a>
   </div>
   <button class="logout" onclick="fetch('/api/auth/logout',{method:'POST'}).then(function(){location.href='/admin/login'})">로그아웃</button>
 </div></body></html>`)
@@ -989,6 +1019,92 @@ async function del(id){
   if(j.ok){list=j.list;render()}
 }
 document.addEventListener('click',function(e){if(e.target.classList.contains('del-btn'))del(e.target.dataset.id)});
+load();
+</script></body></html>`)
+})
+
+// ─── AI Settings UI ──────────────────────────────────────────────────────────
+app.get('/admin/ai-settings', (req, res) => {
+  res.set('Content-Type', 'text/html; charset=utf-8')
+  res.send(`<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AI Settings</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0F172A;font-family:'LG Smart','Arial Narrow',Arial,sans-serif;color:#E2E8F0;padding:32px 24px}
+.container{max-width:720px;margin:0 auto}
+.top{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.back{color:#64748B;text-decoration:none;font-size:13px}.back:hover{color:#94A3B8}
+.logout{background:none;border:1px solid #334155;color:#64748B;padding:6px 16px;border-radius:6px;font-size:12px;cursor:pointer}.logout:hover{border-color:#64748B;color:#94A3B8}
+h1{font-size:22px;font-weight:700;color:#F8FAFC;margin-bottom:6px}
+.desc{font-size:13px;color:#64748B;margin-bottom:24px}
+.section{background:#1E293B;border:1px solid #334155;border-radius:12px;padding:24px;margin-bottom:20px}
+.section h2{font-size:15px;font-weight:700;margin-bottom:12px;color:#F8FAFC}
+.section p.hint{font-size:12px;color:#64748B;margin-bottom:12px;line-height:1.6}
+label{display:block;font-size:12px;color:#94A3B8;margin-bottom:6px;font-weight:600}
+textarea,input[type=text],select{width:100%;padding:10px 12px;border-radius:8px;border:1px solid #334155;background:#0F172A;color:#E2E8F0;font-size:13px;outline:none;font-family:inherit;line-height:1.6}
+textarea:focus,input:focus,select:focus{border-color:#CF0652}
+textarea{resize:vertical;min-height:120px}
+.form-row{margin-bottom:16px}
+.row2{display:flex;gap:12px}.row2>div{flex:1}
+.save-btn{padding:10px 24px;border:none;border-radius:8px;background:#CF0652;color:#fff;font-weight:700;font-size:14px;cursor:pointer;margin-top:8px}
+.save-btn:hover{opacity:.9}
+.status{font-size:12px;margin-top:8px;min-height:18px}.status.ok{color:#4ADE80}.status.err{color:#F87171}
+</style></head><body>
+<div class="container">
+  <div class="top">
+    <a class="back" href="/admin/">&#8592; Admin Dashboard</a>
+    <button class="logout" onclick="fetch('/api/auth/logout',{method:'POST'}).then(function(){location.href='/admin/login'})">로그아웃</button>
+  </div>
+  <h1>AI Settings</h1>
+  <p class="desc">AI 인사이트 생성 시 적용되는 프롬프트 규칙과 모델 설정을 관리합니다.</p>
+  <div class="section">
+    <h2>프롬프트 규칙</h2>
+    <p class="hint">모든 AI 생성 버튼에 공통 적용됩니다. 각 줄에 하나의 규칙을 작성하세요.</p>
+    <div class="form-row">
+      <textarea id="rules" rows="8"></textarea>
+    </div>
+  </div>
+  <div class="section">
+    <h2>모델 설정</h2>
+    <div class="row2">
+      <div>
+        <label>모델</label>
+        <select id="model">
+          <option value="claude-sonnet-4-20250514">Claude Sonnet 4 (빠름, 저렴)</option>
+          <option value="claude-opus-4-20250514">Claude Opus 4 (고품질)</option>
+        </select>
+      </div>
+      <div>
+        <label>최대 토큰</label>
+        <input type="text" id="maxTokens" placeholder="500">
+      </div>
+    </div>
+  </div>
+  <button class="save-btn" onclick="save()">저장</button>
+  <p class="status" id="status"></p>
+</div>
+<script>
+async function load(){
+  var r=await fetch('/api/ai-settings');
+  if(r.status===401){location.href='/admin/login';return}
+  var j=await r.json();if(!j.ok)return;
+  document.getElementById('rules').value=j.settings.promptRules||'';
+  document.getElementById('model').value=j.settings.model||'claude-sonnet-4-20250514';
+  document.getElementById('maxTokens').value=j.settings.maxTokens||500;
+}
+async function save(){
+  var st=document.getElementById('status');
+  var body={
+    promptRules:document.getElementById('rules').value,
+    model:document.getElementById('model').value,
+    maxTokens:parseInt(document.getElementById('maxTokens').value)||500
+  };
+  var r=await fetch('/api/ai-settings',{method:'PUT',headers:{'Content-Type':'application/json','X-Requested-With':'XMLHttpRequest'},body:JSON.stringify(body)});
+  var j=await r.json();
+  if(j.ok){st.textContent='저장되었습니다';st.className='status ok'}
+  else{st.textContent=j.error||'저장 실패';st.className='status err'}
+}
 load();
 </script></body></html>`)
 })
