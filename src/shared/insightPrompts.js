@@ -4,19 +4,22 @@
 export function buildInsightPrompt(type, data) {
   if (type === 'product') {
     const products = data.products || []
-    const avg = products.length ? (products.reduce((s, p) => s + p.score, 0) / products.length).toFixed(1) : 0
+    const t = data.total || {}
     const summary = products.map(p => {
       const w = p.weekly || []
       const wow = w.length >= 2 ? (w[w.length - 1] - w[w.length - 2]).toFixed(1) + '%p' : '—'
       return `${p.kr}: ${p.score}% (경쟁사 대비 ${p.compRatio || '—'}%, 상태: ${p.status}, WoW: ${wow})`
     }).join('\n')
-    return `아래는 제품별 GEO Visibility 현황입니다. 데이터를 분석하여 핵심 인사이트를 작성해주세요.
+    return `아래는 제품별 GEO Visibility 현황입니다. 기준 템플릿의 수치만 교체하세요.
 
-전체 평균: ${avg}%
+※ 아래 수치는 Monthly Visibility Summary 시트 원본값입니다. 직접 계산하지 마세요.
+전체 LG Visibility: ${t.score || '—'}% (경쟁사: ${t.vsComp || '—'}%)
+${t.buTotals ? '본부별: ' + Object.entries(t.buTotals).map(([bu, v]) => `${bu} ${v.lg}%(경쟁 ${v.comp}%)`).join(', ') : ''}
+
 제품별 상세:
 ${summary}
 
-[분석 포인트: 상위/하위 카테고리 격차, 경쟁사 대비 취약 영역, 주간 추세 변화, 우선 개선 카테고리]`
+[주의: 전체 수치는 위의 "전체 LG Visibility" 값을 사용. 제품별 평균으로 계산하지 말 것]`
   }
 
   if (type === 'citation') {
@@ -91,16 +94,22 @@ ${summary}
 
   if (type === 'totalInsight') {
     const products = data.products || []
-    const avg = products.length ? (products.reduce((s, p) => s + p.score, 0) / products.length).toFixed(1) : 0
-    const leads = products.filter(p => p.status === 'lead').length
-    const criticals = products.filter(p => p.status === 'critical').length
-    return `아래는 전체 GEO Visibility 현황입니다. Executive Summary 수준의 전략 인사이트를 작성해주세요.
+    const t = data.total || {}
+    const leads = products.filter(p => p.status === 'lead')
+    const criticals = products.filter(p => p.status === 'critical')
+    const behinds = products.filter(p => p.status === 'behind')
+    return `아래는 전체 GEO Visibility 현황입니다. 기준 템플릿의 수치만 교체하세요.
 
-전체 ${products.length}개 카테고리, 평균 가시성: ${avg}%
-선도: ${leads}개, 취약: ${criticals}개
-제품별: ${products.map(p => `${p.kr} ${p.score}%`).join(', ')}
+※ 아래 수치는 Monthly Visibility Summary 시트 TTL 원본값입니다. 직접 계산하지 마세요.
+전체 LG Visibility: ${t.score || '—'}%
+전체 경쟁사 Visibility: ${t.vsComp || '—'}%
+${t.buTotals ? '본부별: ' + Object.entries(t.buTotals).map(([bu, v]) => `${bu} LG ${v.lg}% / 경쟁 ${v.comp}%`).join(', ') : ''}
 
-[작성 포인트: 전체 가시성 수준 평가, 핵심 성과/리스크, 경쟁사 대비 전략 방향, 우선 액션 1~2개]`
+선도(≥100%): ${leads.map(p => `${p.kr}(${p.score}%)`).join(', ') || '없음'}
+추격(≥80%): ${behinds.map(p => `${p.kr}(${p.score}%)`).join(', ') || '없음'}
+취약(<80%): ${criticals.map(p => `${p.kr}(${p.score}%)`).join(', ') || '없음'}
+
+[주의: "LG전자는 X%의 글로벌 Visibility" 에서 X는 위의 "전체 LG Visibility" 값 사용. 제품별 평균이 아님]`
   }
 
   if (type === 'howToRead') {

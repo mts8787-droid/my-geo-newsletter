@@ -845,7 +845,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
           <button onClick={async () => {
               try {
                 setMeta(m => ({ ...m, totalInsight: '⏳ AI 생성 중...' }))
-                const insight = await generateAIInsight('totalInsight', { products: resolved.products }, previewLang)
+                const insight = await generateAIInsight('totalInsight', { products: resolved.products, total }, previewLang)
                 setMeta(m => ({ ...m, totalInsight: insight }))
               } catch (err) { console.error('[AI]', err); setMeta(m => ({ ...m, totalInsight: `[AI 실패: ${err.message}]` })) }
             }}
@@ -871,7 +871,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
             <button onClick={async () => {
                 try {
                   setMeta(m => ({ ...m, productInsight: '⏳ AI 생성 중...' }))
-                  const insight = await generateAIInsight('product', { products: resolved.products }, previewLang)
+                  const insight = await generateAIInsight('product', { products: resolved.products, total }, previewLang)
                   setMeta(m => ({ ...m, productInsight: insight }))
                 } catch (err) { console.error('[AI]', err); setMeta(m => ({ ...m, productInsight: `[AI 실패: ${err.message}]\n\n` + generateProductInsight(resolved.products) })) }
               }}
