@@ -1139,21 +1139,21 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                                 <td width="33%" style="padding:0 4px 0 0;">
                                   <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border-radius:8px;background:#1E293B;border:1px solid #334155;">
                                     <tr><td align="center" style="padding:10px 8px;">
-                                      <a href="/p/GEO-KPI-Dashboard-KO" style="color:#F8FAFC;font-size:13px;font-weight:700;font-family:${EM_FONT};text-decoration:none;">📊 Visibility Dashboard</a>
+                                      <a href="/p/GEO-KPI-Dashboard-KO" target="_blank" style="color:#F8FAFC;font-size:13px;font-weight:700;font-family:${EM_FONT};text-decoration:none;">📊 Visibility Dashboard</a>
                                     </td></tr>
                                   </table>
                                 </td>
                                 <td width="33%" style="padding:0 2px;">
                                   <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border-radius:8px;background:#1E293B;border:1px solid #334155;">
                                     <tr><td align="center" style="padding:10px 8px;">
-                                      <a href="/p/GEO-Citation-Dashboard-KO" style="color:#F8FAFC;font-size:13px;font-weight:700;font-family:${EM_FONT};text-decoration:none;">📋 Citation Dashboard</a>
+                                      <a href="/p/GEO-Citation-Dashboard-KO" target="_blank" style="color:#F8FAFC;font-size:13px;font-weight:700;font-family:${EM_FONT};text-decoration:none;">📋 Citation Dashboard</a>
                                     </td></tr>
                                   </table>
                                 </td>
                                 <td width="33%" style="padding:0 0 0 4px;">
                                   <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border-radius:8px;background:#1E293B;border:1px solid #334155;">
                                     <tr><td align="center" style="padding:10px 8px;">
-                                      <a href="/p/GEO-Progress-Tracker" style="color:#F8FAFC;font-size:13px;font-weight:700;font-family:${EM_FONT};text-decoration:none;">🎯 Action Tracker</a>
+                                      <a href="/p/GEO-Progress-Tracker" target="_blank" style="color:#F8FAFC;font-size:13px;font-weight:700;font-family:${EM_FONT};text-decoration:none;">🎯 Action Tracker</a>
                                     </td></tr>
                                   </table>
                                 </td>
