@@ -94,6 +94,32 @@ export async function syncFromGoogleSheets(sheetId, onProgress) {
       result.productsPartial = productsPartial
       console.log(`[SYNC] weeklyAll에서 ${productsPartial.length}개 제품 생성:`, productsPartial.map(p => `${p.id}=${p.score}`).join(', '))
     }
+
+    // productsCnty도 없으면 weeklyAll 국가별 데이터에서 생성
+    if (!result.productsCnty) {
+      const productsCnty = []
+      for (const [id, byCountry] of Object.entries(result.weeklyAll)) {
+        const category = ID_KR[id] || id
+        for (const [cnty, brands] of Object.entries(byCountry)) {
+          if (cnty === 'Total' || cnty === 'TTL') continue
+          const lgArr = brands['LG'] || brands['lg'] || []
+          const lgScore = lgArr.length ? lgArr[lgArr.length - 1] : 0
+          if (lgScore <= 0) continue
+          let topCompName = '', topCompScore = 0
+          for (const [brand, arr] of Object.entries(brands)) {
+            if (brand === 'LG' || brand === 'lg') continue
+            const last = arr.length ? arr[arr.length - 1] : 0
+            if (last > topCompScore) { topCompScore = last; topCompName = brand }
+          }
+          const gap = +(lgScore - topCompScore).toFixed(1)
+          productsCnty.push({ product: category, country: cnty, score: lgScore, compName: topCompName, compScore: topCompScore, gap })
+        }
+      }
+      if (productsCnty.length) {
+        result.productsCnty = productsCnty
+        console.log(`[SYNC] weeklyAll에서 productsCnty ${productsCnty.length}건 생성`)
+      }
+    }
   }
 
   return result
