@@ -56,10 +56,17 @@ function writeAiSettings(settings) {
 // ─── Archives storage (AI 학습 데이터) ───────────────────────────────────────
 const ARCHIVES_FILE = join(DATA_DIR, 'archives.json')
 function readArchives() {
-  try { return JSON.parse(readFileSync(ARCHIVES_FILE, 'utf-8')) } catch { return [] }
+  try {
+    const data = JSON.parse(readFileSync(ARCHIVES_FILE, 'utf-8'))
+    return Array.isArray(data) ? data : []
+  } catch (err) {
+    console.log(`[ARCHIVES] readArchives: file=${ARCHIVES_FILE}, error=${err.message}`)
+    return []
+  }
 }
 function writeArchives(list) {
   writeFileSync(ARCHIVES_FILE, JSON.stringify(list, null, 2))
+  console.log(`[ARCHIVES] writeArchives: ${list.length}건 저장 → ${ARCHIVES_FILE}`)
 }
 
 // ─── IP Allowlist storage ────────────────────────────────────────────────────
@@ -1046,10 +1053,13 @@ load();
 
 // ─── Archives API (아카이빙 학습 데이터) ─────────────────────────────────────
 app.get('/api/archives', (req, res) => {
-  res.json({ ok: true, archives: readArchives() })
+  const archives = readArchives()
+  console.log(`[ARCHIVES] GET — ${archives.length}건 반환`)
+  res.json({ ok: true, archives })
 })
 app.post('/api/archives', (req, res) => {
   const { period, insights } = req.body || {}
+  console.log(`[ARCHIVES] POST — period="${period}", insights keys: ${insights ? Object.keys(insights).filter(k => insights[k]).join(',') : 'NONE'}`)
   if (!period || !insights) return res.status(400).json({ ok: false, error: 'period, insights 필수' })
   const list = readArchives()
   // 같은 period가 있으면 덮어쓰기
