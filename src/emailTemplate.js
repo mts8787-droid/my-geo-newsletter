@@ -138,10 +138,10 @@ function weeklyTrendHtml(weekly, color, globalMax, globalMin, weeklyLabels) {
     const spacer = MAX_H - h
     return `<td style="vertical-align:bottom;text-align:center;padding:0 2px;">
       <table border="0" cellpadding="0" cellspacing="0" align="center" style="margin:0 auto;">
-        <tr><td style="font-size:8px;font-weight:700;color:${color};font-family:${EM_FONT};padding-bottom:1px;">${v.toFixed(1)}</td></tr>
+        <tr><td style="font-size:10px;font-weight:700;color:${color};font-family:${EM_FONT};padding-bottom:1px;">${v.toFixed(1)}</td></tr>
         ${spacer > 0 ? `<tr><td height="${spacer}" style="font-size:0;line-height:0;">&nbsp;</td></tr>` : ''}
         <tr><td width="10" height="${h}" style="background:${color};font-size:0;line-height:0;">&nbsp;</td></tr>
-        <tr><td style="font-size:8px;color:#94A3B8;font-family:${EM_FONT};padding-top:2px;">${labels[i] || ''}</td></tr>
+        <tr><td style="font-size:10px;color:#94A3B8;font-family:${EM_FONT};padding-top:2px;">${labels[i] || ''}</td></tr>
       </table>
     </td>`
   }).join('')
@@ -170,7 +170,7 @@ function monthlyTrendHtml(monthly, color, globalMax, globalMin) {
       <table border="0" cellpadding="0" cellspacing="0" align="center" style="margin:0 auto;">
         ${spacer > 0 ? `<tr><td height="${spacer}" style="font-size:0;line-height:0;">&nbsp;</td></tr>` : ''}
         <tr><td width="10" height="${h}" style="background:${color};font-size:0;line-height:0;">&nbsp;</td></tr>
-        <tr><td style="font-size:9px;color:#94A3B8;font-family:${EM_FONT};padding-top:2px;">${labels[i] || ''}</td></tr>
+        <tr><td style="font-size:11px;color:#94A3B8;font-family:${EM_FONT};padding-top:2px;">${labels[i] || ''}</td></tr>
       </table>
     </td>`
   }).join('')
@@ -195,9 +195,9 @@ function productCardHtml(p, globalMax, globalMin, lang = 'ko', opts = {}) {
   const trendTitle = weekCount > 0 ? (lang === 'en' ? `${weekCount}W Trend` : `${weekCount}주 트렌드`) : t.weekTrend
 
   // 트렌드 영역: 대시보드 모드일 때 주별/월별 모두 생성
-  const weeklyContent = `<table border="0" cellpadding="0" cellspacing="0" width="100%"><tr><td align="right" style="font-size:10px;color:#94A3B8;padding-bottom:2px;font-family:${EM_FONT};">${trendTitle}</td></tr></table>
+  const weeklyContent = `<table border="0" cellpadding="0" cellspacing="0" width="100%"><tr><td align="right" style="font-size:12px;color:#94A3B8;padding-bottom:2px;font-family:${EM_FONT};">${trendTitle}</td></tr></table>
                 ${weeklyTrendHtml(trendArr, sparkColor, globalMax, globalMin, weeklyLabels)}`
-  const monthlyContent = `<table border="0" cellpadding="0" cellspacing="0" width="100%"><tr><td align="right" style="font-size:10px;color:#94A3B8;padding-bottom:2px;font-family:${EM_FONT};">${t.monthTrend}</td></tr></table>
+  const monthlyContent = `<table border="0" cellpadding="0" cellspacing="0" width="100%"><tr><td align="right" style="font-size:12px;color:#94A3B8;padding-bottom:2px;font-family:${EM_FONT};">${t.monthTrend}</td></tr></table>
                 ${monthlyTrendHtml(monthlyArr, sparkColor, monthlyGlobalMax, monthlyGlobalMin)}`
 
   const trendCell = showTrendTabs
@@ -211,10 +211,10 @@ function productCardHtml(p, globalMax, globalMin, lang = 'ko', opts = {}) {
         <td style="padding:12px 13px 6px;">
           <table border="0" cellpadding="0" cellspacing="0" width="100%">
             <tr>
-              <td style="font-size:17px;font-weight:900;color:#1A1A1A;line-height:22px;vertical-align:middle;">${escapeHtml(p.kr)}</td>
+              <td style="font-size:19px;font-weight:900;color:#1A1A1A;line-height:22px;vertical-align:middle;">${escapeHtml(p.kr)}</td>
               <td align="right" style="vertical-align:middle;">
                 <table border="0" cellpadding="0" cellspacing="0" align="right"><tr>
-                  <td style="background:${st.bg};color:${st.color};border:1px solid ${st.border};border-radius:10px;padding:2px 7px;font-size:11px;font-weight:700;line-height:22px;font-family:${EM_FONT};">${st.label}</td>
+                  <td style="background:${st.bg};color:${st.color};border:1px solid ${st.border};border-radius:10px;padding:2px 7px;font-size:13px;font-weight:700;line-height:22px;font-family:${EM_FONT};">${st.label}</td>
                 </tr></table>
               </td>
             </tr>
@@ -226,15 +226,15 @@ function productCardHtml(p, globalMax, globalMin, lang = 'ko', opts = {}) {
           <table border="0" cellpadding="0" cellspacing="0" width="100%">
             <tr>
               <td>
-                <span style="font-size:28px;font-weight:900;color:#1A1A1A;">${p.score.toFixed(1)}</span>
-                <span style="font-size:14px;color:#94A3B8;"> %</span>
+                <span style="font-size:30px;font-weight:900;color:#1A1A1A;">${p.score.toFixed(1)}</span>
+                <span style="font-size:16px;color:#94A3B8;"> %</span>
               </td>
               <td align="right" style="vertical-align:top;padding-top:2px;">
                 ${trendCell}
               </td>
             </tr>
             <tr>
-              <td colspan="2" style="padding-top:4px;">${p.prev ? deltaHtml(d, 13, true) : `<span style="color:#94A3B8;font-size:13px;">MoM —</span>`}</td>
+              <td colspan="2" style="padding-top:4px;">${p.prev ? deltaHtml(d, 13, true) : `<span style="color:#94A3B8;font-size:15px;">MoM —</span>`}</td>
             </tr>
           </table>
         </td>
@@ -243,9 +243,15 @@ function productCardHtml(p, globalMax, globalMin, lang = 'ko', opts = {}) {
         <td style="padding:0 13px 12px;">
           <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#F8FAFC;border-radius:6px;">
             <tr>
-              <td style="padding:6px 8px;font-size:13px;color:#1A1A1A;">${lang === 'en' ? `${t.vsComp} ${ssName(p.compName)}` : `${ssName(p.compName)} ${t.vsComp}`}</td>
-              <td align="right" style="padding:6px 8px;font-size:13px;font-weight:700;color:${(p.compRatio || 0) >= 100 ? '#15803D' : (p.compRatio || 0) >= 80 ? '#E8910C' : '#BE123C'};">
-                ${p.compRatio || Math.round(p.vsComp > 0 ? (p.score / p.vsComp) * 100 : 100)}%
+              <td style="padding:6px 8px;font-size:15px;color:#1A1A1A;">${lang === 'en' ? `${t.vsComp} ${ssName(p.compName)}` : `${ssName(p.compName)} ${t.vsComp}`}</td>
+              <td align="right" style="padding:6px 8px;font-size:15px;font-weight:700;color:${(p.compRatio || 0) >= 100 ? '#15803D' : (p.compRatio || 0) >= 80 ? '#E8910C' : '#BE123C'};">
+                ${(() => {
+                  const curRatio = p.compRatio || Math.round(p.vsComp > 0 ? (p.score / p.vsComp) * 100 : 100)
+                  const prevRatio = p.prev && p.vsComp > 0 ? Math.round((p.prev / p.vsComp) * 100) : 0
+                  const ratioDelta = prevRatio > 0 ? curRatio - prevRatio : 0
+                  const deltaStr = ratioDelta !== 0 ? ` <span style="font-size:11px;color:${ratioDelta > 0 ? '#16A34A' : '#DC2626'};">${ratioDelta > 0 ? '+' : ''}${ratioDelta}%p</span>` : ''
+                  return `${curRatio}%${deltaStr}`
+                })()}
               </td>
             </tr>
           </table>
@@ -271,7 +277,7 @@ function buSectionHtml(buKey, buProducts, globalMax, globalMin, lang = 'ko', opt
       ${row.map(p => p ? productCardHtml(p, globalMax, globalMin, lang, opts) : '<td width="33%" style="padding:5px;"></td>').join('')}
     </tr>`).join('')
 
-  const buScoreHtml = `<span style="font-size:14px;color:#94A3B8;font-family:${EM_FONT};">${buProducts.length}${t.categories}</span>`
+  const buScoreHtml = `<span style="font-size:16px;color:#94A3B8;font-family:${EM_FONT};">${buProducts.length}${t.categories}</span>`
 
   return `
   <!-- ${buKey} BU 헤더 -->
@@ -282,7 +288,7 @@ function buSectionHtml(buKey, buProducts, globalMax, globalMin, lang = 'ko', opt
           <td style="background:#F1F5F9;border-radius:7px;padding:7px 12px;">
             <table border="0" cellpadding="0" cellspacing="0" width="100%">
               <tr>
-                <td style="font-size:15px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${escapeHtml(buKey)}</td>
+                <td style="font-size:17px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${escapeHtml(buKey)}</td>
                 <td align="right">${buScoreHtml}</td>
               </tr>
             </table>
@@ -312,8 +318,8 @@ function insightBlockHtml(insight, showInsight, howToRead, showHowToRead, lang =
         <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border-radius:8px;background:#FFF4F7;border:1px solid #F5CCD8;">
           <tr>
             <td style="padding:10px 14px;">
-              <p style="margin:0 0 4px;font-size:11px;font-weight:700;color:${EM_RED};font-family:${EM_FONT};">${t.insight}</p>
-              <p style="margin:0;font-size:12px;color:#1A1A1A;line-height:22px;font-family:${EM_FONT};">${mdBold(insight)}</p>
+              <p style="margin:0 0 4px;font-size:13px;font-weight:700;color:${EM_RED};font-family:${EM_FONT};">${t.insight}</p>
+              <p style="margin:0;font-size:14px;color:#1A1A1A;line-height:22px;font-family:${EM_FONT};">${mdBold(insight)}</p>
             </td>
           </tr>
         </table>
@@ -327,8 +333,8 @@ function insightBlockHtml(insight, showInsight, howToRead, showHowToRead, lang =
         <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border-radius:8px;background:#F8FAFC;border:1px solid #E2E8F0;">
           <tr>
             <td style="padding:10px 14px;">
-              <p style="margin:0 0 4px;font-size:11px;font-weight:700;color:#64748B;font-family:${EM_FONT};">${t.howToRead}</p>
-              <p style="margin:0;font-size:12px;color:#475569;line-height:22px;font-family:${EM_FONT};">${mdBold(howToRead)}</p>
+              <p style="margin:0 0 4px;font-size:13px;font-weight:700;color:#64748B;font-family:${EM_FONT};">${t.howToRead}</p>
+              <p style="margin:0;font-size:14px;color:#475569;line-height:22px;font-family:${EM_FONT};">${mdBold(howToRead)}</p>
             </td>
           </tr>
         </table>
@@ -378,10 +384,10 @@ function countryProductSectionHtml(productName, rows, lang) {
       <table border="0" cellpadding="0" cellspacing="0" align="center" style="margin:0 auto;table-layout:fixed;width:100%;">
         ${spacerH > 0 ? `<tr><td height="${spacerH}" style="font-size:0;line-height:0;">&nbsp;</td></tr>` : ''}
         <tr><td height="${barH}" style="font-size:0;line-height:0;"><table border="0" cellpadding="0" cellspacing="0" align="center"><tr><td width="26" height="${barH}" style="background:${barColor};border-radius:3px 3px 0 0;font-size:0;line-height:0;">&nbsp;</td></tr></table></td></tr>
-        <tr><td style="font-size:11px;font-weight:800;color:${barColor};font-family:${EM_FONT};padding-top:3px;white-space:nowrap;overflow:hidden;">${r.score.toFixed(1)}</td></tr>
-        <tr><td style="font-size:10px;color:#475569;font-family:${EM_FONT};padding-top:2px;white-space:nowrap;overflow:hidden;">${escapeHtml(r.country)}</td></tr>
-        <tr><td style="font-size:9px;color:#94A3B8;font-family:${EM_FONT};padding-top:2px;white-space:nowrap;overflow:hidden;">${ssName(r.compName)} ${r.compScore.toFixed(1)}</td></tr>
-        <tr><td style="font-size:9px;font-weight:700;color:${gapColor};font-family:${EM_FONT};padding-top:1px;white-space:nowrap;overflow:hidden;">${gapStr}</td></tr>
+        <tr><td style="font-size:13px;font-weight:800;color:${barColor};font-family:${EM_FONT};padding-top:3px;white-space:nowrap;overflow:hidden;">${r.score.toFixed(1)}</td></tr>
+        <tr><td style="font-size:12px;color:#475569;font-family:${EM_FONT};padding-top:2px;white-space:nowrap;overflow:hidden;">${escapeHtml(r.country)}</td></tr>
+        <tr><td style="font-size:11px;color:#94A3B8;font-family:${EM_FONT};padding-top:2px;white-space:nowrap;overflow:hidden;">${ssName(r.compName)} ${r.compScore.toFixed(1)}</td></tr>
+        <tr><td style="font-size:11px;font-weight:700;color:${gapColor};font-family:${EM_FONT};padding-top:1px;white-space:nowrap;overflow:hidden;">${gapStr}</td></tr>
       </table>
     </td>`
   }).join('')
@@ -394,8 +400,8 @@ function countryProductSectionHtml(productName, rows, lang) {
           <td style="background:#F1F5F9;border-radius:7px;padding:7px 12px;">
             <table border="0" cellpadding="0" cellspacing="0" width="100%">
               <tr>
-                <td style="font-size:14px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${escapeHtml(productName)}</td>
-                <td align="right" style="font-size:11px;">
+                <td style="font-size:16px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${escapeHtml(productName)}</td>
+                <td align="right" style="font-size:13px;">
                   ${summaryParts.join(`<span style="color:#CBD5E1;font-family:${EM_FONT};"> &nbsp;·&nbsp; </span>`)}
                 </td>
               </tr>
@@ -444,11 +450,11 @@ function countryVisibilitySectionHtml(productsCnty, meta, lang) {
                               <table border="0" cellpadding="0" cellspacing="0">
                                 <tr>
                                   <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
-                                  <td style="padding-left:8px;font-size:17px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${t.cntyTitle}</td>
+                                  <td style="padding-left:8px;font-size:19px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${t.cntyTitle}</td>
                                 </tr>
                               </table>
                             </td>
-                            <td align="right" style="vertical-align:middle;font-size:11px;color:#94A3B8;font-family:${EM_FONT};">
+                            <td align="right" style="vertical-align:middle;font-size:13px;color:#94A3B8;font-family:${EM_FONT};">
                               <span style="color:#15803D;">●</span> ${t.legendLead} &nbsp;
                               <span style="color:#E8910C;">●</span> ${t.legendBehind} &nbsp;
                               <span style="color:#BE123C;">●</span> ${t.legendCritical}
@@ -491,10 +497,10 @@ function citationDomainCntyRowsHtml(cntyRows, domTopN) {
           <tr>
             <td width="150" style="padding:10px 12px 10px 16px;vertical-align:middle;">
               <table border="0" cellpadding="0" cellspacing="0"><tr>
-                <td width="22" height="22" align="center" style="background:${c.rank <= 3 ? EM_RED : '#F1F5F9'};border-radius:4px;font-size:11px;font-weight:800;color:${c.rank <= 3 ? '#FFFFFF' : '#94A3B8'};font-family:${EM_FONT};line-height:22px;">${c.rank}</td>
+                <td width="22" height="22" align="center" style="background:${c.rank <= 3 ? EM_RED : '#F1F5F9'};border-radius:4px;font-size:13px;font-weight:800;color:${c.rank <= 3 ? '#FFFFFF' : '#94A3B8'};font-family:${EM_FONT};line-height:22px;">${c.rank}</td>
                 <td style="padding-left:7px;vertical-align:middle;">
-                  <p style="margin:0;font-size:12px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${escapeHtml(stripDomain(c.domain))}</p>
-                  <span style="font-size:10px;color:#94A3B8;font-family:${EM_FONT};background:#F8FAFC;border-radius:4px;padding:1px 5px;">${escapeHtml(c.type)}</span>
+                  <p style="margin:0;font-size:14px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${escapeHtml(stripDomain(c.domain))}</p>
+                  <span style="font-size:12px;color:#94A3B8;font-family:${EM_FONT};background:#F8FAFC;border-radius:4px;padding:1px 5px;">${escapeHtml(c.type)}</span>
                 </td>
               </tr></table>
             </td>
@@ -503,8 +509,8 @@ function citationDomainCntyRowsHtml(cntyRows, domTopN) {
                 <tr>
                   <td width="${barPct}%" style="background:${EM_RED};border-radius:6px;height:24px;font-size:0;">&nbsp;</td>
                   <td style="height:24px;padding-left:8px;white-space:nowrap;vertical-align:middle;">
-                    <span style="font-size:13px;font-weight:700;color:${EM_RED};font-family:${EM_FONT};">${fmtN(c.citations)}</span>
-                    <span style="font-size:13px;color:#64748B;font-family:${EM_FONT};">&nbsp;(${ratio}%)</span>
+                    <span style="font-size:15px;font-weight:700;color:${EM_RED};font-family:${EM_FONT};">${fmtN(c.citations)}</span>
+                    <span style="font-size:15px;color:#64748B;font-family:${EM_FONT};">&nbsp;(${ratio}%)</span>
                   </td>
                 </tr>
               </table>
@@ -541,7 +547,7 @@ function citationDomainSectionHtml(citationsCnty, meta, lang, citations) {
                               <table border="0" cellpadding="0" cellspacing="0">
                                 <tr>
                                   <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
-                                  <td style="padding-left:8px;font-size:17px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${t.citationDomainTitle}</td>
+                                  <td style="padding-left:8px;font-size:19px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${t.citationDomainTitle}</td>
                                 </tr>
                               </table>
                             </td>
@@ -573,9 +579,9 @@ function citationCntyCountryHtml(cntyCode, rows, lang) {
       <table border="0" cellpadding="0" cellspacing="0" align="center" style="margin:0 auto;table-layout:fixed;width:100%;">
         ${spacerH > 0 ? `<tr><td height="${spacerH}" style="font-size:0;line-height:0;">&nbsp;</td></tr>` : ''}
         <tr><td height="${barH}" style="font-size:0;line-height:0;"><table border="0" cellpadding="0" cellspacing="0" align="center"><tr><td width="22" height="${barH}" style="background:${EM_RED};border-radius:3px 3px 0 0;font-size:0;line-height:0;">&nbsp;</td></tr></table></td></tr>
-        <tr><td style="font-size:11px;font-weight:800;color:${EM_RED};font-family:${EM_FONT};padding-top:3px;white-space:nowrap;">${fmtN(r.citations)}</td></tr>
-        <tr><td style="font-size:11px;color:#1A1A1A;font-family:${EM_FONT};padding-top:2px;word-break:break-all;font-weight:600;">${domainShort}</td></tr>
-        <tr><td style="font-size:11px;color:#94A3B8;font-family:${EM_FONT};padding-top:1px;word-break:break-all;">${r.type}</td></tr>
+        <tr><td style="font-size:13px;font-weight:800;color:${EM_RED};font-family:${EM_FONT};padding-top:3px;white-space:nowrap;">${fmtN(r.citations)}</td></tr>
+        <tr><td style="font-size:13px;color:#1A1A1A;font-family:${EM_FONT};padding-top:2px;word-break:break-all;font-weight:600;">${domainShort}</td></tr>
+        <tr><td style="font-size:13px;color:#94A3B8;font-family:${EM_FONT};padding-top:1px;word-break:break-all;">${r.type}</td></tr>
       </table>
     </td>`
   }).join('')
@@ -588,8 +594,8 @@ function citationCntyCountryHtml(cntyCode, rows, lang) {
           <td style="background:#F1F5F9;border-radius:7px;padding:7px 12px;">
             <table border="0" cellpadding="0" cellspacing="0" width="100%">
               <tr>
-                <td style="font-size:14px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${escapeHtml(cntyCode)}</td>
-                <td align="right" style="font-size:11px;color:#94A3B8;font-family:${EM_FONT};">Top ${rows.length}</td>
+                <td style="font-size:16px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${escapeHtml(cntyCode)}</td>
+                <td align="right" style="font-size:13px;color:#94A3B8;font-family:${EM_FONT};">Top ${rows.length}</td>
               </tr>
             </table>
           </td>
@@ -637,7 +643,7 @@ function citationCntySectionHtml(citationsCnty, meta, lang) {
                               <table border="0" cellpadding="0" cellspacing="0">
                                 <tr>
                                   <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
-                                  <td style="padding-left:8px;font-size:17px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${t.citationCntyTitle}</td>
+                                  <td style="padding-left:8px;font-size:19px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${t.citationCntyTitle}</td>
                                 </tr>
                               </table>
                             </td>
@@ -674,11 +680,11 @@ function citationRowHtml(c, isLast, maxScore) {
       <table border="0" cellpadding="0" cellspacing="0">
         <tr>
           <td width="22" style="vertical-align:top;padding-top:1px;">
-            <table border="0" cellpadding="0" cellspacing="0"><tr><td width="22" height="22" style="background:${rankBg};color:${rankColor};border-radius:4px;font-size:11px;font-weight:800;text-align:center;line-height:22px;font-family:${EM_FONT};">${c.rank}</td></tr></table>
+            <table border="0" cellpadding="0" cellspacing="0"><tr><td width="22" height="22" style="background:${rankBg};color:${rankColor};border-radius:4px;font-size:13px;font-weight:800;text-align:center;line-height:22px;font-family:${EM_FONT};">${c.rank}</td></tr></table>
           </td>
           <td style="padding-left:5px;vertical-align:top;">
-            <table border="0" cellpadding="0" cellspacing="0"><tr><td style="font-size:13px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};line-height:20px;">${escapeHtml(c.source)}</td></tr></table>
-            <table border="0" cellpadding="0" cellspacing="0"><tr><td style="font-size:11px;color:#94A3B8;background:#F8FAFC;border-radius:4px;padding:1px 5px;font-family:${EM_FONT};">${escapeHtml(c.category)}</td></tr></table>
+            <table border="0" cellpadding="0" cellspacing="0"><tr><td style="font-size:15px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};line-height:20px;">${escapeHtml(c.source)}</td></tr></table>
+            <table border="0" cellpadding="0" cellspacing="0"><tr><td style="font-size:13px;color:#94A3B8;background:#F8FAFC;border-radius:4px;padding:1px 5px;font-family:${EM_FONT};">${escapeHtml(c.category)}</td></tr></table>
           </td>
         </tr>
       </table>
@@ -688,8 +694,8 @@ function citationRowHtml(c, isLast, maxScore) {
         <tr>
           <td width="${barPct}%" style="background:${EM_RED};border-radius:6px;height:24px;font-size:0;">&nbsp;</td>
           <td style="height:24px;padding-left:8px;white-space:nowrap;vertical-align:middle;">
-            <span style="font-size:13px;font-weight:700;color:${EM_RED};font-family:${EM_FONT};">${scoreStr}</span>
-            <span style="font-size:13px;color:#64748B;font-family:${EM_FONT};">&nbsp;(${c.ratio ? c.ratio.toFixed(1) + '%' : ''})</span>
+            <span style="font-size:15px;font-weight:700;color:${EM_RED};font-family:${EM_FONT};">${scoreStr}</span>
+            <span style="font-size:15px;color:#64748B;font-family:${EM_FONT};">&nbsp;(${c.ratio ? c.ratio.toFixed(1) + '%' : ''})</span>
             &nbsp;${d ? deltaHtml(d, 12, false) : ''}
           </td>
         </tr>
@@ -738,19 +744,19 @@ function dotcomSectionHtml(dotcom, meta, lang = 'ko') {
 
     // 우위 배지
     let badge = ''
-    if (lgWin)  badge = `&nbsp;&nbsp;<span style="background:#FFF1F2;color:${EM_RED};font-size:10px;font-weight:800;border-radius:3px;padding:1px 5px;font-family:${EM_FONT};mso-line-height-rule:exactly;line-height:18px;">LG +${fmt(lgVal - samVal)}</span>`
-    if (samWin && hasSam) badge = `&nbsp;&nbsp;<span style="background:#EFF6FF;color:#3B82F6;font-size:10px;font-weight:800;border-radius:3px;padding:1px 5px;font-family:${EM_FONT};mso-line-height-rule:exactly;line-height:18px;">SS +${fmt(samVal - lgVal)}</span>`
+    if (lgWin)  badge = `&nbsp;&nbsp;<span style="background:#FFF1F2;color:${EM_RED};font-size:12px;font-weight:800;border-radius:3px;padding:1px 5px;font-family:${EM_FONT};mso-line-height-rule:exactly;line-height:18px;">LG +${fmt(lgVal - samVal)}</span>`
+    if (samWin && hasSam) badge = `&nbsp;&nbsp;<span style="background:#EFF6FF;color:#3B82F6;font-size:12px;font-weight:800;border-radius:3px;padding:1px 5px;font-family:${EM_FONT};mso-line-height-rule:exactly;line-height:18px;">SS +${fmt(samVal - lgVal)}</span>`
 
     // TTL 행: 볼드 + 배경 살짝 + 하단 실선 구분
     const labelStyle = isTTL
-      ? `font-size:13px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};`
-      : `font-size:13px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};`
+      ? `font-size:15px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};`
+      : `font-size:15px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};`
     const rowBg = isTTL ? 'background:#F8FAFC;' : ''
     const rowBorder = isTTL
       ? 'border-bottom:2px solid #E2E8F0;'
       : (isLast ? '' : 'border-bottom:1px solid #F1F5F9;')
     const barH = isTTL ? 16 : 14
-    const numStyle = isTTL ? 'font-size:13px;font-weight:700;' : 'font-size:13px;font-weight:700;'
+    const numStyle = isTTL ? 'font-size:15px;font-weight:700;' : 'font-size:15px;font-weight:700;'
 
     return `
     <tr style="${rowBg}${rowBorder}">
@@ -776,7 +782,7 @@ function dotcomSectionHtml(dotcom, meta, lang = 'ko') {
                   ${hasSam
                     ? `<td width="${samPct}%" style="height:${barH}px;background:#3B82F6;border-radius:3px;font-size:0;">&nbsp;</td>
                        <td style="padding-left:6px;${numStyle}color:${samWin ? '#3B82F6' : '#94A3B8'};font-family:${EM_FONT};white-space:nowrap;">${fmt(samVal)}</td>`
-                    : `<td style="padding-left:0;font-size:13px;color:#CBD5E1;font-family:${EM_FONT};">${t.dotcomLgOnly}</td>`
+                    : `<td style="padding-left:0;font-size:15px;color:#CBD5E1;font-family:${EM_FONT};">${t.dotcomLgOnly}</td>`
                   }
                 </tr>
               </table>
@@ -795,16 +801,16 @@ function dotcomSectionHtml(dotcom, meta, lang = 'ko') {
           <tr>
             <td style="padding:4px 0;vertical-align:top;">
               <table border="0" cellpadding="0" cellspacing="0"><tr>
-                <td style="background:${EM_RED};color:#FFFFFF;font-size:13px;font-weight:700;border-radius:4px;padding:2px 8px;font-family:${EM_FONT};">${t.dotcomLgWin} (${lgWinCols.length})</td>
-                <td style="padding-left:6px;font-size:13px;color:#64748B;font-family:${EM_FONT};">${lgWinCols.length ? lgWinCols.join(', ') : t.dotcomNone}</td>
+                <td style="background:${EM_RED};color:#FFFFFF;font-size:15px;font-weight:700;border-radius:4px;padding:2px 8px;font-family:${EM_FONT};">${t.dotcomLgWin} (${lgWinCols.length})</td>
+                <td style="padding-left:6px;font-size:15px;color:#64748B;font-family:${EM_FONT};">${lgWinCols.length ? lgWinCols.join(', ') : t.dotcomNone}</td>
               </tr></table>
             </td>
           </tr>
           <tr>
             <td style="padding:4px 0;vertical-align:top;">
               <table border="0" cellpadding="0" cellspacing="0"><tr>
-                <td style="background:#3B82F6;color:#FFFFFF;font-size:13px;font-weight:700;border-radius:4px;padding:2px 8px;font-family:${EM_FONT};">${t.dotcomSsWin} (${samWinCols.length})</td>
-                <td style="padding-left:6px;font-size:13px;color:#64748B;font-family:${EM_FONT};">${samWinCols.length ? samWinCols.join(', ') : t.dotcomNone}</td>
+                <td style="background:#3B82F6;color:#FFFFFF;font-size:15px;font-weight:700;border-radius:4px;padding:2px 8px;font-family:${EM_FONT};">${t.dotcomSsWin} (${samWinCols.length})</td>
+                <td style="padding-left:6px;font-size:15px;color:#64748B;font-family:${EM_FONT};">${samWinCols.length ? samWinCols.join(', ') : t.dotcomNone}</td>
               </tr></table>
             </td>
           </tr>
@@ -825,16 +831,16 @@ function dotcomSectionHtml(dotcom, meta, lang = 'ko') {
                               <table border="0" cellpadding="0" cellspacing="0">
                                 <tr>
                                   <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
-                                  <td style="padding-left:8px;font-size:17px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${t.dotcomTitle}</td>
+                                  <td style="padding-left:8px;font-size:19px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${t.dotcomTitle}</td>
                                 </tr>
                               </table>
                             </td>
                             <td align="right" style="vertical-align:middle;">
                               <table border="0" cellpadding="0" cellspacing="0" align="right"><tr>
                                 <td width="10" height="10" style="background:${EM_RED};border-radius:2px;font-size:0;">&nbsp;</td>
-                                <td style="padding:0 8px 0 3px;font-size:11px;color:#94A3B8;font-family:${EM_FONT};">LG</td>
+                                <td style="padding:0 8px 0 3px;font-size:13px;color:#94A3B8;font-family:${EM_FONT};">LG</td>
                                 <td width="10" height="10" style="background:#3B82F6;border-radius:2px;font-size:0;">&nbsp;</td>
-                                <td style="padding-left:3px;font-size:11px;color:#94A3B8;font-family:${EM_FONT};">SS</td>
+                                <td style="padding-left:3px;font-size:13px;color:#94A3B8;font-family:${EM_FONT};">SS</td>
                               </tr></table>
                             </td>
                           </tr>
@@ -859,7 +865,7 @@ function dotcomSectionHtml(dotcom, meta, lang = 'ko') {
 export { escapeHtml }
 
 export function generateEmailHTML(meta, total, products, citations, dotcom = {}, lang = 'ko', productsCnty = [], citationsCnty = [], options = {}) {
-  const { containerWidth = 820, showTrendTabs = false, weeklyLabels } = options
+  const { containerWidth = 920, showTrendTabs = false, weeklyLabels } = options
   const t = T[lang] || T.ko
   total = total || { score: 0, prev: 0, vsComp: 0, rank: 1, totalBrands: 12 }
   products = products || []
@@ -932,8 +938,8 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
           <td style="background:${EM_RED};padding:10px 28px;">
             <table border="0" cellpadding="0" cellspacing="0" width="100%">
               <tr>
-                <td style="font-size:13px;font-weight:700;color:#FFCCD8;font-family:${EM_FONT};">LG ELECTRONICS</td>
-                <td align="right" style="font-size:12px;color:#FFB0C0;font-family:${EM_FONT};">${escapeHtml(meta.reportNo)} · ${escapeHtml(meta.period)}</td>
+                <td style="font-size:15px;font-weight:700;color:#FFCCD8;font-family:${EM_FONT};">LG ELECTRONICS</td>
+                <td align="right" style="font-size:14px;color:#FFB0C0;font-family:${EM_FONT};">${escapeHtml(meta.reportNo)} · ${escapeHtml(meta.period)}</td>
               </tr>
             </table>
           </td>
@@ -944,23 +950,23 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
           <td style="background:#FFFFFF;padding:26px 28px 16px;">
             <table border="0" cellpadding="0" cellspacing="0" width="100%">
               <tr>
-                <td style="font-size:12px;color:#94A3B8;font-family:${EM_FONT};font-weight:400;">${escapeHtml(meta.reportType || (lang === 'en' ? 'GEO Monthly Performance Report' : 'GEO 월간 성과 분석 리포트'))}</td>
-                <td align="right" style="font-size:12px;color:#94A3B8;font-family:${EM_FONT};font-weight:400;">${escapeHtml(meta.team)}</td>
+                <td style="font-size:14px;color:#94A3B8;font-family:${EM_FONT};font-weight:400;">${escapeHtml(meta.reportType || (lang === 'en' ? 'GEO Monthly Performance Report' : 'GEO 월간 성과 분석 리포트'))}</td>
+                <td align="right" style="font-size:14px;color:#94A3B8;font-family:${EM_FONT};font-weight:400;">${escapeHtml(meta.team)}</td>
               </tr>
             </table>
             <p style="margin:16px 0 10px;text-align:center;line-height:1.2;">
               <span style="font-size:${meta.titleFontSize || 24}px;font-weight:700;color:${meta.titleColor || '#1A1A1A'};font-family:${EM_FONT};">${escapeHtml(meta.title || (lang === 'en' ? 'Generative AI Engine Visibility Performance Analysis' : '생성형 AI 엔진 가시성(Visibility) 성과 분석'))}</span>
             </p>
             <p style="margin:0;text-align:center;">
-              <span style="font-size:16px;color:#475569;font-family:${EM_FONT};font-weight:400;">${escapeHtml(meta.dateLine || (lang === 'en' ? 'As of ' + meta.period : meta.period + ' 기준'))}</span>
+              <span style="font-size:18px;color:#475569;font-family:${EM_FONT};font-weight:400;">${escapeHtml(meta.dateLine || (lang === 'en' ? 'As of ' + meta.period : meta.period + ' 기준'))}</span>
             </p>
             ${meta.showNotice && meta.noticeText ? `
             <table border="0" cellpadding="0" cellspacing="0" width="100%">
               <tr><td height="14" style="font-size:0;line-height:0;">&nbsp;</td></tr>
               <tr>
                 <td style="background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;padding:14px 20px;">
-                  <p style="margin:0 0 4px;font-size:13px;font-weight:700;color:${EM_RED};font-family:${EM_FONT};">${t.notice}</p>
-                  <p style="margin:0;font-size:12px;color:#1A1A1A;font-family:${EM_FONT};line-height:21px;">${mdBold(meta.noticeText)}</p>
+                  <p style="margin:0 0 4px;font-size:15px;font-weight:700;color:${EM_RED};font-family:${EM_FONT};">${t.notice}</p>
+                  <p style="margin:0;font-size:14px;color:#1A1A1A;font-family:${EM_FONT};line-height:21px;">${mdBold(meta.noticeText)}</p>
                 </td>
               </tr>
             </table>` : ''}
@@ -969,8 +975,8 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
               <tr><td height="14" style="font-size:0;line-height:0;">&nbsp;</td></tr>
               <tr>
                 <td style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;padding:14px 20px;">
-                  <p style="margin:0 0 4px;font-size:11px;font-weight:700;color:#64748B;font-family:${EM_FONT};">${t.kpiLogic}</p>
-                  <p style="margin:0;font-size:12px;color:#475569;font-family:${EM_FONT};line-height:22px;">${mdBold(meta.kpiLogicText)}</p>
+                  <p style="margin:0 0 4px;font-size:13px;font-weight:700;color:#64748B;font-family:${EM_FONT};">${t.kpiLogic}</p>
+                  <p style="margin:0;font-size:14px;color:#475569;font-family:${EM_FONT};line-height:22px;">${mdBold(meta.kpiLogicText)}</p>
                 </td>
               </tr>
             </table>` : ''}
@@ -1000,23 +1006,23 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                       <td style="padding:24px 24px 22px;border-top:4px solid ${totalSignal};border-radius:14px;">
                         <table border="0" cellpadding="0" cellspacing="0" width="100%">
                           <tr>
-                            <td style="font-size:22px;font-weight:700;color:#FFFFFF;text-transform:uppercase;font-family:${EM_FONT};">LG GEO Visibility %</td>
-                            <td align="right" style="font-size:12px;color:#94A3B8;font-family:${EM_FONT};">Model : ChatGPT, ChatGPT Search, Gemini, Perplexity<br/>Subsidiary : US, CA, UK, DE, ES, BR, MX, IN, AU, VN</td>
+                            <td style="font-size:24px;font-weight:700;color:#FFFFFF;text-transform:uppercase;font-family:${EM_FONT};">LG GEO Visibility %</td>
+                            <td align="right" style="font-size:14px;color:#94A3B8;font-family:${EM_FONT};">Model : ChatGPT, ChatGPT Search, Gemini, Perplexity<br/>Subsidiary : US, CA, UK, DE, ES, BR, MX, IN, AU, VN</td>
                           </tr>
                         </table>
                         <table border="0" cellpadding="0" cellspacing="0" width="100%">
                           <tr>
                             <td style="vertical-align:bottom;">
-                              <span style="font-size:50px;font-weight:900;color:#FFFFFF;font-family:${EM_FONT};">${total.score}</span>
-                              <span style="font-size:20px;color:#94A3B8;font-family:${EM_FONT};"> %</span>
-                              &nbsp;&nbsp;${total.prev ? deltaHtml(totalDelta, 16) : `<span style="color:#94A3B8;font-size:16px;">—</span>`}
-                              <span style="font-size:13px;color:#64748B;font-family:${EM_FONT};"> MoM</span>
+                              <span style="font-size:52px;font-weight:900;color:#FFFFFF;font-family:${EM_FONT};">${total.score}</span>
+                              <span style="font-size:22px;color:#94A3B8;font-family:${EM_FONT};"> %</span>
+                              &nbsp;&nbsp;${total.prev ? deltaHtml(totalDelta, 16) : `<span style="color:#94A3B8;font-size:18px;">—</span>`}
+                              <span style="font-size:15px;color:#64748B;font-family:${EM_FONT};"> MoM</span>
                             </td>
                             <td align="right" style="vertical-align:bottom;padding-bottom:8px;">
-                              ${compAvg > 0 ? `<span style="font-size:14px;color:#3B82F6;font-weight:800;font-family:${EM_FONT};">SAMSUNG</span>
-                              <span style="font-size:14px;color:#94A3B8;font-weight:500;font-family:${EM_FONT};">&nbsp;${compAvg}%</span>
-                              <span style="font-size:12px;color:#64748B;font-family:${EM_FONT};">&nbsp;&nbsp;|&nbsp;&nbsp;</span>
-                              <span style="font-size:14px;font-weight:800;color:${lgVsComp >= 0 ? '#16A34A' : '#DC2626'};font-family:${EM_FONT};">Gap ${lgVsComp >= 0 ? '+' : ''}${lgVsComp}%p</span>` : ''}
+                              ${compAvg > 0 ? `<span style="font-size:16px;color:#3B82F6;font-weight:800;font-family:${EM_FONT};">SAMSUNG</span>
+                              <span style="font-size:16px;color:#94A3B8;font-weight:500;font-family:${EM_FONT};">&nbsp;${compAvg}%</span>
+                              <span style="font-size:14px;color:#64748B;font-family:${EM_FONT};">&nbsp;&nbsp;|&nbsp;&nbsp;</span>
+                              <span style="font-size:16px;font-weight:800;color:${lgVsComp >= 0 ? '#16A34A' : '#DC2626'};font-family:${EM_FONT};">Gap ${lgVsComp >= 0 ? '+' : ''}${lgVsComp}%p</span>` : ''}
                             </td>
                           </tr>
                         </table>
@@ -1024,8 +1030,8 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                         <table border="0" cellpadding="0" cellspacing="0" width="100%">
                           <tr><td height="14" colspan="2" style="font-size:0;line-height:0;">&nbsp;</td></tr>
                           <tr>
-                            <td style="font-size:11px;color:#64748B;font-family:${EM_FONT};">0%</td>
-                            <td align="right" style="font-size:11px;color:#64748B;font-family:${EM_FONT};">100%</td>
+                            <td style="font-size:13px;color:#64748B;font-family:${EM_FONT};">0%</td>
+                            <td align="right" style="font-size:13px;color:#64748B;font-family:${EM_FONT};">100%</td>
                           </tr>
                           <!-- LG 바 -->
                           <tr>
@@ -1064,11 +1070,11 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                             <td colspan="2" style="padding-top:8px;">
                               <table border="0" cellpadding="0" cellspacing="0"><tr>
                                 <td width="10" height="10" style="background:${EM_RED};border-radius:5px;font-size:0;">&nbsp;</td>
-                                <td style="padding-left:5px;font-size:11px;color:#94A3B8;font-family:${EM_FONT};">LG ${total.score}%</td>
+                                <td style="padding-left:5px;font-size:13px;color:#94A3B8;font-family:${EM_FONT};">LG ${total.score}%</td>
                                 ${compAvg > 0 ? `<td style="padding-left:14px;" width="10" height="10"><table border="0" cellpadding="0" cellspacing="0"><tr><td width="10" height="10" style="background:#3B82F6;border-radius:5px;font-size:0;">&nbsp;</td></tr></table></td>
-                                <td style="padding-left:5px;font-size:11px;color:#94A3B8;font-family:${EM_FONT};">SS ${compAvg}%</td>` : ''}
+                                <td style="padding-left:5px;font-size:13px;color:#94A3B8;font-family:${EM_FONT};">SS ${compAvg}%</td>` : ''}
                                 <td style="padding-left:14px;" width="2" height="10"><table border="0" cellpadding="0" cellspacing="0"><tr><td width="2" height="10" style="background:#475569;border-radius:2px;font-size:0;">&nbsp;</td></tr></table></td>
-                                <td style="padding-left:5px;font-size:11px;color:#94A3B8;font-family:${EM_FONT};">prev ${total.prev}%</td>
+                                <td style="padding-left:5px;font-size:13px;color:#94A3B8;font-family:${EM_FONT};">prev ${total.prev}%</td>
                               </tr></table>
                             </td>
                           </tr>
@@ -1089,11 +1095,11 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                             return `<td width="33%" style="padding:2px 3px;">
                               <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#1E293B;border-radius:6px;border-left:3px solid ${sc};">
                                 <tr><td style="padding:6px 8px;white-space:nowrap;">
-                                  <span style="font-size:11px;font-weight:700;color:#FFFFFF;font-family:${EM_FONT};">${bu}</span>
-                                  <span style="font-size:15px;font-weight:900;color:#FFFFFF;font-family:${EM_FONT};margin-left:4px;">${bt.lg.toFixed(1)}%</span>
-                                  <span style="font-size:9px;color:${momColor};font-family:${EM_FONT};margin-left:3px;">${momStr}</span>
-                                  <span style="font-size:9px;color:#64748B;font-family:${EM_FONT};margin-left:4px;">SS ${bt.comp.toFixed(1)}%</span>
-                                  <span style="font-size:9px;color:${gap >= 0 ? '#22C55E' : '#EF4444'};font-family:${EM_FONT};margin-left:2px;">${gap >= 0 ? '+' : ''}${gap}</span>
+                                  <span style="font-size:13px;font-weight:700;color:#FFFFFF;font-family:${EM_FONT};">${bu}</span>
+                                  <span style="font-size:17px;font-weight:900;color:#FFFFFF;font-family:${EM_FONT};margin-left:4px;">${bt.lg.toFixed(1)}%</span>
+                                  <span style="font-size:11px;color:${momColor};font-family:${EM_FONT};margin-left:3px;">${momStr}</span>
+                                  <span style="font-size:11px;color:#64748B;font-family:${EM_FONT};margin-left:4px;">SS ${bt.comp.toFixed(1)}%</span>
+                                  <span style="font-size:11px;color:${gap >= 0 ? '#22C55E' : '#EF4444'};font-family:${EM_FONT};margin-left:2px;">${gap >= 0 ? '+' : ''}${gap}</span>
                                 </td></tr>
                               </table>
                             </td>`
@@ -1110,8 +1116,8 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                         <tr><td height="16" style="font-size:0;line-height:0;">&nbsp;</td></tr>
                           <tr>
                             <td style="padding:14px 16px;background:#1E0F18;border:1px solid #3D1528;border-radius:10px;">
-                              <p style="margin:0 0 6px;font-size:12px;font-weight:700;color:${EM_RED};text-transform:uppercase;font-family:${EM_FONT};">${t.geoInsight}</p>
-                              <p style="margin:0;font-size:13px;color:#FFFFFF;line-height:24px;font-family:${EM_FONT};">${mdBold(meta.totalInsight)}</p>
+                              <p style="margin:0 0 6px;font-size:14px;font-weight:700;color:${EM_RED};text-transform:uppercase;font-family:${EM_FONT};">${t.geoInsight}</p>
+                              <p style="margin:0;font-size:15px;color:#FFFFFF;line-height:24px;font-family:${EM_FONT};">${mdBold(meta.totalInsight)}</p>
                             </td>
                           </tr>
                         </table>` : ''}
@@ -1133,11 +1139,11 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                               <table border="0" cellpadding="0" cellspacing="0">
                                 <tr>
                                   <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
-                                  <td style="padding-left:8px;font-size:17px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${t.productTitle}</td>
+                                  <td style="padding-left:8px;font-size:19px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${t.productTitle}</td>
                                 </tr>
                               </table>
                             </td>
-                            <td align="right" style="vertical-align:middle;font-size:11px;color:#94A3B8;font-family:${EM_FONT};">
+                            <td align="right" style="vertical-align:middle;font-size:13px;color:#94A3B8;font-family:${EM_FONT};">
                               ${t.lgBasis} &nbsp;
                               <span style="color:#15803D;">●</span> ${t.legendLead} &nbsp;
                               <span style="color:#E8910C;">●</span> ${t.legendBehind} &nbsp;
@@ -1151,8 +1157,8 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                     ${showTrendTabs ? `<tr>
                       <td style="padding:12px 28px 0;">
                         <div class="trend-tab-bar" style="display:inline-flex;gap:0;background:#F1F5F9;border-radius:8px;padding:3px;">
-                          <button class="trend-tab-btn active" onclick="switchTrendMode('weekly')" style="padding:5px 16px;border-radius:6px;border:none;font-size:12px;font-weight:700;font-family:${EM_FONT};cursor:pointer;background:${EM_RED};color:#FFFFFF;transition:all .15s;">${t.weeklyTab}</button>
-                          <button class="trend-tab-btn" onclick="switchTrendMode('monthly')" style="padding:5px 16px;border-radius:6px;border:none;font-size:12px;font-weight:700;font-family:${EM_FONT};cursor:pointer;background:transparent;color:#64748B;transition:all .15s;">${t.monthlyTab}</button>
+                          <button class="trend-tab-btn active" onclick="switchTrendMode('weekly')" style="padding:5px 16px;border-radius:6px;border:none;font-size:14px;font-weight:700;font-family:${EM_FONT};cursor:pointer;background:${EM_RED};color:#FFFFFF;transition:all .15s;">${t.weeklyTab}</button>
+                          <button class="trend-tab-btn" onclick="switchTrendMode('monthly')" style="padding:5px 16px;border-radius:6px;border:none;font-size:14px;font-weight:700;font-family:${EM_FONT};cursor:pointer;background:transparent;color:#64748B;transition:all .15s;">${t.monthlyTab}</button>
                         </div>
                       </td>
                     </tr>` : ''}
@@ -1181,14 +1187,14 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                               <table border="0" cellpadding="0" cellspacing="0">
                                 <tr>
                                   <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
-                                  <td style="padding-left:8px;font-size:17px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${t.citationTitle}</td>
+                                  <td style="padding-left:8px;font-size:19px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${t.citationTitle}</td>
                                 </tr>
                               </table>
                             </td>
                             <td align="right" style="vertical-align:middle;">
                               <table border="0" cellpadding="0" cellspacing="0" align="right"><tr>
                                 <td width="14" height="5" style="background:${EM_RED};border-radius:3px;font-size:0;">&nbsp;</td>
-                                <td style="padding-left:4px;font-size:11px;color:#94A3B8;font-family:${EM_FONT};">${t.citationLegend}</td>
+                                <td style="padding-left:4px;font-size:13px;color:#94A3B8;font-family:${EM_FONT};">${t.citationLegend}</td>
                               </tr></table>
                             </td>
                           </tr>
@@ -1223,14 +1229,14 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                         <table border="0" cellpadding="0" cellspacing="0">
                           <tr>
                             <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
-                            <td style="padding-left:8px;font-size:17px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${t.todoTitle}</td>
+                            <td style="padding-left:8px;font-size:19px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${t.todoTitle}</td>
                           </tr>
                         </table>
                       </td>
                     </tr>
                     <tr>
                       <td style="padding:20px 28px;">
-                        <p style="margin:0;font-size:12px;color:#1A1A1A;line-height:22px;font-family:${EM_FONT};">${mdBold(meta.todoText)}</p>
+                        <p style="margin:0;font-size:14px;color:#1A1A1A;line-height:22px;font-family:${EM_FONT};">${mdBold(meta.todoText)}</p>
                       </td>
                     </tr>
                   </table>
@@ -1247,10 +1253,10 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
             <table border="0" cellpadding="0" cellspacing="0" width="100%">
               <tr>
                 <td>
-                  <p style="margin:0;font-size:11px;font-weight:700;color:#FFFFFF;font-family:${EM_FONT};">LG Electronics &nbsp;<span style="font-weight:400;color:#94A3B8;">${t.footer}</span></p>
+                  <p style="margin:0;font-size:13px;font-weight:700;color:#FFFFFF;font-family:${EM_FONT};">LG Electronics &nbsp;<span style="font-weight:400;color:#94A3B8;">${t.footer}</span></p>
                 </td>
                 <td align="right">
-                  <p style="margin:0;font-size:9px;color:#FFFFFF;font-family:${EM_FONT};">© 2026 LG Electronics Inc. All Rights Reserved.</p>
+                  <p style="margin:0;font-size:11px;color:#FFFFFF;font-family:${EM_FONT};">© 2026 LG Electronics Inc. All Rights Reserved.</p>
                 </td>
               </tr>
             </table>
