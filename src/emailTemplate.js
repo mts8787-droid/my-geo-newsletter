@@ -226,7 +226,7 @@ function productCardHtml(p, globalMax, globalMin, lang = 'ko', opts = {}) {
           <table border="0" cellpadding="0" cellspacing="0" width="100%">
             <tr>
               <td>
-                <span style="font-size:30px;font-weight:900;color:#1A1A1A;">${p.score.toFixed(1)}</span>
+                <span style="font-size:29px;font-weight:900;color:#1A1A1A;">${p.score.toFixed(1)}</span>
                 <span style="font-size:16px;color:#94A3B8;"> %</span>
               </td>
               <td align="right" style="vertical-align:top;padding-top:2px;">
@@ -315,7 +315,7 @@ function insightBlockHtml(insight, showInsight, howToRead, showHowToRead, lang =
   if (showInsight && insight) {
     html += `
     <tr>
-      <td style="padding:10px 28px;">
+      <td style="padding:10px 16px;">
         <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border-radius:8px;background:#FFF4F7;border:1px solid #F5CCD8;">
           <tr>
             <td style="padding:10px 14px;">
@@ -330,7 +330,7 @@ function insightBlockHtml(insight, showInsight, howToRead, showHowToRead, lang =
   if (showHowToRead && howToRead) {
     html += `
     <tr>
-      <td style="padding:0 28px 10px;">
+      <td style="padding:0 16px 10px;">
         <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border-radius:8px;background:#F8FAFC;border:1px solid #E2E8F0;">
           <tr>
             <td style="padding:10px 14px;">
@@ -444,7 +444,7 @@ function countryVisibilitySectionHtml(productsCnty, meta, lang) {
                 <td style="padding-bottom:28px;">
                   <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFFFFF;border-radius:16px;border:2px solid #E8EDF2;">
                     <tr>
-                      <td style="padding:22px 28px 18px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;">
+                      <td style="padding:22px 16px 18px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;">
                         <table border="0" cellpadding="0" cellspacing="0" width="100%">
                           <tr>
                             <td style="vertical-align:middle;">
@@ -466,7 +466,7 @@ function countryVisibilitySectionHtml(productsCnty, meta, lang) {
                     </tr>
                     ${insightBlockHtml(meta.cntyInsight, meta.showCntyInsight, meta.cntyHowToRead, meta.showCntyHowToRead, lang)}
                     <tr>
-                      <td style="padding:20px 28px;">
+                      <td style="padding:20px 16px;">
                         <table border="0" cellpadding="0" cellspacing="0" width="100%">
                           ${productSections}
                         </table>
@@ -541,7 +541,7 @@ function citationDomainSectionHtml(citationsCnty, meta, lang, citations) {
                 <td style="padding-bottom:28px;">
                   <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFFFFF;border-radius:16px;border:2px solid #E8EDF2;">
                     <tr>
-                      <td style="padding:22px 28px 18px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;">
+                      <td style="padding:22px 16px 18px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;">
                         <table border="0" cellpadding="0" cellspacing="0" width="100%">
                           <tr>
                             <td style="vertical-align:middle;">
@@ -557,7 +557,7 @@ function citationDomainSectionHtml(citationsCnty, meta, lang, citations) {
                       </td>
                     </tr>
                     ${insightBlockHtml(meta.citDomainInsight, meta.showCitDomainInsight, meta.citDomainHowToRead, meta.showCitDomainHowToRead, lang)}
-                    <tr><td style="padding:20px 28px;"><table border="0" cellpadding="0" cellspacing="0" width="100%">${ttlHtml}</table></td></tr>
+                    <tr><td style="padding:20px 16px;"><table border="0" cellpadding="0" cellspacing="0" width="100%">${ttlHtml}</table></td></tr>
                   </table>
                 </td>
               </tr>` }
@@ -637,7 +637,7 @@ function citationCntySectionHtml(citationsCnty, meta, lang) {
                 <td style="padding-bottom:28px;">
                   <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFFFFF;border-radius:16px;border:2px solid #E8EDF2;">
                     <tr>
-                      <td style="padding:22px 28px 18px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;">
+                      <td style="padding:22px 16px 18px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;">
                         <table border="0" cellpadding="0" cellspacing="0" width="100%">
                           <tr>
                             <td style="vertical-align:middle;">
@@ -654,7 +654,7 @@ function citationCntySectionHtml(citationsCnty, meta, lang) {
                     </tr>
                     ${insightBlockHtml(meta.citCntyInsight, meta.showCitCntyInsight, meta.citCntyHowToRead, meta.showCitCntyHowToRead, lang)}
                     <tr>
-                      <td style="padding:20px 28px;">
+                      <td style="padding:20px 16px;">
                         <table border="0" cellpadding="0" cellspacing="0" width="100%">
                           ${countrySections}
                         </table>
@@ -825,7 +825,7 @@ function dotcomSectionHtml(dotcom, meta, lang = 'ko') {
                 <td style="padding-bottom:28px;">
                   <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFFFFF;border-radius:16px;border:2px solid #E8EDF2;">
                     <tr>
-                      <td style="padding:22px 28px 18px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;">
+                      <td style="padding:22px 16px 18px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;">
                         <table border="0" cellpadding="0" cellspacing="0" width="100%">
                           <tr>
                             <td style="vertical-align:middle;">
@@ -850,7 +850,7 @@ function dotcomSectionHtml(dotcom, meta, lang = 'ko') {
                     </tr>
                     ${insightBlockHtml(meta.dotcomInsight, meta.showDotcomInsight, meta.dotcomHowToRead, meta.showDotcomHowToRead, lang)}
                     <tr>
-                      <td style="padding:12px 28px 20px;">
+                      <td style="padding:12px 16px 20px;">
                         <table border="0" cellpadding="0" cellspacing="0" width="100%">
                           ${barRows}
                           ${summaryRow}
@@ -936,7 +936,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
 
         <!-- ══ 헤더 상단 레드 바 ══ -->
         <tr>
-          <td style="background:${EM_RED};padding:10px 28px;">
+          <td style="background:${EM_RED};padding:10px 16px;">
             <table border="0" cellpadding="0" cellspacing="0" width="100%">
               <tr>
                 <td style="font-size:15px;font-weight:700;color:#FFCCD8;font-family:${EM_FONT};">LG ELECTRONICS</td>
@@ -1133,7 +1133,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                 <td style="padding-bottom:28px;">
                   <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFFFFF;border-radius:16px;border:2px solid #E8EDF2;">
                     <tr>
-                      <td style="padding:22px 28px 18px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;">
+                      <td style="padding:22px 16px 18px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;">
                         <table border="0" cellpadding="0" cellspacing="0" width="100%">
                           <tr>
                             <td style="vertical-align:middle;">
@@ -1164,7 +1164,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                       </td>
                     </tr>` : ''}
                     <tr>
-                      <td style="padding:20px 28px;">
+                      <td style="padding:20px 16px;">
                         <table border="0" cellpadding="0" cellspacing="0" width="100%">
                           ${buSections}
                         </table>
@@ -1181,7 +1181,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                 <td style="padding-bottom:28px;">
                   <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFFFFF;border-radius:16px;border:2px solid #E8EDF2;">
                     <tr>
-                      <td style="padding:22px 28px 18px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;">
+                      <td style="padding:22px 16px 18px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;">
                         <table border="0" cellpadding="0" cellspacing="0" width="100%">
                           <tr>
                             <td style="vertical-align:middle;">
@@ -1204,7 +1204,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                     </tr>
                     ${insightBlockHtml(meta.citationInsight, meta.showCitationInsight, meta.citationHowToRead, meta.showCitationHowToRead, lang)}
                     <tr>
-                      <td style="padding:20px 28px;">
+                      <td style="padding:20px 16px;">
                         <table border="0" cellpadding="0" cellspacing="0" width="100%">
                           ${citationRows}
                         </table>
@@ -1226,7 +1226,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                 <td style="padding-bottom:28px;">
                   <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFFFFF;border-radius:16px;border:2px solid #E8EDF2;">
                     <tr>
-                      <td style="padding:22px 28px 18px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;">
+                      <td style="padding:22px 16px 18px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;">
                         <table border="0" cellpadding="0" cellspacing="0">
                           <tr>
                             <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
@@ -1236,7 +1236,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                       </td>
                     </tr>
                     <tr>
-                      <td style="padding:20px 28px;">
+                      <td style="padding:20px 16px;">
                         <p style="margin:0;font-size:14px;color:#1A1A1A;line-height:22px;font-family:${EM_FONT};">${mdBold(meta.todoText)}</p>
                       </td>
                     </tr>
