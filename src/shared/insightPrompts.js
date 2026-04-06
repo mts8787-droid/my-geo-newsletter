@@ -12,9 +12,10 @@ export function buildInsightPrompt(type, data) {
     }).join('\n')
     return `아래는 제품별 GEO Visibility 현황입니다. 기준 템플릿의 수치만 교체하세요.
 
-※ 아래 수치는 Monthly Visibility Summary 시트 원본값입니다. 직접 계산하지 마세요.
-전체 LG Visibility: ${t.score || '—'}% (경쟁사: ${t.vsComp || '—'}%)
-${t.buTotals ? '본부별: ' + Object.entries(t.buTotals).map(([bu, v]) => `${bu} ${v.lg}%(경쟁 ${v.comp}%)`).join(', ') : ''}
+※ 아래 [공식수치]는 시트 원본값입니다. 이 값을 그대로 인용하세요. 절대 새로 계산하지 마세요.
+[공식수치] 전체 LG Visibility = ${t.score ?? '—'}%
+[공식수치] 전체 경쟁사(Samsung) Visibility = ${t.vsComp ?? '—'}%
+${t.buTotals ? Object.entries(t.buTotals).map(([bu, v]) => `[공식수치] ${bu}본부 LG = ${v.lg}% / 경쟁 = ${v.comp}%`).join('\n') : ''}
 
 제품별 상세:
 ${summary}
@@ -100,10 +101,10 @@ ${summary}
     const behinds = products.filter(p => p.status === 'behind')
     return `아래는 전체 GEO Visibility 현황입니다. 기준 템플릿의 수치만 교체하세요.
 
-※ 아래 수치는 Monthly Visibility Summary 시트 TTL 원본값입니다. 직접 계산하지 마세요.
-전체 LG Visibility: ${t.score || '—'}%
-전체 경쟁사 Visibility: ${t.vsComp || '—'}%
-${t.buTotals ? '본부별: ' + Object.entries(t.buTotals).map(([bu, v]) => `${bu} LG ${v.lg}% / 경쟁 ${v.comp}%`).join(', ') : ''}
+※ 아래 [공식수치]는 시트 TTL 원본값입니다. 이 값을 그대로 인용하세요. 절대 새로 계산하지 마세요.
+[공식수치] 전체 LG Visibility = ${t.score ?? '—'}%
+[공식수치] 전체 경쟁사(Samsung) Visibility = ${t.vsComp ?? '—'}%
+${t.buTotals ? Object.entries(t.buTotals).map(([bu, v]) => `[공식수치] ${bu}본부 LG = ${v.lg}% / 경쟁 = ${v.comp}%`).join('\n') : ''}
 
 선도(≥100%): ${leads.map(p => `${p.kr}(${p.score}%)`).join(', ') || '없음'}
 추격(≥80%): ${behinds.map(p => `${p.kr}(${p.score}%)`).join(', ') || '없음'}
