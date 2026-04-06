@@ -336,7 +336,7 @@ export default function App() {
         {activeTab === 'preview' ? (
           <div style={{ flex: 1, overflowY: 'auto', padding: '28px 36px',
             background: 'linear-gradient(180deg, #0A0F1C 0%, #0F172A 100%)' }}>
-            <div style={{ maxWidth: 860, margin: '0 auto' }}>
+            <div style={{ maxWidth: 960, margin: '0 auto' }}>
               <NewsletterPreview meta={meta} total={total} products={resolved.products} citations={resolved.citations} dotcom={dotcom} productsCnty={resolved.productsCnty} citationsCnty={resolved.citationsCnty} lang={previewLang} weeklyLabels={weeklyLabels} />
             </div>
           </div>

@@ -247,10 +247,11 @@ function productCardHtml(p, globalMax, globalMin, lang = 'ko', opts = {}) {
               <td align="right" style="padding:6px 8px;font-size:15px;font-weight:700;color:${(p.compRatio || 0) >= 100 ? '#15803D' : (p.compRatio || 0) >= 80 ? '#E8910C' : '#BE123C'};">
                 ${(() => {
                   const curRatio = p.compRatio || Math.round(p.vsComp > 0 ? (p.score / p.vsComp) * 100 : 100)
-                  const prevRatio = p.prev && p.vsComp > 0 ? Math.round((p.prev / p.vsComp) * 100) : 0
-                  const ratioDelta = prevRatio > 0 ? curRatio - prevRatio : 0
-                  const deltaStr = ratioDelta !== 0 ? ` <span style="font-size:11px;color:${ratioDelta > 0 ? '#16A34A' : '#DC2626'};">${ratioDelta > 0 ? '+' : ''}${ratioDelta}%p</span>` : ''
-                  return `${curRatio}%${deltaStr}`
+                  if (!p.prev || !p.vsComp) return `${curRatio}%`
+                  const prevRatio = Math.round((p.prev / p.vsComp) * 100)
+                  const rd = curRatio - prevRatio
+                  const rdColor = rd > 0 ? '#16A34A' : rd < 0 ? '#DC2626' : '#94A3B8'
+                  return `${curRatio}% <span style="font-size:13px;color:${rdColor};">${rd > 0 ? '+' : ''}${rd}%p</span>`
                 })()}
               </td>
             </tr>
