@@ -347,8 +347,8 @@ app.post('/api/send-email', (req, res) => {
       res.json({ ok: true })
     })
     .catch((err) => {
-      console.error('[EMAIL] Send error:', err.message)
-      res.status(500).json({ ok: false, error: '이메일 전송 실패' })
+      console.error('[EMAIL] Send error:', err.message, err.code, err.response)
+      res.status(500).json({ ok: false, error: `이메일 전송 실패: ${err.message}` })
     })
 })
 
