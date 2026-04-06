@@ -845,7 +845,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
           <button onClick={async () => {
               try {
                 setMeta(m => ({ ...m, totalInsight: '⏳ AI 생성 중...' }))
-                const insight = await generateAIInsight('totalInsight', { products: resolved.products, total }, previewLang)
+                const insight = await generateAIInsight('totalInsight', { products: resolved.products, total, todoText: meta.todoText || '' }, previewLang)
                 setMeta(m => ({ ...m, totalInsight: insight }))
               } catch (err) { console.error('[AI]', err); setMeta(m => ({ ...m, totalInsight: `[AI 실패: ${err.message}]` })) }
             }}
@@ -1025,6 +1025,72 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
             </div>
           )
         })()}
+
+        {/* 닷컴 Citation 인사이트 */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+          <p style={{ margin: 0, fontSize: 11, color: '#64748B', fontFamily: FONT }}>닷컴 Citation 인사이트</p>
+          <div style={{ display: 'flex', gap: 4 }}>
+            <button onClick={async () => {
+                try {
+                  setMeta(m => ({ ...m, dotcomInsight: '⏳ AI 생성 중...' }))
+                  const insight = await generateAIInsight('dotcom', { dotcom }, previewLang)
+                  setMeta(m => ({ ...m, dotcomInsight: insight }))
+                } catch (err) { console.error('[AI]', err); setMeta(m => ({ ...m, dotcomInsight: `[AI 실패: ${err.message}]` })) }
+              }}
+              style={{ padding: '2px 6px', borderRadius: 4, border: 'none', cursor: 'pointer',
+                background: '#4F46E5', color: '#FFFFFF',
+                fontSize: 11, fontWeight: 700, fontFamily: FONT, display: 'flex', alignItems: 'center', gap: 3 }}>
+              <Sparkles size={9} /> AI 생성
+            </button>
+            <button onClick={() => setMeta(m => ({ ...m, showDotcomInsight: !m.showDotcomInsight }))}
+              style={{ padding: '2px 8px', borderRadius: 4, border: 'none', cursor: 'pointer',
+                background: meta.showDotcomInsight ? LG_RED : '#1E293B',
+                color: meta.showDotcomInsight ? '#FFFFFF' : '#475569',
+                fontSize: 11, fontWeight: 700, fontFamily: FONT }}>
+              {meta.showDotcomInsight ? 'ON' : 'OFF'}
+            </button>
+          </div>
+        </div>
+        <textarea
+          value={meta.dotcomInsight}
+          onChange={e => setMeta(m => ({ ...m, dotcomInsight: e.target.value }))}
+          rows={8}
+          placeholder="닷컴 Citation 인사이트를 입력하세요..."
+          style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6, marginBottom: 8 }}
+        />
+
+        {/* 닷컴 How to Read */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+          <p style={{ margin: 0, fontSize: 11, color: '#64748B', fontFamily: FONT }}>닷컴 How to Read</p>
+          <div style={{ display: 'flex', gap: 4 }}>
+            <button onClick={async () => {
+                try {
+                  setMeta(m => ({ ...m, dotcomHowToRead: '⏳ AI 생성 중...' }))
+                  const insight = await generateAIInsight('howToRead', { section: '닷컴 Citation' }, previewLang)
+                  setMeta(m => ({ ...m, dotcomHowToRead: insight }))
+                } catch (err) { setMeta(m => ({ ...m, dotcomHowToRead: '' })) }
+              }}
+              style={{ padding: '2px 6px', borderRadius: 4, border: 'none', cursor: 'pointer',
+                background: '#4F46E5', color: '#FFFFFF',
+                fontSize: 11, fontWeight: 700, fontFamily: FONT, display: 'flex', alignItems: 'center', gap: 3 }}>
+              <Sparkles size={9} /> AI 생성
+            </button>
+            <button onClick={() => setMeta(m => ({ ...m, showDotcomHowToRead: !m.showDotcomHowToRead }))}
+              style={{ padding: '2px 8px', borderRadius: 4, border: 'none', cursor: 'pointer',
+                background: meta.showDotcomHowToRead ? LG_RED : '#1E293B',
+                color: meta.showDotcomHowToRead ? '#FFFFFF' : '#475569',
+                fontSize: 11, fontWeight: 700, fontFamily: FONT }}>
+              {meta.showDotcomHowToRead ? 'ON' : 'OFF'}
+            </button>
+          </div>
+        </div>
+        <textarea
+          value={meta.dotcomHowToRead}
+          onChange={e => setMeta(m => ({ ...m, dotcomHowToRead: e.target.value }))}
+          rows={4}
+          placeholder="닷컴 How to Read 설명을 입력하세요..."
+          style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6, marginBottom: 8 }}
+        />
 
         {/* Action Plan 섹션 */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
