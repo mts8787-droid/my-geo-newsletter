@@ -326,17 +326,23 @@ function parseVisSummary(rows) {
 }
 
 function parseProductCnty(rows) {
+  // 디버그: 첫 5행 출력
+  console.log(`[parseProductCnty] 총 ${rows.length}행, 첫 5행:`)
+  rows.slice(0, 5).forEach((r, i) => console.log(`  row${i}: [${r.slice(0, 8).map(c => JSON.stringify(String(c || '').trim())).join(', ')}]`))
+
   // 헤더: Div, Date, Country, Category, LG, SAMSUNG, Comp3, ...
   const headerIdx = rows.findIndex(r => {
     const c0 = String(r[0] || '').trim().toLowerCase()
-    return c0 === 'div' || c0 === 'division'
+    return c0 === 'div' || c0 === 'division' || c0 === 'divisions'
   })
   if (headerIdx < 0) {
     // fallback: LG 컬럼이 있는 행을 헤더로 사용
-    const altIdx = rows.findIndex(r => r.some((c, i) => i >= 3 && String(c || '').trim().toUpperCase() === 'LG'))
-    if (altIdx < 0) { console.warn('[parseProductCnty] header not found'); return {} }
+    const altIdx = rows.findIndex(r => r.some((c, i) => i >= 1 && String(c || '').trim().toUpperCase() === 'LG'))
+    if (altIdx < 0) { console.warn('[parseProductCnty] header not found — no Div/Division/LG column'); return {} }
+    console.log(`[parseProductCnty] fallback header at row${altIdx}: [${rows[altIdx].slice(0, 8).map(c => JSON.stringify(String(c || '').trim())).join(', ')}]`)
     return parseProductCntyFromRow(rows, altIdx)
   }
+  console.log(`[parseProductCnty] header at row${headerIdx}: [${rows[headerIdx].slice(0, 8).map(c => JSON.stringify(String(c || '').trim())).join(', ')}]`)
   return parseProductCntyFromRow(rows, headerIdx)
 }
 
