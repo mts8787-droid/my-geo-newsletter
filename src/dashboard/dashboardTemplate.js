@@ -1393,7 +1393,6 @@ ${visibilityOnly ? `
     <button class="tab-btn active" onclick="switchTab('visibility')">Visibility</button>
     <button class="tab-btn" onclick="switchTab('citation')">Citation</button>
     <button class="tab-btn" onclick="switchTab('readability')">Readability</button>
-    <button class="tab-btn" onclick="switchTab('progress')">Progress Tracker</button>
     <button class="tab-btn" onclick="switchTab('promptlist')">Prompt List</button>
     <button class="tab-btn" onclick="switchTab('glossary')">Glossary</button>
   </div>

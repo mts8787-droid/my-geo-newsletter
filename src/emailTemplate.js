@@ -1130,37 +1130,37 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                             </td>
                           </tr>
                         </table>` : ''}
-                        <!-- 대시보드 바로가기 -->
-                        <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                          <tr><td height="16" style="font-size:0;line-height:0;">&nbsp;</td></tr>
-                          <tr>
-                            <td style="padding:0;">
-                              <table border="0" cellpadding="0" cellspacing="0" width="100%"><tr>
-                                <td width="33%" style="padding:0 4px 0 0;">
-                                  <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border-radius:8px;background:#1E293B;border:1px solid #334155;">
-                                    <tr><td align="center" style="padding:10px 8px;">
-                                      <a href="/p/GEO-KPI-Dashboard-KO" target="_blank" style="color:#F8FAFC;font-size:13px;font-weight:700;font-family:${EM_FONT};text-decoration:none;">📊 Visibility Dashboard</a>
-                                    </td></tr>
-                                  </table>
-                                </td>
-                                <td width="33%" style="padding:0 2px;">
-                                  <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border-radius:8px;background:#1E293B;border:1px solid #334155;">
-                                    <tr><td align="center" style="padding:10px 8px;">
-                                      <a href="/p/GEO-Citation-Dashboard-KO" target="_blank" style="color:#F8FAFC;font-size:13px;font-weight:700;font-family:${EM_FONT};text-decoration:none;">📋 Citation Dashboard</a>
-                                    </td></tr>
-                                  </table>
-                                </td>
-                                <td width="33%" style="padding:0 0 0 4px;">
-                                  <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border-radius:8px;background:#1E293B;border:1px solid #334155;">
-                                    <tr><td align="center" style="padding:10px 8px;">
-                                      <a href="/p/GEO-Progress-Tracker" target="_blank" style="color:#F8FAFC;font-size:13px;font-weight:700;font-family:${EM_FONT};text-decoration:none;">🎯 Action Tracker</a>
-                                    </td></tr>
-                                  </table>
-                                </td>
-                              </tr></table>
-                            </td>
-                          </tr>
-                        </table>
+                        <!-- 대시보드 바로가기 (Outlook 호환) -->
+                        ${(() => {
+                          const base = 'https://my-geo-newsletter.onrender.com'
+                          const langSuffix = lang === 'en' ? '-EN' : '-KO'
+                          const buttons = [
+                            { label: 'Visibility Dashboard', url: `${base}/p/GEO-Visibility-Dashboard${langSuffix}` },
+                            { label: 'Citation Dashboard', url: `${base}/p/GEO-Citation-Dashboard${langSuffix}` },
+                            { label: 'KPI Dashboard', url: `${base}/p/GEO-KPI-Dashboard${langSuffix}` },
+                          ]
+                          const cells = buttons.map((b, i) => {
+                            const padL = i === 0 ? 0 : 4
+                            const padR = i === 2 ? 0 : 4
+                            return `<td width="33%" valign="top" style="padding:0 ${padR}px 0 ${padL}px;">
+                              <!--[if mso]>
+                              <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="${b.url}" style="height:42px;v-text-anchor:middle;width:100%;" arcsize="20%" strokecolor="#334155" fillcolor="#1E293B">
+                                <w:anchorlock/>
+                                <center style="color:#F8FAFC;font-family:'LG Smart',Arial,sans-serif;font-size:13px;font-weight:700;">${b.label}</center>
+                              </v:roundrect>
+                              <![endif]-->
+                              <!--[if !mso]><!-- -->
+                              <a href="${b.url}" target="_blank" rel="noopener" style="display:block;background:#1E293B;border:1px solid #334155;border-radius:8px;color:#F8FAFC;font-family:${EM_FONT};font-size:13px;font-weight:700;line-height:42px;text-align:center;text-decoration:none;width:100%;">${b.label}</a>
+                              <!--<![endif]-->
+                            </td>`
+                          }).join('')
+                          return `<table border="0" cellpadding="0" cellspacing="0" width="100%">
+                            <tr><td height="16" style="font-size:0;line-height:0;">&nbsp;</td></tr>
+                            <tr><td style="padding:0;">
+                              <table border="0" cellpadding="0" cellspacing="0" width="100%"><tr>${cells}</tr></table>
+                            </td></tr>
+                          </table>`
+                        })()}
                       </td>
                     </tr>
                   </table>
