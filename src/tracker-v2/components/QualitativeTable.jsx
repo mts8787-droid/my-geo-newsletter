@@ -12,6 +12,12 @@ function statusDot(val, lang) {
 
 function _tr(lang, tr, text) { return lang === 'en' && tr && tr[text] ? tr[text] : text }
 
+const CATEGORY_ORDER = ['콘텐츠수정', '신규콘텐츠제작', '외부채널관리', '닷컴기술개선']
+function catSortKey(name) {
+  const idx = CATEGORY_ORDER.indexOf(name)
+  return idx >= 0 ? idx : 999
+}
+
 export default function QualitativeTable({ goals, results, selectedSH, selectedCategory, month, lang = 'ko', tr = {} }) {
   let filtered = results
   if (selectedSH !== '전체') filtered = filtered.filter(r => r.stakeholder === selectedSH)
@@ -19,7 +25,31 @@ export default function QualitativeTable({ goals, results, selectedSH, selectedC
     const cat = r.taskCategory || goals.find(g => g.stakeholder === r.stakeholder && g.task === r.task)?.taskCategory
     return cat === selectedCategory
   })
-  const allSH = [...new Set(filtered.map(r => r.stakeholder))]
+
+  // 카테고리별 그룹핑 (각 결과 row에 대해 category 결정)
+  const byCategory = {}
+  filtered.forEach(r => {
+    const cat = r.taskCategory
+      || goals.find(g => g.stakeholder === r.stakeholder && g.task === r.task)?.taskCategory
+      || (lang === 'en' ? 'Uncategorized' : '미분류')
+    if (!byCategory[cat]) byCategory[cat] = []
+    byCategory[cat].push(r)
+  })
+  const cats = Object.keys(byCategory).sort((a, b) => catSortKey(a) - catSortKey(b))
+
+  // 카테고리별 요약: 달성/진행/미달성/미정 카운트
+  function summarize(rows) {
+    let achieved = 0, inprog = 0, notAch = 0, blank = 0
+    rows.forEach(r => {
+      const v = String(r.monthly?.[month] ?? '').trim().toUpperCase()
+      if (!v) blank++
+      else if (v === 'PASS' || v === 'O' || v === 'Y' || v === 'YES' || v === '완료' || v === '달성') achieved++
+      else if (v === 'NON-PASS' || v === 'NONPASS' || v === 'X' || v === 'N' || v === 'NO' || v === '미달성') notAch++
+      else if (v === '진행중' || v === '진행' || v === 'WIP' || v === 'ING' || v === '추진') inprog++
+      else blank++
+    })
+    return { achieved, inprog, notAch, blank }
+  }
 
   return (
     <div style={{ background: '#fff', border: '1px solid #E2E8F0', borderRadius: 12, overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
@@ -27,71 +57,98 @@ export default function QualitativeTable({ goals, results, selectedSH, selectedC
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <span style={{ ...SECTION_BAR }} />
           <h3 style={{ fontSize: 20, fontWeight: 700, color: '#111827', margin: 0 }}>{t(lang, 'qualitativeTasks')}</h3>
+          <span style={{ fontSize: 13, color: '#64748B', marginLeft: 8 }}>
+            {cats.length}{lang === 'en' ? ' categories' : '개 카테고리'}
+          </span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: 16, color: '#64748B' }}>
-          <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 8, height: 8, borderRadius: '50%', background: '#15803D', display: 'inline-block' }} /> {t(lang, 'qualAchieved')}</span>
-          <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 8, height: 8, borderRadius: '50%', background: '#D97706', display: 'inline-block' }} /> {t(lang, 'qualInProgress')}</span>
-          <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 8, height: 8, borderRadius: '50%', background: '#BE123C', display: 'inline-block' }} /> {t(lang, 'qualNotAchieved')}</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: 13, color: '#64748B' }}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 8, height: 8, borderRadius: '50%', background: '#15803D' }} /> {t(lang, 'qualAchieved')}</span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 8, height: 8, borderRadius: '50%', background: '#D97706' }} /> {t(lang, 'qualInProgress')}</span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 8, height: 8, borderRadius: '50%', background: '#BE123C' }} /> {t(lang, 'qualNotAchieved')}</span>
         </div>
       </div>
 
-      <div className="overflow-x-auto">
-        <table style={{ width: '100%', fontSize: 16, borderCollapse: 'collapse' }}>
-          <thead>
-            <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
-              <th style={{ padding: '10px 12px', textAlign: 'center', fontSize: 16, fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', width: 100, minWidth: 100 }}>{t(lang, 'org')}</th>
-              <th style={{ padding: '10px 12px', textAlign: 'center', fontSize: 16, fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', width: 160, minWidth: 160 }}>{t(lang, 'taskCategory')}</th>
-              <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 16, fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', width: 240, minWidth: 240 }}>{t(lang, 'task')}</th>
-              <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 16, fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', width: 140, minWidth: 140 }}>Page Type</th>
-              <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 16, fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', minWidth: 160 }}>{t(lang, 'goalDetail')}</th>
-              <th style={{ padding: '10px 12px', textAlign: 'center', fontSize: 16, fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', minWidth: 90 }}>{t(lang, 'result', tMonth(lang, month))}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {allSH.map(sh => {
-              const color = STAKEHOLDER_COLORS[sh] || '#94A3B8'
-              const shResults = filtered.filter(r => r.stakeholder === sh)
+      {cats.length === 0 && (
+        <p style={{ padding: '32px 12px', textAlign: 'center', color: '#94A3B8', fontSize: 16, margin: 0 }}>
+          {t(lang, 'noQualTasks')}
+        </p>
+      )}
 
-              if (shResults.length === 0) return null
+      {cats.map(cat => {
+        const rows = byCategory[cat]
+        const sum = summarize(rows)
+        const headerColor = sum.notAch > sum.achieved ? '#DC2626' : sum.achieved > 0 ? '#16A34A' : '#94A3B8'
+        return (
+          <div key={cat}>
+            {/* 카테고리 헤더 */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 20px', background: '#F1F5F9', borderTop: '1px solid #E2E8F0', borderBottom: '1px solid #CBD5E1', borderLeft: `4px solid ${headerColor}` }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <h4 style={{ margin: 0, fontSize: 16, fontWeight: 800, color: '#0F172A' }}>{tCat(lang, cat)}</h4>
+                <span style={{ fontSize: 12, color: '#64748B', padding: '2px 8px', background: '#FFFFFF', borderRadius: 4, border: '1px solid #E2E8F0' }}>
+                  {rows.length}{lang === 'en' ? ' tasks' : '개 과제'}
+                </span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 12 }}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#15803D', fontWeight: 700 }}>
+                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#15803D' }} />
+                  {lang === 'en' ? 'Achieved' : '달성'} {sum.achieved}
+                </span>
+                <span style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#D97706', fontWeight: 700 }}>
+                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#D97706' }} />
+                  {lang === 'en' ? 'In Progress' : '진행'} {sum.inprog}
+                </span>
+                <span style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#BE123C', fontWeight: 700 }}>
+                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#BE123C' }} />
+                  {lang === 'en' ? 'Missed' : '미달성'} {sum.notAch}
+                </span>
+              </div>
+            </div>
 
-              return shResults.map((r, ri) => {
-                const resultVal = r.monthly?.[month] ?? ''
-                const st = statusDot(resultVal, lang)
-                const g = goals.find(g => g.stakeholder === sh && g.task === r.task)
-                return (
-                  <tr key={`${sh}-${ri}`} style={{ borderBottom: '1px solid #F1F5F9' }} className="hover:bg-[#F8FAFC] transition-colors">
-                    <td style={{ padding: '9px 12px', textAlign: 'center' }}>
-                      <span style={{ display: 'inline-block', padding: '2px 8px', borderRadius: 4, fontSize: 16, fontWeight: 700, background: color + '18', color: '#111827', border: `1px solid ${color}30` }}>{tSH(lang, sh)}</span>
-                    </td>
-                    <td style={{ padding: '9px 12px', textAlign: 'center', color: '#64748B' }}>{tCat(lang, r.taskCategory || g?.taskCategory || '')}</td>
-                    <td style={{ padding: '9px 12px', color: '#1E293B', fontWeight: 500 }}>{_tr(lang, tr, r.task)}</td>
-                    <td style={{ padding: '9px 12px', color: '#64748B' }}>{r.pageType || g?.pageType || ''}</td>
-                    <td style={{ padding: '9px 12px', color: '#475569', maxWidth: 300 }}>
-                      <span style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={_tr(lang, tr, r.detail || g?.detail || '')}>{_tr(lang, tr, r.detail || g?.detail || '')}</span>
-                    </td>
-                    <td style={{ padding: '9px 12px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
-                        <span style={{ width: 9, height: 9, borderRadius: '50%', background: st.dot, display: 'inline-block', boxShadow: st.dot !== '#CBD5E1' ? `0 0 6px ${st.dot}55` : 'none' }} />
-                        <span style={{ color: st.dot === '#CBD5E1' ? '#94A3B8' : st.dot, fontWeight: 600 }}>
-                          {st.label}
-                        </span>
-                      </div>
-                    </td>
+            {/* 카테고리 과제 테이블 */}
+            <div className="overflow-x-auto">
+              <table style={{ width: '100%', fontSize: 14, borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
+                    <th style={{ padding: '8px 12px', textAlign: 'center', fontSize: 12, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em', width: 100 }}>{t(lang, 'org')}</th>
+                    <th style={{ padding: '8px 12px', textAlign: 'left', fontSize: 12, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em', width: 240 }}>{t(lang, 'task')}</th>
+                    <th style={{ padding: '8px 12px', textAlign: 'left', fontSize: 12, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em', width: 130 }}>Page Type</th>
+                    <th style={{ padding: '8px 12px', textAlign: 'left', fontSize: 12, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t(lang, 'goalDetail')}</th>
+                    <th style={{ padding: '8px 12px', textAlign: 'center', fontSize: 12, fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em', width: 120 }}>{t(lang, 'result', tMonth(lang, month))}</th>
                   </tr>
-                )
-              })
-            })}
-
-            {allSH.length === 0 && (
-              <tr>
-                <td colSpan={6} style={{ padding: '32px 12px', textAlign: 'center', color: '#94A3B8', fontSize: 16 }}>
-                  {t(lang, 'noQualTasks')}
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+                </thead>
+                <tbody>
+                  {rows.map((r, ri) => {
+                    const resultVal = r.monthly?.[month] ?? ''
+                    const st = statusDot(resultVal, lang)
+                    const g = goals.find(g => g.stakeholder === r.stakeholder && g.task === r.task)
+                    const color = STAKEHOLDER_COLORS[r.stakeholder] || '#94A3B8'
+                    return (
+                      <tr key={ri} style={{ borderBottom: '1px solid #F1F5F9' }} className="hover:bg-[#F8FAFC] transition-colors">
+                        <td style={{ padding: '8px 12px', textAlign: 'center' }}>
+                          <span style={{ display: 'inline-block', padding: '2px 8px', borderRadius: 4, fontSize: 13, fontWeight: 700, background: color + '18', color: '#111827', border: `1px solid ${color}30` }}>{tSH(lang, r.stakeholder)}</span>
+                        </td>
+                        <td style={{ padding: '8px 12px', color: '#1E293B', fontWeight: 500 }}>{_tr(lang, tr, r.task)}</td>
+                        <td style={{ padding: '8px 12px', color: '#64748B' }}>{r.pageType || g?.pageType || ''}</td>
+                        <td style={{ padding: '8px 12px', color: '#475569', maxWidth: 300 }}>
+                          <span style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={_tr(lang, tr, r.detail || g?.detail || '')}>{_tr(lang, tr, r.detail || g?.detail || '')}</span>
+                        </td>
+                        <td style={{ padding: '8px 12px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                            <span style={{ width: 9, height: 9, borderRadius: '50%', background: st.dot, display: 'inline-block', boxShadow: st.dot !== '#CBD5E1' ? `0 0 6px ${st.dot}55` : 'none' }} />
+                            <span style={{ color: st.dot === '#CBD5E1' ? '#94A3B8' : st.dot, fontWeight: 600 }}>
+                              {st.label}
+                            </span>
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )
+      })}
     </div>
   )
 }
