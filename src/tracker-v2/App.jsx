@@ -5,6 +5,7 @@ import Header from './components/Header'
 import SummaryCards from './components/SummaryCards'
 import PerformanceCharts from './components/PerformanceCharts'
 import StakeholderRanking from './components/StakeholderRanking'
+import CategoryRanking from './components/CategoryRanking'
 import DetailTable from './components/DetailTable'
 import QualitativeTable from './components/QualitativeTable'
 import CategorySummary from './components/CategorySummary'
@@ -465,12 +466,12 @@ export default function App() {
               lang={lang}
             />
 
-            <StakeholderRanking
-              stakeholders={dashboard.stakeholders}
+            <CategoryRanking
+              categories={dashboard.categoryStats}
               month={selectedMonth}
-              selectedSH={selectedSH}
+              selectedCategory={selectedCategory}
+              onSelectCategory={setSelectedCategory}
               lang={lang}
-              tr={taskTranslations}
             />
 
             <DetailTable
