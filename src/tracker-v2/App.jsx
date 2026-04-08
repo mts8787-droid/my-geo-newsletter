@@ -467,55 +467,79 @@ export default function App() {
 
         {dashboard && (
           <>
-            {/* 섹션 1. 요약 대시보드 */}
-            <section style={{ marginBottom: 32 }}>
-              <SectionHeader
-                number="1"
-                title={lang === 'en' ? 'Summary Dashboard' : '요약 대시보드'}
-                subtitle={lang === 'en' ? 'Overall and category-level achievement at a glance' : '전체 및 카테고리별 달성 현황 한눈에 보기'}
-                accent="#CF0652"
-              />
-              <SummaryCards
-                avgRate={dashboard.avgRate}
-                monthActual={dashboard.monthActual}
-                monthGoal={dashboard.monthGoal}
-                annualProgressRate={dashboard.annualProgressRate}
-                cumulativeActual={dashboard.cumulativeActual}
-                annualTarget={dashboard.annualTarget}
-                achievedCount={dashboard.achievedCount}
-                missedCount={dashboard.missedCount}
-                categoryStats={dashboard.categoryStats}
-                month={selectedMonth}
-                lang={lang}
-              />
-            </section>
+            {/* Executive Summary 다크 박스 — 전체 요약 + 카테고리별 진척 */}
+            <section style={{
+              marginBottom: 32,
+              background: 'linear-gradient(180deg, #0B1220 0%, #0F172A 100%)',
+              border: '1px solid #1E293B',
+              borderRadius: 16,
+              padding: 28,
+              boxShadow: '0 10px 30px rgba(2,6,23,0.25)',
+            }}>
+              {/* 박스 라벨 */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 22 }}>
+                <span style={{ display: 'inline-block', width: 6, height: 22, background: '#CF0652', borderRadius: 3 }} />
+                <span style={{
+                  fontSize: 13, fontWeight: 900, color: '#FCA5C8',
+                  letterSpacing: '2px', textTransform: 'uppercase',
+                }}>
+                  Executive Summary
+                </span>
+              </div>
 
-            {/* 섹션 2. 카테고리별 진척 */}
-            {dashboard.categoryStats.length > 0 && (
-              <section style={{ marginBottom: 32 }}>
-                <SectionHeader
-                  number="2"
-                  title={lang === 'en' ? 'Category Progress Detail' : '카테고리별 진척 상세'}
-                  subtitle={lang === 'en' ? 'Click a category to expand assigned organizations and tasks' : '카테고리를 클릭하면 담당 조직과 과제가 펼쳐집니다'}
-                  accent="#1D4ED8"
-                />
-                <CategoryDashboard
-                  categories={dashboard.categoryStats}
+              {/* 전체 요약 */}
+              <div style={{ marginBottom: 24 }}>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: 14, marginBottom: 14 }}>
+                  <h3 style={{ margin: 0, fontSize: 20, fontWeight: 900, color: '#F8FAFC' }}>
+                    {lang === 'en' ? 'Overall Summary' : '전체 요약'}
+                  </h3>
+                  <p style={{ margin: 0, fontSize: 13, color: 'rgba(255,255,255,0.5)' }}>
+                    {lang === 'en' ? 'Aggregated metrics across all categories' : '전 카테고리 통합 지표'}
+                  </p>
+                </div>
+                <div style={{ height: 1, background: '#1E293B', marginBottom: 16 }} />
+                <SummaryCards
+                  avgRate={dashboard.avgRate}
+                  monthActual={dashboard.monthActual}
+                  monthGoal={dashboard.monthGoal}
+                  annualProgressRate={dashboard.annualProgressRate}
+                  cumulativeActual={dashboard.cumulativeActual}
+                  annualTarget={dashboard.annualTarget}
+                  achievedCount={dashboard.achievedCount}
+                  missedCount={dashboard.missedCount}
                   month={selectedMonth}
                   lang={lang}
-                  selectedCategory={selectedCategory}
-                  onSelectCategory={setSelectedCategory}
                 />
-              </section>
-            )}
+              </div>
 
-            {/* 섹션 3. 월별 추세 */}
+              {/* 과제 카테고리별 진척 현황 */}
+              {dashboard.categoryStats.length > 0 && (
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 14, marginBottom: 14 }}>
+                    <h3 style={{ margin: 0, fontSize: 20, fontWeight: 900, color: '#F8FAFC' }}>
+                      {lang === 'en' ? 'Category Progress' : '과제 카테고리별 진척 현황'}
+                    </h3>
+                    <p style={{ margin: 0, fontSize: 13, color: 'rgba(255,255,255,0.5)' }}>
+                      {lang === 'en' ? 'Click a category to expand assigned organizations and tasks' : '카테고리를 클릭하면 담당 조직과 과제가 펼쳐집니다'}
+                    </p>
+                  </div>
+                  <div style={{ height: 1, background: '#1E293B', marginBottom: 16 }} />
+                  <CategoryDashboard
+                    categories={dashboard.categoryStats}
+                    month={selectedMonth}
+                    lang={lang}
+                    selectedCategory={selectedCategory}
+                    onSelectCategory={setSelectedCategory}
+                  />
+                </div>
+              )}
+            </section>
+
+            {/* 월별 추세 */}
             <section style={{ marginBottom: 32 }}>
               <SectionHeader
-                number="3"
                 title={lang === 'en' ? 'Monthly Trend' : '월별 추세'}
                 subtitle={lang === 'en' ? 'Goal vs actual and cumulative progress' : '월별 목표·실적 및 누적 진척'}
-                accent="#16A34A"
               />
               <PerformanceCharts
                 monthlyTotals={dashboard.monthlyTotals}
@@ -526,13 +550,11 @@ export default function App() {
               />
             </section>
 
-            {/* 섹션 4. 정량 과제 상세 */}
+            {/* 정량 과제 상세 */}
             <section style={{ marginBottom: 32 }}>
               <SectionHeader
-                number="4"
                 title={lang === 'en' ? 'Quantitative Tasks' : '정량 과제'}
                 subtitle={lang === 'en' ? 'Tasks with numeric goals — grouped by category' : '수치 목표 기반 과제 — 카테고리별 그룹화'}
-                accent="#7C3AED"
               />
               <DetailTable
                 tasks={dashboard.tasks}
@@ -542,14 +564,12 @@ export default function App() {
               />
             </section>
 
-            {/* 섹션 5. 정성 과제 상세 */}
+            {/* 정성 과제 상세 */}
             {data && (
               <section style={{ marginBottom: 32 }}>
                 <SectionHeader
-                  number="5"
                   title={lang === 'en' ? 'Qualitative Tasks' : '정성 과제'}
                   subtitle={lang === 'en' ? 'Pass / In-progress / Not-passed status — grouped by category' : '달성 / 진행 / 미달성 상태 — 카테고리별 그룹화'}
-                  accent="#0891B2"
                 />
                 <QualitativeTable
                   goals={data.qualitativeGoals.rows}
@@ -566,10 +586,8 @@ export default function App() {
             {data && (
               <section style={{ marginBottom: 32 }}>
                 <SectionHeader
-                  number="6"
                   title={lang === 'en' ? 'Annual Goals (Raw)' : '연간 목표 (원본)'}
                   subtitle={lang === 'en' ? 'Original goal data from the source sheet' : '시트 원본 목표 데이터'}
-                  accent="#64748B"
                 />
                 <RawGoalTable
                   rows={data.quantitativeGoals.rows}
