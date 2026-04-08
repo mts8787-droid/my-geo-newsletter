@@ -2146,8 +2146,16 @@ function _getSamsungScore(item){
 function calcFilteredDataCB(selBU,selProd,selCountry){
   var selectedProdNames={};
   _products.forEach(function(p){if(selProd.isAll||selProd.vals[p.id]){selectedProdNames[p.kr]=true;if(p.category)selectedProdNames[p.category]=true}});
-  // If specific countries selected → use productsCnty
+  var buTotals=_total.buTotals||{};
+  var countryTotals=_total.countryTotals||{};
+  // 단일 국가 + 전체 BU + 전체 제품 → 시트의 country TOTAL 값 사용
   if(!selCountry.isAll){
+    var cKeys=Object.keys(selCountry.vals);
+    if(cKeys.length===1&&selBU.isAll&&selProd.isAll&&countryTotals[cKeys[0]]){
+      var ct=countryTotals[cKeys[0]];
+      return{score:+ct.lg.toFixed(1),prev:+ct.lg.toFixed(1),vsComp:+ct.comp.toFixed(1),compName:'SAMSUNG'}
+    }
+    // 그 외 국가 필터: productsCnty에서 평균 (필터 조합)
     var cntyData=_productsCnty.filter(function(r){return selCountry.vals[r.country]});
     if(!selBU.isAll)cntyData=cntyData.filter(function(r){return _products.some(function(p){return(p.kr===r.product||p.category===r.product)&&selBU.vals[p.bu]})});
     if(!selProd.isAll)cntyData=cntyData.filter(function(r){return selectedProdNames[r.product]});
@@ -2155,6 +2163,14 @@ function calcFilteredDataCB(selBU,selProd,selCountry){
     var lgAvg=cntyData.reduce(function(s,r){return s+r.score},0)/cntyData.length;
     var ssAvg=cntyData.reduce(function(s,r){return s+_getSamsungScore(r)},0)/cntyData.length;
     return{score:+lgAvg.toFixed(1),prev:+lgAvg.toFixed(1),vsComp:+ssAvg.toFixed(1),compName:'SAMSUNG'}
+  }
+  // 단일 BU + 전체 제품 + 전체 국가 → 시트의 BU TOTAL 값 사용
+  if(!selBU.isAll&&selProd.isAll){
+    var buKeys=Object.keys(selBU.vals);
+    if(buKeys.length===1&&buTotals[buKeys[0]]){
+      var bt=buTotals[buKeys[0]];
+      return{score:+bt.lg.toFixed(1),prev:+bt.lg.toFixed(1),vsComp:+bt.comp.toFixed(1),compName:'SAMSUNG'}
+    }
   }
   // Specific products
   if(!selProd.isAll){
@@ -2164,7 +2180,7 @@ function calcFilteredDataCB(selBU,selProd,selCountry){
     var ssA=fProds.reduce(function(s,p){return s+_getSamsungScore(p)},0)/fProds.length;
     return{score:+lgA.toFixed(1),prev:+lgA.toFixed(1),vsComp:+ssA.toFixed(1),compName:'SAMSUNG'}
   }
-  // Specific BU
+  // Specific BU (multi)
   if(!selBU.isAll){
     var buProds=_products.filter(function(p){return selBU.vals[p.bu]});
     if(!buProds.length)return _total;
