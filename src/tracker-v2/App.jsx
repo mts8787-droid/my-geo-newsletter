@@ -512,52 +512,36 @@ export default function App() {
                 />
               </div>
 
-              {/* 과제 카테고리별 진척 현황 */}
-              {dashboard.categoryStats.length > 0 && (
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 14, marginBottom: 14 }}>
-                    <h3 style={{ margin: 0, fontSize: 20, fontWeight: 900, color: '#F8FAFC' }}>
-                      {lang === 'en' ? 'Category Progress' : '과제 카테고리별 진척 현황'}
-                    </h3>
-                    <p style={{ margin: 0, fontSize: 13, color: 'rgba(255,255,255,0.5)' }}>
-                      {lang === 'en' ? 'Click a category to expand assigned organizations and tasks' : '카테고리를 클릭하면 담당 조직과 과제가 펼쳐집니다'}
-                    </p>
-                  </div>
-                  <div style={{ height: 1, background: '#1E293B', marginBottom: 16 }} />
-                  <CategoryDashboard
-                    categories={dashboard.categoryStats}
-                    month={selectedMonth}
-                    lang={lang}
-                    selectedCategory={selectedCategory}
-                    onSelectCategory={setSelectedCategory}
-                  />
+              {/* 월별 추세 */}
+              <div>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: 14, marginBottom: 14 }}>
+                  <h3 style={{ margin: 0, fontSize: 20, fontWeight: 900, color: '#F8FAFC' }}>
+                    {lang === 'en' ? 'Monthly Trend' : '월별 추세'}
+                  </h3>
+                  <p style={{ margin: 0, fontSize: 13, color: 'rgba(255,255,255,0.5)' }}>
+                    {lang === 'en' ? 'Goal vs actual and cumulative progress' : '월별 목표·실적 및 누적 진척'}
+                  </p>
                 </div>
-              )}
+                <div style={{ height: 1, background: '#1E293B', marginBottom: 16 }} />
+                <PerformanceCharts
+                  monthlyTotals={dashboard.monthlyTotals}
+                  cumulative={dashboard.cumulative}
+                  annualTarget={dashboard.annualTarget}
+                  selectedMonth={selectedMonth}
+                  lang={lang}
+                />
+              </div>
             </section>
 
-            {/* 월별 추세 */}
+            {/* 정량 과제 상세 (카테고리별 진척 + 과제 리스트 통합) */}
             <section style={{ marginBottom: 32 }}>
               <SectionHeader
-                title={lang === 'en' ? 'Monthly Trend' : '월별 추세'}
-                subtitle={lang === 'en' ? 'Goal vs actual and cumulative progress' : '월별 목표·실적 및 누적 진척'}
-              />
-              <PerformanceCharts
-                monthlyTotals={dashboard.monthlyTotals}
-                cumulative={dashboard.cumulative}
-                annualTarget={dashboard.annualTarget}
-                selectedMonth={selectedMonth}
-                lang={lang}
-              />
-            </section>
-
-            {/* 정량 과제 상세 */}
-            <section style={{ marginBottom: 32 }}>
-              <SectionHeader
-                title={lang === 'en' ? 'Quantitative Tasks' : '정량 과제'}
-                subtitle={lang === 'en' ? 'Tasks with numeric goals — grouped by category' : '수치 목표 기반 과제 — 카테고리별 그룹화'}
+                title={lang === 'en' ? 'Quantitative Tasks by Category' : '정량 과제 (카테고리별)'}
+                subtitle={lang === 'en' ? 'Click a category to expand task list' : '카테고리를 클릭하면 과제 리스트가 펼쳐집니다'}
               />
               <DetailTable
                 tasks={dashboard.tasks}
+                categoryStats={dashboard.categoryStats}
                 month={selectedMonth}
                 lang={lang}
                 tr={taskTranslations}
