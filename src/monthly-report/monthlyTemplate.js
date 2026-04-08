@@ -1,5 +1,5 @@
 // ─── 월간 보고용 HTML 생성기 (단순 표 기반, 색상/그래프 없음) ─────────────
-const FONT = "'LG Smart', 'Malgun Gothic', Arial, sans-serif"
+const FONT = "'LG Smart', 'Arial Narrow', 'Malgun Gothic', Arial, sans-serif"
 
 // 제품 표시 순서 (KR / EN / 카테고리 코드 모두 매칭)
 const PRODUCT_ORDER = ['TV','모니터','Monitor','IT','오디오','Audio','AV','세탁기','WM','냉장고','REF','식기세척기','DW','청소기','VC','Cooking','쿠킹','RAC','Aircare','Air Care','에어케어']
@@ -381,6 +381,16 @@ export function generateMonthlyReportHTML(meta, total, products, citations, dotc
   return `<!DOCTYPE html><html lang="${lang}"><head>
 <meta charset="UTF-8">
 <title>${escapeHtml(title)} — ${escapeHtml(period)}</title>
+<link href="https://fonts.cdnfonts.com/css/lg-smart" rel="stylesheet" />
+<style>
+@font-face { font-family: 'LG Smart'; font-weight: 400; font-style: normal; src: url('/font/LG%20Smart%20Regular.ttf') format('truetype'); font-display: swap; }
+@font-face { font-family: 'LG Smart'; font-weight: 600; font-style: normal; src: url('/font/LG%20Smart%20SemiBold.ttf') format('truetype'); font-display: swap; }
+@font-face { font-family: 'LG Smart'; font-weight: 700; font-style: normal; src: url('/font/LG%20Smart%20Bold.ttf') format('truetype'); font-display: swap; }
+@font-face { font-family: 'LG Smart'; font-weight: 300; font-style: normal; src: url('/font/LG%20Smart%20Light.ttf') format('truetype'); font-display: swap; }
+@font-face { font-family: 'LG Smart'; font-weight: 400; font-style: italic; src: url('/font/LG%20Smart%20Regular%20Italic.ttf') format('truetype'); font-display: swap; }
+@font-face { font-family: 'LG Smart'; font-weight: 700; font-style: italic; src: url('/font/LG%20Smart%20Bold%20Italic.ttf') format('truetype'); font-display: swap; }
+body, table, td, th, h1, h2, p, span, div { font-family: ${FONT} !important; }
+</style>
 </head>
 <body style="margin:0;padding:24px;font-family:${FONT};color:#000;background:#FFFFFF;">
   <div style="max-width:1100px;margin:0 auto;">
