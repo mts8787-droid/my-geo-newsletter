@@ -1085,6 +1085,10 @@ export function generateVisibilityHTML(meta, total, products, citations, dotcom,
 export function generateDashboardHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty, opts, extra) {
   const visibilityOnly = opts?.visibilityOnly || false
   const includeProgressTracker = opts?.includeProgressTracker !== false
+  const trackerComingSoonMsg = lang === 'en' ? 'Progress Tracker will be available soon.' : '준비 중입니다. 곧 제공될 예정입니다.'
+  const trackerTabContent = includeProgressTracker
+    ? `<iframe id="tracker-iframe" src="/p/progress-tracker/?lang=${lang}" style="width:100%;min-height:calc(100vh - 60px);border:none;background:#0A0F1E" title="Progress Tracker"></iframe>`
+    : `<div class="progress-placeholder"><div class="inner"><div class="icon">⏳</div><h2>Coming Soon</h2><p>${trackerComingSoonMsg}</p></div></div>`
   _sid = 0
   const t = T[lang] || T.ko
 
@@ -1435,13 +1439,7 @@ ${visibilityOnly ? `
   </div></div>
 </div>
 <div id="tab-progress" class="tab-panel">
-  ${includeProgressTracker
-    ? `<iframe id="tracker-iframe" src="/p/progress-tracker/?lang=${lang}" style="width:100%;min-height:calc(100vh - 60px);border:none;background:#0A0F1E" title="Progress Tracker"></iframe>`
-    : `<div class="progress-placeholder"><div class="inner">
-        <div class="icon">⏳</div>
-        <h2>Coming Soon</h2>
-        <p>${lang === 'en' ? 'Progress Tracker will be available soon.' : '준비 중입니다. 곧 제공될 예정입니다.'}</p>
-      </div></div>`}
+  ${trackerTabContent}
 </div>
 <div id="tab-promptlist" class="tab-panel">
   ${promptListTabHtml(extra?.appendixPrompts, lang)}
