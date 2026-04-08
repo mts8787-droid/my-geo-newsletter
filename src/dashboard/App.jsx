@@ -53,6 +53,7 @@ export default function App() {
   const [trackerData, setTrackerData] = useState(null)
   const [publishing, setPublishing] = useState(false)
   const [publishMsg, setPublishMsg] = useState('')
+  const [includeTracker, setIncludeTracker] = useState(false)
 
   // Hash routing
   useEffect(() => {
@@ -85,7 +86,7 @@ export default function App() {
     if (publishing) return
     setPublishing(true); setPublishMsg('')
     try {
-      const result = await publishCombinedDashboard(generateDashboardHTML, resolveDataForLang)
+      const result = await publishCombinedDashboard(generateDashboardHTML, resolveDataForLang, { includeProgressTracker: includeTracker })
       setPublishMsg(`게시 완료!\nKO: ${window.location.origin}${result.urls.ko}\nEN: ${window.location.origin}${result.urls.en}`)
       fetch('/api/publish-history').then(r => r.ok ? r.json() : null).then(d => { if (d) setPublishData(d) })
     } catch (err) {
@@ -279,6 +280,12 @@ export default function App() {
                   편집기 열기
                 </a>
               )}
+
+              {/* Progress Tracker 포함 토글 */}
+              <label style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8, fontSize: 11, color: '#94A3B8', fontFamily: FONT, cursor: 'pointer' }}>
+                <input type="checkbox" checked={includeTracker} onChange={e => setIncludeTracker(e.target.checked)} style={{ cursor: 'pointer' }} />
+                Progress Tracker 포함 (미체크 시 Coming Soon)
+              </label>
 
               {/* 통합 대시보드 게시 버튼 */}
               <button onClick={handlePublishCombined} disabled={publishing}

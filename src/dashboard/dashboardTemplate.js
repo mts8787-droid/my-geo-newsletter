@@ -133,6 +133,7 @@ const REGIONS = {
   EU:    { label: '유럽',   labelEn: 'Europe',         countries: ['UK', 'DE', 'ES'] },
   LATAM: { label: '중남미', labelEn: 'Latin America',   countries: ['BR', 'MX'] },
   APAC:  { label: '아태',   labelEn: 'Asia Pacific',    countries: ['AU', 'VN'] },
+  IN:    { label: '인도',   labelEn: 'India',           countries: ['IN'] },
 }
 
 const TREND_BRAND_COL = 90
@@ -1685,7 +1686,7 @@ var _FALLBACK=['#94A3B8','#64748B','#475569','#CBD5E1','#E2E8F0'];
 var _RED='${RED}';
 var _FONT=${JSON.stringify(FONT)};
 var _COMP='${COMP}';
-var _REGIONS={NA:['US','CA'],EU:['UK','DE','ES'],LATAM:['BR','MX'],APAC:['AU','VN']};
+var _REGIONS={NA:['US','CA'],EU:['UK','DE','ES'],LATAM:['BR','MX'],APAC:['AU','VN'],IN:['IN']};
 var _REGION_LABELS={NA:'${lang==='en'?'North America':'북미'}',EU:'${lang==='en'?'Europe':'유럽'}',LATAM:'${lang==='en'?'Latin America':'중남미'}',APAC:'${lang==='en'?'Asia Pacific':'아태'}'};
 // ─── Helpers ───
 function _fmt(n){return Number(n).toLocaleString('en-US')}

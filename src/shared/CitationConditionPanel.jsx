@@ -10,6 +10,7 @@ export const CITATION_REGIONS = [
   { key: 'NA',    label: 'North America', countries: ['US', 'CA'] },
   { key: 'EU',    label: 'Europe',        countries: ['UK', 'DE', 'ES'] },
   { key: 'APAC',  label: 'Asia Pacific',  countries: ['AU', 'VN'] },
+  { key: 'IN',    label: 'India',         countries: ['IN'] },
   { key: 'LATAM', label: 'Latin America', countries: ['MX', 'BR'] },
 ]
 
