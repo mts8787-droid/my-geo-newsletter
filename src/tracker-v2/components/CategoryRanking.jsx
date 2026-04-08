@@ -1,5 +1,5 @@
-import { SECTION_BAR, statusOf } from '../utils/constants'
-import { t, tCat, tMonth } from '../../shared/i18n.js'
+import { SECTION_BAR, STAKEHOLDER_COLORS, statusOf } from '../utils/constants'
+import { t, tSH, tCat, tMonth } from '../../shared/i18n.js'
 
 function fmt(n) { return Number(n).toLocaleString('en-US') }
 
@@ -105,6 +105,48 @@ export default function CategoryRanking({ categories, month, selectedCategory, o
                   </span>
                 </div>
               </div>
+
+              {/* 담당 조직별 과제 리스트 (항상 펼쳐짐) */}
+              {cat.stakeholders && cat.stakeholders.length > 0 && (
+                <div style={{ marginTop: 10, paddingLeft: 16, borderLeft: `3px solid ${mSt.dot}30` }}>
+                  {cat.stakeholders.map(sh => {
+                    const shColor = STAKEHOLDER_COLORS[sh.name] || '#94A3B8'
+                    const shSt = statusOf(sh.rate)
+                    return (
+                      <div key={sh.name} style={{ marginBottom: 8, padding: '8px 12px', background: '#FAFBFC', borderRadius: 6, border: '1px solid #F1F5F9' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+                          <span style={{ display: 'inline-block', padding: '3px 10px', borderRadius: 4, fontSize: 14, fontWeight: 700, background: shColor + '18', color: '#111827', border: `1px solid ${shColor}30` }}>
+                            {tSH(lang, sh.name)}
+                          </span>
+                          <span style={{ fontSize: 14, fontWeight: 800, color: shSt.text }}>
+                            {(sh.rate || 0).toFixed(1)}%
+                          </span>
+                          <span style={{ fontSize: 13, color: '#94A3B8' }}>
+                            ({sh.tasks?.length || 0}{lang === 'en' ? ' tasks' : '개 과제'})
+                          </span>
+                        </div>
+                        {sh.tasks && sh.tasks.length > 0 && (
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px 8px' }}>
+                            {sh.tasks.map((td, i) => {
+                              const tSt = td.rate !== null && td.rate !== undefined ? statusOf(td.rate) : { dot: '#CBD5E1', text: '#94A3B8' }
+                              return (
+                                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '3px 8px', background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 4 }}>
+                                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: tSt.dot, display: 'inline-block', flexShrink: 0 }} />
+                                  <span style={{ fontSize: 13, color: '#1F2937', maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={td.task}>{td.task}</span>
+                                  <span style={{ fontSize: 12, color: '#64748B', whiteSpace: 'nowrap' }}>{fmt(td.actual)}/{fmt(td.goal)}</span>
+                                  {td.rate != null && (
+                                    <span style={{ fontSize: 13, fontWeight: 700, color: tSt.text, fontVariantNumeric: 'tabular-nums' }}>{td.rate.toFixed(0)}%</span>
+                                  )}
+                                </div>
+                              )
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
             </div>
           )
         })}

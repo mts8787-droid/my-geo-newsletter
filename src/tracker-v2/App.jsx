@@ -208,16 +208,37 @@ function computeDashboard(data, month, stakeholderFilter, categoryFilter) {
     const shNames = [...new Set(catGoals.map(g => g.stakeholder))]
     const stakeholders = shNames.map(sh => {
       let smAct = 0, smGoal = 0
+      const shTasks = []
       catGoals.filter(g => g.stakeholder === sh).forEach(g => {
         const key = `${g.stakeholder}|${g.task}`
         const a = actualMap[key] || {}
-        smGoal += typeof g.monthly?.[month] === 'number' ? g.monthly[month] : 0
-        smAct += typeof a.monthly?.[month] === 'number' ? a.monthly[month] : 0
+        const r = rateMap[key] || {}
+        const tGoal = typeof g.monthly?.[month] === 'number' ? g.monthly[month] : 0
+        const tAct = typeof a.monthly?.[month] === 'number' ? a.monthly[month] : 0
+        smGoal += tGoal
+        smAct += tAct
+        const sheetRate = parseRate(r.monthly?.[month])
+        const computed = tGoal > 0 ? Math.round((tAct / tGoal) * 1000) / 10 : null
+        const tRate = computed !== null ? computed : sheetRate
+        shTasks.push({ task: g.task, rate: tRate, actual: tAct, goal: tGoal })
       })
       const rate = smGoal > 0 ? Math.round((smAct / smGoal) * 1000) / 10 : 0
-      return { name: sh, rate }
+      return { name: sh, rate, tasks: shTasks }
     })
-    return { category: cat, taskCount: catGoals.length, monthRate, cumRate, progressRate, monthActual: mAct, monthGoal: mGoal, cumActual: cAct, cumGoal: cGoal, annualGoal, stakeholders }
+    // 달성/미달성 과제수
+    let achieved = 0, missed = 0
+    catGoals.forEach(g => {
+      const key = `${g.stakeholder}|${g.task}`
+      const a = actualMap[key] || {}
+      const tGoal = typeof g.monthly?.[month] === 'number' ? g.monthly[month] : 0
+      const tAct = typeof a.monthly?.[month] === 'number' ? a.monthly[month] : 0
+      if (tGoal > 0) {
+        const r = (tAct / tGoal) * 100
+        if (r >= 80) achieved++
+        else missed++
+      }
+    })
+    return { category: cat, taskCount: catGoals.length, monthRate, cumRate, progressRate, monthActual: mAct, monthGoal: mGoal, cumActual: cAct, cumGoal: cGoal, annualGoal, stakeholders, achieved, missed }
   })
 
   const totalsRate = parseRate(rates.totals?.monthly?.[month])
@@ -225,11 +246,20 @@ function computeDashboard(data, month, stakeholderFilter, categoryFilter) {
   const monthActual = currentMT?.actual || 0
   const monthGoal = currentMT?.goal || 0
 
+  // 전체 달성/미달성 과제수 (월 기준)
+  const achievedCount = tasks.filter(t => typeof t.goal === 'number' && t.goal > 0 && (t.actual / t.goal) * 100 >= 80).length
+  const missedCount = tasks.filter(t => typeof t.goal === 'number' && t.goal > 0 && (t.actual / t.goal) * 100 < 80).length
+  // 연간 진척율 (전체)
+  const annualProgressRate = annualTarget > 0 ? Math.round((cumulativeActual / annualTarget) * 1000) / 10 : 0
+
   return {
     tasks,
     avgRate: Math.round(avgRate * 10) / 10,
     totalsRate: totalsRate !== null ? Math.round(totalsRate * 10) / 10 : null,
     warningCount,
+    achievedCount,
+    missedCount,
+    annualProgressRate,
     cumulativeActual,
     cumulativeGoal,
     monthActual,
@@ -447,14 +477,14 @@ export default function App() {
 
             <SummaryCards
               avgRate={dashboard.avgRate}
-              cumulativeActual={dashboard.cumulativeActual}
-              cumulativeGoal={dashboard.cumulativeGoal}
               monthActual={dashboard.monthActual}
               monthGoal={dashboard.monthGoal}
-              warningCount={dashboard.warningCount}
+              annualProgressRate={dashboard.annualProgressRate}
+              cumulativeActual={dashboard.cumulativeActual}
               annualTarget={dashboard.annualTarget}
+              achievedCount={dashboard.achievedCount}
+              missedCount={dashboard.missedCount}
               month={selectedMonth}
-              selectedSH={selectedSH}
               lang={lang}
             />
 
