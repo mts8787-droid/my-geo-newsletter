@@ -23,9 +23,12 @@ export function computeCategoryStats(data, month) {
 
   const categoryNames = [...new Set(goalRows.map(g => g.taskCategory).filter(Boolean))]
 
+  const prevMonth = monthIdx > 0 ? MONTHS[monthIdx - 1] : null
+
   return categoryNames.map(cat => {
     const catGoals = goalRows.filter(g => g.taskCategory === cat)
     let mAct = 0, mGoal = 0, cAct = 0, annualGoal = 0
+    let pAct = 0, pGoal = 0
     catGoals.forEach(g => {
       const key = `${g.stakeholder}|${g.task}`
       const a = actualMap[key] || {}
@@ -33,6 +36,13 @@ export function computeCategoryStats(data, month) {
       const av = typeof a.monthly?.[targetMonth] === 'number' ? a.monthly[targetMonth] : 0
       mGoal += gv
       mAct += av
+      // 이전 월
+      if (prevMonth) {
+        const pgv = typeof g.monthly?.[prevMonth] === 'number' ? g.monthly[prevMonth] : 0
+        const pav = typeof a.monthly?.[prevMonth] === 'number' ? a.monthly[prevMonth] : 0
+        pGoal += pgv
+        pAct += pav
+      }
       for (let i = 0; i <= monthIdx; i++) {
         const m = MONTHS[i]
         if (typeof a.monthly?.[m] === 'number') cAct += a.monthly[m]
@@ -42,11 +52,14 @@ export function computeCategoryStats(data, month) {
       })
     })
     const monthRate = mGoal > 0 ? Math.round((mAct / mGoal) * 1000) / 10 : 0
+    const prevMonthRate = pGoal > 0 ? Math.round((pAct / pGoal) * 1000) / 10 : 0
     const progressRate = annualGoal > 0 ? Math.round((cAct / annualGoal) * 1000) / 10 : 0
     return {
       category: cat,
       taskCount: catGoals.length,
       monthRate,
+      prevMonthRate,
+      prevMonth,
       progressRate,
       monthActual: mAct,
       monthGoal: mGoal,

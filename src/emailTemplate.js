@@ -865,11 +865,11 @@ function dotcomSectionHtml(dotcom, meta, lang = 'ko') {
 // ─── Category Cards (Progress Tracker 진척율) ──────────────────────────────
 function categoryCardsHtml(categoryStats, lang) {
   if (!categoryStats || !categoryStats.length) {
-    return `<div style="margin-top:18px;padding:14px 16px;background:#FEF3C7;border:1px solid #FCD34D;border-radius:8px;font-size:12px;color:#92400E;font-family:${EM_FONT};">${lang === 'en' ? 'Progress Tracker data not available. Please re-publish the Progress Tracker to see category cards.' : 'Progress Tracker 데이터가 없습니다. Progress Tracker에서 다시 게시하면 카테고리 카드가 표시됩니다.'}</div>`
+    return `<div style="margin-bottom:14px;padding:14px 16px;background:#FEF3C7;border:1px solid #FCD34D;border-radius:8px;font-size:12px;color:#92400E;font-family:${EM_FONT};">${lang === 'en' ? 'Progress Tracker data not available.' : 'Progress Tracker 데이터가 없습니다.'}</div>`
   }
   const t = lang === 'en'
-    ? { title: 'Action Items by Category', monthly: 'Monthly Rate', progress: 'Progress' }
-    : { title: '카테고리별 진척 현황', monthly: '월 달성률', progress: '진척율' }
+    ? { title: 'Category Progress', monthly: 'This Month', prev: 'Last Month', progress: 'YTD Progress' }
+    : { title: '카테고리별 진척 현황', monthly: '이번 월', prev: '전월', progress: '연간 진척율' }
   function statusColor(rate) {
     if (rate >= 80) return { bg: '#F0FDF4', border: '#BBF7D0', bar: '#16A34A', text: '#15803D' }
     if (rate >= 50) return { bg: '#FFFBEB', border: '#FDE68A', bar: '#D97706', text: '#B45309' }
@@ -878,24 +878,39 @@ function categoryCardsHtml(categoryStats, lang) {
   const cards = categoryStats.map(c => {
     const ms = statusColor(c.monthRate || 0)
     const ps = statusColor(c.progressRate || 0)
+    const prevMonthRate = c.prevMonthRate
+    const hasPrev = prevMonthRate != null && prevMonthRate > 0
+    const delta = hasPrev ? +((c.monthRate || 0) - prevMonthRate).toFixed(1) : null
+    const deltaColor = delta == null ? '#94A3B8' : delta > 0 ? '#16A34A' : delta < 0 ? '#DC2626' : '#94A3B8'
+    const deltaArrow = delta == null ? '' : delta > 0 ? '▲' : delta < 0 ? '▼' : '─'
     return `<td width="50%" valign="top" style="padding:6px;">
       <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFFFFF;border:1.5px solid #E8EDF2;border-radius:10px;">
         <tr><td style="padding:12px 14px;">
-          <p style="margin:0 0 8px;font-size:14px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};">${escapeHtml(c.category)}</p>
-          <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom:6px;">
+          <p style="margin:0 0 10px;font-size:14px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};">${escapeHtml(c.category)}</p>
+          <!-- 이번 월 -->
+          <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom:4px;">
             <tr>
               <td style="font-size:11px;color:#64748B;font-family:${EM_FONT};">${t.monthly}</td>
-              <td align="right" style="font-size:13px;font-weight:700;color:${ms.text};font-family:${EM_FONT};">${(c.monthRate || 0).toFixed(0)}%</td>
+              <td align="right" style="font-size:13px;font-weight:700;color:${ms.text};font-family:${EM_FONT};">${(c.monthRate || 0).toFixed(0)}%${hasPrev ? ` <span style="font-size:10px;font-weight:700;color:${deltaColor};">${deltaArrow}${Math.abs(delta).toFixed(0)}%p</span>` : ''}</td>
             </tr>
           </table>
-          <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#F1F5F9;border-radius:3px;margin-bottom:8px;">
+          <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#F1F5F9;border-radius:3px;margin-bottom:6px;">
             <tr><td height="6" style="font-size:0;line-height:0;">
               <table border="0" cellpadding="0" cellspacing="0" width="${Math.min(Math.round(c.monthRate || 0), 100)}%" style="background:${ms.bar};border-radius:3px;">
                 <tr><td height="6" style="font-size:0;line-height:0;">&nbsp;</td></tr>
               </table>
             </td></tr>
           </table>
-          <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom:6px;">
+          ${hasPrev ? `
+          <!-- 전월 -->
+          <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom:8px;">
+            <tr>
+              <td style="font-size:10px;color:#94A3B8;font-family:${EM_FONT};">${t.prev}</td>
+              <td align="right" style="font-size:11px;font-weight:600;color:#64748B;font-family:${EM_FONT};">${prevMonthRate.toFixed(0)}%</td>
+            </tr>
+          </table>` : '<div style="height:8px"></div>'}
+          <!-- 진척율 -->
+          <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom:4px;">
             <tr>
               <td style="font-size:11px;color:#64748B;font-family:${EM_FONT};">${t.progress}</td>
               <td align="right" style="font-size:13px;font-weight:700;color:${ps.text};font-family:${EM_FONT};">${(c.progressRate || 0).toFixed(0)}%</td>
@@ -920,7 +935,7 @@ function categoryCardsHtml(categoryStats, lang) {
     rows.push(`<tr>${pair.join('')}</tr>`)
   }
   return `
-  <div style="margin-top:18px;padding-top:14px;border-top:1px dashed #CBD5E1;">
+  <div style="margin-bottom:18px;">
     <p style="margin:0 0 10px;font-size:13px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.5px;font-family:${EM_FONT};">${t.title}</p>
     <table border="0" cellpadding="0" cellspacing="0" width="100%">${rows.join('')}</table>
   </div>`
@@ -1337,8 +1352,8 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                     </tr>
                     <tr>
                       <td style="padding:20px 16px;">
-                        <p style="margin:0;font-size:14px;color:#1A1A1A;line-height:22px;font-family:${EM_FONT};">${mdBold(meta.todoText)}</p>
                         ${categoryCardsHtml(categoryStats, lang)}
+                        <p style="margin:0;font-size:14px;color:#1A1A1A;line-height:22px;font-family:${EM_FONT};">${mdBold(meta.todoText)}</p>
                         ${dashboardLinkButtonHtml(lang)}
                       </td>
                     </tr>
