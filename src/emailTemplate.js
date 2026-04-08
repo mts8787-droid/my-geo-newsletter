@@ -864,7 +864,9 @@ function dotcomSectionHtml(dotcom, meta, lang = 'ko') {
 
 // ─── Category Cards (Progress Tracker 진척율) ──────────────────────────────
 function categoryCardsHtml(categoryStats, lang) {
-  if (!categoryStats || !categoryStats.length) return ''
+  if (!categoryStats || !categoryStats.length) {
+    return `<div style="margin-top:18px;padding:14px 16px;background:#FEF3C7;border:1px solid #FCD34D;border-radius:8px;font-size:12px;color:#92400E;font-family:${EM_FONT};">${lang === 'en' ? 'Progress Tracker data not available. Please re-publish the Progress Tracker to see category cards.' : 'Progress Tracker 데이터가 없습니다. Progress Tracker에서 다시 게시하면 카테고리 카드가 표시됩니다.'}</div>`
+  }
   const t = lang === 'en'
     ? { title: 'Action Items by Category', monthly: 'Monthly Rate', progress: 'Progress' }
     : { title: '카테고리별 진척 현황', monthly: '월 달성률', progress: '진척율' }
@@ -1007,8 +1009,14 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
   </style>
   <![endif]-->
   ${citDomainResult.css ? `<style type="text/css">${citDomainResult.css}</style>` : ''}
+  <style type="text/css">
+    html, body { overflow-x: hidden !important; max-width: 100vw; }
+    body * { max-width: 100%; }
+    table { table-layout: auto; }
+    td, th { word-wrap: break-word; overflow-wrap: break-word; }
+  </style>
 </head>
-<body style="margin:0;padding:0;background-color:#F1F5F9;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;">
+<body style="margin:0;padding:0;background-color:#F1F5F9;overflow-x:hidden;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;">
 
 <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color:#F1F5F9;">
   <tr>
