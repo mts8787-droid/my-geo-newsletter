@@ -20,7 +20,7 @@ function CategoryTooltip({ cat, lang }) {
       <div style={{ fontWeight: 700, marginBottom: 6, color: '#F8FAFC' }}>{tCat(lang, cat.category)}</div>
       <div style={{ color: '#94A3B8' }}>{t(lang, 'tooltipTaskCount', cat.taskCount)}</div>
       <div style={{ color: '#94A3B8' }}>{t(lang, 'monthlyRate', '')} {cat.monthRate}% ({fmt(cat.monthActual)} / {fmt(cat.monthGoal)})</div>
-      <div style={{ color: '#94A3B8' }}>{t(lang, 'cumulativeRate')} {cat.cumRate}% ({fmt(cat.cumActual)} / {fmt(cat.cumGoal)})</div>
+      <div style={{ color: '#94A3B8' }}>{lang === 'en' ? 'Annual Progress' : '연간 진척율'} {(cat.progressRate || 0).toFixed(1)}% ({fmt(cat.cumActual)} / {fmt(cat.annualGoal || cat.cumGoal)})</div>
       {cat.stakeholders && cat.stakeholders.length > 0 && (
         <div style={{ marginTop: 6 }}>
           <span style={{ color: '#94A3B8', fontSize: 12 }}>{t(lang, 'tooltipOrgs')}:</span>
@@ -52,7 +52,7 @@ export default function CategorySummary({ categories, month, lang = 'ko', select
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" style={{ padding: 16, overflow: 'visible' }}>
         {categories.map(cat => {
           const ms = statusOf(cat.monthRate)
-          const cs = statusOf(cat.cumRate)
+          const ps = statusOf(cat.progressRate || 0)
           const shCount = cat.stakeholders ? cat.stakeholders.length : 0
           const isSelected = selectedCategory === cat.category
           const isHovered = hoveredCat === cat.category
@@ -102,18 +102,18 @@ export default function CategorySummary({ categories, month, lang = 'ko', select
                 </div>
               </div>
 
-              {/* 누적 달성률 */}
+              {/* 연간 진척율 */}
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-                  <span style={{ fontSize: 15, color: '#94A3B8', width: 82, flexShrink: 0 }}>{t(lang, 'cumulativeRate')}</span>
+                  <span style={{ fontSize: 15, color: '#94A3B8', width: 82, flexShrink: 0 }}>{lang === 'en' ? 'Annual Progress' : '연간 진척율'}</span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0, justifyContent: 'flex-end' }}>
-                    <span style={{ width: 12, height: 12, borderRadius: '50%', background: cs.dot, display: 'inline-block', boxShadow: `0 0 6px ${cs.dot}55` }} />
-                    <span style={{ fontSize: 20, fontWeight: 700, color: cs.text }}>{cat.cumRate}%</span>
-                    <span style={{ fontSize: 14, color: '#64748B' }}>{fmt(cat.cumActual)} / {fmt(cat.cumGoal)}</span>
+                    <span style={{ width: 12, height: 12, borderRadius: '50%', background: ps.dot, display: 'inline-block', boxShadow: `0 0 6px ${ps.dot}55` }} />
+                    <span style={{ fontSize: 20, fontWeight: 700, color: ps.text }}>{(cat.progressRate || 0).toFixed(1)}%</span>
+                    <span style={{ fontSize: 14, color: '#64748B' }}>{fmt(cat.cumActual)} / {fmt(cat.annualGoal || cat.cumGoal)}</span>
                   </div>
                 </div>
                 <div style={{ height: 6, background: 'rgba(255,255,255,0.15)', borderRadius: 3, overflow: 'hidden' }}>
-                  <div style={{ height: '100%', borderRadius: 3, background: cs.bar, width: `${Math.min(cat.cumRate, 100)}%`, transition: 'width 0.5s' }} />
+                  <div style={{ height: '100%', borderRadius: 3, background: ps.bar, width: `${Math.min(cat.progressRate || 0, 100)}%`, transition: 'width 0.5s' }} />
                 </div>
               </div>
 
