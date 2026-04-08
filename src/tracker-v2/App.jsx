@@ -6,6 +6,7 @@ import SummaryCards from './components/SummaryCards'
 import PerformanceCharts from './components/PerformanceCharts'
 import StakeholderRanking from './components/StakeholderRanking'
 import CategoryRanking from './components/CategoryRanking'
+import CategoryDashboard from './components/CategoryDashboard'
 import DetailTable from './components/DetailTable'
 import QualitativeTable from './components/QualitativeTable'
 import CategorySummary from './components/CategorySummary'
@@ -465,16 +466,6 @@ export default function App() {
 
         {dashboard && (
           <>
-            {dashboard.categoryStats.length > 0 && (
-              <CategorySummary
-                categories={dashboard.categoryStats}
-                month={selectedMonth}
-                lang={lang}
-                selectedCategory={selectedCategory}
-                onSelectCategory={setSelectedCategory}
-              />
-            )}
-
             <SummaryCards
               avgRate={dashboard.avgRate}
               monthActual={dashboard.monthActual}
@@ -488,19 +479,21 @@ export default function App() {
               lang={lang}
             />
 
+            {dashboard.categoryStats.length > 0 && (
+              <CategoryDashboard
+                categories={dashboard.categoryStats}
+                month={selectedMonth}
+                lang={lang}
+                selectedCategory={selectedCategory}
+                onSelectCategory={setSelectedCategory}
+              />
+            )}
+
             <PerformanceCharts
               monthlyTotals={dashboard.monthlyTotals}
               cumulative={dashboard.cumulative}
               annualTarget={dashboard.annualTarget}
               selectedMonth={selectedMonth}
-              lang={lang}
-            />
-
-            <CategoryRanking
-              categories={dashboard.categoryStats}
-              month={selectedMonth}
-              selectedCategory={selectedCategory}
-              onSelectCategory={setSelectedCategory}
               lang={lang}
             />
 
