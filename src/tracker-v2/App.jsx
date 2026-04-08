@@ -7,6 +7,7 @@ import PerformanceCharts from './components/PerformanceCharts'
 import StakeholderRanking from './components/StakeholderRanking'
 import CategoryRanking from './components/CategoryRanking'
 import CategoryDashboard from './components/CategoryDashboard'
+import SectionHeader from './components/SectionHeader'
 import DetailTable from './components/DetailTable'
 import QualitativeTable from './components/QualitativeTable'
 import CategorySummary from './components/CategorySummary'
@@ -466,64 +467,118 @@ export default function App() {
 
         {dashboard && (
           <>
-            <SummaryCards
-              avgRate={dashboard.avgRate}
-              monthActual={dashboard.monthActual}
-              monthGoal={dashboard.monthGoal}
-              annualProgressRate={dashboard.annualProgressRate}
-              cumulativeActual={dashboard.cumulativeActual}
-              annualTarget={dashboard.annualTarget}
-              achievedCount={dashboard.achievedCount}
-              missedCount={dashboard.missedCount}
-              month={selectedMonth}
-              lang={lang}
-            />
+            {/* 섹션 1. 요약 대시보드 */}
+            <section style={{ marginBottom: 32 }}>
+              <SectionHeader
+                number="1"
+                title={lang === 'en' ? 'Summary Dashboard' : '요약 대시보드'}
+                subtitle={lang === 'en' ? 'Overall and category-level achievement at a glance' : '전체 및 카테고리별 달성 현황 한눈에 보기'}
+                accent="#CF0652"
+              />
+              <SummaryCards
+                avgRate={dashboard.avgRate}
+                monthActual={dashboard.monthActual}
+                monthGoal={dashboard.monthGoal}
+                annualProgressRate={dashboard.annualProgressRate}
+                cumulativeActual={dashboard.cumulativeActual}
+                annualTarget={dashboard.annualTarget}
+                achievedCount={dashboard.achievedCount}
+                missedCount={dashboard.missedCount}
+                categoryStats={dashboard.categoryStats}
+                month={selectedMonth}
+                lang={lang}
+              />
+            </section>
 
+            {/* 섹션 2. 카테고리별 진척 */}
             {dashboard.categoryStats.length > 0 && (
-              <CategoryDashboard
-                categories={dashboard.categoryStats}
-                month={selectedMonth}
-                lang={lang}
-                selectedCategory={selectedCategory}
-                onSelectCategory={setSelectedCategory}
-              />
+              <section style={{ marginBottom: 32 }}>
+                <SectionHeader
+                  number="2"
+                  title={lang === 'en' ? 'Category Progress Detail' : '카테고리별 진척 상세'}
+                  subtitle={lang === 'en' ? 'Click a category to expand assigned organizations and tasks' : '카테고리를 클릭하면 담당 조직과 과제가 펼쳐집니다'}
+                  accent="#1D4ED8"
+                />
+                <CategoryDashboard
+                  categories={dashboard.categoryStats}
+                  month={selectedMonth}
+                  lang={lang}
+                  selectedCategory={selectedCategory}
+                  onSelectCategory={setSelectedCategory}
+                />
+              </section>
             )}
 
-            <PerformanceCharts
-              monthlyTotals={dashboard.monthlyTotals}
-              cumulative={dashboard.cumulative}
-              annualTarget={dashboard.annualTarget}
-              selectedMonth={selectedMonth}
-              lang={lang}
-            />
+            {/* 섹션 3. 월별 추세 */}
+            <section style={{ marginBottom: 32 }}>
+              <SectionHeader
+                number="3"
+                title={lang === 'en' ? 'Monthly Trend' : '월별 추세'}
+                subtitle={lang === 'en' ? 'Goal vs actual and cumulative progress' : '월별 목표·실적 및 누적 진척'}
+                accent="#16A34A"
+              />
+              <PerformanceCharts
+                monthlyTotals={dashboard.monthlyTotals}
+                cumulative={dashboard.cumulative}
+                annualTarget={dashboard.annualTarget}
+                selectedMonth={selectedMonth}
+                lang={lang}
+              />
+            </section>
 
-            <DetailTable
-              tasks={dashboard.tasks}
-              month={selectedMonth}
-              lang={lang}
-              tr={taskTranslations}
-            />
-
-            {data && (
-              <QualitativeTable
-                goals={data.qualitativeGoals.rows}
-                results={data.qualitativeResults.rows}
-                selectedSH={selectedSH}
-                selectedCategory={selectedCategory}
+            {/* 섹션 4. 정량 과제 상세 */}
+            <section style={{ marginBottom: 32 }}>
+              <SectionHeader
+                number="4"
+                title={lang === 'en' ? 'Quantitative Tasks' : '정량 과제'}
+                subtitle={lang === 'en' ? 'Tasks with numeric goals — grouped by category' : '수치 목표 기반 과제 — 카테고리별 그룹화'}
+                accent="#7C3AED"
+              />
+              <DetailTable
+                tasks={dashboard.tasks}
                 month={selectedMonth}
                 lang={lang}
                 tr={taskTranslations}
               />
+            </section>
+
+            {/* 섹션 5. 정성 과제 상세 */}
+            {data && (
+              <section style={{ marginBottom: 32 }}>
+                <SectionHeader
+                  number="5"
+                  title={lang === 'en' ? 'Qualitative Tasks' : '정성 과제'}
+                  subtitle={lang === 'en' ? 'Pass / In-progress / Not-passed status — grouped by category' : '달성 / 진행 / 미달성 상태 — 카테고리별 그룹화'}
+                  accent="#0891B2"
+                />
+                <QualitativeTable
+                  goals={data.qualitativeGoals.rows}
+                  results={data.qualitativeResults.rows}
+                  selectedSH={selectedSH}
+                  selectedCategory={selectedCategory}
+                  month={selectedMonth}
+                  lang={lang}
+                  tr={taskTranslations}
+                />
+              </section>
             )}
 
             {data && (
-              <RawGoalTable
-                rows={data.quantitativeGoals.rows}
-                selectedSH={selectedSH}
-                selectedCategory={selectedCategory}
-                lang={lang}
-                tr={taskTranslations}
-              />
+              <section style={{ marginBottom: 32 }}>
+                <SectionHeader
+                  number="6"
+                  title={lang === 'en' ? 'Annual Goals (Raw)' : '연간 목표 (원본)'}
+                  subtitle={lang === 'en' ? 'Original goal data from the source sheet' : '시트 원본 목표 데이터'}
+                  accent="#64748B"
+                />
+                <RawGoalTable
+                  rows={data.quantitativeGoals.rows}
+                  selectedSH={selectedSH}
+                  selectedCategory={selectedCategory}
+                  lang={lang}
+                  tr={taskTranslations}
+                />
+              </section>
             )}
           </>
         )}
