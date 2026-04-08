@@ -132,7 +132,7 @@ const REGIONS = {
   NA:    { label: '북미',   labelEn: 'North America',  countries: ['US', 'CA'] },
   EU:    { label: '유럽',   labelEn: 'Europe',         countries: ['UK', 'DE', 'ES'] },
   LATAM: { label: '중남미', labelEn: 'Latin America',   countries: ['BR', 'MX'] },
-  APAC:  { label: '아태',   labelEn: 'Asia Pacific',    countries: ['IN', 'AU', 'VN'] },
+  APAC:  { label: '아태',   labelEn: 'Asia Pacific',    countries: ['AU', 'VN'] },
 }
 
 const TREND_BRAND_COL = 90
@@ -1083,6 +1083,7 @@ export function generateVisibilityHTML(meta, total, products, citations, dotcom,
 
 export function generateDashboardHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty, opts, extra) {
   const visibilityOnly = opts?.visibilityOnly || false
+  const includeProgressTracker = opts?.includeProgressTracker !== false
   _sid = 0
   const t = T[lang] || T.ko
 
@@ -1433,7 +1434,13 @@ ${visibilityOnly ? `
   </div></div>
 </div>
 <div id="tab-progress" class="tab-panel">
-  <iframe id="tracker-iframe" src="/p/progress-tracker/?lang=${lang}" style="width:100%;min-height:calc(100vh - 60px);border:none;background:#0A0F1E" title="Progress Tracker"></iframe>
+  ${includeProgressTracker
+    ? `<iframe id="tracker-iframe" src="/p/progress-tracker/?lang=${lang}" style="width:100%;min-height:calc(100vh - 60px);border:none;background:#0A0F1E" title="Progress Tracker"></iframe>`
+    : `<div class="progress-placeholder"><div class="inner">
+        <div class="icon">⏳</div>
+        <h2>Coming Soon</h2>
+        <p>${lang === 'en' ? 'Progress Tracker will be available soon.' : '준비 중입니다. 곧 제공될 예정입니다.'}</p>
+      </div></div>`}
 </div>
 <div id="tab-promptlist" class="tab-panel">
   ${promptListTabHtml(extra?.appendixPrompts, lang)}
@@ -1678,7 +1685,7 @@ var _FALLBACK=['#94A3B8','#64748B','#475569','#CBD5E1','#E2E8F0'];
 var _RED='${RED}';
 var _FONT=${JSON.stringify(FONT)};
 var _COMP='${COMP}';
-var _REGIONS={NA:['US','CA'],EU:['UK','DE','ES'],LATAM:['BR','MX'],APAC:['IN','AU','VN']};
+var _REGIONS={NA:['US','CA'],EU:['UK','DE','ES'],LATAM:['BR','MX'],APAC:['AU','VN']};
 var _REGION_LABELS={NA:'${lang==='en'?'North America':'북미'}',EU:'${lang==='en'?'Europe':'유럽'}',LATAM:'${lang==='en'?'Latin America':'중남미'}',APAC:'${lang==='en'?'Asia Pacific':'아태'}'};
 // ─── Helpers ───
 function _fmt(n){return Number(n).toLocaleString('en-US')}

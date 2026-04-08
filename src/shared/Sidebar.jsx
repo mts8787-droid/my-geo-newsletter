@@ -24,6 +24,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
   const [publishing, setPublishing] = useState(false)
   const [publishMsg, setPublishMsg] = useState('')
   const [combPublishing, setCombPublishing] = useState(false)
+  const [includeTracker, setIncludeTracker] = useState(false)
   const [combMsg, setCombMsg] = useState('')
 
   // 게시 상태 로드
@@ -74,7 +75,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
     if (combPublishing) return
     setCombPublishing(true); setCombMsg('')
     try {
-      const result = await publishCombinedDashboard(generateDashboardHTML, resolveDataForLang)
+      const result = await publishCombinedDashboard(generateDashboardHTML, resolveDataForLang, { includeProgressTracker: includeTracker })
       setCombMsg(`통합 게시 완료!\nKO: ${window.location.origin}${result.urls.ko}\nEN: ${window.location.origin}${result.urls.en}`)
     } catch (err) {
       setCombMsg('ERROR: ' + err.message)
@@ -589,6 +590,10 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
 
         {mode === 'dashboard' && (
           <>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6, fontSize: 11, color: '#94A3B8', fontFamily: FONT, cursor: 'pointer' }}>
+              <input type="checkbox" checked={includeTracker} onChange={e => setIncludeTracker(e.target.checked)} style={{ cursor: 'pointer' }} />
+              Progress Tracker 포함 (체크 안하면 Coming Soon으로 표시)
+            </label>
             <button onClick={handleCombinedPublish} disabled={combPublishing} style={{
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, width: '100%',
               padding: '8px 12px', borderRadius: 8, border: 'none',

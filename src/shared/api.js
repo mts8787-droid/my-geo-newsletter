@@ -73,7 +73,8 @@ export async function fetchSyncData(mode) {
   } catch (err) { console.warn('[API] fetchSyncData failed:', err.message); return null }
 }
 
-export async function publishCombinedDashboard(generateDashboardHTML, resolveDataForLang) {
+export async function publishCombinedDashboard(generateDashboardHTML, resolveDataForLang, options = {}) {
+  const { includeProgressTracker = false } = options
   const d = await fetchSyncData('dashboard')
   if (!d) throw new Error('동기화 데이터가 없습니다. Visibility Editor에서 먼저 동기화해주세요.')
   const meta = d.meta || {}
@@ -102,7 +103,7 @@ export async function publishCombinedDashboard(generateDashboardHTML, resolveDat
     weeklyBrandPrompt: d.weeklyBrandPrompt || [],
     weeklyBrandPromptLabels: d.weeklyBrandPromptLabels || [],
   }
-  const opts = { monthlyVis: d.monthlyVis || [] }
+  const opts = { monthlyVis: d.monthlyVis || [], includeProgressTracker }
   const htmlKo = generateDashboardHTML(meta, total, resolvedKo.products, resolvedKo.citations, dotcom, 'ko', resolvedKo.productsCnty, resolvedKo.citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty, opts, extra)
   const htmlEn = generateDashboardHTML({ ...meta, title: meta.title || 'GEO KPI Dashboard' }, total, resolvedEn.products, resolvedEn.citations, dotcom, 'en', resolvedEn.productsCnty, resolvedEn.citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty, opts, extra)
   const title = `${meta.period || ''} ${meta.title || 'KPI Dashboard'}`.trim()

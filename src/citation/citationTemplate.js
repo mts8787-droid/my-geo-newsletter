@@ -252,7 +252,7 @@ const REGIONS = {
   NA:    { countries: ['US', 'CA'] },
   EU:    { countries: ['UK', 'DE', 'ES'] },
   LATAM: { countries: ['MX', 'BR'] },
-  APAC:  { countries: ['IN', 'AU', 'VN'] },
+  APAC:  { countries: ['AU', 'VN'] },
 }
 
 // ─── 리본형 범프차트 공통 SVG 생성 ─────────────────────────────────────────
@@ -768,7 +768,7 @@ function switchSubTab(btn,tab){
     p.style.display=p.getAttribute('data-panel')===tab?'':'none';
   });
 }
-var _REGIONS={NA:['US','CA'],EU:['UK','DE','ES'],LATAM:['MX','BR'],APAC:['IN','AU','VN']};
+var _REGIONS={NA:['US','CA'],EU:['UK','DE','ES'],LATAM:['MX','BR'],APAC:['AU','VN']};
 function updateAllCheckbox(target){
   var all=document.querySelectorAll('.fl-chk[data-filter="'+target+'"]');
   var allChecked=true;
