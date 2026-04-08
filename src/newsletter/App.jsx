@@ -45,7 +45,7 @@ function NewsletterPreview({ meta, total, products, citations, dotcom, productsC
       ref={iframeRef}
       title="newsletter-preview"
       scrolling="no"
-      style={{ width: 940, maxWidth: 940, border: 'none', minHeight: 800, background: '#F1F5F9', overflow: 'hidden', display: 'block' }}
+      style={{ width: '100%', maxWidth: '100%', border: 'none', minHeight: 800, background: '#F1F5F9', overflow: 'hidden', display: 'block' }}
       sandbox="allow-same-origin allow-scripts"
     />
   )
@@ -252,7 +252,7 @@ export default function App() {
           generateHTML={generateEmailHTML}
         />
       )}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         {/* 탑바 */}
         <div style={{ height: 48, borderBottom: '1px solid #1E293B',
           background: 'rgba(15,23,42,0.95)', backdropFilter: 'blur(8px)',
@@ -350,9 +350,9 @@ export default function App() {
 
         {/* 컨텐츠 영역 */}
         {activeTab === 'preview' ? (
-          <div style={{ flex: 1, overflowY: 'auto', padding: '28px 36px',
+          <div style={{ flex: 1, minWidth: 0, overflowY: 'auto', overflowX: 'hidden', padding: '28px 36px',
             background: 'linear-gradient(180deg, #0A0F1C 0%, #0F172A 100%)' }}>
-            <div style={{ maxWidth: 960, margin: '0 auto' }}>
+            <div style={{ maxWidth: 960, width: '100%', margin: '0 auto', minWidth: 0 }}>
               <NewsletterPreview meta={meta} total={total} products={resolved.products} citations={resolved.citations} dotcom={dotcom} productsCnty={resolved.productsCnty} citationsCnty={resolved.citationsCnty} lang={previewLang} weeklyLabels={weeklyLabels} categoryStats={categoryStats} />
             </div>
           </div>
