@@ -862,11 +862,94 @@ function dotcomSectionHtml(dotcom, meta, lang = 'ko') {
               </tr>`
 }
 
+// ─── Category Cards (Progress Tracker 진척율) ──────────────────────────────
+function categoryCardsHtml(categoryStats, lang) {
+  if (!categoryStats || !categoryStats.length) return ''
+  const t = lang === 'en'
+    ? { title: 'Action Items by Category', monthly: 'Monthly Rate', progress: 'Progress' }
+    : { title: '카테고리별 진척 현황', monthly: '월 달성률', progress: '진척율' }
+  function statusColor(rate) {
+    if (rate >= 80) return { bg: '#F0FDF4', border: '#BBF7D0', bar: '#16A34A', text: '#15803D' }
+    if (rate >= 50) return { bg: '#FFFBEB', border: '#FDE68A', bar: '#D97706', text: '#B45309' }
+    return { bg: '#FEF2F2', border: '#FECACA', bar: '#DC2626', text: '#BE123C' }
+  }
+  const cards = categoryStats.map(c => {
+    const ms = statusColor(c.monthRate || 0)
+    const ps = statusColor(c.progressRate || 0)
+    return `<td width="50%" valign="top" style="padding:6px;">
+      <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFFFFF;border:1.5px solid #E8EDF2;border-radius:10px;">
+        <tr><td style="padding:12px 14px;">
+          <p style="margin:0 0 8px;font-size:14px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};">${escapeHtml(c.category)}</p>
+          <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom:6px;">
+            <tr>
+              <td style="font-size:11px;color:#64748B;font-family:${EM_FONT};">${t.monthly}</td>
+              <td align="right" style="font-size:13px;font-weight:700;color:${ms.text};font-family:${EM_FONT};">${(c.monthRate || 0).toFixed(0)}%</td>
+            </tr>
+          </table>
+          <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#F1F5F9;border-radius:3px;margin-bottom:8px;">
+            <tr><td height="6" style="font-size:0;line-height:0;">
+              <table border="0" cellpadding="0" cellspacing="0" width="${Math.min(Math.round(c.monthRate || 0), 100)}%" style="background:${ms.bar};border-radius:3px;">
+                <tr><td height="6" style="font-size:0;line-height:0;">&nbsp;</td></tr>
+              </table>
+            </td></tr>
+          </table>
+          <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom:6px;">
+            <tr>
+              <td style="font-size:11px;color:#64748B;font-family:${EM_FONT};">${t.progress}</td>
+              <td align="right" style="font-size:13px;font-weight:700;color:${ps.text};font-family:${EM_FONT};">${(c.progressRate || 0).toFixed(0)}%</td>
+            </tr>
+          </table>
+          <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#F1F5F9;border-radius:3px;">
+            <tr><td height="6" style="font-size:0;line-height:0;">
+              <table border="0" cellpadding="0" cellspacing="0" width="${Math.min(Math.round(c.progressRate || 0), 100)}%" style="background:${ps.bar};border-radius:3px;">
+                <tr><td height="6" style="font-size:0;line-height:0;">&nbsp;</td></tr>
+              </table>
+            </td></tr>
+          </table>
+        </td></tr>
+      </table>
+    </td>`
+  })
+  // 2열 그리드
+  const rows = []
+  for (let i = 0; i < cards.length; i += 2) {
+    const pair = cards.slice(i, i + 2)
+    while (pair.length < 2) pair.push('<td width="50%" style="padding:6px;"></td>')
+    rows.push(`<tr>${pair.join('')}</tr>`)
+  }
+  return `
+  <div style="margin-top:18px;padding-top:14px;border-top:1px dashed #CBD5E1;">
+    <p style="margin:0 0 10px;font-size:13px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.5px;font-family:${EM_FONT};">${t.title}</p>
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">${rows.join('')}</table>
+  </div>`
+}
+
+function dashboardLinkButtonHtml(lang) {
+  const base = 'https://my-geo-newsletter.onrender.com'
+  const langSuffix = lang === 'en' ? '-EN' : '-KO'
+  const url = `${base}/p/GEO-KPI-Dashboard${langSuffix}`
+  const label = lang === 'en' ? 'Open Integrated Dashboard' : '통합 대시보드 바로가기'
+  return `
+  <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-top:16px;">
+    <tr><td align="center">
+      <!--[if mso]>
+      <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="${url}" style="height:48px;v-text-anchor:middle;width:100%;" arcsize="18%" strokecolor="${EM_RED}" fillcolor="${EM_RED}">
+        <w:anchorlock/>
+        <center style="color:#FFFFFF;font-family:'LG Smart',Arial,sans-serif;font-size:15px;font-weight:700;">${label}</center>
+      </v:roundrect>
+      <![endif]-->
+      <!--[if !mso]><!-- -->
+      <a href="${url}" target="_blank" rel="noopener" style="display:block;background:${EM_RED};border:1px solid ${EM_RED};border-radius:8px;color:#FFFFFF;font-family:${EM_FONT};font-size:15px;font-weight:700;line-height:48px;text-align:center;text-decoration:none;width:100%;">${label}</a>
+      <!--<![endif]-->
+    </td></tr>
+  </table>`
+}
+
 // ─── 메인 생성 함수 ───────────────────────────────────────────────────────────
 export { escapeHtml }
 
 export function generateEmailHTML(meta, total, products, citations, dotcom = {}, lang = 'ko', productsCnty = [], citationsCnty = [], options = {}) {
-  const { containerWidth = 920, showTrendTabs = false, weeklyLabels } = options
+  const { containerWidth = 920, showTrendTabs = false, weeklyLabels, categoryStats = null } = options
   const t = T[lang] || T.ko
   total = total || { score: 0, prev: 0, vsComp: 0, rank: 1, totalBrands: 12 }
   products = products || []
@@ -932,7 +1015,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
     <td align="center" style="padding:24px 12px;">
 
       <!-- 메인 컨테이너 -->
-      <table border="0" cellpadding="0" cellspacing="0" width="${containerWidth}" style="max-width:${containerWidth}px;background:#FFFFFF;border-radius:16px;font-family:${EM_FONT};">
+      <table border="0" cellpadding="0" cellspacing="0" width="${containerWidth}" style="width:${containerWidth}px;max-width:${containerWidth}px;table-layout:fixed;background:#FFFFFF;border-radius:16px;font-family:${EM_FONT};">
 
         <!-- ══ 헤더 상단 레드 바 ══ -->
         <tr>
@@ -1130,27 +1213,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                             </td>
                           </tr>
                         </table>` : ''}
-                        <!-- 대시보드 바로가기 (Outlook 호환) -->
-                        ${(() => {
-                          const base = 'https://my-geo-newsletter.onrender.com'
-                          const langSuffix = lang === 'en' ? '-EN' : '-KO'
-                          const url = `${base}/p/GEO-KPI-Dashboard${langSuffix}`
-                          const label = lang === 'en' ? 'Open Integrated Dashboard' : '통합 대시보드 바로가기'
-                          return `<table border="0" cellpadding="0" cellspacing="0" width="100%">
-                            <tr><td height="16" style="font-size:0;line-height:0;">&nbsp;</td></tr>
-                            <tr><td align="center" style="padding:0;">
-                              <!--[if mso]>
-                              <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="${url}" style="height:48px;v-text-anchor:middle;width:100%;" arcsize="18%" strokecolor="${EM_RED}" fillcolor="${EM_RED}">
-                                <w:anchorlock/>
-                                <center style="color:#FFFFFF;font-family:'LG Smart',Arial,sans-serif;font-size:15px;font-weight:700;">${label}</center>
-                              </v:roundrect>
-                              <![endif]-->
-                              <!--[if !mso]><!-- -->
-                              <a href="${url}" target="_blank" rel="noopener" style="display:block;background:${EM_RED};border:1px solid ${EM_RED};border-radius:8px;color:#FFFFFF;font-family:${EM_FONT};font-size:15px;font-weight:700;line-height:48px;text-align:center;text-decoration:none;width:100%;">${label}</a>
-                              <!--<![endif]-->
-                            </td></tr>
-                          </table>`
-                        })()}
+                        <!-- 대시보드 바로가기 버튼은 Action Plan 섹션 아래로 이동됨 -->
                       </td>
                     </tr>
                   </table>
@@ -1250,7 +1313,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
               ${meta.showDotcom !== false ? dotcomSectionHtml(dotcom, meta, lang) : ''}
 
               ${meta.showTodo && meta.todoText ? `
-              <!-- ══ To-do List ══ -->
+              <!-- ══ To-do List + 카테고리 카드 + 대시보드 바로가기 ══ -->
               <tr>
                 <td style="padding-bottom:28px;">
                   <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFFFFF;border-radius:16px;border:2px solid #E8EDF2;">
@@ -1267,6 +1330,8 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                     <tr>
                       <td style="padding:20px 16px;">
                         <p style="margin:0;font-size:14px;color:#1A1A1A;line-height:22px;font-family:${EM_FONT};">${mdBold(meta.todoText)}</p>
+                        ${categoryCardsHtml(categoryStats, lang)}
+                        ${dashboardLinkButtonHtml(lang)}
                       </td>
                     </tr>
                   </table>

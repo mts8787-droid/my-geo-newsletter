@@ -891,13 +891,14 @@ const TRACKER_SNAP = join(DATA_DIR, 'tracker-snapshot.json')
 const TRACKER_META = join(DATA_DIR, 'tracker-meta.json')
 
 app.post('/api/publish-tracker', (req, res) => {
-  const { data } = req.body || {}
+  const { data, dashboard, month } = req.body || {}
   if (!data) return res.status(400).json({ ok: false, error: 'data 필수' })
   try {
-    writeFileSync(TRACKER_SNAP, JSON.stringify(data, null, 2))
+    const snap = { ...data, _dashboard: dashboard || null, _month: month || null }
+    writeFileSync(TRACKER_SNAP, JSON.stringify(snap, null, 2))
     const meta = { title: 'GEO KPI Progress Tracker', ts: Date.now() }
     writeFileSync(TRACKER_META, JSON.stringify(meta, null, 2))
-    console.log('[PUBLISH-TRACKER]', new Date().toISOString())
+    console.log('[PUBLISH-TRACKER]', new Date().toISOString(), 'categoryStats:', dashboard?.categoryStats?.length || 0)
     res.json({ ok: true, ...meta, url: '/p/progress-tracker/' })
   } catch (err) {
     console.error('[PUBLISH-TRACKER] Write error:', err.message)

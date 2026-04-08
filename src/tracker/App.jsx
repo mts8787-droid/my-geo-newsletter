@@ -182,7 +182,7 @@ function computeDashboard(data, month, stakeholderFilter, categoryFilter) {
 
   const categoryStats = categoryNames.map(cat => {
     const catGoals = shFilteredGoals.filter(g => g.taskCategory === cat)
-    let mAct = 0, mGoal = 0, cAct = 0, cGoal = 0
+    let mAct = 0, mGoal = 0, cAct = 0, cGoal = 0, annualGoal = 0
     catGoals.forEach(g => {
       const key = `${g.stakeholder}|${g.task}`
       const a = actualMap[key] || {}
@@ -195,9 +195,15 @@ function computeDashboard(data, month, stakeholderFilter, categoryFilter) {
         if (typeof g.monthly?.[m] === 'number') cGoal += g.monthly[m]
         if (typeof a.monthly?.[m] === 'number') cAct += a.monthly[m]
       }
+      // 연간 전체 goal 합산
+      MONTHS.forEach(m => {
+        if (typeof g.monthly?.[m] === 'number') annualGoal += g.monthly[m]
+      })
     })
     const monthRate = mGoal > 0 ? Math.round((mAct / mGoal) * 1000) / 10 : 0
     const cumRate = cGoal > 0 ? Math.round((cAct / cGoal) * 1000) / 10 : 0
+    // 진척율 = 누적 actual / 연간 goal × 100
+    const progressRate = annualGoal > 0 ? Math.round((cAct / annualGoal) * 1000) / 10 : 0
     const shNames = [...new Set(catGoals.map(g => g.stakeholder))]
     const stakeholders = shNames.map(sh => {
       let smAct = 0, smGoal = 0
@@ -210,7 +216,7 @@ function computeDashboard(data, month, stakeholderFilter, categoryFilter) {
       const rate = smGoal > 0 ? Math.round((smAct / smGoal) * 1000) / 10 : 0
       return { name: sh, rate }
     })
-    return { category: cat, taskCount: catGoals.length, monthRate, cumRate, monthActual: mAct, monthGoal: mGoal, cumActual: cAct, cumGoal: cGoal, stakeholders }
+    return { category: cat, taskCount: catGoals.length, monthRate, cumRate, progressRate, monthActual: mAct, monthGoal: mGoal, cumActual: cAct, cumGoal: cGoal, annualGoal, stakeholders }
   })
 
   const totalsRate = parseRate(rates.totals?.monthly?.[month])
@@ -326,7 +332,7 @@ export default function App() {
       const res = await fetch('/api/publish-tracker', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-        body: JSON.stringify({ data }),
+        body: JSON.stringify({ data, dashboard, month: selectedMonth }),
       })
       const j = await res.json()
       if (!j.ok) throw new Error(j.error || '게시 실패')
