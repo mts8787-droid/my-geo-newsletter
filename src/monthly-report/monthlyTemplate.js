@@ -30,13 +30,13 @@ function fmtRatio(lg, comp) {
   return Math.round((lg / comp) * 100) + '%'
 }
 
-// 신호등 셀 배경 색상 (경쟁비 기준) — 진한 톤
+// 신호등 셀 배경 색상 (경쟁비 기준) — 연한 톤
 function signalBg(lg, comp) {
   if (lg == null || comp == null || comp === 0) return null
   const r = (lg / comp) * 100
-  if (r >= 100) return '#86EFAC'   // 진한 녹색 (선도)
-  if (r >= 80) return '#FCD34D'    // 진한 황색 (추격)
-  return '#FCA5A5'                  // 진한 적색 (취약)
+  if (r >= 100) return '#D1FAE5'   // 연한 녹색 (선도)
+  if (r >= 80) return '#FEF3C7'    // 연한 황색 (추격)
+  return '#FFE4E6'                  // 연한 적색 (취약)
 }
 
 // 도메인명 강조 색상 (Citation 국가별 표용)
@@ -109,8 +109,8 @@ function buildVisibilityTable(productsCnty, productsCntyPrev, lang, productsTTL)
     // TTL 셀 (3개)
     const ttlSig = ttlData ? signalBg(ttlData.score, ttlData.vsComp) : null
     const ttlBgUse = ttlSig || altBg
-    const ttlLgCell = `<td style="border:1px solid #999;padding:3px 5px;font-size:10px;font-family:${FONT};text-align:right;font-weight:700;background:${ttlBgUse};">${ttlData ? fmt(ttlData.score) : '—'}</td>`
-    const ttlRatioCell = `<td style="border:1px solid #999;padding:3px 5px;font-size:10px;font-family:${FONT};text-align:right;font-weight:700;background:${ttlBgUse};">${ttlData ? fmtRatio(ttlData.score, ttlData.vsComp) : '—'}</td>`
+    const ttlLgCell = `<td style="border:1px solid #999;padding:3px 5px;font-size:10px;font-family:${FONT};text-align:center;font-weight:700;background:${ttlBgUse};">${ttlData ? fmt(ttlData.score) : '—'}</td>`
+    const ttlRatioCell = `<td style="border:1px solid #999;padding:3px 5px;font-size:10px;font-family:${FONT};text-align:center;font-weight:700;background:${ttlBgUse};">${ttlData ? fmtRatio(ttlData.score, ttlData.vsComp) : '—'}</td>`
     const ttlCompCell = `<td style="border:1px solid #999;padding:3px 5px;font-size:10px;font-family:${FONT};text-align:center;background:${ttlBgUse};color:#1A1A1A;font-weight:600;">${ttlData?.compName ? escapeHtml(ttlData.compName) : '—'}</td>`
 
     // 국가별 셀
@@ -118,13 +118,13 @@ function buildVisibilityTable(productsCnty, productsCntyPrev, lang, productsTTL)
       const d = dataMap[p]?.[c]
       const sig = d ? signalBg(d.score, d.compScore) : null
       const bgUse = sig || altBg
-      return `<td style="border:1px solid #999;padding:3px 5px;font-size:10px;font-family:${FONT};text-align:right;font-weight:700;background:${bgUse};">${d ? fmt(d.score) : '—'}</td>`
+      return `<td style="border:1px solid #999;padding:3px 5px;font-size:10px;font-family:${FONT};text-align:center;font-weight:700;background:${bgUse};">${d ? fmt(d.score) : '—'}</td>`
     }).join('')
     const ratioCells = countries.map(c => {
       const d = dataMap[p]?.[c]
       const sig = d ? signalBg(d.score, d.compScore) : null
       const bgUse = sig || altBg
-      return `<td style="border:1px solid #999;padding:3px 5px;font-size:10px;font-family:${FONT};text-align:right;font-weight:700;background:${bgUse};">${d ? fmtRatio(d.score, d.compScore) : '—'}</td>`
+      return `<td style="border:1px solid #999;padding:3px 5px;font-size:10px;font-family:${FONT};text-align:center;font-weight:700;background:${bgUse};">${d ? fmtRatio(d.score, d.compScore) : '—'}</td>`
     }).join('')
     const compNameCells = countries.map(c => {
       const d = dataMap[p]?.[c]
@@ -199,12 +199,12 @@ function buildProductSummaryTable(products, productsPrev, lang) {
       const sigBg = signalBg(p.score, p.vsComp) || '#FFFFFF'
       rows.push(`<tr>
         ${i === 0 ? `<td rowspan="${prods.length}" style="border:1px solid #999;padding:6px 10px;font-size:12px;font-family:${FONT};font-weight:700;background:#F5F5F5;text-align:center;vertical-align:middle;">${bu}</td>` : ''}
-        <td style="border:1px solid #999;padding:6px 10px;font-size:12px;font-family:${FONT};">${escapeHtml(p.kr || p.id)}</td>
-        <td style="border:1px solid #999;padding:6px 10px;font-size:12px;font-family:${FONT};text-align:right;font-weight:700;">${fmt(p.score)}%</td>
-        <td style="border:1px solid #999;padding:6px 10px;font-size:12px;font-family:${FONT};text-align:right;">${fmt(p.vsComp)}%</td>
-        <td style="border:1px solid #999;padding:6px 10px;font-size:12px;font-family:${FONT};">${escapeHtml(p.compName || '')}</td>
-        <td style="border:1px solid #999;padding:6px 10px;font-size:12px;font-family:${FONT};text-align:right;font-weight:700;background:${sigBg};">${fmtRatio(p.score, p.vsComp)}</td>
-        <td style="border:1px solid #999;padding:6px 10px;font-size:12px;font-family:${FONT};text-align:right;">${mom}</td>
+        <td style="border:1px solid #999;padding:6px 10px;font-size:12px;font-family:${FONT};text-align:center;">${escapeHtml(p.kr || p.id)}</td>
+        <td style="border:1px solid #999;padding:6px 10px;font-size:12px;font-family:${FONT};text-align:center;font-weight:700;background:${sigBg};">${fmt(p.score)}%</td>
+        <td style="border:1px solid #999;padding:6px 10px;font-size:12px;font-family:${FONT};text-align:center;background:${sigBg};">${fmt(p.vsComp)}%</td>
+        <td style="border:1px solid #999;padding:6px 10px;font-size:12px;font-family:${FONT};text-align:center;background:${sigBg};">${escapeHtml(p.compName || '')}</td>
+        <td style="border:1px solid #999;padding:6px 10px;font-size:12px;font-family:${FONT};text-align:center;font-weight:700;background:${sigBg};">${fmtRatio(p.score, p.vsComp)}</td>
+        <td style="border:1px solid #999;padding:6px 10px;font-size:12px;font-family:${FONT};text-align:center;">${mom}</td>
       </tr>`)
     })
   })
