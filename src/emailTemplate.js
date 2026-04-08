@@ -237,7 +237,7 @@ function productCardHtml(p, globalMax, globalMin, lang = 'ko', opts = {}) {
               </td>
             </tr>
             <tr>
-              <td colspan="2" style="padding-top:4px;">${p.prev ? deltaHtml(d, 13, true) : `<span style="color:#94A3B8;font-size:15px;">MoM —</span>`}</td>
+              <td colspan="2" style="padding-top:4px;">${p.prev != null && p.prev > 0 ? deltaHtml(d, 13, true) : `<span style="color:#94A3B8;font-size:15px;">MoM —</span>`}</td>
             </tr>
           </table>
         </td>
@@ -250,7 +250,7 @@ function productCardHtml(p, globalMax, globalMin, lang = 'ko', opts = {}) {
               <td align="right" style="padding:6px 8px;font-size:15px;font-weight:700;color:${(p.compRatio || 0) >= 100 ? '#15803D' : (p.compRatio || 0) >= 80 ? '#E8910C' : '#BE123C'};">
                 ${(() => {
                   const curRatio = p.compRatio || Math.round(p.vsComp > 0 ? (p.score / p.vsComp) * 100 : 100)
-                  if (!p.prev || !p.vsComp) return `${curRatio}%`
+                  if (p.prev == null || p.prev <= 0 || !p.vsComp) return `${curRatio}%`
                   const prevRatio = Math.round((p.prev / p.vsComp) * 100)
                   const rd = curRatio - prevRatio
                   const rdColor = rd > 0 ? '#16A34A' : rd < 0 ? '#DC2626' : '#94A3B8'

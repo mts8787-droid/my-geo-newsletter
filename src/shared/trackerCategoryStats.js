@@ -32,8 +32,13 @@ export function computeCategoryStats(data, month) {
   // tracker MONTHS는 3월부터 시작이므로 idx 0이 3월
   const currentMonth = new Date().getMonth() + 1  // 1~12
   const fallbackMonth = currentMonth >= 3 && currentMonth <= 12 ? `${currentMonth}월` : '3월'
-  const targetMonth = month || data._month || fallbackMonth
-  const monthIdx = Math.max(0, MONTHS.indexOf(targetMonth))
+  let targetMonth = month || data._month || fallbackMonth
+  let monthIdx = MONTHS.indexOf(targetMonth)
+  // 잘못된 월(MONTHS에 없음)은 명시적으로 3월로 클램프 (key까지 동기화)
+  if (monthIdx < 0) {
+    targetMonth = '3월'
+    monthIdx = 0
+  }
 
   const categoryNames = [...new Set(goalRows.map(g => g.taskCategory).filter(Boolean))]
 

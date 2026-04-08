@@ -370,11 +370,11 @@ function parseProductCntyFromRow(rows, headerIdx) {
   data.slice(0, 5).forEach((r, i) => console.log(`[parseProductCnty] row${i}: div="${r[0]}" date="${r[1]}" country="${r[2]}" cat="${r[3]}" LG=${r[lgIdx]}`))
 
   data.forEach(r => {
-    const div = String(r[0]).trim()
+    const div = String(r[0] || '').trim()
     const date = String(r[1] || '').trim()
     const rawCountry = String(r[2] || '').trim()
     const country = normCountry(r[2]) || rawCountry
-    const category = String(r[3]).trim()
+    const category = String(r[3] || '').trim()
     const lgScore = pct(r[lgIdx])
 
     const compScores = competitors
@@ -405,7 +405,7 @@ function parseProductCntyFromRow(rows, headerIdx) {
   for (const [id, entries] of Object.entries(ttlByProduct)) {
     entries.sort((a, b) => parseMonthFromDate(a.date) - parseMonthFromDate(b.date))
     const latest = entries[entries.length - 1]
-    const prev = entries.length >= 2 ? entries[entries.length - 2].score : 0
+    const prev = entries.length >= 2 ? entries[entries.length - 2].score : null
     console.log(`[parseProductCnty] ${id}: dates=[${entries.map(e => e.date).join(',')}] score=${latest.score} prev=${prev} vsComp=${latest.vsComp}`)
     productsPartial.push({ ...latest, prev })
   }
@@ -415,7 +415,7 @@ function parseProductCntyFromRow(rows, headerIdx) {
   for (const entries of Object.values(cntyByKey)) {
     entries.sort((a, b) => parseMonthFromDate(a.date) - parseMonthFromDate(b.date))
     const latest = entries[entries.length - 1]
-    const prev = entries.length >= 2 ? entries[entries.length - 2].score : 0
+    const prev = entries.length >= 2 ? entries[entries.length - 2].score : null
     productsCnty.push({ ...latest, prev })
   }
 

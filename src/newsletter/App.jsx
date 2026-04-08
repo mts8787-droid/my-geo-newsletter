@@ -140,11 +140,13 @@ export default function App() {
   // tracker 데이터 fetch (액션아이템 카테고리 카드용)
   // meta.period에서 월 추출 → 해당 월 기준으로 categoryStats 계산
   useEffect(() => {
+    let cancelled = false
     const targetMonth = extractMonthFromPeriod(metaKo.period) || '3월'
     console.log('[CategoryCards] targetMonth:', targetMonth, 'period:', metaKo.period)
     fetch('/api/tracker-snapshot')
       .then(r => r.ok ? r.json() : null)
       .then(j => {
+        if (cancelled) return
         console.log('[CategoryCards] tracker-snapshot response:', j?.ok)
         if (j?.ok && j.data) {
           console.log('[CategoryCards] data keys:', Object.keys(j.data))
@@ -166,6 +168,7 @@ export default function App() {
         }
       })
       .catch(err => console.warn('[tracker-snapshot] fetch failed:', err.message))
+    return () => { cancelled = true }
   }, [metaKo.period])
 
   const snapMsgTimer = useRef(null)
@@ -234,8 +237,8 @@ export default function App() {
     if (d.dotcom)    setDotcom(d.dotcom)
     if (d.productsCnty)  setProductsCnty(d.productsCnty)
     if (d.citationsCnty) setCitationsCnty(d.citationsCnty)
-    if (d.weeklyLabels)  setWeeklyLabels(d.weeklyLabels)
-    if (d.weeklyAll)     setWeeklyAll(d.weeklyAll)
+    setWeeklyLabels(d.weeklyLabels || null)
+    setWeeklyAll(d.weeklyAll || {})
     setActiveSnap(snap.ts)
     showSnapMsg(`"${snap.name}" 불러옴`)
   }

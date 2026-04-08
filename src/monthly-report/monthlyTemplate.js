@@ -194,7 +194,7 @@ function buildProductSummaryTable(products, productsPrev, lang) {
       productSortKey(a.kr || a.category || a.id) - productSortKey(b.kr || b.category || b.id)
     )
     prods.forEach((p, i) => {
-      const prev = p.prev || prevMap[p.id]
+      const prev = p.prev != null && p.prev > 0 ? p.prev : prevMap[p.id]
       const mom = fmtDelta(p.score, prev)
       const sigBg = signalBg(p.score, p.vsComp) || '#FFFFFF'
       rows.push(`<tr>
@@ -413,7 +413,7 @@ body, table, td, th, h1, h2, p, span, div { font-family: ${FONT} !important; }
         <td style="border:1px solid #999;padding:8px 12px;font-size:13px;font-weight:700;background:#F5F5F5;">${lang === 'en' ? 'vs Competitor' : '경쟁사 대비'}</td>
         <td style="border:1px solid #999;padding:8px 12px;font-size:13px;font-weight:700;text-align:right;">${fmtRatio(total.score, total.vsComp)}</td>
       </tr>
-      ${total.prev ? `<tr>
+      ${total.prev != null && total.prev > 0 ? `<tr>
         <td style="border:1px solid #999;padding:8px 12px;font-size:13px;font-weight:700;background:#F5F5F5;">MoM(%p)</td>
         <td style="border:1px solid #999;padding:8px 12px;font-size:13px;text-align:right;">${fmtDelta(total.score, total.prev)}</td>
       </tr>` : ''}

@@ -417,7 +417,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
             const weekly = parsed.weeklyMap?.[p.id] || []
             const ratio = p.vsComp > 0 ? (p.score / p.vsComp) * 100 : 100
             const firstValid = weekly.find(v => v != null && v > 0)
-            const prev = p.prev || firstValid || 0
+            const prev = (p.prev != null && p.prev > 0) ? p.prev : (firstValid || 0)
             const monthly = prev > 0 ? [prev, p.score] : []
             return { ...p, prev, weekly, monthly, compRatio: Math.round(ratio),
               status: ratio >= 100 ? 'lead' : ratio >= 80 ? 'behind' : 'critical' }
