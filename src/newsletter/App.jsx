@@ -140,7 +140,7 @@ export default function App() {
   // tracker 데이터 fetch (액션아이템 카테고리 카드용)
   // meta.period에서 월 추출 → 해당 월 기준으로 categoryStats 계산
   useEffect(() => {
-    const targetMonth = extractMonthFromPeriod(metaKo.period) || 'Mar'
+    const targetMonth = extractMonthFromPeriod(metaKo.period) || '3월'
     fetch('/api/tracker-snapshot')
       .then(r => r.ok ? r.json() : null)
       .then(j => {

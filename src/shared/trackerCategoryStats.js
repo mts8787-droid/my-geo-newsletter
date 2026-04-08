@@ -1,6 +1,7 @@
 // ─── Tracker raw data → categoryStats 계산 (newsletter용) ───────────────────
 // progress-tracker가 publish한 raw data 또는 _dashboard 우선 사용
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+// ⚠ tracker의 MONTHS는 한글 ['3월','4월',...,'12월'] (3월 시작!)
+const MONTHS = ['3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월']
 
 // 카테고리 표시 순서
 const CATEGORY_ORDER = ['콘텐츠수정', '신규콘텐츠제작', '외부채널관리', '닷컴기술개선']
@@ -28,7 +29,10 @@ export function computeCategoryStats(data, month) {
 
   const goalRows = data.quantitativeGoals.rows
   const actualMap = buildLookup(data.quantitativeResults?.rows)
-  const targetMonth = month || data._month || MONTHS[new Date().getMonth()]
+  // tracker MONTHS는 3월부터 시작이므로 idx 0이 3월
+  const currentMonth = new Date().getMonth() + 1  // 1~12
+  const fallbackMonth = currentMonth >= 3 && currentMonth <= 12 ? `${currentMonth}월` : '3월'
+  const targetMonth = month || data._month || fallbackMonth
   const monthIdx = Math.max(0, MONTHS.indexOf(targetMonth))
 
   const categoryNames = [...new Set(goalRows.map(g => g.taskCategory).filter(Boolean))]
@@ -79,17 +83,14 @@ export function computeCategoryStats(data, month) {
   }).sort((a, b) => categorySortKey(a.category) - categorySortKey(b.category))
 }
 
-// meta.period에서 월 추출 (예: "2026년 3월" → "Mar", "Mar 2026" → "Mar")
+// meta.period에서 월 추출 (tracker MONTHS 형식 = '3월', '4월', ...)
+// 예: "2026년 3월" → "3월", "Mar 2026" → "3월"
 export function extractMonthFromPeriod(period) {
   if (!period) return null
   const krMatch = String(period).match(/(\d{1,2})월/)
-  if (krMatch) {
-    const idx = parseInt(krMatch[1]) - 1
-    if (idx >= 0 && idx < 12) return MONTHS[idx]
-  }
+  if (krMatch) return `${parseInt(krMatch[1])}월`
+  const enToNum = { jan: 1, feb: 2, mar: 3, apr: 4, may: 5, jun: 6, jul: 7, aug: 8, sep: 9, oct: 10, nov: 11, dec: 12 }
   const enMatch = String(period).match(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)/i)
-  if (enMatch) {
-    return enMatch[1].charAt(0).toUpperCase() + enMatch[1].slice(1, 3).toLowerCase()
-  }
+  if (enMatch) return `${enToNum[enMatch[1].toLowerCase()]}월`
   return null
 }
