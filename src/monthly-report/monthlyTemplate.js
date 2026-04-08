@@ -30,13 +30,13 @@ function fmtRatio(lg, comp) {
   return Math.round((lg / comp) * 100) + '%'
 }
 
-// 신호등 셀 배경 색상 (경쟁비 기준)
+// 신호등 셀 배경 색상 (경쟁비 기준) — 진한 톤
 function signalBg(lg, comp) {
   if (lg == null || comp == null || comp === 0) return null
   const r = (lg / comp) * 100
-  if (r >= 100) return '#D1FAE5'   // 연한 녹색 (선도)
-  if (r >= 80) return '#FEF3C7'    // 연한 황색 (추격)
-  return '#FEE2E2'                  // 연한 적색 (취약)
+  if (r >= 100) return '#86EFAC'   // 진한 녹색 (선도)
+  if (r >= 80) return '#FCD34D'    // 진한 황색 (추격)
+  return '#FCA5A5'                  // 진한 적색 (취약)
 }
 
 // 도메인명 강조 색상 (Citation 국가별 표용)
@@ -49,7 +49,7 @@ function domainHighlight(domain) {
 }
 
 // 국가 = 컬럼, 제품 = 행 (pivot 형식, 가로로 길게)
-function buildVisibilityTable(productsCnty, productsCntyPrev, lang) {
+function buildVisibilityTable(productsCnty, productsCntyPrev, lang, productsTTL) {
   const t = lang === 'en' ? {
     product: 'Product', metric: 'Metric',
     title: 'Monthly GEO Visibility — Country × Product (Pivot)',
@@ -85,45 +85,67 @@ function buildVisibilityTable(productsCnty, productsCntyPrev, lang) {
     return `<p style="font-size:11px;color:#666;font-family:${FONT};">데이터가 없습니다.</p>`
   }
 
-  const colW = Math.max(60, Math.floor(100 / (countries.length + 1)))
-  const headerCells = countries.map(c =>
-    `<th style="border:1px solid #999;padding:4px 6px;font-size:10px;font-weight:700;text-align:center;background:#E8E8E8;min-width:50px;">${escapeHtml(c)}</th>`
-  ).join('')
+  // TTL(전체) 데이터 매핑: products(productsPartial)의 score/vsComp/compName 사용
+  // product 매칭: kr 또는 category 또는 id로 매칭
+  const ttlByProductName = {}
+  ;(productsTTL || []).forEach(p => {
+    const keys = [p.kr, p.category, p.id, p.en].filter(Boolean)
+    keys.forEach(k => { ttlByProductName[k] = p })
+  })
+  const TTL_KEY = lang === 'en' ? 'TTL' : 'TTL'
 
-  // 각 제품마다 LG / 경쟁비 / MoM 3행 표시
+  // 헤더: TTL을 첫 컬럼으로
+  const headerCells = `<th style="border:1px solid #999;padding:4px 6px;font-size:10px;font-weight:700;text-align:center;background:#FBBF24;min-width:55px;">${TTL_KEY}</th>` +
+    countries.map(c =>
+      `<th style="border:1px solid #999;padding:4px 6px;font-size:10px;font-weight:700;text-align:center;background:#E8E8E8;min-width:50px;">${escapeHtml(c)}</th>`
+    ).join('')
+
+  // 각 제품마다 LG / 경쟁비 / 경쟁사 3행, 신호등 색상은 3행 모두 동일하게
   const rows = []
   products.forEach((p, pi) => {
-    const bg = pi % 2 === 0 ? '#FFFFFF' : '#FAFAFA'
-    // LG row
+    const altBg = pi % 2 === 0 ? '#FFFFFF' : '#FAFAFA'
+    const ttlData = ttlByProductName[p]
+
+    // TTL 셀 (3개)
+    const ttlSig = ttlData ? signalBg(ttlData.score, ttlData.vsComp) : null
+    const ttlBgUse = ttlSig || altBg
+    const ttlLgCell = `<td style="border:1px solid #999;padding:3px 5px;font-size:10px;font-family:${FONT};text-align:right;font-weight:700;background:${ttlBgUse};">${ttlData ? fmt(ttlData.score) : '—'}</td>`
+    const ttlRatioCell = `<td style="border:1px solid #999;padding:3px 5px;font-size:10px;font-family:${FONT};text-align:right;font-weight:700;background:${ttlBgUse};">${ttlData ? fmtRatio(ttlData.score, ttlData.vsComp) : '—'}</td>`
+    const ttlCompCell = `<td style="border:1px solid #999;padding:3px 5px;font-size:10px;font-family:${FONT};text-align:center;background:${ttlBgUse};color:#1A1A1A;font-weight:600;">${ttlData?.compName ? escapeHtml(ttlData.compName) : '—'}</td>`
+
+    // 국가별 셀
     const lgCells = countries.map(c => {
       const d = dataMap[p]?.[c]
-      return `<td style="border:1px solid #999;padding:3px 5px;font-size:10px;font-family:${FONT};text-align:right;font-weight:700;background:${bg};">${d ? fmt(d.score) : '—'}</td>`
+      const sig = d ? signalBg(d.score, d.compScore) : null
+      const bgUse = sig || altBg
+      return `<td style="border:1px solid #999;padding:3px 5px;font-size:10px;font-family:${FONT};text-align:right;font-weight:700;background:${bgUse};">${d ? fmt(d.score) : '—'}</td>`
     }).join('')
-    // 경쟁비 row (신호등 색상)
     const ratioCells = countries.map(c => {
       const d = dataMap[p]?.[c]
-      const sigBg = d ? signalBg(d.score, d.compScore) : null
-      const cellBg = sigBg || bg
-      return `<td style="border:1px solid #999;padding:3px 5px;font-size:10px;font-family:${FONT};text-align:right;font-weight:700;background:${cellBg};">${d ? fmtRatio(d.score, d.compScore) : '—'}</td>`
+      const sig = d ? signalBg(d.score, d.compScore) : null
+      const bgUse = sig || altBg
+      return `<td style="border:1px solid #999;padding:3px 5px;font-size:10px;font-family:${FONT};text-align:right;font-weight:700;background:${bgUse};">${d ? fmtRatio(d.score, d.compScore) : '—'}</td>`
     }).join('')
-    // 경쟁사명 row
     const compNameCells = countries.map(c => {
       const d = dataMap[p]?.[c]
-      return `<td style="border:1px solid #999;padding:3px 5px;font-size:10px;font-family:${FONT};text-align:center;background:${bg};color:#444;">${d?.compName ? escapeHtml(d.compName) : '—'}</td>`
+      const sig = d ? signalBg(d.score, d.compScore) : null
+      const bgUse = sig || altBg
+      return `<td style="border:1px solid #999;padding:3px 5px;font-size:10px;font-family:${FONT};text-align:center;background:${bgUse};color:#1A1A1A;font-weight:600;">${d?.compName ? escapeHtml(d.compName) : '—'}</td>`
     }).join('')
+
     rows.push(`
       <tr>
         <td rowspan="3" style="border:1px solid #999;padding:4px 6px;font-size:11px;font-family:${FONT};font-weight:700;background:#F0F0F0;text-align:center;vertical-align:middle;white-space:nowrap;">${escapeHtml(p)}</td>
-        <td style="border:1px solid #999;padding:3px 6px;font-size:10px;font-family:${FONT};font-weight:600;background:${bg};white-space:nowrap;">${t.lg} (%)</td>
-        ${lgCells}
+        <td style="border:1px solid #999;padding:3px 6px;font-size:10px;font-family:${FONT};font-weight:600;background:#F5F5F5;white-space:nowrap;">${t.lg} (%)</td>
+        ${ttlLgCell}${lgCells}
       </tr>
       <tr>
-        <td style="border:1px solid #999;padding:3px 6px;font-size:10px;font-family:${FONT};background:${bg};white-space:nowrap;">${t.ratio}</td>
-        ${ratioCells}
+        <td style="border:1px solid #999;padding:3px 6px;font-size:10px;font-family:${FONT};background:#F5F5F5;white-space:nowrap;">${t.ratio}</td>
+        ${ttlRatioCell}${ratioCells}
       </tr>
       <tr>
-        <td style="border:1px solid #999;padding:3px 6px;font-size:10px;font-family:${FONT};background:${bg};white-space:nowrap;">${lang === 'en' ? 'Top Comp' : '경쟁사'}</td>
-        ${compNameCells}
+        <td style="border:1px solid #999;padding:3px 6px;font-size:10px;font-family:${FONT};background:#F5F5F5;white-space:nowrap;">${lang === 'en' ? 'Top Comp' : '경쟁사'}</td>
+        ${ttlCompCell}${compNameCells}
       </tr>`)
   })
 
@@ -325,12 +347,15 @@ function buildDotcomTable(dotcom, lang) {
     const lv = lg[k] || 0, sv = sam[k] || 0
     const diff = lv - sv
     const winner = diff > 0 ? 'LG' : diff < 0 ? 'SS' : '='
-    return `<tr>
-      <td style="border:1px solid #999;padding:5px 8px;font-size:11px;font-family:${FONT};${k === 'TTL' ? 'font-weight:700;background:#F5F5F5;' : ''}">${escapeHtml(k)}</td>
+    // 우위/열위에 따른 행 전체 색상
+    const rowBg = diff > 0 ? '#86EFAC' : diff < 0 ? '#FCA5A5' : '#FFFFFF'
+    const rowColor = diff > 0 ? '#14532D' : diff < 0 ? '#7F1D1D' : '#1A1A1A'
+    return `<tr style="background:${rowBg};color:${rowColor};">
+      <td style="border:1px solid #999;padding:5px 8px;font-size:11px;font-family:${FONT};font-weight:${k === 'TTL' ? '900' : '600'};">${escapeHtml(k)}</td>
       <td style="border:1px solid #999;padding:5px 8px;font-size:11px;font-family:${FONT};text-align:right;font-weight:700;">${lv.toLocaleString('en-US')}</td>
       <td style="border:1px solid #999;padding:5px 8px;font-size:11px;font-family:${FONT};text-align:right;">${sv.toLocaleString('en-US')}</td>
-      <td style="border:1px solid #999;padding:5px 8px;font-size:11px;font-family:${FONT};text-align:right;">${diff > 0 ? '+' : ''}${diff.toLocaleString('en-US')}</td>
-      <td style="border:1px solid #999;padding:5px 8px;font-size:11px;font-family:${FONT};text-align:center;font-weight:700;">${winner}</td>
+      <td style="border:1px solid #999;padding:5px 8px;font-size:11px;font-family:${FONT};text-align:right;font-weight:700;">${diff > 0 ? '+' : ''}${diff.toLocaleString('en-US')}</td>
+      <td style="border:1px solid #999;padding:5px 8px;font-size:11px;font-family:${FONT};text-align:center;font-weight:900;">${winner}</td>
     </tr>`
   }).join('')
   return `
@@ -385,7 +410,7 @@ export function generateMonthlyReportHTML(meta, total, products, citations, dotc
     </table>` : ''}
 
     ${buildProductSummaryTable(products, productsPrev, lang)}
-    ${buildVisibilityTable(productsCnty, productsCntyPrev, lang)}
+    ${buildVisibilityTable(productsCnty, productsCntyPrev, lang, products)}
 
     <h1 style="font-size:18px;font-weight:700;margin:32px 0 6px;border-top:2px solid #000;padding-top:14px;font-family:${FONT};color:#000;">${lang === 'en' ? 'Citation Analysis' : 'Citation 분석'}</h1>
     ${buildCitationCategoryTable(citations, lang)}
