@@ -30,6 +30,24 @@ function fmtRatio(lg, comp) {
   return Math.round((lg / comp) * 100) + '%'
 }
 
+// 신호등 셀 배경 색상 (경쟁비 기준)
+function signalBg(lg, comp) {
+  if (lg == null || comp == null || comp === 0) return null
+  const r = (lg / comp) * 100
+  if (r >= 100) return '#D1FAE5'   // 연한 녹색 (선도)
+  if (r >= 80) return '#FEF3C7'    // 연한 황색 (추격)
+  return '#FEE2E2'                  // 연한 적색 (취약)
+}
+
+// 도메인명 강조 색상 (Citation 국가별 표용)
+function domainHighlight(domain) {
+  if (!domain) return null
+  const d = domain.toLowerCase()
+  if (d.includes('youtube')) return { bg: '#FFE4E6', color: '#9F1239' }   // YouTube 빨강계열
+  if (d.includes('reddit')) return { bg: '#FFEDD5', color: '#9A3412' }    // Reddit 주황계열
+  return null
+}
+
 // 국가 = 컬럼, 제품 = 행 (pivot 형식, 가로로 길게)
 function buildVisibilityTable(productsCnty, productsCntyPrev, lang) {
   const t = lang === 'en' ? {
@@ -81,10 +99,12 @@ function buildVisibilityTable(productsCnty, productsCntyPrev, lang) {
       const d = dataMap[p]?.[c]
       return `<td style="border:1px solid #999;padding:3px 5px;font-size:10px;font-family:${FONT};text-align:right;font-weight:700;background:${bg};">${d ? fmt(d.score) : '—'}</td>`
     }).join('')
-    // 경쟁비 row
+    // 경쟁비 row (신호등 색상)
     const ratioCells = countries.map(c => {
       const d = dataMap[p]?.[c]
-      return `<td style="border:1px solid #999;padding:3px 5px;font-size:10px;font-family:${FONT};text-align:right;background:${bg};">${d ? fmtRatio(d.score, d.compScore) : '—'}</td>`
+      const sigBg = d ? signalBg(d.score, d.compScore) : null
+      const cellBg = sigBg || bg
+      return `<td style="border:1px solid #999;padding:3px 5px;font-size:10px;font-family:${FONT};text-align:right;font-weight:700;background:${cellBg};">${d ? fmtRatio(d.score, d.compScore) : '—'}</td>`
     }).join('')
     // 경쟁사명 row
     const compNameCells = countries.map(c => {
@@ -154,13 +174,14 @@ function buildProductSummaryTable(products, productsPrev, lang) {
     prods.forEach((p, i) => {
       const prev = p.prev || prevMap[p.id]
       const mom = fmtDelta(p.score, prev)
+      const sigBg = signalBg(p.score, p.vsComp) || '#FFFFFF'
       rows.push(`<tr>
         ${i === 0 ? `<td rowspan="${prods.length}" style="border:1px solid #999;padding:6px 10px;font-size:12px;font-family:${FONT};font-weight:700;background:#F5F5F5;text-align:center;vertical-align:middle;">${bu}</td>` : ''}
         <td style="border:1px solid #999;padding:6px 10px;font-size:12px;font-family:${FONT};">${escapeHtml(p.kr || p.id)}</td>
         <td style="border:1px solid #999;padding:6px 10px;font-size:12px;font-family:${FONT};text-align:right;font-weight:700;">${fmt(p.score)}%</td>
         <td style="border:1px solid #999;padding:6px 10px;font-size:12px;font-family:${FONT};text-align:right;">${fmt(p.vsComp)}%</td>
         <td style="border:1px solid #999;padding:6px 10px;font-size:12px;font-family:${FONT};">${escapeHtml(p.compName || '')}</td>
-        <td style="border:1px solid #999;padding:6px 10px;font-size:12px;font-family:${FONT};text-align:right;font-weight:700;">${fmtRatio(p.score, p.vsComp)}</td>
+        <td style="border:1px solid #999;padding:6px 10px;font-size:12px;font-family:${FONT};text-align:right;font-weight:700;background:${sigBg};">${fmtRatio(p.score, p.vsComp)}</td>
         <td style="border:1px solid #999;padding:6px 10px;font-size:12px;font-family:${FONT};text-align:right;">${mom}</td>
       </tr>`)
     })
@@ -266,7 +287,10 @@ function buildCitationCntyTable(citationsCnty, lang) {
     const cells = []
     for (let i = 0; i < TOPN; i++) {
       const r = top[i]
-      cells.push(`<td style="border:1px solid #999;padding:5px 8px;font-size:10px;font-family:${FONT};">${r ? `${escapeHtml(r.domain || '')} <span style="color:#666;">(${(r.citations || 0).toLocaleString('en-US')})</span>` : '—'}</td>`)
+      const hl = r ? domainHighlight(r.domain) : null
+      const bgStyle = hl ? `background:${hl.bg};` : ''
+      const colorStyle = hl ? `color:${hl.color};font-weight:700;` : ''
+      cells.push(`<td style="border:1px solid #999;padding:5px 8px;font-size:10px;font-family:${FONT};${bgStyle}${colorStyle}">${r ? `${escapeHtml(r.domain || '')} <span style="color:#666;font-weight:400;">(${(r.citations || 0).toLocaleString('en-US')})</span>` : '—'}</td>`)
     }
     return `<tr>
       <td style="border:1px solid #999;padding:5px 8px;font-size:11px;font-family:${FONT};font-weight:700;background:#F5F5F5;text-align:center;">${escapeHtml(cnty)}</td>
