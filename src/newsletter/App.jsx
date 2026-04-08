@@ -141,11 +141,27 @@ export default function App() {
   // meta.period에서 월 추출 → 해당 월 기준으로 categoryStats 계산
   useEffect(() => {
     const targetMonth = extractMonthFromPeriod(metaKo.period) || '3월'
+    console.log('[CategoryCards] targetMonth:', targetMonth, 'period:', metaKo.period)
     fetch('/api/tracker-snapshot')
       .then(r => r.ok ? r.json() : null)
       .then(j => {
+        console.log('[CategoryCards] tracker-snapshot response:', j?.ok)
         if (j?.ok && j.data) {
+          console.log('[CategoryCards] data keys:', Object.keys(j.data))
+          const goals = j.data?.quantitativeGoals?.rows
+          console.log('[CategoryCards] goal rows count:', goals?.length || 0)
+          if (goals?.length) {
+            const sample = goals[0]
+            console.log('[CategoryCards] sample row:', sample)
+            console.log('[CategoryCards] monthly keys:', sample?.monthly ? Object.keys(sample.monthly) : 'NO monthly')
+            console.log('[CategoryCards] sample monthly[3월]:', sample?.monthly?.['3월'])
+            console.log('[CategoryCards] taskCategories:', [...new Set(goals.map(g => g.taskCategory))])
+          }
+          if (j.data?._dashboard?.categoryStats) {
+            console.log('[CategoryCards] _dashboard.categoryStats:', j.data._dashboard.categoryStats)
+          }
           const stats = computeCategoryStats(j.data, targetMonth)
+          console.log('[CategoryCards] computed stats:', stats)
           if (stats?.length) setCategoryStats(stats)
         }
       })
