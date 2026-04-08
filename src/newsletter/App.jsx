@@ -5,6 +5,7 @@ import { INIT_META, INIT_TOTAL, INIT_PRODUCTS, INIT_DOTCOM, INIT_PRODUCTS_CNTY, 
 import { loadCache, saveCache } from '../shared/cache.js'
 import { fetchSnapshots, postSnapshot, updateSnapshot, deleteSnapshot, fetchSyncData } from '../shared/api.js'
 import { resolveDataForLang } from '../shared/utils.js'
+import { computeCategoryStats } from '../shared/trackerCategoryStats.js'
 import Sidebar from '../shared/Sidebar.jsx'
 
 const MODE = 'newsletter'
@@ -44,7 +45,7 @@ function NewsletterPreview({ meta, total, products, citations, dotcom, productsC
       ref={iframeRef}
       title="newsletter-preview"
       scrolling="no"
-      style={{ width: '100%', border: 'none', minHeight: 800, background: '#F1F5F9', overflow: 'hidden' }}
+      style={{ width: 940, maxWidth: 940, border: 'none', minHeight: 800, background: '#F1F5F9', overflow: 'hidden', display: 'block' }}
       sandbox="allow-same-origin allow-scripts"
     />
   )
@@ -137,15 +138,17 @@ export default function App() {
   useEffect(() => { fetchSnapshots(MODE).then(setSnapshots) }, [])
 
   // tracker 데이터 fetch (액션아이템 카테고리 카드용)
+  // _dashboard 우선, 없으면 raw data에서 직접 계산
   useEffect(() => {
     fetch('/api/tracker-snapshot')
       .then(r => r.ok ? r.json() : null)
       .then(j => {
-        if (j?.ok && j.data?._dashboard?.categoryStats) {
-          setCategoryStats(j.data._dashboard.categoryStats)
+        if (j?.ok && j.data) {
+          const stats = computeCategoryStats(j.data)
+          if (stats?.length) setCategoryStats(stats)
         }
       })
-      .catch(() => {})
+      .catch(err => console.warn('[tracker-snapshot] fetch failed:', err.message))
   }, [])
 
   const snapMsgTimer = useRef(null)
