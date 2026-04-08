@@ -1,39 +1,32 @@
 import { useState } from 'react'
-import { STAKEHOLDER_COLORS, SECTION_BAR, statusOfDark as statusOf } from '../utils/constants'
-import { t, tSH, tCat, tMonth } from '../../shared/i18n.js'
+import { SECTION_BAR, statusOf } from '../utils/constants'
+import { t, tCat, tMonth } from '../../shared/i18n.js'
 
 function fmt(n) { return Number(n).toLocaleString('en-US') }
 
-function CategoryTooltip({ cat, lang }) {
+// 도넛 차트 SVG
+function DonutProgress({ rate, color, size = 120 }) {
+  const stroke = 12
+  const radius = (size - stroke) / 2
+  const circ = 2 * Math.PI * radius
+  const r = Math.min(Math.max(rate || 0, 0), 100)
+  const offset = circ - (r / 100) * circ
   return (
-    <div style={{
-      position: 'absolute', top: 'calc(100% + 8px)', left: 0, right: 0,
-      background: '#1E293B', color: '#E2E8F0', borderRadius: 8, padding: '12px 16px',
-      fontSize: 13, lineHeight: 1.7, zIndex: 9999,
-      boxShadow: '0 8px 24px rgba(0,0,0,0.25)', pointerEvents: 'none',
-      whiteSpace: 'normal',
-    }}>
-      <div style={{
-        position: 'absolute', top: -6, left: '50%', transform: 'translateX(-50%)',
-        width: 0, height: 0, borderLeft: '6px solid transparent', borderRight: '6px solid transparent', borderBottom: '6px solid #1E293B',
-      }} />
-      <div style={{ fontWeight: 700, marginBottom: 6, color: '#F8FAFC' }}>{tCat(lang, cat.category)}</div>
-      <div style={{ color: '#94A3B8' }}>{t(lang, 'tooltipTaskCount', cat.taskCount)}</div>
-      <div style={{ color: '#94A3B8' }}>{t(lang, 'monthlyRate', '')} {cat.monthRate}% ({fmt(cat.monthActual)} / {fmt(cat.monthGoal)})</div>
-      <div style={{ color: '#94A3B8' }}>{lang === 'en' ? 'Annual Progress' : '연간 진척율'} {(cat.progressRate || 0).toFixed(1)}% ({fmt(cat.cumActual)} / {fmt(cat.annualGoal || cat.cumGoal)})</div>
-      {cat.stakeholders && cat.stakeholders.length > 0 && (
-        <div style={{ marginTop: 6 }}>
-          <span style={{ color: '#94A3B8', fontSize: 12 }}>{t(lang, 'tooltipOrgs')}:</span>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 4 }}>
-            {cat.stakeholders.map(sh => (
-              <span key={sh.name} style={{ padding: '1px 6px', borderRadius: 3, fontSize: 11, fontWeight: 600, background: '#334155', color: '#CBD5E1' }}>
-                {tSH(lang, sh.name)} {sh.rate}%
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
+    <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>
+      <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="rgba(255,255,255,0.10)" strokeWidth={stroke} />
+      <circle
+        cx={size / 2}
+        cy={size / 2}
+        r={radius}
+        fill="none"
+        stroke={color}
+        strokeWidth={stroke}
+        strokeLinecap="round"
+        strokeDasharray={circ}
+        strokeDashoffset={offset}
+        style={{ transition: 'stroke-dashoffset 0.8s ease-out' }}
+      />
+    </svg>
   )
 }
 
@@ -44,23 +37,29 @@ export default function CategorySummary({ categories, month, lang = 'ko', select
 
   return (
     <div style={{ background: '#1E293B', border: '1px solid #334155', borderRadius: 12, boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}>
-      <div style={{ padding: '16px 20px', borderBottom: '1px solid #334155', background: '#1E293B', borderRadius: '12px 12px 0 0', display: 'flex', alignItems: 'center', gap: 10 }}>
-        <span style={SECTION_BAR} />
-        <h3 style={{ fontSize: 20, fontWeight: 700, color: '#F1F5F9', margin: 0 }}>{t(lang, 'categorySummary')}</h3>
+      <div style={{ padding: '16px 20px', borderBottom: '1px solid #334155', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <span style={SECTION_BAR} />
+          <h3 style={{ fontSize: 20, fontWeight: 700, color: '#F1F5F9', margin: 0 }}>{t(lang, 'categorySummary')}</h3>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: 13, color: '#94A3B8' }}>
+          <span>📅 {tMonth(lang, month)}</span>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" style={{ padding: 16, overflow: 'visible' }}>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4" style={{ padding: 20 }}>
         {categories.map(cat => {
           const ms = statusOf(cat.monthRate)
           const ps = statusOf(cat.progressRate || 0)
-          const shCount = cat.stakeholders ? cat.stakeholders.length : 0
           const isSelected = selectedCategory === cat.category
           const isHovered = hoveredCat === cat.category
+          const shCount = cat.stakeholders ? cat.stakeholders.length : 0
+          const achieved = cat.achieved || 0
+          const missed = cat.missed || 0
 
           return (
             <div
               key={cat.category}
-              className="rounded-xl"
               role="button"
               tabIndex={0}
               onClick={() => onSelectCategory?.(isSelected ? null : cat.category)}
@@ -68,77 +67,67 @@ export default function CategorySummary({ categories, month, lang = 'ko', select
               onMouseEnter={() => setHoveredCat(cat.category)}
               onMouseLeave={() => setHoveredCat(null)}
               style={{
-                border: isSelected ? `2px solid ${ms.dot}` : `1px solid ${ms.border}`,
-                background: ms.bg,
-                padding: isSelected ? 15 : 16,
-                cursor: 'pointer',
                 position: 'relative',
-                zIndex: isHovered ? 100 : 'auto',
+                background: isSelected || isHovered ? '#0F172A' : '#0B1220',
+                border: isSelected ? `2px solid ${ps.dot}` : `1px solid ${ps.border || '#334155'}`,
+                borderRadius: 12,
+                padding: 18,
+                cursor: 'pointer',
                 transition: 'all 0.15s ease',
                 transform: isSelected ? 'scale(1.02)' : 'none',
-                boxShadow: isSelected ? `0 4px 12px ${ms.dot}25` : 'none',
+                boxShadow: isSelected ? `0 6px 18px ${ps.dot}30` : 'none',
               }}
             >
-              {/* Tooltip */}
-              {isHovered && <CategoryTooltip cat={cat} lang={lang} />}
-
+              {/* 카테고리명 + 과제 수 */}
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-                <span style={{ fontSize: 20, fontWeight: 700, color: '#F1F5F9' }}>{tCat(lang, cat.category)}</span>
-                <span style={{ fontSize: 14, color: '#64748B' }}>{t(lang, 'stakeholderCount', shCount)}</span>
+                <h4 style={{ margin: 0, fontSize: 17, fontWeight: 800, color: '#F8FAFC' }}>{tCat(lang, cat.category)}</h4>
+                <span style={{ fontSize: 12, color: '#94A3B8', padding: '3px 8px', background: '#1E293B', borderRadius: 4, border: '1px solid #334155' }}>
+                  {cat.taskCount}{lang === 'en' ? ' tasks' : '개 과제'}
+                </span>
               </div>
 
-              {/* 월 달성률 */}
+              {/* 도넛 차트 + 진척율 % */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', marginBottom: 14 }}>
+                <DonutProgress rate={cat.progressRate || 0} color={ps.dot} size={140} />
+                <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center' }}>
+                  <div style={{ fontSize: 32, fontWeight: 900, color: ps.text, lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
+                    {(cat.progressRate || 0).toFixed(0)}<span style={{ fontSize: 18 }}>%</span>
+                  </div>
+                  <div style={{ fontSize: 11, color: '#64748B', marginTop: 4, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                    {lang === 'en' ? 'Annual' : '연간 진척'}
+                  </div>
+                </div>
+              </div>
+
+              {/* 누적 / 연간 목표 */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 12, color: '#64748B', marginBottom: 14 }}>
+                <span style={{ fontWeight: 700, color: '#CBD5E1' }}>{fmt(cat.cumActual)}</span>
+                <span>/</span>
+                <span>{fmt(cat.annualGoal || cat.cumGoal)}</span>
+              </div>
+
+              {/* 월 달성률 막대 */}
               <div style={{ marginBottom: 10 }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-                  <span style={{ fontSize: 15, color: '#94A3B8', width: 82, flexShrink: 0 }}>{t(lang, 'monthlyRate', tMonth(lang, month))}</span>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0, justifyContent: 'flex-end' }}>
-                    <span style={{ width: 12, height: 12, borderRadius: '50%', background: ms.dot, display: 'inline-block', boxShadow: `0 0 6px ${ms.dot}55` }} />
-                    <span style={{ fontSize: 20, fontWeight: 700, color: ms.text }}>{cat.monthRate}%</span>
-                    <span style={{ fontSize: 14, color: '#64748B' }}>{fmt(cat.monthActual)} / {fmt(cat.monthGoal)}</span>
-                  </div>
+                  <span style={{ fontSize: 12, color: '#94A3B8' }}>{tMonth(lang, month)} {lang === 'en' ? 'Rate' : '달성률'}</span>
+                  <span style={{ fontSize: 14, fontWeight: 800, color: ms.text, fontVariantNumeric: 'tabular-nums' }}>{(cat.monthRate || 0).toFixed(0)}%</span>
                 </div>
-                <div style={{ height: 6, background: 'rgba(255,255,255,0.15)', borderRadius: 3, overflow: 'hidden' }}>
-                  <div style={{ height: '100%', borderRadius: 3, background: ms.bar, width: `${Math.min(cat.monthRate, 100)}%`, transition: 'width 0.5s' }} />
+                <div style={{ height: 6, background: 'rgba(255,255,255,0.10)', borderRadius: 3, overflow: 'hidden' }}>
+                  <div style={{ height: '100%', borderRadius: 3, background: ms.bar, width: `${Math.min(cat.monthRate || 0, 100)}%`, transition: 'width 0.6s' }} />
                 </div>
               </div>
 
-              {/* 연간 진척율 */}
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-                  <span style={{ fontSize: 15, color: '#94A3B8', width: 82, flexShrink: 0 }}>{lang === 'en' ? 'Annual Progress' : '연간 진척율'}</span>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0, justifyContent: 'flex-end' }}>
-                    <span style={{ width: 12, height: 12, borderRadius: '50%', background: ps.dot, display: 'inline-block', boxShadow: `0 0 6px ${ps.dot}55` }} />
-                    <span style={{ fontSize: 20, fontWeight: 700, color: ps.text }}>{(cat.progressRate || 0).toFixed(1)}%</span>
-                    <span style={{ fontSize: 14, color: '#64748B' }}>{fmt(cat.cumActual)} / {fmt(cat.annualGoal || cat.cumGoal)}</span>
-                  </div>
+              {/* 달성/미달성 과제 카운트 */}
+              <div style={{ display: 'flex', gap: 6 }}>
+                <div style={{ flex: 1, padding: '6px 8px', background: '#052E1D', border: '1px solid #14532D', borderRadius: 6, textAlign: 'center' }}>
+                  <div style={{ fontSize: 11, color: '#86EFAC', marginBottom: 2 }}>{lang === 'en' ? 'Achieved' : '달성'}</div>
+                  <div style={{ fontSize: 18, fontWeight: 900, color: '#22C55E', fontVariantNumeric: 'tabular-nums' }}>{achieved}</div>
                 </div>
-                <div style={{ height: 6, background: 'rgba(255,255,255,0.15)', borderRadius: 3, overflow: 'hidden' }}>
-                  <div style={{ height: '100%', borderRadius: 3, background: ps.bar, width: `${Math.min(cat.progressRate || 0, 100)}%`, transition: 'width 0.5s' }} />
+                <div style={{ flex: 1, padding: '6px 8px', background: '#2C0815', border: '1px solid #7F1D1D', borderRadius: 6, textAlign: 'center' }}>
+                  <div style={{ fontSize: 11, color: '#FCA5A5', marginBottom: 2 }}>{lang === 'en' ? 'Missed' : '미달성'}</div>
+                  <div style={{ fontSize: 18, fontWeight: 900, color: '#EF4444', fontVariantNumeric: 'tabular-nums' }}>{missed}</div>
                 </div>
               </div>
-
-              {/* 조직 네임택 */}
-              {cat.stakeholders && cat.stakeholders.length > 0 && (
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 20 }}>
-                  {cat.stakeholders.map(sh => {
-                    const st = statusOf(sh.rate)
-                    return (
-                      <span key={sh.name} style={{
-                        display: 'inline-block',
-                        padding: '2px 8px',
-                        borderRadius: 4,
-                        fontSize: 12,
-                        fontWeight: 700,
-                        background: st.bg,
-                        color: st.text,
-                        border: `1px solid ${st.border}`,
-                      }}>
-                        {tSH(lang, sh.name)}
-                      </span>
-                    )
-                  })}
-                </div>
-              )}
             </div>
           )
         })}
