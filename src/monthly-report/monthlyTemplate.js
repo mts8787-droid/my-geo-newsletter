@@ -1,6 +1,13 @@
 // ─── 월간 보고용 HTML 생성기 (단순 표 기반, 색상/그래프 없음) ─────────────
 const FONT = "'LG Smart', 'Malgun Gothic', Arial, sans-serif"
 
+// 제품 표시 순서 (KR / EN / 카테고리 코드 모두 매칭)
+const PRODUCT_ORDER = ['TV','모니터','Monitor','IT','오디오','Audio','AV','세탁기','WM','냉장고','REF','식기세척기','DW','청소기','VC','Cooking','쿠킹','RAC','Aircare','Air Care','에어케어']
+function productSortKey(name) {
+  const idx = PRODUCT_ORDER.indexOf(name)
+  return idx >= 0 ? idx : 999
+}
+
 function escapeHtml(str) {
   if (typeof str !== 'string') return String(str ?? '')
   return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')
@@ -54,7 +61,7 @@ function buildVisibilityTable(productsCnty, productsCntyPrev, lang) {
   })
 
   const countries = Array.from(countrySet).sort()
-  const products = Array.from(productSet).sort()
+  const products = Array.from(productSet).sort((a, b) => productSortKey(a) - productSortKey(b))
 
   if (!products.length || !countries.length) {
     return `<p style="font-size:11px;color:#666;font-family:${FONT};">데이터가 없습니다.</p>`
@@ -142,7 +149,9 @@ function buildProductSummaryTable(products, productsPrev, lang) {
 
   const rows = []
   buOrder.forEach(bu => {
-    const prods = grouped[bu] || []
+    const prods = (grouped[bu] || []).slice().sort((a, b) =>
+      productSortKey(a.kr || a.category || a.id) - productSortKey(b.kr || b.category || b.id)
+    )
     prods.forEach((p, i) => {
       const prev = p.prev || prevMap[p.id]
       const mom = fmtDelta(p.score, prev)
