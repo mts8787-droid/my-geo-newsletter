@@ -86,11 +86,10 @@ function buildVisibilityTable(productsCnty, productsCntyPrev, lang) {
       const d = dataMap[p]?.[c]
       return `<td style="border:1px solid #999;padding:3px 5px;font-size:10px;font-family:${FONT};text-align:right;background:${bg};">${d ? fmtRatio(d.score, d.compScore) : '—'}</td>`
     }).join('')
-    // MoM row
-    const momCells = countries.map(c => {
+    // 경쟁사명 row
+    const compNameCells = countries.map(c => {
       const d = dataMap[p]?.[c]
-      const prev = d?.prev || prevMap[`${c}|${p}`]
-      return `<td style="border:1px solid #999;padding:3px 5px;font-size:10px;font-family:${FONT};text-align:right;background:${bg};">${d ? fmtDelta(d.score, prev) : '—'}</td>`
+      return `<td style="border:1px solid #999;padding:3px 5px;font-size:10px;font-family:${FONT};text-align:center;background:${bg};color:#444;">${d?.compName ? escapeHtml(d.compName) : '—'}</td>`
     }).join('')
     rows.push(`
       <tr>
@@ -103,8 +102,8 @@ function buildVisibilityTable(productsCnty, productsCntyPrev, lang) {
         ${ratioCells}
       </tr>
       <tr>
-        <td style="border:1px solid #999;padding:3px 6px;font-size:10px;font-family:${FONT};background:${bg};white-space:nowrap;">${t.mom} (%p)</td>
-        ${momCells}
+        <td style="border:1px solid #999;padding:3px 6px;font-size:10px;font-family:${FONT};background:${bg};white-space:nowrap;">${lang === 'en' ? 'Top Comp' : '경쟁사'}</td>
+        ${compNameCells}
       </tr>`)
   })
 
