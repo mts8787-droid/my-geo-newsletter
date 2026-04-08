@@ -40,7 +40,7 @@ export default function SummaryCards({
             value={achievedCount}
             unit={t(lang, 'count')}
             sub={lang === 'en' ? 'Achievement ≥ 80%' : '달성률 ≥ 80%'}
-            color="#15803D" dot="#22C55E" bar="#22C55E"
+            color="#15803D" dot="#15803D" bar="#15803D"
             bg="#ECFDF5" border="#A7F3D0"
             barRate={achievedCount + missedCount > 0 ? (achievedCount / (achievedCount + missedCount)) * 100 : 0}
           />
@@ -50,8 +50,8 @@ export default function SummaryCards({
             value={missedCount}
             unit={t(lang, 'count')}
             sub={lang === 'en' ? 'Achievement < 80%' : '달성률 < 80%'}
-            color="#BE123C" dot="#EF4444" bar="#EF4444"
-            bg="#FEF2F2" border="#FECACA"
+            color="#BE123C" dot="#BE123C" bar="#BE123C"
+            bg="#FFF1F2" border="#FECDD3"
             barRate={achievedCount + missedCount > 0 ? (missedCount / (achievedCount + missedCount)) * 100 : 0}
           />
       </div>

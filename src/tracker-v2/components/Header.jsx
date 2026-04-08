@@ -126,7 +126,7 @@ export default function Header({
       {/* Publish status bar */}
       {!isPublic && publishInfo?.published && (
         <div className="bg-[#ECFDF5] border-t border-[#A7F3D0] px-5 py-1.5 flex items-center justify-center gap-3">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#22C55E] animate-pulse" />
+          <span className="w-1.5 h-1.5 rounded-full bg-[#15803D] animate-pulse" />
           <span className="text-[16px] text-[#15803D]">
             {t(lang, 'publishedAt')} — {publishInfo.ts ? new Date(publishInfo.ts).toLocaleString('ko-KR') : ''}
           </span>

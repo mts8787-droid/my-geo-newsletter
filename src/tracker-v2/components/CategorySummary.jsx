@@ -121,11 +121,11 @@ export default function CategorySummary({ categories, month, lang = 'ko', select
               <div style={{ display: 'flex', gap: 6 }}>
                 <div style={{ flex: 1, padding: '6px 8px', background: '#052E1D', border: '1px solid #14532D', borderRadius: 6, textAlign: 'center' }}>
                   <div style={{ fontSize: 11, color: '#86EFAC', marginBottom: 2 }}>{lang === 'en' ? 'Achieved' : '달성'}</div>
-                  <div style={{ fontSize: 18, fontWeight: 900, color: '#22C55E', fontVariantNumeric: 'tabular-nums' }}>{achieved}</div>
+                  <div style={{ fontSize: 18, fontWeight: 900, color: '#15803D', fontVariantNumeric: 'tabular-nums' }}>{achieved}</div>
                 </div>
                 <div style={{ flex: 1, padding: '6px 8px', background: '#2C0815', border: '1px solid #7F1D1D', borderRadius: 6, textAlign: 'center' }}>
                   <div style={{ fontSize: 11, color: '#FCA5A5', marginBottom: 2 }}>{lang === 'en' ? 'Missed' : '미달성'}</div>
-                  <div style={{ fontSize: 18, fontWeight: 900, color: '#EF4444', fontVariantNumeric: 'tabular-nums' }}>{missed}</div>
+                  <div style={{ fontSize: 18, fontWeight: 900, color: '#BE123C', fontVariantNumeric: 'tabular-nums' }}>{missed}</div>
                 </div>
               </div>
             </div>

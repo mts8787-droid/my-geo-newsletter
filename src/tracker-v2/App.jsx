@@ -278,8 +278,8 @@ export default function App() {
   const [lang, setLang] = useState(URL_LANG === 'en' ? 'en' : 'ko')
   const { data, loading, error, load, refresh } = useSheetData(IS_PUBLIC ? 'snapshot' : 'live')
   const [selectedMonth, setSelectedMonth] = useState(() => {
-    const m = new Date().getMonth() + 1  // 1-12
-    const label = `${m}월`
+    const prev = new Date().getMonth()  // 0-11 → 전월 (1-12)의 0-based index와 일치
+    const label = `${prev}월`
     return MONTHS.includes(label) ? label : MONTHS[0]
   })
   const [selectedSH, setSelectedSH] = useState('전체')
@@ -442,7 +442,7 @@ export default function App() {
 
       <main className="flex-1 max-w-[1400px] mx-auto px-4 py-6 space-y-6">
         {notice.show && notice.text && (
-          <div style={{ background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: 12, padding: '16px 20px' }}>
+          <div style={{ background: '#FFF1F2', border: '1px solid #FECDD3', borderRadius: 12, padding: '16px 20px' }}>
             <div style={{ fontSize: 14, fontWeight: 700, color: '#BE123C', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.5 }}>
               {lang === 'en' ? 'NOTICE' : '공지사항'}
             </div>

@@ -29,13 +29,13 @@ export default function CategoryDashboard({ categories, month, lang = 'ko', sele
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, fontSize: 13, color: '#94A3B8' }}>
           <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-            <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#16A34A' }} />≥80%
+            <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#15803D' }} />≥80%
           </span>
           <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
             <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#D97706' }} />≥50%
           </span>
           <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-            <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#DC2626' }} />{'<50%'}
+            <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#BE123C' }} />{'<50%'}
           </span>
         </div>
       </div>
@@ -124,19 +124,19 @@ export default function CategoryDashboard({ categories, month, lang = 'ko', sele
                 </div>
 
                 {/* 달성과제 */}
-                <div style={{ textAlign: 'center', padding: '8px 0', background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.25)', borderRadius: 8 }}>
+                <div style={{ textAlign: 'center', padding: '8px 0', background: 'rgba(21,128,61,0.12)', border: '1px solid rgba(21,128,61,0.35)', borderRadius: 8 }}>
                   <div style={{ fontSize: 10, color: '#86EFAC', marginBottom: 2, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                     {lang === 'en' ? 'Achieved' : '달성'}
                   </div>
-                  <div style={{ fontSize: 22, fontWeight: 900, color: '#22C55E', fontVariantNumeric: 'tabular-nums' }}>{cat.achieved || 0}</div>
+                  <div style={{ fontSize: 22, fontWeight: 900, color: '#15803D', fontVariantNumeric: 'tabular-nums' }}>{cat.achieved || 0}</div>
                 </div>
 
                 {/* 미달성과제 */}
-                <div style={{ textAlign: 'center', padding: '8px 0', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: 8 }}>
+                <div style={{ textAlign: 'center', padding: '8px 0', background: 'rgba(190,18,60,0.12)', border: '1px solid rgba(190,18,60,0.35)', borderRadius: 8 }}>
                   <div style={{ fontSize: 10, color: '#FCA5A5', marginBottom: 2, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                     {lang === 'en' ? 'Missed' : '미달성'}
                   </div>
-                  <div style={{ fontSize: 22, fontWeight: 900, color: '#EF4444', fontVariantNumeric: 'tabular-nums' }}>{cat.missed || 0}</div>
+                  <div style={{ fontSize: 22, fontWeight: 900, color: '#BE123C', fontVariantNumeric: 'tabular-nums' }}>{cat.missed || 0}</div>
                 </div>
 
                 {/* 펼침 화살표 */}

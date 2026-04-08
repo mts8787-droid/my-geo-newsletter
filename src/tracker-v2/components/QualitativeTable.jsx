@@ -77,7 +77,7 @@ export default function QualitativeTable({ goals, results, selectedSH, selectedC
       {cats.map(cat => {
         const rows = byCategory[cat]
         const sum = summarize(rows)
-        const headerColor = sum.notAch > sum.achieved ? '#DC2626' : sum.achieved > 0 ? '#16A34A' : '#94A3B8'
+        const headerColor = sum.notAch > sum.achieved ? '#BE123C' : sum.achieved > 0 ? '#15803D' : '#94A3B8'
         return (
           <div key={cat}>
             {/* 카테고리 헤더 */}

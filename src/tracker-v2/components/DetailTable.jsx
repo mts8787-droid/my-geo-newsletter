@@ -126,15 +126,15 @@ export default function DetailTable({ tasks, categoryStats = [], month, lang = '
                 <div style={{ fontSize: 10, color: '#15803D', marginBottom: 2, textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 700 }}>
                   {lang === 'en' ? 'Achieved' : '달성'}
                 </div>
-                <div style={{ fontSize: 22, fontWeight: 900, color: '#16A34A', fontVariantNumeric: 'tabular-nums' }}>{stat?.achieved || 0}</div>
+                <div style={{ fontSize: 22, fontWeight: 900, color: '#15803D', fontVariantNumeric: 'tabular-nums' }}>{stat?.achieved || 0}</div>
               </div>
 
               {/* 미달성과제 */}
-              <div style={{ textAlign: 'center', padding: '8px 0', background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: 8 }}>
+              <div style={{ textAlign: 'center', padding: '8px 0', background: '#FFF1F2', border: '1px solid #FECDD3', borderRadius: 8 }}>
                 <div style={{ fontSize: 10, color: '#BE123C', marginBottom: 2, textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 700 }}>
                   {lang === 'en' ? 'Missed' : '미달성'}
                 </div>
-                <div style={{ fontSize: 22, fontWeight: 900, color: '#DC2626', fontVariantNumeric: 'tabular-nums' }}>{stat?.missed || 0}</div>
+                <div style={{ fontSize: 22, fontWeight: 900, color: '#BE123C', fontVariantNumeric: 'tabular-nums' }}>{stat?.missed || 0}</div>
               </div>
 
               {/* 펼침 화살표 */}
