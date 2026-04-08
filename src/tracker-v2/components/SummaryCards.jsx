@@ -65,19 +65,19 @@ function Metric({ label, value, unit, sub, color, dot, bar, bg, border, barRate 
       background: bg || '#FFFFFF',
       border: `1px solid ${border || '#E2E8F0'}`,
       borderRadius: 12,
-      padding: 16,
+      padding: 12,
       position: 'relative',
     }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
         <span style={{ fontSize: 13, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.3px' }}>{label}</span>
         <span style={{ width: 10, height: 10, borderRadius: '50%', background: dot, boxShadow: `0 0 6px ${dot}55` }} />
       </div>
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginBottom: 6 }}>
-        <span style={{ fontSize: 34, fontWeight: 900, color, lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>{value}</span>
-        <span style={{ fontSize: 16, color: '#94A3B8', fontWeight: 600 }}>{unit}</span>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginBottom: 4 }}>
+        <span style={{ fontSize: 28, fontWeight: 900, color, lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>{value}</span>
+        <span style={{ fontSize: 15, color: '#94A3B8', fontWeight: 600 }}>{unit}</span>
       </div>
       {barRate != null && (
-        <div style={{ height: 5, background: 'rgba(15,23,42,0.08)', borderRadius: 3, overflow: 'hidden', marginBottom: 6 }}>
+        <div style={{ height: 4, background: 'rgba(15,23,42,0.08)', borderRadius: 3, overflow: 'hidden', marginBottom: 4 }}>
           <div style={{ height: '100%', borderRadius: 3, width: `${barRate}%`, background: bar, transition: 'width 0.6s' }} />
         </div>
       )}

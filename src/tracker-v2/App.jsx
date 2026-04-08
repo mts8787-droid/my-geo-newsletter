@@ -473,11 +473,11 @@ export default function App() {
               background: 'linear-gradient(180deg, #0B1220 0%, #0F172A 100%)',
               border: '1px solid #1E293B',
               borderRadius: 16,
-              padding: 28,
+              padding: 20,
               boxShadow: '0 10px 30px rgba(2,6,23,0.25)',
             }}>
               {/* 박스 라벨 */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 22 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
                 <span style={{ display: 'inline-block', width: 6, height: 22, background: '#CF0652', borderRadius: 3 }} />
                 <span style={{
                   fontSize: 13, fontWeight: 900, color: '#FCA5C8',
@@ -488,8 +488,8 @@ export default function App() {
               </div>
 
               {/* 전체 요약 */}
-              <div style={{ marginBottom: 24 }}>
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: 14, marginBottom: 14 }}>
+              <div style={{ marginBottom: 16 }}>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: 14, marginBottom: 10 }}>
                   <h3 style={{ margin: 0, fontSize: 20, fontWeight: 900, color: '#F8FAFC' }}>
                     {lang === 'en' ? 'Overall Summary' : '전체 요약'}
                   </h3>
@@ -497,7 +497,7 @@ export default function App() {
                     {lang === 'en' ? 'Aggregated metrics across all categories' : '전 카테고리 통합 지표'}
                   </p>
                 </div>
-                <div style={{ height: 1, background: '#1E293B', marginBottom: 16 }} />
+                <div style={{ height: 1, background: '#1E293B', marginBottom: 12 }} />
                 <SummaryCards
                   avgRate={dashboard.avgRate}
                   monthActual={dashboard.monthActual}
@@ -514,7 +514,7 @@ export default function App() {
 
               {/* 월별 추세 */}
               <div>
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: 14, marginBottom: 14 }}>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: 14, marginBottom: 8 }}>
                   <h3 style={{ margin: 0, fontSize: 20, fontWeight: 900, color: '#F8FAFC' }}>
                     {lang === 'en' ? 'Monthly Trend' : '월별 추세'}
                   </h3>
@@ -522,7 +522,7 @@ export default function App() {
                     {lang === 'en' ? 'Goal vs actual and cumulative progress' : '월별 목표·실적 및 누적 진척'}
                   </p>
                 </div>
-                <div style={{ height: 1, background: '#1E293B', marginBottom: 16 }} />
+                <div style={{ height: 1, background: '#1E293B', marginBottom: 10 }} />
                 <PerformanceCharts
                   monthlyTotals={dashboard.monthlyTotals}
                   cumulative={dashboard.cumulative}

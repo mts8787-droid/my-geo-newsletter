@@ -31,9 +31,9 @@ export default function PerformanceCharts({ monthlyTotals, cumulative, annualTar
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
       {/* 월별 목표 대비 실적 */}
-      <div style={{ background: '#fff', border: '1px solid #E2E8F0', borderRadius: 12, padding: 20, boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}><span style={SECTION_BAR} /><h3 style={{ fontSize: 20, fontWeight: 700, color: '#111827', margin: 0 }}>{t(lang, 'monthlyGoalVsActual')}</h3></div>
-        <ResponsiveContainer width="100%" height={220}>
+      <div style={{ background: '#fff', border: '1px solid #E2E8F0', borderRadius: 12, padding: 14, boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}><span style={SECTION_BAR} /><h3 style={{ fontSize: 18, fontWeight: 700, color: '#111827', margin: 0 }}>{t(lang, 'monthlyGoalVsActual')}</h3></div>
+        <ResponsiveContainer width="100%" height={170}>
           <ComposedChart data={localizedMonthly} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" vertical={false} />
             <XAxis dataKey="month" tick={{ fill: '#475569', fontSize: 16, fontFamily: FONT }} tickLine={false} axisLine={{ stroke: '#E2E8F0' }} />
@@ -47,12 +47,12 @@ export default function PerformanceCharts({ monthlyTotals, cumulative, annualTar
       </div>
 
       {/* 연간 누적 목표대비 실적 */}
-      <div style={{ background: '#fff', border: '1px solid #E2E8F0', borderRadius: 12, padding: 20, boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+      <div style={{ background: '#fff', border: '1px solid #E2E8F0', borderRadius: 12, padding: 14, boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
           <span style={SECTION_BAR} />
-          <h3 style={{ fontSize: 20, fontWeight: 700, color: '#111827', margin: 0 }}>{t(lang, 'cumulativeGoalVsActual')}</h3>
+          <h3 style={{ fontSize: 18, fontWeight: 700, color: '#111827', margin: 0 }}>{t(lang, 'cumulativeGoalVsActual')}</h3>
         </div>
-        <ResponsiveContainer width="100%" height={220}>
+        <ResponsiveContainer width="100%" height={170}>
           <ComposedChart data={localizedCum} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" vertical={false} />
             <XAxis dataKey="month" tick={{ fill: '#475569', fontSize: 16, fontFamily: FONT }} tickLine={false} axisLine={{ stroke: '#E2E8F0' }} />
