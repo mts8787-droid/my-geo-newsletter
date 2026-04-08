@@ -40,7 +40,19 @@
       "Bash(grep -r \"admin\\\\|combined\" /Users/dubaba/my-geo-project/my-geo-newsletter --include=*.json --include=*.html)",
       "Bash(git fetch:*)",
       "Bash(grep -rn \"notice\\\\|howtoread\\\\|howToRead\\\\|how_to_read\" src/dashboard/*.js src/dashboard/*.jsx)",
-      "Bash(grep -rn \"showNotice\\\\|showInsight\\\\|showHowToRead\\\\|notice\\\\|insight\" src/dashboard/*.jsx src/dashboard/*.js src/*.js src/*.jsx)"
+      "Bash(grep -rn \"showNotice\\\\|showInsight\\\\|showHowToRead\\\\|notice\\\\|insight\" src/dashboard/*.jsx src/dashboard/*.js src/*.js src/*.jsx)",
+      "Bash(ls -la /Users/dubaba/my-geo-project/my-geo-newsletter/public/*.html)",
+      "Bash(ls -la /Users/dubaba/my-geo-project/my-geo-newsletter/published/*.html)",
+      "Bash(ls:*)",
+      "Bash(grep -n \"font-family:\\\\${FONT}\" src/dashboard/dashboardTemplate.js)",
+      "Bash(grep -n 'font-family:\\\\${FONT}' src/dashboard/dashboardTemplate.js)",
+      "Bash(grep -v \"^[0-9]*:.*<style\\\\|^[0-9]*:.*body{\\\\|^[0-9]*:.*\\\\.tab\\\\|^[0-9]*:.*\\\\.lang\\\\|^[0-9]*:.*\\\\.gnb\\\\|^[0-9]*:.*return \\\\`\")",
+      "Bash(grep -n \"citation\" vite.config.*)",
+      "Bash(grep -n \"input.*citation\\\\|rollupOptions\" vite.config.*)",
+      "Bash(grep -r \"product\\\\|Product\" /Users/dubaba/my-geo-project/my-geo-newsletter/src/dashboard/*.js)",
+      "Bash(grep -ri \"claude\\\\|openai\\\\|anthropic\\\\|gpt\\\\|davinci\" /Users/dubaba/my-geo-project/my-geo-newsletter/src /Users/dubaba/my-geo-project/my-geo-newsletter/*.js)",
+      "Bash(git restore:*)",
+      "WebFetch(domain:my-geo-newsletter.onrender.com)"
     ]
   }
 }
