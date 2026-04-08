@@ -366,9 +366,6 @@ function parseProductCntyFromRow(rows, headerIdx) {
   const ttlByProduct = {} // { id: [{ ...entry }] }
   const cntyByKey = {}    // { "product|country": [{ ...entry }] }
 
-  // 디버그: 첫 5행 출력
-  data.slice(0, 5).forEach((r, i) => console.log(`[parseProductCnty] row${i}: div="${r[0]}" date="${r[1]}" country="${r[2]}" cat="${r[3]}" LG=${r[lgIdx]}`))
-
   data.forEach(r => {
     const div = String(r[0] || '').trim()
     const date = String(r[1] || '').trim()

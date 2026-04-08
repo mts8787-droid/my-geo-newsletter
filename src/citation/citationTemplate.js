@@ -769,7 +769,7 @@ function switchSubTab(btn,tab){
     p.style.display=p.getAttribute('data-panel')===tab?'':'none';
   });
 }
-var _REGIONS={NA:['US','CA'],EU:['UK','DE','ES'],LATAM:['MX','BR'],APAC:['AU','VN'],IN:['IN']};
+var _REGIONS=${JSON.stringify(Object.fromEntries(Object.entries(REGIONS).map(([k, v]) => [k, v.countries])))};
 function updateAllCheckbox(target){
   var all=document.querySelectorAll('.fl-chk[data-filter="'+target+'"]');
   var allChecked=true;

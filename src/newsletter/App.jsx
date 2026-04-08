@@ -179,12 +179,13 @@ export default function App() {
   }
   useEffect(() => () => clearTimeout(snapMsgTimer.current), [])
 
-  const serverSyncApplied = useRef(false)
+  const userLoadedSnapshot = useRef(false)
   useEffect(() => {
     let cancelled = false
     fetchSyncData(MODE).then(d => {
       if (cancelled || !d) return
-      serverSyncApplied.current = true
+      // 사용자가 이미 snapshot을 로드했으면 server sync data가 덮어쓰지 않도록 보호
+      if (userLoadedSnapshot.current) return
       if (d.meta)          setMetaKo(m => ({ ...m, ...d.meta }))
       if (d.total)         setTotal(t => ({ ...t, ...d.total }))
       if (d.citations)     setCitations(d.citations)
@@ -228,6 +229,7 @@ export default function App() {
     showSnapMsg(result ? '새로 저장 완료!' : '저장 실패')
   }
   function handleSnapLoad(snap) {
+    userLoadedSnapshot.current = true
     const d = snap.data
     setMetaKo({ ...INIT_META, ...(d.metaKo || d.meta || {}) })
     setMetaEn({ ...INIT_META, ...(d.metaEn || {}) })

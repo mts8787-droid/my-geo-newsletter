@@ -1,8 +1,8 @@
 // ─── 월간 보고용 HTML 생성기 (단순 표 기반, 색상/그래프 없음) ─────────────
 const FONT = "'LG Smart', 'Arial Narrow', 'Malgun Gothic', Arial, sans-serif"
 
-// 제품 표시 순서 (KR / EN / 카테고리 코드 모두 매칭)
-const PRODUCT_ORDER = ['TV','모니터','Monitor','IT','오디오','Audio','AV','세탁기','WM','냉장고','REF','식기세척기','DW','청소기','VC','Cooking','쿠킹','RAC','Aircare','Air Care','에어케어']
+// 제품 표시 순서 (KR / EN / 카테고리 코드 모두 매칭, BU 코드 제외)
+const PRODUCT_ORDER = ['TV','모니터','Monitor','오디오','Audio','AV','세탁기','WM','냉장고','REF','식기세척기','DW','청소기','VC','Cooking','쿠킹','RAC','Aircare','Air Care','에어케어']
 function productSortKey(name) {
   const idx = PRODUCT_ORDER.indexOf(name)
   return idx >= 0 ? idx : 999
