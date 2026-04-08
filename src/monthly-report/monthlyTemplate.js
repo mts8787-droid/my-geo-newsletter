@@ -23,69 +23,100 @@ function fmtRatio(lg, comp) {
   return Math.round((lg / comp) * 100) + '%'
 }
 
-// productsCnty 및 productsCntyPrev를 받아서 월간 표 생성
+// 국가 = 컬럼, 제품 = 행 (pivot 형식, 가로로 길게)
 function buildVisibilityTable(productsCnty, productsCntyPrev, lang) {
   const t = lang === 'en' ? {
-    country: 'Country', product: 'Product', lg: 'LG', comp: 'Top Comp', compName: 'Comp', ratio: 'vs Comp', mom: 'MoM',
-    title: 'Monthly GEO Visibility — by Country × Product',
+    product: 'Product', metric: 'Metric',
+    title: 'Monthly GEO Visibility — Country × Product (Pivot)',
+    lg: 'LG', ratio: 'vs Comp', mom: 'MoM',
   } : {
-    country: '국가', product: '제품', lg: 'LG', comp: '경쟁사', compName: '경쟁사명', ratio: '경쟁비', mom: 'MoM(%p)',
+    product: '제품', metric: '구분',
     title: '월간 GEO Visibility — 국가별 × 제품별',
+    lg: 'LG', ratio: '경쟁비', mom: 'MoM',
   }
 
-  // 이전 월 데이터: { "country|product": score }
+  // prevMap (혹시 별도 prev 데이터 전달 시)
   const prevMap = {}
   ;(productsCntyPrev || []).forEach(r => {
     if (r.country && r.product) prevMap[`${r.country}|${r.product}`] = r.score
   })
 
-  // 국가별 그룹
-  const byCountry = {}
+  // 데이터 인덱싱: { product: { country: { score, prev, compScore } } }
+  const dataMap = {}
+  const countrySet = new Set()
+  const productSet = new Set()
   ;(productsCnty || []).forEach(r => {
-    if (!r.country || r.country === 'TTL' || r.country === 'TOTAL') return
-    if (!byCountry[r.country]) byCountry[r.country] = []
-    byCountry[r.country].push(r)
+    if (!r.country || r.country === 'TTL' || r.country === 'TOTAL' || !r.product) return
+    countrySet.add(r.country)
+    productSet.add(r.product)
+    if (!dataMap[r.product]) dataMap[r.product] = {}
+    dataMap[r.product][r.country] = r
   })
-  const countries = Object.keys(byCountry).sort()
 
-  if (!countries.length) return `<p style="font-size:13px;color:#666;font-family:${FONT};">데이터가 없습니다.</p>`
+  const countries = Array.from(countrySet).sort()
+  const products = Array.from(productSet).sort()
 
+  if (!products.length || !countries.length) {
+    return `<p style="font-size:11px;color:#666;font-family:${FONT};">데이터가 없습니다.</p>`
+  }
+
+  const colW = Math.max(60, Math.floor(100 / (countries.length + 1)))
+  const headerCells = countries.map(c =>
+    `<th style="border:1px solid #999;padding:4px 6px;font-size:10px;font-weight:700;text-align:center;background:#E8E8E8;min-width:50px;">${escapeHtml(c)}</th>`
+  ).join('')
+
+  // 각 제품마다 LG / 경쟁비 / MoM 3행 표시
   const rows = []
-  countries.forEach(cnty => {
-    byCountry[cnty].sort((a, b) => (a.product || '').localeCompare(b.product || ''))
-    byCountry[cnty].forEach((r, i) => {
-      const prev = prevMap[`${r.country}|${r.product}`]
-      const mom = fmtDelta(r.score, prev)
-      rows.push(`<tr>
-        ${i === 0 ? `<td rowspan="${byCountry[cnty].length}" style="border:1px solid #999;padding:6px 10px;font-size:12px;font-family:${FONT};font-weight:700;background:#F5F5F5;text-align:center;vertical-align:middle;">${escapeHtml(r.country)}</td>` : ''}
-        <td style="border:1px solid #999;padding:6px 10px;font-size:12px;font-family:${FONT};">${escapeHtml(r.product || '')}</td>
-        <td style="border:1px solid #999;padding:6px 10px;font-size:12px;font-family:${FONT};text-align:right;font-weight:700;">${fmt(r.score)}%</td>
-        <td style="border:1px solid #999;padding:6px 10px;font-size:12px;font-family:${FONT};text-align:right;">${fmt(r.compScore)}%</td>
-        <td style="border:1px solid #999;padding:6px 10px;font-size:12px;font-family:${FONT};">${escapeHtml(r.compName || '')}</td>
-        <td style="border:1px solid #999;padding:6px 10px;font-size:12px;font-family:${FONT};text-align:right;font-weight:700;">${fmtRatio(r.score, r.compScore)}</td>
-        <td style="border:1px solid #999;padding:6px 10px;font-size:12px;font-family:${FONT};text-align:right;">${mom}</td>
+  products.forEach((p, pi) => {
+    const bg = pi % 2 === 0 ? '#FFFFFF' : '#FAFAFA'
+    // LG row
+    const lgCells = countries.map(c => {
+      const d = dataMap[p]?.[c]
+      return `<td style="border:1px solid #999;padding:3px 5px;font-size:10px;font-family:${FONT};text-align:right;font-weight:700;background:${bg};">${d ? fmt(d.score) : '—'}</td>`
+    }).join('')
+    // 경쟁비 row
+    const ratioCells = countries.map(c => {
+      const d = dataMap[p]?.[c]
+      return `<td style="border:1px solid #999;padding:3px 5px;font-size:10px;font-family:${FONT};text-align:right;background:${bg};">${d ? fmtRatio(d.score, d.compScore) : '—'}</td>`
+    }).join('')
+    // MoM row
+    const momCells = countries.map(c => {
+      const d = dataMap[p]?.[c]
+      const prev = d?.prev || prevMap[`${c}|${p}`]
+      return `<td style="border:1px solid #999;padding:3px 5px;font-size:10px;font-family:${FONT};text-align:right;background:${bg};">${d ? fmtDelta(d.score, prev) : '—'}</td>`
+    }).join('')
+    rows.push(`
+      <tr>
+        <td rowspan="3" style="border:1px solid #999;padding:4px 6px;font-size:11px;font-family:${FONT};font-weight:700;background:#F0F0F0;text-align:center;vertical-align:middle;white-space:nowrap;">${escapeHtml(p)}</td>
+        <td style="border:1px solid #999;padding:3px 6px;font-size:10px;font-family:${FONT};font-weight:600;background:${bg};white-space:nowrap;">${t.lg} (%)</td>
+        ${lgCells}
+      </tr>
+      <tr>
+        <td style="border:1px solid #999;padding:3px 6px;font-size:10px;font-family:${FONT};background:${bg};white-space:nowrap;">${t.ratio}</td>
+        ${ratioCells}
+      </tr>
+      <tr>
+        <td style="border:1px solid #999;padding:3px 6px;font-size:10px;font-family:${FONT};background:${bg};white-space:nowrap;">${t.mom} (%p)</td>
+        ${momCells}
       </tr>`)
-    })
   })
 
   return `
   <h2 style="font-size:16px;font-weight:700;margin:24px 0 10px;font-family:${FONT};color:#000;">${t.title}</h2>
-  <table border="0" cellspacing="0" cellpadding="0" style="border-collapse:collapse;width:100%;font-family:${FONT};">
+  <div style="overflow-x:auto;">
+  <table border="0" cellspacing="0" cellpadding="0" style="border-collapse:collapse;width:100%;font-family:${FONT};table-layout:auto;">
     <thead>
-      <tr style="background:#E8E8E8;">
-        <th style="border:1px solid #999;padding:8px 10px;font-size:12px;font-weight:700;text-align:center;">${t.country}</th>
-        <th style="border:1px solid #999;padding:8px 10px;font-size:12px;font-weight:700;text-align:center;">${t.product}</th>
-        <th style="border:1px solid #999;padding:8px 10px;font-size:12px;font-weight:700;text-align:center;">${t.lg}</th>
-        <th style="border:1px solid #999;padding:8px 10px;font-size:12px;font-weight:700;text-align:center;">${t.comp}</th>
-        <th style="border:1px solid #999;padding:8px 10px;font-size:12px;font-weight:700;text-align:center;">${t.compName}</th>
-        <th style="border:1px solid #999;padding:8px 10px;font-size:12px;font-weight:700;text-align:center;">${t.ratio}</th>
-        <th style="border:1px solid #999;padding:8px 10px;font-size:12px;font-weight:700;text-align:center;">${t.mom}</th>
+      <tr>
+        <th style="border:1px solid #999;padding:6px 8px;font-size:11px;font-weight:700;text-align:center;background:#E8E8E8;white-space:nowrap;">${t.product}</th>
+        <th style="border:1px solid #999;padding:6px 8px;font-size:11px;font-weight:700;text-align:center;background:#E8E8E8;white-space:nowrap;">${t.metric}</th>
+        ${headerCells}
       </tr>
     </thead>
     <tbody>
       ${rows.join('')}
     </tbody>
-  </table>`
+  </table>
+  </div>`
 }
 
 // 제품별 본부 합계 표

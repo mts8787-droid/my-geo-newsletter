@@ -410,11 +410,13 @@ function parseProductCntyFromRow(rows, headerIdx) {
     productsPartial.push({ ...latest, prev })
   }
 
-  // 국가별 데이터: 같은 제품+국가에 여러 월이 있으면 최신월만 사용
+  // 국가별 데이터: 같은 제품+국가에 여러 월이 있으면 최신월=score, 이전월=prev
   const productsCnty = []
   for (const entries of Object.values(cntyByKey)) {
     entries.sort((a, b) => parseMonthFromDate(a.date) - parseMonthFromDate(b.date))
-    productsCnty.push(entries[entries.length - 1])
+    const latest = entries[entries.length - 1]
+    const prev = entries.length >= 2 ? entries[entries.length - 2].score : 0
+    productsCnty.push({ ...latest, prev })
   }
 
   return {

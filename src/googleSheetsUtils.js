@@ -105,6 +105,8 @@ export async function syncFromGoogleSheets(sheetId, onProgress) {
           const lgArr = brands['LG'] || brands['lg'] || []
           const lgScore = lgArr.length ? lgArr[lgArr.length - 1] : 0
           if (lgScore <= 0) continue
+          // weekly 첫 주를 prev로 사용 (월 데이터 없을 때 폴백)
+          const lgPrev = lgArr.length >= 2 ? lgArr[0] : 0
           let topCompName = '', topCompScore = 0
           for (const [brand, arr] of Object.entries(brands)) {
             if (brand === 'LG' || brand === 'lg') continue
@@ -112,7 +114,7 @@ export async function syncFromGoogleSheets(sheetId, onProgress) {
             if (last > topCompScore) { topCompScore = last; topCompName = brand }
           }
           const gap = +(lgScore - topCompScore).toFixed(1)
-          productsCnty.push({ product: category, country: cnty, score: lgScore, compName: topCompName, compScore: topCompScore, gap })
+          productsCnty.push({ product: category, country: cnty, score: lgScore, prev: lgPrev, compName: topCompName, compScore: topCompScore, gap })
         }
       }
       if (productsCnty.length) {
