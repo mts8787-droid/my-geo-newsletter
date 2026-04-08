@@ -5,7 +5,7 @@ import { INIT_META, INIT_TOTAL, INIT_PRODUCTS, INIT_DOTCOM, INIT_PRODUCTS_CNTY, 
 import { loadCache, saveCache } from '../shared/cache.js'
 import { fetchSnapshots, postSnapshot, updateSnapshot, deleteSnapshot, fetchSyncData } from '../shared/api.js'
 import { resolveDataForLang } from '../shared/utils.js'
-import { computeCategoryStats } from '../shared/trackerCategoryStats.js'
+import { computeCategoryStats, extractMonthFromPeriod } from '../shared/trackerCategoryStats.js'
 import Sidebar from '../shared/Sidebar.jsx'
 
 const MODE = 'newsletter'
@@ -138,18 +138,19 @@ export default function App() {
   useEffect(() => { fetchSnapshots(MODE).then(setSnapshots) }, [])
 
   // tracker 데이터 fetch (액션아이템 카테고리 카드용)
-  // _dashboard 우선, 없으면 raw data에서 직접 계산
+  // meta.period에서 월 추출 → 해당 월 기준으로 categoryStats 계산
   useEffect(() => {
+    const targetMonth = extractMonthFromPeriod(metaKo.period) || 'Mar'
     fetch('/api/tracker-snapshot')
       .then(r => r.ok ? r.json() : null)
       .then(j => {
         if (j?.ok && j.data) {
-          const stats = computeCategoryStats(j.data)
+          const stats = computeCategoryStats(j.data, targetMonth)
           if (stats?.length) setCategoryStats(stats)
         }
       })
       .catch(err => console.warn('[tracker-snapshot] fetch failed:', err.message))
-  }, [])
+  }, [metaKo.period])
 
   const snapMsgTimer = useRef(null)
   function showSnapMsg(msg, ms = 2000) {

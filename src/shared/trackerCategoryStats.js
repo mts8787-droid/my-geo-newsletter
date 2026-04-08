@@ -2,6 +2,13 @@
 // progress-tracker가 publish한 raw data 또는 _dashboard 우선 사용
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
+// 카테고리 표시 순서
+const CATEGORY_ORDER = ['콘텐츠수정', '신규콘텐츠제작', '외부채널관리', '닷컴기술개선']
+function categorySortKey(name) {
+  const idx = CATEGORY_ORDER.indexOf(name)
+  return idx >= 0 ? idx : 999
+}
+
 function buildLookup(rows) {
   const map = {}
   ;(rows || []).forEach(r => { if (r.stakeholder && r.task) map[`${r.stakeholder}|${r.task}`] = r })
@@ -9,12 +16,15 @@ function buildLookup(rows) {
 }
 
 export function computeCategoryStats(data, month) {
-  // 1순위: 새 형식의 _dashboard.categoryStats (이미 계산됨)
-  if (data?._dashboard?.categoryStats?.length) {
-    return data._dashboard.categoryStats
+  // raw data에서 항상 직접 계산 (특정 월 기준)
+  // _dashboard는 publish 시점의 month라서 신뢰 못함
+  if (!data?.quantitativeGoals?.rows) {
+    // raw data 없으면 _dashboard fallback (정렬만 적용)
+    if (data?._dashboard?.categoryStats?.length) {
+      return [...data._dashboard.categoryStats].sort((a, b) => categorySortKey(a.category) - categorySortKey(b.category))
+    }
+    return null
   }
-  // 2순위: raw data에서 직접 계산
-  if (!data?.quantitativeGoals?.rows) return null
 
   const goalRows = data.quantitativeGoals.rows
   const actualMap = buildLookup(data.quantitativeResults?.rows)
@@ -66,5 +76,20 @@ export function computeCategoryStats(data, month) {
       cumActual: cAct,
       annualGoal,
     }
-  })
+  }).sort((a, b) => categorySortKey(a.category) - categorySortKey(b.category))
+}
+
+// meta.period에서 월 추출 (예: "2026년 3월" → "Mar", "Mar 2026" → "Mar")
+export function extractMonthFromPeriod(period) {
+  if (!period) return null
+  const krMatch = String(period).match(/(\d{1,2})월/)
+  if (krMatch) {
+    const idx = parseInt(krMatch[1]) - 1
+    if (idx >= 0 && idx < 12) return MONTHS[idx]
+  }
+  const enMatch = String(period).match(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)/i)
+  if (enMatch) {
+    return enMatch[1].charAt(0).toUpperCase() + enMatch[1].slice(1, 3).toLowerCase()
+  }
+  return null
 }
