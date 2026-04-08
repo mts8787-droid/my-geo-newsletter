@@ -188,15 +188,18 @@ function productCardHtml(p, globalMax, globalMin, lang = 'ko', opts = {}) {
   const st  = statusInfo(p.status, lang)
   const d   = delta(p.score, p.prev)
   const { showTrendTabs = false, monthlyGlobalMax = 100, monthlyGlobalMin = 0, weeklyLabels } = opts
-  const trendArr = p.weekly || []
+  // 8주 트렌드 고정 — 항상 마지막 8주만 표시
+  const TREND_WEEKS = 8
+  const fullWeekly = p.weekly || []
+  const trendArr = fullWeekly.slice(-TREND_WEEKS)
+  const trimmedLabels = weeklyLabels && weeklyLabels.length >= TREND_WEEKS ? weeklyLabels.slice(-TREND_WEEKS) : weeklyLabels
   const monthlyArr = p.monthly || (p.prev ? [p.prev, p.score] : [])
   const sparkColor = p.status === 'critical' ? '#BE123C' : p.status === 'behind' ? '#E8910C' : '#15803D'
-  const weekCount = trendArr.length
-  const trendTitle = weekCount > 0 ? (lang === 'en' ? `${weekCount}W Trend` : `${weekCount}주 트렌드`) : t.weekTrend
+  const trendTitle = lang === 'en' ? `${TREND_WEEKS}W Trend` : `${TREND_WEEKS}주 트렌드`
 
   // 트렌드 영역: 대시보드 모드일 때 주별/월별 모두 생성
   const weeklyContent = `<table border="0" cellpadding="0" cellspacing="0" width="100%"><tr><td align="right" style="font-size:12px;color:#94A3B8;padding-bottom:2px;font-family:${EM_FONT};">${trendTitle}</td></tr></table>
-                ${weeklyTrendHtml(trendArr, sparkColor, globalMax, globalMin, weeklyLabels)}`
+                ${weeklyTrendHtml(trendArr, sparkColor, globalMax, globalMin, trimmedLabels)}`
   const monthlyContent = `<table border="0" cellpadding="0" cellspacing="0" width="100%"><tr><td align="right" style="font-size:12px;color:#94A3B8;padding-bottom:2px;font-family:${EM_FONT};">${t.monthTrend}</td></tr></table>
                 ${monthlyTrendHtml(monthlyArr, sparkColor, monthlyGlobalMax, monthlyGlobalMin)}`
 
