@@ -187,6 +187,143 @@ function buildProductSummaryTable(products, productsPrev, lang) {
   </table>`
 }
 
+// 도메인 카테고리별 Citation 표
+function buildCitationCategoryTable(citations, lang) {
+  if (!citations || !citations.length) return ''
+  const t = lang === 'en'
+    ? { title: 'Citation by Category', rank: 'Rank', source: 'Category', score: 'Citations', ratio: 'Share' }
+    : { title: 'Citation 카테고리별', rank: '순위', source: '카테고리', score: '인용수', ratio: '비중' }
+  const total = citations.reduce((s, c) => s + (c.score || 0), 0)
+  const rows = citations.map((c, i) => `
+    <tr>
+      <td style="border:1px solid #999;padding:5px 8px;font-size:11px;font-family:${FONT};text-align:center;">${i + 1}</td>
+      <td style="border:1px solid #999;padding:5px 8px;font-size:11px;font-family:${FONT};">${escapeHtml(c.source || c.category || '')}</td>
+      <td style="border:1px solid #999;padding:5px 8px;font-size:11px;font-family:${FONT};text-align:right;font-weight:700;">${(c.score || 0).toLocaleString('en-US')}</td>
+      <td style="border:1px solid #999;padding:5px 8px;font-size:11px;font-family:${FONT};text-align:right;">${total > 0 ? ((c.score / total) * 100).toFixed(1) + '%' : '—'}</td>
+    </tr>`).join('')
+  return `
+  <h2 style="font-size:16px;font-weight:700;margin:24px 0 10px;font-family:${FONT};color:#000;">${t.title}</h2>
+  <table border="0" cellspacing="0" cellpadding="0" style="border-collapse:collapse;width:100%;font-family:${FONT};">
+    <thead><tr style="background:#E8E8E8;">
+      <th style="border:1px solid #999;padding:6px 8px;font-size:11px;font-weight:700;text-align:center;width:50px;">${t.rank}</th>
+      <th style="border:1px solid #999;padding:6px 8px;font-size:11px;font-weight:700;text-align:center;">${t.source}</th>
+      <th style="border:1px solid #999;padding:6px 8px;font-size:11px;font-weight:700;text-align:center;width:140px;">${t.score}</th>
+      <th style="border:1px solid #999;padding:6px 8px;font-size:11px;font-weight:700;text-align:center;width:100px;">${t.ratio}</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`
+}
+
+// 도메인별 Citation 표 (TTL Top N)
+function buildCitationDomainTable(citationsCnty, lang) {
+  const ttlRows = (citationsCnty || []).filter(r => r.cnty === 'TTL' || r.cnty === 'TOTAL' || !r.cnty)
+  if (!ttlRows.length) return ''
+  ttlRows.sort((a, b) => (b.citations || 0) - (a.citations || 0))
+  const top = ttlRows.slice(0, 20)
+  const t = lang === 'en'
+    ? { title: 'Citation by Domain (Top 20)', rank: 'Rank', domain: 'Domain', type: 'Type', score: 'Citations' }
+    : { title: 'Citation 도메인별 Top 20', rank: '순위', domain: '도메인', type: '유형', score: '인용수' }
+  const total = ttlRows.reduce((s, r) => s + (r.citations || 0), 0)
+  const rows = top.map((r, i) => `
+    <tr>
+      <td style="border:1px solid #999;padding:5px 8px;font-size:11px;font-family:${FONT};text-align:center;">${i + 1}</td>
+      <td style="border:1px solid #999;padding:5px 8px;font-size:11px;font-family:${FONT};">${escapeHtml(r.domain || '')}</td>
+      <td style="border:1px solid #999;padding:5px 8px;font-size:11px;font-family:${FONT};">${escapeHtml(r.type || '')}</td>
+      <td style="border:1px solid #999;padding:5px 8px;font-size:11px;font-family:${FONT};text-align:right;font-weight:700;">${(r.citations || 0).toLocaleString('en-US')}</td>
+      <td style="border:1px solid #999;padding:5px 8px;font-size:11px;font-family:${FONT};text-align:right;">${total > 0 ? ((r.citations / total) * 100).toFixed(1) + '%' : '—'}</td>
+    </tr>`).join('')
+  return `
+  <h2 style="font-size:16px;font-weight:700;margin:24px 0 10px;font-family:${FONT};color:#000;">${t.title}</h2>
+  <table border="0" cellspacing="0" cellpadding="0" style="border-collapse:collapse;width:100%;font-family:${FONT};">
+    <thead><tr style="background:#E8E8E8;">
+      <th style="border:1px solid #999;padding:6px 8px;font-size:11px;font-weight:700;text-align:center;width:50px;">${t.rank}</th>
+      <th style="border:1px solid #999;padding:6px 8px;font-size:11px;font-weight:700;text-align:center;">${t.domain}</th>
+      <th style="border:1px solid #999;padding:6px 8px;font-size:11px;font-weight:700;text-align:center;width:120px;">${t.type}</th>
+      <th style="border:1px solid #999;padding:6px 8px;font-size:11px;font-weight:700;text-align:center;width:120px;">${t.score}</th>
+      <th style="border:1px solid #999;padding:6px 8px;font-size:11px;font-weight:700;text-align:center;width:80px;">${lang === 'en' ? 'Share' : '비중'}</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`
+}
+
+// 국가별 Citation Top 도메인 (행=국가, 열=Top 1~5)
+function buildCitationCntyTable(citationsCnty, lang) {
+  const cntyMap = {}
+  ;(citationsCnty || []).forEach(r => {
+    if (!r.cnty || r.cnty === 'TTL' || r.cnty === 'TOTAL') return
+    if (!cntyMap[r.cnty]) cntyMap[r.cnty] = []
+    cntyMap[r.cnty].push(r)
+  })
+  const countries = Object.keys(cntyMap).sort()
+  if (!countries.length) return ''
+  const t = lang === 'en'
+    ? { title: 'Citation by Country (Top 5 Domains)', country: 'Country', total: 'Total' }
+    : { title: '국가별 Citation Top 5 도메인', country: '국가', total: '전체' }
+  const TOPN = 5
+  const rows = countries.map(cnty => {
+    const sorted = cntyMap[cnty].sort((a, b) => (b.citations || 0) - (a.citations || 0))
+    const total = sorted.reduce((s, r) => s + (r.citations || 0), 0)
+    const top = sorted.slice(0, TOPN)
+    const cells = []
+    for (let i = 0; i < TOPN; i++) {
+      const r = top[i]
+      cells.push(`<td style="border:1px solid #999;padding:5px 8px;font-size:10px;font-family:${FONT};">${r ? `${escapeHtml(r.domain || '')} <span style="color:#666;">(${(r.citations || 0).toLocaleString('en-US')})</span>` : '—'}</td>`)
+    }
+    return `<tr>
+      <td style="border:1px solid #999;padding:5px 8px;font-size:11px;font-family:${FONT};font-weight:700;background:#F5F5F5;text-align:center;">${escapeHtml(cnty)}</td>
+      <td style="border:1px solid #999;padding:5px 8px;font-size:11px;font-family:${FONT};text-align:right;font-weight:700;">${total.toLocaleString('en-US')}</td>
+      ${cells.join('')}
+    </tr>`
+  }).join('')
+  return `
+  <h2 style="font-size:16px;font-weight:700;margin:24px 0 10px;font-family:${FONT};color:#000;">${t.title}</h2>
+  <div style="overflow-x:auto;">
+  <table border="0" cellspacing="0" cellpadding="0" style="border-collapse:collapse;width:100%;font-family:${FONT};">
+    <thead><tr style="background:#E8E8E8;">
+      <th style="border:1px solid #999;padding:6px 8px;font-size:11px;font-weight:700;text-align:center;width:60px;">${t.country}</th>
+      <th style="border:1px solid #999;padding:6px 8px;font-size:11px;font-weight:700;text-align:center;width:80px;">${t.total}</th>
+      ${Array.from({ length: TOPN }, (_, i) => `<th style="border:1px solid #999;padding:6px 8px;font-size:11px;font-weight:700;text-align:center;">#${i + 1}</th>`).join('')}
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table>
+  </div>`
+}
+
+// 닷컴 Citation LG vs Samsung 비교
+function buildDotcomTable(dotcom, lang) {
+  if (!dotcom || !dotcom.lg) return ''
+  const lg = dotcom.lg, sam = dotcom.samsung || {}
+  const cols = Object.keys(lg).filter(k => lg[k] != null)
+  if (!cols.length) return ''
+  const t = lang === 'en'
+    ? { title: 'Dotcom Citation — LG vs Samsung', type: 'Page Type', lg: 'LG', sam: 'Samsung', diff: 'Diff', winner: 'Winner' }
+    : { title: '닷컴 Citation — LG vs Samsung', type: '페이지 유형', lg: 'LG', sam: 'Samsung', diff: '차이', winner: '우위' }
+  const rows = cols.map(k => {
+    const lv = lg[k] || 0, sv = sam[k] || 0
+    const diff = lv - sv
+    const winner = diff > 0 ? 'LG' : diff < 0 ? 'SS' : '='
+    return `<tr>
+      <td style="border:1px solid #999;padding:5px 8px;font-size:11px;font-family:${FONT};${k === 'TTL' ? 'font-weight:700;background:#F5F5F5;' : ''}">${escapeHtml(k)}</td>
+      <td style="border:1px solid #999;padding:5px 8px;font-size:11px;font-family:${FONT};text-align:right;font-weight:700;">${lv.toLocaleString('en-US')}</td>
+      <td style="border:1px solid #999;padding:5px 8px;font-size:11px;font-family:${FONT};text-align:right;">${sv.toLocaleString('en-US')}</td>
+      <td style="border:1px solid #999;padding:5px 8px;font-size:11px;font-family:${FONT};text-align:right;">${diff > 0 ? '+' : ''}${diff.toLocaleString('en-US')}</td>
+      <td style="border:1px solid #999;padding:5px 8px;font-size:11px;font-family:${FONT};text-align:center;font-weight:700;">${winner}</td>
+    </tr>`
+  }).join('')
+  return `
+  <h2 style="font-size:16px;font-weight:700;margin:24px 0 10px;font-family:${FONT};color:#000;">${t.title}</h2>
+  <table border="0" cellspacing="0" cellpadding="0" style="border-collapse:collapse;width:100%;font-family:${FONT};">
+    <thead><tr style="background:#E8E8E8;">
+      <th style="border:1px solid #999;padding:6px 8px;font-size:11px;font-weight:700;text-align:center;">${t.type}</th>
+      <th style="border:1px solid #999;padding:6px 8px;font-size:11px;font-weight:700;text-align:center;">${t.lg}</th>
+      <th style="border:1px solid #999;padding:6px 8px;font-size:11px;font-weight:700;text-align:center;">${t.sam}</th>
+      <th style="border:1px solid #999;padding:6px 8px;font-size:11px;font-weight:700;text-align:center;">${t.diff}</th>
+      <th style="border:1px solid #999;padding:6px 8px;font-size:11px;font-weight:700;text-align:center;width:60px;">${t.winner}</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`
+}
+
 export function generateMonthlyReportHTML(meta, total, products, citations, dotcom = {}, lang = 'ko', productsCnty = [], citationsCnty = [], options = {}) {
   const { productsCntyPrev = [], productsPrev = [] } = options
 
@@ -226,6 +363,12 @@ export function generateMonthlyReportHTML(meta, total, products, citations, dotc
 
     ${buildProductSummaryTable(products, productsPrev, lang)}
     ${buildVisibilityTable(productsCnty, productsCntyPrev, lang)}
+
+    <h1 style="font-size:18px;font-weight:700;margin:32px 0 6px;border-top:2px solid #000;padding-top:14px;font-family:${FONT};color:#000;">${lang === 'en' ? 'Citation Analysis' : 'Citation 분석'}</h1>
+    ${buildCitationCategoryTable(citations, lang)}
+    ${buildCitationDomainTable(citationsCnty, lang)}
+    ${buildCitationCntyTable(citationsCnty, lang)}
+    ${buildDotcomTable(dotcom, lang)}
 
     <div style="margin-top:32px;padding-top:12px;border-top:1px solid #999;font-size:11px;color:#666;font-family:${FONT};">
       <p style="margin:0;">${lang === 'en' ? 'LG Electronics · D2C Digital Marketing Team' : 'LG전자 · D2C디지털마케팅팀'}</p>
