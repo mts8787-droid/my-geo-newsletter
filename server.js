@@ -262,8 +262,10 @@ app.use((req, res, next) => {
   if (req.path === '/admin/login') return next()
   if (req.path.startsWith('/api/auth/')) return next()
   if (req.path === '/api/tracker-snapshot') return next()
+  if (req.path === '/api/tracker-snapshot-v2') return next()
 
   if (req.path.startsWith('/admin/progress-tracker/assets/')) return next()
+  if (req.path.startsWith('/admin/progress-tracker-v2/assets/')) return next()
   if (req.path.startsWith('/admin') || req.path.startsWith('/api/')) {
     const token = getSessionToken(req)
     if (!token || !activeSessions.has(token)) {
@@ -889,6 +891,8 @@ app.delete('/api/publish-dashboard', (req, res) => {
 // ─── Progress Tracker Publish (데이터 스냅샷 게시) ────────────────────────────
 const TRACKER_SNAP = join(DATA_DIR, 'tracker-snapshot.json')
 const TRACKER_META = join(DATA_DIR, 'tracker-meta.json')
+const TRACKER_V2_SNAP = join(DATA_DIR, 'tracker-v2-snapshot.json')
+const TRACKER_V2_META = join(DATA_DIR, 'tracker-v2-meta.json')
 
 app.post('/api/publish-tracker', (req, res) => {
   const { data, dashboard, month } = req.body || {}
@@ -928,6 +932,45 @@ app.get('/api/tracker-snapshot', (req, res) => {
   }
 })
 
+// ─── Tracker v2 Publish API ─────────────────────────────────────────────────
+app.post('/api/publish-tracker-v2', (req, res) => {
+  const { data, dashboard, month } = req.body || {}
+  if (!data) return res.status(400).json({ ok: false, error: 'data 필수' })
+  try {
+    const snap = { ...data, _dashboard: dashboard || null, _month: month || null }
+    writeFileSync(TRACKER_V2_SNAP, JSON.stringify(snap, null, 2))
+    const meta = { title: 'GEO KPI Progress Tracker v2', ts: Date.now() }
+    writeFileSync(TRACKER_V2_META, JSON.stringify(meta, null, 2))
+    console.log('[PUBLISH-TRACKER-V2]', new Date().toISOString())
+    res.json({ ok: true, ...meta, url: '/p/progress-tracker-v2/' })
+  } catch (err) {
+    console.error('[PUBLISH-TRACKER-V2] Write error:', err.message)
+    res.status(500).json({ ok: false, error: '파일 저장 실패: ' + err.message })
+  }
+})
+
+app.get('/api/publish-tracker-v2', (req, res) => {
+  const meta = readMetaFile(TRACKER_V2_META)
+  const hasData = existsSync(TRACKER_V2_SNAP)
+  res.json({ published: !!meta && hasData, ...(meta || {}), url: '/p/progress-tracker-v2/' })
+})
+
+app.delete('/api/publish-tracker-v2', (req, res) => {
+  try { unlinkSync(TRACKER_V2_SNAP) } catch (e) { if (e.code !== 'ENOENT') console.error('[PUBLISH-TRACKER-V2] Delete error:', e.message) }
+  try { unlinkSync(TRACKER_V2_META) } catch (e) { if (e.code !== 'ENOENT') console.error('[PUBLISH-TRACKER-V2] Delete meta error:', e.message) }
+  res.json({ ok: true })
+})
+
+// Tracker v2 snapshot (공개)
+app.get('/api/tracker-snapshot-v2', (req, res) => {
+  try {
+    const data = JSON.parse(readFileSync(TRACKER_V2_SNAP, 'utf-8'))
+    res.json({ ok: true, data })
+  } catch {
+    res.json({ ok: false, data: null })
+  }
+})
+
 // ─── Font static files ──────────────────────────────────────────────────────
 app.use('/font', express.static(join(__dirname, 'font'), { maxAge: '1y', immutable: true }))
 
@@ -946,6 +989,23 @@ app.get('/p/progress-tracker', (req, res) => {
 })
 app.get('/p/progress-tracker/*', (req, res) => {
   res.sendFile(join(__dirname, 'dist-tracker', 'tracker.html'))
+})
+
+// ─── Public Progress Tracker v2 (게시된 버전, IP 체크) ───────────────────────
+app.use('/p/progress-tracker-v2', (req, res, next) => {
+  if (!isIpAllowed(req)) {
+    res.status(403)
+    res.set('Content-Type', 'text/html; charset=utf-8')
+    return res.send('<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body style="background:#0F172A;display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;color:#64748B"><p>403 — Access Denied</p></body></html>')
+  }
+  next()
+})
+app.use('/p/progress-tracker-v2', express.static(join(__dirname, 'dist-tracker-v2')))
+app.get('/p/progress-tracker-v2', (req, res) => {
+  res.sendFile(join(__dirname, 'dist-tracker-v2', 'tracker-v2.html'))
+})
+app.get('/p/progress-tracker-v2/*', (req, res) => {
+  res.sendFile(join(__dirname, 'dist-tracker-v2', 'tracker-v2.html'))
 })
 
 app.get('/p/:slug', (req, res) => {
@@ -1016,6 +1076,10 @@ a.card:hover{border-color:#CF0652;transform:translateY(-2px)}
     <a class="card" href="/admin/progress-tracker">
       <div class="card-title">Progress Tracker</div>
       <div class="card-desc">GEO 과제 진행 현황 대시보드</div>
+    </a>
+    <a class="card" href="/admin/progress-tracker-v2">
+      <div class="card-title">Progress Tracker v2</div>
+      <div class="card-desc">Progress Tracker 별도 버전 (통합게시 분리)</div>
     </a>
     <div class="section-title">공통 인프라</div>
     <a class="card" href="/admin/ip-manager">
@@ -1372,6 +1436,14 @@ app.get('/admin/visibility/*', (req, res) => {
 })
 
 // ─── Static files (Progress Tracker at /admin/progress-tracker) ─────────────
+app.use('/admin/progress-tracker-v2', express.static(join(__dirname, 'dist-tracker-v2')))
+app.get('/admin/progress-tracker-v2', (req, res) => {
+  res.sendFile(join(__dirname, 'dist-tracker-v2', 'tracker-v2.html'))
+})
+app.get('/admin/progress-tracker-v2/*', (req, res) => {
+  res.sendFile(join(__dirname, 'dist-tracker-v2', 'tracker-v2.html'))
+})
+
 app.use('/admin/progress-tracker', express.static(join(__dirname, 'dist-tracker')))
 app.get('/admin/progress-tracker', (req, res) => {
   res.sendFile(join(__dirname, 'dist-tracker', 'tracker.html'))
