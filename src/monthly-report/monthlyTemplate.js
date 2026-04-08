@@ -48,6 +48,77 @@ function domainHighlight(domain) {
   return null
 }
 
+// 본부별 종합 표 (Monthly Visibility Summary 시트의 country=TOTAL, division=MS/HS/ES 값)
+function buildBuTotalsTable(buTotals, buTotalsPrev, lang) {
+  if (!buTotals || !Object.keys(buTotals).length) return ''
+  const t = lang === 'en'
+    ? { title: 'Monthly Visibility — BU Totals (Sheet Values)', bu: 'BU', lg: 'LG (%)', comp: 'Comp (%)', ratio: 'vs Comp', mom: 'MoM(%p)' }
+    : { title: '본부별 종합 (시트 합계 직접 사용)', bu: '본부', lg: 'LG (%)', comp: '경쟁사 (%)', ratio: '경쟁비', mom: 'MoM(%p)' }
+  const order = ['MS', 'HS', 'ES']
+  const buKeys = order.filter(k => buTotals[k]).concat(Object.keys(buTotals).filter(k => !order.includes(k)))
+  const rows = buKeys.map(k => {
+    const cur = buTotals[k]
+    const prev = (buTotalsPrev || {})[k]
+    const ratio = cur.comp > 0 ? Math.round((cur.lg / cur.comp) * 100) : 100
+    const sigBg = signalBg(cur.lg, cur.comp) || '#FFFFFF'
+    const mom = prev && prev.lg != null ? fmtDelta(cur.lg, prev.lg) : '—'
+    return `<tr>
+      <td style="border:1px solid #999;padding:6px 10px;font-size:12px;font-family:${FONT};font-weight:700;text-align:center;background:#F5F5F5;">${escapeHtml(k)}</td>
+      <td style="border:1px solid #999;padding:6px 10px;font-size:12px;font-family:${FONT};text-align:center;font-weight:700;background:${sigBg};">${fmt(cur.lg)}</td>
+      <td style="border:1px solid #999;padding:6px 10px;font-size:12px;font-family:${FONT};text-align:center;background:${sigBg};">${fmt(cur.comp)}</td>
+      <td style="border:1px solid #999;padding:6px 10px;font-size:12px;font-family:${FONT};text-align:center;font-weight:700;background:${sigBg};">${ratio}%</td>
+      <td style="border:1px solid #999;padding:6px 10px;font-size:12px;font-family:${FONT};text-align:center;">${mom}</td>
+    </tr>`
+  }).join('')
+  return `
+  <h2 style="font-size:16px;font-weight:700;margin:24px 0 10px;font-family:${FONT};color:#000;">${t.title}</h2>
+  <table border="0" cellspacing="0" cellpadding="0" style="border-collapse:collapse;width:100%;font-family:${FONT};">
+    <thead><tr style="background:#E8E8E8;">
+      <th style="border:1px solid #999;padding:8px 10px;font-size:12px;font-weight:700;text-align:center;">${t.bu}</th>
+      <th style="border:1px solid #999;padding:8px 10px;font-size:12px;font-weight:700;text-align:center;">${t.lg}</th>
+      <th style="border:1px solid #999;padding:8px 10px;font-size:12px;font-weight:700;text-align:center;">${t.comp}</th>
+      <th style="border:1px solid #999;padding:8px 10px;font-size:12px;font-weight:700;text-align:center;">${t.ratio}</th>
+      <th style="border:1px solid #999;padding:8px 10px;font-size:12px;font-weight:700;text-align:center;">${t.mom}</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`
+}
+
+// 국가별 종합 표 (Monthly Visibility Summary 시트의 country=US/.., division=TOTAL 값)
+function buildCountryTotalsTable(countryTotals, countryTotalsPrev, lang) {
+  if (!countryTotals || !Object.keys(countryTotals).length) return ''
+  const t = lang === 'en'
+    ? { title: 'Monthly Visibility — Country Totals (Sheet Values)', country: 'Country', lg: 'LG (%)', comp: 'Comp (%)', ratio: 'vs Comp', mom: 'MoM(%p)' }
+    : { title: '국가별 종합 (시트 합계 직접 사용)', country: '국가', lg: 'LG (%)', comp: '경쟁사 (%)', ratio: '경쟁비', mom: 'MoM(%p)' }
+  const countries = Object.keys(countryTotals).sort()
+  const rows = countries.map(c => {
+    const cur = countryTotals[c]
+    const prev = (countryTotalsPrev || {})[c]
+    const ratio = cur.comp > 0 ? Math.round((cur.lg / cur.comp) * 100) : 100
+    const sigBg = signalBg(cur.lg, cur.comp) || '#FFFFFF'
+    const mom = prev && prev.lg != null ? fmtDelta(cur.lg, prev.lg) : '—'
+    return `<tr>
+      <td style="border:1px solid #999;padding:6px 10px;font-size:12px;font-family:${FONT};font-weight:700;text-align:center;background:#F5F5F5;">${escapeHtml(c)}</td>
+      <td style="border:1px solid #999;padding:6px 10px;font-size:12px;font-family:${FONT};text-align:center;font-weight:700;background:${sigBg};">${fmt(cur.lg)}</td>
+      <td style="border:1px solid #999;padding:6px 10px;font-size:12px;font-family:${FONT};text-align:center;background:${sigBg};">${fmt(cur.comp)}</td>
+      <td style="border:1px solid #999;padding:6px 10px;font-size:12px;font-family:${FONT};text-align:center;font-weight:700;background:${sigBg};">${ratio}%</td>
+      <td style="border:1px solid #999;padding:6px 10px;font-size:12px;font-family:${FONT};text-align:center;">${mom}</td>
+    </tr>`
+  }).join('')
+  return `
+  <h2 style="font-size:16px;font-weight:700;margin:24px 0 10px;font-family:${FONT};color:#000;">${t.title}</h2>
+  <table border="0" cellspacing="0" cellpadding="0" style="border-collapse:collapse;width:100%;font-family:${FONT};">
+    <thead><tr style="background:#E8E8E8;">
+      <th style="border:1px solid #999;padding:8px 10px;font-size:12px;font-weight:700;text-align:center;">${t.country}</th>
+      <th style="border:1px solid #999;padding:8px 10px;font-size:12px;font-weight:700;text-align:center;">${t.lg}</th>
+      <th style="border:1px solid #999;padding:8px 10px;font-size:12px;font-weight:700;text-align:center;">${t.comp}</th>
+      <th style="border:1px solid #999;padding:8px 10px;font-size:12px;font-weight:700;text-align:center;">${t.ratio}</th>
+      <th style="border:1px solid #999;padding:8px 10px;font-size:12px;font-weight:700;text-align:center;">${t.mom}</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`
+}
+
 // 국가 = 컬럼, 제품 = 행 (pivot 형식, 가로로 길게)
 function buildVisibilityTable(productsCnty, productsCntyPrev, lang, productsTTL) {
   const t = lang === 'en' ? {
@@ -419,6 +490,8 @@ body, table, td, th, h1, h2, p, span, div { font-family: ${FONT} !important; }
       </tr>` : ''}
     </table>` : ''}
 
+    ${buildBuTotalsTable(total?.buTotals, total?.buTotalsPrev, lang)}
+    ${buildCountryTotalsTable(total?.countryTotals, total?.countryTotalsPrev, lang)}
     ${buildProductSummaryTable(products, productsPrev, lang)}
     ${buildVisibilityTable(productsCnty, productsCntyPrev, lang, products)}
 

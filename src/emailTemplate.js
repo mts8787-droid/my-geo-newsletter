@@ -1205,7 +1205,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                             if (!bt) return `<td width="33%" style="padding:3px;"></td>`
                             const ratio = bt.comp > 0 ? Math.round((bt.lg / bt.comp) * 100) : 100
                             const sc = ratio >= 100 ? '#22C55E' : ratio >= 80 ? '#F59E0B' : '#EF4444'
-                            const prevBt = (total.buPrev || {})[bu]
+                            const prevBt = (total.buTotalsPrev || total.buPrev || {})[bu]
                             const mom = prevBt ? +(bt.lg - prevBt.lg).toFixed(1) : null
                             const momStr = mom != null ? (mom > 0 ? `▲${mom}` : mom < 0 ? `▼${Math.abs(mom)}` : '─') : '—'
                             const momColor = mom > 0 ? '#22C55E' : mom < 0 ? '#EF4444' : '#94A3B8'

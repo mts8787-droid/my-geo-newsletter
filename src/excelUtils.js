@@ -306,20 +306,44 @@ function parseVisSummary(rows) {
   const vsComp = latestTotal.comp
   const prev = prevTotal ? prevTotal.lg : score
 
-  // 본부별 총합: 최신월의 country=TOTAL, division=MS/HS/ES 행에서 추출
+  // 본부별 총합: 시트의 division=MS/HS/ES, country=TOTAL 행 값을 그대로 사용 (평균 계산 X)
   const latestDate = latestTotal.date
-  const buTotals = {}
-  monthlyVis.filter(r =>
-    r.date === latestDate &&
-    (r.country === 'TOTAL' || r.country === 'TTL') &&
-    r.division && r.division !== 'TOTAL' && r.division !== 'TTL' && r.division !== ''
-  ).forEach(r => {
-    buTotals[r.division] = { lg: r.lg, comp: r.comp }
-  })
+  const prevDate = prevTotal ? prevTotal.date : null
+  function pickBuTotals(dateFilter) {
+    const out = {}
+    monthlyVis.filter(r =>
+      r.date === dateFilter &&
+      (r.country === 'TOTAL' || r.country === 'TTL') &&
+      r.division && r.division !== 'TOTAL' && r.division !== 'TTL' && r.division !== ''
+    ).forEach(r => {
+      out[r.division] = { lg: r.lg, comp: r.comp }
+    })
+    return out
+  }
+  const buTotals = pickBuTotals(latestDate)
+  const buTotalsPrev = prevDate ? pickBuTotals(prevDate) : {}
+
+  // 국가별 총합: 시트의 country=US/CA/UK/.., division=TOTAL 행 값을 그대로 사용
+  function pickCountryTotals(dateFilter) {
+    const out = {}
+    monthlyVis.filter(r =>
+      r.date === dateFilter &&
+      r.country && r.country !== 'TOTAL' && r.country !== 'TTL' &&
+      (r.division === 'TOTAL' || r.division === 'TTL' || r.division === '')
+    ).forEach(r => {
+      out[r.country] = { lg: r.lg, comp: r.comp }
+    })
+    return out
+  }
+  const countryTotals = pickCountryTotals(latestDate)
+  const countryTotalsPrev = prevDate ? pickCountryTotals(prevDate) : {}
 
   const result = {
     total: { score, prev, vsComp, rank: score >= vsComp ? 1 : 2, totalBrands: 12 },
     ...(Object.keys(buTotals).length ? { buTotals } : {}),
+    ...(Object.keys(buTotalsPrev).length ? { buTotalsPrev } : {}),
+    ...(Object.keys(countryTotals).length ? { countryTotals } : {}),
+    ...(Object.keys(countryTotalsPrev).length ? { countryTotalsPrev } : {}),
   }
   if (monthlyVis.length) result.monthlyVis = monthlyVis
   return result
