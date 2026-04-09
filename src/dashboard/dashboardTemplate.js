@@ -832,11 +832,19 @@ function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang, meta, appendixPromp
   const jsonCountries = JSON.stringify(countries)
   const CW = 72 // 각 주차 컬럼 고정 너비 (px)
 
-  // ── 토픽별 US 핵심 프롬프트 매핑 ──
-  const topicPromptMap = {}
-  if (meta?.prTopicPrompts && typeof meta.prTopicPrompts === 'object') {
-    Object.assign(topicPromptMap, meta.prTopicPrompts)
+  // ── raw 문자열 → 맵 파서 ──
+  function parseKeyValRaw(raw) {
+    const map = {}
+    if (!raw) return map
+    String(raw).split('\n').forEach(line => {
+      const idx = line.indexOf('=')
+      if (idx > 0) { const k = line.slice(0, idx).trim(), v = line.slice(idx + 1).trim(); if (k) map[k] = v }
+    })
+    return map
   }
+
+  // ── 토픽별 US 핵심 프롬프트 매핑 ──
+  const topicPromptMap = parseKeyValRaw(meta?.prTopicPromptsRaw)
   if (appendixPrompts && appendixPrompts.length) {
     topics.forEach(tp => {
       if (!topicPromptMap[tp]) {
@@ -847,7 +855,22 @@ function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang, meta, appendixPromp
   }
 
   // ── 토픽별 설명 (매트릭스용) ──
-  const topicDescMap = meta?.prTopicDescs || {}
+  const DEFAULT_TOPIC_DESCS = {
+    'TV': 'OLED·QNED 등 TV 제품 라인업 관련 PR 토픽',
+    'TV Platform': 'webOS, ThinQ 등 스마트 TV 플랫폼·서비스 관련',
+    'Audio': '사운드바·포터블 스피커 등 오디오 제품군 관련',
+    'PC': '그램(gram) 노트북·모니터 등 IT 제품 관련',
+    'Built-in Appliances': '빌트인 가전(오븐·식기세척기·냉장고 등) 관련',
+    'Cooling Kitchen': '냉장고·에어컨·정수기 등 냉방·주방 가전 관련',
+    'Living': '세탁기·청소기·공기청정기 등 생활가전 관련',
+    'Sustainability': 'ESG·친환경·탄소중립 등 지속가능경영 관련',
+    'Robot': 'CLOi·서비스 로봇·산업용 로봇 관련',
+    'AI': 'LG AI 기술·ThinQ AI·온디바이스 AI 관련',
+    'B2B': '상업용 디스플레이·사이니지·B2B 솔루션 관련',
+    'EV': '전기차 부품·LG 마그나·파워트레인 관련',
+    'Design': '제품 디자인·LG 시그니처·디자인 어워드 관련',
+  }
+  const topicDescMap = { ...DEFAULT_TOPIC_DESCS, ...parseKeyValRaw(meta?.prTopicDescsRaw) }
 
   // ── 토픽 카테고리 분류 ──
   const CONSUMER_TOPICS = ['Built-in Appliances', 'Audio', 'Cooling Kitchen', 'Living', 'PC', 'TV', 'TV Platform']

@@ -1047,23 +1047,8 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
         {/* ── PR 토픽별 설명 (매트릭스용) ── */}
         <p style={{ margin: '8px 0 4px', fontSize: 11, color: '#64748B', fontFamily: FONT }}>PR 토픽별 설명 <span style={{ color: '#94A3B8' }}>(토픽=설명, 줄 단위)</span></p>
         <textarea
-          value={(() => {
-            const map = meta.prTopicDescs || {}
-            return Object.entries(map).map(([k, v]) => `${k}=${v}`).join('\n')
-          })()}
-          onChange={e => {
-            const lines = e.target.value.split('\n')
-            const map = {}
-            lines.forEach(line => {
-              const idx = line.indexOf('=')
-              if (idx > 0) {
-                const key = line.slice(0, idx).trim()
-                const val = line.slice(idx + 1).trim()
-                if (key) map[key] = val
-              }
-            })
-            setMeta(m => ({ ...m, prTopicDescs: map }))
-          }}
+          value={meta.prTopicDescsRaw || ''}
+          onChange={e => setMeta(m => ({ ...m, prTopicDescsRaw: e.target.value }))}
           rows={6}
           placeholder={"TV=TV/디스플레이 관련 PR 토픽\nAudio=사운드바/오디오 관련 PR 토픽"}
           style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6, marginBottom: 8, fontSize: 11 }}
@@ -1072,23 +1057,8 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
         {/* ── PR 토픽별 핵심 프롬프트 ── */}
         <p style={{ margin: '8px 0 4px', fontSize: 11, color: '#64748B', fontFamily: FONT }}>PR 토픽별 대표 프롬프트 <span style={{ color: '#94A3B8' }}>(토픽=프롬프트, 줄 단위)</span></p>
         <textarea
-          value={(() => {
-            const map = meta.prTopicPrompts || {}
-            return Object.entries(map).map(([k, v]) => `${k}=${v}`).join('\n')
-          })()}
-          onChange={e => {
-            const lines = e.target.value.split('\n')
-            const map = {}
-            lines.forEach(line => {
-              const idx = line.indexOf('=')
-              if (idx > 0) {
-                const key = line.slice(0, idx).trim()
-                const val = line.slice(idx + 1).trim()
-                if (key) map[key] = val
-              }
-            })
-            setMeta(m => ({ ...m, prTopicPrompts: map }))
-          }}
+          value={meta.prTopicPromptsRaw || ''}
+          onChange={e => setMeta(m => ({ ...m, prTopicPromptsRaw: e.target.value }))}
           rows={6}
           placeholder={"TV=Best TV to buy in 2026\nAudio=Best soundbar for home theater\n(비워두면 Appendix.Prompt List US 데이터 자동 매칭)"}
           style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6, marginBottom: 8, fontSize: 11 }}
