@@ -1035,8 +1035,8 @@ function brandPromptTabHtml(bpData, bpLabels, lang, stakeholderFilter, tabTitle,
         <div class="section-title">${tabTitle || (lang === 'en' ? 'Brand Prompt Anomaly Check' : 'Brand Prompt 이상 점검')}</div>
         <span class="legend">W5–W16 (12${lang === 'en' ? ' weeks' : '주'})</span>
       </div>
-      <div style="margin:16px 28px 0;padding:16px;background:#1E0F18;border:1px solid #3D1528;border-radius:10px">
-        <span style="display:block;font-size:14px;font-weight:700;color:${RED};text-transform:uppercase;margin-bottom:6px">${lang === 'en' ? 'ABOUT THIS PAGE' : '이 페이지 안내'}</span>
+      <div style="margin:16px 28px 0;padding:16px;background:#0F172A;border:1px solid #1E293B;border-radius:10px">
+        <span style="display:block;font-size:14px;font-weight:700;color:${RED};text-transform:uppercase;margin-bottom:6px">Dashboard Guide</span>
         <span style="font-size:15px;color:#fff;line-height:1.8">${(meta?.bpNotice) || (lang === 'en'
           ? 'Brand Prompts should always return 100% visibility. If a prompt falls below 100%, it indicates a potential issue — check for negative sentiment, incorrect brand association, or competitor hijacking in the AI response.'
           : 'Brand Prompt는 자사 브랜드명을 직접 포함한 질의이므로 Visibility가 항상 100%여야 정상입니다. 100% 미만인 경우 AI 응답에서 부정적 sentiment, 브랜드 오인식, 경쟁사 대체 추천 등의 이슈가 발생했을 수 있으므로 해당 프롬프트의 응답 내용을 확인해야 합니다.')}</span>
