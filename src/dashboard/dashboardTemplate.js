@@ -12,6 +12,8 @@ const T = {
     allProducts: '전체 제품', allCountries: '전체 국가',
     productTitle: '제품별 GEO Visibility 현황',
     cntyTitle: '국가별 GEO Visibility 현황',
+    cntyTitleByProduct: '제품별 GEO Visibility 현황',
+    cBrandCompare: 'C브랜드 비교',
     citationTitle: '도메인 카테고리별 Citation 현황',
     citDomainTitle: '도메인별 Citation 현황',
     citCntyTitle: '국가별 Citation 도메인',
@@ -36,6 +38,8 @@ const T = {
     allProducts: 'All Products', allCountries: 'All Countries',
     productTitle: 'GEO Visibility by Product',
     cntyTitle: 'GEO Visibility by Country',
+    cntyTitleByProduct: 'GEO Visibility by Product',
+    cBrandCompare: 'Compare China Brand',
     citationTitle: 'Citation by Domain Category',
     citDomainTitle: 'Citation by Domain',
     citCntyTitle: 'Citation Domain by Country',
@@ -400,8 +404,22 @@ function cntyColHtml(r, maxScore, label) {
   const gap = +(r.score - r.compScore).toFixed(1)
   const gapColor = gap >= 0 ? '#15803D' : '#BE123C'
   const BAR_H = 130
-  const hPx = Math.max(3, Math.round(r.score / maxScore * BAR_H))
-  const cPx = r.compScore > 0 ? Math.max(3, Math.round(r.compScore / maxScore * BAR_H)) : 0
+  // 중국 브랜드 1위 (TCL/Hisense/Haier)
+  const C_BRANDS = ['TCL', 'HISENSE', 'HAIER']
+  let cBrandName = '', cBrandScore = 0
+  if (r.allScores) {
+    Object.entries(r.allScores).forEach(([brand, score]) => {
+      if (C_BRANDS.includes(String(brand).toUpperCase()) && score > cBrandScore) {
+        cBrandName = brand
+        cBrandScore = score
+      }
+    })
+  }
+  const localMax = Math.max(maxScore, cBrandScore)
+  const hPx = Math.max(3, Math.round(r.score / localMax * BAR_H))
+  const cPx = r.compScore > 0 ? Math.max(3, Math.round(r.compScore / localMax * BAR_H)) : 0
+  const cbPx = cBrandScore > 0 ? Math.max(3, Math.round(cBrandScore / localMax * BAR_H)) : 0
+  const cBrandColor = '#9333EA'
   return `<div class="vbar-item" data-product="${r.product}" data-country="${r.country}">
     <div class="vbar-cols">
       <div class="vbar-col-wrap">
@@ -413,6 +431,11 @@ function cntyColHtml(r, maxScore, label) {
         <span class="vbar-val comp-val" style="color:${COMP}">${r.compScore.toFixed(1)}</span>
         <div class="vbar-col" style="height:${cPx}px;background:${COMP}"></div>
         <span class="vbar-col-name">${r.compName.toUpperCase() === 'SAMSUNG' ? 'SS' : r.compName}</span>
+      </div>` : ''}
+      ${cBrandScore > 0 ? `<div class="vbar-col-wrap cbrand-bar" style="display:none">
+        <span class="vbar-val" style="color:${cBrandColor}">${cBrandScore.toFixed(1)}</span>
+        <div class="vbar-col" style="height:${cbPx}px;background:${cBrandColor}"></div>
+        <span class="vbar-col-name" style="color:${cBrandColor}">${cBrandName.substring(0, 3).toUpperCase()}</span>
       </div>` : ''}
     </div>
     <span class="vbar-gap" style="color:${gapColor}">${gap >= 0 ? '+' : ''}${gap}%p</span>
@@ -454,27 +477,27 @@ function countrySectionHtml(productsCnty, meta, t, lang) {
 
   return `<div class="section-card" id="cnty-section">
     <div class="section-header">
-      <div class="section-title">${t.cntyTitle}</div>
+      <div class="section-title" id="cnty-section-title">${t.cntyTitle}</div>
       <div class="section-header-right">
         <div class="trend-tabs">
-          <button class="cnty-view-tab active" onclick="switchCntyView('product')">${t.byProduct}</button>
-          <button class="cnty-view-tab" onclick="switchCntyView('country')">${t.byCountry}</button>
+          <button class="cnty-view-tab active" onclick="switchCntyView('country')">${t.byCountry}</button>
+          <button class="cnty-view-tab" onclick="switchCntyView('product')">${t.byProduct}</button>
         </div>
+        <label style="display:inline-flex;align-items:center;gap:5px;font-size:13px;color:#475569;cursor:pointer;margin-left:8px;">
+          <input type="checkbox" id="cnty-cbrand-toggle" onchange="toggleCBrand(this)" style="cursor:pointer;" />
+          ${t.cBrandCompare}
+        </label>
         <span class="legend"><i style="background:#15803D"></i>${t.legendLead} <i style="background:#D97706"></i>${t.legendBehind} <i style="background:#BE123C"></i>${t.legendCritical} <i style="background:${COMP}"></i>Comp.</span>
       </div>
     </div>
     ${insightHtml(meta.cntyInsight, meta.showCntyInsight, meta.cntyHowToRead, meta.showCntyHowToRead, t)}
     <div class="cnty-filters">
-      <div class="filter-group" id="cnty-filter-products">
-        <span class="filter-label">${t.allProducts}</span>${productChips}
-      </div>
-      <div class="filter-group" id="cnty-filter-countries">
-        <span class="filter-label">${t.allCountries}</span>${countryChips}
-      </div>
+      <div class="filter-group" id="cnty-filter-products">${productChips}</div>
+      <div class="filter-group" id="cnty-filter-countries">${countryChips}</div>
     </div>
     <div class="section-body">
-      <div id="cnty-view-product">${byProductHtml}</div>
-      <div id="cnty-view-country" style="display:none">${byCountryHtml}</div>
+      <div id="cnty-view-country">${byCountryHtml}</div>
+      <div id="cnty-view-product" style="display:none">${byProductHtml}</div>
     </div>
   </div>`
 }
@@ -1613,9 +1636,25 @@ function switchCntyView(mode){
   if(vc)vc.style.display=mode==='country'?'':'none';
   document.querySelectorAll('.cnty-view-tab').forEach(function(btn){btn.classList.remove('active')});
   var tabs=document.querySelectorAll('.cnty-view-tab');
-  if(mode==='product'&&tabs[0])tabs[0].classList.add('active');
-  if(mode==='country'&&tabs[1])tabs[1].classList.add('active');
+  // tabs[0]=country, tabs[1]=product (디폴트가 country로 변경됨)
+  if(mode==='country'&&tabs[0])tabs[0].classList.add('active');
+  if(mode==='product'&&tabs[1])tabs[1].classList.add('active');
+  // 섹션 제목 동적 변경
+  var titleEl=document.getElementById('cnty-section-title');
+  if(titleEl){
+    titleEl.textContent=mode==='product'
+      ? (_lang==='en'?'GEO Visibility by Product':'제품별 GEO Visibility 현황')
+      : (_lang==='en'?'GEO Visibility by Country':'국가별 GEO Visibility 현황');
+  }
   applyCntyFilters();
+}
+var _showCBrand=false;
+function toggleCBrand(cb){
+  _showCBrand=cb.checked;
+  // 모든 cnty 차트 항목에 대해 c-brand 표시 토글
+  document.querySelectorAll('#cnty-section .cbrand-bar').forEach(function(el){
+    el.style.display=_showCBrand?'':'none';
+  });
 }
 function toggleCntyFilter(btn){
   btn.classList.toggle('active');
