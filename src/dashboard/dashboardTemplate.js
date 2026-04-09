@@ -483,6 +483,10 @@ function countrySectionHtml(productsCnty, meta, t, lang) {
           <button class="cnty-view-tab active" onclick="switchCntyView('country')">${t.byCountry}</button>
           <button class="cnty-view-tab" onclick="switchCntyView('product')">${t.byProduct}</button>
         </div>
+        <label style="display:inline-flex;align-items:center;gap:5px;font-size:13px;color:#475569;cursor:pointer;margin-left:8px;">
+          <input type="checkbox" id="cnty-cbrand-toggle" checked onchange="toggleCBrand(this)" style="cursor:pointer;" />
+          ${t.cBrandCompare}
+        </label>
         <span class="legend"><i style="background:#15803D"></i>${t.legendLead} <i style="background:#D97706"></i>${t.legendBehind} <i style="background:#BE123C"></i>${t.legendCritical} <i style="background:${COMP}"></i>Comp. <i style="background:#9333EA"></i>C-Brand</span>
       </div>
     </div>
@@ -1636,6 +1640,12 @@ function getCheckedValues(filterName){
     total++;if(c.checked){vals[c.value]=true;checked++}
   });
   return{vals:vals,total:total,checked:checked,isAll:total===checked};
+}
+function toggleCBrand(cb){
+  var show=cb.checked;
+  document.querySelectorAll('#cnty-section .cbrand-bar').forEach(function(el){
+    el.style.display=show?'':'none';
+  });
 }
 function switchCntyView(mode){
   var vp=document.getElementById('cnty-view-product');
