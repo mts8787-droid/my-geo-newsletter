@@ -1032,7 +1032,7 @@ function brandPromptTabHtml(bpData, bpLabels, lang, stakeholderFilter, tabTitle)
   return `<div style="max-width:1400px;margin:0 auto;padding:28px 40px;font-family:${FONT}">
     <div class="section-card">
       <div class="section-header">
-        <div class="section-title">${tabTitle || (lang === 'en' ? 'Brand Prompt Visibility' : 'Brand Prompt Visibility')}</div>
+        <div class="section-title">${tabTitle || (lang === 'en' ? 'Brand Prompt Anomaly Check' : 'Brand Prompt 이상 점검')}</div>
         <span class="legend">W5–W16 (12${lang === 'en' ? ' weeks' : '주'})</span>
       </div>
       <div class="section-body" id="${elId}-sections"></div>
@@ -1420,7 +1420,7 @@ ${visibilityOnly ? `
 <div id="gnb-visibility" class="gnb-sub active" style="position:sticky;top:0;z-index:99">
   <button class="gnb-sub-btn active" onclick="switchVisSub('bu')">${lang === 'en' ? 'Business Division' : '사업본부'}</button>
   <button class="gnb-sub-btn" onclick="switchVisSub('pr')">PR</button>
-  <button class="gnb-sub-btn" onclick="switchVisSub('brandprompt')">Brand Prompt Visibility</button>
+  <button class="gnb-sub-btn" onclick="switchVisSub('brandprompt')">${lang === 'en' ? 'Brand Prompt Anomaly Check' : 'Brand Prompt 이상 점검'}</button>
 </div>
 <div id="vis-sub-bu" class="vis-sub-panel">
   ${filterLayerHtml.replace('top:86px', 'top:37px')}
@@ -1430,7 +1430,7 @@ ${visibilityOnly ? `
   ${prVisibilityTabHtml(extra?.weeklyPR, extra?.weeklyPRLabels, lang)}
 </div>
 <div id="vis-sub-brandprompt" class="vis-sub-panel" style="display:none">
-  ${brandPromptTabHtml(extra?.weeklyBrandPrompt, extra?.weeklyBrandPromptLabels, lang, null, 'Brand Prompt Visibility')}
+  ${brandPromptTabHtml(extra?.weeklyBrandPrompt, extra?.weeklyBrandPromptLabels, lang, null, lang === 'en' ? 'Brand Prompt Anomaly Check' : 'Brand Prompt 이상 점검')}
 </div>
 ` : `
 <div class="tab-bar">
@@ -1449,7 +1449,7 @@ ${visibilityOnly ? `
 <div id="gnb-visibility" class="gnb-sub active">
   <button class="gnb-sub-btn active" onclick="switchVisSub('bu')">${lang === 'en' ? 'Business Division' : '사업본부'}</button>
   <button class="gnb-sub-btn" onclick="switchVisSub('pr')">PR</button>
-  <button class="gnb-sub-btn" onclick="switchVisSub('brandprompt')">Brand Prompt Visibility</button>
+  <button class="gnb-sub-btn" onclick="switchVisSub('brandprompt')">${lang === 'en' ? 'Brand Prompt Anomaly Check' : 'Brand Prompt 이상 점검'}</button>
 </div>
 <div id="tab-visibility" class="tab-panel active">
   <div id="vis-sub-bu" class="vis-sub-panel active">
@@ -1460,7 +1460,7 @@ ${visibilityOnly ? `
     ${prVisibilityTabHtml(extra?.weeklyPR, extra?.weeklyPRLabels, lang)}
   </div>
   <div id="vis-sub-brandprompt" class="vis-sub-panel" style="display:none">
-    ${brandPromptTabHtml(extra?.weeklyBrandPrompt, extra?.weeklyBrandPromptLabels, lang, null, 'Brand Prompt Visibility')}
+    ${brandPromptTabHtml(extra?.weeklyBrandPrompt, extra?.weeklyBrandPromptLabels, lang, null, lang === 'en' ? 'Brand Prompt Anomaly Check' : 'Brand Prompt 이상 점검')}
   </div>
 </div>
 <div id="tab-citation" class="tab-panel">
