@@ -858,15 +858,8 @@ function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang, meta, appendixPromp
   })
 
   return `<div style="max-width:1400px;margin:0 auto;padding:28px 40px;font-family:${FONT}">
-    <!-- Dashboard Guide -->
-    <div style="margin:0 0 24px;padding:16px;background:#0F172A;border:1px solid #1E293B;border-radius:10px">
-      <span style="display:block;font-size:14px;font-weight:700;color:${RED};text-transform:uppercase;margin-bottom:6px">Dashboard Guide</span>
-      <span style="font-size:15px;color:#fff;line-height:1.8">${(meta?.prNotice) || (lang === 'en'
-        ? 'This page tracks how LG is represented in AI-generated responses to PR-related prompts. It monitors brand visibility across key topics and countries, comparing LG against competitors like Samsung. A score below 100% indicates room for improvement in PR content strategy.'
-        : 'PR Visibility는 AI가 PR 관련 질의에 대해 LG를 얼마나 잘 노출하는지를 추적합니다. 주요 토픽·국가별로 경쟁사(Samsung 등) 대비 LG의 가시성을 모니터링하며, 100% 미만은 해당 토픽의 PR 콘텐츠 전략 개선이 필요함을 의미합니다.')}</span>
-    </div>
     <!-- 필터 바 -->
-    <div id="pr-filters" style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin-bottom:24px;padding:10px 16px;background:#fff;border:1px solid #E8EDF2;border-radius:10px">
+    <div id="pr-filters" style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin-bottom:16px;padding:10px 16px;background:#fff;border:1px solid #E8EDF2;border-radius:10px">
       <div style="display:flex;align-items:center;gap:6px">
         <span style="font-size:15px;font-weight:700;color:#64748B">${lang === 'en' ? 'Type' : '유형'}</span>
         <div id="pr-type-chips"></div>
@@ -876,6 +869,13 @@ function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang, meta, appendixPromp
         <span style="font-size:15px;font-weight:700;color:#64748B">${lang === 'en' ? 'Country' : '국가'}</span>
         <div id="pr-cnty-chips" style="display:flex;gap:4px;flex-wrap:wrap"></div>
       </div>
+    </div>
+    <!-- Dashboard Guide -->
+    <div style="margin:0 0 24px;padding:16px;background:#0F172A;border:1px solid #1E293B;border-radius:10px">
+      <span style="display:block;font-size:14px;font-weight:700;color:${RED};text-transform:uppercase;margin-bottom:6px">Dashboard Guide</span>
+      <span style="font-size:15px;color:#fff;line-height:1.8">${(meta?.prNotice) || (lang === 'en'
+        ? 'This page tracks how LG is represented in AI-generated responses to PR-related prompts. It monitors brand visibility across key topics and countries, comparing LG against competitors like Samsung. A score below 100% indicates room for improvement in PR content strategy.'
+        : 'PR Visibility는 AI가 PR 관련 질의에 대해 LG를 얼마나 잘 노출하는지를 추적합니다. 주요 토픽·국가별로 경쟁사(Samsung 등) 대비 LG의 가시성을 모니터링하며, 100% 미만은 해당 토픽의 PR 콘텐츠 전략 개선이 필요함을 의미합니다.')}</span>
     </div>
     <!-- 상단 요약 매트릭스 -->
     <div class="section-card" style="margin-bottom:24px">
