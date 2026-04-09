@@ -376,7 +376,22 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
           ...(parsed.countryTotals ? { countryTotals: parsed.countryTotals } : {}),
           ...(parsed.countryTotalsPrev ? { countryTotalsPrev: parsed.countryTotalsPrev } : {}),
         }))
-      } else if (parsed.productsPartial && parsed.productsPartial.length > 0) {
+      }
+      // visSummary 시트에서 추출한 최신 월로 meta.period 자동 갱신
+      // (메타 시트가 옛 월 값을 가지고 있는 경우 자동 보정)
+      if (parsed.derivedPeriod) {
+        const yr = (new Date().getFullYear())
+        const newPeriod = `${yr}년 ${parsed.derivedPeriod}`
+        setMetaKo(m => ({ ...m, period: newPeriod }))
+        setMetaEn(m => {
+          // "3월" → "Mar"
+          const num = parseInt(parsed.derivedPeriod) || 0
+          const enNames = ['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+          const enName = enNames[num] || ''
+          return { ...m, period: enName ? `${enName} ${yr}` : m.period }
+        })
+      }
+      if (!parsed.total && parsed.productsPartial && parsed.productsPartial.length > 0) {
         const pp = parsed.productsPartial
         const lgAvg = +(pp.reduce((s, p) => s + p.score, 0) / pp.length).toFixed(1)
         const compAvg = +(pp.reduce((s, p) => s + (p.vsComp || 0), 0) / pp.length).toFixed(1)

@@ -1014,12 +1014,19 @@ function brandPromptTabHtml(bpData, bpLabels, lang, stakeholderFilter, tabTitle)
   // W5부터 12주 고정
   const W12 = []
   for (let i = 0; i < 12; i++) W12.push('w' + (5 + i))
-  const topics = [...new Set(filtered.map(r => r.topic))].filter(Boolean)
+  // stakeholder별로 topic 그룹핑 (null이면 모든 stakeholder)
+  const stakeholders = stakeholderFilter
+    ? [stakeholderFilter]
+    : [...new Set(filtered.map(r => r.stakeholder))].filter(Boolean)
+  const groupedByStakeholder = stakeholders.map(sh => ({
+    stakeholder: sh,
+    topics: [...new Set(filtered.filter(r => r.stakeholder === sh).map(r => r.topic))].filter(Boolean),
+  }))
   const CW = 72
 
   const jsonBP = JSON.stringify(filtered).replace(/</g, '\\u003c')
   const jsonW12 = JSON.stringify(W12)
-  const jsonTopics = JSON.stringify(topics)
+  const jsonGroups = JSON.stringify(groupedByStakeholder)
   const elId = stakeholderFilter ? stakeholderFilter.replace(/[^a-zA-Z]/g, '') : 'bp'
 
   return `<div style="max-width:1400px;margin:0 auto;padding:28px 40px;font-family:${FONT}">
@@ -1033,7 +1040,7 @@ function brandPromptTabHtml(bpData, bpLabels, lang, stakeholderFilter, tabTitle)
   </div>
   <script>
   (function(){
-    var D=${jsonBP},W=${jsonW12},TP=${jsonTopics};
+    var D=${jsonBP},W=${jsonW12},GROUPS=${jsonGroups};
     var CW=${CW},RED='${RED}';
     var N=W.length,tblW=CW*N;
     function svgChart(vals,w,h,color){
@@ -1061,34 +1068,47 @@ function brandPromptTabHtml(bpData, bpLabels, lang, stakeholderFilter, tabTitle)
       if(v>=80) return{bg:'#FFFBEB',color:'#B45309',border:'#FDE68A',label:'${lang==='en'?'Behind':'추격'}'};
       return{bg:'#FFF1F2',color:'#BE123C',border:'#FECDD3',label:'${lang==='en'?'Critical':'취약'}'};
     }
-    function render(){
-      var el=document.getElementById('${elId}-sections');if(!el)return;
-      var html='';
-      TP.forEach(function(topic){
-        var rows=D.filter(function(r){return r.topic===topic&&r.country==='TTL'});
-        if(!rows.length)rows=D.filter(function(r){return r.topic===topic});
-        if(!rows.length)return;
+    function renderTopic(topic, stakeholder){
+      var rows=D.filter(function(r){return r.topic===topic&&r.stakeholder===stakeholder&&r.country==='TTL'});
+      if(!rows.length)rows=D.filter(function(r){return r.topic===topic&&r.stakeholder===stakeholder});
+      if(!rows.length)return '';
+      var topicHtml=''
+      ;(function(){
         var vals=W.map(function(wk){var r=rows[0];return r&&r.scores[wk]!=null?r.scores[wk]:null});
         var lastV=null;for(var i=vals.length-1;i>=0;i--){if(vals[i]!=null){lastV=vals[i];break}}
         var st=tl(lastV);
 
-        html+='<div style="border:1px solid #E8EDF2;border-radius:12px;margin-bottom:16px;overflow:hidden">';
-        html+='<div style="padding:14px 20px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;display:flex;align-items:center;gap:10px;flex-wrap:wrap">';
-        html+='<span style="width:4px;height:22px;border-radius:4px;background:'+RED+';flex-shrink:0"></span>';
-        html+='<span style="font-size:18px;font-weight:700;color:#1A1A1A">'+topic+'</span>';
-        html+='<span style="font-size:14px;font-weight:700;padding:2px 10px;border-radius:10px;background:'+st.bg+';color:'+st.color+';border:1px solid '+st.border+'">'+st.label+'</span>';
-        if(lastV!=null)html+='<span style="font-size:15px;font-weight:700;color:'+st.color+'">'+lastV.toFixed(1)+'%</span>';
+        topicHtml+='<div style="border:1px solid #E8EDF2;border-radius:12px;margin-bottom:16px;overflow:hidden">';
+        topicHtml+='<div style="padding:14px 20px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;display:flex;align-items:center;gap:10px;flex-wrap:wrap">';
+        topicHtml+='<span style="width:4px;height:22px;border-radius:4px;background:'+RED+';flex-shrink:0"></span>';
+        topicHtml+='<span style="font-size:18px;font-weight:700;color:#1A1A1A">'+topic+'</span>';
+        topicHtml+='<span style="font-size:14px;font-weight:700;padding:2px 10px;border-radius:10px;background:'+st.bg+';color:'+st.color+';border:1px solid '+st.border+'">'+st.label+'</span>';
+        if(lastV!=null)topicHtml+='<span style="font-size:15px;font-weight:700;color:'+st.color+'">'+lastV.toFixed(1)+'%</span>';
+        topicHtml+='</div>';
+        topicHtml+='<div style="overflow-x:auto;padding:0 16px 12px"><div style="display:flex"><div style="width:120px;flex-shrink:0"></div><div style="width:'+tblW+'px;flex-shrink:0;padding:8px 0">'+svgChart(vals,tblW,120,RED)+'</div></div>';
+        topicHtml+='<table style="border-collapse:collapse;table-layout:fixed;width:'+(120+tblW)+'px">';
+        topicHtml+='<colgroup><col style="width:120px">';W.forEach(function(){topicHtml+='<col style="width:'+CW+'px">'});topicHtml+='</colgroup>';
+        topicHtml+='<tr style="border-bottom:1px solid #E8EDF2"><th style="text-align:left;padding:5px 8px;font-size:14px;color:#94A3B8;font-weight:600">${lang==='en'?'Week':'주차'}</th>';
+        W.forEach(function(wk){topicHtml+='<th style="text-align:center;padding:5px 0;font-size:14px;color:#94A3B8;font-weight:600">'+wk+'</th>'});
+        topicHtml+='</tr>';
+        topicHtml+='<tr style="background:#FFF8F9"><td style="padding:5px 8px;font-size:14px;font-weight:700;color:'+RED+'">Score</td>';
+        vals.forEach(function(v){topicHtml+='<td style="text-align:center;padding:5px 0;font-size:14px;color:'+(v!=null?'#1A1A1A':'#CBD5E1')+';font-weight:700;font-variant-numeric:tabular-nums">'+(v!=null?v.toFixed(1)+'%':'—')+'</td>'});
+        topicHtml+='</tr></table></div></div>';
+      })();
+      return topicHtml;
+    }
+    function render(){
+      var el=document.getElementById('${elId}-sections');if(!el)return;
+      var html='';
+      GROUPS.forEach(function(g){
+        var inner='';
+        g.topics.forEach(function(t){inner+=renderTopic(t,g.stakeholder)});
+        if(!inner)return;
+        // stakeholder 헤더
+        html+='<div style="margin-bottom:24px">';
+        html+='<h3 style="font-size:20px;font-weight:800;color:#0F172A;margin:0 0 12px;padding:8px 0;border-bottom:2px solid '+RED+'">'+g.stakeholder+'</h3>';
+        html+=inner;
         html+='</div>';
-        // 차트+테이블
-        html+='<div style="overflow-x:auto;padding:0 16px 12px"><div style="display:flex"><div style="width:120px;flex-shrink:0"></div><div style="width:'+tblW+'px;flex-shrink:0;padding:8px 0">'+svgChart(vals,tblW,120,RED)+'</div></div>';
-        html+='<table style="border-collapse:collapse;table-layout:fixed;width:'+(120+tblW)+'px">';
-        html+='<colgroup><col style="width:120px">';W.forEach(function(){html+='<col style="width:'+CW+'px">'});html+='</colgroup>';
-        html+='<tr style="border-bottom:1px solid #E8EDF2"><th style="text-align:left;padding:5px 8px;font-size:14px;color:#94A3B8;font-weight:600">${lang==='en'?'Week':'주차'}</th>';
-        W.forEach(function(wk){html+='<th style="text-align:center;padding:5px 0;font-size:14px;color:#94A3B8;font-weight:600">'+wk+'</th>'});
-        html+='</tr>';
-        html+='<tr style="background:#FFF8F9"><td style="padding:5px 8px;font-size:14px;font-weight:700;color:'+RED+'">Score</td>';
-        vals.forEach(function(v){html+='<td style="text-align:center;padding:5px 0;font-size:14px;color:'+(v!=null?'#1A1A1A':'#CBD5E1')+';font-weight:700;font-variant-numeric:tabular-nums">'+(v!=null?v.toFixed(1)+'%':'—')+'</td>'});
-        html+='</tr></table></div></div>';
       });
       if(!html)html='<div style="text-align:center;padding:60px;color:#94A3B8">${lang==='en'?'No data':'데이터 없음'}</div>';
       el.innerHTML=html;
@@ -1400,8 +1420,7 @@ ${visibilityOnly ? `
 <div id="gnb-visibility" class="gnb-sub active" style="position:sticky;top:0;z-index:99">
   <button class="gnb-sub-btn active" onclick="switchVisSub('bu')">${lang === 'en' ? 'Business Division' : '사업본부'}</button>
   <button class="gnb-sub-btn" onclick="switchVisSub('pr')">PR</button>
-  <button class="gnb-sub-btn" onclick="switchVisSub('brand')">Brand Comm</button>
-  <button class="gnb-sub-btn" onclick="switchVisSub('premium')">${lang === 'en' ? 'Premium' : '고가혁'}</button>
+  <button class="gnb-sub-btn" onclick="switchVisSub('brandprompt')">Brand Prompt Visibility</button>
 </div>
 <div id="vis-sub-bu" class="vis-sub-panel">
   ${filterLayerHtml.replace('top:86px', 'top:37px')}
@@ -1410,11 +1429,8 @@ ${visibilityOnly ? `
 <div id="vis-sub-pr" class="vis-sub-panel" style="display:none">
   ${prVisibilityTabHtml(extra?.weeklyPR, extra?.weeklyPRLabels, lang)}
 </div>
-<div id="vis-sub-brand" class="vis-sub-panel" style="display:none">
-  ${brandPromptTabHtml(extra?.weeklyBrandPrompt, extra?.weeklyBrandPromptLabels, lang, 'Brand Comm.', lang === 'en' ? 'Brand Comm Visibility' : 'Brand Comm Visibility')}
-</div>
-<div id="vis-sub-premium" class="vis-sub-panel" style="display:none">
-  ${brandPromptTabHtml(extra?.weeklyBrandPrompt, extra?.weeklyBrandPromptLabels, lang, 'CVIOS', lang === 'en' ? 'Premium (CVIOS) Visibility' : '고가혁 (CVIOS) Visibility')}
+<div id="vis-sub-brandprompt" class="vis-sub-panel" style="display:none">
+  ${brandPromptTabHtml(extra?.weeklyBrandPrompt, extra?.weeklyBrandPromptLabels, lang, null, 'Brand Prompt Visibility')}
 </div>
 ` : `
 <div class="tab-bar">
@@ -1433,8 +1449,7 @@ ${visibilityOnly ? `
 <div id="gnb-visibility" class="gnb-sub active">
   <button class="gnb-sub-btn active" onclick="switchVisSub('bu')">${lang === 'en' ? 'Business Division' : '사업본부'}</button>
   <button class="gnb-sub-btn" onclick="switchVisSub('pr')">PR</button>
-  <button class="gnb-sub-btn" onclick="switchVisSub('brand')">Brand Comm</button>
-  <button class="gnb-sub-btn" onclick="switchVisSub('premium')">${lang === 'en' ? 'Premium' : '고가혁'}</button>
+  <button class="gnb-sub-btn" onclick="switchVisSub('brandprompt')">Brand Prompt Visibility</button>
 </div>
 <div id="tab-visibility" class="tab-panel active">
   <div id="vis-sub-bu" class="vis-sub-panel active">
@@ -1444,11 +1459,8 @@ ${visibilityOnly ? `
   <div id="vis-sub-pr" class="vis-sub-panel" style="display:none">
     ${prVisibilityTabHtml(extra?.weeklyPR, extra?.weeklyPRLabels, lang)}
   </div>
-  <div id="vis-sub-brand" class="vis-sub-panel" style="display:none">
-    ${brandPromptTabHtml(extra?.weeklyBrandPrompt, extra?.weeklyBrandPromptLabels, lang, 'Brand Comm.', lang === 'en' ? 'Brand Comm Visibility' : 'Brand Comm Visibility')}
-  </div>
-  <div id="vis-sub-premium" class="vis-sub-panel" style="display:none">
-    ${brandPromptTabHtml(extra?.weeklyBrandPrompt, extra?.weeklyBrandPromptLabels, lang, 'CVIOS', lang === 'en' ? 'Premium (CVIOS) Visibility' : '고가혁 (CVIOS) Visibility')}
+  <div id="vis-sub-brandprompt" class="vis-sub-panel" style="display:none">
+    ${brandPromptTabHtml(extra?.weeklyBrandPrompt, extra?.weeklyBrandPromptLabels, lang, null, 'Brand Prompt Visibility')}
   </div>
 </div>
 <div id="tab-citation" class="tab-panel">
@@ -1517,7 +1529,7 @@ function switchVisSub(sub){
   var panel=document.getElementById('vis-sub-'+sub);
   if(panel)panel.style.display='block';
   var btns=document.querySelectorAll('#gnb-visibility .gnb-sub-btn');
-  var subMap={bu:0,pr:1,brand:2,premium:3};
+  var subMap={bu:0,pr:1,brandprompt:2};
   if(subMap[sub]!==undefined&&btns[subMap[sub]])btns[subMap[sub]].classList.add('active');
 }
 function switchPeriodMode(mode){
@@ -2088,7 +2100,9 @@ function _getWeeklyForCountries(prodId,countries){
 }
 function _get4MLabels(prod){
   var ML=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  var mi=_parseMonth(prod.date||'');
+  // _meta.period 우선 (시트의 최신 월 기준), 없으면 prod.date 폴백
+  var mi=_parseMonth((_meta&&_meta.period)||'');
+  if(mi<0)mi=_parseMonth(prod.date||'');
   if(mi<0)return['M-3','M-2','M-1','M0'];
   return[0,1,2,3].map(function(i){return ML[(mi-3+i+12)%12]});
 }

@@ -345,6 +345,10 @@ function parseVisSummary(rows) {
     ...(Object.keys(countryTotals).length ? { countryTotals } : {}),
     ...(Object.keys(countryTotalsPrev).length ? { countryTotalsPrev } : {}),
   }
+  // 최신 월 정보를 meta에 자동 반영 (시트 데이터 기준)
+  if (latestDate) {
+    result.derivedPeriod = latestDate
+  }
   if (monthlyVis.length) result.monthlyVis = monthlyVis
   return result
 }
