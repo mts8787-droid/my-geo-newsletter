@@ -964,9 +964,9 @@ function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang, meta, appendixPromp
       var ac=CN.filter(function(c){return fCnty[c]});
       var cols=['TTL'].concat(ac);
       var h='<div style="overflow-x:auto"><table style="border-collapse:collapse;width:100%">';
-      h+='<thead><tr><th style="padding:8px 10px;text-align:left;font-size:13px;font-weight:700;color:#64748B;border-bottom:2px solid #E8EDF2;white-space:nowrap;width:60px">${lang==='en'?'Category':'구분'}</th>';
-      h+='<th style="padding:8px 10px;text-align:left;font-size:13px;font-weight:700;color:#64748B;border-bottom:2px solid #E8EDF2;white-space:nowrap;width:100px">${lang==='en'?'Topic':'토픽'} <span style="font-weight:400;color:#94A3B8">('+lastW+')</span></th>';
-      h+='<th style="padding:8px 10px;text-align:left;font-size:13px;font-weight:700;color:#64748B;border-bottom:2px solid #E8EDF2">${lang==='en'?'Description':'설명'}</th>';
+      h+='<thead><tr><th style="padding:8px 6px;text-align:center;font-size:13px;font-weight:700;color:#64748B;border-bottom:2px solid #E8EDF2;width:46px">${lang==='en'?'Category':'구분'}</th>';
+      h+='<th style="padding:8px 10px;text-align:center;font-size:13px;font-weight:700;color:#64748B;border-bottom:2px solid #E8EDF2;white-space:nowrap;width:100px">${lang==='en'?'Topic':'토픽'} <span style="font-weight:400;color:#94A3B8">('+lastW+')</span></th>';
+      h+='<th style="padding:8px 10px;text-align:center;font-size:13px;font-weight:700;color:#64748B;border-bottom:2px solid #E8EDF2">${lang==='en'?'Description':'설명'}</th>';
       cols.forEach(function(c){h+='<th style="padding:8px 8px;text-align:center;font-size:13px;font-weight:700;color:#64748B;border-bottom:2px solid #E8EDF2;min-width:56px">'+c+'</th>'});
       h+='</tr></thead><tbody>';
       var prevCat='';
@@ -976,7 +976,7 @@ function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang, meta, appendixPromp
         var catCount=0;if(isNewCat){sortedTP.forEach(function(t){if((TOPIC_CAT[t]||'Corporate & Innovation')===cat)catCount++})}
         h+='<tr style="border-bottom:1px solid #F1F5F9">';
         if(isNewCat){
-          h+='<td rowspan="'+catCount+'" style="padding:6px 10px;font-size:12px;font-weight:700;color:#475569;vertical-align:top;border-right:2px solid #E8EDF2;background:#F8FAFC;white-space:nowrap">'+cat+'</td>';
+          h+='<td rowspan="'+catCount+'" style="padding:6px 6px;font-size:11px;font-weight:700;color:#475569;vertical-align:middle;text-align:center;border-right:2px solid #E8EDF2;background:#F8FAFC;line-height:1.4;word-break:keep-all">'+cat+'</td>';
           prevCat=cat;
         }
         h+='<td style="padding:6px 10px;font-size:14px;font-weight:600;color:#1A1A1A;white-space:nowrap">'+topic+'</td>';
