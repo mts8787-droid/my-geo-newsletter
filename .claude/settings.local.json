@@ -53,7 +53,15 @@
       "Bash(grep -ri \"claude\\\\|openai\\\\|anthropic\\\\|gpt\\\\|davinci\" /Users/dubaba/my-geo-project/my-geo-newsletter/src /Users/dubaba/my-geo-project/my-geo-newsletter/*.js)",
       "Bash(git restore:*)",
       "WebFetch(domain:my-geo-newsletter.onrender.com)",
-      "Bash(git pull:*)"
+      "Bash(git pull:*)",
+      "Bash(mkdir:*)",
+      "Bash(cp -r '/Users/dubaba/my-geo-project/my-geo-newsletter/src/tracker-v2/*' /Users/dubaba/my-geo-project/geo-progress-tracker-v2/src/tracker-v2/)",
+      "Bash(cp /Users/dubaba/my-geo-project/my-geo-newsletter/src/shared/i18n.js /Users/dubaba/my-geo-project/my-geo-newsletter/src/shared/constants.js /Users/dubaba/my-geo-project/my-geo-newsletter/src/shared/utils.js /Users/dubaba/my-geo-project/geo-progress-tracker-v2/src/shared/)",
+      "Bash(cp /Users/dubaba/my-geo-project/my-geo-newsletter/tracker-v2.html /Users/dubaba/my-geo-project/geo-progress-tracker-v2/)",
+      "Bash(cp -r '/Users/dubaba/my-geo-project/my-geo-newsletter/font/*' /Users/dubaba/my-geo-project/geo-progress-tracker-v2/font/)",
+      "Bash(cp /Users/dubaba/my-geo-project/my-geo-newsletter/tailwind.config.js /Users/dubaba/my-geo-project/my-geo-newsletter/postcss.config.js /Users/dubaba/my-geo-project/geo-progress-tracker-v2/)",
+      "Bash(git branch:*)",
+      "Bash(rm:*)"
     ]
   }
 }
