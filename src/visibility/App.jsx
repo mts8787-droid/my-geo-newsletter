@@ -57,6 +57,7 @@ export default function App() {
   const [weeklyPRLabels, setWeeklyPRLabels] = useState([])
   const [weeklyBrandPrompt, setWeeklyBrandPrompt] = useState([])
   const [weeklyBrandPromptLabels, setWeeklyBrandPromptLabels] = useState([])
+  const [appendixPrompts, setAppendixPrompts] = useState([])
   const [previewLang, setPreviewLang] = useState('ko')
   const [snapshots,  setSnapshots]  = useState([])
   const [snapName,   setSnapName]   = useState('')
@@ -94,6 +95,7 @@ export default function App() {
       if (d.weeklyPRLabels) setWeeklyPRLabels(d.weeklyPRLabels)
       if (d.weeklyBrandPrompt) setWeeklyBrandPrompt(d.weeklyBrandPrompt)
       if (d.weeklyBrandPromptLabels) setWeeklyBrandPromptLabels(d.weeklyBrandPromptLabels)
+      if (d.appendixPrompts) setAppendixPrompts(d.appendixPrompts)
       if (d.weeklyLabels)  setWeeklyLabels(d.weeklyLabels)
       if (d.weeklyAll)     setWeeklyAll(prev => ({ ...prev, ...d.weeklyAll }))
       if (d.productsPartial) {
@@ -179,11 +181,12 @@ export default function App() {
           generateHTML={generateVisibilityHTML}
           publishEndpoint="/api/publish-visibility"
           setMonthlyVis={setMonthlyVis}
-          onSyncExtra={({ weeklyPR, weeklyPRLabels, weeklyBrandPrompt, weeklyBrandPromptLabels }) => {
+          onSyncExtra={({ weeklyPR, weeklyPRLabels, weeklyBrandPrompt, weeklyBrandPromptLabels, appendixPrompts }) => {
             if (weeklyPR) setWeeklyPR(weeklyPR)
             if (weeklyPRLabels) setWeeklyPRLabels(weeklyPRLabels)
             if (weeklyBrandPrompt) setWeeklyBrandPrompt(weeklyBrandPrompt)
             if (weeklyBrandPromptLabels) setWeeklyBrandPromptLabels(weeklyBrandPromptLabels)
+            if (appendixPrompts) setAppendixPrompts(appendixPrompts)
           }}
         />
       )}
@@ -277,7 +280,7 @@ export default function App() {
 
         {/* 컨텐츠 영역 */}
         <div style={{ flex: 1, overflow: 'hidden' }}>
-          <DashboardPreview meta={meta} total={total} products={resolved.products} citations={resolved.citations} dotcom={dotcom} productsCnty={resolved.productsCnty} citationsCnty={resolved.citationsCnty} lang={previewLang} weeklyLabels={weeklyLabels} weeklyAll={weeklyAll} citationsByCnty={citationsByCnty} dotcomByCnty={dotcomByCnty} monthlyVis={monthlyVis} extra={{ weeklyPR, weeklyPRLabels, weeklyBrandPrompt, weeklyBrandPromptLabels }} />
+          <DashboardPreview meta={meta} total={total} products={resolved.products} citations={resolved.citations} dotcom={dotcom} productsCnty={resolved.productsCnty} citationsCnty={resolved.citationsCnty} lang={previewLang} weeklyLabels={weeklyLabels} weeklyAll={weeklyAll} citationsByCnty={citationsByCnty} dotcomByCnty={dotcomByCnty} monthlyVis={monthlyVis} extra={{ weeklyPR, weeklyPRLabels, weeklyBrandPrompt, weeklyBrandPromptLabels, appendixPrompts }} />
         </div>
         <div style={{ height: 28, borderTop: '1px solid #1E293B', background: 'rgba(15,23,42,0.95)',
           display: 'flex', alignItems: 'center', justifyContent: 'flex-end', padding: '0 16px', flexShrink: 0 }}>

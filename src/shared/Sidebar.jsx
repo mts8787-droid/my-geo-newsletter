@@ -323,6 +323,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
         weeklyPRLabels: parsed.weeklyPRLabels || null,
         weeklyBrandPrompt: parsed.weeklyBrandPrompt || null,
         weeklyBrandPromptLabels: parsed.weeklyBrandPromptLabels || null,
+        appendixPrompts: parsed.appendixPrompts || null,
       })
       // 주차 라벨: meta.weekStart 기반 자동 생성, 없으면 시트 파싱 값 사용
       const weekCount = parsed.weeklyMap ? Math.max(...Object.values(parsed.weeklyMap).map(a => a.length), 0) : 0
@@ -1030,6 +1031,42 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
           rows={4}
           placeholder="국가별 How to Read 설명을 입력하세요..."
           style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6, marginBottom: 8 }}
+        />
+
+        {/* ── PR Visibility 안내 문구 ── */}
+        <div style={{ height: 1, background: '#1E293B', margin: '12px 0' }} />
+        <p style={{ margin: '0 0 4px', fontSize: 11, color: '#64748B', fontFamily: FONT }}>PR Visibility 안내 문구</p>
+        <textarea
+          value={meta.prNotice || ''}
+          onChange={e => setMeta(m => ({ ...m, prNotice: e.target.value }))}
+          rows={4}
+          placeholder="PR 페이지 상단에 표시될 안내 문구를 입력하세요. 비워두면 기본 문구가 사용됩니다."
+          style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6, marginBottom: 8 }}
+        />
+
+        {/* ── PR 토픽별 핵심 프롬프트 ── */}
+        <p style={{ margin: '8px 0 4px', fontSize: 11, color: '#64748B', fontFamily: FONT }}>PR 토픽별 핵심 프롬프트 <span style={{ color: '#94A3B8' }}>(토픽=프롬프트, 줄 단위)</span></p>
+        <textarea
+          value={(() => {
+            const map = meta.prTopicPrompts || {}
+            return Object.entries(map).map(([k, v]) => `${k}=${v}`).join('\n')
+          })()}
+          onChange={e => {
+            const lines = e.target.value.split('\n')
+            const map = {}
+            lines.forEach(line => {
+              const idx = line.indexOf('=')
+              if (idx > 0) {
+                const key = line.slice(0, idx).trim()
+                const val = line.slice(idx + 1).trim()
+                if (key) map[key] = val
+              }
+            })
+            setMeta(m => ({ ...m, prTopicPrompts: map }))
+          }}
+          rows={6}
+          placeholder={"TV=Best TV to buy in 2026\nAudio=Best soundbar for home theater\n(비워두면 Appendix.Prompt List US 데이터 자동 매칭)"}
+          style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6, marginBottom: 8, fontSize: 11 }}
         />
 
         {/* ── Brand Prompt 이상 점검 안내 문구 ── */}

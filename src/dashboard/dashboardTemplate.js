@@ -810,7 +810,7 @@ function promptListTabHtml(appendixPrompts, lang) {
 }
 
 // ─── PR Visibility 탭 HTML ──────────────────────────────────────────────────
-function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang) {
+function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang, meta, appendixPrompts) {
   if (!weeklyPR || !weeklyPR.length) {
     const msg = lang === 'en' ? 'No PR Visibility data available.' : 'PR Visibility 데이터가 없습니다.'
     return `<div style="display:flex;align-items:center;justify-content:center;min-height:calc(100vh - 160px);color:#94A3B8;font-size:16px">${msg}</div>`
@@ -832,7 +832,37 @@ function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang) {
   const jsonCountries = JSON.stringify(countries)
   const CW = 72 // 각 주차 컬럼 고정 너비 (px)
 
+  // ── 토픽별 US 핵심 프롬프트 매핑 ──
+  const topicPromptMap = {}
+  if (meta?.prTopicPrompts && typeof meta.prTopicPrompts === 'object') {
+    Object.assign(topicPromptMap, meta.prTopicPrompts)
+  }
+  // appendixPrompts에서 US 프롬프트 자동 매칭 (meta에서 오버라이드 안 된 토픽만)
+  if (appendixPrompts && appendixPrompts.length) {
+    topics.forEach(tp => {
+      if (!topicPromptMap[tp]) {
+        const match = appendixPrompts.find(p => p.topic === tp && p.country === 'US')
+        if (match) topicPromptMap[tp] = match.prompt
+      }
+    })
+  }
+
+  // ── 토픽 카테고리 분류 ──
+  const CONSUMER_TOPICS = ['Built-in Appliances', 'Audio', 'Cooling Kitchen', 'Living', 'PC', 'TV', 'TV Platform']
+  const topicCategoryMap = {}
+  topics.forEach(tp => {
+    topicCategoryMap[tp] = CONSUMER_TOPICS.some(ct => tp.toLowerCase().includes(ct.toLowerCase()) || ct.toLowerCase().includes(tp.toLowerCase()))
+      ? 'Consumer Products' : 'Corporate & Innovation'
+  })
+
   return `<div style="max-width:1400px;margin:0 auto;padding:28px 40px;font-family:${FONT}">
+    <!-- Dashboard Guide -->
+    <div style="margin:0 0 24px;padding:16px;background:#0F172A;border:1px solid #1E293B;border-radius:10px">
+      <span style="display:block;font-size:14px;font-weight:700;color:${RED};text-transform:uppercase;margin-bottom:6px">Dashboard Guide</span>
+      <span style="font-size:15px;color:#fff;line-height:1.8">${(meta?.prNotice) || (lang === 'en'
+        ? 'This page tracks how LG is represented in AI-generated responses to PR-related prompts. It monitors brand visibility across key topics and countries, comparing LG against competitors like Samsung. A score below 100% indicates room for improvement in PR content strategy.'
+        : 'PR Visibility는 AI가 PR 관련 질의에 대해 LG를 얼마나 잘 노출하는지를 추적합니다. 주요 토픽·국가별로 경쟁사(Samsung 등) 대비 LG의 가시성을 모니터링하며, 100% 미만은 해당 토픽의 PR 콘텐츠 전략 개선이 필요함을 의미합니다.')}</span>
+    </div>
     <!-- 필터 바 -->
     <div id="pr-filters" style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin-bottom:24px;padding:10px 16px;background:#fff;border:1px solid #E8EDF2;border-radius:10px">
       <div style="display:flex;align-items:center;gap:6px">
@@ -866,6 +896,8 @@ function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang) {
   (function(){
     var D=${jsonPR},W=${jsonW12},TP=${jsonTopics},TY=${jsonTypes},CN=${jsonCountries};
     var CW=${CW};
+    var TOPIC_CAT=${JSON.stringify(topicCategoryMap)};
+    var TOPIC_PROMPT=${JSON.stringify(topicPromptMap).replace(/</g, '\\u003c')};
     var fType=TY[0]||'non-brand';
     var fCnty={};CN.forEach(function(c){fCnty[c]=true});
     var RED='${RED}',COMP='${COMP}';
@@ -895,17 +927,34 @@ function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang) {
     }
     function lastVal(topic,cnty,brand){for(var i=W.length-1;i>=0;i--){var v=val(topic,cnty,brand,W[i]);if(v!=null)return v}return null}
     // ── 상단 매트릭스 (토픽×국가, 최근주 기준 신호등) ──
+    // 카테고리별 토픽 정렬: Consumer Products 먼저, 그다음 Corporate & Innovation
+    var CATS=['Consumer Products','Corporate & Innovation'];
+    var sortedTP=[];
+    CATS.forEach(function(cat){TP.forEach(function(tp){if((TOPIC_CAT[tp]||'Corporate & Innovation')===cat)sortedTP.push(tp)})});
+    TP.forEach(function(tp){if(sortedTP.indexOf(tp)<0)sortedTP.push(tp)});
     function renderMatrix(){
       var el=document.getElementById('pr-matrix');if(!el)return;
       var lastW=W[W.length-1];
       var ac=CN.filter(function(c){return fCnty[c]});
       var cols=['TTL'].concat(ac);
+      var colSpan=cols.length+1;
       var h='<div style="overflow-x:auto"><table style="border-collapse:collapse;width:auto">';
-      h+='<thead><tr><th style="padding:8px 14px;text-align:left;font-size:14px;font-weight:700;color:#64748B;border-bottom:2px solid #E8EDF2;white-space:nowrap">${lang==='en'?'Topic':'토픽'} <span style="font-weight:400;color:#94A3B8">('+lastW+')</span></th>';
+      h+='<thead><tr><th style="padding:8px 14px;text-align:left;font-size:14px;font-weight:700;color:#64748B;border-bottom:2px solid #E8EDF2;white-space:nowrap;min-width:90px">${lang==='en'?'Category':'구분'}</th>';
+      h+='<th style="padding:8px 14px;text-align:left;font-size:14px;font-weight:700;color:#64748B;border-bottom:2px solid #E8EDF2;white-space:nowrap">${lang==='en'?'Topic':'토픽'} <span style="font-weight:400;color:#94A3B8">('+lastW+')</span></th>';
       cols.forEach(function(c){h+='<th style="padding:8px 10px;text-align:center;font-size:14px;font-weight:700;color:#64748B;border-bottom:2px solid #E8EDF2;min-width:60px">'+c+'</th>'});
       h+='</tr></thead><tbody>';
-      TP.forEach(function(topic,ti){
+      var prevCat='';
+      sortedTP.forEach(function(topic){
+        var cat=TOPIC_CAT[topic]||'Corporate & Innovation';
+        var isNewCat=cat!==prevCat;
+        // 카테고리가 바뀔 때 카테고리 셀 rowspan 계산
+        var catCount=0;if(isNewCat){sortedTP.forEach(function(t){if((TOPIC_CAT[t]||'Corporate & Innovation')===cat)catCount++})}
+        // 토픽 행
         h+='<tr style="border-bottom:1px solid #F1F5F9">';
+        if(isNewCat){
+          h+='<td rowspan="'+(catCount*2)+'" style="padding:8px 12px;font-size:13px;font-weight:700;color:#475569;vertical-align:top;border-right:2px solid #E8EDF2;background:#F8FAFC;white-space:nowrap">'+cat+'</td>';
+          prevCat=cat;
+        }
         h+='<td style="padding:8px 14px;font-size:14px;font-weight:600;color:#1A1A1A;white-space:nowrap">'+topic+'</td>';
         cols.forEach(function(cnty){
           var lg=lastVal(topic,cnty,'LG');
@@ -914,6 +963,9 @@ function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang) {
           h+='<td style="padding:6px 8px;text-align:center;background:'+s.bg+';color:'+s.color+';font-size:14px;font-weight:700;font-variant-numeric:tabular-nums;border:1px solid '+s.border+'">'+(lg!=null?lg.toFixed(1)+'%':'—')+'</td>';
         });
         h+='</tr>';
+        // 설명 행
+        var desc=TOPIC_PROMPT[topic]||'';
+        h+='<tr style="border-bottom:1px solid #E8EDF2"><td colspan="'+cols.length+'" style="padding:4px 14px 8px;font-size:12px;color:#94A3B8;line-height:1.5;max-width:600px;white-space:normal">'+(desc?'<span style="color:#94A3B8">'+desc+'</span>':'')+'</td></tr>';
       });
       h+='</tbody></table></div>';
       el.innerHTML=h;
@@ -969,6 +1021,8 @@ function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang) {
         html+='<div style="padding:14px 20px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;display:flex;align-items:center;gap:10px;flex-wrap:wrap">';
         html+='<span style="width:4px;height:22px;border-radius:4px;background:'+RED+';flex-shrink:0"></span>';
         html+='<span style="font-size:18px;font-weight:700;color:#1A1A1A">'+topic+'</span>';
+        var tpPrompt=TOPIC_PROMPT[topic]||'';
+        if(tpPrompt)html+='<span style="font-size:13px;color:#94A3B8;font-weight:400;font-style:italic;max-width:600px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">"'+tpPrompt+'"</span>';
         html+='<span style="font-size:14px;font-weight:700;padding:2px 10px;border-radius:10px;background:'+st.bg+';color:'+st.color+';border:1px solid '+st.border+'">'+st.label+'</span>';
         if(lgLast!=null)html+='<span style="font-size:15px;font-weight:700;color:#1A1A1A">LG '+lgLast.toFixed(1)+'%</span>';
         if(ssLast!=null)html+='<span style="font-size:14px;color:#94A3B8">vs Samsung '+ssLast.toFixed(1)+'%</span>';
@@ -1435,7 +1489,7 @@ ${visibilityOnly ? `
   <div class="dash-container">${visContent}</div>
 </div>
 <div id="vis-sub-pr" class="vis-sub-panel" style="display:none">
-  ${prVisibilityTabHtml(extra?.weeklyPR, extra?.weeklyPRLabels, lang)}
+  ${prVisibilityTabHtml(extra?.weeklyPR, extra?.weeklyPRLabels, lang, meta, extra?.appendixPrompts)}
 </div>
 <div id="vis-sub-brandprompt" class="vis-sub-panel" style="display:none">
   ${brandPromptTabHtml(extra?.weeklyBrandPrompt, extra?.weeklyBrandPromptLabels, lang, null, lang === 'en' ? 'Brand Prompt Anomaly Check' : 'Brand Prompt 이상 점검', meta)}
@@ -1465,7 +1519,7 @@ ${visibilityOnly ? `
     <div class="dash-container">${visContent}</div>
   </div>
   <div id="vis-sub-pr" class="vis-sub-panel" style="display:none">
-    ${prVisibilityTabHtml(extra?.weeklyPR, extra?.weeklyPRLabels, lang)}
+    ${prVisibilityTabHtml(extra?.weeklyPR, extra?.weeklyPRLabels, lang, meta, extra?.appendixPrompts)}
   </div>
   <div id="vis-sub-brandprompt" class="vis-sub-panel" style="display:none">
     ${brandPromptTabHtml(extra?.weeklyBrandPrompt, extra?.weeklyBrandPromptLabels, lang, null, lang === 'en' ? 'Brand Prompt Anomaly Check' : 'Brand Prompt 이상 점검', meta)}
