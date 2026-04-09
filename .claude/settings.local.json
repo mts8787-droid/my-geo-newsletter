@@ -52,7 +52,8 @@
       "Bash(grep -r \"product\\\\|Product\" /Users/dubaba/my-geo-project/my-geo-newsletter/src/dashboard/*.js)",
       "Bash(grep -ri \"claude\\\\|openai\\\\|anthropic\\\\|gpt\\\\|davinci\" /Users/dubaba/my-geo-project/my-geo-newsletter/src /Users/dubaba/my-geo-project/my-geo-newsletter/*.js)",
       "Bash(git restore:*)",
-      "WebFetch(domain:my-geo-newsletter.onrender.com)"
+      "WebFetch(domain:my-geo-newsletter.onrender.com)",
+      "Bash(git pull:*)"
     ]
   }
 }

@@ -1345,15 +1345,15 @@ body.show-insights .howto-box{display:block}
 .prod-comp-pct{font-size:16px;font-weight:700;min-width:40px;text-align:right}
 /* ── 국가 (세로 막대) ── */
 .cnty-product{margin-bottom:40px}
-.vbar-chart{display:flex;align-items:flex-end;gap:28px;padding:12px 8px 0;min-height:220px;overflow-x:auto}
-.vbar-item{display:flex;flex-direction:column;align-items:center;flex:1;min-width:60px;max-width:90px}
+.vbar-chart{display:flex;align-items:flex-end;gap:14px;padding:12px 8px 0;min-height:220px;overflow-x:auto}
+.vbar-item{display:flex;flex-direction:column;align-items:center;flex:1;min-width:88px;max-width:108px}
 .vbar-item.hidden{display:none}
-.vbar-val{font-size:15px;font-weight:700;white-space:nowrap;margin-bottom:3px}
-.vbar-val.comp-val{font-size:15px;font-weight:600}
-.vbar-cols{display:flex;gap:4px;width:100%;align-items:flex-end}
-.vbar-col-wrap{flex:0 0 36px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end}
+.vbar-val{font-size:13px;font-weight:700;white-space:nowrap;margin-bottom:3px}
+.vbar-val.comp-val{font-size:13px;font-weight:600}
+.vbar-cols{display:flex;gap:3px;width:100%;align-items:flex-end;justify-content:center}
+.vbar-col-wrap{flex:0 0 26px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end}
 .vbar-col{width:100%;border-radius:4px 4px 0 0;min-height:3px;transition:height .3s}
-.vbar-col-name{font-size:14px;font-weight:600;color:#94A3B8;margin-top:3px;white-space:nowrap;width:36px;text-align:center;overflow:hidden;text-overflow:clip;letter-spacing:-0.5px}
+.vbar-col-name{font-size:11px;font-weight:600;color:#94A3B8;margin-top:3px;white-space:nowrap;width:26px;text-align:center;overflow:hidden;text-overflow:clip;letter-spacing:-0.5px}
 .vbar-gap{font-size:15px;font-weight:700;margin-top:4px;white-space:nowrap}
 .vbar-label{font-size:15px;font-weight:600;color:#475569;margin-top:4px;text-align:center;word-break:keep-all;line-height:1.3}
 /* ── 국가 뷰탭 ── */
