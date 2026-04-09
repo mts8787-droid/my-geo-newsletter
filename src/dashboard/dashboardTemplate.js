@@ -1189,9 +1189,22 @@ export function generateDashboardHTML(meta, total, products, citations, dotcom, 
       </div>
       <div class="fl-divider"></div>
       <div class="fl-group">
+        <span class="fl-label">${lang === 'en' ? 'Product' : '제품'}</span>
+        <label class="fl-chk-label fl-all-label"><input type="checkbox" class="fl-chk-all" data-target="product" checked onchange="toggleAll(this,'product')"><span>${allLabel}</span></label>
+        ${productCheckboxes}
+      </div>
+    </div>
+    <div class="fl-row">
+      <div class="fl-group">
         <span class="fl-label">Region</span>
         <label class="fl-chk-label fl-all-label"><input type="checkbox" class="fl-chk-all" data-target="region" checked onchange="toggleAll(this,'region')"><span>${allLabel}</span></label>
         ${regionCheckboxes}
+      </div>
+      <div class="fl-divider"></div>
+      <div class="fl-group">
+        <span class="fl-label">${lang === 'en' ? 'Country' : '국가'}</span>
+        <label class="fl-chk-label fl-all-label"><input type="checkbox" class="fl-chk-all" data-target="country" checked onchange="toggleAll(this,'country')"><span>${allLabel}</span></label>
+        ${countryCheckboxes}
       </div>
       <div class="fl-divider"></div>
       <div class="fl-group">
