@@ -837,7 +837,6 @@ function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang, meta, appendixPromp
   if (meta?.prTopicPrompts && typeof meta.prTopicPrompts === 'object') {
     Object.assign(topicPromptMap, meta.prTopicPrompts)
   }
-  // appendixPrompts에서 US 프롬프트 자동 매칭 (meta에서 오버라이드 안 된 토픽만)
   if (appendixPrompts && appendixPrompts.length) {
     topics.forEach(tp => {
       if (!topicPromptMap[tp]) {
@@ -846,6 +845,9 @@ function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang, meta, appendixPromp
       }
     })
   }
+
+  // ── 토픽별 설명 (매트릭스용) ──
+  const topicDescMap = meta?.prTopicDescs || {}
 
   // ── 토픽 카테고리 분류 ──
   const CONSUMER_TOPICS = ['Built-in Appliances', 'Audio', 'Cooling Kitchen', 'Living', 'PC', 'TV', 'TV Platform']
@@ -898,6 +900,7 @@ function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang, meta, appendixPromp
     var CW=${CW};
     var TOPIC_CAT=${JSON.stringify(topicCategoryMap)};
     var TOPIC_PROMPT=${JSON.stringify(topicPromptMap).replace(/</g, '\\u003c')};
+    var TOPIC_DESC=${JSON.stringify(topicDescMap).replace(/</g, '\\u003c')};
     var fType=TY[0]||'non-brand';
     var fCnty={};CN.forEach(function(c){fCnty[c]=true});
     var RED='${RED}',COMP='${COMP}';
@@ -937,35 +940,32 @@ function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang, meta, appendixPromp
       var lastW=W[W.length-1];
       var ac=CN.filter(function(c){return fCnty[c]});
       var cols=['TTL'].concat(ac);
-      var colSpan=cols.length+1;
-      var h='<div style="overflow-x:auto"><table style="border-collapse:collapse;width:auto">';
-      h+='<thead><tr><th style="padding:8px 14px;text-align:left;font-size:14px;font-weight:700;color:#64748B;border-bottom:2px solid #E8EDF2;white-space:nowrap;min-width:90px">${lang==='en'?'Category':'구분'}</th>';
-      h+='<th style="padding:8px 14px;text-align:left;font-size:14px;font-weight:700;color:#64748B;border-bottom:2px solid #E8EDF2;white-space:nowrap">${lang==='en'?'Topic':'토픽'} <span style="font-weight:400;color:#94A3B8">('+lastW+')</span></th>';
-      cols.forEach(function(c){h+='<th style="padding:8px 10px;text-align:center;font-size:14px;font-weight:700;color:#64748B;border-bottom:2px solid #E8EDF2;min-width:60px">'+c+'</th>'});
+      var h='<div style="overflow-x:auto"><table style="border-collapse:collapse;width:100%">';
+      h+='<thead><tr><th style="padding:8px 10px;text-align:left;font-size:13px;font-weight:700;color:#64748B;border-bottom:2px solid #E8EDF2;white-space:nowrap;width:60px">${lang==='en'?'Category':'구분'}</th>';
+      h+='<th style="padding:8px 10px;text-align:left;font-size:13px;font-weight:700;color:#64748B;border-bottom:2px solid #E8EDF2;white-space:nowrap;width:100px">${lang==='en'?'Topic':'토픽'} <span style="font-weight:400;color:#94A3B8">('+lastW+')</span></th>';
+      h+='<th style="padding:8px 10px;text-align:left;font-size:13px;font-weight:700;color:#64748B;border-bottom:2px solid #E8EDF2">${lang==='en'?'Description':'설명'}</th>';
+      cols.forEach(function(c){h+='<th style="padding:8px 8px;text-align:center;font-size:13px;font-weight:700;color:#64748B;border-bottom:2px solid #E8EDF2;min-width:56px">'+c+'</th>'});
       h+='</tr></thead><tbody>';
       var prevCat='';
       sortedTP.forEach(function(topic){
         var cat=TOPIC_CAT[topic]||'Corporate & Innovation';
         var isNewCat=cat!==prevCat;
-        // 카테고리가 바뀔 때 카테고리 셀 rowspan 계산
         var catCount=0;if(isNewCat){sortedTP.forEach(function(t){if((TOPIC_CAT[t]||'Corporate & Innovation')===cat)catCount++})}
-        // 토픽 행
         h+='<tr style="border-bottom:1px solid #F1F5F9">';
         if(isNewCat){
-          h+='<td rowspan="'+(catCount*2)+'" style="padding:8px 12px;font-size:13px;font-weight:700;color:#475569;vertical-align:top;border-right:2px solid #E8EDF2;background:#F8FAFC;white-space:nowrap">'+cat+'</td>';
+          h+='<td rowspan="'+catCount+'" style="padding:6px 10px;font-size:12px;font-weight:700;color:#475569;vertical-align:top;border-right:2px solid #E8EDF2;background:#F8FAFC;white-space:nowrap">'+cat+'</td>';
           prevCat=cat;
         }
-        h+='<td style="padding:8px 14px;font-size:14px;font-weight:600;color:#1A1A1A;white-space:nowrap">'+topic+'</td>';
+        h+='<td style="padding:6px 10px;font-size:14px;font-weight:600;color:#1A1A1A;white-space:nowrap">'+topic+'</td>';
+        var desc=TOPIC_DESC[topic]||'';
+        h+='<td style="padding:6px 10px;font-size:13px;color:#1A1A1A;line-height:1.5">'+desc+'</td>';
         cols.forEach(function(cnty){
           var lg=lastVal(topic,cnty,'LG');
           var ss=lastVal(topic,cnty,'Samsung');
           var s=tl(lg,ss);
-          h+='<td style="padding:6px 8px;text-align:center;background:'+s.bg+';color:'+s.color+';font-size:14px;font-weight:700;font-variant-numeric:tabular-nums;border:1px solid '+s.border+'">'+(lg!=null?lg.toFixed(1)+'%':'—')+'</td>';
+          h+='<td style="padding:6px 6px;text-align:center;background:'+s.bg+';color:'+s.color+';font-size:14px;font-weight:700;font-variant-numeric:tabular-nums;border:1px solid '+s.border+'">'+(lg!=null?lg.toFixed(1)+'%':'—')+'</td>';
         });
         h+='</tr>';
-        // 설명 행
-        var desc=TOPIC_PROMPT[topic]||'';
-        h+='<tr style="border-bottom:1px solid #E8EDF2"><td colspan="'+cols.length+'" style="padding:4px 14px 8px;font-size:12px;color:#94A3B8;line-height:1.5;max-width:600px;white-space:normal">'+(desc?'<span style="color:#94A3B8">'+desc+'</span>':'')+'</td></tr>';
       });
       h+='</tbody></table></div>';
       el.innerHTML=h;
@@ -1022,8 +1022,8 @@ function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang, meta, appendixPromp
         html+='<span style="width:4px;height:22px;border-radius:4px;background:'+RED+';flex-shrink:0"></span>';
         html+='<span style="font-size:18px;font-weight:700;color:#1A1A1A">'+topic+'</span>';
         var tpPrompt=TOPIC_PROMPT[topic]||'';
-        if(tpPrompt)html+='<span style="font-size:13px;color:#94A3B8;font-weight:400;font-style:italic;max-width:600px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">"'+tpPrompt+'"</span>';
-        html+='<span style="font-size:14px;font-weight:700;padding:2px 10px;border-radius:10px;background:'+st.bg+';color:'+st.color+';border:1px solid '+st.border+'">'+st.label+'</span>';
+        if(tpPrompt)html+='<span style="font-size:15px;color:#64748B;font-weight:500;font-style:italic;max-width:700px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">"'+tpPrompt+'"</span>';
+        if(st.label!=='—')html+='<span style="font-size:14px;font-weight:700;padding:2px 10px;border-radius:10px;background:'+st.bg+';color:'+st.color+';border:1px solid '+st.border+'">'+st.label+'</span>';
         if(lgLast!=null)html+='<span style="font-size:15px;font-weight:700;color:#1A1A1A">LG '+lgLast.toFixed(1)+'%</span>';
         if(ssLast!=null)html+='<span style="font-size:14px;color:#94A3B8">vs Samsung '+ssLast.toFixed(1)+'%</span>';
         html+='<span style="margin-left:auto">'+legend+'</span></div>';
