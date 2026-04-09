@@ -404,12 +404,14 @@ function cntyColHtml(r, maxScore, label) {
   const gap = +(r.score - r.compScore).toFixed(1)
   const gapColor = gap >= 0 ? '#15803D' : '#BE123C'
   const BAR_H = 130
-  // 중국 브랜드 1위 (TCL/Hisense/Haier)
-  const C_BRANDS = ['TCL', 'HISENSE', 'HAIER']
+  // 중국 브랜드 1위 (TCL/Hisense/Haier — partial match)
+  const C_BRAND_KEYS = ['TCL', 'HISENSE', 'HAIER']
   let cBrandName = '', cBrandScore = 0
   if (r.allScores) {
     Object.entries(r.allScores).forEach(([brand, score]) => {
-      if (C_BRANDS.includes(String(brand).toUpperCase()) && score > cBrandScore) {
+      const brandUp = String(brand).toUpperCase()
+      const isCBrand = C_BRAND_KEYS.some(k => brandUp.includes(k))
+      if (isCBrand && score > cBrandScore) {
         cBrandName = brand
         cBrandScore = score
       }
@@ -1723,6 +1725,7 @@ function switchCitCnty(btn){
 var _weeklyAll=${weeklyAll ? JSON.stringify(weeklyAll) : '{}'};
 var _products=${JSON.stringify(products.map(p => ({ id: p.id, bu: p.bu, kr: p.kr, en: p.en || p.kr, category: p.category || '', date: p.date || '', status: p.status, score: p.score || 0, prev: p.prev || 0, vsComp: p.vsComp || 0, compName: p.compName || '', compRatio: p.compRatio || 0, allScores: p.allScores || {} })))};
 var _productsCnty=${JSON.stringify(productsCnty || [])};
+console.log('[Cnty] productsCnty[0]:', _productsCnty[0], 'allScores keys:', _productsCnty[0]?.allScores ? Object.keys(_productsCnty[0].allScores) : 'NO allScores');
 var _monthlyVis=${JSON.stringify(opts?.monthlyVis || [])};
 var _total=${JSON.stringify(total)};
 var _meta={period:'${(meta.period || '').replace(/'/g, "\\'")}',reportNo:'${(meta.reportNo || '').replace(/'/g, "\\'")}',totalInsight:${JSON.stringify(meta.totalInsight || '')}};

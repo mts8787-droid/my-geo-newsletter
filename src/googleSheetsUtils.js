@@ -108,13 +108,16 @@ export async function syncFromGoogleSheets(sheetId, onProgress) {
           // weekly 첫 주를 prev로 사용 (월 데이터 없을 때 폴백)
           const lgPrev = lgArr.length >= 2 ? lgArr[0] : 0
           let topCompName = '', topCompScore = 0
+          // 모든 브랜드의 최신 점수 → allScores 맵
+          const allScores = { LG: lgScore }
           for (const [brand, arr] of Object.entries(brands)) {
             if (brand === 'LG' || brand === 'lg') continue
             const last = arr.length ? arr[arr.length - 1] : 0
+            allScores[brand] = last
             if (last > topCompScore) { topCompScore = last; topCompName = brand }
           }
           const gap = +(lgScore - topCompScore).toFixed(1)
-          productsCnty.push({ product: category, country: cnty, score: lgScore, prev: lgPrev, compName: topCompName, compScore: topCompScore, gap })
+          productsCnty.push({ product: category, country: cnty, score: lgScore, prev: lgPrev, compName: topCompName, compScore: topCompScore, gap, allScores })
         }
       }
       if (productsCnty.length) {
