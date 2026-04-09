@@ -460,9 +460,6 @@ function cntyFullName(c) {
 function countrySectionHtml(productsCnty, meta, t, lang) {
   if (!productsCnty || !productsCnty.length) return ''
 
-  const productNames = [...new Set(productsCnty.map(r => r.product))]
-  const countryNames = [...new Set(productsCnty.map(r => r.country))]
-
   // ── View 1: 제품별 (By Product) ──
   const productMap = new Map()
   productsCnty.forEach(r => { if (!productMap.has(r.product)) productMap.set(r.product, []); productMap.get(r.product).push(r) })
@@ -482,14 +479,6 @@ function countrySectionHtml(productsCnty, meta, t, lang) {
     return `<div class="cnty-product" data-group-country="${cnty}"><div class="bu-header"><span class="bu-label">${cntyFullName(cnty)}</span></div><div class="vbar-chart">${bars}</div></div>`
   }).join('')
 
-  // ── Filter chips ──
-  const productChips = productNames.map(n =>
-    `<button class="filter-chip active" data-filter-type="product" data-filter-value="${n}" onclick="toggleCntyFilter(this)">${n}</button>`
-  ).join('')
-  const countryChips = countryNames.map(n =>
-    `<button class="filter-chip active" data-filter-type="country" data-filter-value="${n}" onclick="toggleCntyFilter(this)">${cntyFullName(n)}</button>`
-  ).join('')
-
   return `<div class="section-card" id="cnty-section">
     <div class="section-header">
       <div class="section-title" id="cnty-section-title">${t.cntyTitle}</div>
@@ -506,10 +495,6 @@ function countrySectionHtml(productsCnty, meta, t, lang) {
       </div>
     </div>
     ${insightHtml(meta.cntyInsight, meta.showCntyInsight, meta.cntyHowToRead, meta.showCntyHowToRead, t)}
-    <div class="cnty-filters">
-      <div class="filter-group" id="cnty-filter-products">${productChips}</div>
-      <div class="filter-group" id="cnty-filter-countries">${countryChips}</div>
-    </div>
     <div class="section-body">
       <div id="cnty-view-country">${byCountryHtml}</div>
       <div id="cnty-view-product" style="display:none">${byProductHtml}</div>
