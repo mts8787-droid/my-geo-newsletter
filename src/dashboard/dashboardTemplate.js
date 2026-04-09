@@ -450,6 +450,28 @@ function countrySectionHtml(productsCnty, meta, t, lang) {
   const productNames = [...new Set(productsCnty.map(r => r.product))]
   const countryNames = [...new Set(productsCnty.map(r => r.country))]
 
+  // ── 디버그: allScores에 포함된 모든 브랜드 + C-Brand 매칭 결과 ──
+  const C_BRAND_KEYS_DBG = ['TCL', 'HISENSE', 'HAIER']
+  const allBrandsSet = new Set()
+  let cBrandHitCount = 0
+  let rowsWithAllScores = 0
+  productsCnty.forEach(r => {
+    if (r.allScores && typeof r.allScores === 'object') {
+      rowsWithAllScores++
+      Object.entries(r.allScores).forEach(([b, sc]) => {
+        allBrandsSet.add(b)
+        const bU = String(b).toUpperCase()
+        if (C_BRAND_KEYS_DBG.some(k => bU.includes(k)) && sc > 0) cBrandHitCount++
+      })
+    }
+  })
+  const allBrandsList = [...allBrandsSet].join(', ') || '(없음)'
+  console.log(`[CntySection] productsCnty=${productsCnty.length}, allScores 보유=${rowsWithAllScores}, 전체 브랜드=[${allBrandsList}], C-Brand 매칭 행 수=${cBrandHitCount}`)
+  const debugBanner = `<div style="margin:8px 0;padding:8px 12px;background:#FEF3C7;border:1px solid #FCD34D;border-radius:6px;font-size:12px;color:#78350F;font-family:monospace;">
+    <b>[C-Brand 디버그]</b> productsCnty=${productsCnty.length} · allScores 보유=${rowsWithAllScores} · C-Brand 매칭=${cBrandHitCount}건<br/>
+    전체 브랜드: ${allBrandsList}
+  </div>`
+
   // ── View 1: 제품별 (By Product) ──
   const productMap = new Map()
   productsCnty.forEach(r => { if (!productMap.has(r.product)) productMap.set(r.product, []); productMap.get(r.product).push(r) })
@@ -492,6 +514,7 @@ function countrySectionHtml(productsCnty, meta, t, lang) {
         <span class="legend"><i style="background:#15803D"></i>${t.legendLead} <i style="background:#D97706"></i>${t.legendBehind} <i style="background:#BE123C"></i>${t.legendCritical} <i style="background:${COMP}"></i>Comp. <i style="background:#9333EA"></i>C-Brand</span>
       </div>
     </div>
+    ${debugBanner}
     ${insightHtml(meta.cntyInsight, meta.showCntyInsight, meta.cntyHowToRead, meta.showCntyHowToRead, t)}
     <div class="cnty-filters">
       <div class="filter-group" id="cnty-filter-products">${productChips}</div>
