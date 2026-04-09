@@ -1005,7 +1005,7 @@ function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang) {
 }
 
 // ─── Brand Prompt Visibility 탭 HTML (stakeholder 필터링) ────────────────────
-function brandPromptTabHtml(bpData, bpLabels, lang, stakeholderFilter, tabTitle) {
+function brandPromptTabHtml(bpData, bpLabels, lang, stakeholderFilter, tabTitle, meta) {
   const filtered = (bpData || []).filter(r => !stakeholderFilter || r.stakeholder === stakeholderFilter)
   if (!filtered.length) {
     const msg = lang === 'en' ? 'No data available.' : '데이터가 없습니다.'
@@ -1034,6 +1034,12 @@ function brandPromptTabHtml(bpData, bpLabels, lang, stakeholderFilter, tabTitle)
       <div class="section-header">
         <div class="section-title">${tabTitle || (lang === 'en' ? 'Brand Prompt Anomaly Check' : 'Brand Prompt 이상 점검')}</div>
         <span class="legend">W5–W16 (12${lang === 'en' ? ' weeks' : '주'})</span>
+      </div>
+      <div class="bp-notice" style="margin:16px 0 0;padding:14px 18px;background:#FFF7ED;border:1px solid #FDBA74;border-radius:8px;font-size:14px;color:#78350F;line-height:1.6">
+        <span style="font-weight:700;margin-right:6px">ℹ️</span>
+        ${(meta?.bpNotice) || (lang === 'en'
+          ? 'Brand Prompts should always return 100% visibility. If a prompt falls below 100%, it indicates a potential issue — check for negative sentiment, incorrect brand association, or competitor hijacking in the AI response.'
+          : 'Brand Prompt는 자사 브랜드명을 직접 포함한 질의이므로 Visibility가 항상 100%여야 정상입니다. 100% 미만인 경우 AI 응답에서 부정적 sentiment, 브랜드 오인식, 경쟁사 대체 추천 등의 이슈가 발생했을 수 있으므로 해당 프롬프트의 응답 내용을 확인해야 합니다.')}
       </div>
       <div class="section-body" id="${elId}-sections"></div>
     </div>
@@ -1430,7 +1436,7 @@ ${visibilityOnly ? `
   ${prVisibilityTabHtml(extra?.weeklyPR, extra?.weeklyPRLabels, lang)}
 </div>
 <div id="vis-sub-brandprompt" class="vis-sub-panel" style="display:none">
-  ${brandPromptTabHtml(extra?.weeklyBrandPrompt, extra?.weeklyBrandPromptLabels, lang, null, lang === 'en' ? 'Brand Prompt Anomaly Check' : 'Brand Prompt 이상 점검')}
+  ${brandPromptTabHtml(extra?.weeklyBrandPrompt, extra?.weeklyBrandPromptLabels, lang, null, lang === 'en' ? 'Brand Prompt Anomaly Check' : 'Brand Prompt 이상 점검', meta)}
 </div>
 ` : `
 <div class="tab-bar">
@@ -1460,7 +1466,7 @@ ${visibilityOnly ? `
     ${prVisibilityTabHtml(extra?.weeklyPR, extra?.weeklyPRLabels, lang)}
   </div>
   <div id="vis-sub-brandprompt" class="vis-sub-panel" style="display:none">
-    ${brandPromptTabHtml(extra?.weeklyBrandPrompt, extra?.weeklyBrandPromptLabels, lang, null, lang === 'en' ? 'Brand Prompt Anomaly Check' : 'Brand Prompt 이상 점검')}
+    ${brandPromptTabHtml(extra?.weeklyBrandPrompt, extra?.weeklyBrandPromptLabels, lang, null, lang === 'en' ? 'Brand Prompt Anomaly Check' : 'Brand Prompt 이상 점검', meta)}
   </div>
 </div>
 <div id="tab-citation" class="tab-panel">

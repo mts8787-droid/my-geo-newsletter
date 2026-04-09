@@ -1032,6 +1032,17 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
           style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6, marginBottom: 8 }}
         />
 
+        {/* ── Brand Prompt 이상 점검 안내 문구 ── */}
+        <div style={{ height: 1, background: '#1E293B', margin: '12px 0' }} />
+        <p style={{ margin: '0 0 4px', fontSize: 11, color: '#64748B', fontFamily: FONT }}>Brand Prompt 이상 점검 안내 문구</p>
+        <textarea
+          value={meta.bpNotice || ''}
+          onChange={e => setMeta(m => ({ ...m, bpNotice: e.target.value }))}
+          rows={4}
+          placeholder="Brand Prompt 이상 점검 페이지 상단에 표시될 안내 문구를 입력하세요. 비워두면 기본 문구가 사용됩니다."
+          style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6, marginBottom: 8 }}
+        />
+
         {/* ── Citation 인사이트 ── */}
         <div style={{ height: 1, background: '#1E293B', margin: '12px 0' }} />
 
