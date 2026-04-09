@@ -432,10 +432,10 @@ function cntyColHtml(r, maxScore, label) {
         <div class="vbar-col" style="height:${cPx}px;background:${COMP}"></div>
         <span class="vbar-col-name">${r.compName.toUpperCase() === 'SAMSUNG' ? 'SS' : r.compName}</span>
       </div>` : ''}
-      ${cBrandScore > 0 ? `<div class="vbar-col-wrap cbrand-bar" style="display:none">
+      ${cBrandScore > 0 ? `<div class="vbar-col-wrap cbrand-bar">
         <span class="vbar-val" style="color:${cBrandColor}">${cBrandScore.toFixed(1)}</span>
         <div class="vbar-col" style="height:${cbPx}px;background:${cBrandColor}"></div>
-        <span class="vbar-col-name" style="color:${cBrandColor}">${cBrandName.substring(0, 3).toUpperCase()}</span>
+        <span class="vbar-col-name" style="color:${cBrandColor}">${cBrandName.toUpperCase()}</span>
       </div>` : ''}
     </div>
     <span class="vbar-gap" style="color:${gapColor}">${gap >= 0 ? '+' : ''}${gap}%p</span>
@@ -483,11 +483,7 @@ function countrySectionHtml(productsCnty, meta, t, lang) {
           <button class="cnty-view-tab active" onclick="switchCntyView('country')">${t.byCountry}</button>
           <button class="cnty-view-tab" onclick="switchCntyView('product')">${t.byProduct}</button>
         </div>
-        <label style="display:inline-flex;align-items:center;gap:5px;font-size:13px;color:#475569;cursor:pointer;margin-left:8px;">
-          <input type="checkbox" id="cnty-cbrand-toggle" onchange="toggleCBrand(this)" style="cursor:pointer;" />
-          ${t.cBrandCompare}
-        </label>
-        <span class="legend"><i style="background:#15803D"></i>${t.legendLead} <i style="background:#D97706"></i>${t.legendBehind} <i style="background:#BE123C"></i>${t.legendCritical} <i style="background:${COMP}"></i>Comp.</span>
+        <span class="legend"><i style="background:#15803D"></i>${t.legendLead} <i style="background:#D97706"></i>${t.legendBehind} <i style="background:#BE123C"></i>${t.legendCritical} <i style="background:${COMP}"></i>Comp. <i style="background:#9333EA"></i>C-Brand</span>
       </div>
     </div>
     ${insightHtml(meta.cntyInsight, meta.showCntyInsight, meta.cntyHowToRead, meta.showCntyHowToRead, t)}
@@ -1659,14 +1655,6 @@ function switchCntyView(mode){
       : (_lang==='en'?'GEO Visibility by Country':'국가별 GEO Visibility 현황');
   }
   applyCntyFilters();
-}
-var _showCBrand=false;
-function toggleCBrand(cb){
-  _showCBrand=cb.checked;
-  // 모든 cnty 차트 항목에 대해 c-brand 표시 토글
-  document.querySelectorAll('#cnty-section .cbrand-bar').forEach(function(el){
-    el.style.display=_showCBrand?'':'none';
-  });
 }
 function toggleCntyFilter(btn){
   btn.classList.toggle('active');
