@@ -62,7 +62,9 @@
       "Bash(cp /Users/dubaba/my-geo-project/my-geo-newsletter/tailwind.config.js /Users/dubaba/my-geo-project/my-geo-newsletter/postcss.config.js /Users/dubaba/my-geo-project/geo-progress-tracker-v2/)",
       "Bash(git branch:*)",
       "Bash(rm:*)",
-      "Bash(grep -n \"cit-iframe\\\\|gnb-citation\\\\|switchCitSub\\\\|tab-citation\" dist-dashboard/assets/dashboard-*.js)"
+      "Bash(grep -n \"cit-iframe\\\\|gnb-citation\\\\|switchCitSub\\\\|tab-citation\" dist-dashboard/assets/dashboard-*.js)",
+      "Bash(grep:*)",
+      "Bash(gh api:*)"
     ]
   }
 }

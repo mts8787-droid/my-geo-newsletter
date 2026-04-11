@@ -492,9 +492,9 @@ export function generateCitationHTML(meta, _total, _products, citations, dotcom,
     dotcomTrendChartHtml(dotcomTrend, dotcomTrendMonths, lang),
   ].join('')
 
-  const content = `<div class="sub-tabs">
-      <button class="sub-tab active" data-tab="touchpoint" onclick="switchSubTab(this,'touchpoint')">${lang === 'ko' ? '외부접점채널' : 'Touch Points'}</button>
-      <button class="sub-tab" data-tab="dotcom" onclick="switchSubTab(this,'dotcom')">${lang === 'ko' ? '닷컴' : 'Dotcom'}</button>
+  const content = `<div class="cit-gnb">
+      <button class="cit-gnb-btn active" data-tab="touchpoint" onclick="switchSubTab(this,'touchpoint')">${lang === 'ko' ? '외부접점채널' : 'Touch Points'}</button>
+      <button class="cit-gnb-btn" data-tab="dotcom" onclick="switchSubTab(this,'dotcom')">${lang === 'ko' ? '닷컴' : 'Dotcom'}</button>
     </div>
     <div class="sub-tab-panel" data-panel="touchpoint">${touchPointContent}</div>
     <div class="sub-tab-panel" data-panel="dotcom" style="display:none">${dotcomContent}</div>`
@@ -625,10 +625,10 @@ body{background:#F1F5F9;font-family:${FONT};min-width:1200px;color:#1A1A1A}
 .dash-footer span{font-size:14px;color:#94A3B8}
 .dash-footer strong{color:#fff;font-weight:700}
 /* ── 서브탭 ── */
-.sub-tabs{display:flex;gap:4px;margin-bottom:20px;background:#F1F5F9;border-radius:10px;padding:4px}
-.sub-tab{flex:1;padding:10px 20px;border:none;border-radius:8px;font-size:16px;font-weight:700;font-family:${FONT};cursor:pointer;background:transparent;color:#64748B;transition:all .2s}
-.sub-tab.active{background:#0F172A;color:#fff;box-shadow:0 2px 8px rgba(0,0,0,0.15)}
-.sub-tab:hover:not(.active){background:#E2E8F0}
+.cit-gnb{position:sticky;top:0;z-index:99;background:#1E293B;padding:6px 40px;display:flex;align-items:center;gap:4px}
+.cit-gnb-btn{padding:6px 18px;border-radius:6px;border:none;font-size:14px;font-weight:600;font-family:${FONT};cursor:pointer;transition:all .15s;color:#94A3B8;background:transparent}
+.cit-gnb-btn:hover{color:#E2E8F0}
+.cit-gnb-btn.active{background:#334155;color:#fff}
 /* ── 범프차트 ── */
 .bump-chart-wrap{overflow-x:auto;padding:0;margin-bottom:8px}
 .trend-table{width:100%;border-collapse:collapse;font-size:15px;margin-top:4px}
@@ -775,7 +775,7 @@ function applyFilter(){
 }
 
 function switchSubTab(btn,tab){
-  document.querySelectorAll('.sub-tab').forEach(function(t){t.classList.remove('active')});
+  document.querySelectorAll('.cit-gnb-btn').forEach(function(t){t.classList.remove('active')});
   if(btn)btn.classList.add('active');
   document.querySelectorAll('.sub-tab-panel').forEach(function(p){
     p.style.display=p.getAttribute('data-panel')===tab?'':'none';
@@ -786,11 +786,10 @@ function switchSubTab(btn,tab){
   var params=new URLSearchParams(window.location.search);
   var tab=params.get('tab');
   if(tab==='dotcom'||tab==='touchpoint'){
-    var btn=document.querySelector('.sub-tab[data-tab="'+tab+'"]');
+    var btn=document.querySelector('.cit-gnb-btn[data-tab="'+tab+'"]');
     switchSubTab(btn,tab);
-    // 쿼리 파라미터로 진입 시 내부 서브탭 버튼 숨김 (상위 GNB에서 제어)
-    var tabs=document.querySelector('.sub-tabs');
-    if(tabs)tabs.style.display='none';
+    var gnb=document.querySelector('.cit-gnb');
+    if(gnb)gnb.style.display='none';
   }
 })();
 var _REGIONS=${JSON.stringify(Object.fromEntries(Object.entries(REGIONS).map(([k, v]) => [k, v.countries])))};
