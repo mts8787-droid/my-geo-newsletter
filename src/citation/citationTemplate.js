@@ -894,6 +894,8 @@ try{if(window.self!==window.top){
   var hdr=document.querySelector('.cit-header');if(hdr)hdr.style.display='none';
   var fl=document.querySelector('.filter-layer');if(fl)fl.style.top='0';
 }}catch(e){}
+// 초기 로드 시 세로 막대그래프로 렌더링
+applyFilter();
 </script>
 </body>
 </html>`
