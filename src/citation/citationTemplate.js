@@ -4,6 +4,18 @@ const FONT = "'LG Smart','Arial Narrow',Arial,sans-serif"
 const RED = '#CF0652'
 const COMP = '#94A3B8'
 
+const COUNTRY_FULL_NAME = {
+  US: 'USA', CA: 'Canada', UK: 'UK', GB: 'UK',
+  DE: 'Germany', ES: 'Spain', FR: 'France', IT: 'Italy',
+  BR: 'Brazil', MX: 'Mexico', IN: 'India', AU: 'Australia',
+  VN: 'Vietnam', JP: 'Japan', KR: 'Korea', CN: 'China',
+  TTL: 'Total', TOTAL: 'Total', GLOBAL: 'Global',
+}
+function cntyFullName(c) {
+  const k = String(c || '').trim().toUpperCase()
+  return COUNTRY_FULL_NAME[k] || c
+}
+
 const T = {
   ko: {
     citationTitle: '도메인 카테고리별 Citation 현황',
@@ -499,7 +511,7 @@ export function generateCitationHTML(meta, _total, _products, citations, dotcom,
     return `<label class="fl-chk-label"><input type="checkbox" class="fl-chk" data-filter="region" value="${k}" ${regionOn ? 'checked' : ''} onchange="onRegionChange('${k}')"><span>${k}</span></label>`
   }).join('')
   const countryCheckboxes = countryList.map(c =>
-    `<label class="fl-chk-label"><input type="checkbox" class="fl-chk" data-filter="country" value="${c}" ${isCountryOn(c) ? 'checked' : ''} onchange="onFilterChange()"><span>${c}</span></label>`
+    `<label class="fl-chk-label"><input type="checkbox" class="fl-chk" data-filter="country" value="${c}" ${isCountryOn(c) ? 'checked' : ''} onchange="onFilterChange()"><span>${cntyFullName(c)}</span></label>`
   ).join('')
 
   const filterLayerHtml = `<div class="filter-layer" id="filter-layer">
@@ -764,11 +776,23 @@ function applyFilter(){
 
 function switchSubTab(btn,tab){
   document.querySelectorAll('.sub-tab').forEach(function(t){t.classList.remove('active')});
-  btn.classList.add('active');
+  if(btn)btn.classList.add('active');
   document.querySelectorAll('.sub-tab-panel').forEach(function(p){
     p.style.display=p.getAttribute('data-panel')===tab?'':'none';
   });
 }
+// 쿼리 파라미터로 탭 자동 선택 (?tab=dotcom 또는 ?tab=touchpoint)
+(function(){
+  var params=new URLSearchParams(window.location.search);
+  var tab=params.get('tab');
+  if(tab==='dotcom'||tab==='touchpoint'){
+    var btn=document.querySelector('.sub-tab[data-tab="'+tab+'"]');
+    switchSubTab(btn,tab);
+    // 쿼리 파라미터로 진입 시 내부 서브탭 버튼 숨김 (상위 GNB에서 제어)
+    var tabs=document.querySelector('.sub-tabs');
+    if(tabs)tabs.style.display='none';
+  }
+})();
 var _REGIONS=${JSON.stringify(Object.fromEntries(Object.entries(REGIONS).map(([k, v]) => [k, v.countries])))};
 function updateAllCheckbox(target){
   var all=document.querySelectorAll('.fl-chk[data-filter="'+target+'"]');
