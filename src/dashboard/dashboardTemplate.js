@@ -1502,44 +1502,20 @@ body.show-insights .howto-box{display:block}
 </head>
 <body>
 ${visibilityOnly ? `
-<div class="tab-bar" style="position:sticky;top:0;z-index:100">
-  <div style="display:flex;gap:4px;align-items:center">
-    <button class="tab-btn active" onclick="switchMainTab('visibility')">Visibility</button>
-    <button class="tab-btn" onclick="switchMainTab('citation')">Citation</button>
-  </div>
-  <div style="display:flex;gap:2px;background:#1E293B;border-radius:6px;padding:2px">
-    <button class="lang-btn${lang === 'ko' ? ' active' : ''}" onclick="switchLang('ko')">KO</button>
-    <button class="lang-btn${lang === 'en' ? ' active' : ''}" onclick="switchLang('en')">EN</button>
-  </div>
-</div>
-<div id="gnb-visibility" class="gnb-sub active">
+<div id="gnb-visibility" class="gnb-sub active" style="position:sticky;top:0;z-index:99">
   <button class="gnb-sub-btn active" onclick="switchVisSub('bu')">${lang === 'en' ? 'Business Division' : '사업본부'}</button>
   <button class="gnb-sub-btn" onclick="switchVisSub('pr')">PR</button>
   <button class="gnb-sub-btn" onclick="switchVisSub('brandprompt')">${lang === 'en' ? 'Brand Prompt Anomaly Check' : 'Brand Prompt 이상 점검'}</button>
 </div>
-<div id="gnb-citation" class="gnb-sub">
-  <button class="gnb-sub-btn active" onclick="switchCitSub('touchpoint')">${lang === 'en' ? 'Touch Points' : '외부접점채널'}</button>
-  <button class="gnb-sub-btn" onclick="switchCitSub('dotcom')">${lang === 'en' ? 'Dotcom' : '닷컴'}</button>
+<div id="vis-sub-bu" class="vis-sub-panel">
+  ${filterLayerHtml.replace('top:86px', 'top:37px')}
+  <div class="dash-container">${visContent}</div>
 </div>
-<div id="main-visibility">
-  <div id="vis-sub-bu" class="vis-sub-panel">
-    ${filterLayerHtml.replace('top:86px', 'top:86px')}
-    <div class="dash-container">${visContent}</div>
-  </div>
-  <div id="vis-sub-pr" class="vis-sub-panel" style="display:none">
-    ${prVisibilityTabHtml(extra?.weeklyPR, extra?.weeklyPRLabels, lang, meta, extra?.appendixPrompts)}
-  </div>
-  <div id="vis-sub-brandprompt" class="vis-sub-panel" style="display:none">
-    ${brandPromptTabHtml(extra?.weeklyBrandPrompt, extra?.weeklyBrandPromptLabels, lang, null, lang === 'en' ? 'Brand Prompt Anomaly Check' : 'Brand Prompt 이상 점검', meta)}
-  </div>
+<div id="vis-sub-pr" class="vis-sub-panel" style="display:none">
+  ${prVisibilityTabHtml(extra?.weeklyPR, extra?.weeklyPRLabels, lang, meta, extra?.appendixPrompts)}
 </div>
-<div id="main-citation" style="display:none">
-  <div id="cit-sub-touchpoint">
-    <iframe id="cit-iframe-tp" src="/p/${lang === 'en' ? 'GEO-Citation-Dashboard-EN' : 'GEO-Citation-Dashboard-KO'}?tab=touchpoint" style="width:100%;min-height:calc(100vh - 100px);border:none;background:#F1F5F9" title="Citation - Touch Points"></iframe>
-  </div>
-  <div id="cit-sub-dotcom" style="display:none">
-    <iframe id="cit-iframe-dc" data-src="/p/${lang === 'en' ? 'GEO-Citation-Dashboard-EN' : 'GEO-Citation-Dashboard-KO'}?tab=dotcom" style="width:100%;min-height:calc(100vh - 100px);border:none;background:#F1F5F9" title="Citation - Dotcom"></iframe>
-  </div>
+<div id="vis-sub-brandprompt" class="vis-sub-panel" style="display:none">
+  ${brandPromptTabHtml(extra?.weeklyBrandPrompt, extra?.weeklyBrandPromptLabels, lang, null, lang === 'en' ? 'Brand Prompt Anomaly Check' : 'Brand Prompt 이상 점검', meta)}
 </div>
 ` : `
 <div class="tab-bar">
@@ -1560,10 +1536,6 @@ ${visibilityOnly ? `
   <button class="gnb-sub-btn" onclick="switchVisSub('pr')">PR</button>
   <button class="gnb-sub-btn" onclick="switchVisSub('brandprompt')">${lang === 'en' ? 'Brand Prompt Anomaly Check' : 'Brand Prompt 이상 점검'}</button>
 </div>
-<div id="gnb-citation" class="gnb-sub">
-  <button class="gnb-sub-btn active" onclick="switchCitSub('touchpoint')">${lang === 'en' ? 'Touch Points' : '외부접점채널'}</button>
-  <button class="gnb-sub-btn" onclick="switchCitSub('dotcom')">${lang === 'en' ? 'Dotcom' : '닷컴'}</button>
-</div>
 <div id="tab-visibility" class="tab-panel active">
   <div id="vis-sub-bu" class="vis-sub-panel active">
     ${filterLayerHtml}
@@ -1577,12 +1549,7 @@ ${visibilityOnly ? `
   </div>
 </div>
 <div id="tab-citation" class="tab-panel">
-  <div id="cit-sub-touchpoint">
-    <iframe id="cit-iframe-tp" src="/p/${lang === 'en' ? 'GEO-Citation-Dashboard-EN' : 'GEO-Citation-Dashboard-KO'}?tab=touchpoint" style="width:100%;min-height:calc(100vh - 100px);border:none;background:#F1F5F9" title="Citation - Touch Points"></iframe>
-  </div>
-  <div id="cit-sub-dotcom" style="display:none">
-    <iframe id="cit-iframe-dc" data-src="/p/${lang === 'en' ? 'GEO-Citation-Dashboard-EN' : 'GEO-Citation-Dashboard-KO'}?tab=dotcom" style="width:100%;min-height:calc(100vh - 100px);border:none;background:#F1F5F9" title="Citation - Dotcom"></iframe>
-  </div>
+  <iframe id="cit-iframe" src="/p/${lang === 'en' ? 'GEO-Citation-Dashboard-EN' : 'GEO-Citation-Dashboard-KO'}" style="width:100%;min-height:calc(100vh - 60px);border:none;background:#F1F5F9" title="Citation Dashboard"></iframe>
 </div>
 <div id="tab-readability" class="tab-panel">
   <div class="progress-placeholder"><div class="inner">
@@ -1616,11 +1583,8 @@ function switchLang(lang){
   _curLang=lang;
   document.querySelectorAll('.lang-btn').forEach(function(b){b.classList.toggle('active',b.textContent.toLowerCase()===lang)});
   // Citation iframe 전환
-  var citBase='/p/'+(lang==='en'?'GEO-Citation-Dashboard-EN':'GEO-Citation-Dashboard-KO');
-  var citTp=document.getElementById('cit-iframe-tp');
-  if(citTp)citTp.src=citBase+'?tab=touchpoint';
-  var citDc=document.getElementById('cit-iframe-dc');
-  if(citDc&&citDc.src)citDc.src=citBase+'?tab=dotcom';
+  var citIframe=document.getElementById('cit-iframe');
+  if(citIframe)citIframe.src='/p/'+(lang==='en'?'GEO-Citation-Dashboard-EN':'GEO-Citation-Dashboard-KO');
   // Tracker iframe 전환
   var trkIframe=document.getElementById('tracker-iframe');
   if(trkIframe)trkIframe.src='/p/progress-tracker/?lang='+lang;
@@ -1640,41 +1604,9 @@ function switchTab(id){
   var btns=document.querySelectorAll('.tab-btn');
   var map={visibility:0,citation:1,readability:2,progress:3,promptlist:4,glossary:5};
   if(map[id]!==undefined)btns[map[id]].classList.add('active');
-  // GNB 서브메뉴: 탭에 따라 표시
-  var gnbVis=document.getElementById('gnb-visibility');
-  var gnbCit=document.getElementById('gnb-citation');
-  if(gnbVis){if(id==='visibility')gnbVis.classList.add('active');else gnbVis.classList.remove('active');}
-  if(gnbCit){if(id==='citation')gnbCit.classList.add('active');else gnbCit.classList.remove('active');}
-}
-// visibilityOnly 모드: Visibility ↔ Citation 메인 탭 전환
-function switchMainTab(id){
-  var vis=document.getElementById('main-visibility');
-  var cit=document.getElementById('main-citation');
-  var gnbVis=document.getElementById('gnb-visibility');
-  var gnbCit=document.getElementById('gnb-citation');
-  if(vis)vis.style.display=id==='visibility'?'':'none';
-  if(cit)cit.style.display=id==='citation'?'':'none';
-  if(gnbVis){if(id==='visibility')gnbVis.classList.add('active');else gnbVis.classList.remove('active');}
-  if(gnbCit){if(id==='citation')gnbCit.classList.add('active');else gnbCit.classList.remove('active');}
-  document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active')});
-  var btns=document.querySelectorAll('.tab-btn');
-  var map={visibility:0,citation:1};
-  if(map[id]!==undefined&&btns[map[id]])btns[map[id]].classList.add('active');
-}
-function switchCitSub(sub){
-  document.querySelectorAll('#gnb-citation .gnb-sub-btn').forEach(function(b){b.classList.remove('active')});
-  var btns=document.querySelectorAll('#gnb-citation .gnb-sub-btn');
-  var subMap={touchpoint:0,dotcom:1};
-  if(subMap[sub]!==undefined&&btns[subMap[sub]])btns[subMap[sub]].classList.add('active');
-  var tp=document.getElementById('cit-sub-touchpoint');
-  var dc=document.getElementById('cit-sub-dotcom');
-  if(tp)tp.style.display=sub==='touchpoint'?'':'none';
-  if(dc){
-    dc.style.display=sub==='dotcom'?'':'none';
-    // 닷컴 iframe lazy load
-    var iframe=document.getElementById('cit-iframe-dc');
-    if(iframe&&!iframe.src&&iframe.getAttribute('data-src')){iframe.src=iframe.getAttribute('data-src')}
-  }
+  // GNB 서브메뉴: Visibility 탭일 때만 표시
+  var gnb=document.getElementById('gnb-visibility');
+  if(gnb){if(id==='visibility')gnb.classList.add('active');else gnb.classList.remove('active');}
 }
 function switchVisSub(sub){
   document.querySelectorAll('.vis-sub-panel').forEach(function(p){p.style.display='none'});
