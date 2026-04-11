@@ -713,15 +713,16 @@ function renderCitCat(cits){
   var el=document.getElementById('cit-cat-wrap');
   if(!el)return;
   var topN=_meta.citationTopN||10;
-  var html='<div class="section-card"><div class="section-header"><div class="section-title">'+_t.citationTitle+'</div><span class="legend">'+_t.citLegend+'</span></div><div class="section-body">'+_citCatRows(cits,topN)+'</div></div>';
-  // 국가별 세로 막대그래프
+  // 전체 세로 막대그래프
+  var html='<div class="section-card"><div class="section-header"><div class="section-title">'+_t.citationTitle+'</div><span class="legend">'+_t.citLegend+'</span></div><div class="section-body">'+_citVBar(cits,topN)+'</div></div>';
+  // 국가별 세로 막대그래프 (항상 표시)
   var countries=['US','CA','UK','DE','ES','BR','MX','IN','AU','VN'];
   var cntyCards=[];
   countries.forEach(function(cnty){
     var list=_citationsByCnty[cnty];
     if(!list||!list.length)return;
-    list.sort(function(a,b){return b.score-a.score});
-    cntyCards.push('<div style="flex:1;min-width:280px;background:#fff;border:1px solid #E8EDF2;border-radius:10px;overflow:hidden">'
+    list=list.slice().sort(function(a,b){return b.score-a.score});
+    cntyCards.push('<div style="width:calc(50% - 6px);background:#fff;border:1px solid #E8EDF2;border-radius:10px;overflow:hidden">'
       +'<div style="padding:8px 12px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;font-size:14px;font-weight:700;color:#1A1A1A">'+_cn(cnty)+'</div>'
       +'<div style="padding:4px 8px">'+_citVBar(list,8)+'</div></div>');
   });
@@ -753,26 +754,6 @@ function renderCitDom(citCnty,useAgg){
   el.innerHTML='<div class="section-card"><div class="section-header"><div class="section-title">'+_t.citDomainTitle+'</div><span class="legend">Top '+topN+' Domains</span></div><div class="section-body">'+html+'</div></div>'
 }
 
-function _dcBody(dc,titleOverride){
-  if(!dc||!dc.lg)return'<div style="text-align:center;padding:20px;color:#94A3B8;font-size:13px">'+_noDataMsg+'</div>';
-  var lg=dc.lg,sam=dc.samsung||{};
-  var maxVal=Math.max.apply(null,_DC_COLS.map(function(c){return Math.max(lg[c]||0,sam[c]||0)}).concat([1]));
-  var lgWins=_DC_SAM.filter(function(c){return(lg[c]||0)>(sam[c]||0)});
-  var samWins=_DC_SAM.filter(function(c){return(sam[c]||0)>(lg[c]||0)});
-  var rows=_DC_COLS.map(function(col){
-    var lv=lg[col]||0,sv=sam[col]||0;var hasSam=col!=='Experience';var isTTL=col==='TTL';
-    var lgPct=(lv/maxVal*100).toFixed(1),samPct=(sv/maxVal*100).toFixed(1);
-    var diff=lv-sv;var badge='';
-    if(diff>0)badge='<span class="dc-badge lg">LG +'+_fmt(diff)+'</span>';
-    else if(diff<0&&hasSam)badge='<span class="dc-badge ss">SS +'+_fmt(Math.abs(diff))+'</span>';
-    var r='<div class="dc-row'+(isTTL?' ttl':'')+'"><span class="dc-label">'+(isTTL?_t.dotcomTTL:col)+badge+'</span><div class="dc-bars"><div class="dc-bar-pair"><div class="dc-bar lg" style="width:'+lgPct+'%"></div><span class="dc-val '+(lv>=sv?'win':'')+'">'+_fmt(lv)+'</span></div>';
-    if(hasSam)r+='<div class="dc-bar-pair"><div class="dc-bar ss" style="width:'+samPct+'%"></div><span class="dc-val '+(sv>lv?'win':'')+'">'+_fmt(sv)+'</span></div>';
-    else r+='<div class="dc-bar-pair"><span class="dc-val muted">'+_t.dotcomLgOnly+'</span></div>';
-    return r+'</div></div>';
-  }).join('');
-  rows+='<div class="dc-summary"><span class="dc-sum-item lg">'+_t.dotcomLgWin+' ('+lgWins.length+')</span> <span class="dc-sum-list">'+(lgWins.length?lgWins.join(', '):_t.dotcomNone)+'</span><span class="dc-sum-item ss">'+_t.dotcomSsWin+' ('+samWins.length+')</span> <span class="dc-sum-list">'+(samWins.length?samWins.join(', '):_t.dotcomNone)+'</span></div>';
-  return rows;
-}
 function _dcVBar(dc){
   if(!dc||!dc.lg)return'<div style="text-align:center;padding:12px;color:#94A3B8;font-size:12px">'+_noDataMsg+'</div>';
   var lg=dc.lg,sam=dc.samsung||{};
@@ -798,14 +779,15 @@ function renderDotcom(dc){
   var el=document.getElementById('cit-dc-wrap');
   if(!el)return;
   var legend='<span class="legend"><i style="background:#CF0652"></i>LG <i style="background:#94A3B8"></i>SS</span>';
-  var html='<div class="section-card"><div class="section-header"><div class="section-title">'+_t.dotcomTitle+'</div>'+legend+'</div><div class="section-body">'+_dcBody(dc)+'</div></div>';
-  // 국가별 세로 막대그래프
+  // 전체도 세로 막대그래프
+  var html='<div class="section-card"><div class="section-header"><div class="section-title">'+_t.dotcomTitle+'</div>'+legend+'</div><div class="section-body">'+_dcVBar(dc)+'</div></div>';
+  // 국가별 세로 막대그래프 (항상 표시, 2개씩 1행)
   var countries=['US','CA','UK','DE','ES','BR','MX','IN','AU','VN'];
   var cntyCards=[];
   countries.forEach(function(cnty){
     var d=_dotcomByCnty[cnty];
     if(!d||!d.lg||!Object.keys(d.lg).length)return;
-    cntyCards.push('<div style="flex:1;min-width:280px;background:#fff;border:1px solid #E8EDF2;border-radius:10px;overflow:hidden">'
+    cntyCards.push('<div style="width:calc(50% - 6px);background:#fff;border:1px solid #E8EDF2;border-radius:10px;overflow:hidden">'
       +'<div style="padding:8px 12px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;font-size:14px;font-weight:700;color:#1A1A1A">'+_cn(cnty)+'</div>'
       +'<div style="padding:4px 8px">'+_dcVBar(d)+'</div></div>');
   });
