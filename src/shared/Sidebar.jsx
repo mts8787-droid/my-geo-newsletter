@@ -378,19 +378,28 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
           ...(parsed.countryTotalsPrev ? { countryTotalsPrev: parsed.countryTotalsPrev } : {}),
         }))
       }
-      // visSummary 시트에서 추출한 최신 월로 meta.period 자동 갱신
-      // (메타 시트가 옛 월 값을 가지고 있는 경우 자동 보정)
-      if (parsed.derivedPeriod) {
+      // 시트에서 추출한 최신 월로 meta.period 자동 갱신
+      // visSummary derivedPeriod 또는 Citation citDerivedPeriod 중 최신 사용
+      {
         const yr = (new Date().getFullYear())
-        const newPeriod = `${yr}년 ${parsed.derivedPeriod}`
-        setMetaKo(m => ({ ...m, period: newPeriod }))
-        setMetaEn(m => {
-          // "3월" → "Mar"
-          const num = parseInt(parsed.derivedPeriod) || 0
-          const enNames = ['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
-          const enName = enNames[num] || ''
-          return { ...m, period: enName ? `${enName} ${yr}` : m.period }
-        })
+        const enNames = ['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+        let bestMonth = 0
+        // visSummary에서 추출한 최신 월
+        if (parsed.derivedPeriod) {
+          bestMonth = parseInt(parsed.derivedPeriod) || 0
+        }
+        // Citation 데이터에서 추출한 최신 월 (더 최신이면 우선)
+        if (parsed.citDerivedPeriod) {
+          const citEnMonth = String(parsed.citDerivedPeriod).match(/^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)/i)
+          if (citEnMonth) {
+            const citIdx = enNames.findIndex(m => m && m.toLowerCase() === citEnMonth[1].toLowerCase())
+            if (citIdx > bestMonth) bestMonth = citIdx
+          }
+        }
+        if (bestMonth > 0) {
+          setMetaKo(m => ({ ...m, period: `${yr}년 ${bestMonth}월` }))
+          setMetaEn(m => ({ ...m, period: `${enNames[bestMonth]} ${yr}` }))
+        }
       }
       if (!parsed.total && parsed.productsPartial && parsed.productsPartial.length > 0) {
         const pp = parsed.productsPartial

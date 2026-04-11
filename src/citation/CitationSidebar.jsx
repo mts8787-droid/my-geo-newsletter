@@ -65,8 +65,11 @@ export default function CitationSidebar({
       if (parsed.meta) {
         // Citation 대시보드에서는 Citation 관련 섹션을 항상 표시
         const citMeta = { ...parsed.meta, showCitations: true, showCitDomain: true, showCitCnty: true, showDotcom: true }
+        // Citation 데이터의 최신 월로 기간 자동 갱신
+        if (parsed.citDerivedPeriod) {
+          citMeta.period = parsed.citDerivedPeriod
+        }
         setMetaKo(m => ({ ...m, ...citMeta }))
-        // period/dateLine/reportNo는 EN에도 동기화 (번역 불필요 항목)
         setMetaEn(m => ({ ...m, period: citMeta.period, dateLine: citMeta.dateLine, reportNo: citMeta.reportNo }))
       }
       if (parsed.citations)     setCitations(parsed.citations)

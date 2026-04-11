@@ -986,6 +986,15 @@ function parseCitTouchPoints(rows) {
   for (const [cnty, list] of Object.entries(citationsByCnty)) {
   }
 
+  // 최신 월 자동 감지 → derivedPeriod
+  const MONTHS_EN = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+  let citDerivedPeriod = null
+  if (validMonths.length > 0) {
+    const lastMonth = validMonths[validMonths.length - 1]
+    const mIdx = MONTHS_EN.findIndex(m => lastMonth.toLowerCase().startsWith(m.toLowerCase()))
+    if (mIdx >= 0) citDerivedPeriod = `${MONTHS_EN[mIdx]} ${new Date().getFullYear()}`
+  }
+
   const result = {}
   if (citations.length > 0) result.citations = citations
   if (Object.keys(citationsByCnty).length > 0) result.citationsByCnty = citationsByCnty
@@ -993,6 +1002,7 @@ function parseCitTouchPoints(rows) {
     result.citTouchPointsTrend = citTouchPointsTrend
     result.citTrendMonths = validMonths
   }
+  if (citDerivedPeriod) result.citDerivedPeriod = citDerivedPeriod
   return result
 }
 
