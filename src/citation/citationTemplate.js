@@ -638,7 +638,7 @@ body{background:#F1F5F9;font-family:${FONT};min-width:1200px;color:#1A1A1A}
 .cit-gnb-btn:hover{color:#E2E8F0}
 .cit-gnb-btn.active{background:#334155;color:#fff}
 /* ── 범프차트 ── */
-.bump-chart-wrap{overflow-x:auto;padding:0;margin:0}
+.bump-chart-wrap{overflow-x:auto;padding:0;margin:0 0 20px}
 .trend-table{width:100%;border-collapse:collapse;font-size:15px;margin-top:4px}
 .trend-table th{padding:8px 10px;text-align:left;font-weight:700;color:#64748B;border-bottom:2px solid #E2E8F0;font-size:14px;white-space:nowrap}
 .trend-table td{padding:7px 10px;border-bottom:1px solid #F1F5F9;white-space:nowrap;vertical-align:middle}
