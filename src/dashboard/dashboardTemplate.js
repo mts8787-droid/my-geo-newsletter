@@ -2305,19 +2305,45 @@ function _getSamsungScore(item){
   if(item.allScores){var s=item.allScores.SAMSUNG||item.allScores.Samsung||item.allScores.Samsumg;if(s!=null)return s}
   return item.compScore||item.vsComp||0;
 }
+function _allProdsOfBU(bu){
+  // 해당 BU에 속하는 모든 제품 ID
+  var ids=[];_products.forEach(function(p){if(p.bu===bu)ids.push(p.id)});return ids;
+}
+function _isBuFullySelected(bu,selProd){
+  // 해당 BU의 모든 제품이 선택되었는지 확인
+  var ids=_allProdsOfBU(bu);if(!ids.length)return false;
+  return ids.every(function(id){return selProd.vals[id]});
+}
 function calcFilteredDataCB(selBU,selProd,selCountry){
   var selectedProdNames={};
   _products.forEach(function(p){if(selProd.isAll||selProd.vals[p.id]){selectedProdNames[p.kr]=true;if(p.category)selectedProdNames[p.category]=true}});
   var buTotals=_total.buTotals||{};
   var countryTotals=_total.countryTotals||{};
-  // 단일 국가 + 전체 BU + 전체 제품 → 시트의 country TOTAL 값 사용
-  if(!selCountry.isAll){
+
+  // ── BU별 전체 제품 선택 감지 ──
+  // 선택된 BU 목록 (BU 체크박스 또는 제품으로부터 역산)
+  var activeBUs={};
+  if(selBU.isAll){Object.keys(buTotals).forEach(function(b){activeBUs[b]=true})}
+  else{Object.keys(selBU.vals).forEach(function(b){activeBUs[b]=true})}
+  // 각 BU의 모든 제품이 선택됐는지 확인
+  var buFullySelected={};
+  Object.keys(activeBUs).forEach(function(bu){
+    if(_isBuFullySelected(bu,selProd))buFullySelected[bu]=true;
+  });
+  var allActiveBusFull=Object.keys(activeBUs).length>0&&Object.keys(activeBUs).every(function(b){return buFullySelected[b]});
+
+  // ── 국가 전체 선택 감지 (리전 내 모든 국가 선택 = 전체) ──
+  var allCountryCodes=[];Object.values(_REGIONS).forEach(function(cs){cs.forEach(function(c){allCountryCodes.push(c)})});
+  var allCountriesOn=allCountryCodes.every(function(c){return selCountry.isAll||selCountry.vals[c]});
+
+  // 단일 국가 + 전체 BU/제품 → 시트의 country TOTAL 값 사용
+  if(!allCountriesOn){
     var cKeys=Object.keys(selCountry.vals);
-    if(cKeys.length===1&&selBU.isAll&&selProd.isAll&&countryTotals[cKeys[0]]){
+    if(cKeys.length===1&&allActiveBusFull&&countryTotals[cKeys[0]]){
       var ct=countryTotals[cKeys[0]];
       return{score:+ct.lg.toFixed(1),prev:+ct.lg.toFixed(1),vsComp:+ct.comp.toFixed(1),compName:'SAMSUNG'}
     }
-    // 그 외 국가 필터: productsCnty에서 평균 (필터 조합)
+    // 그 외 국가 필터: productsCnty에서 평균
     var cntyData=_productsCnty.filter(function(r){return selCountry.vals[r.country]});
     if(!selBU.isAll)cntyData=cntyData.filter(function(r){return _products.some(function(p){return(p.kr===r.product||p.category===r.product)&&selBU.vals[p.bu]})});
     if(!selProd.isAll)cntyData=cntyData.filter(function(r){return selectedProdNames[r.product]});
@@ -2326,30 +2352,35 @@ function calcFilteredDataCB(selBU,selProd,selCountry){
     var ssAvg=cntyData.reduce(function(s,r){return s+_getSamsungScore(r)},0)/cntyData.length;
     return{score:+lgAvg.toFixed(1),prev:+lgAvg.toFixed(1),vsComp:+ssAvg.toFixed(1),compName:'SAMSUNG'}
   }
-  // 단일 BU + 전체 제품 + 전체 국가 → 시트의 BU TOTAL 값 사용
-  if(!selBU.isAll&&selProd.isAll){
-    var buKeys=Object.keys(selBU.vals);
-    if(buKeys.length===1&&buTotals[buKeys[0]]){
-      var bt=buTotals[buKeys[0]];
-      return{score:+bt.lg.toFixed(1),prev:+bt.lg.toFixed(1),vsComp:+bt.comp.toFixed(1),compName:'SAMSUNG'}
-    }
+
+  // 전체 국가 + 단일 BU + 해당 BU 모든 제품 → 시트의 BU TOTAL 값 사용
+  var selBuKeys=Object.keys(activeBUs);
+  if(selBuKeys.length===1&&buFullySelected[selBuKeys[0]]&&buTotals[selBuKeys[0]]){
+    var bt=buTotals[selBuKeys[0]];
+    return{score:+bt.lg.toFixed(1),prev:+bt.lg.toFixed(1),vsComp:+bt.comp.toFixed(1),compName:'SAMSUNG'}
   }
-  // Specific products
-  if(!selProd.isAll){
+
+  // 모든 BU의 모든 제품 선택 + 전체 국가 → 시트 TTL
+  if(allActiveBusFull&&allCountriesOn&&selBuKeys.length===Object.keys(buTotals).length){
+    return _total;
+  }
+
+  // Specific products (일부 제품만 선택)
+  if(!allActiveBusFull){
     var fProds=_products.filter(function(p){return selProd.vals[p.id]&&(selBU.isAll||selBU.vals[p.bu])});
     if(!fProds.length)return _total;
     var lgA=fProds.reduce(function(s,p){return s+p.score},0)/fProds.length;
     var ssA=fProds.reduce(function(s,p){return s+_getSamsungScore(p)},0)/fProds.length;
     return{score:+lgA.toFixed(1),prev:+lgA.toFixed(1),vsComp:+ssA.toFixed(1),compName:'SAMSUNG'}
   }
-  // Specific BU (multi)
+
+  // Multiple BUs, all fully selected
   if(!selBU.isAll){
-    var buProds=_products.filter(function(p){return selBU.vals[p.bu]});
-    if(!buProds.length)return _total;
-    var lgA2=buProds.reduce(function(s,p){return s+p.score},0)/buProds.length;
-    var cA2=buProds.reduce(function(s,p){return s+_getSamsungScore(p)},0)/buProds.length;
-    return{score:+lgA2.toFixed(1),prev:+lgA2.toFixed(1),vsComp:+cA2.toFixed(1),compName:'SAMSUNG'}
+    var buLg=0,buComp=0,buCnt=0;
+    selBuKeys.forEach(function(b){if(buTotals[b]){buLg+=buTotals[b].lg;buComp+=buTotals[b].comp;buCnt++}});
+    if(buCnt>0)return{score:+(buLg/buCnt).toFixed(1),prev:+(buLg/buCnt).toFixed(1),vsComp:+(buComp/buCnt).toFixed(1),compName:'SAMSUNG'};
   }
+
   return _total;
 }
 </script>
