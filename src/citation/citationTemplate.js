@@ -270,8 +270,8 @@ const REGIONS = {
 
 // ─── 리본형 범프차트 공통 SVG 생성 ─────────────────────────────────────────
 const BUMP_COLORS = ['#CF0652','#1D4ED8','#059669','#D97706','#7C3AED','#DB2777','#0D9488','#EA580C','#4F46E5','#DC2626','#0891B2','#65A30D']
-// 12개월 고정 (Feb 시작)
-const TREND_12M = ['Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+// 12개월 고정 (Jan~Dec)
+const TREND_12M = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
 const BUMP_MAX = 10 // 최대 표시 개수
 
 function bumpChartSvg(names, rankings, months, maxRank, labelFn) {
@@ -713,8 +713,8 @@ function renderCitCat(cits){
   var el=document.getElementById('cit-cat-wrap');
   if(!el)return;
   var topN=_meta.citationTopN||10;
-  // 전체 세로 막대그래프
-  var html='<div class="section-card"><div class="section-header"><div class="section-title">'+_t.citationTitle+'</div><span class="legend">'+_t.citLegend+'</span></div><div class="section-body">'+_citVBar(cits,topN)+'</div></div>';
+  // 전체 + 국가별 하나의 섹션
+  var body=_citVBar(cits,topN);
   // 국가별 세로 막대그래프 (항상 표시)
   var countries=['US','CA','UK','DE','ES','BR','MX','IN','AU','VN'];
   var cntyCards=[];
@@ -722,14 +722,14 @@ function renderCitCat(cits){
     var list=_citationsByCnty[cnty];
     if(!list||!list.length)return;
     list=list.slice().sort(function(a,b){return b.score-a.score});
-    cntyCards.push('<div style="width:calc(50% - 6px);background:#fff;border:1px solid #E8EDF2;border-radius:10px;overflow:hidden">'
-      +'<div style="padding:8px 12px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;font-size:14px;font-weight:700;color:#1A1A1A">'+_cn(cnty)+'</div>'
+    cntyCards.push('<div style="width:calc(50% - 6px);background:#F8FAFC;border:1px solid #E8EDF2;border-radius:8px;overflow:hidden">'
+      +'<div style="padding:6px 12px;border-bottom:1px solid #F1F5F9;font-size:13px;font-weight:700;color:#1A1A1A">'+_cn(cnty)+'</div>'
       +'<div style="padding:4px 8px">'+_citVBar(list,8)+'</div></div>');
   });
   if(cntyCards.length){
-    html+='<div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:16px">'+cntyCards.join('')+'</div>';
+    body+='<div style="border-top:1px solid #E8EDF2;margin-top:16px;padding-top:16px"><div style="font-size:14px;font-weight:700;color:#64748B;margin-bottom:10px">By Country</div><div style="display:flex;flex-wrap:wrap;gap:12px">'+cntyCards.join('')+'</div></div>';
   }
-  el.innerHTML=html;
+  el.innerHTML='<div class="section-card"><div class="section-header"><div class="section-title">'+_t.citationTitle+'</div><span class="legend">'+_t.citLegend+'</span></div><div class="section-body">'+body+'</div></div>';
 }
 
 function renderCitDom(citCnty,useAgg){
@@ -779,22 +779,22 @@ function renderDotcom(dc){
   var el=document.getElementById('cit-dc-wrap');
   if(!el)return;
   var legend='<span class="legend"><i style="background:#CF0652"></i>LG <i style="background:#94A3B8"></i>SS</span>';
-  // 전체도 세로 막대그래프
-  var html='<div class="section-card"><div class="section-header"><div class="section-title">'+_t.dotcomTitle+'</div>'+legend+'</div><div class="section-body">'+_dcVBar(dc)+'</div></div>';
+  // 전체 + 국가별 하나의 섹션
+  var body=_dcVBar(dc);
   // 국가별 세로 막대그래프 (항상 표시, 2개씩 1행)
   var countries=['US','CA','UK','DE','ES','BR','MX','IN','AU','VN'];
   var cntyCards=[];
   countries.forEach(function(cnty){
     var d=_dotcomByCnty[cnty];
     if(!d||!d.lg||!Object.keys(d.lg).length)return;
-    cntyCards.push('<div style="width:calc(50% - 6px);background:#fff;border:1px solid #E8EDF2;border-radius:10px;overflow:hidden">'
-      +'<div style="padding:8px 12px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;font-size:14px;font-weight:700;color:#1A1A1A">'+_cn(cnty)+'</div>'
+    cntyCards.push('<div style="width:calc(50% - 6px);background:#F8FAFC;border:1px solid #E8EDF2;border-radius:8px;overflow:hidden">'
+      +'<div style="padding:6px 12px;border-bottom:1px solid #F1F5F9;font-size:13px;font-weight:700;color:#1A1A1A">'+_cn(cnty)+'</div>'
       +'<div style="padding:4px 8px">'+_dcVBar(d)+'</div></div>');
   });
   if(cntyCards.length){
-    html+='<div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:16px">'+cntyCards.join('')+'</div>';
+    body+='<div style="border-top:1px solid #E8EDF2;margin-top:16px;padding-top:16px"><div style="font-size:14px;font-weight:700;color:#64748B;margin-bottom:10px">By Country</div><div style="display:flex;flex-wrap:wrap;gap:12px">'+cntyCards.join('')+'</div></div>';
   }
-  el.innerHTML=html;
+  el.innerHTML='<div class="section-card"><div class="section-header"><div class="section-title">'+_t.dotcomTitle+'</div>'+legend+'</div><div class="section-body">'+body+'</div></div>';
 }
 
 function applyFilter(){
