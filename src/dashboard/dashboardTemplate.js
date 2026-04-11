@@ -1533,6 +1533,10 @@ ${visibilityOnly ? `
   <button class="gnb-sub-btn" onclick="switchVisSub('pr')">PR</button>
   <button class="gnb-sub-btn" onclick="switchVisSub('brandprompt')">${lang === 'en' ? 'Brand Prompt Anomaly Check' : 'Brand Prompt 이상 점검'}</button>
 </div>
+<div id="gnb-citation" class="gnb-sub">
+  <button class="gnb-sub-btn active" onclick="switchCitSub('touchpoint')">${lang === 'en' ? 'Touch Points' : '외부접점채널'}</button>
+  <button class="gnb-sub-btn" onclick="switchCitSub('dotcom')">${lang === 'en' ? 'Dotcom' : '닷컴'}</button>
+</div>
 <div id="tab-visibility" class="tab-panel active">
   <div id="vis-sub-bu" class="vis-sub-panel active">
     ${filterLayerHtml}
@@ -1546,7 +1550,12 @@ ${visibilityOnly ? `
   </div>
 </div>
 <div id="tab-citation" class="tab-panel">
-  <iframe id="cit-iframe" src="/p/${lang === 'en' ? 'GEO-Citation-Dashboard-EN' : 'GEO-Citation-Dashboard-KO'}" style="width:100%;min-height:calc(100vh - 60px);border:none;background:#F1F5F9" title="Citation Dashboard"></iframe>
+  <div id="cit-sub-touchpoint">
+    <iframe id="cit-iframe-tp" src="/p/${lang === 'en' ? 'GEO-Citation-Dashboard-EN' : 'GEO-Citation-Dashboard-KO'}?tab=touchpoint" style="width:100%;min-height:calc(100vh - 100px);border:none;background:#F1F5F9" title="Citation - Touch Points"></iframe>
+  </div>
+  <div id="cit-sub-dotcom" style="display:none">
+    <iframe id="cit-iframe-dc" data-src="/p/${lang === 'en' ? 'GEO-Citation-Dashboard-EN' : 'GEO-Citation-Dashboard-KO'}?tab=dotcom" style="width:100%;min-height:calc(100vh - 100px);border:none;background:#F1F5F9" title="Citation - Dotcom"></iframe>
+  </div>
 </div>
 <div id="tab-readability" class="tab-panel">
   <div class="progress-placeholder"><div class="inner">
@@ -1580,8 +1589,11 @@ function switchLang(lang){
   _curLang=lang;
   document.querySelectorAll('.lang-btn').forEach(function(b){b.classList.toggle('active',b.textContent.toLowerCase()===lang)});
   // Citation iframe 전환
-  var citIframe=document.getElementById('cit-iframe');
-  if(citIframe)citIframe.src='/p/'+(lang==='en'?'GEO-Citation-Dashboard-EN':'GEO-Citation-Dashboard-KO');
+  var citBase='/p/'+(lang==='en'?'GEO-Citation-Dashboard-EN':'GEO-Citation-Dashboard-KO');
+  var citTp=document.getElementById('cit-iframe-tp');
+  if(citTp)citTp.src=citBase+'?tab=touchpoint';
+  var citDc=document.getElementById('cit-iframe-dc');
+  if(citDc&&citDc.src)citDc.src=citBase+'?tab=dotcom';
   // Tracker iframe 전환
   var trkIframe=document.getElementById('tracker-iframe');
   if(trkIframe)trkIframe.src='/p/progress-tracker/?lang='+lang;
@@ -1601,9 +1613,25 @@ function switchTab(id){
   var btns=document.querySelectorAll('.tab-btn');
   var map={visibility:0,citation:1,readability:2,progress:3,glossary:4};
   if(map[id]!==undefined)btns[map[id]].classList.add('active');
-  // GNB 서브메뉴: Visibility 탭일 때만 표시
-  var gnb=document.getElementById('gnb-visibility');
-  if(gnb){if(id==='visibility')gnb.classList.add('active');else gnb.classList.remove('active');}
+  // GNB 서브메뉴: 탭에 따라 표시
+  var gnbVis=document.getElementById('gnb-visibility');
+  var gnbCit=document.getElementById('gnb-citation');
+  if(gnbVis){if(id==='visibility')gnbVis.classList.add('active');else gnbVis.classList.remove('active');}
+  if(gnbCit){if(id==='citation')gnbCit.classList.add('active');else gnbCit.classList.remove('active');}
+}
+function switchCitSub(sub){
+  document.querySelectorAll('#gnb-citation .gnb-sub-btn').forEach(function(b){b.classList.remove('active')});
+  var btns=document.querySelectorAll('#gnb-citation .gnb-sub-btn');
+  var subMap={touchpoint:0,dotcom:1};
+  if(subMap[sub]!==undefined&&btns[subMap[sub]])btns[subMap[sub]].classList.add('active');
+  var tp=document.getElementById('cit-sub-touchpoint');
+  var dc=document.getElementById('cit-sub-dotcom');
+  if(tp)tp.style.display=sub==='touchpoint'?'':'none';
+  if(dc){
+    dc.style.display=sub==='dotcom'?'':'none';
+    var iframe=document.getElementById('cit-iframe-dc');
+    if(iframe&&!iframe.src&&iframe.getAttribute('data-src')){iframe.src=iframe.getAttribute('data-src')}
+  }
 }
 function switchVisSub(sub){
   document.querySelectorAll('.vis-sub-panel').forEach(function(p){p.style.display='none'});
