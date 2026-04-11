@@ -629,35 +629,33 @@ function dotcomSectionHtml(dotcom, meta, t) {
 const GLOSSARY_DATA = {
   ko: [
     { term: 'GEO (Generative Engine Optimization)', def: '생성형 AI 검색 엔진(예: ChatGPT, Gemini, Perplexity 등)에서 자사 브랜드 및 제품이 더 잘 노출·추천되도록 콘텐츠를 최적화하는 전략.' },
-    { term: 'Visibility (가시성)', def: 'AI 검색 결과에서 자사 브랜드/제품이 얼마나 자주 등장하는지를 나타내는 지표. 노출 빈도, 순위, 커버리지 등을 포괄한다.' },
-    { term: 'Citation (인용)', def: 'AI 응답 내에서 특정 소스(URL, 도메인)가 참조·링크되는 것. Citation Rate는 자사 도메인이 인용된 비율을 뜻한다.' },
+    { term: 'Visibility (가시성)', def: 'GEO 가시성 점수는 생성형 AI 엔진(ChatGPT, Gemini 등)에서 해당 카테고리 관련 질문 시 LG 제품이 언급·추천되는 빈도를 0~100%로 수치화한 지표입니다. MoM은 전월 대비 증감이며, 경쟁사 대비는 (LG 점수 / 1위 브랜드 점수) × 100%로 산출합니다. 100% 이상=선도, 80% 이상=추격, 80% 미만=취약입니다.' },
+    { term: 'Visibility — 국가별', def: '국가별 GEO 가시성은 각 법인(미국, 영국, 독일 등)에서 생성형 AI 엔진이 해당 제품 카테고리 질문 시 LG를 언급·추천하는 비율입니다. 막대 색상은 경쟁사 대비 상대 점수를 나타내며, 녹색(선도)·주황(추격)·빨강(취약)으로 구분됩니다. 하단 수치는 1위 경쟁사 점수와 LG와의 격차(%p)입니다.' },
+    { term: 'Citation (인용)', def: 'Citation Score는 생성형 AI가 LG 제품 관련 답변 시 참조하는 외부 출처(리뷰 사이트, 미디어 등)의 영향력을 점수화한 지표입니다. 점수가 높을수록 해당 출처가 AI 답변에 자주 인용되며, 증감은 전월 대비 기여도 변화를 나타냅니다.' },
+    { term: 'Citation — 닷컴', def: '닷컴 Citation은 생성형 AI가 답변 시 LG·Samsung 공식 사이트의 각 페이지 유형(TTL, PLP, PDP 등)을 인용하는 빈도를 나타냅니다. TTL은 전체 합계, PLP는 카테고리 목록, PDP는 제품 상세, Microsites는 캠페인 페이지 인용 수입니다.' },
     { term: 'Readability (가독성)', def: '콘텐츠가 AI 엔진에 의해 얼마나 쉽게 파싱·이해되는지를 평가하는 지표. 구조화된 데이터, 명확한 문장 구조 등이 영향을 미친다.' },
-    { term: 'Progress Tracker (과제 현황)', def: '각 유관조직(Stakeholder)별 GEO 개선 과제의 목표 대비 실적 달성률을 추적하는 대시보드.' },
+    { term: 'KPI (Key Performance Indicator)', def: '핵심 성과 지표. GEO에서는 Visibility, Citation Rate, Readability Score 등이 해당된다.' },
+    { term: 'BU (Business Unit)', def: '사업부 단위. MC/BS(MS), H&A(HS), VS(ES) 등으로 구분된다.' },
     { term: 'Stakeholder (유관조직)', def: 'GEO 개선 활동에 참여하는 조직 단위. 예: MS(MC/BS사업부), HS(H&A사업부), ES(VS사업부), PR, 브랜드 등.' },
-    { term: '과제 구분 (Task Category)', def: '과제의 성격에 따른 분류. 예: 콘텐츠 수정, 신규 콘텐츠 제작, 기술 SEO, 구조화 데이터 등.' },
     { term: '달성률', def: '해당 월의 실적을 목표로 나눈 백분율. (실적 ÷ 목표) × 100.' },
     { term: '누적 달성률', def: '연초부터 해당 월까지의 누적 실적을 누적 목표로 나눈 백분율.' },
     { term: '연간 진척률', def: '연초부터 현재까지의 누적 실적을 연간 총 목표로 나눈 백분율.' },
-    { term: '주의 필요 과제', def: '달성률이 80% 미만인 과제. 즉각적인 관심과 조치가 필요한 항목.' },
-    { term: 'Deep Link (딥링크)', def: '특정 페이지나 섹션으로 직접 이동할 수 있는 URL. 월간 리포트에서 대시보드 특정 탭으로 바로 연결 가능.' },
-    { term: 'KPI (Key Performance Indicator)', def: '핵심 성과 지표. GEO에서는 Visibility, Citation Rate, Readability Score 등이 해당된다.' },
-    { term: 'BU (Business Unit)', def: '사업부 단위. MC/BS(MS), H&A(HS), VS(ES) 등으로 구분된다.' },
+    { term: '신호등 체계', def: '100% 이상 = 선도(녹색), 80~100% = 추격(주황), 80% 미만 = 취약(빨강). 경쟁사 대비 상대 점수 기준으로 색상 분류.' },
   ],
   en: [
     { term: 'GEO (Generative Engine Optimization)', def: 'A strategy to optimize content so that brands and products are better surfaced and recommended by generative AI search engines (e.g., ChatGPT, Gemini, Perplexity).' },
-    { term: 'Visibility', def: 'A metric measuring how frequently a brand/product appears in AI search results. Encompasses exposure frequency, ranking, and coverage.' },
-    { term: 'Citation', def: 'When a specific source (URL, domain) is referenced or linked within an AI response. Citation Rate refers to the percentage of responses that cite a given domain.' },
+    { term: 'Visibility', def: 'GEO Visibility Score quantifies how often LG products are mentioned/recommended by generative AI engines (ChatGPT, Gemini, etc.) on a 0–100% scale. MoM shows month-over-month change. Competitor comparison is calculated as (LG Score / Top Brand Score) × 100%. ≥100% = Lead, ≥80% = Behind, <80% = Critical.' },
+    { term: 'Visibility — by Country', def: 'Country-level GEO Visibility measures how often AI engines mention/recommend LG for each product category in each market (US, UK, DE, etc.). Bar colors indicate relative scores vs competitors: green (Lead), orange (Behind), red (Critical). Values below show top competitor score and gap in %p.' },
+    { term: 'Citation', def: 'Citation Score quantifies the influence of external sources (review sites, media, etc.) referenced by AI when answering LG product queries. Higher scores indicate more frequent citation. Changes reflect month-over-month contribution shifts.' },
+    { term: 'Citation — Dotcom', def: 'Dotcom Citation measures how often AI cites LG/Samsung official site page types (TTL, PLP, PDP, etc.). TTL = total, PLP = category listing, PDP = product detail, Microsites = campaign page citation counts.' },
     { term: 'Readability', def: 'A metric evaluating how easily content can be parsed and understood by AI engines. Influenced by structured data, clear sentence structure, etc.' },
-    { term: 'Progress Tracker', def: 'A dashboard tracking goal-vs-actual achievement rates for GEO improvement tasks by each stakeholder organization.' },
+    { term: 'KPI (Key Performance Indicator)', def: 'Core performance metrics. In GEO, these include Visibility, Citation Rate, Readability Score, etc.' },
+    { term: 'BU (Business Unit)', def: 'Organizational division. Categorized as MC/BS (MS), H&A (HS), VS (ES), etc.' },
     { term: 'Stakeholder', def: 'An organizational unit participating in GEO improvement activities. E.g., MS (MC/BS Division), HS (H&A Division), ES (VS Division), PR, Brand, etc.' },
-    { term: 'Task Category', def: 'Classification of tasks by nature. E.g., Content Modification, New Content Creation, Technical SEO, Structured Data, etc.' },
     { term: 'Achievement Rate', def: 'Monthly actual performance divided by target, expressed as a percentage. (Actual / Goal) x 100.' },
     { term: 'Cumulative Achievement Rate', def: 'Year-to-date cumulative actual divided by cumulative goal, expressed as a percentage.' },
     { term: 'Annual Progress Rate', def: 'Year-to-date cumulative actual divided by the total annual target, expressed as a percentage.' },
-    { term: 'Tasks Needing Attention', def: 'Tasks with an achievement rate below 80%. Items requiring immediate attention and action.' },
-    { term: 'Deep Link', def: 'A URL that navigates directly to a specific page or section. Enables direct linking from monthly reports to specific dashboard tabs.' },
-    { term: 'KPI (Key Performance Indicator)', def: 'Core performance metrics. In GEO, these include Visibility, Citation Rate, Readability Score, etc.' },
-    { term: 'BU (Business Unit)', def: 'Organizational division. Categorized as MC/BS (MS), H&A (HS), VS (ES), etc.' },
+    { term: 'Traffic Light System', def: '≥100% = Lead (green), 80–100% = Behind (orange), <80% = Critical (red). Color-coded based on relative score vs competitor.' },
   ],
 }
 
@@ -1523,7 +1521,6 @@ ${visibilityOnly ? `
     <button class="tab-btn active" onclick="switchTab('visibility')">Visibility</button>
     <button class="tab-btn" onclick="switchTab('citation')">Citation</button>
     <button class="tab-btn" onclick="switchTab('readability')">Readability</button>
-    <button class="tab-btn" onclick="switchTab('promptlist')">Prompt List</button>
     <button class="tab-btn" onclick="switchTab('glossary')">Glossary</button>
   </div>
   <div id="lang-toggle" style="display:flex;gap:2px;background:#1E293B;border-radius:6px;padding:2px">
@@ -1602,7 +1599,7 @@ function switchTab(id){
   document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active')});
   document.getElementById('tab-'+id).classList.add('active');
   var btns=document.querySelectorAll('.tab-btn');
-  var map={visibility:0,citation:1,readability:2,progress:3,promptlist:4,glossary:5};
+  var map={visibility:0,citation:1,readability:2,progress:3,glossary:4};
   if(map[id]!==undefined)btns[map[id]].classList.add('active');
   // GNB 서브메뉴: Visibility 탭일 때만 표시
   var gnb=document.getElementById('gnb-visibility');

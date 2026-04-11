@@ -1017,6 +1017,10 @@ a.card:hover{border-color:#CF0652;transform:translateY(-2px)}
       <div class="card-desc">GEO 과제 진행 현황 대시보드</div>
     </a>
     <div class="section-title">공통 인프라</div>
+    <a class="card" href="/admin/dashboard#promptlist">
+      <div class="card-title">Prompt List</div>
+      <div class="card-desc">GEO KPI 측정에 사용되는 프롬프트 목록 확인</div>
+    </a>
     <a class="card" href="/admin/ip-manager">
       <div class="card-title">IP Access Manager</div>
       <div class="card-desc">게시된 리포트 열람 허용 IP 대역 관리</div>
