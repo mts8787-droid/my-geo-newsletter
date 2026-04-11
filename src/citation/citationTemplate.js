@@ -694,19 +694,18 @@ function _citCatRows(cits,topN){
     return '<div class="cit-row"><span class="cit-rank '+(i<3?'top':'')+'">'+c.rank+'</span><div class="cit-info"><span class="cit-source">'+c.source+'</span><span class="cit-cat">'+(c.category||'')+'</span></div><div class="cit-bar-wrap"><div class="cit-bar" style="width:'+pct+'%"></div></div><span class="cit-score">'+_fmt(c.score)+'</span><span class="cit-ratio">('+ratio+'%)</span></div>'
   }).join('');
 }
-function _citVBar(cits,topN){
+function _citVBar(cits,topN,isSmall){
   if(!cits||!cits.length)return'<div style="text-align:center;padding:12px;color:#94A3B8;font-size:12px">'+_noDataMsg+'</div>';
   var list=cits.slice(0,topN);
   var maxScore=Math.max.apply(null,list.map(function(c){return c.score}).concat([1]));
-  var BAR_H=80;
-  return '<div style="display:flex;align-items:flex-end;gap:6px;padding:8px 4px 0;min-height:'+(BAR_H+50)+'px;overflow-x:auto">'+list.map(function(c,i){
+  var BAR_H=isSmall?50:110;
+  var LABEL_H=isSmall?28:34;
+  var fs=isSmall?10:12;
+  var fsl=isSmall?9:10;
+  return '<div style="display:flex;gap:'+(isSmall?'4':'6')+'px;padding:'+(isSmall?'4px 0 0':'8px 0 0')+';overflow-x:auto">'+list.map(function(c,i){
     var h=Math.max(3,Math.round(c.score/maxScore*BAR_H));
     var color=i<3?'#CF0652':'#94A3B8';
-    return '<div style="display:flex;flex-direction:column;align-items:center;flex:1;min-width:50px;max-width:80px">'
-      +'<span style="font-size:11px;font-weight:700;color:'+color+';margin-bottom:2px">'+_fmt(c.score)+'</span>'
-      +'<div style="width:100%;height:'+h+'px;background:'+color+';border-radius:3px 3px 0 0;min-height:3px"></div>'
-      +'<span style="font-size:10px;color:#64748B;margin-top:3px;text-align:center;line-height:1.2;word-break:break-all;max-width:70px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">'+c.source+'</span>'
-      +'</div>';
+    return '<div style="display:flex;flex-direction:column;align-items:center;flex:1;min-width:'+(isSmall?'36px':'0')+'"><span style="font-size:'+fs+'px;font-weight:700;color:'+color+';margin-bottom:2px">'+_fmt(c.score)+'</span><div style="width:100%;height:'+h+'px;background:'+color+';border-radius:3px 3px 0 0;min-height:3px"></div><div style="height:'+LABEL_H+'px;display:flex;align-items:flex-start;justify-content:center;padding-top:3px"><span style="font-size:'+fsl+'px;color:#64748B;text-align:center;line-height:1.2;word-break:break-all;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">'+c.source+'</span></div></div>';
   }).join('')+'</div>';
 }
 function renderCitCat(cits){
@@ -714,7 +713,7 @@ function renderCitCat(cits){
   if(!el)return;
   var topN=_meta.citationTopN||10;
   // 전체 + 국가별 하나의 섹션
-  var body=_citVBar(cits,topN);
+  var body=_citVBar(cits,topN,false);
   // 국가별 세로 막대그래프 (항상 표시)
   var countries=['US','CA','UK','DE','ES','BR','MX','IN','AU','VN'];
   var cntyCards=[];
@@ -724,7 +723,7 @@ function renderCitCat(cits){
     list=list.slice().sort(function(a,b){return b.score-a.score});
     cntyCards.push('<div style="width:calc(50% - 6px);background:#F8FAFC;border:1px solid #E8EDF2;border-radius:8px;overflow:hidden">'
       +'<div style="padding:6px 12px;border-bottom:1px solid #F1F5F9;font-size:13px;font-weight:700;color:#1A1A1A">'+_cn(cnty)+'</div>'
-      +'<div style="padding:4px 8px">'+_citVBar(list,8)+'</div></div>');
+      +'<div style="padding:4px 4px">'+_citVBar(list,8,true)+'</div></div>');
   });
   if(cntyCards.length){
     body+='<div style="border-top:1px solid #E8EDF2;margin-top:16px;padding-top:16px"><div style="font-size:14px;font-weight:700;color:#64748B;margin-bottom:10px">By Country</div><div style="display:flex;flex-wrap:wrap;gap:12px">'+cntyCards.join('')+'</div></div>';
@@ -754,24 +753,30 @@ function renderCitDom(citCnty,useAgg){
   el.innerHTML='<div class="section-card"><div class="section-header"><div class="section-title">'+_t.citDomainTitle+'</div><span class="legend">Top '+topN+' Domains</span></div><div class="section-body">'+html+'</div></div>'
 }
 
-function _dcVBar(dc){
+function _dcVBar(dc,isSmall){
   if(!dc||!dc.lg)return'<div style="text-align:center;padding:12px;color:#94A3B8;font-size:12px">'+_noDataMsg+'</div>';
   var lg=dc.lg,sam=dc.samsung||{};
   var cols=_DC_COLS.filter(function(c){return(lg[c]||0)>0||(sam[c]||0)>0});
   if(!cols.length)return'';
   var maxVal=Math.max.apply(null,cols.map(function(c){return Math.max(lg[c]||0,sam[c]||0)}).concat([1]));
-  var BAR_H=70;
-  return '<div style="display:flex;align-items:flex-end;gap:8px;padding:8px 4px 0;min-height:'+(BAR_H+45)+'px;overflow-x:auto">'+cols.map(function(col){
+  var BAR_H=isSmall?45:100;
+  var bw=isSmall?14:22;
+  var fs=isSmall?9:11;
+  var fsl=isSmall?9:11;
+  return '<div style="display:flex;gap:'+(isSmall?'6':'10')+'px;padding:'+(isSmall?'4px 0 0':'8px 0 0')+';overflow-x:auto">'+cols.map(function(col){
     var lv=lg[col]||0,sv=sam[col]||0;
     var lh=Math.max(2,Math.round(lv/maxVal*BAR_H));
     var sh=Math.max(2,Math.round(sv/maxVal*BAR_H));
     var hasSam=col!=='Experience'&&sv>0;
-    return '<div style="display:flex;flex-direction:column;align-items:center;flex:1;min-width:50px;max-width:90px">'
+    var diff=lv-sv;var gapColor=diff>=0?'#15803D':'#BE123C';
+    var gapTxt=diff>0?'+'+_fmt(diff):diff<0?'-'+_fmt(Math.abs(diff)):'0';
+    return '<div style="display:flex;flex-direction:column;align-items:center;flex:1;min-width:'+(isSmall?'40px':'0')+'">'
       +'<div style="display:flex;gap:2px;align-items:flex-end">'
-      +'<div style="display:flex;flex-direction:column;align-items:center"><span style="font-size:10px;font-weight:700;color:#CF0652;margin-bottom:1px">'+_fmt(lv)+'</span><div style="width:16px;height:'+lh+'px;background:#CF0652;border-radius:2px 2px 0 0"></div></div>'
-      +(hasSam?'<div style="display:flex;flex-direction:column;align-items:center"><span style="font-size:10px;font-weight:600;color:#94A3B8;margin-bottom:1px">'+_fmt(sv)+'</span><div style="width:16px;height:'+sh+'px;background:#94A3B8;border-radius:2px 2px 0 0"></div></div>':'')
+      +'<div style="display:flex;flex-direction:column;align-items:center"><span style="font-size:'+fs+'px;font-weight:700;color:#CF0652;margin-bottom:1px">'+_fmt(lv)+'</span><div style="width:'+bw+'px;height:'+lh+'px;background:#CF0652;border-radius:2px 2px 0 0"></div></div>'
+      +(hasSam?'<div style="display:flex;flex-direction:column;align-items:center"><span style="font-size:'+fs+'px;font-weight:600;color:#94A3B8;margin-bottom:1px">'+_fmt(sv)+'</span><div style="width:'+bw+'px;height:'+sh+'px;background:#94A3B8;border-radius:2px 2px 0 0"></div></div>':'')
       +'</div>'
-      +'<span style="font-size:10px;color:#64748B;margin-top:3px;text-align:center;white-space:nowrap">'+(col==='TTL'?'Total':col)+'</span>'
+      +'<span style="font-size:'+fsl+'px;color:#64748B;margin-top:3px;text-align:center;white-space:nowrap">'+(col==='TTL'?'Total':col)+'</span>'
+      +(hasSam?'<span style="font-size:'+(isSmall?8:10)+'px;font-weight:700;color:'+gapColor+';margin-top:1px">'+gapTxt+'</span>':'')
       +'</div>';
   }).join('')+'</div>';
 }
@@ -780,7 +785,7 @@ function renderDotcom(dc){
   if(!el)return;
   var legend='<span class="legend"><i style="background:#CF0652"></i>LG <i style="background:#94A3B8"></i>SS</span>';
   // 전체 + 국가별 하나의 섹션
-  var body=_dcVBar(dc);
+  var body=_dcVBar(dc,false);
   // 국가별 세로 막대그래프 (항상 표시, 2개씩 1행)
   var countries=['US','CA','UK','DE','ES','BR','MX','IN','AU','VN'];
   var cntyCards=[];
@@ -789,7 +794,7 @@ function renderDotcom(dc){
     if(!d||!d.lg||!Object.keys(d.lg).length)return;
     cntyCards.push('<div style="width:calc(50% - 6px);background:#F8FAFC;border:1px solid #E8EDF2;border-radius:8px;overflow:hidden">'
       +'<div style="padding:6px 12px;border-bottom:1px solid #F1F5F9;font-size:13px;font-weight:700;color:#1A1A1A">'+_cn(cnty)+'</div>'
-      +'<div style="padding:4px 8px">'+_dcVBar(d)+'</div></div>');
+      +'<div style="padding:4px 4px">'+_dcVBar(d,true)+'</div></div>');
   });
   if(cntyCards.length){
     body+='<div style="border-top:1px solid #E8EDF2;margin-top:16px;padding-top:16px"><div style="font-size:14px;font-weight:700;color:#64748B;margin-bottom:10px">By Country</div><div style="display:flex;flex-wrap:wrap;gap:12px">'+cntyCards.join('')+'</div></div>';
