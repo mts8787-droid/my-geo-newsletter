@@ -682,18 +682,33 @@ var _DC_SAM=['TTL','PLP','Microsites','PDP','Newsroom','Support','Buying-guide']
 function _fmt(n){return Number(n).toLocaleString('en-US')}
 function _stripDomain(d){return(d||'').replace(/\\.(com|org|net|co\\.uk|com\\.br|com\\.au|com\\.vn|com\\.mx|co\\.kr|de|es|fr|ca|in|vn)$/i,'')}
 
-function renderCitCat(cits){
-  var el=document.getElementById('cit-cat-wrap');
-  if(!el)return;
-  if(!cits||!cits.length){el.innerHTML='<div class="section-card"><div class="section-header"><div class="section-title">'+_t.citationTitle+'</div></div><div class="section-body"><div style="text-align:center;padding:40px 20px;color:#94A3B8;font-size:13px">'+_noDataMsg+'</div></div></div>';return}
-  var topN=_meta.citationTopN||10;var list=cits.slice(0,topN);
+var _CNTY_NAMES=${JSON.stringify(COUNTRY_FULL_NAME)};
+function _cn(c){return _CNTY_NAMES[c]||_CNTY_NAMES[c&&c.toUpperCase()]||c}
+function _citCatRows(cits,topN){
+  if(!cits||!cits.length)return'<div style="text-align:center;padding:20px;color:#94A3B8;font-size:13px">'+_noDataMsg+'</div>';
+  var list=cits.slice(0,topN);
   var maxScore=Math.max.apply(null,list.map(function(c){return c.score}).concat([1]));
   var totalScore=cits.reduce(function(s,c){return s+c.score},0);
-  var rows=list.map(function(c,i){
+  return list.map(function(c,i){
     var pct=(c.score/maxScore*100).toFixed(1);var ratio=totalScore>0?((c.score/totalScore)*100).toFixed(1):'0.0';
     return '<div class="cit-row"><span class="cit-rank '+(i<3?'top':'')+'">'+c.rank+'</span><div class="cit-info"><span class="cit-source">'+c.source+'</span><span class="cit-cat">'+(c.category||'')+'</span></div><div class="cit-bar-wrap"><div class="cit-bar" style="width:'+pct+'%"></div></div><span class="cit-score">'+_fmt(c.score)+'</span><span class="cit-ratio">('+ratio+'%)</span></div>'
   }).join('');
-  el.innerHTML='<div class="section-card"><div class="section-header"><div class="section-title">'+_t.citationTitle+'</div><span class="legend">'+_t.citLegend+'</span></div><div class="section-body">'+rows+'</div></div>'
+}
+function renderCitCat(cits){
+  var el=document.getElementById('cit-cat-wrap');
+  if(!el)return;
+  var topN=_meta.citationTopN||10;
+  var html='<div class="section-card"><div class="section-header"><div class="section-title">'+_t.citationTitle+'</div><span class="legend">'+_t.citLegend+'</span></div><div class="section-body">'+_citCatRows(cits,topN)+'</div></div>';
+  // 국가별 테이블
+  var countries=['US','CA','UK','DE','ES','BR','MX','IN','AU','VN'];
+  countries.forEach(function(cnty){
+    var list=_citationsByCnty[cnty];
+    if(!list||!list.length)return;
+    list.sort(function(a,b){return b.score-a.score});
+    list.forEach(function(c,i){c.rank=i+1});
+    html+='<div class="section-card" style="margin-top:16px"><div class="section-header"><div class="section-title" style="font-size:16px">'+_cn(cnty)+'</div></div><div class="section-body">'+_citCatRows(list,topN)+'</div></div>';
+  });
+  el.innerHTML=html;
 }
 
 function renderCitDom(citCnty,useAgg){
@@ -718,10 +733,8 @@ function renderCitDom(citCnty,useAgg){
   el.innerHTML='<div class="section-card"><div class="section-header"><div class="section-title">'+_t.citDomainTitle+'</div><span class="legend">Top '+topN+' Domains</span></div><div class="section-body">'+html+'</div></div>'
 }
 
-function renderDotcom(dc){
-  var el=document.getElementById('cit-dc-wrap');
-  if(!el)return;
-  if(!dc||!dc.lg){el.innerHTML='<div class="section-card"><div class="section-header"><div class="section-title">'+_t.dotcomTitle+'</div></div><div class="section-body"><div style="text-align:center;padding:40px 20px;color:#94A3B8;font-size:13px">'+_noDataMsg+'</div></div></div>';return}
+function _dcBody(dc,titleOverride){
+  if(!dc||!dc.lg)return'<div style="text-align:center;padding:20px;color:#94A3B8;font-size:13px">'+_noDataMsg+'</div>';
   var lg=dc.lg,sam=dc.samsung||{};
   var maxVal=Math.max.apply(null,_DC_COLS.map(function(c){return Math.max(lg[c]||0,sam[c]||0)}).concat([1]));
   var lgWins=_DC_SAM.filter(function(c){return(lg[c]||0)>(sam[c]||0)});
@@ -738,7 +751,21 @@ function renderDotcom(dc){
     return r+'</div></div>';
   }).join('');
   rows+='<div class="dc-summary"><span class="dc-sum-item lg">'+_t.dotcomLgWin+' ('+lgWins.length+')</span> <span class="dc-sum-list">'+(lgWins.length?lgWins.join(', '):_t.dotcomNone)+'</span><span class="dc-sum-item ss">'+_t.dotcomSsWin+' ('+samWins.length+')</span> <span class="dc-sum-list">'+(samWins.length?samWins.join(', '):_t.dotcomNone)+'</span></div>';
-  el.innerHTML='<div class="section-card"><div class="section-header"><div class="section-title">'+_t.dotcomTitle+'</div><span class="legend"><i style="background:#CF0652"></i>LG <i style="background:#94A3B8"></i>SS</span></div><div class="section-body">'+rows+'</div></div>'
+  return rows;
+}
+function renderDotcom(dc){
+  var el=document.getElementById('cit-dc-wrap');
+  if(!el)return;
+  var legend='<span class="legend"><i style="background:#CF0652"></i>LG <i style="background:#94A3B8"></i>SS</span>';
+  var html='<div class="section-card"><div class="section-header"><div class="section-title">'+_t.dotcomTitle+'</div>'+legend+'</div><div class="section-body">'+_dcBody(dc)+'</div></div>';
+  // 국가별 테이블
+  var countries=['US','CA','UK','DE','ES','BR','MX','IN','AU','VN'];
+  countries.forEach(function(cnty){
+    var d=_dotcomByCnty[cnty];
+    if(!d||!d.lg||!Object.keys(d.lg).length)return;
+    html+='<div class="section-card" style="margin-top:16px"><div class="section-header"><div class="section-title" style="font-size:16px">'+_cn(cnty)+'</div>'+legend+'</div><div class="section-body">'+_dcBody(d)+'</div></div>';
+  });
+  el.innerHTML=html;
 }
 
 function applyFilter(){
