@@ -261,11 +261,11 @@ function dotcomTrendChartHtml(dotcomTrend, dotcomTrendMonths, lang) {
 // ═══════════════════════════════════════════════════════════════════════════
 // ─── Region 매핑 ────────────────────────────────────────────────────────────
 const REGIONS = {
-  NA:    { countries: ['US', 'CA'] },
-  EU:    { countries: ['UK', 'DE', 'ES'] },
-  LATAM: { countries: ['MX', 'BR'] },
-  APAC:  { countries: ['AU', 'VN'] },
-  IN:    { countries: ['IN'] },
+  NA:    { labelEn: 'North America', countries: ['US', 'CA'] },
+  EU:    { labelEn: 'Europe',        countries: ['UK', 'DE', 'ES'] },
+  LATAM: { labelEn: 'Latin America', countries: ['MX', 'BR'] },
+  APAC:  { labelEn: 'Asia Pacific',  countries: ['AU', 'VN'] },
+  IN:    { labelEn: 'India',         countries: ['IN'] },
 }
 
 // ─── 리본형 범프차트 공통 SVG 생성 ─────────────────────────────────────────
@@ -508,7 +508,7 @@ export function generateCitationHTML(meta, _total, _products, citations, dotcom,
   const allLabel = lang === 'en' ? 'All' : '전체'
   const regionCheckboxes = Object.entries(REGIONS).map(([k, v]) => {
     const regionOn = v.countries.every(c => isCountryOn(c))
-    return `<label class="fl-chk-label"><input type="checkbox" class="fl-chk" data-filter="region" value="${k}" ${regionOn ? 'checked' : ''} onchange="onRegionChange('${k}')"><span>${k}</span></label>`
+    return `<label class="fl-chk-label"><input type="checkbox" class="fl-chk" data-filter="region" value="${k}" ${regionOn ? 'checked' : ''} onchange="onRegionChange('${k}')"><span>${v.labelEn}</span></label>`
   }).join('')
   const countryCheckboxes = countryList.map(c =>
     `<label class="fl-chk-label"><input type="checkbox" class="fl-chk" data-filter="country" value="${c}" ${isCountryOn(c) ? 'checked' : ''} onchange="onFilterChange()"><span>${cntyFullName(c)}</span></label>`
