@@ -702,10 +702,14 @@ function _citVBar(cits,topN,isSmall){
   var LABEL_H=isSmall?28:34;
   var fs=isSmall?10:12;
   var fsl=isSmall?9:10;
-  return '<div style="display:flex;gap:'+(isSmall?'4':'6')+'px;padding:'+(isSmall?'4px 0 0':'8px 0 0')+';overflow-x:auto">'+list.map(function(c,i){
+  return '<div style="display:flex;gap:'+(isSmall?'4':'6')+'px;padding:'+(isSmall?'4px 0 0':'8px 0 0')+';overflow-x:auto;align-items:flex-end">'+list.map(function(c,i){
     var h=Math.max(3,Math.round(c.score/maxScore*BAR_H));
     var color=i<3?'#CF0652':'#94A3B8';
-    return '<div style="display:flex;flex-direction:column;align-items:center;flex:1;min-width:'+(isSmall?'36px':'0')+'"><span style="font-size:'+fs+'px;font-weight:700;color:'+color+';margin-bottom:2px">'+_fmt(c.score)+'</span><div style="width:100%;height:'+h+'px;background:'+color+';border-radius:3px 3px 0 0;min-height:3px"></div><div style="height:'+LABEL_H+'px;display:flex;align-items:flex-start;justify-content:center;padding-top:3px"><span style="font-size:'+fsl+'px;color:#64748B;text-align:center;line-height:1.2;word-break:break-all;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">'+c.source+'</span></div></div>';
+    return '<div style="display:flex;flex-direction:column;align-items:center;flex:1;min-width:'+(isSmall?'36px':'0')+'">'
+      +'<span style="font-size:'+fs+'px;font-weight:700;color:'+color+';margin-bottom:2px">'+_fmt(c.score)+'</span>'
+      +'<div style="width:100%;height:'+h+'px;background:'+color+';border-radius:3px 3px 0 0;min-height:3px"></div>'
+      +'<div style="height:'+LABEL_H+'px;display:flex;align-items:flex-start;justify-content:center;padding-top:3px"><span style="font-size:'+fsl+'px;color:#64748B;text-align:center;line-height:1.2;word-break:break-all;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">'+c.source+'</span></div>'
+      +'</div>';
   }).join('')+'</div>';
 }
 function renderCitCat(cits){
@@ -763,7 +767,7 @@ function _dcVBar(dc,isSmall){
   var bw=isSmall?14:22;
   var fs=isSmall?9:11;
   var fsl=isSmall?9:11;
-  return '<div style="display:flex;gap:'+(isSmall?'6':'10')+'px;padding:'+(isSmall?'4px 0 0':'8px 0 0')+';overflow-x:auto">'+cols.map(function(col){
+  return '<div style="display:flex;gap:'+(isSmall?'6':'10')+'px;padding:'+(isSmall?'4px 0 0':'8px 0 0')+';overflow-x:auto;align-items:flex-end">'+cols.map(function(col){
     var lv=lg[col]||0,sv=sam[col]||0;
     var lh=Math.max(2,Math.round(lv/maxVal*BAR_H));
     var sh=Math.max(2,Math.round(sv/maxVal*BAR_H));
