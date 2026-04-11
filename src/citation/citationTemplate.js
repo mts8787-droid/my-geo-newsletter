@@ -735,6 +735,11 @@ function renderCitCat(cits){
   el.innerHTML='<div class="section-card"><div class="section-header"><div class="section-title">'+_t.citationTitle+'</div><span class="legend">'+_t.citLegend+'</span></div><div class="section-body">'+body+'</div></div>';
 }
 
+function _domToVBarData(rows,topN){
+  // citationsCnty 형식 ({domain,citations}) → _citVBar 형식 ({source,score})
+  var list=rows.slice(0,topN);
+  return list.map(function(r){return{source:_stripDomain(r.domain),score:r.citations}});
+}
 function renderCitDom(citCnty,useAgg){
   var el=document.getElementById('cit-dom-wrap');
   if(!el)return;
@@ -743,18 +748,25 @@ function renderCitDom(citCnty,useAgg){
     var countryRows=citCnty.filter(function(r){return r.cnty!=='TTL'});
     var dm={};countryRows.forEach(function(r){var k=r.domain;if(!dm[k])dm[k]={domain:r.domain,type:r.type,citations:0};dm[k].citations+=r.citations});
     rows=Object.values(dm).sort(function(a,b){return b.citations-a.citations}).slice(0,topN);
-    rows.forEach(function(r,i){r.rank=i+1});
   } else {
     rows=citCnty.filter(function(r){return r.cnty==='TTL'}).sort(function(a,b){return a.rank-b.rank}).slice(0,topN);
   }
-  if(!rows||!rows.length){el.innerHTML='<div class="section-card"><div class="section-header"><div class="section-title">'+_t.citDomainTitle+'</div></div><div class="section-body"><div style="text-align:center;padding:40px 20px;color:#94A3B8;font-size:13px">'+_noDataMsg+'</div></div></div>';return}
-  var maxScore=Math.max.apply(null,rows.map(function(r){return r.citations}).concat([1]));
-  var totalCit=rows.reduce(function(s,r){return s+r.citations},0);
-  var html=rows.map(function(c,i){
-    var pct=(c.citations/maxScore*100).toFixed(1);var ratio=totalCit>0?((c.citations/totalCit)*100).toFixed(1):'0.0';
-    return '<div class="cit-row"><span class="cit-rank '+(i<3?'top':'')+'">'+c.rank+'</span><div class="cit-info"><span class="cit-source">'+_stripDomain(c.domain)+'</span><span class="cit-cat">'+c.type+'</span></div><div class="cit-bar-wrap"><div class="cit-bar" style="width:'+pct+'%"></div></div><span class="cit-score">'+_fmt(c.citations)+'</span><span class="cit-ratio">('+ratio+'%)</span></div>'
-  }).join('');
-  el.innerHTML='<div class="section-card"><div class="section-header"><div class="section-title">'+_t.citDomainTitle+'</div><span class="legend">Top '+topN+' Domains</span></div><div class="section-body">'+html+'</div></div>'
+  // 전체 세로 막대그래프
+  var body=_citVBar(_domToVBarData(rows||[],topN),topN,false);
+  // 국가별 세로 막대그래프
+  var countries=['US','CA','UK','DE','ES','BR','MX','IN','AU','VN'];
+  var cntyCards=[];
+  countries.forEach(function(cnty){
+    var cRows=citCnty.filter(function(r){return r.cnty===cnty}).sort(function(a,b){return b.citations-a.citations});
+    if(!cRows.length)return;
+    cntyCards.push('<div style="width:calc(50% - 6px);background:#F8FAFC;border:1px solid #E8EDF2;border-radius:8px;overflow:hidden">'
+      +'<div style="padding:6px 12px;border-bottom:1px solid #F1F5F9;font-size:13px;font-weight:700;color:#1A1A1A">'+_cn(cnty)+'</div>'
+      +'<div style="padding:4px 4px">'+_citVBar(_domToVBarData(cRows,8),8,true)+'</div></div>');
+  });
+  if(cntyCards.length){
+    body+='<div style="border-top:1px solid #E8EDF2;margin-top:16px;padding-top:16px"><div style="font-size:14px;font-weight:700;color:#64748B;margin-bottom:10px">By Country</div><div style="display:flex;flex-wrap:wrap;gap:12px">'+cntyCards.join('')+'</div></div>';
+  }
+  el.innerHTML='<div class="section-card"><div class="section-header"><div class="section-title">'+_t.citDomainTitle+'</div><span class="legend">Top '+topN+' Domains</span></div><div class="section-body">'+body+'</div></div>';
 }
 
 function _dcVBar(dc,isSmall){
