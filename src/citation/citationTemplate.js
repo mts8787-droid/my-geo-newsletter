@@ -276,14 +276,16 @@ const BUMP_MAX = 10 // 최대 표시 개수
 
 function bumpChartSvg(names, rankings, months, maxRank, labelFn) {
   const fixedRanks = BUMP_MAX
-  const ROW_H = 52 // 리본 간격 (겹침 방지)
-  const EXT = 20
-  const W = Math.max(months.length * 200, 600) + EXT * 2
-  const H = fixedRanks * ROW_H + 16 // 상하 여백 최소화
-  const padL = 20 + EXT, padR = 20 + EXT, padT = 4, padB = 40
+  const ROW_H = 52
+  const EXT_L = 80 // 왼쪽 리본 확장 (라벨이 리본 안에 들어오도록)
+  const EXT_R = 20
+  const W = Math.max(months.length * 200, 600) + EXT_L + EXT_R
+  const H = fixedRanks * ROW_H + 44 // 상하 여백 축소
+  const padL = 10 + EXT_L, padR = 10 + EXT_R, padT = 4, padB = 36
   const chartW = W - padL - padR
   const chartH = H - padT - padB
-  const ribbonW = ROW_H * 0.38 // 리본 두께 (간격 대비 적당히)
+  const ribbonW = ROW_H * 0.38
+  const RND = ribbonW // 둥근 끝 반지름
 
   let svg = `<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" style="font-family:${FONT}">`
 
@@ -306,14 +308,18 @@ function bumpChartSvg(names, rankings, months, maxRank, labelFn) {
     if (points.length < 1) return
 
     const first = points[0], last = points[points.length - 1]
-    const extPts = [{ x: first.x - EXT, y: first.y }, ...points, { x: last.x + EXT, y: last.y }]
+    // 왼쪽 확장 (라벨 공간 확보 + 둥근 끝)
+    const leftX = first.x - EXT_L
+    const rightX = last.x + EXT_R
+    const extPts = [{ x: leftX + RND, y: first.y }, ...points, { x: rightX - RND, y: last.y }]
 
     let upper = '', lower = ''
     for (let i = 0; i < extPts.length; i++) {
       const p = extPts[i]
       if (i === 0) {
-        upper += `M${p.x},${p.y - ribbonW}`
-        lower = `L${p.x},${p.y + ribbonW}`
+        // 왼쪽 둥근 시작
+        upper += `M${p.x - RND},${p.y} A${RND},${ribbonW} 0 0,1 ${p.x},${p.y - ribbonW}`
+        lower = `L${p.x},${p.y + ribbonW} A${RND},${ribbonW} 0 0,1 ${p.x - RND},${p.y}`
       } else {
         const prev = extPts[i - 1]
         const cx = (prev.x + p.x) / 2
@@ -322,11 +328,12 @@ function bumpChartSvg(names, rankings, months, maxRank, labelFn) {
       }
     }
     const lastExt = extPts[extPts.length - 1]
-    const ribbonPath = upper + ` L${lastExt.x},${lastExt.y + ribbonW}` + lower + ' Z'
+    // 오른쪽 둥근 끝
+    const ribbonPath = upper + ` A${RND},${ribbonW} 0 0,1 ${lastExt.x + RND},${lastExt.y}` + ` A${RND},${ribbonW} 0 0,1 ${lastExt.x},${lastExt.y + ribbonW}` + lower + ' Z'
     svg += `<path d="${ribbonPath}" fill="${color}" opacity="0.6" stroke="${color}" stroke-width="0.5" stroke-opacity="0.3"/>`
   })
 
-  // 라벨
+  // 라벨 (검은색, +3pt)
   names.forEach((name, ni) => {
     const label = labelFn ? labelFn(name) : name
     months.forEach((m, i) => {
@@ -334,7 +341,7 @@ function bumpChartSvg(names, rankings, months, maxRank, labelFn) {
       if (rank == null || rank > fixedRanks) return
       const x = padL + (i / Math.max(months.length - 1, 1)) * chartW
       const y = padT + ((rank - 0.5) / fixedRanks) * chartH
-      svg += `<text x="${x}" y="${y + 6}" text-anchor="middle" fill="#fff" font-size="16" font-weight="700" style="text-shadow:0 1px 3px rgba(0,0,0,0.7)">${label}</text>`
+      svg += `<text x="${x}" y="${y + 7}" text-anchor="middle" fill="#0F172A" font-size="19" font-weight="700">${label}</text>`
     })
   })
 
@@ -342,7 +349,7 @@ function bumpChartSvg(names, rankings, months, maxRank, labelFn) {
   months.forEach((m, i) => {
     const x = padL + (i / Math.max(months.length - 1, 1)) * chartW
     svg += `<line x1="${x}" y1="${padT + chartH + 2}" x2="${x}" y2="${padT + chartH + 8}" stroke="#94A3B8" stroke-width="1.5"/>`
-    svg += `<text x="${x}" y="${padT + chartH + 30}" text-anchor="middle" fill="#475569" font-size="20" font-weight="800">${m}</text>`
+    svg += `<text x="${x}" y="${padT + chartH + 28}" text-anchor="middle" fill="#475569" font-size="23" font-weight="800">${m}</text>`
   })
 
   svg += '</svg>'
