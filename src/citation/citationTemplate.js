@@ -288,7 +288,7 @@ function bumpChartSvg(names, rankings, months, maxRank, labelFn) {
   const ribbonW = ROW_H * 0.38
   const RND = ribbonW // 둥근 끝 반지름
 
-  let svg = `<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" style="font-family:${FONT}">`
+  let svg = `<svg viewBox="0 0 ${W} ${H}" width="100%" preserveAspectRatio="xMidYMid meet" style="font-family:${FONT};display:block">`
 
   const sortedNames = [...names].sort((a, b) => {
     const lastM = months[months.length - 1]
