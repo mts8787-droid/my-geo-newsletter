@@ -277,11 +277,12 @@ const BUMP_MAX = 10 // 최대 표시 개수
 function bumpChartSvg(names, rankings, months, maxRank, labelFn) {
   const fixedRanks = BUMP_MAX
   const ROW_H = 52
-  const EXT_L = 80 // 왼쪽 리본 확장 (라벨이 리본 안에 들어오도록)
+  const EXT_L = 80
   const EXT_R = 20
   const W = Math.max(months.length * 200, 600) + EXT_L + EXT_R
-  const H = fixedRanks * ROW_H + 44 // 상하 여백 축소
-  const padL = 10 + EXT_L, padR = 10 + EXT_R, padT = 4, padB = 36
+  const padT = 0, padB = 30
+  const H = fixedRanks * ROW_H + padT + padB
+  const padL = 10 + EXT_L, padR = 10 + EXT_R
   const chartW = W - padL - padR
   const chartH = H - padT - padB
   const ribbonW = ROW_H * 0.38
@@ -341,7 +342,7 @@ function bumpChartSvg(names, rankings, months, maxRank, labelFn) {
       if (rank == null || rank > fixedRanks) return
       const x = padL + (i / Math.max(months.length - 1, 1)) * chartW
       const y = padT + ((rank - 0.5) / fixedRanks) * chartH
-      svg += `<text x="${x}" y="${y + 7}" text-anchor="middle" fill="#0F172A" font-size="19" font-weight="700">${label}</text>`
+      svg += `<text x="${x}" y="${y + 8}" text-anchor="middle" fill="#0F172A" font-size="22" font-weight="700">${label}</text>`
     })
   })
 
@@ -349,7 +350,7 @@ function bumpChartSvg(names, rankings, months, maxRank, labelFn) {
   months.forEach((m, i) => {
     const x = padL + (i / Math.max(months.length - 1, 1)) * chartW
     svg += `<line x1="${x}" y1="${padT + chartH + 2}" x2="${x}" y2="${padT + chartH + 8}" stroke="#94A3B8" stroke-width="1.5"/>`
-    svg += `<text x="${x}" y="${padT + chartH + 28}" text-anchor="middle" fill="#475569" font-size="23" font-weight="800">${m}</text>`
+    svg += `<text x="${x}" y="${padT + chartH + 26}" text-anchor="middle" fill="#475569" font-size="26" font-weight="800">${m}</text>`
   })
 
   svg += '</svg>'
@@ -637,7 +638,7 @@ body{background:#F1F5F9;font-family:${FONT};min-width:1200px;color:#1A1A1A}
 .cit-gnb-btn:hover{color:#E2E8F0}
 .cit-gnb-btn.active{background:#334155;color:#fff}
 /* ── 범프차트 ── */
-.bump-chart-wrap{overflow-x:auto;padding:0;margin-bottom:8px}
+.bump-chart-wrap{overflow-x:auto;padding:0;margin:0}
 .trend-table{width:100%;border-collapse:collapse;font-size:15px;margin-top:4px}
 .trend-table th{padding:8px 10px;text-align:left;font-weight:700;color:#64748B;border-bottom:2px solid #E2E8F0;font-size:14px;white-space:nowrap}
 .trend-table td{padding:7px 10px;border-bottom:1px solid #F1F5F9;white-space:nowrap;vertical-align:middle}
