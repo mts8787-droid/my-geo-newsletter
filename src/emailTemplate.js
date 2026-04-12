@@ -5,6 +5,18 @@ const EM_RED  = '#CF0652'
 const EM_DARK = '#A0003E'
 const EM_FONT = "'LG Smart', 'Arial Narrow', Arial, sans-serif"
 
+const CNTY_KR = {
+  US: '미국', CA: '캐나다', UK: '영국', GB: '영국',
+  DE: '독일', ES: '스페인', FR: '프랑스', IT: '이탈리아',
+  BR: '브라질', MX: '멕시코', IN: '인도', AU: '호주',
+  VN: '베트남', JP: '일본', KR: '한국', CN: '중국',
+  TTL: '전체', TOTAL: '전체', GLOBAL: '전체',
+}
+function cntyKr(c) {
+  const k = String(c || '').trim().toUpperCase()
+  return CNTY_KR[k] || c
+}
+
 // ─── HTML Sanitization (XSS 방지) ──────────────────────────────────────────
 function escapeHtml(str) {
   if (typeof str !== 'string') return String(str ?? '')
@@ -441,12 +453,13 @@ function countryCardHtml(cntyCode, rows, lang) {
         <tr><td height="${barH}" style="font-size:0;line-height:0;"><table border="0" cellpadding="0" cellspacing="0" align="center"><tr><td width="20" height="${barH}" style="background:${barColor};border-radius:3px 3px 0 0;font-size:0;">&nbsp;</td></tr></table></td></tr>
         <tr><td style="font-size:12px;font-weight:800;color:${barColor};font-family:${EM_FONT};padding-top:2px;white-space:nowrap;">${r.score.toFixed(1)}</td></tr>
         <tr><td style="font-size:11px;color:#475569;font-family:${EM_FONT};padding-top:1px;white-space:nowrap;">${escapeHtml(r.product)}</td></tr>
+        <tr><td style="font-size:10px;color:#94A3B8;font-family:${EM_FONT};padding-top:1px;white-space:nowrap;">${ssName(r.compName)} ${r.compScore > 0 ? Math.round(r.score / r.compScore * 100) + '%' : ''}</td></tr>
       </table>
     </td>`
   }).join('')
 
   return `<table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#F8FAFC;border:1px solid #E8EDF2;border-radius:8px;">
-    <tr><td style="padding:6px 10px;border-bottom:1px solid #F1F5F9;font-size:14px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${escapeHtml(cntyCode)}</td></tr>
+    <tr><td style="padding:6px 10px;border-bottom:1px solid #F1F5F9;font-size:14px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${escapeHtml(cntyKr(cntyCode))}</td></tr>
     <tr><td style="padding:6px 4px 8px;"><table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;"><tr>${barCols}</tr></table></td></tr>
   </table>`
 }
@@ -659,7 +672,7 @@ function citationCntySectionHtml(citationsCnty, meta, lang) {
       const color = isFirst ? '#FFFFFF' : val > 0 ? '#1A1A1A' : '#CBD5E1'
       return `<td style="padding:5px 4px;text-align:center;font-size:12px;font-weight:${val > 0 ? '700' : '400'};color:${color};font-family:${EM_FONT};border-bottom:1px solid #F1F5F9;${bg}border-radius:${isFirst ? '4px' : '0'};">${val > 0 ? `${fmtN(val)} <span style="font-size:10px;color:${isFirst ? '#FFD4E0' : '#94A3B8'};font-weight:600;">#${rank}</span>` : '—'}</td>`
     }).join('')
-    return `<tr><td style="padding:5px 8px;font-size:13px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};border-bottom:1px solid #F1F5F9;white-space:nowrap;">${cnty}</td>${cells}</tr>`
+    return `<tr><td style="padding:5px 8px;font-size:13px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};border-bottom:1px solid #F1F5F9;white-space:nowrap;">${cntyKr(cnty)}</td>${cells}</tr>`
   }).join('')
 
   return `
@@ -695,8 +708,10 @@ function citationCntySectionHtml(citationsCnty, meta, lang) {
 const LABEL_WIDTH = 150
 
 function citationRowHtml(c, isLast, maxScore) {
-  const rankBg    = c.rank <= 3 ? EM_RED : '#F1F5F9'
-  const rankColor = c.rank <= 3 ? '#FFFFFF' : '#94A3B8'
+  const isTop3    = c.rank <= 3
+  const rankBg    = isTop3 ? EM_RED : '#F1F5F9'
+  const rankColor = isTop3 ? '#FFFFFF' : '#94A3B8'
+  const barColor  = isTop3 ? EM_RED : '#475569'
   const barPct    = Math.min(Math.round((c.score / maxScore) * 70), 70)
   const d         = c.delta
   const scoreStr  = fmt(c.score)
@@ -719,9 +734,9 @@ function citationRowHtml(c, isLast, maxScore) {
     <td style="padding:6px 16px 6px 0;vertical-align:top;">
       <table border="0" cellpadding="0" cellspacing="0" width="100%">
         <tr>
-          <td width="${barPct}%" style="background:${EM_RED};border-radius:6px;height:24px;font-size:0;">&nbsp;</td>
+          <td width="${barPct}%" style="background:${barColor};border-radius:6px;height:24px;font-size:0;">&nbsp;</td>
           <td style="height:24px;padding-left:8px;white-space:nowrap;vertical-align:middle;">
-            <span style="font-size:15px;font-weight:700;color:${EM_RED};font-family:${EM_FONT};">${scoreStr}</span>
+            <span style="font-size:15px;font-weight:700;color:${barColor};font-family:${EM_FONT};">${scoreStr}</span>
             <span style="font-size:15px;color:#64748B;font-family:${EM_FONT};">&nbsp;(${c.ratio ? c.ratio.toFixed(1) + '%' : ''})</span>
             &nbsp;${d ? deltaHtml(d, 12, false) : ''}
           </td>
