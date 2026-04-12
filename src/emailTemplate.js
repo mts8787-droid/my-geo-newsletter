@@ -424,22 +424,57 @@ function countryProductSectionHtml(productName, rows, lang) {
   </tr>`
 }
 
+function countryCardHtml(cntyCode, rows, lang) {
+  const maxScore = Math.max(...rows.map(r => Math.max(r.score, r.compScore)), 1)
+  const BAR_MAX = 36
+  const colWidth = Math.floor(100 / rows.length)
+
+  const barCols = rows.map(r => {
+    const status = cntyStatus(r.score, r.compScore)
+    const barColor = status === 'lead' ? '#15803D' : status === 'behind' ? '#E8910C' : '#BE123C'
+    const barH = Math.max(Math.round((r.score / maxScore) * BAR_MAX), 3)
+    const spacerH = BAR_MAX - barH
+
+    return `<td width="${colWidth}%" style="vertical-align:bottom;text-align:center;padding:0 1px;">
+      <table border="0" cellpadding="0" cellspacing="0" align="center" style="margin:0 auto;table-layout:fixed;width:100%;">
+        ${spacerH > 0 ? `<tr><td height="${spacerH}" style="font-size:0;line-height:0;">&nbsp;</td></tr>` : ''}
+        <tr><td height="${barH}" style="font-size:0;line-height:0;"><table border="0" cellpadding="0" cellspacing="0" align="center"><tr><td width="20" height="${barH}" style="background:${barColor};border-radius:3px 3px 0 0;font-size:0;">&nbsp;</td></tr></table></td></tr>
+        <tr><td style="font-size:12px;font-weight:800;color:${barColor};font-family:${EM_FONT};padding-top:2px;white-space:nowrap;">${r.score.toFixed(1)}</td></tr>
+        <tr><td style="font-size:11px;color:#475569;font-family:${EM_FONT};padding-top:1px;white-space:nowrap;">${escapeHtml(r.product)}</td></tr>
+      </table>
+    </td>`
+  }).join('')
+
+  return `<table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#F8FAFC;border:1px solid #E8EDF2;border-radius:8px;">
+    <tr><td style="padding:6px 10px;border-bottom:1px solid #F1F5F9;font-size:14px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${escapeHtml(cntyCode)}</td></tr>
+    <tr><td style="padding:6px 4px 8px;"><table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;"><tr>${barCols}</tr></table></td></tr>
+  </table>`
+}
+
 function countryVisibilitySectionHtml(productsCnty, meta, lang) {
   if (!productsCnty || !productsCnty.length) return ''
   const t = T[lang] || T.ko
 
-  const productMap = new Map()
+  // 국가별로 그룹핑
+  const cntyMap = new Map()
   productsCnty.forEach(row => {
-    if (!productMap.has(row.product)) productMap.set(row.product, [])
-    productMap.get(row.product).push(row)
+    if (!cntyMap.has(row.country)) cntyMap.set(row.country, [])
+    cntyMap.get(row.country).push(row)
   })
 
-  // 제품별 on/off 필터 적용
-  const filter = meta.cntyProductFilter || {}
-  const productSections = [...productMap.entries()]
-    .filter(([name]) => filter[name] !== false)
-    .map(([name, rows]) => countryProductSectionHtml(name, rows, lang))
-    .join('')
+  const countries = [...cntyMap.keys()]
+  const cards = countries.map(cnty => countryCardHtml(cnty, cntyMap.get(cnty), lang))
+
+  // 2개씩 한 행에 배치
+  let pairRows = ''
+  for (let i = 0; i < cards.length; i += 2) {
+    const left = cards[i]
+    const right = cards[i + 1] || ''
+    pairRows += `<tr>
+      <td width="50%" style="vertical-align:top;padding:0 4px 10px 0;">${left}</td>
+      <td width="50%" style="vertical-align:top;padding:0 0 10px 4px;">${right}</td>
+    </tr>`
+  }
 
   return `
               <!-- ══ 국가별 GEO Visibility ══ -->
@@ -447,31 +482,18 @@ function countryVisibilitySectionHtml(productsCnty, meta, lang) {
                 <td style="padding-bottom:28px;">
                   <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFFFFF;border-radius:16px;border:2px solid #E8EDF2;">
                     <tr>
-                      <td style="padding:22px 16px 18px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;">
-                        <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                          <tr>
-                            <td style="vertical-align:middle;">
-                              <table border="0" cellpadding="0" cellspacing="0">
-                                <tr>
-                                  <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
-                                  <td style="padding-left:8px;font-size:19px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${t.cntyTitle}</td>
-                                </tr>
-                              </table>
-                            </td>
-                            <td align="right" style="vertical-align:middle;font-size:13px;color:#94A3B8;font-family:${EM_FONT};">
-                              <span style="color:#15803D;">●</span> ${t.legendLead} &nbsp;
-                              <span style="color:#E8910C;">●</span> ${t.legendBehind} &nbsp;
-                              <span style="color:#BE123C;">●</span> ${t.legendCritical}
-                            </td>
-                          </tr>
-                        </table>
+                      <td style="padding:16px 12px 12px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;">
+                        <table border="0" cellpadding="0" cellspacing="0"><tr>
+                          <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
+                          <td style="padding-left:8px;font-size:16px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${t.cntyTitle}</td>
+                        </tr></table>
                       </td>
                     </tr>
                     ${insightBlockHtml(meta.cntyInsight, meta.showCntyInsight, meta.cntyHowToRead, meta.showCntyHowToRead, lang)}
                     <tr>
-                      <td style="padding:20px 16px;">
+                      <td style="padding:12px 10px;">
                         <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                          ${productSections}
+                          ${pairRows}
                         </table>
                       </td>
                     </tr>
