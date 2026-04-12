@@ -495,26 +495,26 @@ function citationDomainCntyRowsHtml(cntyRows, domTopN) {
   return cntyRows.slice(0, domTopN).map((c, i, arr) => {
     const barPct = Math.min(Math.round((c.citations / maxScore) * 70), 70)
     const ratio = totalCit > 0 ? ((c.citations / totalCit) * 100).toFixed(1) : '0.0'
+    const isTop3 = c.rank <= 3
+    const barColor = isTop3 ? EM_RED : '#475569'
+    const valColor = isTop3 ? EM_RED : '#475569'
     return `<tr>
       <td style="border-bottom:${i < arr.length - 1 ? '1px solid #F8FAFC' : 'none'};">
         <table border="0" cellpadding="0" cellspacing="0" width="100%">
           <tr>
-            <td width="150" style="padding:10px 12px 10px 16px;vertical-align:middle;">
+            <td width="120" style="padding:7px 8px 7px 10px;vertical-align:middle;">
               <table border="0" cellpadding="0" cellspacing="0"><tr>
-                <td width="22" height="22" align="center" style="background:${c.rank <= 3 ? EM_RED : '#F1F5F9'};border-radius:4px;font-size:13px;font-weight:800;color:${c.rank <= 3 ? '#FFFFFF' : '#94A3B8'};font-family:${EM_FONT};line-height:22px;">${c.rank}</td>
-                <td style="padding-left:7px;vertical-align:middle;">
-                  <p style="margin:0;font-size:14px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${escapeHtml(stripDomain(c.domain))}</p>
-                  <span style="font-size:12px;color:#94A3B8;font-family:${EM_FONT};background:#F8FAFC;border-radius:4px;padding:1px 5px;">${escapeHtml(c.type)}</span>
-                </td>
+                <td width="20" height="20" align="center" style="background:${isTop3 ? EM_RED : '#F1F5F9'};border-radius:4px;font-size:12px;font-weight:800;color:${isTop3 ? '#FFFFFF' : '#94A3B8'};font-family:${EM_FONT};line-height:20px;">${c.rank}</td>
+                <td style="padding-left:6px;font-size:13px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${escapeHtml(stripDomain(c.domain))}</td>
               </tr></table>
             </td>
-            <td style="padding:10px 16px 10px 0;vertical-align:top;">
+            <td style="padding:7px 10px 7px 0;vertical-align:middle;">
               <table border="0" cellpadding="0" cellspacing="0" width="100%">
                 <tr>
-                  <td width="${barPct}%" style="background:${EM_RED};border-radius:6px;height:24px;font-size:0;">&nbsp;</td>
-                  <td style="height:24px;padding-left:8px;white-space:nowrap;vertical-align:middle;">
-                    <span style="font-size:15px;font-weight:700;color:${EM_RED};font-family:${EM_FONT};">${fmtN(c.citations)}</span>
-                    <span style="font-size:15px;color:#64748B;font-family:${EM_FONT};">&nbsp;(${ratio}%)</span>
+                  <td width="${barPct}%" style="background:${barColor};border-radius:5px;height:20px;font-size:0;">&nbsp;</td>
+                  <td style="height:20px;padding-left:6px;white-space:nowrap;vertical-align:middle;">
+                    <span style="font-size:13px;font-weight:700;color:${valColor};font-family:${EM_FONT};">${fmtN(c.citations)}</span>
+                    <span style="font-size:12px;color:#94A3B8;font-family:${EM_FONT};">&nbsp;(${ratio}%)</span>
                   </td>
                 </tr>
               </table>
@@ -618,14 +618,24 @@ function citationCntySectionHtml(citationsCnty, meta, lang) {
     `<td style="padding:6px 4px;text-align:center;font-size:12px;font-weight:700;color:#64748B;font-family:${EM_FONT};border-bottom:2px solid #E8EDF2;">${d}</td>`
   ).join('')
 
-  // 국가별 행
+  // 국가별 행 (랭킹 + 1위 빨간 배경)
   const countryRows = countries.map(cnty => {
     const rows = cntyMap.get(cnty)
+    const sorted = [...rows].sort((a, b) => b.citations - a.citations)
     const domMap = {}
-    rows.forEach(r => { domMap[stripDomain(r.domain)] = r.citations })
+    const rankMap = {}
+    sorted.forEach((r, i) => {
+      const key = stripDomain(r.domain)
+      domMap[key] = r.citations
+      rankMap[key] = i + 1
+    })
     const cells = topDomains.map(d => {
       const val = domMap[d] || 0
-      return `<td style="padding:5px 4px;text-align:center;font-size:13px;font-weight:${val > 0 ? '700' : '400'};color:${val > 0 ? '#1A1A1A' : '#CBD5E1'};font-family:${EM_FONT};border-bottom:1px solid #F1F5F9;">${val > 0 ? fmtN(val) : '—'}</td>`
+      const rank = rankMap[d] || 999
+      const isFirst = rank === 1 && val > 0
+      const bg = isFirst ? `background:${EM_RED};` : ''
+      const color = isFirst ? '#FFFFFF' : val > 0 ? '#1A1A1A' : '#CBD5E1'
+      return `<td style="padding:5px 4px;text-align:center;font-size:12px;font-weight:${val > 0 ? '700' : '400'};color:${color};font-family:${EM_FONT};border-bottom:1px solid #F1F5F9;${bg}border-radius:${isFirst ? '4px' : '0'};">${val > 0 ? `${fmtN(val)} <span style="font-size:10px;color:${isFirst ? '#FFD4E0' : '#94A3B8'};font-weight:600;">#${rank}</span>` : '—'}</td>`
     }).join('')
     return `<tr><td style="padding:5px 8px;font-size:13px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};border-bottom:1px solid #F1F5F9;white-space:nowrap;">${cnty}</td>${cells}</tr>`
   }).join('')
