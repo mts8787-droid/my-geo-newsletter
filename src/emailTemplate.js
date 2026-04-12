@@ -539,36 +539,8 @@ function citationDomainCntyRowsHtml(cntyRows, domTopN) {
   const fmtN = n => Number(n).toLocaleString('en-US')
 
   return cntyRows.slice(0, domTopN).map((c, i, arr) => {
-    const barPct = Math.min(Math.round((c.citations / maxScore) * 70), 70)
-    const ratio = totalCit > 0 ? ((c.citations / totalCit) * 100).toFixed(1) : '0.0'
-    const isTop3 = c.rank <= 3
-    const barColor = isTop3 ? EM_RED : '#475569'
-    const valColor = isTop3 ? EM_RED : '#475569'
-    return `<tr>
-      <td style="border-bottom:${i < arr.length - 1 ? '1px solid #F8FAFC' : 'none'};">
-        <table border="0" cellpadding="0" cellspacing="0" width="100%">
-          <tr>
-            <td width="120" style="padding:7px 8px 7px 10px;vertical-align:middle;">
-              <table border="0" cellpadding="0" cellspacing="0"><tr>
-                <td width="20" height="20" align="center" style="background:${isTop3 ? EM_RED : '#F1F5F9'};border-radius:4px;font-size:12px;font-weight:800;color:${isTop3 ? '#FFFFFF' : '#94A3B8'};font-family:${EM_FONT};line-height:20px;">${c.rank}</td>
-                <td style="padding-left:6px;font-size:13px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${escapeHtml(stripDomain(c.domain))}</td>
-              </tr></table>
-            </td>
-            <td style="padding:7px 10px 7px 0;vertical-align:middle;">
-              <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                <tr>
-                  <td width="${barPct}%" style="background:${barColor};border-radius:5px;height:20px;font-size:0;">&nbsp;</td>
-                  <td style="height:20px;padding-left:6px;white-space:nowrap;vertical-align:middle;">
-                    <span style="font-size:13px;font-weight:700;color:${valColor};font-family:${EM_FONT};">${fmtN(c.citations)}</span>
-                    <span style="font-size:12px;color:#94A3B8;font-family:${EM_FONT};">&nbsp;(${ratio}%)</span>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>`
+    const ratio = totalCit > 0 ? +((c.citations / totalCit) * 100).toFixed(1) : 0
+    return citUnifiedRow(c.rank, stripDomain(c.domain), c.citations, ratio, maxScore, i === arr.length - 1)
   }).join('')
 }
 
@@ -696,46 +668,34 @@ function citationCntyTableHtml(citationsCnty, lang) {
                       </td></tr>`
 }
 
-// ─── Citation 행 ──────────────────────────────────────────────────────────────
-const LABEL_WIDTH = 150
-
-function citationRowHtml(c, isLast, maxScore) {
-  const isTop3    = c.rank <= 3
-  const rankBg    = isTop3 ? EM_RED : '#F1F5F9'
+// ─── Citation 통합 행 (카테고리 + 도메인 공용) ────────────────────────────────
+function citUnifiedRow(rank, label, score, ratio, maxScore, isLast) {
+  const isTop3 = rank <= 3
+  const rankBg = isTop3 ? EM_RED : '#F1F5F9'
   const rankColor = isTop3 ? '#FFFFFF' : '#94A3B8'
-  const barColor  = isTop3 ? EM_RED : '#475569'
-  const barPct    = Math.min(Math.round((c.score / maxScore) * 70), 70)
-  const d         = c.delta
-  const scoreStr  = fmt(c.score)
+  const barColor = isTop3 ? EM_RED : '#475569'
+  const barPct = Math.min(Math.round((score / maxScore) * 55), 55)
+  const ratioStr = ratio > 0 ? ratio.toFixed(1) + '%' : ''
 
-  return `
-  <tr style="background:#FFFFFF;${isLast ? '' : 'border-bottom:1px solid #F8FAFC;'}">
-    <td style="padding:6px 8px 6px 10px;width:${LABEL_WIDTH}px;vertical-align:top;">
-      <table border="0" cellpadding="0" cellspacing="0">
-        <tr>
-          <td width="22" style="vertical-align:top;padding-top:1px;">
-            <table border="0" cellpadding="0" cellspacing="0"><tr><td width="22" height="22" style="background:${rankBg};color:${rankColor};border-radius:4px;font-size:13px;font-weight:800;text-align:center;line-height:22px;font-family:${EM_FONT};">${c.rank}</td></tr></table>
-          </td>
-          <td style="padding-left:5px;vertical-align:top;">
-            <table border="0" cellpadding="0" cellspacing="0"><tr><td style="font-size:13px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};line-height:18px;">${escapeHtml(c.source)}</td></tr></table>
-            <table border="0" cellpadding="0" cellspacing="0"><tr><td style="font-size:13px;color:#94A3B8;background:#F8FAFC;border-radius:4px;padding:1px 5px;font-family:${EM_FONT};">${escapeHtml(c.category)}</td></tr></table>
-          </td>
-        </tr>
-      </table>
+  return `<tr style="${isLast ? '' : 'border-bottom:1px solid #F1F5F9;'}">
+    <td width="18" style="padding:5px 0 5px 4px;vertical-align:middle;text-align:center;">
+      <table border="0" cellpadding="0" cellspacing="0"><tr><td width="18" height="18" style="background:${rankBg};color:${rankColor};border-radius:3px;font-size:11px;font-weight:800;text-align:center;line-height:18px;font-family:${EM_FONT};">${rank}</td></tr></table>
     </td>
-    <td style="padding:6px 16px 6px 0;vertical-align:top;">
-      <table border="0" cellpadding="0" cellspacing="0" width="100%">
-        <tr>
-          <td width="${barPct}%" style="background:${barColor};border-radius:6px;height:24px;font-size:0;">&nbsp;</td>
-          <td style="height:24px;padding-left:8px;white-space:nowrap;vertical-align:middle;">
-            <span style="font-size:13px;font-weight:700;color:${barColor};font-family:${EM_FONT};">${scoreStr}</span>
-            <span style="font-size:12px;color:#94A3B8;font-family:${EM_FONT};">&nbsp;(${c.ratio ? c.ratio.toFixed(1) + '%' : ''})</span>
-            &nbsp;${d ? deltaHtml(d, 12, false) : ''}
-          </td>
-        </tr>
-      </table>
+    <td width="80" style="padding:5px 4px;vertical-align:middle;font-size:12px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};white-space:nowrap;overflow:hidden;">${escapeHtml(label)}</td>
+    <td style="padding:5px 4px;vertical-align:middle;">
+      <table border="0" cellpadding="0" cellspacing="0" width="100%"><tr>
+        <td width="${barPct}%" style="background:${barColor};border-radius:4px;height:16px;font-size:0;">&nbsp;</td>
+        <td style="padding-left:6px;white-space:nowrap;vertical-align:middle;">
+          <span style="font-size:12px;font-weight:700;color:${barColor};font-family:${EM_FONT};">${fmt(score)}</span>
+          <span style="font-size:11px;color:#94A3B8;font-family:${EM_FONT};">&nbsp;(${ratioStr})</span>
+        </td>
+      </tr></table>
     </td>
   </tr>`
+}
+
+function citationRowHtml(c, isLast, maxScore) {
+  return citUnifiedRow(c.rank, c.source, c.score, c.ratio || 0, maxScore, isLast)
 }
 
 // ─── 닷컴 Citation 비교 차트 ──────────────────────────────────────────────────
@@ -1301,13 +1261,13 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                               <table border="0" cellpadding="0" cellspacing="0" width="100%"><tr>
                                 <td width="50%" style="vertical-align:top;padding-right:6px;">
                                   <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                                    <tr><td style="font-size:14px;font-weight:700;color:#64748B;font-family:${EM_FONT};padding-bottom:8px;border-bottom:1px solid #E8EDF2;">${t.citationTitle}</td></tr>
+                                    <tr><td style="font-size:14px;font-weight:700;color:#0F172A;font-family:${EM_FONT};padding-bottom:8px;border-bottom:1px solid #E8EDF2;">${t.citationTitle}</td></tr>
                                     <tr><td style="padding-top:8px;"><table border="0" cellpadding="0" cellspacing="0" width="100%">${citationRows}</table></td></tr>
                                   </table>
                                 </td>
                                 ${citDomainResult.innerHtml ? `<td width="50%" style="vertical-align:top;padding-left:6px;">
                                   <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                                    <tr><td style="font-size:14px;font-weight:700;color:#64748B;font-family:${EM_FONT};padding-bottom:8px;border-bottom:1px solid #E8EDF2;">${t.citationDomainTitle}</td></tr>
+                                    <tr><td style="font-size:14px;font-weight:700;color:#0F172A;font-family:${EM_FONT};padding-bottom:8px;border-bottom:1px solid #E8EDF2;">${t.citationDomainTitle}</td></tr>
                                     <tr><td style="padding-top:8px;"><table border="0" cellpadding="0" cellspacing="0" width="100%">${citDomainResult.innerHtml}</table></td></tr>
                                   </table>
                                 </td>` : ''}
@@ -1319,7 +1279,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                           <tr>
                             <td style="padding-top:12px;border-top:2px solid #E8EDF2;">
                               <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                                <tr><td style="font-size:14px;font-weight:700;color:#64748B;font-family:${EM_FONT};padding:8px 0;">${t.citationCntyTitle}</td></tr>
+                                <tr><td style="font-size:14px;font-weight:700;color:#0F172A;font-family:${EM_FONT};padding:8px 0;">${t.citationCntyTitle}</td></tr>
                                 ${citationCntyInnerHtml}
                               </table>
                             </td>
