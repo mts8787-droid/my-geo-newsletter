@@ -46,6 +46,7 @@ const T = {
     citationTitle: '도메인 카테고리별 Citation 현황',
     citationDomainTitle: '도메인별 Citation 현황',
     citationCntyTitle: '국가별 Citation 도메인',
+    touchPointTitle: '외부접점채널 Citation',
     citationLegend: 'Citation Score 건수 (비중)',
     dotcomTitle: '닷컴 Citation (경쟁사대비)',
     dotcomTTL: 'TTL (전체)',
@@ -77,6 +78,7 @@ const T = {
     citationTitle: 'Citation by Domain Category',
     citationDomainTitle: 'Citation by Domain',
     citationCntyTitle: 'Citation Domain by Country',
+    touchPointTitle: 'Touch Points Citation',
     citationLegend: 'Citation Score Count (Ratio)',
     dotcomTitle: 'Dotcom Citation (vs Competitor)',
     dotcomTTL: 'TTL (Total)',
@@ -635,9 +637,8 @@ function citationCntyCountryHtml(cntyCode, rows, lang) {
   </tr>`
 }
 
-function citationCntySectionHtml(citationsCnty, meta, lang) {
+function citationCntyTableHtml(citationsCnty, lang) {
   if (!citationsCnty || !citationsCnty.length) return ''
-  const t = T[lang] || T.ko
   const fmtN = n => Number(n).toLocaleString('en-US')
 
   const cntyMap = new Map()
@@ -659,7 +660,7 @@ function citationCntySectionHtml(citationsCnty, meta, lang) {
 
   // 테이블 헤더
   const domainHeaders = topDomains.map(d =>
-    `<td style="padding:6px 4px;text-align:center;font-size:12px;font-weight:700;color:#64748B;font-family:${EM_FONT};border-bottom:2px solid #E8EDF2;">${d}</td>`
+    `<td style="padding:6px 4px;text-align:center;font-size:13px;font-weight:700;color:#64748B;font-family:${EM_FONT};border-bottom:2px solid #E8EDF2;">${d}</td>`
   ).join('')
 
   // 국가별 행 (랭킹 + 1위 빨간 배경)
@@ -684,33 +685,15 @@ function citationCntySectionHtml(citationsCnty, meta, lang) {
     return `<tr><td style="padding:5px 8px;font-size:13px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};border-bottom:1px solid #F1F5F9;white-space:nowrap;">${cntyKr(cnty)}</td>${cells}</tr>`
   }).join('')
 
-  return `
-              <!-- ══ 국가별 Citation 도메인 (통합 표) ══ -->
-              <tr>
-                <td style="padding-bottom:28px;">
-                  <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFFFFF;border-radius:16px;border:2px solid #E8EDF2;">
-                    <tr>
-                      <td style="padding:16px 12px 12px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;">
-                        <table border="0" cellpadding="0" cellspacing="0"><tr>
-                          <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
-                          <td style="padding-left:8px;font-size:16px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${t.citationCntyTitle}</td>
-                        </tr></table>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td style="padding:12px 10px;">
+  return `<tr><td>
                         <table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;">
                           <tr>
-                            <td style="padding:6px 8px;font-size:12px;font-weight:700;color:#64748B;font-family:${EM_FONT};border-bottom:2px solid #E8EDF2;">${lang === 'en' ? 'Country' : '국가'}</td>
+                            <td style="padding:6px 8px;font-size:13px;font-weight:700;color:#64748B;font-family:${EM_FONT};border-bottom:2px solid #E8EDF2;">${lang === 'en' ? 'Country' : '국가'}</td>
                             ${domainHeaders}
                           </tr>
                           ${countryRows}
                         </table>
-                      </td>
-                    </tr>
-                  </table>
-                </td>
-              </tr>`
+                      </td></tr>`
 }
 
 // ─── Citation 행 ──────────────────────────────────────────────────────────────
@@ -734,7 +717,7 @@ function citationRowHtml(c, isLast, maxScore) {
             <table border="0" cellpadding="0" cellspacing="0"><tr><td width="22" height="22" style="background:${rankBg};color:${rankColor};border-radius:4px;font-size:13px;font-weight:800;text-align:center;line-height:22px;font-family:${EM_FONT};">${c.rank}</td></tr></table>
           </td>
           <td style="padding-left:5px;vertical-align:top;">
-            <table border="0" cellpadding="0" cellspacing="0"><tr><td style="font-size:15px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};line-height:20px;">${escapeHtml(c.source)}</td></tr></table>
+            <table border="0" cellpadding="0" cellspacing="0"><tr><td style="font-size:13px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};line-height:18px;">${escapeHtml(c.source)}</td></tr></table>
             <table border="0" cellpadding="0" cellspacing="0"><tr><td style="font-size:13px;color:#94A3B8;background:#F8FAFC;border-radius:4px;padding:1px 5px;font-family:${EM_FONT};">${escapeHtml(c.category)}</td></tr></table>
           </td>
         </tr>
@@ -745,8 +728,8 @@ function citationRowHtml(c, isLast, maxScore) {
         <tr>
           <td width="${barPct}%" style="background:${barColor};border-radius:6px;height:24px;font-size:0;">&nbsp;</td>
           <td style="height:24px;padding-left:8px;white-space:nowrap;vertical-align:middle;">
-            <span style="font-size:15px;font-weight:700;color:${barColor};font-family:${EM_FONT};">${scoreStr}</span>
-            <span style="font-size:15px;color:#64748B;font-family:${EM_FONT};">&nbsp;(${c.ratio ? c.ratio.toFixed(1) + '%' : ''})</span>
+            <span style="font-size:13px;font-weight:700;color:${barColor};font-family:${EM_FONT};">${scoreStr}</span>
+            <span style="font-size:12px;color:#94A3B8;font-family:${EM_FONT};">&nbsp;(${c.ratio ? c.ratio.toFixed(1) + '%' : ''})</span>
             &nbsp;${d ? deltaHtml(d, 12, false) : ''}
           </td>
         </tr>
@@ -997,10 +980,13 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
   const citMaxScore = citationList.length ? Math.max(...citationList.map(c => c.score)) : 100
   const citationRows = citationList.map((c, i) => citationRowHtml(c, i === citationList.length - 1, citMaxScore)).join('')
 
-  // 도메인별 Citation 섹션 (CSS는 <head>에 삽입)
+  // 도메인별 Citation 섹션
   const citDomainResult = meta.showCitDomain !== false
     ? citationDomainSectionHtml(citationsCnty, meta, lang, citations)
     : { html: '', css: '' }
+
+  // 국가별 Citation 도메인 (내부 테이블만)
+  const citationCntyInnerHtml = citationCntyTableHtml(citationsCnty, lang)
 
   return `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -1283,39 +1269,58 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
 
               ${meta.showCnty !== false ? countryVisibilitySectionHtml(productsCnty, meta, lang, total) : ''}
 
-              ${meta.showCitations !== false || citDomainResult.html ? `<!-- ══ Citation 카테고리 + 도메인 (가로 2열) ══ -->
+              ${meta.showCitations !== false || citDomainResult.innerHtml ? `<!-- ══ 외부접점채널 Citation (통합) ══ -->
               <tr>
                 <td style="padding-bottom:28px;">
-                  <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                  <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFFFFF;border-radius:16px;border:2px solid #E8EDF2;">
                     <tr>
-                      ${meta.showCitations !== false ? `<td width="50%" style="vertical-align:top;padding-right:8px;">
-                        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFFFFF;border-radius:16px;border:2px solid #E8EDF2;">
-                          <tr><td style="padding:16px 12px 12px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;">
-                            <table border="0" cellpadding="0" cellspacing="0"><tr>
-                              <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
-                              <td style="padding-left:8px;font-size:16px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${t.citationTitle}</td>
-                            </tr></table>
-                          </td></tr>
-                          <tr><td style="padding:12px 10px;"><table border="0" cellpadding="0" cellspacing="0" width="100%">${citationRows}</table></td></tr>
+                      <td style="padding:16px 12px 12px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;">
+                        <table border="0" cellpadding="0" cellspacing="0"><tr>
+                          <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
+                          <td style="padding-left:8px;font-size:18px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${t.touchPointTitle}</td>
+                        </tr></table>
+                      </td>
+                    </tr>
+                    ${insightBlockHtml(meta.citationInsight, meta.showCitationInsight, meta.citationHowToRead, meta.showCitationHowToRead, lang)}
+                    <tr>
+                      <td style="padding:16px 12px;">
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                          ${meta.showCitations !== false ? `
+                          <!-- 도메인 카테고리별 + 도메인별 (가로 2열) -->
+                          <tr>
+                            <td style="padding-bottom:16px;">
+                              <table border="0" cellpadding="0" cellspacing="0" width="100%"><tr>
+                                <td width="50%" style="vertical-align:top;padding-right:6px;">
+                                  <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                    <tr><td style="font-size:14px;font-weight:700;color:#64748B;font-family:${EM_FONT};padding-bottom:8px;border-bottom:1px solid #E8EDF2;">${t.citationTitle}</td></tr>
+                                    <tr><td style="padding-top:8px;"><table border="0" cellpadding="0" cellspacing="0" width="100%">${citationRows}</table></td></tr>
+                                  </table>
+                                </td>
+                                ${citDomainResult.innerHtml ? `<td width="50%" style="vertical-align:top;padding-left:6px;">
+                                  <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                    <tr><td style="font-size:14px;font-weight:700;color:#64748B;font-family:${EM_FONT};padding-bottom:8px;border-bottom:1px solid #E8EDF2;">${t.citationDomainTitle}</td></tr>
+                                    <tr><td style="padding-top:8px;"><table border="0" cellpadding="0" cellspacing="0" width="100%">${citDomainResult.innerHtml}</table></td></tr>
+                                  </table>
+                                </td>` : ''}
+                              </tr></table>
+                            </td>
+                          </tr>` : ''}
+                          ${meta.showCitCnty !== false && citationCntyInnerHtml ? `
+                          <!-- 국가별 Citation 도메인 -->
+                          <tr>
+                            <td style="padding-top:12px;border-top:2px solid #E8EDF2;">
+                              <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                <tr><td style="font-size:14px;font-weight:700;color:#64748B;font-family:${EM_FONT};padding:8px 0;">${t.citationCntyTitle}</td></tr>
+                                ${citationCntyInnerHtml}
+                              </table>
+                            </td>
+                          </tr>` : ''}
                         </table>
-                      </td>` : ''}
-                      ${citDomainResult.innerHtml ? `<td width="50%" style="vertical-align:top;padding-left:8px;">
-                        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFFFFF;border-radius:16px;border:2px solid #E8EDF2;">
-                          <tr><td style="padding:16px 12px 12px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;">
-                            <table border="0" cellpadding="0" cellspacing="0"><tr>
-                              <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
-                              <td style="padding-left:8px;font-size:16px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${t.citationDomainTitle}</td>
-                            </tr></table>
-                          </td></tr>
-                          <tr><td style="padding:12px 10px;"><table border="0" cellpadding="0" cellspacing="0" width="100%">${citDomainResult.innerHtml}</table></td></tr>
-                        </table>
-                      </td>` : ''}
+                      </td>
                     </tr>
                   </table>
                 </td>
               </tr>` : ''}
-
-              ${meta.showCitCnty !== false ? citationCntySectionHtml(citationsCnty, meta, lang) : ''}
 
               ${meta.showDotcom !== false ? dotcomSectionHtml(dotcom, meta, lang) : ''}
 
