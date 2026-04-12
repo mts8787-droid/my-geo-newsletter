@@ -752,37 +752,40 @@ function dotcomSectionHtml(dotcom, meta, lang = 'ko') {
   const cols = allCols.filter(c => (lg[c] || 0) > 0 || (sam[c] || 0) > 0)
   const maxVal = Math.max(...cols.map(c => Math.max(lg[c] || 0, sam[c] || 0)), 1)
   const BAR_MAX = 80
-  const bw = 24
+  const bw = 36
 
-  // TTL과 나머지를 분리해서 실선 구분
   const ttlCol = cols.includes('TTL') ? 'TTL' : null
   const detailCols = cols.filter(c => c !== 'TTL')
+  // TTL과 상세는 각각 독립 비율
+  const ttlMax = ttlCol ? Math.max(lg['TTL'] || 0, sam['TTL'] || 0, 1) : 1
+  const detailMax = Math.max(...detailCols.map(c => Math.max(lg[c] || 0, sam[c] || 0)), 1)
 
-  function makeBarCol(col) {
+  function makeBarCol(col, localMax) {
     const lv = lg[col] || 0, sv = sam[col] || 0
-    const lh = Math.max(2, Math.round(lv / maxVal * BAR_MAX))
-    const sh = Math.max(2, Math.round(sv / maxVal * BAR_MAX))
+    const lh = Math.max(2, Math.round(lv / localMax * BAR_MAX))
+    const sh = Math.max(2, Math.round(sv / localMax * BAR_MAX))
     const hasSam = col !== 'Experience' && sv > 0
+    const isExp = col === 'Experience'
     const spacerL = BAR_MAX - lh, spacerS = BAR_MAX - sh
     const diff = lv - sv
     const gapColor = diff >= 0 ? '#15803D' : '#BE123C'
     const gapTxt = diff > 0 ? `+${fmtK(diff)}` : diff < 0 ? `-${fmtK(Math.abs(diff))}` : '0'
     const isTTL = col === 'TTL'
 
-    return `<td style="vertical-align:bottom;text-align:center;padding:0 4px;">
+    return `<td style="vertical-align:bottom;text-align:center;padding:0 3px;">
       <table border="0" cellpadding="0" cellspacing="0" align="center" style="margin:0 auto;width:100%;">
         <tr><td style="vertical-align:bottom;text-align:center;">
           <table border="0" cellpadding="0" cellspacing="0" align="center"><tr>
             <td style="vertical-align:bottom;text-align:center;padding:0 1px;">
               <table border="0" cellpadding="0" cellspacing="0" align="center">
-                <tr><td style="font-size:13px;font-weight:700;color:${EM_RED};font-family:${EM_FONT};text-align:center;padding-bottom:2px;">${fmtK(lv)}</td></tr>
+                <tr><td style="font-size:13px;font-weight:700;color:${EM_RED};font-family:${EM_FONT};text-align:center;padding-bottom:1px;">${fmtK(lv)}</td></tr>
                 ${spacerL > 0 ? `<tr><td height="${spacerL}" style="font-size:0;">&nbsp;</td></tr>` : ''}
                 <tr><td height="${lh}" style="font-size:0;"><table border="0" cellpadding="0" cellspacing="0" align="center"><tr><td width="${bw}" height="${lh}" style="background:${EM_RED};border-radius:3px 3px 0 0;font-size:0;">&nbsp;</td></tr></table></td></tr>
               </table>
             </td>
             ${hasSam ? `<td style="vertical-align:bottom;text-align:center;padding:0 1px;">
               <table border="0" cellpadding="0" cellspacing="0" align="center">
-                <tr><td style="font-size:13px;font-weight:600;color:#94A3B8;font-family:${EM_FONT};text-align:center;padding-bottom:2px;">${fmtK(sv)}</td></tr>
+                <tr><td style="font-size:13px;font-weight:600;color:#94A3B8;font-family:${EM_FONT};text-align:center;padding-bottom:1px;">${fmtK(sv)}</td></tr>
                 ${spacerS > 0 ? `<tr><td height="${spacerS}" style="font-size:0;">&nbsp;</td></tr>` : ''}
                 <tr><td height="${sh}" style="font-size:0;"><table border="0" cellpadding="0" cellspacing="0" align="center"><tr><td width="${bw}" height="${sh}" style="background:#94A3B8;border-radius:3px 3px 0 0;font-size:0;">&nbsp;</td></tr></table></td></tr>
               </table>
@@ -791,19 +794,25 @@ function dotcomSectionHtml(dotcom, meta, lang = 'ko') {
         </td></tr>
         <tr><td style="font-size:${isTTL ? '14' : '13'}px;font-weight:700;color:#475569;font-family:${EM_FONT};padding-top:4px;text-align:center;white-space:nowrap;">${isTTL ? 'Total' : col}</td></tr>
         ${hasSam ? `<tr><td style="font-size:12px;font-weight:700;color:${gapColor};font-family:${EM_FONT};padding-top:2px;text-align:center;">${gapTxt}</td></tr>` : ''}
+        ${isExp ? `<tr><td style="font-size:11px;color:#94A3B8;font-family:${EM_FONT};padding-top:1px;text-align:center;">LG Only</td></tr>` : ''}
       </table>
     </td>`
   }
 
-  // TTL 영역 + 실선 + 페이지별 영역
-  let chartHtml = ''
-  if (ttlCol) {
-    chartHtml += `<tr><td style="padding:10px 8px 8px;"><table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;"><tr>${makeBarCol('TTL')}</tr></table></td></tr>`
-    chartHtml += `<tr><td style="padding:0 8px;"><table border="0" cellpadding="0" cellspacing="0" width="100%"><tr><td style="border-top:2px solid #E8EDF2;font-size:0;height:1px;">&nbsp;</td></tr></table></td></tr>`
-  }
-  if (detailCols.length) {
-    chartHtml += `<tr><td style="padding:8px 8px 14px;"><table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;"><tr>${detailCols.map(c => makeBarCol(c)).join('')}</tr></table></td></tr>`
-  }
+  // TTL + 세로 실선 + 페이지별 — 한 행에 배치
+  const chartHtml = `<tr><td style="padding:10px 6px 14px;">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%"><tr>
+      ${ttlCol ? `<td width="14%" style="vertical-align:bottom;padding:0 2px;">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;"><tr>${makeBarCol('TTL', ttlMax)}</tr></table>
+      </td>
+      <td width="1" style="vertical-align:top;padding:0;">
+        <table border="0" cellpadding="0" cellspacing="0" height="${BAR_MAX + 30}"><tr><td width="2" style="background:#E8EDF2;font-size:0;">&nbsp;</td></tr></table>
+      </td>` : ''}
+      <td style="vertical-align:bottom;padding:0 2px;">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;"><tr>${detailCols.map(c => makeBarCol(c, detailMax)).join('')}</tr></table>
+      </td>
+    </tr></table>
+  </td></tr>`
 
   return `
               <!-- ══ 닷컴 Citation (경쟁사대비) ══ -->
