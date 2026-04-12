@@ -436,37 +436,46 @@ function countryProductSectionHtml(productName, rows, lang) {
   </tr>`
 }
 
-function countryCardHtml(cntyCode, rows, lang) {
+function countryCardHtml(cntyCode, rows, lang, countryTotals) {
   const maxScore = Math.max(...rows.map(r => Math.max(r.score, r.compScore)), 1)
-  const BAR_MAX = 36
+  const BAR_MAX = 28
   const colWidth = Math.floor(100 / rows.length)
+  const ct = countryTotals?.[cntyCode]
+  const ctScore = ct ? ct.lg.toFixed(1) + '%' : ''
 
   const barCols = rows.map(r => {
     const status = cntyStatus(r.score, r.compScore)
     const barColor = status === 'lead' ? '#15803D' : status === 'behind' ? '#E8910C' : '#BE123C'
     const barH = Math.max(Math.round((r.score / maxScore) * BAR_MAX), 3)
     const spacerH = BAR_MAX - barH
+    const ratio = r.compScore > 0 ? Math.round(r.score / r.compScore * 100) : 100
 
     return `<td width="${colWidth}%" style="vertical-align:bottom;text-align:center;padding:0 1px;">
       <table border="0" cellpadding="0" cellspacing="0" align="center" style="margin:0 auto;table-layout:fixed;width:100%;">
         ${spacerH > 0 ? `<tr><td height="${spacerH}" style="font-size:0;line-height:0;">&nbsp;</td></tr>` : ''}
-        <tr><td height="${barH}" style="font-size:0;line-height:0;"><table border="0" cellpadding="0" cellspacing="0" align="center"><tr><td width="20" height="${barH}" style="background:${barColor};border-radius:3px 3px 0 0;font-size:0;">&nbsp;</td></tr></table></td></tr>
-        <tr><td style="font-size:12px;font-weight:800;color:${barColor};font-family:${EM_FONT};padding-top:2px;white-space:nowrap;">${r.score.toFixed(1)}</td></tr>
-        <tr><td style="font-size:11px;color:#475569;font-family:${EM_FONT};padding-top:1px;white-space:nowrap;">${escapeHtml(r.product)}</td></tr>
-        <tr><td style="font-size:10px;color:#94A3B8;font-family:${EM_FONT};padding-top:1px;white-space:nowrap;">${ssName(r.compName)} ${r.compScore > 0 ? Math.round(r.score / r.compScore * 100) + '%' : ''}</td></tr>
+        <tr><td height="${barH}" style="font-size:0;line-height:0;"><table border="0" cellpadding="0" cellspacing="0" align="center"><tr><td width="18" height="${barH}" style="background:${barColor};border-radius:3px 3px 0 0;font-size:0;">&nbsp;</td></tr></table></td></tr>
+        <tr><td style="font-size:11px;font-weight:800;color:${barColor};font-family:${EM_FONT};padding-top:2px;white-space:nowrap;">${r.score.toFixed(1)}</td></tr>
+        <tr><td style="font-size:10px;color:#475569;font-family:${EM_FONT};padding-top:1px;white-space:nowrap;">${escapeHtml(r.product)}</td></tr>
+        <tr><td style="font-size:9px;color:#94A3B8;font-family:${EM_FONT};padding-top:1px;white-space:nowrap;line-height:1.3;">${ssName(r.compName)}<br/>${ratio}%</td></tr>
       </table>
     </td>`
   }).join('')
 
   return `<table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#F8FAFC;border:1px solid #E8EDF2;border-radius:8px;">
-    <tr><td style="padding:6px 10px;border-bottom:1px solid #F1F5F9;font-size:14px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${escapeHtml(cntyKr(cntyCode))}</td></tr>
-    <tr><td style="padding:6px 4px 8px;"><table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;"><tr>${barCols}</tr></table></td></tr>
+    <tr><td style="padding:5px 10px;border-bottom:1px solid #F1F5F9;">
+      <table border="0" cellpadding="0" cellspacing="0" width="100%"><tr>
+        <td style="font-size:13px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${escapeHtml(cntyKr(cntyCode))}</td>
+        ${ctScore ? `<td align="right" style="font-size:12px;font-weight:700;color:#64748B;font-family:${EM_FONT};">TTL ${ctScore}</td>` : ''}
+      </tr></table>
+    </td></tr>
+    <tr><td style="padding:4px 4px 6px;"><table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;"><tr>${barCols}</tr></table></td></tr>
   </table>`
 }
 
-function countryVisibilitySectionHtml(productsCnty, meta, lang) {
+function countryVisibilitySectionHtml(productsCnty, meta, lang, total) {
   if (!productsCnty || !productsCnty.length) return ''
   const t = T[lang] || T.ko
+  const countryTotals = total?.countryTotals || {}
 
   // 국가별로 그룹핑
   const cntyMap = new Map()
@@ -476,7 +485,7 @@ function countryVisibilitySectionHtml(productsCnty, meta, lang) {
   })
 
   const countries = [...cntyMap.keys()]
-  const cards = countries.map(cnty => countryCardHtml(cnty, cntyMap.get(cnty), lang))
+  const cards = countries.map(cnty => countryCardHtml(cnty, cntyMap.get(cnty), lang, countryTotals))
 
   // 2개씩 한 행에 배치
   let pairRows = ''
@@ -1330,7 +1339,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                 </td>
               </tr>` : ''}
 
-              ${meta.showCnty !== false ? countryVisibilitySectionHtml(productsCnty, meta, lang) : ''}
+              ${meta.showCnty !== false ? countryVisibilitySectionHtml(productsCnty, meta, lang, total) : ''}
 
               ${meta.showCitations !== false || citDomainResult.html ? `<!-- ══ Citation 카테고리 + 도메인 (가로 2열) ══ -->
               <tr>
