@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Copy, Download, RefreshCw, Check, Send, Sparkles, Languages, Globe, Link2, Archive } from 'lucide-react'
 import { downloadTemplate } from '../excelUtils'
 import { extractSheetId, syncFromGoogleSheets } from '../googleSheetsUtils'
@@ -11,6 +11,13 @@ import { generateProductInsight, generateProductHowToRead, generateCntyHowToRead
 
 export default
 function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, total, setTotal, products, setProducts, citations, setCitations, dotcom, setDotcom, productsCnty, setProductsCnty, citationsCnty, setCitationsCnty, resolved, previewLang, setPreviewLang, snapshots, setSnapshots, setWeeklyLabels, setWeeklyAll, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty, generateHTML, publishEndpoint, setMonthlyVis, onSyncExtra }) {
+  // 최신 데이터 ref — AI 생성 시 stale closure 방지
+  const latestRef = useRef({ products, productsCnty, citations, citationsCnty, total })
+  useEffect(() => {
+    latestRef.current = { products, productsCnty, citations, citationsCnty, total }
+  }, [products, productsCnty, citations, citationsCnty, total])
+  function getLatestData() { return latestRef.current }
+
   const [gsUrl,     setGsUrl]     = useState('https://docs.google.com/spreadsheets/d/1v4V7ZsHNFXXqbAWqvyVkgNIeXx188hSZ9l7FDsRYy2Y/edit')
   const [gsSyncing, setGsSyncing] = useState(false)
   const [gsStatus,  setGsStatus]  = useState(null)
@@ -888,7 +895,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
           <button onClick={async () => {
               try {
                 setMeta(m => ({ ...m, totalInsight: '⏳ AI 생성 중...' }))
-                const insight = await generateAIInsight('totalInsight', { products: resolved.products, total, todoText: meta.todoText || '' }, previewLang)
+                const insight = await generateAIInsight('totalInsight', { products: getLatestData().products, total: getLatestData().total, todoText: meta.todoText || '' }, previewLang)
                 setMeta(m => ({ ...m, totalInsight: insight }))
               } catch (err) { console.error('[AI]', err); setMeta(m => ({ ...m, totalInsight: `[AI 실패: ${err.message}]` })) }
             }}
@@ -914,9 +921,9 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
             <button onClick={async () => {
                 try {
                   setMeta(m => ({ ...m, productInsight: '⏳ AI 생성 중...' }))
-                  const insight = await generateAIInsight('product', { products: resolved.products, total }, previewLang)
+                  const insight = await generateAIInsight('product', { products: getLatestData().products, total: getLatestData().total }, previewLang)
                   setMeta(m => ({ ...m, productInsight: insight }))
-                } catch (err) { console.error('[AI]', err); setMeta(m => ({ ...m, productInsight: `[AI 실패: ${err.message}]\n\n` + generateProductInsight(resolved.products) })) }
+                } catch (err) { console.error('[AI]', err); setMeta(m => ({ ...m, productInsight: `[AI 실패: ${err.message}]\n\n` + generateProductInsight(getLatestData().products) })) }
               }}
               title="AI 인사이트 자동생성 (Claude)"
               style={{ padding: '2px 6px', borderRadius: 4, border: 'none', cursor: 'pointer',
@@ -982,7 +989,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
             <button onClick={async () => {
                 try {
                   setMeta(m => ({ ...m, cntyInsight: '⏳ AI 생성 중...' }))
-                  const insight = await generateAIInsight('cnty', { productsCnty: resolved.productsCnty }, previewLang)
+                  const insight = await generateAIInsight('cnty', { productsCnty: getLatestData().productsCnty }, previewLang)
                   setMeta(m => ({ ...m, cntyInsight: insight }))
                 } catch (err) { console.error('[AI]', err); setMeta(m => ({ ...m, cntyInsight: `[AI 실패: ${err.message}]` })) }
               }}
@@ -1094,7 +1101,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
             <button onClick={async () => {
                 try {
                   setMeta(m => ({ ...m, citationInsight: '⏳ AI 생성 중...' }))
-                  const insight = await generateAIInsight('citation', { citations: resolved.citations }, previewLang)
+                  const insight = await generateAIInsight('citation', { citations: getLatestData().citations }, previewLang)
                   setMeta(m => ({ ...m, citationInsight: insight }))
                 } catch (err) { console.error('[AI]', err); setMeta(m => ({ ...m, citationInsight: `[AI 실패: ${err.message}]` })) }
               }}
@@ -1160,7 +1167,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
             <button onClick={async () => {
                 try {
                   setMeta(m => ({ ...m, citDomainInsight: '⏳ AI 생성 중...' }))
-                  const insight = await generateAIInsight('citDomain', { citationsCnty: resolved.citationsCnty }, previewLang)
+                  const insight = await generateAIInsight('citDomain', { citationsCnty: getLatestData().citationsCnty }, previewLang)
                   setMeta(m => ({ ...m, citDomainInsight: insight }))
                 } catch (err) { console.error('[AI]', err); setMeta(m => ({ ...m, citDomainInsight: `[AI 실패: ${err.message}]` })) }
               }}
@@ -1226,7 +1233,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
             <button onClick={async () => {
                 try {
                   setMeta(m => ({ ...m, citCntyInsight: '⏳ AI 생성 중...' }))
-                  const insight = await generateAIInsight('citCnty', { citationsCnty: resolved.citationsCnty }, previewLang)
+                  const insight = await generateAIInsight('citCnty', { citationsCnty: getLatestData().citationsCnty }, previewLang)
                   setMeta(m => ({ ...m, citCntyInsight: insight }))
                 } catch (err) { console.error('[AI]', err); setMeta(m => ({ ...m, citCntyInsight: `[AI 실패: ${err.message}]` })) }
               }}
@@ -1385,7 +1392,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
             <button onClick={async () => {
                 try {
                   setMeta(m => ({ ...m, todoText: '⏳ AI 생성 중...' }))
-                  const insight = await generateAIInsight('todo', { products: resolved.products }, previewLang)
+                  const insight = await generateAIInsight('todo', { products: getLatestData().products }, previewLang)
                   setMeta(m => ({ ...m, todoText: insight }))
                 } catch (err) { console.error('[AI]', err); setMeta(m => ({ ...m, todoText: `[AI 실패: ${err.message}]` })) }
               }}
