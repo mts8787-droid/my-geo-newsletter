@@ -759,6 +759,8 @@ function citationRowHtml(c, isLast, maxScore) {
 const DC_DETAIL_COLS = ['PLP','Microsites','PDP','Newsroom','Support','Buying-guide','Experience']
 const DC_SAM_COLS    = ['PLP','Microsites','PDP','Newsroom','Support','Buying-guide']
 
+function fmtK(n) { return n >= 1000 ? Math.round(n / 1000) + 'K' : fmt(n) }
+
 function dotcomSectionHtml(dotcom, meta, lang = 'ko') {
   if (!dotcom || !dotcom.lg) return ''
   const t = T[lang] || T.ko
@@ -766,10 +768,14 @@ function dotcomSectionHtml(dotcom, meta, lang = 'ko') {
   const allCols = ['TTL', ...DC_DETAIL_COLS]
   const cols = allCols.filter(c => (lg[c] || 0) > 0 || (sam[c] || 0) > 0)
   const maxVal = Math.max(...cols.map(c => Math.max(lg[c] || 0, sam[c] || 0)), 1)
-  const BAR_MAX = 60
-  const colWidth = Math.floor(100 / cols.length)
+  const BAR_MAX = 80
+  const bw = 24
 
-  const barCols = cols.map(col => {
+  // TTL과 나머지를 분리해서 실선 구분
+  const ttlCol = cols.includes('TTL') ? 'TTL' : null
+  const detailCols = cols.filter(c => c !== 'TTL')
+
+  function makeBarCol(col) {
     const lv = lg[col] || 0, sv = sam[col] || 0
     const lh = Math.max(2, Math.round(lv / maxVal * BAR_MAX))
     const sh = Math.max(2, Math.round(sv / maxVal * BAR_MAX))
@@ -777,34 +783,44 @@ function dotcomSectionHtml(dotcom, meta, lang = 'ko') {
     const spacerL = BAR_MAX - lh, spacerS = BAR_MAX - sh
     const diff = lv - sv
     const gapColor = diff >= 0 ? '#15803D' : '#BE123C'
-    const gapTxt = diff > 0 ? `+${fmt(diff)}` : diff < 0 ? `-${fmt(Math.abs(diff))}` : '0'
+    const gapTxt = diff > 0 ? `+${fmtK(diff)}` : diff < 0 ? `-${fmtK(Math.abs(diff))}` : '0'
     const isTTL = col === 'TTL'
 
-    return `<td width="${colWidth}%" style="vertical-align:bottom;text-align:center;padding:0 2px;">
+    return `<td style="vertical-align:bottom;text-align:center;padding:0 4px;">
       <table border="0" cellpadding="0" cellspacing="0" align="center" style="margin:0 auto;width:100%;">
         <tr><td style="vertical-align:bottom;text-align:center;">
           <table border="0" cellpadding="0" cellspacing="0" align="center"><tr>
             <td style="vertical-align:bottom;text-align:center;padding:0 1px;">
               <table border="0" cellpadding="0" cellspacing="0" align="center">
-                <tr><td style="font-size:11px;font-weight:700;color:${EM_RED};font-family:${EM_FONT};text-align:center;">${fmt(lv)}</td></tr>
+                <tr><td style="font-size:13px;font-weight:700;color:${EM_RED};font-family:${EM_FONT};text-align:center;padding-bottom:2px;">${fmtK(lv)}</td></tr>
                 ${spacerL > 0 ? `<tr><td height="${spacerL}" style="font-size:0;">&nbsp;</td></tr>` : ''}
-                <tr><td height="${lh}" style="font-size:0;"><table border="0" cellpadding="0" cellspacing="0" align="center"><tr><td width="18" height="${lh}" style="background:${EM_RED};border-radius:2px 2px 0 0;font-size:0;">&nbsp;</td></tr></table></td></tr>
+                <tr><td height="${lh}" style="font-size:0;"><table border="0" cellpadding="0" cellspacing="0" align="center"><tr><td width="${bw}" height="${lh}" style="background:${EM_RED};border-radius:3px 3px 0 0;font-size:0;">&nbsp;</td></tr></table></td></tr>
               </table>
             </td>
             ${hasSam ? `<td style="vertical-align:bottom;text-align:center;padding:0 1px;">
               <table border="0" cellpadding="0" cellspacing="0" align="center">
-                <tr><td style="font-size:11px;font-weight:600;color:#94A3B8;font-family:${EM_FONT};text-align:center;">${fmt(sv)}</td></tr>
+                <tr><td style="font-size:13px;font-weight:600;color:#94A3B8;font-family:${EM_FONT};text-align:center;padding-bottom:2px;">${fmtK(sv)}</td></tr>
                 ${spacerS > 0 ? `<tr><td height="${spacerS}" style="font-size:0;">&nbsp;</td></tr>` : ''}
-                <tr><td height="${sh}" style="font-size:0;"><table border="0" cellpadding="0" cellspacing="0" align="center"><tr><td width="18" height="${sh}" style="background:#94A3B8;border-radius:2px 2px 0 0;font-size:0;">&nbsp;</td></tr></table></td></tr>
+                <tr><td height="${sh}" style="font-size:0;"><table border="0" cellpadding="0" cellspacing="0" align="center"><tr><td width="${bw}" height="${sh}" style="background:#94A3B8;border-radius:3px 3px 0 0;font-size:0;">&nbsp;</td></tr></table></td></tr>
               </table>
             </td>` : ''}
           </tr></table>
         </td></tr>
-        <tr><td style="font-size:${isTTL ? '12' : '11'}px;font-weight:${isTTL ? '700' : '600'};color:#475569;font-family:${EM_FONT};padding-top:3px;text-align:center;white-space:nowrap;">${isTTL ? 'Total' : col}</td></tr>
-        ${hasSam ? `<tr><td style="font-size:10px;font-weight:700;color:${gapColor};font-family:${EM_FONT};padding-top:1px;text-align:center;">${gapTxt}</td></tr>` : ''}
+        <tr><td style="font-size:${isTTL ? '14' : '13'}px;font-weight:700;color:#475569;font-family:${EM_FONT};padding-top:4px;text-align:center;white-space:nowrap;">${isTTL ? 'Total' : col}</td></tr>
+        ${hasSam ? `<tr><td style="font-size:12px;font-weight:700;color:${gapColor};font-family:${EM_FONT};padding-top:2px;text-align:center;">${gapTxt}</td></tr>` : ''}
       </table>
     </td>`
-  }).join('')
+  }
+
+  // TTL 영역 + 실선 + 페이지별 영역
+  let chartHtml = ''
+  if (ttlCol) {
+    chartHtml += `<tr><td style="padding:10px 8px 8px;"><table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;"><tr>${makeBarCol('TTL')}</tr></table></td></tr>`
+    chartHtml += `<tr><td style="padding:0 8px;"><table border="0" cellpadding="0" cellspacing="0" width="100%"><tr><td style="border-top:2px solid #E8EDF2;font-size:0;height:1px;">&nbsp;</td></tr></table></td></tr>`
+  }
+  if (detailCols.length) {
+    chartHtml += `<tr><td style="padding:8px 8px 14px;"><table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;"><tr>${detailCols.map(c => makeBarCol(c)).join('')}</tr></table></td></tr>`
+  }
 
   return `
               <!-- ══ 닷컴 Citation (경쟁사대비) ══ -->
@@ -832,13 +848,7 @@ function dotcomSectionHtml(dotcom, meta, lang = 'ko') {
                       </td>
                     </tr>
                     ${insightBlockHtml(meta.dotcomInsight, meta.showDotcomInsight, meta.dotcomHowToRead, meta.showDotcomHowToRead, lang)}
-                    <tr>
-                      <td style="padding:10px 8px 14px;">
-                        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;">
-                          <tr>${barCols}</tr>
-                        </table>
-                      </td>
-                    </tr>
+                    ${chartHtml}
                   </table>
                 </td>
               </tr>`
