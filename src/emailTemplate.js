@@ -762,112 +762,49 @@ const DC_SAM_COLS    = ['PLP','Microsites','PDP','Newsroom','Support','Buying-gu
 function dotcomSectionHtml(dotcom, meta, lang = 'ko') {
   if (!dotcom || !dotcom.lg) return ''
   const t = T[lang] || T.ko
-
   const lg = dotcom.lg, sam = dotcom.samsung || {}
-
-  // TTL 포함 전체 컬럼, maxVal은 TTL 포함 기준
   const allCols = ['TTL', ...DC_DETAIL_COLS]
-  const allVals = allCols.map(c => Math.max(lg[c] || 0, sam[c] || 0))
-  const maxVal  = Math.max(...allVals, 1)
+  const cols = allCols.filter(c => (lg[c] || 0) > 0 || (sam[c] || 0) > 0)
+  const maxVal = Math.max(...cols.map(c => Math.max(lg[c] || 0, sam[c] || 0)), 1)
+  const BAR_MAX = 60
+  const colWidth = Math.floor(100 / cols.length)
 
-  // LG 우위 / SS 우위 분류 (공통 비교 컬럼: TTL + DC_SAM_COLS)
-  const compareCols = ['TTL', ...DC_SAM_COLS]
-  const lgWinCols  = compareCols.filter(c => (lg[c] || 0) > (sam[c] || 0))
-  const samWinCols = compareCols.filter(c => (sam[c] || 0) > (lg[c] || 0))
-  const tieCols    = compareCols.filter(c => (lg[c] || 0) === (sam[c] || 0))
+  const barCols = cols.map(col => {
+    const lv = lg[col] || 0, sv = sam[col] || 0
+    const lh = Math.max(2, Math.round(lv / maxVal * BAR_MAX))
+    const sh = Math.max(2, Math.round(sv / maxVal * BAR_MAX))
+    const hasSam = col !== 'Experience' && sv > 0
+    const spacerL = BAR_MAX - lh, spacerS = BAR_MAX - sh
+    const diff = lv - sv
+    const gapColor = diff >= 0 ? '#15803D' : '#BE123C'
+    const gapTxt = diff > 0 ? `+${fmt(diff)}` : diff < 0 ? `-${fmt(Math.abs(diff))}` : '0'
+    const isTTL = col === 'TTL'
 
-  // TTL은 항상 맨 위, 이후 LG 우위 → 동률 → SS 우위 → Experience(LG only) 순
-  const detailLgWin  = lgWinCols.filter(c => c !== 'TTL')
-  const detailSamWin = samWinCols.filter(c => c !== 'TTL')
-  const detailTie    = tieCols.filter(c => c !== 'TTL')
-  const sortedCols   = ['TTL', ...detailLgWin, ...detailTie, ...detailSamWin, 'Experience']
-
-  const barRows = sortedCols.map((col, idx) => {
-    const lgVal  = lg[col] || 0
-    const samVal = sam[col] || 0
-    const lgPct  = Math.max(Math.round((lgVal / maxVal) * 70), 1)
-    const samPct = Math.max(Math.round((samVal / maxVal) * 70), 1)
-    const lgWin  = lgVal > samVal
-    const samWin = samVal > lgVal
-    const isLast = idx === sortedCols.length - 1
-    const hasSam = col !== 'Experience'
-    const isTTL  = col === 'TTL'
-
-    // 우위 배지
-    let badge = ''
-    if (lgWin)  badge = `&nbsp;&nbsp;<span style="background:#FFF1F2;color:${EM_RED};font-size:12px;font-weight:800;border-radius:3px;padding:1px 5px;font-family:${EM_FONT};mso-line-height-rule:exactly;line-height:18px;">LG +${fmt(lgVal - samVal)}</span>`
-    if (samWin && hasSam) badge = `&nbsp;&nbsp;<span style="background:#EFF6FF;color:#3B82F6;font-size:12px;font-weight:800;border-radius:3px;padding:1px 5px;font-family:${EM_FONT};mso-line-height-rule:exactly;line-height:18px;">SS +${fmt(samVal - lgVal)}</span>`
-
-    // TTL 행: 볼드 + 배경 살짝 + 하단 실선 구분
-    const labelStyle = isTTL
-      ? `font-size:15px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};`
-      : `font-size:15px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};`
-    const rowBg = isTTL ? 'background:#F8FAFC;' : ''
-    const rowBorder = isTTL
-      ? 'border-bottom:2px solid #E2E8F0;'
-      : (isLast ? '' : 'border-bottom:1px solid #F1F5F9;')
-    const barH = isTTL ? 16 : 14
-    const numStyle = isTTL ? 'font-size:15px;font-weight:700;' : 'font-size:15px;font-weight:700;'
-
-    return `
-    <tr style="${rowBg}${rowBorder}">
-      <td style="padding:7px 8px 7px 16px;width:${LABEL_WIDTH}px;vertical-align:middle;">
-        <span style="${labelStyle}">${isTTL ? t.dotcomTTL : col}</span>${badge}
-      </td>
-      <td style="padding:5px 16px 5px 0;vertical-align:middle;">
-        <table border="0" cellpadding="0" cellspacing="0" width="100%">
-          <tr>
-            <td style="padding:2px 0;">
-              <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                <tr>
-                  <td width="${lgPct}%" style="height:${barH}px;background:${EM_RED};border-radius:3px;font-size:0;">&nbsp;</td>
-                  <td style="padding-left:6px;${numStyle}color:${lgWin ? EM_RED : '#94A3B8'};font-family:${EM_FONT};white-space:nowrap;">${fmt(lgVal)}</td>
-                </tr>
+    return `<td width="${colWidth}%" style="vertical-align:bottom;text-align:center;padding:0 2px;">
+      <table border="0" cellpadding="0" cellspacing="0" align="center" style="margin:0 auto;width:100%;">
+        <tr><td style="vertical-align:bottom;text-align:center;">
+          <table border="0" cellpadding="0" cellspacing="0" align="center"><tr>
+            <td style="vertical-align:bottom;text-align:center;padding:0 1px;">
+              <table border="0" cellpadding="0" cellspacing="0" align="center">
+                <tr><td style="font-size:11px;font-weight:700;color:${EM_RED};font-family:${EM_FONT};text-align:center;">${fmt(lv)}</td></tr>
+                ${spacerL > 0 ? `<tr><td height="${spacerL}" style="font-size:0;">&nbsp;</td></tr>` : ''}
+                <tr><td height="${lh}" style="font-size:0;"><table border="0" cellpadding="0" cellspacing="0" align="center"><tr><td width="18" height="${lh}" style="background:${EM_RED};border-radius:2px 2px 0 0;font-size:0;">&nbsp;</td></tr></table></td></tr>
               </table>
             </td>
-          </tr>
-          <tr>
-            <td style="padding:2px 0;">
-              <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                <tr>
-                  ${hasSam
-                    ? `<td width="${samPct}%" style="height:${barH}px;background:#3B82F6;border-radius:3px;font-size:0;">&nbsp;</td>
-                       <td style="padding-left:6px;${numStyle}color:${samWin ? '#3B82F6' : '#94A3B8'};font-family:${EM_FONT};white-space:nowrap;">${fmt(samVal)}</td>`
-                    : `<td style="padding-left:0;font-size:15px;color:#CBD5E1;font-family:${EM_FONT};">${t.dotcomLgOnly}</td>`
-                  }
-                </tr>
+            ${hasSam ? `<td style="vertical-align:bottom;text-align:center;padding:0 1px;">
+              <table border="0" cellpadding="0" cellspacing="0" align="center">
+                <tr><td style="font-size:11px;font-weight:600;color:#94A3B8;font-family:${EM_FONT};text-align:center;">${fmt(sv)}</td></tr>
+                ${spacerS > 0 ? `<tr><td height="${spacerS}" style="font-size:0;">&nbsp;</td></tr>` : ''}
+                <tr><td height="${sh}" style="font-size:0;"><table border="0" cellpadding="0" cellspacing="0" align="center"><tr><td width="18" height="${sh}" style="background:#94A3B8;border-radius:2px 2px 0 0;font-size:0;">&nbsp;</td></tr></table></td></tr>
               </table>
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>`
+            </td>` : ''}
+          </tr></table>
+        </td></tr>
+        <tr><td style="font-size:${isTTL ? '12' : '11'}px;font-weight:${isTTL ? '700' : '600'};color:#475569;font-family:${EM_FONT};padding-top:3px;text-align:center;white-space:nowrap;">${isTTL ? 'Total' : col}</td></tr>
+        ${hasSam ? `<tr><td style="font-size:10px;font-weight:700;color:${gapColor};font-family:${EM_FONT};padding-top:1px;text-align:center;">${gapTxt}</td></tr>` : ''}
+      </table>
+    </td>`
   }).join('')
-
-  // 요약 행
-  const summaryRow = `
-    <tr>
-      <td colspan="2" style="padding:12px 16px 4px;border-top:1px solid #E8EDF2;">
-        <table border="0" cellpadding="0" cellspacing="0" width="100%">
-          <tr>
-            <td style="padding:4px 0;vertical-align:top;">
-              <table border="0" cellpadding="0" cellspacing="0"><tr>
-                <td style="background:${EM_RED};color:#FFFFFF;font-size:15px;font-weight:700;border-radius:4px;padding:2px 8px;font-family:${EM_FONT};">${t.dotcomLgWin} (${lgWinCols.length})</td>
-                <td style="padding-left:6px;font-size:15px;color:#64748B;font-family:${EM_FONT};">${lgWinCols.length ? lgWinCols.join(', ') : t.dotcomNone}</td>
-              </tr></table>
-            </td>
-          </tr>
-          <tr>
-            <td style="padding:4px 0;vertical-align:top;">
-              <table border="0" cellpadding="0" cellspacing="0"><tr>
-                <td style="background:#3B82F6;color:#FFFFFF;font-size:15px;font-weight:700;border-radius:4px;padding:2px 8px;font-family:${EM_FONT};">${t.dotcomSsWin} (${samWinCols.length})</td>
-                <td style="padding-left:6px;font-size:15px;color:#64748B;font-family:${EM_FONT};">${samWinCols.length ? samWinCols.join(', ') : t.dotcomNone}</td>
-              </tr></table>
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>`
 
   return `
               <!-- ══ 닷컴 Citation (경쟁사대비) ══ -->
@@ -875,35 +812,30 @@ function dotcomSectionHtml(dotcom, meta, lang = 'ko') {
                 <td style="padding-bottom:28px;">
                   <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFFFFF;border-radius:16px;border:2px solid #E8EDF2;">
                     <tr>
-                      <td style="padding:22px 16px 18px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;">
-                        <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                          <tr>
-                            <td style="vertical-align:middle;">
-                              <table border="0" cellpadding="0" cellspacing="0">
-                                <tr>
-                                  <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
-                                  <td style="padding-left:8px;font-size:19px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${t.dotcomTitle}</td>
-                                </tr>
-                              </table>
-                            </td>
-                            <td align="right" style="vertical-align:middle;">
-                              <table border="0" cellpadding="0" cellspacing="0" align="right"><tr>
-                                <td width="10" height="10" style="background:${EM_RED};border-radius:2px;font-size:0;">&nbsp;</td>
-                                <td style="padding:0 8px 0 3px;font-size:13px;color:#94A3B8;font-family:${EM_FONT};">LG</td>
-                                <td width="10" height="10" style="background:#3B82F6;border-radius:2px;font-size:0;">&nbsp;</td>
-                                <td style="padding-left:3px;font-size:13px;color:#94A3B8;font-family:${EM_FONT};">SS</td>
-                              </tr></table>
-                            </td>
-                          </tr>
-                        </table>
+                      <td style="padding:16px 12px 12px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;">
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%"><tr>
+                          <td style="vertical-align:middle;">
+                            <table border="0" cellpadding="0" cellspacing="0"><tr>
+                              <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
+                              <td style="padding-left:8px;font-size:16px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${t.dotcomTitle}</td>
+                            </tr></table>
+                          </td>
+                          <td align="right" style="vertical-align:middle;">
+                            <table border="0" cellpadding="0" cellspacing="0" align="right"><tr>
+                              <td width="10" height="10" style="background:${EM_RED};border-radius:2px;font-size:0;">&nbsp;</td>
+                              <td style="padding:0 6px 0 3px;font-size:12px;color:#94A3B8;font-family:${EM_FONT};">LG</td>
+                              <td width="10" height="10" style="background:#94A3B8;border-radius:2px;font-size:0;">&nbsp;</td>
+                              <td style="padding-left:3px;font-size:12px;color:#94A3B8;font-family:${EM_FONT};">SS</td>
+                            </tr></table>
+                          </td>
+                        </tr></table>
                       </td>
                     </tr>
                     ${insightBlockHtml(meta.dotcomInsight, meta.showDotcomInsight, meta.dotcomHowToRead, meta.showDotcomHowToRead, lang)}
                     <tr>
-                      <td style="padding:12px 16px 20px;">
-                        <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                          ${barRows}
-                          ${summaryRow}
+                      <td style="padding:10px 8px 14px;">
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;">
+                          <tr>${barCols}</tr>
                         </table>
                       </td>
                     </tr>
