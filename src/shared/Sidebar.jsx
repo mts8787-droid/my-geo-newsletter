@@ -31,6 +31,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
   const [publishMsg, setPublishMsg] = useState('')
   const [combPublishing, setCombPublishing] = useState(false)
   const [includeTracker, setIncludeTracker] = useState(false)
+  const [trackerVersion, setTrackerVersion] = useState('v2')
   const [combMsg, setCombMsg] = useState('')
 
   // 게시 상태 로드
@@ -82,7 +83,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
     if (combPublishing) return
     setCombPublishing(true); setCombMsg('')
     try {
-      const result = await publishCombinedDashboard(generateDashboardHTML, resolveDataForLang, { includeProgressTracker: includeTracker })
+      const result = await publishCombinedDashboard(generateDashboardHTML, resolveDataForLang, { includeProgressTracker: includeTracker, trackerVersion })
       setCombMsg(`통합 게시 완료!\nKO: ${window.location.origin}${result.urls.ko}\nEN: ${window.location.origin}${result.urls.en}`)
     } catch (err) {
       setCombMsg('ERROR: ' + err.message)
@@ -640,10 +641,24 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
 
         {mode === 'dashboard' && (
           <>
-            <label style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6, fontSize: 11, color: '#94A3B8', fontFamily: FONT, cursor: 'pointer' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4, fontSize: 11, color: '#94A3B8', fontFamily: FONT, cursor: 'pointer' }}>
               <input type="checkbox" checked={includeTracker} onChange={e => setIncludeTracker(e.target.checked)} style={{ cursor: 'pointer' }} />
-              Progress Tracker 포함 (체크 안하면 Coming Soon으로 표시)
+              Progress Tracker 포함
             </label>
+            {includeTracker && (
+              <div style={{ display: 'flex', gap: 4, marginBottom: 6, marginLeft: 18 }}>
+                <button onClick={() => setTrackerVersion('v1')} style={{
+                  padding: '2px 8px', borderRadius: 4, border: 'none', cursor: 'pointer',
+                  background: trackerVersion === 'v1' ? LG_RED : '#1E293B',
+                  color: trackerVersion === 'v1' ? '#FFFFFF' : '#64748B',
+                  fontSize: 10, fontWeight: 700, fontFamily: FONT }}>V1</button>
+                <button onClick={() => setTrackerVersion('v2')} style={{
+                  padding: '2px 8px', borderRadius: 4, border: 'none', cursor: 'pointer',
+                  background: trackerVersion === 'v2' ? LG_RED : '#1E293B',
+                  color: trackerVersion === 'v2' ? '#FFFFFF' : '#64748B',
+                  fontSize: 10, fontWeight: 700, fontFamily: FONT }}>V2 (외부)</button>
+              </div>
+            )}
             <button onClick={handleCombinedPublish} disabled={combPublishing} style={{
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, width: '100%',
               padding: '8px 12px', borderRadius: 8, border: 'none',

@@ -1211,9 +1211,13 @@ export function generateVisibilityHTML(meta, total, products, citations, dotcom,
 export function generateDashboardHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty, opts, extra) {
   const visibilityOnly = opts?.visibilityOnly || false
   const includeProgressTracker = opts?.includeProgressTracker !== false
+  const trackerVersion = opts?.trackerVersion || 'v1'
   const trackerComingSoonMsg = lang === 'en' ? 'Progress Tracker will be available soon.' : '준비 중입니다. 곧 제공될 예정입니다.'
+  const trackerV1Url = `/p/progress-tracker/?lang=${lang}`
+  const trackerV2Url = `https://geo-progress-tracker-v2.onrender.com/p/progress-tracker-v2/`
+  const trackerSrc = trackerVersion === 'v2' ? trackerV2Url : trackerV1Url
   const trackerTabContent = includeProgressTracker
-    ? `<iframe id="tracker-iframe" src="/p/progress-tracker/?lang=${lang}" style="width:100%;min-height:calc(100vh - 60px);border:none;background:#0A0F1E" title="Progress Tracker"></iframe>`
+    ? `<iframe id="tracker-iframe" src="${trackerSrc}" style="width:100%;min-height:calc(100vh - 60px);border:none;background:#0A0F1E" title="Progress Tracker"></iframe>`
     : `<div class="progress-placeholder"><div class="inner"><div class="icon">⏳</div><h2>Coming Soon</h2><p>${trackerComingSoonMsg}</p></div></div>`
   _sid = 0
   const t = T[lang] || T.ko
@@ -1594,9 +1598,9 @@ function switchLang(lang){
   if(citTp)citTp.src=citBase+'?tab=touchpoint';
   var citDc=document.getElementById('cit-iframe-dc');
   if(citDc&&citDc.src)citDc.src=citBase+'?tab=dotcom';
-  // Tracker iframe 전환
+  // Tracker iframe 전환 (v2 외부 URL이면 lang만 변경하지 않음)
   var trkIframe=document.getElementById('tracker-iframe');
-  if(trkIframe)trkIframe.src='/p/progress-tracker/?lang='+lang;
+  if(trkIframe&&trkIframe.src.indexOf('geo-progress-tracker-v2')<0)trkIframe.src='/p/progress-tracker/?lang='+lang;
   // KO↔EN 페이지 전환 — 현재 탭을 hash로 유지
   var path=window.location.pathname;
   var activeTab=document.querySelector('.tab-panel.active');
