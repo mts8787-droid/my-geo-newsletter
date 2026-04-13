@@ -811,18 +811,24 @@ function categoryCardsHtml(categoryStats, lang, meta) {
   if (!categoryStats || !categoryStats.length) {
     return `<div style="margin-bottom:14px;padding:14px 16px;background:#FEF3C7;border:1px solid #FCD34D;border-radius:8px;font-size:12px;color:#92400E;font-family:${EM_FONT};">${lang === 'en' ? 'Progress Tracker data not available.' : 'Progress Tracker 데이터가 없습니다.'}</div>`
   }
-  // meta.period에서 월 추출: "2026년 3월" → "3월", "Mar 2026" → "Mar"
+  // 월 라벨: categoryStats[0].targetMonth 우선 사용 (가장 정확), 없으면 meta.period에서 추출
+  const enMonthNames = ['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
   let monthLabel = lang === 'en' ? 'This Month' : '이번 월'
-  if (meta?.period) {
-    const krMatch = String(meta.period).match(/(\d{1,2})월/)
-    const enToKr = { jan:'1월',feb:'2월',mar:'3월',apr:'4월',may:'5월',jun:'6월',jul:'7월',aug:'8월',sep:'9월',oct:'10월',nov:'11월',dec:'12월' }
-    const enMatch = String(meta.period).match(/(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)/i)
-    if (krMatch) {
-      monthLabel = lang === 'en' ? (enMatch ? enMatch[1] : `${krMatch[1]}월`) : `${krMatch[1]}월`
-    } else if (enMatch) {
-      monthLabel = lang === 'en' ? enMatch[1] : (enToKr[enMatch[1].toLowerCase()] || enMatch[1])
+  const firstStat = categoryStats[0]
+  if (firstStat?.targetMonth) {
+    // targetMonth는 "3월" 형식
+    monthLabel = firstStat.targetMonth
+    if (lang === 'en') {
+      const num = parseInt(firstStat.targetMonth)
+      if (num >= 1 && num <= 12) monthLabel = enMonthNames[num]
     }
+  } else if (meta?.period) {
+    const krMatch = String(meta.period).match(/(\d{1,2})월/)
+    const enMatch = String(meta.period).match(/(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)/i)
+    if (krMatch) monthLabel = lang === 'en' ? (enMatch ? enMatch[1] : `${krMatch[1]}월`) : `${krMatch[1]}월`
+    else if (enMatch) monthLabel = lang === 'en' ? enMatch[1] : `${enMonthNames.indexOf(enMatch[1].charAt(0).toUpperCase() + enMatch[1].slice(1).toLowerCase()) || ''}월`
   }
+  const fmtN = n => Number(n).toLocaleString('en-US')
   const t = lang === 'en'
     ? { title: 'Key Task Progress', monthly: monthLabel, prev: 'Last Month', progress: 'YTD Progress' }
     : { title: '핵심 과제 진척 사항', monthly: monthLabel, prev: '전월', progress: '연간 진척율' }
@@ -846,7 +852,7 @@ function categoryCardsHtml(categoryStats, lang, meta) {
           <!-- 이번 월 -->
           <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom:4px;">
             <tr>
-              <td style="font-size:11px;color:#64748B;font-family:${EM_FONT};">${t.monthly}</td>
+              <td style="font-size:11px;color:#64748B;font-family:${EM_FONT};">${t.monthly} <span style="color:#94A3B8;">(${fmtN(c.monthActual)}/${fmtN(c.monthGoal)})</span></td>
               <td align="right" style="font-size:13px;font-weight:700;color:${ms.text};font-family:${EM_FONT};">${(c.monthRate || 0).toFixed(0)}%${hasPrev ? ` <span style="font-size:10px;font-weight:700;color:${deltaColor};">${deltaArrow}${Math.abs(delta).toFixed(0)}%p</span>` : ''}</td>
             </tr>
           </table>
@@ -868,7 +874,7 @@ function categoryCardsHtml(categoryStats, lang, meta) {
           <!-- 진척율 -->
           <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom:4px;">
             <tr>
-              <td style="font-size:11px;color:#64748B;font-family:${EM_FONT};">${t.progress}</td>
+              <td style="font-size:11px;color:#64748B;font-family:${EM_FONT};">${t.progress} <span style="color:#94A3B8;">(${fmtN(c.cumActual)}/${fmtN(c.annualGoal)})</span></td>
               <td align="right" style="font-size:13px;font-weight:700;color:${ps.text};font-family:${EM_FONT};">${(c.progressRate || 0).toFixed(0)}%</td>
             </tr>
           </table>

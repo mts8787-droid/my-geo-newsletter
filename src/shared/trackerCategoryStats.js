@@ -81,6 +81,7 @@ export function computeCategoryStats(data, month) {
     return {
       category: cat,
       taskCount: catGoals.length,
+      targetMonth,
       monthRate,
       prevMonthRate,
       prevMonth,
