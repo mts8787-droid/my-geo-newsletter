@@ -620,23 +620,25 @@ function citationCntyTableHtml(citationsCnty, lang) {
     `<td style="padding:6px 2px;text-align:center;font-size:11px;font-weight:700;color:#64748B;font-family:${EM_FONT};border-bottom:2px solid #E8EDF2;">#${i+1}</td>`
   ).join('')
 
+  const EXCLUDE_DOMAINS = ['translate.google']
   const countryRows = countries.map(cnty => {
-    const sorted = [...cntyMap.get(cnty)].sort((a, b) => b.citations - a.citations)
+    const filtered = [...cntyMap.get(cnty)].filter(r => !EXCLUDE_DOMAINS.some(ex => r.domain.toLowerCase().includes(ex)))
+    const sorted = filtered.sort((a, b) => b.citations - a.citations)
     const topN = sorted.slice(0, RANK_COUNT)
     const cells = Array.from({length: RANK_COUNT}, (_, i) => {
       const r = topN[i]
-      if (!r) return `<td style="padding:4px 2px;text-align:center;font-size:10px;color:#CBD5E1;font-family:${EM_FONT};border-bottom:1px solid #F1F5F9;">—</td>`
+      if (!r) return `<td style="padding:3px 1px;text-align:center;font-size:10px;color:#CBD5E1;font-family:${EM_FONT};border-bottom:1px solid #F1F5F9;">—</td>`
       const name = stripDomain(r.domain)
       const bold = isBold(name)
-      return `<td style="padding:3px 2px;text-align:center;font-size:12px;color:#1A1A1A;font-family:${EM_FONT};border-bottom:1px solid #F1F5F9;">${bold ? '<b>' : ''}${escapeHtml(name)}${bold ? '</b>' : ''}<br/><span style="font-size:10px;color:#94A3B8;font-weight:700;">${fmtK(r.citations)}</span></td>`
+      return `<td style="padding:3px 1px;text-align:center;font-size:12px;color:#1A1A1A;font-family:${EM_FONT};border-bottom:1px solid #F1F5F9;white-space:nowrap;">${bold ? '<b>' : ''}${escapeHtml(name)}${bold ? '</b>' : ''}<br/><span style="font-size:10px;color:#94A3B8;font-weight:700;">${fmtK(r.citations)}</span></td>`
     }).join('')
-    return `<tr><td style="padding:4px 4px;font-size:11px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};border-bottom:1px solid #F1F5F9;white-space:nowrap;">${cntyKr(cnty)}</td>${cells}</tr>`
+    return `<tr><td style="padding:3px 2px;font-size:11px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};border-bottom:1px solid #F1F5F9;white-space:nowrap;width:1%;">${cntyKr(cnty)}</td>${cells}</tr>`
   }).join('')
 
   return `<tr><td>
                         <table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;">
                           <tr>
-                            <td style="padding:6px 4px;font-size:11px;font-weight:700;color:#64748B;font-family:${EM_FONT};border-bottom:2px solid #E8EDF2;">${lang === 'en' ? 'Country' : '국가'}</td>
+                            <td style="padding:6px 2px;font-size:11px;font-weight:700;color:#64748B;font-family:${EM_FONT};border-bottom:2px solid #E8EDF2;white-space:nowrap;width:1%;">${lang === 'en' ? 'Country' : '국가'}</td>
                             ${rankHeaders}
                           </tr>
                           ${countryRows}
