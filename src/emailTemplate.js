@@ -628,7 +628,7 @@ function citationCntyTableHtml(citationsCnty, lang) {
       if (!r) return `<td style="padding:4px 2px;text-align:center;font-size:10px;color:#CBD5E1;font-family:${EM_FONT};border-bottom:1px solid #F1F5F9;">—</td>`
       const name = stripDomain(r.domain)
       const bold = isBold(name)
-      return `<td style="padding:3px 2px;text-align:center;font-size:10px;color:#1A1A1A;font-family:${EM_FONT};border-bottom:1px solid #F1F5F9;">${bold ? '<b>' : ''}${escapeHtml(name)}${bold ? '</b>' : ''}<br/><span style="font-size:10px;color:#94A3B8;font-weight:700;">${fmtK(r.citations)}</span></td>`
+      return `<td style="padding:3px 2px;text-align:center;font-size:12px;color:#1A1A1A;font-family:${EM_FONT};border-bottom:1px solid #F1F5F9;">${bold ? '<b>' : ''}${escapeHtml(name)}${bold ? '</b>' : ''}<br/><span style="font-size:10px;color:#94A3B8;font-weight:700;">${fmtK(r.citations)}</span></td>`
     }).join('')
     return `<tr><td style="padding:4px 4px;font-size:11px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};border-bottom:1px solid #F1F5F9;white-space:nowrap;">${cntyKr(cnty)}</td>${cells}</tr>`
   }).join('')
