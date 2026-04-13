@@ -13,6 +13,15 @@ function escapeHtml(str) {
   return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')
 }
 
+const COUNTRY_FULL = {
+  US: 'USA', CA: 'Canada', UK: 'UK', GB: 'UK',
+  DE: 'Germany', ES: 'Spain', FR: 'France', IT: 'Italy',
+  BR: 'Brazil', MX: 'Mexico', IN: 'India', AU: 'Australia',
+  VN: 'Vietnam', JP: 'Japan', KR: 'Korea', CN: 'China',
+  TTL: 'Total', TOTAL: 'Total', GLOBAL: 'Global',
+}
+function cntyFull(c) { return COUNTRY_FULL[String(c||'').trim().toUpperCase()] || c }
+
 function fmt(n) {
   if (n == null || isNaN(n)) return '—'
   return Number(n).toFixed(1)
@@ -98,7 +107,7 @@ function buildCountryTotalsTable(countryTotals, countryTotalsPrev, lang) {
     const sigBg = signalBg(cur.lg, cur.comp) || '#FFFFFF'
     const mom = prev && prev.lg != null ? fmtDelta(cur.lg, prev.lg) : '—'
     return `<tr>
-      <td style="border:1px solid #999;padding:6px 10px;font-size:12px;font-family:${FONT};font-weight:700;text-align:center;background:#F5F5F5;">${escapeHtml(c)}</td>
+      <td style="border:1px solid #999;padding:6px 10px;font-size:12px;font-family:${FONT};font-weight:700;text-align:center;background:#F5F5F5;">${escapeHtml(cntyFull(c))}</td>
       <td style="border:1px solid #999;padding:6px 10px;font-size:12px;font-family:${FONT};text-align:center;font-weight:700;background:${sigBg};">${fmt(cur.lg)}</td>
       <td style="border:1px solid #999;padding:6px 10px;font-size:12px;font-family:${FONT};text-align:center;background:${sigBg};">${fmt(cur.comp)}</td>
       <td style="border:1px solid #999;padding:6px 10px;font-size:12px;font-family:${FONT};text-align:center;font-weight:700;background:${sigBg};">${ratio}%</td>
@@ -168,7 +177,7 @@ function buildVisibilityTable(productsCnty, productsCntyPrev, lang, productsTTL)
   // 헤더: TTL을 첫 컬럼으로
   const headerCells = `<th style="border:1px solid #999;padding:4px 6px;font-size:10px;font-weight:700;text-align:center;background:#FBBF24;min-width:55px;">${TTL_KEY}</th>` +
     countries.map(c =>
-      `<th style="border:1px solid #999;padding:4px 6px;font-size:10px;font-weight:700;text-align:center;background:#E8E8E8;min-width:50px;">${escapeHtml(c)}</th>`
+      `<th style="border:1px solid #999;padding:4px 6px;font-size:10px;font-weight:700;text-align:center;background:#E8E8E8;min-width:50px;">${escapeHtml(cntyFull(c))}</th>`
     ).join('')
 
   // 각 제품마다 LG / 경쟁비 / 경쟁사 3행, 신호등 색상은 3행 모두 동일하게
@@ -386,7 +395,7 @@ function buildCitationCntyTable(citationsCnty, lang) {
       cells.push(`<td style="border:1px solid #999;padding:5px 8px;font-size:10px;font-family:${FONT};${bgStyle}${colorStyle}">${r ? `${escapeHtml(r.domain || '')} <span style="color:#666;font-weight:400;">(${(r.citations || 0).toLocaleString('en-US')})</span>` : '—'}</td>`)
     }
     return `<tr>
-      <td style="border:1px solid #999;padding:5px 8px;font-size:11px;font-family:${FONT};font-weight:700;background:#F5F5F5;text-align:center;">${escapeHtml(cnty)}</td>
+      <td style="border:1px solid #999;padding:5px 8px;font-size:11px;font-family:${FONT};font-weight:700;background:#F5F5F5;text-align:center;">${escapeHtml(cntyFull(cnty))}</td>
       <td style="border:1px solid #999;padding:5px 8px;font-size:11px;font-family:${FONT};text-align:right;font-weight:700;">${total.toLocaleString('en-US')}</td>
       ${cells.join('')}
     </tr>`
