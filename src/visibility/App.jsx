@@ -82,7 +82,43 @@ export default function App() {
     fetchSyncData(MODE).then(d => {
       if (cancelled || !d) return
       serverSyncApplied.current = true
-      if (d.meta)          setMetaKo(m => ({ ...m, ...d.meta }))
+      if (d.meta) {
+        // 서버 저장 period가 최신이 아닐 수 있으므로 데이터에서 재감지
+        const enNames = ['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+        let bestMonth = 0
+        // citDerivedPeriod에서 추출
+        if (d.citDerivedPeriod) {
+          const cm = String(d.citDerivedPeriod).match(/(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)/i)
+          if (cm) { const ci = enNames.findIndex(m => m && m.toLowerCase() === cm[1].toLowerCase()); if (ci > bestMonth) bestMonth = ci }
+        }
+        // productsPartial의 최신 date에서 추출
+        if (d.productsPartial?.length) {
+          d.productsPartial.forEach(p => {
+            if (p.date) {
+              const km = String(p.date).match(/(\d{1,2})월/); if (km) { const n = parseInt(km[1]); if (n > bestMonth) bestMonth = n }
+              const em = String(p.date).match(/(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)/i)
+              if (em) { const ci = enNames.findIndex(m => m && m.toLowerCase() === em[1].toLowerCase()); if (ci > bestMonth) bestMonth = ci }
+            }
+          })
+        }
+        // monthlyVis에서 최신 월 추출
+        if (d.monthlyVis?.length) {
+          d.monthlyVis.forEach(r => {
+            if (r.date) {
+              const km = String(r.date).match(/(\d{1,2})월/); if (km) { const n = parseInt(km[1]); if (n > bestMonth) bestMonth = n }
+              const em = String(r.date).match(/(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)/i)
+              if (em) { const ci = enNames.findIndex(m => m && m.toLowerCase() === em[1].toLowerCase()); if (ci > bestMonth) bestMonth = ci }
+            }
+          })
+        }
+        const yr = new Date().getFullYear()
+        const correctedMeta = { ...d.meta }
+        if (bestMonth > 0) {
+          correctedMeta.period = `${enNames[bestMonth]} ${yr}`
+        }
+        setMetaKo(m => ({ ...m, ...correctedMeta }))
+        if (bestMonth > 0) setMetaEn(m => ({ ...m, period: `${enNames[bestMonth]} ${yr}` }))
+      }
       if (d.total)         setTotal(t => ({ ...t, ...d.total }))
       if (d.citations)     setCitations(d.citations)
       if (d.dotcom)        setDotcom(prev => ({ ...prev, ...d.dotcom }))
