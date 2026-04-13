@@ -211,65 +211,48 @@ function productCardHtml(p, globalMax, globalMin, lang = 'ko', opts = {}) {
   const sparkColor = p.status === 'critical' ? '#BE123C' : p.status === 'behind' ? '#E8910C' : '#15803D'
   const trendTitle = lang === 'en' ? `${TREND_WEEKS}W Trend` : `${TREND_WEEKS}주 트렌드`
 
-  // 트렌드 영역: 대시보드 모드일 때 주별/월별 모두 생성
-  const weeklyContent = `<table border="0" cellpadding="0" cellspacing="0" width="100%"><tr><td align="right" style="font-size:12px;color:#94A3B8;padding-bottom:2px;font-family:${EM_FONT};">${trendTitle}</td></tr></table>
-                ${weeklyTrendHtml(trendArr, sparkColor, globalMax, globalMin, trimmedLabels)}`
-  const monthlyContent = `<table border="0" cellpadding="0" cellspacing="0" width="100%"><tr><td align="right" style="font-size:12px;color:#94A3B8;padding-bottom:2px;font-family:${EM_FONT};">${t.monthTrend}</td></tr></table>
-                ${monthlyTrendHtml(monthlyArr, sparkColor, monthlyGlobalMax, monthlyGlobalMin)}`
+  // 경쟁사 대비 비율
+  const curRatio = p.compRatio || Math.round(p.vsComp > 0 ? (p.score / p.vsComp) * 100 : 100)
+  const ratioColor = curRatio >= 100 ? '#15803D' : curRatio >= 80 ? '#E8910C' : '#BE123C'
+  const momStr = p.prev != null && p.prev > 0
+    ? `<span style="font-size:12px;font-weight:700;color:${d.color};font-family:${EM_FONT};">${d.arrow}${Math.abs(d.value).toFixed(1)}%p</span>`
+    : `<span style="font-size:12px;color:#94A3B8;font-family:${EM_FONT};">—</span>`
 
+  // 트렌드 (타이틀 없이 그래프만)
+  const trendGraph = weeklyTrendHtml(trendArr, sparkColor, globalMax, globalMin, trimmedLabels)
   const trendCell = showTrendTabs
-    ? `<div class="trend-weekly">${weeklyContent}</div><div class="trend-monthly" style="display:none;">${monthlyContent}</div>`
-    : weeklyContent
+    ? `<div class="trend-weekly">${trendGraph}</div><div class="trend-monthly" style="display:none;">${monthlyTrendHtml(monthlyArr, sparkColor, monthlyGlobalMax, monthlyGlobalMin)}</div>`
+    : trendGraph
 
   return `
-  <td width="33%" style="padding:4px;vertical-align:top;height:148px;">
-    <table border="0" cellpadding="0" cellspacing="0" width="100%" height="148" style="border:2px solid ${st.border};border-radius:8px;background:#FFFFFF;font-family:${EM_FONT};">
+  <td width="33%" style="padding:3px;vertical-align:top;">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border:2px solid ${st.border};border-radius:8px;background:#FFFFFF;font-family:${EM_FONT};">
       <tr>
-        <td style="padding:8px 10px 4px;">
+        <td style="padding:6px 8px 4px;">
           <table border="0" cellpadding="0" cellspacing="0" width="100%">
             <tr>
-              <td style="font-size:16px;font-weight:900;color:#1A1A1A;line-height:20px;vertical-align:middle;">${escapeHtml(p.kr)}</td>
+              <td style="vertical-align:middle;">
+                <span style="display:inline-block;background:${st.bg};color:${st.color};border:1px solid ${st.border};border-radius:6px;padding:0px 5px;font-size:10px;font-weight:700;line-height:16px;font-family:${EM_FONT};vertical-align:middle;">${st.label}</span>
+                <span style="font-size:14px;font-weight:900;color:#1A1A1A;vertical-align:middle;padding-left:3px;">${escapeHtml(p.kr)}</span>
+              </td>
+              <td align="right" style="vertical-align:middle;white-space:nowrap;">
+                <span style="font-size:11px;color:#64748B;font-family:${EM_FONT};">${ssName(p.compName)}</span>
+                <span style="font-size:12px;font-weight:700;color:${ratioColor};font-family:${EM_FONT};">${curRatio}%</span>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+      <tr>
+        <td style="padding:2px 8px 6px;">
+          <table border="0" cellpadding="0" cellspacing="0" width="100%">
+            <tr>
+              <td style="vertical-align:middle;">
+                <span style="font-size:22px;font-weight:900;color:#1A1A1A;">${p.score.toFixed(1)}</span><span style="font-size:12px;color:#94A3B8;">%</span>
+                &nbsp;${momStr}
+              </td>
               <td align="right" style="vertical-align:middle;">
-                <table border="0" cellpadding="0" cellspacing="0" align="right"><tr>
-                  <td style="background:${st.bg};color:${st.color};border:1px solid ${st.border};border-radius:8px;padding:1px 6px;font-size:11px;font-weight:700;line-height:18px;font-family:${EM_FONT};">${st.label}</td>
-                </tr></table>
-              </td>
-            </tr>
-          </table>
-        </td>
-      </tr>
-      <tr>
-        <td style="padding:2px 10px 6px;">
-          <table border="0" cellpadding="0" cellspacing="0" width="100%">
-            <tr>
-              <td>
-                <span style="font-size:24px;font-weight:900;color:#1A1A1A;">${p.score.toFixed(1)}</span>
-                <span style="font-size:14px;color:#94A3B8;"> %</span>
-              </td>
-              <td align="right" style="vertical-align:top;padding-top:2px;">
                 ${trendCell}
-              </td>
-            </tr>
-            <tr>
-              <td colspan="2" style="padding-top:2px;">${p.prev != null && p.prev > 0 ? deltaHtml(d, 12, true) : `<span style="color:#94A3B8;font-size:13px;">MoM —</span>`}</td>
-            </tr>
-          </table>
-        </td>
-      </tr>
-      <tr>
-        <td style="padding:0 10px 8px;">
-          <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#F8FAFC;border-radius:5px;">
-            <tr>
-              <td style="padding:4px 7px;font-size:13px;color:#1A1A1A;">${lang === 'en' ? `${t.vsComp} ${ssName(p.compName)}` : `${ssName(p.compName)} ${t.vsComp}`}</td>
-              <td align="right" style="padding:4px 7px;font-size:13px;font-weight:700;color:${(p.compRatio || 0) >= 100 ? '#15803D' : (p.compRatio || 0) >= 80 ? '#E8910C' : '#BE123C'};">
-                ${(() => {
-                  const curRatio = p.compRatio || Math.round(p.vsComp > 0 ? (p.score / p.vsComp) * 100 : 100)
-                  if (p.prev == null || p.prev <= 0 || !p.vsComp) return `${curRatio}%`
-                  const prevRatio = Math.round((p.prev / p.vsComp) * 100)
-                  const rd = curRatio - prevRatio
-                  const rdColor = rd > 0 ? '#16A34A' : rd < 0 ? '#DC2626' : '#94A3B8'
-                  return `${curRatio}% <span style="font-size:11px;color:${rdColor};">${rd > 0 ? '+' : ''}${rd}%p</span>`
-                })()}
               </td>
             </tr>
           </table>
