@@ -602,7 +602,8 @@ function citationCntyCountryHtml(cntyCode, rows, lang) {
 
 function citationCntyTableHtml(citationsCnty, lang) {
   if (!citationsCnty || !citationsCnty.length) return ''
-  const fmtN = n => Number(n).toLocaleString('en-US')
+  const BOLD_DOMAINS = ['reddit', 'youtube']
+  function isBold(name) { return BOLD_DOMAINS.some(b => name.toLowerCase().includes(b)) }
 
   const cntyMap = new Map()
   citationsCnty.forEach(row => {
@@ -611,48 +612,36 @@ function citationCntyTableHtml(citationsCnty, lang) {
     cntyMap.get(row.cnty).push(row)
   })
 
-  // 모든 도메인 수집 (전체 국가 통합)
-  const allDomains = new Set()
-  cntyMap.forEach(rows => rows.forEach(r => allDomains.add(stripDomain(r.domain))))
-  // TTL 기준 Top 5 도메인
-  const ttlRows = citationsCnty.filter(r => r.cnty === 'TTL').sort((a, b) => b.citations - a.citations)
-  const topDomains = ttlRows.slice(0, 5).map(r => stripDomain(r.domain))
-
   const countries = [...cntyMap.keys()]
-  if (!countries.length || !topDomains.length) return ''
+  if (!countries.length) return ''
 
-  // 테이블 헤더
-  const domainHeaders = topDomains.map(d =>
-    `<td style="padding:6px 4px;text-align:center;font-size:13px;font-weight:700;color:#64748B;font-family:${EM_FONT};border-bottom:2px solid #E8EDF2;">${d}</td>`
+  // 헤더: 국가 | #1 | #2 | #3 | #4 | #5
+  const rankHeaders = [1,2,3,4,5].map(r =>
+    `<td style="padding:6px 4px;text-align:center;font-size:12px;font-weight:700;color:#64748B;font-family:${EM_FONT};border-bottom:2px solid #E8EDF2;">#${r}</td>`
   ).join('')
 
-  // 국가별 행 (랭킹 + 1위 빨간 배경)
   const countryRows = countries.map(cnty => {
-    const rows = cntyMap.get(cnty)
-    const sorted = [...rows].sort((a, b) => b.citations - a.citations)
-    const domMap = {}
-    const rankMap = {}
-    sorted.forEach((r, i) => {
-      const key = stripDomain(r.domain)
-      domMap[key] = r.citations
-      rankMap[key] = i + 1
-    })
-    const cells = topDomains.map(d => {
-      const val = domMap[d] || 0
-      const rank = rankMap[d] || 999
-      const isFirst = rank === 1 && val > 0
+    const sorted = [...cntyMap.get(cnty)].sort((a, b) => b.citations - a.citations)
+    const top5 = sorted.slice(0, 5)
+    const cells = [0,1,2,3,4].map(i => {
+      const r = top5[i]
+      if (!r) return `<td style="padding:5px 4px;text-align:center;font-size:11px;color:#CBD5E1;font-family:${EM_FONT};border-bottom:1px solid #F1F5F9;">—</td>`
+      const name = stripDomain(r.domain)
+      const bold = isBold(name)
+      const isFirst = i === 0
       const bg = isFirst ? `background:${EM_RED};` : ''
-      const color = isFirst ? '#FFFFFF' : val > 0 ? '#1A1A1A' : '#CBD5E1'
-      return `<td style="padding:5px 4px;text-align:center;font-size:12px;font-weight:${val > 0 ? '700' : '400'};color:${color};font-family:${EM_FONT};border-bottom:1px solid #F1F5F9;${bg}border-radius:${isFirst ? '4px' : '0'};">${val > 0 ? `${fmtN(val)} <span style="font-size:10px;color:${isFirst ? '#FFD4E0' : '#94A3B8'};font-weight:600;">#${rank}</span>` : '—'}</td>`
+      const nameColor = isFirst ? '#FFFFFF' : '#1A1A1A'
+      const numColor = isFirst ? '#FFD4E0' : '#94A3B8'
+      return `<td style="padding:4px 3px;text-align:center;font-size:11px;color:${nameColor};font-family:${EM_FONT};border-bottom:1px solid #F1F5F9;${bg}border-radius:${isFirst ? '4px' : '0'};">${bold ? '<b>' : ''}${escapeHtml(name)}${bold ? '</b>' : ''}<br/><span style="font-size:10px;color:${numColor};font-weight:700;">${fmtK(r.citations)}</span></td>`
     }).join('')
-    return `<tr><td style="padding:5px 8px;font-size:13px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};border-bottom:1px solid #F1F5F9;white-space:nowrap;">${cntyKr(cnty)}</td>${cells}</tr>`
+    return `<tr><td style="padding:5px 6px;font-size:12px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};border-bottom:1px solid #F1F5F9;white-space:nowrap;">${cntyKr(cnty)}</td>${cells}</tr>`
   }).join('')
 
   return `<tr><td>
                         <table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;">
                           <tr>
-                            <td style="padding:6px 8px;font-size:13px;font-weight:700;color:#64748B;font-family:${EM_FONT};border-bottom:2px solid #E8EDF2;">${lang === 'en' ? 'Country' : '국가'}</td>
-                            ${domainHeaders}
+                            <td style="padding:6px 6px;font-size:12px;font-weight:700;color:#64748B;font-family:${EM_FONT};border-bottom:2px solid #E8EDF2;">${lang === 'en' ? 'Country' : '국가'}</td>
+                            ${rankHeaders}
                           </tr>
                           ${countryRows}
                         </table>
