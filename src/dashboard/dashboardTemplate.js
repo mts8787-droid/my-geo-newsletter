@@ -952,7 +952,7 @@ function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang, meta, appendixPromp
     function lastVal(topic,cnty,brand){for(var i=W.length-1;i>=0;i--){var v=val(topic,cnty,brand,W[i]);if(v!=null)return v}return null}
     // ── 상단 매트릭스 (토픽×국가, 최근주 기준 신호등) ──
     // 카테고리별 토픽 정렬: Consumer Products 먼저, 그다음 Corporate & Innovation
-    var CATS=['Consumer Products','Corporate & Innovation'];
+    var CATS=['Corporate & Innovation','Consumer Products'];
     var sortedTP=[];
     CATS.forEach(function(cat){TP.forEach(function(tp){if((TOPIC_CAT[tp]||'Corporate & Innovation')===cat)sortedTP.push(tp)})});
     TP.forEach(function(tp){if(sortedTP.indexOf(tp)<0)sortedTP.push(tp)});
