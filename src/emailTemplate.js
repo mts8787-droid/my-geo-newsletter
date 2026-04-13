@@ -246,7 +246,7 @@ function productCardHtml(p, globalMax, globalMin, lang = 'ko', opts = {}) {
               <td align="right" style="vertical-align:middle;white-space:nowrap;">
                 <span style="font-size:10px;color:#64748B;font-family:${EM_FONT};">${ssName(p.compName)}</span>
                 <span style="font-size:11px;font-weight:700;color:${ratioColor};font-family:${EM_FONT};">${curRatio}%${ratioDelta}</span>
-                &nbsp;<span style="display:inline-block;background:${st.bg};color:${st.color};border:1px solid ${st.border};border-radius:6px;padding:0px 5px;font-size:9px;font-weight:700;line-height:16px;font-family:${EM_FONT};vertical-align:middle;">${st.label}</span>
+                &nbsp;<span style="display:inline-block;background:${st.bg};color:${st.color};border:1px solid ${st.border};border-radius:6px;padding:0px 5px;font-size:10px;font-weight:700;line-height:16px;font-family:${EM_FONT};vertical-align:middle;">${st.label}</span>
               </td>
             </tr>
           </table>
@@ -450,7 +450,7 @@ function countryCardHtml(cntyCode, rows, lang, countryTotals) {
         <tr><td height="${barH}" style="font-size:0;line-height:0;"><table border="0" cellpadding="0" cellspacing="0" align="center"><tr><td width="18" height="${barH}" style="background:${barColor};border-radius:3px 3px 0 0;font-size:0;">&nbsp;</td></tr></table></td></tr>
         <tr><td style="font-size:11px;font-weight:800;color:${barColor};font-family:${EM_FONT};padding-top:2px;white-space:nowrap;">${r.score.toFixed(1)}</td></tr>
         <tr><td style="font-size:10px;color:#475569;font-family:${EM_FONT};padding-top:1px;white-space:nowrap;">${escapeHtml(r.product)}</td></tr>
-        <tr><td style="font-size:9px;color:#94A3B8;font-family:${EM_FONT};padding-top:1px;white-space:nowrap;line-height:1.3;">${ssName(r.compName)}<br/>${ratio}%</td></tr>
+        <tr><td style="font-size:10px;color:#94A3B8;font-family:${EM_FONT};padding-top:1px;white-space:nowrap;line-height:1.3;">${ssName(r.compName)}<br/>${ratio}%</td></tr>
       </table>
     </td>`
   }).join('')
