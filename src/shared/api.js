@@ -114,6 +114,13 @@ export async function publishCombinedDashboard(generateDashboardHTML, resolveDat
     weeklyBrandPromptLabels: d.weeklyBrandPromptLabels || [],
   }
   const opts = { monthlyVis: d.monthlyVis || [], includeProgressTracker, trackerVersion, includePromptList }
+  console.log('[PUBLISH] extra data check:', {
+    weeklyPR: extra.weeklyPR?.length || 0,
+    weeklyBrandPrompt: extra.weeklyBrandPrompt?.length || 0,
+    appendixPrompts: extra.appendixPrompts?.length || 0,
+    source: dDash ? 'dashboard' : dVis ? 'visibility' : 'none',
+    dKeys: Object.keys(d).filter(k => d[k] && (Array.isArray(d[k]) ? d[k].length : true)),
+  })
   const htmlKo = generateDashboardHTML(meta, total, resolvedKo.products, resolvedKo.citations, dotcom, 'ko', resolvedKo.productsCnty, resolvedKo.citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty, opts, extra)
   const htmlEn = generateDashboardHTML({ ...meta, title: meta.title || 'GEO KPI Dashboard' }, total, resolvedEn.products, resolvedEn.citations, dotcom, 'en', resolvedEn.productsCnty, resolvedEn.citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty, opts, extra)
   const title = `${meta.period || ''} ${meta.title || 'KPI Dashboard'}`.trim()
