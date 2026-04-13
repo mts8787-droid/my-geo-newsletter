@@ -272,6 +272,7 @@ export default function App() {
           weeklyLabels={weeklyLabels}
           weeklyAll={weeklyAll}
           generateHTML={generateEmailHTML}
+          categoryStats={categoryStats}
         />
       )}
       <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>

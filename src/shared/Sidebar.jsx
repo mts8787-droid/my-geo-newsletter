@@ -10,7 +10,7 @@ import { generateDashboardHTML } from '../dashboard/dashboardTemplate.js'
 import { generateProductInsight, generateProductHowToRead, generateCntyHowToRead } from './insights.js'
 
 export default
-function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, total, setTotal, products, setProducts, citations, setCitations, dotcom, setDotcom, productsCnty, setProductsCnty, citationsCnty, setCitationsCnty, resolved, previewLang, setPreviewLang, snapshots, setSnapshots, setWeeklyLabels, setWeeklyAll, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty, generateHTML, publishEndpoint, setMonthlyVis, onSyncExtra }) {
+function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, total, setTotal, products, setProducts, citations, setCitations, dotcom, setDotcom, productsCnty, setProductsCnty, citationsCnty, setCitationsCnty, resolved, previewLang, setPreviewLang, snapshots, setSnapshots, setWeeklyLabels, setWeeklyAll, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty, generateHTML, publishEndpoint, setMonthlyVis, onSyncExtra, categoryStats }) {
   // 최신 데이터 ref — AI 생성 시 stale closure 방지
   const latestRef = useRef({ products, productsCnty, citations, citationsCnty, total, dotcom })
   // props 변경 시 즉시 동기 갱신 (useEffect보다 빠름)
@@ -53,8 +53,8 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
         htmlEn = generateHTML(metaEn, latest.total, resolvedEn.products, resolvedEn.citations, dotcom, 'en', resolvedEn.productsCnty, resolvedEn.citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty)
         title = `${metaKo.period || ''} ${metaKo.title || 'KPI Dashboard'}`.trim()
       } else {
-        htmlKo = generateHTML(metaKo, latest.total, resolvedKo.products, resolvedKo.citations, dotcom, 'ko', resolvedKo.productsCnty, resolvedKo.citationsCnty)
-        htmlEn = generateHTML(metaEn, latest.total, resolvedEn.products, resolvedEn.citations, dotcom, 'en', resolvedEn.productsCnty, resolvedEn.citationsCnty)
+        htmlKo = generateHTML(metaKo, latest.total, resolvedKo.products, resolvedKo.citations, dotcom, 'ko', resolvedKo.productsCnty, resolvedKo.citationsCnty, { weeklyLabels, categoryStats })
+        htmlEn = generateHTML(metaEn, latest.total, resolvedEn.products, resolvedEn.citations, dotcom, 'en', resolvedEn.productsCnty, resolvedEn.citationsCnty, { weeklyLabels, categoryStats })
         title = `${metaKo.period || ''} ${metaKo.title || 'Newsletter'}`.trim()
       }
       const ep = publishEndpoint || (mode === 'dashboard' ? '/api/publish-dashboard' : '/api/publish')

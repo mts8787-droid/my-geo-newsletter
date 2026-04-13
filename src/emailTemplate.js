@@ -1310,8 +1310,8 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                     </tr>
                     <tr>
                       <td style="padding:20px 16px;">
+                        <p style="margin:0 0 16px;font-size:14px;color:#1A1A1A;line-height:22px;font-family:${EM_FONT};">${mdBold(meta.todoText)}</p>
                         ${categoryCardsHtml(categoryStats, lang)}
-                        <p style="margin:0;font-size:14px;color:#1A1A1A;line-height:22px;font-family:${EM_FONT};">${mdBold(meta.todoText)}</p>
                         ${dashboardLinkButtonHtml(lang)}
                       </td>
                     </tr>
