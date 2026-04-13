@@ -75,8 +75,18 @@ export async function fetchSyncData(mode) {
 
 export async function publishCombinedDashboard(generateDashboardHTML, resolveDataForLang, options = {}) {
   const { includeProgressTracker = false, trackerVersion = 'v1', includePromptList = false } = options
-  const d = await fetchSyncData('dashboard')
-  if (!d) throw new Error('동기화 데이터가 없습니다. Visibility Editor에서 먼저 동기화해주세요.')
+  // dashboard + visibility sync 데이터 병합 (양쪽에서 최선의 데이터 확보)
+  const [dDash, dVis] = await Promise.all([
+    fetchSyncData('dashboard').catch(() => null),
+    fetchSyncData('visibility').catch(() => null),
+  ])
+  const d = { ...(dVis || {}), ...(dDash || {}) }
+  // visibility 쪽에만 있는 필드 보충
+  if (dVis) {
+    const mergeKeys = ['weeklyPR','weeklyPRLabels','weeklyBrandPrompt','weeklyBrandPromptLabels','appendixPrompts','citationsByCnty','dotcomByCnty','monthlyVis']
+    mergeKeys.forEach(k => { if (!d[k] && dVis[k]) d[k] = dVis[k] })
+  }
+  if (!d || !Object.keys(d).length) throw new Error('동기화 데이터가 없습니다. Visibility Editor에서 먼저 동기화해주세요.')
   const meta = d.meta || {}
   const total = d.total || {}
   // productsPartial 우선, 없으면 products(에디터 state) 폴백
