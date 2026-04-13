@@ -807,13 +807,21 @@ function dotcomSectionHtml(dotcom, meta, lang = 'ko') {
 }
 
 // ─── Category Cards (Progress Tracker 진척율) ──────────────────────────────
-function categoryCardsHtml(categoryStats, lang) {
+function categoryCardsHtml(categoryStats, lang, meta) {
   if (!categoryStats || !categoryStats.length) {
     return `<div style="margin-bottom:14px;padding:14px 16px;background:#FEF3C7;border:1px solid #FCD34D;border-radius:8px;font-size:12px;color:#92400E;font-family:${EM_FONT};">${lang === 'en' ? 'Progress Tracker data not available.' : 'Progress Tracker 데이터가 없습니다.'}</div>`
   }
+  // meta.period에서 월 추출: "2026년 3월" → "3월", "Mar 2026" → "Mar"
+  let monthLabel = lang === 'en' ? 'This Month' : '이번 월'
+  if (meta?.period) {
+    const krMatch = String(meta.period).match(/(\d{1,2})월/)
+    const enMatch = String(meta.period).match(/(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)/i)
+    if (lang === 'en' && enMatch) monthLabel = enMatch[1]
+    else if (krMatch) monthLabel = `${krMatch[1]}월`
+  }
   const t = lang === 'en'
-    ? { title: 'Key Task Progress', monthly: 'This Month', prev: 'Last Month', progress: 'YTD Progress' }
-    : { title: '핵심 과제 진척 사항', monthly: '이번 월', prev: '전월', progress: '연간 진척율' }
+    ? { title: 'Key Task Progress', monthly: monthLabel, prev: 'Last Month', progress: 'YTD Progress' }
+    : { title: '핵심 과제 진척 사항', monthly: monthLabel, prev: '전월', progress: '연간 진척율' }
   function statusColor(rate) {
     if (rate >= 80) return { bg: '#F0FDF4', border: '#BBF7D0', bar: '#16A34A', text: '#15803D' }
     if (rate >= 50) return { bg: '#FFFBEB', border: '#FDE68A', bar: '#D97706', text: '#B45309' }
@@ -880,7 +888,10 @@ function categoryCardsHtml(categoryStats, lang) {
   }
   return `
   <div style="margin-bottom:18px;">
-    <p style="margin:0 0 10px;font-size:13px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.5px;font-family:${EM_FONT};">${t.title}</p>
+    <table border="0" cellpadding="0" cellspacing="0" style="margin-bottom:12px;"><tr>
+      <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
+      <td style="padding-left:8px;font-size:16px;font-weight:800;color:#0F172A;font-family:${EM_FONT};">${t.title}</td>
+    </tr></table>
     <table border="0" cellpadding="0" cellspacing="0" width="100%">${rows.join('')}</table>
   </div>`
 }
@@ -1312,17 +1323,17 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                       <td style="padding:20px 16px;">
                         ${meta.todoNotice ? `
                         <!-- 1. 전사 핵심 과제 노티스 -->
-                        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#0F172A;border-radius:10px;margin-bottom:16px;">
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFF4F7;border:1px solid #F5CCD8;border-radius:10px;margin-bottom:16px;">
                           <tr><td style="padding:14px 16px;">
                             <p style="margin:0 0 4px;font-size:13px;font-weight:700;color:${EM_RED};font-family:${EM_FONT};text-transform:uppercase;">${lang === 'en' ? 'Key Initiative' : '전사 핵심 과제'}</p>
-                            <p style="margin:0;font-size:14px;color:#FFFFFF;line-height:22px;font-family:${EM_FONT};">${mdBold(meta.todoNotice)}</p>
+                            <p style="margin:0;font-size:14px;color:#1A1A1A;line-height:22px;font-family:${EM_FONT};">${mdBold(meta.todoNotice)}</p>
                           </td></tr>
                         </table>` : ''}
                         ${meta.todoText ? `
                         <!-- 2. 인사이트 -->
                         <p style="margin:0 0 16px;font-size:14px;color:#1A1A1A;line-height:22px;font-family:${EM_FONT};">${mdBold(meta.todoText)}</p>` : ''}
                         <!-- 3. 핵심 과제 진척 사항 -->
-                        ${categoryCardsHtml(categoryStats, lang)}
+                        ${categoryCardsHtml(categoryStats, lang, meta)}
                         ${dashboardLinkButtonHtml(lang)}
                       </td>
                     </tr>

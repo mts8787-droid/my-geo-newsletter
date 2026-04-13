@@ -10,9 +10,14 @@ function categorySortKey(name) {
   return idx >= 0 ? idx : 999
 }
 
+function taskKey(r) {
+  // stakeholder + task + pageType + detail로 고유 식별 (동명 과제 구분)
+  return `${r.stakeholder || ''}|${r.task || ''}|${r.pageType || ''}|${r.detail || ''}`
+}
+
 function buildLookup(rows) {
   const map = {}
-  ;(rows || []).forEach(r => { if (r.stakeholder && r.task) map[`${r.stakeholder}|${r.task}`] = r })
+  ;(rows || []).forEach(r => { if (r.stakeholder && r.task) map[taskKey(r)] = r })
   return map
 }
 
@@ -49,7 +54,7 @@ export function computeCategoryStats(data, month) {
     let mAct = 0, mGoal = 0, cAct = 0, annualGoal = 0
     let pAct = 0, pGoal = 0
     catGoals.forEach(g => {
-      const key = `${g.stakeholder}|${g.task}`
+      const key = taskKey(g)
       const a = actualMap[key] || {}
       const gv = typeof g.monthly?.[targetMonth] === 'number' ? g.monthly[targetMonth] : 0
       const av = typeof a.monthly?.[targetMonth] === 'number' ? a.monthly[targetMonth] : 0
