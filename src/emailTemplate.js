@@ -518,8 +518,12 @@ function countryVisibilitySectionHtml(productsCnty, meta, lang, total) {
 }
 
 // ─── 도메인 표시명 (TLD 제거) ─────────────────────────────────────────────────
+const DOMAIN_ALIAS = {
+  'timesofindia.indiatimes': 'indiatimes',
+}
 function stripDomain(domain) {
-  return (domain || '').replace(/\.(com|org|net|co\.uk|com\.br|com\.au|com\.vn|com\.mx|co\.kr|de|es|fr|ca|in|vn)$/i, '')
+  const d = (domain || '').replace(/\.(com|org|net|co\.uk|com\.br|com\.au|com\.vn|com\.mx|co\.kr|de|es|fr|ca|in|vn)$/i, '')
+  return DOMAIN_ALIAS[d.toLowerCase()] || d
 }
 
 // ─── 도메인별 Citation 국가 서브섹션 (가로 바) ─────────────────────────────────
@@ -632,13 +636,13 @@ function citationCntyTableHtml(citationsCnty, lang) {
       const bold = isBold(name)
       return `<td style="padding:3px 1px;text-align:center;font-size:12px;color:#1A1A1A;font-family:${EM_FONT};border-bottom:1px solid #F1F5F9;white-space:nowrap;">${bold ? '<b>' : ''}${escapeHtml(name)}${bold ? '</b>' : ''}<br/><span style="font-size:10px;color:#94A3B8;font-weight:700;">${fmtK(r.citations)}</span></td>`
     }).join('')
-    return `<tr><td style="padding:3px 2px;font-size:11px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};border-bottom:1px solid #F1F5F9;white-space:nowrap;width:1%;">${cntyKr(cnty)}</td>${cells}</tr>`
+    return `<tr><td style="padding:3px 3px;font-size:11px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};border-bottom:1px solid #F1F5F9;white-space:nowrap;width:1%;">${cntyKr(cnty)}</td>${cells}</tr>`
   }).join('')
 
   return `<tr><td>
                         <table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;">
                           <tr>
-                            <td style="padding:6px 2px;font-size:11px;font-weight:700;color:#64748B;font-family:${EM_FONT};border-bottom:2px solid #E8EDF2;white-space:nowrap;width:1%;">${lang === 'en' ? 'Country' : '국가'}</td>
+                            <td style="padding:6px 3px;font-size:11px;font-weight:700;color:#64748B;font-family:${EM_FONT};border-bottom:2px solid #E8EDF2;white-space:nowrap;width:1%;">${lang === 'en' ? 'Country' : '국가'}</td>
                             ${rankHeaders}
                           </tr>
                           ${countryRows}
