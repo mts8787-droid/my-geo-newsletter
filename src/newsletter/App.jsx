@@ -6,7 +6,12 @@ import { loadCache, saveCache } from '../shared/cache.js'
 import { fetchSnapshots, postSnapshot, updateSnapshot, deleteSnapshot, fetchSyncData } from '../shared/api.js'
 import { resolveDataForLang } from '../shared/utils.js'
 import { computeCategoryStats, extractMonthFromPeriod } from '../shared/trackerCategoryStats.js'
+import { parseKPISheet } from '../tracker/utils/sheetParser.js'
+import * as XLSX from 'xlsx-js-style'
 import Sidebar from '../shared/Sidebar.jsx'
+
+const TRACKER_SHEET_ID = '1lAzhlYJIjHVqDeywD3YMR1E9qf2LlDohFc0r6SAnVaE'
+const TRACKER_SHEET_NAME = '파싱시트'
 
 const MODE = 'newsletter'
 const STORAGE_KEY = 'geo-newsletter-cache'
@@ -137,37 +142,46 @@ export default function App() {
 
   useEffect(() => { fetchSnapshots(MODE).then(setSnapshots) }, [])
 
-  // tracker 데이터 fetch (액션아이템 카테고리 카드용)
-  // meta.period에서 월 추출 → 해당 월 기준으로 categoryStats 계산
+  // tracker 데이터: Google Sheets에서 직접 가져와서 categoryStats 계산
   useEffect(() => {
     let cancelled = false
     const targetMonth = extractMonthFromPeriod(metaKo.period) || '3월'
     console.log('[CategoryCards] targetMonth:', targetMonth, 'period:', metaKo.period)
-    fetch('/api/tracker-snapshot')
-      .then(r => r.ok ? r.json() : null)
-      .then(j => {
-        if (cancelled) return
-        console.log('[CategoryCards] tracker-snapshot response:', j?.ok)
-        if (j?.ok && j.data) {
-          console.log('[CategoryCards] data keys:', Object.keys(j.data))
-          const goals = j.data?.quantitativeGoals?.rows
-          console.log('[CategoryCards] goal rows count:', goals?.length || 0)
-          if (goals?.length) {
-            const sample = goals[0]
-            console.log('[CategoryCards] sample row:', sample)
-            console.log('[CategoryCards] monthly keys:', sample?.monthly ? Object.keys(sample.monthly) : 'NO monthly')
-            console.log('[CategoryCards] sample monthly[3월]:', sample?.monthly?.['3월'])
-            console.log('[CategoryCards] taskCategories:', [...new Set(goals.map(g => g.taskCategory))])
-          }
-          if (j.data?._dashboard?.categoryStats) {
-            console.log('[CategoryCards] _dashboard.categoryStats:', j.data._dashboard.categoryStats)
-          }
+
+    // 1차: tracker-snapshot API 시도 (기존 게시 데이터)
+    // 2차: 실패 시 Google Sheets에서 직접 fetch
+    async function loadTrackerData() {
+      // API 시도
+      try {
+        const r = await fetch('/api/tracker-snapshot')
+        const j = r.ok ? await r.json() : null
+        if (j?.ok && j.data?.quantitativeGoals?.rows?.length) {
+          console.log('[CategoryCards] tracker-snapshot OK, rows:', j.data.quantitativeGoals.rows.length)
           const stats = computeCategoryStats(j.data, targetMonth)
-          console.log('[CategoryCards] computed stats:', stats)
-          if (stats?.length) setCategoryStats(stats)
+          if (stats?.length && !cancelled) { setCategoryStats(stats); return }
         }
-      })
-      .catch(err => console.warn('[tracker-snapshot] fetch failed:', err.message))
+      } catch (e) { console.log('[CategoryCards] tracker-snapshot failed:', e.message) }
+
+      // Google Sheets 직접 fetch
+      console.log('[CategoryCards] Fetching from Google Sheets...')
+      try {
+        const rid = `${Date.now()}_${Math.random().toString(36).slice(2,8)}`
+        const url = `/gsheets-proxy/spreadsheets/d/${TRACKER_SHEET_ID}/gviz/tq?sheet=${encodeURIComponent(TRACKER_SHEET_NAME)}&tqx=out:csv;reqId:${rid}&headers=1`
+        const res = await fetch(url, { cache: 'no-store' })
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        const csv = await res.text()
+        const wb = XLSX.read(csv, { type: 'string' })
+        const ws = wb.Sheets[wb.SheetNames[0]]
+        const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' })
+        console.log('[CategoryCards] Sheet rows:', rows.length)
+        const parsed = parseKPISheet(rows)
+        console.log('[CategoryCards] Parsed goals:', parsed.quantitativeGoals?.rows?.length || 0)
+        const stats = computeCategoryStats(parsed, targetMonth)
+        console.log('[CategoryCards] Computed stats:', stats)
+        if (stats?.length && !cancelled) setCategoryStats(stats)
+      } catch (e) { console.warn('[CategoryCards] Google Sheets fetch failed:', e.message) }
+    }
+    loadTrackerData()
     return () => { cancelled = true }
   }, [metaKo.period])
 
