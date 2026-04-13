@@ -12,10 +12,9 @@ import { generateProductInsight, generateProductHowToRead, generateCntyHowToRead
 export default
 function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, total, setTotal, products, setProducts, citations, setCitations, dotcom, setDotcom, productsCnty, setProductsCnty, citationsCnty, setCitationsCnty, resolved, previewLang, setPreviewLang, snapshots, setSnapshots, setWeeklyLabels, setWeeklyAll, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty, generateHTML, publishEndpoint, setMonthlyVis, onSyncExtra }) {
   // 최신 데이터 ref — AI 생성 시 stale closure 방지
-  const latestRef = useRef({ products, productsCnty, citations, citationsCnty, total })
-  useEffect(() => {
-    latestRef.current = { products, productsCnty, citations, citationsCnty, total }
-  }, [products, productsCnty, citations, citationsCnty, total])
+  const latestRef = useRef({ products, productsCnty, citations, citationsCnty, total, dotcom })
+  // props 변경 시 즉시 동기 갱신 (useEffect보다 빠름)
+  latestRef.current = { products, productsCnty, citations, citationsCnty, total, dotcom }
   function getLatestData() { return latestRef.current }
 
   const [gsUrl,     setGsUrl]     = useState('https://docs.google.com/spreadsheets/d/1v4V7ZsHNFXXqbAWqvyVkgNIeXx188hSZ9l7FDsRYy2Y/edit')
@@ -321,10 +320,10 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
         })
         setMetaEn(m => ({ ...m, period: parsed.meta.period, dateLine: parsed.meta.dateLine, reportNo: parsed.meta.reportNo }))
       }
-      if (parsed.citations)    setCitations(parsed.citations)
-      if (parsed.dotcom)       setDotcom(d => ({ ...d, ...parsed.dotcom }))
-      if (parsed.productsCnty) setProductsCnty(parsed.productsCnty)
-      if (parsed.citationsCnty) setCitationsCnty(parsed.citationsCnty)
+      if (parsed.citations)    { setCitations(parsed.citations); latestRef.current = { ...latestRef.current, citations: parsed.citations } }
+      if (parsed.dotcom)       { setDotcom(d => ({ ...d, ...parsed.dotcom })); latestRef.current = { ...latestRef.current, dotcom: { ...latestRef.current.dotcom, ...parsed.dotcom } } }
+      if (parsed.productsCnty) { setProductsCnty(parsed.productsCnty); latestRef.current = { ...latestRef.current, productsCnty: parsed.productsCnty } }
+      if (parsed.citationsCnty) { setCitationsCnty(parsed.citationsCnty); latestRef.current = { ...latestRef.current, citationsCnty: parsed.citationsCnty } }
       if (parsed.monthlyVis && setMonthlyVis) setMonthlyVis(parsed.monthlyVis)
       if (onSyncExtra) onSyncExtra({
         weeklyPR: parsed.weeklyPR || null,
@@ -369,6 +368,8 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
             status: ratio >= 100 ? 'lead' : ratio >= 80 ? 'behind' : 'critical' }
         })
         setProducts(newProducts)
+        // ref 즉시 갱신 — React 재렌더링 전에도 AI가 최신 데이터 참조 가능
+        latestRef.current = { ...latestRef.current, products: newProducts }
       } else if (parsed.weeklyMap) {
         setProducts(prev => prev.map(p => {
           const weekly = parsed.weeklyMap?.[p.id]
@@ -377,14 +378,16 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
       }
       // total: visSummary에서 왔으면 사용, 없으면 productsPartial에서 계산
       if (parsed.total) {
-        setTotal(t => ({
-          ...t,
+        const newTotal = {
+          ...latestRef.current.total,
           ...parsed.total,
           ...(parsed.buTotals ? { buTotals: parsed.buTotals } : {}),
           ...(parsed.buTotalsPrev ? { buTotalsPrev: parsed.buTotalsPrev } : {}),
           ...(parsed.countryTotals ? { countryTotals: parsed.countryTotals } : {}),
           ...(parsed.countryTotalsPrev ? { countryTotalsPrev: parsed.countryTotalsPrev } : {}),
-        }))
+        }
+        setTotal(t => ({ ...t, ...newTotal }))
+        latestRef.current = { ...latestRef.current, total: newTotal }
       }
       // 시트에서 추출한 최신 월로 meta.period 자동 갱신
       // visSummary derivedPeriod 또는 Citation citDerivedPeriod 중 최신 사용
@@ -1327,7 +1330,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
             <button onClick={async () => {
                 try {
                   setMeta(m => ({ ...m, dotcomInsight: '⏳ AI 생성 중...' }))
-                  const insight = await generateAIInsight('dotcom', { dotcom }, previewLang)
+                  const insight = await generateAIInsight('dotcom', { dotcom: getLatestData().dotcom }, previewLang)
                   setMeta(m => ({ ...m, dotcomInsight: insight }))
                 } catch (err) { console.error('[AI]', err); setMeta(m => ({ ...m, dotcomInsight: `[AI 실패: ${err.message}]` })) }
               }}
