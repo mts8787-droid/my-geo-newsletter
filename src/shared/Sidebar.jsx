@@ -266,7 +266,8 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
     if (mailSent === 'sending') return
     setMailSent('sending')
     try {
-      const html    = generateHTML(meta, total, resolved.products, resolved.citations, dotcom, previewLang, resolved.productsCnty, resolved.citationsCnty)
+      const latest = getLatestData()
+      const html    = generateHTML(meta, latest.total, latest.products, latest.citations, latest.dotcom, previewLang, latest.productsCnty, latest.citationsCnty, { weeklyLabels, categoryStats })
       const subject = `[LG GEO] ${meta.title} · ${meta.period}`
       const res = await fetch('/api/send-email', {
         method: 'POST',
