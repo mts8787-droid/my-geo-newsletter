@@ -815,9 +815,13 @@ function categoryCardsHtml(categoryStats, lang, meta) {
   let monthLabel = lang === 'en' ? 'This Month' : '이번 월'
   if (meta?.period) {
     const krMatch = String(meta.period).match(/(\d{1,2})월/)
+    const enToKr = { jan:'1월',feb:'2월',mar:'3월',apr:'4월',may:'5월',jun:'6월',jul:'7월',aug:'8월',sep:'9월',oct:'10월',nov:'11월',dec:'12월' }
     const enMatch = String(meta.period).match(/(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)/i)
-    if (lang === 'en' && enMatch) monthLabel = enMatch[1]
-    else if (krMatch) monthLabel = `${krMatch[1]}월`
+    if (krMatch) {
+      monthLabel = lang === 'en' ? (enMatch ? enMatch[1] : `${krMatch[1]}월`) : `${krMatch[1]}월`
+    } else if (enMatch) {
+      monthLabel = lang === 'en' ? enMatch[1] : (enToKr[enMatch[1].toLowerCase()] || enMatch[1])
+    }
   }
   const t = lang === 'en'
     ? { title: 'Key Task Progress', monthly: monthLabel, prev: 'Last Month', progress: 'YTD Progress' }
