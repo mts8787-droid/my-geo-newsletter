@@ -211,11 +211,20 @@ function productCardHtml(p, globalMax, globalMin, lang = 'ko', opts = {}) {
   const sparkColor = p.status === 'critical' ? '#BE123C' : p.status === 'behind' ? '#E8910C' : '#15803D'
   const trendTitle = lang === 'en' ? `${TREND_WEEKS}W Trend` : `${TREND_WEEKS}주 트렌드`
 
-  // 경쟁사 대비 비율
+  // 경쟁사 대비 비율 + %p 변화
   const curRatio = p.compRatio || Math.round(p.vsComp > 0 ? (p.score / p.vsComp) * 100 : 100)
   const ratioColor = curRatio >= 100 ? '#15803D' : curRatio >= 80 ? '#E8910C' : '#BE123C'
+  let ratioDelta = ''
+  if (p.prev != null && p.prev > 0 && p.vsComp > 0) {
+    const prevRatio = Math.round((p.prev / p.vsComp) * 100)
+    const rd = curRatio - prevRatio
+    if (rd !== 0) ratioDelta = ` <span style="font-size:10px;color:${rd > 0 ? '#16A34A' : '#DC2626'};">${rd > 0 ? '+' : ''}${rd}%p</span>`
+  }
+  // MoM: d는 숫자 (delta 함수 반환값)
+  const momColor = d > 0 ? '#16A34A' : d < 0 ? '#DC2626' : '#94A3B8'
+  const momArrow = d > 0 ? '▲' : d < 0 ? '▼' : ''
   const momStr = p.prev != null && p.prev > 0
-    ? `<span style="font-size:12px;font-weight:700;color:${d.color};font-family:${EM_FONT};">${d.arrow}${Math.abs(d.value).toFixed(1)}%p</span>`
+    ? `<span style="font-size:12px;font-weight:700;color:${momColor};font-family:${EM_FONT};">${momArrow}${Math.abs(d).toFixed(1)}%p</span>`
     : `<span style="font-size:12px;color:#94A3B8;font-family:${EM_FONT};">—</span>`
 
   // 트렌드 (타이틀 없이 그래프만)
@@ -232,12 +241,12 @@ function productCardHtml(p, globalMax, globalMin, lang = 'ko', opts = {}) {
           <table border="0" cellpadding="0" cellspacing="0" width="100%">
             <tr>
               <td style="vertical-align:middle;">
-                <span style="display:inline-block;background:${st.bg};color:${st.color};border:1px solid ${st.border};border-radius:6px;padding:0px 5px;font-size:10px;font-weight:700;line-height:16px;font-family:${EM_FONT};vertical-align:middle;">${st.label}</span>
-                <span style="font-size:14px;font-weight:900;color:#1A1A1A;vertical-align:middle;padding-left:3px;">${escapeHtml(p.kr)}</span>
+                <span style="font-size:14px;font-weight:900;color:#1A1A1A;vertical-align:middle;font-family:${EM_FONT};letter-spacing:-0.3px;">${escapeHtml(p.kr)}</span>
               </td>
               <td align="right" style="vertical-align:middle;white-space:nowrap;">
-                <span style="font-size:11px;color:#64748B;font-family:${EM_FONT};">${ssName(p.compName)}</span>
-                <span style="font-size:12px;font-weight:700;color:${ratioColor};font-family:${EM_FONT};">${curRatio}%</span>
+                <span style="font-size:10px;color:#64748B;font-family:${EM_FONT};">${ssName(p.compName)}</span>
+                <span style="font-size:11px;font-weight:700;color:${ratioColor};font-family:${EM_FONT};">${curRatio}%${ratioDelta}</span>
+                &nbsp;<span style="display:inline-block;background:${st.bg};color:${st.color};border:1px solid ${st.border};border-radius:6px;padding:0px 5px;font-size:9px;font-weight:700;line-height:16px;font-family:${EM_FONT};vertical-align:middle;">${st.label}</span>
               </td>
             </tr>
           </table>
