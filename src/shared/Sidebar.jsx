@@ -1390,8 +1390,18 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
         />
 
         {/* Action Plan 섹션 */}
+        <div style={{ height: 1, background: '#1E293B', margin: '12px 0' }} />
+        <p style={{ margin: '0 0 4px', fontSize: 11, color: '#64748B', fontFamily: FONT }}>전사 핵심 과제 노티스 <span style={{ color: '#94A3B8' }}>(다크 박스)</span></p>
+        <textarea
+          value={meta.todoNotice || ''}
+          onChange={e => setMeta(m => ({ ...m, todoNotice: e.target.value }))}
+          rows={3}
+          placeholder="전사 핵심 과제 노티스를 입력하세요 (비워두면 미표시)"
+          style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6, marginBottom: 8 }}
+        />
+
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-          <p style={{ margin: 0, fontSize: 11, color: '#64748B', fontFamily: FONT }}>Action Plan 섹션</p>
+          <p style={{ margin: 0, fontSize: 11, color: '#64748B', fontFamily: FONT }}>Action Plan 인사이트</p>
           <div style={{ display: 'flex', gap: 4 }}>
             <button onClick={async () => {
                 try {

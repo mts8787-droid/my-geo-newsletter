@@ -812,8 +812,8 @@ function categoryCardsHtml(categoryStats, lang) {
     return `<div style="margin-bottom:14px;padding:14px 16px;background:#FEF3C7;border:1px solid #FCD34D;border-radius:8px;font-size:12px;color:#92400E;font-family:${EM_FONT};">${lang === 'en' ? 'Progress Tracker data not available.' : 'Progress Tracker 데이터가 없습니다.'}</div>`
   }
   const t = lang === 'en'
-    ? { title: 'Category Progress', monthly: 'This Month', prev: 'Last Month', progress: 'YTD Progress' }
-    : { title: '카테고리별 진척 현황', monthly: '이번 월', prev: '전월', progress: '연간 진척율' }
+    ? { title: 'Key Task Progress', monthly: 'This Month', prev: 'Last Month', progress: 'YTD Progress' }
+    : { title: '핵심 과제 진척 사항', monthly: '이번 월', prev: '전월', progress: '연간 진척율' }
   function statusColor(rate) {
     if (rate >= 80) return { bg: '#F0FDF4', border: '#BBF7D0', bar: '#16A34A', text: '#15803D' }
     if (rate >= 50) return { bg: '#FFFBEB', border: '#FDE68A', bar: '#D97706', text: '#B45309' }
@@ -1293,8 +1293,8 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
 
               ${meta.showDotcom !== false ? dotcomSectionHtml(dotcom, meta, lang) : ''}
 
-              ${meta.showTodo && meta.todoText ? `
-              <!-- ══ To-do List + 카테고리 카드 + 대시보드 바로가기 ══ -->
+              ${meta.showTodo ? `
+              <!-- ══ Action Plan (3영역: 노티스 + 인사이트 + 핵심과제 진척) ══ -->
               <tr>
                 <td style="padding-bottom:28px;">
                   <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFFFFF;border-radius:16px;border:2px solid #E8EDF2;">
@@ -1310,7 +1310,18 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                     </tr>
                     <tr>
                       <td style="padding:20px 16px;">
-                        <p style="margin:0 0 16px;font-size:14px;color:#1A1A1A;line-height:22px;font-family:${EM_FONT};">${mdBold(meta.todoText)}</p>
+                        ${meta.todoNotice ? `
+                        <!-- 1. 전사 핵심 과제 노티스 -->
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#0F172A;border-radius:10px;margin-bottom:16px;">
+                          <tr><td style="padding:14px 16px;">
+                            <p style="margin:0 0 4px;font-size:13px;font-weight:700;color:${EM_RED};font-family:${EM_FONT};text-transform:uppercase;">${lang === 'en' ? 'Key Initiative' : '전사 핵심 과제'}</p>
+                            <p style="margin:0;font-size:14px;color:#FFFFFF;line-height:22px;font-family:${EM_FONT};">${mdBold(meta.todoNotice)}</p>
+                          </td></tr>
+                        </table>` : ''}
+                        ${meta.todoText ? `
+                        <!-- 2. 인사이트 -->
+                        <p style="margin:0 0 16px;font-size:14px;color:#1A1A1A;line-height:22px;font-family:${EM_FONT};">${mdBold(meta.todoText)}</p>` : ''}
+                        <!-- 3. 핵심 과제 진척 사항 -->
                         ${categoryCardsHtml(categoryStats, lang)}
                         ${dashboardLinkButtonHtml(lang)}
                       </td>
