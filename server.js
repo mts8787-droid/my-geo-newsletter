@@ -585,32 +585,42 @@ app.post('/api/generate-insight', async (req, res) => {
     }).filter(Boolean).join('\n')
     console.log(`[INSIGHT] type=${type}, archiveKey=${archiveKey}, hasTemplate=${!!latestTemplate}, pastExamples=${pastExamples.length > 0}`)
 
-    const templateInstruction = latestTemplate
-      ? `\n\n★ 핵심 지시: 아래 "기준 템플릿"의 문장 구조, 포맷, 어투, 볼드 처리, 줄바꿈 패턴을 90% 이상 그대로 유지하세요.
-수치(%, 건수, 비율)와 제품명/국가명만 새 데이터로 교체하세요.
-템플릿에 없는 새로운 문장을 추가하지 마세요. 구조를 변경하지 마세요.
+    // 아카이브 템플릿의 수치를 마스킹하여 AI가 옛 수치를 복사하지 않도록 함
+    function maskNumbers(text) {
+      if (!text) return text
+      // 소수점 포함 숫자% → [N]%, 콤마 포함 숫자건 → [N]건, ±숫자%p → ±[N]%p
+      return text
+        .replace(/[\d,]+\.?\d*\s*%p/g, '[N]%p')
+        .replace(/[\d,]+\.?\d*\s*%/g, '[N]%')
+        .replace(/[\d,]+\.?\d*\s*건/g, '[N]건')
+        .replace(/(?<![a-zA-Z])[\d,]+\.?\d*(?=\s*[~→개위])/g, '[N]')
+    }
 
-★ 전월 대비 분석 필수: 각 주요 수치에 대해 전월 대비 증감을 반드시 포함하세요.
-- 예: "42.7%(전월 대비 +1.2%p)" 또는 "전월 38.5% → 이번달 42.7%로 +4.2%p 상승"
-- 전월 데이터가 제공된 경우 개선/악화된 항목을 구분하여 언급
-- 전월 데이터가 없는 항목은 증감 없이 현재 수치만 기재
+    const maskedTemplate = maskNumbers(latestTemplate)
+    const maskedPastExamples = maskNumbers(pastExamples)
 
-[기준 템플릿 — 이 포맷을 따라 수치만 교체]
-${latestTemplate}
+    const templateInstruction = maskedTemplate
+      ? `\n\n★ 핵심 지시: 아래 "기준 템플릿"의 문장 구조, 포맷, 어투, 볼드 처리, 줄바꿈 패턴을 그대로 유지하세요.
+★★ 절대 규칙: 템플릿의 수치는 모두 [N]으로 마스킹되어 있습니다. 반드시 위 [공식수치] 데이터에서 해당 값을 찾아 대입하세요.
+★★ 데이터에 없는 수치는 절대 추정하거나 만들어내지 마세요.
+★ 전월 대비 분석 필수: 데이터에 전월(prev) 값이 있는 경우에만 증감을 포함하세요.
 
-[참고: 과거 리포트들]${pastExamples}`
-      : pastExamples ? `\n\n과거 리포트의 문체와 구조를 90% 이상 유지하고, 수치만 새 데이터로 교체하세요:\n${pastExamples}` : ''
+[기준 템플릿 — 문장 구조만 참고, 수치는 [N]으로 마스킹됨]
+${maskedTemplate}
+
+[참고: 과거 리포트 문체]${maskedPastExamples}`
+      : maskedPastExamples ? `\n\n과거 리포트의 문체와 구조만 참고하세요 (수치는 마스킹됨):\n${maskedPastExamples}` : ''
 
     const systemPrompt = `당신은 LG전자 D2C 디지털마케팅팀의 GEO 리포트 작성자입니다.
-기존 리포트의 포맷과 문체를 충실히 따르면서, 새 데이터의 수치로만 업데이트합니다.
+
+★★★ 최우선 규칙: 사용자 메시지의 [공식수치] 데이터만 사용하세요. 아카이브 템플릿의 수치를 절대 사용하지 마세요. ★★★
 
 작성 규칙:
 ${finalRules}
-- 기준 템플릿이 있으면 문장 구조·볼드·줄바꿈을 그대로 유지하고 수치만 교체
-- 템플릿의 **볼드 처리 패턴**을 동일하게 적용
-- 새로운 문장이나 해석을 추가하지 말 것
-- 제공된 데이터에 있는 수치만 그대로 사용 (평균 계산, 합산, 비율 계산 등 절대 금지)
-- "전체 LG Visibility" 값은 데이터에 명시된 값을 그대로 사용 (제품별 점수의 평균이 아님)
+- 기준 템플릿이 있으면 문장 구조·볼드·줄바꿈을 그대로 유지
+- 모든 수치는 반드시 [공식수치]로 표시된 데이터에서만 가져올 것
+- 평균 계산, 합산, 비율 재계산 절대 금지 — 데이터에 있는 값을 그대로 복사
+- "전체 LG Visibility" 값은 데이터에 명시된 값을 그대로 사용 (제품별 평균이 아님)
 - ${lang === 'en' ? '영어로 작성' : '한국어로 작성'}${templateInstruction}`
 
     const userPrompt = buildInsightPrompt(type, data)

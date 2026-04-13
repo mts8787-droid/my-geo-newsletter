@@ -88,16 +88,27 @@ ${comparison}`
   }
 
   if (type === 'cnty') {
-    const list = (data.productsCnty || []).slice(0, 30).map(r =>
-      `${r.country} — ${r.product}: LG ${r.score}% vs 경쟁 ${r.compScore || '—'}% (경쟁비: ${r.compScore > 0 ? Math.round((r.score / r.compScore) * 100) : '—'}%)`
-    ).join('\n')
+    const cntyMap = {}
+    ;(data.productsCnty || []).forEach(r => {
+      if (!cntyMap[r.country]) cntyMap[r.country] = []
+      cntyMap[r.country].push(r)
+    })
+    const list = Object.entries(cntyMap).map(([cnty, rows]) => {
+      const lines = rows.map(r => {
+        const ratio = r.compScore > 0 ? Math.round((r.score / r.compScore) * 100) : '—'
+        return `  [공식수치] ${r.product}: LG ${r.score}% vs ${r.compName || '경쟁'} ${r.compScore || '—'}% (경쟁비: ${ratio}%)`
+      }).join('\n')
+      return `[${cnty}]\n${lines}`
+    }).join('\n')
     return `[섹션: 국가별 GEO Visibility 현황]
-이 섹션에는 제품별로 10개 국가(US,CA,UK,DE,ES,BR,MX,IN,AU,VN)의 LG vs 경쟁사 Visibility를 보여주는 막대 차트가 있습니다.
-경쟁비(%)는 LG/경쟁사*100으로 100% 이상이면 선도, 80% 미만이면 취약입니다.
-인사이트는 이 차트 위에 삽입됩니다. 기준 템플릿의 포맷을 따라 수치만 교체하세요.
+모든 국가(US,CA,UK,DE,ES,BR,MX,IN,AU,VN)의 데이터를 빠짐없이 분석하세요.
 
-국가별 데이터:
-${list}`
+※ 아래 수치는 시트 원본값입니다. 이 값만 사용하세요. 절대 다른 수치를 만들지 마세요.
+
+${list}
+
+[필수: 모든 국가를 포함하여 분석할 것]
+[필수: 경쟁비, 점수 등 수치는 위 [공식수치]만 사용]`
   }
 
   if (type === 'citDomain') {
