@@ -922,6 +922,8 @@ function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang, meta, appendixPromp
     var TOPIC_CAT=${JSON.stringify(topicCategoryMap)};
     var TOPIC_PROMPT=${JSON.stringify(topicPromptMap).replace(/</g, '\\u003c')};
     var TOPIC_DESC=${JSON.stringify(topicDescMap).replace(/</g, '\\u003c')};
+    var _CF=${JSON.stringify(COUNTRY_FULL_NAME)};
+    function cf(c){return _CF[c]||_CF[c&&c.toUpperCase()]||c}
     var fType=TY[0]||'non-brand';
     var fCnty={};CN.forEach(function(c){fCnty[c]=true});
     var RED='${RED}',COMP='${COMP}';
@@ -942,7 +944,7 @@ function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang, meta, appendixPromp
       var te=document.getElementById('pr-type-chips');if(te)te.innerHTML=TY.map(function(t){return chip(t,fType===t,"_prSetType('"+t+"')")}).join(' ');
       var ce=document.getElementById('pr-cnty-chips');if(!ce)return;
       var allOn=CN.every(function(c){return fCnty[c]});
-      ce.innerHTML=chip('${lang==='en'?'All':'전체'}',allOn,'_prCntyAll()')+' '+CN.map(function(c){return chip(c,!!fCnty[c],"_prCntyTog('"+c+"')")}).join(' ');
+      ce.innerHTML=chip('${lang==='en'?'All':'전체'}',allOn,'_prCntyAll()')+' '+CN.map(function(c){return chip(cf(c),!!fCnty[c],"_prCntyTog('"+c+"')")}).join(' ');
     }
     // 특정 토픽+국가+브랜드의 특정 주 값
     function val(topic,cnty,brand,wk){
@@ -965,7 +967,7 @@ function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang, meta, appendixPromp
       h+='<thead><tr><th style="padding:8px 6px;text-align:center;font-size:13px;font-weight:700;color:#64748B;border-bottom:2px solid #E8EDF2;width:46px">${lang==='en'?'Category':'구분'}</th>';
       h+='<th style="padding:8px 10px;text-align:center;font-size:13px;font-weight:700;color:#64748B;border-bottom:2px solid #E8EDF2;white-space:nowrap;width:100px">${lang==='en'?'Topic':'토픽'} <span style="font-weight:400;color:#94A3B8">('+lastW+')</span></th>';
       h+='<th style="padding:8px 10px;text-align:center;font-size:13px;font-weight:700;color:#64748B;border-bottom:2px solid #E8EDF2">${lang==='en'?'Description':'설명'}</th>';
-      cols.forEach(function(c){h+='<th style="padding:8px 8px;text-align:center;font-size:13px;font-weight:700;color:#64748B;border-bottom:2px solid #E8EDF2;min-width:56px">'+c+'</th>'});
+      cols.forEach(function(c){h+='<th style="padding:8px 8px;text-align:center;font-size:13px;font-weight:700;color:#64748B;border-bottom:2px solid #E8EDF2;min-width:56px">'+cf(c)+'</th>'});
       h+='</tr></thead><tbody>';
       var prevCat='';
       sortedTP.forEach(function(topic){
@@ -1034,7 +1036,7 @@ function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang, meta, appendixPromp
           var cr=D.filter(function(r){return r.topic===topic&&r.country===cn&&r.brand==='LG'&&r.type===fType});
           if(!cr.length)return'';
           var cells=W.map(function(wk){var v=cr[0]&&cr[0].scores[wk];return'<td style="width:'+CW+'px;min-width:'+CW+'px;max-width:'+CW+'px;text-align:center;padding:5px 0;font-size:13px;color:#475569;font-variant-numeric:tabular-nums">'+(v!=null?v.toFixed(1)+'%':'—')+'</td>'}).join('');
-          return'<tr style="border-top:1px solid #F1F5F9"><td style="padding:5px 8px;font-size:13px;font-weight:600;color:#64748B;white-space:nowrap">'+cn+'</td>'+cells+'</tr>';
+          return'<tr style="border-top:1px solid #F1F5F9"><td style="padding:5px 8px;font-size:13px;font-weight:600;color:#64748B;white-space:nowrap">'+cf(cn)+'</td>'+cells+'</tr>';
         }).filter(Boolean).join('');
 
         html+='<div style="border:1px solid #E8EDF2;border-radius:12px;margin-bottom:20px;overflow:hidden">';
