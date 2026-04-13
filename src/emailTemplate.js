@@ -244,8 +244,7 @@ function productCardHtml(p, globalMax, globalMin, lang = 'ko', opts = {}) {
                 <span style="font-size:14px;font-weight:900;color:#1A1A1A;vertical-align:middle;font-family:${EM_FONT};letter-spacing:-0.3px;">${escapeHtml(p.kr)}</span>
               </td>
               <td align="right" style="vertical-align:middle;white-space:nowrap;">
-                <span style="font-size:10px;color:#64748B;font-family:${EM_FONT};">${ssName(p.compName)}</span>
-                <span style="font-size:11px;font-weight:700;color:${ratioColor};font-family:${EM_FONT};">${curRatio}%${ratioDelta}</span>
+                <span style="font-size:13px;font-weight:700;color:${ratioColor};font-family:${EM_FONT};">${escapeHtml(p.compName || 'Samsung')} ${lang === 'en' ? 'vs' : '대비'} ${curRatio}%${ratioDelta}</span>
                 &nbsp;<span style="display:inline-block;background:${st.bg};color:${st.color};border:1px solid ${st.border};border-radius:6px;padding:0px 5px;font-size:10px;font-weight:700;line-height:16px;font-family:${EM_FONT};vertical-align:middle;">${st.label}</span>
               </td>
             </tr>
