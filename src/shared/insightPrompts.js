@@ -1,30 +1,60 @@
 // ─── AI 인사이트 생성용 프롬프트 빌더 ─────────────────────────────────────────
 // server.js와 vite dev plugin에서 공유
 
+function buProductSummary(products) {
+  const buMap = {}
+  products.forEach(p => {
+    const bu = p.bu || 'etc'
+    if (!buMap[bu]) buMap[bu] = []
+    buMap[bu].push(p)
+  })
+  return Object.entries(buMap).map(([bu, prods]) => {
+    const lines = prods.map(p => {
+      const mom = p.prev ? `MoM: ${(p.score - p.prev) > 0 ? '+' : ''}${(p.score - p.prev).toFixed(1)}%p (전월 ${p.prev}%)` : 'MoM: 전월 데이터 없음'
+      return `  - ${p.kr}: ${p.score}% (경쟁사 대비 ${p.compRatio || '—'}%, 상태: ${p.status}, ${mom})`
+    }).join('\n')
+    return `[${bu}본부]\n${lines}`
+  }).join('\n')
+}
+
+function countrySummary(productsCnty) {
+  if (!productsCnty || !productsCnty.length) return ''
+  const cntyMap = {}
+  productsCnty.forEach(r => {
+    if (!cntyMap[r.country]) cntyMap[r.country] = []
+    cntyMap[r.country].push(r)
+  })
+  return Object.entries(cntyMap).map(([cnty, rows]) => {
+    const avg = rows.length ? +(rows.reduce((s, r) => s + r.score, 0) / rows.length).toFixed(1) : 0
+    const top = rows.sort((a, b) => b.score - a.score)[0]
+    const bottom = rows.sort((a, b) => a.score - b.score)[0]
+    return `${cnty}: 평균 ${avg}% (최고: ${top?.product} ${top?.score}%, 최저: ${bottom?.product} ${bottom?.score}%)`
+  }).join('\n')
+}
+
 export function buildInsightPrompt(type, data) {
   if (type === 'product') {
     const products = data.products || []
     const t = data.total || {}
     const prevDelta = t.prev && t.prev !== t.score ? ` (전월 ${t.prev}%, ${(t.score - t.prev) > 0 ? '+' : ''}${(t.score - t.prev).toFixed(1)}%p)` : ''
     const compPrevDelta = t.prev && t.vsComp ? ` (전월 경쟁비 ${Math.round((t.prev / t.vsComp) * 100)}%)` : ''
-    const summary = products.map(p => {
-      const w = p.weekly || []
-      const wow = w.length >= 2 ? (w[w.length - 1] - w[w.length - 2]).toFixed(1) + '%p' : '—'
-      const mom = p.prev ? `MoM: ${(p.score - p.prev) > 0 ? '+' : ''}${(p.score - p.prev).toFixed(1)}%p (전월 ${p.prev}%)` : 'MoM: 전월 데이터 없음'
-      return `${p.kr}: ${p.score}% (경쟁사 대비 ${p.compRatio || '—'}%, 상태: ${p.status}, WoW: ${wow}, ${mom})`
-    }).join('\n')
-    return `아래는 제품별 GEO Visibility 현황입니다. 기준 템플릿의 수치만 교체하세요.
+    const countryTotals = t.countryTotals || {}
+    const cntyLines = Object.entries(countryTotals).map(([c, v]) => `[공식수치] ${c} LG = ${v.lg}% / 경쟁 = ${v.comp}%`).join('\n')
+
+    return `아래는 제품별 GEO Visibility 현황입니다. 모든 본부(MS/HS/ES)와 국가를 포함하여 분석하세요.
 
 ※ 아래 [공식수치]는 시트 원본값입니다. 이 값을 그대로 인용하세요. 절대 새로 계산하지 마세요.
 [공식수치] 전체 LG Visibility = ${t.score ?? '—'}%${prevDelta}
 [공식수치] 전체 경쟁사(Samsung) Visibility = ${t.vsComp ?? '—'}%${compPrevDelta}
 ${t.buTotals ? Object.entries(t.buTotals).map(([bu, v]) => `[공식수치] ${bu}본부 LG = ${v.lg}% / 경쟁 = ${v.comp}%`).join('\n') : ''}
+${cntyLines ? `\n국가별 전체:\n${cntyLines}` : ''}
 
-제품별 상세 (전월 대비 증감 포함):
-${summary}
+본부별 제품 상세:
+${buProductSummary(products)}
 
-[주의: 전체 수치는 위의 "전체 LG Visibility" 값을 사용. 제품별 평균으로 계산하지 말 것]
-[필수: 주요 수치에 전월 대비 증감을 반드시 포함 — 예: "42.7%(전월 대비 +1.2%p)"]`
+[필수: 모든 본부(MS, HS, ES)를 빠짐없이 분석할 것]
+[필수: 주요 수치에 전월 대비 증감을 반드시 포함 — 예: "42.7%(전월 대비 +1.2%p)"]
+[주의: 전체 수치는 위의 "전체 LG Visibility" 값을 사용. 제품별 평균으로 계산하지 말 것]`
   }
 
   if (type === 'citation') {
@@ -106,32 +136,37 @@ ${summary}
 
   if (type === 'totalInsight') {
     const products = data.products || []
+    const productsCnty = data.productsCnty || []
     const t = data.total || {}
     const leads = products.filter(p => p.status === 'lead')
     const criticals = products.filter(p => p.status === 'critical')
     const behinds = products.filter(p => p.status === 'behind')
     const prevDelta = t.prev && t.prev !== t.score ? `(전월 ${t.prev}%, ${(t.score - t.prev) > 0 ? '+' : ''}${(t.score - t.prev).toFixed(1)}%p)` : ''
+    const countryTotals = t.countryTotals || {}
+    const cntyLines = Object.entries(countryTotals).map(([c, v]) => `[공식수치] ${c} LG = ${v.lg}% / 경쟁 = ${v.comp}%`).join('\n')
+
     return `[섹션: Executive Summary — 전체 GEO Visibility 카드]
-이 섹션은 전체 LG Visibility 점수, 경쟁사 대비 Gap, 본부별 미니카드가 포함된 다크 배경 히어로 카드입니다.
-기준 템플릿의 수치만 교체하세요.
+이 섹션은 전체 LG Visibility 점수, 경쟁사 대비 Gap, 본부별(MS/HS/ES) 수치가 포함된 다크 배경 히어로 카드입니다.
+모든 본부(MS/HS/ES)와 주요 국가를 포함하여 분석하세요. 기준 템플릿의 수치만 교체하세요.
 
 ※ 아래 [공식수치]는 시트 TTL 원본값입니다. 절대 새로 계산하지 마세요.
 [공식수치] 전체 LG Visibility = ${t.score ?? '—'}% ${prevDelta}
 [공식수치] 전체 경쟁사(Samsung) Visibility = ${t.vsComp ?? '—'}%
 ${t.buTotals ? Object.entries(t.buTotals).map(([bu, v]) => `[공식수치] ${bu}본부 LG = ${v.lg}% / 경쟁 = ${v.comp}%`).join('\n') : ''}
+${cntyLines ? `\n국가별 전체:\n${cntyLines}` : ''}
 
-제품별 (전월 대비 포함):
-${products.map(p => {
-      const mom = p.prev ? `전월 ${p.prev}% → ${(p.score - p.prev) > 0 ? '+' : ''}${(p.score - p.prev).toFixed(1)}%p` : ''
-      return `${p.kr}: ${p.score}% (경쟁비 ${p.compRatio || '—'}%, ${p.status})${mom ? ' [' + mom + ']' : ''}`
-    }).join('\n')}
+본부별 제품 상세:
+${buProductSummary(products)}
 
 선도(≥100%): ${leads.map(p => `${p.kr}(${p.score}%)`).join(', ') || '없음'}
 추격(≥80%): ${behinds.map(p => `${p.kr}(${p.score}%)`).join(', ') || '없음'}
 취약(<80%): ${criticals.map(p => `${p.kr}(${p.score}%)`).join(', ') || '없음'}
 
+${countrySummary(productsCnty) ? `국가별 제품 요약:\n${countrySummary(productsCnty)}` : ''}
+
 ${data.todoText ? `\n액션아이템 (인사이트 마지막에 1~2줄로 요약 포함):\n${data.todoText}` : ''}
 
+[필수: 모든 본부(MS, HS, ES)를 빠짐없이 분석할 것]
 [필수: 주요 수치에 전월 대비 증감을 반드시 포함 — 예: "42.7%(전월 대비 +1.2%p)"]
 [필수: 인사이트 마지막에 위 액션아이템의 핵심 1~2개를 한 줄로 요약 추가]
 [주의: 전체 수치는 "전체 LG Visibility" 값 사용. 제품별 평균이 아님]`

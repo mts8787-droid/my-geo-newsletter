@@ -899,7 +899,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
           <button onClick={async () => {
               try {
                 setMeta(m => ({ ...m, totalInsight: '⏳ AI 생성 중...' }))
-                const insight = await generateAIInsight('totalInsight', { products: getLatestData().products, total: getLatestData().total, todoText: meta.todoText || '' }, previewLang)
+                const insight = await generateAIInsight('totalInsight', { products: getLatestData().products, productsCnty: getLatestData().productsCnty, total: getLatestData().total, todoText: meta.todoText || '' }, previewLang)
                 setMeta(m => ({ ...m, totalInsight: insight }))
               } catch (err) { console.error('[AI]', err); setMeta(m => ({ ...m, totalInsight: `[AI 실패: ${err.message}]` })) }
             }}
