@@ -1212,6 +1212,7 @@ export function generateDashboardHTML(meta, total, products, citations, dotcom, 
   const visibilityOnly = opts?.visibilityOnly || false
   const includeProgressTracker = opts?.includeProgressTracker !== false
   const trackerVersion = opts?.trackerVersion || 'v1'
+  const includePromptList = opts?.includePromptList || false
   const trackerComingSoonMsg = lang === 'en' ? 'Progress Tracker will be available soon.' : '준비 중입니다. 곧 제공될 예정입니다.'
   const trackerV1Url = `/p/progress-tracker/?lang=${lang}`
   const trackerV2Url = `https://geo-progress-tracker-v2.onrender.com/p/progress-tracker-v2/`
@@ -1525,6 +1526,7 @@ ${visibilityOnly ? `
     <button class="tab-btn active" onclick="switchTab('visibility')">Visibility</button>
     <button class="tab-btn" onclick="switchTab('citation')">Citation</button>
     <button class="tab-btn" onclick="switchTab('readability')">Readability</button>
+    ${includePromptList ? `<button class="tab-btn" onclick="switchTab('promptlist')">Prompt List</button>` : ''}
     <button class="tab-btn" onclick="switchTab('glossary')">Glossary</button>
   </div>
   <div id="lang-toggle" style="display:flex;gap:2px;background:#1E293B;border-radius:6px;padding:2px">
@@ -1614,9 +1616,9 @@ function switchTab(id){
   document.querySelectorAll('.tab-panel').forEach(function(p){p.classList.remove('active')});
   document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active')});
   document.getElementById('tab-'+id).classList.add('active');
-  var btns=document.querySelectorAll('.tab-btn');
-  var map={visibility:0,citation:1,readability:2,progress:3,glossary:4};
-  if(map[id]!==undefined)btns[map[id]].classList.add('active');
+  document.querySelectorAll('.tab-btn').forEach(function(b){
+    if(b.getAttribute('onclick')&&b.getAttribute('onclick').indexOf("'"+id+"'")>=0)b.classList.add('active');
+  });
   // GNB 서브메뉴: 탭에 따라 표시
   var gnbVis=document.getElementById('gnb-visibility');
   var gnbCit=document.getElementById('gnb-citation');

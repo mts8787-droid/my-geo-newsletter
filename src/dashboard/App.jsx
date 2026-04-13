@@ -54,6 +54,8 @@ export default function App() {
   const [publishing, setPublishing] = useState(false)
   const [publishMsg, setPublishMsg] = useState('')
   const [includeTracker, setIncludeTracker] = useState(false)
+  const [trackerVersion, setTrackerVersion] = useState('v2')
+  const [includePromptList, setIncludePromptList] = useState(false)
 
   // Hash routing
   useEffect(() => {
@@ -86,7 +88,7 @@ export default function App() {
     if (publishing) return
     setPublishing(true); setPublishMsg('')
     try {
-      const result = await publishCombinedDashboard(generateDashboardHTML, resolveDataForLang, { includeProgressTracker: includeTracker })
+      const result = await publishCombinedDashboard(generateDashboardHTML, resolveDataForLang, { includeProgressTracker: includeTracker, trackerVersion, includePromptList })
       setPublishMsg(`게시 완료!\nKO: ${window.location.origin}${result.urls.ko}\nEN: ${window.location.origin}${result.urls.en}`)
       fetch('/api/publish-history').then(r => r.ok ? r.json() : null).then(d => { if (d) setPublishData(d) })
     } catch (err) {
@@ -282,9 +284,29 @@ export default function App() {
               )}
 
               {/* Progress Tracker 포함 토글 */}
-              <label style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8, fontSize: 11, color: '#94A3B8', fontFamily: FONT, cursor: 'pointer' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4, fontSize: 11, color: '#94A3B8', fontFamily: FONT, cursor: 'pointer' }}>
                 <input type="checkbox" checked={includeTracker} onChange={e => setIncludeTracker(e.target.checked)} style={{ cursor: 'pointer' }} />
-                Progress Tracker 포함 (미체크 시 Coming Soon)
+                Progress Tracker 포함
+              </label>
+              {includeTracker && (
+                <div style={{ display: 'flex', gap: 4, marginBottom: 6, marginLeft: 18 }}>
+                  <button onClick={() => setTrackerVersion('v1')} style={{
+                    padding: '2px 8px', borderRadius: 4, border: 'none', cursor: 'pointer',
+                    background: trackerVersion === 'v1' ? '#CF0652' : '#1E293B',
+                    color: trackerVersion === 'v1' ? '#FFFFFF' : '#64748B',
+                    fontSize: 10, fontWeight: 700, fontFamily: FONT }}>V1</button>
+                  <button onClick={() => setTrackerVersion('v2')} style={{
+                    padding: '2px 8px', borderRadius: 4, border: 'none', cursor: 'pointer',
+                    background: trackerVersion === 'v2' ? '#CF0652' : '#1E293B',
+                    color: trackerVersion === 'v2' ? '#FFFFFF' : '#64748B',
+                    fontSize: 10, fontWeight: 700, fontFamily: FONT }}>V2 (외부)</button>
+                </div>
+              )}
+
+              {/* Prompt List 포함 토글 */}
+              <label style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8, fontSize: 11, color: '#94A3B8', fontFamily: FONT, cursor: 'pointer' }}>
+                <input type="checkbox" checked={includePromptList} onChange={e => setIncludePromptList(e.target.checked)} style={{ cursor: 'pointer' }} />
+                Prompt List 포함
               </label>
 
               {/* 통합 대시보드 게시 버튼 */}
