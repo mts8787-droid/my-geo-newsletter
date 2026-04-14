@@ -69,7 +69,8 @@
       "Bash(sed -i '' 's/US, CA, UK, DE, ES, BR, MX, IN, AU, VN/US, CA, UK, DE, ES, BR, MX, AU, VN, IN/g' src/dashboard/dashboardTemplate.js src/shared/components.jsx src/emailTemplate.js src/shared/insightPrompts.js)",
       "Bash(sed -i '' 's/'\\\\''US'\\\\'','\\\\''CA'\\\\'','\\\\''UK'\\\\'','\\\\''DE'\\\\'','\\\\''ES'\\\\'','\\\\''BR'\\\\'','\\\\''MX'\\\\'','\\\\''IN'\\\\'','\\\\''AU'\\\\'','\\\\''VN'\\\\'','\\\\''TTL'\\\\'','\\\\''GLOBAL'\\\\''/'\\\\''US'\\\\'','\\\\''CA'\\\\'','\\\\''UK'\\\\'','\\\\''DE'\\\\'','\\\\''ES'\\\\'','\\\\''BR'\\\\'','\\\\''MX'\\\\'','\\\\''AU'\\\\'','\\\\''VN'\\\\'','\\\\''IN'\\\\'','\\\\''TTL'\\\\'','\\\\''GLOBAL'\\\\''/g' src/excelUtils.js)",
       "Bash(sed -i '' 's/'\\\\''US'\\\\'','\\\\''CA'\\\\'','\\\\''UK'\\\\'','\\\\''DE'\\\\'','\\\\''ES'\\\\'','\\\\''MX'\\\\'','\\\\''BR'\\\\'','\\\\''IN'\\\\'','\\\\''AU'\\\\'','\\\\''VN'\\\\''/'\\\\''US'\\\\'','\\\\''CA'\\\\'','\\\\''UK'\\\\'','\\\\''DE'\\\\'','\\\\''ES'\\\\'','\\\\''MX'\\\\'','\\\\''BR'\\\\'','\\\\''AU'\\\\'','\\\\''VN'\\\\'','\\\\''IN'\\\\''/g' src/citation/citationTemplate.js)",
-      "Bash(sed -i '' s/US,CA,UK,DE,ES,BR,MX,IN,AU,VN/US,CA,UK,DE,ES,BR,MX,AU,VN,IN/g src/shared/insightPrompts.js)"
+      "Bash(sed -i '' s/US,CA,UK,DE,ES,BR,MX,IN,AU,VN/US,CA,UK,DE,ES,BR,MX,AU,VN,IN/g src/shared/insightPrompts.js)",
+      "Bash(npm show:*)"
     ]
   }
 }
