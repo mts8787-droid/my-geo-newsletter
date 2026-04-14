@@ -227,7 +227,7 @@ function trendDetailHtml(products, weeklyAll, wLabels, t, lang) {
       return `<div class="trend-row" style="margin-bottom:24px">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
           <span style="width:4px;height:22px;border-radius:4px;background:${RED};flex-shrink:0"></span>
-          <span style="font-size:20px;font-weight:700;color:#1A1A1A">${prodNameWithUL(p)}</span>
+          <span style="font-size:20px;font-weight:700;color:#1A1A1A">${prodNameUL(p, ulMap)}</span>
           <span style="font-size:14px;font-weight:700;padding:2px 8px;border-radius:10px;background:${st.bg};color:${st.color};border:1px solid ${st.border}">${st.label}</span>
           ${lgLatest != null ? `<span style="font-size:16px;font-weight:700;color:#1A1A1A">LG ${lgLatest.toFixed(1)}%</span>` : ''}
           ${p.compName ? `<span style="font-size:14px;color:#94A3B8">vs ${p.compName} ${p.compRatio || ''}%</span>` : ''}
@@ -313,7 +313,14 @@ function heroHtml(total, meta, t, lang) {
 }
 
 // ─── 제품 섹션 ──────────────────────────────────────────────────────────────
-function productSectionHtml(products, meta, t, lang, wLabels) {
+const UL_PROD_MAP = { tv:'TV', monitor:'IT', audio:'AV', washer:'WM', fridge:'REF', dw:'DW', vacuum:'VC', cooking:'COOKING', rac:'RAC', aircare:'AIRCARE' }
+function getULCntys(prodId, ulMap) {
+  const code = UL_PROD_MAP[prodId] || (prodId || '').toUpperCase()
+  return Object.keys(ulMap || {}).filter(k => k.endsWith('|' + code)).map(k => k.split('|')[0])
+}
+function prodNameUL(p, ulMap) { const c = getULCntys(p.id || p.category, ulMap); return c.length ? `${p.kr}*` : p.kr }
+
+function productSectionHtml(products, meta, t, lang, wLabels, ulMap) {
   if (!products.length) return ''
   const BU_ORDER = ['MS', 'HS', 'ES']
 
@@ -355,7 +362,7 @@ function productSectionHtml(products, meta, t, lang, wLabels) {
       const compColor = compPct >= 100 ? '#15803D' : compPct >= 80 ? '#D97706' : '#BE123C'
       return `<div class="prod-card" style="border-color:${st.border}">
         <div class="prod-head">
-          <span class="prod-name">${prodNameWithUL(p)}</span>
+          <span class="prod-name">${prodNameUL(p, ulMap)}</span>
           <span class="prod-badge" style="background:${st.bg};color:${st.color};border-color:${st.border}">${st.label}</span>
         </div>
         <div class="prod-score-row">
@@ -389,8 +396,8 @@ function productSectionHtml(products, meta, t, lang, wLabels) {
     </div>
     ${insightHtml(meta.productInsight, meta.showProductInsight, meta.productHowToRead, meta.showProductHowToRead, t)}
     <div class="section-body">${buGroups}${(() => {
-      const footnotes = products.filter(p => getUnlaunchedCntys(p.id || p.category).length > 0)
-        .map(p => `${p.kr}: ${getUnlaunchedCntys(p.id || p.category).join(', ')} ${lang === 'en' ? 'not launched' : '미출시'}`)
+      const footnotes = products.filter(p => getULCntys(p.id || p.category, ulMap).length > 0)
+        .map(p => `${p.kr}: ${getULCntys(p.id || p.category, ulMap).join(', ')} ${lang === 'en' ? 'not launched' : '미출시'}`)
       return footnotes.length ? `<p style="margin:12px 0 0;font-size:12px;color:#94A3B8;line-height:1.6">* ${footnotes.join(' / ')}</p>` : ''
     })()}</div>
   </div>`
@@ -1219,16 +1226,7 @@ export function generateDashboardHTML(meta, total, products, citations, dotcom, 
   const includeProgressTracker = opts?.includeProgressTracker !== false
   const trackerVersion = opts?.trackerVersion || 'v1'
   const includePromptList = opts?.includePromptList || false
-  const unlaunchedMap = extra?.unlaunchedMap || {}
-  const PROD_TO_UL = { tv:'TV', monitor:'IT', audio:'AV', washer:'WM', fridge:'REF', dw:'DW', vacuum:'VC', cooking:'COOKING', rac:'RAC', aircare:'AIRCARE' }
-  function getUnlaunchedCntys(prodId) {
-    const code = PROD_TO_UL[prodId] || (prodId || '').toUpperCase()
-    return Object.keys(unlaunchedMap).filter(k => k.endsWith('|' + code)).map(k => k.split('|')[0])
-  }
-  function prodNameWithUL(p) {
-    const cntys = getUnlaunchedCntys(p.id || p.category)
-    return cntys.length ? `${p.kr}*` : p.kr
-  }
+  const ulMap = extra?.unlaunchedMap || {}
   const trackerComingSoonMsg = lang === 'en' ? 'Progress Tracker will be available soon.' : '준비 중입니다. 곧 제공될 예정입니다.'
   const trackerV1Url = `/p/progress-tracker/?lang=${lang}`
   const trackerV2Url = `https://geo-progress-tracker-v2.onrender.com/p/progress-tracker-v2/`
@@ -1325,7 +1323,7 @@ export function generateDashboardHTML(meta, total, products, citations, dotcom, 
   const visContent = [
     noticeHtml,
     meta.showTotal !== false ? heroHtml(total, meta, t, lang) : '',
-    meta.showProducts !== false ? productSectionHtml(products, meta, t, lang, wLabels) : '',
+    meta.showProducts !== false ? productSectionHtml(products, meta, t, lang, wLabels, ulMap) : '',
     `<div id="trend-container">${trendDetailHtml(products, weeklyAll, wLabels, t, lang)}</div>`,
     meta.showCnty !== false ? countrySectionHtml(productsCnty, meta, t, lang) : '',
   ].join('')

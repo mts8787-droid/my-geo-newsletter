@@ -241,7 +241,7 @@ function productCardHtml(p, globalMax, globalMin, lang = 'ko', opts = {}) {
           <table border="0" cellpadding="0" cellspacing="0" width="100%">
             <tr>
               <td style="vertical-align:middle;">
-                <span style="font-size:14px;font-weight:900;color:#1A1A1A;vertical-align:middle;font-family:${EM_FONT};letter-spacing:-0.3px;">${escapeHtml(prodNameUL(p))}</span>
+                <span style="font-size:14px;font-weight:900;color:#1A1A1A;vertical-align:middle;font-family:${EM_FONT};letter-spacing:-0.3px;">${escapeHtml(opts.prodNameFn ? opts.prodNameFn(p) : p.kr)}</span>
               </td>
               <td align="right" style="vertical-align:middle;white-space:nowrap;">
                 <span style="font-size:13px;font-weight:700;color:${ratioColor};font-family:${EM_FONT};">${escapeHtml(p.compName || 'Samsung')} ${lang === 'en' ? 'vs' : '대비'} ${curRatio}%${ratioDelta}</span>
@@ -945,7 +945,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
   const monthlyGlobalMin = allMonthly.length ? Math.min(...allMonthly) : 0
 
   const buTotals = total.buTotals || {}
-  const trendOpts = { showTrendTabs, monthlyGlobalMax, monthlyGlobalMin, weeklyLabels, buTotals }
+  const trendOpts = { showTrendTabs, monthlyGlobalMax, monthlyGlobalMin, weeklyLabels, buTotals, prodNameFn: prodNameUL }
 
   const BU_ORDER = ['MS', 'HS', 'ES']
   const buSections = BU_ORDER.map(buKey => {
