@@ -11,10 +11,9 @@ import { generateProductInsight, generateProductHowToRead, generateCntyHowToRead
 
 export default
 function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, total, setTotal, products, setProducts, citations, setCitations, dotcom, setDotcom, productsCnty, setProductsCnty, citationsCnty, setCitationsCnty, resolved, previewLang, setPreviewLang, snapshots, setSnapshots, setWeeklyLabels, setWeeklyAll, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty, generateHTML, publishEndpoint, setMonthlyVis, onSyncExtra, categoryStats, extra }) {
-  // 최신 데이터 ref — AI 생성 시 stale closure 방지
-  const latestRef = useRef({ products, productsCnty, citations, citationsCnty, total, dotcom })
-  // props 변경 시 즉시 동기 갱신 (useEffect보다 빠름)
-  latestRef.current = { products, productsCnty, citations, citationsCnty, total, dotcom }
+  // 최신 데이터 ref — AI 생성/게시 시 stale closure 방지
+  const latestRef = useRef({ products, productsCnty, citations, citationsCnty, total, dotcom, extra })
+  latestRef.current = { products, productsCnty, citations, citationsCnty, total, dotcom, extra }
   function getLatestData() { return latestRef.current }
 
   const [gsUrl,     setGsUrl]     = useState('https://docs.google.com/spreadsheets/d/1v4V7ZsHNFXXqbAWqvyVkgNIeXx188hSZ9l7FDsRYy2Y/edit')
@@ -50,9 +49,11 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
       const resolvedEn = resolveDataForLang(latest.products, latest.productsCnty, latest.citations, latest.citationsCnty, 'en')
       let htmlKo, htmlEn, title
       if (mode === 'dashboard') {
-        const monthlyVis = [] // visibilityOnly 모드에서는 opts에 포함
-        htmlKo = generateHTML(metaKo, latest.total, resolvedKo.products, resolvedKo.citations, latest.dotcom, 'ko', resolvedKo.productsCnty, resolvedKo.citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty, monthlyVis, extra)
-        htmlEn = generateHTML(metaEn, latest.total, resolvedEn.products, resolvedEn.citations, latest.dotcom, 'en', resolvedEn.productsCnty, resolvedEn.citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty, monthlyVis, extra)
+        const monthlyVis = []
+        const latestExtra = latest.extra || extra || {}
+        console.log('[PUBLISH] extra check:', { weeklyPR: latestExtra?.weeklyPR?.length, weeklyBP: latestExtra?.weeklyBrandPrompt?.length })
+        htmlKo = generateHTML(metaKo, latest.total, resolvedKo.products, resolvedKo.citations, latest.dotcom, 'ko', resolvedKo.productsCnty, resolvedKo.citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty, monthlyVis, latestExtra)
+        htmlEn = generateHTML(metaEn, latest.total, resolvedEn.products, resolvedEn.citations, latest.dotcom, 'en', resolvedEn.productsCnty, resolvedEn.citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty, monthlyVis, latestExtra)
         title = `${metaKo.period || ''} ${metaKo.title || 'KPI Dashboard'}`.trim()
       } else {
         htmlKo = generateHTML(metaKo, latest.total, resolvedKo.products, resolvedKo.citations, dotcom, 'ko', resolvedKo.productsCnty, resolvedKo.citationsCnty, { weeklyLabels, categoryStats })
@@ -328,13 +329,18 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
       if (parsed.productsCnty) { setProductsCnty(parsed.productsCnty); latestRef.current = { ...latestRef.current, productsCnty: parsed.productsCnty } }
       if (parsed.citationsCnty) { setCitationsCnty(parsed.citationsCnty); latestRef.current = { ...latestRef.current, citationsCnty: parsed.citationsCnty } }
       if (parsed.monthlyVis && setMonthlyVis) setMonthlyVis(parsed.monthlyVis)
-      if (onSyncExtra) onSyncExtra({
-        weeklyPR: parsed.weeklyPR || null,
-        weeklyPRLabels: parsed.weeklyPRLabels || null,
-        weeklyBrandPrompt: parsed.weeklyBrandPrompt || null,
-        weeklyBrandPromptLabels: parsed.weeklyBrandPromptLabels || null,
-        appendixPrompts: parsed.appendixPrompts || null,
-      })
+      if (onSyncExtra) {
+        const syncExtra = {
+          weeklyPR: parsed.weeklyPR || null,
+          weeklyPRLabels: parsed.weeklyPRLabels || null,
+          weeklyBrandPrompt: parsed.weeklyBrandPrompt || null,
+          weeklyBrandPromptLabels: parsed.weeklyBrandPromptLabels || null,
+          appendixPrompts: parsed.appendixPrompts || null,
+        }
+        onSyncExtra(syncExtra)
+        // latestRef에도 extra 즉시 갱신
+        latestRef.current = { ...latestRef.current, extra: { ...latestRef.current.extra, ...syncExtra } }
+      }
       // 주차 라벨: meta.weekStart 기반 자동 생성, 없으면 시트 파싱 값 사용
       const weekCount = parsed.weeklyMap ? Math.max(...Object.values(parsed.weeklyMap).map(a => a.length), 0) : 0
       const ws = parsed.meta?.weekStart
