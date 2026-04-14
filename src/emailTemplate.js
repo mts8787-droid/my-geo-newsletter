@@ -331,20 +331,10 @@ function productCardV2Html(p, lang = 'ko', opts = {}) {
   <td width="33%" style="padding:3px;vertical-align:top;">
     <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border:2px solid ${st.border};border-radius:8px;background:#FFFFFF;font-family:${EM_FONT};">
       <tr>
-        <td style="padding:6px 8px 3px;">
-          <table border="0" cellpadding="0" cellspacing="0" width="100%">
-            <tr>
-              <td style="vertical-align:middle;">
-                <span style="font-size:14px;font-weight:900;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-0.3px;">${escapeHtml(prodName)}</span>
-                &nbsp;<span style="font-size:18px;font-weight:900;color:#1A1A1A;">${p.score.toFixed(1)}<span style="font-size:11px;color:#94A3B8;">%</span></span>
-                ${momStr}
-              </td>
-              <td align="right" style="vertical-align:middle;white-space:nowrap;">
-                <span style="font-size:12px;font-weight:700;color:${ratioColor};font-family:${EM_FONT};">${escapeHtml(p.compName || 'Samsung')} ${lang === 'en' ? 'vs' : '대비'} ${curRatio}%</span>
-                &nbsp;<span style="display:inline-block;background:${st.bg};color:${st.color};border:1px solid ${st.border};border-radius:6px;padding:0px 5px;font-size:10px;font-weight:700;line-height:16px;font-family:${EM_FONT};vertical-align:middle;">${st.label}</span>
-              </td>
-            </tr>
-          </table>
+        <td style="padding:5px 6px 3px;white-space:nowrap;overflow:hidden;">
+          <span style="font-size:13px;font-weight:900;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-0.5px;">${escapeHtml(prodName)}</span>
+          <span style="font-size:15px;font-weight:900;color:#1A1A1A;font-family:${EM_FONT};">${p.score.toFixed(1)}<span style="font-size:10px;color:#94A3B8;">%</span></span>${momStr ? `&nbsp;${momStr}` : ''}
+          <span style="float:right;white-space:nowrap;"><span style="font-size:11px;font-weight:700;color:${ratioColor};font-family:${EM_FONT};">SS ${curRatio}%</span>&nbsp;<span style="display:inline-block;background:${st.bg};color:${st.color};border:1px solid ${st.border};border-radius:5px;padding:0px 4px;font-size:10px;font-weight:700;line-height:15px;font-family:${EM_FONT};vertical-align:middle;">${st.label}</span></span>
         </td>
       </tr>
       <tr>
