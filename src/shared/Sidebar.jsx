@@ -403,20 +403,35 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
       {
         const yr = (new Date().getFullYear())
         const enNames = ['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+        const enMonthMap = { jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12 }
         let bestMonth = 0
+
+        function extractMonth(dateStr) {
+          if (!dateStr) return 0
+          const s = String(dateStr).trim()
+          // "3월" or "12월"
+          const krMatch = s.match(/(\d{1,2})월/)
+          if (krMatch) { const n = parseInt(krMatch[1]); return n >= 1 && n <= 12 ? n : 0 }
+          // "Mar", "Feb 2026", etc
+          const enMatch = s.match(/\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i)
+          if (enMatch) return enMonthMap[enMatch[1].toLowerCase()] || 0
+          // "2026-03" ISO format
+          const isoMatch = s.match(/\d{4}[-\/](\d{1,2})/)
+          if (isoMatch) { const n = parseInt(isoMatch[1]); return n >= 1 && n <= 12 ? n : 0 }
+          return 0
+        }
+
         // visSummary에서 추출한 최신 월
         if (parsed.derivedPeriod) {
-          bestMonth = parseInt(parsed.derivedPeriod) || 0
+          const m = extractMonth(parsed.derivedPeriod)
+          if (m > bestMonth) bestMonth = m
         }
-        // Citation 데이터에서 추출한 최신 월 (더 최신이면 우선)
+        // Citation 데이터에서 추출한 최신 월
         if (parsed.citDerivedPeriod) {
-          const citEnMonth = String(parsed.citDerivedPeriod).match(/^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)/i)
-          if (citEnMonth) {
-            const citIdx = enNames.findIndex(m => m && m.toLowerCase() === citEnMonth[1].toLowerCase())
-            if (citIdx > bestMonth) bestMonth = citIdx
-          }
+          const m = extractMonth(parsed.citDerivedPeriod)
+          if (m > bestMonth) bestMonth = m
         }
-        if (bestMonth > 0) {
+        if (bestMonth > 0 && bestMonth <= 12) {
           setMetaKo(m => ({ ...m, period: `${yr}년 ${bestMonth}월` }))
           setMetaEn(m => ({ ...m, period: `${enNames[bestMonth]} ${yr}` }))
         }
