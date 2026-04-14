@@ -140,7 +140,13 @@ export default function App() {
         setProducts(d.productsPartial.map(p => {
           const weekly = d.weeklyMap?.[p.id] || []
           const ratio = p.vsComp > 0 ? (p.score / p.vsComp) * 100 : 100
-          return { ...p, weekly, monthly: [], compRatio: Math.round(ratio),
+          const validW = weekly.filter(v => v != null && v > 0)
+          let prev = p.prev
+          if (!prev && validW.length >= 5) prev = validW[validW.length - 5] || validW[0]
+          if (!prev && validW.length >= 2) prev = validW[0]
+          prev = prev || 0
+          const monthly = prev > 0 && prev !== p.score ? [prev, p.score] : []
+          return { ...p, prev, weekly, monthly, compRatio: Math.round(ratio),
             status: ratio >= 100 ? 'lead' : ratio >= 80 ? 'behind' : 'critical' }
         }))
       } else if (d.weeklyMap) {

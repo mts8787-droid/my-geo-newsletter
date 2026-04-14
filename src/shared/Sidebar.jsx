@@ -370,10 +370,16 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
           if (!weekly.length) console.warn(`[SYNC] product "${p.id}" (bu:${p.bu}) has NO weekly data — weeklyMap has: [${wmKeys}]`)
           else console.log(`[SYNC] product "${p.id}" weekly:`, weekly)
           const ratio = p.vsComp > 0 ? (p.score / p.vsComp) * 100 : 100
-          // prev: 시트에 이전 월 데이터가 없으면 weekly 첫 non-null 값으로 폴백
-          const firstValid = weekly.find(v => v != null && v > 0)
-          const prev = p.prev || firstValid || 0
-          const monthly = prev > 0 ? [prev, p.score] : []
+          // prev: 시트 이전 월 → weekly에서 마지막 4주 전 값 → weekly 첫 값 폴백
+          const validWeekly = weekly.filter(v => v != null && v > 0)
+          let prev = p.prev
+          if (!prev && validWeekly.length >= 5) {
+            // weekly 4주 전 값을 prev로 사용 (대략 1개월 전)
+            prev = validWeekly[validWeekly.length - 5] || validWeekly[0]
+          }
+          if (!prev && validWeekly.length >= 2) prev = validWeekly[0]
+          prev = prev || 0
+          const monthly = prev > 0 && prev !== p.score ? [prev, p.score] : []
           return { ...p, prev, weekly, monthly, compRatio: Math.round(ratio),
             status: ratio >= 100 ? 'lead' : ratio >= 80 ? 'behind' : 'critical' }
         })
