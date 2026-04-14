@@ -89,6 +89,36 @@ export async function publishCombinedDashboard(generateDashboardHTML, resolveDat
   if (!d || !Object.keys(d).length) throw new Error('동기화 데이터가 없습니다. Visibility Editor에서 먼저 동기화해주세요.')
   const meta = d.meta || {}
   const total = d.total || {}
+
+  // 서버 meta.period가 이전 월일 수 있으므로 데이터에서 최신 월 재감지
+  const enNames = ['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+  let bestMonth = 0
+  if (d.citDerivedPeriod) {
+    const cm = String(d.citDerivedPeriod).match(/(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)/i)
+    if (cm) { const ci = enNames.findIndex(m => m && m.toLowerCase() === cm[1].toLowerCase()); if (ci > bestMonth) bestMonth = ci }
+  }
+  if (d.productsPartial?.length) {
+    d.productsPartial.forEach(p => {
+      if (p.date) {
+        const km = String(p.date).match(/(\d{1,2})월/); if (km) { const n = parseInt(km[1]); if (n > bestMonth) bestMonth = n }
+        const em = String(p.date).match(/(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)/i)
+        if (em) { const ci = enNames.findIndex(m => m && m.toLowerCase() === em[1].toLowerCase()); if (ci > bestMonth) bestMonth = ci }
+      }
+    })
+  }
+  if (d.monthlyVis?.length) {
+    d.monthlyVis.forEach(r => {
+      if (r.date) {
+        const km = String(r.date).match(/(\d{1,2})월/); if (km) { const n = parseInt(km[1]); if (n > bestMonth) bestMonth = n }
+        const em = String(r.date).match(/(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)/i)
+        if (em) { const ci = enNames.findIndex(m => m && m.toLowerCase() === em[1].toLowerCase()); if (ci > bestMonth) bestMonth = ci }
+      }
+    })
+  }
+  if (bestMonth > 0) {
+    const yr = new Date().getFullYear()
+    meta.period = `${enNames[bestMonth]} ${yr}`
+  }
   // productsPartial 우선, 없으면 products(에디터 state) 폴백
   const rawProducts = d.productsPartial || d.products || []
   const products = rawProducts.map(p => {
