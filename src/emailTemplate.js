@@ -241,7 +241,7 @@ function productCardHtml(p, globalMax, globalMin, lang = 'ko', opts = {}) {
           <table border="0" cellpadding="0" cellspacing="0" width="100%">
             <tr>
               <td style="vertical-align:middle;">
-                <span style="font-size:14px;font-weight:900;color:#1A1A1A;vertical-align:middle;font-family:${EM_FONT};letter-spacing:-0.3px;">${escapeHtml(p.kr)}</span>
+                <span style="font-size:14px;font-weight:900;color:#1A1A1A;vertical-align:middle;font-family:${EM_FONT};letter-spacing:-0.3px;">${escapeHtml(prodNameUL(p))}</span>
               </td>
               <td align="right" style="vertical-align:middle;white-space:nowrap;">
                 <span style="font-size:13px;font-weight:700;color:${ratioColor};font-family:${EM_FONT};">${escapeHtml(p.compName || 'Samsung')} ${lang === 'en' ? 'vs' : '대비'} ${curRatio}%${ratioDelta}</span>
@@ -913,10 +913,16 @@ function dashboardLinkButtonHtml(lang) {
 export { escapeHtml }
 
 export function generateEmailHTML(meta, total, products, citations, dotcom = {}, lang = 'ko', productsCnty = [], citationsCnty = [], options = {}) {
-  const { containerWidth = 920, showTrendTabs = false, weeklyLabels, categoryStats = null } = options
+  const { containerWidth = 920, showTrendTabs = false, weeklyLabels, categoryStats = null, unlaunchedMap = {} } = options
   const t = T[lang] || T.ko
   total = total || { score: 0, prev: 0, vsComp: 0, rank: 1, totalBrands: 12 }
   products = products || []
+  const UL_PROD_MAP = { tv:'TV', monitor:'IT', audio:'AV', washer:'WM', fridge:'REF', dw:'DW', vacuum:'VC', cooking:'COOKING', rac:'RAC', aircare:'AIRCARE' }
+  function getULCntys(prodId) {
+    const code = UL_PROD_MAP[prodId] || (prodId || '').toUpperCase()
+    return Object.keys(unlaunchedMap).filter(k => k.endsWith('|' + code)).map(k => k.split('|')[0])
+  }
+  function prodNameUL(p) { const c = getULCntys(p.id || p.category); return c.length ? `${p.kr}*` : p.kr }
   citations = citations || []
   const totalDelta = delta(total.score, total.prev)
   const scoreBarW  = Math.round(total.score || 0)

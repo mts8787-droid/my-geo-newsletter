@@ -227,7 +227,7 @@ function trendDetailHtml(products, weeklyAll, wLabels, t, lang) {
       return `<div class="trend-row" style="margin-bottom:24px">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
           <span style="width:4px;height:22px;border-radius:4px;background:${RED};flex-shrink:0"></span>
-          <span style="font-size:20px;font-weight:700;color:#1A1A1A">${p.kr}</span>
+          <span style="font-size:20px;font-weight:700;color:#1A1A1A">${prodNameWithUL(p)}</span>
           <span style="font-size:14px;font-weight:700;padding:2px 8px;border-radius:10px;background:${st.bg};color:${st.color};border:1px solid ${st.border}">${st.label}</span>
           ${lgLatest != null ? `<span style="font-size:16px;font-weight:700;color:#1A1A1A">LG ${lgLatest.toFixed(1)}%</span>` : ''}
           ${p.compName ? `<span style="font-size:14px;color:#94A3B8">vs ${p.compName} ${p.compRatio || ''}%</span>` : ''}
@@ -355,7 +355,7 @@ function productSectionHtml(products, meta, t, lang, wLabels) {
       const compColor = compPct >= 100 ? '#15803D' : compPct >= 80 ? '#D97706' : '#BE123C'
       return `<div class="prod-card" style="border-color:${st.border}">
         <div class="prod-head">
-          <span class="prod-name">${p.kr}</span>
+          <span class="prod-name">${prodNameWithUL(p)}</span>
           <span class="prod-badge" style="background:${st.bg};color:${st.color};border-color:${st.border}">${st.label}</span>
         </div>
         <div class="prod-score-row">
@@ -388,7 +388,11 @@ function productSectionHtml(products, meta, t, lang, wLabels) {
       <span class="legend"><i style="background:#15803D"></i>${t.legendLead} <i style="background:#D97706"></i>${t.legendBehind} <i style="background:#BE123C"></i>${t.legendCritical}</span>
     </div>
     ${insightHtml(meta.productInsight, meta.showProductInsight, meta.productHowToRead, meta.showProductHowToRead, t)}
-    <div class="section-body">${buGroups}</div>
+    <div class="section-body">${buGroups}${(() => {
+      const footnotes = products.filter(p => getUnlaunchedCntys(p.id || p.category).length > 0)
+        .map(p => `${p.kr}: ${getUnlaunchedCntys(p.id || p.category).join(', ')} ${lang === 'en' ? 'not launched' : '미출시'}`)
+      return footnotes.length ? `<p style="margin:12px 0 0;font-size:12px;color:#94A3B8;line-height:1.6">* ${footnotes.join(' / ')}</p>` : ''
+    })()}</div>
   </div>`
 }
 
@@ -1215,6 +1219,16 @@ export function generateDashboardHTML(meta, total, products, citations, dotcom, 
   const includeProgressTracker = opts?.includeProgressTracker !== false
   const trackerVersion = opts?.trackerVersion || 'v1'
   const includePromptList = opts?.includePromptList || false
+  const unlaunchedMap = extra?.unlaunchedMap || {}
+  const PROD_TO_UL = { tv:'TV', monitor:'IT', audio:'AV', washer:'WM', fridge:'REF', dw:'DW', vacuum:'VC', cooking:'COOKING', rac:'RAC', aircare:'AIRCARE' }
+  function getUnlaunchedCntys(prodId) {
+    const code = PROD_TO_UL[prodId] || (prodId || '').toUpperCase()
+    return Object.keys(unlaunchedMap).filter(k => k.endsWith('|' + code)).map(k => k.split('|')[0])
+  }
+  function prodNameWithUL(p) {
+    const cntys = getUnlaunchedCntys(p.id || p.category)
+    return cntys.length ? `${p.kr}*` : p.kr
+  }
   const trackerComingSoonMsg = lang === 'en' ? 'Progress Tracker will be available soon.' : '준비 중입니다. 곧 제공될 예정입니다.'
   const trackerV1Url = `/p/progress-tracker/?lang=${lang}`
   const trackerV2Url = `https://geo-progress-tracker-v2.onrender.com/p/progress-tracker-v2/`
@@ -1841,6 +1855,11 @@ function switchCitCnty(btn){
 var _weeklyAll=${weeklyAll ? JSON.stringify(weeklyAll) : '{}'};
 var _products=${JSON.stringify(products.map(p => ({ id: p.id, bu: p.bu, kr: p.kr, en: p.en || p.kr, category: p.category || '', date: p.date || '', status: p.status, score: p.score || 0, prev: p.prev || 0, vsComp: p.vsComp || 0, compName: p.compName || '', compRatio: p.compRatio || 0, allScores: p.allScores || {} })))};
 var _productsCnty=${JSON.stringify(productsCnty || [])};
+var _unlaunchedMap=${JSON.stringify(unlaunchedMap)};
+// 제품 ID → unlaunched 시트 카테고리 코드 매핑
+var _PROD_TO_UL={'tv':'TV','monitor':'IT','audio':'AV','washer':'WM','fridge':'REF','dw':'DW','vacuum':'VC','cooking':'COOKING','rac':'RAC','aircare':'AIRCARE'};
+function _isUnlaunched(cnty,prodId){var code=_PROD_TO_UL[prodId]||prodId.toUpperCase();return!!_unlaunchedMap[cnty+'|'+code]}
+function _unlaunchedCntys(prodId){var code=_PROD_TO_UL[prodId]||prodId.toUpperCase();var r=[];Object.keys(_unlaunchedMap).forEach(function(k){if(k.endsWith('|'+code))r.push(k.split('|')[0])});return r}
 console.log('[Cnty] productsCnty[0]:', _productsCnty[0], 'allScores keys:', _productsCnty[0]?.allScores ? Object.keys(_productsCnty[0].allScores) : 'NO allScores');
 var _monthlyVis=${JSON.stringify(opts?.monthlyVis || [])};
 var _total=${JSON.stringify(total)};

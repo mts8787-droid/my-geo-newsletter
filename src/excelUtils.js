@@ -18,6 +18,7 @@ export const SHEET_NAMES = {
   citTouchPoints: 'Citation-Touch Points',
   citDomain:      'Citation-Domain',
   appendix:       'Appendix.Prompt List',
+  unlaunched:     'unlaunched',
 }
 
 // ─── 카테고리 ID/KR 매핑 ──────────────────────────────────────────────────────
@@ -1337,6 +1338,34 @@ function parseAppendix(rows) {
   return prompts.length > 0 ? { appendixPrompts: prompts } : {}
 }
 
+// ─── Unlaunched 시트 파서 ─────────────────────────────────────────────────────
+function parseUnlaunched(rows) {
+  const headerIdx = rows.findIndex(r =>
+    r.some(c => /^country$/i.test(String(c || '').trim())) &&
+    r.some(c => /^launched$/i.test(String(c || '').trim()))
+  )
+  if (headerIdx < 0) return {}
+  const header = rows[headerIdx]
+  const colMap = {}
+  const FIELDS = ['country', 'division', 'category', 'launched']
+  for (let i = 0; i < header.length; i++) {
+    const s = String(header[i] || '').trim().toLowerCase()
+    if (FIELDS.includes(s) && !colMap[s]) colMap[s] = i
+  }
+  // country|category(정규화) → true 맵 (unlaunched만)
+  const unlaunchedMap = {}
+  rows.slice(headerIdx + 1).forEach(r => {
+    if (!r) return
+    const status = String(r[colMap.launched] || '').trim().toLowerCase()
+    if (status !== 'unlaunched') return
+    const country = normCountry(r[colMap.country])
+    const category = String(r[colMap.category] || '').trim().toUpperCase()
+    if (country && category) unlaunchedMap[`${country}|${category}`] = true
+  })
+  console.log(`[parseUnlaunched] ${Object.keys(unlaunchedMap).length}건:`, Object.keys(unlaunchedMap).join(', '))
+  return Object.keys(unlaunchedMap).length > 0 ? { unlaunchedMap } : {}
+}
+
 // ─── 메인 파서 라우터 ──────────────────────────────────────────────────────────
 export function parseSheetRows(sheetName, rows) {
   if (sheetName === SHEET_NAMES.meta) return parseMeta(rows)
@@ -1364,6 +1393,7 @@ export function parseSheetRows(sheetName, rows) {
   if (sheetName === SHEET_NAMES.citDomain) return parseCitDomain(rows)
 
   if (sheetName === SHEET_NAMES.appendix) return parseAppendix(rows)
+  if (sheetName === SHEET_NAMES.unlaunched) return parseUnlaunched(rows)
 
   return {}
 }

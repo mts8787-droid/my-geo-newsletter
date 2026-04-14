@@ -142,6 +142,7 @@ export async function publishCombinedDashboard(generateDashboardHTML, resolveDat
     weeklyPRLabels: d.weeklyPRLabels || [],
     weeklyBrandPrompt: d.weeklyBrandPrompt || [],
     weeklyBrandPromptLabels: d.weeklyBrandPromptLabels || [],
+    unlaunchedMap: d.unlaunchedMap || {},
   }
   const opts = { monthlyVis: d.monthlyVis || [], includeProgressTracker, trackerVersion, includePromptList }
   console.log('[PUBLISH] extra data check:', {
