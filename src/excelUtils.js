@@ -1362,7 +1362,6 @@ function parseUnlaunched(rows) {
     const category = String(r[colMap.category] || '').trim().toUpperCase()
     if (country && category) unlaunchedMap[`${country}|${category}`] = true
   })
-  console.log(`[parseUnlaunched] ${Object.keys(unlaunchedMap).length}건:`, Object.keys(unlaunchedMap).join(', '))
   return Object.keys(unlaunchedMap).length > 0 ? { unlaunchedMap } : {}
 }
 

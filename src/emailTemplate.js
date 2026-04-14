@@ -306,7 +306,7 @@ function productCardV2Html(p, lang = 'ko', opts = {}) {
       <table border="0" cellpadding="0" cellspacing="0" align="center" style="width:100%;">
         ${BAR_H > 0 ? `<tr><td height="${BAR_H}" style="font-size:0;">&nbsp;</td></tr>` : ''}
         <tr><td style="font-size:10px;color:#CBD5E1;font-family:${EM_FONT};text-align:center;">—</td></tr>
-        <tr><td style="font-size:10px;color:#94A3B8;font-family:${EM_FONT};text-align:center;white-space:nowrap;transform:scaleX(0.85);display:block;">${cn3(c)}</td></tr>
+        <tr><td style="font-size:10px;color:#94A3B8;font-family:${EM_FONT};text-align:center;white-space:nowrap;letter-spacing:-1px;">${cn3(c)}</td></tr>
         <tr><td style="font-size:10px;color:#CBD5E1;font-family:${EM_FONT};text-align:center;">—</td></tr>
       </table>
     </td>`
@@ -321,7 +321,7 @@ function productCardV2Html(p, lang = 'ko', opts = {}) {
         ${spacer > 0 ? `<tr><td height="${spacer}" style="font-size:0;">&nbsp;</td></tr>` : ''}
         <tr><td height="${barH}" style="font-size:0;"><table border="0" cellpadding="0" cellspacing="0" align="center"><tr><td width="16" height="${barH}" style="background:${barColor};border-radius:2px 2px 0 0;font-size:0;">&nbsp;</td></tr></table></td></tr>
         <tr><td style="font-size:10px;font-weight:700;color:${barColor};font-family:${EM_FONT};text-align:center;padding-top:1px;">${r.score.toFixed(0)}</td></tr>
-        <tr><td style="font-size:10px;font-weight:700;color:${barColor};font-family:${EM_FONT};text-align:center;white-space:nowrap;"><span style="display:inline-block;transform:scaleX(0.82);font-family:${EM_FONT};">${cn3(c)}</span></td></tr>
+        <tr><td style="font-size:10px;font-weight:700;color:${barColor};font-family:${EM_FONT};text-align:center;white-space:nowrap;"><span style="letter-spacing:-1px;font-family:${EM_FONT};">${cn3(c)}</span></td></tr>
         <tr><td style="font-size:10px;color:#94A3B8;font-family:${EM_FONT};text-align:center;">${compTxt}</td></tr>
       </table>
     </td>`

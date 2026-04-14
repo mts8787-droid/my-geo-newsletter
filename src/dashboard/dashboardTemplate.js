@@ -1263,7 +1263,7 @@ export function generateDashboardHTML(meta, total, products, citations, dotcom, 
     `<label class="fl-chk-label"><input type="checkbox" class="fl-chk" data-filter="country" value="${c}" checked onchange="onFilterChange()"><span>${cntyFullName(c)}</span></label>`
   ).join('')
   const regionCheckboxes = Object.entries(REGIONS).map(([k, v]) =>
-    `<label class="fl-chk-label"><input type="checkbox" class="fl-chk" data-filter="region" value="${k}" checked onchange="onRegionChange('${k}')"><span>${lang === 'en' ? v.labelEn : v.labelEn}</span></label>`
+    `<label class="fl-chk-label"><input type="checkbox" class="fl-chk" data-filter="region" value="${k}" checked onchange="onRegionChange('${k}')"><span>${lang === 'en' ? v.labelEn : v.label}</span></label>`
   ).join('')
 
   const langToggleHtml = `<div class="fl-group"><div style="display:flex;gap:2px;background:#F1F5F9;border-radius:6px;padding:2px"><button class="lang-btn${lang==='ko'?' active':''}" onclick="switchLang('ko')">KO</button><button class="lang-btn${lang==='en'?' active':''}" onclick="switchLang('en')">EN</button></div></div><div class="fl-divider"></div>`
@@ -1858,7 +1858,6 @@ var _unlaunchedMap=${JSON.stringify(ulMap)};
 var _PROD_TO_UL={'tv':'TV','monitor':'IT','audio':'AV','washer':'WM','fridge':'REF','dw':'DW','vacuum':'VC','cooking':'COOKING','rac':'RAC','aircare':'AIRCARE'};
 function _isUnlaunched(cnty,prodId){var code=_PROD_TO_UL[prodId]||prodId.toUpperCase();return!!_unlaunchedMap[cnty+'|'+code]}
 function _unlaunchedCntys(prodId){var code=_PROD_TO_UL[prodId]||prodId.toUpperCase();var r=[];Object.keys(_unlaunchedMap).forEach(function(k){if(k.endsWith('|'+code))r.push(k.split('|')[0])});return r}
-console.log('[Cnty] productsCnty[0]:', _productsCnty[0], 'allScores keys:', _productsCnty[0]?.allScores ? Object.keys(_productsCnty[0].allScores) : 'NO allScores');
 var _monthlyVis=${JSON.stringify(opts?.monthlyVis || [])};
 var _total=${JSON.stringify(total)};
 var _meta={period:'${(meta.period || '').replace(/'/g, "\\'")}',reportNo:'${(meta.reportNo || '').replace(/'/g, "\\'")}',totalInsight:${JSON.stringify(meta.totalInsight || '')}};
