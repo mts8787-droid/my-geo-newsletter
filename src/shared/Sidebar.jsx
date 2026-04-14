@@ -56,8 +56,8 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
         htmlEn = generateHTML(metaEn, latest.total, resolvedEn.products, resolvedEn.citations, latest.dotcom, 'en', resolvedEn.productsCnty, resolvedEn.citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty, monthlyVis, latestExtra)
         title = `${metaKo.period || ''} ${metaKo.title || 'KPI Dashboard'}`.trim()
       } else {
-        htmlKo = generateHTML(metaKo, latest.total, resolvedKo.products, resolvedKo.citations, dotcom, 'ko', resolvedKo.productsCnty, resolvedKo.citationsCnty, { weeklyLabels, categoryStats, unlaunchedMap: extra?.unlaunchedMap || {} })
-        htmlEn = generateHTML(metaEn, latest.total, resolvedEn.products, resolvedEn.citations, dotcom, 'en', resolvedEn.productsCnty, resolvedEn.citationsCnty, { weeklyLabels, categoryStats, unlaunchedMap: extra?.unlaunchedMap || {} })
+        htmlKo = generateHTML(metaKo, latest.total, resolvedKo.products, resolvedKo.citations, dotcom, 'ko', resolvedKo.productsCnty, resolvedKo.citationsCnty, { weeklyLabels, categoryStats, unlaunchedMap: extra?.unlaunchedMap || {}, productCardVersion: meta.productCardVersion || 'v1' })
+        htmlEn = generateHTML(metaEn, latest.total, resolvedEn.products, resolvedEn.citations, dotcom, 'en', resolvedEn.productsCnty, resolvedEn.citationsCnty, { weeklyLabels, categoryStats, unlaunchedMap: extra?.unlaunchedMap || {}, productCardVersion: meta.productCardVersion || 'v1' })
         title = `${metaKo.period || ''} ${metaKo.title || 'Newsletter'}`.trim()
       }
       const ep = publishEndpoint || (mode === 'dashboard' ? '/api/publish-dashboard' : '/api/publish')
@@ -270,7 +270,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
     setMailSent('sending')
     try {
       const latest = getLatestData()
-      const html    = generateHTML(meta, latest.total, latest.products, latest.citations, latest.dotcom, previewLang, latest.productsCnty, latest.citationsCnty, { weeklyLabels, categoryStats, unlaunchedMap: extra?.unlaunchedMap || {} })
+      const html    = generateHTML(meta, latest.total, latest.products, latest.citations, latest.dotcom, previewLang, latest.productsCnty, latest.citationsCnty, { weeklyLabels, categoryStats, unlaunchedMap: extra?.unlaunchedMap || {}, productCardVersion: meta.productCardVersion || 'v1' })
       const subject = `[LG GEO] ${meta.title} · ${meta.period}`
       const res = await fetch('/api/send-email', {
         method: 'POST',
@@ -931,6 +931,21 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
               {label}
             </button>
           ))}
+        </div>
+
+        {/* 제품 카드 버전 선택 */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
+          <span style={{ fontSize: 11, color: '#64748B', fontFamily: FONT }}>제품 카드:</span>
+          <button onClick={() => setMeta(m => ({ ...m, productCardVersion: 'v1' }))} style={{
+            padding: '2px 8px', borderRadius: 4, border: 'none', cursor: 'pointer',
+            background: (meta.productCardVersion || 'v1') === 'v1' ? LG_RED : '#1E293B',
+            color: (meta.productCardVersion || 'v1') === 'v1' ? '#FFF' : '#64748B',
+            fontSize: 10, fontWeight: 700, fontFamily: FONT }}>V1 트렌드</button>
+          <button onClick={() => setMeta(m => ({ ...m, productCardVersion: 'v2' }))} style={{
+            padding: '2px 8px', borderRadius: 4, border: 'none', cursor: 'pointer',
+            background: meta.productCardVersion === 'v2' ? LG_RED : '#1E293B',
+            color: meta.productCardVersion === 'v2' ? '#FFF' : '#64748B',
+            fontSize: 10, fontWeight: 700, fontFamily: FONT }}>V2 국가별</button>
         </div>
 
         {/* ── 콘텐츠 편집 ── */}
