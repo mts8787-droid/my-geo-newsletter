@@ -1011,7 +1011,7 @@ function parseCitDomain(rows) {
   // 새 구조: No | Region | Domain | Type | Feb | Mar | Apr | ...
   // Region: Global(=TTL), US, CA, UK 등 인라인 국가
   const REGION_MAP = { 'GLOBAL': 'TTL', 'TOTAL': 'TTL', '미국':'US','캐나다':'CA','영국':'UK','독일':'DE','스페인':'ES','브라질':'BR','멕시코':'MX','인도':'IN','호주':'AU','베트남':'VN' }
-  const COUNTRIES = ['US','CA','UK','DE','ES','BR','MX','IN','AU','VN','TTL','GLOBAL']
+  const COUNTRIES = ['US','CA','UK','DE','ES','BR','MX','AU','VN','IN','TTL','GLOBAL']
   const MONTH_RE = /^(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|[0-9]{1,2}월)/i
 
   // 헤더 행 찾기 — No/Region 또는 Domain 키워드가 있는 행

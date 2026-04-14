@@ -289,7 +289,7 @@ function productCardV2Html(p, lang = 'ko', opts = {}) {
     const rProd = (r.product || '').toLowerCase()
     return rProd === prodId || rProd === (p.category || '').toLowerCase() || rProd === (p.kr || '').toLowerCase()
   })
-  const ALL_COUNTRIES = ['US','CA','UK','DE','ES','BR','MX','IN','AU','VN']
+  const ALL_COUNTRIES = ['US','CA','UK','DE','ES','BR','MX','AU','VN','IN']
   const cntyMap = {}
   cntyData.forEach(r => { cntyMap[r.country] = r })
   const maxCnty = Math.max(...ALL_COUNTRIES.map(c => cntyMap[c]?.score || 0), 1)
@@ -1163,7 +1163,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                         <table border="0" cellpadding="0" cellspacing="0" width="100%">
                           <tr>
                             <td style="font-size:24px;font-weight:700;color:#FFFFFF;text-transform:uppercase;font-family:${EM_FONT};">LG GEO Visibility %</td>
-                            <td align="right" style="font-size:14px;color:#94A3B8;font-family:${EM_FONT};">Model : ChatGPT, ChatGPT Search, Gemini, Perplexity<br/>Subsidiary : US, CA, UK, DE, ES, BR, MX, IN, AU, VN</td>
+                            <td align="right" style="font-size:14px;color:#94A3B8;font-family:${EM_FONT};">Model : ChatGPT, ChatGPT Search, Gemini, Perplexity<br/>Subsidiary : US, CA, UK, DE, ES, BR, MX, AU, VN, IN</td>
                           </tr>
                         </table>
                         <table border="0" cellpadding="0" cellspacing="0" width="100%">

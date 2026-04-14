@@ -727,7 +727,7 @@ function renderCitCat(cits){
   // 전체 + 국가별 하나의 섹션
   var body=_citVBar(cits,topN,false);
   // 국가별 세로 막대그래프 (항상 표시)
-  var countries=['US','CA','UK','DE','ES','BR','MX','IN','AU','VN'];
+  var countries=['US','CA','UK','DE','ES','BR','MX','AU','VN','IN'];
   var cntyCards=[];
   countries.forEach(function(cnty){
     var list=_citationsByCnty[cnty];
@@ -762,7 +762,7 @@ function renderCitDom(citCnty,useAgg){
   // 전체 세로 막대그래프
   var body=_citVBar(_domToVBarData(rows||[],topN),topN,false);
   // 국가별 세로 막대그래프
-  var countries=['US','CA','UK','DE','ES','BR','MX','IN','AU','VN'];
+  var countries=['US','CA','UK','DE','ES','BR','MX','AU','VN','IN'];
   var cntyCards=[];
   countries.forEach(function(cnty){
     var cRows=citCnty.filter(function(r){return r.cnty===cnty}).sort(function(a,b){return b.citations-a.citations});
@@ -811,7 +811,7 @@ function renderDotcom(dc){
   // 전체 + 국가별 하나의 섹션
   var body=_dcVBar(dc,false);
   // 국가별 세로 막대그래프 (항상 표시, 2개씩 1행)
-  var countries=['US','CA','UK','DE','ES','BR','MX','IN','AU','VN'];
+  var countries=['US','CA','UK','DE','ES','BR','MX','AU','VN','IN'];
   var cntyCards=[];
   countries.forEach(function(cnty){
     var d=_dotcomByCnty[cnty];
@@ -827,7 +827,7 @@ function renderDotcom(dc){
 }
 
 function applyFilter(){
-  var filter={};var allCodes=['US','CA','UK','DE','ES','MX','BR','IN','AU','VN'];
+  var filter={};var allCodes=['US','CA','UK','DE','ES','MX','BR','AU','VN','IN'];
   document.querySelectorAll('#filter-layer .fl-chk[data-filter="country"]').forEach(function(c){filter[c.value]=c.checked});
   var enabled=allCodes.filter(function(c){return filter[c]!==false});
   var allSelected=enabled.length===allCodes.length;

@@ -83,7 +83,7 @@ export function TotalSection({ total, totalInsight }) {
           textTransform: 'uppercase', fontFamily: FONT }}>
           LG GEO Visibility %
         </p>
-        <span style={{ fontSize: 11, color: '#94A3B8', fontFamily: FONT, textAlign: 'right' }}>Model : ChatGPT, ChatGPT Search, Gemini, Perplexity<br/>Subsidiary : US, CA, UK, DE, ES, BR, MX, IN, AU, VN</span>
+        <span style={{ fontSize: 11, color: '#94A3B8', fontFamily: FONT, textAlign: 'right' }}>Model : ChatGPT, ChatGPT Search, Gemini, Perplexity<br/>Subsidiary : US, CA, UK, DE, ES, BR, MX, AU, VN, IN</span>
       </div>
       <div style={{ display: 'flex', alignItems: 'flex-end', gap: 14, marginBottom: 16, flexWrap: 'wrap' }}>
         <div>

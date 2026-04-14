@@ -101,7 +101,7 @@ ${comparison}`
       return `[${cnty}]\n${lines}`
     }).join('\n')
     return `[섹션: 국가별 GEO Visibility 현황]
-모든 국가(US,CA,UK,DE,ES,BR,MX,IN,AU,VN)의 데이터를 빠짐없이 분석하세요.
+모든 국가(US,CA,UK,DE,ES,BR,MX,AU,VN,IN)의 데이터를 빠짐없이 분석하세요.
 
 ※ 아래 수치는 시트 원본값입니다. 이 값만 사용하세요. 절대 다른 수치를 만들지 마세요.
 
