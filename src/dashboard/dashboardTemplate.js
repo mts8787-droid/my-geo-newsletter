@@ -1853,7 +1853,7 @@ function switchCitCnty(btn){
 var _weeklyAll=${weeklyAll ? JSON.stringify(weeklyAll) : '{}'};
 var _products=${JSON.stringify(products.map(p => ({ id: p.id, bu: p.bu, kr: p.kr, en: p.en || p.kr, category: p.category || '', date: p.date || '', status: p.status, score: p.score || 0, prev: p.prev || 0, vsComp: p.vsComp || 0, compName: p.compName || '', compRatio: p.compRatio || 0, allScores: p.allScores || {} })))};
 var _productsCnty=${JSON.stringify(productsCnty || [])};
-var _unlaunchedMap=${JSON.stringify(unlaunchedMap)};
+var _unlaunchedMap=${JSON.stringify(ulMap)};
 // 제품 ID → unlaunched 시트 카테고리 코드 매핑
 var _PROD_TO_UL={'tv':'TV','monitor':'IT','audio':'AV','washer':'WM','fridge':'REF','dw':'DW','vacuum':'VC','cooking':'COOKING','rac':'RAC','aircare':'AIRCARE'};
 function _isUnlaunched(cnty,prodId){var code=_PROD_TO_UL[prodId]||prodId.toUpperCase();return!!_unlaunchedMap[cnty+'|'+code]}
