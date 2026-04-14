@@ -945,6 +945,11 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
             background: meta.productCardVersion === 'v2' ? LG_RED : '#1E293B',
             color: meta.productCardVersion === 'v2' ? '#FFF' : '#64748B',
             fontSize: 10, fontWeight: 700, fontFamily: FONT }}>V2 국가별</button>
+          <button onClick={() => setMeta(m => ({ ...m, productCardVersion: 'v3' }))} style={{
+            padding: '2px 8px', borderRadius: 4, border: 'none', cursor: 'pointer',
+            background: meta.productCardVersion === 'v3' ? LG_RED : '#1E293B',
+            color: meta.productCardVersion === 'v3' ? '#FFF' : '#64748B',
+            fontSize: 10, fontWeight: 700, fontFamily: FONT }}>V3 경쟁사</button>
         </div>
 
         {/* ── 콘텐츠 편집 ── */}

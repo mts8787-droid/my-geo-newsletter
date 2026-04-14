@@ -332,9 +332,85 @@ function productCardV2Html(p, lang = 'ko', opts = {}) {
     <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border:2px solid ${st.border};border-radius:8px;background:#FFFFFF;font-family:${EM_FONT};">
       <tr>
         <td style="padding:5px 6px 3px;white-space:nowrap;overflow:hidden;">
-          <span style="font-size:13px;font-weight:900;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-0.5px;">${escapeHtml(prodName)}</span>
-          <span style="font-size:15px;font-weight:900;color:#1A1A1A;font-family:${EM_FONT};">${p.score.toFixed(1)}<span style="font-size:10px;color:#94A3B8;">%</span></span>${momStr ? `&nbsp;${momStr}` : ''}
-          <span style="float:right;white-space:nowrap;"><span style="font-size:11px;font-weight:700;color:${ratioColor};font-family:${EM_FONT};">SS ${curRatio}%</span>&nbsp;<span style="display:inline-block;background:${st.bg};color:${st.color};border:1px solid ${st.border};border-radius:5px;padding:0px 4px;font-size:10px;font-weight:700;line-height:15px;font-family:${EM_FONT};vertical-align:middle;">${st.label}</span></span>
+          <span style="font-size:16px;font-weight:900;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-0.5px;">${escapeHtml(prodName)}</span>
+          <span style="font-size:18px;font-weight:900;color:#1A1A1A;font-family:${EM_FONT};">${p.score.toFixed(1)}<span style="font-size:11px;color:#94A3B8;">%</span></span>${momStr ? `&nbsp;${momStr}` : ''}
+          <span style="float:right;white-space:nowrap;"><span style="font-size:13px;font-weight:700;color:${ratioColor};font-family:${EM_FONT};">SS ${curRatio}%</span>&nbsp;<span style="display:inline-block;background:${st.bg};color:${st.color};border:1px solid ${st.border};border-radius:5px;padding:0px 4px;font-size:10px;font-weight:700;line-height:15px;font-family:${EM_FONT};vertical-align:middle;">${st.label}</span></span>
+        </td>
+      </tr>
+      <tr>
+        <td style="padding:2px 4px 6px;">
+          <table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;">
+            <tr>${countryBars}</tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </td>`
+}
+
+// ─── 제품 카드 V3 (국가별 + 경쟁사명 개별 표시) ──────────────────────────────────
+function productCardV3Html(p, lang = 'ko', opts = {}) {
+  const st = statusInfo(p.status, lang)
+  const d = delta(p.score, p.prev)
+  const curRatio = p.compRatio || Math.round(p.vsComp > 0 ? (p.score / p.vsComp) * 100 : 100)
+  const ratioColor = curRatio >= 100 ? '#15803D' : curRatio >= 80 ? '#E8910C' : '#BE123C'
+  const momColor = d > 0 ? '#16A34A' : d < 0 ? '#DC2626' : '#94A3B8'
+  const momArrow = d > 0 ? '▲' : d < 0 ? '▼' : ''
+  const momStr = p.prev != null && p.prev > 0
+    ? `<span style="font-size:12px;font-weight:700;color:${momColor};">${momArrow}${Math.abs(d).toFixed(1)}%p</span>`
+    : ''
+  const prodName = opts.prodNameFn ? opts.prodNameFn(p) : p.kr
+
+  const cntyData = (opts.productsCnty || []).filter(r => {
+    const prodId = (p.id || '').toLowerCase()
+    const rProd = (r.product || '').toLowerCase()
+    return rProd === prodId || rProd === (p.category || '').toLowerCase() || rProd === (p.kr || '').toLowerCase()
+  })
+  const ALL_COUNTRIES = ['US','CA','UK','DE','ES','BR','MX','AU','VN','IN']
+  const cntyMap = {}
+  cntyData.forEach(r => { cntyMap[r.country] = r })
+  const maxCnty = Math.max(...ALL_COUNTRIES.map(c => cntyMap[c]?.score || 0), 1)
+  const BAR_H = 28
+  const CNTY_3 = { US:'미국', CA:'캐나다', UK:'영국', DE:'독일', ES:'스페인', BR:'브라질', MX:'멕시코', AU:'호주', VN:'베트남', IN:'인도' }
+  function cn3(c) { const n = CNTY_3[c] || cntyKr(c); return n.length > 3 ? n.slice(0,3) : n }
+  function ssShort(name) { if (!name) return ''; return name.replace(/Samsung/gi,'SS').replace(/삼성/g,'SS').slice(0,6) }
+
+  const countryBars = ALL_COUNTRIES.map(c => {
+    const r = cntyMap[c]
+    if (!r || r.score <= 0) return `<td style="vertical-align:bottom;text-align:center;padding:0 1px;width:10%;">
+      <table border="0" cellpadding="0" cellspacing="0" align="center" style="width:100%;">
+        <tr><td height="${BAR_H}" style="font-size:0;">&nbsp;</td></tr>
+        <tr><td style="font-size:10px;color:#CBD5E1;text-align:center;">—</td></tr>
+        <tr><td style="font-size:10px;color:#94A3B8;text-align:center;letter-spacing:-1px;">${cn3(c)}</td></tr>
+        <tr><td style="font-size:0;height:10px;">&nbsp;</td></tr>
+      </table>
+    </td>`
+    const cRatio = r.compScore > 0 ? Math.round(r.score / r.compScore * 100) : 100
+    const cStatus = cRatio >= 100 ? 'lead' : cRatio >= 80 ? 'behind' : 'critical'
+    const barColor = cStatus === 'lead' ? '#15803D' : cStatus === 'behind' ? '#E8910C' : '#BE123C'
+    const barH = Math.max(3, Math.round(r.score / maxCnty * BAR_H))
+    const spacer = BAR_H - barH
+    const compName = ssShort(r.compName)
+    const compRatio = r.compScore > 0 ? `${cRatio}%` : ''
+    return `<td style="vertical-align:bottom;text-align:center;padding:0 1px;width:10%;">
+      <table border="0" cellpadding="0" cellspacing="0" align="center" style="width:100%;">
+        ${spacer > 0 ? `<tr><td height="${spacer}" style="font-size:0;">&nbsp;</td></tr>` : ''}
+        <tr><td height="${barH}" style="font-size:0;"><table border="0" cellpadding="0" cellspacing="0" align="center"><tr><td width="16" height="${barH}" style="background:${barColor};border-radius:2px 2px 0 0;font-size:0;">&nbsp;</td></tr></table></td></tr>
+        <tr><td style="font-size:10px;font-weight:700;color:${barColor};font-family:${EM_FONT};text-align:center;padding-top:1px;">${r.score.toFixed(0)}</td></tr>
+        <tr><td style="font-size:10px;font-weight:700;color:${barColor};font-family:${EM_FONT};text-align:center;letter-spacing:-1px;">${cn3(c)}</td></tr>
+        <tr><td style="font-size:10px;color:#94A3B8;font-family:${EM_FONT};text-align:center;white-space:nowrap;letter-spacing:-0.5px;">${compName}<br/>${compRatio}</td></tr>
+      </table>
+    </td>`
+  }).join('')
+
+  return `
+  <td width="33%" style="padding:3px;vertical-align:top;">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border:2px solid ${st.border};border-radius:8px;background:#FFFFFF;font-family:${EM_FONT};">
+      <tr>
+        <td style="padding:5px 6px 3px;white-space:nowrap;overflow:hidden;">
+          <span style="font-size:16px;font-weight:900;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-0.5px;">${escapeHtml(prodName)}</span>
+          <span style="font-size:18px;font-weight:900;color:#1A1A1A;font-family:${EM_FONT};">${p.score.toFixed(1)}<span style="font-size:11px;color:#94A3B8;">%</span></span>${momStr ? `&nbsp;${momStr}` : ''}
+          <span style="float:right;white-space:nowrap;"><span style="font-size:13px;font-weight:700;color:${ratioColor};font-family:${EM_FONT};">SS ${curRatio}%</span>&nbsp;<span style="display:inline-block;background:${st.bg};color:${st.color};border:1px solid ${st.border};border-radius:5px;padding:0px 4px;font-size:10px;font-weight:700;line-height:15px;font-family:${EM_FONT};vertical-align:middle;">${st.label}</span></span>
         </td>
       </tr>
       <tr>
@@ -360,10 +436,12 @@ function buSectionHtml(buKey, buProducts, globalMax, globalMin, lang = 'ko', opt
   }
 
   const cardVersion = opts.productCardVersion || 'v1'
+  const cardFn = cardVersion === 'v3' ? productCardV3Html
+    : cardVersion === 'v2' ? productCardV2Html : null
   const rowsHtml = rows.map(row => `
     <tr>
       ${row.map(p => p
-        ? (cardVersion === 'v2' ? productCardV2Html(p, lang, opts) : productCardHtml(p, globalMax, globalMin, lang, opts))
+        ? (cardFn ? cardFn(p, lang, opts) : productCardHtml(p, globalMax, globalMin, lang, opts))
         : '<td width="33%" style="padding:5px;"></td>'
       ).join('')}
     </tr>`).join('')
