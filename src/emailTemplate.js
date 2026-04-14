@@ -295,26 +295,33 @@ function productCardV2Html(p, lang = 'ko', opts = {}) {
   const maxCnty = Math.max(...ALL_COUNTRIES.map(c => cntyMap[c]?.score || 0), 1)
   const BAR_H = 32
 
+  // 3글자 국가명 (장평 축소로 좁은 셀에 맞춤)
+  const CNTY_3 = { US:'미국', CA:'캐나다', UK:'영국', DE:'독일', ES:'스페인', BR:'브라질', MX:'멕시코', AU:'호주', VN:'베트남', IN:'인도' }
+  function cn3(c) { const n = CNTY_3[c] || cntyKr(c); return n.length > 3 ? n.slice(0,3) : n }
+
+  // 순서: 그래프 → 점수 → 국가명 → 경쟁비
   const countryBars = ALL_COUNTRIES.map(c => {
     const r = cntyMap[c]
     if (!r || r.score <= 0) return `<td style="vertical-align:bottom;text-align:center;padding:0 1px;width:10%;">
       <table border="0" cellpadding="0" cellspacing="0" align="center" style="width:100%;">
-        <tr><td height="${BAR_H}" style="font-size:0;">&nbsp;</td></tr>
+        ${BAR_H > 0 ? `<tr><td height="${BAR_H}" style="font-size:0;">&nbsp;</td></tr>` : ''}
         <tr><td style="font-size:10px;color:#CBD5E1;font-family:${EM_FONT};text-align:center;">—</td></tr>
-        <tr><td style="font-size:10px;color:#94A3B8;font-family:${EM_FONT};text-align:center;">${cntyKr(c).slice(0,2)}</td></tr>
+        <tr><td style="font-size:10px;color:#94A3B8;font-family:${EM_FONT};text-align:center;white-space:nowrap;transform:scaleX(0.85);display:block;">${cn3(c)}</td></tr>
+        <tr><td style="font-size:10px;color:#CBD5E1;font-family:${EM_FONT};text-align:center;">—</td></tr>
       </table>
     </td>`
-    const cStatus = r.compScore > 0 ? (r.score / r.compScore * 100 >= 100 ? 'lead' : r.score / r.compScore * 100 >= 80 ? 'behind' : 'critical') : 'lead'
+    const cRatio = r.compScore > 0 ? Math.round(r.score / r.compScore * 100) : 100
+    const cStatus = cRatio >= 100 ? 'lead' : cRatio >= 80 ? 'behind' : 'critical'
     const barColor = cStatus === 'lead' ? '#15803D' : cStatus === 'behind' ? '#E8910C' : '#BE123C'
     const barH = Math.max(3, Math.round(r.score / maxCnty * BAR_H))
     const spacer = BAR_H - barH
-    const compTxt = r.compScore > 0 ? `${Math.round(r.score / r.compScore * 100)}%` : ''
+    const compTxt = r.compScore > 0 ? `${cRatio}%` : ''
     return `<td style="vertical-align:bottom;text-align:center;padding:0 1px;width:10%;">
       <table border="0" cellpadding="0" cellspacing="0" align="center" style="width:100%;">
-        <tr><td style="font-size:10px;font-weight:700;color:${barColor};font-family:${EM_FONT};text-align:center;">${r.score.toFixed(0)}</td></tr>
         ${spacer > 0 ? `<tr><td height="${spacer}" style="font-size:0;">&nbsp;</td></tr>` : ''}
         <tr><td height="${barH}" style="font-size:0;"><table border="0" cellpadding="0" cellspacing="0" align="center"><tr><td width="16" height="${barH}" style="background:${barColor};border-radius:2px 2px 0 0;font-size:0;">&nbsp;</td></tr></table></td></tr>
-        <tr><td style="font-size:10px;font-weight:700;color:${barColor};font-family:${EM_FONT};text-align:center;padding-top:1px;">${cntyKr(c).slice(0,2)}</td></tr>
+        <tr><td style="font-size:10px;font-weight:700;color:${barColor};font-family:${EM_FONT};text-align:center;padding-top:1px;">${r.score.toFixed(0)}</td></tr>
+        <tr><td style="font-size:10px;font-weight:700;color:${barColor};font-family:${EM_FONT};text-align:center;white-space:nowrap;"><span style="display:inline-block;transform:scaleX(0.82);font-family:${EM_FONT};">${cn3(c)}</span></td></tr>
         <tr><td style="font-size:10px;color:#94A3B8;font-family:${EM_FONT};text-align:center;">${compTxt}</td></tr>
       </table>
     </td>`
