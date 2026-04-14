@@ -185,7 +185,7 @@ function svgMultiLine(brandData, labels, w, h) {
 }
 
 // ─── 경쟁사 트렌드 섹션 ────────────────────────────────────────────────────
-function trendDetailHtml(products, weeklyAll, wLabels, t, lang) {
+function trendDetailHtml(products, weeklyAll, wLabels, t, lang, ulMap) {
   if (!weeklyAll || !Object.keys(weeklyAll).length) return ''
   const BU_ORDER = ['MS', 'HS', 'ES']
 
@@ -1324,7 +1324,7 @@ export function generateDashboardHTML(meta, total, products, citations, dotcom, 
     noticeHtml,
     meta.showTotal !== false ? heroHtml(total, meta, t, lang) : '',
     meta.showProducts !== false ? productSectionHtml(products, meta, t, lang, wLabels, ulMap) : '',
-    `<div id="trend-container">${trendDetailHtml(products, weeklyAll, wLabels, t, lang)}</div>`,
+    `<div id="trend-container">${trendDetailHtml(products, weeklyAll, wLabels, t, lang, ulMap)}</div>`,
     meta.showCnty !== false ? countrySectionHtml(productsCnty, meta, t, lang) : '',
   ].join('')
   // Citation 탭은 iframe으로 별도 사이테이션 페이지를 가져옴
