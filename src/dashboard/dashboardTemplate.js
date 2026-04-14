@@ -484,7 +484,11 @@ function countrySectionHtml(productsCnty, meta, t, lang) {
   // ── View 2: 국가별 (By Country) ──
   const countryMap = new Map()
   productsCnty.forEach(r => { if (!countryMap.has(r.country)) countryMap.set(r.country, []); countryMap.get(r.country).push(r) })
-  const byCountryHtml = [...countryMap.entries()].map(([cnty, rows]) => {
+  const _CORD = ['US','CA','UK','DE','ES','BR','MX','AU','VN','IN']
+  const sortedCountries = _CORD.filter(c => countryMap.has(c)).concat([...countryMap.keys()].filter(c => !_CORD.includes(c)))
+  const byCountryHtml = sortedCountries.map(cnty => {
+    const rows = countryMap.get(cnty)
+    if (!rows) return ''
     const maxScore = Math.max(...rows.map(r => Math.max(r.score, r.compScore)), 1)
     const bars = rows.map(r => cntyColHtml(r, maxScore, r.product)).join('')
     return `<div class="cnty-product" data-group-country="${cnty}"><div class="bu-header"><span class="bu-label">${cntyFullName(cnty)}</span></div><div class="vbar-chart">${bars}</div></div>`

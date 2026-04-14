@@ -13,6 +13,11 @@ function escapeHtml(str) {
   return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')
 }
 
+const COUNTRY_ORDER = ['US','CA','UK','DE','ES','BR','MX','AU','VN','IN']
+function sortCountries(keys) {
+  return COUNTRY_ORDER.filter(c => keys.includes(c)).concat(keys.filter(c => !COUNTRY_ORDER.includes(c)))
+}
+
 const COUNTRY_FULL = {
   US: 'USA', CA: 'Canada', UK: 'UK', GB: 'UK',
   DE: 'Germany', ES: 'Spain', FR: 'France', IT: 'Italy',
@@ -99,7 +104,7 @@ function buildCountryTotalsTable(countryTotals, countryTotalsPrev, lang) {
   const t = lang === 'en'
     ? { title: 'Monthly Visibility — Country Totals (Sheet Values)', country: 'Country', lg: 'LG (%)', comp: 'Comp (%)', ratio: 'vs Comp', mom: 'MoM(%p)' }
     : { title: '국가별 종합 (시트 합계 직접 사용)', country: '국가', lg: 'LG (%)', comp: '경쟁사 (%)', ratio: '경쟁비', mom: 'MoM(%p)' }
-  const countries = Object.keys(countryTotals).sort()
+  const countries = sortCountries(Object.keys(countryTotals))
   const rows = countries.map(c => {
     const cur = countryTotals[c]
     const prev = (countryTotalsPrev || {})[c]
@@ -158,7 +163,7 @@ function buildVisibilityTable(productsCnty, productsCntyPrev, lang, productsTTL)
     dataMap[r.product][r.country] = r
   })
 
-  const countries = Array.from(countrySet).sort()
+  const countries = sortCountries(Array.from(countrySet))
   const products = Array.from(productSet).sort((a, b) => productSortKey(a) - productSortKey(b))
 
   if (!products.length || !countries.length) {
@@ -376,7 +381,7 @@ function buildCitationCntyTable(citationsCnty, lang) {
     if (!cntyMap[r.cnty]) cntyMap[r.cnty] = []
     cntyMap[r.cnty].push(r)
   })
-  const countries = Object.keys(cntyMap).sort()
+  const countries = sortCountries(Object.keys(cntyMap))
   if (!countries.length) return ''
   const t = lang === 'en'
     ? { title: 'Citation by Country (Top 5 Domains)', country: 'Country', total: 'Total' }

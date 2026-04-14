@@ -637,7 +637,8 @@ function countryVisibilitySectionHtml(productsCnty, meta, lang, total) {
     cntyMap.get(row.country).push(row)
   })
 
-  const countries = [...cntyMap.keys()]
+  const CNTY_ORDER = ['US','CA','UK','DE','ES','BR','MX','AU','VN','IN']
+  const countries = CNTY_ORDER.filter(c => cntyMap.has(c)).concat([...cntyMap.keys()].filter(c => !CNTY_ORDER.includes(c)))
   const cards = countries.map(cnty => countryCardHtml(cnty, cntyMap.get(cnty), lang, countryTotals))
 
   // 2개씩 한 행에 배치
@@ -776,7 +777,8 @@ function citationCntyTableHtml(citationsCnty, lang) {
     cntyMap.get(row.cnty).push(row)
   })
 
-  const countries = [...cntyMap.keys()]
+  const _CO = ['US','CA','UK','DE','ES','BR','MX','AU','VN','IN']
+  const countries = _CO.filter(c => cntyMap.has(c)).concat([...cntyMap.keys()].filter(c => !_CO.includes(c)))
   if (!countries.length) return ''
 
   const RANK_COUNT = 10
