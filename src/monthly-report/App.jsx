@@ -6,12 +6,7 @@ import { loadCache, saveCache } from '../shared/cache.js'
 import { fetchSnapshots, postSnapshot, updateSnapshot, deleteSnapshot, fetchSyncData } from '../shared/api.js'
 import { resolveDataForLang } from '../shared/utils.js'
 import { computeCategoryStats, extractMonthFromPeriod } from '../shared/trackerCategoryStats.js'
-import { parseKPISheet } from '../tracker/utils/sheetParser.js'
-import * as XLSX from 'xlsx-js-style'
 import Sidebar from '../shared/Sidebar.jsx'
-
-const TRACKER_SHEET_ID = '1lAzhlYJIjHVqDeywD3YMR1E9qf2LlDohFc0r6SAnVaE'
-const TRACKER_SHEET_NAME = '파싱시트'
 
 const MODE = 'monthly-report'
 const STORAGE_KEY = 'geo-monthly-report-cache'
@@ -146,8 +141,12 @@ export default function App() {
         }
       } catch {}
       try {
+        const [{ parseKPISheet }, XLSX] = await Promise.all([
+          import('../tracker/utils/sheetParser.js'),
+          import('xlsx-js-style'),
+        ])
         const rid = `${Date.now()}_${Math.random().toString(36).slice(2,8)}`
-        const url = `/gsheets-proxy/spreadsheets/d/${TRACKER_SHEET_ID}/gviz/tq?sheet=${encodeURIComponent(TRACKER_SHEET_NAME)}&tqx=out:csv;reqId:${rid}&headers=1`
+        const url = `/gsheets-proxy/spreadsheets/d/1lAzhlYJIjHVqDeywD3YMR1E9qf2LlDohFc0r6SAnVaE/gviz/tq?sheet=${encodeURIComponent('파싱시트')}&tqx=out:csv;reqId:${rid}&headers=1`
         const res = await fetch(url, { cache: 'no-store' })
         if (!res.ok) return
         const csv = await res.text()
