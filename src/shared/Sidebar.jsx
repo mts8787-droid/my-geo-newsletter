@@ -72,7 +72,17 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
       if (mode === 'dashboard') {
         try {
           const currentSync = await fetchSyncData(mode) || {}
-          saveSyncData(mode, { ...currentSync, meta: metaKo, total: latest.total })
+          const latestExtra = latest.extra || extra || {}
+          saveSyncData(mode, {
+            ...currentSync,
+            meta: metaKo,
+            total: latest.total,
+            weeklyPR: latestExtra.weeklyPR || currentSync.weeklyPR,
+            weeklyPRLabels: latestExtra.weeklyPRLabels || currentSync.weeklyPRLabels,
+            weeklyBrandPrompt: latestExtra.weeklyBrandPrompt || currentSync.weeklyBrandPrompt,
+            weeklyBrandPromptLabels: latestExtra.weeklyBrandPromptLabels || currentSync.weeklyBrandPromptLabels,
+            appendixPrompts: latestExtra.appendixPrompts || currentSync.appendixPrompts,
+          })
         } catch {}
       }
       const koUrl = `${window.location.origin}${data.urls.ko}`

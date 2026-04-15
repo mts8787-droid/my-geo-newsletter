@@ -1700,21 +1700,36 @@ function switchPeriodMode(mode){
   document.querySelectorAll('.trend-monthly').forEach(function(el){el.style.display=mode==='monthly'?'':'none'});
   document.querySelectorAll('.prod-wow').forEach(function(el){el.style.display=mode==='weekly'?'':'none'});
   document.querySelectorAll('.prod-mom').forEach(function(el){el.style.display=mode==='monthly'?'':'none'});
-  // 카드 점수/MoM/경쟁비 동적 전환
+  // 카드 점수/MoM/경쟁비/신호등 동적 전환
   document.querySelectorAll('.prod-card').forEach(function(card){
     var sc=mode==='monthly'?card.getAttribute('data-ms'):card.getAttribute('data-ws');
-    var ratio=mode==='monthly'?card.getAttribute('data-mr'):card.getAttribute('data-wr');
+    var ratio=parseFloat(mode==='monthly'?card.getAttribute('data-mr'):card.getAttribute('data-wr'));
     var mom=mode==='monthly'?card.getAttribute('data-mmom'):card.getAttribute('data-wmom');
+    // 점수 업데이트
     var scoreEl=card.querySelector('.prod-score');
     if(scoreEl&&sc)scoreEl.innerHTML=sc+'<small>%</small>';
+    // 경쟁비 업데이트
     var compEl=card.querySelector('.prod-comp-pct');
-    if(compEl&&ratio)compEl.textContent=Math.min(parseInt(ratio),120)+'%';
-    // MoM 업데이트
+    if(compEl&&!isNaN(ratio))compEl.textContent=Math.min(Math.round(ratio),120)+'%';
+    // 신호등 색상 업데이트
+    var status=ratio>=100?'lead':ratio>=80?'behind':'critical';
+    var colors={lead:{border:'#BBF7D0',bg:'#ECFDF5',color:'#15803D'},behind:{border:'#FDE68A',bg:'#FFFBEB',color:'#D97706'},critical:{border:'#FECDD3',bg:'#FFF1F2',color:'#BE123C'}};
+    var c=colors[status];
+    card.style.borderColor=c.border;
+    var badge=card.querySelector('.prod-badge');
+    if(badge){badge.style.background=c.bg;badge.style.color=c.color;badge.style.borderColor=c.border}
+    // 경쟁비 바 색상
+    var compBar=card.querySelector('.prod-comp-bar');
+    if(compBar)compBar.style.background=c.color;
+    var compPctEl=card.querySelector('.prod-comp-pct');
+    if(compPctEl)compPctEl.style.color=c.color;
+    // 그래프 sparkColor는 CSS로 직접 변경 어려움 (SVG) — 서버사이드에서 결정
+    // MoM/WoW 업데이트
     var momEl=mode==='monthly'?card.querySelector('.prod-mom'):card.querySelector('.prod-wow');
     if(momEl&&mom){
-      var mv=parseFloat(mom);var arrow=mv>0?'▲':mv<0?'▼':'─';var color=mv>0?'#22C55E':mv<0?'#EF4444':'#94A3B8';
+      var mv=parseFloat(mom);var arrow=mv>0?'▲':mv<0?'▼':'─';var clr=mv>0?'#22C55E':mv<0?'#EF4444':'#94A3B8';
       momEl.innerHTML=(mode==='monthly'?'MoM ':'WoW ')+arrow+' '+Math.abs(mv).toFixed(1)+'%p';
-      momEl.style.color=color;
+      momEl.style.color=clr;
     }
   });
   onFilterChange();
