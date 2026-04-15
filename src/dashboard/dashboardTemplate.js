@@ -342,10 +342,13 @@ function productSectionHtml(products, meta, t, lang, wLabels, ulMap, monthlyVis,
         if (last > wComp) wComp = last
       })
       const mComp = p.vsComp || 0
-      const wRatio = wComp > 0 ? Math.round((wScore / wComp) * 100) : (mComp > 0 ? Math.round((wScore / mComp) * 100) : 100)
-      const mRatio = mComp > 0 ? Math.round((mScore / mComp) * 100) : 100
+      // 소수점까지 반영한 비율 (100% 경계 정확 판별)
+      const wRatioExact = wComp > 0 ? (wScore / wComp * 100) : (mComp > 0 ? (wScore / mComp * 100) : 100)
+      const mRatioExact = mComp > 0 ? (mScore / mComp * 100) : 100
+      const wRatio = Math.round(wRatioExact * 10) / 10 // 소수 1자리
+      const mRatio = Math.round(mRatioExact * 10) / 10
       const latestRatio = wRatio
-      const latestStatus = latestRatio >= 100 ? 'lead' : latestRatio >= 80 ? 'behind' : 'critical'
+      const latestStatus = wRatioExact >= 100 ? 'lead' : wRatioExact >= 80 ? 'behind' : 'critical'
       const st = statusInfo(latestStatus, lang)
       // WoW: 마지막 2주 차이
       const wLast = weekly.length >= 2 ? weekly[weekly.length - 1] : null
@@ -353,7 +356,7 @@ function productSectionHtml(products, meta, t, lang, wLabels, ulMap, monthlyVis,
       const wd = (wLast != null && wPrev != null) ? +(wLast - wPrev).toFixed(1) : null
       const wArrow = wd > 0 ? '▲' : wd < 0 ? '▼' : '─'
       const wColor = wd > 0 ? '#22C55E' : wd < 0 ? '#EF4444' : '#94A3B8'
-      const sparkColor = p.status === 'critical' ? '#BE123C' : p.status === 'behind' ? '#D97706' : '#15803D'
+      const sparkColor = latestStatus === 'critical' ? '#BE123C' : latestStatus === 'behind' ? '#D97706' : '#15803D'
       // MoM: monthlyVis에서 BU별 월간 트렌드 구성 (제품별 월간 데이터 없으면 BU 대리)
       const MLNAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
       const enMonthMap = {jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11}
