@@ -1188,7 +1188,7 @@ function parsePRVisibility(rows, mode) {
 
   // 데이터 라벨 추출 (월 또는 주차)
   const MONTH_RE = /^(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|[0-9]{1,2}월)/i
-  const WEEK_RE = /^w\d+$/i
+  const WEEK_RE = /^w\d+/i
   const dataLabels = []
   // 헤더 행 및 주변 행(0~headerIdx)에서 라벨 탐색
   const labelSearchRows = [headerIdx]
@@ -1198,7 +1198,7 @@ function parsePRVisibility(rows, mode) {
     const searchRow = rows[ri]
     if (!searchRow) continue
     for (let i = dataStartCol; i < searchRow.length; i++) {
-      const h = String(searchRow[i] || '').trim()
+      const h = String(searchRow[i] || '').split(/\n/)[0].trim()
       if (h && (MONTH_RE.test(h) || WEEK_RE.test(h))) dataLabels.push({ col: i, label: h })
     }
   }
@@ -1260,10 +1260,10 @@ function parseBrandPromptVisibility(rows, mode) {
   dataStartCol = Math.max(stakeholderCol, typeCol, countryCol, topicCol) + 1
 
   const MONTH_RE = /^(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|[0-9]{1,2}월)/i
-  const WEEK_RE = /^w\d+$/i
+  const WEEK_RE = /^w\d+/i
   const dataLabels = []
   for (let i = dataStartCol; i < header.length; i++) {
-    const h = String(header[i] || '').trim()
+    const h = String(header[i] || '').split(/\n/)[0].trim()
     if (h && (MONTH_RE.test(h) || WEEK_RE.test(h))) dataLabels.push({ col: i, label: h })
   }
 
