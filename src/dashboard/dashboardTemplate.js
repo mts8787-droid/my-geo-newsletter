@@ -261,12 +261,9 @@ function monthlyTrendDetailHtml(products, monthlyVis, t, lang, ulMap) {
   const enMonthMap = {jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11}
   function parseMIdx(d) { const km = String(d).match(/(\d{1,2})월/); if (km) return parseInt(km[1])-1; const em = String(d).match(/(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i); return em ? enMonthMap[em[1].toLowerCase()] : -1 }
 
-  // 월 라벨 추출 (정렬)
-  const allMonths = new Set()
-  monthlyVis.forEach(r => { const mi = parseMIdx(r.date); if (mi >= 0) allMonths.add(mi) })
-  const sortedMonths = [...allMonths].sort((a, b) => a - b)
-  const mLabels = sortedMonths.map(mi => MNAMES[mi])
-  if (!mLabels.length) return ''
+  // 12개월 고정 (Jan~Dec)
+  const sortedMonths = [0,1,2,3,4,5,6,7,8,9,10,11]
+  const mLabels = MNAMES.slice()
 
   const buGroups = BU_ORDER.map(bu => {
     const prods = products.filter(p => p.bu === bu)
@@ -1482,7 +1479,7 @@ export function generateDashboardHTML(meta, total, products, citations, dotcom, 
     commonTop,
     meta.showProducts !== false ? productSectionHtml(products, meta, t, lang, wLabels, ulMap, opts?.monthlyVis || [], weeklyAll) : '',
     `<div id="trend-container">${trendDetailHtml(products, weeklyAll, wLabels, t, lang, ulMap)}</div>`,
-    meta.showCnty !== false ? countrySectionHtml(weeklyProductsCnty.length ? weeklyProductsCnty : productsCnty, meta, t, lang) : '',
+    meta.showCnty !== false ? countrySectionHtml(weeklyProductsCnty, meta, t, lang) : '',
   ].join('')
 
   // 월간 콘텐츠 (제품 카드를 월간 데이터로 렌더링)

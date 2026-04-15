@@ -590,7 +590,7 @@ function parseWeekly(rows, div) {
     const s = String(c || '').trim().toLowerCase()
     return s === 'category' || s === 'product'
   })
-  const countryIdx = header.findIndex(c => String(c || '').trim().toLowerCase() === 'country')
+  const countryIdx = header.findIndex(c => { const s = String(c || '').trim().toLowerCase(); return s === 'country' || s === 'county' })
   const brandIdx = header.findIndex(c => String(c || '').trim().toLowerCase() === 'brand')
   const lgIdx = header.findIndex(c => String(c || '').trim().toUpperCase() === 'LG')
 
