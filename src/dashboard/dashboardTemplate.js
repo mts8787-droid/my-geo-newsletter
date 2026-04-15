@@ -1363,18 +1363,23 @@ export function generateDashboardHTML(meta, total, products, citations, dotcom, 
   ].join('')
 
   // 월간 콘텐츠 (제품 카드를 월간 데이터로 렌더링)
-  const monthlyProducts = products.map(p => ({
-    ...p,
-    score: p.monthlyScore || p.score,
-    prev: p.monthlyPrev || p.prev,
-    weekly: (p.monthlyScores || []).map(m => m.score),
-    status: (() => {
-      const ms = p.monthlyScore || p.score
-      const mc = p.vsComp || 0
-      const r = mc > 0 ? ms / mc * 100 : 100
-      return r >= 100 ? 'lead' : r >= 80 ? 'behind' : 'critical'
-    })(),
-  }))
+  const monthlyProducts = products.map(p => {
+    const ms = p.monthlyScore || p.score
+    const mp = p.monthlyPrev || p.prev
+    const mc = p.vsComp || 0
+    const r = mc > 0 ? ms / mc * 100 : 100
+    return {
+      ...p,
+      score: ms,
+      prev: mp,
+      weeklyScore: ms,      // productSectionHtml이 wScore = p.weeklyScore를 사용하므로 월간값으로 덮어쓰기
+      weeklyPrev: mp,
+      monthlyScore: ms,
+      monthlyPrev: mp,
+      weekly: (p.monthlyScores || []).map(m => m.score),
+      status: r >= 100 ? 'lead' : r >= 80 ? 'behind' : 'critical',
+    }
+  })
   const monthlyLabels = (products[0]?.monthlyScores || []).map(m => {
     const MNAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
     const km = String(m.date).match(/(\d{1,2})월/)
