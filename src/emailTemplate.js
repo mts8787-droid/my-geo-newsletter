@@ -632,7 +632,7 @@ function countryCardHtml(cntyCode, rows, lang, countryTotals) {
         ${spacerH > 0 ? `<tr><td height="${spacerH}" style="font-size:0;line-height:0;">&nbsp;</td></tr>` : ''}
         <tr><td height="${barH}" style="font-size:0;line-height:0;"><table border="0" cellpadding="0" cellspacing="0" align="center"><tr><td width="18" height="${barH}" style="background:${barColor};border-radius:3px 3px 0 0;font-size:0;">&nbsp;</td></tr></table></td></tr>
         <tr><td style="font-size:11px;font-weight:800;color:${barColor};font-family:${EM_FONT};padding-top:2px;white-space:nowrap;">${r.score.toFixed(1)}</td></tr>
-        <tr><td style="font-size:10px;font-weight:700;color:${barColor};font-family:${EM_FONT};padding-top:1px;white-space:nowrap;">${escapeHtml(r.product)}</td></tr>
+        <tr><td style="font-size:10px;font-weight:700;color:${barColor};font-family:${EM_FONT};padding-top:1px;white-space:nowrap;">${escapeHtml(r.product === '식기세척기' ? '식세기' : r.product)}</td></tr>
         <tr><td style="font-size:10px;color:#94A3B8;font-family:${EM_FONT};padding-top:1px;white-space:nowrap;line-height:1.3;">${ssName(r.compName)}<br/>${ratio}%</td></tr>
       </table>
     </td>`
