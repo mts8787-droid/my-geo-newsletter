@@ -94,6 +94,60 @@ export function computeCategoryStats(data, month) {
   }).sort((a, b) => categorySortKey(a.category) - categorySortKey(b.category))
 }
 
+// ─── 조직(stakeholder)별 진척 집계 ─────────────────────────────────────────
+const STAKEHOLDER_ORDER = ['MS', 'HS', 'ES', '고가혁', '브랜드', 'D2C', 'PR']
+function stakeholderSortKey(name) {
+  const idx = STAKEHOLDER_ORDER.indexOf(name)
+  return idx >= 0 ? idx : 999
+}
+
+export function computeStakeholderStats(data, month) {
+  if (!data?.quantitativeGoals?.rows) return null
+  const goalRows = data.quantitativeGoals.rows
+  const actualMap = buildLookup(data.quantitativeResults?.rows)
+  const currentMonth = new Date().getMonth() + 1
+  const fallbackMonth = currentMonth >= 3 && currentMonth <= 12 ? `${currentMonth}월` : '3월'
+  let targetMonth = month || data._month || fallbackMonth
+  let monthIdx = MONTHS.indexOf(targetMonth)
+  if (monthIdx < 0) { targetMonth = '3월'; monthIdx = 0 }
+
+  const stakeholderNames = [...new Set(goalRows.map(g => g.stakeholder).filter(Boolean))]
+  const prevMonth = monthIdx > 0 ? MONTHS[monthIdx - 1] : null
+
+  return stakeholderNames.map(sh => {
+    const shGoals = goalRows.filter(g => g.stakeholder === sh)
+    let mAct = 0, mGoal = 0, cAct = 0, annualGoal = 0
+    shGoals.forEach(g => {
+      const key = taskKey(g)
+      const a = actualMap[key] || {}
+      const gv = typeof g.monthly?.[targetMonth] === 'number' ? g.monthly[targetMonth] : 0
+      const av = typeof a.monthly?.[targetMonth] === 'number' ? a.monthly[targetMonth] : 0
+      mGoal += gv
+      mAct += av
+      for (let i = 0; i <= monthIdx; i++) {
+        const m = MONTHS[i]
+        if (typeof a.monthly?.[m] === 'number') cAct += a.monthly[m]
+      }
+      MONTHS.forEach(m => {
+        if (typeof g.monthly?.[m] === 'number') annualGoal += g.monthly[m]
+      })
+    })
+    const monthRate = mGoal > 0 ? Math.round((mAct / mGoal) * 1000) / 10 : 0
+    const progressRate = annualGoal > 0 ? Math.round((cAct / annualGoal) * 1000) / 10 : 0
+    return {
+      stakeholder: sh,
+      taskCount: shGoals.length,
+      targetMonth,
+      monthRate,
+      monthActual: mAct,
+      monthGoal: mGoal,
+      progressRate,
+      cumActual: cAct,
+      annualGoal,
+    }
+  }).sort((a, b) => stakeholderSortKey(a.stakeholder) - stakeholderSortKey(b.stakeholder))
+}
+
 // meta.period에서 월 추출 (tracker MONTHS 형식 = '3월', '4월', ...)
 // 예: "2026년 3월" → "3월", "Mar 2026" → "3월"
 export function extractMonthFromPeriod(period) {

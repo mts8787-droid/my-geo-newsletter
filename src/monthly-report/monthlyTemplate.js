@@ -498,8 +498,47 @@ function buildTrackerSummaryTable(categoryStats, lang, period) {
   </table>`
 }
 
+function buildStakeholderTable(stakeholderStats, lang) {
+  if (!stakeholderStats || !stakeholderStats.length) return ''
+  const month = stakeholderStats[0]?.targetMonth || '3월'
+  const t = lang === 'en'
+    ? { title: `${month} Achievement by Organization`, org: 'Organization', tasks: 'Tasks', rate: 'Achievement', count: 'Actual/Goal', progress: 'YTD Progress' }
+    : { title: `${month} 조직별 달성 현황`, org: '조직', tasks: '과제수', rate: '달성률', count: '실적/목표', progress: '연간 진척률' }
+
+  function sigBg(rate) {
+    if (rate >= 80) return '#D1FAE5'
+    if (rate >= 50) return '#FEF3C7'
+    return '#FEE2E2'
+  }
+
+  const rows = stakeholderStats.map(s => {
+    return `<tr>
+      <td style="border:1px solid #999;padding:6px 10px;font-size:12px;font-weight:700;font-family:${FONT};background:#F5F5F5;">${escapeHtml(s.stakeholder)}</td>
+      <td style="border:1px solid #999;padding:6px 10px;font-size:12px;text-align:center;">${s.taskCount}</td>
+      <td style="border:1px solid #999;padding:6px 10px;font-size:12px;font-weight:700;text-align:center;background:${sigBg(s.monthRate)};">${(s.monthRate || 0).toFixed(0)}%</td>
+      <td style="border:1px solid #999;padding:6px 10px;font-size:12px;text-align:center;">${(s.monthActual || 0).toLocaleString()} / ${(s.monthGoal || 0).toLocaleString()}</td>
+      <td style="border:1px solid #999;padding:6px 10px;font-size:12px;font-weight:700;text-align:center;background:${sigBg(s.progressRate)};">${(s.progressRate || 0).toFixed(0)}%</td>
+      <td style="border:1px solid #999;padding:6px 10px;font-size:12px;text-align:center;">${(s.cumActual || 0).toLocaleString()} / ${(s.annualGoal || 0).toLocaleString()}</td>
+    </tr>`
+  }).join('')
+
+  return `
+  <h2 style="font-size:16px;font-weight:700;margin:16px 0 10px;font-family:${FONT};color:#000;">${t.title}</h2>
+  <table border="0" cellspacing="0" cellpadding="0" style="border-collapse:collapse;width:100%;font-family:${FONT};">
+    <thead><tr style="background:#E8E8E8;">
+      <th style="border:1px solid #999;padding:8px 10px;font-size:12px;font-weight:700;text-align:center;">${t.org}</th>
+      <th style="border:1px solid #999;padding:8px 10px;font-size:12px;font-weight:700;text-align:center;">${t.tasks}</th>
+      <th style="border:1px solid #999;padding:8px 10px;font-size:12px;font-weight:700;text-align:center;">${month} ${t.rate}</th>
+      <th style="border:1px solid #999;padding:8px 10px;font-size:12px;font-weight:700;text-align:center;">${t.count}</th>
+      <th style="border:1px solid #999;padding:8px 10px;font-size:12px;font-weight:700;text-align:center;">${t.progress}</th>
+      <th style="border:1px solid #999;padding:8px 10px;font-size:12px;font-weight:700;text-align:center;">${t.count}</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`
+}
+
 export function generateMonthlyReportHTML(meta, total, products, citations, dotcom = {}, lang = 'ko', productsCnty = [], citationsCnty = [], options = {}) {
-  const { productsCntyPrev = [], productsPrev = [], categoryStats = null } = options
+  const { productsCntyPrev = [], productsPrev = [], categoryStats = null, stakeholderStats = null } = options
 
   const title = lang === 'en' ? 'GEO Monthly Report' : 'GEO 월간 보고서'
   const period = meta.period || ''
@@ -557,6 +596,7 @@ body, table, td, th, h1, h2, p, span, div { font-family: ${FONT} !important; }
     ${buildDotcomTable(dotcom, lang)}
 
     ${buildTrackerSummaryTable(categoryStats, lang, period)}
+    ${buildStakeholderTable(stakeholderStats, lang)}
 
     <div style="margin-top:32px;padding-top:12px;border-top:1px solid #999;font-size:11px;color:#666;font-family:${FONT};">
       <p style="margin:0;">${lang === 'en' ? 'LG Electronics · D2C Digital Marketing Team' : 'LG전자 · D2C디지털마케팅팀'}</p>

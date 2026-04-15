@@ -5,17 +5,17 @@ import { INIT_META, INIT_TOTAL, INIT_PRODUCTS, INIT_DOTCOM, INIT_PRODUCTS_CNTY, 
 import { loadCache, saveCache } from '../shared/cache.js'
 import { fetchSnapshots, postSnapshot, updateSnapshot, deleteSnapshot, fetchSyncData } from '../shared/api.js'
 import { resolveDataForLang } from '../shared/utils.js'
-import { computeCategoryStats, extractMonthFromPeriod } from '../shared/trackerCategoryStats.js'
+import { computeCategoryStats, computeStakeholderStats, extractMonthFromPeriod } from '../shared/trackerCategoryStats.js'
 import Sidebar from '../shared/Sidebar.jsx'
 
 const MODE = 'monthly-report'
 const STORAGE_KEY = 'geo-monthly-report-cache'
 
 // ─── 뉴스레터 미리보기 (iframe) ──────────────────────────────────────────────
-function NewsletterPreview({ meta, total, products, citations, dotcom, productsCnty = [], citationsCnty = [], lang = 'ko', weeklyLabels, categoryStats }) {
+function NewsletterPreview({ meta, total, products, citations, dotcom, productsCnty = [], citationsCnty = [], lang = 'ko', weeklyLabels, categoryStats, stakeholderStats }) {
   const iframeRef = useRef(null)
   const html = useMemo(
-    () => generateEmailHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, { weeklyLabels, categoryStats }),
+    () => generateEmailHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, { weeklyLabels, categoryStats, stakeholderStats }),
     [meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels]
   )
 
@@ -52,9 +52,9 @@ function NewsletterPreview({ meta, total, products, citations, dotcom, productsC
 }
 
 // ─── HTML 코드 뷰어 ───────────────────────────────────────────────────────────
-function HtmlCodeViewer({ meta, total, products, citations, dotcom, productsCnty = [], citationsCnty = [], lang = 'ko', weeklyLabels, categoryStats }) {
+function HtmlCodeViewer({ meta, total, products, citations, dotcom, productsCnty = [], citationsCnty = [], lang = 'ko', weeklyLabels, categoryStats, stakeholderStats }) {
   const [copied, setCopied] = useState(false)
-  const html = useMemo(() => generateEmailHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, { weeklyLabels, categoryStats }), [meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, categoryStats])
+  const html = useMemo(() => generateEmailHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, { weeklyLabels, categoryStats, stakeholderStats }), [meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, categoryStats])
 
   async function handleCopy() {
     try {
@@ -118,6 +118,7 @@ export default function App() {
   const [weeklyLabels, setWeeklyLabels] = useState(cache?.weeklyLabels ?? null)
   const [weeklyAll, setWeeklyAll] = useState(cache?.weeklyAll ?? {})
   const [categoryStats, setCategoryStats] = useState(null)
+  const [stakeholderStats, setStakeholderStats] = useState(null)
   const [activeTab, setActiveTab] = useState('preview')
   const [previewLang, setPreviewLang] = useState('ko')
   const [snapshots,  setSnapshots]  = useState([])
@@ -137,7 +138,8 @@ export default function App() {
         const j = r.ok ? await r.json() : null
         if (j?.ok && j.data?.quantitativeGoals?.rows?.length) {
           const stats = computeCategoryStats(j.data, targetMonth)
-          if (stats?.length && !cancelled) { setCategoryStats(stats); return }
+          const shStats = computeStakeholderStats(j.data, targetMonth)
+          if (stats?.length && !cancelled) { setCategoryStats(stats); if (shStats?.length) setStakeholderStats(shStats); return }
         }
       } catch {}
       try {
@@ -155,7 +157,11 @@ export default function App() {
         const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' })
         const parsed = parseKPISheet(rows)
         const stats = computeCategoryStats(parsed, targetMonth)
-        if (stats?.length && !cancelled) setCategoryStats(stats)
+        if (stats?.length && !cancelled) {
+          setCategoryStats(stats)
+          const shStats = computeStakeholderStats(parsed, targetMonth)
+          if (shStats?.length) setStakeholderStats(shStats)
+        }
       } catch {}
     }
     load()
@@ -374,11 +380,11 @@ export default function App() {
           <div style={{ flex: 1, overflowY: 'auto', padding: '28px 36px',
             background: 'linear-gradient(180deg, #0A0F1C 0%, #0F172A 100%)' }}>
             <div style={{ maxWidth: 960, margin: '0 auto' }}>
-              <NewsletterPreview meta={meta} total={total} products={resolved.products} citations={resolved.citations} dotcom={dotcom} productsCnty={resolved.productsCnty} citationsCnty={resolved.citationsCnty} lang={previewLang} weeklyLabels={weeklyLabels} categoryStats={categoryStats} />
+              <NewsletterPreview meta={meta} total={total} products={resolved.products} citations={resolved.citations} dotcom={dotcom} productsCnty={resolved.productsCnty} citationsCnty={resolved.citationsCnty} lang={previewLang} weeklyLabels={weeklyLabels} categoryStats={categoryStats} stakeholderStats={stakeholderStats} />
             </div>
           </div>
         ) : (
-          <HtmlCodeViewer meta={meta} total={total} products={resolved.products} citations={resolved.citations} dotcom={dotcom} productsCnty={resolved.productsCnty} citationsCnty={resolved.citationsCnty} lang={previewLang} weeklyLabels={weeklyLabels} categoryStats={categoryStats} />
+          <HtmlCodeViewer meta={meta} total={total} products={resolved.products} citations={resolved.citations} dotcom={dotcom} productsCnty={resolved.productsCnty} citationsCnty={resolved.citationsCnty} lang={previewLang} weeklyLabels={weeklyLabels} categoryStats={categoryStats} stakeholderStats={stakeholderStats} />
         )}
         <div style={{ height: 28, borderTop: '1px solid #1E293B', background: 'rgba(15,23,42,0.95)',
           display: 'flex', alignItems: 'center', justifyContent: 'flex-end', padding: '0 16px', flexShrink: 0 }}>
