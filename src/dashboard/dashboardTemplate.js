@@ -320,7 +320,7 @@ function getULCntys(prodId, ulMap) {
 }
 function prodNameUL(p, ulMap) { const c = getULCntys(p.id || p.category, ulMap); return c.length ? `${p.kr}*` : p.kr }
 
-function productSectionHtml(products, meta, t, lang, wLabels, ulMap) {
+function productSectionHtml(products, meta, t, lang, wLabels, ulMap, monthlyVis) {
   if (!products.length) return ''
   const BU_ORDER = ['MS', 'HS', 'ES']
 
@@ -342,11 +342,20 @@ function productSectionHtml(products, meta, t, lang, wLabels, ulMap) {
       const wArrow = wd > 0 ? '▲' : wd < 0 ? '▼' : '─'
       const wColor = wd > 0 ? '#22C55E' : wd < 0 ? '#EF4444' : '#94A3B8'
       const sparkColor = p.status === 'critical' ? '#BE123C' : p.status === 'behind' ? '#D97706' : '#15803D'
-      // MoM: monthlyScores에서 월간 트렌드 구성
+      // MoM: monthlyVis에서 BU별 월간 트렌드 구성 (제품별 월간 데이터 없으면 BU 대리)
       const MLNAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
-      const ms = p.monthlyScores || []
+      const enMonthMap = {jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11}
+      function parseMIdx(d) { const km = String(d).match(/(\d{1,2})월/); if (km) return parseInt(km[1])-1; const em = String(d).match(/(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i); return em ? enMonthMap[em[1].toLowerCase()] : -1 }
+      // monthlyScores 우선, 없으면 monthlyVis의 BU TOTAL
+      let ms = (p.monthlyScores || [])
+      if (ms.length < 2 && monthlyVis.length > 0) {
+        const buRows = monthlyVis.filter(r => r.division === p.bu && (r.country === 'TOTAL' || r.country === 'TTL'))
+        const byMonth = {}
+        buRows.forEach(r => { const mi = parseMIdx(r.date); if (mi >= 0) byMonth[mi] = { date: r.date, score: r.lg, comp: r.comp } })
+        ms = Object.keys(byMonth).sort((a,b) => a - b).map(k => byMonth[k])
+      }
       const m4Labels = ms.length > 0
-        ? ms.map(m => { const em = String(m.date).match(/(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)/i); const km = String(m.date).match(/(\d{1,2})월/); return em ? em[1] : km ? MLNAMES[parseInt(km[1])-1] || m.date : m.date })
+        ? ms.map(m => { const mi = parseMIdx(m.date); return mi >= 0 ? MLNAMES[mi] : m.date })
         : ['M-3','M-2','M-1','M0']
       const m4Data = ms.length > 0 ? ms.map(m => m.score) : [null, null, null, p.score]
       const momD = ms.length >= 2 ? +(ms[ms.length-1].score - ms[ms.length-2].score).toFixed(1) : null
@@ -1321,7 +1330,7 @@ export function generateDashboardHTML(meta, total, products, citations, dotcom, 
   const visContent = [
     noticeHtml,
     meta.showTotal !== false ? heroHtml(total, meta, t, lang) : '',
-    meta.showProducts !== false ? productSectionHtml(products, meta, t, lang, wLabels, ulMap) : '',
+    meta.showProducts !== false ? productSectionHtml(products, meta, t, lang, wLabels, ulMap, opts?.monthlyVis || []) : '',
     `<div id="trend-container">${trendDetailHtml(products, weeklyAll, wLabels, t, lang, ulMap)}</div>`,
     meta.showCnty !== false ? countrySectionHtml(productsCnty, meta, t, lang) : '',
   ].join('')
