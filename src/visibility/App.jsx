@@ -139,15 +139,15 @@ export default function App() {
       if (d.productsPartial) {
         setProducts(d.productsPartial.map(p => {
           const weekly = d.weeklyMap?.[p.id] || []
-          const ratio = p.vsComp > 0 ? (p.score / p.vsComp) * 100 : 100
           const validW = weekly.filter(v => v != null && v > 0)
-          let prev = p.prev
-          if (!prev && validW.length >= 5) prev = validW[validW.length - 5] || validW[0]
-          if (!prev && validW.length >= 2) prev = validW[0]
-          prev = prev || 0
-          const monthly = prev > 0 && prev !== p.score ? [prev, p.score] : []
-          return { ...p, prev, weekly, monthly, compRatio: Math.round(ratio),
-            status: ratio >= 100 ? 'lead' : ratio >= 80 ? 'behind' : 'critical' }
+          const monthlyScore = p.monthlyScore || p.score
+          const monthlyPrev = p.monthlyPrev || p.prev || 0
+          const weeklyScore = p.weeklyScore || (validW.length > 0 ? validW[validW.length - 1] : monthlyScore)
+          const weeklyPrev = p.weeklyPrev || (validW.length >= 5 ? validW[validW.length - 5] : (validW[0] || 0))
+          const ratio = p.vsComp > 0 ? Math.round(monthlyScore / p.vsComp * 100) : 100
+          const monthly = monthlyPrev > 0 && monthlyPrev !== monthlyScore ? [monthlyPrev, monthlyScore] : []
+          return { ...p, weekly, monthly, weeklyScore, weeklyPrev, monthlyScore, monthlyPrev,
+            compRatio: ratio, status: ratio >= 100 ? 'lead' : ratio >= 80 ? 'behind' : 'critical' }
         }))
       } else if (d.weeklyMap) {
         setProducts(prev => prev.map(p => {

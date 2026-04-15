@@ -329,10 +329,14 @@ function productSectionHtml(products, meta, t, lang, wLabels, ulMap, monthlyVis)
     if (!prods.length) return ''
     const cards = prods.map(p => {
       const weekly = p.weekly || []
-      // 최근 주 스코어로 표시 (없으면 월간 스코어 폴백)
-      const latestScore = weekly.length > 0 ? weekly[weekly.length - 1] : p.score
+      // Weekly/Monthly 두 버전 점수
+      const wScore = p.weeklyScore || (weekly.length > 0 ? weekly[weekly.length - 1] : p.score)
+      const mScore = p.monthlyScore || p.score
+      const latestScore = wScore // 기본 표시: Weekly
       const latestComp = p.vsComp || 0
-      const latestRatio = latestComp > 0 ? Math.round((latestScore / latestComp) * 100) : 100
+      const wRatio = latestComp > 0 ? Math.round((wScore / latestComp) * 100) : 100
+      const mRatio = latestComp > 0 ? Math.round((mScore / latestComp) * 100) : 100
+      const latestRatio = wRatio
       const latestStatus = latestRatio >= 100 ? 'lead' : latestRatio >= 80 ? 'behind' : 'critical'
       const st = statusInfo(latestStatus, lang)
       // WoW: 마지막 2주 차이
@@ -363,7 +367,10 @@ function productSectionHtml(products, meta, t, lang, wLabels, ulMap, monthlyVis)
       const momColor = momD > 0 ? '#22C55E' : momD < 0 ? '#EF4444' : '#94A3B8'
       const compPct = latestRatio
       const compColor = compPct >= 100 ? '#15803D' : compPct >= 80 ? '#D97706' : '#BE123C'
-      return `<div class="prod-card" style="border-color:${st.border}">
+      const wPrevScore = p.weeklyPrev || (weekly.length >= 5 ? weekly[weekly.length - 5] : (weekly[0] || 0))
+      const wMomD = wScore && wPrevScore ? +(wScore - wPrevScore).toFixed(1) : null
+      const mMomD = mScore && (p.monthlyPrev || p.prev) ? +(mScore - (p.monthlyPrev || p.prev)).toFixed(1) : null
+      return `<div class="prod-card" data-ws="${wScore.toFixed(1)}" data-ms="${mScore.toFixed(1)}" data-wr="${wRatio}" data-mr="${mRatio}" data-wmom="${wMomD != null ? wMomD : ''}" data-mmom="${mMomD != null ? mMomD : ''}" style="border-color:${st.border}">
         <div class="prod-head">
           <span class="prod-name">${prodNameUL(p, ulMap)}</span>
           <span class="prod-badge" style="background:${st.bg};color:${st.color};border-color:${st.border}">${st.label}</span>
@@ -1682,6 +1689,23 @@ function switchPeriodMode(mode){
   document.querySelectorAll('.trend-monthly').forEach(function(el){el.style.display=mode==='monthly'?'':'none'});
   document.querySelectorAll('.prod-wow').forEach(function(el){el.style.display=mode==='weekly'?'':'none'});
   document.querySelectorAll('.prod-mom').forEach(function(el){el.style.display=mode==='monthly'?'':'none'});
+  // 카드 점수/MoM/경쟁비 동적 전환
+  document.querySelectorAll('.prod-card').forEach(function(card){
+    var sc=mode==='monthly'?card.getAttribute('data-ms'):card.getAttribute('data-ws');
+    var ratio=mode==='monthly'?card.getAttribute('data-mr'):card.getAttribute('data-wr');
+    var mom=mode==='monthly'?card.getAttribute('data-mmom'):card.getAttribute('data-wmom');
+    var scoreEl=card.querySelector('.prod-score');
+    if(scoreEl&&sc)scoreEl.innerHTML=sc+'<small>%</small>';
+    var compEl=card.querySelector('.prod-comp-pct');
+    if(compEl&&ratio)compEl.textContent=Math.min(parseInt(ratio),120)+'%';
+    // MoM 업데이트
+    var momEl=mode==='monthly'?card.querySelector('.prod-mom'):card.querySelector('.prod-wow');
+    if(momEl&&mom){
+      var mv=parseFloat(mom);var arrow=mv>0?'▲':mv<0?'▼':'─';var color=mv>0?'#22C55E':mv<0?'#EF4444':'#94A3B8';
+      momEl.innerHTML=(mode==='monthly'?'MoM ':'WoW ')+arrow+' '+Math.abs(mv).toFixed(1)+'%p';
+      momEl.style.color=color;
+    }
+  });
   onFilterChange();
 }
 function switchTrend(mode){switchPeriodMode(mode)}

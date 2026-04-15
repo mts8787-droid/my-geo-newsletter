@@ -373,20 +373,26 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
       if (parsed.productsPartial) {
         const newProducts = parsed.productsPartial.map(p => {
           const weekly = parsed.weeklyMap?.[p.id] || []
-          if (!weekly.length) console.warn(`[SYNC] product "${p.id}" (bu:${p.bu}) has NO weekly data — weeklyMap has: [${wmKeys}]`)
-          else console.log(`[SYNC] product "${p.id}" weekly:`, weekly)
-          const ratio = p.vsComp > 0 ? (p.score / p.vsComp) * 100 : 100
-          // prev: 시트 이전 월 → weekly에서 마지막 4주 전 값 → weekly 첫 값 폴백
           const validWeekly = weekly.filter(v => v != null && v > 0)
-          let prev = p.prev
-          if (!prev && validWeekly.length >= 5) {
-            // weekly 4주 전 값을 prev로 사용 (대략 1개월 전)
-            prev = validWeekly[validWeekly.length - 5] || validWeekly[0]
-          }
-          if (!prev && validWeekly.length >= 2) prev = validWeekly[0]
-          prev = prev || 0
-          const monthly = prev > 0 && prev !== p.score ? [prev, p.score] : []
-          return { ...p, prev, weekly, monthly, compRatio: Math.round(ratio),
+
+          // Monthly 점수 (Monthly Product 시트에서)
+          const monthlyScore = p.score
+          const monthlyPrev = p.prev || 0
+          const monthlyRatio = p.vsComp > 0 ? Math.round(monthlyScore / p.vsComp * 100) : 100
+
+          // Weekly 점수 (Weekly 시트에서)
+          const weeklyScore = validWeekly.length > 0 ? validWeekly[validWeekly.length - 1] : monthlyScore
+          const weeklyPrev = validWeekly.length >= 5 ? validWeekly[validWeekly.length - 5] : (validWeekly[0] || 0)
+
+          // 기본 표시값은 Monthly (공식 수치)
+          const score = monthlyScore
+          const prev = monthlyPrev
+          const ratio = monthlyRatio
+          const monthly = monthlyPrev > 0 && monthlyPrev !== monthlyScore ? [monthlyPrev, monthlyScore] : []
+
+          return { ...p, score, prev, weekly, monthly,
+            weeklyScore, weeklyPrev, monthlyScore, monthlyPrev,
+            compRatio: ratio,
             status: ratio >= 100 ? 'lead' : ratio >= 80 ? 'behind' : 'critical' }
         })
         setProducts(newProducts)

@@ -199,31 +199,35 @@ function monthlyTrendHtml(monthly, color, globalMax, globalMin) {
 // ─── 제품 카드 (이메일용) ──────────────────────────────────────────────────────
 function productCardHtml(p, globalMax, globalMin, lang = 'ko', opts = {}) {
   const t   = T[lang] || T.ko
-  const st  = statusInfo(p.status, lang)
-  const d   = delta(p.score, p.prev)
   const { showTrendTabs = false, monthlyGlobalMax = 100, monthlyGlobalMin = 0, weeklyLabels } = opts
-  // 8주 트렌드 고정 — 항상 마지막 8주만 표시
+  const useMonthly = opts.trendMode === 'monthly'
+
+  // 모드에 따른 점수 선택
+  const activeScore = useMonthly ? (p.monthlyScore || p.score) : (p.weeklyScore || p.score)
+  const activePrev = useMonthly ? (p.monthlyPrev || p.prev || 0) : (p.weeklyPrev || 0)
+  const activeComp = p.vsComp || 0
+  const curRatio = activeComp > 0 ? Math.round(activeScore / activeComp * 100) : 100
+  const ratioColor = curRatio >= 100 ? '#15803D' : curRatio >= 80 ? '#E8910C' : '#BE123C'
+  const activeStatus = curRatio >= 100 ? 'lead' : curRatio >= 80 ? 'behind' : 'critical'
+  const st = statusInfo(activeStatus, lang)
+
+  const d = delta(activeScore, activePrev)
+  const sparkColor = activeStatus === 'critical' ? '#BE123C' : activeStatus === 'behind' ? '#E8910C' : '#15803D'
+
   const TREND_WEEKS = 8
   const fullWeekly = p.weekly || []
   const trendArr = fullWeekly.slice(-TREND_WEEKS)
   const trimmedLabels = weeklyLabels && weeklyLabels.length >= TREND_WEEKS ? weeklyLabels.slice(-TREND_WEEKS) : weeklyLabels
-  const monthlyArr = p.monthly || (p.prev ? [p.prev, p.score] : [])
-  const sparkColor = p.status === 'critical' ? '#BE123C' : p.status === 'behind' ? '#E8910C' : '#15803D'
-  const trendTitle = lang === 'en' ? `${TREND_WEEKS}W Trend` : `${TREND_WEEKS}주 트렌드`
 
-  // 경쟁사 대비 비율 + %p 변화
-  const curRatio = p.compRatio || Math.round(p.vsComp > 0 ? (p.score / p.vsComp) * 100 : 100)
-  const ratioColor = curRatio >= 100 ? '#15803D' : curRatio >= 80 ? '#E8910C' : '#BE123C'
   let ratioDelta = ''
-  if (p.prev != null && p.prev > 0 && p.vsComp > 0) {
-    const prevRatio = Math.round((p.prev / p.vsComp) * 100)
+  if (activePrev > 0 && activeComp > 0) {
+    const prevRatio = Math.round(activePrev / activeComp * 100)
     const rd = curRatio - prevRatio
     if (rd !== 0) ratioDelta = ` <span style="font-size:10px;color:${rd > 0 ? '#16A34A' : '#DC2626'};">${rd > 0 ? '+' : ''}${rd}%p</span>`
   }
-  // MoM: d는 숫자 (delta 함수 반환값)
   const momColor = d > 0 ? '#16A34A' : d < 0 ? '#DC2626' : '#94A3B8'
   const momArrow = d > 0 ? '▲' : d < 0 ? '▼' : ''
-  const momStr = p.prev != null && p.prev > 0
+  const momStr = activePrev > 0
     ? `<span style="font-size:12px;font-weight:700;color:${momColor};font-family:${EM_FONT};">${momArrow}${Math.abs(d).toFixed(1)}%p</span>`
     : `<span style="font-size:12px;color:#94A3B8;font-family:${EM_FONT};">—</span>`
 
@@ -267,7 +271,7 @@ function productCardHtml(p, globalMax, globalMin, lang = 'ko', opts = {}) {
           <table border="0" cellpadding="0" cellspacing="0" width="100%">
             <tr>
               <td style="vertical-align:middle;">
-                <span style="font-size:22px;font-weight:900;color:#1A1A1A;">${p.score.toFixed(1)}</span><span style="font-size:12px;color:#94A3B8;">%</span>
+                <span style="font-size:22px;font-weight:900;color:#1A1A1A;">${activeScore.toFixed(1)}</span><span style="font-size:12px;color:#94A3B8;">%</span>
                 &nbsp;${momStr}
               </td>
               <td align="right" style="vertical-align:middle;">
