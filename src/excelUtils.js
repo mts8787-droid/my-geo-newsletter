@@ -4,9 +4,9 @@ import * as XLSX from 'xlsx-js-style'
 export const SHEET_NAMES = {
   meta:           'meta',
   visSummary:     'Monthly Visibility Summary',
-  productMS:      '시트3',
-  productHS:      'Monthly Visibility Product_CNTY',
-  productES:      '시트4',
+  productMS:      'Monthly Visibility Product_CNTY_MS',
+  productHS:      'Monthly Visibility Product_CNTY_HS',
+  productES:      'Monthly Visibility Product_CNTY_ES',
   weeklyMS:       'Weekly MS Visibility',
   weeklyHS:       'Weekly HS Visibility',
   weeklyES:       'Weekly ES Visibility',
