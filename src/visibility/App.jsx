@@ -225,6 +225,7 @@ export default function App() {
           generateHTML={generateVisibilityHTML}
           publishEndpoint="/api/publish-visibility"
           setMonthlyVis={setMonthlyVis}
+          monthlyVis={monthlyVis}
           extra={{ weeklyPR, weeklyPRLabels, weeklyBrandPrompt, weeklyBrandPromptLabels, appendixPrompts, unlaunchedMap }}
           onSyncExtra={({ weeklyPR, weeklyPRLabels, weeklyBrandPrompt, weeklyBrandPromptLabels, appendixPrompts, unlaunchedMap: ulm }) => {
             if (weeklyPR) setWeeklyPR(weeklyPR)

@@ -10,7 +10,7 @@ import { generateDashboardHTML } from '../dashboard/dashboardTemplate.js'
 import { generateProductInsight, generateProductHowToRead, generateCntyHowToRead } from './insights.js'
 
 export default
-function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, total, setTotal, products, setProducts, citations, setCitations, dotcom, setDotcom, productsCnty, setProductsCnty, citationsCnty, setCitationsCnty, resolved, previewLang, setPreviewLang, snapshots, setSnapshots, setWeeklyLabels, setWeeklyAll, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty, generateHTML, publishEndpoint, setMonthlyVis, onSyncExtra, categoryStats, extra }) {
+function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, total, setTotal, products, setProducts, citations, setCitations, dotcom, setDotcom, productsCnty, setProductsCnty, citationsCnty, setCitationsCnty, resolved, previewLang, setPreviewLang, snapshots, setSnapshots, setWeeklyLabels, setWeeklyAll, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty, generateHTML, publishEndpoint, setMonthlyVis, onSyncExtra, categoryStats, extra, monthlyVis }) {
   // 최신 데이터 ref — AI 생성/게시 시 stale closure 방지
   const latestRef = useRef({ products, productsCnty, citations, citationsCnty, total, dotcom, extra })
   latestRef.current = { products, productsCnty, citations, citationsCnty, total, dotcom, extra }
@@ -49,10 +49,10 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
       const resolvedEn = resolveDataForLang(latest.products, latest.productsCnty, latest.citations, latest.citationsCnty, 'en')
       let htmlKo, htmlEn, title
       if (mode === 'dashboard') {
-        const monthlyVis = []
+        const mv = monthlyVis || []
         const latestExtra = latest.extra || extra || {}
-        htmlKo = generateHTML(metaKo, latest.total, resolvedKo.products, resolvedKo.citations, latest.dotcom, 'ko', resolvedKo.productsCnty, resolvedKo.citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty, monthlyVis, latestExtra)
-        htmlEn = generateHTML(metaEn, latest.total, resolvedEn.products, resolvedEn.citations, latest.dotcom, 'en', resolvedEn.productsCnty, resolvedEn.citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty, monthlyVis, latestExtra)
+        htmlKo = generateHTML(metaKo, latest.total, resolvedKo.products, resolvedKo.citations, latest.dotcom, 'ko', resolvedKo.productsCnty, resolvedKo.citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty, mv, latestExtra)
+        htmlEn = generateHTML(metaEn, latest.total, resolvedEn.products, resolvedEn.citations, latest.dotcom, 'en', resolvedEn.productsCnty, resolvedEn.citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty, mv, latestExtra)
         title = `${metaKo.period || ''} ${metaKo.title || 'KPI Dashboard'}`.trim()
       } else {
         htmlKo = generateHTML(metaKo, latest.total, resolvedKo.products, resolvedKo.citations, dotcom, 'ko', resolvedKo.productsCnty, resolvedKo.citationsCnty, { weeklyLabels, categoryStats, unlaunchedMap: extra?.unlaunchedMap || {}, productCardVersion: meta.productCardVersion || 'v1', trendMode: meta.trendMode || 'weekly' })
