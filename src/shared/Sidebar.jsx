@@ -68,6 +68,13 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
       const data = await res.json()
       if (!data.ok) throw new Error(data.error || '게시 실패')
       setPublishInfo({ ...data, published: true })
+      // 게시 시 현재 meta도 sync 데이터에 저장 (통합 게시에서 최신 인사이트/기간 반영)
+      if (mode === 'dashboard') {
+        try {
+          const currentSync = await fetchSyncData(mode) || {}
+          saveSyncData(mode, { ...currentSync, meta: metaKo, total: latest.total })
+        } catch {}
+      }
       const koUrl = `${window.location.origin}${data.urls.ko}`
       const enUrl = `${window.location.origin}${data.urls.en}`
       try { await navigator.clipboard.writeText(koUrl + '\n' + enUrl) } catch {}
