@@ -1345,13 +1345,50 @@ export function generateDashboardHTML(meta, total, products, citations, dotcom, 
 
   const noticeHtml = meta.showNotice && meta.noticeText ? `<div class="notice-box"><div class="notice-title">${lang === 'en' ? 'NOTICE' : '공지사항'}</div><div class="notice-text">${mdBold(meta.noticeText)}</div></div>` : ''
 
-  const visContent = [
+  // 주간/월간 공통 콘텐츠
+  const commonTop = [
     noticeHtml,
     meta.showTotal !== false ? heroHtml(total, meta, t, lang) : '',
-    meta.showProducts !== false ? productSectionHtml(products, meta, t, lang, wLabels, ulMap, opts?.monthlyVis || [], weeklyAll) : '',
-    `<div id="trend-container">${trendDetailHtml(products, weeklyAll, wLabels, t, lang, ulMap)}</div>`,
+  ].join('')
+  const commonBottom = [
     meta.showCnty !== false ? countrySectionHtml(productsCnty, meta, t, lang) : '',
   ].join('')
+
+  // 주간 콘텐츠
+  const weeklyContent = [
+    commonTop,
+    meta.showProducts !== false ? productSectionHtml(products, meta, t, lang, wLabels, ulMap, opts?.monthlyVis || [], weeklyAll) : '',
+    `<div id="trend-container">${trendDetailHtml(products, weeklyAll, wLabels, t, lang, ulMap)}</div>`,
+    commonBottom,
+  ].join('')
+
+  // 월간 콘텐츠 (제품 카드를 월간 데이터로 렌더링)
+  const monthlyProducts = products.map(p => ({
+    ...p,
+    score: p.monthlyScore || p.score,
+    prev: p.monthlyPrev || p.prev,
+    weekly: (p.monthlyScores || []).map(m => m.score),
+    status: (() => {
+      const ms = p.monthlyScore || p.score
+      const mc = p.vsComp || 0
+      const r = mc > 0 ? ms / mc * 100 : 100
+      return r >= 100 ? 'lead' : r >= 80 ? 'behind' : 'critical'
+    })(),
+  }))
+  const monthlyLabels = (products[0]?.monthlyScores || []).map(m => {
+    const MNAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+    const km = String(m.date).match(/(\d{1,2})월/)
+    const em = String(m.date).match(/(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i)
+    return km ? MNAMES[parseInt(km[1])-1] : em ? em[1].charAt(0).toUpperCase()+em[1].slice(1).toLowerCase() : m.date
+  })
+  const monthlyContent = [
+    commonTop,
+    meta.showProducts !== false ? productSectionHtml(monthlyProducts, meta, t, lang, monthlyLabels.length ? monthlyLabels : ['Feb','Mar'], ulMap, opts?.monthlyVis || [], {}) : '',
+    commonBottom,
+  ].join('')
+
+  // 기존 호환: visContent는 주간 기본
+  const visContent = weeklyContent
   // Citation 탭은 iframe으로 별도 사이테이션 페이지를 가져옴
 
   return `<!DOCTYPE html>
@@ -1545,13 +1582,17 @@ body.show-insights .howto-box{display:block}
 <body>
 ${visibilityOnly ? `
 <div id="gnb-visibility" class="gnb-sub active" style="position:sticky;top:0;z-index:99">
-  <button class="gnb-sub-btn active" onclick="switchVisSub('bu')">${lang === 'en' ? 'Business Division' : '사업본부'}</button>
+  <button class="gnb-sub-btn active" onclick="switchVisSub('bu-weekly')">${lang === 'en' ? 'Weekly' : '주간'}</button>
+  <button class="gnb-sub-btn" onclick="switchVisSub('bu-monthly')">${lang === 'en' ? 'Monthly' : '월간'}</button>
   <button class="gnb-sub-btn" onclick="switchVisSub('pr')">PR</button>
   <button class="gnb-sub-btn" onclick="switchVisSub('brandprompt')">${lang === 'en' ? 'Brand Prompt Anomaly Check' : 'Brand Prompt 이상 점검'}</button>
 </div>
-<div id="vis-sub-bu" class="vis-sub-panel">
+<div id="vis-sub-bu-weekly" class="vis-sub-panel">
   ${filterLayerHtml.replace('top:86px', 'top:37px')}
-  <div class="dash-container">${visContent}</div>
+  <div class="dash-container">${weeklyContent}</div>
+</div>
+<div id="vis-sub-bu-monthly" class="vis-sub-panel" style="display:none">
+  <div class="dash-container">${monthlyContent}</div>
 </div>
 <div id="vis-sub-pr" class="vis-sub-panel" style="display:none">
   ${prVisibilityTabHtml(extra?.weeklyPR, extra?.weeklyPRLabels, lang, meta, extra?.appendixPrompts)}
@@ -1574,7 +1615,8 @@ ${visibilityOnly ? `
   </div>
 </div>
 <div id="gnb-visibility" class="gnb-sub active">
-  <button class="gnb-sub-btn active" onclick="switchVisSub('bu')">${lang === 'en' ? 'Business Division' : '사업본부'}</button>
+  <button class="gnb-sub-btn active" onclick="switchVisSub('bu-weekly')">${lang === 'en' ? 'Weekly' : '주간'}</button>
+  <button class="gnb-sub-btn" onclick="switchVisSub('bu-monthly')">${lang === 'en' ? 'Monthly' : '월간'}</button>
   <button class="gnb-sub-btn" onclick="switchVisSub('pr')">PR</button>
   <button class="gnb-sub-btn" onclick="switchVisSub('brandprompt')">${lang === 'en' ? 'Brand Prompt Anomaly Check' : 'Brand Prompt 이상 점검'}</button>
 </div>
@@ -1583,9 +1625,12 @@ ${visibilityOnly ? `
   <button class="gnb-sub-btn" onclick="switchCitSub('dotcom')">${lang === 'en' ? 'Dotcom' : '닷컴'}</button>
 </div>
 <div id="tab-visibility" class="tab-panel active">
-  <div id="vis-sub-bu" class="vis-sub-panel active">
+  <div id="vis-sub-bu-weekly" class="vis-sub-panel active">
     ${filterLayerHtml}
-    <div class="dash-container">${visContent}</div>
+    <div class="dash-container">${weeklyContent}</div>
+  </div>
+  <div id="vis-sub-bu-monthly" class="vis-sub-panel" style="display:none">
+    <div class="dash-container">${monthlyContent}</div>
   </div>
   <div id="vis-sub-pr" class="vis-sub-panel" style="display:none">
     ${prVisibilityTabHtml(extra?.weeklyPR, extra?.weeklyPRLabels, lang, meta, extra?.appendixPrompts)}
@@ -1684,7 +1729,7 @@ function switchVisSub(sub){
   var panel=document.getElementById('vis-sub-'+sub);
   if(panel)panel.style.display='block';
   var btns=document.querySelectorAll('#gnb-visibility .gnb-sub-btn');
-  var subMap={bu:0,pr:1,brandprompt:2};
+  var subMap={'bu-weekly':0,'bu-monthly':1,pr:2,brandprompt:3};
   if(subMap[sub]!==undefined&&btns[subMap[sub]])btns[subMap[sub]].classList.add('active');
 }
 function switchPeriodMode(mode){
