@@ -80,11 +80,16 @@ export async function publishCombinedDashboard(generateDashboardHTML, resolveDat
     fetchSyncData('dashboard').catch(() => null),
     fetchSyncData('visibility').catch(() => null),
   ])
-  const d = { ...(dVis || {}), ...(dDash || {}) }
-  // visibility 쪽에만 있는 필드 보충
-  if (dVis) {
-    const mergeKeys = ['weeklyPR','weeklyPRLabels','weeklyBrandPrompt','weeklyBrandPromptLabels','appendixPrompts','citationsByCnty','dotcomByCnty','monthlyVis']
-    mergeKeys.forEach(k => { if (!d[k] && dVis[k]) d[k] = dVis[k] })
+  // visibility sync를 기본으로, dashboard sync로 보충 (visibility의 meta/인사이트가 최신)
+  const d = { ...(dDash || {}), ...(dVis || {}) }
+  // dashboard에만 있는 데이터 보충 (visibility에 없는 필드)
+  if (dDash) {
+    const dashOnlyKeys = ['weeklyPR','weeklyPRLabels','weeklyBrandPrompt','weeklyBrandPromptLabels','appendixPrompts','unlaunchedMap']
+    dashOnlyKeys.forEach(k => { if (!d[k] && dDash[k]) d[k] = dDash[k] })
+  }
+  // meta는 visibility 우선 + dashboard 보충 (인사이트/period는 visibility가 최신)
+  if (dVis?.meta && dDash?.meta) {
+    d.meta = { ...(dDash.meta || {}), ...(dVis.meta || {}) }
   }
   if (!d || !Object.keys(d).length) throw new Error('동기화 데이터가 없습니다. Visibility Editor에서 먼저 동기화해주세요.')
   const meta = d.meta || {}
