@@ -253,6 +253,107 @@ function trendDetailHtml(products, weeklyAll, wLabels, t, lang, ulMap) {
   </div>`
 }
 
+// ─── 월간 경쟁사 트렌드 섹션 ──────────────────────────────────────────────
+function monthlyTrendDetailHtml(products, monthlyVis, t, lang, ulMap) {
+  if (!monthlyVis || !monthlyVis.length) return ''
+  const BU_ORDER = ['MS', 'HS', 'ES']
+  const MNAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+  const enMonthMap = {jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11}
+  function parseMIdx(d) { const km = String(d).match(/(\d{1,2})월/); if (km) return parseInt(km[1])-1; const em = String(d).match(/(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i); return em ? enMonthMap[em[1].toLowerCase()] : -1 }
+
+  // 월 라벨 추출 (정렬)
+  const allMonths = new Set()
+  monthlyVis.forEach(r => { const mi = parseMIdx(r.date); if (mi >= 0) allMonths.add(mi) })
+  const sortedMonths = [...allMonths].sort((a, b) => a - b)
+  const mLabels = sortedMonths.map(mi => MNAMES[mi])
+  if (!mLabels.length) return ''
+
+  const buGroups = BU_ORDER.map(bu => {
+    const prods = products.filter(p => p.bu === bu)
+    if (!prods.length) return ''
+    const rows = prods.map(p => {
+      // monthlyScores 우선 (제품별 월간 데이터)
+      const ms = p.monthlyScores || []
+      let brandData = {}
+      if (ms.length >= 2) {
+        // 제품별 월간 점수가 있으면 LG 라인만 표시 (경쟁사 데이터는 vsComp 단일값)
+        const lgArr = sortedMonths.map(mi => {
+          const found = ms.find(m => parseMIdx(m.date) === mi)
+          return found ? found.score : null
+        })
+        brandData = { LG: lgArr }
+        // vsComp가 있으면 경쟁사 라인도 추가 (동일 값 반복이 아닌, 실제 월간 comp 데이터 있으면)
+        if (p.vsComp > 0) {
+          const compArr = sortedMonths.map(mi => {
+            const found = ms.find(m => parseMIdx(m.date) === mi)
+            return found && found.comp != null ? found.comp : null
+          })
+          if (compArr.some(v => v != null)) brandData[p.compName || 'Comp'] = compArr
+        }
+      } else {
+        // 폴백: monthlyVis에서 BU TOTAL 데이터
+        const buRows = monthlyVis.filter(r => r.division === bu && (r.country === 'TOTAL' || r.country === 'TTL'))
+        const byMonth = {}
+        buRows.forEach(r => { const mi = parseMIdx(r.date); if (mi >= 0) byMonth[mi] = r })
+        const lgArr = sortedMonths.map(mi => byMonth[mi]?.lg || null)
+        const compArr = sortedMonths.map(mi => byMonth[mi]?.comp || null)
+        brandData = { LG: lgArr }
+        if (compArr.some(v => v != null && v > 0)) brandData['Samsung'] = compArr
+      }
+
+      const brands = Object.keys(brandData)
+      if (!brands.length) return ''
+      const st = statusInfo(p.status, lang)
+      const lgLatest = brandData.LG?.[brandData.LG.length - 1]
+      const legend = brands.map((b, i) => {
+        const c = brandColor(b, i)
+        const isLG = b === 'LG'
+        return `<span style="display:inline-flex;align-items:center;gap:3px;margin-right:12px"><i style="display:inline-block;width:10px;height:3px;border-radius:1px;background:${c};opacity:${isLG ? 1 : 0.7}"></i><span style="font-size:13px;color:${isLG ? '#1A1A1A' : '#94A3B8'};font-weight:${isLG ? 700 : 400}">${b}</span></span>`
+      }).join('')
+      const N = mLabels.length
+      const colgroup = `<colgroup><col style="width:${TREND_BRAND_COL}px">${mLabels.map(() => '<col>').join('')}</colgroup>`
+      const chartRow = `<tr><td style="padding:0;border:0"></td><td colspan="${N}" style="padding:8px 0;border:0">${svgMultiLine(brandData, mLabels, N * 80, 180)}</td></tr>`
+      const legendRow = `<tr><td style="padding:0;border:0"></td><td colspan="${N}" style="padding:4px 0 6px;border:0">${legend}</td></tr>`
+      const thead = `<tr style="border-top:1px solid #E8EDF2"><th style="text-align:left;padding:5px 6px;font-size:14px;color:#94A3B8;font-weight:600;border-bottom:1px solid #F1F5F9">Brand</th>${mLabels.map(m => `<th style="text-align:center;padding:5px 2px;font-size:14px;color:#94A3B8;font-weight:600;border-bottom:1px solid #F1F5F9">${m}</th>`).join('')}</tr>`
+      const tbody = brands.map((b, i) => {
+        const c = brandColor(b, i)
+        const isLG = b === 'LG'
+        const cells = mLabels.map((_, mi) => {
+          const val = brandData[b]?.[mi]
+          return `<td style="text-align:center;padding:5px 2px;font-size:14px;color:${val != null ? (isLG ? '#1A1A1A' : '#475569') : '#CBD5E1'};font-weight:${isLG ? 700 : 400};border-bottom:1px solid #F8FAFC;font-variant-numeric:tabular-nums">${val != null ? val.toFixed(1) : '—'}</td>`
+        }).join('')
+        return `<tr style="background:${isLG ? '#FFF8F9' : i % 2 === 0 ? '#fff' : '#FAFBFC'}"><td style="padding:5px 6px;font-size:13px;font-weight:${isLG ? 700 : 500};color:${c};border-bottom:1px solid #F8FAFC;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><i style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${c};margin-right:4px;vertical-align:0"></i>${b}</td>${cells}</tr>`
+      }).join('')
+
+      return `<div class="trend-row" style="margin-bottom:24px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+          <span style="width:4px;height:22px;border-radius:4px;background:${RED};flex-shrink:0"></span>
+          <span style="font-size:20px;font-weight:700;color:#1A1A1A">${prodNameUL(p, ulMap)}</span>
+          <span style="font-size:14px;font-weight:700;padding:2px 8px;border-radius:10px;background:${st.bg};color:${st.color};border:1px solid ${st.border}">${st.label}</span>
+          ${lgLatest != null ? `<span style="font-size:16px;font-weight:700;color:#1A1A1A">LG ${lgLatest.toFixed(1)}%</span>` : ''}
+          ${p.compName ? `<span style="font-size:14px;color:#94A3B8">vs ${p.compName} ${p.compRatio || ''}%</span>` : ''}
+        </div>
+        <div style="border:1px solid #E8EDF2;border-radius:10px;overflow:hidden"><table style="width:100%;border-collapse:collapse;table-layout:fixed;font-family:${FONT}">${colgroup}<tbody>${chartRow}${legendRow}${thead}${tbody}</tbody></table></div>
+      </div>`
+    }).join('')
+
+    if (!rows) return ''
+    return `<div class="bu-group" data-bu="${bu}" style="margin-bottom:20px">
+      <div class="bu-header"><span class="bu-label">${bu}</span></div>
+      ${rows}
+    </div>`
+  }).join('')
+
+  if (!buGroups.trim()) return ''
+  return `<div class="section-card">
+    <div class="section-header">
+      <div class="section-title">${lang === 'en' ? 'Monthly Trend' : '월간 트렌드'}</div>
+      <span class="legend">${mLabels[0]}–${mLabels[mLabels.length - 1]} (${mLabels.length}${lang === 'en' ? ' months' : '개월'})</span>
+    </div>
+    <div class="section-body">${buGroups}</div>
+  </div>`
+}
+
 // ─── Insight / HowToRead ────────────────────────────────────────────────────
 function insightHtml(insight, showInsight, howToRead, showHowToRead, t) {
   let h = ''
@@ -1386,9 +1487,11 @@ export function generateDashboardHTML(meta, total, products, citations, dotcom, 
     const em = String(m.date).match(/(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i)
     return km ? MNAMES[parseInt(km[1])-1] : em ? em[1].charAt(0).toUpperCase()+em[1].slice(1).toLowerCase() : m.date
   })
+  const mVis = opts?.monthlyVis || []
   const monthlyContent = [
     commonTop,
-    meta.showProducts !== false ? productSectionHtml(monthlyProducts, meta, t, lang, monthlyLabels.length ? monthlyLabels : ['Feb','Mar'], ulMap, opts?.monthlyVis || [], {}) : '',
+    meta.showProducts !== false ? productSectionHtml(monthlyProducts, meta, t, lang, monthlyLabels.length ? monthlyLabels : ['Feb','Mar'], ulMap, mVis, {}) : '',
+    monthlyTrendDetailHtml(monthlyProducts, mVis, t, lang, ulMap),
     commonBottom,
   ].join('')
 
