@@ -348,11 +348,29 @@ function productCardV2Html(p, lang = 'ko', opts = {}) {
   </td>`
 }
 
-// ─── 제품 카드 V3 (국가별 + 경쟁사명 개별 표시) ──────────────────────────────────
+// ─── 제품별 기본 비교 경쟁사 ──────────────────────────────────────────────────
+const PREFERRED_COMP = {
+  monitor: 'ASUS', audio: 'JBL', dw: 'Bosch', vacuum: 'Dyson',
+  cooking: 'Samsung', rac: 'Daikin', aircare: 'Xiaomi',
+}
+function getPreferredComp(prodId, allScores) {
+  const pref = PREFERRED_COMP[(prodId || '').toLowerCase()]
+  if (!pref || !allScores) return null
+  // 대소문자 무시 매칭
+  const match = Object.entries(allScores).find(([k]) => k.toLowerCase() === pref.toLowerCase() && k.toLowerCase() !== 'lg')
+  return match ? { name: match[0], score: match[1] } : null
+}
+function compShort(name) { if (!name) return ''; return name.replace(/Samsung/gi,'SS').replace(/삼성/g,'SS').slice(0,6) }
+
+// ─── 제품 카드 V3 (국가별 + 지정 경쟁사 비교) ──────────────────────────────────
 function productCardV3Html(p, lang = 'ko', opts = {}) {
   const st = statusInfo(p.status, lang)
   const d = delta(p.score, p.prev)
-  const curRatio = p.compRatio || Math.round(p.vsComp > 0 ? (p.score / p.vsComp) * 100 : 100)
+  // 지정 경쟁사 우선, 없으면 기존 1위 경쟁사
+  const prefComp = getPreferredComp(p.id, p.allScores)
+  const mainCompName = prefComp ? prefComp.name : (p.compName || 'Samsung')
+  const mainCompScore = prefComp ? prefComp.score : (p.vsComp || 0)
+  const curRatio = mainCompScore > 0 ? Math.round(p.score / mainCompScore * 100) : 100
   const ratioColor = curRatio >= 100 ? '#15803D' : curRatio >= 80 ? '#E8910C' : '#BE123C'
   const momColor = d > 0 ? '#16A34A' : d < 0 ? '#DC2626' : '#94A3B8'
   const momArrow = d > 0 ? '▲' : d < 0 ? '▼' : ''
@@ -373,7 +391,6 @@ function productCardV3Html(p, lang = 'ko', opts = {}) {
   const BAR_H = 28
   const CNTY_3 = { US:'미국', CA:'캐나다', UK:'영국', DE:'독일', ES:'스페인', BR:'브라질', MX:'멕시코', AU:'호주', VN:'베트남', IN:'인도' }
   function cn3(c) { const n = CNTY_3[c] || cntyKr(c); return n.length > 3 ? n.slice(0,3) : n }
-  function ssShort(name) { if (!name) return ''; return name.replace(/Samsung/gi,'SS').replace(/삼성/g,'SS').slice(0,6) }
 
   const countryBars = ALL_COUNTRIES.map(c => {
     const r = cntyMap[c]
@@ -381,24 +398,26 @@ function productCardV3Html(p, lang = 'ko', opts = {}) {
       <table border="0" cellpadding="0" cellspacing="0" align="center" style="width:100%;">
         <tr><td height="${BAR_H}" style="font-size:0;">&nbsp;</td></tr>
         <tr><td style="font-size:10px;color:#CBD5E1;text-align:center;">—</td></tr>
-        <tr><td style="font-size:10px;color:#94A3B8;text-align:center;letter-spacing:-1px;">${cn3(c)}</td></tr>
+        <tr><td style="font-size:10px;color:#94A3B8;text-align:center;white-space:nowrap;letter-spacing:-1.5px;font-size:10px;">${cn3(c)}</td></tr>
         <tr><td style="font-size:0;height:10px;">&nbsp;</td></tr>
       </table>
     </td>`
-    const cRatio = r.compScore > 0 ? Math.round(r.score / r.compScore * 100) : 100
+    // 지정 경쟁사의 국가별 점수 찾기
+    const prefCnty = getPreferredComp(p.id, r.allScores)
+    const cCompName = prefCnty ? prefCnty.name : (r.compName || '')
+    const cCompScore = prefCnty ? prefCnty.score : (r.compScore || 0)
+    const cRatio = cCompScore > 0 ? Math.round(r.score / cCompScore * 100) : 100
     const cStatus = cRatio >= 100 ? 'lead' : cRatio >= 80 ? 'behind' : 'critical'
     const barColor = cStatus === 'lead' ? '#15803D' : cStatus === 'behind' ? '#E8910C' : '#BE123C'
     const barH = Math.max(3, Math.round(r.score / maxCnty * BAR_H))
     const spacer = BAR_H - barH
-    const compName = ssShort(r.compName)
-    const compRatio = r.compScore > 0 ? `${cRatio}%` : ''
     return `<td style="vertical-align:bottom;text-align:center;padding:0 1px;width:10%;">
       <table border="0" cellpadding="0" cellspacing="0" align="center" style="width:100%;">
         ${spacer > 0 ? `<tr><td height="${spacer}" style="font-size:0;">&nbsp;</td></tr>` : ''}
         <tr><td height="${barH}" style="font-size:0;"><table border="0" cellpadding="0" cellspacing="0" align="center"><tr><td width="16" height="${barH}" style="background:${barColor};border-radius:2px 2px 0 0;font-size:0;">&nbsp;</td></tr></table></td></tr>
         <tr><td style="font-size:10px;font-weight:700;color:${barColor};font-family:${EM_FONT};text-align:center;padding-top:1px;">${r.score.toFixed(0)}</td></tr>
-        <tr><td style="font-size:10px;font-weight:700;color:${barColor};font-family:${EM_FONT};text-align:center;letter-spacing:-1px;">${cn3(c)}</td></tr>
-        <tr><td style="font-size:10px;color:#94A3B8;font-family:${EM_FONT};text-align:center;white-space:nowrap;letter-spacing:-0.5px;">${compName}<br/>${compRatio}</td></tr>
+        <tr><td style="font-size:10px;font-weight:700;color:${barColor};font-family:${EM_FONT};text-align:center;white-space:nowrap;letter-spacing:-1.5px;">${cn3(c)}</td></tr>
+        <tr><td style="font-size:10px;color:#94A3B8;font-family:${EM_FONT};text-align:center;white-space:nowrap;letter-spacing:-0.5px;">${compShort(cCompName)}<br/>${cCompScore > 0 ? cRatio + '%' : ''}</td></tr>
       </table>
     </td>`
   }).join('')
@@ -410,7 +429,7 @@ function productCardV3Html(p, lang = 'ko', opts = {}) {
         <td style="padding:5px 6px 3px;white-space:nowrap;overflow:hidden;">
           <span style="font-size:16px;font-weight:900;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-0.5px;">${escapeHtml(prodName)}</span>
           <span style="font-size:18px;font-weight:900;color:#1A1A1A;font-family:${EM_FONT};">${p.score.toFixed(1)}<span style="font-size:11px;color:#94A3B8;">%</span></span>${momStr ? `&nbsp;${momStr}` : ''}
-          <span style="float:right;white-space:nowrap;"><span style="font-size:13px;font-weight:700;color:${ratioColor};font-family:${EM_FONT};">SS ${curRatio}%</span>&nbsp;<span style="display:inline-block;background:${st.bg};color:${st.color};border:1px solid ${st.border};border-radius:5px;padding:0px 4px;font-size:10px;font-weight:700;line-height:15px;font-family:${EM_FONT};vertical-align:middle;">${st.label}</span></span>
+          <span style="float:right;white-space:nowrap;"><span style="font-size:13px;font-weight:700;color:${ratioColor};font-family:${EM_FONT};">${compShort(mainCompName)} ${curRatio}%</span>&nbsp;<span style="display:inline-block;background:${st.bg};color:${st.color};border:1px solid ${st.border};border-radius:5px;padding:0px 4px;font-size:10px;font-weight:700;line-height:15px;font-family:${EM_FONT};vertical-align:middle;">${st.label}</span></span>
         </td>
       </tr>
       <tr>
@@ -446,7 +465,12 @@ function buSectionHtml(buKey, buProducts, globalMax, globalMin, lang = 'ko', opt
       ).join('')}
     </tr>`).join('')
 
-  const buScoreHtml = `<span style="font-size:16px;color:#94A3B8;font-family:${EM_FONT};">${buProducts.length}${t.categories}</span>`
+  // BU 경쟁비 계산
+  const buRatio = buTotal && buTotal.comp > 0 ? Math.round(buTotal.lg / buTotal.comp * 100) : null
+  const buRatioColor = buRatio ? (buRatio >= 100 ? '#15803D' : buRatio >= 80 ? '#E8910C' : '#BE123C') : '#94A3B8'
+  const buScoreHtml = buRatio
+    ? `<span style="font-size:14px;font-weight:700;color:${buRatioColor};font-family:${EM_FONT};">vs SS ${buRatio}%</span><span style="font-size:13px;color:#94A3B8;font-family:${EM_FONT};"> · ${buProducts.length}${t.categories}</span>`
+    : `<span style="font-size:14px;color:#94A3B8;font-family:${EM_FONT};">${buProducts.length}${t.categories}</span>`
 
   return `
   <!-- ${buKey} BU 헤더 -->
@@ -1252,10 +1276,9 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                               <span style="font-size:15px;color:#64748B;font-family:${EM_FONT};"> MoM</span>
                             </td>
                             <td align="right" style="vertical-align:bottom;padding-bottom:8px;">
-                              ${compAvg > 0 ? `<span style="font-size:16px;color:#3B82F6;font-weight:800;font-family:${EM_FONT};">SAMSUNG</span>
-                              <span style="font-size:16px;color:#94A3B8;font-weight:500;font-family:${EM_FONT};">&nbsp;${compAvg}%</span>
+                              ${compAvg > 0 ? `<span style="font-size:18px;color:#3B82F6;font-weight:800;font-family:${EM_FONT};">SAMSUNG ${compAvg}%</span>
                               <span style="font-size:14px;color:#64748B;font-family:${EM_FONT};">&nbsp;&nbsp;|&nbsp;&nbsp;</span>
-                              <span style="font-size:16px;font-weight:800;color:${lgVsComp >= 0 ? '#16A34A' : '#DC2626'};font-family:${EM_FONT};">Gap ${lgVsComp >= 0 ? '+' : ''}${lgVsComp}%p</span>` : ''}
+                              <span style="font-size:18px;font-weight:800;color:${totalRatio >= 100 ? '#16A34A' : totalRatio >= 80 ? '#E8910C' : '#DC2626'};font-family:${EM_FONT};">${lang === 'en' ? 'vs' : '대비'} ${totalRatio}%</span>` : ''}
                             </td>
                           </tr>
                         </table>
@@ -1332,7 +1355,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                                   <span style="font-size:16px;font-weight:900;color:#FFFFFF;font-family:${EM_FONT};margin-left:4px;">${bt.lg.toFixed(1)}%</span>
                                   <span style="font-size:10px;color:${momColor};font-family:${EM_FONT};margin-left:3px;">${momStr}</span>
                                   <span style="font-size:10px;color:#64748B;font-family:${EM_FONT};margin-left:4px;">SS ${bt.comp.toFixed(1)}%</span>
-                                  <span style="font-size:10px;color:${gap >= 0 ? '#22C55E' : '#EF4444'};font-family:${EM_FONT};margin-left:2px;">${gap >= 0 ? '+' : ''}${gap}</span>
+                                  <span style="font-size:11px;font-weight:700;color:${sc};font-family:${EM_FONT};margin-left:3px;">${lang === 'en' ? 'vs' : '대비'}${ratio}%</span>
                                 </td></tr>
                               </table>
                             </td>`
