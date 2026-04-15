@@ -1299,14 +1299,6 @@ export function generateDashboardHTML(meta, total, products, citations, dotcom, 
         <span class="fl-label">${lang === 'en' ? 'Period' : '기간'}</span>
         <span class="fl-badge">${meta.period || '—'}</span>
       </div>
-      <div class="fl-divider"></div>
-      <div class="fl-group">
-        <span class="fl-label">${lang === 'en' ? 'View' : '조회'}</span>
-        <div class="trend-tabs" id="period-toggle">
-          <button class="trend-tab active" onclick="switchPeriodMode('weekly')">${lang === 'en' ? 'Weekly' : '주간'}</button>
-          <button class="trend-tab" onclick="switchPeriodMode('monthly')">${lang === 'en' ? 'Monthly' : '월간'}</button>
-        </div>
-      </div>
     </div>
     <div class="fl-row">
       <div class="fl-group">
