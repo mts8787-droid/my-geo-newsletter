@@ -1299,6 +1299,14 @@ export function generateDashboardHTML(meta, total, products, citations, dotcom, 
         <span class="fl-label">${lang === 'en' ? 'Period' : '기간'}</span>
         <span class="fl-badge">${meta.period || '—'}</span>
       </div>
+      <div class="fl-divider"></div>
+      <div class="fl-group">
+        <span class="fl-label">${lang === 'en' ? 'View' : '조회'}</span>
+        <div class="trend-tabs" id="period-toggle">
+          <button class="trend-tab active" onclick="switchPeriodPage('weekly')">${lang === 'en' ? 'Weekly' : '주간'}</button>
+          <button class="trend-tab" onclick="switchPeriodPage('monthly')">${lang === 'en' ? 'Monthly' : '월간'}</button>
+        </div>
+      </div>
     </div>
     <div class="fl-row">
       <div class="fl-group">
@@ -1574,17 +1582,14 @@ body.show-insights .howto-box{display:block}
 <body>
 ${visibilityOnly ? `
 <div id="gnb-visibility" class="gnb-sub active" style="position:sticky;top:0;z-index:99">
-  <button class="gnb-sub-btn active" onclick="switchVisSub('bu-weekly')">${lang === 'en' ? 'Weekly' : '주간'}</button>
-  <button class="gnb-sub-btn" onclick="switchVisSub('bu-monthly')">${lang === 'en' ? 'Monthly' : '월간'}</button>
+  <button class="gnb-sub-btn active" onclick="switchVisSub('bu')">${lang === 'en' ? 'Business Division' : '사업본부'}</button>
   <button class="gnb-sub-btn" onclick="switchVisSub('pr')">PR</button>
   <button class="gnb-sub-btn" onclick="switchVisSub('brandprompt')">${lang === 'en' ? 'Brand Prompt Anomaly Check' : 'Brand Prompt 이상 점검'}</button>
 </div>
-<div id="vis-sub-bu-weekly" class="vis-sub-panel">
+<div id="vis-sub-bu" class="vis-sub-panel">
   ${filterLayerHtml.replace('top:86px', 'top:37px')}
-  <div class="dash-container">${weeklyContent}</div>
-</div>
-<div id="vis-sub-bu-monthly" class="vis-sub-panel" style="display:none">
-  <div class="dash-container">${monthlyContent}</div>
+  <div id="bu-weekly-content" class="dash-container">${weeklyContent}</div>
+  <div id="bu-monthly-content" class="dash-container" style="display:none">${monthlyContent}</div>
 </div>
 <div id="vis-sub-pr" class="vis-sub-panel" style="display:none">
   ${prVisibilityTabHtml(extra?.weeklyPR, extra?.weeklyPRLabels, lang, meta, extra?.appendixPrompts)}
@@ -1607,8 +1612,7 @@ ${visibilityOnly ? `
   </div>
 </div>
 <div id="gnb-visibility" class="gnb-sub active">
-  <button class="gnb-sub-btn active" onclick="switchVisSub('bu-weekly')">${lang === 'en' ? 'Weekly' : '주간'}</button>
-  <button class="gnb-sub-btn" onclick="switchVisSub('bu-monthly')">${lang === 'en' ? 'Monthly' : '월간'}</button>
+  <button class="gnb-sub-btn active" onclick="switchVisSub('bu')">${lang === 'en' ? 'Business Division' : '사업본부'}</button>
   <button class="gnb-sub-btn" onclick="switchVisSub('pr')">PR</button>
   <button class="gnb-sub-btn" onclick="switchVisSub('brandprompt')">${lang === 'en' ? 'Brand Prompt Anomaly Check' : 'Brand Prompt 이상 점검'}</button>
 </div>
@@ -1617,12 +1621,10 @@ ${visibilityOnly ? `
   <button class="gnb-sub-btn" onclick="switchCitSub('dotcom')">${lang === 'en' ? 'Dotcom' : '닷컴'}</button>
 </div>
 <div id="tab-visibility" class="tab-panel active">
-  <div id="vis-sub-bu-weekly" class="vis-sub-panel active">
+  <div id="vis-sub-bu" class="vis-sub-panel active">
     ${filterLayerHtml}
-    <div class="dash-container">${weeklyContent}</div>
-  </div>
-  <div id="vis-sub-bu-monthly" class="vis-sub-panel" style="display:none">
-    <div class="dash-container">${monthlyContent}</div>
+    <div id="bu-weekly-content" class="dash-container">${weeklyContent}</div>
+    <div id="bu-monthly-content" class="dash-container" style="display:none">${monthlyContent}</div>
   </div>
   <div id="vis-sub-pr" class="vis-sub-panel" style="display:none">
     ${prVisibilityTabHtml(extra?.weeklyPR, extra?.weeklyPRLabels, lang, meta, extra?.appendixPrompts)}
@@ -1721,8 +1723,20 @@ function switchVisSub(sub){
   var panel=document.getElementById('vis-sub-'+sub);
   if(panel)panel.style.display='block';
   var btns=document.querySelectorAll('#gnb-visibility .gnb-sub-btn');
-  var subMap={'bu-weekly':0,'bu-monthly':1,pr:2,brandprompt:3};
+  var subMap={bu:0,pr:1,brandprompt:2};
   if(subMap[sub]!==undefined&&btns[subMap[sub]])btns[subMap[sub]].classList.add('active');
+}
+function switchPeriodPage(mode){
+  var wc=document.getElementById('bu-weekly-content');
+  var mc=document.getElementById('bu-monthly-content');
+  if(wc)wc.style.display=mode==='weekly'?'':'none';
+  if(mc)mc.style.display=mode==='monthly'?'':'none';
+  // 필터 버튼 활성화 상태 업데이트
+  document.querySelectorAll('#period-toggle .trend-tab').forEach(function(btn){
+    var isW=mode==='weekly'&&btn.textContent.match(/(주간|Weekly)/);
+    var isM=mode==='monthly'&&btn.textContent.match(/(월간|Monthly)/);
+    if(isW||isM)btn.classList.add('active');else btn.classList.remove('active');
+  });
 }
 function switchPeriodMode(mode){
   _periodMode=mode;
