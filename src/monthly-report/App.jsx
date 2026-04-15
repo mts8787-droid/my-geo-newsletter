@@ -59,7 +59,7 @@ function NewsletterPreview({ meta, total, products, citations, dotcom, productsC
 // ─── HTML 코드 뷰어 ───────────────────────────────────────────────────────────
 function HtmlCodeViewer({ meta, total, products, citations, dotcom, productsCnty = [], citationsCnty = [], lang = 'ko', weeklyLabels }) {
   const [copied, setCopied] = useState(false)
-  const html = useMemo(() => generateEmailHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, { weeklyLabels, categoryStats }), [meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels])
+  const html = useMemo(() => generateEmailHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, { weeklyLabels, categoryStats }), [meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, categoryStats])
 
   async function handleCopy() {
     try {
