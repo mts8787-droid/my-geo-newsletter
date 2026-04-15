@@ -320,7 +320,7 @@ function getULCntys(prodId, ulMap) {
 }
 function prodNameUL(p, ulMap) { const c = getULCntys(p.id || p.category, ulMap); return c.length ? `${p.kr}*` : p.kr }
 
-function productSectionHtml(products, meta, t, lang, wLabels, ulMap, monthlyVis) {
+function productSectionHtml(products, meta, t, lang, wLabels, ulMap, monthlyVis, weeklyAll) {
   if (!products.length) return ''
   const BU_ORDER = ['MS', 'HS', 'ES']
 
@@ -1345,7 +1345,7 @@ export function generateDashboardHTML(meta, total, products, citations, dotcom, 
   const visContent = [
     noticeHtml,
     meta.showTotal !== false ? heroHtml(total, meta, t, lang) : '',
-    meta.showProducts !== false ? productSectionHtml(products, meta, t, lang, wLabels, ulMap, opts?.monthlyVis || []) : '',
+    meta.showProducts !== false ? productSectionHtml(products, meta, t, lang, wLabels, ulMap, opts?.monthlyVis || [], weeklyAll) : '',
     `<div id="trend-container">${trendDetailHtml(products, weeklyAll, wLabels, t, lang, ulMap)}</div>`,
     meta.showCnty !== false ? countrySectionHtml(productsCnty, meta, t, lang) : '',
   ].join('')
