@@ -561,10 +561,10 @@ function parseWeekly(rows, div) {
     const first5 = r.slice(0, 5).map(c => String(c || '').trim().toLowerCase())
     return first5.includes('category') || first5.includes('product')
   })
-  // 2차: W패턴 컬럼이 있는 행
+  // 2차: W패턴 컬럼이 있는 행 (줄바꿈 포함 헤더 지원: "w5\n(2/2~2/8)")
   if (headerIdx < 0) {
     headerIdx = rows.findIndex(r =>
-      r.some(c => /^w\d+$/i.test(String(c || '').trim()))
+      r.some(c => /^w\d+/i.test(String(c || '').split(/\n/)[0].trim()))
     )
   }
   // 3차: 'lg' 컬럼 (앞 10컬럼 + 문자열 셀 3개 이상 — 대시보드 브랜드 행 오감지 방지)
@@ -594,12 +594,12 @@ function parseWeekly(rows, div) {
   const brandIdx = header.findIndex(c => String(c || '').trim().toLowerCase() === 'brand')
   const lgIdx = header.findIndex(c => String(c || '').trim().toUpperCase() === 'LG')
 
-  // 주차 컬럼 찾기
+  // 주차 컬럼 찾기 (줄바꿈 포함 헤더 지원: "w5\n(2/2~2/8)" → "w5")
   const wCols = []
   for (let i = 0; i < header.length; i++) {
-    if (/^w\d+$/i.test(String(header[i] || '').trim())) wCols.push(i)
+    if (/^w\d+/i.test(String(header[i] || '').split(/\n/)[0].trim())) wCols.push(i)
   }
-  weeklyLabels = wCols.map(i => String(header[i] || '').trim())
+  weeklyLabels = wCols.map(i => String(header[i] || '').split(/\n/)[0].trim())
 
   // Country 필터 헬퍼 — (Total), TTL 모두 허용
   function isTotal(r) {
