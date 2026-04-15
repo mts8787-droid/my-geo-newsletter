@@ -434,7 +434,7 @@ function parseProductCntyFromRow(rows, headerIdx) {
     const prev = entries.length >= 2 ? entries[entries.length - 2].score : null
     console.log(`[parseProductCnty] ${id}: dates=[${entries.map(e => e.date).join(',')}] score=${latest.score} prev=${prev} vsComp=${latest.vsComp}`)
     // 모든 월별 점수 보존 (월간 트렌드용)
-    const monthlyScores = entries.map(e => ({ date: e.date, score: e.score, comp: e.vsComp }))
+    const monthlyScores = entries.map(e => ({ date: e.date, score: e.score, comp: e.vsComp, allScores: e.allScores }))
     productsPartial.push({ ...latest, prev, monthlyScores })
   }
 

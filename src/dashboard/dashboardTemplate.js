@@ -269,23 +269,26 @@ function monthlyTrendDetailHtml(products, monthlyVis, t, lang, ulMap) {
     const prods = products.filter(p => p.bu === bu)
     if (!prods.length) return ''
     const rows = prods.map(p => {
-      // monthlyScores 우선 (제품별 월간 데이터)
+      // monthlyScores에서 모든 경쟁사 데이터 추출
       const ms = p.monthlyScores || []
       let brandData = {}
       if (ms.length >= 2) {
-        // 제품별 월간 점수가 있으면 LG 라인만 표시 (경쟁사 데이터는 vsComp 단일값)
-        const lgArr = sortedMonths.map(mi => {
-          const found = ms.find(m => parseMIdx(m.date) === mi)
-          return found ? found.score : null
-        })
-        brandData = { LG: lgArr }
-        // vsComp가 있으면 경쟁사 라인도 추가 (동일 값 반복이 아닌, 실제 월간 comp 데이터 있으면)
-        if (p.vsComp > 0) {
-          const compArr = sortedMonths.map(mi => {
+        // allScores에서 모든 브랜드 수집
+        const allBrands = new Set()
+        ms.forEach(m => { if (m.allScores) Object.keys(m.allScores).forEach(b => allBrands.add(b)) })
+        allBrands.forEach(brand => {
+          brandData[brand] = sortedMonths.map(mi => {
             const found = ms.find(m => parseMIdx(m.date) === mi)
-            return found && found.comp != null ? found.comp : null
+            return found?.allScores?.[brand] ?? null
           })
-          if (compArr.some(v => v != null)) brandData[p.compName || 'Comp'] = compArr
+        })
+        // allScores가 없으면 LG+Comp 폴백
+        if (!allBrands.size) {
+          brandData.LG = sortedMonths.map(mi => { const f = ms.find(m => parseMIdx(m.date) === mi); return f ? f.score : null })
+          if (p.vsComp > 0) {
+            const compArr = sortedMonths.map(mi => { const f = ms.find(m => parseMIdx(m.date) === mi); return f?.comp ?? null })
+            if (compArr.some(v => v != null)) brandData[p.compName || 'Comp'] = compArr
+          }
         }
       } else {
         // 폴백: monthlyVis에서 BU TOTAL 데이터
@@ -298,10 +301,15 @@ function monthlyTrendDetailHtml(products, monthlyVis, t, lang, ulMap) {
         if (compArr.some(v => v != null && v > 0)) brandData['Samsung'] = compArr
       }
 
-      const brands = Object.keys(brandData)
+      const brands = Object.keys(brandData).sort((a, b) => {
+        if (a === 'LG') return -1; if (b === 'LG') return 1
+        const la = (brandData[a] || []).filter(v => v != null).pop() || 0
+        const lb = (brandData[b] || []).filter(v => v != null).pop() || 0
+        return lb - la
+      })
       if (!brands.length) return ''
       const st = statusInfo(p.status, lang)
-      const lgLatest = brandData.LG?.[brandData.LG.length - 1]
+      const lgLatest = (brandData.LG || []).filter(v => v != null).pop()
       const legend = brands.map((b, i) => {
         const c = brandColor(b, i)
         const isLG = b === 'LG'
