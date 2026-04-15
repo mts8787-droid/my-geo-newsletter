@@ -332,10 +332,18 @@ function productSectionHtml(products, meta, t, lang, wLabels, ulMap, monthlyVis)
       // Weekly/Monthly 두 버전 점수
       const wScore = p.weeklyScore || (weekly.length > 0 ? weekly[weekly.length - 1] : p.score)
       const mScore = p.monthlyScore || p.score
-      const latestScore = wScore // 기본 표시: Weekly
-      const latestComp = p.vsComp || 0
-      const wRatio = latestComp > 0 ? Math.round((wScore / latestComp) * 100) : 100
-      const mRatio = latestComp > 0 ? Math.round((mScore / latestComp) * 100) : 100
+      const latestScore = wScore
+      // 주간 경쟁사: weeklyAll에서 마지막 주 1위 경쟁사 점수
+      const wAll = weeklyAll?.[p.id]?.['Total'] || weeklyAll?.[p.id]?.['TTL'] || {}
+      let wComp = 0
+      Object.entries(wAll).forEach(([brand, arr]) => {
+        if (brand === 'LG' || brand === 'lg') return
+        const last = Array.isArray(arr) && arr.length ? arr[arr.length - 1] : 0
+        if (last > wComp) wComp = last
+      })
+      const mComp = p.vsComp || 0
+      const wRatio = wComp > 0 ? Math.round((wScore / wComp) * 100) : (mComp > 0 ? Math.round((wScore / mComp) * 100) : 100)
+      const mRatio = mComp > 0 ? Math.round((mScore / mComp) * 100) : 100
       const latestRatio = wRatio
       const latestStatus = latestRatio >= 100 ? 'lead' : latestRatio >= 80 ? 'behind' : 'critical'
       const st = statusInfo(latestStatus, lang)
@@ -1277,7 +1285,7 @@ export function generateDashboardHTML(meta, total, products, citations, dotcom, 
     `<label class="fl-chk-label"><input type="checkbox" class="fl-chk" data-filter="country" value="${c}" checked onchange="onFilterChange()"><span>${cntyFullName(c)}</span></label>`
   ).join('')
   const regionCheckboxes = Object.entries(REGIONS).map(([k, v]) =>
-    `<label class="fl-chk-label"><input type="checkbox" class="fl-chk" data-filter="region" value="${k}" checked onchange="onRegionChange('${k}')"><span>${lang === 'en' ? v.labelEn : v.label}</span></label>`
+    `<label class="fl-chk-label"><input type="checkbox" class="fl-chk" data-filter="region" value="${k}" checked onchange="onRegionChange('${k}')"><span>${v.labelEn}</span></label>`
   ).join('')
 
   const langToggleHtml = `<div class="fl-group"><div style="display:flex;gap:2px;background:#F1F5F9;border-radius:6px;padding:2px"><button class="lang-btn${lang==='ko'?' active':''}" onclick="switchLang('ko')">KO</button><button class="lang-btn${lang==='en'?' active':''}" onclick="switchLang('en')">EN</button></div></div><div class="fl-divider"></div>`
