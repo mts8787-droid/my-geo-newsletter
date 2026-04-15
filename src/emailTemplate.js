@@ -240,7 +240,6 @@ function productCardHtml(p, globalMax, globalMin, lang = 'ko', opts = {}) {
   const msMin = msData.length ? Math.min(...msData.filter(v => v > 0)) : 0
 
   // 트렌드 모드에 따라 선택
-  const useMonthly = opts.trendMode === 'monthly'
   const trendGraph = useMonthly
     ? weeklyTrendHtml(msData, sparkColor, msMax, msMin, msLabels)
     : weeklyTrendHtml(trendArr, sparkColor, globalMax, globalMin, trimmedLabels)
