@@ -433,7 +433,9 @@ function parseProductCntyFromRow(rows, headerIdx) {
     const latest = entries[entries.length - 1]
     const prev = entries.length >= 2 ? entries[entries.length - 2].score : null
     console.log(`[parseProductCnty] ${id}: dates=[${entries.map(e => e.date).join(',')}] score=${latest.score} prev=${prev} vsComp=${latest.vsComp}`)
-    productsPartial.push({ ...latest, prev })
+    // 모든 월별 점수 보존 (월간 트렌드용)
+    const monthlyScores = entries.map(e => ({ date: e.date, score: e.score, comp: e.vsComp }))
+    productsPartial.push({ ...latest, prev, monthlyScores })
   }
 
   // 국가별 데이터: 같은 제품+국가에 여러 월이 있으면 최신월=score, 이전월=prev

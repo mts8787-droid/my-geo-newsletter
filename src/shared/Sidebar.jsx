@@ -55,8 +55,8 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
         htmlEn = generateHTML(metaEn, latest.total, resolvedEn.products, resolvedEn.citations, latest.dotcom, 'en', resolvedEn.productsCnty, resolvedEn.citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty, monthlyVis, latestExtra)
         title = `${metaKo.period || ''} ${metaKo.title || 'KPI Dashboard'}`.trim()
       } else {
-        htmlKo = generateHTML(metaKo, latest.total, resolvedKo.products, resolvedKo.citations, dotcom, 'ko', resolvedKo.productsCnty, resolvedKo.citationsCnty, { weeklyLabels, categoryStats, unlaunchedMap: extra?.unlaunchedMap || {}, productCardVersion: meta.productCardVersion || 'v1' })
-        htmlEn = generateHTML(metaEn, latest.total, resolvedEn.products, resolvedEn.citations, dotcom, 'en', resolvedEn.productsCnty, resolvedEn.citationsCnty, { weeklyLabels, categoryStats, unlaunchedMap: extra?.unlaunchedMap || {}, productCardVersion: meta.productCardVersion || 'v1' })
+        htmlKo = generateHTML(metaKo, latest.total, resolvedKo.products, resolvedKo.citations, dotcom, 'ko', resolvedKo.productsCnty, resolvedKo.citationsCnty, { weeklyLabels, categoryStats, unlaunchedMap: extra?.unlaunchedMap || {}, productCardVersion: meta.productCardVersion || 'v1', trendMode: meta.trendMode || 'weekly' })
+        htmlEn = generateHTML(metaEn, latest.total, resolvedEn.products, resolvedEn.citations, dotcom, 'en', resolvedEn.productsCnty, resolvedEn.citationsCnty, { weeklyLabels, categoryStats, unlaunchedMap: extra?.unlaunchedMap || {}, productCardVersion: meta.productCardVersion || 'v1', trendMode: meta.trendMode || 'weekly' })
         title = `${metaKo.period || ''} ${metaKo.title || 'Newsletter'}`.trim()
       }
       const ep = publishEndpoint || (mode === 'dashboard' ? '/api/publish-dashboard' : '/api/publish')
@@ -276,7 +276,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
     setMailSent('sending')
     try {
       const latest = getLatestData()
-      const html    = generateHTML(meta, latest.total, latest.products, latest.citations, latest.dotcom, previewLang, latest.productsCnty, latest.citationsCnty, { weeklyLabels, categoryStats, unlaunchedMap: extra?.unlaunchedMap || {}, productCardVersion: meta.productCardVersion || 'v1' })
+      const html    = generateHTML(meta, latest.total, latest.products, latest.citations, latest.dotcom, previewLang, latest.productsCnty, latest.citationsCnty, { weeklyLabels, categoryStats, unlaunchedMap: extra?.unlaunchedMap || {}, productCardVersion: meta.productCardVersion || 'v1', trendMode: meta.trendMode || 'weekly' })
       const subject = `[LG GEO] ${meta.title} · ${meta.period}`
       const res = await fetch('/api/send-email', {
         method: 'POST',
@@ -947,6 +947,15 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
             background: (meta.productCardVersion || 'v1') === 'v1' ? LG_RED : '#1E293B',
             color: (meta.productCardVersion || 'v1') === 'v1' ? '#FFF' : '#64748B',
             fontSize: 10, fontWeight: 700, fontFamily: FONT }}>V1 트렌드</button>
+          <span style={{ width: 1, height: 14, background: '#334155', margin: '0 4px' }}></span>
+          <button onClick={() => setMeta(m => ({ ...m, trendMode: (m.trendMode || 'weekly') === 'weekly' ? 'monthly' : 'weekly' }))} style={{
+            padding: '2px 8px', borderRadius: 4, border: 'none', cursor: 'pointer',
+            background: meta.trendMode === 'monthly' ? '#166534' : '#1E293B',
+            color: meta.trendMode === 'monthly' ? '#86EFAC' : '#64748B',
+            fontSize: 10, fontWeight: 700, fontFamily: FONT }}>{meta.trendMode === 'monthly' ? 'Monthly' : 'Weekly'}</button>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
+          <span style={{ fontSize: 11, color: '#64748B', fontFamily: FONT }}>카드 타입:</span>
           <button onClick={() => setMeta(m => ({ ...m, productCardVersion: 'v2' }))} style={{
             padding: '2px 8px', borderRadius: 4, border: 'none', cursor: 'pointer',
             background: meta.productCardVersion === 'v2' ? LG_RED : '#1E293B',

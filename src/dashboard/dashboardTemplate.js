@@ -342,22 +342,16 @@ function productSectionHtml(products, meta, t, lang, wLabels, ulMap) {
       const wArrow = wd > 0 ? '▲' : wd < 0 ? '▼' : '─'
       const wColor = wd > 0 ? '#22C55E' : wd < 0 ? '#EF4444' : '#94A3B8'
       const sparkColor = p.status === 'critical' ? '#BE123C' : p.status === 'behind' ? '#D97706' : '#15803D'
-      // MoM: date에서 월 파악 → 최근 4개월 라벨 + 데이터
+      // MoM: monthlyScores에서 월간 트렌드 구성
       const MLNAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
-      const dateStr = p.date || ''
-      const mMatch = dateStr.match(/([0-9]{1,2})월/)
-      const curMonthIdx = mMatch ? parseInt(mMatch[1]) - 1 : -1
-      // 최근 4개월 라벨 (현재 월 포함하여 역산)
-      const m4Labels = curMonthIdx >= 0
-        ? [0,1,2,3].map(i => MLNAMES[(curMonthIdx - 3 + i + 12) % 12])
+      const ms = p.monthlyScores || []
+      const m4Labels = ms.length > 0
+        ? ms.map(m => { const em = String(m.date).match(/(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)/i); const km = String(m.date).match(/(\d{1,2})월/); return em ? em[1] : km ? MLNAMES[parseInt(km[1])-1] || m.date : m.date })
         : ['M-3','M-2','M-1','M0']
-      // 데이터: 현재 월 = 마지막, 이전 3개월은 null (아직 없음)
-      const allS = p.allScores || {}
-      const curLG = allS.LG != null ? allS.LG : null
-      const m4Data = [null, null, null, curLG]
-      const momD = null // 이전 월 데이터 없으면 계산 불가
-      const momArrow = '─'
-      const momColor = '#94A3B8'
+      const m4Data = ms.length > 0 ? ms.map(m => m.score) : [null, null, null, p.score]
+      const momD = ms.length >= 2 ? +(ms[ms.length-1].score - ms[ms.length-2].score).toFixed(1) : null
+      const momArrow = momD > 0 ? '▲' : momD < 0 ? '▼' : '─'
+      const momColor = momD > 0 ? '#22C55E' : momD < 0 ? '#EF4444' : '#94A3B8'
       const compPct = latestRatio
       const compColor = compPct >= 100 ? '#15803D' : compPct >= 80 ? '#D97706' : '#BE123C'
       return `<div class="prod-card" style="border-color:${st.border}">

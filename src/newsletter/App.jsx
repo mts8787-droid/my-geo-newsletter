@@ -20,7 +20,7 @@ const STORAGE_KEY = 'geo-newsletter-cache'
 function NewsletterPreview({ meta, total, products, citations, dotcom, productsCnty = [], citationsCnty = [], lang = 'ko', weeklyLabels, categoryStats }) {
   const iframeRef = useRef(null)
   const html = useMemo(
-    () => generateEmailHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, { weeklyLabels, categoryStats, productCardVersion: meta.productCardVersion || 'v1' }),
+    () => generateEmailHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, { weeklyLabels, categoryStats, productCardVersion: meta.productCardVersion || 'v1', trendMode: meta.trendMode || 'weekly' }),
     [meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, categoryStats]
   )
 
@@ -59,7 +59,7 @@ function NewsletterPreview({ meta, total, products, citations, dotcom, productsC
 // ─── HTML 코드 뷰어 ───────────────────────────────────────────────────────────
 function HtmlCodeViewer({ meta, total, products, citations, dotcom, productsCnty = [], citationsCnty = [], lang = 'ko', weeklyLabels, categoryStats }) {
   const [copied, setCopied] = useState(false)
-  const html = useMemo(() => generateEmailHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, { weeklyLabels, categoryStats, productCardVersion: meta.productCardVersion || 'v1' }), [meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, categoryStats])
+  const html = useMemo(() => generateEmailHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, { weeklyLabels, categoryStats, productCardVersion: meta.productCardVersion || 'v1', trendMode: meta.trendMode || 'weekly' }), [meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, categoryStats])
 
   async function handleCopy() {
     try {

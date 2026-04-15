@@ -227,10 +227,21 @@ function productCardHtml(p, globalMax, globalMin, lang = 'ko', opts = {}) {
     ? `<span style="font-size:12px;font-weight:700;color:${momColor};font-family:${EM_FONT};">${momArrow}${Math.abs(d).toFixed(1)}%p</span>`
     : `<span style="font-size:12px;color:#94A3B8;font-family:${EM_FONT};">—</span>`
 
-  // 트렌드 (타이틀 없이 그래프만)
-  const trendGraph = weeklyTrendHtml(trendArr, sparkColor, globalMax, globalMin, trimmedLabels)
+  // 월간 트렌드: monthlyScores에서 구성
+  const ms = p.monthlyScores || []
+  const MNAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+  const msLabels = ms.map(m => { const em = String(m.date).match(/(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)/i); const km = String(m.date).match(/(\d{1,2})월/); return em ? em[1] : km ? MNAMES[parseInt(km[1])-1] : '' })
+  const msData = ms.map(m => m.score)
+  const msMax = msData.length ? Math.max(...msData) : 100
+  const msMin = msData.length ? Math.min(...msData.filter(v => v > 0)) : 0
+
+  // 트렌드 모드에 따라 선택
+  const useMonthly = opts.trendMode === 'monthly'
+  const trendGraph = useMonthly
+    ? weeklyTrendHtml(msData, sparkColor, msMax, msMin, msLabels)
+    : weeklyTrendHtml(trendArr, sparkColor, globalMax, globalMin, trimmedLabels)
   const trendCell = showTrendTabs
-    ? `<div class="trend-weekly">${trendGraph}</div><div class="trend-monthly" style="display:none;">${monthlyTrendHtml(monthlyArr, sparkColor, monthlyGlobalMax, monthlyGlobalMin)}</div>`
+    ? `<div class="trend-weekly">${weeklyTrendHtml(trendArr, sparkColor, globalMax, globalMin, trimmedLabels)}</div><div class="trend-monthly" style="display:none;">${weeklyTrendHtml(msData, sparkColor, msMax, msMin, msLabels)}</div>`
     : trendGraph
 
   return `
@@ -1099,7 +1110,7 @@ function dashboardLinkButtonHtml(lang) {
 export { escapeHtml }
 
 export function generateEmailHTML(meta, total, products, citations, dotcom = {}, lang = 'ko', productsCnty = [], citationsCnty = [], options = {}) {
-  const { containerWidth = 920, showTrendTabs = false, weeklyLabels, categoryStats = null, unlaunchedMap = {}, productCardVersion = 'v1' } = options
+  const { containerWidth = 920, showTrendTabs = false, weeklyLabels, categoryStats = null, unlaunchedMap = {}, productCardVersion = 'v1', trendMode = 'weekly' } = options
   const t = T[lang] || T.ko
   total = total || { score: 0, prev: 0, vsComp: 0, rank: 1, totalBrands: 12 }
   products = products || []
@@ -1131,7 +1142,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
   const monthlyGlobalMin = allMonthly.length ? Math.min(...allMonthly) : 0
 
   const buTotals = total.buTotals || {}
-  const trendOpts = { showTrendTabs, monthlyGlobalMax, monthlyGlobalMin, weeklyLabels, buTotals, prodNameFn: prodNameUL, productCardVersion, productsCnty }
+  const trendOpts = { showTrendTabs, monthlyGlobalMax, monthlyGlobalMin, weeklyLabels, buTotals, prodNameFn: prodNameUL, productCardVersion, productsCnty, trendMode }
 
   const BU_ORDER = ['MS', 'HS', 'ES']
   const buSections = BU_ORDER.map(buKey => {
