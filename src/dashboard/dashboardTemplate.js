@@ -1446,21 +1446,43 @@ export function generateDashboardHTML(meta, total, products, citations, dotcom, 
 
   const noticeHtml = meta.showNotice && meta.noticeText ? `<div class="notice-box"><div class="notice-title">${lang === 'en' ? 'NOTICE' : '공지사항'}</div><div class="notice-text">${mdBold(meta.noticeText)}</div></div>` : ''
 
-  // 주간/월간 공통 콘텐츠
+  // 주간/월간 공통 상단
   const commonTop = [
     noticeHtml,
     meta.showTotal !== false ? heroHtml(total, meta, t, lang) : '',
   ].join('')
-  const commonBottom = [
-    meta.showCnty !== false ? countrySectionHtml(productsCnty, meta, t, lang) : '',
-  ].join('')
+
+  // 주간 국가별: weeklyAll에서 마지막 주 데이터로 productsCnty 형태 생성
+  const weeklyProductsCnty = []
+  if (weeklyAll && Object.keys(weeklyAll).length) {
+    const ID_KR = { tv: 'TV', monitor: '모니터', audio: '오디오', washer: '세탁기', fridge: '냉장고', dw: '식기세척기', vacuum: '청소기', cooking: 'Cooking', rac: 'RAC', aircare: 'Aircare' }
+    Object.entries(weeklyAll).forEach(([prodId, cntyData]) => {
+      const pInfo = products.find(p => p.id === prodId)
+      const prodName = pInfo?.kr || ID_KR[prodId] || prodId
+      Object.entries(cntyData).forEach(([cnty, brandData]) => {
+        if (cnty === 'Total' || cnty === 'TTL' || cnty === 'TOTAL') return
+        const lgArr = brandData.LG || brandData.lg || []
+        const lgScore = lgArr.length > 0 ? lgArr[lgArr.length - 1] : 0
+        if (lgScore <= 0) return
+        // 1위 경쟁사 찾기
+        let topCompName = '', topCompScore = 0
+        Object.entries(brandData).forEach(([brand, arr]) => {
+          if (brand === 'LG' || brand === 'lg') return
+          const last = Array.isArray(arr) && arr.length ? arr[arr.length - 1] : 0
+          if (last > topCompScore) { topCompScore = last; topCompName = brand }
+        })
+        const gap = +(lgScore - topCompScore).toFixed(1)
+        weeklyProductsCnty.push({ product: prodName, country: cnty, score: lgScore, compName: topCompName, compScore: topCompScore, gap, allScores: brandData })
+      })
+    })
+  }
 
   // 주간 콘텐츠
   const weeklyContent = [
     commonTop,
     meta.showProducts !== false ? productSectionHtml(products, meta, t, lang, wLabels, ulMap, opts?.monthlyVis || [], weeklyAll) : '',
     `<div id="trend-container">${trendDetailHtml(products, weeklyAll, wLabels, t, lang, ulMap)}</div>`,
-    commonBottom,
+    meta.showCnty !== false ? countrySectionHtml(weeklyProductsCnty.length ? weeklyProductsCnty : productsCnty, meta, t, lang) : '',
   ].join('')
 
   // 월간 콘텐츠 (제품 카드를 월간 데이터로 렌더링)
@@ -1492,7 +1514,7 @@ export function generateDashboardHTML(meta, total, products, citations, dotcom, 
     commonTop,
     meta.showProducts !== false ? productSectionHtml(monthlyProducts, meta, t, lang, monthlyLabels.length ? monthlyLabels : ['Feb','Mar'], ulMap, mVis, {}) : '',
     monthlyTrendDetailHtml(monthlyProducts, mVis, t, lang, ulMap),
-    commonBottom,
+    meta.showCnty !== false ? countrySectionHtml(productsCnty, meta, t, lang) : '',
   ].join('')
 
   // 기존 호환: visContent는 주간 기본
