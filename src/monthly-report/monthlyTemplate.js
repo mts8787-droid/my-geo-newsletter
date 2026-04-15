@@ -457,8 +457,49 @@ function buildDotcomTable(dotcom, lang) {
   </table>`
 }
 
+// ─── Progress Tracker Executive Summary 표 ─────────────────────────────────
+function buildTrackerSummaryTable(categoryStats, lang, period) {
+  if (!categoryStats || !categoryStats.length) return ''
+  const month = categoryStats[0]?.targetMonth || '3월'
+  const t = lang === 'en'
+    ? { title: `Progress Tracker — ${month} Executive Summary`, cat: 'Task Category', rate: 'Achievement', count: 'Actual/Goal', progress: 'YTD Progress' }
+    : { title: `Progress Tracker — ${month} Executive Summary`, cat: '과제 구분', rate: '달성률', count: '실적/목표', progress: '연간 진척률' }
+
+  function sigBg(rate) {
+    if (rate >= 80) return '#D1FAE5'
+    if (rate >= 50) return '#FEF3C7'
+    return '#FEE2E2'
+  }
+
+  const rows = categoryStats.map(c => {
+    const mRate = (c.monthRate || 0).toFixed(0)
+    const pRate = (c.progressRate || 0).toFixed(0)
+    return `<tr>
+      <td style="border:1px solid #999;padding:6px 10px;font-size:12px;font-weight:700;font-family:${FONT};background:#F5F5F5;">${escapeHtml(c.category)}</td>
+      <td style="border:1px solid #999;padding:6px 10px;font-size:12px;font-weight:700;text-align:center;background:${sigBg(c.monthRate)};">${mRate}%</td>
+      <td style="border:1px solid #999;padding:6px 10px;font-size:12px;text-align:center;">${(c.monthActual || 0).toLocaleString()} / ${(c.monthGoal || 0).toLocaleString()}</td>
+      <td style="border:1px solid #999;padding:6px 10px;font-size:12px;font-weight:700;text-align:center;background:${sigBg(c.progressRate)};">${pRate}%</td>
+      <td style="border:1px solid #999;padding:6px 10px;font-size:12px;text-align:center;">${(c.cumActual || 0).toLocaleString()} / ${(c.annualGoal || 0).toLocaleString()}</td>
+    </tr>`
+  }).join('')
+
+  return `
+  <h1 style="font-size:18px;font-weight:700;margin:32px 0 6px;border-top:2px solid #000;padding-top:14px;font-family:${FONT};color:#000;">Progress Tracker</h1>
+  <h2 style="font-size:16px;font-weight:700;margin:10px 0;font-family:${FONT};color:#000;">${t.title}</h2>
+  <table border="0" cellspacing="0" cellpadding="0" style="border-collapse:collapse;width:100%;font-family:${FONT};">
+    <thead><tr style="background:#E8E8E8;">
+      <th style="border:1px solid #999;padding:8px 10px;font-size:12px;font-weight:700;text-align:center;">${t.cat}</th>
+      <th style="border:1px solid #999;padding:8px 10px;font-size:12px;font-weight:700;text-align:center;">${month} ${t.rate}</th>
+      <th style="border:1px solid #999;padding:8px 10px;font-size:12px;font-weight:700;text-align:center;">${t.count}</th>
+      <th style="border:1px solid #999;padding:8px 10px;font-size:12px;font-weight:700;text-align:center;">${t.progress}</th>
+      <th style="border:1px solid #999;padding:8px 10px;font-size:12px;font-weight:700;text-align:center;">${t.count}</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`
+}
+
 export function generateMonthlyReportHTML(meta, total, products, citations, dotcom = {}, lang = 'ko', productsCnty = [], citationsCnty = [], options = {}) {
-  const { productsCntyPrev = [], productsPrev = [] } = options
+  const { productsCntyPrev = [], productsPrev = [], categoryStats = null } = options
 
   const title = lang === 'en' ? 'GEO Monthly Report' : 'GEO 월간 보고서'
   const period = meta.period || ''
@@ -514,6 +555,8 @@ body, table, td, th, h1, h2, p, span, div { font-family: ${FONT} !important; }
     ${buildCitationDomainTable(citationsCnty, lang)}
     ${buildCitationCntyTable(citationsCnty, lang)}
     ${buildDotcomTable(dotcom, lang)}
+
+    ${buildTrackerSummaryTable(categoryStats, lang, period)}
 
     <div style="margin-top:32px;padding-top:12px;border-top:1px solid #999;font-size:11px;color:#666;font-family:${FONT};">
       <p style="margin:0;">${lang === 'en' ? 'LG Electronics · D2C Digital Marketing Team' : 'LG전자 · D2C디지털마케팅팀'}</p>

@@ -5,7 +5,13 @@ import { INIT_META, INIT_TOTAL, INIT_PRODUCTS, INIT_DOTCOM, INIT_PRODUCTS_CNTY, 
 import { loadCache, saveCache } from '../shared/cache.js'
 import { fetchSnapshots, postSnapshot, updateSnapshot, deleteSnapshot, fetchSyncData } from '../shared/api.js'
 import { resolveDataForLang } from '../shared/utils.js'
+import { computeCategoryStats, extractMonthFromPeriod } from '../shared/trackerCategoryStats.js'
+import { parseKPISheet } from '../tracker/utils/sheetParser.js'
+import * as XLSX from 'xlsx-js-style'
 import Sidebar from '../shared/Sidebar.jsx'
+
+const TRACKER_SHEET_ID = '1lAzhlYJIjHVqDeywD3YMR1E9qf2LlDohFc0r6SAnVaE'
+const TRACKER_SHEET_NAME = '파싱시트'
 
 const MODE = 'monthly-report'
 const STORAGE_KEY = 'geo-monthly-report-cache'
@@ -14,7 +20,7 @@ const STORAGE_KEY = 'geo-monthly-report-cache'
 function NewsletterPreview({ meta, total, products, citations, dotcom, productsCnty = [], citationsCnty = [], lang = 'ko', weeklyLabels }) {
   const iframeRef = useRef(null)
   const html = useMemo(
-    () => generateEmailHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, { weeklyLabels }),
+    () => generateEmailHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, { weeklyLabels, categoryStats }),
     [meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels]
   )
 
@@ -53,7 +59,7 @@ function NewsletterPreview({ meta, total, products, citations, dotcom, productsC
 // ─── HTML 코드 뷰어 ───────────────────────────────────────────────────────────
 function HtmlCodeViewer({ meta, total, products, citations, dotcom, productsCnty = [], citationsCnty = [], lang = 'ko', weeklyLabels }) {
   const [copied, setCopied] = useState(false)
-  const html = useMemo(() => generateEmailHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, { weeklyLabels }), [meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels])
+  const html = useMemo(() => generateEmailHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, { weeklyLabels, categoryStats }), [meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels])
 
   async function handleCopy() {
     try {
@@ -116,6 +122,7 @@ export default function App() {
   const [citationsCnty, setCitationsCnty] = useState(cache?.citationsCnty ?? INIT_CITATIONS_CNTY)
   const [weeklyLabels, setWeeklyLabels] = useState(cache?.weeklyLabels ?? null)
   const [weeklyAll, setWeeklyAll] = useState(cache?.weeklyAll ?? {})
+  const [categoryStats, setCategoryStats] = useState(null)
   const [activeTab, setActiveTab] = useState('preview')
   const [previewLang, setPreviewLang] = useState('ko')
   const [snapshots,  setSnapshots]  = useState([])
@@ -124,6 +131,37 @@ export default function App() {
   const [snapMsg,    setSnapMsg]    = useState('')
   const [activeSnap, setActiveSnap] = useState(null)
   const [sidebarOpen, setSidebarOpen] = useState(true)
+
+  // tracker 데이터 fetch
+  useEffect(() => {
+    let cancelled = false
+    const targetMonth = extractMonthFromPeriod(metaKo.period) || '3월'
+    async function load() {
+      try {
+        const r = await fetch('/api/tracker-snapshot')
+        const j = r.ok ? await r.json() : null
+        if (j?.ok && j.data?.quantitativeGoals?.rows?.length) {
+          const stats = computeCategoryStats(j.data, targetMonth)
+          if (stats?.length && !cancelled) { setCategoryStats(stats); return }
+        }
+      } catch {}
+      try {
+        const rid = `${Date.now()}_${Math.random().toString(36).slice(2,8)}`
+        const url = `/gsheets-proxy/spreadsheets/d/${TRACKER_SHEET_ID}/gviz/tq?sheet=${encodeURIComponent(TRACKER_SHEET_NAME)}&tqx=out:csv;reqId:${rid}&headers=1`
+        const res = await fetch(url, { cache: 'no-store' })
+        if (!res.ok) return
+        const csv = await res.text()
+        const wb = XLSX.read(csv, { type: 'string' })
+        const ws = wb.Sheets[wb.SheetNames[0]]
+        const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' })
+        const parsed = parseKPISheet(rows)
+        const stats = computeCategoryStats(parsed, targetMonth)
+        if (stats?.length && !cancelled) setCategoryStats(stats)
+      } catch {}
+    }
+    load()
+    return () => { cancelled = true }
+  }, [metaKo.period])
 
   const meta    = previewLang === 'en' ? metaEn : metaKo
   const setMeta = previewLang === 'en' ? setMetaEn : setMetaKo
