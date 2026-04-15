@@ -479,6 +479,71 @@ export function generateCitationHTML(meta, _total, _products, citations, dotcom,
   citationsByCnty = citationsByCnty || {}
   dotcomByCnty = dotcomByCnty || {}
 
+  // ── meta.period에서 선택된 월 추출 → 해당 월 데이터로 교체 ──
+  const MONTHS_EN = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+  let selectedMonth = null
+  if (meta.period) {
+    const p = String(meta.period)
+    const km = p.match(/(\d{1,2})월/)
+    if (km) selectedMonth = MONTHS_EN[parseInt(km[1]) - 1]
+    if (!selectedMonth) {
+      const em = p.match(/(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i)
+      if (em) selectedMonth = em[1].charAt(0).toUpperCase() + em[1].slice(1).toLowerCase()
+    }
+  }
+  // 선택된 월이 있으면 citations/citationsCnty/citationsByCnty 점수를 해당 월로 교체
+  if (selectedMonth) {
+    // Touch Points (citations)
+    if (citations && citations.length) {
+      citations = citations.map(c => {
+        if (c.monthScores && c.monthScores[selectedMonth] != null) {
+          return { ...c, score: c.monthScores[selectedMonth] }
+        }
+        return c
+      }).filter(c => c.score > 0)
+      // 재정렬 + 순위/비율 재계산
+      citations.sort((a, b) => b.score - a.score)
+      const total = citations.reduce((s, c) => s + c.score, 0)
+      citations.forEach((c, i) => { c.rank = i + 1; c.ratio = total > 0 ? +((c.score / total) * 100).toFixed(1) : 0 })
+    }
+    // Domain (citationsCnty)
+    if (citationsCnty && citationsCnty.length) {
+      citationsCnty = citationsCnty.map(c => {
+        if (c.monthScores && c.monthScores[selectedMonth] != null) {
+          return { ...c, citations: c.monthScores[selectedMonth] }
+        }
+        return c
+      }).filter(c => c.citations > 0)
+    }
+    // 국가별 Touch Points (citationsByCnty)
+    if (citationsByCnty && Object.keys(citationsByCnty).length) {
+      const newByCnty = {}
+      for (const [cnty, list] of Object.entries(citationsByCnty)) {
+        const filtered = list.map(c => {
+          if (c.monthScores && c.monthScores[selectedMonth] != null) {
+            return { ...c, score: c.monthScores[selectedMonth] }
+          }
+          return c
+        }).filter(c => c.score > 0)
+        if (filtered.length) {
+          filtered.sort((a, b) => b.score - a.score)
+          const cntyTotal = filtered.reduce((s, c) => s + c.score, 0)
+          filtered.forEach((c, i) => { c.rank = i + 1; c.ratio = cntyTotal > 0 ? +((c.score / cntyTotal) * 100).toFixed(1) : 0 })
+          newByCnty[cnty] = filtered
+        }
+      }
+      citationsByCnty = newByCnty
+    }
+  }
+
+  // Dotcom 기간 필터: 선택된 월의 데이터로 교체
+  if (selectedMonth && dotcom && dotcom.byMonth && dotcom.byMonth[selectedMonth]) {
+    dotcom = { ...dotcom, lg: dotcom.byMonth[selectedMonth].lg, samsung: dotcom.byMonth[selectedMonth].samsung }
+  }
+  if (selectedMonth && dotcomByCnty && dotcom?.byCntyByMonth?.[selectedMonth]) {
+    dotcomByCnty = dotcom.byCntyByMonth[selectedMonth]
+  }
+
   // 국가 필터 초기 상태 (모두 선택)
   const allCountryCodes = Object.values(REGIONS).flatMap(r => r.countries)
   const isCountryOn = () => true

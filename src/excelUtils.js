@@ -827,8 +827,36 @@ function parseCitPageType(rows) {
   Object.values(dotcomTrend).forEach(m => Object.keys(m).forEach(k => allMonths.add(k)))
   const dotcomTrendMonths = MONTH_NAMES.filter(m => allMonths.has(m))
 
+  // 월별 dotcom 데이터 보존 (기간 필터용)
+  const dotcomByMonth = {}
+  const dotcomByCntyByMonth = {}
+  monthPairs.forEach((mp, mi) => {
+    const mLabel = monthLabels[mi]
+    if (!mLabel) return
+    const mLg = {}, mSam = {}
+    data.forEach(r => {
+      const rawCountry = normCountry(r[0])
+      const pageType = String(r[1] || '').replace(/[()]/g, '').trim()
+      let key = /page total|^ttl$/i.test(pageType) ? 'TTL' : pageType
+      if (key.toLowerCase() === 'microsite') key = 'Microsites'
+      const cnty = CNTY_ALIAS[rawCountry] || rawCountry.toUpperCase()
+      const lv = numVal(r[mp.lg])
+      const sv = numVal(r[mp.ss])
+      if (cnty === 'TTL') {
+        mLg[key] = (mLg[key] || 0) + lv
+        mSam[key] = (mSam[key] || 0) + sv
+      } else {
+        if (!dotcomByCntyByMonth[mLabel]) dotcomByCntyByMonth[mLabel] = {}
+        if (!dotcomByCntyByMonth[mLabel][cnty]) dotcomByCntyByMonth[mLabel][cnty] = { lg: {}, samsung: {} }
+        dotcomByCntyByMonth[mLabel][cnty].lg[key] = (dotcomByCntyByMonth[mLabel][cnty].lg[key] || 0) + lv
+        dotcomByCntyByMonth[mLabel][cnty].samsung[key] = (dotcomByCntyByMonth[mLabel][cnty].samsung[key] || 0) + sv
+      }
+    })
+    if (Object.keys(mLg).length) dotcomByMonth[mLabel] = { lg: mLg, samsung: mSam }
+  })
+
   const result = {}
-  if (lg.TTL || Object.keys(lg).length) result.dotcom = { lg, samsung }
+  if (lg.TTL || Object.keys(lg).length) result.dotcom = { lg, samsung, byMonth: dotcomByMonth, byCntyByMonth: dotcomByCntyByMonth }
   if (Object.keys(dotcomByCnty).length) result.dotcomByCnty = dotcomByCnty
   if (Object.keys(dotcomTrend).length && dotcomTrendMonths.length) {
     result.dotcomTrend = dotcomTrend
@@ -947,20 +975,21 @@ function parseCitTouchPoints(rows) {
       }
     }
 
+    // 모든 월별 데이터 수집
+    const monthScores = {}
+    monthLabels.forEach(({ col, label }) => {
+      const val = numVal(r[col])
+      if (val > 0) monthScores[label] = val
+    })
+
     if (country === 'TTL' || country === 'TOTAL') {
-      if (score > 0) citations.push({ source: channel, category: '', score, delta: 0, ratio: 0 })
-      // 모든 월별 데이터 수집 (트렌드용)
-      const monthData = {}
-      monthLabels.forEach(({ col, label }) => {
-        const val = numVal(r[col])
-        if (val > 0) monthData[label] = val
-      })
-      if (Object.keys(monthData).length > 0) {
-        citTouchPointsTrend[channel] = monthData
+      if (score > 0) citations.push({ source: channel, category: '', score, delta: 0, ratio: 0, monthScores })
+      if (Object.keys(monthScores).length > 0) {
+        citTouchPointsTrend[channel] = monthScores
       }
     } else if (score > 0) {
       if (!citationsByCnty[country]) citationsByCnty[country] = []
-      citationsByCnty[country].push({ source: channel, category: '', score, delta: 0, ratio: 0 })
+      citationsByCnty[country].push({ source: channel, category: '', score, delta: 0, ratio: 0, monthScores })
     }
   })
 
@@ -1145,9 +1174,19 @@ function parseCitDomain(rows) {
       }
     }
 
+    // 월별 점수맵 (기간 필터용)
+    const monthScores = {}
+    if (domainMonthLabels.length > 0) {
+      domainMonthLabels.forEach(({ col, label }) => {
+        const raw = String(r[col] || '').replace(/,/g, '').trim()
+        const val = parseFloat(raw)
+        if (!isNaN(val) && val > 0) monthScores[label] = val
+      })
+    }
+
     if (citations > 0) {
       cntyRanks[cnty] = (cntyRanks[cnty] || 0) + 1
-      result.push({ cnty, rank: cntyRanks[cnty], domain, type, citations })
+      result.push({ cnty, rank: cntyRanks[cnty], domain, type, citations, monthScores })
     }
   }
 
