@@ -605,9 +605,9 @@ export function generateCitationHTML(meta, _total, _products, citations, dotcom,
       <div class="fl-divider cit-lang-toggle"></div>
       <div class="fl-group">
         <span class="fl-label">${lang === 'en' ? 'Period' : '기간'}</span>
-        ${sortedAvailMonths.length > 1 ? `<div class="trend-tabs" id="month-toggle">${sortedAvailMonths.map(m =>
-          `<button class="trend-tab${m === selectedMonth ? ' active' : ''}" onclick="switchMonth('${m}')">${m}</button>`
-        ).join('')}</div>` : `<span class="fl-badge">${meta.period || '—'}</span>`}
+        ${sortedAvailMonths.length > 1 ? `<select id="month-select" onchange="switchMonth(this.value)" style="padding:4px 8px;border-radius:6px;border:1px solid #CBD5E1;font-size:13px;font-family:${FONT};background:#fff;cursor:pointer">${sortedAvailMonths.map(m =>
+          `<option value="${m}"${m === selectedMonth ? ' selected' : ''}>${m}</option>`
+        ).join('')}</select>` : `<span class="fl-badge">${meta.period || '—'}</span>`}
       </div>
       <div class="fl-divider"></div>
       <div class="fl-group">
@@ -911,9 +911,9 @@ function renderDotcom(dc){
 }
 
 function switchMonth(month){
-  // 월 버튼 활성화
-  document.querySelectorAll('#month-toggle .trend-tab').forEach(function(b){b.classList.remove('active')});
-  document.querySelectorAll('#month-toggle .trend-tab').forEach(function(b){if(b.textContent===month)b.classList.add('active')});
+  // 드롭박스 동기화
+  var sel=document.getElementById('month-select');
+  if(sel)sel.value=month;
   // Touch Points: monthScores에서 해당 월 점수 추출
   _citations=_rawCitations.map(function(c){
     var s=(c.monthScores&&c.monthScores[month]!=null)?c.monthScores[month]:c.score;
