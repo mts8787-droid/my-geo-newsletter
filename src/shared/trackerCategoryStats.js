@@ -36,7 +36,9 @@ export function computeCategoryStats(data, month) {
   const actualMap = buildLookup(data.quantitativeResults?.rows)
   // tracker MONTHS는 3월부터 시작이므로 idx 0이 3월
   const currentMonth = new Date().getMonth() + 1  // 1~12
-  const fallbackMonth = currentMonth >= 3 && currentMonth <= 12 ? `${currentMonth}월` : '3월'
+  // 뉴스레터에서는 이전 달을 전달하므로, fallback도 이전 달 기준
+  const prevM = currentMonth - 1
+  const fallbackMonth = prevM >= 3 && prevM <= 12 ? `${prevM}월` : '3월'
   let targetMonth = month || data._month || fallbackMonth
   let monthIdx = MONTHS.indexOf(targetMonth)
   // 잘못된 월(MONTHS에 없음)은 명시적으로 3월로 클램프 (key까지 동기화)
@@ -106,7 +108,8 @@ export function computeStakeholderStats(data, month) {
   const goalRows = data.quantitativeGoals.rows
   const actualMap = buildLookup(data.quantitativeResults?.rows)
   const currentMonth = new Date().getMonth() + 1
-  const fallbackMonth = currentMonth >= 3 && currentMonth <= 12 ? `${currentMonth}월` : '3월'
+  const prevM = currentMonth - 1
+  const fallbackMonth = prevM >= 3 && prevM <= 12 ? `${prevM}월` : '3월'
   let targetMonth = month || data._month || fallbackMonth
   let monthIdx = MONTHS.indexOf(targetMonth)
   if (monthIdx < 0) { targetMonth = '3월'; monthIdx = 0 }
@@ -158,4 +161,16 @@ export function extractMonthFromPeriod(period) {
   const enMatch = String(period).match(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)/i)
   if (enMatch) return `${enToNum[enMatch[1].toLowerCase()]}월`
   return null
+}
+
+// 뉴스레터 핵심 과제 진척: 항상 이전 달 (현재 4월이면 3월)
+// MONTHS는 3월~12월이므로 3월이면 이전 달 없음 → 3월 유지
+export function previousMonth(monthStr) {
+  if (!monthStr) return null
+  const m = String(monthStr).match(/(\d{1,2})월/)
+  if (!m) return monthStr
+  const num = parseInt(m[1])
+  const prev = num - 1
+  if (prev < 3) return '3월'  // tracker MONTHS는 3월부터 시작
+  return `${prev}월`
 }

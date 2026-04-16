@@ -5,7 +5,7 @@ import { INIT_META, INIT_TOTAL, INIT_PRODUCTS, INIT_DOTCOM, INIT_PRODUCTS_CNTY, 
 import { loadCache, saveCache } from '../shared/cache.js'
 import { fetchSnapshots, postSnapshot, updateSnapshot, deleteSnapshot, fetchSyncData } from '../shared/api.js'
 import { resolveDataForLang } from '../shared/utils.js'
-import { computeCategoryStats, extractMonthFromPeriod } from '../shared/trackerCategoryStats.js'
+import { computeCategoryStats, extractMonthFromPeriod, previousMonth } from '../shared/trackerCategoryStats.js'
 import { parseKPISheet } from '../tracker/utils/sheetParser.js'
 import * as XLSX from 'xlsx-js-style'
 import Sidebar from '../shared/Sidebar.jsx'
@@ -145,8 +145,10 @@ export default function App() {
   // tracker 데이터: Google Sheets에서 직접 가져와서 categoryStats 계산
   useEffect(() => {
     let cancelled = false
-    const targetMonth = extractMonthFromPeriod(metaKo.period) || '3월'
-    console.log('[CategoryCards] targetMonth:', targetMonth, 'period:', metaKo.period)
+    // 뉴스레터 진척사항은 항상 이전 달 (현재 발행월의 직전 달)
+    const currentPeriodMonth = extractMonthFromPeriod(metaKo.period) || `${new Date().getMonth() + 1}월`
+    const targetMonth = previousMonth(currentPeriodMonth)
+    console.log('[CategoryCards] targetMonth(이전달):', targetMonth, 'period:', metaKo.period)
 
     // 1차: tracker-snapshot API 시도 (기존 게시 데이터)
     // 2차: 실패 시 Google Sheets에서 직접 fetch
