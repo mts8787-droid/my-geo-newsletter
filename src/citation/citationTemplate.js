@@ -479,8 +479,20 @@ export function generateCitationHTML(meta, _total, _products, citations, dotcom,
   citationsByCnty = citationsByCnty || {}
   dotcomByCnty = dotcomByCnty || {}
 
-  // ── meta.period에서 선택된 월 추출 → 해당 월 데이터로 교체 ──
+  // 원본 데이터 보존 (클라이언트 월 전환용)
+  const rawCitations = citations ? JSON.parse(JSON.stringify(citations)) : []
+  const rawCitationsByCnty = citationsByCnty ? JSON.parse(JSON.stringify(citationsByCnty)) : {}
+  const rawCitationsCnty = citationsCnty ? JSON.parse(JSON.stringify(citationsCnty)) : []
+  const rawDotcom = dotcom ? JSON.parse(JSON.stringify(dotcom)) : null
+  const rawDotcomByCnty = dotcomByCnty ? JSON.parse(JSON.stringify(dotcomByCnty)) : {}
+
+  // 가용 월 목록 추출
   const MONTHS_EN = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+  const availableMonths = new Set()
+  if (rawCitations.length) rawCitations.forEach(c => { if (c.monthScores) Object.keys(c.monthScores).forEach(m => availableMonths.add(m)) })
+  const sortedAvailMonths = MONTHS_EN.filter(m => availableMonths.has(m))
+
+  // ── meta.period에서 선택된 월 추출 → 해당 월 데이터로 교체 ──
   let selectedMonth = null
   if (meta.period) {
     const p = String(meta.period)
@@ -593,7 +605,9 @@ export function generateCitationHTML(meta, _total, _products, citations, dotcom,
       <div class="fl-divider cit-lang-toggle"></div>
       <div class="fl-group">
         <span class="fl-label">${lang === 'en' ? 'Period' : '기간'}</span>
-        <span class="fl-badge">${meta.period || '—'}</span>
+        ${sortedAvailMonths.length > 1 ? `<div class="trend-tabs" id="month-toggle">${sortedAvailMonths.map(m =>
+          `<button class="trend-tab${m === selectedMonth ? ' active' : ''}" onclick="switchMonth('${m}')">${m}</button>`
+        ).join('')}</div>` : `<span class="fl-badge">${meta.period || '—'}</span>`}
       </div>
       <div class="fl-divider"></div>
       <div class="fl-group">
@@ -739,6 +753,11 @@ var _citationsByCnty=${JSON.stringify(citationsByCnty || {})};
 var _citationsCnty=${JSON.stringify(citationsCnty || [])};
 var _dotcom=${JSON.stringify(dotcom || null)};
 var _dotcomByCnty=${JSON.stringify(dotcomByCnty || {})};
+var _rawCitations=${JSON.stringify(rawCitations)};
+var _rawCitationsByCnty=${JSON.stringify(rawCitationsByCnty)};
+var _rawCitationsCnty=${JSON.stringify(rawCitationsCnty)};
+var _rawDotcom=${JSON.stringify(rawDotcom)};
+var _rawDotcomByCnty=${JSON.stringify(rawDotcomByCnty)};
 var _meta=${JSON.stringify({
   citationTopN: meta.citationTopN || 10,
   citDomainTopN: meta.citDomainTopN || 10,
@@ -891,6 +910,46 @@ function renderDotcom(dc){
   el.innerHTML='<div class="section-card"><div class="section-header"><div class="section-title">'+_t.dotcomTitle+'</div>'+legend+'</div><div class="section-body">'+body+'</div></div>';
 }
 
+function switchMonth(month){
+  // 월 버튼 활성화
+  document.querySelectorAll('#month-toggle .trend-tab').forEach(function(b){b.classList.remove('active')});
+  document.querySelectorAll('#month-toggle .trend-tab').forEach(function(b){if(b.textContent===month)b.classList.add('active')});
+  // Touch Points: monthScores에서 해당 월 점수 추출
+  _citations=_rawCitations.map(function(c){
+    var s=(c.monthScores&&c.monthScores[month]!=null)?c.monthScores[month]:c.score;
+    return Object.assign({},c,{score:s});
+  }).filter(function(c){return c.score>0});
+  _citations.sort(function(a,b){return b.score-a.score});
+  var total=_citations.reduce(function(s,c){return s+c.score},0);
+  _citations.forEach(function(c,i){c.rank=i+1;c.ratio=total>0?+((c.score/total)*100).toFixed(1):0});
+  // 국가별 Touch Points
+  _citationsByCnty={};
+  Object.keys(_rawCitationsByCnty).forEach(function(cnty){
+    var list=_rawCitationsByCnty[cnty].map(function(c){
+      var s=(c.monthScores&&c.monthScores[month]!=null)?c.monthScores[month]:c.score;
+      return Object.assign({},c,{score:s});
+    }).filter(function(c){return c.score>0});
+    if(list.length){
+      list.sort(function(a,b){return b.score-a.score});
+      var t=list.reduce(function(s,c){return s+c.score},0);
+      list.forEach(function(c,i){c.rank=i+1;c.ratio=t>0?+((c.score/t)*100).toFixed(1):0});
+      _citationsByCnty[cnty]=list;
+    }
+  });
+  // Domain
+  _citationsCnty=_rawCitationsCnty.map(function(c){
+    var s=(c.monthScores&&c.monthScores[month]!=null)?c.monthScores[month]:c.citations;
+    return Object.assign({},c,{citations:s});
+  }).filter(function(c){return c.citations>0});
+  // Dotcom
+  if(_rawDotcom&&_rawDotcom.byMonth&&_rawDotcom.byMonth[month]){
+    _dotcom={lg:_rawDotcom.byMonth[month].lg,samsung:_rawDotcom.byMonth[month].samsung};
+  }
+  if(_rawDotcom&&_rawDotcom.byCntyByMonth&&_rawDotcom.byCntyByMonth[month]){
+    _dotcomByCnty=_rawDotcom.byCntyByMonth[month];
+  }
+  applyFilter();
+}
 function applyFilter(){
   var filter={};var allCodes=['US','CA','UK','DE','ES','MX','BR','AU','VN','IN'];
   document.querySelectorAll('#filter-layer .fl-chk[data-filter="country"]').forEach(function(c){filter[c.value]=c.checked});

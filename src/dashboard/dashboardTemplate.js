@@ -1354,7 +1354,7 @@ export function generateVisibilityHTML(meta, total, products, citations, dotcom,
 
 export function generateDashboardHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty, opts, extra) {
   const visibilityOnly = opts?.visibilityOnly || false
-  const includeProgressTracker = opts?.includeProgressTracker !== false
+  const includeProgressTracker = opts?.includeProgressTracker === true
   const trackerVersion = opts?.trackerVersion || 'v1'
   const includePromptList = opts?.includePromptList || false
   const ulMap = extra?.unlaunchedMap || {}
@@ -1738,6 +1738,7 @@ ${visibilityOnly ? `
     <button class="tab-btn active" onclick="switchTab('visibility')">Visibility</button>
     <button class="tab-btn" onclick="switchTab('citation')">Citation</button>
     <button class="tab-btn" onclick="switchTab('readability')">Readability</button>
+    ${includeProgressTracker ? `<button class="tab-btn" onclick="switchTab('progress')">Progress Tracker</button>` : ''}
     ${includePromptList ? `<button class="tab-btn" onclick="switchTab('promptlist')">Prompt List</button>` : ''}
     <button class="tab-btn" onclick="switchTab('glossary')">Glossary</button>
   </div>
