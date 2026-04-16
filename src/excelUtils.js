@@ -1389,28 +1389,70 @@ function parseAppendix(rows) {
 
 // ─── Unlaunched 시트 파서 ─────────────────────────────────────────────────────
 function parseUnlaunched(rows) {
-  const headerIdx = rows.findIndex(r =>
-    r.some(c => /^country$/i.test(String(c || '').trim())) &&
-    r.some(c => /^launched$/i.test(String(c || '').trim()))
-  )
-  if (headerIdx < 0) return {}
+  // 헤더 탐색: country + (launched|status|launch) 콤보
+  const headerIdx = rows.findIndex(r => {
+    if (!r) return false
+    const hasCountry = r.some(c => /^(country|county)$/i.test(String(c || '').trim()))
+    const hasStatus = r.some(c => /^(launched|launch|launch\s*status|status|출시여부|출시)$/i.test(String(c || '').trim()))
+    return hasCountry && hasStatus
+  })
+  if (headerIdx < 0) {
+    console.warn('[parseUnlaunched] 헤더 못찾음. 시트 첫 10행:')
+    rows.slice(0, 10).forEach((r, i) => console.log(`  row${i}:`, r?.slice(0, 6)))
+    return {}
+  }
   const header = rows[headerIdx]
-  const colMap = {}
-  const FIELDS = ['country', 'division', 'category', 'launched']
+  let countryCol = -1, categoryCol = -1, statusCol = -1, divisionCol = -1
   for (let i = 0; i < header.length; i++) {
     const s = String(header[i] || '').trim().toLowerCase()
-    if (FIELDS.includes(s) && !colMap[s]) colMap[s] = i
+    if (countryCol < 0 && (s === 'country' || s === 'county')) countryCol = i
+    if (categoryCol < 0 && (s === 'category' || s === 'product' || s === '제품' || s === '카테고리')) categoryCol = i
+    if (statusCol < 0 && /^(launched|launch|launch\s*status|status|출시여부|출시)$/i.test(s)) statusCol = i
+    if (divisionCol < 0 && (s === 'division' || s === 'div' || s === 'bu' || s === '본부')) divisionCol = i
   }
-  // country|category(정규화) → true 맵 (unlaunched만)
+  if (countryCol < 0 || categoryCol < 0 || statusCol < 0) {
+    console.warn('[parseUnlaunched] 필수 컬럼 누락', { countryCol, categoryCol, statusCol, header })
+    return {}
+  }
+
+  // unlaunched로 간주할 값 — 다양한 표현 허용
+  const UNLAUNCHED_VALUES = new Set([
+    'unlaunched', 'not launched', 'notlaunched', '미출시', 'no', 'n',
+    'false', 'unlaunch', '미 출시', '미발매', 'not available', 'na',
+  ])
+
   const unlaunchedMap = {}
+  let totalRows = 0, matchedRows = 0
   rows.slice(headerIdx + 1).forEach(r => {
     if (!r) return
-    const status = String(r[colMap.launched] || '').trim().toLowerCase()
-    if (status !== 'unlaunched') return
-    const country = normCountry(r[colMap.country])
-    const category = String(r[colMap.category] || '').trim().toUpperCase()
-    if (country && category) unlaunchedMap[`${country}|${category}`] = true
+    const rawStatus = String(r[statusCol] || '').trim()
+    if (!rawStatus) return
+    totalRows++
+    const status = rawStatus.toLowerCase().replace(/\s+/g, ' ')
+    if (!UNLAUNCHED_VALUES.has(status) && !UNLAUNCHED_VALUES.has(status.replace(/\s/g, ''))) return
+    const country = normCountry(r[countryCol])
+    const rawCategory = String(r[categoryCol] || '').trim()
+    if (!country || !rawCategory) return
+    // category: UL_PROD_MAP 기준 코드로 정규화 (TV, IT, AV, WM, REF, DW, VC, COOKING, RAC, AIRCARE)
+    // 원본도 저장 + 정규화 값도 저장 (매칭 유연성)
+    const upperCat = rawCategory.toUpperCase()
+    const NORMALIZE = {
+      'TV': 'TV', 'MONITOR': 'IT', 'IT': 'IT', 'AUDIO': 'AV', 'AV': 'AV',
+      'WASHER': 'WM', 'WM': 'WM', 'WASHING MACHINE': 'WM',
+      'REFRIGERATOR': 'REF', 'REF': 'REF', 'FRIDGE': 'REF',
+      'DISHWASHER': 'DW', 'DW': 'DW',
+      'VACUUM': 'VC', 'VC': 'VC', 'VACUUM CLEANER': 'VC',
+      'COOKING': 'COOKING', 'COOK': 'COOKING',
+      'RAC': 'RAC', 'AIRCARE': 'AIRCARE', 'AIR CARE': 'AIRCARE',
+      'STYLER': 'STYLER',
+    }
+    const normCat = NORMALIZE[upperCat] || upperCat
+    unlaunchedMap[`${country}|${normCat}`] = true
+    // 원본 값도 별도 키로 저장 (매칭 유연성)
+    if (normCat !== upperCat) unlaunchedMap[`${country}|${upperCat}`] = true
+    matchedRows++
   })
+  console.log(`[parseUnlaunched] 총 ${totalRows}행 중 ${matchedRows}행 매칭 / 미출시 ${Object.keys(unlaunchedMap).length}건`)
   return Object.keys(unlaunchedMap).length > 0 ? { unlaunchedMap } : {}
 }
 
