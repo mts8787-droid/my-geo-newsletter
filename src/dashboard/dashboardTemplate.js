@@ -662,9 +662,11 @@ function countrySectionHtml(productsCnty, meta, t, lang, ulMap) {
       <div id="cnty-view-product" style="display:none">${byProductHtml}</div>
       ${(() => {
         if (!ulMap || !Object.keys(ulMap).length) return ''
+        // 제품명(kr) → id 역매핑
+        const NAME_TO_ID = { 'TV':'tv', '모니터':'monitor', '오디오':'audio', '세탁기':'washer', '냉장고':'fridge', '식기세척기':'dw', '청소기':'vacuum', 'Cooking':'cooking', 'RAC':'rac', 'Aircare':'aircare' }
         const products = [...new Set(productsCnty.map(r => r.product))]
         const footnotes = products.map(name => {
-          const id = Object.entries(CATEGORY_ID_MAP).find(([k]) => CATEGORY_KR_MAP[k] === name)?.[1] || name.toLowerCase()
+          const id = NAME_TO_ID[name] || String(name).toLowerCase()
           const cntys = getULCntys(id, ulMap)
           return cntys.length ? `${name}: ${cntys.join(', ')} ${lang === 'en' ? 'not launched' : '미출시'}` : null
         }).filter(Boolean)
