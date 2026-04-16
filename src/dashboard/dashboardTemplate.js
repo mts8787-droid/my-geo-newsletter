@@ -224,11 +224,12 @@ function trendDetailHtml(products, weeklyAll, wLabels, t, lang, ulMap) {
         return `<tr style="background:${isLG ? '#FFF8F9' : i % 2 === 0 ? '#fff' : '#FAFBFC'}"><td style="padding:5px 6px;font-size:13px;font-weight:${isLG ? 700 : 500};color:${c};border-bottom:1px solid #F8FAFC;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><i style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${c};margin-right:4px;vertical-align:0"></i>${b}</td>${cells}</tr>`
       }).join('')
 
-      return `<div class="trend-row" style="margin-bottom:24px">
+      const _trAllUL = isAllUnlaunched(p.id || p.category, ulMap)
+      return `<div class="trend-row${_trAllUL ? ' is-unlaunched' : ''}" data-prodid="${p.id || p.category}" style="margin-bottom:24px">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
           <span style="width:4px;height:22px;border-radius:4px;background:${RED};flex-shrink:0"></span>
           <span style="font-size:20px;font-weight:700;color:#1A1A1A">${prodNameUL(p, ulMap)}</span>
-          <span style="font-size:14px;font-weight:700;padding:2px 8px;border-radius:10px;background:${st.bg};color:${st.color};border:1px solid ${st.border}">${st.label}</span>
+          <span class="trend-status-badge" style="font-size:14px;font-weight:700;padding:2px 8px;border-radius:10px;background:${_trAllUL ? '#F1F5F9' : st.bg};color:${_trAllUL ? '#64748B' : st.color};border:1px solid ${_trAllUL ? '#CBD5E1' : st.border}">${_trAllUL ? (lang === 'en' ? 'Unlaunched' : '미출시') : st.label}</span>
           ${lgLatest != null ? `<span style="font-size:16px;font-weight:700;color:#1A1A1A">LG ${lgLatest.toFixed(1)}%</span>` : ''}
           ${p.compName ? `<span style="font-size:14px;color:#94A3B8">vs ${p.compName} ${p.compRatio || ''}%</span>` : ''}
         </div>
@@ -252,7 +253,7 @@ function trendDetailHtml(products, weeklyAll, wLabels, t, lang, ulMap) {
     <div class="section-body">${buGroups}${(() => {
       const footnotes = products.filter(p => getULCntys(p.id || p.category, ulMap).length > 0)
         .map(p => `${p.kr}: ${getULCntys(p.id || p.category, ulMap).join(', ')} ${lang === 'en' ? 'not launched' : '미출시'}`)
-      return footnotes.length ? `<p style="margin:12px 0 0;font-size:12px;color:#94A3B8;line-height:1.6">* ${footnotes.join(' / ')}</p>` : ''
+      return footnotes.length ? `<p style="margin:12px 0 0;font-size:12px;color:#1A1A1A;line-height:1.6;font-weight:500">* ${footnotes.join(' / ')}</p>` : ''
     })()}</div>
   </div>`
 }
@@ -334,11 +335,12 @@ function monthlyTrendDetailHtml(products, monthlyVis, t, lang, ulMap) {
         return `<tr style="background:${isLG ? '#FFF8F9' : i % 2 === 0 ? '#fff' : '#FAFBFC'}"><td style="padding:5px 6px;font-size:13px;font-weight:${isLG ? 700 : 500};color:${c};border-bottom:1px solid #F8FAFC;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><i style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${c};margin-right:4px;vertical-align:0"></i>${b}</td>${cells}</tr>`
       }).join('')
 
-      return `<div class="trend-row" style="margin-bottom:24px">
+      const _trAllUL = isAllUnlaunched(p.id || p.category, ulMap)
+      return `<div class="trend-row${_trAllUL ? ' is-unlaunched' : ''}" data-prodid="${p.id || p.category}" style="margin-bottom:24px">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
           <span style="width:4px;height:22px;border-radius:4px;background:${RED};flex-shrink:0"></span>
           <span style="font-size:20px;font-weight:700;color:#1A1A1A">${prodNameUL(p, ulMap)}</span>
-          <span style="font-size:14px;font-weight:700;padding:2px 8px;border-radius:10px;background:${st.bg};color:${st.color};border:1px solid ${st.border}">${st.label}</span>
+          <span class="trend-status-badge" style="font-size:14px;font-weight:700;padding:2px 8px;border-radius:10px;background:${_trAllUL ? '#F1F5F9' : st.bg};color:${_trAllUL ? '#64748B' : st.color};border:1px solid ${_trAllUL ? '#CBD5E1' : st.border}">${_trAllUL ? (lang === 'en' ? 'Unlaunched' : '미출시') : st.label}</span>
           ${lgLatest != null ? `<span style="font-size:16px;font-weight:700;color:#1A1A1A">LG ${lgLatest.toFixed(1)}%</span>` : ''}
           ${p.compName ? `<span style="font-size:14px;color:#94A3B8">vs ${p.compName} ${p.compRatio || ''}%</span>` : ''}
         </div>
@@ -362,7 +364,7 @@ function monthlyTrendDetailHtml(products, monthlyVis, t, lang, ulMap) {
     <div class="section-body">${buGroups}${(() => {
       const footnotes = products.filter(p => getULCntys(p.id || p.category, ulMap).length > 0)
         .map(p => `${p.kr}: ${getULCntys(p.id || p.category, ulMap).join(', ')} ${lang === 'en' ? 'not launched' : '미출시'}`)
-      return footnotes.length ? `<p style="margin:12px 0 0;font-size:12px;color:#94A3B8;line-height:1.6">* ${footnotes.join(' / ')}</p>` : ''
+      return footnotes.length ? `<p style="margin:12px 0 0;font-size:12px;color:#1A1A1A;line-height:1.6;font-weight:500">* ${footnotes.join(' / ')}</p>` : ''
     })()}</div>
   </div>`
 }
@@ -504,12 +506,13 @@ function productSectionHtml(products, meta, t, lang, wLabels, ulMap, monthlyVis,
       const mMomD = mScore && (p.monthlyPrev || p.prev) ? +(mScore - (p.monthlyPrev || p.prev)).toFixed(1) : null
       const ulCntys = getULCntys(p.id || p.category, ulMap)
       const allUL = isAllUnlaunched(p.id || p.category, ulMap)
-      const useBlack = allUL
-      const finalSt = useBlack ? { border: '#1A1A1A', bg: '#F1F5F9', color: '#1A1A1A', label: lang === 'en' ? 'Unlaunched' : '미출시' } : st
-      return `<div class="prod-card" data-ws="${wScore.toFixed(1)}" data-ms="${mScore.toFixed(1)}" data-wr="${wRatio}" data-mr="${mRatio}" data-wmom="${wMomD != null ? wMomD : ''}" data-mmom="${mMomD != null ? mMomD : ''}" style="border-color:${finalSt.border}">
+      // 기본 렌더는 전체 국가 기준 (전 국가 미출시면 회색). 필터 시 클라이언트 JS가 재계산.
+      const GRAY = { border: '#CBD5E1', bg: '#F1F5F9', color: '#64748B', label: lang === 'en' ? 'Unlaunched' : '미출시' }
+      const finalSt = allUL ? GRAY : st
+      return `<div class="prod-card${allUL ? ' is-unlaunched' : ''}" data-prodid="${p.id || p.category}" data-ws="${wScore.toFixed(1)}" data-ms="${mScore.toFixed(1)}" data-wr="${wRatio}" data-mr="${mRatio}" data-wmom="${wMomD != null ? wMomD : ''}" data-mmom="${mMomD != null ? mMomD : ''}" style="border-color:${finalSt.border}">
         <div class="prod-head">
           <span class="prod-name">${prodNameUL(p, ulMap)}</span>
-          ${ulCntys.length > 0 ? `<span style="display:block;font-size:11px;color:#94A3B8;margin-top:1px">* ${lang === 'en' ? 'Not launched in some countries' : '제품 미출시 국가 있음'}</span>` : ''}
+          ${ulCntys.length > 0 ? `<span class="prod-ul-note" style="display:block;font-size:11px;color:#94A3B8;margin-top:1px">* ${lang === 'en' ? 'Not launched countries' : '제품 미출시 국가'}</span>` : ''}
           <span class="prod-badge" style="background:${finalSt.bg};color:${finalSt.color};border-color:${finalSt.border}">${finalSt.label}</span>
         </div>
         <div class="prod-score-row">
@@ -545,7 +548,7 @@ function productSectionHtml(products, meta, t, lang, wLabels, ulMap, monthlyVis,
     <div class="section-body">${buGroups}${(() => {
       const footnotes = products.filter(p => getULCntys(p.id || p.category, ulMap).length > 0)
         .map(p => `${p.kr}: ${getULCntys(p.id || p.category, ulMap).join(', ')} ${lang === 'en' ? 'not launched' : '미출시'}`)
-      return footnotes.length ? `<p style="margin:12px 0 0;font-size:12px;color:#94A3B8;line-height:1.6">* ${footnotes.join(' / ')}</p>` : ''
+      return footnotes.length ? `<p style="margin:12px 0 0;font-size:12px;color:#1A1A1A;line-height:1.6;font-weight:500">* ${footnotes.join(' / ')}</p>` : ''
     })()}</div>
   </div>`
 }
@@ -556,11 +559,16 @@ function cntyStatus(sc, comp) {
   const r = sc / comp * 100
   return r >= 100 ? 'lead' : r >= 80 ? 'behind' : 'critical'
 }
-function cntyColHtml(r, maxScore, label) {
+function cntyColHtml(r, maxScore, label, ulMap) {
+  // 제품명(kr) → id 역매핑
+  const NAME_TO_ID = { 'TV':'tv', '모니터':'monitor', '오디오':'audio', '세탁기':'washer', '냉장고':'fridge', '식기세척기':'dw', '청소기':'vacuum', 'Cooking':'cooking', 'RAC':'rac', 'Aircare':'aircare' }
+  const prodId = NAME_TO_ID[r.product] || String(r.product || '').toLowerCase()
+  const ulCode = UL_PROD_MAP[prodId] || (prodId || '').toUpperCase()
+  const isUL = ulMap && ulMap[`${r.country}|${ulCode}`]
   const st = cntyStatus(r.score, r.compScore)
-  const barColor = st === 'lead' ? '#15803D' : st === 'behind' ? '#D97706' : '#BE123C'
+  const barColor = isUL ? '#94A3B8' : (st === 'lead' ? '#15803D' : st === 'behind' ? '#D97706' : '#BE123C')
   const gap = +(r.score - r.compScore).toFixed(1)
-  const gapColor = gap >= 0 ? '#15803D' : '#BE123C'
+  const gapColor = isUL ? '#64748B' : (gap >= 0 ? '#15803D' : '#BE123C')
   const BAR_H = 130
   // 중국 브랜드 1위 (TCL/Hisense/Haier — partial match)
   const C_BRAND_KEYS = ['TCL', 'HISENSE', 'HAIER']
@@ -580,7 +588,7 @@ function cntyColHtml(r, maxScore, label) {
   const cPx = r.compScore > 0 ? Math.max(3, Math.round(r.compScore / localMax * BAR_H)) : 0
   const cbPx = cBrandScore > 0 ? Math.max(3, Math.round(cBrandScore / localMax * BAR_H)) : 0
   const cBrandColor = '#9333EA'
-  return `<div class="vbar-item" data-product="${r.product}" data-country="${r.country}">
+  return `<div class="vbar-item${isUL ? ' is-unlaunched' : ''}" data-product="${r.product}" data-country="${r.country}" data-prodid="${prodId}">
     <div class="vbar-cols">
       <div class="vbar-col-wrap">
         <span class="vbar-val" style="color:${barColor}">${r.score.toFixed(1)}</span>
@@ -624,7 +632,7 @@ function countrySectionHtml(productsCnty, meta, t, lang, ulMap) {
   const filter = meta.cntyProductFilter || {}
   const byProductHtml = [...productMap.entries()].filter(([n]) => filter[n] !== false).map(([name, rows]) => {
     const maxScore = Math.max(...rows.map(r => Math.max(r.score, r.compScore)), 1)
-    const bars = rows.map(r => cntyColHtml(r, maxScore, cntyFullName(r.country))).join('')
+    const bars = rows.map(r => cntyColHtml(r, maxScore, cntyFullName(r.country), ulMap)).join('')
     return `<div class="cnty-product" data-group-product="${name}"><div class="bu-header"><span class="bu-label">${name}</span></div><div class="vbar-chart">${bars}</div></div>`
   }).join('')
 
@@ -637,7 +645,7 @@ function countrySectionHtml(productsCnty, meta, t, lang, ulMap) {
     const rows = countryMap.get(cnty)
     if (!rows) return ''
     const maxScore = Math.max(...rows.map(r => Math.max(r.score, r.compScore)), 1)
-    const bars = rows.map(r => cntyColHtml(r, maxScore, r.product)).join('')
+    const bars = rows.map(r => cntyColHtml(r, maxScore, r.product, ulMap)).join('')
     return `<div class="cnty-product" data-group-country="${cnty}"><div class="bu-header"><span class="bu-label">${cntyFullName(cnty)}</span></div><div class="vbar-chart">${bars}</div></div>`
   }).join('')
 
@@ -670,7 +678,7 @@ function countrySectionHtml(productsCnty, meta, t, lang, ulMap) {
           const cntys = getULCntys(id, ulMap)
           return cntys.length ? `${name}: ${cntys.join(', ')} ${lang === 'en' ? 'not launched' : '미출시'}` : null
         }).filter(Boolean)
-        return footnotes.length ? `<p style="margin:12px 0 0;font-size:12px;color:#94A3B8;line-height:1.6">* ${footnotes.join(' / ')}</p>` : ''
+        return footnotes.length ? `<p style="margin:12px 0 0;font-size:12px;color:#1A1A1A;line-height:1.6;font-weight:500">* ${footnotes.join(' / ')}</p>` : ''
       })()}
     </div>
   </div>`
@@ -1659,6 +1667,20 @@ body.show-insights .howto-box{display:block}
 .prod-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
 .prod-card{border:2px solid #E8EDF2;border-radius:12px;padding:16px 18px;background:#fff;transition:border-color .15s}
 .prod-card:hover{border-color:#CBD5E1}
+/* 미출시 제품: 회색 처리 (신호등/그래프/테두리/경쟁비바) */
+.prod-card.is-unlaunched{border-color:#CBD5E1 !important}
+.prod-card.is-unlaunched .prod-badge{background:#F1F5F9 !important;color:#64748B !important;border-color:#CBD5E1 !important}
+.prod-card.is-unlaunched .prod-chart svg path[stroke]{stroke:#94A3B8 !important}
+.prod-card.is-unlaunched .prod-chart svg circle[stroke]{stroke:#94A3B8 !important}
+.prod-card.is-unlaunched .prod-chart svg text[fill]:not([fill="#94A3B8"]){fill:#64748B !important}
+.prod-card.is-unlaunched .prod-chart svg stop{stop-color:#94A3B8 !important}
+.prod-card.is-unlaunched .prod-comp-bar{background:#94A3B8 !important}
+.prod-card.is-unlaunched .prod-comp-pct{color:#64748B !important}
+/* 국가별 섹션 미출시 제품 bar */
+.vbar-item.is-unlaunched .vbar-bar{background:#94A3B8 !important}
+.vbar-item.is-unlaunched .vbar-label{color:#64748B !important}
+/* 주간/월간 트렌드 미출시 배지 */
+.trend-row.is-unlaunched .trend-status-badge{background:#F1F5F9 !important;color:#64748B !important;border-color:#CBD5E1 !important}
 .prod-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
 .prod-name{font-size:20px;font-weight:900;color:#1A1A1A}
 .prod-badge{font-size:14px;font-weight:700;padding:2px 8px;border-radius:10px;border:1px solid}
@@ -2197,6 +2219,35 @@ function onFilterChange(){
   applyCntyFilters();
   updateHeroFromCheckboxes();
   updateProductScores(selCountry,selBU,selProd);
+  applyUnlaunchedStyle(selCountry);
+}
+// 선택된 국가 내에서 제품이 "모두 미출시"면 카드/트렌드에 회색 처리
+function applyUnlaunchedStyle(selCountry){
+  var countries = selCountry.isAll ? ['US','CA','UK','DE','ES','BR','MX','AU','VN','IN'] : Object.keys(selCountry.vals).filter(function(k){return selCountry.vals[k]});
+  if(!countries.length)countries = ['US','CA','UK','DE','ES','BR','MX','AU','VN','IN'];
+  // 제품 카드
+  document.querySelectorAll('.prod-card[data-prodid]').forEach(function(card){
+    var pid = card.getAttribute('data-prodid');
+    var allUL = countries.every(function(c){return _isUnlaunched(c,pid)});
+    card.classList.toggle('is-unlaunched', allUL);
+    // 배지 텍스트 업데이트
+    var badge = card.querySelector('.prod-badge');
+    if(badge && allUL){badge.textContent = (document.documentElement.lang==='en'?'Unlaunched':'미출시')}
+  });
+  // 트렌드 row
+  document.querySelectorAll('.trend-row[data-prodid]').forEach(function(row){
+    var pid = row.getAttribute('data-prodid');
+    var allUL = countries.every(function(c){return _isUnlaunched(c,pid)});
+    row.classList.toggle('is-unlaunched', allUL);
+    var badge = row.querySelector('.trend-status-badge');
+    if(badge && allUL){badge.textContent = (document.documentElement.lang==='en'?'Unlaunched':'미출시')}
+  });
+  // 국가별 섹션 vbar
+  document.querySelectorAll('.vbar-item[data-prodid][data-country]').forEach(function(item){
+    var pid = item.getAttribute('data-prodid');
+    var cnty = item.getAttribute('data-country');
+    item.classList.toggle('is-unlaunched', _isUnlaunched(cnty, pid));
+  });
 }
 function filterBU(selBU){
   document.querySelectorAll('.bu-group[data-bu]').forEach(function(g){
