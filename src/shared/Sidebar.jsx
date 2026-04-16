@@ -29,7 +29,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
   const [publishing, setPublishing] = useState(false)
   const [publishMsg, setPublishMsg] = useState('')
   const [combPublishing, setCombPublishing] = useState(false)
-  const [includeTracker, setIncludeTracker] = useState(false)
+  const [includeTracker, setIncludeTracker] = useState(true)
   const [trackerVersion, setTrackerVersion] = useState('v2')
   const [combMsg, setCombMsg] = useState('')
 

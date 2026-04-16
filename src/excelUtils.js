@@ -24,15 +24,23 @@ export const SHEET_NAMES = {
 // ─── 카테고리 ID/KR 매핑 ──────────────────────────────────────────────────────
 const CATEGORY_ID_MAP = {
   'TV': 'tv', 'Monitor': 'monitor', 'IT': 'monitor', 'Audio': 'audio', 'AV': 'audio',
-  'WM': 'washer', 'REF': 'fridge', 'DW': 'dw',
-  'VC': 'vacuum', 'Cooking': 'cooking',
+  'WM': 'washer', 'Washer': 'washer', 'Washing Machine': 'washer',
+  'REF': 'fridge', 'Refrigerator': 'fridge',
+  'DW': 'dw', 'Dishwasher': 'dw',
+  'VC': 'vacuum', 'Vacuum': 'vacuum', 'Vacuum Cleaner': 'vacuum',
+  'Cooking': 'cooking', 'Cook': 'cooking',
   'RAC': 'rac', 'Aircare': 'aircare', 'Air Care': 'aircare',
+  'Styler': 'styler',
 }
 const CATEGORY_KR_MAP = {
   'TV': 'TV', 'Monitor': '모니터', 'IT': '모니터', 'Audio': '오디오', 'AV': '오디오',
-  'WM': '세탁기', 'REF': '냉장고', 'DW': '식기세척기',
-  'VC': '청소기', 'Cooking': 'Cooking',
+  'WM': '세탁기', 'Washer': '세탁기', 'Washing Machine': '세탁기',
+  'REF': '냉장고', 'Refrigerator': '냉장고',
+  'DW': '식기세척기', 'Dishwasher': '식기세척기',
+  'VC': '청소기', 'Vacuum': '청소기', 'Vacuum Cleaner': '청소기',
+  'Cooking': 'Cooking', 'Cook': 'Cooking',
   'RAC': 'RAC', 'Aircare': 'Aircare', 'Air Care': 'Aircare',
+  'Styler': 'Styler',
 }
 
 export const DOTCOM_LG_COLS   = ['TTL','PLP','Microsites','PDP','Newsroom','Support','Buying-guide','Experience']

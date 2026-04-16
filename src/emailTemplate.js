@@ -1349,38 +1349,6 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                             </td>
                           </tr>
                         </table>
-                        ${(() => {
-                          // ── 본부별 미니 카드 (3열) ──
-                          const buKeys = ['MS', 'HS', 'ES']
-                          const buCards = buKeys.map(bu => {
-                            const bt = buTotals[bu]
-                            if (!bt) return `<td width="33%" style="padding:3px;"></td>`
-                            const ratio = bt.comp > 0 ? Math.round((bt.lg / bt.comp) * 100) : 100
-                            const sc = ratio >= 100 ? '#22C55E' : ratio >= 80 ? '#F59E0B' : '#EF4444'
-                            const prevBt = (total.buTotalsPrev || total.buPrev || {})[bu]
-                            const mom = prevBt ? +(bt.lg - prevBt.lg).toFixed(1) : null
-                            const momStr = mom != null ? (mom > 0 ? `▲${mom}` : mom < 0 ? `▼${Math.abs(mom)}` : '─') : '—'
-                            const momColor = mom > 0 ? '#22C55E' : mom < 0 ? '#EF4444' : '#94A3B8'
-                            const gap = +(bt.lg - bt.comp).toFixed(1)
-                            return `<td width="33%" style="padding:2px 3px;">
-                              <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#1E293B;border-radius:6px;border-left:3px solid ${sc};table-layout:fixed;">
-                                <tr><td style="padding:6px 8px;overflow:hidden;">
-                                  <span style="font-size:13px;font-weight:700;color:#FFFFFF;font-family:${EM_FONT};">${bu}</span>
-                                  <span style="font-size:16px;font-weight:900;color:#FFFFFF;font-family:${EM_FONT};margin-left:4px;">${bt.lg.toFixed(1)}%</span>
-                                  <span style="font-size:10px;color:${momColor};font-family:${EM_FONT};margin-left:3px;">${momStr}</span>
-                                  <span style="font-size:10px;color:#64748B;font-family:${EM_FONT};margin-left:4px;">SS ${bt.comp.toFixed(1)}%</span>
-                                  <span style="font-size:11px;font-weight:700;color:${sc};font-family:${EM_FONT};margin-left:3px;">${lang === 'en' ? 'vs' : '대비'}${ratio}%</span>
-                                </td></tr>
-                              </table>
-                            </td>`
-                          }).join('')
-                          const hasBu = buKeys.some(bu => buTotals[bu])
-                          return hasBu ? `
-                          <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                            <tr><td height="12" style="font-size:0;line-height:0;">&nbsp;</td></tr>
-                            <tr>${buCards}</tr>
-                          </table>` : ''
-                        })()}
                         ${meta.totalInsight ? `
                         <table border="0" cellpadding="0" cellspacing="0" width="100%">
                         <tr><td height="16" style="font-size:0;line-height:0;">&nbsp;</td></tr>

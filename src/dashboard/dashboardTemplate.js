@@ -249,7 +249,11 @@ function trendDetailHtml(products, weeklyAll, wLabels, t, lang, ulMap) {
       <div class="section-title">${lang === 'en' ? 'Weekly Competitor Trend' : '주간 경쟁사 트렌드'}</div>
       <span class="legend">${wLabels[0]}–${wLabels[wLabels.length - 1]} (${wLabels.length}${lang === 'en' ? ' weeks' : '주'})</span>
     </div>
-    <div class="section-body">${buGroups}</div>
+    <div class="section-body">${buGroups}${(() => {
+      const footnotes = products.filter(p => getULCntys(p.id || p.category, ulMap).length > 0)
+        .map(p => `${p.kr}: ${getULCntys(p.id || p.category, ulMap).join(', ')} ${lang === 'en' ? 'not launched' : '미출시'}`)
+      return footnotes.length ? `<p style="margin:12px 0 0;font-size:12px;color:#94A3B8;line-height:1.6">* ${footnotes.join(' / ')}</p>` : ''
+    })()}</div>
   </div>`
 }
 
@@ -355,7 +359,11 @@ function monthlyTrendDetailHtml(products, monthlyVis, t, lang, ulMap) {
       <div class="section-title">${lang === 'en' ? 'Monthly Trend' : '월간 트렌드'}</div>
       <span class="legend">${mLabels[0]}–${mLabels[mLabels.length - 1]} (${mLabels.length}${lang === 'en' ? ' months' : '개월'})</span>
     </div>
-    <div class="section-body">${buGroups}</div>
+    <div class="section-body">${buGroups}${(() => {
+      const footnotes = products.filter(p => getULCntys(p.id || p.category, ulMap).length > 0)
+        .map(p => `${p.kr}: ${getULCntys(p.id || p.category, ulMap).join(', ')} ${lang === 'en' ? 'not launched' : '미출시'}`)
+      return footnotes.length ? `<p style="margin:12px 0 0;font-size:12px;color:#94A3B8;line-height:1.6">* ${footnotes.join(' / ')}</p>` : ''
+    })()}</div>
   </div>`
 }
 
@@ -424,6 +432,13 @@ function getULCntys(prodId, ulMap) {
   const code = UL_PROD_MAP[prodId] || (prodId || '').toUpperCase()
   return Object.keys(ulMap || {}).filter(k => k.endsWith('|' + code)).map(k => k.split('|')[0])
 }
+const ALL_10_COUNTRIES = ['US','CA','UK','DE','ES','BR','MX','AU','VN','IN']
+function isAllUnlaunched(prodId, ulMap) {
+  return ALL_10_COUNTRIES.every(c => {
+    const code = UL_PROD_MAP[prodId] || (prodId || '').toUpperCase()
+    return (ulMap || {})[`${c}|${code}`]
+  })
+}
 function prodNameUL(p, ulMap) { const c = getULCntys(p.id || p.category, ulMap); return c.length ? `${p.kr}*` : p.kr }
 
 function productSectionHtml(products, meta, t, lang, wLabels, ulMap, monthlyVis, weeklyAll) {
@@ -487,10 +502,15 @@ function productSectionHtml(products, meta, t, lang, wLabels, ulMap, monthlyVis,
       const wPrevScore = p.weeklyPrev || (weekly.length >= 5 ? weekly[weekly.length - 5] : (weekly[0] || 0))
       const wMomD = wScore && wPrevScore ? +(wScore - wPrevScore).toFixed(1) : null
       const mMomD = mScore && (p.monthlyPrev || p.prev) ? +(mScore - (p.monthlyPrev || p.prev)).toFixed(1) : null
-      return `<div class="prod-card" data-ws="${wScore.toFixed(1)}" data-ms="${mScore.toFixed(1)}" data-wr="${wRatio}" data-mr="${mRatio}" data-wmom="${wMomD != null ? wMomD : ''}" data-mmom="${mMomD != null ? mMomD : ''}" style="border-color:${st.border}">
+      const ulCntys = getULCntys(p.id || p.category, ulMap)
+      const allUL = isAllUnlaunched(p.id || p.category, ulMap)
+      const useBlack = allUL
+      const finalSt = useBlack ? { border: '#1A1A1A', bg: '#F1F5F9', color: '#1A1A1A', label: lang === 'en' ? 'Unlaunched' : '미출시' } : st
+      return `<div class="prod-card" data-ws="${wScore.toFixed(1)}" data-ms="${mScore.toFixed(1)}" data-wr="${wRatio}" data-mr="${mRatio}" data-wmom="${wMomD != null ? wMomD : ''}" data-mmom="${mMomD != null ? mMomD : ''}" style="border-color:${finalSt.border}">
         <div class="prod-head">
           <span class="prod-name">${prodNameUL(p, ulMap)}</span>
-          <span class="prod-badge" style="background:${st.bg};color:${st.color};border-color:${st.border}">${st.label}</span>
+          ${ulCntys.length > 0 ? `<span style="display:block;font-size:11px;color:#94A3B8;margin-top:1px">* ${lang === 'en' ? 'Not launched in some countries' : '제품 미출시 국가 있음'}</span>` : ''}
+          <span class="prod-badge" style="background:${finalSt.bg};color:${finalSt.color};border-color:${finalSt.border}">${finalSt.label}</span>
         </div>
         <div class="prod-score-row">
           <span class="prod-score">${latestScore.toFixed(1)}<small>%</small></span>
@@ -595,7 +615,7 @@ function cntyFullName(c) {
   return COUNTRY_FULL_NAME[k] || c
 }
 
-function countrySectionHtml(productsCnty, meta, t, lang) {
+function countrySectionHtml(productsCnty, meta, t, lang, ulMap) {
   if (!productsCnty || !productsCnty.length) return ''
 
   // ── View 1: 제품별 (By Product) ──
@@ -640,6 +660,16 @@ function countrySectionHtml(productsCnty, meta, t, lang) {
     <div class="section-body">
       <div id="cnty-view-country">${byCountryHtml}</div>
       <div id="cnty-view-product" style="display:none">${byProductHtml}</div>
+      ${(() => {
+        if (!ulMap || !Object.keys(ulMap).length) return ''
+        const products = [...new Set(productsCnty.map(r => r.product))]
+        const footnotes = products.map(name => {
+          const id = Object.entries(CATEGORY_ID_MAP).find(([k]) => CATEGORY_KR_MAP[k] === name)?.[1] || name.toLowerCase()
+          const cntys = getULCntys(id, ulMap)
+          return cntys.length ? `${name}: ${cntys.join(', ')} ${lang === 'en' ? 'not launched' : '미출시'}` : null
+        }).filter(Boolean)
+        return footnotes.length ? `<p style="margin:12px 0 0;font-size:12px;color:#94A3B8;line-height:1.6">* ${footnotes.join(' / ')}</p>` : ''
+      })()}
     </div>
   </div>`
 }
@@ -1487,7 +1517,7 @@ export function generateDashboardHTML(meta, total, products, citations, dotcom, 
     commonTop,
     meta.showProducts !== false ? productSectionHtml(products, meta, t, lang, wLabels, ulMap, opts?.monthlyVis || [], weeklyAll) : '',
     `<div id="trend-container">${trendDetailHtml(products, weeklyAll, wLabels, t, lang, ulMap)}</div>`,
-    meta.showCnty !== false ? countrySectionHtml(weeklyProductsCnty, meta, t, lang) : '',
+    meta.showCnty !== false ? countrySectionHtml(weeklyProductsCnty, meta, t, lang, ulMap) : '',
   ].join('')
 
   // 월간 콘텐츠 (제품 카드를 월간 데이터로 렌더링)
@@ -1519,7 +1549,7 @@ export function generateDashboardHTML(meta, total, products, citations, dotcom, 
     commonTop,
     meta.showProducts !== false ? productSectionHtml(monthlyProducts, meta, t, lang, monthlyLabels.length ? monthlyLabels : ['Feb','Mar'], ulMap, mVis, {}) : '',
     monthlyTrendDetailHtml(monthlyProducts, mVis, t, lang, ulMap),
-    meta.showCnty !== false ? countrySectionHtml(productsCnty, meta, t, lang) : '',
+    meta.showCnty !== false ? countrySectionHtml(productsCnty, meta, t, lang, ulMap) : '',
   ].join('')
 
   // 기존 호환: visContent는 주간 기본
