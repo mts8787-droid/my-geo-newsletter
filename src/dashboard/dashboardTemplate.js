@@ -1517,7 +1517,15 @@ export function generateDashboardHTML(meta, total, products, citations, dotcom, 
           if (last > topCompScore) { topCompScore = last; topCompName = brand }
         })
         const gap = +(lgScore - topCompScore).toFixed(1)
-        weeklyProductsCnty.push({ product: prodName, country: cnty, score: lgScore, compName: topCompName, compScore: topCompScore, gap, allScores: brandData })
+        // brandData는 { LG: [w5,w6,...] } 형태 → 마지막 주 값만 뽑아 { LG: 85.2, Samsung: 78 } 형태로 평탄화 (C-Brand 감지용)
+        const flatScores = {}
+        Object.entries(brandData).forEach(([brand, arr]) => {
+          if (Array.isArray(arr) && arr.length) {
+            const last = arr[arr.length - 1]
+            if (last != null) flatScores[brand] = last
+          }
+        })
+        weeklyProductsCnty.push({ product: prodName, country: cnty, score: lgScore, compName: topCompName, compScore: topCompScore, gap, allScores: flatScores })
       })
     })
   }
