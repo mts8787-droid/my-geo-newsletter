@@ -36,10 +36,12 @@ const NL_SNAP_FILE = join(DATA_DIR, 'newsletter-snapshots.json')
 const DB_SNAP_FILE = join(DATA_DIR, 'dashboard-snapshots.json')
 const CT_SNAP_FILE = join(DATA_DIR, 'citation-snapshots.json')
 const MR_SNAP_FILE = join(DATA_DIR, 'monthly-report-snapshots.json')
+const WR_SNAP_FILE = join(DATA_DIR, 'weekly-report-snapshots.json')
 const NL_SYNC_FILE = join(DATA_DIR, 'newsletter-sync-data.json')
 const DB_SYNC_FILE = join(DATA_DIR, 'dashboard-sync-data.json')
 const CT_SYNC_FILE = join(DATA_DIR, 'citation-sync-data.json')
 const MR_SYNC_FILE = join(DATA_DIR, 'monthly-report-sync-data.json')
+const WR_SYNC_FILE = join(DATA_DIR, 'weekly-report-sync-data.json')
 
 // ─── AI Settings storage ─────────────────────────────────────────────────────
 const AI_SETTINGS_FILE = join(DATA_DIR, 'ai-settings.json')
@@ -419,12 +421,14 @@ function modeSnapFile(mode) {
   if (mode === 'dashboard') return DB_SNAP_FILE
   if (mode === 'citation') return CT_SNAP_FILE
   if (mode === 'monthly-report') return MR_SNAP_FILE
+  if (mode === 'weekly-report') return WR_SNAP_FILE
   return NL_SNAP_FILE
 }
 function modeSyncFile(mode) {
   if (mode === 'dashboard') return DB_SYNC_FILE
   if (mode === 'citation') return CT_SYNC_FILE
   if (mode === 'monthly-report') return MR_SYNC_FILE
+  if (mode === 'weekly-report') return WR_SYNC_FILE
   return NL_SYNC_FILE
 }
 function readModeSnapshots(mode) {
@@ -701,7 +705,7 @@ function readMetaFile(metaPath) {
 }
 
 // ─── 모드 검증 미들웨어 ──────────────────────────────────────────────────────
-const VALID_MODES = ['newsletter', 'dashboard', 'citation', 'monthly-report']
+const VALID_MODES = ['newsletter', 'dashboard', 'citation', 'monthly-report', 'weekly-report']
 function validateMode(req, res, next) {
   if (!VALID_MODES.includes(req.params.mode)) {
     return res.status(400).json({ ok: false, error: `invalid mode: ${req.params.mode}. allowed: ${VALID_MODES.join(', ')}` })
@@ -1017,6 +1021,10 @@ a.card:hover{border-color:#CF0652;transform:translateY(-2px)}
     <a class="card" href="/admin/monthly-report">
       <div class="card-title">Monthly Report</div>
       <div class="card-desc">월간 보고용 단순 표 형태 리포트 — 색상/그래프 없음</div>
+    </a>
+    <a class="card" href="/admin/weekly-report">
+      <div class="card-title">Weekly Report</div>
+      <div class="card-desc">주간 보고용 표 리포트 — 국가별 제품별 전주대비 포함</div>
     </a>
     <a class="card" href="/admin/readability" style="opacity:0.5;pointer-events:none">
       <div class="card-title">Readability Editor</div>
@@ -1364,6 +1372,15 @@ app.get('/admin/monthly-report', (req, res) => {
 })
 app.get('/admin/monthly-report/*', (req, res) => {
   res.sendFile(join(__dirname, 'dist-monthly-report', 'monthly-report.html'))
+})
+
+// ─── Static files (Weekly Report at /admin/weekly-report) ──────────────────
+app.use('/admin/weekly-report', express.static(join(__dirname, 'dist-weekly-report')))
+app.get('/admin/weekly-report', (req, res) => {
+  res.sendFile(join(__dirname, 'dist-weekly-report', 'weekly-report.html'))
+})
+app.get('/admin/weekly-report/*', (req, res) => {
+  res.sendFile(join(__dirname, 'dist-weekly-report', 'weekly-report.html'))
 })
 
 // ─── Static files (Citation Dashboard at /admin/citation) ───────────────────
