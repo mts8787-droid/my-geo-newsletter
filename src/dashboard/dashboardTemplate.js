@@ -1410,7 +1410,6 @@ export function generateDashboardHTML(meta, total, products, citations, dotcom, 
   const t = T[lang] || T.ko
 
   // 주차 라벨 — 시트에서 파싱된 weeklyLabels 우선 사용, 없으면 데이터 길이 기반 생성
-  console.log('[DASHBOARD] weeklyLabels received:', weeklyLabels, 'opts.weeklyLabelsFull:', opts?.weeklyLabelsFull)
   let wLabels
   if (weeklyLabels && weeklyLabels.length) {
     wLabels = weeklyLabels.map(l => String(l).toUpperCase().startsWith('W') ? l.toUpperCase() : l)

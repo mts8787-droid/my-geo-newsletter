@@ -467,8 +467,8 @@ function findWeekLabels(rows, startRow = 0, endRow) {
   for (let i = startRow; i < end; i++) {
     const labels = []
     for (const cell of (rows[i] || [])) {
-      const s = String(cell || '').trim()
-      if (/^W\d+$/i.test(s)) labels.push(s.toUpperCase())
+      const s = String(cell || '').split(/\n/)[0].trim()
+      if (/^W\d+/i.test(s)) labels.push(s.toUpperCase())
     }
     if (labels.length >= 2) return labels
   }
@@ -605,9 +605,35 @@ function parseWeekly(rows, div) {
   // 주차 컬럼 찾기 (줄바꿈 포함 헤더 지원: "w5\n(2/2~2/8)" → "w5")
   const wCols = []
   for (let i = 0; i < header.length; i++) {
-    if (/^w\d+/i.test(String(header[i] || '').split(/\n/)[0].trim())) wCols.push(i)
+    const raw = String(header[i] || '')
+    const firstLine = raw.split(/\n/)[0].trim()
+    if (/^w\d+/i.test(firstLine)) wCols.push(i)
   }
-  weeklyLabels = wCols.map(i => String(header[i] || '').split(/\n/)[0].trim())
+  console.log(`[parseWeekly:${div}] header cols:`, header.slice(0, 8).map(c => JSON.stringify(String(c||'').trim().substring(0,20))), `wCols found: ${wCols.length} at indices:`, wCols.slice(0,5))
+  // wCols 못 찾으면 헤더 전체 행 + 위 행에서 w패턴 재탐색
+  if (!wCols.length && headerIdx >= 0) {
+    // 헤더 행 + 위 2행에서 w패턴 검색
+    for (let ri = Math.max(0, headerIdx - 2); ri <= headerIdx; ri++) {
+      const r = rows[ri]
+      if (!r) continue
+      for (let i = 0; i < r.length; i++) {
+        const raw = String(r[i] || '')
+        const firstLine = raw.split(/\n/)[0].trim()
+        if (/^w\d+/i.test(firstLine) && !wCols.includes(i)) wCols.push(i)
+      }
+      if (wCols.length >= 2) break
+    }
+    if (wCols.length) console.log(`[parseWeekly:${div}] wCols found in nearby rows:`, wCols.length)
+  }
+  weeklyLabels = wCols.map(i => {
+    // 모든 헤더 행에서 해당 컬럼의 w라벨 찾기
+    for (let ri = Math.max(0, headerIdx - 2); ri <= headerIdx; ri++) {
+      const raw = String(rows[ri]?.[i] || '')
+      const firstLine = raw.split(/\n/)[0].trim()
+      if (/^w\d+/i.test(firstLine)) return firstLine.toUpperCase()
+    }
+    return String(header[i] || '').split(/\n/)[0].trim()
+  })
   // 날짜 범위 포함 라벨: "W5(2/2~2/8)" 형태
   let weeklyLabelsFull = wCols.map(i => {
     const raw = String(header[i] || '').trim()
