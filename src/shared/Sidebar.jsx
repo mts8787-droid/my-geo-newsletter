@@ -359,8 +359,9 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
         // latestRef에도 extra 즉시 갱신
         latestRef.current = { ...latestRef.current, extra: { ...latestRef.current.extra, ...syncExtra } }
       }
-      // 주차 라벨: 시트 파싱 값 우선 사용 (정확한 주차 번호 보장)
+      // 주차 라벨: 시트 파싱 값 우선 사��� (정확한 주차 번호 보장)
       const wl = parsed.weeklyLabels || parsed.meta?.weeklyLabels
+      console.log('[SYNC] weeklyLabels:', wl, 'weeklyLabelsFull:', parsed.weeklyLabelsFull)
       if (wl && wl.length) setWeeklyLabels(wl)
       if (parsed.weeklyAll) setWeeklyAll(prev => ({ ...prev, ...parsed.weeklyAll }))
       // 제품: productsPartial이 있으면 새로 생성, 없으면 weeklyMap만 병합

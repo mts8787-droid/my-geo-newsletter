@@ -46,7 +46,7 @@ export async function syncFromGoogleSheets(sheetId, onProgress) {
       const parsed = parseSheetRows(name, rows)
       // 스마트 병합: 배열은 합치고(단 weeklyLabels는 덮어쓰기), 객체는 병합, 나머지는 덮어쓰기
       for (const [key, val] of Object.entries(parsed)) {
-        if (key === 'weeklyLabels') {
+        if (key === 'weeklyLabels' || key === 'weeklyLabelsFull') {
           if (!result[key]) result[key] = val
         } else if (Array.isArray(val) && Array.isArray(result[key])) {
           result[key] = [...result[key], ...val]
