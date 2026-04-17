@@ -2184,18 +2184,21 @@ function switchCitCnty(btn){
   });
 }
 // ─── Embedded Data ───
-var _weeklyAll=${weeklyAll ? JSON.stringify(weeklyAll) : '{}'};
-var _products=${JSON.stringify(products.map(p => ({ id: p.id, bu: p.bu, kr: p.kr, en: p.en || p.kr, category: p.category || '', date: p.date || '', status: p.status, score: p.score || 0, prev: p.prev || 0, vsComp: p.vsComp || 0, compName: p.compName || '', compRatio: p.compRatio || 0, allScores: p.allScores || {} })))};
-var _productsCnty=${JSON.stringify(productsCnty || [])};
-var _unlaunchedMap=${JSON.stringify(ulMap)};
-// 제품 ID → unlaunched 시트 카테고리 코드 매핑
+${(() => {
+  // JSON 문자열 내 </script> 방지
+  const S = v => JSON.stringify(v).replace(/<\//g, '<\\/')
+  return `var _weeklyAll=${weeklyAll ? S(weeklyAll) : '{}'};
+var _products=${S(products.map(p => ({ id: p.id, bu: p.bu, kr: p.kr, en: p.en || p.kr, category: p.category || '', date: p.date || '', status: p.status, score: p.score || 0, prev: p.prev || 0, vsComp: p.vsComp || 0, compName: p.compName || '', compRatio: p.compRatio || 0, allScores: p.allScores || {} })))};
+var _productsCnty=${S(productsCnty || [])};
+var _unlaunchedMap=${S(ulMap)};
 var _PROD_TO_UL={'tv':'TV','monitor':'IT','audio':'AV','washer':'WM','fridge':'REF','dw':'DW','vacuum':'VC','cooking':'COOKING','rac':'RAC','aircare':'AIRCARE'};
 function _isUnlaunched(cnty,prodId){var code=_PROD_TO_UL[prodId]||prodId.toUpperCase();return!!_unlaunchedMap[cnty+'|'+code]}
 function _unlaunchedCntys(prodId){var code=_PROD_TO_UL[prodId]||prodId.toUpperCase();var r=[];Object.keys(_unlaunchedMap).forEach(function(k){if(k.endsWith('|'+code))r.push(k.split('|')[0])});return r}
-var _monthlyVis=${JSON.stringify(opts?.monthlyVis || [])};
-var _total=${JSON.stringify(total)};
-var _meta={period:'${(meta.period || '').replace(/'/g, "\\'")}',reportNo:'${(meta.reportNo || '').replace(/'/g, "\\'")}',totalInsight:${JSON.stringify(meta.totalInsight || '')}};
-var _wLabels=${JSON.stringify(wLabels)};
+var _monthlyVis=${S(opts?.monthlyVis || [])};
+var _total=${S(total)};
+var _meta={period:${S(meta.period || '')},reportNo:${S(meta.reportNo || '')},totalInsight:${S(meta.totalInsight || '')}};
+var _wLabels=${S(wLabels)};`
+})()}
 var _lang='${lang}';
 var _BRAND_COLORS=${JSON.stringify(BRAND_COLORS)};
 var _FALLBACK=['#94A3B8','#64748B','#475569','#CBD5E1','#E2E8F0'];

@@ -609,38 +609,43 @@ function parseWeekly(rows, div) {
     const firstLine = raw.split(/\n/)[0].trim()
     if (/^w\d+/i.test(firstLine)) wCols.push(i)
   }
-  console.log(`[parseWeekly:${div}] header cols:`, header.slice(0, 8).map(c => JSON.stringify(String(c||'').trim().substring(0,20))), `wCols found: ${wCols.length} at indices:`, wCols.slice(0,5))
-  // wCols 못 찾으면 헤더 전체 행 + 위 행에서 w패턴 재탐색
+  // wCols 못 찾으면 헤더 위 모든 행에서 w패턴 재탐색
   if (!wCols.length && headerIdx >= 0) {
-    // 헤더 행 + 위 2행에서 w패턴 검색
-    for (let ri = Math.max(0, headerIdx - 2); ri <= headerIdx; ri++) {
+    for (let ri = 0; ri <= headerIdx; ri++) {
       const r = rows[ri]
       if (!r) continue
+      const found = []
       for (let i = 0; i < r.length; i++) {
         const raw = String(r[i] || '')
         const firstLine = raw.split(/\n/)[0].trim()
-        if (/^w\d+/i.test(firstLine) && !wCols.includes(i)) wCols.push(i)
+        if (/^w\d+/i.test(firstLine)) found.push(i)
       }
-      if (wCols.length >= 2) break
+      if (found.length >= 2) { found.forEach(i => { if (!wCols.includes(i)) wCols.push(i) }); break }
     }
-    if (wCols.length) console.log(`[parseWeekly:${div}] wCols found in nearby rows:`, wCols.length)
   }
+  // wCols에서 라벨 추출: 모든 행에서 해당 컬럼의 w라벨 찾기
   weeklyLabels = wCols.map(i => {
-    // 모든 헤더 행에서 해당 컬럼의 w라벨 찾기
-    for (let ri = Math.max(0, headerIdx - 2); ri <= headerIdx; ri++) {
+    for (let ri = 0; ri <= headerIdx; ri++) {
       const raw = String(rows[ri]?.[i] || '')
       const firstLine = raw.split(/\n/)[0].trim()
       if (/^w\d+/i.test(firstLine)) return firstLine.toUpperCase()
     }
-    return String(header[i] || '').split(/\n/)[0].trim()
+    return `W${i}`
   })
   // 날짜 범위 포함 라벨: "W5(2/2~2/8)" 형태
   let weeklyLabelsFull = wCols.map(i => {
-    const raw = String(header[i] || '').trim()
-    const parts = raw.split(/\n/)
-    const wNum = parts[0].trim()
-    const dateRange = parts[1] ? parts[1].trim() : ''
-    return dateRange ? `${wNum}${dateRange}` : wNum
+    // 모든 행에서 해당 컬럼의 전체 라벨 찾기
+    for (let ri = 0; ri <= headerIdx; ri++) {
+      const raw = String(rows[ri]?.[i] || '').trim()
+      if (!raw) continue
+      const parts = raw.split(/\n/)
+      const firstLine = parts[0].trim()
+      if (/^w\d+/i.test(firstLine)) {
+        const dateRange = parts[1] ? parts[1].trim() : ''
+        return dateRange ? `${firstLine.toUpperCase()}${dateRange}` : firstLine.toUpperCase()
+      }
+    }
+    return weeklyLabels[wCols.indexOf(i)] || `W${i}`
   })
 
   // Country 필터 헬퍼 — (Total), TTL 모두 허용
