@@ -259,7 +259,7 @@ function trendDetailHtml(products, weeklyAll, wLabels, t, lang, ulMap, periodTag
 }
 
 // ─── 월간 경쟁사 트렌드 섹션 ──────────────────────────────────────────────
-function monthlyTrendDetailHtml(products, monthlyVis, t, lang, ulMap) {
+function monthlyTrendDetailHtml(products, monthlyVis, t, lang, ulMap, periodTag) {
   if (!monthlyVis || !monthlyVis.length) return ''
   const BU_ORDER = ['MS', 'HS', 'ES']
   const MNAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
@@ -359,7 +359,7 @@ function monthlyTrendDetailHtml(products, monthlyVis, t, lang, ulMap) {
   return `<div class="section-card">
     <div class="section-header">
       <div class="section-title">${lang === 'en' ? 'Monthly Trend' : '월간 트렌드'}</div>
-      <span class="legend">${mLabels[0]}–${mLabels[mLabels.length - 1]} (${mLabels.length}${lang === 'en' ? ' months' : '개월'})</span>
+      <span class="legend">${periodTag || ''} &nbsp;|&nbsp; ${mLabels[0]}–${mLabels[mLabels.length - 1]} (${mLabels.length}${lang === 'en' ? ' months' : '개월'})</span>
     </div>
     <div class="section-body">${buGroups}${(() => {
       const footnotes = products.filter(p => getULCntys(p.id || p.category, ulMap).length > 0)
@@ -1084,8 +1084,8 @@ function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang, meta, appendixPromp
     <!-- 상단 요약 매트릭스 -->
     <div class="section-card" style="margin-bottom:24px">
       <div class="section-header">
-        <div class="section-title">${lang === 'en' ? 'PR Visibility Overview' : 'PR Visibility 현황'}</div>
-        <span class="legend"><i style="background:#15803D"></i>${lang === 'en' ? 'Lead ≥100%' : '선도 ≥100%'} <i style="background:#D97706"></i>${lang === 'en' ? 'Behind ≥80%' : '추격 ≥80%'} <i style="background:#BE123C"></i>${lang === 'en' ? 'Critical <80%' : '취약 <80%'}</span>
+        <div class="section-title">${lang === 'en' ? 'PR Visibility Overview' : 'PR Visibility 현황'} <span style="font-size:12px;font-weight:600;color:#3B82F6;background:#EFF6FF;padding:2px 8px;border-radius:6px;border:1px solid #93C5FD">${weeklyPRLabels?.length ? weeklyPRLabels[weeklyPRLabels.length - 1].toUpperCase() : ''} ${lang === 'en' ? 'data' : '기준'}</span></div>
+        <span class="legend"><i style="background:#15803D"></i>${lang === 'en' ? 'Lead ≥100%' : '선도 ≥100%'} <i style="background:#D97706"></i>${lang === 'en' ? 'Behind ≥80%' : '추격 ≥80%'} <i style="background:#BE123C"></i>${lang === 'en' ? 'Critical <80%' : '취약 <80%'} <span style="color:#94A3B8;font-size:11px;margin-left:6px">${lang === 'en' ? '() = vs SS ratio' : '() 는 SS 대비 경쟁비'}</span></span>
       </div>
       <div class="section-body" id="pr-matrix"></div>
     </div>
@@ -1169,7 +1169,8 @@ function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang, meta, appendixPromp
           var lg=lastVal(topic,cnty,'LG');
           var ss=lastVal(topic,cnty,'Samsung');
           var s=tl(lg,ss);
-          h+='<td style="padding:6px 6px;text-align:center;background:'+s.bg+';color:'+s.color+';font-size:14px;font-weight:700;font-variant-numeric:tabular-nums;border:1px solid '+s.border+'">'+(lg!=null?lg.toFixed(1)+'%':'—')+'</td>';
+          var ratio=(lg!=null&&ss!=null&&ss>0)?Math.round(lg/ss*100)+'%':'';
+          h+='<td style="padding:4px 6px;text-align:center;background:'+s.bg+';color:'+s.color+';font-size:14px;font-weight:700;font-variant-numeric:tabular-nums;border:1px solid '+s.border+'">'+(lg!=null?lg.toFixed(1)+'%':'—')+(ratio?'<div style="font-size:10px;font-weight:400;color:#64748B">('+ratio+')</div>':'')+'</td>';
         });
         h+='</tr>';
       });
@@ -1574,11 +1575,12 @@ export function generateDashboardHTML(meta, total, products, citations, dotcom, 
     return km ? MNAMES[parseInt(km[1])-1] : em ? em[1].charAt(0).toUpperCase()+em[1].slice(1).toLowerCase() : m.date
   })
   const mVis = opts?.monthlyVis || []
+  const monthlyPeriodTag = meta.period ? `<span style="font-size:12px;font-weight:600;color:#7C3AED;background:#F5F3FF;padding:2px 8px;border-radius:6px;border:1px solid #C4B5FD">${meta.period}</span>` : ''
   const monthlyContent = [
     commonTop,
-    meta.showProducts !== false ? productSectionHtml(monthlyProducts, meta, t, lang, monthlyLabels.length ? monthlyLabels : ['Feb','Mar'], ulMap, mVis, {}) : '',
-    monthlyTrendDetailHtml(monthlyProducts, mVis, t, lang, ulMap),
-    meta.showCnty !== false ? countrySectionHtml(productsCnty, meta, t, lang, ulMap) : '',
+    meta.showProducts !== false ? productSectionHtml(monthlyProducts, meta, t, lang, monthlyLabels.length ? monthlyLabels : ['Feb','Mar'], ulMap, mVis, {}, monthlyPeriodTag) : '',
+    monthlyTrendDetailHtml(monthlyProducts, mVis, t, lang, ulMap, monthlyPeriodTag),
+    meta.showCnty !== false ? countrySectionHtml(productsCnty, meta, t, lang, ulMap, monthlyPeriodTag) : '',
   ].join('')
 
   // 기존 호환: visContent는 주간 기본
@@ -2188,7 +2190,7 @@ ${(() => {
   // JSON 문자열 내 </script> 방지
   const S = v => JSON.stringify(v).replace(/<\//g, '<\\/').replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029')
   return `var _weeklyAll=${weeklyAll ? S(weeklyAll) : '{}'};
-var _products=${S(products.map(p => ({ id: p.id, bu: p.bu, kr: p.kr, en: p.en || p.kr, category: p.category || '', date: p.date || '', status: p.status, score: p.score || 0, prev: p.prev || 0, vsComp: p.vsComp || 0, compName: p.compName || '', compRatio: p.compRatio || 0, allScores: p.allScores || {} })))};
+var _products=${S(products.map(p => ({ id: p.id, bu: p.bu, kr: p.kr, en: p.en || p.kr, category: p.category || '', date: p.date || '', status: p.status, score: p.score || 0, prev: p.prev || 0, vsComp: p.vsComp || 0, compName: p.compName || '', compRatio: p.compRatio || 0, allScores: p.allScores || {}, monthlyScores: p.monthlyScores || [] })))};
 var _productsCnty=${S(productsCnty || [])};
 var _unlaunchedMap=${S(ulMap)};
 var _PROD_TO_UL={'tv':'TV','monitor':'IT','audio':'AV','washer':'WM','fridge':'REF','dw':'DW','vacuum':'VC','cooking':'COOKING','rac':'RAC','aircare':'AIRCARE'};
@@ -2271,7 +2273,6 @@ function updateMonthlyProductScores(selCountry){
   var cards=monthlyContainer.querySelectorAll('.prod-card');
   var countries=selCountry.isAll?null:Object.keys(selCountry.vals);
   if(selCountry.isAll){
-    // TTL → 원래 서버렌더 값 복원 (data-ms에 저장)
     cards.forEach(function(card){
       var ms=parseFloat(card.getAttribute('data-ms'));
       var mr=parseFloat(card.getAttribute('data-mr'));
@@ -2279,9 +2280,10 @@ function updateMonthlyProductScores(selCountry){
       var compPct=isNaN(mr)?100:Math.round(mr);
       var status=compPct>=100?'lead':compPct>=80?'behind':'critical';
       var st=_statusInfo(status);
+      var sparkColor=status==='critical'?'#BE123C':status==='behind'?'#D97706':'#15803D';
       var scoreEl=card.querySelector('.prod-score');if(scoreEl)scoreEl.innerHTML=ms.toFixed(1)+'<small>%</small>';
-      var compBar=card.querySelector('.prod-comp-bar');if(compBar){compBar.style.width=Math.min(compPct,120)+'%';compBar.style.background=st.color||'#15803D'}
-      var compPctEl=card.querySelector('.prod-comp-pct');if(compPctEl){compPctEl.textContent=compPct+'%';compPctEl.style.color=st.color||'#15803D'}
+      var compBar=card.querySelector('.prod-comp-bar');if(compBar){compBar.style.width=Math.min(compPct,120)+'%';compBar.style.background=sparkColor}
+      var compPctEl=card.querySelector('.prod-comp-pct');if(compPctEl){compPctEl.textContent=compPct+'%';compPctEl.style.color=sparkColor}
       var badge=card.querySelector('.prod-badge');if(badge){badge.style.background=st.bg;badge.style.color=st.color;badge.style.borderColor=st.border;badge.textContent=st.label}
       card.style.borderColor=st.border;
     });
@@ -2320,11 +2322,21 @@ function updateMonthlyProductScores(selCountry){
     }
     var status=compPct>=100?'lead':compPct>=80?'behind':'critical';
     var st=_statusInfo(status);
+    var sparkColor=status==='critical'?'#BE123C':status==='behind'?'#D97706':'#15803D';
     var scoreEl=card.querySelector('.prod-score');if(scoreEl)scoreEl.innerHTML=score.toFixed(1)+'<small>%</small>';
-    var compBar=card.querySelector('.prod-comp-bar');if(compBar){compBar.style.width=Math.min(compPct,120)+'%';compBar.style.background=st.color||'#15803D'}
-    var compPctEl=card.querySelector('.prod-comp-pct');if(compPctEl){compPctEl.textContent=compPct+'%';compPctEl.style.color=st.color||'#15803D'}
+    var compBar=card.querySelector('.prod-comp-bar');if(compBar){compBar.style.width=Math.min(compPct,120)+'%';compBar.style.background=sparkColor}
+    var compPctEl=card.querySelector('.prod-comp-pct');if(compPctEl){compPctEl.textContent=compPct+'%';compPctEl.style.color=sparkColor}
     var badge=card.querySelector('.prod-badge');if(badge){badge.style.background=st.bg;badge.style.color=st.color;badge.style.borderColor=st.border;badge.textContent=st.label}
     card.style.borderColor=st.border;
+    // 월간 미니차트 업데이트 (trend-monthly에 표시)
+    var mChart=card.querySelector('.trend-monthly');
+    if(mChart&&prod){
+      var ms=prod.monthlyScores||[];
+      var mData=ms.length?ms.map(function(m){return m.score}):[score];
+      var ML=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      var mLabels=ms.length?ms.map(function(m){var km=String(m.date||'').match(/(\\d{1,2})월/);return km?ML[parseInt(km[1])-1]:m.date}):['M0'];
+      mChart.innerHTML=_miniSvgNullAware(mData,mLabels,300,90,sparkColor);
+    }
   });
 }
 // 선택된 국가 내에서 제품이 "모두 미출시"면 카드/트렌드에 회색 처리
