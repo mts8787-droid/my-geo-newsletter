@@ -564,18 +564,33 @@ function parseWeekly(rows, div) {
   const weeklyMap = {}
   let weeklyLabels = []
 
-  // 1차: 'product' 또는 'category'가 앞 4컬럼에 있는 행 (표준 테이블 헤더)
+  // ── 헤더 탐색 전략 ──
+  // 시트 구조:
+  //   Row A (선택): [시트 제목] — 건너뜀
+  //   Row B: Product | Country | B/NB | Brand | W6     | W7     | ... (주차 라벨)
+  //   Row C: (선택)  |         |      |       | 2/2~2/8| 2/9~2/15| ... (날짜 범위)
+  //   Row D+: TV     | (Total) | NB   | LG    | 85.5%  | 85.7%  | ...
+
+  // 1) W패턴 행 찾기 (주차 라벨 행)
+  let wLabelRowIdx = -1
+  for (let i = 0; i < Math.min(rows.length, 10); i++) {
+    const r = rows[i]
+    if (!r) continue
+    let wCount = 0
+    for (let j = 0; j < r.length; j++) {
+      if (/^w\d+$/i.test(String(r[j] || '').trim())) wCount++
+    }
+    if (wCount >= 2) { wLabelRowIdx = i; break }
+  }
+
+  // 2) Product/Category 행 찾기 (데이터 시작점)
   let headerIdx = rows.findIndex(r => {
     const first5 = r.slice(0, 5).map(c => String(c || '').trim().toLowerCase())
     return first5.includes('category') || first5.includes('product')
   })
-  // 2차: W패턴 컬럼이 있는 행 (줄바꿈 포함 헤더 지원: "w5\n(2/2~2/8)")
-  if (headerIdx < 0) {
-    headerIdx = rows.findIndex(r =>
-      r.some(c => /^w\d+/i.test(String(c || '').split(/\n/)[0].trim()))
-    )
-  }
-  // 3차: 'lg' 컬럼 (앞 10컬럼 + 문자열 셀 3개 이상 — 대시보드 브랜드 행 오감지 방지)
+  // W라벨 행이 Product 행과 같으면 그대로, 다르면 Product 행이 데이터 헤더
+  if (headerIdx < 0 && wLabelRowIdx >= 0) headerIdx = wLabelRowIdx
+  // 3차: 'lg' 컬럼
   if (headerIdx < 0) {
     headerIdx = rows.findIndex(r => {
       let hasLG = false, textCount = 0
@@ -592,7 +607,18 @@ function parseWeekly(rows, div) {
   }
 
   const header = rows[headerIdx]
-  const data = rows.slice(headerIdx + 1).filter(r => r[0] != null && String(r[0]).trim())
+  // 데이터: 주차 라벨 행과 날짜 행을 건너뛰고 실제 데이터만
+  const dataStartRow = headerIdx + 1
+  // 날짜 행 감지: headerIdx 바로 아래 행이 날짜 범위(숫자/슬래시 패턴)이면 건너뜀
+  let dateRangeRow = null
+  if (rows[dataStartRow]) {
+    const sample = rows[dataStartRow].slice(4, 8).map(c => String(c || '').trim()).filter(Boolean)
+    if (sample.length && sample.every(s => /^\d{1,2}\/\d{1,2}/.test(s) || /~/.test(s) || /^\(/.test(s))) {
+      dateRangeRow = dataStartRow
+    }
+  }
+  const actualDataStart = dateRangeRow != null ? dateRangeRow + 1 : dataStartRow
+  const data = rows.slice(actualDataStart).filter(r => r[0] != null && String(r[0]).trim())
 
   const catIdx = header.findIndex(c => {
     const s = String(c || '').trim().toLowerCase()
@@ -602,51 +628,39 @@ function parseWeekly(rows, div) {
   const brandIdx = header.findIndex(c => String(c || '').trim().toLowerCase() === 'brand')
   const lgIdx = header.findIndex(c => String(c || '').trim().toUpperCase() === 'LG')
 
-  // 주차 컬럼 찾기 (줄바꿈 포함 헤더 지원: "w5\n(2/2~2/8)" → "w5")
+  // ── 주차 컬럼 찾기 ──
+  // 우선: W라벨 행에서 추출 (별도 행인 경우)
+  // 차선: header 행 자체에서 추출
   const wCols = []
-  for (let i = 0; i < header.length; i++) {
-    const raw = String(header[i] || '')
-    const firstLine = raw.split(/\n/)[0].trim()
-    if (/^w\d+/i.test(firstLine)) wCols.push(i)
+  const wLabelSource = wLabelRowIdx >= 0 ? rows[wLabelRowIdx] : header
+  for (let i = 0; i < wLabelSource.length; i++) {
+    if (/^w\d+$/i.test(String(wLabelSource[i] || '').trim())) wCols.push(i)
   }
-  // wCols 못 찾으면 헤더 위 모든 행에서 w패턴 재탐색
-  if (!wCols.length && headerIdx >= 0) {
-    for (let ri = 0; ri <= headerIdx; ri++) {
-      const r = rows[ri]
-      if (!r) continue
-      const found = []
-      for (let i = 0; i < r.length; i++) {
-        const raw = String(r[i] || '')
-        const firstLine = raw.split(/\n/)[0].trim()
-        if (/^w\d+/i.test(firstLine)) found.push(i)
-      }
-      if (found.length >= 2) { found.forEach(i => { if (!wCols.includes(i)) wCols.push(i) }); break }
+  // 폴백: 줄바꿈 형태도 시도 (이전 호환)
+  if (!wCols.length) {
+    for (let i = 0; i < header.length; i++) {
+      const firstLine = String(header[i] || '').split(/\n/)[0].trim()
+      if (/^w\d+/i.test(firstLine)) wCols.push(i)
     }
   }
-  // wCols에서 라벨 추출: 모든 행에서 해당 컬럼의 w라벨 찾기
-  weeklyLabels = wCols.map(i => {
-    for (let ri = 0; ri <= headerIdx; ri++) {
-      const raw = String(rows[ri]?.[i] || '')
-      const firstLine = raw.split(/\n/)[0].trim()
-      if (/^w\d+/i.test(firstLine)) return firstLine.toUpperCase()
+
+  // 라벨 추출
+  weeklyLabels = wCols.map(i => String(wLabelSource[i] || '').trim().toUpperCase())
+
+  // 날짜 범위 포함 Full 라벨: W6(2/2~2/8) 형태
+  let weeklyLabelsFull = wCols.map((colIdx, idx) => {
+    const wNum = weeklyLabels[idx] || `W${colIdx}`
+    // 날짜 범위: dateRangeRow 또는 headerIdx+1 행에서 추출
+    let dateRange = ''
+    const drRow = dateRangeRow != null ? rows[dateRangeRow] : (wLabelRowIdx !== headerIdx && wLabelRowIdx >= 0 ? rows[wLabelRowIdx + 1] : null)
+    if (drRow) {
+      const dr = String(drRow[colIdx] || '').trim()
+      if (dr && /\d/.test(dr)) dateRange = dr.startsWith('(') ? dr : `(${dr})`
     }
-    return `W${i}`
+    return dateRange ? `${wNum}${dateRange}` : wNum
   })
-  // 날짜 범위 포함 라벨: "W5(2/2~2/8)" 형태
-  let weeklyLabelsFull = wCols.map(i => {
-    // 모든 행에서 해당 컬럼의 전체 라벨 찾기
-    for (let ri = 0; ri <= headerIdx; ri++) {
-      const raw = String(rows[ri]?.[i] || '').trim()
-      if (!raw) continue
-      const parts = raw.split(/\n/)
-      const firstLine = parts[0].trim()
-      if (/^w\d+/i.test(firstLine)) {
-        const dateRange = parts[1] ? parts[1].trim() : ''
-        return dateRange ? `${firstLine.toUpperCase()}${dateRange}` : firstLine.toUpperCase()
-      }
-    }
-    return weeklyLabels[wCols.indexOf(i)] || `W${i}`
-  })
+
+  console.log(`[parseWeekly:${div}] wLabelRow:${wLabelRowIdx} headerIdx:${headerIdx} dateRangeRow:${dateRangeRow} wCols:${wCols.length} labels:`, weeklyLabels.slice(0, 5), 'full:', weeklyLabelsFull.slice(-2))
 
   // Country 필터 헬퍼 — (Total), TTL 모두 허용
   function isTotal(r) {
