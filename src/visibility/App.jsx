@@ -333,7 +333,7 @@ export default function App() {
 
         {/* 컨텐츠 영역 */}
         <div style={{ flex: 1, overflow: 'hidden' }}>
-          <DashboardPreview meta={meta} total={total} products={resolved.products} citations={resolved.citations} dotcom={dotcom} productsCnty={resolved.productsCnty} citationsCnty={resolved.citationsCnty} lang={previewLang} weeklyLabels={weeklyLabels} weeklyAll={weeklyAll} citationsByCnty={citationsByCnty} dotcomByCnty={dotcomByCnty} monthlyVis={monthlyVis} extra={{ weeklyPR, weeklyPRLabels, weeklyBrandPrompt, weeklyBrandPromptLabels, appendixPrompts, unlaunchedMap }} />
+          <DashboardPreview meta={meta} total={total} products={resolved.products} citations={resolved.citations} dotcom={dotcom} productsCnty={resolved.productsCnty} citationsCnty={resolved.citationsCnty} lang={previewLang} weeklyLabels={weeklyLabels} weeklyAll={weeklyAll} citationsByCnty={citationsByCnty} dotcomByCnty={dotcomByCnty} monthlyVis={monthlyVis} extra={{ weeklyPR, weeklyPRLabels, weeklyBrandPrompt, weeklyBrandPromptLabels, appendixPrompts, unlaunchedMap, weeklyLabelsFull, prTopicList }} />
         </div>
         <div style={{ height: 28, borderTop: '1px solid #1E293B', background: 'rgba(15,23,42,0.95)',
           display: 'flex', alignItems: 'center', justifyContent: 'flex-end', padding: '0 16px', flexShrink: 0 }}>
