@@ -59,6 +59,7 @@ export default function App() {
   const [weeklyBrandPromptLabels, setWeeklyBrandPromptLabels] = useState([])
   const [appendixPrompts, setAppendixPrompts] = useState([])
   const [unlaunchedMap, setUnlaunchedMap] = useState({})
+  const [weeklyLabelsFull, setWeeklyLabelsFull] = useState(null)
   const [previewLang, setPreviewLang] = useState('ko')
   const [snapshots,  setSnapshots]  = useState([])
   const [snapName,   setSnapName]   = useState('')
@@ -135,6 +136,7 @@ export default function App() {
       if (d.appendixPrompts) setAppendixPrompts(d.appendixPrompts)
       if (d.unlaunchedMap) setUnlaunchedMap(d.unlaunchedMap)
       if (d.weeklyLabels)  setWeeklyLabels(d.weeklyLabels)
+      if (d.weeklyLabelsFull) setWeeklyLabelsFull(d.weeklyLabelsFull)
       if (d.weeklyAll)     setWeeklyAll(prev => ({ ...prev, ...d.weeklyAll }))
       if (d.productsPartial) {
         setProducts(d.productsPartial.map(p => {
@@ -226,14 +228,15 @@ export default function App() {
           publishEndpoint="/api/publish-visibility"
           setMonthlyVis={setMonthlyVis}
           monthlyVis={monthlyVis}
-          extra={{ weeklyPR, weeklyPRLabels, weeklyBrandPrompt, weeklyBrandPromptLabels, appendixPrompts, unlaunchedMap }}
-          onSyncExtra={({ weeklyPR, weeklyPRLabels, weeklyBrandPrompt, weeklyBrandPromptLabels, appendixPrompts, unlaunchedMap: ulm }) => {
+          extra={{ weeklyPR, weeklyPRLabels, weeklyBrandPrompt, weeklyBrandPromptLabels, appendixPrompts, unlaunchedMap, weeklyLabelsFull }}
+          onSyncExtra={({ weeklyPR, weeklyPRLabels, weeklyBrandPrompt, weeklyBrandPromptLabels, appendixPrompts, unlaunchedMap: ulm, weeklyLabelsFull: wlf }) => {
             if (weeklyPR) setWeeklyPR(weeklyPR)
             if (weeklyPRLabels) setWeeklyPRLabels(weeklyPRLabels)
             if (weeklyBrandPrompt) setWeeklyBrandPrompt(weeklyBrandPrompt)
             if (weeklyBrandPromptLabels) setWeeklyBrandPromptLabels(weeklyBrandPromptLabels)
             if (appendixPrompts) setAppendixPrompts(appendixPrompts)
             if (ulm) setUnlaunchedMap(ulm)
+            if (wlf) setWeeklyLabelsFull(wlf)
           }}
         />
       )}
