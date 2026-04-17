@@ -119,6 +119,8 @@ export async function publishCombinedDashboard(generateDashboardHTML, resolveDat
     weeklyBrandPrompt: d.weeklyBrandPrompt || [],
     weeklyBrandPromptLabels: d.weeklyBrandPromptLabels || [],
     unlaunchedMap: d.unlaunchedMap || {},
+    prTopicList: d.prTopicList || [],
+    weeklyLabelsFull: d.weeklyLabelsFull || [],
   }
   const opts = { monthlyVis: d.monthlyVis || [], includeProgressTracker, trackerVersion, includePromptList }
   const htmlKo = generateDashboardHTML(meta, total, resolvedKo.products, resolvedKo.citations, dotcom, 'ko', resolvedKo.productsCnty, resolvedKo.citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty, opts, extra)
