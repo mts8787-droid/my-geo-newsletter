@@ -649,9 +649,9 @@ function countrySectionHtml(productsCnty, meta, t, lang, ulMap, periodTag) {
     return `<div class="cnty-product" data-group-country="${cnty}"><div class="bu-header"><span class="bu-label">${cntyFullName(cnty)}</span></div><div class="vbar-chart">${bars}</div></div>`
   }).join('')
 
-  return `<div class="section-card" id="cnty-section">
+  return `<div class="section-card cnty-section">
     <div class="section-header">
-      <div class="section-title" id="cnty-section-title">${t.cntyTitle}${periodTag || ''}</div>
+      <div class="section-title cnty-section-title">${t.cntyTitle}${periodTag || ''}</div>
       <div class="section-header-right">
         <div class="trend-tabs">
           <button class="cnty-view-tab active" onclick="switchCntyView('country')">${t.byCountry}</button>
@@ -666,8 +666,8 @@ function countrySectionHtml(productsCnty, meta, t, lang, ulMap, periodTag) {
     </div>
     ${insightHtml(meta.cntyInsight, meta.showCntyInsight, meta.cntyHowToRead, meta.showCntyHowToRead, t)}
     <div class="section-body">
-      <div id="cnty-view-country">${byCountryHtml}</div>
-      <div id="cnty-view-product" style="display:none">${byProductHtml}</div>
+      <div class="cnty-view-country">${byCountryHtml}</div>
+      <div class="cnty-view-product" style="display:none">${byProductHtml}</div>
       ${(() => {
         if (!ulMap || !Object.keys(ulMap).length) return ''
         // 제품명(kr) → id 역매핑
@@ -1408,10 +1408,15 @@ export function generateDashboardHTML(meta, total, products, citations, dotcom, 
   _sid = 0
   const t = T[lang] || T.ko
 
-  // 12주 고정 라벨 — meta.weekStart 또는 데이터 길이 기반
-  const _dataLen = weeklyAll ? Math.max(...Object.values(weeklyAll).flatMap(byC => Object.values(byC).flatMap(brands => Object.values(brands).map(arr => arr?.length || 0))), 0) : 0
-  const _startW = meta.weekStart || Math.max(1, _dataLen - 11)
-  const wLabels = Array.from({ length: 12 }, (_, i) => `W${_startW + i}`)
+  // 주차 라벨 — 시트에서 파싱된 weeklyLabels 우선 사용, 없으면 데이터 길이 기반 생성
+  let wLabels
+  if (weeklyLabels && weeklyLabels.length) {
+    wLabels = weeklyLabels.map(l => String(l).toUpperCase().startsWith('W') ? l.toUpperCase() : l)
+  } else {
+    const _dataLen = weeklyAll ? Math.max(...Object.values(weeklyAll).flatMap(byC => Object.values(byC).flatMap(brands => Object.values(brands).map(arr => arr?.length || 0))), 0) : 0
+    const _startW = meta.weekStart || Math.max(1, _dataLen - 11)
+    wLabels = Array.from({ length: Math.max(12, _dataLen) }, (_, i) => `W${_startW + i}`)
+  }
 
   // 인사이트는 meta 설정값을 존중 (강제 true 제거)
 
@@ -1443,8 +1448,8 @@ export function generateDashboardHTML(meta, total, products, citations, dotcom, 
       ${langToggleHtml}
       <div class="fl-group">
         <span class="fl-label">${lang === 'en' ? 'Period' : '기간'}</span>
-        <span class="fl-badge" id="period-badge">${meta.period || '—'}</span>
-        <span class="fl-badge" id="period-weekly-badge" style="display:none;background:#EFF6FF;color:#1D4ED8;border:1px solid #93C5FD">${wLabels[wLabels.length - 1]} ${lang === 'en' ? 'data' : '기준'}</span>
+        <span class="fl-badge" id="period-badge" style="display:none">${meta.period || '—'}</span>
+        <span class="fl-badge" id="period-weekly-badge" style="background:#EFF6FF;color:#1D4ED8;border:1px solid #93C5FD">${wLabels[wLabels.length - 1]} ${lang === 'en' ? 'data' : '기준'}</span>
       </div>
       <div class="fl-divider"></div>
       <div class="fl-group">
@@ -2089,27 +2094,39 @@ function getCheckedValues(filterName){
 }
 function toggleCBrand(cb){
   var show=cb.checked;
-  document.querySelectorAll('#cnty-section .cbrand-bar').forEach(function(el){
+  document.querySelectorAll('.cnty-section .cbrand-bar').forEach(function(el){
     el.style.display=show?'':'none';
   });
 }
+// 현재 보이는 콘텐츠 패널 (주간/월간) 내의 국가 섹션을 찾는 헬퍼
+function _getVisibleCntySections(){
+  var results=[];
+  document.querySelectorAll('.cnty-section').forEach(function(sec){
+    // 부모가 display:none이면 제외
+    var p=sec.closest('#bu-weekly-content')||sec.closest('#bu-monthly-content');
+    if(!p||p.style.display!=='none')results.push(sec);
+  });
+  return results;
+}
 function switchCntyView(mode){
-  var vp=document.getElementById('cnty-view-product');
-  var vc=document.getElementById('cnty-view-country');
-  if(vp)vp.style.display=mode==='product'?'':'none';
-  if(vc)vc.style.display=mode==='country'?'':'none';
-  document.querySelectorAll('.cnty-view-tab').forEach(function(btn){btn.classList.remove('active')});
-  var tabs=document.querySelectorAll('.cnty-view-tab');
-  // tabs[0]=country, tabs[1]=product (디폴트가 country로 변경됨)
-  if(mode==='country'&&tabs[0])tabs[0].classList.add('active');
-  if(mode==='product'&&tabs[1])tabs[1].classList.add('active');
-  // 섹션 제목 동적 변경
-  var titleEl=document.getElementById('cnty-section-title');
-  if(titleEl){
-    titleEl.textContent=mode==='product'
-      ? (_lang==='en'?'GEO Visibility by Product':'제품별 GEO Visibility 현황')
-      : (_lang==='en'?'GEO Visibility by Country':'국가별 GEO Visibility 현황');
-  }
+  _getVisibleCntySections().forEach(function(sec){
+    var vp=sec.querySelector('.cnty-view-product');
+    var vc=sec.querySelector('.cnty-view-country');
+    if(vp)vp.style.display=mode==='product'?'':'none';
+    if(vc)vc.style.display=mode==='country'?'':'none';
+    sec.querySelectorAll('.cnty-view-tab').forEach(function(btn){btn.classList.remove('active')});
+    var tabs=sec.querySelectorAll('.cnty-view-tab');
+    if(mode==='country'&&tabs[0])tabs[0].classList.add('active');
+    if(mode==='product'&&tabs[1])tabs[1].classList.add('active');
+    var titleEl=sec.querySelector('.cnty-section-title');
+    if(titleEl){
+      // periodTag 보존 (기존 span 태그)
+      var existingTag=titleEl.querySelector('span');var tagHtml=existingTag?existingTag.outerHTML:'';
+      titleEl.innerHTML=(mode==='product'
+        ? (_lang==='en'?'GEO Visibility by Product':'제품별 GEO Visibility 현황')
+        : (_lang==='en'?'GEO Visibility by Country':'국가별 GEO Visibility 현황'))+tagHtml;
+    }
+  });
   applyCntyFilters();
 }
 function toggleCntyFilter(btn){
@@ -2123,24 +2140,24 @@ function applyCntyFilters(){
   var activeProductNames={};
   _products.forEach(function(p){if(selProducts.isAll||selProducts.vals[p.id]){activeProductNames[p.kr]=true;if(p.category)activeProductNames[p.category]=true}});
   // product view
-  document.querySelectorAll('#cnty-view-product .vbar-item').forEach(function(item){
+  document.querySelectorAll('.cnty-view-product .vbar-item').forEach(function(item){
     var p=item.getAttribute('data-product');var c=item.getAttribute('data-country');
     var show=(selProducts.isAll||activeProductNames[p])&&(selCountries.isAll||selCountries.vals[c]);
     item.classList.toggle('hidden',!show);
   });
-  document.querySelectorAll('#cnty-view-product .cnty-product').forEach(function(grp){
+  document.querySelectorAll('.cnty-view-product .cnty-product').forEach(function(grp){
     var gp=grp.getAttribute('data-group-product');
     var vis=grp.querySelectorAll('.vbar-item:not(.hidden)').length;
     var show=vis>0&&(selProducts.isAll||activeProductNames[gp]);
     grp.style.display=show?'':'none';
   });
   // country view
-  document.querySelectorAll('#cnty-view-country .vbar-item').forEach(function(item){
+  document.querySelectorAll('.cnty-view-country .vbar-item').forEach(function(item){
     var p=item.getAttribute('data-product');var c=item.getAttribute('data-country');
     var show=(selProducts.isAll||activeProductNames[p])&&(selCountries.isAll||selCountries.vals[c]);
     item.classList.toggle('hidden',!show);
   });
-  document.querySelectorAll('#cnty-view-country .cnty-product').forEach(function(grp){
+  document.querySelectorAll('.cnty-view-country .cnty-product').forEach(function(grp){
     var gc=grp.getAttribute('data-group-country');
     var vis=grp.querySelectorAll('.vbar-item:not(.hidden)').length;
     var show=vis>0&&(selCountries.isAll||selCountries.vals[gc]);
@@ -2590,49 +2607,54 @@ function updateProductScores(selCountry,selBU,selProd){
   if(!weeklyContainer)return;
   var cards=weeklyContainer.querySelectorAll('.prod-card');
   var countries=selCountry.isAll?null:Object.keys(selCountry.vals);
-  // 전체 국가 선택 시 → TTL 데이터 사용
+  // 전체 국가 선택 시 → 주간 TTL 데이터 사용 (마지막 주 LG 점수 + 경쟁사)
   if(selCountry.isAll){
     cards.forEach(function(card){
       var nameEl=card.querySelector('.prod-name');if(!nameEl)return;
       var prod=_products.find(function(p){return p.kr===nameEl.textContent||p.en===nameEl.textContent});if(!prod)return;
-      var weekly=((_weeklyAll[prod.id]||{})['Total']||{}).LG||[];
+      var totalData=(_weeklyAll[prod.id]||{})['Total']||{};
+      var weekly=totalData.LG||[];
+      // 주간 마지막 주 점수
+      var wScore=weekly.length>0?weekly[weekly.length-1]:prod.score;
+      // 주간 경쟁사 마지막 주 1위
+      var wComp=0;
+      Object.keys(totalData).forEach(function(b){if(b==='LG'||b==='lg')return;var arr=totalData[b]||[];var last=arr.length?arr[arr.length-1]:0;if(last>wComp)wComp=last});
+      var wRatio=wComp>0?Math.round(wScore/wComp*100):100;
       var mL=_get4MLabels(prod);
-      var lgScore=prod.allScores?prod.allScores.LG:null;
-      _updateCard(card,prod.score,prod.compRatio||100,weekly,_wLabels,lgScore,mL);
+      _updateCard(card,wScore,wRatio,weekly,_wLabels,null,mL);
     });
     return;
   }
   if(!countries||!countries.length)return;
-  var prodKeyMap={};
-  _products.forEach(function(p){
-    var keys=[(p.category||'').toUpperCase(),p.id.toUpperCase(),(p.kr||'').toUpperCase(),(p.en||'').toUpperCase()];
-    keys.forEach(function(k){if(k)prodKeyMap[k]=p.id});
-  });
-  var avgByProdId={};
-  _productsCnty.forEach(function(r){
-    if(countries.indexOf(r.country||'')<0&&countries.indexOf(r.countryEn||'')<0)return;
-    var rKey=(r.product||'').toUpperCase();
-    var prodId=prodKeyMap[rKey];
-    if(!prodId)return;
-    if(!avgByProdId[prodId])avgByProdId[prodId]={scores:[],compScores:[]};
-    avgByProdId[prodId].scores.push(r.score||0);
-    avgByProdId[prodId].compScores.push(r.compScore||0);
-  });
+  // 주간 국가별 데이터: weeklyAll에서 선택된 국가의 마지막 주 LG/경쟁사 평균
   cards.forEach(function(card){
     var nameEl=card.querySelector('.prod-name');if(!nameEl)return;
     var prod=_products.find(function(p){return p.kr===nameEl.textContent||p.en===nameEl.textContent});if(!prod)return;
-    var avg=avgByProdId[prod.id];
+    var prodData=_weeklyAll[prod.id]||{};
+    var scores=[];var compScores=[];
+    countries.forEach(function(c){
+      var cd=prodData[c];if(!cd)return;
+      var lgArr=cd.LG||cd.lg||[];var last=lgArr.length?lgArr[lgArr.length-1]:0;
+      if(last>0)scores.push(last);
+      // 경쟁사 1위
+      var topComp=0;
+      Object.keys(cd).forEach(function(b){if(b==='LG'||b==='lg')return;var a=cd[b]||[];var l=a.length?a[a.length-1]:0;if(l>topComp)topComp=l});
+      if(topComp>0)compScores.push(topComp);
+    });
     var score,compPct;
-    if(avg&&avg.scores.length){
-      score=+(avg.scores.reduce(function(s,v){return s+v},0)/avg.scores.length).toFixed(1);
-      var comp=+(avg.compScores.reduce(function(s,v){return s+v},0)/avg.compScores.length).toFixed(1);
-      compPct=comp>0?Math.round((score/comp)*100):100;
+    if(scores.length){
+      score=+(scores.reduce(function(s,v){return s+v},0)/scores.length).toFixed(1);
+      var comp=compScores.length?+(compScores.reduce(function(s,v){return s+v},0)/compScores.length).toFixed(1):0;
+      compPct=comp>0?Math.round(score/comp*100):100;
     }else{
-      score=prod.score;compPct=prod.compRatio||100;
+      // 선택 국가에 주간 데이터 없으면 TTL 폴백
+      var totalLG=(prodData['Total']||{}).LG||[];
+      score=totalLG.length?totalLG[totalLG.length-1]:prod.score;
+      compPct=prod.compRatio||100;
     }
     var weekly=_getWeeklyForCountries(prod.id,countries);
     var mL=_get4MLabels(prod);
-    _updateCard(card,score,compPct,weekly,_wLabels,score,mL);
+    _updateCard(card,score,compPct,weekly,_wLabels,null,mL);
   });
 }
 
