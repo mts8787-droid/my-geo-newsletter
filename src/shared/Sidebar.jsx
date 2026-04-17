@@ -354,6 +354,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
           appendixPrompts: parsed.appendixPrompts || null,
           unlaunchedMap: parsed.unlaunchedMap || null,
           weeklyLabelsFull: parsed.weeklyLabelsFull || null,
+          prTopicList: parsed.prTopicList || null,
         }
         onSyncExtra(syncExtra)
         // latestRef에도 extra 즉시 갱신
@@ -496,6 +497,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
           dotcomByCnty: parsed.dotcomByCnty || null,
           appendixPrompts: parsed.appendixPrompts || null,
           unlaunchedMap: parsed.unlaunchedMap || null,
+          prTopicList: parsed.prTopicList || null,
           monthlyVis: parsed.monthlyVis || null,
           weeklyPR: parsed.weeklyPR || null,
           weeklyPRLabels: parsed.weeklyPRLabels || null,

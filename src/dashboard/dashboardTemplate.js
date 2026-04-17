@@ -991,7 +991,7 @@ function promptListTabHtml(appendixPrompts, lang) {
 }
 
 // ─── PR Visibility 탭 HTML ──────────────────────────────────────────────────
-function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang, meta, appendixPrompts) {
+function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang, meta, appendixPrompts, extra) {
   if (!weeklyPR || !weeklyPR.length) {
     const msg = lang === 'en' ? 'No PR Visibility data available.' : 'PR Visibility 데이터가 없습니다.'
     return `<div style="display:flex;align-items:center;justify-content:center;min-height:calc(100vh - 160px);color:#94A3B8;font-size:16px">${msg}</div>`
@@ -1035,30 +1035,39 @@ function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang, meta, appendixPromp
     })
   }
 
-  // ── 토픽별 설명 (매트릭스용) ──
+  // ── PR Topic List 시트에서 토픽 설명/카테고리 매핑 ──
+  const prTopicList = extra?.prTopicList || []
+  const sheetDescMap = {}
+  const sheetCatMap = {}
+  prTopicList.forEach(t => {
+    // topic 또는 topicRow로 매칭
+    const keys = [t.topic, t.topicRow, t.oldTopic].filter(Boolean).map(k => k.trim())
+    keys.forEach(k => {
+      if (t.explanation && !sheetDescMap[k]) sheetDescMap[k] = t.explanation
+      if (t.bu && !sheetCatMap[k]) sheetCatMap[k] = t.bu
+    })
+  })
   const DEFAULT_TOPIC_DESCS = {
-    'TV': 'OLED·QNED 등 TV 제품 라인업 관련 PR 토픽',
-    'TV Platform': 'webOS, ThinQ 등 스마트 TV 플랫폼·서비스 관련',
-    'Audio': '사운드바·포터블 스피커 등 오디오 제품군 관련',
+    'TV': 'OLED·QNED 등 TV 제품 라인업 관련',
+    'TV Platform': 'webOS 등 스마트 TV 플랫폼·솔루션 관련',
+    'Audio': '오디오 제품군 전반',
     'PC': '그램(gram) 노트북·모니터 등 IT 제품 관련',
-    'Built-in Appliances': '빌트인 가전(오븐·식기세척기·냉장고 등) 관련',
-    'Cooling Kitchen': '냉장고·에어컨·정수기 등 냉방·주방 가전 관련',
-    'Living': '세탁기·청소기·공기청정기 등 생활가전 관련',
-    'Sustainability': 'ESG·친환경·탄소중립 등 지속가능경영 관련',
-    'Robot': 'CLOi·서비스 로봇·산업용 로봇 관련',
-    'AI': 'LG AI 기술·ThinQ AI·온디바이스 AI 관련',
-    'B2B': '상업용 디스플레이·사이니지·B2B 솔루션 관련',
-    'EV': '전기차 부품·LG 마그나·파워트레인 관련',
-    'Design': '제품 디자인·LG 시그니처·디자인 어워드 관련',
+    'IT': '모니터·그램(gram) 노트북 등 IT 제품 관련',
   }
-  const topicDescMap = { ...DEFAULT_TOPIC_DESCS, ...parseKeyValRaw(meta?.prTopicDescsRaw) }
+  const topicDescMap = { ...DEFAULT_TOPIC_DESCS, ...sheetDescMap, ...parseKeyValRaw(meta?.prTopicDescsRaw) }
 
-  // ── 토픽 카테고리 분류 ──
-  const CONSUMER_TOPICS = ['Built-in Appliances', 'Audio', 'Cooling Kitchen', 'Living', 'PC', 'TV', 'TV Platform']
+  // ── 토픽 카테고리 분류: PR Topic List 시트의 BU 기준 ──
   const topicCategoryMap = {}
   topics.forEach(tp => {
-    topicCategoryMap[tp] = CONSUMER_TOPICS.some(ct => tp.toLowerCase().includes(ct.toLowerCase()) || ct.toLowerCase().includes(tp.toLowerCase()))
-      ? 'Consumer Products' : 'Corporate & Innovation'
+    const sheetBU = sheetCatMap[tp]
+    if (sheetBU) {
+      topicCategoryMap[tp] = sheetBU
+    } else {
+      // 폴백: 기존 분류
+      const CONSUMER_TOPICS = ['Audio', 'Kitchen', 'Living', 'TV', 'TV Platform', 'IT', 'PC']
+      topicCategoryMap[tp] = CONSUMER_TOPICS.some(ct => tp.toLowerCase().includes(ct.toLowerCase()))
+        ? 'MS/HS' : 'CORP/ES/VS'
+    }
   })
 
   return `<div style="max-width:1400px;margin:0 auto;padding:28px 40px;font-family:${FONT}">
@@ -1074,12 +1083,12 @@ function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang, meta, appendixPromp
         <div id="pr-cnty-chips" style="display:flex;gap:4px;flex-wrap:wrap"></div>
       </div>
     </div>
-    <!-- Dashboard Guide -->
+    <!-- NOTICE -->
     <div style="margin:0 0 24px;padding:16px;background:#0F172A;border:1px solid #1E293B;border-radius:10px">
-      <span style="display:block;font-size:14px;font-weight:700;color:${RED};text-transform:uppercase;margin-bottom:6px">Dashboard Guide</span>
+      <span style="display:block;font-size:14px;font-weight:700;color:${RED};text-transform:uppercase;margin-bottom:6px">NOTICE</span>
       <span style="font-size:15px;color:#fff;line-height:1.8">${(meta?.prNotice) || (lang === 'en'
-        ? 'This page tracks how LG is represented in AI-generated responses to PR-related prompts. It monitors brand visibility across key topics and countries, comparing LG against competitors like Samsung. A score below 100% indicates room for improvement in PR content strategy.'
-        : 'PR Visibility는 AI가 PR 관련 질의에 대해 LG를 얼마나 잘 노출하는지를 추적합니다. 주요 토픽·국가별로 경쟁사(Samsung 등) 대비 LG의 가시성을 모니터링하며, 100% 미만은 해당 토픽의 PR 콘텐츠 전략 개선이 필요함을 의미합니다.')}</span>
+        ? 'PR Visibility tracks how well "LG Electronics" is featured in AI search engine responses to queries related to our key business areas, product lines, and service topics. It monitors the visibility of our information versus competitors by major topic. For "Brand" type queries, items with Visibility below 100% indicate the need for GEO strategy review.'
+        : 'PR Visibility 는 AI 검색 엔진 내 자사 주요 사업/제품군/서비스 토픽 관련 질의에 대한 답변에서 \'LG전자\'가 얼마나 잘 노출되는지를 추적합니다. 주요 토픽 별로 경쟁사 대비 자사 정보의 가시성을 모니터링 하며, \'브랜드\' 유형의 경우, Visibility 100% 미만 항목은 GEO 전략 검토가 필요함을 의미합니다.')}</span>
     </div>
     <!-- 상단 요약 매트릭스 -->
     <div class="section-card" style="margin-bottom:24px">
@@ -1137,9 +1146,10 @@ function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang, meta, appendixPromp
     function lastVal(topic,cnty,brand){for(var i=W.length-1;i>=0;i--){var v=val(topic,cnty,brand,W[i]);if(v!=null)return v}return null}
     // ── 상단 매트릭스 (토픽×국가, 최근주 기준 신호등) ──
     // 카테고리별 토픽 정렬: Consumer Products 먼저, 그다음 Corporate & Innovation
-    var CATS=['Corporate & Innovation','Consumer Products'];
+    // BU 순서로 토픽 정렬
+    var BU_ORDER=['${lang === 'en' ? 'Key Initiatives' : '전사 핵심 추진 과제'}','CORP','MS','HS','ES','VS'];
     var sortedTP=[];
-    CATS.forEach(function(cat){TP.forEach(function(tp){if((TOPIC_CAT[tp]||'Corporate & Innovation')===cat)sortedTP.push(tp)})});
+    BU_ORDER.forEach(function(bu){TP.forEach(function(tp){if(TOPIC_CAT[tp]===bu&&sortedTP.indexOf(tp)<0)sortedTP.push(tp)})});
     TP.forEach(function(tp){if(sortedTP.indexOf(tp)<0)sortedTP.push(tp)});
     function renderMatrix(){
       var el=document.getElementById('pr-matrix');if(!el)return;
@@ -1807,7 +1817,7 @@ ${visibilityOnly ? `
   <div id="bu-monthly-content" class="dash-container" style="display:none">${monthlyContent}</div>
 </div>
 <div id="vis-sub-pr" class="vis-sub-panel" style="display:none">
-  ${prVisibilityTabHtml(extra?.weeklyPR, extra?.weeklyPRLabels, lang, meta, extra?.appendixPrompts)}
+  ${prVisibilityTabHtml(extra?.weeklyPR, extra?.weeklyPRLabels, lang, meta, extra?.appendixPrompts, extra)}
 </div>
 <div id="vis-sub-brandprompt" class="vis-sub-panel" style="display:none">
   ${brandPromptTabHtml(extra?.weeklyBrandPrompt, extra?.weeklyBrandPromptLabels, lang, null, lang === 'en' ? 'Brand Prompt Anomaly Check' : 'Brand Prompt 이상 점검', meta)}
@@ -1843,7 +1853,7 @@ ${visibilityOnly ? `
     <div id="bu-monthly-content" class="dash-container" style="display:none">${monthlyContent}</div>
   </div>
   <div id="vis-sub-pr" class="vis-sub-panel" style="display:none">
-    ${prVisibilityTabHtml(extra?.weeklyPR, extra?.weeklyPRLabels, lang, meta, extra?.appendixPrompts)}
+    ${prVisibilityTabHtml(extra?.weeklyPR, extra?.weeklyPRLabels, lang, meta, extra?.appendixPrompts, extra)}
   </div>
   <div id="vis-sub-brandprompt" class="vis-sub-panel" style="display:none">
     ${brandPromptTabHtml(extra?.weeklyBrandPrompt, extra?.weeklyBrandPromptLabels, lang, null, lang === 'en' ? 'Brand Prompt Anomaly Check' : 'Brand Prompt 이상 점검', meta)}

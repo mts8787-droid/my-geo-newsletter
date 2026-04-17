@@ -19,6 +19,7 @@ export const SHEET_NAMES = {
   citDomain:      'Citation-Domain',
   appendix:       'Appendix.Prompt List',
   unlaunched:     'unlaunched',
+  prTopicList:    'PR Topic List',
 }
 
 // ─── 카테고리 ID/KR 매핑 ──────────────────────────────────────────────────────
@@ -1511,6 +1512,44 @@ function parseUnlaunched(rows) {
   return Object.keys(unlaunchedMap).length > 0 ? { unlaunchedMap } : {}
 }
 
+// ─── PR Topic List 파서 ──────────────────────────────────────────────────────
+// 구조: BU | Topic-대시보드 | Explanation | 기존 토픽 | Topic-row
+// BU 빈 셀은 이전 BU 유지 (병합 셀)
+function parsePRTopicList(rows) {
+  const headerIdx = rows.findIndex(r =>
+    r && r.some(c => /^bu$/i.test(String(c || '').trim())) &&
+    r.some(c => /topic/i.test(String(c || '').trim()))
+  )
+  if (headerIdx < 0) return {}
+  const header = rows[headerIdx]
+  let buCol = -1, topicCol = -1, explCol = -1, oldTopicCol = -1, topicRowCol = -1
+  for (let i = 0; i < header.length; i++) {
+    const s = String(header[i] || '').trim().toLowerCase()
+    if (buCol < 0 && s === 'bu') buCol = i
+    if (topicCol < 0 && s.includes('topic') && s.includes('대시보드')) topicCol = i
+    if (explCol < 0 && (s === 'explanation' || s === '설명')) explCol = i
+    if (oldTopicCol < 0 && s.includes('기존')) oldTopicCol = i
+    if (topicRowCol < 0 && s.includes('topic') && s.includes('row')) topicRowCol = i
+  }
+  if (topicCol < 0) topicCol = 1
+  if (explCol < 0) explCol = 2
+
+  const prTopicList = []
+  let lastBU = ''
+  rows.slice(headerIdx + 1).forEach(r => {
+    if (!r) return
+    const bu = String(r[buCol] || '').trim()
+    if (bu) lastBU = bu
+    const topic = String(r[topicCol] || '').trim()
+    if (!topic) return
+    const explanation = String(r[explCol] || '').trim()
+    const oldTopic = oldTopicCol >= 0 ? String(r[oldTopicCol] || '').trim() : ''
+    const topicRow = topicRowCol >= 0 ? String(r[topicRowCol] || '').trim() : ''
+    prTopicList.push({ bu: lastBU, topic, explanation, oldTopic, topicRow })
+  })
+  return prTopicList.length > 0 ? { prTopicList } : {}
+}
+
 // ─── 메인 파서 라우터 ──────────────────────────────────────────────────────────
 export function parseSheetRows(sheetName, rows) {
   if (sheetName === SHEET_NAMES.meta) return parseMeta(rows)
@@ -1539,6 +1578,7 @@ export function parseSheetRows(sheetName, rows) {
 
   if (sheetName === SHEET_NAMES.appendix) return parseAppendix(rows)
   if (sheetName === SHEET_NAMES.unlaunched) return parseUnlaunched(rows)
+  if (sheetName === SHEET_NAMES.prTopicList) return parsePRTopicList(rows)
 
   return {}
 }
