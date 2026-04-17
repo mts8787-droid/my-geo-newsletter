@@ -1811,6 +1811,7 @@ function onFilterChange(){
   updateProductScores(selCountry,selBU,selProd);
   updateMonthlyProductScores(selCountry);
   updateMonthlyTrend(selCountry);
+  filterTrendByProduct(selProd);
   applyUnlaunchedStyle(selCountry);
 }
 // 월간 카드 업데이트: 국가 필터 반영
@@ -1929,25 +1930,44 @@ function updateMonthlyTrend(selCountry){
       Object.keys(m.allScores).forEach(function(b){if(!allBrands[b])allBrands[b]=true});
     });
     var brandData={};
+    // 국가 필터용: 선택 국가들의 브랜드별 평균 계산 (최신 월 기준, 이전 월은 비율 적용)
+    var cntyBrandAvg={};
+    var ttlBrandLast={};
+    if(countries){
+      var prodKr=prod.kr||prod.category||'';
+      // 선택 국가들의 allScores 집계
+      var brandSums={};var brandCounts={};
+      countries.forEach(function(c){
+        var match=_productsCnty.find(function(r){return r.country===c&&(r.product===prodKr||r.product===prod.category)});
+        if(match&&match.allScores){
+          Object.keys(match.allScores).forEach(function(b){
+            if(!brandSums[b])brandSums[b]=0;
+            if(!brandCounts[b])brandCounts[b]=0;
+            brandSums[b]+=match.allScores[b];
+            brandCounts[b]++;
+          });
+        }
+      });
+      Object.keys(brandSums).forEach(function(b){cntyBrandAvg[b]=+(brandSums[b]/brandCounts[b]).toFixed(1)});
+      // TTL 마지막 월 브랜드 값 (비율 계산용)
+      var lastMs=ms[ms.length-1];
+      if(lastMs&&lastMs.allScores)ttlBrandLast=lastMs.allScores;
+    }
     Object.keys(allBrands).forEach(function(brand){
       brandData[brand]=sorted.map(function(mi){
         var found=ms.find(function(m){return pmi(m.date)===mi});
         if(!found||!found.allScores)return null;
         var ttlVal=found.allScores[brand];
         if(ttlVal==null)return null;
-        // 국가 필터 미적용 → TTL 값
         if(!countries)return ttlVal;
-        // 국가 필터 적용 → 해당 국가들의 해당 제품+브랜드 평균 (마지막 월만)
-        if(pmi(found.date)===pmi(ms[ms.length-1].date)){
-          var vals=[];
-          countries.forEach(function(c){
-            var cr=_productsCnty.filter(function(r){return r.country===c});
-            var prodKr=prod.kr||prod.category||'';
-            var match=cr.find(function(r){return r.product===prodKr||r.product===prod.category});
-            if(match&&match.allScores&&match.allScores[brand]!=null)vals.push(match.allScores[brand]);
-          });
-          if(vals.length)return +(vals.reduce(function(s,v){return s+v},0)/vals.length).toFixed(1);
+        // 국가 필터: 선택 국가 평균이 있으면 비율 적용
+        var cntyAvg=cntyBrandAvg[brand];
+        var ttlLast=ttlBrandLast[brand];
+        if(cntyAvg!=null&&ttlLast!=null&&ttlLast>0){
+          // 이전 월은 TTL 비율로 스케일링: cntyAvg * (이전월TTL / 최신월TTL)
+          return +(cntyAvg * (ttlVal / ttlLast)).toFixed(1);
         }
+        if(cntyAvg!=null)return cntyAvg;
         return ttlVal;
       });
     });
@@ -2057,11 +2077,23 @@ function filterProducts(selProd){
     document.querySelectorAll('.prod-card').forEach(function(c){c.style.display=''});
     return;
   }
-  var selectedNames={};
-  _products.forEach(function(p){if(selProd.vals[p.id])selectedNames[p.kr]=true});
   document.querySelectorAll('.prod-card').forEach(function(c){
-    var name=c.querySelector('.prod-name');
-    c.style.display=(name&&selectedNames[name.textContent])?'':'none';
+    var pid=c.getAttribute('data-prodid');
+    c.style.display=(pid&&selProd.vals[pid])?'':'none';
+  });
+}
+function filterTrendByProduct(selProd){
+  // 주간+월간 트렌드 행: 선택 안 된 제품 숨김
+  document.querySelectorAll('.trend-row[data-prodid]').forEach(function(row){
+    var pid=row.getAttribute('data-prodid');
+    row.style.display=(selProd.isAll||selProd.vals[pid])?'':'none';
+  });
+  // BU 그룹: 내부 visible row 없으면 그룹도 숨김
+  document.querySelectorAll('#trend-container .bu-group[data-bu], #monthly-trend-container .bu-group[data-bu]').forEach(function(grp){
+    var visRows=grp.querySelectorAll('.trend-row[data-prodid]');
+    var hasVisible=false;
+    visRows.forEach(function(r){if(r.style.display!=='none')hasVisible=true});
+    grp.style.display=hasVisible?'':'none';
   });
 }
 function filterTrend(selBU,selProd,selCountry){
