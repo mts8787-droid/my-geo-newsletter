@@ -879,7 +879,7 @@ body, table, td, th, h1, h2, p, span, div { font-family: ${Ft} !important; }
         h+='<td style="padding:6px 10px;font-size:16px;font-weight:600;color:#1A1A1A">'+row.topic+'</td>';
         h+='<td style="padding:6px 10px;font-size:14px;color:#64748B;line-height:1.4">'+((row.explanation||''))+'</td>';
         if(!dataKey){
-          cols.forEach(function(){h+='<td style="padding:4px 6px;text-align:center;font-size:15px;color:#CBD5E1;border:1px solid #F1F5F9;background:#FAFBFC">—</td>'});
+          h+='<td colspan="'+cols.length+'" style="padding:8px 12px;text-align:center;font-size:13px;color:#94A3B8;font-style:italic;border:1px solid #F1F5F9;background:#FAFBFC">${h==="en"?"Prompt addition/modification in progress (KPI tracking planned within April)":"Prompt 추가/수정 진행 중 (4월 내 KPI 추적 진행 예정)"}</td>';
         }else{
           cols.forEach(function(cnty){
             var lg=lastVal(dataKey,cnty,'LG');
