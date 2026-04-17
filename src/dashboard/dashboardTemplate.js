@@ -1074,19 +1074,19 @@ function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang, meta, appendixPromp
     <!-- 필터 바 -->
     <div id="pr-filters" style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin-bottom:16px;padding:10px 16px;background:#fff;border:1px solid #E8EDF2;border-radius:10px">
       <div style="display:flex;align-items:center;gap:6px">
-        <span style="font-size:15px;font-weight:700;color:#64748B">${lang === 'en' ? 'Type' : '유형'}</span>
+        <span style="font-size:18px;font-weight:700;color:#64748B">${lang === 'en' ? 'Type' : '유형'}</span>
         <div id="pr-type-chips"></div>
       </div>
       <div style="width:1px;height:24px;background:#E8EDF2"></div>
       <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
-        <span style="font-size:15px;font-weight:700;color:#64748B">${lang === 'en' ? 'Country' : '국가'}</span>
+        <span style="font-size:18px;font-weight:700;color:#64748B">${lang === 'en' ? 'Country' : '국가'}</span>
         <div id="pr-cnty-chips" style="display:flex;gap:4px;flex-wrap:wrap"></div>
       </div>
     </div>
     <!-- NOTICE -->
     <div style="margin:0 0 24px;padding:16px;background:#0F172A;border:1px solid #1E293B;border-radius:10px">
-      <span style="display:block;font-size:14px;font-weight:700;color:${RED};text-transform:uppercase;margin-bottom:6px">NOTICE</span>
-      <span style="font-size:15px;color:#fff;line-height:1.8">${(meta?.prNotice) || (lang === 'en'
+      <span style="display:block;font-size:17px;font-weight:700;color:${RED};text-transform:uppercase;margin-bottom:6px">NOTICE</span>
+      <span style="font-size:18px;color:#fff;line-height:1.8">${(meta?.prNotice) || (lang === 'en'
         ? 'PR Visibility tracks how well "LG Electronics" is featured in AI search engine responses to queries related to our key business areas, product lines, and service topics. It monitors the visibility of our information versus competitors by major topic. For "Brand" type queries, items with Visibility below 100% indicate the need for GEO strategy review.'
         : 'PR Visibility 는 AI 검색 엔진 내 자사 주요 사업/제품군/서비스 토픽 관련 질의에 대한 답변에서 \'LG전자\'가 얼마나 잘 노출되는지를 추적합니다. 주요 토픽 별로 경쟁사 대비 자사 정보의 가시성을 모니터링 하며, \'브랜드\' 유형의 경우, Visibility 100% 미만 항목은 GEO 전략 검토가 필요함을 의미합니다.')}</span>
     </div>
@@ -1132,7 +1132,7 @@ function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang, meta, appendixPromp
       if(r>=80) return{bg:'#FFFBEB',color:'#B45309',border:'#FDE68A',label:'${lang==='en'?'Behind':'추격'}'};
       return{bg:'#FFF1F2',color:'#BE123C',border:'#FECDD3',label:'${lang==='en'?'Critical':'취약'}'};
     }
-    function chip(txt,on,onclick){return'<span onclick="'+onclick+'" style="padding:3px 10px;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer;border:1px solid '+(on?'#0F172A':'#E2E8F0')+';background:'+(on?'#0F172A':'#F8FAFC')+';color:'+(on?'#fff':'#475569')+';white-space:nowrap;user-select:none">'+txt+'</span>'}
+    function chip(txt,on,onclick){return'<span onclick="'+onclick+'" style="padding:3px 10px;border-radius:6px;font-size:17px;font-weight:600;cursor:pointer;border:1px solid '+(on?'#0F172A':'#E2E8F0')+';background:'+(on?'#0F172A':'#F8FAFC')+';color:'+(on?'#fff':'#475569')+';white-space:nowrap;user-select:none">'+txt+'</span>'}
     function renderFilters(){
       var te=document.getElementById('pr-type-chips');if(te)te.innerHTML=TY.map(function(t){return chip(t,fType===t,"_prSetType('"+t+"')")}).join(' ');
       var ce=document.getElementById('pr-cnty-chips');if(!ce)return;
@@ -1154,10 +1154,10 @@ function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang, meta, appendixPromp
       var ac=CN.filter(function(c){return fCnty[c]});
       var cols=['TTL'].concat(ac);
       var h='<div style="overflow-x:auto"><table style="border-collapse:collapse;width:100%">';
-      h+='<thead><tr><th style="padding:8px 6px;text-align:center;font-size:13px;font-weight:700;color:#64748B;border-bottom:2px solid #E8EDF2;width:60px">BU</th>';
-      h+='<th style="padding:8px 10px;text-align:left;font-size:13px;font-weight:700;color:#64748B;border-bottom:2px solid #E8EDF2;min-width:120px">${lang==='en'?'Topic':'토픽'} <span style="font-weight:400;color:#94A3B8">('+lastW+')</span></th>';
-      h+='<th style="padding:8px 10px;text-align:left;font-size:13px;font-weight:700;color:#64748B;border-bottom:2px solid #E8EDF2;min-width:140px">${lang==='en'?'Description':'설명'}</th>';
-      cols.forEach(function(c){h+='<th style="padding:8px 6px;text-align:center;font-size:13px;font-weight:700;color:#64748B;border-bottom:2px solid #E8EDF2;min-width:56px">'+cf(c)+'</th>'});
+      h+='<thead><tr><th style="padding:8px 6px;text-align:center;font-size:16px;font-weight:700;color:#64748B;border-bottom:2px solid #E8EDF2;width:60px">BU</th>';
+      h+='<th style="padding:8px 10px;text-align:left;font-size:16px;font-weight:700;color:#64748B;border-bottom:2px solid #E8EDF2;min-width:120px">${lang==='en'?'Topic':'토픽'} <span style="font-weight:400;color:#94A3B8">('+lastW+')</span></th>';
+      h+='<th style="padding:8px 10px;text-align:left;font-size:16px;font-weight:700;color:#64748B;border-bottom:2px solid #E8EDF2;min-width:140px">${lang==='en'?'Description':'설명'}</th>';
+      cols.forEach(function(c){h+='<th style="padding:8px 6px;text-align:center;font-size:16px;font-weight:700;color:#64748B;border-bottom:2px solid #E8EDF2;min-width:56px">'+cf(c)+'</th>'});
       h+='</tr></thead><tbody>';
       var prevBU='';
       _prTopicList.forEach(function(row,idx){
@@ -1168,21 +1168,20 @@ function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang, meta, appendixPromp
         var dataKey=(row.oldTopic||'').trim();
         h+='<tr style="border-bottom:1px solid #F1F5F9;'+(isNewBU&&idx>0?'border-top:2px solid #CBD5E1;':'')+'">';
         if(isNewBU){
-          h+='<td rowspan="'+buCount+'" style="padding:6px 8px;font-size:12px;font-weight:700;color:#475569;vertical-align:middle;text-align:center;border-right:2px solid #E8EDF2;background:#F8FAFC;line-height:1.4;word-break:keep-all">'+bu+'</td>';
+          h+='<td rowspan="'+buCount+'" style="padding:6px 8px;font-size:15px;font-weight:700;color:#475569;vertical-align:middle;text-align:center;border-right:2px solid #E8EDF2;background:#F8FAFC;line-height:1.4;word-break:keep-all">'+bu+'</td>';
           prevBU=bu;
         }
-        h+='<td style="padding:6px 10px;font-size:13px;font-weight:600;color:#1A1A1A">'+row.topic+'</td>';
-        h+='<td style="padding:6px 10px;font-size:11px;color:#64748B;line-height:1.4">'+((row.explanation||''))+'</td>';
+        h+='<td style="padding:6px 10px;font-size:16px;font-weight:600;color:#1A1A1A">'+row.topic+'</td>';
+        h+='<td style="padding:6px 10px;font-size:14px;color:#64748B;line-height:1.4">'+((row.explanation||''))+'</td>';
         if(!dataKey){
-          // 기존 토픽 없음 → 데이터 없음
-          cols.forEach(function(){h+='<td style="padding:4px 6px;text-align:center;font-size:12px;color:#CBD5E1;border:1px solid #F1F5F9;background:#FAFBFC">—</td>'});
+          cols.forEach(function(){h+='<td style="padding:4px 6px;text-align:center;font-size:15px;color:#CBD5E1;border:1px solid #F1F5F9;background:#FAFBFC">—</td>'});
         }else{
           cols.forEach(function(cnty){
             var lg=lastVal(dataKey,cnty,'LG');
             var ss=lastVal(dataKey,cnty,'Samsung');
             var s=tl(lg,ss);
             var ratio=(lg!=null&&ss!=null&&ss>0)?Math.round(lg/ss*100)+'%':'';
-            h+='<td style="padding:4px 6px;text-align:center;background:'+s.bg+';color:'+s.color+';font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;border:1px solid '+s.border+'">'+(lg!=null?lg.toFixed(1)+'%':'—')+(ratio?'<div style="font-size:10px;font-weight:400;color:#64748B">('+ratio+')</div>':'')+'</td>';
+            h+='<td style="padding:4px 6px;text-align:center;background:'+s.bg+';color:'+s.color+';font-size:15px;font-weight:700;font-variant-numeric:tabular-nums;border:1px solid '+s.border+'">'+(lg!=null?lg.toFixed(1)+'%':'—')+(ratio?'<div style="font-size:13px;font-weight:400;color:#64748B">('+ratio+')</div>':'')+'</td>';
           });
         }
         h+='</tr>';
@@ -1215,7 +1214,13 @@ function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang, meta, appendixPromp
     function renderSections(){
       var el=document.getElementById('pr-sections');if(!el)return;
       var N=W.length;var tblW=CW*N;var html='';
-      TP.forEach(function(topic){
+      // PR Topic List의 기존 토픽(oldTopic)이 있는 토픽만 섹션 표시
+      var validTopics=[];
+      if(_prTopicList&&_prTopicList.length){
+        _prTopicList.forEach(function(t){if(t.oldTopic&&t.oldTopic.trim())validTopics.push(t.oldTopic.trim())});
+      }
+      var sectionTopics=validTopics.length?validTopics:TP;
+      sectionTopics.forEach(function(topic){
         var ttl=D.filter(function(r){return r.topic===topic&&r.country==='TTL'&&r.type===fType});
         if(!ttl.length)return;
         var brandMap={};
@@ -1226,43 +1231,43 @@ function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang, meta, appendixPromp
         var lgLast=chartData.LG?chartData.LG[N-1]:null;
         var ssLast=chartData.Samsung?chartData.Samsung[N-1]:null;
         var st=tl(lgLast,ssLast);
-        var legend=brands.map(function(b,i){var c=bc(b,i);var isLG=b==='LG';return'<span style="display:inline-flex;align-items:center;gap:3px;margin-right:10px"><i style="display:inline-block;width:10px;height:3px;border-radius:1px;background:'+c+'"></i><span style="font-size:12px;color:'+(isLG?'#1A1A1A':'#94A3B8')+';font-weight:'+(isLG?700:400)+'">'+b+'</span></span>'}).join('');
+        var legend=brands.map(function(b,i){var c=bc(b,i);var isLG=b==='LG';return'<span style="display:inline-flex;align-items:center;gap:3px;margin-right:10px"><i style="display:inline-block;width:10px;height:3px;border-radius:1px;background:'+c+'"></i><span style="font-size:15px;color:'+(isLG?'#1A1A1A':'#94A3B8')+';font-weight:'+(isLG?700:400)+'">'+b+'</span></span>'}).join('');
         // 국가별 LG 서브
         var ac=CN.filter(function(c){return fCnty[c]});
         var cntyHtml=ac.map(function(cn){
           var cr=D.filter(function(r){return r.topic===topic&&r.country===cn&&r.brand==='LG'&&r.type===fType});
           if(!cr.length)return'';
-          var cells=W.map(function(wk){var v=cr[0]&&cr[0].scores[wk];return'<td style="width:'+CW+'px;min-width:'+CW+'px;max-width:'+CW+'px;text-align:center;padding:5px 0;font-size:13px;color:#475569;font-variant-numeric:tabular-nums">'+(v!=null?v.toFixed(1)+'%':'—')+'</td>'}).join('');
-          return'<tr style="border-top:1px solid #F1F5F9"><td style="padding:5px 8px;font-size:13px;font-weight:600;color:#64748B;white-space:nowrap">'+cf(cn)+'</td>'+cells+'</tr>';
+          var cells=W.map(function(wk){var v=cr[0]&&cr[0].scores[wk];return'<td style="width:'+CW+'px;min-width:'+CW+'px;max-width:'+CW+'px;text-align:center;padding:5px 0;font-size:16px;color:#475569;font-variant-numeric:tabular-nums">'+(v!=null?v.toFixed(1)+'%':'—')+'</td>'}).join('');
+          return'<tr style="border-top:1px solid #F1F5F9"><td style="padding:5px 8px;font-size:16px;font-weight:600;color:#64748B;white-space:nowrap">'+cf(cn)+'</td>'+cells+'</tr>';
         }).filter(Boolean).join('');
 
         html+='<div style="border:1px solid #E8EDF2;border-radius:12px;margin-bottom:20px;overflow:hidden">';
         // 헤더
         html+='<div style="padding:14px 20px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;display:flex;align-items:center;gap:10px;flex-wrap:wrap">';
         html+='<span style="width:4px;height:22px;border-radius:4px;background:'+RED+';flex-shrink:0"></span>';
-        html+='<span style="font-size:18px;font-weight:700;color:#1A1A1A">'+topic+'</span>';
+        html+='<span style="font-size:21px;font-weight:700;color:#1A1A1A">'+topic+'</span>';
         var tpPrompt=TOPIC_PROMPT[topic]||'';
-        if(tpPrompt)html+='<span style="font-size:15px;color:#64748B;font-weight:500;font-style:italic;max-width:700px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">"'+tpPrompt+'"</span>';
-        if(st.label!=='—')html+='<span style="font-size:14px;font-weight:700;padding:2px 10px;border-radius:10px;background:'+st.bg+';color:'+st.color+';border:1px solid '+st.border+'">'+st.label+'</span>';
-        if(lgLast!=null)html+='<span style="font-size:15px;font-weight:700;color:#1A1A1A">LG '+lgLast.toFixed(1)+'%</span>';
-        if(ssLast!=null)html+='<span style="font-size:14px;color:#94A3B8">vs Samsung '+ssLast.toFixed(1)+'%</span>';
+        if(tpPrompt)html+='<span style="font-size:18px;color:#64748B;font-weight:500;font-style:italic;max-width:700px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">"'+tpPrompt+'"</span>';
+        if(st.label!=='—')html+='<span style="font-size:17px;font-weight:700;padding:2px 10px;border-radius:10px;background:'+st.bg+';color:'+st.color+';border:1px solid '+st.border+'">'+st.label+'</span>';
+        if(lgLast!=null)html+='<span style="font-size:18px;font-weight:700;color:#1A1A1A">LG '+lgLast.toFixed(1)+'%</span>';
+        if(ssLast!=null)html+='<span style="font-size:17px;color:#94A3B8">vs Samsung '+ssLast.toFixed(1)+'%</span>';
         html+='<span style="margin-left:auto">'+legend+'</span></div>';
         // 차트+테이블 (같은 너비 정렬)
         html+='<div style="overflow-x:auto;padding:0 16px 12px"><div style="display:flex"><div style="width:120px;flex-shrink:0"></div><div style="width:'+tblW+'px;flex-shrink:0;padding:8px 0">'+svgChart(chartData,tblW,160)+'</div></div>';
         // 테이블
         html+='<table style="border-collapse:collapse;table-layout:fixed;width:'+(120+tblW)+'px">';
         html+='<colgroup><col style="width:120px">';W.forEach(function(){html+='<col style="width:'+CW+'px">'});html+='</colgroup>';
-        html+='<tr style="border-bottom:1px solid #E8EDF2"><th style="text-align:left;padding:5px 8px;font-size:14px;color:#94A3B8;font-weight:600">Brand</th>';
-        W.forEach(function(wk){html+='<th style="text-align:center;padding:5px 0;font-size:14px;color:#94A3B8;font-weight:600">'+wk+'</th>'});
+        html+='<tr style="border-bottom:1px solid #E8EDF2"><th style="text-align:left;padding:5px 8px;font-size:17px;color:#94A3B8;font-weight:600">Brand</th>';
+        W.forEach(function(wk){html+='<th style="text-align:center;padding:5px 0;font-size:17px;color:#94A3B8;font-weight:600">'+wk+'</th>'});
         html+='</tr>';
         brands.forEach(function(b,i){
           var c=bc(b,i);var isLG=b==='LG';
-          html+='<tr style="background:'+(isLG?'#FFF8F9':i%2===0?'#fff':'#FAFBFC')+'"><td style="padding:5px 8px;font-size:14px;font-weight:'+(isLG?700:500)+';color:'+c+';white-space:nowrap"><i style="display:inline-block;width:6px;height:6px;border-radius:50%;background:'+c+';margin-right:4px;vertical-align:0"></i>'+b+'</td>';
-          W.forEach(function(wk,wi){var v=chartData[b][wi];html+='<td style="text-align:center;padding:5px 0;font-size:14px;color:'+(v!=null?(isLG?'#1A1A1A':'#475569'):'#CBD5E1')+';font-weight:'+(isLG?700:400)+';font-variant-numeric:tabular-nums">'+(v!=null?v.toFixed(1)+'%':'—')+'</td>'});
+          html+='<tr style="background:'+(isLG?'#FFF8F9':i%2===0?'#fff':'#FAFBFC')+'"><td style="padding:5px 8px;font-size:17px;font-weight:'+(isLG?700:500)+';color:'+c+';white-space:nowrap"><i style="display:inline-block;width:6px;height:6px;border-radius:50%;background:'+c+';margin-right:4px;vertical-align:0"></i>'+b+'</td>';
+          W.forEach(function(wk,wi){var v=chartData[b][wi];html+='<td style="text-align:center;padding:5px 0;font-size:17px;color:'+(v!=null?(isLG?'#1A1A1A':'#475569'):'#CBD5E1')+';font-weight:'+(isLG?700:400)+';font-variant-numeric:tabular-nums">'+(v!=null?v.toFixed(1)+'%':'—')+'</td>'});
           html+='</tr>';
         });
         if(cntyHtml){
-          html+='<tr><td colspan="'+(N+1)+'" style="padding:6px 8px;font-size:11px;font-weight:700;color:#64748B;background:#F8FAFC;border-top:2px solid #E8EDF2">${lang==='en'?'LG by Country':'LG 국가별'}</td></tr>'+cntyHtml;
+          html+='<tr><td colspan="'+(N+1)+'" style="padding:6px 8px;font-size:14px;font-weight:700;color:#64748B;background:#F8FAFC;border-top:2px solid #E8EDF2">${lang==='en'?'LG by Country':'LG 국가별'}</td></tr>'+cntyHtml;
         }
         html+='</table></div></div>';
       });
