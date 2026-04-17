@@ -247,8 +247,8 @@ function trendDetailHtml(products, weeklyAll, wLabels, t, lang, ulMap, periodTag
   if (!buGroups.trim()) return ''
   return `<div class="section-card">
     <div class="section-header">
-      <div class="section-title">${lang === 'en' ? 'Weekly Competitor Trend' : '주간 경쟁사 트렌드'}${periodTag || ''}</div>
-      <span class="legend">${wLabels[0]}–${wLabels[wLabels.length - 1]} (${wLabels.length}${lang === 'en' ? ' weeks' : '주'})</span>
+      <div class="section-title">${lang === 'en' ? 'Weekly Competitor Trend' : '주간 경쟁사 트렌드'}</div>
+      <span class="legend">${periodTag || ''} &nbsp;|&nbsp; ${wLabels[0]}–${wLabels[wLabels.length - 1]} (${wLabels.length}${lang === 'en' ? ' weeks' : '주'})</span>
     </div>
     <div class="section-body">${buGroups}${(() => {
       const footnotes = products.filter(p => getULCntys(p.id || p.category, ulMap).length > 0)
@@ -541,8 +541,8 @@ function productSectionHtml(products, meta, t, lang, wLabels, ulMap, monthlyVis,
 
   return `<div class="section-card">
     <div class="section-header">
-      <div class="section-title">${t.productTitle}${periodTag || ''}</div>
-      <span class="legend"><i style="background:#15803D"></i>${t.legendLead} <i style="background:#D97706"></i>${t.legendBehind} <i style="background:#BE123C"></i>${t.legendCritical}</span>
+      <div class="section-title">${t.productTitle}</div>
+      <span class="legend">${periodTag || ''}${periodTag ? ' &nbsp;|&nbsp; ' : ''}<i style="background:#15803D"></i>${t.legendLead} <i style="background:#D97706"></i>${t.legendBehind} <i style="background:#BE123C"></i>${t.legendCritical}</span>
     </div>
     ${insightHtml(meta.productInsight, meta.showProductInsight, meta.productHowToRead, meta.showProductHowToRead, t)}
     <div class="section-body">${buGroups}${(() => {
@@ -651,14 +651,15 @@ function countrySectionHtml(productsCnty, meta, t, lang, ulMap, periodTag) {
 
   return `<div class="section-card cnty-section">
     <div class="section-header">
-      <div class="section-title cnty-section-title">${t.cntyTitle}${periodTag || ''}</div>
+      <div class="section-title cnty-section-title">${t.cntyTitle}</div>
       <div class="section-header-right">
+        ${periodTag ? `<span class="legend">${periodTag}</span>` : ''}
         <div class="trend-tabs">
           <button class="cnty-view-tab active" onclick="switchCntyView('country')">${t.byCountry}</button>
           <button class="cnty-view-tab" onclick="switchCntyView('product')">${t.byProduct}</button>
         </div>
         <label style="display:inline-flex;align-items:center;gap:5px;font-size:13px;color:#475569;cursor:pointer;margin-left:8px;">
-          <input type="checkbox" id="cnty-cbrand-toggle" checked onchange="toggleCBrand(this)" style="cursor:pointer;" />
+          <input type="checkbox" class="cnty-cbrand-toggle" checked onchange="toggleCBrand(this)" style="cursor:pointer;" />
           ${t.cBrandCompare}
         </label>
         <span class="legend"><i style="background:#15803D"></i>${t.legendLead} <i style="background:#D97706"></i>${t.legendBehind} <i style="background:#BE123C"></i>${t.legendCritical} <i style="background:${COMP}"></i>Comp. <i style="background:#9333EA"></i>C-Brand</span>
@@ -1389,7 +1390,7 @@ function brandPromptTabHtml(bpData, bpLabels, lang, stakeholderFilter, tabTitle,
 // 메인 생성 함수
 // ═══════════════════════════════════════════════════════════════════════════
 export function generateVisibilityHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty, monthlyVis, extra) {
-  return generateDashboardHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty, { visibilityOnly: true, monthlyVis }, extra)
+  return generateDashboardHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty, { visibilityOnly: true, monthlyVis, weeklyLabelsFull: extra?.weeklyLabelsFull }, extra)
 }
 
 export function generateDashboardHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty, opts, extra) {
@@ -1536,9 +1537,9 @@ export function generateDashboardHTML(meta, total, products, citations, dotcom, 
     })
   }
 
-  // 주간 기간 라벨 (마지막 주차)
-  const lastWeekLabel = wLabels[wLabels.length - 1] || ''
-  const weeklyPeriodTag = lastWeekLabel ? `<span style="font-size:12px;font-weight:400;color:#3B82F6;margin-left:8px;background:#EFF6FF;padding:2px 8px;border-radius:6px;border:1px solid #93C5FD">${lastWeekLabel} ${lang === 'en' ? 'data' : '기준'}</span>` : ''
+  // 주간 기간 라벨 (마지막 주차 + 날짜 범위)
+  const lastWeekLabelFull = opts?.weeklyLabelsFull?.[opts.weeklyLabelsFull.length - 1] || wLabels[wLabels.length - 1] || ''
+  const weeklyPeriodTag = lastWeekLabelFull ? `<span style="font-size:12px;font-weight:600;color:#3B82F6;background:#EFF6FF;padding:2px 8px;border-radius:6px;border:1px solid #93C5FD">${lastWeekLabelFull} ${lang === 'en' ? 'data' : '기준'}</span>` : ''
 
   // 주간 콘텐츠
   const weeklyContent = [
@@ -2254,7 +2255,71 @@ function onFilterChange(){
   applyCntyFilters();
   updateHeroFromCheckboxes();
   updateProductScores(selCountry,selBU,selProd);
+  updateMonthlyProductScores(selCountry);
   applyUnlaunchedStyle(selCountry);
+}
+// 월간 카드 업데이트: 국가 필터 반영
+function updateMonthlyProductScores(selCountry){
+  var monthlyContainer=document.getElementById('bu-monthly-content');
+  if(!monthlyContainer)return;
+  var cards=monthlyContainer.querySelectorAll('.prod-card');
+  var countries=selCountry.isAll?null:Object.keys(selCountry.vals);
+  if(selCountry.isAll){
+    // TTL → 원래 서버렌더 값 복원 (data-ms에 저장)
+    cards.forEach(function(card){
+      var ms=parseFloat(card.getAttribute('data-ms'));
+      var mr=parseFloat(card.getAttribute('data-mr'));
+      if(isNaN(ms))return;
+      var compPct=isNaN(mr)?100:Math.round(mr);
+      var status=compPct>=100?'lead':compPct>=80?'behind':'critical';
+      var st=_statusInfo(status);
+      var scoreEl=card.querySelector('.prod-score');if(scoreEl)scoreEl.innerHTML=ms.toFixed(1)+'<small>%</small>';
+      var compBar=card.querySelector('.prod-comp-bar');if(compBar){compBar.style.width=Math.min(compPct,120)+'%';compBar.style.background=st.color||'#15803D'}
+      var compPctEl=card.querySelector('.prod-comp-pct');if(compPctEl){compPctEl.textContent=compPct+'%';compPctEl.style.color=st.color||'#15803D'}
+      var badge=card.querySelector('.prod-badge');if(badge){badge.style.background=st.bg;badge.style.color=st.color;badge.style.borderColor=st.border;badge.textContent=st.label}
+      card.style.borderColor=st.border;
+    });
+    return;
+  }
+  if(!countries||!countries.length)return;
+  // 월간 국가별 데이터에서 선택 국가 평균
+  var prodKeyMap={};
+  _products.forEach(function(p){
+    var keys=[(p.category||'').toUpperCase(),p.id.toUpperCase(),(p.kr||'').toUpperCase(),(p.en||'').toUpperCase()];
+    keys.forEach(function(k){if(k)prodKeyMap[k]=p.id});
+  });
+  var avgByProdId={};
+  _productsCnty.forEach(function(r){
+    if(countries.indexOf(r.country||'')<0)return;
+    var rKey=(r.product||'').toUpperCase();
+    var prodId=prodKeyMap[rKey];
+    if(!prodId)return;
+    if(!avgByProdId[prodId])avgByProdId[prodId]={scores:[],compScores:[]};
+    avgByProdId[prodId].scores.push(r.score||0);
+    avgByProdId[prodId].compScores.push(r.compScore||0);
+  });
+  cards.forEach(function(card){
+    var nameEl=card.querySelector('.prod-name');if(!nameEl)return;
+    var name=nameEl.textContent.replace(/\*$/,'');
+    var prod=_products.find(function(p){return p.kr===name||p.en===name});if(!prod)return;
+    var avg=avgByProdId[prod.id];
+    var score,compPct;
+    if(avg&&avg.scores.length){
+      score=+(avg.scores.reduce(function(s,v){return s+v},0)/avg.scores.length).toFixed(1);
+      var comp=+(avg.compScores.reduce(function(s,v){return s+v},0)/avg.compScores.length).toFixed(1);
+      compPct=comp>0?Math.round((score/comp)*100):100;
+    }else{
+      var ms=parseFloat(card.getAttribute('data-ms'));
+      score=isNaN(ms)?0:ms;compPct=100;
+    }
+    var status=compPct>=100?'lead':compPct>=80?'behind':'critical';
+    var st=_statusInfo(status);
+    var scoreEl=card.querySelector('.prod-score');if(scoreEl)scoreEl.innerHTML=score.toFixed(1)+'<small>%</small>';
+    var compBar=card.querySelector('.prod-comp-bar');if(compBar){compBar.style.width=Math.min(compPct,120)+'%';compBar.style.background=st.color||'#15803D'}
+    var compPctEl=card.querySelector('.prod-comp-pct');if(compPctEl){compPctEl.textContent=compPct+'%';compPctEl.style.color=st.color||'#15803D'}
+    var badge=card.querySelector('.prod-badge');if(badge){badge.style.background=st.bg;badge.style.color=st.color;badge.style.borderColor=st.border;badge.textContent=st.label}
+    card.style.borderColor=st.border;
+  });
 }
 // 선택된 국가 내에서 제품이 "모두 미출시"면 카드/트렌드에 회색 처리
 function applyUnlaunchedStyle(selCountry){

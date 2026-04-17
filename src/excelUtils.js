@@ -608,6 +608,14 @@ function parseWeekly(rows, div) {
     if (/^w\d+/i.test(String(header[i] || '').split(/\n/)[0].trim())) wCols.push(i)
   }
   weeklyLabels = wCols.map(i => String(header[i] || '').split(/\n/)[0].trim())
+  // 날짜 범위 포함 라벨: "W5(2/2~2/8)" 형태
+  let weeklyLabelsFull = wCols.map(i => {
+    const raw = String(header[i] || '').trim()
+    const parts = raw.split(/\n/)
+    const wNum = parts[0].trim()
+    const dateRange = parts[1] ? parts[1].trim() : ''
+    return dateRange ? `${wNum}${dateRange}` : wNum
+  })
 
   // Country 필터 헬퍼 — (Total), TTL 모두 허용
   function isTotal(r) {
@@ -723,6 +731,7 @@ function parseWeekly(rows, div) {
     const start = trimmedLen > MAX_WEEKS ? weeklyLabels.length - MAX_WEEKS : firstDataIdx
     if (start > 0 && start < weeklyLabels.length) {
       weeklyLabels = weeklyLabels.slice(start)
+      weeklyLabelsFull = weeklyLabelsFull.slice(start)
       sliceWeeklyData(weeklyAll, weeklyMap, start)
     }
   }
@@ -730,6 +739,7 @@ function parseWeekly(rows, div) {
   if (Object.keys(weeklyMap).length) {
     const result = { weeklyMap }
     if (weeklyLabels.length) result.weeklyLabels = weeklyLabels
+    if (weeklyLabelsFull.length) result.weeklyLabelsFull = weeklyLabelsFull
     if (Object.keys(weeklyAll).length) result.weeklyAll = weeklyAll
     return result
   }

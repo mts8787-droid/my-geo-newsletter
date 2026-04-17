@@ -353,6 +353,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
           weeklyBrandPromptLabels: parsed.weeklyBrandPromptLabels || null,
           appendixPrompts: parsed.appendixPrompts || null,
           unlaunchedMap: parsed.unlaunchedMap || null,
+          weeklyLabelsFull: parsed.weeklyLabelsFull || null,
         }
         onSyncExtra(syncExtra)
         // latestRef에도 extra 즉시 갱신
@@ -488,6 +489,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
           productsPartial: parsed.productsPartial || null,
           weeklyMap: parsed.weeklyMap || null,
           weeklyLabels: parsed.weeklyLabels || null,
+          weeklyLabelsFull: parsed.weeklyLabelsFull || null,
           weeklyAll: parsed.weeklyAll || null,
           citations: parsed.citations || null,
           dotcom: parsed.dotcom || null,
