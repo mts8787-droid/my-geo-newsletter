@@ -2291,6 +2291,22 @@ function updateMonthlyProductScores(selCountry){
       var compPctEl=card.querySelector('.prod-comp-pct');if(compPctEl){compPctEl.textContent=compPct+'%';compPctEl.style.color=sparkColor}
       var badge=card.querySelector('.prod-badge');if(badge){badge.style.background=st.bg;badge.style.color=st.color;badge.style.borderColor=st.border;badge.textContent=st.label}
       card.style.borderColor=st.border;
+      // TTL 미니차트 복원
+      var nameEl=card.querySelector('.prod-name');
+      if(nameEl){
+        var name=nameEl.textContent.replace(/\\*$/,'');
+        var prod=_products.find(function(p){return p.kr===name||p.en===name});
+        if(prod){
+          var mChart=card.querySelector('.trend-monthly');
+          if(mChart){
+            var msc=prod.monthlyScores||[];
+            var mData=msc.length?msc.map(function(m){return m.score}):[ms];
+            var ML=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+            var mLabels=msc.length?msc.map(function(m){var km=String(m.date||'').match(/(\\d{1,2})월/);return km?ML[parseInt(km[1])-1]:m.date}):['M0'];
+            mChart.innerHTML=_miniSvgNullAware(mData,mLabels,300,90,sparkColor);
+          }
+        }
+      }
     });
     return;
   }
@@ -2333,11 +2349,13 @@ function updateMonthlyProductScores(selCountry){
     var compPctEl=card.querySelector('.prod-comp-pct');if(compPctEl){compPctEl.textContent=compPct+'%';compPctEl.style.color=sparkColor}
     var badge=card.querySelector('.prod-badge');if(badge){badge.style.background=st.bg;badge.style.color=st.color;badge.style.borderColor=st.border;badge.textContent=st.label}
     card.style.borderColor=st.border;
-    // 월간 미니차트 업데이트 (trend-monthly에 표시)
+    // 월간 미니차트: TTL 기반 트렌드에서 마지막 점을 선택 국가 평균으로 교체
     var mChart=card.querySelector('.trend-monthly');
     if(mChart&&prod){
       var ms=prod.monthlyScores||[];
       var mData=ms.length?ms.map(function(m){return m.score}):[score];
+      // 마지막 점을 현재 필터 점수로 교체
+      if(mData.length)mData[mData.length-1]=score;
       var ML=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
       var mLabels=ms.length?ms.map(function(m){var km=String(m.date||'').match(/(\\d{1,2})월/);return km?ML[parseInt(km[1])-1]:m.date}):['M0'];
       mChart.innerHTML=_miniSvgNullAware(mData,mLabels,300,90,sparkColor);
