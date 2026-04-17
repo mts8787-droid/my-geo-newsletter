@@ -1145,49 +1145,46 @@ function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang, meta, appendixPromp
       return r&&r.scores[wk]!=null?r.scores[wk]:null;
     }
     function lastVal(topic,cnty,brand){for(var i=W.length-1;i>=0;i--){var v=val(topic,cnty,brand,W[i]);if(v!=null)return v}return null}
-    // ── 상단 매트릭스: PR Topic List 시트 기준 ──
-    // _prTopicList 기반 행 구성, 기존 토픽(oldTopic)으로 데이터 매칭
+    // ── 상단 매트릭스: PR Topic List 시트 전용 ──
+    // PR Topic List의 토픽만 행으로 사용. 기존 토픽(oldTopic)으로 Weekly PR 데이터 JOIN.
     function renderMatrix(){
       var el=document.getElementById('pr-matrix');if(!el)return;
+      if(!_prTopicList||!_prTopicList.length){el.innerHTML='<p style="text-align:center;color:#94A3B8;padding:20px">PR Topic List 시트를 동기화해주세요.</p>';return}
       var lastW=W[W.length-1];
       var ac=CN.filter(function(c){return fCnty[c]});
       var cols=['TTL'].concat(ac);
-      // PR Topic List가 있으면 시트 기반, 없으면 기존 TP 기반
-      var matrixRows=[];
-      if(_prTopicList&&_prTopicList.length){
-        _prTopicList.forEach(function(t){matrixRows.push({bu:t.bu,topic:t.topic,desc:t.explanation||'',dataKey:t.oldTopic||t.topicRow||''})});
-      }else{
-        TP.forEach(function(tp){matrixRows.push({bu:TOPIC_CAT[tp]||'',topic:tp,desc:TOPIC_DESC[tp]||'',dataKey:tp})});
-      }
       var h='<div style="overflow-x:auto"><table style="border-collapse:collapse;width:100%">';
-      h+='<thead><tr><th style="padding:8px 6px;text-align:center;font-size:13px;font-weight:700;color:#64748B;border-bottom:2px solid #E8EDF2;width:46px">${lang==='en'?'BU':'BU'}</th>';
-      h+='<th style="padding:8px 10px;text-align:center;font-size:13px;font-weight:700;color:#64748B;border-bottom:2px solid #E8EDF2;white-space:nowrap;width:120px">${lang==='en'?'Topic':'토픽'} <span style="font-weight:400;color:#94A3B8">('+lastW+')</span></th>';
-      h+='<th style="padding:8px 10px;text-align:center;font-size:13px;font-weight:700;color:#64748B;border-bottom:2px solid #E8EDF2">${lang==='en'?'Description':'설명'}</th>';
-      cols.forEach(function(c){h+='<th style="padding:8px 8px;text-align:center;font-size:13px;font-weight:700;color:#64748B;border-bottom:2px solid #E8EDF2;min-width:56px">'+cf(c)+'</th>'});
+      h+='<thead><tr><th style="padding:8px 6px;text-align:center;font-size:13px;font-weight:700;color:#64748B;border-bottom:2px solid #E8EDF2;width:60px">BU</th>';
+      h+='<th style="padding:8px 10px;text-align:left;font-size:13px;font-weight:700;color:#64748B;border-bottom:2px solid #E8EDF2;min-width:120px">${lang==='en'?'Topic':'토픽'} <span style="font-weight:400;color:#94A3B8">('+lastW+')</span></th>';
+      h+='<th style="padding:8px 10px;text-align:left;font-size:13px;font-weight:700;color:#64748B;border-bottom:2px solid #E8EDF2;min-width:140px">${lang==='en'?'Description':'설명'}</th>';
+      cols.forEach(function(c){h+='<th style="padding:8px 6px;text-align:center;font-size:13px;font-weight:700;color:#64748B;border-bottom:2px solid #E8EDF2;min-width:56px">'+cf(c)+'</th>'});
       h+='</tr></thead><tbody>';
       var prevBU='';
-      matrixRows.forEach(function(row){
-        var isNewBU=row.bu!==prevBU&&row.bu;
+      _prTopicList.forEach(function(row,idx){
+        var bu=row.bu||'';
+        var isNewBU=bu&&bu!==prevBU;
         var buCount=0;
-        if(isNewBU){matrixRows.forEach(function(r){if(r.bu===row.bu)buCount++})}
-        h+='<tr style="border-bottom:1px solid #F1F5F9">';
+        if(isNewBU){_prTopicList.forEach(function(r){if(r.bu===bu)buCount++})}
+        var dataKey=(row.oldTopic||'').trim();
+        h+='<tr style="border-bottom:1px solid #F1F5F9;'+(isNewBU&&idx>0?'border-top:2px solid #CBD5E1;':'')+'">';
         if(isNewBU){
-          h+='<td rowspan="'+buCount+'" style="padding:6px 6px;font-size:12px;font-weight:700;color:#475569;vertical-align:middle;text-align:center;border-right:2px solid #E8EDF2;background:#F8FAFC;line-height:1.4;word-break:keep-all">'+row.bu+'</td>';
-          prevBU=row.bu;
+          h+='<td rowspan="'+buCount+'" style="padding:6px 8px;font-size:12px;font-weight:700;color:#475569;vertical-align:middle;text-align:center;border-right:2px solid #E8EDF2;background:#F8FAFC;line-height:1.4;word-break:keep-all">'+bu+'</td>';
+          prevBU=bu;
         }
-        h+='<td style="padding:6px 10px;font-size:13px;font-weight:600;color:#1A1A1A;white-space:nowrap">'+row.topic+'</td>';
-        h+='<td style="padding:6px 10px;font-size:12px;color:#1A1A1A;line-height:1.5">'+row.desc+'</td>';
-        cols.forEach(function(cnty){
-          if(!row.dataKey){
-            h+='<td style="padding:4px 6px;text-align:center;font-size:12px;color:#CBD5E1;border:1px solid #E2E8F0">—</td>';
-            return;
-          }
-          var lg=lastVal(row.dataKey,cnty,'LG');
-          var ss=lastVal(row.dataKey,cnty,'Samsung');
-          var s=tl(lg,ss);
-          var ratio=(lg!=null&&ss!=null&&ss>0)?Math.round(lg/ss*100)+'%':'';
-          h+='<td style="padding:4px 6px;text-align:center;background:'+s.bg+';color:'+s.color+';font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;border:1px solid '+s.border+'">'+(lg!=null?lg.toFixed(1)+'%':'—')+(ratio?'<div style="font-size:10px;font-weight:400;color:#64748B">('+ratio+')</div>':'')+'</td>';
-        });
+        h+='<td style="padding:6px 10px;font-size:13px;font-weight:600;color:#1A1A1A">'+row.topic+'</td>';
+        h+='<td style="padding:6px 10px;font-size:11px;color:#64748B;line-height:1.4">'+((row.explanation||''))+'</td>';
+        if(!dataKey){
+          // 기존 토픽 없음 → 데이터 없음
+          cols.forEach(function(){h+='<td style="padding:4px 6px;text-align:center;font-size:12px;color:#CBD5E1;border:1px solid #F1F5F9;background:#FAFBFC">—</td>'});
+        }else{
+          cols.forEach(function(cnty){
+            var lg=lastVal(dataKey,cnty,'LG');
+            var ss=lastVal(dataKey,cnty,'Samsung');
+            var s=tl(lg,ss);
+            var ratio=(lg!=null&&ss!=null&&ss>0)?Math.round(lg/ss*100)+'%':'';
+            h+='<td style="padding:4px 6px;text-align:center;background:'+s.bg+';color:'+s.color+';font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;border:1px solid '+s.border+'">'+(lg!=null?lg.toFixed(1)+'%':'—')+(ratio?'<div style="font-size:10px;font-weight:400;color:#64748B">('+ratio+')</div>':'')+'</td>';
+          });
+        }
         h+='</tr>';
       });
       h+='</tbody></table></div>';
