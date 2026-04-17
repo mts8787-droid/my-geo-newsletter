@@ -819,6 +819,7 @@ body, table, td, th, h1, h2, p, span, div { font-family: ${Ft} !important; }
     var TOPIC_CAT=${JSON.stringify(ve)};
     var TOPIC_PROMPT=${JSON.stringify(Y).replace(/</g,"\\u003c")};
     var TOPIC_DESC=${JSON.stringify(Le).replace(/</g,"\\u003c")};
+    var _prTopicList=${JSON.stringify(ne).replace(/</g,"\\u003c")};
     var _CF=${JSON.stringify(ip)};
     function cf(c){return _CF[c]||_CF[c&&c.toUpperCase()]||c}
     var fType=TY[0]||'non-brand';
@@ -849,40 +850,45 @@ body, table, td, th, h1, h2, p, span, div { font-family: ${Ft} !important; }
       return r&&r.scores[wk]!=null?r.scores[wk]:null;
     }
     function lastVal(topic,cnty,brand){for(var i=W.length-1;i>=0;i--){var v=val(topic,cnty,brand,W[i]);if(v!=null)return v}return null}
-    // ── 상단 매트릭스 (토픽×국가, 최근주 기준 신호등) ──
-    // 카테고리별 토픽 정렬: Consumer Products 먼저, 그다음 Corporate & Innovation
-    // BU 순서로 토픽 정렬
-    var BU_ORDER=['${h==="en"?"Key Initiatives":"전사 핵심 추진 과제"}','CORP','MS','HS','ES','VS'];
-    var sortedTP=[];
-    BU_ORDER.forEach(function(bu){TP.forEach(function(tp){if(TOPIC_CAT[tp]===bu&&sortedTP.indexOf(tp)<0)sortedTP.push(tp)})});
-    TP.forEach(function(tp){if(sortedTP.indexOf(tp)<0)sortedTP.push(tp)});
+    // ── 상단 매트릭스: PR Topic List 시트 기준 ──
+    // _prTopicList 기반 행 구성, 기존 토픽(oldTopic)으로 데이터 매칭
     function renderMatrix(){
       var el=document.getElementById('pr-matrix');if(!el)return;
       var lastW=W[W.length-1];
       var ac=CN.filter(function(c){return fCnty[c]});
       var cols=['TTL'].concat(ac);
+      // PR Topic List가 있으면 시트 기반, 없으면 기존 TP 기반
+      var matrixRows=[];
+      if(_prTopicList&&_prTopicList.length){
+        _prTopicList.forEach(function(t){matrixRows.push({bu:t.bu,topic:t.topic,desc:t.explanation||'',dataKey:t.oldTopic||t.topicRow||''})});
+      }else{
+        TP.forEach(function(tp){matrixRows.push({bu:TOPIC_CAT[tp]||'',topic:tp,desc:TOPIC_DESC[tp]||'',dataKey:tp})});
+      }
       var h='<div style="overflow-x:auto"><table style="border-collapse:collapse;width:100%">';
-      h+='<thead><tr><th style="padding:8px 6px;text-align:center;font-size:13px;font-weight:700;color:#64748B;border-bottom:2px solid #E8EDF2;width:46px">${h==="en"?"Category":"구분"}</th>';
-      h+='<th style="padding:8px 10px;text-align:center;font-size:13px;font-weight:700;color:#64748B;border-bottom:2px solid #E8EDF2;white-space:nowrap;width:100px">${h==="en"?"Topic":"토픽"} <span style="font-weight:400;color:#94A3B8">('+lastW+')</span></th>';
+      h+='<thead><tr><th style="padding:8px 6px;text-align:center;font-size:13px;font-weight:700;color:#64748B;border-bottom:2px solid #E8EDF2;width:46px">BU</th>';
+      h+='<th style="padding:8px 10px;text-align:center;font-size:13px;font-weight:700;color:#64748B;border-bottom:2px solid #E8EDF2;white-space:nowrap;width:120px">${h==="en"?"Topic":"토픽"} <span style="font-weight:400;color:#94A3B8">('+lastW+')</span></th>';
       h+='<th style="padding:8px 10px;text-align:center;font-size:13px;font-weight:700;color:#64748B;border-bottom:2px solid #E8EDF2">${h==="en"?"Description":"설명"}</th>';
       cols.forEach(function(c){h+='<th style="padding:8px 8px;text-align:center;font-size:13px;font-weight:700;color:#64748B;border-bottom:2px solid #E8EDF2;min-width:56px">'+cf(c)+'</th>'});
       h+='</tr></thead><tbody>';
-      var prevCat='';
-      sortedTP.forEach(function(topic){
-        var cat=TOPIC_CAT[topic]||'Corporate & Innovation';
-        var isNewCat=cat!==prevCat;
-        var catCount=0;if(isNewCat){sortedTP.forEach(function(t){if((TOPIC_CAT[t]||'Corporate & Innovation')===cat)catCount++})}
+      var prevBU='';
+      matrixRows.forEach(function(row){
+        var isNewBU=row.bu!==prevBU&&row.bu;
+        var buCount=0;
+        if(isNewBU){matrixRows.forEach(function(r){if(r.bu===row.bu)buCount++})}
         h+='<tr style="border-bottom:1px solid #F1F5F9">';
-        if(isNewCat){
-          h+='<td rowspan="'+catCount+'" style="padding:6px 6px;font-size:12px;font-weight:700;color:#475569;vertical-align:middle;text-align:center;border-right:2px solid #E8EDF2;background:#F8FAFC;line-height:1.4;word-break:keep-all">'+cat+'</td>';
-          prevCat=cat;
+        if(isNewBU){
+          h+='<td rowspan="'+buCount+'" style="padding:6px 6px;font-size:12px;font-weight:700;color:#475569;vertical-align:middle;text-align:center;border-right:2px solid #E8EDF2;background:#F8FAFC;line-height:1.4;word-break:keep-all">'+row.bu+'</td>';
+          prevBU=row.bu;
         }
-        h+='<td style="padding:6px 10px;font-size:14px;font-weight:600;color:#1A1A1A;white-space:nowrap">'+topic+'</td>';
-        var desc=TOPIC_DESC[topic]||'';
-        h+='<td style="padding:6px 10px;font-size:12px;color:#1A1A1A;line-height:1.5">'+desc+'</td>';
+        h+='<td style="padding:6px 10px;font-size:13px;font-weight:600;color:#1A1A1A;white-space:nowrap">'+row.topic+'</td>';
+        h+='<td style="padding:6px 10px;font-size:12px;color:#1A1A1A;line-height:1.5">'+row.desc+'</td>';
         cols.forEach(function(cnty){
-          var lg=lastVal(topic,cnty,'LG');
-          var ss=lastVal(topic,cnty,'Samsung');
+          if(!row.dataKey){
+            h+='<td style="padding:4px 6px;text-align:center;font-size:12px;color:#CBD5E1;border:1px solid #E2E8F0">—</td>';
+            return;
+          }
+          var lg=lastVal(row.dataKey,cnty,'LG');
+          var ss=lastVal(row.dataKey,cnty,'Samsung');
           var s=tl(lg,ss);
           var ratio=(lg!=null&&ss!=null&&ss>0)?Math.round(lg/ss*100)+'%':'';
           h+='<td style="padding:4px 6px;text-align:center;background:'+s.bg+';color:'+s.color+';font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;border:1px solid '+s.border+'">'+(lg!=null?lg.toFixed(1)+'%':'—')+(ratio?'<div style="font-size:10px;font-weight:400;color:#64748B">('+ratio+')</div>':'')+'</td>';
