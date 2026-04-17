@@ -185,7 +185,7 @@ function svgMultiLine(brandData, labels, w, h) {
 }
 
 // ─── 경쟁사 트렌드 섹션 ────────────────────────────────────────────────────
-function trendDetailHtml(products, weeklyAll, wLabels, t, lang, ulMap) {
+function trendDetailHtml(products, weeklyAll, wLabels, t, lang, ulMap, periodTag) {
   if (!weeklyAll || !Object.keys(weeklyAll).length) return ''
   const BU_ORDER = ['MS', 'HS', 'ES']
 
@@ -247,7 +247,7 @@ function trendDetailHtml(products, weeklyAll, wLabels, t, lang, ulMap) {
   if (!buGroups.trim()) return ''
   return `<div class="section-card">
     <div class="section-header">
-      <div class="section-title">${lang === 'en' ? 'Weekly Competitor Trend' : '주간 경쟁사 트렌드'}</div>
+      <div class="section-title">${lang === 'en' ? 'Weekly Competitor Trend' : '주간 경쟁사 트렌드'}${periodTag || ''}</div>
       <span class="legend">${wLabels[0]}–${wLabels[wLabels.length - 1]} (${wLabels.length}${lang === 'en' ? ' weeks' : '주'})</span>
     </div>
     <div class="section-body">${buGroups}${(() => {
@@ -443,7 +443,7 @@ function isAllUnlaunched(prodId, ulMap) {
 }
 function prodNameUL(p, ulMap) { const c = getULCntys(p.id || p.category, ulMap); return c.length ? `${p.kr}*` : p.kr }
 
-function productSectionHtml(products, meta, t, lang, wLabels, ulMap, monthlyVis, weeklyAll) {
+function productSectionHtml(products, meta, t, lang, wLabels, ulMap, monthlyVis, weeklyAll, periodTag) {
   if (!products.length) return ''
   const BU_ORDER = ['MS', 'HS', 'ES']
 
@@ -541,7 +541,7 @@ function productSectionHtml(products, meta, t, lang, wLabels, ulMap, monthlyVis,
 
   return `<div class="section-card">
     <div class="section-header">
-      <div class="section-title">${t.productTitle}</div>
+      <div class="section-title">${t.productTitle}${periodTag || ''}</div>
       <span class="legend"><i style="background:#15803D"></i>${t.legendLead} <i style="background:#D97706"></i>${t.legendBehind} <i style="background:#BE123C"></i>${t.legendCritical}</span>
     </div>
     ${insightHtml(meta.productInsight, meta.showProductInsight, meta.productHowToRead, meta.showProductHowToRead, t)}
@@ -623,7 +623,7 @@ function cntyFullName(c) {
   return COUNTRY_FULL_NAME[k] || c
 }
 
-function countrySectionHtml(productsCnty, meta, t, lang, ulMap) {
+function countrySectionHtml(productsCnty, meta, t, lang, ulMap, periodTag) {
   if (!productsCnty || !productsCnty.length) return ''
 
   // ── View 1: 제품별 (By Product) ──
@@ -651,7 +651,7 @@ function countrySectionHtml(productsCnty, meta, t, lang, ulMap) {
 
   return `<div class="section-card" id="cnty-section">
     <div class="section-header">
-      <div class="section-title" id="cnty-section-title">${t.cntyTitle}</div>
+      <div class="section-title" id="cnty-section-title">${t.cntyTitle}${periodTag || ''}</div>
       <div class="section-header-right">
         <div class="trend-tabs">
           <button class="cnty-view-tab active" onclick="switchCntyView('country')">${t.byCountry}</button>
@@ -1443,7 +1443,8 @@ export function generateDashboardHTML(meta, total, products, citations, dotcom, 
       ${langToggleHtml}
       <div class="fl-group">
         <span class="fl-label">${lang === 'en' ? 'Period' : '기간'}</span>
-        <span class="fl-badge">${meta.period || '—'}</span>
+        <span class="fl-badge" id="period-badge">${meta.period || '—'}</span>
+        <span class="fl-badge" id="period-weekly-badge" style="display:none;background:#EFF6FF;color:#1D4ED8;border:1px solid #93C5FD">${wLabels[wLabels.length - 1]} ${lang === 'en' ? 'data' : '기준'}</span>
       </div>
       <div class="fl-divider"></div>
       <div class="fl-group">
@@ -1530,12 +1531,16 @@ export function generateDashboardHTML(meta, total, products, citations, dotcom, 
     })
   }
 
+  // 주간 기간 라벨 (마지막 주차)
+  const lastWeekLabel = wLabels[wLabels.length - 1] || ''
+  const weeklyPeriodTag = lastWeekLabel ? `<span style="font-size:12px;font-weight:400;color:#3B82F6;margin-left:8px;background:#EFF6FF;padding:2px 8px;border-radius:6px;border:1px solid #93C5FD">${lastWeekLabel} ${lang === 'en' ? 'data' : '기준'}</span>` : ''
+
   // 주간 콘텐츠
   const weeklyContent = [
     commonTop,
-    meta.showProducts !== false ? productSectionHtml(products, meta, t, lang, wLabels, ulMap, opts?.monthlyVis || [], weeklyAll) : '',
-    `<div id="trend-container">${trendDetailHtml(products, weeklyAll, wLabels, t, lang, ulMap)}</div>`,
-    meta.showCnty !== false ? countrySectionHtml(weeklyProductsCnty, meta, t, lang, ulMap) : '',
+    meta.showProducts !== false ? productSectionHtml(products, meta, t, lang, wLabels, ulMap, opts?.monthlyVis || [], weeklyAll, weeklyPeriodTag) : '',
+    `<div id="trend-container">${trendDetailHtml(products, weeklyAll, wLabels, t, lang, ulMap, weeklyPeriodTag)}</div>`,
+    meta.showCnty !== false ? countrySectionHtml(weeklyProductsCnty, meta, t, lang, ulMap, weeklyPeriodTag) : '',
   ].join('')
 
   // 월간 콘텐츠 (제품 카드를 월간 데이터로 렌더링)
@@ -1935,6 +1940,11 @@ function switchPeriodPage(mode){
     var isM=mode==='monthly'&&btn.textContent.match(/(월간|Monthly)/);
     if(isW||isM)btn.classList.add('active');else btn.classList.remove('active');
   });
+  // 기간 뱃지 토글
+  var monthBadge=document.getElementById('period-badge');
+  var weekBadge=document.getElementById('period-weekly-badge');
+  if(monthBadge)monthBadge.style.display=mode==='monthly'?'':'none';
+  if(weekBadge)weekBadge.style.display=mode==='weekly'?'':'none';
 }
 function switchPeriodMode(mode){
   _periodMode=mode;
@@ -2575,10 +2585,14 @@ function _get4MLabels(prod){
   return[0,1,2,3].map(function(i){return ML[(mi-3+i+12)%12]});
 }
 function updateProductScores(selCountry,selBU,selProd){
+  // 주간 콘텐츠 카드만 업데이트 (월간 콘텐츠는 서버사이드 렌더링 고정)
+  var weeklyContainer=document.getElementById('bu-weekly-content');
+  if(!weeklyContainer)return;
+  var cards=weeklyContainer.querySelectorAll('.prod-card');
   var countries=selCountry.isAll?null:Object.keys(selCountry.vals);
   // 전체 국가 선택 시 → TTL 데이터 사용
   if(selCountry.isAll){
-    document.querySelectorAll('.prod-card').forEach(function(card){
+    cards.forEach(function(card){
       var nameEl=card.querySelector('.prod-name');if(!nameEl)return;
       var prod=_products.find(function(p){return p.kr===nameEl.textContent||p.en===nameEl.textContent});if(!prod)return;
       var weekly=((_weeklyAll[prod.id]||{})['Total']||{}).LG||[];
@@ -2589,8 +2603,6 @@ function updateProductScores(selCountry,selBU,selProd){
     return;
   }
   if(!countries||!countries.length)return;
-  // 국가 필터 적용 → productsCnty에서 평균 계산
-  // 매칭 키 맵 구축: product → 여러 형태의 키
   var prodKeyMap={};
   _products.forEach(function(p){
     var keys=[(p.category||'').toUpperCase(),p.id.toUpperCase(),(p.kr||'').toUpperCase(),(p.en||'').toUpperCase()];
@@ -2606,7 +2618,7 @@ function updateProductScores(selCountry,selBU,selProd){
     avgByProdId[prodId].scores.push(r.score||0);
     avgByProdId[prodId].compScores.push(r.compScore||0);
   });
-  document.querySelectorAll('.prod-card').forEach(function(card){
+  cards.forEach(function(card){
     var nameEl=card.querySelector('.prod-name');if(!nameEl)return;
     var prod=_products.find(function(p){return p.kr===nameEl.textContent||p.en===nameEl.textContent});if(!prod)return;
     var avg=avgByProdId[prod.id];
