@@ -1829,7 +1829,7 @@ function updateMonthlyProductScores(selCountry){
   });
   cards.forEach(function(card){
     var nameEl=card.querySelector('.prod-name');if(!nameEl)return;
-    var name=nameEl.textContent.replace(/*$/,'');
+    var name=nameEl.textContent.replace(/\\*$/,'');
     var prod=_products.find(function(p){return p.kr===name||p.en===name});if(!prod)return;
     var avg=avgByProdId[prod.id];
     var score,compPct;
