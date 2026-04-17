@@ -1579,7 +1579,7 @@ export function generateDashboardHTML(meta, total, products, citations, dotcom, 
   const monthlyContent = [
     commonTop,
     meta.showProducts !== false ? productSectionHtml(monthlyProducts, meta, t, lang, monthlyLabels.length ? monthlyLabels : ['Feb','Mar'], ulMap, mVis, {}, monthlyPeriodTag) : '',
-    monthlyTrendDetailHtml(monthlyProducts, mVis, t, lang, ulMap, monthlyPeriodTag),
+    `<div id="monthly-trend-container">${monthlyTrendDetailHtml(monthlyProducts, mVis, t, lang, ulMap, monthlyPeriodTag)}</div>`,
     meta.showCnty !== false ? countrySectionHtml(productsCnty, meta, t, lang, ulMap, monthlyPeriodTag) : '',
   ].join('')
 
@@ -2217,6 +2217,25 @@ var _COMP='${COMP}';
 var _REGIONS=${S(Object.fromEntries(Object.entries(REGIONS).map(([k, v]) => [k, v.countries])))};`
 })()}
 var _REGION_LABELS=${JSON.stringify(Object.fromEntries(Object.entries(REGIONS).map(([k, v]) => [k, lang === 'en' ? v.labelEn : v.label]))).replace(/<\//g, '<\\/')};
+function _brandColor(name,idx){return _BRAND_COLORS[name]||_FALLBACK[idx%_FALLBACK.length]}
+function _trendMultiSvg(brandData,labels,w,h){
+  var brands=Object.keys(brandData);if(!brands.length||!labels.length)return'';
+  var mn=Infinity,mx=-Infinity;
+  brands.forEach(function(b){(brandData[b]||[]).forEach(function(v){if(v!=null){if(v<mn)mn=v;if(v>mx)mx=v}})});
+  if(!isFinite(mn))return'';
+  var pad=Math.max((mx-mn)*0.15,2);mn=Math.max(0,mn-pad);mx=Math.min(100,mx+pad);var rng=mx-mn||1;
+  var N=labels.length;var pt=8,pb=8,ch=h-pt-pb;var g='';
+  for(var i=0;i<=4;i++){var y=pt+(i/4)*ch;g+='<line x1="0" y1="'+y.toFixed(1)+'" x2="'+w+'" y2="'+y.toFixed(1)+'" stroke="#E8EDF2" stroke-width="1"/>';}
+  brands.forEach(function(b,bi){
+    var vals=brandData[b]||[];var color=_brandColor(b,bi);var isLG=b==='LG';var sw=isLG?2.5:1.5;var op=isLG?1:0.7;
+    var pts=[];
+    vals.forEach(function(v,i){if(v!=null){var x=((i+0.5)/N)*w;var y=pt+(1-(v-mn)/rng)*ch;pts.push({x:x,y:y,v:v})}});
+    if(!pts.length)return;
+    if(pts.length>=2){var d=pts.map(function(p,i){return(i?'L':'M')+p.x.toFixed(1)+','+p.y.toFixed(1)}).join(' ');g+='<path d="'+d+'" stroke="'+color+'" fill="none" stroke-width="'+sw+'" stroke-linecap="round" stroke-linejoin="round" opacity="'+op+'"/>';}
+    pts.forEach(function(p){g+='<circle cx="'+p.x.toFixed(1)+'" cy="'+p.y.toFixed(1)+'" r="'+(isLG?3.5:2.5)+'" fill="#fff" stroke="'+color+'" stroke-width="'+(isLG?2:1.5)+'" opacity="'+op+'"/>'});
+  });
+  return'<svg viewBox="0 0 '+w+' '+h+'" width="100%" height="'+h+'" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" style="display:block">'+g+'</svg>';
+}
 // ─── Helpers ───
 function _fmt(n){return Number(n).toLocaleString('en-US')}
 function _bc(n,i){return _BRAND_COLORS[n]||_FALLBACK[i%_FALLBACK.length]}
@@ -2269,6 +2288,7 @@ function onFilterChange(){
   updateHeroFromCheckboxes();
   updateProductScores(selCountry,selBU,selProd);
   updateMonthlyProductScores(selCountry);
+  updateMonthlyTrend(selCountry);
   applyUnlaunchedStyle(selCountry);
 }
 // 월간 카드 업데이트: 국가 필터 반영
@@ -2360,6 +2380,103 @@ function updateMonthlyProductScores(selCountry){
       var mLabels=ms.length?ms.map(function(m){var km=String(m.date||'').match(/(\\d{1,2})월/);return km?ML[parseInt(km[1])-1]:m.date}):['M0'];
       mChart.innerHTML=_miniSvgNullAware(mData,mLabels,300,90,sparkColor);
     }
+  });
+}
+// 월간 트렌드 차트: 국가 필터에 따라 재렌더링
+function updateMonthlyTrend(selCountry){
+  var container=document.getElementById('monthly-trend-container');
+  if(!container)return;
+  var countries=selCountry.isAll?null:Object.keys(selCountry.vals).filter(function(k){return selCountry.vals[k]});
+  // 제품명 → id 매핑
+  var NAME_TO_ID={'TV':'tv','모니터':'monitor','오디오':'audio','세탁기':'washer','냉장고':'fridge','식기세척기':'dw','청소기':'vacuum','Cooking':'cooking','RAC':'rac','Aircare':'aircare'};
+  // 각 트렌드 row의 SVG+표를 재렌더링
+  container.querySelectorAll('.trend-row[data-prodid]').forEach(function(row){
+    var pid=row.getAttribute('data-prodid');
+    var prod=_products.find(function(p){return p.id===pid});
+    if(!prod||!prod.monthlyScores||prod.monthlyScores.length<2)return;
+    var ms=prod.monthlyScores;
+    var ML=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    var enM={jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11};
+    function pmi(d){var km=String(d).match(/(\\d{1,2})월/);if(km)return parseInt(km[1])-1;var em=String(d).match(/(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i);return em?enM[em[1].toLowerCase()]:-1}
+    // 12개월 고정
+    var sorted=[0,1,2,3,4,5,6,7,8,9,10,11];
+    // 브랜드 데이터 구성
+    var allBrands={};
+    ms.forEach(function(m){
+      if(!m.allScores)return;
+      Object.keys(m.allScores).forEach(function(b){if(!allBrands[b])allBrands[b]=true});
+    });
+    var brandData={};
+    Object.keys(allBrands).forEach(function(brand){
+      brandData[brand]=sorted.map(function(mi){
+        var found=ms.find(function(m){return pmi(m.date)===mi});
+        if(!found||!found.allScores)return null;
+        var ttlVal=found.allScores[brand];
+        if(ttlVal==null)return null;
+        // 국가 필터 미적용 → TTL 값
+        if(!countries)return ttlVal;
+        // 국가 필터 적용 → 해당 국가들의 해당 제품+브랜드 평균 (마지막 월만)
+        if(pmi(found.date)===pmi(ms[ms.length-1].date)){
+          var vals=[];
+          countries.forEach(function(c){
+            var cr=_productsCnty.filter(function(r){return r.country===c});
+            var prodKr=prod.kr||prod.category||'';
+            var match=cr.find(function(r){return r.product===prodKr||r.product===prod.category});
+            if(match&&match.allScores&&match.allScores[brand]!=null)vals.push(match.allScores[brand]);
+          });
+          if(vals.length)return +(vals.reduce(function(s,v){return s+v},0)/vals.length).toFixed(1);
+        }
+        return ttlVal;
+      });
+    });
+    // 브랜드 정렬 (LG 먼저)
+    var brands=Object.keys(brandData).sort(function(a,b){
+      if(a==='LG')return -1;if(b==='LG')return 1;
+      var la=(brandData[a]||[]).filter(function(v){return v!=null});la=la.length?la[la.length-1]:0;
+      var lb=(brandData[b]||[]).filter(function(v){return v!=null});lb=lb.length?lb[lb.length-1]:0;
+      return lb-la;
+    });
+    if(!brands.length)return;
+    // 테이블 재생성
+    var mLabels=ML;var N=12;
+    var tbl=row.querySelector('table');
+    if(!tbl)return;
+    // SVG 재생성
+    var svgTd=tbl.querySelector('td[colspan]');
+    if(svgTd){svgTd.innerHTML=_trendMultiSvg(brandData,mLabels,N*80,180)}
+    // 범례
+    var legendTd=tbl.querySelectorAll('tr')[1];
+    if(legendTd){
+      var legTd=legendTd.querySelector('td[colspan]');
+      if(legTd){
+        var lh='';
+        brands.forEach(function(b,i){var c=_brandColor(b,i);var isLG=b==='LG';lh+='<span style="display:inline-flex;align-items:center;gap:3px;margin-right:12px"><i style="display:inline-block;width:10px;height:3px;border-radius:1px;background:'+c+';opacity:'+(isLG?1:0.7)+'"></i><span style="font-size:13px;color:'+(isLG?'#1A1A1A':'#94A3B8')+';font-weight:'+(isLG?700:400)+'">'+b+'</span></span>'});
+        legTd.innerHTML=lh;
+      }
+    }
+    // 데이터 행 재생성
+    var tbody=tbl.querySelector('tbody');if(!tbody)return;
+    // thead(2행: chart+legend) + thead row(Brand|W1|W2..) + data rows
+    // 기존 데이터 행 제거 후 재생성
+    var existingRows=tbody.querySelectorAll('tr');
+    var startIdx=3;// chart + legend + header = 3행
+    for(var ri=existingRows.length-1;ri>=startIdx;ri--){existingRows[ri].remove()}
+    brands.forEach(function(b,i){
+      var c=_brandColor(b,i);var isLG=b==='LG';
+      var tr=document.createElement('tr');
+      tr.style.background=isLG?'#FFF8F9':i%2===0?'#fff':'#FAFBFC';
+      var html='<td style="padding:5px 6px;font-size:13px;font-weight:'+(isLG?700:500)+';color:'+c+';border-bottom:1px solid #F8FAFC;white-space:nowrap"><i style="display:inline-block;width:6px;height:6px;border-radius:50%;background:'+c+';margin-right:4px;vertical-align:0"></i>'+b+'</td>';
+      sorted.forEach(function(mi){
+        var val=brandData[b]?brandData[b][mi]:null;
+        html+='<td style="text-align:center;padding:5px 2px;font-size:14px;color:'+(val!=null?(isLG?'#1A1A1A':'#475569'):'#CBD5E1')+';font-weight:'+(isLG?700:400)+';border-bottom:1px solid #F8FAFC;font-variant-numeric:tabular-nums">'+(val!=null?val.toFixed(1):'—')+'</td>';
+      });
+      tr.innerHTML=html;
+      tbody.appendChild(tr);
+    });
+    // 상태 배지 업데이트
+    var lgLast=(brandData.LG||[]).filter(function(v){return v!=null});lgLast=lgLast.length?lgLast[lgLast.length-1]:null;
+    var lgSpan=row.querySelector('span[style*="font-size:16px"]');
+    if(lgSpan&&lgLast!=null)lgSpan.textContent='LG '+lgLast.toFixed(1)+'%';
   });
 }
 // 선택된 국가 내에서 제품이 "모두 미출시"면 카드/트렌드에 회색 처리
