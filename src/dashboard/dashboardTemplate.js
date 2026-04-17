@@ -1159,18 +1159,18 @@ function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang, meta, appendixPromp
         var catCount=0;if(isNewCat){sortedTP.forEach(function(t){if((TOPIC_CAT[t]||'Corporate & Innovation')===cat)catCount++})}
         h+='<tr style="border-bottom:1px solid #F1F5F9">';
         if(isNewCat){
-          h+='<td rowspan="'+catCount+'" style="padding:6px 6px;font-size:11px;font-weight:700;color:#475569;vertical-align:middle;text-align:center;border-right:2px solid #E8EDF2;background:#F8FAFC;line-height:1.4;word-break:keep-all">'+cat+'</td>';
+          h+='<td rowspan="'+catCount+'" style="padding:6px 6px;font-size:12px;font-weight:700;color:#475569;vertical-align:middle;text-align:center;border-right:2px solid #E8EDF2;background:#F8FAFC;line-height:1.4;word-break:keep-all">'+cat+'</td>';
           prevCat=cat;
         }
         h+='<td style="padding:6px 10px;font-size:14px;font-weight:600;color:#1A1A1A;white-space:nowrap">'+topic+'</td>';
         var desc=TOPIC_DESC[topic]||'';
-        h+='<td style="padding:6px 10px;font-size:13px;color:#1A1A1A;line-height:1.5">'+desc+'</td>';
+        h+='<td style="padding:6px 10px;font-size:12px;color:#1A1A1A;line-height:1.5">'+desc+'</td>';
         cols.forEach(function(cnty){
           var lg=lastVal(topic,cnty,'LG');
           var ss=lastVal(topic,cnty,'Samsung');
           var s=tl(lg,ss);
           var ratio=(lg!=null&&ss!=null&&ss>0)?Math.round(lg/ss*100)+'%':'';
-          h+='<td style="padding:4px 6px;text-align:center;background:'+s.bg+';color:'+s.color+';font-size:14px;font-weight:700;font-variant-numeric:tabular-nums;border:1px solid '+s.border+'">'+(lg!=null?lg.toFixed(1)+'%':'—')+(ratio?'<div style="font-size:10px;font-weight:400;color:#64748B">('+ratio+')</div>':'')+'</td>';
+          h+='<td style="padding:4px 6px;text-align:center;background:'+s.bg+';color:'+s.color+';font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;border:1px solid '+s.border+'">'+(lg!=null?lg.toFixed(1)+'%':'—')+(ratio?'<div style="font-size:10px;font-weight:400;color:#64748B">('+ratio+')</div>':'')+'</td>';
         });
         h+='</tr>';
       });
@@ -1691,6 +1691,11 @@ body.show-insights .howto-box{display:block}
 /* 미출시 제품: 회색 처리 (신호등/그래프/테두리/경쟁비바) */
 .prod-card.is-unlaunched{border-color:#CBD5E1 !important}
 .prod-card.is-unlaunched .prod-badge{background:#F1F5F9 !important;color:#64748B !important;border-color:#CBD5E1 !important}
+/* 월간 패널: trend-monthly 보이고 trend-weekly 숨김, WoW/MoM 반전 */
+#bu-monthly-content .trend-weekly{display:none !important}
+#bu-monthly-content .trend-monthly{display:block !important}
+#bu-monthly-content .prod-wow{display:none !important}
+#bu-monthly-content .prod-mom{display:inline !important}
 .prod-card.is-unlaunched .prod-chart svg path[stroke]{stroke:#94A3B8 !important}
 .prod-card.is-unlaunched .prod-chart svg circle[stroke]{stroke:#94A3B8 !important}
 .prod-card.is-unlaunched .prod-chart svg text[fill]:not([fill="#94A3B8"]){fill:#64748B !important}
@@ -2343,14 +2348,31 @@ function updateMonthlyProductScores(selCountry){
 function applyUnlaunchedStyle(selCountry){
   var countries = selCountry.isAll ? ['US','CA','UK','DE','ES','BR','MX','AU','VN','IN'] : Object.keys(selCountry.vals).filter(function(k){return selCountry.vals[k]});
   if(!countries.length)countries = ['US','CA','UK','DE','ES','BR','MX','AU','VN','IN'];
+  var isEn=document.documentElement.lang==='en';
   // 제품 카드
   document.querySelectorAll('.prod-card[data-prodid]').forEach(function(card){
     var pid = card.getAttribute('data-prodid');
     var allUL = countries.every(function(c){return _isUnlaunched(c,pid)});
+    var someUL = !allUL && countries.some(function(c){return _isUnlaunched(c,pid)});
     card.classList.toggle('is-unlaunched', allUL);
-    // 배지 텍스트 업데이트
     var badge = card.querySelector('.prod-badge');
-    if(badge && allUL){badge.textContent = (document.documentElement.lang==='en'?'Unlaunched':'미출시')}
+    if(badge && allUL){badge.textContent = isEn?'Unlaunched':'미출시'}
+    // 미출시 라벨 동적 변경
+    var ulNote = card.querySelector('.prod-ul-note');
+    if(ulNote){
+      if(allUL){
+        ulNote.style.display='block';
+        ulNote.textContent=isEn?'* Not launched':'* 제품 미출시 국가';
+      } else if(someUL && countries.length>1){
+        ulNote.style.display='block';
+        ulNote.textContent=isEn?'* Includes unlaunched countries':'* 제품 미출시 국가 포함';
+      } else if(someUL && countries.length===1){
+        ulNote.style.display='block';
+        ulNote.textContent=isEn?'* Not launched':'* 제품 미출시 국가';
+      } else {
+        ulNote.style.display='none';
+      }
+    }
   });
   // 트렌드 row
   document.querySelectorAll('.trend-row[data-prodid]').forEach(function(row){
