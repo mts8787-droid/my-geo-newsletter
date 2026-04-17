@@ -2186,7 +2186,7 @@ function switchCitCnty(btn){
 // ─── Embedded Data ───
 ${(() => {
   // JSON 문자열 내 </script> 방지
-  const S = v => JSON.stringify(v).replace(/<\//g, '<\\/')
+  const S = v => JSON.stringify(v).replace(/<\//g, '<\\/').replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029')
   return `var _weeklyAll=${weeklyAll ? S(weeklyAll) : '{}'};
 var _products=${S(products.map(p => ({ id: p.id, bu: p.bu, kr: p.kr, en: p.en || p.kr, category: p.category || '', date: p.date || '', status: p.status, score: p.score || 0, prev: p.prev || 0, vsComp: p.vsComp || 0, compName: p.compName || '', compRatio: p.compRatio || 0, allScores: p.allScores || {} })))};
 var _productsCnty=${S(productsCnty || [])};
@@ -2199,14 +2199,17 @@ var _total=${S(total)};
 var _meta={period:${S(meta.period || '')},reportNo:${S(meta.reportNo || '')},totalInsight:${S(meta.totalInsight || '')}};
 var _wLabels=${S(wLabels)};`
 })()}
-var _lang='${lang}';
-var _BRAND_COLORS=${JSON.stringify(BRAND_COLORS)};
+${(() => {
+  const S = v => JSON.stringify(v).replace(/<\//g, '<\\/').replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029')
+  return `var _lang='${lang}';
+var _BRAND_COLORS=${S(BRAND_COLORS)};
 var _FALLBACK=['#94A3B8','#64748B','#475569','#CBD5E1','#E2E8F0'];
 var _RED='${RED}';
-var _FONT=${JSON.stringify(FONT)};
+var _FONT=${S(FONT)};
 var _COMP='${COMP}';
-var _REGIONS=${JSON.stringify(Object.fromEntries(Object.entries(REGIONS).map(([k, v]) => [k, v.countries])))};
-var _REGION_LABELS=${JSON.stringify(Object.fromEntries(Object.entries(REGIONS).map(([k, v]) => [k, lang === 'en' ? v.labelEn : v.label])))};
+var _REGIONS=${S(Object.fromEntries(Object.entries(REGIONS).map(([k, v]) => [k, v.countries])))};`
+})()}
+var _REGION_LABELS=${JSON.stringify(Object.fromEntries(Object.entries(REGIONS).map(([k, v]) => [k, lang === 'en' ? v.labelEn : v.label]))).replace(/<\//g, '<\\/')};
 // ─── Helpers ───
 function _fmt(n){return Number(n).toLocaleString('en-US')}
 function _bc(n,i){return _BRAND_COLORS[n]||_FALLBACK[i%_FALLBACK.length]}
