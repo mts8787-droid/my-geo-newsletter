@@ -1517,8 +1517,9 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
               <tr>
                 <td>
                   <p style="margin:0;font-size:13px;font-weight:700;color:#FFFFFF;font-family:${EM_FONT};">LG Electronics &nbsp;<span style="font-weight:400;color:#94A3B8;">${t.footer}</span></p>
+                  <p style="margin:4px 0 0;font-size:11px;color:#64748B;font-family:${EM_FONT};">Taesung Moon <a href="mailto:ts.moon@lge.com" style="color:#94A3B8;text-decoration:none;">ts.moon@lge.com</a> &nbsp;|&nbsp; Hyunseo Chung <a href="mailto:hs0902.chung@lge.com" style="color:#94A3B8;text-decoration:none;">hs0902.chung@lge.com</a></p>
                 </td>
-                <td align="right">
+                <td align="right" style="vertical-align:top;">
                   <p style="margin:0;font-size:11px;color:#FFFFFF;font-family:${EM_FONT};">© 2026 LG Electronics Inc. All Rights Reserved.</p>
                 </td>
               </tr>
