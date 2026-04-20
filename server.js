@@ -110,7 +110,12 @@ function ipMatchesCidr(ip, cidr) {
 }
 
 function getRealIp(req) {
-  return req.headers['cf-connecting-ip'] || req.headers['x-real-ip'] || req.ip
+  // trust proxy=1 + Render 프록시 체인이므로 req.ip를 사용 (Express가 x-forwarded-for를 안전하게 해석).
+  // CF/x-real-ip 헤더는 클라이언트가 직접 위조할 수 있어 TRUST_CF_HEADER=1일 때만 사용.
+  if (process.env.TRUST_CF_HEADER === '1') {
+    return req.headers['cf-connecting-ip'] || req.headers['x-real-ip'] || req.ip
+  }
+  return req.ip
 }
 
 function isIpAllowed(req) {
@@ -138,7 +143,9 @@ function getSessionToken(req) {
 // ─── File lock for concurrent write safety ──────────────────────────────────
 const fileLocks = new Map()
 function withFileLock(file, fn) {
-  const chain = (fileLocks.get(file) || Promise.resolve()).then(fn).catch(fn)
+  // 이전 작업의 성공/실패와 무관하게 fn을 정확히 한 번만 실행
+  const prev = fileLocks.get(file) || Promise.resolve()
+  const chain = prev.then(() => fn(), () => fn())
   fileLocks.set(file, chain.then(() => {}, () => {}))
   return chain
 }
