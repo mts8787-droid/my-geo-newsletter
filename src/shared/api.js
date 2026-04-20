@@ -84,7 +84,7 @@ export async function publishCombinedDashboard(generateDashboardHTML, resolveDat
   const d = { ...(dDash || {}), ...(dVis || {}) }
   // dashboard에만 있는 데이터 보충 (visibility에 없는 필드)
   if (dDash) {
-    const dashOnlyKeys = ['weeklyPR','weeklyPRLabels','weeklyBrandPrompt','weeklyBrandPromptLabels','appendixPrompts','unlaunchedMap']
+    const dashOnlyKeys = ['weeklyPR','weeklyPRLabels','weeklyBrandPrompt','weeklyBrandPromptLabels','appendixPrompts','unlaunchedMap','prTopicList','weeklyLabelsFull']
     dashOnlyKeys.forEach(k => { if (!d[k] && dDash[k]) d[k] = dDash[k] })
   }
   // meta는 visibility 우선 + dashboard 보충 (인사이트/period는 visibility가 최신)
