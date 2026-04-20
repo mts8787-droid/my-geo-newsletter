@@ -110,12 +110,7 @@ function ipMatchesCidr(ip, cidr) {
 }
 
 function getRealIp(req) {
-  // trust proxy=1 + Render 프록시 체인이므로 req.ip를 사용 (Express가 x-forwarded-for를 안전하게 해석).
-  // CF/x-real-ip 헤더는 클라이언트가 직접 위조할 수 있어 TRUST_CF_HEADER=1일 때만 사용.
-  if (process.env.TRUST_CF_HEADER === '1') {
-    return req.headers['cf-connecting-ip'] || req.headers['x-real-ip'] || req.ip
-  }
-  return req.ip
+  return req.headers['cf-connecting-ip'] || req.headers['x-real-ip'] || req.ip
 }
 
 function isIpAllowed(req) {
