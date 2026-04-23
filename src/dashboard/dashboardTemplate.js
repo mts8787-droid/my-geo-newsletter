@@ -2642,12 +2642,18 @@ function filterTrend(selBU,selProd,selCountry){
     return;
   }
 
-  // 다중 국가 평균 데이터 계산
+  // 다중 국가 평균 데이터 계산 (국가별 주간 데이터 없으면 Total 폴백)
   function _avgWeeklyData(prodId){
-    if(!trendCountries)return (_weeklyAll[prodId]||{})[trendCnty]||{};
+    var prodData=_weeklyAll[prodId]||{};
+    if(!trendCountries){
+      var d=prodData[trendCnty];
+      if(!d||!Object.keys(d).length)d=prodData['Total']||prodData['TTL']||{};
+      return d;
+    }
     var allBrands={};
     trendCountries.forEach(function(c){
-      var cData=(_weeklyAll[prodId]||{})[c]||{};
+      var cData=prodData[c];
+      if(!cData||!Object.keys(cData).length)cData=prodData['Total']||prodData['TTL']||{};
       Object.keys(cData).forEach(function(brand){
         if(!allBrands[brand])allBrands[brand]=[];
         allBrands[brand].push(cData[brand]||[]);
