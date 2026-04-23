@@ -2417,11 +2417,12 @@ function updateProductScores(selCountry,selBU,selProd){
       var prod=_products.find(function(p){return p.kr===nameEl.textContent||p.en===nameEl.textContent});if(!prod)return;
       var totalData=(_weeklyAll[prod.id]||{})['Total']||{};
       var weekly=totalData.LG||[];
-      // 주간 마지막 주 점수
-      var wScore=weekly.length>0?weekly[weekly.length-1]:prod.score;
-      // 주간 경쟁사 마지막 주 1위
+      var validW=weekly.filter(function(v){return v!=null});
+      // 주간 마지막 주 점수 (null 제외)
+      var wScore=validW.length>0?validW[validW.length-1]:prod.score;
+      // 주간 경쟁사 마지막 주 1위 (null 제외)
       var wComp=0;
-      Object.keys(totalData).forEach(function(b){if(b==='LG'||b==='lg')return;var arr=totalData[b]||[];var last=arr.length?arr[arr.length-1]:0;if(last>wComp)wComp=last});
+      Object.keys(totalData).forEach(function(b){if(b==='LG'||b==='lg')return;var arr=(totalData[b]||[]).filter(function(v){return v!=null});var last=arr.length?arr[arr.length-1]:0;if(last>wComp)wComp=last});
       var wRatio=wComp>0?Math.round(wScore/wComp*100):100;
       var mL=_get4MLabels(prod);
       _updateCard(card,wScore,wRatio,weekly,_wLabels,null,mL);
