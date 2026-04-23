@@ -1053,9 +1053,78 @@ a.card:hover{border-color:#CF0652;transform:translateY(-2px)}
       <div class="card-title">Archives (학습 데이터)</div>
       <div class="card-desc">완성본 아카이빙 · AI 인사이트 생성 시 문체 학습 데이터로 활용</div>
     </a>
+    <a class="card" href="/admin/de-prompts">
+      <div class="card-title">독일 프롬프트 예시</div>
+      <div class="card-desc">DE 국가 카테고리별·제품별·토픽별 대표 프롬프트 각 1개</div>
+    </a>
   </div>
   <button class="logout" onclick="fetch('/api/auth/logout',{method:'POST'}).then(function(){location.href='/admin/login'})">로그아웃</button>
 </div></body></html>`)
+})
+
+// ─── 독일(DE) 프롬프트 예시 페이지 ────────────────────────────────────────────
+app.get('/admin/de-prompts', (req, res) => {
+  const vis = readModeSyncData('visibility') || {}
+  const dash = readModeSyncData('dashboard') || {}
+  const prompts = vis.appendixPrompts || dash.appendixPrompts || []
+  const source = vis.appendixPrompts ? 'visibility' : (dash.appendixPrompts ? 'dashboard' : 'none')
+  const dePrompts = prompts.filter(p => String(p.country || '').toUpperCase() === 'DE')
+
+  function pickOnePer(field) {
+    const out = {}
+    for (const p of dePrompts) {
+      const key = String(p[field] || '').trim()
+      if (!key) continue
+      if (!out[key]) out[key] = p
+    }
+    return out
+  }
+  const byCategory = pickOnePer('category')
+  const byTopic = pickOnePer('topic')
+  const byDivision = pickOnePer('division')
+
+  function esc(s) {
+    return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+  }
+  function section(title, obj) {
+    const keys = Object.keys(obj).sort()
+    if (!keys.length) return `<section><h2>${esc(title)}</h2><p class="empty">해당 필드에 데이터 없음</p></section>`
+    const rows = keys.map(k => {
+      const p = obj[k]
+      const meta = [p.division, p.category, p.topic, p.launched, p.branded, p.cej].filter(Boolean).map(esc).join(' · ')
+      return `<article class="card"><header><span class="key">${esc(k)}</span><span class="meta">${meta}</span></header><pre>${esc(p.prompt)}</pre></article>`
+    }).join('')
+    return `<section><h2>${esc(title)} <span class="count">${keys.length}</span></h2>${rows}</section>`
+  }
+
+  res.set('Content-Type', 'text/html; charset=utf-8')
+  res.send(`<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>독일 프롬프트 예시</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{min-height:100vh;background:#0F172A;color:#E2E8F0;font-family:'LG Smart','Arial Narrow',Arial,sans-serif;padding:28px 32px;line-height:1.5}
+h1{font-size:22px;color:#F8FAFC;margin-bottom:4px}
+.sub{font-size:13px;color:#64748B;margin-bottom:24px}
+.back{color:#CF0652;text-decoration:none;font-size:13px;margin-right:14px}
+section{background:#1E293B;border:1px solid #334155;border-radius:12px;padding:20px 22px;margin-bottom:18px}
+h2{font-size:15px;color:#F8FAFC;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.count{font-size:11px;color:#64748B;background:#0F172A;padding:2px 8px;border-radius:10px;font-weight:400}
+.card{background:#0F172A;border:1px solid #1E293B;border-radius:8px;padding:12px 14px;margin-top:10px}
+.card header{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-bottom:8px}
+.key{font-weight:700;color:#F8FAFC;font-size:14px}
+.meta{font-size:11px;color:#94A3B8}
+pre{font-family:'LG Smart','Arial Narrow',Arial,sans-serif;white-space:pre-wrap;word-break:break-word;color:#CBD5E1;font-size:13px;line-height:1.6}
+.empty{color:#64748B;font-size:12px;font-style:italic}
+.info{font-size:11px;color:#64748B;background:#0F172A;border:1px solid #1E293B;border-radius:6px;padding:8px 12px;margin-bottom:18px}
+</style></head><body>
+<a class="back" href="/admin/">← 관리자</a>
+<h1>독일(DE) 프롬프트 예시</h1>
+<p class="sub">appendixPrompts 소스에서 DE 국가로 필터링 후 카테고리/제품(Division)/토픽별 대표 프롬프트 각 1개씩 추출</p>
+<div class="info">소스: <strong>${esc(source)}</strong> &nbsp;·&nbsp; 전체 프롬프트: <strong>${prompts.length}</strong>건 &nbsp;·&nbsp; DE 필터 결과: <strong>${dePrompts.length}</strong>건</div>
+${section('카테고리별 (category)', byCategory)}
+${section('제품/본부별 (division)', byDivision)}
+${section('토픽별 (topic)', byTopic)}
+</body></html>`)
 })
 
 // ─── IP Access Manager UI ────────────────────────────────────────────────────
