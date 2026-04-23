@@ -1063,12 +1063,21 @@ a.card:hover{border-color:#CF0652;transform:translateY(-2px)}
 })
 
 // ─── 독일(DE) 프롬프트 예시 페이지 ────────────────────────────────────────────
+function isNonBrandedPrompt(p) {
+  const v = String(p.branded || '').trim().toLowerCase().replace(/[\s\-_]/g, '')
+  // 논브랜드 표현
+  const NB = new Set(['nb', 'nonbrand', 'nonbranded', 'non', '논브랜드', '비브랜드', 'no', 'n', 'false', '0'])
+  return NB.has(v)
+}
+
 function getDePromptCombos() {
   const vis = readModeSyncData('visibility') || {}
   const dash = readModeSyncData('dashboard') || {}
   const prompts = vis.appendixPrompts || dash.appendixPrompts || []
   const source = vis.appendixPrompts ? 'visibility' : (dash.appendixPrompts ? 'dashboard' : 'none')
-  const dePrompts = prompts.filter(p => String(p.country || '').toUpperCase() === 'DE')
+  const dePrompts = prompts
+    .filter(p => String(p.country || '').toUpperCase() === 'DE')
+    .filter(isNonBrandedPrompt)
   // (category, topic, cej) 조합당 첫 1건
   const seen = new Set()
   const combos = []
@@ -1128,7 +1137,7 @@ tbody tr:nth-child(even){background:#182237}
 </style></head><body>
 <a class="back" href="/admin/">← 관리자</a>
 <h1>독일(DE) 프롬프트 예시</h1>
-<p class="sub">appendixPrompts 소스 · DE 필터 후 (카테고리 × 토픽 × CEJ) 조합마다 대표 프롬프트 1개</p>
+<p class="sub">appendixPrompts 소스 · DE + 논브랜드 필터 후 (카테고리 × 토픽 × CEJ) 조합마다 대표 프롬프트 1개</p>
 <div class="bar">
   <div class="info">소스: <strong>${esc(source)}</strong> · 전체: <strong>${totalPrompts}</strong>건 · DE: <strong>${deCount}</strong>건 · 조합: <strong>${combos.length}</strong>건</div>
   <a class="btn" href="/admin/de-prompts.xlsx" download>엑셀 다운로드</a>
