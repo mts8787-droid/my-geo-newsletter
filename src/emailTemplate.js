@@ -1175,7 +1175,12 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
     const code = UL_PROD_MAP[prodId] || (prodId || '').toUpperCase()
     return Object.keys(unlaunchedMap).filter(k => k.endsWith('|' + code)).map(k => k.split('|')[0])
   }
-  function prodNameUL(p) { const c = getULCntys(p.id || p.category); return c.length ? `${p.kr}*` : p.kr }
+  function prodNameUL(p) {
+    // 영문본에서 청소기 → VC 축약 (그 외 제품은 p.kr 유지)
+    const baseName = lang === 'en' && p.kr === '청소기' ? 'VC' : p.kr
+    const c = getULCntys(p.id || p.category)
+    return c.length ? `${baseName}*` : baseName
+  }
   citations = citations || []
   const totalDelta = delta(total.score, total.prev)
   const scoreBarW  = Math.round(total.score || 0)
