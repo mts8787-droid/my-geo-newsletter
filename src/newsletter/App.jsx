@@ -17,11 +17,11 @@ const MODE = 'newsletter'
 const STORAGE_KEY = 'geo-newsletter-cache'
 
 // ─── 뉴스레터 미리보기 (iframe) ──────────────────────────────────────────────
-function NewsletterPreview({ meta, total, products, citations, dotcom, productsCnty = [], citationsCnty = [], lang = 'ko', weeklyLabels, categoryStats }) {
+function NewsletterPreview({ meta, total, products, citations, dotcom, productsCnty = [], citationsCnty = [], lang = 'ko', weeklyLabels, categoryStats, unlaunchedMap = {} }) {
   const iframeRef = useRef(null)
   const html = useMemo(
-    () => generateEmailHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, { weeklyLabels, categoryStats, productCardVersion: meta.productCardVersion || 'v1', trendMode: meta.trendMode || 'weekly' }),
-    [meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, categoryStats]
+    () => generateEmailHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, { weeklyLabels, categoryStats, unlaunchedMap, productCardVersion: meta.productCardVersion || 'v1', trendMode: meta.trendMode || 'weekly' }),
+    [meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, categoryStats, unlaunchedMap]
   )
 
   React.useEffect(() => {
@@ -57,9 +57,9 @@ function NewsletterPreview({ meta, total, products, citations, dotcom, productsC
 }
 
 // ─── HTML 코드 뷰어 ───────────────────────────────────────────────────────────
-function HtmlCodeViewer({ meta, total, products, citations, dotcom, productsCnty = [], citationsCnty = [], lang = 'ko', weeklyLabels, categoryStats }) {
+function HtmlCodeViewer({ meta, total, products, citations, dotcom, productsCnty = [], citationsCnty = [], lang = 'ko', weeklyLabels, categoryStats, unlaunchedMap = {} }) {
   const [copied, setCopied] = useState(false)
-  const html = useMemo(() => generateEmailHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, { weeklyLabels, categoryStats, productCardVersion: meta.productCardVersion || 'v1', trendMode: meta.trendMode || 'weekly' }), [meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, categoryStats])
+  const html = useMemo(() => generateEmailHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, { weeklyLabels, categoryStats, unlaunchedMap, productCardVersion: meta.productCardVersion || 'v1', trendMode: meta.trendMode || 'weekly' }), [meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, categoryStats, unlaunchedMap])
 
   async function handleCopy() {
     try {
@@ -122,6 +122,7 @@ export default function App() {
   const [citationsCnty, setCitationsCnty] = useState(cache?.citationsCnty ?? INIT_CITATIONS_CNTY)
   const [weeklyLabels, setWeeklyLabels] = useState(cache?.weeklyLabels ?? null)
   const [weeklyAll, setWeeklyAll] = useState(cache?.weeklyAll ?? {})
+  const [unlaunchedMap, setUnlaunchedMap] = useState(cache?.unlaunchedMap ?? {})
   const [activeTab, setActiveTab] = useState('preview')
   const [previewLang, setPreviewLang] = useState('ko')
   const [categoryStats, setCategoryStats] = useState(null)
@@ -210,6 +211,7 @@ export default function App() {
       if (d.citationsCnty) setCitationsCnty(d.citationsCnty)
       if (d.weeklyLabels)  setWeeklyLabels(d.weeklyLabels)
       if (d.weeklyAll)     setWeeklyAll(prev => ({ ...prev, ...d.weeklyAll }))
+      if (d.unlaunchedMap) setUnlaunchedMap(d.unlaunchedMap)
       if (d.productsPartial) {
         setProducts(d.productsPartial.map(p => {
           const weekly = d.weeklyMap?.[p.id] || []
@@ -227,9 +229,24 @@ export default function App() {
     return () => { cancelled = true }
   }, [])
 
+  // newsletter sync에 unlaunchedMap이 없을 경우 visibility/dashboard sync에서 폴백
   useEffect(() => {
-    saveCache(STORAGE_KEY, { metaKo, metaEn, total, products, citations, dotcom, productsCnty, citationsCnty, weeklyLabels, weeklyAll })
-  }, [metaKo, metaEn, total, products, citations, dotcom, productsCnty, citationsCnty, weeklyLabels, weeklyAll])
+    if (Object.keys(unlaunchedMap).length > 0) return
+    let cancelled = false
+    ;(async () => {
+      const [dVis, dDash] = await Promise.all([
+        fetchSyncData('visibility').catch(() => null),
+        fetchSyncData('dashboard').catch(() => null),
+      ])
+      const ulm = dVis?.unlaunchedMap || dDash?.unlaunchedMap
+      if (ulm && !cancelled) setUnlaunchedMap(ulm)
+    })()
+    return () => { cancelled = true }
+  }, [])
+
+  useEffect(() => {
+    saveCache(STORAGE_KEY, { metaKo, metaEn, total, products, citations, dotcom, productsCnty, citationsCnty, weeklyLabels, weeklyAll, unlaunchedMap })
+  }, [metaKo, metaEn, total, products, citations, dotcom, productsCnty, citationsCnty, weeklyLabels, weeklyAll, unlaunchedMap])
 
   async function handleSnapOverwrite() {
     if (!activeSnap) return
@@ -289,6 +306,7 @@ export default function App() {
           weeklyAll={weeklyAll}
           generateHTML={generateEmailHTML}
           categoryStats={categoryStats}
+          extra={{ unlaunchedMap }}
         />
       )}
       <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
@@ -392,11 +410,11 @@ export default function App() {
           <div style={{ flex: 1, minWidth: 0, overflowY: 'auto', overflowX: 'hidden', padding: '28px 36px',
             background: 'linear-gradient(180deg, #0A0F1C 0%, #0F172A 100%)' }}>
             <div style={{ maxWidth: 960, width: '100%', margin: '0 auto', minWidth: 0 }}>
-              <NewsletterPreview meta={meta} total={total} products={resolved.products} citations={resolved.citations} dotcom={dotcom} productsCnty={resolved.productsCnty} citationsCnty={resolved.citationsCnty} lang={previewLang} weeklyLabels={weeklyLabels} categoryStats={categoryStats} />
+              <NewsletterPreview meta={meta} total={total} products={resolved.products} citations={resolved.citations} dotcom={dotcom} productsCnty={resolved.productsCnty} citationsCnty={resolved.citationsCnty} lang={previewLang} weeklyLabels={weeklyLabels} categoryStats={categoryStats} unlaunchedMap={unlaunchedMap} />
             </div>
           </div>
         ) : (
-          <HtmlCodeViewer meta={meta} total={total} products={resolved.products} citations={resolved.citations} dotcom={dotcom} productsCnty={resolved.productsCnty} citationsCnty={resolved.citationsCnty} lang={previewLang} weeklyLabels={weeklyLabels} categoryStats={categoryStats} />
+          <HtmlCodeViewer meta={meta} total={total} products={resolved.products} citations={resolved.citations} dotcom={dotcom} productsCnty={resolved.productsCnty} citationsCnty={resolved.citationsCnty} lang={previewLang} weeklyLabels={weeklyLabels} categoryStats={categoryStats} unlaunchedMap={unlaunchedMap} />
         )}
         <div style={{ height: 28, borderTop: '1px solid #1E293B', background: 'rgba(15,23,42,0.95)',
           display: 'flex', alignItems: 'center', justifyContent: 'flex-end', padding: '0 16px', flexShrink: 0 }}>
