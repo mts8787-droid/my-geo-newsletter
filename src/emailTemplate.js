@@ -1175,9 +1175,21 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
     const code = UL_PROD_MAP[prodId] || (prodId || '').toUpperCase()
     return Object.keys(unlaunchedMap).filter(k => k.endsWith('|' + code)).map(k => k.split('|')[0])
   }
+  // 영문본 제품명 매핑 (p.id 또는 p.kr 기준)
+  const PROD_EN_NAME = {
+    tv: 'TV', monitor: 'Monitor', audio: 'Audio',
+    fridge: 'Refrigerator', washer: 'Washer', cooking: 'Cooking',
+    dw: 'Dishwasher', vacuum: 'VC', rac: 'RAC', aircare: 'Aircare',
+  }
+  const PROD_EN_BY_KR = {
+    'TV': 'TV', '모니터': 'Monitor', '오디오': 'Audio',
+    '냉장고': 'Refrigerator', '세탁기': 'Washer', 'Cooking': 'Cooking',
+    '식기세척기': 'Dishwasher', '청소기': 'VC', 'RAC': 'RAC', 'Aircare': 'Aircare',
+  }
   function prodNameUL(p) {
-    // 영문본에서 청소기 → VC 축약 (그 외 제품은 p.kr 유지)
-    const baseName = lang === 'en' && p.kr === '청소기' ? 'VC' : p.kr
+    const baseName = lang === 'en'
+      ? (PROD_EN_NAME[(p.id || '').toLowerCase()] || PROD_EN_BY_KR[p.kr] || p.kr)
+      : p.kr
     const c = getULCntys(p.id || p.category)
     return c.length ? `${baseName}*` : baseName
   }
