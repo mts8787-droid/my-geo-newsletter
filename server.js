@@ -1082,6 +1082,7 @@ app.get('/admin/de-prompts', (req, res) => {
   const byCategory = pickOnePer('category')
   const byTopic = pickOnePer('topic')
   const byDivision = pickOnePer('division')
+  const byCej = pickOnePer('cej')
 
   function esc(s) {
     return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
@@ -1124,6 +1125,7 @@ pre{font-family:'LG Smart','Arial Narrow',Arial,sans-serif;white-space:pre-wrap;
 ${section('카테고리별 (category)', byCategory)}
 ${section('제품/본부별 (division)', byDivision)}
 ${section('토픽별 (topic)', byTopic)}
+${section('CEJ별 (cej)', byCej)}
 </body></html>`)
 })
 
