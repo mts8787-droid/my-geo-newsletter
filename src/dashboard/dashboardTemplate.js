@@ -512,9 +512,7 @@ function productSectionHtml(products, meta, t, lang, wLabels, ulMap, monthlyVis,
       return `<div class="prod-card${allUL ? ' is-unlaunched' : ''}" data-prodid="${p.id || p.category}" data-ws="${wScore.toFixed(1)}" data-ms="${mScore.toFixed(1)}" data-wr="${wRatio}" data-mr="${mRatio}" data-wmom="${wMomD != null ? wMomD : ''}" data-mmom="${mMomD != null ? mMomD : ''}" style="border-color:${finalSt.border}">
         <div class="prod-head">
           <span class="prod-name">${prodNameUL(p, ulMap)}</span>
-          ${(p.id || p.category) === 'audio'
-            ? `<span class="prod-ul-note" data-audio="1" style="display:block;font-size:11px;color:#94A3B8;margin-top:1px">* Sound Suite</span>`
-            : ulCntys.length > 0 ? `<span class="prod-ul-note" style="display:block;font-size:11px;color:#94A3B8;margin-top:1px">* ${lang === 'en' ? 'Not launched countries' : '제품 미출시 국가'}</span>` : ''}
+          ${ulCntys.length > 0 ? `<span class="prod-ul-note" style="display:block;font-size:11px;color:#94A3B8;margin-top:1px">* ${lang === 'en' ? 'Not launched countries' : '제품 미출시 국가'}</span>` : ''}
           <span class="prod-badge" style="background:${finalSt.bg};color:${finalSt.color};border-color:${finalSt.border}">${finalSt.label}</span>
         </div>
         <div class="prod-score-row">
@@ -2532,9 +2530,9 @@ function applyUnlaunchedStyle(selCountry){
     card.classList.toggle('is-unlaunched', allUL);
     var badge = card.querySelector('.prod-badge');
     if(badge && allUL){badge.textContent = isEn?'Unlaunched':'미출시'}
-    // 미출시 라벨 동적 변경 (오디오는 'Sound Suite' 고정 표기라 제외)
+    // 미출시 라벨 동적 변경
     var ulNote = card.querySelector('.prod-ul-note');
-    if(ulNote && !ulNote.hasAttribute('data-audio')){
+    if(ulNote){
       if(allUL){
         ulNote.style.display='block';
         ulNote.textContent=isEn?'* Not launched':'* 제품 미출시 국가';

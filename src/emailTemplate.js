@@ -1212,10 +1212,8 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
     const baseName = lang === 'en'
       ? (PROD_EN_NAME[(p.id || '').toLowerCase()] || PROD_EN_BY_KR[p.kr] || p.kr)
       : p.kr
-    // 오디오는 Sound Suite 기준이므로 항상 * 고정
-    const isAudio = (p.id || '').toLowerCase() === 'audio'
     const c = getULCntys(p.id || p.category)
-    return (isAudio || c.length) ? `${baseName}*` : baseName
+    return c.length ? `${baseName}*` : baseName
   }
   citations = citations || []
   const totalDelta = delta(total.score, total.prev)
@@ -1247,7 +1245,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
     return buProducts.length ? buSectionHtml(buKey, buProducts, globalMax, globalMin, lang, trendOpts) : ''
   }).join('')
 
-  // 제품별 섹션 하단 각주: 미출시 국가 + Sound Suite 기준
+  // 제품별 섹션 하단 각주: 미출시 국가
   const ulFootnoteParts = products
     .filter(p => getULCntys(p.id || p.category).length > 0)
     .map(p => {
@@ -1257,13 +1255,8 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
       const cntys = getULCntys(p.id || p.category).map(c => cntyLabel(c, lang)).join(', ')
       return `${displayName}: ${cntys} ${lang === 'en' ? 'not launched' : '미출시'}`
     })
-  const hasAudio = products.some(p => (p.id || '').toLowerCase() === 'audio')
-  const audioNote = hasAudio ? (lang === 'en' ? 'Audio is based on Sound Suite' : '오디오는 Sound Suite 기준') : ''
-  const productFootnoteHtml = (ulFootnoteParts.length || audioNote)
-    ? `<p style="margin:12px 16px 0;font-size:11px;color:#64748B;font-family:${EM_FONT};line-height:1.6;">${[
-        ulFootnoteParts.length ? `* ${ulFootnoteParts.join(' / ')}` : '',
-        audioNote ? `* ${audioNote}` : '',
-      ].filter(Boolean).join('<br/>')}</p>`
+  const productFootnoteHtml = ulFootnoteParts.length
+    ? `<p style="margin:12px 16px 0;font-size:11px;color:#64748B;font-family:${EM_FONT};line-height:1.6;">* ${ulFootnoteParts.join(' / ')}</p>`
     : ''
 
   const citTopN = meta.citationTopN || 10
