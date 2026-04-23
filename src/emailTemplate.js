@@ -62,6 +62,16 @@ function prodLabel2Line(name, lang) {
   return map[name] || escapeHtml(String(name || '')) + '<br/>&nbsp;'
 }
 
+// unlaunchedMap 조회용 코드 매핑 (id → 시트의 ulCode)
+const UL_PROD_CODE = { tv:'TV', monitor:'IT', audio:'AV', washer:'WM', fridge:'REF', dw:'DW', vacuum:'VC', cooking:'COOKING', rac:'RAC', aircare:'AIRCARE' }
+// 국가별 섹션에서 한글/영문 제품명을 id로 역매핑
+const PROD_NAME_TO_ID = { 'TV':'tv', '모니터':'monitor', 'Monitor':'monitor', '오디오':'audio', 'Audio':'audio', '세탁기':'washer', 'Washer':'washer', '냉장고':'fridge', 'Refrigerator':'fridge', 'Fridge':'fridge', '식기세척기':'dw', 'Dishwasher':'dw', '청소기':'vacuum', 'Vacuum':'vacuum', 'VC':'vacuum', 'Cooking':'cooking', 'RAC':'rac', 'Aircare':'aircare' }
+function isUnlaunched(unlaunchedMap, country, prodId) {
+  if (!unlaunchedMap) return false
+  const code = UL_PROD_CODE[(prodId || '').toLowerCase()] || (prodId || '').toUpperCase()
+  return !!unlaunchedMap[`${country}|${code}`]
+}
+
 // Key Task Progress 카테고리 영문
 const CATEGORY_EN = {
   '콘텐츠수정': 'Content Revision',
@@ -367,21 +377,25 @@ function productCardV2Html(p, lang = 'ko', opts = {}) {
   cntyData.forEach(r => { cntyMap[r.country] = r })
   const maxCnty = Math.max(...ALL_COUNTRIES.map(c => cntyMap[c]?.score || 0), 1)
   const BAR_H = 32
+  const ulMap = opts.unlaunchedMap || {}
 
   // 순서: 그래프 → 점수 → 국가명 → 경쟁비
   const countryBars = ALL_COUNTRIES.map(c => {
     const r = cntyMap[c]
+    const unlaunched = isUnlaunched(ulMap, c, p.id)
     if (!r || r.score <= 0) return `<td style="vertical-align:bottom;text-align:center;padding:0 1px;width:10%;">
       <table border="0" cellpadding="0" cellspacing="0" align="center" style="width:100%;">
         ${BAR_H > 0 ? `<tr><td height="${BAR_H}" style="font-size:0;">&nbsp;</td></tr>` : ''}
         <tr><td style="font-size:10px;color:#CBD5E1;font-family:${EM_FONT};text-align:center;">—</td></tr>
-        <tr><td style="font-size:8px;color:#94A3B8;font-family:${EM_FONT};text-align:center;line-height:1.1;letter-spacing:-0.3px;">${cntyLabel2Line(c, lang)}</td></tr>
+        <tr><td style="font-size:8px;color:${unlaunched ? '#CBD5E1' : '#94A3B8'};font-family:${EM_FONT};text-align:center;line-height:1.1;letter-spacing:-0.3px;">${cntyLabel2Line(c, lang)}</td></tr>
         <tr><td style="font-size:10px;color:#CBD5E1;font-family:${EM_FONT};text-align:center;">—</td></tr>
       </table>
     </td>`
     const cRatio = r.compScore > 0 ? Math.round(r.score / r.compScore * 100) : 100
     const cStatus = cRatio >= 100 ? 'lead' : cRatio >= 80 ? 'behind' : 'critical'
-    const barColor = cStatus === 'lead' ? '#15803D' : cStatus === 'behind' ? '#E8910C' : '#BE123C'
+    const baseBarColor = cStatus === 'lead' ? '#15803D' : cStatus === 'behind' ? '#E8910C' : '#BE123C'
+    const barColor = unlaunched ? '#94A3B8' : baseBarColor
+    const labelColor = unlaunched ? '#94A3B8' : baseBarColor
     const barH = Math.max(3, Math.round(r.score / maxCnty * BAR_H))
     const spacer = BAR_H - barH
     const compTxt = r.compScore > 0 ? `${cRatio}%` : ''
@@ -389,8 +403,8 @@ function productCardV2Html(p, lang = 'ko', opts = {}) {
       <table border="0" cellpadding="0" cellspacing="0" align="center" style="width:100%;">
         ${spacer > 0 ? `<tr><td height="${spacer}" style="font-size:0;">&nbsp;</td></tr>` : ''}
         <tr><td height="${barH}" style="font-size:0;"><table border="0" cellpadding="0" cellspacing="0" align="center"><tr><td width="16" height="${barH}" style="background:${barColor};border-radius:2px 2px 0 0;font-size:0;">&nbsp;</td></tr></table></td></tr>
-        <tr><td style="font-size:10px;font-weight:700;color:${barColor};font-family:${EM_FONT};text-align:center;padding-top:1px;">${r.score.toFixed(0)}</td></tr>
-        <tr><td style="font-size:8px;font-weight:700;color:${barColor};font-family:${EM_FONT};text-align:center;line-height:1.1;letter-spacing:-0.3px;">${cntyLabel2Line(c, lang)}</td></tr>
+        <tr><td style="font-size:10px;font-weight:700;color:${labelColor};font-family:${EM_FONT};text-align:center;padding-top:1px;">${r.score.toFixed(0)}</td></tr>
+        <tr><td style="font-size:8px;font-weight:700;color:${labelColor};font-family:${EM_FONT};text-align:center;line-height:1.1;letter-spacing:-0.3px;">${cntyLabel2Line(c, lang)}</td></tr>
         <tr><td style="font-size:10px;color:#94A3B8;font-family:${EM_FONT};text-align:center;">${compTxt}</td></tr>
       </table>
     </td>`
@@ -458,14 +472,16 @@ function productCardV3Html(p, lang = 'ko', opts = {}) {
   cntyData.forEach(r => { cntyMap[r.country] = r })
   const maxCnty = Math.max(...ALL_COUNTRIES.map(c => cntyMap[c]?.score || 0), 1)
   const BAR_H = 28
+  const ulMap = opts.unlaunchedMap || {}
 
   const countryBars = ALL_COUNTRIES.map(c => {
     const r = cntyMap[c]
+    const unlaunched = isUnlaunched(ulMap, c, p.id)
     if (!r || r.score <= 0) return `<td style="vertical-align:bottom;text-align:center;padding:0 1px;width:10%;">
       <table border="0" cellpadding="0" cellspacing="0" align="center" style="width:100%;">
         <tr><td height="${BAR_H}" style="font-size:0;">&nbsp;</td></tr>
         <tr><td style="font-size:10px;color:#CBD5E1;text-align:center;">—</td></tr>
-        <tr><td style="font-size:8px;color:#94A3B8;font-family:${EM_FONT};text-align:center;line-height:1.1;letter-spacing:-0.3px;">${cntyLabel2Line(c, lang)}</td></tr>
+        <tr><td style="font-size:8px;color:${unlaunched ? '#CBD5E1' : '#94A3B8'};font-family:${EM_FONT};text-align:center;line-height:1.1;letter-spacing:-0.3px;">${cntyLabel2Line(c, lang)}</td></tr>
         <tr><td style="font-size:0;height:10px;">&nbsp;</td></tr>
       </table>
     </td>`
@@ -475,15 +491,17 @@ function productCardV3Html(p, lang = 'ko', opts = {}) {
     const cCompScore = prefCnty ? prefCnty.score : (r.compScore || 0)
     const cRatio = cCompScore > 0 ? Math.round(r.score / cCompScore * 100) : 100
     const cStatus = cRatio >= 100 ? 'lead' : cRatio >= 80 ? 'behind' : 'critical'
-    const barColor = cStatus === 'lead' ? '#15803D' : cStatus === 'behind' ? '#E8910C' : '#BE123C'
+    const baseBarColor = cStatus === 'lead' ? '#15803D' : cStatus === 'behind' ? '#E8910C' : '#BE123C'
+    const barColor = unlaunched ? '#94A3B8' : baseBarColor
+    const labelColor = unlaunched ? '#94A3B8' : baseBarColor
     const barH = Math.max(3, Math.round(r.score / maxCnty * BAR_H))
     const spacer = BAR_H - barH
     return `<td style="vertical-align:bottom;text-align:center;padding:0 1px;width:10%;">
       <table border="0" cellpadding="0" cellspacing="0" align="center" style="width:100%;">
         ${spacer > 0 ? `<tr><td height="${spacer}" style="font-size:0;">&nbsp;</td></tr>` : ''}
         <tr><td height="${barH}" style="font-size:0;"><table border="0" cellpadding="0" cellspacing="0" align="center"><tr><td width="16" height="${barH}" style="background:${barColor};border-radius:2px 2px 0 0;font-size:0;">&nbsp;</td></tr></table></td></tr>
-        <tr><td style="font-size:10px;font-weight:700;color:${barColor};font-family:${EM_FONT};text-align:center;padding-top:1px;">${r.score.toFixed(0)}</td></tr>
-        <tr><td style="font-size:8px;font-weight:700;color:${barColor};font-family:${EM_FONT};text-align:center;line-height:1.1;letter-spacing:-0.3px;">${cntyLabel2Line(c, lang)}</td></tr>
+        <tr><td style="font-size:10px;font-weight:700;color:${labelColor};font-family:${EM_FONT};text-align:center;padding-top:1px;">${r.score.toFixed(0)}</td></tr>
+        <tr><td style="font-size:8px;font-weight:700;color:${labelColor};font-family:${EM_FONT};text-align:center;line-height:1.1;letter-spacing:-0.3px;">${cntyLabel2Line(c, lang)}</td></tr>
         <tr><td style="font-size:10px;color:#94A3B8;font-family:${EM_FONT};text-align:center;white-space:nowrap;letter-spacing:-0.5px;">${compShort(cCompName)}<br/>${cCompScore > 0 ? cRatio + '%' : ''}</td></tr>
       </table>
     </td>`
@@ -680,7 +698,7 @@ function countryProductSectionHtml(productName, rows, lang) {
   </tr>`
 }
 
-function countryCardHtml(cntyCode, rows, lang, countryTotals) {
+function countryCardHtml(cntyCode, rows, lang, countryTotals, unlaunchedMap = {}) {
   const maxScore = Math.max(...rows.map(r => Math.max(r.score, r.compScore)), 1)
   const BAR_MAX = 28
   const colWidth = Math.floor(100 / rows.length)
@@ -689,7 +707,11 @@ function countryCardHtml(cntyCode, rows, lang, countryTotals) {
 
   const barCols = rows.map(r => {
     const status = cntyStatus(r.score, r.compScore)
-    const barColor = status === 'lead' ? '#15803D' : status === 'behind' ? '#E8910C' : '#BE123C'
+    const baseBarColor = status === 'lead' ? '#15803D' : status === 'behind' ? '#E8910C' : '#BE123C'
+    const prodId = PROD_NAME_TO_ID[r.product] || (r.product || '').toLowerCase()
+    const unlaunched = isUnlaunched(unlaunchedMap, cntyCode, prodId)
+    const barColor = unlaunched ? '#94A3B8' : baseBarColor
+    const labelColor = unlaunched ? '#94A3B8' : baseBarColor
     const barH = Math.max(Math.round((r.score / maxScore) * BAR_MAX), 3)
     const spacerH = BAR_MAX - barH
     const ratio = r.compScore > 0 ? Math.round(r.score / r.compScore * 100) : 100
@@ -698,8 +720,8 @@ function countryCardHtml(cntyCode, rows, lang, countryTotals) {
       <table border="0" cellpadding="0" cellspacing="0" align="center" style="margin:0 auto;table-layout:fixed;width:100%;">
         ${spacerH > 0 ? `<tr><td height="${spacerH}" style="font-size:0;line-height:0;">&nbsp;</td></tr>` : ''}
         <tr><td height="${barH}" style="font-size:0;line-height:0;"><table border="0" cellpadding="0" cellspacing="0" align="center"><tr><td width="18" height="${barH}" style="background:${barColor};border-radius:3px 3px 0 0;font-size:0;">&nbsp;</td></tr></table></td></tr>
-        <tr><td height="16" style="height:16px;font-size:11px;font-weight:800;color:${barColor};font-family:${EM_FONT};padding-top:2px;white-space:nowrap;line-height:14px;">${r.score.toFixed(1)}</td></tr>
-        <tr><td height="26" style="height:26px;font-size:10px;font-weight:700;color:${barColor};font-family:${EM_FONT};padding-top:1px;line-height:11px;letter-spacing:-0.3px;vertical-align:top;">${prodLabel2Line(r.product, lang)}</td></tr>
+        <tr><td height="16" style="height:16px;font-size:11px;font-weight:800;color:${labelColor};font-family:${EM_FONT};padding-top:2px;white-space:nowrap;line-height:14px;">${r.score.toFixed(1)}</td></tr>
+        <tr><td height="26" style="height:26px;font-size:10px;font-weight:700;color:${labelColor};font-family:${EM_FONT};padding-top:1px;line-height:11px;letter-spacing:-0.3px;vertical-align:top;">${prodLabel2Line(r.product, lang)}</td></tr>
         <tr><td height="28" style="height:28px;font-size:10px;color:#94A3B8;font-family:${EM_FONT};padding-top:1px;white-space:nowrap;line-height:13px;vertical-align:top;">${ssName(r.compName)}<br/>${ratio}%</td></tr>
       </table>
     </td>`
@@ -716,7 +738,7 @@ function countryCardHtml(cntyCode, rows, lang, countryTotals) {
   </table>`
 }
 
-function countryVisibilitySectionHtml(productsCnty, meta, lang, total) {
+function countryVisibilitySectionHtml(productsCnty, meta, lang, total, unlaunchedMap = {}) {
   if (!productsCnty || !productsCnty.length) return ''
   const t = T[lang] || T.ko
   const countryTotals = total?.countryTotals || {}
@@ -730,7 +752,7 @@ function countryVisibilitySectionHtml(productsCnty, meta, lang, total) {
 
   const CNTY_ORDER = ['US','CA','UK','DE','ES','BR','MX','AU','VN','IN']
   const countries = CNTY_ORDER.filter(c => cntyMap.has(c)).concat([...cntyMap.keys()].filter(c => !CNTY_ORDER.includes(c)))
-  const cards = countries.map(cnty => countryCardHtml(cnty, cntyMap.get(cnty), lang, countryTotals))
+  const cards = countries.map(cnty => countryCardHtml(cnty, cntyMap.get(cnty), lang, countryTotals, unlaunchedMap))
 
   // 2개씩 한 행에 배치
   let pairRows = ''
@@ -1190,8 +1212,10 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
     const baseName = lang === 'en'
       ? (PROD_EN_NAME[(p.id || '').toLowerCase()] || PROD_EN_BY_KR[p.kr] || p.kr)
       : p.kr
+    // 오디오는 Sound Suite 기준이므로 항상 * 고정
+    const isAudio = (p.id || '').toLowerCase() === 'audio'
     const c = getULCntys(p.id || p.category)
-    return c.length ? `${baseName}*` : baseName
+    return (isAudio || c.length) ? `${baseName}*` : baseName
   }
   citations = citations || []
   const totalDelta = delta(total.score, total.prev)
@@ -1215,13 +1239,32 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
   const monthlyGlobalMin = allMonthly.length ? Math.min(...allMonthly) : 0
 
   const buTotals = total.buTotals || {}
-  const trendOpts = { showTrendTabs, monthlyGlobalMax, monthlyGlobalMin, weeklyLabels, buTotals, prodNameFn: prodNameUL, productCardVersion, productsCnty, trendMode }
+  const trendOpts = { showTrendTabs, monthlyGlobalMax, monthlyGlobalMin, weeklyLabels, buTotals, prodNameFn: prodNameUL, productCardVersion, productsCnty, trendMode, unlaunchedMap }
 
   const BU_ORDER = ['MS', 'HS', 'ES']
   const buSections = BU_ORDER.map(buKey => {
     const buProducts = products.filter(p => p.bu === buKey)
     return buProducts.length ? buSectionHtml(buKey, buProducts, globalMax, globalMin, lang, trendOpts) : ''
   }).join('')
+
+  // 제품별 섹션 하단 각주: 미출시 국가 + Sound Suite 기준
+  const ulFootnoteParts = products
+    .filter(p => getULCntys(p.id || p.category).length > 0)
+    .map(p => {
+      const displayName = lang === 'en'
+        ? (PROD_EN_NAME[(p.id || '').toLowerCase()] || PROD_EN_BY_KR[p.kr] || p.kr)
+        : p.kr
+      const cntys = getULCntys(p.id || p.category).map(c => cntyLabel(c, lang)).join(', ')
+      return `${displayName}: ${cntys} ${lang === 'en' ? 'not launched' : '미출시'}`
+    })
+  const hasAudio = products.some(p => (p.id || '').toLowerCase() === 'audio')
+  const audioNote = hasAudio ? (lang === 'en' ? 'Audio is based on Sound Suite' : '오디오는 Sound Suite 기준') : ''
+  const productFootnoteHtml = (ulFootnoteParts.length || audioNote)
+    ? `<p style="margin:12px 16px 0;font-size:11px;color:#64748B;font-family:${EM_FONT};line-height:1.6;">${[
+        ulFootnoteParts.length ? `* ${ulFootnoteParts.join(' / ')}` : '',
+        audioNote ? `* ${audioNote}` : '',
+      ].filter(Boolean).join('<br/>')}</p>`
+    : ''
 
   const citTopN = meta.citationTopN || 10
   const citationList = (citations || []).slice(0, citTopN)
@@ -1476,13 +1519,14 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                         <table border="0" cellpadding="0" cellspacing="0" width="100%">
                           ${buSections}
                         </table>
+                        ${productFootnoteHtml}
                       </td>
                     </tr>
                   </table>
                 </td>
               </tr>` : ''}
 
-              ${meta.showCnty !== false ? countryVisibilitySectionHtml(productsCnty, meta, lang, total) : ''}
+              ${meta.showCnty !== false ? countryVisibilitySectionHtml(productsCnty, meta, lang, total, unlaunchedMap) : ''}
 
               ${meta.showCitations !== false || citDomainResult.innerHtml ? `<!-- ══ 외부접점채널 Citation (통합) ══ -->
               <tr>
