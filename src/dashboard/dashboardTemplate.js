@@ -1415,6 +1415,37 @@ export function generateVisibilityHTML(meta, total, products, citations, dotcom,
 }
 
 export function generateDashboardHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty, opts, extra) {
+  // ─── weekly 배열 null → 0 정규화 (대시보드 클라이언트 필터/트렌드 호환) ───
+  // 뉴스레터는 null 유지(빈 셀 미표시)지만 대시보드 클라이언트 JS는 0 기반으로 동작
+  products = (products || []).map(p => ({
+    ...p,
+    weekly: (p.weekly || []).map(v => v == null ? 0 : v),
+    monthly: (p.monthly || []).map(v => v == null ? 0 : v),
+  }))
+  if (weeklyAll && typeof weeklyAll === 'object') {
+    Object.values(weeklyAll).forEach(prod => {
+      if (!prod || typeof prod !== 'object') return
+      Object.values(prod).forEach(cnty => {
+        if (!cnty || typeof cnty !== 'object') return
+        Object.keys(cnty).forEach(brand => {
+          const arr = cnty[brand]
+          if (Array.isArray(arr)) cnty[brand] = arr.map(v => v == null ? 0 : v)
+        })
+      })
+    })
+  }
+  // ─── 제품별 고정 경쟁사(emailTemplate의 PREFERRED_COMP 대시보드 버전) ───
+  const PREFERRED_COMP = { aircare: 'Xiaomi' }
+  products = products.map(p => {
+    const pref = PREFERRED_COMP[(p.id || '').toLowerCase()]
+    if (!pref || !p.allScores) return p
+    const match = Object.entries(p.allScores).find(([k]) => k.toLowerCase() === pref.toLowerCase() && k.toLowerCase() !== 'lg')
+    if (!match) return p
+    const compScore = match[1]
+    if (!(compScore > 0)) return p
+    const ratio = Math.round((p.score / compScore) * 100)
+    return { ...p, compName: match[0], vsComp: compScore, compRatio: ratio, status: ratio >= 100 ? 'lead' : ratio >= 80 ? 'behind' : 'critical' }
+  })
   const visibilityOnly = opts?.visibilityOnly || false
   const includeProgressTracker = opts?.includeProgressTracker === true
   const trackerVersion = opts?.trackerVersion || 'v1'
