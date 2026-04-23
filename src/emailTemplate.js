@@ -12,9 +12,66 @@ const CNTY_KR = {
   VN: '베트남', JP: '일본', KR: '한국', CN: '중국',
   TTL: '전체', TOTAL: '전체', GLOBAL: '전체',
 }
+const CNTY_EN = {
+  US: 'United States', CA: 'Canada', UK: 'United Kingdom', GB: 'United Kingdom',
+  DE: 'Germany', ES: 'Spain', FR: 'France', IT: 'Italy',
+  BR: 'Brazil', MX: 'Mexico', IN: 'India', AU: 'Australia',
+  VN: 'Vietnam', JP: 'Japan', KR: 'Korea', CN: 'China',
+  TTL: 'Total', TOTAL: 'Total', GLOBAL: 'Total',
+}
+// 2줄 표기용 (짧은 이름은 &nbsp;로 높이 정렬)
+const CNTY_EN_2LINE = {
+  US: 'United<br/>States', CA: 'Canada<br/>&nbsp;', UK: 'United<br/>Kingdom', GB: 'United<br/>Kingdom',
+  DE: 'Germany<br/>&nbsp;', ES: 'Spain<br/>&nbsp;', BR: 'Brazil<br/>&nbsp;', MX: 'Mexico<br/>&nbsp;',
+  AU: 'Australia<br/>&nbsp;', VN: 'Vietnam<br/>&nbsp;', IN: 'India<br/>&nbsp;',
+}
 function cntyKr(c) {
   const k = String(c || '').trim().toUpperCase()
   return CNTY_KR[k] || c
+}
+function cntyEn(c) {
+  const k = String(c || '').trim().toUpperCase()
+  return CNTY_EN[k] || c
+}
+function cntyLabel(c, lang) {
+  return lang === 'en' ? cntyEn(c) : cntyKr(c)
+}
+function cntyLabel2Line(c, lang) {
+  const k = String(c || '').trim().toUpperCase()
+  if (lang === 'en') return CNTY_EN_2LINE[k] || (CNTY_EN[k] || c) + '<br/>&nbsp;'
+  return CNTY_KR[k] || c
+}
+
+// 제품명 2줄 라벨 (국가별 섹션에서 정렬용)
+const PROD_2LINE_KR = {
+  'TV': 'TV<br/>&nbsp;', '모니터': '모니터<br/>&nbsp;', '오디오': '오디오<br/>&nbsp;',
+  '세탁기': '세탁기<br/>&nbsp;', '냉장고': '냉장고<br/>&nbsp;',
+  '식기세척기': '식기<br/>세척기', '식세기': '식기<br/>세척기',
+  '청소기': '청소기<br/>&nbsp;', 'Cooking': 'Cooking<br/>&nbsp;',
+  'RAC': 'RAC<br/>&nbsp;', 'Aircare': 'Aircare<br/>&nbsp;',
+}
+const PROD_2LINE_EN = {
+  'TV': 'TV<br/>&nbsp;', '모니터': 'Monitor<br/>&nbsp;', '오디오': 'Audio<br/>&nbsp;',
+  '세탁기': 'Washer<br/>&nbsp;', '냉장고': 'Fridge<br/>&nbsp;',
+  '식기세척기': 'Dish<br/>washer', '식세기': 'Dish<br/>washer',
+  '청소기': 'Vacuum<br/>&nbsp;', 'Cooking': 'Cooking<br/>&nbsp;',
+  'RAC': 'RAC<br/>&nbsp;', 'Aircare': 'Air<br/>care',
+}
+function prodLabel2Line(name, lang) {
+  const map = lang === 'en' ? PROD_2LINE_EN : PROD_2LINE_KR
+  return map[name] || escapeHtml(String(name || '')) + '<br/>&nbsp;'
+}
+
+// Key Task Progress 카테고리 영문
+const CATEGORY_EN = {
+  '콘텐츠수정': 'Content Revision',
+  '신규콘텐츠제작': 'New Content Production',
+  '외부채널관리': 'External Channel Mgmt',
+  '닷컴기술개선': 'Dotcom Tech Improvement',
+}
+function categoryLabel(name, lang) {
+  if (lang === 'en') return CATEGORY_EN[name] || name
+  return name
 }
 
 // ─── HTML Sanitization (XSS 방지) ──────────────────────────────────────────
@@ -309,10 +366,6 @@ function productCardV2Html(p, lang = 'ko', opts = {}) {
   const maxCnty = Math.max(...ALL_COUNTRIES.map(c => cntyMap[c]?.score || 0), 1)
   const BAR_H = 32
 
-  // 3글자 국가명 (장평 축소로 좁은 셀에 맞춤)
-  const CNTY_3 = { US:'미국', CA:'캐나다', UK:'영국', DE:'독일', ES:'스페인', BR:'브라질', MX:'멕시코', AU:'호주', VN:'베트남', IN:'인도' }
-  function cn3(c) { const n = CNTY_3[c] || cntyKr(c); return n.length > 3 ? n.slice(0,3) : n }
-
   // 순서: 그래프 → 점수 → 국가명 → 경쟁비
   const countryBars = ALL_COUNTRIES.map(c => {
     const r = cntyMap[c]
@@ -320,7 +373,7 @@ function productCardV2Html(p, lang = 'ko', opts = {}) {
       <table border="0" cellpadding="0" cellspacing="0" align="center" style="width:100%;">
         ${BAR_H > 0 ? `<tr><td height="${BAR_H}" style="font-size:0;">&nbsp;</td></tr>` : ''}
         <tr><td style="font-size:10px;color:#CBD5E1;font-family:${EM_FONT};text-align:center;">—</td></tr>
-        <tr><td style="font-size:10px;color:#94A3B8;font-family:${EM_FONT};text-align:center;white-space:nowrap;letter-spacing:-1px;">${cn3(c)}</td></tr>
+        <tr><td style="font-size:9px;color:#94A3B8;font-family:${EM_FONT};text-align:center;line-height:1.1;letter-spacing:-0.3px;">${cntyLabel2Line(c, lang)}</td></tr>
         <tr><td style="font-size:10px;color:#CBD5E1;font-family:${EM_FONT};text-align:center;">—</td></tr>
       </table>
     </td>`
@@ -335,7 +388,7 @@ function productCardV2Html(p, lang = 'ko', opts = {}) {
         ${spacer > 0 ? `<tr><td height="${spacer}" style="font-size:0;">&nbsp;</td></tr>` : ''}
         <tr><td height="${barH}" style="font-size:0;"><table border="0" cellpadding="0" cellspacing="0" align="center"><tr><td width="16" height="${barH}" style="background:${barColor};border-radius:2px 2px 0 0;font-size:0;">&nbsp;</td></tr></table></td></tr>
         <tr><td style="font-size:10px;font-weight:700;color:${barColor};font-family:${EM_FONT};text-align:center;padding-top:1px;">${r.score.toFixed(0)}</td></tr>
-        <tr><td style="font-size:10px;font-weight:700;color:${barColor};font-family:${EM_FONT};text-align:center;white-space:nowrap;"><span style="letter-spacing:-1px;font-family:${EM_FONT};">${cn3(c)}</span></td></tr>
+        <tr><td style="font-size:9px;font-weight:700;color:${barColor};font-family:${EM_FONT};text-align:center;line-height:1.1;letter-spacing:-0.3px;">${cntyLabel2Line(c, lang)}</td></tr>
         <tr><td style="font-size:10px;color:#94A3B8;font-family:${EM_FONT};text-align:center;">${compTxt}</td></tr>
       </table>
     </td>`
@@ -403,8 +456,6 @@ function productCardV3Html(p, lang = 'ko', opts = {}) {
   cntyData.forEach(r => { cntyMap[r.country] = r })
   const maxCnty = Math.max(...ALL_COUNTRIES.map(c => cntyMap[c]?.score || 0), 1)
   const BAR_H = 28
-  const CNTY_3 = { US:'미국', CA:'캐나다', UK:'영국', DE:'독일', ES:'스페인', BR:'브라질', MX:'멕시코', AU:'호주', VN:'베트남', IN:'인도' }
-  function cn3(c) { const n = CNTY_3[c] || cntyKr(c); return n.length > 3 ? n.slice(0,3) : n }
 
   const countryBars = ALL_COUNTRIES.map(c => {
     const r = cntyMap[c]
@@ -412,7 +463,7 @@ function productCardV3Html(p, lang = 'ko', opts = {}) {
       <table border="0" cellpadding="0" cellspacing="0" align="center" style="width:100%;">
         <tr><td height="${BAR_H}" style="font-size:0;">&nbsp;</td></tr>
         <tr><td style="font-size:10px;color:#CBD5E1;text-align:center;">—</td></tr>
-        <tr><td style="font-size:10px;color:#94A3B8;text-align:center;white-space:nowrap;letter-spacing:-1.5px;font-size:10px;">${cn3(c)}</td></tr>
+        <tr><td style="font-size:9px;color:#94A3B8;font-family:${EM_FONT};text-align:center;line-height:1.1;letter-spacing:-0.3px;">${cntyLabel2Line(c, lang)}</td></tr>
         <tr><td style="font-size:0;height:10px;">&nbsp;</td></tr>
       </table>
     </td>`
@@ -430,7 +481,7 @@ function productCardV3Html(p, lang = 'ko', opts = {}) {
         ${spacer > 0 ? `<tr><td height="${spacer}" style="font-size:0;">&nbsp;</td></tr>` : ''}
         <tr><td height="${barH}" style="font-size:0;"><table border="0" cellpadding="0" cellspacing="0" align="center"><tr><td width="16" height="${barH}" style="background:${barColor};border-radius:2px 2px 0 0;font-size:0;">&nbsp;</td></tr></table></td></tr>
         <tr><td style="font-size:10px;font-weight:700;color:${barColor};font-family:${EM_FONT};text-align:center;padding-top:1px;">${r.score.toFixed(0)}</td></tr>
-        <tr><td style="font-size:10px;font-weight:700;color:${barColor};font-family:${EM_FONT};text-align:center;white-space:nowrap;letter-spacing:-1.5px;">${cn3(c)}</td></tr>
+        <tr><td style="font-size:9px;font-weight:700;color:${barColor};font-family:${EM_FONT};text-align:center;line-height:1.1;letter-spacing:-0.3px;">${cntyLabel2Line(c, lang)}</td></tr>
         <tr><td style="font-size:10px;color:#94A3B8;font-family:${EM_FONT};text-align:center;white-space:nowrap;letter-spacing:-0.5px;">${compShort(cCompName)}<br/>${cCompScore > 0 ? cRatio + '%' : ''}</td></tr>
       </table>
     </td>`
@@ -646,7 +697,7 @@ function countryCardHtml(cntyCode, rows, lang, countryTotals) {
         ${spacerH > 0 ? `<tr><td height="${spacerH}" style="font-size:0;line-height:0;">&nbsp;</td></tr>` : ''}
         <tr><td height="${barH}" style="font-size:0;line-height:0;"><table border="0" cellpadding="0" cellspacing="0" align="center"><tr><td width="18" height="${barH}" style="background:${barColor};border-radius:3px 3px 0 0;font-size:0;">&nbsp;</td></tr></table></td></tr>
         <tr><td style="font-size:11px;font-weight:800;color:${barColor};font-family:${EM_FONT};padding-top:2px;white-space:nowrap;">${r.score.toFixed(1)}</td></tr>
-        <tr><td style="font-size:10px;font-weight:700;color:${barColor};font-family:${EM_FONT};padding-top:1px;white-space:nowrap;">${escapeHtml(r.product === '식기세척기' ? '식세기' : r.product)}</td></tr>
+        <tr><td style="font-size:10px;font-weight:700;color:${barColor};font-family:${EM_FONT};padding-top:1px;line-height:1.1;letter-spacing:-0.3px;">${prodLabel2Line(r.product, lang)}</td></tr>
         <tr><td style="font-size:10px;color:#94A3B8;font-family:${EM_FONT};padding-top:1px;white-space:nowrap;line-height:1.3;">${ssName(r.compName)}<br/>${ratio}%</td></tr>
       </table>
     </td>`
@@ -655,7 +706,7 @@ function countryCardHtml(cntyCode, rows, lang, countryTotals) {
   return `<table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#F8FAFC;border:1px solid #E8EDF2;border-radius:8px;">
     <tr><td style="padding:5px 10px;border-bottom:1px solid #F1F5F9;">
       <table border="0" cellpadding="0" cellspacing="0" width="100%"><tr>
-        <td style="font-size:13px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${escapeHtml(cntyKr(cntyCode))}</td>
+        <td style="font-size:13px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${escapeHtml(cntyLabel(cntyCode, lang))}</td>
         ${ctScore ? `<td align="right" style="font-size:12px;font-weight:700;color:#64748B;font-family:${EM_FONT};">TTL ${ctScore}</td>` : ''}
       </tr></table>
     </td></tr>
@@ -1030,7 +1081,7 @@ function categoryCardsHtml(categoryStats, lang, meta) {
     return `<td width="50%" valign="top" style="padding:6px;">
       <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFFFFF;border:1.5px solid #E8EDF2;border-radius:10px;">
         <tr><td style="padding:12px 14px;">
-          <p style="margin:0 0 10px;font-size:14px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};">${escapeHtml(c.category)}</p>
+          <p style="margin:0 0 10px;font-size:14px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};">${escapeHtml(categoryLabel(c.category, lang))}</p>
           <!-- 이번 월 -->
           <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom:4px;">
             <tr>
