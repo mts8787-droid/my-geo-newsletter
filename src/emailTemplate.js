@@ -696,9 +696,9 @@ function countryCardHtml(cntyCode, rows, lang, countryTotals) {
       <table border="0" cellpadding="0" cellspacing="0" align="center" style="margin:0 auto;table-layout:fixed;width:100%;">
         ${spacerH > 0 ? `<tr><td height="${spacerH}" style="font-size:0;line-height:0;">&nbsp;</td></tr>` : ''}
         <tr><td height="${barH}" style="font-size:0;line-height:0;"><table border="0" cellpadding="0" cellspacing="0" align="center"><tr><td width="18" height="${barH}" style="background:${barColor};border-radius:3px 3px 0 0;font-size:0;">&nbsp;</td></tr></table></td></tr>
-        <tr><td style="font-size:11px;font-weight:800;color:${barColor};font-family:${EM_FONT};padding-top:2px;white-space:nowrap;">${r.score.toFixed(1)}</td></tr>
-        <tr><td style="font-size:10px;font-weight:700;color:${barColor};font-family:${EM_FONT};padding-top:1px;line-height:1.1;letter-spacing:-0.3px;">${prodLabel2Line(r.product, lang)}</td></tr>
-        <tr><td style="font-size:10px;color:#94A3B8;font-family:${EM_FONT};padding-top:1px;white-space:nowrap;line-height:1.3;">${ssName(r.compName)}<br/>${ratio}%</td></tr>
+        <tr><td height="16" style="height:16px;font-size:11px;font-weight:800;color:${barColor};font-family:${EM_FONT};padding-top:2px;white-space:nowrap;line-height:14px;">${r.score.toFixed(1)}</td></tr>
+        <tr><td height="26" style="height:26px;font-size:10px;font-weight:700;color:${barColor};font-family:${EM_FONT};padding-top:1px;line-height:11px;letter-spacing:-0.3px;vertical-align:top;">${prodLabel2Line(r.product, lang)}</td></tr>
+        <tr><td height="28" style="height:28px;font-size:10px;color:#94A3B8;font-family:${EM_FONT};padding-top:1px;white-space:nowrap;line-height:13px;vertical-align:top;">${ssName(r.compName)}<br/>${ratio}%</td></tr>
       </table>
     </td>`
   }).join('')
