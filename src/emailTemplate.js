@@ -70,8 +70,10 @@ const CATEGORY_EN = {
   '닷컴기술개선': 'Dotcom Tech Improvement',
 }
 function categoryLabel(name, lang) {
-  if (lang === 'en') return CATEGORY_EN[name] || name
-  return name
+  if (lang !== 'en') return name
+  // 공백/띄어쓰기 변형에 모두 대응 (예: "콘텐츠 수정" / "콘텐츠수정")
+  const key = String(name || '').replace(/\s+/g, '')
+  return CATEGORY_EN[key] || CATEGORY_EN[name] || name
 }
 
 // ─── HTML Sanitization (XSS 방지) ──────────────────────────────────────────
