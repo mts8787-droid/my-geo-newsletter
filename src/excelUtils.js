@@ -163,6 +163,13 @@ function pct(v) {
   if (Math.abs(n) <= 1 && n !== 0) return +(n * 100).toFixed(2)
   return +n.toFixed(2)
 }
+// 빈 셀은 null로 반환 (주간 트렌드에서 0%로 그리지 않기 위함)
+function pctOrNull(v) {
+  if (v == null) return null
+  const raw = String(v).trim()
+  if (raw === '') return null
+  return pct(v)
+}
 
 function numVal(v) {
   return parseFloat(String(v ?? '').replace(/,/g, '').replace(/%/g, '').trim()) || 0
@@ -709,7 +716,7 @@ function parseWeekly(rows, div) {
       const cnty = rawCnty === 'TOTAL' || rawCnty === 'TTL' || !rawCnty ? 'Total' : rawCnty
       if (!weeklyAll[prodId]) weeklyAll[prodId] = {}
       if (!weeklyAll[prodId][cnty]) weeklyAll[prodId][cnty] = {}
-      weeklyAll[prodId][cnty][brand] = wCols.map(c => pct(r[c]))
+      weeklyAll[prodId][cnty][brand] = wCols.map(c => pctOrNull(r[c]))
     })
     // LG Total만 추출 (기존 weeklyMap 호환)
     data.forEach(r => {
@@ -719,7 +726,7 @@ function parseWeekly(rows, div) {
       if (!isTotal(r)) return
       const cat = String(r[catIdx >= 0 ? catIdx : 0] || '').trim()
       if (!cat) return
-      weeklyMap[CATEGORY_ID_MAP[cat] || cat.toLowerCase()] = wCols.map(c => pct(r[c]))
+      weeklyMap[CATEGORY_ID_MAP[cat] || cat.toLowerCase()] = wCols.map(c => pctOrNull(r[c]))
     })
   } else if (lgIdx >= 0) {
     // Format: Div, Week/Date, Country, Category, LG, ...
@@ -738,7 +745,7 @@ function parseWeekly(rows, div) {
         if (wl && !weekLabelOrder.includes(wl)) weekLabelOrder.push(wl)
       }
       byCategory[cat] = byCategory[cat] || []
-      byCategory[cat].push(pct(r[lgIdx]))
+      byCategory[cat].push(pctOrNull(r[lgIdx]))
     })
     Object.entries(byCategory).forEach(([cat, vals]) => {
       weeklyMap[CATEGORY_ID_MAP[cat] || cat.toLowerCase()] = vals
@@ -750,7 +757,7 @@ function parseWeekly(rows, div) {
       if (!isTotal(r)) return
       const cat = String(r[catIdx >= 0 ? catIdx : 0] || '').trim()
       if (!cat) return
-      weeklyMap[CATEGORY_ID_MAP[cat] || cat.toLowerCase()] = wCols.map(c => pct(r[c]))
+      weeklyMap[CATEGORY_ID_MAP[cat] || cat.toLowerCase()] = wCols.map(c => pctOrNull(r[c]))
     })
   }
 
