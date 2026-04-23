@@ -4,6 +4,8 @@ import nodemailer from 'nodemailer'
 import translate from 'google-translate-api-x'
 import Anthropic from '@anthropic-ai/sdk'
 import { buildInsightPrompt } from './src/shared/insightPrompts.js'
+import { parseAppendix } from './src/excelUtils.js'
+import XLSX from 'xlsx-js-style'
 import { fileURLToPath } from 'url'
 import { dirname, join } from 'path'
 import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync, unlinkSync } from 'fs'
@@ -1134,6 +1136,10 @@ tbody tr:nth-child(even){background:#182237}
 .prompt{min-width:380px;white-space:pre-wrap;word-break:break-word;color:#F8FAFC}
 .meta{color:#94A3B8;font-size:11px}
 .empty{padding:40px;text-align:center;color:#64748B}
+.syncform{background:#1E293B;border:1px solid #334155;border-radius:10px;padding:14px 18px;margin-bottom:18px;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.syncform label{display:flex;flex-direction:column;font-size:11px;color:#94A3B8;gap:4px;flex:1;min-width:180px}
+.syncform input{background:#0F172A;border:1px solid #334155;border-radius:6px;padding:8px 10px;color:#E2E8F0;font-size:13px;font-family:inherit}
+.syncform .hint{font-size:11px;color:#64748B;flex-basis:100%}
 </style></head><body>
 <a class="back" href="/admin/">← 관리자</a>
 <h1>독일(DE) 프롬프트 예시</h1>
@@ -1143,6 +1149,12 @@ tbody tr:nth-child(even){background:#182237}
   <a class="btn" href="/admin/de-prompts.xlsx" download>엑셀 다운로드</a>
   <a class="btn" href="/admin/de-prompts.csv" download>CSV 다운로드</a>
 </div>
+<form class="syncform" method="POST" action="/admin/de-prompts/sync-sheet">
+  <label>Google Sheet URL 또는 ID <input type="text" name="sheet" placeholder="https://docs.google.com/spreadsheets/d/..." required></label>
+  <label>탭 이름 <input type="text" name="tab" value="Appendix.Prompt List"></label>
+  <button class="btn" type="submit">시트에서 동기화</button>
+  <span class="hint">동기화하면 visibility sync-data의 appendixPrompts가 시트 최신값으로 교체됩니다.</span>
+</form>
 ${combos.length === 0
   ? `<div class="wrap"><p class="empty">DE 프롬프트가 없습니다. visibility/dashboard 동기화 후 재시도하세요.</p></div>`
   : `<div class="wrap"><table>
@@ -1174,10 +1186,48 @@ app.get('/admin/de-prompts.csv', (req, res) => {
   res.send(body)
 })
 
+function extractSheetId(raw) {
+  const s = String(raw || '').trim()
+  const m = s.match(/\/spreadsheets\/d\/([a-zA-Z0-9_-]+)/)
+  if (m) return m[1]
+  // 공백/기호 없는 순수 ID로 간주
+  if (/^[a-zA-Z0-9_-]{20,}$/.test(s)) return s
+  return null
+}
+
+app.use('/admin/de-prompts/sync-sheet', express.urlencoded({ extended: false, limit: '1mb' }))
+app.post('/admin/de-prompts/sync-sheet', async (req, res) => {
+  const sheetId = extractSheetId(req.body?.sheet)
+  const tab = String(req.body?.tab || 'Appendix.Prompt List').trim() || 'Appendix.Prompt List'
+  if (!sheetId) return res.status(400).send('유효한 Google Sheet URL/ID가 아닙니다. <a href="/admin/de-prompts">뒤로</a>')
+  try {
+    const rid = `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
+    const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?sheet=${encodeURIComponent(tab)}&tqx=out:csv;reqId:${rid}&headers=1`
+    const gRes = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0' } })
+    if (!gRes.ok) return res.status(gRes.status).send(`Google Sheets 응답 실패: ${gRes.status}. 시트가 공개 보기 허용인지 확인하세요. <a href="/admin/de-prompts">뒤로</a>`)
+    const csv = await gRes.text()
+    const wb = XLSX.read(csv, { type: 'string' })
+    const ws = wb.Sheets[wb.SheetNames[0]]
+    const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' })
+    const parsed = parseAppendix(rows)
+    const appendixPrompts = parsed.appendixPrompts || []
+    if (!appendixPrompts.length) return res.status(422).send(`파싱 결과가 비어있습니다. 탭명/컬럼 헤더(country, prompts)를 확인하세요. <a href="/admin/de-prompts">뒤로</a>`)
+    // visibility sync-data에 병합 저장
+    const current = readModeSyncData('visibility') || {}
+    current.appendixPrompts = appendixPrompts
+    current.savedAt = Date.now()
+    writeModeSyncData('visibility', current)
+    console.log(`[DE-PROMPTS] sheet sync: ${appendixPrompts.length}건 저장 (sheet=${sheetId}, tab=${tab})`)
+    res.redirect('/admin/de-prompts')
+  } catch (err) {
+    console.error('[DE-PROMPTS] sync error:', err.message)
+    res.status(500).send(`동기화 실패: ${err.message}. <a href="/admin/de-prompts">뒤로</a>`)
+  }
+})
+
 // 엑셀(.xlsx) 다운로드
 app.get('/admin/de-prompts.xlsx', async (req, res) => {
   const { combos } = getDePromptCombos()
-  const XLSX = (await import('xlsx-js-style')).default
   const data = [
     ['#', 'Category', 'Topic', 'CEJ', 'Prompt', 'Division', 'Launched', 'Branded'],
     ...combos.map((p, i) => [i + 1, p.category || '', p.topic || '', p.cej || '', p.prompt || '', p.division || '', p.launched || '', p.branded || '']),

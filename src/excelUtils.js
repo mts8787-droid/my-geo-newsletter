@@ -1411,7 +1411,7 @@ function parseBrandPromptVisibility(rows, mode) {
 
 // ─── Appendix.Prompt List 파서 ──────────────────────────────────────────────
 // 구조: (빈) | Country | Prompts | Division | Category | launched | Branded | CEJ | Topic
-function parseAppendix(rows) {
+export function parseAppendix(rows) {
   // 헤더 찾기
   const headerIdx = rows.findIndex(r => {
     if (!r) return false
