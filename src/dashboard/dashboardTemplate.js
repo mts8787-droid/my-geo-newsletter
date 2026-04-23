@@ -452,8 +452,10 @@ function productSectionHtml(products, meta, t, lang, wLabels, ulMap, monthlyVis,
     if (!prods.length) return ''
     const cards = prods.map(p => {
       const weekly = p.weekly || []
+      // null 제외한 유효 주간값 (빈 셀이 null로 들어올 수 있음)
+      const validWeekly = weekly.filter(v => v != null)
       // Weekly/Monthly 두 버전 점수
-      const wScore = p.weeklyScore || (weekly.length > 0 ? weekly[weekly.length - 1] : p.score)
+      const wScore = p.weeklyScore || (validWeekly.length > 0 ? validWeekly[validWeekly.length - 1] : p.score)
       const mScore = p.monthlyScore || p.score
       const latestScore = wScore
       // 주간 경쟁사: weeklyAll에서 마지막 주 1위 경쟁사 점수
@@ -473,9 +475,9 @@ function productSectionHtml(products, meta, t, lang, wLabels, ulMap, monthlyVis,
       const latestRatio = wRatio
       const latestStatus = wRatioExact >= 100 ? 'lead' : wRatioExact >= 80 ? 'behind' : 'critical'
       const st = statusInfo(latestStatus, lang)
-      // WoW: 마지막 2주 차이
-      const wLast = weekly.length >= 2 ? weekly[weekly.length - 1] : null
-      const wPrev = weekly.length >= 2 ? weekly[weekly.length - 2] : null
+      // WoW: 유효값 기준 마지막 2주 차이 (null 섞여있어도 정확히 계산)
+      const wLast = validWeekly.length >= 1 ? validWeekly[validWeekly.length - 1] : null
+      const wPrev = validWeekly.length >= 2 ? validWeekly[validWeekly.length - 2] : null
       const wd = (wLast != null && wPrev != null) ? +(wLast - wPrev).toFixed(1) : null
       const wArrow = wd > 0 ? '▲' : wd < 0 ? '▼' : '─'
       const wColor = wd > 0 ? '#22C55E' : wd < 0 ? '#EF4444' : '#94A3B8'
@@ -501,7 +503,7 @@ function productSectionHtml(products, meta, t, lang, wLabels, ulMap, monthlyVis,
       const momColor = momD > 0 ? '#22C55E' : momD < 0 ? '#EF4444' : '#94A3B8'
       const compPct = latestRatio
       const compColor = compPct >= 100 ? '#15803D' : compPct >= 80 ? '#D97706' : '#BE123C'
-      const wPrevScore = p.weeklyPrev || (weekly.length >= 5 ? weekly[weekly.length - 5] : (weekly[0] || 0))
+      const wPrevScore = p.weeklyPrev || (validWeekly.length >= 5 ? validWeekly[validWeekly.length - 5] : (validWeekly[0] || 0))
       const wMomD = wScore && wPrevScore ? +(wScore - wPrevScore).toFixed(1) : null
       const mMomD = mScore && (p.monthlyPrev || p.prev) ? +(mScore - (p.monthlyPrev || p.prev)).toFixed(1) : null
       const ulCntys = getULCntys(p.id || p.category, ulMap)
