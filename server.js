@@ -1063,40 +1063,45 @@ a.card:hover{border-color:#CF0652;transform:translateY(-2px)}
 })
 
 // ─── 독일(DE) 프롬프트 예시 페이지 ────────────────────────────────────────────
-app.get('/admin/de-prompts', (req, res) => {
+function getDePromptCombos() {
   const vis = readModeSyncData('visibility') || {}
   const dash = readModeSyncData('dashboard') || {}
   const prompts = vis.appendixPrompts || dash.appendixPrompts || []
   const source = vis.appendixPrompts ? 'visibility' : (dash.appendixPrompts ? 'dashboard' : 'none')
   const dePrompts = prompts.filter(p => String(p.country || '').toUpperCase() === 'DE')
-
-  function pickOnePer(field) {
-    const out = {}
-    for (const p of dePrompts) {
-      const key = String(p[field] || '').trim()
-      if (!key) continue
-      if (!out[key]) out[key] = p
-    }
-    return out
+  // (category, topic, cej) 조합당 첫 1건
+  const seen = new Set()
+  const combos = []
+  for (const p of dePrompts) {
+    const key = `${p.category || ''}||${p.topic || ''}||${p.cej || ''}`
+    if (seen.has(key)) continue
+    seen.add(key)
+    combos.push(p)
   }
-  const byCategory = pickOnePer('category')
-  const byTopic = pickOnePer('topic')
-  const byDivision = pickOnePer('division')
-  const byCej = pickOnePer('cej')
+  combos.sort((a, b) => {
+    return String(a.category || '').localeCompare(String(b.category || ''))
+      || String(a.topic || '').localeCompare(String(b.topic || ''))
+      || String(a.cej || '').localeCompare(String(b.cej || ''))
+  })
+  return { combos, totalPrompts: prompts.length, deCount: dePrompts.length, source }
+}
 
+app.get('/admin/de-prompts', (req, res) => {
+  const { combos, totalPrompts, deCount, source } = getDePromptCombos()
   function esc(s) {
     return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
   }
-  function section(title, obj) {
-    const keys = Object.keys(obj).sort()
-    if (!keys.length) return `<section><h2>${esc(title)}</h2><p class="empty">해당 필드에 데이터 없음</p></section>`
-    const rows = keys.map(k => {
-      const p = obj[k]
-      const meta = [p.division, p.category, p.topic, p.launched, p.branded, p.cej].filter(Boolean).map(esc).join(' · ')
-      return `<article class="card"><header><span class="key">${esc(k)}</span><span class="meta">${meta}</span></header><pre>${esc(p.prompt)}</pre></article>`
-    }).join('')
-    return `<section><h2>${esc(title)} <span class="count">${keys.length}</span></h2>${rows}</section>`
-  }
+  const rows = combos.map((p, i) => `
+    <tr>
+      <td class="num">${i + 1}</td>
+      <td>${esc(p.category)}</td>
+      <td>${esc(p.topic)}</td>
+      <td>${esc(p.cej)}</td>
+      <td class="prompt">${esc(p.prompt)}</td>
+      <td class="meta">${esc(p.division)}</td>
+      <td class="meta">${esc(p.launched)}</td>
+      <td class="meta">${esc(p.branded)}</td>
+    </tr>`).join('')
 
   res.set('Content-Type', 'text/html; charset=utf-8')
   res.send(`<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
@@ -1105,28 +1110,84 @@ app.get('/admin/de-prompts', (req, res) => {
 *{margin:0;padding:0;box-sizing:border-box}
 body{min-height:100vh;background:#0F172A;color:#E2E8F0;font-family:'LG Smart','Arial Narrow',Arial,sans-serif;padding:28px 32px;line-height:1.5}
 h1{font-size:22px;color:#F8FAFC;margin-bottom:4px}
-.sub{font-size:13px;color:#64748B;margin-bottom:24px}
+.sub{font-size:13px;color:#64748B;margin-bottom:18px}
 .back{color:#CF0652;text-decoration:none;font-size:13px;margin-right:14px}
-section{background:#1E293B;border:1px solid #334155;border-radius:12px;padding:20px 22px;margin-bottom:18px}
-h2{font-size:15px;color:#F8FAFC;margin-bottom:12px;display:flex;align-items:center;gap:8px}
-.count{font-size:11px;color:#64748B;background:#0F172A;padding:2px 8px;border-radius:10px;font-weight:400}
-.card{background:#0F172A;border:1px solid #1E293B;border-radius:8px;padding:12px 14px;margin-top:10px}
-.card header{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-bottom:8px}
-.key{font-weight:700;color:#F8FAFC;font-size:14px}
-.meta{font-size:11px;color:#94A3B8}
-pre{font-family:'LG Smart','Arial Narrow',Arial,sans-serif;white-space:pre-wrap;word-break:break-word;color:#CBD5E1;font-size:13px;line-height:1.6}
-.empty{color:#64748B;font-size:12px;font-style:italic}
-.info{font-size:11px;color:#64748B;background:#0F172A;border:1px solid #1E293B;border-radius:6px;padding:8px 12px;margin-bottom:18px}
+.bar{display:flex;align-items:center;gap:14px;margin-bottom:16px;flex-wrap:wrap}
+.info{font-size:12px;color:#94A3B8;background:#1E293B;border:1px solid #334155;border-radius:8px;padding:8px 14px}
+.btn{background:#CF0652;color:#fff;border:none;border-radius:8px;padding:9px 18px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;text-decoration:none;display:inline-block}
+.btn:hover{opacity:.9}
+.wrap{background:#1E293B;border:1px solid #334155;border-radius:12px;overflow:auto}
+table{width:100%;border-collapse:collapse;font-size:12px}
+thead th{background:#0F172A;color:#94A3B8;font-weight:700;padding:10px 12px;text-align:left;border-bottom:1px solid #334155;position:sticky;top:0;white-space:nowrap}
+tbody td{padding:10px 12px;border-bottom:1px solid #1E293B;color:#E2E8F0;vertical-align:top}
+tbody tr:nth-child(even){background:#182237}
+.num{color:#64748B;font-weight:600;width:40px}
+.prompt{min-width:380px;white-space:pre-wrap;word-break:break-word;color:#F8FAFC}
+.meta{color:#94A3B8;font-size:11px}
+.empty{padding:40px;text-align:center;color:#64748B}
 </style></head><body>
 <a class="back" href="/admin/">← 관리자</a>
 <h1>독일(DE) 프롬프트 예시</h1>
-<p class="sub">appendixPrompts 소스에서 DE 국가로 필터링 후 카테고리/제품(Division)/토픽별 대표 프롬프트 각 1개씩 추출</p>
-<div class="info">소스: <strong>${esc(source)}</strong> &nbsp;·&nbsp; 전체 프롬프트: <strong>${prompts.length}</strong>건 &nbsp;·&nbsp; DE 필터 결과: <strong>${dePrompts.length}</strong>건</div>
-${section('카테고리별 (category)', byCategory)}
-${section('제품/본부별 (division)', byDivision)}
-${section('토픽별 (topic)', byTopic)}
-${section('CEJ별 (cej)', byCej)}
+<p class="sub">appendixPrompts 소스 · DE 필터 후 (카테고리 × 토픽 × CEJ) 조합마다 대표 프롬프트 1개</p>
+<div class="bar">
+  <div class="info">소스: <strong>${esc(source)}</strong> · 전체: <strong>${totalPrompts}</strong>건 · DE: <strong>${deCount}</strong>건 · 조합: <strong>${combos.length}</strong>건</div>
+  <a class="btn" href="/admin/de-prompts.xlsx" download>엑셀 다운로드</a>
+  <a class="btn" href="/admin/de-prompts.csv" download>CSV 다운로드</a>
+</div>
+${combos.length === 0
+  ? `<div class="wrap"><p class="empty">DE 프롬프트가 없습니다. visibility/dashboard 동기화 후 재시도하세요.</p></div>`
+  : `<div class="wrap"><table>
+    <thead><tr>
+      <th>#</th><th>제품(Category)</th><th>토픽(Topic)</th><th>CEJ</th><th>프롬프트</th>
+      <th>Division</th><th>Launched</th><th>Branded</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table></div>`}
 </body></html>`)
+})
+
+// CSV 다운로드 (UTF-8 BOM, 엑셀 한글 호환)
+app.get('/admin/de-prompts.csv', (req, res) => {
+  const { combos } = getDePromptCombos()
+  function csvCell(v) {
+    const s = String(v ?? '')
+    if (/[",\n\r]/.test(s)) return `"${s.replace(/"/g, '""')}"`
+    return s
+  }
+  const header = ['#', 'Category', 'Topic', 'CEJ', 'Prompt', 'Division', 'Launched', 'Branded']
+  const lines = [header.join(',')]
+  combos.forEach((p, i) => {
+    lines.push([i + 1, p.category, p.topic, p.cej, p.prompt, p.division, p.launched, p.branded].map(csvCell).join(','))
+  })
+  const body = '\uFEFF' + lines.join('\r\n')
+  res.set('Content-Type', 'text/csv; charset=utf-8')
+  res.set('Content-Disposition', 'attachment; filename="de-prompts.csv"')
+  res.send(body)
+})
+
+// 엑셀(.xlsx) 다운로드
+app.get('/admin/de-prompts.xlsx', async (req, res) => {
+  const { combos } = getDePromptCombos()
+  const XLSX = (await import('xlsx-js-style')).default
+  const data = [
+    ['#', 'Category', 'Topic', 'CEJ', 'Prompt', 'Division', 'Launched', 'Branded'],
+    ...combos.map((p, i) => [i + 1, p.category || '', p.topic || '', p.cej || '', p.prompt || '', p.division || '', p.launched || '', p.branded || '']),
+  ]
+  const ws = XLSX.utils.aoa_to_sheet(data)
+  // 컬럼 너비
+  ws['!cols'] = [{ wch: 4 }, { wch: 18 }, { wch: 22 }, { wch: 14 }, { wch: 80 }, { wch: 10 }, { wch: 10 }, { wch: 10 }]
+  // 헤더 스타일
+  const headerStyle = { font: { bold: true, color: { rgb: 'FFFFFF' } }, fill: { fgColor: { rgb: 'CF0652' } }, alignment: { vertical: 'center' } }
+  for (let c = 0; c < data[0].length; c++) {
+    const addr = XLSX.utils.encode_cell({ r: 0, c })
+    if (ws[addr]) ws[addr].s = headerStyle
+  }
+  const wb = XLSX.utils.book_new()
+  XLSX.utils.book_append_sheet(wb, ws, 'DE Prompts')
+  const buf = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' })
+  res.set('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+  res.set('Content-Disposition', 'attachment; filename="de-prompts.xlsx"')
+  res.send(buf)
 })
 
 // ─── IP Access Manager UI ────────────────────────────────────────────────────
