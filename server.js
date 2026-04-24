@@ -1059,9 +1059,92 @@ a.card:hover{border-color:#CF0652;transform:translateY(-2px)}
       <div class="card-title">독일 프롬프트 예시</div>
       <div class="card-desc">DE 국가 카테고리별·제품별·토픽별 대표 프롬프트 각 1개</div>
     </a>
+    <a class="card" href="/admin/plan">
+      <div class="card-title">시스템 기획서</div>
+      <div class="card-desc">현행 아키텍처 · GCP/BigQuery 자동화 · Claude 에이전트화 로드맵</div>
+    </a>
   </div>
   <button class="logout" onclick="fetch('/api/auth/logout',{method:'POST'}).then(function(){location.href='/admin/login'})">로그아웃</button>
 </div></body></html>`)
+})
+
+// ─── 시스템 기획서 (ADMIN_PLAN.md 렌더) ──────────────────────────────────────
+app.get('/admin/plan', (req, res) => {
+  let md = ''
+  try {
+    md = readFileSync(join(__dirname, 'docs', 'ADMIN_PLAN.md'), 'utf-8')
+  } catch (e) {
+    return res.status(404).send('ADMIN_PLAN.md 파일을 찾을 수 없습니다.')
+  }
+  // 클라이언트에서 marked + mermaid CDN으로 렌더 (iOS Safari 호환)
+  res.set('Content-Type', 'text/html; charset=utf-8')
+  const mdJson = JSON.stringify(md)
+  res.send(`<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>시스템 기획서</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#0F172A;color:#E2E8F0;font-family:'LG Smart','Arial Narrow',Arial,sans-serif;padding:24px 32px;line-height:1.65}
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px}
+.back{color:#CF0652;text-decoration:none;font-size:13px}
+.actions{display:flex;gap:10px}
+.btn{background:#1E293B;border:1px solid #334155;border-radius:8px;padding:8px 16px;font-size:12px;font-weight:600;color:#E2E8F0;text-decoration:none;cursor:pointer;font-family:inherit}
+.btn:hover{background:#334155}
+.content{max-width:1040px;margin:0 auto;background:#0B1220;border:1px solid #1E293B;border-radius:12px;padding:32px 40px}
+.content h1{font-size:26px;color:#F8FAFC;margin:0 0 12px;padding-bottom:10px;border-bottom:2px solid #CF0652}
+.content h2{font-size:20px;color:#F8FAFC;margin:28px 0 12px;padding-bottom:6px;border-bottom:1px solid #334155}
+.content h3{font-size:16px;color:#F8FAFC;margin:22px 0 10px}
+.content h4{font-size:14px;color:#CBD5E1;margin:18px 0 8px}
+.content p{margin:10px 0;color:#CBD5E1;font-size:14px}
+.content ul,.content ol{margin:10px 0 10px 22px;color:#CBD5E1;font-size:14px}
+.content li{margin:4px 0}
+.content code{background:#1E293B;color:#F8C4D7;padding:2px 6px;border-radius:4px;font-family:'Consolas','Courier New',monospace;font-size:12px}
+.content pre{background:#1E293B;border:1px solid #334155;border-radius:8px;padding:14px 16px;overflow:auto;font-family:'Consolas','Courier New',monospace;font-size:12px;line-height:1.5}
+.content pre code{background:none;padding:0;color:#E2E8F0}
+.content table{border-collapse:collapse;width:100%;margin:14px 0;font-size:13px}
+.content th,.content td{border:1px solid #334155;padding:8px 12px;text-align:left;vertical-align:top;color:#CBD5E1}
+.content th{background:#1E293B;color:#F8FAFC;font-weight:700}
+.content tr:nth-child(even) td{background:#0F172A}
+.content blockquote{border-left:3px solid #CF0652;margin:14px 0;padding:6px 16px;background:#1E293B;color:#94A3B8;font-size:13px;border-radius:0 6px 6px 0}
+.content a{color:#F472B6;text-decoration:none}
+.content a:hover{text-decoration:underline}
+.mermaid{background:#fff;border-radius:8px;padding:16px;margin:14px 0;overflow:auto;text-align:center}
+.content hr{border:none;border-top:1px solid #334155;margin:22px 0}
+</style></head><body>
+<div class="topbar">
+  <a class="back" href="/admin/">← 관리자</a>
+  <div class="actions">
+    <a class="btn" href="/admin/plan.md" download="ADMIN_PLAN.md">MD 다운로드</a>
+    <button class="btn" onclick="window.print()">인쇄/PDF 저장</button>
+  </div>
+</div>
+<div id="root" class="content">로딩 중…</div>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs'
+  mermaid.initialize({ startOnLoad: false, theme: 'dark', themeVariables: { darkMode: true, background: '#ffffff', primaryColor: '#CF0652', primaryTextColor: '#1A1A1A' } })
+  const md = ${mdJson}
+  marked.use({ gfm: true, breaks: false })
+  // mermaid 코드블록을 <div class="mermaid"> 로 변환
+  const renderer = new marked.Renderer()
+  const origCode = renderer.code.bind(renderer)
+  renderer.code = function(code, infostring) {
+    if (infostring && /^mermaid/i.test(infostring)) return '<div class="mermaid">' + code + '</div>'
+    return origCode(code, infostring)
+  }
+  document.getElementById('root').innerHTML = marked.parse(md, { renderer })
+  await mermaid.run({ querySelector: '.mermaid' })
+</script>
+</body></html>`)
+})
+
+// 원문 MD 다운로드
+app.get('/admin/plan.md', (req, res) => {
+  try {
+    const md = readFileSync(join(__dirname, 'docs', 'ADMIN_PLAN.md'), 'utf-8')
+    res.set('Content-Type', 'text/markdown; charset=utf-8')
+    res.set('Content-Disposition', 'attachment; filename="ADMIN_PLAN.md"')
+    res.send(md)
+  } catch { res.status(404).send('not found') }
 })
 
 // ─── 독일(DE) 프롬프트 예시 페이지 ────────────────────────────────────────────
