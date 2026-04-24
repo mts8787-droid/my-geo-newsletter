@@ -2634,7 +2634,12 @@ function filterTrend(selBU,selProd,selCountry){
     if(cKeys.length===1)trendCnty=cKeys[0];
     else if(cKeys.length>1)trendCountries=cKeys;
   }
-  var container=document.getElementById('trend-container');if(!container)return;
+  var container=document.getElementById('trend-container');if(!container){console.warn('[filterTrend] trend-container 없음');return}
+  try{
+    var sampleProd=_products&&_products[0]&&_products[0].id;
+    var sampleKeys=sampleProd&&_weeklyAll&&_weeklyAll[sampleProd]?Object.keys(_weeklyAll[sampleProd]):[];
+    console.log('[filterTrend]',{trendCnty:trendCnty,trendCountries:trendCountries,periodMode:_periodMode,selBU:selBU,selProd:selProd,weeklyAllProducts:_weeklyAll?Object.keys(_weeklyAll).length:0,sampleCountryKeys:sampleKeys});
+  }catch(e){}
 
   // 월간 모드: 제품별 월간 스코어 표시
   if(_periodMode==='monthly'){
@@ -2705,7 +2710,8 @@ function filterTrend(selBU,selProd,selCountry){
     html+='<div class="bu-group" data-bu="'+b+'" style="margin-bottom:20px"><div class="bu-header"><span class="bu-label">'+b+'</span></div>'+rows+'</div>';
   });
   // 필터 변경 후 데이터가 비었을 때 컨테이너를 비우지 않음 — 이전 SSR/렌더 유지
-  if(!hasTrend)return;
+  if(!hasTrend){console.warn('[filterTrend] hasTrend=false, 이전 렌더 유지');return}
+  console.log('[filterTrend] 렌더 성공, BU 수:', (html.match(/data-bu=/g)||[]).length);
   var title=_lang==='en'?'Weekly Competitor Trend':'주간 경쟁사 트렌드';
   var sub=_wLabels[0]+'–'+_wLabels[_wLabels.length-1]+' ('+_wLabels.length+(_lang==='en'?' weeks':'주')+')';
   var cntyLabel=trendCountries?(' — '+trendCountries.join(', ')+' avg'):(trendCnty==='Total'?'':' — '+trendCnty);
