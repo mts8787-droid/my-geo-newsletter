@@ -18,8 +18,8 @@
 | 장 | 내용 |
 |---|---|
 | §2 | 현행 시스템 (간략) + 코드 품질 리뷰 + 보안 점검 |
-| §3 | 향후 개선 방향 — 기능 축 (5개) |
-| §4 | 향후 개선 방향 — 코드·보안 축 (신규) |
+| §3 | 향후 개선 방향 — 기능 축 (6개) |
+| §4 | 향후 개선 방향 — 코드·보안 축 |
 | §5 | 최종 비전 — 에이전트화된 시스템 |
 | §6 | 로드맵 |
 | §7 | 리스크 |
@@ -155,7 +155,7 @@ flowchart LR
 
 ---
 
-## 3. 향후 개선 방향 — 기능 축 (5개)
+## 3. 향후 개선 방향 — 기능 축 (6개)
 
 | 축 | 목적 | 핵심 기술 |
 |---|---|---|
@@ -163,7 +163,8 @@ flowchart LR
 | §3.2 프롬프트 관리·추출 통합 | 프롬프트를 단일 원천으로 버전 관리 | BigQuery 마스터 + 승인 워크플로 |
 | §3.3 지식 허브 (RAG화) | 기존 뉴스레터·PIC 지식 활용 | 임베딩 + 벡터 검색 |
 | §3.4 Progress Tracker 자동화 | 법인 사이트맵 기반 신규 콘텐츠 자동 트래킹 | 크롤러 + 리더빌리티 + 승인 UI |
-| §3.5 리포트 생성 에이전트화 | 사실 조회·검증·자기 수정 | Claude API 도구 호출 + 검증 루프 |
+| §3.5 리포트 생성 에이전트화 | 사실 조회·검증·자기 수정 + 생성 이력 관리 | Claude API 도구 호출 + 검증 루프 |
+| §3.6 운영·거버넌스 | 권한·알림·감사 | 롤 기반 권한 + Outlook/Teams 알림 + 감사 로그 |
 
 각 축의 상세는 아래.
 
@@ -184,6 +185,7 @@ flowchart LR
 | BigQuery 팩트·차원 | 정제된 수치 + 제품·국가·토픽·프롬프트 마스터 |
 | BigQuery 리포트 마트 | 대시보드용 일·주·월 집계 |
 | 브릿지 API | BigQuery 집계 → 기존 sync-data JSON으로 변환 |
+| **데이터 신선도 배지** | 각 편집 화면 상단에 "데이터 최신화: N시간 전" · "⚠️ 24시간 경과" 표시로 stale 방지 |
 
 ```mermaid
 flowchart LR
@@ -229,8 +231,6 @@ flowchart LR
 | 승인 워크플로 | Draft → Review → Active → Deprecated |
 | 내보내기 | CSV / XLSX (스타일 포함) |
 | 가져오기 | CSV/XLSX 일괄 업로드, dry-run 검증 후 반영 |
-| **성과 연계 (추가 제안)** | 프롬프트별 "인용 획득 수"·"LG 언급률"을 BigQuery에서 자동 산출해 프롬프트 성능 랭킹 표시 |
-| **프롬프트 A/B 실험 (추가 제안)** | 동일 의도 프롬프트 2개를 동시에 돌려 엔진 응답의 우세 측정 |
 
 ---
 
@@ -256,11 +256,6 @@ flowchart LR
 | ⑤ 메타 태깅 | country/product/topic/cej/period/source 자동 분류 (Claude 호출) |
 | ⑥ 품질 검수 | 관리자 UI에서 잘못 태깅된 항목 수정 |
 
-**추가 제안 기능**
-- **인용 근거 링크**: 생성된 인사이트 옆에 참조된 청크 클릭으로 원문 바로 보기
-- **연관 메모 추천**: 특정 제품·국가 편집 중 관련 PIC 메모 자동 사이드바 표시
-- **stale 경고**: 3개월 이상 된 지식이 참조됐을 때 "이 자료는 오래됨" 배지
-
 ---
 
 ### 3.4 Progress Tracker 자동화
@@ -279,6 +274,7 @@ flowchart LR
 | ⑥ 검토 큐 적재 | BigQuery `tracker_intake` |
 | ⑦ 담당자 리뷰 | "Progress Tracker 대상?" 체크박스 UI |
 | ⑧ 자동 등록 | 체크된 URL → 과제 목록에 편입, 법인·카테고리·게시일 자동 기입 |
+| ⑨ 실적 입력 담당자 배정 | 법인별 **실적 입력 담당자**에게 자동 과제 할당 → 월간 실적 업데이트 의무화 |
 
 ```mermaid
 flowchart LR
@@ -301,10 +297,10 @@ flowchart LR
   UI -- 체크된 항목 --> PT
 ```
 
-**추가 제안 기능**
-- **리더빌리티 변화 추적**: 동일 URL이 재작성될 때 점수 추이 그래프
-- **번역 품질 검증**: EN 원본과 다국어 번역본의 리더빌리티 갭 자동 측정
-- **SEO 체크리스트**: meta description·H 구조·alt 텍스트·schema.org JSON-LD 존재 여부
+**실적 입력 담당자 롤**
+- 법인별로 지정된 담당자에게 신규 과제가 자동 할당됨
+- 담당자는 편집 화면에서 **자신에게 할당된 과제 목록**과 입력 상태(미입력·진행중·완료)를 본다
+- 월간 입력 누락은 §3.6의 Outlook/Teams 알림으로 리마인드
 
 ---
 
@@ -320,28 +316,75 @@ flowchart LR
 | 수치 재검증 자동화 | 본문 수치 일치 확인 후 재생성 | 정규식 추출 → 도구 결과 대조 → 재호출 (최대 2회) |
 | 관찰성 로그 | 비용·품질 수치 추적 | `usage.input_tokens`/`output_tokens`/latency/cost → BigQuery `logs.insight_runs` |
 | 프롬프트 버전 관리 | A/B 평가·롤백 | `prompts/v{N}/` 디렉터리 + AI Settings 스위치 |
+| **리포트 생성 이력 대시보드** | 호출 수·비용·retry율·성공률 시계열 추적 | `logs.insight_runs` 기반 Looker Studio 대시보드, 관리자 UI에서도 조회 |
+| **섹션 잠금 (lock)** | 담당자가 완료한 섹션은 재생성 방지 | 잠금 해제 시 감사 로그 기록 (§3.6과 연동) |
+| **다중 LLM 비교 (옵션)** | Claude·GPT·Gemini 응답을 나란히 (모델 선정·디버깅 목적) | `/admin/ai-settings`에서 비교 모드 활성화 시 병렬 호출 |
 
 ---
 
-### 3.6 추가 제안 기능 (전반)
+### 3.6 운영·거버넌스
 
-기존 5개 축 외에, 현행 운영에 실질적 가치가 있을 기능들:
+**목적**: 누가 무엇을 할 수 있는지, 무엇이 언제 알려지고, 누가 언제 어떤 변경을 했는지를 체계화한다.
 
-| 분류 | 기능 | 효과 |
+#### (1) 롤 기반 권한
+
+| 롤 | 권한 |
+|---|---|
+| **Viewer (임원·열람자)** | 게시된 대시보드·뉴스레터 열람 |
+| **Editor (마케터)** | 측정값·뉴스레터·대시보드 편집, AI 인사이트 생성 |
+| **Approver (PM·팀장)** | Editor 권한 + 프롬프트 승인(`draft→active`), 뉴스레터 발송 승인 |
+| **Tracker Contributor (실적 입력 담당자)** | 자신에게 할당된 Progress Tracker 과제만 실적 입력·조회 |
+| **Admin** | 롤 관리·IP 화이트리스트·AI 설정·감사 로그 열람 |
+
+권한은 `audit_logs`에 모든 액션을 기록한다 (§3.6-(3)).
+
+#### (2) Outlook/Teams 기반 알림
+
+기존 `Outlook/Teams` 언급을 모두 제거하고, **Microsoft 365 환경 (Outlook·Teams)** 기반 알림으로 통합.
+
+| 알림 경로 | 사용처 | 구현 |
 |---|---|---|
-| 알림 | **Slack 통합 알림 센터** | 동기화 실패·비용 초과·엔진 응답 이상·월간 초안 완료를 Slack 채널로 |
-| 권한 | **롤 기반 권한 (Viewer·Editor·Approver)** | 임원은 대시보드만, 마케터는 편집까지, PM은 승인까지 |
-| 거버넌스 | **발행 승인 워크플로** | 월간 뉴스레터 발송 전 2인 이상 승인 필요 옵션 |
-| 협업 | **섹션별 코멘트** | 임원이 뉴스레터 특정 섹션에 피드백 남기기 (👍/👎 + 텍스트) |
-| 분석 | **리포트 생성 이력 대시보드** | 호출 수·비용·retry율·thumbs_up 비율 시계열 |
-| 실험 | **다중 LLM 비교 뷰** | 같은 프롬프트로 Claude·GPT·Gemini 응답을 나란히 (디버깅·모델 선정) |
-| UX | **섹션 잠금(lock)** | 담당자가 완료한 섹션은 재생성 방지, 잠금 해제 시 감사 로그 |
-| 경영 보고 | **임원용 모바일 뷰** | 대시보드 핵심 KPI를 모바일 친화 레이아웃으로 |
-| 국가 | **다국가 응답 비교** | 동일 프롬프트의 국가별 응답 차이를 한 화면에 |
-| 품질 | **독자 피드백 수집** | 발송된 뉴스레터 이메일 하단에 만족도 투표(원클릭) |
-| 품질 | **팩트 태깅** | 본문 문장마다 "이 수치는 어떤 도구 호출에서 왔나" 태그 및 감사 |
-| 운영 | **데이터 신선도 배지** | 편집 화면 상단에 "데이터 최신화: N시간 전" 배지 |
-| 보안 | **감사 로그 뷰어** | 관리자에서 최근 100건의 변경 이력 열람 |
+| **Outlook 이메일** | 월간 초안 준비 완료, 예산 초과, 보안 이상, 뉴스레터 발송 실패 | SMTP → Exchange Online |
+| **Microsoft Teams 채널 카드** | 자동 수집 실패, 엔진 응답 편차, Progress Tracker 실적 입력 리마인드 | **Teams Incoming Webhook** (Adaptive Card JSON POST) |
+| **개인 Teams 챗** | 실적 입력 담당자에게 과제 할당 알림 | Graph API (차후 단계) |
+
+운영 시나리오 예:
+- 매월 1일 06:00 — 월간 초안 완료 → 담당자 Outlook + Approver Teams 채널
+- 주간 금요일 17:00 — 실적 미입력 과제 있는 담당자에게 Teams 리마인드
+- 이벤트 — LLM 비용 상한 80%/100% 도달 → Admin Teams 채널 경고
+
+#### (3) 감사 로그 뷰어 (최근 1,000건)
+
+| 속성 | 설명 |
+|---|---|
+| 저장 | BigQuery `logs.audit_logs` (append-only) |
+| 기록 대상 | 로그인·로그아웃, 프롬프트·롤·AI 설정·IP 화이트리스트 변경, 게시·발송, 섹션 잠금/해제, Archives 수정 |
+| 필드 | `ts`, `user`, `action`, `target_id`, `before` / `after` (JSON), `ip`, `user_agent` |
+| UI | `/admin/audit` — **최근 1,000건** 테이블 (사용자·액션·대상·시각 필터) |
+| 내보내기 | CSV/XLSX 다운로드 |
+| 보존 | BigQuery 장기 저장 90일 + Cloud Storage 아카이브 1년 |
+
+```mermaid
+flowchart LR
+  classDef ui fill:#FEF3C7,stroke:#B45309,color:#78350F
+  classDef svc fill:#FCE7F3,stroke:#BE185D,color:#831843
+  classDef store fill:#D1FAE5,stroke:#047857,color:#064E3B
+  classDef ext fill:#E0E7FF,stroke:#4338CA,color:#312E81
+
+  편집[편집·관리 화면]:::ui
+  서버[웹 서버]:::svc
+  권한[롤 기반 권한 체크]:::svc
+  감사[감사 로그 적재]:::svc
+  알림[Outlook/Teams 알림 디스패처]:::svc
+
+  Log[BigQuery<br/>audit_logs]:::store
+  Outlook[Outlook SMTP]:::ext
+  Teams[Teams Webhook]:::ext
+
+  편집 --> 서버 --> 권한
+  권한 -- 허용 --> 감사 --> Log
+  권한 -- 이벤트 --> 알림 --> Outlook & Teams
+```
 
 ---
 
@@ -397,7 +440,7 @@ flowchart LR
 | 빌드 | 수동 `npm run build` → Render | GitHub Actions → Artifact Registry → Cloud Run |
 | 구성 관리 | 환경변수 산재 | Secret Manager + Terraform |
 | 언어 | JS | 점진적 TS (shared → server → editors) |
-| 모니터링 | Render 기본 로그 | Cloud Monitoring + Slack 알림 + Looker Studio |
+| 모니터링 | Render 기본 로그 | Cloud Monitoring + Outlook/Teams 알림 + Looker Studio |
 
 ---
 
@@ -422,7 +465,7 @@ flowchart TD
   생성[⑤ 섹션별 본문 생성<br/>Claude API]:::agent
   검증[⑥ 수치 재검증]:::agent
   초안[⑦ 뉴스레터 초안 저장]:::auto
-  알림[⑧ 담당자 알림 (Slack)]:::auto
+  알림[⑧ 담당자 알림 (Outlook/Teams)]:::auto
 
   검토[⑨ 담당자 검토·미세 편집]:::human
   승인[⑩ 승인 + 발송 예약]:::human
@@ -438,10 +481,12 @@ flowchart TD
 | 지점 | 담당자가 하는 일 | 빈도 |
 |---|---|---|
 | Progress Tracker 인테이크 | 신규 URL이 트래킹 대상인지 체크 | 매주 10분 |
+| Progress Tracker 실적 입력 | 할당된 과제의 월간 실적 기입 | 월 1회 (법인 담당자) |
 | 프롬프트 관리 | 신규 프롬프트 승인·수정 | 월 1회 15분 |
 | 지식 허브 | 메모 업로드 + 잘못 태깅된 청크 교정 | 수시 |
 | 월간 초안 검토 | 자동 생성된 뉴스레터 읽고 승인 | 월 1회 15~20분 |
-| 이상 알림 대응 | 엔진 응답 이상·비용 초과 | 이벤트 발생 시 |
+| 감사 로그 확인 | 최근 1,000건 이상 이벤트 점검 | 월 1회 |
+| 이상 알림 대응 | 엔진 응답 이상·비용 초과 (Outlook/Teams 수신) | 이벤트 발생 시 |
 
 ### 5.3 기대 효과
 
@@ -470,12 +515,12 @@ flowchart TD
 | P2 | 2주 | GCP 기초 세팅 | K5·K16·K17 (상수·CI·audit) |
 | P3 | 3주 | 데이터 자동 수집 MVP | K1·K2 (핸들러 분해·프롬프트 버전) |
 | P4 | 2주 | 브릿지 연동 | K6·K8 (단위 테스트·Zod) |
-| P5 | 2주 | 프롬프트 관리 통합 | K7·SEC4 (integration·rate limit) |
-| P6 | 3주 | 지식 허브 RAG | K10·SEC2·SEC8 (템플릿 분리·CSP·감사 로그) |
-| P7 | 3주 | Progress Tracker 자동화 | K9 (TS 도입 1차) |
-| P8 | 3주 | 에이전트화 (도구·검증) | K11·SEC3 (server.js 분리·Secret Manager) |
-| P9 | 2주 | 월간 자동 초안 | K12·SEC9 (Redis 이관) |
-| P10 | 2주 | 최종 루프 통합 | K13·전면 검증 |
+| P5 | 2주 | 프롬프트 관리 통합 + **롤 기반 권한 1차** | K7·SEC4 (integration·rate limit) |
+| P6 | 3주 | 지식 허브 RAG + **Outlook/Teams 알림 디스패처** | K10·SEC2·SEC8 (템플릿 분리·CSP·감사 로그) |
+| P7 | 3주 | Progress Tracker 자동화 + **실적 입력 담당자 롤** | K9 (TS 도입 1차) |
+| P8 | 3주 | 에이전트화 (도구·검증) + **리포트 생성 이력 대시보드**·**섹션 잠금** | K11·SEC3 (server.js 분리·Secret Manager) |
+| P9 | 2주 | 월간 자동 초안 + **감사 로그 뷰어 (1,000건)** | K12·SEC9 (Redis 이관) |
+| P10 | 2주 | 최종 루프 통합 + **다중 LLM 비교 (옵션)** | K13·전면 검증 |
 
 ---
 
@@ -511,4 +556,4 @@ flowchart TD
 
 ---
 
-*문서 버전 v8.0 · 2026-04-24*
+*문서 버전 v9.0 · 2026-04-24*

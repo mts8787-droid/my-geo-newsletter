@@ -129,7 +129,7 @@
 | **Cloud Trace** | API 요청 분산 추적 |
 | **Error Reporting** | 예외 자동 그룹화 |
 | **Looker Studio** | `logs.insight_runs` 시각화 (비용·품질·토큰 추이) |
-| **Slack Webhook** | 중요 알림 연동 (예산 초과·작업 실패·월간 초안 완료) |
+| **Outlook SMTP + Teams Webhook** | 중요 알림 연동 (예산 초과·작업 실패·월간 초안 완료·실적 입력 리마인드) |
 | **BigQuery `audit_logs`** | 게시·프롬프트·설정 변경 감사 |
 
 **예산 알림**: GCP Billing Budget 월 $300 → 50%/80%/100% 단계 알림 + 100% 시 자동 API 차단 옵션.
@@ -145,7 +145,7 @@
 | **Perplexity** | 측정 엔진 | Enterprise API 계약 필요 |
 | **OpenAI (ChatGPT)** | 측정 엔진 + 폴백 임베딩 | API 키 |
 | **Gmail SMTP** | 뉴스레터 발송 | OAuth2 앱 비밀번호 |
-| **Slack** | 알림 수신 | Incoming Webhook URL |
+| **Outlook/Teams** | 알림 수신 | Incoming Webhook URL |
 | **GitHub** | 소스 레포 + Actions CI | Private repo |
 | **Cloudflare (선택)** | 글로벌 CDN·DDoS | Cloud Armor로 대체 가능 |
 
@@ -273,7 +273,7 @@ terraform/
 ### Step 5 — 관찰성·알림
 - [ ] Looker Studio 대시보드 (`logs.insight_runs` 기반)
 - [ ] Cloud Monitoring 알림 정책 (작업 실패·예산·응답 이상)
-- [ ] Slack Incoming Webhook 연동
+- [ ] Outlook/Teams Incoming Webhook 연동
 
 ### Step 6 — 보안 강화
 - [ ] Cloud Armor 규칙 적용
