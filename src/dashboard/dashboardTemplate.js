@@ -2642,18 +2642,26 @@ function filterTrend(selBU,selProd,selCountry){
     return;
   }
 
-  // 다중 국가 평균 데이터 계산 (국가별 주간 데이터 없으면 Total 폴백)
+  // 다중 국가 평균 데이터 계산 (국가별 주간 데이터 없으면 Total 폴백, Total도 없으면 아무 국가)
+  function _pickAnyCountry(prodData){
+    var keys=Object.keys(prodData||{});
+    for(var i=0;i<keys.length;i++){
+      var v=prodData[keys[i]];
+      if(v&&Object.keys(v).length)return v;
+    }
+    return {};
+  }
   function _avgWeeklyData(prodId){
     var prodData=_weeklyAll[prodId]||{};
     if(!trendCountries){
       var d=prodData[trendCnty];
-      if(!d||!Object.keys(d).length)d=prodData['Total']||prodData['TTL']||{};
+      if(!d||!Object.keys(d).length)d=prodData['Total']||prodData['TTL']||_pickAnyCountry(prodData);
       return d;
     }
     var allBrands={};
     trendCountries.forEach(function(c){
       var cData=prodData[c];
-      if(!cData||!Object.keys(cData).length)cData=prodData['Total']||prodData['TTL']||{};
+      if(!cData||!Object.keys(cData).length)cData=prodData['Total']||prodData['TTL']||_pickAnyCountry(prodData);
       Object.keys(cData).forEach(function(brand){
         if(!allBrands[brand])allBrands[brand]=[];
         allBrands[brand].push(cData[brand]||[]);
@@ -2696,7 +2704,8 @@ function filterTrend(selBU,selProd,selCountry){
     if(!rows)return;hasTrend=true;
     html+='<div class="bu-group" data-bu="'+b+'" style="margin-bottom:20px"><div class="bu-header"><span class="bu-label">'+b+'</span></div>'+rows+'</div>';
   });
-  if(!hasTrend){container.innerHTML='';return}
+  // 필터 변경 후 데이터가 비었을 때 컨테이너를 비우지 않음 — 이전 SSR/렌더 유지
+  if(!hasTrend)return;
   var title=_lang==='en'?'Weekly Competitor Trend':'주간 경쟁사 트렌드';
   var sub=_wLabels[0]+'–'+_wLabels[_wLabels.length-1]+' ('+_wLabels.length+(_lang==='en'?' weeks':'주')+')';
   var cntyLabel=trendCountries?(' — '+trendCountries.join(', ')+' avg'):(trendCnty==='Total'?'':' — '+trendCnty);
