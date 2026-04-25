@@ -1,16 +1,14 @@
 // ─── Translate API — /api/translate ──────────────────────────────────────
 import { Router } from 'express'
 import translate from 'google-translate-api-x'
+import { validateBody, TranslateSchema } from '../lib/validate.js'
 
 const TRANSLATE_BATCH = 20
 
 export const translateRouter = Router()
 
-translateRouter.post('/api/translate', async (req, res) => {
-  const { texts, from, to } = req.body || {}
-  if (!texts || !Array.isArray(texts) || !to) {
-    return res.status(400).json({ ok: false, error: 'texts (array), to 필수' })
-  }
+translateRouter.post('/api/translate', validateBody(TranslateSchema), async (req, res) => {
+  const { texts, from, to } = req.body
   try {
     const translated = []
     for (let i = 0; i < texts.length; i += TRANSLATE_BATCH) {

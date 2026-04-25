@@ -13,12 +13,15 @@ import {
 } from '../src/shared/insightAgent.js'
 import { readArchives, readAiSettings } from '../lib/storage.js'
 import { appendInsightRun } from '../lib/insight-runs.js'
+import { logFor } from '../lib/logger.js'
+import { validateBody, InsightPostSchema } from '../lib/validate.js'
+
+const log = logFor('insight')
 
 export const insightRouter = Router()
 
-insightRouter.post('/api/generate-insight', async (req, res) => {
-  const { type, data, lang, rules } = req.body || {}
-  if (!type || !data) return res.status(400).json({ ok: false, error: 'type, data 필수' })
+insightRouter.post('/api/generate-insight', validateBody(InsightPostSchema), async (req, res) => {
+  const { type, data, lang, rules } = req.body
   const apiKey = process.env.ANTHROPIC_API_KEY
   if (!apiKey) return res.status(500).json({ ok: false, error: 'ANTHROPIC_API_KEY가 설정되지 않았습니다' })
 
@@ -46,7 +49,12 @@ insightRouter.post('/api/generate-insight', async (req, res) => {
       maxTokens: aiSettings.maxTokens || INSIGHT_DEFAULT_MAX_TOKENS,
     })
 
-    console.log(`[INSIGHT] type=${type} archiveKey=${archiveKey} model=${model} in=${result.inputTokens} out=${result.outputTokens} latency=${result.latencyMs}ms cost=$${result.costUsd} stop=${result.stopReason}`)
+    log.info({
+      type, archiveKey, model, lang: lang || 'ko',
+      inputTokens: result.inputTokens, outputTokens: result.outputTokens,
+      latencyMs: result.latencyMs, costUsd: result.costUsd,
+      stopReason: result.stopReason,
+    }, 'insight ok')
     appendInsightRun({
       type, archiveKey, model, lang: lang || 'ko',
       inputTokens: result.inputTokens, outputTokens: result.outputTokens,
@@ -58,7 +66,7 @@ insightRouter.post('/api/generate-insight', async (req, res) => {
   } catch (err) {
     const latencyMs = Date.now() - t0
     const { kind, httpStatus } = classifyClaudeError(err)
-    console.error(`[INSIGHT] ${kind} type=${type} latency=${latencyMs}ms err=${err.message}`)
+    log.error({ kind, type, latencyMs, err: err.message }, 'insight failed')
     appendInsightRun({
       type, archiveKey, model, lang: lang || 'ko',
       inputTokens: 0, outputTokens: 0, latencyMs, costUsd: 0,

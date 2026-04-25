@@ -1,6 +1,7 @@
 // ─── Email API (월간 뉴스레터 발송) — /api/send-email ──────────────────────
 import { Router } from 'express'
 import nodemailer from 'nodemailer'
+import { validateBody, SendEmailSchema } from '../lib/validate.js'
 
 let _smtpTransporter = null
 function getSmtpTransporter() {
@@ -20,10 +21,9 @@ function getSmtpTransporter() {
 
 export const emailRouter = Router()
 
-emailRouter.post('/api/send-email', (req, res) => {
+emailRouter.post('/api/send-email', validateBody(SendEmailSchema), (req, res) => {
   console.log('[EMAIL] Route hit')
-  const { to, subject, html } = req.body || {}
-  if (!to || !subject || !html) return res.status(400).json({ ok: false, error: 'to, subject, html 필수' })
+  const { to, subject, html } = req.body
 
   const transporter = getSmtpTransporter()
   if (!transporter) return res.status(500).json({ ok: false, error: 'SMTP 설정이 없습니다.' })

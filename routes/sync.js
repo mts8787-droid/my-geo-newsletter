@@ -5,6 +5,7 @@ import {
   readModeSyncData, writeModeSyncData,
 } from '../lib/storage.js'
 import { validateMode } from '../lib/middleware.js'
+import { validateBody, SyncDataPostSchema } from '../lib/validate.js'
 
 export const STALE_THRESHOLD_MS = 24 * 60 * 60 * 1000
 
@@ -17,9 +18,8 @@ syncRouter.get('/api/sync-data', (req, res) => {
   res.json({ ok: true, data })
 })
 
-syncRouter.post('/api/sync-data', (req, res) => {
-  const { data } = req.body || {}
-  if (!data) return res.status(400).json({ ok: false, error: 'data 필수' })
+syncRouter.post('/api/sync-data', validateBody(SyncDataPostSchema), (req, res) => {
+  const { data } = req.body
   writeSyncData({ ...data, savedAt: Date.now() })
   console.log('[SYNC-DATA] Saved at', new Date().toISOString())
   res.json({ ok: true })
@@ -35,10 +35,9 @@ syncRouter.get('/api/:mode/sync-data', validateMode, (req, res) => {
   res.json({ ok: true, data, savedAt, ageMs, stale, staleThresholdMs: STALE_THRESHOLD_MS })
 })
 
-syncRouter.post('/api/:mode/sync-data', validateMode, (req, res) => {
+syncRouter.post('/api/:mode/sync-data', validateMode, validateBody(SyncDataPostSchema), (req, res) => {
   const { mode } = req.params
-  const { data } = req.body || {}
-  if (!data) return res.status(400).json({ ok: false, error: 'data 필수' })
+  const { data } = req.body
   writeModeSyncData(mode, { ...data, savedAt: Date.now() })
   console.log(`[SYNC-DATA:${mode}] Saved at`, new Date().toISOString())
   res.json({ ok: true })

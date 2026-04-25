@@ -4,6 +4,7 @@ import { Router } from 'express'
 import { readFileSync, writeFileSync, existsSync, unlinkSync } from 'fs'
 import { join } from 'path'
 import { DATA_DIR, PUB_DIR } from '../lib/storage.js'
+import { validateBody, PublishPostSchema, TrackerPublishSchema } from '../lib/validate.js'
 
 // ─── 채널별 슬러그·메타 파일 매핑 ──────────────────────────────────────────
 export const CHANNELS = {
@@ -72,8 +73,7 @@ function deleteIfExists(path, tag) {
 // ─── 채널별 POST/GET/DELETE 핸들러 빌더 ───────────────────────────────────
 function buildPostHandler(ch) {
   return (req, res) => {
-    const { htmlKo, htmlEn, title } = req.body || {}
-    if (!htmlKo || !htmlEn) return res.status(400).json({ ok: false, error: 'htmlKo, htmlEn 필수' })
+    const { htmlKo, htmlEn, title } = req.body
     try {
       const koPath = join(PUB_DIR, `${ch.koSlug}.html`)
       const enPath = join(PUB_DIR, `${ch.enSlug}.html`)
@@ -111,23 +111,23 @@ function buildDeleteHandler(ch) {
 export const publishRouter = Router()
 
 // 5개 채널 일괄 등록 (path는 /api/publish[-{key}])
-publishRouter.post('/api/publish', buildPostHandler(CHANNELS.newsletter))
+publishRouter.post('/api/publish', validateBody(PublishPostSchema), buildPostHandler(CHANNELS.newsletter))
 publishRouter.get('/api/publish', buildGetHandler(CHANNELS.newsletter))
 publishRouter.delete('/api/publish', buildDeleteHandler(CHANNELS.newsletter))
 
-publishRouter.post('/api/publish-dashboard', buildPostHandler(CHANNELS.dashboard))
+publishRouter.post('/api/publish-dashboard', validateBody(PublishPostSchema), buildPostHandler(CHANNELS.dashboard))
 publishRouter.get('/api/publish-dashboard', buildGetHandler(CHANNELS.dashboard))
 publishRouter.delete('/api/publish-dashboard', buildDeleteHandler(CHANNELS.dashboard))
 
-publishRouter.post('/api/publish-citation', buildPostHandler(CHANNELS.citation))
+publishRouter.post('/api/publish-citation', validateBody(PublishPostSchema), buildPostHandler(CHANNELS.citation))
 publishRouter.get('/api/publish-citation', buildGetHandler(CHANNELS.citation))
 publishRouter.delete('/api/publish-citation', buildDeleteHandler(CHANNELS.citation))
 
-publishRouter.post('/api/publish-monthly-report', buildPostHandler(CHANNELS['monthly-report']))
+publishRouter.post('/api/publish-monthly-report', validateBody(PublishPostSchema), buildPostHandler(CHANNELS['monthly-report']))
 publishRouter.get('/api/publish-monthly-report', buildGetHandler(CHANNELS['monthly-report']))
 publishRouter.delete('/api/publish-monthly-report', buildDeleteHandler(CHANNELS['monthly-report']))
 
-publishRouter.post('/api/publish-visibility', buildPostHandler(CHANNELS.visibility))
+publishRouter.post('/api/publish-visibility', validateBody(PublishPostSchema), buildPostHandler(CHANNELS.visibility))
 publishRouter.get('/api/publish-visibility', buildGetHandler(CHANNELS.visibility))
 publishRouter.delete('/api/publish-visibility', buildDeleteHandler(CHANNELS.visibility))
 
@@ -148,9 +148,8 @@ publishRouter.get('/api/publish-history', (req, res) => {
 const TRACKER_SNAP = join(DATA_DIR, 'tracker-snapshot.json')
 const TRACKER_META = join(DATA_DIR, 'tracker-meta.json')
 
-publishRouter.post('/api/publish-tracker', (req, res) => {
-  const { data, dashboard, month } = req.body || {}
-  if (!data) return res.status(400).json({ ok: false, error: 'data 필수' })
+publishRouter.post('/api/publish-tracker', validateBody(TrackerPublishSchema), (req, res) => {
+  const { data, dashboard, month } = req.body
   try {
     const snap = { ...data, _dashboard: dashboard || null, _month: month || null }
     writeFileSync(TRACKER_SNAP, JSON.stringify(snap, null, 2))
