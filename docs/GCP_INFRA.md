@@ -87,11 +87,14 @@
 
 | 서비스 | 사용처 | 비용 |
 |---|---|---|
-| **Anthropic Claude API** (외부, 유일한 LLM) | 리포트 생성·메타 태깅·품질 평가·도구 호출 | 호출당 과금 (§14 참고) |
-| **Vertex AI — text-embedding-005** | 지식 허브 임베딩 (LLM 아님, 임베딩 전용) | $0.02 / 1M 토큰 |
+| **Claude on Vertex AI Model Garden** (권장) | 리포트 생성·메타 태깅·품질 평가·도구 호출 — GCP 경계 안에서 호출 | 호출당 과금 (§14 참고) |
+| **Anthropic Claude API** (직접) | 폐쇄 환경 도입 전 임시 경로 | 동일 단가 |
+| **Vertex AI — text-embedding-005** | 지식 허브 임베딩 (LLM 아님, 임베딩 전용) — Private Google Access | $0.02 / 1M 토큰 |
+| **자체 호스팅 임베딩 (옵션)** | BGE-large·E5-large on GKE/GCE — 사내 GPU 인프라가 가능할 때 | GPU 비용 가변 |
+| **DLP API (옵션)** | 업로드 문서에서 PII·기밀 라벨 자동 검출·마스킹 | 호출당 |
 
-> 본 시스템은 **Claude API 단일 LLM 정책**. 다른 LLM(GPT·Gemini 등)에 호출하거나 응답을 교차 검증하지 않는다.
-> Vertex AI는 임베딩 모델만 사용하며, 모델 응답 생성에는 관여하지 않는다.
+> **단일 LLM 정책**: 다른 LLM(GPT·Gemini 등)에 호출·교차 검증하지 않는다.
+> **폐쇄 환경 정책**: 담당자 암묵지·사내 보고서를 다루는 경로는 VPC Service Controls 경계 내부에서만 동작 (§8 참고).
 
 ---
 
@@ -111,12 +114,16 @@
 
 | 계층 | 구성 |
 |---|---|
-| **VPC** | 기본 `default` (규모상 충분). Private Service Access로 Cloud SQL 연결 |
+| **VPC** | `geo-report-vpc` (서비스 사이 사설 IP 통신). Cloud SQL 연결은 Private Service Access |
+| **VPC Service Controls (지식 허브 보안 경계)** | BigQuery·Cloud SQL·Vertex AI·Secret Manager·GCS를 Perimeter 안에 가두어, 경계 외부로의 데이터 송신을 차단. 담당자 암묵지·보고서 데이터가 사외로 나가지 않도록 함 |
+| **Private Service Connect** | Vertex AI·BigQuery 호출을 사설 IP로만 라우팅 (인터넷 미경유) |
+| **Private Google Access** | Cloud Run Job이 임베딩·Claude 호출 시 공인 IP 미사용 |
 | **Cloud Armor** | web-api Cloud Run 앞에 WAF (OWASP 규칙셋 + rate limit) |
 | **Identity-Aware Proxy (IAP)** | `/admin/*` 보호 옵션 (LG SSO 연동 가능) |
 | **Cloud CDN** | 게시본 정적 HTML 캐시 (선택) |
 | **DNS** | Cloud DNS — `geo-report.lge.com` |
 | **TLS** | Google-managed 인증서 |
+| **DLP API (선택)** | 업로드 문서의 PII 자동 검출·마스킹 |
 
 ---
 
@@ -372,6 +379,7 @@ flowchart LR
 **핵심 설계 원칙**
 
 - **단일 LLM 정책** — 시스템 내부에서 응답을 생성하는 LLM은 **Claude API 하나뿐**. 다른 엔진 호출이나 응답 교차 검증을 두지 않아 운영·비용·검증 부담을 최소화
+- **폐쇄 환경 RAG** — 담당자 암묵지·사내 보고서를 활용하는 지식 허브 + LLM 호출 경로 전체를 **VPC Service Controls 경계** 안에서만 동작시키며, Claude는 Vertex AI Model Garden을 통해 GCP 내부에서 호출. 외부로 사내 데이터가 송신되지 않음
 - **측정값은 SEMrush API에서 직접 적재** — 기존 4단계 수기(Python → CSV → Drive → 시트)를 폐지하고, [`dashboard-raw-data`](https://github.com/mts8787-droid/dashboard-raw-data.git) 레포의 Claude Code 적재 스크립트를 컨테이너화한 `semrush-loader` Cloud Run Job이 매일 새벽 BigQuery에 적재. 구글 시트는 메타·기획 정보 보관용으로만 유지
 - **GCP 단일 플랫폼** — 데이터 창고(BigQuery), 컴퓨트(Cloud Run), 비밀 관리(Secret Manager), 관찰성(Cloud Monitoring)을 GCP로 통일
 - **기존 Render는 단계적 이전** — 초기에는 Render를 그대로 두고 브릿지 API로 BigQuery 결과만 동기화하다가, 안정화된 뒤 Cloud Run으로 컷오버. 에디터·템플릿 코드는 바꾸지 않음
@@ -397,4 +405,4 @@ flowchart LR
 
 ---
 
-*문서 버전 v4.0 · 2026-04-25*
+*문서 버전 v5.0 · 2026-04-25*

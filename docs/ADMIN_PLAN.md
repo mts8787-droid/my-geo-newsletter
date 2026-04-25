@@ -239,7 +239,7 @@ flowchart LR
 | **LLM 사용** | Claude API 단발 호출 (래퍼) | Claude API 단일 + 도구 호출(Tool Use) + 수치 재검증 루프 |
 | **수치 정확성** | 환각 발생 시 PIC가 수동 교정 | `get_metric` 도구로 BigQuery 직접 조회, 불일치 시 자동 재생성 |
 | **과거 발행본 활용** | 12건 전문을 프롬프트에 통째 삽입 | RAG (지식 허브) — 의미 유사 청크 3~5개만 검색 주입 |
-| **PIC 지식 활용** | 시스템 외부에 흩어짐 | 지식 허브에 업로드·임베딩, `search_knowledge` 도구로 활용 |
+| **담당자 암묵지·보고서** | 시스템 외부에 흩어짐 (개인 메모·드라이브·메일) | 지식 허브에 업로드·임베딩, `search_knowledge` 도구로 활용 |
 | **프롬프트 관리** | `Appendix.Prompt List` 시트 + 분산 화면 | BigQuery 마스터(version·status) + 통합 관리 UI |
 | **Progress Tracker** | 수동 과제 등록 | 사이트맵 자동 크롤 → 리더빌리티 검수 → 인테이크 큐 → 실적 입력 담당자 자동 배정 |
 | **권한** | 단일 PIC 비밀번호 | 5개 롤 (Viewer·Editor·Approver·Tracker Contributor·Admin) |
@@ -327,16 +327,17 @@ flowchart LR
 
 ---
 
-### 4.3 지식 허브 (기존 뉴스레터 + PIC 지식 RAG화)
+### 4.3 지식 허브 (기존 뉴스레터 + 담당자 암묵지·보고서 RAG화)
 
 **입력 자료**
 
 | 종류 | 출처 |
 |---|---|
 | 기존 뉴스레터 본문 | archives.json + 신규 발행분 자동 수집 |
-| PIC 메모 | 관리자 UI 업로드 (회의록·경쟁사 분석·고객 피드백) |
-| 제품/시장 레퍼런스 | 사양서·조사 보고서·브랜드 가이드 업로드 |
-| 과거 Q&A | 내부 해석 메모 |
+| **담당자 암묵지** | 회의록·구두 인사이트·내부 채팅 정리 메모 등 그동안 문서화되지 못한 지식 |
+| **공식 보고서** | 월간·분기 GEO 보고서, 경쟁사 분석, 고객 피드백 보고서, 시장 조사 |
+| 제품/시장 레퍼런스 | 사양서·브랜드 가이드·캠페인 자료 |
+| 과거 Q&A | 내부 해석 메모 ("왜 DE RAC가 Q2에 상승했나" 등) |
 
 **처리 파이프라인**
 
@@ -359,6 +360,61 @@ flowchart LR
 | ④ 메타 필터 | country/product 일치 우선 |
 | ⑤ Claude 주입 | `search_knowledge` 도구 호출 결과를 user 메시지에 근거로 삽입 |
 | ⑥ 근거 표시 | 생성 본문 옆에 참조 청크 각주 |
+
+#### 폐쇄 환경 운영 방안
+
+담당자 암묵지·보고서에는 사내 민감 정보가 포함되므로, 지식 허브와 RAG 검색 전 과정이 **사외로 데이터를 송신하지 않는 폐쇄 환경**에서 작동해야 한다. 다음 4개 레이어로 구현한다.
+
+| 레이어 | 구성 | 설명 |
+|---|---|---|
+| **L1 네트워크 격리** | VPC Service Controls + Private Service Connect | BigQuery·Cloud SQL·Vertex AI·Secret Manager를 보안 경계(perimeter)에 가두어, 경계 외부로의 데이터 송신을 차단. 모든 GCP 서비스 호출은 사설 IP로만 통신 |
+| **L2 임베딩 사내화** | Vertex AI 임베딩 모델을 **VPC 내부에서만** 호출 (Private Google Access) | 임베딩 입력 텍스트가 공인 인터넷을 거치지 않음. 더 강한 폐쇄가 필요하면 GCE/GKE 위에 오픈소스 임베딩 모델(BGE-large·E5-large) 직접 호스팅 |
+| **L3 LLM 호출 경로** | **Claude on Vertex AI Model Garden** 사용 | Anthropic 서버 직접 호출 대신, GCP가 중계하는 Claude 엔드포인트를 사용해 데이터가 GCP 보안 경계 안에서만 흐름. 같은 프로젝트 IAM·VPC-SC가 적용됨 |
+| **L4 데이터 분류·마스킹** | DLP API + 업로드 시 자동 PII 스크럽 | 업로드 문서에서 개인정보·회사 기밀 라벨 자동 검출, 임베딩 전 마스킹 (선택) |
+
+**구성 도식**
+
+```mermaid
+flowchart LR
+  classDef peri fill:#FEE2E2,stroke:#B91C1C,color:#7F1D1D,stroke-width:2px
+  classDef gcp fill:#D1FAE5,stroke:#047857,color:#064E3B
+  classDef ext fill:#E0E7FF,stroke:#4338CA,color:#312E81
+
+  Up[담당자 업로드<br/>회의록·보고서]:::ext
+
+  subgraph Peri["VPC Service Controls 보안 경계"]
+    direction LR
+    DLP[DLP API<br/>PII 스크럽]:::gcp
+    KI[knowledge-indexer<br/>Cloud Run Job]:::gcp
+    VAEmb[Vertex AI 임베딩<br/>Private 호출]:::gcp
+    SQL[Cloud SQL pgvector<br/>Private IP]:::gcp
+    BQ[BigQuery<br/>knowledge·logs]:::gcp
+    Agent[리포트 생성 에이전트]:::gcp
+    Claude[Claude on<br/>Vertex AI Model Garden]:::gcp
+  end
+
+  Up -- HTTPS + IAP --> DLP --> KI --> VAEmb --> SQL
+  KI --> BQ
+  Agent -- search_knowledge --> SQL
+  Agent -- Tool Use --> Claude
+  Claude -- 사설 응답 --> Agent
+```
+
+**선택 가능 옵션**
+
+| 옵션 | 적용 효과 | 트레이드오프 |
+|---|---|---|
+| Vertex AI 임베딩 + VPC-SC | GCP 관리형, 설정 간단 | 임베딩 모델은 Google이 운영 (Anthropic·OpenAI보다 사외 노출 적음) |
+| 자체 호스팅 임베딩 (BGE/E5 on GKE/GCE) | 모델 가중치까지 사내 통제, 외부 의존 0 | GPU 인프라·운영 비용 증가, 모델 업그레이드 자체 책임 |
+| Claude on Vertex AI | 데이터가 GCP 경계 안에서만 흐름 | Anthropic 직접 SDK 대비 일부 기능 시차, 호출당 단가 약간 다름 |
+| DLP 자동 마스킹 | PII·기밀 라벨 자동 검출·차단 | False positive 시 정상 문서도 차단될 수 있음 — 검수 큐 필요 |
+
+**권장 도입 순서**
+
+1. **P6 단계** (지식 허브 RAG 도입)에 **Vertex AI 임베딩 + VPC-SC + Private Cloud SQL**을 기본 폐쇄 구성으로 적용
+2. **P8 단계** (에이전트화)에 **Claude on Vertex AI Model Garden**으로 LLM 경로도 폐쇄 경계 안에 포함
+3. PII 민감도가 높은 보고서가 들어오기 시작하면 **DLP API 자동 마스킹** 단계 추가
+4. 사내 보안 정책이 더 엄격해지면 **자체 호스팅 임베딩**으로 마이그레이션
 
 ---
 
@@ -661,4 +717,4 @@ flowchart TD
 
 ---
 
-*문서 버전 v14.0 · 2026-04-25*
+*문서 버전 v15.0 · 2026-04-25*
