@@ -2,7 +2,7 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { resolve, dirname } from 'path'
 import { fileURLToPath } from 'url'
-import { appVersion, serveFontsPlugin, serveHtmlPlugin, gsheetsProxy, apiProxy } from './vite.shared.js'
+import { appVersion, serveFontsPlugin, serveHtmlPlugin, gsheetsProxy, apiProxy, manualChunks } from './vite.shared.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
@@ -17,6 +17,7 @@ export default defineConfig({
     emptyOutDir: true,
     rollupOptions: {
       input: resolve(__dirname, 'dashboard.html'),
+      output: { manualChunks },
     },
   },
   server: {

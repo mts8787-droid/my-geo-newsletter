@@ -152,7 +152,7 @@ export function downloadTemplate(meta, total, products, citations, dotcom = {}) 
 
 // ─── 파싱 공통 ──────────────────────────────────────────────────────────────────
 
-function pct(v) {
+export function pct(v) {
   const raw = String(v ?? '').trim()
   const hasPercent = raw.includes('%')
   const s = raw.replace(/%/g, '').replace(/,/g, '').trim()
@@ -164,7 +164,7 @@ function pct(v) {
   return +n.toFixed(2)
 }
 // 빈 셀은 null로 반환 (주간 트렌드에서 0%로 그리지 않기 위함)
-function pctOrNull(v) {
+export function pctOrNull(v) {
   if (v == null) return null
   const raw = String(v).trim()
   if (raw === '') return null

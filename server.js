@@ -1,6 +1,7 @@
 import express from 'express'
 import crypto from 'crypto'
 import nodemailer from 'nodemailer'
+import sanitizeHtmlLib from 'sanitize-html'
 import translate from 'google-translate-api-x'
 import Anthropic from '@anthropic-ai/sdk'
 import { buildInsightPrompt } from './src/shared/insightPrompts.js'
@@ -25,11 +26,34 @@ import dotenv from 'dotenv'
 
 dotenv.config()
 
-// ─── HTML Sanitizer (strip <script> tags for published pages) ────────────────
+// ─── HTML Sanitizer — sanitize-html 라이브러리 (C7) ─────────────────────────
+// 게시 HTML은 풍부한 인라인 스타일·table 레이아웃이 필요하므로 모든 태그·속성을 허용하되,
+// <script>, on*=, javascript:/data: URL은 차단해 XSS 방지
+const SANITIZE_OPTIONS = {
+  allowedTags: false,           // 모든 HTML 태그 허용 (table·svg·style 등 게시 템플릿용)
+  allowedAttributes: false,     // 모든 속성 허용
+  allowedSchemes: ['http', 'https', 'mailto', 'tel'],
+  allowedSchemesAppliedToAttributes: ['href', 'src', 'cite', 'action'],
+  allowProtocolRelative: false,
+  disallowedTagsMode: 'discard',
+  exclusiveFilter: (frame) => frame.tag === 'script',
+  transformTags: {
+    '*': (tagName, attribs) => {
+      const cleaned = {}
+      for (const [k, v] of Object.entries(attribs || {})) {
+        // on* 인라인 이벤트 핸들러 제거
+        if (/^on/i.test(k)) continue
+        // style 안에 expression/javascript 차단
+        if (k === 'style' && /(javascript:|expression\()/i.test(v)) continue
+        cleaned[k] = v
+      }
+      return { tagName, attribs: cleaned }
+    },
+  },
+}
 function sanitizeHtml(html) {
-  return html.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script\s*>/gi, '')
-             .replace(/\son\w+\s*=\s*["'][^"']*["']/gi, '')
-             .replace(/\son\w+\s*=\s*[^\s>]+/gi, '')
+  if (typeof html !== 'string') return ''
+  return sanitizeHtmlLib(html, SANITIZE_OPTIONS)
 }
 
 const __dirname = dirname(fileURLToPath(import.meta.url))

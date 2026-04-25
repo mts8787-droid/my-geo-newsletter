@@ -6,7 +6,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import dotenv from 'dotenv'
 import { readFileSync, writeFileSync, mkdirSync, existsSync, unlinkSync } from 'fs'
 import { resolve } from 'path'
-import { appVersion, serveFontsPlugin, gsheetsProxy } from './vite.shared.js'
+import { appVersion, serveFontsPlugin, gsheetsProxy, manualChunks } from './vite.shared.js'
 
 dotenv.config()
 
@@ -340,6 +340,11 @@ export default defineConfig({
     __APP_VERSION__: JSON.stringify(appVersion),
   },
   plugins: [react(), serveFontsPlugin(), emailApiPlugin(), translateApiPlugin(), insightApiPlugin(), snapshotsApiPlugin(), gsheetExportPlugin(), publishApiPlugin()],
+  build: {
+    rollupOptions: {
+      output: { manualChunks },
+    },
+  },
   server: {
     proxy: {
       ...gsheetsProxy,

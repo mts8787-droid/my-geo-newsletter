@@ -82,10 +82,13 @@ export async function publishCombinedDashboard(generateDashboardHTML, resolveDat
   ])
   // visibility sync를 기본으로, dashboard sync로 보충 (visibility의 meta/인사이트가 최신)
   const d = { ...(dDash || {}), ...(dVis || {}) }
-  // dashboard에만 있는 데이터 보충 (visibility에 없는 필드)
+  // C15 — dashOnlyKeys 자동화: dashboard에만 있는 키를 자동 보충
+  // (이전에는 수동 배열로 관리해 신규 키 추가 시 누락 위험. 이제 dDash의 모든 키를
+  //  순회하여 d에 누락된 truthy 값을 채워 넣음)
   if (dDash) {
-    const dashOnlyKeys = ['weeklyPR','weeklyPRLabels','weeklyBrandPrompt','weeklyBrandPromptLabels','appendixPrompts','unlaunchedMap','prTopicList','weeklyLabelsFull']
-    dashOnlyKeys.forEach(k => { if (!d[k] && dDash[k]) d[k] = dDash[k] })
+    Object.keys(dDash).forEach(k => {
+      if (d[k] == null && dDash[k] != null) d[k] = dDash[k]
+    })
   }
   // meta는 visibility 우선 + dashboard 보충 (인사이트/period는 visibility가 최신)
   if (dVis?.meta && dDash?.meta) {

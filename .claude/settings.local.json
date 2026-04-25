@@ -71,7 +71,8 @@
       "Bash(sed -i '' 's/'\\\\''US'\\\\'','\\\\''CA'\\\\'','\\\\''UK'\\\\'','\\\\''DE'\\\\'','\\\\''ES'\\\\'','\\\\''MX'\\\\'','\\\\''BR'\\\\'','\\\\''IN'\\\\'','\\\\''AU'\\\\'','\\\\''VN'\\\\''/'\\\\''US'\\\\'','\\\\''CA'\\\\'','\\\\''UK'\\\\'','\\\\''DE'\\\\'','\\\\''ES'\\\\'','\\\\''MX'\\\\'','\\\\''BR'\\\\'','\\\\''AU'\\\\'','\\\\''VN'\\\\'','\\\\''IN'\\\\''/g' src/citation/citationTemplate.js)",
       "Bash(sed -i '' s/US,CA,UK,DE,ES,BR,MX,IN,AU,VN/US,CA,UK,DE,ES,BR,MX,AU,VN,IN/g src/shared/insightPrompts.js)",
       "Bash(npm show:*)",
-      "Bash(wc -l /Users/dubaba/my-geo-project/my-geo-newsletter/src/monthly-report/*)"
+      "Bash(wc -l /Users/dubaba/my-geo-project/my-geo-newsletter/src/monthly-report/*)",
+      "Bash(npm test *)"
     ]
   }
 }

@@ -1,0 +1,154 @@
+import { describe, it, expect } from 'vitest'
+import {
+  ARCHIVE_KEY_MAP,
+  resolveArchiveKey,
+  maskNumbers,
+  buildSystemPrompt,
+  wrapUserPrompt,
+  estimateCostUsd,
+  classifyClaudeError,
+  INSIGHT_DEFAULT_MODEL,
+} from './insightAgent.js'
+
+describe('resolveArchiveKey', () => {
+  it('직접 매핑된 type을 반환', () => {
+    expect(resolveArchiveKey('product', {})).toBe('productInsight')
+    expect(resolveArchiveKey('citation', {})).toBe('citationInsight')
+    expect(resolveArchiveKey('todo', {})).toBe('todoText')
+  })
+
+  it('howToRead + section.includes("국가별 GEO") → cntyHowToRead', () => {
+    expect(resolveArchiveKey('howToRead', { section: '국가별 GEO Visibility' }))
+      .toBe('cntyHowToRead')
+  })
+
+  it('howToRead + section "도메인별" → citDomainHowToRead', () => {
+    expect(resolveArchiveKey('howToRead', { section: '도메인별 Citation' }))
+      .toBe('citDomainHowToRead')
+  })
+
+  it('howToRead + 매칭 없으면 그대로 howToRead', () => {
+    expect(resolveArchiveKey('howToRead', { section: '없는섹션' })).toBe('howToRead')
+  })
+
+  it('알 수 없는 type은 그대로 반환', () => {
+    expect(resolveArchiveKey('myCustomType', {})).toBe('myCustomType')
+  })
+})
+
+describe('maskNumbers', () => {
+  it('퍼센트 수치를 [N]%로 마스킹', () => {
+    expect(maskNumbers('38.2%')).toBe('[N]%')
+    expect(maskNumbers('전체 81.2%')).toBe('전체 [N]%')
+  })
+
+  it('%p (포인트) 마스킹', () => {
+    expect(maskNumbers('+2.5%p')).toBe('+[N]%p')
+    expect(maskNumbers('-1.2%p')).toBe('-[N]%p')
+  })
+
+  it('건수 마스킹', () => {
+    expect(maskNumbers('12,300건')).toBe('[N]건')
+  })
+
+  it('빈 값/null/undefined 그대로 반환', () => {
+    expect(maskNumbers('')).toBe('')
+    expect(maskNumbers(null)).toBe(null)
+    expect(maskNumbers(undefined)).toBe(undefined)
+  })
+})
+
+describe('buildSystemPrompt', () => {
+  it('템플릿이 있을 때 템플릿 블록 포함', () => {
+    const sp = buildSystemPrompt({
+      rules: '- 한국어\n- 간결',
+      lang: 'ko',
+      maskedTemplate: '전체 [N]%로 [N]%p 상승',
+      maskedPastExamples: '\n--- [3월호] ---\n[N]% 달성',
+    })
+    expect(sp).toContain('한국어로 작성')
+    expect(sp).toContain('전체 [N]%로 [N]%p 상승')
+    expect(sp).toContain('기준 템플릿')
+  })
+
+  it('템플릿 없고 예시만 있을 때 examples-only 블록', () => {
+    const sp = buildSystemPrompt({
+      rules: '간결',
+      lang: 'en',
+      maskedTemplate: '',
+      maskedPastExamples: '\n--- [Apr] ---\n[N]%',
+    })
+    expect(sp).toContain('영어로 작성')
+    expect(sp).toContain('과거 리포트의 문체와 구조만 참고')
+    // 템플릿 블록은 포함되지 않아야 함 (구체적 매칭)
+    expect(sp).not.toContain('[기준 템플릿 — 문장 구조만 참고')
+  })
+
+  it('보안 규칙 (untrusted_data 무시)이 항상 포함됨', () => {
+    const sp = buildSystemPrompt({ rules: '', lang: 'ko' })
+    expect(sp).toContain('untrusted_data')
+    expect(sp).toContain('지시문')
+  })
+})
+
+describe('wrapUserPrompt', () => {
+  it('untrusted_data 태그로 감싼다', () => {
+    const wrapped = wrapUserPrompt('데이터 본문')
+    expect(wrapped.startsWith('<untrusted_data>')).toBe(true)
+    expect(wrapped.endsWith('</untrusted_data>')).toBe(true)
+    expect(wrapped).toContain('데이터 본문')
+  })
+})
+
+describe('estimateCostUsd', () => {
+  it('Sonnet 단가($3 in / $15 out per 1M)로 비용 계산', () => {
+    expect(estimateCostUsd(1000, 500)).toBe(0.0105) // 0.003 + 0.0075
+  })
+
+  it('0 토큰은 0 USD', () => {
+    expect(estimateCostUsd(0, 0)).toBe(0)
+  })
+})
+
+describe('classifyClaudeError', () => {
+  it('429 → rate_limit', () => {
+    expect(classifyClaudeError({ status: 429, message: '...' }))
+      .toEqual({ kind: 'rate_limit', httpStatus: 429 })
+  })
+
+  it('529 / overloaded → overloaded', () => {
+    expect(classifyClaudeError({ status: 529, message: 'overloaded' }))
+      .toEqual({ kind: 'overloaded', httpStatus: 503 })
+  })
+
+  it('400 → bad_request', () => {
+    expect(classifyClaudeError({ status: 400, message: '...' }))
+      .toEqual({ kind: 'bad_request', httpStatus: 400 })
+  })
+
+  it('401/403 → auth', () => {
+    expect(classifyClaudeError({ status: 401, message: '...' }).kind).toBe('auth')
+    expect(classifyClaudeError({ status: 403, message: '...' }).kind).toBe('auth')
+  })
+
+  it('5xx → upstream_5xx', () => {
+    expect(classifyClaudeError({ status: 502, message: '...' }).kind).toBe('upstream_5xx')
+  })
+
+  it('알 수 없는 에러 → error / 500', () => {
+    expect(classifyClaudeError({ message: 'unknown' }))
+      .toEqual({ kind: 'error', httpStatus: 500 })
+  })
+})
+
+describe('상수', () => {
+  it('기본 모델은 Sonnet 4.5', () => {
+    expect(INSIGHT_DEFAULT_MODEL).toMatch(/sonnet-4-5/)
+  })
+
+  it('ARCHIVE_KEY_MAP은 적어도 핵심 키들을 가진다', () => {
+    expect(ARCHIVE_KEY_MAP.product).toBe('productInsight')
+    expect(ARCHIVE_KEY_MAP.citation).toBe('citationInsight')
+    expect(ARCHIVE_KEY_MAP.todo).toBe('todoText')
+  })
+})

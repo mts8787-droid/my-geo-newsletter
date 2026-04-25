@@ -66,3 +66,15 @@ export const apiProxy = {
     changeOrigin: true,
   },
 }
+
+// ─── C17 코드 스플릿: 큰 라이브러리를 별도 청크로 분리 ──────────────────────
+// 사용처: vite.config.js 등에서 build.rollupOptions.output.manualChunks 로 전달
+export function manualChunks(id) {
+  if (!id.includes('node_modules')) return undefined
+  if (id.includes('xlsx-js-style') || id.includes('xlsx')) return 'xlsx'
+  if (id.includes('recharts') || id.includes('d3-')) return 'recharts'
+  if (id.includes('react-dom')) return 'react-dom'
+  if (id.includes('react/') || id.includes('react@') || /node_modules\/react\//.test(id)) return 'react'
+  if (id.includes('lucide-react')) return 'icons'
+  return undefined
+}

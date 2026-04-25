@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  test-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Unit tests (vitest)
+        run: npm test
+
+      - name: Production build (7 SPAs)
+        run: npm run build
+        env:
+          ADMIN_PASSWORD: ci-placeholder
+
+      - name: Upload dist artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-bundles
+          path: |
+            dist/
+            dist-dashboard/
+            dist-citation/
+            dist-tracker/
+            dist-visibility/
+            dist-monthly-report/
+            dist-weekly-report/
+          retention-days: 7
+
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Security audit (high+ severity 차단)
+        run: npm audit --omit=dev --audit-level=high
+        # high 이상 취약점이 있으면 실패. 운영 의존성에만 적용 (devDependencies 제외)

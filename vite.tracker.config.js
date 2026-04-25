@@ -2,7 +2,7 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { resolve, dirname } from 'path'
 import { fileURLToPath } from 'url'
-import { appVersion, serveFontsPlugin, gsheetsProxy } from './vite.shared.js'
+import { appVersion, serveFontsPlugin, gsheetsProxy, manualChunks } from './vite.shared.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
@@ -36,6 +36,7 @@ export default defineConfig({
     emptyOutDir: true,
     rollupOptions: {
       input: resolve(__dirname, 'tracker.html'),
+      output: { manualChunks },
     },
   },
   server: {
