@@ -87,6 +87,10 @@ a.card:hover{border-color:#CF0652;transform:translateY(-2px)}
       <div class="card-title">AI Settings</div>
       <div class="card-desc">AI 인사이트 생성 프롬프트 규칙 · 모델 설정</div>
     </a>
+    <a class="card" href="/admin/observability">
+      <div class="card-title">Observability</div>
+      <div class="card-desc">AI 인사이트 호출 토큰·비용·지연·실패 추적 (insight_runs 시각화)</div>
+    </a>
     <a class="card" href="/admin/archives">
       <div class="card-title">Archives (학습 데이터)</div>
       <div class="card-desc">완성본 아카이빙 · AI 인사이트 생성 시 문체 학습 데이터로 활용</div>

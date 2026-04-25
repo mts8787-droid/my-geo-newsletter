@@ -27,6 +27,7 @@ import { authRouter } from './routes/auth-api.js'
 import { publishedRouter } from './routes/published.js'
 import { spaStaticRouter } from './routes/spa-static.js'
 import { adminPagesRouter } from './routes/admin-pages.js'
+import { observabilityRouter } from './routes/observability.js'
 import { landingRouter } from './routes/landing.js'
 
 dotenv.config()
@@ -155,6 +156,7 @@ app.use(aiSettingsRouter)
 app.use(archivesRouter)
 app.use(publishRouter)
 app.use(adminPagesRouter)
+app.use(observabilityRouter)
 app.use(spaStaticRouter)
 app.use(landingRouter)
 
