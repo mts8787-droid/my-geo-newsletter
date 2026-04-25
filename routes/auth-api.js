@@ -9,7 +9,7 @@ import {
 } from '../lib/auth.js'
 
 // ─── 로그인 시도 횟수 제한 (in-memory; 멀티 인스턴스시 Redis 권장) ────────
-const loginAttempts = new Map()
+export const loginAttempts = new Map()
 const MAX_LOGIN_ATTEMPTS = 5
 const LOGIN_WINDOW_MS = 15 * 60 * 1000
 
