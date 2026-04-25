@@ -84,7 +84,9 @@
       "Bash(awk 'NR>=113 && NR<=120 || NR>=812 && NR<=820' server.js)",
       "Bash(awk 'NR>=110 && NR<=120' /tmp/server.new.js)",
       "Bash(npx vitest *)",
-      "Bash(ADMIN_PASSWORD=ci-test npm run build)"
+      "Bash(ADMIN_PASSWORD=ci-test npm run build)",
+      "Bash(ADMIN_PASSWORD=ci-test npx vite build --config vite.config.dashboard.js)",
+      "Bash(ADMIN_PASSWORD=ci-test npm run build:dashboard)"
     ]
   }
 }

@@ -80,8 +80,15 @@ export const REGIONS = {
 }
 
 export const ALL_10_COUNTRIES = ['US','CA','UK','DE','ES','BR','MX','AU','VN','IN']
-// COUNTRY_FULL_NAME은 dashboardTemplate.js 내부에 단일 문자열 형식으로 유지
-// (cntyKr 형식의 다국어 처리는 별도 helper로 추후 통합 가능)
+
+// 국가코드 → 풀네임 (dashboardFormat.cntyFullName 등에서 사용)
+export const COUNTRY_FULL_NAME = {
+  US: 'USA', CA: 'Canada', UK: 'UK', GB: 'UK',
+  DE: 'Germany', ES: 'Spain', FR: 'France', IT: 'Italy',
+  BR: 'Brazil', MX: 'Mexico', IN: 'India', AU: 'Australia',
+  VN: 'Vietnam', JP: 'Japan', KR: 'Korea', CN: 'China',
+  TTL: 'Total', TOTAL: 'Total', GLOBAL: 'Global',
+}
 
 // ─── 미출시 코드 매핑 ────────────────────────────────────────────────────────
 export const UL_PROD_MAP = {

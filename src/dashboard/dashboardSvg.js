@@ -1,0 +1,92 @@
+// N1 — dashboardTemplate.js에서 분리된 SVG 차트 생성기 (테스트 대상)
+import { FONT, BRAND_COLORS, FALLBACK_COLORS } from './dashboardConsts.js'
+
+// gradient·defs 충돌 방지용 카운터 (모듈 단위)
+let _sid = 0
+
+// 단일 색상 라인 차트 — null 값은 스킵, 라벨은 모든 위치에 표시
+export function svgLine(data, labels, w, h, color) {
+  if (!data || !data.length) return `<svg width="${w}" height="${h}"></svg>`
+  const id = _sid++
+  const pad = { t: 18, r: 10, b: 20, l: 10 }
+  const cw = w - pad.l - pad.r, ch = h - pad.t - pad.b
+  const valid = data.filter(v => v != null)
+  if (!valid.length) {
+    let svg = `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}" xmlns="http://www.w3.org/2000/svg" style="display:block;">`
+    const N = data.length, divisor = N > 1 ? N - 1 : 1
+    svg += data.map((_, i) => {
+      const x = pad.l + (i / divisor) * cw
+      return `<text x="${x.toFixed(1)}" y="${pad.t+ch+14}" text-anchor="middle" font-size="12" fill="#94A3B8" font-family="${FONT}">${labels[i]||''}</text>`
+    }).join('')
+    svg += '</svg>'
+    return svg
+  }
+  const mn = Math.min(...valid) - 1, mx = Math.max(...valid) + 1, rng = mx - mn || 1
+  const N = data.length, divisor = N > 1 ? N - 1 : 1
+  const allX = data.map((_, i) => pad.l + (i / divisor) * cw)
+  const pts = []
+  data.forEach((v, i) => { if (v != null) pts.push({ x: allX[i], y: pad.t + (1 - (v - mn) / rng) * ch, v }) })
+  let svg = `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}" xmlns="http://www.w3.org/2000/svg" style="display:block;">`
+  if (pts.length >= 2) {
+    const line = pts.map((p, i) => `${i ? 'L' : 'M'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ')
+    const area = line + ` L${pts[pts.length-1].x.toFixed(1)},${pad.t+ch} L${pts[0].x.toFixed(1)},${pad.t+ch} Z`
+    svg += `<defs><linearGradient id="lg${id}" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="${color}" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="${color}" stop-opacity="0.03"/>
+    </linearGradient></defs>`
+    svg += `<path d="${area}" fill="url(#lg${id})"/>`
+    svg += `<path d="${line}" stroke="${color}" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`
+  }
+  svg += pts.map(p => `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="3.5" fill="#fff" stroke="${color}" stroke-width="2"/>`).join('')
+  svg += pts.map(p => `<text x="${p.x.toFixed(1)}" y="${Math.max(p.y - 7, 12)}" text-anchor="middle" font-size="12" font-weight="700" fill="${color}" font-family="${FONT}">${p.v.toFixed(1)}</text>`).join('')
+  svg += data.map((_, i) => `<text x="${allX[i].toFixed(1)}" y="${pad.t+ch+14}" text-anchor="middle" font-size="12" fill="#94A3B8" font-family="${FONT}">${labels[i]||''}</text>`).join('')
+  svg += '</svg>'
+  return svg
+}
+
+// 브랜드별 색상 — BRAND_COLORS 매칭 우선, 미정의 시 FALLBACK_COLORS 순환
+export function brandColor(name, idx) {
+  return BRAND_COLORS[name] || FALLBACK_COLORS[idx % FALLBACK_COLORS.length]
+}
+
+// 다중 브랜드 라인 차트 (X 라벨 없음 — 외부 테이블 헤더가 대체)
+export function svgMultiLine(brandData, labels, w, h) {
+  const brands = Object.keys(brandData)
+  if (!brands.length || !labels.length) return ''
+  let mn = Infinity, mx = -Infinity
+  brands.forEach(b => (brandData[b] || []).forEach(v => { if (v != null) { if (v < mn) mn = v; if (v > mx) mx = v } }))
+  if (!isFinite(mn)) return ''
+  const pad = Math.max((mx - mn) * 0.15, 2)
+  mn = Math.max(0, mn - pad); mx = Math.min(100, mx + pad)
+  const rng = mx - mn || 1
+  const N = labels.length
+  const pt = 8, pb = 8, ch = h - pt - pb
+  let g = ''
+  for (let i = 0; i <= 4; i++) {
+    const y = pt + (i / 4) * ch
+    g += `<line x1="0" y1="${y.toFixed(1)}" x2="${w}" y2="${y.toFixed(1)}" stroke="#E8EDF2" stroke-width="1"/>`
+  }
+  brands.forEach((b, bi) => {
+    const vals = brandData[b] || []
+    const color = brandColor(b, bi)
+    const isLG = b === 'LG'
+    const sw = isLG ? 2.5 : 1.5
+    const opacity = isLG ? 1 : 0.7
+    const pts = []
+    vals.forEach((v, i) => {
+      if (v == null) return
+      const x = ((i + 0.5) / N) * w
+      const y = pt + (1 - (v - mn) / rng) * ch
+      pts.push({ x, y, v })
+    })
+    if (!pts.length) return
+    if (pts.length >= 2) {
+      const d = pts.map((p, i) => `${i ? 'L' : 'M'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ')
+      g += `<path d="${d}" stroke="${color}" fill="none" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round" opacity="${opacity}"/>`
+    }
+    pts.forEach(p => {
+      g += `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${isLG ? 3.5 : 2.5}" fill="#fff" stroke="${color}" stroke-width="${isLG ? 2 : 1.5}" opacity="${opacity}"/>`
+    })
+  })
+  return `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" style="display:block">${g}</svg>`
+}

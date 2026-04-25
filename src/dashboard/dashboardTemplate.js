@@ -2,117 +2,16 @@
 import { buildDashboardStyles } from './dashboardStyles.js'
 import {
   FONT, RED, COMP, T,
-  BRAND_COLORS, FALLBACK_COLORS,
+  BRAND_COLORS, FALLBACK_COLORS, COUNTRY_FULL_NAME,
   REGIONS, ALL_10_COUNTRIES,
   UL_PROD_MAP, DC_COLS, DC_SAM, TREND_BRAND_COL,
 } from './dashboardConsts.js'
+// N1 — 순수 함수 분리 (테스트 대상)
+import { statusInfo, fmt, mdBold, stripDomain, cntyStatus, cntyFullName } from './dashboardFormat.js'
+import { svgLine, svgMultiLine, brandColor } from './dashboardSvg.js'
 
-function statusInfo(s, lang) {
-  const t = T[lang] || T.ko
-  if (s === 'lead')     return { bg: '#ECFDF5', border: '#A7F3D0', color: '#15803D', label: t.lead }
-  if (s === 'behind')   return { bg: '#FFFBEB', border: '#FDE68A', color: '#B45309', label: t.behind }
-  if (s === 'critical') return { bg: '#FFF1F2', border: '#FECDD3', color: '#BE123C', label: t.critical }
-  return { bg: '#F8FAFC', border: '#E2E8F0', color: '#475569', label: '—' }
-}
-
-function fmt(n) { return Number(n).toLocaleString('en-US') }
-function mdBold(text) {
-  return (text || '').replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/\r?\n/g, '<br>')
-}
-function stripDomain(d) {
-  return (d || '').replace(/\.(com|org|net|co\.uk|com\.br|com\.au|com\.vn|com\.mx|co\.kr|de|es|fr|ca|in|vn)$/i, '')
-}
-
-// ─── SVG 그래프 ──────────────────────────────────────────────────────────────
-let _sid = 0
-function svgLine(data, labels, w, h, color) {
-  if (!data || !data.length) return `<svg width="${w}" height="${h}"></svg>`
-  const id = _sid++
-  const pad = { t: 18, r: 10, b: 20, l: 10 }
-  const cw = w - pad.l - pad.r, ch = h - pad.t - pad.b
-  const valid = data.filter(v => v != null)
-  if (!valid.length) {
-    // 데이터 없어도 축 라벨은 표시
-    let svg = `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}" xmlns="http://www.w3.org/2000/svg" style="display:block;">`
-    const N = data.length, divisor = N > 1 ? N - 1 : 1
-    svg += data.map((_, i) => {
-      const x = pad.l + (i / divisor) * cw
-      return `<text x="${x.toFixed(1)}" y="${pad.t+ch+14}" text-anchor="middle" font-size="12" fill="#94A3B8" font-family="${FONT}">${labels[i]||''}</text>`
-    }).join('')
-    svg += '</svg>'
-    return svg
-  }
-  const mn = Math.min(...valid) - 1, mx = Math.max(...valid) + 1, rng = mx - mn || 1
-  const N = data.length, divisor = N > 1 ? N - 1 : 1
-  // 모든 위치의 x좌표 + 라벨 (null 포함)
-  const allX = data.map((_, i) => pad.l + (i / divisor) * cw)
-  // 유효 데이터 포인트만
-  const pts = []
-  data.forEach((v, i) => { if (v != null) pts.push({ x: allX[i], y: pad.t + (1 - (v - mn) / rng) * ch, v }) })
-  let svg = `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}" xmlns="http://www.w3.org/2000/svg" style="display:block;">`
-  if (pts.length >= 2) {
-    const line = pts.map((p, i) => `${i ? 'L' : 'M'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ')
-    const area = line + ` L${pts[pts.length-1].x.toFixed(1)},${pad.t+ch} L${pts[0].x.toFixed(1)},${pad.t+ch} Z`
-    svg += `<defs><linearGradient id="lg${id}" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="${color}" stop-opacity="0.25"/>
-      <stop offset="100%" stop-color="${color}" stop-opacity="0.03"/>
-    </linearGradient></defs>`
-    svg += `<path d="${area}" fill="url(#lg${id})"/>`
-    svg += `<path d="${line}" stroke="${color}" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`
-  }
-  svg += pts.map(p => `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="3.5" fill="#fff" stroke="${color}" stroke-width="2"/>`).join('')
-  svg += pts.map(p => `<text x="${p.x.toFixed(1)}" y="${Math.max(p.y - 7, 12)}" text-anchor="middle" font-size="12" font-weight="700" fill="${color}" font-family="${FONT}">${p.v.toFixed(1)}</text>`).join('')
-  // 모든 위치에 축 라벨 표시 (null 포함)
-  svg += data.map((_, i) => `<text x="${allX[i].toFixed(1)}" y="${pad.t+ch+14}" text-anchor="middle" font-size="12" fill="#94A3B8" font-family="${FONT}">${labels[i]||''}</text>`).join('')
-  svg += '</svg>'
-  return svg
-}
-
-// ─── Multi-brand SVG 라인 차트 ─────────────────────────────────────────────
-// BRAND_COLORS·FALLBACK_COLORS·REGIONS·TREND_BRAND_COL는 dashboardConsts.js에서 import
-function brandColor(name, idx) { return BRAND_COLORS[name] || FALLBACK_COLORS[idx % FALLBACK_COLORS.length] }
-
-// SVG 라인 차트 (X 라벨 없음 — 테이블 헤더가 대체)
-function svgMultiLine(brandData, labels, w, h) {
-  const brands = Object.keys(brandData)
-  if (!brands.length || !labels.length) return ''
-  let mn = Infinity, mx = -Infinity
-  brands.forEach(b => (brandData[b] || []).forEach(v => { if (v != null) { if (v < mn) mn = v; if (v > mx) mx = v } }))
-  if (!isFinite(mn)) return ''
-  const pad = Math.max((mx - mn) * 0.15, 2)
-  mn = Math.max(0, mn - pad); mx = Math.min(100, mx + pad)
-  const rng = mx - mn || 1
-  const N = labels.length
-  const pt = 8, pb = 8, ch = h - pt - pb
-  let g = ''
-  for (let i = 0; i <= 4; i++) {
-    const y = pt + (i / 4) * ch
-    g += `<line x1="0" y1="${y.toFixed(1)}" x2="${w}" y2="${y.toFixed(1)}" stroke="#E8EDF2" stroke-width="1"/>`
-  }
-  brands.forEach((b, bi) => {
-    const vals = brandData[b] || []
-    const color = brandColor(b, bi)
-    const isLG = b === 'LG'
-    const sw = isLG ? 2.5 : 1.5
-    const opacity = isLG ? 1 : 0.7
-    const pts = []
-    vals.forEach((v, i) => {
-      if (v == null) return
-      const x = ((i + 0.5) / N) * w
-      const y = pt + (1 - (v - mn) / rng) * ch
-      pts.push({ x, y, v })
-    })
-    if (!pts.length) return
-    if (pts.length >= 2) {
-      const d = pts.map((p, i) => `${i ? 'L' : 'M'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ')
-      g += `<path d="${d}" stroke="${color}" fill="none" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round" opacity="${opacity}"/>`
-    }
-    pts.forEach(p => {
-      g += `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${isLG ? 3.5 : 2.5}" fill="#fff" stroke="${color}" stroke-width="${isLG ? 2 : 1.5}" opacity="${opacity}"/>`
-    })
-  })
-  return `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" style="display:block">${g}</svg>`
-}
+// SVG 차트(svgLine·svgMultiLine·brandColor) → ./dashboardSvg.js
+// 포맷 헬퍼(statusInfo·fmt·mdBold·stripDomain·cntyStatus·cntyFullName) → ./dashboardFormat.js
 
 // ─── 경쟁사 트렌드 섹션 ────────────────────────────────────────────────────
 function trendDetailHtml(products, weeklyAll, wLabels, t, lang, ulMap, periodTag) {
@@ -485,11 +384,8 @@ function productSectionHtml(products, meta, t, lang, wLabels, ulMap, monthlyVis,
 }
 
 // ─── 국가별 Visibility ──────────────────────────────────────────────────────
-function cntyStatus(sc, comp) {
-  if (comp <= 0) return 'lead'
-  const r = sc / comp * 100
-  return r >= 100 ? 'lead' : r >= 80 ? 'behind' : 'critical'
-}
+// cntyStatus, cntyFullName, COUNTRY_FULL_NAME → ./dashboardFormat.js / ./dashboardConsts.js
+
 function cntyColHtml(r, maxScore, label, ulMap) {
   // 제품명(kr) → id 역매핑
   const NAME_TO_ID = { 'TV':'tv', '모니터':'monitor', '오디오':'audio', '세탁기':'washer', '냉장고':'fridge', '식기세척기':'dw', '청소기':'vacuum', 'Cooking':'cooking', 'RAC':'rac', 'Aircare':'aircare' }
@@ -542,17 +438,6 @@ function cntyColHtml(r, maxScore, label, ulMap) {
   </div>`
 }
 // 국가 코드 → 풀네임
-const COUNTRY_FULL_NAME = {
-  US: 'USA', CA: 'Canada', UK: 'UK', GB: 'UK',
-  DE: 'Germany', ES: 'Spain', FR: 'France', IT: 'Italy',
-  BR: 'Brazil', MX: 'Mexico', IN: 'India', AU: 'Australia',
-  VN: 'Vietnam', JP: 'Japan', KR: 'Korea', CN: 'China',
-  TTL: 'Total', TOTAL: 'Total', GLOBAL: 'Global',
-}
-function cntyFullName(c) {
-  const k = String(c || '').trim().toUpperCase()
-  return COUNTRY_FULL_NAME[k] || c
-}
 
 function countrySectionHtml(productsCnty, meta, t, lang, ulMap, periodTag) {
   if (!productsCnty || !productsCnty.length) return ''
