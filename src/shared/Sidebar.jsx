@@ -3,9 +3,9 @@ import { Copy, Download, RefreshCw, Check, Send, Sparkles, Languages, Globe, Lin
 import { downloadTemplate } from '../excelUtils'
 import { extractSheetId, syncFromGoogleSheets } from '../googleSheetsUtils'
 import { LG_RED, FONT } from './constants.js'
-import { inputStyle } from './components.jsx'
+import { inputStyle, DataFreshnessBadge } from './components.jsx'
 import { resolveDataForLang, translateTexts } from './utils.js'
-import { saveSyncData, fetchSyncData, publishCombinedDashboard, generateAIInsight } from './api.js'
+import { saveSyncData, fetchSyncData, fetchSyncMeta, publishCombinedDashboard, generateAIInsight } from './api.js'
 import { generateDashboardHTML } from '../dashboard/dashboardTemplate.js'
 import { generateProductInsight, generateProductHowToRead, generateCntyHowToRead } from './insights.js'
 
@@ -39,6 +39,17 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
     const ep = publishEndpoint || (mode === 'dashboard' ? '/api/publish-dashboard' : '/api/publish')
     fetch(ep).then(r => r.ok ? r.json() : null).then(setPublishInfo).catch(() => {})
   }, [mode, publishEndpoint])
+
+  // C16 — 데이터 신선도 메타: 진입 시 + 1분마다 갱신, 동기화/저장 시 즉시 반영
+  const [syncMeta, setSyncMeta] = useState(null)
+  useEffect(() => {
+    let alive = true
+    const tick = () => fetchSyncMeta(mode).then(m => { if (alive) setSyncMeta(m) })
+    tick()
+    const iv = setInterval(tick, 60_000)
+    return () => { alive = false; clearInterval(iv) }
+  }, [mode])
+  function refreshSyncMeta() { fetchSyncMeta(mode).then(setSyncMeta) }
 
   async function handlePublish() {
     if (publishing) return
@@ -510,6 +521,8 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
           dotcomTrend: parsed.dotcomTrend || null,
           dotcomTrendMonths: parsed.dotcomTrendMonths || null,
         })
+        // C16 — 동기화 직후 신선도 배지 즉시 갱신
+        setTimeout(refreshSyncMeta, 250)
       }, 100)
       setDebugLog(_log.join('\n'))
       setGsStatus('ok'); setGsMsg(mode === 'dashboard' ? '동기화 완료! EN 자동 번역 중...' : '동기화 완료!')
@@ -547,8 +560,9 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
     <div style={{ width: 520, minWidth: 520, borderRight: '1px solid #1E293B',
       background: '#0F172A', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
 
-      {/* 로고 */}
-      <div style={{ padding: '16px 18px 14px', borderBottom: '1px solid #1E293B' }}>
+      {/* 로고 + C16 데이터 신선도 배지 */}
+      <div style={{ padding: '16px 18px 14px', borderBottom: '1px solid #1E293B',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
           <div style={{ width: 28, height: 28, borderRadius: 7, background: LG_RED,
             display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -559,6 +573,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
             <p style={{ margin: 0, fontSize: 11, color: '#475569', fontFamily: FONT }}>{mode === 'dashboard' ? '대시보드 생성기' : '뉴스레터 생성기'}</p>
           </div>
         </div>
+        <DataFreshnessBadge {...(syncMeta || {})} />
       </div>
 
       {/* 메인 영역 */}

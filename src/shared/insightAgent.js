@@ -102,6 +102,65 @@ export function estimateCostUsd(inputTokens, outputTokens) {
   ).toFixed(6)
 }
 
+/**
+ * C8 — 인사이트 컨텍스트 로더 (archives 의존성 주입)
+ * @param {object} opts
+ * @param {string} opts.type
+ * @param {object} opts.data
+ * @param {() => Array} opts.readArchives — 의존성 주입(테스트 용이)
+ * @returns {{ archiveKey: string, latestTemplate: string, pastExamples: string,
+ *             maskedTemplate: string, maskedPastExamples: string }}
+ */
+export function loadInsightContext({ type, data, readArchives }) {
+  const archiveKey = resolveArchiveKey(type, data)
+  const archives = (readArchives() || []).slice(0, INSIGHT_ARCHIVE_LIMIT)
+  const latestTemplate = archives[0]?.insights?.[archiveKey] || ''
+  const pastExamples = archives.slice(0, INSIGHT_PAST_EXAMPLES).map(a => {
+    const text = a.insights?.[archiveKey] || ''
+    return text ? `\n--- [${a.period}] ---\n${text}` : ''
+  }).filter(Boolean).join('\n')
+  return {
+    archiveKey,
+    latestTemplate,
+    pastExamples,
+    maskedTemplate: maskNumbers(latestTemplate),
+    maskedPastExamples: maskNumbers(pastExamples),
+  }
+}
+
+/**
+ * C8 — Claude 호출 + 관찰성 메타 산출 (Anthropic SDK 의존성 주입)
+ * @param {object} opts
+ * @param {object} opts.client — Anthropic SDK 인스턴스
+ * @param {string} opts.systemPrompt
+ * @param {string} opts.userPrompt
+ * @param {string} opts.model
+ * @param {number} opts.maxTokens
+ * @returns {Promise<{ insight: string, inputTokens: number, outputTokens: number,
+ *                    latencyMs: number, costUsd: number, stopReason: string }>}
+ */
+export async function callClaudeInsight({ client, systemPrompt, userPrompt, model, maxTokens }) {
+  const t0 = Date.now()
+  const message = await client.messages.create({
+    model,
+    max_tokens: maxTokens,
+    system: systemPrompt,
+    messages: [{ role: 'user', content: userPrompt }],
+  })
+  const latencyMs = Date.now() - t0
+  const usage = message.usage || {}
+  const inputTokens = usage.input_tokens || 0
+  const outputTokens = usage.output_tokens || 0
+  return {
+    insight: message.content?.[0]?.text || '',
+    inputTokens,
+    outputTokens,
+    latencyMs,
+    costUsd: estimateCostUsd(inputTokens, outputTokens),
+    stopReason: message.stop_reason,
+  }
+}
+
 // Anthropic SDK 에러를 분류 (C13)
 export function classifyClaudeError(err) {
   const status = err?.status

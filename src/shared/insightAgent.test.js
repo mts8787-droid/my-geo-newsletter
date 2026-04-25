@@ -7,7 +7,11 @@ import {
   wrapUserPrompt,
   estimateCostUsd,
   classifyClaudeError,
+  loadInsightContext,
+  callClaudeInsight,
   INSIGHT_DEFAULT_MODEL,
+  INSIGHT_ARCHIVE_LIMIT,
+  INSIGHT_PAST_EXAMPLES,
 } from './insightAgent.js'
 
 describe('resolveArchiveKey', () => {
@@ -138,6 +142,64 @@ describe('classifyClaudeError', () => {
   it('알 수 없는 에러 → error / 500', () => {
     expect(classifyClaudeError({ message: 'unknown' }))
       .toEqual({ kind: 'error', httpStatus: 500 })
+  })
+})
+
+describe('loadInsightContext (C8)', () => {
+  const fakeArchives = [
+    { period: '4월', insights: { productInsight: '제품별 38.2% 상승' } },
+    { period: '3월', insights: { productInsight: '36.5% 도달' } },
+    { period: '2월', insights: { productInsight: '34% 기록' } },
+    { period: '1월', insights: { productInsight: '30% 시작' } },
+  ]
+
+  it('archiveKey와 마스킹된 템플릿/예시를 반환', () => {
+    const ctx = loadInsightContext({
+      type: 'product', data: {},
+      readArchives: () => fakeArchives,
+    })
+    expect(ctx.archiveKey).toBe('productInsight')
+    expect(ctx.latestTemplate).toBe('제품별 38.2% 상승')
+    expect(ctx.maskedTemplate).toBe('제품별 [N]% 상승')
+    expect(ctx.maskedPastExamples).toContain('[N]%')
+    expect(ctx.maskedPastExamples).not.toContain('38.2')
+  })
+
+  it('readArchives가 빈 배열을 반환하면 빈 컨텍스트', () => {
+    const ctx = loadInsightContext({ type: 'product', data: {}, readArchives: () => [] })
+    expect(ctx.latestTemplate).toBe('')
+    expect(ctx.maskedTemplate).toBe('')
+  })
+
+  it('past examples는 INSIGHT_PAST_EXAMPLES 개수까지만', () => {
+    const ctx = loadInsightContext({ type: 'product', data: {}, readArchives: () => fakeArchives })
+    const periodMarkers = (ctx.pastExamples.match(/--- \[/g) || []).length
+    expect(periodMarkers).toBe(INSIGHT_PAST_EXAMPLES)
+  })
+})
+
+describe('callClaudeInsight (C8)', () => {
+  it('Anthropic 응답을 표준 메타 객체로 정규화', async () => {
+    const fakeClient = {
+      messages: {
+        create: async () => ({
+          content: [{ type: 'text', text: '본문' }],
+          usage: { input_tokens: 1500, output_tokens: 400 },
+          stop_reason: 'end_turn',
+        }),
+      },
+    }
+    const result = await callClaudeInsight({
+      client: fakeClient,
+      systemPrompt: 's', userPrompt: 'u',
+      model: 'claude-sonnet-4-5-20251001', maxTokens: 1000,
+    })
+    expect(result.insight).toBe('본문')
+    expect(result.inputTokens).toBe(1500)
+    expect(result.outputTokens).toBe(400)
+    expect(result.stopReason).toBe('end_turn')
+    expect(result.costUsd).toBeCloseTo(1500 * 3 / 1_000_000 + 400 * 15 / 1_000_000, 6)
+    expect(result.latencyMs).toBeGreaterThanOrEqual(0)
   })
 })
 

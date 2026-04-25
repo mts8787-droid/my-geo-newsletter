@@ -5,15 +5,12 @@ import translate from 'google-translate-api-x'
 import Anthropic from '@anthropic-ai/sdk'
 import { buildInsightPrompt } from './src/shared/insightPrompts.js'
 import {
-  INSIGHT_ARCHIVE_LIMIT,
-  INSIGHT_PAST_EXAMPLES,
   INSIGHT_DEFAULT_MODEL,
   INSIGHT_DEFAULT_MAX_TOKENS,
-  resolveArchiveKey,
-  maskNumbers,
+  loadInsightContext,
   buildSystemPrompt,
   wrapUserPrompt,
-  estimateCostUsd,
+  callClaudeInsight,
   classifyClaudeError,
 } from './src/shared/insightAgent.js'
 import { parseAppendix } from './src/excelUtils.js'
@@ -429,55 +426,42 @@ app.post('/api/generate-insight', async (req, res) => {
   try {
     const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
     const aiSettings = readAiSettings()
-    archiveKey = resolveArchiveKey(type, data)
 
-    // 1) 과거 발행본에서 학습 템플릿·예시 추출 + 수치 마스킹
-    const archives = readArchives().slice(0, INSIGHT_ARCHIVE_LIMIT)
-    const latestTemplate = archives[0]?.insights?.[archiveKey] || ''
-    const pastExamples = archives.slice(0, INSIGHT_PAST_EXAMPLES).map(a => {
-      const text = a.insights?.[archiveKey] || ''
-      return text ? `\n--- [${a.period}] ---\n${text}` : ''
-    }).filter(Boolean).join('\n')
-    const maskedTemplate = maskNumbers(latestTemplate)
-    const maskedPastExamples = maskNumbers(pastExamples)
+    // 1) 컨텍스트 로드 (archives 의존성 주입)
+    const ctx = loadInsightContext({ type, data, readArchives })
+    archiveKey = ctx.archiveKey
 
-    // 2) system + user 프롬프트 빌드 (C5 외부 파일, C3 untrusted_data 격리)
+    // 2) 프롬프트 빌드 (system: 외부 파일 v1 / user: untrusted_data 격리)
     const systemPrompt = buildSystemPrompt({
       rules: rules || aiSettings.promptRules,
       lang,
-      maskedTemplate,
-      maskedPastExamples,
+      maskedTemplate: ctx.maskedTemplate,
+      maskedPastExamples: ctx.maskedPastExamples,
     })
     const userPrompt = wrapUserPrompt(buildInsightPrompt(type, data))
 
-    // 3) Claude API 호출
+    // 3) Claude 호출 (관찰성 메타 동시 산출)
     model = aiSettings.model || INSIGHT_DEFAULT_MODEL
-    const maxTokens = aiSettings.maxTokens || INSIGHT_DEFAULT_MAX_TOKENS
-    const message = await client.messages.create({
+    const result = await callClaudeInsight({
+      client,
+      systemPrompt,
+      userPrompt,
       model,
-      max_tokens: maxTokens,
-      system: systemPrompt,
-      messages: [{ role: 'user', content: userPrompt }],
+      maxTokens: aiSettings.maxTokens || INSIGHT_DEFAULT_MAX_TOKENS,
     })
 
-    // 4) C4 관찰성 로그
-    const insight = message.content[0]?.text || ''
-    const latencyMs = Date.now() - t0
-    const usage = message.usage || {}
-    const inputTokens = usage.input_tokens || 0
-    const outputTokens = usage.output_tokens || 0
-    const costUsd = estimateCostUsd(inputTokens, outputTokens)
-    console.log(`[INSIGHT] type=${type} archiveKey=${archiveKey} model=${model} in=${inputTokens} out=${outputTokens} latency=${latencyMs}ms cost=$${costUsd} stop=${message.stop_reason}`)
+    // 4) 로그
+    console.log(`[INSIGHT] type=${type} archiveKey=${archiveKey} model=${model} in=${result.inputTokens} out=${result.outputTokens} latency=${result.latencyMs}ms cost=$${result.costUsd} stop=${result.stopReason}`)
     appendInsightRun({
       type, archiveKey, model, lang: lang || 'ko',
-      inputTokens, outputTokens, latencyMs, costUsd,
-      stopReason: message.stop_reason, ok: true,
+      inputTokens: result.inputTokens, outputTokens: result.outputTokens,
+      latencyMs: result.latencyMs, costUsd: result.costUsd,
+      stopReason: result.stopReason, ok: true,
     })
 
-    res.json({ ok: true, insight })
+    res.json({ ok: true, insight: result.insight })
   } catch (err) {
     const latencyMs = Date.now() - t0
-    // C13 — Anthropic SDK 에러 분류
     const { kind, httpStatus } = classifyClaudeError(err)
     console.error(`[INSIGHT] ${kind} type=${type} latency=${latencyMs}ms err=${err.message}`)
     appendInsightRun({

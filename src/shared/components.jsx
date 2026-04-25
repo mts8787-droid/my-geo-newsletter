@@ -266,3 +266,37 @@ export const inputStyle = {
   borderRadius: 7, padding: '6px 10px', fontSize: 11, color: '#E2E8F0',
   fontFamily: FONT, outline: 'none', boxSizing: 'border-box',
 }
+
+// ─── C16 데이터 신선도 배지 ─────────────────────────────────────────────────
+function formatAge(ageMs) {
+  if (ageMs == null) return '동기화 안 됨'
+  const sec = Math.floor(ageMs / 1000)
+  const min = Math.floor(sec / 60)
+  const hr  = Math.floor(min / 60)
+  const day = Math.floor(hr / 24)
+  if (day >= 1) return `${day}일 전`
+  if (hr  >= 1) return `${hr}시간 전`
+  if (min >= 1) return `${min}분 전`
+  return '방금 전'
+}
+export function DataFreshnessBadge({ savedAt, ageMs, stale, style }) {
+  const noData = savedAt == null
+  const bg     = noData ? '#1E293B' : stale ? '#7F1D1D' : '#064E3B'
+  const fg     = noData ? '#94A3B8' : stale ? '#FCA5A5' : '#86EFAC'
+  const border = noData ? '#334155' : stale ? '#B91C1C' : '#047857'
+  const icon   = noData ? '○' : stale ? '⚠️' : '●'
+  const label  = noData ? '동기화 정보 없음' : `데이터 최신화: ${formatAge(ageMs)}`
+  const ts     = savedAt ? new Date(savedAt).toLocaleString('ko-KR') : ''
+  return (
+    <span title={ts} style={{
+      display: 'inline-flex', alignItems: 'center', gap: 5,
+      background: bg, color: fg, border: `1px solid ${border}`,
+      borderRadius: 7, padding: '4px 9px', fontSize: 11, fontWeight: 600,
+      fontFamily: FONT, whiteSpace: 'nowrap',
+      ...(style || {}),
+    }}>
+      <span aria-hidden style={{ fontSize: 10 }}>{icon}</span>
+      {label}
+    </span>
+  )
+}

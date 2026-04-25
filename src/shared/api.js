@@ -73,6 +73,22 @@ export async function fetchSyncData(mode) {
   } catch (err) { console.warn('[API] fetchSyncData failed:', err.message); return null }
 }
 
+// C16 — 데이터 신선도 메타만 가벼운 응답으로 조회 (배지·자동 갱신용)
+export async function fetchSyncMeta(mode) {
+  try {
+    const r = await fetch(apiPaths(mode).syncData)
+    if (!r.ok) return null
+    const j = await r.json()
+    if (!j.ok) return null
+    return {
+      savedAt: j.savedAt ?? null,
+      ageMs: typeof j.ageMs === 'number' ? j.ageMs : null,
+      stale: !!j.stale,
+      staleThresholdMs: j.staleThresholdMs ?? 24 * 60 * 60 * 1000,
+    }
+  } catch (err) { console.warn('[API] fetchSyncMeta failed:', err.message); return null }
+}
+
 export async function publishCombinedDashboard(generateDashboardHTML, resolveDataForLang, options = {}) {
   const { includeProgressTracker = false, trackerVersion = 'v1', includePromptList = false } = options
   // dashboard + visibility sync 데이터 병합 (양쪽에서 최선의 데이터 확보)
