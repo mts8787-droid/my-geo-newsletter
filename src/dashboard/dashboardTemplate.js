@@ -1,62 +1,11 @@
 // ─── GEO KPI 대시보드 — 독립 시각화 (이메일 템플릿 미사용) ─────────────────────
-const FONT = "'LG Smart','Arial Narrow',Arial,sans-serif"
-const RED = '#CF0652'
-const COMP = '#94A3B8' // 경쟁사 공통 회색
-
-const T = {
-  ko: {
-    lead: '선도', behind: '추격', critical: '취약',
-    weeklyTab: '주별', monthlyTab: '월별',
-    vsComp: '대비', categories: '개 카테고리',
-    byProduct: '제품별', byCountry: '국가별',
-    allProducts: '전체 제품', allCountries: '전체 국가',
-    productTitle: '제품별 GEO Visibility 현황',
-    cntyTitle: '국가별 GEO Visibility 현황',
-    cntyTitleByProduct: '제품별 GEO Visibility 현황',
-    cBrandCompare: 'C브랜드 비교',
-    citationTitle: '도메인 카테고리별 Citation 현황',
-    citDomainTitle: '도메인별 Citation 현황',
-    citCntyTitle: '국가별 Citation 도메인',
-    dotcomTitle: '닷컴 Citation (경쟁사대비)',
-    legendLead: '선도 ≥100%', legendBehind: '추격 ≥80%', legendCritical: '취약 <80%',
-    lgBasis: 'LG/1위 기준',
-    insight: 'INSIGHT', howToRead: 'HOW TO READ',
-    geoInsight: 'Executive Summary',
-    dotcomLgWin: 'LG 우위', dotcomSsWin: 'SS 우위', dotcomNone: '없음',
-    dotcomTTL: 'TTL (전체)', dotcomLgOnly: '— (LG only)',
-    todoTitle: 'Action Plan',
-    footer: '해외영업본부 D2C해외영업그룹 D2C마케팅담당 D2C디지털마케팅팀',
-    citLegend: 'Citation Score 건수 (비중)',
-    progressMsg: '4월 업데이트 예정',
-    readabilityMsg: '4월 업데이트 예정',
-  },
-  en: {
-    lead: 'Lead', behind: 'Behind', critical: 'Critical',
-    weeklyTab: 'Weekly', monthlyTab: 'Monthly',
-    vsComp: 'vs', categories: ' Categories',
-    byProduct: 'By Product', byCountry: 'By Country',
-    allProducts: 'All Products', allCountries: 'All Countries',
-    productTitle: 'GEO Visibility by Product',
-    cntyTitle: 'GEO Visibility by Country',
-    cntyTitleByProduct: 'GEO Visibility by Product',
-    cBrandCompare: 'Compare China Brand',
-    citationTitle: 'Citation by Domain Category',
-    citDomainTitle: 'Citation by Domain',
-    citCntyTitle: 'Citation Domain by Country',
-    dotcomTitle: 'Dotcom Citation (vs Competitor)',
-    legendLead: 'Lead ≥100%', legendBehind: 'Behind ≥80%', legendCritical: 'Critical <80%',
-    lgBasis: 'LG/Top 1 Basis',
-    insight: 'INSIGHT', howToRead: 'HOW TO READ',
-    geoInsight: 'Executive Summary',
-    dotcomLgWin: 'LG Leads', dotcomSsWin: 'SS Leads', dotcomNone: 'None',
-    dotcomTTL: 'TTL (Total)', dotcomLgOnly: '— (LG only)',
-    todoTitle: 'Action Plan',
-    footer: 'Overseas Sales HQ · D2C Digital Marketing Team',
-    citLegend: 'Citation Score Count (Ratio)',
-    progressMsg: 'Coming in April update',
-    readabilityMsg: 'Coming in April update',
-  },
-}
+import { buildDashboardStyles } from './dashboardStyles.js'
+import {
+  FONT, RED, COMP, T,
+  BRAND_COLORS, FALLBACK_COLORS,
+  REGIONS, ALL_10_COUNTRIES,
+  UL_PROD_MAP, DC_COLS, DC_SAM, TREND_BRAND_COL,
+} from './dashboardConsts.js'
 
 function statusInfo(s, lang) {
   const t = T[lang] || T.ko
@@ -120,27 +69,8 @@ function svgLine(data, labels, w, h, color) {
 }
 
 // ─── Multi-brand SVG 라인 차트 ─────────────────────────────────────────────
-const BRAND_COLORS = {
-  LG: RED, Samsung: '#3B82F6', Sony: '#7C3AED', Hisense: '#059669',
-  TCL: '#D97706', Asus: '#0EA5E9', Dell: '#6366F1', MSI: '#EF4444',
-  JBL: '#F97316', Bose: '#8B5CF6', Bosch: '#14B8A6', Whirlpool: '#06B6D4',
-  Haier: '#22C55E', Miele: '#A855F7', Dyson: '#EC4899', Xiaomi: '#F59E0B',
-  Shark: '#6B7280', Daikin: '#2563EB', Mitsubishi: '#DC2626', Media: '#10B981',
-  Panasonic: '#0D9488', Blueair: '#0284C7', Philips: '#7C3AED',
-}
-const FALLBACK_COLORS = ['#94A3B8','#64748B','#475569','#CBD5E1','#E2E8F0']
+// BRAND_COLORS·FALLBACK_COLORS·REGIONS·TREND_BRAND_COL는 dashboardConsts.js에서 import
 function brandColor(name, idx) { return BRAND_COLORS[name] || FALLBACK_COLORS[idx % FALLBACK_COLORS.length] }
-
-// ─── Region 매핑 ────────────────────────────────────────────────────────────
-const REGIONS = {
-  NA:    { label: '북미',   labelEn: 'North America',  countries: ['US', 'CA'] },
-  EU:    { label: '유럽',   labelEn: 'Europe',         countries: ['UK', 'DE', 'ES'] },
-  LATAM: { label: '중남미', labelEn: 'Latin America',   countries: ['BR', 'MX'] },
-  APAC:  { label: '아태',   labelEn: 'Asia Pacific',    countries: ['AU', 'VN'] },
-  IN:    { label: '인도',   labelEn: 'India',           countries: ['IN'] },
-}
-
-const TREND_BRAND_COL = 90
 
 // SVG 라인 차트 (X 라벨 없음 — 테이블 헤더가 대체)
 function svgMultiLine(brandData, labels, w, h) {
@@ -429,12 +359,11 @@ function heroHtml(total, meta, t, lang) {
 }
 
 // ─── 제품 섹션 ──────────────────────────────────────────────────────────────
-const UL_PROD_MAP = { tv:'TV', monitor:'IT', audio:'AV', washer:'WM', fridge:'REF', dw:'DW', vacuum:'VC', cooking:'COOKING', rac:'RAC', aircare:'AIRCARE' }
+// UL_PROD_MAP·ALL_10_COUNTRIES는 dashboardConsts.js에서 import
 function getULCntys(prodId, ulMap) {
   const code = UL_PROD_MAP[prodId] || (prodId || '').toUpperCase()
   return Object.keys(ulMap || {}).filter(k => k.endsWith('|' + code)).map(k => k.split('|')[0])
 }
-const ALL_10_COUNTRIES = ['US','CA','UK','DE','ES','BR','MX','AU','VN','IN']
 function isAllUnlaunched(prodId, ulMap) {
   return ALL_10_COUNTRIES.every(c => {
     const code = UL_PROD_MAP[prodId] || (prodId || '').toUpperCase()
@@ -762,9 +691,7 @@ function citDomainSectionHtml(citationsCnty, meta, t, citations, lang) {
   </div>`
 }
 
-// ─── 닷컴 Citation 비교 ────────────────────────────────────────────────────
-const DC_COLS = ['TTL','PLP','Microsites','PDP','Newsroom','Support','Buying-guide','Experience']
-const DC_SAM  = ['TTL','PLP','Microsites','PDP','Newsroom','Support','Buying-guide']
+// ─── 닷컴 Citation 비교 (DC_COLS·DC_SAM는 dashboardConsts.js에서 import) ────
 function dotcomSectionHtml(dotcom, meta, t) {
   if (!dotcom || !dotcom.lg) return ''
   const lg = dotcom.lg, sam = dotcom.samsung || {}
@@ -1645,205 +1572,7 @@ export function generateDashboardHTML(meta, total, products, citations, dotcom, 
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${meta.title || 'GEO KPI Dashboard'} — ${meta.period || ''}</title>
 <link href="https://fonts.cdnfonts.com/css/lg-smart" rel="stylesheet"/>
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{background:#F1F5F9;font-family:${FONT};min-width:1200px;color:#1A1A1A}
-/* ── 탭바 ── */
-.tab-bar{position:sticky;top:0;z-index:100;background:#0F172A;display:flex;align-items:center;justify-content:space-between;padding:10px 40px;border-bottom:none}
-.lang-btn{padding:4px 10px;border-radius:5px;border:none;font-size:13px;font-weight:700;cursor:pointer;background:transparent;color:#64748B;font-family:${FONT};transition:all .15s}
-.lang-btn.active{background:${RED};color:#fff}
-.lang-btn:hover:not(.active){color:#1E293B}
-.tab-btn{padding:8px 24px;border-radius:8px;border:none;font-size:16px;font-weight:600;font-family:${FONT};cursor:pointer;transition:all .15s;color:#94A3B8;background:transparent}
-.tab-btn:hover{color:#E2E8F0}
-.tab-btn.active{background:${RED};color:#fff}
-.tab-panel{display:none}
-.tab-panel.active{display:block}
-/* ── GNB 서브메뉴 ── */
-.gnb-sub{display:none;position:sticky;top:49px;z-index:99;background:#1E293B;padding:6px 40px;border-bottom:none}
-.gnb-sub.active{display:flex;align-items:center;gap:4px}
-.gnb-sub-btn{padding:6px 18px;border-radius:6px;border:none;font-size:14px;font-weight:600;font-family:${FONT};cursor:pointer;transition:all .15s;color:#94A3B8;background:transparent}
-.gnb-sub-btn:hover{color:#E2E8F0}
-.gnb-sub-btn.active{background:#334155;color:#fff}
-.dash-container{max-width:1400px;margin:0 auto;padding:28px 40px}
-/* ── 필터 레이어 ── */
-.filter-layer{position:sticky;top:86px;z-index:90;background:#fff;border-bottom:2px solid #E8EDF2;padding:8px 40px}
-.fl-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:4px 0}
-.fl-group{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-.fl-label{font-size:15px;font-weight:700;color:#64748B;white-space:nowrap;margin-right:4px}
-.fl-badge{font-size:15px;font-weight:600;color:#1A1A1A;padding:3px 10px;border-radius:6px;background:#F1F5F9}
-.fl-chk-label{display:inline-flex;align-items:center;gap:3px;padding:3px 8px;border-radius:6px;font-size:14px;font-weight:600;color:#475569;cursor:pointer;transition:all .15s;background:#F8FAFC;border:1px solid #E2E8F0;white-space:nowrap;user-select:none}
-.fl-chk-label:hover{border-color:#94A3B8}
-.fl-chk-label:has(input:checked){background:#0F172A;color:#fff;border-color:#0F172A}
-.fl-chk{width:12px;height:12px;margin:0;cursor:pointer;accent-color:${RED}}
-.fl-all-label{font-weight:700}
-.fl-divider{width:1px;height:24px;background:#E8EDF2;flex-shrink:0;align-self:center}
-.hero-ctx{display:flex;gap:8px;flex-wrap:wrap}
-.hero-ctx-badge{font-size:14px;font-weight:600;padding:3px 10px;border-radius:6px;background:rgba(255,255,255,.12);color:#FFB0C0;border:1px solid rgba(255,255,255,.08)}
-/* ── Hero ── */
-.hero{background:#0F172A;border-radius:16px;padding:28px 32px;margin-bottom:24px;color:#fff}
-.hero-top{display:flex;justify-content:space-between;margin-bottom:20px}
-.hero-brand{font-size:16px;font-weight:700;color:#FFCCD8}
-.hero-meta{font-size:14px;color:#FFB0C0}
-.hero-body{display:flex;gap:40px;align-items:flex-start}
-.hero-left{flex:1}
-.hero-right{flex:0 0 320px;text-align:right}
-.hero-label{font-size:16px;font-weight:600;color:#94A3B8;text-transform:uppercase;margin-bottom:8px}
-.hero-score-row{margin-bottom:16px;display:flex;align-items:baseline;gap:8px}
-.hero-score{font-size:52px;font-weight:900}
-.hero-pct{font-size:20px;color:#94A3B8}
-.hero-delta{font-size:16px;font-weight:700}
-.hero-mom{font-size:15px;color:#64748B}
-.hero-gauge{margin-top:8px}
-.hero-gauge-track{height:10px;background:#1E2433;border-radius:8px;overflow:hidden}
-.hero-gauge-bar{height:100%;border-radius:8px;transition:width .5s}
-.hero-legend{display:flex;gap:16px;margin-top:10px;font-size:14px;color:#94A3B8}
-.hero-legend i{display:inline-block;width:10px;height:10px;border-radius:5px;margin-right:4px;vertical-align:-1px}
-.hero-comp{margin-top:12px}
-.hero-comp-label{font-size:16px;font-weight:800;color:${COMP}}
-.hero-comp-score{font-size:16px;color:#94A3B8}
-.hero-comp-gap{font-size:16px;font-weight:800;margin-left:8px}
-.hero-info{font-size:14px;color:#64748B;margin-top:12px;line-height:1.6}
-.hero-insight{margin-top:20px;padding:16px;background:#1E0F18;border:1px solid #3D1528;border-radius:10px}
-.hero-insight-label{display:block;font-size:14px;font-weight:700;color:${RED};text-transform:uppercase;margin-bottom:6px}
-.hero-insight-text{font-size:15px;color:#fff;line-height:1.8}
-/* ── 섹션 카드 ── */
-.section-card{background:#fff;border-radius:16px;border:1px solid #E8EDF2;margin-bottom:24px;overflow:hidden}
-.section-header{padding:20px 28px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
-.section-title{font-size:20px;font-weight:700;color:#1A1A1A;display:flex;align-items:center;gap:8px}
-.section-title::before{content:'';width:4px;height:22px;background:${RED};border-radius:4px;flex-shrink:0}
-.section-header-right{display:flex;align-items:center;gap:16px}
-.section-body{padding:24px 28px}
-.legend{font-size:14px;color:#94A3B8;display:flex;align-items:center;gap:4px;flex-wrap:wrap}
-.legend i{display:inline-block;width:8px;height:8px;border-radius:50%;margin:0 2px 0 8px;vertical-align:0}
-/* ── Insight / HowToRead ── */
-.hero-insight,.insight-box,.howto-box{display:none}
-body.show-insights .hero-insight{display:block}
-body.show-insights .insight-box{display:block}
-body.show-insights .howto-box{display:block}
-.insight-box{margin:0 28px;padding:12px 16px;background:#FFF4F7;border:1px solid #F5CCD8;border-radius:8px;margin-top:12px}
-.insight-label{display:block;font-size:14px;font-weight:700;color:${RED};margin-bottom:4px}
-.insight-text{font-size:14px;color:#1A1A1A;line-height:1.8}
-.howto-box{margin:0 28px;padding:12px 16px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;margin-top:8px}
-.howto-label{display:block;font-size:14px;font-weight:700;color:#64748B;margin-bottom:4px}
-.howto-text{font-size:14px;color:#475569;line-height:1.8}
-/* ── 트렌드 탭 ── */
-.trend-tabs{display:inline-flex;background:#F1F5F9;border-radius:8px;padding:3px}
-.trend-tab{padding:5px 16px;border:none;border-radius:6px;font-size:14px;font-weight:700;font-family:${FONT};cursor:pointer;background:transparent;color:#64748B;transition:all .15s}
-.trend-tab.active{background:${RED};color:#fff}
-.trend-tab:hover{opacity:.85}
-/* ── BU / 제품 ── */
-.bu-group{margin-bottom:20px}
-.bu-header{display:flex;align-items:center;justify-content:space-between;background:#F1F5F9;border-radius:8px;padding:8px 14px;margin-bottom:12px}
-.bu-label{font-size:17px;font-weight:700;color:#1A1A1A}
-.bu-count{font-size:15px;color:#94A3B8}
-.prod-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-.prod-card{border:2px solid #E8EDF2;border-radius:12px;padding:16px 18px;background:#fff;transition:border-color .15s}
-.prod-card:hover{border-color:#CBD5E1}
-/* 미출시 제품: 회색 처리 (신호등/그래프/테두리/경쟁비바) */
-.prod-card.is-unlaunched{border-color:#CBD5E1 !important}
-.prod-card.is-unlaunched .prod-badge{background:#F1F5F9 !important;color:#64748B !important;border-color:#CBD5E1 !important}
-/* 월간 패널: trend-monthly 보이고 trend-weekly 숨김, WoW/MoM 반전 */
-#bu-monthly-content .trend-weekly{display:none !important}
-#bu-monthly-content .trend-monthly{display:block !important}
-#bu-monthly-content .prod-wow{display:none !important}
-#bu-monthly-content .prod-mom{display:inline !important}
-.prod-card.is-unlaunched .prod-chart svg path[stroke]{stroke:#94A3B8 !important}
-.prod-card.is-unlaunched .prod-chart svg circle[stroke]{stroke:#94A3B8 !important}
-.prod-card.is-unlaunched .prod-chart svg text[fill]:not([fill="#94A3B8"]){fill:#64748B !important}
-.prod-card.is-unlaunched .prod-chart svg stop{stop-color:#94A3B8 !important}
-.prod-card.is-unlaunched .prod-comp-bar{background:#94A3B8 !important}
-.prod-card.is-unlaunched .prod-comp-pct{color:#64748B !important}
-/* 국가별 섹션 미출시 제품 bar */
-.vbar-item.is-unlaunched .vbar-bar{background:#94A3B8 !important}
-.vbar-item.is-unlaunched .vbar-label{color:#64748B !important}
-/* 주간/월간 트렌드 미출시 배지 */
-.trend-row.is-unlaunched .trend-status-badge{background:#F1F5F9 !important;color:#64748B !important;border-color:#CBD5E1 !important}
-.prod-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
-.prod-name{font-size:20px;font-weight:900;color:#1A1A1A}
-.prod-badge{font-size:14px;font-weight:700;padding:2px 8px;border-radius:10px;border:1px solid}
-.prod-score-row{display:flex;align-items:baseline;gap:10px;margin-bottom:4px}
-.prod-score{font-size:32px;font-weight:900;color:#1A1A1A}
-.prod-score small{font-size:16px;color:#94A3B8;font-weight:400}
-.prod-delta{font-size:14px;font-weight:700}
-.prod-chart{margin:6px 0 10px}
-.prod-comp{display:flex;align-items:center;gap:8px;background:#F8FAFC;border-radius:8px;padding:8px 10px}
-.prod-comp-name{font-size:14px;color:#64748B;white-space:nowrap;min-width:80px}
-.prod-comp-bar-wrap{flex:1;height:6px;background:#E8EDF2;border-radius:3px;overflow:hidden}
-.prod-comp-bar{height:100%;border-radius:3px;transition:width .3s}
-.prod-comp-pct{font-size:16px;font-weight:700;min-width:40px;text-align:right}
-/* ── 국가 (세로 막대) ── */
-.cnty-product{margin-bottom:40px}
-.vbar-chart{display:flex;align-items:flex-end;gap:14px;padding:12px 8px 0;min-height:220px;overflow-x:auto}
-.vbar-item{display:flex;flex-direction:column;align-items:center;flex:1;min-width:88px;max-width:108px}
-.vbar-item.hidden{display:none}
-.vbar-val{font-size:13px;font-weight:700;white-space:nowrap;margin-bottom:3px}
-.vbar-val.comp-val{font-size:13px;font-weight:600}
-.vbar-cols{display:flex;gap:3px;width:100%;align-items:flex-end;justify-content:center}
-.vbar-col-wrap{flex:0 0 26px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end}
-.vbar-col{width:100%;border-radius:4px 4px 0 0;min-height:3px;transition:height .3s}
-.vbar-col-name{font-size:11px;font-weight:600;color:#94A3B8;margin-top:3px;white-space:nowrap;width:26px;text-align:center;overflow:hidden;text-overflow:clip;letter-spacing:-0.5px}
-.vbar-gap{font-size:15px;font-weight:700;margin-top:4px;white-space:nowrap}
-.vbar-label{font-size:15px;font-weight:600;color:#475569;margin-top:4px;text-align:center;word-break:keep-all;line-height:1.3}
-/* ── 국가 뷰탭 ── */
-.cnty-view-tab{padding:5px 16px;border:none;border-radius:6px;font-size:14px;font-weight:700;font-family:${FONT};cursor:pointer;background:transparent;color:#64748B;transition:all .15s}
-.cnty-view-tab.active{background:${RED};color:#fff}
-.cnty-view-tab:hover{opacity:.85}
-/* ── 필터 칩 ── */
-.cnty-filters{padding:12px 28px 0;display:flex;flex-wrap:wrap;gap:10px}
-.filter-group{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-.filter-label{font-size:14px;font-weight:700;color:#64748B;margin-right:4px;white-space:nowrap}
-.filter-chip{padding:4px 12px;border-radius:14px;border:1px solid #E2E8F0;font-size:14px;font-weight:600;font-family:${FONT};cursor:pointer;background:#fff;color:#64748B;transition:all .15s}
-.filter-chip.active{background:#0F172A;color:#fff;border-color:#0F172A}
-.filter-chip:hover{border-color:#94A3B8}
-/* ── Citation ── */
-.cit-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #F8FAFC}
-.cit-row:last-child{border-bottom:none}
-.cit-row.compact{padding:5px 0}
-.cit-rank{width:28px;height:28px;border-radius:5px;background:#F1F5F9;font-size:14px;font-weight:800;color:#94A3B8;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.cit-rank.top{background:${RED};color:#fff}
-.cit-info{min-width:160px;flex-shrink:0}
-.cit-source{display:block;font-size:16px;font-weight:700;color:#1A1A1A}
-.cit-cat{font-size:14px;color:#94A3B8;background:#F8FAFC;border-radius:4px;padding:1px 5px}
-.cit-bar-wrap{flex:1;height:24px;background:#F8FAFC;border-radius:6px;overflow:hidden}
-.cit-bar{height:100%;background:${RED};border-radius:6px;transition:width .3s}
-.cit-score{font-size:16px;font-weight:700;color:${RED};min-width:80px;text-align:right}
-.cit-ratio{font-size:14px;color:#64748B;min-width:50px}
-.cit-delta{font-size:14px;font-weight:700;min-width:50px}
-/* ── 닷컴 ── */
-.dc-row{display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid #F8FAFC}
-.dc-row:last-child{border-bottom:none}
-.dc-row.ttl{background:#F8FAFC;border-radius:8px;padding:10px 12px;margin-bottom:8px;border-bottom:2px solid #E2E8F0}
-.dc-label{font-size:16px;font-weight:700;color:#1A1A1A;min-width:160px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-.dc-bars{flex:1}
-.dc-bar-pair{display:flex;align-items:center;gap:8px;margin:2px 0}
-.dc-bar{height:16px;border-radius:4px;min-width:2px;transition:width .3s}
-.dc-bar.lg{background:${RED}}
-.dc-bar.ss{background:${COMP}}
-.dc-val{font-size:16px;font-weight:700;color:#94A3B8;white-space:nowrap}
-.dc-val.win{color:#1A1A1A}
-.dc-val.muted{color:#CBD5E1;font-weight:400}
-.dc-badge{font-size:14px;font-weight:800;padding:1px 6px;border-radius:3px}
-.dc-badge.lg{background:#FFF1F2;color:${RED}}
-.dc-badge.ss{background:#F1F5F9;color:#64748B}
-.dc-summary{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;padding-top:16px;border-top:1px solid #E8EDF2;align-items:center}
-.dc-sum-item{font-size:16px;font-weight:700;color:#fff;padding:3px 10px;border-radius:5px}
-.dc-sum-item.lg{background:${RED}}
-.dc-sum-item.ss{background:${COMP}}
-.dc-sum-list{font-size:16px;color:#64748B;margin-right:16px}
-/* ── Progress ── */
-.progress-placeholder{min-height:60vh;display:flex;align-items:center;justify-content:center}
-.progress-placeholder .inner{text-align:center;padding:40px}
-.progress-placeholder .icon{font-size:48px;margin-bottom:16px;opacity:.3}
-.progress-placeholder h2{font-size:20px;font-weight:700;color:#1E293B;margin-bottom:8px}
-.progress-placeholder p{font-size:16px;color:#64748B}
-/* ── Footer ── */
-.notice-box{background:#FEF2F2;border:1px solid #FECACA;border-radius:12px;padding:16px 20px;margin-bottom:20px}
-.notice-box .notice-title{font-size:14px;font-weight:700;color:#BE123C;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px}
-.notice-box .notice-text{font-size:15px;color:#1E293B;line-height:1.8}
-.dash-footer{background:#1A1A1A;padding:16px 40px;display:flex;justify-content:space-between;align-items:center;margin-top:auto}
-.dash-footer span{font-size:14px;color:#94A3B8}
-.dash-footer strong{color:#fff;font-weight:700}
-</style>
+<style>${buildDashboardStyles({ FONT, RED, COMP })}</style>
 </head>
 <body>
 ${visibilityOnly ? `

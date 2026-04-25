@@ -72,7 +72,12 @@
       "Bash(sed -i '' s/US,CA,UK,DE,ES,BR,MX,IN,AU,VN/US,CA,UK,DE,ES,BR,MX,AU,VN,IN/g src/shared/insightPrompts.js)",
       "Bash(npm show:*)",
       "Bash(wc -l /Users/dubaba/my-geo-project/my-geo-newsletter/src/monthly-report/*)",
-      "Bash(npm test *)"
+      "Bash(npm test *)",
+      "Bash(<style\" src/dashboard/dashboardTemplate.js | head -10)",
+      "Bash(sed -n '1649,1845p' src/dashboard/dashboardTemplate.js)",
+      "Read(//tmp/**)",
+      "Bash(awk 'NR==1650 || NR==1848 || NR==1849 {print NR\": \"$0}' src/dashboard/dashboardTemplate.js)",
+      "Bash(awk 'NR>=1648 && NR<=1654' /tmp/dashboardTemplate.new.js)"
     ]
   }
 }
