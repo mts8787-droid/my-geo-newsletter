@@ -1,7 +1,6 @@
 import express from 'express'
 import crypto from 'crypto'
 import nodemailer from 'nodemailer'
-import sanitizeHtmlLib from 'sanitize-html'
 import translate from 'google-translate-api-x'
 import Anthropic from '@anthropic-ai/sdk'
 import { buildInsightPrompt } from './src/shared/insightPrompts.js'
@@ -21,40 +20,27 @@ import { parseAppendix } from './src/excelUtils.js'
 import XLSX from 'xlsx-js-style'
 import { fileURLToPath } from 'url'
 import { dirname, join } from 'path'
-import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync, unlinkSync, appendFileSync } from 'fs'
+import { readFileSync, writeFileSync, readdirSync, unlinkSync } from 'fs'
 import dotenv from 'dotenv'
 
-dotenv.config()
+// C11 step1·2 — 헬퍼들을 lib/ 모듈로 분리
+import {
+  DATA_DIR, PUB_DIR, VALID_MODES,
+  readSnapshots, writeSnapshots,
+  readSyncData, writeSyncData,
+  readModeSnapshots, writeModeSnapshots,
+  readModeSyncData, writeModeSyncData,
+  readAiSettings, writeAiSettings,
+  readArchives, writeArchives,
+  readIpAllowlist, writeIpAllowlist,
+} from './lib/storage.js'
+import { ADMIN_PASSWORD, activeSessions, getSessionToken, createSessionToken, revokeSessionToken } from './lib/auth.js'
+import { extractIPv4, ipToNum, ipMatchesCidr, getRealIp, isIpAllowed } from './lib/network.js'
+import { sanitizeHtml } from './lib/sanitize.js'
+import { withFileLock } from './lib/lock.js'
+import { appendInsightRun } from './lib/insight-runs.js'
 
-// ─── HTML Sanitizer — sanitize-html 라이브러리 (C7) ─────────────────────────
-// 게시 HTML은 풍부한 인라인 스타일·table 레이아웃이 필요하므로 모든 태그·속성을 허용하되,
-// <script>, on*=, javascript:/data: URL은 차단해 XSS 방지
-const SANITIZE_OPTIONS = {
-  allowedTags: false,           // 모든 HTML 태그 허용 (table·svg·style 등 게시 템플릿용)
-  allowedAttributes: false,     // 모든 속성 허용
-  allowedSchemes: ['http', 'https', 'mailto', 'tel'],
-  allowedSchemesAppliedToAttributes: ['href', 'src', 'cite', 'action'],
-  allowProtocolRelative: false,
-  disallowedTagsMode: 'discard',
-  exclusiveFilter: (frame) => frame.tag === 'script',
-  transformTags: {
-    '*': (tagName, attribs) => {
-      const cleaned = {}
-      for (const [k, v] of Object.entries(attribs || {})) {
-        // on* 인라인 이벤트 핸들러 제거
-        if (/^on/i.test(k)) continue
-        // style 안에 expression/javascript 차단
-        if (k === 'style' && /(javascript:|expression\()/i.test(v)) continue
-        cleaned[k] = v
-      }
-      return { tagName, attribs: cleaned }
-    },
-  },
-}
-function sanitizeHtml(html) {
-  if (typeof html !== 'string') return ''
-  return sanitizeHtmlLib(html, SANITIZE_OPTIONS)
-}
+dotenv.config()
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const app = express()
@@ -62,133 +48,8 @@ const PORT = process.env.PORT || 3000
 
 app.set('trust proxy', 1)  // trust only the first proxy (Render load balancer)
 
-// ─── Snapshots file storage ──────────────────────────────────────────────────
-const DATA_DIR = process.env.DATA_DIR || join(__dirname, 'data')
-const SNAP_FILE = join(DATA_DIR, 'snapshots.json')
-const PUB_DIR = join(DATA_DIR, 'published')
-if (!existsSync(DATA_DIR)) mkdirSync(DATA_DIR, { recursive: true })
-if (!existsSync(PUB_DIR)) mkdirSync(PUB_DIR, { recursive: true })
-
-// ─── Mode-specific file paths (newsletter / dashboard 분리 저장) ─────────────
-const NL_SNAP_FILE = join(DATA_DIR, 'newsletter-snapshots.json')
-const DB_SNAP_FILE = join(DATA_DIR, 'dashboard-snapshots.json')
-const CT_SNAP_FILE = join(DATA_DIR, 'citation-snapshots.json')
-const MR_SNAP_FILE = join(DATA_DIR, 'monthly-report-snapshots.json')
-const WR_SNAP_FILE = join(DATA_DIR, 'weekly-report-snapshots.json')
-const NL_SYNC_FILE = join(DATA_DIR, 'newsletter-sync-data.json')
-const DB_SYNC_FILE = join(DATA_DIR, 'dashboard-sync-data.json')
-const CT_SYNC_FILE = join(DATA_DIR, 'citation-sync-data.json')
-const MR_SYNC_FILE = join(DATA_DIR, 'monthly-report-sync-data.json')
-const WR_SYNC_FILE = join(DATA_DIR, 'weekly-report-sync-data.json')
-
-// ─── AI Settings storage ─────────────────────────────────────────────────────
-const AI_SETTINGS_FILE = join(DATA_DIR, 'ai-settings.json')
-const DEFAULT_AI_SETTINGS = {
-  promptRules: `- 제공된 데이터에 있는 수치만 사용할 것 (추가 계산·추정 금지)\n- 리포트에 표시된 제품명, 점수, 경쟁사명을 그대로 인용\n- 존재하지 않는 수치를 만들어내지 말 것\n- 전문적이지만 간결하게 3~5문장\n- 비즈니스 보고서 톤 (한국어 작성 시)`,
-  model: 'claude-sonnet-4-20250514',
-  maxTokens: 500,
-}
-function readAiSettings() {
-  try { return { ...DEFAULT_AI_SETTINGS, ...JSON.parse(readFileSync(AI_SETTINGS_FILE, 'utf-8')) } } catch { return { ...DEFAULT_AI_SETTINGS } }
-}
-function writeAiSettings(settings) {
-  writeFileSync(AI_SETTINGS_FILE, JSON.stringify(settings, null, 2))
-}
-
-// ─── Archives storage (AI 학습 데이터) ───────────────────────────────────────
-const ARCHIVES_FILE = join(DATA_DIR, 'archives.json')
-function readArchives() {
-  try {
-    const data = JSON.parse(readFileSync(ARCHIVES_FILE, 'utf-8'))
-    return Array.isArray(data) ? data : []
-  } catch (err) {
-    console.log(`[ARCHIVES] readArchives: file=${ARCHIVES_FILE}, error=${err.message}`)
-    return []
-  }
-}
-function writeArchives(list) {
-  writeFileSync(ARCHIVES_FILE, JSON.stringify(list, null, 2))
-  console.log(`[ARCHIVES] writeArchives: ${list.length}건 저장 → ${ARCHIVES_FILE}`)
-}
-
-// ─── IP Allowlist storage ────────────────────────────────────────────────────
-const IP_FILE = join(DATA_DIR, 'ip-allowlist.json')
-
-let _ipAllowlistCache = null
-function readIpAllowlist() {
-  if (_ipAllowlistCache) return _ipAllowlistCache
-  try { _ipAllowlistCache = JSON.parse(readFileSync(IP_FILE, 'utf-8')); return _ipAllowlistCache } catch { return [] }
-}
-function writeIpAllowlist(list) {
-  writeFileSync(IP_FILE, JSON.stringify(list, null, 2))
-  _ipAllowlistCache = list
-}
-
-function extractIPv4(ip) {
-  if (!ip) return null
-  if (ip.startsWith('::ffff:')) return ip.slice(7)
-  if (/^\d{1,3}(\.\d{1,3}){3}$/.test(ip)) return ip
-  return null
-}
-
-function ipToNum(ip) {
-  return ip.split('.').reduce((sum, octet) => (sum << 8) + parseInt(octet), 0) >>> 0
-}
-
-function ipMatchesCidr(ip, cidr) {
-  const ipv4 = extractIPv4(ip)
-  if (!ipv4) return false
-  const [range, bitsStr] = cidr.split('/')
-  const rangeIpv4 = extractIPv4(range)
-  if (!rangeIpv4) return false
-  const bits = bitsStr ? parseInt(bitsStr) : 32
-  if (bits === 0) return true
-  const mask = (~0 << (32 - bits)) >>> 0
-  return (ipToNum(ipv4) & mask) === (ipToNum(rangeIpv4) & mask)
-}
-
-function getRealIp(req) {
-  return req.headers['cf-connecting-ip'] || req.headers['x-real-ip'] || req.ip
-}
-
-function isIpAllowed(req) {
-  const list = readIpAllowlist()
-  if (list.length === 0) return true
-  const ip = getRealIp(req)
-  return list.some(entry => ipMatchesCidr(ip, entry.cidr))
-}
-
-// ─── Admin Auth ──────────────────────────────────────────────────────────────
-if (!process.env.ADMIN_PASSWORD) {
-  console.error('⚠️  ADMIN_PASSWORD 환경 변수가 설정되지 않았습니다. 서버를 시작할 수 없습니다.')
-  process.exit(1)
-}
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD
-const activeSessions = new Set()
-
-function getSessionToken(req) {
-  const cookie = req.headers.cookie
-  if (!cookie) return null
-  const match = cookie.split(';').map(c => c.trim()).find(c => c.startsWith('admin_token='))
-  return match ? match.split('=')[1] : null
-}
-
-// ─── File lock for concurrent write safety ──────────────────────────────────
-const fileLocks = new Map()
-function withFileLock(file, fn) {
-  // 이전 작업의 성공/실패와 무관하게 fn을 정확히 한 번만 실행
-  const prev = fileLocks.get(file) || Promise.resolve()
-  const chain = prev.then(() => fn(), () => fn())
-  fileLocks.set(file, chain.then(() => {}, () => {}))
-  return chain
-}
-
-function readSnapshots() {
-  try { return JSON.parse(readFileSync(SNAP_FILE, 'utf-8')) } catch { return [] }
-}
-function writeSnapshots(list) {
-  writeFileSync(SNAP_FILE, JSON.stringify(list, null, 2))
-}
+// 헬퍼·storage·auth·sanitize·lock·insight-runs 는 lib/ 에서 import (C11 step1·2)
+// 글로벌 SNAP_FILE / SYNC_FILE 은 storage 모듈에서 export됨
 
 // ─── Security Headers ────────────────────────────────────────────────────────
 app.use((req, res, next) => {
@@ -279,8 +140,7 @@ app.post('/api/auth/login', (req, res) => {
     return res.status(401).json({ ok: false, error: '비밀번호가 올바르지 않습니다.' })
   }
   loginAttempts.delete(ip)
-  const token = crypto.randomBytes(32).toString('hex')
-  activeSessions.add(token)
+  const token = createSessionToken()
   res.cookie('admin_token', token, {
     httpOnly: true,
     sameSite: 'lax',
@@ -293,7 +153,7 @@ app.post('/api/auth/login', (req, res) => {
 
 app.post('/api/auth/logout', (req, res) => {
   const token = getSessionToken(req)
-  if (token) activeSessions.delete(token)
+  revokeSessionToken(token)
   res.clearCookie('admin_token', { path: '/' })
   res.json({ ok: true })
 })
@@ -431,16 +291,7 @@ app.delete('/api/snapshots/:ts', (req, res) => {
   })
 })
 
-// ─── Sync Data (Google Sheets 동기화 데이터 서버 저장) ────────────────────────
-const SYNC_FILE = join(DATA_DIR, 'sync-data.json')
-
-function readSyncData() {
-  try { return JSON.parse(readFileSync(SYNC_FILE, 'utf-8')) } catch { return null }
-}
-function writeSyncData(data) {
-  writeFileSync(SYNC_FILE, JSON.stringify(data, null, 2))
-}
-
+// 글로벌 sync-data API (newsletter 호환)
 app.get('/api/sync-data', (req, res) => {
   const data = readSyncData()
   if (!data) return res.json({ ok: false, data: null })
@@ -455,34 +306,6 @@ app.post('/api/sync-data', (req, res) => {
   console.log('[SYNC-DATA] Saved at', new Date().toISOString())
   res.json({ ok: true })
 })
-
-// ─── Mode-specific Snapshots & Sync Data (newsletter / dashboard 분리) ──────
-function modeSnapFile(mode) {
-  if (mode === 'dashboard') return DB_SNAP_FILE
-  if (mode === 'citation') return CT_SNAP_FILE
-  if (mode === 'monthly-report') return MR_SNAP_FILE
-  if (mode === 'weekly-report') return WR_SNAP_FILE
-  return NL_SNAP_FILE
-}
-function modeSyncFile(mode) {
-  if (mode === 'dashboard') return DB_SYNC_FILE
-  if (mode === 'citation') return CT_SYNC_FILE
-  if (mode === 'monthly-report') return MR_SYNC_FILE
-  if (mode === 'weekly-report') return WR_SYNC_FILE
-  return NL_SYNC_FILE
-}
-function readModeSnapshots(mode) {
-  try { return JSON.parse(readFileSync(modeSnapFile(mode), 'utf-8')) } catch { return [] }
-}
-function writeModeSnapshots(mode, list) {
-  writeFileSync(modeSnapFile(mode), JSON.stringify(list, null, 2))
-}
-function readModeSyncData(mode) {
-  try { return JSON.parse(readFileSync(modeSyncFile(mode), 'utf-8')) } catch { return null }
-}
-function writeModeSyncData(mode, data) {
-  writeFileSync(modeSyncFile(mode), JSON.stringify(data, null, 2))
-}
 
 // Snapshots — /api/:mode/snapshots (validateMode 미들웨어로 검증 통합)
 app.get('/api/:mode/snapshots', validateMode, (req, res) => {
@@ -589,16 +412,8 @@ app.post('/api/translate', async (req, res) => {
 })
 
 // ─── AI Insight Generation (Claude API) ─────────────────────────────────────
-// 상수·프롬프트 빌더·에러 분류는 src/shared/insightAgent.js로 분리
-const INSIGHT_RUNS_LOG = join(DATA_DIR, 'insight-runs.log')
-
-// C4 — 관찰성 로깅: insight 호출의 토큰·지연·비용을 JSONL로 누적
-function appendInsightRun(entry) {
-  try {
-    appendFileSync(INSIGHT_RUNS_LOG, JSON.stringify({ ts: Date.now(), ...entry }) + '\n')
-  } catch { /* 로깅 실패는 본 흐름에 영향 주지 않음 */ }
-}
-
+// 상수·프롬프트 빌더·에러 분류는 src/shared/insightAgent.js로,
+// 호출 로깅(appendInsightRun)은 lib/insight-runs.js로 분리
 app.post('/api/generate-insight', async (req, res) => {
   const { type, data, lang, rules } = req.body || {}
   if (!type || !data) {
@@ -736,8 +551,7 @@ function readMetaFile(metaPath) {
   try { return JSON.parse(readFileSync(metaPath, 'utf-8')) } catch { return null }
 }
 
-// ─── 모드 검증 미들웨어 ──────────────────────────────────────────────────────
-const VALID_MODES = ['newsletter', 'dashboard', 'citation', 'monthly-report', 'weekly-report']
+// ─── 모드 검증 미들웨어 (VALID_MODES는 lib/storage.js에서 import) ─────────────
 function validateMode(req, res, next) {
   if (!VALID_MODES.includes(req.params.mode)) {
     return res.status(400).json({ ok: false, error: `invalid mode: ${req.params.mode}. allowed: ${VALID_MODES.join(', ')}` })
