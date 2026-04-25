@@ -35,6 +35,7 @@
 ```mermaid
 flowchart LR
   classDef user fill:#DBEAFE,stroke:#1E40AF,color:#1E3A8A
+  classDef manual fill:#FEE2E2,stroke:#B91C1C,color:#7F1D1D
   classDef edit fill:#FEF3C7,stroke:#B45309,color:#78350F
   classDef web fill:#FCE7F3,stroke:#BE185D,color:#831843
   classDef store fill:#D1FAE5,stroke:#047857,color:#064E3B
@@ -42,6 +43,16 @@ flowchart LR
 
   PIC[담당자]:::user
   Exec[임원·팀]:::user
+
+  SEM[SEMrush API<br/>측정값 원천]:::ext
+
+  subgraph Manual["수기 데이터 수집 (현행 병목)"]
+    Py[로컬 Python 스크립트<br/>API 다운로드]:::manual
+    CSV[CSV 파일]:::manual
+    Drive[Google Drive 업로드<br/>→ 시트로 변환]:::manual
+  end
+
+  GS[구글 시트<br/>19개 탭]:::ext
 
   subgraph Editor["편집 페이지"]
     VE[측정값 편집]:::edit
@@ -58,12 +69,13 @@ flowchart LR
   end
 
   Files[서버 저장소]:::store
-  GS[구글 시트]:::ext
   Mail[이메일 발송]:::ext
   Claude[Claude API]:::ext
 
+  PIC -- 수동 실행 --> Py
+  SEM --> Py --> CSV --> Drive --> GS
   PIC --> Auth --> Editor
-  Editor -- 시트 데이터 가져오기 --> GS
+  Editor -- 시트 동기화<br/>(자체 파서) --> GS
   Editor -- 저장 --> API --> Files
   Editor -- 인사이트 요청 --> AI --> Claude
   Editor -- 게시 --> Pub --> Files
@@ -71,12 +83,19 @@ flowchart LR
   Exec -. 열람 .-> Files
 ```
 
+**현행 데이터 수집 단계** (붉은 박스 = 수기 병목)
+1. PIC가 로컬 Python 스크립트로 **SEMrush API**를 호출해 측정값 다운로드
+2. 결과를 **CSV로 저장**
+3. **Google Drive에 업로드**하여 구글 시트로 변환
+4. 편집 페이지가 시트의 19개 탭을 자체 파서로 동기화
+
 ### 2.2 핵심 기능 목록
 
 | 기능 | 설명 |
 |---|---|
+| **SEMrush 데이터 수집 (수기)** | PIC가 로컬 Python으로 SEMrush API 호출 → CSV → Google Drive → 구글 시트 |
 | 편집 페이지 7종 | 측정값·대시보드·뉴스레터·Citation·월간/주간 리포트·Progress Tracker |
-| 구글 시트 동기화 | 19개 탭을 수동 트리거로 당겨와 파싱 |
+| 구글 시트 동기화 | 19개 탭을 자체 파서로 당겨와 정형 데이터화 |
 | 게시 | KO/EN HTML을 고정 URL로 공개 (IP 화이트리스트) |
 | 이메일 발송 | 월간 뉴스레터를 SMTP로 수동 발송 |
 | AI 인사이트 | Claude API로 본문 초안 생성 (과거 발행본 12건 참고) |
@@ -86,8 +105,8 @@ flowchart LR
 
 | 영역 | 한계 | 결과 |
 |---|---|---|
-| 데이터 수집 | 시트 수기 입력 + 수동 동기화 | 담당자 공수 월 수 시간 |
-| 저장 | 서버 디스크 JSON 파일 | 이력·검색·집계 불가 |
+| **SEMrush 수집** | 로컬 Python 수동 실행 → CSV → Drive 업로드 (4단계 수기) | 매주 수십 분, 누락·오류 위험 |
+| 데이터 저장 | 서버 디스크 JSON 파일 | 이력·검색·집계 불가 |
 | AI 생성 | 단발 호출, 수치 검증 없음 | 환각·오류 수동 교정 필요 |
 | 관찰성 | 로그 수준 기록 | 비용·품질 추적 불가 |
 | 프롬프트 관리 | 시트 + 몇몇 화면에 분산 | 버전·승인 체계 없음 |
@@ -115,11 +134,13 @@ flowchart LR
 
   Sched[⏰ Cloud Scheduler<br/>일·주·월 크론]:::sched
 
-  Sheets[구글 시트<br/>GEO 측정값·메타]:::ext
+  SEM[SEMrush API<br/>측정값 원천]:::ext
+  Sheets[구글 시트<br/>리포트 메타·기획]:::ext
   Sites[법인 사이트맵<br/>US·DE·FR·UK·…]:::ext
 
   subgraph Ingest["① 데이터 자동 수집"]
-    ETL[시트 ETL]:::run
+    CC[Claude Code 기반<br/>SEMrush → BigQuery<br/>자동 적재]:::run
+    ETL[시트 ETL<br/>메타 동기화]:::run
     Bridge[브릿지 API]:::run
   end
 
@@ -169,6 +190,8 @@ flowchart LR
     Exec[임원·Viewer]:::user
   end
 
+  Sched --> CC
+  SEM --> CC --> Core
   Sched --> ETL
   Sheets --> ETL --> Core
   Sched --> SC
@@ -208,12 +231,13 @@ flowchart LR
 ### 3.1 인프라 결론
 
 - **LLM은 Claude API 단일** — 다른 엔진 호출·교차 검증 없음. 리포트 생성·메타 태깅·품질 평가에 모두 Claude만 사용
-- 측정값(GEO 점수)은 외부에서 수집되어 **구글 시트로 입수** → ETL로 BigQuery 적재 (시스템이 측정 엔진을 직접 호출하지 않음)
+- **측정값 수집을 Claude Code로 전면 자동화** — 기존 4단계 수기(Python 다운로드 → CSV → Drive → 시트)를 Claude Code 기반 작업으로 교체해 **SEMrush API → BigQuery 직접 적재**. 별도 레포 [`mts8787-droid/dashboard-raw-data`](https://github.com/mts8787-droid/dashboard-raw-data.git)에 이미 구현된 적재 스크립트를 재사용·확장
+- **구글 시트는 메타·기획 정보로 한정** — 리포트 제목·기간·기획 메모 등은 시트에서 ETL, 측정값은 SEMrush 자동 적재 경로로 이원화
 - **GCP를 데이터·AI 기반**으로 삼고, 기존 **Render 웹 서버는 단계적으로 Cloud Run**으로 이전. 전환 기간에는 브릿지 API로 공존
 - 데이터·지식·프롬프트·감사 로그를 모두 **BigQuery 단일 원천**에 통합
 - **뉴스레터와 대시보드는 동일한 BigQuery 데이터 + 동일한 에이전트**로 생성되어, 두 산출물의 톤·수치·근거가 자동 일치
 - **Outlook/Teams 알림**은 메인 흐름과 분리된 **부가 기능** (이상 탐지·완료 통지)
-- 고정 인프라 비용은 **월 $55~120**, Claude API 호출은 **월 $20~50** 수준에서 통제 (예산 알림 필수)
+- 고정 인프라 비용은 **월 $55~120**, Claude API 호출은 **월 $20~50** 수준 (예산 알림 필수)
 - 세부는 `docs/GCP_INFRA.md` / `/admin/infra` 참조
 
 ---
@@ -233,22 +257,24 @@ flowchart LR
 
 ### 4.1 데이터 파이프라인 자동화
 
-**목적**: 담당자의 "시트 동기화" 클릭 단계를 폐지하고, 모든 데이터를 BigQuery에 누적해 이력·검색·집계가 가능하게 만든다.
+**목적**: 현재 4단계 수기 흐름(Python → CSV → Drive → 시트)을 폐지하고, **Claude Code 기반 작업**으로 SEMrush API에서 BigQuery까지 자동 적재한다. 시트 동기화 클릭도 사라지고, 모든 데이터가 BigQuery에 누적되어 이력·검색·집계가 가능해진다.
 
-> 본 시스템은 측정 엔진(Perplexity·ChatGPT 등)을 직접 호출하지 않는다.
-> GEO 측정값은 외부에서 수집되어 **구글 시트로 입수**되며, 본 파이프라인은 이를 **BigQuery로 자동 ETL**한다.
 > 시스템 내부에서 사용하는 LLM은 **Claude API 하나**뿐이다 (리포트 생성·메타 태깅·품질 평가 모두).
 
 **구성**
 
 | 구성 요소 | 역할 |
 |---|---|
-| 자동 스케줄러 | 매일 새벽·시간 단위 파이프라인 트리거 |
-| 시트 ETL | 구글 시트 19개 탭을 읽어 BigQuery 팩트·차원 테이블에 적재 (변경 분만) |
-| BigQuery 팩트·차원 | 측정값·제품·국가·토픽·프롬프트 마스터 |
+| 자동 스케줄러 | 매일 새벽 데이터 적재 트리거 (Cloud Scheduler) |
+| **Claude Code 기반 SEMrush 적재** | SEMrush API 호출 → 정규화 → BigQuery 직접 적재. 별도 레포 [`dashboard-raw-data`](https://github.com/mts8787-droid/dashboard-raw-data.git)의 구현을 재사용 |
+| 시트 ETL (메타 전용) | 구글 시트의 메타·기획 탭만 읽어 BigQuery `meta_*` 테이블 갱신 (측정값 시트는 To-Be에서 제외) |
+| BigQuery 팩트·차원 | SEMrush 적재 결과 + 시트 메타가 합쳐진 측정값·제품·국가·토픽·프롬프트 마스터 |
 | BigQuery 리포트 마트 | 뉴스레터·대시보드용 일·주·월 집계 (Scheduled Query) |
 | 브릿지 API | BigQuery 마트 → 기존 sync-data JSON 형식으로 변환해 웹 서버에 전달 |
 | **데이터 신선도 배지** | 각 편집 화면 상단에 "데이터 최신화: N시간 전"·"⚠️ 24시간 경과" 표시 |
+
+**기존 레포 활용**
+- [`mts8787-droid/dashboard-raw-data`](https://github.com/mts8787-droid/dashboard-raw-data.git) — 이미 Claude Code로 BigQuery 적재 파이프라인이 구현되어 있음. 이 레포의 적재 로직을 본 인프라의 Cloud Run Job(`semrush-loader`)으로 컨테이너화해 운영 환경에 통합한다.
 
 ---
 
@@ -605,7 +631,8 @@ flowchart TD
 | `src/visibility/App.jsx` 등 | 편집 페이지 루트 |
 | `docs/ADMIN_PLAN.md` | 이 문서 |
 | `docs/GCP_INFRA.md` | GCP 인프라 구성도 (`/admin/infra`) |
+| [`mts8787-droid/dashboard-raw-data`](https://github.com/mts8787-droid/dashboard-raw-data.git) | **별도 레포** — Claude Code 기반 SEMrush API → BigQuery 적재 (To-Be 데이터 파이프라인 핵심) |
 
 ---
 
-*문서 버전 v12.0 · 2026-04-25*
+*문서 버전 v13.0 · 2026-04-25*

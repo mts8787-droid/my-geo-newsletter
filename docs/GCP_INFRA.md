@@ -34,7 +34,8 @@
 | 서비스 | 사용처 | 트리거 | 예상 비용(월) |
 |---|---|---|---|
 | **Cloud Run Service — web-api** | Render 대체 (최종 단계, 점진 이전) | HTTPS (`geo-report.lge.com`) | $20~50 |
-| **Cloud Run Job — sheet-etl** | 구글 시트 → BigQuery 자동 ETL | Cloud Scheduler (시간·일) | $1~3 |
+| **Cloud Run Job — semrush-loader** | Claude Code 기반 SEMrush API → BigQuery 자동 적재. 별도 레포 [`dashboard-raw-data`](https://github.com/mts8787-droid/dashboard-raw-data.git)의 적재 스크립트를 컨테이너화 | Cloud Scheduler (매일 새벽) | $2~5 |
+| **Cloud Run Job — sheet-etl** | 구글 시트의 메타·기획 탭 → BigQuery 동기화 | Cloud Scheduler (시간·일) | $0.5~1 |
 | **Cloud Run Job — sitemap-crawler** | 법인 사이트맵 수집·diff | 매주 월요일 | $1~2 |
 | **Cloud Run Job — readability-scorer** | 신규 URL 리더빌리티 계산 | sitemap-crawler 후속 | $1~2 |
 | **Cloud Run Job — knowledge-indexer** | PDF/DOCX 청킹·임베딩·BigQuery 적재 | 업로드 이벤트 or 수동 | $2~5 |
@@ -42,7 +43,7 @@
 | **Cloud Run Job — insight-agent** | 월간 자동 초안 생성 에이전트 (Claude API) | 매월 1일 06:00 | $1~3 |
 | **Cloud Functions (2세대)** | 이벤트 응답 (GCS 업로드 → 인덱싱 트리거) | Eventarc | $0~1 |
 
-> 본 시스템은 외부 측정 엔진(Perplexity·ChatGPT 등)을 **직접 호출하지 않는다**. GEO 측정값은 외부 수집 후 구글 시트로 입수되며, 시스템 내부 LLM은 Claude API 하나로 통일.
+> 측정값 원천은 **SEMrush API**이며, Claude Code 기반 적재 작업이 매일 새벽 자동으로 BigQuery에 적재한다(별도 레포 `dashboard-raw-data` 활용). 시스템 내부 LLM은 **Claude API 하나**로 통일.
 
 > 컨테이너는 모두 **Artifact Registry**에 저장, `geo-report-prod/asia-northeast3-docker.pkg.dev/geo-report` 리포지터리.
 
@@ -139,6 +140,7 @@
 
 | 서비스 | 용도 | 비고 |
 |---|---|---|
+| **SEMrush API** | GEO 측정값 원천 (Position·Visibility·SERP) | API 키, 별도 레포 `dashboard-raw-data`에서 호출 로직 검증됨 |
 | **Render** | 현행 웹 서버·게시본 호스팅 | 최종 Cloud Run 이전 전까지 유지 |
 | **Anthropic** | Claude API (시스템 내부 유일한 LLM) | 프로젝트 API 키 별도 발급 |
 | **Gmail SMTP** | 월간 뉴스레터 발송 | OAuth2 앱 비밀번호 |
@@ -153,6 +155,7 @@
 | 서비스 계정 | 최소 권한 |
 |---|---|
 | `sa-web-api@` | BigQuery Data Viewer, Secret Accessor, Cloud SQL Client, Cloud Run Invoker (bridge) |
+| `sa-semrush-loader@` | BigQuery Data Editor (core), Secret Accessor (SEMrush API 키) |
 | `sa-sheet-etl@` | BigQuery Data Editor (core), Secret Accessor (시트 서비스 계정 키) |
 | `sa-sitemap-crawler@` | BigQuery Data Editor (tracker), Storage Object Creator |
 | `sa-knowledge-indexer@` | BigQuery Data Editor (knowledge), Cloud SQL Client, Vertex AI User |
@@ -230,7 +233,7 @@ terraform/
 | Vertex AI 임베딩 | 월 10M 토큰 | $0.2 |
 | **Claude·임베딩 소계** | | **$15~25** |
 
-> 측정 엔진 호출비(Perplexity·ChatGPT)는 시스템 외부에서 발생하므로 본 인프라 비용에 포함되지 않는다.
+> SEMrush API 구독료는 별도(기존 LG 계약 사용). 본 인프라는 호출 자체를 자동화할 뿐, 라이선스 비용을 추가로 발생시키지 않는다.
 
 **총합**: **월 $70~150** (인프라 + Claude). **Budget Alert** 월 $300 상한 권장.
 
@@ -257,10 +260,11 @@ terraform/
 - [ ] Cloud SQL 인스턴스 + pgvector 확장
 
 ### Step 3 — 배치·서비스
-- [ ] 각 Cloud Run Job 컨테이너 이미지 빌드·배포
+- [ ] **`dashboard-raw-data` 레포 fork/clone → 컨테이너화 → `semrush-loader` Cloud Run Job으로 등록**
+- [ ] 각 Cloud Run Job 컨테이너 이미지 빌드·배포 (semrush-loader, sheet-etl, sitemap-crawler, knowledge-indexer, bridge-sync, insight-agent)
 - [ ] Cloud Scheduler 크론 등록 (03:00, 월요일, 매월 1일)
-- [ ] Cloud Workflows 파이프라인 정의
-- [ ] Secret Manager에 시크릿 등록 + SA 바인딩
+- [ ] Cloud Workflows 파이프라인 정의 (semrush-loader → sheet-etl → mart 갱신 → bridge-sync 순차)
+- [ ] Secret Manager에 SEMrush·Anthropic·SMTP 시크릿 등록 + SA 바인딩
 
 ### Step 4 — 브릿지 연동
 - [ ] Render 서버에 `/api/ingest/sync-from-bq` 라우트 추가
@@ -303,7 +307,8 @@ flowchart LR
 
   subgraph Compute["컴퓨트"]
     WebAPI[Cloud Run<br/>web-api]:::run
-    SE[Cloud Run Job<br/>sheet-etl]:::run
+    SR[Cloud Run Job<br/>semrush-loader<br/>Claude Code 기반]:::run
+    SE[Cloud Run Job<br/>sheet-etl 메타]:::run
     SC[Cloud Run Job<br/>sitemap-crawler]:::run
     KI[Cloud Run Job<br/>knowledge-indexer]:::run
     BR[Cloud Run Job<br/>bridge-sync]:::run
@@ -321,7 +326,8 @@ flowchart LR
     VA[Vertex AI<br/>임베딩 전용]:::ai
   end
 
-  Sheets[구글 시트<br/>측정값 입수]:::ai
+  SEM[SEMrush API<br/>측정값 원천]:::ai
+  Sheets[구글 시트<br/>메타·기획]:::ai
 
   subgraph Orch["오케스트레이션"]
     CS[Cloud Scheduler]:::ops
@@ -341,6 +347,8 @@ flowchart LR
     LS[Looker Studio]:::ops
   end
 
+  CS --> SR
+  SEM --> SR --> BQ
   CS --> SE
   Sheets --> SE --> BQ
   CS --> SC --> BQ
@@ -350,9 +358,9 @@ flowchart LR
   CS --> IA --> Cl & BQ & SQL
   WebAPI --> Cl
   WebAPI --> SM
-  WebAPI & SE & SC & KI & IA --> Log --> Mon --> LS
+  WebAPI & SR & SE & SC & KI & IA --> Log --> Mon --> LS
   CA -.->WebAPI
-  IAM -.->WebAPI & SE & SC & KI & BR & IA
+  IAM -.->WebAPI & SR & SE & SC & KI & BR & IA
 ```
 
 ---
@@ -364,7 +372,7 @@ flowchart LR
 **핵심 설계 원칙**
 
 - **단일 LLM 정책** — 시스템 내부에서 응답을 생성하는 LLM은 **Claude API 하나뿐**. 다른 엔진 호출이나 응답 교차 검증을 두지 않아 운영·비용·검증 부담을 최소화
-- **측정 엔진 직접 호출 없음** — Perplexity·ChatGPT 등 측정 엔진은 시스템 외부에서 수집되어 구글 시트로 입수되며, 본 인프라는 시트→BigQuery ETL과 BigQuery→리포트 렌더만 담당
+- **측정값은 SEMrush API에서 직접 적재** — 기존 4단계 수기(Python → CSV → Drive → 시트)를 폐지하고, [`dashboard-raw-data`](https://github.com/mts8787-droid/dashboard-raw-data.git) 레포의 Claude Code 적재 스크립트를 컨테이너화한 `semrush-loader` Cloud Run Job이 매일 새벽 BigQuery에 적재. 구글 시트는 메타·기획 정보 보관용으로만 유지
 - **GCP 단일 플랫폼** — 데이터 창고(BigQuery), 컴퓨트(Cloud Run), 비밀 관리(Secret Manager), 관찰성(Cloud Monitoring)을 GCP로 통일
 - **기존 Render는 단계적 이전** — 초기에는 Render를 그대로 두고 브릿지 API로 BigQuery 결과만 동기화하다가, 안정화된 뒤 Cloud Run으로 컷오버. 에디터·템플릿 코드는 바꾸지 않음
 - **뉴스레터·대시보드 일관성** — 동일한 BigQuery 데이터 + 동일한 Claude 에이전트로 두 산출물을 동시 생성해 톤·수치·근거를 자동 일치시킴
@@ -385,8 +393,8 @@ flowchart LR
 | 감사 이력 | 로그 수준 | BigQuery `audit_logs` append-only |
 
 **도입 원칙 한 줄 요약**
-> **"기존 운영에 브릿지로 붙이고, 안정화된 뒤에 비로소 컷오버한다. 수집·관리·생성·알림·감사의 **진실 공급원은 BigQuery 단 하나**로 모은다."**
+> **"SEMrush는 Claude Code로 자동 적재하고, LLM은 Claude API 하나로 통일한다. 기존 운영에 브릿지로 붙이다 안정화된 뒤 컷오버하며, 수집·관리·생성·알림·감사의 진실 공급원은 BigQuery 단 하나로 모은다."**
 
 ---
 
-*문서 버전 v3.0 · 2026-04-25*
+*문서 버전 v4.0 · 2026-04-25*
