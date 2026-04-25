@@ -1,41 +1,34 @@
 import express from 'express'
 import crypto from 'crypto'
-import nodemailer from 'nodemailer'
-import translate from 'google-translate-api-x'
-import Anthropic from '@anthropic-ai/sdk'
-import { buildInsightPrompt } from './src/shared/insightPrompts.js'
-import {
-  INSIGHT_DEFAULT_MODEL,
-  INSIGHT_DEFAULT_MAX_TOKENS,
-  loadInsightContext,
-  buildSystemPrompt,
-  wrapUserPrompt,
-  callClaudeInsight,
-  classifyClaudeError,
-} from './src/shared/insightAgent.js'
 import { parseAppendix } from './src/excelUtils.js'
 import XLSX from 'xlsx-js-style'
 import { fileURLToPath } from 'url'
 import { dirname, join } from 'path'
-import { readFileSync, writeFileSync, readdirSync, unlinkSync } from 'fs'
+import { readFileSync, writeFileSync, readdirSync, unlinkSync, existsSync } from 'fs'
 import dotenv from 'dotenv'
 
 // C11 step1·2 — 헬퍼들을 lib/ 모듈로 분리
 import {
-  DATA_DIR, PUB_DIR, VALID_MODES,
-  readSnapshots, writeSnapshots,
-  readSyncData, writeSyncData,
-  readModeSnapshots, writeModeSnapshots,
-  readModeSyncData, writeModeSyncData,
-  readAiSettings, writeAiSettings,
-  readArchives, writeArchives,
-  readIpAllowlist, writeIpAllowlist,
+  DATA_DIR, PUB_DIR, VALID_MODES, SNAP_FILE,
+  readModeSyncData,
+  readAiSettings,
+  readArchives,
+  readSnapshots,
 } from './lib/storage.js'
 import { ADMIN_PASSWORD, activeSessions, getSessionToken, createSessionToken, revokeSessionToken } from './lib/auth.js'
-import { extractIPv4, ipToNum, ipMatchesCidr, getRealIp, isIpAllowed } from './lib/network.js'
+import { isIpAllowed } from './lib/network.js'
 import { sanitizeHtml } from './lib/sanitize.js'
-import { withFileLock } from './lib/lock.js'
-import { appendInsightRun } from './lib/insight-runs.js'
+import { validateMode } from './lib/middleware.js'
+
+// C11 step3 — 라우트 모듈
+import { snapshotsRouter } from './routes/snapshots.js'
+import { syncRouter } from './routes/sync.js'
+import { insightRouter } from './routes/insight.js'
+import { emailRouter } from './routes/email.js'
+import { translateRouter } from './routes/translate.js'
+import { ipRouter } from './routes/ip-allowlist.js'
+import { aiSettingsRouter } from './routes/ai-settings.js'
+import { archivesRouter } from './routes/archives.js'
 
 dotenv.config()
 
@@ -208,150 +201,15 @@ app.get('/gsheets-proxy/*', async (req, res) => {
   }
 })
 
-// ─── Email API ───────────────────────────────────────────────────────────────
-let _smtpTransporter = null
-function getSmtpTransporter() {
-  if (_smtpTransporter) return _smtpTransporter
-  const host = process.env.SMTP_HOST || 'smtp.gmail.com'
-  const port = parseInt(process.env.SMTP_PORT || '587')
-  const user = process.env.SMTP_USER
-  const pass = process.env.SMTP_PASS
-  if (!user || !pass) return null
-  _smtpTransporter = nodemailer.createTransport({
-    host, port, secure: port === 465,
-    auth: { user, pass },
-    pool: true,
-  })
-  return _smtpTransporter
-}
-
-app.post('/api/send-email', (req, res) => {
-  console.log('[EMAIL] Route hit')
-  const { to, subject, html } = req.body || {}
-
-  if (!to || !subject || !html) {
-    return res.status(400).json({ ok: false, error: 'to, subject, html 필수' })
-  }
-
-  const transporter = getSmtpTransporter()
-  if (!transporter) {
-    return res.status(500).json({ ok: false, error: 'SMTP 설정이 없습니다.' })
-  }
-
-  transporter.sendMail({
-    from: process.env.SMTP_FROM || process.env.SMTP_USER,
-    to, subject, html,
-  })
-    .then(() => {
-      console.log('[EMAIL] Sent to', to)
-      res.json({ ok: true })
-    })
-    .catch((err) => {
-      console.error('[EMAIL] Send error:', err.message, err.code, err.response)
-      res.status(500).json({ ok: false, error: `이메일 전송 실패: ${err.message}` })
-    })
-})
-
-// ─── Snapshots API ───────────────────────────────────────────────────────────
-app.get('/api/snapshots', (req, res) => {
-  res.json(readSnapshots())
-})
-
-app.post('/api/snapshots', (req, res) => {
-  const { name, data } = req.body || {}
-  if (!name || !data) return res.status(400).json({ ok: false, error: 'name, data 필수' })
-  withFileLock(SNAP_FILE, () => {
-    const snap = { name, ts: Date.now(), data }
-    const list = [snap, ...readSnapshots()].slice(0, 50)
-    writeSnapshots(list)
-    res.json({ ok: true, snapshots: list })
-  })
-})
-
-app.put('/api/snapshots/:ts', (req, res) => {
-  const ts = parseInt(req.params.ts)
-  const { data } = req.body || {}
-  if (!data) return res.status(400).json({ ok: false, error: 'data 필수' })
-  withFileLock(SNAP_FILE, () => {
-    const list = readSnapshots().map(s => s.ts === ts ? { ...s, data, updatedAt: Date.now() } : s)
-    writeSnapshots(list)
-    res.json({ ok: true, snapshots: list })
-  })
-})
-
-app.delete('/api/snapshots/:ts', (req, res) => {
-  const ts = parseInt(req.params.ts)
-  withFileLock(SNAP_FILE, () => {
-    const list = readSnapshots().filter(s => s.ts !== ts)
-    writeSnapshots(list)
-    res.json({ ok: true, snapshots: list })
-  })
-})
-
-// 글로벌 sync-data API (newsletter 호환)
-app.get('/api/sync-data', (req, res) => {
-  const data = readSyncData()
-  if (!data) return res.json({ ok: false, data: null })
-  res.json({ ok: true, data })
-})
-
-app.post('/api/sync-data', (req, res) => {
-  const { data } = req.body || {}
-  if (!data) return res.status(400).json({ ok: false, error: 'data 필수' })
-  const payload = { ...data, savedAt: Date.now() }
-  writeSyncData(payload)
-  console.log('[SYNC-DATA] Saved at', new Date().toISOString())
-  res.json({ ok: true })
-})
-
-// Snapshots — /api/:mode/snapshots (validateMode 미들웨어로 검증 통합)
-app.get('/api/:mode/snapshots', validateMode, (req, res) => {
-  res.json(readModeSnapshots(req.params.mode))
-})
-app.post('/api/:mode/snapshots', validateMode, (req, res) => {
-  const { mode } = req.params
-  const { name, data } = req.body || {}
-  if (!name || !data) return res.status(400).json({ ok: false, error: 'name, data 필수' })
-  const snap = { name, ts: Date.now(), data }
-  const list = [snap, ...readModeSnapshots(mode)].slice(0, 50)
-  writeModeSnapshots(mode, list)
-  res.json({ ok: true, snapshots: list })
-})
-app.put('/api/:mode/snapshots/:ts', validateMode, (req, res) => {
-  const ts = parseInt(req.params.ts)
-  const { data } = req.body || {}
-  if (!data) return res.status(400).json({ ok: false, error: 'data 필수' })
-  const list = readModeSnapshots(req.params.mode).map(s => s.ts === ts ? { ...s, data, updatedAt: Date.now() } : s)
-  writeModeSnapshots(req.params.mode, list)
-  res.json({ ok: true, snapshots: list })
-})
-app.delete('/api/:mode/snapshots/:ts', validateMode, (req, res) => {
-  const ts = parseInt(req.params.ts)
-  const list = readModeSnapshots(req.params.mode).filter(s => s.ts !== ts)
-  writeModeSnapshots(req.params.mode, list)
-  res.json({ ok: true, snapshots: list })
-})
-
-// Sync Data — /api/:mode/sync-data (validateMode 미들웨어로 검증 통합)
-const STALE_THRESHOLD_MS = 24 * 60 * 60 * 1000
-app.get('/api/:mode/sync-data', validateMode, (req, res) => {
-  const data = readModeSyncData(req.params.mode)
-  if (!data) return res.json({ ok: false, data: null })
-  // C16 — 데이터 신선도 응답: 클라이언트가 stale 배지를 표시할 수 있도록
-  const savedAt = typeof data.savedAt === 'number' ? data.savedAt : null
-  const ageMs = savedAt ? Math.max(0, Date.now() - savedAt) : null
-  const stale = ageMs != null ? ageMs > STALE_THRESHOLD_MS : true
-  res.json({ ok: true, data, savedAt, ageMs, stale, staleThresholdMs: STALE_THRESHOLD_MS })
-})
-app.post('/api/:mode/sync-data', validateMode, (req, res) => {
-  const { mode } = req.params
-  const { data } = req.body || {}
-  if (!data) return res.status(400).json({ ok: false, error: 'data 필수' })
-  const payload = { ...data, savedAt: Date.now() }
-  writeModeSyncData(mode, payload)
-  console.log(`[SYNC-DATA:${mode}] Saved at`, new Date().toISOString())
-  res.json({ ok: true })
-})
+// ─── 라우트 모듈 마운트 (C11 step3) ────────────────────────────────────────
+app.use(snapshotsRouter)
+app.use(syncRouter)
+app.use(insightRouter)
+app.use(emailRouter)
+app.use(translateRouter)
+app.use(ipRouter)
+app.use(aiSettingsRouter)
+app.use(archivesRouter)
 
 // ─── Google Sheet Export (Apps Script proxy) ────────────────────────────────
 app.post('/api/gsheet-export', async (req, res) => {
@@ -385,135 +243,7 @@ app.post('/api/gsheet-export', async (req, res) => {
   }
 })
 
-// ─── Translate API ───────────────────────────────────────────────────────────
-app.post('/api/translate', async (req, res) => {
-  const { texts, from, to } = req.body || {}
-  if (!texts || !Array.isArray(texts) || !to) {
-    return res.status(400).json({ ok: false, error: 'texts (array), to 필수' })
-  }
-  try {
-    // 배치 처리: 한 번에 너무 많이 보내면 Google이 차단할 수 있으므로 20개씩 나눠서 번역
-    const BATCH = 20
-    const translated = []
-    for (let i = 0; i < texts.length; i += BATCH) {
-      const batch = texts.slice(i, i + BATCH)
-      const results = await translate(batch, { from: from || 'ko', to })
-      const arr = Array.isArray(results) ? results : [results]
-      translated.push(...arr.map(r => r.text))
-    }
-    res.json({ ok: true, translated })
-  } catch (err) {
-    console.error('[TRANSLATE] Error:', err.message, err.stack)
-    res.status(500).json({ ok: false, error: '번역 실패: ' + err.message })
-  }
-})
-
-// ─── AI Insight Generation (Claude API) ─────────────────────────────────────
-// 상수·프롬프트 빌더·에러 분류는 src/shared/insightAgent.js로,
-// 호출 로깅(appendInsightRun)은 lib/insight-runs.js로 분리
-app.post('/api/generate-insight', async (req, res) => {
-  const { type, data, lang, rules } = req.body || {}
-  if (!type || !data) {
-    return res.status(400).json({ ok: false, error: 'type, data 필수' })
-  }
-  const apiKey = process.env.ANTHROPIC_API_KEY
-  if (!apiKey) {
-    return res.status(500).json({ ok: false, error: 'ANTHROPIC_API_KEY가 설정되지 않았습니다' })
-  }
-  const t0 = Date.now()
-  let archiveKey = type
-  let model = INSIGHT_DEFAULT_MODEL
-  try {
-    const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
-    const aiSettings = readAiSettings()
-
-    // 1) 컨텍스트 로드 (archives 의존성 주입)
-    const ctx = loadInsightContext({ type, data, readArchives })
-    archiveKey = ctx.archiveKey
-
-    // 2) 프롬프트 빌드 (system: 외부 파일 v1 / user: untrusted_data 격리)
-    const systemPrompt = buildSystemPrompt({
-      rules: rules || aiSettings.promptRules,
-      lang,
-      maskedTemplate: ctx.maskedTemplate,
-      maskedPastExamples: ctx.maskedPastExamples,
-    })
-    const userPrompt = wrapUserPrompt(buildInsightPrompt(type, data))
-
-    // 3) Claude 호출 (관찰성 메타 동시 산출)
-    model = aiSettings.model || INSIGHT_DEFAULT_MODEL
-    const result = await callClaudeInsight({
-      client,
-      systemPrompt,
-      userPrompt,
-      model,
-      maxTokens: aiSettings.maxTokens || INSIGHT_DEFAULT_MAX_TOKENS,
-    })
-
-    // 4) 로그
-    console.log(`[INSIGHT] type=${type} archiveKey=${archiveKey} model=${model} in=${result.inputTokens} out=${result.outputTokens} latency=${result.latencyMs}ms cost=$${result.costUsd} stop=${result.stopReason}`)
-    appendInsightRun({
-      type, archiveKey, model, lang: lang || 'ko',
-      inputTokens: result.inputTokens, outputTokens: result.outputTokens,
-      latencyMs: result.latencyMs, costUsd: result.costUsd,
-      stopReason: result.stopReason, ok: true,
-    })
-
-    res.json({ ok: true, insight: result.insight })
-  } catch (err) {
-    const latencyMs = Date.now() - t0
-    const { kind, httpStatus } = classifyClaudeError(err)
-    console.error(`[INSIGHT] ${kind} type=${type} latency=${latencyMs}ms err=${err.message}`)
-    appendInsightRun({
-      type, archiveKey, model, lang: lang || 'ko',
-      inputTokens: 0, outputTokens: 0, latencyMs, costUsd: 0,
-      stopReason: null, ok: false, kind, error: err.message,
-    })
-    res.status(httpStatus).json({ ok: false, kind, error: 'AI 인사이트 생성 실패: ' + err.message })
-  }
-})
-
-// ─── IP Allowlist API ────────────────────────────────────────────────────────
-app.get('/api/ip-allowlist', (req, res) => {
-  res.json(readIpAllowlist())
-})
-
-app.post('/api/ip-allowlist', (req, res) => {
-  const { cidr, country, label } = req.body || {}
-  if (!cidr) return res.status(400).json({ ok: false, error: 'cidr 필수' })
-  const m = cidr.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})(\/(\d{1,2}))?$/)
-  if (!m || [m[1],m[2],m[3],m[4]].some(o => parseInt(o) > 255) || (m[6] && parseInt(m[6]) > 32)) {
-    return res.status(400).json({ ok: false, error: 'CIDR 형식이 올바르지 않습니다 (예: 192.168.0.0/16)' })
-  }
-  const entry = { id: crypto.randomBytes(8).toString('hex'), cidr, country: country || '', label: label || '', createdAt: Date.now() }
-  const list = [...readIpAllowlist(), entry]
-  writeIpAllowlist(list)
-  res.json({ ok: true, list })
-})
-
-app.delete('/api/ip-allowlist/:id', (req, res) => {
-  const list = readIpAllowlist().filter(e => e.id !== req.params.id)
-  writeIpAllowlist(list)
-  res.json({ ok: true, list })
-})
-
-app.get('/api/my-ip', (req, res) => {
-  res.json({ ip: getRealIp(req) })
-})
-
-// ─── AI Settings API ─────────────────────────────────────────────────────────
-app.get('/api/ai-settings', (req, res) => {
-  res.json({ ok: true, settings: readAiSettings() })
-})
-app.put('/api/ai-settings', (req, res) => {
-  const current = readAiSettings()
-  const { promptRules, model, maxTokens } = req.body || {}
-  if (promptRules !== undefined) current.promptRules = promptRules
-  if (model !== undefined) current.model = model
-  if (maxTokens !== undefined) current.maxTokens = parseInt(maxTokens) || 500
-  writeAiSettings(current)
-  res.json({ ok: true, settings: current })
-})
+// translate · insight · ip · ai-settings 라우트는 모두 routes/ 모듈로 분리됨
 
 // ─── 공통 언어 전환 바 (Newsletter / Dashboard / Citation 공용) ───────────────
 function makeLangBarHtml(activeLang, koSlug, enSlug) {
@@ -535,13 +265,7 @@ function readMetaFile(metaPath) {
   try { return JSON.parse(readFileSync(metaPath, 'utf-8')) } catch { return null }
 }
 
-// ─── 모드 검증 미들웨어 (VALID_MODES는 lib/storage.js에서 import) ─────────────
-function validateMode(req, res, next) {
-  if (!VALID_MODES.includes(req.params.mode)) {
-    return res.status(400).json({ ok: false, error: `invalid mode: ${req.params.mode}. allowed: ${VALID_MODES.join(', ')}` })
-  }
-  next()
-}
+// validateMode는 lib/middleware.js에서 import됨
 
 // ─── Publish API (KO+EN 동시 게시, 고정 URL) ────────────────────────────────
 const KO_SLUG = 'GEO-Monthly-Report-KO'
@@ -1335,30 +1059,7 @@ load();
 </script></body></html>`)
 })
 
-// ─── Archives API (아카이빙 학습 데이터) ─────────────────────────────────────
-app.get('/api/archives', (req, res) => {
-  const archives = readArchives()
-  console.log(`[ARCHIVES] GET — ${archives.length}건 반환`)
-  res.json({ ok: true, archives })
-})
-app.post('/api/archives', (req, res) => {
-  const { period, insights } = req.body || {}
-  console.log(`[ARCHIVES] POST — period="${period}", insights keys: ${insights ? Object.keys(insights).filter(k => insights[k]).join(',') : 'NONE'}`)
-  if (!period || !insights) return res.status(400).json({ ok: false, error: 'period, insights 필수' })
-  const list = readArchives()
-  // 같은 period가 있으면 덮어쓰기
-  const idx = list.findIndex(a => a.period === period)
-  const entry = { id: crypto.randomBytes(8).toString('hex'), period, insights, createdAt: Date.now() }
-  if (idx >= 0) { entry.id = list[idx].id; list[idx] = entry }
-  else list.unshift(entry)
-  writeArchives(list)
-  res.json({ ok: true, archives: list })
-})
-app.delete('/api/archives/:id', (req, res) => {
-  const list = readArchives().filter(a => a.id !== req.params.id)
-  writeArchives(list)
-  res.json({ ok: true, archives: list })
-})
+// archives API는 routes/archives.js로 분리됨
 
 // ─── Archives UI (학습 데이터 확인) ──────────────────────────────────────────
 app.get('/admin/archives', (req, res) => {

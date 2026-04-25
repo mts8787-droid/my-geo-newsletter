@@ -77,7 +77,8 @@
       "Bash(sed -n '1649,1845p' src/dashboard/dashboardTemplate.js)",
       "Read(//tmp/**)",
       "Bash(awk 'NR==1650 || NR==1848 || NR==1849 {print NR\": \"$0}' src/dashboard/dashboardTemplate.js)",
-      "Bash(awk 'NR>=1648 && NR<=1654' /tmp/dashboardTemplate.new.js)"
+      "Bash(awk 'NR>=1648 && NR<=1654' /tmp/dashboardTemplate.new.js)",
+      "Bash(ADMIN_PASSWORD=t timeout 3 node server.js)"
     ]
   }
 }
