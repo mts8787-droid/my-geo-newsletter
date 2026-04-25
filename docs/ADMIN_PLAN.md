@@ -100,7 +100,7 @@ flowchart LR
 
 ## 3. To-Be 아키텍처 (한 장)
 
-6개 기능 축이 통합 완료됐을 때의 전체 그림.
+6개 기능 축이 통합 완료됐을 때의 전체 그림. **LLM은 Claude API만 사용**한다 (다른 엔진 호출·교차 검증 없음).
 
 ```mermaid
 flowchart LR
@@ -108,14 +108,19 @@ flowchart LR
   classDef run fill:#FCE7F3,stroke:#BE185D,color:#831843
   classDef bq fill:#D1FAE5,stroke:#047857,color:#064E3B
   classDef ui fill:#DBEAFE,stroke:#1E40AF,color:#1E3A8A
+  classDef out fill:#FBCFE8,stroke:#9D174D,color:#831843,stroke-width:2px
   classDef ext fill:#E0E7FF,stroke:#4338CA,color:#312E81
   classDef user fill:#FEE2E2,stroke:#B91C1C,color:#7F1D1D
+  classDef opt fill:#F1F5F9,stroke:#94A3B8,color:#475569,stroke-dasharray: 4 4
 
   Sched[⏰ Cloud Scheduler<br/>일·주·월 크론]:::sched
 
+  Sheets[구글 시트<br/>GEO 측정값·메타]:::ext
+  Sites[법인 사이트맵<br/>US·DE·FR·UK·…]:::ext
+
   subgraph Ingest["① 데이터 자동 수집"]
-    PR[프롬프트 러너]:::run
-    PS[응답 파서]:::run
+    ETL[시트 ETL]:::run
+    Bridge[브릿지 API]:::run
   end
 
   subgraph Tracker["④ Progress Tracker 자동화"]
@@ -124,14 +129,8 @@ flowchart LR
     IQ[인테이크 큐]:::ui
   end
 
-  subgraph Engines["생성형 AI 엔진"]
-    Perp[Perplexity]:::ext
-    GPT[ChatGPT]:::ext
-  end
-
   subgraph Warehouse["BigQuery 데이터 창고"]
-    Raw[raw]:::bq
-    Core[core·mart]:::bq
+    Core[core·mart<br/>측정값·집계]:::bq
     Prompts[② 프롬프트<br/>dim_prompt·history]:::bq
     Knowledge[③ 지식 허브<br/>chunks + 임베딩]:::bq
     TrackDS[tracker_intake·tasks]:::bq
@@ -139,7 +138,8 @@ flowchart LR
   end
 
   Vec[Vector DB<br/>pgvector]:::bq
-  Bridge[브릿지 API]:::run
+
+  Claude[🤖 Claude API<br/>리포트 생성 LLM]:::ext
 
   subgraph Agent["⑤ 리포트 생성 에이전트"]
     Loop[의도→검색→수치→생성→검증]:::run
@@ -147,15 +147,20 @@ flowchart LR
     Lock[섹션 잠금]:::ui
   end
 
-  Claude[Claude API]:::ext
-
-  subgraph WebApp["웹 서버 (Render → Cloud Run 이전)"]
-    Editor[편집 페이지 7종<br/>데이터 신선도 배지]:::ui
-    Gov[⑥ 운영·거버넌스<br/>롤 권한·감사 뷰어]:::ui
-    Pub[게시·SMTP 발송]:::run
+  subgraph Render["📰 시각화 산출물"]
+    NL[월간 뉴스레터 HTML<br/>KO/EN]:::out
+    Dash[임원 대시보드 HTML<br/>KO/EN]:::out
   end
 
-  Notif[Outlook/Teams<br/>알림 디스패처]:::ext
+  Mail[월간 이메일 발송<br/>SMTP]:::ext
+
+  subgraph WebApp["웹 서버 (Render → Cloud Run)"]
+    Editor[편집 페이지 7종<br/>데이터 신선도 배지]:::ui
+    Gov[⑥ 운영·거버넌스<br/>롤 권한·감사 뷰어]:::ui
+    Pub[게시·발송 처리]:::run
+  end
+
+  Notif[(Outlook/Teams<br/>알림 디스패처<br/>※부가 기능)]:::opt
 
   subgraph Users["사용자"]
     PIC[PIC·Editor]:::user
@@ -164,14 +169,12 @@ flowchart LR
     Exec[임원·Viewer]:::user
   end
 
-  Sites[법인 사이트맵<br/>US·DE·FR·UK·…]:::ext
-
-  Sched --> PR --> Perp & GPT
-  PR --> PS --> Raw --> Core
+  Sched --> ETL
+  Sheets --> ETL --> Core
   Sched --> SC
   Sites --> SC --> RD --> IQ --> TrackDS
-  Sched --> Bridge --> Core
-  Bridge -.sync.-> Editor
+  Sched --> Bridge
+  Bridge -- mart 동기화 --> Editor
   Sched --> Loop
   Loop -- get_metric --> Core
   Loop -- search_knowledge --> Vec
@@ -182,27 +185,35 @@ flowchart LR
   Editor --> Loop
   Editor --> Prompts
   Editor --> Knowledge
+  Loop --> NL & Dash
+  Editor --> NL & Dash
+  NL --> Pub --> Mail --> Exec
+  Dash --> Pub
+  Pub -. 공개 URL 열람 .-> Exec
   IQ -- 승인 --> Contrib
-  Gov --> Notif
-  Loop --> Notif
-  Bridge --> Notif
-  Notif --> PIC & Appr & Contrib
-  Editor --> Pub
-  Pub -.게시본.-> Exec
+  Editor --> Contrib
+  Gov -. 부가 .-> Notif
+  Loop -. 부가 .-> Notif
+  Bridge -. 부가 .-> Notif
+  Notif -. 알림 .-> PIC & Appr & Contrib
 ```
 
 **도식 읽는 법**
 - ①~⑥: §4 기능 축 번호
-- **세 박스가 수평**: (왼쪽) 자동 수집 · 트래커 자동화 · 엔진 호출 → (가운데) BigQuery 창고 → (오른쪽) 에이전트·웹 서버
-- 모든 이벤트는 **Outlook/Teams 알림**으로 발화
-- 감사·이력·원본은 **BigQuery**에 누적
+- **메인 흐름** (왼쪽 → 오른쪽): 구글 시트·사이트맵 → 데이터 창고(BigQuery) → 에이전트(Claude API) → **시각화 산출물(뉴스레터·대시보드)** → 임원 열람
+- **시각화 산출물**(분홍 굵은 선): 동일한 BigQuery 데이터에서 같은 에이전트가 **뉴스레터 HTML과 대시보드 HTML을 일관되게 동시 생성** — 톤·수치·근거가 두 채널에서 일치
+- **LLM 호출은 Claude API 단일** — 측정 엔진 호출이나 모델 교차 검증 없음
+- **Outlook/Teams 알림**은 점선·회색의 **부가 기능** — 메인 데이터 흐름과는 분리
 
 ### 3.1 인프라 결론
 
-- **GCP를 데이터·AI 기반**으로 삼고, 기존 **Render 웹 서버는 단계적으로 Cloud Run**으로 이전한다. 전환 기간에는 브릿지 API로 두 환경을 공존시켜 리스크를 최소화한다
-- 데이터·지식·프롬프트·감사 로그를 모두 **BigQuery 단일 원천**에 통합 — 이력·검색·집계·Looker 시각화가 동시에 해결됨
-- **Claude API**는 리포트 생성 담당(도구 호출 + 검증 루프). Vertex AI는 임베딩에 한정
-- 고정 인프라 비용은 **월 $55~120**, LLM·엔진 호출은 **월 $400~800** 수준에서 통제(예산 알림 필수)
+- **LLM은 Claude API 단일** — 다른 엔진 호출·교차 검증 없음. 리포트 생성·메타 태깅·품질 평가에 모두 Claude만 사용
+- 측정값(GEO 점수)은 외부에서 수집되어 **구글 시트로 입수** → ETL로 BigQuery 적재 (시스템이 측정 엔진을 직접 호출하지 않음)
+- **GCP를 데이터·AI 기반**으로 삼고, 기존 **Render 웹 서버는 단계적으로 Cloud Run**으로 이전. 전환 기간에는 브릿지 API로 공존
+- 데이터·지식·프롬프트·감사 로그를 모두 **BigQuery 단일 원천**에 통합
+- **뉴스레터와 대시보드는 동일한 BigQuery 데이터 + 동일한 에이전트**로 생성되어, 두 산출물의 톤·수치·근거가 자동 일치
+- **Outlook/Teams 알림**은 메인 흐름과 분리된 **부가 기능** (이상 탐지·완료 통지)
+- 고정 인프라 비용은 **월 $55~120**, Claude API 호출은 **월 $20~50** 수준에서 통제 (예산 알림 필수)
 - 세부는 `docs/GCP_INFRA.md` / `/admin/infra` 참조
 
 ---
@@ -222,19 +233,21 @@ flowchart LR
 
 ### 4.1 데이터 파이프라인 자동화
 
-**목적**: 담당자의 "시트 동기화" 단계를 폐지. 매일 새벽 자동 수집·정리·집계.
+**목적**: 담당자의 "시트 동기화" 클릭 단계를 폐지하고, 모든 데이터를 BigQuery에 누적해 이력·검색·집계가 가능하게 만든다.
+
+> 본 시스템은 측정 엔진(Perplexity·ChatGPT 등)을 직접 호출하지 않는다.
+> GEO 측정값은 외부에서 수집되어 **구글 시트로 입수**되며, 본 파이프라인은 이를 **BigQuery로 자동 ETL**한다.
+> 시스템 내부에서 사용하는 LLM은 **Claude API 하나**뿐이다 (리포트 생성·메타 태깅·품질 평가 모두).
 
 **구성**
 
 | 구성 요소 | 역할 |
 |---|---|
-| 자동 스케줄러 | 매일 새벽 파이프라인 시작 |
-| 프롬프트 러너 | Perplexity·ChatGPT에 측정 프롬프트 일괄 호출 |
-| 응답 파서 | 인용·브랜드 언급·도메인 추출 |
-| BigQuery 원본 | 엔진 답변 원본 보존 |
-| BigQuery 팩트·차원 | 정제된 수치 + 제품·국가·토픽·프롬프트 마스터 |
-| BigQuery 리포트 마트 | 대시보드용 일·주·월 집계 |
-| 브릿지 API | BigQuery 집계 → 기존 sync-data JSON으로 변환 |
+| 자동 스케줄러 | 매일 새벽·시간 단위 파이프라인 트리거 |
+| 시트 ETL | 구글 시트 19개 탭을 읽어 BigQuery 팩트·차원 테이블에 적재 (변경 분만) |
+| BigQuery 팩트·차원 | 측정값·제품·국가·토픽·프롬프트 마스터 |
+| BigQuery 리포트 마트 | 뉴스레터·대시보드용 일·주·월 집계 (Scheduled Query) |
+| 브릿지 API | BigQuery 마트 → 기존 sync-data JSON 형식으로 변환해 웹 서버에 전달 |
 | **데이터 신선도 배지** | 각 편집 화면 상단에 "데이터 최신화: N시간 전"·"⚠️ 24시간 경과" 표시 |
 
 ---
@@ -595,4 +608,4 @@ flowchart TD
 
 ---
 
-*문서 버전 v11.0 · 2026-04-24*
+*문서 버전 v12.0 · 2026-04-25*
