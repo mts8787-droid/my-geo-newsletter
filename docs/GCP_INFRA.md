@@ -398,11 +398,11 @@ flowchart LR
 | 인프라 고정비 | Render $7 | GCP $55~120 |
 | Claude API 가변비 | 통제 불가 | 월 $15~25 (예산 알림 $300 상한) |
 | 장애 복구 | 수동 | Monitoring 알림 + 자동 재시도 |
-| 감사 이력 | 로그 수준 | BigQuery `audit_logs` append-only |
+| 감사 이력 | 로그인 + AI 생성 (`pino` 구조화 로그 + `insight_runs.jsonl`) — 게시·설정 이벤트는 미적재 | BigQuery `audit_logs` append-only (게시·프롬프트·롤·설정 변경 전체) |
 
 **도입 원칙 한 줄 요약**
 > **"SEMrush는 Claude Code로 자동 적재하고, LLM은 Claude API 하나로 통일한다. 기존 운영에 브릿지로 붙이다 안정화된 뒤 컷오버하며, 수집·관리·생성·알림·감사의 진실 공급원은 BigQuery 단 하나로 모은다."**
 
 ---
 
-*문서 버전 v6.0 · 2026-04-25*
+*문서 버전 v7.0 · 2026-04-25 — Render 측 코드 개선 라운드 반영 (감사 이력·관찰성 As-Is 갱신)*

@@ -108,12 +108,12 @@ flowchart LR
 | **SEMrush 수집** | 로컬 Python 수동 실행 → CSV → Drive 업로드 (4단계 수기) | 매주 수십 분, 누락·오류 위험 |
 | 데이터 저장 | 서버 디스크 JSON 파일 | 이력·검색·집계 불가 |
 | AI 생성 | 단발 호출, 수치 검증 없음 | 환각·오류 수동 교정 필요 |
-| 관찰성 | 로그 수준 기록 | 비용·품질 추적 불가 |
-| 프롬프트 관리 | 시트 + 몇몇 화면에 분산 | 버전·승인 체계 없음 |
+| 관찰성 | `pino` + `insight_runs.jsonl` 적재 (이번 라운드 도입), 통합 대시보드 미구축 | 비용·품질 추적은 가능하나 시각화 부재 |
+| 프롬프트 관리 | 시트 + 몇몇 화면에 분산 (코드 측 `prompts/v1/`로 외부화는 완료) | 버전·승인 체계 없음 |
 | 지식 활용 | 과거 본문 raw 투입 | 토큰 낭비 + 일관성 부족 |
 | Progress Tracker | 수동 과제 등록 | 신규 콘텐츠 누락 가능 |
 
-> 코드 품질·보안 상세 진단은 **Appendix A/B** 참고.
+> 코드 품질·보안 잔여 항목은 **Appendix A/B** 참고 (이번 라운드에서 다수 항목이 코드 측 개선으로 해소됨).
 
 ---
 
@@ -246,9 +246,9 @@ flowchart LR
 | **알림** | 없음 (수동 확인) | Outlook 이메일 + Teams 채널 (부가 기능) |
 | **뉴스레터·대시보드** | 별도 편집 화면, 수동 정합성 점검 | 동일 BigQuery + 동일 에이전트로 동시 생성, 톤·수치 자동 일치 |
 | **뉴스레터 발송** | 수동 SMTP 발송 | 월간 자동 초안 → PIC 검토·승인 → 발송 예약 |
-| **관찰성** | console.log 수준 | BigQuery `logs.insight_runs` + 자체 관리자 대시보드 (`/admin/observability`) |
-| **감사** | 로그인만 기록 | `audit_logs` 게시·프롬프트·롤·설정 변경 전체, 관리자 UI 1,000건 뷰어 |
-| **보안** | 정규식 sanitize, 인젝션 무방어 | sanitize-html + CSP, `<untrusted_data>` 래퍼, Secret Manager |
+| **관찰성** | `pino` 구조화 로그 + `data/insight_runs.jsonl` (token·latency·cost) | BigQuery `logs.insight_runs` + 자체 관리자 대시보드 (`/admin/observability`) |
+| **감사** | 로그인 + AI 생성 기록 (insight_runs) | `audit_logs` 게시·프롬프트·롤·설정 변경 전체, 관리자 UI 1,000건 뷰어 |
+| **보안** | sanitize-html + CSP + `<untrusted_data>` 래퍼 + Origin·Referer CSRF + 라우트별 rate-limit (이번 라운드 적용) | + Secret Manager + Cloud Armor + Redis 세션 |
 | **인프라** | Render 단일 인스턴스 ($7/월) | GCP (Cloud Run + BigQuery + Cloud SQL) ($55~120/월) |
 | **LLM 비용** | 통제 불가 | Claude API 월 $20~50 (Budget Alert $300 상한) |
 | **PIC 월간 공수** | 수 시간 | 15~20분 (자동 초안 검토·승인 중심) |
@@ -556,16 +556,18 @@ flowchart TD
 | 단계 | 기간 | 기능 산출물 | 코드·보안 산출물 |
 |---|---|---|---|
 | P0 | — | 본 기획서 | — |
-| P1 | 1주 | — | K3·K4·K14·SEC1 (인젝션·관찰성·stale) |
-| P2 | 2주 | GCP 기초 세팅 | K5·K16·K17 (상수·CI·audit) |
-| P3 | 3주 | 데이터 자동 수집 MVP | K1·K2 (핸들러 분해·프롬프트 버전) |
-| P4 | 2주 | 브릿지 연동 | K6·K8 (단위 테스트·Zod) |
-| P5 | 2주 | 프롬프트 관리 통합 + **롤 기반 권한 1차** | K7·SEC4 (integration·rate limit) |
-| P6 | 3주 | 지식 허브 RAG + **Outlook/Teams 알림 디스패처** | K10·SEC2·SEC8 (템플릿 분리·CSP·감사 로그) |
+| P1 | 1주 | — | ✅ K3·K4·K14·SEC1 (인젝션·관찰성·stale) |
+| P2 | 2주 | GCP 기초 세팅 (대기) | ✅ K5·K16·K17 (상수·CI·audit) |
+| P3 | 3주 | 데이터 자동 수집 MVP (대기) | ✅ K1·K2 (핸들러 분해·프롬프트 버전) |
+| P4 | 2주 | 브릿지 연동 (대기) | ✅ K6·K8 (단위 테스트·Zod) |
+| P5 | 2주 | 프롬프트 관리 통합 + **롤 기반 권한 1차** | ✅ K7·SEC4 (integration·rate limit, 227 tests) |
+| P6 | 3주 | 지식 허브 RAG + **Outlook/Teams 알림 디스패처** | 🟡 K10 ✅·SEC2 ✅·SEC8 (템플릿 분리·CSP 적용, 감사 로그 일부) |
 | P7 | 3주 | Progress Tracker 자동화 + **실적 입력 담당자 롤** | K9 (TS 도입 1차) |
-| P8 | 3주 | 에이전트화 (도구·검증) + **이력 대시보드**·**섹션 잠금** | K11·SEC3 (server.js 분리·Secret Manager) |
+| P8 | 3주 | 에이전트화 (도구·검증) + **이력 대시보드**·**섹션 잠금** | ✅ K11 (server.js 분리, 1877 → 131줄) · SEC3 (Secret Manager) |
 | P9 | 2주 | 월간 자동 초안 + **감사 로그 뷰어 (1,000건)** | K12·SEC9 (Redis 이관) |
-| P10 | 2주 | 최종 루프 통합 | K13·전면 검증 |
+| P10 | 2주 | 최종 루프 통합 | ✅ K13 (pino) · 전면 검증 |
+
+> 코드·보안 산출물 ✅ = 이번 라운드까지 코드 측에서 완료. GCP 인프라 의존 항목(SEC3·SEC9·K12·K9 등)은 잔존.
 
 ---
 
@@ -588,101 +590,59 @@ flowchart TD
 
 # Appendix
 
-## A. 코드 품질 리뷰 — 안드레이 카파시 관점
+## A. 코드 품질 리뷰 — 잔여 항목
 
-**판단 요약**
-> "This is not an agent. It's a single-shot LLM wrapper embedded in a 90-line Express handler."
+이번 라운드에서 카파시 관점 18개 항목 중 14개를 코드 측에서 해소. 잔존 항목은 모두 인프라·전략 의존.
 
-**점수표** (심각도 × 영향 ÷ 난이도, 클수록 우선)
+| # | 항목 | 이슈 | 심각도 | 영향 | 난이도 | 점수 | 우선 | 의존 |
+|---|---|---|---:|---:|---:|---:|:---:|---|
+| C1 | 에이전트성 결여 | `/api/generate-insight`는 단발 래퍼. tool use·retry·self-critique 전무 | 5 | 5 | 3 | 8.3 | 🔴 | Claude Tool Use 도입 |
+| C9 | 타입 안전성 0 | JS only. Zod 런타임 검증은 도입했으나 컴파일 타임 타입 부재 | 3 | 4 | 4 | 3.0 | 🟡 | TS 점진 도입 |
+| C12 step3 | 클라이언트 JS 분리 미완 | `dashboardTemplate.js`의 SSR + 인라인 client JS 혼재 (style·constants는 분리 완료) | 3 | 3 | 4 | 2.3 | 🟡 | SSR/CSR 경계 재설계 |
+| C18 | 마이그레이션 경로 | 디스크 JSON 저장 → BigQuery 이관 미시작 | 3 | 3 | 2 | 4.5 | 🟠 | GCP 인프라 |
 
-| # | 항목 | 이슈 요약 | 심각도 | 영향 | 난이도 | 점수 | 우선 |
-|---|---|---|---:|---:|---:|---:|:---:|
-| C1 | 에이전트성 결여 | `/api/generate-insight`는 단발 래퍼. tool use·retry·self-critique 전무 | 5 | 5 | 3 | 8.3 | 🔴 |
-| C2 | 라우트 핸들러 거대화 | 90~150줄 핸들러에 매핑·마스킹·프롬프트·호출·에러 모두 인라인 | 4 | 4 | 2 | 8.0 | 🔴 |
-| C3 | 프롬프트 인젝션 무방어 | 시트 `data`를 system에 직접 interpolation | 5 | 4 | 2 | 10.0 | 🔴 |
-| C4 | 관찰성 부재 | `console.log` 수준. token/latency/cost 미기록 | 4 | 5 | 2 | 10.0 | 🔴 |
-| C5 | 프롬프트 버전 관리 | JS 템플릿 리터럴. diff·롤백 불가 | 3 | 4 | 2 | 6.0 | 🟠 |
-| C6 | 매직 넘버/문자열 | `12`·`3`·`TTL`·`Audio` 등 상수 미분리 | 3 | 3 | 1 | 9.0 | 🔴 |
-| C7 | 정규식 휴리스틱 | `pct`·`maskNumbers`·`sanitizeHtml` | 4 | 4 | 3 | 5.3 | 🟠 |
-| C8 | 순수 함수/I-O 혼재 | readAiSettings·writeFileSync가 핸들러 안 | 4 | 3 | 3 | 4.0 | 🟠 |
-| C9 | 타입 안전성 0 | JS only. `req.body` 즉시 destructure | 3 | 4 | 4 | 3.0 | 🟡 |
-| C10 | 테스트 부재 | unit·integration 모두 0 | 4 | 4 | 4 | 4.0 | 🟠 |
-| C11 | 거대 단일 파일 | `server.js` ~1,600줄 | 3 | 3 | 3 | 3.0 | 🟡 |
-| C12 | SSR + 클라이언트 JS 혼재 | `dashboardTemplate.js` | 4 | 4 | 4 | 4.0 | 🟠 |
-| C13 | 에러 핸들링 단일 레이어 | try/catch/console.error | 3 | 4 | 2 | 6.0 | 🟠 |
-| C14 | 의존 관리 취약 | `xlsx-js-style` dynamic+static 혼용, `npm audit` 부재 | 2 | 3 | 1 | 6.0 | 🟠 |
-| C15 | 상태 관리 분산 | `dashOnlyKeys` 수동 목록 | 3 | 4 | 3 | 4.0 | 🟡 |
-| C16 | stale 데이터 경고 부재 | sync-data 24h+ 경고 없음 | 3 | 3 | 1 | 9.0 | 🔴 |
-| C17 | 번들 크기 미최적화 | 각 SPA 1MB+ | 2 | 3 | 3 | 2.0 | 🟡 |
-| C18 | 마이그레이션 경로 부재 | JSON 파일 저장 | 3 | 3 | 2 | 4.5 | 🟠 |
-
-우선: **C3(10.0)·C4(10.0)·C6(9.0)·C16(9.0)·C1(8.3)·C2(8.0)**
+**해소된 항목 (참고)**: C2 (server.js 라우트 분해), C3 (untrusted_data 래퍼), C4 (pino + insight_runs), C5 (`prompts/v1/`), C6 (상수 분리), C7 (sanitize-html + maskNumbers 분리), C8 (loadInsightContext 등 순수 함수화), C10 (테스트 0 → 227), C11 (server.js 1877 → 131줄), C12 step1·2 (style·const 분리), C13 (classifyClaudeError), C14 (manualChunks + npm audit CI), C15 (자동 키 추출), C16 (sync stale 메타), C17 (코드 스플릿)
 
 ---
 
-## B. 보안 취약점 점검
+## B. 보안 취약점 — 잔여 항목
+
+15개 항목 중 11개는 코드 측에서 해소. 잔존 항목은 모두 GCP·인프라 의존.
 
 | # | 항목 | 현재 상태 | 위험 | 권고 |
 |---|---|---|---|---|
-| S1 | 프롬프트 인젝션 | 시트 `data`를 system prompt에 직접 | 🔴 High | `<untrusted_data>` 래퍼 + 결과 재검증 |
-| S2 | HTML Sanitize | 정규식 기반 (`<script>`·`onX=` 제거) | 🟠 Medium | `DOMPurify`·`sanitize-html` 라이브러리 |
-| S3 | API 키 관리 | env var 직접 전달 | 🟠 Medium | Secret Manager 이관 + 감사 |
-| S4 | Rate Limit | `/api/auth/login`만 | 🟠 Medium | `express-rate-limit` 전역 |
-| S5 | CSRF | `X-Requested-With`만 | 🟡 Low | Origin/Referer 화이트리스트 |
-| S6 | IP 화이트리스트 우회 | CF/x-real-ip 신뢰 | 🟡 Low | `TRUST_CF_HEADER` 옵션 |
-| S7 | SSRF (gsheets-proxy) | docs.google.com만 허용 | 🟢 OK | DNS resolution 검증 추가 |
-| S8 | 정적 HTML XSS | 서버 1회 sanitize | 🟠 Medium | 게시 HTML에 CSP 헤더 |
-| S9 | 경로 traversal | `/p/:slug` 검증 부족 | 🟡 Low | `^[A-Za-z0-9_-]+$` 검증 |
-| S10 | 의존성 취약점 | `npm audit` 루틴 없음 | 🟠 Medium | CI + Dependabot |
-| S11 | 세션 저장소 | 메모리 Set | 🟡 Low | Redis |
-| S12 | 감사 로그 | 로그인만 | 🟠 Medium | 게시·프롬프트·설정 이벤트 |
-| S13 | 파일 권한 | `/data` 전체 쓰기 | 🟢 OK | 유지 |
-| S14 | 환경변수 노출 | 민감 정보 없음 | 🟢 OK | 향후 주의 |
-| S15 | 입력 크기 제한 | 전역 50mb | 🟡 Low | 라우트별 차등 |
+| S3 | API 키 관리 | env var 직접 전달 | 🟠 Medium | GCP Secret Manager 이관 + 접근 감사 |
+| S6 | IP 화이트리스트 우회 | `cf-connecting-ip`·`x-real-ip` 무조건 신뢰 (현 운영 정책상 유지) | 🟡 Low | Cloud Run 이전 시 Cloud Armor + `TRUST_CF_HEADER` 옵션 |
+| S11 | 세션 저장소 | 메모리 `Set` (단일 인스턴스 한정) | 🟡 Low | Memorystore Redis |
+| S12 | 감사 로그 | 로그인 시도 + AI 생성(`insight_runs.jsonl`)만 | 🟠 Medium | 게시·프롬프트·롤·설정 변경 이벤트 적재 (BigQuery `audit_logs`) |
 
-요약: 🔴 1 · 🟠 6 · 🟡 5 · 🟢 3
+**해소된 항목 (참고)**: S1 (untrusted_data 래퍼), S2 (sanitize-html), S4 (express-rate-limit 전역+라우트별), S5 (Origin/Referer 화이트리스트), S7 (Apps Script origin 검증 포함), S8 (게시 HTML CSP 헤더), S9 (`^[a-zA-Z0-9-]+$` 슬러그 검증), S10 (`npm audit` CI), S15 (라우트별 JSON 차등 1mb/50mb)
 
 ---
 
-## C. 코드 개선 프로그램
+## C. 코드 개선 프로그램 — 잔여 항목
 
 | # | 개선 항목 | 원인 | 우선 | 공수 |
 |---|---|---|:---:|---|
-| K1 | 라우트 핸들러 분해 (`buildSystemPrompt`·`maskNumbers`·`callClaude` 순수 함수화) | C2·C8 | 🔴 | 3일 |
-| K2 | 프롬프트 파일 분리 (`prompts/v{N}/`) + 버전 스위치 | C5 | 🔴 | 2일 |
-| K3 | `<untrusted_data>` 경계 도입 | C3 / S1 | 🔴 | 0.5일 |
-| K4 | 관찰성 로그 `logs.insight_runs` + 자체 관리자 대시보드 (`/admin/observability`) | C4 | 🔴 | 3일 |
-| K5 | 상수 파일 (`constants.runtime.ts`) | C6 | 🔴 | 1일 |
-| K6 | 단위 테스트 (Vitest) | C10 | 🟠 | 4일 |
-| K7 | Integration 테스트 (supertest) | C10 | 🟠 | 3일 |
-| K8 | Zod 스키마 검증 (`req.body`·sync-data) | C9 | 🟠 | 2일 |
+| K4-2 | `/admin/observability` 통합 대시보드 (`insight_runs.jsonl` 시각화) | C4 잔존 | 🟠 | 2일 |
 | K9 | 타입 전환 (TypeScript) 점진 도입 | C9 | 🟠 | 10일 |
-| K10 | `dashboardTemplate.js` 분리 (`ssr.js`·`client.js`·`styles.css`) | C12 | 🟠 | 5일 |
-| K11 | `server.js` → 라우트 모듈로 분리 | C11 | 🟡 | 5일 |
-| K12 | `withFileLock` → SQLite/Redis | C13 | 🟡 | 4일 |
-| K13 | 로깅 프레임워크 (`pino`) + 상관관계 ID | C4·C13 | 🟠 | 2일 |
-| K14 | stale sync-data 경고 배지 UI | C16 | 🔴 | 0.5일 |
-| K15 | 번들 코드 스플릿 (xlsx dynamic 일원화) | C17 | 🟡 | 1일 |
-| K16 | `npm audit --audit-level=high` CI + Dependabot | C14 | 🟠 | 0.5일 |
-| K17 | CI 파이프라인 (GitHub Actions): lint·test·build·audit | — | 🟠 | 2일 |
+| K10-2 | `dashboardTemplate.js` 클라이언트 JS 분리 (style·const는 분리 완료) | C12 step3 | 🟡 | 3일 |
+| K12 | `withFileLock` → Memorystore Redis (또는 분산 락) | 멀티 인스턴스 시 | 🟡 | 4일 |
+
+**해소된 항목 (참고)**: K1 (라우트 분해), K2 (`prompts/v1/`), K3 (untrusted_data), K4 (insight_runs 적재), K5 (상수 분리), K6 (Vitest 단위 테스트), K7 (supertest 통합 테스트, 227 tests), K8 (Zod 스키마), K10 step1·2 (style·const 분리), K11 (server.js 분리), K13 (pino), K14 (stale 메타), K15 (manualChunks), K16 (npm audit CI), K17 (GitHub Actions)
 
 ---
 
-## D. 보안 강화 프로그램
+## D. 보안 강화 프로그램 — 잔여 항목
 
 | # | 개선 항목 | 대응 | 우선 | 공수 |
 |---|---|---|:---:|---|
-| SEC1 | `<untrusted_data>` 래퍼 + 결과 재검증 | S1 | 🔴 | K3과 동일 |
-| SEC2 | `sanitize-html` 라이브러리 + CSP 헤더 | S2·S8 | 🟠 | 1일 |
 | SEC3 | GCP Secret Manager + 접근 감사 | S3 | 🟠 | 2일 |
-| SEC4 | `express-rate-limit` 전역 | S4 | 🟠 | 1일 |
-| SEC5 | Origin/Referer 화이트리스트 CSRF 보강 | S5 | 🟡 | 0.5일 |
-| SEC6 | `TRUST_CF_HEADER` 환경변수로 헤더 신뢰 선택 | S6 | 🟡 | 0.5일 |
-| SEC7 | `/p/:slug` 경로 traversal 정규식 | S9 | 🟡 | 0.2일 |
-| SEC8 | `audit_logs` 이벤트 적재 | S12 | 🟠 | 2일 |
-| SEC9 | 세션 저장소 Redis 이관 | S11 | 🟡 | 2일 |
-| SEC10 | 라우트별 `express.json` 크기 차등 | S15 | 🟡 | 0.5일 |
-| SEC11 | `npm audit` CI + 주간 Dependabot PR | S10 | 🟠 | K16 포함 |
+| SEC6 | Cloud Run 이전 시 `TRUST_CF_HEADER` 환경변수화 + Cloud Armor | S6 | 🟡 | 0.5일 |
+| SEC8 | `audit_logs` 게시·프롬프트·롤·설정 이벤트 적재 (BigQuery) | S12 | 🟠 | 2일 |
+| SEC9 | 세션 저장소 Memorystore Redis 이관 | S11 | 🟡 | 2일 |
+
+**해소된 항목 (참고)**: SEC1 (untrusted_data), SEC2 (sanitize-html + CSP), SEC4 (express-rate-limit), SEC5 (Origin/Referer), SEC7 (slug 경로 traversal 검증), SEC10 (JSON 크기 차등), SEC11 (npm audit CI)
 
 ---
 
@@ -702,19 +662,22 @@ flowchart TD
 
 ## F. 소스 파일
 
-| 파일 | 역할 |
-|---|---|
-| `server.js` | 웹 서버 (라우팅·인증·게시·Claude API 호출·관리자 UI) |
-| `src/excelUtils.js` | 구글 시트 19개 탭 파서 |
-| `src/shared/insightPrompts.js` | 섹션별 Claude 프롬프트 빌더 |
-| `src/shared/api.js` | 편집 페이지용 API 래퍼 |
-| `src/dashboard/dashboardTemplate.js` | 임원 대시보드 템플릿 |
-| `src/emailTemplate.js` | 월간 뉴스레터 이메일 템플릿 |
-| `src/visibility/App.jsx` 등 | 편집 페이지 루트 |
-| `docs/ADMIN_PLAN.md` | 이 문서 |
-| `docs/GCP_INFRA.md` | GCP 인프라 구성도 (`/admin/infra`) |
-| [`mts8787-droid/dashboard-raw-data`](https://github.com/mts8787-droid/dashboard-raw-data.git) | **별도 레포** — Claude Code 기반 SEMrush API → BigQuery 적재 (To-Be 데이터 파이프라인 핵심) |
+| 영역 | 파일 / 디렉터리 | 역할 |
+|---|---|---|
+| 진입점 | `server.js` (131줄) | 미들웨어·인증·라우트 마운트만 |
+| 라우트 | `routes/snapshots.js` `routes/sync.js` `routes/insight.js` `routes/email.js` `routes/translate.js` `routes/ip-allowlist.js` `routes/ai-settings.js` `routes/archives.js` `routes/publish.js` `routes/proxy.js` `routes/auth-api.js` `routes/published.js` `routes/spa-static.js` `routes/admin-pages.js` `routes/landing.js` | 14개 라우트 모듈 (C11 분해 결과) |
+| 라이브러리 | `lib/storage.js` `lib/auth.js` `lib/network.js` `lib/sanitize.js` `lib/lock.js` `lib/insight-runs.js` `lib/middleware.js` `lib/logger.js` `lib/validate.js` | 9개 lib 모듈 — I/O·인증·CIDR·sanitize·logger·Zod 스키마 |
+| 에이전트 | `src/shared/insightAgent.js` | `loadInsightContext`·`callClaudeInsight`·`classifyClaudeError` 등 순수 함수 |
+| 프롬프트 | `prompts/v1/system.base.txt` `prompts/v1/system.template.txt` `prompts/v1/system.examples-only.txt` | 외부화된 프롬프트 (버전별 폴더) |
+| 데이터 파서 | `src/excelUtils.js` | 구글 시트 19개 탭 파서 |
+| 클라이언트 | `src/dashboard/dashboardTemplate.js` (+ `dashboardStyles.js`·`dashboardConsts.js` 분리) | 임원 대시보드 템플릿 |
+| 이메일 | `src/emailTemplate.js` | 월간 뉴스레터 이메일 템플릿 |
+| 편집 SPA | `src/{visibility,citation,...}/App.jsx` | 7종 편집 페이지 |
+| 테스트 | `lib/*.test.js`·`src/**/*.test.js`·`test/routes/*.test.js` | 21 test files · 227 tests (Vitest + supertest) |
+| CI | `.github/workflows/ci.yml` | test → build (7 SPAs) → npm audit |
+| 문서 | `docs/ADMIN_PLAN.md` (이 문서) · `docs/GCP_INFRA.md` (`/admin/infra`) | — |
+| 외부 레포 | [`mts8787-droid/dashboard-raw-data`](https://github.com/mts8787-droid/dashboard-raw-data.git) | Claude Code 기반 SEMrush API → BigQuery 적재 (To-Be 데이터 파이프라인 핵심) |
 
 ---
 
-*문서 버전 v16.0 · 2026-04-25*
+*문서 버전 v17.0 · 2026-04-25 — 코드 개선 라운드 반영, Appendix 잔여 항목만 유지*
