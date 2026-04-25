@@ -2,6 +2,9 @@
 // /gsheets-proxy/*  : docs.google.com CSV 중계 (sheet 동기화용)
 // /api/gsheet-export: Apps Script Web App 프록시 (시트 export 자동화용)
 import { Router } from 'express'
+import { logFor } from '../lib/logger.js'
+
+const log = logFor('proxy')
 
 export const proxyRouter = Router()
 
@@ -16,18 +19,18 @@ proxyRouter.get('/gsheets-proxy/*', async (req, res) => {
   } catch {
     return res.status(400).json({ error: '유효하지 않은 URL' })
   }
-  console.log('[PROXY]', target.slice(0, 120))
+  log.debug({ target: target.slice(0, 120) }, 'gsheets proxy')
   try {
     const gRes = await fetch(target, { headers: { 'User-Agent': 'Mozilla/5.0' } })
     if (!gRes.ok) {
-      console.log('[PROXY] Google returned', gRes.status)
+      log.warn({ status: gRes.status }, 'gsheets non-2xx')
       return res.status(gRes.status).send(await gRes.text())
     }
     res.set('Content-Type', gRes.headers.get('content-type') || 'text/csv')
     res.set('Cache-Control', 'no-store, no-cache, must-revalidate')
     res.send(await gRes.text())
   } catch (err) {
-    console.error('[PROXY] Error:', err.message)
+    log.error({ err: err.message }, 'gsheets proxy failed')
     res.status(502).json({ error: '프록시 요청 실패' })
   }
 })
@@ -58,7 +61,7 @@ proxyRouter.post('/api/gsheet-export', async (req, res) => {
     try { result = JSON.parse(text) } catch { result = { ok: false, error: text } }
     res.json(result)
   } catch (err) {
-    console.error('[GSHEET-EXPORT] Error:', err.message)
+    log.error({ err: err.message }, 'gsheet-export failed')
     res.status(500).json({ ok: false, error: 'Google Sheet 내보내기 실패' })
   }
 })

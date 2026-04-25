@@ -5,6 +5,9 @@ import { readFileSync, writeFileSync, existsSync, unlinkSync } from 'fs'
 import { join } from 'path'
 import { DATA_DIR, PUB_DIR } from '../lib/storage.js'
 import { validateBody, PublishPostSchema, TrackerPublishSchema } from '../lib/validate.js'
+import { logFor } from '../lib/logger.js'
+
+const log = logFor('publish')
 
 // ─── 채널별 슬러그·메타 파일 매핑 ──────────────────────────────────────────
 export const CHANNELS = {
@@ -66,7 +69,7 @@ export function readMetaFile(metaPath) {
 
 function deleteIfExists(path, tag) {
   try { unlinkSync(path) } catch (e) {
-    if (e.code !== 'ENOENT') console.error(`[${tag}] Delete error:`, e.message)
+    if (e.code !== 'ENOENT') log.warn({ tag, err: e.message }, 'delete failed')
   }
 }
 
@@ -83,10 +86,10 @@ function buildPostHandler(ch) {
       writeFileSync(enPath, finalEn)
       const meta = { title: title || ch.title, ts: Date.now() }
       writeFileSync(ch.metaFile, JSON.stringify(meta, null, 2))
-      console.log(`[${ch.logTag}]`, meta.title, `-> /p/${ch.koSlug}, /p/${ch.enSlug}`)
+      log.info({ tag: ch.logTag, title: meta.title, koSlug: ch.koSlug, enSlug: ch.enSlug }, 'published')
       res.json({ ok: true, urls: { ko: `/p/${ch.koSlug}`, en: `/p/${ch.enSlug}` }, ...meta })
     } catch (err) {
-      console.error(`[${ch.logTag}] Write error:`, err.message)
+      log.error({ tag: ch.logTag, err: err.message }, 'publish write failed')
       res.status(500).json({ ok: false, error: '파일 저장 실패: ' + err.message })
     }
   }
@@ -155,10 +158,10 @@ publishRouter.post('/api/publish-tracker', validateBody(TrackerPublishSchema), (
     writeFileSync(TRACKER_SNAP, JSON.stringify(snap, null, 2))
     const meta = { title: 'GEO KPI Progress Tracker', ts: Date.now() }
     writeFileSync(TRACKER_META, JSON.stringify(meta, null, 2))
-    console.log('[PUBLISH-TRACKER]', new Date().toISOString(), 'categoryStats:', dashboard?.categoryStats?.length || 0)
+    log.info({ tag: 'PUBLISH-TRACKER', categoryStats: dashboard?.categoryStats?.length || 0 }, 'tracker published')
     res.json({ ok: true, ...meta, url: '/p/progress-tracker/' })
   } catch (err) {
-    console.error('[PUBLISH-TRACKER] Write error:', err.message)
+    log.error({ tag: 'PUBLISH-TRACKER', err: err.message }, 'tracker write failed')
     res.status(500).json({ ok: false, error: '파일 저장 실패: ' + err.message })
   }
 })

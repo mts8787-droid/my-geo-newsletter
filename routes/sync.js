@@ -6,6 +6,9 @@ import {
 } from '../lib/storage.js'
 import { validateMode } from '../lib/middleware.js'
 import { validateBody, SyncDataPostSchema } from '../lib/validate.js'
+import { logFor } from '../lib/logger.js'
+
+const log = logFor('sync')
 
 export const STALE_THRESHOLD_MS = 24 * 60 * 60 * 1000
 
@@ -21,7 +24,7 @@ syncRouter.get('/api/sync-data', (req, res) => {
 syncRouter.post('/api/sync-data', validateBody(SyncDataPostSchema), (req, res) => {
   const { data } = req.body
   writeSyncData({ ...data, savedAt: Date.now() })
-  console.log('[SYNC-DATA] Saved at', new Date().toISOString())
+  log.info({ mode: 'global' }, 'sync-data saved')
   res.json({ ok: true })
 })
 
@@ -39,6 +42,6 @@ syncRouter.post('/api/:mode/sync-data', validateMode, validateBody(SyncDataPostS
   const { mode } = req.params
   const { data } = req.body
   writeModeSyncData(mode, { ...data, savedAt: Date.now() })
-  console.log(`[SYNC-DATA:${mode}] Saved at`, new Date().toISOString())
+  log.info({ mode }, 'sync-data saved')
   res.json({ ok: true })
 })

@@ -8,6 +8,9 @@ import dotenv from 'dotenv'
 // C11 step1·2 — 헬퍼들을 lib/ 모듈로 분리
 import { DATA_DIR, SNAP_FILE, readSnapshots } from './lib/storage.js'
 import { ADMIN_PASSWORD, activeSessions, getSessionToken } from './lib/auth.js'
+import { logger, logFor } from './lib/logger.js'
+
+const log = logFor('server')
 
 // C11 step3 — 라우트 모듈
 import { snapshotsRouter } from './routes/snapshots.js'
@@ -174,18 +177,19 @@ app.use((req, res, next) => {
 
 // ─── Error handler ───────────────────────────────────────────────────────────
 app.use((err, req, res, _next) => {
-  console.error('[SERVER] Error:', err.message)
+  log.error({ err: err.message, path: req.path, method: req.method }, 'unhandled')
   res.status(500).json({ ok: false, error: '서버 내부 오류' })
 })
 
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server running on port ${PORT}`)
-  console.log(`DATA_DIR = ${DATA_DIR}`)
-  console.log(`SNAP_FILE = ${SNAP_FILE}`)
-  console.log(`SNAP_FILE exists = ${existsSync(SNAP_FILE)}`)
-  if (ADMIN_PASSWORD === 'changeme') console.log('[WARN] Using default admin password. Set ADMIN_PASSWORD env var.')
-  try {
-    const snaps = readSnapshots()
-    console.log(`Snapshots count = ${snaps.length}`)
-  } catch (e) { console.log(`Snapshots read error: ${e.message}`) }
+  let snapCount = 0
+  try { snapCount = readSnapshots().length } catch {}
+  log.info({
+    port: PORT,
+    dataDir: DATA_DIR,
+    snapFile: SNAP_FILE,
+    snapFileExists: existsSync(SNAP_FILE),
+    snapshotsCount: snapCount,
+  }, 'server started')
+  if (ADMIN_PASSWORD === 'changeme') log.warn('default ADMIN_PASSWORD detected — set env var')
 })

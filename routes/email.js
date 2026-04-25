@@ -2,6 +2,9 @@
 import { Router } from 'express'
 import nodemailer from 'nodemailer'
 import { validateBody, SendEmailSchema } from '../lib/validate.js'
+import { logFor } from '../lib/logger.js'
+
+const log = logFor('email')
 
 let _smtpTransporter = null
 function getSmtpTransporter() {
@@ -22,7 +25,6 @@ function getSmtpTransporter() {
 export const emailRouter = Router()
 
 emailRouter.post('/api/send-email', validateBody(SendEmailSchema), (req, res) => {
-  console.log('[EMAIL] Route hit')
   const { to, subject, html } = req.body
 
   const transporter = getSmtpTransporter()
@@ -33,11 +35,11 @@ emailRouter.post('/api/send-email', validateBody(SendEmailSchema), (req, res) =>
     to, subject, html,
   })
     .then(() => {
-      console.log('[EMAIL] Sent to', to)
+      log.info({ to }, 'email sent')
       res.json({ ok: true })
     })
     .catch((err) => {
-      console.error('[EMAIL] Send error:', err.message, err.code, err.response)
+      log.error({ to, err: err.message, code: err.code }, 'email send failed')
       res.status(500).json({ ok: false, error: `이메일 전송 실패: ${err.message}` })
     })
 })

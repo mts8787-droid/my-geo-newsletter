@@ -2,6 +2,9 @@
 import { Router } from 'express'
 import translate from 'google-translate-api-x'
 import { validateBody, TranslateSchema } from '../lib/validate.js'
+import { logFor } from '../lib/logger.js'
+
+const log = logFor('translate')
 
 const TRANSLATE_BATCH = 20
 
@@ -19,7 +22,7 @@ translateRouter.post('/api/translate', validateBody(TranslateSchema), async (req
     }
     res.json({ ok: true, translated })
   } catch (err) {
-    console.error('[TRANSLATE] Error:', err.message, err.stack)
+    log.error({ err: err.message }, 'translate failed')
     res.status(500).json({ ok: false, error: '번역 실패: ' + err.message })
   }
 })
