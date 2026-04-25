@@ -30,6 +30,10 @@ import { ipRouter } from './routes/ip-allowlist.js'
 import { aiSettingsRouter } from './routes/ai-settings.js'
 import { archivesRouter } from './routes/archives.js'
 import { publishRouter } from './routes/publish.js'
+import { proxyRouter } from './routes/proxy.js'
+import { authRouter } from './routes/auth-api.js'
+import { publishedRouter } from './routes/published.js'
+import { spaStaticRouter } from './routes/spa-static.js'
 
 dotenv.config()
 
@@ -57,97 +61,7 @@ app.use((req, res, next) => {
 // ─── JSON body parser ────────────────────────────────────────────────────────
 app.use(express.json({ limit: '50mb' }))
 
-// ─── Admin Login Page ────────────────────────────────────────────────────────
-app.get('/admin/login', (req, res) => {
-  const token = getSessionToken(req)
-  if (token && activeSessions.has(token)) return res.redirect('/admin/')
-  res.set('Content-Type', 'text/html; charset=utf-8')
-  res.send(`<!DOCTYPE html>
-<html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Admin Login</title>
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0F172A;font-family:'LG Smart','Arial Narrow',Arial,sans-serif;color:#E2E8F0}
-.card{background:#1E293B;border:1px solid #334155;border-radius:16px;padding:40px 36px;width:100%;max-width:400px}
-h1{font-size:20px;font-weight:700;color:#F8FAFC;margin-bottom:8px;text-align:center}
-.sub{font-size:13px;color:#64748B;text-align:center;margin-bottom:28px}
-label{display:block;font-size:12px;color:#94A3B8;margin-bottom:6px;font-weight:600}
-input{width:100%;padding:12px 14px;border-radius:8px;border:1px solid #334155;background:#0F172A;color:#E2E8F0;font-size:14px;outline:none;transition:border-color .2s}
-input:focus{border-color:#CF0652}
-button{width:100%;margin-top:20px;padding:14px;border:none;border-radius:10px;background:#CF0652;color:#fff;font-size:14px;font-weight:700;cursor:pointer;transition:opacity .15s}
-button:hover{opacity:.9}button:disabled{opacity:.5;cursor:not-allowed}
-.err{color:#F87171;font-size:12px;margin-top:12px;text-align:center;display:none}
-</style></head><body>
-<div class="card">
-  <h1>Admin Login</h1>
-  <p class="sub">GEO Newsletter Management</p>
-  <form id="f">
-    <label for="pw">Password</label>
-    <input type="password" id="pw" placeholder="관리자 비밀번호 입력" autofocus>
-    <button type="submit">로그인</button>
-    <p class="err" id="err"></p>
-  </form>
-</div>
-<script>
-document.getElementById('f').addEventListener('submit', async function(e) {
-  e.preventDefault();
-  var btn = e.target.querySelector('button');
-  var err = document.getElementById('err');
-  btn.disabled = true; err.style.display = 'none';
-  try {
-    var r = await fetch('/api/auth/login', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({password: document.getElementById('pw').value})
-    });
-    var j = await r.json();
-    if (j.ok) { location.href = '/admin/'; }
-    else { err.textContent = j.error; err.style.display = 'block'; }
-  } catch(ex) { err.textContent = '서버 연결 실패'; err.style.display = 'block'; }
-  btn.disabled = false;
-});
-</script></body></html>`)
-})
-
-// ─── Login Rate Limiter ──────────────────────────────────────────────────────
-const loginAttempts = new Map()  // ip -> { count, resetAt }
-const MAX_LOGIN_ATTEMPTS = 5
-const LOGIN_WINDOW_MS = 15 * 60 * 1000  // 15 minutes
-
-// ─── Auth API ────────────────────────────────────────────────────────────────
-app.post('/api/auth/login', (req, res) => {
-  const ip = req.ip
-  const now = Date.now()
-  const attempt = loginAttempts.get(ip)
-  if (attempt && now < attempt.resetAt && attempt.count >= MAX_LOGIN_ATTEMPTS) {
-    const retryAfter = Math.ceil((attempt.resetAt - now) / 1000)
-    return res.status(429).json({ ok: false, error: `너무 많은 로그인 시도. ${retryAfter}초 후 재시도하세요.` })
-  }
-  const { password } = req.body || {}
-  if (password !== ADMIN_PASSWORD) {
-    const entry = attempt && now < attempt.resetAt ? attempt : { count: 0, resetAt: now + LOGIN_WINDOW_MS }
-    entry.count++
-    loginAttempts.set(ip, entry)
-    return res.status(401).json({ ok: false, error: '비밀번호가 올바르지 않습니다.' })
-  }
-  loginAttempts.delete(ip)
-  const token = createSessionToken()
-  res.cookie('admin_token', token, {
-    httpOnly: true,
-    sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
-    maxAge: 24 * 60 * 60 * 1000,
-    path: '/',
-  })
-  res.json({ ok: true })
-})
-
-app.post('/api/auth/logout', (req, res) => {
-  const token = getSessionToken(req)
-  revokeSessionToken(token)
-  res.clearCookie('admin_token', { path: '/' })
-  res.json({ ok: true })
-})
+// /admin/login HTML + /api/auth/login·logout는 routes/auth-api.js로 분리됨
 
 // ─── Auth Middleware ─────────────────────────────────────────────────────────
 app.use((req, res, next) => {
@@ -172,37 +86,12 @@ app.use((req, res, next) => {
   next()
 })
 
-// ─── Google Sheets proxy (fetch-based) ──────────────────────────────────────
-app.get('/gsheets-proxy/*', async (req, res) => {
-  const target = 'https://docs.google.com' + req.originalUrl.replace('/gsheets-proxy', '')
-  try {
-    const parsed = new URL(target)
-    if (parsed.hostname !== 'docs.google.com') {
-      return res.status(403).json({ error: 'docs.google.com만 프록시 허용' })
-    }
-  } catch {
-    return res.status(400).json({ error: '유효하지 않은 URL' })
-  }
-  console.log('[PROXY]', target.slice(0, 120))
-  try {
-    const gRes = await fetch(target, {
-      headers: { 'User-Agent': 'Mozilla/5.0' },
-    })
-    if (!gRes.ok) {
-      console.log('[PROXY] Google returned', gRes.status)
-      return res.status(gRes.status).send(await gRes.text())
-    }
-    res.set('Content-Type', gRes.headers.get('content-type') || 'text/csv')
-    res.set('Cache-Control', 'no-store, no-cache, must-revalidate')
-    const body = await gRes.text()
-    res.send(body)
-  } catch (err) {
-    console.error('[PROXY] Error:', err.message)
-    res.status(502).json({ error: '프록시 요청 실패' })
-  }
-})
+// /gsheets-proxy/* + /api/gsheet-export는 routes/proxy.js로 분리됨
 
 // ─── 라우트 모듈 마운트 (C11 step3) ────────────────────────────────────────
+app.use(authRouter)
+app.use(proxyRouter)
+app.use(publishedRouter)
 app.use(snapshotsRouter)
 app.use(syncRouter)
 app.use(insightRouter)
@@ -212,77 +101,16 @@ app.use(ipRouter)
 app.use(aiSettingsRouter)
 app.use(archivesRouter)
 app.use(publishRouter)
+app.use(spaStaticRouter)
 
-// ─── Google Sheet Export (Apps Script proxy) ────────────────────────────────
-app.post('/api/gsheet-export', async (req, res) => {
-  const { scriptUrl, data } = req.body || {}
-  if (!scriptUrl || !data) {
-    return res.status(400).json({ ok: false, error: 'scriptUrl, data 필수' })
-  }
-  const ALLOWED_ORIGINS = ['https://script.google.com', 'https://script.googleusercontent.com']
-  try {
-    const parsed = new URL(scriptUrl)
-    if (!ALLOWED_ORIGINS.some(o => parsed.origin === o)) {
-      return res.status(403).json({ ok: false, error: 'Google Apps Script URL만 허용됩니다' })
-    }
-  } catch {
-    return res.status(400).json({ ok: false, error: '유효하지 않은 URL입니다' })
-  }
-  try {
-    const gRes = await fetch(scriptUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify(data),
-      redirect: 'follow',
-    })
-    const text = await gRes.text()
-    let result
-    try { result = JSON.parse(text) } catch { result = { ok: false, error: text } }
-    res.json(result)
-  } catch (err) {
-    console.error('[GSHEET-EXPORT] Error:', err.message)
-    res.status(500).json({ ok: false, error: 'Google Sheet 내보내기 실패' })
-  }
-})
+// gsheet-export는 routes/proxy.js로 분리됨
 
 // translate · insight · ip · ai-settings 라우트는 모두 routes/ 모듈로 분리됨
 
 // validateMode·publish 라우트는 routes/publish.js로 분리됨
 // makeLangBarHtml/injectLangBar/readMetaFile은 publish 모듈 내부로 이동
 
-// ─── Font static files ──────────────────────────────────────────────────────
-app.use('/font', express.static(join(__dirname, 'font'), { maxAge: '1y', immutable: true }))
-
-// ─── Public Progress Tracker (게시된 버전, IP 체크) ──────────────────────────
-app.use('/p/progress-tracker', (req, res, next) => {
-  if (!isIpAllowed(req)) {
-    res.status(403)
-    res.set('Content-Type', 'text/html; charset=utf-8')
-    return res.send('<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body style="background:#0F172A;display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;color:#64748B"><p>403 — Access Denied</p></body></html>')
-  }
-  next()
-})
-app.use('/p/progress-tracker', express.static(join(__dirname, 'dist-tracker')))
-app.get('/p/progress-tracker', (req, res) => {
-  res.sendFile(join(__dirname, 'dist-tracker', 'tracker.html'))
-})
-app.get('/p/progress-tracker/*', (req, res) => {
-  res.sendFile(join(__dirname, 'dist-tracker', 'tracker.html'))
-})
-
-app.get('/p/:slug', (req, res) => {
-  if (!isIpAllowed(req)) {
-    res.status(403)
-    res.set('Content-Type', 'text/html; charset=utf-8')
-    return res.send(`<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Access Denied</title><style>*{margin:0;padding:0;box-sizing:border-box}body{min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0F172A;font-family:'LG Smart','Arial Narrow',Arial,sans-serif;color:#E2E8F0}.w{text-align:center;padding:40px 24px}h1{font-size:48px;font-weight:700;color:#334155;margin-bottom:16px}p{font-size:15px;color:#64748B}</style></head><body><div class="w"><h1>403</h1><p>접근이 허용되지 않은 IP입니다.</p></div></body></html>`)
-  }
-  const slug = req.params.slug
-  if (!/^[a-zA-Z0-9\-]+$/.test(slug)) return res.status(400).send('Invalid slug')
-  const file = join(PUB_DIR, `${slug}.html`)
-  if (!existsSync(file)) return res.status(404).send('Not found')
-  res.set('Content-Type', 'text/html; charset=utf-8')
-  res.send(readFileSync(file, 'utf-8'))
-})
+// /font, /p/*, 게시본 트래커는 routes/published.js + spa-static.js로 분리됨
 
 // ─── Admin Dashboard ─────────────────────────────────────────────────────────
 app.get('/admin/', (req, res) => {
@@ -984,68 +812,7 @@ load();
 </script></body></html>`)
 })
 
-// ─── Static files (admin UI at /admin/newsletter) ───────────────────────────
-app.use('/admin/newsletter', express.static(join(__dirname, 'dist')))
-app.get('/admin/newsletter', (req, res) => {
-  res.sendFile(join(__dirname, 'dist', 'index.html'))
-})
-app.get('/admin/newsletter/*', (req, res) => {
-  res.sendFile(join(__dirname, 'dist', 'index.html'))
-})
-
-// ─── Static files (KPI Dashboard at /admin/dashboard) ───────────────────────
-app.use('/admin/dashboard', express.static(join(__dirname, 'dist-dashboard')))
-app.get('/admin/dashboard', (req, res) => {
-  res.sendFile(join(__dirname, 'dist-dashboard', 'dashboard.html'))
-})
-app.get('/admin/dashboard/*', (req, res) => {
-  res.sendFile(join(__dirname, 'dist-dashboard', 'dashboard.html'))
-})
-
-// ─── Static files (Monthly Report at /admin/monthly-report) ────────────────
-app.use('/admin/monthly-report', express.static(join(__dirname, 'dist-monthly-report')))
-app.get('/admin/monthly-report', (req, res) => {
-  res.sendFile(join(__dirname, 'dist-monthly-report', 'monthly-report.html'))
-})
-app.get('/admin/monthly-report/*', (req, res) => {
-  res.sendFile(join(__dirname, 'dist-monthly-report', 'monthly-report.html'))
-})
-
-// ─── Static files (Weekly Report at /admin/weekly-report) ──────────────────
-app.use('/admin/weekly-report', express.static(join(__dirname, 'dist-weekly-report')))
-app.get('/admin/weekly-report', (req, res) => {
-  res.sendFile(join(__dirname, 'dist-weekly-report', 'weekly-report.html'))
-})
-app.get('/admin/weekly-report/*', (req, res) => {
-  res.sendFile(join(__dirname, 'dist-weekly-report', 'weekly-report.html'))
-})
-
-// ─── Static files (Citation Dashboard at /admin/citation) ───────────────────
-app.use('/admin/citation', express.static(join(__dirname, 'dist-citation')))
-app.get('/admin/citation', (req, res) => {
-  res.sendFile(join(__dirname, 'dist-citation', 'citation.html'))
-})
-app.get('/admin/citation/*', (req, res) => {
-  res.sendFile(join(__dirname, 'dist-citation', 'citation.html'))
-})
-
-// ─── Static files (Visibility Editor at /admin/visibility) ──────────────────
-app.use('/admin/visibility', express.static(join(__dirname, 'dist-visibility')))
-app.get('/admin/visibility', (req, res) => {
-  res.sendFile(join(__dirname, 'dist-visibility', 'visibility.html'))
-})
-app.get('/admin/visibility/*', (req, res) => {
-  res.sendFile(join(__dirname, 'dist-visibility', 'visibility.html'))
-})
-
-// ─── Static files (Progress Tracker at /admin/progress-tracker) ─────────────
-app.use('/admin/progress-tracker', express.static(join(__dirname, 'dist-tracker')))
-app.get('/admin/progress-tracker', (req, res) => {
-  res.sendFile(join(__dirname, 'dist-tracker', 'tracker.html'))
-})
-app.get('/admin/progress-tracker/*', (req, res) => {
-  res.sendFile(join(__dirname, 'dist-tracker', 'tracker.html'))
-})
+// 7개 SPA 정적 서빙은 routes/spa-static.js로 분리됨
 app.get('/', (req, res) => {
   if (!isIpAllowed(req)) {
     res.status(403)
