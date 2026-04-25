@@ -12,6 +12,16 @@ export const INSIGHT_ARCHIVE_LIMIT = 12
 export const INSIGHT_PAST_EXAMPLES = 3
 export const INSIGHT_DEFAULT_MODEL = 'claude-sonnet-4-5-20251001'
 export const INSIGHT_DEFAULT_MAX_TOKENS = 4096
+export const INSIGHT_DEFAULT_MAX_RETRIES = 3
+export const INSIGHT_MIN_OUTPUT_LENGTH = 30
+// Claude가 거절했을 때 본문에 자주 등장하는 패턴 (KO/EN). 부분 일치 거부 신호로만 사용
+export const REFUSAL_PATTERNS = [
+  /i\s+can(?:'|no)t\s+(?:help|assist|provide)/i,
+  /i'?m\s+(?:unable|sorry)/i,
+  /도와드릴\s*수\s*없습니다/,
+  /답변(?:을)?\s*드릴\s*수\s*없습니다/,
+  /응답할\s*수\s*없습니다/,
+]
 // Claude Sonnet 4.5 단가 (per 1M tokens)
 export const CLAUDE_INPUT_USD_PER_1M = 3
 export const CLAUDE_OUTPUT_USD_PER_1M = 15
@@ -161,8 +171,26 @@ export async function callClaudeInsight({ client, systemPrompt, userPrompt, mode
   }
 }
 
-// Anthropic SDK 에러를 분류 (C13)
+// N3 — Claude 응답 본문 검증. 빈 본문·refuse 응답·길이 하한 미달은 'invalid_output'으로 거부
+export function validateClaudeOutput(insight, { minLength = INSIGHT_MIN_OUTPUT_LENGTH } = {}) {
+  const text = String(insight || '').trim()
+  if (!text) throwInvalidOutput('empty', '응답 본문이 비어있습니다')
+  if (text.length < minLength) throwInvalidOutput('too_short', `응답 길이가 너무 짧습니다 (${text.length}자, 하한 ${minLength})`)
+  for (const re of REFUSAL_PATTERNS) {
+    if (re.test(text)) throwInvalidOutput('refusal', '모델이 응답을 거절했습니다')
+  }
+}
+
+function throwInvalidOutput(reason, message) {
+  const err = new Error(message)
+  err.kind = 'invalid_output'
+  err.reason = reason
+  throw err
+}
+
+// Anthropic SDK 에러를 분류 (C13). N3 invalid_output은 미리 표시된 err.kind를 우선
 export function classifyClaudeError(err) {
+  if (err?.kind === 'invalid_output') return { kind: 'invalid_output', httpStatus: 502 }
   const status = err?.status
   const msg = err?.message || ''
   if (status === 429 || /rate.?limit/i.test(msg)) return { kind: 'rate_limit', httpStatus: 429 }

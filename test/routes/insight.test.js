@@ -42,8 +42,9 @@ beforeEach(() => {
 
 describe('POST /api/generate-insight', () => {
   it('정상 호출 → ok:true + insight 본문 반환', async () => {
+    const insightText = '이번 달 LG 가시성은 전월 대비 2.3%p 상승했습니다. 주요 요인은 미국·독일 시장에서의 OLED 카테고리 강세입니다.'
     messagesCreateMock.mockResolvedValue({
-      content: [{ text: '인사이트 본문' }],
+      content: [{ text: insightText }],
       usage: { input_tokens: 100, output_tokens: 50 },
       stop_reason: 'end_turn',
     })
@@ -54,7 +55,7 @@ describe('POST /api/generate-insight', () => {
     })
     expect(res.status).toBe(200)
     expect(res.body.ok).toBe(true)
-    expect(res.body.insight).toBe('인사이트 본문')
+    expect(res.body.insight).toBe(insightText)
     expect(messagesCreateMock).toHaveBeenCalledOnce()
     expect(appendInsightRunMock).toHaveBeenCalledOnce()
     const run = appendInsightRunMock.mock.calls[0][0]
@@ -139,5 +140,47 @@ describe('POST /api/generate-insight', () => {
     })
     expect(res.status).toBe(500)
     expect(res.body.kind).toBe('error')
+  })
+
+  it('빈 응답 → 502 + kind:invalid_output (N3)', async () => {
+    messagesCreateMock.mockResolvedValue({
+      content: [{ text: '' }],
+      usage: { input_tokens: 10, output_tokens: 0 },
+      stop_reason: 'end_turn',
+    })
+    const res = await request(makeApp()).post('/api/generate-insight').send({
+      type: 'totalInsight', data: { x: 1 },
+    })
+    expect(res.status).toBe(502)
+    expect(res.body.kind).toBe('invalid_output')
+    expect(appendInsightRunMock.mock.calls[0][0].reason).toBe('empty')
+  })
+
+  it('거절 응답 → 502 + kind:invalid_output/refusal (N3)', async () => {
+    messagesCreateMock.mockResolvedValue({
+      content: [{ text: '죄송합니다. 도와드릴 수 없습니다. 다른 질문이 있으시면 알려주세요.' }],
+      usage: { input_tokens: 10, output_tokens: 20 },
+      stop_reason: 'end_turn',
+    })
+    const res = await request(makeApp()).post('/api/generate-insight').send({
+      type: 'totalInsight', data: { x: 1 },
+    })
+    expect(res.status).toBe(502)
+    expect(res.body.kind).toBe('invalid_output')
+    expect(appendInsightRunMock.mock.calls[0][0].reason).toBe('refusal')
+  })
+
+  it('하한 미달 응답 → 502 + kind:invalid_output/too_short (N3)', async () => {
+    messagesCreateMock.mockResolvedValue({
+      content: [{ text: '음.' }],
+      usage: { input_tokens: 10, output_tokens: 1 },
+      stop_reason: 'end_turn',
+    })
+    const res = await request(makeApp()).post('/api/generate-insight').send({
+      type: 'totalInsight', data: { x: 1 },
+    })
+    expect(res.status).toBe(502)
+    expect(res.body.kind).toBe('invalid_output')
+    expect(appendInsightRunMock.mock.calls[0][0].reason).toBe('too_short')
   })
 })

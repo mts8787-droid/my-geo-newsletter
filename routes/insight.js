@@ -5,11 +5,13 @@ import { buildInsightPrompt } from '../src/shared/insightPrompts.js'
 import {
   INSIGHT_DEFAULT_MODEL,
   INSIGHT_DEFAULT_MAX_TOKENS,
+  INSIGHT_DEFAULT_MAX_RETRIES,
   loadInsightContext,
   buildSystemPrompt,
   wrapUserPrompt,
   callClaudeInsight,
   classifyClaudeError,
+  validateClaudeOutput,
 } from '../src/shared/insightAgent.js'
 import { readArchives, readAiSettings } from '../lib/storage.js'
 import { appendInsightRun } from '../lib/insight-runs.js'
@@ -29,7 +31,8 @@ insightRouter.post('/api/generate-insight', validateBody(InsightPostSchema), asy
   let archiveKey = type
   let model = INSIGHT_DEFAULT_MODEL
   try {
-    const client = new Anthropic({ apiKey })
+    // N4 — SDK 자체 retry/backoff (429·529·5xx 자동 재시도)
+    const client = new Anthropic({ apiKey, maxRetries: INSIGHT_DEFAULT_MAX_RETRIES })
     const aiSettings = readAiSettings()
 
     const ctx = loadInsightContext({ type, data, readArchives })
@@ -49,6 +52,9 @@ insightRouter.post('/api/generate-insight', validateBody(InsightPostSchema), asy
       maxTokens: aiSettings.maxTokens || INSIGHT_DEFAULT_MAX_TOKENS,
     })
 
+    // N3 — 빈 본문·거절·길이 하한 검증 (실패 시 throw → catch 블록에서 invalid_output 분류)
+    validateClaudeOutput(result.insight)
+
     log.info({
       type, archiveKey, model, lang: lang || 'ko',
       inputTokens: result.inputTokens, outputTokens: result.outputTokens,
@@ -66,11 +72,11 @@ insightRouter.post('/api/generate-insight', validateBody(InsightPostSchema), asy
   } catch (err) {
     const latencyMs = Date.now() - t0
     const { kind, httpStatus } = classifyClaudeError(err)
-    log.error({ kind, type, latencyMs, err: err.message }, 'insight failed')
+    log.error({ kind, type, latencyMs, err: err.message, reason: err.reason }, 'insight failed')
     appendInsightRun({
       type, archiveKey, model, lang: lang || 'ko',
       inputTokens: 0, outputTokens: 0, latencyMs, costUsd: 0,
-      stopReason: null, ok: false, kind, error: err.message,
+      stopReason: null, ok: false, kind, error: err.message, reason: err.reason,
     })
     res.status(httpStatus).json({ ok: false, kind, error: 'AI 인사이트 생성 실패: ' + err.message })
   }

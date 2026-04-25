@@ -288,8 +288,8 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
     setTimeout(() => setCopied(false), 2500)
   }
 
-  function handleDownload() {
-    downloadTemplate(meta, total, products, citations, dotcom)
+  async function handleDownload() {
+    await downloadTemplate(meta, total, products, citations, dotcom)
   }
 
   async function handleSendMail() {

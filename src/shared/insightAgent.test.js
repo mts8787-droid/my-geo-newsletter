@@ -9,7 +9,10 @@ import {
   classifyClaudeError,
   loadInsightContext,
   callClaudeInsight,
+  validateClaudeOutput,
   INSIGHT_DEFAULT_MODEL,
+  INSIGHT_DEFAULT_MAX_RETRIES,
+  INSIGHT_MIN_OUTPUT_LENGTH,
   INSIGHT_ARCHIVE_LIMIT,
   INSIGHT_PAST_EXAMPLES,
 } from './insightAgent.js'
@@ -212,5 +215,81 @@ describe('상수', () => {
     expect(ARCHIVE_KEY_MAP.product).toBe('productInsight')
     expect(ARCHIVE_KEY_MAP.citation).toBe('citationInsight')
     expect(ARCHIVE_KEY_MAP.todo).toBe('todoText')
+  })
+
+  it('기본 retry 회수 ≥ 1', () => {
+    expect(INSIGHT_DEFAULT_MAX_RETRIES).toBeGreaterThanOrEqual(1)
+  })
+
+  it('출력 하한 ≥ 10자', () => {
+    expect(INSIGHT_MIN_OUTPUT_LENGTH).toBeGreaterThanOrEqual(10)
+  })
+})
+
+describe('validateClaudeOutput — N3 출력 검증', () => {
+  it('정상 본문 → 통과', () => {
+    expect(() => validateClaudeOutput('이번 달 LG 가시성은 전월 대비 [N]%p 상승했습니다.')).not.toThrow()
+  })
+
+  it('빈 본문 → invalid_output/empty', () => {
+    try { validateClaudeOutput(''); throw new Error('not thrown') }
+    catch (e) {
+      expect(e.kind).toBe('invalid_output')
+      expect(e.reason).toBe('empty')
+    }
+  })
+
+  it('null/undefined → invalid_output/empty', () => {
+    expect(() => validateClaudeOutput(null)).toThrow()
+    expect(() => validateClaudeOutput(undefined)).toThrow()
+  })
+
+  it('공백만 → invalid_output/empty', () => {
+    try { validateClaudeOutput('   \n\t  '); throw new Error('not thrown') }
+    catch (e) { expect(e.reason).toBe('empty') }
+  })
+
+  it('하한 미달 짧은 본문 → invalid_output/too_short', () => {
+    try { validateClaudeOutput('짧음.'); throw new Error('not thrown') }
+    catch (e) {
+      expect(e.kind).toBe('invalid_output')
+      expect(e.reason).toBe('too_short')
+    }
+  })
+
+  it('영문 거절 표현 → invalid_output/refusal', () => {
+    try {
+      validateClaudeOutput("I cannot help with this request as it requires sensitive market data interpretation.")
+      throw new Error('not thrown')
+    }
+    catch (e) { expect(e.reason).toBe('refusal') }
+  })
+
+  it('한국어 거절 표현 → invalid_output/refusal', () => {
+    try {
+      validateClaudeOutput('죄송하지만 이 요청에 대해서는 도와드릴 수 없습니다. 다른 도움이 필요하시면 말씀해 주세요.')
+      throw new Error('not thrown')
+    }
+    catch (e) { expect(e.reason).toBe('refusal') }
+  })
+
+  it('"answer 답변을 드릴 수 없습니다" 한국어 거절', () => {
+    try {
+      validateClaudeOutput('해당 분석에 대해서는 답변을 드릴 수 없습니다. 다른 질문에 대해 도움드리겠습니다.')
+      throw new Error('not thrown')
+    }
+    catch (e) { expect(e.reason).toBe('refusal') }
+  })
+
+  it('minLength 옵션으로 하한 조정', () => {
+    expect(() => validateClaudeOutput('짧지만 OK', { minLength: 5 })).not.toThrow()
+    expect(() => validateClaudeOutput('너무 짧', { minLength: 10 })).toThrow()
+  })
+})
+
+describe('classifyClaudeError — invalid_output 분류', () => {
+  it('err.kind="invalid_output" → 502', () => {
+    const err = Object.assign(new Error('empty'), { kind: 'invalid_output', reason: 'empty' })
+    expect(classifyClaudeError(err)).toEqual({ kind: 'invalid_output', httpStatus: 502 })
   })
 })

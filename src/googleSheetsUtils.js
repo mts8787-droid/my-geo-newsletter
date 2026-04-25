@@ -1,4 +1,5 @@
-import * as XLSX from 'xlsx-js-style'
+// N2 — XLSX는 fetchSheet 호출 시에만 필요 → 동적 로드
+import { loadXlsx } from './shared/loadXlsx.js'
 import { SHEET_NAMES, parseSheetRows } from './excelUtils'
 
 export function extractSheetId(url) {
@@ -19,6 +20,7 @@ async function fetchSheet(sheetId, sheetName) {
     `"${sheetName}" 시트를 가져올 수 없습니다 (HTTP ${res.status}).`
   )
   const csv = await res.text()
+  const XLSX = await loadXlsx()
   const wb  = XLSX.read(csv, { type: 'string' })
   const ws  = wb.Sheets[wb.SheetNames[0]]
   return XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' })

@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react'
-import * as XLSX from 'xlsx-js-style'
+// N2 — XLSX는 fetchSheet 호출 시 동적 로드
+import { loadXlsx } from '../../shared/loadXlsx.js'
 import { SHEET_ID, SHEET_GID, CACHE_TTL } from '../utils/constants'
 import { parseKPISheet } from '../utils/sheetParser'
 
@@ -52,6 +53,7 @@ async function fetchSheet() {
     csv = await res.text()
   }
 
+  const XLSX = await loadXlsx()
   const wb = XLSX.read(csv, { type: 'string' })
   const ws = wb.Sheets[wb.SheetNames[0]]
   return XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' })

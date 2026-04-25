@@ -1,4 +1,5 @@
-import * as XLSX from 'xlsx-js-style'
+// N2 — XLSX는 downloadTemplate에서만 쓰이므로 함수 내부에서 동적 로드
+import { loadXlsx } from './shared/loadXlsx.js'
 
 // ─── 시트 이름 (Google Sheets 동기화용 — 새 데이터 원천) ─────────────────────────
 export const SHEET_NAMES = {
@@ -47,7 +48,8 @@ const CATEGORY_KR_MAP = {
 export const DOTCOM_LG_COLS   = ['TTL','PLP','Microsites','PDP','Newsroom','Support','Buying-guide','Experience']
 export const DOTCOM_SAM_COLS  = ['TTL','PLP','Microsites','PDP','Newsroom','Support','Buying-guide']
 
-export function downloadTemplate(meta, total, products, citations, dotcom = {}) {
+export async function downloadTemplate(meta, total, products, citations, dotcom = {}) {
+  const XLSX = await loadXlsx()
   const wb = XLSX.utils.book_new()
 
   // ── meta ──────────────────────────────────────────────────────────────────

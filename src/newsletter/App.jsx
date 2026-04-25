@@ -7,7 +7,8 @@ import { fetchSnapshots, postSnapshot, updateSnapshot, deleteSnapshot, fetchSync
 import { resolveDataForLang } from '../shared/utils.js'
 import { computeCategoryStats, extractMonthFromPeriod, previousMonth } from '../shared/trackerCategoryStats.js'
 import { parseKPISheet } from '../tracker/utils/sheetParser.js'
-import * as XLSX from 'xlsx-js-style'
+// N2 — XLSX는 사용 시점에만 동적 로드 (~870KB)
+import { loadXlsx } from '../shared/loadXlsx.js'
 import Sidebar from '../shared/Sidebar.jsx'
 
 const TRACKER_SHEET_ID = '1lAzhlYJIjHVqDeywD3YMR1E9qf2LlDohFc0r6SAnVaE'
@@ -173,6 +174,7 @@ export default function App() {
         const res = await fetch(url, { cache: 'no-store' })
         if (!res.ok) throw new Error(`HTTP ${res.status}`)
         const csv = await res.text()
+        const XLSX = await loadXlsx()
         const wb = XLSX.read(csv, { type: 'string' })
         const ws = wb.Sheets[wb.SheetNames[0]]
         const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' })
