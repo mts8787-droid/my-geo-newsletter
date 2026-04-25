@@ -1,4 +1,5 @@
 import express from 'express'
+import rateLimit from 'express-rate-limit'
 import { fileURLToPath } from 'url'
 import { dirname } from 'path'
 import { existsSync } from 'fs'
@@ -48,10 +49,58 @@ app.use((req, res, next) => {
   next()
 })
 
-// ─── JSON body parser ────────────────────────────────────────────────────────
-app.use(express.json({ limit: '50mb' }))
+// ─── JSON body parser (SEC10 라우트별 크기 차등) ────────────────────────────
+// publish/snapshots/sync는 큰 HTML/구조화 데이터를 받으므로 50mb 허용
+// 그 외 API는 1mb로 제한해 DOS 표면적 축소
+const LARGE_JSON_PATHS = [
+  /^\/api\/publish/,           // /api/publish, /api/publish-dashboard 등 모두
+  /^\/api\/[^/]+\/snapshots/,  // /api/:mode/snapshots
+  /^\/api\/snapshots/,         // legacy
+  /^\/api\/[^/]+\/sync-data/,  // /api/:mode/sync-data
+  /^\/api\/sync-data/,         // legacy
+  /^\/api\/generate-insight/,  // 큰 데이터 컨텍스트
+  /^\/api\/send-email/,        // HTML body
+  /^\/api\/archives/,          // 인사이트 본문
+]
+const largeJson = express.json({ limit: '50mb' })
+const smallJson = express.json({ limit: '1mb' })
+app.use((req, res, next) => {
+  const useLarge = LARGE_JSON_PATHS.some(re => re.test(req.path))
+  return (useLarge ? largeJson : smallJson)(req, res, next)
+})
 
 // /admin/login HTML + /api/auth/login·logout는 routes/auth-api.js로 분리됨
+
+// ─── SEC4 Rate Limit (전역 + 민감 경로 추가 강화) ────────────────────────
+// 일반 API: 1분당 300회 (정상 PIC 사용 기준 충분, 봇/크롤러 차단)
+const apiLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 300,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { ok: false, error: '요청이 너무 많습니다. 잠시 후 재시도하세요.' },
+})
+// 비싼 경로(LLM 호출·게시·시트 ETL): 1분당 30회
+const expensiveLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { ok: false, error: '비용 높은 작업의 호출 한도를 초과했습니다.' },
+})
+
+app.use('/api/', apiLimiter)
+app.use('/api/generate-insight', expensiveLimiter)
+app.use('/api/translate', expensiveLimiter)
+app.use('/api/publish', expensiveLimiter)
+app.use('/api/publish-dashboard', expensiveLimiter)
+app.use('/api/publish-citation', expensiveLimiter)
+app.use('/api/publish-monthly-report', expensiveLimiter)
+app.use('/api/publish-visibility', expensiveLimiter)
+app.use('/api/publish-tracker', expensiveLimiter)
+app.use('/api/send-email', expensiveLimiter)
+app.use('/api/gsheet-export', expensiveLimiter)
+// 로그인 자체는 routes/auth-api.js의 자체 rate-limiter(5회/15분)가 처리
 
 // ─── Auth Middleware ─────────────────────────────────────────────────────────
 app.use((req, res, next) => {
@@ -66,10 +115,21 @@ app.use((req, res, next) => {
       if (req.path.startsWith('/api/')) return res.status(401).json({ ok: false, error: 'Unauthorized' })
       return res.redirect('/admin/login')
     }
-    // CSRF protection: state-changing API requests must include X-Requested-With header
+    // CSRF protection (SEC5): state-changing API requests는 다음 중 하나 이상이 검증되어야 함
+    // 1) X-Requested-With 헤더 (XHR/fetch만 보낼 수 있음, <form>은 못 보냄)
+    // 2) Origin 또는 Referer가 본 사이트 호스트와 일치
     if (req.path.startsWith('/api/') && ['POST', 'PUT', 'DELETE'].includes(req.method)) {
-      if (req.headers['content-type']?.includes('application/json') && !req.headers['x-requested-with']) {
-        return res.status(403).json({ ok: false, error: 'CSRF 검증 실패' })
+      const isJson = req.headers['content-type']?.includes('application/json')
+      if (isJson) {
+        const xrw = !!req.headers['x-requested-with']
+        const origin = req.headers.origin || ''
+        const referer = req.headers.referer || ''
+        const expectedHost = req.headers.host
+        const fromSelf = (origin && origin.endsWith(`//${expectedHost}`)) ||
+                        (referer && referer.includes(`//${expectedHost}/`))
+        if (!xrw && !fromSelf) {
+          return res.status(403).json({ ok: false, error: 'CSRF 검증 실패' })
+        }
       }
     }
   }
