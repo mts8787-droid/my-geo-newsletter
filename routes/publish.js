@@ -6,7 +6,7 @@ import { join } from 'path'
 import { DATA_DIR, PUB_DIR } from '../lib/storage.js'
 
 // ─── 채널별 슬러그·메타 파일 매핑 ──────────────────────────────────────────
-const CHANNELS = {
+export const CHANNELS = {
   newsletter: {
     koSlug: 'GEO-Monthly-Report-KO',
     enSlug: 'GEO-Monthly-Report-EN',
@@ -59,7 +59,7 @@ function injectLangBar(html, lang, koSlug, enSlug) {
   return bar + html
 }
 
-function readMetaFile(metaPath) {
+export function readMetaFile(metaPath) {
   try { return JSON.parse(readFileSync(metaPath, 'utf-8')) } catch { return null }
 }
 

@@ -78,7 +78,11 @@
       "Read(//tmp/**)",
       "Bash(awk 'NR==1650 || NR==1848 || NR==1849 {print NR\": \"$0}' src/dashboard/dashboardTemplate.js)",
       "Bash(awk 'NR>=1648 && NR<=1654' /tmp/dashboardTemplate.new.js)",
-      "Bash(ADMIN_PASSWORD=t timeout 3 node server.js)"
+      "Bash(ADMIN_PASSWORD=t timeout 3 node server.js)",
+      "Bash(awk 'NR==115,/^}\\)$/' server.js)",
+      "Bash(awk 'NR==113 || NR==114 || NR==814 || NR==815' server.js)",
+      "Bash(awk 'NR>=113 && NR<=120 || NR>=812 && NR<=820' server.js)",
+      "Bash(awk 'NR>=110 && NR<=120' /tmp/server.new.js)"
     ]
   }
 }
