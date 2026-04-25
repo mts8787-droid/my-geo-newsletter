@@ -135,7 +135,7 @@
 | **Cloud Monitoring** | 메트릭 대시보드, Uptime Check, 알림 정책 |
 | **Cloud Trace** | API 요청 분산 추적 |
 | **Error Reporting** | 예외 자동 그룹화 |
-| **Looker Studio** | `logs.insight_runs` 시각화 (비용·품질·토큰 추이) |
+| **자체 관리자 대시보드** (`/admin/observability`) | `logs.insight_runs` 등 BigQuery 데이터를 직접 쿼리해 비용·품질·토큰·retry율을 SVG/HTML 차트로 표시. 기존 `dashboardTemplate.js` 패턴을 재사용해 디자인·권한 일관성 확보 |
 | **Outlook SMTP + Teams Webhook** | 중요 알림 연동 (예산 초과·작업 실패·월간 초안 완료·실적 입력 리마인드) |
 | **BigQuery `audit_logs`** | 게시·프롬프트·설정 변경 감사 |
 
@@ -206,7 +206,7 @@ terraform/
 |---|---|---|
 | **PR 검증** | PR open | lint → unit test → build → `npm audit` |
 | **스테이징 배포** | main merge | Docker build → Artifact Registry push → Cloud Run deploy (stg) → smoke test |
-| **운영 배포** | 수동 승인 | stg 이미지 prod 태그 → Cloud Run deploy (prod) → Looker Studio 지표 모니터링 |
+| **운영 배포** | 수동 승인 | stg 이미지 prod 태그 → Cloud Run deploy (prod) → 자체 관리자 대시보드 지표 확인 |
 | **Terraform plan/apply** | `terraform/` 변경 PR | plan 코멘트 → main merge → apply |
 | **야간 보안 스캔** | Nightly | `npm audit` + `trivy`(컨테이너) + Dependabot |
 
@@ -279,7 +279,7 @@ terraform/
 - [ ] 1주일 병행 운영 (시트 동기화 + 자동 수집 비교)
 
 ### Step 5 — 관찰성·알림
-- [ ] Looker Studio 대시보드 (`logs.insight_runs` 기반)
+- [ ] 자체 관리자 대시보드 (`/admin/observability`) 구현 — `logs.insight_runs`·`audit_logs`를 BigQuery에서 직접 조회해 SVG/HTML 차트로 렌더 (Claude Code 100% 작성 가능)
 - [ ] Cloud Monitoring 알림 정책 (작업 실패·예산·응답 이상)
 - [ ] Outlook/Teams Incoming Webhook 연동
 
@@ -351,7 +351,7 @@ flowchart LR
   subgraph Obs["관찰성"]
     Log[Cloud Logging]:::ops
     Mon[Cloud Monitoring]:::ops
-    LS[Looker Studio]:::ops
+    LS[자체 관리자 대시보드<br/>/admin/observability]:::ops
   end
 
   CS --> SR
@@ -405,4 +405,4 @@ flowchart LR
 
 ---
 
-*문서 버전 v5.0 · 2026-04-25*
+*문서 버전 v6.0 · 2026-04-25*

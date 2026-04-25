@@ -234,7 +234,7 @@ flowchart LR
 |---|---|---|
 | **측정값 수집** | SEMrush API → 로컬 Python → CSV → Drive 업로드 → 시트 (4단계 수기) | Claude Code 기반 `semrush-loader`가 BigQuery에 직접 적재 (자동) |
 | **데이터 동기화** | PIC가 편집 화면에서 "동기화" 클릭 | Cloud Scheduler 매일 새벽 자동, "데이터 신선도 배지"로 상태 표시 |
-| **데이터 저장소** | Render 디스크 JSON 파일 (검색·집계 불가) | BigQuery 단일 원천 (이력·검색·집계·Looker 시각화) |
+| **데이터 저장소** | Render 디스크 JSON 파일 (검색·집계 불가) | BigQuery 단일 원천 (이력·검색·집계, 자체 웹 대시보드로 시각화) |
 | **구글 시트 역할** | 모든 측정값·메타·프롬프트 보관 (혼합) | 메타·기획 정보로 한정, 측정값은 SEMrush 자동 적재 |
 | **LLM 사용** | Claude API 단발 호출 (래퍼) | Claude API 단일 + 도구 호출(Tool Use) + 수치 재검증 루프 |
 | **수치 정확성** | 환각 발생 시 PIC가 수동 교정 | `get_metric` 도구로 BigQuery 직접 조회, 불일치 시 자동 재생성 |
@@ -246,7 +246,7 @@ flowchart LR
 | **알림** | 없음 (수동 확인) | Outlook 이메일 + Teams 채널 (부가 기능) |
 | **뉴스레터·대시보드** | 별도 편집 화면, 수동 정합성 점검 | 동일 BigQuery + 동일 에이전트로 동시 생성, 톤·수치 자동 일치 |
 | **뉴스레터 발송** | 수동 SMTP 발송 | 월간 자동 초안 → PIC 검토·승인 → 발송 예약 |
-| **관찰성** | console.log 수준 | BigQuery `logs.insight_runs` + Looker Studio 대시보드 |
+| **관찰성** | console.log 수준 | BigQuery `logs.insight_runs` + 자체 관리자 대시보드 (`/admin/observability`) |
 | **감사** | 로그인만 기록 | `audit_logs` 게시·프롬프트·롤·설정 변경 전체, 관리자 UI 1,000건 뷰어 |
 | **보안** | 정규식 sanitize, 인젝션 무방어 | sanitize-html + CSP, `<untrusted_data>` 래퍼, Secret Manager |
 | **인프라** | Render 단일 인스턴스 ($7/월) | GCP (Cloud Run + BigQuery + Cloud SQL) ($55~120/월) |
@@ -449,9 +449,9 @@ flowchart LR
 | RAG 주입 | 과거 발행본·지식 활용 | `search_knowledge` → Vector Search 결과를 user 메시지에 근거로 |
 | 프롬프트 인젝션 방어 | 시트 데이터의 악의적 지시 무시 | `<untrusted_data>` 태그 + system 지시 |
 | 수치 재검증 자동화 | 본문 수치 일치 확인 후 재생성 | 정규식 추출 → 도구 결과 대조 → 재호출 (최대 2회) |
-| 관찰성 로그 | 비용·품질 수치 추적 | `usage.input_tokens`/`output_tokens`/latency/cost → BigQuery `logs.insight_runs` |
+| 관찰성 로그 | 비용·품질 수치 추적 | `usage.input_tokens`/`output_tokens`/latency/cost → BigQuery `logs.insight_runs`, 자체 관리자 대시보드(`/admin/observability`)에서 차트로 조회 |
 | 프롬프트 버전 관리 | A/B 평가·롤백 | `prompts/v{N}/` 디렉터리 + AI Settings 스위치 |
-| **리포트 생성 이력 대시보드** | 호출 수·비용·retry율·성공률 시계열 | `logs.insight_runs` 기반 Looker Studio + 관리자 UI |
+| **리포트 생성 이력 대시보드** | 호출 수·비용·retry율·성공률 시계열 | `logs.insight_runs` 기반 **자체 관리자 웹 대시보드** (현행 dashboardTemplate 패턴 재사용, SVG/HTML 차트) |
 | **섹션 잠금 (lock)** | 담당자가 완료한 섹션은 재생성 방지 | 잠금 해제 시 감사 로그 기록 |
 
 ---
@@ -651,7 +651,7 @@ flowchart TD
 | K1 | 라우트 핸들러 분해 (`buildSystemPrompt`·`maskNumbers`·`callClaude` 순수 함수화) | C2·C8 | 🔴 | 3일 |
 | K2 | 프롬프트 파일 분리 (`prompts/v{N}/`) + 버전 스위치 | C5 | 🔴 | 2일 |
 | K3 | `<untrusted_data>` 경계 도입 | C3 / S1 | 🔴 | 0.5일 |
-| K4 | 관찰성 로그 `logs.insight_runs` + Looker Studio | C4 | 🔴 | 3일 |
+| K4 | 관찰성 로그 `logs.insight_runs` + 자체 관리자 대시보드 (`/admin/observability`) | C4 | 🔴 | 3일 |
 | K5 | 상수 파일 (`constants.runtime.ts`) | C6 | 🔴 | 1일 |
 | K6 | 단위 테스트 (Vitest) | C10 | 🟠 | 4일 |
 | K7 | Integration 테스트 (supertest) | C10 | 🟠 | 3일 |
@@ -696,7 +696,7 @@ flowchart TD
 | 빌드 | 수동 → Render | GitHub Actions → Artifact Registry → Cloud Run |
 | 구성 관리 | 환경변수 산재 | Secret Manager + Terraform |
 | 언어 | JS | 점진적 TS |
-| 모니터링 | Render 기본 로그 | Cloud Monitoring + Outlook/Teams 알림 + Looker Studio |
+| 모니터링 | Render 기본 로그 | Cloud Monitoring + Outlook/Teams 알림 + 자체 관리자 대시보드 |
 
 ---
 
@@ -717,4 +717,4 @@ flowchart TD
 
 ---
 
-*문서 버전 v15.0 · 2026-04-25*
+*문서 버전 v16.0 · 2026-04-25*
