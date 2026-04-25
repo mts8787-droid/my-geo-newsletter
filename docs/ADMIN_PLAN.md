@@ -223,12 +223,38 @@ flowchart LR
 
 **도식 읽는 법**
 - ①~⑥: §4 기능 축 번호
-- **메인 흐름** (왼쪽 → 오른쪽): 구글 시트·사이트맵 → 데이터 창고(BigQuery) → 에이전트(Claude API) → **시각화 산출물(뉴스레터·대시보드)** → 임원 열람
+- **메인 흐름** (왼쪽 → 오른쪽): SEMrush·구글 시트·사이트맵 → 데이터 창고(BigQuery) → 에이전트(Claude API) → **시각화 산출물(뉴스레터·대시보드)** → 임원 열람
 - **시각화 산출물**(분홍 굵은 선): 동일한 BigQuery 데이터에서 같은 에이전트가 **뉴스레터 HTML과 대시보드 HTML을 일관되게 동시 생성** — 톤·수치·근거가 두 채널에서 일치
 - **LLM 호출은 Claude API 단일** — 측정 엔진 호출이나 모델 교차 검증 없음
 - **Outlook/Teams 알림**은 점선·회색의 **부가 기능** — 메인 데이터 흐름과는 분리
 
-### 3.1 인프라 결론
+### 3.1 As-Is vs To-Be 차이 정리
+
+| 항목 | As-Is (현행) | To-Be (목표) |
+|---|---|---|
+| **측정값 수집** | SEMrush API → 로컬 Python → CSV → Drive 업로드 → 시트 (4단계 수기) | Claude Code 기반 `semrush-loader`가 BigQuery에 직접 적재 (자동) |
+| **데이터 동기화** | PIC가 편집 화면에서 "동기화" 클릭 | Cloud Scheduler 매일 새벽 자동, "데이터 신선도 배지"로 상태 표시 |
+| **데이터 저장소** | Render 디스크 JSON 파일 (검색·집계 불가) | BigQuery 단일 원천 (이력·검색·집계·Looker 시각화) |
+| **구글 시트 역할** | 모든 측정값·메타·프롬프트 보관 (혼합) | 메타·기획 정보로 한정, 측정값은 SEMrush 자동 적재 |
+| **LLM 사용** | Claude API 단발 호출 (래퍼) | Claude API 단일 + 도구 호출(Tool Use) + 수치 재검증 루프 |
+| **수치 정확성** | 환각 발생 시 PIC가 수동 교정 | `get_metric` 도구로 BigQuery 직접 조회, 불일치 시 자동 재생성 |
+| **과거 발행본 활용** | 12건 전문을 프롬프트에 통째 삽입 | RAG (지식 허브) — 의미 유사 청크 3~5개만 검색 주입 |
+| **PIC 지식 활용** | 시스템 외부에 흩어짐 | 지식 허브에 업로드·임베딩, `search_knowledge` 도구로 활용 |
+| **프롬프트 관리** | `Appendix.Prompt List` 시트 + 분산 화면 | BigQuery 마스터(version·status) + 통합 관리 UI |
+| **Progress Tracker** | 수동 과제 등록 | 사이트맵 자동 크롤 → 리더빌리티 검수 → 인테이크 큐 → 실적 입력 담당자 자동 배정 |
+| **권한** | 단일 PIC 비밀번호 | 5개 롤 (Viewer·Editor·Approver·Tracker Contributor·Admin) |
+| **알림** | 없음 (수동 확인) | Outlook 이메일 + Teams 채널 (부가 기능) |
+| **뉴스레터·대시보드** | 별도 편집 화면, 수동 정합성 점검 | 동일 BigQuery + 동일 에이전트로 동시 생성, 톤·수치 자동 일치 |
+| **뉴스레터 발송** | 수동 SMTP 발송 | 월간 자동 초안 → PIC 검토·승인 → 발송 예약 |
+| **관찰성** | console.log 수준 | BigQuery `logs.insight_runs` + Looker Studio 대시보드 |
+| **감사** | 로그인만 기록 | `audit_logs` 게시·프롬프트·롤·설정 변경 전체, 관리자 UI 1,000건 뷰어 |
+| **보안** | 정규식 sanitize, 인젝션 무방어 | sanitize-html + CSP, `<untrusted_data>` 래퍼, Secret Manager |
+| **인프라** | Render 단일 인스턴스 ($7/월) | GCP (Cloud Run + BigQuery + Cloud SQL) ($55~120/월) |
+| **LLM 비용** | 통제 불가 | Claude API 월 $20~50 (Budget Alert $300 상한) |
+| **PIC 월간 공수** | 수 시간 | 15~20분 (자동 초안 검토·승인 중심) |
+| **신규 콘텐츠 누락** | 발생 | 0건 (사이트맵 기반 자동 인테이크) |
+
+### 3.2 인프라 결론
 
 - **LLM은 Claude API 단일** — 다른 엔진 호출·교차 검증 없음. 리포트 생성·메타 태깅·품질 평가에 모두 Claude만 사용
 - **측정값 수집을 Claude Code로 전면 자동화** — 기존 4단계 수기(Python 다운로드 → CSV → Drive → 시트)를 Claude Code 기반 작업으로 교체해 **SEMrush API → BigQuery 직접 적재**. 별도 레포 [`mts8787-droid/dashboard-raw-data`](https://github.com/mts8787-droid/dashboard-raw-data.git)에 이미 구현된 적재 스크립트를 재사용·확장
@@ -635,4 +661,4 @@ flowchart TD
 
 ---
 
-*문서 버전 v13.0 · 2026-04-25*
+*문서 버전 v14.0 · 2026-04-25*
