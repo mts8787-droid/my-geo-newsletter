@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { pct, pctOrNull } from './excelUtils.js'
+import { pct, pctOrNull, canonicalCountry } from './excelUtils.js'
 
 describe('pct', () => {
   it('퍼센트 문자열 → 숫자', () => {
@@ -47,5 +47,54 @@ describe('pctOrNull', () => {
   it('실제 0% 입력은 0으로 보존 (null과 구분)', () => {
     expect(pctOrNull('0%')).toBe(0)
     expect(pctOrNull('0')).toBe(0)
+  })
+})
+
+describe('canonicalCountry — 시트 표기 → 표준 10개 코드 정규화', () => {
+  it.each([
+    ['UK', 'UK'],
+    ['GB', 'UK'],
+    ['United Kingdom', 'UK'],
+    ['Great Britain', 'UK'],
+    ['Britain', 'UK'],
+    ['England', 'UK'],
+    ['USA', 'US'],
+    ['United States', 'US'],
+    ['America', 'US'],
+    ['Brazil', 'BR'],
+    ['BRA', 'BR'],
+    ['Brasil', 'BR'],
+    ['Mexico', 'MX'],
+    ['MEX', 'MX'],
+    ['Germany', 'DE'],
+    ['Deutschland', 'DE'],
+    ['Spain', 'ES'],
+    ['Vietnam', 'VN'],
+    ['Viet Nam', 'VN'],
+    ['Australia', 'AU'],
+    ['India', 'IN'],
+  ])('%s → %s', (input, expected) => {
+    expect(canonicalCountry(input)).toBe(expected)
+  })
+
+  it('이미 정규화된 코드는 그대로', () => {
+    expect(canonicalCountry('US')).toBe('US')
+    expect(canonicalCountry('DE')).toBe('DE')
+  })
+
+  it('소문자/공백/괄호 처리', () => {
+    expect(canonicalCountry('  uk  ')).toBe('UK')
+    expect(canonicalCountry('(GB)')).toBe('UK')
+    expect(canonicalCountry('U.K.')).toBe('UK')
+  })
+
+  it('알려지지 않은 국가 → uppercase fallback', () => {
+    expect(canonicalCountry('Atlantis')).toBe('ATLANTIS')
+    expect(canonicalCountry('xx')).toBe('XX')
+  })
+
+  it('null/빈 문자열 → 빈 문자열', () => {
+    expect(canonicalCountry(null)).toBe('')
+    expect(canonicalCountry('')).toBe('')
   })
 })

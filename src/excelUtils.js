@@ -182,6 +182,30 @@ function normCountry(raw) {
   return String(raw || '').replace(/[()]/g, '').replace(/\./g, '').trim().toUpperCase()
 }
 
+// 시트의 다양한 국가 표기를 대시보드 표준 10개 코드(US/CA/UK/DE/ES/BR/MX/AU/VN/IN)로 정규화.
+// unlaunchedMap 키 일관성 + 신호등 라벨 매칭을 위해 사용.
+const CANONICAL_COUNTRY_MAP = {
+  'US': 'US', 'USA': 'US', 'UNITED STATES': 'US', 'AMERICA': 'US',
+  'CA': 'CA', 'CAN': 'CA', 'CANADA': 'CA',
+  'UK': 'UK', 'GB': 'UK', 'GREAT BRITAIN': 'UK', 'UNITED KINGDOM': 'UK', 'BRITAIN': 'UK', 'ENGLAND': 'UK',
+  'DE': 'DE', 'GER': 'DE', 'GERMANY': 'DE', 'DEUTSCHLAND': 'DE',
+  'ES': 'ES', 'SP': 'ES', 'SPAIN': 'ES', 'ESPAÑA': 'ES',
+  'BR': 'BR', 'BRA': 'BR', 'BRAZIL': 'BR', 'BRASIL': 'BR',
+  'MX': 'MX', 'MEX': 'MX', 'MEXICO': 'MX', 'MÉXICO': 'MX',
+  'AU': 'AU', 'AUS': 'AU', 'AUSTRALIA': 'AU',
+  'VN': 'VN', 'VIE': 'VN', 'VIET': 'VN', 'VIETNAM': 'VN', 'VIET NAM': 'VN',
+  'IN': 'IN', 'IND': 'IN', 'INDIA': 'IN',
+  'KR': 'KR', 'KOR': 'KR', 'KOREA': 'KR', 'SOUTH KOREA': 'KR',
+  'JP': 'JP', 'JPN': 'JP', 'JAPAN': 'JP',
+  'CN': 'CN', 'CHN': 'CN', 'CHINA': 'CN',
+  'FR': 'FR', 'FRA': 'FR', 'FRANCE': 'FR',
+  'IT': 'IT', 'ITA': 'IT', 'ITALY': 'IT', 'ITALIA': 'IT',
+}
+export function canonicalCountry(raw) {
+  const norm = normCountry(raw)
+  return CANONICAL_COUNTRY_MAP[norm] || norm
+}
+
 // 날짜 문자열에서 정렬 가능한 월 값 추출 (연도 경계 안전: year*12+month)
 // "2026년 3월" → 24315, "Mar 2026" → 24315, "2026-03" → 24315, "3월" → 3
 function parseMonthFromDate(dateStr) {
@@ -1496,7 +1520,9 @@ function parseUnlaunched(rows) {
     totalRows++
     const status = rawStatus.toLowerCase().replace(/\s+/g, ' ')
     if (!UNLAUNCHED_VALUES.has(status) && !UNLAUNCHED_VALUES.has(status.replace(/\s/g, ''))) return
-    const country = normCountry(r[countryCol])
+    // 시트 표기('GB','United Kingdom','USA','BRA' 등)를 표준 코드(UK/US/BR ...)로 정규화 →
+    // 클라이언트 _isUnlaunched(cnty, prodId)가 'UK|AIRCARE' 키로 일관 조회 가능
+    const country = canonicalCountry(r[countryCol])
     const rawCategory = String(r[categoryCol] || '').trim()
     if (!country || !rawCategory) return
     // category: UL_PROD_MAP 기준 코드로 정규화 (TV, IT, AV, WM, REF, DW, VC, COOKING, RAC, AIRCARE)
