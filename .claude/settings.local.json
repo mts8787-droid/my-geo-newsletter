@@ -88,7 +88,13 @@
       "Bash(ADMIN_PASSWORD=ci-test npx vite build --config vite.config.dashboard.js)",
       "Bash(ADMIN_PASSWORD=ci-test npm run build:dashboard)",
       "Bash(npx tsc *)",
-      "Bash(echo \"EXIT=$?\")"
+      "Bash(echo \"EXIT=$?\")",
+      "Bash(awk 'NR==1546{start=NR} /<\\\\/script>/&&start{print start\",\"NR; exit}' /Users/dubaba/my-geo-project/my-geo-newsletter/src/dashboard/dashboardTemplate.js)",
+      "Bash(awk 'NR>=1546 && NR<=1860' /Users/dubaba/my-geo-project/my-geo-newsletter/src/dashboard/dashboardTemplate.js)",
+      "Bash(awk 'NR>=1855 && NR<=1872' /Users/dubaba/my-geo-project/my-geo-newsletter/src/dashboard/dashboardTemplate.js)",
+      "Bash(awk 'NR>=2700{print NR\": \"$0}' /Users/dubaba/my-geo-project/my-geo-newsletter/src/dashboard/dashboardTemplate.js)",
+      "Bash(awk 'NR>=1546 && NR<=2732' /Users/dubaba/my-geo-project/my-geo-newsletter/src/dashboard/dashboardTemplate.js)",
+      "Bash(awk 'NR>=1547 && NR<=2731' /Users/dubaba/my-geo-project/my-geo-newsletter/src/dashboard/dashboardTemplate.js)"
     ]
   }
 }
