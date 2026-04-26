@@ -1273,7 +1273,7 @@ export function generateDashboardHTML(meta, total, products, citations, dotcom, 
   const trackerTabContent = includeProgressTracker
     ? `<iframe id="tracker-iframe" src="${trackerSrc}" style="width:100%;min-height:calc(100vh - 60px);border:none;background:#0A0F1E" title="Progress Tracker"></iframe>`
     : `<div class="progress-placeholder"><div class="inner"><div class="icon">⏳</div><h2>Coming Soon</h2><p>${trackerComingSoonMsg}</p></div></div>`
-  _sid = 0
+  // _sid는 dashboardSvg.js의 모듈 카운터 — 단조 증가로 ID 고유성 충분 (리셋 불필요)
   const t = T[lang] || T.ko
 
   // 주차 라벨 — 시트에서 파싱된 weeklyLabels 우선 사용, 없으면 데이터 길이 기반 생성

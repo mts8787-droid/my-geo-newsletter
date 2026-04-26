@@ -23,92 +23,105 @@ adminPagesRouter.get('/admin/', (req, res) => {
 <title>GEO Newsletter Admin</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0F172A;font-family:'LG Smart','Arial Narrow',Arial,sans-serif;color:#E2E8F0}
-.wrap{text-align:center;padding:40px 24px;max-width:540px;width:100%}
-.logo{font-size:11px;font-weight:700;letter-spacing:3px;color:#64748B;text-transform:uppercase;margin-bottom:28px}
-h1{font-size:24px;font-weight:700;color:#F8FAFC;margin-bottom:32px}
-.cards{display:flex;flex-direction:column;gap:14px;margin-bottom:32px}
-a.card{display:block;background:#1E293B;border:1px solid #334155;border-radius:12px;padding:24px;text-decoration:none;text-align:left;transition:border-color .2s,transform .15s}
+body{min-height:100vh;background:#0F172A;font-family:'LG Smart','Arial Narrow',Arial,sans-serif;color:#E2E8F0;padding:40px 24px}
+.wrap{max-width:1100px;margin:0 auto}
+.header{text-align:center;margin-bottom:32px}
+.logo{font-size:11px;font-weight:700;letter-spacing:3px;color:#64748B;text-transform:uppercase;margin-bottom:14px}
+h1{font-size:24px;font-weight:700;color:#F8FAFC}
+.columns{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:32px}
+@media (max-width:780px){.columns{grid-template-columns:1fr}}
+.col{display:flex;flex-direction:column;gap:12px}
+a.card{display:block;background:#1E293B;border:1px solid #334155;border-radius:12px;padding:18px 20px;text-decoration:none;text-align:left;transition:border-color .2s,transform .15s}
 a.card:hover{border-color:#CF0652;transform:translateY(-2px)}
-.card-title{font-size:16px;font-weight:700;color:#F8FAFC;margin-bottom:4px}
-.card-desc{font-size:13px;color:#94A3B8}
-.section-title{font-size:13px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:2px;margin:24px 0 12px}
-.logout{background:none;border:1px solid #334155;color:#64748B;padding:10px 24px;border-radius:8px;font-size:13px;cursor:pointer}
+.card-title{font-size:15px;font-weight:700;color:#F8FAFC;margin-bottom:3px}
+.card-desc{font-size:12px;color:#94A3B8;line-height:1.5}
+.section-title{font-size:12px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:2px;margin:6px 0 4px}
+.section-title:not(:first-child){margin-top:18px}
+.footer{text-align:center}
+.logout{background:none;border:1px solid #334155;color:#64748B;padding:10px 24px;border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit}
 .logout:hover{border-color:#64748B;color:#94A3B8}
 </style></head><body>
 <div class="wrap">
-  <div class="logo">GEO Newsletter</div>
-  <h1>Admin Dashboard</h1>
-  <div class="cards">
-    <div class="section-title" style="margin-top:0">뉴스레터 관리</div>
-    <a class="card" href="/admin/newsletter">
-      <div class="card-title">Newsletter Generator</div>
-      <div class="card-desc">GEO 모니터링 리포트 생성, 편집 및 발송</div>
-    </a>
-    <div class="section-title">대시보드 관리</div>
-    <a class="card" href="/admin/dashboard">
-      <div class="card-title">Dashboard Viewer</div>
-      <div class="card-desc">Visibility · Citation · Readability · Tracker 통합 뷰어 — 여기서 통합 대시보드 게시</div>
-    </a>
-    <a class="card" href="/admin/visibility">
-      <div class="card-title">Visibility Editor</div>
-      <div class="card-desc">GEO Visibility KPI 편집 — Visibility 단독 게시</div>
-    </a>
-    <a class="card" href="/admin/citation">
-      <div class="card-title">Citation Editor</div>
-      <div class="card-desc">Citation 분석 편집 — Citation 단독 게시</div>
-    </a>
-    <a class="card" href="/admin/monthly-report">
-      <div class="card-title">Monthly Report</div>
-      <div class="card-desc">월간 보고용 단순 표 형태 리포트 — 색상/그래프 없음</div>
-    </a>
-    <a class="card" href="/admin/weekly-report">
-      <div class="card-title">Weekly Report</div>
-      <div class="card-desc">주간 보고용 표 리포트 — 국가별 제품별 전주대비 포함</div>
-    </a>
-    <a class="card" href="/admin/readability" style="opacity:0.5;pointer-events:none">
-      <div class="card-title">Readability Editor</div>
-      <div class="card-desc">추후 고도화 예정</div>
-    </a>
-    <a class="card" href="/admin/progress-tracker">
-      <div class="card-title">Progress Tracker</div>
-      <div class="card-desc">GEO 과제 진행 현황 대시보드</div>
-    </a>
-    <div class="section-title">공통 인프라</div>
-    <a class="card" href="/admin/dashboard#promptlist">
-      <div class="card-title">Prompt List</div>
-      <div class="card-desc">GEO KPI 측정에 사용되는 프롬프트 목록 확인</div>
-    </a>
-    <a class="card" href="/admin/ip-manager">
-      <div class="card-title">IP Access Manager</div>
-      <div class="card-desc">게시된 리포트 열람 허용 IP 대역 관리</div>
-    </a>
-    <a class="card" href="/admin/ai-settings">
-      <div class="card-title">AI Settings</div>
-      <div class="card-desc">AI 인사이트 생성 프롬프트 규칙 · 모델 설정</div>
-    </a>
-    <a class="card" href="/admin/observability">
-      <div class="card-title">Observability</div>
-      <div class="card-desc">AI 인사이트 호출 토큰·비용·지연·실패 추적 (insight_runs 시각화)</div>
-    </a>
-    <a class="card" href="/admin/archives">
-      <div class="card-title">Archives (학습 데이터)</div>
-      <div class="card-desc">완성본 아카이빙 · AI 인사이트 생성 시 문체 학습 데이터로 활용</div>
-    </a>
-    <a class="card" href="/admin/de-prompts">
-      <div class="card-title">독일 프롬프트 예시</div>
-      <div class="card-desc">DE 국가 카테고리별·제품별·토픽별 대표 프롬프트 각 1개</div>
-    </a>
-    <a class="card" href="/admin/plan">
-      <div class="card-title">시스템 기획서</div>
-      <div class="card-desc">현행 아키텍처 · 코드/보안 리뷰 · 기능 로드맵</div>
-    </a>
-    <a class="card" href="/admin/infra">
-      <div class="card-title">GCP 인프라 구성도</div>
-      <div class="card-desc">GCP 서비스·컴퓨트·데이터·IaC·CI/CD·비용·도입 체크리스트</div>
-    </a>
+  <div class="header">
+    <div class="logo">GEO Newsletter</div>
+    <h1>Admin Dashboard</h1>
   </div>
-  <button class="logout" onclick="fetch('/api/auth/logout',{method:'POST'}).then(function(){location.href='/admin/login'})">로그아웃</button>
+  <div class="columns">
+    <div class="col">
+      <div class="section-title">뉴스레터 관리</div>
+      <a class="card" href="/admin/newsletter">
+        <div class="card-title">Newsletter Generator</div>
+        <div class="card-desc">GEO 모니터링 리포트 생성, 편집 및 발송</div>
+      </a>
+      <div class="section-title">대시보드 관리</div>
+      <a class="card" href="/admin/dashboard">
+        <div class="card-title">Dashboard Viewer</div>
+        <div class="card-desc">Visibility · Citation · Readability · Tracker 통합 뷰어 — 여기서 통합 대시보드 게시</div>
+      </a>
+      <a class="card" href="/admin/visibility">
+        <div class="card-title">Visibility Editor</div>
+        <div class="card-desc">GEO Visibility KPI 편집 — Visibility 단독 게시</div>
+      </a>
+      <a class="card" href="/admin/citation">
+        <div class="card-title">Citation Editor</div>
+        <div class="card-desc">Citation 분석 편집 — Citation 단독 게시</div>
+      </a>
+      <a class="card" href="/admin/monthly-report">
+        <div class="card-title">Monthly Report</div>
+        <div class="card-desc">월간 보고용 단순 표 형태 리포트 — 색상/그래프 없음</div>
+      </a>
+      <a class="card" href="/admin/weekly-report">
+        <div class="card-title">Weekly Report</div>
+        <div class="card-desc">주간 보고용 표 리포트 — 국가별 제품별 전주대비 포함</div>
+      </a>
+      <a class="card" href="/admin/readability" style="opacity:0.5;pointer-events:none">
+        <div class="card-title">Readability Editor</div>
+        <div class="card-desc">추후 고도화 예정</div>
+      </a>
+      <a class="card" href="/admin/progress-tracker">
+        <div class="card-title">Progress Tracker</div>
+        <div class="card-desc">GEO 과제 진행 현황 대시보드</div>
+      </a>
+    </div>
+    <div class="col">
+      <div class="section-title">공통 인프라</div>
+      <a class="card" href="/admin/dashboard#promptlist">
+        <div class="card-title">Prompt List</div>
+        <div class="card-desc">GEO KPI 측정에 사용되는 프롬프트 목록 확인</div>
+      </a>
+      <a class="card" href="/admin/ip-manager">
+        <div class="card-title">IP Access Manager</div>
+        <div class="card-desc">게시된 리포트 열람 허용 IP 대역 관리</div>
+      </a>
+      <a class="card" href="/admin/ai-settings">
+        <div class="card-title">AI Settings</div>
+        <div class="card-desc">AI 인사이트 생성 프롬프트 규칙 · 모델 설정</div>
+      </a>
+      <a class="card" href="/admin/observability">
+        <div class="card-title">Observability</div>
+        <div class="card-desc">AI 인사이트 호출 토큰·비용·지연·실패 추적 (insight_runs 시각화)</div>
+      </a>
+      <a class="card" href="/admin/archives">
+        <div class="card-title">Archives (학습 데이터)</div>
+        <div class="card-desc">완성본 아카이빙 · AI 인사이트 생성 시 문체 학습 데이터로 활용</div>
+      </a>
+      <a class="card" href="/admin/de-prompts">
+        <div class="card-title">독일 프롬프트 예시</div>
+        <div class="card-desc">DE 국가 카테고리별·제품별·토픽별 대표 프롬프트 각 1개</div>
+      </a>
+      <a class="card" href="/admin/plan">
+        <div class="card-title">시스템 기획서</div>
+        <div class="card-desc">현행 아키텍처 · 코드/보안 리뷰 · 기능 로드맵</div>
+      </a>
+      <a class="card" href="/admin/infra">
+        <div class="card-title">GCP 인프라 구성도</div>
+        <div class="card-desc">GCP 서비스·컴퓨트·데이터·IaC·CI/CD·비용·도입 체크리스트</div>
+      </a>
+    </div>
+  </div>
+  <div class="footer">
+    <button class="logout" onclick="fetch('/api/auth/logout',{method:'POST'}).then(function(){location.href='/admin/login'})">로그아웃</button>
+  </div>
 </div></body></html>`)
 })
 
