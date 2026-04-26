@@ -680,13 +680,31 @@ function applyUnlaunchedStyle(selCountry){
       }
     }
   });
-  // 트렌드 row
+  // 트렌드 row — 미출시 시 텍스트·배경·테두리·글자색까지 회색으로 통일.
+  // 최초 1회 원본 status 정보(text/bg/color/border)를 dataset에 캐시 → allUL 해제 시 복원.
   document.querySelectorAll('.trend-row[data-prodid]').forEach(function(row){
     var pid = row.getAttribute('data-prodid');
     var allUL = countries.every(function(c){return _isUnlaunched(c,pid)});
     row.classList.toggle('is-unlaunched', allUL);
     var badge = row.querySelector('.trend-status-badge');
-    if(badge && allUL){badge.textContent = (document.documentElement.lang==='en'?'Unlaunched':'미출시')}
+    if(!badge)return;
+    if(badge.dataset.origText==null){
+      badge.dataset.origText=badge.textContent;
+      badge.dataset.origBg=badge.style.background;
+      badge.dataset.origColor=badge.style.color;
+      badge.dataset.origBorder=badge.style.borderColor||badge.style.border;
+    }
+    if(allUL){
+      badge.textContent=isEn?'Unlaunched':'미출시';
+      badge.style.background='#F1F5F9';
+      badge.style.color='#64748B';
+      badge.style.borderColor='#CBD5E1';
+    }else{
+      badge.textContent=badge.dataset.origText;
+      badge.style.background=badge.dataset.origBg;
+      badge.style.color=badge.dataset.origColor;
+      badge.style.borderColor=badge.dataset.origBorder;
+    }
   });
   // 국가별 섹션 vbar
   document.querySelectorAll('.vbar-item[data-prodid][data-country]').forEach(function(item){
@@ -1049,7 +1067,9 @@ function updateProductScores(selCountry,selBU,selProd){
   if(selCountry.isAll){
     cards.forEach(function(card){
       var nameEl=card.querySelector('.prod-name');if(!nameEl)return;
-      var prod=_products.find(function(p){return p.kr===nameEl.textContent||p.en===nameEl.textContent});if(!prod)return;
+      // 미출시 국가가 있는 제품은 prodNameUL이 'kr*' 형식으로 렌더 → 트레일링 * 제거 후 매치
+      var name=nameEl.textContent.replace(/\\*$/,'');
+      var prod=_products.find(function(p){return p.kr===name||p.en===name});if(!prod)return;
       var totalData=(_weeklyAll[prod.id]||{})['Total']||{};
       var weekly=totalData.LG||[];
       var validW=weekly.filter(function(v){return v!=null});
@@ -1068,7 +1088,8 @@ function updateProductScores(selCountry,selBU,selProd){
   // 주간 국가별 데이터: weeklyAll에서 선택된 국가의 마지막 주 LG/경쟁사 평균
   cards.forEach(function(card){
     var nameEl=card.querySelector('.prod-name');if(!nameEl)return;
-    var prod=_products.find(function(p){return p.kr===nameEl.textContent||p.en===nameEl.textContent});if(!prod)return;
+    var name=nameEl.textContent.replace(/\\*$/,'');
+    var prod=_products.find(function(p){return p.kr===name||p.en===name});if(!prod)return;
     var prodData=_weeklyAll[prod.id]||{};
     var scores=[];var compScores=[];
     countries.forEach(function(c){
