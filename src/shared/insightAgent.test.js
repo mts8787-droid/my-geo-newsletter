@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest'
+import { vi } from 'vitest'
 import {
   ARCHIVE_KEY_MAP,
   resolveArchiveKey,
@@ -10,9 +11,12 @@ import {
   loadInsightContext,
   callClaudeInsight,
   validateClaudeOutput,
+  lookupByPath,
+  buildLookupTool,
   INSIGHT_DEFAULT_MODEL,
   INSIGHT_DEFAULT_MAX_RETRIES,
   INSIGHT_MIN_OUTPUT_LENGTH,
+  INSIGHT_MAX_TOOL_STEPS,
   INSIGHT_ARCHIVE_LIMIT,
   INSIGHT_PAST_EXAMPLES,
 } from './insightAgent.js'
@@ -291,5 +295,172 @@ describe('classifyClaudeError — invalid_output 분류', () => {
   it('err.kind="invalid_output" → 502', () => {
     const err = Object.assign(new Error('empty'), { kind: 'invalid_output', reason: 'empty' })
     expect(classifyClaudeError(err)).toEqual({ kind: 'invalid_output', httpStatus: 502 })
+  })
+
+  it('err.kind="tool_loop_exceeded" → 500 (분류 안 됨, 일반 error)', () => {
+    const err = Object.assign(new Error('loop'), { kind: 'tool_loop_exceeded' })
+    // 현재 분류는 invalid_output만 우선 처리, 나머지는 일반 error
+    expect(classifyClaudeError(err).httpStatus).toBe(500)
+  })
+})
+
+describe('lookupByPath — 안전한 JSON 경로 조회', () => {
+  const data = {
+    products: [{ score: 87.5, name: 'TV' }, { score: 72.1, name: 'AC' }],
+    total: { LG: 80, Samsung: 75 },
+    nested: { a: { b: { c: 'deep' } } },
+  }
+
+  it('점 표기', () => {
+    expect(lookupByPath(data, 'total.LG')).toBe(80)
+    expect(lookupByPath(data, 'nested.a.b.c')).toBe('deep')
+  })
+
+  it('배열 인덱스 (괄호)', () => {
+    expect(lookupByPath(data, 'products[0].score')).toBe(87.5)
+    expect(lookupByPath(data, 'products[1].name')).toBe('AC')
+  })
+
+  it('존재하지 않는 키 → undefined', () => {
+    expect(lookupByPath(data, 'total.Apple')).toBeUndefined()
+    expect(lookupByPath(data, 'products[99].name')).toBeUndefined()
+  })
+
+  it('null/잘못된 입력 → undefined', () => {
+    expect(lookupByPath(null, 'a')).toBeUndefined()
+    expect(lookupByPath(data, null)).toBeUndefined()
+    expect(lookupByPath(data, '')).toBe(data) // empty path → root
+  })
+
+  it('프로토타입 오염 차단 (__proto__·constructor)', () => {
+    expect(lookupByPath(data, '__proto__')).toBeUndefined()
+    expect(lookupByPath(data, 'constructor')).toBeUndefined()
+    expect(lookupByPath(data, 'prototype')).toBeUndefined()
+  })
+
+  it('배열에 비정수 인덱스 → undefined', () => {
+    expect(lookupByPath(data, 'products.foo')).toBeUndefined()
+  })
+
+  it('원시값에 깊은 경로 → undefined', () => {
+    expect(lookupByPath(data, 'total.LG.deeper')).toBeUndefined()
+  })
+})
+
+describe('buildLookupTool', () => {
+  it('schema 형태가 Anthropic tool 규격 준수', () => {
+    const tool = buildLookupTool({ x: 1 })
+    expect(tool.schema.name).toBe('lookup')
+    expect(tool.schema.input_schema.type).toBe('object')
+    expect(tool.schema.input_schema.required).toContain('path')
+  })
+
+  it('execute → 정상 경로 ok:true + value', () => {
+    const tool = buildLookupTool({ products: [{ score: 80 }] })
+    expect(tool.execute({ input: { path: 'products[0].score' } })).toEqual({ ok: true, value: 80 })
+  })
+
+  it('execute → 미존재 경로 ok:false + error', () => {
+    const tool = buildLookupTool({ x: 1 })
+    const r = tool.execute({ input: { path: 'y.z' } })
+    expect(r.ok).toBe(false)
+    expect(r.error).toContain('y.z')
+  })
+})
+
+describe('callClaudeInsight — tool use 루프', () => {
+  function makeClient(responses) {
+    const create = vi.fn()
+    responses.forEach(r => create.mockResolvedValueOnce(r))
+    return { client: { messages: { create } }, create }
+  }
+
+  it('tools 미지정 → 단일 호출 (기존 동작)', async () => {
+    const { client, create } = makeClient([{
+      content: [{ type: 'text', text: '단일 응답' }],
+      usage: { input_tokens: 10, output_tokens: 5 },
+      stop_reason: 'end_turn',
+    }])
+    const r = await callClaudeInsight({ client, systemPrompt: 's', userPrompt: 'u', model: 'm', maxTokens: 100 })
+    expect(create).toHaveBeenCalledOnce()
+    expect(r.insight).toBe('단일 응답')
+    expect(r.steps).toBe(0)
+    expect(r.toolCalls).toEqual([])
+  })
+
+  it('tools 지정 + tool_use 1회 → 도구 실행 후 종료', async () => {
+    const { client, create } = makeClient([
+      {
+        content: [
+          { type: 'text', text: '잠시 데이터를 확인하겠습니다.' },
+          { type: 'tool_use', id: 'tu_1', name: 'lookup', input: { path: 'total.LG' } },
+        ],
+        usage: { input_tokens: 50, output_tokens: 20 },
+        stop_reason: 'tool_use',
+      },
+      {
+        content: [{ type: 'text', text: 'LG 점수 80점 기준 분석 결과입니다.' }],
+        usage: { input_tokens: 60, output_tokens: 30 },
+        stop_reason: 'end_turn',
+      },
+    ])
+    const tools = [{ name: 'lookup', description: 'd', input_schema: { type: 'object', properties: { path: { type: 'string' } } } }]
+    const executeTool = vi.fn(async ({ name, input }) => {
+      expect(name).toBe('lookup'); expect(input.path).toBe('total.LG')
+      return { ok: true, value: 80 }
+    })
+    const r = await callClaudeInsight({ client, systemPrompt: 's', userPrompt: 'u', model: 'm', maxTokens: 200, tools, executeTool })
+    expect(create).toHaveBeenCalledTimes(2)
+    expect(executeTool).toHaveBeenCalledOnce()
+    expect(r.insight).toBe('LG 점수 80점 기준 분석 결과입니다.')
+    expect(r.steps).toBe(1)
+    expect(r.toolCalls).toEqual([{ name: 'lookup', input: { path: 'total.LG' }, isError: false }])
+    // 토큰 합산
+    expect(r.inputTokens).toBe(110)
+    expect(r.outputTokens).toBe(50)
+  })
+
+  it('tool 실행 throw → tool_result.is_error 전달, 모델이 복구', async () => {
+    const { client } = makeClient([
+      { content: [{ type: 'tool_use', id: 't1', name: 'lookup', input: { path: 'bad' } }], usage: { input_tokens: 30, output_tokens: 5 }, stop_reason: 'tool_use' },
+      { content: [{ type: 'text', text: '도구 오류 처리 후 응답' }], usage: { input_tokens: 35, output_tokens: 10 }, stop_reason: 'end_turn' },
+    ])
+    const tools = [{ name: 'lookup', description: 'd', input_schema: {} }]
+    const executeTool = async () => { throw new Error('boom') }
+    const r = await callClaudeInsight({ client, systemPrompt: 's', userPrompt: 'u', model: 'm', maxTokens: 200, tools, executeTool })
+    expect(r.insight).toBe('도구 오류 처리 후 응답')
+    expect(r.toolCalls[0].isError).toBe(true)
+  })
+
+  it('maxSteps 초과 → tool_loop_exceeded 예외', async () => {
+    // 항상 tool_use를 반환하는 가상 응답
+    const create = vi.fn(async () => ({
+      content: [{ type: 'tool_use', id: 't', name: 'lookup', input: { path: 'x' } }],
+      usage: { input_tokens: 10, output_tokens: 5 },
+      stop_reason: 'tool_use',
+    }))
+    const client = { messages: { create } }
+    const tools = [{ name: 'lookup', description: 'd', input_schema: {} }]
+    const executeTool = async () => ({ ok: true })
+    let err
+    try {
+      await callClaudeInsight({ client, systemPrompt: 's', userPrompt: 'u', model: 'm', maxTokens: 200, tools, executeTool, maxSteps: 2 })
+    } catch (e) { err = e }
+    expect(err).toBeDefined()
+    expect(err.kind).toBe('tool_loop_exceeded')
+  })
+
+  it('text 블록 다중 → join 합산', async () => {
+    const { client } = makeClient([{
+      content: [{ type: 'text', text: 'A' }, { type: 'text', text: 'B' }],
+      usage: { input_tokens: 5, output_tokens: 5 },
+      stop_reason: 'end_turn',
+    }])
+    const r = await callClaudeInsight({ client, systemPrompt: 's', userPrompt: 'u', model: 'm', maxTokens: 100 })
+    expect(r.insight).toBe('A\nB')
+  })
+
+  it('INSIGHT_MAX_TOOL_STEPS 상수 ≥ 3', () => {
+    expect(INSIGHT_MAX_TOOL_STEPS).toBeGreaterThanOrEqual(3)
   })
 })

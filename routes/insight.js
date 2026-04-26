@@ -12,6 +12,7 @@ import {
   callClaudeInsight,
   classifyClaudeError,
   validateClaudeOutput,
+  buildLookupTool,
 } from '../src/shared/insightAgent.js'
 import { readArchives, readAiSettings } from '../lib/storage.js'
 import { appendInsightRun } from '../lib/insight-runs.js'
@@ -47,9 +48,21 @@ insightRouter.post('/api/generate-insight', validateBody(InsightPostSchema), asy
     const userPrompt = wrapUserPrompt(buildInsightPrompt(type, data))
 
     model = aiSettings.model || INSIGHT_DEFAULT_MODEL
+    // C1 — tool use 옵트인. aiSettings.useTools=true 일 때 lookup 도구 활성화
+    let tools, executeTool
+    if (aiSettings.useTools) {
+      const lookup = buildLookupTool(data)
+      tools = [lookup.schema]
+      executeTool = (call) => {
+        if (call.name === 'lookup') return lookup.execute(call)
+        return { ok: false, error: `unknown tool: ${call.name}` }
+      }
+    }
+
     const result = await callClaudeInsight({
       client, systemPrompt, userPrompt, model,
       maxTokens: aiSettings.maxTokens || INSIGHT_DEFAULT_MAX_TOKENS,
+      tools, executeTool,
     })
 
     // N3 — 빈 본문·거절·길이 하한 검증 (실패 시 throw → catch 블록에서 invalid_output 분류)
@@ -60,12 +73,14 @@ insightRouter.post('/api/generate-insight', validateBody(InsightPostSchema), asy
       inputTokens: result.inputTokens, outputTokens: result.outputTokens,
       latencyMs: result.latencyMs, costUsd: result.costUsd,
       stopReason: result.stopReason,
+      steps: result.steps, toolCalls: result.toolCalls?.length || 0,
     }, 'insight ok')
     appendInsightRun({
       type, archiveKey, model, lang: lang || 'ko',
       inputTokens: result.inputTokens, outputTokens: result.outputTokens,
       latencyMs: result.latencyMs, costUsd: result.costUsd,
       stopReason: result.stopReason, ok: true,
+      steps: result.steps, toolCalls: result.toolCalls?.length || 0,
     })
 
     res.json({ ok: true, insight: result.insight })

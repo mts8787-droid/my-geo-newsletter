@@ -691,6 +691,14 @@ textarea{resize:vertical;min-height:120px}
       </div>
     </div>
   </div>
+  <div class="section">
+    <h2>에이전트 모드 (실험적)</h2>
+    <p class="hint">활성화하면 Claude가 <code>lookup(path)</code> 도구를 사용해 데이터를 직접 조회합니다. 수치 환각이 줄지만 호출 비용이 증가합니다 (보통 1.5~2배).</p>
+    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:#E2E8F0">
+      <input type="checkbox" id="useTools" style="width:auto;margin:0">
+      <span>tool use 루프 활성화 (lookup 도구)</span>
+    </label>
+  </div>
   <button class="save-btn" onclick="save()">저장</button>
   <p class="status" id="status"></p>
 </div>
@@ -702,13 +710,15 @@ async function load(){
   document.getElementById('rules').value=j.settings.promptRules||'';
   document.getElementById('model').value=j.settings.model||'claude-sonnet-4-20250514';
   document.getElementById('maxTokens').value=j.settings.maxTokens||500;
+  document.getElementById('useTools').checked=!!j.settings.useTools;
 }
 async function save(){
   var st=document.getElementById('status');
   var body={
     promptRules:document.getElementById('rules').value,
     model:document.getElementById('model').value,
-    maxTokens:parseInt(document.getElementById('maxTokens').value)||500
+    maxTokens:parseInt(document.getElementById('maxTokens').value)||500,
+    useTools:document.getElementById('useTools').checked
   };
   var r=await fetch('/api/ai-settings',{method:'PUT',headers:{'Content-Type':'application/json','X-Requested-With':'XMLHttpRequest'},body:JSON.stringify(body)});
   var j=await r.json();

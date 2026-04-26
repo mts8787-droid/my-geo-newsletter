@@ -138,36 +138,140 @@ export function loadInsightContext({ type, data, readArchives }) {
   }
 }
 
+// C1 — tool use 루프 최대 반복 횟수 (무한 루프 방지)
+export const INSIGHT_MAX_TOOL_STEPS = 5
+
 /**
- * C8 — Claude 호출 + 관찰성 메타 산출 (Anthropic SDK 의존성 주입)
+ * C8 + C1 — Claude 호출. tools 미지정 시 단일 호출, 지정 시 tool use 루프.
  * @param {object} opts
  * @param {object} opts.client — Anthropic SDK 인스턴스
  * @param {string} opts.systemPrompt
  * @param {string} opts.userPrompt
  * @param {string} opts.model
  * @param {number} opts.maxTokens
+ * @param {Array}  [opts.tools] — Anthropic tool schemas (선택). 빈/미지정이면 단일 호출.
+ * @param {(call: {name:string,input:any}) => Promise<any>|any} [opts.executeTool] — tool dispatcher
+ * @param {number} [opts.maxSteps=INSIGHT_MAX_TOOL_STEPS] — tool use 루프 상한
  * @returns {Promise<{ insight: string, inputTokens: number, outputTokens: number,
- *                    latencyMs: number, costUsd: number, stopReason: string }>}
+ *                    latencyMs: number, costUsd: number, stopReason: string,
+ *                    steps: number, toolCalls: Array }>}
  */
-export async function callClaudeInsight({ client, systemPrompt, userPrompt, model, maxTokens }) {
+export async function callClaudeInsight({ client, systemPrompt, userPrompt, model, maxTokens, tools, executeTool, maxSteps = INSIGHT_MAX_TOOL_STEPS }) {
   const t0 = Date.now()
-  const message = await client.messages.create({
-    model,
-    max_tokens: maxTokens,
-    system: systemPrompt,
-    messages: [{ role: 'user', content: userPrompt }],
-  })
+  const useTools = Array.isArray(tools) && tools.length > 0 && typeof executeTool === 'function'
+  const messages = [{ role: 'user', content: userPrompt }]
+  let inputTokens = 0, outputTokens = 0
+  let stopReason = null
+  const toolCalls = []
+  let steps = 0
+  let lastMessage = null
+
+  for (steps = 0; steps <= maxSteps; steps++) {
+    const req = { model, max_tokens: maxTokens, system: systemPrompt, messages }
+    if (useTools) req.tools = tools
+    const message = await client.messages.create(req)
+    lastMessage = message
+    const usage = message.usage || {}
+    inputTokens += usage.input_tokens || 0
+    outputTokens += usage.output_tokens || 0
+    stopReason = message.stop_reason
+
+    if (!useTools) break  // 단일 호출 모드 — 즉시 종료
+
+    // tool use 블록 수집
+    const toolUses = (message.content || []).filter(b => b.type === 'tool_use')
+    if (!toolUses.length) break  // 모델이 더 이상 도구를 부르지 않으면 종료
+
+    if (steps >= maxSteps) {
+      const err = new Error(`tool use 루프가 ${maxSteps}회를 초과했습니다`)
+      err.kind = 'tool_loop_exceeded'
+      throw err
+    }
+
+    // assistant 응답을 messages에 누적, tool_result 직렬화
+    messages.push({ role: 'assistant', content: message.content })
+    const toolResults = []
+    for (const use of toolUses) {
+      let result, isError = false
+      try {
+        result = await executeTool({ name: use.name, input: use.input })
+      } catch (err) {
+        result = `tool error: ${err?.message || String(err)}`
+        isError = true
+      }
+      toolCalls.push({ name: use.name, input: use.input, isError })
+      toolResults.push({
+        type: 'tool_result',
+        tool_use_id: use.id,
+        content: typeof result === 'string' ? result : JSON.stringify(result),
+        ...(isError ? { is_error: true } : {}),
+      })
+    }
+    messages.push({ role: 'user', content: toolResults })
+  }
+
   const latencyMs = Date.now() - t0
-  const usage = message.usage || {}
-  const inputTokens = usage.input_tokens || 0
-  const outputTokens = usage.output_tokens || 0
+  // 마지막 응답의 text 블록만 합산 (tool_use 블록은 제외).
+  // 실제 SDK는 type:'text'를 항상 보내지만, 단일 호출 호환을 위해 type 미설정 + text 보유 블록도 수용
+  const insight = (lastMessage?.content || [])
+    .filter(b => b.type === 'text' || (b.type == null && typeof b.text === 'string'))
+    .map(b => b.text || '')
+    .join('\n')
+    .trim()
   return {
-    insight: message.content?.[0]?.text || '',
+    insight,
     inputTokens,
     outputTokens,
     latencyMs,
     costUsd: estimateCostUsd(inputTokens, outputTokens),
-    stopReason: message.stop_reason,
+    stopReason,
+    steps,
+    toolCalls,
+  }
+}
+
+// C1 — JSON 데이터를 안전하게 path로 조회 (점 표기·인덱스 지원, 프로토타입 오염 차단)
+// 예: 'products[0].score', 'total.LG', 'citations[2].domain'
+export function lookupByPath(root, path) {
+  if (root == null || typeof path !== 'string') return undefined
+  const parts = path.match(/[^.[\]]+/g) || []
+  let cur = root
+  for (const part of parts) {
+    if (cur == null) return undefined
+    // 프로토타입 오염 방지
+    if (part === '__proto__' || part === 'prototype' || part === 'constructor') return undefined
+    if (Array.isArray(cur)) {
+      const idx = Number(part)
+      if (!Number.isInteger(idx)) return undefined
+      cur = cur[idx]
+    } else if (typeof cur === 'object') {
+      cur = cur[part]
+    } else {
+      return undefined
+    }
+  }
+  return cur
+}
+
+// C1 — 기본 도구 빌더: 데이터 컨텍스트를 클로저로 캡처
+export function buildLookupTool(dataContext) {
+  return {
+    schema: {
+      name: 'lookup',
+      description: '제공된 데이터에서 특정 경로의 값을 조회합니다. 수치 환각 방지·근거 검증에 사용. 예: "products[0].score", "total.LG"',
+      input_schema: {
+        type: 'object',
+        properties: {
+          path: { type: 'string', description: '점·괄호 표기 경로 (예: products[0].score)' },
+        },
+        required: ['path'],
+      },
+    },
+    execute: ({ input }) => {
+      const v = lookupByPath(dataContext, input?.path)
+      if (v === undefined) return { ok: false, error: `path not found: ${input?.path}` }
+      return { ok: true, value: v }
+    },
   }
 }
 

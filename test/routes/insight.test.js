@@ -183,4 +183,55 @@ describe('POST /api/generate-insight', () => {
     expect(res.body.kind).toBe('invalid_output')
     expect(appendInsightRunMock.mock.calls[0][0].reason).toBe('too_short')
   })
+
+  it('aiSettings.useTools=true → tool 루프 활성화, tool_use 처리 후 응답 (C1)', async () => {
+    fakeAiSettings.useTools = true
+    // 첫 응답: lookup tool_use
+    messagesCreateMock.mockResolvedValueOnce({
+      content: [
+        { type: 'text', text: '데이터 확인 중' },
+        { type: 'tool_use', id: 'tu1', name: 'lookup', input: { path: 'products[0].score' } },
+      ],
+      usage: { input_tokens: 50, output_tokens: 20 },
+      stop_reason: 'tool_use',
+    })
+    // 두 번째 응답: 텍스트 (충분히 긴 길이로 검증 통과)
+    messagesCreateMock.mockResolvedValueOnce({
+      content: [{ type: 'text', text: 'lookup 결과 80을 근거로 LG의 가시성이 강세를 보입니다. 추가 검토가 필요합니다.' }],
+      usage: { input_tokens: 60, output_tokens: 30 },
+      stop_reason: 'end_turn',
+    })
+    const res = await request(makeApp()).post('/api/generate-insight').send({
+      type: 'totalInsight',
+      data: { products: [{ score: 80 }] },
+    })
+    expect(res.status).toBe(200)
+    expect(res.body.ok).toBe(true)
+    expect(messagesCreateMock).toHaveBeenCalledTimes(2)
+    // 첫 호출에 tools 포함되어야 함
+    expect(messagesCreateMock.mock.calls[0][0].tools).toBeDefined()
+    expect(messagesCreateMock.mock.calls[0][0].tools[0].name).toBe('lookup')
+    // 두 번째 호출의 messages 안에 tool_result 포함
+    const secondMessages = messagesCreateMock.mock.calls[1][0].messages
+    const toolResultMsg = secondMessages.find(m => Array.isArray(m.content) && m.content.some(c => c.type === 'tool_result'))
+    expect(toolResultMsg).toBeDefined()
+    // observability 적재에 toolCalls 카운트 포함
+    expect(appendInsightRunMock.mock.calls[0][0].toolCalls).toBe(1)
+    expect(appendInsightRunMock.mock.calls[0][0].steps).toBe(1)
+    fakeAiSettings.useTools = false  // cleanup
+  })
+
+  it('aiSettings.useTools=false → tools 미전달 (기본 동작)', async () => {
+    fakeAiSettings.useTools = false
+    messagesCreateMock.mockResolvedValue({
+      content: [{ text: '단일 호출 — 도구 없이 충분히 긴 응답 본문을 반환합니다.' }],
+      usage: { input_tokens: 100, output_tokens: 50 },
+      stop_reason: 'end_turn',
+    })
+    const res = await request(makeApp()).post('/api/generate-insight').send({
+      type: 'totalInsight', data: { x: 1 },
+    })
+    expect(res.status).toBe(200)
+    expect(messagesCreateMock.mock.calls[0][0].tools).toBeUndefined()
+  })
 })
