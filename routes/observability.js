@@ -7,7 +7,7 @@ import { readInsightRuns, summarizeInsightRuns } from '../lib/insight-runs.js'
 export const observabilityRouter = Router()
 
 observabilityRouter.get('/api/observability/runs', (req, res) => {
-  const limit = Math.max(1, Math.min(5000, parseInt(req.query.limit) || 1000))
+  const limit = Math.max(1, Math.min(5000, parseInt(String(req.query.limit ?? '')) || 1000))
   const runs = readInsightRuns({ limit })
   const summary = summarizeInsightRuns(runs)
   // 시계열 — 최근 24시간(시간별)·최근 30일(일별) 카운트·실패율

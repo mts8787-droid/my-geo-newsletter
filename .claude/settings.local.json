@@ -86,7 +86,9 @@
       "Bash(npx vitest *)",
       "Bash(ADMIN_PASSWORD=ci-test npm run build)",
       "Bash(ADMIN_PASSWORD=ci-test npx vite build --config vite.config.dashboard.js)",
-      "Bash(ADMIN_PASSWORD=ci-test npm run build:dashboard)"
+      "Bash(ADMIN_PASSWORD=ci-test npm run build:dashboard)",
+      "Bash(npx tsc *)",
+      "Bash(echo \"EXIT=$?\")"
     ]
   }
 }

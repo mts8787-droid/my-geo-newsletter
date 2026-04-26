@@ -357,6 +357,7 @@ function parseVisSummary(rows) {
   const countryTotals = pickCountryTotals(latestDate)
   const countryTotalsPrev = prevDate ? pickCountryTotals(prevDate) : {}
 
+  /** @type {any} */
   const result = {
     total: { score, prev, vsComp, rank: score >= vsComp ? 1 : 2, totalBrands: 12 },
     ...(Object.keys(buTotals).length ? { buTotals } : {}),

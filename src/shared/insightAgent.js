@@ -73,10 +73,10 @@ function applyTemplate(template, vars) {
 /**
  * system prompt를 빌드한다.
  * @param {object} opts
- * @param {string} opts.rules — AI Settings의 작성 규칙
- * @param {string} opts.lang — 'ko' | 'en'
- * @param {string} opts.maskedTemplate — 마스킹된 기준 템플릿 (없을 수 있음)
- * @param {string} opts.maskedPastExamples — 마스킹된 과거 예시들 (없을 수 있음)
+ * @param {string} opts.rules - AI Settings의 작성 규칙
+ * @param {string} opts.lang - 'ko' | 'en'
+ * @param {string} opts.maskedTemplate - 마스킹된 기준 템플릿 (없을 수 있음)
+ * @param {string} opts.maskedPastExamples - 마스킹된 과거 예시들 (없을 수 있음)
  * @param {string} [opts.version='v1']
  */
 export function buildSystemPrompt({ rules, lang, maskedTemplate, maskedPastExamples, version = 'v1' }) {
@@ -117,7 +117,7 @@ export function estimateCostUsd(inputTokens, outputTokens) {
  * @param {object} opts
  * @param {string} opts.type
  * @param {object} opts.data
- * @param {() => Array} opts.readArchives — 의존성 주입(테스트 용이)
+ * @param {() => any[]} opts.readArchives - 의존성 주입(테스트 용이)
  * @returns {{ archiveKey: string, latestTemplate: string, pastExamples: string,
  *             maskedTemplate: string, maskedPastExamples: string }}
  */
@@ -144,21 +144,22 @@ export const INSIGHT_MAX_TOOL_STEPS = 5
 /**
  * C8 + C1 — Claude 호출. tools 미지정 시 단일 호출, 지정 시 tool use 루프.
  * @param {object} opts
- * @param {object} opts.client — Anthropic SDK 인스턴스
+ * @param {any} opts.client - Anthropic SDK 인스턴스
  * @param {string} opts.systemPrompt
  * @param {string} opts.userPrompt
  * @param {string} opts.model
  * @param {number} opts.maxTokens
- * @param {Array}  [opts.tools] — Anthropic tool schemas (선택). 빈/미지정이면 단일 호출.
- * @param {(call: {name:string,input:any}) => Promise<any>|any} [opts.executeTool] — tool dispatcher
- * @param {number} [opts.maxSteps=INSIGHT_MAX_TOOL_STEPS] — tool use 루프 상한
+ * @param {any[]} [opts.tools] - Anthropic tool schemas (선택). 빈/미지정이면 단일 호출.
+ * @param {(call: {name: string, input: any}) => any} [opts.executeTool] - tool dispatcher
+ * @param {number} [opts.maxSteps] - tool use 루프 상한 (기본 INSIGHT_MAX_TOOL_STEPS)
  * @returns {Promise<{ insight: string, inputTokens: number, outputTokens: number,
  *                    latencyMs: number, costUsd: number, stopReason: string,
- *                    steps: number, toolCalls: Array }>}
+ *                    steps: number, toolCalls: any[] }>}
  */
 export async function callClaudeInsight({ client, systemPrompt, userPrompt, model, maxTokens, tools, executeTool, maxSteps = INSIGHT_MAX_TOOL_STEPS }) {
   const t0 = Date.now()
   const useTools = Array.isArray(tools) && tools.length > 0 && typeof executeTool === 'function'
+  /** @type {Array<{role: string, content: any}>} */
   const messages = [{ role: 'user', content: userPrompt }]
   let inputTokens = 0, outputTokens = 0
   let stopReason = null
@@ -183,6 +184,7 @@ export async function callClaudeInsight({ client, systemPrompt, userPrompt, mode
     if (!toolUses.length) break  // 모델이 더 이상 도구를 부르지 않으면 종료
 
     if (steps >= maxSteps) {
+      /** @type {any} */
       const err = new Error(`tool use 루프가 ${maxSteps}회를 초과했습니다`)
       err.kind = 'tool_loop_exceeded'
       throw err
@@ -286,6 +288,7 @@ export function validateClaudeOutput(insight, { minLength = INSIGHT_MIN_OUTPUT_L
 }
 
 function throwInvalidOutput(reason, message) {
+  /** @type {any} */
   const err = new Error(message)
   err.kind = 'invalid_output'
   err.reason = reason
