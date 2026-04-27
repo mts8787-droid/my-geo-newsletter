@@ -95,7 +95,8 @@
       "Bash(awk 'NR>=2700{print NR\": \"$0}' /Users/dubaba/my-geo-project/my-geo-newsletter/src/dashboard/dashboardTemplate.js)",
       "Bash(awk 'NR>=1546 && NR<=2732' /Users/dubaba/my-geo-project/my-geo-newsletter/src/dashboard/dashboardTemplate.js)",
       "Bash(awk 'NR>=1547 && NR<=2731' /Users/dubaba/my-geo-project/my-geo-newsletter/src/dashboard/dashboardTemplate.js)",
-      "Bash(ADMIN_PASSWORD=ci-test npm run build:visibility)"
+      "Bash(ADMIN_PASSWORD=ci-test npm run build:visibility)",
+      "Bash(awk '/^```mermaid$/{f=1;next} /^```$/{f=0} f' /Users/dubaba/my-geo-project/my-geo-newsletter/docs/ADMIN_PLAN.md)"
     ]
   }
 }
