@@ -13,13 +13,17 @@ const PROJECT_ROOT = join(__dirname, '..')
 
 // ─── SEC2 — Content-Security-Policy (게시 HTML 전용) ──────────────────
 // 게시 HTML은 인라인 style/script를 광범위 사용하므로 unsafe-inline 허용,
-// 단 외부 도메인은 LG Smart 폰트 CDN만 화이트리스트
+// 외부 도메인 화이트리스트:
+//  - fonts.cdnfonts.com: LG Smart 웹폰트
+//  - geo-progress-tracker-v2.onrender.com: Progress Tracker v2 iframe (통합 게시)
 const PUBLISHED_CSP = [
   "default-src 'self'",
   "style-src 'self' 'unsafe-inline' https://fonts.cdnfonts.com",
   "font-src 'self' https://fonts.cdnfonts.com data:",
   "script-src 'self' 'unsafe-inline'",
   "img-src 'self' data: https:",
+  // iframe 임베드 — Progress Tracker v2 외부 호스트 명시 허용
+  "frame-src 'self' https://geo-progress-tracker-v2.onrender.com",
   "frame-ancestors 'self'",
   "base-uri 'self'",
   "form-action 'self'",
