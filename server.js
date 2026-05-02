@@ -28,6 +28,7 @@ import { publishedRouter } from './routes/published.js'
 import { spaStaticRouter } from './routes/spa-static.js'
 import { adminPagesRouter } from './routes/admin-pages.js'
 import { observabilityRouter } from './routes/observability.js'
+import { bridgeRouter } from './routes/bridge.js'
 import { landingRouter } from './routes/landing.js'
 
 dotenv.config()
@@ -157,6 +158,7 @@ app.use(archivesRouter)
 app.use(publishRouter)
 app.use(adminPagesRouter)
 app.use(observabilityRouter)
+app.use(bridgeRouter)
 app.use(spaStaticRouter)
 app.use(landingRouter)
 
