@@ -97,7 +97,10 @@
       "Bash(awk 'NR>=1547 && NR<=2731' /Users/dubaba/my-geo-project/my-geo-newsletter/src/dashboard/dashboardTemplate.js)",
       "Bash(ADMIN_PASSWORD=ci-test npm run build:visibility)",
       "Bash(awk '/^```mermaid$/{f=1;next} /^```$/{f=0} f' /Users/dubaba/my-geo-project/my-geo-newsletter/docs/ADMIN_PLAN.md)",
-      "Bash(ADMIN_PASSWORD=ci-test PORT=3098 timeout 4 node server.js)"
+      "Bash(ADMIN_PASSWORD=ci-test PORT=3098 timeout 4 node server.js)",
+      "Bash(awk '/<\\\\/style>/{f=1} f' /tmp/dashboard-raw-data/docs/prd-data-connection.html)",
+      "Bash(sed -i '' 's|geo-dashboad-raw-service-accou@geo-dashboad-raw\\\\.iam\\\\.gserviceaccount\\\\.com|<서비스계정명>@pj-my-geo.iam.gserviceaccount.com|g' docs/CLOUD_RUN_JOB.md)",
+      "Bash(sed -i '' 's|geo-dashboad-raw|pj-my-geo|g' docs/CLOUD_RUN_JOB.md)"
     ]
   }
 }

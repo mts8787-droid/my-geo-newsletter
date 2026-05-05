@@ -196,9 +196,13 @@ a.card:hover{border-color:#CF0652;transform:translateY(-2px)}
         <div class="card-title">GCP 인프라 구성도</div>
         <div class="card-desc">GCP 서비스·컴퓨트·데이터·IaC·CI/CD·비용·도입 체크리스트</div>
       </a>
+      <a class="card" href="/admin/data-prd">
+        <div class="card-title">Data Connection PRD</div>
+        <div class="card-desc">dashboard-raw-data 셋업 PRD — GCP 프로젝트·서비스 계정·BigQuery 단계별 가이드 (이미 완료)</div>
+      </a>
       <a class="card" href="/admin/cloud-run-job">
         <div class="card-title">Cloud Run Job 배포 절차</div>
-        <div class="card-desc">SEMrush → BigQuery 적재 (dashboard-raw-data) — 콘솔 단계별 가이드</div>
+        <div class="card-desc">PRD 다음 4단계 — Cloud Run Job 전환 + Scheduler + reader 키 + 본 시스템 연결</div>
       </a>
       <a class="card" href="/admin/bigquery-schema">
         <div class="card-title">BigQuery Schema 계약</div>
@@ -232,6 +236,17 @@ adminPagesRouter.get('/admin/cloud-run-job.md', (req, res) => renderMarkdownDown
 adminPagesRouter.get('/admin/bigquery-schema', (req, res) =>
   renderMarkdownPage(res, { mdFile: 'BIGQUERY_SCHEMA.md', title: 'BigQuery Schema 계약', downloadHref: '/admin/bigquery-schema.md', downloadName: 'BIGQUERY_SCHEMA.md' }))
 adminPagesRouter.get('/admin/bigquery-schema.md', (req, res) => renderMarkdownDownload(res, 'BIGQUERY_SCHEMA.md'))
+
+// dashboard-raw-data 셋업 PRD (자체 완결 HTML — 마크다운 변환 불필요)
+adminPagesRouter.get('/admin/data-prd', (req, res) => {
+  try {
+    const html = readFileSync(join(PROJECT_ROOT, 'docs', 'prd-data-connection.html'), 'utf-8')
+    res.set('Content-Type', 'text/html; charset=utf-8')
+    res.send(html)
+  } catch {
+    res.status(404).send('prd-data-connection.html 파일을 찾을 수 없습니다.')
+  }
+})
 
 // ─── 독일(DE) 프롬프트 예시 페이지 ────────────────────────────────────────────
 function isNonBrandedPrompt(p) {
