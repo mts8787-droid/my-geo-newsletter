@@ -13,6 +13,85 @@ import { readModeSyncData, writeModeSyncData } from '../lib/storage.js'
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const PROJECT_ROOT = join(__dirname, '..')
 
+// ─── Markdown 문서 렌더 헬퍼 ────────────────────────────────────────────────
+// /admin/plan, /admin/infra, /admin/cloud-run-job, /admin/bigquery-schema 공통.
+// marked + mermaid CDN로 클라이언트 렌더 (iOS Safari 호환).
+function renderMarkdownPage(res, { mdFile, title, downloadHref, downloadName }) {
+  let md = ''
+  try {
+    md = readFileSync(join(PROJECT_ROOT, 'docs', mdFile), 'utf-8')
+  } catch {
+    return res.status(404).send(`${mdFile} 파일을 찾을 수 없습니다.`)
+  }
+  res.set('Content-Type', 'text/html; charset=utf-8')
+  const mdJson = JSON.stringify(md)
+  const titleEsc = String(title).replace(/[<>"']/g, c => ({ '<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]))
+  res.send(`<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${titleEsc}</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#0F172A;color:#E2E8F0;font-family:'LG Smart','Arial Narrow',Arial,sans-serif;padding:24px 32px;line-height:1.65}
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px}
+.back{color:#CF0652;text-decoration:none;font-size:13px}
+.actions{display:flex;gap:10px}
+.btn{background:#1E293B;border:1px solid #334155;border-radius:8px;padding:8px 16px;font-size:12px;font-weight:600;color:#E2E8F0;text-decoration:none;cursor:pointer;font-family:inherit}
+.btn:hover{background:#334155}
+.content{max-width:1040px;margin:0 auto;background:#0B1220;border:1px solid #1E293B;border-radius:12px;padding:32px 40px}
+.content h1{font-size:26px;color:#F8FAFC;margin:0 0 12px;padding-bottom:10px;border-bottom:2px solid #CF0652}
+.content h2{font-size:20px;color:#F8FAFC;margin:28px 0 12px;padding-bottom:6px;border-bottom:1px solid #334155}
+.content h3{font-size:16px;color:#F8FAFC;margin:22px 0 10px}
+.content h4{font-size:14px;color:#CBD5E1;margin:18px 0 8px}
+.content p{margin:10px 0;color:#CBD5E1;font-size:14px}
+.content ul,.content ol{margin:10px 0 10px 22px;color:#CBD5E1;font-size:14px}
+.content li{margin:4px 0}
+.content code{background:#1E293B;color:#F8C4D7;padding:2px 6px;border-radius:4px;font-family:'Consolas','Courier New',monospace;font-size:12px}
+.content pre{background:#1E293B;border:1px solid #334155;border-radius:8px;padding:14px 16px;overflow:auto;font-family:'Consolas','Courier New',monospace;font-size:12px;line-height:1.5}
+.content pre code{background:none;padding:0;color:#E2E8F0}
+.content table{border-collapse:collapse;width:100%;margin:14px 0;font-size:13px}
+.content th,.content td{border:1px solid #334155;padding:8px 12px;text-align:left;vertical-align:top;color:#CBD5E1}
+.content th{background:#1E293B;color:#F8FAFC;font-weight:700}
+.content tr:nth-child(even) td{background:#0F172A}
+.content blockquote{border-left:3px solid #CF0652;margin:14px 0;padding:6px 16px;background:#1E293B;color:#94A3B8;font-size:13px;border-radius:0 6px 6px 0}
+.content a{color:#F472B6;text-decoration:none}
+.content a:hover{text-decoration:underline}
+.mermaid{background:#fff;border-radius:8px;padding:16px;margin:14px 0;overflow:auto;text-align:center}
+.content hr{border:none;border-top:1px solid #334155;margin:22px 0}
+</style></head><body>
+<div class="topbar">
+  <a class="back" href="/admin/">← 관리자</a>
+  <div class="actions">
+    <a class="btn" href="${downloadHref}" download="${downloadName}">MD 다운로드</a>
+    <button class="btn" onclick="window.print()">인쇄/PDF 저장</button>
+  </div>
+</div>
+<div id="root" class="content">로딩 중…</div>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs'
+  mermaid.initialize({ startOnLoad: false, theme: 'dark', themeVariables: { darkMode: true, background: '#ffffff', primaryColor: '#CF0652', primaryTextColor: '#1A1A1A' } })
+  const md = ${mdJson}
+  marked.use({ gfm: true, breaks: false })
+  const renderer = new marked.Renderer()
+  const origCode = renderer.code.bind(renderer)
+  renderer.code = function(code, infostring) {
+    if (infostring && /^mermaid/i.test(infostring)) return '<div class="mermaid">' + code + '</div>'
+    return origCode(code, infostring)
+  }
+  document.getElementById('root').innerHTML = marked.parse(md, { renderer })
+  await mermaid.run({ querySelector: '.mermaid' })
+</script>
+</body></html>`)
+}
+
+function renderMarkdownDownload(res, mdFile) {
+  try {
+    const md = readFileSync(join(PROJECT_ROOT, 'docs', mdFile), 'utf-8')
+    res.set('Content-Type', 'text/markdown; charset=utf-8')
+    res.set('Content-Disposition', `attachment; filename="${mdFile}"`)
+    res.send(md)
+  } catch { res.status(404).send('not found') }
+}
+
 export const adminPagesRouter = Router()
 
 // ─── Admin Dashboard ─────────────────────────────────────────────────────────
@@ -117,6 +196,14 @@ a.card:hover{border-color:#CF0652;transform:translateY(-2px)}
         <div class="card-title">GCP 인프라 구성도</div>
         <div class="card-desc">GCP 서비스·컴퓨트·데이터·IaC·CI/CD·비용·도입 체크리스트</div>
       </a>
+      <a class="card" href="/admin/cloud-run-job">
+        <div class="card-title">Cloud Run Job 배포 절차</div>
+        <div class="card-desc">SEMrush → BigQuery 적재 (dashboard-raw-data) — 콘솔 단계별 가이드</div>
+      </a>
+      <a class="card" href="/admin/bigquery-schema">
+        <div class="card-title">BigQuery Schema 계약</div>
+        <div class="card-desc">두 레포(writer·reader) 간 단일 결합 지점 — 테이블·시스템 컬럼 규약</div>
+      </a>
     </div>
   </div>
   <div class="footer">
@@ -125,159 +212,26 @@ a.card:hover{border-color:#CF0652;transform:translateY(-2px)}
 </div></body></html>`)
 })
 
-// ─── 시스템 기획서 (ADMIN_PLAN.md 렌더) ──────────────────────────────────────
-adminPagesRouter.get('/admin/plan', (req, res) => {
-  let md = ''
-  try {
-    md = readFileSync(join(PROJECT_ROOT, 'docs', 'ADMIN_PLAN.md'), 'utf-8')
-  } catch (e) {
-    return res.status(404).send('ADMIN_PLAN.md 파일을 찾을 수 없습니다.')
-  }
-  // 클라이언트에서 marked + mermaid CDN으로 렌더 (iOS Safari 호환)
-  res.set('Content-Type', 'text/html; charset=utf-8')
-  const mdJson = JSON.stringify(md)
-  res.send(`<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>시스템 기획서</title>
-<style>
-*{box-sizing:border-box}
-body{margin:0;background:#0F172A;color:#E2E8F0;font-family:'LG Smart','Arial Narrow',Arial,sans-serif;padding:24px 32px;line-height:1.65}
-.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px}
-.back{color:#CF0652;text-decoration:none;font-size:13px}
-.actions{display:flex;gap:10px}
-.btn{background:#1E293B;border:1px solid #334155;border-radius:8px;padding:8px 16px;font-size:12px;font-weight:600;color:#E2E8F0;text-decoration:none;cursor:pointer;font-family:inherit}
-.btn:hover{background:#334155}
-.content{max-width:1040px;margin:0 auto;background:#0B1220;border:1px solid #1E293B;border-radius:12px;padding:32px 40px}
-.content h1{font-size:26px;color:#F8FAFC;margin:0 0 12px;padding-bottom:10px;border-bottom:2px solid #CF0652}
-.content h2{font-size:20px;color:#F8FAFC;margin:28px 0 12px;padding-bottom:6px;border-bottom:1px solid #334155}
-.content h3{font-size:16px;color:#F8FAFC;margin:22px 0 10px}
-.content h4{font-size:14px;color:#CBD5E1;margin:18px 0 8px}
-.content p{margin:10px 0;color:#CBD5E1;font-size:14px}
-.content ul,.content ol{margin:10px 0 10px 22px;color:#CBD5E1;font-size:14px}
-.content li{margin:4px 0}
-.content code{background:#1E293B;color:#F8C4D7;padding:2px 6px;border-radius:4px;font-family:'Consolas','Courier New',monospace;font-size:12px}
-.content pre{background:#1E293B;border:1px solid #334155;border-radius:8px;padding:14px 16px;overflow:auto;font-family:'Consolas','Courier New',monospace;font-size:12px;line-height:1.5}
-.content pre code{background:none;padding:0;color:#E2E8F0}
-.content table{border-collapse:collapse;width:100%;margin:14px 0;font-size:13px}
-.content th,.content td{border:1px solid #334155;padding:8px 12px;text-align:left;vertical-align:top;color:#CBD5E1}
-.content th{background:#1E293B;color:#F8FAFC;font-weight:700}
-.content tr:nth-child(even) td{background:#0F172A}
-.content blockquote{border-left:3px solid #CF0652;margin:14px 0;padding:6px 16px;background:#1E293B;color:#94A3B8;font-size:13px;border-radius:0 6px 6px 0}
-.content a{color:#F472B6;text-decoration:none}
-.content a:hover{text-decoration:underline}
-.mermaid{background:#fff;border-radius:8px;padding:16px;margin:14px 0;overflow:auto;text-align:center}
-.content hr{border:none;border-top:1px solid #334155;margin:22px 0}
-</style></head><body>
-<div class="topbar">
-  <a class="back" href="/admin/">← 관리자</a>
-  <div class="actions">
-    <a class="btn" href="/admin/plan.md" download="ADMIN_PLAN.md">MD 다운로드</a>
-    <button class="btn" onclick="window.print()">인쇄/PDF 저장</button>
-  </div>
-</div>
-<div id="root" class="content">로딩 중…</div>
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-<script type="module">
-  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs'
-  mermaid.initialize({ startOnLoad: false, theme: 'dark', themeVariables: { darkMode: true, background: '#ffffff', primaryColor: '#CF0652', primaryTextColor: '#1A1A1A' } })
-  const md = ${mdJson}
-  marked.use({ gfm: true, breaks: false })
-  // mermaid 코드블록을 <div class="mermaid"> 로 변환
-  const renderer = new marked.Renderer()
-  const origCode = renderer.code.bind(renderer)
-  renderer.code = function(code, infostring) {
-    if (infostring && /^mermaid/i.test(infostring)) return '<div class="mermaid">' + code + '</div>'
-    return origCode(code, infostring)
-  }
-  document.getElementById('root').innerHTML = marked.parse(md, { renderer })
-  await mermaid.run({ querySelector: '.mermaid' })
-</script>
-</body></html>`)
-})
+// ─── 마크다운 문서 페이지 (헬퍼 사용) ──────────────────────────────────────
+// /admin/plan          — 시스템 기획서 (ADMIN_PLAN.md)
+// /admin/infra         — GCP 인프라 (GCP_INFRA.md)
+// /admin/cloud-run-job — Cloud Run Job 배포 절차 (CLOUD_RUN_JOB.md, dashboard-raw-data 동기본)
+// /admin/bigquery-schema — BigQuery 스키마 계약 (BIGQUERY_SCHEMA.md, 동일)
+adminPagesRouter.get('/admin/plan', (req, res) =>
+  renderMarkdownPage(res, { mdFile: 'ADMIN_PLAN.md', title: '시스템 기획서', downloadHref: '/admin/plan.md', downloadName: 'ADMIN_PLAN.md' }))
+adminPagesRouter.get('/admin/plan.md', (req, res) => renderMarkdownDownload(res, 'ADMIN_PLAN.md'))
 
-// 원문 MD 다운로드
-adminPagesRouter.get('/admin/plan.md', (req, res) => {
-  try {
-    const md = readFileSync(join(PROJECT_ROOT, 'docs', 'ADMIN_PLAN.md'), 'utf-8')
-    res.set('Content-Type', 'text/markdown; charset=utf-8')
-    res.set('Content-Disposition', 'attachment; filename="ADMIN_PLAN.md"')
-    res.send(md)
-  } catch { res.status(404).send('not found') }
-})
+adminPagesRouter.get('/admin/infra', (req, res) =>
+  renderMarkdownPage(res, { mdFile: 'GCP_INFRA.md', title: 'GCP 인프라 구성도', downloadHref: '/admin/infra.md', downloadName: 'GCP_INFRA.md' }))
+adminPagesRouter.get('/admin/infra.md', (req, res) => renderMarkdownDownload(res, 'GCP_INFRA.md'))
 
-// ─── GCP 인프라 구성도 (GCP_INFRA.md 렌더) ───────────────────────────────────
-adminPagesRouter.get('/admin/infra', (req, res) => {
-  let md = ''
-  try {
-    md = readFileSync(join(PROJECT_ROOT, 'docs', 'GCP_INFRA.md'), 'utf-8')
-  } catch (e) {
-    return res.status(404).send('GCP_INFRA.md 파일을 찾을 수 없습니다.')
-  }
-  res.set('Content-Type', 'text/html; charset=utf-8')
-  const mdJson = JSON.stringify(md)
-  res.send(`<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>GCP 인프라 구성도</title>
-<style>
-*{box-sizing:border-box}
-body{margin:0;background:#0F172A;color:#E2E8F0;font-family:'LG Smart','Arial Narrow',Arial,sans-serif;padding:24px 32px;line-height:1.65}
-.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px}
-.back{color:#CF0652;text-decoration:none;font-size:13px}
-.actions{display:flex;gap:10px}
-.btn{background:#1E293B;border:1px solid #334155;border-radius:8px;padding:8px 16px;font-size:12px;font-weight:600;color:#E2E8F0;text-decoration:none;cursor:pointer;font-family:inherit}
-.btn:hover{background:#334155}
-.content{max-width:1040px;margin:0 auto;background:#0B1220;border:1px solid #1E293B;border-radius:12px;padding:32px 40px}
-.content h1{font-size:26px;color:#F8FAFC;margin:0 0 12px;padding-bottom:10px;border-bottom:2px solid #CF0652}
-.content h2{font-size:20px;color:#F8FAFC;margin:28px 0 12px;padding-bottom:6px;border-bottom:1px solid #334155}
-.content h3{font-size:16px;color:#F8FAFC;margin:22px 0 10px}
-.content p{margin:10px 0;color:#CBD5E1;font-size:14px}
-.content ul,.content ol{margin:10px 0 10px 22px;color:#CBD5E1;font-size:14px}
-.content li{margin:4px 0}
-.content code{background:#1E293B;color:#F8C4D7;padding:2px 6px;border-radius:4px;font-family:'Consolas','Courier New',monospace;font-size:12px}
-.content pre{background:#1E293B;border:1px solid #334155;border-radius:8px;padding:14px 16px;overflow:auto;font-family:'Consolas','Courier New',monospace;font-size:12px;line-height:1.5}
-.content pre code{background:none;padding:0;color:#E2E8F0}
-.content table{border-collapse:collapse;width:100%;margin:14px 0;font-size:13px}
-.content th,.content td{border:1px solid #334155;padding:8px 12px;text-align:left;vertical-align:top;color:#CBD5E1}
-.content th{background:#1E293B;color:#F8FAFC;font-weight:700}
-.content tr:nth-child(even) td{background:#0F172A}
-.content blockquote{border-left:3px solid #CF0652;margin:14px 0;padding:6px 16px;background:#1E293B;color:#94A3B8;font-size:13px;border-radius:0 6px 6px 0}
-.content a{color:#F472B6;text-decoration:none}
-.content a:hover{text-decoration:underline}
-.mermaid{background:#fff;border-radius:8px;padding:16px;margin:14px 0;overflow:auto;text-align:center}
-.content hr{border:none;border-top:1px solid #334155;margin:22px 0}
-</style></head><body>
-<div class="topbar">
-  <a class="back" href="/admin/">← 관리자</a>
-  <div class="actions">
-    <a class="btn" href="/admin/infra.md" download="GCP_INFRA.md">MD 다운로드</a>
-    <button class="btn" onclick="window.print()">인쇄/PDF 저장</button>
-  </div>
-</div>
-<div id="root" class="content">로딩 중…</div>
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-<script type="module">
-  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs'
-  mermaid.initialize({ startOnLoad: false, theme: 'dark', themeVariables: { darkMode: true, background: '#ffffff', primaryColor: '#CF0652', primaryTextColor: '#1A1A1A' } })
-  const md = ${mdJson}
-  marked.use({ gfm: true, breaks: false })
-  const renderer = new marked.Renderer()
-  const origCode = renderer.code.bind(renderer)
-  renderer.code = function(code, infostring) {
-    if (infostring && /^mermaid/i.test(infostring)) return '<div class="mermaid">' + code + '</div>'
-    return origCode(code, infostring)
-  }
-  document.getElementById('root').innerHTML = marked.parse(md, { renderer })
-  await mermaid.run({ querySelector: '.mermaid' })
-</script>
-</body></html>`)
-})
+adminPagesRouter.get('/admin/cloud-run-job', (req, res) =>
+  renderMarkdownPage(res, { mdFile: 'CLOUD_RUN_JOB.md', title: 'Cloud Run Job 배포 절차', downloadHref: '/admin/cloud-run-job.md', downloadName: 'CLOUD_RUN_JOB.md' }))
+adminPagesRouter.get('/admin/cloud-run-job.md', (req, res) => renderMarkdownDownload(res, 'CLOUD_RUN_JOB.md'))
 
-adminPagesRouter.get('/admin/infra.md', (req, res) => {
-  try {
-    const md = readFileSync(join(PROJECT_ROOT, 'docs', 'GCP_INFRA.md'), 'utf-8')
-    res.set('Content-Type', 'text/markdown; charset=utf-8')
-    res.set('Content-Disposition', 'attachment; filename="GCP_INFRA.md"')
-    res.send(md)
-  } catch { res.status(404).send('not found') }
-})
+adminPagesRouter.get('/admin/bigquery-schema', (req, res) =>
+  renderMarkdownPage(res, { mdFile: 'BIGQUERY_SCHEMA.md', title: 'BigQuery Schema 계약', downloadHref: '/admin/bigquery-schema.md', downloadName: 'BIGQUERY_SCHEMA.md' }))
+adminPagesRouter.get('/admin/bigquery-schema.md', (req, res) => renderMarkdownDownload(res, 'BIGQUERY_SCHEMA.md'))
 
 // ─── 독일(DE) 프롬프트 예시 페이지 ────────────────────────────────────────────
 function isNonBrandedPrompt(p) {
