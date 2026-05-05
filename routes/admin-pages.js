@@ -240,12 +240,25 @@ adminPagesRouter.get('/admin/bigquery-schema.md', (req, res) => renderMarkdownDo
 // dashboard-raw-data 셋업 PRD (자체 완결 HTML — 마크다운 변환 불필요)
 adminPagesRouter.get('/admin/data-prd', (req, res) => {
   try {
-    const html = readFileSync(join(PROJECT_ROOT, 'docs', 'prd-data-connection.html'), 'utf-8')
+    let html = readFileSync(join(PROJECT_ROOT, 'docs', 'prd-data-connection.html'), 'utf-8')
+    // 다운로드 버튼 주입 (PRD 우측 상단 fixed, 기존 .back-top 버튼과 비슷한 스타일)
+    const downloadBtn = `<a href="/admin/data-prd.html" download="prd-data-connection.html" style="position:fixed;top:1rem;right:1rem;z-index:1001;background:#0F1B2D;color:#fff;padding:.55rem 1rem;border-radius:8px;font-size:.78rem;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,.15);font-family:'Noto Sans KR',sans-serif;font-weight:600">⬇ HTML 다운로드</a>`
+    html = html.replace('<body>', '<body>\n' + downloadBtn)
     res.set('Content-Type', 'text/html; charset=utf-8')
     res.send(html)
   } catch {
     res.status(404).send('prd-data-connection.html 파일을 찾을 수 없습니다.')
   }
+})
+
+// PRD 원문 HTML 다운로드
+adminPagesRouter.get('/admin/data-prd.html', (req, res) => {
+  try {
+    const html = readFileSync(join(PROJECT_ROOT, 'docs', 'prd-data-connection.html'), 'utf-8')
+    res.set('Content-Type', 'text/html; charset=utf-8')
+    res.set('Content-Disposition', 'attachment; filename="prd-data-connection.html"')
+    res.send(html)
+  } catch { res.status(404).send('not found') }
 })
 
 // ─── 독일(DE) 프롬프트 예시 페이지 ────────────────────────────────────────────
