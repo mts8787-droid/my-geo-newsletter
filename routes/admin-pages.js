@@ -159,7 +159,11 @@ a.card:hover{border-color:#CF0652;transform:translateY(-2px)}
       </a>
       <a class="card" href="/admin/progress-tracker">
         <div class="card-title">Progress Tracker</div>
-        <div class="card-desc">GEO 과제 진행 현황 대시보드</div>
+        <div class="card-desc">GEO 과제 진행 현황 대시보드 (v1)</div>
+      </a>
+      <a class="card" href="/admin/progress-tracker-v2/">
+        <div class="card-title">Progress Tracker v2</div>
+        <div class="card-desc">GEO 과제 진행 현황 — geo-progress-tracker-v2 통합 (Tailwind, 카테고리 대시보드, KPI 테이블)</div>
       </a>
     </div>
     <div class="col">

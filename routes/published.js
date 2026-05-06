@@ -15,15 +15,14 @@ const PROJECT_ROOT = join(__dirname, '..')
 // 게시 HTML은 인라인 style/script를 광범위 사용하므로 unsafe-inline 허용,
 // 외부 도메인 화이트리스트:
 //  - fonts.cdnfonts.com: LG Smart 웹폰트
-//  - geo-progress-tracker-v2.onrender.com: Progress Tracker v2 iframe (통합 게시)
+// (Progress Tracker v2는 본 레포에 통합되어 same-origin이므로 외부 frame-src 불필요)
 const PUBLISHED_CSP = [
   "default-src 'self'",
   "style-src 'self' 'unsafe-inline' https://fonts.cdnfonts.com",
   "font-src 'self' https://fonts.cdnfonts.com data:",
   "script-src 'self' 'unsafe-inline'",
   "img-src 'self' data: https:",
-  // iframe 임베드 — Progress Tracker v2 외부 호스트 명시 허용
-  "frame-src 'self' https://geo-progress-tracker-v2.onrender.com",
+  "frame-src 'self'",
   "frame-ancestors 'self'",
   "base-uri 'self'",
   "form-action 'self'",
@@ -48,7 +47,7 @@ function send403Page(res, kind = 'full') {
 
 export const publishedRouter = Router()
 
-// ─── /p/progress-tracker (정적 SPA + IP 체크 + CSP) ─────────────────────
+// ─── /p/progress-tracker (v1 정적 SPA + IP 체크 + CSP) ─────────────────
 publishedRouter.use('/p/progress-tracker', (req, res, next) => {
   if (!isIpAllowed(req)) return send403Page(res, 'simple')
   setPublishedSecurityHeaders(res)
@@ -60,6 +59,20 @@ publishedRouter.get('/p/progress-tracker', (req, res) => {
 })
 publishedRouter.get('/p/progress-tracker/*', (req, res) => {
   res.sendFile(join(PROJECT_ROOT, 'dist-tracker', 'tracker.html'))
+})
+
+// ─── /p/progress-tracker-v2 (v2 정적 SPA — geo-progress-tracker-v2 통합) ──
+publishedRouter.use('/p/progress-tracker-v2', (req, res, next) => {
+  if (!isIpAllowed(req)) return send403Page(res, 'simple')
+  setPublishedSecurityHeaders(res)
+  next()
+})
+publishedRouter.use('/p/progress-tracker-v2', express.static(join(PROJECT_ROOT, 'dist-tracker-v2')))
+publishedRouter.get('/p/progress-tracker-v2', (req, res) => {
+  res.sendFile(join(PROJECT_ROOT, 'dist-tracker-v2', 'tracker-v2.html'))
+})
+publishedRouter.get('/p/progress-tracker-v2/*', (req, res) => {
+  res.sendFile(join(PROJECT_ROOT, 'dist-tracker-v2', 'tracker-v2.html'))
 })
 
 // ─── /p/:slug (게시된 HTML 단일 파일 + CSP) ─────────────────────────────

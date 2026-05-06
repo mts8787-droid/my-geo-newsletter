@@ -40,9 +40,9 @@ describe('GET /p/:slug', () => {
     expect(res.headers['content-type']).toMatch(/text\/html/)
     expect(res.headers['content-security-policy']).toContain("default-src 'self'")
     expect(res.headers['content-security-policy']).toContain("frame-ancestors 'self'")
-    // Progress Tracker v2 iframe 임베드 허용 (통합 게시)
-    expect(res.headers['content-security-policy']).toContain('frame-src')
-    expect(res.headers['content-security-policy']).toContain('geo-progress-tracker-v2.onrender.com')
+    // v2 트래커 본 레포 통합 후 same-origin → frame-src 'self'만 허용
+    expect(res.headers['content-security-policy']).toContain("frame-src 'self'")
+    expect(res.headers['content-security-policy']).not.toContain('geo-progress-tracker-v2.onrender.com')
     expect(res.headers['x-content-type-options']).toBe('nosniff')
   })
 

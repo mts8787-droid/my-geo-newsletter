@@ -1268,7 +1268,8 @@ export function generateDashboardHTML(meta, total, products, citations, dotcom, 
   const ulMap = extra?.unlaunchedMap || {}
   const trackerComingSoonMsg = lang === 'en' ? 'Progress Tracker will be available soon.' : '준비 중입니다. 곧 제공될 예정입니다.'
   const trackerV1Url = `/p/progress-tracker/?lang=${lang}`
-  const trackerV2Url = `https://geo-progress-tracker-v2.onrender.com/p/progress-tracker-v2/`
+  // v2도 본 레포에 통합되어 same-origin 경로로 변경 (이전: 외부 onrender URL)
+  const trackerV2Url = `/p/progress-tracker-v2/?lang=${lang}`
   const trackerSrc = trackerVersion === 'v2' ? trackerV2Url : trackerV1Url
   const trackerTabContent = includeProgressTracker
     ? `<iframe id="tracker-iframe" src="${trackerSrc}" style="width:100%;min-height:calc(100vh - 60px);border:none;background:#0A0F1E" title="Progress Tracker"></iframe>`

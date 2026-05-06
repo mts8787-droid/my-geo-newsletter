@@ -9,13 +9,14 @@ const PROJECT_ROOT = join(__dirname, '..')
 
 // 7개 SPA: 경로 → dist 디렉터리 / 진입 HTML
 const SPAS = [
-  { path: '/admin/newsletter',       dir: 'dist',                  html: 'index.html' },
-  { path: '/admin/dashboard',        dir: 'dist-dashboard',        html: 'dashboard.html' },
-  { path: '/admin/monthly-report',   dir: 'dist-monthly-report',   html: 'monthly-report.html' },
-  { path: '/admin/weekly-report',    dir: 'dist-weekly-report',    html: 'weekly-report.html' },
-  { path: '/admin/citation',         dir: 'dist-citation',         html: 'citation.html' },
-  { path: '/admin/visibility',       dir: 'dist-visibility',       html: 'visibility.html' },
-  { path: '/admin/progress-tracker', dir: 'dist-tracker',          html: 'tracker.html' },
+  { path: '/admin/newsletter',          dir: 'dist',                  html: 'index.html' },
+  { path: '/admin/dashboard',           dir: 'dist-dashboard',        html: 'dashboard.html' },
+  { path: '/admin/monthly-report',      dir: 'dist-monthly-report',   html: 'monthly-report.html' },
+  { path: '/admin/weekly-report',       dir: 'dist-weekly-report',    html: 'weekly-report.html' },
+  { path: '/admin/citation',            dir: 'dist-citation',         html: 'citation.html' },
+  { path: '/admin/visibility',          dir: 'dist-visibility',       html: 'visibility.html' },
+  { path: '/admin/progress-tracker',    dir: 'dist-tracker',          html: 'tracker.html' },
+  { path: '/admin/progress-tracker-v2', dir: 'dist-tracker-v2',       html: 'tracker-v2.html' },
 ]
 
 export const spaStaticRouter = Router()

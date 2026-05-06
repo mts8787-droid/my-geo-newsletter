@@ -188,3 +188,44 @@ publishRouter.get('/api/tracker-snapshot', (req, res) => {
     res.json({ ok: false, data: null })
   }
 })
+
+// ─── Progress Tracker v2 Publish (geo-progress-tracker-v2 통합) ───────────
+const TRACKER_V2_SNAP = join(DATA_DIR, 'tracker-v2-snapshot.json')
+const TRACKER_V2_META = join(DATA_DIR, 'tracker-v2-meta.json')
+
+publishRouter.post('/api/publish-tracker-v2', validateBody(TrackerPublishSchema), (req, res) => {
+  const { data, dashboard, month } = req.body
+  try {
+    const snap = { ...data, _dashboard: dashboard || null, _month: month || null }
+    writeFileSync(TRACKER_V2_SNAP, JSON.stringify(snap, null, 2))
+    const meta = { title: 'GEO KPI Progress Tracker v2', ts: Date.now() }
+    writeFileSync(TRACKER_V2_META, JSON.stringify(meta, null, 2))
+    log.info({ tag: 'PUBLISH-TRACKER-V2', categoryStats: dashboard?.categoryStats?.length || 0 }, 'tracker v2 published')
+    res.json({ ok: true, ...meta, url: '/p/progress-tracker-v2/' })
+  } catch (err) {
+    log.error({ tag: 'PUBLISH-TRACKER-V2', err: err.message }, 'tracker v2 write failed')
+    res.status(500).json({ ok: false, error: '파일 저장 실패: ' + err.message })
+  }
+})
+
+publishRouter.get('/api/publish-tracker-v2', (req, res) => {
+  const meta = readMetaFile(TRACKER_V2_META)
+  const hasData = existsSync(TRACKER_V2_SNAP)
+  res.json({ published: !!meta && hasData, ...(meta || {}), url: '/p/progress-tracker-v2/' })
+})
+
+publishRouter.delete('/api/publish-tracker-v2', (req, res) => {
+  deleteIfExists(TRACKER_V2_SNAP, 'PUBLISH-TRACKER-V2')
+  deleteIfExists(TRACKER_V2_META, 'PUBLISH-TRACKER-V2')
+  res.json({ ok: true })
+})
+
+// 공개(인증 불필요): /api/tracker-snapshot-v2
+publishRouter.get('/api/tracker-snapshot-v2', (req, res) => {
+  try {
+    const data = JSON.parse(readFileSync(TRACKER_V2_SNAP, 'utf-8'))
+    res.json({ ok: true, data })
+  } catch {
+    res.json({ ok: false, data: null })
+  }
+})
