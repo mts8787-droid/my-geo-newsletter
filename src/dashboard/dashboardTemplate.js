@@ -1263,14 +1263,11 @@ export function generateDashboardHTML(meta, total, products, citations, dotcom, 
   })
   const visibilityOnly = opts?.visibilityOnly || false
   const includeProgressTracker = opts?.includeProgressTracker === true
-  const trackerVersion = opts?.trackerVersion || 'v1'
   const includePromptList = opts?.includePromptList || false
   const ulMap = extra?.unlaunchedMap || {}
   const trackerComingSoonMsg = lang === 'en' ? 'Progress Tracker will be available soon.' : '준비 중입니다. 곧 제공될 예정입니다.'
-  const trackerV1Url = `/p/progress-tracker/?lang=${lang}`
-  // v2도 본 레포에 통합되어 same-origin 경로로 변경 (이전: 외부 onrender URL)
-  const trackerV2Url = `/p/progress-tracker-v2/?lang=${lang}`
-  const trackerSrc = trackerVersion === 'v2' ? trackerV2Url : trackerV1Url
+  // 트래커는 v2(geo-progress-tracker-v2 통합본)만 사용
+  const trackerSrc = `/p/progress-tracker-v2/?lang=${lang}`
   const trackerTabContent = includeProgressTracker
     ? `<iframe id="tracker-iframe" src="${trackerSrc}" style="width:100%;min-height:calc(100vh - 60px);border:none;background:#0A0F1E" title="Progress Tracker"></iframe>`
     : `<div class="progress-placeholder"><div class="inner"><div class="icon">⏳</div><h2>Coming Soon</h2><p>${trackerComingSoonMsg}</p></div></div>`

@@ -47,21 +47,7 @@ function send403Page(res, kind = 'full') {
 
 export const publishedRouter = Router()
 
-// ─── /p/progress-tracker (v1 정적 SPA + IP 체크 + CSP) ─────────────────
-publishedRouter.use('/p/progress-tracker', (req, res, next) => {
-  if (!isIpAllowed(req)) return send403Page(res, 'simple')
-  setPublishedSecurityHeaders(res)
-  next()
-})
-publishedRouter.use('/p/progress-tracker', express.static(join(PROJECT_ROOT, 'dist-tracker')))
-publishedRouter.get('/p/progress-tracker', (req, res) => {
-  res.sendFile(join(PROJECT_ROOT, 'dist-tracker', 'tracker.html'))
-})
-publishedRouter.get('/p/progress-tracker/*', (req, res) => {
-  res.sendFile(join(PROJECT_ROOT, 'dist-tracker', 'tracker.html'))
-})
-
-// ─── /p/progress-tracker-v2 (v2 정적 SPA — geo-progress-tracker-v2 통합) ──
+// ─── /p/progress-tracker-v2 (정적 SPA — geo-progress-tracker-v2 통합) ──
 publishedRouter.use('/p/progress-tracker-v2', (req, res, next) => {
   if (!isIpAllowed(req)) return send403Page(res, 'simple')
   setPublishedSecurityHeaders(res)

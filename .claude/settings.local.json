@@ -100,7 +100,11 @@
       "Bash(ADMIN_PASSWORD=ci-test PORT=3098 timeout 4 node server.js)",
       "Bash(awk '/<\\\\/style>/{f=1} f' /tmp/dashboard-raw-data/docs/prd-data-connection.html)",
       "Bash(sed -i '' 's|geo-dashboad-raw-service-accou@geo-dashboad-raw\\\\.iam\\\\.gserviceaccount\\\\.com|<서비스계정명>@pj-my-geo.iam.gserviceaccount.com|g' docs/CLOUD_RUN_JOB.md)",
-      "Bash(sed -i '' 's|geo-dashboad-raw|pj-my-geo|g' docs/CLOUD_RUN_JOB.md)"
+      "Bash(sed -i '' 's|geo-dashboad-raw|pj-my-geo|g' docs/CLOUD_RUN_JOB.md)",
+      "Bash(ADMIN_PASSWORD=ci-test npm run build:citation)",
+      "Bash(ADMIN_PASSWORD=ci-test npx vite build)",
+      "Bash(sed -i '' 's|tracker/utils/sheetParser|tracker-v2/utils/sheetParser|g' src/monthly-report/App.jsx src/weekly-report/App.jsx)",
+      "Bash(sed -i '' \"s|fetch\\('/api/tracker-snapshot'\\)|fetch\\('/api/tracker-snapshot-v2'\\)|g\" src/monthly-report/App.jsx src/weekly-report/App.jsx)"
     ]
   }
 }

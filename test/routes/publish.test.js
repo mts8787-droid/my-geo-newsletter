@@ -33,8 +33,6 @@ function cleanFiles() {
       try { rmSync(p) } catch {}
     }
   }
-  try { rmSync(join(TMP_DATA, 'tracker-snapshot.json')) } catch {}
-  try { rmSync(join(TMP_DATA, 'tracker-meta.json')) } catch {}
   try { rmSync(join(TMP_DATA, 'tracker-v2-snapshot.json')) } catch {}
   try { rmSync(join(TMP_DATA, 'tracker-v2-meta.json')) } catch {}
 }
@@ -156,65 +154,7 @@ describe('GET /api/publish-history', () => {
   })
 })
 
-describe('progress-tracker publish', () => {
-  it('POST → 스냅샷 + meta 저장', async () => {
-    const res = await request(makeApp()).post('/api/publish-tracker').send({
-      data: { foo: 1, bar: 2 },
-      dashboard: { categoryStats: [{ a: 1 }] },
-      month: '2026-04',
-    })
-    expect(res.status).toBe(200)
-    expect(res.body.ok).toBe(true)
-    expect(res.body.url).toBe('/p/progress-tracker/')
-    expect(existsSync(join(TMP_DATA, 'tracker-snapshot.json'))).toBe(true)
-    expect(existsSync(join(TMP_DATA, 'tracker-meta.json'))).toBe(true)
-  })
-
-  it('POST → data 누락 시 400', async () => {
-    const res = await request(makeApp()).post('/api/publish-tracker').send({ dashboard: {} })
-    expect(res.status).toBe(400)
-  })
-
-  it('GET 게시 전 → published:false', async () => {
-    const res = await request(makeApp()).get('/api/publish-tracker')
-    expect(res.body.published).toBe(false)
-  })
-
-  it('GET 게시 후 → published:true + meta', async () => {
-    await request(makeApp()).post('/api/publish-tracker').send({ data: { x: 1 } })
-    const res = await request(makeApp()).get('/api/publish-tracker')
-    expect(res.body.published).toBe(true)
-    expect(res.body.title).toBe('GEO KPI Progress Tracker')
-  })
-
-  it('GET /api/tracker-snapshot 게시 후 데이터 반환', async () => {
-    await request(makeApp()).post('/api/publish-tracker').send({
-      data: { metric: 42 },
-      dashboard: { categoryStats: [] },
-      month: '2026-04',
-    })
-    const res = await request(makeApp()).get('/api/tracker-snapshot')
-    expect(res.body.ok).toBe(true)
-    expect(res.body.data.metric).toBe(42)
-    expect(res.body.data._month).toBe('2026-04')
-  })
-
-  it('DELETE → 스냅샷·meta 제거', async () => {
-    await request(makeApp()).post('/api/publish-tracker').send({ data: { x: 1 } })
-    const del = await request(makeApp()).delete('/api/publish-tracker')
-    expect(del.body.ok).toBe(true)
-    expect(existsSync(join(TMP_DATA, 'tracker-snapshot.json'))).toBe(false)
-    expect(existsSync(join(TMP_DATA, 'tracker-meta.json'))).toBe(false)
-  })
-
-  it('GET /api/tracker-snapshot 데이터 없으면 ok:false', async () => {
-    const res = await request(makeApp()).get('/api/tracker-snapshot')
-    expect(res.body.ok).toBe(false)
-    expect(res.body.data).toBe(null)
-  })
-})
-
-describe('progress-tracker-v2 publish (geo-progress-tracker-v2 통합)', () => {
+describe('progress-tracker publish (v2 only — geo-progress-tracker-v2 통합)', () => {
   it('POST → v2 스냅샷 + meta 저장', async () => {
     const res = await request(makeApp()).post('/api/publish-tracker-v2').send({
       data: { foo: 1, bar: 2 },
@@ -273,14 +213,4 @@ describe('progress-tracker-v2 publish (geo-progress-tracker-v2 통합)', () => {
     expect(res.body.data).toBe(null)
   })
 
-  it('v1·v2 스냅샷이 독립 파일에 저장됨 (서로 영향 없음)', async () => {
-    await request(makeApp()).post('/api/publish-tracker').send({ data: { v: 1 } })
-    await request(makeApp()).post('/api/publish-tracker-v2').send({ data: { v: 2 } })
-    expect(existsSync(join(TMP_DATA, 'tracker-snapshot.json'))).toBe(true)
-    expect(existsSync(join(TMP_DATA, 'tracker-v2-snapshot.json'))).toBe(true)
-    // v1만 삭제 → v2는 살아있음
-    await request(makeApp()).delete('/api/publish-tracker')
-    expect(existsSync(join(TMP_DATA, 'tracker-snapshot.json'))).toBe(false)
-    expect(existsSync(join(TMP_DATA, 'tracker-v2-snapshot.json'))).toBe(true)
-  })
 })

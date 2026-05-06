@@ -15,7 +15,6 @@ const SPAS = [
   { path: '/admin/weekly-report',       dir: 'dist-weekly-report',    html: 'weekly-report.html' },
   { path: '/admin/citation',            dir: 'dist-citation',         html: 'citation.html' },
   { path: '/admin/visibility',          dir: 'dist-visibility',       html: 'visibility.html' },
-  { path: '/admin/progress-tracker',    dir: 'dist-tracker',          html: 'tracker.html' },
   { path: '/admin/progress-tracker-v2', dir: 'dist-tracker-v2',       html: 'tracker-v2.html' },
 ]
 

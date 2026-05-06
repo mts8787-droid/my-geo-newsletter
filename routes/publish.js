@@ -147,49 +147,7 @@ publishRouter.get('/api/publish-history', (req, res) => {
   res.json(result)
 })
 
-// ─── Progress Tracker Publish (데이터 스냅샷) ─────────────────────────────
-const TRACKER_SNAP = join(DATA_DIR, 'tracker-snapshot.json')
-const TRACKER_META = join(DATA_DIR, 'tracker-meta.json')
-
-publishRouter.post('/api/publish-tracker', validateBody(TrackerPublishSchema), (req, res) => {
-  const { data, dashboard, month } = req.body
-  try {
-    const snap = { ...data, _dashboard: dashboard || null, _month: month || null }
-    writeFileSync(TRACKER_SNAP, JSON.stringify(snap, null, 2))
-    const meta = { title: 'GEO KPI Progress Tracker', ts: Date.now() }
-    writeFileSync(TRACKER_META, JSON.stringify(meta, null, 2))
-    log.info({ tag: 'PUBLISH-TRACKER', categoryStats: dashboard?.categoryStats?.length || 0 }, 'tracker published')
-    res.json({ ok: true, ...meta, url: '/p/progress-tracker/' })
-  } catch (err) {
-    log.error({ tag: 'PUBLISH-TRACKER', err: err.message }, 'tracker write failed')
-    res.status(500).json({ ok: false, error: '파일 저장 실패: ' + err.message })
-  }
-})
-
-publishRouter.get('/api/publish-tracker', (req, res) => {
-  const meta = readMetaFile(TRACKER_META)
-  const hasData = existsSync(TRACKER_SNAP)
-  res.json({ published: !!meta && hasData, ...(meta || {}), url: '/p/progress-tracker/' })
-})
-
-publishRouter.delete('/api/publish-tracker', (req, res) => {
-  deleteIfExists(TRACKER_SNAP, 'PUBLISH-TRACKER')
-  deleteIfExists(TRACKER_META, 'PUBLISH-TRACKER')
-  res.json({ ok: true })
-})
-
-// 공개(인증 불필요): /api/tracker-snapshot
-// — 인증 미들웨어가 /api/tracker-snapshot을 화이트리스트로 통과시킴
-publishRouter.get('/api/tracker-snapshot', (req, res) => {
-  try {
-    const data = JSON.parse(readFileSync(TRACKER_SNAP, 'utf-8'))
-    res.json({ ok: true, data })
-  } catch {
-    res.json({ ok: false, data: null })
-  }
-})
-
-// ─── Progress Tracker v2 Publish (geo-progress-tracker-v2 통합) ───────────
+// ─── Progress Tracker (v2 only — geo-progress-tracker-v2 통합) ────────────
 const TRACKER_V2_SNAP = join(DATA_DIR, 'tracker-v2-snapshot.json')
 const TRACKER_V2_META = join(DATA_DIR, 'tracker-v2-meta.json')
 

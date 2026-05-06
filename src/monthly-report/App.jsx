@@ -134,7 +134,7 @@ export default function App() {
     const targetMonth = extractMonthFromPeriod(metaKo.period) || '3월'
     async function load() {
       try {
-        const r = await fetch('/api/tracker-snapshot')
+        const r = await fetch('/api/tracker-snapshot-v2')
         const j = r.ok ? await r.json() : null
         if (j?.ok && j.data?.quantitativeGoals?.rows?.length) {
           const stats = computeCategoryStats(j.data, targetMonth)
@@ -144,7 +144,7 @@ export default function App() {
       } catch {}
       try {
         const [{ parseKPISheet }, XLSX] = await Promise.all([
-          import('../tracker/utils/sheetParser.js'),
+          import('../tracker-v2/utils/sheetParser.js'),
           import('xlsx-js-style'),
         ])
         const rid = `${Date.now()}_${Math.random().toString(36).slice(2,8)}`

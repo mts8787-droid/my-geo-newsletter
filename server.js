@@ -112,7 +112,6 @@ app.use((req, res, next) => {
   if (req.path.startsWith('/p/') || req.path === '/') return next()
   if (req.path === '/admin/login') return next()
   if (req.path.startsWith('/api/auth/')) return next()
-  if (req.path === '/api/tracker-snapshot') return next()
   if (req.path === '/api/tracker-snapshot-v2') return next()
   if (req.path.startsWith('/admin/progress-tracker/assets/')) return next()
   if (req.path.startsWith('/admin') || req.path.startsWith('/api/')) {

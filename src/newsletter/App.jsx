@@ -6,7 +6,7 @@ import { loadCache, saveCache } from '../shared/cache.js'
 import { fetchSnapshots, postSnapshot, updateSnapshot, deleteSnapshot, fetchSyncData } from '../shared/api.js'
 import { resolveDataForLang } from '../shared/utils.js'
 import { computeCategoryStats, extractMonthFromPeriod, previousMonth } from '../shared/trackerCategoryStats.js'
-import { parseKPISheet } from '../tracker/utils/sheetParser.js'
+import { parseKPISheet } from '../tracker-v2/utils/sheetParser.js'
 // N2 — XLSX는 사용 시점에만 동적 로드 (~870KB)
 import { loadXlsx } from '../shared/loadXlsx.js'
 import Sidebar from '../shared/Sidebar.jsx'
@@ -157,7 +157,7 @@ export default function App() {
     async function loadTrackerData() {
       // API 시도
       try {
-        const r = await fetch('/api/tracker-snapshot')
+        const r = await fetch('/api/tracker-snapshot-v2')
         const j = r.ok ? await r.json() : null
         if (j?.ok && j.data?.quantitativeGoals?.rows?.length) {
           console.log('[CategoryCards] tracker-snapshot OK, rows:', j.data.quantitativeGoals.rows.length)

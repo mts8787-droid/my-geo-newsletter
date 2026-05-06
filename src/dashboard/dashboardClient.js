@@ -45,13 +45,9 @@ function switchLang(lang){
   if(citTp)citTp.src=citBase+'?tab=touchpoint';
   var citDc=document.getElementById('cit-iframe-dc');
   if(citDc&&citDc.src)citDc.src=citBase+'?tab=dotcom';
-  // Tracker iframe 전환 — v1·v2 모두 same-origin이므로 src의 base path를 유지하며 lang만 갱신
+  // Tracker iframe lang 갱신 (v2만 사용)
   var trkIframe=document.getElementById('tracker-iframe');
-  if(trkIframe){
-    var src=trkIframe.src||'';
-    if(src.indexOf('progress-tracker-v2')>=0)trkIframe.src='/p/progress-tracker-v2/?lang='+lang;
-    else trkIframe.src='/p/progress-tracker/?lang='+lang;
-  }
+  if(trkIframe)trkIframe.src='/p/progress-tracker-v2/?lang='+lang;
   // KO↔EN 페이지 전환 — 현재 탭을 hash로 유지
   var path=window.location.pathname;
   var activeTab=document.querySelector('.tab-panel.active');

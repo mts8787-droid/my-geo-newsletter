@@ -20,14 +20,14 @@ const TAB_KEYS = TABS.map(t => t.key)
 const IFRAME_PATHS = {
   visibility: { ko: '/p/GEO-Visibility-Dashboard-KO', en: '/p/GEO-Visibility-Dashboard-EN' },
   citation:   { ko: '/p/GEO-Citation-Dashboard-KO', en: '/p/GEO-Citation-Dashboard-EN' },
-  tracker:    '/p/progress-tracker/',
+  tracker:    '/p/progress-tracker-v2/',
 }
 
 const EDITOR_LINKS = {
   visibility:  '/admin/visibility',
   citation:    '/admin/citation',
   readability: null,
-  tracker:     '/admin/progress-tracker',
+  tracker:     '/admin/progress-tracker-v2/',
   appendix:    null,
   glossary:    null,
 }
@@ -54,7 +54,6 @@ export default function App() {
   const [publishing, setPublishing] = useState(false)
   const [publishMsg, setPublishMsg] = useState('')
   const [includeTracker, setIncludeTracker] = useState(false)
-  const [trackerVersion, setTrackerVersion] = useState('v2')
   const [includePromptList, setIncludePromptList] = useState(false)
 
   // Hash routing
@@ -77,7 +76,7 @@ export default function App() {
       .then(d => { if (d) setPublishData(d) })
       .catch(() => {})
 
-    fetch('/api/publish-tracker')
+    fetch('/api/publish-tracker-v2')
       .then(r => r.ok ? r.json() : null)
       .then(d => { if (d) setTrackerData(d) })
       .catch(() => {})
@@ -88,7 +87,7 @@ export default function App() {
     if (publishing) return
     setPublishing(true); setPublishMsg('')
     try {
-      const result = await publishCombinedDashboard(generateDashboardHTML, resolveDataForLang, { includeProgressTracker: includeTracker, trackerVersion, includePromptList })
+      const result = await publishCombinedDashboard(generateDashboardHTML, resolveDataForLang, { includeProgressTracker: includeTracker, includePromptList })
       setPublishMsg(`게시 완료!\nKO: ${window.location.origin}${result.urls.ko}\nEN: ${window.location.origin}${result.urls.en}`)
       fetch('/api/publish-history').then(r => r.ok ? r.json() : null).then(d => { if (d) setPublishData(d) })
     } catch (err) {
@@ -288,21 +287,6 @@ export default function App() {
                 <input type="checkbox" checked={includeTracker} onChange={e => setIncludeTracker(e.target.checked)} style={{ cursor: 'pointer' }} />
                 Progress Tracker 포함
               </label>
-              {includeTracker && (
-                <div style={{ display: 'flex', gap: 4, marginBottom: 6, marginLeft: 18 }}>
-                  <button onClick={() => setTrackerVersion('v1')} style={{
-                    padding: '2px 8px', borderRadius: 4, border: 'none', cursor: 'pointer',
-                    background: trackerVersion === 'v1' ? '#CF0652' : '#1E293B',
-                    color: trackerVersion === 'v1' ? '#FFFFFF' : '#64748B',
-                    fontSize: 10, fontWeight: 700, fontFamily: FONT }}>V1</button>
-                  <button onClick={() => setTrackerVersion('v2')} style={{
-                    padding: '2px 8px', borderRadius: 4, border: 'none', cursor: 'pointer',
-                    background: trackerVersion === 'v2' ? '#CF0652' : '#1E293B',
-                    color: trackerVersion === 'v2' ? '#FFFFFF' : '#64748B',
-                    fontSize: 10, fontWeight: 700, fontFamily: FONT }}>V2 (외부)</button>
-                </div>
-              )}
-
               {/* Prompt List 포함 토글 */}
               <label style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8, fontSize: 11, color: '#94A3B8', fontFamily: FONT, cursor: 'pointer' }}>
                 <input type="checkbox" checked={includePromptList} onChange={e => setIncludePromptList(e.target.checked)} style={{ cursor: 'pointer' }} />
