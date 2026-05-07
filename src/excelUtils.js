@@ -1143,10 +1143,10 @@ function parseCitDomain(rows) {
   const COUNTRIES = ['US','CA','UK','DE','ES','BR','MX','AU','VN','IN','TTL','GLOBAL']
   const MONTH_RE = /^(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|[0-9]{1,2}월)/i
 
-  // 헤더 행 찾기 — No/Region 또는 Domain 키워드가 있는 행
+  // 헤더 행 찾기 — No/Region/PRD 또는 Domain 키워드가 있는 행
   let headerRow = null
   let startIdx = 0
-  let noCol = -1, regionCol = -1, domainCol = -1, typeCol = -1, dataStartCol = 4
+  let noCol = -1, regionCol = -1, domainCol = -1, typeCol = -1, prdCol = -1, dataStartCol = 4
 
   for (let i = 0; i < Math.min(rows.length, 10); i++) {
     const r = rows[i]
@@ -1154,14 +1154,17 @@ function parseCitDomain(rows) {
     const hasNo = r.some(c => /^no$/i.test(String(c || '').trim()))
     const hasRegion = r.some(c => /^region$/i.test(String(c || '').trim()))
     const hasDomain = r.some(c => /domain|domian/i.test(String(c || '').trim()))
-    if (hasNo || hasRegion || hasDomain) {
+    const hasPrd = r.some(c => /^prd$/i.test(String(c || '').trim()))
+    if (hasNo || hasRegion || hasDomain || hasPrd) {
       headerRow = r
       startIdx = i + 1
       for (let j = 0; j < r.length; j++) {
         const s = String(r[j] || '').trim().toLowerCase()
+        if (s === 'prd' && prdCol < 0) prdCol = j
         if (s === 'no' && noCol < 0) noCol = j
         if (s === 'region' && regionCol < 0) regionCol = j
         if ((s === 'domain' || s === 'domian') && domainCol < 0) domainCol = j
+        if (s === 'type' && typeCol < 0) typeCol = j
       }
       break
     }
@@ -1170,15 +1173,16 @@ function parseCitDomain(rows) {
     }
   }
 
-  // 새 구조 감지: No(col0) + Region(col1) + Domain(col2) + Type(col3) + Data(col4+)
-  // 헤더의 col2가 "Feb" 등 월 라벨이지만 실제로 도메인 이름이 들어감
-  const isNewLayout = noCol >= 0 || regionCol >= 0
+  // 새 구조 감지 (PRD 컬럼 추가 케이스 포함):
+  //   v1: No | Region | Domain | Type | Data
+  //   v2: PRD | No | Region | Domain | Type | Data ← 2026-05 시트 변경
+  // 헤더에서 검출된 위치를 그대로 사용하되, 누락 시에만 v1 기준 폴백.
+  const isNewLayout = noCol >= 0 || regionCol >= 0 || prdCol >= 0
   if (isNewLayout) {
-    // No=0, Region=1, Domain=2, Type=3, Data=4+
-    regionCol = regionCol >= 0 ? regionCol : 1
-    domainCol = 2
-    typeCol = 3
-    dataStartCol = 4
+    if (regionCol < 0) regionCol = noCol >= 0 ? noCol + 1 : (prdCol >= 0 ? prdCol + 2 : 1)
+    if (domainCol < 0) domainCol = regionCol + 1
+    if (typeCol < 0) typeCol = domainCol + 1
+    dataStartCol = Math.max(domainCol, typeCol) + 1
   } else if (domainCol >= 0) {
     // 이전 구조: Domain, Type, Data...
     typeCol = domainCol + 1
