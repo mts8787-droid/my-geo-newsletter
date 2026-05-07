@@ -88,37 +88,6 @@ function citationSectionHtml(citations, meta, t, lang) {
   </div>`
 }
 
-// ─── 제품별 Citation (Top N 채널) ──────────────────────────────────────────
-function perProductSectionHtml(citationsByPrd, meta, t, lang) {
-  if (!citationsByPrd || !Object.keys(citationsByPrd).length) return ''
-  const topN = 5
-  const title = lang === 'en' ? 'By Product' : '제품별'
-  const prdList = Object.keys(citationsByPrd).sort()
-  const cards = prdList.map(prd => {
-    const list = (citationsByPrd[prd] || []).slice(0, topN)
-    if (!list.length) return ''
-    const maxScore = Math.max(...list.map(c => c.score), 1)
-    const rows = list.map((c, i) => {
-      const pct = (c.score / maxScore * 100).toFixed(1)
-      return `<div style="display:flex;align-items:center;gap:6px;padding:3px 0;font-size:11px">
-        <span style="min-width:14px;font-weight:700;color:#94A3B8">${c.rank || i+1}</span>
-        <span style="flex:1;color:#1A1A1A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.source}</span>
-        <div style="width:60px;height:6px;background:#F1F5F9;border-radius:3px;overflow:hidden"><div style="width:${pct}%;height:100%;background:${RED}"></div></div>
-        <span style="min-width:38px;text-align:right;color:#64748B">${fmt(c.score)}</span>
-      </div>`
-    }).join('')
-    return `<div style="width:calc(50% - 6px);background:#F8FAFC;border:1px solid #E8EDF2;border-radius:8px;overflow:hidden">
-      <div style="padding:6px 12px;border-bottom:1px solid #F1F5F9;font-size:13px;font-weight:700;color:#1A1A1A">${prd}</div>
-      <div style="padding:6px 12px">${rows}</div>
-    </div>`
-  }).filter(Boolean).join('')
-  if (!cards) return ''
-  return `<div class="section-card" id="cit-prd-section">
-    <div class="section-header"><div class="section-title">${title}</div></div>
-    <div class="section-body" id="cit-prd-cards" style="display:flex;flex-wrap:wrap;gap:12px">${cards}</div>
-  </div>`
-}
-
 // ─── 도메인별 Citation ──────────────────────────────────────────────────────
 function citDomainSectionHtml(citationsCnty, meta, t, citations, lang, useAggregated) {
   if (!citationsCnty || !citationsCnty.length) return ''
@@ -605,10 +574,10 @@ export function generateCitationHTML(meta, _total, _products, citations, dotcom,
   const citNoticeHtml = meta.showNotice && meta.noticeText ? `<div class="notice-box"><div class="notice-title">${lang === 'en' ? 'NOTICE' : '공지사항'}</div><div class="notice-text">${mdBold(meta.noticeText)}</div></div>` : ''
 
   // ── 외부접점채널 탭 콘텐츠 ──
+  // 제품별(By Product)은 cit-cat-wrap 및 cit-dom-wrap 내부에서 클라이언트가 렌더 (renderCitCat / renderCitDom)
   const touchPointContent = [
     citNoticeHtml,
     meta.showCitations !== false ? `<div id="cit-cat-wrap">${citationSectionHtml(citations, meta, t, lang)}</div>` : '',
-    `<div id="cit-prd-wrap">${perProductSectionHtml(citationsByPrd, meta, t, lang)}</div>`,
     (meta.showCitDomain !== false || meta.showCitCnty !== false) ? `<div id="cit-dom-wrap">${citDomainSectionHtml(citationsCnty, meta, t, citations, lang, false)}</div>` : '',
     meta.showCitTouchPointsTrend !== false ? citCategoryBumpChartHtml(citTouchPointsTrend, citTrendMonths, meta, t, lang) : '',
     meta.showCitDomainTrend !== false ? citDomainBumpChartHtml(citDomainTrend, citDomainMonths, meta, t, lang) : '',
@@ -627,10 +596,8 @@ export function generateCitationHTML(meta, _total, _products, citations, dotcom,
     <div class="sub-tab-panel" data-panel="touchpoint">${touchPointContent}</div>
     <div class="sub-tab-panel" data-panel="dotcom" style="display:none">${dotcomContent}</div>`
 
-  // 국가 목록 추출 (데이터에 존재하는 국가만)
-  const countries = new Set()
-  if (citationsCnty) citationsCnty.forEach(r => { if (r.cnty && r.cnty !== 'TTL') countries.add(r.cnty) })
-  const countryList = [...countries].sort()
+  // 모든 국가를 항상 표시 (데이터 유무와 무관 — REGIONS 정의 기준)
+  const countryList = allCountryCodes.slice()
   const allOn = allCountryCodes.every(c => isCountryOn(c))
 
   const allLabel = lang === 'en' ? 'All' : '전체'
@@ -831,7 +798,8 @@ function _citCatRows(cits,topN){
     return '<div class="cit-row"><span class="cit-rank '+(i<3?'top':'')+'">'+c.rank+'</span><div class="cit-info"><span class="cit-source">'+c.source+'</span><span class="cit-cat">'+(c.category||'')+'</span></div><div class="cit-bar-wrap"><div class="cit-bar" style="width:'+pct+'%"></div></div><span class="cit-score">'+_fmt(c.score)+'</span><span class="cit-ratio">('+ratio+'%)</span></div>'
   }).join('');
 }
-function _citVBar(cits,topN,isSmall){
+// topColor: 상위 3 막대 색 (기본 #CF0652). 연한 색 변형은 '#F87171' 권장.
+function _citVBar(cits,topN,isSmall,topColor){
   if(!cits||!cits.length)return'<div style="text-align:center;padding:12px;color:#94A3B8;font-size:12px">'+_noDataMsg+'</div>';
   var list=cits.slice(0,topN);
   var maxScore=Math.max.apply(null,list.map(function(c){return c.score}).concat([1]));
@@ -839,9 +807,10 @@ function _citVBar(cits,topN,isSmall){
   var LABEL_H=isSmall?30:36;
   var fs=isSmall?12:14;
   var fsl=isSmall?11:12;
+  var tc=topColor||'#CF0652';
   return '<div style="display:flex;gap:'+(isSmall?'4':'6')+'px;padding:'+(isSmall?'4px 0 0':'8px 0 0')+';overflow-x:auto;align-items:flex-end">'+list.map(function(c,i){
     var h=Math.max(3,Math.round(c.score/maxScore*BAR_H));
-    var color=i<3?'#CF0652':'#94A3B8';
+    var color=i<3?tc:'#94A3B8';
     return '<div style="display:flex;flex-direction:column;align-items:center;flex:1;min-width:'+(isSmall?'36px':'0')+'">'
       +'<span style="font-size:'+fs+'px;font-weight:700;color:'+color+';margin-bottom:2px">'+_fmt(c.score)+'</span>'
       +'<div style="width:100%;height:'+h+'px;background:'+color+';border-radius:3px 3px 0 0;min-height:3px"></div>'
@@ -849,27 +818,60 @@ function _citVBar(cits,topN,isSmall){
       +'</div>';
   }).join('')+'</div>';
 }
+// 카드 한 장 (제목 + 작은 세로막대그래프)
+function _vbarCard(title,vbarHtml){
+  return '<div style="width:calc(50% - 6px);background:#F8FAFC;border:1px solid #E8EDF2;border-radius:8px;overflow:hidden">'
+    +'<div style="padding:6px 12px;border-bottom:1px solid #F1F5F9;font-size:13px;font-weight:700;color:#1A1A1A">'+title+'</div>'
+    +'<div style="padding:4px 4px">'+vbarHtml+'</div></div>';
+}
+// 하위 섹션 래퍼 (By Product / By Country)
+function _subSection(label,cardsHtml){
+  return '<div style="border-top:1px solid #E8EDF2;margin-top:16px;padding-top:16px">'
+    +'<div style="font-size:14px;font-weight:700;color:#64748B;margin-bottom:10px">'+label+'</div>'
+    +'<div style="display:flex;flex-wrap:wrap;gap:12px">'+cardsHtml+'</div></div>';
+}
 function renderCitCat(cits){
   var el=document.getElementById('cit-cat-wrap');
   if(!el)return;
   var topN=_meta.citationTopN||10;
-  // 전체 + 국가별 하나의 섹션
   var body=_citVBar(cits,topN,false);
-  // 국가별 세로 막대그래프 (항상 표시)
+
+  // By Product (제품별 — 도메인 카테고리별 하위, 연한 붉은색)
+  var prdCards=[];
+  Object.keys(_citationsByPrd||{}).sort().forEach(function(prd){
+    var list=_citationsByPrd[prd];
+    if(!list||!list.length)return;
+    list=list.slice().sort(function(a,b){return b.score-a.score});
+    prdCards.push(_vbarCard(prd,_citVBar(list,8,true,'#F87171')));
+  });
+  if(prdCards.length){
+    body+=_subSection(_lang==='en'?'By Product':'제품별',prdCards.join(''));
+  }
+
+  // By Country
   var countries=['US','CA','UK','DE','ES','BR','MX','AU','VN','IN'];
   var cntyCards=[];
   countries.forEach(function(cnty){
     var list=_citationsByCnty[cnty];
     if(!list||!list.length)return;
     list=list.slice().sort(function(a,b){return b.score-a.score});
-    cntyCards.push('<div style="width:calc(50% - 6px);background:#F8FAFC;border:1px solid #E8EDF2;border-radius:8px;overflow:hidden">'
-      +'<div style="padding:6px 12px;border-bottom:1px solid #F1F5F9;font-size:13px;font-weight:700;color:#1A1A1A">'+_cn(cnty)+'</div>'
-      +'<div style="padding:4px 4px">'+_citVBar(list,8,true)+'</div></div>');
+    cntyCards.push(_vbarCard(_cn(cnty),_citVBar(list,8,true)));
   });
   if(cntyCards.length){
-    body+='<div style="border-top:1px solid #E8EDF2;margin-top:16px;padding-top:16px"><div style="font-size:14px;font-weight:700;color:#64748B;margin-bottom:10px">By Country</div><div style="display:flex;flex-wrap:wrap;gap:12px">'+cntyCards.join('')+'</div></div>';
+    body+=_subSection('By Country',cntyCards.join(''));
   }
   el.innerHTML='<div class="section-card"><div class="section-header"><div class="section-title">'+_t.citationTitle+'</div><span class="legend">'+_t.citLegend+'</span></div><div class="section-body">'+body+'</div></div>';
+}
+// 도메인별 → 제품별 분해: 채널 source(citationsByPrd)와 도메인을 stripDomain 후 lowercase 매칭
+function _domainByProduct(domain){
+  var dKey=_stripDomain(domain).toLowerCase();
+  var result=[];
+  Object.keys(_citationsByPrd||{}).forEach(function(prd){
+    var list=_citationsByPrd[prd]||[];
+    var match=list.find(function(c){return _stripDomain(c.source).toLowerCase()===dKey});
+    if(match&&match.score>0)result.push({source:prd,score:match.score});
+  });
+  return result.sort(function(a,b){return b.score-a.score});
 }
 
 function _domToVBarData(rows,topN){
@@ -890,18 +892,28 @@ function renderCitDom(citCnty,useAgg){
   }
   // 전체 세로 막대그래프
   var body=_citVBar(_domToVBarData(rows||[],topN),topN,false);
-  // 국가별 세로 막대그래프
+
+  // By Product (개별 도메인 × 제품별 사이테이션 수, 연한 붉은색)
+  var prdCards=[];
+  (rows||[]).forEach(function(d){
+    var prdList=_domainByProduct(d.domain);
+    if(!prdList.length)return;
+    prdCards.push(_vbarCard(_stripDomain(d.domain),_citVBar(prdList,8,true,'#F87171')));
+  });
+  if(prdCards.length){
+    body+=_subSection(_lang==='en'?'By Product':'제품별',prdCards.join(''));
+  }
+
+  // By Country
   var countries=['US','CA','UK','DE','ES','BR','MX','AU','VN','IN'];
   var cntyCards=[];
   countries.forEach(function(cnty){
     var cRows=citCnty.filter(function(r){return r.cnty===cnty}).sort(function(a,b){return b.citations-a.citations});
     if(!cRows.length)return;
-    cntyCards.push('<div style="width:calc(50% - 6px);background:#F8FAFC;border:1px solid #E8EDF2;border-radius:8px;overflow:hidden">'
-      +'<div style="padding:6px 12px;border-bottom:1px solid #F1F5F9;font-size:13px;font-weight:700;color:#1A1A1A">'+_cn(cnty)+'</div>'
-      +'<div style="padding:4px 4px">'+_citVBar(_domToVBarData(cRows,8),8,true)+'</div></div>');
+    cntyCards.push(_vbarCard(_cn(cnty),_citVBar(_domToVBarData(cRows,8),8,true)));
   });
   if(cntyCards.length){
-    body+='<div style="border-top:1px solid #E8EDF2;margin-top:16px;padding-top:16px"><div style="font-size:14px;font-weight:700;color:#64748B;margin-bottom:10px">By Country</div><div style="display:flex;flex-wrap:wrap;gap:12px">'+cntyCards.join('')+'</div></div>';
+    body+=_subSection('By Country',cntyCards.join(''));
   }
   el.innerHTML='<div class="section-card"><div class="section-header"><div class="section-title">'+_t.citDomainTitle+'</div><span class="legend">Top '+topN+' Domains</span></div><div class="section-body">'+body+'</div></div>';
 }
@@ -932,31 +944,6 @@ function _dcVBar(dc,isSmall){
       +(hasSam?'<span style="font-size:'+(isSmall?10:12)+'px;font-weight:700;color:'+gapColor+';margin-top:1px">'+gapTxt+'</span>':'')
       +'</div>';
   }).join('')+'</div>';
-}
-function renderPerProduct(byPrd){
-  var el=document.getElementById('cit-prd-cards');
-  if(!el)return;
-  if(!byPrd||!Object.keys(byPrd).length){el.innerHTML='<div style="text-align:center;padding:12px;color:#94A3B8;font-size:12px">'+_noDataMsg+'</div>';return}
-  var topN=5;
-  var prdList=Object.keys(byPrd).sort();
-  var html=prdList.map(function(prd){
-    var list=(byPrd[prd]||[]).slice(0,topN);
-    if(!list.length)return '';
-    var maxScore=Math.max.apply(null,list.map(function(c){return c.score}).concat([1]));
-    var rows=list.map(function(c,i){
-      var pct=(c.score/maxScore*100).toFixed(1);
-      return '<div style="display:flex;align-items:center;gap:6px;padding:3px 0;font-size:11px">'
-        +'<span style="min-width:14px;font-weight:700;color:#94A3B8">'+(c.rank||i+1)+'</span>'
-        +'<span style="flex:1;color:#1A1A1A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+c.source+'</span>'
-        +'<div style="width:60px;height:6px;background:#F1F5F9;border-radius:3px;overflow:hidden"><div style="width:'+pct+'%;height:100%;background:#CF0652"></div></div>'
-        +'<span style="min-width:38px;text-align:right;color:#64748B">'+_fmt(c.score)+'</span>'
-        +'</div>';
-    }).join('');
-    return '<div style="width:calc(50% - 6px);background:#F8FAFC;border:1px solid #E8EDF2;border-radius:8px;overflow:hidden">'
-      +'<div style="padding:6px 12px;border-bottom:1px solid #F1F5F9;font-size:13px;font-weight:700;color:#1A1A1A">'+prd+'</div>'
-      +'<div style="padding:6px 12px">'+rows+'</div></div>';
-  }).filter(Boolean).join('');
-  el.innerHTML=html||'<div style="text-align:center;padding:12px;color:#94A3B8;font-size:12px">'+_noDataMsg+'</div>';
 }
 function renderDotcom(dc){
   var el=document.getElementById('cit-dc-wrap');
@@ -1069,9 +1056,6 @@ function applyFilter(){
   // 도메인 Citation
   var filteredCitCnty=noneSelected?[]:(_citationsCnty||[]).filter(function(r){return r.cnty==='TTL'||enabled.includes(r.cnty)});
   renderCitDom(filteredCitCnty,!allSelected&&!noneSelected);
-
-  // 제품별 (국가 필터 무관 — TTL 행 기반)
-  renderPerProduct(_citationsByPrd);
 
   // 닷컴 Citation
   var filteredDc=_dotcom;
