@@ -1,121 +1,187 @@
 # BigQuery Schema 계약
 
-> **원본 위치**: [`mts8787-droid/dashboard-raw-data`](https://github.com/mts8787-droid/dashboard-raw-data/blob/main/BIGQUERY_SCHEMA.md) — 본 사본은 어드민 열람용. 변경은 원본에서 한 후 본 레포에도 동기화.
+> **원본 위치**: [`mts8787-droid/dashboard-raw-data`](https://github.com/mts8787-droid/dashboard-raw-data/blob/main/BIGQUERY_SCHEMA.md) — 본 사본은 어드민 열람용. 변경은 원본 레포에서 한 후 본 레포 `docs/`에도 동기화.
 
 > **누가 읽나요?**
-> - **PIC** → §1 (한 줄 설명) + §2 (PIC가 알아야 할 것) + §6 (용어집) — 표 정의는 안 외워도 됨
-> - **dev** → §3 (테이블 정의) + §4 (변경 절차) + §5 (환경변수)
+> - **PIC** → §1 (한 줄 설명) + §2 (Ascent DB 7개 테이블 한 눈에) + §6 (용어집)
+> - **dev** → §3 (테이블별 정의) + §4 (변경 절차) + §5 (환경변수)
+> - **상세 컬럼**: 본 문서가 아닌 `docs/schema/<table>.json` 7개 파일이 정확한 출처
 
 ---
 
 ## 1. 한 줄 설명
 
-이 문서는 **두 시스템(`dashboard-raw-data` + `my-geo-newsletter`)이 같은 BigQuery 테이블을 안전하게 공유**하기 위한 약속이다.
+이 문서는 **두 시스템(`dashboard-raw-data` writer + `my-geo-newsletter` reader)이 같은 BigQuery 테이블을 안전하게 공유**하기 위한 약속이다. 코드는 공유하지 않고 본 문서·스키마 JSON만 양쪽이 따른다.
 
 ```
-dashboard-raw-data (writer, 데이터를 씀)
-        ↓
-   BigQuery 테이블  ← 이 문서가 정의하는 약속
-        ↓
-my-geo-newsletter (reader, 데이터를 읽음)
+SEMrush API → dashboard-raw-data (writer) → BigQuery 7 tables → my-geo-newsletter (reader)
+                  weekly/monthly             pj-my-geo.semrush_data
 ```
-
-코드는 공유하지 않는다. 이 문서의 **컬럼 이름·타입 약속**만 양쪽이 따른다.
 
 ---
 
-## 2. PIC가 알아야 할 것
+## 2. Ascent DB 7개 테이블 (PIC용)
 
-### 어떤 데이터가 어디에 쌓이나?
+`pj-my-geo.semrush_data` 데이터셋. 데이터 흐름:
 
-매일 새벽 SEMrush에서 받아오는 데이터는 모두 **GCP의 BigQuery**라는 데이터 창고에 자동 저장됨.
+```
+SEMrush API
+   ├─→ prompt_master (분류체계 · 14컬럼)
+   ├─→ visibility    (가시성 원천 · 12컬럼)         ─┐
+   └─→ citation      (인용 원천 · 13컬럼)            │
+                                                      │
+   PIC 수동 입력 ──→ competitor_brand (4컬럼)         │
+   PIC 수동 입력 ──→ domain_mapping  (3컬럼)         │
+                                                      │
+   visibility ⨝ prompt_master ──→ report_visibility (9컬럼) ──→ reader
+   citation  ⨝ prompt_master                                       
+              ⨝ domain_mapping  ──→ report_citation  (24컬럼) ──→ reader
+```
 
-| 항목 | 값 |
-|---|---|
-| GCP 프로젝트 | `lg-geo-prod` (Phase 2 셋업 시 결정) |
-| 데이터셋(Dataset) | `semrush_data` |
-| 첫 테이블 | `ai_visibility` (AI 모델별 LG 가시성) |
+| 분류 | 테이블 | 컬럼 | 역할 / 주기 |
+|---|---|:---:|---|
+| 분류체계 | `prompt_master` | 14 | raw / weekly. SEMrush + PIC 정의 |
+| 원천 | `visibility` | 12 | raw / weekly. LG·경쟁사 가시성 |
+|  | `citation` | 13 | raw / monthly. 프롬프트 기반 인용 |
+| 리포트 | `report_visibility` | 9 | transform / weekly. 가시성 평균(%) |
+|  | `report_citation` | 24 | transform / monthly. 인용 분류·집계 |
+| 매핑 | `competitor_brand` | 4 | mapping / static. LG·경쟁사 분류 |
+|  | `domain_mapping` | 3 | mapping / static. 도메인 유형 분류 |
 
-### "신선도(stale)"가 뭔가요?
+### Prompt ID 규칙 (14자리)
 
-데이터가 24시간 이상 갱신 안 됐으면 시스템이 **stale = true**로 표시 → 어드민의 신선도 배지에 ⚠️ 표시. 이 경우:
-1. 어드민 → "Cloud Run Job 배포 절차" → §4 트러블슈팅 표 확인
-2. 또는 dev에게 알림
+```
+1 / UK / HS / DW / L / N / C / 0070
+W   CNTR DIV CTG STT BNS CEJ 시퀀스
+1   2    2   2   1   1   1   4
+```
 
-### PIC가 직접 BigQuery 화면을 봐야 할 때는?
-
-**거의 없음.** 어드민의 신선도 배지로 충분. 굳이 본다면:
-- 데이터 새로 들어왔는지 확인: GCP 콘솔 → BigQuery → `ai_visibility` 테이블 → "미리보기"
-- 직접 SQL은 dev 영역
-
----
-
-## 3. 테이블 정의 (dev용)
-
-### `ai_visibility` — AI 검색 가시성 (모델별·일별)
-
-`SEMrush Enterprise Element API → ai_visibility` 응답을 그대로 적재 + 4개 시스템 컬럼 추가.
-
-**시스템 컬럼** (writer가 항상 추가)
-
-| 컬럼 | 타입 | 의미 |
+| 자리 | 의미 | 예시 |
 |---|---|---|
-| `_loaded_at` | `TIMESTAMP` | 적재 시점 (UTC ISO8601) |
-| `_source` | `STRING` | 원천, 항상 `"semrush_enterprise"` |
-| `model` | `STRING` | AI 모델 (`search-gpt`·`perplexity`·`gpt-5`·`gemini-2.5-flash`·`copilot`·`claude`·`meta-ai`) |
-| `date` | `STRING` (YYYY-MM-DD) | 데이터 일자 |
+| **W** (Workspace, 1) | D2C=1, MS=2 |
+| **CNTR** (2) | 국가 코드 | UK, US, DE |
+| **DIV** (2) | 본부 | HS, MS, ES |
+| **CTG** (2) | 제품 카테고리 | TV, AC, RA, CO, DW |
+| **STT** (1) | 출시 상태 | L=Launched, U=Unlaunched |
+| **BNS** (1) | 브랜드/논브랜드 | B=Brand, N=Nonbrand |
+| **CEJ** (1) | 단계 | I=Interest, C=Conversion, E=Experience |
+| **시퀀스** (4) | 일련번호 | 0001~ |
 
-**SEMrush 응답 컬럼** (autodetect, 변경 가능)
+### "신선도(stale)"
 
-SEMrush 측에서 컬럼 이름·타입을 변경할 수 있음. BigQuery `autodetect`로 자동 감지. 현재 시점 컬럼은:
-```bash
-bq show --schema {project}.semrush_data.ai_visibility
+마지막 적재 시각이 24h 초과면 **stale = true** → 어드민 신선도 배지에 ⚠️.
+
+- 주간 테이블(visibility, prompt_master, report_visibility): 매주 월요일 새벽 적재
+- 월간 테이블(citation, report_citation): 매월 1일 새벽 적재
+- 매핑 테이블(competitor_brand, domain_mapping): static (PIC 수동)
+
+---
+
+## 3. 테이블별 정의 (dev용)
+
+### 핵심 원칙
+
+- **PK**: 모든 테이블 `id` (BIGINT, AUTO_INCREMENT)
+- **FK**: `prompt_id`로 prompt_master·visibility·citation 연결
+- **메타 컬럼**: `input_at`, `updated_at` (TIMESTAMP) — raw 테이블만
+- **report_*** 테이블은 PIC가 직접 INSERT 안 함 — 매주/매월 변환 쿼리로 재생성
+
+### 테이블별 상세
+
+각 테이블의 컬럼·리니지 상세는 다음 7개 JSON 참조 (단일 source of truth):
+
+```
+docs/schema/pj-my-geo__semrush_data__prompt_master.json
+docs/schema/pj-my-geo__semrush_data__visibility.json
+docs/schema/pj-my-geo__semrush_data__citation.json
+docs/schema/pj-my-geo__semrush_data__report_visibility.json
+docs/schema/pj-my-geo__semrush_data__report_citation.json
+docs/schema/pj-my-geo__semrush_data__competitor_brand.json
+docs/schema/pj-my-geo__semrush_data__domain_mapping.json
 ```
 
-**파티션·클러스터링 (권장)**
+각 JSON 구조:
+
+```json
+{
+  "dataset": "pj-my-geo.semrush_data",
+  "table": "report_visibility",
+  "columns": [
+    { "name": "visibility", "bq_type": "NUMERIC",
+      "nullable": "Y", "key": "",
+      "description": "가시성 값 (Group By 후 평균 %)",
+      "source_file": "visibility", "source_column": "visibility",
+      "derivation": "AVG(visibility) %" }
+  ],
+  "lineage": {
+    "role": "transform",
+    "frequency": "weekly",
+    "sources": [
+      { "table": "visibility", "join_on": "prompt_id" },
+      { "table": "prompt_master", "join_on": "prompt_id, cntr" }
+    ],
+    "downstream": [],
+    "transforms": [
+      "JOIN visibility ⨝ prompt_master",
+      "GROUP BY start_date, end_date, cntr, ctg, bns, brand",
+      "AVG(visibility) → visibility (decimal(5,2))"
+    ]
+  }
+}
+```
+
+### 변환 쿼리
+
+`report_visibility`·`report_citation` 생성용 쿼리 템플릿은 Streamlit `🛠️ 스키마 DDL` 페이지에서 자동 생성. 또는 `schema_to_ddl.build_report_visibility_query(...)` 직접 호출.
+
+### 권장 파티션·클러스터링
 
 ```sql
-CREATE OR REPLACE TABLE `{project}.semrush_data.ai_visibility`
-PARTITION BY DATE(date)
-CLUSTER BY model, _source AS
-SELECT * FROM `{project}.semrush_data.ai_visibility`;
+-- 모든 raw 테이블 (visibility/citation/prompt_master)
+PARTITION BY start_date  -- prompt_master는 input_at::DATE
+CLUSTER BY cntr, brand   -- prompt_master는 cntr, prompt_id
+
+-- 리포트 테이블
+PARTITION BY start_date
+CLUSTER BY cntr, ctg, brand
 ```
 
 미적용 시 reader가 풀 스캔 → 비용 증가.
 
-### Reader 사용 패턴
+---
 
-`my-geo-newsletter`의 `routes/bridge.js`(`@google-cloud/bigquery` 사용)가 sync-data JSON 형식으로 변환해 편집 페이지에 전달.
+## 4. Reader(my-geo-newsletter) 측 사용 패턴
+
+`routes/bridge.js`(`@google-cloud/bigquery`)가 `report_visibility`·`report_citation`을 조회해 sync-data JSON으로 변환.
 
 **예시 쿼리**
 
 ```sql
--- 최근 7일, LG, 모델별 일평균 가시성
-SELECT model, date, AVG(visibility) AS visibility_avg
-FROM `{project}.semrush_data.ai_visibility`
-WHERE date BETWEEN DATE_SUB(CURRENT_DATE(), INTERVAL 7 DAY) AND CURRENT_DATE()
-  AND _source = 'semrush_enterprise'
-GROUP BY model, date
-ORDER BY date DESC, model;
+-- 최근 주간 가시성 (전체 카테고리, 국가별 평균)
+SELECT cntr, ctg, brand, AVG(visibility) AS visibility_avg
+FROM `pj-my-geo.semrush_data.report_visibility`
+WHERE start_date >= DATE_SUB(CURRENT_DATE(), INTERVAL 7 DAY)
+GROUP BY cntr, ctg, brand
+ORDER BY visibility_avg DESC;
+
+-- 인용 도메인 Top 10 (월간)
+SELECT domain, domain_type, COUNT(*) AS cnt
+FROM `pj-my-geo.semrush_data.report_citation`
+WHERE start_date >= DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY)
+  AND average_position IS NOT NULL
+GROUP BY domain, domain_type
+ORDER BY cnt DESC LIMIT 10;
 ```
 
 **Reader 가드라인**
-- `_source = 'semrush_enterprise'` 필터 권장 (향후 다른 소스 대비)
-- `_loaded_at`으로 신선도 판정 (24h 초과 = stale)
-- `WHERE date BETWEEN ...` 필수 (파티션 미적용 시 비용 폭주 방지)
-
-### 추가 예정 테이블
-
-| 테이블 | 출처 | 시점 |
-|---|---|---|
-| `tracker_intake` | 사이트맵 크롤러 (§4.4) | Phase 1 |
-| `dim_prompt` / `dim_prompt_history` | 프롬프트 마스터 (§4.2) | Phase 2 |
-| `audit_logs` | 게시·프롬프트·설정 변경 | Phase 2 |
-| `logs.insight_runs` | AI 호출 메타 (현재 JSONL) | Phase 2 |
+- 조회는 **report_*** 테이블 우선. raw 테이블은 디버깅용
+- `WHERE start_date BETWEEN ...` 필수 (파티션 미적용 시 비용 폭주)
+- `updated_at` 또는 별도 메타로 신선도 판정 (24h 초과 = stale)
+- 컬럼 추가는 reader가 무시 가능 — 안전. 컬럼 삭제·이름 변경은 §5 절차
 
 ---
 
-## 4. 스키마 변경 절차 (dev용)
+## 5. 스키마 변경 절차 (dev용)
 
 | 변경 | 안전성 | 절차 |
 |---|---|---|
@@ -124,14 +190,16 @@ ORDER BY date DESC, model;
 | **타입 변경** | 🔴 위험 | 새 컬럼 추가 후 마이그레이션. 직접 변경 금지 |
 | **컬럼 삭제** | 🟠 주의 | reader 코드 참조 제거 → N개월 대기 → 삭제 |
 | **테이블 삭제** | 🟠 주의 | reader 사용 종료 확인 → archive 처리 |
+| **`report_*` 컬럼 추가** | 🟢 안전 | 변환 쿼리 SELECT에 추가 + JSON 갱신 |
 
-본 문서 변경 시:
-1. 변경 사유·날짜를 git commit message에 명시
-2. `my-geo-newsletter` 측에 영향 있으면 PR 코멘트 cross-link
+**문서 변경 시**:
+1. `dashboard-raw-data` 측 `docs/schema/<table>.json` 갱신 (Streamlit 학습 페이지)
+2. 본 `BIGQUERY_SCHEMA.md` 사람용 표 갱신
+3. `my-geo-newsletter` reader에 영향 있으면 vendor copy(`my-geo-newsletter/docs/BIGQUERY_SCHEMA.md`) 동기화 + PR 코멘트 cross-link
 
 ---
 
-## 5. 환경변수 (writer 측)
+## 6. 환경변수 (writer 측)
 
 | 변수 | 필수 | 기본 | 설명 |
 |---|:---:|---|---|
@@ -140,27 +208,31 @@ ORDER BY date DESC, model;
 | `SEMRUSH_PROJECT_ID` | — | — | Enterprise Project ID (선택) |
 | `SEMRUSH_DATABASE` | — | `us` | DB locale |
 | `TARGET_DOMAIN` | — | `example.com` | 대상 도메인 |
-| `GCP_PROJECT_ID` | ✅ | — | BigQuery 프로젝트 |
+| `GCP_PROJECT_ID` | ✅ | `pj-my-geo` | BigQuery 프로젝트 |
 | `BQ_DATASET` | — | `semrush_data` | 데이터셋 이름 |
 | `GOOGLE_APPLICATION_CREDENTIAL_JSON` | ✅ | — | 서비스 계정 키 JSON 문자열 |
 
+Reader(my-geo-newsletter) 측은 `GOOGLE_APPLICATION_CREDENTIALS_JSON` (변수명 `S` 위치 다름) 사용.
+
 ---
 
-## 6. 용어집
+## 7. 용어집
 
 | 단어 | 한 줄 설명 | 비유 |
 |---|---|---|
 | **데이터셋(Dataset)** | BigQuery 안의 폴더 — 여러 테이블 묶음 | 자료실 캐비닛 |
 | **테이블(Table)** | 데이터셋 안의 표 데이터 1개 | 캐비닛 안의 폴더 |
-| **컬럼(Column)** | 표의 세로 열 (예: `model`, `date`) | 엑셀의 A열, B열 |
-| **타입(Type)** | 컬럼이 담는 값의 종류 (`STRING`, `TIMESTAMP` 등) | "이 칸은 숫자만" 같은 규칙 |
-| **시스템 컬럼** | writer가 자동으로 추가하는 컬럼 (`_loaded_at` 등) | 사진의 EXIF (찍힌 시각·기기 정보) |
-| **autodetect** | BigQuery가 데이터를 보고 컬럼 타입을 자동 추정 | 엑셀 자동 서식 |
-| **파티션(Partition)** | 큰 테이블을 날짜·키별로 나눠 저장해 조회 빠르게 | 연도별로 나뉜 자료실 폴더 |
-| **클러스터링(Clustering)** | 같은 모델끼리 묶어 저장해 필터 빠르게 | 알파벳순 정렬 |
-| **append-only** | 기록은 추가만, 수정·삭제 안 됨 | 출입 기록부 (덮어쓰기 안 함) |
+| **컬럼(Column)** | 표의 세로 열 | 엑셀의 A열, B열 |
+| **타입(Type)** | 컬럼이 담는 값의 종류 (`STRING`, `INT64` 등) | "이 칸은 숫자만" 같은 규칙 |
+| **PK / FK** | Primary Key (PK, 고유) / Foreign Key (FK, 다른 테이블 참조) | 회원번호(PK) / 주문서의 회원번호(FK) |
+| **JOIN** | 두 테이블을 키로 합치기 | 엑셀 VLOOKUP |
+| **GROUP BY** | 키로 묶어 집계 | 엑셀 피벗 테이블 |
+| **AVG/SUM/COUNT** | 평균/합/개수 집계 함수 | 엑셀 함수와 동일 |
+| **파티션(Partition)** | 큰 테이블을 날짜별로 나눠 저장해 조회 빠르게 | 연도별 자료실 폴더 |
+| **클러스터링(Clustering)** | 같은 키 끼리 묶어 저장해 필터 빠르게 | 알파벳순 정렬 |
+| **raw / transform / mapping** | 원천 / 가공 / 매핑 테이블 분류 |  |
 | **writer / reader** | 쓰는 쪽 / 읽는 쪽 | dashboard-raw-data가 writer, my-geo-newsletter가 reader |
 
 ---
 
-*v1.1 · 2026-05-05 — PIC용 §1·§2, dev용 §3~5, 용어집 §6로 분리.*
+*v2.0 · 2026-05-06 — Ascent DB 7개 테이블 정의 반영. 시간 역순 lineage 폐기, 테이블별 단일 JSON으로 단순화. 상세 컬럼은 docs/schema/*.json 참조.*
