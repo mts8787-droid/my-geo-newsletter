@@ -830,15 +830,16 @@ function _subSection(label,cardsHtml){
     +'<div style="font-size:14px;font-weight:700;color:#64748B;margin-bottom:10px">'+label+'</div>'
     +'<div style="display:flex;flex-wrap:wrap;gap:12px">'+cardsHtml+'</div></div>';
 }
-// prdData: 국가 필터 적용된 제품별 채널 데이터 ({prd: [{source, score}]})
-function renderCitCat(cits,prdData){
+// prdData: 국가 필터 적용된 제품별 채널 데이터, enabledCntys: 선택된 국가 코드 배열
+function renderCitCat(cits,prdData,enabledCntys){
   var el=document.getElementById('cit-cat-wrap');
   if(!el)return;
   var topN=_meta.citationTopN||10;
   var body=_citVBar(cits,topN,false);
 
-  // By Country (먼저)
-  var countries=['US','CA','UK','DE','ES','BR','MX','AU','VN','IN'];
+  // By Country (선택된 국가만)
+  var ALL=['US','CA','UK','DE','ES','BR','MX','AU','VN','IN'];
+  var countries=enabledCntys&&enabledCntys.length?ALL.filter(function(c){return enabledCntys.indexOf(c)>=0}):ALL;
   var cntyCards=[];
   countries.forEach(function(cnty){
     var list=_citationsByCnty[cnty];
@@ -883,7 +884,7 @@ function _domToVBarData(rows,topN){
   var list=rows.slice(0,topN);
   return list.map(function(r){return{source:_stripDomain(r.domain),score:r.citations}});
 }
-function renderCitDom(citCnty,useAgg,prdData){
+function renderCitDom(citCnty,useAgg,prdData,enabledCntys){
   var el=document.getElementById('cit-dom-wrap');
   if(!el)return;
   var topN=_meta.citDomainTopN||10;var rows;
@@ -897,8 +898,9 @@ function renderCitDom(citCnty,useAgg,prdData){
   // 전체 세로 막대그래프
   var body=_citVBar(_domToVBarData(rows||[],topN),topN,false);
 
-  // By Country (먼저)
-  var countries=['US','CA','UK','DE','ES','BR','MX','AU','VN','IN'];
+  // By Country (선택된 국가만)
+  var ALL=['US','CA','UK','DE','ES','BR','MX','AU','VN','IN'];
+  var countries=enabledCntys&&enabledCntys.length?ALL.filter(function(c){return enabledCntys.indexOf(c)>=0}):ALL;
   var cntyCards=[];
   countries.forEach(function(cnty){
     var cRows=citCnty.filter(function(r){return r.cnty===cnty}).sort(function(a,b){return b.citations-a.citations});
@@ -1080,11 +1082,11 @@ function applyFilter(){
       if(list.length)prdData[prd]=list;
     });
   }
-  renderCitCat(filteredCit,prdData);
+  renderCitCat(filteredCit,prdData,enabled);
 
   // 도메인 Citation
   var filteredCitCnty=noneSelected?[]:(_citationsCnty||[]).filter(function(r){return r.cnty==='TTL'||enabled.includes(r.cnty)});
-  renderCitDom(filteredCitCnty,!allSelected&&!noneSelected,prdData);
+  renderCitDom(filteredCitCnty,!allSelected&&!noneSelected,prdData,enabled);
 
   // 닷컴 Citation
   var filteredDc=_dotcom;
