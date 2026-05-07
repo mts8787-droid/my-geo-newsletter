@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react'
-import { RefreshCw, Globe, Link2, Languages } from 'lucide-react'
+import { RefreshCw, Globe, Link2 } from 'lucide-react'
 import { extractSheetId, syncFromGoogleSheets } from '../googleSheetsUtils'
 import { LG_RED, FONT } from '../shared/constants.js'
 import { inputStyle } from '../shared/components.jsx'
-import { resolveDataForLang, translateTexts } from '../shared/utils.js'
+import { resolveDataForLang } from '../shared/utils.js'
 import { saveSyncData, publishCombinedDashboard } from '../shared/api.js'
 import { generateDashboardHTML } from '../dashboard/dashboardTemplate.js'
 
@@ -26,8 +26,6 @@ export default function CitationSidebar({
   const [combPublishing, setCombPublishing] = useState(false)
   const [combMsg, setCombMsg] = useState('')
   const [publishInfo, setPublishInfo] = useState(null)
-  const [showTranslatePopup, setShowTranslatePopup] = useState(false)
-  const [translating, setTranslating] = useState(false)
 
   // 게시 상태 로드
   useEffect(() => {
@@ -174,41 +172,6 @@ export default function CitationSidebar({
     }
   }
 
-  async function handleTranslate() {
-    if (previewLang !== 'en') {
-      alert('EN 탭에서만 AI 번역 기능을 사용할 수 있습니다.')
-      return
-    }
-    setShowTranslatePopup(true)
-  }
-
-  async function executeTranslate() {
-    setShowTranslatePopup(false)
-    setTranslating(true)
-    try {
-      const src = metaKo
-      const metaTexts = [
-        src.citationInsight || '', src.citationHowToRead || '',
-        src.citDomainInsight || '', src.citDomainHowToRead || '',
-        src.citCntyInsight || '', src.citCntyHowToRead || '',
-        src.dotcomInsight || '', src.dotcomHowToRead || '',
-      ]
-      const tr = await translateTexts(metaTexts, { from: 'ko', to: 'en' })
-      let idx = 0
-      setMetaEn(m => ({
-        ...m,
-        citationInsight: tr[idx++] || '', citationHowToRead: tr[idx++] || '',
-        citDomainInsight: tr[idx++] || '', citDomainHowToRead: tr[idx++] || '',
-        citCntyInsight: tr[idx++] || '', citCntyHowToRead: tr[idx++] || '',
-        dotcomInsight: tr[idx++] || '', dotcomHowToRead: tr[idx++] || '',
-      }))
-    } catch (err) {
-      alert('번역 오류: ' + err.message)
-    } finally {
-      setTranslating(false)
-    }
-  }
-
   return (
     <div style={{ width: 520, minWidth: 520, borderRight: '1px solid #1E293B',
       background: '#0F172A', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
@@ -294,46 +257,6 @@ export default function CitationSidebar({
 
         <div style={{ height: 1, background: '#1E293B', marginBottom: 16 }} />
 
-        {/* AI 번역 */}
-        <button onClick={handleTranslate} disabled={translating} style={{
-          width: '100%', padding: '9px 0', background: translating ? '#1E293B' : '#4F46E5', border: '1px solid #6366F133',
-          borderRadius: 8, fontSize: 11, fontWeight: 700, color: '#E0E7FF', fontFamily: FONT,
-          cursor: translating ? 'wait' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, marginBottom: 12,
-          opacity: translating ? 0.6 : 1,
-        }}>
-          <Languages size={13} /> {translating ? '번역 중...' : 'AI 번역 (EN)'}
-        </button>
-
-        {/* 번역 확인 팝업 */}
-        {showTranslatePopup && (
-          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 9999,
-            display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <div style={{ background: '#1E293B', border: '1px solid #334155', borderRadius: 14,
-              padding: '24px 28px', maxWidth: 380, width: '90%', boxShadow: '0 20px 60px rgba(0,0,0,0.5)' }}>
-              <p style={{ margin: '0 0 6px', fontSize: 15, fontWeight: 700, color: '#FFFFFF', fontFamily: FONT }}>
-                AI 번역 확인
-              </p>
-              <p style={{ margin: '0 0 20px', fontSize: 12, color: '#94A3B8', lineHeight: 1.6, fontFamily: FONT }}>
-                Citation 관련 텍스트를 영어로 번역합니다.<br/>진행하시겠습니까?
-              </p>
-              <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-                <button onClick={() => setShowTranslatePopup(false)} style={{
-                  padding: '8px 20px', borderRadius: 8, border: '1px solid #334155', background: 'transparent',
-                  color: '#94A3B8', fontSize: 12, fontWeight: 600, fontFamily: FONT, cursor: 'pointer' }}>
-                  아니오
-                </button>
-                <button onClick={executeTranslate} style={{
-                  padding: '8px 20px', borderRadius: 8, border: 'none', background: '#4F46E5',
-                  color: '#FFFFFF', fontSize: 12, fontWeight: 700, fontFamily: FONT, cursor: 'pointer' }}>
-                  예, 번역하기
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        <div style={{ height: 1, background: '#1E293B', marginBottom: 16 }} />
-
         {/* ── 노티스 ── */}
         <div style={{ marginBottom: 16 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
@@ -349,32 +272,26 @@ export default function CitationSidebar({
             style={{ ...inputStyle, fontSize: 11, lineHeight: 1.6 }} />
         </div>
 
-        {/* ── 인사이트 ── */}
+        {/* ── 월간 트렌드 표시 ── */}
         <div style={{ marginBottom: 16 }}>
-          <span style={{ fontSize: 11, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: 1, fontFamily: FONT, display: 'block', marginBottom: 8 }}>Insights</span>
+          <span style={{ fontSize: 11, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: 1, fontFamily: FONT, display: 'block', marginBottom: 8 }}>월간 트렌드 표시</span>
           {[
-            { key: 'citationInsight', show: 'showCitationInsight', label: 'Citation Insight' },
-            { key: 'citationHowToRead', show: 'showCitationHowToRead', label: 'Citation How to Read' },
-            { key: 'citDomainInsight', show: 'showCitDomainInsight', label: 'Domain Insight' },
-            { key: 'citDomainHowToRead', show: 'showCitDomainHowToRead', label: 'Domain How to Read' },
-            { key: 'citCntyInsight', show: 'showCitCntyInsight', label: 'Country Insight' },
-            { key: 'citCntyHowToRead', show: 'showCitCntyHowToRead', label: 'Country How to Read' },
-            { key: 'dotcomInsight', show: 'showDotcomInsight', label: 'Dotcom Insight' },
-            { key: 'dotcomHowToRead', show: 'showDotcomHowToRead', label: 'Dotcom How to Read' },
-          ].map(f => (
-            <div key={f.key} style={{ marginBottom: 8 }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 2 }}>
-                <label style={{ fontSize: 10, color: '#64748B', fontFamily: FONT }}>{f.label}</label>
-                <button onClick={() => setMeta(m => ({ ...m, [f.show]: !m[f.show] }))}
-                  style={{ padding: '1px 6px', borderRadius: 3, border: 'none', cursor: 'pointer', fontSize: 9, fontWeight: 700, fontFamily: FONT,
-                    background: meta[f.show] ? '#166534' : '#1E293B', color: meta[f.show] ? '#86EFAC' : '#64748B' }}>
-                  {meta[f.show] ? 'ON' : 'OFF'}
+            { show: 'showCitTouchPointsTrend', label: '외부접점채널 월간 트렌드' },
+            { show: 'showCitDomainTrend', label: '도메인 월간 트렌드' },
+            { show: 'showDotcomTrend', label: '닷컴 월간 트렌드' },
+          ].map(f => {
+            const on = meta[f.show] !== false  // 디폴트 ON (undefined === !== false === true)
+            return (
+              <div key={f.show} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6, padding: '6px 10px', borderRadius: 6, background: '#0F172A', border: '1px solid #1E293B' }}>
+                <label style={{ fontSize: 11, color: '#94A3B8', fontFamily: FONT }}>{f.label}</label>
+                <button onClick={() => setMeta(m => ({ ...m, [f.show]: !on }))}
+                  style={{ padding: '2px 8px', borderRadius: 4, border: 'none', cursor: 'pointer', fontSize: 10, fontWeight: 700, fontFamily: FONT,
+                    background: on ? '#166534' : '#1E293B', color: on ? '#86EFAC' : '#64748B' }}>
+                  {on ? 'ON' : 'OFF'}
                 </button>
               </div>
-              <textarea value={meta[f.key] || ''} onChange={e => setMeta(m => ({ ...m, [f.key]: e.target.value }))}
-                rows={2} style={{ ...inputStyle, fontSize: 11, lineHeight: 1.5 }} />
-            </div>
-          ))}
+            )
+          })}
         </div>
 
         <div style={{ height: 1, background: '#1E293B', marginBottom: 16 }} />

@@ -503,40 +503,24 @@ export function generateCitationHTML(meta, _total, _products, citations, dotcom,
       if (em) selectedMonth = em[1].charAt(0).toUpperCase() + em[1].slice(1).toLowerCase()
     }
   }
-  // 선택된 월이 있으면 citations/citationsCnty/citationsByCnty 점수를 해당 월로 교체
+  // 선택된 월이 있으면 해당 월 monthScores만 사용 (없으면 0 → 필터아웃, 이전 월 폴백 금지)
   if (selectedMonth) {
-    // Touch Points (citations)
+    const pickScore = c => (c.monthScores && c.monthScores[selectedMonth]) || 0
     if (citations && citations.length) {
-      citations = citations.map(c => {
-        if (c.monthScores && c.monthScores[selectedMonth] != null) {
-          return { ...c, score: c.monthScores[selectedMonth] }
-        }
-        return c
-      }).filter(c => c.score > 0)
-      // 재정렬 + 순위/비율 재계산
+      citations = citations.map(c => ({ ...c, score: pickScore(c) })).filter(c => c.score > 0)
       citations.sort((a, b) => b.score - a.score)
       const total = citations.reduce((s, c) => s + c.score, 0)
       citations.forEach((c, i) => { c.rank = i + 1; c.ratio = total > 0 ? +((c.score / total) * 100).toFixed(1) : 0 })
     }
-    // Domain (citationsCnty)
     if (citationsCnty && citationsCnty.length) {
-      citationsCnty = citationsCnty.map(c => {
-        if (c.monthScores && c.monthScores[selectedMonth] != null) {
-          return { ...c, citations: c.monthScores[selectedMonth] }
-        }
-        return c
-      }).filter(c => c.citations > 0)
+      citationsCnty = citationsCnty
+        .map(c => ({ ...c, citations: pickScore(c) }))
+        .filter(c => c.citations > 0)
     }
-    // 국가별 Touch Points (citationsByCnty)
     if (citationsByCnty && Object.keys(citationsByCnty).length) {
       const newByCnty = {}
       for (const [cnty, list] of Object.entries(citationsByCnty)) {
-        const filtered = list.map(c => {
-          if (c.monthScores && c.monthScores[selectedMonth] != null) {
-            return { ...c, score: c.monthScores[selectedMonth] }
-          }
-          return c
-        }).filter(c => c.score > 0)
+        const filtered = list.map(c => ({ ...c, score: pickScore(c) })).filter(c => c.score > 0)
         if (filtered.length) {
           filtered.sort((a, b) => b.score - a.score)
           const cntyTotal = filtered.reduce((s, c) => s + c.score, 0)
@@ -576,14 +560,14 @@ export function generateCitationHTML(meta, _total, _products, citations, dotcom,
     citNoticeHtml,
     meta.showCitations !== false ? `<div id="cit-cat-wrap">${citationSectionHtml(citations, meta, t, lang)}</div>` : '',
     (meta.showCitDomain !== false || meta.showCitCnty !== false) ? `<div id="cit-dom-wrap">${citDomainSectionHtml(citationsCnty, meta, t, citations, lang, false)}</div>` : '',
-    citCategoryBumpChartHtml(citTouchPointsTrend, citTrendMonths, meta, t, lang),
-    citDomainBumpChartHtml(citDomainTrend, citDomainMonths, meta, t, lang),
+    meta.showCitTouchPointsTrend !== false ? citCategoryBumpChartHtml(citTouchPointsTrend, citTrendMonths, meta, t, lang) : '',
+    meta.showCitDomainTrend !== false ? citDomainBumpChartHtml(citDomainTrend, citDomainMonths, meta, t, lang) : '',
   ].join('')
 
   // ── 닷컴 탭 콘텐츠 ──
   const dotcomContent = [
     meta.showDotcom !== false ? `<div id="cit-dc-wrap">${dotcomSectionHtml(dotcom, meta, t, lang)}</div>` : '',
-    dotcomTrendChartHtml(dotcomTrend, dotcomTrendMonths, lang),
+    meta.showDotcomTrend !== false ? dotcomTrendChartHtml(dotcomTrend, dotcomTrendMonths, lang) : '',
   ].join('')
 
   const content = `<div class="cit-gnb">
@@ -923,9 +907,9 @@ function switchMonth(month){
   // 드롭박스 동기화
   var sel=document.getElementById('month-select');
   if(sel)sel.value=month;
-  // Touch Points: monthScores에서 해당 월 점수 추출
+  // Touch Points: 해당 월 monthScores만 사용 (없으면 0 → 필터아웃, 이전 월 폴백 금지)
   _citations=_rawCitations.map(function(c){
-    var s=(c.monthScores&&c.monthScores[month]!=null)?c.monthScores[month]:c.score;
+    var s=(c.monthScores&&c.monthScores[month])||0;
     return Object.assign({},c,{score:s});
   }).filter(function(c){return c.score>0});
   _citations.sort(function(a,b){return b.score-a.score});
@@ -935,7 +919,7 @@ function switchMonth(month){
   _citationsByCnty={};
   Object.keys(_rawCitationsByCnty).forEach(function(cnty){
     var list=_rawCitationsByCnty[cnty].map(function(c){
-      var s=(c.monthScores&&c.monthScores[month]!=null)?c.monthScores[month]:c.score;
+      var s=(c.monthScores&&c.monthScores[month])||0;
       return Object.assign({},c,{score:s});
     }).filter(function(c){return c.score>0});
     if(list.length){
@@ -947,7 +931,7 @@ function switchMonth(month){
   });
   // Domain
   _citationsCnty=_rawCitationsCnty.map(function(c){
-    var s=(c.monthScores&&c.monthScores[month]!=null)?c.monthScores[month]:c.citations;
+    var s=(c.monthScores&&c.monthScores[month])||0;
     return Object.assign({},c,{citations:s});
   }).filter(function(c){return c.citations>0});
   // Dotcom — byMonth 우선, 누락 시 byCntyByMonth 합산으로 TTL 보완
