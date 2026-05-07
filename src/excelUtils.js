@@ -985,28 +985,17 @@ function parseCitTouchPoints(rows) {
   const header = headerIdx >= 0 ? rows[headerIdx] : []
   const startRow = (headerIdx >= 0 ? headerIdx : 0) + 1
 
-  // 컬럼 레이아웃
-  let countryCol = -1, channelCol = -1, prdCol = -1, dataStartCol = 2
+  // 1) 라벨 컬럼 검출 (PRD/NO/Country/Channel/example 등 — 헤더 텍스트가 명시된 비-월 컬럼)
+  // 시트 예: PRD | NO | Country | Channel | example | Feb | Mar | Apr
+  let countryCol = -1, channelCol = -1, prdCol = -1
   for (let i = 0; i < header.length; i++) {
     const s = String(header[i] || '').trim().toLowerCase()
     if (s === 'country' && countryCol < 0) countryCol = i
     if (s === 'channel' && channelCol < 0) channelCol = i
     if (s === 'prd' && prdCol < 0) prdCol = i
   }
-  if (countryCol >= 0 && channelCol >= 0) {
-    dataStartCol = Math.max(countryCol, channelCol, prdCol) + 1
-  } else {
-    // 첫 열이 비어있으면 col0=empty, col1=country, col2=channel, col3+=data
-    const firstDataRow = rows[startRow]
-    if (firstDataRow && !String(firstDataRow[0] || '').trim()) {
-      countryCol = 1; channelCol = 2; dataStartCol = 3
-    } else {
-      countryCol = 0; channelCol = 1; dataStartCol = 2
-    }
-  }
 
   // 월 라벨을 canonical 짧은 이름으로 정규화 ('Apr 2026' / '4월' / 'April' → 'Apr')
-  // 클라이언트/SSR 필터가 'Apr' 키로 조회하므로 raw 헤더 텍스트 유지 시 monthScores 매칭 실패함
   const MONTHS_ORDER = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
   function canonMonth(raw) {
     const s = String(raw || '').trim().toLowerCase()
@@ -1021,38 +1010,67 @@ function parseCitTouchPoints(rows) {
     return null
   }
 
-  // 월 라벨 추출 — 헤더 행 + (필요시) 헤더 바로 위 행
+  // 2) 월 컬럼 검출 (헤더 행 전체 스캔 + 필요 시 위 행 보충)
   const monthLabels = []  // { col, label: 'Apr' (canonical) }
   const seenCols = new Set()
-  for (let i = dataStartCol; i < header.length; i++) {
+  for (let i = 0; i < header.length; i++) {
     const cm = canonMonth(header[i])
     if (cm && !seenCols.has(i)) { monthLabels.push({ col: i, label: cm }); seenCols.add(i) }
   }
   if (headerIdx > 0) {
     const monthRow = rows[headerIdx - 1]
     if (monthRow) {
-      for (let i = dataStartCol; i < monthRow.length; i++) {
+      for (let i = 0; i < monthRow.length; i++) {
         const cm = canonMonth(monthRow[i])
         if (cm && !seenCols.has(i)) { monthLabels.push({ col: i, label: cm }); seenCols.add(i) }
       }
     }
   }
 
-  // 라벨 없는 데이터 컬럼 역산 — 첫 라벨된 월의 인덱스에서 거꾸로 세기
-  // 빈 열이 많은 경우 데이터 있는 컬럼만 카운트해서 한 칸씩 어긋날 수 있음 → 연속된 모든 컬럼 사용
+  // 3) dataStartCol 결정 — 첫 월 컬럼 위치를 정답으로 사용
+  // 라벨 컬럼들(prd/country/channel/example/no 등) 사이에 비-월 컬럼이 있어도 무시됨
+  let dataStartCol = 2
+  if (monthLabels.length > 0) {
+    dataStartCol = Math.min(...monthLabels.map(m => m.col))
+  } else if (countryCol >= 0 && channelCol >= 0) {
+    dataStartCol = Math.max(countryCol, channelCol, prdCol) + 1
+  } else {
+    const firstDataRow = rows[startRow]
+    if (firstDataRow && !String(firstDataRow[0] || '').trim()) {
+      countryCol = 1; channelCol = 2; dataStartCol = 3
+    } else {
+      countryCol = 0; channelCol = 1; dataStartCol = 2
+    }
+  }
+
+  // 4) Country/Channel 위치 fallback (헤더에 없을 때)
+  if (countryCol < 0 || channelCol < 0) {
+    const firstDataRow = rows[startRow]
+    const offset = firstDataRow && !String(firstDataRow[0] || '').trim() ? 1 : 0
+    if (countryCol < 0) countryCol = offset
+    if (channelCol < 0) channelCol = offset + 1
+  }
+
+  // 5) 라벨 없는 데이터 컬럼 역산 — dataStartCol 기준으로 firstLabeled에서 거꾸로
+  // dataStartCol = 첫 월 컬럼이므로 보통 gap=0이지만, 헤더에 'Mar', 'Apr' 만 있고
+  // 그 이전이 비어있는데 데이터가 들어있는 케이스를 보정
   if (monthLabels.length > 0) {
     monthLabels.sort((a, b) => a.col - b.col)
     const firstLabeled = monthLabels[0]
     const firstMonthIdx = MONTHS_ORDER.indexOf(firstLabeled.label)
+    // 라벨 컬럼들(country/channel/prd) 보다 뒤이면서 firstLabeled 보다 앞인 컬럼만 후보
+    const labelCols = new Set([countryCol, channelCol, prdCol].filter(c => c >= 0))
     if (firstMonthIdx > 0 && firstLabeled.col > dataStartCol) {
-      const gap = firstLabeled.col - dataStartCol  // 빈 칸 포함 모든 컬럼
-      for (let k = 1; k <= gap; k++) {
-        const targetCol = firstLabeled.col - k
-        if (seenCols.has(targetCol)) continue
-        const mi = firstMonthIdx - k
-        if (mi < 0) break
-        monthLabels.push({ col: targetCol, label: MONTHS_ORDER[mi] })
-        seenCols.add(targetCol)
+      let mi = firstMonthIdx - 1
+      for (let c = firstLabeled.col - 1; c >= dataStartCol && mi >= 0; c--) {
+        if (seenCols.has(c) || labelCols.has(c)) continue
+        // 헤더(또는 위 행)에 비-월 텍스트가 있으면 비-데이터 컬럼 → 스킵
+        const ht = String(header[c] || '').trim()
+        const mt = headerIdx > 0 ? String((rows[headerIdx - 1] || [])[c] || '').trim() : ''
+        if (ht || mt) continue
+        monthLabels.push({ col: c, label: MONTHS_ORDER[mi] })
+        seenCols.add(c)
+        mi--
       }
     }
   }
