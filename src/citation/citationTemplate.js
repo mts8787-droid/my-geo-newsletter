@@ -24,7 +24,8 @@ const T = {
     insight: 'INSIGHT', howToRead: 'HOW TO READ',
     dotcomLgWin: 'LG 우위', dotcomSsWin: 'SS 우위', dotcomNone: '없음',
     dotcomTTL: 'TTL (전체)', dotcomLgOnly: '— (LG only)',
-    citLegend: 'Citation Score 건수 (비중)',
+    citLegend: 'Citation URL 수',
+    byProductFootnote: '제품별 Citation URL 수의 경우, 제품별 Prompt의 수가 상이하여 비중으로 표시함',
     footer: '해외영업본부 D2C해외영업그룹 D2C마케팅담당 D2C디지털마케팅팀',
   },
   en: {
@@ -34,7 +35,8 @@ const T = {
     insight: 'INSIGHT', howToRead: 'HOW TO READ',
     dotcomLgWin: 'LG Leads', dotcomSsWin: 'SS Leads', dotcomNone: 'None',
     dotcomTTL: 'TTL (Total)', dotcomLgOnly: '— (LG only)',
-    citLegend: 'Citation Score Count (Ratio)',
+    citLegend: 'Citation URL Count',
+    byProductFootnote: 'By Product Citation URL counts are shown as ratios since prompt counts differ across products',
     footer: 'Overseas Sales HQ · D2C Digital Marketing Team',
   },
 }
@@ -748,6 +750,7 @@ body{background:#F1F5F9;font-family:${FONT};min-width:1200px;color:#1A1A1A}
 .trend-val{font-weight:700;color:#1A1A1A;margin-right:4px}
 .trend-rank{font-size:13px;color:#94A3B8;font-weight:600}
 .trend-type{color:#94A3B8;font-size:14px}
+.cit-footnote{margin-top:12px;font-size:12px;color:#64748B;font-style:italic;padding:8px 12px;background:#F8FAFC;border-radius:6px;border-left:3px solid #CBD5E1}
 </style>
 </head>
 <body>
@@ -789,6 +792,7 @@ var _meta=${JSON.stringify({
   showCitDomain: meta.showCitDomain,
   showCitCnty: meta.showCitCnty,
   showDotcom: meta.showDotcom,
+  byProductMode: meta.byProductMode || 'count',
 })};
 var _lang='${lang}';
 var _noDataMsg=_lang==='en'?'No data available for the selected filter.':'선택된 필터에 해당하는 데이터가 없습니다.';
@@ -811,10 +815,12 @@ function _citCatRows(cits,topN){
   }).join('');
 }
 // topColor: 상위 3 막대 색 (기본 #CF0652). 연한 색 변형은 '#F87171' 권장.
-function _citVBar(cits,topN,isSmall,topColor){
+// isRatio: true 면 라벨을 "% (cits 합 대비)" 로 표시 — 제품별 카드의 ratio 모드용.
+function _citVBar(cits,topN,isSmall,topColor,isRatio){
   if(!cits||!cits.length)return'<div style="text-align:center;padding:12px;color:#94A3B8;font-size:12px">'+_noDataMsg+'</div>';
   var list=cits.slice(0,topN);
   var maxScore=Math.max.apply(null,list.map(function(c){return c.score}).concat([1]));
+  var totalForRatio=isRatio?cits.reduce(function(s,c){return s+(c.score||0)},0):0;
   var BAR_H=isSmall?50:110;
   var LABEL_H=isSmall?30:36;
   var fs=isSmall?12:14;
@@ -823,8 +829,9 @@ function _citVBar(cits,topN,isSmall,topColor){
   return '<div style="display:flex;gap:'+(isSmall?'4':'6')+'px;padding:'+(isSmall?'4px 0 0':'8px 0 0')+';overflow-x:auto;align-items:flex-end">'+list.map(function(c,i){
     var h=Math.max(3,Math.round(c.score/maxScore*BAR_H));
     var color=i<3?tc:'#94A3B8';
+    var valLabel=isRatio?(totalForRatio>0?((c.score/totalForRatio)*100).toFixed(1)+'%':'0%'):_fmt(c.score);
     return '<div style="display:flex;flex-direction:column;align-items:center;flex:1;min-width:'+(isSmall?'36px':'0')+'">'
-      +'<span style="font-size:'+fs+'px;font-weight:700;color:'+color+';margin-bottom:2px">'+_fmt(c.score)+'</span>'
+      +'<span style="font-size:'+fs+'px;font-weight:700;color:'+color+';margin-bottom:2px">'+valLabel+'</span>'
       +'<div style="width:100%;height:'+h+'px;background:'+color+';border-radius:3px 3px 0 0;min-height:3px"></div>'
       +'<div style="height:'+LABEL_H+'px;display:flex;align-items:flex-start;justify-content:center;padding-top:3px"><span style="font-size:'+fsl+'px;color:#64748B;text-align:center;line-height:1.2;word-break:break-all;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">'+c.source+'</span></div>'
       +'</div>';
@@ -865,16 +872,18 @@ function renderCitCat(cits,prdData,enabledCntys){
   }
 
   // By Product (국가 필터 반영, 연한 붉은색)
+  var isRatio=_meta.byProductMode==='ratio';
   var prdSrc=prdData||_citationsByPrd||{};
   var prdCards=[];
   Object.keys(prdSrc).sort().forEach(function(prd){
     var list=prdSrc[prd];
     if(!list||!list.length)return;
     list=list.slice().sort(function(a,b){return b.score-a.score});
-    prdCards.push(_vbarCard(prd,_citVBar(list,8,true,'#F87171')));
+    prdCards.push(_vbarCard(prd,_citVBar(list,8,true,'#F87171',isRatio)));
   });
   if(prdCards.length){
     body+=_subSection(_lang==='en'?'By Product':'제품별',prdCards.join(''));
+    if(isRatio)body+='<div class="cit-footnote">'+_t.byProductFootnote+'</div>';
   }
 
   el.innerHTML='<div class="section-card"><div class="section-header"><div class="section-title">'+_t.citationTitle+'</div><span class="legend">'+_t.citLegend+'</span></div><div class="section-body">'+body+'</div></div>';
@@ -925,14 +934,16 @@ function renderCitDom(citCnty,useAgg,prdData,enabledCntys){
   }
 
   // By Product (국가 필터 반영 — 개별 도메인 × 제품별, 연한 붉은색)
+  var isRatio=_meta.byProductMode==='ratio';
   var prdCards=[];
   (rows||[]).forEach(function(d){
     var prdList=_domainByProduct(d.domain,prdData);
     if(!prdList.length)return;
-    prdCards.push(_vbarCard(_stripDomain(d.domain),_citVBar(prdList,8,true,'#F87171')));
+    prdCards.push(_vbarCard(_stripDomain(d.domain),_citVBar(prdList,8,true,'#F87171',isRatio)));
   });
   if(prdCards.length){
     body+=_subSection(_lang==='en'?'By Product':'제품별',prdCards.join(''));
+    if(isRatio)body+='<div class="cit-footnote">'+_t.byProductFootnote+'</div>';
   }
 
   el.innerHTML='<div class="section-card"><div class="section-header"><div class="section-title">'+_t.citDomainTitle+'</div><span class="legend">Top '+topN+' Domains</span></div><div class="section-body">'+body+'</div></div>';

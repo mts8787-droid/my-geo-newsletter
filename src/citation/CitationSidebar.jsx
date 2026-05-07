@@ -274,6 +274,25 @@ export default function CitationSidebar({
             style={{ ...inputStyle, fontSize: 11, lineHeight: 1.6 }} />
         </div>
 
+        {/* ── 제품별 표시 모드 ── */}
+        <div style={{ marginBottom: 16 }}>
+          <span style={{ fontSize: 11, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: 1, fontFamily: FONT, display: 'block', marginBottom: 8 }}>제품별 표시</span>
+          <div style={{ display: 'flex', gap: 6 }}>
+            <button onClick={() => setMeta(m => ({ ...m, byProductMode: 'count' }))}
+              style={{ flex: 1, padding: '6px 10px', borderRadius: 6, border: 'none', cursor: 'pointer', fontSize: 11, fontWeight: 700, fontFamily: FONT,
+                background: (meta.byProductMode || 'count') === 'count' ? '#CF0652' : '#1E293B',
+                color: (meta.byProductMode || 'count') === 'count' ? '#FFF' : '#64748B' }}>
+              실제 수치
+            </button>
+            <button onClick={() => setMeta(m => ({ ...m, byProductMode: 'ratio' }))}
+              style={{ flex: 1, padding: '6px 10px', borderRadius: 6, border: 'none', cursor: 'pointer', fontSize: 11, fontWeight: 700, fontFamily: FONT,
+                background: meta.byProductMode === 'ratio' ? '#CF0652' : '#1E293B',
+                color: meta.byProductMode === 'ratio' ? '#FFF' : '#64748B' }}>
+              비중 (%)
+            </button>
+          </div>
+        </div>
+
         {/* ── 월간 트렌드 표시 ── */}
         <div style={{ marginBottom: 16 }}>
           <span style={{ fontSize: 11, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: 1, fontFamily: FONT, display: 'block', marginBottom: 8 }}>월간 트렌드 표시</span>
