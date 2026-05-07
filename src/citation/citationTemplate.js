@@ -488,10 +488,16 @@ export function generateCitationHTML(meta, _total, _products, citations, dotcom,
   const rawDotcom = dotcom ? JSON.parse(JSON.stringify(dotcom)) : null
   const rawDotcomByCnty = dotcomByCnty ? JSON.parse(JSON.stringify(dotcomByCnty)) : {}
 
-  // 가용 월 목록 추출
+  // 가용 월 목록 추출 — TTL이 비는 달도 dropdown에 노출되도록 모든 소스에서 수집
   const MONTHS_EN = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
   const availableMonths = new Set()
-  if (rawCitations.length) rawCitations.forEach(c => { if (c.monthScores) Object.keys(c.monthScores).forEach(m => availableMonths.add(m)) })
+  const collectMonths = list => list && list.forEach(c => { if (c.monthScores) Object.keys(c.monthScores).forEach(m => availableMonths.add(m)) })
+  collectMonths(rawCitations)
+  Object.values(rawCitationsByCnty).forEach(collectMonths)
+  Object.values(rawCitationsByPrd).forEach(collectMonths)
+  collectMonths(rawCitationsCnty)
+  if (rawDotcom?.byMonth) Object.keys(rawDotcom.byMonth).forEach(m => availableMonths.add(m))
+  if (rawDotcom?.byCntyByMonth) Object.keys(rawDotcom.byCntyByMonth).forEach(m => availableMonths.add(m))
   const sortedAvailMonths = MONTHS_EN.filter(m => availableMonths.has(m))
 
   // ── meta.period에서 선택된 월 추출 → 해당 월 데이터로 교체 ──
