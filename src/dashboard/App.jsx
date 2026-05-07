@@ -53,7 +53,7 @@ export default function App() {
   const [trackerData, setTrackerData] = useState(null)
   const [publishing, setPublishing] = useState(false)
   const [publishMsg, setPublishMsg] = useState('')
-  const [includeTracker, setIncludeTracker] = useState(false)
+  const [includeReadability, setIncludeReadability] = useState(false)
   const [includePromptList, setIncludePromptList] = useState(false)
 
   // Hash routing
@@ -87,7 +87,7 @@ export default function App() {
     if (publishing) return
     setPublishing(true); setPublishMsg('')
     try {
-      const result = await publishCombinedDashboard(generateDashboardHTML, resolveDataForLang, { includeProgressTracker: includeTracker, includePromptList })
+      const result = await publishCombinedDashboard(generateDashboardHTML, resolveDataForLang, { includePromptList, includeReadability })
       setPublishMsg(`게시 완료!\nKO: ${window.location.origin}${result.urls.ko}\nEN: ${window.location.origin}${result.urls.en}`)
       fetch('/api/publish-history').then(r => r.ok ? r.json() : null).then(d => { if (d) setPublishData(d) })
     } catch (err) {
@@ -282,10 +282,10 @@ export default function App() {
                 </a>
               )}
 
-              {/* Progress Tracker 포함 토글 */}
+              {/* Readability 포함 토글 (기본 OFF) */}
               <label style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4, fontSize: 11, color: '#94A3B8', fontFamily: FONT, cursor: 'pointer' }}>
-                <input type="checkbox" checked={includeTracker} onChange={e => setIncludeTracker(e.target.checked)} style={{ cursor: 'pointer' }} />
-                Progress Tracker 포함
+                <input type="checkbox" checked={includeReadability} onChange={e => setIncludeReadability(e.target.checked)} style={{ cursor: 'pointer' }} />
+                Readability 포함
               </label>
               {/* Prompt List 포함 토글 */}
               <label style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8, fontSize: 11, color: '#94A3B8', fontFamily: FONT, cursor: 'pointer' }}>

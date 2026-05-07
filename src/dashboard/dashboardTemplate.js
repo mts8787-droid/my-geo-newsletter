@@ -1262,15 +1262,12 @@ export function generateDashboardHTML(meta, total, products, citations, dotcom, 
     return { ...p, compName: match[0], vsComp: compScore, compRatio: ratio, status: ratio >= 100 ? 'lead' : ratio >= 80 ? 'behind' : 'critical' }
   })
   const visibilityOnly = opts?.visibilityOnly || false
-  const includeProgressTracker = opts?.includeProgressTracker === true
   const includePromptList = opts?.includePromptList || false
+  const includeReadability = opts?.includeReadability === true
   const ulMap = extra?.unlaunchedMap || {}
-  const trackerComingSoonMsg = lang === 'en' ? 'Progress Tracker will be available soon.' : '준비 중입니다. 곧 제공될 예정입니다.'
-  // 트래커는 v2(geo-progress-tracker-v2 통합본)만 사용
+  // 트래커는 v2(geo-progress-tracker-v2 통합본)만 사용 — 항상 포함
   const trackerSrc = `/p/progress-tracker-v2/?lang=${lang}`
-  const trackerTabContent = includeProgressTracker
-    ? `<iframe id="tracker-iframe" src="${trackerSrc}" style="width:100%;min-height:calc(100vh - 60px);border:none;background:#0A0F1E" title="Progress Tracker"></iframe>`
-    : `<div class="progress-placeholder"><div class="inner"><div class="icon">⏳</div><h2>Coming Soon</h2><p>${trackerComingSoonMsg}</p></div></div>`
+  const trackerTabContent = `<iframe id="tracker-iframe" src="${trackerSrc}" style="width:100%;min-height:calc(100vh - 60px);border:none;background:#0A0F1E" title="Progress Tracker"></iframe>`
   // _sid는 dashboardSvg.js의 모듈 카운터 — 단조 증가로 ID 고유성 충분 (리셋 불필요)
   const t = T[lang] || T.ko
 
@@ -1483,8 +1480,8 @@ ${visibilityOnly ? `
   <div style="display:flex;gap:4px;align-items:center">
     <button class="tab-btn active" onclick="switchTab('visibility')">Visibility</button>
     <button class="tab-btn" onclick="switchTab('citation')">Citation</button>
-    <button class="tab-btn" onclick="switchTab('readability')">Readability</button>
-    ${includeProgressTracker ? `<button class="tab-btn" onclick="switchTab('progress')">Progress Tracker</button>` : ''}
+    ${includeReadability ? `<button class="tab-btn" onclick="switchTab('readability')">Readability</button>` : ''}
+    <button class="tab-btn" onclick="switchTab('progress')">Progress Tracker</button>
     ${includePromptList ? `<button class="tab-btn" onclick="switchTab('promptlist')">Prompt List</button>` : ''}
     <button class="tab-btn" onclick="switchTab('glossary')">Glossary</button>
   </div>
@@ -1523,13 +1520,13 @@ ${visibilityOnly ? `
     <iframe id="cit-iframe-dc" data-src="/p/${lang === 'en' ? 'GEO-Citation-Dashboard-EN' : 'GEO-Citation-Dashboard-KO'}?tab=dotcom" style="width:100%;min-height:calc(100vh - 100px);border:none;background:#F1F5F9" title="Citation - Dotcom"></iframe>
   </div>
 </div>
-<div id="tab-readability" class="tab-panel">
+${includeReadability ? `<div id="tab-readability" class="tab-panel">
   <div class="progress-placeholder"><div class="inner">
     <div class="icon">📖</div>
     <h2>Readability</h2>
     <p>${t.readabilityMsg}</p>
   </div></div>
-</div>
+</div>` : ''}
 <div id="tab-progress" class="tab-panel">
   ${trackerTabContent}
 </div>

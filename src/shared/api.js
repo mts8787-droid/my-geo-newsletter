@@ -90,7 +90,7 @@ export async function fetchSyncMeta(mode) {
 }
 
 export async function publishCombinedDashboard(generateDashboardHTML, resolveDataForLang, options = {}) {
-  const { includeProgressTracker = false, includePromptList = false } = options
+  const { includePromptList = false, includeReadability = false } = options
   // dashboard + visibility sync 데이터 병합 (양쪽에서 최선의 데이터 확보)
   const [dDash, dVis] = await Promise.all([
     fetchSyncData('dashboard').catch(() => null),
@@ -141,7 +141,7 @@ export async function publishCombinedDashboard(generateDashboardHTML, resolveDat
     prTopicList: d.prTopicList || [],
     weeklyLabelsFull: d.weeklyLabelsFull || [],
   }
-  const opts = { monthlyVis: d.monthlyVis || [], includeProgressTracker, includePromptList }
+  const opts = { monthlyVis: d.monthlyVis || [], includePromptList, includeReadability }
   const htmlKo = generateDashboardHTML(meta, total, resolvedKo.products, resolvedKo.citations, dotcom, 'ko', resolvedKo.productsCnty, resolvedKo.citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty, opts, extra)
   const htmlEn = generateDashboardHTML({ ...meta, title: meta.title || 'GEO KPI Dashboard' }, total, resolvedEn.products, resolvedEn.citations, dotcom, 'en', resolvedEn.productsCnty, resolvedEn.citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty, opts, extra)
   const title = `${meta.period || ''} ${meta.title || 'KPI Dashboard'}`.trim()
