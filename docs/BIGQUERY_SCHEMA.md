@@ -43,7 +43,7 @@ SEMrush API
 | 분류체계 | `prompt_master` | 14 | raw / weekly. SEMrush + PIC 정의 |
 | 원천 | `visibility` | 12 | raw / weekly. LG·경쟁사 가시성 |
 |  | `citation` | 13 | raw / monthly. 프롬프트 기반 인용 |
-| 리포트 | `report_visibility` | 9 | transform / weekly. 가시성 평균(%) |
+| 리포트 | `report_visibility` | 9 | transform / weekly. 가시성 평균(%) · ⚠️ **5월 업데이트 예정** |
 |  | `report_citation` | 24 | transform / monthly. 인용 분류·집계 |
 | 매핑 | `competitor_brand` | 4 | mapping / static. LG·경쟁사 분류 |
 |  | `domain_mapping` | 3 | mapping / static. 도메인 유형 분류 |
