@@ -830,25 +830,14 @@ function _subSection(label,cardsHtml){
     +'<div style="font-size:14px;font-weight:700;color:#64748B;margin-bottom:10px">'+label+'</div>'
     +'<div style="display:flex;flex-wrap:wrap;gap:12px">'+cardsHtml+'</div></div>';
 }
-function renderCitCat(cits){
+// prdData: 국가 필터 적용된 제품별 채널 데이터 ({prd: [{source, score}]})
+function renderCitCat(cits,prdData){
   var el=document.getElementById('cit-cat-wrap');
   if(!el)return;
   var topN=_meta.citationTopN||10;
   var body=_citVBar(cits,topN,false);
 
-  // By Product (제품별 — 도메인 카테고리별 하위, 연한 붉은색)
-  var prdCards=[];
-  Object.keys(_citationsByPrd||{}).sort().forEach(function(prd){
-    var list=_citationsByPrd[prd];
-    if(!list||!list.length)return;
-    list=list.slice().sort(function(a,b){return b.score-a.score});
-    prdCards.push(_vbarCard(prd,_citVBar(list,8,true,'#F87171')));
-  });
-  if(prdCards.length){
-    body+=_subSection(_lang==='en'?'By Product':'제품별',prdCards.join(''));
-  }
-
-  // By Country
+  // By Country (먼저)
   var countries=['US','CA','UK','DE','ES','BR','MX','AU','VN','IN'];
   var cntyCards=[];
   countries.forEach(function(cnty){
@@ -860,14 +849,29 @@ function renderCitCat(cits){
   if(cntyCards.length){
     body+=_subSection('By Country',cntyCards.join(''));
   }
+
+  // By Product (국가 필터 반영, 연한 붉은색)
+  var prdSrc=prdData||_citationsByPrd||{};
+  var prdCards=[];
+  Object.keys(prdSrc).sort().forEach(function(prd){
+    var list=prdSrc[prd];
+    if(!list||!list.length)return;
+    list=list.slice().sort(function(a,b){return b.score-a.score});
+    prdCards.push(_vbarCard(prd,_citVBar(list,8,true,'#F87171')));
+  });
+  if(prdCards.length){
+    body+=_subSection(_lang==='en'?'By Product':'제품별',prdCards.join(''));
+  }
+
   el.innerHTML='<div class="section-card"><div class="section-header"><div class="section-title">'+_t.citationTitle+'</div><span class="legend">'+_t.citLegend+'</span></div><div class="section-body">'+body+'</div></div>';
 }
-// 도메인별 → 제품별 분해: 채널 source(citationsByPrd)와 도메인을 stripDomain 후 lowercase 매칭
-function _domainByProduct(domain){
+// 도메인별 → 제품별 분해: 채널 source와 도메인을 stripDomain 후 lowercase 매칭
+function _domainByProduct(domain,prdData){
+  var src=prdData||_citationsByPrd||{};
   var dKey=_stripDomain(domain).toLowerCase();
   var result=[];
-  Object.keys(_citationsByPrd||{}).forEach(function(prd){
-    var list=_citationsByPrd[prd]||[];
+  Object.keys(src).forEach(function(prd){
+    var list=src[prd]||[];
     var match=list.find(function(c){return _stripDomain(c.source).toLowerCase()===dKey});
     if(match&&match.score>0)result.push({source:prd,score:match.score});
   });
@@ -879,7 +883,7 @@ function _domToVBarData(rows,topN){
   var list=rows.slice(0,topN);
   return list.map(function(r){return{source:_stripDomain(r.domain),score:r.citations}});
 }
-function renderCitDom(citCnty,useAgg){
+function renderCitDom(citCnty,useAgg,prdData){
   var el=document.getElementById('cit-dom-wrap');
   if(!el)return;
   var topN=_meta.citDomainTopN||10;var rows;
@@ -893,18 +897,7 @@ function renderCitDom(citCnty,useAgg){
   // 전체 세로 막대그래프
   var body=_citVBar(_domToVBarData(rows||[],topN),topN,false);
 
-  // By Product (개별 도메인 × 제품별 사이테이션 수, 연한 붉은색)
-  var prdCards=[];
-  (rows||[]).forEach(function(d){
-    var prdList=_domainByProduct(d.domain);
-    if(!prdList.length)return;
-    prdCards.push(_vbarCard(_stripDomain(d.domain),_citVBar(prdList,8,true,'#F87171')));
-  });
-  if(prdCards.length){
-    body+=_subSection(_lang==='en'?'By Product':'제품별',prdCards.join(''));
-  }
-
-  // By Country
+  // By Country (먼저)
   var countries=['US','CA','UK','DE','ES','BR','MX','AU','VN','IN'];
   var cntyCards=[];
   countries.forEach(function(cnty){
@@ -915,6 +908,18 @@ function renderCitDom(citCnty,useAgg){
   if(cntyCards.length){
     body+=_subSection('By Country',cntyCards.join(''));
   }
+
+  // By Product (국가 필터 반영 — 개별 도메인 × 제품별, 연한 붉은색)
+  var prdCards=[];
+  (rows||[]).forEach(function(d){
+    var prdList=_domainByProduct(d.domain,prdData);
+    if(!prdList.length)return;
+    prdCards.push(_vbarCard(_stripDomain(d.domain),_citVBar(prdList,8,true,'#F87171')));
+  });
+  if(prdCards.length){
+    body+=_subSection(_lang==='en'?'By Product':'제품별',prdCards.join(''));
+  }
+
   el.innerHTML='<div class="section-card"><div class="section-header"><div class="section-title">'+_t.citDomainTitle+'</div><span class="legend">Top '+topN+' Domains</span></div><div class="section-body">'+body+'</div></div>';
 }
 
@@ -1051,11 +1056,35 @@ function applyFilter(){
     merged.forEach(function(c,i){c.rank=i+1;c.ratio=total>0?+((c.score/total)*100).toFixed(1):0});
     if(merged.length>0)filteredCit=merged;
   }
-  renderCitCat(filteredCit);
+
+  // 제품별 채널 데이터 — 국가 필터 반영
+  // 전체 선택: _citationsByPrd (TTL/aggregated 뷰) 그대로
+  // 일부 선택: _citationsByCnty[cnty][i].prd 로 매칭해 채널별 score 합산
+  var prdData=null;
+  if(noneSelected){
+    prdData={};
+  }else if(allSelected){
+    prdData=_citationsByPrd;
+  }else{
+    prdData={};
+    Object.keys(_citationsByPrd||{}).forEach(function(prd){
+      var ch={};
+      enabled.forEach(function(cnty){
+        (_citationsByCnty[cnty]||[]).forEach(function(c){
+          if(c.prd!==prd)return;
+          if(!ch[c.source])ch[c.source]={source:c.source,score:0};
+          ch[c.source].score+=c.score;
+        });
+      });
+      var list=Object.values(ch).sort(function(a,b){return b.score-a.score});
+      if(list.length)prdData[prd]=list;
+    });
+  }
+  renderCitCat(filteredCit,prdData);
 
   // 도메인 Citation
   var filteredCitCnty=noneSelected?[]:(_citationsCnty||[]).filter(function(r){return r.cnty==='TTL'||enabled.includes(r.cnty)});
-  renderCitDom(filteredCitCnty,!allSelected&&!noneSelected);
+  renderCitDom(filteredCitCnty,!allSelected&&!noneSelected,prdData);
 
   // 닷컴 Citation
   var filteredDc=_dotcom;

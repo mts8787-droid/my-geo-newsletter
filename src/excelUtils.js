@@ -1125,7 +1125,8 @@ function parseCitTouchPoints(rows) {
       }
     } else if (score > 0) {
       if (!citationsByCnty[country]) citationsByCnty[country] = []
-      citationsByCnty[country].push({ source: channel, category: '', score, delta: 0, ratio: 0, monthScores })
+      // prd 필드 보존 — 클라이언트에서 By Product 국가 필터 시 사용
+      citationsByCnty[country].push({ source: channel, category: '', score, delta: 0, ratio: 0, monthScores, prd: prd || '' })
       // 제품별 비TTL 행 — channel 기준 합산 (AU/VN 등 국가별 PRD 입력 케이스)
       if (prd) {
         if (!citationsByPrdAgg[prd]) citationsByPrdAgg[prd] = {}
