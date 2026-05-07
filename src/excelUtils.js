@@ -1113,22 +1113,27 @@ function parseCitTouchPoints(rows) {
       if (v && v > 0) { score = v; break }
     }
 
+    const prdU = prd.toUpperCase()
+    const isPrdTtl = !prd || prdU === 'TTL' || prdU === 'TOTAL'
+
     if (country === 'TTL' || country === 'TOTAL') {
-      if (score > 0) citations.push({ source: channel, category: '', score, delta: 0, ratio: 0, monthScores })
-      if (Object.keys(monthScores).length > 0) {
-        citTouchPointsTrend[channel] = monthScores
-      }
-      // 제품별 TTL 행
-      if (prd && score > 0) {
+      // 상단 차트/트렌드: PRD=TTL 행만 사용 (PRD별 행은 citationsByPrdTtl로)
+      if (isPrdTtl) {
+        if (score > 0) citations.push({ source: channel, category: '', score, delta: 0, ratio: 0, monthScores })
+        if (Object.keys(monthScores).length > 0) {
+          citTouchPointsTrend[channel] = monthScores
+        }
+      } else if (score > 0) {
+        // 제품별 TTL 행 (Country=TTL, PRD=특정 제품)
         if (!citationsByPrdTtl[prd]) citationsByPrdTtl[prd] = []
         citationsByPrdTtl[prd].push({ source: channel, category: '', score, delta: 0, ratio: 0, monthScores })
       }
     } else if (score > 0) {
+      // citationsByCnty: PRD=TTL은 prd='' 로, PRD=특정제품은 prd=제품명으로 보존 (By Product 매칭용)
       if (!citationsByCnty[country]) citationsByCnty[country] = []
-      // prd 필드 보존 — 클라이언트에서 By Product 국가 필터 시 사용
-      citationsByCnty[country].push({ source: channel, category: '', score, delta: 0, ratio: 0, monthScores, prd: prd || '' })
-      // 제품별 비TTL 행 — channel 기준 합산 (AU/VN 등 국가별 PRD 입력 케이스)
-      if (prd) {
+      citationsByCnty[country].push({ source: channel, category: '', score, delta: 0, ratio: 0, monthScores, prd: isPrdTtl ? '' : prd })
+      if (!isPrdTtl) {
+        // 제품별 비TTL 행 — channel 기준 합산 (AU/VN 등 국가별 PRD 입력 케이스)
         if (!citationsByPrdAgg[prd]) citationsByPrdAgg[prd] = {}
         if (!citationsByPrdAgg[prd][channel]) {
           citationsByPrdAgg[prd][channel] = { source: channel, category: '', score: 0, delta: 0, ratio: 0, monthScores: {} }
