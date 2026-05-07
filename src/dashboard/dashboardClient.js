@@ -138,12 +138,12 @@ function switchVisWeek(idx){
   var label=sel&&sel.options[sel.selectedIndex]?sel.options[sel.selectedIndex].textContent:_wLabels[idx];
   var badge=document.getElementById('period-weekly-badge');
   if(badge)badge.textContent=label+' '+(_curLang==='en'?'data':'기준');
-  // 제품 카드/Hero 재계산
+  // 제품 카드/Hero/트렌드 재계산 (filterTrend 내부에서 _trendMultiSvg가 _curWeekIdx로 truncate)
   if(typeof onFilterChange==='function')onFilterChange();
   else if(typeof updateHeroFromCheckboxes==='function')updateHeroFromCheckboxes();
-  // 하단 트렌드 차트 truncate
-  _updateTrendCharts();
+  _truncateTrendTable('#trend-container',_wLabels.length,_curWeekIdx);
 }
+// _monthOptsRaw가 항상 3-letter('Jan'..'Dec')로 정규화되므로 dropdown 텍스트로 캘린더 인덱스 역산 안전
 function switchVisMonth(idx){
   _curMonthIdx=idx;
   var sel=document.getElementById('vis-month-select');
@@ -153,7 +153,11 @@ function switchVisMonth(idx){
   var mb=document.getElementById('period-badge');
   if(mb)mb.textContent=monthName;
   _applyMonthSelectionOverride();
-  _updateMonthlyTrendCharts();
+  // #monthly-trend-container 재렌더 (updateMonthlyTrend 내부에서 _trendMultiSvg가 _curMonthIdxIn12로 truncate)
+  if(typeof updateMonthlyTrend==='function'&&typeof getCheckedValues==='function'){
+    updateMonthlyTrend(getCheckedValues('country'));
+  }
+  _truncateTrendTable('#monthly-trend-container',12,_curMonthIdxIn12);
 }
 // 월 드롭다운으로 선택된 월의 점수/경쟁비를 카드에 덮어쓰기
 function _applyMonthSelectionOverride(){
@@ -181,41 +185,16 @@ function _applyMonthSelectionOverride(){
     var compPctEl=card.querySelector('.prod-comp-pct');if(compPctEl){compPctEl.textContent=compPct+'%';compPctEl.style.color=cc}
   });
 }
-// 하단 주간 트렌드 차트 truncate — SVG는 clip-path, 표 셀은 display:none
-function _updateTrendCharts(){
-  var N=_wLabels.length;if(!N)return;
-  var endIdx=_curWeekIdx<0||_curWeekIdx>=N?N-1:_curWeekIdx;
-  var rightClipPct=Math.max(0,(N-endIdx-1)/N)*100;
-  var rows=document.querySelectorAll('#trend-container .trend-row');
-  rows.forEach(function(row){
-    var svg=row.querySelector('svg');
-    if(svg)svg.style.clipPath='inset(0 '+rightClipPct.toFixed(2)+'% 0 0)';
+// 트렌드 표 셀 truncate (SVG는 _trendMultiSvg(...,endIdx)에서 처리). endIdx<0 이면 전체 표시.
+function _truncateTrendTable(containerSel,N,endIdx){
+  if(!N)return;
+  var lim=(endIdx>=0&&endIdx<N)?endIdx:N-1;
+  document.querySelectorAll(containerSel+' .trend-row').forEach(function(row){
     row.querySelectorAll('table > tbody > tr').forEach(function(tr){
       var cells=tr.children;
       if(cells.length<=2)return;  // chart row / legend row (colspan)
       for(var i=1;i<cells.length;i++){
-        var weekIdx=i-1;
-        cells[i].style.display=weekIdx>endIdx?'none':'';
-      }
-    });
-  });
-}
-// 하단 월간 트렌드 차트 truncate — 12개월 기준 (0=Jan, 11=Dec)
-function _updateMonthlyTrendCharts(){
-  if(_curMonthIdxIn12<0)return;
-  var N=12;
-  var endIdx=_curMonthIdxIn12;
-  var rightClipPct=Math.max(0,(N-endIdx-1)/N)*100;
-  var rows=document.querySelectorAll('#monthly-trend-container .trend-row');
-  rows.forEach(function(row){
-    var svg=row.querySelector('svg');
-    if(svg)svg.style.clipPath='inset(0 '+rightClipPct.toFixed(2)+'% 0 0)';
-    row.querySelectorAll('table > tbody > tr').forEach(function(tr){
-      var cells=tr.children;
-      if(cells.length<=2)return;
-      for(var i=1;i<cells.length;i++){
-        var monthIdx=i-1;
-        cells[i].style.display=monthIdx>endIdx?'none':'';
+        cells[i].style.display=(i-1)>lim?'none':'';
       }
     });
   });
@@ -479,18 +458,20 @@ var _REGIONS=${S(Object.fromEntries(Object.entries(REGIONS).map(([k, v]) => [k, 
 })()}
 var _REGION_LABELS=${JSON.stringify(Object.fromEntries(Object.entries(REGIONS).map(([k, v]) => [k, lang === 'en' ? v.labelEn : v.label]))).replace(/<\//g, '<\\/')};
 function _brandColor(name,idx){return _BRAND_COLORS[name]||_FALLBACK[idx%_FALLBACK.length]}
-function _trendMultiSvg(brandData,labels,w,h){
+// endIdx: 0..N-1 까지만 라인/포인트 그림 (-1 또는 미지정 = 전체). 배경 가로선은 항상 풀 폭.
+function _trendMultiSvg(brandData,labels,w,h,endIdx){
   var brands=Object.keys(brandData);if(!brands.length||!labels.length)return'';
   var mn=Infinity,mx=-Infinity;
   brands.forEach(function(b){(brandData[b]||[]).forEach(function(v){if(v!=null){if(v<mn)mn=v;if(v>mx)mx=v}})});
   if(!isFinite(mn))return'';
   var pad=Math.max((mx-mn)*0.15,2);mn=Math.max(0,mn-pad);mx=Math.min(100,mx+pad);var rng=mx-mn||1;
   var N=labels.length;var pt=8,pb=8,ch=h-pt-pb;var g='';
+  var maxI=(typeof endIdx==='number'&&endIdx>=0&&endIdx<N)?endIdx:N-1;
   for(var i=0;i<=4;i++){var y=pt+(i/4)*ch;g+='<line x1="0" y1="'+y.toFixed(1)+'" x2="'+w+'" y2="'+y.toFixed(1)+'" stroke="#E8EDF2" stroke-width="1"/>';}
   brands.forEach(function(b,bi){
     var vals=brandData[b]||[];var color=_brandColor(b,bi);var isLG=b==='LG';var sw=isLG?2.5:1.5;var op=isLG?1:0.7;
     var pts=[];
-    vals.forEach(function(v,i){if(v!=null){var x=((i+0.5)/N)*w;var y=pt+(1-(v-mn)/rng)*ch;pts.push({x:x,y:y,v:v})}});
+    vals.forEach(function(v,i){if(v!=null&&i<=maxI){var x=((i+0.5)/N)*w;var y=pt+(1-(v-mn)/rng)*ch;pts.push({x:x,y:y,v:v})}});
     if(!pts.length)return;
     if(pts.length>=2){var d=pts.map(function(p,i){return(i?'L':'M')+p.x.toFixed(1)+','+p.y.toFixed(1)}).join(' ');g+='<path d="'+d+'" stroke="'+color+'" fill="none" stroke-width="'+sw+'" stroke-linecap="round" stroke-linejoin="round" opacity="'+op+'"/>';}
     pts.forEach(function(p){g+='<circle cx="'+p.x.toFixed(1)+'" cy="'+p.y.toFixed(1)+'" r="'+(isLG?3.5:2.5)+'" fill="#fff" stroke="'+color+'" stroke-width="'+(isLG?2:1.5)+'" opacity="'+op+'"/>'});
@@ -507,26 +488,6 @@ function _statusInfo(s){
   return{bg:'#F8FAFC',border:'#E2E8F0',color:'#475569',label:'—'};
 }
 var _TREND_BC=${TREND_BRAND_COL};
-function _svgML(bd,labels,w,h){
-  var brands=Object.keys(bd);if(!brands.length||!labels.length)return'';
-  var mn=Infinity,mx=-Infinity;var N=labels.length;
-  brands.forEach(function(b){(bd[b]||[]).forEach(function(v){if(v!=null){if(v<mn)mn=v;if(v>mx)mx=v}})});
-  if(!isFinite(mn))return'';
-  var pad=Math.max((mx-mn)*0.15,2);mn=Math.max(0,mn-pad);mx=Math.min(100,mx+pad);var rng=mx-mn||1;
-  var pt=8,pb=8,ch=h-pt-pb;
-  var g='';
-  for(var i=0;i<=4;i++){var y=pt+(i/4)*ch;
-    g+='<line x1="0" y1="'+y.toFixed(1)+'" x2="'+w+'" y2="'+y.toFixed(1)+'" stroke="#E8EDF2" stroke-width="1"/>';
-  }
-  brands.forEach(function(b,bi){var vals=bd[b]||[];var c=_bc(b,bi);var isLG=b==='LG';var sw=isLG?2.5:1.5;var op=isLG?1:0.7;var pts=[];
-    vals.forEach(function(v,i){if(v==null)return;var x=((i+0.5)/N)*w;var y=pt+(1-(v-mn)/rng)*ch;pts.push({x:x,y:y,v:v})});
-    if(!pts.length)return;
-    if(pts.length>=2){var d=pts.map(function(p,i){return(i?'L':'M')+p.x.toFixed(1)+','+p.y.toFixed(1)}).join(' ');
-    g+='<path d="'+d+'" stroke="'+c+'" fill="none" stroke-width="'+sw+'" stroke-linecap="round" stroke-linejoin="round" opacity="'+op+'"/>';}
-    pts.forEach(function(p){g+='<circle cx="'+p.x.toFixed(1)+'" cy="'+p.y.toFixed(1)+'" r="'+(isLG?3.5:2.5)+'" fill="#fff" stroke="'+c+'" stroke-width="'+(isLG?2:1.5)+'" opacity="'+op+'"/>'});
-  });
-  return '<svg viewBox="0 0 '+w+' '+h+'" width="100%" height="'+h+'" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" style="display:block">'+g+'</svg>';
-}
 
 // ─── Checkbox-based Filter Logic ───
 function onFilterChange(){
@@ -724,7 +685,7 @@ function updateMonthlyTrend(selCountry){
     if(!tbl)return;
     // SVG 재생성
     var svgTd=tbl.querySelector('td[colspan]');
-    if(svgTd){svgTd.innerHTML=_trendMultiSvg(brandData,mLabels,N*80,180)}
+    if(svgTd){svgTd.innerHTML=_trendMultiSvg(brandData,mLabels,N*80,180,_curMonthIdxIn12)}
     // 범례
     var legendTd=tbl.querySelectorAll('tr')[1];
     if(legendTd){
@@ -923,7 +884,7 @@ function filterTrend(selBU,selProd,selCountry){
       var legend=brands.map(function(br,i){var c=_bc(br,i);var isLG=br==='LG';return'<span style="display:inline-flex;align-items:center;gap:3px;margin-right:12px"><i style="display:inline-block;width:10px;height:3px;border-radius:1px;background:'+c+';opacity:'+(isLG?1:0.7)+'"></i><span style="font-size:13px;color:'+(isLG?'#1A1A1A':'#94A3B8')+';font-weight:'+(isLG?700:400)+'">'+br+'</span></span>'}).join('');
       var N=_wLabels.length;
       var colgroup='<colgroup><col style="width:'+_TREND_BC+'px">'+_wLabels.map(function(){return'<col>'}).join('')+'</colgroup>';
-      var chartRow='<tr><td style="padding:0;border:0"></td><td colspan="'+N+'" style="padding:8px 0;border:0">'+_svgML(data,_wLabels,N*80,180)+'</td></tr>';
+      var chartRow='<tr><td style="padding:0;border:0"></td><td colspan="'+N+'" style="padding:8px 0;border:0">'+_trendMultiSvg(data,_wLabels,N*80,180,_curWeekIdx)+'</td></tr>';
       var legendRow='<tr><td style="padding:0;border:0"></td><td colspan="'+N+'" style="padding:4px 0 6px;border:0">'+legend+'</td></tr>';
       var thead='<tr style="border-top:1px solid #E8EDF2"><th style="text-align:left;padding:5px 6px;font-size:14px;color:#94A3B8;font-weight:600;border-bottom:1px solid #F1F5F9">Brand</th>'+_wLabels.map(function(w){return'<th style="text-align:center;padding:5px 2px;font-size:14px;color:#94A3B8;font-weight:600;border-bottom:1px solid #F1F5F9">'+w+'</th>'}).join('')+'</tr>';
       var tbody=brands.map(function(br,i){var c=_bc(br,i);var isLG=br==='LG';var cells=_wLabels.map(function(_,wi){var val=data[br]?data[br][wi]:null;return'<td style="text-align:center;padding:5px 2px;font-size:14px;color:'+(val!=null?(isLG?'#1A1A1A':'#475569'):'#CBD5E1')+';font-weight:'+(isLG?700:400)+';border-bottom:1px solid #F8FAFC;font-variant-numeric:tabular-nums">'+(val!=null?val.toFixed(1):'—')+'</td>'}).join('');return'<tr style="background:'+(isLG?'#FFF8F9':i%2===0?'#fff':'#FAFBFC')+'"><td style="padding:5px 6px;font-size:14px;font-weight:'+(isLG?700:500)+';color:'+c+';border-bottom:1px solid #F8FAFC;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><i style="display:inline-block;width:6px;height:6px;border-radius:50%;background:'+c+';margin-right:4px;vertical-align:0"></i>'+br+'</td>'+cells+'</tr>'}).join('');
@@ -1044,7 +1005,7 @@ function _renderMonthlyTrend(container,selBU,selProd,trendCnty,trendCountries){
       var colgroup='<colgroup><col style="width:'+_TREND_BC+'px">'+ML.map(function(){return'<col>'}).join('')+'</colgroup>';
       // SVG 멀티 라인 차트
       var svgW=N*80;var svgH=180;
-      var chartSvg=_svgML(brandData,ML,svgW,svgH);
+      var chartSvg=_trendMultiSvg(brandData,ML,svgW,svgH,_curMonthIdxIn12);
       // 범례
       var legend=brands.map(function(br,i){var c=_bc(br,i);var isLG=br==='LG';return'<span style="display:inline-flex;align-items:center;gap:3px;margin-right:12px"><i style="display:inline-block;width:10px;height:3px;border-radius:1px;background:'+c+';opacity:'+(isLG?1:0.7)+'"></i><span style="font-size:14px;color:'+(isLG?'#1A1A1A':'#94A3B8')+';font-weight:'+(isLG?700:400)+'">'+br+'</span></span>'}).join('');
       var chartRow='<tr><td style="padding:0;border:0"></td><td colspan="'+N+'" style="padding:8px 0;border:0">'+chartSvg+'</td></tr>';
