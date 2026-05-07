@@ -1005,53 +1005,59 @@ function parseCitTouchPoints(rows) {
     }
   }
 
-  // 유효한 월 이름 패턴 (Jan, Feb, Mar, ..., 1월, 2월, ... 또는 숫자)
-  const MONTH_RE = /^(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|[0-9]{1,2}월)/i
-
-  // 월 라벨 추출 — 헤더 행에서 유효한 월 이름만 수집
-  const monthLabels = []
-  for (let i = dataStartCol; i < header.length; i++) {
-    const h = String(header[i] || '').trim()
-    if (h && MONTH_RE.test(h)) monthLabels.push({ col: i, label: h })
+  // 월 라벨을 canonical 짧은 이름으로 정규화 ('Apr 2026' / '4월' / 'April' → 'Apr')
+  // 클라이언트/SSR 필터가 'Apr' 키로 조회하므로 raw 헤더 텍스트 유지 시 monthScores 매칭 실패함
+  const MONTHS_ORDER = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+  function canonMonth(raw) {
+    const s = String(raw || '').trim().toLowerCase()
+    if (!s) return null
+    const km = s.match(/^(\d{1,2})월/)
+    if (km) {
+      const n = parseInt(km[1])
+      if (n >= 1 && n <= 12) return MONTHS_ORDER[n - 1]
+    }
+    const em = s.match(/^(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i)
+    if (em) return em[1].charAt(0).toUpperCase() + em[1].slice(1).toLowerCase()
+    return null
   }
-  // 헤더에 월 라벨이 부족하면, 헤더 위 행에서 보충 (빈 컬럼이나 비월 라벨 대체)
+
+  // 월 라벨 추출 — 헤더 행 + (필요시) 헤더 바로 위 행
+  const monthLabels = []  // { col, label: 'Apr' (canonical) }
+  const seenCols = new Set()
+  for (let i = dataStartCol; i < header.length; i++) {
+    const cm = canonMonth(header[i])
+    if (cm && !seenCols.has(i)) { monthLabels.push({ col: i, label: cm }); seenCols.add(i) }
+  }
   if (headerIdx > 0) {
     const monthRow = rows[headerIdx - 1]
     if (monthRow) {
       for (let i = dataStartCol; i < monthRow.length; i++) {
-        const mv = String(monthRow[i] || '').trim()
-        if (mv && MONTH_RE.test(mv) && !monthLabels.some(m => m.col === i)) {
-          monthLabels.push({ col: i, label: mv })
-        }
+        const cm = canonMonth(monthRow[i])
+        if (cm && !seenCols.has(i)) { monthLabels.push({ col: i, label: cm }); seenCols.add(i) }
       }
     }
   }
-  monthLabels.sort((a, b) => a.col - b.col)
 
-  // 라벨 없는 데이터 컬럼에 월 이름 역산 (첫 라벨 월에서 거꾸로 세기)
-  // 예: col 4,5 비어있고 col 6=Apr → col 5=Mar, col 4=Feb
+  // 라벨 없는 데이터 컬럼 역산 — 첫 라벨된 월의 인덱스에서 거꾸로 세기
+  // 빈 열이 많은 경우 데이터 있는 컬럼만 카운트해서 한 칸씩 어긋날 수 있음 → 연속된 모든 컬럼 사용
   if (monthLabels.length > 0) {
-    const MONTHS_ORDER = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+    monthLabels.sort((a, b) => a.col - b.col)
     const firstLabeled = monthLabels[0]
-    const firstMonthIdx = MONTHS_ORDER.findIndex(m => firstLabeled.label.toLowerCase().startsWith(m.toLowerCase()))
+    const firstMonthIdx = MONTHS_ORDER.indexOf(firstLabeled.label)
     if (firstMonthIdx > 0 && firstLabeled.col > dataStartCol) {
-      const dataRows = rows.slice(startRow)
-      const unlabeled = []
-      for (let c = dataStartCol; c < firstLabeled.col; c++) {
-        if (dataRows.some(r => { const v = typeof r[c] === 'number' ? r[c] : parseFloat(String(r[c] || '').replace(/,/g, '')); return !isNaN(v) && v > 0 })) {
-          unlabeled.push(c)
-        }
+      const gap = firstLabeled.col - dataStartCol  // 빈 칸 포함 모든 컬럼
+      for (let k = 1; k <= gap; k++) {
+        const targetCol = firstLabeled.col - k
+        if (seenCols.has(targetCol)) continue
+        const mi = firstMonthIdx - k
+        if (mi < 0) break
+        monthLabels.push({ col: targetCol, label: MONTHS_ORDER[mi] })
+        seenCols.add(targetCol)
       }
-      // 가장 가까운 컬럼부터 역산
-      for (let i = unlabeled.length - 1; i >= 0; i--) {
-        const mi = firstMonthIdx - (unlabeled.length - i)
-        if (mi >= 0) {
-          monthLabels.push({ col: unlabeled[i], label: MONTHS_ORDER[mi] })
-        }
-      }
-      monthLabels.sort((a, b) => a.col - b.col)
     }
   }
+  // 월 순 (chronological)으로 정렬 — score 역순 iteration이 "최신 월" 의미를 갖도록
+  monthLabels.sort((a, b) => MONTHS_ORDER.indexOf(a.label) - MONTHS_ORDER.indexOf(b.label))
 
   const data = rows.slice(startRow).filter(r => r.some(c => c != null && String(c).trim()))
   const citations = []
@@ -1070,30 +1076,24 @@ function parseCitTouchPoints(rows) {
     const country = normCountry(r[countryCol])
     const channel = String(r[channelCol] || '').replace(/[()]/g, '').trim()
     const prd = prdCol >= 0 ? String(r[prdCol] || '').trim() : ''
-    if (!channel || channel.toLowerCase() === 'total') return
+    // 빈 행 / 헤더 잔재 / 채널만 빈 행 스킵
+    if (!country || !channel) return
+    if (channel.toLowerCase() === 'total') return
     _seenCountries.add(country)
 
-    // 최신 월 데이터 찾기 — monthLabels 컬럼만 사용 (역순으로)
-    let score = 0
-    if (monthLabels.length > 0) {
-      for (let i = monthLabels.length - 1; i >= 0; i--) {
-        const val = numVal(r[monthLabels[i].col])
-        if (val > 0) { score = val; break }
-      }
-    } else {
-      // monthLabels가 없으면 기존 방식 (dataStartCol부터 역순)
-      for (let i = r.length - 1; i >= dataStartCol; i--) {
-        const val = numVal(r[i])
-        if (val > 0) { score = val; break }
-      }
-    }
-
-    // 모든 월별 데이터 수집
+    // 모든 월별 데이터 수집 (monthLabels 컬럼만 — dataStartCol+ 무차별 fallback 제거)
     const monthScores = {}
     monthLabels.forEach(({ col, label }) => {
       const val = numVal(r[col])
       if (val > 0) monthScores[label] = val
     })
+
+    // 최신 월 score: chronologically 마지막부터 거꾸로 (monthLabels 이미 chronological 정렬)
+    let score = 0
+    for (let i = monthLabels.length - 1; i >= 0; i--) {
+      const v = monthScores[monthLabels[i].label]
+      if (v && v > 0) { score = v; break }
+    }
 
     if (country === 'TTL' || country === 'TOTAL') {
       if (score > 0) citations.push({ source: channel, category: '', score, delta: 0, ratio: 0, monthScores })
