@@ -1052,7 +1052,7 @@ function applyFilter(){
   var filteredCit=_citations;
   if(noneSelected){filteredCit=[]}
   else if(!allSelected&&Object.keys(_citationsByCnty).length>0){
-    var catMap={};enabled.forEach(function(cnty){var list=_citationsByCnty[cnty]||[];list.forEach(function(c){if(!catMap[c.source])catMap[c.source]={source:c.source,category:c.category||'',score:0,delta:0};catMap[c.source].score+=c.score})});
+    var catMap={};enabled.forEach(function(cnty){var list=(_citationsByCnty[cnty]||[]).slice().sort(function(a,b){return b.score-a.score}).slice(0,8);list.forEach(function(c){if(!catMap[c.source])catMap[c.source]={source:c.source,category:c.category||'',score:0,delta:0};catMap[c.source].score+=c.score})});
     var merged=Object.values(catMap).sort(function(a,b){return b.score-a.score});
     var total=merged.reduce(function(s,c){return s+c.score},0);
     merged.forEach(function(c,i){c.rank=i+1;c.ratio=total>0?+((c.score/total)*100).toFixed(1):0});
