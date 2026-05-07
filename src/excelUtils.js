@@ -1090,61 +1090,105 @@ function parseCitTouchPoints(rows) {
 
   const _seenCountries = new Set()
 
+  // 1차: (country, channel) 단위로 TTL 행과 PRD-specific 행을 분리 수집
+  // groupMap[country][channel] = { ttl: monthScores|null, prds: [{prd, monthScores}] }
+  const groupMap = {}
   data.forEach(r => {
     const country = normCountry(r[countryCol])
     const channel = String(r[channelCol] || '').replace(/[()]/g, '').trim()
     const prd = prdCol >= 0 ? String(r[prdCol] || '').trim() : ''
-    // 빈 행 / 헤더 잔재 / 채널만 빈 행 스킵
     if (!country || !channel) return
     if (channel.toLowerCase() === 'total') return
     _seenCountries.add(country)
 
-    // 모든 월별 데이터 수집 (monthLabels 컬럼만 — dataStartCol+ 무차별 fallback 제거)
     const monthScores = {}
     monthLabels.forEach(({ col, label }) => {
       const val = numVal(r[col])
       if (val > 0) monthScores[label] = val
     })
-
-    // 최신 월 score: chronologically 마지막부터 거꾸로 (monthLabels 이미 chronological 정렬)
-    let score = 0
-    for (let i = monthLabels.length - 1; i >= 0; i--) {
-      const v = monthScores[monthLabels[i].label]
-      if (v && v > 0) { score = v; break }
-    }
+    if (Object.keys(monthScores).length === 0) return
 
     const prdU = prd.toUpperCase()
     const isPrdTtl = !prd || prdU === 'TTL' || prdU === 'TOTAL'
+    const cntyKey = (country === 'TTL' || country === 'TOTAL') ? 'TTL' : country
 
-    if (country === 'TTL' || country === 'TOTAL') {
-      // 상단 차트/트렌드: PRD=TTL 행만 사용 (PRD별 행은 citationsByPrdTtl로)
-      if (isPrdTtl) {
-        if (score > 0) citations.push({ source: channel, category: '', score, delta: 0, ratio: 0, monthScores })
-        if (Object.keys(monthScores).length > 0) {
-          citTouchPointsTrend[channel] = monthScores
-        }
-      } else if (score > 0) {
-        // 제품별 TTL 행 (Country=TTL, PRD=특정 제품)
-        if (!citationsByPrdTtl[prd]) citationsByPrdTtl[prd] = []
-        citationsByPrdTtl[prd].push({ source: channel, category: '', score, delta: 0, ratio: 0, monthScores })
+    if (!groupMap[cntyKey]) groupMap[cntyKey] = {}
+    if (!groupMap[cntyKey][channel]) groupMap[cntyKey][channel] = { ttl: null, prds: [] }
+    if (isPrdTtl) {
+      groupMap[cntyKey][channel].ttl = monthScores
+    } else {
+      groupMap[cntyKey][channel].prds.push({ prd, monthScores })
+    }
+  })
+
+  // 헬퍼: monthScores에서 latest month score
+  const pickLatest = ms => {
+    for (let i = monthLabels.length - 1; i >= 0; i--) {
+      const v = ms[monthLabels[i].label]
+      if (v > 0) return v
+    }
+    return 0
+  }
+  // 헬퍼: TTL 행 우선, 비어있는 월은 PRD-specific 합으로 폴백
+  const mergeWithFallback = group => {
+    const merged = {}
+    monthLabels.forEach(({ label }) => {
+      const ttlVal = group.ttl ? group.ttl[label] || 0 : 0
+      if (ttlVal > 0) {
+        merged[label] = ttlVal
+      } else {
+        let sum = 0
+        group.prds.forEach(({ monthScores }) => { sum += monthScores[label] || 0 })
+        if (sum > 0) merged[label] = sum
       }
-    } else if (score > 0) {
-      // citationsByCnty: PRD=TTL은 prd='' 로, PRD=특정제품은 prd=제품명으로 보존 (By Product 매칭용)
-      if (!citationsByCnty[country]) citationsByCnty[country] = []
-      citationsByCnty[country].push({ source: channel, category: '', score, delta: 0, ratio: 0, monthScores, prd: isPrdTtl ? '' : prd })
-      if (!isPrdTtl) {
-        // 제품별 비TTL 행 — channel 기준 합산 (AU/VN 등 국가별 PRD 입력 케이스)
+    })
+    return merged
+  }
+
+  // 2차: TTL 국가 — citations / citTouchPointsTrend / citationsByPrdTtl 빌드
+  const ttlGroup = groupMap.TTL || {}
+  Object.entries(ttlGroup).forEach(([channel, group]) => {
+    const merged = mergeWithFallback(group)
+    const score = pickLatest(merged)
+    if (score > 0) {
+      citations.push({ source: channel, category: '', score, delta: 0, ratio: 0, monthScores: merged })
+      citTouchPointsTrend[channel] = merged
+    }
+    group.prds.forEach(({ prd, monthScores }) => {
+      const pScore = pickLatest(monthScores)
+      if (pScore > 0) {
+        if (!citationsByPrdTtl[prd]) citationsByPrdTtl[prd] = []
+        citationsByPrdTtl[prd].push({ source: channel, category: '', score: pScore, delta: 0, ratio: 0, monthScores })
+      }
+    })
+  })
+
+  // 3차: 국가별 — citationsByCnty (TTL+PRD-specific 행 모두 보존, prd 필드로 구분) / citationsByPrdAgg 빌드
+  Object.entries(groupMap).forEach(([country, channelMap]) => {
+    if (country === 'TTL') return
+    Object.entries(channelMap).forEach(([channel, group]) => {
+      const merged = mergeWithFallback(group)
+      const aggScore = pickLatest(merged)
+      if (aggScore > 0) {
+        if (!citationsByCnty[country]) citationsByCnty[country] = []
+        citationsByCnty[country].push({ source: channel, category: '', score: aggScore, delta: 0, ratio: 0, monthScores: merged, prd: '' })
+      }
+      group.prds.forEach(({ prd, monthScores }) => {
+        const pScore = pickLatest(monthScores)
+        if (pScore <= 0) return
+        if (!citationsByCnty[country]) citationsByCnty[country] = []
+        citationsByCnty[country].push({ source: channel, category: '', score: pScore, delta: 0, ratio: 0, monthScores, prd })
         if (!citationsByPrdAgg[prd]) citationsByPrdAgg[prd] = {}
         if (!citationsByPrdAgg[prd][channel]) {
           citationsByPrdAgg[prd][channel] = { source: channel, category: '', score: 0, delta: 0, ratio: 0, monthScores: {} }
         }
         const agg = citationsByPrdAgg[prd][channel]
-        agg.score += score
+        agg.score += pScore
         Object.entries(monthScores).forEach(([m, v]) => {
           agg.monthScores[m] = (agg.monthScores[m] || 0) + v
         })
-      }
-    }
+      })
+    })
   })
 
   // 제품별 최종 — TTL 우선, 없으면 비TTL 합산
