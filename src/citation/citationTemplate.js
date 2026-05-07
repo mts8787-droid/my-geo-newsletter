@@ -578,7 +578,7 @@ export function generateCitationHTML(meta, _total, _products, citations, dotcom,
     }
   }
 
-  // Dotcom 기간 필터: byMonth 우선, 누락 시 byCntyByMonth 합산으로 TTL 보완
+  // Dotcom 기간 필터: byMonth 우선, 없으면 byCntyByMonth 합산, 둘 다 없으면 빈 상태
   if (selectedMonth && dotcom) {
     const dM = dotcom.byMonth?.[selectedMonth]
     const dCM = dotcom.byCntyByMonth?.[selectedMonth]
@@ -591,8 +591,11 @@ export function generateCitationHTML(meta, _total, _products, citations, dotcom,
         Object.entries(d.samsung || {}).forEach(([k, v]) => { aSam[k] = (aSam[k] || 0) + v })
       })
       dotcom = { ...dotcom, lg: aLg, samsung: aSam }
+    } else {
+      // 해당 월 데이터 없음 — 빈 상태로 명시 (이전 월 폴백 금지)
+      dotcom = { ...dotcom, lg: {}, samsung: {} }
     }
-    if (dCM) dotcomByCnty = dCM
+    dotcomByCnty = dCM || {}
   }
 
   // 국가 필터 초기 상태 (모두 선택)
@@ -966,7 +969,9 @@ function renderDotcom(dc){
   var cntyCards=[];
   countries.forEach(function(cnty){
     var d=_dotcomByCnty[cnty];
-    if(!d||!d.lg||!Object.keys(d.lg).length)return;
+    if(!d||!d.lg)return;
+    var hasData=Object.values(d.lg||{}).some(function(v){return v>0})||Object.values(d.samsung||{}).some(function(v){return v>0});
+    if(!hasData)return;
     cntyCards.push('<div style="width:calc(50% - 6px);background:#F8FAFC;border:1px solid #E8EDF2;border-radius:8px;overflow:hidden">'
       +'<div style="padding:6px 12px;border-bottom:1px solid #F1F5F9;font-size:13px;font-weight:700;color:#1A1A1A">'+_cn(cnty)+'</div>'
       +'<div style="padding:4px 4px">'+_dcVBar(d,true)+'</div></div>');
@@ -1022,7 +1027,7 @@ function switchMonth(month){
     var s=(c.monthScores&&c.monthScores[month])||0;
     return Object.assign({},c,{citations:s});
   }).filter(function(c){return c.citations>0});
-  // Dotcom — byMonth 우선, 누락 시 byCntyByMonth 합산으로 TTL 보완
+  // Dotcom — byMonth 우선, 없으면 byCntyByMonth 합산, 둘 다 없으면 빈 상태(이전 월 폴백 금지)
   if(_rawDotcom){
     var dM=_rawDotcom.byMonth&&_rawDotcom.byMonth[month];
     var dCM=_rawDotcom.byCntyByMonth&&_rawDotcom.byCntyByMonth[month];
@@ -1036,7 +1041,7 @@ function switchMonth(month){
       });
       _dotcom={lg:aLg,samsung:aSam};
     }else{
-      _dotcom=null;
+      _dotcom={lg:{},samsung:{}};  // 해당 월 데이터 없음 — 빈 상태
     }
     _dotcomByCnty=dCM||{};
   }

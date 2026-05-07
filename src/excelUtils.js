@@ -925,7 +925,7 @@ function parseCitPageType(rows) {
   Object.values(dotcomTrend).forEach(m => Object.keys(m).forEach(k => allMonths.add(k)))
   const dotcomTrendMonths = MONTH_NAMES.filter(m => allMonths.has(m))
 
-  // 월별 dotcom 데이터 보존 (기간 필터용)
+  // 월별 dotcom 데이터 보존 (기간 필터용) — 0 값은 누적하지 않음(빈 카드 방지)
   const dotcomByMonth = {}
   const dotcomByCntyByMonth = {}
   monthPairs.forEach((mp, mi) => {
@@ -940,17 +940,27 @@ function parseCitPageType(rows) {
       const cnty = CNTY_ALIAS[rawCountry] || rawCountry.toUpperCase()
       const lv = numVal(r[mp.lg])
       const sv = numVal(r[mp.ss])
+      if (lv <= 0 && sv <= 0) return  // 해당 월 행에 값 없음 → 스킵
       if (cnty === 'TTL') {
-        mLg[key] = (mLg[key] || 0) + lv
-        mSam[key] = (mSam[key] || 0) + sv
+        if (lv > 0) mLg[key] = (mLg[key] || 0) + lv
+        if (sv > 0) mSam[key] = (mSam[key] || 0) + sv
       } else {
         if (!dotcomByCntyByMonth[mLabel]) dotcomByCntyByMonth[mLabel] = {}
         if (!dotcomByCntyByMonth[mLabel][cnty]) dotcomByCntyByMonth[mLabel][cnty] = { lg: {}, samsung: {} }
-        dotcomByCntyByMonth[mLabel][cnty].lg[key] = (dotcomByCntyByMonth[mLabel][cnty].lg[key] || 0) + lv
-        dotcomByCntyByMonth[mLabel][cnty].samsung[key] = (dotcomByCntyByMonth[mLabel][cnty].samsung[key] || 0) + sv
+        if (lv > 0) dotcomByCntyByMonth[mLabel][cnty].lg[key] = (dotcomByCntyByMonth[mLabel][cnty].lg[key] || 0) + lv
+        if (sv > 0) dotcomByCntyByMonth[mLabel][cnty].samsung[key] = (dotcomByCntyByMonth[mLabel][cnty].samsung[key] || 0) + sv
       }
     })
     if (Object.keys(mLg).length) dotcomByMonth[mLabel] = { lg: mLg, samsung: mSam }
+  })
+  // byCntyByMonth에서 lg/samsung 모두 빈 country 항목 정리 (0값으로 초기화됐을 수도 있음)
+  Object.keys(dotcomByCntyByMonth).forEach(m => {
+    Object.keys(dotcomByCntyByMonth[m]).forEach(c => {
+      const e = dotcomByCntyByMonth[m][c]
+      const hasData = Object.values(e.lg).some(v => v > 0) || Object.values(e.samsung).some(v => v > 0)
+      if (!hasData) delete dotcomByCntyByMonth[m][c]
+    })
+    if (!Object.keys(dotcomByCntyByMonth[m]).length) delete dotcomByCntyByMonth[m]
   })
 
   const result = {}
@@ -1050,8 +1060,9 @@ function parseCitTouchPoints(rows) {
 
   // 국가별 카테고리 Citation 수집
   const citationsByCnty = {}   // { cnty: [{ source, score, ... }] }
-  // 제품별 카테고리 Citation 수집 (TTL country 행 기준)
-  const citationsByPrd = {}    // { prd: [{ source, score, ... }] }
+  // 제품별 카테고리 — TTL 행 우선, 없으면 비TTL 국가 합산
+  const citationsByPrdTtl = {}  // { prd: [{ source, score, monthScores }] } — TTL 행 직접
+  const citationsByPrdAgg = {}  // { prd: { channel: { source, score, monthScores } } } — 비TTL 합산
 
   const _seenCountries = new Set()
 
@@ -1089,15 +1100,36 @@ function parseCitTouchPoints(rows) {
       if (Object.keys(monthScores).length > 0) {
         citTouchPointsTrend[channel] = monthScores
       }
-      // 제품별 데이터: PRD가 있고 TTL country 행이면 수집
+      // 제품별 TTL 행
       if (prd && score > 0) {
-        if (!citationsByPrd[prd]) citationsByPrd[prd] = []
-        citationsByPrd[prd].push({ source: channel, category: '', score, delta: 0, ratio: 0, monthScores })
+        if (!citationsByPrdTtl[prd]) citationsByPrdTtl[prd] = []
+        citationsByPrdTtl[prd].push({ source: channel, category: '', score, delta: 0, ratio: 0, monthScores })
       }
     } else if (score > 0) {
       if (!citationsByCnty[country]) citationsByCnty[country] = []
       citationsByCnty[country].push({ source: channel, category: '', score, delta: 0, ratio: 0, monthScores })
+      // 제품별 비TTL 행 — channel 기준 합산 (AU/VN 등 국가별 PRD 입력 케이스)
+      if (prd) {
+        if (!citationsByPrdAgg[prd]) citationsByPrdAgg[prd] = {}
+        if (!citationsByPrdAgg[prd][channel]) {
+          citationsByPrdAgg[prd][channel] = { source: channel, category: '', score: 0, delta: 0, ratio: 0, monthScores: {} }
+        }
+        const agg = citationsByPrdAgg[prd][channel]
+        agg.score += score
+        Object.entries(monthScores).forEach(([m, v]) => {
+          agg.monthScores[m] = (agg.monthScores[m] || 0) + v
+        })
+      }
     }
+  })
+
+  // 제품별 최종 — TTL 우선, 없으면 비TTL 합산
+  const citationsByPrd = {}
+  const allPrds = new Set([...Object.keys(citationsByPrdTtl), ...Object.keys(citationsByPrdAgg)])
+  allPrds.forEach(prd => {
+    let list = citationsByPrdTtl[prd]
+    if (!list || !list.length) list = Object.values(citationsByPrdAgg[prd] || {})
+    if (list && list.length) citationsByPrd[prd] = list
   })
 
   const total = citations.reduce((s, c) => s + c.score, 0)
@@ -1134,12 +1166,24 @@ function parseCitTouchPoints(rows) {
   for (const [cnty, list] of Object.entries(citationsByCnty)) {
   }
 
-  // 최신 월 자동 감지 → derivedPeriod
+  // 기본 월 자동 감지 → derivedPeriod
+  // 최신 월의 데이터 양(채널 개수)이 직전 월의 50% 미만이면 직전 월을 기본으로
+  // (예: 4월이 일부만 입력된 상태면 3월을 기본으로 보여줌)
   const MONTHS_EN = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
   let citDerivedPeriod = null
   if (validMonths.length > 0) {
-    const lastMonth = validMonths[validMonths.length - 1]
-    const mIdx = MONTHS_EN.findIndex(m => lastMonth.toLowerCase().startsWith(m.toLowerCase()))
+    const monthChannelCount = {}
+    Object.values(citTouchPointsTrend).forEach(ms => {
+      Object.entries(ms).forEach(([m, v]) => { if (v > 0) monthChannelCount[m] = (monthChannelCount[m] || 0) + 1 })
+    })
+    let pickMonth = validMonths[validMonths.length - 1]
+    if (validMonths.length >= 2) {
+      const lastCount = monthChannelCount[pickMonth] || 0
+      const prevMonth = validMonths[validMonths.length - 2]
+      const prevCount = monthChannelCount[prevMonth] || 0
+      if (prevCount > 0 && lastCount < prevCount * 0.5) pickMonth = prevMonth
+    }
+    const mIdx = MONTHS_EN.findIndex(m => pickMonth.toLowerCase().startsWith(m.toLowerCase()))
     if (mIdx >= 0) citDerivedPeriod = `${MONTHS_EN[mIdx]} ${new Date().getFullYear()}`
   }
 
