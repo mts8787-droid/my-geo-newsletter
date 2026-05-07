@@ -1129,30 +1129,17 @@ function parseCitTouchPoints(rows) {
     }
     return 0
   }
-  // 헬퍼: TTL 행 우선, 비어있는 월은 PRD-specific 합으로 폴백
-  const mergeWithFallback = group => {
-    const merged = {}
-    monthLabels.forEach(({ label }) => {
-      const ttlVal = group.ttl ? group.ttl[label] || 0 : 0
-      if (ttlVal > 0) {
-        merged[label] = ttlVal
-      } else {
-        let sum = 0
-        group.prds.forEach(({ monthScores }) => { sum += monthScores[label] || 0 })
-        if (sum > 0) merged[label] = sum
-      }
-    })
-    return merged
-  }
+  // 헬퍼: PRD=TTL 행 monthScores만 사용 (폴백 없음 — 비어있는 월은 빈 채로 유지)
+  const ttlScores = group => group.ttl ? { ...group.ttl } : {}
 
   // 2차: TTL 국가 — citations / citTouchPointsTrend / citationsByPrdTtl 빌드
   const ttlGroup = groupMap.TTL || {}
   Object.entries(ttlGroup).forEach(([channel, group]) => {
-    const merged = mergeWithFallback(group)
-    const score = pickLatest(merged)
+    const tScores = ttlScores(group)
+    const score = pickLatest(tScores)
     if (score > 0) {
-      citations.push({ source: channel, category: '', score, delta: 0, ratio: 0, monthScores: merged })
-      citTouchPointsTrend[channel] = merged
+      citations.push({ source: channel, category: '', score, delta: 0, ratio: 0, monthScores: tScores })
+      citTouchPointsTrend[channel] = tScores
     }
     group.prds.forEach(({ prd, monthScores }) => {
       const pScore = pickLatest(monthScores)
@@ -1163,15 +1150,15 @@ function parseCitTouchPoints(rows) {
     })
   })
 
-  // 3차: 국가별 — citationsByCnty (TTL+PRD-specific 행 모두 보존, prd 필드로 구분) / citationsByPrdAgg 빌드
+  // 3차: 국가별 — citationsByCnty (PRD=TTL 집계행 + PRD-specific 행 보존) / citationsByPrdAgg 빌드
   Object.entries(groupMap).forEach(([country, channelMap]) => {
     if (country === 'TTL') return
     Object.entries(channelMap).forEach(([channel, group]) => {
-      const merged = mergeWithFallback(group)
-      const aggScore = pickLatest(merged)
+      const tScores = ttlScores(group)
+      const aggScore = pickLatest(tScores)
       if (aggScore > 0) {
         if (!citationsByCnty[country]) citationsByCnty[country] = []
-        citationsByCnty[country].push({ source: channel, category: '', score: aggScore, delta: 0, ratio: 0, monthScores: merged, prd: '' })
+        citationsByCnty[country].push({ source: channel, category: '', score: aggScore, delta: 0, ratio: 0, monthScores: tScores, prd: '' })
       }
       group.prds.forEach(({ prd, monthScores }) => {
         const pScore = pickLatest(monthScores)

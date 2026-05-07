@@ -547,10 +547,17 @@ export function generateCitationHTML(meta, _total, _products, citations, dotcom,
     }
   }
 
-  // Dotcom 기간 필터: byMonth 우선, 없으면 byCntyByMonth 합산, 둘 다 없으면 빈 상태
+  // Dotcom 기간 필터: 선택 월 → 없으면 가장 최신 데이터 있는 월로 폴백
   if (selectedMonth && dotcom) {
-    const dM = dotcom.byMonth?.[selectedMonth]
-    const dCM = dotcom.byCntyByMonth?.[selectedMonth]
+    const hasMonth = m => !!(dotcom.byMonth?.[m]) || (dotcom.byCntyByMonth?.[m] && Object.keys(dotcom.byCntyByMonth[m]).length > 0)
+    let useMonth = selectedMonth
+    if (!hasMonth(useMonth)) {
+      for (let i = MONTHS_EN.length - 1; i >= 0; i--) {
+        if (hasMonth(MONTHS_EN[i])) { useMonth = MONTHS_EN[i]; break }
+      }
+    }
+    const dM = dotcom.byMonth?.[useMonth]
+    const dCM = dotcom.byCntyByMonth?.[useMonth]
     if (dM) {
       dotcom = { ...dotcom, lg: dM.lg || {}, samsung: dM.samsung || {} }
     } else if (dCM && Object.keys(dCM).length) {
@@ -561,7 +568,6 @@ export function generateCitationHTML(meta, _total, _products, citations, dotcom,
       })
       dotcom = { ...dotcom, lg: aLg, samsung: aSam }
     } else {
-      // 해당 월 데이터 없음 — 빈 상태로 명시 (이전 월 폴백 금지)
       dotcom = { ...dotcom, lg: {}, samsung: {} }
     }
     dotcomByCnty = dCM || {}
@@ -1022,10 +1028,16 @@ function switchMonth(month){
     var s=(c.monthScores&&c.monthScores[month])||0;
     return Object.assign({},c,{citations:s});
   }).filter(function(c){return c.citations>0});
-  // Dotcom — byMonth 우선, 없으면 byCntyByMonth 합산, 둘 다 없으면 빈 상태(이전 월 폴백 금지)
+  // Dotcom — 선택 월 데이터 없으면 가장 최신 데이터 있는 월로 폴백
   if(_rawDotcom){
-    var dM=_rawDotcom.byMonth&&_rawDotcom.byMonth[month];
-    var dCM=_rawDotcom.byCntyByMonth&&_rawDotcom.byCntyByMonth[month];
+    var _MONTHS_EN=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    var _hasM=function(m){return!!(_rawDotcom.byMonth&&_rawDotcom.byMonth[m])||(_rawDotcom.byCntyByMonth&&_rawDotcom.byCntyByMonth[m]&&Object.keys(_rawDotcom.byCntyByMonth[m]).length>0)};
+    var useM=month;
+    if(!_hasM(useM)){
+      for(var i=_MONTHS_EN.length-1;i>=0;i--){if(_hasM(_MONTHS_EN[i])){useM=_MONTHS_EN[i];break}}
+    }
+    var dM=_rawDotcom.byMonth&&_rawDotcom.byMonth[useM];
+    var dCM=_rawDotcom.byCntyByMonth&&_rawDotcom.byCntyByMonth[useM];
     if(dM){
       _dotcom={lg:dM.lg||{},samsung:dM.samsung||{}};
     }else if(dCM&&Object.keys(dCM).length){
@@ -1036,7 +1048,7 @@ function switchMonth(month){
       });
       _dotcom={lg:aLg,samsung:aSam};
     }else{
-      _dotcom={lg:{},samsung:{}};  // 해당 월 데이터 없음 — 빈 상태
+      _dotcom={lg:{},samsung:{}};
     }
     _dotcomByCnty=dCM||{};
   }
