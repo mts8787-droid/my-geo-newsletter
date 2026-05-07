@@ -548,12 +548,21 @@ export function generateCitationHTML(meta, _total, _products, citations, dotcom,
     }
   }
 
-  // Dotcom 기간 필터: 선택된 월의 데이터로 교체
-  if (selectedMonth && dotcom && dotcom.byMonth && dotcom.byMonth[selectedMonth]) {
-    dotcom = { ...dotcom, lg: dotcom.byMonth[selectedMonth].lg, samsung: dotcom.byMonth[selectedMonth].samsung }
-  }
-  if (selectedMonth && dotcomByCnty && dotcom?.byCntyByMonth?.[selectedMonth]) {
-    dotcomByCnty = dotcom.byCntyByMonth[selectedMonth]
+  // Dotcom 기간 필터: byMonth 우선, 누락 시 byCntyByMonth 합산으로 TTL 보완
+  if (selectedMonth && dotcom) {
+    const dM = dotcom.byMonth?.[selectedMonth]
+    const dCM = dotcom.byCntyByMonth?.[selectedMonth]
+    if (dM) {
+      dotcom = { ...dotcom, lg: dM.lg || {}, samsung: dM.samsung || {} }
+    } else if (dCM && Object.keys(dCM).length) {
+      const aLg = {}, aSam = {}
+      Object.values(dCM).forEach(d => {
+        Object.entries(d.lg || {}).forEach(([k, v]) => { aLg[k] = (aLg[k] || 0) + v })
+        Object.entries(d.samsung || {}).forEach(([k, v]) => { aSam[k] = (aSam[k] || 0) + v })
+      })
+      dotcom = { ...dotcom, lg: aLg, samsung: aSam }
+    }
+    if (dCM) dotcomByCnty = dCM
   }
 
   // 국가 필터 초기 상태 (모두 선택)
@@ -941,12 +950,23 @@ function switchMonth(month){
     var s=(c.monthScores&&c.monthScores[month]!=null)?c.monthScores[month]:c.citations;
     return Object.assign({},c,{citations:s});
   }).filter(function(c){return c.citations>0});
-  // Dotcom
-  if(_rawDotcom&&_rawDotcom.byMonth&&_rawDotcom.byMonth[month]){
-    _dotcom={lg:_rawDotcom.byMonth[month].lg,samsung:_rawDotcom.byMonth[month].samsung};
-  }
-  if(_rawDotcom&&_rawDotcom.byCntyByMonth&&_rawDotcom.byCntyByMonth[month]){
-    _dotcomByCnty=_rawDotcom.byCntyByMonth[month];
+  // Dotcom — byMonth 우선, 누락 시 byCntyByMonth 합산으로 TTL 보완
+  if(_rawDotcom){
+    var dM=_rawDotcom.byMonth&&_rawDotcom.byMonth[month];
+    var dCM=_rawDotcom.byCntyByMonth&&_rawDotcom.byCntyByMonth[month];
+    if(dM){
+      _dotcom={lg:dM.lg||{},samsung:dM.samsung||{}};
+    }else if(dCM&&Object.keys(dCM).length){
+      var aLg={},aSam={};
+      Object.values(dCM).forEach(function(d){
+        Object.entries(d.lg||{}).forEach(function(e){aLg[e[0]]=(aLg[e[0]]||0)+e[1]});
+        Object.entries(d.samsung||{}).forEach(function(e){aSam[e[0]]=(aSam[e[0]]||0)+e[1]});
+      });
+      _dotcom={lg:aLg,samsung:aSam};
+    }else{
+      _dotcom=null;
+    }
+    _dotcomByCnty=dCM||{};
   }
   applyFilter();
 }
