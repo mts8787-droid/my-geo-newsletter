@@ -88,6 +88,37 @@ function citationSectionHtml(citations, meta, t, lang) {
   </div>`
 }
 
+// ─── 제품별 Citation (Top N 채널) ──────────────────────────────────────────
+function perProductSectionHtml(citationsByPrd, meta, t, lang) {
+  if (!citationsByPrd || !Object.keys(citationsByPrd).length) return ''
+  const topN = 5
+  const title = lang === 'en' ? 'By Product' : '제품별'
+  const prdList = Object.keys(citationsByPrd).sort()
+  const cards = prdList.map(prd => {
+    const list = (citationsByPrd[prd] || []).slice(0, topN)
+    if (!list.length) return ''
+    const maxScore = Math.max(...list.map(c => c.score), 1)
+    const rows = list.map((c, i) => {
+      const pct = (c.score / maxScore * 100).toFixed(1)
+      return `<div style="display:flex;align-items:center;gap:6px;padding:3px 0;font-size:11px">
+        <span style="min-width:14px;font-weight:700;color:#94A3B8">${c.rank || i+1}</span>
+        <span style="flex:1;color:#1A1A1A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.source}</span>
+        <div style="width:60px;height:6px;background:#F1F5F9;border-radius:3px;overflow:hidden"><div style="width:${pct}%;height:100%;background:${RED}"></div></div>
+        <span style="min-width:38px;text-align:right;color:#64748B">${fmt(c.score)}</span>
+      </div>`
+    }).join('')
+    return `<div style="width:calc(50% - 6px);background:#F8FAFC;border:1px solid #E8EDF2;border-radius:8px;overflow:hidden">
+      <div style="padding:6px 12px;border-bottom:1px solid #F1F5F9;font-size:13px;font-weight:700;color:#1A1A1A">${prd}</div>
+      <div style="padding:6px 12px">${rows}</div>
+    </div>`
+  }).filter(Boolean).join('')
+  if (!cards) return ''
+  return `<div class="section-card" id="cit-prd-section">
+    <div class="section-header"><div class="section-title">${title}</div></div>
+    <div class="section-body" id="cit-prd-cards" style="display:flex;flex-wrap:wrap;gap:12px">${cards}</div>
+  </div>`
+}
+
 // ─── 도메인별 Citation ──────────────────────────────────────────────────────
 function citDomainSectionHtml(citationsCnty, meta, t, citations, lang, useAggregated) {
   if (!citationsCnty || !citationsCnty.length) return ''
@@ -473,15 +504,17 @@ function citDomainBumpChartHtml(citDomainTrend, citDomainMonths, meta, t, lang) 
   </div>`
 }
 
-export function generateCitationHTML(meta, _total, _products, citations, dotcom, lang, _productsCnty, citationsCnty, trendData, citationsByCnty, dotcomByCnty) {
+export function generateCitationHTML(meta, _total, _products, citations, dotcom, lang, _productsCnty, citationsCnty, trendData, citationsByCnty, dotcomByCnty, citationsByPrd) {
   const t = T[lang] || T.ko
   const { citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, dotcomTrend, dotcomTrendMonths } = trendData || {}
   citationsByCnty = citationsByCnty || {}
+  citationsByPrd = citationsByPrd || {}
   dotcomByCnty = dotcomByCnty || {}
 
   // 원본 데이터 보존 (클라이언트 월 전환용)
   const rawCitations = citations ? JSON.parse(JSON.stringify(citations)) : []
   const rawCitationsByCnty = citationsByCnty ? JSON.parse(JSON.stringify(citationsByCnty)) : {}
+  const rawCitationsByPrd = citationsByPrd ? JSON.parse(JSON.stringify(citationsByPrd)) : {}
   const rawCitationsCnty = citationsCnty ? JSON.parse(JSON.stringify(citationsCnty)) : []
   const rawDotcom = dotcom ? JSON.parse(JSON.stringify(dotcom)) : null
   const rawDotcomByCnty = dotcomByCnty ? JSON.parse(JSON.stringify(dotcomByCnty)) : {}
@@ -530,6 +563,19 @@ export function generateCitationHTML(meta, _total, _products, citations, dotcom,
       }
       citationsByCnty = newByCnty
     }
+    if (citationsByPrd && Object.keys(citationsByPrd).length) {
+      const newByPrd = {}
+      for (const [prd, list] of Object.entries(citationsByPrd)) {
+        const filtered = list.map(c => ({ ...c, score: pickScore(c) })).filter(c => c.score > 0)
+        if (filtered.length) {
+          filtered.sort((a, b) => b.score - a.score)
+          const prdTotal = filtered.reduce((s, c) => s + c.score, 0)
+          filtered.forEach((c, i) => { c.rank = i + 1; c.ratio = prdTotal > 0 ? +((c.score / prdTotal) * 100).toFixed(1) : 0 })
+          newByPrd[prd] = filtered
+        }
+      }
+      citationsByPrd = newByPrd
+    }
   }
 
   // Dotcom 기간 필터: byMonth 우선, 누락 시 byCntyByMonth 합산으로 TTL 보완
@@ -559,6 +605,7 @@ export function generateCitationHTML(meta, _total, _products, citations, dotcom,
   const touchPointContent = [
     citNoticeHtml,
     meta.showCitations !== false ? `<div id="cit-cat-wrap">${citationSectionHtml(citations, meta, t, lang)}</div>` : '',
+    `<div id="cit-prd-wrap">${perProductSectionHtml(citationsByPrd, meta, t, lang)}</div>`,
     (meta.showCitDomain !== false || meta.showCitCnty !== false) ? `<div id="cit-dom-wrap">${citDomainSectionHtml(citationsCnty, meta, t, citations, lang, false)}</div>` : '',
     meta.showCitTouchPointsTrend !== false ? citCategoryBumpChartHtml(citTouchPointsTrend, citTrendMonths, meta, t, lang) : '',
     meta.showCitDomainTrend !== false ? citDomainBumpChartHtml(citDomainTrend, citDomainMonths, meta, t, lang) : '',
@@ -743,11 +790,13 @@ ${filterLayerHtml}
 <script>
 var _citations=${JSON.stringify(citations || [])};
 var _citationsByCnty=${JSON.stringify(citationsByCnty || {})};
+var _citationsByPrd=${JSON.stringify(citationsByPrd || {})};
 var _citationsCnty=${JSON.stringify(citationsCnty || [])};
 var _dotcom=${JSON.stringify(dotcom || null)};
 var _dotcomByCnty=${JSON.stringify(dotcomByCnty || {})};
 var _rawCitations=${JSON.stringify(rawCitations)};
 var _rawCitationsByCnty=${JSON.stringify(rawCitationsByCnty)};
+var _rawCitationsByPrd=${JSON.stringify(rawCitationsByPrd)};
 var _rawCitationsCnty=${JSON.stringify(rawCitationsCnty)};
 var _rawDotcom=${JSON.stringify(rawDotcom)};
 var _rawDotcomByCnty=${JSON.stringify(rawDotcomByCnty)};
@@ -881,6 +930,31 @@ function _dcVBar(dc,isSmall){
       +'</div>';
   }).join('')+'</div>';
 }
+function renderPerProduct(byPrd){
+  var el=document.getElementById('cit-prd-cards');
+  if(!el)return;
+  if(!byPrd||!Object.keys(byPrd).length){el.innerHTML='<div style="text-align:center;padding:12px;color:#94A3B8;font-size:12px">'+_noDataMsg+'</div>';return}
+  var topN=5;
+  var prdList=Object.keys(byPrd).sort();
+  var html=prdList.map(function(prd){
+    var list=(byPrd[prd]||[]).slice(0,topN);
+    if(!list.length)return '';
+    var maxScore=Math.max.apply(null,list.map(function(c){return c.score}).concat([1]));
+    var rows=list.map(function(c,i){
+      var pct=(c.score/maxScore*100).toFixed(1);
+      return '<div style="display:flex;align-items:center;gap:6px;padding:3px 0;font-size:11px">'
+        +'<span style="min-width:14px;font-weight:700;color:#94A3B8">'+(c.rank||i+1)+'</span>'
+        +'<span style="flex:1;color:#1A1A1A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+c.source+'</span>'
+        +'<div style="width:60px;height:6px;background:#F1F5F9;border-radius:3px;overflow:hidden"><div style="width:'+pct+'%;height:100%;background:#CF0652"></div></div>'
+        +'<span style="min-width:38px;text-align:right;color:#64748B">'+_fmt(c.score)+'</span>'
+        +'</div>';
+    }).join('');
+    return '<div style="width:calc(50% - 6px);background:#F8FAFC;border:1px solid #E8EDF2;border-radius:8px;overflow:hidden">'
+      +'<div style="padding:6px 12px;border-bottom:1px solid #F1F5F9;font-size:13px;font-weight:700;color:#1A1A1A">'+prd+'</div>'
+      +'<div style="padding:6px 12px">'+rows+'</div></div>';
+  }).filter(Boolean).join('');
+  el.innerHTML=html||'<div style="text-align:center;padding:12px;color:#94A3B8;font-size:12px">'+_noDataMsg+'</div>';
+}
 function renderDotcom(dc){
   var el=document.getElementById('cit-dc-wrap');
   if(!el)return;
@@ -927,6 +1001,20 @@ function switchMonth(month){
       var t=list.reduce(function(s,c){return s+c.score},0);
       list.forEach(function(c,i){c.rank=i+1;c.ratio=t>0?+((c.score/t)*100).toFixed(1):0});
       _citationsByCnty[cnty]=list;
+    }
+  });
+  // 제품별 Touch Points
+  _citationsByPrd={};
+  Object.keys(_rawCitationsByPrd).forEach(function(prd){
+    var list=_rawCitationsByPrd[prd].map(function(c){
+      var s=(c.monthScores&&c.monthScores[month])||0;
+      return Object.assign({},c,{score:s});
+    }).filter(function(c){return c.score>0});
+    if(list.length){
+      list.sort(function(a,b){return b.score-a.score});
+      var t=list.reduce(function(s,c){return s+c.score},0);
+      list.forEach(function(c,i){c.rank=i+1;c.ratio=t>0?+((c.score/t)*100).toFixed(1):0});
+      _citationsByPrd[prd]=list;
     }
   });
   // Domain
@@ -976,6 +1064,9 @@ function applyFilter(){
   // 도메인 Citation
   var filteredCitCnty=noneSelected?[]:(_citationsCnty||[]).filter(function(r){return r.cnty==='TTL'||enabled.includes(r.cnty)});
   renderCitDom(filteredCitCnty,!allSelected&&!noneSelected);
+
+  // 제품별 (국가 필터 무관 — TTL 행 기반)
+  renderPerProduct(_citationsByPrd);
 
   // 닷컴 Citation
   var filteredDc=_dotcom;

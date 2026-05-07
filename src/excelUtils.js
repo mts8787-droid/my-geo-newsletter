@@ -976,14 +976,15 @@ function parseCitTouchPoints(rows) {
   const startRow = (headerIdx >= 0 ? headerIdx : 0) + 1
 
   // 컬럼 레이아웃
-  let countryCol = -1, channelCol = -1, dataStartCol = 2
+  let countryCol = -1, channelCol = -1, prdCol = -1, dataStartCol = 2
   for (let i = 0; i < header.length; i++) {
     const s = String(header[i] || '').trim().toLowerCase()
     if (s === 'country' && countryCol < 0) countryCol = i
     if (s === 'channel' && channelCol < 0) channelCol = i
+    if (s === 'prd' && prdCol < 0) prdCol = i
   }
   if (countryCol >= 0 && channelCol >= 0) {
-    dataStartCol = Math.max(countryCol, channelCol) + 1
+    dataStartCol = Math.max(countryCol, channelCol, prdCol) + 1
   } else {
     // 첫 열이 비어있으면 col0=empty, col1=country, col2=channel, col3+=data
     const firstDataRow = rows[startRow]
@@ -1049,12 +1050,15 @@ function parseCitTouchPoints(rows) {
 
   // 국가별 카테고리 Citation 수집
   const citationsByCnty = {}   // { cnty: [{ source, score, ... }] }
+  // 제품별 카테고리 Citation 수집 (TTL country 행 기준)
+  const citationsByPrd = {}    // { prd: [{ source, score, ... }] }
 
   const _seenCountries = new Set()
 
   data.forEach(r => {
     const country = normCountry(r[countryCol])
     const channel = String(r[channelCol] || '').replace(/[()]/g, '').trim()
+    const prd = prdCol >= 0 ? String(r[prdCol] || '').trim() : ''
     if (!channel || channel.toLowerCase() === 'total') return
     _seenCountries.add(country)
 
@@ -1085,6 +1089,11 @@ function parseCitTouchPoints(rows) {
       if (Object.keys(monthScores).length > 0) {
         citTouchPointsTrend[channel] = monthScores
       }
+      // 제품별 데이터: PRD가 있고 TTL country 행이면 수집
+      if (prd && score > 0) {
+        if (!citationsByPrd[prd]) citationsByPrd[prd] = []
+        citationsByPrd[prd].push({ source: channel, category: '', score, delta: 0, ratio: 0, monthScores })
+      }
     } else if (score > 0) {
       if (!citationsByCnty[country]) citationsByCnty[country] = []
       citationsByCnty[country].push({ source: channel, category: '', score, delta: 0, ratio: 0, monthScores })
@@ -1105,6 +1114,15 @@ function parseCitTouchPoints(rows) {
     list.forEach((c, i) => {
       c.rank = i + 1
       c.ratio = cntyTotal > 0 ? +((c.score / cntyTotal) * 100).toFixed(1) : 0
+    })
+  }
+  // 제품별 citations 순위 계산
+  for (const [prd, list] of Object.entries(citationsByPrd)) {
+    const prdTotal = list.reduce((s, c) => s + c.score, 0)
+    list.sort((a, b) => b.score - a.score)
+    list.forEach((c, i) => {
+      c.rank = i + 1
+      c.ratio = prdTotal > 0 ? +((c.score / prdTotal) * 100).toFixed(1) : 0
     })
   }
 
@@ -1128,6 +1146,7 @@ function parseCitTouchPoints(rows) {
   const result = {}
   if (citations.length > 0) result.citations = citations
   if (Object.keys(citationsByCnty).length > 0) result.citationsByCnty = citationsByCnty
+  if (Object.keys(citationsByPrd).length > 0) result.citationsByPrd = citationsByPrd
   if (Object.keys(citTouchPointsTrend).length > 0) {
     result.citTouchPointsTrend = citTouchPointsTrend
     result.citTrendMonths = validMonths

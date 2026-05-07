@@ -10,7 +10,7 @@ import { generateDashboardHTML } from '../dashboard/dashboardTemplate.js'
 export default function CitationSidebar({
   mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn,
   citations, setCitations, citationsCnty, setCitationsCnty, dotcom, setDotcom,
-  citationsByCnty, setCitationsByCnty, dotcomByCnty, setDotcomByCnty,
+  citationsByCnty, setCitationsByCnty, citationsByPrd, setCitationsByPrd, dotcomByCnty, setDotcomByCnty,
   citTouchPointsTrend, setCitTouchPointsTrend, citTrendMonths, setCitTrendMonths,
   citDomainTrend, setCitDomainTrend, citDomainMonths, setCitDomainMonths,
   dotcomTrend, setDotcomTrend, dotcomTrendMonths, setDotcomTrendMonths,
@@ -72,6 +72,7 @@ export default function CitationSidebar({
       }
       if (parsed.citations)     setCitations(parsed.citations)
       if (parsed.citationsByCnty) setCitationsByCnty(parsed.citationsByCnty)
+      if (parsed.citationsByPrd) setCitationsByPrd(parsed.citationsByPrd)
       if (parsed.dotcom)        setDotcom(d => ({ ...d, ...parsed.dotcom }))
       if (parsed.dotcomByCnty)  setDotcomByCnty(parsed.dotcomByCnty)
       if (parsed.citationsCnty) setCitationsCnty(parsed.citationsCnty)
@@ -96,6 +97,7 @@ export default function CitationSidebar({
           meta: parsed.meta || null,
           citations: parsed.citations || null,
           citationsByCnty: parsed.citationsByCnty || null,
+          citationsByPrd: parsed.citationsByPrd || null,
           dotcom: parsed.dotcom || null,
           dotcomByCnty: parsed.dotcomByCnty || null,
           citationsCnty: parsed.citationsCnty || null,
@@ -127,8 +129,8 @@ export default function CitationSidebar({
       const resolvedKo = resolveDataForLang([], [], citations, citationsCnty, 'ko')
       const resolvedEn = resolveDataForLang([], [], citations, citationsCnty, 'en')
       const trendData = { citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, dotcomTrend, dotcomTrendMonths }
-      const htmlKo = generateHTML(metaKo, null, [], resolvedKo.citations, dotcom, 'ko', [], resolvedKo.citationsCnty, trendData, citationsByCnty, dotcomByCnty)
-      const htmlEn = generateHTML(metaEn, null, [], resolvedEn.citations, dotcom, 'en', [], resolvedEn.citationsCnty, trendData, citationsByCnty, dotcomByCnty)
+      const htmlKo = generateHTML(metaKo, null, [], resolvedKo.citations, dotcom, 'ko', [], resolvedKo.citationsCnty, trendData, citationsByCnty, dotcomByCnty, citationsByPrd)
+      const htmlEn = generateHTML(metaEn, null, [], resolvedEn.citations, dotcom, 'en', [], resolvedEn.citationsCnty, trendData, citationsByCnty, dotcomByCnty, citationsByPrd)
       const title = `${metaKo.period || ''} Citation Dashboard`.trim()
       const res = await fetch('/api/publish-citation', {
         method: 'POST',
