@@ -1306,6 +1306,19 @@ export function generateDashboardHTML(meta, total, products, citations, dotcom, 
   ).join('')
 
   const langToggleHtml = `<div class="fl-group"><div style="display:flex;gap:2px;background:#F1F5F9;border-radius:6px;padding:2px"><button class="lang-btn${lang==='ko'?' active':''}" onclick="switchLang('ko')">KO</button><button class="lang-btn${lang==='en'?' active':''}" onclick="switchLang('en')">EN</button></div></div><div class="fl-divider"></div>`
+  // 주차/월 드롭다운 옵션 — wLabels 전체, monthlyLabels(아래에서 정의)
+  const weekFullLabels = (opts?.weeklyLabelsFull && opts.weeklyLabelsFull.length === wLabels.length) ? opts.weeklyLabelsFull : wLabels
+  const weekOptionsHtml = wLabels.map((w, i) => `<option value="${i}"${i === wLabels.length - 1 ? ' selected' : ''}>${weekFullLabels[i] || w}</option>`).join('')
+  // monthlyLabels는 아래 monthlyContent 섹션에서 만들지만, dropdown용으로 미리 계산
+  const _monthOptsRaw = (products[0]?.monthlyScores || []).map(m => {
+    const MNAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+    const km = String(m.date).match(/(\d{1,2})월/)
+    const em = String(m.date).match(/(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i)
+    return km ? MNAMES[parseInt(km[1])-1] : em ? em[1].charAt(0).toUpperCase()+em[1].slice(1).toLowerCase() : m.date
+  })
+  const monthOptionsHtml = _monthOptsRaw.map((m, i) => `<option value="${i}"${i === _monthOptsRaw.length - 1 ? ' selected' : ''}>${m}</option>`).join('')
+  const dropSelStyle = `padding:3px 8px;border-radius:6px;border:1px solid #CBD5E1;font-size:13px;background:#fff;cursor:pointer;font-family:${FONT}`
+
   const filterLayerHtml = `<div class="filter-layer" id="filter-layer">
     <div class="fl-row">
       ${langToggleHtml}
@@ -1321,6 +1334,15 @@ export function generateDashboardHTML(meta, total, products, citations, dotcom, 
           <button class="trend-tab active" onclick="switchPeriodPage('weekly')">${lang === 'en' ? 'Weekly' : '주간'}</button>
           <button class="trend-tab" onclick="switchPeriodPage('monthly')">${lang === 'en' ? 'Monthly' : '월간'}</button>
         </div>
+      </div>
+      <div class="fl-divider"></div>
+      <div class="fl-group" id="vis-week-select-group"${wLabels.length > 1 ? '' : ' style="display:none"'}>
+        <span class="fl-label">${lang === 'en' ? 'Week' : '주차'}</span>
+        <select id="vis-week-select" onchange="switchVisWeek(parseInt(this.value))" style="${dropSelStyle}">${weekOptionsHtml}</select>
+      </div>
+      <div class="fl-group" id="vis-month-select-group" style="display:none">
+        <span class="fl-label">${lang === 'en' ? 'Month' : '월'}</span>
+        <select id="vis-month-select" onchange="switchVisMonth(parseInt(this.value))" style="${dropSelStyle}"${_monthOptsRaw.length > 0 ? '' : ' disabled'}>${monthOptionsHtml || '<option>—</option>'}</select>
       </div>
     </div>
     <div class="fl-row">

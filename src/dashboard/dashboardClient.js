@@ -94,6 +94,7 @@ function switchVisSub(sub){
   if(subMap[sub]!==undefined&&btns[subMap[sub]])btns[subMap[sub]].classList.add('active');
 }
 function switchPeriodPage(mode){
+  _periodMode=mode;
   var wc=document.getElementById('bu-weekly-content');
   var mc=document.getElementById('bu-monthly-content');
   if(wc)wc.style.display=mode==='weekly'?'':'none';
@@ -109,6 +110,55 @@ function switchPeriodPage(mode){
   var weekBadge=document.getElementById('period-weekly-badge');
   if(monthBadge)monthBadge.style.display=mode==='monthly'?'':'none';
   if(weekBadge)weekBadge.style.display=mode==='weekly'?'':'none';
+  // 주차/월 드롭다운 표시 토글
+  var wkGrp=document.getElementById('vis-week-select-group');
+  var mnGrp=document.getElementById('vis-month-select-group');
+  if(wkGrp)wkGrp.style.display=mode==='weekly'?'':'none';
+  if(mnGrp)mnGrp.style.display=mode==='monthly'?'':'none';
+}
+// 주차/월 선택 (Visibility 전용 — 제품 카드 점수 갱신)
+var _curWeekIdx=-1;  // -1 = 최신
+var _curMonthIdx=-1; // -1 = 최신
+function _arrAtIdx(arr,idx){
+  if(!arr||!arr.length)return null;
+  var i=idx<0||idx>=arr.length?arr.length-1:idx;
+  return arr[i];
+}
+function switchVisWeek(idx){
+  _curWeekIdx=idx;
+  // 주차 뱃지 업데이트 (W6 (2/2~2/8) data)
+  var sel=document.getElementById('vis-week-select');
+  var label=sel&&sel.options[sel.selectedIndex]?sel.options[sel.selectedIndex].textContent:_wLabels[idx];
+  var badge=document.getElementById('period-weekly-badge');
+  if(badge)badge.textContent=label+' '+(_curLang==='en'?'data':'기준');
+  // 제품 카드/Hero 재계산
+  if(typeof onFilterChange==='function')onFilterChange();
+  else if(typeof updateHeroFromCheckboxes==='function')updateHeroFromCheckboxes();
+}
+function switchVisMonth(idx){
+  _curMonthIdx=idx;
+  var sel=document.getElementById('vis-month-select');
+  var label=sel&&sel.options[sel.selectedIndex]?sel.options[sel.selectedIndex].textContent:'';
+  var mb=document.getElementById('period-badge');
+  if(mb)mb.textContent=label;
+  updateMonthlyProductScores();
+}
+function updateMonthlyProductScores(){
+  var monthlyContainer=document.getElementById('bu-monthly-content');
+  if(!monthlyContainer)return;
+  var cards=monthlyContainer.querySelectorAll('.prod-card');
+  cards.forEach(function(card){
+    var nameEl=card.querySelector('.prod-name');if(!nameEl)return;
+    var name=nameEl.textContent.replace(/\\*$/,'');
+    var prod=_products.find(function(p){return p.kr===name||p.en===name});if(!prod)return;
+    var ms=prod.monthlyScores||[];if(!ms.length)return;
+    var pick=_arrAtIdx(ms,_curMonthIdx);
+    if(!pick)return;
+    var sc=Number(pick.score)||0;
+    // 카드의 메인 점수 영역만 업데이트
+    var scoreEl=card.querySelector('.prod-score');
+    if(scoreEl)scoreEl.textContent=sc.toFixed(1);
+  });
 }
 function switchPeriodMode(mode){
   _periodMode=mode;
@@ -1063,7 +1113,13 @@ function updateProductScores(selCountry,selBU,selProd){
   if(!weeklyContainer)return;
   var cards=weeklyContainer.querySelectorAll('.prod-card');
   var countries=selCountry.isAll?null:Object.keys(selCountry.vals);
-  // 전체 국가 선택 시 → 주간 TTL 데이터 사용 (마지막 주 LG 점수 + 경쟁사)
+  // 선택된 주차의 인덱스 (없으면 마지막)
+  function _pickW(arr){
+    if(!arr||!arr.length)return null;
+    var idx=_curWeekIdx<0||_curWeekIdx>=arr.length?arr.length-1:_curWeekIdx;
+    return arr[idx];
+  }
+  // 전체 국가 선택 시 → 주간 TTL 데이터 사용 (선택 주차 LG 점수 + 경쟁사)
   if(selCountry.isAll){
     cards.forEach(function(card){
       var nameEl=card.querySelector('.prod-name');if(!nameEl)return;
@@ -1072,12 +1128,12 @@ function updateProductScores(selCountry,selBU,selProd){
       var prod=_products.find(function(p){return p.kr===name||p.en===name});if(!prod)return;
       var totalData=(_weeklyAll[prod.id]||{})['Total']||{};
       var weekly=totalData.LG||[];
-      var validW=weekly.filter(function(v){return v!=null});
-      // 주간 마지막 주 점수 (null 제외)
-      var wScore=validW.length>0?validW[validW.length-1]:prod.score;
-      // 주간 경쟁사 마지막 주 1위 (null 제외)
+      // 선택 주차 점수 (해당 주 값이 null이면 0 폴백)
+      var wScore=_pickW(weekly);
+      if(wScore==null)wScore=prod.score;
+      // 선택 주차 경쟁사 1위
       var wComp=0;
-      Object.keys(totalData).forEach(function(b){if(b==='LG'||b==='lg')return;var arr=(totalData[b]||[]).filter(function(v){return v!=null});var last=arr.length?arr[arr.length-1]:0;if(last>wComp)wComp=last});
+      Object.keys(totalData).forEach(function(b){if(b==='LG'||b==='lg')return;var arr=totalData[b]||[];var v=_pickW(arr);if(v!=null&&v>wComp)wComp=v});
       var wRatio=wComp>0?Math.round(wScore/wComp*100):100;
       var mL=_get4MLabels(prod);
       _updateCard(card,wScore,wRatio,weekly,_wLabels,null,mL);
@@ -1085,7 +1141,7 @@ function updateProductScores(selCountry,selBU,selProd){
     return;
   }
   if(!countries||!countries.length)return;
-  // 주간 국가별 데이터: weeklyAll에서 선택된 국가의 마지막 주 LG/경쟁사 평균
+  // 주간 국가별 데이터: weeklyAll에서 선택된 국가의 선택 주차 LG/경쟁사 평균
   cards.forEach(function(card){
     var nameEl=card.querySelector('.prod-name');if(!nameEl)return;
     var name=nameEl.textContent.replace(/\\*$/,'');
@@ -1094,11 +1150,11 @@ function updateProductScores(selCountry,selBU,selProd){
     var scores=[];var compScores=[];
     countries.forEach(function(c){
       var cd=prodData[c];if(!cd)return;
-      var lgArr=cd.LG||cd.lg||[];var last=lgArr.length?lgArr[lgArr.length-1]:0;
-      if(last>0)scores.push(last);
+      var lgArr=cd.LG||cd.lg||[];var last=_pickW(lgArr);
+      if(last!=null&&last>0)scores.push(last);
       // 경쟁사 1위
       var topComp=0;
-      Object.keys(cd).forEach(function(b){if(b==='LG'||b==='lg')return;var a=cd[b]||[];var l=a.length?a[a.length-1]:0;if(l>topComp)topComp=l});
+      Object.keys(cd).forEach(function(b){if(b==='LG'||b==='lg')return;var a=cd[b]||[];var l=_pickW(a);if(l!=null&&l>topComp)topComp=l});
       if(topComp>0)compScores.push(topComp);
     });
     var score,compPct;
@@ -1107,9 +1163,10 @@ function updateProductScores(selCountry,selBU,selProd){
       var comp=compScores.length?+(compScores.reduce(function(s,v){return s+v},0)/compScores.length).toFixed(1):0;
       compPct=comp>0?Math.round(score/comp*100):100;
     }else{
-      // 선택 국가에 주간 데이터 없으면 TTL 폴백
+      // 선택 국가/주차에 주간 데이터 없으면 TTL 폴백
       var totalLG=(prodData['Total']||{}).LG||[];
-      score=totalLG.length?totalLG[totalLG.length-1]:prod.score;
+      var t=_pickW(totalLG);
+      score=t!=null?t:prod.score;
       compPct=prod.compRatio||100;
     }
     var weekly=_getWeeklyForCountries(prod.id,countries);
