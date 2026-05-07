@@ -354,7 +354,7 @@ function productSectionHtml(products, meta, t, lang, wLabels, ulMap, monthlyVis,
           <span class="prod-delta prod-mom" style="display:none;color:${momColor}">${momD != null ? `MoM ${momArrow} ${Math.abs(momD).toFixed(1)}%p` : 'MoM —'}</span>
         </div>
         <div class="prod-chart">
-          <div class="trend-weekly">${svgLine(weekly, wLabels, 300, 90, sparkColor)}</div>
+          <div class="trend-weekly">${svgLine(weekly.slice(-10), wLabels.slice(-10), 300, 90, sparkColor)}</div>
           <div class="trend-monthly" style="display:none">${svgLine(m4Data, m4Labels, 300, 90, sparkColor)}</div>
         </div>
         <div class="prod-comp">

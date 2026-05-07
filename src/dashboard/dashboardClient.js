@@ -116,17 +116,24 @@ function switchPeriodPage(mode){
   if(wkGrp)wkGrp.style.display=mode==='weekly'?'':'none';
   if(mnGrp)mnGrp.style.display=mode==='monthly'?'':'none';
 }
-// 주차/월 선택 (Visibility 전용 — 제품 카드 점수 갱신)
-var _curWeekIdx=-1;  // -1 = 최신
-var _curMonthIdx=-1; // -1 = 최신
+// 주차/월 선택 (Visibility 전용 — 제품 카드 점수 + 미니그래프 + 트렌드 truncation)
+var _curWeekIdx=-1;        // -1 = 최신 (wLabels 인덱스)
+var _curMonthIdx=-1;       // -1 = 최신 (dropdown 인덱스, monthlyScores 배열 기준)
+var _curMonthIdxIn12=-1;   // 0=Jan, 11=Dec (트렌드 차트 truncate용)
 function _arrAtIdx(arr,idx){
   if(!arr||!arr.length)return null;
   var i=idx<0||idx>=arr.length?arr.length-1:idx;
   return arr[i];
 }
+// 미니그래프용 슬라이스: 선택 주차까지 + 최근 10주만
+function _miniSlice(arr,labels){
+  if(!arr||!arr.length)return{data:arr||[],labels:labels||[]};
+  var end=_curWeekIdx<0||_curWeekIdx>=arr.length?arr.length-1:_curWeekIdx;
+  var start=Math.max(0,end-9);
+  return{data:arr.slice(start,end+1),labels:(labels||[]).slice(start,end+1)};
+}
 function switchVisWeek(idx){
   _curWeekIdx=idx;
-  // 주차 뱃지 업데이트 (W6 (2/2~2/8) data)
   var sel=document.getElementById('vis-week-select');
   var label=sel&&sel.options[sel.selectedIndex]?sel.options[sel.selectedIndex].textContent:_wLabels[idx];
   var badge=document.getElementById('period-weekly-badge');
@@ -134,16 +141,23 @@ function switchVisWeek(idx){
   // 제품 카드/Hero 재계산
   if(typeof onFilterChange==='function')onFilterChange();
   else if(typeof updateHeroFromCheckboxes==='function')updateHeroFromCheckboxes();
+  // 하단 트렌드 차트 truncate
+  _updateTrendCharts();
 }
 function switchVisMonth(idx){
   _curMonthIdx=idx;
   var sel=document.getElementById('vis-month-select');
-  var label=sel&&sel.options[sel.selectedIndex]?sel.options[sel.selectedIndex].textContent:'';
+  var monthName=sel&&sel.options[sel.selectedIndex]?sel.options[sel.selectedIndex].textContent:'';
+  var MN=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  _curMonthIdxIn12=MN.indexOf(monthName);
   var mb=document.getElementById('period-badge');
-  if(mb)mb.textContent=label;
-  updateMonthlyProductScores();
+  if(mb)mb.textContent=monthName;
+  _applyMonthSelectionOverride();
+  _updateMonthlyTrendCharts();
 }
-function updateMonthlyProductScores(){
+// 월 드롭다운으로 선택된 월의 점수/경쟁비를 카드에 덮어쓰기
+function _applyMonthSelectionOverride(){
+  if(_curMonthIdx<0)return;
   var monthlyContainer=document.getElementById('bu-monthly-content');
   if(!monthlyContainer)return;
   var cards=monthlyContainer.querySelectorAll('.prod-card');
@@ -155,9 +169,55 @@ function updateMonthlyProductScores(){
     var pick=_arrAtIdx(ms,_curMonthIdx);
     if(!pick)return;
     var sc=Number(pick.score)||0;
-    // 카드의 메인 점수 영역만 업데이트
     var scoreEl=card.querySelector('.prod-score');
-    if(scoreEl)scoreEl.textContent=sc.toFixed(1);
+    if(scoreEl)scoreEl.innerHTML=sc.toFixed(1)+'<small>%</small>';
+    // 경쟁비 (allScores에서 LG 외 1위 추출, 폴백 pick.comp)
+    var compTop=0;
+    if(pick.allScores){Object.keys(pick.allScores).forEach(function(b){if(b==='LG'||b==='lg')return;var v=Number(pick.allScores[b])||0;if(v>compTop)compTop=v})}
+    if(!compTop&&pick.comp)compTop=Number(pick.comp)||0;
+    var compPct=compTop>0?Math.round(sc/compTop*100):100;
+    var cc=compPct>=100?'#15803D':compPct>=80?'#D97706':'#BE123C';
+    var compBar=card.querySelector('.prod-comp-bar');if(compBar){compBar.style.width=Math.min(compPct,120)+'%';compBar.style.background=cc}
+    var compPctEl=card.querySelector('.prod-comp-pct');if(compPctEl){compPctEl.textContent=compPct+'%';compPctEl.style.color=cc}
+  });
+}
+// 하단 주간 트렌드 차트 truncate — SVG는 clip-path, 표 셀은 display:none
+function _updateTrendCharts(){
+  var N=_wLabels.length;if(!N)return;
+  var endIdx=_curWeekIdx<0||_curWeekIdx>=N?N-1:_curWeekIdx;
+  var rightClipPct=Math.max(0,(N-endIdx-1)/N)*100;
+  var rows=document.querySelectorAll('#trend-container .trend-row');
+  rows.forEach(function(row){
+    var svg=row.querySelector('svg');
+    if(svg)svg.style.clipPath='inset(0 '+rightClipPct.toFixed(2)+'% 0 0)';
+    row.querySelectorAll('table > tbody > tr').forEach(function(tr){
+      var cells=tr.children;
+      if(cells.length<=2)return;  // chart row / legend row (colspan)
+      for(var i=1;i<cells.length;i++){
+        var weekIdx=i-1;
+        cells[i].style.display=weekIdx>endIdx?'none':'';
+      }
+    });
+  });
+}
+// 하단 월간 트렌드 차트 truncate — 12개월 기준 (0=Jan, 11=Dec)
+function _updateMonthlyTrendCharts(){
+  if(_curMonthIdxIn12<0)return;
+  var N=12;
+  var endIdx=_curMonthIdxIn12;
+  var rightClipPct=Math.max(0,(N-endIdx-1)/N)*100;
+  var rows=document.querySelectorAll('#monthly-trend-container .trend-row');
+  rows.forEach(function(row){
+    var svg=row.querySelector('svg');
+    if(svg)svg.style.clipPath='inset(0 '+rightClipPct.toFixed(2)+'% 0 0)';
+    row.querySelectorAll('table > tbody > tr').forEach(function(tr){
+      var cells=tr.children;
+      if(cells.length<=2)return;
+      for(var i=1;i<cells.length;i++){
+        var monthIdx=i-1;
+        cells[i].style.display=monthIdx>endIdx?'none':'';
+      }
+    });
   });
 }
 function switchPeriodMode(mode){
@@ -1136,7 +1196,8 @@ function updateProductScores(selCountry,selBU,selProd){
       Object.keys(totalData).forEach(function(b){if(b==='LG'||b==='lg')return;var arr=totalData[b]||[];var v=_pickW(arr);if(v!=null&&v>wComp)wComp=v});
       var wRatio=wComp>0?Math.round(wScore/wComp*100):100;
       var mL=_get4MLabels(prod);
-      _updateCard(card,wScore,wRatio,weekly,_wLabels,null,mL);
+      var mini=_miniSlice(weekly,_wLabels);
+      _updateCard(card,wScore,wRatio,mini.data,mini.labels,null,mL);
     });
     return;
   }
@@ -1171,7 +1232,8 @@ function updateProductScores(selCountry,selBU,selProd){
     }
     var weekly=_getWeeklyForCountries(prod.id,countries);
     var mL=_get4MLabels(prod);
-    _updateCard(card,score,compPct,weekly,_wLabels,null,mL);
+    var mini=_miniSlice(weekly,_wLabels);
+    _updateCard(card,score,compPct,mini.data,mini.labels,null,mL);
   });
 }
 
