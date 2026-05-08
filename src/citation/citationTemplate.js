@@ -928,12 +928,14 @@ function renderCitDom(citCnty,useAgg,prdData,enabledCntys){
   var el=document.getElementById('cit-dom-wrap');
   if(!el)return;
   var topN=_meta.citDomainTopN||10;var rows;
+  // PRD-specific 행은 도메인 합계에 더해지면 PRD=TTL과 이중 합산되므로 top/By Country 집계에서 제외
+  var isPrdTtlRow=function(r){return!r.prd||/^(ttl|total)$/i.test(r.prd)};
   if(useAgg){
-    var countryRows=citCnty.filter(function(r){return r.cnty!=='TTL'});
+    var countryRows=citCnty.filter(function(r){return r.cnty!=='TTL'&&isPrdTtlRow(r)});
     var dm={};countryRows.forEach(function(r){var k=r.domain;if(!dm[k])dm[k]={domain:r.domain,type:r.type,citations:0};dm[k].citations+=r.citations});
     rows=Object.values(dm).sort(function(a,b){return b.citations-a.citations}).slice(0,topN);
   } else {
-    rows=citCnty.filter(function(r){return r.cnty==='TTL'}).sort(function(a,b){return a.rank-b.rank}).slice(0,topN);
+    rows=citCnty.filter(function(r){return r.cnty==='TTL'&&isPrdTtlRow(r)}).sort(function(a,b){return a.rank-b.rank}).slice(0,topN);
   }
   // 전체 세로 막대그래프
   var body=_citVBar(_domToVBarData(rows||[],topN),topN,false);
@@ -943,7 +945,7 @@ function renderCitDom(citCnty,useAgg,prdData,enabledCntys){
   var countries=enabledCntys&&enabledCntys.length?ALL.filter(function(c){return enabledCntys.indexOf(c)>=0}):ALL;
   var cntyCards=[];
   countries.forEach(function(cnty){
-    var cRows=citCnty.filter(function(r){return r.cnty===cnty}).sort(function(a,b){return b.citations-a.citations});
+    var cRows=citCnty.filter(function(r){return r.cnty===cnty&&isPrdTtlRow(r)}).sort(function(a,b){return b.citations-a.citations});
     if(!cRows.length)return;
     cntyCards.push(_vbarCard(_cn(cnty),_citVBar(_domToVBarData(cRows,8),8,true)));
   });
