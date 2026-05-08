@@ -930,12 +930,23 @@ function renderCitDom(citCnty,useAgg,prdData,enabledCntys){
   var topN=_meta.citDomainTopN||10;var rows;
   // PRD-specific 행은 도메인 합계에 더해지면 PRD=TTL과 이중 합산되므로 top/By Country 집계에서 제외
   var isPrdTtlRow=function(r){return!r.prd||/^(ttl|total)$/i.test(r.prd)};
+  function aggByCnty(filterFn){
+    var dm={};
+    citCnty.filter(filterFn).forEach(function(r){
+      var k=r.domain;
+      if(!dm[k])dm[k]={domain:r.domain,type:r.type,citations:0};
+      dm[k].citations+=r.citations;
+    });
+    return Object.values(dm).sort(function(a,b){return b.citations-a.citations}).slice(0,topN);
+  }
   if(useAgg){
-    var countryRows=citCnty.filter(function(r){return r.cnty!=='TTL'&&isPrdTtlRow(r)});
-    var dm={};countryRows.forEach(function(r){var k=r.domain;if(!dm[k])dm[k]={domain:r.domain,type:r.type,citations:0};dm[k].citations+=r.citations});
-    rows=Object.values(dm).sort(function(a,b){return b.citations-a.citations}).slice(0,topN);
+    rows=aggByCnty(function(r){return r.cnty!=='TTL'&&isPrdTtlRow(r)});
   } else {
     rows=citCnty.filter(function(r){return r.cnty==='TTL'&&isPrdTtlRow(r)}).sort(function(a,b){return a.rank-b.rank}).slice(0,topN);
+    // 폴백: TTL 국가에 해당 월 데이터가 없으면 per-country 합산을 top으로 사용 (By Product 노출 위함)
+    if(!rows.length){
+      rows=aggByCnty(function(r){return r.cnty!=='TTL'&&isPrdTtlRow(r)});
+    }
   }
   // 전체 세로 막대그래프
   var body=_citVBar(_domToVBarData(rows||[],topN),topN,false);
