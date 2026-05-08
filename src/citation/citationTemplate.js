@@ -964,34 +964,27 @@ function renderCitDom(citCnty,useAgg,prdData,enabledCntys){
     body+=_subSection(_lang==='en'?'By Country':'국가별',cntyCards.join(''));
   }
 
-  // By Product (국가 × 제품 카드, 안에 도메인 바 — 개별 국가 단위로 계산)
+  // By Product (제품별 카드, 안에 도메인 바 — 선택 국가 합산 기준 제품 내 도메인 비중)
   var isRatio=_meta.byProductMode==='ratio';
   var ALLP=['US','CA','UK','DE','ES','BR','MX','AU','VN','IN'];
   var allowedP=enabledCntys&&enabledCntys.length?enabledCntys:ALLP;
   var isPrdSpec=function(p){if(!p)return false;var u=String(p).toUpperCase();return u!=='TTL'&&u!=='TOTAL'};
-  // (cnty, prd) → { domain → score }
-  var grpMap={};
+  // prd → { domain → score (선택 국가 전체 합) }
+  var prdMap={};
   (_citationsCnty||[]).forEach(function(r){
     if(!isPrdSpec(r.prd))return;
     if(allowedP.indexOf(r.cnty)<0)return;
-    var key=r.cnty+'|'+r.prd;
     var d=_stripDomain(r.domain);
-    if(!grpMap[key])grpMap[key]={cnty:r.cnty,prd:r.prd,doms:{}};
-    grpMap[key].doms[d]=(grpMap[key].doms[d]||0)+(r.citations||0);
-  });
-  // 카드 정렬: 국가 → 제품
-  var grpEntries=Object.values(grpMap).sort(function(a,b){
-    var ci=ALLP.indexOf(a.cnty)-ALLP.indexOf(b.cnty);
-    if(ci!==0)return ci;
-    return String(a.prd).localeCompare(String(b.prd));
+    if(!prdMap[r.prd])prdMap[r.prd]={};
+    prdMap[r.prd][d]=(prdMap[r.prd][d]||0)+(r.citations||0);
   });
   var prdCards=[];
-  grpEntries.forEach(function(e){
-    var list=Object.keys(e.doms).map(function(d){return{source:d,score:e.doms[d]}})
+  Object.keys(prdMap).sort().forEach(function(prd){
+    var dm=prdMap[prd];
+    var list=Object.keys(dm).map(function(d){return{source:d,score:dm[d]}})
       .sort(function(a,b){return b.score-a.score});
     if(!list.length)return;
-    var title=_cn(e.cnty)+' · '+e.prd;
-    prdCards.push(_vbarCard(title,_citVBar(list,8,true,'#F87171',isRatio)));
+    prdCards.push(_vbarCard(prd,_citVBar(list,8,true,'#F87171',isRatio)));
   });
   if(prdCards.length){
     body+=_subSection(_lang==='en'?'By Product':'제품별',prdCards.join(''));
