@@ -1357,6 +1357,7 @@ function parseCitDomain(rows) {
 
     const domain = String(r[domainCol] || '').trim()
     const type = String(r[typeCol] || '').trim()
+    const prd = prdCol >= 0 ? String(r[prdCol] || '').trim() : ''
 
     // 이전 구조: 도메인 없는 행이 국가 마커일 수 있음
     if (!isNewLayout && (!domain || !domain.includes('.'))) {
@@ -1421,7 +1422,7 @@ function parseCitDomain(rows) {
 
     if (citations > 0) {
       cntyRanks[cnty] = (cntyRanks[cnty] || 0) + 1
-      result.push({ cnty, rank: cntyRanks[cnty], domain, type, citations, monthScores })
+      result.push({ cnty, rank: cntyRanks[cnty], domain, type, citations, monthScores, prd })
     }
   }
 
