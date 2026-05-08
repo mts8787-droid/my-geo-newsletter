@@ -804,6 +804,10 @@ function _stripDomain(d){return(d||'').replace(/\\.(com|org|net|co\\.uk|com\\.br
 
 var _CNTY_NAMES=${JSON.stringify(COUNTRY_FULL_NAME)};
 function _cn(c){return _CNTY_NAMES[c]||_CNTY_NAMES[c&&c.toUpperCase()]||c}
+// 제품 정렬 순서: TV·Monitor·Audio·Washer(WM)·Fridge·DW·Vacuum·Cooking·RAC(AC)·Aircare
+var _PRD_ORDER_MAP={'tv':0,'monitor':1,'audio':2,'washer':3,'wm':3,'fridge':4,'ref':4,'refrigerator':4,'dw':5,'dishwasher':5,'vacuum':6,'vac':6,'cooking':7,'cook':7,'rac':8,'aircare':9};
+function _prdOrderIdx(p){var l=String(p||'').toLowerCase();return _PRD_ORDER_MAP[l]!=null?_PRD_ORDER_MAP[l]:999}
+function _prdSort(a,b){var ai=_prdOrderIdx(a),bi=_prdOrderIdx(b);if(ai!==bi)return ai-bi;return String(a).localeCompare(String(b))}
 function _citCatRows(cits,topN){
   if(!cits||!cits.length)return'<div style="text-align:center;padding:20px;color:#94A3B8;font-size:13px">'+_noDataMsg+'</div>';
   var list=cits.slice(0,topN);
@@ -875,7 +879,7 @@ function renderCitCat(cits,prdData,enabledCntys){
   var isRatio=_meta.byProductMode==='ratio';
   var prdSrc=prdData||_citationsByPrd||{};
   var prdCards=[];
-  Object.keys(prdSrc).sort().forEach(function(prd){
+  Object.keys(prdSrc).sort(_prdSort).forEach(function(prd){
     var list=prdSrc[prd];
     if(!list||!list.length)return;
     list=list.slice().sort(function(a,b){return b.score-a.score});
@@ -979,7 +983,7 @@ function renderCitDom(citCnty,useAgg,prdData,enabledCntys){
     prdMap[r.prd][d]=(prdMap[r.prd][d]||0)+(r.citations||0);
   });
   var prdCards=[];
-  Object.keys(prdMap).sort().forEach(function(prd){
+  Object.keys(prdMap).sort(_prdSort).forEach(function(prd){
     var dm=prdMap[prd];
     var list=Object.keys(dm).map(function(d){return{source:d,score:dm[d]}})
       .sort(function(a,b){return b.score-a.score});
