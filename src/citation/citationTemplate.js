@@ -805,7 +805,7 @@ function _stripDomain(d){return(d||'').replace(/\\.(com|org|net|co\\.uk|com\\.br
 var _CNTY_NAMES=${JSON.stringify(COUNTRY_FULL_NAME)};
 function _cn(c){return _CNTY_NAMES[c]||_CNTY_NAMES[c&&c.toUpperCase()]||c}
 // 제품 정렬 순서: TV·Monitor·Audio·Washer(WM)·Fridge·DW·Vacuum·Cooking·RAC(AC)·Aircare
-var _PRD_ORDER_MAP={'tv':0,'monitor':1,'audio':2,'washer':3,'wm':3,'fridge':4,'ref':4,'refrigerator':4,'dw':5,'dishwasher':5,'vacuum':6,'vac':6,'cooking':7,'cook':7,'rac':8,'aircare':9};
+var _PRD_ORDER_MAP={'tv':0,'monitor':1,'it':1,'audio':2,'washer':3,'wm':3,'fridge':4,'ref':4,'refrigerator':4,'dw':5,'dishwasher':5,'vacuum':6,'vac':6,'cooking':7,'cook':7,'rac':8,'aircare':9};
 function _prdOrderIdx(p){var l=String(p||'').toLowerCase();return _PRD_ORDER_MAP[l]!=null?_PRD_ORDER_MAP[l]:999}
 function _prdSort(a,b){var ai=_prdOrderIdx(a),bi=_prdOrderIdx(b);if(ai!==bi)return ai-bi;return String(a).localeCompare(String(b))}
 function _citCatRows(cits,topN){

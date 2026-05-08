@@ -190,6 +190,12 @@ function _applyMonthSelectionOverride(){
     var cc=compPct>=100?'#15803D':compPct>=80?'#D97706':'#BE123C';
     var compBar=card.querySelector('.prod-comp-bar');if(compBar){compBar.style.width=Math.min(compPct,120)+'%';compBar.style.background=cc}
     var compPctEl=card.querySelector('.prod-comp-pct');if(compPctEl){compPctEl.textContent=compPct+'%';compPctEl.style.color=cc}
+    // status badge / 카드 테두리도 선택 월 기준으로 재계산
+    var status=compPct>=100?'lead':compPct>=80?'behind':'critical';
+    var st=_statusInfo(status);
+    var badge=card.querySelector('.prod-badge');
+    if(badge){badge.style.background=st.bg;badge.style.color=st.color;badge.style.borderColor=st.border;badge.textContent=st.label}
+    card.style.borderColor=st.border;
     // 월간 미니차트 truncate: 선택 월까지만
     var mChart=card.querySelector('.trend-monthly');
     if(mChart){
