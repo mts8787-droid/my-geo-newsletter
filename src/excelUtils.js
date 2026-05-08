@@ -1346,83 +1346,151 @@ function parseCitDomain(rows) {
     }
   }
 
+  // v3 layout 검출: 월 컬럼마다 (Region, Domain, Type) 블록이 앞에 반복
+  // 헤더 예: PRD|No|Region|Domain|Domain Type|Feb|Region|domain|domain_type|Mar|...
+  const isTypeHeader = h => /^(type|domain[_ ]type)$/i.test(String(h || '').trim())
+  const isDomainHeader = h => /^(domain|domian)$/i.test(String(h || '').trim())
+  const isRegionHeader = h => /^region$/i.test(String(h || '').trim())
+  const monthBlocks = []  // {regionCol, domainCol, typeCol, monthCol, label}
+  if (headerRow) {
+    domainMonthLabels.forEach(({ col, label }) => {
+      const tCol = col - 1, dCol = col - 2, rCol = col - 3
+      if (rCol < 0) return
+      if (isTypeHeader(headerRow[tCol]) && isDomainHeader(headerRow[dCol]) && isRegionHeader(headerRow[rCol])) {
+        monthBlocks.push({ regionCol: rCol, domainCol: dCol, typeCol: tCol, monthCol: col, label })
+      }
+    })
+  }
+
   const result = []
   const citDomainTrend = {}
   const cntyRanks = {}  // 국가별 순위 카운터
   let legacyCnty = 'TTL'  // 이전 구조용 국가 추적
 
-  for (let i = startIdx; i < rows.length; i++) {
-    const r = rows[i]
-    if (!r) continue
-
-    const domain = String(r[domainCol] || '').trim()
-    const type = String(r[typeCol] || '').trim()
-    const prd = prdCol >= 0 ? String(r[prdCol] || '').trim() : ''
-
-    // 이전 구조: 도메인 없는 행이 국가 마커일 수 있음
-    if (!isNewLayout && (!domain || !domain.includes('.'))) {
-      const cv = String(r[domainCol] || '').trim().toUpperCase()
-      const cntyCode = REGION_MAP[cv] || (COUNTRIES.includes(cv) ? cv : null)
-      if (cntyCode && (!type || type === '')) {
-        legacyCnty = cntyCode
-      }
-      continue
+  if (monthBlocks.length >= 2) {
+    // ─ v3: 월별 (Region/Domain/Type/Value) 블록 반복 — 블록 단위 파싱 후 (cnty, domain, type, prd)로 집계
+    const aggMap = {}  // key → { cnty, domain, type, prd, monthScores }
+    for (let i = startIdx; i < rows.length; i++) {
+      const r = rows[i]
+      if (!r) continue
+      const prd = prdCol >= 0 ? String(r[prdCol] || '').trim() : ''
+      monthBlocks.forEach(b => {
+        const rawDomain = String(r[b.domainCol] || '').trim()
+        if (!rawDomain || !rawDomain.includes('.')) return
+        const rawVal = String(r[b.monthCol] || '').replace(/,/g, '').trim()
+        const val = parseFloat(rawVal)
+        if (isNaN(val) || val <= 0) return
+        const rawRegion = String(r[b.regionCol] || '').trim().toUpperCase()
+        const cnty = REGION_MAP[rawRegion] || rawRegion || 'TTL'
+        const type = String(r[b.typeCol] || '').trim()
+        const key = `${cnty}|${rawDomain}|${type}|${prd}`
+        if (!aggMap[key]) aggMap[key] = { cnty, domain: rawDomain, type, prd, monthScores: {} }
+        // 같은 (cnty, domain, type, prd) 키가 같은 월에 두 번 등장하는 일은 없지만 안전하게 누적
+        aggMap[key].monthScores[b.label] = (aggMap[key].monthScores[b.label] || 0) + val
+      })
     }
-    if (!domain || !domain.includes('.')) continue
-
-    // 국가 결정: 새 구조는 인라인 Region, 이전 구조는 구분자 행
-    let cnty = 'TTL'
-    if (isNewLayout && regionCol >= 0) {
-      const rawRegion = String(r[regionCol] || '').trim().toUpperCase()
-      cnty = REGION_MAP[rawRegion] || rawRegion
-    } else if (!isNewLayout) {
-      cnty = legacyCnty
-    }
-
-    // 최신 월 데이터
-    let citations = 0
-    if (domainMonthLabels.length > 0) {
+    // aggMap → result 행 + citDomainTrend
+    Object.values(aggMap).forEach(e => {
+      // 최신 월 citations (chronological 마지막부터 역순)
+      let citations = 0
       for (let j = domainMonthLabels.length - 1; j >= 0; j--) {
-        const raw = String(r[domainMonthLabels[j].col] || '').replace(/,/g, '').trim()
-        const val = parseFloat(raw)
-        if (!isNaN(val) && val > 0) { citations = val; break }
+        const v = e.monthScores[domainMonthLabels[j].label]
+        if (v > 0) { citations = v; break }
       }
-    } else {
-      for (let j = r.length - 1; j >= dataStartCol; j--) {
-        const raw = String(r[j] || '').replace(/,/g, '').trim()
-        if (!raw) continue
-        const val = parseFloat(raw)
-        if (!isNaN(val) && val > 0) { citations = val; break }
+      if (citations <= 0) return
+      cntyRanks[e.cnty] = (cntyRanks[e.cnty] || 0) + 1
+      result.push({ cnty: e.cnty, rank: cntyRanks[e.cnty], domain: e.domain, type: e.type, citations, monthScores: e.monthScores, prd: e.prd })
+      const key = `${e.cnty}|${e.domain}`
+      // 트렌드는 PRD=TTL 기준으로 (PRD-specific 행이 따로 누적 안 되도록), 단 PRD 없는 시트면 그냥 등록
+      if (!e.prd || /^(ttl|total)$/i.test(e.prd)) {
+        citDomainTrend[key] = { cnty: e.cnty, domain: e.domain, type: e.type, months: e.monthScores }
+      } else if (!citDomainTrend[key]) {
+        // PRD=TTL 행이 없으면 PRD-specific 행으로 폴백 등록 (나중에 PRD=TTL 발견 시 덮어씀)
+        citDomainTrend[key] = { cnty: e.cnty, domain: e.domain, type: e.type, months: e.monthScores }
       }
-    }
+    })
+    // 국가별 정렬: rank가 cntyRanks 누적 순서 기반이라 citations 큰 순으로 재정렬 후 rank 재할당
+    const byCnty = {}
+    result.forEach(r => { if (!byCnty[r.cnty]) byCnty[r.cnty] = []; byCnty[r.cnty].push(r) })
+    Object.values(byCnty).forEach(list => {
+      list.sort((a, b) => b.citations - a.citations)
+      list.forEach((r, i) => { r.rank = i + 1 })
+    })
+  } else {
+    // ─ v1/v2: 단일 (Region, Domain, Type) 컬럼 + 월 값들
+    for (let i = startIdx; i < rows.length; i++) {
+      const r = rows[i]
+      if (!r) continue
 
-    // 월별 트렌드 데이터 수집
-    if (domainMonthLabels.length > 0) {
-      const monthData = {}
-      domainMonthLabels.forEach(({ col, label }) => {
-        const raw = String(r[col] || '').replace(/,/g, '').trim()
-        const val = parseFloat(raw)
-        if (!isNaN(val) && val > 0) monthData[label] = val
-      })
-      if (Object.keys(monthData).length > 0) {
-        const key = `${cnty}|${domain}`
-        citDomainTrend[key] = { cnty, domain, type, months: monthData }
+      const domain = String(r[domainCol] || '').trim()
+      const type = String(r[typeCol] || '').trim()
+      const prd = prdCol >= 0 ? String(r[prdCol] || '').trim() : ''
+
+      // 이전 구조: 도메인 없는 행이 국가 마커일 수 있음
+      if (!isNewLayout && (!domain || !domain.includes('.'))) {
+        const cv = String(r[domainCol] || '').trim().toUpperCase()
+        const cntyCode = REGION_MAP[cv] || (COUNTRIES.includes(cv) ? cv : null)
+        if (cntyCode && (!type || type === '')) {
+          legacyCnty = cntyCode
+        }
+        continue
       }
-    }
+      if (!domain || !domain.includes('.')) continue
 
-    // 월별 점수맵 (기간 필터용)
-    const monthScores = {}
-    if (domainMonthLabels.length > 0) {
-      domainMonthLabels.forEach(({ col, label }) => {
-        const raw = String(r[col] || '').replace(/,/g, '').trim()
-        const val = parseFloat(raw)
-        if (!isNaN(val) && val > 0) monthScores[label] = val
-      })
-    }
+      // 국가 결정: 새 구조는 인라인 Region, 이전 구조는 구분자 행
+      let cnty = 'TTL'
+      if (isNewLayout && regionCol >= 0) {
+        const rawRegion = String(r[regionCol] || '').trim().toUpperCase()
+        cnty = REGION_MAP[rawRegion] || rawRegion
+      } else if (!isNewLayout) {
+        cnty = legacyCnty
+      }
 
-    if (citations > 0) {
-      cntyRanks[cnty] = (cntyRanks[cnty] || 0) + 1
-      result.push({ cnty, rank: cntyRanks[cnty], domain, type, citations, monthScores, prd })
+      // 최신 월 데이터
+      let citations = 0
+      if (domainMonthLabels.length > 0) {
+        for (let j = domainMonthLabels.length - 1; j >= 0; j--) {
+          const raw = String(r[domainMonthLabels[j].col] || '').replace(/,/g, '').trim()
+          const val = parseFloat(raw)
+          if (!isNaN(val) && val > 0) { citations = val; break }
+        }
+      } else {
+        for (let j = r.length - 1; j >= dataStartCol; j--) {
+          const raw = String(r[j] || '').replace(/,/g, '').trim()
+          if (!raw) continue
+          const val = parseFloat(raw)
+          if (!isNaN(val) && val > 0) { citations = val; break }
+        }
+      }
+
+      // 월별 트렌드 데이터 수집
+      if (domainMonthLabels.length > 0) {
+        const monthData = {}
+        domainMonthLabels.forEach(({ col, label }) => {
+          const raw = String(r[col] || '').replace(/,/g, '').trim()
+          const val = parseFloat(raw)
+          if (!isNaN(val) && val > 0) monthData[label] = val
+        })
+        if (Object.keys(monthData).length > 0) {
+          const key = `${cnty}|${domain}`
+          citDomainTrend[key] = { cnty, domain, type, months: monthData }
+        }
+      }
+
+      // 월별 점수맵 (기간 필터용)
+      const monthScores = {}
+      if (domainMonthLabels.length > 0) {
+        domainMonthLabels.forEach(({ col, label }) => {
+          const raw = String(r[col] || '').replace(/,/g, '').trim()
+          const val = parseFloat(raw)
+          if (!isNaN(val) && val > 0) monthScores[label] = val
+        })
+      }
+
+      if (citations > 0) {
+        cntyRanks[cnty] = (cntyRanks[cnty] || 0) + 1
+        result.push({ cnty, rank: cntyRanks[cnty], domain, type, citations, monthScores, prd })
+      }
     }
   }
 
