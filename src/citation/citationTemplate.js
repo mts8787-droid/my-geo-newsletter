@@ -889,20 +889,32 @@ function renderCitCat(cits,prdData,enabledCntys){
   el.innerHTML='<div class="section-card"><div class="section-header"><div class="section-title">'+_t.citationTitle+'</div><span class="legend">'+_t.citLegend+'</span></div><div class="section-body">'+body+'</div></div>';
 }
 // 도메인별 → 제품별 분해: 도메인 시트(_citationsCnty)에서 prd 필드 기반 그룹핑
-// enabledCntys: 선택된 국가 (없으면 ALL). PRD=TTL/total 행은 제외 — 제품별 분해이므로.
+// 전체 선택: cnty='TTL'의 PRD-specific 행을 우선 사용. 없으면 per-country 합으로 폴백.
+// 부분 선택: 선택된 국가들의 PRD-specific 행만 합산.
 function _domainByProduct(domain,enabledCntys){
   var dKey=_stripDomain(domain).toLowerCase();
   var ALL=['US','CA','UK','DE','ES','BR','MX','AU','VN','IN'];
-  var allowed=enabledCntys&&enabledCntys.length?enabledCntys:ALL;
-  var prdMap={};
-  (_citationsCnty||[]).forEach(function(r){
-    if(!r.prd)return;
-    var prdU=String(r.prd).toUpperCase();
-    if(prdU==='TTL'||prdU==='TOTAL')return;
-    if(_stripDomain(r.domain).toLowerCase()!==dKey)return;
-    if(allowed.indexOf(r.cnty)<0)return;
-    prdMap[r.prd]=(prdMap[r.prd]||0)+(r.citations||0);
-  });
+  var allSelected=!enabledCntys||enabledCntys.length===0||enabledCntys.length===ALL.length;
+  var isPrdSpecific=function(p){if(!p)return false;var u=String(p).toUpperCase();return u!=='TTL'&&u!=='TOTAL'};
+  function collect(filterFn){
+    var m={};
+    (_citationsCnty||[]).forEach(function(r){
+      if(!isPrdSpecific(r.prd))return;
+      if(_stripDomain(r.domain).toLowerCase()!==dKey)return;
+      if(!filterFn(r))return;
+      m[r.prd]=(m[r.prd]||0)+(r.citations||0);
+    });
+    return m;
+  }
+  var prdMap;
+  if(allSelected){
+    prdMap=collect(function(r){return r.cnty==='TTL'});
+    if(Object.keys(prdMap).length===0){
+      prdMap=collect(function(r){return ALL.indexOf(r.cnty)>=0});
+    }
+  }else{
+    prdMap=collect(function(r){return enabledCntys.indexOf(r.cnty)>=0});
+  }
   return Object.keys(prdMap).map(function(p){return{source:p,score:prdMap[p]}})
     .sort(function(a,b){return b.score-a.score});
 }
