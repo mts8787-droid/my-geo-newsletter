@@ -1323,11 +1323,26 @@ function parseCitDomain(rows) {
   }
 
   // 월 라벨 추출 — 헤더 행의 dataStartCol 이후에서 월 패턴 탐색
+  // 라벨은 canonical 짧은 이름으로 정규화 ('Apr 2026' / '4월' / 'April' → 'Apr')
+  // — Touch Points 와 동일 규칙으로 맞춰 dropdown('Apr')과 매칭되도록
+  const MONTHS_ORDER_DOM = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+  const canonMonthDom = raw => {
+    const s = String(raw || '').trim().toLowerCase()
+    if (!s) return null
+    const km = s.match(/^(\d{1,2})월/)
+    if (km) {
+      const n = parseInt(km[1])
+      if (n >= 1 && n <= 12) return MONTHS_ORDER_DOM[n - 1]
+    }
+    const em = s.match(/^(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i)
+    if (em) return em[1].charAt(0).toUpperCase() + em[1].slice(1).toLowerCase()
+    return null
+  }
   const domainMonthLabels = []
   if (headerRow) {
     for (let i = dataStartCol; i < headerRow.length; i++) {
-      const h = String(headerRow[i] || '').trim()
-      if (h && MONTH_RE.test(h)) domainMonthLabels.push({ col: i, label: h })
+      const cm = canonMonthDom(headerRow[i])
+      if (cm) domainMonthLabels.push({ col: i, label: cm })
     }
   }
 
