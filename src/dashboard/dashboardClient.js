@@ -1220,13 +1220,14 @@ function updateProductScores(selCountry,selBU,selProd){
 }
 
 // ─── Hero / Executive Summary 동적 업데이트 (체크박스 기반) ───
+// 주간/월간 콘텐츠 둘 다 hero를 포함해 DOM에 동일 id 엘리먼트가 2개 있을 수 있음 — 모두 갱신
 function updateHeroFromCheckboxes(){
   var selBU=getCheckedValues('bu');
   var selProd=getCheckedValues('product');
   var selRegion=getCheckedValues('region');
   var selCountry=getCheckedValues('country');
-  var hero=document.getElementById('hero-section');if(!hero)return;
-  var ctx=document.getElementById('hero-ctx');
+  var heroes=document.querySelectorAll('#hero-section, .hero');
+  if(!heroes.length)return;
   var allL=_lang==='en'?'All':'전체';
   // Context badges
   var badges='<span class="hero-ctx-badge">'+_meta.period+'</span>';
@@ -1236,7 +1237,6 @@ function updateHeroFromCheckboxes(){
   badges+='<span class="hero-ctx-badge">'+prodLabel+'</span>';
   var cntyLabel=selCountry.isAll?(allL+(_lang==='en'?' Countries':' 국가')):Object.keys(selCountry.vals).join(', ');
   badges+='<span class="hero-ctx-badge">'+cntyLabel+'</span>';
-  if(ctx)ctx.innerHTML=badges;
   // Calculate filtered scores
   var result=calcFilteredDataCB(selBU,selProd,selCountry);
   if(!result)return;
@@ -1245,15 +1245,19 @@ function updateHeroFromCheckboxes(){
   var gap=+(sc-comp).toFixed(1);
   var dArrow=d>0?'▲':d<0?'▼':'─';
   var dColor=d>0?'#22C55E':d<0?'#EF4444':'#94A3B8';
-  var scoreRow=hero.querySelector('.hero-score-row');
-  if(scoreRow)scoreRow.innerHTML='<span class="hero-score">'+sc.toFixed(1)+'</span><span class="hero-pct">%</span><span class="hero-delta" style="color:'+dColor+'">'+dArrow+' '+Math.abs(d).toFixed(1)+'%p</span><span class="hero-mom">MoM</span>';
-  var tracks=hero.querySelectorAll('.hero-gauge-track');
-  if(tracks[0]){var bar=tracks[0].querySelector('.hero-gauge-bar');if(bar)bar.style.width=Math.min(sc,100)+'%'}
-  if(tracks[1]){var bar2=tracks[1].querySelector('.hero-gauge-bar');if(bar2)bar2.style.width=Math.min(comp,100)+'%'}
-  var legend=hero.querySelector('.hero-legend');
-  if(legend)legend.innerHTML='<span><i style="background:'+_RED+'"></i> LG '+sc.toFixed(1)+'%</span>'+(comp>0?'<span><i style="background:'+_COMP+'"></i> '+compName+' '+comp.toFixed(1)+'%</span>':'')+'<span><i style="background:#475569"></i> prev '+(result.prev||sc).toFixed(1)+'%</span>';
-  var compDiv=hero.querySelector('.hero-comp');
-  if(compDiv&&comp>0){compDiv.innerHTML='<span class="hero-comp-label">'+compName.toUpperCase()+'</span> <span class="hero-comp-score">'+comp.toFixed(1)+'%</span><span class="hero-comp-gap" style="color:'+(gap>=0?'#22C55E':'#EF4444')+'">Gap '+(gap>=0?'+':'')+gap.toFixed(1)+'%p</span>'}
+  heroes.forEach(function(hero){
+    var ctx=hero.querySelector('#hero-ctx, .hero-ctx');
+    if(ctx)ctx.innerHTML=badges;
+    var scoreRow=hero.querySelector('.hero-score-row');
+    if(scoreRow)scoreRow.innerHTML='<span class="hero-score">'+sc.toFixed(1)+'</span><span class="hero-pct">%</span><span class="hero-delta" style="color:'+dColor+'">'+dArrow+' '+Math.abs(d).toFixed(1)+'%p</span><span class="hero-mom">MoM</span>';
+    var tracks=hero.querySelectorAll('.hero-gauge-track');
+    if(tracks[0]){var bar=tracks[0].querySelector('.hero-gauge-bar');if(bar)bar.style.width=Math.min(sc,100)+'%'}
+    if(tracks[1]){var bar2=tracks[1].querySelector('.hero-gauge-bar');if(bar2)bar2.style.width=Math.min(comp,100)+'%'}
+    var legend=hero.querySelector('.hero-legend');
+    if(legend)legend.innerHTML='<span><i style="background:'+_RED+'"></i> LG '+sc.toFixed(1)+'%</span>'+(comp>0?'<span><i style="background:'+_COMP+'"></i> '+compName+' '+comp.toFixed(1)+'%</span>':'')+'<span><i style="background:#475569"></i> prev '+(result.prev||sc).toFixed(1)+'%</span>';
+    var compDiv=hero.querySelector('.hero-comp');
+    if(compDiv&&comp>0){compDiv.innerHTML='<span class="hero-comp-label">'+compName.toUpperCase()+'</span> <span class="hero-comp-score">'+comp.toFixed(1)+'%</span><span class="hero-comp-gap" style="color:'+(gap>=0?'#22C55E':'#EF4444')+'">Gap '+(gap>=0?'+':'')+gap.toFixed(1)+'%p</span>'}
+  });
 }
 function _getSamsungScore(item){
   if(item.allScores){var s=item.allScores.SAMSUNG||item.allScores.Samsung||item.allScores.Samsumg;if(s!=null)return s}
