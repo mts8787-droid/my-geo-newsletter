@@ -159,12 +159,19 @@ function switchVisMonth(idx){
   }
   _truncateTrendTable('#monthly-trend-container',12,_curMonthIdxIn12);
 }
+// 월 드롭다운 선택 인덱스로 monthlyScores를 truncate (선택 월까지만)
+function _sliceMsByCurMonth(ms){
+  if(!ms||!ms.length)return ms;
+  if(_curMonthIdx<0||_curMonthIdx>=ms.length)return ms;
+  return ms.slice(0,_curMonthIdx+1);
+}
 // 월 드롭다운으로 선택된 월의 점수/경쟁비를 카드에 덮어쓰기
 function _applyMonthSelectionOverride(){
   if(_curMonthIdx<0)return;
   var monthlyContainer=document.getElementById('bu-monthly-content');
   if(!monthlyContainer)return;
   var cards=monthlyContainer.querySelectorAll('.prod-card');
+  var ML=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   cards.forEach(function(card){
     var nameEl=card.querySelector('.prod-name');if(!nameEl)return;
     var name=nameEl.textContent.replace(/\\*$/,'');
@@ -183,6 +190,14 @@ function _applyMonthSelectionOverride(){
     var cc=compPct>=100?'#15803D':compPct>=80?'#D97706':'#BE123C';
     var compBar=card.querySelector('.prod-comp-bar');if(compBar){compBar.style.width=Math.min(compPct,120)+'%';compBar.style.background=cc}
     var compPctEl=card.querySelector('.prod-comp-pct');if(compPctEl){compPctEl.textContent=compPct+'%';compPctEl.style.color=cc}
+    // 월간 미니차트 truncate: 선택 월까지만
+    var mChart=card.querySelector('.trend-monthly');
+    if(mChart){
+      var msSliced=_sliceMsByCurMonth(ms);
+      var mData=msSliced.map(function(m){return m.score});
+      var mLabels=msSliced.map(function(m){var km=String(m.date||'').match(/(\\d{1,2})월/);return km?ML[parseInt(km[1])-1]:m.date});
+      mChart.innerHTML=_miniSvgNullAware(mData,mLabels,300,90,cc);
+    }
   });
 }
 // 트렌드 표 셀 truncate (SVG는 _trendMultiSvg(...,endIdx)에서 처리). endIdx<0 이면 전체 표시.
@@ -542,7 +557,7 @@ function updateMonthlyProductScores(selCountry){
         if(prod){
           var mChart=card.querySelector('.trend-monthly');
           if(mChart){
-            var msc=prod.monthlyScores||[];
+            var msc=_sliceMsByCurMonth(prod.monthlyScores||[]);
             var mData=msc.length?msc.map(function(m){return m.score}):[ms];
             var ML=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
             var mLabels=msc.length?msc.map(function(m){var km=String(m.date||'').match(/(\\d{1,2})월/);return km?ML[parseInt(km[1])-1]:m.date}):['M0'];
@@ -595,7 +610,7 @@ function updateMonthlyProductScores(selCountry){
     // 월간 미니차트: TTL 기반 트렌드에서 마지막 점을 선택 국가 평균으로 교체
     var mChart=card.querySelector('.trend-monthly');
     if(mChart&&prod){
-      var ms=prod.monthlyScores||[];
+      var ms=_sliceMsByCurMonth(prod.monthlyScores||[]);
       var mData=ms.length?ms.map(function(m){return m.score}):[score];
       // 마지막 점을 현재 필터 점수로 교체
       if(mData.length)mData[mData.length-1]=score;
