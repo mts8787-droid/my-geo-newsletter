@@ -15,17 +15,22 @@ let _authPromise = null
 function getAuth() {
   if (_authPromise) return _authPromise
   const raw = process.env.GOOGLE_SERVICE_ACCOUNT_JSON
+  if (!raw && !process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+    throw new Error('서비스 계정 미설정: Render env 에 GOOGLE_SERVICE_ACCOUNT_JSON (서비스 계정 키 JSON 전체 문자열) 추가 필요')
+  }
   let opts
   if (raw) {
     let credentials
     try { credentials = JSON.parse(raw) }
-    catch (e) { throw new Error('GOOGLE_SERVICE_ACCOUNT_JSON parse 실패: ' + e.message) }
+    catch (e) { throw new Error('GOOGLE_SERVICE_ACCOUNT_JSON 파싱 실패 — JSON 형식 확인 필요: ' + e.message) }
+    if (!credentials.client_email || !credentials.private_key) {
+      throw new Error('GOOGLE_SERVICE_ACCOUNT_JSON 에 client_email/private_key 필드가 없습니다 — 서비스 계정 키 JSON 전체를 붙여넣으세요')
+    }
     opts = { credentials, scopes: SCOPES }
   } else {
-    // GOOGLE_APPLICATION_CREDENTIALS 또는 metadata server 사용
     opts = { scopes: SCOPES }
   }
-  _authPromise = new GoogleAuth(opts).getClient()
+  _authPromise = new GoogleAuth(opts).getClient().catch(e => { _authPromise = null; throw e })
   return _authPromise
 }
 
