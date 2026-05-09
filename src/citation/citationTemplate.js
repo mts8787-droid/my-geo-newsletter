@@ -502,6 +502,22 @@ export function generateCitationHTML(meta, _total, _products, citations, dotcom,
   const rawDotcom = dotcom ? JSON.parse(JSON.stringify(dotcom)) : null
   const rawDotcomByCnty = dotcomByCnty ? JSON.parse(JSON.stringify(dotcomByCnty)) : {}
 
+  // 가용 제품 목록 (Touch Points + Domain PRD-specific) — UI 필터용
+  const availablePrdsSet = new Set()
+  Object.keys(rawCitationsByPrd).forEach(p => availablePrdsSet.add(p))
+  ;(rawCitationsCnty || []).forEach(r => {
+    if (r.prd && !/^(ttl|total)$/i.test(r.prd)) availablePrdsSet.add(r.prd)
+  })
+  const _PRD_ORDER_KEYS = ['tv','monitor','it','audio','washer','wm','fridge','ref','refrigerator','dw','dishwasher','vacuum','vac','cooking','cook','rac','aircare']
+  const sortedAvailPrds = [...availablePrdsSet].sort((a, b) => {
+    const ai = _PRD_ORDER_KEYS.indexOf(String(a || '').toLowerCase())
+    const bi = _PRD_ORDER_KEYS.indexOf(String(b || '').toLowerCase())
+    if (ai >= 0 && bi >= 0) return ai - bi
+    if (ai >= 0) return -1
+    if (bi >= 0) return 1
+    return String(a).localeCompare(String(b))
+  })
+
   // 가용 월 목록 추출 — TTL이 비는 달도 dropdown에 노출되도록 모든 소스에서 수집
   const MONTHS_EN = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
   const availableMonths = new Set()
@@ -634,6 +650,10 @@ export function generateCitationHTML(meta, _total, _products, citations, dotcom,
   const countryCheckboxes = countryList.map(c =>
     `<label class="fl-chk-label"><input type="checkbox" class="fl-chk" data-filter="country" value="${c}" ${isCountryOn(c) ? 'checked' : ''} onchange="onFilterChange()"><span>${cntyFullName(c)}</span></label>`
   ).join('')
+  const prdCheckboxes = sortedAvailPrds.map(p =>
+    `<label class="fl-chk-label"><input type="checkbox" class="fl-chk" data-filter="prd" value="${p}" checked onchange="onFilterChange()"><span>${p}</span></label>`
+  ).join('')
+  const showPrdFilter = sortedAvailPrds.length > 0
 
   const filterLayerHtml = `<div class="filter-layer" id="filter-layer">
     <div class="fl-row">
@@ -657,6 +677,12 @@ export function generateCitationHTML(meta, _total, _products, citations, dotcom,
         <label class="fl-chk-label fl-all-label"><input type="checkbox" class="fl-chk-all" data-target="country" ${allOn ? 'checked' : ''} onchange="toggleAll(this,'country')"><span>${allLabel}</span></label>
         ${countryCheckboxes}
       </div>
+      ${showPrdFilter ? `<div class="fl-divider"></div>
+      <div class="fl-group">
+        <span class="fl-label">${lang === 'en' ? 'Product' : '제품'}</span>
+        <label class="fl-chk-label fl-all-label"><input type="checkbox" class="fl-chk-all" data-target="prd" checked onchange="toggleAll(this,'prd')"><span>${allLabel}</span></label>
+        ${prdCheckboxes}
+      </div>` : ''}
     </div>
   </div>`
 
@@ -865,21 +891,30 @@ function _subSection(label,cardsHtml){
     +'<div style="font-size:14px;font-weight:700;color:#64748B;margin-bottom:10px">'+label+'</div>'
     +'<div style="display:flex;flex-wrap:wrap;gap:12px">'+cardsHtml+'</div></div>';
 }
-// prdData: 국가 필터 적용된 제품별 채널 데이터, enabledCntys: 선택된 국가 코드 배열
-function renderCitCat(cits,prdData,enabledCntys){
+// prdData: By Product 카드용 채널 데이터, enabledCntys/enabledPrds: 선택 코드/제품
+function renderCitCat(cits,prdData,enabledCntys,enabledPrds,allPrdSel,nonePrdSel){
   var el=document.getElementById('cit-cat-wrap');
   if(!el)return;
   var topN=_meta.citationTopN||10;
   var body=_citVBar(cits,topN,false);
 
-  // By Country (선택된 국가만)
+  // By Country: prd 필터에 따라 행 선택 — All prd 면 PRD=TTL 행, 부분이면 enabled prd-specific 합산
   var ALL=['US','CA','UK','DE','ES','BR','MX','AU','VN','IN'];
   var countries=enabledCntys&&enabledCntys.length?ALL.filter(function(c){return enabledCntys.indexOf(c)>=0}):ALL;
+  var prdSet={};(enabledPrds||[]).forEach(function(p){prdSet[p]=true});
   var cntyCards=[];
   countries.forEach(function(cnty){
-    var list=_citationsByCnty[cnty];
-    if(!list||!list.length)return;
-    list=list.filter(function(c){return !c.prd}).slice().sort(function(a,b){return b.score-a.score});
+    var rows=_citationsByCnty[cnty];
+    if(!rows||!rows.length)return;
+    var list;
+    if(nonePrdSel){return}
+    else if(allPrdSel){list=rows.filter(function(c){return !c.prd})}
+    else{
+      // 같은 source 채널을 enabled prd 행에서 합산
+      var ch={};rows.forEach(function(c){if(!c.prd||!prdSet[c.prd])return;if(!ch[c.source])ch[c.source]={source:c.source,score:0};ch[c.source].score+=c.score});
+      list=Object.values(ch);
+    }
+    list=list.slice().sort(function(a,b){return b.score-a.score});
     if(!list.length)return;
     cntyCards.push(_vbarCard(_cn(cnty),_citVBar(list,8,true)));
   });
@@ -887,9 +922,9 @@ function renderCitCat(cits,prdData,enabledCntys){
     body+=_subSection(_lang==='en'?'By Country':'국가별',cntyCards.join(''));
   }
 
-  // By Product (국가 필터 반영, 연한 붉은색)
+  // By Product: prdData 의 prd만 카드로 (selected prd 만 들어옴)
   var isRatio=_meta.byProductMode==='ratio';
-  var prdSrc=prdData||_citationsByPrd||{};
+  var prdSrc=prdData||{};
   var prdCards=[];
   Object.keys(prdSrc).sort(_prdSort).forEach(function(prd){
     var list=prdSrc[prd];
@@ -940,12 +975,18 @@ function _domToVBarData(rows,topN){
   var list=rows.slice(0,topN);
   return list.map(function(r){return{source:_stripDomain(r.domain),score:r.citations}});
 }
-function renderCitDom(citCnty,useAgg,prdData,enabledCntys){
+function renderCitDom(citCnty,useAgg,prdData,enabledCntys,enabledPrds,allPrdSel,nonePrdSel){
   var el=document.getElementById('cit-dom-wrap');
   if(!el)return;
   var topN=_meta.citDomainTopN||10;var rows;
-  // PRD-specific 행은 도메인 합계에 더해지면 PRD=TTL과 이중 합산되므로 top/By Country 집계에서 제외
+  // 전체 prd 선택: PRD=TTL 행 사용. 부분: enabled prd-specific 행
   var isPrdTtlRow=function(r){return!r.prd||/^(ttl|total)$/i.test(r.prd)};
+  var prdSet={};(enabledPrds||[]).forEach(function(p){prdSet[p]=true});
+  var rowOk=function(r){
+    if(nonePrdSel)return false;
+    if(allPrdSel)return isPrdTtlRow(r);
+    return !isPrdTtlRow(r)&&!!prdSet[r.prd];
+  };
   function aggByCnty(filterFn){
     var dm={};
     citCnty.filter(filterFn).forEach(function(r){
@@ -956,23 +997,29 @@ function renderCitDom(citCnty,useAgg,prdData,enabledCntys){
     return Object.values(dm).sort(function(a,b){return b.citations-a.citations}).slice(0,topN);
   }
   if(useAgg){
-    rows=aggByCnty(function(r){return r.cnty!=='TTL'&&isPrdTtlRow(r)});
+    rows=aggByCnty(function(r){return r.cnty!=='TTL'&&rowOk(r)});
   } else {
-    rows=citCnty.filter(function(r){return r.cnty==='TTL'&&isPrdTtlRow(r)}).sort(function(a,b){return a.rank-b.rank}).slice(0,topN);
-    // 폴백: TTL 국가에 해당 월 데이터가 없으면 per-country 합산을 top으로 사용 (By Product 노출 위함)
+    rows=citCnty.filter(function(r){return r.cnty==='TTL'&&rowOk(r)}).sort(function(a,b){return (b.citations||0)-(a.citations||0)}).slice(0,topN);
     if(!rows.length){
-      rows=aggByCnty(function(r){return r.cnty!=='TTL'&&isPrdTtlRow(r)});
+      rows=aggByCnty(function(r){return r.cnty!=='TTL'&&rowOk(r)});
     }
   }
   // 전체 세로 막대그래프
   var body=_citVBar(_domToVBarData(rows||[],topN),topN,false);
 
-  // By Country (선택된 국가만)
+  // By Country (선택된 국가만, 제품 필터 반영)
   var ALL=['US','CA','UK','DE','ES','BR','MX','AU','VN','IN'];
   var countries=enabledCntys&&enabledCntys.length?ALL.filter(function(c){return enabledCntys.indexOf(c)>=0}):ALL;
   var cntyCards=[];
   countries.forEach(function(cnty){
-    var cRows=citCnty.filter(function(r){return r.cnty===cnty&&isPrdTtlRow(r)}).sort(function(a,b){return b.citations-a.citations});
+    var cRows;
+    if(allPrdSel){
+      cRows=citCnty.filter(function(r){return r.cnty===cnty&&isPrdTtlRow(r)}).sort(function(a,b){return b.citations-a.citations});
+    }else{
+      // 도메인별로 enabled prd-specific 합산
+      var dm={};citCnty.forEach(function(r){if(r.cnty!==cnty)return;if(!rowOk(r))return;var k=r.domain;if(!dm[k])dm[k]={domain:r.domain,type:r.type,citations:0};dm[k].citations+=r.citations});
+      cRows=Object.values(dm).sort(function(a,b){return b.citations-a.citations});
+    }
     if(!cRows.length)return;
     cntyCards.push(_vbarCard(_cn(cnty),_citVBar(_domToVBarData(cRows,8),8,true)));
   });
@@ -985,10 +1032,12 @@ function renderCitDom(citCnty,useAgg,prdData,enabledCntys){
   var ALLP=['US','CA','UK','DE','ES','BR','MX','AU','VN','IN'];
   var allowedP=enabledCntys&&enabledCntys.length?enabledCntys:ALLP;
   var isPrdSpec=function(p){if(!p)return false;var u=String(p).toUpperCase();return u!=='TTL'&&u!=='TOTAL'};
-  // prd → { domain → score (선택 국가 전체 합) }
+  // prd → { domain → score (선택 국가 전체 합) } — 선택된 prd 만 노출
+  var prdShowSet=allPrdSel?null:prdSet;
   var prdMap={};
   (_citationsCnty||[]).forEach(function(r){
     if(!isPrdSpec(r.prd))return;
+    if(prdShowSet&&!prdShowSet[r.prd])return;
     if(allowedP.indexOf(r.cnty)<0)return;
     var d=_stripDomain(r.domain);
     if(!prdMap[r.prd])prdMap[r.prd]={};
@@ -1139,45 +1188,99 @@ function applyFilter(){
   var allSelected=enabled.length===allCodes.length;
   var noneSelected=enabled.length===0;
 
+  // ── 제품 필터 ──
+  var pFilter={};
+  document.querySelectorAll('#filter-layer .fl-chk[data-filter="prd"]').forEach(function(c){pFilter[c.value]=c.checked});
+  var enabledPrds=(_PRD_LIST||[]).filter(function(p){return pFilter[p]!==false});
+  var allPrdSel=enabledPrds.length===(_PRD_LIST||[]).length;
+  var nonePrdSel=(_PRD_LIST||[]).length>0&&enabledPrds.length===0;
+  // 행이 현재 prd 필터에 부합? 전체 선택→ PRD=TTL(빈) 행, 부분 선택→ enabled PRD-specific 행
+  var prdSet={};enabledPrds.forEach(function(p){prdSet[p]=true});
+  function _prdMatch(r){
+    var u=String(r.prd||'').toUpperCase();
+    var isTtl=!r.prd||u==='TTL'||u==='TOTAL';
+    if(nonePrdSel)return false;
+    if(allPrdSel)return isTtl;
+    return !isTtl&&!!prdSet[r.prd];
+  }
+
   // 카테고리 Citation
-  var filteredCit=_citations;
-  if(noneSelected){filteredCit=[]}
-  else if(!allSelected&&Object.keys(_citationsByCnty).length>0){
+  var filteredCit;
+  if(noneSelected||nonePrdSel){
+    filteredCit=[];
+  }else if(allSelected&&allPrdSel){
+    filteredCit=_citations;
+  }else if(allPrdSel){
+    // 국가 부분, 제품 전체: 기존 로직 (PRD=TTL 행만)
     var catMap={};enabled.forEach(function(cnty){var list=(_citationsByCnty[cnty]||[]).filter(function(c){return !c.prd});list.forEach(function(c){if(!catMap[c.source])catMap[c.source]={source:c.source,category:c.category||'',score:0,delta:0};catMap[c.source].score+=c.score})});
     var merged=Object.values(catMap).sort(function(a,b){return b.score-a.score});
     var total=merged.reduce(function(s,c){return s+c.score},0);
     merged.forEach(function(c,i){c.rank=i+1;c.ratio=total>0?+((c.score/total)*100).toFixed(1):0});
-    if(merged.length>0)filteredCit=merged;
-  }
-
-  // 제품별 채널 데이터 — 국가 필터 반영
-  // 전체 선택: _citationsByPrd (TTL/aggregated 뷰) 그대로
-  // 일부 선택: _citationsByCnty[cnty][i].prd 로 매칭해 채널별 score 합산
-  var prdData=null;
-  if(noneSelected){
-    prdData={};
-  }else if(allSelected){
-    prdData=_citationsByPrd;
+    filteredCit=merged.length>0?merged:_citations;
   }else{
-    prdData={};
-    Object.keys(_citationsByPrd||{}).forEach(function(prd){
-      var ch={};
-      enabled.forEach(function(cnty){
-        (_citationsByCnty[cnty]||[]).forEach(function(c){
-          if(c.prd!==prd)return;
-          if(!ch[c.source])ch[c.source]={source:c.source,score:0};
-          ch[c.source].score+=c.score;
+    // 제품 부분: 선택 prd 의 source 별 합산 (선택 국가 범위)
+    var catMap2={};
+    var cntyScope=allSelected?Object.keys(_citationsByCnty||{}):enabled;
+    cntyScope.forEach(function(cnty){
+      (_citationsByCnty[cnty]||[]).forEach(function(c){
+        if(!_prdMatch(c))return;
+        if(!catMap2[c.source])catMap2[c.source]={source:c.source,category:c.category||'',score:0,delta:0};
+        catMap2[c.source].score+=c.score;
+      });
+    });
+    // PRD-specific 만으로는 부족할 때 제품별 raw에서 폴백 (cnty=TTL 라인)
+    if(Object.keys(catMap2).length===0){
+      enabledPrds.forEach(function(prd){
+        (_citationsByPrd[prd]||[]).forEach(function(c){
+          if(!catMap2[c.source])catMap2[c.source]={source:c.source,category:c.category||'',score:0,delta:0};
+          catMap2[c.source].score+=c.score;
         });
       });
-      var list=Object.values(ch).sort(function(a,b){return b.score-a.score});
-      if(list.length)prdData[prd]=list;
+    }
+    var merged2=Object.values(catMap2).sort(function(a,b){return b.score-a.score});
+    var total2=merged2.reduce(function(s,c){return s+c.score},0);
+    merged2.forEach(function(c,i){c.rank=i+1;c.ratio=total2>0?+((c.score/total2)*100).toFixed(1):0});
+    filteredCit=merged2;
+  }
+
+  // 제품별 채널 데이터 — By Product 카드용 (선택 prd 만 노출)
+  var prdData={};
+  if(!noneSelected&&!nonePrdSel){
+    var prdsToShow=allPrdSel?Object.keys(_citationsByPrd||{}):enabledPrds;
+    if(allSelected){
+      prdsToShow.forEach(function(prd){if(_citationsByPrd[prd])prdData[prd]=_citationsByPrd[prd]});
+    }else{
+      prdsToShow.forEach(function(prd){
+        var ch={};
+        enabled.forEach(function(cnty){
+          (_citationsByCnty[cnty]||[]).forEach(function(c){
+            if(c.prd!==prd)return;
+            if(!ch[c.source])ch[c.source]={source:c.source,score:0};
+            ch[c.source].score+=c.score;
+          });
+        });
+        var list=Object.values(ch).sort(function(a,b){return b.score-a.score});
+        if(list.length)prdData[prd]=list;
+      });
+    }
+  }
+  renderCitCat(filteredCit,prdData,enabled,enabledPrds,allPrdSel,nonePrdSel);
+
+  // 도메인 Citation — 국가 + 제품 필터
+  var filteredCitCnty;
+  if(noneSelected||nonePrdSel){
+    filteredCitCnty=[];
+  }else{
+    filteredCitCnty=(_citationsCnty||[]).filter(function(r){
+      var cntyOk=r.cnty==='TTL'||enabled.includes(r.cnty);
+      if(!cntyOk)return false;
+      // 제품 필터: All 일 땐 PRD=TTL 행만 + (PRD-specific 도 By Product 카드용으로 보존)
+      // 부분 선택 시: enabled PRD-specific 행만
+      if(allPrdSel)return true;  // 모든 행 통과 (renderCitDom 내부에서 PRD=TTL 분리)
+      return _prdMatch(r);
     });
   }
-  renderCitCat(filteredCit,prdData,enabled);
-
-  // 도메인 Citation
-  var filteredCitCnty=noneSelected?[]:(_citationsCnty||[]).filter(function(r){return r.cnty==='TTL'||enabled.includes(r.cnty)});
-  renderCitDom(filteredCitCnty,!allSelected&&!noneSelected,prdData,enabled);
+  renderCitDom(filteredCitCnty,!allSelected&&!noneSelected,prdData,enabled,enabledPrds,allPrdSel,nonePrdSel);
 
   // 닷컴 Citation
   var filteredDc=_dotcom;
@@ -1208,6 +1311,7 @@ function switchSubTab(btn,tab){
   }
 })();
 var _REGIONS=${JSON.stringify(Object.fromEntries(Object.entries(REGIONS).map(([k, v]) => [k, v.countries])))};
+var _PRD_LIST=${JSON.stringify(sortedAvailPrds)};
 function updateAllCheckbox(target){
   var all=document.querySelectorAll('.fl-chk[data-filter="'+target+'"]');
   var allChecked=true;

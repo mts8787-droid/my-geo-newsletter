@@ -1367,6 +1367,17 @@ function parseCitDomain(rows) {
   const cntyRanks = {}  // 국가별 순위 카운터
   let legacyCnty = 'TTL'  // 이전 구조용 국가 추적
 
+  // 도메인 문자열 정규화: '[www.x.com](https://www.x.com)' / 'www.x.com' / 'X.COM' → 'x.com'
+  const cleanDomain = raw => {
+    let s = String(raw || '').trim()
+    if (!s) return ''
+    const md = s.match(/^\[([^\]]+)\]/)
+    if (md) s = md[1].trim()
+    s = s.replace(/^https?:\/\//i, '').replace(/^www\./i, '').toLowerCase()
+    // 경로/쿼리 제거
+    const slash = s.indexOf('/'); if (slash >= 0) s = s.slice(0, slash)
+    return s
+  }
   if (monthBlocks.length >= 2) {
     // ─ v3: 월별 (Region/Domain/Type/Value) 블록 반복 — 블록 단위 파싱 후 (cnty, domain, type, prd)로 집계
     const aggMap = {}  // key → { cnty, domain, type, prd, monthScores }
@@ -1375,17 +1386,16 @@ function parseCitDomain(rows) {
       if (!r) continue
       const prd = prdCol >= 0 ? String(r[prdCol] || '').trim() : ''
       monthBlocks.forEach(b => {
-        const rawDomain = String(r[b.domainCol] || '').trim()
-        if (!rawDomain || !rawDomain.includes('.')) return
+        const domain = cleanDomain(r[b.domainCol])
+        if (!domain || !domain.includes('.')) return
         const rawVal = String(r[b.monthCol] || '').replace(/,/g, '').trim()
         const val = parseFloat(rawVal)
         if (isNaN(val) || val <= 0) return
         const rawRegion = String(r[b.regionCol] || '').trim().toUpperCase()
         const cnty = REGION_MAP[rawRegion] || rawRegion || 'TTL'
         const type = String(r[b.typeCol] || '').trim()
-        const key = `${cnty}|${rawDomain}|${type}|${prd}`
-        if (!aggMap[key]) aggMap[key] = { cnty, domain: rawDomain, type, prd, monthScores: {} }
-        // 같은 (cnty, domain, type, prd) 키가 같은 월에 두 번 등장하는 일은 없지만 안전하게 누적
+        const key = `${cnty}|${domain}|${type}|${prd}`
+        if (!aggMap[key]) aggMap[key] = { cnty, domain, type, prd, monthScores: {} }
         aggMap[key].monthScores[b.label] = (aggMap[key].monthScores[b.label] || 0) + val
       })
     }
