@@ -8,6 +8,7 @@ import { resolveDataForLang, translateTexts } from './utils.js'
 import { saveSyncData, fetchSyncData, fetchSyncMeta, publishCombinedDashboard, generateAIInsight } from './api.js'
 import { generateDashboardHTML } from '../dashboard/dashboardTemplate.js'
 import { generateProductInsight, generateProductHowToRead, generateCntyHowToRead } from './insights.js'
+import SheetDownload from './SheetDownload.jsx'
 
 export default
 function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, total, setTotal, products, setProducts, citations, setCitations, dotcom, setDotcom, productsCnty, setProductsCnty, citationsCnty, setCitationsCnty, resolved, previewLang, setPreviewLang, snapshots, setSnapshots, setWeeklyLabels, setWeeklyAll, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty, generateHTML, publishEndpoint, setMonthlyVis, onSyncExtra, categoryStats, extra, monthlyVis }) {
@@ -640,6 +641,11 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
             >로그 복사</button>
           </div>
         )}
+
+        <div style={{ height: 1, background: '#1E293B', marginBottom: 16 }} />
+
+        {/* ── 시트 다운로드 (대시보드별 별도 URL 저장) ── */}
+        <SheetDownload storageKey={`geo-${mode||'dashboard'}-sheet-url`} downloadName={`${mode||'dashboard'}-sheet`} label="시트 다운로드" />
 
         <div style={{ height: 1, background: '#1E293B', marginBottom: 16 }} />
 
