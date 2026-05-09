@@ -1401,14 +1401,25 @@ function parseCitDomain(rows) {
       cntyRanks[e.cnty] = (cntyRanks[e.cnty] || 0) + 1
       result.push({ cnty: e.cnty, rank: cntyRanks[e.cnty], domain: e.domain, type: e.type, citations, monthScores: e.monthScores, prd: e.prd })
       const key = `${e.cnty}|${e.domain}`
-      // 트렌드는 PRD=TTL 기준으로 (PRD-specific 행이 따로 누적 안 되도록), 단 PRD 없는 시트면 그냥 등록
-      if (!e.prd || /^(ttl|total)$/i.test(e.prd)) {
-        citDomainTrend[key] = { cnty: e.cnty, domain: e.domain, type: e.type, months: e.monthScores }
-      } else if (!citDomainTrend[key]) {
-        // PRD=TTL 행이 없으면 PRD-specific 행으로 폴백 등록 (나중에 PRD=TTL 발견 시 덮어씀)
-        citDomainTrend[key] = { cnty: e.cnty, domain: e.domain, type: e.type, months: e.monthScores }
+      // 트렌드: PRD=TTL 우선이되 같은 (cnty, domain) 다른 type/PRD 의 월 데이터도 merge
+      // (예: Feb 'Comminity', Mar 'Community' 처럼 type 표기 다른 행이 있어도 월별 값 누락 방지)
+      const isTtlPrd = !e.prd || /^(ttl|total)$/i.test(e.prd)
+      if (!citDomainTrend[key]) {
+        citDomainTrend[key] = { cnty: e.cnty, domain: e.domain, type: e.type, months: {}, _hasTtl: false }
+      }
+      const slot = citDomainTrend[key]
+      // PRD=TTL 데이터가 등장하면 type/months 갱신 우선권 부여
+      if (isTtlPrd) {
+        slot.type = e.type || slot.type
+        slot._hasTtl = true
+        Object.entries(e.monthScores).forEach(([m, v]) => { if (v > 0) slot.months[m] = v })
+      } else if (!slot._hasTtl) {
+        // PRD-specific 폴백: 빈 월에만 채워넣기 (PRD=TTL 이 발견되면 덮어쓸 것)
+        Object.entries(e.monthScores).forEach(([m, v]) => { if (v > 0 && !slot.months[m]) slot.months[m] = v })
       }
     })
+    // _hasTtl 플래그 정리 (출력에 불필요)
+    Object.values(citDomainTrend).forEach(v => { delete v._hasTtl })
     // 국가별 정렬: rank가 cntyRanks 누적 순서 기반이라 citations 큰 순으로 재정렬 후 rank 재할당
     const byCnty = {}
     result.forEach(r => { if (!byCnty[r.cnty]) byCnty[r.cnty] = []; byCnty[r.cnty].push(r) })

@@ -420,15 +420,27 @@ function citDomainBumpChartHtml(citDomainTrend, citDomainMonths, meta, t, lang) 
   const topN = BUMP_MAX
 
   // TTL 국가의 도메인만 사용
-  const entries = Object.entries(citDomainTrend)
+  let entries = Object.entries(citDomainTrend)
     .filter(([key]) => key.startsWith('TTL|'))
     .map(([key, val]) => ({ domain: val.domain, type: val.type, months: val.months }))
 
+  // TTL 국가에 데이터 없으면 country-aggregated 폴백
+  if (!entries.length || !entries.some(e => Object.values(e.months || {}).some(v => v > 0))) {
+    const agg = {}
+    Object.entries(citDomainTrend).forEach(([key, val]) => {
+      if (key.startsWith('TTL|')) return
+      const k = val.domain
+      if (!agg[k]) agg[k] = { domain: val.domain, type: val.type, months: {} }
+      Object.entries(val.months || {}).forEach(([m, v]) => { agg[k].months[m] = (agg[k].months[m] || 0) + (v || 0) })
+    })
+    entries = Object.values(agg)
+  }
+
   if (!entries.length) return ''
 
-  // 마지막 월 기준으로 정렬 후 Top N
-  const lastMonth = months[months.length - 1]
-  entries.sort((a, b) => (b.months[lastMonth] || 0) - (a.months[lastMonth] || 0))
+  // 데이터 있는 가장 최신 월 기준 정렬 (Dec 같은 빈 달로 sort 하지 않도록)
+  const lastDataMonth = [...months].reverse().find(m => entries.some(e => (e.months?.[m] || 0) > 0)) || months[months.length - 1]
+  entries.sort((a, b) => (b.months[lastDataMonth] || 0) - (a.months[lastDataMonth] || 0))
   const topEntries = entries.slice(0, topN)
 
   // 월별 순위 계산
