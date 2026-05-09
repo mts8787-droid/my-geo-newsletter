@@ -26,6 +26,7 @@ const T = {
     dotcomTTL: 'TTL (전체)', dotcomLgOnly: '— (LG only)',
     citLegend: 'Citation URL 수',
     byProductFootnote: '제품별 Citation URL 수의 경우, 제품별 Prompt의 수가 상이하여 비중으로 표시함',
+    trendByProductFootnote: '제품별 트렌드 순위는 미제공',
     footer: '해외영업본부 D2C해외영업그룹 D2C마케팅담당 D2C디지털마케팅팀',
   },
   en: {
@@ -37,6 +38,7 @@ const T = {
     dotcomTTL: 'TTL (Total)', dotcomLgOnly: '— (LG only)',
     citLegend: 'Citation URL Count',
     byProductFootnote: 'By Product Citation URL counts are shown as ratios since prompt counts differ across products',
+    trendByProductFootnote: 'Per-product trend rankings not provided',
     footer: 'Overseas Sales HQ · D2C Digital Marketing Team',
   },
 }
@@ -409,6 +411,7 @@ function citCategoryBumpChartHtml(citTouchPointsTrend, citTrendMonths, meta, t, 
     <div class="section-body">
       <div class="bump-chart-wrap">${svg}</div>
       ${table}
+      <div class="cit-footnote">${t.trendByProductFootnote}</div>
     </div>
   </div>`
 }
@@ -483,6 +486,7 @@ function citDomainBumpChartHtml(citDomainTrend, citDomainMonths, meta, t, lang) 
     <div class="section-body">
       <div class="bump-chart-wrap">${svg}</div>
       ${table}
+      <div class="cit-footnote">${t.trendByProductFootnote}</div>
     </div>
   </div>`
 }
