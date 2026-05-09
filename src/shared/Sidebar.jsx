@@ -642,10 +642,8 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
           </div>
         )}
 
-        <div style={{ height: 1, background: '#1E293B', marginBottom: 16 }} />
-
-        {/* ── 시트 다운로드 (대시보드별 별도 URL 저장) ── */}
-        <SheetDownload storageKey={`geo-${mode||'dashboard'}-sheet-url`} downloadName={`${mode||'dashboard'}-sheet`} label="시트 다운로드" />
+        {/* ── 시트 xlsx 다운로드 (동기화 URL 재사용) ── */}
+        <SheetDownload url={gsUrl} downloadName={`${mode||'dashboard'}-sheet`} />
 
         <div style={{ height: 1, background: '#1E293B', marginBottom: 16 }} />
 

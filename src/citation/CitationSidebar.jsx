@@ -258,10 +258,8 @@ export default function CitationSidebar({
           </div>
         )}
 
-        <div style={{ height: 1, background: '#1E293B', marginBottom: 16 }} />
-
-        {/* ── 시트 다운로드 ── */}
-        <SheetDownload storageKey="geo-citation-sheet-url" downloadName="citation-sheet" label="시트 다운로드" />
+        {/* ── 시트 xlsx 다운로드 (동기화 URL 재사용) ── */}
+        <SheetDownload url={gsUrl} downloadName="citation-sheet" />
 
         <div style={{ height: 1, background: '#1E293B', marginBottom: 16 }} />
 

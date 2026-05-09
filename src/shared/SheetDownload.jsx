@@ -1,5 +1,5 @@
-// 구글 시트 URL 입력 + xlsx 다운로드 버튼 (서버: /api/sheet-download)
-// 사용법: <SheetDownload storageKey="geo-citation-sheet-url" downloadName="citation" />
+// 동기화에 쓰는 시트 URL 을 그대로 받아 xlsx 다운로드 (서버: /api/sheet-download)
+// 사용법: <SheetDownload url={gsUrl} downloadName="citation-sheet" />
 import { useState } from 'react'
 
 const FONT = "'LG Smart','Arial Narrow',Arial,sans-serif"
@@ -13,21 +13,13 @@ function extractSheetId(input) {
   return ''
 }
 
-export default function SheetDownload({ storageKey, downloadName = 'sheet', label = '구글 시트' }) {
-  const [url, setUrl] = useState(() => {
-    try { return localStorage.getItem(storageKey) || '' } catch { return '' }
-  })
+export default function SheetDownload({ url, downloadName = 'sheet' }) {
   const [busy, setBusy] = useState(false)
   const [msg, setMsg] = useState('')
 
-  function persist(v) {
-    setUrl(v)
-    try { localStorage.setItem(storageKey, v) } catch {}
-  }
-
   async function handleDownload() {
     const id = extractSheetId(url)
-    if (!id) { setMsg('ERROR: 시트 URL 또는 ID 입력 필요'); return }
+    if (!id) { setMsg('ERROR: 동기화 URL 비어있거나 잘못됨'); return }
     setBusy(true); setMsg('')
     try {
       const r = await fetch(`/api/sheet-download?id=${encodeURIComponent(id)}&name=${encodeURIComponent(downloadName)}`, {
@@ -54,24 +46,15 @@ export default function SheetDownload({ storageKey, downloadName = 'sheet', labe
   }
 
   return (
-    <div style={{ marginBottom: 12 }}>
-      <p style={{ margin: '0 0 6px 2px', fontSize: 11, fontWeight: 700, color: '#475569',
-        textTransform: 'uppercase', letterSpacing: 1, fontFamily: FONT }}>{label}</p>
-      <input
-        value={url}
-        onChange={e => persist(e.target.value)}
-        placeholder="https://docs.google.com/spreadsheets/d/..."
-        style={{ width: '100%', padding: '6px 8px', fontSize: 11, fontFamily: FONT,
-          borderRadius: 4, border: '1px solid #334155', background: '#0F172A', color: '#E2E8F0',
-          marginBottom: 6 }}
-      />
+    <div style={{ marginBottom: 8 }}>
       <button
         onClick={handleDownload}
-        disabled={busy}
-        style={{ width: '100%', padding: '6px 0', borderRadius: 6, border: 'none',
-          background: busy ? '#1E293B' : '#1D4ED8', color: busy ? '#94A3B8' : '#DBEAFE',
+        disabled={busy || !url}
+        style={{ width: '100%', padding: '8px 0', borderRadius: 8, border: 'none',
+          background: (busy || !url) ? '#1E293B' : '#1D4ED8',
+          color: (busy || !url) ? '#94A3B8' : '#DBEAFE',
           fontSize: 11, fontWeight: 700, fontFamily: FONT,
-          cursor: busy ? 'wait' : 'pointer' }}
+          cursor: (busy || !url) ? 'not-allowed' : 'pointer' }}
       >
         {busy ? '다운로드 중…' : '📥 시트 xlsx 다운로드'}
       </button>
