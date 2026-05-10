@@ -69,7 +69,8 @@ export default function SheetDownload({ url, downloadName = 'sheet', mode }) {
       {msg && (
         <div style={{ marginTop: 6, padding: '4px 8px', borderRadius: 4, fontSize: 10, fontFamily: FONT,
           background: msg.startsWith('ERROR') ? '#450A0A' : '#14532D',
-          color: msg.startsWith('ERROR') ? '#FCA5A5' : '#86EFAC' }}>{msg}</div>
+          color: msg.startsWith('ERROR') ? '#FCA5A5' : '#86EFAC',
+          wordBreak: 'break-word', whiteSpace: 'pre-wrap', lineHeight: 1.4 }}>{msg}</div>
       )}
     </div>
   )

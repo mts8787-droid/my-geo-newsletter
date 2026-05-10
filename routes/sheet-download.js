@@ -101,8 +101,20 @@ sheetDownloadRouter.get('/api/sheet-download', async (req, res) => {
     const sr = await fetch(sheetsUrl, { headers: { Authorization: `Bearer ${accessToken}` } })
     if (!sr.ok) {
       const text = await sr.text().catch(() => '')
-      log.warn({ status: sr.status, id, body: text.slice(0, 500) }, 'sheets batchGet failed')
-      return res.status(sr.status).json({ error: 'sheets batchGet 실패', status: sr.status, detail: text.slice(0, 500) })
+      log.warn({ status: sr.status, id, body: text.slice(0, 1000) }, 'sheets batchGet failed')
+      // Google API 에러 본문 파싱 → 가장 도움되는 메시지 추출
+      let gMsg = ''
+      try { const j = JSON.parse(text); gMsg = j.error?.message || j.message || '' } catch {}
+      let hint = ''
+      if (sr.status === 403 && /has not been used|disabled|SERVICE_DISABLED/i.test(gMsg + ' ' + text)) {
+        hint = ' — Google Cloud Console 에서 서비스 계정 프로젝트의 "Google Sheets API" 를 활성화하세요 (https://console.cloud.google.com/apis/library/sheets.googleapis.com)'
+      } else if (sr.status === 403) {
+        hint = ' — 시트가 서비스 계정 이메일에 공유되어 있는지 확인하세요 (Drive 공유 권한)'
+      } else if (sr.status === 400 && /Unable to parse range/i.test(gMsg)) {
+        hint = ' — 시트에 해당 이름의 탭이 없습니다. 시트 탭명을 확인하세요'
+      }
+      const errMsg = `sheets batchGet 실패 (${sr.status})` + (gMsg ? `: ${gMsg}` : '') + hint
+      return res.status(sr.status).json({ error: errMsg, status: sr.status, detail: text.slice(0, 1000) })
     }
     const data = await sr.json()
     const valueRanges = data.valueRanges || []
