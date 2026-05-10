@@ -183,6 +183,50 @@ ${data.todoText ? `\n액션아이템 (인사이트 마지막에 1~2줄로 요약
 [주의: 전체 수치는 "전체 LG Visibility" 값 사용. 제품별 평균이 아님]`
   }
 
+  if (type === 'monthlyReportBody') {
+    const products = data.products || []
+    const productsCnty = data.productsCnty || []
+    const citations = data.citations || []
+    const t = data.total || {}
+    const period = data.period || ''
+    const todoText = data.todoText || ''
+    const prevDelta = t.prev && t.prev !== t.score ? `(전월 ${t.prev}%, ${(t.score - t.prev) > 0 ? '+' : ''}${(t.score - t.prev).toFixed(1)}%p)` : ''
+    const countryTotals = t.countryTotals || {}
+    const cntyLines = Object.entries(countryTotals).map(([c, v]) => `[공식수치] ${c} LG = ${v.lg}% / 경쟁 = ${v.comp}%`).join('\n')
+    const citTotal = citations.reduce((s, c) => s + (c.score || 0), 0)
+    const citTop = citations.slice(0, 5).map((c, i) => `${i + 1}. ${c.source} (${c.category || ''}) — ${c.score}건 (${citTotal > 0 ? ((c.score / citTotal) * 100).toFixed(1) : 0}%)`).join('\n')
+    return `[섹션: GEO 월간 보고서 본문 — 임원/스테이크홀더 대상 종합 보고서]
+아래 3개 섹션 구조로 ${period || '이번 달'} GEO 성과 종합 보고서를 작성하세요. 각 섹션은 번호로 구분하고, 2번 섹션은 2.1/2.2/2.3 하위 섹션을 포함합니다.
+
+[필수 구조]
+1. GEO 최적화의 중요성 및 방향성 정의 (도입부 — LLM 시대 마케팅 패러다임 변화, Brand Visibility/Citation/Readability KPI 정의)
+2. ${period || '이번 달'} 실적 리뷰 - AI 노출 및 인용 현황
+   2.1 글로벌 성과 요약 (전체 Visibility, 경쟁사 대비, 주요 카테고리 요약)
+   2.2 지역별 세부 현황 (북미·유럽·중남미·아시아 권역별 — 강점/약점 카테고리)
+   2.3 Citation(인용) 분석 (Retail/Review 비중, 영어권/비영어권 핵심 채널)
+3. 향후 추진 방향 및 Action Items (①~⑤ 번호 매김, 각 항목 1~2문장 설명)
+
+※ 아래 [공식수치]는 시트 원본값입니다. 절대 새로 계산하지 마세요.
+[공식수치] 전체 LG Visibility = ${t.score ?? '—'}% ${prevDelta}
+[공식수치] 전체 경쟁사(Samsung) Visibility = ${t.vsComp ?? '—'}%
+${t.buTotals ? Object.entries(t.buTotals).map(([bu, v]) => `[공식수치] ${bu}본부 LG = ${v.lg}% / 경쟁 = ${v.comp}%`).join('\n') : ''}
+${cntyLines ? `\n국가별 전체:\n${cntyLines}` : ''}
+
+본부별 제품 상세:
+${buProductSummary(products)}
+
+${countrySummary(productsCnty) ? `국가별 제품 요약:\n${countrySummary(productsCnty)}` : ''}
+
+${citTop ? `Citation Top 5:\n[공식수치] 전체 Citation: ${citTotal}건\n${citTop}` : ''}
+
+${todoText ? `\n기존 Action Plan 메모 (3번 섹션 작성 시 참고):\n${todoText}` : ''}
+
+[필수: 모든 권역(북미/유럽/중남미/아시아) 빠짐없이 포함]
+[필수: 1·2·3 번호 매김 헤딩, 2.1·2.2·2.3 서브 헤딩 형식 준수]
+[필수: 3번 섹션 액션 아이템은 ①②③④⑤ 원형 숫자로 시작]
+[주의: 임원 보고용 톤 — 객관적·구체적 수치 인용]`
+  }
+
   if (type === 'howToRead') {
     const section = data.section || 'general'
     return `"${section}" 섹션의 How to Read(읽는 법) 가이드를 작성해주세요.

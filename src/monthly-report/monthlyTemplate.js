@@ -13,6 +13,38 @@ function escapeHtml(str) {
   return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')
 }
 
+// 보고서 본문(monthlyReportBody) 렌더링
+// "1. xxx" → h2, "1.1 xxx" / "1.1. xxx" → h3, 빈 줄 → 단락 구분, **굵게** → <strong>
+function renderReportBody(text) {
+  if (!text || !String(text).trim()) return ''
+  const inlineFmt = s => escapeHtml(s).replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+  const lines = String(text).split(/\n/)
+  const out = []
+  let buf = []
+  const flush = () => {
+    if (buf.length) {
+      out.push(`<p style="margin:0 0 10px;font-size:13px;line-height:1.75;font-family:${FONT};color:#222;">${buf.map(inlineFmt).join('<br/>')}</p>`)
+      buf = []
+    }
+  }
+  for (const raw of lines) {
+    const line = raw.trim()
+    if (!line) { flush(); continue }
+    let m
+    if ((m = line.match(/^(\d+)\.(\d+)\.?\s+(.+)$/))) {
+      flush()
+      out.push(`<h3 style="font-size:14px;font-weight:700;margin:14px 0 6px;font-family:${FONT};color:#111;">${escapeHtml(m[1])}.${escapeHtml(m[2])} ${inlineFmt(m[3])}</h3>`)
+    } else if ((m = line.match(/^(\d+)\.\s+(.+)$/))) {
+      flush()
+      out.push(`<h2 style="font-size:16px;font-weight:700;margin:22px 0 10px;border-top:1px solid #999;padding-top:12px;font-family:${FONT};color:#000;">${escapeHtml(m[1])}. ${inlineFmt(m[2])}</h2>`)
+    } else {
+      buf.push(line)
+    }
+  }
+  flush()
+  return out.join('')
+}
+
 const COUNTRY_ORDER = ['US','CA','UK','DE','ES','BR','MX','AU','VN','IN']
 function sortCountries(keys) {
   return COUNTRY_ORDER.filter(c => keys.includes(c)).concat(keys.filter(c => !COUNTRY_ORDER.includes(c)))
@@ -563,6 +595,11 @@ body, table, td, th, h1, h2, p, span, div { font-family: ${FONT} !important; }
       <h1 style="font-size:22px;font-weight:700;margin:0;font-family:${FONT};">${escapeHtml(title)}</h1>
       <p style="font-size:13px;color:#444;margin:4px 0 0;font-family:${FONT};">${escapeHtml(period)} · ${escapeHtml(meta.team || '')}</p>
     </div>
+
+    ${meta.showMonthlyReportBody !== false && meta.monthlyReportBody ? `
+    <section style="margin-bottom:28px;">
+      ${renderReportBody(meta.monthlyReportBody)}
+    </section>` : ''}
 
     ${total && total.score != null ? `
     <table border="0" cellspacing="0" cellpadding="0" style="border-collapse:collapse;width:100%;margin-bottom:8px;font-family:${FONT};">

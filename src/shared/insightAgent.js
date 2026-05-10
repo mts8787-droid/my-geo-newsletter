@@ -29,6 +29,7 @@ export const CLAUDE_OUTPUT_USD_PER_1M = 15
 // type → archives 키 매핑
 export const ARCHIVE_KEY_MAP = {
   totalInsight: 'totalInsight',
+  monthlyReportBody: 'monthlyReportBody',
   product: 'productInsight', productHowToRead: 'productHowToRead',
   citation: 'citationInsight', citationHowToRead: 'citationHowToRead',
   dotcom: 'dotcomInsight', dotcomHowToRead: 'dotcomHowToRead',

@@ -161,6 +161,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
         src.citDomainInsight || '', src.citDomainHowToRead || '',
         src.citCntyInsight || '', src.citCntyHowToRead || '',
         src.period || '', src.team || '', src.reportNo || '',
+        src.monthlyReportBody || '',
       ]
       // 제품명 + 경쟁사명 (한글 원본)
       const productKrTexts = _products.map(p => p.kr || '')
@@ -202,6 +203,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
         period: (idx++, src.period),
         team: tr[idx++] || src.team,
         reportNo: (idx++, src.reportNo),
+        monthlyReportBody: tr[idx++] || src.monthlyReportBody,
       }
 
       const capitalize = s => s ? s.replace(/\b\w/g, c => c.toUpperCase()) : s
@@ -337,7 +339,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
         // 텍스트 칸: 기존 값이 있으면 덮어쓰지 않음 (빈 값인 경우에만 적용)
         const textKeys = ['totalInsight','productInsight','productHowToRead','citationInsight','citationHowToRead',
           'dotcomInsight','dotcomHowToRead','cntyInsight','cntyHowToRead','citDomainInsight','citDomainHowToRead',
-          'citCntyInsight','citCntyHowToRead','noticeText','kpiLogicText','todoText','aiPromptRules']
+          'citCntyInsight','citCntyHowToRead','noticeText','kpiLogicText','todoText','aiPromptRules','monthlyReportBody']
         setMetaKo(m => {
           const merged = { ...m }
           for (const [k, v] of Object.entries(parsed.meta)) {
@@ -750,6 +752,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
             citCntyHowToRead: meta.citCntyHowToRead || '', dotcomInsight: meta.dotcomInsight || '',
             dotcomHowToRead: meta.dotcomHowToRead || '', todoText: meta.todoText || '',
             noticeText: meta.noticeText || '', kpiLogicText: meta.kpiLogicText || '',
+            monthlyReportBody: meta.monthlyReportBody || '',
           }
           const hasContent = Object.values(insights).some(v => v.trim())
           if (!hasContent) { alert('아카이빙할 인사이트 콘텐츠가 없습니다.'); return }
@@ -994,6 +997,45 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
           textTransform: 'uppercase', letterSpacing: 1, fontFamily: FONT }}>
           콘텐츠 편집
         </p>
+
+        {/* 월간 보고서 본문 (monthly-report 전용) */}
+        {mode === 'monthly-report' && (
+          <>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+              <p style={{ margin: 0, fontSize: 11, color: '#64748B', fontFamily: FONT }}>월간 보고서 본문</p>
+              <button onClick={async () => {
+                  try {
+                    setMeta(m => ({ ...m, monthlyReportBody: '⏳ AI 생성 중...' }))
+                    const insight = await generateAIInsight('monthlyReportBody', {
+                      products: getLatestData().products,
+                      productsCnty: getLatestData().productsCnty,
+                      total: getLatestData().total,
+                      citations: getLatestData().citations,
+                      todoText: meta.todoText || '',
+                      period: meta.period || '',
+                    }, previewLang)
+                    setMeta(m => ({ ...m, monthlyReportBody: insight }))
+                  } catch (err) { console.error('[AI]', err); setMeta(m => ({ ...m, monthlyReportBody: `[AI 실패: ${err.message}]` })) }
+                }}
+                title="AI 보고서 본문 자동 생성 (Claude)"
+                style={{ padding: '2px 6px', borderRadius: 4, border: 'none', cursor: 'pointer',
+                  background: '#4F46E5', color: '#FFFFFF',
+                  fontSize: 11, fontWeight: 700, fontFamily: FONT, display: 'flex', alignItems: 'center', gap: 3 }}>
+                <Sparkles size={9} /> AI 생성
+              </button>
+            </div>
+            <textarea
+              value={meta.monthlyReportBody || ''}
+              onChange={e => setMeta(m => ({ ...m, monthlyReportBody: e.target.value }))}
+              rows={28}
+              placeholder="월간 보고서 본문을 입력하세요. 1./2./3. 형식 헤딩, 2.1/2.2 서브헤딩 지원..."
+              style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6, marginBottom: 4 }}
+            />
+            <p style={{ margin: '0 0 14px', fontSize: 11, color: '#475569', fontFamily: FONT }}>
+              <code>1. 제목</code> → H2 · <code>2.1 부제</code> → H3 · <code>**텍스트**</code> → <strong>볼드</strong>
+            </p>
+          </>
+        )}
 
         {/* GEO 전략 인사이트 */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
