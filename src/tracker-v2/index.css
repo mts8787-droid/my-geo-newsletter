@@ -9,10 +9,31 @@
 */
 @font-face {
   font-family: 'LGEIText';
+  src: local('LGEIText Light'), local('LGEITextLight'),
+       url('/font/LGEIText Light.ttf') format('truetype');
+  font-weight: 100 300;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'LGEIText';
   src: local('LGEIText Regular'), local('LGEITextRegular'),
        url('/font/LGEIText Regular.otf') format('opentype'),
        url('/font/LGEIText Regular.ttf') format('truetype');
-  font-weight: 100 900;
+  font-weight: 400 500;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'LGEIText';
+  src: local('LGEIText SemiBold'), local('LGEITextSemiBold'),
+       url('/font/LGEIText SemiBold.ttf') format('truetype');
+  font-weight: 600;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'LGEIText';
+  src: local('LGEIText Bold'), local('LGEITextBold'),
+       url('/font/LGEIText Bold.ttf') format('truetype');
+  font-weight: 700 900;
   font-display: swap;
 }
 
@@ -64,12 +85,37 @@
 /* AppFont: LGEIText 한글 + Arial Narrow 영문 합성 */
 @font-face {
   font-family: 'AppFont';
+  src: local('LGEIText Light'), local('LGEITextLight'),
+       url('/font/LGEIText Light.ttf') format('truetype');
+  unicode-range: U+AC00-D7A3, U+1100-11FF, U+3130-318F, U+A960-A97F, U+D7B0-D7FF,
+                 U+3000-303F, U+2010-205F;
+  font-weight: 100 300;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'AppFont';
   src: local('LGEIText Regular'), local('LGEITextRegular'),
        url('/font/LGEIText Regular.otf') format('opentype'),
        url('/font/LGEIText Regular.ttf') format('truetype');
   unicode-range: U+AC00-D7A3, U+1100-11FF, U+3130-318F, U+A960-A97F, U+D7B0-D7FF,
                  U+3000-303F, U+2010-205F;
-  font-weight: 100 900;
+  font-weight: 400 500;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'AppFont';
+  src: local('LGEIText SemiBold'), local('LGEITextSemiBold'),
+       url('/font/LGEIText SemiBold.ttf') format('truetype');
+  unicode-range: U+AC00-D7A3, U+1100-11FF, U+3130-318F, U+A960-A97F, U+D7B0-D7FF;
+  font-weight: 600;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'AppFont';
+  src: local('LGEIText Bold'), local('LGEITextBold'),
+       url('/font/LGEIText Bold.ttf') format('truetype');
+  unicode-range: U+AC00-D7A3, U+1100-11FF, U+3130-318F, U+A960-A97F, U+D7B0-D7FF;
+  font-weight: 700 900;
   font-display: swap;
 }
 @font-face {

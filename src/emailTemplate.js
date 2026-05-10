@@ -1287,7 +1287,10 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
   <![endif]-->
   ${citDomainResult.css ? `<style type="text/css">${citDomainResult.css}</style>` : ''}
   <style type="text/css">
-    @font-face { font-family: 'LGEIText'; font-weight: 100 900; font-style: normal; src: url('/font/LGEIText%20Regular.otf') format('opentype'), url('/font/LGEIText%20Regular.ttf') format('truetype'); font-display: swap; }
+    @font-face { font-family: 'LGEIText'; font-weight: 100 300; font-style: normal; src: url('/font/LGEIText%20Light.ttf') format('truetype'); font-display: swap; }
+    @font-face { font-family: 'LGEIText'; font-weight: 400 500; font-style: normal; src: url('/font/LGEIText%20Regular.otf') format('opentype'), url('/font/LGEIText%20Regular.ttf') format('truetype'); font-display: swap; }
+    @font-face { font-family: 'LGEIText'; font-weight: 600; font-style: normal; src: url('/font/LGEIText%20SemiBold.ttf') format('truetype'); font-display: swap; }
+    @font-face { font-family: 'LGEIText'; font-weight: 700 900; font-style: normal; src: url('/font/LGEIText%20Bold.ttf') format('truetype'); font-display: swap; }
     html, body { overflow-x: hidden !important; max-width: 100vw; }
     body * { max-width: 100%; }
     table { table-layout: auto; }
