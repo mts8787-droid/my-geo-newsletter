@@ -16,7 +16,9 @@ export function serveFontsPlugin() {
         const file = resolve('font', decodeURIComponent(req.url).replace(/^\//, '').split('?')[0])
         if (!file.startsWith(fontDir)) return res.writeHead(403).end('Forbidden')
         if (!existsSync(file)) return next()
-        res.setHeader('Content-Type', 'font/ttf')
+        const ext = file.toLowerCase().split('.').pop()
+        const mime = ext === 'otf' ? 'font/otf' : ext === 'woff2' ? 'font/woff2' : ext === 'woff' ? 'font/woff' : 'font/ttf'
+        res.setHeader('Content-Type', mime)
         res.setHeader('Cache-Control', 'public, max-age=31536000, immutable')
         createReadStream(file).pipe(res)
       })

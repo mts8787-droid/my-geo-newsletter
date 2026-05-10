@@ -1,7 +1,7 @@
 // ─── 브랜드 토큰 ──────────────────────────────────────────────────────────────
 export const LG_RED  = '#CF0652'
 export const LG_DARK = '#A0003E'
-export const FONT    = "'LG Smart','Arial Narrow',Arial,sans-serif"
+export const FONT    = "'LGEIText','LG Smart','Arial Narrow',Arial,sans-serif"
 
 // ─── 디자인 가이드 공통 상수 ─────────────────────────────────────────────────
 export const SECTION_BAR = { width: 4, height: 22, borderRadius: 4, background: LG_RED, flexShrink: 0 }

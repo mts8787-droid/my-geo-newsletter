@@ -1477,7 +1477,7 @@ export function generateDashboardHTML(meta, total, products, citations, dotcom, 
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${meta.title || 'GEO KPI Dashboard'} — ${meta.period || ''}</title>
 <link href="https://fonts.cdnfonts.com/css/lg-smart" rel="stylesheet"/>
-<style>${buildDashboardStyles({ FONT, RED, COMP })}</style>
+<style>@font-face{font-family:'LGEIText';font-weight:100 900;font-style:normal;src:url('/font/LGEIText%20Regular.otf') format('opentype'),url('/font/LGEIText%20Regular.ttf') format('truetype');font-display:swap}${buildDashboardStyles({ FONT, RED, COMP })}</style>
 </head>
 <body>
 ${visibilityOnly ? `

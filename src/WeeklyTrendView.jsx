@@ -1,6 +1,6 @@
 import { useState, useMemo, useRef, useEffect, useCallback } from 'react'
 
-const FONT = "'LG Smart','Arial Narrow',Arial,sans-serif"
+const FONT = "'LGEIText','LG Smart','Arial Narrow',Arial,sans-serif"
 const LG_RED = '#CF0652'
 const BRAND_COL = 90
 

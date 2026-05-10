@@ -4,7 +4,7 @@ import {
 import { SECTION_BAR } from '../utils/constants'
 import { t, tMonth } from '../../shared/i18n.js'
 
-const FONT = "'LG Smart','Arial Narrow',Arial,sans-serif"
+const FONT = "'LGEIText','LG Smart','Arial Narrow',Arial,sans-serif"
 const RED = '#CF0652'
 const BLUE = '#475569'
 

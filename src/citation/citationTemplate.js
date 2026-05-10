@@ -1,6 +1,6 @@
 // ─── GEO Citation 대시보드 — Citation 전용 독립 시각화 ───────────────────────
 // dashboardTemplate.js의 Citation 섹션만 추출하여 독립 렌더링
-const FONT = "'LG Smart','Arial Narrow',Arial,sans-serif"
+const FONT = "'LGEIText','LG Smart','Arial Narrow',Arial,sans-serif"
 const RED = '#CF0652'
 const COMP = '#94A3B8'
 
@@ -698,6 +698,7 @@ export function generateCitationHTML(meta, _total, _products, citations, dotcom,
 <title>Citation Dashboard — ${meta.period || ''}</title>
 <link href="https://fonts.cdnfonts.com/css/lg-smart" rel="stylesheet"/>
 <style>
+@font-face{font-family:'LGEIText';font-weight:100 900;font-style:normal;src:url('/font/LGEIText%20Regular.otf') format('opentype'),url('/font/LGEIText%20Regular.ttf') format('truetype');font-display:swap}
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#F1F5F9;font-family:${FONT};min-width:1200px;color:#1A1A1A}
 .cit-header{position:sticky;top:0;z-index:100;background:#0F172A;display:flex;align-items:center;justify-content:space-between;padding:14px 40px;border-bottom:1px solid #1E293B}

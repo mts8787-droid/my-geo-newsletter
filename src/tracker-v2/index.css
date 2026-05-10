@@ -3,9 +3,19 @@
 @tailwind utilities;
 
 /*
-  LG Smart — 웹폰트 (font/ 디렉토리에서 로드)
-  한글 범위에 적용, 영문/숫자에는 Arial Narrow 적용
+  LGEIText — 한글 시스템 폰트 (Regular 단일 weight)
+  LG Smart — 보조 한글 폰트 (Light/SemiBold/Bold 변형 제공)
+  영문/숫자에는 Arial Narrow 적용
 */
+@font-face {
+  font-family: 'LGEIText';
+  src: local('LGEIText Regular'), local('LGEITextRegular'),
+       url('/font/LGEIText Regular.otf') format('opentype'),
+       url('/font/LGEIText Regular.ttf') format('truetype');
+  font-weight: 100 900;
+  font-display: swap;
+}
+
 @font-face {
   font-family: 'LG Smart';
   src: local('LG Smart Light'), local('LGSmartLight'),
@@ -51,30 +61,15 @@
   font-display: swap;
 }
 
-/* AppFont: LG Smart 한글 + Arial Narrow 영문 합성 */
+/* AppFont: LGEIText 한글 + Arial Narrow 영문 합성 */
 @font-face {
   font-family: 'AppFont';
-  src: local('LG Smart Regular'), local('LGSmartRegular'),
-       url('/font/LG Smart Regular.ttf') format('truetype');
+  src: local('LGEIText Regular'), local('LGEITextRegular'),
+       url('/font/LGEIText Regular.otf') format('opentype'),
+       url('/font/LGEIText Regular.ttf') format('truetype');
   unicode-range: U+AC00-D7A3, U+1100-11FF, U+3130-318F, U+A960-A97F, U+D7B0-D7FF,
                  U+3000-303F, U+2010-205F;
-  font-weight: 400;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'AppFont';
-  src: local('LG Smart SemiBold'), local('LGSmartSemiBold'),
-       url('/font/LG Smart SemiBold.ttf') format('truetype');
-  unicode-range: U+AC00-D7A3, U+1100-11FF, U+3130-318F, U+A960-A97F, U+D7B0-D7FF;
-  font-weight: 500 600;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'AppFont';
-  src: local('LG Smart Bold'), local('LGSmartBold'),
-       url('/font/LG Smart Bold.ttf') format('truetype');
-  unicode-range: U+AC00-D7A3, U+1100-11FF, U+3130-318F, U+A960-A97F, U+D7B0-D7FF;
-  font-weight: 700 900;
+  font-weight: 100 900;
   font-display: swap;
 }
 @font-face {
@@ -90,7 +85,7 @@
 
 body {
   margin: 0;
-  font-family: 'AppFont', 'LG Smart', 'Arial Narrow', Arial, sans-serif;
+  font-family: 'AppFont', 'LGEIText', 'LG Smart', 'Arial Narrow', Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   letter-spacing: -0.01em;
   background: #F9FAFB;

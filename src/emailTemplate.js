@@ -3,7 +3,7 @@
 
 const EM_RED  = '#CF0652'
 const EM_DARK = '#A0003E'
-const EM_FONT = "'LG Smart', 'Arial Narrow', Arial, sans-serif"
+const EM_FONT = "'LGEIText','LG Smart', 'Arial Narrow', Arial, sans-serif"
 
 const CNTY_KR = {
   US: '미국', CA: '캐나다', UK: '영국', GB: '영국',
@@ -1174,7 +1174,7 @@ function dashboardLinkButtonHtml(lang) {
       <!--[if mso]>
       <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="${url}" style="height:48px;v-text-anchor:middle;width:100%;" arcsize="18%" strokecolor="${EM_RED}" fillcolor="${EM_RED}">
         <w:anchorlock/>
-        <center style="color:#FFFFFF;font-family:'LG Smart',Arial,sans-serif;font-size:15px;font-weight:700;">${label}</center>
+        <center style="color:#FFFFFF;font-family:'LGEIText','LG Smart',Arial,sans-serif;font-size:15px;font-weight:700;">${label}</center>
       </v:roundrect>
       <![endif]-->
       <!--[if !mso]><!-- -->
@@ -1282,7 +1282,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
   <!--[if mso]>
   <style type="text/css">
     table { border-collapse: collapse; }
-    td { font-family: 'LG Smart', Arial, sans-serif; }
+    td { font-family: 'LGEIText','LG Smart', Arial, sans-serif; }
   </style>
   <![endif]-->
   ${citDomainResult.css ? `<style type="text/css">${citDomainResult.css}</style>` : ''}

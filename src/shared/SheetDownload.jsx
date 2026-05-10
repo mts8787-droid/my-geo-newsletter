@@ -4,7 +4,7 @@
 import { useState } from 'react'
 import { tabsForMode } from './sheetTabsForMode.js'
 
-const FONT = "'LG Smart','Arial Narrow',Arial,sans-serif"
+const FONT = "'LGEIText','LG Smart','Arial Narrow',Arial,sans-serif"
 
 function extractSheetId(input) {
   const s = String(input || '').trim()

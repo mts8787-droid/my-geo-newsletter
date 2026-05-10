@@ -1,5 +1,5 @@
 // ─── 대시보드 상수 — dashboardTemplate.js에서 분리 (C12 step2) ─────────────
-export const FONT = "'LG Smart','Arial Narrow',Arial,sans-serif"
+export const FONT = "'LGEIText','LG Smart','Arial Narrow',Arial,sans-serif"
 export const RED = '#CF0652'
 export const COMP = '#94A3B8' // 경쟁사 공통 회색
 
