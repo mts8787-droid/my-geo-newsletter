@@ -1,15 +1,21 @@
-// 구글 드라이브 시트를 xlsx 로 export 하여 사용자에게 다운로드 응답
+// 구글 시트의 선택된 탭만 CSV로 묶어 ZIP 으로 다운로드 응답
+// (?tabs= 미지정 시 기존 동작: 시트 전체 xlsx 로 export)
 // 인증: 서비스 계정 (env: GOOGLE_SERVICE_ACCOUNT_JSON 또는 GOOGLE_APPLICATION_CREDENTIALS)
 //       시트는 서비스 계정 이메일에 "보기" 이상 권한으로 공유되어야 함
 import { Router } from 'express'
 import { GoogleAuth } from 'google-auth-library'
+import JSZip from 'jszip'
 import { logFor } from '../lib/logger.js'
 
 const log = logFor('sheet-download')
 export const sheetDownloadRouter = Router()
 
-const SCOPES = ['https://www.googleapis.com/auth/drive.readonly']
+const SCOPES = [
+  'https://www.googleapis.com/auth/drive.readonly',
+  'https://www.googleapis.com/auth/spreadsheets.readonly',
+]
 const XLSX_MIME = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+const ZIP_MIME = 'application/zip'
 
 let _authPromise = null
 function getAuth() {
@@ -39,9 +45,22 @@ function extractSheetId(input) {
   if (!s) return ''
   const m = s.match(/\/d\/([a-zA-Z0-9_-]{20,})/)
   if (m) return m[1]
-  // ID 만 입력한 경우
   if (/^[a-zA-Z0-9_-]{20,}$/.test(s)) return s
   return ''
+}
+
+function rowsToCSV(rows) {
+  if (!rows || !rows.length) return ''
+  return rows.map(row =>
+    (row || []).map(cell => {
+      const s = cell == null ? '' : String(cell)
+      return /[,"\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s
+    }).join(',')
+  ).join('\r\n')
+}
+
+function sanitizeFileName(s) {
+  return String(s || 'sheet').replace(/[\/\\?%*:|"<>]/g, '_').slice(0, 100) || 'sheet'
 }
 
 sheetDownloadRouter.get('/api/sheet-download', async (req, res) => {
@@ -50,24 +69,60 @@ sheetDownloadRouter.get('/api/sheet-download', async (req, res) => {
     const name = String(req.query.name || 'sheet').replace(/[^\w가-힣\-_]/g, '_').slice(0, 80) || 'sheet'
     if (!id) return res.status(400).json({ error: 'sheet id/url 필수 (?id=... 또는 ?url=https://docs.google.com/spreadsheets/d/...)' })
 
+    const tabsParam = req.query.tabs ? String(req.query.tabs) : ''
+    const tabs = tabsParam ? tabsParam.split(',').map(s => s.trim()).filter(Boolean) : []
+
     const client = await getAuth()
     const accessToken = (await client.getAccessToken()).token
     if (!accessToken) return res.status(500).json({ error: '서비스 계정 토큰 발급 실패' })
 
-    const driveUrl = `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(id)}/export?mimeType=${encodeURIComponent(XLSX_MIME)}`
-    const r = await fetch(driveUrl, { headers: { Authorization: `Bearer ${accessToken}` } })
-    if (!r.ok) {
-      const text = await r.text().catch(() => '')
-      log.warn({ status: r.status, id, body: text.slice(0, 500) }, 'drive export failed')
-      return res.status(r.status).json({ error: 'drive export 실패', status: r.status, detail: text.slice(0, 500) })
+    // 탭 미지정 → 기존 동작 (전체 xlsx)
+    if (tabs.length === 0) {
+      const driveUrl = `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(id)}/export?mimeType=${encodeURIComponent(XLSX_MIME)}`
+      const r = await fetch(driveUrl, { headers: { Authorization: `Bearer ${accessToken}` } })
+      if (!r.ok) {
+        const text = await r.text().catch(() => '')
+        log.warn({ status: r.status, id, body: text.slice(0, 500) }, 'drive export failed')
+        return res.status(r.status).json({ error: 'drive export 실패', status: r.status, detail: text.slice(0, 500) })
+      }
+      res.setHeader('Content-Type', XLSX_MIME)
+      res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${encodeURIComponent(name + '.xlsx')}`)
+      res.setHeader('Cache-Control', 'no-store')
+      const buf = Buffer.from(await r.arrayBuffer())
+      res.send(buf)
+      log.info({ id, name, bytes: buf.length }, 'sheet downloaded (xlsx)')
+      return
     }
 
-    res.setHeader('Content-Type', XLSX_MIME)
-    res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${encodeURIComponent(name + '.xlsx')}`)
+    // 선택 탭 → CSV ZIP
+    // 시트명에 공백/특수문자가 있어도 안전하게 — 시트명을 단독 range 로 전달 (전체 시트 의미)
+    const rangesQS = tabs.map(t => `ranges=${encodeURIComponent(t)}`).join('&')
+    const sheetsUrl = `https://sheets.googleapis.com/v4/spreadsheets/${encodeURIComponent(id)}/values:batchGet?${rangesQS}&valueRenderOption=FORMATTED_VALUE&dateTimeRenderOption=FORMATTED_STRING`
+    const sr = await fetch(sheetsUrl, { headers: { Authorization: `Bearer ${accessToken}` } })
+    if (!sr.ok) {
+      const text = await sr.text().catch(() => '')
+      log.warn({ status: sr.status, id, body: text.slice(0, 500) }, 'sheets batchGet failed')
+      return res.status(sr.status).json({ error: 'sheets batchGet 실패', status: sr.status, detail: text.slice(0, 500) })
+    }
+    const data = await sr.json()
+    const valueRanges = data.valueRanges || []
+
+    const zip = new JSZip()
+    let included = 0
+    valueRanges.forEach((vr, i) => {
+      const tabName = tabs[i] || `sheet${i + 1}`
+      const csv = rowsToCSV(vr.values)
+      // UTF-8 BOM — Excel 이 한글 깨짐 없이 열도록
+      zip.file(`${sanitizeFileName(tabName)}.csv`, '﻿' + csv)
+      included++
+    })
+    const buf = await zip.generateAsync({ type: 'nodebuffer', compression: 'DEFLATE' })
+
+    res.setHeader('Content-Type', ZIP_MIME)
+    res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${encodeURIComponent(name + '.zip')}`)
     res.setHeader('Cache-Control', 'no-store')
-    const buf = Buffer.from(await r.arrayBuffer())
     res.send(buf)
-    log.info({ id, name, bytes: buf.length }, 'sheet downloaded')
+    log.info({ id, name, tabs: included, bytes: buf.length }, 'sheet downloaded (zip)')
   } catch (e) {
     log.error({ err: e.message }, 'sheet-download error')
     res.status(500).json({ error: e.message })

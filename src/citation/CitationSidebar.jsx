@@ -258,8 +258,8 @@ export default function CitationSidebar({
           </div>
         )}
 
-        {/* ── 시트 xlsx 다운로드 (동기화 URL 재사용) ── */}
-        <SheetDownload url={gsUrl} downloadName="citation-sheet" />
+        {/* ── 시트 다운로드 (citation 탭만 CSV ZIP) ── */}
+        <SheetDownload url={gsUrl} downloadName="citation-sheet" mode="citation" />
 
         <div style={{ height: 1, background: '#1E293B', marginBottom: 16 }} />
 
