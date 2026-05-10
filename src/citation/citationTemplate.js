@@ -862,13 +862,14 @@ function _citCatRows(cits,topN){
 }
 // topColor: 상위 3 막대 색 (기본 #CF0652). 연한 색 변형은 '#F87171' 권장.
 // isRatio: true 면 라벨을 "% (cits 합 대비)" 로 표시 — 제품별 카드의 ratio 모드용.
-function _citVBar(cits,topN,isSmall,topColor,isRatio){
+function _citVBar(cits,topN,isSmall,topColor,isRatio,scale){
   if(!cits||!cits.length)return'<div style="text-align:center;padding:12px;color:#94A3B8;font-size:12px">'+_noDataMsg+'</div>';
   var list=cits.slice(0,topN);
   var maxScore=Math.max.apply(null,list.map(function(c){return c.score}).concat([1]));
   var totalForRatio=isRatio?cits.reduce(function(s,c){return s+(c.score||0)},0):0;
-  var BAR_H=isSmall?50:110;
-  var LABEL_H=isSmall?30:36;
+  var sc=scale||1;
+  var BAR_H=Math.round((isSmall?50:110)*sc);
+  var LABEL_H=Math.round((isSmall?30:36)*sc);
   var fs=isSmall?12:14;
   var fsl=isSmall?11:12;
   var tc=topColor||'#CF0652';
@@ -934,7 +935,7 @@ function renderCitCat(cits,prdData,enabledCntys,enabledPrds,allPrdSel,nonePrdSel
     var list=prdSrc[prd];
     if(!list||!list.length)return;
     list=list.slice().sort(function(a,b){return b.score-a.score});
-    prdCards.push(_vbarCard(prd,_citVBar(list,8,true,'#F87171',isRatio)));
+    prdCards.push(_vbarCard(prd,_citVBar(list,8,true,'#F87171',isRatio,0.7)));
   });
   if(prdCards.length){
     body+=_subSection(_lang==='en'?'By Product':'제품별',prdCards.join(''));
@@ -1053,7 +1054,7 @@ function renderCitDom(citCnty,useAgg,prdData,enabledCntys,enabledPrds,allPrdSel,
     var list=Object.keys(dm).map(function(d){return{source:d,score:dm[d]}})
       .sort(function(a,b){return b.score-a.score});
     if(!list.length)return;
-    prdCards.push(_vbarCard(prd,_citVBar(list,8,true,'#F87171',isRatio)));
+    prdCards.push(_vbarCard(prd,_citVBar(list,8,true,'#F87171',isRatio,0.7)));
   });
   if(prdCards.length){
     body+=_subSection(_lang==='en'?'By Product':'제품별',prdCards.join(''));
