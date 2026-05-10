@@ -868,12 +868,12 @@ function _citVBar(cits,topN,isSmall,topColor,isRatio,scale){
   var maxScore=Math.max.apply(null,list.map(function(c){return c.score}).concat([1]));
   var totalForRatio=isRatio?cits.reduce(function(s,c){return s+(c.score||0)},0):0;
   var sc=scale||1;
-  var BAR_H=Math.round((isSmall?50:110)*sc);
-  var LABEL_H=Math.round((isSmall?30:36)*sc);
+  var BAR_H=Math.round((isSmall?40:110)*sc);
+  var LABEL_H=isSmall?42:36;
   var fs=isSmall?12:14;
   var fsl=isSmall?11:12;
   var tc=topColor||'#CF0652';
-  return '<div style="display:flex;gap:'+(isSmall?'4':'6')+'px;padding:'+(isSmall?'4px 0 0':'8px 0 0')+';overflow-x:auto;align-items:flex-end">'+list.map(function(c,i){
+  return '<div style="display:flex;gap:'+(isSmall?'4':'6')+'px;padding:'+(isSmall?'4px 0 0':'8px 0 0')+';overflow:hidden;align-items:flex-end">'+list.map(function(c,i){
     var h=Math.max(3,Math.round(c.score/maxScore*BAR_H));
     var color=i<3?tc:'#94A3B8';
     var valLabel=isRatio?(totalForRatio>0?((c.score/totalForRatio)*100).toFixed(1)+'%':'0%'):_fmt(c.score);
@@ -921,7 +921,7 @@ function renderCitCat(cits,prdData,enabledCntys,enabledPrds,allPrdSel,nonePrdSel
     }
     list=list.slice().sort(function(a,b){return b.score-a.score});
     if(!list.length)return;
-    cntyCards.push(_vbarCard(_cn(cnty),_citVBar(list,8,true)));
+    cntyCards.push(_vbarCard(_cn(cnty),_citVBar(list,8,true,null,false,0.7)));
   });
   if(cntyCards.length){
     body+=_subSection(_lang==='en'?'By Country':'국가별',cntyCards.join(''));
@@ -1026,7 +1026,7 @@ function renderCitDom(citCnty,useAgg,prdData,enabledCntys,enabledPrds,allPrdSel,
       cRows=Object.values(dm).sort(function(a,b){return b.citations-a.citations});
     }
     if(!cRows.length)return;
-    cntyCards.push(_vbarCard(_cn(cnty),_citVBar(_domToVBarData(cRows,8),8,true)));
+    cntyCards.push(_vbarCard(_cn(cnty),_citVBar(_domToVBarData(cRows,8),8,true,null,false,0.7)));
   });
   if(cntyCards.length){
     body+=_subSection(_lang==='en'?'By Country':'국가별',cntyCards.join(''));
