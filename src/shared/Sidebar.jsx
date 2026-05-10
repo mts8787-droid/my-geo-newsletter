@@ -649,6 +649,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
 
         <div style={{ height: 1, background: '#1E293B', marginBottom: 16 }} />
 
+        {mode !== 'monthly-report' && (<>
         {/* AI 번역 */}
         <button onClick={handleTranslate} disabled={translating} style={{
           width: '100%', padding: '9px 0', background: translating ? '#1E293B' : '#4F46E5', border: '1px solid #6366F133',
@@ -688,6 +689,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
             </div>
           </div>
         )}
+        </>)}
 
         {/* 구글 시트 템플릿 다운로드 */}
         <button onClick={handleDownload} style={{
@@ -698,6 +700,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
           <Download size={12} /> 구글 시트 템플릿 다운로드
         </button>
 
+        {mode !== 'monthly-report' && (<>
         {/* 웹 게시 (KO+EN 동시) */}
         <button onClick={handlePublish} disabled={publishing} style={{
           width: '100%', padding: '9px 0',
@@ -740,6 +743,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
             )}
           </>
         )}
+        </>)}
 
         {/* 아카이빙 (AI 학습 데이터) */}
         <button onClick={async () => {
@@ -777,7 +781,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
           <Archive size={12} /> 완성본 아카이빙 (AI 학습)
         </button>
 
-        {publishMsg && (
+        {mode !== 'monthly-report' && publishMsg && (
           <div style={{
             padding: '8px 10px', borderRadius: 7, fontSize: 11, fontFamily: FONT, lineHeight: 1.8,
             background: publishMsg.startsWith('ERROR:') ? '#450A0A' : '#14532D',
@@ -794,7 +798,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
         )}
 
         {/* 게시 상태 */}
-        {publishInfo?.published && (
+        {mode !== 'monthly-report' && publishInfo?.published && (
           <div style={{ background: '#1E293B', borderRadius: 8, padding: '8px 10px', marginBottom: 12 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
               <span style={{ fontSize: 10, fontWeight: 700, color: '#64748B', fontFamily: FONT, textTransform: 'uppercase', letterSpacing: 0.8 }}>게시 중</span>
@@ -821,6 +825,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
 
         <div style={{ height: 1, background: '#1E293B', marginBottom: 16 }} />
 
+        {mode !== 'monthly-report' && (<>
         {/* ── 헤더 편집 ── */}
         <p style={{ margin: '0 0 10px 2px', fontSize: 11, fontWeight: 700, color: '#475569',
           textTransform: 'uppercase', letterSpacing: 1, fontFamily: FONT }}>
@@ -997,6 +1002,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
           textTransform: 'uppercase', letterSpacing: 1, fontFamily: FONT }}>
           콘텐츠 편집
         </p>
+        </>)}
 
         {/* 월간 보고서 본문 (monthly-report 전용) */}
         {mode === 'monthly-report' && (
@@ -1037,6 +1043,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
           </>
         )}
 
+        {mode !== 'monthly-report' && (<>
         {/* GEO 전략 인사이트 */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
           <p style={{ margin: 0, fontSize: 11, color: '#64748B', fontFamily: FONT }}>GEO 전략 인사이트</p>
@@ -1578,7 +1585,9 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
         <p style={{ margin: '0 0 16px', fontSize: 11, color: '#475569', fontFamily: FONT }}>**텍스트** → <strong>볼드</strong> · 줄바꿈 지원</p>
 
         <div style={{ height: 1, background: '#1E293B', marginBottom: 16 }} />
+        </>)}
 
+        {mode !== 'monthly-report' && (<>
         {/* HTML 복사 */}
         <button onClick={handleCopyHtml} style={{
           width: '100%', padding: '9px 0', background: copied ? '#14532D' : 'transparent',
@@ -1618,6 +1627,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
             : mailSent === 'error' ? <><Send size={12} /> 발송 실패 — 다시 시도</>
             : <><Send size={12} /> 메일 발송</>}
         </button>
+        </>)}
       </div>
 
       {/* 폰트 안내 */}
