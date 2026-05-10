@@ -1287,6 +1287,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
   <![endif]-->
   ${citDomainResult.css ? `<style type="text/css">${citDomainResult.css}</style>` : ''}
   <style type="text/css">
+    @font-face { font-family: 'LGEIText'; font-weight: 100 900; font-style: normal; src: url('/font/LGEIText%20Regular.otf') format('opentype'), url('/font/LGEIText%20Regular.ttf') format('truetype'); font-display: swap; }
     html, body { overflow-x: hidden !important; max-width: 100vw; }
     body * { max-width: 100%; }
     table { table-layout: auto; }
