@@ -18,6 +18,8 @@ export const CHANNELS = {
     title: 'GEO Monthly Report',
     injectLangBar: true,
     logTag: 'PUBLISH',
+    // 월별 발행 모드 — 각 월(YYYY-MM)이 별도 정적 페이지로 게시됨
+    monthly: true,
   },
   dashboard: {
     koSlug: 'GEO-KPI-Dashboard-KO',
@@ -73,6 +75,24 @@ function deleteIfExists(path, tag) {
   }
 }
 
+// ─── 월별 발행 채널용 슬러그 헬퍼 ─────────────────────────────────────────
+function monthSuffix(slug, month) { return `${slug}-${month}` }
+function isValidMonth(m) { return typeof m === 'string' && /^\d{4}-(0[1-9]|1[0-2])$/.test(m) }
+function readMonthlyMeta(metaPath) {
+  const m = readMetaFile(metaPath)
+  if (m && m.months && typeof m.months === 'object') return m
+  return { months: {} }
+}
+function monthlyEntry(ch, month) {
+  const koSlug = monthSuffix(ch.koSlug, month)
+  const enSlug = monthSuffix(ch.enSlug, month)
+  return {
+    koSlug, enSlug,
+    koPath: join(PUB_DIR, `${koSlug}.html`),
+    enPath: join(PUB_DIR, `${enSlug}.html`),
+  }
+}
+
 // ─── 채널별 POST/GET/DELETE 핸들러 빌더 ───────────────────────────────────
 function buildPostHandler(ch) {
   return (req, res) => {
@@ -111,12 +131,72 @@ function buildDeleteHandler(ch) {
   }
 }
 
+// ─── 월별 발행 채널 핸들러 (newsletter 등 monthly: true) ─────────────────
+function buildMonthlyPostHandler(ch) {
+  return (req, res) => {
+    const { htmlKo, htmlEn, title, month } = req.body
+    if (!isValidMonth(month)) return res.status(400).json({ ok: false, error: 'month(YYYY-MM) 필수' })
+    try {
+      const e = monthlyEntry(ch, month)
+      const finalKo = ch.injectLangBar ? injectLangBar(htmlKo, 'ko', e.koSlug, e.enSlug) : htmlKo
+      const finalEn = ch.injectLangBar ? injectLangBar(htmlEn, 'en', e.koSlug, e.enSlug) : htmlEn
+      writeFileSync(e.koPath, finalKo)
+      writeFileSync(e.enPath, finalEn)
+      const all = readMonthlyMeta(ch.metaFile)
+      all.months[month] = { title: title || ch.title, ts: Date.now() }
+      writeFileSync(ch.metaFile, JSON.stringify(all, null, 2))
+      log.info({ tag: ch.logTag, month, title: all.months[month].title, koSlug: e.koSlug }, 'monthly published')
+      res.json({ ok: true, month, urls: { ko: `/p/${e.koSlug}`, en: `/p/${e.enSlug}` }, ...all.months[month] })
+    } catch (err) {
+      log.error({ tag: ch.logTag, err: err.message }, 'monthly publish write failed')
+      res.status(500).json({ ok: false, error: '파일 저장 실패: ' + err.message })
+    }
+  }
+}
+function buildMonthlyGetHandler(ch) {
+  return (req, res) => {
+    const all = readMonthlyMeta(ch.metaFile)
+    const reqMonth = req.query.month
+    if (reqMonth) {
+      if (!isValidMonth(reqMonth)) return res.status(400).json({ error: 'month(YYYY-MM) 형식 오류' })
+      const e = monthlyEntry(ch, reqMonth)
+      const ko = existsSync(e.koPath), en = existsSync(e.enPath)
+      const meta = all.months[reqMonth] || null
+      return res.json({ month: reqMonth, published: ko && en, ko, en, ...(meta || {}), urls: { ko: `/p/${e.koSlug}`, en: `/p/${e.enSlug}` } })
+    }
+    const months = Object.entries(all.months || {})
+      .map(([m, meta]) => {
+        const e = monthlyEntry(ch, m)
+        const ko = existsSync(e.koPath), en = existsSync(e.enPath)
+        return { month: m, published: ko && en, ko, en, ...meta, urls: { ko: `/p/${e.koSlug}`, en: `/p/${e.enSlug}` } }
+      })
+      .filter(x => x.ko || x.en)
+      .sort((a, b) => b.month.localeCompare(a.month))
+    res.json({ months })
+  }
+}
+function buildMonthlyDeleteHandler(ch) {
+  return (req, res) => {
+    const month = req.query.month
+    if (!isValidMonth(month)) return res.status(400).json({ ok: false, error: 'month(YYYY-MM) 쿼리 필수' })
+    const e = monthlyEntry(ch, month)
+    deleteIfExists(e.koPath, ch.logTag)
+    deleteIfExists(e.enPath, ch.logTag)
+    const all = readMonthlyMeta(ch.metaFile)
+    delete all.months[month]
+    writeFileSync(ch.metaFile, JSON.stringify(all, null, 2))
+    log.info({ tag: ch.logTag, month }, 'monthly unpublished')
+    res.json({ ok: true, month })
+  }
+}
+
 export const publishRouter = Router()
 
 // 5개 채널 일괄 등록 (path는 /api/publish[-{key}])
-publishRouter.post('/api/publish', validateBody(PublishPostSchema), buildPostHandler(CHANNELS.newsletter))
-publishRouter.get('/api/publish', buildGetHandler(CHANNELS.newsletter))
-publishRouter.delete('/api/publish', buildDeleteHandler(CHANNELS.newsletter))
+// newsletter 는 월별 발행 모드 — 각 월(YYYY-MM)이 별도 정적 페이지
+publishRouter.post('/api/publish', validateBody(PublishPostSchema), buildMonthlyPostHandler(CHANNELS.newsletter))
+publishRouter.get('/api/publish', buildMonthlyGetHandler(CHANNELS.newsletter))
+publishRouter.delete('/api/publish', buildMonthlyDeleteHandler(CHANNELS.newsletter))
 
 publishRouter.post('/api/publish-dashboard', validateBody(PublishPostSchema), buildPostHandler(CHANNELS.dashboard))
 publishRouter.get('/api/publish-dashboard', buildGetHandler(CHANNELS.dashboard))
@@ -139,10 +219,24 @@ publishRouter.get('/api/publish-history', (req, res) => {
   const result = {}
   for (const [key, ch] of Object.entries(CHANNELS)) {
     if (key === 'monthly-report' || key === 'visibility') continue // history는 newsletter/dashboard/citation 3종만
-    const meta = readMetaFile(ch.metaFile)
-    const ko = existsSync(join(PUB_DIR, `${ch.koSlug}.html`))
-    const en = existsSync(join(PUB_DIR, `${ch.enSlug}.html`))
-    result[key] = meta ? { ...meta, published: ko && en, urls: { ko: `/p/${ch.koSlug}`, en: `/p/${ch.enSlug}` } } : null
+    if (ch.monthly) {
+      // newsletter: 월별 발행 — 가장 최근 월을 latest 로 노출
+      const all = readMonthlyMeta(ch.metaFile)
+      const sorted = Object.entries(all.months || {})
+        .map(([m, meta]) => {
+          const e = monthlyEntry(ch, m)
+          return { month: m, meta, ko: existsSync(e.koPath), en: existsSync(e.enPath), urls: { ko: `/p/${e.koSlug}`, en: `/p/${e.enSlug}` } }
+        })
+        .filter(x => x.ko || x.en)
+        .sort((a, b) => b.month.localeCompare(a.month))
+      const latest = sorted[0]
+      result[key] = latest ? { ...latest.meta, month: latest.month, published: latest.ko && latest.en, urls: latest.urls, allMonths: sorted.map(s => ({ month: s.month, urls: s.urls, ts: s.meta?.ts })) } : null
+    } else {
+      const meta = readMetaFile(ch.metaFile)
+      const ko = existsSync(join(PUB_DIR, `${ch.koSlug}.html`))
+      const en = existsSync(join(PUB_DIR, `${ch.enSlug}.html`))
+      result[key] = meta ? { ...meta, published: ko && en, urls: { ko: `/p/${ch.koSlug}`, en: `/p/${ch.enSlug}` } } : null
+    }
   }
   res.json(result)
 })

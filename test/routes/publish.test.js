@@ -40,9 +40,9 @@ function cleanFiles() {
 beforeEach(cleanFiles)
 afterAll(() => { try { rmSync(TMP_ROOT, { recursive: true, force: true }) } catch {} })
 
-describe('publishRouter — 5채널 CRUD', () => {
+describe('publishRouter — 4채널 CRUD (단일 페이지)', () => {
   const channels = [
-    { path: '/api/publish', key: 'newsletter' },
+    // newsletter 는 월별 발행 모드 — 별도 테스트 블록으로 분리
     { path: '/api/publish-dashboard', key: 'dashboard' },
     { path: '/api/publish-citation', key: 'citation' },
     { path: '/api/publish-monthly-report', key: 'monthly-report' },
@@ -104,19 +104,107 @@ describe('publishRouter — 5채널 CRUD', () => {
   }
 })
 
-describe('newsletter 언어 전환 바 주입', () => {
-  it('htmlKo·htmlEn에 lang-bar HTML이 삽입된다', async () => {
+describe('newsletter — 월별 발행 (/api/publish)', () => {
+  const M = '2026-05'
+  const M2 = '2026-04'
+  const slugKo = m => `${CHANNELS.newsletter.koSlug}-${m}`
+  const slugEn = m => `${CHANNELS.newsletter.enSlug}-${m}`
+
+  function cleanMonths(...months) {
+    for (const m of months) {
+      try { rmSync(join(TMP_PUB, `${slugKo(m)}.html`)) } catch {}
+      try { rmSync(join(TMP_PUB, `${slugEn(m)}.html`)) } catch {}
+    }
+  }
+  beforeEach(() => cleanMonths(M, M2))
+
+  it('POST month=YYYY-MM → 월별 슬러그로 KO/EN 저장 + meta.months 누적', async () => {
+    const res = await request(makeApp()).post('/api/publish').send({
+      htmlKo: '<html><body>한글</body></html>',
+      htmlEn: '<html><body>English</body></html>',
+      title: 'May 2026',
+      month: M,
+    })
+    expect(res.status).toBe(200)
+    expect(res.body.ok).toBe(true)
+    expect(res.body.month).toBe(M)
+    expect(res.body.urls.ko).toBe(`/p/${slugKo(M)}`)
+    expect(existsSync(join(TMP_PUB, `${slugKo(M)}.html`))).toBe(true)
+    const meta = JSON.parse(readFileSync(CHANNELS.newsletter.metaFile, 'utf-8'))
+    expect(meta.months[M]).toMatchObject({ title: 'May 2026' })
+  })
+
+  it('POST month 누락 시 400', async () => {
+    const res = await request(makeApp()).post('/api/publish').send({
+      htmlKo: '<html>x</html>', htmlEn: '<html>y</html>',
+    })
+    expect(res.status).toBe(400)
+  })
+
+  it('POST month 형식 오류 시 400 (Zod)', async () => {
+    const res = await request(makeApp()).post('/api/publish').send({
+      htmlKo: '<html>x</html>', htmlEn: '<html>y</html>', month: '2026-13',
+    })
+    expect(res.status).toBe(400)
+  })
+
+  it('GET (no query) → 게시된 모든 월 목록 반환 (최신 월 먼저)', async () => {
+    await request(makeApp()).post('/api/publish').send({
+      htmlKo: '<html>4월</html>', htmlEn: '<html>Apr</html>', title: 'Apr', month: M2,
+    })
+    await request(makeApp()).post('/api/publish').send({
+      htmlKo: '<html>5월</html>', htmlEn: '<html>May</html>', title: 'May', month: M,
+    })
+    const res = await request(makeApp()).get('/api/publish')
+    expect(res.status).toBe(200)
+    expect(res.body.months).toHaveLength(2)
+    expect(res.body.months[0].month).toBe(M)
+    expect(res.body.months[0].published).toBe(true)
+    expect(res.body.months[1].month).toBe(M2)
+  })
+
+  it('GET ?month=YYYY-MM → 특정 월 상태', async () => {
+    await request(makeApp()).post('/api/publish').send({
+      htmlKo: '<html>x</html>', htmlEn: '<html>y</html>', title: 'May', month: M,
+    })
+    const res = await request(makeApp()).get(`/api/publish?month=${M}`)
+    expect(res.body.published).toBe(true)
+    expect(res.body.title).toBe('May')
+    expect(res.body.urls.ko).toBe(`/p/${slugKo(M)}`)
+  })
+
+  it('DELETE ?month=YYYY-MM → 해당 월만 삭제', async () => {
+    await request(makeApp()).post('/api/publish').send({
+      htmlKo: '<html>4</html>', htmlEn: '<html>4</html>', month: M2,
+    })
+    await request(makeApp()).post('/api/publish').send({
+      htmlKo: '<html>5</html>', htmlEn: '<html>5</html>', month: M,
+    })
+    const del = await request(makeApp()).delete(`/api/publish?month=${M}`)
+    expect(del.status).toBe(200)
+    expect(del.body.ok).toBe(true)
+    expect(existsSync(join(TMP_PUB, `${slugKo(M)}.html`))).toBe(false)
+    expect(existsSync(join(TMP_PUB, `${slugKo(M2)}.html`))).toBe(true)
+    const meta = JSON.parse(readFileSync(CHANNELS.newsletter.metaFile, 'utf-8'))
+    expect(meta.months[M]).toBeUndefined()
+    expect(meta.months[M2]).toBeDefined()
+  })
+
+  it('DELETE month 누락 시 400', async () => {
+    const res = await request(makeApp()).delete('/api/publish')
+    expect(res.status).toBe(400)
+  })
+
+  it('lang-bar 가 월별 슬러그로 삽입된다', async () => {
     await request(makeApp()).post('/api/publish').send({
       htmlKo: '<html><body><h1>본문</h1></body></html>',
       htmlEn: '<html><body><h1>body</h1></body></html>',
+      month: M,
     })
-    const koContent = readFileSync(join(TMP_PUB, `${CHANNELS.newsletter.koSlug}.html`), 'utf-8')
-    const enContent = readFileSync(join(TMP_PUB, `${CHANNELS.newsletter.enSlug}.html`), 'utf-8')
+    const koContent = readFileSync(join(TMP_PUB, `${slugKo(M)}.html`), 'utf-8')
     expect(koContent).toContain('한국어')
     expect(koContent).toContain('English')
-    expect(koContent).toContain('/p/' + CHANNELS.newsletter.koSlug)
-    expect(enContent).toContain('한국어')
-    expect(enContent).toContain('/p/' + CHANNELS.newsletter.enSlug)
+    expect(koContent).toContain('/p/' + slugKo(M))
   })
 
   it('dashboard 등 다른 채널은 lang-bar 미주입', async () => {

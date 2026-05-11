@@ -35,10 +35,44 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
 
   // 게시 상태 로드
   const [publishInfo, setPublishInfo] = useState(null)
+  // 뉴스레터 월별 발행 — 게시된 월 목록 + 선택된 발행 월 (YYYY-MM)
+  const [publishedMonths, setPublishedMonths] = useState([])
+  const isNewsletter = mode === 'newsletter'
+  const [publishMonth, setPublishMonth] = useState(() => {
+    const d = new Date()
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+  })
+  function refreshNewsletterMonths() {
+    if (!isNewsletter) return
+    fetch('/api/publish').then(r => r.ok ? r.json() : null).then(d => {
+      if (d && Array.isArray(d.months)) setPublishedMonths(d.months)
+    }).catch(() => {})
+  }
   useEffect(() => {
+    if (isNewsletter) {
+      refreshNewsletterMonths()
+      return
+    }
     const ep = publishEndpoint || (mode === 'dashboard' ? '/api/publish-dashboard' : '/api/publish')
     fetch(ep).then(r => r.ok ? r.json() : null).then(setPublishInfo).catch(() => {})
-  }, [mode, publishEndpoint])
+  }, [mode, publishEndpoint, isNewsletter])
+
+  // 드롭다운 옵션: 최근 24개월 + 현재 선택 월(범위 밖이면) + 이미 게시된 월
+  const monthOptions = (() => {
+    const set = new Set()
+    const now = new Date()
+    for (let i = 0; i < 24; i++) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
+      set.add(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`)
+    }
+    for (const m of publishedMonths) set.add(m.month)
+    if (publishMonth) set.add(publishMonth)
+    return [...set].sort((a, b) => b.localeCompare(a))
+  })()
+  function monthLabel(m) {
+    const [y, mo] = m.split('-')
+    return `${y}년 ${parseInt(mo, 10)}월`
+  }
 
   // C16 — 데이터 신선도 메타: 진입 시 + 1분마다 갱신, 동기화/저장 시 즉시 반영
   const [syncMeta, setSyncMeta] = useState(null)
@@ -71,14 +105,17 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
         title = `${metaKo.period || ''} ${metaKo.title || 'Newsletter'}`.trim()
       }
       const ep = publishEndpoint || (mode === 'dashboard' ? '/api/publish-dashboard' : '/api/publish')
+      const payload = { title, htmlKo, htmlEn }
+      if (isNewsletter) payload.month = publishMonth
       const res = await fetch(ep, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-        body: JSON.stringify({ title, htmlKo, htmlEn }),
+        body: JSON.stringify(payload),
       })
       const data = await res.json()
       if (!data.ok) throw new Error(data.error || '게시 실패')
       setPublishInfo({ ...data, published: true })
+      if (isNewsletter) refreshNewsletterMonths()
       // 게시 시 현재 meta도 sync 데이터에 저장 (통합 게시에서 최신 인사이트/기간 반영)
       if (mode === 'dashboard') {
         try {
@@ -122,12 +159,16 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
     }
   }
 
-  async function handleUnpublish() {
+  async function handleUnpublish(monthArg) {
     try {
       const ep = publishEndpoint || (mode === 'dashboard' ? '/api/publish-dashboard' : '/api/publish')
-      const res = await fetch(ep, { method: 'DELETE' })
+      const url = isNewsletter ? `${ep}?month=${encodeURIComponent(monthArg || publishMonth)}` : ep
+      const res = await fetch(url, { method: 'DELETE' })
       const data = await res.json()
-      if (data.ok) setPublishInfo(null)
+      if (data.ok) {
+        if (isNewsletter) refreshNewsletterMonths()
+        else setPublishInfo(null)
+      }
     } catch {}
   }
 
@@ -701,6 +742,26 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
         </button>
 
         {mode !== 'monthly-report' && (<>
+        {/* 뉴스레터 발행 월 선택 (월별 정적 페이지) */}
+        {isNewsletter && (
+          <div style={{ marginBottom: 8 }}>
+            <p style={{ margin: '0 0 4px', fontSize: 11, color: '#64748B', fontFamily: FONT }}>발행 월</p>
+            <select
+              value={publishMonth}
+              onChange={e => setPublishMonth(e.target.value)}
+              style={{
+                width: '100%', padding: '7px 9px', borderRadius: 8,
+                border: '1px solid #334155', background: '#0F172A', color: '#E2E8F0',
+                fontFamily: FONT, fontSize: 11, fontWeight: 700, cursor: 'pointer',
+              }}
+            >
+              {monthOptions.map(m => (
+                <option key={m} value={m}>{m} · {monthLabel(m)}{publishedMonths.find(x => x.month === m) ? ' ✓ 게시됨' : ''}</option>
+              ))}
+            </select>
+          </div>
+        )}
+
         {/* 웹 게시 (KO+EN 동시) */}
         <button onClick={handlePublish} disabled={publishing} style={{
           width: '100%', padding: '9px 0',
@@ -712,7 +773,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
           marginBottom: 8, transition: 'all 0.2s',
         }}>
           <Globe size={12} />
-          {publishing ? '게시 중...' : '웹사이트 게시 (KO + EN)'}
+          {publishing ? '게시 중...' : (isNewsletter ? `${monthLabel(publishMonth)} 게시 (KO + EN)` : '웹사이트 게시 (KO + EN)')}
         </button>
 
         {mode === 'dashboard' && (
@@ -797,12 +858,12 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
           </div>
         )}
 
-        {/* 게시 상태 */}
-        {mode !== 'monthly-report' && publishInfo?.published && (
+        {/* 게시 상태 — 단일 페이지 채널 (dashboard/citation/visibility) */}
+        {mode !== 'monthly-report' && !isNewsletter && publishInfo?.published && (
           <div style={{ background: '#1E293B', borderRadius: 8, padding: '8px 10px', marginBottom: 12 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
               <span style={{ fontSize: 10, fontWeight: 700, color: '#64748B', fontFamily: FONT, textTransform: 'uppercase', letterSpacing: 0.8 }}>게시 중</span>
-              <button onClick={handleUnpublish} style={{ padding: '2px 8px', borderRadius: 4, border: 'none', cursor: 'pointer',
+              <button onClick={() => handleUnpublish()} style={{ padding: '2px 8px', borderRadius: 4, border: 'none', cursor: 'pointer',
                 background: '#7F1D1D', color: '#FCA5A5', fontSize: 10, fontFamily: FONT, fontWeight: 600 }}>삭제</button>
             </div>
             {[{ label: 'KO', url: publishInfo.urls.ko }, { label: 'EN', url: publishInfo.urls.en }].map(({ label, url }) => (
@@ -820,6 +881,40 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
             <span style={{ fontSize: 10, color: '#475569', fontFamily: FONT }}>
               {publishInfo.ts ? new Date(publishInfo.ts).toLocaleString('ko-KR') : ''}
             </span>
+          </div>
+        )}
+
+        {/* 뉴스레터 — 게시된 월 목록 (월별 정적 페이지) */}
+        {isNewsletter && publishedMonths.length > 0 && (
+          <div style={{ background: '#1E293B', borderRadius: 8, padding: '8px 10px', marginBottom: 12 }}>
+            <div style={{ marginBottom: 6 }}>
+              <span style={{ fontSize: 10, fontWeight: 700, color: '#64748B', fontFamily: FONT, textTransform: 'uppercase', letterSpacing: 0.8 }}>게시된 월 ({publishedMonths.length})</span>
+            </div>
+            {publishedMonths.map(m => (
+              <div key={m.month} style={{ borderTop: '1px solid #0F172A', paddingTop: 6, marginTop: 6 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 3 }}>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: '#E2E8F0', fontFamily: FONT }}>{monthLabel(m.month)}</span>
+                  <button onClick={() => { if (confirm(`${monthLabel(m.month)} 게시본을 삭제할까요?`)) handleUnpublish(m.month) }}
+                    style={{ padding: '2px 6px', borderRadius: 4, border: 'none', cursor: 'pointer',
+                      background: '#7F1D1D', color: '#FCA5A5', fontSize: 10, fontFamily: FONT, fontWeight: 600 }}>삭제</button>
+                </div>
+                {[{ label: 'KO', url: m.urls.ko }, { label: 'EN', url: m.urls.en }].map(({ label, url }) => (
+                  <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 2 }}>
+                    <a href={url} target="_blank" rel="noopener noreferrer"
+                      style={{ flex: 1, fontSize: 10, color: '#A78BFA', fontFamily: FONT, textDecoration: 'none', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {label}: {url}
+                    </a>
+                    <button onClick={() => navigator.clipboard.writeText(`${window.location.origin}${url}`)} title="URL 복사"
+                      style={{ padding: '2px 5px', borderRadius: 4, border: 'none', cursor: 'pointer', background: '#334155', color: '#94A3B8', fontSize: 10, display: 'flex' }}>
+                      <Link2 size={10} />
+                    </button>
+                  </div>
+                ))}
+                <span style={{ fontSize: 10, color: '#475569', fontFamily: FONT }}>
+                  {m.ts ? new Date(m.ts).toLocaleString('ko-KR') : ''}
+                </span>
+              </div>
+            ))}
           </div>
         )}
 
