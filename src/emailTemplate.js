@@ -1065,12 +1065,29 @@ function dotcomSectionHtml(dotcom, meta, lang = 'ko') {
               </tr>`
 }
 
-// ─── 제품별 Citation (Top 3 카테고리 + Top 3 도메인) ───────────────────────
+// ─── 제품별 Citation (Top 3 카테고리 + Top 3 도메인, 본부별 그룹핑 + 막대) ──
 function citationByProductHtml(citationsCnty, meta, lang) {
   if (meta.showCitPrd === false) return ''
   if (!citationsCnty || !citationsCnty.length) return ''
   const isPrdSpec = p => p && String(p).toUpperCase() !== 'TTL' && String(p).toUpperCase() !== 'TOTAL'
-  // 제품별 PRD-specific 행 그룹핑
+  // PRD 코드 → 표준 id / 표시명 / 본부 매핑
+  const PRD_CODE_TO_ID = {
+    TV: 'tv', IT: 'monitor', MONITOR: 'monitor', AV: 'audio', AUDIO: 'audio',
+    REF: 'fridge', REFRIGERATOR: 'fridge', WM: 'washer', WASHER: 'washer',
+    DW: 'dw', DISHWASHER: 'dw', VC: 'vacuum', VACUUM: 'vacuum',
+    COOKING: 'cooking', COOK: 'cooking', RAC: 'rac', AIRCARE: 'aircare', AIRCARE_: 'aircare',
+  }
+  const PRD_KR = { tv:'TV', monitor:'모니터', audio:'오디오', fridge:'냉장고', washer:'세탁기', cooking:'Cooking', dw:'식기세척기', vacuum:'청소기', rac:'RAC', aircare:'Aircare' }
+  const PRD_EN = { tv:'TV', monitor:'Monitor', audio:'Audio', fridge:'Refrigerator', washer:'Washer', cooking:'Cooking', dw:'Dishwasher', vacuum:'VC', rac:'RAC', aircare:'Aircare' }
+  const PRD_BU = { tv:'MS', monitor:'MS', audio:'MS', fridge:'HS', washer:'HS', cooking:'HS', dw:'HS', vacuum:'HS', rac:'ES', aircare:'ES' }
+  const PRD_ORDER_IDX = { tv:0, monitor:1, audio:2, washer:3, fridge:4, dw:5, vacuum:6, cooking:7, rac:8, aircare:9 }
+  const prdId = code => PRD_CODE_TO_ID[String(code || '').toUpperCase()] || String(code || '').toLowerCase()
+  const prdName = code => {
+    const id = prdId(code)
+    return (lang === 'en' ? PRD_EN[id] : PRD_KR[id]) || code
+  }
+  const prdBu = code => PRD_BU[prdId(code)] || ''
+  // 제품별 그룹핑
   const prdGroups = {}
   citationsCnty.forEach(r => {
     if (!isPrdSpec(r.prd)) return
@@ -1080,13 +1097,44 @@ function citationByProductHtml(citationsCnty, meta, lang) {
   const prdKeys = Object.keys(prdGroups)
   if (!prdKeys.length) return ''
   const t = lang === 'en'
-    ? { title: 'Citation by Product', topCategories: 'Top 3 Categories', topDomains: 'Top 3 Domains', noData: 'No data' }
-    : { title: '제품별 Citation', topCategories: 'Top 3 카테고리', topDomains: 'Top 3 도메인', noData: '데이터 없음' }
-  // 제품 정렬 — 알파벳/한글
-  prdKeys.sort()
-  const prdCards = prdKeys.map(prd => {
+    ? { title: 'Citation by Product', topCategories: 'Top 3 Categories', topDomains: 'Top 3 Domains', noData: 'No data', buLabels: { MS: 'MS', HS: 'HS', ES: 'ES', etc: 'Other' } }
+    : { title: '제품별 Citation', topCategories: 'Top 3 카테고리', topDomains: 'Top 3 도메인', noData: '데이터 없음', buLabels: { MS: 'MS', HS: 'HS', ES: 'ES', etc: '기타' } }
+  // 본부별 묶기
+  const byBu = { MS: [], HS: [], ES: [], etc: [] }
+  prdKeys.forEach(prd => {
+    const bu = prdBu(prd)
+    byBu[bu in byBu ? bu : 'etc'].push(prd)
+  })
+  Object.keys(byBu).forEach(bu => {
+    byBu[bu].sort((a, b) => {
+      const ai = PRD_ORDER_IDX[prdId(a)]; const bi = PRD_ORDER_IDX[prdId(b)]
+      return (ai != null ? ai : 999) - (bi != null ? bi : 999)
+    })
+  })
+  // 막대 가로 시각화 (이메일 호환 — 중첩 table)
+  const BAR_COLORS = { cat: '#3B82F6', dom: '#7C3AED' }
+  function barRow(label, value, maxValue, color) {
+    const pct = maxValue > 0 ? Math.max(2, Math.round((value / maxValue) * 100)) : 0
+    return `<tr>
+      <td style="font-size:10px;color:#475569;padding:3px 6px 3px 0;font-family:${EM_FONT};white-space:nowrap;max-width:90px;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(label)}</td>
+      <td style="padding:3px 0;">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#F1F5F9;border-radius:3px;">
+          <tr><td height="7" style="font-size:0;line-height:0;">
+            <table border="0" cellpadding="0" cellspacing="0" width="${pct}%" style="background:${color};border-radius:3px;">
+              <tr><td height="7" style="font-size:0;line-height:0;">&nbsp;</td></tr>
+            </table>
+          </td></tr>
+        </table>
+      </td>
+      <td align="right" style="font-size:10px;font-weight:700;color:#1A1A1A;padding:3px 0 3px 6px;font-family:${EM_FONT};white-space:nowrap;">${Number(value).toLocaleString()}</td>
+    </tr>`
+  }
+  function emptyRow() {
+    return `<tr><td colspan="3" style="font-size:10px;color:#94A3B8;padding:3px 0;font-family:${EM_FONT};">${t.noData}</td></tr>`
+  }
+  function prdCardHtml(prd) {
     const rows = prdGroups[prd]
-    // Top 3 카테고리 (type 기준)
+    // Top 3 카테고리
     const catMap = {}
     rows.forEach(r => {
       const cat = r.type || 'Unknown'
@@ -1101,33 +1149,48 @@ function citationByProductHtml(citationsCnty, meta, lang) {
       domMap[dom] = (domMap[dom] || 0) + (r.citations || 0)
     })
     const topDoms = Object.entries(domMap).sort((a, b) => b[1] - a[1]).slice(0, 3)
-    const renderList = list => (list.length ? list : []).map(([n, v], i) =>
-      `<tr><td style="font-size:11px;color:#475569;padding:2px 0;font-family:${EM_FONT};">${i + 1}. ${escapeHtml(n)}</td><td align="right" style="font-size:11px;font-weight:700;color:#1A1A1A;padding:2px 0;font-family:${EM_FONT};">${v.toLocaleString()}</td></tr>`
-    ).join('') || `<tr><td style="font-size:11px;color:#94A3B8;padding:2px 0;font-family:${EM_FONT};">${t.noData}</td></tr>`
-    return `<td width="33%" valign="top" style="padding:6px;">
+    const maxCat = topCats[0]?.[1] || 1
+    const maxDom = topDoms[0]?.[1] || 1
+    const catRows = topCats.length ? topCats.map(([n, v]) => barRow(n, v, maxCat, BAR_COLORS.cat)).join('') : emptyRow()
+    const domRows = topDoms.length ? topDoms.map(([n, v]) => barRow(n, v, maxDom, BAR_COLORS.dom)).join('') : emptyRow()
+    return `<td width="33%" valign="top" style="padding:5px;">
       <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFFFFF;border:1.5px solid #E8EDF2;border-radius:10px;">
         <tr><td style="padding:10px 12px;">
-          <p style="margin:0 0 8px;font-size:13px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};">${escapeHtml(prd)}</p>
-          <p style="margin:0 0 4px;font-size:10px;font-weight:700;color:#64748B;font-family:${EM_FONT};text-transform:uppercase;letter-spacing:0.4px;">${t.topCategories}</p>
-          <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom:8px;">${renderList(topCats)}</table>
-          <p style="margin:0 0 4px;font-size:10px;font-weight:700;color:#64748B;font-family:${EM_FONT};text-transform:uppercase;letter-spacing:0.4px;">${t.topDomains}</p>
-          <table border="0" cellpadding="0" cellspacing="0" width="100%">${renderList(topDoms)}</table>
+          <p style="margin:0 0 8px;font-size:13px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};">${escapeHtml(prdName(prd))}</p>
+          <p style="margin:0 0 4px;font-size:9px;font-weight:700;color:#64748B;font-family:${EM_FONT};text-transform:uppercase;letter-spacing:0.4px;">${t.topCategories}</p>
+          <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom:8px;table-layout:fixed;">${catRows}</table>
+          <p style="margin:0 0 4px;font-size:9px;font-weight:700;color:#64748B;font-family:${EM_FONT};text-transform:uppercase;letter-spacing:0.4px;">${t.topDomains}</p>
+          <table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;">${domRows}</table>
         </td></tr>
       </table>
     </td>`
-  })
-  // 3-column grid
-  const gridRows = []
-  for (let i = 0; i < prdCards.length; i += 3) {
-    const trio = prdCards.slice(i, i + 3)
-    while (trio.length < 3) trio.push('<td width="33%" style="padding:6px;"></td>')
-    gridRows.push(`<tr>${trio.join('')}</tr>`)
   }
+  // 본부별 섹션 — 각 본부에 3-column grid
+  const BU_ORDER = ['MS', 'HS', 'ES', 'etc']
+  const buSections = BU_ORDER.filter(bu => byBu[bu]?.length).map(bu => {
+    const cards = byBu[bu].map(prdCardHtml)
+    const gridRows = []
+    for (let i = 0; i < cards.length; i += 3) {
+      const trio = cards.slice(i, i + 3)
+      while (trio.length < 3) trio.push('<td width="33%" style="padding:5px;"></td>')
+      gridRows.push(`<tr>${trio.join('')}</tr>`)
+    }
+    return `<tr>
+      <td style="padding:10px 0 4px;">
+        <table border="0" cellpadding="0" cellspacing="0"><tr>
+          <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
+          <td style="padding-left:8px;font-size:13px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${t.buLabels[bu]}</td>
+        </tr></table>
+      </td>
+    </tr>
+    <tr><td><table border="0" cellpadding="0" cellspacing="0" width="100%">${gridRows.join('')}</table></td></tr>`
+  }).join('')
+  if (!buSections) return ''
   return `<tr>
     <td style="padding-top:12px;border-top:2px solid #E8EDF2;">
       <table border="0" cellpadding="0" cellspacing="0" width="100%">
         <tr><td style="font-size:14px;font-weight:700;color:#0F172A;font-family:${EM_FONT};padding:8px 0;">${t.title}</td></tr>
-        <tr><td><table border="0" cellpadding="0" cellspacing="0" width="100%">${gridRows.join('')}</table></td></tr>
+        ${buSections}
       </table>
     </td>
   </tr>`
