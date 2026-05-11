@@ -57,7 +57,7 @@ function makeLangBarHtml(activeLang, koSlug, enSlug) {
     const active = lang === activeLang
     return `<a href="${href}" style="display:inline-block;font-size:13px;text-decoration:none;padding:6px 18px;border-radius:20px;margin:0 4px;color:${active ? '#FFFFFF' : '#94A3B8'};font-weight:${active ? '700' : '500'};background:${active ? '#CF0652' : 'rgba(255,255,255,0.08)'};">${label}</a>`
   }
-  return `<div style="background:#0F172A;padding:12px 0;text-align:center;font-family:'LG Smart','Arial Narrow',Arial,sans-serif;">${btn('ko','한국어','/p/'+koSlug)}${btn('en','English','/p/'+enSlug)}</div>`
+  return `<div style="background:#0F172A;padding:12px 0;text-align:center;font-family:'LGEIText','LG Smart','Arial Narrow',Arial,sans-serif;">${btn('ko','한국어','/p/'+koSlug)}${btn('en','English','/p/'+enSlug)}</div>`
 }
 function injectLangBar(html, lang, koSlug, enSlug) {
   const bar = makeLangBarHtml(lang, koSlug, enSlug)

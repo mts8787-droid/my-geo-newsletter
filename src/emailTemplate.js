@@ -1297,7 +1297,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
     td, th { word-wrap: break-word; overflow-wrap: break-word; }
   </style>
 </head>
-<body style="margin:0;padding:0;background-color:#F1F5F9;overflow-x:hidden;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;">
+<body style="margin:0;padding:0;background-color:#F1F5F9;overflow-x:hidden;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;font-family:${EM_FONT};">
 
 <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color:#F1F5F9;">
   <tr>
