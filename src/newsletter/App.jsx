@@ -5,7 +5,7 @@ import { INIT_META, INIT_TOTAL, INIT_PRODUCTS, INIT_DOTCOM, INIT_PRODUCTS_CNTY, 
 import { loadCache, saveCache } from '../shared/cache.js'
 import { fetchSnapshots, postSnapshot, updateSnapshot, deleteSnapshot, fetchSyncData } from '../shared/api.js'
 import { resolveDataForLang } from '../shared/utils.js'
-import { computeCategoryStats, extractMonthFromPeriod, previousMonth } from '../shared/trackerCategoryStats.js'
+import { computeCategoryStats, extractMonthFromPeriod } from '../shared/trackerCategoryStats.js'
 import { parseKPISheet } from '../tracker-v2/utils/sheetParser.js'
 // N2 — XLSX는 사용 시점에만 동적 로드 (~870KB)
 import { loadXlsx } from '../shared/loadXlsx.js'
@@ -127,6 +127,8 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('preview')
   const [previewLang, setPreviewLang] = useState('ko')
   const [categoryStats, setCategoryStats] = useState(null)
+  // 핵심 과제 진척 — 사용자가 사이드바에서 선택. null = 자동(데이터의 월과 동일)
+  const [progressMonth, setProgressMonth] = useState(null)
   const [snapshots,  setSnapshots]  = useState([])
   const [snapName,   setSnapName]   = useState('')
   const [snapOpen,   setSnapOpen]   = useState(false)
@@ -147,10 +149,41 @@ export default function App() {
   // tracker 데이터: Google Sheets에서 직접 가져와서 categoryStats 계산
   useEffect(() => {
     let cancelled = false
-    // 뉴스레터 진척사항은 항상 이전 달 (현재 발행월의 직전 달)
-    const currentPeriodMonth = extractMonthFromPeriod(metaKo.period) || `${new Date().getMonth() + 1}월`
-    const targetMonth = previousMonth(currentPeriodMonth)
-    console.log('[CategoryCards] targetMonth(이전달):', targetMonth, 'period:', metaKo.period)
+    // 기본: 데이터의 월과 동일 (사용자가 progressMonth 로 override 가능)
+    const dataMonth = extractMonthFromPeriod(metaKo.period) || `${new Date().getMonth() + 1}월`
+    const targetMonth = progressMonth || dataMonth
+    console.log('[CategoryCards] targetMonth:', targetMonth, '(dataMonth:', dataMonth, 'override:', progressMonth, ')')
+
+    // 알려진 카테고리 (영어 매핑이 emailTemplate.js CATEGORY_EN 에 존재) — 그 외엔 AI 번역 필요
+    const KNOWN_EN_CATEGORIES = new Set(['콘텐츠수정', '콘텐츠 수정', '신규콘텐츠제작', '신규 콘텐츠 제작', '외부채널관리', '외부 채널 관리', '닷컴기술개선', '닷컴 기술 개선'])
+
+    // 미지의 카테고리 이름은 AI 번역 → categoryEn 필드로 enrich
+    async function enrichWithEnTranslation(stats) {
+      if (cancelled || !stats?.length) return stats
+      const unknown = [...new Set(stats.map(s => s.category).filter(c => c && !KNOWN_EN_CATEGORIES.has(String(c).replace(/\s+/g, ''))))].filter(Boolean)
+      if (unknown.length === 0) return stats
+      try {
+        const r = await fetch('/api/translate', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ texts: unknown, from: 'ko', to: 'en' }),
+        })
+        const j = await r.json()
+        if (!j?.ok || !Array.isArray(j.translated)) return stats
+        const map = {}
+        unknown.forEach((k, i) => { map[k] = j.translated[i] })
+        return stats.map(s => map[s.category] ? { ...s, categoryEn: map[s.category] } : s)
+      } catch (e) {
+        console.warn('[CategoryCards] auto-translate failed:', e.message)
+        return stats
+      }
+    }
+
+    async function setStatsWithTranslation(stats) {
+      if (!stats?.length || cancelled) return
+      setCategoryStats(stats)
+      const enriched = await enrichWithEnTranslation(stats)
+      if (enriched !== stats && !cancelled) setCategoryStats(enriched)
+    }
 
     // 1차: tracker-snapshot API 시도 (기존 게시 데이터)
     // 2차: 실패 시 Google Sheets에서 직접 fetch
@@ -162,7 +195,7 @@ export default function App() {
         if (j?.ok && j.data?.quantitativeGoals?.rows?.length) {
           console.log('[CategoryCards] tracker-snapshot OK, rows:', j.data.quantitativeGoals.rows.length)
           const stats = computeCategoryStats(j.data, targetMonth)
-          if (stats?.length && !cancelled) { setCategoryStats(stats); return }
+          if (stats?.length && !cancelled) { await setStatsWithTranslation(stats); return }
         }
       } catch (e) { console.log('[CategoryCards] tracker-snapshot failed:', e.message) }
 
@@ -183,12 +216,12 @@ export default function App() {
         console.log('[CategoryCards] Parsed goals:', parsed.quantitativeGoals?.rows?.length || 0)
         const stats = computeCategoryStats(parsed, targetMonth)
         console.log('[CategoryCards] Computed stats:', stats)
-        if (stats?.length && !cancelled) setCategoryStats(stats)
+        if (stats?.length && !cancelled) await setStatsWithTranslation(stats)
       } catch (e) { console.warn('[CategoryCards] Google Sheets fetch failed:', e.message) }
     }
     loadTrackerData()
     return () => { cancelled = true }
-  }, [metaKo.period])
+  }, [metaKo.period, progressMonth])
 
   const snapMsgTimer = useRef(null)
   function showSnapMsg(msg, ms = 2000) {
@@ -308,6 +341,9 @@ export default function App() {
           weeklyAll={weeklyAll}
           generateHTML={generateEmailHTML}
           categoryStats={categoryStats}
+          progressMonth={progressMonth}
+          setProgressMonth={setProgressMonth}
+          progressDataMonth={extractMonthFromPeriod(metaKo.period) || `${new Date().getMonth() + 1}월`}
           extra={{ unlaunchedMap }}
         />
       )}

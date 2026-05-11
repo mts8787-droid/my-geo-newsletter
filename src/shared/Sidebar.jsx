@@ -11,7 +11,7 @@ import { generateProductInsight, generateProductHowToRead, generateCntyHowToRead
 import SheetDownload from './SheetDownload.jsx'
 
 export default
-function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, total, setTotal, products, setProducts, citations, setCitations, dotcom, setDotcom, productsCnty, setProductsCnty, citationsCnty, setCitationsCnty, resolved, previewLang, setPreviewLang, snapshots, setSnapshots, setWeeklyLabels, setWeeklyAll, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty, generateHTML, publishEndpoint, setMonthlyVis, onSyncExtra, categoryStats, extra, monthlyVis }) {
+function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, total, setTotal, products, setProducts, citations, setCitations, dotcom, setDotcom, productsCnty, setProductsCnty, citationsCnty, setCitationsCnty, resolved, previewLang, setPreviewLang, snapshots, setSnapshots, setWeeklyLabels, setWeeklyAll, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty, generateHTML, publishEndpoint, setMonthlyVis, onSyncExtra, categoryStats, extra, monthlyVis, progressMonth, setProgressMonth, progressDataMonth }) {
   // 최신 데이터 ref — AI 생성/게시 시 stale closure 방지
   const latestRef = useRef({ products, productsCnty, citations, citationsCnty, total, dotcom, extra })
   latestRef.current = { products, productsCnty, citations, citationsCnty, total, dotcom, extra }
@@ -759,6 +759,37 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
                 <option key={m} value={m}>{m} · {monthLabel(m)}{publishedMonths.find(x => x.month === m) ? ' ✓ 게시됨' : ''}</option>
               ))}
             </select>
+          </div>
+        )}
+
+        {/* 뉴스레터 핵심 과제 진척 — 데이터 월 선택 (기본: 발행 데이터 월과 동일) */}
+        {isNewsletter && setProgressMonth && (
+          <div style={{ marginBottom: 8 }}>
+            <p style={{ margin: '0 0 4px', fontSize: 11, color: '#64748B', fontFamily: FONT }}>
+              핵심 과제 진척 월 <span style={{ color: '#475569' }}>(기본: 데이터 월 = {progressDataMonth || '—'})</span>
+            </p>
+            <div style={{ display: 'flex', gap: 4 }}>
+              <select
+                value={progressMonth || ''}
+                onChange={e => setProgressMonth(e.target.value || null)}
+                style={{
+                  flex: 1, padding: '7px 9px', borderRadius: 8,
+                  border: '1px solid #334155', background: '#0F172A', color: '#E2E8F0',
+                  fontFamily: FONT, fontSize: 11, fontWeight: 700, cursor: 'pointer',
+                }}
+              >
+                <option value="">자동 ({progressDataMonth || '데이터 월'})</option>
+                {['3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'].map(m => (
+                  <option key={m} value={m}>{m}</option>
+                ))}
+              </select>
+              {progressMonth && (
+                <button onClick={() => setProgressMonth(null)} title="기본값(데이터 월)로 되돌리기"
+                  style={{ padding: '7px 10px', borderRadius: 8, border: '1px solid #334155',
+                    background: 'transparent', color: '#94A3B8', fontFamily: FONT,
+                    fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>↺</button>
+              )}
+            </div>
           </div>
         )}
 

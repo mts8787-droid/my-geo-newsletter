@@ -79,8 +79,10 @@ const CATEGORY_EN = {
   '외부채널관리': 'External Channel Mgmt',
   '닷컴기술개선': 'Dotcom Tech Improvement',
 }
-function categoryLabel(name, lang) {
+function categoryLabel(name, lang, customEn) {
   if (lang !== 'en') return name
+  // 우선순위: 런타임 AI 번역 결과 → 정적 사전 → 원본
+  if (customEn) return customEn
   // 공백/띄어쓰기 변형에 모두 대응 (예: "콘텐츠 수정" / "콘텐츠수정")
   const key = String(name || '').replace(/\s+/g, '')
   return CATEGORY_EN[key] || CATEGORY_EN[name] || name
@@ -1105,7 +1107,7 @@ function categoryCardsHtml(categoryStats, lang, meta) {
     return `<td width="50%" valign="top" style="padding:6px;">
       <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFFFFF;border:1.5px solid #E8EDF2;border-radius:10px;">
         <tr><td style="padding:12px 14px;">
-          <p style="margin:0 0 10px;font-size:14px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};">${escapeHtml(categoryLabel(c.category, lang))}</p>
+          <p style="margin:0 0 10px;font-size:14px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};">${escapeHtml(categoryLabel(c.category, lang, c.categoryEn))}</p>
           <!-- 이번 월 -->
           <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom:4px;">
             <tr>
