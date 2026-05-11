@@ -90,6 +90,20 @@ export const COUNTRY_FULL_NAME = {
   TTL: 'Total', TOTAL: 'Total', GLOBAL: 'Global',
 }
 
+// 국가코드 → 정식 국가명 (각주·문장 용 — 약자 대신 풀네임)
+export const COUNTRY_OFFICIAL_NAME_EN = {
+  US: 'United States', CA: 'Canada', UK: 'United Kingdom', GB: 'United Kingdom',
+  DE: 'Germany', ES: 'Spain', FR: 'France', IT: 'Italy',
+  BR: 'Brazil', MX: 'Mexico', IN: 'India', AU: 'Australia',
+  VN: 'Vietnam', JP: 'Japan', KR: 'South Korea', CN: 'China',
+}
+export const COUNTRY_OFFICIAL_NAME_KR = {
+  US: '미국', CA: '캐나다', UK: '영국', GB: '영국',
+  DE: '독일', ES: '스페인', FR: '프랑스', IT: '이탈리아',
+  BR: '브라질', MX: '멕시코', IN: '인도', AU: '호주',
+  VN: '베트남', JP: '일본', KR: '한국', CN: '중국',
+}
+
 // ─── 미출시 코드 매핑 ────────────────────────────────────────────────────────
 export const UL_PROD_MAP = {
   tv: 'TV', monitor: 'IT', audio: 'AV', washer: 'WM',

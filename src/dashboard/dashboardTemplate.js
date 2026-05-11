@@ -7,7 +7,7 @@ import {
   UL_PROD_MAP, DC_COLS, DC_SAM, TREND_BRAND_COL,
 } from './dashboardConsts.js'
 // N1 — 순수 함수 분리 (테스트 대상)
-import { statusInfo, fmt, mdBold, stripDomain, cntyStatus, cntyFullName } from './dashboardFormat.js'
+import { statusInfo, fmt, mdBold, stripDomain, cntyStatus, cntyFullName, cntyOfficial } from './dashboardFormat.js'
 import { svgLine, svgMultiLine, brandColor } from './dashboardSvg.js'
 // C12 step3 — 인라인 클라이언트 스크립트 분리 (1,186줄)
 import { buildDashboardClientScript } from './dashboardClient.js'
@@ -84,7 +84,7 @@ function trendDetailHtml(products, weeklyAll, wLabels, t, lang, ulMap, periodTag
     </div>
     <div class="section-body">${buGroups}${(() => {
       const footnotes = products.filter(p => getULCntys(p.id || p.category, ulMap).length > 0)
-        .map(p => `${p.kr}: ${getULCntys(p.id || p.category, ulMap).join(', ')} ${lang === 'en' ? 'not launched' : '미출시'}`)
+        .map(p => `${p.kr}: ${getULCntys(p.id || p.category, ulMap).map(c => cntyOfficial(c, lang)).join(', ')} ${lang === 'en' ? 'not launched' : '미출시'}`)
       return footnotes.length ? `<p style="margin:12px 0 0;font-size:12px;color:#1A1A1A;line-height:1.6;font-weight:500">* ${footnotes.join(' / ')}</p>` : ''
     })()}</div>
   </div>`
@@ -195,7 +195,7 @@ function monthlyTrendDetailHtml(products, monthlyVis, t, lang, ulMap, periodTag)
     </div>
     <div class="section-body">${buGroups}${(() => {
       const footnotes = products.filter(p => getULCntys(p.id || p.category, ulMap).length > 0)
-        .map(p => `${p.kr}: ${getULCntys(p.id || p.category, ulMap).join(', ')} ${lang === 'en' ? 'not launched' : '미출시'}`)
+        .map(p => `${p.kr}: ${getULCntys(p.id || p.category, ulMap).map(c => cntyOfficial(c, lang)).join(', ')} ${lang === 'en' ? 'not launched' : '미출시'}`)
       return footnotes.length ? `<p style="margin:12px 0 0;font-size:12px;color:#1A1A1A;line-height:1.6;font-weight:500">* ${footnotes.join(' / ')}</p>` : ''
     })()}</div>
   </div>`
@@ -380,7 +380,7 @@ function productSectionHtml(products, meta, t, lang, wLabels, ulMap, monthlyVis,
     ${insightHtml(meta.productInsight, meta.showProductInsight, meta.productHowToRead, meta.showProductHowToRead, t)}
     <div class="section-body">${buGroups}${(() => {
       const footnotes = products.filter(p => getULCntys(p.id || p.category, ulMap).length > 0)
-        .map(p => `${p.kr}: ${getULCntys(p.id || p.category, ulMap).join(', ')} ${lang === 'en' ? 'not launched' : '미출시'}`)
+        .map(p => `${p.kr}: ${getULCntys(p.id || p.category, ulMap).map(c => cntyOfficial(c, lang)).join(', ')} ${lang === 'en' ? 'not launched' : '미출시'}`)
       return footnotes.length ? `<p style="margin:12px 0 0;font-size:12px;color:#1A1A1A;line-height:1.6;font-weight:500">* ${footnotes.join(' / ')}</p>` : ''
     })()}</div>
   </div>`

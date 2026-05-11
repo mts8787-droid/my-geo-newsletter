@@ -1117,20 +1117,20 @@ function citationByProductHtml(citationsCnty, meta, lang) {
   })
   // 막대 가로 시각화 (이메일 호환 — 중첩 table) · 짙은 녹색 계열
   const BAR_COLORS = { cat: CIT_GREEN, dom: CIT_GREEN_DARK }
-  function barRow(label, value, maxValue, color) {
-    const pct = maxValue > 0 ? Math.max(2, Math.round((value / maxValue) * 100)) : 0
+  function barRow(label, displayValue, pctWidth, color) {
+    const w = Math.max(2, Math.min(Math.round(pctWidth), 100))
     return `<tr>
       <td style="font-size:9px;color:#475569;padding:1px 5px 1px 0;font-family:${EM_FONT};white-space:nowrap;max-width:80px;overflow:hidden;text-overflow:ellipsis;line-height:1.2;">${escapeHtml(label)}</td>
       <td style="padding:1px 0;">
         <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#F1F5F9;border-radius:2px;">
           <tr><td height="5" style="font-size:0;line-height:0;">
-            <table border="0" cellpadding="0" cellspacing="0" width="${pct}%" style="background:${color};border-radius:2px;">
+            <table border="0" cellpadding="0" cellspacing="0" width="${w}%" style="background:${color};border-radius:2px;">
               <tr><td height="5" style="font-size:0;line-height:0;">&nbsp;</td></tr>
             </table>
           </td></tr>
         </table>
       </td>
-      <td align="right" style="font-size:9px;font-weight:700;color:#1A1A1A;padding:1px 0 1px 5px;font-family:${EM_FONT};white-space:nowrap;line-height:1.2;">${Number(value).toLocaleString()}</td>
+      <td align="right" style="font-size:9px;font-weight:700;color:#1A1A1A;padding:1px 0 1px 5px;font-family:${EM_FONT};white-space:nowrap;line-height:1.2;">${displayValue}</td>
     </tr>`
   }
   function emptyRow() {
@@ -1138,6 +1138,8 @@ function citationByProductHtml(citationsCnty, meta, lang) {
   }
   function prdCardHtml(prd) {
     const rows = prdGroups[prd]
+    // 제품 전체 citation 합계 — 카테고리 비중 분모
+    const totalForCat = rows.reduce((s, r) => s + (r.citations || 0), 0) || 1
     // Top 3 카테고리
     const catMap = {}
     rows.forEach(r => {
@@ -1145,6 +1147,8 @@ function citationByProductHtml(citationsCnty, meta, lang) {
       catMap[cat] = (catMap[cat] || 0) + (r.citations || 0)
     })
     const topCats = Object.entries(catMap).sort((a, b) => b[1] - a[1]).slice(0, 3)
+    // 도메인 비중 분모 — 도메인이 있는 행의 citation 합계
+    const totalForDom = rows.reduce((s, r) => s + (r.domain ? (r.citations || 0) : 0), 0) || 1
     // Top 3 도메인
     const domMap = {}
     rows.forEach(r => {
@@ -1153,10 +1157,18 @@ function citationByProductHtml(citationsCnty, meta, lang) {
       domMap[dom] = (domMap[dom] || 0) + (r.citations || 0)
     })
     const topDoms = Object.entries(domMap).sort((a, b) => b[1] - a[1]).slice(0, 3)
-    const maxCat = topCats[0]?.[1] || 1
-    const maxDom = topDoms[0]?.[1] || 1
-    const catRows = topCats.length ? topCats.map(([n, v]) => barRow(n, v, maxCat, BAR_COLORS.cat)).join('') : emptyRow()
-    const domRows = topDoms.length ? topDoms.map(([n, v]) => barRow(n, v, maxDom, BAR_COLORS.dom)).join('') : emptyRow()
+    const catRows = topCats.length
+      ? topCats.map(([n, v]) => {
+          const pct = (v / totalForCat) * 100
+          return barRow(n, pct.toFixed(1) + '%', pct, BAR_COLORS.cat)
+        }).join('')
+      : emptyRow()
+    const domRows = topDoms.length
+      ? topDoms.map(([n, v]) => {
+          const pct = (v / totalForDom) * 100
+          return barRow(n, pct.toFixed(1) + '%', pct, BAR_COLORS.dom)
+        }).join('')
+      : emptyRow()
     return `<td width="33%" valign="top" style="padding:3px;">
       <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFFFFF;border:1.5px solid #E8EDF2;border-radius:8px;">
         <tr><td style="padding:6px 8px;">
@@ -1192,12 +1204,17 @@ function citationByProductHtml(citationsCnty, meta, lang) {
   if (!buSections) return ''
   // 인사이트 블록 (citPrdInsight) — 헤더 바로 아래 삽입
   const insightHtml = insightBlockHtml(meta.citPrdInsight, meta.showCitPrdInsight, meta.citPrdHowToRead, meta.showCitPrdHowToRead, lang)
+  // 비중 분석 각주
+  const footnoteText = lang === 'en'
+    ? 'Citation counts by product use different prompt counts per product, so they are analyzed as ratios.'
+    : '제품별 싸이테이션 수의 경우 제품별 측정 프롬프트 수가 상이하여 비중으로 분석함'
   return `<tr>
     <td style="padding-top:12px;border-top:2px solid #E8EDF2;">
       <table border="0" cellpadding="0" cellspacing="0" width="100%">
         <tr><td style="font-size:14px;font-weight:700;color:#0F172A;font-family:${EM_FONT};padding:8px 0;">${t.title}</td></tr>
         ${insightHtml}
         ${buSections}
+        <tr><td style="padding:8px 4px 0;font-size:10px;color:#64748B;font-family:${EM_FONT};line-height:1.5;font-style:italic;">* ${footnoteText}</td></tr>
       </table>
     </td>
   </tr>`
@@ -1393,10 +1410,13 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
         ? (PROD_EN_NAME[(p.id || '').toLowerCase()] || PROD_EN_BY_KR[p.kr] || p.kr)
         : p.kr
       const cntys = getULCntys(p.id || p.category).map(c => cntyLabel(c, lang)).join(', ')
-      return `${displayName}: ${cntys} ${lang === 'en' ? 'not launched' : '미출시'}`
+      return `${displayName} : ${cntys}`
     })
+  const ulIntro = lang === 'en'
+    ? 'Unlaunched countries are shown in gray status'
+    : '제품 미출시 국가는 신호등 회색으로 표기함'
   const productFootnoteHtml = ulFootnoteParts.length
-    ? `<p style="margin:12px 16px 0;font-size:11px;color:#64748B;font-family:${EM_FONT};line-height:1.6;">* ${ulFootnoteParts.join(' / ')}</p>`
+    ? `<p style="margin:12px 16px 0;font-size:11px;color:#64748B;font-family:${EM_FONT};line-height:1.6;">* ${ulIntro} (${ulFootnoteParts.join(' / ')})</p>`
     : ''
 
   const citTopN = meta.citationTopN || 10

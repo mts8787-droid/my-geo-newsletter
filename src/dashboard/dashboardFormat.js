@@ -1,5 +1,5 @@
 // N1 — dashboardTemplate.js에서 분리된 순수 포맷 헬퍼 (테스트 대상)
-import { T, COUNTRY_FULL_NAME } from './dashboardConsts.js'
+import { T, COUNTRY_FULL_NAME, COUNTRY_OFFICIAL_NAME_EN, COUNTRY_OFFICIAL_NAME_KR } from './dashboardConsts.js'
 
 export function statusInfo(s, lang) {
   const t = T[lang] || T.ko
@@ -29,4 +29,11 @@ export function cntyStatus(sc, comp) {
 export function cntyFullName(c) {
   const k = String(c || '').trim().toUpperCase()
   return COUNTRY_FULL_NAME[k] || c
+}
+
+// 각주·문장용 정식 국가명 (약자 X — 'US' → 'United States' / '미국')
+export function cntyOfficial(c, lang) {
+  const k = String(c || '').trim().toUpperCase()
+  if (lang === 'en') return COUNTRY_OFFICIAL_NAME_EN[k] || COUNTRY_FULL_NAME[k] || c
+  return COUNTRY_OFFICIAL_NAME_KR[k] || COUNTRY_FULL_NAME[k] || c
 }
