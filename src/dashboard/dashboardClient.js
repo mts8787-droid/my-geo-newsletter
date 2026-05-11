@@ -153,11 +153,94 @@ function switchVisMonth(idx){
   var mb=document.getElementById('period-badge');
   if(mb)mb.textContent=monthName;
   _applyMonthSelectionOverride();
+  // 국가별 제품별 Visibility 카드 — _monthlyVis 기반으로 선택 월 값으로 덮어쓰기
+  _updateCntyMonth();
   // #monthly-trend-container 재렌더 (updateMonthlyTrend 내부에서 _trendMultiSvg가 _curMonthIdxIn12로 truncate)
   if(typeof updateMonthlyTrend==='function'&&typeof getCheckedValues==='function'){
     updateMonthlyTrend(getCheckedValues('country'));
   }
   _truncateTrendTable('#monthly-trend-container',12,_curMonthIdxIn12);
+}
+// 선택 월의 _monthlyVis 데이터로 국가별 제품별 vbar-item 의 LG/Comp 점수·바·갭 갱신
+function _updateCntyMonth(){
+  if(_curMonthIdxIn12<0||!_monthlyVis||!_monthlyVis.length)return;
+  var enM={jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11};
+  function dateMonthIdx(d){
+    var km=String(d).match(/(\\d{1,2})월/);if(km)return parseInt(km[1])-1;
+    var em=String(d).match(/(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i);
+    return em?enM[em[1].toLowerCase()]:-1;
+  }
+  var lookup={};
+  _monthlyVis.forEach(function(r){
+    if(dateMonthIdx(r.date)!==_curMonthIdxIn12)return;
+    var key=(r.country||'')+'|'+(r.division||'').toUpperCase();
+    if(!lookup[key])lookup[key]=r;
+  });
+  var BAR_H=130;
+  ['.cnty-view-product','.cnty-view-country'].forEach(function(viewSel){
+    document.querySelectorAll(viewSel+' .cnty-product').forEach(function(grp){
+      var items=grp.querySelectorAll('.vbar-item');
+      // 1차: 각 아이템의 lg/comp 점수 결정 (선택 월 데이터 우선, 없으면 기존 값 유지)
+      var rowLg=[],rowComp=[];
+      items.forEach(function(item){
+        var prodid=item.getAttribute('data-prodid');
+        var country=item.getAttribute('data-country');
+        var divCode=(_PROD_TO_UL[prodid]||prodid||'').toUpperCase();
+        var row=lookup[country+'|'+divCode];
+        if(row){
+          rowLg.push(Number(row.lg)||0);
+          rowComp.push(Number(row.comp)||0);
+        }else{
+          // 해당 월 데이터 없음 — 기존 텍스트 유지
+          var lgEl=item.querySelector('.vbar-cols > .vbar-col-wrap:first-child > .vbar-val');
+          var cEl=item.querySelector('.vbar-val.comp-val');
+          rowLg.push(parseFloat(lgEl?lgEl.textContent:'0')||0);
+          rowComp.push(parseFloat(cEl?cEl.textContent:'0')||0);
+        }
+      });
+      // 2차: 그룹 maxScore 재계산 후 bar 높이 + 값 + gap 갱신
+      var cBrandScores=[];
+      items.forEach(function(item){
+        var cbEl=item.querySelector('.cbrand-bar .vbar-val');
+        cBrandScores.push(parseFloat(cbEl?cbEl.textContent:'0')||0);
+      });
+      var maxScore=1;
+      for(var i=0;i<items.length;i++){
+        maxScore=Math.max(maxScore,rowLg[i],rowComp[i],cBrandScores[i]);
+      }
+      items.forEach(function(item,i){
+        var lg=rowLg[i],comp=rowComp[i];
+        var gap=+(lg-comp).toFixed(1);
+        var hPx=Math.max(3,Math.round(lg/maxScore*BAR_H));
+        var cPx=comp>0?Math.max(3,Math.round(comp/maxScore*BAR_H)):0;
+        var cbPx=cBrandScores[i]>0?Math.max(3,Math.round(cBrandScores[i]/maxScore*BAR_H)):0;
+        // LG 점수
+        var lgValEl=item.querySelector('.vbar-cols > .vbar-col-wrap:first-child > .vbar-val');
+        var lgColEl=item.querySelector('.vbar-cols > .vbar-col-wrap:first-child > .vbar-col');
+        if(lgValEl)lgValEl.textContent=lg.toFixed(1);
+        if(lgColEl)lgColEl.style.height=hPx+'px';
+        // Comp 점수
+        var cValEl=item.querySelector('.vbar-val.comp-val');
+        var cColEl=cValEl&&cValEl.parentElement?cValEl.parentElement.querySelector('.vbar-col'):null;
+        if(cValEl)cValEl.textContent=comp.toFixed(1);
+        if(cColEl)cColEl.style.height=cPx+'px';
+        // C-brand bar 도 maxScore 변경에 따라 비례 재조정 (값은 그대로)
+        var cbColEl=item.querySelector('.cbrand-bar .vbar-col');
+        if(cbColEl&&cBrandScores[i]>0)cbColEl.style.height=cbPx+'px';
+        // 신호등 색상 (LG/Comp 비율)
+        var status=comp>0?(lg>=comp?'lead':lg>=comp*0.8?'behind':'critical'):'lead';
+        var barColor=status==='lead'?'#15803D':status==='behind'?'#D97706':'#BE123C';
+        if(lgValEl)lgValEl.style.color=barColor;
+        if(lgColEl)lgColEl.style.background=barColor;
+        // Gap
+        var gapEl=item.querySelector('.vbar-gap');
+        if(gapEl){
+          gapEl.textContent=(gap>=0?'+':'')+gap+'%p';
+          gapEl.style.color=gap>=0?'#15803D':'#BE123C';
+        }
+      });
+    });
+  });
 }
 // 월 드롭다운 선택 인덱스로 monthlyScores를 truncate (선택 월까지만)
 function _sliceMsByCurMonth(ms){
