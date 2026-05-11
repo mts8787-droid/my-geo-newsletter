@@ -91,6 +91,8 @@ export const INIT_META  = {
   citDomainHowToRead: '', showCitDomainHowToRead: false,
   citCntyInsight: '', showCitCntyInsight: false,
   citCntyHowToRead: '', showCitCntyHowToRead: false,
+  citPrdInsight: '', showCitPrdInsight: false,
+  citPrdHowToRead: '', showCitPrdHowToRead: false,
   noticeText: '', showNotice: false,
   todoText: '', showTodo: false,
   monthlyReportBody: MONTHLY_REPORT_BODY_DEFAULT, showMonthlyReportBody: true,

@@ -145,6 +145,40 @@ ${summary}
 [분석 포인트: 국가별 인용 패턴 차이, 주요 시장별 핵심 도메인, 국가별 최적화 전략]`
   }
 
+  if (type === 'citPrd') {
+    const PRD_KR = { TV:'TV', IT:'모니터', MONITOR:'모니터', AV:'오디오', AUDIO:'오디오', REF:'냉장고', WM:'세탁기', DW:'식기세척기', VC:'청소기', COOKING:'Cooking', RAC:'RAC', AIRCARE:'Aircare' }
+    const PRD_BU = { TV:'MS', IT:'MS', MONITOR:'MS', AV:'MS', AUDIO:'MS', REF:'HS', WM:'HS', DW:'HS', VC:'HS', COOKING:'HS', RAC:'ES', AIRCARE:'ES' }
+    const isPrdSpec = p => p && String(p).toUpperCase() !== 'TTL' && String(p).toUpperCase() !== 'TOTAL'
+    const prdGroups = {}
+    ;(data.citationsCnty || []).forEach(r => {
+      if (!isPrdSpec(r.prd)) return
+      if (!prdGroups[r.prd]) prdGroups[r.prd] = []
+      prdGroups[r.prd].push(r)
+    })
+    const buGroups = { MS: [], HS: [], ES: [], etc: [] }
+    Object.entries(prdGroups).forEach(([prd, rows]) => {
+      const code = String(prd).toUpperCase()
+      const bu = PRD_BU[code] || 'etc'
+      const name = PRD_KR[code] || prd
+      // Top 3 카테고리·도메인 산출
+      const catMap = {}; rows.forEach(r => { const c = r.type || '기타'; catMap[c] = (catMap[c] || 0) + (r.citations || 0) })
+      const top3Cat = Object.entries(catMap).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([n, v]) => `${n}(${v}건)`).join(', ')
+      const domMap = {}; rows.forEach(r => { if (r.domain) domMap[r.domain] = (domMap[r.domain] || 0) + (r.citations || 0) })
+      const top3Dom = Object.entries(domMap).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([n, v]) => `${n}(${v}건)`).join(', ')
+      buGroups[bu].push(`  - ${name}: Top3 카테고리 [${top3Cat}] / Top3 도메인 [${top3Dom}]`)
+    })
+    const summary = Object.entries(buGroups).filter(([, arr]) => arr.length).map(([bu, arr]) => `[${bu}본부]\n${arr.join('\n')}`).join('\n')
+    return `[섹션: 제품별 Citation — 본부별 그룹핑, 각 제품 Top 3 카테고리·도메인]
+이 섹션은 제품별로 Citation 의 강한 카테고리·도메인을 보여줍니다. 본부(MS/HS/ES)별로 묶여있고, 각 제품 카드에 Top 3 카테고리 + Top 3 도메인 막대그래프가 표시됩니다.
+
+본부·제품별 핵심 인용 채널:
+${summary}
+
+[분석 포인트: 본부별 인용 패턴 차이(MS=콘텐츠 중심? / HS=Retail 중심? / ES=전문 채널?), 제품별 강점 카테고리/도메인, 약점 제품의 보완 전략]
+[필수: 모든 본부(MS/HS/ES)를 빠짐없이 언급]
+[필수: 구체적 제품명·도메인명을 인용]`
+  }
+
   if (type === 'totalInsight') {
     const products = data.products || []
     const productsCnty = data.productsCnty || []

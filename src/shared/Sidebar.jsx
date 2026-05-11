@@ -201,6 +201,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
         src.cntyInsight || '', src.cntyHowToRead || '',
         src.citDomainInsight || '', src.citDomainHowToRead || '',
         src.citCntyInsight || '', src.citCntyHowToRead || '',
+        src.citPrdInsight || '', src.citPrdHowToRead || '',
         src.period || '', src.team || '', src.reportNo || '',
         src.monthlyReportBody || '',
       ]
@@ -241,6 +242,8 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
         citDomainHowToRead: tr[idx++] || src.citDomainHowToRead,
         citCntyInsight: tr[idx++] || src.citCntyInsight,
         citCntyHowToRead: tr[idx++] || src.citCntyHowToRead,
+        citPrdInsight: tr[idx++] || src.citPrdInsight,
+        citPrdHowToRead: tr[idx++] || src.citPrdHowToRead,
         period: (idx++, src.period),
         team: tr[idx++] || src.team,
         reportNo: (idx++, src.reportNo),
@@ -380,7 +383,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
         // 텍스트 칸: 기존 값이 있으면 덮어쓰지 않음 (빈 값인 경우에만 적용)
         const textKeys = ['totalInsight','productInsight','productHowToRead','citationInsight','citationHowToRead',
           'dotcomInsight','dotcomHowToRead','cntyInsight','cntyHowToRead','citDomainInsight','citDomainHowToRead',
-          'citCntyInsight','citCntyHowToRead','noticeText','kpiLogicText','todoText','aiPromptRules','monthlyReportBody']
+          'citCntyInsight','citCntyHowToRead','citPrdInsight','citPrdHowToRead','noticeText','kpiLogicText','todoText','aiPromptRules','monthlyReportBody']
         setMetaKo(m => {
           const merged = { ...m }
           for (const [k, v] of Object.entries(parsed.meta)) {
@@ -845,6 +848,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
             cntyHowToRead: meta.cntyHowToRead || '', citationInsight: meta.citationInsight || '',
             citationHowToRead: meta.citationHowToRead || '', citDomainInsight: meta.citDomainInsight || '',
             citDomainHowToRead: meta.citDomainHowToRead || '', citCntyInsight: meta.citCntyInsight || '',
+            citPrdInsight: meta.citPrdInsight || '', citPrdHowToRead: meta.citPrdHowToRead || '',
             citCntyHowToRead: meta.citCntyHowToRead || '', dotcomInsight: meta.dotcomInsight || '',
             dotcomHowToRead: meta.dotcomHowToRead || '', todoText: meta.todoText || '',
             noticeText: meta.noticeText || '', kpiLogicText: meta.kpiLogicText || '',
@@ -1082,6 +1086,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
             { key: 'showProducts',  label: '제품별' },
             { key: 'showCnty',      label: '국가별' },
             { key: 'showCitations', label: 'Citation' },
+            { key: 'showCitCnty',   label: 'Citation 국가별' },
             { key: 'showCitPrd',    label: 'Citation 제품별' },
             { key: 'showDotcom',    label: '닷컴' },
             { key: 'showTodo',      label: 'Action Plan' },
@@ -1572,6 +1577,72 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
           onChange={e => setMeta(m => ({ ...m, citCntyHowToRead: e.target.value }))}
           rows={4}
           placeholder="국가별 Citation How to Read..."
+          style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6, marginBottom: 8 }}
+        />
+
+        {/* 제품별 Citation 인사이트 */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+          <p style={{ margin: 0, fontSize: 11, color: '#64748B', fontFamily: FONT }}>제품별 Citation 인사이트</p>
+          <div style={{ display: 'flex', gap: 4 }}>
+            <button onClick={async () => {
+                try {
+                  setMeta(m => ({ ...m, citPrdInsight: '⏳ AI 생성 중...' }))
+                  const insight = await generateAIInsight('citPrd', { citationsCnty: getLatestData().citationsCnty }, previewLang)
+                  setMeta(m => ({ ...m, citPrdInsight: insight }))
+                } catch (err) { console.error('[AI]', err); setMeta(m => ({ ...m, citPrdInsight: `[AI 실패: ${err.message}]` })) }
+              }}
+              style={{ padding: '2px 6px', borderRadius: 4, border: 'none', cursor: 'pointer',
+                background: '#4F46E5', color: '#FFFFFF',
+                fontSize: 11, fontWeight: 700, fontFamily: FONT, display: 'flex', alignItems: 'center', gap: 3 }}>
+              <Sparkles size={9} /> AI 생성
+            </button>
+            <button onClick={() => setMeta(m => ({ ...m, showCitPrdInsight: !m.showCitPrdInsight }))}
+              style={{ padding: '2px 8px', borderRadius: 4, border: 'none', cursor: 'pointer',
+                background: meta.showCitPrdInsight ? LG_RED : '#1E293B',
+                color: meta.showCitPrdInsight ? '#FFFFFF' : '#475569',
+                fontSize: 11, fontWeight: 700, fontFamily: FONT }}>
+              {meta.showCitPrdInsight ? 'ON' : 'OFF'}
+            </button>
+          </div>
+        </div>
+        <textarea
+          value={meta.citPrdInsight || ''}
+          onChange={e => setMeta(m => ({ ...m, citPrdInsight: e.target.value }))}
+          rows={8}
+          placeholder="제품별 Citation 인사이트 — 본부별 인용 패턴, 강점/약점 카테고리 등"
+          style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6, marginBottom: 8 }}
+        />
+
+        {/* 제품별 Citation How to Read */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+          <p style={{ margin: 0, fontSize: 11, color: '#64748B', fontFamily: FONT }}>제품별 Citation How to Read</p>
+          <div style={{ display: 'flex', gap: 4 }}>
+            <button onClick={async () => {
+                try {
+                  setMeta(m => ({ ...m, citPrdHowToRead: '⏳ AI 생성 중...' }))
+                  const insight = await generateAIInsight('howToRead', { section: '제품별 Citation' }, previewLang)
+                  setMeta(m => ({ ...m, citPrdHowToRead: insight }))
+                } catch { setMeta(m => ({ ...m, citPrdHowToRead: '' })) }
+              }}
+              style={{ padding: '2px 6px', borderRadius: 4, border: 'none', cursor: 'pointer',
+                background: '#4F46E5', color: '#FFFFFF',
+                fontSize: 11, fontWeight: 700, fontFamily: FONT, display: 'flex', alignItems: 'center', gap: 3 }}>
+              <Sparkles size={9} /> AI 생성
+            </button>
+            <button onClick={() => setMeta(m => ({ ...m, showCitPrdHowToRead: !m.showCitPrdHowToRead }))}
+              style={{ padding: '2px 8px', borderRadius: 4, border: 'none', cursor: 'pointer',
+                background: meta.showCitPrdHowToRead ? LG_RED : '#1E293B',
+                color: meta.showCitPrdHowToRead ? '#FFFFFF' : '#475569',
+                fontSize: 11, fontWeight: 700, fontFamily: FONT }}>
+              {meta.showCitPrdHowToRead ? 'ON' : 'OFF'}
+            </button>
+          </div>
+        </div>
+        <textarea
+          value={meta.citPrdHowToRead || ''}
+          onChange={e => setMeta(m => ({ ...m, citPrdHowToRead: e.target.value }))}
+          rows={4}
+          placeholder="제품별 Citation How to Read..."
           style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6, marginBottom: 8 }}
         />
 

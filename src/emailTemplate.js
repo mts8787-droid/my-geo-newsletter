@@ -2,6 +2,9 @@
 // 규칙: table 기반 레이아웃, 인라인 스타일, 외부 폰트 없음, flex/grid 없음
 
 const EM_RED  = '#CF0652'
+// Citation 차트 전용 — 짙은 녹색 계열 (LG_RED 와 구분)
+const CIT_GREEN      = '#15803D'  // primary (Top3 등)
+const CIT_GREEN_DARK = '#166534'  // accent (도메인 막대 등)
 const EM_DARK = '#A0003E'
 const EM_FONT = "'LGEIText','LG Smart', 'Arial Narrow', Arial, sans-serif"
 
@@ -331,6 +334,7 @@ function productCardHtml(p, globalMax, globalMin, lang = 'ko', opts = {}) {
               <td align="right" style="vertical-align:middle;white-space:nowrap;">
                 <span style="font-size:13px;font-weight:700;color:${ratioColor};font-family:${EM_FONT};">${escapeHtml(p.compName || 'Samsung')} ${lang === 'en' ? 'vs' : '대비'} ${curRatio}%${ratioDelta}</span>
                 &nbsp;<span style="display:inline-block;background:${st.bg};color:${st.color};border:1px solid ${st.border};border-radius:6px;padding:0px 5px;font-size:10px;font-weight:700;line-height:16px;font-family:${EM_FONT};vertical-align:middle;">${st.label}</span>
+                ${activePrev > 0 ? `<div style="margin-top:2px;font-size:10px;color:#94A3B8;font-family:${EM_FONT};text-align:right;">${lang === 'en' ? 'MoM' : '전월대비'} <span style="color:${momColor};font-weight:700;">${momArrow}${Math.abs(d).toFixed(1)}%p</span></div>` : ''}
               </td>
             </tr>
           </table>
@@ -419,7 +423,7 @@ function productCardV2Html(p, lang = 'ko', opts = {}) {
         <td style="padding:5px 6px 3px;white-space:nowrap;overflow:hidden;">
           <span style="font-size:14px;font-weight:900;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-0.5px;">${escapeHtml(prodName)}</span>
           <span style="font-size:18px;font-weight:900;color:#1A1A1A;font-family:${EM_FONT};">${p.score.toFixed(1)}<span style="font-size:11px;color:#94A3B8;">%</span></span>${momStr ? `&nbsp;${momStr}` : ''}
-          <span style="float:right;white-space:nowrap;"><span style="font-size:13px;font-weight:700;color:${ratioColor};font-family:${EM_FONT};">SS ${curRatio}%</span>&nbsp;<span style="display:inline-block;background:${st.bg};color:${st.color};border:1px solid ${st.border};border-radius:5px;padding:0px 4px;font-size:10px;font-weight:700;line-height:15px;font-family:${EM_FONT};vertical-align:middle;">${st.label}</span></span>
+          <span style="float:right;white-space:nowrap;"><span style="font-size:13px;font-weight:700;color:${ratioColor};font-family:${EM_FONT};">SS ${curRatio}%</span>&nbsp;<span style="display:inline-block;background:${st.bg};color:${st.color};border:1px solid ${st.border};border-radius:5px;padding:0px 4px;font-size:10px;font-weight:700;line-height:15px;font-family:${EM_FONT};vertical-align:middle;">${st.label}</span>${p.prev != null && p.prev > 0 ? `<div style="font-size:10px;color:#94A3B8;font-family:${EM_FONT};text-align:right;margin-top:1px;">${lang === 'en' ? 'MoM' : '전월대비'} <span style="color:${momColor};font-weight:700;">${momArrow}${Math.abs(d).toFixed(1)}%p</span></div>` : ''}</span>
         </td>
       </tr>
       <tr>
@@ -846,8 +850,8 @@ function citationCntyCountryHtml(cntyCode, rows, lang) {
     return `<td width="${colWidth}%" style="vertical-align:top;text-align:center;padding:0 1px;">
       <table border="0" cellpadding="0" cellspacing="0" align="center" style="margin:0 auto;table-layout:fixed;width:100%;">
         ${spacerH > 0 ? `<tr><td height="${spacerH}" style="font-size:0;line-height:0;">&nbsp;</td></tr>` : ''}
-        <tr><td height="${barH}" style="font-size:0;line-height:0;"><table border="0" cellpadding="0" cellspacing="0" align="center"><tr><td width="22" height="${barH}" style="background:${EM_RED};border-radius:3px 3px 0 0;font-size:0;line-height:0;">&nbsp;</td></tr></table></td></tr>
-        <tr><td style="font-size:13px;font-weight:800;color:${EM_RED};font-family:${EM_FONT};padding-top:3px;white-space:nowrap;">${fmtN(r.citations)}</td></tr>
+        <tr><td height="${barH}" style="font-size:0;line-height:0;"><table border="0" cellpadding="0" cellspacing="0" align="center"><tr><td width="22" height="${barH}" style="background:${CIT_GREEN};border-radius:3px 3px 0 0;font-size:0;line-height:0;">&nbsp;</td></tr></table></td></tr>
+        <tr><td style="font-size:13px;font-weight:800;color:${CIT_GREEN};font-family:${EM_FONT};padding-top:3px;white-space:nowrap;">${fmtN(r.citations)}</td></tr>
         <tr><td style="font-size:13px;color:#1A1A1A;font-family:${EM_FONT};padding-top:2px;word-break:break-all;font-weight:600;">${domainShort}</td></tr>
         <tr><td style="font-size:13px;color:#94A3B8;font-family:${EM_FONT};padding-top:1px;word-break:break-all;">${r.type}</td></tr>
       </table>
@@ -930,9 +934,9 @@ function citationCntyTableHtml(citationsCnty, lang) {
 // ─── Citation 통합 행 (카테고리 + 도메인 공용) ────────────────────────────────
 function citUnifiedRow(rank, label, score, ratio, maxScore, isLast) {
   const isTop3 = rank <= 3
-  const rankBg = isTop3 ? EM_RED : '#F1F5F9'
+  const rankBg = isTop3 ? CIT_GREEN : '#F1F5F9'
   const rankColor = isTop3 ? '#FFFFFF' : '#94A3B8'
-  const barColor = isTop3 ? EM_RED : '#475569'
+  const barColor = isTop3 ? CIT_GREEN : '#475569'
   const barPct = Math.min(Math.round((score / maxScore) * 55), 55)
   const ratioStr = ratio > 0 ? ratio.toFixed(1) + '%' : ''
 
@@ -1111,26 +1115,26 @@ function citationByProductHtml(citationsCnty, meta, lang) {
       return (ai != null ? ai : 999) - (bi != null ? bi : 999)
     })
   })
-  // 막대 가로 시각화 (이메일 호환 — 중첩 table)
-  const BAR_COLORS = { cat: '#3B82F6', dom: '#7C3AED' }
+  // 막대 가로 시각화 (이메일 호환 — 중첩 table) · 짙은 녹색 계열
+  const BAR_COLORS = { cat: CIT_GREEN, dom: CIT_GREEN_DARK }
   function barRow(label, value, maxValue, color) {
     const pct = maxValue > 0 ? Math.max(2, Math.round((value / maxValue) * 100)) : 0
     return `<tr>
-      <td style="font-size:10px;color:#475569;padding:3px 6px 3px 0;font-family:${EM_FONT};white-space:nowrap;max-width:90px;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(label)}</td>
-      <td style="padding:3px 0;">
-        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#F1F5F9;border-radius:3px;">
-          <tr><td height="7" style="font-size:0;line-height:0;">
-            <table border="0" cellpadding="0" cellspacing="0" width="${pct}%" style="background:${color};border-radius:3px;">
-              <tr><td height="7" style="font-size:0;line-height:0;">&nbsp;</td></tr>
+      <td style="font-size:9px;color:#475569;padding:1px 5px 1px 0;font-family:${EM_FONT};white-space:nowrap;max-width:80px;overflow:hidden;text-overflow:ellipsis;line-height:1.2;">${escapeHtml(label)}</td>
+      <td style="padding:1px 0;">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#F1F5F9;border-radius:2px;">
+          <tr><td height="5" style="font-size:0;line-height:0;">
+            <table border="0" cellpadding="0" cellspacing="0" width="${pct}%" style="background:${color};border-radius:2px;">
+              <tr><td height="5" style="font-size:0;line-height:0;">&nbsp;</td></tr>
             </table>
           </td></tr>
         </table>
       </td>
-      <td align="right" style="font-size:10px;font-weight:700;color:#1A1A1A;padding:3px 0 3px 6px;font-family:${EM_FONT};white-space:nowrap;">${Number(value).toLocaleString()}</td>
+      <td align="right" style="font-size:9px;font-weight:700;color:#1A1A1A;padding:1px 0 1px 5px;font-family:${EM_FONT};white-space:nowrap;line-height:1.2;">${Number(value).toLocaleString()}</td>
     </tr>`
   }
   function emptyRow() {
-    return `<tr><td colspan="3" style="font-size:10px;color:#94A3B8;padding:3px 0;font-family:${EM_FONT};">${t.noData}</td></tr>`
+    return `<tr><td colspan="3" style="font-size:9px;color:#94A3B8;padding:1px 0;font-family:${EM_FONT};line-height:1.2;">${t.noData}</td></tr>`
   }
   function prdCardHtml(prd) {
     const rows = prdGroups[prd]
@@ -1153,13 +1157,13 @@ function citationByProductHtml(citationsCnty, meta, lang) {
     const maxDom = topDoms[0]?.[1] || 1
     const catRows = topCats.length ? topCats.map(([n, v]) => barRow(n, v, maxCat, BAR_COLORS.cat)).join('') : emptyRow()
     const domRows = topDoms.length ? topDoms.map(([n, v]) => barRow(n, v, maxDom, BAR_COLORS.dom)).join('') : emptyRow()
-    return `<td width="33%" valign="top" style="padding:5px;">
-      <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFFFFF;border:1.5px solid #E8EDF2;border-radius:10px;">
-        <tr><td style="padding:10px 12px;">
-          <p style="margin:0 0 8px;font-size:13px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};">${escapeHtml(prdName(prd))}</p>
-          <p style="margin:0 0 4px;font-size:9px;font-weight:700;color:#64748B;font-family:${EM_FONT};text-transform:uppercase;letter-spacing:0.4px;">${t.topCategories}</p>
-          <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom:8px;table-layout:fixed;">${catRows}</table>
-          <p style="margin:0 0 4px;font-size:9px;font-weight:700;color:#64748B;font-family:${EM_FONT};text-transform:uppercase;letter-spacing:0.4px;">${t.topDomains}</p>
+    return `<td width="33%" valign="top" style="padding:3px;">
+      <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFFFFF;border:1.5px solid #E8EDF2;border-radius:8px;">
+        <tr><td style="padding:6px 8px;">
+          <p style="margin:0 0 4px;font-size:11px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};line-height:1.2;">${escapeHtml(prdName(prd))}</p>
+          <p style="margin:0 0 2px;font-size:8px;font-weight:700;color:#64748B;font-family:${EM_FONT};text-transform:uppercase;letter-spacing:0.3px;line-height:1.2;">${t.topCategories}</p>
+          <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom:4px;table-layout:fixed;">${catRows}</table>
+          <p style="margin:0 0 2px;font-size:8px;font-weight:700;color:#64748B;font-family:${EM_FONT};text-transform:uppercase;letter-spacing:0.3px;line-height:1.2;">${t.topDomains}</p>
           <table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;">${domRows}</table>
         </td></tr>
       </table>
@@ -1176,20 +1180,23 @@ function citationByProductHtml(citationsCnty, meta, lang) {
       gridRows.push(`<tr>${trio.join('')}</tr>`)
     }
     return `<tr>
-      <td style="padding:10px 0 4px;">
+      <td style="padding:6px 0 2px;">
         <table border="0" cellpadding="0" cellspacing="0"><tr>
-          <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
-          <td style="padding-left:8px;font-size:13px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${t.buLabels[bu]}</td>
+          <td width="3" style="background:${CIT_GREEN};border-radius:2px;">&nbsp;</td>
+          <td style="padding-left:6px;font-size:12px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};line-height:1.2;">${t.buLabels[bu]}</td>
         </tr></table>
       </td>
     </tr>
     <tr><td><table border="0" cellpadding="0" cellspacing="0" width="100%">${gridRows.join('')}</table></td></tr>`
   }).join('')
   if (!buSections) return ''
+  // 인사이트 블록 (citPrdInsight) — 헤더 바로 아래 삽입
+  const insightHtml = insightBlockHtml(meta.citPrdInsight, meta.showCitPrdInsight, meta.citPrdHowToRead, meta.showCitPrdHowToRead, lang)
   return `<tr>
     <td style="padding-top:12px;border-top:2px solid #E8EDF2;">
       <table border="0" cellpadding="0" cellspacing="0" width="100%">
         <tr><td style="font-size:14px;font-weight:700;color:#0F172A;font-family:${EM_FONT};padding:8px 0;">${t.title}</td></tr>
+        ${insightHtml}
         ${buSections}
       </table>
     </td>

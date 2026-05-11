@@ -36,6 +36,7 @@ export const ARCHIVE_KEY_MAP = {
   cnty: 'cntyInsight', cntyHowToRead: 'cntyHowToRead',
   citDomain: 'citDomainInsight', citDomainHowToRead: 'citDomainHowToRead',
   citCnty: 'citCntyInsight', citCntyHowToRead: 'citCntyHowToRead',
+  citPrd: 'citPrdInsight', citPrdHowToRead: 'citPrdHowToRead',
   todo: 'todoText', notice: 'noticeText', kpiLogic: 'kpiLogicText',
 }
 
