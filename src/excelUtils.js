@@ -482,12 +482,20 @@ function parseProductCntyFromRow(rows, headerIdx) {
   }
 
   // 국가별 데이터: 같은 제품+국가에 여러 월이 있으면 최신월=score, 이전월=prev
+  // 월별 점수도 보존 (월간 country×product 드롭다운 필터용)
   const productsCnty = []
   for (const entries of Object.values(cntyByKey)) {
     entries.sort((a, b) => parseMonthFromDate(a.date) - parseMonthFromDate(b.date))
     const latest = entries[entries.length - 1]
     const prev = entries.length >= 2 ? entries[entries.length - 2].score : null
-    productsCnty.push({ ...latest, prev })
+    const monthlyScores = entries.map(e => ({
+      date: e.date,
+      score: e.score,
+      compScore: e.compScore,
+      compName: e.compName,
+      allScores: e.allScores,
+    }))
+    productsCnty.push({ ...latest, prev, monthlyScores })
   }
 
   return {

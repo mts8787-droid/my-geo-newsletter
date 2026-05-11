@@ -1065,6 +1065,74 @@ function dotcomSectionHtml(dotcom, meta, lang = 'ko') {
               </tr>`
 }
 
+// ─── 제품별 Citation (Top 3 카테고리 + Top 3 도메인) ───────────────────────
+function citationByProductHtml(citationsCnty, meta, lang) {
+  if (meta.showCitPrd === false) return ''
+  if (!citationsCnty || !citationsCnty.length) return ''
+  const isPrdSpec = p => p && String(p).toUpperCase() !== 'TTL' && String(p).toUpperCase() !== 'TOTAL'
+  // 제품별 PRD-specific 행 그룹핑
+  const prdGroups = {}
+  citationsCnty.forEach(r => {
+    if (!isPrdSpec(r.prd)) return
+    if (!prdGroups[r.prd]) prdGroups[r.prd] = []
+    prdGroups[r.prd].push(r)
+  })
+  const prdKeys = Object.keys(prdGroups)
+  if (!prdKeys.length) return ''
+  const t = lang === 'en'
+    ? { title: 'Citation by Product', topCategories: 'Top 3 Categories', topDomains: 'Top 3 Domains', noData: 'No data' }
+    : { title: '제품별 Citation', topCategories: 'Top 3 카테고리', topDomains: 'Top 3 도메인', noData: '데이터 없음' }
+  // 제품 정렬 — 알파벳/한글
+  prdKeys.sort()
+  const prdCards = prdKeys.map(prd => {
+    const rows = prdGroups[prd]
+    // Top 3 카테고리 (type 기준)
+    const catMap = {}
+    rows.forEach(r => {
+      const cat = r.type || 'Unknown'
+      catMap[cat] = (catMap[cat] || 0) + (r.citations || 0)
+    })
+    const topCats = Object.entries(catMap).sort((a, b) => b[1] - a[1]).slice(0, 3)
+    // Top 3 도메인
+    const domMap = {}
+    rows.forEach(r => {
+      const dom = r.domain || ''
+      if (!dom) return
+      domMap[dom] = (domMap[dom] || 0) + (r.citations || 0)
+    })
+    const topDoms = Object.entries(domMap).sort((a, b) => b[1] - a[1]).slice(0, 3)
+    const renderList = list => (list.length ? list : []).map(([n, v], i) =>
+      `<tr><td style="font-size:11px;color:#475569;padding:2px 0;font-family:${EM_FONT};">${i + 1}. ${escapeHtml(n)}</td><td align="right" style="font-size:11px;font-weight:700;color:#1A1A1A;padding:2px 0;font-family:${EM_FONT};">${v.toLocaleString()}</td></tr>`
+    ).join('') || `<tr><td style="font-size:11px;color:#94A3B8;padding:2px 0;font-family:${EM_FONT};">${t.noData}</td></tr>`
+    return `<td width="33%" valign="top" style="padding:6px;">
+      <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFFFFF;border:1.5px solid #E8EDF2;border-radius:10px;">
+        <tr><td style="padding:10px 12px;">
+          <p style="margin:0 0 8px;font-size:13px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};">${escapeHtml(prd)}</p>
+          <p style="margin:0 0 4px;font-size:10px;font-weight:700;color:#64748B;font-family:${EM_FONT};text-transform:uppercase;letter-spacing:0.4px;">${t.topCategories}</p>
+          <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom:8px;">${renderList(topCats)}</table>
+          <p style="margin:0 0 4px;font-size:10px;font-weight:700;color:#64748B;font-family:${EM_FONT};text-transform:uppercase;letter-spacing:0.4px;">${t.topDomains}</p>
+          <table border="0" cellpadding="0" cellspacing="0" width="100%">${renderList(topDoms)}</table>
+        </td></tr>
+      </table>
+    </td>`
+  })
+  // 3-column grid
+  const gridRows = []
+  for (let i = 0; i < prdCards.length; i += 3) {
+    const trio = prdCards.slice(i, i + 3)
+    while (trio.length < 3) trio.push('<td width="33%" style="padding:6px;"></td>')
+    gridRows.push(`<tr>${trio.join('')}</tr>`)
+  }
+  return `<tr>
+    <td style="padding-top:12px;border-top:2px solid #E8EDF2;">
+      <table border="0" cellpadding="0" cellspacing="0" width="100%">
+        <tr><td style="font-size:14px;font-weight:700;color:#0F172A;font-family:${EM_FONT};padding:8px 0;">${t.title}</td></tr>
+        <tr><td><table border="0" cellpadding="0" cellspacing="0" width="100%">${gridRows.join('')}</table></td></tr>
+      </table>
+    </td>
+  </tr>`
+}
+
 // ─── Category Cards (Progress Tracker 진척율) ──────────────────────────────
 function categoryCardsHtml(categoryStats, lang, meta) {
   if (!categoryStats || !categoryStats.length) {
@@ -1573,6 +1641,8 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                               </table>
                             </td>
                           </tr>` : ''}
+                          <!-- 제품별 Citation (Top 3 카테고리 + 도메인) -->
+                          ${citationByProductHtml(citationsCnty, meta, lang)}
                         </table>
                       </td>
                     </tr>

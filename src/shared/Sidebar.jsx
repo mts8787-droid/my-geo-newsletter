@@ -1081,6 +1081,8 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
             { key: 'showTotal',     label: 'GEO 지수' },
             { key: 'showProducts',  label: '제품별' },
             { key: 'showCnty',      label: '국가별' },
+            { key: 'showCitations', label: 'Citation' },
+            { key: 'showCitPrd',    label: 'Citation 제품별' },
             { key: 'showDotcom',    label: '닷컴' },
             { key: 'showTodo',      label: 'Action Plan' },
           ].map(({ key, label }) => (
