@@ -172,7 +172,12 @@ export async function callClaudeInsight({ client, systemPrompt, userPrompt, mode
   for (steps = 0; steps <= maxSteps; steps++) {
     const req = { model, max_tokens: maxTokens, system: systemPrompt, messages }
     if (useTools) req.tools = tools
-    const message = await client.messages.create(req)
+    // max_tokens 가 크면 SDK 가 비스트리밍 요청을 거부 (응답 10분+ 추정 시).
+    // streaming → finalMessage() 로 동일한 message 형태 수신.
+    // 테스트 mock 호환: stream 이 없으면 create 로 폴백.
+    const message = typeof client.messages.stream === 'function'
+      ? await client.messages.stream(req).finalMessage()
+      : await client.messages.create(req)
     lastMessage = message
     const usage = message.usage || {}
     inputTokens += usage.input_tokens || 0
