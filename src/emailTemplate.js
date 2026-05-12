@@ -559,89 +559,101 @@ function productCardV3Html(p, lang = 'ko', opts = {}) {
 }
 
 // ─── BU 섹션 ──────────────────────────────────────────────────────────────────
-// ─── 카드 범례 (HS 마지막 빈 칸 — V3 카드 구조 / 회색 보더 / 막대 7개+설명 3슬롯) ──
+// ─── 카드 범례 (HS 마지막 빈 칸 — V3 카드 구조 / 회색 톤 / 값 아래에 라벨) ──
 function productCardLegendHtml(lang = 'ko') {
   const t = lang === 'en' ? {
     name: 'Sample',
-    annotName: '← Category name',
-    annotScore: '← LG Visibility (Total)',
-    annotMom: '← MoM change',
-    annotRatio: '← vs Top-1 competitor',
-    annotBadge: '← Status',
+    lblName: 'Category',
+    lblScore: 'LG Visibility',
+    lblMom: 'MoM change',
+    lblRatio: 'vs Top-1',
+    lblBadge: 'Status',
     legendTitle: 'Country bars',
-    legendBar: '■ Bar height = LG score',
-    legendCnty: 'XX = Country code',
-    legendRatio: 'XX% = vs comp ratio',
+    legendBar: '■ Bar = LG score',
+    legendCnty: 'XX = Country',
+    legendRatio: 'XX% = vs comp',
   } : {
     name: '예시',
-    annotName: '← 카테고리명',
-    annotScore: '← 전체 LG Visibility',
-    annotMom: '← 전월대비 증감',
-    annotRatio: '← 1위 경쟁사 대비',
-    annotBadge: '← 신호등',
+    lblName: '카테고리명',
+    lblScore: '전체 LG Visibility',
+    lblMom: '전월대비',
+    lblRatio: '1위 경쟁사 대비',
+    lblBadge: '신호등',
     legendTitle: '국가별 막대',
-    legendBar: '■ 막대 높이 = LG 점수',
+    legendBar: '■ 막대 = LG 점수',
     legendCnty: 'XX = 국가 코드',
     legendRatio: 'XX% = 경쟁비',
   }
-  // 예시 수치 — Lead 상태(녹색) 기준
-  const exScore = 42.5
-  const exMomVal = 1.2
-  const exRatio = 105
-  // V3 카드와 동일 패딩/폰트 — 색상은 회색 보더 (Status 가 아닌 안내용)
+  // 모든 색상 회색 톤 (안내 카드 — Lead/Behind/Critical 색 제거)
   const grayBorder = '#CBD5E1'
-  const badge = { bg: '#ECFDF5', border: '#A7F3D0', color: '#15803D', label: 'Lead' } // 배지 내부는 V3 그대로
-  const ratioColor = '#15803D'
-  const momColor = '#16A34A'
-  // 9px 회색 주석 — 카드 색상에는 영향 없음
-  const anno = (txt) => `<span style="font-size:9px;color:#94A3B8;font-family:${EM_FONT};font-weight:400;letter-spacing:0;">&nbsp;${escapeHtml(txt)}</span>`
-  // 막대 7개 — V3 색상 (Lead/Behind/Critical 모두 노출) + 막대 높이 축소
+  const grayMid    = '#94A3B8'
+  const grayDark   = '#64748B'
+  const grayBarBg  = '#94A3B8'
+  const badge = { bg: '#F1F5F9', border: '#CBD5E1', color: '#64748B', label: 'Status' }
+  // 라벨 헬퍼 — 값 바로 아래 한 줄
+  const lbl = (txt) => `<div style="font-size:9px;color:${grayMid};font-family:${EM_FONT};font-weight:400;line-height:1.2;margin-top:1px;">${escapeHtml(txt)}</div>`
+  // 막대 7개 — 모두 회색 (V3 의 28px 높이 그대로 유지 → 다른 카드와 길이 일치)
   const exCntys = [
-    { code: 'US', score: 48, ratio: 115, status: 'lead' },
-    { code: 'CA', score: 44, ratio: 108, status: 'lead' },
-    { code: 'UK', score: 40, ratio: 95,  status: 'behind' },
-    { code: 'DE', score: 32, ratio: 75,  status: 'critical' },
-    { code: 'BR', score: 45, ratio: 110, status: 'lead' },
-    { code: 'IN', score: 38, ratio: 88,  status: 'behind' },
-    { code: 'AU', score: 35, ratio: 82,  status: 'behind' },
+    { code: 'US', score: 48, ratio: 115 },
+    { code: 'CA', score: 44, ratio: 108 },
+    { code: 'UK', score: 40, ratio: 95 },
+    { code: 'DE', score: 32, ratio: 75 },
+    { code: 'BR', score: 45, ratio: 110 },
+    { code: 'IN', score: 38, ratio: 88 },
+    { code: 'AU', score: 35, ratio: 82 },
   ]
-  const BAR_H = 20 // V3 의 28 보다 축소 — 상단에 설명 행 들어갈 여지
+  const BAR_H = 28 // V3 와 동일 — 카드 높이 일치
   const maxEx = 50
   const cntyBars = exCntys.map(c => {
-    const barColor = c.status === 'lead' ? '#15803D' : c.status === 'behind' ? '#E8910C' : '#BE123C'
     const h = Math.max(3, Math.round(c.score / maxEx * BAR_H))
     const spacer = BAR_H - h
     return `<td style="vertical-align:bottom;text-align:center;padding:0 1px;width:10%;">
       <table border="0" cellpadding="0" cellspacing="0" align="center" style="width:100%;">
         ${spacer > 0 ? `<tr><td height="${spacer}" style="font-size:0;">&nbsp;</td></tr>` : ''}
-        <tr><td height="${h}" style="font-size:0;"><table border="0" cellpadding="0" cellspacing="0" align="center"><tr><td width="14" height="${h}" style="background:${barColor};border-radius:2px 2px 0 0;font-size:0;">&nbsp;</td></tr></table></td></tr>
-        <tr><td style="font-size:9px;font-weight:700;color:${barColor};font-family:${EM_FONT};text-align:center;padding-top:1px;">${c.score}</td></tr>
-        <tr><td style="font-size:8px;font-weight:700;color:${barColor};font-family:${EM_FONT};text-align:center;">${c.code}</td></tr>
-        <tr><td style="font-size:9px;color:#94A3B8;font-family:${EM_FONT};text-align:center;">${c.ratio}%</td></tr>
+        <tr><td height="${h}" style="font-size:0;"><table border="0" cellpadding="0" cellspacing="0" align="center"><tr><td width="16" height="${h}" style="background:${grayBarBg};border-radius:2px 2px 0 0;font-size:0;">&nbsp;</td></tr></table></td></tr>
+        <tr><td style="font-size:10px;font-weight:700;color:${grayDark};font-family:${EM_FONT};text-align:center;padding-top:1px;">${c.score}</td></tr>
+        <tr><td style="font-size:8px;font-weight:700;color:${grayDark};font-family:${EM_FONT};text-align:center;">${c.code}</td></tr>
+        <tr><td style="font-size:10px;color:${grayMid};font-family:${EM_FONT};text-align:center;">${c.ratio}%</td></tr>
       </table>
     </td>`
   }).join('')
-  // 좌측 3슬롯 자리 (30% 폭) — '국가별 막대' 설명 박스
+  // 좌측 3슬롯 (30%) — 막대 영역 바로 옆 설명
   const explainBlock = `<td colspan="3" style="vertical-align:top;padding:0 6px 0 2px;width:30%;">
-    <div style="font-size:10px;font-weight:700;color:#475569;font-family:${EM_FONT};margin-bottom:3px;line-height:1.3;">${escapeHtml(t.legendTitle)}</div>
-    <div style="font-size:9px;color:#94A3B8;font-family:${EM_FONT};line-height:1.5;">
+    <div style="font-size:10px;font-weight:700;color:${grayDark};font-family:${EM_FONT};margin-bottom:3px;line-height:1.3;">${escapeHtml(t.legendTitle)}</div>
+    <div style="font-size:9px;color:${grayMid};font-family:${EM_FONT};line-height:1.5;">
       <div>${escapeHtml(t.legendBar)}</div>
       <div>${escapeHtml(t.legendCnty)}</div>
       <div>${escapeHtml(t.legendRatio)}</div>
     </div>
   </td>`
-  // V3 카드 구조 그대로 — 헤더 영역 위치/패딩/폰트 동일, 보더만 회색
+  // 헤더: 4-셀 테이블 — 각 셀에 [값 + 바로 아래 라벨] (V3 위치와 일치)
+  // padding 5px 6px 3px 동일 / 전체 폰트 사이즈도 V3 그대로 (라벨만 9px 회색 추가)
   return `<td width="33%" style="padding:3px;vertical-align:top;">
     <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border:2px solid ${grayBorder};border-radius:8px;background:#FFFFFF;font-family:${EM_FONT};">
       <tr>
-        <td style="padding:5px 6px 3px;white-space:nowrap;overflow:hidden;">
-          <span style="font-size:14px;font-weight:900;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-0.5px;">${escapeHtml(t.name)}</span>${anno(t.annotName)}
-          <span style="font-size:18px;font-weight:900;color:#1A1A1A;font-family:${EM_FONT};">${exScore}<span style="font-size:11px;color:#94A3B8;">%</span></span>${anno(t.annotScore)}
-          &nbsp;<span style="font-size:12px;font-weight:700;color:${momColor};font-family:${EM_FONT};">▲${exMomVal}%p</span>${anno(t.annotMom)}
-          <span style="float:right;white-space:nowrap;">
-            <span style="font-size:13px;font-weight:700;color:${ratioColor};font-family:${EM_FONT};">SS ${exRatio}%</span>&nbsp;<span style="display:inline-block;background:${badge.bg};color:${badge.color};border:1px solid ${badge.border};border-radius:5px;padding:0px 4px;font-size:10px;font-weight:700;line-height:15px;font-family:${EM_FONT};vertical-align:middle;">${badge.label}</span>
-            <div style="margin-top:1px;text-align:right;">${anno(t.annotRatio + ' / ' + t.annotBadge)}</div>
-          </span>
+        <td style="padding:5px 6px 3px;">
+          <table border="0" cellpadding="0" cellspacing="0" width="100%">
+            <tr>
+              <td valign="top" style="padding:0 4px 0 0;">
+                <div style="font-size:14px;font-weight:900;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-0.5px;line-height:1.2;">${escapeHtml(t.name)}</div>
+                ${lbl(t.lblName)}
+              </td>
+              <td valign="top" style="padding:0 4px;">
+                <div style="font-size:18px;font-weight:900;color:#1A1A1A;font-family:${EM_FONT};line-height:1.1;">42.5<span style="font-size:11px;color:${grayMid};">%</span></div>
+                ${lbl(t.lblScore)}
+              </td>
+              <td valign="top" style="padding:0 4px;">
+                <div style="font-size:12px;font-weight:700;color:${grayDark};font-family:${EM_FONT};line-height:1.2;">▲1.2%p</div>
+                ${lbl(t.lblMom)}
+              </td>
+              <td valign="top" align="right" style="padding:0;white-space:nowrap;">
+                <div style="line-height:1.2;">
+                  <span style="font-size:13px;font-weight:700;color:${grayDark};font-family:${EM_FONT};">SS 105%</span>&nbsp;<span style="display:inline-block;background:${badge.bg};color:${badge.color};border:1px solid ${badge.border};border-radius:5px;padding:0px 4px;font-size:10px;font-weight:700;line-height:15px;font-family:${EM_FONT};vertical-align:middle;">${escapeHtml(badge.label)}</span>
+                </div>
+                ${lbl(t.lblRatio + ' / ' + t.lblBadge)}
+              </td>
+            </tr>
+          </table>
         </td>
       </tr>
       <tr>
