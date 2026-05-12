@@ -559,40 +559,87 @@ function productCardV3Html(p, lang = 'ko', opts = {}) {
 }
 
 // ─── BU 섹션 ──────────────────────────────────────────────────────────────────
-// ─── 카드 범례 (HS 마지막 빈 칸에 삽입 — 각 수치 의미 설명) ─────────────
+// ─── 카드 범례 (HS 마지막 빈 칸 — V3 카드 디자인 그대로 + 인라인 주석 + 예시 수치) ──
 function productCardLegendHtml(lang = 'ko') {
   const t = lang === 'en' ? {
-    title: 'Card Guide',
-    items: [
-      ['Product', 'Category name'],
-      ['XX.X%', 'LG Visibility (Total)'],
-      ['▲±X.X%p', 'MoM change'],
-      ['SS XX%', 'LG vs Top-1 competitor'],
-      ['Status', 'Lead / Behind / Critical'],
-      ['Bars', 'Visibility by country'],
-    ],
+    name: 'Sample',
+    annotName: '← Category',
+    annotScore: '← LG Visibility',
+    annotMom: '← MoM change',
+    annotRatio: '← vs Top-1 competitor',
+    annotBadge: '← Status badge',
+    annotBars: '← Visibility by country (LG score / country / vs competitor ratio)',
   } : {
-    title: '카드 설명',
-    items: [
-      ['제품명', '카테고리명'],
-      ['XX.X%', '전체 LG Visibility'],
-      ['▲±X.X%p', '전월대비 증감'],
-      ['SS XX%', '1위 경쟁사 대비 비율'],
-      ['신호등', 'Lead / Behind / Critical'],
-      ['하단 막대', '국가별 Visibility'],
-    ],
+    name: '예시',
+    annotName: '← 카테고리명',
+    annotScore: '← 전체 LG Visibility',
+    annotMom: '← 전월대비 증감',
+    annotRatio: '← 1위 경쟁사 대비 비율',
+    annotBadge: '← 신호등',
+    annotBars: '← 국가별 (LG 점수 / 국가코드 / 경쟁비)',
   }
-  const itemsHtml = t.items.map(([label, desc]) => `
-    <tr>
-      <td style="font-size:10px;font-weight:700;color:#475569;font-family:${EM_FONT};padding:2px 6px 2px 0;white-space:nowrap;vertical-align:top;line-height:1.4;">${escapeHtml(label)}</td>
-      <td style="font-size:10px;color:#94A3B8;font-family:${EM_FONT};padding:2px 0;line-height:1.4;vertical-align:top;">${escapeHtml(desc)}</td>
-    </tr>`).join('')
+  // 예시 수치 — Lead 상태(녹색) 기준
+  const exScore = 42.5
+  const exMomVal = +1.2
+  const exRatio = 105
+  // V3 카드와 동일한 색상
+  const badge = { bg: '#ECFDF5', border: '#A7F3D0', color: '#15803D', label: 'Lead' }
+  const ratioColor = '#15803D'
+  const momColor = '#16A34A'
+  // 주석 헬퍼 — 회색 작은 글씨, 카드 색상 영향 없음
+  const anno = (txt) => `<span style="font-size:9px;color:#94A3B8;font-family:${EM_FONT};font-weight:400;letter-spacing:0;">&nbsp;${escapeHtml(txt)}</span>`
+  // 예시 국가별 막대 (5개) — V3 색상 그대로 (Lead=green, Behind=orange, Critical=red)
+  const exCntys = [
+    { code: 'US', score: 48, ratio: 115, status: 'lead' },
+    { code: 'UK', score: 40, ratio: 95,  status: 'behind' },
+    { code: 'DE', score: 32, ratio: 75,  status: 'critical' },
+    { code: 'BR', score: 45, ratio: 108, status: 'lead' },
+    { code: 'IN', score: 38, ratio: 88,  status: 'behind' },
+  ]
+  const BAR_H = 28
+  const maxEx = 50
+  const cntyBars = exCntys.map(c => {
+    const barColor = c.status === 'lead' ? '#15803D' : c.status === 'behind' ? '#E8910C' : '#BE123C'
+    const h = Math.max(3, Math.round(c.score / maxEx * BAR_H))
+    const spacer = BAR_H - h
+    return `<td style="vertical-align:bottom;text-align:center;padding:0 1px;width:20%;">
+      <table border="0" cellpadding="0" cellspacing="0" align="center" style="width:100%;">
+        ${spacer > 0 ? `<tr><td height="${spacer}" style="font-size:0;">&nbsp;</td></tr>` : ''}
+        <tr><td height="${h}" style="font-size:0;"><table border="0" cellpadding="0" cellspacing="0" align="center"><tr><td width="16" height="${h}" style="background:${barColor};border-radius:2px 2px 0 0;font-size:0;">&nbsp;</td></tr></table></td></tr>
+        <tr><td style="font-size:10px;font-weight:700;color:${barColor};font-family:${EM_FONT};text-align:center;padding-top:1px;">${c.score}</td></tr>
+        <tr><td style="font-size:8px;font-weight:700;color:${barColor};font-family:${EM_FONT};text-align:center;">${c.code}</td></tr>
+        <tr><td style="font-size:10px;color:#94A3B8;font-family:${EM_FONT};text-align:center;">${c.ratio}%</td></tr>
+      </table>
+    </td>`
+  }).join('')
+  // V3 카드 구조 그대로 사용 (border / padding / 색상 모두 동일), 각 값 옆에 주석만 인라인 추가
   return `<td width="33%" style="padding:3px;vertical-align:top;">
-    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border:1.5px dashed #CBD5E1;border-radius:8px;background:#F8FAFC;font-family:${EM_FONT};">
-      <tr><td style="padding:8px 10px;">
-        <p style="margin:0 0 6px;font-size:11px;font-weight:700;color:#64748B;font-family:${EM_FONT};text-transform:uppercase;letter-spacing:0.5px;">${escapeHtml(t.title)}</p>
-        <table border="0" cellpadding="0" cellspacing="0" width="100%">${itemsHtml}</table>
-      </td></tr>
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border:2px solid ${badge.border};border-radius:8px;background:#FFFFFF;font-family:${EM_FONT};">
+      <tr>
+        <td style="padding:5px 6px 3px;">
+          <!-- 1줄: 제품명 + 점수 + MoM, 우측: SS ratio + Badge -->
+          <div style="white-space:nowrap;overflow:hidden;">
+            <span style="font-size:14px;font-weight:900;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-0.5px;">${escapeHtml(t.name)}</span>${anno(t.annotName)}
+            <span style="float:right;white-space:nowrap;">
+              <span style="font-size:13px;font-weight:700;color:${ratioColor};font-family:${EM_FONT};">SS ${exRatio}%</span>&nbsp;<span style="display:inline-block;background:${badge.bg};color:${badge.color};border:1px solid ${badge.border};border-radius:5px;padding:0px 4px;font-size:10px;font-weight:700;line-height:15px;font-family:${EM_FONT};vertical-align:middle;">${badge.label}</span>
+            </span>
+          </div>
+          <div style="margin-top:2px;text-align:right;">${anno(t.annotRatio + ' / ' + t.annotBadge)}</div>
+          <div style="margin-top:6px;white-space:nowrap;overflow:hidden;">
+            <span style="font-size:18px;font-weight:900;color:#1A1A1A;font-family:${EM_FONT};">${exScore}<span style="font-size:11px;color:#94A3B8;">%</span></span>
+            &nbsp;<span style="font-size:12px;font-weight:700;color:${momColor};font-family:${EM_FONT};">▲${exMomVal}%p</span>
+          </div>
+          <div style="margin-top:1px;">${anno(t.annotScore + ' / ' + t.annotMom)}</div>
+        </td>
+      </tr>
+      <tr>
+        <td style="padding:2px 4px 6px;">
+          <table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;">
+            <tr>${cntyBars}</tr>
+          </table>
+          <div style="margin-top:3px;">${anno(t.annotBars)}</div>
+        </td>
+      </tr>
     </table>
   </td>`
 }
