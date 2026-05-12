@@ -182,6 +182,17 @@ function fmt(n) {
   return Number(n).toLocaleString('en-US')
 }
 
+// 모든 수치(건수)는 만 단위로 표기 — '00만' (정수) 또는 '0.X만' (1자리 소수)
+function fmtMan(n) {
+  if (n == null || isNaN(n)) return '—'
+  const v = Number(n)
+  if (v === 0) return '0'
+  const sign = v < 0 ? '-' : ''
+  const man = Math.abs(v) / 10000
+  if (man >= 1) return sign + Math.round(man).toLocaleString('en-US') + '만'
+  return sign + man.toFixed(1) + '만'
+}
+
 function mdBold(text) {
   return escapeHtml(text || '')
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
@@ -851,7 +862,7 @@ function citationCntyCountryHtml(cntyCode, rows, lang) {
       <table border="0" cellpadding="0" cellspacing="0" align="center" style="margin:0 auto;table-layout:fixed;width:100%;">
         ${spacerH > 0 ? `<tr><td height="${spacerH}" style="font-size:0;line-height:0;">&nbsp;</td></tr>` : ''}
         <tr><td height="${barH}" style="font-size:0;line-height:0;"><table border="0" cellpadding="0" cellspacing="0" align="center"><tr><td width="22" height="${barH}" style="background:${CIT_GREEN};border-radius:3px 3px 0 0;font-size:0;line-height:0;">&nbsp;</td></tr></table></td></tr>
-        <tr><td style="font-size:13px;font-weight:800;color:${CIT_GREEN};font-family:${EM_FONT};padding-top:3px;white-space:nowrap;">${fmtN(r.citations)}</td></tr>
+        <tr><td style="font-size:13px;font-weight:800;color:${CIT_GREEN};font-family:${EM_FONT};padding-top:3px;white-space:nowrap;">${fmtMan(r.citations)}</td></tr>
         <tr><td style="font-size:13px;color:#1A1A1A;font-family:${EM_FONT};padding-top:2px;word-break:break-all;font-weight:600;">${domainShort}</td></tr>
         <tr><td style="font-size:13px;color:#94A3B8;font-family:${EM_FONT};padding-top:1px;word-break:break-all;">${r.type}</td></tr>
       </table>
@@ -915,7 +926,7 @@ function citationCntyTableHtml(citationsCnty, lang) {
       if (!r) return `<td style="padding:3px 1px;text-align:center;font-size:10px;color:#CBD5E1;font-family:${EM_FONT};border-bottom:1px solid #F1F5F9;">—</td>`
       const name = stripDomain(r.domain)
       const bold = isBold(name)
-      return `<td style="padding:3px 1px;text-align:center;font-size:12px;color:#1A1A1A;font-family:${EM_FONT};border-bottom:1px solid #F1F5F9;white-space:nowrap;">${bold ? '<b>' : ''}${escapeHtml(name)}${bold ? '</b>' : ''}<br/><span style="font-size:10px;color:#94A3B8;font-weight:700;">${fmtK(r.citations)}</span></td>`
+      return `<td style="padding:3px 1px;text-align:center;font-size:12px;color:#1A1A1A;font-family:${EM_FONT};border-bottom:1px solid #F1F5F9;white-space:nowrap;">${bold ? '<b>' : ''}${escapeHtml(name)}${bold ? '</b>' : ''}<br/><span style="font-size:10px;color:#94A3B8;font-weight:700;">${fmtMan(r.citations)}</span></td>`
     }).join('')
     return `<tr><td style="padding:5px 8px;font-size:12px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};border-bottom:1px solid #F1F5F9;white-space:nowrap;">${escapeHtml(cntyLabel(cnty, lang))}</td>${cells}</tr>`
   }).join('')
@@ -949,7 +960,7 @@ function citUnifiedRow(rank, label, score, ratio, maxScore, isLast) {
       <table border="0" cellpadding="0" cellspacing="0" width="100%"><tr>
         <td width="${barPct}%" style="background:${barColor};border-radius:4px;height:16px;font-size:0;">&nbsp;</td>
         <td style="padding-left:6px;white-space:nowrap;vertical-align:middle;">
-          <span style="font-size:12px;font-weight:700;color:${barColor};font-family:${EM_FONT};">${fmt(score)}</span>
+          <span style="font-size:12px;font-weight:700;color:${barColor};font-family:${EM_FONT};">${fmtMan(score)}</span>
           <span style="font-size:11px;color:#94A3B8;font-family:${EM_FONT};">&nbsp;(${ratioStr})</span>
         </td>
       </tr></table>
@@ -992,7 +1003,7 @@ function dotcomSectionHtml(dotcom, meta, lang = 'ko') {
     const spacerL = BAR_MAX - lh, spacerS = BAR_MAX - sh
     const diff = lv - sv
     const gapColor = diff >= 0 ? '#15803D' : '#BE123C'
-    const gapTxt = diff > 0 ? `+${fmtK(diff)}` : diff < 0 ? `-${fmtK(Math.abs(diff))}` : '0'
+    const gapTxt = diff > 0 ? `+${fmtMan(diff)}` : diff < 0 ? `-${fmtMan(Math.abs(diff))}` : '0'
     const isTTL = col === 'TTL'
 
     return `<td style="vertical-align:bottom;text-align:center;padding:0 3px;">
@@ -1001,14 +1012,14 @@ function dotcomSectionHtml(dotcom, meta, lang = 'ko') {
           <table border="0" cellpadding="0" cellspacing="0" align="center"><tr>
             <td style="vertical-align:bottom;text-align:center;padding:0 1px;">
               <table border="0" cellpadding="0" cellspacing="0" align="center">
-                <tr><td style="font-size:13px;font-weight:700;color:${EM_RED};font-family:${EM_FONT};text-align:center;padding-bottom:1px;">${fmtK(lv)}</td></tr>
+                <tr><td style="font-size:13px;font-weight:700;color:${EM_RED};font-family:${EM_FONT};text-align:center;padding-bottom:1px;">${fmtMan(lv)}</td></tr>
                 ${spacerL > 0 ? `<tr><td height="${spacerL}" style="font-size:0;">&nbsp;</td></tr>` : ''}
                 <tr><td height="${lh}" style="font-size:0;"><table border="0" cellpadding="0" cellspacing="0" align="center"><tr><td width="${bw}" height="${lh}" style="background:${EM_RED};border-radius:3px 3px 0 0;font-size:0;">&nbsp;</td></tr></table></td></tr>
               </table>
             </td>
             ${hasSam ? `<td style="vertical-align:bottom;text-align:center;padding:0 1px;">
               <table border="0" cellpadding="0" cellspacing="0" align="center">
-                <tr><td style="font-size:13px;font-weight:600;color:#94A3B8;font-family:${EM_FONT};text-align:center;padding-bottom:1px;">${fmtK(sv)}</td></tr>
+                <tr><td style="font-size:13px;font-weight:600;color:#94A3B8;font-family:${EM_FONT};text-align:center;padding-bottom:1px;">${fmtMan(sv)}</td></tr>
                 ${spacerS > 0 ? `<tr><td height="${spacerS}" style="font-size:0;">&nbsp;</td></tr>` : ''}
                 <tr><td height="${sh}" style="font-size:0;"><table border="0" cellpadding="0" cellspacing="0" align="center"><tr><td width="${bw}" height="${sh}" style="background:#94A3B8;border-radius:3px 3px 0 0;font-size:0;">&nbsp;</td></tr></table></td></tr>
               </table>

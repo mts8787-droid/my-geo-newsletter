@@ -160,23 +160,31 @@ ${summary}
       const code = String(prd).toUpperCase()
       const bu = PRD_BU[code] || 'etc'
       const name = PRD_KR[code] || prd
-      // Top 3 카테고리·도메인 산출
+      // 제품별 분모: 카테고리는 전체 citation 합계, 도메인은 도메인 보유 행 합계
+      const totalForCat = rows.reduce((s, r) => s + (r.citations || 0), 0) || 1
+      const totalForDom = rows.reduce((s, r) => s + (r.domain ? (r.citations || 0) : 0), 0) || 1
+      // Top 3 카테고리·도메인 산출 — 비중(%)으로 표시 (절대 건수 X)
       const catMap = {}; rows.forEach(r => { const c = r.type || '기타'; catMap[c] = (catMap[c] || 0) + (r.citations || 0) })
-      const top3Cat = Object.entries(catMap).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([n, v]) => `${n}(${v}건)`).join(', ')
+      const top3Cat = Object.entries(catMap).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([n, v]) => `${n}(${(v / totalForCat * 100).toFixed(1)}%)`).join(', ')
       const domMap = {}; rows.forEach(r => { if (r.domain) domMap[r.domain] = (domMap[r.domain] || 0) + (r.citations || 0) })
-      const top3Dom = Object.entries(domMap).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([n, v]) => `${n}(${v}건)`).join(', ')
+      const top3Dom = Object.entries(domMap).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([n, v]) => `${n}(${(v / totalForDom * 100).toFixed(1)}%)`).join(', ')
       buGroups[bu].push(`  - ${name}: Top3 카테고리 [${top3Cat}] / Top3 도메인 [${top3Dom}]`)
     })
     const summary = Object.entries(buGroups).filter(([, arr]) => arr.length).map(([bu, arr]) => `[${bu}본부]\n${arr.join('\n')}`).join('\n')
     return `[섹션: 제품별 Citation — 본부별 그룹핑, 각 제품 Top 3 카테고리·도메인]
 이 섹션은 제품별로 Citation 의 강한 카테고리·도메인을 보여줍니다. 본부(MS/HS/ES)별로 묶여있고, 각 제품 카드에 Top 3 카테고리 + Top 3 도메인 막대그래프가 표시됩니다.
 
-본부·제품별 핵심 인용 채널:
+⚠ 중요 — 제품별 측정 프롬프트 수가 상이하므로 절대 건수 비교는 무의미합니다.
+모든 수치는 **비중(%)** 으로만 표시되며, 인사이트도 반드시 **비중 기반**으로 작성하세요.
+
+본부·제품별 핵심 인용 채널 (괄호 안 수치 = 제품 내 비중%):
 ${summary}
 
 [분석 포인트: 본부별 인용 패턴 차이(MS=콘텐츠 중심? / HS=Retail 중심? / ES=전문 채널?), 제품별 강점 카테고리/도메인, 약점 제품의 보완 전략]
 [필수: 모든 본부(MS/HS/ES)를 빠짐없이 언급]
-[필수: 구체적 제품명·도메인명을 인용]`
+[필수: 구체적 제품명·도메인명을 인용]
+[필수: 수치는 반드시 비중(%)으로 표현 — '~건' 등 절대 건수 표현 사용 금지]
+[필수: 제품 간 단순 건수 비교 금지 — 비중·구성·집중도 관점으로만 비교]`
   }
 
   if (type === 'totalInsight') {
