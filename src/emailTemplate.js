@@ -1131,21 +1131,21 @@ function citationByProductHtml(citationsCnty, meta, lang) {
   function barRow(label, displayValue, pctWidth, color) {
     const w = Math.max(2, Math.min(Math.round(pctWidth), 100))
     return `<tr>
-      <td style="font-size:9px;color:#475569;padding:1px 5px 1px 0;font-family:${EM_FONT};white-space:nowrap;max-width:80px;overflow:hidden;text-overflow:ellipsis;line-height:1.2;">${escapeHtml(label)}</td>
-      <td style="padding:1px 0;">
-        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#F1F5F9;border-radius:2px;">
-          <tr><td height="5" style="font-size:0;line-height:0;">
-            <table border="0" cellpadding="0" cellspacing="0" width="${w}%" style="background:${color};border-radius:2px;">
-              <tr><td height="5" style="font-size:0;line-height:0;">&nbsp;</td></tr>
+      <td style="font-size:11px;color:#475569;padding:3px 6px 3px 0;font-family:${EM_FONT};white-space:nowrap;max-width:100px;overflow:hidden;text-overflow:ellipsis;line-height:1.3;">${escapeHtml(label)}</td>
+      <td style="padding:3px 0;">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#F1F5F9;border-radius:3px;">
+          <tr><td height="7" style="font-size:0;line-height:0;">
+            <table border="0" cellpadding="0" cellspacing="0" width="${w}%" style="background:${color};border-radius:3px;">
+              <tr><td height="7" style="font-size:0;line-height:0;">&nbsp;</td></tr>
             </table>
           </td></tr>
         </table>
       </td>
-      <td align="right" style="font-size:9px;font-weight:700;color:#1A1A1A;padding:1px 0 1px 5px;font-family:${EM_FONT};white-space:nowrap;line-height:1.2;">${displayValue}</td>
+      <td align="right" style="font-size:11px;font-weight:700;color:#1A1A1A;padding:3px 0 3px 6px;font-family:${EM_FONT};white-space:nowrap;line-height:1.3;">${displayValue}</td>
     </tr>`
   }
   function emptyRow() {
-    return `<tr><td colspan="3" style="font-size:9px;color:#94A3B8;padding:1px 0;font-family:${EM_FONT};line-height:1.2;">${t.noData}</td></tr>`
+    return `<tr><td colspan="3" style="font-size:11px;color:#94A3B8;padding:3px 0;font-family:${EM_FONT};line-height:1.3;">${t.noData}</td></tr>`
   }
   function prdCardHtml(prd) {
     const rows = prdGroups[prd]
@@ -1180,13 +1180,13 @@ function citationByProductHtml(citationsCnty, meta, lang) {
           return barRow(n, pct.toFixed(1) + '%', pct, BAR_COLORS.dom)
         }).join('')
       : emptyRow()
-    return `<td width="33%" valign="top" style="padding:3px;">
+    return `<td width="33%" valign="top" style="padding:4px;">
       <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFFFFF;border:1.5px solid #E8EDF2;border-radius:8px;">
-        <tr><td style="padding:6px 8px;">
-          <p style="margin:0 0 4px;font-size:11px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};line-height:1.2;">${escapeHtml(prdName(prd))}</p>
-          <p style="margin:0 0 2px;font-size:8px;font-weight:700;color:#64748B;font-family:${EM_FONT};text-transform:uppercase;letter-spacing:0.3px;line-height:1.2;">${t.topCategories}</p>
-          <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom:4px;table-layout:fixed;">${catRows}</table>
-          <p style="margin:0 0 2px;font-size:8px;font-weight:700;color:#64748B;font-family:${EM_FONT};text-transform:uppercase;letter-spacing:0.3px;line-height:1.2;">${t.topDomains}</p>
+        <tr><td style="padding:9px 11px;">
+          <p style="margin:0 0 6px;font-size:13px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};line-height:1.3;">${escapeHtml(prdName(prd))}</p>
+          <p style="margin:0 0 3px;font-size:10px;font-weight:700;color:#64748B;font-family:${EM_FONT};text-transform:uppercase;letter-spacing:0.4px;line-height:1.3;">${t.topCategories}</p>
+          <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom:7px;table-layout:fixed;">${catRows}</table>
+          <p style="margin:0 0 3px;font-size:10px;font-weight:700;color:#64748B;font-family:${EM_FONT};text-transform:uppercase;letter-spacing:0.4px;line-height:1.3;">${t.topDomains}</p>
           <table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;">${domRows}</table>
         </td></tr>
       </table>
