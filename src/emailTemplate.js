@@ -45,24 +45,24 @@ function cntyLabel2Line(c, lang) {
   return CNTY_KR[k] || c
 }
 
-// 제품명 2줄 라벨 (국가별 섹션에서 정렬용)
-const PROD_2LINE_KR = {
-  'TV': 'TV<br/>&nbsp;', '모니터': '모니터<br/>&nbsp;', '오디오': '오디오<br/>&nbsp;',
-  '세탁기': '세탁기<br/>&nbsp;', '냉장고': '냉장고<br/>&nbsp;',
+// 제품명 라벨 — 단일 라인 우선 (긴 이름만 2줄로 자연 wrap)
+const PROD_LABEL_KR = {
+  'TV': 'TV', '모니터': '모니터', '오디오': '오디오',
+  '세탁기': '세탁기', '냉장고': '냉장고',
   '식기세척기': '식기<br/>세척기', '식세기': '식기<br/>세척기',
-  '청소기': '청소기<br/>&nbsp;', 'Cooking': 'Cooking<br/>&nbsp;',
-  'RAC': 'RAC<br/>&nbsp;', 'Aircare': 'Aircare<br/>&nbsp;',
+  '청소기': '청소기', 'Cooking': 'Cooking',
+  'RAC': 'RAC', 'Aircare': 'Aircare',
 }
-const PROD_2LINE_EN = {
-  'TV': 'TV<br/>&nbsp;', '모니터': 'Monitor<br/>&nbsp;', '오디오': 'Audio<br/>&nbsp;',
-  '세탁기': 'Washer<br/>&nbsp;', '냉장고': 'Fridge<br/>&nbsp;',
+const PROD_LABEL_EN = {
+  'TV': 'TV', '모니터': 'Monitor', '오디오': 'Audio',
+  '세탁기': 'Washer', '냉장고': 'Fridge',
   '식기세척기': 'Dish<br/>washer', '식세기': 'Dish<br/>washer',
-  '청소기': 'Vacuum<br/>&nbsp;', 'Cooking': 'Cooking<br/>&nbsp;',
-  'RAC': 'RAC<br/>&nbsp;', 'Aircare': 'Air<br/>care',
+  '청소기': 'Vacuum', 'Cooking': 'Cooking',
+  'RAC': 'RAC', 'Aircare': 'Air<br/>care',
 }
 function prodLabel2Line(name, lang) {
-  const map = lang === 'en' ? PROD_2LINE_EN : PROD_2LINE_KR
-  return map[name] || escapeHtml(String(name || '')) + '<br/>&nbsp;'
+  const map = lang === 'en' ? PROD_LABEL_EN : PROD_LABEL_KR
+  return map[name] || escapeHtml(String(name || ''))
 }
 
 // unlaunchedMap 조회용 코드 매핑 (id → 시트의 ulCode)
@@ -559,6 +559,44 @@ function productCardV3Html(p, lang = 'ko', opts = {}) {
 }
 
 // ─── BU 섹션 ──────────────────────────────────────────────────────────────────
+// ─── 카드 범례 (HS 마지막 빈 칸에 삽입 — 각 수치 의미 설명) ─────────────
+function productCardLegendHtml(lang = 'ko') {
+  const t = lang === 'en' ? {
+    title: 'Card Guide',
+    items: [
+      ['Product', 'Category name'],
+      ['XX.X%', 'LG Visibility (Total)'],
+      ['▲±X.X%p', 'MoM change'],
+      ['SS XX%', 'LG vs Top-1 competitor'],
+      ['Status', 'Lead / Behind / Critical'],
+      ['Bars', 'Visibility by country'],
+    ],
+  } : {
+    title: '카드 설명',
+    items: [
+      ['제품명', '카테고리명'],
+      ['XX.X%', '전체 LG Visibility'],
+      ['▲±X.X%p', '전월대비 증감'],
+      ['SS XX%', '1위 경쟁사 대비 비율'],
+      ['신호등', 'Lead / Behind / Critical'],
+      ['하단 막대', '국가별 Visibility'],
+    ],
+  }
+  const itemsHtml = t.items.map(([label, desc]) => `
+    <tr>
+      <td style="font-size:10px;font-weight:700;color:#475569;font-family:${EM_FONT};padding:2px 6px 2px 0;white-space:nowrap;vertical-align:top;line-height:1.4;">${escapeHtml(label)}</td>
+      <td style="font-size:10px;color:#94A3B8;font-family:${EM_FONT};padding:2px 0;line-height:1.4;vertical-align:top;">${escapeHtml(desc)}</td>
+    </tr>`).join('')
+  return `<td width="33%" style="padding:3px;vertical-align:top;">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border:1.5px dashed #CBD5E1;border-radius:8px;background:#F8FAFC;font-family:${EM_FONT};">
+      <tr><td style="padding:8px 10px;">
+        <p style="margin:0 0 6px;font-size:11px;font-weight:700;color:#64748B;font-family:${EM_FONT};text-transform:uppercase;letter-spacing:0.5px;">${escapeHtml(t.title)}</p>
+        <table border="0" cellpadding="0" cellspacing="0" width="100%">${itemsHtml}</table>
+      </td></tr>
+    </table>
+  </td>`
+}
+
 function buSectionHtml(buKey, buProducts, globalMax, globalMin, lang = 'ko', opts = {}) {
   const t = T[lang] || T.ko
   const buTotal = (opts.buTotals || {})[buKey]
@@ -572,12 +610,21 @@ function buSectionHtml(buKey, buProducts, globalMax, globalMin, lang = 'ko', opt
   const cardVersion = opts.productCardVersion || 'v1'
   const cardFn = cardVersion === 'v3' ? productCardV3Html
     : cardVersion === 'v2' ? productCardV2Html : null
+
+  // HS BU 마지막 빈 칸에 카드 범례 (각 수치 의미 설명) 삽입
+  if (buKey === 'HS' && rows.length > 0) {
+    const lastRow = rows[rows.length - 1]
+    const emptyIdx = lastRow.findIndex(p => p === null)
+    if (emptyIdx >= 0) lastRow[emptyIdx] = '__LEGEND__'
+  }
+
   const rowsHtml = rows.map(row => `
     <tr>
-      ${row.map(p => p
-        ? (cardFn ? cardFn(p, lang, opts) : productCardHtml(p, globalMax, globalMin, lang, opts))
-        : '<td width="33%" style="padding:5px;"></td>'
-      ).join('')}
+      ${row.map(p => {
+        if (p === '__LEGEND__') return productCardLegendHtml(lang)
+        if (p === null) return '<td width="33%" style="padding:5px;"></td>'
+        return cardFn ? cardFn(p, lang, opts) : productCardHtml(p, globalMax, globalMin, lang, opts)
+      }).join('')}
     </tr>`).join('')
 
   // BU 경쟁비 계산
@@ -751,8 +798,8 @@ function countryCardHtml(cntyCode, rows, lang, countryTotals, unlaunchedMap = {}
         ${spacerH > 0 ? `<tr><td height="${spacerH}" style="font-size:0;line-height:0;">&nbsp;</td></tr>` : ''}
         <tr><td height="${barH}" style="font-size:0;line-height:0;"><table border="0" cellpadding="0" cellspacing="0" align="center"><tr><td width="18" height="${barH}" style="background:${barColor};border-radius:3px 3px 0 0;font-size:0;">&nbsp;</td></tr></table></td></tr>
         <tr><td height="16" style="height:16px;font-size:11px;font-weight:800;color:${labelColor};font-family:${EM_FONT};padding-top:2px;white-space:nowrap;line-height:14px;">${r.score.toFixed(1)}</td></tr>
-        <tr><td height="26" style="height:26px;font-size:10px;font-weight:700;color:${labelColor};font-family:${EM_FONT};padding-top:1px;line-height:11px;letter-spacing:-0.3px;vertical-align:top;">${prodLabel2Line(r.product, lang)}</td></tr>
-        <tr><td height="28" style="height:28px;font-size:10px;color:#94A3B8;font-family:${EM_FONT};padding-top:1px;white-space:nowrap;line-height:13px;vertical-align:top;">${ssName(r.compName)}<br/>${ratio}%</td></tr>
+        <tr><td style="font-size:10px;font-weight:700;color:${labelColor};font-family:${EM_FONT};padding:1px 0 0;line-height:11px;letter-spacing:-0.3px;vertical-align:top;">${prodLabel2Line(r.product, lang)}</td></tr>
+        <tr><td style="font-size:10px;color:#94A3B8;font-family:${EM_FONT};padding:2px 0 0;white-space:nowrap;line-height:13px;vertical-align:top;">${ssName(r.compName)}<br/>${ratio}%</td></tr>
       </table>
     </td>`
   }).join('')
