@@ -182,13 +182,27 @@ function fmt(n) {
   return Number(n).toLocaleString('en-US')
 }
 
-// 모든 수치(건수)는 만 단위로 표기 — '00만' (정수) 또는 '0.X만' (1자리 소수)
-function fmtMan(n) {
+// 수치(건수) 표기 — 언어별:
+//   ko: '00만' 또는 '0.X만'   en: '00K' (천) / '0.XK' (천) / '0.XM' (백만 이상)
+function fmtMan(n, lang) {
   if (n == null || isNaN(n)) return '—'
   const v = Number(n)
   if (v === 0) return '0'
   const sign = v < 0 ? '-' : ''
-  const man = Math.abs(v) / 10000
+  const abs = Math.abs(v)
+  if (lang === 'en') {
+    if (abs >= 1_000_000) {
+      const m = abs / 1_000_000
+      return sign + (m >= 10 ? Math.round(m) : m.toFixed(1)) + 'M'
+    }
+    if (abs >= 1_000) {
+      const k = abs / 1_000
+      return sign + (k >= 10 ? Math.round(k) : k.toFixed(1)) + 'K'
+    }
+    return sign + abs.toString()
+  }
+  // ko (default)
+  const man = abs / 10000
   if (man >= 1) return sign + Math.round(man).toLocaleString('en-US') + '만'
   return sign + man.toFixed(1) + '만'
 }
@@ -818,7 +832,7 @@ function stripDomain(domain) {
 }
 
 // ─── 도메인별 Citation 국가 서브섹션 (가로 바) ─────────────────────────────────
-function citationDomainCntyRowsHtml(cntyRows, domTopN) {
+function citationDomainCntyRowsHtml(cntyRows, domTopN, lang) {
   if (!cntyRows.length) return ''
   const maxScore = Math.max(...cntyRows.map(r => r.citations), 1)
   const totalCit = cntyRows.reduce((s, r) => s + r.citations, 0)
@@ -826,7 +840,7 @@ function citationDomainCntyRowsHtml(cntyRows, domTopN) {
 
   return cntyRows.slice(0, domTopN).map((c, i, arr) => {
     const ratio = totalCit > 0 ? +((c.citations / totalCit) * 100).toFixed(1) : 0
-    return citUnifiedRow(c.rank, stripDomain(c.domain), c.citations, ratio, maxScore, i === arr.length - 1)
+    return citUnifiedRow(c.rank, stripDomain(c.domain), c.citations, ratio, maxScore, i === arr.length - 1, lang)
   }).join('')
 }
 
@@ -841,7 +855,7 @@ function citationDomainSectionHtml(citationsCnty, meta, lang, citations) {
   if (!ttlRows.length) return { html: '', css: '' }
 
   {
-    const ttlHtml = citationDomainCntyRowsHtml(ttlRows, domTopN)
+    const ttlHtml = citationDomainCntyRowsHtml(ttlRows, domTopN, lang)
     return { css: '', html: true, innerHtml: ttlHtml }
   }
 }
@@ -862,7 +876,7 @@ function citationCntyCountryHtml(cntyCode, rows, lang) {
       <table border="0" cellpadding="0" cellspacing="0" align="center" style="margin:0 auto;table-layout:fixed;width:100%;">
         ${spacerH > 0 ? `<tr><td height="${spacerH}" style="font-size:0;line-height:0;">&nbsp;</td></tr>` : ''}
         <tr><td height="${barH}" style="font-size:0;line-height:0;"><table border="0" cellpadding="0" cellspacing="0" align="center"><tr><td width="22" height="${barH}" style="background:${CIT_GREEN};border-radius:3px 3px 0 0;font-size:0;line-height:0;">&nbsp;</td></tr></table></td></tr>
-        <tr><td style="font-size:13px;font-weight:800;color:${CIT_GREEN};font-family:${EM_FONT};padding-top:3px;white-space:nowrap;">${fmtMan(r.citations)}</td></tr>
+        <tr><td style="font-size:13px;font-weight:800;color:${CIT_GREEN};font-family:${EM_FONT};padding-top:3px;white-space:nowrap;">${fmtMan(r.citations, lang)}</td></tr>
         <tr><td style="font-size:13px;color:#1A1A1A;font-family:${EM_FONT};padding-top:2px;word-break:break-all;font-weight:600;">${domainShort}</td></tr>
         <tr><td style="font-size:13px;color:#94A3B8;font-family:${EM_FONT};padding-top:1px;word-break:break-all;">${r.type}</td></tr>
       </table>
@@ -926,7 +940,7 @@ function citationCntyTableHtml(citationsCnty, lang) {
       if (!r) return `<td style="padding:3px 1px;text-align:center;font-size:10px;color:#CBD5E1;font-family:${EM_FONT};border-bottom:1px solid #F1F5F9;">—</td>`
       const name = stripDomain(r.domain)
       const bold = isBold(name)
-      return `<td style="padding:3px 1px;text-align:center;font-size:12px;color:#1A1A1A;font-family:${EM_FONT};border-bottom:1px solid #F1F5F9;white-space:nowrap;">${bold ? '<b>' : ''}${escapeHtml(name)}${bold ? '</b>' : ''}<br/><span style="font-size:10px;color:#94A3B8;font-weight:700;">${fmtMan(r.citations)}</span></td>`
+      return `<td style="padding:3px 1px;text-align:center;font-size:12px;color:#1A1A1A;font-family:${EM_FONT};border-bottom:1px solid #F1F5F9;white-space:nowrap;">${bold ? '<b>' : ''}${escapeHtml(name)}${bold ? '</b>' : ''}<br/><span style="font-size:10px;color:#94A3B8;font-weight:700;">${fmtMan(r.citations, lang)}</span></td>`
     }).join('')
     return `<tr><td style="padding:5px 8px;font-size:12px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};border-bottom:1px solid #F1F5F9;white-space:nowrap;">${escapeHtml(cntyLabel(cnty, lang))}</td>${cells}</tr>`
   }).join('')
@@ -943,7 +957,7 @@ function citationCntyTableHtml(citationsCnty, lang) {
 }
 
 // ─── Citation 통합 행 (카테고리 + 도메인 공용) ────────────────────────────────
-function citUnifiedRow(rank, label, score, ratio, maxScore, isLast) {
+function citUnifiedRow(rank, label, score, ratio, maxScore, isLast, lang) {
   const isTop3 = rank <= 3
   const rankBg = isTop3 ? CIT_GREEN : '#F1F5F9'
   const rankColor = isTop3 ? '#FFFFFF' : '#94A3B8'
@@ -960,7 +974,7 @@ function citUnifiedRow(rank, label, score, ratio, maxScore, isLast) {
       <table border="0" cellpadding="0" cellspacing="0" width="100%"><tr>
         <td width="${barPct}%" style="background:${barColor};border-radius:4px;height:16px;font-size:0;">&nbsp;</td>
         <td style="padding-left:6px;white-space:nowrap;vertical-align:middle;">
-          <span style="font-size:12px;font-weight:700;color:${barColor};font-family:${EM_FONT};">${fmtMan(score)}</span>
+          <span style="font-size:12px;font-weight:700;color:${barColor};font-family:${EM_FONT};">${fmtMan(score, lang)}</span>
           <span style="font-size:11px;color:#94A3B8;font-family:${EM_FONT};">&nbsp;(${ratioStr})</span>
         </td>
       </tr></table>
@@ -968,8 +982,8 @@ function citUnifiedRow(rank, label, score, ratio, maxScore, isLast) {
   </tr>`
 }
 
-function citationRowHtml(c, isLast, maxScore) {
-  return citUnifiedRow(c.rank, c.source, c.score, c.ratio || 0, maxScore, isLast)
+function citationRowHtml(c, isLast, maxScore, lang) {
+  return citUnifiedRow(c.rank, c.source, c.score, c.ratio || 0, maxScore, isLast, lang)
 }
 
 // ─── 닷컴 Citation 비교 차트 ──────────────────────────────────────────────────
@@ -1003,7 +1017,7 @@ function dotcomSectionHtml(dotcom, meta, lang = 'ko') {
     const spacerL = BAR_MAX - lh, spacerS = BAR_MAX - sh
     const diff = lv - sv
     const gapColor = diff >= 0 ? '#15803D' : '#BE123C'
-    const gapTxt = diff > 0 ? `+${fmtMan(diff)}` : diff < 0 ? `-${fmtMan(Math.abs(diff))}` : '0'
+    const gapTxt = diff > 0 ? `+${fmtMan(diff, lang)}` : diff < 0 ? `-${fmtMan(Math.abs(diff), lang)}` : '0'
     const isTTL = col === 'TTL'
 
     return `<td style="vertical-align:bottom;text-align:center;padding:0 3px;">
@@ -1012,14 +1026,14 @@ function dotcomSectionHtml(dotcom, meta, lang = 'ko') {
           <table border="0" cellpadding="0" cellspacing="0" align="center"><tr>
             <td style="vertical-align:bottom;text-align:center;padding:0 1px;">
               <table border="0" cellpadding="0" cellspacing="0" align="center">
-                <tr><td style="font-size:13px;font-weight:700;color:${EM_RED};font-family:${EM_FONT};text-align:center;padding-bottom:1px;">${fmtMan(lv)}</td></tr>
+                <tr><td style="font-size:13px;font-weight:700;color:${EM_RED};font-family:${EM_FONT};text-align:center;padding-bottom:1px;">${fmtMan(lv, lang)}</td></tr>
                 ${spacerL > 0 ? `<tr><td height="${spacerL}" style="font-size:0;">&nbsp;</td></tr>` : ''}
                 <tr><td height="${lh}" style="font-size:0;"><table border="0" cellpadding="0" cellspacing="0" align="center"><tr><td width="${bw}" height="${lh}" style="background:${EM_RED};border-radius:3px 3px 0 0;font-size:0;">&nbsp;</td></tr></table></td></tr>
               </table>
             </td>
             ${hasSam ? `<td style="vertical-align:bottom;text-align:center;padding:0 1px;">
               <table border="0" cellpadding="0" cellspacing="0" align="center">
-                <tr><td style="font-size:13px;font-weight:600;color:#94A3B8;font-family:${EM_FONT};text-align:center;padding-bottom:1px;">${fmtMan(sv)}</td></tr>
+                <tr><td style="font-size:13px;font-weight:600;color:#94A3B8;font-family:${EM_FONT};text-align:center;padding-bottom:1px;">${fmtMan(sv, lang)}</td></tr>
                 ${spacerS > 0 ? `<tr><td height="${spacerS}" style="font-size:0;">&nbsp;</td></tr>` : ''}
                 <tr><td height="${sh}" style="font-size:0;"><table border="0" cellpadding="0" cellspacing="0" align="center"><tr><td width="${bw}" height="${sh}" style="background:#94A3B8;border-radius:3px 3px 0 0;font-size:0;">&nbsp;</td></tr></table></td></tr>
               </table>
@@ -1433,7 +1447,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
   const citTopN = meta.citationTopN || 10
   const citationList = (citations || []).slice(0, citTopN)
   const citMaxScore = citationList.length ? Math.max(...citationList.map(c => c.score)) : 100
-  const citationRows = citationList.map((c, i) => citationRowHtml(c, i === citationList.length - 1, citMaxScore)).join('')
+  const citationRows = citationList.map((c, i) => citationRowHtml(c, i === citationList.length - 1, citMaxScore, lang)).join('')
 
   // 도메인별 Citation 섹션
   const citDomainResult = meta.showCitDomain !== false

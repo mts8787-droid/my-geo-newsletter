@@ -1141,6 +1141,18 @@ function parseCitTouchPoints(rows) {
   const ttlScores = group => group.ttl ? { ...group.ttl } : {}
 
   // 2차: TTL 국가 — citations / citTouchPointsTrend / citationsByPrdTtl 빌드
+  // 추가: 국가별 트렌드 (citTouchPointsTrendByCnty) — 클라이언트 필터용
+  const citTouchPointsTrendByCnty = {}
+  Object.entries(groupMap).forEach(([country, channelMap]) => {
+    if (country === 'TTL') return
+    Object.entries(channelMap).forEach(([channel, group]) => {
+      const tScores = ttlScores(group)
+      if (Object.keys(tScores).length === 0) return
+      if (!citTouchPointsTrendByCnty[country]) citTouchPointsTrendByCnty[country] = {}
+      citTouchPointsTrendByCnty[country][channel] = tScores
+    })
+  })
+
   const ttlGroup = groupMap.TTL || {}
   Object.entries(ttlGroup).forEach(([channel, group]) => {
     const tScores = ttlScores(group)
@@ -1257,6 +1269,9 @@ function parseCitTouchPoints(rows) {
   if (Object.keys(citTouchPointsTrend).length > 0) {
     result.citTouchPointsTrend = citTouchPointsTrend
     result.citTrendMonths = validMonths
+  }
+  if (Object.keys(citTouchPointsTrendByCnty).length > 0) {
+    result.citTouchPointsTrendByCnty = citTouchPointsTrendByCnty
   }
   if (citDerivedPeriod) result.citDerivedPeriod = citDerivedPeriod
   return result

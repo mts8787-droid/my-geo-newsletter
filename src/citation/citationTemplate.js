@@ -406,11 +406,11 @@ function citCategoryBumpChartHtml(citTouchPointsTrend, citTrendMonths, meta, t, 
   })
   table += '</tbody></table>'
 
-  return `<div class="section-card">
-    <div class="section-header"><div class="section-title">${t.citationTitle} — ${lang === 'ko' ? '월간 트렌드' : 'Monthly Trend'}</div></div>
+  return `<div class="section-card" id="cit-cat-trend-section">
+    <div class="section-header"><div class="section-title">${t.citationTitle} — ${lang === 'ko' ? '월간 트렌드' : 'Monthly Trend'}</div><span class="legend" id="cit-cat-trend-scope" style="font-size:12px;color:#64748B"></span></div>
     <div class="section-body">
-      <div class="bump-chart-wrap">${svg}</div>
-      ${table}
+      <div class="bump-chart-wrap" id="cit-cat-trend-svg-wrap">${svg}</div>
+      <div id="cit-cat-trend-table-wrap">${table}</div>
       <div class="cit-footnote">${t.trendByProductFootnote}</div>
     </div>
   </div>`
@@ -481,11 +481,11 @@ function citDomainBumpChartHtml(citDomainTrend, citDomainMonths, meta, t, lang) 
   })
   table += '</tbody></table>'
 
-  return `<div class="section-card">
-    <div class="section-header"><div class="section-title">${t.citDomainTitle} — ${lang === 'ko' ? '월간 트렌드' : 'Monthly Trend'}</div></div>
+  return `<div class="section-card" id="cit-dom-trend-section">
+    <div class="section-header"><div class="section-title">${t.citDomainTitle} — ${lang === 'ko' ? '월간 트렌드' : 'Monthly Trend'}</div><span class="legend" id="cit-dom-trend-scope" style="font-size:12px;color:#64748B"></span></div>
     <div class="section-body">
-      <div class="bump-chart-wrap">${svg}</div>
-      ${table}
+      <div class="bump-chart-wrap" id="cit-dom-trend-svg-wrap">${svg}</div>
+      <div id="cit-dom-trend-table-wrap">${table}</div>
       <div class="cit-footnote">${t.trendByProductFootnote}</div>
     </div>
   </div>`
@@ -831,6 +831,12 @@ var _rawCitationsByPrd=${JSON.stringify(rawCitationsByPrd)};
 var _rawCitationsCnty=${JSON.stringify(rawCitationsCnty)};
 var _rawDotcom=${JSON.stringify(rawDotcom)};
 var _rawDotcomByCnty=${JSON.stringify(rawDotcomByCnty)};
+var _citTouchPointsTrend=${JSON.stringify(citTouchPointsTrend || {})};
+var _citDomainTrend=${JSON.stringify(citDomainTrend || {})};
+var _TREND_12M=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+var _BUMP_MAX=10;
+var _BUMP_COLORS=['#CF0652','#1D4ED8','#059669','#D97706','#7C3AED','#DB2777','#0D9488','#EA580C','#4F46E5','#DC2626','#0891B2','#65A30D'];
+var _FONT=${JSON.stringify(FONT)};
 var _meta=${JSON.stringify({
   citationTopN: meta.citationTopN || 10,
   citDomainTopN: meta.citDomainTopN || 10,
@@ -1299,6 +1305,222 @@ function applyFilter(){
     if(Object.keys(lg).length>0)filteredDc={lg:lg,samsung:samsung};else filteredDc=null;
   }
   renderDotcom(filteredDc);
+
+  // ── Citation 트렌드: 국가 필터 적용 ──
+  _renderCitCatTrend(enabled, allSelected, noneSelected);
+  _renderCitDomTrend(enabled, allSelected, noneSelected);
+}
+
+// ─── Citation 카테고리 트렌드 (국가 필터 aware) ───────────────────────────
+function _renderCitCatTrend(enabled, allSelected, noneSelected){
+  var section=document.getElementById('cit-cat-trend-section');
+  if(!section)return;
+  var svgWrap=document.getElementById('cit-cat-trend-svg-wrap');
+  var tblWrap=document.getElementById('cit-cat-trend-table-wrap');
+  var scopeEl=document.getElementById('cit-cat-trend-scope');
+  if(noneSelected){
+    if(svgWrap)svgWrap.innerHTML='<div style="text-align:center;padding:32px;color:#94A3B8;font-size:14px">'+_noDataMsg+'</div>';
+    if(tblWrap)tblWrap.innerHTML='';
+    if(scopeEl)scopeEl.textContent='';
+    return;
+  }
+  // byChannel: channel → month → score (선택 국가 합산, PRD=TTL 행만)
+  var byChannel={};
+  if(allSelected){
+    // 전체: 서버 사전 계산된 TTL 데이터 사용 (그대로)
+    Object.keys(_citTouchPointsTrend||{}).forEach(function(k){byChannel[k]=_citTouchPointsTrend[k]||{}});
+  }else{
+    enabled.forEach(function(cnty){
+      var list=_rawCitationsByCnty[cnty]||[];
+      list.forEach(function(r){
+        if(r.prd)return;
+        if(!r.monthScores)return;
+        if(!byChannel[r.source])byChannel[r.source]={};
+        Object.keys(r.monthScores).forEach(function(m){
+          byChannel[r.source][m]=(byChannel[r.source][m]||0)+(r.monthScores[m]||0);
+        });
+      });
+    });
+  }
+  _drawCitTrendBump('cit-cat', byChannel, null, allSelected, enabled, scopeEl);
+}
+
+// ─── Citation 도메인 트렌드 (국가 필터 aware) ─────────────────────────────
+function _renderCitDomTrend(enabled, allSelected, noneSelected){
+  var section=document.getElementById('cit-dom-trend-section');
+  if(!section)return;
+  var svgWrap=document.getElementById('cit-dom-trend-svg-wrap');
+  var tblWrap=document.getElementById('cit-dom-trend-table-wrap');
+  var scopeEl=document.getElementById('cit-dom-trend-scope');
+  if(noneSelected){
+    if(svgWrap)svgWrap.innerHTML='<div style="text-align:center;padding:32px;color:#94A3B8;font-size:14px">'+_noDataMsg+'</div>';
+    if(tblWrap)tblWrap.innerHTML='';
+    if(scopeEl)scopeEl.textContent='';
+    return;
+  }
+  // citDomainTrend 키 형식: '${cnty}|${k}' / val: {domain, type, months}
+  var byDomain={}; var typeOf={};
+  Object.keys(_citDomainTrend||{}).forEach(function(key){
+    var parts=key.split('|');var cnty=parts[0];
+    if(allSelected){
+      // 전체: 'TTL|*' 우선 사용
+      if(cnty!=='TTL')return;
+    }else{
+      if(enabled.indexOf(cnty)<0)return;
+    }
+    var val=_citDomainTrend[key]||{};
+    var dom=val.domain;if(!dom)return;
+    typeOf[dom]=val.type||'';
+    if(!byDomain[dom])byDomain[dom]={};
+    Object.keys(val.months||{}).forEach(function(m){
+      byDomain[dom][m]=(byDomain[dom][m]||0)+(val.months[m]||0);
+    });
+  });
+  // 전체 모드인데 TTL 데이터 없으면 country aggregated 폴백
+  if(allSelected&&Object.keys(byDomain).length===0){
+    Object.keys(_citDomainTrend||{}).forEach(function(key){
+      var parts=key.split('|');var cnty=parts[0];if(cnty==='TTL')return;
+      var val=_citDomainTrend[key]||{};var dom=val.domain;if(!dom)return;
+      typeOf[dom]=val.type||'';
+      if(!byDomain[dom])byDomain[dom]={};
+      Object.keys(val.months||{}).forEach(function(m){
+        byDomain[dom][m]=(byDomain[dom][m]||0)+(val.months[m]||0);
+      });
+    });
+  }
+  _drawCitTrendBump('cit-dom', byDomain, typeOf, allSelected, enabled, scopeEl);
+}
+
+// 공통 렌더러: byKey 데이터 → 랭킹 계산 → SVG/테이블 렌더
+function _drawCitTrendBump(prefix, byKey, typeOf, allSelected, enabled, scopeEl){
+  var svgWrap=document.getElementById(prefix+'-trend-svg-wrap');
+  var tblWrap=document.getElementById(prefix+'-trend-table-wrap');
+  var months=_TREND_12M;
+  if(scopeEl){
+    if(allSelected){scopeEl.textContent=_lang==='en'?'All countries':'전체 국가'}
+    else{scopeEl.textContent=(_lang==='en'?'Filter: ':'필터: ')+enabled.map(function(c){return _cn(c)}).join(', ')}
+  }
+  // 최신 월 (값 있는 가장 마지막) 기준 Top N 선정
+  var keys=Object.keys(byKey);
+  if(!keys.length){
+    if(svgWrap)svgWrap.innerHTML='<div style="text-align:center;padding:32px;color:#94A3B8;font-size:14px">'+_noDataMsg+'</div>';
+    if(tblWrap)tblWrap.innerHTML='';
+    return;
+  }
+  var lastM=null;
+  for(var i=months.length-1;i>=0;i--){
+    if(keys.some(function(k){return (byKey[k][months[i]]||0)>0})){lastM=months[i];break}
+  }
+  if(!lastM)lastM=months[months.length-1];
+  var topKeys=keys.slice().sort(function(a,b){return (byKey[b][lastM]||0)-(byKey[a][lastM]||0)}).slice(0,_BUMP_MAX);
+  // 랭킹
+  var rankings={};
+  months.forEach(function(m){
+    var scored=topKeys.map(function(k){return{k:k,s:byKey[k][m]||0}})
+      .filter(function(e){return e.s>0})
+      .sort(function(a,b){return b.s-a.s});
+    scored.forEach(function(e,idx){
+      if(!rankings[e.k])rankings[e.k]={};
+      rankings[e.k][m]=idx+1;
+    });
+  });
+  // 일부 키는 모든 월에서 0이면 표시 제외
+  var visKeys=topKeys.filter(function(k){return rankings[k]});
+  if(!visKeys.length){
+    if(svgWrap)svgWrap.innerHTML='<div style="text-align:center;padding:32px;color:#94A3B8;font-size:14px">'+_noDataMsg+'</div>';
+    if(tblWrap)tblWrap.innerHTML='';
+    return;
+  }
+  // SVG 생성 (서버 bumpChartSvg 와 동일 알고리즘)
+  var svg=_bumpChartSvgJS(visKeys, rankings, months, _BUMP_MAX, prefix==='cit-dom'?_stripDomain:null);
+  if(svgWrap)svgWrap.innerHTML=svg;
+  // 테이블
+  var tableHtml='<table class="trend-table"><thead><tr><th>'+(prefix==='cit-dom'?(_lang==='en'?'Domain':'도메인'):(_lang==='en'?'Category':'카테고리'))+'</th>';
+  if(prefix==='cit-dom')tableHtml+='<th>Type</th>';
+  months.forEach(function(m){tableHtml+='<th>'+m+'</th>'});
+  tableHtml+='</tr></thead><tbody>';
+  visKeys.forEach(function(k,idx){
+    var color=_BUMP_COLORS[idx%_BUMP_COLORS.length];
+    tableHtml+='<tr><td><span class="trend-dot" style="background:'+color+'"></span>'+(prefix==='cit-dom'?_stripDomain(k):k)+'</td>';
+    if(prefix==='cit-dom')tableHtml+='<td class="trend-type">'+(typeOf&&typeOf[k]||'')+'</td>';
+    months.forEach(function(m){
+      var val=byKey[k][m];
+      var rank=rankings[k]&&rankings[k][m];
+      tableHtml+='<td>'+(val!=null&&val>0?'<span class="trend-val">'+_fmt(val)+'</span><span class="trend-rank">#'+rank+'</span>':'—')+'</td>';
+    });
+    tableHtml+='</tr>';
+  });
+  tableHtml+='</tbody></table>';
+  if(tblWrap)tblWrap.innerHTML=tableHtml;
+}
+
+// 서버 bumpChartSvg 와 동일 알고리즘 (path 생성)
+function _bumpChartSvgJS(names, rankings, months, maxRank, labelFn){
+  var fixedRanks=maxRank;
+  var ROW_H=52;
+  var EXT_L=80,EXT_R=20;
+  var W=Math.max(months.length*200,600)+EXT_L+EXT_R;
+  var padT=0,padB=30;
+  var H=fixedRanks*ROW_H+padT+padB;
+  var padL=10+EXT_L,padR=10+EXT_R;
+  var chartW=W-padL-padR;
+  var chartH=H-padT-padB;
+  var ribbonW=ROW_H*0.38;
+  var RND=ribbonW;
+  var svg='<svg viewBox="0 0 '+W+' '+H+'" width="100%" preserveAspectRatio="xMidYMid meet" style="font-family:'+_FONT+';display:block">';
+  var sorted=names.slice().sort(function(a,b){
+    var lm=months[months.length-1];
+    return ((rankings[b]||{})[lm]||999)-((rankings[a]||{})[lm]||999);
+  });
+  sorted.forEach(function(name){
+    var color=_BUMP_COLORS[names.indexOf(name)%_BUMP_COLORS.length];
+    var points=[];
+    months.forEach(function(m,i){
+      var rank=(rankings[name]||{})[m];
+      if(rank!=null&&rank<=fixedRanks){
+        var x=padL+(i/Math.max(months.length-1,1))*chartW;
+        var y=padT+((rank-0.5)/fixedRanks)*chartH;
+        points.push({x:x,y:y,rank:rank,month:m});
+      }
+    });
+    if(points.length<1)return;
+    var first=points[0],last=points[points.length-1];
+    var leftX=first.x-EXT_L,rightX=last.x+EXT_R;
+    var extPts=[{x:leftX+RND,y:first.y}].concat(points).concat([{x:rightX-RND,y:last.y}]);
+    var upper='',lower='';
+    for(var i=0;i<extPts.length;i++){
+      var p=extPts[i];
+      if(i===0){
+        upper+='M'+(p.x-RND)+','+p.y+' A'+RND+','+ribbonW+' 0 0,1 '+p.x+','+(p.y-ribbonW);
+        lower='L'+p.x+','+(p.y+ribbonW)+' A'+RND+','+ribbonW+' 0 0,1 '+(p.x-RND)+','+p.y;
+      }else{
+        var prev=extPts[i-1];
+        var cx=(prev.x+p.x)/2;
+        upper+=' C'+cx+','+(prev.y-ribbonW)+' '+cx+','+(p.y-ribbonW)+' '+p.x+','+(p.y-ribbonW);
+        lower=' C'+cx+','+(p.y+ribbonW)+' '+cx+','+(prev.y+ribbonW)+' '+prev.x+','+(prev.y+ribbonW)+lower;
+      }
+    }
+    var lastExt=extPts[extPts.length-1];
+    var ribbonPath=upper+' A'+RND+','+ribbonW+' 0 0,1 '+(lastExt.x+RND)+','+lastExt.y+' A'+RND+','+ribbonW+' 0 0,1 '+lastExt.x+','+(lastExt.y+ribbonW)+lower+' Z';
+    svg+='<path d="'+ribbonPath+'" fill="'+color+'" opacity="0.6" stroke="'+color+'" stroke-width="0.5" stroke-opacity="0.3"/>';
+  });
+  names.forEach(function(name){
+    var label=labelFn?labelFn(name):name;
+    months.forEach(function(m,i){
+      var rank=(rankings[name]||{})[m];
+      if(rank==null||rank>fixedRanks)return;
+      var x=padL+(i/Math.max(months.length-1,1))*chartW;
+      var y=padT+((rank-0.5)/fixedRanks)*chartH;
+      svg+='<text x="'+x+'" y="'+(y+8)+'" text-anchor="middle" fill="#0F172A" font-size="22" font-weight="700">'+label+'</text>';
+    });
+  });
+  months.forEach(function(m,i){
+    var x=padL+(i/Math.max(months.length-1,1))*chartW;
+    svg+='<line x1="'+x+'" y1="'+(padT+chartH+2)+'" x2="'+x+'" y2="'+(padT+chartH+8)+'" stroke="#94A3B8" stroke-width="1.5"/>';
+    svg+='<text x="'+x+'" y="'+(padT+chartH+26)+'" text-anchor="middle" fill="#475569" font-size="26" font-weight="800">'+m+'</text>';
+  });
+  svg+='</svg>';
+  return svg;
 }
 
 function switchSubTab(btn,tab){
