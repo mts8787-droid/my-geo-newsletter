@@ -463,10 +463,9 @@ function productCardV2Html(p, lang = 'ko', opts = {}) {
 }
 
 // ─── 제품별 기본 비교 경쟁사 ──────────────────────────────────────────────────
-const PREFERRED_COMP = {
-  monitor: 'ASUS', audio: 'JBL', dw: 'Bosch', vacuum: 'Dyson',
-  cooking: 'Samsung', rac: 'Daikin', aircare: 'Xiaomi',
-}
+// 모든 제품을 1위 경쟁사(자사 제외 최고 비저빌리티) 자동 선정으로 통일.
+// 특정 브랜드 고정이 필요하면 이 객체에 항목 추가: { vacuum: 'Dyson', ... }
+const PREFERRED_COMP = {}
 function getPreferredComp(prodId, allScores) {
   const pref = PREFERRED_COMP[(prodId || '').toLowerCase()]
   if (!pref || !allScores) return null
