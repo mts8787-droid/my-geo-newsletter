@@ -448,7 +448,7 @@ function productCardV2Html(p, lang = 'ko', opts = {}) {
         <td style="padding:5px 6px 3px;white-space:nowrap;overflow:hidden;">
           <span style="font-size:14px;font-weight:900;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-0.5px;">${escapeHtml(prodName)}</span>
           <span style="font-size:18px;font-weight:900;color:#1A1A1A;font-family:${EM_FONT};">${p.score.toFixed(1)}<span style="font-size:11px;color:#94A3B8;">%</span></span>${momStr ? `&nbsp;${momStr}` : ''}
-          <span style="float:right;white-space:nowrap;"><span style="font-size:13px;font-weight:700;color:${ratioColor};font-family:${EM_FONT};">SS ${curRatio}%</span>&nbsp;<span style="display:inline-block;background:${st.bg};color:${st.color};border:1px solid ${st.border};border-radius:5px;padding:0px 4px;font-size:10px;font-weight:700;line-height:15px;font-family:${EM_FONT};vertical-align:middle;">${st.label}</span>${p.prev != null && p.prev > 0 ? `<div style="font-size:10px;color:#94A3B8;font-family:${EM_FONT};text-align:right;margin-top:1px;">${lang === 'en' ? 'MoM' : '전월대비'} <span style="color:${momColor};font-weight:700;">${momArrow}${Math.abs(d).toFixed(1)}%p</span></div>` : ''}</span>
+          <span style="float:right;white-space:nowrap;"><span style="font-size:13px;font-weight:700;color:${ratioColor};font-family:${EM_FONT};">${escapeHtml(compShort(mainCompName) || 'SS')} ${curRatio}%</span>&nbsp;<span style="display:inline-block;background:${st.bg};color:${st.color};border:1px solid ${st.border};border-radius:5px;padding:0px 4px;font-size:10px;font-weight:700;line-height:15px;font-family:${EM_FONT};vertical-align:middle;">${st.label}</span>${p.prev != null && p.prev > 0 ? `<div style="font-size:10px;color:#94A3B8;font-family:${EM_FONT};text-align:right;margin-top:1px;">${lang === 'en' ? 'MoM' : '전월대비'} <span style="color:${momColor};font-weight:700;">${momArrow}${Math.abs(d).toFixed(1)}%p</span></div>` : ''}</span>
         </td>
       </tr>
       <tr>
@@ -1675,7 +1675,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                         <table border="0" cellpadding="0" cellspacing="0" width="100%">
                           <tr>
                             <td style="font-size:24px;font-weight:700;color:#FFFFFF;text-transform:uppercase;font-family:${EM_FONT};">LG GEO Visibility %</td>
-                            <td align="right" style="font-size:14px;color:#94A3B8;font-family:${EM_FONT};">Model : ChatGPT, ChatGPT Search, Gemini, Perplexity<br/>Subsidiary : United States, Canada, United Kingdom, Germany, Spain, Brazil, Mexico, Australia, Vietnam, India</td>
+                            <td align="right" style="font-size:14px;color:#94A3B8;font-family:${EM_FONT};">Model : ChatGPT, ChatGPT Search, Gemini, Perplexity<br/>Subsidiary : USA, Canada, UK, Germany, Spain, Brazil, Mexico, AU, Vietnam, India</td>
                           </tr>
                         </table>
                         <table border="0" cellpadding="0" cellspacing="0" width="100%">

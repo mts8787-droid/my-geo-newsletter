@@ -197,7 +197,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
         src.productInsight || '', src.productHowToRead || '',
         src.citationInsight || '', src.citationHowToRead || '',
         src.dotcomInsight || '', src.dotcomHowToRead || '',
-        src.todoText || '', src.kpiLogicText || '',
+        src.todoText || '', src.todoNotice || '', src.kpiLogicText || '',
         src.cntyInsight || '', src.cntyHowToRead || '',
         src.citDomainInsight || '', src.citDomainHowToRead || '',
         src.citCntyInsight || '', src.citCntyHowToRead || '',
@@ -235,6 +235,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
         dotcomInsight: tr[idx++] || src.dotcomInsight,
         dotcomHowToRead: tr[idx++] || src.dotcomHowToRead,
         todoText: tr[idx++] || src.todoText,
+        todoNotice: tr[idx++] || src.todoNotice,
         kpiLogicText: tr[idx++] || src.kpiLogicText,
         cntyInsight: tr[idx++] || src.cntyInsight,
         cntyHowToRead: tr[idx++] || src.cntyHowToRead,
@@ -383,7 +384,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
         // 텍스트 칸: 기존 값이 있으면 덮어쓰지 않음 (빈 값인 경우에만 적용)
         const textKeys = ['totalInsight','productInsight','productHowToRead','citationInsight','citationHowToRead',
           'dotcomInsight','dotcomHowToRead','cntyInsight','cntyHowToRead','citDomainInsight','citDomainHowToRead',
-          'citCntyInsight','citCntyHowToRead','citPrdInsight','citPrdHowToRead','noticeText','kpiLogicText','todoText','aiPromptRules','monthlyReportBody']
+          'citCntyInsight','citCntyHowToRead','citPrdInsight','citPrdHowToRead','noticeText','kpiLogicText','todoText','todoNotice','aiPromptRules','monthlyReportBody']
         setMetaKo(m => {
           const merged = { ...m }
           for (const [k, v] of Object.entries(parsed.meta)) {
@@ -851,6 +852,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
             citPrdInsight: meta.citPrdInsight || '', citPrdHowToRead: meta.citPrdHowToRead || '',
             citCntyHowToRead: meta.citCntyHowToRead || '', dotcomInsight: meta.dotcomInsight || '',
             dotcomHowToRead: meta.dotcomHowToRead || '', todoText: meta.todoText || '',
+            todoNotice: meta.todoNotice || '',
             noticeText: meta.noticeText || '', kpiLogicText: meta.kpiLogicText || '',
             monthlyReportBody: meta.monthlyReportBody || '',
           }
