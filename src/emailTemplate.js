@@ -559,7 +559,7 @@ function productCardV3Html(p, lang = 'ko', opts = {}) {
 }
 
 // ─── BU 섹션 ──────────────────────────────────────────────────────────────────
-// ─── 카드 범례 (HS 마지막 빈 칸 — V3 inline 구조 + 행렬 정렬 / 회색 톤) ──
+// ─── 카드 범례 (HS 마지막 빈 칸 — 고정 높이로 다른 카드와 정확 일치) ──
 function productCardLegendHtml(lang = 'ko') {
   const t = lang === 'en' ? {
     name: 'Sample',
@@ -588,7 +588,7 @@ function productCardLegendHtml(lang = 'ko') {
   const grayDark   = '#64748B'
   const grayBarBg  = '#94A3B8'
   const badge = { bg: '#F1F5F9', border: '#CBD5E1', color: '#64748B', label: 'Status' }
-  // 막대 7개 — 회색, 막대 높이 축소 (전체 카드 높이 보정용)
+  // 막대 7개 — 회색 + 국가 풀네임 (cntyLabel 사용: KO 미국/캐나다/.. EN United States/..)
   const exCntys = [
     { code: 'US', score: 48, ratio: 115 },
     { code: 'CA', score: 44, ratio: 108 },
@@ -598,7 +598,7 @@ function productCardLegendHtml(lang = 'ko') {
     { code: 'IN', score: 38, ratio: 88 },
     { code: 'AU', score: 35, ratio: 82 },
   ]
-  const BAR_H = 20 // V3 28 → 20 축소: 헤더 라벨 행이 추가됐으므로 카드 전체 높이 보정
+  const BAR_H = 18 // 막대 축소 — 고정 높이 카드 내에서 헤더 라벨 행 공간 확보
   const maxEx = 50
   const cntyBars = exCntys.map(c => {
     const h = Math.max(3, Math.round(c.score / maxEx * BAR_H))
@@ -606,18 +606,14 @@ function productCardLegendHtml(lang = 'ko') {
     return `<td style="vertical-align:bottom;text-align:center;padding:0 1px;width:10%;">
       <table border="0" cellpadding="0" cellspacing="0" align="center" style="width:100%;">
         ${spacer > 0 ? `<tr><td height="${spacer}" style="font-size:0;line-height:0;">&nbsp;</td></tr>` : ''}
-        <tr><td height="${h}" style="font-size:0;line-height:0;"><table border="0" cellpadding="0" cellspacing="0" align="center"><tr><td width="16" height="${h}" style="background:${grayBarBg};border-radius:2px 2px 0 0;font-size:0;">&nbsp;</td></tr></table></td></tr>
+        <tr><td height="${h}" style="font-size:0;line-height:0;"><table border="0" cellpadding="0" cellspacing="0" align="center"><tr><td width="14" height="${h}" style="background:${grayBarBg};border-radius:2px 2px 0 0;font-size:0;">&nbsp;</td></tr></table></td></tr>
         <tr><td style="font-size:10px;font-weight:700;color:${grayDark};font-family:${EM_FONT};text-align:center;padding-top:1px;line-height:1.1;">${c.score}</td></tr>
-        <tr><td style="font-size:8px;font-weight:700;color:${grayDark};font-family:${EM_FONT};text-align:center;line-height:1.1;">${c.code}</td></tr>
+        <tr><td style="font-size:8px;font-weight:700;color:${grayDark};font-family:${EM_FONT};text-align:center;line-height:1.1;letter-spacing:-0.3px;">${escapeHtml(cntyLabel(c.code, lang))}</td></tr>
         <tr><td style="font-size:10px;color:${grayMid};font-family:${EM_FONT};text-align:center;line-height:1.1;">${c.ratio}%</td></tr>
       </table>
     </td>`
   }).join('')
-  // 좌측 3슬롯 — 막대 영역과 정확히 행 정렬 (같은 row 구조)
-  // Row 1: 막대 영역 자리 → 제목 '국가별 막대'
-  // Row 2: 점수 행 자리 → 'Visibility'
-  // Row 3: 국가 코드 행 자리 → '국가명'
-  // Row 4: 경쟁비 행 자리 → '경쟁비'
+  // 좌측 3슬롯 — 막대 영역 row 구조와 정렬
   const explainBlock = `<td colspan="3" valign="bottom" style="padding:0 6px 0 2px;width:30%;">
     <table border="0" cellpadding="0" cellspacing="0" width="100%">
       <tr><td height="${BAR_H}" style="font-size:9px;font-weight:700;color:${grayDark};font-family:${EM_FONT};line-height:1.1;vertical-align:bottom;">${escapeHtml(t.legendTitle)}</td></tr>
@@ -626,9 +622,10 @@ function productCardLegendHtml(lang = 'ko') {
       <tr><td style="font-size:9px;color:${grayMid};font-family:${EM_FONT};line-height:1.1;">${escapeHtml(t.lblRatio)}</td></tr>
     </table>
   </td>`
-  // 헤더 — V3 inline 구조 (한 줄), 모든 텍스트/숫자 회색
+  // 카드 inner 테이블 — 고정 높이 (V3 카드 자연 높이와 동일하게 강제)
+  const CARD_H = 108
   return `<td width="33%" style="padding:3px;vertical-align:top;">
-    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border:2px solid ${grayBorder};border-radius:8px;background:#FFFFFF;font-family:${EM_FONT};">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" height="${CARD_H}" style="border:2px solid ${grayBorder};border-radius:8px;background:#FFFFFF;font-family:${EM_FONT};height:${CARD_H}px;">
       <tr>
         <td style="padding:5px 6px 3px;white-space:nowrap;overflow:hidden;">
           <span style="font-size:14px;font-weight:900;color:${grayDark};font-family:${EM_FONT};letter-spacing:-0.5px;">${escapeHtml(t.name)}</span>
@@ -644,7 +641,7 @@ function productCardLegendHtml(lang = 'ko') {
         </td>
       </tr>
       <tr>
-        <td style="padding:2px 4px 6px;">
+        <td valign="bottom" style="padding:2px 4px 6px;">
           <table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;">
             <tr>${explainBlock}${cntyBars}</tr>
           </table>
