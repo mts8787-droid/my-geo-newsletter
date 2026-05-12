@@ -16,17 +16,17 @@ const CNTY_KR = {
   TTL: '전체', TOTAL: '전체', GLOBAL: '전체',
 }
 const CNTY_EN = {
-  US: 'United States', CA: 'Canada', UK: 'United Kingdom', GB: 'United Kingdom',
+  US: 'USA', CA: 'Canada', UK: 'UK', GB: 'UK',
   DE: 'Germany', ES: 'Spain', FR: 'France', IT: 'Italy',
-  BR: 'Brazil', MX: 'Mexico', IN: 'India', AU: 'Australia',
+  BR: 'Brazil', MX: 'Mexico', IN: 'India', AU: 'AU',
   VN: 'Vietnam', JP: 'Japan', KR: 'Korea', CN: 'China',
   TTL: 'Total', TOTAL: 'Total', GLOBAL: 'Total',
 }
-// 2줄 표기용 (짧은 이름은 &nbsp;로 높이 정렬)
+// 2줄 표기용 (짧은 이름은 &nbsp;로 높이 정렬) — 좁은 셀에 맞춰 약어 사용
 const CNTY_EN_2LINE = {
-  US: 'United<br/>States', CA: 'Canada<br/>&nbsp;', UK: 'United<br/>Kingdom', GB: 'United<br/>Kingdom',
-  DE: 'Germany<br/>&nbsp;', ES: 'Spain<br/>&nbsp;', BR: 'Brazil<br/>&nbsp;', MX: 'Mexico<br/>&nbsp;',
-  AU: 'Australia<br/>&nbsp;', VN: 'Vietnam<br/>&nbsp;', IN: 'India<br/>&nbsp;',
+  US: 'USA', CA: 'Canada', UK: 'UK', GB: 'UK',
+  DE: 'Germany', ES: 'Spain', BR: 'Brazil', MX: 'Mexico',
+  AU: 'AU', VN: 'Vietnam', IN: 'India',
 }
 function cntyKr(c) {
   const k = String(c || '').trim().toUpperCase()
@@ -55,8 +55,8 @@ const PROD_LABEL_KR = {
 }
 const PROD_LABEL_EN = {
   'TV': 'TV', '모니터': 'Monitor', '오디오': 'Audio',
-  '세탁기': 'Washer', '냉장고': 'Fridge',
-  '식기세척기': 'Dish<br/>washer', '식세기': 'Dish<br/>washer',
+  '세탁기': 'Washer', '냉장고': 'REF',
+  '식기세척기': 'DW', '식세기': 'DW',
   '청소기': 'Vacuum', 'Cooking': 'Cooking',
   'RAC': 'RAC', 'Aircare': 'Air<br/>care',
 }
@@ -1482,13 +1482,13 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
   // 영문본 제품명 매핑 (p.id 또는 p.kr 기준)
   const PROD_EN_NAME = {
     tv: 'TV', monitor: 'Monitor', audio: 'Audio',
-    fridge: 'Refrigerator', washer: 'Washer', cooking: 'Cooking',
-    dw: 'Dishwasher', vacuum: 'VC', rac: 'RAC', aircare: 'Aircare',
+    fridge: 'REF', washer: 'Washer', cooking: 'Cooking',
+    dw: 'DW', vacuum: 'VC', rac: 'RAC', aircare: 'Aircare',
   }
   const PROD_EN_BY_KR = {
     'TV': 'TV', '모니터': 'Monitor', '오디오': 'Audio',
-    '냉장고': 'Refrigerator', '세탁기': 'Washer', 'Cooking': 'Cooking',
-    '식기세척기': 'Dishwasher', '청소기': 'VC', 'RAC': 'RAC', 'Aircare': 'Aircare',
+    '냉장고': 'REF', '세탁기': 'Washer', 'Cooking': 'Cooking',
+    '식기세척기': 'DW', '청소기': 'VC', 'RAC': 'RAC', 'Aircare': 'Aircare',
   }
   function prodNameUL(p) {
     const baseName = lang === 'en'
