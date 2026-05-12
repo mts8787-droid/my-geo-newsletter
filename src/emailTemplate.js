@@ -517,10 +517,10 @@ function productCardV3Html(p, lang = 'ko', opts = {}) {
         <tr><td style="font-size:0;height:10px;">&nbsp;</td></tr>
       </table>
     </td>`
-    // 지정 경쟁사의 국가별 점수 찾기
-    const prefCnty = getPreferredComp(p.id, r.allScores)
-    const cCompName = prefCnty ? prefCnty.name : (r.compName || '')
-    const cCompScore = prefCnty ? prefCnty.score : (r.compScore || 0)
+    // 국가별 막대는 항상 해당 국가의 1위 경쟁사와 비교 (PREFERRED_COMP 무시)
+    // — 카드 상단의 mainComp(고정 브랜드, 예: Aircare→Xiaomi)와 별개 운영
+    const cCompName = r.compName || ''
+    const cCompScore = r.compScore || 0
     const cRatio = cCompScore > 0 ? Math.round(r.score / cCompScore * 100) : 100
     const cStatus = cRatio >= 100 ? 'lead' : cRatio >= 80 ? 'behind' : 'critical'
     const baseBarColor = cStatus === 'lead' ? '#15803D' : cStatus === 'behind' ? '#E8910C' : '#BE123C'
