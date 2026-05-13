@@ -75,17 +75,32 @@ function isUnlaunched(unlaunchedMap, country, prodId) {
   return !!unlaunchedMap[`${country}|${code}`]
 }
 
-// 오디오·RAC: 4월(W13)을 새 베이스라인으로. 이전 데이터는 회색 페이드 + MoM 표기 숨김
-const BASELINE_RESET_PRODUCTS = ['audio', 'rac']
+// 오디오: W13/Apr 베이스라인 (boundary 회색 연결)
+// RAC/Aircare: W16 베이스라인 (boundary 끊김), 월간은 Apr 공통
+const BASELINE_RESET_PRODUCTS = ['audio', 'rac', 'aircare']
 function isBaselineResetProduct(p) {
   const id = typeof p === 'string' ? p : (p?.id || p?.category || '')
   return BASELINE_RESET_PRODUCTS.includes(String(id).toLowerCase())
 }
-function baselineIdxIn(labels) {
+function baselineWeekForProd(p) {
+  const id = String(typeof p === 'string' ? p : (p?.id || p?.category || '')).toLowerCase()
+  if (id === 'audio') return 13
+  if (id === 'rac' || id === 'aircare') return 16
+  return 0
+}
+function baselineIdxIn(labels, p) {
   if (!labels) return -1
+  const wk = p ? baselineWeekForProd(p) : 0
+  if (wk > 0) {
+    const wkIdx = labels.findIndex(l => {
+      const m = String(l || '').trim().match(/^W?(\d+)$/i)
+      return m && parseInt(m[1], 10) === wk
+    })
+    if (wkIdx >= 0) return wkIdx
+  }
   return labels.findIndex(l => {
     const s = String(l || '').trim()
-    return /^W?13$/i.test(s) || /^Apr(il)?$/i.test(s) || s === '4월'
+    return /^Apr(il)?$/i.test(s) || s === '4월'
   })
 }
 
@@ -359,9 +374,9 @@ function productCardHtml(p, globalMax, globalMin, lang = 'ko', opts = {}) {
   const msMax = msData.length ? Math.max(...msData) : 100
   const msMin = msData.length ? Math.min(...msData.filter(v => v > 0)) : 0
 
-  // 베이스라인 리셋 제품(오디오/RAC): 4월/W13 미만 회색 페이드
-  const _wFadeIdx = _isBaseReset ? baselineIdxIn(trimmedLabels) : -1
-  const _mFadeIdx = _isBaseReset ? baselineIdxIn(msLabels) : -1
+  // 베이스라인 리셋 제품: 제품별 W (오디오 W13, RAC/Aircare W16) / 월 Apr 미만 회색 페이드
+  const _wFadeIdx = _isBaseReset ? baselineIdxIn(trimmedLabels, p) : -1
+  const _mFadeIdx = _isBaseReset ? baselineIdxIn(msLabels, p) : -1
 
   // 트렌드 모드에 따라 선택
   const trendGraph = useMonthly

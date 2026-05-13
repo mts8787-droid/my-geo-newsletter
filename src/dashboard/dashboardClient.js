@@ -302,7 +302,8 @@ function _applyMonthSelectionOverride(){
       var msSliced=_sliceMsByCurMonth(ms);
       var mData=msSliced.map(function(m){return m.score});
       var mLabels=msSliced.map(function(m){var km=String(m.date||'').match(/(\\d{1,2})월/);return km?ML[parseInt(km[1])-1]:m.date});
-      mChart.innerHTML=_miniSvgNullAware(mData,mLabels,300,90,cc,_baselineIdx(card.getAttribute('data-prodid'),mLabels));
+      var _pid1=card.getAttribute('data-prodid');var _fi1=_baselineIdx(_pid1,mLabels);
+      mChart.innerHTML=_miniSvgNullAware(mData,mLabels,300,90,cc,_fi1,_shouldBridge(_pid1),_fi1>0?'*Baseline 재설정':'');
     }
   });
 }
@@ -673,7 +674,8 @@ function updateMonthlyProductScores(selCountry){
             var mData=msc.length?msc.map(function(m){return m.score}):[ms];
             var ML=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
             var mLabels=msc.length?msc.map(function(m){var km=String(m.date||'').match(/(\\d{1,2})월/);return km?ML[parseInt(km[1])-1]:m.date}):['M0'];
-            mChart.innerHTML=_miniSvgNullAware(mData,mLabels,300,90,sparkColor,_baselineIdx(prod.id,mLabels));
+            var _fi2=_baselineIdx(prod.id,mLabels);
+            mChart.innerHTML=_miniSvgNullAware(mData,mLabels,300,90,sparkColor,_fi2,_shouldBridge(prod.id),_fi2>0?'*Baseline 재설정':'');
           }
         }
       }
@@ -732,14 +734,16 @@ function updateMonthlyProductScores(selCountry){
     if(mChart&&prod){
       var series=_filteredMonthlySeries(prod.id,countries);
       if(series&&series.data.length){
-        mChart.innerHTML=_miniSvgNullAware(series.data,series.labels,300,90,sparkColor,_baselineIdx(prod.id,series.labels));
+        var _fi3=_baselineIdx(prod.id,series.labels);
+        mChart.innerHTML=_miniSvgNullAware(series.data,series.labels,300,90,sparkColor,_fi3,_shouldBridge(prod.id),_fi3>0?'*Baseline 재설정':'');
       }else{
         var ms=_sliceMsByCurMonth(prod.monthlyScores||[]);
         var mData=ms.length?ms.map(function(m){return m.score}):[score];
         if(mData.length)mData[mData.length-1]=score;
         var ML=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
         var mLabels=ms.length?ms.map(function(m){var km=String(m.date||'').match(/(\\d{1,2})월/);return km?ML[parseInt(km[1])-1]:m.date}):['M0'];
-        mChart.innerHTML=_miniSvgNullAware(mData,mLabels,300,90,sparkColor,_baselineIdx(prod.id,mLabels));
+        var _fi4=_baselineIdx(prod.id,mLabels);
+        mChart.innerHTML=_miniSvgNullAware(mData,mLabels,300,90,sparkColor,_fi4,_shouldBridge(prod.id),_fi4>0?'*Baseline 재설정':'');
       }
     }
   });
@@ -1165,8 +1169,11 @@ function _renderMonthlyTrend(container,selBU,selProd,trendCnty,trendCountries){
 }
 
 // ─── 제품 카드 스코어 국가 필터 업데이트 ───
-// 오디오/RAC: 4월(W13) 이전 데이터는 그래프 회색 페이드 + 연결선 끊김
-function _isBaselineProd(prodId){var s=String(prodId||'').toLowerCase();return s==='audio'||s==='rac'}
+// 오디오: W13/Apr 베이스라인 (boundary 회색 연결)
+// RAC/Aircare: W16 베이스라인 (boundary 끊김), 월간은 Apr 공통
+function _isBaselineProd(prodId){var s=String(prodId||'').toLowerCase();return s==='audio'||s==='rac'||s==='aircare'}
+function _baselineWk(prodId){var s=String(prodId||'').toLowerCase();if(s==='audio')return 13;if(s==='rac'||s==='aircare')return 16;return 0}
+function _shouldBridge(prodId){return String(prodId||'').toLowerCase()==='audio'}
 // prod-mom 텍스트 갱신 (baseline 제품은 빈 처리)
 function _setProdMom(card,momD){
   var el=card.querySelector('.prod-mom');if(!el)return;
@@ -1231,14 +1238,22 @@ function _filteredMomD(prodId,countries){
 }
 function _baselineIdx(prodId,labels){
   if(!_isBaselineProd(prodId)||!labels)return -1;
-  for(var i=0;i<labels.length;i++){
-    var s=String(labels[i]||'').trim();
-    if(/^W?13$/i.test(s)||/^Apr(il)?$/i.test(s)||s==='4월')return i;
+  var wk=_baselineWk(prodId);
+  if(wk>0){
+    for(var i=0;i<labels.length;i++){
+      var m=String(labels[i]||'').trim().match(/^W?(\\d+)$/i);
+      if(m&&parseInt(m[1],10)===wk)return i;
+    }
+  }
+  for(var j=0;j<labels.length;j++){
+    var s=String(labels[j]||'').trim();
+    if(/^Apr(il)?$/i.test(s)||s==='4월')return j;
   }
   return -1;
 }
 // 미니 SVG 라인 차트 생성 (클라이언트용)
-function _miniSvg(data,labels,w,h,color,fadeIdx){
+// bridge: true면 boundary 직전→직후 회색 연결 / label: dashed 베이스라인 라벨
+function _miniSvg(data,labels,w,h,color,fadeIdx,bridge,label){
   if(!data||data.length<2)return'<svg width="'+w+'" height="'+h+'"></svg>';
   if(fadeIdx==null)fadeIdx=-1;
   var pt=18,pr=10,pb=20,pl=10;var cw=w-pl-pr;var ch=h-pt-pb;
@@ -1256,16 +1271,30 @@ function _miniSvg(data,labels,w,h,color,fadeIdx){
     s+='<path d="'+area+'" fill="url(#'+id+')"/>';
     s+='<path d="'+line+'" stroke="'+color+'" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>';
   }
+  if(bridge&&prePts.length&&postPts.length){
+    var a=prePts[prePts.length-1],b=postPts[0];
+    s+='<line x1="'+a.x.toFixed(1)+'" y1="'+a.y.toFixed(1)+'" x2="'+b.x.toFixed(1)+'" y2="'+b.y.toFixed(1)+'" stroke="'+FADE+'" stroke-width="2" stroke-linecap="round" opacity="0.85"/>';
+  }
   if(prePts.length>=2){
     var pline=prePts.map(function(p,i){return(i?'L':'M')+p.x.toFixed(1)+','+p.y.toFixed(1)}).join(' ');
     s+='<path d="'+pline+'" stroke="'+FADE+'" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.85"/>';
   }
-  pts.forEach(function(p){var isPre=fadeIdx>0&&p.idx<fadeIdx;s+='<circle cx="'+p.x.toFixed(1)+'" cy="'+p.y.toFixed(1)+'" r="3.5" fill="#fff" stroke="'+(isPre?FADE:color)+'" stroke-width="2" opacity="'+(isPre?0.85:1)+'"/>'});
+  pts.forEach(function(p){
+    var isPre=fadeIdx>0&&p.idx<fadeIdx;
+    var isBaseStart=fadeIdx>0&&p.idx===fadeIdx;
+    if(isBaseStart){s+='<circle cx="'+p.x.toFixed(1)+'" cy="'+p.y.toFixed(1)+'" r="4" fill="#000" stroke="'+color+'" stroke-width="3"/>';return}
+    s+='<circle cx="'+p.x.toFixed(1)+'" cy="'+p.y.toFixed(1)+'" r="3.5" fill="#fff" stroke="'+(isPre?FADE:color)+'" stroke-width="2" opacity="'+(isPre?0.85:1)+'"/>';
+  });
   pts.forEach(function(p){var isPre=fadeIdx>0&&p.idx<fadeIdx;s+='<text x="'+p.x.toFixed(1)+'" y="'+Math.max(p.y-7,12)+'" text-anchor="middle" font-size="12" font-weight="700" fill="'+(isPre?FADE:color)+'" font-family="'+_FONT+'">'+p.v.toFixed(1)+'</text>'});
+  if(fadeIdx>0&&label){
+    var bx=pl+(fadeIdx/(data.length-1))*cw;
+    s+='<line x1="'+bx.toFixed(1)+'" y1="'+pt+'" x2="'+bx.toFixed(1)+'" y2="'+(pt+ch)+'" stroke="#64748B" stroke-width="1" stroke-dasharray="3,3"/>';
+    s+='<text x="'+(bx+4).toFixed(1)+'" y="'+(pt+10).toFixed(1)+'" font-size="10" fill="#64748B" font-family="'+_FONT+'">'+label+'</text>';
+  }
   pts.forEach(function(p,i){s+='<text x="'+p.x.toFixed(1)+'" y="'+(pt+ch+14)+'" text-anchor="middle" font-size="12" fill="#94A3B8" font-family="'+_FONT+'">'+(labels[i]||'')+'</text>'});
   s+='</svg>';return s;
 }
-function _miniSvgNullAware(data,labels,w,h,color,fadeIdx){
+function _miniSvgNullAware(data,labels,w,h,color,fadeIdx,bridge,label){
   if(fadeIdx==null)fadeIdx=-1;
   var pt=18,pr=10,pb=20,pl=10;var cw=w-pl-pr;var ch=h-pt-pb;
   var N=data.length;var divisor=N>1?N-1:1;
@@ -1287,12 +1316,26 @@ function _miniSvgNullAware(data,labels,w,h,color,fadeIdx){
       s+='<path d="'+area+'" fill="url(#'+id+')"/>';
       s+='<path d="'+line+'" stroke="'+color+'" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>';
     }
+    if(bridge&&prePts.length&&postPts.length){
+      var a=prePts[prePts.length-1],b=postPts[0];
+      s+='<line x1="'+a.x.toFixed(1)+'" y1="'+a.y.toFixed(1)+'" x2="'+b.x.toFixed(1)+'" y2="'+b.y.toFixed(1)+'" stroke="'+FADE+'" stroke-width="2" stroke-linecap="round" opacity="0.85"/>';
+    }
     if(prePts.length>=2){
       var pline=prePts.map(function(p,i){return(i?'L':'M')+p.x.toFixed(1)+','+p.y.toFixed(1)}).join(' ');
       s+='<path d="'+pline+'" stroke="'+FADE+'" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.85"/>';
     }
-    pts.forEach(function(p){var isPre=fadeIdx>0&&p.idx<fadeIdx;s+='<circle cx="'+p.x.toFixed(1)+'" cy="'+p.y.toFixed(1)+'" r="3.5" fill="#fff" stroke="'+(isPre?FADE:color)+'" stroke-width="2" opacity="'+(isPre?0.85:1)+'"/>'});
+    pts.forEach(function(p){
+      var isPre=fadeIdx>0&&p.idx<fadeIdx;
+      var isBaseStart=fadeIdx>0&&p.idx===fadeIdx;
+      if(isBaseStart){s+='<circle cx="'+p.x.toFixed(1)+'" cy="'+p.y.toFixed(1)+'" r="4" fill="#000" stroke="'+color+'" stroke-width="3"/>';return}
+      s+='<circle cx="'+p.x.toFixed(1)+'" cy="'+p.y.toFixed(1)+'" r="3.5" fill="#fff" stroke="'+(isPre?FADE:color)+'" stroke-width="2" opacity="'+(isPre?0.85:1)+'"/>';
+    });
     pts.forEach(function(p){var isPre=fadeIdx>0&&p.idx<fadeIdx;s+='<text x="'+p.x.toFixed(1)+'" y="'+Math.max(p.y-7,12)+'" text-anchor="middle" font-size="12" font-weight="700" fill="'+(isPre?FADE:color)+'" font-family="'+_FONT+'">'+p.v.toFixed(1)+'</text>'});
+  }
+  if(fadeIdx>0&&label){
+    var bx=allX[fadeIdx];
+    s+='<line x1="'+bx.toFixed(1)+'" y1="'+pt+'" x2="'+bx.toFixed(1)+'" y2="'+(pt+ch)+'" stroke="#64748B" stroke-width="1" stroke-dasharray="3,3"/>';
+    s+='<text x="'+(bx+4).toFixed(1)+'" y="'+(pt+10).toFixed(1)+'" font-size="10" fill="#64748B" font-family="'+_FONT+'">'+label+'</text>';
   }
   data.forEach(function(_,i){s+='<text x="'+allX[i].toFixed(1)+'" y="'+(pt+ch+14)+'" text-anchor="middle" font-size="12" fill="#94A3B8" font-family="'+_FONT+'">'+(labels[i]||'')+'</text>'});
   s+='</svg>';return s;
@@ -1322,13 +1365,14 @@ function _updateCard(card,score,compPct,weeklyData,wLabels,monthlyLG,mLabels){
   var _pid=card.getAttribute('data-prodid');
   var chartWrap=card.querySelector('.trend-weekly');
   if(chartWrap){
-    chartWrap.innerHTML=weeklyData&&weeklyData.length>=1?_miniSvg(weeklyData,wLabels,300,90,sparkColor,_baselineIdx(_pid,wLabels)):'<svg width="300" height="90"></svg>';
+    var _fiW=_baselineIdx(_pid,wLabels);
+    chartWrap.innerHTML=weeklyData&&weeklyData.length>=1?_miniSvg(weeklyData,wLabels,300,90,sparkColor,_fiW,_shouldBridge(_pid),_fiW>0?'*Baseline 재설정':''):'<svg width="300" height="90"></svg>';
   }
   // 월간 미니 차트 (4M: [null,null,null,score])
   if(mLabels&&mLabels.length){
     var m4=[null,null,null,monthlyLG!=null?monthlyLG:null];
     var mChartWrap=card.querySelector('.trend-monthly');
-    if(mChartWrap)mChartWrap.innerHTML=_miniSvgNullAware(m4,mLabels,300,90,sparkColor,_baselineIdx(_pid,mLabels));
+    if(mChartWrap){var _fiM=_baselineIdx(_pid,mLabels);mChartWrap.innerHTML=_miniSvgNullAware(m4,mLabels,300,90,sparkColor,_fiM,_shouldBridge(_pid),_fiM>0?'*Baseline 재설정':'')}
   }
 }
 function _getWeeklyForCountries(prodId,countries){

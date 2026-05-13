@@ -16,19 +16,40 @@ import { buildDashboardClientScript } from './dashboardClient.js'
 // 포맷 헬퍼(statusInfo·fmt·mdBold·stripDomain·cntyStatus·cntyFullName) → ./dashboardFormat.js
 // 인라인 클라이언트 JS(switchTab·filterTrend·_buildHero 등) → ./dashboardClient.js
 
-// ─── 베이스라인 리셋 제품 — 오디오·RAC는 4월(W13)을 새 베이스라인으로 ────────────
-// 이전 기간 데이터는 그래프에서 회색 페이드 + 연결선 끊기 / MoM 표기 숨김
-const BASELINE_RESET_PRODUCTS = ['audio', 'rac']
+// ─── 베이스라인 리셋 제품 ──────────────────────────────────────────────────────
+// 오디오: W13/Apr (boundary W12→W13 회색 연결)
+// RAC/Aircare: W16 (boundary W15→W16 끊김)
+// 이전 기간 데이터는 그래프에서 회색 페이드, MoM 표기 숨김
+const BASELINE_RESET_PRODUCTS = ['audio', 'rac', 'aircare']
 function isBaselineResetProduct(prodOrId) {
   const id = typeof prodOrId === 'string' ? prodOrId : (prodOrId?.id || prodOrId?.category || '')
   return BASELINE_RESET_PRODUCTS.includes(String(id).toLowerCase())
 }
+function _baselineWeekFor(prodOrId) {
+  const id = String(typeof prodOrId === 'string' ? prodOrId : (prodOrId?.id || prodOrId?.category || '')).toLowerCase()
+  if (id === 'audio') return 13
+  if (id === 'rac' || id === 'aircare') return 16
+  return 0
+}
 function baselineIdxFor(prodOrId, labels) {
   if (!isBaselineResetProduct(prodOrId) || !labels) return -1
+  const wk = _baselineWeekFor(prodOrId)
+  if (wk > 0) {
+    const wkIdx = labels.findIndex(l => {
+      const m = String(l || '').trim().match(/^W?(\d+)$/i)
+      return m && parseInt(m[1], 10) === wk
+    })
+    if (wkIdx >= 0) return wkIdx
+  }
+  // 월간 라벨 — 모두 Apr 기준 (월간 베이스라인은 단순화)
   return labels.findIndex(l => {
     const s = String(l || '').trim()
-    return /^W?13$/i.test(s) || /^Apr(il)?$/i.test(s) || s === '4월'
+    return /^Apr(il)?$/i.test(s) || s === '4월'
   })
+}
+function shouldBridgeBaseline(prodOrId) {
+  const id = String(typeof prodOrId === 'string' ? prodOrId : (prodOrId?.id || prodOrId?.category || '')).toLowerCase()
+  return id === 'audio'  // 오디오만 boundary 회색 연결 (RAC/Aircare 는 끊김)
 }
 
 // ─── 경쟁사 트렌드 섹션 ────────────────────────────────────────────────────
@@ -59,7 +80,8 @@ function trendDetailHtml(products, weeklyAll, wLabels, t, lang, ulMap, periodTag
       const N = wLabels.length
       const colgroup = `<colgroup><col style="width:${TREND_BRAND_COL}px">${wLabels.map(() => '<col>').join('')}</colgroup>`
       const _wFadeIdx = baselineIdxFor(p, wLabels)
-      const chartRow = `<tr><td style="padding:0;border:0"></td><td colspan="${N}" style="padding:8px 0;border:0">${svgMultiLine(data, wLabels, N * 80, 180, { fadeBeforeIdx: _wFadeIdx })}</td></tr>`
+      const _wBridge = shouldBridgeBaseline(p)
+      const chartRow = `<tr><td style="padding:0;border:0"></td><td colspan="${N}" style="padding:8px 0;border:0">${svgMultiLine(data, wLabels, N * 80, 180, { fadeBeforeIdx: _wFadeIdx, bridgeBaseline: _wBridge, baselineLabel: _wFadeIdx > 0 ? '*Baseline 재설정' : '' })}</td></tr>`
       const legendRow = `<tr><td style="padding:0;border:0"></td><td colspan="${N}" style="padding:4px 0 6px;border:0">${legend}</td></tr>`
       const thead = `<tr style="border-top:1px solid #E8EDF2"><th style="text-align:left;padding:5px 6px;font-size:14px;color:#94A3B8;font-weight:600;border-bottom:1px solid #F1F5F9">Brand</th>${wLabels.map(w => `<th style="text-align:center;padding:5px 2px;font-size:14px;color:#94A3B8;font-weight:600;border-bottom:1px solid #F1F5F9">${w}</th>`).join('')}</tr>`
       const tbody = brands.map((b, i) => {
@@ -171,7 +193,8 @@ function monthlyTrendDetailHtml(products, monthlyVis, t, lang, ulMap, periodTag)
       const N = mLabels.length
       const colgroup = `<colgroup><col style="width:${TREND_BRAND_COL}px">${mLabels.map(() => '<col>').join('')}</colgroup>`
       const _mFadeIdx = baselineIdxFor(p, mLabels)
-      const chartRow = `<tr><td style="padding:0;border:0"></td><td colspan="${N}" style="padding:8px 0;border:0">${svgMultiLine(brandData, mLabels, N * 80, 180, { fadeBeforeIdx: _mFadeIdx })}</td></tr>`
+      const _mBridge = shouldBridgeBaseline(p)
+      const chartRow = `<tr><td style="padding:0;border:0"></td><td colspan="${N}" style="padding:8px 0;border:0">${svgMultiLine(brandData, mLabels, N * 80, 180, { fadeBeforeIdx: _mFadeIdx, bridgeBaseline: _mBridge, baselineLabel: _mFadeIdx > 0 ? '*Baseline 재설정' : '' })}</td></tr>`
       const legendRow = `<tr><td style="padding:0;border:0"></td><td colspan="${N}" style="padding:4px 0 6px;border:0">${legend}</td></tr>`
       const thead = `<tr style="border-top:1px solid #E8EDF2"><th style="text-align:left;padding:5px 6px;font-size:14px;color:#94A3B8;font-weight:600;border-bottom:1px solid #F1F5F9">Brand</th>${mLabels.map(m => `<th style="text-align:center;padding:5px 2px;font-size:14px;color:#94A3B8;font-weight:600;border-bottom:1px solid #F1F5F9">${m}</th>`).join('')}</tr>`
       const tbody = brands.map((b, i) => {
@@ -365,8 +388,8 @@ function productSectionHtml(products, meta, t, lang, wLabels, ulMap, monthlyVis,
           <span class="prod-delta prod-mom" style="display:none;color:${momColor}">${(isBaselineResetProduct(p) || momD == null) ? '' : `MoM ${momArrow} ${Math.abs(momD).toFixed(1)}%p`}</span>
         </div>
         <div class="prod-chart">
-          <div class="trend-weekly">${svgLine(weekly.slice(-10), wLabels.slice(-10), 300, 90, sparkColor, { fadeBeforeIdx: baselineIdxFor(p, wLabels.slice(-10)) })}</div>
-          <div class="trend-monthly" style="display:none">${svgLine(m4Data, m4Labels, 300, 90, sparkColor, { fadeBeforeIdx: baselineIdxFor(p, m4Labels) })}</div>
+          <div class="trend-weekly">${(() => { const _ls = wLabels.slice(-10); const _fi = baselineIdxFor(p, _ls); return svgLine(weekly.slice(-10), _ls, 300, 90, sparkColor, { fadeBeforeIdx: _fi, bridgeBaseline: shouldBridgeBaseline(p), baselineLabel: _fi > 0 ? '*Baseline 재설정' : '' }) })()}</div>
+          <div class="trend-monthly" style="display:none">${(() => { const _fi = baselineIdxFor(p, m4Labels); return svgLine(m4Data, m4Labels, 300, 90, sparkColor, { fadeBeforeIdx: _fi, bridgeBaseline: shouldBridgeBaseline(p), baselineLabel: _fi > 0 ? '*Baseline 재설정' : '' }) })()}</div>
         </div>
         <div class="prod-comp">
           <span class="prod-comp-name">${lang === 'en' ? `vs ${p.compName}` : `${p.compName} ${t.vsComp}`}</span>
