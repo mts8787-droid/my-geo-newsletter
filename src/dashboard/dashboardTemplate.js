@@ -16,6 +16,21 @@ import { buildDashboardClientScript } from './dashboardClient.js'
 // 포맷 헬퍼(statusInfo·fmt·mdBold·stripDomain·cntyStatus·cntyFullName) → ./dashboardFormat.js
 // 인라인 클라이언트 JS(switchTab·filterTrend·_buildHero 등) → ./dashboardClient.js
 
+// ─── 베이스라인 리셋 제품 — 오디오·RAC는 4월(W13)을 새 베이스라인으로 ────────────
+// 이전 기간 데이터는 그래프에서 회색 페이드 + 연결선 끊기 / MoM 표기 숨김
+const BASELINE_RESET_PRODUCTS = ['audio', 'rac']
+function isBaselineResetProduct(prodOrId) {
+  const id = typeof prodOrId === 'string' ? prodOrId : (prodOrId?.id || prodOrId?.category || '')
+  return BASELINE_RESET_PRODUCTS.includes(String(id).toLowerCase())
+}
+function baselineIdxFor(prodOrId, labels) {
+  if (!isBaselineResetProduct(prodOrId) || !labels) return -1
+  return labels.findIndex(l => {
+    const s = String(l || '').trim()
+    return /^W?13$/i.test(s) || /^Apr(il)?$/i.test(s) || s === '4월'
+  })
+}
+
 // ─── 경쟁사 트렌드 섹션 ────────────────────────────────────────────────────
 function trendDetailHtml(products, weeklyAll, wLabels, t, lang, ulMap, periodTag) {
   if (!weeklyAll || !Object.keys(weeklyAll).length) return ''
@@ -43,7 +58,8 @@ function trendDetailHtml(products, weeklyAll, wLabels, t, lang, ulMap, periodTag
       // 차트+표 통합 테이블: colgroup 공유로 X축 정렬 보장
       const N = wLabels.length
       const colgroup = `<colgroup><col style="width:${TREND_BRAND_COL}px">${wLabels.map(() => '<col>').join('')}</colgroup>`
-      const chartRow = `<tr><td style="padding:0;border:0"></td><td colspan="${N}" style="padding:8px 0;border:0">${svgMultiLine(data, wLabels, N * 80, 180)}</td></tr>`
+      const _wFadeIdx = baselineIdxFor(p, wLabels)
+      const chartRow = `<tr><td style="padding:0;border:0"></td><td colspan="${N}" style="padding:8px 0;border:0">${svgMultiLine(data, wLabels, N * 80, 180, { fadeBeforeIdx: _wFadeIdx })}</td></tr>`
       const legendRow = `<tr><td style="padding:0;border:0"></td><td colspan="${N}" style="padding:4px 0 6px;border:0">${legend}</td></tr>`
       const thead = `<tr style="border-top:1px solid #E8EDF2"><th style="text-align:left;padding:5px 6px;font-size:14px;color:#94A3B8;font-weight:600;border-bottom:1px solid #F1F5F9">Brand</th>${wLabels.map(w => `<th style="text-align:center;padding:5px 2px;font-size:14px;color:#94A3B8;font-weight:600;border-bottom:1px solid #F1F5F9">${w}</th>`).join('')}</tr>`
       const tbody = brands.map((b, i) => {
@@ -154,7 +170,8 @@ function monthlyTrendDetailHtml(products, monthlyVis, t, lang, ulMap, periodTag)
       }).join('')
       const N = mLabels.length
       const colgroup = `<colgroup><col style="width:${TREND_BRAND_COL}px">${mLabels.map(() => '<col>').join('')}</colgroup>`
-      const chartRow = `<tr><td style="padding:0;border:0"></td><td colspan="${N}" style="padding:8px 0;border:0">${svgMultiLine(brandData, mLabels, N * 80, 180)}</td></tr>`
+      const _mFadeIdx = baselineIdxFor(p, mLabels)
+      const chartRow = `<tr><td style="padding:0;border:0"></td><td colspan="${N}" style="padding:8px 0;border:0">${svgMultiLine(brandData, mLabels, N * 80, 180, { fadeBeforeIdx: _mFadeIdx })}</td></tr>`
       const legendRow = `<tr><td style="padding:0;border:0"></td><td colspan="${N}" style="padding:4px 0 6px;border:0">${legend}</td></tr>`
       const thead = `<tr style="border-top:1px solid #E8EDF2"><th style="text-align:left;padding:5px 6px;font-size:14px;color:#94A3B8;font-weight:600;border-bottom:1px solid #F1F5F9">Brand</th>${mLabels.map(m => `<th style="text-align:center;padding:5px 2px;font-size:14px;color:#94A3B8;font-weight:600;border-bottom:1px solid #F1F5F9">${m}</th>`).join('')}</tr>`
       const tbody = brands.map((b, i) => {
@@ -351,11 +368,11 @@ function productSectionHtml(products, meta, t, lang, wLabels, ulMap, monthlyVis,
         <div class="prod-score-row">
           <span class="prod-score">${latestScore.toFixed(1)}<small>%</small></span>
           <span class="prod-delta prod-wow" style="color:${wColor}">${wd != null ? `WoW ${wArrow} ${Math.abs(wd).toFixed(1)}%p` : 'WoW —'}</span>
-          <span class="prod-delta prod-mom" style="display:none;color:${momColor}">${momD != null ? `MoM ${momArrow} ${Math.abs(momD).toFixed(1)}%p` : 'MoM —'}</span>
+          <span class="prod-delta prod-mom" style="display:none;color:${momColor}">${(isBaselineResetProduct(p) || momD == null) ? '' : `MoM ${momArrow} ${Math.abs(momD).toFixed(1)}%p`}</span>
         </div>
         <div class="prod-chart">
-          <div class="trend-weekly">${svgLine(weekly.slice(-10), wLabels.slice(-10), 300, 90, sparkColor)}</div>
-          <div class="trend-monthly" style="display:none">${svgLine(m4Data, m4Labels, 300, 90, sparkColor)}</div>
+          <div class="trend-weekly">${svgLine(weekly.slice(-10), wLabels.slice(-10), 300, 90, sparkColor, { fadeBeforeIdx: baselineIdxFor(p, wLabels.slice(-10)) })}</div>
+          <div class="trend-monthly" style="display:none">${svgLine(m4Data, m4Labels, 300, 90, sparkColor, { fadeBeforeIdx: baselineIdxFor(p, m4Labels) })}</div>
         </div>
         <div class="prod-comp">
           <span class="prod-comp-name">${lang === 'en' ? `vs ${p.compName}` : `${p.compName} ${t.vsComp}`}</span>

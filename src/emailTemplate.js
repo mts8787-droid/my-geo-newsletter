@@ -75,6 +75,20 @@ function isUnlaunched(unlaunchedMap, country, prodId) {
   return !!unlaunchedMap[`${country}|${code}`]
 }
 
+// 오디오·RAC: 4월(W13)을 새 베이스라인으로. 이전 데이터는 회색 페이드 + MoM 표기 숨김
+const BASELINE_RESET_PRODUCTS = ['audio', 'rac']
+function isBaselineResetProduct(p) {
+  const id = typeof p === 'string' ? p : (p?.id || p?.category || '')
+  return BASELINE_RESET_PRODUCTS.includes(String(id).toLowerCase())
+}
+function baselineIdxIn(labels) {
+  if (!labels) return -1
+  return labels.findIndex(l => {
+    const s = String(l || '').trim()
+    return /^W?13$/i.test(s) || /^Apr(il)?$/i.test(s) || s === '4월'
+  })
+}
+
 // Key Task Progress 카테고리 영문
 const CATEGORY_EN = {
   '콘텐츠수정': 'Content Revision',
@@ -231,7 +245,7 @@ function deltaHtml(d, size = 15, mom = false) {
 }
 
 // ─── 주간 트렌드 바 차트 (이메일 호환, 제품별 상대 스케일) ────────────────────
-function weeklyTrendHtml(weekly, color, globalMax, globalMin, weeklyLabels) {
+function weeklyTrendHtml(weekly, color, globalMax, globalMin, weeklyLabels, fadeBeforeIdx = -1) {
   if (!weekly || weekly.length === 0) return ''
   // 제품 자체 min/max 사용 → 작은 증감도 바 높낮이에 반영
   const valid = weekly.filter(v => v != null)
@@ -244,16 +258,20 @@ function weeklyTrendHtml(weekly, color, globalMax, globalMin, weeklyLabels) {
   const labels = weeklyLabels && weeklyLabels.length >= weekly.length
     ? weeklyLabels.slice(weeklyLabels.length - weekly.length)
     : fallback
+  const FADE = '#CBD5E1'
 
   const bars = weekly.map((v, i) => {
     if (v == null) return ''
     const h = Math.round(((v - localMin) / range) * MAX_H) + 4
     const spacer = MAX_H - h
+    const isPre = fadeBeforeIdx > 0 && i < fadeBeforeIdx
+    const barCol = isPre ? FADE : color
+    const valCol = isPre ? FADE : color
     return `<td style="vertical-align:bottom;text-align:center;padding:0 2px;">
       <table border="0" cellpadding="0" cellspacing="0" align="center" style="margin:0 auto;">
-        <tr><td style="font-size:10px;font-weight:700;color:${color};font-family:${EM_FONT};padding-bottom:1px;">${v.toFixed(1)}</td></tr>
+        <tr><td style="font-size:10px;font-weight:700;color:${valCol};font-family:${EM_FONT};padding-bottom:1px;">${isPre ? '' : v.toFixed(1)}</td></tr>
         ${spacer > 0 ? `<tr><td height="${spacer}" style="font-size:0;line-height:0;">&nbsp;</td></tr>` : ''}
-        <tr><td width="10" height="${h}" style="background:${color};font-size:0;line-height:0;">&nbsp;</td></tr>
+        <tr><td width="10" height="${h}" style="background:${barCol};font-size:0;line-height:0;">&nbsp;</td></tr>
         <tr><td style="font-size:10px;color:#94A3B8;font-family:${EM_FONT};padding-top:2px;">${labels[i] || ''}</td></tr>
       </table>
     </td>`
@@ -326,9 +344,12 @@ function productCardHtml(p, globalMax, globalMin, lang = 'ko', opts = {}) {
   }
   const momColor = d > 0 ? '#16A34A' : d < 0 ? '#DC2626' : '#94A3B8'
   const momArrow = d > 0 ? '▲' : d < 0 ? '▼' : ''
-  const momStr = activePrev > 0
-    ? `<span style="font-size:12px;font-weight:700;color:${momColor};font-family:${EM_FONT};">${momArrow}${Math.abs(d).toFixed(1)}%p</span>`
-    : `<span style="font-size:12px;color:#94A3B8;font-family:${EM_FONT};">—</span>`
+  const _isBaseReset = isBaselineResetProduct(p)
+  const momStr = _isBaseReset
+    ? ''
+    : activePrev > 0
+      ? `<span style="font-size:12px;font-weight:700;color:${momColor};font-family:${EM_FONT};">${momArrow}${Math.abs(d).toFixed(1)}%p</span>`
+      : `<span style="font-size:12px;color:#94A3B8;font-family:${EM_FONT};">—</span>`
 
   // 월간 트렌드: monthlyScores에서 구성
   const ms = p.monthlyScores || []
@@ -338,12 +359,16 @@ function productCardHtml(p, globalMax, globalMin, lang = 'ko', opts = {}) {
   const msMax = msData.length ? Math.max(...msData) : 100
   const msMin = msData.length ? Math.min(...msData.filter(v => v > 0)) : 0
 
+  // 베이스라인 리셋 제품(오디오/RAC): 4월/W13 미만 회색 페이드
+  const _wFadeIdx = _isBaseReset ? baselineIdxIn(trimmedLabels) : -1
+  const _mFadeIdx = _isBaseReset ? baselineIdxIn(msLabels) : -1
+
   // 트렌드 모드에 따라 선택
   const trendGraph = useMonthly
-    ? weeklyTrendHtml(msData, sparkColor, msMax, msMin, msLabels)
-    : weeklyTrendHtml(trendArr, sparkColor, globalMax, globalMin, trimmedLabels)
+    ? weeklyTrendHtml(msData, sparkColor, msMax, msMin, msLabels, _mFadeIdx)
+    : weeklyTrendHtml(trendArr, sparkColor, globalMax, globalMin, trimmedLabels, _wFadeIdx)
   const trendCell = showTrendTabs
-    ? `<div class="trend-weekly">${weeklyTrendHtml(trendArr, sparkColor, globalMax, globalMin, trimmedLabels)}</div><div class="trend-monthly" style="display:none;">${weeklyTrendHtml(msData, sparkColor, msMax, msMin, msLabels)}</div>`
+    ? `<div class="trend-weekly">${weeklyTrendHtml(trendArr, sparkColor, globalMax, globalMin, trimmedLabels, _wFadeIdx)}</div><div class="trend-monthly" style="display:none;">${weeklyTrendHtml(msData, sparkColor, msMax, msMin, msLabels, _mFadeIdx)}</div>`
     : trendGraph
 
   return `
@@ -359,7 +384,7 @@ function productCardHtml(p, globalMax, globalMin, lang = 'ko', opts = {}) {
               <td align="right" style="vertical-align:middle;white-space:nowrap;">
                 <span style="font-size:13px;font-weight:700;color:${ratioColor};font-family:${EM_FONT};letter-spacing:-1px;">${escapeHtml(p.compName || 'Samsung')} ${lang === 'en' ? 'vs' : '대비'} ${curRatio}%${ratioDelta}</span>
                 &nbsp;<span style="display:inline-block;background:${st.bg};color:${st.color};border:1px solid ${st.border};border-radius:6px;padding:0px 5px;font-size:10px;font-weight:700;line-height:16px;font-family:${EM_FONT};vertical-align:middle;">${st.label}</span>
-                ${activePrev > 0 ? `<div style="margin-top:2px;font-size:10px;color:#94A3B8;font-family:${EM_FONT};text-align:right;">${lang === 'en' ? 'MoM' : '전월대비'} <span style="color:${momColor};font-weight:700;">${momArrow}${Math.abs(d).toFixed(1)}%p</span></div>` : ''}
+                ${(_isBaseReset || !(activePrev > 0)) ? '' : `<div style="margin-top:2px;font-size:10px;color:#94A3B8;font-family:${EM_FONT};text-align:right;">${lang === 'en' ? 'MoM' : '전월대비'} <span style="color:${momColor};font-weight:700;">${momArrow}${Math.abs(d).toFixed(1)}%p</span></div>`}
               </td>
             </tr>
           </table>
@@ -392,7 +417,7 @@ function productCardV2Html(p, lang = 'ko', opts = {}) {
   const ratioColor = curRatio >= 100 ? '#15803D' : curRatio >= 80 ? '#E8910C' : '#BE123C'
   const momColor = d > 0 ? '#16A34A' : d < 0 ? '#DC2626' : '#94A3B8'
   const momArrow = d > 0 ? '▲' : d < 0 ? '▼' : ''
-  const momStr = p.prev != null && p.prev > 0
+  const momStr = (!isBaselineResetProduct(p) && p.prev != null && p.prev > 0)
     ? `<span style="font-size:11px;font-weight:700;color:${momColor};">${momArrow}${Math.abs(d).toFixed(1)}%p</span>`
     : ''
   const prodName = opts.prodNameFn ? opts.prodNameFn(p) : p.kr
@@ -489,7 +514,7 @@ function productCardV3Html(p, lang = 'ko', opts = {}) {
   const ratioColor = curRatio >= 100 ? '#15803D' : curRatio >= 80 ? '#E8910C' : '#BE123C'
   const momColor = d > 0 ? '#16A34A' : d < 0 ? '#DC2626' : '#94A3B8'
   const momArrow = d > 0 ? '▲' : d < 0 ? '▼' : ''
-  const momStr = p.prev != null && p.prev > 0
+  const momStr = (!isBaselineResetProduct(p) && p.prev != null && p.prev > 0)
     ? `<span style="font-size:12px;font-weight:700;color:${momColor};letter-spacing:-1.2px;">${momArrow}${Math.abs(d).toFixed(1)}%p</span>`
     : ''
   const prodName = opts.prodNameFn ? opts.prodNameFn(p) : p.kr

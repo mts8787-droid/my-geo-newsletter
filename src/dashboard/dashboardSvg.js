@@ -5,8 +5,10 @@ import { FONT, BRAND_COLORS, FALLBACK_COLORS } from './dashboardConsts.js'
 let _sid = 0
 
 // 단일 색상 라인 차트 — null 값은 스킵, 라벨은 모든 위치에 표시
-export function svgLine(data, labels, w, h, color) {
+// opts.fadeBeforeIdx: 해당 인덱스 미만 데이터는 회색으로 페이드 + 연결선 끊김
+export function svgLine(data, labels, w, h, color, opts = {}) {
   if (!data || !data.length) return `<svg width="${w}" height="${h}"></svg>`
+  const fadeBeforeIdx = opts.fadeBeforeIdx != null ? opts.fadeBeforeIdx : -1
   const id = _sid++
   const pad = { t: 18, r: 10, b: 20, l: 10 }
   const cw = w - pad.l - pad.r, ch = h - pad.t - pad.b
@@ -25,11 +27,14 @@ export function svgLine(data, labels, w, h, color) {
   const N = data.length, divisor = N > 1 ? N - 1 : 1
   const allX = data.map((_, i) => pad.l + (i / divisor) * cw)
   const pts = []
-  data.forEach((v, i) => { if (v != null) pts.push({ x: allX[i], y: pad.t + (1 - (v - mn) / rng) * ch, v }) })
+  data.forEach((v, i) => { if (v != null) pts.push({ x: allX[i], y: pad.t + (1 - (v - mn) / rng) * ch, v, idx: i }) })
   let svg = `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}" xmlns="http://www.w3.org/2000/svg" style="display:block;">`
-  if (pts.length >= 2) {
-    const line = pts.map((p, i) => `${i ? 'L' : 'M'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ')
-    const area = line + ` L${pts[pts.length-1].x.toFixed(1)},${pad.t+ch} L${pts[0].x.toFixed(1)},${pad.t+ch} Z`
+  const prePts = fadeBeforeIdx > 0 ? pts.filter(p => p.idx < fadeBeforeIdx) : []
+  const postPts = fadeBeforeIdx > 0 ? pts.filter(p => p.idx >= fadeBeforeIdx) : pts
+  const FADE = '#CBD5E1'
+  if (postPts.length >= 2) {
+    const line = postPts.map((p, i) => `${i ? 'L' : 'M'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ')
+    const area = line + ` L${postPts[postPts.length-1].x.toFixed(1)},${pad.t+ch} L${postPts[0].x.toFixed(1)},${pad.t+ch} Z`
     svg += `<defs><linearGradient id="lg${id}" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0%" stop-color="${color}" stop-opacity="0.25"/>
       <stop offset="100%" stop-color="${color}" stop-opacity="0.03"/>
@@ -37,8 +42,18 @@ export function svgLine(data, labels, w, h, color) {
     svg += `<path d="${area}" fill="url(#lg${id})"/>`
     svg += `<path d="${line}" stroke="${color}" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`
   }
-  svg += pts.map(p => `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="3.5" fill="#fff" stroke="${color}" stroke-width="2"/>`).join('')
-  svg += pts.map(p => `<text x="${p.x.toFixed(1)}" y="${Math.max(p.y - 7, 12)}" text-anchor="middle" font-size="12" font-weight="700" fill="${color}" font-family="${FONT}">${p.v.toFixed(1)}</text>`).join('')
+  if (prePts.length >= 2) {
+    const line = prePts.map((p, i) => `${i ? 'L' : 'M'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ')
+    svg += `<path d="${line}" stroke="${FADE}" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.5"/>`
+  }
+  svg += pts.map(p => {
+    const isPre = fadeBeforeIdx > 0 && p.idx < fadeBeforeIdx
+    return `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="3.5" fill="#fff" stroke="${isPre ? FADE : color}" stroke-width="2" opacity="${isPre ? 0.5 : 1}"/>`
+  }).join('')
+  svg += pts.map(p => {
+    if (fadeBeforeIdx > 0 && p.idx < fadeBeforeIdx) return ''
+    return `<text x="${p.x.toFixed(1)}" y="${Math.max(p.y - 7, 12)}" text-anchor="middle" font-size="12" font-weight="700" fill="${color}" font-family="${FONT}">${p.v.toFixed(1)}</text>`
+  }).join('')
   svg += data.map((_, i) => `<text x="${allX[i].toFixed(1)}" y="${pad.t+ch+14}" text-anchor="middle" font-size="12" fill="#94A3B8" font-family="${FONT}">${labels[i]||''}</text>`).join('')
   svg += '</svg>'
   return svg
@@ -50,9 +65,11 @@ export function brandColor(name, idx) {
 }
 
 // 다중 브랜드 라인 차트 (X 라벨 없음 — 외부 테이블 헤더가 대체)
-export function svgMultiLine(brandData, labels, w, h) {
+// opts.fadeBeforeIdx: 해당 인덱스 미만 데이터는 회색으로 페이드 + 연결선 끊김
+export function svgMultiLine(brandData, labels, w, h, opts = {}) {
   const brands = Object.keys(brandData)
   if (!brands.length || !labels.length) return ''
+  const fadeBeforeIdx = opts.fadeBeforeIdx != null ? opts.fadeBeforeIdx : -1
   let mn = Infinity, mx = -Infinity
   brands.forEach(b => (brandData[b] || []).forEach(v => { if (v != null) { if (v < mn) mn = v; if (v > mx) mx = v } }))
   if (!isFinite(mn)) return ''
@@ -61,6 +78,7 @@ export function svgMultiLine(brandData, labels, w, h) {
   const rng = mx - mn || 1
   const N = labels.length
   const pt = 8, pb = 8, ch = h - pt - pb
+  const FADE = '#CBD5E1'
   let g = ''
   for (let i = 0; i <= 4; i++) {
     const y = pt + (i / 4) * ch
@@ -77,16 +95,22 @@ export function svgMultiLine(brandData, labels, w, h) {
       if (v == null) return
       const x = ((i + 0.5) / N) * w
       const y = pt + (1 - (v - mn) / rng) * ch
-      pts.push({ x, y, v })
+      pts.push({ x, y, v, idx: i })
     })
     if (!pts.length) return
-    if (pts.length >= 2) {
-      const d = pts.map((p, i) => `${i ? 'L' : 'M'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ')
-      g += `<path d="${d}" stroke="${color}" fill="none" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round" opacity="${opacity}"/>`
+    const prePts = fadeBeforeIdx > 0 ? pts.filter(p => p.idx < fadeBeforeIdx) : []
+    const postPts = fadeBeforeIdx > 0 ? pts.filter(p => p.idx >= fadeBeforeIdx) : pts
+    function drawSeg(segPts, segColor, segOp) {
+      if (segPts.length >= 2) {
+        const d = segPts.map((p, i) => `${i ? 'L' : 'M'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ')
+        g += `<path d="${d}" stroke="${segColor}" fill="none" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round" opacity="${segOp}"/>`
+      }
+      segPts.forEach(p => {
+        g += `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${isLG ? 3.5 : 2.5}" fill="#fff" stroke="${segColor}" stroke-width="${isLG ? 2 : 1.5}" opacity="${segOp}"/>`
+      })
     }
-    pts.forEach(p => {
-      g += `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${isLG ? 3.5 : 2.5}" fill="#fff" stroke="${color}" stroke-width="${isLG ? 2 : 1.5}" opacity="${opacity}"/>`
-    })
+    drawSeg(prePts, FADE, 0.4)
+    drawSeg(postPts, color, opacity)
   })
   return `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" style="display:block">${g}</svg>`
 }
