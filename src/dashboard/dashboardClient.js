@@ -1163,36 +1163,27 @@ function _setProdMom(card,momD){
   el.innerHTML='MoM '+arrow+' '+Math.abs(momD).toFixed(1)+'%p';
   el.style.color=clr;
 }
-// 월 문자열을 0~11 인덱스로 정규화 ('1월'/'Jan' 등)
-function _parseMonthIdx(d){
-  var s=String(d||'');
-  var km=s.match(/(\\d{1,2})월/);if(km)return parseInt(km[1])-1;
-  var em=s.match(/(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)/i);
-  if(em){var k=em[1].toLowerCase();return['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'].indexOf(k)}
-  return -1;
-}
-// 선택 국가들의 _productsCnty[].monthlyScores 평균에서 MoM 계산
+// 선택 국가들의 monthlyScores 마지막 2개 평균으로 MoM 계산
+// (monthlyScores 는 서버에서 parseMonthFromDate 로 연·월 정렬됨 → 배열 끝이 최신)
 function _filteredMomD(prodId,countries){
   if(!_productsCnty||!_productsCnty.length||!countries||!countries.length)return null;
   var prod=_products.find(function(p){return p.id===prodId});if(!prod)return null;
   var prodKeys=[(prod.category||'').toUpperCase(),prod.id.toUpperCase(),(prod.kr||'').toUpperCase(),(prod.en||'').toUpperCase()].filter(Boolean);
-  var byMonth={};
+  var lastSum=0,lastCnt=0,prevSum=0,prevCnt=0;
   _productsCnty.forEach(function(r){
     if(countries.indexOf(r.country||'')<0)return;
     var rKey=(r.product||'').toUpperCase();
     if(prodKeys.indexOf(rKey)<0)return;
-    (r.monthlyScores||[]).forEach(function(m){
-      var mi=_parseMonthIdx(m.date);if(mi<0||m.score==null)return;
-      if(!byMonth[mi])byMonth[mi]={sum:0,count:0};
-      byMonth[mi].sum+=Number(m.score)||0;byMonth[mi].count++;
-    });
+    var ms=r.monthlyScores||[];if(ms.length<2)return;
+    // 월 드롭다운(_curMonthIdx) 있으면 그 위치를 '최신'으로, 없으면 배열 끝
+    var lastIdx=(_curMonthIdx>=0&&_curMonthIdx<ms.length)?_curMonthIdx:ms.length-1;
+    var prevIdx=lastIdx-1;if(prevIdx<0)return;
+    var last=ms[lastIdx],prev=ms[prevIdx];
+    if(last&&last.score!=null){lastSum+=Number(last.score)||0;lastCnt++}
+    if(prev&&prev.score!=null){prevSum+=Number(prev.score)||0;prevCnt++}
   });
-  var indices=Object.keys(byMonth).map(Number).sort(function(a,b){return a-b});
-  if(indices.length<2)return null;
-  var last=indices[indices.length-1],prev=indices[indices.length-2];
-  var lastAvg=byMonth[last].sum/byMonth[last].count;
-  var prevAvg=byMonth[prev].sum/byMonth[prev].count;
-  return +(lastAvg-prevAvg).toFixed(1);
+  if(!lastCnt||!prevCnt)return null;
+  return +((lastSum/lastCnt)-(prevSum/prevCnt)).toFixed(1);
 }
 function _baselineIdx(prodId,labels){
   if(!_isBaselineProd(prodId)||!labels)return -1;
