@@ -84,7 +84,7 @@ function trendDetailHtml(products, weeklyAll, wLabels, t, lang, ulMap, periodTag
     </div>
     <div class="section-body">${buGroups}${(() => {
       const footnotes = products.filter(p => getULCntys(p.id || p.category, ulMap).length > 0)
-        .map(p => `${p.kr}: ${getULCntys(p.id || p.category, ulMap).map(c => cntyOfficial(c, lang)).join(', ')} ${lang === 'en' ? 'not launched' : '미출시'}`)
+        .map(p => `${((p.id || '').toLowerCase() === 'audio' || p.kr === '오디오') ? 'Audio-Sound Suit' : p.kr}: ${getULCntys(p.id || p.category, ulMap).map(c => cntyOfficial(c, lang)).join(', ')} ${lang === 'en' ? 'not launched' : '미출시'}`)
       return footnotes.length ? `<p style="margin:12px 0 0;font-size:12px;color:#1A1A1A;line-height:1.6;font-weight:500">* ${footnotes.join(' / ')}</p>` : ''
     })()}</div>
   </div>`
@@ -195,7 +195,7 @@ function monthlyTrendDetailHtml(products, monthlyVis, t, lang, ulMap, periodTag)
     </div>
     <div class="section-body">${buGroups}${(() => {
       const footnotes = products.filter(p => getULCntys(p.id || p.category, ulMap).length > 0)
-        .map(p => `${p.kr}: ${getULCntys(p.id || p.category, ulMap).map(c => cntyOfficial(c, lang)).join(', ')} ${lang === 'en' ? 'not launched' : '미출시'}`)
+        .map(p => `${((p.id || '').toLowerCase() === 'audio' || p.kr === '오디오') ? 'Audio-Sound Suit' : p.kr}: ${getULCntys(p.id || p.category, ulMap).map(c => cntyOfficial(c, lang)).join(', ')} ${lang === 'en' ? 'not launched' : '미출시'}`)
       return footnotes.length ? `<p style="margin:12px 0 0;font-size:12px;color:#1A1A1A;line-height:1.6;font-weight:500">* ${footnotes.join(' / ')}</p>` : ''
     })()}</div>
   </div>`
@@ -380,7 +380,7 @@ function productSectionHtml(products, meta, t, lang, wLabels, ulMap, monthlyVis,
     ${insightHtml(meta.productInsight, meta.showProductInsight, meta.productHowToRead, meta.showProductHowToRead, t)}
     <div class="section-body">${buGroups}${(() => {
       const footnotes = products.filter(p => getULCntys(p.id || p.category, ulMap).length > 0)
-        .map(p => `${p.kr}: ${getULCntys(p.id || p.category, ulMap).map(c => cntyOfficial(c, lang)).join(', ')} ${lang === 'en' ? 'not launched' : '미출시'}`)
+        .map(p => `${((p.id || '').toLowerCase() === 'audio' || p.kr === '오디오') ? 'Audio-Sound Suit' : p.kr}: ${getULCntys(p.id || p.category, ulMap).map(c => cntyOfficial(c, lang)).join(', ')} ${lang === 'en' ? 'not launched' : '미출시'}`)
       return footnotes.length ? `<p style="margin:12px 0 0;font-size:12px;color:#1A1A1A;line-height:1.6;font-weight:500">* ${footnotes.join(' / ')}</p>` : ''
     })()}</div>
   </div>`
@@ -496,7 +496,8 @@ function countrySectionHtml(productsCnty, meta, t, lang, ulMap, periodTag) {
         const footnotes = products.map(name => {
           const id = NAME_TO_ID[name] || String(name).toLowerCase()
           const cntys = getULCntys(id, ulMap)
-          return cntys.length ? `${name}: ${cntys.join(', ')} ${lang === 'en' ? 'not launched' : '미출시'}` : null
+          const displayName = id === 'audio' ? 'Audio-Sound Suit' : name
+          return cntys.length ? `${displayName}: ${cntys.join(', ')} ${lang === 'en' ? 'not launched' : '미출시'}` : null
         }).filter(Boolean)
         return footnotes.length ? `<p style="margin:12px 0 0;font-size:12px;color:#1A1A1A;line-height:1.6;font-weight:500">* ${footnotes.join(' / ')}</p>` : ''
       })()}

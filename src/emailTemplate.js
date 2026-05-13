@@ -1533,9 +1533,12 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
   const ulFootnoteParts = products
     .filter(p => getULCntys(p.id || p.category).length > 0)
     .map(p => {
-      const displayName = lang === 'en'
-        ? (PROD_EN_NAME[(p.id || '').toLowerCase()] || PROD_EN_BY_KR[p.kr] || p.kr)
-        : p.kr
+      const isAudio = (p.id || '').toLowerCase() === 'audio' || p.kr === '오디오'
+      const displayName = isAudio
+        ? 'Audio-Sound Suit'
+        : lang === 'en'
+          ? (PROD_EN_NAME[(p.id || '').toLowerCase()] || PROD_EN_BY_KR[p.kr] || p.kr)
+          : p.kr
       const cntys = getULCntys(p.id || p.category).map(c => cntyLabel(c, lang)).join(', ')
       return `${displayName} : ${cntys}`
     })
