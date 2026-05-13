@@ -258,7 +258,7 @@ function weeklyTrendHtml(weekly, color, globalMax, globalMin, weeklyLabels, fade
   const labels = weeklyLabels && weeklyLabels.length >= weekly.length
     ? weeklyLabels.slice(weeklyLabels.length - weekly.length)
     : fallback
-  const FADE = '#CBD5E1'
+  const FADE = '#64748B'
 
   const bars = weekly.map((v, i) => {
     if (v == null) return ''
@@ -269,7 +269,7 @@ function weeklyTrendHtml(weekly, color, globalMax, globalMin, weeklyLabels, fade
     const valCol = isPre ? FADE : color
     return `<td style="vertical-align:bottom;text-align:center;padding:0 2px;">
       <table border="0" cellpadding="0" cellspacing="0" align="center" style="margin:0 auto;">
-        <tr><td style="font-size:10px;font-weight:700;color:${valCol};font-family:${EM_FONT};padding-bottom:1px;">${isPre ? '' : v.toFixed(1)}</td></tr>
+        <tr><td style="font-size:10px;font-weight:700;color:${valCol};font-family:${EM_FONT};padding-bottom:1px;">${v.toFixed(1)}</td></tr>
         ${spacer > 0 ? `<tr><td height="${spacer}" style="font-size:0;line-height:0;">&nbsp;</td></tr>` : ''}
         <tr><td width="10" height="${h}" style="background:${barCol};font-size:0;line-height:0;">&nbsp;</td></tr>
         <tr><td style="font-size:10px;color:#94A3B8;font-family:${EM_FONT};padding-top:2px;">${labels[i] || ''}</td></tr>

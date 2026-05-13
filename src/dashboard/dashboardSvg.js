@@ -31,7 +31,7 @@ export function svgLine(data, labels, w, h, color, opts = {}) {
   let svg = `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}" xmlns="http://www.w3.org/2000/svg" style="display:block;">`
   const prePts = fadeBeforeIdx > 0 ? pts.filter(p => p.idx < fadeBeforeIdx) : []
   const postPts = fadeBeforeIdx > 0 ? pts.filter(p => p.idx >= fadeBeforeIdx) : pts
-  const FADE = '#CBD5E1'
+  const FADE = '#64748B'
   if (postPts.length >= 2) {
     const line = postPts.map((p, i) => `${i ? 'L' : 'M'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ')
     const area = line + ` L${postPts[postPts.length-1].x.toFixed(1)},${pad.t+ch} L${postPts[0].x.toFixed(1)},${pad.t+ch} Z`
@@ -44,15 +44,16 @@ export function svgLine(data, labels, w, h, color, opts = {}) {
   }
   if (prePts.length >= 2) {
     const line = prePts.map((p, i) => `${i ? 'L' : 'M'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ')
-    svg += `<path d="${line}" stroke="${FADE}" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.5"/>`
+    svg += `<path d="${line}" stroke="${FADE}" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.85"/>`
   }
   svg += pts.map(p => {
     const isPre = fadeBeforeIdx > 0 && p.idx < fadeBeforeIdx
-    return `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="3.5" fill="#fff" stroke="${isPre ? FADE : color}" stroke-width="2" opacity="${isPre ? 0.5 : 1}"/>`
+    return `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="3.5" fill="#fff" stroke="${isPre ? FADE : color}" stroke-width="2" opacity="${isPre ? 0.85 : 1}"/>`
   }).join('')
   svg += pts.map(p => {
-    if (fadeBeforeIdx > 0 && p.idx < fadeBeforeIdx) return ''
-    return `<text x="${p.x.toFixed(1)}" y="${Math.max(p.y - 7, 12)}" text-anchor="middle" font-size="12" font-weight="700" fill="${color}" font-family="${FONT}">${p.v.toFixed(1)}</text>`
+    const isPre = fadeBeforeIdx > 0 && p.idx < fadeBeforeIdx
+    const tcol = isPre ? FADE : color
+    return `<text x="${p.x.toFixed(1)}" y="${Math.max(p.y - 7, 12)}" text-anchor="middle" font-size="12" font-weight="700" fill="${tcol}" font-family="${FONT}">${p.v.toFixed(1)}</text>`
   }).join('')
   svg += data.map((_, i) => `<text x="${allX[i].toFixed(1)}" y="${pad.t+ch+14}" text-anchor="middle" font-size="12" fill="#94A3B8" font-family="${FONT}">${labels[i]||''}</text>`).join('')
   svg += '</svg>'
@@ -78,7 +79,7 @@ export function svgMultiLine(brandData, labels, w, h, opts = {}) {
   const rng = mx - mn || 1
   const N = labels.length
   const pt = 8, pb = 8, ch = h - pt - pb
-  const FADE = '#CBD5E1'
+  const FADE = '#64748B'
   let g = ''
   for (let i = 0; i <= 4; i++) {
     const y = pt + (i / 4) * ch
@@ -109,7 +110,7 @@ export function svgMultiLine(brandData, labels, w, h, opts = {}) {
         g += `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${isLG ? 3.5 : 2.5}" fill="#fff" stroke="${segColor}" stroke-width="${isLG ? 2 : 1.5}" opacity="${segOp}"/>`
       })
     }
-    drawSeg(prePts, FADE, 0.4)
+    drawSeg(prePts, FADE, 0.85)
     drawSeg(postPts, color, opacity)
   })
   return `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" style="display:block">${g}</svg>`

@@ -1163,22 +1163,37 @@ function _setProdMom(card,momD){
   el.innerHTML='MoM '+arrow+' '+Math.abs(momD).toFixed(1)+'%p';
   el.style.color=clr;
 }
-// 선택 국가들의 monthlyScores 마지막 2개 평균으로 MoM 계산
-// (monthlyScores 는 서버에서 parseMonthFromDate 로 연·월 정렬됨 → 배열 끝이 최신)
+// 선택 국가들의 MoM 평균 — 국가별 monthlyScores 길이가 달라도 실제 월(date) 기준으로 정합
+// 1) 대상 월(target month-of-year) 결정: 월 드롭다운(_curMonthIdxIn12) 우선, 없으면 데이터에서 최신
+// 2) 각 국가별로 target 위치 찾고, 그 직전(prev) 위치 score 사용
 function _filteredMomD(prodId,countries){
   if(!_productsCnty||!_productsCnty.length||!countries||!countries.length)return null;
   var prod=_products.find(function(p){return p.id===prodId});if(!prod)return null;
   var prodKeys=[(prod.category||'').toUpperCase(),prod.id.toUpperCase(),(prod.kr||'').toUpperCase(),(prod.en||'').toUpperCase()].filter(Boolean);
-  var lastSum=0,lastCnt=0,prevSum=0,prevCnt=0;
+  var enM={jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11};
+  function dmi(d){var km=String(d).match(/(\\d{1,2})월/);if(km)return parseInt(km[1])-1;var em=String(d).match(/(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i);return em?enM[em[1].toLowerCase()]:-1}
+  var entries=[];
   _productsCnty.forEach(function(r){
     if(countries.indexOf(r.country||'')<0)return;
     var rKey=(r.product||'').toUpperCase();
     if(prodKeys.indexOf(rKey)<0)return;
-    var ms=r.monthlyScores||[];if(ms.length<2)return;
-    // 월 드롭다운(_curMonthIdx) 있으면 그 위치를 '최신'으로, 없으면 배열 끝
-    var lastIdx=(_curMonthIdx>=0&&_curMonthIdx<ms.length)?_curMonthIdx:ms.length-1;
-    var prevIdx=lastIdx-1;if(prevIdx<0)return;
-    var last=ms[lastIdx],prev=ms[prevIdx];
+    entries.push(r);
+  });
+  if(!entries.length)return null;
+  var targetMi=_curMonthIdxIn12;
+  if(targetMi<0){
+    // 데이터 중 가장 긴 monthlyScores 의 마지막 month-of-year 를 최신으로
+    var longest=null;
+    entries.forEach(function(r){var ms=r.monthlyScores||[];if(!longest||ms.length>longest.length)longest=ms});
+    if(longest&&longest.length)targetMi=dmi(longest[longest.length-1].date);
+  }
+  if(targetMi<0)return null;
+  var lastSum=0,lastCnt=0,prevSum=0,prevCnt=0;
+  entries.forEach(function(r){
+    var ms=r.monthlyScores||[];if(!ms.length)return;
+    var ti=-1;for(var i=0;i<ms.length;i++){if(dmi(ms[i].date)===targetMi){ti=i;break}}
+    if(ti<0)return;
+    var last=ms[ti],prev=ti>0?ms[ti-1]:null;
     if(last&&last.score!=null){lastSum+=Number(last.score)||0;lastCnt++}
     if(prev&&prev.score!=null){prevSum+=Number(prev.score)||0;prevCnt++}
   });
@@ -1202,7 +1217,7 @@ function _miniSvg(data,labels,w,h,color,fadeIdx){
   var pts=data.map(function(v,i){return{x:pl+(i/(data.length-1))*cw,y:pt+(1-(v-mn)/rng)*ch,v:v,idx:i}});
   var prePts=fadeIdx>0?pts.filter(function(p){return p.idx<fadeIdx}):[];
   var postPts=fadeIdx>0?pts.filter(function(p){return p.idx>=fadeIdx}):pts;
-  var FADE='#CBD5E1';
+  var FADE='#64748B';
   var id='ms'+Math.random().toString(36).slice(2,6);
   var s='<svg viewBox="0 0 '+w+' '+h+'" width="100%" height="'+h+'" xmlns="http://www.w3.org/2000/svg" style="display:block">';
   if(postPts.length>=2){
@@ -1214,10 +1229,10 @@ function _miniSvg(data,labels,w,h,color,fadeIdx){
   }
   if(prePts.length>=2){
     var pline=prePts.map(function(p,i){return(i?'L':'M')+p.x.toFixed(1)+','+p.y.toFixed(1)}).join(' ');
-    s+='<path d="'+pline+'" stroke="'+FADE+'" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.5"/>';
+    s+='<path d="'+pline+'" stroke="'+FADE+'" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.85"/>';
   }
-  pts.forEach(function(p){var isPre=fadeIdx>0&&p.idx<fadeIdx;s+='<circle cx="'+p.x.toFixed(1)+'" cy="'+p.y.toFixed(1)+'" r="3.5" fill="#fff" stroke="'+(isPre?FADE:color)+'" stroke-width="2" opacity="'+(isPre?0.5:1)+'"/>'});
-  pts.forEach(function(p){if(fadeIdx>0&&p.idx<fadeIdx)return;s+='<text x="'+p.x.toFixed(1)+'" y="'+Math.max(p.y-7,12)+'" text-anchor="middle" font-size="12" font-weight="700" fill="'+color+'" font-family="'+_FONT+'">'+p.v.toFixed(1)+'</text>'});
+  pts.forEach(function(p){var isPre=fadeIdx>0&&p.idx<fadeIdx;s+='<circle cx="'+p.x.toFixed(1)+'" cy="'+p.y.toFixed(1)+'" r="3.5" fill="#fff" stroke="'+(isPre?FADE:color)+'" stroke-width="2" opacity="'+(isPre?0.85:1)+'"/>'});
+  pts.forEach(function(p){var isPre=fadeIdx>0&&p.idx<fadeIdx;s+='<text x="'+p.x.toFixed(1)+'" y="'+Math.max(p.y-7,12)+'" text-anchor="middle" font-size="12" font-weight="700" fill="'+(isPre?FADE:color)+'" font-family="'+_FONT+'">'+p.v.toFixed(1)+'</text>'});
   pts.forEach(function(p,i){s+='<text x="'+p.x.toFixed(1)+'" y="'+(pt+ch+14)+'" text-anchor="middle" font-size="12" fill="#94A3B8" font-family="'+_FONT+'">'+(labels[i]||'')+'</text>'});
   s+='</svg>';return s;
 }
@@ -1227,7 +1242,7 @@ function _miniSvgNullAware(data,labels,w,h,color,fadeIdx){
   var N=data.length;var divisor=N>1?N-1:1;
   var allX=data.map(function(_,i){return pl+(i/divisor)*cw});
   var valid=data.filter(function(v){return v!=null});
-  var FADE='#CBD5E1';
+  var FADE='#64748B';
   var s='<svg viewBox="0 0 '+w+' '+h+'" width="100%" height="'+h+'" xmlns="http://www.w3.org/2000/svg" style="display:block">';
   if(valid.length){
     var mn=Math.min.apply(null,valid)-1;var mx=Math.max.apply(null,valid)+1;var rng=mx-mn||1;
@@ -1245,10 +1260,10 @@ function _miniSvgNullAware(data,labels,w,h,color,fadeIdx){
     }
     if(prePts.length>=2){
       var pline=prePts.map(function(p,i){return(i?'L':'M')+p.x.toFixed(1)+','+p.y.toFixed(1)}).join(' ');
-      s+='<path d="'+pline+'" stroke="'+FADE+'" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.5"/>';
+      s+='<path d="'+pline+'" stroke="'+FADE+'" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.85"/>';
     }
-    pts.forEach(function(p){var isPre=fadeIdx>0&&p.idx<fadeIdx;s+='<circle cx="'+p.x.toFixed(1)+'" cy="'+p.y.toFixed(1)+'" r="3.5" fill="#fff" stroke="'+(isPre?FADE:color)+'" stroke-width="2" opacity="'+(isPre?0.5:1)+'"/>'});
-    pts.forEach(function(p){if(fadeIdx>0&&p.idx<fadeIdx)return;s+='<text x="'+p.x.toFixed(1)+'" y="'+Math.max(p.y-7,12)+'" text-anchor="middle" font-size="12" font-weight="700" fill="'+color+'" font-family="'+_FONT+'">'+p.v.toFixed(1)+'</text>'});
+    pts.forEach(function(p){var isPre=fadeIdx>0&&p.idx<fadeIdx;s+='<circle cx="'+p.x.toFixed(1)+'" cy="'+p.y.toFixed(1)+'" r="3.5" fill="#fff" stroke="'+(isPre?FADE:color)+'" stroke-width="2" opacity="'+(isPre?0.85:1)+'"/>'});
+    pts.forEach(function(p){var isPre=fadeIdx>0&&p.idx<fadeIdx;s+='<text x="'+p.x.toFixed(1)+'" y="'+Math.max(p.y-7,12)+'" text-anchor="middle" font-size="12" font-weight="700" fill="'+(isPre?FADE:color)+'" font-family="'+_FONT+'">'+p.v.toFixed(1)+'</text>'});
   }
   data.forEach(function(_,i){s+='<text x="'+allX[i].toFixed(1)+'" y="'+(pt+ch+14)+'" text-anchor="middle" font-size="12" fill="#94A3B8" font-family="'+_FONT+'">'+(labels[i]||'')+'</text>'});
   s+='</svg>';return s;
