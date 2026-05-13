@@ -654,6 +654,9 @@ function updateMonthlyProductScores(selCountry){
       var compPctEl=card.querySelector('.prod-comp-pct');if(compPctEl){compPctEl.textContent=compPct+'%';compPctEl.style.color=sparkColor}
       var badge=card.querySelector('.prod-badge');if(badge){badge.style.background=st.bg;badge.style.color=st.color;badge.style.borderColor=st.border;badge.textContent=st.label}
       card.style.borderColor=st.border;
+      // 전체 국가: 서버 렌더 MoM(data-mmom) 복원
+      var origMom=parseFloat(card.getAttribute('data-mmom'));
+      _setProdMom(card,isNaN(origMom)?null:origMom);
       // TTL 미니차트 복원
       var nameEl=card.querySelector('.prod-name');
       if(nameEl){
@@ -712,6 +715,8 @@ function updateMonthlyProductScores(selCountry){
     var compPctEl=card.querySelector('.prod-comp-pct');if(compPctEl){compPctEl.textContent=compPct+'%';compPctEl.style.color=sparkColor}
     var badge=card.querySelector('.prod-badge');if(badge){badge.style.background=st.bg;badge.style.color=st.color;badge.style.borderColor=st.border;badge.textContent=st.label}
     card.style.borderColor=st.border;
+    // 선택 국가 기반 MoM 재계산
+    _setProdMom(card,_filteredMomD(prod.id,countries));
     // 월간 미니차트: TTL 기반 트렌드에서 마지막 점을 선택 국가 평균으로 교체
     var mChart=card.querySelector('.trend-monthly');
     if(mChart&&prod){
@@ -1148,6 +1153,47 @@ function _renderMonthlyTrend(container,selBU,selProd,trendCnty,trendCountries){
 // ─── 제품 카드 스코어 국가 필터 업데이트 ───
 // 오디오/RAC: 4월(W13) 이전 데이터는 그래프 회색 페이드 + 연결선 끊김
 function _isBaselineProd(prodId){var s=String(prodId||'').toLowerCase();return s==='audio'||s==='rac'}
+// prod-mom 텍스트 갱신 (baseline 제품은 빈 처리)
+function _setProdMom(card,momD){
+  var el=card.querySelector('.prod-mom');if(!el)return;
+  if(_isBaselineProd(card.getAttribute('data-prodid'))){el.innerHTML='';return}
+  if(momD==null||isNaN(momD)){el.innerHTML='MoM —';el.style.color='#94A3B8';return}
+  var arrow=momD>0?'▲':momD<0?'▼':'─';
+  var clr=momD>0?'#22C55E':momD<0?'#EF4444':'#94A3B8';
+  el.innerHTML='MoM '+arrow+' '+Math.abs(momD).toFixed(1)+'%p';
+  el.style.color=clr;
+}
+// 월 문자열을 0~11 인덱스로 정규화 ('1월'/'Jan' 등)
+function _parseMonthIdx(d){
+  var s=String(d||'');
+  var km=s.match(/(\\d{1,2})월/);if(km)return parseInt(km[1])-1;
+  var em=s.match(/(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)/i);
+  if(em){var k=em[1].toLowerCase();return['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'].indexOf(k)}
+  return -1;
+}
+// 선택 국가들의 _productsCnty[].monthlyScores 평균에서 MoM 계산
+function _filteredMomD(prodId,countries){
+  if(!_productsCnty||!_productsCnty.length||!countries||!countries.length)return null;
+  var prod=_products.find(function(p){return p.id===prodId});if(!prod)return null;
+  var prodKeys=[(prod.category||'').toUpperCase(),prod.id.toUpperCase(),(prod.kr||'').toUpperCase(),(prod.en||'').toUpperCase()].filter(Boolean);
+  var byMonth={};
+  _productsCnty.forEach(function(r){
+    if(countries.indexOf(r.country||'')<0)return;
+    var rKey=(r.product||'').toUpperCase();
+    if(prodKeys.indexOf(rKey)<0)return;
+    (r.monthlyScores||[]).forEach(function(m){
+      var mi=_parseMonthIdx(m.date);if(mi<0||m.score==null)return;
+      if(!byMonth[mi])byMonth[mi]={sum:0,count:0};
+      byMonth[mi].sum+=Number(m.score)||0;byMonth[mi].count++;
+    });
+  });
+  var indices=Object.keys(byMonth).map(Number).sort(function(a,b){return a-b});
+  if(indices.length<2)return null;
+  var last=indices[indices.length-1],prev=indices[indices.length-2];
+  var lastAvg=byMonth[last].sum/byMonth[last].count;
+  var prevAvg=byMonth[prev].sum/byMonth[prev].count;
+  return +(lastAvg-prevAvg).toFixed(1);
+}
 function _baselineIdx(prodId,labels){
   if(!_isBaselineProd(prodId)||!labels)return -1;
   for(var i=0;i<labels.length;i++){
