@@ -146,11 +146,7 @@ function trendDetailHtml(products, weeklyAll, wLabels, t, lang, ulMap, periodTag
       <div class="section-title">${lang === 'en' ? 'Weekly Competitor Trend' : '주간 경쟁사 트렌드'}</div>
       <span class="legend">${periodTag || ''} &nbsp;|&nbsp; ${wLabels[0]}–${wLabels[wLabels.length - 1]} (${wLabels.length}${lang === 'en' ? ' weeks' : '주'})</span>
     </div>
-    <div class="section-body">${buGroups}${(() => {
-      const footnotes = products.filter(p => getULCntys(p.id || p.category, ulMap).length > 0)
-        .map(p => `${((p.id || '').toLowerCase() === 'audio' || p.kr === '오디오') ? 'Audio-Sound Suit' : p.kr}: ${getULCntys(p.id || p.category, ulMap).map(c => cntyOfficial(c, lang)).join(', ')} ${lang === 'en' ? 'not launched' : '미출시'}`)
-      return footnotes.length ? `<p style="margin:12px 0 0;font-size:12px;color:#1A1A1A;line-height:1.6;font-weight:500">* ${footnotes.join(' / ')}</p>` : ''
-    })()}</div>
+    <div class="section-body">${buGroups}</div>
   </div>`
 }
 
@@ -259,11 +255,7 @@ function monthlyTrendDetailHtml(products, monthlyVis, t, lang, ulMap, periodTag)
       <div class="section-title">${lang === 'en' ? 'Monthly Trend' : '월간 트렌드'}</div>
       <span class="legend">${periodTag || ''} &nbsp;|&nbsp; ${mLabels[0]}–${mLabels[mLabels.length - 1]} (${mLabels.length}${lang === 'en' ? ' months' : '개월'})</span>
     </div>
-    <div class="section-body">${buGroups}${(() => {
-      const footnotes = products.filter(p => getULCntys(p.id || p.category, ulMap).length > 0)
-        .map(p => `${((p.id || '').toLowerCase() === 'audio' || p.kr === '오디오') ? 'Audio-Sound Suit' : p.kr}: ${getULCntys(p.id || p.category, ulMap).map(c => cntyOfficial(c, lang)).join(', ')} ${lang === 'en' ? 'not launched' : '미출시'}`)
-      return footnotes.length ? `<p style="margin:12px 0 0;font-size:12px;color:#1A1A1A;line-height:1.6;font-weight:500">* ${footnotes.join(' / ')}</p>` : ''
-    })()}</div>
+    <div class="section-body">${buGroups}</div>
   </div>`
 }
 

@@ -62,12 +62,13 @@ export function svgLine(data, labels, w, h, color, opts = {}) {
     const tcol = isPre ? FADE : color
     return `<text x="${p.x.toFixed(1)}" y="${Math.max(p.y - 7, 12)}" text-anchor="middle" font-size="12" font-weight="700" fill="${tcol}" font-family="${FONT}">${p.v.toFixed(1)}</text>`
   }).join('')
-  // 베이스라인 dashed vertical + 라벨 (차트 상단)
+  // 베이스라인 dashed vertical + 라벨 (오른쪽 끝 가까우면 25px 아래로)
   if (fadeBeforeIdx > 0 && baselineLabel) {
     const bx = allX[fadeBeforeIdx]
     svg += `<line x1="${bx.toFixed(1)}" y1="${pad.t}" x2="${bx.toFixed(1)}" y2="${pad.t+ch}" stroke="#64748B" stroke-width="1" stroke-dasharray="3,3"/>`
     const onRight = bx > w * 0.7
-    svg += `<text x="${(onRight ? bx-5 : bx+5).toFixed(1)}" y="${(pad.t+8).toFixed(1)}" text-anchor="${onRight ? 'end' : 'start'}" font-size="9" fill="#64748B" font-family="${FONT}">${baselineLabel}</text>`
+    const labelY = onRight ? pad.t + 33 : pad.t + 8
+    svg += `<text x="${(onRight ? bx-5 : bx+5).toFixed(1)}" y="${labelY.toFixed(1)}" text-anchor="${onRight ? 'end' : 'start'}" font-size="9" fill="#64748B" font-family="${FONT}">${baselineLabel}</text>`
   }
   svg += data.map((_, i) => `<text x="${allX[i].toFixed(1)}" y="${pad.t+ch+14}" text-anchor="middle" font-size="12" fill="#94A3B8" font-family="${FONT}">${labels[i]||''}</text>`).join('')
   svg += '</svg>'
