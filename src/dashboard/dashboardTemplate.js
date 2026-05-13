@@ -51,6 +51,32 @@ function shouldBridgeBaseline(prodOrId) {
   const id = String(typeof prodOrId === 'string' ? prodOrId : (prodOrId?.id || prodOrId?.category || '')).toLowerCase()
   return id === 'audio'  // 오디오만 boundary 회색 연결 (RAC/Aircare 는 끊김)
 }
+// ─── Baseline 재조정 각주 (4월) ──────────────────────────────────────────────
+const BASELINE_NOTES = {
+  ko: {
+    title: '*Baseline 재조정 (4월)',
+    audio: '-Audio : 오디오 신제품 Sound Suit의 브랜드 전략 및 핵심 경쟁력 고려하여 기존 DAFC 토픽 외 Speaker Set, Spatial Sound, Connectivity 등 고객들이 주로 질문할 주요 USP 관점의 프롬프트 추가함',
+    racair: '-RAC/Aircare : 사업 중요도에 따라서 국가별 Prompt를 재분배 함(브라질, 멕시코, 베트남, 인도 확대 / 미국, 영국, 독일, 호주 축소). 제조사 브랜드가 노출되지 않는 Prompt를 중심으로 삭제 함 (브랜드 노출수 Avg 0.2개 Prompt)',
+  },
+  en: {
+    title: '*Baseline reset (April)',
+    audio: '-Audio: Considering the brand strategy and core competitiveness of the new Sound Suit, added prompts from key USP perspectives (Speaker Set, Spatial Sound, Connectivity, etc.) frequently asked by customers, beyond existing DAFC topics',
+    racair: '-RAC/Aircare: Redistributed prompts by country based on business priority (expanded: Brazil, Mexico, Vietnam, India / reduced: US, UK, Germany, Australia). Removed prompts where manufacturer brand was not exposed (avg 0.2 brand mentions per prompt)',
+  },
+}
+function baselineNoteFullHtml(lang) {
+  const n = BASELINE_NOTES[lang] || BASELINE_NOTES.ko
+  return `<p style="margin:8px 0 0;font-size:12px;color:#1A1A1A;line-height:1.6;font-weight:500">${n.title}</p>
+<p style="margin:2px 0 0;font-size:12px;color:#1A1A1A;line-height:1.6;font-weight:400">${n.audio}</p>
+<p style="margin:2px 0 0;font-size:12px;color:#1A1A1A;line-height:1.6;font-weight:400">${n.racair}</p>`
+}
+function baselineNotePerProductHtml(prodOrId, lang) {
+  const id = String(typeof prodOrId === 'string' ? prodOrId : (prodOrId?.id || prodOrId?.category || '')).toLowerCase()
+  const n = BASELINE_NOTES[lang] || BASELINE_NOTES.ko
+  if (id === 'audio') return `<p style="margin:6px 0 0;font-size:11px;color:#64748B;line-height:1.5">${n.audio}</p>`
+  if (id === 'rac' || id === 'aircare') return `<p style="margin:6px 0 0;font-size:11px;color:#64748B;line-height:1.5">${n.racair}</p>`
+  return ''
+}
 
 // ─── 경쟁사 트렌드 섹션 ────────────────────────────────────────────────────
 function trendDetailHtml(products, weeklyAll, wLabels, t, lang, ulMap, periodTag) {
@@ -103,6 +129,7 @@ function trendDetailHtml(products, weeklyAll, wLabels, t, lang, ulMap, periodTag
           ${p.compName ? `<span style="font-size:14px;color:#94A3B8">vs ${p.compName} ${p.compRatio || ''}%</span>` : ''}
         </div>
         <div style="border:1px solid #E8EDF2;border-radius:10px;overflow:hidden"><table style="width:100%;border-collapse:collapse;table-layout:fixed;font-family:${FONT}">${colgroup}<tbody>${chartRow}${legendRow}${thead}${tbody}</tbody></table></div>
+        ${baselineNotePerProductHtml(p, lang)}
       </div>`
     }).join('')
 
@@ -215,6 +242,7 @@ function monthlyTrendDetailHtml(products, monthlyVis, t, lang, ulMap, periodTag)
           ${p.compName ? `<span style="font-size:14px;color:#94A3B8">vs ${p.compName} ${p.compRatio || ''}%</span>` : ''}
         </div>
         <div style="border:1px solid #E8EDF2;border-radius:10px;overflow:hidden"><table style="width:100%;border-collapse:collapse;table-layout:fixed;font-family:${FONT}">${colgroup}<tbody>${chartRow}${legendRow}${thead}${tbody}</tbody></table></div>
+        ${baselineNotePerProductHtml(p, lang)}
       </div>`
     }).join('')
 
@@ -413,7 +441,7 @@ function productSectionHtml(products, meta, t, lang, wLabels, ulMap, monthlyVis,
     <div class="section-body">${buGroups}${(() => {
       const footnotes = products.filter(p => getULCntys(p.id || p.category, ulMap).length > 0)
         .map(p => `${((p.id || '').toLowerCase() === 'audio' || p.kr === '오디오') ? 'Audio-Sound Suit' : p.kr}: ${getULCntys(p.id || p.category, ulMap).map(c => cntyOfficial(c, lang)).join(', ')} ${lang === 'en' ? 'not launched' : '미출시'}`)
-      return footnotes.length ? `<p style="margin:12px 0 0;font-size:12px;color:#1A1A1A;line-height:1.6;font-weight:500">* ${footnotes.join(' / ')}</p>` : ''
+      return (footnotes.length ? `<p style="margin:12px 0 0;font-size:12px;color:#1A1A1A;line-height:1.6;font-weight:500">* ${footnotes.join(' / ')}</p>` : '') + baselineNoteFullHtml(lang)
     })()}</div>
   </div>`
 }

@@ -1579,8 +1579,8 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
         : lang === 'en'
           ? (PROD_EN_NAME[(p.id || '').toLowerCase()] || PROD_EN_BY_KR[p.kr] || p.kr)
           : p.kr
-      const cntys = getULCntys(p.id || p.category).map(c => cntyLabel(c, lang)).join(',&nbsp;')
-      return `${displayName}&nbsp;:&nbsp;${cntys}`
+      const cntys = getULCntys(p.id || p.category).map(c => cntyLabel(c, lang)).join(',')
+      return `${displayName} : ${cntys}`
     })
   const ulIntro = lang === 'en'
     ? 'Unlaunched countries are shown in gray status'
