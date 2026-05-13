@@ -1163,37 +1163,19 @@ function _setProdMom(card,momD){
   el.innerHTML='MoM '+arrow+' '+Math.abs(momD).toFixed(1)+'%p';
   el.style.color=clr;
 }
-// 선택 국가들의 MoM 평균 — 국가별 monthlyScores 길이가 달라도 실제 월(date) 기준으로 정합
-// 1) 대상 월(target month-of-year) 결정: 월 드롭다운(_curMonthIdxIn12) 우선, 없으면 데이터에서 최신
-// 2) 각 국가별로 target 위치 찾고, 그 직전(prev) 위치 score 사용
+// 선택 국가들 평균 MoM — 주간 WoW(_updateCard 의 wLast-wPrev) 와 동일 패턴
+// 각 국가별 monthlyScores 는 서버에서 시간순 정렬되어 있음 → 배열 마지막 2개가 (최신월, 직전월)
 function _filteredMomD(prodId,countries){
   if(!_productsCnty||!_productsCnty.length||!countries||!countries.length)return null;
   var prod=_products.find(function(p){return p.id===prodId});if(!prod)return null;
   var prodKeys=[(prod.category||'').toUpperCase(),prod.id.toUpperCase(),(prod.kr||'').toUpperCase(),(prod.en||'').toUpperCase()].filter(Boolean);
-  var enM={jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11};
-  function dmi(d){var km=String(d).match(/(\\d{1,2})월/);if(km)return parseInt(km[1])-1;var em=String(d).match(/(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i);return em?enM[em[1].toLowerCase()]:-1}
-  var entries=[];
+  var lastSum=0,lastCnt=0,prevSum=0,prevCnt=0;
   _productsCnty.forEach(function(r){
     if(countries.indexOf(r.country||'')<0)return;
     var rKey=(r.product||'').toUpperCase();
     if(prodKeys.indexOf(rKey)<0)return;
-    entries.push(r);
-  });
-  if(!entries.length)return null;
-  var targetMi=_curMonthIdxIn12;
-  if(targetMi<0){
-    // 데이터 중 가장 긴 monthlyScores 의 마지막 month-of-year 를 최신으로
-    var longest=null;
-    entries.forEach(function(r){var ms=r.monthlyScores||[];if(!longest||ms.length>longest.length)longest=ms});
-    if(longest&&longest.length)targetMi=dmi(longest[longest.length-1].date);
-  }
-  if(targetMi<0)return null;
-  var lastSum=0,lastCnt=0,prevSum=0,prevCnt=0;
-  entries.forEach(function(r){
-    var ms=r.monthlyScores||[];if(!ms.length)return;
-    var ti=-1;for(var i=0;i<ms.length;i++){if(dmi(ms[i].date)===targetMi){ti=i;break}}
-    if(ti<0)return;
-    var last=ms[ti],prev=ti>0?ms[ti-1]:null;
+    var ms=r.monthlyScores||[];if(ms.length<2)return;
+    var last=ms[ms.length-1],prev=ms[ms.length-2];
     if(last&&last.score!=null){lastSum+=Number(last.score)||0;lastCnt++}
     if(prev&&prev.score!=null){prevSum+=Number(prev.score)||0;prevCnt++}
   });
