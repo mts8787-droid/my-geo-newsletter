@@ -7,10 +7,13 @@ let _sid = 0
 // 단일 색상 라인 차트 — null 값은 스킵, 라벨은 모든 위치에 표시
 // opts.fadeBeforeIdx: 해당 인덱스 미만 데이터는 회색으로 페이드 + 연결선 끊김
 // opts.baselineLabel: 베이스라인 시작점에 dashed vertical + 라벨 (예: '*Baseline 재설정')
+// opts.labelOffsetY / lineOffsetY: 라벨/점선 Y 오프셋 (제품·모드별 위치 미세 조정)
 export function svgLine(data, labels, w, h, color, opts = {}) {
   if (!data || !data.length) return `<svg width="${w}" height="${h}"></svg>`
   const fadeBeforeIdx = opts.fadeBeforeIdx != null ? opts.fadeBeforeIdx : -1
   const baselineLabel = opts.baselineLabel || ''
+  const labelOffsetY = opts.labelOffsetY || 0
+  const lineOffsetY = opts.lineOffsetY || 0
   const id = _sid++
   const pad = { t: 18, r: 10, b: 20, l: 10 }
   const cw = w - pad.l - pad.r, ch = h - pad.t - pad.b
@@ -67,9 +70,9 @@ export function svgLine(data, labels, w, h, color, opts = {}) {
   // onLeft (Audio W13): 차트 상단
   if (fadeBeforeIdx > 0 && baselineLabel) {
     const bx = allX[fadeBeforeIdx]
-    svg += `<line x1="${bx.toFixed(1)}" y1="${pad.t}" x2="${bx.toFixed(1)}" y2="${pad.t+ch}" stroke="#64748B" stroke-width="1" stroke-dasharray="3,3"/>`
+    svg += `<line x1="${bx.toFixed(1)}" y1="${(pad.t + lineOffsetY).toFixed(1)}" x2="${bx.toFixed(1)}" y2="${(pad.t+ch + lineOffsetY).toFixed(1)}" stroke="#64748B" stroke-width="1" stroke-dasharray="3,3"/>`
     const onRight = bx > w * 0.7
-    const labelY = onRight ? pad.t + ch + 1 : pad.t + 8
+    const labelY = (onRight ? pad.t + ch + 1 : pad.t + 8) + labelOffsetY
     svg += `<text x="${(onRight ? bx-5 : bx+5).toFixed(1)}" y="${labelY.toFixed(1)}" text-anchor="${onRight ? 'end' : 'start'}" font-size="9" fill="#64748B" font-family="${FONT}">${baselineLabel}</text>`
   }
   svg += data.map((_, i) => `<text x="${allX[i].toFixed(1)}" y="${pad.t+ch+14}" text-anchor="middle" font-size="12" fill="#94A3B8" font-family="${FONT}">${labels[i]||''}</text>`).join('')

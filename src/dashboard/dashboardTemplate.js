@@ -406,8 +406,18 @@ function productSectionHtml(products, meta, t, lang, wLabels, ulMap, monthlyVis,
           <span class="prod-delta prod-mom" style="display:none;color:${momColor}">${(isBaselineResetProduct(p) || momD == null) ? '' : `MoM ${momArrow} ${Math.abs(momD).toFixed(1)}%p`}</span>
         </div>
         <div class="prod-chart">
-          <div class="trend-weekly">${(() => { const _ls = wLabels.slice(-10); const _fi = baselineIdxFor(p, _ls); return svgLine(weekly.slice(-10), _ls, 300, 90, sparkColor, { fadeBeforeIdx: _fi, baselineLabel: _fi > 0 ? '*Baseline 재설정' : '' }) })()}</div>
-          <div class="trend-monthly" style="display:none">${(() => { const _fi = baselineIdxFor(p, m4Labels); return svgLine(m4Data, m4Labels, 300, 90, sparkColor, { fadeBeforeIdx: _fi, baselineLabel: _fi > 0 ? '*Baseline 재설정' : '' }) })()}</div>
+          <div class="trend-weekly">${(() => {
+            const _ls = wLabels.slice(-10); const _fi = baselineIdxFor(p, _ls)
+            const _id = String(p.id || '').toLowerCase()
+            const _labOff = (_id === 'rac' || _id === 'aircare') ? 20 : 0  // RAC/Aircare 주간: 라벨 +20px
+            return svgLine(weekly.slice(-10), _ls, 300, 90, sparkColor, { fadeBeforeIdx: _fi, baselineLabel: _fi > 0 ? '*Baseline 재설정' : '', labelOffsetY: _labOff })
+          })()}</div>
+          <div class="trend-monthly" style="display:none">${(() => {
+            const _fi = baselineIdxFor(p, m4Labels)
+            const _id = String(p.id || '').toLowerCase()
+            const _audMon = _id === 'audio'  // 오디오 월간: 라벨·점선 -20px
+            return svgLine(m4Data, m4Labels, 300, 90, sparkColor, { fadeBeforeIdx: _fi, baselineLabel: _fi > 0 ? '*Baseline 재설정' : '', labelOffsetY: _audMon ? -20 : 0, lineOffsetY: _audMon ? -20 : 0 })
+          })()}</div>
         </div>
         <div class="prod-comp">
           <span class="prod-comp-name">${lang === 'en' ? `vs ${p.compName}` : `${p.compName} ${t.vsComp}`}</span>

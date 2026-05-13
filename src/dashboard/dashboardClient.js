@@ -303,7 +303,8 @@ function _applyMonthSelectionOverride(){
       var mData=msSliced.map(function(m){return m.score});
       var mLabels=msSliced.map(function(m){var km=String(m.date||'').match(/(\\d{1,2})월/);return km?ML[parseInt(km[1])-1]:m.date});
       var _pid1=card.getAttribute('data-prodid');var _fi1=_baselineIdx(_pid1,mLabels);
-      mChart.innerHTML=_miniSvgNullAware(mData,mLabels,300,90,cc,_fi1,_shouldBridge(_pid1),_fi1>0?'*Baseline 재설정':'');
+      var _audM1=String(_pid1||'').toLowerCase()==='audio'?-20:0;
+      mChart.innerHTML=_miniSvgNullAware(mData,mLabels,300,90,cc,_fi1,_shouldBridge(_pid1),_fi1>0?'*Baseline 재설정':'',_audM1,_audM1);
     }
   });
 }
@@ -675,7 +676,8 @@ function updateMonthlyProductScores(selCountry){
             var ML=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
             var mLabels=msc.length?msc.map(function(m){var km=String(m.date||'').match(/(\\d{1,2})월/);return km?ML[parseInt(km[1])-1]:m.date}):['M0'];
             var _fi2=_baselineIdx(prod.id,mLabels);
-            mChart.innerHTML=_miniSvgNullAware(mData,mLabels,300,90,sparkColor,_fi2,_shouldBridge(prod.id),_fi2>0?'*Baseline 재설정':'');
+            var _audM2=String(prod.id||'').toLowerCase()==='audio'?-20:0;
+            mChart.innerHTML=_miniSvgNullAware(mData,mLabels,300,90,sparkColor,_fi2,_shouldBridge(prod.id),_fi2>0?'*Baseline 재설정':'',_audM2,_audM2);
           }
         }
       }
@@ -735,7 +737,8 @@ function updateMonthlyProductScores(selCountry){
       var series=_filteredMonthlySeries(prod.id,countries);
       if(series&&series.data.length){
         var _fi3=_baselineIdx(prod.id,series.labels);
-        mChart.innerHTML=_miniSvgNullAware(series.data,series.labels,300,90,sparkColor,_fi3,_shouldBridge(prod.id),_fi3>0?'*Baseline 재설정':'');
+        var _audM3=String(prod.id||'').toLowerCase()==='audio'?-20:0;
+        mChart.innerHTML=_miniSvgNullAware(series.data,series.labels,300,90,sparkColor,_fi3,_shouldBridge(prod.id),_fi3>0?'*Baseline 재설정':'',_audM3,_audM3);
       }else{
         var ms=_sliceMsByCurMonth(prod.monthlyScores||[]);
         var mData=ms.length?ms.map(function(m){return m.score}):[score];
@@ -743,7 +746,8 @@ function updateMonthlyProductScores(selCountry){
         var ML=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
         var mLabels=ms.length?ms.map(function(m){var km=String(m.date||'').match(/(\\d{1,2})월/);return km?ML[parseInt(km[1])-1]:m.date}):['M0'];
         var _fi4=_baselineIdx(prod.id,mLabels);
-        mChart.innerHTML=_miniSvgNullAware(mData,mLabels,300,90,sparkColor,_fi4,_shouldBridge(prod.id),_fi4>0?'*Baseline 재설정':'');
+        var _audM4=String(prod.id||'').toLowerCase()==='audio'?-20:0;
+        mChart.innerHTML=_miniSvgNullAware(mData,mLabels,300,90,sparkColor,_fi4,_shouldBridge(prod.id),_fi4>0?'*Baseline 재설정':'',_audM4,_audM4);
       }
     }
   });
@@ -1252,7 +1256,9 @@ function _baselineIdx(prodId,labels){
   return -1;
 }
 // 미니 SVG 라인 차트 — bridge 인자 제거 (모든 베이스라인 제품 boundary 끊김), 베이스라인 라벨 X축 영역으로
-function _miniSvg(data,labels,w,h,color,fadeIdx,_unused,label){
+// labOff/lineOff: 라벨/점선 Y 오프셋 (제품·모드별)
+function _miniSvg(data,labels,w,h,color,fadeIdx,_unused,label,labOff,lineOff){
+  labOff=labOff||0;lineOff=lineOff||0;
   if(!data||data.length<2)return'<svg width="'+w+'" height="'+h+'"></svg>';
   if(fadeIdx==null)fadeIdx=-1;
   var pt=18,pr=10,pb=20,pl=10;var cw=w-pl-pr;var ch=h-pt-pb;
@@ -1283,15 +1289,16 @@ function _miniSvg(data,labels,w,h,color,fadeIdx,_unused,label){
   pts.forEach(function(p){var isPre=fadeIdx>0&&p.idx<fadeIdx;s+='<text x="'+p.x.toFixed(1)+'" y="'+Math.max(p.y-7,12)+'" text-anchor="middle" font-size="12" font-weight="700" fill="'+(isPre?FADE:color)+'" font-family="'+_FONT+'">'+p.v.toFixed(1)+'</text>'});
   if(fadeIdx>0&&label){
     var bx=pl+(fadeIdx/(data.length-1))*cw;
-    s+='<line x1="'+bx.toFixed(1)+'" y1="'+pt+'" x2="'+bx.toFixed(1)+'" y2="'+(pt+ch)+'" stroke="#64748B" stroke-width="1" stroke-dasharray="3,3"/>';
+    s+='<line x1="'+bx.toFixed(1)+'" y1="'+(pt+lineOff).toFixed(1)+'" x2="'+bx.toFixed(1)+'" y2="'+(pt+ch+lineOff).toFixed(1)+'" stroke="#64748B" stroke-width="1" stroke-dasharray="3,3"/>';
     var onR=bx>w*0.7;
-    var labY=onR?pt+ch+1:pt+8;
+    var labY=(onR?pt+ch+1:pt+8)+labOff;
     s+='<text x="'+(onR?bx-4:bx+4).toFixed(1)+'" y="'+labY.toFixed(1)+'" text-anchor="'+(onR?'end':'start')+'" font-size="9" fill="#64748B" font-family="'+_FONT+'">'+label+'</text>';
   }
   pts.forEach(function(p,i){s+='<text x="'+p.x.toFixed(1)+'" y="'+(pt+ch+14)+'" text-anchor="middle" font-size="12" fill="#94A3B8" font-family="'+_FONT+'">'+(labels[i]||'')+'</text>'});
   s+='</svg>';return s;
 }
-function _miniSvgNullAware(data,labels,w,h,color,fadeIdx,_unused,label){
+function _miniSvgNullAware(data,labels,w,h,color,fadeIdx,_unused,label,labOff,lineOff){
+  labOff=labOff||0;lineOff=lineOff||0;
   if(fadeIdx==null)fadeIdx=-1;
   var pt=18,pr=10,pb=20,pl=10;var cw=w-pl-pr;var ch=h-pt-pb;
   var N=data.length;var divisor=N>1?N-1:1;
@@ -1361,13 +1368,14 @@ function _updateCard(card,score,compPct,weeklyData,wLabels,monthlyLG,mLabels){
   var chartWrap=card.querySelector('.trend-weekly');
   if(chartWrap){
     var _fiW=_baselineIdx(_pid,wLabels);
-    chartWrap.innerHTML=weeklyData&&weeklyData.length>=1?_miniSvg(weeklyData,wLabels,300,90,sparkColor,_fiW,_shouldBridge(_pid),_fiW>0?'*Baseline 재설정':''):'<svg width="300" height="90"></svg>';
+    var _racW=(_pid==='rac'||_pid==='aircare')?20:0;
+    chartWrap.innerHTML=weeklyData&&weeklyData.length>=1?_miniSvg(weeklyData,wLabels,300,90,sparkColor,_fiW,_shouldBridge(_pid),_fiW>0?'*Baseline 재설정':'',_racW,0):'<svg width="300" height="90"></svg>';
   }
   // 월간 미니 차트 (4M: [null,null,null,score])
   if(mLabels&&mLabels.length){
     var m4=[null,null,null,monthlyLG!=null?monthlyLG:null];
     var mChartWrap=card.querySelector('.trend-monthly');
-    if(mChartWrap){var _fiM=_baselineIdx(_pid,mLabels);mChartWrap.innerHTML=_miniSvgNullAware(m4,mLabels,300,90,sparkColor,_fiM,_shouldBridge(_pid),_fiM>0?'*Baseline 재설정':'')}
+    if(mChartWrap){var _fiM=_baselineIdx(_pid,mLabels);var _audMC=_pid==='audio'?-20:0;mChartWrap.innerHTML=_miniSvgNullAware(m4,mLabels,300,90,sparkColor,_fiM,_shouldBridge(_pid),_fiM>0?'*Baseline 재설정':'',_audMC,_audMC)}
   }
 }
 function _getWeeklyForCountries(prodId,countries){
