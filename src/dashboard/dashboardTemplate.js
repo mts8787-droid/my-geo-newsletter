@@ -415,8 +415,8 @@ function productSectionHtml(products, meta, t, lang, wLabels, ulMap, monthlyVis,
           <div class="trend-monthly" style="display:none">${(() => {
             const _fi = baselineIdxFor(p, m4Labels)
             const _id = String(p.id || '').toLowerCase()
-            const _audMon = _id === 'audio'  // 오디오 월간: 라벨·점선 -60px
-            return svgLine(m4Data, m4Labels, 300, 90, sparkColor, { fadeBeforeIdx: _fi, baselineLabel: _fi > 0 ? '*Baseline 재설정' : '', labelOffsetY: _audMon ? -60 : 0, lineOffsetY: _audMon ? -60 : 0 })
+            const _audMon = _id === 'audio'  // 오디오 월간: 라벨만 -60px (점선은 기본 유지)
+            return svgLine(m4Data, m4Labels, 300, 90, sparkColor, { fadeBeforeIdx: _fi, baselineLabel: _fi > 0 ? '*Baseline 재설정' : '', labelOffsetY: _audMon ? -60 : 0 })
           })()}</div>
         </div>
         <div class="prod-comp">
