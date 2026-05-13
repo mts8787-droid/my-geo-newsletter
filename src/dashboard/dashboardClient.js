@@ -161,15 +161,19 @@ function switchVisMonth(idx){
   }
   _truncateTrendTable('#monthly-trend-container',12,_curMonthIdxIn12);
 }
+// month-of-year(0~11) 파싱 — '1월'·'Jan'·'2026-01'·'2026/1' 모두 지원
+function _dateMi(d){
+  var s=String(d||'').trim();
+  var km=s.match(/(\\d{1,2})월/);if(km)return parseInt(km[1])-1;
+  var enM={jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11};
+  var em=s.match(/(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i);if(em)return enM[em[1].toLowerCase()];
+  var iso=s.match(/\\d{4}[-\\/](\\d{1,2})/);if(iso)return parseInt(iso[1])-1;
+  return -1;
+}
 // 선택 월의 _productsCnty[].monthlyScores 데이터로 국가별 제품별 vbar-item 의 LG/Comp 점수·바·갭 갱신
 function _updateCntyMonth(){
   if(_curMonthIdxIn12<0||!_productsCnty||!_productsCnty.length)return;
-  var enM={jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11};
-  function dateMonthIdx(d){
-    var km=String(d).match(/(\\d{1,2})월/);if(km)return parseInt(km[1])-1;
-    var em=String(d).match(/(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i);
-    return em?enM[em[1].toLowerCase()]:-1;
-  }
+  var dateMonthIdx=_dateMi;
   // product+country → cnty 엔트리 매핑
   var cntyMap={};
   _productsCnty.forEach(function(r){
@@ -690,8 +694,14 @@ function updateMonthlyProductScores(selCountry){
     var prodId=prodKeyMap[rKey];
     if(!prodId)return;
     if(!avgByProdId[prodId])avgByProdId[prodId]={scores:[],compScores:[]};
-    avgByProdId[prodId].scores.push(r.score||0);
-    avgByProdId[prodId].compScores.push(r.compScore||0);
+    // 월 드롭다운 활성 시 해당 월의 score/compScore 사용, 아니면 r.score/r.compScore(최신)
+    var sc=r.score,cs=r.compScore;
+    if(_curMonthIdxIn12>=0){
+      var ms=(r.monthlyScores||[]).find(function(m){return _dateMi(m.date)===_curMonthIdxIn12});
+      if(ms){sc=Number(ms.score)||0;cs=Number(ms.compScore)||0}
+    }
+    avgByProdId[prodId].scores.push(sc||0);
+    avgByProdId[prodId].compScores.push(cs||0);
   });
   cards.forEach(function(card){
     var nameEl=card.querySelector('.prod-name');if(!nameEl)return;
@@ -1164,7 +1174,8 @@ function _setProdMom(card,momD){
   el.style.color=clr;
 }
 // 선택 국가들 평균 MoM — 주간 WoW(_updateCard 의 wLast-wPrev) 와 동일 패턴
-// 각 국가별 monthlyScores 는 서버에서 시간순 정렬되어 있음 → 배열 마지막 2개가 (최신월, 직전월)
+// 각 국가별 monthlyScores 는 서버에서 시간순 정렬되어 있음
+// 월 드롭다운(_curMonthIdxIn12) 있으면 그 month-of-year 위치를 '최신'으로, 없으면 배열 끝
 function _filteredMomD(prodId,countries){
   if(!_productsCnty||!_productsCnty.length||!countries||!countries.length)return null;
   var prod=_products.find(function(p){return p.id===prodId});if(!prod)return null;
@@ -1175,7 +1186,12 @@ function _filteredMomD(prodId,countries){
     var rKey=(r.product||'').toUpperCase();
     if(prodKeys.indexOf(rKey)<0)return;
     var ms=r.monthlyScores||[];if(ms.length<2)return;
-    var last=ms[ms.length-1],prev=ms[ms.length-2];
+    var ti=ms.length-1;
+    if(_curMonthIdxIn12>=0){
+      for(var i=0;i<ms.length;i++){if(_dateMi(ms[i].date)===_curMonthIdxIn12){ti=i;break}}
+    }
+    if(ti<1)return;
+    var last=ms[ti],prev=ms[ti-1];
     if(last&&last.score!=null){lastSum+=Number(last.score)||0;lastCnt++}
     if(prev&&prev.score!=null){prevSum+=Number(prev.score)||0;prevCnt++}
   });
