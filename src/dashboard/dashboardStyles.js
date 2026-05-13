@@ -136,7 +136,7 @@ body.show-insights .howto-box{display:block}
 .vbar-cols{display:flex;gap:3px;width:100%;align-items:flex-end;justify-content:center}
 .vbar-col-wrap{flex:0 0 26px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end}
 .vbar-col{width:100%;border-radius:4px 4px 0 0;min-height:3px;transition:height .3s}
-.vbar-col-name{font-size:11px;font-weight:600;color:#94A3B8;margin-top:3px;white-space:nowrap;width:26px;text-align:center;overflow:hidden;text-overflow:clip;letter-spacing:-0.5px}
+.vbar-col-name{font-size:10px;font-weight:600;color:#94A3B8;margin-top:3px;white-space:nowrap;width:26px;text-align:center;overflow:visible;letter-spacing:-0.6px}
 .vbar-gap{font-size:15px;font-weight:700;margin-top:4px;white-space:nowrap}
 .vbar-label{font-size:15px;font-weight:600;color:#475569;margin-top:4px;text-align:center;word-break:keep-all;line-height:1.3}
 /* ── 국가 뷰탭 ── */
