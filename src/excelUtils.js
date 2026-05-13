@@ -1728,6 +1728,9 @@ export function parseAppendix(rows) {
 }
 
 // ─── Unlaunched 시트 파서 ─────────────────────────────────────────────────────
+// 시트 데이터와 무관하게 항상 미출시로 간주할 (국가|제품) — Audio 는 BR/VN/IN 미출시
+const DEFAULT_UNLAUNCHED = { 'BR|AV': true, 'VN|AV': true, 'IN|AV': true }
+
 function parseUnlaunched(rows) {
   // 헤더 탐색: country + (launched|status|launch) 콤보
   const headerIdx = rows.findIndex(r => {
@@ -1739,7 +1742,7 @@ function parseUnlaunched(rows) {
   if (headerIdx < 0) {
     console.warn('[parseUnlaunched] 헤더 못찾음. 시트 첫 10행:')
     rows.slice(0, 10).forEach((r, i) => console.log(`  row${i}:`, r?.slice(0, 6)))
-    return {}
+    return { unlaunchedMap: { ...DEFAULT_UNLAUNCHED } }
   }
   const header = rows[headerIdx]
   let countryCol = -1, categoryCol = -1, statusCol = -1, divisionCol = -1
@@ -1752,7 +1755,7 @@ function parseUnlaunched(rows) {
   }
   if (countryCol < 0 || categoryCol < 0 || statusCol < 0) {
     console.warn('[parseUnlaunched] 필수 컬럼 누락', { countryCol, categoryCol, statusCol, header })
-    return {}
+    return { unlaunchedMap: { ...DEFAULT_UNLAUNCHED } }
   }
 
   // unlaunched로 간주할 값 — 다양한 표현 허용
@@ -1761,7 +1764,7 @@ function parseUnlaunched(rows) {
     'false', 'unlaunch', '미 출시', '미발매', 'not available', 'na',
   ])
 
-  const unlaunchedMap = {}
+  const unlaunchedMap = { ...DEFAULT_UNLAUNCHED }
   let totalRows = 0, matchedRows = 0
   rows.slice(headerIdx + 1).forEach(r => {
     if (!r) return
@@ -1795,7 +1798,7 @@ function parseUnlaunched(rows) {
     matchedRows++
   })
   console.log(`[parseUnlaunched] 총 ${totalRows}행 중 ${matchedRows}행 매칭 / 미출시 ${Object.keys(unlaunchedMap).length}건`)
-  return Object.keys(unlaunchedMap).length > 0 ? { unlaunchedMap } : {}
+  return { unlaunchedMap }
 }
 
 // ─── PR Topic List 파서 ──────────────────────────────────────────────────────

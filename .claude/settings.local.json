@@ -104,7 +104,16 @@
       "Bash(ADMIN_PASSWORD=ci-test npm run build:citation)",
       "Bash(ADMIN_PASSWORD=ci-test npx vite build)",
       "Bash(sed -i '' 's|tracker/utils/sheetParser|tracker-v2/utils/sheetParser|g' src/monthly-report/App.jsx src/weekly-report/App.jsx)",
-      "Bash(sed -i '' \"s|fetch\\('/api/tracker-snapshot'\\)|fetch\\('/api/tracker-snapshot-v2'\\)|g\" src/monthly-report/App.jsx src/weekly-report/App.jsx)"
+      "Bash(sed -i '' \"s|fetch\\('/api/tracker-snapshot'\\)|fetch\\('/api/tracker-snapshot-v2'\\)|g\" src/monthly-report/App.jsx src/weekly-report/App.jsx)",
+      "Bash(git -C /tmp/dashboard-raw-data status --short)",
+      "Bash(git reset *)",
+      "Bash(awk '/^function __TRACKED_VAR__|^export function __TRACKED_VAR__/,/^function|^export function/ {print}' /Users/dubaba/my-geo-project/my-geo-newsletter/src/excelUtils.js)",
+      "Bash(awk '/^function parseCitDomain/,/^function/ {print NR\": \"$0}' /Users/dubaba/my-geo-project/my-geo-newsletter/src/excelUtils.js)",
+      "Bash(cp \"/Users/dubaba/.claude/uploads/7baed8d2-331a-444f-9dca-9d92a7675dc7/8f357d22-LGEITextTTFRegular.ttf\" \"/Users/dubaba/my-geo-project/my-geo-newsletter/font/LGEIText Regular.ttf\")",
+      "Bash(cp \"/Users/dubaba/.claude/uploads/7baed8d2-331a-444f-9dca-9d92a7675dc7/b20f7435-LGEITextRegular.otf\" \"/Users/dubaba/my-geo-project/my-geo-newsletter/font/LGEIText Regular.otf\")",
+      "Bash(cp \"/Users/dubaba/.claude/uploads/7baed8d2-331a-444f-9dca-9d92a7675dc7/d3b762be-LGEITextTTFLight.ttf\" \"/Users/dubaba/my-geo-project/my-geo-newsletter/font/LGEIText Light.ttf\")",
+      "Bash(cp \"/Users/dubaba/.claude/uploads/7baed8d2-331a-444f-9dca-9d92a7675dc7/a4c5ecc1-LGEITextTTFSemiBold.ttf\" \"/Users/dubaba/my-geo-project/my-geo-newsletter/font/LGEIText SemiBold.ttf\")",
+      "Bash(cp \"/Users/dubaba/.claude/uploads/7baed8d2-331a-444f-9dca-9d92a7675dc7/b98cb957-LGEITextTTFBold.ttf\" \"/Users/dubaba/my-geo-project/my-geo-newsletter/font/LGEIText Bold.ttf\")"
     ]
   }
 }
