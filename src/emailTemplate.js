@@ -1584,10 +1584,15 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
     })
   const ulIntro = lang === 'en'
     ? 'Unlaunched countries are shown in gray status'
-    : '제품 미출시 국가는 신호등 회색으로 표기함'
-  const productFootnoteHtml = ulFootnoteParts.length
-    ? `<p style="margin:12px 16px 0;font-size:11px;color:#64748B;font-family:${EM_FONT};line-height:1.6;">* ${ulIntro} (${ulFootnoteParts.join(' / ')})</p>`
+    : '제품 미출시 국가는 신호등 회색 표기'
+  const baselineNote = lang === 'en'
+    ? 'Audio, RAC, Aircare: MoM analysis not provided due to Prompt recalibration in April (strategic country Prompt weight adjustment, key USP-based Prompt setup)'
+    : '오디오, RAC, Aircare 는 4월 중 Prompt 재조정으로 전월비 분석 미 진행 (주요 전략 국가별 Prompt 가중치 조정, 핵심 USP 기반 Prompt 추가 셋팅 진행)'
+  const ulLine = ulFootnoteParts.length
+    ? `<p style="margin:12px 16px 0;font-size:11px;color:#64748B;font-family:${EM_FONT};line-height:1.6;">* ${ulIntro}(${ulFootnoteParts.join(' / ')})</p>`
     : ''
+  const baselineLine = `<p style="margin:4px 16px 0;font-size:11px;color:#64748B;font-family:${EM_FONT};line-height:1.6;">* ${baselineNote}</p>`
+  const productFootnoteHtml = ulLine + baselineLine
 
   const citTopN = meta.citationTopN || 10
   const citationList = (citations || []).slice(0, citTopN)
