@@ -218,13 +218,8 @@ function monthlyTrendDetailHtml(products, monthlyVis, t, lang, ulMap, periodTag)
   </div>`
 }
 
-// ─── Insight / HowToRead ────────────────────────────────────────────────────
-function insightHtml(insight, showInsight, howToRead, showHowToRead, t) {
-  let h = ''
-  if (showInsight && insight) h += `<div class="insight-box"><span class="insight-label">${t.insight}</span><span class="insight-text">${mdBold(insight)}</span></div>`
-  if (showHowToRead && howToRead) h += `<div class="howto-box"><span class="howto-label">${t.howToRead}</span><span class="howto-text">${mdBold(howToRead)}</span></div>`
-  return h
-}
+// ─── Insight / HowToRead — GEO 인사이트 기능 제거됨 (빈 문자열 반환) ────────────
+function insightHtml() { return '' }
 
 // ─── Hero KPI ───────────────────────────────────────────────────────────────
 function heroHtml(total, meta, t, lang) {
@@ -273,7 +268,6 @@ function heroHtml(total, meta, t, lang) {
         <div class="hero-info">Model : ChatGPT, ChatGPT Search, Gemini, Perplexity<br/>Subsidiary : US, CA, UK, DE, ES, BR, MX, AU, VN, IN</div>
       </div>
     </div>
-    ${meta.totalInsight ? `<div class="hero-insight"><span class="hero-insight-label">${t.geoInsight}</span><span class="hero-insight-text">${mdBold(meta.totalInsight)}</span></div>` : ''}
   </div>`
 }
 
@@ -1387,11 +1381,6 @@ export function generateDashboardHTML(meta, total, products, citations, dotcom, 
         <span class="fl-label">${lang === 'en' ? 'Country' : '국가'}</span>
         <label class="fl-chk-label fl-all-label"><input type="checkbox" class="fl-chk-all" data-target="country" checked onchange="toggleAll(this,'country')"><span>${allLabel}</span></label>
         ${countryCheckboxes}
-      </div>
-      <div class="fl-divider"></div>
-      <div class="fl-group">
-        <span class="fl-label">${lang === 'en' ? 'Display' : '표시'}</span>
-        <label class="fl-chk-label"><input type="checkbox" id="toggle-insights" onchange="toggleInsights(this.checked)"><span>${lang === 'en' ? 'GEO Insights' : 'GEO 인사이트'}</span></label>
       </div>
     </div>
   </div>`

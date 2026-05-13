@@ -958,7 +958,8 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
         <div style={{ height: 1, background: '#1E293B', marginBottom: 16 }} />
 
         {mode !== 'monthly-report' && (<>
-        {/* ── 헤더 편집 ── */}
+        {/* ── 헤더 편집 (대시보드 모드는 텍스트 입력란 숨김) ── */}
+        {mode !== 'dashboard' && (<>
         <p style={{ margin: '0 0 10px 2px', fontSize: 11, fontWeight: 700, color: '#475569',
           textTransform: 'uppercase', letterSpacing: 1, fontFamily: FONT }}>
           헤더 편집
@@ -1001,6 +1002,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
         <p style={{ margin: '0 0 3px', fontSize: 11, color: '#64748B', fontFamily: FONT }}>기준 텍스트 <span style={{ color: '#334155' }}>(팀명 아래)</span></p>
         <input value={meta.dateLine} onChange={e => setMeta(m => ({ ...m, dateLine: e.target.value }))}
           style={{ ...inputStyle, marginBottom: 10 }} />
+        </>)}
 
         {/* Notice */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
@@ -1019,7 +1021,8 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
           <p style={{ margin: '0 0 10px', fontSize: 11, color: '#475569', fontFamily: FONT }}>**텍스트** → <strong>볼드</strong></p>
         </>)}
 
-        {/* KPI Logic */}
+        {/* KPI Logic (대시보드 모드는 숨김) */}
+        {mode !== 'dashboard' && (<>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
           <p style={{ margin: 0, fontSize: 11, color: '#64748B', fontFamily: FONT }}>KPI Logic</p>
           <button onClick={() => setMeta(m => ({ ...m, showKpiLogic: !m.showKpiLogic }))}
@@ -1034,6 +1037,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
             rows={4} placeholder="KPI Logic 내용을 입력하세요..."
             style={{ ...inputStyle, marginBottom: 4, resize: 'vertical' }} />
           <p style={{ margin: '0 0 10px', fontSize: 11, color: '#475569', fontFamily: FONT }}>**텍스트** → <strong>볼드</strong></p>
+        </>)}
         </>)}
 
         {/* 폰트 크기 */}
@@ -1178,7 +1182,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
           </>
         )}
 
-        {mode !== 'monthly-report' && (<>
+        {mode !== 'monthly-report' && mode !== 'dashboard' && (<>
         {/* GEO 전략 인사이트 */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
           <p style={{ margin: 0, fontSize: 11, color: '#64748B', fontFamily: FONT }}>GEO 전략 인사이트</p>
@@ -1802,7 +1806,8 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
           {copied ? <><Check size={12} /> 복사됨!</> : <><Copy size={12} /> 이메일 HTML 복사</>}
         </button>
 
-        {/* 메일 발송 */}
+        {/* 메일 발송 (대시보드 모드는 텍스트 입력 숨김) */}
+        {mode !== 'dashboard' && (<>
         <p style={{ margin: '0 0 4px', fontSize: 11, color: '#64748B', fontFamily: FONT }}>수신 이메일 주소</p>
         <input
           type="email"
@@ -1828,6 +1833,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
             : mailSent === 'error' ? <><Send size={12} /> 발송 실패 — 다시 시도</>
             : <><Send size={12} /> 메일 발송</>}
         </button>
+        </>)}
         </>)}
       </div>
 
