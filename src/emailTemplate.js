@@ -490,7 +490,7 @@ function productCardV3Html(p, lang = 'ko', opts = {}) {
   const momColor = d > 0 ? '#16A34A' : d < 0 ? '#DC2626' : '#94A3B8'
   const momArrow = d > 0 ? '▲' : d < 0 ? '▼' : ''
   const momStr = p.prev != null && p.prev > 0
-    ? `<span style="font-size:12px;font-weight:700;color:${momColor};">${momArrow}${Math.abs(d).toFixed(1)}%p</span>`
+    ? `<span style="font-size:12px;font-weight:700;color:${momColor};letter-spacing:-1.2px;">${momArrow}${Math.abs(d).toFixed(1)}%p</span>`
     : ''
   const prodName = opts.prodNameFn ? opts.prodNameFn(p) : p.kr
 
@@ -545,8 +545,8 @@ function productCardV3Html(p, lang = 'ko', opts = {}) {
       <tr>
         <td style="padding:5px 6px 3px;white-space:nowrap;overflow:hidden;">
           <span style="font-size:14px;font-weight:900;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:${lang === 'en' ? '-0.9px' : '-0.5px'};">${escapeHtml(prodName)}</span>
-          <span style="font-size:18px;font-weight:900;color:#1A1A1A;font-family:${EM_FONT};">${p.score.toFixed(1)}<span style="font-size:11px;color:#94A3B8;">%</span></span>${momStr ? `&nbsp;${momStr}` : ''}
-          <span style="float:right;white-space:nowrap;"><span style="font-size:13px;font-weight:700;color:${ratioColor};font-family:${EM_FONT};letter-spacing:-1px;">${compShort(mainCompName)} ${curRatio}%</span>&nbsp;<span style="display:inline-block;background:${st.bg};color:${st.color};border:1px solid ${st.border};border-radius:5px;padding:0px 4px;font-size:10px;font-weight:700;line-height:15px;font-family:${EM_FONT};vertical-align:middle;">${st.label}</span></span>
+          <span style="font-size:18px;font-weight:900;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-1.8px;">${p.score.toFixed(1)}<span style="font-size:11px;color:#94A3B8;letter-spacing:-1.1px;">%</span></span>${momStr ? `&nbsp;${momStr}` : ''}
+          <span style="float:right;white-space:nowrap;"><span style="font-size:13px;font-weight:700;color:${ratioColor};font-family:${EM_FONT};letter-spacing:-1.3px;">${compShort(mainCompName)} ${curRatio}%</span>&nbsp;<span style="display:inline-block;background:${st.bg};color:${st.color};border:1px solid ${st.border};border-radius:5px;padding:0px 4px;font-size:10px;font-weight:700;line-height:15px;font-family:${EM_FONT};vertical-align:middle;">${st.label}</span></span>
         </td>
       </tr>
       <tr>
@@ -1472,7 +1472,7 @@ function dashboardLinkButtonHtml(lang) {
 export { escapeHtml }
 
 export function generateEmailHTML(meta, total, products, citations, dotcom = {}, lang = 'ko', productsCnty = [], citationsCnty = [], options = {}) {
-  const { containerWidth = 950, showTrendTabs = false, weeklyLabels, categoryStats = null, unlaunchedMap = {}, productCardVersion = 'v1', trendMode = 'weekly' } = options
+  const { containerWidth = 980, showTrendTabs = false, weeklyLabels, categoryStats = null, unlaunchedMap = {}, productCardVersion = 'v1', trendMode = 'weekly' } = options
   const t = T[lang] || T.ko
   total = total || { score: 0, prev: 0, vsComp: 0, rank: 1, totalBrands: 12 }
   products = products || []
