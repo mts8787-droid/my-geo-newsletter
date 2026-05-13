@@ -303,7 +303,7 @@ function _applyMonthSelectionOverride(){
       var mData=msSliced.map(function(m){return m.score});
       var mLabels=msSliced.map(function(m){var km=String(m.date||'').match(/(\\d{1,2})월/);return km?ML[parseInt(km[1])-1]:m.date});
       var _pid1=card.getAttribute('data-prodid');var _fi1=_baselineIdx(_pid1,mLabels);
-      var _audM1=String(_pid1||'').toLowerCase()==='audio'?-20:0;
+      var _audM1=String(_pid1||'').toLowerCase()==='audio'?-60:0;
       mChart.innerHTML=_miniSvgNullAware(mData,mLabels,300,90,cc,_fi1,_shouldBridge(_pid1),_fi1>0?'*Baseline 재설정':'',_audM1,_audM1);
     }
   });
@@ -676,7 +676,7 @@ function updateMonthlyProductScores(selCountry){
             var ML=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
             var mLabels=msc.length?msc.map(function(m){var km=String(m.date||'').match(/(\\d{1,2})월/);return km?ML[parseInt(km[1])-1]:m.date}):['M0'];
             var _fi2=_baselineIdx(prod.id,mLabels);
-            var _audM2=String(prod.id||'').toLowerCase()==='audio'?-20:0;
+            var _audM2=String(prod.id||'').toLowerCase()==='audio'?-60:0;
             mChart.innerHTML=_miniSvgNullAware(mData,mLabels,300,90,sparkColor,_fi2,_shouldBridge(prod.id),_fi2>0?'*Baseline 재설정':'',_audM2,_audM2);
           }
         }
@@ -737,7 +737,7 @@ function updateMonthlyProductScores(selCountry){
       var series=_filteredMonthlySeries(prod.id,countries);
       if(series&&series.data.length){
         var _fi3=_baselineIdx(prod.id,series.labels);
-        var _audM3=String(prod.id||'').toLowerCase()==='audio'?-20:0;
+        var _audM3=String(prod.id||'').toLowerCase()==='audio'?-60:0;
         mChart.innerHTML=_miniSvgNullAware(series.data,series.labels,300,90,sparkColor,_fi3,_shouldBridge(prod.id),_fi3>0?'*Baseline 재설정':'',_audM3,_audM3);
       }else{
         var ms=_sliceMsByCurMonth(prod.monthlyScores||[]);
@@ -746,7 +746,7 @@ function updateMonthlyProductScores(selCountry){
         var ML=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
         var mLabels=ms.length?ms.map(function(m){var km=String(m.date||'').match(/(\\d{1,2})월/);return km?ML[parseInt(km[1])-1]:m.date}):['M0'];
         var _fi4=_baselineIdx(prod.id,mLabels);
-        var _audM4=String(prod.id||'').toLowerCase()==='audio'?-20:0;
+        var _audM4=String(prod.id||'').toLowerCase()==='audio'?-60:0;
         mChart.innerHTML=_miniSvgNullAware(mData,mLabels,300,90,sparkColor,_fi4,_shouldBridge(prod.id),_fi4>0?'*Baseline 재설정':'',_audM4,_audM4);
       }
     }
@@ -1368,14 +1368,14 @@ function _updateCard(card,score,compPct,weeklyData,wLabels,monthlyLG,mLabels){
   var chartWrap=card.querySelector('.trend-weekly');
   if(chartWrap){
     var _fiW=_baselineIdx(_pid,wLabels);
-    var _racW=(_pid==='rac'||_pid==='aircare')?20:0;
+    var _racW=_pid==='aircare'?30:_pid==='rac'?20:0;
     chartWrap.innerHTML=weeklyData&&weeklyData.length>=1?_miniSvg(weeklyData,wLabels,300,90,sparkColor,_fiW,_shouldBridge(_pid),_fiW>0?'*Baseline 재설정':'',_racW,0):'<svg width="300" height="90"></svg>';
   }
   // 월간 미니 차트 (4M: [null,null,null,score])
   if(mLabels&&mLabels.length){
     var m4=[null,null,null,monthlyLG!=null?monthlyLG:null];
     var mChartWrap=card.querySelector('.trend-monthly');
-    if(mChartWrap){var _fiM=_baselineIdx(_pid,mLabels);var _audMC=_pid==='audio'?-20:0;mChartWrap.innerHTML=_miniSvgNullAware(m4,mLabels,300,90,sparkColor,_fiM,_shouldBridge(_pid),_fiM>0?'*Baseline 재설정':'',_audMC,_audMC)}
+    if(mChartWrap){var _fiM=_baselineIdx(_pid,mLabels);var _audMC=_pid==='audio'?-60:0;mChartWrap.innerHTML=_miniSvgNullAware(m4,mLabels,300,90,sparkColor,_fiM,_shouldBridge(_pid),_fiM>0?'*Baseline 재설정':'',_audMC,_audMC)}
   }
 }
 function _getWeeklyForCountries(prodId,countries){
