@@ -1472,7 +1472,7 @@ function dashboardLinkButtonHtml(lang) {
 export { escapeHtml }
 
 export function generateEmailHTML(meta, total, products, citations, dotcom = {}, lang = 'ko', productsCnty = [], citationsCnty = [], options = {}) {
-  const { containerWidth = 920, showTrendTabs = false, weeklyLabels, categoryStats = null, unlaunchedMap = {}, productCardVersion = 'v1', trendMode = 'weekly' } = options
+  const { containerWidth = 950, showTrendTabs = false, weeklyLabels, categoryStats = null, unlaunchedMap = {}, productCardVersion = 'v1', trendMode = 'weekly' } = options
   const t = T[lang] || T.ko
   total = total || { score: 0, prev: 0, vsComp: 0, rank: 1, totalBrands: 12 }
   products = products || []
