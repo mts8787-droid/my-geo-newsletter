@@ -69,11 +69,12 @@ export function svgLine(data, labels, w, h, color, opts = {}) {
     const tcol = isPre ? FADE : color
     return `<text x="${p.x.toFixed(1)}" y="${Math.max(p.y - 7, 12)}" text-anchor="middle" font-size="12" font-weight="700" fill="${tcol}" font-family="${FONT}">${p.v.toFixed(1)}</text>`
   }).join('')
-  // 베이스라인 dashed vertical + 라벨
+  // 베이스라인 dashed vertical + 라벨 (오른쪽 끝 가까우면 왼쪽 배치)
   if (fadeBeforeIdx > 0 && baselineLabel) {
     const bx = allX[fadeBeforeIdx]
     svg += `<line x1="${bx.toFixed(1)}" y1="${pad.t}" x2="${bx.toFixed(1)}" y2="${pad.t+ch}" stroke="#64748B" stroke-width="1" stroke-dasharray="3,3"/>`
-    svg += `<text x="${(bx+5).toFixed(1)}" y="${(pad.t+10).toFixed(1)}" font-size="10" fill="#64748B" font-family="${FONT}">${baselineLabel}</text>`
+    const onRight = bx > w * 0.7
+    svg += `<text x="${(onRight ? bx-5 : bx+5).toFixed(1)}" y="${(pad.t+10).toFixed(1)}" text-anchor="${onRight ? 'end' : 'start'}" font-size="10" fill="#64748B" font-family="${FONT}">${baselineLabel}</text>`
   }
   svg += data.map((_, i) => `<text x="${allX[i].toFixed(1)}" y="${pad.t+ch+14}" text-anchor="middle" font-size="12" fill="#94A3B8" font-family="${FONT}">${labels[i]||''}</text>`).join('')
   svg += '</svg>'
@@ -148,11 +149,12 @@ export function svgMultiLine(brandData, labels, w, h, opts = {}) {
       if (bp) g += `<circle cx="${bp.x.toFixed(1)}" cy="${bp.y.toFixed(1)}" r="4.5" fill="#000" stroke="${color}" stroke-width="3"/>`
     }
   })
-  // 베이스라인 dashed vertical + 라벨 (차트 전체)
+  // 베이스라인 dashed vertical + 라벨 (오른쪽 끝 가까우면 왼쪽 배치)
   if (fadeBeforeIdx > 0 && baselineLabel) {
     const bx = ((fadeBeforeIdx + 0.5) / N) * w
     g += `<line x1="${bx.toFixed(1)}" y1="${pt}" x2="${bx.toFixed(1)}" y2="${pt+ch}" stroke="#64748B" stroke-width="1" stroke-dasharray="4,3"/>`
-    g += `<text x="${(bx+5).toFixed(1)}" y="${(pt+12).toFixed(1)}" font-size="11" fill="#64748B" font-family="${FONT}">${baselineLabel}</text>`
+    const onRight = bx > w * 0.7
+    g += `<text x="${(onRight ? bx-5 : bx+5).toFixed(1)}" y="${(pt+12).toFixed(1)}" text-anchor="${onRight ? 'end' : 'start'}" font-size="11" fill="#64748B" font-family="${FONT}">${baselineLabel}</text>`
   }
   return `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" style="display:block">${g}</svg>`
 }

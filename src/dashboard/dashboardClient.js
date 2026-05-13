@@ -1289,7 +1289,8 @@ function _miniSvg(data,labels,w,h,color,fadeIdx,bridge,label){
   if(fadeIdx>0&&label){
     var bx=pl+(fadeIdx/(data.length-1))*cw;
     s+='<line x1="'+bx.toFixed(1)+'" y1="'+pt+'" x2="'+bx.toFixed(1)+'" y2="'+(pt+ch)+'" stroke="#64748B" stroke-width="1" stroke-dasharray="3,3"/>';
-    s+='<text x="'+(bx+4).toFixed(1)+'" y="'+(pt+10).toFixed(1)+'" font-size="10" fill="#64748B" font-family="'+_FONT+'">'+label+'</text>';
+    var onR=bx>w*0.7;
+    s+='<text x="'+(onR?bx-4:bx+4).toFixed(1)+'" y="'+(pt+10).toFixed(1)+'" text-anchor="'+(onR?'end':'start')+'" font-size="10" fill="#64748B" font-family="'+_FONT+'">'+label+'</text>';
   }
   pts.forEach(function(p,i){s+='<text x="'+p.x.toFixed(1)+'" y="'+(pt+ch+14)+'" text-anchor="middle" font-size="12" fill="#94A3B8" font-family="'+_FONT+'">'+(labels[i]||'')+'</text>'});
   s+='</svg>';return s;
@@ -1335,7 +1336,8 @@ function _miniSvgNullAware(data,labels,w,h,color,fadeIdx,bridge,label){
   if(fadeIdx>0&&label){
     var bx=allX[fadeIdx];
     s+='<line x1="'+bx.toFixed(1)+'" y1="'+pt+'" x2="'+bx.toFixed(1)+'" y2="'+(pt+ch)+'" stroke="#64748B" stroke-width="1" stroke-dasharray="3,3"/>';
-    s+='<text x="'+(bx+4).toFixed(1)+'" y="'+(pt+10).toFixed(1)+'" font-size="10" fill="#64748B" font-family="'+_FONT+'">'+label+'</text>';
+    var onR=bx>w*0.7;
+    s+='<text x="'+(onR?bx-4:bx+4).toFixed(1)+'" y="'+(pt+10).toFixed(1)+'" text-anchor="'+(onR?'end':'start')+'" font-size="10" fill="#64748B" font-family="'+_FONT+'">'+label+'</text>';
   }
   data.forEach(function(_,i){s+='<text x="'+allX[i].toFixed(1)+'" y="'+(pt+ch+14)+'" text-anchor="middle" font-size="12" fill="#94A3B8" font-family="'+_FONT+'">'+(labels[i]||'')+'</text>'});
   s+='</svg>';return s;
