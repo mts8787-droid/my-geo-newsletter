@@ -1512,7 +1512,7 @@ function dashboardLinkButtonHtml(lang) {
 export { escapeHtml }
 
 export function generateEmailHTML(meta, total, products, citations, dotcom = {}, lang = 'ko', productsCnty = [], citationsCnty = [], options = {}) {
-  const { containerWidth = 980, showTrendTabs = false, weeklyLabels, categoryStats = null, unlaunchedMap = {}, productCardVersion = 'v1', trendMode = 'weekly' } = options
+  const { containerWidth = 920, showTrendTabs = false, weeklyLabels, categoryStats = null, unlaunchedMap = {}, productCardVersion = 'v1', trendMode = 'weekly' } = options
   const t = T[lang] || T.ko
   total = total || { score: 0, prev: 0, vsComp: 0, rank: 1, totalBrands: 12 }
   products = products || []
@@ -1631,7 +1631,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
 
 <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color:#F1F5F9;">
   <tr>
-    <td align="left" style="padding:24px 8px 24px 8px;">
+    <td align="center" style="padding:24px 0;">
 
       <!-- 메인 컨테이너 -->
       <table border="0" cellpadding="0" cellspacing="0" width="${containerWidth}" style="width:${containerWidth}px;max-width:${containerWidth}px;table-layout:fixed;background:#FFFFFF;border-radius:16px;font-family:${EM_FONT};">
