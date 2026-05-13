@@ -62,14 +62,18 @@ export function svgLine(data, labels, w, h, color, opts = {}) {
     const tcol = isPre ? FADE : color
     return `<text x="${p.x.toFixed(1)}" y="${Math.max(p.y - 7, 12)}" text-anchor="middle" font-size="12" font-weight="700" fill="${tcol}" font-family="${FONT}">${p.v.toFixed(1)}</text>`
   }).join('')
-  // 베이스라인 dashed vertical + 라벨
-  // onRight (RAC/Aircare W16): X축 라벨 아래로 내림 (그래프/데이터값과 안 겹치게)
+  // 베이스라인 dashed vertical + 라벨 (흰 배경 박스 + 차트 안 하단)
+  // onRight (RAC/Aircare W16): 차트 하단 안쪽, 데이터·라벨과 겹쳐도 배경 박스로 가독성 확보
   // onLeft (Audio W13): 차트 상단
   if (fadeBeforeIdx > 0 && baselineLabel) {
     const bx = allX[fadeBeforeIdx]
     svg += `<line x1="${bx.toFixed(1)}" y1="${pad.t}" x2="${bx.toFixed(1)}" y2="${pad.t+ch}" stroke="#64748B" stroke-width="1" stroke-dasharray="3,3"/>`
     const onRight = bx > w * 0.7
-    const labelY = onRight ? pad.t + ch + 26 : pad.t + 8
+    const labelY = onRight ? pad.t + ch - 4 : pad.t + 8
+    const textW = baselineLabel.length * 5.2
+    const rectX = onRight ? bx - 5 - textW : bx + 5
+    const rectY = labelY - 9
+    svg += `<rect x="${rectX.toFixed(1)}" y="${rectY.toFixed(1)}" width="${textW.toFixed(1)}" height="12" fill="#FFFFFF" opacity="0.92" rx="2"/>`
     svg += `<text x="${(onRight ? bx-5 : bx+5).toFixed(1)}" y="${labelY.toFixed(1)}" text-anchor="${onRight ? 'end' : 'start'}" font-size="9" fill="#64748B" font-family="${FONT}">${baselineLabel}</text>`
   }
   svg += data.map((_, i) => `<text x="${allX[i].toFixed(1)}" y="${pad.t+ch+14}" text-anchor="middle" font-size="12" fill="#94A3B8" font-family="${FONT}">${labels[i]||''}</text>`).join('')

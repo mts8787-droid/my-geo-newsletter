@@ -1285,7 +1285,10 @@ function _miniSvg(data,labels,w,h,color,fadeIdx,_unused,label){
     var bx=pl+(fadeIdx/(data.length-1))*cw;
     s+='<line x1="'+bx.toFixed(1)+'" y1="'+pt+'" x2="'+bx.toFixed(1)+'" y2="'+(pt+ch)+'" stroke="#64748B" stroke-width="1" stroke-dasharray="3,3"/>';
     var onR=bx>w*0.7;
-    var labY=onR?pt+ch+26:pt+8;
+    var labY=onR?pt+ch-4:pt+8;
+    var textW=label.length*5.2;
+    var rectX=onR?bx-5-textW:bx+5;
+    s+='<rect x="'+rectX.toFixed(1)+'" y="'+(labY-9).toFixed(1)+'" width="'+textW.toFixed(1)+'" height="12" fill="#FFFFFF" opacity="0.92" rx="2"/>';
     s+='<text x="'+(onR?bx-4:bx+4).toFixed(1)+'" y="'+labY.toFixed(1)+'" text-anchor="'+(onR?'end':'start')+'" font-size="9" fill="#64748B" font-family="'+_FONT+'">'+label+'</text>';
   }
   pts.forEach(function(p,i){s+='<text x="'+p.x.toFixed(1)+'" y="'+(pt+ch+14)+'" text-anchor="middle" font-size="12" fill="#94A3B8" font-family="'+_FONT+'">'+(labels[i]||'')+'</text>'});
@@ -1329,7 +1332,10 @@ function _miniSvgNullAware(data,labels,w,h,color,fadeIdx,_unused,label){
     var bx=allX[fadeIdx];
     s+='<line x1="'+bx.toFixed(1)+'" y1="'+pt+'" x2="'+bx.toFixed(1)+'" y2="'+(pt+ch)+'" stroke="#64748B" stroke-width="1" stroke-dasharray="3,3"/>';
     var onR=bx>w*0.7;
-    var labY=onR?pt+ch+26:pt+8;
+    var labY=onR?pt+ch-4:pt+8;
+    var textW=label.length*5.2;
+    var rectX=onR?bx-5-textW:bx+5;
+    s+='<rect x="'+rectX.toFixed(1)+'" y="'+(labY-9).toFixed(1)+'" width="'+textW.toFixed(1)+'" height="12" fill="#FFFFFF" opacity="0.92" rx="2"/>';
     s+='<text x="'+(onR?bx-4:bx+4).toFixed(1)+'" y="'+labY.toFixed(1)+'" text-anchor="'+(onR?'end':'start')+'" font-size="9" fill="#64748B" font-family="'+_FONT+'">'+label+'</text>';
   }
   data.forEach(function(_,i){s+='<text x="'+allX[i].toFixed(1)+'" y="'+(pt+ch+14)+'" text-anchor="middle" font-size="12" fill="#94A3B8" font-family="'+_FONT+'">'+(labels[i]||'')+'</text>'});
