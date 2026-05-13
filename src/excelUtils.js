@@ -212,8 +212,19 @@ function parseMonthFromDate(dateStr) {
   const s = String(dateStr || '').trim()
   const enMonths = { jan:1, feb:2, mar:3, apr:4, may:5, jun:6, jul:7, aug:8, sep:9, oct:10, nov:11, dec:12 }
   let month = 0, year = 0
-  const yearMatch = s.match(/(\d{4})/)
-  if (yearMatch) year = parseInt(yearMatch[1])
+  // 4자리 연도 (2026, '2026-01' 등)
+  const ym4 = s.match(/(\d{4})/)
+  if (ym4) year = parseInt(ym4[1])
+  else {
+    // 2자리 연도 한국식 '26년' → 20YY (예: '26년 2월' → 2026)
+    const ky2 = s.match(/(\d{2})년/)
+    if (ky2) year = 2000 + parseInt(ky2[1])
+    // 2자리 연도 영문 'YY' 단독 (예: 'Apr 26')
+    else {
+      const ey2 = s.match(/\b(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\w*\s+(\d{2})\b/i)
+      if (ey2) year = 2000 + parseInt(ey2[1])
+    }
+  }
   const krMatch = s.match(/(\d{1,2})월/)
   if (krMatch) { month = parseInt(krMatch[1]) }
   else {
