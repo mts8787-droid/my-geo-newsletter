@@ -37,18 +37,21 @@ beforeEach(() => {
 afterAll(() => { try { rmSync(TMP_ROOT, { recursive: true, force: true }) } catch {} })
 
 describe('GET /', () => {
-  it('IP 허용 → 안내 HTML 반환 (채널 슬러그 링크 포함)', async () => {
+  it('IP 허용 → 안내 HTML 반환 (Newsletter/Dashboard 링크 + admin 링크)', async () => {
     const res = await request(makeApp()).get('/')
     expect(res.status).toBe(200)
     expect(res.headers['content-type']).toMatch(/text\/html/)
     expect(res.text).toContain('LG Electronics')
     expect(res.text).toContain('Newsletter')
     expect(res.text).toContain('Dashboard')
-    expect(res.text).toContain('Citation')
     expect(res.text).toContain(`/p/${CHANNELS.newsletter.koSlug}`)
     expect(res.text).toContain(`/p/${CHANNELS.newsletter.enSlug}`)
     expect(res.text).toContain(`/p/${CHANNELS.dashboard.koSlug}`)
-    expect(res.text).toContain(`/p/${CHANNELS.citation.koSlug}`)
+    // Citation 섹션은 제거됨
+    expect(res.text).not.toContain(`/p/${CHANNELS.citation.koSlug}`)
+    // 하단 admin 링크
+    expect(res.text).toContain('/admin/newsletter')
+    expect(res.text).toContain('admin')
   })
 
   it('IP 화이트리스트 차단 → 403 페이지', async () => {

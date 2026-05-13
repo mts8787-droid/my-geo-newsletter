@@ -13,7 +13,6 @@ landingRouter.get('/', (req, res) => {
   }
   const nl = CHANNELS.newsletter
   const dash = CHANNELS.dashboard
-  const cit = CHANNELS.citation
   const meta = readMetaFile(nl.metaFile)
   const title = meta?.title || 'GEO Monthly Report'
   const ts = meta?.ts ? new Date(meta.ts).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' }) : ''
@@ -41,6 +40,9 @@ a.btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.3)}
 .btn-en:hover{border-color:#64748B}
 .flag{font-size:18px}
 .section-label{font-size:11px;font-weight:700;letter-spacing:1px;color:#64748B;text-transform:uppercase;margin-top:20px;margin-bottom:8px}
+.admin{margin-top:40px;font-size:11px;color:#475569}
+.admin a{color:#64748B;text-decoration:none;border-bottom:1px solid #334155;padding-bottom:1px}
+.admin a:hover{color:#94A3B8}
 </style>
 </head>
 <body>
@@ -62,10 +64,8 @@ a.btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.3)}
     <p class="section-label">Dashboard</p>
     <a class="btn btn-ko" href="/p/${dash.koSlug}"><span class="flag">🇰🇷</span> 한국어 대시보드</a>
     <a class="btn btn-en" href="/p/${dash.enSlug}"><span class="flag">🇺🇸</span> English Dashboard</a>
-    <p class="section-label">Citation</p>
-    <a class="btn btn-ko" href="/p/${cit.koSlug}"><span class="flag">🇰🇷</span> 한국어 Citation</a>
-    <a class="btn btn-en" href="/p/${cit.enSlug}"><span class="flag">🇺🇸</span> English Citation</a>
   </div>
+  <p class="admin">관리자: <a href="/admin/newsletter">admin 페이지</a></p>
 </div>
 </body>
 </html>`)

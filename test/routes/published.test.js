@@ -8,10 +8,13 @@ import { join } from 'path'
 // 임시 PUB_DIR — 실제 fs 사용
 const TMP_ROOT = mkdtempSync(join(tmpdir(), 'published-test-'))
 const TMP_PUB = join(TMP_ROOT, 'pub')
+const TMP_DATA = join(TMP_ROOT, 'data')
 mkdirSync(TMP_PUB, { recursive: true })
+mkdirSync(TMP_DATA, { recursive: true })
 
 vi.mock('../../lib/storage.js', () => ({
   PUB_DIR: TMP_PUB,
+  DATA_DIR: TMP_DATA,
   readIpAllowlist: vi.fn(() => [...fakeAllowlist]),
 }))
 
