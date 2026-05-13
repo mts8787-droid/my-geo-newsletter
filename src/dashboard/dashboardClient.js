@@ -1262,7 +1262,7 @@ function _miniSvg(data,labels,w,h,color,fadeIdx,_unused,label){
   var postPts=fadeIdx>0?pts.filter(function(p){return p.idx>=fadeIdx}):pts;
   var FADE='#64748B';
   var id='ms'+Math.random().toString(36).slice(2,6);
-  var s='<svg viewBox="0 0 '+w+' '+h+'" width="100%" height="'+h+'" xmlns="http://www.w3.org/2000/svg" style="display:block">';
+  var s='<svg viewBox="0 0 '+w+' '+(h+12)+'" width="100%" height="'+(h+12)+'" xmlns="http://www.w3.org/2000/svg" style="display:block;overflow:visible">';
   if(postPts.length>=2){
     var line=postPts.map(function(p,i){return(i?'L':'M')+p.x.toFixed(1)+','+p.y.toFixed(1)}).join(' ');
     var area=line+' L'+postPts[postPts.length-1].x.toFixed(1)+','+(pt+ch)+' L'+postPts[0].x.toFixed(1)+','+(pt+ch)+' Z';
@@ -1285,7 +1285,7 @@ function _miniSvg(data,labels,w,h,color,fadeIdx,_unused,label){
     var bx=pl+(fadeIdx/(data.length-1))*cw;
     s+='<line x1="'+bx.toFixed(1)+'" y1="'+pt+'" x2="'+bx.toFixed(1)+'" y2="'+(pt+ch)+'" stroke="#64748B" stroke-width="1" stroke-dasharray="3,3"/>';
     var onR=bx>w*0.7;
-    var labY=onR?pt+33:pt+8;
+    var labY=onR?pt+ch+26:pt+8;
     s+='<text x="'+(onR?bx-4:bx+4).toFixed(1)+'" y="'+labY.toFixed(1)+'" text-anchor="'+(onR?'end':'start')+'" font-size="9" fill="#64748B" font-family="'+_FONT+'">'+label+'</text>';
   }
   pts.forEach(function(p,i){s+='<text x="'+p.x.toFixed(1)+'" y="'+(pt+ch+14)+'" text-anchor="middle" font-size="12" fill="#94A3B8" font-family="'+_FONT+'">'+(labels[i]||'')+'</text>'});
@@ -1298,7 +1298,7 @@ function _miniSvgNullAware(data,labels,w,h,color,fadeIdx,_unused,label){
   var allX=data.map(function(_,i){return pl+(i/divisor)*cw});
   var valid=data.filter(function(v){return v!=null});
   var FADE='#64748B';
-  var s='<svg viewBox="0 0 '+w+' '+h+'" width="100%" height="'+h+'" xmlns="http://www.w3.org/2000/svg" style="display:block">';
+  var s='<svg viewBox="0 0 '+w+' '+(h+12)+'" width="100%" height="'+(h+12)+'" xmlns="http://www.w3.org/2000/svg" style="display:block;overflow:visible">';
   if(valid.length){
     var mn=Math.min.apply(null,valid)-1;var mx=Math.max.apply(null,valid)+1;var rng=mx-mn||1;
     var pts=[];
@@ -1329,7 +1329,7 @@ function _miniSvgNullAware(data,labels,w,h,color,fadeIdx,_unused,label){
     var bx=allX[fadeIdx];
     s+='<line x1="'+bx.toFixed(1)+'" y1="'+pt+'" x2="'+bx.toFixed(1)+'" y2="'+(pt+ch)+'" stroke="#64748B" stroke-width="1" stroke-dasharray="3,3"/>';
     var onR=bx>w*0.7;
-    var labY=onR?pt+33:pt+8;
+    var labY=onR?pt+ch+26:pt+8;
     s+='<text x="'+(onR?bx-4:bx+4).toFixed(1)+'" y="'+labY.toFixed(1)+'" text-anchor="'+(onR?'end':'start')+'" font-size="9" fill="#64748B" font-family="'+_FONT+'">'+label+'</text>';
   }
   data.forEach(function(_,i){s+='<text x="'+allX[i].toFixed(1)+'" y="'+(pt+ch+14)+'" text-anchor="middle" font-size="12" fill="#94A3B8" font-family="'+_FONT+'">'+(labels[i]||'')+'</text>'});
