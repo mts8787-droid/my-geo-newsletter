@@ -1251,9 +1251,8 @@ function _baselineIdx(prodId,labels){
   }
   return -1;
 }
-// 미니 SVG 라인 차트 생성 (클라이언트용)
-// bridge: true면 boundary 직전→직후 회색 연결 / label: dashed 베이스라인 라벨
-function _miniSvg(data,labels,w,h,color,fadeIdx,bridge,label){
+// 미니 SVG 라인 차트 — bridge 인자 제거 (모든 베이스라인 제품 boundary 끊김), 베이스라인 라벨 X축 영역으로
+function _miniSvg(data,labels,w,h,color,fadeIdx,_unused,label){
   if(!data||data.length<2)return'<svg width="'+w+'" height="'+h+'"></svg>';
   if(fadeIdx==null)fadeIdx=-1;
   var pt=18,pr=10,pb=20,pl=10;var cw=w-pl-pr;var ch=h-pt-pb;
@@ -1271,10 +1270,6 @@ function _miniSvg(data,labels,w,h,color,fadeIdx,bridge,label){
     s+='<path d="'+area+'" fill="url(#'+id+')"/>';
     s+='<path d="'+line+'" stroke="'+color+'" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>';
   }
-  if(bridge&&prePts.length&&postPts.length){
-    var a=prePts[prePts.length-1],b=postPts[0];
-    s+='<line x1="'+a.x.toFixed(1)+'" y1="'+a.y.toFixed(1)+'" x2="'+b.x.toFixed(1)+'" y2="'+b.y.toFixed(1)+'" stroke="'+FADE+'" stroke-width="2" stroke-linecap="round" opacity="0.85"/>';
-  }
   if(prePts.length>=2){
     var pline=prePts.map(function(p,i){return(i?'L':'M')+p.x.toFixed(1)+','+p.y.toFixed(1)}).join(' ');
     s+='<path d="'+pline+'" stroke="'+FADE+'" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.85"/>';
@@ -1290,12 +1285,12 @@ function _miniSvg(data,labels,w,h,color,fadeIdx,bridge,label){
     var bx=pl+(fadeIdx/(data.length-1))*cw;
     s+='<line x1="'+bx.toFixed(1)+'" y1="'+pt+'" x2="'+bx.toFixed(1)+'" y2="'+(pt+ch)+'" stroke="#64748B" stroke-width="1" stroke-dasharray="3,3"/>';
     var onR=bx>w*0.7;
-    s+='<text x="'+(onR?bx-4:bx+4).toFixed(1)+'" y="'+(pt+10).toFixed(1)+'" text-anchor="'+(onR?'end':'start')+'" font-size="10" fill="#64748B" font-family="'+_FONT+'">'+label+'</text>';
+    s+='<text x="'+(onR?bx-4:bx+4).toFixed(1)+'" y="'+(pt+ch+14).toFixed(1)+'" text-anchor="'+(onR?'end':'start')+'" font-size="9" fill="#64748B" font-family="'+_FONT+'">'+label+'</text>';
   }
   pts.forEach(function(p,i){s+='<text x="'+p.x.toFixed(1)+'" y="'+(pt+ch+14)+'" text-anchor="middle" font-size="12" fill="#94A3B8" font-family="'+_FONT+'">'+(labels[i]||'')+'</text>'});
   s+='</svg>';return s;
 }
-function _miniSvgNullAware(data,labels,w,h,color,fadeIdx,bridge,label){
+function _miniSvgNullAware(data,labels,w,h,color,fadeIdx,_unused,label){
   if(fadeIdx==null)fadeIdx=-1;
   var pt=18,pr=10,pb=20,pl=10;var cw=w-pl-pr;var ch=h-pt-pb;
   var N=data.length;var divisor=N>1?N-1:1;
@@ -1317,10 +1312,6 @@ function _miniSvgNullAware(data,labels,w,h,color,fadeIdx,bridge,label){
       s+='<path d="'+area+'" fill="url(#'+id+')"/>';
       s+='<path d="'+line+'" stroke="'+color+'" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>';
     }
-    if(bridge&&prePts.length&&postPts.length){
-      var a=prePts[prePts.length-1],b=postPts[0];
-      s+='<line x1="'+a.x.toFixed(1)+'" y1="'+a.y.toFixed(1)+'" x2="'+b.x.toFixed(1)+'" y2="'+b.y.toFixed(1)+'" stroke="'+FADE+'" stroke-width="2" stroke-linecap="round" opacity="0.85"/>';
-    }
     if(prePts.length>=2){
       var pline=prePts.map(function(p,i){return(i?'L':'M')+p.x.toFixed(1)+','+p.y.toFixed(1)}).join(' ');
       s+='<path d="'+pline+'" stroke="'+FADE+'" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.85"/>';
@@ -1337,7 +1328,7 @@ function _miniSvgNullAware(data,labels,w,h,color,fadeIdx,bridge,label){
     var bx=allX[fadeIdx];
     s+='<line x1="'+bx.toFixed(1)+'" y1="'+pt+'" x2="'+bx.toFixed(1)+'" y2="'+(pt+ch)+'" stroke="#64748B" stroke-width="1" stroke-dasharray="3,3"/>';
     var onR=bx>w*0.7;
-    s+='<text x="'+(onR?bx-4:bx+4).toFixed(1)+'" y="'+(pt+10).toFixed(1)+'" text-anchor="'+(onR?'end':'start')+'" font-size="10" fill="#64748B" font-family="'+_FONT+'">'+label+'</text>';
+    s+='<text x="'+(onR?bx-4:bx+4).toFixed(1)+'" y="'+(pt+ch+14).toFixed(1)+'" text-anchor="'+(onR?'end':'start')+'" font-size="9" fill="#64748B" font-family="'+_FONT+'">'+label+'</text>';
   }
   data.forEach(function(_,i){s+='<text x="'+allX[i].toFixed(1)+'" y="'+(pt+ch+14)+'" text-anchor="middle" font-size="12" fill="#94A3B8" font-family="'+_FONT+'">'+(labels[i]||'')+'</text>'});
   s+='</svg>';return s;

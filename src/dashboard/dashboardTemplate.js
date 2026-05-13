@@ -80,8 +80,7 @@ function trendDetailHtml(products, weeklyAll, wLabels, t, lang, ulMap, periodTag
       const N = wLabels.length
       const colgroup = `<colgroup><col style="width:${TREND_BRAND_COL}px">${wLabels.map(() => '<col>').join('')}</colgroup>`
       const _wFadeIdx = baselineIdxFor(p, wLabels)
-      const _wBridge = shouldBridgeBaseline(p)
-      const chartRow = `<tr><td style="padding:0;border:0"></td><td colspan="${N}" style="padding:8px 0;border:0">${svgMultiLine(data, wLabels, N * 80, 180, { fadeBeforeIdx: _wFadeIdx, bridgeBaseline: _wBridge, baselineLabel: _wFadeIdx > 0 ? '*Baseline 재설정' : '' })}</td></tr>`
+      const chartRow = `<tr><td style="padding:0;border:0"></td><td colspan="${N}" style="padding:8px 0;border:0">${svgMultiLine(data, wLabels, N * 80, 180, { fadeBeforeIdx: _wFadeIdx, baselineLabel: _wFadeIdx > 0 ? '*Baseline 재설정' : '' })}</td></tr>`
       const legendRow = `<tr><td style="padding:0;border:0"></td><td colspan="${N}" style="padding:4px 0 6px;border:0">${legend}</td></tr>`
       const thead = `<tr style="border-top:1px solid #E8EDF2"><th style="text-align:left;padding:5px 6px;font-size:14px;color:#94A3B8;font-weight:600;border-bottom:1px solid #F1F5F9">Brand</th>${wLabels.map(w => `<th style="text-align:center;padding:5px 2px;font-size:14px;color:#94A3B8;font-weight:600;border-bottom:1px solid #F1F5F9">${w}</th>`).join('')}</tr>`
       const tbody = brands.map((b, i) => {
@@ -193,8 +192,7 @@ function monthlyTrendDetailHtml(products, monthlyVis, t, lang, ulMap, periodTag)
       const N = mLabels.length
       const colgroup = `<colgroup><col style="width:${TREND_BRAND_COL}px">${mLabels.map(() => '<col>').join('')}</colgroup>`
       const _mFadeIdx = baselineIdxFor(p, mLabels)
-      const _mBridge = shouldBridgeBaseline(p)
-      const chartRow = `<tr><td style="padding:0;border:0"></td><td colspan="${N}" style="padding:8px 0;border:0">${svgMultiLine(brandData, mLabels, N * 80, 180, { fadeBeforeIdx: _mFadeIdx, bridgeBaseline: _mBridge, baselineLabel: _mFadeIdx > 0 ? '*Baseline 재설정' : '' })}</td></tr>`
+      const chartRow = `<tr><td style="padding:0;border:0"></td><td colspan="${N}" style="padding:8px 0;border:0">${svgMultiLine(brandData, mLabels, N * 80, 180, { fadeBeforeIdx: _mFadeIdx, baselineLabel: _mFadeIdx > 0 ? '*Baseline 재설정' : '' })}</td></tr>`
       const legendRow = `<tr><td style="padding:0;border:0"></td><td colspan="${N}" style="padding:4px 0 6px;border:0">${legend}</td></tr>`
       const thead = `<tr style="border-top:1px solid #E8EDF2"><th style="text-align:left;padding:5px 6px;font-size:14px;color:#94A3B8;font-weight:600;border-bottom:1px solid #F1F5F9">Brand</th>${mLabels.map(m => `<th style="text-align:center;padding:5px 2px;font-size:14px;color:#94A3B8;font-weight:600;border-bottom:1px solid #F1F5F9">${m}</th>`).join('')}</tr>`
       const tbody = brands.map((b, i) => {
@@ -388,8 +386,8 @@ function productSectionHtml(products, meta, t, lang, wLabels, ulMap, monthlyVis,
           <span class="prod-delta prod-mom" style="display:none;color:${momColor}">${(isBaselineResetProduct(p) || momD == null) ? '' : `MoM ${momArrow} ${Math.abs(momD).toFixed(1)}%p`}</span>
         </div>
         <div class="prod-chart">
-          <div class="trend-weekly">${(() => { const _ls = wLabels.slice(-10); const _fi = baselineIdxFor(p, _ls); return svgLine(weekly.slice(-10), _ls, 300, 90, sparkColor, { fadeBeforeIdx: _fi, bridgeBaseline: shouldBridgeBaseline(p), baselineLabel: _fi > 0 ? '*Baseline 재설정' : '' }) })()}</div>
-          <div class="trend-monthly" style="display:none">${(() => { const _fi = baselineIdxFor(p, m4Labels); return svgLine(m4Data, m4Labels, 300, 90, sparkColor, { fadeBeforeIdx: _fi, bridgeBaseline: shouldBridgeBaseline(p), baselineLabel: _fi > 0 ? '*Baseline 재설정' : '' }) })()}</div>
+          <div class="trend-weekly">${(() => { const _ls = wLabels.slice(-10); const _fi = baselineIdxFor(p, _ls); return svgLine(weekly.slice(-10), _ls, 300, 90, sparkColor, { fadeBeforeIdx: _fi, baselineLabel: _fi > 0 ? '*Baseline 재설정' : '' }) })()}</div>
+          <div class="trend-monthly" style="display:none">${(() => { const _fi = baselineIdxFor(p, m4Labels); return svgLine(m4Data, m4Labels, 300, 90, sparkColor, { fadeBeforeIdx: _fi, baselineLabel: _fi > 0 ? '*Baseline 재설정' : '' }) })()}</div>
         </div>
         <div class="prod-comp">
           <span class="prod-comp-name">${lang === 'en' ? `vs ${p.compName}` : `${p.compName} ${t.vsComp}`}</span>
