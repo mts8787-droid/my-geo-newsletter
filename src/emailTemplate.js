@@ -1575,7 +1575,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
     .map(p => {
       const isAudio = (p.id || '').toLowerCase() === 'audio' || p.kr === '오디오'
       const displayName = isAudio
-        ? 'Audio-Sound Suit'
+        ? 'Audio-Sound Suite'
         : lang === 'en'
           ? (PROD_EN_NAME[(p.id || '').toLowerCase()] || PROD_EN_BY_KR[p.kr] || p.kr)
           : p.kr

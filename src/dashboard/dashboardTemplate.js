@@ -55,12 +55,12 @@ function shouldBridgeBaseline(prodOrId) {
 const BASELINE_NOTES = {
   ko: {
     title: '*Baseline 재조정 (4월)',
-    audio: '-Audio : 오디오 신제품 Sound Suit의 브랜드 전략 및 핵심 경쟁력 고려하여 기존 DAFC 토픽 외 Speaker Set, Spatial Sound, Connectivity 등 고객들이 주로 질문할 주요 USP 관점의 프롬프트 추가함',
+    audio: '-Audio : 오디오 신제품 Sound Suite의 브랜드 전략 및 핵심 경쟁력 고려하여 기존 DAFC 토픽 외 Speaker Set, Spatial Sound, Connectivity 등 고객들이 주로 질문할 주요 USP 관점의 프롬프트 추가함',
     racair: '-RAC/Aircare : 사업 중요도에 따라서 국가별 Prompt를 재분배 함(브라질, 멕시코, 베트남, 인도 확대 / 미국, 영국, 독일, 호주 축소). 제조사 브랜드가 노출되지 않는 Prompt를 중심으로 삭제 함 (브랜드 노출수 Avg 0.2개 Prompt)',
   },
   en: {
     title: '*Baseline reset (April)',
-    audio: '-Audio: Considering the brand strategy and core competitiveness of the new Sound Suit, added prompts from key USP perspectives (Speaker Set, Spatial Sound, Connectivity, etc.) frequently asked by customers, beyond existing DAFC topics',
+    audio: '-Audio: Considering the brand strategy and core competitiveness of the new Sound Suite, added prompts from key USP perspectives (Speaker Set, Spatial Sound, Connectivity, etc.) frequently asked by customers, beyond existing DAFC topics',
     racair: '-RAC/Aircare: Redistributed prompts by country based on business priority (expanded: Brazil, Mexico, Vietnam, India / reduced: US, UK, Germany, Australia). Removed prompts where manufacturer brand was not exposed (avg 0.2 brand mentions per prompt)',
   },
 }
@@ -442,7 +442,7 @@ function productSectionHtml(products, meta, t, lang, wLabels, ulMap, monthlyVis,
     ${insightHtml(meta.productInsight, meta.showProductInsight, meta.productHowToRead, meta.showProductHowToRead, t)}
     <div class="section-body">${buGroups}${(() => {
       const footnotes = products.filter(p => getULCntys(p.id || p.category, ulMap).length > 0)
-        .map(p => `${((p.id || '').toLowerCase() === 'audio' || p.kr === '오디오') ? 'Audio-Sound Suit' : p.kr}: ${getULCntys(p.id || p.category, ulMap).map(c => cntyOfficial(c, lang)).join(', ')} ${lang === 'en' ? 'not launched' : '미출시'}`)
+        .map(p => `${((p.id || '').toLowerCase() === 'audio' || p.kr === '오디오') ? 'Audio-Sound Suite' : p.kr}: ${getULCntys(p.id || p.category, ulMap).map(c => cntyOfficial(c, lang)).join(', ')} ${lang === 'en' ? 'not launched' : '미출시'}`)
       return (footnotes.length ? `<p style="margin:12px 0 0;font-size:12px;color:#1A1A1A;line-height:1.6;font-weight:500">* ${footnotes.join(' / ')}</p>` : '') + baselineNoteFullHtml(lang)
     })()}</div>
   </div>`
@@ -558,7 +558,7 @@ function countrySectionHtml(productsCnty, meta, t, lang, ulMap, periodTag) {
         const footnotes = products.map(name => {
           const id = NAME_TO_ID[name] || String(name).toLowerCase()
           const cntys = getULCntys(id, ulMap)
-          const displayName = id === 'audio' ? 'Audio-Sound Suit' : name
+          const displayName = id === 'audio' ? 'Audio-Sound Suite' : name
           return cntys.length ? `${displayName}: ${cntys.join(', ')} ${lang === 'en' ? 'not launched' : '미출시'}` : null
         }).filter(Boolean)
         return footnotes.length ? `<p style="margin:12px 0 0;font-size:12px;color:#1A1A1A;line-height:1.6;font-weight:500">* ${footnotes.join(' / ')}</p>` : ''
