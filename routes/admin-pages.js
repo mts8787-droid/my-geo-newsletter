@@ -13,10 +13,241 @@ import { readModeSyncData, writeModeSyncData } from '../lib/storage.js'
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const PROJECT_ROOT = join(__dirname, '..')
 
+// ─── Prompting Skills — 컴포넌트 라이브 프리뷰 HTML ────────────────────────
+// PROMPTING_SKILLS.md 의 C-01 ~ C-13 컴포넌트를 실제 렌더된 HTML 로 보여주는 갤러리.
+// MD 파일은 그대로 두고, 웹 페이지에만 갤러리 섹션 주입.
+const PROMPTING_SKILLS_PREVIEW = `
+<style>
+  .preview-section{margin-top:40px;padding-top:32px;border-top:2px solid #CF0652}
+  .preview-section h2{font-size:22px;color:#F8FAFC;margin-bottom:24px}
+  .preview-card{background:#fff;border-radius:10px;padding:20px;margin:18px 0;color:#1A1A1A;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+  .preview-label{display:inline-block;background:#CF0652;color:#fff;font-size:11px;font-weight:700;padding:3px 10px;border-radius:5px;letter-spacing:1px;margin-bottom:10px}
+  .preview-name{font-size:14px;color:#475569;margin-bottom:14px;font-weight:600}
+</style>
+<div class="preview-section">
+<h2>Live Examples — 컴포넌트 미리보기</h2>
+
+<div class="preview-card">
+  <span class="preview-label">C-01</span><span class="preview-name">Hero 카드</span>
+  <div style="background:#0F172A;color:#E2E8F0;padding:24px;border-radius:12px;font-family:'LGEIText','LG Smart',Arial,sans-serif">
+    <div style="font-size:12px;color:#94A3B8;letter-spacing:2px;text-transform:uppercase">전체 KPI %</div>
+    <div style="display:flex;align-items:baseline;gap:10px;margin:8px 0">
+      <span style="font-size:48px;font-weight:900;color:#fff;letter-spacing:-2px">41.9</span>
+      <span style="font-size:20px;color:#94A3B8">%</span>
+      <span style="font-size:14px;color:#22C55E">▲ 1.2%p</span>
+      <span style="font-size:12px;color:#94A3B8">MoM</span>
+    </div>
+    <div style="display:flex;gap:12px;margin-top:8px;font-size:13px">
+      <span style="color:#94A3B8">계열2</span>
+      <span>45.2%</span>
+      <span style="color:#EF4444">Gap −3.3%p</span>
+    </div>
+    <div style="font-size:11px;color:#94A3B8;margin-top:14px;line-height:1.5">
+      Model: A, B, C, D<br/>Scope: G1, G2, G3, G4
+    </div>
+  </div>
+</div>
+
+<div class="preview-card">
+  <span class="preview-label">C-02</span><span class="preview-name">안내 박스 (Notice / KPI Logic)</span>
+  <div style="background:#FEF2F4;border:1px solid #FECDD3;border-radius:10px;padding:14px 18px;margin-bottom:10px">
+    <div style="font-size:11px;font-weight:700;color:#BE123C;letter-spacing:1px;margin-bottom:4px">NOTICE</div>
+    <div style="font-size:13px;color:#1A1A1A;line-height:1.6">본 리포트는 <strong>4월 기준</strong>으로 작성됨</div>
+  </div>
+  <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:14px 18px">
+    <div style="font-size:11px;font-weight:700;color:#475569;letter-spacing:1px;margin-bottom:4px">KPI LOGIC</div>
+    <div style="font-size:13px;color:#1A1A1A;line-height:1.6"><strong>비율(%)</strong>: 자사/1위 경쟁사 × 100</div>
+  </div>
+</div>
+
+<div class="preview-card">
+  <span class="preview-label">C-03</span><span class="preview-name">카테고리 카드 (간단)</span>
+  <div style="border:2px solid #A7F3D0;border-radius:8px;background:#fff;padding:12px;width:280px;font-family:'LGEIText',Arial,sans-serif">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+      <span style="font-size:14px;font-weight:900;color:#1A1A1A">항목 A</span>
+      <span style="background:#ECFDF5;color:#15803D;border:1px solid #A7F3D0;border-radius:5px;padding:0 6px;font-size:10px;font-weight:700">Lead</span>
+    </div>
+    <div style="display:flex;align-items:baseline;gap:6px;margin-bottom:8px">
+      <span style="font-size:22px;font-weight:900;color:#1A1A1A">88.1</span>
+      <span style="font-size:11px;color:#94A3B8">%</span>
+      <span style="font-size:12px;font-weight:700;color:#22C55E">▼0.8%p</span>
+    </div>
+    <div style="font-size:11px;color:#64748B">계열2 대비 <span style="color:#15803D;font-weight:700">95%</span></div>
+    <svg viewBox="0 0 280 70" style="width:100%;margin-top:8px;background:#F8FAFC;border-radius:4px">
+      <path d="M10,50 L60,42 L110,35 L160,30 L210,25 L260,28" stroke="#15803D" fill="none" stroke-width="2"/>
+      <circle cx="260" cy="28" r="4" fill="#fff" stroke="#15803D" stroke-width="2"/>
+    </svg>
+  </div>
+</div>
+
+<div class="preview-card">
+  <span class="preview-label">C-05</span><span class="preview-name">막대 그래프 (그룹 vbar)</span>
+  <div style="display:flex;gap:24px;padding:10px">
+    ${['A','B','C'].map((label, idx) => {
+      const vals = [[87,90,42],[55,50,60],[68,71,30]][idx]
+      const colors = ['#CF0652','#3B82F6','#059669']
+      const maxV = Math.max(...vals)
+      return `<div style="text-align:center">
+        <div style="display:flex;gap:3px;align-items:flex-end;justify-content:center;height:130px">
+          ${vals.map((v,i) => `<div style="display:flex;flex-direction:column;align-items:center;width:26px">
+            <span style="font-size:11px;font-weight:700;color:${colors[i]};margin-bottom:2px">${v}</span>
+            <div style="width:100%;height:${Math.round(v/maxV*100)}px;background:${colors[i]};border-radius:4px 4px 0 0"></div>
+            <span style="font-size:10px;color:#94A3B8;margin-top:3px;letter-spacing:-0.6px">${['cat1','cat2','cat3'][i]}</span>
+          </div>`).join('')}
+        </div>
+        <div style="font-size:15px;font-weight:600;color:#475569;margin-top:6px">${label}</div>
+      </div>`
+    }).join('')}
+  </div>
+</div>
+
+<div class="preview-card">
+  <span class="preview-label">C-06</span><span class="preview-name">가로 막대 Top N</span>
+  <div>
+    ${[['item1', 1234, 0.45], ['item2', 980, 0.36], ['item3', 720, 0.26], ['item4', 510, 0.19]].map(([n,v,r], i) => {
+      const color = i === 0 ? '#15803D' : i < 3 ? '#22C55E' : '#94A3B8'
+      const w = (v/1234*100).toFixed(1)
+      return `<div style="display:flex;align-items:center;gap:8px;padding:5px 0">
+        <span style="width:80px;font-size:13px;font-weight:600">${n}</span>
+        <div style="flex:1;background:#F1F5F9;border-radius:4px;height:18px"><div style="width:${w}%;height:100%;background:${color};border-radius:4px"></div></div>
+        <span style="width:120px;text-align:right;font-size:12px;font-weight:700;color:${color}">${v.toLocaleString()} (${(r*100).toFixed(1)}%)</span>
+      </div>`
+    }).join('')}
+  </div>
+</div>
+
+<div class="preview-card">
+  <span class="preview-label">C-07</span><span class="preview-name">단일 라인 차트 (svgLine)</span>
+  <svg viewBox="0 0 300 102" width="100%" height="102" style="background:#fff;overflow:visible">
+    <defs><linearGradient id="g1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#15803D" stop-opacity="0.25"/><stop offset="100%" stop-color="#15803D" stop-opacity="0.03"/></linearGradient></defs>
+    <path d="M10,55 L46,48 L82,42 L118,38 L154,32 L190,28 L226,22 L262,20 L290,18 L290,70 L10,70 Z" fill="url(#g1)"/>
+    <path d="M10,55 L46,48 L82,42 L118,38 L154,32 L190,28 L226,22 L262,20 L290,18" stroke="#15803D" fill="none" stroke-width="2"/>
+    ${[55,48,42,38,32,28,22,20,18].map((y,i) => `<circle cx="${10 + i*35}" cy="${y}" r="3.5" fill="#fff" stroke="#15803D" stroke-width="2"/>`).join('')}
+    ${['80.1','82.5','84.7','86.1','87.2','88.0','88.4','88.7','88.9'].map((v,i) => `<text x="${10 + i*35}" y="${[55,48,42,38,32,28,22,20,18][i] - 7}" text-anchor="middle" font-size="11" font-weight="700" fill="#15803D">${v}</text>`).join('')}
+    ${['W1','W2','W3','W4','W5','W6','W7','W8','W9'].map((l,i) => `<text x="${10 + i*35}" y="86" text-anchor="middle" font-size="11" fill="#94A3B8">${l}</text>`).join('')}
+  </svg>
+</div>
+
+<div class="preview-card">
+  <span class="preview-label">C-08</span><span class="preview-name">다중 라인 차트 (svgMultiLine)</span>
+  <svg viewBox="0 0 480 160" width="100%" height="160" style="background:#fff">
+    <g><line x1="0" y1="8" x2="480" y2="8" stroke="#E8EDF2"/><line x1="0" y1="44" x2="480" y2="44" stroke="#E8EDF2"/><line x1="0" y1="80" x2="480" y2="80" stroke="#E8EDF2"/><line x1="0" y1="116" x2="480" y2="116" stroke="#E8EDF2"/><line x1="0" y1="152" x2="480" y2="152" stroke="#E8EDF2"/></g>
+    <path d="M40,60 L120,55 L200,40 L280,35 L360,28 L440,22" stroke="#CF0652" fill="none" stroke-width="2.5"/>
+    ${[60,55,40,35,28,22].map((y,i) => `<circle cx="${40 + i*80}" cy="${y}" r="3.5" fill="#fff" stroke="#CF0652" stroke-width="2"/>`).join('')}
+    <path d="M40,90 L120,85 L200,72 L280,70 L360,65 L440,55" stroke="#3B82F6" fill="none" stroke-width="1.5" opacity="0.7"/>
+    ${[90,85,72,70,65,55].map((y,i) => `<circle cx="${40 + i*80}" cy="${y}" r="2.5" fill="#fff" stroke="#3B82F6" stroke-width="1.5" opacity="0.7"/>`).join('')}
+    <path d="M40,120 L120,118 L200,108 L280,100 L360,95 L440,85" stroke="#059669" fill="none" stroke-width="1.5" opacity="0.7"/>
+    ${[120,118,108,100,95,85].map((y,i) => `<circle cx="${40 + i*80}" cy="${y}" r="2.5" fill="#fff" stroke="#059669" stroke-width="1.5" opacity="0.7"/>`).join('')}
+  </svg>
+  <div style="display:flex;gap:14px;font-size:12px;margin-top:6px;color:#475569">
+    <span><i style="display:inline-block;width:10px;height:3px;background:#CF0652;border-radius:1px;margin-right:4px"></i>cat1</span>
+    <span><i style="display:inline-block;width:10px;height:3px;background:#3B82F6;border-radius:1px;margin-right:4px"></i>cat2</span>
+    <span><i style="display:inline-block;width:10px;height:3px;background:#059669;border-radius:1px;margin-right:4px"></i>cat3</span>
+  </div>
+</div>
+
+<div class="preview-card">
+  <span class="preview-label">C-09</span><span class="preview-name">범프 차트 (Bump Chart)</span>
+  <svg viewBox="0 0 700 260" width="100%" style="background:#fff">
+    ${(() => {
+      const months = ['M1','M2','M3','M4','M5']
+      const rankings = { 'item1': [1,2,1,1,2], 'item2': [2,1,3,2,1], 'item3': [3,3,2,3,3] }
+      const COLORS = ['#CF0652','#1D4ED8','#059669']
+      const padL = 80, padR = 60, padT = 10, padB = 20
+      const chartW = 700 - padL - padR, chartH = 260 - padT - padB
+      const ROW_H = chartH / 5, ribbonW = ROW_H * 0.32
+      let out = ''
+      Object.entries(rankings).forEach(([name, ranks], ni) => {
+        const color = COLORS[ni]
+        const points = ranks.map((r,i) => ({
+          x: padL + (i/4) * chartW,
+          y: padT + ((r-0.5)/5) * chartH,
+          rank: r
+        }))
+        // Simple line + ribbons
+        const path = points.map((p,i) => (i===0?'M':'L') + p.x + ',' + p.y).join(' ')
+        out += `<path d="${path}" stroke="${color}" fill="none" stroke-width="${ribbonW*2}" opacity="0.4" stroke-linecap="round" stroke-linejoin="round"/>`
+        points.forEach(p => {
+          out += `<text x="${p.x}" y="${p.y+5}" text-anchor="middle" fill="#0F172A" font-size="14" font-weight="700">${name}</text>`
+        })
+      })
+      months.forEach((m, i) => {
+        out += `<text x="${padL + (i/4)*chartW}" y="${260-5}" text-anchor="middle" fill="#94A3B8" font-size="11">${m}</text>`
+      })
+      return out
+    })()}
+  </svg>
+</div>
+
+<div class="preview-card">
+  <span class="preview-label">C-10</span><span class="preview-name">미니 트렌드 바 (메일 호환)</span>
+  <table border="0" cellpadding="0" cellspacing="0" style="display:inline-table">
+    <tr>
+      ${[80,82,85,83,87,88,86,90].map((v, i) => {
+        const localMin = 80, localMax = 90
+        const h = Math.round(((v-localMin)/(localMax-localMin)) * 24) + 4
+        const spacer = 28 - h
+        return `<td style="vertical-align:bottom;text-align:center;padding:0 4px">
+          <table align="center"><tr><td style="font-size:10px;font-weight:700;color:#15803D;padding-bottom:1px">${v}</td></tr>
+          ${spacer > 0 ? `<tr><td height="${spacer}" style="font-size:0;line-height:0">&nbsp;</td></tr>` : ''}
+          <tr><td width="14" height="${h}" style="background:#15803D;font-size:0;line-height:0">&nbsp;</td></tr>
+          <tr><td style="font-size:10px;color:#94A3B8;padding-top:2px">W${i+1}</td></tr></table>
+        </td>`
+      }).join('')}
+    </tr>
+  </table>
+</div>
+
+<div class="preview-card">
+  <span class="preview-label">C-11</span><span class="preview-name">신호등 / 뱃지</span>
+  <div style="display:flex;gap:10px;align-items:center">
+    <span style="background:#ECFDF5;color:#15803D;border:1px solid #A7F3D0;border-radius:5px;padding:2px 8px;font-size:11px;font-weight:700">Lead</span>
+    <span style="background:#FFFBEB;color:#B45309;border:1px solid #FDE68A;border-radius:5px;padding:2px 8px;font-size:11px;font-weight:700">Behind</span>
+    <span style="background:#FFF1F2;color:#BE123C;border:1px solid #FECDD3;border-radius:5px;padding:2px 8px;font-size:11px;font-weight:700">Critical</span>
+    <span style="background:#F8FAFC;color:#475569;border:1px solid #E2E8F0;border-radius:5px;padding:2px 8px;font-size:11px;font-weight:700">—</span>
+  </div>
+</div>
+
+<div class="preview-card">
+  <span class="preview-label">C-12</span><span class="preview-name">베이스라인 마커 (3요소 한 세트)</span>
+  <svg viewBox="0 0 320 102" width="100%" height="102" style="background:#fff;overflow:visible">
+    <!-- Pre-baseline (gray) -->
+    <path d="M10,40 L46,45 L82,42 L118,48 L154,50" stroke="#64748B" fill="none" stroke-width="2" opacity="0.85"/>
+    <!-- Post-baseline (color) -->
+    <path d="M190,30 L226,28 L262,22 L298,20" stroke="#CF0652" fill="none" stroke-width="2"/>
+    <!-- Dashed vertical -->
+    <line x1="190" y1="20" x2="190" y2="70" stroke="#64748B" stroke-width="1" stroke-dasharray="3,3"/>
+    <!-- Pre-baseline circles -->
+    ${[[10,40],[46,45],[82,42],[118,48],[154,50]].map(([x,y]) => `<circle cx="${x}" cy="${y}" r="3.5" fill="#fff" stroke="#64748B" stroke-width="2" opacity="0.85"/>`).join('')}
+    <!-- Baseline start point (filled black) -->
+    <circle cx="190" cy="30" r="4" fill="#000" stroke="#CF0652" stroke-width="3"/>
+    <!-- Post circles -->
+    ${[[226,28],[262,22],[298,20]].map(([x,y]) => `<circle cx="${x}" cy="${y}" r="3.5" fill="#fff" stroke="#CF0652" stroke-width="2"/>`).join('')}
+    <!-- Label -->
+    <text x="195" y="28" text-anchor="start" font-size="9" fill="#64748B">*Baseline reset</text>
+    <!-- X labels -->
+    ${['T1','T2','T3','T4','T5','T6','T7','T8','T9'].map((l,i) => `<text x="${10 + i*36}" y="86" text-anchor="middle" font-size="11" fill="#94A3B8">${l}</text>`).join('')}
+  </svg>
+</div>
+
+<div class="preview-card">
+  <span class="preview-label">C-13</span><span class="preview-name">각주 (Footnote) 3종</span>
+  <p style="margin:0 0 8px;font-size:11px;color:#64748B;line-height:1.6">
+    * 제외 항목 (항목 A : 그룹1, 그룹3 / 항목 B : 그룹2)
+  </p>
+  <p style="margin:8px 0 0;font-size:12px;color:#1A1A1A;font-weight:500">*Baseline 재조정 (4월)</p>
+  <p style="margin:2px 0 0;font-size:12px;color:#1A1A1A">-항목 A : 신제품 출시에 따라 측정 기준 변경</p>
+  <p style="margin:2px 0 0;font-size:12px;color:#1A1A1A">-항목 B/C : 그룹별 가중치 재분배</p>
+  <p style="margin:10px 0 0;font-size:11px;color:#64748B;font-style:italic">(인라인 사례) 해당 항목 차트 아래에 단일 안내 1줄.</p>
+</div>
+
+</div>
+`
+
 // ─── Markdown 문서 렌더 헬퍼 ────────────────────────────────────────────────
 // /admin/plan, /admin/infra, /admin/cloud-run-job, /admin/bigquery-schema 공통.
 // marked + mermaid CDN로 클라이언트 렌더 (iOS Safari 호환).
-function renderMarkdownPage(res, { mdFile, title, downloadHref, downloadName }) {
+function renderMarkdownPage(res, { mdFile, title, downloadHref, downloadName, livePreview }) {
   let md = ''
   try {
     md = readFileSync(join(PROJECT_ROOT, 'docs', mdFile), 'utf-8')
@@ -77,7 +308,7 @@ body{margin:0;background:#0F172A;color:#E2E8F0;font-family:'LG Smart','Arial Nar
     if (infostring && /^mermaid/i.test(infostring)) return '<div class="mermaid">' + code + '</div>'
     return origCode(code, infostring)
   }
-  document.getElementById('root').innerHTML = marked.parse(md, { renderer })
+  document.getElementById('root').innerHTML = marked.parse(md, { renderer }) + ${JSON.stringify(livePreview || '')}
   await mermaid.run({ querySelector: '.mermaid' })
 </script>
 </body></html>`)
@@ -248,7 +479,7 @@ adminPagesRouter.get('/admin/bigquery-schema', (req, res) =>
 adminPagesRouter.get('/admin/bigquery-schema.md', (req, res) => renderMarkdownDownload(res, 'BIGQUERY_SCHEMA.md'))
 
 adminPagesRouter.get('/admin/prompting-skills', (req, res) =>
-  renderMarkdownPage(res, { mdFile: 'PROMPTING_SKILLS.md', title: 'Prompting Skills — 대시보드 기능별 사례', downloadHref: '/admin/prompting-skills.md', downloadName: 'PROMPTING_SKILLS.md' }))
+  renderMarkdownPage(res, { mdFile: 'PROMPTING_SKILLS.md', title: 'Prompting Skills — 대시보드 기능별 사례', downloadHref: '/admin/prompting-skills.md', downloadName: 'PROMPTING_SKILLS.md', livePreview: PROMPTING_SKILLS_PREVIEW }))
 adminPagesRouter.get('/admin/prompting-skills.md', (req, res) => renderMarkdownDownload(res, 'PROMPTING_SKILLS.md'))
 
 // dashboard-raw-data 셋업 PRD (자체 완결 HTML — 마크다운 변환 불필요)
