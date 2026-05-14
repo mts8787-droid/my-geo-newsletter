@@ -145,14 +145,6 @@ a.card:hover{border-color:#CF0652;transform:translateY(-2px)}
         <div class="card-title">Citation Editor</div>
         <div class="card-desc">Citation 분석 편집 — Citation 단독 게시</div>
       </a>
-      <a class="card" href="/admin/monthly-report">
-        <div class="card-title">Monthly Report</div>
-        <div class="card-desc">월간 보고용 단순 표 형태 리포트 — 색상/그래프 없음</div>
-      </a>
-      <a class="card" href="/admin/weekly-report">
-        <div class="card-title">Weekly Report</div>
-        <div class="card-desc">주간 보고용 표 리포트 — 국가별 제품별 전주대비 포함</div>
-      </a>
       <a class="card" href="/admin/readability" style="opacity:0.5;pointer-events:none">
         <div class="card-title">Readability Editor</div>
         <div class="card-desc">추후 고도화 예정</div>
@@ -160,6 +152,16 @@ a.card:hover{border-color:#CF0652;transform:translateY(-2px)}
       <a class="card" href="/admin/progress-tracker-v2/">
         <div class="card-title">Progress Tracker</div>
         <div class="card-desc">GEO 과제 진행 현황 대시보드 — 카테고리별 정량/정성 KPI</div>
+      </a>
+
+      <div class="section-title">리포트</div>
+      <a class="card" href="/admin/monthly-report">
+        <div class="card-title">Monthly Report</div>
+        <div class="card-desc">월간 보고용 단순 표 형태 리포트 — 색상/그래프 없음</div>
+      </a>
+      <a class="card" href="/admin/weekly-report">
+        <div class="card-title">Weekly Report</div>
+        <div class="card-desc">주간 보고용 표 리포트 — 국가별 제품별 전주대비 포함</div>
       </a>
     </div>
     <div class="col">
@@ -188,6 +190,8 @@ a.card:hover{border-color:#CF0652;transform:translateY(-2px)}
         <div class="card-title">독일 프롬프트 예시</div>
         <div class="card-desc">DE 국가 카테고리별·제품별·토픽별 대표 프롬프트 각 1개</div>
       </a>
+
+      <div class="section-title">DB구축</div>
       <a class="card" href="/admin/plan">
         <div class="card-title">시스템 기획서</div>
         <div class="card-desc">현행 아키텍처 · 코드/보안 리뷰 · 기능 로드맵</div>
@@ -207,6 +211,12 @@ a.card:hover{border-color:#CF0652;transform:translateY(-2px)}
       <a class="card" href="/admin/bigquery-schema">
         <div class="card-title">BigQuery Schema 계약</div>
         <div class="card-desc">두 레포(writer·reader) 간 단일 결합 지점 — 테이블·시스템 컬럼 규약</div>
+      </a>
+
+      <div class="section-title">스킬</div>
+      <a class="card" href="/admin/prompting-skills">
+        <div class="card-title">Prompting Skills</div>
+        <div class="card-desc">본 프로젝트를 만들 때 사용한 프롬프팅 패턴 — 대시보드 기능별 실전 사례</div>
       </a>
     </div>
   </div>
@@ -236,6 +246,10 @@ adminPagesRouter.get('/admin/cloud-run-job.md', (req, res) => renderMarkdownDown
 adminPagesRouter.get('/admin/bigquery-schema', (req, res) =>
   renderMarkdownPage(res, { mdFile: 'BIGQUERY_SCHEMA.md', title: 'BigQuery Schema 계약', downloadHref: '/admin/bigquery-schema.md', downloadName: 'BIGQUERY_SCHEMA.md' }))
 adminPagesRouter.get('/admin/bigquery-schema.md', (req, res) => renderMarkdownDownload(res, 'BIGQUERY_SCHEMA.md'))
+
+adminPagesRouter.get('/admin/prompting-skills', (req, res) =>
+  renderMarkdownPage(res, { mdFile: 'PROMPTING_SKILLS.md', title: 'Prompting Skills — 대시보드 기능별 사례', downloadHref: '/admin/prompting-skills.md', downloadName: 'PROMPTING_SKILLS.md' }))
+adminPagesRouter.get('/admin/prompting-skills.md', (req, res) => renderMarkdownDownload(res, 'PROMPTING_SKILLS.md'))
 
 // dashboard-raw-data 셋업 PRD (자체 완결 HTML — 마크다운 변환 불필요)
 adminPagesRouter.get('/admin/data-prd', (req, res) => {
