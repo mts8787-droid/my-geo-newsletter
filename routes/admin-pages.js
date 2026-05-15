@@ -23,6 +23,12 @@ const PROMPTING_SKILLS_PREVIEW = `
   .preview-card{background:#fff;border-radius:10px;padding:24px;margin:18px 0;color:#1A1A1A;box-shadow:0 2px 8px rgba(0,0,0,.3)}
   .preview-label{display:inline-block;background:#CF0652;color:#fff;font-size:11px;font-weight:700;padding:3px 10px;border-radius:5px;letter-spacing:1px;margin-bottom:10px}
   .preview-name{font-size:14px;color:#475569;margin-bottom:14px;font-weight:600;margin-left:10px}
+  /* 페이지 CSS 다크 테마 무효화 — preview-card 내부 모든 테이블은 인라인 스타일만 사용 */
+  .preview-card table{border-collapse:collapse;width:auto;margin:0;font-size:inherit;font-family:inherit}
+  .preview-card th,.preview-card td{border:none;padding:0;color:inherit;background:transparent;vertical-align:inherit;text-align:inherit}
+  .preview-card tr:nth-child(even) td{background:transparent}
+  /* code/pre 다크 테마 무효 */
+  .preview-card code,.preview-card pre{background:transparent;color:inherit;padding:0;font-family:inherit}
   /* 실제 대시보드와 동일한 prod-card 스타일 */
   .pc{font-family:'LGEIText','LG Smart','Arial Narrow',Arial,sans-serif}
 </style>
@@ -575,10 +581,10 @@ const PROMPTING_SKILLS_PREVIEW = `
   </div>
 </div>
 
-<!-- C-21 제품 카드 V1 (뉴스레터, 트렌드 바) — 실제 emailTemplate V1 디자인 -->
+<!-- C-21 제품 카드 V1 (뉴스레터, 트렌드 바) — 실제 emailTemplate V1 디자인, 약 305px -->
 <div class="preview-card pc">
-  <span class="preview-label">C-21</span><span class="preview-name">제품 카드 V1 — Newsletter (트렌드 바 우측)</span>
-  <table border="0" cellpadding="0" cellspacing="0" width="340" style="border:2px solid #A7F3D0;border-radius:8px;background:#fff">
+  <span class="preview-label">C-21</span><span class="preview-name">제품 카드 V1 — Newsletter (트렌드 바 우측, 실제 ~305px)</span>
+  <table border="0" cellpadding="0" cellspacing="0" width="305" style="border:2px solid #A7F3D0;border-radius:8px;background:#fff">
     <tr><td style="padding:8px 10px 4px">
       <table width="100%" cellpadding="0" cellspacing="0"><tr>
         <td style="vertical-align:middle">
@@ -610,10 +616,10 @@ const PROMPTING_SKILLS_PREVIEW = `
   </table>
 </div>
 
-<!-- C-22 제품 카드 V2 (뉴스레터, 10그룹 막대) -->
+<!-- C-22 제품 카드 V2 (뉴스레터, 10그룹 막대) — 실제 305px -->
 <div class="preview-card pc">
-  <span class="preview-label">C-22</span><span class="preview-name">제품 카드 V2 — Newsletter (10그룹 막대)</span>
-  <table border="0" cellpadding="0" cellspacing="0" width="500" style="border:2px solid #A7F3D0;border-radius:8px;background:#fff">
+  <span class="preview-label">C-22</span><span class="preview-name">제품 카드 V2 — Newsletter (10그룹 막대, 실제 ~305px)</span>
+  <table border="0" cellpadding="0" cellspacing="0" width="305" style="border:2px solid #A7F3D0;border-radius:8px;background:#fff">
     <tr><td style="padding:8px 10px 4px">
       <table width="100%" cellpadding="0" cellspacing="0"><tr>
         <td>
@@ -645,10 +651,10 @@ const PROMPTING_SKILLS_PREVIEW = `
   </table>
 </div>
 
-<!-- C-23 제품 카드 V3 (뉴스레터, 그룹별 1위 비교) — 실제 V3 디자인 -->
+<!-- C-23 제품 카드 V3 (뉴스레터, 그룹별 1위 비교) — 실제 V3 디자인 ~305px -->
 <div class="preview-card pc">
-  <span class="preview-label">C-23</span><span class="preview-name">제품 카드 V3 — Newsletter (그룹별 1위 비교)</span>
-  <table border="0" cellpadding="0" cellspacing="0" width="500" style="border:2px solid #A7F3D0;border-radius:8px;background:#fff">
+  <span class="preview-label">C-23</span><span class="preview-name">제품 카드 V3 — Newsletter (그룹별 1위 비교, 실제 ~305px)</span>
+  <table border="0" cellpadding="0" cellspacing="0" width="305" style="border:2px solid #A7F3D0;border-radius:8px;background:#fff">
     <tr><td style="padding:6px 8px 3px;white-space:nowrap">
       <span style="font-size:14px;font-weight:900;color:#1A1A1A;letter-spacing:-0.5px">항목 A</span>
       <span style="font-size:18px;font-weight:900;color:#1A1A1A;letter-spacing:-1.8px;margin-left:4px">88.1<span style="font-size:11px;color:#94A3B8;letter-spacing:-1.1px">%</span></span>
