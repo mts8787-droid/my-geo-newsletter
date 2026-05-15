@@ -393,7 +393,364 @@ function loadArchive(snapshot) {
 - 단순 데이터 변환은 lazy migration (저장 시 신규 키만)
 - 깊은 schema 변경은 명시적 migration 함수
 
-## 6. ANTI-PATTERNS (DATA)
+## 6. ERROR CATCHING PROCESS
+
+데이터 파이프라인 곳곳에서 발생 가능한 오류를 **단계별로 탐지·분류·기록·복구**하는 표준 프로세스. 외부 입력(시트, API)·파싱 로직·다운스트림 변환 모든 경계점에 적용.
+
+### 6.1 5단계 워크플로우
+
+```
+[1] DETECT     — 경계 지점에서 입력 검증 (parser 시작 전)
+    ↓
+[2] CLASSIFY   — 심각도 분류 (fatal / warning / info)
+    ↓
+[3] CAPTURE    — 컨텍스트 수집 (입력 sample + 위치 + 시도 결과)
+    ↓
+[4] RECOVER    — fallback 전략 적용 (디폴트 / null / skip)
+    ↓
+[5] SURFACE    — 적절한 채널로 표면화 (warn / log / throw)
+```
+
+### 6.2 단계별 RULE
+
+#### [1] DETECT — 경계 지점
+
+다음 지점에서 **항상** 검증 실행:
+- 시트 동기화 직후 (rows 길이, 첫 행 형태)
+- 파서 진입 시 (헤더 탐지, 필수 컬럼)
+- per-row 처리 (필수 필드 존재, 타입)
+- 파서 종료 시 (output 비어있는지, 예상 카테고리 다 있는지)
+- 다운스트림 변환 (필터 결과 비정상 0건)
+
+```js
+function parseProductCnty(rows) {
+  // [1] DETECT: 입력 자체 검증
+  if (!Array.isArray(rows) || rows.length === 0) {
+    return _logFatal('parseProductCnty', 'empty rows', { len: rows?.length })
+  }
+  // 헤더 탐지
+  const headerIdx = findHeaderIdx(rows, requiredCols)
+  if (headerIdx < 0) {
+    return _logWarn('parseProductCnty', 'header not found', { firstRows: rows.slice(0, 5) })
+  }
+  // ... per-row 처리
+}
+```
+
+#### [2] CLASSIFY — 심각도
+
+| 레벨 | 의미 | 예시 | 액션 |
+|---|---|---|---|
+| `fatal` | 파싱 자체 불가능 | 시트 부재, 모든 컬럼 누락 | 빈 객체 반환 + console.error |
+| `warning` | 부분 처리 가능 | 일부 행 손상, 헤더 일부 누락 | console.warn + skip / fallback |
+| `info` | 정상 + 메타 정보 | 파싱 N건 성공, 디폴트 적용 | console.log (디버그 모드만) |
+
+```js
+function _logFatal(scope, msg, ctx) {
+  console.error(`[${scope}] FATAL:`, msg, ctx)
+  return {}
+}
+function _logWarn(scope, msg, ctx) {
+  console.warn(`[${scope}] WARN:`, msg, ctx)
+  return null
+}
+function _logInfo(scope, msg, ctx) {
+  if (process.env.DEBUG) console.log(`[${scope}] INFO:`, msg, ctx)
+}
+```
+
+#### [3] CAPTURE — 컨텍스트 dump
+
+오류 시 **재현 가능한 최소 컨텍스트** 함께 저장:
+
+```js
+// Bad — 정보 부족
+console.warn('parse failed')
+
+// Good — 재현 컨텍스트
+console.warn('[parseProductCnty] WARN: invalid score', {
+  scope: 'parseProductCnty',
+  row: rows[i],
+  rowIdx: i,
+  cell: r[scoreCol],
+  parsed: parseNumber(r[scoreCol]),
+  expectedRange: '[0, 100]',
+})
+```
+
+**필수 정보**:
+- `scope`: 어느 함수/모듈
+- `rowIdx` / `colIdx`: 위치
+- `raw`: 원본 값 (parsing 전)
+- `parsed`: 파싱 시도 결과
+- `expected`: 기대 형식/범위
+
+#### [4] RECOVER — fallback 전략
+
+각 오류에 대한 명시적 복구:
+
+| 오류 | Fallback |
+|---|---|
+| 시트 부재 | 다운스트림 `extra.x \|\| {}` 패턴 |
+| 헤더 못 찾음 | DEFAULT 디폴트 + 빈 결과 + warn |
+| 행 손상 (1건) | 그 행만 skip + warn (parser 중단 X) |
+| 숫자 파싱 실패 | `null` (NOT 0) + warn |
+| 날짜 파싱 실패 | year=0 fallback + warn (정렬은 month-of-year 만으로) |
+| API 401/403 | 스트리밍 API 재시도 (insightAgent.js) |
+| 데이터 검증 실패 | `null` + warn + 다음 행 |
+
+#### [5] SURFACE — 표면화 채널
+
+| 채널 | 사용 시기 |
+|---|---|
+| `console.error` | fatal — 파이프라인 깨짐, 사용자 알림 필요 |
+| `console.warn` | warning — 부분 손실, 다운스트림 영향 가능 |
+| `console.log` (DEBUG only) | info — 정상 흐름 추적 |
+| `throw` | dev 모드만 — production 은 silent fallback |
+| `insight_runs` 테이블 | AI 호출 등 외부 boundary — 영구 기록 |
+
+**RULE**: production 에서 throw 금지. silent return + warn 으로 다운스트림 진행 보장.
+
+### 6.3 표준 try/catch 패턴
+
+per-row 처리는 try/catch 로 격리:
+
+```js
+const rows = data.slice(headerIdx + 1)
+const out = []
+let okCount = 0, skipCount = 0
+rows.forEach((r, i) => {
+  try {
+    const parsed = parseRow(r, columns)
+    if (parsed) { out.push(parsed); okCount++ }
+    else skipCount++
+  } catch (e) {
+    skipCount++
+    console.warn(`[parser] row ${i + headerIdx + 1} skipped:`, e.message, { row: r })
+  }
+})
+console.log(`[parser] ${okCount} parsed, ${skipCount} skipped`)
+return out
+```
+
+**RULE**: 한 행 실패가 전체 파싱을 멈추지 않게. 각 행 try/catch + skip count 집계.
+
+---
+
+## 7. SELF-LOGGING & HARNESS ENGINEERING
+
+코딩 에이전트가 **자기 행위를 기록·검증·반성** 하는 패턴. 단순 logging 을 넘어 "내가 한 일이 의도대로 됐는지 스스로 확인" 하는 루프.
+
+### 7.1 핵심 원칙
+
+```
+ACT     — 무언가 실행
+LOG     — 실행한 행위 + 입력 + 결과 기록
+VERIFY  — 결과가 예상과 일치하는지 검사
+REFLECT — 불일치 시 진단 + 수정 시도
+```
+
+본 레포 사례: `insight_runs` 테이블 (AI 호출 로그) → `/admin/observability` 시각화.
+
+### 7.2 구조화 로그 (Structured Log)
+
+자유 텍스트 logging 대신 **JSON 친화 구조** 로 — 후처리·필터·집계 가능.
+
+```js
+function logStructured(entry) {
+  const record = {
+    ts: Date.now(),
+    scope: entry.scope,
+    level: entry.level,        // 'info' | 'warn' | 'error' | 'fatal'
+    msg: entry.msg,
+    input: entry.input,        // 입력 sample (truncated)
+    output: entry.output,      // 결과 sample
+    duration_ms: entry.duration,
+    success: entry.success,
+    error: entry.error?.message,
+    context: entry.context,    // 추가 컨텍스트 (rowIdx 등)
+  }
+  console.log(JSON.stringify(record))  // 또는 DB 에 insert
+}
+```
+
+**RULE**:
+- 한 logical action = 한 record
+- 한 줄 JSON (grep/jq 친화)
+- 민감 정보 redact
+
+### 7.3 외부 Boundary 기록 (Audit Trail)
+
+외부 시스템 경계 호출은 **모두 영구 기록**:
+
+| Boundary | 기록할 정보 |
+|---|---|
+| Google Sheets API | sheet name, row count, fetch latency, success |
+| Anthropic API | model, input tokens, output tokens, cost, latency, success |
+| File IO (게시) | path, byte size, success |
+| User action (publish/sync) | user, timestamp, mode, target |
+
+본 레포의 `insight_runs` 패턴 차용:
+```js
+async function callBoundary(scope, fn, input) {
+  const start = Date.now()
+  let result, error
+  try {
+    result = await fn(input)
+  } catch (e) {
+    error = e
+  }
+  const duration = Date.now() - start
+  await db.insert('boundary_calls', {
+    ts: start, scope, input_sample: truncate(input, 500),
+    output_sample: truncate(result, 500),
+    duration_ms: duration, success: !error, error: error?.message,
+  })
+  if (error) throw error
+  return result
+}
+```
+
+### 7.4 자기 검증 루프 (Verify-After-Act)
+
+행위 직후 결과를 검증해서 의도와 일치하는지 확인:
+
+```js
+async function syncAndVerify(sheetUrl) {
+  // ACT
+  const parsed = await syncFromGoogleSheets(sheetUrl)
+
+  // VERIFY
+  const issues = []
+  if (!parsed.products?.length) issues.push('products empty')
+  if (!parsed.productsCnty?.length) issues.push('productsCnty empty')
+
+  // 카테고리 다 있나
+  const expectedCategories = ['tv', 'monitor', 'fridge', 'washer']
+  expectedCategories.forEach(c => {
+    if (!parsed.products.find(p => p.id === c)) issues.push(`missing category: ${c}`)
+  })
+
+  // 시간순 정렬 invariant
+  parsed.productsCnty.forEach(r => {
+    const ms = r.monthlyScores || []
+    for (let i = 1; i < ms.length; i++) {
+      if (parseMonthFromDate(ms[i].date) < parseMonthFromDate(ms[i-1].date)) {
+        issues.push(`unsorted monthlyScores: ${r.country}|${r.product}`)
+        break
+      }
+    }
+  })
+
+  // REFLECT
+  if (issues.length) {
+    console.warn('[sync verify] issues found:', issues)
+    return { parsed, issues }
+  }
+  return { parsed, issues: [] }
+}
+```
+
+**RULE**: 모든 파이프라인 단계는 invariant 검증 함수 1개 보유. 변경 시 invariant 도 동시 업데이트.
+
+### 7.5 Decision Audit (왜 이렇게 했는지 기록)
+
+분기/fallback 선택 이유를 로그에 명시:
+
+```js
+// Bad — 결과만 기록
+unlaunchedMap = parseUnlaunched(rows)
+
+// Good — 결정 사유 기록
+let unlaunchedMap
+if (rows && rows.length > 0) {
+  const result = parseUnlaunched(rows)
+  if (Object.keys(result.unlaunchedMap).length === DEFAULT_UNLAUNCHED_COUNT) {
+    logStructured({
+      scope:'parseUnlaunched', level:'warn',
+      msg:'sheet empty, using DEFAULT_UNLAUNCHED only',
+      context: { sheetRows: rows.length, defaultCount: DEFAULT_UNLAUNCHED_COUNT }
+    })
+  }
+  unlaunchedMap = result.unlaunchedMap
+} else {
+  logStructured({
+    scope:'parseUnlaunched', level:'warn',
+    msg:'no sheet — fallback to DEFAULT only', context:{}
+  })
+  unlaunchedMap = { ...DEFAULT_UNLAUNCHED }
+}
+```
+
+후일 디버깅 시 "왜 이 데이터가 나왔지" 답을 로그가 직접 제공.
+
+### 7.6 Observability Dashboard
+
+수집한 로그를 **시각화** 해서 사람/에이전트가 패턴 식별:
+
+본 레포 `/admin/observability` 사례:
+- AI 호출별 토큰/비용/지연/실패 추적
+- 시계열 차트 (시간당 호출 수, 평균 지연)
+- 실패 케이스 테이블 (error message + 원본 input sample)
+- 코스트 알림 (월간 임계값 초과 시 강조)
+
+**RULE**: 외부 boundary 호출은 모두 dashboard 시각화 대상. log → DB → admin page 파이프라인 구축.
+
+### 7.7 Self-Critique Loop (에이전트의 자기 반성)
+
+코딩 에이전트가 자기 로그를 읽고 패턴 식별:
+
+```js
+// 주기적 self-check
+async function selfCheck() {
+  const recentRuns = await db.query('SELECT * FROM boundary_calls WHERE ts > NOW() - INTERVAL 24 HOUR')
+  const failureRate = recentRuns.filter(r => !r.success).length / recentRuns.length
+  if (failureRate > 0.05) {
+    notify(`[harness] 24h failure rate ${(failureRate*100).toFixed(1)}% — investigate`)
+  }
+  // 평균 지연 회귀 검출
+  const avgLatency = recentRuns.reduce((s,r) => s + r.duration_ms, 0) / recentRuns.length
+  const baseline = await db.query('SELECT AVG(duration_ms) FROM boundary_calls WHERE ts BETWEEN ... AND ...')
+  if (avgLatency > baseline * 1.5) {
+    notify(`[harness] latency regression: ${avgLatency}ms vs baseline ${baseline}ms`)
+  }
+}
+```
+
+**RULE**: 정기 self-check (cron) → 임계값 초과 시 사용자/에이전트에 알림 → 수정 시도 → 결과 재기록 → 재검증.
+
+### 7.8 Test-Verify-Document Loop
+
+신규 데이터/파서 추가 시 표준 루프:
+
+```
+[1] WRITE       — 신규 파서 작성
+[2] TEST        — 단위 테스트 (입력 sample → 기대 출력)
+[3] LOG         — parser 내부에 INFO 로그 삽입 (count, distribution)
+[4] RUN         — 실제 시트 동기화 실행
+[5] VERIFY      — 로그 확인 (예상 카테고리·국가 다 있나)
+[6] DOCUMENT    — 본 문서 §5 에 RULE/PATTERN 등재
+[7] ANTI-PAT    — 발견한 함정 §6 ANTI-PATTERN 으로 명문화
+```
+
+### 7.9 본 레포 적용 사례
+
+| 컴포넌트 | Self-Logging 패턴 |
+|---|---|
+| `parseProductCnty` | `console.log` 로 카테고리·국가 카운트 출력 |
+| `parseUnlaunched` | 매칭/총 행 카운트 + 디폴트 적용 여부 로그 |
+| `insightAgent.js` | 모든 AI 호출을 `insight_runs` DB 테이블에 영구 저장 |
+| `/admin/observability` | insight_runs 시각화 (토큰/비용/지연/실패) |
+| `syncFromGoogleSheets` | batchGet 시작/종료 로그 + 탭별 row count |
+
+**확장 방향** (현재 없음, 추가 가능):
+- 모든 파서를 `boundary_calls` 테이블로 통합 기록
+- `/admin/observability` 에 파서 메트릭스 추가 (카테고리·국가 누락 검출)
+- 정기 self-check cron (failure rate, latency regression)
+
+---
+
+## 8. ANTI-PATTERNS (DATA)
 
 ```
 NEVER  (\d{4}) 만 매칭 → 한국식 2자리 연도 (26년) 누락 → sort 깨짐
@@ -408,7 +765,7 @@ NEVER  unlaunchedMap 디폴트 없이 시트만 의존 → DEFAULT 병합 필수
 NEVER  타입 검증 없이 외부 입력 사용 → score > 100 등 누출 방지
 ```
 
-## 7. VERIFICATION & DEBUGGING
+## 9. VERIFICATION & DEBUGGING
 
 ### 7.1 파서 디버그 명령
 
@@ -444,6 +801,8 @@ _unlaunchedMap
 - 파싱 의심 시: "시트의 date 컬럼 값 형식 1~2개 예시 알려주세요"
 - 데이터 shape 불명: iframe 콘솔에서 `_productsCnty[0]` JSON 공유 요청
 
-## 8. META
+## 10. META
 
 신규 파서 추가 시 본 문서 §5 (DIRECTIVES) 에 RULE/ANTI-PATTERN 등재. 도메인 무관 — LG/제품/국가 등 특이값 없이 일반화.
+
+신규 boundary 호출 추가 시 §7 (SELF-LOGGING) 패턴 적용 — `boundary_calls` 통합 기록 + observability dashboard 등록.
