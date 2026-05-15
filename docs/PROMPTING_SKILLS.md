@@ -774,6 +774,379 @@ function bumpChartSvg(names, rankings, months, maxRank = 10, labelFn) {
 
 **RULE**: 베이스라인 X 좌표가 차트 너비의 70% 초과면 (`bx > w * 0.7`) 좌측 정렬, 아니면 우측. `labelOffsetY` 옵션으로 미세 조정.
 
+## C-14 — Composed 차트 (Bar + Line)
+
+**WHAT**: 막대(실적) + 라인(목표) 합성. 월별 진척 현황 시각화 (Progress Tracker 스타일).
+
+**DATA**:
+```js
+{ data: [
+  { month:'M1', actual: 800, goal: 1000 },
+  { month:'M2', actual: 950, goal: 1100 },
+  ...
+]}
+```
+
+**HTML/SVG 구조**: Recharts 의 `ComposedChart` (React 환경) 또는 직접 SVG:
+- 막대: `<rect>` 막대, `fill: #CF0652`, radius top 4px
+- 라인: `<path>` stroke, 라인 위 dots `<circle r="3.5" fill="#fff" stroke="#111827" stroke-width="2"/>`
+- X 그리드 점선 `stroke-dasharray="3 3"`
+- 범례: 상단, 원형 마커 (iconType="circle")
+
+**RULE**:
+- 막대 max-width 32~36px
+- Y축 1000+ 시 `1.0k` 형식으로 단축
+- 범례 폰트 16px (가독성)
+
+## C-15 — Summary Metric Card (4-Grid)
+
+**WHAT**: 페이지 상단 4개 핵심 메트릭 카드 (월 달성률, 연 진척, 달성 과제 수, 미달 과제 수).
+
+**DATA**:
+```js
+{ label:'월 달성률 (4월)', value:'92.5', unit:'%',
+  sub:'1,234 / 1,334', status:'lead', barRate:92.5 }
+```
+
+**HTML**:
+```html
+<div style="background:${st.bg};border:1px solid ${st.border};border-radius:12px;padding:12px;position:relative">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+    <span style="font-size:13px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.3px">${label}</span>
+    <span style="width:10px;height:10px;border-radius:50%;background:${st.dot};box-shadow:0 0 6px ${st.dot}55"></span>
+  </div>
+  <div style="display:flex;align-items:baseline;gap:4px;margin-bottom:4px">
+    <span style="font-size:28px;font-weight:900;color:${st.color};line-height:1;font-variant-numeric:tabular-nums">${value}</span>
+    <span style="font-size:15px;color:#94A3B8;font-weight:600">${unit}</span>
+  </div>
+  <div style="height:4px;background:rgba(15,23,42,0.08);border-radius:3px;overflow:hidden;margin-bottom:4px">
+    <div style="width:${barRate}%;height:100%;background:${st.bar}"></div>
+  </div>
+  <div style="font-size:12px;color:#64748B">${sub}</div>
+</div>
+```
+
+**RULE**:
+- 4개 카드 한 줄 (모바일에선 2x2)
+- 상단 라벨 + 우상단 dot
+- 큰 숫자 (28px, weight 900) + 단위
+- 하단 진행률 바 (rate 적용)
+- 보조 라벨 (실적/목표 등)
+
+## C-16 — KPI 테이블 (정량)
+
+**WHAT**: 카테고리 × 항목별 정량 데이터 테이블. 월별 누적 합계 + 달성률.
+
+**DATA**:
+```js
+{ rows: [
+  { stakeholder:'팀A', category:'시스템', goal:1000, actual:850, rate:85.0 },
+  ...
+], totals: { goal, actual, rate } }
+```
+
+**HTML**:
+```html
+<table style="width:100%;border-collapse:collapse;font-size:13px;font-family:${FONT}">
+  <thead>
+    <tr style="background:#F8FAFC;border-bottom:2px solid #CF0652">
+      <th style="padding:10px 12px;text-align:left;color:#475569;font-weight:700">담당</th>
+      <th>카테고리</th>
+      <th style="text-align:right">목표</th>
+      <th style="text-align:right">실적</th>
+      <th style="text-align:right">달성률</th>
+    </tr>
+  </thead>
+  <tbody>
+    ${rows.map((r, i) => `
+      <tr style="border-bottom:1px solid #F1F5F9;${i % 2 === 0 ? 'background:#FAFBFC' : ''}">
+        <td style="padding:8px 12px">${r.stakeholder}</td>
+        <td>${r.category}</td>
+        <td style="text-align:right;font-variant-numeric:tabular-nums">${fmt(r.goal)}</td>
+        <td style="text-align:right;font-variant-numeric:tabular-nums;color:#1A1A1A;font-weight:600">${fmt(r.actual)}</td>
+        <td style="text-align:right;font-weight:700;color:${rateColor(r.rate)}">${r.rate.toFixed(1)}%</td>
+      </tr>
+    `).join('')}
+    <tr style="background:#1E293B;color:#fff;font-weight:700">
+      <td style="padding:10px 12px" colspan="2">합계</td>
+      <td style="text-align:right">${fmt(totals.goal)}</td>
+      <td style="text-align:right">${fmt(totals.actual)}</td>
+      <td style="text-align:right">${totals.rate.toFixed(1)}%</td>
+    </tr>
+  </tbody>
+</table>
+```
+
+**RULE**:
+- 헤더: 좌측 정렬 라벨, 우측 정렬 숫자 (`text-align:right` + `tabular-nums`)
+- 짝수 행 옅은 회색 배경
+- 합계 행: 짙은 색 배경, 흰 글자
+- 달성률: `lead/behind/critical` 색상
+
+## C-17 — Qualitative 테이블 (정성)
+
+**WHAT**: 진척 단계(Status) 표 형태 — 시작/진행/완료 등 단계별 dot 마커.
+
+**DATA**:
+```js
+{ rows: [
+  { category:'카테고리1', goal:'목표 문장', status:'진행', responsible:'팀A' },
+  ...
+]}
+```
+
+**상태 dot**:
+```js
+function statusDot(status) {
+  if (status === '완료') return { color:'#15803D', label:'완료' }
+  if (status === '진행') return { color:'#D97706', label:'진행' }
+  if (status === '계획') return { color:'#94A3B8', label:'계획' }
+  return { color:'#94A3B8', label:'-' }
+}
+```
+
+**HTML**:
+```html
+<table style="...">
+  <thead>...</thead>
+  <tbody>
+    ${rows.map(r => {
+      const s = statusDot(r.status)
+      return `<tr>
+        <td>${r.category}</td>
+        <td style="font-size:13px;line-height:1.5">${r.goal}</td>
+        <td><span style="display:inline-flex;align-items:center;gap:6px">
+          <span style="width:8px;height:8px;border-radius:50%;background:${s.color}"></span>
+          ${s.label}
+        </span></td>
+        <td>${r.responsible}</td>
+      </tr>`
+    }).join('')}
+  </tbody>
+</table>
+```
+
+## C-18 — Category Card (카테고리 점수 카드)
+
+**WHAT**: 카테고리별 KPI 한 줄 카드 (작은 카드들이 가로 나열).
+
+**DATA**: `{ id, name, score, target, status }`
+
+**HTML**:
+```html
+<div style="background:#fff;border:1px solid #E2E8F0;border-left:4px solid ${st.color};
+  border-radius:8px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;
+  cursor:pointer;transition:transform .15s">
+  <div>
+    <div style="font-size:12px;color:#64748B;margin-bottom:2px">${name}</div>
+    <div style="font-size:20px;font-weight:900;color:#1A1A1A">${score.toFixed(1)}<span style="font-size:13px;color:#94A3B8">%</span></div>
+  </div>
+  <div style="text-align:right">
+    <div style="font-size:11px;color:#94A3B8">목표</div>
+    <div style="font-size:14px;font-weight:700;color:${st.color}">${target}%</div>
+  </div>
+</div>
+```
+
+## C-19 — 파이 차트 (Pie Chart)
+
+**WHAT**: 비율 분포 시각화 (전체 100% 중 시리즈별 점유율).
+
+**DATA**: `{ slices: [{ name:'cat1', value:35 }, { name:'cat2', value:25 }, ...] }`
+
+**SVG**:
+```js
+function pieChartSvg(slices, w = 240, h = 240, opts = {}) {
+  const cx = w / 2, cy = h / 2
+  const r = Math.min(w, h) / 2 - 20
+  const total = slices.reduce((s, x) => s + x.value, 0)
+  let acc = 0
+  const COLORS = ['#CF0652','#3B82F6','#059669','#D97706','#7C3AED','#94A3B8']
+
+  let svg = `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}" style="display:block">`
+  slices.forEach((s, i) => {
+    const a0 = (acc / total) * 2 * Math.PI - Math.PI / 2
+    const a1 = ((acc + s.value) / total) * 2 * Math.PI - Math.PI / 2
+    acc += s.value
+    const x0 = cx + r * Math.cos(a0), y0 = cy + r * Math.sin(a0)
+    const x1 = cx + r * Math.cos(a1), y1 = cy + r * Math.sin(a1)
+    const large = (a1 - a0) > Math.PI ? 1 : 0
+    const color = COLORS[i % COLORS.length]
+    svg += `<path d="M${cx},${cy} L${x0.toFixed(1)},${y0.toFixed(1)} A${r},${r} 0 ${large} 1 ${x1.toFixed(1)},${y1.toFixed(1)} Z"
+      fill="${color}" stroke="#fff" stroke-width="2"/>`
+    // 라벨 (각도 중간에)
+    const am = (a0 + a1) / 2
+    const lx = cx + (r * 0.65) * Math.cos(am)
+    const ly = cy + (r * 0.65) * Math.sin(am)
+    const pct = ((s.value / total) * 100).toFixed(0)
+    if (pct > 5) {
+      svg += `<text x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">${pct}%</text>`
+    }
+  })
+  svg += '</svg>'
+  return svg
+}
+```
+
+**RULE**:
+- 최대 5~6 슬라이스 권장
+- 5% 이하 슬라이스는 라벨 생략 (혹은 외부 라벨)
+- 흰색 stroke 로 슬라이스 구분
+- 외부에 범례 (legend)
+
+## C-20 — 4분면 점도표 (Quadrant Scatter)
+
+**WHAT**: X축·Y축 2지표 기준 항목을 사분면에 배치. 우상 = 우수, 좌하 = 부진 등.
+
+**DATA**: `{ items: [{ name, x, y, size?, group? }, ...] }`
+
+**SVG**:
+```js
+function quadrantSvg(items, w = 400, h = 320, opts = {}) {
+  const padL = 40, padR = 20, padT = 20, padB = 40
+  const cw = w - padL - padR, ch = h - padT - padB
+  const xMid = padL + cw / 2, yMid = padT + ch / 2
+  const xMin = opts.xMin ?? 0, xMax = opts.xMax ?? 100
+  const yMin = opts.yMin ?? 0, yMax = opts.yMax ?? 100
+  const COLORS = ['#CF0652','#3B82F6','#059669','#D97706','#7C3AED']
+
+  let svg = `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}" style="display:block">`
+  // 사분면 라벨/영역 배경
+  svg += `<rect x="${xMid}" y="${padT}" width="${cw/2}" height="${ch/2}" fill="#ECFDF5"/>`  // 우상 (lead)
+  svg += `<rect x="${padL}" y="${yMid}" width="${cw/2}" height="${ch/2}" fill="#FFF1F2"/>`   // 좌하 (critical)
+  // 축
+  svg += `<line x1="${padL}" y1="${yMid}" x2="${padL + cw}" y2="${yMid}" stroke="#94A3B8" stroke-width="1"/>`
+  svg += `<line x1="${xMid}" y1="${padT}" x2="${xMid}" y2="${padT + ch}" stroke="#94A3B8" stroke-width="1"/>`
+  // 외곽
+  svg += `<rect x="${padL}" y="${padT}" width="${cw}" height="${ch}" fill="none" stroke="#E2E8F0"/>`
+  // 사분면 라벨
+  svg += `<text x="${padL + cw - 8}" y="${padT + 14}" text-anchor="end" font-size="10" fill="#15803D" font-weight="700">우수</text>`
+  svg += `<text x="${padL + 8}" y="${padT + ch - 6}" font-size="10" fill="#BE123C" font-weight="700">부진</text>`
+  // 점 + 라벨
+  items.forEach((it, i) => {
+    const x = padL + ((it.x - xMin) / (xMax - xMin)) * cw
+    const y = padT + (1 - (it.y - yMin) / (yMax - yMin)) * ch
+    const color = COLORS[(it.group ?? i) % COLORS.length]
+    const r = it.size ?? 6
+    svg += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r}" fill="${color}" opacity="0.7" stroke="#fff" stroke-width="2"/>`
+    svg += `<text x="${x.toFixed(1)}" y="${(y - r - 4).toFixed(1)}" text-anchor="middle" font-size="11" font-weight="600" fill="#1A1A1A">${it.name}</text>`
+  })
+  // 축 라벨
+  svg += `<text x="${padL + cw / 2}" y="${h - 8}" text-anchor="middle" font-size="12" fill="#475569">${opts.xLabel || 'X'}</text>`
+  svg += `<text x="14" y="${padT + ch / 2}" text-anchor="middle" font-size="12" fill="#475569" transform="rotate(-90, 14, ${padT + ch / 2})">${opts.yLabel || 'Y'}</text>`
+  svg += '</svg>'
+  return svg
+}
+```
+
+**RULE**:
+- 우상 사분면(우수): 옅은 녹색 배경 `#ECFDF5`
+- 좌하 사분면(부진): 옅은 빨강 배경 `#FFF1F2`
+- 가운데 십자 축
+- 점 크기로 추가 차원(예: 규모) 표현 가능
+- 라벨은 점 위쪽에 배치, 겹침 방지 시 외부 라벨 처리
+
+## C-21 — 제품 카드 V1 (Newsletter, 트렌드 바 포함)
+
+**WHAT**: 점수 + MoM + 미니 트렌드 바 + 비교 라벨.
+
+**HTML**:
+```html
+<td width="33%" style="padding:3px;vertical-align:top">
+  <table border="0" cellpadding="0" cellspacing="0" width="100%"
+    style="border:2px solid ${st.border};border-radius:8px;background:#fff">
+    <!-- 헤더 (제품명 + vs 경쟁비 + status badge + MoM) -->
+    <tr><td style="padding:6px 8px 4px">
+      <table width="100%"><tr>
+        <td style="vertical-align:middle">
+          <span style="font-size:12px;font-weight:900;letter-spacing:-0.5px">${name}</span>
+        </td>
+        <td align="right">
+          <span style="font-size:13px;font-weight:700;color:${ratioColor};letter-spacing:-1px">
+            ${compName} 대비 ${ratio}%
+          </span>
+          <span style="background:${st.bg};color:${st.color};border:1px solid ${st.border};
+            border-radius:6px;padding:0 5px;font-size:10px;font-weight:700">${st.label}</span>
+        </td>
+      </tr></table>
+    </td></tr>
+    <!-- 점수 + 트렌드 바 -->
+    <tr><td style="padding:2px 8px 6px">
+      <table width="100%"><tr>
+        <td style="vertical-align:middle">
+          <span style="font-size:22px;font-weight:900">${score.toFixed(1)}</span>
+          <span style="font-size:12px;color:#94A3B8">%</span>
+          &nbsp;<span style="font-size:12px;font-weight:700;color:${momColor}">${momArrow}${momAbs}%p</span>
+        </td>
+        <td align="right">${miniTrendBars}</td>  <!-- C-10 -->
+      </tr></table>
+    </td></tr>
+  </table>
+</td>
+```
+
+**RULE**:
+- 3열(33% width) — 한 행에 3장
+- 테두리 색 = status
+- 좌측 점수, 우측 트렌드 바
+- 메일 호환 table 레이아웃
+
+## C-22 — 제품 카드 V2 (Newsletter, 10국 Visibility 막대)
+
+**WHAT**: 카테고리 카드 + 10개 그룹(국가) 막대 (cat1 vs cat2 비교).
+
+**HTML 핵심**:
+```html
+<td width="33%" style="...">
+  <table style="...">
+    <!-- 헤더 (제품명 + 점수 + status) -->
+    <tr><td>...</td></tr>
+    <!-- 10개 막대 (그룹별 2단) -->
+    <tr><td>
+      <table width="100%" style="table-layout:fixed">
+        <tr>
+          ${groups.map(g => `
+            <td style="vertical-align:bottom;text-align:center;padding:0 1px;width:10%">
+              <table align="center">
+                <tr><td style="font-size:10px;font-weight:700;color:${barColor}">${g.lg}</td></tr>
+                <tr><td width="14" height="${hPx}" style="background:${barColor}">&nbsp;</td></tr>
+                <tr><td style="font-size:8px;color:#94A3B8">${g.name}</td></tr>
+                <tr><td style="font-size:10px;color:#94A3B8">${g.comp}</td></tr>
+              </table>
+            </td>
+          `).join('')}
+        </tr>
+      </table>
+    </td></tr>
+  </table>
+</td>
+```
+
+**RULE**: 10국 (또는 그룹 N개) 각 10% width, 막대 14px.
+
+## C-23 — 제품 카드 V3 (Newsletter, 국가 막대 + 1위 경쟁사 비교)
+
+**WHAT**: V2 와 비슷하나 각 그룹별 1위 경쟁사 점수/비율을 함께 표시.
+
+**HTML 핵심**:
+```html
+<!-- 상단: 제품명 + 점수 + 메인 비교(고정 또는 자동 1위) + status -->
+<!-- 본문 막대: 각 국가별 LG 막대 + 그 국가의 1위 경쟁사 표시 -->
+${groups.map(g => `
+  <td>
+    <table align="center">
+      <tr><td><div style="height:${spacer}px"></div></td></tr>
+      <tr><td width="16" height="${barH}" style="background:${cStatusColor};border-radius:2px 2px 0 0">&nbsp;</td></tr>
+      <tr><td style="font-size:10px;font-weight:700;color:${cStatusColor}">${g.score.toFixed(0)}</td></tr>
+      <tr><td style="font-size:8px;font-weight:700;color:${cStatusColor};line-height:1.1">${g.name}</td></tr>
+      <tr><td style="font-size:10px;color:#94A3B8">${compShort(g.compName)}<br/>${g.compRatio}%</td></tr>
+    </table>
+  </td>
+`).join('')}
+```
+
+**RULE**: 각 막대 색은 해당 국가의 자체 status (lead/behind/critical) 기준. 메인 헤더의 비교 경쟁사와 별개.
+
 ## C-13 — 각주 (Footnote)
 
 3가지 패턴:

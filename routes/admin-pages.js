@@ -241,6 +241,283 @@ const PROMPTING_SKILLS_PREVIEW = `
   <p style="margin:10px 0 0;font-size:11px;color:#64748B;font-style:italic">(인라인 사례) 해당 항목 차트 아래에 단일 안내 1줄.</p>
 </div>
 
+<div class="preview-card">
+  <span class="preview-label">C-14</span><span class="preview-name">Composed 차트 (Bar 실적 + Line 목표)</span>
+  <svg viewBox="0 0 500 180" width="100%" height="180" style="background:#fff">
+    <g><line x1="0" y1="20" x2="500" y2="20" stroke="#F1F5F9" stroke-dasharray="3 3"/><line x1="0" y1="60" x2="500" y2="60" stroke="#F1F5F9" stroke-dasharray="3 3"/><line x1="0" y1="100" x2="500" y2="100" stroke="#F1F5F9" stroke-dasharray="3 3"/><line x1="0" y1="140" x2="500" y2="140" stroke="#F1F5F9" stroke-dasharray="3 3"/></g>
+    ${[800,950,1050,1150,1200,1280].map((v, i) => {
+      const x = 50 + i * 75, hPx = (v / 1400) * 130
+      return `<rect x="${x-14}" y="${145-hPx}" width="28" height="${hPx}" fill="#CF0652" rx="4"/>
+              <text x="${x}" y="${165}" text-anchor="middle" font-size="12" fill="#475569">M${i+1}</text>`
+    }).join('')}
+    <path d="M50,${145-(1000/1400)*130} L125,${145-(1100/1400)*130} L200,${145-(1150/1400)*130} L275,${145-(1200/1400)*130} L350,${145-(1280/1400)*130} L425,${145-(1340/1400)*130}" stroke="#111827" fill="none" stroke-width="2"/>
+    ${[1000,1100,1150,1200,1280,1340].map((v, i) => `<circle cx="${50 + i*75}" cy="${145-(v/1400)*130}" r="3.5" fill="#fff" stroke="#111827" stroke-width="2"/>`).join('')}
+  </svg>
+  <div style="display:flex;gap:14px;font-size:12px;margin-top:6px;color:#475569;padding:0 50px">
+    <span><i style="display:inline-block;width:8px;height:8px;background:#CF0652;border-radius:50%;margin-right:4px"></i>실적</span>
+    <span><i style="display:inline-block;width:8px;height:8px;background:#111827;border-radius:50%;margin-right:4px"></i>목표</span>
+  </div>
+</div>
+
+<div class="preview-card">
+  <span class="preview-label">C-15</span><span class="preview-name">Summary Metric 4-Grid</span>
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px">
+    ${[
+      ['월 달성률 (4월)','92.5','%','1,234 / 1,334','#ECFDF5','#A7F3D0','#15803D',92.5],
+      ['연간 진척율','45.3','%','5,678 / 12,540','#FFFBEB','#FDE68A','#B45309',45.3],
+      ['달성 과제','12','건','달성률 ≥ 80%','#ECFDF5','#A7F3D0','#15803D',75],
+      ['미달성 과제','4','건','달성률 < 80%','#FFF1F2','#FECDD3','#BE123C',25],
+    ].map(([label, val, unit, sub, bg, border, color, rate]) => `
+      <div style="background:${bg};border:1px solid ${border};border-radius:12px;padding:12px;position:relative">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <span style="font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.3px">${label}</span>
+          <span style="width:10px;height:10px;border-radius:50%;background:${color};box-shadow:0 0 6px ${color}55"></span>
+        </div>
+        <div style="display:flex;align-items:baseline;gap:4px;margin-bottom:4px">
+          <span style="font-size:28px;font-weight:900;color:${color};line-height:1">${val}</span>
+          <span style="font-size:13px;color:#94A3B8;font-weight:600">${unit}</span>
+        </div>
+        <div style="height:4px;background:rgba(15,23,42,0.08);border-radius:3px;overflow:hidden;margin-bottom:4px">
+          <div style="width:${rate}%;height:100%;background:${color}"></div>
+        </div>
+        <div style="font-size:11px;color:#64748B">${sub}</div>
+      </div>
+    `).join('')}
+  </div>
+</div>
+
+<div class="preview-card">
+  <span class="preview-label">C-16</span><span class="preview-name">KPI 정량 테이블</span>
+  <table style="width:100%;border-collapse:collapse;font-size:13px">
+    <thead>
+      <tr style="background:#F8FAFC;border-bottom:2px solid #CF0652">
+        <th style="padding:10px 12px;text-align:left;color:#475569">담당</th>
+        <th style="padding:10px 12px;text-align:left;color:#475569">카테고리</th>
+        <th style="padding:10px 12px;text-align:right;color:#475569">목표</th>
+        <th style="padding:10px 12px;text-align:right;color:#475569">실적</th>
+        <th style="padding:10px 12px;text-align:right;color:#475569">달성률</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${[
+        ['팀A','시스템',1000,850,85.0,'#15803D'],
+        ['팀A','데이터',800,720,90.0,'#15803D'],
+        ['팀B','콘텐츠',1200,910,75.8,'#B45309'],
+        ['팀B','채널',600,420,70.0,'#B45309'],
+        ['팀C','마케팅',500,260,52.0,'#BE123C'],
+      ].map((r, i) => `
+        <tr style="border-bottom:1px solid #F1F5F9;${i % 2 === 0 ? 'background:#FAFBFC' : ''}">
+          <td style="padding:8px 12px">${r[0]}</td>
+          <td style="padding:8px 12px">${r[1]}</td>
+          <td style="padding:8px 12px;text-align:right">${r[2].toLocaleString()}</td>
+          <td style="padding:8px 12px;text-align:right;font-weight:600">${r[3].toLocaleString()}</td>
+          <td style="padding:8px 12px;text-align:right;font-weight:700;color:${r[5]}">${r[4].toFixed(1)}%</td>
+        </tr>
+      `).join('')}
+      <tr style="background:#1E293B;color:#fff;font-weight:700">
+        <td style="padding:10px 12px" colspan="2">합계</td>
+        <td style="padding:10px 12px;text-align:right">4,100</td>
+        <td style="padding:10px 12px;text-align:right">3,160</td>
+        <td style="padding:10px 12px;text-align:right">77.1%</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="preview-card">
+  <span class="preview-label">C-17</span><span class="preview-name">Qualitative 테이블 (정성)</span>
+  <table style="width:100%;border-collapse:collapse;font-size:13px">
+    <thead>
+      <tr style="background:#F8FAFC;border-bottom:2px solid #CF0652">
+        <th style="padding:10px 12px;text-align:left;color:#475569">카테고리</th>
+        <th style="padding:10px 12px;text-align:left;color:#475569">목표</th>
+        <th style="padding:10px 12px;text-align:left;color:#475569">상태</th>
+        <th style="padding:10px 12px;text-align:left;color:#475569">담당</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${[
+        ['시스템','신규 인증 모듈 도입 (Q2)','완료','#15803D','팀A'],
+        ['데이터','데이터 파이프라인 자동화','진행','#D97706','팀A'],
+        ['콘텐츠','외부 채널 운영 가이드 작성','진행','#D97706','팀B'],
+        ['채널','신규 채널 발굴 (3개)','계획','#94A3B8','팀B'],
+      ].map((r, i) => `
+        <tr style="border-bottom:1px solid #F1F5F9;${i % 2 === 0 ? 'background:#FAFBFC' : ''}">
+          <td style="padding:8px 12px">${r[0]}</td>
+          <td style="padding:8px 12px;line-height:1.5">${r[1]}</td>
+          <td style="padding:8px 12px">
+            <span style="display:inline-flex;align-items:center;gap:6px">
+              <span style="width:8px;height:8px;border-radius:50%;background:${r[3]}"></span>
+              ${r[2]}
+            </span>
+          </td>
+          <td style="padding:8px 12px">${r[4]}</td>
+        </tr>
+      `).join('')}
+    </tbody>
+  </table>
+</div>
+
+<div class="preview-card">
+  <span class="preview-label">C-18</span><span class="preview-name">Category Cards</span>
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+    ${[['시스템',85.0,80,'#15803D'],['데이터',75.8,80,'#B45309'],['콘텐츠',52.0,70,'#BE123C']].map(([n, sc, tg, color]) => `
+      <div style="background:#fff;border:1px solid #E2E8F0;border-left:4px solid ${color};
+        border-radius:8px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div style="font-size:12px;color:#64748B;margin-bottom:2px">${n}</div>
+          <div style="font-size:20px;font-weight:900;color:#1A1A1A">${sc.toFixed(1)}<span style="font-size:13px;color:#94A3B8">%</span></div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:11px;color:#94A3B8">목표</div>
+          <div style="font-size:14px;font-weight:700;color:${color}">${tg}%</div>
+        </div>
+      </div>
+    `).join('')}
+  </div>
+</div>
+
+<div class="preview-card">
+  <span class="preview-label">C-19</span><span class="preview-name">파이 차트 (Pie Chart)</span>
+  <div style="display:flex;align-items:center;gap:24px">
+    <svg viewBox="0 0 200 200" width="200" height="200">
+      ${(() => {
+        const slices = [['cat1', 35, '#CF0652'], ['cat2', 25, '#3B82F6'], ['cat3', 18, '#059669'], ['cat4', 14, '#D97706'], ['cat5', 8, '#7C3AED']]
+        const cx = 100, cy = 100, r = 80
+        const total = slices.reduce((s, x) => s + x[1], 0)
+        let acc = 0, out = ''
+        slices.forEach(([name, v, color]) => {
+          const a0 = (acc / total) * 2 * Math.PI - Math.PI / 2
+          const a1 = ((acc + v) / total) * 2 * Math.PI - Math.PI / 2
+          acc += v
+          const x0 = cx + r * Math.cos(a0), y0 = cy + r * Math.sin(a0)
+          const x1 = cx + r * Math.cos(a1), y1 = cy + r * Math.sin(a1)
+          const large = (a1 - a0) > Math.PI ? 1 : 0
+          out += `<path d="M${cx},${cy} L${x0.toFixed(1)},${y0.toFixed(1)} A${r},${r} 0 ${large} 1 ${x1.toFixed(1)},${y1.toFixed(1)} Z" fill="${color}" stroke="#fff" stroke-width="2"/>`
+          const am = (a0 + a1) / 2
+          const lx = cx + (r * 0.65) * Math.cos(am), ly = cy + (r * 0.65) * Math.sin(am)
+          if (v >= 8) out += `<text x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">${v}%</text>`
+        })
+        return out
+      })()}
+    </svg>
+    <div style="display:flex;flex-direction:column;gap:6px;font-size:13px">
+      ${[['cat1','#CF0652','35%'],['cat2','#3B82F6','25%'],['cat3','#059669','18%'],['cat4','#D97706','14%'],['cat5','#7C3AED','8%']].map(([n,c,p]) => `<div style="display:flex;align-items:center;gap:8px"><span style="width:12px;height:12px;border-radius:3px;background:${c}"></span><span style="width:50px">${n}</span><span style="color:#475569;font-weight:600">${p}</span></div>`).join('')}
+    </div>
+  </div>
+</div>
+
+<div class="preview-card">
+  <span class="preview-label">C-20</span><span class="preview-name">4분면 점도표 (Quadrant Scatter)</span>
+  <svg viewBox="0 0 400 320" width="100%" height="320" style="background:#fff">
+    <rect x="220" y="20" width="160" height="140" fill="#ECFDF5"/>
+    <rect x="40" y="160" width="180" height="140" fill="#FFF1F2"/>
+    <line x1="40" y1="160" x2="380" y2="160" stroke="#94A3B8" stroke-width="1"/>
+    <line x1="220" y1="20" x2="220" y2="300" stroke="#94A3B8" stroke-width="1"/>
+    <rect x="40" y="20" width="340" height="280" fill="none" stroke="#E2E8F0"/>
+    <text x="370" y="34" text-anchor="end" font-size="10" fill="#15803D" font-weight="700">우수</text>
+    <text x="48" y="294" font-size="10" fill="#BE123C" font-weight="700">부진</text>
+    ${[['A',80,85,'#CF0652',10],['B',60,40,'#3B82F6',8],['C',45,75,'#059669',6],['D',30,30,'#D97706',12],['E',90,65,'#7C3AED',7]].map(([n,x,y,c,r]) => {
+      const px = 40 + (x / 100) * 340
+      const py = 20 + (1 - y / 100) * 280
+      return `<circle cx="${px}" cy="${py}" r="${r}" fill="${c}" opacity="0.7" stroke="#fff" stroke-width="2"/>
+              <text x="${px}" y="${py - r - 4}" text-anchor="middle" font-size="11" font-weight="600" fill="#1A1A1A">${n}</text>`
+    }).join('')}
+    <text x="210" y="316" text-anchor="middle" font-size="12" fill="#475569">X 지표 (성과)</text>
+    <text x="14" y="160" text-anchor="middle" font-size="12" fill="#475569" transform="rotate(-90, 14, 160)">Y 지표 (효율)</text>
+  </svg>
+</div>
+
+<div class="preview-card">
+  <span class="preview-label">C-21</span><span class="preview-name">제품 카드 V1 (Newsletter, 트렌드 바)</span>
+  <table border="0" cellpadding="0" cellspacing="0" width="300" style="border:2px solid #A7F3D0;border-radius:8px;background:#fff;font-family:'LGEIText',Arial">
+    <tr><td style="padding:6px 8px 4px">
+      <table width="100%"><tr>
+        <td><span style="font-size:12px;font-weight:900;letter-spacing:-0.3px">항목 A</span></td>
+        <td align="right">
+          <span style="font-size:11px;font-weight:700;color:#15803D">계열2 대비 95%</span>
+          &nbsp;<span style="background:#ECFDF5;color:#15803D;border:1px solid #A7F3D0;border-radius:6px;padding:0 4px;font-size:10px;font-weight:700">Lead</span>
+        </td>
+      </tr></table>
+    </td></tr>
+    <tr><td style="padding:2px 8px 6px">
+      <table width="100%"><tr>
+        <td style="vertical-align:middle">
+          <span style="font-size:22px;font-weight:900">88.1</span>
+          <span style="font-size:12px;color:#94A3B8">%</span>
+          &nbsp;<span style="font-size:12px;font-weight:700;color:#22C55E">▲1.2%p</span>
+        </td>
+        <td align="right">
+          <table cellpadding="0" cellspacing="0"><tr>
+            ${[80,82,85,83,87,88].map(v => {
+              const h = Math.round((v-78)/12 * 24) + 4
+              const sp = 28 - h
+              return `<td style="vertical-align:bottom;text-align:center;padding:0 1px"><table align="center"><tr><td style="font-size:8px;color:#15803D;font-weight:700">${v}</td></tr>${sp>0?`<tr><td height="${sp}" style="font-size:0">&nbsp;</td></tr>`:''}<tr><td width="6" height="${h}" style="background:#15803D">&nbsp;</td></tr></table></td>`
+            }).join('')}
+          </tr></table>
+        </td>
+      </tr></table>
+    </td></tr>
+  </table>
+</div>
+
+<div class="preview-card">
+  <span class="preview-label">C-22</span><span class="preview-name">제품 카드 V2 (Newsletter, 10그룹 막대)</span>
+  <table border="0" cellpadding="0" cellspacing="0" width="400" style="border:2px solid #A7F3D0;border-radius:8px;background:#fff;font-family:'LGEIText',Arial">
+    <tr><td style="padding:6px 8px 4px">
+      <table width="100%"><tr>
+        <td><span style="font-size:13px;font-weight:900">항목 A</span> <span style="font-size:14px;font-weight:900">88.1<span style="font-size:10px;color:#94A3B8">%</span></span></td>
+        <td align="right"><span style="background:#ECFDF5;color:#15803D;border:1px solid #A7F3D0;border-radius:6px;padding:0 4px;font-size:10px;font-weight:700">Lead</span></td>
+      </tr></table>
+    </td></tr>
+    <tr><td style="padding:4px 6px 8px">
+      <table width="100%" style="table-layout:fixed"><tr>
+        ${['G1','G2','G3','G4','G5','G6','G7','G8','G9','G10'].map((g, i) => {
+          const lg = [87,86,86,85,84,84,85,85,84,83][i]
+          const comp = [87,86,86,84,83,85,87,84,84,84][i]
+          const hPx = Math.round(lg/100*40)
+          return `<td style="vertical-align:bottom;text-align:center;padding:0 1px;width:10%">
+            <table align="center"><tr><td style="font-size:9px;font-weight:700;color:#15803D">${lg}</td></tr>
+            <tr><td width="14" height="${hPx}" style="background:#15803D">&nbsp;</td></tr>
+            <tr><td style="font-size:8px;color:#94A3B8">${g}</td></tr>
+            <tr><td style="font-size:9px;color:#94A3B8">${comp}</td></tr></table>
+          </td>`
+        }).join('')}
+      </tr></table>
+    </td></tr>
+  </table>
+</div>
+
+<div class="preview-card">
+  <span class="preview-label">C-23</span><span class="preview-name">제품 카드 V3 (Newsletter, 그룹별 1위 비교)</span>
+  <table border="0" cellpadding="0" cellspacing="0" width="400" style="border:2px solid #A7F3D0;border-radius:8px;background:#fff;font-family:'LGEIText',Arial">
+    <tr><td style="padding:5px 6px 3px;white-space:nowrap">
+      <span style="font-size:14px;font-weight:900;letter-spacing:-0.5px">항목A</span>
+      <span style="font-size:18px;font-weight:900;letter-spacing:-1.8px">88.1<span style="font-size:11px;color:#94A3B8">%</span></span>
+      &nbsp;<span style="font-size:12px;font-weight:700;color:#22C55E">▲1.2%p</span>
+      <span style="float:right;white-space:nowrap"><span style="font-size:13px;font-weight:700;color:#15803D;letter-spacing:-1.3px">계열2 95%</span>&nbsp;<span style="background:#ECFDF5;color:#15803D;border:1px solid #A7F3D0;border-radius:5px;padding:0 4px;font-size:10px;font-weight:700">Lead</span></span>
+    </td></tr>
+    <tr><td style="padding:2px 4px 6px">
+      <table width="100%" style="table-layout:fixed"><tr>
+        ${['G1','G2','G3','G4','G5','G6','G7','G8','G9','G10'].map((g, i) => {
+          const sc = [87,86,86,85,84,84,85,85,84,83][i]
+          const comp = [87,86,86,84,83,85,87,84,84,84][i]
+          const ratio = Math.round(sc/comp*100)
+          const color = ratio >= 100 ? '#15803D' : ratio >= 80 ? '#E8910C' : '#BE123C'
+          const compShort = ['SS','SS','SS','SS','SS','SS','SS','SS','SS','SS'][i]
+          const hPx = Math.round(sc/100*28)
+          return `<td style="vertical-align:bottom;text-align:center;padding:0 1px;width:10%">
+            <table align="center"><tr><td width="16" height="${hPx}" style="background:${color};border-radius:2px 2px 0 0">&nbsp;</td></tr>
+            <tr><td style="font-size:10px;font-weight:700;color:${color}">${sc}</td></tr>
+            <tr><td style="font-size:8px;font-weight:700;color:${color};line-height:1.1">${g}</td></tr>
+            <tr><td style="font-size:9px;color:#94A3B8;white-space:nowrap">${compShort}<br/>${ratio}%</td></tr></table>
+          </td>`
+        }).join('')}
+      </tr></table>
+    </td></tr>
+  </table>
+</div>
+
 </div>
 `
 
