@@ -113,7 +113,9 @@
       "Bash(cp \"/Users/dubaba/.claude/uploads/7baed8d2-331a-444f-9dca-9d92a7675dc7/b20f7435-LGEITextRegular.otf\" \"/Users/dubaba/my-geo-project/my-geo-newsletter/font/LGEIText Regular.otf\")",
       "Bash(cp \"/Users/dubaba/.claude/uploads/7baed8d2-331a-444f-9dca-9d92a7675dc7/d3b762be-LGEITextTTFLight.ttf\" \"/Users/dubaba/my-geo-project/my-geo-newsletter/font/LGEIText Light.ttf\")",
       "Bash(cp \"/Users/dubaba/.claude/uploads/7baed8d2-331a-444f-9dca-9d92a7675dc7/a4c5ecc1-LGEITextTTFSemiBold.ttf\" \"/Users/dubaba/my-geo-project/my-geo-newsletter/font/LGEIText SemiBold.ttf\")",
-      "Bash(cp \"/Users/dubaba/.claude/uploads/7baed8d2-331a-444f-9dca-9d92a7675dc7/b98cb957-LGEITextTTFBold.ttf\" \"/Users/dubaba/my-geo-project/my-geo-newsletter/font/LGEIText Bold.ttf\")"
+      "Bash(cp \"/Users/dubaba/.claude/uploads/7baed8d2-331a-444f-9dca-9d92a7675dc7/b98cb957-LGEITextTTFBold.ttf\" \"/Users/dubaba/my-geo-project/my-geo-newsletter/font/LGEIText Bold.ttf\")",
+      "Bash(awk 'NR==19,NR==522' /Users/dubaba/my-geo-project/my-geo-newsletter/routes/admin-pages.js)",
+      "Bash(awk 'NR==520,NR==522' /Users/dubaba/my-geo-project/my-geo-newsletter/routes/admin-pages.js)"
     ]
   }
 }
