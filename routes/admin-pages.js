@@ -892,9 +892,13 @@ a.card:hover{border-color:#CF0652;transform:translateY(-2px)}
       </a>
 
       <div class="section-title">스킬</div>
-      <a class="card" href="/admin/prompting-skills">
-        <div class="card-title">Prompting Skills</div>
-        <div class="card-desc">본 프로젝트를 만들 때 사용한 프롬프팅 패턴 — 대시보드 기능별 실전 사례</div>
+      <a class="card" href="/admin/design-skills">
+        <div class="card-title">Design Skills</div>
+        <div class="card-desc">디자인 토큰 + 그래프/테이블 컴포넌트 23종 (HTML/SVG 패턴) — 라이브 갤러리 포함</div>
+      </a>
+      <a class="card" href="/admin/data-skills">
+        <div class="card-title">Data Skills</div>
+        <div class="card-desc">데이터 파싱·정제·검증 + Sheets 동기화 + 카테고리 매핑 + 에러 처리</div>
       </a>
     </div>
   </div>
@@ -925,9 +929,17 @@ adminPagesRouter.get('/admin/bigquery-schema', (req, res) =>
   renderMarkdownPage(res, { mdFile: 'BIGQUERY_SCHEMA.md', title: 'BigQuery Schema 계약', downloadHref: '/admin/bigquery-schema.md', downloadName: 'BIGQUERY_SCHEMA.md' }))
 adminPagesRouter.get('/admin/bigquery-schema.md', (req, res) => renderMarkdownDownload(res, 'BIGQUERY_SCHEMA.md'))
 
-adminPagesRouter.get('/admin/prompting-skills', (req, res) =>
-  renderMarkdownPage(res, { mdFile: 'PROMPTING_SKILLS.md', title: 'Prompting Skills — 대시보드 기능별 사례', downloadHref: '/admin/prompting-skills.md', downloadName: 'PROMPTING_SKILLS.md', livePreview: PROMPTING_SKILLS_PREVIEW }))
-adminPagesRouter.get('/admin/prompting-skills.md', (req, res) => renderMarkdownDownload(res, 'PROMPTING_SKILLS.md'))
+adminPagesRouter.get('/admin/design-skills', (req, res) =>
+  renderMarkdownPage(res, { mdFile: 'DESIGN_SKILLS.md', title: 'Design Skills — 디자인 / 그래프 / 테이블 컴포넌트', downloadHref: '/admin/design-skills.md', downloadName: 'DESIGN_SKILLS.md', livePreview: PROMPTING_SKILLS_PREVIEW }))
+adminPagesRouter.get('/admin/design-skills.md', (req, res) => renderMarkdownDownload(res, 'DESIGN_SKILLS.md'))
+
+adminPagesRouter.get('/admin/data-skills', (req, res) =>
+  renderMarkdownPage(res, { mdFile: 'DATA_SKILLS.md', title: 'Data Skills — 파싱 / 정제 / 검증', downloadHref: '/admin/data-skills.md', downloadName: 'DATA_SKILLS.md' }))
+adminPagesRouter.get('/admin/data-skills.md', (req, res) => renderMarkdownDownload(res, 'DATA_SKILLS.md'))
+
+// 옛 경로 호환 — design-skills 로 redirect
+adminPagesRouter.get('/admin/prompting-skills', (req, res) => res.redirect(301, '/admin/design-skills'))
+adminPagesRouter.get('/admin/prompting-skills.md', (req, res) => renderMarkdownDownload(res, 'DESIGN_SKILLS.md'))
 
 // dashboard-raw-data 셋업 PRD (자체 완결 HTML — 마크다운 변환 불필요)
 adminPagesRouter.get('/admin/data-prd', (req, res) => {
