@@ -454,12 +454,25 @@ function productCardV2Html(p, lang = 'ko', opts = {}) {
   const countryBars = ALL_COUNTRIES.map(c => {
     const r = cntyMap[c]
     const unlaunched = isUnlaunched(ulMap, c, p.id)
-    // 해당 제품이 그 국가에 미출시면 0점과 동일 표기 (숫자 '—', 막대 없음)
-    if (!r || r.score <= 0 || unlaunched) return `<td style="vertical-align:bottom;text-align:center;padding:0 1px;width:10%;">
+    // 해당 제품이 그 국가에 미출시면 가는 회색 막대(약 1%)와 '—' 라벨로 정렬 유지
+    if (unlaunched) {
+      const ulBarH = 2
+      const ulSpacer = BAR_H - ulBarH
+      return `<td style="vertical-align:bottom;text-align:center;padding:0 1px;width:10%;">
+      <table border="0" cellpadding="0" cellspacing="0" align="center" style="width:100%;">
+        <tr><td height="${ulSpacer}" style="font-size:0;">&nbsp;</td></tr>
+        <tr><td height="${ulBarH}" style="font-size:0;"><table border="0" cellpadding="0" cellspacing="0" align="center"><tr><td width="16" height="${ulBarH}" style="background:#94A3B8;border-radius:2px 2px 0 0;font-size:0;">&nbsp;</td></tr></table></td></tr>
+        <tr><td style="font-size:10px;font-weight:700;color:#94A3B8;font-family:${EM_FONT};text-align:center;padding-top:1px;">—</td></tr>
+        <tr><td style="font-size:8px;font-weight:700;color:#94A3B8;font-family:${EM_FONT};text-align:center;line-height:1.1;letter-spacing:-0.3px;">${cntyLabel2Line(c, lang)}</td></tr>
+        <tr><td style="font-size:10px;color:#94A3B8;font-family:${EM_FONT};text-align:center;">—</td></tr>
+      </table>
+    </td>`
+    }
+    if (!r || r.score <= 0) return `<td style="vertical-align:bottom;text-align:center;padding:0 1px;width:10%;">
       <table border="0" cellpadding="0" cellspacing="0" align="center" style="width:100%;">
         ${BAR_H > 0 ? `<tr><td height="${BAR_H}" style="font-size:0;">&nbsp;</td></tr>` : ''}
         <tr><td style="font-size:10px;color:#CBD5E1;font-family:${EM_FONT};text-align:center;">—</td></tr>
-        <tr><td style="font-size:8px;color:${unlaunched ? '#CBD5E1' : '#94A3B8'};font-family:${EM_FONT};text-align:center;line-height:1.1;letter-spacing:-0.3px;">${cntyLabel2Line(c, lang)}</td></tr>
+        <tr><td style="font-size:8px;color:#94A3B8;font-family:${EM_FONT};text-align:center;line-height:1.1;letter-spacing:-0.3px;">${cntyLabel2Line(c, lang)}</td></tr>
         <tr><td style="font-size:10px;color:#CBD5E1;font-family:${EM_FONT};text-align:center;">—</td></tr>
       </table>
     </td>`
@@ -550,12 +563,25 @@ function productCardV3Html(p, lang = 'ko', opts = {}) {
   const countryBars = ALL_COUNTRIES.map(c => {
     const r = cntyMap[c]
     const unlaunched = isUnlaunched(ulMap, c, p.id)
-    // 해당 제품이 그 국가에 미출시면 0점과 동일 표기 (숫자 '—', 막대 없음)
-    if (!r || r.score <= 0 || unlaunched) return `<td style="vertical-align:bottom;text-align:center;padding:0 1px;width:10%;">
+    // 해당 제품이 그 국가에 미출시면 가는 회색 막대(약 1%)와 '—' 라벨로 정렬 유지
+    if (unlaunched) {
+      const ulBarH = 2
+      const ulSpacer = BAR_H - ulBarH
+      return `<td style="vertical-align:bottom;text-align:center;padding:0 1px;width:10%;">
+      <table border="0" cellpadding="0" cellspacing="0" align="center" style="width:100%;">
+        <tr><td height="${ulSpacer}" style="font-size:0;">&nbsp;</td></tr>
+        <tr><td height="${ulBarH}" style="font-size:0;"><table border="0" cellpadding="0" cellspacing="0" align="center"><tr><td width="16" height="${ulBarH}" style="background:#94A3B8;border-radius:2px 2px 0 0;font-size:0;">&nbsp;</td></tr></table></td></tr>
+        <tr><td style="font-size:10px;font-weight:700;color:#94A3B8;font-family:${EM_FONT};text-align:center;padding-top:1px;">—</td></tr>
+        <tr><td style="font-size:8px;font-weight:700;color:#94A3B8;font-family:${EM_FONT};text-align:center;line-height:1.1;letter-spacing:-0.3px;">${cntyLabel2Line(c, lang)}</td></tr>
+        <tr><td style="font-size:10px;color:#94A3B8;font-family:${EM_FONT};text-align:center;white-space:nowrap;letter-spacing:-0.5px;">—<br/>—</td></tr>
+      </table>
+    </td>`
+    }
+    if (!r || r.score <= 0) return `<td style="vertical-align:bottom;text-align:center;padding:0 1px;width:10%;">
       <table border="0" cellpadding="0" cellspacing="0" align="center" style="width:100%;">
         <tr><td height="${BAR_H}" style="font-size:0;">&nbsp;</td></tr>
         <tr><td style="font-size:10px;color:#CBD5E1;text-align:center;">—</td></tr>
-        <tr><td style="font-size:8px;color:${unlaunched ? '#CBD5E1' : '#94A3B8'};font-family:${EM_FONT};text-align:center;line-height:1.1;letter-spacing:-0.3px;">${cntyLabel2Line(c, lang)}</td></tr>
+        <tr><td style="font-size:8px;color:#94A3B8;font-family:${EM_FONT};text-align:center;line-height:1.1;letter-spacing:-0.3px;">${cntyLabel2Line(c, lang)}</td></tr>
         <tr><td style="font-size:0;height:10px;">&nbsp;</td></tr>
       </table>
     </td>`
@@ -785,8 +811,22 @@ function countryCardHtml(cntyCode, rows, lang, countryTotals, unlaunchedMap = {}
     const baseBarColor = status === 'lead' ? '#15803D' : status === 'behind' ? '#E8910C' : '#BE123C'
     const prodId = PROD_NAME_TO_ID[r.product] || (r.product || '').toLowerCase()
     const unlaunched = isUnlaunched(unlaunchedMap, cntyCode, prodId)
-    const barColor = unlaunched ? '#94A3B8' : baseBarColor
-    const labelColor = unlaunched ? '#94A3B8' : baseBarColor
+    // 미출시 셀: 가는 회색 막대(약 1%) + 모든 라벨 '—'로 정렬 유지
+    if (unlaunched) {
+      const ulBarH = 2
+      const ulSpacer = BAR_MAX - ulBarH
+      return `<td width="${colWidth}%" style="vertical-align:bottom;text-align:center;padding:0 1px;">
+      <table border="0" cellpadding="0" cellspacing="0" align="center" style="margin:0 auto;table-layout:fixed;width:100%;">
+        <tr><td height="${ulSpacer}" style="font-size:0;line-height:0;">&nbsp;</td></tr>
+        <tr><td height="${ulBarH}" style="font-size:0;line-height:0;"><table border="0" cellpadding="0" cellspacing="0" align="center"><tr><td width="18" height="${ulBarH}" style="background:#94A3B8;border-radius:3px 3px 0 0;font-size:0;">&nbsp;</td></tr></table></td></tr>
+        <tr><td height="16" style="height:16px;font-size:11px;font-weight:800;color:#94A3B8;font-family:${EM_FONT};padding-top:2px;white-space:nowrap;line-height:14px;">—</td></tr>
+        <tr><td style="font-size:10px;font-weight:700;color:#94A3B8;font-family:${EM_FONT};padding:1px 0 0;line-height:11px;letter-spacing:-0.3px;vertical-align:top;">${prodLabel2Line(r.product, lang)}</td></tr>
+        <tr><td style="font-size:10px;color:#94A3B8;font-family:${EM_FONT};padding:2px 0 0;white-space:nowrap;line-height:13px;vertical-align:top;">—<br/>—</td></tr>
+      </table>
+    </td>`
+    }
+    const barColor = baseBarColor
+    const labelColor = baseBarColor
     const barH = Math.max(Math.round((r.score / maxScore) * BAR_MAX), 3)
     const spacerH = BAR_MAX - barH
     const ratio = r.compScore > 0 ? Math.round(r.score / r.compScore * 100) : 100
