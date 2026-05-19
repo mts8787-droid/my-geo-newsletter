@@ -1454,7 +1454,9 @@ function dashboardLinkButtonHtml(lang) {
 export { escapeHtml }
 
 export function generateEmailHTML(meta, total, products, citations, dotcom = {}, lang = 'ko', productsCnty = [], citationsCnty = [], options = {}) {
-  const { containerWidth = 940, showTrendTabs = false, weeklyLabels, categoryStats = null, unlaunchedMap = {}, productCardVersion = 'v1', trendMode = 'weekly' } = options
+  const { containerWidth = 940, showTrendTabs = false, weeklyLabels, categoryStats = null, unlaunchedMap: ulInput = {}, productCardVersion = 'v1', trendMode = 'weekly' } = options
+  // 뉴스레터 전용 미출시 오버라이드: Aircare 멕시코 미출시
+  const unlaunchedMap = { ...ulInput, 'MX|AIRCARE': true }
   const t = T[lang] || T.ko
   total = total || { score: 0, prev: 0, vsComp: 0, rank: 1, totalBrands: 12 }
   products = products || []
