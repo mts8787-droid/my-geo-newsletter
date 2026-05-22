@@ -1,4 +1,7 @@
-# AGENT.md — Dashboard / Newsletter Design System & Build Skills
+---
+name: prompting
+description: 에이전틱 코딩 도구(Claude Code/Cursor/Codex)가 본 레포에서 작업할 때 참조하는 통합 시스템 프롬프트. PROJECT CONTEXT, COMMANDS, FILE LAYOUT, DESIGN TOKENS, DATA INTERFACES, DIRECTIVES, COMPONENT LIBRARY(C-01~C-23), ANTI-PATTERNS, VERIFICATION 통합본. 도메인 무관 일반화.
+---
 
 > Agentic coding tool (Claude Code, Cursor, Codex) 가 본 레포에서 작업할 때 참조하는 시스템 프롬프트.
 > 도메인/데이터 추상화 — 임의 데이터(계열 1~5, 항목 A~F 등)에 적용 가능.
@@ -51,7 +54,8 @@ routes/
   admin-pages.js           # /admin/* HTML 라우트
   publish.js               # 게시 (KO+EN)
   published.js             # /p/:slug 정적 HTML 서빙
-docs/                      # 본 문서 + ADMIN_PLAN.md 등
+.claude/skills/            # 본 문서 + design / data 스킬
+docs/                      # 인프라/스키마 참조 (ADMIN_PLAN, BIGQUERY_SCHEMA, ...)
 ```
 
 ## 4. DESIGN TOKENS (REQUIRED IMPORTS)

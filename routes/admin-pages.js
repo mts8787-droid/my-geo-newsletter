@@ -14,7 +14,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 const PROJECT_ROOT = join(__dirname, '..')
 
 // ─── Prompting Skills — 컴포넌트 라이브 프리뷰 HTML ────────────────────────
-// PROMPTING_SKILLS.md 의 C-01 ~ C-13 컴포넌트를 실제 렌더된 HTML 로 보여주는 갤러리.
+// .claude/skills/design/SKILL.md 의 C-01 ~ C-13 컴포넌트를 실제 렌더된 HTML 로 보여주는 갤러리.
 // MD 파일은 그대로 두고, 웹 페이지에만 갤러리 섹션 주입.
 const PROMPTING_SKILLS_PREVIEW = `
 <style>
@@ -694,10 +694,10 @@ const PROMPTING_SKILLS_PREVIEW = `
 // ─── Markdown 문서 렌더 헬퍼 ────────────────────────────────────────────────
 // /admin/plan, /admin/infra, /admin/cloud-run-job, /admin/bigquery-schema 공통.
 // marked + mermaid CDN로 클라이언트 렌더 (iOS Safari 호환).
-function renderMarkdownPage(res, { mdFile, title, downloadHref, downloadName, livePreview }) {
+function renderMarkdownPage(res, { mdFile, title, downloadHref, downloadName, livePreview, dir = 'docs' }) {
   let md = ''
   try {
-    md = readFileSync(join(PROJECT_ROOT, 'docs', mdFile), 'utf-8')
+    md = readFileSync(join(PROJECT_ROOT, dir, mdFile), 'utf-8')
   } catch {
     return res.status(404).send(`${mdFile} 파일을 찾을 수 없습니다.`)
   }
@@ -761,11 +761,11 @@ body{margin:0;background:#0F172A;color:#E2E8F0;font-family:'LG Smart','Arial Nar
 </body></html>`)
 }
 
-function renderMarkdownDownload(res, mdFile) {
+function renderMarkdownDownload(res, mdFile, { dir = 'docs', downloadName } = {}) {
   try {
-    const md = readFileSync(join(PROJECT_ROOT, 'docs', mdFile), 'utf-8')
+    const md = readFileSync(join(PROJECT_ROOT, dir, mdFile), 'utf-8')
     res.set('Content-Type', 'text/markdown; charset=utf-8')
-    res.set('Content-Disposition', `attachment; filename="${mdFile}"`)
+    res.set('Content-Disposition', `attachment; filename="${downloadName || mdFile}"`)
     res.send(md)
   } catch { res.status(404).send('not found') }
 }
@@ -930,16 +930,16 @@ adminPagesRouter.get('/admin/bigquery-schema', (req, res) =>
 adminPagesRouter.get('/admin/bigquery-schema.md', (req, res) => renderMarkdownDownload(res, 'BIGQUERY_SCHEMA.md'))
 
 adminPagesRouter.get('/admin/design-skills', (req, res) =>
-  renderMarkdownPage(res, { mdFile: 'DESIGN_SKILLS.md', title: 'Design Skills — 디자인 / 그래프 / 테이블 컴포넌트', downloadHref: '/admin/design-skills.md', downloadName: 'DESIGN_SKILLS.md', livePreview: PROMPTING_SKILLS_PREVIEW }))
-adminPagesRouter.get('/admin/design-skills.md', (req, res) => renderMarkdownDownload(res, 'DESIGN_SKILLS.md'))
+  renderMarkdownPage(res, { dir: '.claude/skills/design', mdFile: 'SKILL.md', title: 'Design Skills — 디자인 / 그래프 / 테이블 컴포넌트', downloadHref: '/admin/design-skills.md', downloadName: 'DESIGN_SKILLS.md', livePreview: PROMPTING_SKILLS_PREVIEW }))
+adminPagesRouter.get('/admin/design-skills.md', (req, res) => renderMarkdownDownload(res, 'SKILL.md', { dir: '.claude/skills/design', downloadName: 'DESIGN_SKILLS.md' }))
 
 adminPagesRouter.get('/admin/data-skills', (req, res) =>
-  renderMarkdownPage(res, { mdFile: 'DATA_SKILLS.md', title: 'Data Skills — 파싱 / 정제 / 검증', downloadHref: '/admin/data-skills.md', downloadName: 'DATA_SKILLS.md' }))
-adminPagesRouter.get('/admin/data-skills.md', (req, res) => renderMarkdownDownload(res, 'DATA_SKILLS.md'))
+  renderMarkdownPage(res, { dir: '.claude/skills/data', mdFile: 'SKILL.md', title: 'Data Skills — 파싱 / 정제 / 검증', downloadHref: '/admin/data-skills.md', downloadName: 'DATA_SKILLS.md' }))
+adminPagesRouter.get('/admin/data-skills.md', (req, res) => renderMarkdownDownload(res, 'SKILL.md', { dir: '.claude/skills/data', downloadName: 'DATA_SKILLS.md' }))
 
-// 옛 경로 호환 — design-skills 로 redirect
+// 옛 경로 호환 — design-skills 로 redirect (.md 다운로드는 prompting 본문)
 adminPagesRouter.get('/admin/prompting-skills', (req, res) => res.redirect(301, '/admin/design-skills'))
-adminPagesRouter.get('/admin/prompting-skills.md', (req, res) => renderMarkdownDownload(res, 'DESIGN_SKILLS.md'))
+adminPagesRouter.get('/admin/prompting-skills.md', (req, res) => renderMarkdownDownload(res, 'SKILL.md', { dir: '.claude/skills/prompting', downloadName: 'PROMPTING_SKILLS.md' }))
 
 // dashboard-raw-data 셋업 PRD (자체 완결 HTML — 마크다운 변환 불필요)
 adminPagesRouter.get('/admin/data-prd', (req, res) => {

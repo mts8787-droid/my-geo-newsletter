@@ -1,7 +1,10 @@
-# AGENT.md — Design / Graph / Table 컴포넌트 라이브러리
+---
+name: design
+description: 대시보드/뉴스레터의 시각·UI 작업 시 참조. SVG 차트(svgLine, svgMultiLine, bumpChart), Status 토큰, Typography, 컬러 팔레트, 베이스라인 마커, 카테고리 카드, 그룹 막대, 4분면 점도표, Newsletter 제품 카드(V1/V2/V3) 등 컴포넌트 패턴 라이브러리(C-01~C-23).
+---
 
 > 코딩 에이전트가 시각/UI 작업 시 참조하는 디자인 시스템 + 컴포넌트 패턴.
-> 데이터 파싱/정제는 별도 `DATA_SKILLS.md` 참조.
+> 데이터 파싱/정제는 별도 `.claude/skills/data/SKILL.md` 참조.
 
 ---
 
