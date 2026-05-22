@@ -771,6 +771,8 @@ async function selfCheck() {
 | `sheetParserUtils.js` | `_logFatal/_logWarn/_logInfo` 헬퍼 — 모든 파서가 일관 로그 포맷 사용 |
 | `parseSheetRows` 라우터 | `assertRows` 진입 가드 + 미매칭 시트명 `_logWarn` (silent skip 방지) |
 | `parseUnlaunched` | 5분기 (invalid-input/header-not-found/missing-columns/merged/row-error) 일관 로그 + skipCount + per-row CAPTURE |
+| `parseWeekly` | 3-mode (Brand/LG/Category) 자동 감지 + 3 helper 추출 (`_extractWeeklyBrandFormat`, `_extractWeeklyLgFormat`, `_extractWeeklyCategoryFormat`) + 통합 테스트 6개 |
+| `parseCitTouchPoints` / `parseCitDomain` | 헤더 best-effort fallback 진입 시 `_logWarn` 출력 + 통합 테스트 6개 |
 | `parseProductCnty` | `console.log` 로 카테고리·국가 카운트 출력 |
 | `insightAgent.js` | 모든 AI 호출을 `insight_runs` DB 테이블에 영구 저장 |
 | `/admin/observability` | insight_runs 시각화 (토큰/비용/지연/실패) |

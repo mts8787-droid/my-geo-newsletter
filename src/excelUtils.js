@@ -602,6 +602,101 @@ function sliceWeeklyData(weeklyAll, weeklyMap, start) {
   }
 }
 
+// ─── parseWeekly 3-mode helpers ────────────────────────────────────────────
+// ctx = { data, rows, header, headerIdx, brandIdx, lgIdx, catIdx, countryIdx,
+//         wCols, weeklyLabels, weeklyMap, weeklyAll, isNonBrand, isTotal }
+// 각 helper 는 weeklyMap (+ Brand mode 의 weeklyAll) 을 mutation. wCols/weeklyLabels
+// 변경이 필요한 경우만 반환값으로 전달.
+
+// Mode A: Product | Country | B/NB | Brand | W컬럼 — 가장 풍부 (weeklyAll 도 추출)
+function _extractWeeklyBrandFormat(ctx) {
+  const { data, rows, headerIdx, brandIdx, catIdx, countryIdx, isNonBrand, isTotal, weeklyMap, weeklyAll } = ctx
+  let wCols = ctx.wCols
+  let weeklyLabels = ctx.weeklyLabels
+
+  // wCols 빈 경우: 첫 LG NonBrand 행에서 연속된 데이터 컬럼 자동 감지
+  if (!wCols.length) {
+    const firstLg = data.find(r =>
+      String(r[brandIdx] || '').trim().toUpperCase() === 'LG' && isNonBrand(r)
+    )
+    if (firstLg) {
+      const detected = []
+      for (let i = brandIdx + 1; i < firstLg.length; i++) {
+        const v = String(firstLg[i] || '').trim()
+        if (v) detected.push(i)
+        else if (detected.length) break
+      }
+      wCols = detected
+      weeklyLabels = findWeekLabels(rows, 0, headerIdx + 1) || wCols.map((_, i) => `W${i + 1}`)
+    }
+  }
+
+  // 모든 브랜드 NonBrand 데이터 수집 (트렌드 차트용)
+  data.forEach(r => {
+    if (!isNonBrand(r)) return
+    const brand = String(r[brandIdx] || '').trim()
+    if (!brand) return
+    const cat = String(r[catIdx >= 0 ? catIdx : 0] || '').trim()
+    if (!cat) return
+    const prodId = RAW_TO_PROD_ID[cat] || cat.toLowerCase()
+    const rawCnty = countryIdx >= 0 ? normCountry(r[countryIdx]) : 'TOTAL'
+    const cnty = rawCnty === 'TOTAL' || rawCnty === 'TTL' || !rawCnty ? 'Total' : rawCnty
+    if (!weeklyAll[prodId]) weeklyAll[prodId] = {}
+    if (!weeklyAll[prodId][cnty]) weeklyAll[prodId][cnty] = {}
+    weeklyAll[prodId][cnty][brand] = wCols.map(c => pctOrNull(r[c]))
+  })
+
+  // LG Total만 추출 (기존 weeklyMap 호환)
+  data.forEach(r => {
+    const brand = String(r[brandIdx] || '').trim().toUpperCase()
+    if (brand !== 'LG') return
+    if (!isNonBrand(r)) return
+    if (!isTotal(r)) return
+    const cat = String(r[catIdx >= 0 ? catIdx : 0] || '').trim()
+    if (!cat) return
+    weeklyMap[RAW_TO_PROD_ID[cat] || cat.toLowerCase()] = wCols.map(c => pctOrNull(r[c]))
+  })
+
+  return { wCols, weeklyLabels }
+}
+
+// Mode B: Div | Date | Country | Category | LG | ... — brand 없음, LG 컬럼만
+function _extractWeeklyLgFormat(ctx) {
+  const { data, header, lgIdx, catIdx, isTotal, weeklyMap } = ctx
+  const dateIdx = header.findIndex(c => {
+    const s = String(c || '').trim().toLowerCase()
+    return s === 'date' || s === 'week' || s === 'period'
+  })
+  const byCategory = {}
+  const weekLabelOrder = []
+  data.forEach(r => {
+    if (!isTotal(r)) return
+    const cat = String(r[catIdx >= 0 ? catIdx : 3] || '').trim()
+    if (!cat) return
+    if (dateIdx >= 0) {
+      const wl = String(r[dateIdx] || '').trim()
+      if (wl && !weekLabelOrder.includes(wl)) weekLabelOrder.push(wl)
+    }
+    byCategory[cat] = byCategory[cat] || []
+    byCategory[cat].push(pctOrNull(r[lgIdx]))
+  })
+  Object.entries(byCategory).forEach(([cat, vals]) => {
+    weeklyMap[RAW_TO_PROD_ID[cat] || cat.toLowerCase()] = vals
+  })
+  return weekLabelOrder.length ? weekLabelOrder : null
+}
+
+// Mode C: Category | W컬럼 만 (가장 단순) — TTL/Total 행만 추출
+function _extractWeeklyCategoryFormat(ctx) {
+  const { data, wCols, catIdx, isTotal, weeklyMap } = ctx
+  data.forEach(r => {
+    if (!isTotal(r)) return
+    const cat = String(r[catIdx >= 0 ? catIdx : 0] || '').trim()
+    if (!cat) return
+    weeklyMap[RAW_TO_PROD_ID[cat] || cat.toLowerCase()] = wCols.map(c => pctOrNull(r[c]))
+  })
+}
+
 // parseWeekly — 3가지 시트 포맷을 자동 감지해서 weeklyMap 으로 통일.
 //
 // 본 함수가 232줄로 비대한 이유: 시트 포맷이 시점별로 진화해서 3가지 호환 처리 필요.
@@ -690,7 +785,8 @@ function parseWeekly(rows, div) {
   // ── 주차 컬럼 찾기 ──
   // 우선: W라벨 행에서 추출 (별도 행인 경우)
   // 차선: header 행 자체에서 추출
-  const wCols = []
+  // let — Mode A (Brand) helper 가 자동 감지 시 재할당
+  let wCols = []
   const wLabelSource = wLabelRowIdx >= 0 ? rows[wLabelRowIdx] : header
   for (let i = 0; i < wLabelSource.length; i++) {
     if (/^w\d+$/i.test(String(wLabelSource[i] || '').trim())) wCols.push(i)
@@ -740,76 +836,16 @@ function parseWeekly(rows, div) {
   }
 
   const weeklyAll = {}
+  const ctx = { data, rows, header, headerIdx, brandIdx, lgIdx, catIdx, countryIdx, wCols, weeklyLabels, weeklyMap, weeklyAll, isNonBrand, isTotal }
   if (brandIdx >= 0) {
-    // wCols가 비어있으면 첫 LG NonBrand 데이터 행에서 데이터 컬럼 자동 감지
-    if (!wCols.length) {
-      const firstLg = data.find(r =>
-        String(r[brandIdx] || '').trim().toUpperCase() === 'LG' && isNonBrand(r)
-      )
-      if (firstLg) {
-        for (let i = brandIdx + 1; i < firstLg.length; i++) {
-          const v = String(firstLg[i] || '').trim()
-          if (v) wCols.push(i)
-          else if (wCols.length) break
-        }
-        weeklyLabels = findWeekLabels(rows, 0, headerIdx + 1) || wCols.map((_, i) => `W${i + 1}`)
-      }
-    }
-    // 모든 브랜드 NonBrand 데이터 수집 (트렌드 차트용)
-    data.forEach(r => {
-      if (!isNonBrand(r)) return
-      const brand = String(r[brandIdx] || '').trim()
-      if (!brand) return
-      const cat = String(r[catIdx >= 0 ? catIdx : 0] || '').trim()
-      if (!cat) return
-      const prodId = RAW_TO_PROD_ID[cat] || cat.toLowerCase()
-      const rawCnty = countryIdx >= 0 ? normCountry(r[countryIdx]) : 'TOTAL'
-      const cnty = rawCnty === 'TOTAL' || rawCnty === 'TTL' || !rawCnty ? 'Total' : rawCnty
-      if (!weeklyAll[prodId]) weeklyAll[prodId] = {}
-      if (!weeklyAll[prodId][cnty]) weeklyAll[prodId][cnty] = {}
-      weeklyAll[prodId][cnty][brand] = wCols.map(c => pctOrNull(r[c]))
-    })
-    // LG Total만 추출 (기존 weeklyMap 호환)
-    data.forEach(r => {
-      const brand = String(r[brandIdx] || '').trim().toUpperCase()
-      if (brand !== 'LG') return
-      if (!isNonBrand(r)) return
-      if (!isTotal(r)) return
-      const cat = String(r[catIdx >= 0 ? catIdx : 0] || '').trim()
-      if (!cat) return
-      weeklyMap[RAW_TO_PROD_ID[cat] || cat.toLowerCase()] = wCols.map(c => pctOrNull(r[c]))
-    })
+    const updated = _extractWeeklyBrandFormat(ctx)
+    wCols = updated.wCols
+    weeklyLabels = updated.weeklyLabels
   } else if (lgIdx >= 0) {
-    // Format: Div, Week/Date, Country, Category, LG, ...
-    const dateIdx = header.findIndex(c => {
-      const s = String(c || '').trim().toLowerCase()
-      return s === 'date' || s === 'week' || s === 'period'
-    })
-    const byCategory = {}
-    const weekLabelOrder = []
-    data.forEach(r => {
-      if (!isTotal(r)) return
-      const cat = String(r[catIdx >= 0 ? catIdx : 3] || '').trim()
-      if (!cat) return
-      if (dateIdx >= 0) {
-        const wl = String(r[dateIdx] || '').trim()
-        if (wl && !weekLabelOrder.includes(wl)) weekLabelOrder.push(wl)
-      }
-      byCategory[cat] = byCategory[cat] || []
-      byCategory[cat].push(pctOrNull(r[lgIdx]))
-    })
-    Object.entries(byCategory).forEach(([cat, vals]) => {
-      weeklyMap[RAW_TO_PROD_ID[cat] || cat.toLowerCase()] = vals
-    })
-    if (weekLabelOrder.length) weeklyLabels = weekLabelOrder
+    const newLabels = _extractWeeklyLgFormat(ctx)
+    if (newLabels) weeklyLabels = newLabels
   } else if (wCols.length) {
-    // Format: Category, w1, w2, w3, w4
-    data.forEach(r => {
-      if (!isTotal(r)) return
-      const cat = String(r[catIdx >= 0 ? catIdx : 0] || '').trim()
-      if (!cat) return
-      weeklyMap[RAW_TO_PROD_ID[cat] || cat.toLowerCase()] = wCols.map(c => pctOrNull(r[c]))
-    })
+    _extractWeeklyCategoryFormat(ctx)
   }
 
   // ── 앞쪽 빈 주차 제거 & 최대 12주 제한 (단일 패스) ──
