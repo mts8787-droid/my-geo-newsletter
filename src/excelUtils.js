@@ -1743,6 +1743,12 @@ export function parseAppendix(rows) {
 const DEFAULT_UNLAUNCHED = { 'BR|AV': true, 'VN|AV': true, 'IN|AV': true }
 
 function parseUnlaunched(rows) {
+  // [1] DETECT: 입력 자체 검증 — rows 가 배열이 아니거나 빈 배열이면 fatal
+  if (!Array.isArray(rows) || rows.length === 0) {
+    console.warn('[parseUnlaunched] invalid input', { type: typeof rows, isArray: Array.isArray(rows), len: rows?.length })
+    console.log(`[parseUnlaunched] decision=default-only reason=invalid-input / 시트매칭 0건 + 디폴트 ${Object.keys(DEFAULT_UNLAUNCHED).length}건`)
+    return { unlaunchedMap: { ...DEFAULT_UNLAUNCHED } }
+  }
   // 헤더 탐색: country + (launched|status|launch) 콤보
   const headerIdx = rows.findIndex(r => {
     if (!r) return false
@@ -1778,39 +1784,62 @@ function parseUnlaunched(rows) {
   ])
 
   const unlaunchedMap = { ...DEFAULT_UNLAUNCHED }
-  let totalRows = 0, matchedRows = 0
-  rows.slice(headerIdx + 1).forEach(r => {
-    if (!r) return
-    const rawStatus = String(r[statusCol] || '').trim()
-    if (!rawStatus) return
-    totalRows++
-    const status = rawStatus.toLowerCase().replace(/\s+/g, ' ')
-    if (!UNLAUNCHED_VALUES.has(status) && !UNLAUNCHED_VALUES.has(status.replace(/\s/g, ''))) return
-    // 시트 표기('GB','United Kingdom','USA','BRA' 등)를 표준 코드(UK/US/BR ...)로 정규화 →
-    // 클라이언트 _isUnlaunched(cnty, prodId)가 'UK|AIRCARE' 키로 일관 조회 가능
-    const country = canonicalCountry(r[countryCol])
-    const rawCategory = String(r[categoryCol] || '').trim()
-    if (!country || !rawCategory) return
-    // category: UL_PROD_MAP 기준 코드로 정규화 (TV, IT, AV, WM, REF, DW, VC, COOKING, RAC, AIRCARE)
-    // 원본도 저장 + 정규화 값도 저장 (매칭 유연성)
-    const upperCat = rawCategory.toUpperCase()
-    const NORMALIZE = {
-      'TV': 'TV', 'MONITOR': 'IT', 'IT': 'IT', 'AUDIO': 'AV', 'AV': 'AV',
-      'WASHER': 'WM', 'WM': 'WM', 'WASHING MACHINE': 'WM',
-      'REFRIGERATOR': 'REF', 'REF': 'REF', 'FRIDGE': 'REF',
-      'DISHWASHER': 'DW', 'DW': 'DW',
-      'VACUUM': 'VC', 'VC': 'VC', 'VACUUM CLEANER': 'VC',
-      'COOKING': 'COOKING', 'COOK': 'COOKING',
-      'RAC': 'RAC', 'AIRCARE': 'AIRCARE', 'AIR CARE': 'AIRCARE',
-      'STYLER': 'STYLER',
+  let totalRows = 0, matchedRows = 0, skipCount = 0
+  rows.slice(headerIdx + 1).forEach((r, idx) => {
+    const rowIdx = headerIdx + 1 + idx
+    try {
+      if (!r) { skipCount++; return }
+      const rawStatus = String(r[statusCol] || '').trim()
+      if (!rawStatus) { skipCount++; return }
+      totalRows++
+      const status = rawStatus.toLowerCase().replace(/\s+/g, ' ')
+      // launched(정상) 케이스 — silent skip, warn 도 X (정상 데이터)
+      if (!UNLAUNCHED_VALUES.has(status) && !UNLAUNCHED_VALUES.has(status.replace(/\s/g, ''))) return
+      // 시트 표기('GB','United Kingdom','USA','BRA' 등)를 표준 코드(UK/US/BR ...)로 정규화 →
+      // 클라이언트 _isUnlaunched(cnty, prodId)가 'UK|AIRCARE' 키로 일관 조회 가능
+      const country = canonicalCountry(r[countryCol])
+      const rawCategory = String(r[categoryCol] || '').trim()
+      if (!country || !rawCategory) {
+        // [3] CAPTURE: 정규화 실패 — 진짜 skip + warn
+        console.warn('[parseUnlaunched] row skipped', {
+          rowIdx,
+          raw: { country: r[countryCol], category: r[categoryCol], status: r[statusCol] },
+          parsed: { country, rawCategory },
+        })
+        skipCount++
+        return
+      }
+      // category: UL_PROD_MAP 기준 코드로 정규화 (TV, IT, AV, WM, REF, DW, VC, COOKING, RAC, AIRCARE)
+      // 원본도 저장 + 정규화 값도 저장 (매칭 유연성)
+      const upperCat = rawCategory.toUpperCase()
+      const NORMALIZE = {
+        'TV': 'TV', 'MONITOR': 'IT', 'IT': 'IT', 'AUDIO': 'AV', 'AV': 'AV',
+        'WASHER': 'WM', 'WM': 'WM', 'WASHING MACHINE': 'WM',
+        'REFRIGERATOR': 'REF', 'REF': 'REF', 'FRIDGE': 'REF',
+        'DISHWASHER': 'DW', 'DW': 'DW',
+        'VACUUM': 'VC', 'VC': 'VC', 'VACUUM CLEANER': 'VC',
+        'COOKING': 'COOKING', 'COOK': 'COOKING',
+        'RAC': 'RAC', 'AIRCARE': 'AIRCARE', 'AIR CARE': 'AIRCARE',
+        'STYLER': 'STYLER',
+      }
+      const normCat = NORMALIZE[upperCat] || upperCat
+      unlaunchedMap[`${country}|${normCat}`] = true
+      // 원본 값도 별도 키로 저장 (매칭 유연성)
+      if (normCat !== upperCat) unlaunchedMap[`${country}|${upperCat}`] = true
+      matchedRows++
+    } catch (e) {
+      // catch 내부에서 raw 추출 자체도 실패할 수 있으므로 try 로 격리, 실패 시 r 전체 dump
+      let raw
+      try {
+        raw = { country: r?.[countryCol], category: r?.[categoryCol], status: r?.[statusCol] }
+      } catch {
+        raw = r
+      }
+      console.warn('[parseUnlaunched] row error', { rowIdx, raw, error: e?.message })
+      skipCount++
     }
-    const normCat = NORMALIZE[upperCat] || upperCat
-    unlaunchedMap[`${country}|${normCat}`] = true
-    // 원본 값도 별도 키로 저장 (매칭 유연성)
-    if (normCat !== upperCat) unlaunchedMap[`${country}|${upperCat}`] = true
-    matchedRows++
   })
-  console.log(`[parseUnlaunched] decision=merged / 시트매칭 ${matchedRows}건 + 디폴트 ${Object.keys(DEFAULT_UNLAUNCHED).length}건 / 총행 ${totalRows} / 최종키 ${Object.keys(unlaunchedMap).length}개`)
+  console.log(`[parseUnlaunched] decision=merged / 시트매칭 ${matchedRows}건 + 디폴트 ${Object.keys(DEFAULT_UNLAUNCHED).length}건 + skip ${skipCount}건 / 총행 ${totalRows} / 최종키 ${Object.keys(unlaunchedMap).length}개`)
   return { unlaunchedMap }
 }
 
