@@ -108,7 +108,7 @@ export const COUNTRY_OFFICIAL_NAME_KR = {
 export const UL_PROD_MAP = {
   tv: 'TV', monitor: 'IT', audio: 'AV', washer: 'WM',
   fridge: 'REF', dw: 'DW', vacuum: 'VC',
-  cooking: 'COOKING', rac: 'RAC', aircare: 'AIRCARE',
+  cooking: 'COOKING', rac: 'RAC', aircare: 'AIRCARE', styler: 'STYLER',
 }
 
 // ─── Dotcom 컬럼 ─────────────────────────────────────────────────────────────

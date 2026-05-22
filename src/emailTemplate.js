@@ -1476,7 +1476,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
   const t = T[lang] || T.ko
   total = total || { score: 0, prev: 0, vsComp: 0, rank: 1, totalBrands: 12 }
   products = products || []
-  const UL_PROD_MAP = { tv:'TV', monitor:'IT', audio:'AV', washer:'WM', fridge:'REF', dw:'DW', vacuum:'VC', cooking:'COOKING', rac:'RAC', aircare:'AIRCARE' }
+  const UL_PROD_MAP = { tv:'TV', monitor:'IT', audio:'AV', washer:'WM', fridge:'REF', dw:'DW', vacuum:'VC', cooking:'COOKING', rac:'RAC', aircare:'AIRCARE', styler:'STYLER' }
   function getULCntys(prodId) {
     const code = UL_PROD_MAP[prodId] || (prodId || '').toUpperCase()
     return Object.keys(unlaunchedMap).filter(k => k.endsWith('|' + code)).map(k => k.split('|')[0])

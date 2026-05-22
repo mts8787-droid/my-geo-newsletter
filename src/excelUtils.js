@@ -1753,6 +1753,7 @@ function parseUnlaunched(rows) {
   if (headerIdx < 0) {
     console.warn('[parseUnlaunched] 헤더 못찾음. 시트 첫 10행:')
     rows.slice(0, 10).forEach((r, i) => console.log(`  row${i}:`, r?.slice(0, 6)))
+    console.log(`[parseUnlaunched] decision=default-only reason=header-not-found / 시트매칭 0건 + 디폴트 ${Object.keys(DEFAULT_UNLAUNCHED).length}건`)
     return { unlaunchedMap: { ...DEFAULT_UNLAUNCHED } }
   }
   const header = rows[headerIdx]
@@ -1766,6 +1767,7 @@ function parseUnlaunched(rows) {
   }
   if (countryCol < 0 || categoryCol < 0 || statusCol < 0) {
     console.warn('[parseUnlaunched] 필수 컬럼 누락', { countryCol, categoryCol, statusCol, header })
+    console.log(`[parseUnlaunched] decision=default-only reason=missing-columns / 시트매칭 0건 + 디폴트 ${Object.keys(DEFAULT_UNLAUNCHED).length}건`)
     return { unlaunchedMap: { ...DEFAULT_UNLAUNCHED } }
   }
 
@@ -1808,7 +1810,7 @@ function parseUnlaunched(rows) {
     if (normCat !== upperCat) unlaunchedMap[`${country}|${upperCat}`] = true
     matchedRows++
   })
-  console.log(`[parseUnlaunched] 총 ${totalRows}행 중 ${matchedRows}행 매칭 / 미출시 ${Object.keys(unlaunchedMap).length}건`)
+  console.log(`[parseUnlaunched] decision=merged / 시트매칭 ${matchedRows}건 + 디폴트 ${Object.keys(DEFAULT_UNLAUNCHED).length}건 / 총행 ${totalRows} / 최종키 ${Object.keys(unlaunchedMap).length}개`)
   return { unlaunchedMap }
 }
 
