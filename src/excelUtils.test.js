@@ -370,6 +370,91 @@ describe('parseCitDomain — v1/v2/v3 layout 자동 감지', () => {
   })
 })
 
+// ─── parseProductCnty — 거대 파서 (106줄) ───────────────────────────────────
+describe('parseProductCnty — TTL/국가별 분리 + 시간순 정렬 invariant', () => {
+  const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
+  const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+  beforeEach(() => { logSpy.mockClear(); warnSpy.mockClear() })
+
+  it('기본 fixture: TTL → productsPartial, 국가별 → productsCnty', () => {
+    const rows = [
+      ['Div', 'Date',     'Country', 'Category', 'LG', 'Samsung'],
+      ['MS',  'Feb 2026', 'TTL',     'TV',        80,   85],
+      ['MS',  'Mar 2026', 'TTL',     'TV',        82,   86],
+      ['MS',  'Feb 2026', 'US',      'TV',        75,   80],
+      ['MS',  'Mar 2026', 'US',      'TV',        77,   82],
+    ]
+    const result = parseSheetRows(SHEET_NAMES.productMS, rows)
+    // productsPartial: TTL 행만, 최신월 score + 직전월 prev
+    const tv = result.productsPartial?.find(p => p.id === 'tv')
+    expect(tv?.score).toBe(82)        // Mar (최신)
+    expect(tv?.prev).toBe(80)         // Feb
+    expect(tv?.vsComp).toBe(86)       // Mar Samsung
+    // monthlyScores: 시간순 정렬
+    expect(tv?.monthlyScores?.length).toBe(2)
+    expect(tv?.monthlyScores?.[0].date).toBe('Feb 2026')
+    expect(tv?.monthlyScores?.[1].date).toBe('Mar 2026')
+    // productsCnty: US|TV
+    const usTv = result.productsCnty?.find(p => p.country === 'US' && p.product === 'TV')
+    expect(usTv?.score).toBe(77)
+    expect(usTv?.prev).toBe(75)
+  })
+
+  it('시간순 정렬 invariant: 입력 순서가 역순이어도 monthlyScores 는 시간순', () => {
+    const rows = [
+      ['Div', 'Date',     'Country', 'Category', 'LG', 'Samsung'],
+      ['MS',  'Mar 2026', 'TTL',     'TV',        82,   86],     // 먼저 입력
+      ['MS',  'Feb 2026', 'TTL',     'TV',        80,   85],     // 나중 입력
+    ]
+    const result = parseSheetRows(SHEET_NAMES.productMS, rows)
+    const tv = result.productsPartial?.find(p => p.id === 'tv')
+    expect(tv?.monthlyScores?.[0].date).toBe('Feb 2026')   // 시간순 강제 정렬
+    expect(tv?.monthlyScores?.[1].date).toBe('Mar 2026')
+    expect(tv?.score).toBe(82)    // Mar (최신)
+    expect(tv?.prev).toBe(80)     // Feb
+  })
+
+  it('카테고리 정규화: Monitor/IT 둘 다 monitor 로', () => {
+    const rows = [
+      ['Div', 'Date',     'Country', 'Category', 'LG'],
+      ['MS',  'Feb 2026', 'TTL',     'Monitor',   60],
+      ['MS',  'Mar 2026', 'TTL',     'IT',        62],     // 같은 prodId 'monitor'
+    ]
+    const result = parseSheetRows(SHEET_NAMES.productMS, rows)
+    const monitor = result.productsPartial?.find(p => p.id === 'monitor')
+    expect(monitor).toBeDefined()
+    expect(monitor?.score).toBe(62)
+  })
+
+  it('알려지지 않은 카테고리 → lowercase fallback', () => {
+    const rows = [
+      ['Div', 'Date',     'Country', 'Category', 'LG'],
+      ['MS',  'Feb 2026', 'TTL',     'NewCategory', 50],
+    ]
+    const result = parseSheetRows(SHEET_NAMES.productMS, rows)
+    const p = result.productsPartial?.find(x => x.id === 'newcategory')
+    expect(p).toBeDefined()
+  })
+
+  it('헤더 없는 시트 → warn + {}', () => {
+    const rows = [['x', 'y', 'z'], ['1', '2', '3']]
+    const result = parseSheetRows(SHEET_NAMES.productMS, rows)
+    expect(result).toEqual({})
+    expect(warnSpy).toHaveBeenCalled()
+  })
+
+  it('vsComp: 여러 경쟁사 중 최고 점수 + 이름 자동 선택', () => {
+    const rows = [
+      ['Div', 'Date',     'Country', 'Category', 'LG', 'Samsung', 'Sony'],
+      ['MS',  'Mar 2026', 'TTL',     'TV',        82,   86,        90],     // Sony 가 최고
+    ]
+    const result = parseSheetRows(SHEET_NAMES.productMS, rows)
+    const tv = result.productsPartial?.find(p => p.id === 'tv')
+    expect(tv?.vsComp).toBe(90)     // Sony score
+    expect(tv?.compName).toBe('Sony')
+  })
+})
+
 // ─── parseSheetRows 라우터 가드 ─────────────────────────────────────────────
 describe('parseSheetRows 라우터 — DETECT + unknown sheet', () => {
   const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
