@@ -1,7 +1,7 @@
 // N2 — XLSX는 downloadTemplate에서만 쓰이므로 함수 내부에서 동적 로드
 import { loadXlsx } from './shared/loadXlsx.js'
 import { RAW_TO_PROD_ID, RAW_TO_KR, UL_CODE_NORMALIZE } from './categoryMap.js'
-import { _logWarn, assertRows } from './sheetParserUtils.js'
+import { _logWarn, assertRows, findHeaderIdx } from './sheetParserUtils.js'
 
 // ─── 시트 이름 (Google Sheets 동기화용 — 새 데이터 원천) ─────────────────────────
 export const SHEET_NAMES = {
@@ -136,14 +136,20 @@ export async function downloadTemplate(meta, total, products, citations, dotcom 
 
 // ─── 파싱 공통 ──────────────────────────────────────────────────────────────────
 
+// 시트의 다양한 % 표기를 정규화. 비즈니스 룰:
+//   - '75.3%' / '75.3' / 75.3 → 75.3 (이미 percent 값)
+//   - 0.753 → 75.3 (ratio 입력으로 간주, ×100)
+//   - '0' / 0 → 0 (실측 0, ratio 변환 X)
+//   - 빈/잘못된 입력 → 0 (구분 필요 시 pctOrNull 사용)
+// WARNING: 사용자가 0~1 점수 (예: 0.5 점) 를 percent 가 아닌 의미로 입력하면 50 으로 변환됨.
+//   본 함수는 score 가 항상 0~100 percent 라는 가정 위에 동작. ratio 가 합법인 값(예: -1~+1
+//   상관계수, 0~1 확률) 은 별도 파서 필요. 시트 룰 변경 시 본 함수 + pctOrNull 동시 수정.
 export function pct(v) {
   const raw = String(v ?? '').trim()
   const hasPercent = raw.includes('%')
   const s = raw.replace(/%/g, '').replace(/,/g, '').trim()
   const n = parseFloat(s) || 0
-  // '%' 기호가 있으면 이미 퍼센트 값 (예: "75.3%" → 75.3)
   if (hasPercent) return +n.toFixed(2)
-  // '%' 없이 0~1 사이 소수면 × 100 (예: 0.753 → 75.3)
   if (Math.abs(n) <= 1 && n !== 0) return +(n * 100).toFixed(2)
   return +n.toFixed(2)
 }
@@ -596,6 +602,23 @@ function sliceWeeklyData(weeklyAll, weeklyMap, start) {
   }
 }
 
+// parseWeekly — 3가지 시트 포맷을 자동 감지해서 weeklyMap 으로 통일.
+//
+// 본 함수가 232줄로 비대한 이유: 시트 포맷이 시점별로 진화해서 3가지 호환 처리 필요.
+//   포맷 A (brandIdx >= 0): Product | Country | B/NB | Brand | W6 | W7 | ...
+//     · 가장 풍부 — weeklyAll (모든 브랜드 NonBrand) + weeklyMap (LG TTL) 둘 다 추출
+//     · 본 함수 핵심 경로. 700 라인대.
+//   포맷 B (lgIdx >= 0, brand 없음): Div | Date | Country | Category | LG | ...
+//     · monthly 시트 비슷한 형태가 weekly 로 들어온 케이스. weeklyMap 만.
+//   포맷 C (wCols.length 만): Category | W1 | W2 | W3 | ...
+//     · 가장 단순 — 카테고리 기준 weeklyMap 만.
+//   포맷 미감지: parseDashboardLayout 으로 폴백 (대시보드 레이아웃 — 카테고리가 열 헤더).
+//
+// 향후 분할 가이드 (테스트 추가 후 권장): 3 helper 로 추출.
+//   - parseWeeklyBrandFormat(data, header, headerIdx, ...) → { weeklyMap, weeklyAll }
+//   - parseWeeklyLgFormat(data, header, ...) → { weeklyMap }
+//   - parseWeeklyCategoryFormat(data, wCols, ...) → { weeklyMap }
+// 분할 전 회귀 테스트 부재 (parseUnlaunched 만 테스트 있음) — 분할 시 회귀 위험 매우 큼.
 function parseWeekly(rows, div) {
   const weeklyMap = {}
   let weeklyLabels = []
@@ -983,6 +1006,11 @@ function parseCitTouchPoints(rows) {
     const isTitleRow = r.some(c => /^\[.*\]$/.test(String(c || '').trim()))
     return !isTitleRow
   })
+  // 헤더 못찾아도 best-effort fallback 으로 진행 (월 컬럼 자동 감지 등). 다만 visibility 위해 warn.
+  if (headerIdx < 0) {
+    _logWarn('parseCitTouchPoints', 'header not found (need channel/country) — falling back to position-based parse',
+      { firstRows: rows.slice(0, 5).map(r => r?.slice(0, 6)) })
+  }
   const header = headerIdx >= 0 ? rows[headerIdx] : []
   const startRow = (headerIdx >= 0 ? headerIdx : 0) + 1
 
@@ -1231,9 +1259,6 @@ function parseCitTouchPoints(rows) {
     Object.values(citTouchPointsTrend).some(d => d[label] > 0)
   )
 
-  for (const [cnty, list] of Object.entries(citationsByCnty)) {
-  }
-
   // 기본 월 자동 감지 → derivedPeriod
   // 최신 월의 데이터 양(채널 개수)이 직전 월의 50% 미만이면 직전 월을 기본으로
   // (예: 4월이 일부만 입력된 상태면 3월을 기본으로 보여줌)
@@ -1305,6 +1330,11 @@ function parseCitDomain(rows) {
     if (String(r[0] || '').trim().startsWith('[') || !String(r[0] || '').trim()) {
       startIdx = i + 1
     }
+  }
+  // 헤더 못찾으면 best-effort fallback (도메인 자동 감지) 으로 진행하되, visibility 위해 warn.
+  if (!headerRow) {
+    _logWarn('parseCitDomain', 'header not found (need No/Region/Domain/PRD) — falling back to domain auto-detect',
+      { firstRows: rows.slice(0, 5).map(r => r?.slice(0, 6)) })
   }
 
   // 새 구조 감지 (PRD 컬럼 추가 케이스 포함):
@@ -1548,11 +1578,7 @@ function parseCitDomain(rows) {
 function parsePRVisibility(rows, mode) {
   // mode: 'monthly' 또는 'weekly'
   // 헤더: Type, County, Topic, Brand, data columns...
-  const headerIdx = rows.findIndex(r => {
-    if (!r) return false
-    return r.some(c => /^type$/i.test(String(c || '').trim())) &&
-           r.some(c => /^county|^country$/i.test(String(c || '').trim()))
-  })
+  const headerIdx = findHeaderIdx(rows, [/^type$/, /^(county|country)$/])
   if (headerIdx < 0) return _logWarn(`parsePRVisibility:${mode}`, 'header not found (need Type + Country)', { firstRows: rows.slice(0, 5).map(r => r?.slice(0, 6)) })
 
   const header = rows[headerIdx]
@@ -1683,11 +1709,7 @@ function parseBrandPromptVisibility(rows, mode) {
 // 구조: (빈) | Country | Prompts | Division | Category | launched | Branded | CEJ | Topic
 export function parseAppendix(rows) {
   // 헤더 찾기
-  const headerIdx = rows.findIndex(r => {
-    if (!r) return false
-    return r.some(c => /^prompts?$/i.test(String(c || '').trim())) &&
-           r.some(c => /^country$/i.test(String(c || '').trim()))
-  })
+  const headerIdx = findHeaderIdx(rows, [/^prompts?$/, /^country$/])
   if (headerIdx < 0) return _logWarn('parseAppendix', 'header not found (need Prompts + Country)', { firstRows: rows.slice(0, 5).map(r => r?.slice(0, 6)) })
 
   const header = rows[headerIdx]
@@ -1732,12 +1754,10 @@ function parseUnlaunched(rows) {
     return { unlaunchedMap: { ...DEFAULT_UNLAUNCHED } }
   }
   // 헤더 탐색: country + (launched|status|launch) 콤보
-  const headerIdx = rows.findIndex(r => {
-    if (!r) return false
-    const hasCountry = r.some(c => /^(country|county)$/i.test(String(c || '').trim()))
-    const hasStatus = r.some(c => /^(launched|launch|launch\s*status|status|출시여부|출시)$/i.test(String(c || '').trim()))
-    return hasCountry && hasStatus
-  })
+  const headerIdx = findHeaderIdx(rows, [
+    /^(country|county)$/,
+    /^(launched|launch|launch\s*status|status|출시여부|출시)$/,
+  ])
   if (headerIdx < 0) {
     console.warn('[parseUnlaunched] 헤더 못찾음. 시트 첫 10행:')
     rows.slice(0, 10).forEach((r, i) => console.log(`  row${i}:`, r?.slice(0, 6)))
@@ -1819,10 +1839,7 @@ function parseUnlaunched(rows) {
 // 구조: BU | Topic-대시보드 | Explanation | 기존 토픽 | Topic-row
 // BU 빈 셀은 이전 BU 유지 (병합 셀)
 function parsePRTopicList(rows) {
-  const headerIdx = rows.findIndex(r =>
-    r && r.some(c => /^bu$/i.test(String(c || '').trim())) &&
-    r.some(c => /topic/i.test(String(c || '').trim()))
-  )
+  const headerIdx = findHeaderIdx(rows, [/^bu$/, /topic/])
   if (headerIdx < 0) return _logWarn('parsePRTopicList', 'header not found (need BU + Topic)', { firstRows: rows.slice(0, 5).map(r => r?.slice(0, 6)) })
   const header = rows[headerIdx]
   let buCol = -1, topicCol = -1, explCol = -1, oldTopicCol = -1, topicRowCol = -1
