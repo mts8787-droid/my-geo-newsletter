@@ -10,7 +10,7 @@ tools: Read, Bash, Grep, Glob
 
 ## 작업 영역
 
-`src/excelUtils.js` (parseSheet switch) · `src/googleSheetsUtils.js` (Sheets API) · `src/shared/sheetTabsForMode.js` (모드별 탭) · `src/shared/api.js` (publish 시 extra 조립) · `test/excelUtils.test.js`.
+`src/excelUtils.js` (parseSheetRows 라우터) · `src/categoryMap.js` (카테고리 매핑 single source) · `src/sheetParserUtils.js` (파서 공통 헬퍼) · `src/googleSheetsUtils.js` (Sheets API) · `src/shared/sheetTabsForMode.js` (모드별 탭) · `src/shared/api.js` (publish 시 extra 조립) · `src/excelUtils.test.js`.
 
 표준 데이터 shape · 5단계 ERROR CATCHING · Self-Logging 패턴은 `.claude/skills/data/SKILL.md` 참조.
 
@@ -36,9 +36,12 @@ tools: Read, Bash, Grep, Glob
 5. 위 §3 의 invariant 체크리스트 적용:
    - **date sort**: `parseMonthFromDate` 로 정렬된 상태?
    - **null vs 0**: 빈 셀과 실측 0 구분 유지?
-   - **카테고리 ID**: 4개 매핑(`CATEGORY_ID_MAP`/`CATEGORY_KR_MAP`/`UL_PROD_MAP`/`PROD_NAME_TO_ID`) 모두 일관?
-   - **헤더 탐지**: `findHeaderIdx` 사용 (첫 행 가정 X)?
+   - **카테고리 매핑 single source**: `src/categoryMap.js` 에서만 정의? 다른 파일은 import? `UL_CODE_NORMALIZE` 결과값 ⊆ `Object.values(PROD_ID_TO_UL_CODE)` invariant 통과?
+   - **헤더 탐지**: `findHeaderIdx` (`src/sheetParserUtils.js`) 사용 — 첫 행 가정 X?
+   - **라우터 가드**: `parseSheetRows` 진입부에 `assertRows` 적용? 미매칭 시트명에 `_logWarn` 출력?
+   - **silent fallback 금지**: 모든 `return {}` 가 `_logWarn(scope, msg, ctx)` 거쳐가나? 컨텍스트 dump 있나?
    - **디폴트 병합**: `DEFAULT_UNLAUNCHED` 등 비즈니스 fact 가 시트 누락 시 살아남나?
+   - **per-row CAPTURE**: 정규화 실패 행이 silent skip 이 아니라 `console.warn({ rowIdx, raw, parsed })` 출력?
 6. 보고서 출력
 
 ## 절대 금지
@@ -53,7 +56,8 @@ tools: Read, Bash, Grep, Glob
 | 질문 | 어디부터 보는가 |
 |---|---|
 | "왜 5월 데이터가 안 보이지" | `parseMonthFromDate` regex + 해당 시트의 date 컬럼 raw 값 |
-| "Aircare 가 멕시코에서 회색 처리가 안 됨" | `parseUnlaunched` 의 `DEFAULT_UNLAUNCHED` + `UL_PROD_MAP` + `isUnlaunched` |
+| "Aircare 가 멕시코에서 회색 처리가 안 됨" | `parseUnlaunched` 의 `DEFAULT_UNLAUNCHED` + `categoryMap.js` 의 `PROD_ID_TO_UL_CODE` + `_isUnlaunched` 매칭 |
+| "신규 카테고리 추가 후 미출시 매칭 누락" | `src/categoryMap.js` 1곳만 수정됐는지 (다른 파일에 매핑 재정의 없는지). `assertCategoryMapInvariant()` 통과 확인 |
 | "MoM 부호가 반대로 나옴" | `monthlyScores` 정렬 invariant — `entries.sort(parseMonthFromDate)` 누락 여부 |
 | "신규 시트 추가 후 카테고리 누락" | `parseSheet` switch · `sheetTabsForMode` · `App.jsx` state 반영 4단계 모두 누락 없는지 |
 | "score > 100 이상값 노출" | §5.9 타입/범위 검증 (`isValidScore`) 적용 누락 |

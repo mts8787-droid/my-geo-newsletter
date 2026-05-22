@@ -1,5 +1,6 @@
 // ─── 이메일 호환 HTML 생성기 ─────────────────────────────────────────────────
 // 규칙: table 기반 레이아웃, 인라인 스타일, 외부 폰트 없음, flex/grid 없음
+import { PROD_ID_TO_UL_CODE as UL_PROD_MAP } from './categoryMap.js'
 
 const EM_RED  = '#CF0652'
 // Citation 차트 전용 — 짙은 녹색 계열 (LG_RED 와 구분)
@@ -1476,7 +1477,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
   const t = T[lang] || T.ko
   total = total || { score: 0, prev: 0, vsComp: 0, rank: 1, totalBrands: 12 }
   products = products || []
-  const UL_PROD_MAP = { tv:'TV', monitor:'IT', audio:'AV', washer:'WM', fridge:'REF', dw:'DW', vacuum:'VC', cooking:'COOKING', rac:'RAC', aircare:'AIRCARE', styler:'STYLER' }
+  // UL_PROD_MAP 은 src/categoryMap.js (single source) 에서 모듈 상단에 import.
   function getULCntys(prodId) {
     const code = UL_PROD_MAP[prodId] || (prodId || '').toUpperCase()
     return Object.keys(unlaunchedMap).filter(k => k.endsWith('|' + code)).map(k => k.split('|')[0])

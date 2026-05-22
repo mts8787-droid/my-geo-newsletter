@@ -1,5 +1,7 @@
 // N2 — XLSX는 downloadTemplate에서만 쓰이므로 함수 내부에서 동적 로드
 import { loadXlsx } from './shared/loadXlsx.js'
+import { RAW_TO_PROD_ID, RAW_TO_KR, UL_CODE_NORMALIZE } from './categoryMap.js'
+import { _logWarn, assertRows } from './sheetParserUtils.js'
 
 // ─── 시트 이름 (Google Sheets 동기화용 — 새 데이터 원천) ─────────────────────────
 export const SHEET_NAMES = {
@@ -23,27 +25,7 @@ export const SHEET_NAMES = {
   prTopicList:    'PR Topic List',
 }
 
-// ─── 카테고리 ID/KR 매핑 ──────────────────────────────────────────────────────
-const CATEGORY_ID_MAP = {
-  'TV': 'tv', 'Monitor': 'monitor', 'IT': 'monitor', 'Audio': 'audio', 'AV': 'audio',
-  'WM': 'washer', 'Washer': 'washer', 'Washing Machine': 'washer',
-  'REF': 'fridge', 'Refrigerator': 'fridge',
-  'DW': 'dw', 'Dishwasher': 'dw',
-  'VC': 'vacuum', 'Vacuum': 'vacuum', 'Vacuum Cleaner': 'vacuum',
-  'Cooking': 'cooking', 'Cook': 'cooking',
-  'RAC': 'rac', 'Aircare': 'aircare', 'Air Care': 'aircare',
-  'Styler': 'styler',
-}
-const CATEGORY_KR_MAP = {
-  'TV': 'TV', 'Monitor': '모니터', 'IT': '모니터', 'Audio': '오디오', 'AV': '오디오',
-  'WM': '세탁기', 'Washer': '세탁기', 'Washing Machine': '세탁기',
-  'REF': '냉장고', 'Refrigerator': '냉장고',
-  'DW': '식기세척기', 'Dishwasher': '식기세척기',
-  'VC': '청소기', 'Vacuum': '청소기', 'Vacuum Cleaner': '청소기',
-  'Cooking': 'Cooking', 'Cook': 'Cooking',
-  'RAC': 'RAC', 'Aircare': 'Aircare', 'Air Care': 'Aircare',
-  'Styler': 'Styler',
-}
+// 카테고리 ID/KR 매핑은 src/categoryMap.js (single source) 로 이전 — 이 파일에서는 import 만.
 
 export const DOTCOM_LG_COLS   = ['TTL','PLP','Microsites','PDP','Newsroom','Support','Buying-guide','Experience']
 export const DOTCOM_SAM_COLS  = ['TTL','PLP','Microsites','PDP','Newsroom','Support','Buying-guide']
@@ -348,7 +330,7 @@ function parseVisSummary(rows) {
   // 첫번째 TOTAL 행 폴백 (필터링 결과 없을 때)
   if (!latestTotal) {
     const ttlRow = rows.find(r => r.some(c => String(c || '').trim().toUpperCase() === 'TOTAL'))
-    if (!ttlRow) return {}
+    if (!ttlRow) return _logWarn('parseVisSummary', 'no TOTAL row found', { sample: rows.slice(0, 5).map(r => r?.slice(0, 6)) })
     const score = pct(ttlRow[lgCol])
     const vsComp = pct(ttlRow[actualSsCol])
     const result = { total: { score, prev: score, vsComp, rank: score >= vsComp ? 1 : 2, totalBrands: 12 } }
@@ -468,8 +450,8 @@ function parseProductCntyFromRow(rows, headerIdx) {
     compScores.forEach(c => { allScores[c.name] = c.score })
 
     if (country === 'TTL' || country === 'TOTAL') {
-      const id = CATEGORY_ID_MAP[category] || category.toLowerCase()
-      const kr = CATEGORY_KR_MAP[category] || category
+      const id = RAW_TO_PROD_ID[category] || category.toLowerCase()
+      const kr = RAW_TO_KR[category] || category
       if (!ttlByProduct[id]) ttlByProduct[id] = []
       ttlByProduct[id].push({ id, bu: div, kr, category, date, score: lgScore, vsComp: topComp.score, compName: topComp.name, allScores })
     } else {
@@ -538,11 +520,11 @@ function parseDashboardLayout(rows, div) {
   // 대시보드 레이아웃: 카테고리 이름이 열 헤더로 배치, 브랜드별 행에 주간 값
   const DASH_CAT_MAP = div ? (DASH_CAT_BY_DIV[div] || {})
     : { ...DASH_CAT_BY_DIV.MS, ...DASH_CAT_BY_DIV.ES }
-  if (!Object.keys(DASH_CAT_MAP).length) return {}
+  if (!Object.keys(DASH_CAT_MAP).length) return _logWarn('parseDashboardLayout', 'no DASH_CAT_MAP for division', { div })
   const catRowIdx = rows.findIndex(r =>
     r.some(c => String(c || '').trim() in DASH_CAT_MAP)
   )
-  if (catRowIdx < 0) return {}
+  if (catRowIdx < 0) return _logWarn('parseDashboardLayout', 'category row not found', { div, expectedKeys: Object.keys(DASH_CAT_MAP) })
   const catRow = rows[catRowIdx]
 
   // TTL 행 찾기 (섹션 경계)
@@ -570,7 +552,7 @@ function parseDashboardLayout(rows, div) {
     if (hasNB) { lgNbRowIdx = i; break }
   }
   const dataRowIdx = lgNbRowIdx >= 0 ? lgNbRowIdx : lgRowIdx >= 0 ? lgRowIdx : ttlRowIdx
-  if (dataRowIdx < 0) return {}
+  if (dataRowIdx < 0) return _logWarn('parseDashboardLayout', 'data row (LG/NB/TTL) not found', { div, catRowIdx, ttlRowIdx })
   const dataRow = rows[dataRowIdx]
   const dataRowLabel = lgNbRowIdx >= 0 ? 'LG-NB' : lgRowIdx >= 0 ? 'LG' : 'TTL'
 
@@ -594,7 +576,7 @@ function parseDashboardLayout(rows, div) {
     if (vals.length) weeklyMap[id] = vals
   }
   if (!Object.keys(weeklyMap).length) {
-    return {}
+    return _logWarn('parseDashboardLayout', 'no weekly data extracted', { div, catRowIdx, dataRowIdx, dataRowLabel })
   }
   const weeklyLabels = findWeekLabels(rows, catRowIdx, sectionEnd)
     || Object.values(weeklyMap)[0]?.map((_, i) => `W${i + 1}`) || []
@@ -757,7 +739,7 @@ function parseWeekly(rows, div) {
       if (!brand) return
       const cat = String(r[catIdx >= 0 ? catIdx : 0] || '').trim()
       if (!cat) return
-      const prodId = CATEGORY_ID_MAP[cat] || cat.toLowerCase()
+      const prodId = RAW_TO_PROD_ID[cat] || cat.toLowerCase()
       const rawCnty = countryIdx >= 0 ? normCountry(r[countryIdx]) : 'TOTAL'
       const cnty = rawCnty === 'TOTAL' || rawCnty === 'TTL' || !rawCnty ? 'Total' : rawCnty
       if (!weeklyAll[prodId]) weeklyAll[prodId] = {}
@@ -772,7 +754,7 @@ function parseWeekly(rows, div) {
       if (!isTotal(r)) return
       const cat = String(r[catIdx >= 0 ? catIdx : 0] || '').trim()
       if (!cat) return
-      weeklyMap[CATEGORY_ID_MAP[cat] || cat.toLowerCase()] = wCols.map(c => pctOrNull(r[c]))
+      weeklyMap[RAW_TO_PROD_ID[cat] || cat.toLowerCase()] = wCols.map(c => pctOrNull(r[c]))
     })
   } else if (lgIdx >= 0) {
     // Format: Div, Week/Date, Country, Category, LG, ...
@@ -794,7 +776,7 @@ function parseWeekly(rows, div) {
       byCategory[cat].push(pctOrNull(r[lgIdx]))
     })
     Object.entries(byCategory).forEach(([cat, vals]) => {
-      weeklyMap[CATEGORY_ID_MAP[cat] || cat.toLowerCase()] = vals
+      weeklyMap[RAW_TO_PROD_ID[cat] || cat.toLowerCase()] = vals
     })
     if (weekLabelOrder.length) weeklyLabels = weekLabelOrder
   } else if (wCols.length) {
@@ -803,7 +785,7 @@ function parseWeekly(rows, div) {
       if (!isTotal(r)) return
       const cat = String(r[catIdx >= 0 ? catIdx : 0] || '').trim()
       if (!cat) return
-      weeklyMap[CATEGORY_ID_MAP[cat] || cat.toLowerCase()] = wCols.map(c => pctOrNull(r[c]))
+      weeklyMap[RAW_TO_PROD_ID[cat] || cat.toLowerCase()] = wCols.map(c => pctOrNull(r[c]))
     })
   }
 
@@ -855,7 +837,7 @@ function parseCitPageType(rows) {
     const isTitleRow = r.some(c => /^\[.*\]$/.test(String(c || '').trim()))
     return !isTitleRow
   })
-  if (headerIdx < 0) return {}
+  if (headerIdx < 0) return _logWarn('parseCitPageType', 'header not found', { firstRows: rows.slice(0, 5).map(r => r?.slice(0, 6)) })
 
   const header = rows[headerIdx]
 
@@ -1571,7 +1553,7 @@ function parsePRVisibility(rows, mode) {
     return r.some(c => /^type$/i.test(String(c || '').trim())) &&
            r.some(c => /^county|^country$/i.test(String(c || '').trim()))
   })
-  if (headerIdx < 0) return {}
+  if (headerIdx < 0) return _logWarn(`parsePRVisibility:${mode}`, 'header not found (need Type + Country)', { firstRows: rows.slice(0, 5).map(r => r?.slice(0, 6)) })
 
   const header = rows[headerIdx]
   let typeCol = -1, countryCol = -1, topicCol = -1, brandCol = -1, dataStartCol = 4
@@ -1644,7 +1626,7 @@ function parseBrandPromptVisibility(rows, mode) {
            (r.some(c => /^type$/i.test(String(c || '').trim())) &&
             r.some(c => /topoc|topic/i.test(String(c || '').trim())))
   })
-  if (headerIdx < 0) return {}
+  if (headerIdx < 0) return _logWarn(`parseBrandPromptVisibility:${mode}`, 'header not found (need Stakeholders or Type+Topic)', { firstRows: rows.slice(0, 5).map(r => r?.slice(0, 6)) })
 
   const header = rows[headerIdx]
   let stakeholderCol = -1, typeCol = -1, countryCol = -1, topicCol = -1, dataStartCol = 4
@@ -1706,7 +1688,7 @@ export function parseAppendix(rows) {
     return r.some(c => /^prompts?$/i.test(String(c || '').trim())) &&
            r.some(c => /^country$/i.test(String(c || '').trim()))
   })
-  if (headerIdx < 0) return {}
+  if (headerIdx < 0) return _logWarn('parseAppendix', 'header not found (need Prompts + Country)', { firstRows: rows.slice(0, 5).map(r => r?.slice(0, 6)) })
 
   const header = rows[headerIdx]
   const colMap = {}
@@ -1809,20 +1791,10 @@ function parseUnlaunched(rows) {
         skipCount++
         return
       }
-      // category: UL_PROD_MAP 기준 코드로 정규화 (TV, IT, AV, WM, REF, DW, VC, COOKING, RAC, AIRCARE)
+      // category: categoryMap.js 의 UL_CODE_NORMALIZE 로 정규화 (TV, IT, AV, WM, REF, DW, VC, COOKING, RAC, AIRCARE, STYLER)
       // 원본도 저장 + 정규화 값도 저장 (매칭 유연성)
       const upperCat = rawCategory.toUpperCase()
-      const NORMALIZE = {
-        'TV': 'TV', 'MONITOR': 'IT', 'IT': 'IT', 'AUDIO': 'AV', 'AV': 'AV',
-        'WASHER': 'WM', 'WM': 'WM', 'WASHING MACHINE': 'WM',
-        'REFRIGERATOR': 'REF', 'REF': 'REF', 'FRIDGE': 'REF',
-        'DISHWASHER': 'DW', 'DW': 'DW',
-        'VACUUM': 'VC', 'VC': 'VC', 'VACUUM CLEANER': 'VC',
-        'COOKING': 'COOKING', 'COOK': 'COOKING',
-        'RAC': 'RAC', 'AIRCARE': 'AIRCARE', 'AIR CARE': 'AIRCARE',
-        'STYLER': 'STYLER',
-      }
-      const normCat = NORMALIZE[upperCat] || upperCat
+      const normCat = UL_CODE_NORMALIZE[upperCat] || upperCat
       unlaunchedMap[`${country}|${normCat}`] = true
       // 원본 값도 별도 키로 저장 (매칭 유연성)
       if (normCat !== upperCat) unlaunchedMap[`${country}|${upperCat}`] = true
@@ -1851,7 +1823,7 @@ function parsePRTopicList(rows) {
     r && r.some(c => /^bu$/i.test(String(c || '').trim())) &&
     r.some(c => /topic/i.test(String(c || '').trim()))
   )
-  if (headerIdx < 0) return {}
+  if (headerIdx < 0) return _logWarn('parsePRTopicList', 'header not found (need BU + Topic)', { firstRows: rows.slice(0, 5).map(r => r?.slice(0, 6)) })
   const header = rows[headerIdx]
   let buCol = -1, topicCol = -1, explCol = -1, oldTopicCol = -1, topicRowCol = -1
   for (let i = 0; i < header.length; i++) {
@@ -1883,6 +1855,10 @@ function parsePRTopicList(rows) {
 
 // ─── 메인 파서 라우터 ──────────────────────────────────────────────────────────
 export function parseSheetRows(sheetName, rows) {
+  // [1] DETECT: 라우터 레벨 입력 가드 — rows 가 배열이 아니거나 빈 배열이면 fatal.
+  // 하위 파서는 정상 rows 를 받는다고 가정 가능 (parseUnlaunched 등 일부는 추가 가드 보유).
+  if (!assertRows(rows, `parseSheetRows:${sheetName}`)) return {}
+
   if (sheetName === SHEET_NAMES.meta) return parseMeta(rows)
 
   if (sheetName === SHEET_NAMES.visSummary) return parseVisSummary(rows)
@@ -1911,5 +1887,5 @@ export function parseSheetRows(sheetName, rows) {
   if (sheetName === SHEET_NAMES.unlaunched) return parseUnlaunched(rows)
   if (sheetName === SHEET_NAMES.prTopicList) return parsePRTopicList(rows)
 
-  return {}
+  return _logWarn('parseSheetRows', 'unknown sheet name — router has no handler', { sheetName, known: Object.values(SHEET_NAMES) })
 }

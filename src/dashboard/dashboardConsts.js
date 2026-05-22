@@ -105,11 +105,9 @@ export const COUNTRY_OFFICIAL_NAME_KR = {
 }
 
 // ─── 미출시 코드 매핑 ────────────────────────────────────────────────────────
-export const UL_PROD_MAP = {
-  tv: 'TV', monitor: 'IT', audio: 'AV', washer: 'WM',
-  fridge: 'REF', dw: 'DW', vacuum: 'VC',
-  cooking: 'COOKING', rac: 'RAC', aircare: 'AIRCARE', styler: 'STYLER',
-}
+// src/categoryMap.js (single source) 의 PROD_ID_TO_UL_CODE 를 alias 로 re-export
+// — 기존 사용처 (dashboardTemplate.js, emailTemplate.js 등) 가 UL_PROD_MAP 이름 유지.
+export { PROD_ID_TO_UL_CODE as UL_PROD_MAP } from '../categoryMap.js'
 
 // ─── Dotcom 컬럼 ─────────────────────────────────────────────────────────────
 export const DC_COLS = ['TTL','PLP','Microsites','PDP','Newsroom','Support','Buying-guide','Experience']
