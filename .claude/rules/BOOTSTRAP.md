@@ -808,6 +808,137 @@ C) 짧은 부분 소스코드 직접 작성 → 시각 의도만 표현
 
 ---
 
+## TECHNIQUE-8: 점진적 변경 + 회귀 검증 사이클
+
+**상황**: 큰 리팩터링 / 거대 함수 분할 / 매핑 통합 같이 회귀 위험 큰 변경
+
+**Claude 의 액션**:
+```
+1. 변경을 작은 phase 로 분할 (예: Phase A/B/C/D/E/F/G)
+2. 각 phase 마다:
+   a. 변경 적용
+   b. npm test 즉시 실행 → 회귀 없는지 확인
+   c. build 검증 (필요 시)
+   d. phase 단위 커밋 (의미 명확)
+3. 회귀 발견 시 → 그 phase 만 되돌리고 다른 접근
+4. 마지막에 통합 검증 (전체 test + build + 시각 확인)
+
+본 세션 사례:
+- parseWeekly 232줄 분할 시: 통합 테스트 6개 fixture 먼저 (baseline) → 3 helper 추출 → 회귀 X 확인
+- 매핑 통합 6 phase: 단일 소스 → 헬퍼 → import 전환 → silent fallback → 검증 → 미러
+```
+
+**언제**: 200줄+ 함수 분할 / single source 통합 / silent fallback 일괄 처리 / 큰 인프라 변경
+
+---
+
+## TECHNIQUE-9: 잔여 패턴 grep 회귀 방지
+
+**상황**: 매핑 통합 / 토큰 통합 / 인라인 정의 제거 — "다 통합했나?" 의 검증
+
+**Claude 의 액션**:
+```
+1. 회귀 위험 패턴 정의 (예: 인라인 매핑 `tv: 'TV', monitor:`)
+2. grep -rn 으로 src/ 전체 검색:
+   grep -rn "tv:\s*'TV'\|monitor:\s*'IT'" --include="*.js" --include="*.jsx" src/
+3. 발견된 곳 모두 통합 (single source import 로)
+4. 다시 grep — 잔여 0건 확인 (회귀 방지)
+5. 신규 위치 발견 시 (예: 이메일 인라인 string) 적합한 통합 방식 선택
+6. 패턴을 ANTI-PATTERN 으로 등재 (.claude/rules/data.md NEVER)
+
+본 세션 사례:
+- STYLER 누락 회귀 — 매핑이 8 곳 분산 → grep 으로 모든 위치 식별 → 통합 → 잔여 0 달성
+- "tv:.*'TV'" grep 결과 0 — 회귀 차단 검증
+```
+
+**언제**: single source 통합 직후 / 신규 prefix 추가 후 / 토큰 적용 통합
+
+---
+
+## TECHNIQUE-10: invariant 런타임 + 테스트 자동 검증
+
+**상황**: 신규 카테고리 / 매핑 / 토큰 추가 시 — 사람 수동 검증 부담 / 일부 누락 위험
+
+**Claude 의 액션**:
+```
+1. invariant 함수 작성 (예: assertCategoryMapInvariant):
+   - 매핑 4종 (KR/EN/CODE/BU) 의 키가 모두 PROD_IDS 와 일치
+   - UL_CODE_NORMALIZE 결과값 ⊆ PROD_ID_TO_UL_CODE 값 집합
+   - 위반 시 throw new Error('xxx 누락')
+
+2. 두 곳에서 자동 검증:
+   a. 모듈 로드 시 — 런타임에서 즉시 (사용자 환경에서 발견)
+   b. 테스트에서 — npm test 가 강제 (CI / 개발 단계에서 차단)
+
+3. 신규 추가 시 4종 중 하나만 빠져도 invariant 위반 → 자동 차단
+4. invariant 메시지에 구체적 정보 (어떤 키 누락) → 사용자 즉시 알 수 있게
+
+본 세션 사례:
+- categoryMap.js 의 assertCategoryMapInvariant — PROD_IDS 의 모든 id 가 4 종 매핑에
+  등재되어 있는지 검증. STYLER 누락 같은 회귀 차단.
+```
+
+**언제**: 매핑 / 토큰 / 설정 같이 "동시 갱신" 필요한 데이터 (single source 강제)
+
+---
+
+## TECHNIQUE-11: 서브에이전트 도메인 진단 위임 (read-only)
+
+**상황**: 특정 영역 (예: 데이터 파이프라인) 의 정합성 / 회귀 위험 점검 — 메인이 모두 직접 하면 부담
+
+**Claude 의 액션**:
+```
+1. read-only 서브에이전트 정의 (.claude/agents/<name>.md):
+   - description: "X 영역의 shape·정합성·누락 조사·보고 전담"
+   - tools: Read, Bash, Grep, Glob (Edit 권한 없음 — 진단만)
+
+2. 메인이 서브에이전트에 위임:
+   "data-puller 야, parseUnlaunched 가 5단계 ERROR CATCHING 따르는지 점검해줘"
+
+3. 서브에이전트가 진단 보고 (구체적 라인 인용 + 위반 항목 + 우선순위)
+
+4. 메인이 보고 검증 + 코드 수정 (서브에이전트는 진단만)
+
+5. 사용자 입장 — Claude 와 한 명만 대화. 내부적으로 메인+서브 분담.
+
+본 세션 사례:
+- data-puller 가 parseUnlaunched ERROR CATCHING 5단계 점검 → 메인이 검증 + 수정
+- 메인이 직접 검증한 결과로 보고 (메인은 일 안 한다는 인상 X)
+```
+
+**언제**: 큰 영역 진단 / 회귀 위험 점검 / 다른 시각 필요할 때 (메인 + 서브 분담)
+
+---
+
+## TECHNIQUE-12: 본질 변경 + 산출물 분리 커밋
+
+**상황**: 코드 + 빌드 산출물 (dist) 동시 변경 — 한 커밋에 묶으면 의미 흐림
+
+**Claude 의 액션**:
+```
+1. 본질 변경 먼저 커밋:
+   - src/ + routes/ + .claude/ + docs/ 등 사람이 작성한 변경
+   - 의미 있는 commit 메시지 (feat / fix / refactor / docs)
+
+2. dist-* 같은 빌드 산출물 별도 커밋:
+   - chore(dist): ... 같은 형식
+   - "본질 변경 abc1234 반영" 같이 참조
+
+3. 효과:
+   - git log 에서 의미 있는 변경 식별 쉬움 (chore dist 제외)
+   - revert 시 본질 변경만 되돌리기 가능 (산출물은 다음 빌드에서 재생성)
+   - PR 리뷰 시 산출물 변경 페이지 스크롤 부담 X
+
+본 세션 사례:
+- "feat(harness): X" → 본질 커밋
+- "chore(dist): 빌드 산출물 — X 반영" → 산출물 커밋
+- 두 커밋 분리로 git log 가독성 ↑
+```
+
+**언제**: 빌드 산출물이 git 추적 대상 / 매 코드 변경 시 dist 갱신되는 패턴
+
+---
+
 ## TECHNIQUES 사용법
 
 `.claude/skills/debug/SKILL.md` 의 워크플로우가 본 TECHNIQUES 자동 호출.
