@@ -1,7 +1,7 @@
 // N2 — XLSX는 downloadTemplate에서만 쓰이므로 함수 내부에서 동적 로드
 import { loadXlsx } from './shared/loadXlsx.js'
 import { RAW_TO_PROD_ID, RAW_TO_KR, UL_CODE_NORMALIZE } from './categoryMap.js'
-import { _logWarn, assertRows, findHeaderIdx } from './sheetParserUtils.js'
+import { _logFatal, _logWarn, assertRows, findHeaderIdx } from './sheetParserUtils.js'
 
 // ─── 시트 이름 (Google Sheets 동기화용 — 새 데이터 원천) ─────────────────────────
 export const SHEET_NAMES = {
@@ -1912,33 +1912,39 @@ export function parseSheetRows(sheetName, rows) {
   // 하위 파서는 정상 rows 를 받는다고 가정 가능 (parseUnlaunched 등 일부는 추가 가드 보유).
   if (!assertRows(rows, `parseSheetRows:${sheetName}`)) return {}
 
-  if (sheetName === SHEET_NAMES.meta) return parseMeta(rows)
+  // [2] CLASSIFY + [4] RECOVER: 파서 throw 시 sync 전체 중단되지 않도록 격리.
+  // 한 시트가 망가져도 다른 시트는 계속 동기화. _logFatal 로 fatal 표면화 + {} 반환.
+  try {
+    if (sheetName === SHEET_NAMES.meta) return parseMeta(rows)
 
-  if (sheetName === SHEET_NAMES.visSummary) return parseVisSummary(rows)
+    if (sheetName === SHEET_NAMES.visSummary) return parseVisSummary(rows)
 
-  if (sheetName === SHEET_NAMES.productMS ||
-      sheetName === SHEET_NAMES.productHS ||
-      sheetName === SHEET_NAMES.productES) return parseProductCnty(rows)
+    if (sheetName === SHEET_NAMES.productMS ||
+        sheetName === SHEET_NAMES.productHS ||
+        sheetName === SHEET_NAMES.productES) return parseProductCnty(rows)
 
-  if (sheetName === SHEET_NAMES.weeklyMS) return parseWeekly(rows, 'MS')
-  if (sheetName === SHEET_NAMES.weeklyHS) return parseWeekly(rows, 'HS')
-  if (sheetName === SHEET_NAMES.weeklyES) return parseWeekly(rows, 'ES')
+    if (sheetName === SHEET_NAMES.weeklyMS) return parseWeekly(rows, 'MS')
+    if (sheetName === SHEET_NAMES.weeklyHS) return parseWeekly(rows, 'HS')
+    if (sheetName === SHEET_NAMES.weeklyES) return parseWeekly(rows, 'ES')
 
-  if (sheetName === SHEET_NAMES.monthlyPR) return parsePRVisibility(rows, 'monthly')
-  if (sheetName === SHEET_NAMES.weeklyPR) return parsePRVisibility(rows, 'weekly')
+    if (sheetName === SHEET_NAMES.monthlyPR) return parsePRVisibility(rows, 'monthly')
+    if (sheetName === SHEET_NAMES.weeklyPR) return parsePRVisibility(rows, 'weekly')
 
-  if (sheetName === SHEET_NAMES.monthlyBrandPrompt) return parseBrandPromptVisibility(rows, 'monthly')
-  if (sheetName === SHEET_NAMES.weeklyBrandPrompt) return parseBrandPromptVisibility(rows, 'weekly')
+    if (sheetName === SHEET_NAMES.monthlyBrandPrompt) return parseBrandPromptVisibility(rows, 'monthly')
+    if (sheetName === SHEET_NAMES.weeklyBrandPrompt) return parseBrandPromptVisibility(rows, 'weekly')
 
-  if (sheetName === SHEET_NAMES.citPageType) return parseCitPageType(rows)
+    if (sheetName === SHEET_NAMES.citPageType) return parseCitPageType(rows)
 
-  if (sheetName === SHEET_NAMES.citTouchPoints) return parseCitTouchPoints(rows)
+    if (sheetName === SHEET_NAMES.citTouchPoints) return parseCitTouchPoints(rows)
 
-  if (sheetName === SHEET_NAMES.citDomain) return parseCitDomain(rows)
+    if (sheetName === SHEET_NAMES.citDomain) return parseCitDomain(rows)
 
-  if (sheetName === SHEET_NAMES.appendix) return parseAppendix(rows)
-  if (sheetName === SHEET_NAMES.unlaunched) return parseUnlaunched(rows)
-  if (sheetName === SHEET_NAMES.prTopicList) return parsePRTopicList(rows)
+    if (sheetName === SHEET_NAMES.appendix) return parseAppendix(rows)
+    if (sheetName === SHEET_NAMES.unlaunched) return parseUnlaunched(rows)
+    if (sheetName === SHEET_NAMES.prTopicList) return parsePRTopicList(rows)
+  } catch (e) {
+    return _logFatal(`parseSheetRows:${sheetName}`, 'parser threw — sheet 격리', { error: e?.message, stack: e?.stack?.split('\n').slice(0, 3).join(' | ') })
+  }
 
   return _logWarn('parseSheetRows', 'unknown sheet name — router has no handler', { sheetName, known: Object.values(SHEET_NAMES) })
 }

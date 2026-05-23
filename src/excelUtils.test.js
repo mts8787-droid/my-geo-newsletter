@@ -688,4 +688,12 @@ describe('parseSheetRows 라우터 — DETECT + unknown sheet', () => {
     expect(result).toEqual({})
     expect(errorSpy).toHaveBeenCalled()
   })
+
+  it('라우터 try/catch — 손상된 rows 가 파서를 throw 시켜도 sync 격리 (parseMeta)', () => {
+    // rows=[null] 은 Array.isArray=true 라 assertRows 통과. parseMeta 안에서 r[0] 접근 시 TypeError.
+    // 라우터 try/catch 가 catch → _logFatal → {} 반환.
+    const result = parseSheetRows(SHEET_NAMES.meta, [null])
+    expect(result).toEqual({})
+    expect(errorSpy).toHaveBeenCalled()
+  })
 })

@@ -769,7 +769,7 @@ async function selfCheck() {
 |---|---|
 | `categoryMap.js` | invariant 자동 검증 (UL_CODE_NORMALIZE 결과 ⊆ PROD_ID_TO_UL_CODE), 위반 시 모듈 로드 시점에 warn |
 | `sheetParserUtils.js` | `_logFatal/_logWarn/_logInfo` 헬퍼 — 모든 파서가 일관 로그 포맷 사용 |
-| `parseSheetRows` 라우터 | `assertRows` 진입 가드 + 미매칭 시트명 `_logWarn` (silent skip 방지) |
+| `parseSheetRows` 라우터 | `assertRows` 진입 가드 + 미매칭 시트명 `_logWarn` (silent skip 방지) + try/catch 격리 (한 시트 파서 throw 시 `_logFatal` 로 표면화 + 다른 시트 sync 계속) |
 | `parseUnlaunched` | 5분기 (invalid-input/header-not-found/missing-columns/merged/row-error) 일관 로그 + skipCount + per-row CAPTURE |
 | `parseWeekly` | 3-mode (Brand/LG/Category) 자동 감지 + 3 helper 추출 (`_extractWeeklyBrandFormat`, `_extractWeeklyLgFormat`, `_extractWeeklyCategoryFormat`) + 통합 테스트 6개 |
 | `parseCitTouchPoints` / `parseCitDomain` | 헤더 best-effort fallback 진입 시 `_logWarn` 출력 + 통합 테스트 6개 |
@@ -803,6 +803,7 @@ NEVER  parseSheetRows 라우터에서 미매칭 시트명 silent skip → _logWa
 NEVER  파서 진입부 입력 검증 생략 → assertRows() 라우터 가드 + 외부 직접 호출 시 자체 가드
 NEVER  같은 헤더 동의어 정규식을 파서마다 인라인 작성 → findHeaderIdx(rows, [regex, ...]) 헬퍼 사용 (AND 매칭)
 NEVER  pct() 로 ratio 값 (상관계수 -1~+1, 확률 0~1) 파싱 → ×100 자동 변환 트랩, 별도 parser 필요
+NEVER  파서 throw 가 sync 전체 중단 → parseSheetRows 라우터 try/catch + _logFatal 격리 (다른 시트 계속)
 ```
 
 ## 9. VERIFICATION & DEBUGGING
