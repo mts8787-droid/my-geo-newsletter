@@ -588,56 +588,20 @@ C) 짧은 부분 소스코드 직접 작성 → 시각 의도만 표현
 
 **증상**: 월/국가/제품 필터 변경해도 차트 갱신 X / 필터 후 트렌드 사라짐 / 일부 카드만 반영
 
-**원인** (본 레포 30+ 필터 관련 fix 분석):
-- `data-prodid` 속성 누락 → row 매칭 실패 (트렌드 사라짐 근본 원인)
-- 클라이언트 짝 함수 미수정 (서버 SVG 변경 시 _miniSvg / _trendMultiSvg 동시 수정 필요)
-- 일부 카드만 필터 반영 (Hero summary / 미니차트 누락)
-- null 요소 처리 안 함 — weekly / 경쟁사 배열에 null 있을 때
-- truncate 인덱스 (`_curWeekIdx` / `_curMonthIdxIn12`) 안 갱신
-- 데이터 없을 때 Total 폴백 안 함
-- 드롭다운 옵션 자체에서 누락 (예: TTL 없는 달)
+**원인**: 본 레포 30+ 필터 관련 fix 결과 — 8 가지 독립 원인. 각각 TECHNIQUE 로 분리 (TECHNIQUE-16 ~ TECHNIQUE-23).
 
-**디버깅 순서**:
-```
-1. data-prodid 속성 검증:
-   - DOM 의 .trend-row 같은 row 에 data-prodid 속성 있는지 (필터 매칭 키)
-   - filterTrend 같은 함수가 id 로 row 찾는지
+**디버깅 순서**: 8 TECHNIQUE 를 순차 적용. 매칭되는 원인 발견 시 그 TECHNIQUE 의 처리 방식 따름.
 
-2. 클라이언트 짝 함수 일치성:
-   - 서버 SVG (dashboardSvg.js) 변경 → 클라 (_miniSvg / _trendMultiSvg) 동시 수정?
-   - filterTrend 호출 후 SVG 재생성 코드 확인
+1. → TECHNIQUE-16: data-prodid 매칭 키 검증
+2. → TECHNIQUE-17: 클라이언트 짝 함수 일치성
+3. → TECHNIQUE-18: 필터 영향 카드 전체 점검
+4. → TECHNIQUE-19: null 요소 안전 처리
+5. → TECHNIQUE-20: truncate 인덱스 갱신
+6. → TECHNIQUE-21: 드롭다운 옵션 자체 검증
+7. → TECHNIQUE-22: Total 폴백 전략
+8. → TECHNIQUE-23: 필터 state 격리
 
-3. 필터 영향 카드 모두 검증:
-   - Hero summary 카드
-   - 카드 미니차트
-   - 큰 트렌드 차트
-   - vbar / hbar
-   - 국가별 / 제품별 섹션
-   각각 필터 변경 시 재계산 함수 호출하는지
-
-4. null 처리:
-   - 배열에 null 요소 있을 때 _miniSvgNullAware 같은 null-aware 함수 사용
-   - null vs 0 명확히 구분 (선 끊김 vs 0 점)
-
-5. truncate 인덱스 갱신:
-   - _curWeekIdx 같은 전역 변수
-   - 월/주차 드롭다운 변경 시 갱신되고 재렌더 트리거
-
-6. 드롭다운 옵션 자체 검증:
-   - TTL 없는 달도 옵션에 포함됐는지 (강제 추가)
-   - 빈 데이터 month 도 선택 가능 — 빈 화면이라도 렌더
-
-7. Total 폴백:
-   - 특정 국가 선택 시 그 국가 데이터 없으면 Total 평균으로 폴백
-   - 또는 명시적 "데이터 없음" 메시지
-
-8. 필터 state 격리 확인 — TECHNIQUE-14 참조:
-   - 페이지 분리 시 다른 SPA 와 state 공유 X
-   - GNB 탭과 필터 레이어 충돌 X
-```
-
-**관련 룰**: design.md §5.7 truncate / §5.8 서버↔클라 짝 / NEVER 룰 (data-prodid 누락)
-**관련 TECHNIQUE**: TECHNIQUE-14 (헤더·필터 꼬임 방지) / TECHNIQUE-1, 2 (디버깅 로그)
+**관련 룰**: design.md §5.7 truncate / §5.8 서버↔클라 짝 / NEVER 룰
 
 ---
 
@@ -1123,6 +1087,285 @@ C) 짧은 부분 소스코드 직접 작성 → 시각 의도만 표현
 ```
 
 **언제**: 빌드 산출물이 git 추적 대상 / 매 코드 변경 시 dist 갱신되는 패턴
+
+---
+
+## TECHNIQUE-16: data-prodid 매칭 키 검증 (필터 row 식별)
+
+**처리 이유**: 클라이언트 측 `filterTrend()` 같은 함수가 DOM 의 row 들을 순회하면서 prodId 로 매칭한 후 새 SVG 로 교체. **매칭 키 (`data-prodid`) 가 없으면 어떤 row 가 어느 prodId 인지 모름 → 필터 변경 시 row 안 찾아서 "트렌드 사라짐" 회귀**. 본 레포의 commit `84cf45a` "filterTrend 결과 .trend-row에 data-prodid 속성 추가 (트렌드 사라짐 근본 원인)" 의 정확한 케이스.
+
+**처리 방식**:
+```js
+// 1. 서버 HTML 생성 시 row 에 data-prodid 속성 명시
+// dashboardTemplate.js (또는 동등) 의 트렌드 row 생성 코드:
+`<div class="trend-row" data-prodid="${prodId}">
+  ${trendSvg}
+</div>`
+
+// 2. 클라이언트에서 row 매칭 시 dataset.prodid 사용
+function filterTrend(prodIds, cntyKeys) {
+  const container = document.getElementById('trend-container')
+  container.querySelectorAll('.trend-row').forEach(row => {
+    const id = row.dataset.prodid  // ← 매칭 키
+    if (!id) return                // ← 누락 row 보호
+    row.innerHTML = _trendMultiSvgRow(id, prodIds, cntyKeys, ...)
+  })
+}
+
+// 3. 검증
+// - 브라우저 DevTools 의 Elements 탭에서 .trend-row 직접 확인
+// - 각 row 의 data-prodid 속성 존재 여부 + 값 정확성
+// - 또는 콘솔 명령: document.querySelectorAll('.trend-row[data-prodid]').length
+```
+
+**관련 fix**: `84cf45a` data-prodid 누락 / `debug: filterTrend 진입부/종료부에 콘솔 로그`
+**ANTI-PATTERN**: design.md NEVER "filterTrend 의 row 매칭에 data-prodid 속성 누락"
+
+---
+
+## TECHNIQUE-17: 클라이언트 짝 함수 일치성 (서버 SVG ↔ 클라 _miniSvg)
+
+**처리 이유**: 본 레포는 서버 측 (정적 HTML 첫 렌더용) 과 클라이언트 측 (필터 시 동적 재렌더) 에 **같은 차트를 두 번 구현**. 서버 함수 (예: `svgMultiLine`) 만 변경하고 클라이언트 짝 (`_trendMultiSvg`) 미수정 시 — 첫 렌더는 정상, 필터 후 차트 깨짐 / 시각 불일치.
+
+**처리 방식**:
+```js
+// 짝 함수 매핑 (반드시 같이 수정):
+//   svgLine          ↔ _miniSvg
+//   svgMultiLine     ↔ _trendMultiSvg
+//   svgLineNullAware ↔ _miniSvgNullAware
+
+// 옵션 객체 일치 강제 — 둘 다 동일 옵션 시그니처:
+function svgMultiLine(brandData, labels, w, h, opts = {}) {
+  const { fadeBeforeIdx, baselineLabel, labelOffsetY, lineOffsetY, truncateAfter } = opts
+  // ... 서버 측 SVG 생성
+}
+
+// 클라 짝
+function _trendMultiSvg(brandData, labels, w, h, opts = {}) {
+  const { fadeBeforeIdx, baselineLabel, labelOffsetY, lineOffsetY, truncateAfter } = opts
+  // ... 클라 측 동일 로직
+}
+
+// 검증 — 첫 렌더 + 필터 후 시각적으로 동일한지:
+// 1. 페이지 로드 후 차트 스크린샷
+// 2. 필터 변경
+// 3. 변경 후 스크린샷 — 첫 렌더와 색·위치·라벨 일관
+```
+
+**관련 룰**: design.md §5.8 서버↔클라 짝 매핑 표
+**ANTI-PATTERN**: design.md NEVER "서버 SVG 함수만 수정 → 클라이언트 짝 누락"
+
+---
+
+## TECHNIQUE-18: 필터 영향 카드 전체 점검 (한 카드만 반영 X)
+
+**처리 이유**: 필터 변경 → "트렌드 차트는 갱신되는데 카드 미니 차트는 그대로" 같이 일부 카드만 반영. 본 레포의 `"월간 비저빌리티 카드 MoM — 국가 필터 반영"`, `"월 드롭다운 선택 시 제품카드 미니차트도 truncate"`, `"hero summary 카드도 필터 변경 반영"` 같은 fix 패턴 — **필터 핸들러가 일부 카드 재계산 함수만 호출**한 케이스.
+
+**처리 방식**:
+```js
+// 1. 필터 변경 시 영향받는 모든 컴포넌트 식별:
+function onFilterChange(newFilter) {
+  // ─── 모두 호출 — 누락 X ───────────────────────
+  updateHeroSummary(newFilter)         // ← Hero / 요약 카드
+  updateProductCards(newFilter)         // ← 카드 미니 차트
+  updateTrendSection(newFilter)         // ← 큰 트렌드
+  updateVbarSection(newFilter)          // ← 그룹 막대
+  updateCountrySection(newFilter)       // ← 국가별 섹션
+  updateProductSection(newFilter)       // ← 제품별 섹션
+}
+
+// 2. 영향 범위 코드 주석 명시 — 필터 핸들러 위에:
+// 필터 X 변경 시 영향받는 컴포넌트:
+//   - Hero summary, 카드 미니 차트, 큰 트렌드, vbar, 국가별, 제품별
+//   - 추가 시 본 주석 + onFilterChange 함수에 호출 추가
+
+// 3. 검증 — 필터 변경 후 페이지의 모든 차트·카드 시각 검증:
+//   - KO/EN 양쪽
+//   - 모든 카드의 값 / 차트 / 라벨 일관 갱신
+```
+
+**관련 fix**: `"hero summary 카드도 필터 변경 반영"` / `"제품카드 미니차트도 truncate"` / `"By Country 섹션도 국가 필터 반영"`
+
+---
+
+## TECHNIQUE-19: null 요소 안전 처리 (_miniSvgNullAware)
+
+**처리 이유**: 데이터 배열에 null 요소 있을 때 (시트 빈 셀 → pctOrNull → null) 일반 svgLine 호출 시 — null 을 0 으로 렌더하거나 path 생성 시 NaN. **null 은 "데이터 없음" 이지 "0" 아님**. 본 레포의 `"dashboard 클라이언트 필터링 — weekly/경쟁사 배열의 null 요소 처리"` fix 의 케이스.
+
+**처리 방식**:
+```js
+// 1. null vs 0 명확 구분 — pctOrNull 사용 (data.md §5.3):
+//   빈 셀 / '-' / 'NA' → null
+//   '0' / 0 → 0
+
+// 2. null-aware SVG 함수 사용:
+function _miniSvgNullAware(data, w, h, color) {
+  // null 인 점은 점 미렌더 + 선 끊김 (line break)
+  const segments = []
+  let current = []
+  data.forEach((v, i) => {
+    if (v == null) {
+      if (current.length) segments.push(current)
+      current = []
+    } else {
+      current.push({ x: i, y: v })
+    }
+  })
+  if (current.length) segments.push(current)
+  // 각 segment 별로 path 생성 (서로 잇지 않음)
+  return segments.map(seg => `<path d="${pathOf(seg)}"/>`).join('')
+}
+
+// 3. 평균 계산 시 null 제외:
+const avg = data.filter(v => v != null).reduce((s, v) => s + v, 0) / data.filter(v => v != null).length
+
+// 4. 차트 영역의 시각:
+// - null 위치는 점 미렌더
+// - 선이 그 사이를 건너뛰지 않고 break
+// - 사용자가 "이 시점 데이터 없음" 시각적으로 인지
+```
+
+**관련 룰**: data.md §5.3 빈셀/null/0 구분 / NEVER 룰 "null vs 0 동일 취급"
+
+---
+
+## TECHNIQUE-20: truncate 인덱스 갱신 (월/주차 선택)
+
+**처리 이유**: 사용자가 월/주차 드롭다운에서 특정 시점 선택 시 — 그 시점까지만 차트 렌더 (이후는 빈 영역). 본 레포의 `_curWeekIdx` / `_curMonthIdxIn12` 같은 전역 인덱스로 추적. **드롭다운 변경 시 인덱스 갱신 안 되면 차트가 이전 시점 그대로** 또는 전체 데이터로 다시 그려짐.
+
+**처리 방식**:
+```js
+// 1. 전역 인덱스 변수 (dashboardClient.js):
+var _curWeekIdx = -1          // -1 = 전체 표시
+var _curMonthIdxIn12 = -1     // 0=Jan, 11=Dec
+
+// 2. 드롭다운 변경 시 인덱스 갱신:
+weekDropdown.addEventListener('change', e => {
+  _curWeekIdx = parseInt(e.target.value)
+  // 영향받는 모든 차트 재렌더
+  updateTrendCharts({ truncateAfter: _curWeekIdx })
+  _truncateTrendTable('#trend-container', _wLabels.length, _curWeekIdx)
+})
+
+// 3. SVG 생성 함수에 truncate 옵션 전달:
+function _trendMultiSvg(brandData, labels, w, h, opts) {
+  const { truncateAfter } = opts
+  const dataToRender = truncateAfter < 0
+    ? brandData
+    : sliceUpTo(brandData, truncateAfter + 1)
+  // 배경 가로선·X축 라벨은 전체 범위 유지 (차트 폭 안정)
+  // ...
+}
+
+// 4. 검증:
+// - 드롭다운 변경 → 차트가 그 시점까지만 표시
+// - 차트 폭 자체는 변경 X (배경 가로선 전체 유지)
+```
+
+**관련 룰**: design.md §5.7 truncate / NEVER 룰 "truncate 시 viewBox 축소"
+
+---
+
+## TECHNIQUE-21: 드롭다운 옵션 자체 검증 (빈 시점도 선택 가능)
+
+**처리 이유**: TTL (전체) 데이터가 없는 달도 사용자가 선택할 수 있어야 — 빈 화면이라도 렌더. **드롭다운 옵션 생성 시 TTL 있는 달만 포함하면 그 달 선택 불가**. 본 레포의 `"TTL 없는 달도 기간 dropdown에서 선택 가능"` fix 의 케이스.
+
+**처리 방식**:
+```js
+// 1. 옵션 생성 시 모든 시점 포함:
+// ❌ Bad — TTL 있는 달만:
+const months = monthlyVis
+  .filter(r => r.country === 'TTL')
+  .map(r => r.date)
+
+// ✓ Good — 모든 시점:
+const months = [...new Set(monthlyVis.map(r => r.date))]
+  .sort((a, b) => parseMonthFromDate(a) - parseMonthFromDate(b))
+
+// 2. 빈 데이터 시점 선택 시 처리:
+function renderForMonth(month) {
+  const data = monthlyVis.filter(r => r.date === month)
+  if (!data.length) {
+    // "데이터 없음" 메시지 + 차트 영역 빈 채로
+    container.innerHTML = '<div class="empty">해당 기간 데이터 없음</div>'
+    return
+  }
+  // 정상 렌더
+}
+
+// 3. 검증:
+// - 모든 시점 드롭다운에 표시
+// - 선택 시 데이터 있으면 차트 / 없으면 명시적 빈 메시지
+```
+
+**관련 fix**: `"TTL 없는 달도 기간 dropdown에서 선택 가능"`
+
+---
+
+## TECHNIQUE-22: Total 폴백 전략 (특정 국가 데이터 없을 때)
+
+**처리 이유**: 사용자가 특정 국가 선택 시 — 그 국가의 데이터가 없으면 Hero / 카드 빈 화면. **명시적 폴백 또는 "데이터 없음" 메시지 필요**. 본 레포의 `"주간 경쟁사 트렌드 — 국가 필터 시 Total 폴백"` fix.
+
+**처리 방식**:
+```js
+// 1. 국가 필터 적용 시 데이터 존재 검증:
+function _filteredMonthlySeries(prodId, cntyKeys) {
+  const filtered = productsCnty.filter(r =>
+    r.product === prodId && cntyKeys.includes(r.country)
+  )
+  if (filtered.length === 0) {
+    // 폴백: Total 데이터로 (또는 전체 평균)
+    return fallbackToTotal(prodId)
+  }
+  return aggregateByCnty(filtered)
+}
+
+// 2. 폴백 패턴 — 두 가지:
+//   A) 자동 Total 폴백 — 사용자에게 명시 안 보이게 (조용히)
+//   B) 명시적 메시지 — "이 국가는 데이터 없음, Total 표시" 알림
+
+// 3. 차트 어디서 어떤 폴백 쓰는지 코드 주석:
+// 국가 필터 시 데이터 없으면 Total 폴백 (자동) — 사용자 인지 X
+// 명시 필요 시 onFilterChange 의 returned issues 에 추가
+
+// 4. 검증:
+// - 데이터 없는 국가 선택 → 빈 화면 아니고 폴백 또는 메시지
+// - 폴백 결과가 다른 카드 (Hero / vbar) 와 일관
+```
+
+**관련 fix**: `"주간 경쟁사 트렌드 — 국가 필터 시 Total 폴백"` / `"도메인 'All view'에서 TTL 국가 비면 per-country 합산으로 폴백"`
+
+---
+
+## TECHNIQUE-23: 필터 state 격리 (페이지 분리 시)
+
+**처리 이유**: 여러 SPA / 페이지 분리 후 한 페이지의 필터 변경이 다른 페이지의 차트에 영향 — state 공유 누설. 또는 GNB 탭 (큰 모드 전환) 과 필터 레이어 (좁히기) 가 한 영역에 섞이면 충돌. 본 레포의 `"필터 레이어에서 Weekly/Monthly 기간 토글 제거 — GNB 탭으로 대체"` fix.
+
+**처리 방식**:
+```js
+// 1. 각 SPA 의 필터 state 는 자체 useState / useReducer:
+function VisibilityApp() {
+  const [filter, setFilter] = useState({ country: 'all', product: 'all', month: latest })
+  // ... 이 state 는 VisibilityApp 내부에서만 사용
+}
+
+// 2. 외부와 통신은 URL 파라미터 또는 localStorage:
+// 예: URL ?country=US&month=2026-03
+// 또는 localStorage.filterState
+
+// 3. GNB 탭 vs 필터 레이어 분리:
+//   GNB 탭 (Weekly / Monthly) — 페이지 전환 (다른 SPA 또는 다른 mode 컴포넌트)
+//   필터 레이어 (국가 / 제품 / 시점) — 같은 페이지 안 좁히기
+//   둘이 한 영역에 섞이면 충돌 — 사용자가 "월간 보고서" 안에서 "주간" 토글하면 의미 혼동
+
+// 4. 검증:
+// - 한 SPA 의 필터 변경 → 다른 SPA 차트 영향 X
+// - GNB 탭 클릭 → 페이지 전환 (필터 reset 또는 유지 명시)
+// - 필터 변경 → 같은 페이지 내 좁히기만
+```
+
+**관련 fix**: `"필터 레이어에서 Weekly/Monthly 기간 토글 제거 (GNB 탭으로 대체)"` / `"GNB 사업본부 탭 복원 + 필터 내 주간/월간 페이지 전환 버튼"`
+**관련 TECHNIQUE**: TECHNIQUE-13 (페이지 분리) / TECHNIQUE-14 (꼬임 방지)
 
 ---
 
