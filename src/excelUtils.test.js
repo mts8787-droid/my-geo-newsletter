@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { pct, pctOrNull, canonicalCountry, parseSheetRows, SHEET_NAMES } from './excelUtils.js'
-import { PROD_ID_TO_UL_CODE, UL_CODE_NORMALIZE, assertCategoryMapInvariant } from './categoryMap.js'
+import { PROD_IDS, PROD_ID_TO_UL_CODE, PROD_ID_TO_KR, PROD_ID_TO_EN, PROD_ID_TO_BU, UL_CODE_NORMALIZE, assertCategoryMapInvariant } from './categoryMap.js'
 
 describe('pct', () => {
   it('퍼센트 문자열 → 숫자', () => {
@@ -109,6 +109,24 @@ describe('categoryMap — single source invariant', () => {
   it('STYLER 가 PROD_ID_TO_UL_CODE 에 포함 (회귀 방지: 누락 시 _isUnlaunched 매칭 실패)', () => {
     expect(PROD_ID_TO_UL_CODE.styler).toBe('STYLER')
     expect(UL_CODE_NORMALIZE.STYLER).toBe('STYLER')
+  })
+
+  it('PROD_IDS 의 모든 prodId 가 4종 매핑 (KR/EN/UL_CODE/BU) 에 정의됨', () => {
+    for (const id of PROD_IDS) {
+      expect(PROD_ID_TO_KR[id]).toBeDefined()
+      expect(PROD_ID_TO_EN[id]).toBeDefined()
+      expect(PROD_ID_TO_UL_CODE[id]).toBeDefined()
+      expect(PROD_ID_TO_BU[id]).toBeDefined()
+    }
+  })
+
+  it('PROD_ID_TO_BU 분류: MS/HS/ES + styler=HS', () => {
+    expect(PROD_ID_TO_BU.tv).toBe('MS')
+    expect(PROD_ID_TO_BU.monitor).toBe('MS')
+    expect(PROD_ID_TO_BU.washer).toBe('HS')
+    expect(PROD_ID_TO_BU.rac).toBe('ES')
+    expect(PROD_ID_TO_BU.aircare).toBe('ES')
+    expect(PROD_ID_TO_BU.styler).toBe('HS')
   })
 })
 

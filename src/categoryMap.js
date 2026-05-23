@@ -27,6 +27,17 @@ export const PROD_ID_TO_EN = {
   rac: 'RAC', aircare: 'Aircare', styler: 'Styler',
 }
 
+// prodId → BU (Business Unit) 분류
+// MS = Media Solutions (TV/모니터/오디오)
+// HS = Home Solutions (가전 — 세탁기/냉장고/식세기/청소기/쿠킹/스타일러)
+// ES = Energy Solutions (공조 — RAC/AirCare)
+// 호출처는 `PROD_ID_TO_BU[id] || 'HS'` 패턴 — 미정의 prodId 는 HS fallback
+export const PROD_ID_TO_BU = {
+  tv: 'MS', monitor: 'MS', audio: 'MS',
+  washer: 'HS', fridge: 'HS', dw: 'HS', vacuum: 'HS', cooking: 'HS', styler: 'HS',
+  rac: 'ES', aircare: 'ES',
+}
+
 // prodId → UL_CODE (미출시 시트 표준 표기)
 // 호환: 기존 UL_PROD_MAP 과 정확히 같은 키/값 — dashboardConsts.js 가 alias 로 re-export
 export const PROD_ID_TO_UL_CODE = {
@@ -94,11 +105,20 @@ if (_UNKNOWN_RESULTS.length) {
 }
 
 // 외부에서 호출 가능한 검증 헬퍼 (테스트용)
+// invariant 1: UL_CODE_NORMALIZE 결과값 ⊆ PROD_ID_TO_UL_CODE 의 값 집합
+// invariant 2: PROD_IDS 의 모든 prodId 가 매핑 4종 (KR/EN/UL_CODE/BU) 에 정의
 export function assertCategoryMapInvariant() {
   const codes = new Set(Object.values(PROD_ID_TO_UL_CODE))
   const unknown = [...new Set(Object.values(UL_CODE_NORMALIZE))].filter(c => !codes.has(c))
   if (unknown.length) {
     throw new Error(`UL_CODE_NORMALIZE 결과값 ${JSON.stringify(unknown)} 이 PROD_ID_TO_UL_CODE 와 불일치`)
+  }
+  const maps = { PROD_ID_TO_KR, PROD_ID_TO_EN, PROD_ID_TO_UL_CODE, PROD_ID_TO_BU }
+  for (const [name, map] of Object.entries(maps)) {
+    const missing = PROD_IDS.filter(id => map[id] == null)
+    if (missing.length) {
+      throw new Error(`${name} 에 prodId 누락: ${JSON.stringify(missing)} — categoryMap.js single source 룰 위반`)
+    }
   }
   return true
 }

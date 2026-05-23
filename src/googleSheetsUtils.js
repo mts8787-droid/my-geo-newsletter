@@ -1,6 +1,7 @@
 // N2 — XLSX는 fetchSheet 호출 시에만 필요 → 동적 로드
 import { loadXlsx } from './shared/loadXlsx.js'
 import { SHEET_NAMES, parseSheetRows } from './excelUtils'
+import { PROD_ID_TO_KR, PROD_ID_TO_BU } from './categoryMap.js'
 
 export function extractSheetId(url) {
   const match = url.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/)
@@ -67,8 +68,7 @@ export async function syncFromGoogleSheets(sheetId, onProgress) {
   // ── 폴백: productsPartial이 없으면 weeklyAll + weeklyMap에서 자동 생성 ──
   if (!result.productsPartial && result.weeklyAll && result.weeklyMap) {
     console.log('[SYNC] productsPartial 없음 → weeklyAll에서 자동 생성')
-    const ID_KR = { tv: 'TV', monitor: '모니터', audio: '오디오', washer: '세탁기', fridge: '냉장고', dw: '식기세척기', vacuum: '청소기', cooking: 'Cooking', rac: 'RAC', aircare: 'Aircare' }
-    const ID_BU = { tv: 'MS', monitor: 'MS', audio: 'MS', washer: 'HS', fridge: 'HS', dw: 'HS', vacuum: 'HS', cooking: 'HS', rac: 'ES', aircare: 'ES' }
+    // 카테고리 매핑은 src/categoryMap.js single source — 로컬 재정의 금지 (STYLER 누락 회귀 방지)
     const productsPartial = []
     for (const [id, byCountry] of Object.entries(result.weeklyAll)) {
       const total = byCountry['Total'] || byCountry['TTL'] || {}
@@ -85,7 +85,7 @@ export async function syncFromGoogleSheets(sheetId, onProgress) {
       }
       if (score > 0) {
         productsPartial.push({
-          id, bu: ID_BU[id] || 'HS', kr: ID_KR[id] || id,
+          id, bu: PROD_ID_TO_BU[id] || 'HS', kr: PROD_ID_TO_KR[id] || id,
           category: id, date: result.meta?.period || '',
           score, prev, vsComp: topCompScore, compName: topCompName,
           allScores: { LG: score, ...(topCompName ? { [topCompName]: topCompScore } : {}) },
@@ -101,7 +101,7 @@ export async function syncFromGoogleSheets(sheetId, onProgress) {
     if (!result.productsCnty) {
       const productsCnty = []
       for (const [id, byCountry] of Object.entries(result.weeklyAll)) {
-        const category = ID_KR[id] || id
+        const category = PROD_ID_TO_KR[id] || id
         for (const [cnty, brands] of Object.entries(byCountry)) {
           if (cnty === 'Total' || cnty === 'TTL') continue
           const lgArr = brands['LG'] || brands['lg'] || []
