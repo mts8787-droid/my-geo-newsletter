@@ -11,7 +11,7 @@
 
 1. **신규 프로젝트 적용 시나리오** (STEP 0~8) — 새 프로젝트에 본 하네스 적용 시 Claude 가 진행
 2. **디버깅 시나리오 모음** (DEBUG-1 ~ DEBUG-15) — 회귀·오류 발생 시 Claude 가 따라가는 패턴
-3. **효과적 디버깅·협업 기법** (TECHNIQUE-1 ~ TECHNIQUE-7) — Claude 가 막히거나 정보 부족 시 활용
+3. **효과적 디버깅·협업 기법** (TECHNIQUE-1 ~ TECHNIQUE-23) — Claude 가 막히거나 정보 부족 시 활용
 
 ---
 
@@ -24,10 +24,33 @@
 
 `.claude/skills/onboard/SKILL.md` 가 자동 인식 → BOOTSTRAP 시나리오 STEP 0 부터 진행.
 
+### 사전 준비 — chmod 두 방법
+
+**A) Claude 에게 맡기기 (권장 — 사용자 부담 X)**
+```
+사용자 → Claude: "이 하네스 적용해줘"
+또는: "chmod +x .claude/hooks/*.sh 실행해줘"
+```
+Claude Code 가 Bash 도구로 즉시 실행. 첫 실행 시 권한 prompt 뜨면 허용.
+
+**B) 직접 터미널에서 (Bash 권한 거부 / Windows 순수 cmd)**
+
+| OS | 터미널 |
+|---|---|
+| macOS | Terminal.app / iTerm2 |
+| Linux | GNOME Terminal / Konsole |
+| Windows | **WSL** 또는 **Git Bash** (cmd / PowerShell 에는 `chmod` 없음) |
+
+```bash
+cd /path/to/your/project
+chmod +x .claude/hooks/*.sh
+ls -l .claude/hooks/    # -rwxr-xr-x 표시되면 성공
+```
+
 ### Claude 가 자동 진행하는 8 STEP
 | STEP | Claude 액션 | 사용자 액션 |
 |---|---|---|
-| 0. 환경 확인 | `.claude/` 디렉토리 검증 | ZIP 풀고 chmod 실행 |
+| 0. 환경 확인 | `.claude/` 디렉토리 검증 + Claude 가 chmod 자동 또는 사용자 안내 | ZIP 풀기 (chmod 는 Claude 시키기) |
 | 1. 도메인 인터뷰 | 6 질문 (도메인/소스/카테고리/시각/KPI/이메일) | **6 질문 답변** |
 | 2. 도메인 파일 | `categoryMap.js` 자동 생성 | 생성된 파일 확인 |
 | 3. 데이터 모델 | `SHEET_NAMES` + parser 작성 | 시트 헤더 알려주기 |
