@@ -699,6 +699,125 @@ function _attachTooltip(chartEl, dataFn) {
 - 명백한 오타는 사용자 지시 후 일괄 치환 (`replace_all: true`).
 - 미출시 각주 콤마 뒤 공백 없음.
 
+### 5.16 차트 + 테이블 결합 — X 좌표 정렬 invariant (C-24)
+
+**핵심 invariant**: 상단 차트와 하단 테이블을 위·아래로 이어서 구성할 때, **차트의 표식(점)이 위치한 X 좌표와 테이블 수치열(컬럼 헤더·셀)의 X 좌표가 항상 일치**해야 함.
+
+#### 왜 중요한가
+사용자는 차트의 한 점에서 수직으로 내려가 그 시점의 정확한 수치를 테이블에서 읽는다. X 좌표가 어긋나면:
+- 4월 데이터 점 아래 3월 컬럼이 와서 **잘못된 시점의 수치를 읽음**
+- 시각적 신뢰 붕괴 — "이 차트 데이터 맞아?"
+- 필터 / 기간 변경 시 차트만 갱신되고 테이블이 안 따라오면 **상하 정렬 깨짐**
+
+#### 구현 패턴
+
+```
+┌──────────────────────────────────────────────────┐
+│  ●        ●        ●        ●        ●          │   ← 차트 (점 X 좌표 = x0, x1, x2, x3, x4)
+│ /          \       /          \      /           │
+│              \              \                    │
+│               \              \                   │
+└──┬────────┬────────┬────────┬────────┬──────────┘
+   │        │        │        │        │             ← 같은 X 좌표
+┌──┴────────┴────────┴────────┴────────┴──────────┐
+│ Jan      Feb      Mar      Apr      May          │   ← 테이블 헤더
+├──────────┼────────┼────────┼────────┼────────────┤
+│  82.1    83.5    85.0    87.2    86.4            │   ← 테이블 셀
+└──────────────────────────────────────────────────┘
+```
+
+**1) 차트 좌표 계산 — 테이블이 따라야 할 source of truth**
+
+```js
+// dashboardSvg.js — svgMultiLine 가 이미 사용
+const pad = 28
+const usableW = w - pad * 2
+const N = labels.length
+const stepX = N > 1 ? usableW / (N - 1) : 0
+const x = i => pad + stepX * i  // 각 데이터 포인트의 X 좌표
+```
+
+**2) 테이블 컬럼 폭 매칭 — 두 가지 방식**
+
+**A) table-layout: fixed + 명시 width** (권장):
+```html
+<table style="width:${chartW}px;table-layout:fixed;border-collapse:collapse">
+  <colgroup>
+    <col style="width:${pad}px"/>           <!-- 차트 좌측 padding 영역 -->
+    ${labels.map(() => `<col style="width:${stepX}px"/>`).join('')}
+    <col style="width:${pad}px"/>           <!-- 차트 우측 padding 영역 -->
+  </colgroup>
+  <thead><tr>
+    <th></th>
+    ${labels.map(l => `<th style="text-align:center">${l}</th>`).join('')}
+    <th></th>
+  </tr></thead>
+  <tbody><tr>
+    <td></td>
+    ${data.map(v => `<td style="text-align:center">${v.toFixed(1)}</td>`).join('')}
+    <td></td>
+  </tr></tbody>
+</table>
+```
+
+**B) absolute positioning** (차트 SVG 위에 테이블 오버레이 — 복잡):
+- SVG 안에 `<foreignObject>` 또는 부모 div `position:relative` + 테이블 셀 `position:absolute; left:${x(i)}px`
+- 정확도는 높으나 유지보수 부담 — 가능하면 (A) 사용
+
+**3) 헤더 / 값 / 비교군 모두 같은 정렬 — 다중 행**
+
+```html
+<table style="width:${chartW}px;table-layout:fixed">
+  <colgroup>...같은 col 정의 재사용...</colgroup>
+  <thead><tr><th>기간</th>${labels.map(l=>`<th>${l}</th>`).join('')}<th></th></tr></thead>
+  <tbody>
+    <tr><td>LG</td>${lgData.map(v=>`<td>${v.toFixed(1)}</td>`).join('')}<td></td></tr>
+    <tr><td>Samsung</td>${ssData.map(v=>`<td>${v.toFixed(1)}</td>`).join('')}<td></td></tr>
+    <tr><td>Gap</td>${gapData.map(v=>`<td>${v}</td>`).join('')}<td></td></tr>
+  </tbody>
+</table>
+```
+
+→ 각 row 의 N+2 셀이 차트 N+2 X 좌표 슬롯과 1:1 매칭. 좌측 라벨 셀 + N 데이터 셀 + 우측 padding 셀.
+
+#### 필터 / 기간 변경 시 동기 (서버↔클라 짝과 동일 원칙 §5.8)
+
+차트의 기간값 (월/주) 변경 시 테이블 수치열도 **자동으로** 같은 인덱스로 갱신:
+
+```js
+// dashboardClient.js
+function _updateChartTableCombo(prodId, monthIdx) {
+  // 1) 차트 재렌더 — 선택된 월까지 truncate
+  _trendMultiSvg(brandData, labels, w, h, { truncateAfter: monthIdx })
+
+  // 2) 테이블 수치열 재렌더 — 같은 labels 기준
+  _renderComboTable('#combo-table', labels, brandData, monthIdx)
+  // 차트와 동일한 labels / 같은 N 개 컬럼 → X 좌표 자동 일치
+}
+```
+
+**RULE**:
+- 테이블 컬럼 정의는 차트의 `labels` 배열에서 직접 derive — 별도 변수 X.
+- 차트 좌측 padding (28px) ↔ 테이블 첫 빈 컬럼 너비 일치.
+- 차트 truncate 시 테이블도 동일 인덱스까지만 강조 (그 외는 fade 처리 가능).
+- truncate 후에도 테이블의 **전체 컬럼 폭은 유지** (차트 viewBox 유지 §5.7 과 동일 원칙).
+
+#### 시각 검증 (반드시)
+
+수정 후 브라우저에서:
+1. 차트의 한 점에 마우스 올리고 수직으로 손가락 내려서 테이블 같은 컬럼인지 확인
+2. 첫 점 / 마지막 점 / 가운데 점 3곳 검증
+3. KO / EN 두 언어 모두 검증 (영문이 더 길 수 있음 — 컬럼 폭 영향)
+4. 필터 / 기간 드롭다운 변경 후 재검증
+
+#### ANTI-PATTERN
+
+- 차트는 `padding 28px` 인데 테이블은 `padding 12px` → 좌측 정렬 어긋남
+- 테이블 컬럼에 다른 라벨 추가 (예: "전월 대비") → 컬럼 수 불일치 → 정렬 깨짐
+- 차트 N=12 인데 테이블 N=11 (한 컬럼 누락) → 마지막 점이 끝 컬럼이 아님
+- table-layout 미지정 → 셀 내용 길이에 따라 폭 가변 → 정렬 깨짐
+- 차트 갱신 시 테이블 갱신 누락 → 필터 후 상하 데이터 불일치
+
 ## 6. ANTI-PATTERNS (DESIGN)
 
 ```
@@ -725,6 +844,9 @@ NEVER  범프 차트에 height 고정 → viewBox 비율 자동 조정 사용
 NEVER  범프 차트 라벨 회색 → 검정 (회색 배경에서 대비 확보)
 NEVER  TTL 차트에 부분 국가 합산 → strict TTL 행만 사용 (또는 By Country 카드 상위 N 합)
 NEVER  미니 차트 null 값을 0 으로 → _miniSvgNullAware 로 선 끊기 (null vs 0 구분)
+NEVER  차트 + 테이블 결합 시 X 좌표 어긋남 → §5.16 — 차트 표식 X 와 테이블 컬럼 X 항상 일치 (labels 배열 공유 + table-layout:fixed + 좌측 padding 컬럼 일치)
+NEVER  차트만 갱신하고 테이블 수치열 안 따라옴 → 필터/기간 변경 시 두 컴포넌트 동시 재렌더
+NEVER  테이블에 차트와 다른 컬럼 수 (예: "전월 대비" 컬럼 추가) → 상하 정렬 깨짐 (별도 row 로 분리 또는 차트도 동일 컬럼 추가)
 ```
 
 ## 7. COMPONENT LIBRARY (HTML/SVG PATTERNS)

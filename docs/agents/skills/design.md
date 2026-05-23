@@ -64,6 +64,80 @@
 - 서버만 SVG 갱신 후 클라이언트 짝 누락 → 필터 깨짐
 - 한 차트에 여러 분류 섞기 (M-1 콤보처럼 명시 양식만)
 
+## skill: 차트 + 표 결합 (X 좌표 정렬)
+
+사용자가 "상단 차트, 하단 표 만들어줘" / "이 차트 아래 시점별 수치 표 붙여줘" / "월별 차트 + 표" 같이 요청할 때.
+
+**핵심**: 테이블 디자인(색·폰트·구분선 등)은 자유 — Claude 자율. 그러나 **차트 표식(점)의 X 좌표 ↔ 테이블 컬럼의 X 좌표 정렬은 매우 엄격히 점검**. (`.claude/rules/design.md` §5.16 — C-24 invariant)
+
+```
+1. [차트 먼저] — 사용자 요구 분류 코드로 차트 작성
+   ├─ "차트 그리기 (분류 코드)" skill 따름 (L-1 / L-5 / M-1 등)
+   └─ 차트의 labels 배열 / N (포인트 수) / w (총 폭) / pad (좌측 padding, 보통 28) 확정
+
+2. [기간값 지정] — 차트의 시간 단위 결정
+   ├─ 월간 (12개월 / 6개월 등): labels = ['Jan','Feb',...,'Dec']
+   ├─ 주간 (W1~W12 등):        labels = ['W1','W2',...,'W12']
+   └─ 기타 (분기 / 일별 등) — 사용자 확인
+
+3. [테이블 컬럼 정의] — 차트의 labels 배열에서 직접 derive
+   ├─ ⚠ 별도 변수 생성 금지 — 같은 labels 참조해야 자동 동기
+   ├─ 컬럼 수: 좌측 라벨 1 + N 데이터 + 우측 padding 1 = N+2
+   └─ table-layout: fixed + colgroup 명시 width 필수
+
+4. [좌우 padding 매칭] — 차트의 좌측 28px ↔ 테이블 첫 빈 컬럼 28px
+   ├─ <col style="width:${pad}px"/>  좌측
+   ├─ <col style="width:${stepX}px"/> × N
+   └─ <col style="width:${pad}px"/>  우측
+
+5. [테이블 디자인 자유] — Claude 자율
+   ├─ 폰트·색·구분선·배경·hover 등 자유롭게 설계
+   ├─ 단 모든 row 의 컬럼 수와 폭 정의 동일 (colgroup 재사용)
+   └─ 차트와 테이블 사이 간격은 0~8px (붙어 있어야 시각 연결)
+
+6. [기간 / 필터 변경 시 자동 동기] — 차트와 테이블 동시 재렌더
+   ├─ 클라이언트 핸들러 (dashboardClient.js):
+   │   function _updateChartTableCombo(monthIdx) {
+   │     _trendMultiSvg(data, labels, w, h, { truncateAfter: monthIdx })  // 차트
+   │     _renderComboTable(labels, data, monthIdx)                        // 테이블
+   │   }
+   ├─ 두 렌더 함수가 같은 labels / 같은 N → X 좌표 자동 일치
+   └─ truncate 시 테이블도 같은 인덱스까지만 강조 (그 외는 색·opacity fade)
+
+7. [X 좌표 정렬 검증 — 가장 중요] — 시각적으로 위·아래 일치 확인
+   a. 브라우저 DevTools 로 차트 첫 점의 X 좌표 측정 (getBoundingClientRect)
+   b. 같은 X 좌표 위치의 테이블 컬럼 헤더가 일치하는지
+   c. 마지막 점도 동일 검증
+   d. 가운데 점 검증 — 누적 오차 확인
+   e. 영문 / 한글 양 모드 검증 (영문 라벨이 더 길면 컬럼 폭 영향)
+   f. 빌드 후 정적 HTML 에서도 동일 검증 (서버 렌더 결과)
+
+8. [기간 변경 검증]
+   a. 기간 드롭다운 변경 — 차트 truncate 됨
+   b. 테이블 수치열도 같은 인덱스까지 강조됐는지
+   c. 정렬은 그대로 유지됐는지 (테이블 컬럼 폭은 변경 X)
+
+9. [회귀 방지 — data 속성]
+   ├─ 테이블 row 에 data-prodid / data-date 속성 부여 (필터 매칭 키)
+   └─ 차트 row 의 매칭 키와 동일 — §5.8 의 data-prodid 패턴
+```
+
+**검증 체크리스트** (반드시 모두 통과):
+- [ ] 차트 첫 점 X = 테이블 첫 데이터 컬럼 X
+- [ ] 차트 마지막 점 X = 테이블 마지막 데이터 컬럼 X
+- [ ] 차트 좌측 padding 폭 = 테이블 첫 빈 컬럼 폭
+- [ ] labels 배열 단일 변수 (차트·테이블 공유) — duplicate 정의 X
+- [ ] 필터 / 기간 변경 시 차트·테이블 동시 갱신
+- [ ] KO·EN 양 모드 정렬 유지
+- [ ] truncate 후에도 테이블 컬럼 폭 유지 (강조만 변경)
+
+**ANTI-PATTERN**:
+- 차트 padding 28px / 테이블 padding 12px → 좌측 정렬 어긋남
+- 테이블에 차트와 다른 컬럼 수 ("전월 대비" 같이 추가) → 정렬 깨짐
+- table-layout 미지정 → 셀 내용 길이에 따라 폭 가변
+- 차트만 재렌더 + 테이블 정적 → 필터 후 데이터 불일치
+- absolute positioning 으로 테이블 셀 → 차트 위 오버레이는 유지보수 부담 (table-layout 권장)
+
 ## skill: 신규 컴포넌트 (C-XX) 추가
 
 새로운 카드/차트/테이블 시각 컴포넌트를 추가할 때.
