@@ -33,6 +33,17 @@
 - **목적**: 빌드 산출물을 직접 수정해서 다음 빌드에 덮어쓰여지는 회귀 방지.
 - **CLAUDE.md 관련 Rule**: "NEVER dist-* / dist 디렉토리 직접 수정 (빌드 산출물)"
 
+### 3. `newsletter-guard.sh` (PostToolUse)
+
+- **트리거**: `Edit` | `Write` | `MultiEdit` 직후
+- **대상**: `src/emailTemplate.js`, `src/monthly-report/monthlyTemplate.js`, `src/weekly-report/weeklyTemplate.js`, `src/newsletter/*.{js,jsx}`
+- **동작**: 다음 NEVER Rule 위반 검출 시 `exit 2` + stderr 위치 보고:
+  1. `containerWidth = N` 에서 `N > 940` (우측 짤림)
+  2. `display:flex` / `display:grid` (Outlook 미지원)
+  3. `overflow-x:hidden` / `body { min-width }` (iframe 클립)
+- **목적**: 이메일 호환 NEVER Rule 자동 차단. Outlook / Gmail / Apple Mail 깨짐 회귀 방지.
+- **관련 Rule**: `.claude/rules/newsletter.md` §3 NEVER RULES / `.claude/rules/design.md` §5.2 / CLAUDE.md NEVER 표
+
 ## 신규 Hook 추가 가이드
 
 ```

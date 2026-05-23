@@ -45,6 +45,8 @@ const MIRROR_MAP = [
   { src: '.claude/skills/design-tune/SKILL.md',    dst: 'docs/agents/skills/design-tune.md',    stripFrontmatter: true },
   { src: '.claude/skills/onboard/SKILL.md',        dst: 'docs/agents/skills/onboard.md',        stripFrontmatter: true },
   { src: '.claude/skills/debug/SKILL.md',          dst: 'docs/agents/skills/debug.md',          stripFrontmatter: true },
+  { src: '.claude/skills/newsletter/SKILL.md',     dst: 'docs/agents/skills/newsletter.md',     stripFrontmatter: true },
+  { src: '.claude/rules/newsletter.md',            dst: 'docs/agents/rules/newsletter.md' },
   // Hook 가이드 — README.md 미러 (이름만 HOOK_GUIDE 로)
   { src: '.claude/hooks/README.md',          dst: 'docs/agents/HOOK_GUIDE.md' },
   // AGENTS.md — OpenAI Codex / Antigravity 자동 로드 표준 (원본 → 미러)

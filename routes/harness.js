@@ -84,6 +84,12 @@ const HARNESS_COMPONENTS = [
   },
   {
     category: 'rule',
+    label: '뉴스레터 Rule 매뉴얼',
+    file: '.claude/rules/newsletter.md',
+    desc: '이메일 호환 HTML (table-layout, 인라인 style), containerWidth 940, KO/EN 양 언어, 미출시 회색 처리, V1/V2/V3 카드, preheader/footer/SMTP, 발송 전 multi-client 검증 체크리스트.',
+  },
+  {
+    category: 'rule',
     label: '부트스트랩 시나리오 (Bootstrap)',
     file: '.claude/rules/BOOTSTRAP.md',
     desc: 'Claude 가 새 프로젝트 적용 시 따라가는 시나리오. 8 step (환경확인 → 도메인 인터뷰 → 도메인 파일 → 데이터 모델 → 디자인 토큰 → 외부 시스템 → 비즈니스 fact → 빌드 검증). 사람이 직접 읽는 가이드 X — Claude 가 step 별 사용자에게 질문·설명.',
@@ -113,6 +119,12 @@ const HARNESS_COMPONENTS = [
     label: 'block-dist.sh — Bash (For AI)',
     file: '.claude/hooks/block-dist.sh',
     desc: 'PreToolUse: dist-*/dist/ 빌드 산출물 직접 수정 차단. CLAUDE.md NEVER Rule 강제.',
+  },
+  {
+    category: 'hook',
+    label: 'newsletter-guard.sh — Bash (For AI)',
+    file: '.claude/hooks/newsletter-guard.sh',
+    desc: 'PostToolUse: src/emailTemplate.js · monthly/weeklyTemplate.js · newsletter/* 수정 후 검증. containerWidth > 940 / display:flex|grid / overflow-x:hidden / body min-width 검출 시 exit 2 차단. .claude/rules/newsletter.md §3 NEVER 자동 강제.',
   },
 
   // ─── Skill — 순차 워크플로우. 명령 조합 ────────────────────────────
@@ -164,6 +176,12 @@ const HARNESS_COMPONENTS = [
     label: 'design-tune — 호환·미세조정·회귀',
     file: '.claude/skills/design-tune/SKILL.md',
     desc: '이메일 호환 변환(table-layout), KO/EN 라벨 추가, UI 깨짐·차트 안 보임 회귀 디버깅.',
+  },
+  {
+    category: 'skill',
+    label: 'newsletter — 뉴스레터 발행본·발송',
+    file: '.claude/skills/newsletter/SKILL.md',
+    desc: '신규 뉴스레터 발행본 작성, 새 섹션 추가, 발송 전 multi-client 호환 검증, 미출시 처리 회귀, SMTP 발송. KO/EN 동시 생성.',
   },
   {
     category: 'skill',

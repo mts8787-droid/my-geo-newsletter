@@ -129,7 +129,11 @@
       "Bash(mkdir -p .claude/rules docs/agents)",
       "Bash(git mv *)",
       "WebFetch(domain:github.com)",
-      "WebFetch(domain:www.chartjs.org)"
+      "WebFetch(domain:www.chartjs.org)",
+      "Bash(.claude/hooks/newsletter-guard.sh)",
+      "Bash(echo \"exit=$?\")",
+      "Bash(rm -rf /tmp/test)",
+      "Bash(mkdir -p /tmp/test/src)"
     ]
   }
 }
