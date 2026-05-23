@@ -16,7 +16,7 @@ const GRAY = '#64748B'
 export const CHART_CATALOG = [
   // ─── L: Line (7종) ─────────────────────────────────────────────────────────
   { code: 'L-1', category: 'line', name: 'Basic Line', desc: '기본 직선 라인 — 가장 단순. 카드 미니 트렌드의 기본.', usage: '대시보드 카드 미니 트렌드 (svgLine)', svg: svgBasic() },
-  { code: 'L-2', category: 'line', name: 'Interpolation (곡선)', desc: 'Q/C Bezier 곡선 연결. 본 레포 미사용 (시각 일관성 위해 직선만).', usage: '미사용', svg: svgInterpolation() },
+  { code: 'L-2', category: 'line', name: 'Interpolation (곡선)', desc: 'Q/C Bezier 곡선 연결. 본 저장소 미사용 (시각 일관성 위해 직선만).', usage: '미사용', svg: svgInterpolation() },
   { code: 'L-3', category: 'line', name: 'Multi-axis', desc: '좌/우 Y축 분리 — 단위 다른 두 series.', usage: '미사용 (도입 후보: KPI % + 호출 수)', svg: svgMultiAxis() },
   { code: 'L-4', category: 'line', name: 'Point Styling', desc: '점 모양 / 크기 / 색 커스터마이즈. 베이스라인 시작점만 사용.', usage: '베이스라인 시작점 (검정 fill + 컬러 stroke)', svg: svgPointStyle() },
   { code: 'L-5', category: 'line', name: 'Segments', desc: '구간별 다른 시각 (색 / 두께 / dash). fadeBeforeIdx 가 이 컨셉.', usage: '베이스라인 fade (pre 회색 / post 컬러)', svg: svgSegments() },
@@ -31,28 +31,28 @@ export const CHART_CATALOG = [
   { code: 'M-1', category: 'mixed', name: 'Combo Bar+Line', desc: 'Bar (절댓값) + Line (추세) 단일 Y축. 도입 후보: KPI 값 + 증가율.', usage: '미사용', svg: svgComboBarLine() },
   { code: 'M-2', category: 'mixed', name: 'Stacked Bar+Line', desc: '누적 막대 + 합계 추세 라인 overlay. 도입 후보: BU 누적 + 평균 추세.', usage: '미사용', svg: svgStackedComboLine() },
 
-  // ─── V: Vertical Bar (본 레포 — Chart.js 표준 외) ─────────────────────────
-  { code: 'V-1', category: 'vbar', name: '그룹 막대 (vbar)', desc: '본 레포 C-05. 카테고리당 N 개 막대 가로 나란히. _citVBar 헬퍼 + scale 파라미터.', usage: 'dashboard / citation 의 카테고리별 vbar (Reddit/YouTube 등)', svg: svgVbarGroup() },
+  // ─── V: Vertical Bar (본 저장소 — Chart.js 표준 외) ─────────────────────────
+  { code: 'V-1', category: 'vbar', name: '그룹 막대 (vbar)', desc: '본 저장소 C-05. 카테고리당 N 개 막대 가로 나란히. _citVBar 헬퍼 + scale 파라미터.', usage: 'dashboard / citation 의 카테고리별 vbar (Reddit/YouTube 등)', svg: svgVbarGroup() },
 
-  // ─── HB: Horizontal Bar (본 레포 — Top N) ─────────────────────────────────
-  { code: 'HB-1', category: 'hbar', name: '가로 막대 (Top N)', desc: '본 레포 C-06. 도메인 / 채널 랭킹용. Top N 정렬 + 비중 표시.', usage: 'citation 의 도메인 Top N 랭킹', svg: svgHbarTopN() },
+  // ─── HB: Horizontal Bar (본 저장소 — Top N) ─────────────────────────────────
+  { code: 'HB-1', category: 'hbar', name: '가로 막대 (Top N)', desc: '본 저장소 C-06. 도메인 / 채널 랭킹용. Top N 정렬 + 비중 표시.', usage: 'citation 의 도메인 Top N 랭킹', svg: svgHbarTopN() },
 
-  // ─── BP: Bump (본 레포 — 도메인 순위 변화) ────────────────────────────────
-  { code: 'BP-1', category: 'bump', name: '범프 차트 (Bump)', desc: '본 레포 C-09. 순위 변화 시각화. viewBox 비율 + linecap=round + 폰트 +3pt + 하단 여백 +20px.', usage: 'citation 의 카테고리 / 도메인 월별 랭킹 변화 (bumpChartSvg)', svg: svgBump() },
+  // ─── BP: Bump (본 저장소 — 도메인 순위 변화) ────────────────────────────────
+  { code: 'BP-1', category: 'bump', name: '범프 차트 (Bump)', desc: '본 저장소 C-09. 순위 변화 시각화. viewBox 비율 + linecap=round + 폰트 +3pt + 하단 여백 +20px.', usage: 'citation 의 카테고리 / 도메인 월별 랭킹 변화 (bumpChartSvg)', svg: svgBump() },
 
-  // ─── MT: Mini Trend (본 레포 — 이메일 호환) ───────────────────────────────
-  { code: 'MT-1', category: 'mini', name: '미니 트렌드 바 (메일 호환)', desc: '본 레포 C-10. SVG 미지원 클라이언트 (Outlook 등) 용 table-layout 기반.', usage: '뉴스레터 / 이메일 본문 (emailTemplate.js)', svg: svgMiniTrend() },
+  // ─── MT: Mini Trend (본 저장소 — 이메일 호환) ───────────────────────────────
+  { code: 'MT-1', category: 'mini', name: '미니 트렌드 바 (메일 호환)', desc: '본 저장소 C-10. SVG 미지원 클라이언트 (Outlook 등) 용 table-layout 기반.', usage: '뉴스레터 / 이메일 본문 (emailTemplate.js)', svg: svgMiniTrend() },
 
-  // ─── D: Doughnut (1) + Pie (본 레포) ─────────────────────────────────────
+  // ─── D: Doughnut (1) + Pie (본 저장소) ─────────────────────────────────────
   { code: 'D-1', category: 'doughnut', name: 'Doughnut', desc: 'cutout 비중 시각화. 5 슬라이스 이하. 도입 후보: observability type 분포.', usage: '미사용', svg: svgDoughnut() },
-  { code: 'D-2', category: 'doughnut', name: 'Pie (본 레포 C-19)', desc: '본 레포 C-19 — Doughnut 의 cutout 없는 변종. citation 비중 표시.', usage: 'citation 카테고리 비중 (cutout=0)', svg: svgPie() },
+  { code: 'D-2', category: 'doughnut', name: 'Pie (본 저장소 C-19)', desc: '본 저장소 C-19 — Doughnut 의 cutout 없는 변종. citation 비중 표시.', usage: 'citation 카테고리 비중 (cutout=0)', svg: svgPie() },
 
   // ─── R: Radar (1) ────────────────────────────────────────────────────────
   { code: 'R-1', category: 'radar', name: 'Radar (skip points)', desc: 'polar 다차원 metric 비교. 8 axis 이하 / 3 dataset 이하.', usage: '미사용 (도입 후보: 카테고리별 8 metric 비교)', svg: svgRadar() },
 
-  // ─── BU: Bubble (1) + 4분면 (본 레포) ────────────────────────────────────
+  // ─── BU: Bubble (1) + 4분면 (본 저장소) ────────────────────────────────────
   { code: 'BU-1', category: 'bubble', name: 'Bubble', desc: 'X / Y / radius 3차원.', usage: '미사용', svg: svgBubble() },
-  { code: 'BU-2', category: 'bubble', name: '4분면 점도표 (본 레포 C-20)', desc: '본 레포 C-20 — Bubble 의 r 고정 단순화. X/Y 만으로 4 사분면 분류.', usage: 'tracker / KPI 분석 4사분면 (impact × effort 등)', svg: svgQuadrant() },
+  { code: 'BU-2', category: 'bubble', name: '4분면 점도표 (본 저장소 C-20)', desc: '본 저장소 C-20 — Bubble 의 r 고정 단순화. X/Y 만으로 4 사분면 분류.', usage: 'tracker / KPI 분석 4사분면 (impact × effort 등)', svg: svgQuadrant() },
 
   // ─── T: Tooltip (직교 — 모든 차트에) ──────────────────────────────────────
   { code: 'T-1', category: 'tooltip', name: 'Tooltip (직교 패턴)', desc: '모든 차트와 엮어 사용. <title> 또는 Custom DOM. 차트 양식과 직교.', usage: '향후 차트별 hover 정보 표시', svg: svgTooltip() },
@@ -61,7 +61,7 @@ export const CHART_CATALOG = [
 const CATEGORY_LABELS = {
   line:     { label: 'L — 라인 차트',         color: '#60A5FA', desc: 'Line — 시계열 / 트렌드' },
   bar:      { label: 'B — 바 차트 (스택)',     color: '#F472B6', desc: 'Bar — 카테고리 누적 (Chart.js 표준)' },
-  vbar:     { label: 'V — 그룹 막대 (본 레포)', color: '#EC4899', desc: 'Vbar — 카테고리당 N 개 막대 (그룹)' },
+  vbar:     { label: 'V — 그룹 막대 (본 저장소)', color: '#EC4899', desc: 'Vbar — 카테고리당 N 개 막대 (그룹)' },
   hbar:     { label: 'HB — 가로 막대 (Top N)', color: '#DB2777', desc: 'Horizontal Bar — 랭킹 / Top N' },
   mixed:    { label: 'M — 콤보 차트',           color: '#A78BFA', desc: 'Mixed — Bar + Line 결합' },
   bump:     { label: 'BP — 범프 차트',          color: '#C084FC', desc: 'Bump — 순위 변화 시각화' },
@@ -446,7 +446,7 @@ export function renderChartLibraryHTML({ adminMode = false } = {}) {
         <div class="chart-svg">${it.svg}</div>
         <div class="chart-desc">${escHtml(it.desc)}</div>
         <div class="chart-usage"><strong>사용:</strong> ${escHtml(it.usage)}</div>
-        <div class="chart-cmd">스킬 호출 예시: <code>"${escHtml(it.code)} 차트 그려줘"</code></div>
+        <div class="chart-cmd">Skill 호출 예시: <code>"${escHtml(it.code)} 차트 그려줘"</code></div>
       </div>
     `).join('')
     return `<div class="section">
@@ -496,7 +496,7 @@ ${topBar}
 
 <div class="intro">
   <p style="font-size:14px;color:#F8FAFC;margin-bottom:10px"><strong>분류 체계란?</strong> 차트 양식마다 짧은 코드 (예: <code>L-1</code>, <code>BP-1</code>) 를 부여한 호출 시스템.</p>
-  <p style="font-size:13px;color:#CBD5E1;margin-bottom:14px"><strong>왜 쓰나?</strong> 스킬이 차트를 그릴 때 어떤 양식인지 명확히 지정 — <code>"L-1 형태로 라인 차트 만들어줘"</code> 같이 코드만 알려주면 정확한 양식으로 그려짐.</p>
+  <p style="font-size:13px;color:#CBD5E1;margin-bottom:14px"><strong>왜 쓰나?</strong> Skill이 차트를 그릴 때 어떤 양식인지 명확히 지정 — <code>"L-1 형태로 라인 차트 만들어줘"</code> 같이 코드만 알려주면 정확한 양식으로 그려짐.</p>
   <ul style="margin-left:22px;font-size:13px;color:#CBD5E1;line-height:1.9">
     <li><code>L</code> — 라인 (시계열 / 트렌드)</li>
     <li><code>B</code> — 바 스택 (누적 / part-to-whole)</li>

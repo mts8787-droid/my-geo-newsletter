@@ -24,7 +24,7 @@
   `chmod +x .claude/hooks/*.sh`
 - 실행 후 검증:
   `ls -l .claude/hooks/` 결과에 -rwxr-xr-x 표시 확인
-- 사용자에게 보고: "훅 실행 권한 부여 완료"
+- 사용자에게 보고: "Hook 실행 권한 부여 완료"
 - ⚠ 권한 prompt 가 뜨면 사용자가 허용해야 함 (Claude Code 의 Bash 허용 정책에 따라)
 
 옵션 B — 사용자가 직접 (Bash 권한 없거나 Windows 순수 cmd):
@@ -200,7 +200,7 @@ C) 짧은 부분 소스코드 직접 작성 → 시각 의도만 표현
 
 [Claude 가 사용자에게 안내]:
 "실제 값은 .env (gitignore) 에 본인이 작성하세요. AI 사용 시 .claude/rules/ai.md
-의 N3 응답 검증·비용 추적 룰이 자동 적용됩니다."
+의 N3 응답 검증·비용 추적 Rule이 자동 적용됩니다."
 ```
 
 ---
@@ -209,7 +209,7 @@ C) 짧은 부분 소스코드 직접 작성 → 시각 의도만 표현
 
 ```
 [Claude 가 사용자에게 질문]:
-"데이터에 없어도 항상 적용되어야 할 비즈니스 룰이 있나요?
+"데이터에 없어도 항상 적용되어야 할 비즈니스 Rule이 있나요?
 예시:
 - 특정 채널은 항상 제외
 - 특정 제품은 미출시 (특정 국가에서)
@@ -239,7 +239,7 @@ C) 짧은 부분 소스코드 직접 작성 → 시각 의도만 표현
 "브라우저로 다음 항목 확인 부탁드립니다:
 - /admin 로그인 가능
 - 어드민 메뉴 3단 구조 (게시·인프라·하네스) 정상
-- /admin/harness — 본 프로젝트 룰/훅/스킬 다 노출
+- /admin/harness — 본 프로젝트 Rule/Hook/Skill 다 노출
 - /admin/chart-library — 차트 분류 코드 + 본인 토큰 적용 확인
 - 데이터 동기화 한 번 — verifySyncResult 결과 SyncHealth 에 표시"
 
@@ -253,13 +253,13 @@ C) 짧은 부분 소스코드 직접 작성 → 시각 의도만 표현
 
 ```
 [Claude 가 사용자에게 안내]:
-"이후 신규 작업마다 해당 스킬 워크플로우를 따르세요:
+"이후 신규 작업마다 해당 Skill 워크플로우를 따르세요:
 - 시트 추가 → .claude/skills/data/SKILL.md '신규 시트 추가' (8 step)
-- 카테고리 추가 → 동일 스킬 '신규 카테고리 추가' (7 step)
+- 카테고리 추가 → 동일 Skill '신규 카테고리 추가' (7 step)
 - 차트 추가 → '\"L-1 그려줘\"' 같은 분류 코드로 .claude/skills/design/SKILL.md
 - 회귀 발견 → '회귀 디버깅 (TDD)' 6 step
 
-자세한 룰/매뉴얼은 docs/agents/HUMAN_GUIDE.md 의 '도메인 예시' / '트러블슈팅' 참조."
+자세한 Rule/매뉴얼은 docs/agents/HUMAN_GUIDE.md 의 '도메인 예시' / '트러블슈팅' 참조."
 ```
 
 ---
@@ -268,7 +268,7 @@ C) 짧은 부분 소스코드 직접 작성 → 시각 의도만 표현
 
 - STEP 7 의 모든 검증 체크리스트 통과
 - 사용자가 첫 데이터 동기화 + 빌드 성공 보고
-- /admin/harness 페이지에서 본 프로젝트 룰/훅/스킬 노출 확인
+- /admin/harness 페이지에서 본 프로젝트 Rule/Hook/Skill 노출 확인
 
 미완료 시:
 - 실패 step 으로 복귀 — Claude 가 사용자에게 다시 질문
@@ -296,13 +296,13 @@ C) 짧은 부분 소스코드 직접 작성 → 시각 의도만 표현
 **디버깅 순서**:
 ```
 1. labelOffsetY / lineOffsetY 옵션 확인 (svgLine / svgMultiLine 호출처)
-2. 5~30px 단위로 조정 — 100px+ 한 번에 변경 금지 (NEVER 룰)
+2. 5~30px 단위로 조정 — 100px+ 한 번에 변경 금지 (NEVER Rule)
 3. bx > w * 0.7 (오른쪽 끝 가까움) 시 onRight 모드 — 라벨 좌측 정렬
 4. 흰 배경 박스 발견 시 제거 (NEVER) — X축 영역에 직접 배치
 5. 카테고리별 (Audio/RAC/Aircare 등) 다른 오프셋 필요 시 baselineWeekFor() 같은 helper 로 분기
 6. 서버 SVG + 클라이언트 짝 (dashboardSvg.js + dashboardClient.js) 동시 수정
 ```
-**관련 룰**: `.claude/rules/design.md` §5.3 베이스라인 마커 / §4.3 Fade / §C-12
+**관련 Rule**: `.claude/rules/design.md` §5.3 베이스라인 마커 / §4.3 Fade / §C-12
 
 ---
 
@@ -323,7 +323,7 @@ C) 짧은 부분 소스코드 직접 작성 → 시각 의도만 표현
 4. 외곽 td padding 좌우 0 + 좌측 8px 고정 패턴 시도
 5. 5~30px 단위로 조정 (920 ↔ 940 ↔ 980 같은 반복)
 ```
-**관련 룰**: design.md §5.2 / NEVER 룰 (containerWidth, overflow-x, align)
+**관련 Rule**: design.md §5.2 / NEVER Rule (containerWidth, overflow-x, align)
 
 ---
 
@@ -343,7 +343,7 @@ C) 짧은 부분 소스코드 직접 작성 → 시각 의도만 표현
 4. 단위 테스트 추가 — 실패하는 테스트 먼저 → 코드 수정
 5. monthlyScores 시간순 정렬 invariant 검증
 ```
-**관련 룰**: data.md §5.1 / §5.6 / NEVER 룰 ((\d{4}) 만 매칭)
+**관련 Rule**: data.md §5.1 / §5.6 / NEVER Rule ((\d{4}) 만 매칭)
 
 ---
 
@@ -364,7 +364,7 @@ C) 짧은 부분 소스코드 직접 작성 → 시각 의도만 표현
 4. 국가 필터 헬퍼 (_filteredMonthlySeries 등) — date 키로 byDate 누적 (인덱스 X)
 5. MoM 부호 = (latest - prev) / prev — prev=0 edge case 처리
 ```
-**관련 룰**: data.md §5.6 / §5.7
+**관련 Rule**: data.md §5.6 / §5.7
 
 ---
 
@@ -379,13 +379,13 @@ C) 짧은 부분 소스코드 직접 작성 → 시각 의도만 표현
 
 **디버깅 순서**:
 ```
-1. CSS overflow 속성 확인 → visible 로 변경 (NEVER 룰 overflow:hidden)
+1. CSS overflow 속성 확인 → visible 로 변경 (NEVER Rule overflow:hidden)
 2. 폰트 11px → 10px 축소 시도
 3. letter-spacing -0.6px ~ -0.9px 강화
 4. 영문 모드 약어화 (Refrigerator → REF, Dishwasher → DW, Vacuum → VC)
 5. table-layout: fixed 인 경우 width 명시
 ```
-**관련 룰**: design.md §4.4 / NEVER 룰 (overflow:hidden 좁은 셀, 영문 풀네임)
+**관련 Rule**: design.md §4.4 / NEVER Rule (overflow:hidden 좁은 셀, 영문 풀네임)
 
 ---
 
@@ -407,7 +407,7 @@ C) 짧은 부분 소스코드 직접 작성 → 시각 의도만 표현
 5. _isUnlaunched(cnty, prodId) 클라이언트 함수 동작 검증
 6. 미출시 셀 디자인 — 회색 막대 + 모든 라벨 '—' 표기
 ```
-**관련 룰**: data.md §5.5 / §5.8 / NEVER 룰 (카테고리 매핑 분산)
+**관련 Rule**: data.md §5.5 / §5.8 / NEVER Rule (카테고리 매핑 분산)
 
 ---
 
@@ -429,7 +429,7 @@ C) 짧은 부분 소스코드 직접 작성 → 시각 의도만 표현
 5. 모델 ID 최신인지 (claude-opus-4-7, claude-sonnet-4-6, claude-haiku-4-5)
 6. 비용 추적 — insight_runs.jsonl 에 기록 확인
 ```
-**관련 룰**: ai.md §3.1~3.3 / NEVER 룰 (max_tokens > 4096 non-streaming)
+**관련 Rule**: ai.md §3.1~3.3 / NEVER Rule (max_tokens > 4096 non-streaming)
 
 ---
 
@@ -451,7 +451,7 @@ C) 짧은 부분 소스코드 직접 작성 → 시각 의도만 표현
 5. gviz/tq csv proxy URL 정확한지 (production / development)
 6. 시트 권한 — '링크 있는 사용자' 보기 권한 또는 서비스 계정 share
 ```
-**관련 룰**: data.md §4.1 / data-puller 서브에이전트 위임 가능
+**관련 Rule**: data.md §4.1 / data-puller Sub-Agent 위임 가능
 
 ---
 
@@ -473,7 +473,7 @@ C) 짧은 부분 소스코드 직접 작성 → 시각 의도만 표현
 5. 월 라벨 canonical 정규화 (canonMonthDom) — 'Apr 2026' / '4월' → 'Apr'
 6. 'All view' 에서 TTL 비면 per-country 합산 폴백
 ```
-**관련 룰**: data.md §5.7 / parseCitDomain (excelUtils.js)
+**관련 Rule**: data.md §5.7 / parseCitDomain (excelUtils.js)
 
 ---
 
@@ -495,7 +495,7 @@ C) 짧은 부분 소스코드 직접 작성 → 시각 의도만 표현
 5. 카드 높이 통일 — fixed height 또는 stretch
 6. KO/EN 양쪽 검증
 ```
-**관련 룰**: design.md §C-21~C-23 (V1/V2/V3) / §5.10 vbar
+**관련 Rule**: design.md §C-21~C-23 (V1/V2/V3) / §5.10 vbar
 
 ---
 
@@ -517,7 +517,7 @@ C) 짧은 부분 소스코드 직접 작성 → 시각 의도만 표현
 5. 미니차트도 truncate 동작 — 카드 미니 트렌드 (svgLine ↔ _miniSvg)
 6. Hero summary 카드도 필터 반영
 ```
-**관련 룰**: design.md §5.7 truncate / §5.8 서버↔클라 짝 / NEVER 룰 (data-prodid 누락)
+**관련 Rule**: design.md §5.7 truncate / §5.8 서버↔클라 짝 / NEVER Rule (data-prodid 누락)
 
 ---
 
@@ -539,7 +539,7 @@ C) 짧은 부분 소스코드 직접 작성 → 시각 의도만 표현
 5. T[lang] || T.ko 패턴으로 fallback
 6. KO/EN 둘 다 시각 검증
 ```
-**관련 룰**: design.md §4.4 (영문 자간 압축, 좁은 셀 약어)
+**관련 Rule**: design.md §4.4 (영문 자간 압축, 좁은 셀 약어)
 
 ---
 
@@ -560,7 +560,7 @@ C) 짧은 부분 소스코드 직접 작성 → 시각 의도만 표현
 5. npm test — assertCategoryMapInvariant 통과 확인
 6. 다른 파일에 인라인 매핑 발견 시 categoryMap.js import 로 통합
 ```
-**관련 룰**: data.md §5.5 / NEVER 룰 (카테고리 매핑 분산)
+**관련 Rule**: data.md §5.5 / NEVER Rule (카테고리 매핑 분산)
 
 ---
 
@@ -581,7 +581,7 @@ C) 짧은 부분 소스코드 직접 작성 → 시각 의도만 표현
 5. const → let 변경 필요 시 명시 (helper 가 새 배열 반환)
 6. npm test — baseline 회귀 X 확인
 ```
-**관련 룰**: skills/data/SKILL.md "거대 파서 분할" 워크플로우
+**관련 Rule**: skills/data/SKILL.md "거대 파서 분할" 워크플로우
 
 ---
 
@@ -602,7 +602,7 @@ C) 짧은 부분 소스코드 직접 작성 → 시각 의도만 표현
 4. verifySyncResult 가 sync 후 invariant 검증 (products 빈 / DEFAULT 누락 / weeklyLabels 자동 생성)
 5. /admin/observability 의 Sync Health 섹션 — localStorage syncDiagnostics 확인
 ```
-**관련 룰**: data.md §5.10 / NEVER 룰 (silent return {})
+**관련 Rule**: data.md §5.10 / NEVER Rule (silent return {})
 
 ---
 
@@ -610,7 +610,7 @@ C) 짧은 부분 소스코드 직접 작성 → 시각 의도만 표현
 
 **증상**: 월/국가/제품 필터 변경해도 차트 갱신 X / 필터 후 트렌드 사라짐 / 일부 카드만 반영
 
-**원인**: 본 레포 30+ 필터 관련 fix 결과 — 8 가지 독립 원인. 각각 TECHNIQUE 로 분리 (TECHNIQUE-16 ~ TECHNIQUE-23).
+**원인**: 본 저장소 30+ 필터 관련 fix 결과 — 8 가지 독립 원인. 각각 TECHNIQUE 로 분리 (TECHNIQUE-16 ~ TECHNIQUE-23).
 
 **디버깅 순서**: 8 TECHNIQUE 를 순차 적용. 매칭되는 원인 발견 시 그 TECHNIQUE 의 처리 방식 따름.
 
@@ -623,7 +623,7 @@ C) 짧은 부분 소스코드 직접 작성 → 시각 의도만 표현
 7. → TECHNIQUE-22: Total 폴백 전략
 8. → TECHNIQUE-23: 필터 state 격리
 
-**관련 룰**: design.md §5.7 truncate / §5.8 서버↔클라 짝 / NEVER 룰
+**관련 Rule**: design.md §5.7 truncate / §5.8 서버↔클라 짝 / NEVER Rule
 
 ---
 
@@ -841,7 +841,7 @@ C) 짧은 부분 소스코드 직접 작성 → 시각 의도만 표현
    'vbar 라벨 위로 +10px' (안 됨: '위로')
    'Hero 카드 padding +5px / 좌우 +20px' (안 됨: '여백 더')
 
-⚠ 한 번에 100px+ 변경 금지 (NEVER 룰) — 5~30px 단위 반복.
+⚠ 한 번에 100px+ 변경 금지 (NEVER Rule) — 5~30px 단위 반복.
 ⚠ 모호한 명령 ('좀 더') 시 Claude 가 단위 명확화 질문."
 ```
 
@@ -928,22 +928,22 @@ C) 짧은 부분 소스코드 직접 작성 → 시각 의도만 표현
 
 ---
 
-## TECHNIQUE-11: 서브에이전트 도메인 진단 위임 (read-only)
+## TECHNIQUE-11: Sub-Agent 도메인 진단 위임 (read-only)
 
 **상황**: 특정 영역 (예: 데이터 파이프라인) 의 정합성 / 회귀 위험 점검 — 메인이 모두 직접 하면 부담
 
 **Claude 의 액션**:
 ```
-1. read-only 서브에이전트 정의 (.claude/agents/<name>.md):
+1. read-only Sub-Agent 정의 (.claude/agents/<name>.md):
    - description: "X 영역의 shape·정합성·누락 조사·보고 전담"
    - tools: Read, Bash, Grep, Glob (Edit 권한 없음 — 진단만)
 
-2. 메인이 서브에이전트에 위임:
+2. 메인이 Sub-Agent에 위임:
    "data-puller 야, parseUnlaunched 가 5단계 ERROR CATCHING 따르는지 점검해줘"
 
-3. 서브에이전트가 진단 보고 (구체적 라인 인용 + 위반 항목 + 우선순위)
+3. Sub-Agent가 진단 보고 (구체적 라인 인용 + 위반 항목 + 우선순위)
 
-4. 메인이 보고 검증 + 코드 수정 (서브에이전트는 진단만)
+4. 메인이 보고 검증 + 코드 수정 (Sub-Agent는 진단만)
 
 5. 사용자 입장 — Claude 와 한 명만 대화. 내부적으로 메인+서브 분담.
 
@@ -982,7 +982,7 @@ C) 짧은 부분 소스코드 직접 작성 → 시각 의도만 표현
    - sheetTabsForMode 로 SPA 별 필요 탭만 fetch
 
 본 세션 사례:
-- 본 레포 7 SPA: dashboard, visibility, citation, tracker-v2, newsletter,
+- 본 저장소 7 SPA: dashboard, visibility, citation, tracker-v2, newsletter,
   monthly-report, weekly-report — 각 vite config 분리
 - /admin/ 메뉴가 통합 관리자 (3단 그리드)
 - 공통: excelUtils.js · categoryMap.js · sheetParserUtils.js
@@ -1010,7 +1010,7 @@ C) 짧은 부분 소스코드 직접 작성 → 시각 의도만 표현
 3. 헤더 / GNB 와 필터 레이어 분리:
    - GNB 탭 (Weekly/Monthly 같은 큰 모드) 은 페이지 전환
    - 필터 레이어는 같은 페이지 안의 좁히기만 (모드 전환 X)
-   - 둘이 한 영역에 섞이면 충돌 (본 레포 'GNB 탭 / 필터 레이어 분리' fix 참조)
+   - 둘이 한 영역에 섞이면 충돌 (본 저장소 'GNB 탭 / 필터 레이어 분리' fix 참조)
 
 4. 필터 적용 결과 검증:
    - 필터 변경 → 어느 컴포넌트가 재렌더 / 어느 게 그대로
@@ -1021,7 +1021,7 @@ C) 짧은 부분 소스코드 직접 작성 → 시각 의도만 표현
    - 필터 적용 함수 (_filteredMonthlySeries 같은) 공통 모듈로 분리
    - 모든 SPA 가 import — 동일 로직 보장
 
-본 세션 / 본 레포 사례:
+본 세션 / 본 저장소 사례:
 - GNB 사업본부 탭 + 필터 레이어 동시 존재 시 충돌 → "필터 레이어에서 Weekly/Monthly
   토글 제거, GNB 탭으로 대체" fix
 - _filteredMonthlySeries / _filteredMomD 같은 공통 헬퍼 — 모든 카드에 동일 적용
@@ -1073,7 +1073,7 @@ C) 짧은 부분 소스코드 직접 작성 → 시각 의도만 표현
    - verifySyncResult 로 invariant 통과 확인
    - 시각 검증 — 모든 차트 데이터 정상
 
-본 레포 사례:
+본 저장소 사례:
 - "도메인 시트 v3 레이아웃 (월별 반복 블록) 지원" — 원본 시트 구조 변경 대응
 - "Citation 도메인 layout 변경" 시리즈 — 헤더 추가 (PRD 컬럼) 대응
 - null vs 0 구분 — pctOrNull 함수로 빈 셀 보존
@@ -1114,7 +1114,7 @@ C) 짧은 부분 소스코드 직접 작성 → 시각 의도만 표현
 
 ## TECHNIQUE-16: data-prodid 매칭 키 검증 (필터 row 식별)
 
-**처리 이유**: 클라이언트 측 `filterTrend()` 같은 함수가 DOM 의 row 들을 순회하면서 prodId 로 매칭한 후 새 SVG 로 교체. **매칭 키 (`data-prodid`) 가 없으면 어떤 row 가 어느 prodId 인지 모름 → 필터 변경 시 row 안 찾아서 "트렌드 사라짐" 회귀**. 본 레포의 commit `84cf45a` "filterTrend 결과 .trend-row에 data-prodid 속성 추가 (트렌드 사라짐 근본 원인)" 의 정확한 케이스.
+**처리 이유**: 클라이언트 측 `filterTrend()` 같은 함수가 DOM 의 row 들을 순회하면서 prodId 로 매칭한 후 새 SVG 로 교체. **매칭 키 (`data-prodid`) 가 없으면 어떤 row 가 어느 prodId 인지 모름 → 필터 변경 시 row 안 찾아서 "트렌드 사라짐" 회귀**. 본 저장소의 commit `84cf45a` "filterTrend 결과 .trend-row에 data-prodid 속성 추가 (트렌드 사라짐 근본 원인)" 의 정확한 케이스.
 
 **처리 방식**:
 ```js
@@ -1147,7 +1147,7 @@ function filterTrend(prodIds, cntyKeys) {
 
 ## TECHNIQUE-17: 클라이언트 짝 함수 일치성 (서버 SVG ↔ 클라 _miniSvg)
 
-**처리 이유**: 본 레포는 서버 측 (정적 HTML 첫 렌더용) 과 클라이언트 측 (필터 시 동적 재렌더) 에 **같은 차트를 두 번 구현**. 서버 함수 (예: `svgMultiLine`) 만 변경하고 클라이언트 짝 (`_trendMultiSvg`) 미수정 시 — 첫 렌더는 정상, 필터 후 차트 깨짐 / 시각 불일치.
+**처리 이유**: 본 저장소는 서버 측 (정적 HTML 첫 렌더용) 과 클라이언트 측 (필터 시 동적 재렌더) 에 **같은 차트를 두 번 구현**. 서버 함수 (예: `svgMultiLine`) 만 변경하고 클라이언트 짝 (`_trendMultiSvg`) 미수정 시 — 첫 렌더는 정상, 필터 후 차트 깨짐 / 시각 불일치.
 
 **처리 방식**:
 ```js
@@ -1174,14 +1174,14 @@ function _trendMultiSvg(brandData, labels, w, h, opts = {}) {
 // 3. 변경 후 스크린샷 — 첫 렌더와 색·위치·라벨 일관
 ```
 
-**관련 룰**: design.md §5.8 서버↔클라 짝 매핑 표
+**관련 Rule**: design.md §5.8 서버↔클라 짝 매핑 표
 **ANTI-PATTERN**: design.md NEVER "서버 SVG 함수만 수정 → 클라이언트 짝 누락"
 
 ---
 
 ## TECHNIQUE-18: 필터 영향 카드 전체 점검 (한 카드만 반영 X)
 
-**처리 이유**: 필터 변경 → "트렌드 차트는 갱신되는데 카드 미니 차트는 그대로" 같이 일부 카드만 반영. 본 레포의 `"월간 비저빌리티 카드 MoM — 국가 필터 반영"`, `"월 드롭다운 선택 시 제품카드 미니차트도 truncate"`, `"hero summary 카드도 필터 변경 반영"` 같은 fix 패턴 — **필터 핸들러가 일부 카드 재계산 함수만 호출**한 케이스.
+**처리 이유**: 필터 변경 → "트렌드 차트는 갱신되는데 카드 미니 차트는 그대로" 같이 일부 카드만 반영. 본 저장소의 `"월간 비저빌리티 카드 MoM — 국가 필터 반영"`, `"월 드롭다운 선택 시 제품카드 미니차트도 truncate"`, `"hero summary 카드도 필터 변경 반영"` 같은 fix 패턴 — **필터 핸들러가 일부 카드 재계산 함수만 호출**한 케이스.
 
 **처리 방식**:
 ```js
@@ -1212,7 +1212,7 @@ function onFilterChange(newFilter) {
 
 ## TECHNIQUE-19: null 요소 안전 처리 (_miniSvgNullAware)
 
-**처리 이유**: 데이터 배열에 null 요소 있을 때 (시트 빈 셀 → pctOrNull → null) 일반 svgLine 호출 시 — null 을 0 으로 렌더하거나 path 생성 시 NaN. **null 은 "데이터 없음" 이지 "0" 아님**. 본 레포의 `"dashboard 클라이언트 필터링 — weekly/경쟁사 배열의 null 요소 처리"` fix 의 케이스.
+**처리 이유**: 데이터 배열에 null 요소 있을 때 (시트 빈 셀 → pctOrNull → null) 일반 svgLine 호출 시 — null 을 0 으로 렌더하거나 path 생성 시 NaN. **null 은 "데이터 없음" 이지 "0" 아님**. 본 저장소의 `"dashboard 클라이언트 필터링 — weekly/경쟁사 배열의 null 요소 처리"` fix 의 케이스.
 
 **처리 방식**:
 ```js
@@ -1247,13 +1247,13 @@ const avg = data.filter(v => v != null).reduce((s, v) => s + v, 0) / data.filter
 // - 사용자가 "이 시점 데이터 없음" 시각적으로 인지
 ```
 
-**관련 룰**: data.md §5.3 빈셀/null/0 구분 / NEVER 룰 "null vs 0 동일 취급"
+**관련 Rule**: data.md §5.3 빈셀/null/0 구분 / NEVER Rule "null vs 0 동일 취급"
 
 ---
 
 ## TECHNIQUE-20: truncate 인덱스 갱신 (월/주차 선택)
 
-**처리 이유**: 사용자가 월/주차 드롭다운에서 특정 시점 선택 시 — 그 시점까지만 차트 렌더 (이후는 빈 영역). 본 레포의 `_curWeekIdx` / `_curMonthIdxIn12` 같은 전역 인덱스로 추적. **드롭다운 변경 시 인덱스 갱신 안 되면 차트가 이전 시점 그대로** 또는 전체 데이터로 다시 그려짐.
+**처리 이유**: 사용자가 월/주차 드롭다운에서 특정 시점 선택 시 — 그 시점까지만 차트 렌더 (이후는 빈 영역). 본 저장소의 `_curWeekIdx` / `_curMonthIdxIn12` 같은 전역 인덱스로 추적. **드롭다운 변경 시 인덱스 갱신 안 되면 차트가 이전 시점 그대로** 또는 전체 데이터로 다시 그려짐.
 
 **처리 방식**:
 ```js
@@ -1284,13 +1284,13 @@ function _trendMultiSvg(brandData, labels, w, h, opts) {
 // - 차트 폭 자체는 변경 X (배경 가로선 전체 유지)
 ```
 
-**관련 룰**: design.md §5.7 truncate / NEVER 룰 "truncate 시 viewBox 축소"
+**관련 Rule**: design.md §5.7 truncate / NEVER Rule "truncate 시 viewBox 축소"
 
 ---
 
 ## TECHNIQUE-21: 드롭다운 옵션 자체 검증 (빈 시점도 선택 가능)
 
-**처리 이유**: TTL (전체) 데이터가 없는 달도 사용자가 선택할 수 있어야 — 빈 화면이라도 렌더. **드롭다운 옵션 생성 시 TTL 있는 달만 포함하면 그 달 선택 불가**. 본 레포의 `"TTL 없는 달도 기간 dropdown에서 선택 가능"` fix 의 케이스.
+**처리 이유**: TTL (전체) 데이터가 없는 달도 사용자가 선택할 수 있어야 — 빈 화면이라도 렌더. **드롭다운 옵션 생성 시 TTL 있는 달만 포함하면 그 달 선택 불가**. 본 저장소의 `"TTL 없는 달도 기간 dropdown에서 선택 가능"` fix 의 케이스.
 
 **처리 방식**:
 ```js
@@ -1326,7 +1326,7 @@ function renderForMonth(month) {
 
 ## TECHNIQUE-22: Total 폴백 전략 (특정 국가 데이터 없을 때)
 
-**처리 이유**: 사용자가 특정 국가 선택 시 — 그 국가의 데이터가 없으면 Hero / 카드 빈 화면. **명시적 폴백 또는 "데이터 없음" 메시지 필요**. 본 레포의 `"주간 경쟁사 트렌드 — 국가 필터 시 Total 폴백"` fix.
+**처리 이유**: 사용자가 특정 국가 선택 시 — 그 국가의 데이터가 없으면 Hero / 카드 빈 화면. **명시적 폴백 또는 "데이터 없음" 메시지 필요**. 본 저장소의 `"주간 경쟁사 트렌드 — 국가 필터 시 Total 폴백"` fix.
 
 **처리 방식**:
 ```js
@@ -1361,7 +1361,7 @@ function _filteredMonthlySeries(prodId, cntyKeys) {
 
 ## TECHNIQUE-23: 필터 state 격리 (페이지 분리 시)
 
-**처리 이유**: 여러 SPA / 페이지 분리 후 한 페이지의 필터 변경이 다른 페이지의 차트에 영향 — state 공유 누설. 또는 GNB 탭 (큰 모드 전환) 과 필터 레이어 (좁히기) 가 한 영역에 섞이면 충돌. 본 레포의 `"필터 레이어에서 Weekly/Monthly 기간 토글 제거 — GNB 탭으로 대체"` fix.
+**처리 이유**: 여러 SPA / 페이지 분리 후 한 페이지의 필터 변경이 다른 페이지의 차트에 영향 — state 공유 누설. 또는 GNB 탭 (큰 모드 전환) 과 필터 레이어 (좁히기) 가 한 영역에 섞이면 충돌. 본 저장소의 `"필터 레이어에서 Weekly/Monthly 기간 토글 제거 — GNB 탭으로 대체"` fix.
 
 **처리 방식**:
 ```js

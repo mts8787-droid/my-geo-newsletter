@@ -1,6 +1,6 @@
 // Chart Library — 14 차트 양식 분류 카탈로그
-// 분류 코드 (L-1, B-1, M-1, D-1, R-1, BU-1, T-1) + 예시 SVG + 본 레포 사용 위치.
-// 스킬에서 "L-1 차트 그려줘" 같이 호출.
+// 분류 코드 (L-1, B-1, M-1, D-1, R-1, BU-1, T-1) + 예시 SVG + 본 저장소 사용 위치.
+// Skill에서 "L-1 차트 그려줘" 같이 호출.
 // 어드민 페이지: GET /admin/chart-library
 // 미러: docs/agents/CHART_LIBRARY.html (sync-harness 가 본 페이지의 HTML 을 정적 생성)
 

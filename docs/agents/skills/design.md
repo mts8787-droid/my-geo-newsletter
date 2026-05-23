@@ -6,7 +6,7 @@
 > Claude Code 가 디자인/UI 작업을 할 때 따라야 할 **순차 워크플로우 모음**.
 > 본 파일은 "이걸 할 때는 1) → 2) → 3) ..." 형태의 step-by-step.
 > 각 step 이 참조하는 **디자인 토큰·컴포넌트 카탈로그(C-01~C-23)·SVG 패턴·이메일 호환 ANTI-PATTERN 은 `.claude/rules/design.md`**.
-> 절대 금지는 훅 (`.claude/hooks/`), 프로젝트 헌법은 `CLAUDE.md`.
+> 절대 금지는 Hook (`.claude/hooks/`), 프로젝트 헌법은 `CLAUDE.md`.
 
 ---
 
@@ -28,7 +28,7 @@
    - BU — 버블 / 4분면 — BU-1, BU-2
    - T — 툴팁 (직교) — T-1
 2. 카탈로그 조회:
-   · `/admin/chart-library` (라이브) — 예시 SVG + 본 레포 사용 위치
+   · `/admin/chart-library` (라이브) — 예시 SVG + 본 저장소 사용 위치
    · `docs/agents/CHART_LIBRARY.html` (정적 미러)
    · `.claude/rules/design.md` §5.11~§5.14 — 상세 SVG 패턴 / 데이터 shape / ANTI-PATTERN
 3. 데이터 shape 결정:
@@ -37,11 +37,11 @@
    · D-1: `[{label, value, color}, ...]`
    · R-1: `{labels: [metrics], datasets: [{label, data: [v]}]}`
    · 외: 각 양식별 design.md §5.X 참조
-4. 본 레포 토큰 적용:
+4. 본 저장소 토큰 적용:
    · 색상: BRAND_COLORS / STATUS / RED / COMP (`dashboardConsts.js`)
    · 폰트: FONT (`'LGEIText','LG Smart',...`)
    · letter-spacing: 한글 -0.5px, 영문 -0.9px (§4.4)
-5. SVG 구현 (또는 본 레포 헬퍼 사용):
+5. SVG 구현 (또는 본 저장소 헬퍼 사용):
    · 단일 라인 (L-1) → svgLine() 활용
    · 다중 라인 (L-5 segments 포함) → svgMultiLine() — fadeBeforeIdx 옵션
    · 외 (D-1 / R-1 / BU-1) → 직접 SVG path / circle / polygon
@@ -113,7 +113,7 @@ emailTemplate.js 의 V1/V2/V3 외 새 카드 버전 (V4 등) 추가.
 ```
 1. .claude/rules/design.md 의 V1/V2/V3 정의 확인 — 어떤 차별점인지
 2. src/emailTemplate.js 에 새 함수 (예: productCardV4) 추가
-3. 제약 준수 (CLAUDE.md NEVER 룰):
+3. 제약 준수 (CLAUDE.md NEVER Rule):
    a. containerWidth ≤ 940 (우측 짤림 방지)
    b. body { overflow-x:hidden } 또는 min-width 금지 (iframe 클립)
    c. table-layout 기반 (flex/grid 금지)
@@ -138,7 +138,7 @@ emailTemplate.js 의 V1/V2/V3 외 새 카드 버전 (V4 등) 추가.
    b. width 인라인 스타일 (CSS class 불가)
    c. font-family 인라인
    d. SVG 대신 막대 그래프는 background-color + width % 트릭
-3. CLAUDE.md NEVER 룰 모두 통과:
+3. CLAUDE.md NEVER Rule 모두 통과:
    a. containerWidth ≤ 940
    b. overflow-x:hidden / min-width 금지
 4. Outlook / Gmail / Apple Mail 호환 확인 (가능하면 Litmus 같은 도구)
@@ -159,7 +159,7 @@ emailTemplate.js 의 V1/V2/V3 외 새 카드 버전 (V4 등) 추가.
 3. 영문/한글 길이 차이 고려 — UI 깨짐 방지 (max-width 또는 ellipsis)
 4. emailTemplate.js 도 별도 lang 처리 (PROD_EN_NAME / PROD_EN_BY_KR 등)
 5. KO/EN 양쪽 시각 검증
-6. CLAUDE.md NEVER 룰: 사용자 텍스트 임의 다듬기 금지 — 사용자가 준 정확한 문구 그대로
+6. CLAUDE.md NEVER Rule: 사용자 텍스트 임의 다듬기 금지 — 사용자가 준 정확한 문구 그대로
 ```
 
 ---
@@ -172,7 +172,7 @@ emailTemplate.js 의 V1/V2/V3 외 새 카드 버전 (V4 등) 추가.
 1. generateXxxHTML 함수가 이미 반환하는 string 사용
 2. 어드민 React 컴포넌트에 <iframe srcdoc={html} /> 추가
 3. iframe 의 부모 컨테이너에 overflow-x: hidden / min-width 절대 금지
-   (CLAUDE.md NEVER 룰: iframe 안 콘텐츠가 클립됨)
+   (CLAUDE.md NEVER Rule: iframe 안 콘텐츠가 클립됨)
 4. 적절한 iframe height 설정 — onLoad 후 contentDocument.body.scrollHeight 측정 후 동적 적용
 5. KO/EN 토글 시 iframe key 강제 재마운트 (srcdoc 캐시 회피)
 6. styles 의 폰트 / 색상 토큰 일관성 확인
@@ -191,7 +191,7 @@ emailTemplate.js 의 V1/V2/V3 외 새 카드 버전 (V4 등) 추가.
    b. 시각 문제 → 본 워크플로우 계속
 3. 영향 범위 좁힘 — 특정 카테고리/국가/월 에서만 발생하는지
 4. 토큰 위반 확인 — 하드코딩 색상/폰트 추가됐는지 git diff
-5. CLAUDE.md NEVER 룰 위반 검토:
+5. CLAUDE.md NEVER Rule 위반 검토:
    a. containerWidth > 940
    b. body overflow-x:hidden / min-width
    c. SVG 미지원 클라이언트 (이메일에서 차트 안 나옴)

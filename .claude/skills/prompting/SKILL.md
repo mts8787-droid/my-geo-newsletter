@@ -1,9 +1,9 @@
 ---
 name: prompting
-description: 에이전틱 코딩 도구(Claude Code/Cursor/Codex)가 본 레포에서 작업할 때 참조하는 통합 시스템 프롬프트. PROJECT CONTEXT, COMMANDS, FILE LAYOUT, DESIGN TOKENS, DATA INTERFACES, DIRECTIVES, COMPONENT LIBRARY(C-01~C-23), ANTI-PATTERNS, VERIFICATION 통합본. 도메인 무관 일반화.
+description: 에이전틱 코딩 도구(Claude Code/Cursor/Codex)가 본 저장소에서 작업할 때 참조하는 통합 시스템 프롬프트. PROJECT CONTEXT, COMMANDS, FILE LAYOUT, DESIGN TOKENS, DATA INTERFACES, DIRECTIVES, COMPONENT LIBRARY(C-01~C-23), ANTI-PATTERNS, VERIFICATION 통합본. 도메인 무관 일반화.
 ---
 
-> Agentic coding tool (Claude Code, Cursor, Codex) 가 본 레포에서 작업할 때 참조하는 시스템 프롬프트.
+> Agentic coding tool (Claude Code, Cursor, Codex) 가 본 저장소에서 작업할 때 참조하는 시스템 프롬프트.
 > 도메인/데이터 추상화 — 임의 데이터(계열 1~5, 항목 A~F 등)에 적용 가능.
 
 ---
@@ -54,7 +54,7 @@ routes/
   admin-pages.js           # /admin/* HTML 라우트
   publish.js               # 게시 (KO+EN)
   published.js             # /p/:slug 정적 HTML 서빙
-.claude/skills/            # 본 문서 + design / data 스킬
+.claude/skills/            # 본 문서 + design / data Skill
 docs/                      # 인프라/스키마 참조 (ADMIN_PLAN, BIGQUERY_SCHEMA, ...)
 ```
 
@@ -130,7 +130,7 @@ border-radius card 8~12px | badge 5~6px | bar 4px top
 
 ## 5. DATA INTERFACES (CANONICAL)
 
-본 레포 전체에서 가정하는 데이터 shape — 새 컴포넌트 작성 시 이 shape 부터 매핑.
+본 저장소 전체에서 가정하는 데이터 shape — 새 컴포넌트 작성 시 이 shape 부터 매핑.
 
 ```js
 // 단일 시계열

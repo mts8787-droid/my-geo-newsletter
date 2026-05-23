@@ -1,4 +1,4 @@
-// Harness Mirror — Claude Code 하네스(룰·스킬·훅·서브에이전트) 정리 + ZIP 다운로드
+// Harness Mirror — Claude Code 하네스(Rule·Skill·Hook·Sub-Agent) 정리 + ZIP 다운로드
 // 본 페이지는 .claude/ + CLAUDE.md 의 실시간 미러. 다른 프로젝트에 적용하려고 ZIP 받을 때 사용.
 // ZIP 생성 시점에 실제 파일을 읽으므로 항상 최신. 별도 동기화 단계 없음.
 import { Router } from 'express'
@@ -10,7 +10,7 @@ import { renderMarkdownPage } from './admin-pages.js'
 export const harnessRouter = Router()
 
 // ─── 하네스 컴포넌트 정의 ────────────────────────────────────────────────────
-// 본 레포의 실제 파일 경로 + UI 표시용 메타데이터.
+// 본 저장소의 실제 파일 경로 + UI 표시용 메타데이터.
 // 새 컴포넌트 (예: 신규 hook, agent) 추가 시 이 배열만 갱신.
 const HARNESS_COMPONENTS = [
   // ─── 진입점 (Entry Point) — docs/agents/ 미러 호스트 ─────────────────────
@@ -34,33 +34,45 @@ const HARNESS_COMPONENTS = [
   },
   {
     category: 'entry',
+    label: 'Hook 가이드 (HTML)',
+    file: 'docs/agents/HOOK_GUIDE.html',
+    desc: 'Hook README.md 의 디자인된 HTML 버전 — marked.js 렌더. 브라우저 더블클릭으로 인증 없이 열람 가능.',
+  },
+  {
+    category: 'entry',
+    label: 'Hook 가이드 (Markdown 미러)',
+    file: 'docs/agents/HOOK_GUIDE.md',
+    desc: '.claude/hooks/README.md 의 미러. 원본 수정 시 sync-harness 가 자동 갱신.',
+  },
+  {
+    category: 'entry',
     label: '부트스트랩 사용법 (Usage Guide)',
     file: 'docs/agents/HUMAN_GUIDE.md',
     desc: '사람이 직접 읽는 사용 설명서 — BOOTSTRAP 의 시나리오 (신규 프로젝트 적용 STEP 0~8 + 디버깅 DEBUG-1~15) 어떻게 트리거하고 활용하는지 + 도메인 예시 + 검증 체크리스트 + 트러블슈팅 + FAQ.',
   },
 
-  // ─── 룰 (Rule) — 따라야 할 규칙. Markdown. 권고 (~80%) ─────────────────────
+  // ─── Rule — 따라야 할 규칙. Markdown. 권고 (~80%) ─────────────────────
   {
     category: 'rule',
     label: '프로젝트 헌법',
     file: 'CLAUDE.md',
-    desc: '본 레포에서 작업할 때 항상 로드되는 프로젝트 룰. 하네스 4 개념 정의, 스택, NEVER 룰, 작업 흐름. (글로벌 헌법은 ~/.claude/CLAUDE.md)',
+    desc: '본 저장소에서 작업할 때 항상 로드되는 프로젝트 Rule. 하네스 4 개념 정의, 스택, NEVER Rule, 작업 흐름. (글로벌 헌법은 ~/.claude/CLAUDE.md)',
   },
   {
     category: 'rule',
-    label: '데이터 룰 매뉴얼',
+    label: '데이터 Rule 매뉴얼',
     file: '.claude/rules/data.md',
-    desc: '데이터 작업의 토큰·invariant·ANTI-PATTERN. 5단계 ERROR CATCHING / null vs 0 / 날짜 정규화 등. 스킬이 step 별로 참조.',
+    desc: '데이터 작업의 토큰·invariant·ANTI-PATTERN. 5단계 ERROR CATCHING / null vs 0 / 날짜 정규화 등. Skill이 step 별로 참조.',
   },
   {
     category: 'rule',
-    label: '디자인 룰 매뉴얼',
+    label: '디자인 Rule 매뉴얼',
     file: '.claude/rules/design.md',
-    desc: '디자인 토큰·컴포넌트 카탈로그 (C-01~C-23)·SVG 패턴·이메일 호환 ANTI-PATTERN. 스킬이 step 별로 참조.',
+    desc: '디자인 토큰·컴포넌트 카탈로그 (C-01~C-23)·SVG 패턴·이메일 호환 ANTI-PATTERN. Skill이 step 별로 참조.',
   },
   {
     category: 'rule',
-    label: 'AI 룰 매뉴얼',
+    label: 'AI Rule 매뉴얼',
     file: '.claude/rules/ai.md',
     desc: 'Anthropic API · 인사이트 생성 · N3 응답 검증 (invalid_output) · 에러 분류 · 비용 추적 · ANTI-PATTERN.',
   },
@@ -71,33 +83,33 @@ const HARNESS_COMPONENTS = [
     desc: 'Claude 가 새 프로젝트 적용 시 따라가는 시나리오. 8 step (환경확인 → 도메인 인터뷰 → 도메인 파일 → 데이터 모델 → 디자인 토큰 → 외부 시스템 → 비즈니스 fact → 빌드 검증). 사람이 직접 읽는 가이드 X — Claude 가 step 별 사용자에게 질문·설명.',
   },
 
-  // ─── 훅 (Hook) — 절대 금지. JSON 강제 (100%) + md 설명서 ───────────────────
+  // ─── Hook — 절대 금지. 사람용 가이드 + JSON/Bash (For AI) ──────────────
   {
     category: 'hook',
-    label: '훅 등록 (JSON 강제)',
-    file: '.claude/settings.json',
-    desc: 'PreToolUse + PostToolUse 훅 등록. JSON 필수 — 시스템이 파싱·실행하므로 Claude 우회 불가.',
-  },
-  {
-    category: 'hook',
-    label: '훅 인간 가독 설명서',
+    label: 'Hook 가이드 (사람용 설명서)',
     file: '.claude/hooks/README.md',
-    desc: '각 훅의 트리거·대상·동작·목적 + 신규 훅 추가 가이드. .md 안의 hook 정의는 무시됨을 명시.',
+    desc: '각 Hook의 트리거·대상·동작·목적 + 신규 Hook 추가 가이드. 원본은 여기, 미러는 docs/agents/HOOK_GUIDE.md / HOOK_GUIDE.html.',
   },
   {
     category: 'hook',
-    label: '신택스 검증 훅 (PostToolUse)',
+    label: 'settings.json — JSON (For AI)',
+    file: '.claude/settings.json',
+    desc: 'PreToolUse + PostToolUse Hook 등록. JSON 필수 — 시스템이 파싱·실행 (Claude 우회 불가).',
+  },
+  {
+    category: 'hook',
+    label: 'syntax-check.sh — Bash (For AI)',
     file: '.claude/hooks/syntax-check.sh',
-    desc: 'src/·routes/ 의 .js Edit/Write 직후 node --check. 실패 시 exit 2 → Claude 재시도.',
+    desc: 'PostToolUse: src/·routes/ 의 .js Edit/Write 직후 node --check. 실패 시 exit 2 → Claude 재시도.',
   },
   {
     category: 'hook',
-    label: 'dist 차단 훅 (PreToolUse)',
+    label: 'block-dist.sh — Bash (For AI)',
     file: '.claude/hooks/block-dist.sh',
-    desc: 'dist-*/dist/ 빌드 산출물 직접 수정 호출 차단. CLAUDE.md NEVER 룰 강제.',
+    desc: 'PreToolUse: dist-*/dist/ 빌드 산출물 직접 수정 차단. CLAUDE.md NEVER Rule 강제.',
   },
 
-  // ─── 스킬 (Skill) — 순차 워크플로우. 명령 조합 ────────────────────────────
+  // ─── Skill — 순차 워크플로우. 명령 조합 ────────────────────────────
   {
     category: 'skill',
     label: '데이터 워크플로우',
@@ -114,7 +126,7 @@ const HARNESS_COMPONENTS = [
     category: 'skill',
     label: '에이전트형 도구 통합 프롬프트',
     file: '.claude/skills/prompting/SKILL.md',
-    desc: 'Claude Code 외 다른 에이전트형 도구 (Cursor/Codex) 가 본 레포에서 작업할 때 참조하는 통합 시스템 프롬프트.',
+    desc: 'Claude Code 외 다른 에이전트형 도구 (Cursor/Codex) 가 본 저장소에서 작업할 때 참조하는 통합 시스템 프롬프트.',
   },
   {
     category: 'skill',
@@ -129,10 +141,10 @@ const HARNESS_COMPONENTS = [
     desc: '사용자 "X 안 됨" / "fix" / "회귀" 요청 시. BOOTSTRAP 의 DEBUG-1~15 시나리오 중 증상 매칭. 시나리오는 가이드 — 더 나은 방법 발견 시 그 방식.',
   },
 
-  // ─── 서브에이전트 (Sub-agent) — 특정 영역 분리 작업 ────────────────────────
+  // ─── Sub-Agent — 특정 영역 분리 작업 ────────────────────────
   {
     category: 'agent',
-    label: '데이터 진단 서브에이전트',
+    label: '데이터 진단 Sub-Agent',
     file: '.claude/agents/data-puller.md',
     desc: 'Google Sheets 파싱 파이프라인의 shape·정합성·누락 조사·보고 전담 (read-only). Claude Code 가 위임 시 활성화.',
   },
@@ -140,10 +152,10 @@ const HARNESS_COMPONENTS = [
 
 const CATEGORY_LABELS = {
   entry: '가이드 — 하네스 전체 개요 (docs/agents/ 미러)',
-  rule: '룰 (Rule) — 따라야 할 규칙. Markdown 권고 (~80%)',
-  hook: '훅 (Hook) — 절대 하면 안 되는 것. JSON 강제 (100%) + 인간용 md 설명서',
-  skill: '스킬 (Skill) — 자동 워크플로우 / 명령 조합. step-by-step',
-  agent: '서브에이전트 (Sub-agent) — 특정 영역 분리 작업 (Claude Code 공식 기능)',
+  rule: 'Rule — 따라야 할 규칙. Markdown 권고 (~80%)',
+  hook: 'Hook — 절대 하면 안 되는 것. JSON 강제 (100%) + 인간용 md 설명서',
+  skill: 'Skill — 자동 워크플로우 / 명령 조합. step-by-step',
+  agent: 'Sub-Agent — 특정 영역 분리 작업 (Claude Code 공식 기능)',
 }
 
 const ROOT = process.cwd()
@@ -162,37 +174,37 @@ function generateReadme() {
   const today = new Date().toISOString().slice(0, 10)
   return `# Claude Code Harness Mirror
 
-본 ZIP 은 \`my-geo-newsletter\` 레포의 Claude Code 하네스 (룰·훅·스킬·서브에이전트) 미러링 본.
+본 ZIP 은 \`my-geo-newsletter\` 저장소의 Claude Code 하네스 (Rule·Hook·Skill·Sub-Agent) 미러링 본.
 생성일: ${today}
 
 ## 하네스 4 개념
 
 | 개념 | 형식 | 강제력 | 역할 |
 |---|---|---|---|
-| **룰 (Rule)** | Markdown | 권고 (~80%) | 따라야 할 규칙 |
-| **훅 (Hook)** | JSON 강제 + md 설명서 | 100% (시스템 차단) | 절대 하면 안 되는 것 |
-| **스킬 (Skill)** | Markdown 워크플로우 | 권고 (필요 시 로드) | 자동 워크플로우 / 명령 조합 |
-| **서브에이전트** | Markdown frontmatter | Claude 가 위임 시 활성 | 특정 영역 분리 작업 |
+| **Rule** | Markdown | 권고 (~80%) | 따라야 할 규칙 |
+| **Hook** | JSON 강제 + md 설명서 | 100% (시스템 차단) | 절대 하면 안 되는 것 |
+| **Skill** | Markdown 워크플로우 | 권고 (필요 시 로드) | 자동 워크플로우 / 명령 조합 |
+| **Sub-Agent** | Markdown frontmatter | Claude 가 위임 시 활성 | 특정 영역 분리 작업 |
 
 ## ZIP 내용
 
-### 룰 (Rule)
-- \`CLAUDE.md\` — 프로젝트 헌법 (4 개념 정의 + NEVER 룰 + 작업 흐름)
-- \`.claude/rules/data.md\` — 데이터 작업 룰·매뉴얼·invariant·ANTI-PATTERN
+### Rule
+- \`CLAUDE.md\` — 프로젝트 헌법 (4 개념 정의 + NEVER Rule + 작업 흐름)
+- \`.claude/rules/data.md\` — 데이터 작업 Rule·매뉴얼·invariant·ANTI-PATTERN
 - \`.claude/rules/design.md\` — 디자인 토큰·컴포넌트 카탈로그·SVG 패턴
 
-### 훅 (Hook)
-- \`.claude/settings.json\` — 훅 등록 (JSON 필수)
+### Hook
+- \`.claude/settings.json\` — Hook 등록 (JSON 필수)
 - \`.claude/hooks/README.md\` — 인간 가독성 설명서
 - \`.claude/hooks/syntax-check.sh\` — PostToolUse 신택스 검증
 - \`.claude/hooks/block-dist.sh\` — PreToolUse 빌드산출물 차단
 
-### 스킬 (Skill)
+### Skill
 - \`.claude/skills/data/SKILL.md\` — 데이터 워크플로우 8개
 - \`.claude/skills/design/SKILL.md\` — 디자인 워크플로우 7개
 - \`.claude/skills/prompting/SKILL.md\` — 에이전트형 도구 통합 프롬프트
 
-### 서브에이전트 (Sub-agent)
+### Sub-Agent
 - \`.claude/agents/data-puller.md\` — 데이터 진단 read-only
 
 ## 다른 프로젝트에 적용
@@ -207,11 +219,11 @@ function generateReadme() {
 - **Markdown 권고**: \`CLAUDE.md\`, \`.claude/skills/*/SKILL.md\`, \`.claude/rules/*.md\`, \`.claude/agents/*.md\` — Claude 가 읽고 따름 (~80%).
 - \`.md\` 안에 \`hooks:\` 같은 자동화 정의 적어도 무시됨. 자동 강제는 \`settings.json\` 만.
 
-## 스킬 vs 룰 차이
+## Skill vs Rule 차이
 
-- **스킬 (skill)** = 순차 워크플로우. "이걸 할 때는 1) → 2) → 3) ..." (step-by-step 명령 조합)
-- **룰 (rule)** = 그 step 이 따라야 할 토큰·invariant·ANTI-PATTERN 정의 (참조용 매뉴얼)
-- 스킬에 토큰·패턴 정의가 섞이면 안 되고, 그건 룰에. 스킬은 짧고 sequential.
+- **Skill** = 순차 워크플로우. "이걸 할 때는 1) → 2) → 3) ..." (step-by-step 명령 조합)
+- **Rule** = 그 step 이 따라야 할 토큰·invariant·ANTI-PATTERN 정의 (참조용 매뉴얼)
+- Skill에 토큰·패턴 정의가 섞이면 안 되고, 그건 Rule에. Skill은 짧고 sequential.
 
 ## 주의
 
@@ -414,13 +426,13 @@ h1{font-size:22px;color:#F8FAFC;margin-bottom:4px}
   <a class="back" href="/admin/">← 관리자</a>
 </div>
 <h1>Harness Mirror</h1>
-<p class="sub">Claude Code 하네스 (룰·스킬·훅·서브에이전트) 의 실시간 미러링</p>
+<p class="sub">Claude Code 하네스 (Rule·Skill·Hook·Sub-Agent) 의 실시간 미러링</p>
 
 <div class="usage">
   <h2 style="font-size:16px;color:#F8FAFC;margin-bottom:10px">📌 Harness Mirror 란?</h2>
-  <p style="font-size:13px;color:#CBD5E1;margin-bottom:8px">본 페이지는 <strong style="color:#F8FAFC">Claude Code 가 본 프로젝트에서 작업할 때 따르는 룰·훅·스킬·서브에이전트 모두를 한곳에 모은 페이지</strong>.</p>
+  <p style="font-size:13px;color:#CBD5E1;margin-bottom:8px">본 페이지는 <strong style="color:#F8FAFC">Claude Code 가 본 프로젝트에서 작업할 때 따르는 Rule·Hook·Skill·Sub-Agent 모두를 한곳에 모은 페이지</strong>.</p>
   <ul style="font-size:13px;color:#CBD5E1;margin-left:22px;line-height:1.8;margin-bottom:12px">
-    <li><strong style="color:#F8FAFC">왜 필요한가?</strong> 시간이 흐르면 어떤 룰이 있는지 기억이 안 남. 한 페이지에서 다 볼 수 있게.</li>
+    <li><strong style="color:#F8FAFC">왜 필요한가?</strong> 시간이 흐르면 어떤 Rule이 있는지 기억이 안 남. 한 페이지에서 다 볼 수 있게.</li>
     <li><strong style="color:#F8FAFC">어떻게 만들어지나?</strong> 본 프로젝트의 <code>.claude/</code> + <code>CLAUDE.md</code> + <code>docs/agents/</code> 의 실시간 미러. 파일이 수정되면 자동 반영.</li>
     <li><strong style="color:#F8FAFC">무엇을 할 수 있나?</strong> (1) 각 파일 클릭해서 보기 (2) 전체 ZIP 다운로드해서 다른 프로젝트에 적용 (3) 팀원과 공유</li>
   </ul>
@@ -436,21 +448,21 @@ h1{font-size:22px;color:#F8FAFC;margin-bottom:4px}
         <li><code style="background:#0F172A;padding:1px 6px;border-radius:3px">docs/agents/</code> — 사람용 미러 (선택 — Claude Code 작동에는 불필요)</li>
       </ul>
     </li>
-    <li><strong>실행 권한 부여</strong>: <code style="background:#0F172A;padding:2px 8px;border-radius:4px;color:#F8C4D7">chmod +x .claude/hooks/*.sh</code> — 훅이 실행되려면 필수</li>
+    <li><strong>실행 권한 부여</strong>: <code style="background:#0F172A;padding:2px 8px;border-radius:4px;color:#F8C4D7">chmod +x .claude/hooks/*.sh</code> — Hook이 실행되려면 필수</li>
     <li><strong>Claude Code 실행</strong> — 자동으로 로드:
       <ul style="margin:6px 0 6px 20px;font-size:12px;color:#94A3B8;line-height:1.6">
         <li><span style="color:#60A5FA">RULE</span>: <code>CLAUDE.md</code> 항상 로드 + <code>.claude/rules/</code> 가 CLAUDE.md 명시 참조 시 로드</li>
-        <li><span style="color:#F87171">HOOK</span>: <code>.claude/settings.json</code> 등록된 훅이 Edit/Write 시점에 시스템 자동 실행 (100% 강제)</li>
+        <li><span style="color:#F87171">HOOK</span>: <code>.claude/settings.json</code> 등록된 Hook이 Edit/Write 시점에 시스템 자동 실행 (100% 강제)</li>
         <li><span style="color:#4ADE80">SKILL</span>: <code>.claude/skills/&lt;name&gt;/SKILL.md</code> 의 frontmatter description 으로 트리거 — Claude 가 필요 시 자동 로드</li>
         <li><span style="color:#FBBF24">AGENT</span>: <code>.claude/agents/&lt;name&gt;.md</code> 의 frontmatter — Claude 가 위임 시 활성</li>
       </ul>
     </li>
     <li><strong>새 프로젝트에 맞게 커스터마이즈</strong>:
       <ul style="margin:6px 0 6px 20px;font-size:12px;color:#94A3B8;line-height:1.6">
-        <li>CLAUDE.md 의 NEVER 룰·스택·디렉토리 맵을 신규 프로젝트에 맞춰 수정</li>
-        <li>.claude/rules/ 의 룰 매뉴얼을 도메인에 맞게 (예: 다른 데이터 모델·다른 디자인 시스템)</li>
-        <li>훅 스크립트의 grep 패턴·차단 경로 조정</li>
-        <li>스킬 워크플로우는 신규 프로젝트의 실제 작업에 맞게 step-by-step 재작성</li>
+        <li>CLAUDE.md 의 NEVER Rule·스택·디렉토리 맵을 신규 프로젝트에 맞춰 수정</li>
+        <li>.claude/rules/ 의 Rule 매뉴얼을 도메인에 맞게 (예: 다른 데이터 모델·다른 디자인 시스템)</li>
+        <li>Hook 스크립트의 grep 패턴·차단 경로 조정</li>
+        <li>Skill 워크플로우는 신규 프로젝트의 실제 작업에 맞게 step-by-step 재작성</li>
       </ul>
     </li>
   </ol>
@@ -461,20 +473,20 @@ h1{font-size:22px;color:#F8FAFC;margin-bottom:4px}
 <div class="intro">
   <h3 style="font-size:14px;color:#F8FAFC;margin-bottom:10px">🧩 하네스 4 개념</h3>
   <ul style="font-size:13px;color:#CBD5E1;margin-left:22px;line-height:1.9">
-    <li><span style="color:#60A5FA;font-weight:700">룰 (Rule)</span> — 따라야 할 규칙. Claude 가 권고로 따름 (~80%). 토큰·invariant·ANTI-PATTERN 매뉴얼.</li>
-    <li><span style="color:#F87171;font-weight:700">훅 (Hook)</span> — 절대 하면 안 되는 것. <strong>JSON 강제 (100%)</strong>. 시스템이 자동 차단.</li>
-    <li><span style="color:#4ADE80;font-weight:700">스킬 (Skill)</span> — 자동 워크플로우 / 명령 조합. "L-1 차트 그려줘" 같은 호출.</li>
-    <li><span style="color:#FBBF24;font-weight:700">서브에이전트</span> — 특정 영역 분리 작업 (예: 데이터 진단 read-only).</li>
+    <li><span style="color:#60A5FA;font-weight:700">Rule</span> — 따라야 할 규칙. Claude 가 권고로 따름 (~80%). 토큰·invariant·ANTI-PATTERN 매뉴얼.</li>
+    <li><span style="color:#F87171;font-weight:700">Hook</span> — 절대 하면 안 되는 것. <strong>JSON 강제 (100%)</strong>. 시스템이 자동 차단.</li>
+    <li><span style="color:#4ADE80;font-weight:700">Skill</span> — 자동 워크플로우 / 명령 조합. "L-1 차트 그려줘" 같은 호출.</li>
+    <li><span style="color:#FBBF24;font-weight:700">Sub-Agent</span> — 특정 영역 분리 작업 (예: 데이터 진단 read-only).</li>
   </ul>
   <p style="color:#94A3B8;font-size:11px;margin-top:10px">아래 목록의 각 컴포넌트를 클릭하면 디자인된 HTML 또는 원본 Markdown 으로 열람 가능.</p>
 </div>
 
 <div class="kpis">
   <div class="card"><div class="label">가이드</div><div class="value">${(grouped.entry || []).length}</div></div>
-  <div class="card"><div class="label">룰 (Rule)</div><div class="value">${(grouped.rule || []).length}</div></div>
-  <div class="card"><div class="label">훅 (Hook)</div><div class="value">${(grouped.hook || []).length}</div></div>
-  <div class="card"><div class="label">스킬 (Skill)</div><div class="value">${(grouped.skill || []).length}</div></div>
-  <div class="card"><div class="label">서브에이전트</div><div class="value">${(grouped.agent || []).length}</div></div>
+  <div class="card"><div class="label">Rule</div><div class="value">${(grouped.rule || []).length}</div></div>
+  <div class="card"><div class="label">Hook</div><div class="value">${(grouped.hook || []).length}</div></div>
+  <div class="card"><div class="label">Skill</div><div class="value">${(grouped.skill || []).length}</div></div>
+  <div class="card"><div class="label">Sub-Agent</div><div class="value">${(grouped.agent || []).length}</div></div>
   <div class="card"><div class="label">총 크기 (압축 전)</div><div class="value">${escHtml(fmtBytes(totalSize))}</div></div>
 </div>
 

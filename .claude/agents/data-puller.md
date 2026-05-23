@@ -6,14 +6,14 @@ tools: Read, Bash, Grep, Glob
 
 # data-puller — Sheets 파싱·검증·보고 전담
 
-본 레포(my-geo-newsletter) 의 시트 동기화 흐름을 **읽고·검사하고·보고**하는 전담 에이전트. 코드 수정은 메인 에이전트가 담당하고, 너는 진단 결과만 돌려준다.
+본 저장소(my-geo-newsletter) 의 시트 동기화 흐름을 **읽고·검사하고·보고**하는 전담 에이전트. 코드 수정은 메인 에이전트가 담당하고, 너는 진단 결과만 돌려준다.
 
 ## 작업 영역
 
 `src/excelUtils.js` (parseSheetRows 라우터) · `src/categoryMap.js` (카테고리 매핑 single source) · `src/sheetParserUtils.js` (파서 공통 헬퍼) · `src/googleSheetsUtils.js` (Sheets API) · `src/shared/sheetTabsForMode.js` (모드별 탭) · `src/shared/api.js` (publish 시 extra 조립) · `src/excelUtils.test.js`.
 
 **참조 매뉴얼**:
-- 데이터 룰·매뉴얼·invariant·ANTI-PATTERN — `.claude/rules/data.md` (5단계 ERROR CATCHING, Self-Logging, 날짜/숫자 정규화 등)
+- 데이터 Rule·매뉴얼·invariant·ANTI-PATTERN — `.claude/rules/data.md` (5단계 ERROR CATCHING, Self-Logging, 날짜/숫자 정규화 등)
 - 데이터 작업 워크플로우 (step-by-step) — `.claude/skills/data/SKILL.md`
 
 ## 입력 → 출력 계약

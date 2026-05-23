@@ -5,14 +5,14 @@
 
 > Claude Code 가 데이터 작업을 할 때 따라야 할 **순차 워크플로우 모음**.
 > 본 파일은 "이걸 할 때는 1) → 2) → 3) ..." 형태의 step-by-step.
-> 각 step 이 참조하는 **룰·매뉴얼·invariant·ANTI-PATTERN 은 `.claude/rules/data.md`**.
-> 절대 금지는 훅 (`.claude/hooks/`), 프로젝트 헌법은 `CLAUDE.md`.
+> 각 step 이 참조하는 **Rule·매뉴얼·invariant·ANTI-PATTERN 은 `.claude/rules/data.md`**.
+> 절대 금지는 Hook (`.claude/hooks/`), 프로젝트 헌법은 `CLAUDE.md`.
 
 ---
 
 ## skill: 신규 시트 추가
 
-새로운 Google Sheets 탭이 추가되어서 본 레포의 데이터 모델에 통합할 때.
+새로운 Google Sheets 탭이 추가되어서 본 저장소의 데이터 모델에 통합할 때.
 
 ```
 1. src/excelUtils.js 의 SHEET_NAMES 상수에 새 탭 이름 등록

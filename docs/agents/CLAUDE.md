@@ -1,23 +1,23 @@
 <!-- 자동 생성 미러 — 원본: CLAUDE.md
      수정은 원본에서. 본 파일은 npm run sync:harness 또는 prebuild 시 자동 갱신. -->
 
-# CLAUDE.md — my-geo-newsletter 프로젝트 룰
+# CLAUDE.md — my-geo-newsletter 프로젝트 Rule
 
-> Claude Code 가 본 레포에서 작업할 때 **항상** 로드되는 룰 — 이 프로젝트만의 규칙.
+> Claude Code 가 본 저장소에서 작업할 때 **항상** 로드되는 Rule — 이 프로젝트만의 규칙.
 > 글로벌 헌법 (안드레 카파시 관점 등) 은 `~/.claude/CLAUDE.md` (사용자 글로벌).
 
 ## 하네스 4 개념 — 형식·강제력 차이
 
-본 레포는 Claude Code 의 4가지 하네스 컴포넌트를 명확히 분리:
+본 저장소는 Claude Code 의 4가지 하네스 컴포넌트를 명확히 분리:
 
-| 개념 | 형식 | 강제력 | 위치 | 본 레포 사례 |
+| 개념 | 형식 | 강제력 | 위치 | 본 저장소 사례 |
 |---|---|---|---|---|
-| **룰 (Rule)** | Markdown | 권고 (~80%) | `CLAUDE.md`, `docs/*.md` | 이 파일 + `.claude/rules/data.md` + `.claude/rules/design.md` |
-| **훅 (Hook)** | JSON 강제 + md 설명서 | 100% (시스템 차단) | `.claude/settings.json` + `.claude/hooks/*.sh` | syntax-check, block-dist (절대 금지 자동 차단) |
-| **스킬 (Skill)** | Markdown 워크플로우 | 권고 (Claude 가 필요 시 로드) | `.claude/skills/*/SKILL.md` | `data` (8 워크플로우), `design` (7 워크플로우) |
-| **서브에이전트** | Markdown frontmatter | Claude 가 위임 시 활성 | `.claude/agents/*.md` | `data-puller` (read-only 진단) |
+| **Rule** | Markdown | 권고 (~80%) | `CLAUDE.md`, `docs/*.md` | 이 파일 + `.claude/rules/data.md` + `.claude/rules/design.md` |
+| **Hook** | JSON 강제 + md 설명서 | 100% (시스템 차단) | `.claude/settings.json` + `.claude/hooks/*.sh` | syntax-check, block-dist (절대 금지 자동 차단) |
+| **Skill** | Markdown 워크플로우 | 권고 (Claude 가 필요 시 로드) | `.claude/skills/*/SKILL.md` | `data` (8 워크플로우), `design` (7 워크플로우) |
+| **Sub-Agent** | Markdown frontmatter | Claude 가 위임 시 활성 | `.claude/agents/*.md` | `data-puller` (read-only 진단) |
 
-**핵심**: 룰 = "따라야 할 규칙" / 훅 = "절대 하면 안 되는 것" / 스킬 = "순차 워크플로우 (명령 조합)" / 서브에이전트 = "영역 분리 작업"
+**핵심**: Rule = "따라야 할 규칙" / Hook = "절대 하면 안 되는 것" / Skill = "순차 워크플로우 (명령 조합)" / Sub-Agent = "영역 분리 작업"
 
 ## 스택
 
@@ -57,32 +57,32 @@ src/
 routes/
   admin-pages.js     # /admin/* HTML 라우트
   publish.js · published.js · ...
-docs/                # 인프라/스키마 참조 문서 (스킬은 .claude/skills/)
+docs/                # 인프라/스키마 참조 문서 (Skill은 .claude/skills/)
 .claude/
   skills/            # 재사용 가능한 작업 매뉴얼 (design/data/prompting)
   settings.local.json
 ```
 
-## 스킬 (Skill — 순차 워크플로우)
+## Skill (Skill — 순차 워크플로우)
 
-스킬은 "자동으로 특정 행동을 하게 하는 명령 조합" — step-by-step 워크플로우. 룰/매뉴얼/anti-pattern 은 별도 docs/.
+Skill은 "자동으로 특정 행동을 하게 하는 명령 조합" — step-by-step 워크플로우. Rule/매뉴얼/anti-pattern 은 별도 docs/.
 
 - `.claude/skills/design/SKILL.md` — 디자인 워크플로우 (신규 컴포넌트 추가, SVG 차트, 뉴스레터 카드 변형, 이메일 호환 변환 등)
 - `.claude/skills/data/SKILL.md` — 데이터 워크플로우 (신규 시트 추가, 신규 카테고리 추가, 회귀 디버깅 TDD, 거대 파서 분할, silent fallback 강화, 매핑 통합 등)
 - `.claude/skills/prompting/SKILL.md` — 다른 에이전트형 도구 (Cursor/Codex) 용 통합 프롬프트
 
-## 룰 매뉴얼 (Rule — 참조용)
+## Rule 매뉴얼 (Rule — 참조용)
 
-스킬이 step-by-step 이라면, 룰은 그 step 이 따라야 할 토큰·invariant·ANTI-PATTERN 정의.
+Skill이 step-by-step 이라면, Rule은 그 step 이 따라야 할 토큰·invariant·ANTI-PATTERN 정의.
 
-- `.claude/rules/data.md` — 데이터 작업 룰 (5단계 ERROR CATCHING, invariant, 날짜/숫자 정규화, null vs 0, ANTI-PATTERN)
-- `.claude/rules/design.md` — 디자인 작업 룰 (토큰, SVG 패턴, 컴포넌트 카탈로그 C-01~C-23, 이메일 호환 ANTI-PATTERN)
+- `.claude/rules/data.md` — 데이터 작업 Rule (5단계 ERROR CATCHING, invariant, 날짜/숫자 정규화, null vs 0, ANTI-PATTERN)
+- `.claude/rules/design.md` — 디자인 작업 Rule (토큰, SVG 패턴, 컴포넌트 카탈로그 C-01~C-23, 이메일 호환 ANTI-PATTERN)
 
-전체 하네스 (룰·스킬·훅·서브에이전트) 미러링 ZIP 다운로드: `/admin/harness` 페이지.
+전체 하네스 (Rule·Skill·Hook·Sub-Agent) 미러링 ZIP 다운로드: `/admin/harness` 페이지.
 
 ## 참조 문서 (Reference Docs)
 
-스킬이 아닌 인프라/스키마/배포 문서는 `docs/` 에 그대로:
+Skill이 아닌 인프라/스키마/배포 문서는 `docs/` 에 그대로:
 
 - `docs/ADMIN_PLAN.md` — 시스템 기획서
 - `docs/GCP_INFRA.md` — GCP 인프라 구성
@@ -107,7 +107,7 @@ docs/                # 인프라/스키마 참조 문서 (스킬은 .claude/skil
 
 신규 마커 추가 시 본 표에 등재. 코드 주석으로만 두지 말 것.
 
-## 자동화 룰
+## 자동화 Rule
 
 - **변경 후 자동 커밋 + 푸시** (사용자 글로벌 메모리에 기재). 사용자가 별도 지시 없어도 작업 단위마다 `git add` → conventional commit → `git push`.
 - 커밋 메시지: `feat(scope): ...` / `fix(scope): ...` / `docs(scope): ...` / `refactor(scope): ...` / `style(scope): ...` — 한국어 본문 + `Co-Authored-By: Claude Opus 4.7 (1M context)` 트레일러
@@ -116,7 +116,7 @@ docs/                # 인프라/스키마 참조 문서 (스킬은 .claude/skil
 ## 절대 금지 (NEVER)
 
 ```
-NEVER  --no-verify 로 훅 우회 (사용자 명시 지시 외)
+NEVER  --no-verify 로 Hook 우회 (사용자 명시 지시 외)
 NEVER  --no-gpg-sign 서명 우회
 NEVER  git push --force / --force-with-lease 를 main 에
 NEVER  rm -rf / git reset --hard / git clean -f 를 사용자 확인 없이

@@ -1,3 +1,6 @@
+<!-- 자동 생성 미러 — 원본: .claude/hooks/README.md
+     수정은 원본에서. 본 파일은 npm run sync:harness 또는 prebuild 시 자동 갱신. -->
+
 # Hook (Hooks) — 절대 금지 강제
 
 > Rule의 반대 — "절대 하면 안 되는 것" 의 정의. 시스템이 직접 실행해서 100% 차단.

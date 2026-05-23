@@ -34,7 +34,7 @@ a{color:#60A5FA}
 </style></head><body>
 
 <h1>Harness</h1>
-<p class="sub">본 프로젝트의 Claude Code 하네스 (룰·훅·스킬·서브에이전트) 전체 설명</p>
+<p class="sub">본 프로젝트의 Claude Code 하네스 (Rule·Hook·Skill·Sub-Agent) 전체 설명</p>
 
 <div class="intro">
   <p><strong>본 폴더 <code>docs/agents/</code> 는 모든 하네스의 미러링 본 (사람용 진입점).</strong> Claude Code 가 실제 사용하는 것은 원본 (<code>CLAUDE.md</code>, <code>.claude/</code> 안).</p>
@@ -45,10 +45,10 @@ a{color:#60A5FA}
   <h2>4 개념 정의</h2>
   <table>
     <tr><th>개념</th><th>형식</th><th>강제력</th><th>역할</th></tr>
-    <tr><td><span class="tag badge-rule">RULE</span> 룰</td><td>Markdown</td><td>권고 (~80%)</td><td>따라야 할 규칙 — 토큰·invariant·ANTI-PATTERN. 참조용 매뉴얼.</td></tr>
-    <tr><td><span class="tag badge-hook">HOOK</span> 훅</td><td>JSON + md 설명서</td><td>100% (시스템 차단)</td><td>절대 하면 안 되는 것. 등록은 settings.json (JSON 필수).</td></tr>
-    <tr><td><span class="tag badge-skill">SKILL</span> 스킬</td><td>Markdown</td><td>권고 (필요 시 로드)</td><td>자동 워크플로우 / 명령 조합. step-by-step.</td></tr>
-    <tr><td><span class="tag badge-agent">AGENT</span> 서브에이전트</td><td>Markdown frontmatter</td><td>위임 시 활성</td><td>특정 영역 분리 작업. Claude Code 공식 기능.</td></tr>
+    <tr><td><span class="tag badge-rule">RULE</span> Rule</td><td>Markdown</td><td>권고 (~80%)</td><td>따라야 할 규칙 — 토큰·invariant·ANTI-PATTERN. 참조용 매뉴얼.</td></tr>
+    <tr><td><span class="tag badge-hook">HOOK</span> Hook</td><td>JSON + md 설명서</td><td>100% (시스템 차단)</td><td>절대 하면 안 되는 것. 등록은 settings.json (JSON 필수).</td></tr>
+    <tr><td><span class="tag badge-skill">SKILL</span> Skill</td><td>Markdown</td><td>권고 (필요 시 로드)</td><td>자동 워크플로우 / 명령 조합. step-by-step.</td></tr>
+    <tr><td><span class="tag badge-agent">AGENT</span> Sub-Agent</td><td>Markdown frontmatter</td><td>위임 시 활성</td><td>특정 영역 분리 작업. Claude Code 공식 기능.</td></tr>
   </table>
 
   <div class="warn">
@@ -61,7 +61,7 @@ a{color:#60A5FA}
   <p><strong>원본 (Claude Code 공식 — 실제 작동)</strong></p>
   <div class="tree">CLAUDE.md
 .claude/
-├── settings.json               (훅 등록 JSON 강제)
+├── settings.json               (Hook 등록 JSON 강제)
 ├── hooks/                      (syntax-check.sh, block-dist.sh, README.md)
 ├── skills/<name>/SKILL.md      (data, design, prompting)
 ├── agents/                     (data-puller.md)
@@ -72,40 +72,40 @@ a{color:#60A5FA}
 ├── HARNESS.md            ← 전체 설명 (마크다운)
 ├── HARNESS.html          ← 본 파일 (브라우저로 더블클릭)
 ├── CLAUDE.md             ← 프로젝트 헌법 미러
-├── rules/                ← 룰 매뉴얼 미러
+├── rules/                ← Rule 매뉴얼 미러
 │   ├── data.md
 │   └── design.md
-├── skills/               ← 스킬 워크플로우 미러
+├── skills/               ← Skill 워크플로우 미러
 │   ├── data.md
 │   └── design.md
-└── hooks/                ← 훅 영역별 관점
+└── hooks/                ← Hook 영역별 관점
     ├── data.md
     └── design.md</div>
 </div>
 
 <div class="section">
-  <h2><span class="tag badge-rule">RULE</span> 룰 (Rule) — 따라야 할 규칙</h2>
+  <h2><span class="tag badge-rule">RULE</span> Rule — 따라야 할 규칙</h2>
   <p>토큰·invariant·ANTI-PATTERN 정의. Markdown 권고 (~80%).</p>
   <ul>
-    <li><code>CLAUDE.md</code> — 프로젝트 헌법 (4 개념 정의 + NEVER 룰 + 작업 흐름)</li>
-    <li><code>rules/data.md</code> — 데이터 작업 룰·매뉴얼·invariant (5단계 ERROR CATCHING / null vs 0 / 날짜 정규화)</li>
+    <li><code>CLAUDE.md</code> — 프로젝트 헌법 (4 개념 정의 + NEVER Rule + 작업 흐름)</li>
+    <li><code>rules/data.md</code> — 데이터 작업 Rule·매뉴얼·invariant (5단계 ERROR CATCHING / null vs 0 / 날짜 정규화)</li>
     <li><code>rules/design.md</code> — 디자인 토큰·컴포넌트 카탈로그 (C-01~C-23)·SVG 패턴·이메일 호환 ANTI-PATTERN</li>
   </ul>
   <p>원본: <code>CLAUDE.md</code>, <code>.claude/rules/data.md</code>, <code>.claude/rules/design.md</code></p>
 </div>
 
 <div class="section">
-  <h2><span class="tag badge-hook">HOOK</span> 훅 (Hook) — 절대 금지 강제</h2>
+  <h2><span class="tag badge-hook">HOOK</span> Hook — 절대 금지 강제</h2>
   <p>시스템이 직접 차단. JSON 필수 + 인간 가독 md 설명서.</p>
   <ul>
-    <li><code>hooks/data.md</code> — 데이터 영역 적용 훅 (syntax-check 위주) + 추가 후보 (warn-inline-mapping, warn-silent-fallback 등)</li>
-    <li><code>hooks/design.md</code> — 디자인 영역 적용 훅 (block-dist 위주) + 추가 후보 (block-hardcoded-color, block-flex-in-email 등)</li>
+    <li><code>hooks/data.md</code> — 데이터 영역 적용 Hook (syntax-check 위주) + 추가 후보 (warn-inline-mapping, warn-silent-fallback 등)</li>
+    <li><code>hooks/design.md</code> — 디자인 영역 적용 Hook (block-dist 위주) + 추가 후보 (block-hardcoded-color, block-flex-in-email 등)</li>
   </ul>
   <p>원본 정의: <code>.claude/settings.json</code> (JSON 강제), <code>.claude/hooks/*.sh</code> (스크립트)</p>
 </div>
 
 <div class="section">
-  <h2><span class="tag badge-skill">SKILL</span> 스킬 (Skill) — 순차 워크플로우</h2>
+  <h2><span class="tag badge-skill">SKILL</span> Skill — 순차 워크플로우</h2>
   <p>"이걸 할 때는 1) → 2) → 3) ..." step-by-step 명령 조합.</p>
   <ul>
     <li><code>skills/data.md</code> — 8 워크플로우 (신규 시트 추가, 신규 카테고리 추가, 회귀 디버깅 TDD, 거대 파서 분할, silent fallback 강화, 매핑 통합, sync verify, ERROR CATCHING 적용)</li>
@@ -115,7 +115,7 @@ a{color:#60A5FA}
 </div>
 
 <div class="section">
-  <h2><span class="tag badge-agent">AGENT</span> 서브에이전트 (Sub-agent)</h2>
+  <h2><span class="tag badge-agent">AGENT</span> Sub-Agent</h2>
   <p>특정 영역 분리 작업 — Claude Code 공식 기능. Claude 가 위임 시 활성화.</p>
   <ul>
     <li><code>data-puller.md</code> — 데이터 파싱 파이프라인의 shape·정합성·누락 조사·보고 (read-only)</li>
@@ -132,7 +132,7 @@ a{color:#60A5FA}
 </div>
 
 <div class="section">
-  <h2>본 레포 갱신 흐름</h2>
+  <h2>본 저장소 갱신 흐름</h2>
   <ol style="margin-left:22px;font-size:13px;color:#CBD5E1">
     <li>원본 파일 수정 (예: <code>.claude/rules/data.md</code>, <code>.claude/skills/data/SKILL.md</code>)</li>
     <li><code>npm run build</code> 또는 <code>npm run sync:harness</code> → <code>.claude/agents/</code> 미러 자동 갱신</li>
@@ -145,8 +145,8 @@ a{color:#60A5FA}
 
 <div class="section">
   <h2>강제력 격상 패턴</h2>
-  <p>룰을 권고가 아닌 100% 강제로 만들려면 → 해당 룰을 검출하는 <code>*.sh</code> 훅 작성 → <code>.claude/settings.json</code> 등록.</p>
-  <p>예시는 <code>hooks/data.md</code> · <code>hooks/design.md</code> 의 "추가 후보 훅" 섹션 참고.</p>
+  <p>Rule을 권고가 아닌 100% 강제로 만들려면 → 해당 Rule을 검출하는 <code>*.sh</code> Hook 작성 → <code>.claude/settings.json</code> 등록.</p>
+  <p>예시는 <code>hooks/data.md</code> · <code>hooks/design.md</code> 의 "추가 후보 Hook" 섹션 참고.</p>
 </div>
 
 </body></html>

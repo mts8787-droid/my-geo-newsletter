@@ -1,11 +1,11 @@
 <!-- 자동 생성 미러 — 원본: .claude/rules/data.md
      수정은 원본에서. 본 파일은 npm run sync:harness 또는 prebuild 시 자동 갱신. -->
 
-# 데이터 룰 (Data Rules)
+# 데이터 Rule (Data Rules)
 
-> 본 프로젝트의 데이터 작업 룰·매뉴얼·invariant·ANTI-PATTERN 모음. **참조용 매뉴얼**.
-> 실제 작업 워크플로우 (step-by-step) 는 `.claude/skills/data/SKILL.md` (스킬) 참조.
-> 룰은 Claude Code 가 권고로 따름 (~80%). 100% 강제는 훅 (`.claude/hooks/`) 영역.
+> 본 프로젝트의 데이터 작업 Rule·매뉴얼·invariant·ANTI-PATTERN 모음. **참조용 매뉴얼**.
+> 실제 작업 워크플로우 (step-by-step) 는 `.claude/skills/data/SKILL.md` (Skill) 참조.
+> Rule은 Claude Code 가 권고로 따름 (~80%). 100% 강제는 Hook (`.claude/hooks/`) 영역.
 
 ---
 
@@ -32,7 +32,7 @@
 
 ## 3. DATA INTERFACES (CANONICAL)
 
-본 레포 전체 가정하는 데이터 shape. 신규 데이터 추가 시 이 shape 부터 매핑.
+본 저장소 전체 가정하는 데이터 shape. 신규 데이터 추가 시 이 shape 부터 매핑.
 
 ```js
 // 단일 시계열
@@ -231,10 +231,10 @@ function parseNumber(v) {
 4. `isNaN(n) ? null : n`
 
 **`pct()` 의 ratio 자동 변환 트랩** (`src/excelUtils.js`):
-- 비즈니스 룰: `0~1` 사이 입력은 ratio 로 간주, `×100` 자동 변환 (예: `0.753 → 75.3`).
+- 비즈니스 Rule: `0~1` 사이 입력은 ratio 로 간주, `×100` 자동 변환 (예: `0.753 → 75.3`).
 - `'%'` 접미는 이미 percent 로 간주, 변환 없음.
 - **WARNING**: score 가 0~100 percent 라는 가정 위에 동작. ratio 가 합법인 값 (상관계수 -1~+1, 확률 0~1) 은 본 함수 금지 — 별도 parser 필요.
-- 시트 룰 변경 시 `pct` + `pctOrNull` 동시 수정.
+- 시트 Rule 변경 시 `pct` + `pctOrNull` 동시 수정.
 
 ### 5.5 카테고리 ID 매핑 (single source)
 
@@ -603,7 +603,7 @@ VERIFY  — 결과가 예상과 일치하는지 검사
 REFLECT — 불일치 시 진단 + 수정 시도
 ```
 
-본 레포 사례: `insight_runs` 테이블 (AI 호출 로그) → `/admin/observability` 시각화.
+본 저장소 사례: `insight_runs` 테이블 (AI 호출 로그) → `/admin/observability` 시각화.
 
 ### 7.2 구조화 로그 (Structured Log)
 
@@ -643,7 +643,7 @@ function logStructured(entry) {
 | File IO (게시) | path, byte size, success |
 | User action (publish/sync) | user, timestamp, mode, target |
 
-본 레포의 `insight_runs` 패턴 차용:
+본 저장소의 `insight_runs` 패턴 차용:
 ```js
 async function callBoundary(scope, fn, input) {
   const start = Date.now()
@@ -741,7 +741,7 @@ if (rows && rows.length > 0) {
 
 수집한 로그를 **시각화** 해서 사람/에이전트가 패턴 식별:
 
-본 레포 `/admin/observability` 사례:
+본 저장소 `/admin/observability` 사례:
 - AI 호출별 토큰/비용/지연/실패 추적
 - 시계열 차트 (시간당 호출 수, 평균 지연)
 - 실패 케이스 테이블 (error message + 원본 input sample)
@@ -786,7 +786,7 @@ async function selfCheck() {
 [7] ANTI-PAT    — 발견한 함정 §6 ANTI-PATTERN 으로 명문화
 ```
 
-### 7.9 본 레포 적용 사례
+### 7.9 본 저장소 적용 사례
 
 | 컴포넌트 | Self-Logging 패턴 |
 |---|---|

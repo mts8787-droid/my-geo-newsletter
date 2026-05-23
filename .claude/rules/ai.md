@@ -1,8 +1,8 @@
-# AI 룰 (AI Rules) — Anthropic API / 인사이트 생성 작업 규칙
+# AI Rule (AI Rules) — Anthropic API / 인사이트 생성 작업 규칙
 
 > Anthropic SDK 호출 / AI 인사이트 생성 / 응답 검증 / 비용·신뢰성 패턴.
 > 실제 워크플로우 (step-by-step) 는 향후 `.claude/skills/ai/SKILL.md` 신설 시 작성.
-> 본 문서는 룰 매뉴얼 (참조용). 권고 (~80%). 100% 강제는 훅 영역.
+> 본 문서는 Rule 매뉴얼 (참조용). 권고 (~80%). 100% 강제는 Hook 영역.
 
 ---
 
@@ -45,7 +45,7 @@ Anthropic SDK (streaming) → 응답 chunk 누적
 
 ## 3. AI DIRECTIVES
 
-### 3.1 Streaming 강제 (N3 + CLAUDE.md NEVER 룰)
+### 3.1 Streaming 강제 (N3 + CLAUDE.md NEVER Rule)
 
 **RULE**: `max_tokens > 4096` 인 경우 non-streaming 호출 금지. 반드시 streaming.
 - 이유: Anthropic API 가 large output 시 timeout 또는 403 반환
@@ -127,7 +127,7 @@ const PRICING = {
 const cost = inputTokens * pricing.input + outputTokens * pricing.output
 ```
 
-### 3.5 사용자 텍스트 보호 (CLAUDE.md NEVER 룰)
+### 3.5 사용자 텍스트 보호 (CLAUDE.md NEVER Rule)
 
 **RULE**: AI 가 받은 사용자 텍스트는 **그대로** 사용. 임의 다듬기 / 정정 / 보강 금지.
 - 예: 사용자가 `"Q1 결과 발표"` 라고 적으면 AI 가 `"1분기 결과 발표"` 로 다듬는 것 금지

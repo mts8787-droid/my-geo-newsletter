@@ -118,7 +118,18 @@
       "Bash(awk 'NR==520,NR==522' /Users/dubaba/my-geo-project/my-geo-newsletter/routes/admin-pages.js)",
       "Bash(git rm *)",
       "Bash(/Users/dubaba/my-geo-project/my-geo-newsletter/.claude/hooks/syntax-check.sh)",
-      "Bash(echo \"EXIT: $?\")"
+      "Bash(echo \"EXIT: $?\")",
+      "Bash(.claude/hooks/block-dist.sh)",
+      "Bash(echo \"exit: $?\")",
+      "Bash(ADMIN_PASSWORD=ci-test PORT=3199 timeout 6 node server.js)",
+      "Bash(unzip -l /tmp/harness.zip)",
+      "Bash(cp .claude/skills/data/SKILL.md docs/DATA_RULES.md)",
+      "Bash(cp .claude/skills/design/SKILL.md docs/DESIGN_RULES.md)",
+      "Bash(unzip -l /tmp/h.zip)",
+      "Bash(mkdir -p .claude/rules docs/agents)",
+      "Bash(git mv *)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:www.chartjs.org)"
     ]
   }
 }

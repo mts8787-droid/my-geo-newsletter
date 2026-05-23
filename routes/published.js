@@ -16,7 +16,7 @@ const PROJECT_ROOT = join(__dirname, '..')
 // 게시 HTML은 인라인 style/script를 광범위 사용하므로 unsafe-inline 허용,
 // 외부 도메인 화이트리스트:
 //  - fonts.cdnfonts.com: LG Smart 웹폰트
-// (Progress Tracker v2는 본 레포에 통합되어 same-origin이므로 외부 frame-src 불필요)
+// (Progress Tracker v2는 본 저장소에 통합되어 same-origin이므로 외부 frame-src 불필요)
 const PUBLISHED_CSP = [
   "default-src 'self'",
   "style-src 'self' 'unsafe-inline' https://fonts.cdnfonts.com",

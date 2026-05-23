@@ -3,7 +3,7 @@
 
 # Debug — 디버깅 시나리오 호출 워크플로우
 
-> 사용자가 디버깅 / 수정 요청 시 본 스킬 사용. `.claude/rules/BOOTSTRAP.md` 의 "디버깅 시나리오 모음" 15 카테고리 활용.
+> 사용자가 디버깅 / 수정 요청 시 본 Skill 사용. `.claude/rules/BOOTSTRAP.md` 의 "디버깅 시나리오 모음" 15 카테고리 활용.
 
 ---
 
@@ -44,7 +44,7 @@
 3. 매칭 시나리오의 디버깅 순서 따름:
    · 각 step 의 진단 / 검증 / 수정 동작 실행
    · 사용자에게 진단 결과 보고
-   · 관련 룰 (data.md / design.md / ai.md NEVER 룰) 위반 여부 검토
+   · 관련 Rule (data.md / design.md / ai.md NEVER Rule) 위반 여부 검토
 
 4. 더 나은 방법 발견 시 그 방식으로 진행:
    · 시나리오는 절대 아님 — 가이드
@@ -58,7 +58,7 @@
 
 6. 회귀 방지:
    · 수정 후 단위 테스트 추가 (회귀 디버깅 TDD 워크플로우 참조)
-   · 관련 룰 ANTI-PATTERN 으로 등재할지 검토
+   · 관련 Rule ANTI-PATTERN 으로 등재할지 검토
 ```
 
 ---
@@ -74,8 +74,8 @@
    · 증상 (사용자가 보는 현상)
    · 원인 (코드 / 데이터 / 외부 boundary 의 어디서)
    · 디버깅 순서 (1~6 step)
-   · 관련 룰 / ANTI-PATTERN 참조
-4. 관련 ANTI-PATTERN 이 룰에 없으면 추가 (data.md / design.md / ai.md)
+   · 관련 Rule / ANTI-PATTERN 참조
+4. 관련 ANTI-PATTERN 이 Rule에 없으면 추가 (data.md / design.md / ai.md)
 5. npm run sync:harness — 미러 갱신
 ```
 

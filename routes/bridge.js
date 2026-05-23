@@ -1,8 +1,8 @@
 // ─── BigQuery → sync-data JSON 브릿지 ───────────────────────────────────────
-// `dashboard-raw-data` 레포(writer)가 채운 BigQuery 테이블을 읽어
+// `dashboard-raw-data` 저장소(writer)가 채운 BigQuery 테이블을 읽어
 // 기존 편집 페이지의 sync-data JSON 형식으로 변환해 전달한다.
 //
-// 두 레포 사이 결합 지점은 BIGQUERY_SCHEMA.md 단일 — 코드 공유 없음.
+// 두 저장소 사이 결합 지점은 BIGQUERY_SCHEMA.md 단일 — 코드 공유 없음.
 //
 // 라우트:
 //   GET /api/bridge/health           — BigQuery 연결 상태

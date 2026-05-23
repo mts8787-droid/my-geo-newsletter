@@ -1,0 +1,37 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hook 가이드 (사람용 설명서)</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#0F172A;color:#E2E8F0;font-family:'LG Smart','Arial Narrow',Arial,sans-serif;padding:24px 32px;line-height:1.65}
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px}
+.content{max-width:1040px;margin:0 auto;background:#0B1220;border:1px solid #1E293B;border-radius:12px;padding:32px 40px}
+.content h1{font-size:26px;color:#F8FAFC;margin:0 0 12px;padding-bottom:10px;border-bottom:2px solid #CF0652}
+.content h2{font-size:20px;color:#F8FAFC;margin:28px 0 12px;padding-bottom:6px;border-bottom:1px solid #334155}
+.content h3{font-size:16px;color:#F8FAFC;margin:22px 0 10px}
+.content h4{font-size:14px;color:#CBD5E1;margin:18px 0 8px}
+.content p{margin:10px 0;color:#CBD5E1;font-size:14px}
+.content ul,.content ol{margin:10px 0 10px 22px;color:#CBD5E1;font-size:14px}
+.content li{margin:4px 0}
+.content code{background:#1E293B;color:#F8C4D7;padding:2px 6px;border-radius:4px;font-family:'Consolas','Courier New',monospace;font-size:12px}
+.content pre{background:#1E293B;border:1px solid #334155;border-radius:8px;padding:14px 16px;overflow:auto;font-family:'Consolas','Courier New',monospace;font-size:12px;line-height:1.5}
+.content pre code{background:none;padding:0;color:#E2E8F0}
+.content table{border-collapse:collapse;width:100%;margin:14px 0;font-size:13px}
+.content th,.content td{border:1px solid #334155;padding:8px 12px;text-align:left;vertical-align:top;color:#CBD5E1}
+.content th{background:#1E293B;color:#F8FAFC;font-weight:700}
+.content tr:nth-child(even) td{background:#0F172A}
+.content blockquote{border-left:3px solid #CF0652;margin:14px 0;padding:6px 16px;background:#1E293B;color:#94A3B8;font-size:13px;border-radius:0 6px 6px 0}
+.content hr{border:none;border-top:1px solid #334155;margin:22px 0}
+.content a{color:#F472B6;text-decoration:none}
+.content a:hover{text-decoration:underline}
+</style></head><body>
+<div class="topbar">
+  <span style="font-size:11px;color:#64748B">Hook 가이드 — .claude/hooks/README.md 의 디자인된 사람용 설명서</span>
+</div>
+<div id="content" class="content">로딩 중…</div>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script>
+  marked.use({ gfm: true, breaks: false })
+  document.getElementById('content').innerHTML = marked.parse("# Hook (Hooks) — 절대 금지 강제\n\n> Rule의 반대 — \"절대 하면 안 되는 것\" 의 정의. 시스템이 직접 실행해서 100% 차단.\n> **JSON 필수**: 등록은 `.claude/settings.json` 의 `hooks` 필드 (시스템이 파싱·실행).\n> `.md` 안에 hook 정의를 적어봐야 무시됨. 본 문서는 인간 가독성용 설명서.\n\n## 형식·강제력\n\n| 컴포넌트 | 형식 | 강제력 |\n|---|---|---|\n| 등록 (`.claude/settings.json`) | JSON | 시스템이 직접 파싱·실행 — Claude 우회 불가 |\n| 스크립트 (`*.sh`) | Bash (또는 Node, Python 등) | 종료 코드로 차단/허용 결정 (exit 2 = 차단) |\n| 본 README | Markdown | 인간 가독성 — Claude 가 읽을 수도 있지만 강제 X |\n\n## 등록된 Hook\n\n### 1. `syntax-check.sh` (PostToolUse)\n\n- **트리거**: `Edit` | `Write` | `MultiEdit` 직후\n- **대상**: `src/` 또는 `routes/` 의 `*.js` (서버측 JS만; `.jsx` 는 transform 필요해서 제외)\n- **동작**: `node --check <file>` 으로 신택스 검증. 실패 시 `exit 2` + stderr 메시지 → Claude 가 에러 보고 즉시 수정 유도.\n- **목적**: 문법 깨짐 (괄호 누락, typo 등) 즉시 차단. 빌드 시까지 모르고 가는 것 방지.\n- **CLAUDE.md 관련 Rule**: 없음 (예방적 검증)\n\n### 2. `block-dist.sh` (PreToolUse)\n\n- **트리거**: `Edit` | `Write` | `MultiEdit` 호출 전\n- **대상**: `file_path` 가 `dist-*/` 또는 `dist/` 포함\n- **동작**: 위 패턴 매칭 시 `exit 2` + stderr 메시지 → Claude 가 차단 사유 인지하고 다른 경로 선택.\n- **목적**: 빌드 산출물을 직접 수정해서 다음 빌드에 덮어쓰여지는 회귀 방지.\n- **CLAUDE.md 관련 Rule**: \"NEVER dist-* / dist 디렉토리 직접 수정 (빌드 산출물)\"\n\n## 신규 Hook 추가 가이드\n\n```\n1. .claude/hooks/<name>.sh 작성\n   a. shebang: #!/usr/bin/env bash\n   b. stdin JSON 파싱 → tool_input.file_path 추출 (예시: syntax-check.sh 참고)\n   c. 검증 로직 (case / grep / node --check 등)\n   d. 차단 시 exit 2 + stderr 메시지 / 통과 시 exit 0\n2. chmod +x .claude/hooks/<name>.sh\n3. .claude/settings.json 의 hooks 필드에 등록:\n   {\n     \"hooks\": {\n       \"PreToolUse\"|\"PostToolUse\": [{\n         \"matcher\": \"Edit|Write|MultiEdit\",\n         \"hooks\": [{ \"type\": \"command\", \"command\": \"$CLAUDE_PROJECT_DIR/.claude/hooks/<name>.sh\" }]\n       }]\n     }\n   }\n4. 본 README 에 항목 추가 — 트리거·대상·동작·목적·관련 Rule\n5. 동작 검증:\n   echo '{\"tool_input\":{\"file_path\":\"<test-path>\"}}' | .claude/hooks/<name>.sh\n   echo \"exit: $?\"\n```\n\n## Hook vs Rule vs Skill 차이\n\n```\nRule (CLAUDE.md / docs/*_RULES.md)\n  → \"따라야 할 규칙\" — Claude 가 권고로 따름 (~80%)\n\nHook (settings.json + hooks/*.sh)\n  → \"절대 하면 안 되는 것\" — 시스템이 강제 차단 (100%)\n  → Rule의 critical 한 항목 (회귀 위험 큰 것) 만 Hook으로 격상\n\nSkill (skills/*/SKILL.md)\n  → \"순차 워크플로우 (명령 조합)\" — Claude 가 필요 시 로드해 step-by-step 실행\n\nSub-Agent (agents/*.md)\n  → 특정 영역 분리 작업 (read-only 진단 등)\n```\n\n## 추가 Hook 후보 (미구현, 참고용)\n\n- `block-no-verify.sh` — 커밋 시 `--no-verify` 사용 차단 (CLAUDE.md NEVER Rule)\n- `block-force-push.sh` — `git push --force` 차단\n- `warn-inline-mapping.sh` — Edit 후 추가된 라인에 `tv:.*'TV'.*monitor.*'IT'` 같은 인라인 매핑 패턴 검출 시 warn (categoryMap single source 강제)\n- `block-large-non-streaming.sh` — Anthropic non-streaming + max_tokens > 4096 호출 차단\n")
+</script>
+</body></html>
