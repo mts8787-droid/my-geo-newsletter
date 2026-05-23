@@ -932,6 +932,7 @@ a.harness-entry:hover{border-color:#CF0652;background:#4F2535}
       <a class="harness-file" href="/admin/data-skills"><span class="harness-tag tag-skill">SKILL</span> 데이터 스킬 (라이브 페이지) <code>data/SKILL.md</code></a>
       <a class="harness-file" href="/admin/design-skills"><span class="harness-tag tag-skill">SKILL</span> 디자인 스킬 (라이브 페이지) <code>design/SKILL.md</code></a>
       <a class="harness-file" href="/admin/harness/view?path=.claude/skills/prompting/SKILL.md" target="_blank"><span class="harness-tag tag-skill">SKILL</span> 프롬프팅 통합 <code>prompting/SKILL.md</code></a>
+      <a class="harness-file" href="/admin/harness/view?path=.claude/skills/onboard/SKILL.md" target="_blank"><span class="harness-tag tag-skill">SKILL</span> Onboard (하네스 적용) <code>onboard/SKILL.md</code></a>
 
       <a class="harness-file" href="/admin/harness/view?path=.claude/agents/data-puller.md" target="_blank"><span class="harness-tag tag-agent">AGENT</span> 데이터 진단 <code>data-puller.md</code></a>
 
