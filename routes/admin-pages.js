@@ -931,8 +931,14 @@ a.harness-entry:hover{border-color:#CF0652;background:#4F2535}
       <a class="harness-file" href="/admin/harness/view?path=.claude/hooks/syntax-check.sh" target="_blank"><span class="harness-tag tag-config">Bash (For AI)</span> <code>syntax-check.sh</code></a>
       <a class="harness-file" href="/admin/harness/view?path=.claude/hooks/block-dist.sh" target="_blank"><span class="harness-tag tag-config">Bash (For AI)</span> <code>block-dist.sh</code></a>
 
-      <a class="harness-file" href="/admin/data-skills"><span class="harness-tag tag-skill">SKILL</span> 데이터 Skill (라이브 페이지) <code>data/SKILL.md</code></a>
-      <a class="harness-file" href="/admin/design-skills"><span class="harness-tag tag-skill">SKILL</span> 디자인 Skill (라이브 페이지) <code>design/SKILL.md</code></a>
+      <a class="harness-file" href="/admin/data-skills"><span class="harness-tag tag-skill">INDEX</span> data (인덱스 — 라이브 페이지) <code>data/SKILL.md</code></a>
+      <a class="harness-file" href="/admin/harness/view?path=.claude/skills/data-add/SKILL.md" target="_blank"><span class="harness-tag tag-skill">SKILL</span> data-add — 시트·카테고리 신규 추가 <code>data-add/SKILL.md</code></a>
+      <a class="harness-file" href="/admin/harness/view?path=.claude/skills/data-debug/SKILL.md" target="_blank"><span class="harness-tag tag-skill">SKILL</span> data-debug — 회귀·sync 진단 <code>data-debug/SKILL.md</code></a>
+      <a class="harness-file" href="/admin/harness/view?path=.claude/skills/data-refactor/SKILL.md" target="_blank"><span class="harness-tag tag-skill">SKILL</span> data-refactor — 분할·매핑·로깅 품질 <code>data-refactor/SKILL.md</code></a>
+      <a class="harness-file" href="/admin/design-skills"><span class="harness-tag tag-skill">INDEX</span> design (인덱스 — 라이브 페이지) <code>design/SKILL.md</code></a>
+      <a class="harness-file" href="/admin/harness/view?path=.claude/skills/design-chart/SKILL.md" target="_blank"><span class="harness-tag tag-skill">SKILL</span> design-chart — 차트(L-1~T-1) + 차트+표 결합 <code>design-chart/SKILL.md</code></a>
+      <a class="harness-file" href="/admin/harness/view?path=.claude/skills/design-component/SKILL.md" target="_blank"><span class="harness-tag tag-skill">SKILL</span> design-component — 카드·컴포넌트(C-XX) 추가 <code>design-component/SKILL.md</code></a>
+      <a class="harness-file" href="/admin/harness/view?path=.claude/skills/design-tune/SKILL.md" target="_blank"><span class="harness-tag tag-skill">SKILL</span> design-tune — 호환·KO/EN·회귀 디버깅 <code>design-tune/SKILL.md</code></a>
       <a class="harness-file" href="/admin/harness/view?path=.claude/skills/prompting/SKILL.md" target="_blank"><span class="harness-tag tag-skill">SKILL</span> 프롬프팅 통합 <code>prompting/SKILL.md</code></a>
       <a class="harness-file" href="/admin/harness/view?path=.claude/skills/onboard/SKILL.md" target="_blank"><span class="harness-tag tag-skill">SKILL</span> Onboard (하네스 적용) <code>onboard/SKILL.md</code></a>
       <a class="harness-file" href="/admin/harness/view?path=.claude/skills/debug/SKILL.md" target="_blank"><span class="harness-tag tag-skill">SKILL</span> Debug (디버깅 시나리오) <code>debug/SKILL.md</code></a>

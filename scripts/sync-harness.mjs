@@ -35,10 +35,16 @@ const MIRROR_MAP = [
   { src: '.claude/rules/ai.md',        dst: 'docs/agents/rules/ai.md' },
   { src: '.claude/rules/BOOTSTRAP.md', dst: 'docs/agents/rules/BOOTSTRAP.md' },
   // Skill 워크플로우 (frontmatter 제거 — 미러는 참조용)
-  { src: '.claude/skills/data/SKILL.md',     dst: 'docs/agents/skills/data.md',     stripFrontmatter: true },
-  { src: '.claude/skills/design/SKILL.md',   dst: 'docs/agents/skills/design.md',   stripFrontmatter: true },
-  { src: '.claude/skills/onboard/SKILL.md',  dst: 'docs/agents/skills/onboard.md',  stripFrontmatter: true },
-  { src: '.claude/skills/debug/SKILL.md',    dst: 'docs/agents/skills/debug.md',    stripFrontmatter: true },
+  { src: '.claude/skills/data/SKILL.md',           dst: 'docs/agents/skills/data.md',           stripFrontmatter: true },
+  { src: '.claude/skills/data-add/SKILL.md',       dst: 'docs/agents/skills/data-add.md',       stripFrontmatter: true },
+  { src: '.claude/skills/data-debug/SKILL.md',     dst: 'docs/agents/skills/data-debug.md',     stripFrontmatter: true },
+  { src: '.claude/skills/data-refactor/SKILL.md',  dst: 'docs/agents/skills/data-refactor.md',  stripFrontmatter: true },
+  { src: '.claude/skills/design/SKILL.md',         dst: 'docs/agents/skills/design.md',         stripFrontmatter: true },
+  { src: '.claude/skills/design-chart/SKILL.md',   dst: 'docs/agents/skills/design-chart.md',   stripFrontmatter: true },
+  { src: '.claude/skills/design-component/SKILL.md', dst: 'docs/agents/skills/design-component.md', stripFrontmatter: true },
+  { src: '.claude/skills/design-tune/SKILL.md',    dst: 'docs/agents/skills/design-tune.md',    stripFrontmatter: true },
+  { src: '.claude/skills/onboard/SKILL.md',        dst: 'docs/agents/skills/onboard.md',        stripFrontmatter: true },
+  { src: '.claude/skills/debug/SKILL.md',          dst: 'docs/agents/skills/debug.md',          stripFrontmatter: true },
   // Hook 가이드 — README.md 미러 (이름만 HOOK_GUIDE 로)
   { src: '.claude/hooks/README.md',          dst: 'docs/agents/HOOK_GUIDE.md' },
   // AGENTS.md — OpenAI Codex / Antigravity 자동 로드 표준 (원본 → 미러)

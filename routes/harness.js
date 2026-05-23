@@ -116,17 +116,54 @@ const HARNESS_COMPONENTS = [
   },
 
   // ─── Skill — 순차 워크플로우. 명령 조합 ────────────────────────────
+  // 데이터·디자인 각각 성격별 3 sub-skill 로 분리 (/skills 정밀 매칭).
   {
     category: 'skill',
-    label: '데이터 워크플로우',
+    label: 'data (인덱스)',
     file: '.claude/skills/data/SKILL.md',
-    desc: '신규 시트 추가, 신규 카테고리 추가, 회귀 디버깅(TDD), 거대 파서 분할, silent fallback 강화, 매핑 통합, sync verify 등 step-by-step.',
+    desc: '데이터 워크플로우는 성격별 3 sub-skill 로 분리됨 — data-add / data-debug / data-refactor. 본 파일은 분기 인덱스.',
   },
   {
     category: 'skill',
-    label: '디자인 워크플로우',
+    label: 'data-add — 신규 시트·카테고리 추가',
+    file: '.claude/skills/data-add/SKILL.md',
+    desc: 'Google Sheets 신규 탭, PROD_IDS 에 새 카테고리(STYLER 같은) 추가. parseSheetRows 등록 / categoryMap.js single source / 4종 매핑 + invariant.',
+  },
+  {
+    category: 'skill',
+    label: 'data-debug — 회귀·동기화 진단',
+    file: '.claude/skills/data-debug/SKILL.md',
+    desc: 'MoM 부호 반전·정렬 깨짐·sync 결과 이상 디버깅. 재현 fixture 우선(TDD), verify-after-act invariant, 5단계 ERROR CATCHING.',
+  },
+  {
+    category: 'skill',
+    label: 'data-refactor — 분할·매핑·로깅 품질',
+    file: '.claude/skills/data-refactor/SKILL.md',
+    desc: '거대 파서(200줄+) helper 분할, silent return {} → _logWarn, 분산 매핑 single source 통합, ERROR CATCHING 점진 적용.',
+  },
+  {
+    category: 'skill',
+    label: 'design (인덱스)',
     file: '.claude/skills/design/SKILL.md',
-    desc: '신규 컴포넌트(C-XX) 추가, SVG 차트 패턴 추가, 뉴스레터 카드 변형, 이메일 호환 변환, KO/EN 라벨 추가, iframe srcdoc 미리보기 등 step-by-step.',
+    desc: '디자인 워크플로우는 성격별 3 sub-skill 로 분리됨 — design-chart / design-component / design-tune. 본 파일은 분기 인덱스.',
+  },
+  {
+    category: 'skill',
+    label: 'design-chart — 차트 작업',
+    file: '.claude/skills/design-chart/SKILL.md',
+    desc: '분류 코드(L-1 ~ T-1) 차트 그리기, 차트+표 결합 X 좌표 정렬(C-24), 신규 SVG 차트 양식(heatmap·sankey 등).',
+  },
+  {
+    category: 'skill',
+    label: 'design-component — 컴포넌트·카드 추가',
+    file: '.claude/skills/design-component/SKILL.md',
+    desc: '신규 컴포넌트(C-XX), 뉴스레터 제품 카드 변형(V4 등), 어드민 iframe srcdoc 미리보기 추가.',
+  },
+  {
+    category: 'skill',
+    label: 'design-tune — 호환·미세조정·회귀',
+    file: '.claude/skills/design-tune/SKILL.md',
+    desc: '이메일 호환 변환(table-layout), KO/EN 라벨 추가, UI 깨짐·차트 안 보임 회귀 디버깅.',
   },
   {
     category: 'skill',
