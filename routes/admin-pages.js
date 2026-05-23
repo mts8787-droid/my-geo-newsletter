@@ -919,7 +919,7 @@ a.harness-entry:hover{border-color:#CF0652;background:#4F2535}
 
       <div class="section-title">실제 사용되는 하네스 도구</div>
       <a class="harness-file" href="/admin/harness/view?path=CLAUDE.md" target="_blank"><span class="harness-tag tag-rule">RULE</span> 프로젝트 헌법 <code>CLAUDE.md</code></a>
-      <a class="harness-file" href="/admin/harness/view?path=Agent.md" target="_blank"><span class="harness-tag tag-rule">RULE</span> Agent 통합 가이드 (타 에이전트용) <code>Agent.md</code></a>
+      <a class="harness-file" href="/admin/harness/view?path=AGENTS.md" target="_blank"><span class="harness-tag tag-rule">RULE</span> AGENTS.md (Codex / Antigravity 자동 로드) <code>AGENTS.md</code></a>
       <a class="harness-file" href="/admin/harness/view?path=.claude/rules/data.md" target="_blank"><span class="harness-tag tag-rule">RULE</span> 데이터 Rule <code>.claude/rules/data.md</code></a>
       <a class="harness-file" href="/admin/harness/view?path=.claude/rules/design.md" target="_blank"><span class="harness-tag tag-rule">RULE</span> 디자인 Rule <code>.claude/rules/design.md</code></a>
       <a class="harness-file" href="/admin/harness/view?path=.claude/rules/ai.md" target="_blank"><span class="harness-tag tag-rule">RULE</span> AI Rule <code>.claude/rules/ai.md</code></a>

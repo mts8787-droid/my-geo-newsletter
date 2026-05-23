@@ -13,6 +13,11 @@
 * **정의:** Antigravity 에이전트의 영구적 지식 저장 시스템(`appDataDir/knowledge`)입니다.
 * **역할:** 과거의 대화 기록, 프로젝트의 아키텍처 패턴, 템플릿 룰 등을 메타데이터(`metadata.json`)와 함께 보존합니다. 에이전트가 새로운 작업을 시작하기 **최우선으로(Mandatory First Step)** 로드하여 중복 작업을 방지하고 일관성을 유지하도록 강제합니다.
 
+### C. OpenAI Codex `AGENTS.md` (KI 등가물)
+* **정의:** OpenAI Codex (CLI / Workspace / Cloud) 가 워크스페이스 루트의 **`AGENTS.md`** 파일을 자동 로드하는 표준 컨벤션입니다. Antigravity 의 KI 와 동일한 역할 — 별도의 영구 지식 시스템이 아니라, 루트의 `AGENTS.md` 자체가 영구 컨텍스트 주입 메커니즘으로 동작합니다.
+* **역할:** 새 세션이 시작될 때 Codex 가 `AGENTS.md` 를 시스템 프롬프트의 일부로 자동 주입합니다. 사용자가 매번 지침을 반복하지 않아도 에이전트가 본 저장소의 행동 규범을 인지합니다.
+* **호환:** 본 통합 가이드를 루트에 `AGENTS.md` (대문자 복수형) 로 두면 **OpenAI Codex 와 Antigravity 양쪽에서 자동 인식·로드** 됩니다. Claude Code 는 별도로 `CLAUDE.md` 를 자동 로드하므로, 본 저장소는 두 파일을 병행 유지합니다 (CLAUDE.md = 프로젝트 구체 지침 / AGENTS.md = 에이전트 공통 통합 가이드).
+
 ## 3. Andrej Karpathy 관점의 개발 원칙 (Karpathy Guidelines)
 AI(LLM) 코딩 과정에서 흔히 발생하는 실수(오버엔지니어링, 불필요한 리팩토링 등)를 방지하기 위해 Andrej Karpathy가 강조한 보수적이고 신중한 개발 원칙입니다.
 

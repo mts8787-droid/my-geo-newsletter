@@ -60,9 +60,9 @@ const HARNESS_COMPONENTS = [
   },
   {
     category: 'rule',
-    label: 'Agent 통합 가이드 (Antigravity 등 타 에이전트용)',
-    file: 'Agent.md',
-    desc: 'Claude·Antigravity 등 서로 다른 에이전트가 동일한 하네스 안에서 움직이도록 하기 위한 통합 지침. CLAUDE.md (프로젝트 구체 지침) + Karpathy 4 원칙 융합. Antigravity Knowledge Item (KI) 주입용.',
+    label: 'AGENTS.md (OpenAI Codex / Antigravity 자동 로드)',
+    file: 'AGENTS.md',
+    desc: 'OpenAI Codex 와 Antigravity 가 워크스페이스 루트의 AGENTS.md 를 자동 로드. CLAUDE.md (프로젝트 구체 지침) + Karpathy 4 원칙 융합 — 어느 에이전트를 호출해도 동일한 하네스 안에서 동작.',
   },
   {
     category: 'rule',
