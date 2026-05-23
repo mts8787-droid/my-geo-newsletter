@@ -246,6 +246,106 @@ function filterTrend(prodIds, cntyKeys) {
 - `citationTemplate.js` 의 `citCategoryBumpChartHtml` / `citDomainBumpChartHtml`
 - 클라이언트 측: `_bumpChartSvgJS` (필터 시 재렌더용)
 
+### 5.11 라인 차트 양식 7종 (Chart.js 표준 매핑 + 본 레포 SVG 패턴)
+
+Chart.js 의 `docs/samples/line` 디렉토리 기준 7가지 양식. 본 레포의 `dashboardSvg.js` 의 svgLine / svgMultiLine 으로 구현 시 가이드.
+
+#### 1) Basic Line (`line`)
+가장 단순한 직선 라인. **본 레포 기본** — `svgLine(data, labels, w, h, color, opts={})`.
+- 직선 path: `M x0 y0 L x1 y1 L x2 y2 ...`
+- 점: `<circle r="3" fill="${color}"/>`
+- 사용처: 카드 미니 트렌드 (svgLine), 모든 트렌드 차트의 기본
+
+#### 2) Interpolation (`interpolation`)
+데이터 포인트를 **곡선**으로 연결 (catmull-rom / bezier / cubic spline).
+- SVG 구현: `Q` (quadratic Bezier) 또는 `C` (cubic Bezier) path command
+  ```
+  M x0 y0 Q cx cy x1 y1 ...   // Quadratic
+  M x0 y0 C c1x c1y c2x c2y x1 y1 ...   // Cubic
+  ```
+- **본 레포 RULE**: 시각 일관성 위해 트렌드 차트 **직선만 사용** (Chart.js 가 보여줘도 본 레포는 단순한 직선이 KPI 변화 추적에 더 정확). 곡선 적용 시 시각 왜곡 가능 (보간된 점이 실제 값처럼 보임).
+- **언제 곡선 사용 OK**: 데이터가 연속 측정 (sensor data 등) + 정확한 값보다 추세가 중요한 경우만.
+
+#### 3) Multi-axis (`multi-axis`)
+단위 다른 두 series 를 같은 차트에 (좌/우 Y축 분리).
+- 예: LG 점수 (%) + Anthropic 호출 수 (정수)
+- SVG 구현: viewBox 좌측 = primary Y축 (%), 우측 = secondary Y축 (count)
+  ```svg
+  <text x="0" y="..." text-anchor="end">100%</text>   <!-- left Y -->
+  <text x="${w}" y="..." text-anchor="start">500</text>  <!-- right Y -->
+  ```
+- **본 레포 현재**: 단일 Y축만. 신규 차트가 단위 섞인 경우 svgMultiLine 의 옵션으로 확장 권장.
+- **언제 사용**: KPI + 비교 metric 동시 표시 (예: visibility 점수 % + monthly 호출 수)
+
+#### 4) Point Styling (`point-styling`)
+데이터 포인트 마커 커스터마이즈 (크기 / 모양 / 색).
+- 본 레포 현재:
+  - 일반 점: `<circle r="3" fill="${color}"/>`
+  - 베이스라인 시작점: `<circle r="4" fill="#000" stroke="${color}" stroke-width="3"/>` (강조)
+- 추가 패턴 (필요 시):
+  ```svg
+  <!-- 사각형 -->
+  <rect x="${x-3}" y="${y-3}" width="6" height="6" fill="${color}"/>
+  <!-- 삼각형 -->
+  <polygon points="${x},${y-4} ${x-4},${y+3} ${x+4},${y+3}" fill="${color}"/>
+  <!-- 별/X 표시 등은 SVG path 로 -->
+  ```
+- **본 레포 RULE**: 점 모양 일관 — 한 차트에 다른 모양 섞기 X. **베이스라인 시작점만 예외**.
+
+#### 5) Segments (`segments`)
+한 라인을 구간별로 다른 색·두께·dash 적용.
+- **본 레포 패턴**: `fadeBeforeIdx` 가 이 컨셉 — pre = 회색 (`#64748B`, opacity 0.85) + post = 컬러
+  - svgLine / svgMultiLine 둘 다 지원
+- SVG 구현: 두 path 로 분리 (§5.3 [1] Bridge 제거 룰)
+  ```svg
+  <path d="M ... (pre points)" stroke="#64748B" opacity="0.85"/>
+  <path d="M ... (post points)" stroke="${color}"/>
+  ```
+- 확장 가능성: 예측 구간 (dashed) vs 실측 구간 (solid) 분기
+
+#### 6) Stepped Line (`stepped`)
+점과 점을 **직각**으로 연결 (계단형). KPI 가 step-change 인 경우 적합.
+- SVG path: `M x0 y0 L x1 y0 L x1 y1 L x2 y1 ...` (수평 → 수직 반복)
+- 또는 `H` (horizontal) / `V` (vertical) command:
+  ```
+  M x0 y0 H x1 V y1 H x2 V y2 ...
+  ```
+- **본 레포 현재 사용 X** — 현재 KPI 는 연속 측정. 정책·시점 변경 같은 step-change 데이터면 적합.
+- **언제 사용 OK**: 분기별 데이터 (Q1/Q2/Q3/Q4), 정책 변경 시점, 버전 릴리즈 KPI 등 — 직선 보간이 의미 왜곡인 경우
+
+#### 7) Styling (`styling`)
+색·두께·dash 패턴·linecap 등 라인 자체 시각 속성.
+- 본 레포 현재:
+  - stroke-width: 1.5 (기본), 2 (베이스라인 마커)
+  - stroke-dasharray: solid 기본, dashed `"3,3"` (베이스라인 수직선)
+  - stroke-linecap: 기본 (butt)
+- 표준 패턴:
+  | 용도 | stroke-dasharray | stroke-width |
+  |---|---|---|
+  | 실측 | `none` (solid) | 1.5 |
+  | 예측 / 보간 | `"3,3"` | 1.5 |
+  | 베이스라인 수직 | `"3,3"` | 1 |
+  | 강조 (선택된 카테고리) | `none` | 2 |
+  | 비교군 (회색) | `none`, opacity 0.85 | 1 |
+
+#### 본 레포의 라인 차트 양식 적용 매트릭스
+
+| 양식 | 본 레포 사용 위치 |
+|---|---|
+| Basic | 카드 미니 트렌드 (svgLine), 모든 트렌드 차트의 기본 |
+| Interpolation | 미사용 (시각 일관성 위해 직선) |
+| Multi-axis | 미사용 (현재 단일 Y축) — 신규 KPI + 호출 수 추가 시 후보 |
+| Point Styling | 베이스라인 시작점 (검정 fill + 컬러 stroke 4px) 만 강조 |
+| Segments | `fadeBeforeIdx` — pre 회색 / post 컬러 (베이스라인) |
+| Stepped | 미사용 — step-change 데이터 추가 시 후보 |
+| Styling | dashed (3,3) 베이스라인, stroke-width 1.5/2 |
+
+#### ANTI-PATTERN (Chart.js 매핑)
+- 한 차트에 곡선 + 직선 섞기 → 시각 일관성 깨짐
+- 점 모양 카테고리마다 다르게 → 베이스라인 시작점만 예외
+- Multi-axis 도입 시 좌/우 Y축 라벨 색상 동일 → 좌측 검정 / 우측 컬러로 매칭
+- Stepped 와 직선 비교군 동시 표시 → 단위 / 의미 혼동
+
 ### 5.10 수직 막대 (vbar) — Citation 카테고리 / Dotcom
 
 `_citVBar(cits, topN, isSmall, topColor, isRatio, scale)`.
