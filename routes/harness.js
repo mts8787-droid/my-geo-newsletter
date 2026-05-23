@@ -115,7 +115,7 @@ const HARNESS_COMPONENTS = [
 ]
 
 const CATEGORY_LABELS = {
-  entry: '진입점 (Entry Point) — docs/agents/ 미러 호스트의 시작',
+  entry: '가이드 — 하네스 전체 개요 (docs/agents/ 미러)',
   rule: '룰 (Rule) — 따라야 할 규칙. Markdown 권고 (~80%)',
   hook: '훅 (Hook) — 절대 하면 안 되는 것. JSON 강제 (100%) + 인간용 md 설명서',
   skill: '스킬 (Skill) — 자동 워크플로우 / 명령 조합. step-by-step',
@@ -438,7 +438,7 @@ h1{font-size:22px;color:#F8FAFC;margin-bottom:4px}
 </div>
 
 <div class="kpis">
-  <div class="card"><div class="label">진입점</div><div class="value">${(grouped.entry || []).length}</div></div>
+  <div class="card"><div class="label">가이드</div><div class="value">${(grouped.entry || []).length}</div></div>
   <div class="card"><div class="label">룰 (Rule)</div><div class="value">${(grouped.rule || []).length}</div></div>
   <div class="card"><div class="label">훅 (Hook)</div><div class="value">${(grouped.hook || []).length}</div></div>
   <div class="card"><div class="label">스킬 (Skill)</div><div class="value">${(grouped.skill || []).length}</div></div>

@@ -934,7 +934,7 @@ a.harness-entry:hover{border-color:#CF0652;background:#4F2535}
 
       <a class="harness-file" href="/admin/harness/view?path=.claude/agents/data-puller.md" target="_blank"><span class="harness-tag tag-agent">AGENT</span> 데이터 진단 <code>data-puller.md</code></a>
 
-      <div class="section-title">미러 진입점</div>
+      <div class="section-title">가이드 (개요 + 미러)</div>
       <a class="harness-file" href="/admin/harness/view?path=docs/agents/HARNESS.md" target="_blank"><span class="harness-tag tag-rule">MD</span> 전체 설명 (마크다운) <code>docs/agents/HARNESS.md</code></a>
       <a class="harness-file" href="/admin/harness/view?path=docs/agents/HARNESS.html" target="_blank"><span class="harness-tag tag-rule">HTML</span> 전체 설명 (HTML 소스) <code>docs/agents/HARNESS.html</code></a>
       <a class="harness-file" href="/admin/harness/view?path=docs/agents/CHART_LIBRARY.html" target="_blank"><span class="harness-tag tag-rule">HTML</span> 차트 라이브러리 (정적 미러) <code>docs/agents/CHART_LIBRARY.html</code></a>
