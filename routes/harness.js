@@ -58,6 +58,12 @@ const HARNESS_COMPONENTS = [
     file: '.claude/rules/ai.md',
     desc: 'Anthropic API · 인사이트 생성 · N3 응답 검증 (invalid_output) · 에러 분류 · 비용 추적 · ANTI-PATTERN.',
   },
+  {
+    category: 'rule',
+    label: '부트스트랩 가이드 (Bootstrap)',
+    file: '.claude/rules/BOOTSTRAP.md',
+    desc: '새 프로젝트에 본 하네스 적용 시 8 단계 가이드. 도메인 인터뷰 / 도메인 파일 / 데이터 모델 / 디자인 토큰 / 외부 시스템 / 비즈니스 fact / 빌드 + 3 도메인 예시 (매출/HR/제품).',
+  },
 
   // ─── 훅 (Hook) — 절대 금지. JSON 강제 (100%) + md 설명서 ───────────────────
   {
@@ -103,6 +109,12 @@ const HARNESS_COMPONENTS = [
     label: '에이전트형 도구 통합 프롬프트',
     file: '.claude/skills/prompting/SKILL.md',
     desc: 'Claude Code 외 다른 에이전트형 도구 (Cursor/Codex) 가 본 레포에서 작업할 때 참조하는 통합 시스템 프롬프트.',
+  },
+  {
+    category: 'skill',
+    label: '하네스 적용 (Onboard)',
+    file: '.claude/skills/onboard/SKILL.md',
+    desc: '새 프로젝트에 본 하네스 적용 시 사용. "이 하네스 적용해줘" 요청 시 도메인 인터뷰 → 도메인 파일 → 데이터 모델 → 디자인 토큰 → 빌드 검증 8 step.',
   },
 
   // ─── 서브에이전트 (Sub-agent) — 특정 영역 분리 작업 ────────────────────────
@@ -393,8 +405,16 @@ h1{font-size:22px;color:#F8FAFC;margin-bottom:4px}
 <p class="sub">Claude Code 하네스 (룰·스킬·훅·서브에이전트) 의 실시간 미러링</p>
 
 <div class="usage">
-  <h2 style="font-size:16px;color:#F8FAFC;margin-bottom:10px">💡 사용 패턴 — 다른 프로젝트에 적용</h2>
-  <p style="font-size:13px;color:#CBD5E1;margin-bottom:10px">본 레포의 하네스가 잘 정착되어 있으면 ZIP 받아서 새 프로젝트에 적용 가능. <strong style="color:#F8FAFC">Claude Code 가 자동으로 룰·스킬·훅·서브에이전트를 인식</strong>.</p>
+  <h2 style="font-size:16px;color:#F8FAFC;margin-bottom:10px">📌 Harness Mirror 란?</h2>
+  <p style="font-size:13px;color:#CBD5E1;margin-bottom:8px">본 페이지는 <strong style="color:#F8FAFC">Claude Code 가 본 프로젝트에서 작업할 때 따르는 룰·훅·스킬·서브에이전트 모두를 한곳에 모은 페이지</strong>.</p>
+  <ul style="font-size:13px;color:#CBD5E1;margin-left:22px;line-height:1.8;margin-bottom:12px">
+    <li><strong style="color:#F8FAFC">왜 필요한가?</strong> 시간이 흐르면 어떤 룰이 있는지 기억이 안 남. 한 페이지에서 다 볼 수 있게.</li>
+    <li><strong style="color:#F8FAFC">어떻게 만들어지나?</strong> 본 프로젝트의 <code>.claude/</code> + <code>CLAUDE.md</code> + <code>docs/agents/</code> 의 실시간 미러. 파일이 수정되면 자동 반영.</li>
+    <li><strong style="color:#F8FAFC">무엇을 할 수 있나?</strong> (1) 각 파일 클릭해서 보기 (2) 전체 ZIP 다운로드해서 다른 프로젝트에 적용 (3) 팀원과 공유</li>
+  </ul>
+
+  <h2 style="font-size:16px;color:#F8FAFC;margin-bottom:10px;margin-top:18px">💡 다른 프로젝트에 적용하기</h2>
+  <p style="font-size:13px;color:#CBD5E1;margin-bottom:10px">ZIP 받아서 새 프로젝트에 풀고 Claude 에게 <code style="background:#0F172A;padding:1px 6px;border-radius:3px">"이 하네스 적용해줘. 내 프로젝트는 [도메인]"</code> 하면 자동 셋업.</p>
   <ol style="font-size:13px;color:#CBD5E1;margin-left:24px;line-height:1.8">
     <li><strong>전체 ZIP 다운로드</strong> (아래 빨간 버튼) — 원본 + 미러 모두 포함</li>
     <li>대상 프로젝트 <strong>루트에 압축 풀기</strong>:
@@ -427,14 +447,14 @@ h1{font-size:22px;color:#F8FAFC;margin-bottom:4px}
 </div>
 
 <div class="intro">
-  <p><strong>본 페이지는 <code>CLAUDE.md</code> + <code>.claude/</code> + <code>docs/agents/</code> 의 실시간 미러.</strong> 4 개념·각 컴포넌트 상세는 아래 목록.</p>
-  <p style="color:#94A3B8;font-size:12px;margin-top:8px">
-    <strong style="color:#F8FAFC">하네스 4 개념</strong> —
-    <span style="color:#60A5FA">룰</span>: 따라야 할 규칙 (md, ~80%) ·
-    <span style="color:#F87171">훅</span>: 절대 금지 (JSON 강제, 100%) ·
-    <span style="color:#4ADE80">스킬</span>: 순차 워크플로우 (md, 명령 조합) ·
-    <span style="color:#FBBF24">서브에이전트</span>: 영역 분리 (md frontmatter)
-  </p>
+  <h3 style="font-size:14px;color:#F8FAFC;margin-bottom:10px">🧩 하네스 4 개념</h3>
+  <ul style="font-size:13px;color:#CBD5E1;margin-left:22px;line-height:1.9">
+    <li><span style="color:#60A5FA;font-weight:700">룰 (Rule)</span> — 따라야 할 규칙. Claude 가 권고로 따름 (~80%). 토큰·invariant·ANTI-PATTERN 매뉴얼.</li>
+    <li><span style="color:#F87171;font-weight:700">훅 (Hook)</span> — 절대 하면 안 되는 것. <strong>JSON 강제 (100%)</strong>. 시스템이 자동 차단.</li>
+    <li><span style="color:#4ADE80;font-weight:700">스킬 (Skill)</span> — 자동 워크플로우 / 명령 조합. "L-1 차트 그려줘" 같은 호출.</li>
+    <li><span style="color:#FBBF24;font-weight:700">서브에이전트</span> — 특정 영역 분리 작업 (예: 데이터 진단 read-only).</li>
+  </ul>
+  <p style="color:#94A3B8;font-size:11px;margin-top:10px">아래 목록의 각 컴포넌트를 클릭하면 디자인된 HTML 또는 원본 Markdown 으로 열람 가능.</p>
 </div>
 
 <div class="kpis">

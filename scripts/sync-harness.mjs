@@ -30,12 +30,14 @@ const MIRROR_MAP = [
   // 헌법
   { src: 'CLAUDE.md', dst: 'docs/agents/CLAUDE.md' },
   // 룰 매뉴얼 (원본: .claude/rules/)
-  { src: '.claude/rules/data.md',   dst: 'docs/agents/rules/data.md' },
-  { src: '.claude/rules/design.md', dst: 'docs/agents/rules/design.md' },
-  { src: '.claude/rules/ai.md',     dst: 'docs/agents/rules/ai.md' },
+  { src: '.claude/rules/data.md',      dst: 'docs/agents/rules/data.md' },
+  { src: '.claude/rules/design.md',    dst: 'docs/agents/rules/design.md' },
+  { src: '.claude/rules/ai.md',        dst: 'docs/agents/rules/ai.md' },
+  { src: '.claude/rules/BOOTSTRAP.md', dst: 'docs/agents/rules/BOOTSTRAP.md' },
   // 스킬 워크플로우 (frontmatter 제거 — 미러는 참조용)
-  { src: '.claude/skills/data/SKILL.md',   dst: 'docs/agents/skills/data.md',   stripFrontmatter: true },
-  { src: '.claude/skills/design/SKILL.md', dst: 'docs/agents/skills/design.md', stripFrontmatter: true },
+  { src: '.claude/skills/data/SKILL.md',     dst: 'docs/agents/skills/data.md',     stripFrontmatter: true },
+  { src: '.claude/skills/design/SKILL.md',   dst: 'docs/agents/skills/design.md',   stripFrontmatter: true },
+  { src: '.claude/skills/onboard/SKILL.md',  dst: 'docs/agents/skills/onboard.md',  stripFrontmatter: true },
 ]
 
 function stripFrontmatter(content) {
