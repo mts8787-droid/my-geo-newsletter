@@ -370,6 +370,104 @@ describe('parseCitDomain — v1/v2/v3 layout 자동 감지', () => {
   })
 })
 
+// ─── parseVisSummary — KV / 테이블 두 형식 + 시간순 정렬 ────────────────────
+describe('parseVisSummary — 두 형식 자동 감지 + TOTAL 시간순', () => {
+  const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+  const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
+  beforeEach(() => { warnSpy.mockClear(); logSpy.mockClear() })
+
+  it('KV 형식: 키-value 매핑 → total 객체', () => {
+    const rows = [
+      ['key',         'value'],
+      ['score',       '85.5'],
+      ['prev',        '82'],
+      ['vsComp',      '90'],
+      ['rank',        1],
+      ['totalBrands', 12],
+    ]
+    const result = parseSheetRows(SHEET_NAMES.visSummary, rows)
+    expect(result.total).toEqual({ score: 85.5, prev: 82, vsComp: 90, rank: 1, totalBrands: 12 })
+  })
+
+  it('테이블 형식: Date/Country/Division/LG/Samsung — TTL/TOTAL 행 시간순', () => {
+    // countryTotals / buTotals 는 최신월(Mar 2026) 행만 추출. Feb 2026 는 prev 계산용.
+    const rows = [
+      ['Date',     'Country', 'Division', 'LG', 'Samsung'],
+      ['Feb 2026', 'TOTAL',   'TOTAL',     80,   75],
+      ['Mar 2026', 'TOTAL',   'TOTAL',     86,   82],
+      ['Mar 2026', 'US',      'TOTAL',     70,   65],
+      ['Mar 2026', 'TOTAL',   'MS',        88,   85],
+    ]
+    const result = parseSheetRows(SHEET_NAMES.visSummary, rows)
+    // 최신 월 TOTAL 행 → score, 직전월 → prev
+    expect(result.total?.score).toBe(86)
+    expect(result.total?.prev).toBe(80)
+    expect(result.total?.vsComp).toBe(82)
+    // 국가별
+    expect(result.countryTotals?.US).toEqual({ lg: 70, comp: 65 })
+    // BU 별
+    expect(result.buTotals?.MS).toEqual({ lg: 88, comp: 85 })
+    // monthlyVis 보존
+    expect(result.monthlyVis?.length).toBeGreaterThan(0)
+    // derivedPeriod = 최신월
+    expect(result.derivedPeriod).toBe('Mar 2026')
+  })
+
+  it('TTL 없는 시트 → fallback 첫 TOTAL 행 + warn', () => {
+    const rows = [
+      ['Date', 'Country', 'Division', 'LG', 'Samsung'],
+      ['Mar',  'TOTAL',   'TOTAL',     85,   80],   // date 'Mar' 만, 연도 없음 → 정렬키 약함
+    ]
+    const result = parseSheetRows(SHEET_NAMES.visSummary, rows)
+    // monthlyVis 비어있을 가능성 → fallback 분기
+    expect(result.total).toBeDefined()
+  })
+})
+
+// ─── parseCitPageType — Dotcom (LG/SS) 월 페어 ──────────────────────────────
+describe('parseCitPageType — 월 페어 + dotcom 집계 + 트렌드', () => {
+  const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+  beforeEach(() => { warnSpy.mockClear() })
+
+  it('Feb LG/SS + Mar LG/SS → dotcom + dotcomTrend', () => {
+    const rows = [
+      ['Country', 'Page Type', 'Feb LG', 'Feb SS', 'Mar LG', 'Mar SS'],
+      ['TTL',     'TTL',        80,       75,       85,       80],
+      ['TTL',     'PLP',        60,       55,       65,       58],
+      ['US',      'PLP',        50,       45,       55,       50],
+    ]
+    const result = parseSheetRows(SHEET_NAMES.citPageType, rows)
+    // 최신월(Mar) dotcom
+    expect(result.dotcom?.lg?.TTL).toBe(85)
+    expect(result.dotcom?.lg?.PLP).toBe(65)
+    expect(result.dotcom?.samsung?.PLP).toBe(58)
+    // 국가별 (US 만)
+    expect(result.dotcomByCnty?.US?.lg?.PLP).toBe(55)
+    // 트렌드 (Feb + Mar)
+    expect(result.dotcomTrend?.TTL?.Feb?.lg).toBe(80)
+    expect(result.dotcomTrend?.TTL?.Mar?.lg).toBe(85)
+    expect(result.dotcomTrendMonths).toEqual(['Feb', 'Mar'])
+  })
+
+  it('CNTY_ALIAS: 한글 국가명 → 표준 코드 (미국 → US)', () => {
+    const rows = [
+      ['Country', 'Page Type', 'Mar LG', 'Mar SS'],
+      ['미국',    'PLP',        50,       45],
+    ]
+    const result = parseSheetRows(SHEET_NAMES.citPageType, rows)
+    expect(result.dotcomByCnty?.US?.lg?.PLP).toBe(50)
+  })
+
+  it('Microsite → Microsites 정규화 (오타 흡수)', () => {
+    const rows = [
+      ['Country', 'Page Type', 'Mar LG'],
+      ['TTL',     'Microsite',  70],     // 단수형 → Microsites 로 변환
+    ]
+    const result = parseSheetRows(SHEET_NAMES.citPageType, rows)
+    expect(result.dotcom?.lg?.Microsites).toBe(70)
+  })
+})
+
 // ─── parseProductCnty — 거대 파서 (106줄) ───────────────────────────────────
 describe('parseProductCnty — TTL/국가별 분리 + 시간순 정렬 invariant', () => {
   const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
@@ -452,6 +550,121 @@ describe('parseProductCnty — TTL/국가별 분리 + 시간순 정렬 invariant
     const tv = result.productsPartial?.find(p => p.id === 'tv')
     expect(tv?.vsComp).toBe(90)     // Sony score
     expect(tv?.compName).toBe('Sony')
+  })
+})
+
+// ─── parseMeta — key-value 시트 ─────────────────────────────────────────────
+describe('parseMeta — key-value 매핑 + 한→영 변환', () => {
+  it('numKeys/boolKeys/alwaysOff 처리', () => {
+    const rows = [
+      ['key',            'value'],
+      ['titleFontSize',  '28'],
+      ['showProducts',   'y'],
+      ['showNotice',     'y'],         // alwaysOff — 강제 false
+      ['period',         '2026년 4월'], // 한→영 변환
+      ['someText',       'foo'],
+    ]
+    const result = parseSheetRows(SHEET_NAMES.meta, rows)
+    expect(result.meta?.titleFontSize).toBe(28)
+    expect(result.meta?.showProducts).toBe(true)
+    expect(result.meta?.showNotice).toBe(false)  // alwaysOff 강제
+    expect(result.meta?.period).toBe('Apr 2026')  // 한→영
+    expect(result.meta?.someText).toBe('foo')
+  })
+
+  it('weeklyLabels 콤마 문자열 → 배열', () => {
+    const rows = [
+      ['key',           'value'],
+      ['weeklyLabels',  'W5,W6,W7,W8'],
+    ]
+    const result = parseSheetRows(SHEET_NAMES.meta, rows)
+    expect(result.meta?.weeklyLabels).toEqual(['W5', 'W6', 'W7', 'W8'])
+  })
+})
+
+// ─── parsePRVisibility / parseBrandPromptVisibility ─────────────────────────
+describe('parsePRVisibility — monthly/weekly 모드', () => {
+  const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+  beforeEach(() => { warnSpy.mockClear() })
+
+  it('monthly 모드: Type/County/Topic/Brand + 월 컬럼', () => {
+    const rows = [
+      ['Type', 'County', 'Topic',  'Brand', 'Feb', 'Mar'],
+      ['T1',   'US',     'Topic1', 'LG',     50,    55],
+      ['T1',   'UK',     'Topic2', 'LG',     40,    45],
+    ]
+    const result = parseSheetRows(SHEET_NAMES.monthlyPR, rows)
+    expect(result.monthlyPR?.length).toBe(2)
+    expect(result.monthlyPRLabels).toEqual(['Feb', 'Mar'])
+    const first = result.monthlyPR?.[0]
+    expect(first?.country).toBe('US')
+    expect(first?.scores).toEqual({ Feb: 50, Mar: 55 })
+    expect(first?.latestScore).toBe(55)
+  })
+
+  it('헤더 없는 시트 → warn + {}', () => {
+    parseSheetRows(SHEET_NAMES.monthlyPR, [['x'], ['y']])
+    const headerWarn = warnSpy.mock.calls.some(call =>
+      String(call[1]).includes('header not found')
+    )
+    expect(headerWarn).toBe(true)
+  })
+})
+
+describe('parseBrandPromptVisibility — monthly/weekly 모드', () => {
+  it('Stakeholders + 주차 컬럼', () => {
+    const rows = [
+      ['Steakholders', 'Type', 'Country', 'Topoc',  'W5', 'W6'],
+      ['Influencer',   'T1',   'US',      'Topic1', 60,    65],
+    ]
+    const result = parseSheetRows(SHEET_NAMES.weeklyBrandPrompt, rows)
+    expect(result.weeklyBrandPrompt?.length).toBe(1)
+    expect(result.weeklyBrandPromptLabels).toEqual(['W5', 'W6'])
+    const first = result.weeklyBrandPrompt?.[0]
+    expect(first?.stakeholder).toBe('Influencer')
+    expect(first?.topic).toBe('Topic1')
+  })
+})
+
+// ─── parseAppendix / parsePRTopicList ───────────────────────────────────────
+describe('parseAppendix — Prompt List', () => {
+  it('Country/Prompts/Division/Category 매핑 → appendixPrompts 배열', () => {
+    const rows = [
+      ['Country', 'Prompts', 'Division', 'Category', 'launched', 'Branded', 'CEJ', 'Topic'],
+      ['US',      'q1?',     'MS',       'TV',       'yes',       'no',     'C1',  'T1'],
+      ['UK',      'q2?',     'HS',       'WM',       'yes',       'yes',    'C2',  'T2'],
+    ]
+    const result = parseSheetRows(SHEET_NAMES.appendix, rows)
+    expect(result.appendixPrompts?.length).toBe(2)
+    expect(result.appendixPrompts?.[0].country).toBe('US')
+    expect(result.appendixPrompts?.[0].prompt).toBe('q1?')
+  })
+
+  it('Prompts 빈 행은 skip', () => {
+    const rows = [
+      ['Country', 'Prompts', 'Division', 'Category', 'launched', 'Branded', 'CEJ', 'Topic'],
+      ['US',      '',        'MS',       'TV',       'yes',       'no',     'C1',  'T1'],
+      ['UK',      'q2?',     'HS',       'WM',       'yes',       'yes',    'C2',  'T2'],
+    ]
+    const result = parseSheetRows(SHEET_NAMES.appendix, rows)
+    expect(result.appendixPrompts?.length).toBe(1)
+    expect(result.appendixPrompts?.[0].country).toBe('UK')
+  })
+})
+
+describe('parsePRTopicList — BU 병합 셀 처리', () => {
+  it('BU 빈 셀은 이전 BU 유지 (병합 셀 패턴)', () => {
+    const rows = [
+      ['BU', 'Topic-대시보드', 'Explanation', '기존 토픽', 'Topic-row'],
+      ['MS', 'Topic1',         'expl1',       '',          'row1'],
+      ['',   'Topic2',         'expl2',       '',          'row2'],     // BU 빈 → MS 유지
+      ['HS', 'Topic3',         'expl3',       '',          'row3'],
+    ]
+    const result = parseSheetRows(SHEET_NAMES.prTopicList, rows)
+    expect(result.prTopicList?.length).toBe(3)
+    expect(result.prTopicList?.[0].bu).toBe('MS')
+    expect(result.prTopicList?.[1].bu).toBe('MS')   // 병합 유지
+    expect(result.prTopicList?.[2].bu).toBe('HS')
   })
 })
 
