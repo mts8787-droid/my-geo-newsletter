@@ -31,27 +31,45 @@ export const CHART_CATALOG = [
   { code: 'M-1', category: 'mixed', name: 'Combo Bar+Line', desc: 'Bar (절댓값) + Line (추세) 단일 Y축. 도입 후보: KPI 값 + 증가율.', usage: '미사용', svg: svgComboBarLine() },
   { code: 'M-2', category: 'mixed', name: 'Stacked Bar+Line', desc: '누적 막대 + 합계 추세 라인 overlay. 도입 후보: BU 누적 + 평균 추세.', usage: '미사용', svg: svgStackedComboLine() },
 
-  // ─── D: Doughnut (1) ─────────────────────────────────────────────────────
+  // ─── V: Vertical Bar (본 레포 — Chart.js 표준 외) ─────────────────────────
+  { code: 'V-1', category: 'vbar', name: '그룹 막대 (vbar)', desc: '본 레포 C-05. 카테고리당 N 개 막대 가로 나란히. _citVBar 헬퍼 + scale 파라미터.', usage: 'dashboard / citation 의 카테고리별 vbar (Reddit/YouTube 등)', svg: svgVbarGroup() },
+
+  // ─── HB: Horizontal Bar (본 레포 — Top N) ─────────────────────────────────
+  { code: 'HB-1', category: 'hbar', name: '가로 막대 (Top N)', desc: '본 레포 C-06. 도메인 / 채널 랭킹용. Top N 정렬 + 비중 표시.', usage: 'citation 의 도메인 Top N 랭킹', svg: svgHbarTopN() },
+
+  // ─── BP: Bump (본 레포 — 도메인 순위 변화) ────────────────────────────────
+  { code: 'BP-1', category: 'bump', name: '범프 차트 (Bump)', desc: '본 레포 C-09. 순위 변화 시각화. viewBox 비율 + linecap=round + 폰트 +3pt + 하단 여백 +20px.', usage: 'citation 의 카테고리 / 도메인 월별 랭킹 변화 (bumpChartSvg)', svg: svgBump() },
+
+  // ─── MT: Mini Trend (본 레포 — 이메일 호환) ───────────────────────────────
+  { code: 'MT-1', category: 'mini', name: '미니 트렌드 바 (메일 호환)', desc: '본 레포 C-10. SVG 미지원 클라이언트 (Outlook 등) 용 table-layout 기반.', usage: '뉴스레터 / 이메일 본문 (emailTemplate.js)', svg: svgMiniTrend() },
+
+  // ─── D: Doughnut (1) + Pie (본 레포) ─────────────────────────────────────
   { code: 'D-1', category: 'doughnut', name: 'Doughnut', desc: 'cutout 비중 시각화. 5 슬라이스 이하. 도입 후보: observability type 분포.', usage: '미사용', svg: svgDoughnut() },
+  { code: 'D-2', category: 'doughnut', name: 'Pie (본 레포 C-19)', desc: '본 레포 C-19 — Doughnut 의 cutout 없는 변종. citation 비중 표시.', usage: 'citation 카테고리 비중 (cutout=0)', svg: svgPie() },
 
   // ─── R: Radar (1) ────────────────────────────────────────────────────────
   { code: 'R-1', category: 'radar', name: 'Radar (skip points)', desc: 'polar 다차원 metric 비교. 8 axis 이하 / 3 dataset 이하.', usage: '미사용 (도입 후보: 카테고리별 8 metric 비교)', svg: svgRadar() },
 
-  // ─── BU: Bubble (1) ──────────────────────────────────────────────────────
-  { code: 'BU-1', category: 'bubble', name: 'Bubble', desc: 'X / Y / radius 3차원. 본 레포 4분면 점도표 (C-15) 는 단순화 형태.', usage: '미사용 (4분면 C-15 만)', svg: svgBubble() },
+  // ─── BU: Bubble (1) + 4분면 (본 레포) ────────────────────────────────────
+  { code: 'BU-1', category: 'bubble', name: 'Bubble', desc: 'X / Y / radius 3차원.', usage: '미사용', svg: svgBubble() },
+  { code: 'BU-2', category: 'bubble', name: '4분면 점도표 (본 레포 C-20)', desc: '본 레포 C-20 — Bubble 의 r 고정 단순화. X/Y 만으로 4 사분면 분류.', usage: 'tracker / KPI 분석 4사분면 (impact × effort 등)', svg: svgQuadrant() },
 
   // ─── T: Tooltip (직교 — 모든 차트에) ──────────────────────────────────────
   { code: 'T-1', category: 'tooltip', name: 'Tooltip (직교 패턴)', desc: '모든 차트와 엮어 사용. <title> 또는 Custom DOM. 차트 양식과 직교.', usage: '향후 차트별 hover 정보 표시', svg: svgTooltip() },
 ]
 
 const CATEGORY_LABELS = {
-  line:     { label: 'L — 라인 차트', color: '#60A5FA', desc: 'Line — 시계열 / 트렌드' },
-  bar:      { label: 'B — 바 차트',    color: '#F472B6', desc: 'Bar — 카테고리 비교 / 누적' },
-  mixed:    { label: 'M — 콤보 차트', color: '#A78BFA', desc: 'Mixed — Bar + Line 결합' },
-  doughnut: { label: 'D — 도넛 차트', color: '#FBBF24', desc: 'Doughnut — 비중 / 점유율' },
-  radar:    { label: 'R — 레이더 차트', color: '#4ADE80', desc: 'Radar — 다차원 metric' },
-  bubble:   { label: 'BU — 버블 차트', color: '#22D3EE', desc: 'Bubble — 3변수 (X/Y/r)' },
-  tooltip:  { label: 'T — 툴팁 (직교)', color: '#FCA5A5', desc: 'Tooltip — 모든 차트에 추가 가능' },
+  line:     { label: 'L — 라인 차트',         color: '#60A5FA', desc: 'Line — 시계열 / 트렌드' },
+  bar:      { label: 'B — 바 차트 (스택)',     color: '#F472B6', desc: 'Bar — 카테고리 누적 (Chart.js 표준)' },
+  vbar:     { label: 'V — 그룹 막대 (본 레포)', color: '#EC4899', desc: 'Vbar — 카테고리당 N 개 막대 (그룹)' },
+  hbar:     { label: 'HB — 가로 막대 (Top N)', color: '#DB2777', desc: 'Horizontal Bar — 랭킹 / Top N' },
+  mixed:    { label: 'M — 콤보 차트',           color: '#A78BFA', desc: 'Mixed — Bar + Line 결합' },
+  bump:     { label: 'BP — 범프 차트',          color: '#C084FC', desc: 'Bump — 순위 변화 시각화' },
+  mini:     { label: 'MT — 미니 트렌드',        color: '#94A3B8', desc: 'Mini Trend — 이메일 호환 (table-layout)' },
+  doughnut: { label: 'D — 도넛 / 파이',          color: '#FBBF24', desc: 'Doughnut / Pie — 비중 / 점유율' },
+  radar:    { label: 'R — 레이더 차트',         color: '#4ADE80', desc: 'Radar — 다차원 metric' },
+  bubble:   { label: 'BU — 버블 / 4분면',        color: '#22D3EE', desc: 'Bubble / Quadrant — 3변수 (X/Y/r) 또는 4사분면' },
+  tooltip:  { label: 'T — 툴팁 (직교)',          color: '#FCA5A5', desc: 'Tooltip — 모든 차트에 추가 가능' },
 }
 
 // ─── 예시 SVG 함수 ────────────────────────────────────────────────────────
@@ -273,6 +291,126 @@ function svgBubble() {
   ).join(''))
 }
 
+function svgVbarGroup() {
+  let s = ''
+  const data = [[40,28,18], [35,30,22], [42,25,15], [38,32,25], [45,30,20], [40,35,18], [42,28,22]]
+  data.forEach((cat, i) => {
+    const x = 14 + i * 28
+    const colors = [RED, BLUE, GREEN]
+    cat.forEach((h, j) => {
+      s += `<rect x="${x + j * 6}" y="${70 - h * 1.2}" width="5" height="${h * 1.2}" fill="${colors[j]}"/>`
+    })
+  })
+  return svgFrame(s)
+}
+
+function svgHbarTopN() {
+  let s = ''
+  const data = [
+    { label: 'reddit.com',   val: 92, color: RED },
+    { label: 'youtube.com',  val: 78, color: BLUE },
+    { label: 'twitter.com',  val: 65, color: GREEN },
+    { label: 'medium.com',   val: 52, color: '#FBBF24' },
+    { label: 'github.com',   val: 38, color: '#A78BFA' },
+  ]
+  data.forEach((d, i) => {
+    const y = 10 + i * 12
+    const w = d.val * 1.8
+    s += `<text x="2" y="${y + 7}" font-size="7" fill="#94A3B8" font-family="Arial">${d.label}</text>`
+    s += `<rect x="62" y="${y}" width="${w}" height="9" fill="${d.color}" opacity="0.85"/>`
+    s += `<text x="${62 + w + 4}" y="${y + 7}" font-size="7" fill="#CBD5E1" font-family="Arial">${d.val}</text>`
+  })
+  return svgFrame(s)
+}
+
+function svgBump() {
+  // 4 series, 5 months — 순위 변화
+  const months = 5
+  const ranks = [
+    { color: RED,    seq: [1, 2, 1, 1, 1] },
+    { color: BLUE,   seq: [2, 1, 3, 2, 3] },
+    { color: GREEN,  seq: [3, 3, 2, 4, 2] },
+    { color: '#FBBF24', seq: [4, 4, 4, 3, 4] },
+  ]
+  let s = ''
+  // 그리드 라인
+  for (let m = 0; m < months; m++) {
+    const x = 20 + m * 45
+    s += `<line x1="${x}" y1="10" x2="${x}" y2="70" stroke="${GRAY}" stroke-width="0.3" opacity="0.3"/>`
+  }
+  ranks.forEach(r => {
+    let path = ''
+    r.seq.forEach((rank, m) => {
+      const x = 20 + m * 45
+      const y = 15 + (rank - 1) * 14
+      path += (m === 0 ? `M ${x} ${y}` : ` L ${x} ${y}`)
+      s += `<circle cx="${x}" cy="${y}" r="2.5" fill="${r.color}"/>`
+    })
+    s += `<path d="${path}" stroke="${r.color}" stroke-width="2" fill="none" stroke-linecap="round"/>`
+  })
+  return svgFrame(s)
+}
+
+function svgMiniTrend() {
+  // 이메일 table-layout 호환 — 막대만으로 표현
+  let s = ''
+  const data = [55, 62, 58, 68, 72, 65, 75]
+  data.forEach((v, i) => {
+    const x = 14 + i * 28
+    const h = v * 0.7
+    s += `<rect x="${x}" y="${70 - h}" width="22" height="${h}" fill="${RED}" opacity="${0.4 + i * 0.1}"/>`
+  })
+  // 텍스트 라벨 (table cell 시뮬레이션)
+  s += `<text x="${W / 2}" y="${H - 2}" font-size="7" fill="#64748B" font-family="Arial" text-anchor="middle">W22~W28 (이메일 table-layout 호환)</text>`
+  return svgFrame(s)
+}
+
+function svgPie() {
+  const cx = W / 2, cy = H / 2, r = 32
+  const slices = [
+    { val: 35, color: RED },
+    { val: 25, color: BLUE },
+    { val: 20, color: GREEN },
+    { val: 12, color: '#FBBF24' },
+    { val: 8,  color: '#A78BFA' },
+  ]
+  let acc = 0, s = ''
+  slices.forEach(slice => {
+    const start = (acc / 100) * Math.PI * 2 - Math.PI / 2
+    acc += slice.val
+    const end = (acc / 100) * Math.PI * 2 - Math.PI / 2
+    const x0 = cx + r * Math.cos(start), y0 = cy + r * Math.sin(start)
+    const x1 = cx + r * Math.cos(end),   y1 = cy + r * Math.sin(end)
+    const large = (end - start) > Math.PI ? 1 : 0
+    s += `<path d="M ${cx} ${cy} L ${x0.toFixed(1)} ${y0.toFixed(1)} A ${r} ${r} 0 ${large} 1 ${x1.toFixed(1)} ${y1.toFixed(1)} Z" fill="${slice.color}"/>`
+  })
+  return svgFrame(s)
+}
+
+function svgQuadrant() {
+  // 4사분면 점도표 — X/Y 축 + 점들 (r 고정)
+  const cx = W / 2, cy = H / 2
+  let s = ''
+  // 축
+  s += `<line x1="${cx}" y1="6" x2="${cx}" y2="${H - 6}" stroke="${GRAY}" stroke-width="0.5" opacity="0.5"/>`
+  s += `<line x1="10" y1="${cy}" x2="${W - 10}" y2="${cy}" stroke="${GRAY}" stroke-width="0.5" opacity="0.5"/>`
+  // 점들
+  const points = [
+    { x: 40,  y: 25, c: RED },     // Q2 (top-left)
+    { x: 165, y: 20, c: BLUE },    // Q1 (top-right)
+    { x: 55,  y: 60, c: GREEN },   // Q3 (bottom-left)
+    { x: 175, y: 58, c: '#FBBF24' }, // Q4 (bottom-right)
+    { x: 130, y: 35, c: '#A78BFA' },
+  ]
+  points.forEach(p => s += `<circle cx="${p.x}" cy="${p.y}" r="4" fill="${p.c}" opacity="0.7" stroke="${p.c}" stroke-width="1"/>`)
+  // 사분면 라벨
+  s += `<text x="${W - 5}" y="14" font-size="6" fill="#64748B" font-family="Arial" text-anchor="end">Q1</text>`
+  s += `<text x="14" y="14" font-size="6" fill="#64748B" font-family="Arial">Q2</text>`
+  s += `<text x="14" y="${H - 4}" font-size="6" fill="#64748B" font-family="Arial">Q3</text>`
+  s += `<text x="${W - 5}" y="${H - 4}" font-size="6" fill="#64748B" font-family="Arial" text-anchor="end">Q4</text>`
+  return svgFrame(s)
+}
+
 function svgTooltip() {
   return svgFrame(`
     <path d="M 10 60 L 50 40 L 90 50 L 130 30 L 170 35 L 210 20" stroke="${RED}" stroke-width="1.5" fill="none"/>
@@ -358,14 +496,23 @@ ${topBar}
 
 <div class="intro">
   <p><strong>분류 코드 체계</strong> — 스킬에서 차트 호출 시 사용:</p>
-  <p style="margin-top:8px;font-size:12px">
+  <p style="margin-top:8px;font-size:12px;line-height:1.9">
+    <strong style="color:#F8FAFC">Chart.js 표준</strong>:
     <code>L-1 ~ L-7</code> 라인 ·
-    <code>B-1, B-2</code> 바 ·
+    <code>B-1, B-2</code> 바 스택 ·
     <code>M-1, M-2</code> 콤보 ·
     <code>D-1</code> 도넛 ·
     <code>R-1</code> 레이더 ·
     <code>BU-1</code> 버블 ·
-    <code>T-1</code> 툴팁 (직교)
+    <code>T-1</code> 툴팁
+    <br>
+    <strong style="color:#F8FAFC">본 레포 추가</strong>:
+    <code>V-1</code> 그룹 막대 (C-05) ·
+    <code>HB-1</code> 가로 막대 Top N (C-06) ·
+    <code>BP-1</code> 범프 (C-09) ·
+    <code>MT-1</code> 미니 트렌드 (C-10) ·
+    <code>D-2</code> 파이 (C-19) ·
+    <code>BU-2</code> 4분면 (C-20)
   </p>
   <p style="margin-top:10px;font-size:12px">사용 예시: <code>"L-1 차트 그려줘"</code> · <code>"B-2 그룹 스택 사용"</code> · <code>"M-1 콤보 차트 + T-1 툴팁"</code></p>
   <p style="margin-top:10px;font-size:11px;color:#94A3B8">상세 SVG 패턴 · 데이터 shape · ANTI-PATTERN 은 <code>.claude/rules/design.md</code> §5.11 ~ §5.14 참조.</p>

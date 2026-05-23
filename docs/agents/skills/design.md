@@ -15,14 +15,22 @@
 사용자가 "L-1 차트 그려줘" / "B-2 그룹 스택 사용" / "M-1 + T-1 (콤보 + 툴팁)" 같이 분류 코드로 요청할 때.
 
 ```
-1. 분류 코드 식별:
+1. 분류 코드 식별 (Chart.js 15 + 본 레포 6):
+   **Chart.js 표준**:
    · L-1 ~ L-7: 라인 (Basic, Interpolation, Multi-axis, Point Styling, Segments, Stepped, Styling)
-   · B-1, B-2: 바 (Stacked, Stacked Groups)
+   · B-1, B-2: 바 스택 (Stacked, Stacked Groups)
    · M-1, M-2: 콤보 (Bar+Line, Stacked Bar+Line)
    · D-1: 도넛
    · R-1: 레이더 (skip points)
    · BU-1: 버블 (X/Y/r)
    · T-1: 툴팁 (직교 — 모든 차트와 조합 가능)
+   **본 레포 추가**:
+   · V-1: 그룹 막대 vbar (C-05)
+   · HB-1: 가로 막대 Top N (C-06)
+   · BP-1: 범프 차트 (C-09)
+   · MT-1: 미니 트렌드 바 메일 호환 (C-10)
+   · D-2: 파이 (C-19 — cutout 없는 doughnut)
+   · BU-2: 4분면 점도표 (C-20 — r 고정 단순화 bubble)
 2. 카탈로그 조회:
    · `/admin/chart-library` (라이브) — 예시 SVG + 본 레포 사용 위치
    · `docs/agents/CHART_LIBRARY.html` (정적 미러)
