@@ -12,61 +12,86 @@ export const harnessRouter = Router()
 // 본 레포의 실제 파일 경로 + UI 표시용 메타데이터.
 // 새 컴포넌트 (예: 신규 hook, agent) 추가 시 이 배열만 갱신.
 const HARNESS_COMPONENTS = [
+  // ─── 룰 (Rule) — 따라야 할 규칙. Markdown. 권고 (~80%) ─────────────────────
   {
     category: 'rule',
-    label: '프로젝트 룰',
+    label: '프로젝트 헌법',
     file: 'CLAUDE.md',
-    desc: 'Claude Code 가 본 레포에서 작업할 때 항상 로드되는 룰. 스택·디렉토리·NEVER 룰·작업 흐름.',
+    desc: '본 레포에서 작업할 때 항상 로드되는 프로젝트 룰. 하네스 4 개념 정의, 스택, NEVER 룰, 작업 흐름. (글로벌 헌법은 ~/.claude/CLAUDE.md)',
   },
   {
-    category: 'skill',
-    label: '디자인 하네스',
-    file: '.claude/skills/design/SKILL.md',
-    desc: 'SVG 차트·테이블·뉴스레터 카드(V1/V2/V3) 등 23개 컴포넌트 패턴 라이브러리.',
+    category: 'rule',
+    label: '데이터 룰 매뉴얼',
+    file: 'docs/DATA_RULES.md',
+    desc: '데이터 작업의 토큰·invariant·ANTI-PATTERN. 5단계 ERROR CATCHING / null vs 0 / 날짜 정규화 등. 스킬이 step 별로 참조.',
   },
   {
-    category: 'skill',
-    label: '데이터 하네스',
-    file: '.claude/skills/data/SKILL.md',
-    desc: 'Google Sheets 파싱·정제·검증·동기화. 5단계 ERROR CATCHING + Self-Logging + verify-after-act.',
+    category: 'rule',
+    label: '디자인 룰 매뉴얼',
+    file: 'docs/DESIGN_RULES.md',
+    desc: '디자인 토큰·컴포넌트 카탈로그 (C-01~C-23)·SVG 패턴·이메일 호환 ANTI-PATTERN. 스킬이 step 별로 참조.',
   },
-  {
-    category: 'skill',
-    label: '프롬프팅 통합 매뉴얼',
-    file: '.claude/skills/prompting/SKILL.md',
-    desc: 'Claude Code/Cursor/Codex 등 에이전트형 도구가 본 레포에서 작업할 때 참조하는 통합 시스템 프롬프트.',
-  },
+
+  // ─── 훅 (Hook) — 절대 금지. JSON 강제 (100%) + md 설명서 ───────────────────
   {
     category: 'hook',
-    label: '훅 설정',
+    label: '훅 등록 (JSON 강제)',
     file: '.claude/settings.json',
-    desc: 'PreToolUse + PostToolUse 훅 등록 (JSON 형식 강제 — 기계 파싱).',
+    desc: 'PreToolUse + PostToolUse 훅 등록. JSON 필수 — 시스템이 파싱·실행하므로 Claude 우회 불가.',
   },
   {
     category: 'hook',
-    label: '신택스 검증 훅',
+    label: '훅 인간 가독 설명서',
+    file: '.claude/hooks/README.md',
+    desc: '각 훅의 트리거·대상·동작·목적 + 신규 훅 추가 가이드. .md 안의 hook 정의는 무시됨을 명시.',
+  },
+  {
+    category: 'hook',
+    label: '신택스 검증 훅 (PostToolUse)',
     file: '.claude/hooks/syntax-check.sh',
-    desc: 'PostToolUse: src/·routes/ 의 .js Edit/Write 후 node --check 신택스 검증. 실패 시 즉시 피드백.',
+    desc: 'src/·routes/ 의 .js Edit/Write 직후 node --check. 실패 시 exit 2 → Claude 재시도.',
   },
   {
     category: 'hook',
-    label: 'dist 차단 훅',
+    label: 'dist 차단 훅 (PreToolUse)',
     file: '.claude/hooks/block-dist.sh',
-    desc: 'PreToolUse: dist-*/dist/ 빌드 산출물 직접 수정 차단. CLAUDE.md NEVER 룰 강제.',
+    desc: 'dist-*/dist/ 빌드 산출물 직접 수정 호출 차단. CLAUDE.md NEVER 룰 강제.',
   },
+
+  // ─── 스킬 (Skill) — 순차 워크플로우. 명령 조합 ────────────────────────────
+  {
+    category: 'skill',
+    label: '데이터 워크플로우',
+    file: '.claude/skills/data/SKILL.md',
+    desc: '신규 시트 추가, 신규 카테고리 추가, 회귀 디버깅(TDD), 거대 파서 분할, silent fallback 강화, 매핑 통합, sync verify 등 step-by-step.',
+  },
+  {
+    category: 'skill',
+    label: '디자인 워크플로우',
+    file: '.claude/skills/design/SKILL.md',
+    desc: '신규 컴포넌트(C-XX) 추가, SVG 차트 패턴 추가, 뉴스레터 카드 변형, 이메일 호환 변환, KO/EN 라벨 추가, iframe srcdoc 미리보기 등 step-by-step.',
+  },
+  {
+    category: 'skill',
+    label: '에이전트형 도구 통합 프롬프트',
+    file: '.claude/skills/prompting/SKILL.md',
+    desc: 'Claude Code 외 다른 에이전트형 도구 (Cursor/Codex) 가 본 레포에서 작업할 때 참조하는 통합 시스템 프롬프트.',
+  },
+
+  // ─── 서브에이전트 (Sub-agent) — 특정 영역 분리 작업 ────────────────────────
   {
     category: 'agent',
     label: '데이터 진단 서브에이전트',
     file: '.claude/agents/data-puller.md',
-    desc: 'Google Sheets 파싱 파이프라인의 데이터 shape·정합성·누락 조사·보고 전담 (read-only).',
+    desc: 'Google Sheets 파싱 파이프라인의 shape·정합성·누락 조사·보고 전담 (read-only). Claude Code 가 위임 시 활성화.',
   },
 ]
 
 const CATEGORY_LABELS = {
-  rule: '룰 (Rule)',
-  skill: '스킬 / 하네스 (Skill / Harness)',
-  hook: '훅 (Hook)',
-  agent: '서브에이전트 (Sub-agent)',
+  rule: '룰 (Rule) — 따라야 할 규칙. Markdown 권고 (~80%)',
+  hook: '훅 (Hook) — 절대 하면 안 되는 것. JSON 강제 (100%) + 인간용 md 설명서',
+  skill: '스킬 (Skill) — 자동 워크플로우 / 명령 조합. step-by-step',
+  agent: '서브에이전트 (Sub-agent) — 특정 영역 분리 작업 (Claude Code 공식 기능)',
 }
 
 const ROOT = process.cwd()
@@ -85,38 +110,62 @@ function generateReadme() {
   const today = new Date().toISOString().slice(0, 10)
   return `# Claude Code Harness Mirror
 
-본 ZIP 은 \`my-geo-newsletter\` 레포의 Claude Code 하네스(룰·스킬·훅·서브에이전트) 미러링 본.
+본 ZIP 은 \`my-geo-newsletter\` 레포의 Claude Code 하네스 (룰·훅·스킬·서브에이전트) 미러링 본.
 생성일: ${today}
 
-## 무엇인가
-Claude Code 가 본 레포에서 작업할 때 자동 로드되는 다음 컴포넌트들의 복사본:
+## 하네스 4 개념
 
-| 컴포넌트 | 역할 |
-|---|---|
-| \`CLAUDE.md\` | 프로젝트 룰 (Claude 가 항상 로드) |
-| \`.claude/skills/design/SKILL.md\` | 디자인 하네스 |
-| \`.claude/skills/data/SKILL.md\` | 데이터 하네스 |
-| \`.claude/skills/prompting/SKILL.md\` | 에이전트형 도구 통합 프롬프트 |
-| \`.claude/settings.json\` | 훅 등록 (JSON 강제) |
-| \`.claude/hooks/syntax-check.sh\` | PostToolUse 신택스 검증 훅 |
-| \`.claude/hooks/block-dist.sh\` | PreToolUse 빌드산출물 수정 차단 훅 |
-| \`.claude/agents/data-puller.md\` | 데이터 진단 read-only 서브에이전트 |
+| 개념 | 형식 | 강제력 | 역할 |
+|---|---|---|---|
+| **룰 (Rule)** | Markdown | 권고 (~80%) | 따라야 할 규칙 |
+| **훅 (Hook)** | JSON 강제 + md 설명서 | 100% (시스템 차단) | 절대 하면 안 되는 것 |
+| **스킬 (Skill)** | Markdown 워크플로우 | 권고 (필요 시 로드) | 자동 워크플로우 / 명령 조합 |
+| **서브에이전트** | Markdown frontmatter | Claude 가 위임 시 활성 | 특정 영역 분리 작업 |
+
+## ZIP 내용
+
+### 룰 (Rule)
+- \`CLAUDE.md\` — 프로젝트 헌법 (4 개념 정의 + NEVER 룰 + 작업 흐름)
+- \`docs/DATA_RULES.md\` — 데이터 작업 룰·매뉴얼·invariant·ANTI-PATTERN
+- \`docs/DESIGN_RULES.md\` — 디자인 토큰·컴포넌트 카탈로그·SVG 패턴
+
+### 훅 (Hook)
+- \`.claude/settings.json\` — 훅 등록 (JSON 필수)
+- \`.claude/hooks/README.md\` — 인간 가독성 설명서
+- \`.claude/hooks/syntax-check.sh\` — PostToolUse 신택스 검증
+- \`.claude/hooks/block-dist.sh\` — PreToolUse 빌드산출물 차단
+
+### 스킬 (Skill)
+- \`.claude/skills/data/SKILL.md\` — 데이터 워크플로우 8개
+- \`.claude/skills/design/SKILL.md\` — 디자인 워크플로우 7개
+- \`.claude/skills/prompting/SKILL.md\` — 에이전트형 도구 통합 프롬프트
+
+### 서브에이전트 (Sub-agent)
+- \`.claude/agents/data-puller.md\` — 데이터 진단 read-only
 
 ## 다른 프로젝트에 적용
-1. 본 ZIP 의 \`CLAUDE.md\` + \`.claude/\` 전체를 대상 프로젝트 루트에 복사
+
+1. 본 ZIP 의 \`CLAUDE.md\` + \`docs/\` + \`.claude/\` 전체를 대상 프로젝트 루트에 복사
 2. \`chmod +x .claude/hooks/*.sh\` (실행 권한)
 3. Claude Code 실행 시 자동 로드됨
 
-## 형식 강제성
+## 형식 강제성 — 핵심
+
 - **JSON 필수**: \`.claude/settings.json\` — 시스템이 직접 파싱·실행. Claude 가 우회 불가.
-- **Markdown 권고**: \`CLAUDE.md\`, \`SKILL.md\`, agent \`.md\` — Claude 가 읽고 따름 (~80%).
-- \`.md\` 안에 \`hooks:\` 정의해도 무시됨. 자동 강제는 \`settings.json\` 만.
+- **Markdown 권고**: \`CLAUDE.md\`, \`SKILL.md\`, \`docs/*_RULES.md\`, agent \`.md\` — Claude 가 읽고 따름 (~80%).
+- \`.md\` 안에 \`hooks:\` 같은 자동화 정의 적어도 무시됨. 자동 강제는 \`settings.json\` 만.
+
+## 스킬 vs 룰 차이
+
+- **스킬 (skill)** = 순차 워크플로우. "이걸 할 때는 1) → 2) → 3) ..." (step-by-step 명령 조합)
+- **룰 (rule)** = 그 step 이 따라야 할 토큰·invariant·ANTI-PATTERN 정의 (참조용 매뉴얼)
+- 스킬에 토큰·패턴 정의가 섞이면 안 되고, 그건 룰에. 스킬은 짧고 sequential.
 
 ## 주의
+
 - 본 ZIP 은 원본의 **그 시점 스냅샷**. 원본이 갱신되면 다시 다운로드.
 - 원본 갱신을 자동 동기화하려면 git submodule 또는 sparse checkout 등 별도 메커니즘 필요.
-
-원본: \`/admin/harness\` 페이지에서 항상 최신 ZIP 다운로드 가능.
+- 원본: \`/admin/harness\` 페이지에서 항상 최신 ZIP 다운로드 가능 (호출 시점에 실제 파일 → 자동 미러).
 `
 }
 
@@ -232,19 +281,25 @@ h1{font-size:22px;color:#F8FAFC;margin-bottom:4px}
 <p class="sub">Claude Code 하네스 (룰·스킬·훅·서브에이전트) 의 실시간 미러링</p>
 
 <div class="intro">
-  <p><strong>본 페이지는 <code>.claude/</code> + <code>CLAUDE.md</code> 의 실시간 미러.</strong> 다른 프로젝트에 적용하거나 팀원과 공유할 때 ZIP 다운로드.</p>
+  <p><strong>본 페이지는 <code>CLAUDE.md</code> + <code>docs/</code> + <code>.claude/</code> 의 실시간 미러.</strong> 다른 프로젝트에 적용하거나 팀원과 공유할 때 ZIP 다운로드.</p>
   <p>ZIP 생성 시점에 실제 파일을 읽으므로 <strong>항상 최신</strong>. 실제 하네스 파일이 수정되면 다음 다운로드 시 즉시 반영.</p>
-  <p style="color:#94A3B8;font-size:12px;margin-top:4px">강제력 차이 — <strong style="color:#F8FAFC">JSON (settings.json)</strong>: 시스템이 직접 실행 · <strong style="color:#F8FAFC">Markdown (.md)</strong>: Claude 가 읽고 따름 (~80%).</p>
+  <p style="color:#94A3B8;font-size:12px;margin-top:8px">
+    <strong style="color:#F8FAFC">하네스 4 개념</strong> —
+    <span style="color:#F8FAFC">룰</span>: 따라야 할 규칙 (md, ~80%) ·
+    <span style="color:#F8FAFC">훅</span>: 절대 금지 (JSON 강제, 100%) ·
+    <span style="color:#F8FAFC">스킬</span>: 순차 워크플로우 (md, 명령 조합) ·
+    <span style="color:#F8FAFC">서브에이전트</span>: 영역 분리 (md frontmatter)
+  </p>
   <a class="dl-btn" href="/api/harness/zip">📦 전체 ZIP 다운로드</a>
 </div>
 
 <div class="kpis">
-  <div class="card"><div class="label">컴포넌트</div><div class="value">${items.length}</div></div>
-  <div class="card"><div class="label">총 크기</div><div class="value">${escHtml(fmtBytes(totalSize))}</div></div>
-  <div class="card"><div class="label">룰</div><div class="value">${(grouped.rule || []).length}</div></div>
-  <div class="card"><div class="label">스킬</div><div class="value">${(grouped.skill || []).length}</div></div>
-  <div class="card"><div class="label">훅</div><div class="value">${(grouped.hook || []).length}</div></div>
+  <div class="card"><div class="label">총 컴포넌트</div><div class="value">${items.length}</div></div>
+  <div class="card"><div class="label">룰 (Rule)</div><div class="value">${(grouped.rule || []).length}</div></div>
+  <div class="card"><div class="label">훅 (Hook)</div><div class="value">${(grouped.hook || []).length}</div></div>
+  <div class="card"><div class="label">스킬 (Skill)</div><div class="value">${(grouped.skill || []).length}</div></div>
   <div class="card"><div class="label">서브에이전트</div><div class="value">${(grouped.agent || []).length}</div></div>
+  <div class="card"><div class="label">총 크기 (압축 전)</div><div class="value">${escHtml(fmtBytes(totalSize))}</div></div>
 </div>
 
 ${sectionsHtml}

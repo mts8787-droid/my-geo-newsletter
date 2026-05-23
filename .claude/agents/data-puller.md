@@ -12,7 +12,9 @@ tools: Read, Bash, Grep, Glob
 
 `src/excelUtils.js` (parseSheetRows 라우터) · `src/categoryMap.js` (카테고리 매핑 single source) · `src/sheetParserUtils.js` (파서 공통 헬퍼) · `src/googleSheetsUtils.js` (Sheets API) · `src/shared/sheetTabsForMode.js` (모드별 탭) · `src/shared/api.js` (publish 시 extra 조립) · `src/excelUtils.test.js`.
 
-표준 데이터 shape · 5단계 ERROR CATCHING · Self-Logging 패턴은 `.claude/skills/data/SKILL.md` 참조.
+**참조 매뉴얼**:
+- 데이터 룰·매뉴얼·invariant·ANTI-PATTERN — `docs/DATA_RULES.md` (5단계 ERROR CATCHING, Self-Logging, 날짜/숫자 정규화 등)
+- 데이터 작업 워크플로우 (step-by-step) — `.claude/skills/data/SKILL.md`
 
 ## 입력 → 출력 계약
 
@@ -29,10 +31,10 @@ tools: Read, Bash, Grep, Glob
 
 ## 표준 워크플로우
 
-1. `.claude/skills/data/SKILL.md` §3 (CANONICAL shapes) + §5 (DIRECTIVES) + §6 (ERROR CATCHING) 로드
-2. 조사 대상 파서/탭 코드 `Read` — `src/excelUtils.js` 의 해당 `parseXxx` 함수 + `parseSheet` switch 분기
-3. 관련 테스트 확인 — `test/excelUtils.test.js` 에 케이스가 있나
-4. 필요 시 `npx vitest run test/excelUtils.test.js -t "<패턴>"` 실행해 출력 확인
+1. `docs/DATA_RULES.md` §3 (CANONICAL shapes) + §5 (DIRECTIVES) + §6 (ERROR CATCHING) 로드
+2. 조사 대상 파서/탭 코드 `Read` — `src/excelUtils.js` 의 해당 `parseXxx` 함수 + `parseSheetRows` 라우터 분기
+3. 관련 테스트 확인 — `src/excelUtils.test.js` 에 케이스가 있나
+4. 필요 시 `npx vitest run src/excelUtils.test.js -t "<패턴>"` 실행해 출력 확인
 5. 위 §3 의 invariant 체크리스트 적용:
    - **date sort**: `parseMonthFromDate` 로 정렬된 상태?
    - **null vs 0**: 빈 셀과 실측 0 구분 유지?
