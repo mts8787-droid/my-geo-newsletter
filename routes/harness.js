@@ -60,6 +60,12 @@ const HARNESS_COMPONENTS = [
   },
   {
     category: 'rule',
+    label: 'Agent 통합 가이드 (Antigravity 등 타 에이전트용)',
+    file: 'Agent.md',
+    desc: 'Claude·Antigravity 등 서로 다른 에이전트가 동일한 하네스 안에서 움직이도록 하기 위한 통합 지침. CLAUDE.md (프로젝트 구체 지침) + Karpathy 4 원칙 융합. Antigravity Knowledge Item (KI) 주입용.',
+  },
+  {
+    category: 'rule',
     label: '데이터 Rule 매뉴얼',
     file: '.claude/rules/data.md',
     desc: '데이터 작업의 토큰·invariant·ANTI-PATTERN. 5단계 ERROR CATCHING / null vs 0 / 날짜 정규화 등. Skill이 step 별로 참조.',

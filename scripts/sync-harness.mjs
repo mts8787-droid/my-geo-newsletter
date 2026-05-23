@@ -41,6 +41,8 @@ const MIRROR_MAP = [
   { src: '.claude/skills/debug/SKILL.md',    dst: 'docs/agents/skills/debug.md',    stripFrontmatter: true },
   // Hook 가이드 — README.md 미러 (이름만 HOOK_GUIDE 로)
   { src: '.claude/hooks/README.md',          dst: 'docs/agents/HOOK_GUIDE.md' },
+  // Agent.md — Antigravity / 타 에이전트용 통합 가이드 (원본 → 미러)
+  { src: 'Agent.md',                         dst: 'docs/agents/Agent.md' },
 ]
 
 function stripFrontmatter(content) {
