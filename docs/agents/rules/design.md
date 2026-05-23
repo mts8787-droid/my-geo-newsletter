@@ -147,14 +147,123 @@ border-radius card 8~12px | badge 5~6px | bar 4px top
 - `align="center"` 유지, 외곽 td `padding:24px 0`.
 - `body { min-width }` / `overflow-x:hidden` 금지 (iframe 클립).
 
-### 5.3 베이스라인 마커 (시점 분기)
+### 5.3 베이스라인 마커 (시점 분기) — 3 요소 한 세트
 
-3 요소 한 세트:
-1. **Pre 페이드**: 회색 `#64748B`, opacity 0.85
-2. **시작점 마커**: `<circle r="4" fill="#000" stroke="${color}" stroke-width="3"/>`
-3. **Dashed vertical + 라벨**: `stroke-dasharray="3,3"`, font 9, `*Baseline 재설정`
+베이스라인 = 분석 기준점 (예: 새 측정 도구 도입 시점, 정책 변경 등). 이전 데이터는 시각적으로 분리.
 
-위치 RULE: `bx > w * 0.7` → onRight (좌측 정렬). `labelOffsetY` / `lineOffsetY` 옵션으로 카테고리·모드별 미세 조정.
+#### 3 시각 요소
+1. **Pre 페이드**: 회색 `#64748B`, opacity 0.85 — 베이스라인 이전 데이터는 회색
+2. **시작점 마커**: `<circle r="4" fill="#000" stroke="${color}" stroke-width="3"/>` — 베이스라인 첫 점에 검정 fill + 컬러 stroke
+3. **Dashed vertical + 라벨**: `stroke-dasharray="3,3"`, font 9, `*Baseline 재설정` — 수직선 + 라벨
+
+#### 베이스라인 처리 3 규칙 (commit `baa42ab`)
+
+```
+[1] Bridge 제거 — Pre 와 Post 를 잇는 연결선 그리지 않음
+    · prePts / postPts 두 path 로 분리
+    · 베이스라인 시작점 (fadeBeforeIdx 인덱스) 은 postPts 의 첫 점 — pre 와 잇지 않음
+[2] 모든 브랜드 line break 적용 — LG 뿐 아니라 경쟁사 라인도 같은 시점에 끊김
+    · svgMultiLine 의 fadeBeforeIdx 가 모든 series 에 동시 적용
+    · 한 카테고리만 끊고 다른 건 잇는 것 → 시각 혼란
+[3] 라벨은 X축 영역에 (차트 데이터와 안 겹치게)
+    · 차트 안쪽 하단 또는 X축 아래
+    · 흰 배경 박스 금지 — 라벨 위치 자체로 분리
+```
+
+#### 위치 자동 (좌/우)
+- `bx > w * 0.7` (오른쪽 끝 가까움) → `onRight` 모드 (라벨 좌측 정렬, text-anchor=end)
+- 그 외 → 오른쪽 정렬 (text-anchor=start)
+- 카테고리·모드별 미세 조정: `labelOffsetY` / `lineOffsetY` 옵션
+
+### 5.7 그래프 truncate (필터 시점 잘라내기)
+
+월/주차 필터 적용 시 차트 데이터를 잘라내되 **배경 가로선은 유지** (차트 영역 변경 X 시각 안정).
+
+#### 적용 패턴 (`dashboardClient.js`)
+```js
+// 필터 인덱스 변수
+var _curWeekIdx = -1         // 마지막 주 = 전체
+var _curMonthIdxIn12 = -1    // 0=Jan, 11=Dec
+
+// truncate 함수가 _curWeekIdx 까지만 라인/포인트 렌더
+_trendMultiSvg(brandData, labels, w, h, { truncateAfter: _curWeekIdx })
+_truncateTrendTable('#trend-container', _wLabels.length, _curWeekIdx)
+```
+
+#### RULE
+- 배경 가로선·X축 라벨은 **전체 범위 유지** — 차트 폭 안정
+- 라인·포인트만 `_curWeekIdx + 1` 까지 렌더
+- 미니 차트도 동일 truncate (제품 카드의 작은 트렌드)
+- 트렌드 차트 truncate 시 svg 의 `viewBox` 유지 — 새로 그리지 말고 mask 적용
+
+#### ANTI-PATTERN
+- truncate 시 `viewBox` 자체 축소 → 차트 영역이 줄어들면서 다른 카드와 정렬 깨짐
+- 배경 가로선까지 잘라내기 → 차트 영역 변경으로 보임
+
+### 5.8 서버 SVG ↔ 클라이언트 짝 동기 (반드시 두 곳)
+
+서버 측 SVG 생성 (`dashboardSvg.js`) 과 클라이언트 측 인라인 JS (`dashboardClient.js`) 가 **같은 차트를 두 번 구현**. 필터 변경 시 클라이언트가 재렌더 — 두 코드가 일치해야 함.
+
+#### 짝 함수 매핑
+
+| 서버 (dashboardSvg.js) | 클라이언트 (dashboardClient.js) | 용도 |
+|---|---|---|
+| `svgLine(data, labels, w, h, color, opts)` | `_miniSvg(...)` | 단일 라인 (제품 카드 미니 트렌드) |
+| `svgMultiLine(brandData, labels, w, h, opts)` | `_trendMultiSvg(...)` | 다중 라인 (트렌드 섹션 큰 차트) |
+| - | `_miniSvgNullAware(...)` | null 값에서 선 끊기 (week 미입력 데이터) |
+
+#### RULE
+- 서버 SVG 함수 시그니처/동작 변경 → 클라이언트 짝도 **동시 수정**
+- 옵션 객체 일치: `{ fadeBeforeIdx, baselineLabel, labelOffsetY, lineOffsetY, truncateAfter }`
+- 베이스라인·페이드·truncate 모두 두 곳에서 같은 결과
+
+#### filterTrend DOM 업데이트
+필터 변경 시 클라이언트가 `.trend-row` DOM 을 새 SVG 로 교체. **`data-prodid` 속성 필수** — row 매칭 키.
+
+```js
+// dashboardClient.js
+function filterTrend(prodIds, cntyKeys) {
+  _trendContainer.querySelectorAll('.trend-row').forEach(row => {
+    const id = row.dataset.prodid    // ← data-prodid 속성으로 매칭
+    if (!id) return
+    row.innerHTML = _trendMultiSvgRow(id, ...)
+  })
+}
+```
+
+**ANTI-PATTERN**: `data-prodid` 누락 → 필터 변경 시 트렌드 사라짐 회귀 (commit `84cf45a`).
+
+### 5.9 범프 차트 (Bump Chart) — Citation 도메인 랭킹
+
+순위 변화를 시각화 (1위 → 3위 → 1위 같은 흐름). `bumpChartSvg(names, rankings, months, maxRank, labelFn)`.
+
+#### 디자인 RULE
+- **height 고정 X** — `viewBox` 비율로 자동 조정 (commit `a8a170c`)
+- 폰트 +3pt 보강 (작으면 라벨 가독성 떨어짐)
+- 라벨 색상: **검정** (#000) — 회색 배경에서 대비 확보
+- 리본 양끝 둥글게 — `stroke-linecap="round"`
+- 여백: 차트 양옆 / 상하 최소 (라벨이 영역 안에 들어오게)
+- 하단 여백 +20px (라벨 잘림 방지)
+
+#### 적용 위치
+- `citationTemplate.js` 의 `citCategoryBumpChartHtml` / `citDomainBumpChartHtml`
+- 클라이언트 측: `_bumpChartSvgJS` (필터 시 재렌더용)
+
+### 5.10 수직 막대 (vbar) — Citation 카테고리 / Dotcom
+
+`_citVBar(cits, topN, isSmall, topColor, isRatio, scale)`.
+
+#### scale 파라미터
+- `scale = 0.7` 같이 카드 높이를 N% 로 축소 (제품별 카드는 큰 카드 70%)
+- 안에 있는 모든 막대 높이가 비례 축소
+
+#### TTL strict / 부분 국가 선택
+- TTL (전체) 보기 모드: TTL 행만 사용 (다른 국가 합산 X)
+- 부분 국가 선택 시: 상단 차트 = 선택된 국가의 By Country 카드 상위 N 합산 (commit `4c5061d`)
+
+#### 컬럼명 짤림 방지
+- `.vbar-col-name` 의 `overflow: visible` 필수
+- 좁은 셀 ($brand$ 가 길면) 폰트 11→10 + letter-spacing 강화 + 영문 약어
 
 ### 5.4 사이드바 모드 분기 (`Sidebar.jsx`)
 
@@ -193,6 +302,16 @@ NEVER  베이스라인 라벨에 흰 배경 박스 → X축 영역에 직접 텍
 NEVER  미출시 국가 나열 콤마 뒤 일반 공백 → 줄바꿈 분리 (non-breaking space `&#x00A0;`)
 NEVER  영문 모드 좁은 셀에 풀네임 → 약어 사용 (Refrigerator→REF, Dishwasher→DW)
 NEVER  flex/grid 를 이메일 HTML 에 사용 → table-layout 만 (Outlook 호환)
+NEVER  베이스라인 시 pre/post 를 한 path 로 연결 → 두 path 로 분리 (bridge 제거)
+NEVER  한 series 만 베이스라인 line break, 다른 series 는 연결 유지 → 모든 브랜드 동시 break
+NEVER  truncate 시 차트 viewBox 자체 축소 → viewBox 유지, 라인/포인트만 truncate
+NEVER  truncate 시 배경 가로선까지 잘라내기 → 전체 범위 유지 (차트 영역 안정)
+NEVER  filterTrend 의 row 매칭에 data-prodid 속성 누락 → 필터 시 트렌드 사라짐 회귀
+NEVER  서버 SVG (`svgLine`) 시그니처 변경 후 클라이언트 짝 (`_miniSvg`) 미수정 → 필터 결과 깨짐
+NEVER  범프 차트에 height 고정 → viewBox 비율 자동 조정 사용
+NEVER  범프 차트 라벨 회색 → 검정 (회색 배경에서 대비 확보)
+NEVER  TTL 차트에 부분 국가 합산 → strict TTL 행만 사용 (또는 By Country 카드 상위 N 합)
+NEVER  미니 차트 null 값을 0 으로 → _miniSvgNullAware 로 선 끊기 (null vs 0 구분)
 ```
 
 ## 7. COMPONENT LIBRARY (HTML/SVG PATTERNS)
