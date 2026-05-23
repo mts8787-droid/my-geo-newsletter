@@ -17,9 +17,31 @@
 - .claude/ 디렉토리 + 그 안에 settings.json / hooks/ / rules/ / skills/ / agents/
 - docs/agents/ 디렉토리
 
-[Claude 가 사용자에게 안내]:
-- "ZIP 압축 푸셨나요? .claude/hooks/*.sh 에 실행 권한 (chmod +x) 부여하셨나요?"
-- 필요시 명령어 제시: `chmod +x .claude/hooks/*.sh`
+[Claude 의 chmod 처리 — 두 가지 옵션 중 선택]:
+
+옵션 A — Claude 가 직접 실행 (권장, 사용자 부담 X):
+- Claude Code 의 Bash 도구로 즉시 실행:
+  `chmod +x .claude/hooks/*.sh`
+- 실행 후 검증:
+  `ls -l .claude/hooks/` 결과에 -rwxr-xr-x 표시 확인
+- 사용자에게 보고: "훅 실행 권한 부여 완료"
+- ⚠ 권한 prompt 가 뜨면 사용자가 허용해야 함 (Claude Code 의 Bash 허용 정책에 따라)
+
+옵션 B — 사용자가 직접 (Bash 권한 없거나 Windows 순수 cmd):
+- Claude 가 명령 안내:
+  "터미널에서 다음 명령 실행 부탁드립니다:
+   cd /path/to/your/project
+   chmod +x .claude/hooks/*.sh
+
+   OS 별:
+   - macOS: Terminal.app 또는 iTerm2
+   - Linux: 기본 터미널
+   - Windows: WSL 또는 Git Bash (cmd / PowerShell 에는 chmod 없음)
+
+   실행 후 ls -l .claude/hooks/ 결과 알려주세요.
+   '-rwxr-xr-x' 표시되면 성공입니다."
+
+[기본 흐름]: 옵션 A 시도 → 권한 거부 / 환경 제약 시 옵션 B 폴백
 
 [Claude 가 사용자에게 백업 안내 — TECHNIQUE-5]:
 - "본격 적용 전 백업해두시면 좋아요:
