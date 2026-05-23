@@ -5,7 +5,7 @@
 
 > Claude Code 가 데이터 작업을 할 때 따라야 할 **순차 워크플로우 모음**.
 > 본 파일은 "이걸 할 때는 1) → 2) → 3) ..." 형태의 step-by-step.
-> 각 step 이 참조하는 **룰·매뉴얼·invariant·ANTI-PATTERN 은 `docs/DATA_RULES.md`**.
+> 각 step 이 참조하는 **룰·매뉴얼·invariant·ANTI-PATTERN 은 `.claude/rules/data.md`**.
 > 절대 금지는 훅 (`.claude/hooks/`), 프로젝트 헌법은 `CLAUDE.md`.
 
 ---
@@ -18,7 +18,7 @@
 1. src/excelUtils.js 의 SHEET_NAMES 상수에 새 탭 이름 등록
 2. parseSheetRows 라우터에 새 분기 추가 — 해당 sheetName 일 때 parseXxx 호출
 3. parseXxx 함수 작성:
-   a. 진입부: docs/DATA_RULES.md §6.2 [1] DETECT — 보통 assertRows 라우터 가드가 처리하므로 생략 가능
+   a. 진입부: .claude/rules/data.md §6.2 [1] DETECT — 보통 assertRows 라우터 가드가 처리하므로 생략 가능
    b. 헤더 탐지: findHeaderIdx (AND 매칭) 또는 rows.findIndex (OR/복잡 분기)
    c. 헤더 없으면 _logWarn(scope, 'header not found', { firstRows }) 후 return {}
    d. 데이터 row 처리: 헤더 다음 행부터 forEach
@@ -30,7 +30,7 @@
 7. generateXxxHTML 에서 활용 (대시보드 / 뉴스레터 / 이메일)
 8. 통합 테스트 1개 이상 추가 — src/excelUtils.test.js 에 fixture + parseSheetRows 통한 호출
 9. invariant 자동 검증 통과 확인 (npm test 의 categoryMap invariant 등)
-10. docs/DATA_RULES.md §4.2 (신규 시트 추가 절차) 참고
+10. .claude/rules/data.md §4.2 (신규 시트 추가 절차) 참고
 ```
 
 ---
@@ -70,7 +70,7 @@
    b. parseSheetRows(SHEET_NAMES.X, fixture) 호출
    c. 기대값 expect — 현재는 실패해야 정상 (회귀 재현 증명)
 3. npm test -- --run src/excelUtils.test.js — 새 테스트가 실패하는지 확인
-4. 원인 파악 → docs/DATA_RULES.md §6 ERROR CATCHING 5단계 흐름 따라 진단:
+4. 원인 파악 → .claude/rules/data.md §6 ERROR CATCHING 5단계 흐름 따라 진단:
    a. [1] DETECT — 입력 어디서 망가졌나
    b. [3] CAPTURE — rowIdx / raw / parsed / expected 로그
 5. 코드 수정 — surgical (영향 최소)
@@ -111,7 +111,7 @@
 2. import 추가: import { _logWarn } from './sheetParserUtils.js'
 3. _logWarn 의 반환값은 {} — 호출자는 그대로 return _logWarn(...) 가능
 4. 테스트 추가 — silent 케이스 fixture 가 빈 객체 반환 + console.warn 호출 검증
-5. docs/DATA_RULES.md §8 ANTI-PATTERN ('silent fail') 위반 안 함 확인
+5. .claude/rules/data.md §8 ANTI-PATTERN ('silent fail') 위반 안 함 확인
 ```
 
 ---
@@ -143,7 +143,7 @@ syncFromGoogleSheets 호출 직후 invariant 자동 검증.
    result._syncIssues = verifySyncResult(result, 'syncFromGoogleSheets')
 2. localStorage 에 진단 기록 저장 (최근 10건):
    try { localStorage.setItem('syncDiagnostics', JSON.stringify(records)) } catch
-3. verifySyncResult 가 검증하는 invariant (docs/DATA_RULES.md §7.4):
+3. verifySyncResult 가 검증하는 invariant (.claude/rules/data.md §7.4):
    a. products / productsPartial 둘 다 비면 issue
    b. productsCnty 빈 배열이면 issue
    c. unlaunchedMap DEFAULT 누락 (BR|AV) 이면 issue
@@ -155,7 +155,7 @@ syncFromGoogleSheets 호출 직후 invariant 자동 검증.
 
 ## skill: 거대 파서에 ERROR CATCHING 적용
 
-기존 파서에 5단계 ERROR CATCHING 패턴 (docs/DATA_RULES.md §6) 을 점진 적용.
+기존 파서에 5단계 ERROR CATCHING 패턴 (.claude/rules/data.md §6) 을 점진 적용.
 
 ```
 1. [1] DETECT — 진입부에 assertRows 가드 (라우터에서 처리되면 생략 가능)

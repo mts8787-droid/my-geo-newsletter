@@ -1,4 +1,4 @@
-<!-- 자동 생성 미러 — 원본: docs/DATA_RULES.md
+<!-- 자동 생성 미러 — 원본: .claude/rules/data.md
      수정은 원본에서. 본 파일은 npm run sync:harness 또는 prebuild 시 자동 갱신. -->
 
 # 데이터 룰 (Data Rules)

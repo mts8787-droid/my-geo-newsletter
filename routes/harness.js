@@ -12,18 +12,18 @@ export const harnessRouter = Router()
 // 본 레포의 실제 파일 경로 + UI 표시용 메타데이터.
 // 새 컴포넌트 (예: 신규 hook, agent) 추가 시 이 배열만 갱신.
 const HARNESS_COMPONENTS = [
-  // ─── 진입점 (Entry Point) — 정보 구조 단일 호스트 ────────────────────────
+  // ─── 진입점 (Entry Point) — docs/agents/ 미러 호스트 ─────────────────────
   {
     category: 'entry',
     label: '전체 하네스 설명 (HTML)',
-    file: '.claude/agents/HARNESS.html',
+    file: 'docs/agents/HARNESS.html',
     desc: '브라우저 더블클릭으로 열림. 4 개념·폴더 구조·각 컴포넌트 설명·적용 가이드 시각화.',
   },
   {
     category: 'entry',
     label: '전체 하네스 설명 (Markdown)',
-    file: '.claude/agents/HARNESS.md',
-    desc: '동일 내용 마크다운. .claude/agents/ 미러 호스트의 진입점.',
+    file: 'docs/agents/HARNESS.md',
+    desc: '동일 내용 마크다운. docs/agents/ 미러 호스트의 진입점.',
   },
 
   // ─── 룰 (Rule) — 따라야 할 규칙. Markdown. 권고 (~80%) ─────────────────────
@@ -36,13 +36,13 @@ const HARNESS_COMPONENTS = [
   {
     category: 'rule',
     label: '데이터 룰 매뉴얼',
-    file: 'docs/DATA_RULES.md',
+    file: '.claude/rules/data.md',
     desc: '데이터 작업의 토큰·invariant·ANTI-PATTERN. 5단계 ERROR CATCHING / null vs 0 / 날짜 정규화 등. 스킬이 step 별로 참조.',
   },
   {
     category: 'rule',
     label: '디자인 룰 매뉴얼',
-    file: 'docs/DESIGN_RULES.md',
+    file: '.claude/rules/design.md',
     desc: '디자인 토큰·컴포넌트 카탈로그 (C-01~C-23)·SVG 패턴·이메일 호환 ANTI-PATTERN. 스킬이 step 별로 참조.',
   },
 
@@ -102,7 +102,7 @@ const HARNESS_COMPONENTS = [
 ]
 
 const CATEGORY_LABELS = {
-  entry: '진입점 (Entry Point) — .claude/agents/ 미러 호스트의 시작',
+  entry: '진입점 (Entry Point) — docs/agents/ 미러 호스트의 시작',
   rule: '룰 (Rule) — 따라야 할 규칙. Markdown 권고 (~80%)',
   hook: '훅 (Hook) — 절대 하면 안 되는 것. JSON 강제 (100%) + 인간용 md 설명서',
   skill: '스킬 (Skill) — 자동 워크플로우 / 명령 조합. step-by-step',
@@ -141,8 +141,8 @@ function generateReadme() {
 
 ### 룰 (Rule)
 - \`CLAUDE.md\` — 프로젝트 헌법 (4 개념 정의 + NEVER 룰 + 작업 흐름)
-- \`docs/DATA_RULES.md\` — 데이터 작업 룰·매뉴얼·invariant·ANTI-PATTERN
-- \`docs/DESIGN_RULES.md\` — 디자인 토큰·컴포넌트 카탈로그·SVG 패턴
+- \`.claude/rules/data.md\` — 데이터 작업 룰·매뉴얼·invariant·ANTI-PATTERN
+- \`.claude/rules/design.md\` — 디자인 토큰·컴포넌트 카탈로그·SVG 패턴
 
 ### 훅 (Hook)
 - \`.claude/settings.json\` — 훅 등록 (JSON 필수)
@@ -167,7 +167,7 @@ function generateReadme() {
 ## 형식 강제성 — 핵심
 
 - **JSON 필수**: \`.claude/settings.json\` — 시스템이 직접 파싱·실행. Claude 가 우회 불가.
-- **Markdown 권고**: \`CLAUDE.md\`, \`SKILL.md\`, \`docs/*_RULES.md\`, agent \`.md\` — Claude 가 읽고 따름 (~80%).
+- **Markdown 권고**: \`CLAUDE.md\`, \`.claude/skills/*/SKILL.md\`, \`.claude/rules/*.md\`, \`.claude/agents/*.md\` — Claude 가 읽고 따름 (~80%).
 - \`.md\` 안에 \`hooks:\` 같은 자동화 정의 적어도 무시됨. 자동 강제는 \`settings.json\` 만.
 
 ## 스킬 vs 룰 차이
@@ -209,8 +209,10 @@ harnessRouter.get('/api/harness/zip', async (req, res) => {
       const content = readSafe(file)
       if (content != null) { zip.file(file, content); seen.add(file) }
     }
-    // 2) .claude/agents/ 미러 폴더 전체 재귀 — 진입점 + rules/skills/hooks/ 미러 모두
-    addDirToZip(zip, '.claude/agents')
+    // 2) .claude/rules/ 원본 폴더 (README.md 포함)
+    addDirToZip(zip, '.claude/rules')
+    // 3) docs/agents/ 미러 폴더 전체 재귀 — 진입점 + rules/skills/hooks/ 미러 모두
+    addDirToZip(zip, 'docs/agents')
     // 3) README (사용 가이드)
     zip.file('README.md', generateReadme())
     const buffer = await zip.generateAsync({ type: 'nodebuffer', compression: 'DEFLATE' })

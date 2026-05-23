@@ -5,7 +5,7 @@
 
 > Claude Code 가 디자인/UI 작업을 할 때 따라야 할 **순차 워크플로우 모음**.
 > 본 파일은 "이걸 할 때는 1) → 2) → 3) ..." 형태의 step-by-step.
-> 각 step 이 참조하는 **디자인 토큰·컴포넌트 카탈로그(C-01~C-23)·SVG 패턴·이메일 호환 ANTI-PATTERN 은 `docs/DESIGN_RULES.md`**.
+> 각 step 이 참조하는 **디자인 토큰·컴포넌트 카탈로그(C-01~C-23)·SVG 패턴·이메일 호환 ANTI-PATTERN 은 `.claude/rules/design.md`**.
 > 절대 금지는 훅 (`.claude/hooks/`), 프로젝트 헌법은 `CLAUDE.md`.
 
 ---
@@ -15,20 +15,20 @@
 새로운 카드/차트/테이블 시각 컴포넌트를 추가할 때.
 
 ```
-1. docs/DESIGN_RULES.md 의 컴포넌트 카탈로그 (C-01~C-23) 확인 — 다음 C-번호 할당
+1. .claude/rules/design.md 의 컴포넌트 카탈로그 (C-01~C-23) 확인 — 다음 C-번호 할당
 2. 어디서 쓰일지 결정:
    a. 대시보드 (서버 SVG 렌더) → src/dashboard/dashboardTemplate.js
    b. 이메일 / 뉴스레터 (table-layout) → src/emailTemplate.js
    c. 어드민 React (Recharts) → src/visibility/ 또는 newsletter/
 3. 디자인 토큰 사용 — FONT / RED / COMP / BRAND_COLORS (src/dashboard/dashboardConsts.js)
-   하드코딩 색상·폰트 금지 (docs/DESIGN_RULES.md ANTI-PATTERN)
-4. Status / Typography / 컬러 팔레트는 docs/DESIGN_RULES.md 의 정의 따름
+   하드코딩 색상·폰트 금지 (.claude/rules/design.md ANTI-PATTERN)
+4. Status / Typography / 컬러 팔레트는 .claude/rules/design.md 의 정의 따름
 5. 컴포넌트 함수 작성:
    a. 서버 SVG: HTML string 반환 함수
    b. 이메일: <table> 기반 HTML (flex/grid 금지)
    c. React: 컴포넌트 함수
 6. dashboardClient.js 의 인라인 JS 갱신 (필터 변경 시 재렌더 필요한 경우)
-7. docs/DESIGN_RULES.md 의 컴포넌트 카탈로그에 C-XX 항목 등재 — 설명·예시·사용 위치
+7. .claude/rules/design.md 의 컴포넌트 카탈로그에 C-XX 항목 등재 — 설명·예시·사용 위치
 8. 어드민 프리뷰 (iframe srcdoc) 또는 dev server 로 시각 검증
 9. KO/EN i18n 라벨 확인 (T 객체)
 ```
@@ -42,12 +42,12 @@
 ```
 1. src/dashboard/dashboardSvg.js 에 헬퍼 함수 추가 (svgLine / svgMultiLine 패턴 참고)
 2. viewBox 기반 반응형 + 100% width 보장
-3. baseline marker / status dot / brand color 는 docs/DESIGN_RULES.md 의 SVG 패턴 따름
+3. baseline marker / status dot / brand color 는 .claude/rules/design.md 의 SVG 패턴 따름
 4. 클라이언트 인라인 JS (dashboardClient.js) 의 _miniSvg / _miniSvgNullAware 와 시각 일관성
-5. null 값 처리 — break (선이 끊기게), 점도 안 찍힘 (docs/DESIGN_RULES.md null vs 0)
+5. null 값 처리 — break (선이 끊기게), 점도 안 찍힘 (.claude/rules/design.md null vs 0)
 6. 사용처 (template) 에서 호출 + i18n 라벨
 7. 이메일 호환 검토 — SVG 미지원 클라이언트 (Outlook 등) 에서 대체 (table-layout 또는 정적 PNG)
-8. docs/DESIGN_RULES.md 의 SVG 패턴 섹션에 등재
+8. .claude/rules/design.md 의 SVG 패턴 섹션에 등재
 ```
 
 ---
@@ -57,7 +57,7 @@
 emailTemplate.js 의 V1/V2/V3 외 새 카드 버전 (V4 등) 추가.
 
 ```
-1. docs/DESIGN_RULES.md 의 V1/V2/V3 정의 확인 — 어떤 차별점인지
+1. .claude/rules/design.md 의 V1/V2/V3 정의 확인 — 어떤 차별점인지
 2. src/emailTemplate.js 에 새 함수 (예: productCardV4) 추가
 3. 제약 준수 (CLAUDE.md NEVER 룰):
    a. containerWidth ≤ 940 (우측 짤림 방지)
@@ -68,7 +68,7 @@ emailTemplate.js 의 V1/V2/V3 외 새 카드 버전 (V4 등) 추가.
 5. unlaunchedMap 회색 처리 / 미출시 텍스트 호환
 6. KO/EN 양쪽 검증
 7. 어드민 프리뷰에 토글 추가 (선택)
-8. docs/DESIGN_RULES.md 의 카드 카탈로그 갱신
+8. .claude/rules/design.md 의 카드 카탈로그 갱신
 ```
 
 ---
@@ -131,7 +131,7 @@ emailTemplate.js 의 V1/V2/V3 외 새 카드 버전 (V4 등) 추가.
 대시보드/뉴스레터에서 카드 깨짐·차트 안 나옴·텍스트 클립 발생 시.
 
 ```
-1. 어떤 컴포넌트 (C-XX) 인지 식별 — docs/DESIGN_RULES.md 의 카탈로그 매핑
+1. 어떤 컴포넌트 (C-XX) 인지 식별 — .claude/rules/design.md 의 카탈로그 매핑
 2. 데이터 문제인지 시각 문제인지 분리:
    a. 데이터 문제 → 데이터 하네스 워크플로우 (회귀 디버깅 TDD) 로 위임
    b. 시각 문제 → 본 워크플로우 계속

@@ -1,4 +1,4 @@
-<!-- 자동 생성 미러 — 원본: docs/DESIGN_RULES.md
+<!-- 자동 생성 미러 — 원본: .claude/rules/design.md
      수정은 원본에서. 본 파일은 npm run sync:harness 또는 prebuild 시 자동 갱신. -->
 
 # 디자인 룰 (Design Rules)

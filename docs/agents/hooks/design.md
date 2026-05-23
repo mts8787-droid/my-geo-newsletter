@@ -28,6 +28,6 @@
 - **block-overflow-iframe.sh**: `body { overflow-x:hidden }` 또는 `min-width` 추가 차단. iframe 클립 방지.
 
 ## 관련 룰 / 스킬
-- 룰: `docs/DESIGN_RULES.md` (토큰 · 컴포넌트 카탈로그 · SVG 패턴 · 이메일 호환 ANTI-PATTERN)
+- 룰: `.claude/rules/design.md` (토큰 · 컴포넌트 카탈로그 · SVG 패턴 · 이메일 호환 ANTI-PATTERN)
 - 스킬 워크플로우: `.claude/skills/design/SKILL.md`
 - 헌법: `CLAUDE.md` (NEVER 룰 — containerWidth · overflow-x · 텍스트 임의 다듬기 등)

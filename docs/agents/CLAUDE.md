@@ -12,7 +12,7 @@
 
 | 개념 | 형식 | 강제력 | 위치 | 본 레포 사례 |
 |---|---|---|---|---|
-| **룰 (Rule)** | Markdown | 권고 (~80%) | `CLAUDE.md`, `docs/*.md` | 이 파일 + `docs/DATA_RULES.md` + `docs/DESIGN_RULES.md` |
+| **룰 (Rule)** | Markdown | 권고 (~80%) | `CLAUDE.md`, `docs/*.md` | 이 파일 + `.claude/rules/data.md` + `.claude/rules/design.md` |
 | **훅 (Hook)** | JSON 강제 + md 설명서 | 100% (시스템 차단) | `.claude/settings.json` + `.claude/hooks/*.sh` | syntax-check, block-dist (절대 금지 자동 차단) |
 | **스킬 (Skill)** | Markdown 워크플로우 | 권고 (Claude 가 필요 시 로드) | `.claude/skills/*/SKILL.md` | `data` (8 워크플로우), `design` (7 워크플로우) |
 | **서브에이전트** | Markdown frontmatter | Claude 가 위임 시 활성 | `.claude/agents/*.md` | `data-puller` (read-only 진단) |
@@ -75,8 +75,8 @@ docs/                # 인프라/스키마 참조 문서 (스킬은 .claude/skil
 
 스킬이 step-by-step 이라면, 룰은 그 step 이 따라야 할 토큰·invariant·ANTI-PATTERN 정의.
 
-- `docs/DATA_RULES.md` — 데이터 작업 룰 (5단계 ERROR CATCHING, invariant, 날짜/숫자 정규화, null vs 0, ANTI-PATTERN)
-- `docs/DESIGN_RULES.md` — 디자인 작업 룰 (토큰, SVG 패턴, 컴포넌트 카탈로그 C-01~C-23, 이메일 호환 ANTI-PATTERN)
+- `.claude/rules/data.md` — 데이터 작업 룰 (5단계 ERROR CATCHING, invariant, 날짜/숫자 정규화, null vs 0, ANTI-PATTERN)
+- `.claude/rules/design.md` — 디자인 작업 룰 (토큰, SVG 패턴, 컴포넌트 카탈로그 C-01~C-23, 이메일 호환 ANTI-PATTERN)
 
 전체 하네스 (룰·스킬·훅·서브에이전트) 미러링 ZIP 다운로드: `/admin/harness` 페이지.
 
