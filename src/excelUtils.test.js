@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { pct, pctOrNull, canonicalCountry, parseSheetRows, SHEET_NAMES } from './excelUtils.js'
 import { PROD_IDS, PROD_ID_TO_UL_CODE, PROD_ID_TO_KR, PROD_ID_TO_EN, PROD_ID_TO_BU, UL_CODE_NORMALIZE, assertCategoryMapInvariant } from './categoryMap.js'
+import { verifySyncResult } from './sheetParserUtils.js'
 
 describe('pct', () => {
   it('퍼센트 문자열 → 숫자', () => {
@@ -483,6 +484,51 @@ describe('parseCitPageType — 월 페어 + dotcom 집계 + 트렌드', () => {
     ]
     const result = parseSheetRows(SHEET_NAMES.citPageType, rows)
     expect(result.dotcom?.lg?.Microsites).toBe(70)
+  })
+})
+
+// ─── verifySyncResult — sync invariant 검증 ────────────────────────────────
+describe('verifySyncResult — SKILL.md §7.4 verify-after-act', () => {
+  const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+  const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
+  beforeEach(() => { warnSpy.mockClear(); logSpy.mockClear() })
+
+  it('정상 result → issues 0개 + log 통과', () => {
+    const r = {
+      products: [{ id: 'tv' }],
+      productsCnty: [{ product: 'TV', country: 'US' }],
+      unlaunchedMap: { 'BR|AV': true },
+    }
+    const issues = verifySyncResult(r, 'test')
+    expect(issues).toEqual([])
+    expect(logSpy).toHaveBeenCalled()
+  })
+
+  it('products 둘 다 비면 issue', () => {
+    const r = { unlaunchedMap: { 'BR|AV': true } }
+    const issues = verifySyncResult(r, 'test')
+    expect(issues.some(i => i.includes('products'))).toBe(true)
+  })
+
+  it('unlaunchedMap DEFAULT 누락 → issue (BR|AV)', () => {
+    const r = { products: [{}], unlaunchedMap: {} }
+    const issues = verifySyncResult(r, 'test')
+    expect(issues.some(i => i.includes('BR|AV'))).toBe(true)
+  })
+
+  it('weeklyLabels 자동 생성 (W1,W2,...) → issue', () => {
+    const r = {
+      products: [{}],
+      unlaunchedMap: { 'BR|AV': true },
+      weeklyLabels: ['W1', 'W2', 'W3'],
+    }
+    const issues = verifySyncResult(r, 'test')
+    expect(issues.some(i => i.includes('자동 생성'))).toBe(true)
+  })
+
+  it('result 가 객체 아님 → fatal', () => {
+    expect(verifySyncResult(null, 'test').length).toBeGreaterThan(0)
+    expect(verifySyncResult('string', 'test').length).toBeGreaterThan(0)
   })
 })
 

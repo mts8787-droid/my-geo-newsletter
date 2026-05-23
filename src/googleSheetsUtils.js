@@ -2,6 +2,7 @@
 import { loadXlsx } from './shared/loadXlsx.js'
 import { SHEET_NAMES, parseSheetRows } from './excelUtils'
 import { PROD_ID_TO_KR, PROD_ID_TO_BU } from './categoryMap.js'
+import { verifySyncResult } from './sheetParserUtils.js'
 
 export function extractSheetId(url) {
   const match = url.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/)
@@ -148,6 +149,10 @@ export async function syncFromGoogleSheets(sheetId, onProgress) {
       }
     }
   }
+
+  // Verify-After-Act — invariant 검증 (SKILL.md §7.4)
+  // issues 는 console.warn 으로 surface. UI 알림으로 노출하려면 caller 가 result._syncIssues 활용.
+  result._syncIssues = verifySyncResult(result, 'syncFromGoogleSheets')
 
   return result
 }

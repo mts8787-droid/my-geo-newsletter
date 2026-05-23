@@ -768,7 +768,8 @@ async function selfCheck() {
 | 컴포넌트 | Self-Logging 패턴 |
 |---|---|
 | `categoryMap.js` | invariant 자동 검증 (UL_CODE_NORMALIZE 결과 ⊆ PROD_ID_TO_UL_CODE), 위반 시 모듈 로드 시점에 warn |
-| `sheetParserUtils.js` | `_logFatal/_logWarn/_logInfo` 헬퍼 — 모든 파서가 일관 로그 포맷 사용 |
+| `sheetParserUtils.js` | `_logFatal/_logWarn/_logInfo` 헬퍼 + `verifySyncResult` (Verify-After-Act §7.4 구현) — 모든 파서가 일관 로그 포맷 사용 |
+| `syncFromGoogleSheets` | 종료 직전 `verifySyncResult` 호출 — products 비음 / unlaunchedMap DEFAULT 누락 / weeklyLabels 자동 생성 등 invariant 위반 자동 감지 + warn + `result._syncIssues` 첨부 |
 | `parseSheetRows` 라우터 | `assertRows` 진입 가드 + 미매칭 시트명 `_logWarn` (silent skip 방지) + try/catch 격리 (한 시트 파서 throw 시 `_logFatal` 로 표면화 + 다른 시트 sync 계속) |
 | `parseUnlaunched` | 5분기 (invalid-input/header-not-found/missing-columns/merged/row-error) 일관 로그 + skipCount + per-row CAPTURE |
 | `parseWeekly` | 3-mode (Brand/LG/Category) 자동 감지 + 3 helper 추출 (`_extractWeeklyBrandFormat`, `_extractWeeklyLgFormat`, `_extractWeeklyCategoryFormat`) + 통합 테스트 6개 |

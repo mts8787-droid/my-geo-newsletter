@@ -54,6 +54,49 @@ export function findHeaderIdx(rows, requiredCols) {
   })
 }
 
+// ─── Verify-After-Act — sync 종료 후 invariant 검증 ─────────────────────────
+// SKILL.md §7.4 패턴. syncFromGoogleSheets 종료 시 호출. issues 배열 반환 + warn 출력.
+// 호출자는 issues 를 UI 알림 등으로 surface 할 수 있음 (현재는 console 만).
+export function verifySyncResult(result, scope = 'sync') {
+  const issues = []
+  if (!result || typeof result !== 'object') {
+    issues.push('result 가 객체가 아님')
+    console.warn(`[${scope}] verify FATAL:`, issues)
+    return issues
+  }
+
+  // products / productsPartial 둘 다 비면 대시보드 카드 못 그림
+  const hasProducts = (result.products?.length || result.productsPartial?.length)
+  if (!hasProducts) {
+    issues.push('products / productsPartial 둘 다 비어있음 — 대시보드 카드 누락 위험')
+  }
+
+  // productsCnty 비면 국가별 그리드 못 그림
+  if (Array.isArray(result.productsCnty) && result.productsCnty.length === 0) {
+    issues.push('productsCnty 비어있음 — 국가별 그리드 누락')
+  }
+
+  // unlaunchedMap DEFAULT 보존 확인 (parseUnlaunched 의 비즈니스 fact)
+  if (result.unlaunchedMap && !result.unlaunchedMap['BR|AV']) {
+    issues.push('unlaunchedMap DEFAULT 누락 (BR|AV) — parseUnlaunched 가 DEFAULT 병합 안 함')
+  }
+
+  // weeklyLabels 가 W1,W2,... 자동 생성된 채로 남으면 PR/BrandPrompt 라벨 폴백 미동작 의심
+  if (result.weeklyLabels?.length) {
+    const isAuto = result.weeklyLabels.every((l, i) => l === `W${i + 1}`)
+    if (isAuto) {
+      issues.push('weeklyLabels 가 자동 생성 (W1,W2,...) — PR 라벨 폴백 미동작')
+    }
+  }
+
+  if (issues.length) {
+    console.warn(`[${scope}] verify: ${issues.length}개 이슈 발견`, issues)
+  } else {
+    console.log(`[${scope}] verify: invariant 통과`)
+  }
+  return issues
+}
+
 // ─── [3] CAPTURE + [4] RECOVER — per-row 처리 안전 래퍼 ──────────────────────
 // 한 행 처리 중 throw 가 나도 후속 행 처리는 계속.
 // fn(r, rowIdx) 의 반환값이 truthy 면 ok, falsy 면 skip 으로 카운트.
