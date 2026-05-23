@@ -32,6 +32,12 @@ const HARNESS_COMPONENTS = [
     file: 'docs/agents/CHART_LIBRARY.html',
     desc: '14 차트 양식 + 툴팁 분류 카탈로그 (L-1~T-1) 정적 HTML. 라이브: /admin/chart-library.',
   },
+  {
+    category: 'entry',
+    label: '사람용 가이드 (Human Guide)',
+    file: 'docs/agents/HUMAN_GUIDE.md',
+    desc: '사람이 직접 읽는 참조 자료 — 도메인 예시 3개 (매출/HR/제품) · 검증 체크리스트 · 트러블슈팅 표 · FAQ. BOOTSTRAP 시나리오 진행 중 Claude 가 본 문서 참조 안내.',
+  },
 
   // ─── 룰 (Rule) — 따라야 할 규칙. Markdown. 권고 (~80%) ─────────────────────
   {
@@ -60,9 +66,9 @@ const HARNESS_COMPONENTS = [
   },
   {
     category: 'rule',
-    label: '부트스트랩 가이드 (Bootstrap)',
+    label: '부트스트랩 시나리오 (Bootstrap)',
     file: '.claude/rules/BOOTSTRAP.md',
-    desc: '새 프로젝트에 본 하네스 적용 시 8 단계 가이드. 도메인 인터뷰 / 도메인 파일 / 데이터 모델 / 디자인 토큰 / 외부 시스템 / 비즈니스 fact / 빌드 + 3 도메인 예시 (매출/HR/제품).',
+    desc: 'Claude 가 새 프로젝트 적용 시 따라가는 시나리오. 8 step (환경확인 → 도메인 인터뷰 → 도메인 파일 → 데이터 모델 → 디자인 토큰 → 외부 시스템 → 비즈니스 fact → 빌드 검증). 사람이 직접 읽는 가이드 X — Claude 가 step 별 사용자에게 질문·설명.',
   },
 
   // ─── 훅 (Hook) — 절대 금지. JSON 강제 (100%) + md 설명서 ───────────────────
