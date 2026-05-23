@@ -1,6 +1,6 @@
 // ─── 이메일 호환 HTML 생성기 ─────────────────────────────────────────────────
 // 규칙: table 기반 레이아웃, 인라인 스타일, 외부 폰트 없음, flex/grid 없음
-import { PROD_ID_TO_UL_CODE as UL_PROD_MAP } from './categoryMap.js'
+import { PROD_ID_TO_UL_CODE as UL_PROD_MAP, PROD_ID_TO_UL_CODE, PROD_ID_TO_KR, PROD_ID_TO_EN, PROD_ID_TO_BU, PROD_ID_TO_ORDER, NAME_TO_PROD_ID } from './categoryMap.js'
 
 const EM_RED  = '#CF0652'
 // Citation 차트 전용 — 짙은 녹색 계열 (LG_RED 와 구분)
@@ -66,10 +66,9 @@ function prodLabel2Line(name, lang) {
   return map[name] || escapeHtml(String(name || ''))
 }
 
-// unlaunchedMap 조회용 코드 매핑 (id → 시트의 ulCode)
-const UL_PROD_CODE = { tv:'TV', monitor:'IT', audio:'AV', washer:'WM', fridge:'REF', dw:'DW', vacuum:'VC', cooking:'COOKING', rac:'RAC', aircare:'AIRCARE' }
-// 국가별 섹션에서 한글/영문 제품명을 id로 역매핑
-const PROD_NAME_TO_ID = { 'TV':'tv', '모니터':'monitor', 'Monitor':'monitor', '오디오':'audio', 'Audio':'audio', '세탁기':'washer', 'Washer':'washer', '냉장고':'fridge', 'Refrigerator':'fridge', 'Fridge':'fridge', '식기세척기':'dw', 'Dishwasher':'dw', '청소기':'vacuum', 'Vacuum':'vacuum', 'VC':'vacuum', 'Cooking':'cooking', 'RAC':'rac', 'Aircare':'aircare' }
+// unlaunchedMap 조회용 + 역매핑: src/categoryMap.js single source
+const UL_PROD_CODE = PROD_ID_TO_UL_CODE
+const PROD_NAME_TO_ID = NAME_TO_PROD_ID
 function isUnlaunched(unlaunchedMap, country, prodId) {
   if (!unlaunchedMap) return false
   const code = UL_PROD_CODE[(prodId || '').toLowerCase()] || (prodId || '').toUpperCase()
@@ -1207,10 +1206,11 @@ function citationByProductHtml(citationsCnty, meta, lang) {
     DW: 'dw', DISHWASHER: 'dw', VC: 'vacuum', VACUUM: 'vacuum',
     COOKING: 'cooking', COOK: 'cooking', RAC: 'rac', AIRCARE: 'aircare', AIRCARE_: 'aircare',
   }
-  const PRD_KR = { tv:'TV', monitor:'모니터', audio:'오디오', fridge:'냉장고', washer:'세탁기', cooking:'Cooking', dw:'식기세척기', vacuum:'청소기', rac:'RAC', aircare:'Aircare' }
-  const PRD_EN = { tv:'TV', monitor:'Monitor', audio:'Audio', fridge:'Refrigerator', washer:'Washer', cooking:'Cooking', dw:'Dishwasher', vacuum:'VC', rac:'RAC', aircare:'Aircare' }
-  const PRD_BU = { tv:'MS', monitor:'MS', audio:'MS', fridge:'HS', washer:'HS', cooking:'HS', dw:'HS', vacuum:'HS', rac:'ES', aircare:'ES' }
-  const PRD_ORDER_IDX = { tv:0, monitor:1, audio:2, washer:3, fridge:4, dw:5, vacuum:6, cooking:7, rac:8, aircare:9 }
+  // src/categoryMap.js single source 사용
+  const PRD_KR = PROD_ID_TO_KR
+  const PRD_EN = PROD_ID_TO_EN
+  const PRD_BU = PROD_ID_TO_BU
+  const PRD_ORDER_IDX = PROD_ID_TO_ORDER
   const prdId = code => PRD_CODE_TO_ID[String(code || '').toUpperCase()] || String(code || '').toLowerCase()
   const prdName = code => {
     const id = prdId(code)

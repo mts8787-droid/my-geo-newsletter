@@ -1,4 +1,6 @@
 // ─── 주간 보고용 HTML 생성기 (표 기반, 주간 데이터) ────────────────────────
+import { PROD_ID_TO_KR, PROD_ID_TO_BU } from '../categoryMap.js'
+
 const FONT = "'LGEIText','LG Smart', 'Arial Narrow', 'Malgun Gothic', Arial, sans-serif"
 
 const PRODUCT_ORDER = ['TV','모니터','Monitor','오디오','Audio','AV','세탁기','WM','냉장고','REF','식기세척기','DW','청소기','VC','Cooking','쿠킹','RAC','Aircare','Air Care','에어케어']
@@ -65,8 +67,9 @@ function domainHighlight(domain) {
 function extractWeeklyData(weeklyAll, weeklyLabels) {
   if (!weeklyAll || !Object.keys(weeklyAll).length) return { products: [], productsCnty: [], lastLabel: null, prevLabel: null }
 
-  const PROD_ID_KR = { tv: 'TV', monitor: '모니터', audio: '오디오', washer: '세탁기', fridge: '냉장고', dw: '식기세척기', vacuum: '청소기', cooking: 'Cooking', rac: 'RAC', aircare: 'Aircare' }
-  const PROD_ID_BU = { tv: 'MS', monitor: 'MS', audio: 'MS', washer: 'HS', fridge: 'HS', dw: 'HS', vacuum: 'HS', cooking: 'HS', rac: 'ES', aircare: 'ES' }
+  // src/categoryMap.js single source 사용
+  const PROD_ID_KR = PROD_ID_TO_KR
+  const PROD_ID_BU = PROD_ID_TO_BU
 
   const products = []
   const productsCnty = []

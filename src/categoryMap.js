@@ -76,6 +76,27 @@ export const RAW_TO_KR = {
   'Styler': 'Styler',
 }
 
+// 한/영/약어 시트 입력 → prodId 역매핑 (이전 PROD_NAME_TO_ID)
+// 시트의 다양한 표기 (한글/영문/약어) 를 prodId 로 정규화하는 통합 흡수기.
+export const NAME_TO_PROD_ID = {
+  // KR
+  'TV': 'tv', '모니터': 'monitor', '오디오': 'audio',
+  '세탁기': 'washer', '냉장고': 'fridge', '식기세척기': 'dw',
+  '청소기': 'vacuum', '쿠킹': 'cooking',
+  // EN
+  'Monitor': 'monitor', 'Audio': 'audio',
+  'Washer': 'washer', 'Refrigerator': 'fridge', 'Fridge': 'fridge',
+  'Dishwasher': 'dw', 'Vacuum': 'vacuum', 'Cooking': 'cooking',
+  // 약어 / 시트 raw
+  'IT': 'monitor', 'AV': 'audio', 'WM': 'washer', 'REF': 'fridge', 'DW': 'dw', 'VC': 'vacuum',
+  'RAC': 'rac', 'AIRCARE': 'aircare', 'Aircare': 'aircare',
+  'STYLER': 'styler', 'Styler': 'styler',
+}
+
+// prodId → 정렬 순서 (대시보드 카드, 뉴스레터 그리드 등에서 일관 순서)
+// 자동 생성: PROD_IDS 배열의 인덱스 그대로 사용 (수동 정의 안 함, 누락 회귀 방지)
+export const PROD_ID_TO_ORDER = Object.fromEntries(PROD_IDS.map((id, i) => [id, i]))
+
 // 미출시 시트의 raw 카테고리 (uppercase 정규화 후) → 표준 UL_CODE
 // 시트 사용자가 'WASHING MACHINE', 'AIR CARE' 같은 다양한 표기로 입력해도 흡수.
 // 결과값 셋은 반드시 PROD_ID_TO_UL_CODE 의 값 셋과 일치해야 함 (invariant — 아래 검증).

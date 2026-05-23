@@ -6,6 +6,7 @@ import {
   REGIONS, ALL_10_COUNTRIES,
   UL_PROD_MAP, DC_COLS, DC_SAM, TREND_BRAND_COL,
 } from './dashboardConsts.js'
+import { PROD_ID_TO_KR } from '../categoryMap.js'
 // N1 — 순수 함수 분리 (테스트 대상)
 import { statusInfo, fmt, mdBold, stripDomain, cntyStatus, cntyFullName, cntyOfficial } from './dashboardFormat.js'
 import { svgLine, svgMultiLine, brandColor } from './dashboardSvg.js'
@@ -1449,7 +1450,8 @@ export function generateDashboardHTML(meta, total, products, citations, dotcom, 
   // 주간 국가별: weeklyAll에서 마지막 주 데이터로 productsCnty 형태 생성
   const weeklyProductsCnty = []
   if (weeklyAll && Object.keys(weeklyAll).length) {
-    const ID_KR = { tv: 'TV', monitor: '모니터', audio: '오디오', washer: '세탁기', fridge: '냉장고', dw: '식기세척기', vacuum: '청소기', cooking: 'Cooking', rac: 'RAC', aircare: 'Aircare' }
+    // src/categoryMap.js single source 사용 — 한글명 표시
+    const ID_KR = PROD_ID_TO_KR
     Object.entries(weeklyAll).forEach(([prodId, cntyData]) => {
       const pInfo = products.find(p => p.id === prodId)
       const prodName = pInfo?.kr || ID_KR[prodId] || prodId
