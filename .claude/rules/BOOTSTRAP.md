@@ -581,6 +581,63 @@ C) 짧은 부분 소스코드 직접 작성 → 시각 의도만 표현
 
 ---
 
+## DEBUG-16: 필터 작동 안 함 / 필터 후 차트 사라짐·갱신 X
+
+**증상**: 월/국가/제품 필터 변경해도 차트 갱신 X / 필터 후 트렌드 사라짐 / 일부 카드만 반영
+
+**원인** (본 레포 30+ 필터 관련 fix 분석):
+- `data-prodid` 속성 누락 → row 매칭 실패 (트렌드 사라짐 근본 원인)
+- 클라이언트 짝 함수 미수정 (서버 SVG 변경 시 _miniSvg / _trendMultiSvg 동시 수정 필요)
+- 일부 카드만 필터 반영 (Hero summary / 미니차트 누락)
+- null 요소 처리 안 함 — weekly / 경쟁사 배열에 null 있을 때
+- truncate 인덱스 (`_curWeekIdx` / `_curMonthIdxIn12`) 안 갱신
+- 데이터 없을 때 Total 폴백 안 함
+- 드롭다운 옵션 자체에서 누락 (예: TTL 없는 달)
+
+**디버깅 순서**:
+```
+1. data-prodid 속성 검증:
+   - DOM 의 .trend-row 같은 row 에 data-prodid 속성 있는지 (필터 매칭 키)
+   - filterTrend 같은 함수가 id 로 row 찾는지
+
+2. 클라이언트 짝 함수 일치성:
+   - 서버 SVG (dashboardSvg.js) 변경 → 클라 (_miniSvg / _trendMultiSvg) 동시 수정?
+   - filterTrend 호출 후 SVG 재생성 코드 확인
+
+3. 필터 영향 카드 모두 검증:
+   - Hero summary 카드
+   - 카드 미니차트
+   - 큰 트렌드 차트
+   - vbar / hbar
+   - 국가별 / 제품별 섹션
+   각각 필터 변경 시 재계산 함수 호출하는지
+
+4. null 처리:
+   - 배열에 null 요소 있을 때 _miniSvgNullAware 같은 null-aware 함수 사용
+   - null vs 0 명확히 구분 (선 끊김 vs 0 점)
+
+5. truncate 인덱스 갱신:
+   - _curWeekIdx 같은 전역 변수
+   - 월/주차 드롭다운 변경 시 갱신되고 재렌더 트리거
+
+6. 드롭다운 옵션 자체 검증:
+   - TTL 없는 달도 옵션에 포함됐는지 (강제 추가)
+   - 빈 데이터 month 도 선택 가능 — 빈 화면이라도 렌더
+
+7. Total 폴백:
+   - 특정 국가 선택 시 그 국가 데이터 없으면 Total 평균으로 폴백
+   - 또는 명시적 "데이터 없음" 메시지
+
+8. 필터 state 격리 확인 — TECHNIQUE-14 참조:
+   - 페이지 분리 시 다른 SPA 와 state 공유 X
+   - GNB 탭과 필터 레이어 충돌 X
+```
+
+**관련 룰**: design.md §5.7 truncate / §5.8 서버↔클라 짝 / NEVER 룰 (data-prodid 누락)
+**관련 TECHNIQUE**: TECHNIQUE-14 (헤더·필터 꼬임 방지) / TECHNIQUE-1, 2 (디버깅 로그)
+
+---
+
 ## 디버깅 시나리오 사용법
 
 본 시나리오들은 `.claude/skills/debug/SKILL.md` 가 호출. 사용자가 `"X 안 됨"` / `"이거 디버깅해줘"` 같이 요청하면:
@@ -907,6 +964,133 @@ C) 짧은 부분 소스코드 직접 작성 → 시각 의도만 표현
 ```
 
 **언제**: 큰 영역 진단 / 회귀 위험 점검 / 다른 시각 필요할 때 (메인 + 서브 분담)
+
+---
+
+## TECHNIQUE-13: 페이지 분리 + 통합 관리자 패턴
+
+**상황**: 디자인 요소 너무 복잡 / 한 페이지에 데이터 여러 종류 / 단일 SPA 비대
+
+**Claude 의 액션**:
+```
+1. 영역별 SPA 분리 검토:
+   - 대시보드 (실시간 KPI) — dashboard SPA
+   - 뉴스레터 (이메일 호환) — newsletter SPA
+   - 트래커 (정성 KPI) — tracker SPA
+   - 분야별 (Visibility / Citation 등) — 각 SPA
+2. 각 SPA 의 책임 명확:
+   - 자체 데이터 모델 / 필터 / 차트
+   - 다른 SPA 와 state 공유 X (URL / localStorage 외)
+3. 통합 관리자 어드민 UI 별도:
+   - 어드민 메뉴 (3단 그리드 — 게시·인프라·하네스)
+   - 각 SPA 의 진입점 카드
+   - 공통 인프라 (인증·observability·하네스 미러)
+4. 빌드 분리:
+   - vite.<spa>.config.js 각각
+   - dist-<spa> 별도
+5. 시트 / 데이터 모듈은 공통화:
+   - excelUtils.js 의 parseSheetRows 라우터는 모든 SPA 공유
+   - sheetTabsForMode 로 SPA 별 필요 탭만 fetch
+
+본 세션 사례:
+- 본 레포 7 SPA: dashboard, visibility, citation, tracker-v2, newsletter,
+  monthly-report, weekly-report — 각 vite config 분리
+- /admin/ 메뉴가 통합 관리자 (3단 그리드)
+- 공통: excelUtils.js · categoryMap.js · sheetParserUtils.js
+```
+
+**언제**: 한 화면 / 한 페이지에 모듈이 5+ / 데이터 종류 3+ / 디자인 복잡도 한계 초과
+
+---
+
+## TECHNIQUE-14: 헤더·필터 조합 꼬임 방지 (페이지 분리 시)
+
+**상황**: 여러 SPA / 페이지 분리 후 필터·헤더 동기화 깨짐 — 한 페이지의 필터가 다른 페이지 영향
+
+**Claude 의 액션**:
+```
+1. 필터 state 격리:
+   - 각 SPA 마다 독립 state (React useState / useReducer)
+   - URL 파라미터 또는 localStorage 로만 외부와 통신
+   - 다른 SPA 의 state 에 직접 접근 X
+
+2. 필터 변경 시 영향 범위 명시:
+   - "필터 X 가 어느 컴포넌트 / 차트에 영향 주는지" 코드 주석 명시
+   - 영향받는 컴포넌트는 'data-prodid' 같은 매칭 키 필수
+
+3. 헤더 / GNB 와 필터 레이어 분리:
+   - GNB 탭 (Weekly/Monthly 같은 큰 모드) 은 페이지 전환
+   - 필터 레이어는 같은 페이지 안의 좁히기만 (모드 전환 X)
+   - 둘이 한 영역에 섞이면 충돌 (본 레포 'GNB 탭 / 필터 레이어 분리' fix 참조)
+
+4. 필터 적용 결과 검증:
+   - 필터 변경 → 어느 컴포넌트가 재렌더 / 어느 게 그대로
+   - data-prodid 매칭 / row 식별 키 일관 사용
+   - 미니차트 + 트렌드 + Hero summary 모두 동일 필터 반영
+
+5. 페이지간 공통 헬퍼:
+   - 필터 적용 함수 (_filteredMonthlySeries 같은) 공통 모듈로 분리
+   - 모든 SPA 가 import — 동일 로직 보장
+
+본 세션 / 본 레포 사례:
+- GNB 사업본부 탭 + 필터 레이어 동시 존재 시 충돌 → "필터 레이어에서 Weekly/Monthly
+  토글 제거, GNB 탭으로 대체" fix
+- _filteredMonthlySeries / _filteredMomD 같은 공통 헬퍼 — 모든 카드에 동일 적용
+```
+
+**언제**: 페이지 분리 직후 / GNB·필터 같이 다중 레이어 도입 시 / 필터 동기화 문제 의심 시
+
+---
+
+## TECHNIQUE-15: 데이터 완전 틀어짐 — 원본 헤더 변경 + 빈셀 검증
+
+**상황**: 데이터 동기화 후 모든 차트 빈 화면 / 잘못된 값 / "왜 안 보이지?" — 원본 시트 구조 변경 의심
+
+**Claude 의 액션**:
+```
+1. 사용자에게 원본 헤더 변경 확인 요청:
+   "데이터가 갑자기 틀어졌으면 원본 시트의 헤더 (첫 행) 가 변경됐을 가능성이 큽니다.
+   다음 확인 부탁드립니다:
+   - 마지막으로 정상 작동했을 때와 비교해 시트 헤더 (컬럼 이름) 가 바뀌었나요?
+   - 컬럼 순서가 바뀌었나요?
+   - 새 컬럼이 추가됐나요? 기존 컬럼이 삭제됐나요?
+   - 탭 이름 (시트 이름) 이 바뀌었나요?"
+
+2. 헤더 포함 데이터 복사 요청 — TECHNIQUE-3 활용:
+   "시트의 헤더 행 + 데이터 첫 3~5행을 그대로 복사해서 채팅에 붙여주세요.
+   탭/콤마 구분 텍스트로:
+   | Country | Date | Category | KPI1 | KPI2 |
+   | US | Mar 2026 | TV | 85 | 90 |"
+
+3. 빈셀 / null 값 확인:
+   "데이터에 빈셀 (빈 칸) 또는 명시적 null / N/A / '-' / '미측정' 같은 값이 있나요?
+   특정 행 / 열에 그런 케이스 있는지 알려주세요. (이게 0 과 다르게 처리되어야 함)"
+
+4. 빈셀 / null 처리 정책 결정 (data.md §5.3 참조):
+   - 빈 셀 → null (데이터 없음)
+   - '-' / '–' / '—' → null
+   - 'NA' / 'N/A' → null
+   - '0' / 0 → 0 (실제 측정값)
+   - 차트 렌더 시 null → 점 미렌더 (선 끊김) — _miniSvgNullAware 활용
+   - 평균 계산 시 null 제외 (count 분모 조정)
+
+5. 헤더 매핑 갱신:
+   - findHeaderIdx 의 정규식 동의어 추가 (예: 'launched|launch|status|출시여부')
+   - 새 헤더 이름 시트에 등장 시 정규식 확장
+   - 동의어 매핑은 _logInfo 로 로그 출력 (어떤 헤더 인식했는지)
+
+6. 검증:
+   - 임시 로그 창 (TECHNIQUE-1) 으로 파싱 결과 확인
+   - verifySyncResult 로 invariant 통과 확인
+   - 시각 검증 — 모든 차트 데이터 정상
+
+본 레포 사례:
+- "도메인 시트 v3 레이아웃 (월별 반복 블록) 지원" — 원본 시트 구조 변경 대응
+- "Citation 도메인 layout 변경" 시리즈 — 헤더 추가 (PRD 컬럼) 대응
+- null vs 0 구분 — pctOrNull 함수로 빈 셀 보존
+```
+
+**언제**: 모든 차트 갑자기 안 보임 / 시트 동기화 정상인데 값 이상 / 사용자가 "데이터 완전 틀어졌어" 보고
 
 ---
 
