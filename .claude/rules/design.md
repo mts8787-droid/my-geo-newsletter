@@ -107,6 +107,20 @@ letter-spacing :
   좁은 컬럼명: -0.6px
 ```
 
+**영문 모드 자간 추가 압축** (`lang === 'en'`):
+- 영문 제품명: 자간 -1px (좁은 셀 정렬 — 한글보다 길어서 압축 필요)
+- 경쟁사 브랜드명: 자간 -1px (KO/EN 모두 — `Whirlpool`, `Mitsubishi` 같이 긴 이름)
+- KO 모드는 letter-spacing 0 또는 위 기본값
+
+**좁은 셀에서 짤림 방지 패턴**:
+- `.vbar-col-name` 같이 vbar 컬럼 라벨 영역: `overflow: visible` 필수 (clip 금지)
+- 폰트 크기 11 → 10 + letter-spacing 강화로 길이 압축
+- 영문 약어 사용 (예: `Refrigerator → REF`, `Dishwasher → DW`, `Vacuum → VC`) — 시각 일관 + 좁은 셀 호환
+
+**각주 / 인라인 텍스트**:
+- 미출시 국가 나열의 콤마/콜론 뒤에 **non-breaking space** (`&#x00A0;`) 사용 — 콤마+공백이 줄바꿈으로 분리되는 것 방지
+- Subsidiary 표기는 약자 → 풀네임 (`US, UK` → `United States, United Kingdom`) — Executive Summary 같이 풀네임이 필요한 곳
+
 ### 4.5 Spacing
 
 ```
@@ -171,6 +185,11 @@ NEVER  align="center" 변경 → 사용자 명시 금지
 NEVER  사용자 텍스트 임의 다듬기 → 그대로 사용
 NEVER  한 번에 100px+ 변경 → 5~30px 단위 반복
 NEVER  카드 배경 검정/투명 → 항상 #fff (또는 status bg)
+NEVER  vbar 컬럼 라벨 overflow:hidden → 브랜드명 짤림 (overflow:visible 필수)
+NEVER  베이스라인 라벨에 흰 배경 박스 → X축 영역에 직접 텍스트 배치 (`labelOffsetY` 조정)
+NEVER  미출시 국가 나열 콤마 뒤 일반 공백 → 줄바꿈 분리 (non-breaking space `&#x00A0;`)
+NEVER  영문 모드 좁은 셀에 풀네임 → 약어 사용 (Refrigerator→REF, Dishwasher→DW)
+NEVER  flex/grid 를 이메일 HTML 에 사용 → table-layout 만 (Outlook 호환)
 ```
 
 ## 7. COMPONENT LIBRARY (HTML/SVG PATTERNS)

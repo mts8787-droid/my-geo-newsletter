@@ -917,6 +917,7 @@ a.harness-entry:hover{border-color:#CF0652;background:#4F2535}
       <a class="harness-file" href="/admin/harness/view?path=CLAUDE.md" target="_blank"><span class="harness-tag tag-rule">RULE</span> 프로젝트 헌법 <code>CLAUDE.md</code></a>
       <a class="harness-file" href="/admin/harness/view?path=.claude/rules/data.md" target="_blank"><span class="harness-tag tag-rule">RULE</span> 데이터 룰 <code>.claude/rules/data.md</code></a>
       <a class="harness-file" href="/admin/harness/view?path=.claude/rules/design.md" target="_blank"><span class="harness-tag tag-rule">RULE</span> 디자인 룰 <code>.claude/rules/design.md</code></a>
+      <a class="harness-file" href="/admin/harness/view?path=.claude/rules/ai.md" target="_blank"><span class="harness-tag tag-rule">RULE</span> AI 룰 <code>.claude/rules/ai.md</code></a>
 
       <a class="harness-file" href="/admin/harness/view?path=.claude/settings.json" target="_blank"><span class="harness-tag tag-config">JSON</span> 훅 등록 <code>.claude/settings.json</code></a>
       <a class="harness-file" href="/admin/harness/view?path=.claude/hooks/syntax-check.sh" target="_blank"><span class="harness-tag tag-hook">HOOK</span> 신택스 검증 <code>syntax-check.sh</code></a>

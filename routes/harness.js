@@ -46,6 +46,12 @@ const HARNESS_COMPONENTS = [
     file: '.claude/rules/design.md',
     desc: '디자인 토큰·컴포넌트 카탈로그 (C-01~C-23)·SVG 패턴·이메일 호환 ANTI-PATTERN. 스킬이 step 별로 참조.',
   },
+  {
+    category: 'rule',
+    label: 'AI 룰 매뉴얼',
+    file: '.claude/rules/ai.md',
+    desc: 'Anthropic API · 인사이트 생성 · N3 응답 검증 (invalid_output) · 에러 분류 · 비용 추적 · ANTI-PATTERN.',
+  },
 
   // ─── 훅 (Hook) — 절대 금지. JSON 강제 (100%) + md 설명서 ───────────────────
   {

@@ -395,6 +395,28 @@ function loadArchive(snapshot) {
 - 단순 데이터 변환은 lazy migration (저장 시 신규 키만)
 - 깊은 schema 변경은 명시적 migration 함수
 
+### 5.12 Sync 후 자동 derive (fallback 생성)
+
+원본 시트가 일부만 갖춰진 상태에서도 다운스트림 동작 가능하게 fallback 데이터 자동 생성.
+
+**패턴** (`googleSheetsUtils.js` 의 syncFromGoogleSheets 종료부):
+```js
+// productsPartial 없으면 weeklyAll 에서 자동 생성 — 신규 시트 추가 전 임시 호환
+if (!result.productsPartial && result.weeklyAll && result.weeklyMap) {
+  console.log('[SYNC] productsPartial 없음 → weeklyAll에서 자동 생성')
+  // ... weeklyAll → productsPartial / productsCnty 변환
+}
+
+// weeklyLabels 가 자동 생성 (W1,W2,...) 만 남으면 PR 라벨 폴백
+if (result.weeklyLabels?.every((l, i) => l === `W${i + 1}`)) {
+  // weeklyPRLabels / weeklyBrandPromptLabels 에서 실제 W라벨 추출
+}
+```
+
+**RULE**:
+- fallback 은 console.log 로 명시 (디버깅 시 어떤 derived 데이터인지 추적 가능)
+- verifySyncResult 가 자동 생성된 라벨 같은 stale 상태 감지 → SyncHealth 에 surface
+
 ## 6. ERROR CATCHING PROCESS
 
 데이터 파이프라인 곳곳에서 발생 가능한 오류를 **단계별로 탐지·분류·기록·복구**하는 표준 프로세스. 외부 입력(시트, API)·파싱 로직·다운스트림 변환 모든 경계점에 적용.
