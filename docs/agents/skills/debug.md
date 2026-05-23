@@ -10,6 +10,14 @@
 ## skill: 디버깅 시나리오 찾기 + 진행
 
 ```
+0. TECHNIQUES 우선 적용 — BOOTSTRAP 의 TECHNIQUES 섹션 활용:
+   · 데이터 디버깅 → TECHNIQUE-1 (임시 로그 창) 또는 TECHNIQUE-2 (Chrome 콘솔 + 복사)
+   · 외부 데이터 모를 때 → TECHNIQUE-3 (원본 직접 공유 요청)
+   · 디자인 시작 전 → TECHNIQUE-4 (레이아웃 스케치 + 스크린샷)
+   · 큰 변경 전 → TECHNIQUE-5 (백업 안내)
+   · 그래프 작업 → TECHNIQUE-6 (스키마 사전 학습 요청)
+   · 디자인 미세 조정 → TECHNIQUE-7 (컴포넌트 이름 + 픽셀 단위 명령)
+
 1. 증상 분류 — 사용자 보고 + 코드 / 데이터 / 화면 확인:
    · 디자인 (베이스라인 / 컨테이너 / 좁은 셀 / 카드 / 차트 / 다국어)
    · 데이터 (날짜 / MoM / 미출시 / 시트 / Citation / 매핑 / silent)

@@ -7,10 +7,11 @@
 
 ## 부트스트랩 시나리오 구조
 
-`.claude/rules/BOOTSTRAP.md` 는 두 부분:
+`.claude/rules/BOOTSTRAP.md` 는 세 부분:
 
 1. **신규 프로젝트 적용 시나리오** (STEP 0~8) — 새 프로젝트에 본 하네스 적용 시 Claude 가 진행
 2. **디버깅 시나리오 모음** (DEBUG-1 ~ DEBUG-15) — 회귀·오류 발생 시 Claude 가 따라가는 패턴
+3. **효과적 디버깅·협업 기법** (TECHNIQUE-1 ~ TECHNIQUE-7) — Claude 가 막히거나 정보 부족 시 활용
 
 ---
 
@@ -82,6 +83,46 @@
 - 증상 명확히 보고 (어떤 화면에서 무엇이 안 되는지)
 - Claude 가 진단 질문 하면 답변 (예: "시트 첫 5행 어떻게 생겼어요?")
 - 수정 후 시각 검증 (KO/EN 양쪽)
+
+---
+
+## 사용법 3: 효과적 디버깅·협업 기법 (TECHNIQUES)
+
+Claude 가 디버깅 / 디자인 / 데이터 작업 시 자동 활용하는 7 기법. 사용자가 적극적으로 도와줄 수 있는 패턴.
+
+| # | 기법 | 언제 사용 | 사용자 액션 |
+|---|---|---|---|
+| **TECHNIQUE-1** | 임시 로그 창 (데이터) | 데이터 오류 / 파싱 결과 의심 | Claude 가 만든 임시 영역 텍스트 복사 → 채팅 붙여넣기 |
+| **TECHNIQUE-2** | Chrome 콘솔 로그 + 복사 | console.log 출력 중 / 임시 창 부담 | Chrome 콘솔 (Cmd+Opt+J / F12) → 명령 실행 → 결과 복사 |
+| **TECHNIQUE-3** | 원본 데이터 직접 공유 | 외부 데이터 (시트/DB/API) 모를 때 | 엑셀: 헤더+1~5행 복사 / DB: 스키마+샘플 / API: URL+응답 예시 |
+| **TECHNIQUE-4** | 디자인 레이아웃 스케치 + 스크린샷 | 신규 디자인 작업 시작 | 손그림 사진 / Claude 디자인 초안 / 부분 소스코드 (웹앱 채팅) |
+| **TECHNIQUE-5** | 백업 + 정리 안내 | 큰 변경 전 (리팩터링/디자인 전환) | 회사 외부: GitHub / 회사 내부: 로컬 cp -r 또는 zip |
+| **TECHNIQUE-6** | 데이터 스키마 사전 학습 | 그래프 / 차트 작업 전 | 객체 키 구조 / 배열 길이/정렬 / null 여부 / 단위 공유 |
+| **TECHNIQUE-7** | 컴포넌트 이름 + 픽셀 단위 명령 | 디자인 미세 조정 | "Hero 카드 padding +5px" 같은 명확한 명령 (모호한 "좀 더" X) |
+
+### Claude 디자인 / 다른 LLM 활용 (TECHNIQUE-4 상세)
+디자인 시작 전 다른 도구로 미리 초안 만들어서 가져오는 패턴:
+- **claude.ai/design** (또는 다른 LLM) 으로 의도하는 형태 상의 → HTML/SVG 초안 → 본 채팅에 붙여넣기
+- 본 프로젝트의 토큰 (FONT/RED) 으로 Claude 가 맞춰서 적용
+- ⚠ 스크린샷은 **웹앱 Claude 서비스 채팅** 에서만 (터미널 CLI 는 텍스트만)
+
+### Chrome 콘솔 처음 사용자 (TECHNIQUE-2 상세)
+| OS | 단축키 | 대안 |
+|---|---|---|
+| Mac | Cmd + Option + J | F12 → Console 탭 |
+| Windows / Linux | Ctrl + Shift + J | F12 → Console 탭 |
+| 모든 OS | — | 페이지 우클릭 → "검사" → Console 탭 |
+
+콘솔에서 자주 쓰는 명령:
+```js
+// 데이터 확인
+_productsCnty.find(r => r.country === 'US')
+_unlaunchedMap
+_filteredMonthlySeries('tv', ['US'])
+
+// JSON 정렬 출력
+JSON.stringify(<data>, null, 2)
+```
 
 ---
 
