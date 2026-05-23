@@ -694,7 +694,7 @@ const PROMPTING_SKILLS_PREVIEW = `
 // ─── Markdown 문서 렌더 헬퍼 ────────────────────────────────────────────────
 // /admin/plan, /admin/infra, /admin/cloud-run-job, /admin/bigquery-schema 공통.
 // marked + mermaid CDN로 클라이언트 렌더 (iOS Safari 호환).
-function renderMarkdownPage(res, { mdFile, title, downloadHref, downloadName, livePreview, dir = 'docs' }) {
+export function renderMarkdownPage(res, { mdFile, title, downloadHref, downloadName, livePreview, dir = 'docs' }) {
   let md = ''
   try {
     md = readFileSync(join(PROJECT_ROOT, dir, mdFile), 'utf-8')
@@ -914,24 +914,24 @@ a.harness-entry:hover{border-color:#CF0652;background:#4F2535}
       </a>
 
       <div class="section-title">실제 사용되는 하네스 도구</div>
-      <a class="harness-file" href="/api/harness/file?path=CLAUDE.md" target="_blank"><span class="harness-tag tag-rule">RULE</span> 프로젝트 헌법 <code>CLAUDE.md</code></a>
-      <a class="harness-file" href="/api/harness/file?path=.claude/rules/data.md" target="_blank"><span class="harness-tag tag-rule">RULE</span> 데이터 룰 <code>.claude/rules/data.md</code></a>
-      <a class="harness-file" href="/api/harness/file?path=.claude/rules/design.md" target="_blank"><span class="harness-tag tag-rule">RULE</span> 디자인 룰 <code>.claude/rules/design.md</code></a>
+      <a class="harness-file" href="/admin/harness/view?path=CLAUDE.md" target="_blank"><span class="harness-tag tag-rule">RULE</span> 프로젝트 헌법 <code>CLAUDE.md</code></a>
+      <a class="harness-file" href="/admin/harness/view?path=.claude/rules/data.md" target="_blank"><span class="harness-tag tag-rule">RULE</span> 데이터 룰 <code>.claude/rules/data.md</code></a>
+      <a class="harness-file" href="/admin/harness/view?path=.claude/rules/design.md" target="_blank"><span class="harness-tag tag-rule">RULE</span> 디자인 룰 <code>.claude/rules/design.md</code></a>
 
-      <a class="harness-file" href="/api/harness/file?path=.claude/settings.json" target="_blank"><span class="harness-tag tag-config">JSON</span> 훅 등록 <code>.claude/settings.json</code></a>
-      <a class="harness-file" href="/api/harness/file?path=.claude/hooks/syntax-check.sh" target="_blank"><span class="harness-tag tag-hook">HOOK</span> 신택스 검증 <code>syntax-check.sh</code></a>
-      <a class="harness-file" href="/api/harness/file?path=.claude/hooks/block-dist.sh" target="_blank"><span class="harness-tag tag-hook">HOOK</span> dist 차단 <code>block-dist.sh</code></a>
-      <a class="harness-file" href="/api/harness/file?path=.claude/hooks/README.md" target="_blank"><span class="harness-tag tag-hook">DOCS</span> 훅 설명서 <code>hooks/README.md</code></a>
+      <a class="harness-file" href="/admin/harness/view?path=.claude/settings.json" target="_blank"><span class="harness-tag tag-config">JSON</span> 훅 등록 <code>.claude/settings.json</code></a>
+      <a class="harness-file" href="/admin/harness/view?path=.claude/hooks/syntax-check.sh" target="_blank"><span class="harness-tag tag-hook">HOOK</span> 신택스 검증 <code>syntax-check.sh</code></a>
+      <a class="harness-file" href="/admin/harness/view?path=.claude/hooks/block-dist.sh" target="_blank"><span class="harness-tag tag-hook">HOOK</span> dist 차단 <code>block-dist.sh</code></a>
+      <a class="harness-file" href="/admin/harness/view?path=.claude/hooks/README.md" target="_blank"><span class="harness-tag tag-hook">DOCS</span> 훅 설명서 <code>hooks/README.md</code></a>
 
       <a class="harness-file" href="/admin/data-skills"><span class="harness-tag tag-skill">SKILL</span> 데이터 스킬 (라이브 페이지) <code>data/SKILL.md</code></a>
       <a class="harness-file" href="/admin/design-skills"><span class="harness-tag tag-skill">SKILL</span> 디자인 스킬 (라이브 페이지) <code>design/SKILL.md</code></a>
-      <a class="harness-file" href="/api/harness/file?path=.claude/skills/prompting/SKILL.md" target="_blank"><span class="harness-tag tag-skill">SKILL</span> 프롬프팅 통합 <code>prompting/SKILL.md</code></a>
+      <a class="harness-file" href="/admin/harness/view?path=.claude/skills/prompting/SKILL.md" target="_blank"><span class="harness-tag tag-skill">SKILL</span> 프롬프팅 통합 <code>prompting/SKILL.md</code></a>
 
-      <a class="harness-file" href="/api/harness/file?path=.claude/agents/data-puller.md" target="_blank"><span class="harness-tag tag-agent">AGENT</span> 데이터 진단 <code>data-puller.md</code></a>
+      <a class="harness-file" href="/admin/harness/view?path=.claude/agents/data-puller.md" target="_blank"><span class="harness-tag tag-agent">AGENT</span> 데이터 진단 <code>data-puller.md</code></a>
 
       <div class="section-title">미러 진입점</div>
-      <a class="harness-file" href="/api/harness/file?path=docs/agents/HARNESS.md" target="_blank"><span class="harness-tag tag-rule">MD</span> 전체 설명 (마크다운) <code>docs/agents/HARNESS.md</code></a>
-      <a class="harness-file" href="/api/harness/file?path=docs/agents/HARNESS.html" target="_blank"><span class="harness-tag tag-rule">HTML</span> 전체 설명 (HTML 소스) <code>docs/agents/HARNESS.html</code></a>
+      <a class="harness-file" href="/admin/harness/view?path=docs/agents/HARNESS.md" target="_blank"><span class="harness-tag tag-rule">MD</span> 전체 설명 (마크다운) <code>docs/agents/HARNESS.md</code></a>
+      <a class="harness-file" href="/admin/harness/view?path=docs/agents/HARNESS.html" target="_blank"><span class="harness-tag tag-rule">HTML</span> 전체 설명 (HTML 소스) <code>docs/agents/HARNESS.html</code></a>
     </div>
   </div>
   <div class="footer">

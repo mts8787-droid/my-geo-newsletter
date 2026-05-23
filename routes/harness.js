@@ -5,6 +5,7 @@ import { Router } from 'express'
 import fs from 'fs'
 import path from 'path'
 import JSZip from 'jszip'
+import { renderMarkdownPage } from './admin-pages.js'
 
 export const harnessRouter = Router()
 
@@ -225,6 +226,56 @@ harnessRouter.get('/api/harness/zip', async (req, res) => {
   }
 })
 
+// ─── GET /admin/harness/view?path=... — 개별 파일 보기 ────────────────────
+// .md → marked.js 렌더 (admin-pages.js 의 renderMarkdownPage 활용)
+// .sh / .json / 외 → 다크 테마 code block 페이지
+harnessRouter.get('/admin/harness/view', (req, res) => {
+  const relPath = String(req.query.path || '')
+  const found = HARNESS_COMPONENTS.find(c => c.file === relPath)
+  if (!found) return res.status(404).send('unknown harness component')
+
+  // .md 는 마크다운 렌더 (mermaid 포함)
+  if (relPath.endsWith('.md')) {
+    const dir = path.dirname(relPath)
+    const mdFile = path.basename(relPath)
+    return renderMarkdownPage(res, {
+      mdFile, dir, title: `${found.label} — ${relPath}`,
+      downloadHref: `/api/harness/file?path=${encodeURIComponent(relPath)}`,
+      downloadName: mdFile,
+    })
+  }
+
+  // .sh / .json / 외 → 코드 블록 페이지
+  const content = readSafe(relPath)
+  if (content == null) return res.status(404).send('file not found')
+  const lang = relPath.endsWith('.json') ? 'json' : relPath.endsWith('.sh') ? 'bash' : 'text'
+  const titleEsc = escHtml(`${found.label} — ${relPath}`)
+  const codeEsc = escHtml(content)
+  res.set('Content-Type', 'text/html; charset=utf-8')
+  res.send(`<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${titleEsc}</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0F172A;color:#E2E8F0;font-family:'LG Smart','Arial Narrow',Arial,sans-serif;padding:24px 32px;line-height:1.5}
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:12px}
+.back{color:#CF0652;text-decoration:none;font-size:13px}
+.btn{background:#1E293B;border:1px solid #334155;border-radius:8px;padding:8px 16px;font-size:12px;font-weight:600;color:#E2E8F0;text-decoration:none}
+h1{font-size:18px;color:#F8FAFC;margin-bottom:6px}
+.meta{font-size:12px;color:#64748B;margin-bottom:18px;font-family:ui-monospace,Menlo,Consolas,monospace}
+pre{background:#0B1220;border:1px solid #1E293B;border-radius:12px;padding:20px 24px;overflow:auto;max-width:1100px;margin:0 auto;font-family:'Consolas','Courier New',ui-monospace,monospace;font-size:12px;line-height:1.6;color:#CBD5E1;white-space:pre-wrap;word-wrap:break-word}
+.lang{display:inline-block;background:#334155;color:#94A3B8;padding:2px 8px;border-radius:4px;font-size:10px;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
+</style></head><body>
+<div class="topbar">
+  <a class="back" href="/admin/harness">← Harness Mirror</a>
+  <a class="btn" href="/api/harness/file?path=${encodeURIComponent(relPath)}" target="_blank">raw 다운로드</a>
+</div>
+<h1>${titleEsc}</h1>
+<div class="meta"><span class="lang">${lang}</span> · ${escHtml(found.desc)}</div>
+<pre>${codeEsc}</pre>
+</body></html>`)
+})
+
 // ─── GET /api/harness/file?path=... — 개별 파일 raw 보기 ──────────────────
 harnessRouter.get('/api/harness/file', (req, res) => {
   const relPath = String(req.query.path || '')
@@ -269,7 +320,9 @@ harnessRouter.get('/admin/harness', (req, res) => {
         </div>
         <div class="comp-desc">${escHtml(it.desc)}</div>
         <div class="comp-actions">
-          <a class="link" href="/api/harness/file?path=${encodeURIComponent(it.file)}" target="_blank">파일 내용 보기 →</a>
+          <a class="link" href="/admin/harness/view?path=${encodeURIComponent(it.file)}" target="_blank">렌더된 보기 (HTML) →</a>
+          &nbsp;&middot;&nbsp;
+          <a class="link" href="/api/harness/file?path=${encodeURIComponent(it.file)}" target="_blank" style="color:#64748B">raw 보기</a>
         </div>
       </div>
     `).join('')
@@ -290,7 +343,9 @@ h1{font-size:22px;color:#F8FAFC;margin-bottom:4px}
 .intro{background:#1E293B;border:1px solid #334155;border-radius:12px;padding:18px 22px;margin-bottom:18px;font-size:13px;color:#CBD5E1}
 .intro p{margin-bottom:6px}
 .intro strong{color:#F8FAFC}
-.dl-btn{display:inline-block;background:#CF0652;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:700;font-size:14px;margin-top:8px}
+.usage{background:linear-gradient(135deg,#1F2937 0%,#2A1F3F 100%);border:1px solid #CF0652;border-radius:12px;padding:22px 26px;margin-bottom:18px}
+.usage code{font-family:ui-monospace,Menlo,Consolas,monospace}
+.dl-btn{display:inline-block;background:#CF0652;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:700;font-size:14px;margin-top:14px}
 .dl-btn:hover{background:#e0186b}
 .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:24px}
 .card{background:#1E293B;border:1px solid #334155;border-radius:10px;padding:14px 18px}
@@ -317,17 +372,49 @@ h1{font-size:22px;color:#F8FAFC;margin-bottom:4px}
 <h1>Harness Mirror</h1>
 <p class="sub">Claude Code 하네스 (룰·스킬·훅·서브에이전트) 의 실시간 미러링</p>
 
+<div class="usage">
+  <h2 style="font-size:16px;color:#F8FAFC;margin-bottom:10px">💡 사용 패턴 — 다른 프로젝트에 적용</h2>
+  <p style="font-size:13px;color:#CBD5E1;margin-bottom:10px">본 레포의 하네스가 잘 정착되어 있으면 ZIP 받아서 새 프로젝트에 적용 가능. <strong style="color:#F8FAFC">Claude Code 가 자동으로 룰·스킬·훅·서브에이전트를 인식</strong>.</p>
+  <ol style="font-size:13px;color:#CBD5E1;margin-left:24px;line-height:1.8">
+    <li><strong>전체 ZIP 다운로드</strong> (아래 빨간 버튼) — 원본 + 미러 모두 포함</li>
+    <li>대상 프로젝트 <strong>루트에 압축 풀기</strong>:
+      <ul style="margin:6px 0 6px 20px;font-size:12px;color:#94A3B8;line-height:1.6">
+        <li><code style="background:#0F172A;padding:1px 6px;border-radius:3px">CLAUDE.md</code> — 프로젝트 헌법 (Claude 가 항상 로드)</li>
+        <li><code style="background:#0F172A;padding:1px 6px;border-radius:3px">.claude/</code> — settings.json + hooks/ + skills/ + agents/ + rules/</li>
+        <li><code style="background:#0F172A;padding:1px 6px;border-radius:3px">docs/agents/</code> — 사람용 미러 (선택 — Claude Code 작동에는 불필요)</li>
+      </ul>
+    </li>
+    <li><strong>실행 권한 부여</strong>: <code style="background:#0F172A;padding:2px 8px;border-radius:4px;color:#F8C4D7">chmod +x .claude/hooks/*.sh</code> — 훅이 실행되려면 필수</li>
+    <li><strong>Claude Code 실행</strong> — 자동으로 로드:
+      <ul style="margin:6px 0 6px 20px;font-size:12px;color:#94A3B8;line-height:1.6">
+        <li><span style="color:#60A5FA">RULE</span>: <code>CLAUDE.md</code> 항상 로드 + <code>.claude/rules/</code> 가 CLAUDE.md 명시 참조 시 로드</li>
+        <li><span style="color:#F87171">HOOK</span>: <code>.claude/settings.json</code> 등록된 훅이 Edit/Write 시점에 시스템 자동 실행 (100% 강제)</li>
+        <li><span style="color:#4ADE80">SKILL</span>: <code>.claude/skills/&lt;name&gt;/SKILL.md</code> 의 frontmatter description 으로 트리거 — Claude 가 필요 시 자동 로드</li>
+        <li><span style="color:#FBBF24">AGENT</span>: <code>.claude/agents/&lt;name&gt;.md</code> 의 frontmatter — Claude 가 위임 시 활성</li>
+      </ul>
+    </li>
+    <li><strong>새 프로젝트에 맞게 커스터마이즈</strong>:
+      <ul style="margin:6px 0 6px 20px;font-size:12px;color:#94A3B8;line-height:1.6">
+        <li>CLAUDE.md 의 NEVER 룰·스택·디렉토리 맵을 신규 프로젝트에 맞춰 수정</li>
+        <li>.claude/rules/ 의 룰 매뉴얼을 도메인에 맞게 (예: 다른 데이터 모델·다른 디자인 시스템)</li>
+        <li>훅 스크립트의 grep 패턴·차단 경로 조정</li>
+        <li>스킬 워크플로우는 신규 프로젝트의 실제 작업에 맞게 step-by-step 재작성</li>
+      </ul>
+    </li>
+  </ol>
+  <p style="font-size:11px;color:#64748B;margin-top:10px;font-style:italic">미러는 <code>npm run sync:harness</code> 또는 <code>npm run build</code> (prebuild) 시 자동 갱신 — 본 ZIP 은 호출 시점에 항상 최신.</p>
+  <a class="dl-btn" href="/api/harness/zip">📦 전체 ZIP 다운로드</a>
+</div>
+
 <div class="intro">
-  <p><strong>본 페이지는 <code>CLAUDE.md</code> + <code>docs/</code> + <code>.claude/</code> 의 실시간 미러.</strong> 다른 프로젝트에 적용하거나 팀원과 공유할 때 ZIP 다운로드.</p>
-  <p>ZIP 생성 시점에 실제 파일을 읽으므로 <strong>항상 최신</strong>. 실제 하네스 파일이 수정되면 다음 다운로드 시 즉시 반영.</p>
+  <p><strong>본 페이지는 <code>CLAUDE.md</code> + <code>.claude/</code> + <code>docs/agents/</code> 의 실시간 미러.</strong> 4 개념·각 컴포넌트 상세는 아래 목록.</p>
   <p style="color:#94A3B8;font-size:12px;margin-top:8px">
     <strong style="color:#F8FAFC">하네스 4 개념</strong> —
-    <span style="color:#F8FAFC">룰</span>: 따라야 할 규칙 (md, ~80%) ·
-    <span style="color:#F8FAFC">훅</span>: 절대 금지 (JSON 강제, 100%) ·
-    <span style="color:#F8FAFC">스킬</span>: 순차 워크플로우 (md, 명령 조합) ·
-    <span style="color:#F8FAFC">서브에이전트</span>: 영역 분리 (md frontmatter)
+    <span style="color:#60A5FA">룰</span>: 따라야 할 규칙 (md, ~80%) ·
+    <span style="color:#F87171">훅</span>: 절대 금지 (JSON 강제, 100%) ·
+    <span style="color:#4ADE80">스킬</span>: 순차 워크플로우 (md, 명령 조합) ·
+    <span style="color:#FBBF24">서브에이전트</span>: 영역 분리 (md frontmatter)
   </p>
-  <a class="dl-btn" href="/api/harness/zip">📦 전체 ZIP 다운로드</a>
 </div>
 
 <div class="kpis">
@@ -341,9 +428,6 @@ h1{font-size:22px;color:#F8FAFC;margin-bottom:4px}
 
 ${sectionsHtml}
 
-<div class="note">
-  <strong>💡 사용 패턴</strong> — 본 레포의 하네스가 잘 정착되어 있으면 ZIP 받아서 새 프로젝트에 압축 풀고 <code>chmod +x .claude/hooks/*.sh</code> 만 실행. Claude Code 가 자동으로 룰·스킬·훅을 인식합니다.
-</div>
 
 </body></html>`)
 })
