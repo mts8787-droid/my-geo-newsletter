@@ -3,11 +3,16 @@
 // ⚠ tracker의 MONTHS는 한글 ['3월','4월',...,'12월'] (3월 시작!)
 const MONTHS = ['3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월']
 
-// 카테고리 표시 순서
-const CATEGORY_ORDER = ['콘텐츠수정', '신규콘텐츠제작', '외부채널관리', '닷컴기술개선']
-function categorySortKey(name) {
-  const idx = CATEGORY_ORDER.indexOf(name)
+// 카테고리 표시 순서 (tracker 도메인 — newsletter/dashboard 의 prodId 와는 다른 카테고리)
+// single source: 본 파일. 다른 곳 (tracker-v2 컴포넌트) 은 import 사용.
+export const TRACKER_CATEGORY_ORDER = ['콘텐츠수정', '신규콘텐츠제작', '외부채널관리', '닷컴기술개선']
+const CATEGORY_ORDER = TRACKER_CATEGORY_ORDER  // 본 파일 내부 호환
+export function trackerCategorySortKey(name) {
+  const idx = TRACKER_CATEGORY_ORDER.indexOf(name)
   return idx >= 0 ? idx : 999
+}
+function categorySortKey(name) {
+  return trackerCategorySortKey(name)
 }
 
 function taskKey(r) {

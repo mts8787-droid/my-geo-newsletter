@@ -8,7 +8,7 @@ function fmtRate(rate) {
 }
 function _tr(lang, tr, text) { return lang === 'en' && tr && tr[text] ? tr[text] : text }
 
-const CATEGORY_ORDER = ['콘텐츠수정', '신규콘텐츠제작', '외부채널관리', '닷컴기술개선']
+import { TRACKER_CATEGORY_ORDER as CATEGORY_ORDER } from '../../shared/trackerCategoryStats.js'
 function catSortKey(name) {
   const idx = CATEGORY_ORDER.indexOf(name)
   return idx >= 0 ? idx : 999

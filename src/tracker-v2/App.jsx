@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
+import { TRACKER_CATEGORY_ORDER } from '../shared/trackerCategoryStats.js'
 import { PanelLeftClose, PanelLeftOpen } from 'lucide-react'
 import { useSheetData } from './hooks/useSheetData'
 import Header from './components/Header'
@@ -259,7 +260,8 @@ function computeDashboard(data, month, stakeholderFilter, categoryFilter) {
 
   // 카테고리 표시 순서 고정: 콘텐츠수정 → 신규콘텐츠제작 → 외부채널관리 → 닷컴기술개선
   // 시트 원본의 공백 유무 차이를 흡수하기 위해 공백 제거 후 비교
-  const CATEGORY_ORDER = ['콘텐츠수정', '신규콘텐츠제작', '외부채널관리', '닷컴기술개선']
+  // single source: src/shared/trackerCategoryStats.js
+  const CATEGORY_ORDER = TRACKER_CATEGORY_ORDER
   const catIdx = (name) => {
     const key = String(name || '').replace(/\s+/g, '')
     const i = CATEGORY_ORDER.indexOf(key)
