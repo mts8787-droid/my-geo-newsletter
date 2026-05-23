@@ -10,6 +10,8 @@
     "dev:citation": "vite --config vite.citation.config.js",
     "dev:tracker": "vite --config vite.tracker-v2.config.js",
     "build": "vite build && vite build --config vite.dashboard.config.js && vite build --config vite.visibility.config.js && vite build --config vite.citation.config.js && vite build --config vite.tracker-v2.config.js && vite build --config vite.monthly.config.js && vite build --config vite.weekly.config.js",
+    "prebuild": "node scripts/sync-harness.mjs",
+    "sync:harness": "node scripts/sync-harness.mjs",
     "build:dashboard": "vite build --config vite.dashboard.config.js",
     "build:visibility": "vite build --config vite.visibility.config.js",
     "build:citation": "vite build --config vite.citation.config.js",

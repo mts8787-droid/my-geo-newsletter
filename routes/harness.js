@@ -12,6 +12,20 @@ export const harnessRouter = Router()
 // 본 레포의 실제 파일 경로 + UI 표시용 메타데이터.
 // 새 컴포넌트 (예: 신규 hook, agent) 추가 시 이 배열만 갱신.
 const HARNESS_COMPONENTS = [
+  // ─── 진입점 (Entry Point) — 정보 구조 단일 호스트 ────────────────────────
+  {
+    category: 'entry',
+    label: '전체 하네스 설명 (HTML)',
+    file: '.claude/agents/HARNESS.html',
+    desc: '브라우저 더블클릭으로 열림. 4 개념·폴더 구조·각 컴포넌트 설명·적용 가이드 시각화.',
+  },
+  {
+    category: 'entry',
+    label: '전체 하네스 설명 (Markdown)',
+    file: '.claude/agents/HARNESS.md',
+    desc: '동일 내용 마크다운. .claude/agents/ 미러 호스트의 진입점.',
+  },
+
   // ─── 룰 (Rule) — 따라야 할 규칙. Markdown. 권고 (~80%) ─────────────────────
   {
     category: 'rule',
@@ -88,6 +102,7 @@ const HARNESS_COMPONENTS = [
 ]
 
 const CATEGORY_LABELS = {
+  entry: '진입점 (Entry Point) — .claude/agents/ 미러 호스트의 시작',
   rule: '룰 (Rule) — 따라야 할 규칙. Markdown 권고 (~80%)',
   hook: '훅 (Hook) — 절대 하면 안 되는 것. JSON 강제 (100%) + 인간용 md 설명서',
   skill: '스킬 (Skill) — 자동 워크플로우 / 명령 조합. step-by-step',
@@ -170,13 +185,33 @@ function generateReadme() {
 }
 
 // ─── GET /api/harness/zip — 실제 파일 → 즉시 ZIP 생성 ─────────────────────
+// .claude/agents/ 폴더를 재귀 추가 — 미러 호스트 전체 (rules/, skills/, hooks/, HARNESS.*, CLAUDE.md 미러)
+function addDirToZip(zip, srcDir) {
+  const absSrc = path.join(ROOT, srcDir)
+  if (!fs.existsSync(absSrc)) return
+  for (const entry of fs.readdirSync(absSrc)) {
+    const relPath = path.join(srcDir, entry)
+    const absPath = path.join(ROOT, relPath)
+    if (fs.statSync(absPath).isDirectory()) {
+      addDirToZip(zip, relPath)
+    } else {
+      zip.file(relPath, fs.readFileSync(absPath))
+    }
+  }
+}
+
 harnessRouter.get('/api/harness/zip', async (req, res) => {
   try {
     const zip = new JSZip()
+    // 1) 명시 컴포넌트 (CLAUDE.md, docs/, .claude/settings.json, .claude/hooks/, .claude/skills/, agents/HARNESS.*)
+    const seen = new Set()
     for (const { file } of HARNESS_COMPONENTS) {
       const content = readSafe(file)
-      if (content != null) zip.file(file, content)
+      if (content != null) { zip.file(file, content); seen.add(file) }
     }
+    // 2) .claude/agents/ 미러 폴더 전체 재귀 — 진입점 + rules/skills/hooks/ 미러 모두
+    addDirToZip(zip, '.claude/agents')
+    // 3) README (사용 가이드)
     zip.file('README.md', generateReadme())
     const buffer = await zip.generateAsync({ type: 'nodebuffer', compression: 'DEFLATE' })
     const fname = `harness-mirror-${new Date().toISOString().slice(0, 10)}.zip`
@@ -294,7 +329,7 @@ h1{font-size:22px;color:#F8FAFC;margin-bottom:4px}
 </div>
 
 <div class="kpis">
-  <div class="card"><div class="label">총 컴포넌트</div><div class="value">${items.length}</div></div>
+  <div class="card"><div class="label">진입점</div><div class="value">${(grouped.entry || []).length}</div></div>
   <div class="card"><div class="label">룰 (Rule)</div><div class="value">${(grouped.rule || []).length}</div></div>
   <div class="card"><div class="label">훅 (Hook)</div><div class="value">${(grouped.hook || []).length}</div></div>
   <div class="card"><div class="label">스킬 (Skill)</div><div class="value">${(grouped.skill || []).length}</div></div>
