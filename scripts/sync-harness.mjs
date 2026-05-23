@@ -38,6 +38,7 @@ const MIRROR_MAP = [
   { src: '.claude/skills/data/SKILL.md',     dst: 'docs/agents/skills/data.md',     stripFrontmatter: true },
   { src: '.claude/skills/design/SKILL.md',   dst: 'docs/agents/skills/design.md',   stripFrontmatter: true },
   { src: '.claude/skills/onboard/SKILL.md',  dst: 'docs/agents/skills/onboard.md',  stripFrontmatter: true },
+  { src: '.claude/skills/debug/SKILL.md',    dst: 'docs/agents/skills/debug.md',    stripFrontmatter: true },
 ]
 
 function stripFrontmatter(content) {

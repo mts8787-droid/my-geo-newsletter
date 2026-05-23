@@ -34,9 +34,9 @@ const HARNESS_COMPONENTS = [
   },
   {
     category: 'entry',
-    label: '사람용 가이드 (Human Guide)',
+    label: '부트스트랩 사용법 (Usage Guide)',
     file: 'docs/agents/HUMAN_GUIDE.md',
-    desc: '사람이 직접 읽는 참조 자료 — 도메인 예시 3개 (매출/HR/제품) · 검증 체크리스트 · 트러블슈팅 표 · FAQ. BOOTSTRAP 시나리오 진행 중 Claude 가 본 문서 참조 안내.',
+    desc: '사람이 직접 읽는 사용 설명서 — BOOTSTRAP 의 시나리오 (신규 프로젝트 적용 STEP 0~8 + 디버깅 DEBUG-1~15) 어떻게 트리거하고 활용하는지 + 도메인 예시 + 검증 체크리스트 + 트러블슈팅 + FAQ.',
   },
 
   // ─── 룰 (Rule) — 따라야 할 규칙. Markdown. 권고 (~80%) ─────────────────────
@@ -121,6 +121,12 @@ const HARNESS_COMPONENTS = [
     label: '하네스 적용 (Onboard)',
     file: '.claude/skills/onboard/SKILL.md',
     desc: '새 프로젝트에 본 하네스 적용 시 사용. "이 하네스 적용해줘" 요청 시 도메인 인터뷰 → 도메인 파일 → 데이터 모델 → 디자인 토큰 → 빌드 검증 8 step.',
+  },
+  {
+    category: 'skill',
+    label: '디버깅 (Debug)',
+    file: '.claude/skills/debug/SKILL.md',
+    desc: '사용자 "X 안 됨" / "fix" / "회귀" 요청 시. BOOTSTRAP 의 DEBUG-1~15 시나리오 중 증상 매칭. 시나리오는 가이드 — 더 나은 방법 발견 시 그 방식.',
   },
 
   // ─── 서브에이전트 (Sub-agent) — 특정 영역 분리 작업 ────────────────────────
