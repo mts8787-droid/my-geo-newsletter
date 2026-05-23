@@ -1,5 +1,16 @@
 // ─── GEO Citation 대시보드 — Citation 전용 독립 시각화 ───────────────────────
 // dashboardTemplate.js의 Citation 섹션만 추출하여 독립 렌더링
+import { PROD_IDS, PROD_ID_TO_ORDER, NAME_TO_PROD_ID } from '../categoryMap.js'
+
+// _PRD_ORDER_MAP: 클라이언트 인라인 코드에 임베드되는 정렬 순서 맵
+// prodId + 한/영/약어 시트 표기 모두 같은 순서로. categoryMap.js single source.
+const _PRD_ORDER_MAP_INLINE = (() => {
+  const m = {}
+  for (const id of PROD_IDS) m[id] = PROD_ID_TO_ORDER[id]
+  for (const [name, id] of Object.entries(NAME_TO_PROD_ID)) m[name.toLowerCase()] = PROD_ID_TO_ORDER[id]
+  return m
+})()
+
 const FONT = "'LGEIText','LG Smart','Arial Narrow',Arial,sans-serif"
 const RED = '#CF0652'
 const COMP = '#94A3B8'
@@ -857,7 +868,7 @@ function _stripDomain(d){return(d||'').replace(/\\.(com|org|net|co\\.uk|com\\.br
 var _CNTY_NAMES=${JSON.stringify(COUNTRY_FULL_NAME)};
 function _cn(c){return _CNTY_NAMES[c]||_CNTY_NAMES[c&&c.toUpperCase()]||c}
 // 제품 정렬 순서: TV·Monitor·Audio·Washer(WM)·Fridge·DW·Vacuum·Cooking·RAC(AC)·Aircare
-var _PRD_ORDER_MAP={'tv':0,'monitor':1,'it':1,'audio':2,'washer':3,'wm':3,'fridge':4,'ref':4,'refrigerator':4,'dw':5,'dishwasher':5,'vacuum':6,'vac':6,'cooking':7,'cook':7,'rac':8,'aircare':9};
+var _PRD_ORDER_MAP=${JSON.stringify(_PRD_ORDER_MAP_INLINE)};
 function _prdOrderIdx(p){var l=String(p||'').toLowerCase();return _PRD_ORDER_MAP[l]!=null?_PRD_ORDER_MAP[l]:999}
 function _prdSort(a,b){var ai=_prdOrderIdx(a),bi=_prdOrderIdx(b);if(ai!==bi)return ai-bi;return String(a).localeCompare(String(b))}
 function _citCatRows(cits,topN){

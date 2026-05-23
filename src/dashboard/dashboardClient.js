@@ -2,6 +2,7 @@
 // generateDashboardHTML이 호출 시점에 모든 데이터를 주입한다 (클로저 인자 전달).
 // 빌드 단계는 추가하지 않음 — 게시 HTML에 그대로 임베드된다.
 import { BRAND_COLORS, REGIONS, FONT, RED, COMP, TREND_BRAND_COL } from './dashboardConsts.js'
+import { PROD_ID_TO_UL_CODE } from '../categoryMap.js'
 
 /**
  * @param {object} opts
@@ -564,7 +565,7 @@ ${(() => {
 var _products=${S(products.map(p => ({ id: p.id, bu: p.bu, kr: p.kr, en: p.en || p.kr, category: p.category || '', date: p.date || '', status: p.status, score: p.score || 0, prev: p.prev || 0, vsComp: p.vsComp || 0, compName: p.compName || '', compRatio: p.compRatio || 0, allScores: p.allScores || {}, monthlyScores: p.monthlyScores || [] })))};
 var _productsCnty=${S(productsCnty || [])};
 var _unlaunchedMap=${S(ulMap)};
-var _PROD_TO_UL={'tv':'TV','monitor':'IT','audio':'AV','washer':'WM','fridge':'REF','dw':'DW','vacuum':'VC','cooking':'COOKING','rac':'RAC','aircare':'AIRCARE'};
+var _PROD_TO_UL=${S(PROD_ID_TO_UL_CODE)};
 function _isUnlaunched(cnty,prodId){var code=_PROD_TO_UL[prodId]||prodId.toUpperCase();return!!_unlaunchedMap[cnty+'|'+code]}
 function _unlaunchedCntys(prodId){var code=_PROD_TO_UL[prodId]||prodId.toUpperCase();var r=[];Object.keys(_unlaunchedMap).forEach(function(k){if(k.endsWith('|'+code))r.push(k.split('|')[0])});return r}
 var _monthlyVis=${S(opts?.monthlyVis || [])};

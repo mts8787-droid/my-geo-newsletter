@@ -1482,17 +1482,15 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
     const code = UL_PROD_MAP[prodId] || (prodId || '').toUpperCase()
     return Object.keys(unlaunchedMap).filter(k => k.endsWith('|' + code)).map(k => k.split('|')[0])
   }
-  // 영문본 제품명 매핑 (p.id 또는 p.kr 기준)
-  const PROD_EN_NAME = {
-    tv: 'TV', monitor: 'Monitor', audio: 'Audio',
-    fridge: 'REF', washer: 'Washer', cooking: 'Cooking',
-    dw: 'DW', vacuum: 'VC', rac: 'RAC', aircare: 'Aircare',
-  }
-  const PROD_EN_BY_KR = {
-    'TV': 'TV', '모니터': 'Monitor', '오디오': 'Audio',
-    '냉장고': 'REF', '세탁기': 'Washer', 'Cooking': 'Cooking',
-    '식기세척기': 'DW', '청소기': 'VC', 'RAC': 'RAC', 'Aircare': 'Aircare',
-  }
+  // 영문본 제품명 매핑 (p.id 또는 p.kr 기준) — src/categoryMap.js single source
+  const PROD_EN_NAME = PROD_ID_TO_EN
+  // KR/EN 양쪽 키 모두 영문 매핑 (한글 카드 라벨 + 영문 카드 라벨 둘 다 lookup 가능)
+  const PROD_EN_BY_KR = Object.fromEntries(
+    Object.keys(PROD_ID_TO_KR).flatMap(id => [
+      [PROD_ID_TO_KR[id], PROD_ID_TO_EN[id]],
+      [PROD_ID_TO_EN[id], PROD_ID_TO_EN[id]],
+    ])
+  )
   function prodNameUL(p) {
     const baseName = lang === 'en'
       ? (PROD_EN_NAME[(p.id || '').toLowerCase()] || PROD_EN_BY_KR[p.kr] || p.kr)
