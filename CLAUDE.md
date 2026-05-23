@@ -32,9 +32,11 @@ src/
   visibility/   # Visibility 어드민 (React)
   tracker-v2/   # Progress Tracker (Recharts)
   monthly-report/ · weekly-report/
-  emailTemplate.js   # 뉴스레터 본문 (V1/V2/V3 카드, weeklyTrendHtml)
-  excelUtils.js      # 시트 파서 (parseSheet switch)
-  shared/            # Sidebar, api, constants, insightAgent 등
+  emailTemplate.js     # 뉴스레터 본문 (V1/V2/V3 카드, weeklyTrendHtml)
+  excelUtils.js        # 시트 파서 (parseSheetRows 라우터 + 18개 parser*)
+  categoryMap.js       # 카테고리 매핑 single source — 모든 prodId/UL_CODE 정의
+  sheetParserUtils.js  # 파서 공통 헬퍼 — _logFatal/_logWarn/assertRows/findHeaderIdx
+  shared/              # Sidebar, api, constants, insightAgent 등
 routes/
   admin-pages.js     # /admin/* HTML 라우트
   publish.js · published.js · ...
@@ -81,12 +83,18 @@ NEVER  body { overflow-x:hidden } / min-width (iframe 클립)
 NEVER  사용자 텍스트 임의 다듬기 — 그대로 사용
 NEVER  4자리 연도(\d{4}) 만 매칭 → 한국식 (\d{2})년 누락 → sort 깨짐
 NEVER  Anthropic non-streaming 으로 max_tokens 큰 호출 → 403
+NEVER  카테고리 매핑을 categoryMap.js 외 다른 파일에 정의 (STYLER 누락 회귀)
+NEVER  silent return {} (warn 없이) — _logWarn(scope, msg, ctx) 헬퍼 사용
+NEVER  파서 진입부 입력 검증 생략 — assertRows 라우터 가드 의존 가능 (외부 직접 호출 시 자체 가드)
 ```
 
 ## 작업 흐름 (Workflow)
 
 코드 변경 시:
 1. 영향 범위 확인 (서버/클라이언트 짝 함수 동시 수정 필요한지 등)
-2. 수정 → `npm test` (해당 영역)
-3. 자동 커밋 + 푸시
-4. 사용자에게 **재게시 안내** (파싱 변경 시 "구글 시트 동기화 → 웹사이트 게시")
+2. 카테고리/매핑 추가는 `src/categoryMap.js` 만. invariant 자동 검증 통과 확인 (`npm test` 시 categoryMap invariant 테스트 강제)
+3. 파서 신규 추가 시 `parseSheetRows` 라우터 등록 + `SHEET_NAMES` 등록 + 통합 테스트 1개 이상 (`src/excelUtils.test.js`)
+4. silent fallback 금지 — 모든 분기에 `_logWarn(scope, msg, ctx)` 또는 `_logFatal` 표면화
+5. 수정 → `npm test` (해당 영역)
+6. 자동 커밋 + 푸시
+7. 사용자에게 **재게시 안내** (파싱 변경 시 "구글 시트 동기화 → 웹사이트 게시")
