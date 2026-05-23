@@ -257,6 +257,14 @@ harnessRouter.get('/admin/harness/view', (req, res) => {
     })
   }
 
+  // .html 은 이미 디자인된 문서 — content 그대로 응답 (iframe 없이)
+  if (relPath.endsWith('.html')) {
+    const content = readSafe(relPath)
+    if (content == null) return res.status(404).send('file not found')
+    res.set('Content-Type', 'text/html; charset=utf-8')
+    return res.send(content)
+  }
+
   // .sh / .json / 외 → 코드 블록 페이지
   const content = readSafe(relPath)
   if (content == null) return res.status(404).send('file not found')
@@ -332,9 +340,9 @@ harnessRouter.get('/admin/harness', (req, res) => {
         </div>
         <div class="comp-desc">${escHtml(it.desc)}</div>
         <div class="comp-actions">
-          <a class="link" href="/admin/harness/view?path=${encodeURIComponent(it.file)}" target="_blank">렌더된 보기 (HTML) →</a>
+          <a class="link" href="/admin/harness/view?path=${encodeURIComponent(it.file)}" target="_blank">HTML (for Human) →</a>
           &nbsp;&middot;&nbsp;
-          <a class="link" href="/api/harness/file?path=${encodeURIComponent(it.file)}" target="_blank" style="color:#64748B">raw 보기</a>
+          <a class="link" href="/api/harness/file?path=${encodeURIComponent(it.file)}" target="_blank" style="color:#64748B">Markdown (For AI)</a>
         </div>
       </div>
     `).join('')
