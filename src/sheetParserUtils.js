@@ -9,26 +9,50 @@
 //   _logInfo  → undefined (호출자는 무시)
 // fatal vs warning 의 차이는 console 레벨과 의미 — fatal 은 파싱 자체 불가, warning 은 부분 손실.
 
+/**
+ * 파싱 자체 불가능 (시트 부재, 모든 컬럼 누락) 시 호출. console.error + 빈 객체 반환.
+ * @param {string} scope - 호출 위치 식별자 (예: 'parseUnlaunched')
+ * @param {string} msg - 사람이 읽을 메시지
+ * @param {object} [ctx] - 재현 컨텍스트 (rowIdx, raw, parsed 등)
+ * @returns {{}} 빈 객체 — 호출자가 그대로 return 가능
+ */
 export function _logFatal(scope, msg, ctx) {
   console.error(`[${scope}] FATAL:`, msg, ctx ?? '')
   return {}
 }
 
+/**
+ * 부분 처리 가능 (일부 행 손상, 헤더 일부 누락) 시 호출. console.warn + 빈 객체 반환.
+ * @param {string} scope - 호출 위치 식별자
+ * @param {string} msg - 사람이 읽을 메시지
+ * @param {object} [ctx] - 재현 컨텍스트
+ * @returns {{}} 빈 객체 — silent `return {}` 대체
+ */
 export function _logWarn(scope, msg, ctx) {
   console.warn(`[${scope}] WARN:`, msg, ctx ?? '')
   return {}
 }
 
+/**
+ * 정상 흐름 + 메타 정보 (파싱 N건 성공, 디폴트 적용 등) 추적. 항상 출력.
+ * @param {string} scope
+ * @param {string} msg
+ * @param {object} [ctx]
+ * @returns {void}
+ */
 export function _logInfo(scope, msg, ctx) {
-  // 정상 흐름 추적 — 항상 출력 (DEBUG 환경변수 미사용 환경 고려)
   console.log(`[${scope}]`, msg, ctx ?? '')
 }
 
 // ─── [1] DETECT — 입력 자체 검증 ─────────────────────────────────────────────
-// rows 가 배열인지, 빈 배열이 아닌지. 위반 시 fatal 로그 + true 반환 (호출자가 early return)
-// 사용 패턴:
-//   if (assertRowsFatal(rows, 'parseXxx', defaultResult)) return defaultResult
-// 호출자가 fallback 값을 정의해서 넘기면 그것을 _logFatal 에 컨텍스트로 표시.
+/**
+ * rows 가 배열인지, 빈 배열이 아닌지 검증. 위반 시 _logFatal + false 반환.
+ * @param {unknown} rows - 검증할 시트 행 배열
+ * @param {string} scope - 호출 위치
+ * @returns {boolean} true 면 통과, false 면 호출자가 early return 해야 함
+ * @example
+ *   if (!assertRows(rows, 'parseSheetRows:meta')) return {}
+ */
 export function assertRows(rows, scope) {
   if (!Array.isArray(rows)) {
     _logFatal(scope, 'invalid input: not an array', { type: typeof rows })
@@ -42,8 +66,16 @@ export function assertRows(rows, scope) {
 }
 
 // ─── 헤더 자동 탐지 — SKILL.md §5.2 ─────────────────────────────────────────
-// requiredCols: 각 요구사항이 RegExp 또는 string. 모든 요구사항이 한 행에서 만족되어야 매칭.
-// 못 찾으면 -1. 호출자가 _logWarn 으로 처리.
+/**
+ * 헤더 행을 자동 탐지. requiredCols 의 모든 패턴이 한 행에서 만족되어야 매칭 (AND).
+ * OR 매칭 / 단일 컬럼 / 복잡 분기 케이스는 본 함수 부적합 — rows.findIndex 직접 사용.
+ * @param {any[][]} rows - 시트 행 배열
+ * @param {(RegExp | string)[]} requiredCols - 매칭할 컬럼 패턴들
+ * @returns {number} 헤더 행 인덱스. 못 찾으면 -1.
+ * @example
+ *   const idx = findHeaderIdx(rows, [/^(country|county)$/, /^(launched|status)$/])
+ *   if (idx < 0) return _logWarn('parseXxx', 'header not found', { firstRows: rows.slice(0,5) })
+ */
 export function findHeaderIdx(rows, requiredCols) {
   return rows.findIndex(r => {
     if (!Array.isArray(r)) return false
@@ -55,8 +87,13 @@ export function findHeaderIdx(rows, requiredCols) {
 }
 
 // ─── Verify-After-Act — sync 종료 후 invariant 검증 ─────────────────────────
-// SKILL.md §7.4 패턴. syncFromGoogleSheets 종료 시 호출. issues 배열 반환 + warn 출력.
-// 호출자는 issues 를 UI 알림 등으로 surface 할 수 있음 (현재는 console 만).
+/**
+ * sync 결과의 invariant (products 유무, DEFAULT 보존, 라벨 폴백 등) 검증.
+ * SKILL.md §7.4 패턴. console.warn 출력 + issues 배열 반환.
+ * @param {object} result - syncFromGoogleSheets 의 반환 객체
+ * @param {string} [scope='sync'] - 로그 식별자
+ * @returns {string[]} issues — UI 알림 등으로 surface 가능 (빈 배열이면 통과)
+ */
 export function verifySyncResult(result, scope = 'sync') {
   const issues = []
   if (!result || typeof result !== 'object') {
@@ -98,15 +135,17 @@ export function verifySyncResult(result, scope = 'sync') {
 }
 
 // ─── [3] CAPTURE + [4] RECOVER — per-row 처리 안전 래퍼 ──────────────────────
-// 한 행 처리 중 throw 가 나도 후속 행 처리는 계속.
-// fn(r, rowIdx) 의 반환값이 truthy 면 ok, falsy 면 skip 으로 카운트.
-// catch 시 SKILL.md §6.3 표준 컨텍스트 dump.
-//
-// 사용 패턴:
-//   const { okCount, skipCount } = forEachRowSafe(data, headerIdx, 'parseXxx', (r, rowIdx) => {
-//     // ... row 처리, throw 가능, falsy 반환하면 skip 카운트
-//     return parsed  // truthy
-//   })
+/**
+ * forEach 의 try/catch 래퍼. 한 행 throw 가 후속 행 처리를 막지 않음.
+ * fn 반환값 truthy → okCount++, falsy → skipCount++. catch → skipCount++ + warn.
+ * SKILL.md §6.3 표준 컨텍스트 dump (rowIdx, raw, error).
+ * @template T
+ * @param {T[]} data - 처리할 행 배열
+ * @param {number} headerOffset - 헤더 행 인덱스 (시트 절대 rowIdx 계산용)
+ * @param {string} scope - 로그 식별자
+ * @param {(r: T, rowIdx: number) => unknown} fn - 행별 처리. truthy 반환=성공.
+ * @returns {{ okCount: number, skipCount: number }}
+ */
 export function forEachRowSafe(data, headerOffset, scope, fn) {
   let okCount = 0, skipCount = 0
   data.forEach((r, idx) => {

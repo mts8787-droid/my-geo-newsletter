@@ -125,9 +125,15 @@ if (_UNKNOWN_RESULTS.length) {
     { unknown: _UNKNOWN_RESULTS, validCodes: [..._UL_CODES] })
 }
 
-// 외부에서 호출 가능한 검증 헬퍼 (테스트용)
-// invariant 1: UL_CODE_NORMALIZE 결과값 ⊆ PROD_ID_TO_UL_CODE 의 값 집합
-// invariant 2: PROD_IDS 의 모든 prodId 가 매핑 4종 (KR/EN/UL_CODE/BU) 에 정의
+/**
+ * categoryMap.js 의 invariant 검증 (테스트·런타임 강제용).
+ * - invariant 1: UL_CODE_NORMALIZE 결과값 ⊆ PROD_ID_TO_UL_CODE 의 값 집합
+ *   (시트 raw → UL_CODE 정규화가 표준 코드로만 매핑되는지)
+ * - invariant 2: PROD_IDS 의 모든 prodId 가 매핑 4종 (KR/EN/UL_CODE/BU) 에 정의
+ *   (신규 prodId 추가 시 4곳 모두 채워야 통과)
+ * @returns {true} 모든 invariant 통과 시
+ * @throws {Error} 위반 시 메시지 + 위반 항목 포함
+ */
 export function assertCategoryMapInvariant() {
   const codes = new Set(Object.values(PROD_ID_TO_UL_CODE))
   const unknown = [...new Set(Object.values(UL_CODE_NORMALIZE))].filter(c => !codes.has(c))
