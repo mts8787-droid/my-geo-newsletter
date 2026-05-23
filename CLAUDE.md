@@ -46,13 +46,15 @@ docs/                # 인프라/스키마 참조 문서 (스킬은 .claude/skil
   settings.local.json
 ```
 
-## 스킬 (Skill — 작업별 매뉴얼)
+## 스킬 / 하네스 (작업별 매뉴얼)
 
-작업 영역에 따라 자동 참조:
+작업 영역에 따라 Claude Code 가 자동 참조:
 
-- `.claude/skills/design/SKILL.md` — 디자인 시스템 · SVG 차트 · 테이블 · 뉴스레터 카드 (V1/V2/V3)
-- `.claude/skills/data/SKILL.md` — 시트 파싱 · 날짜/숫자 정규화 · null vs 0 · 에러 캐칭 · self-logging
-- `.claude/skills/prompting/SKILL.md` — 에이전트형 도구가 작업할 때 참조하는 통합 매뉴얼
+- `.claude/skills/design/SKILL.md` — **디자인 하네스** · SVG 차트 · 테이블 · 뉴스레터 카드 (V1/V2/V3)
+- `.claude/skills/data/SKILL.md` — **데이터 하네스** · 시트 파싱 · 날짜/숫자 정규화 · null vs 0 · 5단계 ERROR CATCHING · self-logging
+- `.claude/skills/prompting/SKILL.md` — 에이전트형 도구가 본 레포에서 작업할 때 참조하는 통합 프롬프트
+
+전체 하네스 미러링 ZIP 다운로드: `/admin/harness` 페이지.
 
 ## 참조 문서 (Reference Docs)
 

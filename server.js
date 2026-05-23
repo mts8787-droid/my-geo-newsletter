@@ -31,6 +31,7 @@ import { observabilityRouter } from './routes/observability.js'
 import { bridgeRouter } from './routes/bridge.js'
 import { landingRouter } from './routes/landing.js'
 import { sheetDownloadRouter } from './routes/sheet-download.js'
+import { harnessRouter } from './routes/harness.js'
 
 dotenv.config()
 
@@ -160,6 +161,7 @@ app.use(archivesRouter)
 app.use(publishRouter)
 app.use(adminPagesRouter)
 app.use(observabilityRouter)
+app.use(harnessRouter)
 app.use(sheetDownloadRouter)
 app.use(bridgeRouter)
 app.use(spaStaticRouter)

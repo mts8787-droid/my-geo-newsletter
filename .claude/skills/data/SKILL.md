@@ -1,10 +1,12 @@
 ---
 name: data
-description: Google Sheets 데이터 파싱·정제·검증·동기화 작업 시 참조. parseSheet 시트 파서, parseMonthFromDate(한/영 날짜 포맷), 빈셀·null·0 구분, 헤더 자동탐지, 카테고리 ID 매핑, 시간순 정렬 invariant, 5단계 ERROR CATCHING(DETECT→CLASSIFY→CAPTURE→RECOVER→SURFACE), Self-Logging 하네스, Observability 패턴.
+description: 데이터 하네스 — Google Sheets 데이터 파싱·정제·검증·동기화 작업 시 참조. parseSheet 시트 파서, parseMonthFromDate(한/영 날짜 포맷), 빈셀·null·0 구분, 헤더 자동탐지, 카테고리 ID 매핑, 시간순 정렬 invariant, 5단계 ERROR CATCHING(DETECT→CLASSIFY→CAPTURE→RECOVER→SURFACE), Self-Logging 하네스, Observability 패턴.
 ---
 
-> 코딩 에이전트가 데이터 파싱·정제·검증·동기화 작업 시 참조하는 스킬셋.
-> 디자인/UI 는 별도 `.claude/skills/design/SKILL.md` 참조.
+# 데이터 하네스 (Data Harness)
+
+> 코딩 에이전트가 데이터 파싱·정제·검증·동기화 작업 시 참조하는 데이터 하네스.
+> 디자인/UI 는 별도 디자인 하네스 (`.claude/skills/design/SKILL.md`) 참조.
 
 ---
 
