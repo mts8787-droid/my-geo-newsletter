@@ -26,6 +26,12 @@ const HARNESS_COMPONENTS = [
     file: 'docs/agents/HARNESS.md',
     desc: '동일 내용 마크다운. docs/agents/ 미러 호스트의 진입점.',
   },
+  {
+    category: 'entry',
+    label: '차트 라이브러리 (정적 미러)',
+    file: 'docs/agents/CHART_LIBRARY.html',
+    desc: '14 차트 양식 + 툴팁 분류 카탈로그 (L-1~T-1) 정적 HTML. 라이브: /admin/chart-library.',
+  },
 
   // ─── 룰 (Rule) — 따라야 할 규칙. Markdown. 권고 (~80%) ─────────────────────
   {

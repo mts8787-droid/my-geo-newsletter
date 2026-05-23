@@ -1,0 +1,271 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chart Library — 14 차트 양식 분류 카탈로그</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0F172A;color:#E2E8F0;font-family:'LG Smart','Arial Narrow',Arial,sans-serif;padding:28px 32px;line-height:1.6;max-width:1400px;margin:0 auto}
+.top{display:flex;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:12px}
+.back{color:#CF0652;text-decoration:none;font-size:13px}
+h1{font-size:26px;color:#F8FAFC;margin-bottom:6px}
+.sub{font-size:13px;color:#64748B;margin-bottom:24px}
+.intro{background:#1E293B;border:1px solid #334155;border-radius:12px;padding:18px 22px;margin-bottom:24px;font-size:13px;color:#CBD5E1}
+.intro strong{color:#F8FAFC}
+.intro code{background:#0F172A;color:#F8C4D7;padding:2px 8px;border-radius:4px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px}
+.section{margin-bottom:28px}
+.section-title{font-size:18px;font-weight:700;color:#F8FAFC;border-left:3px solid;padding-left:12px;margin-bottom:6px}
+.section-desc{font-size:12px;color:#94A3B8;margin-bottom:14px;padding-left:15px}
+.chart-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+.chart-card{background:#1E293B;border:1px solid #334155;border-radius:10px;padding:14px 16px;transition:border-color .15s}
+.chart-card:hover{border-color:#CF0652}
+.chart-code{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;font-family:ui-monospace,Menlo,Consolas,monospace}
+.chart-name{font-size:14px;font-weight:700;color:#F8FAFC;margin-bottom:10px}
+.chart-svg{margin-bottom:10px}
+.chart-desc{font-size:12px;color:#CBD5E1;margin-bottom:8px;line-height:1.5}
+.chart-usage{font-size:11px;color:#94A3B8;margin-bottom:6px}
+.chart-usage strong{color:#CBD5E1}
+.chart-cmd{font-size:10px;color:#64748B;border-top:1px solid #334155;padding-top:6px;margin-top:6px}
+.chart-cmd code{background:#0F172A;color:#F8C4D7;padding:1px 6px;border-radius:3px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:10px}
+</style></head><body>
+
+<div class="top"><span style="font-size:11px;color:#64748B">정적 미러 — /admin/chart-library 의 그 시점 스냅샷</span></div>
+
+<h1>Chart Library — 차트 분류 카탈로그</h1>
+<p class="sub">14 차트 양식 + 1 직교 패턴 (툴팁) — 분류 코드 + 예시 SVG + 본 레포 사용 위치</p>
+
+<div class="intro">
+  <p><strong>분류 코드 체계</strong> — 스킬에서 차트 호출 시 사용:</p>
+  <p style="margin-top:8px;font-size:12px">
+    <code>L-1 ~ L-7</code> 라인 ·
+    <code>B-1, B-2</code> 바 ·
+    <code>M-1, M-2</code> 콤보 ·
+    <code>D-1</code> 도넛 ·
+    <code>R-1</code> 레이더 ·
+    <code>BU-1</code> 버블 ·
+    <code>T-1</code> 툴팁 (직교)
+  </p>
+  <p style="margin-top:10px;font-size:12px">사용 예시: <code>"L-1 차트 그려줘"</code> · <code>"B-2 그룹 스택 사용"</code> · <code>"M-1 콤보 차트 + T-1 툴팁"</code></p>
+  <p style="margin-top:10px;font-size:11px;color:#94A3B8">상세 SVG 패턴 · 데이터 shape · ANTI-PATTERN 은 <code>.claude/rules/design.md</code> §5.11 ~ §5.14 참조.</p>
+</div>
+
+<div class="section">
+      <h2 class="section-title" style="border-color:#60A5FA">L — 라인 차트</h2>
+      <p class="section-desc">Line — 시계열 / 트렌드</p>
+      <div class="chart-grid">
+      <div class="chart-card">
+        <div class="chart-code" style="color:#60A5FA">L-1</div>
+        <div class="chart-name">Basic Line</div>
+        <div class="chart-svg"><svg viewBox="0 0 220 80" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:220px;background:#0F172A;border-radius:6px">
+    <path d="M 10 60 L 50 40 L 90 50 L 130 30 L 170 35 L 210 20" stroke="#CF0652" stroke-width="1.5" fill="none"/>
+    <circle cx="10" cy="60" r="2.5" fill="#CF0652"/>
+    <circle cx="50" cy="40" r="2.5" fill="#CF0652"/>
+    <circle cx="90" cy="50" r="2.5" fill="#CF0652"/>
+    <circle cx="130" cy="30" r="2.5" fill="#CF0652"/>
+    <circle cx="170" cy="35" r="2.5" fill="#CF0652"/>
+    <circle cx="210" cy="20" r="2.5" fill="#CF0652"/>
+  </svg></div>
+        <div class="chart-desc">기본 직선 라인 — 가장 단순. 카드 미니 트렌드의 기본.</div>
+        <div class="chart-usage"><strong>사용:</strong> 대시보드 카드 미니 트렌드 (svgLine)</div>
+        <div class="chart-cmd">스킬 호출 예시: <code>"L-1 차트 그려줘"</code></div>
+      </div>
+    
+      <div class="chart-card">
+        <div class="chart-code" style="color:#60A5FA">L-2</div>
+        <div class="chart-name">Interpolation (곡선)</div>
+        <div class="chart-svg"><svg viewBox="0 0 220 80" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:220px;background:#0F172A;border-radius:6px">
+    <path d="M 10 60 Q 30 30 50 40 T 90 50 T 130 30 T 170 35 T 210 20" stroke="#CF0652" stroke-width="1.5" fill="none"/>
+    <circle cx="10" cy="60" r="2.5" fill="#CF0652"/>
+    <circle cx="90" cy="50" r="2.5" fill="#CF0652"/>
+    <circle cx="170" cy="35" r="2.5" fill="#CF0652"/>
+    <circle cx="210" cy="20" r="2.5" fill="#CF0652"/>
+  </svg></div>
+        <div class="chart-desc">Q/C Bezier 곡선 연결. 본 레포 미사용 (시각 일관성 위해 직선만).</div>
+        <div class="chart-usage"><strong>사용:</strong> 미사용</div>
+        <div class="chart-cmd">스킬 호출 예시: <code>"L-2 차트 그려줘"</code></div>
+      </div>
+    
+      <div class="chart-card">
+        <div class="chart-code" style="color:#60A5FA">L-3</div>
+        <div class="chart-name">Multi-axis</div>
+        <div class="chart-svg"><svg viewBox="0 0 220 80" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:220px;background:#0F172A;border-radius:6px">
+    <text x="2" y="14" font-size="8" fill="#60A5FA" font-family="Arial">%</text>
+    <text x="208" y="14" font-size="8" fill="#CF0652" font-family="Arial" text-anchor="start">N</text>
+    <path d="M 14 55 L 54 40 L 94 45 L 134 30 L 174 38 L 210 25" stroke="#60A5FA" stroke-width="1.5" fill="none"/>
+    <path d="M 14 30 L 54 50 L 94 35 L 134 60 L 174 45 L 210 55" stroke="#CF0652" stroke-width="1.5" fill="none" stroke-dasharray="3,3"/>
+  </svg></div>
+        <div class="chart-desc">좌/우 Y축 분리 — 단위 다른 두 series.</div>
+        <div class="chart-usage"><strong>사용:</strong> 미사용 (도입 후보: KPI % + 호출 수)</div>
+        <div class="chart-cmd">스킬 호출 예시: <code>"L-3 차트 그려줘"</code></div>
+      </div>
+    
+      <div class="chart-card">
+        <div class="chart-code" style="color:#60A5FA">L-4</div>
+        <div class="chart-name">Point Styling</div>
+        <div class="chart-svg"><svg viewBox="0 0 220 80" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:220px;background:#0F172A;border-radius:6px">
+    <path d="M 10 60 L 50 40 L 90 50 L 130 30 L 170 35 L 210 20" stroke="#CF0652" stroke-width="1.5" fill="none"/>
+    <circle cx="10" cy="60" r="2.5" fill="#CF0652"/>
+    <circle cx="50" cy="40" r="2.5" fill="#CF0652"/>
+    <circle cx="90" cy="50" r="4" fill="#000" stroke="#CF0652" stroke-width="2"/>
+    <circle cx="130" cy="30" r="2.5" fill="#CF0652"/>
+    <rect x="167" y="32" width="6" height="6" fill="#CF0652"/>
+    <polygon points="210,15 205,24 215,24" fill="#CF0652"/>
+  </svg></div>
+        <div class="chart-desc">점 모양 / 크기 / 색 커스터마이즈. 베이스라인 시작점만 사용.</div>
+        <div class="chart-usage"><strong>사용:</strong> 베이스라인 시작점 (검정 fill + 컬러 stroke)</div>
+        <div class="chart-cmd">스킬 호출 예시: <code>"L-4 차트 그려줘"</code></div>
+      </div>
+    
+      <div class="chart-card">
+        <div class="chart-code" style="color:#60A5FA">L-5</div>
+        <div class="chart-name">Segments</div>
+        <div class="chart-svg"><svg viewBox="0 0 220 80" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:220px;background:#0F172A;border-radius:6px">
+    <path d="M 10 60 L 50 50 L 90 55" stroke="#64748B" stroke-width="1.5" opacity="0.85" fill="none"/>
+    <circle cx="10" cy="60" r="2.5" fill="#64748B" opacity="0.85"/>
+    <circle cx="50" cy="50" r="2.5" fill="#64748B" opacity="0.85"/>
+    <line x1="110" y1="10" x2="110" y2="70" stroke="#64748B" stroke-width="1" stroke-dasharray="3,3"/>
+    <text x="113" y="20" font-size="7" fill="#64748B" font-family="Arial">*Baseline</text>
+    <path d="M 110 40 L 150 30 L 190 35 L 210 20" stroke="#CF0652" stroke-width="1.5" fill="none"/>
+    <circle cx="110" cy="40" r="4" fill="#000" stroke="#CF0652" stroke-width="2"/>
+    <circle cx="150" cy="30" r="2.5" fill="#CF0652"/>
+    <circle cx="190" cy="35" r="2.5" fill="#CF0652"/>
+    <circle cx="210" cy="20" r="2.5" fill="#CF0652"/>
+  </svg></div>
+        <div class="chart-desc">구간별 다른 시각 (색 / 두께 / dash). fadeBeforeIdx 가 이 컨셉.</div>
+        <div class="chart-usage"><strong>사용:</strong> 베이스라인 fade (pre 회색 / post 컬러)</div>
+        <div class="chart-cmd">스킬 호출 예시: <code>"L-5 차트 그려줘"</code></div>
+      </div>
+    
+      <div class="chart-card">
+        <div class="chart-code" style="color:#60A5FA">L-6</div>
+        <div class="chart-name">Stepped</div>
+        <div class="chart-svg"><svg viewBox="0 0 220 80" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:220px;background:#0F172A;border-radius:6px">
+    <path d="M 10 60 H 50 V 40 H 90 V 50 H 130 V 30 H 170 V 35 H 210" stroke="#CF0652" stroke-width="1.5" fill="none"/>
+    <circle cx="10" cy="60" r="2.5" fill="#CF0652"/>
+    <circle cx="50" cy="40" r="2.5" fill="#CF0652"/>
+    <circle cx="90" cy="50" r="2.5" fill="#CF0652"/>
+    <circle cx="130" cy="30" r="2.5" fill="#CF0652"/>
+    <circle cx="170" cy="35" r="2.5" fill="#CF0652"/>
+  </svg></div>
+        <div class="chart-desc">계단형 (직각 연결). step-change 데이터 시 적합.</div>
+        <div class="chart-usage"><strong>사용:</strong> 미사용 (도입 후보: 분기 데이터, 정책 변경 시점)</div>
+        <div class="chart-cmd">스킬 호출 예시: <code>"L-6 차트 그려줘"</code></div>
+      </div>
+    
+      <div class="chart-card">
+        <div class="chart-code" style="color:#60A5FA">L-7</div>
+        <div class="chart-name">Styling</div>
+        <div class="chart-svg"><svg viewBox="0 0 220 80" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:220px;background:#0F172A;border-radius:6px">
+    <path d="M 10 60 L 50 40 L 90 50 L 130 30 L 170 35 L 210 20" stroke="#CF0652" stroke-width="2" fill="none"/>
+    <path d="M 10 70 L 50 55 L 90 60 L 130 50 L 170 52 L 210 40" stroke="#60A5FA" stroke-width="1.5" stroke-dasharray="3,3" fill="none"/>
+    <path d="M 10 45 L 50 35 L 90 38 L 130 28 L 170 25 L 210 18" stroke="#64748B" stroke-width="1" opacity="0.85" fill="none"/>
+  </svg></div>
+        <div class="chart-desc">색 / 두께 / dash 패턴. dashed 베이스라인 수직선 / 비교군 회색.</div>
+        <div class="chart-usage"><strong>사용:</strong> dashed 베이스라인, 비교군 라인 회색</div>
+        <div class="chart-cmd">스킬 호출 예시: <code>"L-7 차트 그려줘"</code></div>
+      </div>
+    </div>
+    </div><div class="section">
+      <h2 class="section-title" style="border-color:#F472B6">B — 바 차트</h2>
+      <p class="section-desc">Bar — 카테고리 비교 / 누적</p>
+      <div class="chart-grid">
+      <div class="chart-card">
+        <div class="chart-code" style="color:#F472B6">B-1</div>
+        <div class="chart-name">Stacked Bar</div>
+        <div class="chart-svg"><svg viewBox="0 0 220 80" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:220px;background:#0F172A;border-radius:6px"><rect x="14" y="49" width="20" height="21" fill="#CF0652"/><rect x="14" y="38.5" width="20" height="10.5" fill="#60A5FA"/><rect x="14" y="30.1" width="20" height="8.399999999999999" fill="#4ADE80"/><rect x="42" y="52.5" width="20" height="17.5" fill="#CF0652"/><rect x="42" y="38.5" width="20" height="14" fill="#60A5FA"/><rect x="42" y="28" width="20" height="10.5" fill="#4ADE80"/><rect x="70" y="56" width="20" height="14" fill="#CF0652"/><rect x="70" y="38.5" width="20" height="17.5" fill="#60A5FA"/><rect x="70" y="25.9" width="20" height="12.6" fill="#4ADE80"/><rect x="98" y="45.5" width="20" height="24.5" fill="#CF0652"/><rect x="98" y="32.9" width="20" height="12.6" fill="#60A5FA"/><rect x="98" y="25.9" width="20" height="7" fill="#4ADE80"/><rect x="126" y="54.6" width="20" height="15.399999999999999" fill="#CF0652"/><rect x="126" y="39.2" width="20" height="15.399999999999999" fill="#60A5FA"/><rect x="126" y="25.200000000000003" width="20" height="14" fill="#4ADE80"/><rect x="154" y="50.400000000000006" width="20" height="19.599999999999998" fill="#CF0652"/><rect x="154" y="37.800000000000004" width="20" height="12.6" fill="#60A5FA"/><rect x="154" y="29.400000000000006" width="20" height="8.399999999999999" fill="#4ADE80"/><rect x="182" y="49" width="20" height="21" fill="#CF0652"/><rect x="182" y="35" width="20" height="14" fill="#60A5FA"/><rect x="182" y="24.5" width="20" height="10.5" fill="#4ADE80"/></svg></div>
+        <div class="chart-desc">단일 스택 — 카테고리당 1 컬럼 누적 (part-to-whole).</div>
+        <div class="chart-usage"><strong>사용:</strong> 미사용 (도입 후보: BU별 누적, Citation type 누적)</div>
+        <div class="chart-cmd">스킬 호출 예시: <code>"B-1 차트 그려줘"</code></div>
+      </div>
+    
+      <div class="chart-card">
+        <div class="chart-code" style="color:#F472B6">B-2</div>
+        <div class="chart-name">Stacked Groups</div>
+        <div class="chart-svg"><svg viewBox="0 0 220 80" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:220px;background:#0F172A;border-radius:6px"><rect x="12" y="52" width="8" height="18" fill="#CF0652"/><rect x="12" y="38.5" width="8" height="13.5" fill="#F472B6"/><rect x="40" y="47.5" width="8" height="22.5" fill="#CF0652"/><rect x="40" y="36.7" width="8" height="10.8" fill="#F472B6"/><rect x="68" y="53.8" width="8" height="16.2" fill="#CF0652"/><rect x="68" y="44.8" width="8" height="9" fill="#F472B6"/><rect x="96" y="50.2" width="8" height="19.8" fill="#CF0652"/><rect x="96" y="37.6" width="8" height="12.6" fill="#F472B6"/><rect x="124" y="55.6" width="8" height="14.4" fill="#CF0652"/><rect x="124" y="39.400000000000006" width="8" height="16.2" fill="#F472B6"/><rect x="152" y="52" width="8" height="18" fill="#CF0652"/><rect x="152" y="41.2" width="8" height="10.8" fill="#F472B6"/><rect x="180" y="48.4" width="8" height="21.6" fill="#CF0652"/><rect x="180" y="34.9" width="8" height="13.5" fill="#F472B6"/><rect x="22" y="53.8" width="8" height="16.2" fill="#60A5FA"/><rect x="50" y="50.2" width="8" height="19.8" fill="#60A5FA"/><rect x="78" y="56.5" width="8" height="13.5" fill="#60A5FA"/><rect x="106" y="47.5" width="8" height="22.5" fill="#60A5FA"/><rect x="134" y="52" width="8" height="18" fill="#60A5FA"/><rect x="162" y="55.6" width="8" height="14.4" fill="#60A5FA"/><rect x="190" y="50.2" width="8" height="19.8" fill="#60A5FA"/></svg></div>
+        <div class="chart-desc">카테고리당 N stack 가로 나란히 (그룹 간 비교).</div>
+        <div class="chart-usage"><strong>사용:</strong> 미사용 (도입 후보: KR vs EN, LG vs Samsung 누적)</div>
+        <div class="chart-cmd">스킬 호출 예시: <code>"B-2 차트 그려줘"</code></div>
+      </div>
+    </div>
+    </div><div class="section">
+      <h2 class="section-title" style="border-color:#A78BFA">M — 콤보 차트</h2>
+      <p class="section-desc">Mixed — Bar + Line 결합</p>
+      <div class="chart-grid">
+      <div class="chart-card">
+        <div class="chart-code" style="color:#A78BFA">M-1</div>
+        <div class="chart-name">Combo Bar+Line</div>
+        <div class="chart-svg"><svg viewBox="0 0 220 80" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:220px;background:#0F172A;border-radius:6px"><rect x="14" y="42" width="18" height="28" fill="#60A5FA" opacity="0.8"/><rect x="42" y="35" width="18" height="35" fill="#60A5FA" opacity="0.8"/><rect x="70" y="45.5" width="18" height="24.5" fill="#60A5FA" opacity="0.8"/><rect x="98" y="31.5" width="18" height="38.5" fill="#60A5FA" opacity="0.8"/><rect x="126" y="28" width="18" height="42" fill="#60A5FA" opacity="0.8"/><rect x="154" y="38.5" width="18" height="31.499999999999996" fill="#60A5FA" opacity="0.8"/><rect x="182" y="24.5" width="18" height="45.5" fill="#60A5FA" opacity="0.8"/><path d="M 23 35 L 51 28 L 79 38 L 107 25 L 135 22 L 163 30 L 191 18" stroke="#CF0652" stroke-width="2" fill="none"/><circle cx="23" cy="35" r="2.5" fill="#CF0652"/><circle cx="51" cy="28" r="2.5" fill="#CF0652"/><circle cx="79" cy="38" r="2.5" fill="#CF0652"/><circle cx="107" cy="25" r="2.5" fill="#CF0652"/><circle cx="135" cy="22" r="2.5" fill="#CF0652"/><circle cx="163" cy="30" r="2.5" fill="#CF0652"/><circle cx="191" cy="18" r="2.5" fill="#CF0652"/></svg></div>
+        <div class="chart-desc">Bar (절댓값) + Line (추세) 단일 Y축. 도입 후보: KPI 값 + 증가율.</div>
+        <div class="chart-usage"><strong>사용:</strong> 미사용</div>
+        <div class="chart-cmd">스킬 호출 예시: <code>"M-1 차트 그려줘"</code></div>
+      </div>
+    
+      <div class="chart-card">
+        <div class="chart-code" style="color:#A78BFA">M-2</div>
+        <div class="chart-name">Stacked Bar+Line</div>
+        <div class="chart-svg"><svg viewBox="0 0 220 80" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:220px;background:#0F172A;border-radius:6px"><rect x="14" y="56" width="18" height="14" fill="#CF0652" opacity="0.8"/><rect x="14" y="45.5" width="18" height="10.5" fill="#60A5FA" opacity="0.8"/><rect x="42" y="52.5" width="18" height="17.5" fill="#CF0652" opacity="0.8"/><rect x="42" y="39.9" width="18" height="12.6" fill="#60A5FA" opacity="0.8"/><rect x="70" y="57.4" width="18" height="12.6" fill="#CF0652" opacity="0.8"/><rect x="70" y="43.4" width="18" height="14" fill="#60A5FA" opacity="0.8"/><rect x="98" y="50.400000000000006" width="18" height="19.599999999999998" fill="#CF0652" opacity="0.8"/><rect x="98" y="39.900000000000006" width="18" height="10.5" fill="#60A5FA" opacity="0.8"/><rect x="126" y="54.6" width="18" height="15.399999999999999" fill="#CF0652" opacity="0.8"/><rect x="126" y="39.2" width="18" height="15.399999999999999" fill="#60A5FA" opacity="0.8"/><rect x="154" y="56" width="18" height="14" fill="#CF0652" opacity="0.8"/><rect x="154" y="43.4" width="18" height="12.6" fill="#60A5FA" opacity="0.8"/><rect x="182" y="52.5" width="18" height="17.5" fill="#CF0652" opacity="0.8"/><rect x="182" y="38.5" width="18" height="14" fill="#60A5FA" opacity="0.8"/><path d="M 23 40.5 L 51 34.900000000000006 L 79 38.400000000000006 L 107 34.900000000000006 L 135 34.2 L 163 38.400000000000006 L 191 33.5" stroke="#4ADE80" stroke-width="2" fill="none"/><circle cx="23" cy="40.5" r="2.5" fill="#4ADE80"/><circle cx="51" cy="34.900000000000006" r="2.5" fill="#4ADE80"/><circle cx="79" cy="38.400000000000006" r="2.5" fill="#4ADE80"/><circle cx="107" cy="34.900000000000006" r="2.5" fill="#4ADE80"/><circle cx="135" cy="34.2" r="2.5" fill="#4ADE80"/><circle cx="163" cy="38.400000000000006" r="2.5" fill="#4ADE80"/><circle cx="191" cy="33.5" r="2.5" fill="#4ADE80"/></svg></div>
+        <div class="chart-desc">누적 막대 + 합계 추세 라인 overlay. 도입 후보: BU 누적 + 평균 추세.</div>
+        <div class="chart-usage"><strong>사용:</strong> 미사용</div>
+        <div class="chart-cmd">스킬 호출 예시: <code>"M-2 차트 그려줘"</code></div>
+      </div>
+    </div>
+    </div><div class="section">
+      <h2 class="section-title" style="border-color:#FBBF24">D — 도넛 차트</h2>
+      <p class="section-desc">Doughnut — 비중 / 점유율</p>
+      <div class="chart-grid">
+      <div class="chart-card">
+        <div class="chart-code" style="color:#FBBF24">D-1</div>
+        <div class="chart-name">Doughnut</div>
+        <div class="chart-svg"><svg viewBox="0 0 220 80" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:220px;background:#0F172A;border-radius:6px"><path d="M 110.0 10.0 A 30 30 0 0 1 138.5 49.3 L 125.2 44.9 A 16 16 0 0 0 110.0 24.0 Z" fill="#CF0652"/><path d="M 138.5 49.3 A 30 30 0 0 1 100.7 68.5 L 105.1 55.2 A 16 16 0 0 0 125.2 44.9 Z" fill="#60A5FA"/><path d="M 100.7 68.5 A 30 30 0 0 1 80.0 40.0 L 94.0 40.0 A 16 16 0 0 0 105.1 55.2 Z" fill="#4ADE80"/><path d="M 80.0 40.0 A 30 30 0 0 1 92.4 15.7 L 100.6 27.1 A 16 16 0 0 0 94.0 40.0 Z" fill="#FBBF24"/><path d="M 92.4 15.7 A 30 30 0 0 1 110.0 10.0 L 110.0 24.0 A 16 16 0 0 0 100.6 27.1 Z" fill="#A78BFA"/></svg></div>
+        <div class="chart-desc">cutout 비중 시각화. 5 슬라이스 이하. 도입 후보: observability type 분포.</div>
+        <div class="chart-usage"><strong>사용:</strong> 미사용</div>
+        <div class="chart-cmd">스킬 호출 예시: <code>"D-1 차트 그려줘"</code></div>
+      </div>
+    </div>
+    </div><div class="section">
+      <h2 class="section-title" style="border-color:#4ADE80">R — 레이더 차트</h2>
+      <p class="section-desc">Radar — 다차원 metric</p>
+      <div class="chart-grid">
+      <div class="chart-card">
+        <div class="chart-code" style="color:#4ADE80">R-1</div>
+        <div class="chart-name">Radar (skip points)</div>
+        <div class="chart-svg"><svg viewBox="0 0 220 80" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:220px;background:#0F172A;border-radius:6px"><polygon points="110.0,30.0 118.7,35.0 118.7,45.0 110.0,50.0 101.3,45.0 101.3,35.0 " fill="none" stroke="#64748B" stroke-width="0.5" opacity="0.4"/><polygon points="110.0,20.0 127.3,30.0 127.3,50.0 110.0,60.0 92.7,50.0 92.7,30.0 " fill="none" stroke="#64748B" stroke-width="0.5" opacity="0.4"/><polygon points="110.0,10.0 136.0,25.0 136.0,55.0 110.0,70.0 84.0,55.0 84.0,25.0 " fill="none" stroke="#64748B" stroke-width="0.5" opacity="0.4"/><line x1="110" y1="40" x2="110.0" y2="10.0" stroke="#64748B" stroke-width="0.5" opacity="0.4"/><line x1="110" y1="40" x2="136.0" y2="25.0" stroke="#64748B" stroke-width="0.5" opacity="0.4"/><line x1="110" y1="40" x2="136.0" y2="55.0" stroke="#64748B" stroke-width="0.5" opacity="0.4"/><line x1="110" y1="40" x2="110.0" y2="70.0" stroke="#64748B" stroke-width="0.5" opacity="0.4"/><line x1="110" y1="40" x2="84.0" y2="55.0" stroke="#64748B" stroke-width="0.5" opacity="0.4"/><line x1="110" y1="40" x2="84.0" y2="25.0" stroke="#64748B" stroke-width="0.5" opacity="0.4"/><polygon points="110.0,16.0 125.6,31.0 133.4,53.5 110.0,55.0 91.8,50.5 87.9,27.2 " fill="#CF0652" fill-opacity="0.3" stroke="#CF0652" stroke-width="1.5"/></svg></div>
+        <div class="chart-desc">polar 다차원 metric 비교. 8 axis 이하 / 3 dataset 이하.</div>
+        <div class="chart-usage"><strong>사용:</strong> 미사용 (도입 후보: 카테고리별 8 metric 비교)</div>
+        <div class="chart-cmd">스킬 호출 예시: <code>"R-1 차트 그려줘"</code></div>
+      </div>
+    </div>
+    </div><div class="section">
+      <h2 class="section-title" style="border-color:#22D3EE">BU — 버블 차트</h2>
+      <p class="section-desc">Bubble — 3변수 (X/Y/r)</p>
+      <div class="chart-grid">
+      <div class="chart-card">
+        <div class="chart-code" style="color:#22D3EE">BU-1</div>
+        <div class="chart-name">Bubble</div>
+        <div class="chart-svg"><svg viewBox="0 0 220 80" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:220px;background:#0F172A;border-radius:6px"><circle cx="40" cy="50" r="8" fill="#CF0652" opacity="0.5" stroke="#CF0652" stroke-width="1.5"/><circle cx="80" cy="30" r="14" fill="#60A5FA" opacity="0.5" stroke="#60A5FA" stroke-width="1.5"/><circle cx="120" cy="45" r="6" fill="#4ADE80" opacity="0.5" stroke="#4ADE80" stroke-width="1.5"/><circle cx="160" cy="25" r="11" fill="#FBBF24" opacity="0.5" stroke="#FBBF24" stroke-width="1.5"/><circle cx="195" cy="55" r="9" fill="#A78BFA" opacity="0.5" stroke="#A78BFA" stroke-width="1.5"/></svg></div>
+        <div class="chart-desc">X / Y / radius 3차원. 본 레포 4분면 점도표 (C-15) 는 단순화 형태.</div>
+        <div class="chart-usage"><strong>사용:</strong> 미사용 (4분면 C-15 만)</div>
+        <div class="chart-cmd">스킬 호출 예시: <code>"BU-1 차트 그려줘"</code></div>
+      </div>
+    </div>
+    </div><div class="section">
+      <h2 class="section-title" style="border-color:#FCA5A5">T — 툴팁 (직교)</h2>
+      <p class="section-desc">Tooltip — 모든 차트에 추가 가능</p>
+      <div class="chart-grid">
+      <div class="chart-card">
+        <div class="chart-code" style="color:#FCA5A5">T-1</div>
+        <div class="chart-name">Tooltip (직교 패턴)</div>
+        <div class="chart-svg"><svg viewBox="0 0 220 80" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:220px;background:#0F172A;border-radius:6px">
+    <path d="M 10 60 L 50 40 L 90 50 L 130 30 L 170 35 L 210 20" stroke="#CF0652" stroke-width="1.5" fill="none"/>
+    <circle cx="130" cy="30" r="3.5" fill="#CF0652" stroke="#fff" stroke-width="1"/>
+    <rect x="140" y="10" width="60" height="22" rx="4" fill="#1E293B" stroke="#334155"/>
+    <text x="145" y="20" font-size="6" fill="#F8FAFC" font-family="Arial">Mar 2026</text>
+    <text x="145" y="28" font-size="6" fill="#CBD5E1" font-family="Arial">LG: 85.5%</text>
+    <line x1="130" y1="33" x2="140" y2="22" stroke="#334155" stroke-width="0.5"/>
+  </svg></div>
+        <div class="chart-desc">모든 차트와 엮어 사용. &lt;title&gt; 또는 Custom DOM. 차트 양식과 직교.</div>
+        <div class="chart-usage"><strong>사용:</strong> 향후 차트별 hover 정보 표시</div>
+        <div class="chart-cmd">스킬 호출 예시: <code>"T-1 차트 그려줘"</code></div>
+      </div>
+    </div>
+    </div>
+
+</body></html>

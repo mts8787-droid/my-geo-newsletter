@@ -912,6 +912,10 @@ a.harness-entry:hover{border-color:#CF0652;background:#4F2535}
         <div class="card-title">📦 Harness Mirror</div>
         <div class="card-desc">전체 하네스 (룰·훅·스킬·서브에이전트) 정리 페이지 + ZIP 다운로드 — 다른 프로젝트에 적용 가능</div>
       </a>
+      <a class="card harness-entry" href="/admin/chart-library" style="background:#1F2937;border-color:#60A5FA">
+        <div class="card-title" style="color:#93C5FD">📊 Chart Library</div>
+        <div class="card-desc">14 차트 양식 + 툴팁 카탈로그 (L-1~T-1) — 분류 코드 + 예시 SVG + 본 레포 사용 위치</div>
+      </a>
 
       <div class="section-title">실제 사용되는 하네스 도구</div>
       <a class="harness-file" href="/admin/harness/view?path=CLAUDE.md" target="_blank"><span class="harness-tag tag-rule">RULE</span> 프로젝트 헌법 <code>CLAUDE.md</code></a>
@@ -933,6 +937,7 @@ a.harness-entry:hover{border-color:#CF0652;background:#4F2535}
       <div class="section-title">미러 진입점</div>
       <a class="harness-file" href="/admin/harness/view?path=docs/agents/HARNESS.md" target="_blank"><span class="harness-tag tag-rule">MD</span> 전체 설명 (마크다운) <code>docs/agents/HARNESS.md</code></a>
       <a class="harness-file" href="/admin/harness/view?path=docs/agents/HARNESS.html" target="_blank"><span class="harness-tag tag-rule">HTML</span> 전체 설명 (HTML 소스) <code>docs/agents/HARNESS.html</code></a>
+      <a class="harness-file" href="/admin/harness/view?path=docs/agents/CHART_LIBRARY.html" target="_blank"><span class="harness-tag tag-rule">HTML</span> 차트 라이브러리 (정적 미러) <code>docs/agents/CHART_LIBRARY.html</code></a>
     </div>
   </div>
   <div class="footer">

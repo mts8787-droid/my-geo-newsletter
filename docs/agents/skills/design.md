@@ -10,6 +10,56 @@
 
 ---
 
+## skill: 차트 그리기 (분류 코드 L-1 ~ T-1)
+
+사용자가 "L-1 차트 그려줘" / "B-2 그룹 스택 사용" / "M-1 + T-1 (콤보 + 툴팁)" 같이 분류 코드로 요청할 때.
+
+```
+1. 분류 코드 식별:
+   · L-1 ~ L-7: 라인 (Basic, Interpolation, Multi-axis, Point Styling, Segments, Stepped, Styling)
+   · B-1, B-2: 바 (Stacked, Stacked Groups)
+   · M-1, M-2: 콤보 (Bar+Line, Stacked Bar+Line)
+   · D-1: 도넛
+   · R-1: 레이더 (skip points)
+   · BU-1: 버블 (X/Y/r)
+   · T-1: 툴팁 (직교 — 모든 차트와 조합 가능)
+2. 카탈로그 조회:
+   · `/admin/chart-library` (라이브) — 예시 SVG + 본 레포 사용 위치
+   · `docs/agents/CHART_LIBRARY.html` (정적 미러)
+   · `.claude/rules/design.md` §5.11~§5.14 — 상세 SVG 패턴 / 데이터 shape / ANTI-PATTERN
+3. 데이터 shape 결정:
+   · L-1: `[{label, data: [number]}, ...]`
+   · BU-1: `[{x, y, r}, ...]`
+   · D-1: `[{label, value, color}, ...]`
+   · R-1: `{labels: [metrics], datasets: [{label, data: [v]}]}`
+   · 외: 각 양식별 design.md §5.X 참조
+4. 본 레포 토큰 적용:
+   · 색상: BRAND_COLORS / STATUS / RED / COMP (`dashboardConsts.js`)
+   · 폰트: FONT (`'LGEIText','LG Smart',...`)
+   · letter-spacing: 한글 -0.5px, 영문 -0.9px (§4.4)
+5. SVG 구현 (또는 본 레포 헬퍼 사용):
+   · 단일 라인 (L-1) → svgLine() 활용
+   · 다중 라인 (L-5 segments 포함) → svgMultiLine() — fadeBeforeIdx 옵션
+   · 외 (D-1 / R-1 / BU-1) → 직접 SVG path / circle / polygon
+6. 서버 SVG ↔ 클라이언트 짝 동시 작성 (필터 시 재렌더 필요한 경우):
+   · 서버: dashboardSvg.js 또는 emailTemplate.js
+   · 클라이언트: dashboardClient.js 의 _miniSvg / _trendMultiSvg
+   · §5.8 짝 함수 매핑 표 참조
+7. T-1 툴팁 추가 (옵션 — 사용자가 함께 요청 시):
+   · 카드 미니 / vbar → <title> 엘리먼트
+   · 큰 트렌드 / 범프 / 도넛 → Custom DOM tooltip
+   · §5.13 참조
+8. KO/EN i18n 라벨 (T 객체)
+9. 시각 검증 — 어드민 프리뷰 (iframe srcdoc) 또는 dev server
+10. 신규 차트 추가 시 → `/admin/chart-library` 페이지의 CHART_CATALOG (scripts/render-chart-library.mjs) 에 항목 추가
+```
+
+**ANTI-PATTERN**:
+- 분류 코드 외 임의 변형 (예: "L-1 인데 곡선" — L-1 은 직선만, 곡선은 L-2)
+- 토큰 무시 하드코딩 색상 (BRAND_COLORS 외)
+- 서버만 SVG 갱신 후 클라이언트 짝 누락 → 필터 깨짐
+- 한 차트에 여러 분류 섞기 (M-1 콤보처럼 명시 양식만)
+
 ## skill: 신규 컴포넌트 (C-XX) 추가
 
 새로운 카드/차트/테이블 시각 컴포넌트를 추가할 때.

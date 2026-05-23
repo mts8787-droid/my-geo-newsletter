@@ -18,6 +18,7 @@
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
+import { renderChartLibraryHTML } from './render-chart-library.mjs'
 
 const __filename = fileURLToPath(import.meta.url)
 const ROOT = path.resolve(path.dirname(__filename), '..')
@@ -401,4 +402,9 @@ a{color:#60A5FA}
 
 fs.writeFileSync(path.join(ROOT, 'docs/agents/HARNESS.html'), HARNESS_HTML, 'utf8')
 
-console.log(`[sync-harness] 완료. 미러 ${okCount}개, skip ${skipCount}개. 정적 생성: HARNESS.md, HARNESS.html, hooks/data.md, hooks/design.md`)
+// ─── CHART_LIBRARY.html — 차트 분류 카탈로그 정적 미러 ──────────────────────
+// /admin/chart-library 페이지의 그 시점 스냅샷. 브라우저 더블클릭으로 인증 없이 열람 가능.
+fs.writeFileSync(path.join(ROOT, 'docs/agents/CHART_LIBRARY.html'),
+  renderChartLibraryHTML({ adminMode: false }), 'utf8')
+
+console.log(`[sync-harness] 완료. 미러 ${okCount}개, skip ${skipCount}개. 정적 생성: HARNESS.md, HARNESS.html, CHART_LIBRARY.html, hooks/data.md, hooks/design.md`)
