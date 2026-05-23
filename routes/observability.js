@@ -120,6 +120,40 @@ function renderDist(map, title){
   return renderSection(title, '<table><thead><tr><th>'+esc(title)+'</th><th style="text-align:right">횟수</th></tr></thead><tbody>'+rows+'</tbody></table>')
 }
 
+// Sync Health 섹션 — googleSheetsUtils.js 의 verifySyncResult 가 저장한 localStorage 기록 표시
+// 도메인 같은 origin 가정 (admin SPA 와 observability 페이지가 같은 server 호스트).
+function renderSyncSection(){
+  try {
+    var records = JSON.parse(localStorage.getItem('syncDiagnostics') || '[]')
+    if (!records.length) {
+      return renderSection('Sync Health (브라우저 로컬)',
+        '<p class="muted">아직 sync 기록 없음. 어드민(newsletter/visibility/dashboard)에서 "구글 시트 동기화" 후 다시 확인하세요.</p>')
+    }
+    var rows = records.map(function(r){
+      var date = fmtTime(r.ts)
+      var issuesHtml
+      if (!r.issues || !r.issues.length) {
+        issuesHtml = '<span class="badge badge-ok">✓ invariant 통과</span>'
+      } else {
+        issuesHtml = '<ul style="margin:4px 0 0 18px;color:#F59E0B">'
+          + r.issues.map(function(i){return '<li>'+esc(i)+'</li>'}).join('')
+          + '</ul>'
+      }
+      var sheetInfo = r.sheetCount ? ' ('+esc(r.sheetCount)+'개 시트)' : ''
+      return '<tr>'
+        + '<td>'+esc(date)+'</td>'
+        + '<td>'+esc(r.scope||'')+sheetInfo+'</td>'
+        + '<td>'+issuesHtml+'</td>'
+        + '</tr>'
+    }).join('')
+    var clearBtn = ' <button class="refresh" style="margin-left:8px;padding:4px 10px;font-size:11px" onclick="localStorage.removeItem(\'syncDiagnostics\');load()">기록 비우기</button>'
+    return renderSection('Sync Health (브라우저 로컬 — 최근 '+records.length+'건)'+clearBtn,
+      '<table><thead><tr><th>시각</th><th>scope</th><th>이슈</th></tr></thead><tbody>'+rows+'</tbody></table>')
+  } catch (e) {
+    return renderSection('Sync Health', '<p class="muted">로딩 오류: '+esc(e.message||'')+'</p>')
+  }
+}
+
 function renderFailures(fails){
   if(!fails.length) return renderSection('최근 실패 (없음)', '<p class="muted">실패한 호출이 없습니다.</p>')
   var rows = fails.map(function(f){
@@ -137,16 +171,18 @@ function renderFailures(fails){
 async function load(){
   var root = document.getElementById('root')
   root.innerHTML = '<p class="empty">로딩 중…</p>'
+  var syncHtml = renderSyncSection()  // localStorage 동기 읽기 — fetch 전에 즉시 렌더 가능
   var r = await fetch('/api/observability/runs?limit=1000', {headers: {'X-Requested-With':'XMLHttpRequest'}})
   if(r.status===401){location.href='/admin/login';return}
-  if(!r.ok){root.innerHTML='<p class="empty">로드 실패: '+r.status+'</p>';return}
+  if(!r.ok){root.innerHTML=syncHtml + '<p class="empty">AI 인사이트 로드 실패: '+r.status+'</p>';return}
   var j = await r.json()
   var s = j.summary
   if(!s.count){
-    root.innerHTML = '<div class="section"><p class="empty">아직 인사이트 호출 이력이 없습니다.<br>편집 페이지에서 AI 인사이트를 한 번 생성한 뒤 다시 확인하세요.</p></div>'
+    root.innerHTML = syncHtml + '<div class="section"><p class="empty">아직 인사이트 호출 이력이 없습니다.<br>편집 페이지에서 AI 인사이트를 한 번 생성한 뒤 다시 확인하세요.</p></div>'
     return
   }
-  var html = renderKpi(s)
+  var html = syncHtml
+    + renderKpi(s)
     + '<div class="row">'
       + renderSection('최근 24시간 호출 수 (시간별)', chartBars(j.hourly, 'total', '#CF0652', 120))
       + renderSection('최근 30일 비용 (일별 USD)', chartBars(j.daily, 'costUsd', '#22C55E', 120))

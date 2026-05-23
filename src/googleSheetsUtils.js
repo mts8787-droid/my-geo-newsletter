@@ -154,5 +154,19 @@ export async function syncFromGoogleSheets(sheetId, onProgress) {
   // issues 는 console.warn 으로 surface. UI 알림으로 노출하려면 caller 가 result._syncIssues 활용.
   result._syncIssues = verifySyncResult(result, 'syncFromGoogleSheets')
 
+  // localStorage 에 진단 기록 저장 (최근 10건) — /admin/observability 의 Sync Health 섹션이 읽음
+  if (typeof localStorage !== 'undefined') {
+    try {
+      const records = JSON.parse(localStorage.getItem('syncDiagnostics') || '[]')
+      records.unshift({
+        ts: Date.now(),
+        scope: 'syncFromGoogleSheets',
+        issues: result._syncIssues || [],
+        sheetCount: names.length,
+      })
+      localStorage.setItem('syncDiagnostics', JSON.stringify(records.slice(0, 10)))
+    } catch (e) { /* localStorage 미지원 환경 무시 */ }
+  }
+
   return result
 }
