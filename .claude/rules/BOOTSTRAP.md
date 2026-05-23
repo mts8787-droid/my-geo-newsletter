@@ -40,6 +40,23 @@
 
 [기본 흐름]: 옵션 A 시도 → 권한 거부 / 환경 제약 시 옵션 B 폴백
 
+[Claude 가 사용자에게 글로벌 헌법 병합 안내 — CLAUDE.md / AGENTS.md]:
+- 본 저장소의 `CLAUDE.md` 와 `AGENTS.md` 는 **프로젝트 헌법**.
+  Karpathy 4 원칙 같은 보편적 행동 규범은 **사용자의 글로벌 헌법** 에 두는 게 표준:
+  · Claude Code 글로벌: `~/.claude/CLAUDE.md`
+  · OpenAI Codex / Antigravity 글로벌: `~/.codex/AGENTS.md` 또는 `~/AGENTS.md` (도구별 규정 확인)
+
+- 사용자 글로벌 헌법 존재 여부 확인:
+  · `~/.claude/CLAUDE.md` 가 이미 있는지 — `test -f ~/.claude/CLAUDE.md && echo EXIST`
+  · `~/.codex/AGENTS.md` / `~/AGENTS.md` 도 동일 확인
+
+- 병합 전략 (사용자에게 선택 요청):
+  · 옵션 A — 글로벌에 등록: 본 저장소의 CLAUDE.md / AGENTS.md 중 보편 규범 (Karpathy 4 원칙, 자동 커밋·푸시 등) 만 추출해서 글로벌 헌법에 append.
+  · 옵션 B — 프로젝트 헌법에만 유지: 본 저장소 안에서만 적용 (다른 저장소에는 영향 X).
+  · 옵션 C — 기존 글로벌과 병합: 사용자가 이미 글로벌 헌법을 갖고 있으면, 본 저장소 규범과 충돌하는 부분 확인 후 사용자에게 병합 방안 제안 (덮어쓰기 / 섹션 추가 / skip).
+
+- ⚠ Claude 가 사용자 글로벌 헌법을 **임의로 수정하지 않음**. 항상 사용자에게 보여주고 확인 후 진행.
+
 [Claude 가 사용자에게 백업 안내 — TECHNIQUE-5]:
 - "본격 적용 전 백업해두시면 좋아요:
   · 회사 외부 정보 / 오픈소스 → GitHub (git init + push)

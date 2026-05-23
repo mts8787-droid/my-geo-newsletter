@@ -54,15 +54,15 @@ const HARNESS_COMPONENTS = [
   // ─── Rule — 따라야 할 규칙. Markdown. 권고 (~80%) ─────────────────────
   {
     category: 'rule',
-    label: '프로젝트 헌법',
+    label: 'CLAUDE.md',
     file: 'CLAUDE.md',
-    desc: '본 저장소에서 작업할 때 항상 로드되는 프로젝트 Rule. 하네스 4 개념 정의, 스택, NEVER Rule, 작업 흐름. (글로벌 헌법은 ~/.claude/CLAUDE.md)',
+    desc: '본 저장소의 "프로젝트 헌법" — Claude Code 가 본 저장소에서 작업할 때 항상 로드. 하네스 4 개념 정의·스택·NEVER Rule·작업 흐름. ⚠ 보편 규범 (Karpathy 4 원칙 등) 은 사용자 글로벌 헌법 ~/.claude/CLAUDE.md 에 등록 권장 — 다른 저장소에서도 동일 행동 규범 유지. 기존 글로벌이 있으면 사용자 확인 후 병합.',
   },
   {
     category: 'rule',
-    label: 'AGENTS.md (OpenAI Codex / Antigravity 자동 로드)',
+    label: 'AGENTS.md',
     file: 'AGENTS.md',
-    desc: 'OpenAI Codex 와 Antigravity 가 워크스페이스 루트의 AGENTS.md 를 자동 로드. CLAUDE.md (프로젝트 구체 지침) + Karpathy 4 원칙 융합 — 어느 에이전트를 호출해도 동일한 하네스 안에서 동작.',
+    desc: '본 저장소의 "에이전트 공통 헌법" — OpenAI Codex / Antigravity 가 워크스페이스 루트의 AGENTS.md 를 자동 로드. CLAUDE.md (프로젝트 구체 지침) + Karpathy 4 원칙 융합. ⚠ 보편 규범은 사용자 글로벌 ~/.codex/AGENTS.md 또는 ~/AGENTS.md 에 등록 권장 — 기존 글로벌이 있으면 사용자 확인 후 병합.',
   },
   {
     category: 'rule',
