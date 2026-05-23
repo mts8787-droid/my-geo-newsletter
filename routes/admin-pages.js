@@ -781,11 +781,12 @@ adminPagesRouter.get('/admin/', (req, res) => {
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{min-height:100vh;background:#0F172A;font-family:'LG Smart','Arial Narrow',Arial,sans-serif;color:#E2E8F0;padding:40px 24px}
-.wrap{max-width:1100px;margin:0 auto}
+.wrap{max-width:1400px;margin:0 auto}
 .header{text-align:center;margin-bottom:32px}
 .logo{font-size:11px;font-weight:700;letter-spacing:3px;color:#64748B;text-transform:uppercase;margin-bottom:14px}
 h1{font-size:24px;font-weight:700;color:#F8FAFC}
-.columns{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:32px}
+.columns{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;margin-bottom:32px}
+@media (max-width:1100px){.columns{grid-template-columns:1fr 1fr}}
 @media (max-width:780px){.columns{grid-template-columns:1fr}}
 .col{display:flex;flex-direction:column;gap:12px}
 a.card{display:block;background:#1E293B;border:1px solid #334155;border-radius:12px;padding:18px 20px;text-decoration:none;text-align:left;transition:border-color .2s,transform .15s}
@@ -794,6 +795,19 @@ a.card:hover{border-color:#CF0652;transform:translateY(-2px)}
 .card-desc{font-size:12px;color:#94A3B8;line-height:1.5}
 .section-title{font-size:12px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:2px;margin:6px 0 4px}
 .section-title:not(:first-child){margin-top:18px}
+.col-harness .section-title{color:#CF0652}
+.harness-entry{background:#3F1D2A;border:1px solid #7F1D3D;border-radius:12px;padding:14px 18px;margin-bottom:10px}
+.harness-entry .card-title{color:#FCA5A5}
+a.harness-entry:hover{border-color:#CF0652;background:#4F2535}
+.harness-file{display:flex;align-items:center;gap:8px;background:#1E293B;border:1px solid #334155;border-radius:8px;padding:8px 12px;text-decoration:none;color:#CBD5E1;font-size:12px;margin-bottom:6px;transition:border-color .15s}
+.harness-file:hover{border-color:#CF0652;color:#F8FAFC}
+.harness-file code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:10px;color:#94A3B8;background:#0F172A;padding:1px 6px;border-radius:3px;margin-left:auto}
+.harness-tag{font-size:9px;padding:1px 6px;border-radius:3px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px}
+.tag-rule{background:#1E3A5F;color:#60A5FA}
+.tag-hook{background:#3F1D1D;color:#F87171}
+.tag-skill{background:#1F3A1F;color:#4ADE80}
+.tag-agent{background:#3F2A1D;color:#FBBF24}
+.tag-config{background:#2A1F3F;color:#A78BFA}
 .footer{text-align:center}
 .logout{background:none;border:1px solid #334155;color:#64748B;padding:10px 24px;border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit}
 .logout:hover{border-color:#64748B;color:#94A3B8}
@@ -860,10 +874,6 @@ a.card:hover{border-color:#CF0652;transform:translateY(-2px)}
         <div class="card-title">Observability</div>
         <div class="card-desc">AI 인사이트 호출 토큰·비용·지연·실패 추적 (insight_runs 시각화)</div>
       </a>
-      <a class="card" href="/admin/harness">
-        <div class="card-title">Harness Mirror</div>
-        <div class="card-desc">Claude Code 하네스 (룰·스킬·훅·서브에이전트) 정리 + ZIP 다운로드 — 다른 프로젝트에 적용 가능</div>
-      </a>
       <a class="card" href="/admin/archives">
         <div class="card-title">Archives (학습 데이터)</div>
         <div class="card-desc">완성본 아카이빙 · AI 인사이트 생성 시 문체 학습 데이터로 활용</div>
@@ -894,16 +904,34 @@ a.card:hover{border-color:#CF0652;transform:translateY(-2px)}
         <div class="card-title">BigQuery Schema 계약</div>
         <div class="card-desc">두 레포(writer·reader) 간 단일 결합 지점 — 테이블·시스템 컬럼 규약</div>
       </a>
+    </div>
 
-      <div class="section-title">스킬</div>
-      <a class="card" href="/admin/design-skills">
-        <div class="card-title">Design Skills</div>
-        <div class="card-desc">디자인 토큰 + 그래프/테이블 컴포넌트 23종 (HTML/SVG 패턴) — 라이브 갤러리 포함</div>
+    <div class="col col-harness">
+      <div class="section-title">하네스 (Harness)</div>
+      <a class="card harness-entry" href="/admin/harness">
+        <div class="card-title">📦 Harness Mirror</div>
+        <div class="card-desc">전체 하네스 (룰·훅·스킬·서브에이전트) 정리 페이지 + ZIP 다운로드 — 다른 프로젝트에 적용 가능</div>
       </a>
-      <a class="card" href="/admin/data-skills">
-        <div class="card-title">Data Skills</div>
-        <div class="card-desc">데이터 파싱·정제·검증 + Sheets 동기화 + 카테고리 매핑 + 에러 처리</div>
-      </a>
+
+      <div class="section-title">실제 사용되는 하네스 도구</div>
+      <a class="harness-file" href="/api/harness/file?path=CLAUDE.md" target="_blank"><span class="harness-tag tag-rule">RULE</span> 프로젝트 헌법 <code>CLAUDE.md</code></a>
+      <a class="harness-file" href="/api/harness/file?path=.claude/rules/data.md" target="_blank"><span class="harness-tag tag-rule">RULE</span> 데이터 룰 <code>.claude/rules/data.md</code></a>
+      <a class="harness-file" href="/api/harness/file?path=.claude/rules/design.md" target="_blank"><span class="harness-tag tag-rule">RULE</span> 디자인 룰 <code>.claude/rules/design.md</code></a>
+
+      <a class="harness-file" href="/api/harness/file?path=.claude/settings.json" target="_blank"><span class="harness-tag tag-config">JSON</span> 훅 등록 <code>.claude/settings.json</code></a>
+      <a class="harness-file" href="/api/harness/file?path=.claude/hooks/syntax-check.sh" target="_blank"><span class="harness-tag tag-hook">HOOK</span> 신택스 검증 <code>syntax-check.sh</code></a>
+      <a class="harness-file" href="/api/harness/file?path=.claude/hooks/block-dist.sh" target="_blank"><span class="harness-tag tag-hook">HOOK</span> dist 차단 <code>block-dist.sh</code></a>
+      <a class="harness-file" href="/api/harness/file?path=.claude/hooks/README.md" target="_blank"><span class="harness-tag tag-hook">DOCS</span> 훅 설명서 <code>hooks/README.md</code></a>
+
+      <a class="harness-file" href="/admin/data-skills"><span class="harness-tag tag-skill">SKILL</span> 데이터 스킬 (라이브 페이지) <code>data/SKILL.md</code></a>
+      <a class="harness-file" href="/admin/design-skills"><span class="harness-tag tag-skill">SKILL</span> 디자인 스킬 (라이브 페이지) <code>design/SKILL.md</code></a>
+      <a class="harness-file" href="/api/harness/file?path=.claude/skills/prompting/SKILL.md" target="_blank"><span class="harness-tag tag-skill">SKILL</span> 프롬프팅 통합 <code>prompting/SKILL.md</code></a>
+
+      <a class="harness-file" href="/api/harness/file?path=.claude/agents/data-puller.md" target="_blank"><span class="harness-tag tag-agent">AGENT</span> 데이터 진단 <code>data-puller.md</code></a>
+
+      <div class="section-title">미러 진입점</div>
+      <a class="harness-file" href="/api/harness/file?path=docs/agents/HARNESS.md" target="_blank"><span class="harness-tag tag-rule">MD</span> 전체 설명 (마크다운) <code>docs/agents/HARNESS.md</code></a>
+      <a class="harness-file" href="/api/harness/file?path=docs/agents/HARNESS.html" target="_blank"><span class="harness-tag tag-rule">HTML</span> 전체 설명 (HTML 소스) <code>docs/agents/HARNESS.html</code></a>
     </div>
   </div>
   <div class="footer">
