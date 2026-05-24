@@ -460,7 +460,7 @@ export function renderChartLibraryHTML({ adminMode = false } = {}) {
 
   const topBar = adminMode
     ? '<div class="top"><a class="back" href="/hiro">← HIRO</a></div>'
-    : '<div class="top"><span style="font-size:11px;color:#64748B">정적 미러 — /hiro/chart-library 의 그 시점 스냅샷</span></div>'
+    : '<div class="top"><span style="font-size:12px;color:#64748B">정적 미러 — /hiro/chart-library 의 그 시점 스냅샷</span></div>'
 
   return `<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -470,26 +470,26 @@ ${themeStyle()}
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:var(--bg-primary);color:var(--text-primary);font-family:'LG Smart','Arial Narrow',Arial,sans-serif;padding:28px 32px;line-height:1.6;max-width:1400px;margin:0 auto;transition:background .2s,color .2s}
 .top{display:flex;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:12px}
-.back{color:var(--accent);text-decoration:none;font-size:13px}
+.back{color:var(--accent);text-decoration:none;font-size:14px}
 h1{font-size:26px;color:var(--text-strong);margin-bottom:6px}
-.sub{font-size:13px;color:var(--text-muted);margin-bottom:24px}
-.intro{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:18px 22px;margin-bottom:24px;font-size:13px;color:var(--text-desc)}
+.sub{font-size:14px;color:var(--text-muted);margin-bottom:24px}
+.intro{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:18px 22px;margin-bottom:24px;font-size:14px;color:var(--text-desc)}
 .intro strong{color:var(--text-strong)}
-.intro code{background:var(--bg-code);color:#F8C4D7;padding:2px 8px;border-radius:4px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px}
+.intro code{background:var(--bg-code);color:#F8C4D7;padding:2px 8px;border-radius:4px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px}
 .section{margin-bottom:28px}
 .section-title{font-size:18px;font-weight:700;color:var(--text-strong);border-left:3px solid;padding-left:12px;margin-bottom:6px}
-.section-desc{font-size:12px;color:var(--text-sub);margin-bottom:14px;padding-left:15px}
+.section-desc{font-size:13px;color:var(--text-sub);margin-bottom:14px;padding-left:15px}
 .chart-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
 .chart-card{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:14px 16px;transition:border-color .15s}
 .chart-card:hover{border-color:var(--accent)}
-.chart-code{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;font-family:ui-monospace,Menlo,Consolas,monospace}
-.chart-name{font-size:14px;font-weight:700;color:var(--text-strong);margin-bottom:10px}
+.chart-code{font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;font-family:ui-monospace,Menlo,Consolas,monospace}
+.chart-name{font-size:15px;font-weight:700;color:var(--text-strong);margin-bottom:10px}
 .chart-svg{margin-bottom:10px}
-.chart-desc{font-size:12px;color:var(--text-desc);margin-bottom:8px;line-height:1.5}
-.chart-usage{font-size:11px;color:var(--text-sub);margin-bottom:6px}
+.chart-desc{font-size:13px;color:var(--text-desc);margin-bottom:8px;line-height:1.5}
+.chart-usage{font-size:12px;color:var(--text-sub);margin-bottom:6px}
 .chart-usage strong{color:var(--text-desc)}
-.chart-cmd{font-size:11px;color:var(--text-muted);border-top:1px solid var(--border);padding-top:6px;margin-top:6px}
-.chart-cmd code{background:var(--bg-code);color:#F8C4D7;padding:1px 6px;border-radius:3px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11px}
+.chart-cmd{font-size:12px;color:var(--text-muted);border-top:1px solid var(--border);padding-top:6px;margin-top:6px}
+.chart-cmd code{background:var(--bg-code);color:#F8C4D7;padding:1px 6px;border-radius:3px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px}
 [data-theme="light"] .intro code,[data-theme="light"] .chart-cmd code{color:#BE123C}
 [data-theme="light"] [style*="color:#F8FAFC"]{color:#0F172A !important}
 [data-theme="light"] [style*="color:#CBD5E1"]{color:#334155 !important}
@@ -504,9 +504,9 @@ ${topBar}
 <p class="sub">차트 양식별 분류 코드 + 예시 SVG + 사용 위치</p>
 
 <div class="intro">
-  <p style="font-size:14px;color:#F8FAFC;margin-bottom:10px"><strong>이 페이지가 뭔가요?</strong> Claude 한테 "이런 차트 그려줘" 라고 부탁할 때 헷갈리지 않게 <strong>차트 종류마다 짧은 코드 (예: <code>L-1</code>, <code>BP-1</code>)</strong> 를 붙여놓은 카탈로그입니다.</p>
-  <p style="font-size:13px;color:#CBD5E1;margin-bottom:14px"><strong>왜 쓰나요?</strong> <code>"라인 차트 그려줘"</code> 라고만 하면 Claude 가 어떤 모양으로 그릴지 애매해요. <code>"L-1 라인 차트 그려줘"</code> 라고 하면 정확히 같은 양식으로 그립니다. 팀 내에서도 한 양식 = 한 코드.</p>
-  <ul style="margin-left:22px;font-size:13px;color:#CBD5E1;line-height:1.9">
+  <p style="font-size:15px;color:#F8FAFC;margin-bottom:10px"><strong>이 페이지가 뭔가요?</strong> Claude 한테 "이런 차트 그려줘" 라고 부탁할 때 헷갈리지 않게 <strong>차트 종류마다 짧은 코드 (예: <code>L-1</code>, <code>BP-1</code>)</strong> 를 붙여놓은 카탈로그입니다.</p>
+  <p style="font-size:14px;color:#CBD5E1;margin-bottom:14px"><strong>왜 쓰나요?</strong> <code>"라인 차트 그려줘"</code> 라고만 하면 Claude 가 어떤 모양으로 그릴지 애매해요. <code>"L-1 라인 차트 그려줘"</code> 라고 하면 정확히 같은 양식으로 그립니다. 팀 내에서도 한 양식 = 한 코드.</p>
+  <ul style="margin-left:22px;font-size:14px;color:#CBD5E1;line-height:1.9">
     <li><code>L</code> — 라인 (시계열 / 트렌드)</li>
     <li><code>B</code> — 바 스택 (누적 / part-to-whole)</li>
     <li><code>V</code> — 그룹 막대 vbar (카테고리별 N 개)</li>
@@ -519,7 +519,7 @@ ${topBar}
     <li><code>BU</code> — 버블 / 4분면 (X/Y 산점)</li>
     <li><code>T</code> — 툴팁 (직교 — 어느 차트에든 추가)</li>
   </ul>
-  <p style="margin-top:14px;font-size:12px;color:#94A3B8">카테고리 뒤 숫자는 양식 번호 (같은 카테고리 안 변형 구분). 예: <code>L-1</code> 기본 라인 / <code>L-5</code> 베이스라인 fade 라인.</p>
+  <p style="margin-top:14px;font-size:13px;color:#94A3B8">카테고리 뒤 숫자는 양식 번호 (같은 카테고리 안 변형 구분). 예: <code>L-1</code> 기본 라인 / <code>L-5</code> 베이스라인 fade 라인.</p>
 </div>
 
 ${sectionsHtml}

@@ -386,12 +386,12 @@ ${themeStyle()}
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:var(--bg-primary);color:var(--text-primary);font-family:'LG Smart','Arial Narrow',Arial,sans-serif;padding:24px 32px;line-height:1.5;transition:background .2s,color .2s}
 .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:12px}
-.back{color:var(--accent);text-decoration:none;font-size:13px}
-.btn{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:8px 16px;font-size:13px;font-weight:600;color:var(--text-primary);text-decoration:none}
+.back{color:var(--accent);text-decoration:none;font-size:14px}
+.btn{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:8px 16px;font-size:14px;font-weight:600;color:var(--text-primary);text-decoration:none}
 h1{font-size:18px;color:var(--text-strong);margin-bottom:6px}
-.meta{font-size:12px;color:var(--text-muted);margin-bottom:18px;font-family:ui-monospace,Menlo,Consolas,monospace}
-pre{background:var(--bg-code);border:1px solid var(--border);border-radius:12px;padding:20px 24px;overflow:auto;max-width:1100px;margin:0 auto;font-family:'Consolas','Courier New',ui-monospace,monospace;font-size:13px;line-height:1.6;color:var(--text-desc);white-space:pre-wrap;word-wrap:break-word}
-.lang{display:inline-block;background:var(--border);color:var(--text-sub);padding:2px 8px;border-radius:4px;font-size:11px;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
+.meta{font-size:13px;color:var(--text-muted);margin-bottom:18px;font-family:ui-monospace,Menlo,Consolas,monospace}
+pre{background:var(--bg-code);border:1px solid var(--border);border-radius:12px;padding:20px 24px;overflow:auto;max-width:1100px;margin:0 auto;font-family:'Consolas','Courier New',ui-monospace,monospace;font-size:14px;line-height:1.6;color:var(--text-desc);white-space:pre-wrap;word-wrap:break-word}
+.lang{display:inline-block;background:var(--border);color:var(--text-sub);padding:2px 8px;border-radius:4px;font-size:12px;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
 </style></head><body>
 ${themeToggleButton()}
 <div class="topbar">
@@ -466,38 +466,38 @@ ${themeStyle()}
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:var(--bg-primary);color:var(--text-primary);font-family:'LG Smart','Arial Narrow',Arial,sans-serif;padding:28px 32px;line-height:1.5;transition:background .2s,color .2s}
 .top{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:12px}
-.back{color:var(--accent);text-decoration:none;font-size:13px}
+.back{color:var(--accent);text-decoration:none;font-size:14px}
 h1{font-size:22px;color:var(--text-strong);margin-bottom:4px}
-.sub{font-size:13px;color:var(--text-muted);margin-bottom:18px}
-.intro{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:18px 22px;margin-bottom:18px;font-size:13px;color:var(--text-desc)}
+.sub{font-size:14px;color:var(--text-muted);margin-bottom:18px}
+.intro{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:18px 22px;margin-bottom:18px;font-size:14px;color:var(--text-desc)}
 .intro p{margin-bottom:6px}
 .intro strong{color:var(--text-strong)}
 .usage{background:var(--bg-card);border:1px solid var(--accent);border-radius:12px;padding:22px 26px;margin-bottom:18px;color:var(--text-desc)}
 [data-theme="dark"] .usage{background:linear-gradient(135deg,#1F2937 0%,#2A1F3F 100%)}
 .usage code{font-family:ui-monospace,Menlo,Consolas,monospace}
-.dl-btn{display:inline-block;background:var(--accent);color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:700;font-size:14px;margin-top:14px}
+.dl-btn{display:inline-block;background:var(--accent);color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:700;font-size:15px;margin-top:14px}
 .dl-btn:hover{background:#e0186b}
-.gh-btn{display:inline-block;background:#24292F;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:700;font-size:14px;margin-top:14px;margin-left:10px;border:1px solid #444C56}
+.gh-btn{display:inline-block;background:#24292F;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:700;font-size:15px;margin-top:14px;margin-left:10px;border:1px solid #444C56}
 .gh-btn:hover{background:#32383F}
 [data-theme="light"] .gh-btn{background:#1F2328;border-color:#1F2328}
 [data-theme="light"] .gh-btn:hover{background:#24292F}
 .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:24px}
 .card{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:14px 18px}
-.card .label{font-size:11px;color:var(--text-sub);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
+.card .label{font-size:12px;color:var(--text-sub);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
 .card .value{font-size:24px;font-weight:700;color:var(--text-strong)}
 .section{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin-bottom:18px}
-.section h2{font-size:15px;font-weight:700;color:var(--text-strong);margin-bottom:14px}
+.section h2{font-size:16px;font-weight:700;color:var(--text-strong);margin-bottom:14px}
 .comp{padding:12px 0;border-bottom:1px solid var(--border-soft)}
 .comp:last-child{border-bottom:0}
 .comp-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:6px}
-.comp-label{font-weight:700;color:var(--text-strong);font-size:14px}
-.comp-path{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11px;color:var(--text-sub);background:var(--bg-code);padding:2px 8px;border-radius:4px}
-.comp-size{font-size:11px;color:var(--text-muted);margin-left:auto}
-.comp-desc{font-size:12px;color:var(--text-desc);margin-bottom:6px}
-.comp-actions{font-size:12px}
+.comp-label{font-weight:700;color:var(--text-strong);font-size:15px}
+.comp-path{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;color:var(--text-sub);background:var(--bg-code);padding:2px 8px;border-radius:4px}
+.comp-size{font-size:12px;color:var(--text-muted);margin-left:auto}
+.comp-desc{font-size:13px;color:var(--text-desc);margin-bottom:6px}
+.comp-actions{font-size:13px}
 .link{color:var(--accent);text-decoration:none}
 .link:hover{text-decoration:underline}
-.note{background:#0F2A1F;border:1px solid #15803D;border-radius:8px;padding:12px 16px;margin-top:18px;font-size:13px;color:#86EFAC}
+.note{background:#0F2A1F;border:1px solid #15803D;border-radius:8px;padding:12px 16px;margin-top:18px;font-size:14px;color:#86EFAC}
 .note strong{color:#4ADE80}
 [data-theme="light"] .note{background:#ECFDF5;border-color:#A7F3D0;color:#166534}
 [data-theme="light"] .note strong{color:#15803D}
@@ -515,15 +515,15 @@ h1{font-size:22px;color:var(--text-strong);margin-bottom:4px}
 .hiro-hero .title{font-size:80px;font-weight:900;color:var(--text-strong);letter-spacing:-4px;line-height:0.95;margin-bottom:8px;font-family:'LG Smart','Arial Narrow',Arial,sans-serif}
 .hiro-hero .title .cat{font-size:60px;vertical-align:middle;margin-right:8px}
 .hiro-hero .fullname{font-size:18px;font-weight:600;color:var(--accent);letter-spacing:1.5px;margin-bottom:6px}
-.hiro-hero .tagline{font-size:13px;color:var(--text-sub);font-style:italic}
-.guide-inline{font-size:12px;color:var(--text-desc);margin-top:12px;margin-bottom:6px;padding:8px 12px;background:var(--bg-code);border-left:3px solid var(--accent);border-radius:4px}
+.hiro-hero .tagline{font-size:14px;color:var(--text-sub);font-style:italic}
+.guide-inline{font-size:13px;color:var(--text-desc);margin-top:12px;margin-bottom:6px;padding:8px 12px;background:var(--bg-code);border-left:3px solid var(--accent);border-radius:4px}
 .guide-inline strong{color:var(--text-strong)}
 .guide-inline a{color:var(--accent);text-decoration:none;font-weight:600;margin:0 2px}
 .guide-inline a:hover{text-decoration:underline}
 @media (max-width:780px){
   .hiro-hero .title{font-size:48px;letter-spacing:-2px}
   .hiro-hero .title .cat{font-size:40px}
-  .hiro-hero .fullname{font-size:14px;letter-spacing:1px}
+  .hiro-hero .fullname{font-size:15px;letter-spacing:1px}
 }
 </style></head><body>
 ${themeToggleButton()}
@@ -534,23 +534,23 @@ ${themeToggleButton()}
 </div>
 
 <div class="usage">
-  <h2 style="font-size:16px;color:#F8FAFC;margin-bottom:10px">📌 HIRO 란?</h2>
-  <p style="font-size:12px;color:#94A3B8;margin-bottom:10px;font-style:italic">🐈‍⬛ 히로 (HIRO) — 본 하네스의 마스코트 검은 고양이. 사용자가 부트스트랩 시나리오 같은 대화형 작업을 할 때 친근한 안내자로 말을 건넵니다.</p>
-  <p style="font-size:13px;color:#CBD5E1;margin-bottom:8px">HIRO optimizes how you build interactive dashboards with Claude Code. Instead of crafting data parsers, chart components, and newsletter templates from scratch every time, HIRO ships a reusable harness — <strong style="color:#F8FAFC">skills, rules, hooks, and scenario-based bootstraps</strong> — that turns the manual workflow into a standardized, repeatable pipeline.</p>
-  <p style="font-size:13px;color:#CBD5E1;margin-bottom:8px">HIRO 는 Claude Code 로 인터랙티브 대시보드를 만드는 작업을 최적화합니다. 데이터 파서, 차트 컴포넌트, 뉴스레터 템플릿을 매번 처음부터 짜는 대신, HIRO 는 재사용 가능한 하네스 — <strong style="color:#F8FAFC">스킬·룰·훅·시나리오 기반 부트스트랩</strong> — 를 제공해 수작업 워크플로우를 표준화된 반복 가능한 파이프라인으로 바꿉니다.</p>
-  <p style="font-size:13px;color:#CBD5E1;margin-bottom:8px">본 페이지는 <strong style="color:#F8FAFC">Claude Code 가 본 프로젝트에서 작업할 때 따르는 Rule·Hook·Skill·Sub-Agent 모두를 한곳에 모은 페이지</strong>.</p>
-  <ul style="font-size:13px;color:#CBD5E1;margin-left:22px;line-height:1.8;margin-bottom:12px">
+  <h2 style="font-size:17px;color:#F8FAFC;margin-bottom:10px">📌 HIRO 란?</h2>
+  <p style="font-size:13px;color:#94A3B8;margin-bottom:10px;font-style:italic">🐈‍⬛ 히로 (HIRO) — 본 하네스의 마스코트 검은 고양이. 사용자가 부트스트랩 시나리오 같은 대화형 작업을 할 때 친근한 안내자로 말을 건넵니다.</p>
+  <p style="font-size:14px;color:#CBD5E1;margin-bottom:8px">HIRO optimizes how you build interactive dashboards with Claude Code. Instead of crafting data parsers, chart components, and newsletter templates from scratch every time, HIRO ships a reusable harness — <strong style="color:#F8FAFC">skills, rules, hooks, and scenario-based bootstraps</strong> — that turns the manual workflow into a standardized, repeatable pipeline.</p>
+  <p style="font-size:14px;color:#CBD5E1;margin-bottom:8px">HIRO 는 Claude Code 로 인터랙티브 대시보드를 만드는 작업을 최적화합니다. 데이터 파서, 차트 컴포넌트, 뉴스레터 템플릿을 매번 처음부터 짜는 대신, HIRO 는 재사용 가능한 하네스 — <strong style="color:#F8FAFC">스킬·룰·훅·시나리오 기반 부트스트랩</strong> — 를 제공해 수작업 워크플로우를 표준화된 반복 가능한 파이프라인으로 바꿉니다.</p>
+  <p style="font-size:14px;color:#CBD5E1;margin-bottom:8px">본 페이지는 <strong style="color:#F8FAFC">Claude Code 가 본 프로젝트에서 작업할 때 따르는 Rule·Hook·Skill·Sub-Agent 모두를 한곳에 모은 페이지</strong>.</p>
+  <ul style="font-size:14px;color:#CBD5E1;margin-left:22px;line-height:1.8;margin-bottom:12px">
     <li><strong style="color:#F8FAFC">왜 필요한가?</strong> 시간이 흐르면 어떤 Rule이 있는지 기억이 안 남. 한 페이지에서 다 볼 수 있게.</li>
     <li><strong style="color:#F8FAFC">어떻게 만들어지나?</strong> 본 프로젝트의 <code>.claude/</code> + <code>CLAUDE.md</code> + <code>docs/agents/</code> 의 실시간 미러. 파일이 수정되면 자동 반영.</li>
     <li><strong style="color:#F8FAFC">무엇을 할 수 있나?</strong> (1) 각 파일 클릭해서 보기 (2) 전체 ZIP 다운로드해서 다른 프로젝트에 적용 (3) 팀원과 공유</li>
   </ul>
 
-  <h2 style="font-size:16px;color:#F8FAFC;margin-bottom:10px;margin-top:18px">💡 다른 프로젝트에 적용하기</h2>
-  <p style="font-size:13px;color:#CBD5E1;margin-bottom:10px">ZIP 받아서 새 프로젝트에 풀고 Claude 에게 <code style="background:#0F172A;padding:1px 6px;border-radius:3px">"이 하네스 적용해줘. 내 프로젝트는 [도메인]"</code> 하면 자동 셋업.</p>
-  <ol style="font-size:13px;color:#CBD5E1;margin-left:24px;line-height:1.8">
+  <h2 style="font-size:17px;color:#F8FAFC;margin-bottom:10px;margin-top:18px">💡 다른 프로젝트에 적용하기</h2>
+  <p style="font-size:14px;color:#CBD5E1;margin-bottom:10px">ZIP 받아서 새 프로젝트에 풀고 Claude 에게 <code style="background:#0F172A;padding:1px 6px;border-radius:3px">"이 하네스 적용해줘. 내 프로젝트는 [도메인]"</code> 하면 자동 셋업.</p>
+  <ol style="font-size:14px;color:#CBD5E1;margin-left:24px;line-height:1.8">
     <li><strong>전체 ZIP 다운로드</strong> (아래 빨간 버튼) — 원본 + 미러 모두 포함</li>
     <li>대상 프로젝트 <strong>루트에 압축 풀기</strong>:
-      <ul style="margin:6px 0 6px 20px;font-size:12px;color:#94A3B8;line-height:1.6">
+      <ul style="margin:6px 0 6px 20px;font-size:13px;color:#94A3B8;line-height:1.6">
         <li><code style="background:#0F172A;padding:1px 6px;border-radius:3px">CLAUDE.md</code> — 프로젝트 헌법 (Claude 가 항상 로드)</li>
         <li><code style="background:#0F172A;padding:1px 6px;border-radius:3px">.claude/</code> — settings.json + hooks/ + skills/ + agents/ + rules/</li>
         <li><code style="background:#0F172A;padding:1px 6px;border-radius:3px">docs/agents/</code> — 사람용 미러 (선택 — Claude Code 작동에는 불필요)</li>
@@ -558,7 +558,7 @@ ${themeToggleButton()}
     </li>
     <li><strong>실행 권한 부여</strong>: <code style="background:#0F172A;padding:2px 8px;border-radius:4px;color:#F8C4D7">chmod +x .claude/hooks/*.sh</code> — Hook이 실행되려면 필수</li>
     <li><strong>Claude Code 실행</strong> — 자동으로 로드:
-      <ul style="margin:6px 0 6px 20px;font-size:12px;color:#94A3B8;line-height:1.6">
+      <ul style="margin:6px 0 6px 20px;font-size:13px;color:#94A3B8;line-height:1.6">
         <li><span style="color:#60A5FA">RULE</span>: <code>CLAUDE.md</code> 항상 로드 + <code>.claude/rules/</code> 가 CLAUDE.md 명시 참조 시 로드</li>
         <li><span style="color:#F87171">HOOK</span>: <code>.claude/settings.json</code> 등록된 Hook이 Edit/Write 시점에 시스템 자동 실행 (100% 강제)</li>
         <li><span style="color:#4ADE80">SKILL</span>: <code>.claude/skills/&lt;name&gt;/SKILL.md</code> 의 frontmatter description 으로 트리거 — Claude 가 필요 시 자동 로드</li>
@@ -566,7 +566,7 @@ ${themeToggleButton()}
       </ul>
     </li>
     <li><strong>새 프로젝트에 맞게 커스터마이즈</strong>:
-      <ul style="margin:6px 0 6px 20px;font-size:12px;color:#94A3B8;line-height:1.6">
+      <ul style="margin:6px 0 6px 20px;font-size:13px;color:#94A3B8;line-height:1.6">
         <li>CLAUDE.md 의 NEVER Rule·스택·디렉토리 맵을 신규 프로젝트에 맞춰 수정</li>
         <li>.claude/rules/ 의 Rule 매뉴얼을 도메인에 맞게 (예: 다른 데이터 모델·다른 디자인 시스템)</li>
         <li>Hook 스크립트의 grep 패턴·차단 경로 조정</li>
@@ -574,7 +574,7 @@ ${themeToggleButton()}
       </ul>
     </li>
   </ol>
-  <p style="font-size:11px;color:#64748B;margin-top:10px;font-style:italic">미러는 <code>npm run sync:harness</code> 또는 <code>npm run build</code> (prebuild) 시 자동 갱신 — 본 ZIP 은 호출 시점에 항상 최신.</p>
+  <p style="font-size:12px;color:#64748B;margin-top:10px;font-style:italic">미러는 <code>npm run sync:harness</code> 또는 <code>npm run build</code> (prebuild) 시 자동 갱신 — 본 ZIP 은 호출 시점에 항상 최신.</p>
   <div class="guide-inline">
     ⚠️ <strong>다른 프로젝트에 HIRO 적용하기 전 — 3 가이드 반드시 정독</strong>:
     <a href="/hiro/view?path=docs/agents/HARNESS.html">전체 하네스 설명</a> ·
@@ -586,14 +586,14 @@ ${themeToggleButton()}
 </div>
 
 <div class="intro">
-  <h3 style="font-size:14px;color:#F8FAFC;margin-bottom:10px">🧩 하네스 4 개념</h3>
-  <ul style="font-size:13px;color:#CBD5E1;margin-left:22px;line-height:1.9">
+  <h3 style="font-size:15px;color:#F8FAFC;margin-bottom:10px">🧩 하네스 4 개념</h3>
+  <ul style="font-size:14px;color:#CBD5E1;margin-left:22px;line-height:1.9">
     <li><span style="color:#60A5FA;font-weight:700">Rule</span> — 따라야 할 규칙. Claude 가 권고로 따름 (~80%). 토큰·invariant·ANTI-PATTERN 매뉴얼.</li>
     <li><span style="color:#F87171;font-weight:700">Hook</span> — 절대 하면 안 되는 것. <strong>JSON 강제 (100%)</strong>. 시스템이 자동 차단.</li>
     <li><span style="color:#4ADE80;font-weight:700">Skill</span> — 자동 워크플로우 / 명령 조합. "L-1 차트 그려줘" 같은 호출.</li>
     <li><span style="color:#FBBF24;font-weight:700">Sub-Agent</span> — 특정 영역 분리 작업 (예: 데이터 진단 read-only).</li>
   </ul>
-  <p style="color:#94A3B8;font-size:11px;margin-top:10px">아래 목록의 각 컴포넌트를 클릭하면 디자인된 HTML 또는 원본 Markdown 으로 열람 가능.</p>
+  <p style="color:#94A3B8;font-size:12px;margin-top:10px">아래 목록의 각 컴포넌트를 클릭하면 디자인된 HTML 또는 원본 Markdown 으로 열람 가능.</p>
 </div>
 
 <div class="kpis">
