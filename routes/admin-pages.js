@@ -13,7 +13,7 @@ import { readModeSyncData, writeModeSyncData } from '../lib/storage.js'
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const PROJECT_ROOT = join(__dirname, '..')
 
-// ─── 테마 (다크/라이트) 공통 헬퍼 — /admin/, /admin/harness 에서 사용 ──────────
+// ─── 테마 (다크/라이트) 공통 헬퍼 — /admin/, /hiro 에서 사용 ──────────
 // CSS 변수로 색상 토큰 정의 + localStorage 'hiro-theme' 저장 + body 우측 상단 토글 버튼.
 // head 에 themeStyle(), body 맨 앞에 themeToggleButton() 삽입.
 export function themeStyle() {
@@ -968,53 +968,53 @@ ${themeToggleButton()}
 
     <div class="col col-harness">
       <div class="section-title">HIRO (Harness for Interactive Reporting Optimization)</div>
-      <a class="card harness-entry" href="/admin/harness">
+      <a class="card harness-entry" href="/hiro">
         <div class="card-title">🐈‍⬛ HIRO</div>
         <div class="card-desc">전체 하네스 (Rule·Hook·Skill·Sub-Agent) 정리 페이지 + ZIP 다운로드 — 다른 프로젝트에 적용 가능</div>
       </a>
-      <a class="card harness-entry" href="/admin/chart-library" style="background:#1F2937;border-color:#60A5FA">
+      <a class="card harness-entry" href="/hiro/chart-library" style="background:#1F2937;border-color:#60A5FA">
         <div class="card-title" style="color:#93C5FD">📊 Chart Library</div>
         <div class="card-desc">14 차트 양식 + 툴팁 카탈로그 (L-1~T-1) — 분류 코드 + 예시 SVG + 본 저장소 사용 위치</div>
       </a>
 
       <div class="section-title">실제 사용되는 하네스 도구</div>
-      <a class="harness-file" href="/admin/harness/view?path=CLAUDE.md" target="_blank"><span class="harness-tag tag-rule">RULE</span> <code>CLAUDE.md</code> — 본 저장소 프로젝트 헌법 (Claude Code 자동 로드). 보편 규범은 글로벌 <code>~/.claude/CLAUDE.md</code> 병합 권장.</a>
-      <a class="harness-file" href="/admin/harness/view?path=AGENTS.md" target="_blank"><span class="harness-tag tag-rule">RULE</span> <code>AGENTS.md</code> — Codex / Antigravity 자동 로드. 보편 규범은 글로벌 <code>~/.codex/AGENTS.md</code> 또는 <code>~/AGENTS.md</code> 병합 권장.</a>
-      <a class="harness-file" href="/admin/harness/view?path=.claude/rules/data.md" target="_blank"><span class="harness-tag tag-rule">RULE</span> 데이터 Rule <code>.claude/rules/data.md</code></a>
-      <a class="harness-file" href="/admin/harness/view?path=.claude/rules/design.md" target="_blank"><span class="harness-tag tag-rule">RULE</span> 디자인 Rule <code>.claude/rules/design.md</code></a>
-      <a class="harness-file" href="/admin/harness/view?path=.claude/rules/ai.md" target="_blank"><span class="harness-tag tag-rule">RULE</span> AI Rule <code>.claude/rules/ai.md</code></a>
-      <a class="harness-file" href="/admin/harness/view?path=.claude/rules/newsletter.md" target="_blank"><span class="harness-tag tag-rule">RULE</span> 뉴스레터 Rule <code>.claude/rules/newsletter.md</code></a>
-      <a class="harness-file" href="/admin/harness/view?path=.claude/rules/BOOTSTRAP.md" target="_blank"><span class="harness-tag tag-rule">RULE</span> 부트스트랩 시나리오 (Claude 용) <code>.claude/rules/BOOTSTRAP.md</code></a>
-      <a class="harness-file" href="/admin/harness/view?path=.claude/rules/BOOTSTRAP-newsletter.md" target="_blank"><span class="harness-tag tag-rule">RULE</span> 뉴스레터 부트스트랩 시나리오 <code>.claude/rules/BOOTSTRAP-newsletter.md</code></a>
-      <a class="harness-file" href="/admin/harness/view?path=docs/agents/HUMAN_GUIDE.md" target="_blank"><span class="harness-tag tag-rule">MD</span> 부트스트랩 사용법 (Usage Guide) <code>docs/agents/HUMAN_GUIDE.md</code></a>
+      <a class="harness-file" href="/hiro/view?path=CLAUDE.md" target="_blank"><span class="harness-tag tag-rule">RULE</span> <code>CLAUDE.md</code> — 본 저장소 프로젝트 헌법 (Claude Code 자동 로드). 보편 규범은 글로벌 <code>~/.claude/CLAUDE.md</code> 병합 권장.</a>
+      <a class="harness-file" href="/hiro/view?path=AGENTS.md" target="_blank"><span class="harness-tag tag-rule">RULE</span> <code>AGENTS.md</code> — Codex / Antigravity 자동 로드. 보편 규범은 글로벌 <code>~/.codex/AGENTS.md</code> 또는 <code>~/AGENTS.md</code> 병합 권장.</a>
+      <a class="harness-file" href="/hiro/view?path=.claude/rules/data.md" target="_blank"><span class="harness-tag tag-rule">RULE</span> 데이터 Rule <code>.claude/rules/data.md</code></a>
+      <a class="harness-file" href="/hiro/view?path=.claude/rules/design.md" target="_blank"><span class="harness-tag tag-rule">RULE</span> 디자인 Rule <code>.claude/rules/design.md</code></a>
+      <a class="harness-file" href="/hiro/view?path=.claude/rules/ai.md" target="_blank"><span class="harness-tag tag-rule">RULE</span> AI Rule <code>.claude/rules/ai.md</code></a>
+      <a class="harness-file" href="/hiro/view?path=.claude/rules/newsletter.md" target="_blank"><span class="harness-tag tag-rule">RULE</span> 뉴스레터 Rule <code>.claude/rules/newsletter.md</code></a>
+      <a class="harness-file" href="/hiro/view?path=.claude/rules/BOOTSTRAP.md" target="_blank"><span class="harness-tag tag-rule">RULE</span> 부트스트랩 시나리오 (Claude 용) <code>.claude/rules/BOOTSTRAP.md</code></a>
+      <a class="harness-file" href="/hiro/view?path=.claude/rules/BOOTSTRAP-newsletter.md" target="_blank"><span class="harness-tag tag-rule">RULE</span> 뉴스레터 부트스트랩 시나리오 <code>.claude/rules/BOOTSTRAP-newsletter.md</code></a>
+      <a class="harness-file" href="/hiro/view?path=docs/agents/HUMAN_GUIDE.md" target="_blank"><span class="harness-tag tag-rule">MD</span> 부트스트랩 사용법 (Usage Guide) <code>docs/agents/HUMAN_GUIDE.md</code></a>
 
-      <a class="harness-file" href="/admin/harness/view?path=.claude/hooks/README.md" target="_blank"><span class="harness-tag tag-hook">GUIDE</span> Hook 가이드 (사람용) <code>hooks/README.md</code></a>
-      <a class="harness-file" href="/admin/harness/view?path=.claude/settings.json" target="_blank"><span class="harness-tag tag-config">JSON (For AI)</span> <code>.claude/settings.json</code></a>
-      <a class="harness-file" href="/admin/harness/view?path=.claude/hooks/syntax-check.sh" target="_blank"><span class="harness-tag tag-config">Bash (For AI)</span> <code>syntax-check.sh</code></a>
-      <a class="harness-file" href="/admin/harness/view?path=.claude/hooks/block-dist.sh" target="_blank"><span class="harness-tag tag-config">Bash (For AI)</span> <code>block-dist.sh</code></a>
-      <a class="harness-file" href="/admin/harness/view?path=.claude/hooks/newsletter-guard.sh" target="_blank"><span class="harness-tag tag-config">Bash (For AI)</span> <code>newsletter-guard.sh</code> — 이메일 호환 NEVER 자동 차단</a>
+      <a class="harness-file" href="/hiro/view?path=.claude/hooks/README.md" target="_blank"><span class="harness-tag tag-hook">GUIDE</span> Hook 가이드 (사람용) <code>hooks/README.md</code></a>
+      <a class="harness-file" href="/hiro/view?path=.claude/settings.json" target="_blank"><span class="harness-tag tag-config">JSON (For AI)</span> <code>.claude/settings.json</code></a>
+      <a class="harness-file" href="/hiro/view?path=.claude/hooks/syntax-check.sh" target="_blank"><span class="harness-tag tag-config">Bash (For AI)</span> <code>syntax-check.sh</code></a>
+      <a class="harness-file" href="/hiro/view?path=.claude/hooks/block-dist.sh" target="_blank"><span class="harness-tag tag-config">Bash (For AI)</span> <code>block-dist.sh</code></a>
+      <a class="harness-file" href="/hiro/view?path=.claude/hooks/newsletter-guard.sh" target="_blank"><span class="harness-tag tag-config">Bash (For AI)</span> <code>newsletter-guard.sh</code> — 이메일 호환 NEVER 자동 차단</a>
 
       <a class="harness-file" href="/admin/data-skills"><span class="harness-tag tag-skill">INDEX</span> data (인덱스 — 라이브 페이지) <code>data/SKILL.md</code></a>
-      <a class="harness-file" href="/admin/harness/view?path=.claude/skills/data-add/SKILL.md" target="_blank"><span class="harness-tag tag-skill">SKILL</span> data-add — 시트·카테고리 신규 추가 <code>data-add/SKILL.md</code></a>
-      <a class="harness-file" href="/admin/harness/view?path=.claude/skills/data-debug/SKILL.md" target="_blank"><span class="harness-tag tag-skill">SKILL</span> data-debug — 회귀·sync 진단 <code>data-debug/SKILL.md</code></a>
-      <a class="harness-file" href="/admin/harness/view?path=.claude/skills/data-refactor/SKILL.md" target="_blank"><span class="harness-tag tag-skill">SKILL</span> data-refactor — 분할·매핑·로깅 품질 <code>data-refactor/SKILL.md</code></a>
+      <a class="harness-file" href="/hiro/view?path=.claude/skills/data-add/SKILL.md" target="_blank"><span class="harness-tag tag-skill">SKILL</span> data-add — 시트·카테고리 신규 추가 <code>data-add/SKILL.md</code></a>
+      <a class="harness-file" href="/hiro/view?path=.claude/skills/data-debug/SKILL.md" target="_blank"><span class="harness-tag tag-skill">SKILL</span> data-debug — 회귀·sync 진단 <code>data-debug/SKILL.md</code></a>
+      <a class="harness-file" href="/hiro/view?path=.claude/skills/data-refactor/SKILL.md" target="_blank"><span class="harness-tag tag-skill">SKILL</span> data-refactor — 분할·매핑·로깅 품질 <code>data-refactor/SKILL.md</code></a>
       <a class="harness-file" href="/admin/design-skills"><span class="harness-tag tag-skill">INDEX</span> design (인덱스 — 라이브 페이지) <code>design/SKILL.md</code></a>
-      <a class="harness-file" href="/admin/harness/view?path=.claude/skills/design-chart/SKILL.md" target="_blank"><span class="harness-tag tag-skill">SKILL</span> design-chart — 차트(L-1~T-1) + 차트+표 결합 <code>design-chart/SKILL.md</code></a>
-      <a class="harness-file" href="/admin/harness/view?path=.claude/skills/design-component/SKILL.md" target="_blank"><span class="harness-tag tag-skill">SKILL</span> design-component — 카드·컴포넌트(C-XX) 추가 <code>design-component/SKILL.md</code></a>
-      <a class="harness-file" href="/admin/harness/view?path=.claude/skills/design-tune/SKILL.md" target="_blank"><span class="harness-tag tag-skill">SKILL</span> design-tune — 호환·KO/EN·회귀 디버깅 <code>design-tune/SKILL.md</code></a>
-      <a class="harness-file" href="/admin/harness/view?path=.claude/skills/newsletter/SKILL.md" target="_blank"><span class="harness-tag tag-skill">INDEX</span> newsletter (인덱스) <code>newsletter/SKILL.md</code></a>
-      <a class="harness-file" href="/admin/harness/view?path=.claude/skills/newsletter-make/SKILL.md" target="_blank"><span class="harness-tag tag-skill">SKILL</span> newsletter-make — 신규 발행본·섹션 추가 <code>newsletter-make/SKILL.md</code></a>
-      <a class="harness-file" href="/admin/harness/view?path=.claude/skills/newsletter-debug/SKILL.md" target="_blank"><span class="harness-tag tag-skill">SKILL</span> newsletter-debug — 회귀·호환 디버깅 <code>newsletter-debug/SKILL.md</code></a>
-      <a class="harness-file" href="/admin/harness/view?path=.claude/skills/newsletter-send/SKILL.md" target="_blank"><span class="harness-tag tag-skill">SKILL</span> newsletter-send — 발송 전 검증·SMTP <code>newsletter-send/SKILL.md</code></a>
-      <a class="harness-file" href="/admin/harness/view?path=.claude/skills/prompting/SKILL.md" target="_blank"><span class="harness-tag tag-skill">SKILL</span> 프롬프팅 통합 <code>prompting/SKILL.md</code></a>
-      <a class="harness-file" href="/admin/harness/view?path=.claude/skills/onboard/SKILL.md" target="_blank"><span class="harness-tag tag-skill">SKILL</span> Onboard (하네스 적용) <code>onboard/SKILL.md</code></a>
-      <a class="harness-file" href="/admin/harness/view?path=.claude/skills/debug/SKILL.md" target="_blank"><span class="harness-tag tag-skill">SKILL</span> Debug (디버깅 시나리오) <code>debug/SKILL.md</code></a>
+      <a class="harness-file" href="/hiro/view?path=.claude/skills/design-chart/SKILL.md" target="_blank"><span class="harness-tag tag-skill">SKILL</span> design-chart — 차트(L-1~T-1) + 차트+표 결합 <code>design-chart/SKILL.md</code></a>
+      <a class="harness-file" href="/hiro/view?path=.claude/skills/design-component/SKILL.md" target="_blank"><span class="harness-tag tag-skill">SKILL</span> design-component — 카드·컴포넌트(C-XX) 추가 <code>design-component/SKILL.md</code></a>
+      <a class="harness-file" href="/hiro/view?path=.claude/skills/design-tune/SKILL.md" target="_blank"><span class="harness-tag tag-skill">SKILL</span> design-tune — 호환·KO/EN·회귀 디버깅 <code>design-tune/SKILL.md</code></a>
+      <a class="harness-file" href="/hiro/view?path=.claude/skills/newsletter/SKILL.md" target="_blank"><span class="harness-tag tag-skill">INDEX</span> newsletter (인덱스) <code>newsletter/SKILL.md</code></a>
+      <a class="harness-file" href="/hiro/view?path=.claude/skills/newsletter-make/SKILL.md" target="_blank"><span class="harness-tag tag-skill">SKILL</span> newsletter-make — 신규 발행본·섹션 추가 <code>newsletter-make/SKILL.md</code></a>
+      <a class="harness-file" href="/hiro/view?path=.claude/skills/newsletter-debug/SKILL.md" target="_blank"><span class="harness-tag tag-skill">SKILL</span> newsletter-debug — 회귀·호환 디버깅 <code>newsletter-debug/SKILL.md</code></a>
+      <a class="harness-file" href="/hiro/view?path=.claude/skills/newsletter-send/SKILL.md" target="_blank"><span class="harness-tag tag-skill">SKILL</span> newsletter-send — 발송 전 검증·SMTP <code>newsletter-send/SKILL.md</code></a>
+      <a class="harness-file" href="/hiro/view?path=.claude/skills/prompting/SKILL.md" target="_blank"><span class="harness-tag tag-skill">SKILL</span> 프롬프팅 통합 <code>prompting/SKILL.md</code></a>
+      <a class="harness-file" href="/hiro/view?path=.claude/skills/onboard/SKILL.md" target="_blank"><span class="harness-tag tag-skill">SKILL</span> Onboard (하네스 적용) <code>onboard/SKILL.md</code></a>
+      <a class="harness-file" href="/hiro/view?path=.claude/skills/debug/SKILL.md" target="_blank"><span class="harness-tag tag-skill">SKILL</span> Debug (디버깅 시나리오) <code>debug/SKILL.md</code></a>
 
-      <a class="harness-file" href="/admin/harness/view?path=.claude/agents/data-puller.md" target="_blank"><span class="harness-tag tag-agent">AGENT</span> 데이터 진단 <code>data-puller.md</code></a>
+      <a class="harness-file" href="/hiro/view?path=.claude/agents/data-puller.md" target="_blank"><span class="harness-tag tag-agent">AGENT</span> 데이터 진단 <code>data-puller.md</code></a>
 
       <div class="section-title">가이드 (개요 + 미러)</div>
-      <a class="harness-file" href="/admin/harness/view?path=docs/agents/HARNESS.html" target="_blank"><span class="harness-tag tag-rule">HTML</span> 전체 하네스 설명 (같은 내용 .md 도 있음) <code>docs/agents/HARNESS.html</code></a>
-      <a class="harness-file" href="/admin/harness/view?path=docs/agents/CHART_LIBRARY.html" target="_blank"><span class="harness-tag tag-rule">HTML</span> 차트 라이브러리 (정적 미러) <code>docs/agents/CHART_LIBRARY.html</code></a>
+      <a class="harness-file" href="/hiro/view?path=docs/agents/HARNESS.html" target="_blank"><span class="harness-tag tag-rule">HTML</span> 전체 하네스 설명 (같은 내용 .md 도 있음) <code>docs/agents/HARNESS.html</code></a>
+      <a class="harness-file" href="/hiro/view?path=docs/agents/CHART_LIBRARY.html" target="_blank"><span class="harness-tag tag-rule">HTML</span> 차트 라이브러리 (정적 미러) <code>docs/agents/CHART_LIBRARY.html</code></a>
     </div>
   </div>
   <div class="footer">

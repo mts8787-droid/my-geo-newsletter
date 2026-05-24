@@ -133,7 +133,11 @@
       "Bash(.claude/hooks/newsletter-guard.sh)",
       "Bash(echo \"exit=$?\")",
       "Bash(rm -rf /tmp/test)",
-      "Bash(mkdir -p /tmp/test/src)"
+      "Bash(mkdir -p /tmp/test/src)",
+      "Bash(sed -i.bak -e 's|/admin/harness/view|/hiro/view|g' -e 's|/admin/harness|/hiro|g' -e 's|/api/harness/|/api/hiro/|g' routes/harness.js)",
+      "Bash(sed -i.bak -e 's|/admin/harness/view|/hiro/view|g' -e 's|/admin/harness|/hiro|g' -e 's|/api/harness/|/api/hiro/|g' -e 's|/admin/chart-library|/hiro/chart-library|g' routes/admin-pages.js)",
+      "Bash(sed -i.bak \"s|/admin/chart-library|/hiro/chart-library|g\" routes/chart-library.js)",
+      "Bash(sed -i.bak -e 's|/admin/harness|/hiro|g' scripts/render-chart-library.mjs)"
     ]
   }
 }

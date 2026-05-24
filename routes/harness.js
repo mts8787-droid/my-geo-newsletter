@@ -297,11 +297,11 @@ function generateReadme() {
 
 - 본 ZIP 은 원본의 **그 시점 스냅샷**. 원본이 갱신되면 다시 다운로드.
 - 원본 갱신을 자동 동기화하려면 git submodule 또는 sparse checkout 등 별도 메커니즘 필요.
-- 원본: \`/admin/harness\` 페이지에서 항상 최신 ZIP 다운로드 가능 (호출 시점에 실제 파일 → 자동 미러).
+- 원본: \`/hiro\` 페이지에서 항상 최신 ZIP 다운로드 가능 (호출 시점에 실제 파일 → 자동 미러).
 `
 }
 
-// ─── GET /api/harness/zip — 실제 파일 → 즉시 ZIP 생성 ─────────────────────
+// ─── GET /api/hiro/zip — 실제 파일 → 즉시 ZIP 생성 ─────────────────────
 // .claude/agents/ 폴더를 재귀 추가 — 미러 호스트 전체 (rules/, skills/, hooks/, HARNESS.*, CLAUDE.md 미러)
 function addDirToZip(zip, srcDir) {
   const absSrc = path.join(ROOT, srcDir)
@@ -317,7 +317,7 @@ function addDirToZip(zip, srcDir) {
   }
 }
 
-harnessRouter.get('/api/harness/zip', async (req, res) => {
+harnessRouter.get('/api/hiro/zip', async (req, res) => {
   try {
     const zip = new JSZip()
     // 1) 명시 컴포넌트 (CLAUDE.md, docs/, .claude/settings.json, .claude/hooks/, .claude/skills/, agents/HARNESS.*)
@@ -342,10 +342,10 @@ harnessRouter.get('/api/harness/zip', async (req, res) => {
   }
 })
 
-// ─── GET /admin/harness/view?path=... — 개별 파일 보기 ────────────────────
+// ─── GET /hiro/view?path=... — 개별 파일 보기 ────────────────────
 // .md → marked.js 렌더 (admin-pages.js 의 renderMarkdownPage 활용)
 // .sh / .json / 외 → 다크 테마 code block 페이지
-harnessRouter.get('/admin/harness/view', (req, res) => {
+harnessRouter.get('/hiro/view', (req, res) => {
   const relPath = String(req.query.path || '')
   const found = HARNESS_COMPONENTS.find(c => c.file === relPath)
   if (!found) return res.status(404).send('unknown harness component')
@@ -356,7 +356,7 @@ harnessRouter.get('/admin/harness/view', (req, res) => {
     const mdFile = path.basename(relPath)
     return renderMarkdownPage(res, {
       mdFile, dir, title: `${found.label} — ${relPath}`,
-      downloadHref: `/api/harness/file?path=${encodeURIComponent(relPath)}`,
+      downloadHref: `/api/hiro/file?path=${encodeURIComponent(relPath)}`,
       downloadName: mdFile,
     })
   }
@@ -391,8 +391,8 @@ pre{background:#0B1220;border:1px solid #1E293B;border-radius:12px;padding:20px 
 .lang{display:inline-block;background:#334155;color:#94A3B8;padding:2px 8px;border-radius:4px;font-size:10px;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
 </style></head><body>
 <div class="topbar">
-  <a class="back" href="/admin/harness">← HIRO</a>
-  <a class="btn" href="/api/harness/file?path=${encodeURIComponent(relPath)}" target="_blank">raw 다운로드</a>
+  <a class="back" href="/hiro">← HIRO</a>
+  <a class="btn" href="/api/hiro/file?path=${encodeURIComponent(relPath)}" target="_blank">raw 다운로드</a>
 </div>
 <h1>${titleEsc}</h1>
 <div class="meta"><span class="lang">${lang}</span> · ${escHtml(found.desc)}</div>
@@ -400,8 +400,8 @@ pre{background:#0B1220;border:1px solid #1E293B;border-radius:12px;padding:20px 
 </body></html>`)
 })
 
-// ─── GET /api/harness/file?path=... — 개별 파일 raw 보기 ──────────────────
-harnessRouter.get('/api/harness/file', (req, res) => {
+// ─── GET /api/hiro/file?path=... — 개별 파일 raw 보기 ──────────────────
+harnessRouter.get('/api/hiro/file', (req, res) => {
   const relPath = String(req.query.path || '')
   const found = HARNESS_COMPONENTS.find(c => c.file === relPath)
   if (!found) return res.status(404).json({ ok: false, error: 'unknown harness component' })
@@ -411,7 +411,7 @@ harnessRouter.get('/api/harness/file', (req, res) => {
   res.send(content)
 })
 
-// ─── GET /admin/harness — 정리 페이지 ────────────────────────────────────
+// ─── GET /hiro — 정리 페이지 ────────────────────────────────────
 function escHtml(s) {
   return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]))
 }
@@ -422,7 +422,7 @@ function fmtBytes(n) {
   return (n / 1024 / 1024).toFixed(2) + ' MB'
 }
 
-harnessRouter.get('/admin/harness', (req, res) => {
+harnessRouter.get('/hiro', (req, res) => {
   // 컴포넌트별 메타 (크기 등) 미리 계산
   const items = HARNESS_COMPONENTS.map(c => ({ ...c, size: fileSize(c.file) }))
   const grouped = {}
@@ -444,9 +444,9 @@ harnessRouter.get('/admin/harness', (req, res) => {
         </div>
         <div class="comp-desc">${escHtml(it.desc)}</div>
         <div class="comp-actions">
-          <a class="link" href="/admin/harness/view?path=${encodeURIComponent(it.file)}" target="_blank">HTML (for Human) →</a>
+          <a class="link" href="/hiro/view?path=${encodeURIComponent(it.file)}" target="_blank">HTML (for Human) →</a>
           &nbsp;&middot;&nbsp;
-          <a class="link" href="/api/harness/file?path=${encodeURIComponent(it.file)}" target="_blank" style="color:#64748B">Markdown (For AI)</a>
+          <a class="link" href="/api/hiro/file?path=${encodeURIComponent(it.file)}" target="_blank" style="color:#64748B">Markdown (For AI)</a>
         </div>
       </div>
     `).join('')
@@ -544,7 +544,7 @@ ${themeToggleButton()}
     </li>
   </ol>
   <p style="font-size:11px;color:#64748B;margin-top:10px;font-style:italic">미러는 <code>npm run sync:harness</code> 또는 <code>npm run build</code> (prebuild) 시 자동 갱신 — 본 ZIP 은 호출 시점에 항상 최신.</p>
-  <a class="dl-btn" href="/api/harness/zip">📦 전체 ZIP 다운로드</a>
+  <a class="dl-btn" href="/api/hiro/zip">📦 전체 ZIP 다운로드</a>
 </div>
 
 <div class="intro">
@@ -571,4 +571,16 @@ ${sectionsHtml}
 
 
 </body></html>`)
+})
+
+// ─── 백워드 호환 redirect — 기존 /admin/harness* + /api/harness/* 링크 보존 ──
+harnessRouter.get('/admin/harness', (req, res) => res.redirect(301, '/hiro'))
+harnessRouter.get('/admin/harness/view', (req, res) => {
+  const q = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : ''
+  res.redirect(301, '/hiro/view' + q)
+})
+harnessRouter.get('/api/harness/zip', (req, res) => res.redirect(301, '/api/hiro/zip'))
+harnessRouter.get('/api/harness/file', (req, res) => {
+  const q = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : ''
+  res.redirect(301, '/api/hiro/file' + q)
 })

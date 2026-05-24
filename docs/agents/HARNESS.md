@@ -78,7 +78,7 @@ docs/agents/
 ## 사용
 
 ### 다른 프로젝트에 적용
-1. ZIP 다운로드 (어드민 `/admin/harness` 페이지) — 원본 `.claude/` + `CLAUDE.md` + 미러 `docs/agents/` 모두 포함
+1. ZIP 다운로드 (어드민 `/hiro` 페이지) — 원본 `.claude/` + `CLAUDE.md` + 미러 `docs/agents/` 모두 포함
 2. 또는 수동: `CLAUDE.md` + `.claude/` (전체) 통째로 복사
 3. `chmod +x .claude/hooks/*.sh`
 4. Claude Code 실행 → 자동 로드

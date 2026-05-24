@@ -118,6 +118,14 @@ app.use((req, res, next) => {
   if (req.path === '/api/tracker-snapshot-v2') return next()
   if (req.method === 'GET' && req.path === '/api/dashboard/sync-data') return next()
   if (req.path.startsWith('/admin/progress-tracker-v2/assets/')) return next()
+  // HIRO public 외부 게시 — 인증 없이 접근 (사용자가 외부 공유 목적으로 의도)
+  if (req.path.startsWith('/hiro/') || req.path === '/hiro') return next()
+  // /api/hiro/* 는 GET·HEAD 만 public (POST·PUT·DELETE 등 mutation 차단)
+  if ((req.method === 'GET' || req.method === 'HEAD') && req.path.startsWith('/api/hiro/')) return next()
+  // 백워드 호환: 옛 /admin/harness* + /admin/chart-library + /api/harness/* 링크 → 301 redirect 통과
+  if (req.path === '/admin/harness' || req.path.startsWith('/admin/harness/')) return next()
+  if (req.path === '/admin/chart-library') return next()
+  if ((req.method === 'GET' || req.method === 'HEAD') && req.path.startsWith('/api/harness/')) return next()
   if (req.path.startsWith('/admin') || req.path.startsWith('/api/')) {
     const token = getSessionToken(req)
     if (!token || !activeSessions.has(token)) {

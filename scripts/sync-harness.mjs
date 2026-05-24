@@ -238,7 +238,7 @@ docs/agents/
 ## 사용
 
 ### 다른 프로젝트에 적용
-1. ZIP 다운로드 (어드민 \`/admin/harness\` 페이지) — 원본 \`.claude/\` + \`CLAUDE.md\` + 미러 \`docs/agents/\` 모두 포함
+1. ZIP 다운로드 (어드민 \`/hiro\` 페이지) — 원본 \`.claude/\` + \`CLAUDE.md\` + 미러 \`docs/agents/\` 모두 포함
 2. 또는 수동: \`CLAUDE.md\` + \`.claude/\` (전체) 통째로 복사
 3. \`chmod +x .claude/hooks/*.sh\`
 4. Claude Code 실행 → 자동 로드
@@ -492,7 +492,7 @@ a{color:#60A5FA}
 <div class="section">
   <h2>다른 프로젝트에 적용</h2>
   <ol style="margin-left:22px;font-size:13px;color:#CBD5E1">
-    <li>ZIP 다운로드 (어드민 <code>/admin/harness</code>) 또는 <code>.claude/agents/</code> + <code>CLAUDE.md</code> + <code>docs/</code> + <code>.claude/hooks/</code> + <code>.claude/skills/</code> + <code>.claude/settings.json</code> 복사</li>
+    <li>ZIP 다운로드 (어드민 <code>/hiro</code>) 또는 <code>.claude/agents/</code> + <code>CLAUDE.md</code> + <code>docs/</code> + <code>.claude/hooks/</code> + <code>.claude/skills/</code> + <code>.claude/settings.json</code> 복사</li>
     <li><code>chmod +x .claude/hooks/*.sh</code></li>
     <li>Claude Code 실행 → 자동 로드</li>
   </ol>
