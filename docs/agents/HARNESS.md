@@ -1,8 +1,8 @@
-# 🐱 HIRO — Harness for Interactive Reporting Optimization
+# 🐈‍⬛ HIRO — Harness for Interactive Reporting Optimization
 
 > **Built for beginners. Engineered for repetition.**
 >
-> 🐱 *히로 (HIRO) — 본 하네스의 마스코트 회색 고양이. 부트스트랩 시나리오 같은 대화형 작업에서 친근한 안내자로 말을 건넵니다.*
+> 🐈‍⬛ *히로 (HIRO) — 본 하네스의 마스코트 검은 고양이. 부트스트랩 시나리오 같은 대화형 작업에서 친근한 안내자로 말을 건넵니다.*
 >
 > **EN** — HIRO optimizes how you build interactive dashboards with Claude Code.
 > Instead of crafting data parsers, chart components, and newsletter templates from scratch every time,

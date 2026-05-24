@@ -89,7 +89,7 @@ const HARNESS_COMPONENTS = [
     category: 'hook',
     label: 'Hook 가이드 (사람용 설명서)',
     file: '.claude/hooks/README.md',
-    desc: '각 Hook의 트리거·대상·동작·목적 + 신규 Hook 추가 가이드. 원본은 여기, 미러는 docs/agents/HOOK_GUIDE.md / HOOK_GUIDE.html.',
+    desc: '각 Hook의 트리거·대상·동작·목적 + 신규 Hook 추가 가이드. 원본 README — 별도 미러 없음 (필요 시 본 파일 직접 열람).',
   },
   {
     category: 'hook',
@@ -493,13 +493,13 @@ h1{font-size:22px;color:#F8FAFC;margin-bottom:4px}
 <div class="top">
   <a class="back" href="/admin/">← 관리자</a>
 </div>
-<h1>🐱 HIRO</h1>
+<h1>🐈‍⬛ HIRO</h1>
 <p class="sub" style="font-size:14px;color:#CBD5E1;font-weight:600;margin-bottom:4px">Harness for Interactive Reporting Optimization</p>
 <p class="sub" style="font-size:12px;color:#94A3B8;font-style:italic;margin-bottom:18px">Built for beginners. Engineered for repetition.</p>
 
 <div class="usage">
   <h2 style="font-size:16px;color:#F8FAFC;margin-bottom:10px">📌 HIRO 란?</h2>
-  <p style="font-size:12px;color:#94A3B8;margin-bottom:10px;font-style:italic">🐱 히로 (HIRO) — 본 하네스의 마스코트 회색 고양이. 사용자가 부트스트랩 시나리오 같은 대화형 작업을 할 때 친근한 안내자로 말을 건넵니다.</p>
+  <p style="font-size:12px;color:#94A3B8;margin-bottom:10px;font-style:italic">🐈‍⬛ 히로 (HIRO) — 본 하네스의 마스코트 검은 고양이. 사용자가 부트스트랩 시나리오 같은 대화형 작업을 할 때 친근한 안내자로 말을 건넵니다.</p>
   <p style="font-size:13px;color:#CBD5E1;margin-bottom:8px">HIRO optimizes how you build interactive dashboards with Claude Code. Instead of crafting data parsers, chart components, and newsletter templates from scratch every time, HIRO ships a reusable harness — <strong style="color:#F8FAFC">skills, rules, hooks, and scenario-based bootstraps</strong> — that turns the manual workflow into a standardized, repeatable pipeline.</p>
   <p style="font-size:13px;color:#CBD5E1;margin-bottom:8px">HIRO 는 Claude Code 로 인터랙티브 대시보드를 만드는 작업을 최적화합니다. 데이터 파서, 차트 컴포넌트, 뉴스레터 템플릿을 매번 처음부터 짜는 대신, HIRO 는 재사용 가능한 하네스 — <strong style="color:#F8FAFC">스킬·룰·훅·시나리오 기반 부트스트랩</strong> — 를 제공해 수작업 워크플로우를 표준화된 반복 가능한 파이프라인으로 바꿉니다.</p>
   <p style="font-size:13px;color:#CBD5E1;margin-bottom:8px">본 페이지는 <strong style="color:#F8FAFC">Claude Code 가 본 프로젝트에서 작업할 때 따르는 Rule·Hook·Skill·Sub-Agent 모두를 한곳에 모은 페이지</strong>.</p>
