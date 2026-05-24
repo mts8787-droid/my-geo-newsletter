@@ -379,17 +379,19 @@ harnessRouter.get('/hiro/view', (req, res) => {
   res.send(`<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${titleEsc}</title>
+${themeStyle()}
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#0F172A;color:#E2E8F0;font-family:'LG Smart','Arial Narrow',Arial,sans-serif;padding:24px 32px;line-height:1.5}
+body{background:var(--bg-primary);color:var(--text-primary);font-family:'LG Smart','Arial Narrow',Arial,sans-serif;padding:24px 32px;line-height:1.5;transition:background .2s,color .2s}
 .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:12px}
-.back{color:#CF0652;text-decoration:none;font-size:13px}
-.btn{background:#1E293B;border:1px solid #334155;border-radius:8px;padding:8px 16px;font-size:12px;font-weight:600;color:#E2E8F0;text-decoration:none}
-h1{font-size:18px;color:#F8FAFC;margin-bottom:6px}
-.meta{font-size:12px;color:#64748B;margin-bottom:18px;font-family:ui-monospace,Menlo,Consolas,monospace}
-pre{background:#0B1220;border:1px solid #1E293B;border-radius:12px;padding:20px 24px;overflow:auto;max-width:1100px;margin:0 auto;font-family:'Consolas','Courier New',ui-monospace,monospace;font-size:12px;line-height:1.6;color:#CBD5E1;white-space:pre-wrap;word-wrap:break-word}
-.lang{display:inline-block;background:#334155;color:#94A3B8;padding:2px 8px;border-radius:4px;font-size:10px;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
+.back{color:var(--accent);text-decoration:none;font-size:13px}
+.btn{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:8px 16px;font-size:13px;font-weight:600;color:var(--text-primary);text-decoration:none}
+h1{font-size:18px;color:var(--text-strong);margin-bottom:6px}
+.meta{font-size:12px;color:var(--text-muted);margin-bottom:18px;font-family:ui-monospace,Menlo,Consolas,monospace}
+pre{background:var(--bg-code);border:1px solid var(--border);border-radius:12px;padding:20px 24px;overflow:auto;max-width:1100px;margin:0 auto;font-family:'Consolas','Courier New',ui-monospace,monospace;font-size:13px;line-height:1.6;color:var(--text-desc);white-space:pre-wrap;word-wrap:break-word}
+.lang{display:inline-block;background:var(--border);color:var(--text-sub);padding:2px 8px;border-radius:4px;font-size:11px;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
 </style></head><body>
+${themeToggleButton()}
 <div class="topbar">
   <a class="back" href="/hiro">← HIRO</a>
   <a class="btn" href="/api/hiro/file?path=${encodeURIComponent(relPath)}" target="_blank">raw 다운로드</a>
@@ -493,18 +495,37 @@ h1{font-size:22px;color:var(--text-strong);margin-bottom:4px}
 .comp-actions{font-size:12px}
 .link{color:var(--accent);text-decoration:none}
 .link:hover{text-decoration:underline}
-.note{background:#0F2A1F;border:1px solid #15803D;border-radius:8px;padding:12px 16px;margin-top:18px;font-size:12px;color:#86EFAC}
+.note{background:#0F2A1F;border:1px solid #15803D;border-radius:8px;padding:12px 16px;margin-top:18px;font-size:13px;color:#86EFAC}
 .note strong{color:#4ADE80}
 [data-theme="light"] .note{background:#ECFDF5;border-color:#A7F3D0;color:#166534}
 [data-theme="light"] .note strong{color:#15803D}
+
+/* 라이트 모드 강제 override — 인라인 style 의 다크용 색상을 라이트 톤으로 (text 가독성) */
+[data-theme="light"] [style*="color:#F8FAFC"]{color:#0F172A !important}
+[data-theme="light"] [style*="color:#CBD5E1"]{color:#334155 !important}
+[data-theme="light"] [style*="color:#94A3B8"]{color:#475569 !important}
+[data-theme="light"] [style*="color:#64748B"]{color:#475569 !important}
+[data-theme="light"] [style*="background:#0F172A"]{background:#F1F5F9 !important;color:#0F172A !important}
+[data-theme="light"] [style*="color:#F8C4D7"]{color:#BE123C !important}
+
+/* HIRO Hero 타이틀 */
+.hiro-hero{text-align:center;padding:36px 24px 28px;border-bottom:1px solid var(--border);margin-bottom:24px}
+.hiro-hero .title{font-size:80px;font-weight:900;color:var(--text-strong);letter-spacing:-4px;line-height:0.95;margin-bottom:8px;font-family:'LG Smart','Arial Narrow',Arial,sans-serif}
+.hiro-hero .title .cat{font-size:60px;vertical-align:middle;margin-right:8px}
+.hiro-hero .fullname{font-size:18px;font-weight:600;color:var(--accent);letter-spacing:1.5px;margin-bottom:6px}
+.hiro-hero .tagline{font-size:13px;color:var(--text-sub);font-style:italic}
+@media (max-width:780px){
+  .hiro-hero .title{font-size:48px;letter-spacing:-2px}
+  .hiro-hero .title .cat{font-size:40px}
+  .hiro-hero .fullname{font-size:14px;letter-spacing:1px}
+}
 </style></head><body>
 ${themeToggleButton()}
-<div class="top">
-  <a class="back" href="/admin/">← 관리자</a>
+<div class="hiro-hero">
+  <div class="title"><span class="cat">🐈‍⬛</span>HIRO</div>
+  <div class="fullname">Harness for Interactive Reporting Optimization</div>
+  <div class="tagline">Built for beginners. Engineered for repetition.</div>
 </div>
-<h1>🐈‍⬛ HIRO</h1>
-<p class="sub" style="font-size:14px;color:#CBD5E1;font-weight:600;margin-bottom:4px">Harness for Interactive Reporting Optimization</p>
-<p class="sub" style="font-size:12px;color:#94A3B8;font-style:italic;margin-bottom:18px">Built for beginners. Engineered for repetition.</p>
 
 <div class="usage">
   <h2 style="font-size:16px;color:#F8FAFC;margin-bottom:10px">📌 HIRO 란?</h2>

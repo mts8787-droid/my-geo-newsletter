@@ -185,9 +185,9 @@ const PROMPTING_SKILLS_PREVIEW = `
       ${[87,86,85,84,86,88,90,87,85,84].map((v, i) => {
         const hPx = (v - 80) * 6 + 8
         return `<div style="flex:1;display:flex;flex-direction:column;align-items:center">
-          <span style="font-size:10px;font-weight:700;color:#15803D;margin-bottom:2px">${v}</span>
+          <span style="font-size:11px;font-weight:700;color:#15803D;margin-bottom:2px">${v}</span>
           <div style="width:18px;height:${hPx}px;background:#15803D;border-radius:3px 3px 0 0"></div>
-          <span style="font-size:9px;color:#94A3B8;margin-top:4px;font-weight:600">G${i+1}</span>
+          <span style="font-size:11px;color:#94A3B8;margin-top:4px;font-weight:600">G${i+1}</span>
         </div>`
       }).join('')}
     </div>
@@ -208,7 +208,7 @@ const PROMPTING_SKILLS_PREVIEW = `
           ${vals.map((v,i) => `<div style="display:flex;flex-direction:column;align-items:center;width:26px">
             <span style="font-size:11px;font-weight:700;color:${colors[i]};margin-bottom:2px">${v.toFixed(1)}</span>
             <div style="width:100%;height:${Math.round(v/maxV*100)}px;background:${colors[i]};border-radius:4px 4px 0 0"></div>
-            <span style="font-size:10px;color:#94A3B8;margin-top:3px;letter-spacing:-0.6px;font-weight:600">${names[i]}</span>
+            <span style="font-size:11px;color:#94A3B8;margin-top:3px;letter-spacing:-0.6px;font-weight:600">${names[i]}</span>
           </div>`).join('')}
         </div>
         <div style="font-size:14px;font-weight:600;color:#475569;margin-top:6px">${label}</div>
@@ -343,10 +343,10 @@ const PROMPTING_SKILLS_PREVIEW = `
         const h = Math.round(((v-localMin)/(localMax-localMin)) * 24) + 4
         const spacer = 28 - h
         return `<td style="vertical-align:bottom;text-align:center;padding:0 4px">
-          <table align="center" style="margin:0 auto"><tr><td style="font-size:10px;font-weight:700;color:#15803D;padding-bottom:1px">${v}</td></tr>
+          <table align="center" style="margin:0 auto"><tr><td style="font-size:11px;font-weight:700;color:#15803D;padding-bottom:1px">${v}</td></tr>
           ${spacer > 0 ? `<tr><td height="${spacer}" style="font-size:0;line-height:0">&nbsp;</td></tr>` : ''}
           <tr><td width="10" height="${h}" style="background:#15803D;font-size:0;line-height:0">&nbsp;</td></tr>
-          <tr><td style="font-size:10px;color:#94A3B8;padding-top:2px">W${i+1}</td></tr></table>
+          <tr><td style="font-size:11px;color:#94A3B8;padding-top:2px">W${i+1}</td></tr></table>
         </td>`
       }).join('')}
     </tr>
@@ -571,7 +571,7 @@ const PROMPTING_SKILLS_PREVIEW = `
           <div style="font-size:22px;font-weight:900;color:#1A1A1A;letter-spacing:-1px">${sc.toFixed(1)}<span style="font-size:13px;color:#94A3B8;margin-left:2px">%</span></div>
         </div>
         <div style="text-align:right">
-          <div style="font-size:10px;color:#94A3B8;text-transform:uppercase;letter-spacing:0.5px">목표</div>
+          <div style="font-size:11px;color:#94A3B8;text-transform:uppercase;letter-spacing:0.5px">목표</div>
           <div style="font-size:15px;font-weight:700;color:${color}">${tg}%</div>
         </div>
       </div>
@@ -645,7 +645,7 @@ const PROMPTING_SKILLS_PREVIEW = `
         </td>
         <td align="right" style="vertical-align:middle;white-space:nowrap">
           <span style="font-size:12px;font-weight:700;color:#15803D;letter-spacing:-0.5px">B계열 대비 95%</span>
-          &nbsp;<span style="display:inline-block;background:#ECFDF5;color:#15803D;border:1px solid #A7F3D0;border-radius:6px;padding:1px 6px;font-size:10px;font-weight:700">Lead</span>
+          &nbsp;<span style="display:inline-block;background:#ECFDF5;color:#15803D;border:1px solid #A7F3D0;border-radius:6px;padding:1px 6px;font-size:11px;font-weight:700">Lead</span>
         </td>
       </tr></table>
     </td></tr>
@@ -660,7 +660,7 @@ const PROMPTING_SKILLS_PREVIEW = `
             ${[80,82,85,83,87,88,86,90].map((v, i) => {
               const h = Math.round((v-78)/14 * 24) + 4
               const sp = 28 - h
-              return `<td style="vertical-align:bottom;text-align:center;padding:0 2px"><table align="center"><tr><td style="font-size:9px;color:#15803D;font-weight:700;padding-bottom:1px">${v}</td></tr>${sp>0?`<tr><td height="${sp}" style="font-size:0;line-height:0">&nbsp;</td></tr>`:''}<tr><td width="8" height="${h}" style="background:#15803D;font-size:0;line-height:0">&nbsp;</td></tr><tr><td style="font-size:8px;color:#94A3B8;padding-top:2px">W${i+1}</td></tr></table></td>`
+              return `<td style="vertical-align:bottom;text-align:center;padding:0 2px"><table align="center"><tr><td style="font-size:11px;color:#15803D;font-weight:700;padding-bottom:1px">${v}</td></tr>${sp>0?`<tr><td height="${sp}" style="font-size:0;line-height:0">&nbsp;</td></tr>`:''}<tr><td width="8" height="${h}" style="background:#15803D;font-size:0;line-height:0">&nbsp;</td></tr><tr><td style="font-size:8px;color:#94A3B8;padding-top:2px">W${i+1}</td></tr></table></td>`
             }).join('')}
           </tr></table>
         </td>
@@ -682,7 +682,7 @@ const PROMPTING_SKILLS_PREVIEW = `
         </td>
         <td align="right" style="white-space:nowrap">
           <span style="font-size:12px;font-weight:700;color:#15803D">B계열 대비 95%</span>
-          &nbsp;<span style="display:inline-block;background:#ECFDF5;color:#15803D;border:1px solid #A7F3D0;border-radius:6px;padding:1px 6px;font-size:10px;font-weight:700">Lead</span>
+          &nbsp;<span style="display:inline-block;background:#ECFDF5;color:#15803D;border:1px solid #A7F3D0;border-radius:6px;padding:1px 6px;font-size:11px;font-weight:700">Lead</span>
         </td>
       </tr></table>
     </td></tr>
@@ -693,10 +693,10 @@ const PROMPTING_SKILLS_PREVIEW = `
           const comp = [85,86,84,83,82,85,87,84,86,84][i]
           const hPx = Math.round((lg-78)/14 * 36) + 4
           return `<td style="vertical-align:bottom;text-align:center;padding:0 1px;width:10%">
-            <table align="center"><tr><td style="font-size:9px;font-weight:700;color:#15803D;padding-bottom:1px">${lg}</td></tr>
+            <table align="center"><tr><td style="font-size:11px;font-weight:700;color:#15803D;padding-bottom:1px">${lg}</td></tr>
             <tr><td width="14" height="${hPx}" style="background:#15803D;border-radius:2px 2px 0 0;font-size:0;line-height:0">&nbsp;</td></tr>
-            <tr><td style="font-size:9px;color:#94A3B8;font-weight:700;padding-top:2px">${g}</td></tr>
-            <tr><td style="font-size:9px;color:#94A3B8;padding-top:1px">${comp}</td></tr></table>
+            <tr><td style="font-size:11px;color:#94A3B8;font-weight:700;padding-top:2px">${g}</td></tr>
+            <tr><td style="font-size:11px;color:#94A3B8;padding-top:1px">${comp}</td></tr></table>
           </td>`
         }).join('')}
       </tr></table>
@@ -714,7 +714,7 @@ const PROMPTING_SKILLS_PREVIEW = `
       &nbsp;<span style="font-size:12px;font-weight:700;color:#22C55E;letter-spacing:-1.2px">▲1.2%p</span>
       <span style="float:right;white-space:nowrap">
         <span style="font-size:13px;font-weight:700;color:#15803D;letter-spacing:-1.3px">B계열 95%</span>
-        &nbsp;<span style="display:inline-block;background:#ECFDF5;color:#15803D;border:1px solid #A7F3D0;border-radius:5px;padding:0 4px;font-size:10px;font-weight:700;line-height:15px;vertical-align:middle">Lead</span>
+        &nbsp;<span style="display:inline-block;background:#ECFDF5;color:#15803D;border:1px solid #A7F3D0;border-radius:5px;padding:0 4px;font-size:11px;font-weight:700;line-height:15px;vertical-align:middle">Lead</span>
       </span>
     </td></tr>
     <tr><td style="padding:2px 6px 8px">
@@ -730,9 +730,9 @@ const PROMPTING_SKILLS_PREVIEW = `
             <table align="center" style="width:100%">
               ${spacer > 0 ? `<tr><td height="${spacer}" style="font-size:0;line-height:0">&nbsp;</td></tr>` : ''}
               <tr><td height="${hPx}" style="font-size:0"><table cellpadding="0" cellspacing="0" align="center"><tr><td width="16" height="${hPx}" style="background:${color};border-radius:2px 2px 0 0;font-size:0;line-height:0">&nbsp;</td></tr></table></td></tr>
-              <tr><td style="font-size:10px;font-weight:700;color:${color};text-align:center;padding-top:1px">${sc}</td></tr>
+              <tr><td style="font-size:11px;font-weight:700;color:${color};text-align:center;padding-top:1px">${sc}</td></tr>
               <tr><td style="font-size:8px;font-weight:700;color:${color};text-align:center;line-height:1.1;letter-spacing:-0.3px">${g}</td></tr>
-              <tr><td style="font-size:9px;color:#94A3B8;text-align:center;white-space:nowrap;letter-spacing:-0.5px">SS<br/>${ratio}%</td></tr>
+              <tr><td style="font-size:11px;color:#94A3B8;text-align:center;white-space:nowrap;letter-spacing:-0.5px">SS<br/>${ratio}%</td></tr>
             </table>
           </td>`
         }).join('')}
@@ -759,37 +759,39 @@ export function renderMarkdownPage(res, { mdFile, title, downloadHref, downloadN
   const titleEsc = String(title).replace(/[<>"']/g, c => ({ '<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]))
   res.send(`<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${titleEsc}</title>
+${themeStyle()}
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#0F172A;color:#E2E8F0;font-family:'LG Smart','Arial Narrow',Arial,sans-serif;padding:24px 32px;line-height:1.65}
+body{margin:0;background:var(--bg-primary);color:var(--text-primary);font-family:'LG Smart','Arial Narrow',Arial,sans-serif;padding:24px 32px;line-height:1.65;transition:background .2s,color .2s}
 .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px}
-.back{color:#CF0652;text-decoration:none;font-size:13px}
 .actions{display:flex;gap:10px}
-.btn{background:#1E293B;border:1px solid #334155;border-radius:8px;padding:8px 16px;font-size:12px;font-weight:600;color:#E2E8F0;text-decoration:none;cursor:pointer;font-family:inherit}
-.btn:hover{background:#334155}
-.content{max-width:1040px;margin:0 auto;background:#0B1220;border:1px solid #1E293B;border-radius:12px;padding:32px 40px}
-.content h1{font-size:26px;color:#F8FAFC;margin:0 0 12px;padding-bottom:10px;border-bottom:2px solid #CF0652}
-.content h2{font-size:20px;color:#F8FAFC;margin:28px 0 12px;padding-bottom:6px;border-bottom:1px solid #334155}
-.content h3{font-size:16px;color:#F8FAFC;margin:22px 0 10px}
-.content h4{font-size:14px;color:#CBD5E1;margin:18px 0 8px}
-.content p{margin:10px 0;color:#CBD5E1;font-size:14px}
-.content ul,.content ol{margin:10px 0 10px 22px;color:#CBD5E1;font-size:14px}
+.btn{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:8px 16px;font-size:13px;font-weight:600;color:var(--text-primary);text-decoration:none;cursor:pointer;font-family:inherit}
+.btn:hover{background:var(--border)}
+.content{max-width:1040px;margin:0 auto;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:32px 40px}
+.content h1{font-size:26px;color:var(--text-strong);margin:0 0 12px;padding-bottom:10px;border-bottom:2px solid var(--accent)}
+.content h2{font-size:20px;color:var(--text-strong);margin:28px 0 12px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+.content h3{font-size:16px;color:var(--text-strong);margin:22px 0 10px}
+.content h4{font-size:14px;color:var(--text-desc);margin:18px 0 8px}
+.content p{margin:10px 0;color:var(--text-desc);font-size:14px}
+.content ul,.content ol{margin:10px 0 10px 22px;color:var(--text-desc);font-size:14px}
 .content li{margin:4px 0}
-.content code{background:#1E293B;color:#F8C4D7;padding:2px 6px;border-radius:4px;font-family:'Consolas','Courier New',monospace;font-size:12px}
-.content pre{background:#1E293B;border:1px solid #334155;border-radius:8px;padding:14px 16px;overflow:auto;font-family:'Consolas','Courier New',monospace;font-size:12px;line-height:1.5}
-.content pre code{background:none;padding:0;color:#E2E8F0}
+.content code{background:var(--bg-code);color:#F8C4D7;padding:2px 6px;border-radius:4px;font-family:'Consolas','Courier New',monospace;font-size:12px}
+.content pre{background:var(--bg-code);border:1px solid var(--border);border-radius:8px;padding:14px 16px;overflow:auto;font-family:'Consolas','Courier New',monospace;font-size:13px;line-height:1.5}
+.content pre code{background:none;padding:0;color:var(--text-primary)}
 .content table{border-collapse:collapse;width:100%;margin:14px 0;font-size:13px}
-.content th,.content td{border:1px solid #334155;padding:8px 12px;text-align:left;vertical-align:top;color:#CBD5E1}
-.content th{background:#1E293B;color:#F8FAFC;font-weight:700}
-.content tr:nth-child(even) td{background:#0F172A}
-.content blockquote{border-left:3px solid #CF0652;margin:14px 0;padding:6px 16px;background:#1E293B;color:#94A3B8;font-size:13px;border-radius:0 6px 6px 0}
-.content a{color:#F472B6;text-decoration:none}
+.content th,.content td{border:1px solid var(--border);padding:8px 12px;text-align:left;vertical-align:top;color:var(--text-desc)}
+.content th{background:var(--bg-code);color:var(--text-strong);font-weight:700}
+.content tr:nth-child(even) td{background:var(--bg-code)}
+.content blockquote{border-left:3px solid var(--accent);margin:14px 0;padding:6px 16px;background:var(--bg-code);color:var(--text-sub);font-size:13px;border-radius:0 6px 6px 0}
+.content a{color:var(--accent);text-decoration:none}
 .content a:hover{text-decoration:underline}
 .mermaid{background:#fff;border-radius:8px;padding:16px;margin:14px 0;overflow:auto;text-align:center}
-.content hr{border:none;border-top:1px solid #334155;margin:22px 0}
+.content hr{border:none;border-top:1px solid var(--border);margin:22px 0}
+[data-theme="light"] .content code{color:#BE123C}
 </style></head><body>
+${themeToggleButton()}
 <div class="topbar">
-  <a class="back" href="/admin/">← 관리자</a>
+  <div></div>
   <div class="actions">
     <a class="btn" href="${downloadHref}" download="${downloadName}">MD 다운로드</a>
     <button class="btn" onclick="window.print()">인쇄/PDF 저장</button>
@@ -855,8 +857,8 @@ a.card:hover{border-color:var(--accent);transform:translateY(-2px)}
 a.harness-entry:hover{border-color:var(--accent);background:var(--hero-hover-bg)}
 .harness-file{display:flex;align-items:center;gap:8px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:8px 12px;text-decoration:none;color:var(--text-desc);font-size:12px;margin-bottom:6px;transition:border-color .15s,background .2s,color .2s}
 .harness-file:hover{border-color:var(--accent);color:var(--text-strong)}
-.harness-file code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:10px;color:var(--text-sub);background:var(--bg-code);padding:1px 6px;border-radius:3px;margin-left:auto}
-.harness-tag{font-size:9px;padding:1px 6px;border-radius:3px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px}
+.harness-file code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11px;color:var(--text-sub);background:var(--bg-code);padding:1px 6px;border-radius:3px;margin-left:auto}
+.harness-tag{font-size:11px;padding:1px 6px;border-radius:3px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px}
 .tag-rule{background:#1E3A5F;color:#60A5FA}
 .tag-hook{background:#3F1D1D;color:#F87171}
 .tag-skill{background:#1F3A1F;color:#4ADE80}

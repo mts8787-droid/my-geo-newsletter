@@ -325,7 +325,7 @@ td{padding:10px 14px;border-bottom:1px solid rgba(51,65,85,.5);color:#CBD5E1}
 code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11px;color:#F8FAFC;background:#0F172A;padding:2px 6px;border-radius:3px}
 .section{background:#1E293B;border:1px solid #334155;border-radius:12px;padding:20px 24px;margin-bottom:18px}
 .section h2{font-size:16px;font-weight:700;color:#F8FAFC;margin-bottom:12px;display:flex;align-items:center;gap:8px}
-.section h2 .tag{font-size:10px;background:#334155;color:#94A3B8;padding:2px 8px;border-radius:4px;font-weight:600;text-transform:uppercase;letter-spacing:1px}
+.section h2 .tag{font-size:11px;background:#334155;color:#94A3B8;padding:2px 8px;border-radius:4px;font-weight:600;text-transform:uppercase;letter-spacing:1px}
 .section h3{font-size:13px;font-weight:600;color:#F8FAFC;margin:14px 0 6px}
 .section p{font-size:13px;color:#CBD5E1;margin-bottom:8px}
 .section ul{margin:6px 0 12px 22px;font-size:13px;color:#CBD5E1}
