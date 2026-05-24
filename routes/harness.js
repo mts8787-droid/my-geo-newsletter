@@ -6,7 +6,8 @@ import { Router } from 'express'
 import fs from 'fs'
 import path from 'path'
 import JSZip from 'jszip'
-import { renderMarkdownPage, themeStyle, themeToggleButton } from './admin-pages.js'
+import { renderMarkdownPage } from './admin-pages.js'
+import { themeStyle, themeToggleButton } from '../lib/theme.js'
 
 export const harnessRouter = Router()
 
@@ -358,6 +359,7 @@ harnessRouter.get('/hiro/view', (req, res) => {
       mdFile, dir, title: `${found.label} — ${relPath}`,
       downloadHref: `/api/hiro/file?path=${encodeURIComponent(relPath)}`,
       downloadName: mdFile,
+      backHref: '/hiro', backLabel: '← HIRO',
     })
   }
 
@@ -394,7 +396,7 @@ pre{background:var(--bg-code);border:1px solid var(--border);border-radius:12px;
 ${themeToggleButton()}
 <div class="topbar">
   <a class="back" href="/hiro">← HIRO</a>
-  <a class="btn" href="/api/hiro/file?path=${encodeURIComponent(relPath)}" target="_blank">raw 다운로드</a>
+  <a class="btn" href="/api/hiro/file?path=${encodeURIComponent(relPath)}">raw 다운로드</a>
 </div>
 <h1>${titleEsc}</h1>
 <div class="meta"><span class="lang">${lang}</span> · ${escHtml(found.desc)}</div>
@@ -446,9 +448,9 @@ harnessRouter.get('/hiro', (req, res) => {
         </div>
         <div class="comp-desc">${escHtml(it.desc)}</div>
         <div class="comp-actions">
-          <a class="link" href="/hiro/view?path=${encodeURIComponent(it.file)}" target="_blank">HTML (for Human) →</a>
+          <a class="link" href="/hiro/view?path=${encodeURIComponent(it.file)}">HTML (for Human) →</a>
           &nbsp;&middot;&nbsp;
-          <a class="link" href="/api/hiro/file?path=${encodeURIComponent(it.file)}" target="_blank" style="color:#64748B">Markdown (For AI)</a>
+          <a class="link" href="/api/hiro/file?path=${encodeURIComponent(it.file)}" style="color:#64748B">Markdown (For AI)</a>
         </div>
       </div>
     `).join('')

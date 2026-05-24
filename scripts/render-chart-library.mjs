@@ -1,6 +1,8 @@
 // Chart Library HTML 생성기 — 14 차트 양식 + 1 직교 패턴 카탈로그
 // 서버 라우트 (routes/chart-library.js) + sync-harness 정적 미러 (docs/agents/CHART_LIBRARY.html) 양쪽에서 사용.
 
+import { themeStyle, themeToggleButton } from '../lib/theme.js'
+
 // ─── SVG 예시용 색상 토큰 (CHART_CATALOG 보다 먼저 — TDZ 회피) ────────────
 const W = 220, H = 80
 const BG = '#0F172A'
@@ -457,37 +459,44 @@ export function renderChartLibraryHTML({ adminMode = false } = {}) {
   }).join('')
 
   const topBar = adminMode
-    ? '<div class="top"><a class="back" href="/admin/">← 관리자</a><a class="back" href="/hiro" style="margin-left:14px">→ HIRO</a></div>'
-    : '<div class="top"><span style="font-size:11px;color:#64748B">정적 미러 — /admin/chart-library 의 그 시점 스냅샷</span></div>'
+    ? '<div class="top"><a class="back" href="/hiro">← HIRO</a></div>'
+    : '<div class="top"><span style="font-size:11px;color:#64748B">정적 미러 — /hiro/chart-library 의 그 시점 스냅샷</span></div>'
 
   return `<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Chart Library — 14 차트 양식 분류 카탈로그</title>
+${themeStyle()}
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#0F172A;color:#E2E8F0;font-family:'LG Smart','Arial Narrow',Arial,sans-serif;padding:28px 32px;line-height:1.6;max-width:1400px;margin:0 auto}
+body{background:var(--bg-primary);color:var(--text-primary);font-family:'LG Smart','Arial Narrow',Arial,sans-serif;padding:28px 32px;line-height:1.6;max-width:1400px;margin:0 auto;transition:background .2s,color .2s}
 .top{display:flex;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:12px}
-.back{color:#CF0652;text-decoration:none;font-size:13px}
-h1{font-size:26px;color:#F8FAFC;margin-bottom:6px}
-.sub{font-size:13px;color:#64748B;margin-bottom:24px}
-.intro{background:#1E293B;border:1px solid #334155;border-radius:12px;padding:18px 22px;margin-bottom:24px;font-size:13px;color:#CBD5E1}
-.intro strong{color:#F8FAFC}
-.intro code{background:#0F172A;color:#F8C4D7;padding:2px 8px;border-radius:4px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px}
+.back{color:var(--accent);text-decoration:none;font-size:13px}
+h1{font-size:26px;color:var(--text-strong);margin-bottom:6px}
+.sub{font-size:13px;color:var(--text-muted);margin-bottom:24px}
+.intro{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:18px 22px;margin-bottom:24px;font-size:13px;color:var(--text-desc)}
+.intro strong{color:var(--text-strong)}
+.intro code{background:var(--bg-code);color:#F8C4D7;padding:2px 8px;border-radius:4px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px}
 .section{margin-bottom:28px}
-.section-title{font-size:18px;font-weight:700;color:#F8FAFC;border-left:3px solid;padding-left:12px;margin-bottom:6px}
-.section-desc{font-size:12px;color:#94A3B8;margin-bottom:14px;padding-left:15px}
+.section-title{font-size:18px;font-weight:700;color:var(--text-strong);border-left:3px solid;padding-left:12px;margin-bottom:6px}
+.section-desc{font-size:12px;color:var(--text-sub);margin-bottom:14px;padding-left:15px}
 .chart-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
-.chart-card{background:#1E293B;border:1px solid #334155;border-radius:10px;padding:14px 16px;transition:border-color .15s}
-.chart-card:hover{border-color:#CF0652}
+.chart-card{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:14px 16px;transition:border-color .15s}
+.chart-card:hover{border-color:var(--accent)}
 .chart-code{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;font-family:ui-monospace,Menlo,Consolas,monospace}
-.chart-name{font-size:14px;font-weight:700;color:#F8FAFC;margin-bottom:10px}
+.chart-name{font-size:14px;font-weight:700;color:var(--text-strong);margin-bottom:10px}
 .chart-svg{margin-bottom:10px}
-.chart-desc{font-size:12px;color:#CBD5E1;margin-bottom:8px;line-height:1.5}
-.chart-usage{font-size:11px;color:#94A3B8;margin-bottom:6px}
-.chart-usage strong{color:#CBD5E1}
-.chart-cmd{font-size:11px;color:#64748B;border-top:1px solid #334155;padding-top:6px;margin-top:6px}
-.chart-cmd code{background:#0F172A;color:#F8C4D7;padding:1px 6px;border-radius:3px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11px}
+.chart-desc{font-size:12px;color:var(--text-desc);margin-bottom:8px;line-height:1.5}
+.chart-usage{font-size:11px;color:var(--text-sub);margin-bottom:6px}
+.chart-usage strong{color:var(--text-desc)}
+.chart-cmd{font-size:11px;color:var(--text-muted);border-top:1px solid var(--border);padding-top:6px;margin-top:6px}
+.chart-cmd code{background:var(--bg-code);color:#F8C4D7;padding:1px 6px;border-radius:3px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11px}
+[data-theme="light"] .intro code,[data-theme="light"] .chart-cmd code{color:#BE123C}
+[data-theme="light"] [style*="color:#F8FAFC"]{color:#0F172A !important}
+[data-theme="light"] [style*="color:#CBD5E1"]{color:#334155 !important}
+[data-theme="light"] [style*="color:#94A3B8"]{color:#475569 !important}
+[data-theme="light"] [style*="color:#64748B"]{color:#475569 !important}
 </style></head><body>
+${adminMode ? themeToggleButton() : ''}
 
 ${topBar}
 
