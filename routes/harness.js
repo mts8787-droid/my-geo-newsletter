@@ -15,23 +15,23 @@ export const harnessRouter = Router()
 // 본 저장소의 실제 파일 경로 + UI 표시용 메타데이터.
 // 새 컴포넌트 (예: 신규 hook, agent) 추가 시 이 배열만 갱신.
 const HARNESS_COMPONENTS = [
-  // ─── 진입점 (Entry Point) — docs/agents/ 미러 호스트 ─────────────────────
+  // ─── 진입점 (Entry Point) — harness-mirror/docs/ 미러 호스트 ─────────────
   {
     category: 'entry',
     label: '전체 하네스 설명',
-    file: 'docs/agents/HARNESS.html',
-    desc: '브라우저 더블클릭으로 열림. 4 개념·폴더 구조·각 컴포넌트 설명·Skill 사용법 시각화. (같은 내용 마크다운: docs/agents/HARNESS.md)',
+    file: 'harness-mirror/docs/HARNESS.html',
+    desc: '브라우저 더블클릭으로 열림. 4 개념·폴더 구조·각 컴포넌트 설명·Skill 사용법 시각화. (같은 내용 마크다운: harness-mirror/docs/HARNESS.md)',
   },
   {
     category: 'entry',
     label: '차트 라이브러리 (정적 미러)',
-    file: 'docs/agents/CHART_LIBRARY.html',
+    file: 'harness-mirror/docs/CHART_LIBRARY.html',
     desc: '14 차트 양식 + 툴팁 분류 카탈로그 (L-1~T-1) 정적 HTML. 라이브: /admin/chart-library.',
   },
   {
     category: 'entry',
     label: '부트스트랩 사용법 (Usage Guide)',
-    file: 'docs/agents/HUMAN_GUIDE.md',
+    file: 'harness-mirror/docs/HUMAN_GUIDE.md',
     desc: '사람이 직접 읽는 사용 설명서 — BOOTSTRAP 의 시나리오 (신규 프로젝트 적용 STEP 0~8 + 디버깅 DEBUG-1~15) 어떻게 트리거하고 활용하는지 + 도메인 예시 + 검증 체크리스트 + 트러블슈팅 + FAQ.',
   },
 
@@ -221,7 +221,7 @@ const HARNESS_COMPONENTS = [
 
 // label 구조: { key, rest } — key 만 볼드, rest 는 일반
 const CATEGORY_LABELS = {
-  entry: { key: '가이드', rest: ' — 하네스 전체 개요 (docs/agents/ 미러)' },
+  entry: { key: '가이드', rest: ' — 하네스 전체 개요 (harness-mirror/docs/ 미러)' },
   rule:  { key: 'Rule',  rest: ' — 따라야 할 규칙. Markdown 권고 (~80%)' },
   hook:  { key: 'Hook',  rest: ' — 절대 하면 안 되는 것. JSON 강제 (100%) + 인간용 md 설명서' },
   skill: { key: 'Skill', rest: ' — 자동 워크플로우 / 명령 조합. step-by-step' },
@@ -244,10 +244,21 @@ function generateReadme() {
   const today = new Date().toISOString().slice(0, 10)
   return `# HIRO — Harness for Interactive Reporting Optimization
 
-본 ZIP 은 \`my-geo-newsletter\` 저장소의 Claude Code 하네스 (Rule·Hook·Skill·Sub-Agent) 미러링 본.
+본 ZIP 은 \`my-geo-newsletter\` 저장소의 Claude Code 하네스 미러링 본.
 생성일: ${today}
 
-## 하네스 4 개념
+## 2벌 정리 — 실제 작동 / 사람용 미러
+
+본 ZIP 은 같은 컨텐츠를 **2 곳에 정리**:
+
+1. **실제 작동** (Claude / Codex 가 자동 로드):
+   - \`CLAUDE.md\` (루트) — Claude Code 헌법
+   - \`AGENTS.md\` (루트) — OpenAI Codex / Antigravity 헌법
+   - \`.claude/\` — Hook · Skill · Sub-Agent · Rule
+2. **사람용 미러** (git 공유 + 가독성):
+   - \`harness-mirror/\` — 위 1) 의 1:1 복사 + 가이드 HTML 모음
+
+## 4 개념
 
 | 개념 | 형식 | 강제력 | 역할 |
 |---|---|---|---|
@@ -256,32 +267,35 @@ function generateReadme() {
 | **Skill** | Markdown 워크플로우 | 권고 (필요 시 로드) | 자동 워크플로우 / 명령 조합 |
 | **Sub-Agent** | Markdown frontmatter | Claude 가 위임 시 활성 | 특정 영역 분리 작업 |
 
-## ZIP 내용
+## ZIP 구조
 
-### Rule
-- \`CLAUDE.md\` — 프로젝트 헌법 (4 개념 정의 + NEVER Rule + 작업 흐름)
-- \`.claude/rules/data.md\` — 데이터 작업 Rule·매뉴얼·invariant·ANTI-PATTERN
-- \`.claude/rules/design.md\` — 디자인 토큰·컴포넌트 카탈로그·SVG 패턴
-
-### Hook
-- \`.claude/settings.json\` — Hook 등록 (JSON 필수)
-- \`.claude/hooks/README.md\` — 인간 가독성 설명서
-- \`.claude/hooks/syntax-check.sh\` — PostToolUse 신택스 검증
-- \`.claude/hooks/block-dist.sh\` — PreToolUse 빌드산출물 차단
-
-### Skill
-- \`.claude/skills/data/SKILL.md\` — 데이터 워크플로우 8개
-- \`.claude/skills/design/SKILL.md\` — 디자인 워크플로우 7개
-- \`.claude/skills/prompting/SKILL.md\` — 에이전트형 도구 통합 프롬프트
-
-### Sub-Agent
-- \`.claude/agents/data-puller.md\` — 데이터 진단 read-only
+\`\`\`
+CLAUDE.md                            ← 실제 작동
+AGENTS.md                            ← 실제 작동
+.claude/                             ← 실제 작동
+├── settings.json
+├── hooks/{*.sh, README.md}
+├── skills/<name>/SKILL.md
+├── agents/*.md
+└── rules/*.md
+harness-mirror/                      ← 사람용 미러
+├── CLAUDE.md
+├── AGENTS.md
+├── .claude/                         (실제 .claude/ 1:1 미러)
+└── docs/
+    ├── HARNESS.md · HARNESS.html
+    ├── CHART_LIBRARY.html
+    ├── HUMAN_GUIDE.md
+    └── hooks/{data,design}.md
+README.md                            ← 본 안내
+\`\`\`
 
 ## 다른 프로젝트에 적용
 
-1. 본 ZIP 의 \`CLAUDE.md\` + \`docs/\` + \`.claude/\` 전체를 대상 프로젝트 루트에 복사
-2. \`chmod +x .claude/hooks/*.sh\` (실행 권한)
-3. Claude Code 실행 시 자동 로드됨
+1. 본 ZIP 의 \`CLAUDE.md\` + \`AGENTS.md\` + \`.claude/\` + \`harness-mirror/\` 전체를 대상 프로젝트 루트에 복사.
+2. \`chmod +x .claude/hooks/*.sh\` (Mac/Linux/WSL — 실행 권한).
+3. Claude Code (또는 Codex) 실행 시 자동 로드.
+4. \`harness-mirror/\` 는 사람용 설명 사본 — 실제 작동에는 영향 X. 필요 없으면 삭제 가능.
 
 ## 형식 강제성 — 핵심
 
@@ -297,22 +311,24 @@ function generateReadme() {
 
 ## 주의
 
-- 본 ZIP 은 원본의 **그 시점 스냅샷**. 원본이 갱신되면 다시 다운로드.
+- 본 ZIP 은 원본의 **그 시점 스냅샷**. 원본 갱신 시 다시 다운로드.
 - 원본 갱신을 자동 동기화하려면 git submodule 또는 sparse checkout 등 별도 메커니즘 필요.
 - 원본: \`/hiro\` 페이지에서 항상 최신 ZIP 다운로드 가능 (호출 시점에 실제 파일 → 자동 미러).
 `
 }
 
 // ─── GET /api/hiro/zip — 실제 파일 → 즉시 ZIP 생성 ─────────────────────
-// .claude/agents/ 폴더를 재귀 추가 — 미러 호스트 전체 (rules/, skills/, hooks/, HARNESS.*, CLAUDE.md 미러)
-function addDirToZip(zip, srcDir) {
+// 2벌 구성: (1) 실제 작동 .claude/ + CLAUDE.md + AGENTS.md (2) harness-mirror/ 사람용 미러
+function addDirToZip(zip, srcDir, opts = {}) {
+  const { skip = [] } = opts
   const absSrc = path.join(ROOT, srcDir)
   if (!fs.existsSync(absSrc)) return
   for (const entry of fs.readdirSync(absSrc)) {
+    if (skip.includes(entry)) continue
     const relPath = path.join(srcDir, entry)
     const absPath = path.join(ROOT, relPath)
     if (fs.statSync(absPath).isDirectory()) {
-      addDirToZip(zip, relPath)
+      addDirToZip(zip, relPath, opts)
     } else {
       zip.file(relPath, fs.readFileSync(absPath))
     }
@@ -322,20 +338,19 @@ function addDirToZip(zip, srcDir) {
 harnessRouter.get('/api/hiro/zip', async (req, res) => {
   try {
     const zip = new JSZip()
-    // 1) 명시 컴포넌트 (CLAUDE.md, docs/, .claude/settings.json, .claude/hooks/, .claude/skills/, agents/HARNESS.*)
-    const seen = new Set()
-    for (const { file } of HARNESS_COMPONENTS) {
-      const content = readSafe(file)
-      if (content != null) { zip.file(file, content); seen.add(file) }
+    // (1) 실제 작동 — Claude / Codex 가 자동 로드
+    for (const f of ['CLAUDE.md', 'AGENTS.md']) {
+      const content = readSafe(f)
+      if (content != null) zip.file(f, content)
     }
-    // 2) .claude/rules/ 원본 폴더 (README.md 포함)
-    addDirToZip(zip, '.claude/rules')
-    // 3) docs/agents/ 미러 폴더 전체 재귀 — 진입점 + rules/skills/hooks/ 미러 모두
-    addDirToZip(zip, 'docs/agents')
-    // 3) README (사용 가이드)
+    // .claude/ 전체 (settings.local.json 만 제외 — 사용자 PC 정보)
+    addDirToZip(zip, '.claude', { skip: ['settings.local.json'] })
+    // (2) 사람용 미러 — harness-mirror/ 폴더 전체 (CLAUDE.md / AGENTS.md / .claude/ / docs/)
+    addDirToZip(zip, 'harness-mirror')
+    // README (사용 가이드)
     zip.file('README.md', generateReadme())
     const buffer = await zip.generateAsync({ type: 'nodebuffer', compression: 'DEFLATE' })
-    const fname = `harness-mirror-${new Date().toISOString().slice(0, 10)}.zip`
+    const fname = `hiro-harness-${new Date().toISOString().slice(0, 10)}.zip`
     res.set('Content-Type', 'application/zip')
     res.set('Content-Disposition', `attachment; filename="${fname}"`)
     res.send(buffer)
@@ -548,7 +563,7 @@ ${themeToggleButton()}
   <p style="font-size:14px;color:#CBD5E1;margin-bottom:8px">본 페이지는 <strong style="color:#F8FAFC">Claude Code 가 본 프로젝트에서 작업할 때 따르는 Rule·Hook·Skill·Sub-Agent 모두를 한곳에 모은 페이지</strong>.</p>
   <ul style="font-size:14px;color:#CBD5E1;margin-left:22px;line-height:1.8;margin-bottom:12px">
     <li><strong style="color:#F8FAFC">왜 필요한가?</strong> 시간이 흐르면 어떤 Rule이 있는지 기억이 안 남. 한 페이지에서 다 볼 수 있게.</li>
-    <li><strong style="color:#F8FAFC">어떻게 만들어지나?</strong> 본 프로젝트의 <code>.claude/</code> + <code>CLAUDE.md</code> + <code>docs/agents/</code> 의 실시간 미러. 파일이 수정되면 자동 반영.</li>
+    <li><strong style="color:#F8FAFC">어떻게 만들어지나?</strong> 본 프로젝트의 <code>.claude/</code> + <code>CLAUDE.md</code> + <code>AGENTS.md</code> 가 원본. 사람용 미러는 <code>harness-mirror/</code> 폴더에 자동 생성 (원본 수정 시 빌드 시점 자동 반영).</li>
     <li><strong style="color:#F8FAFC">무엇을 할 수 있나?</strong> (1) 각 파일 클릭해서 보기 (2) 전체 ZIP 다운로드해서 다른 프로젝트에 적용 (3) 팀원과 공유</li>
   </ul>
 
@@ -559,8 +574,9 @@ ${themeToggleButton()}
     <li>대상 프로젝트 <strong>루트에 압축 풀기</strong>:
       <ul style="margin:6px 0 6px 20px;font-size:13px;color:#94A3B8;line-height:1.6">
         <li><code style="background:#0F172A;padding:1px 6px;border-radius:3px">CLAUDE.md</code> — 프로젝트 헌법 (Claude 가 항상 로드)</li>
+        <li><code style="background:#0F172A;padding:1px 6px;border-radius:3px">AGENTS.md</code> — OpenAI Codex / Antigravity 헌법 (자동 로드)</li>
         <li><code style="background:#0F172A;padding:1px 6px;border-radius:3px">.claude/</code> — settings.json + hooks/ + skills/ + agents/ + rules/</li>
-        <li><code style="background:#0F172A;padding:1px 6px;border-radius:3px">docs/agents/</code> — 사람용 미러 (선택 — Claude Code 작동에는 불필요)</li>
+        <li><code style="background:#0F172A;padding:1px 6px;border-radius:3px">harness-mirror/</code> — 사람용 미러 (선택 — Claude Code 작동에는 불필요)</li>
       </ul>
     </li>
     <li><strong>실행 권한 부여</strong>: <code style="background:#0F172A;padding:2px 8px;border-radius:4px;color:#F8C4D7">chmod +x .claude/hooks/*.sh</code> — Hook이 실행되려면 필수</li>
@@ -584,9 +600,9 @@ ${themeToggleButton()}
   <p style="font-size:12px;color:#64748B;margin-top:10px;font-style:italic">미러는 <code>npm run sync:harness</code> 또는 <code>npm run build</code> (prebuild) 시 자동 갱신 — 본 ZIP 은 호출 시점에 항상 최신.</p>
   <div class="guide-inline">
     ⚠️ <strong>다른 프로젝트에 HIRO 적용하기 전 — 3 가이드 반드시 정독</strong>:
-    <a href="/hiro/view?path=docs/agents/HARNESS.html">전체 하네스 설명</a> ·
+    <a href="/hiro/view?path=harness-mirror/docs/HARNESS.html">전체 하네스 설명</a> ·
     <a href="/hiro/chart-library">차트 라이브러리</a> ·
-    <a href="/hiro/view?path=docs/agents/HUMAN_GUIDE.md">부트스트랩 사용법</a>
+    <a href="/hiro/view?path=harness-mirror/docs/HUMAN_GUIDE.md">부트스트랩 사용법</a>
   </div>
   <a class="dl-btn" href="/api/hiro/zip">📦 전체 ZIP 다운로드</a>
   <a class="gh-btn" href="https://github.com/mts8787-droid/HIRO" target="_blank" rel="noopener noreferrer">⭐ GitHub 바로가기</a>

@@ -1,5 +1,5 @@
 // Chart Library HTML 생성기 — 14 차트 양식 + 1 직교 패턴 카탈로그
-// 서버 라우트 (routes/chart-library.js) + sync-harness 정적 미러 (docs/agents/CHART_LIBRARY.html) 양쪽에서 사용.
+// 서버 라우트 (routes/chart-library.js) + sync-harness 정적 미러 (harness-mirror/docs/CHART_LIBRARY.html) 양쪽에서 사용.
 
 import { themeStyle, themeToggleButton } from '../lib/theme.js'
 

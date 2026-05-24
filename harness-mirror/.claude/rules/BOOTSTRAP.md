@@ -1,3 +1,6 @@
+<!-- 자동 생성 미러 — 원본: .claude/rules/BOOTSTRAP.md
+     수정은 원본에서. 본 파일은 npm run sync:harness 또는 prebuild 시 자동 갱신. -->
+
 # 부트스트랩 시나리오 (Bootstrap Scenario)
 
 > **이 파일은 Claude 가 따라가는 시나리오** — 사람이 직접 읽는 가이드 아님.

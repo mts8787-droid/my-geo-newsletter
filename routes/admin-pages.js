@@ -939,7 +939,7 @@ ${themeToggleButton()}
       <a class="harness-file" href="/hiro/view?path=.claude/rules/newsletter.md" target="_blank"><span class="harness-tag tag-rule">RULE</span> 뉴스레터 Rule <code>.claude/rules/newsletter.md</code></a>
       <a class="harness-file" href="/hiro/view?path=.claude/rules/BOOTSTRAP.md" target="_blank"><span class="harness-tag tag-rule">RULE</span> 부트스트랩 시나리오 (Claude 용) <code>.claude/rules/BOOTSTRAP.md</code></a>
       <a class="harness-file" href="/hiro/view?path=.claude/rules/BOOTSTRAP-newsletter.md" target="_blank"><span class="harness-tag tag-rule">RULE</span> 뉴스레터 부트스트랩 시나리오 <code>.claude/rules/BOOTSTRAP-newsletter.md</code></a>
-      <a class="harness-file" href="/hiro/view?path=docs/agents/HUMAN_GUIDE.md" target="_blank"><span class="harness-tag tag-rule">MD</span> 부트스트랩 사용법 (Usage Guide) <code>docs/agents/HUMAN_GUIDE.md</code></a>
+      <a class="harness-file" href="/hiro/view?path=harness-mirror/docs/HUMAN_GUIDE.md" target="_blank"><span class="harness-tag tag-rule">MD</span> 부트스트랩 사용법 (Usage Guide) <code>harness-mirror/docs/HUMAN_GUIDE.md</code></a>
 
       <a class="harness-file" href="/hiro/view?path=.claude/hooks/README.md" target="_blank"><span class="harness-tag tag-hook">GUIDE</span> Hook 가이드 (사람용) <code>hooks/README.md</code></a>
       <a class="harness-file" href="/hiro/view?path=.claude/settings.json" target="_blank"><span class="harness-tag tag-config">JSON (For AI)</span> <code>.claude/settings.json</code></a>
@@ -966,8 +966,8 @@ ${themeToggleButton()}
       <a class="harness-file" href="/hiro/view?path=.claude/agents/data-puller.md" target="_blank"><span class="harness-tag tag-agent">AGENT</span> 데이터 진단 <code>data-puller.md</code></a>
 
       <div class="section-title">가이드 (개요 + 미러)</div>
-      <a class="harness-file" href="/hiro/view?path=docs/agents/HARNESS.html" target="_blank"><span class="harness-tag tag-rule">HTML</span> 전체 하네스 설명 (같은 내용 .md 도 있음) <code>docs/agents/HARNESS.html</code></a>
-      <a class="harness-file" href="/hiro/view?path=docs/agents/CHART_LIBRARY.html" target="_blank"><span class="harness-tag tag-rule">HTML</span> 차트 라이브러리 (정적 미러) <code>docs/agents/CHART_LIBRARY.html</code></a>
+      <a class="harness-file" href="/hiro/view?path=harness-mirror/docs/HARNESS.html" target="_blank"><span class="harness-tag tag-rule">HTML</span> 전체 하네스 설명 (같은 내용 .md 도 있음) <code>harness-mirror/docs/HARNESS.html</code></a>
+      <a class="harness-file" href="/hiro/view?path=harness-mirror/docs/CHART_LIBRARY.html" target="_blank"><span class="harness-tag tag-rule">HTML</span> 차트 라이브러리 (정적 미러) <code>harness-mirror/docs/CHART_LIBRARY.html</code></a>
     </div>
   </div>
   <div class="footer">

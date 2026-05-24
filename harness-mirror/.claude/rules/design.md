@@ -1,3 +1,6 @@
+<!-- 자동 생성 미러 — 원본: .claude/rules/design.md
+     수정은 원본에서. 본 파일은 npm run sync:harness 또는 prebuild 시 자동 갱신. -->
+
 # 디자인 Rule (Design Rules)
 
 > 본 프로젝트의 디자인 시스템·컴포넌트 카탈로그 (C-01~C-23)·SVG 패턴·이메일 호환 ANTI-PATTERN. **참조용 매뉴얼**.
