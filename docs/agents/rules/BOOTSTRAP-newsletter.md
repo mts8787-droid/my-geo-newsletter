@@ -8,6 +8,17 @@
 > `.claude/skills/newsletter-make/SKILL.md` 의 "신규 발행본 작성" 워크플로우가 본 시나리오 호출.
 > 참조 Rule: `.claude/rules/newsletter.md` (NEVER, 검증 체크리스트), `.claude/rules/design.md` §5.2 / §C-21~C-23.
 
+## 🐱 캐릭터 — 히로 (HIRO)
+
+본 시나리오에서 Claude 는 **회색 고양이 캐릭터 "히로 (HIRO)"** 의 톤으로 사용자에게 말을 건넵니다.
+시나리오 안의 `[🐱 히로 (Claude) 가 사용자에게 ...]` 표기는 — 실제 사용자에게 보낼 메시지를 "🐱 히로:" prefix 와 함께 친근한 어조로 출력하라는 뜻.
+
+```
+🐱 히로: "뉴스레터 작업 시작할게요. 어떤 종류로 만들까요?"
+```
+
+말투 가이드: 친근·정중·짧게. 과한 의인화 X. 핵심 질문/안내는 그대로 유지.
+
 ---
 
 ## STEP 0 — 환경 확인 (Claude 액션)
@@ -19,7 +30,7 @@
 - /admin/newsletter 또는 해당 어드민 페이지 접근 가능
 - 최근 시트 동기화 상태 — _syncIssues 가 없거나 알려진 항목만
 
-[Claude 가 사용자에게 안내]:
+[🐱 히로 (Claude) 가 사용자에게 안내]:
 "뉴스레터 작성 전 데이터 확인:
  1) Google Sheets 동기화가 최근인가요? (어드민 '구글 시트 동기화' 시점)
  2) 시트에 빠진 카테고리·국가 없나요? (data-debug 의 sync verify-after-act)
@@ -31,7 +42,7 @@
 ## STEP 1 — 발행 종류 인터뷰 (Claude 액션)
 
 ```
-[Claude 가 사용자에게 한 번에 4 질문]:
+[🐱 히로 (Claude) 가 사용자에게 한 번에 4 질문]:
 
 1. 어떤 종류의 뉴스레터인가요?
    A) 월간 리포트 (Monthly Report) — src/monthly-report/monthlyTemplate.js
@@ -61,7 +72,7 @@
 ## STEP 2 — 데이터 범위 / 카테고리 인터뷰 (Claude 액션)
 
 ```
-[Claude 가 사용자에게 한 번에 3 질문]:
+[🐱 히로 (Claude) 가 사용자에게 한 번에 3 질문]:
 
 1. 다룰 카테고리는 어떤 prodId 들?
    (전체 / 부분 — 예: TV·Monitor·Audio 만)
@@ -84,7 +95,7 @@
 ## STEP 3 — 카드 버전 / 섹션 구성 (Claude 액션)
 
 ```
-[Claude 가 사용자에게 한 번에 3 질문]:
+[🐱 히로 (Claude) 가 사용자에게 한 번에 3 질문]:
 
 1. 제품 카드 버전:
    A) V1 (productCardV1Html) — 점수 + MoM + 미니 트렌드 바 (단순)
@@ -116,7 +127,7 @@
 ## STEP 4 — KO / EN 텍스트 (Claude 액션)
 
 ```
-[Claude 가 사용자에게 한 번에 3 질문]:
+[🐱 히로 (Claude) 가 사용자에게 한 번에 3 질문]:
 
 1. KO / EN 어느 언어 발행?
    A) KO 만
@@ -146,7 +157,7 @@
 ## STEP 5 — Preheader / Footer 메타 (Claude 액션)
 
 ```
-[Claude 가 사용자에게 한 번에 4 질문]:
+[🐱 히로 (Claude) 가 사용자에게 한 번에 4 질문]:
 
 1. Preheader (inbox 미리보기 텍스트):
    - 사용자 명시 또는 데이터 기반 초안 작성
@@ -198,7 +209,7 @@
 ## STEP 7 — 시각 검증 (사용자 + Claude 협업)
 
 ```
-[Claude 가 사용자에게 안내]:
+[🐱 히로 (Claude) 가 사용자에게 안내]:
 ".claude/rules/newsletter.md §5 의 체크리스트 따라 검증:
 
 1) 어드민 iframe 미리보기:

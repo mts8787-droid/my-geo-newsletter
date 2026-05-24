@@ -158,14 +158,21 @@ fs.writeFileSync(path.join(ROOT, 'docs/agents/hooks/data.md'),   HOOKS_DATA_MD, 
 fs.writeFileSync(path.join(ROOT, 'docs/agents/hooks/design.md'), HOOKS_DESIGN_MD, 'utf8')
 
 // ─── HARNESS.md — 전체 하네스 설명 (정적) ───────────────────────────────────
-const HARNESS_MD = `# HIRO — Harness for Interactive Reporting Optimization
+const HARNESS_MD = `# 🐱 HIRO — Harness for Interactive Reporting Optimization
 
 > **Built for beginners. Engineered for repetition.**
 >
-> HIRO optimizes how you build interactive dashboards with Claude Code.
+> 🐱 *히로 (HIRO) — 본 하네스의 마스코트 회색 고양이. 부트스트랩 시나리오 같은 대화형 작업에서 친근한 안내자로 말을 건넵니다.*
+>
+> **EN** — HIRO optimizes how you build interactive dashboards with Claude Code.
 > Instead of crafting data parsers, chart components, and newsletter templates from scratch every time,
 > HIRO ships a reusable harness — skills, rules, hooks, and scenario-based bootstraps —
 > that turns the manual workflow into a standardized, repeatable pipeline.
+>
+> **KO** — HIRO 는 Claude Code 로 인터랙티브 대시보드를 만드는 작업을 최적화합니다.
+> 데이터 파서, 차트 컴포넌트, 뉴스레터 템플릿을 매번 처음부터 짜는 대신,
+> HIRO 는 재사용 가능한 하네스 — 스킬·룰·훅·시나리오 기반 부트스트랩 — 를 제공해
+> 수작업 워크플로우를 표준화된 반복 가능한 파이프라인으로 바꿉니다.
 
 본 저장소의 Claude Code 하네스 전체 설명
 
@@ -335,10 +342,12 @@ code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11px;color:#F8F
 a{color:#60A5FA}
 </style></head><body>
 
-<h1>HIRO</h1>
+<h1>🐱 HIRO</h1>
 <p class="sub" style="font-size:14px;color:#CBD5E1;font-weight:600;margin-bottom:4px">Harness for Interactive Reporting Optimization</p>
 <p class="sub" style="font-size:12px;color:#94A3B8;font-style:italic;margin-bottom:14px">Built for beginners. Engineered for repetition.</p>
-<p class="sub" style="font-size:13px;color:#CBD5E1;margin-bottom:18px">HIRO optimizes how you build interactive dashboards with Claude Code. Instead of crafting data parsers, chart components, and newsletter templates from scratch every time, HIRO ships a reusable harness — <strong>skills, rules, hooks, and scenario-based bootstraps</strong> — that turns the manual workflow into a standardized, repeatable pipeline.</p>
+<p class="sub" style="font-size:12px;color:#94A3B8;font-style:italic;margin-bottom:14px">🐱 히로 (HIRO) — 본 하네스의 마스코트 회색 고양이. 부트스트랩 시나리오 같은 대화형 작업에서 친근한 안내자로 말을 건넵니다.</p>
+<p class="sub" style="font-size:13px;color:#CBD5E1;margin-bottom:10px">HIRO optimizes how you build interactive dashboards with Claude Code. Instead of crafting data parsers, chart components, and newsletter templates from scratch every time, HIRO ships a reusable harness — <strong>skills, rules, hooks, and scenario-based bootstraps</strong> — that turns the manual workflow into a standardized, repeatable pipeline.</p>
+<p class="sub" style="font-size:13px;color:#CBD5E1;margin-bottom:18px">HIRO 는 Claude Code 로 인터랙티브 대시보드를 만드는 작업을 최적화합니다. 데이터 파서, 차트 컴포넌트, 뉴스레터 템플릿을 매번 처음부터 짜는 대신, HIRO 는 재사용 가능한 하네스 — <strong>스킬·룰·훅·시나리오 기반 부트스트랩</strong> — 를 제공해 수작업 워크플로우를 표준화된 반복 가능한 파이프라인으로 바꿉니다.</p>
 
 <div class="intro">
   <p><strong>이 페이지가 뭔가요?</strong> — Claude 가 본 저장소에서 일할 때 자동으로 따르는 <strong>규칙·자동 검사·작업 매뉴얼·보조 일꾼</strong>의 묶음입니다. 이 페이지는 <strong>사람이 보기 좋게 정리한 미러</strong>이고, 실제 Claude 가 읽는 원본은 <code>CLAUDE.md</code> + <code>.claude/</code> 폴더에 있어요.</p>

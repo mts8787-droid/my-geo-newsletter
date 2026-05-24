@@ -909,7 +909,7 @@ a.harness-entry:hover{border-color:#CF0652;background:#4F2535}
     <div class="col col-harness">
       <div class="section-title">HIRO (Harness for Interactive Reporting Optimization)</div>
       <a class="card harness-entry" href="/admin/harness">
-        <div class="card-title">📦 HIRO</div>
+        <div class="card-title">🐱 HIRO</div>
         <div class="card-desc">전체 하네스 (Rule·Hook·Skill·Sub-Agent) 정리 페이지 + ZIP 다운로드 — 다른 프로젝트에 적용 가능</div>
       </a>
       <a class="card harness-entry" href="/admin/chart-library" style="background:#1F2937;border-color:#60A5FA">
