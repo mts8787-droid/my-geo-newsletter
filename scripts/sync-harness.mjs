@@ -174,11 +174,13 @@ const HARNESS_MD = `# 🐈‍⬛ HIRO — Harness for Interactive Reporting Opti
 > HIRO 는 재사용 가능한 하네스 — 스킬·룰·훅·시나리오 기반 부트스트랩 — 를 제공해
 > 수작업 워크플로우를 표준화된 반복 가능한 파이프라인으로 바꿉니다.
 
-본 저장소의 Claude Code 하네스 전체 설명
+## 이 페이지가 뭔가요?
 
-> 본 폴더 (\`docs/agents/\`) 는 본 저장소의 모든 하네스 컴포넌트의 **미러링 본** (사람용 진입점).
-> Claude Code 가 실제 작동에 사용하는 것은 원본 (\`CLAUDE.md\`, \`.claude/\` 안).
-> 원본 수정 시 \`npm run sync:harness\` 또는 \`npm run build\` (prebuild) 로 미러 자동 갱신.
+Claude (또는 다른 AI 코딩 도우미) 가 본 저장소에서 일할 때 **자동으로 따르는 규칙·자동 검사·작업 매뉴얼·보조 일꾼** 의 묶음이에요. 4 가지 종류 (Rule / Hook / Skill / Sub-Agent) 로 나뉩니다.
+
+- **사람이 읽는 페이지** (이 파일) — 한 곳에 보기 좋게 정리한 사본
+- **Claude 가 실제 읽는 파일** — \`CLAUDE.md\` + \`.claude/\` 폴더 안
+- 원본을 고치면 \`npm run build\` 실행 시 이 사본이 자동으로 갱신돼요 (사본은 직접 수정 X).
 
 ## 폴더 구조
 
@@ -219,43 +221,29 @@ docs/agents/
     └── design.md
 \`\`\`
 
-## 4 개념 — 강제력 차이
+## 4 가지 종류 — 한 줄 설명
 
-| 개념 | 형식 | 강제력 | 원본 위치 | 미러 위치 |
-|---|---|---|---|---|
-| **Rule** | Markdown | 권고 (~80%) | \`CLAUDE.md\`, \`.claude/rules/*.md\` | \`docs/agents/CLAUDE.md\`, \`docs/agents/rules/*.md\` |
-| **Hook** | JSON 강제 (100%) + md 설명서 | 시스템 차단 | \`.claude/settings.json\`, \`.claude/hooks/*\` | \`docs/agents/hooks/*.md\` (영역별 관점) |
-| **Skill** | Markdown 워크플로우 | 권고 | \`.claude/skills/<name>/SKILL.md\` | \`docs/agents/skills/*.md\` |
-| **Sub-Agent** | Markdown frontmatter | 위임 시 활성 | \`.claude/agents/*.md\` | 미러 없음 (원본 그대로) |
+| 종류 | 뭐 하는 거? | 얼마나 강제? | 예시 |
+|---|---|---|---|
+| **Rule (규칙)** | Claude 가 따라야 할 약속 — "이렇게 해, 이건 하지 마" | 권고 (80% 정도) | "카테고리 이름은 한 파일에만 정의" |
+| **Hook (자동 검사)** | 시스템이 미리 막아주는 자동 검사 — Claude 가 어겨도 차단됨 | 100% 차단 | 빌드 산출물 직접 수정 시도 → 거부 |
+| **Skill (작업 매뉴얼)** | "이 작업은 1→2→3 순서로" 같은 step-by-step | 필요할 때 자동 로드 | "뉴스레터 만들어줘" → \`newsletter-make\` |
+| **Sub-Agent (보조 일꾼)** | 특정 영역만 보는 보조 — 메인이 위임하면 활성 | 위임 시 활성 | \`data-puller\` — 데이터 진단 전담 |
 
-## 핵심 차이
-
-- **Rule** = "따라야 할 규칙" — 토큰·invariant·ANTI-PATTERN. **참조용 매뉴얼**.
-- **Hook** = "절대 하면 안 되는 것" — 시스템이 강제 차단. **JSON 필수**.
-- **Skill** = "자동으로 특정 행동을 하게 하는 명령 조합" — 순차 워크플로우. step-by-step.
-- **Sub-Agent** = 특정 영역 분리 작업 (read-only 진단 등). Claude Code 공식 기능.
+**Hook 만 100% 강제** — Rule / Skill 은 Claude 가 읽고 권고로 따르는 정도입니다. 절대 어기면 안 되는 건 Hook 으로 만들어야 시스템이 차단해요.
 
 ## 사용
 
-### 다른 프로젝트에 적용
-1. ZIP 다운로드 (어드민 \`/hiro\` 페이지) — 원본 \`.claude/\` + \`CLAUDE.md\` + 미러 \`docs/agents/\` 모두 포함
-2. 또는 수동: \`CLAUDE.md\` + \`.claude/\` (전체) 통째로 복사
-3. \`chmod +x .claude/hooks/*.sh\`
-4. Claude Code 실행 → 자동 로드
+### 다른 프로젝트에 HIRO 적용하기
+1. **ZIP 다운로드** — \`/hiro\` 페이지 위쪽 빨간 버튼 또는 GitHub 리포 (https://github.com/mts8787-droid/HIRO) 에서 clone.
+2. 대상 프로젝트 루트에 **압축 풀기** — \`CLAUDE.md\`, \`AGENTS.md\`, \`.claude/\`, \`docs/agents/\` 가 추가됩니다.
+3. **Hook 실행 권한 부여** — \`chmod +x .claude/hooks/*.sh\` (Mac/Linux/WSL 한 줄)
+4. **Claude Code 실행** → 자동으로 모두 로드됩니다.
 
-### 본 저장소에서 갱신 흐름
-1. **원본 파일** 수정 (예: \`.claude/rules/data.md\`, \`.claude/skills/data/SKILL.md\`)
-2. \`npm run build\` 또는 \`npm run sync:harness\` → \`docs/agents/\` 미러 자동 갱신
-3. 미러 폴더 변경도 함께 커밋
-
-### 미러는 읽기 전용
-- 미러 파일 상단에 "원본 위치" 헤더 주석 — 다음 sync 시 덮어쓰여짐
-- 직접 수정 금지. 항상 원본에서.
-
-### 자동 동기화
-- \`package.json\` 의 \`prebuild\` 스크립트가 \`node scripts/sync-harness.mjs\` 호출
-- \`npm run build\` 시 자동 미러 갱신
-- 수동: \`npm run sync:harness\`
+### 본 저장소에서 내용 수정하는 흐름
+1. **원본만 수정** — \`.claude/rules/...\`, \`.claude/skills/...\` 같은 곳. \`docs/agents/\` 사본은 직접 수정 X (다음 빌드에서 덮어쓰여짐).
+2. \`npm run build\` 실행 → 사본 자동 갱신.
+3. 두 폴더 변경 모두 함께 커밋.
 
 ## Skill — 영역별 카테고리
 

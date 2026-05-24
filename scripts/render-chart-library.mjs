@@ -504,8 +504,8 @@ ${topBar}
 <p class="sub">차트 양식별 분류 코드 + 예시 SVG + 사용 위치</p>
 
 <div class="intro">
-  <p style="font-size:14px;color:#F8FAFC;margin-bottom:10px"><strong>분류 체계란?</strong> 차트 양식마다 짧은 코드 (예: <code>L-1</code>, <code>BP-1</code>) 를 부여한 호출 시스템.</p>
-  <p style="font-size:13px;color:#CBD5E1;margin-bottom:14px"><strong>왜 쓰나?</strong> Skill이 차트를 그릴 때 어떤 양식인지 명확히 지정 — <code>"L-1 형태로 라인 차트 만들어줘"</code> 같이 코드만 알려주면 정확한 양식으로 그려짐.</p>
+  <p style="font-size:14px;color:#F8FAFC;margin-bottom:10px"><strong>이 페이지가 뭔가요?</strong> Claude 한테 "이런 차트 그려줘" 라고 부탁할 때 헷갈리지 않게 <strong>차트 종류마다 짧은 코드 (예: <code>L-1</code>, <code>BP-1</code>)</strong> 를 붙여놓은 카탈로그입니다.</p>
+  <p style="font-size:13px;color:#CBD5E1;margin-bottom:14px"><strong>왜 쓰나요?</strong> <code>"라인 차트 그려줘"</code> 라고만 하면 Claude 가 어떤 모양으로 그릴지 애매해요. <code>"L-1 라인 차트 그려줘"</code> 라고 하면 정확히 같은 양식으로 그립니다. 팀 내에서도 한 양식 = 한 코드.</p>
   <ul style="margin-left:22px;font-size:13px;color:#CBD5E1;line-height:1.9">
     <li><code>L</code> — 라인 (시계열 / 트렌드)</li>
     <li><code>B</code> — 바 스택 (누적 / part-to-whole)</li>
