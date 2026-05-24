@@ -332,22 +332,42 @@ a{color:#60A5FA}
 <p class="sub">본 프로젝트의 Claude Code 하네스 (Rule·Hook·Skill·Sub-Agent) 전체 설명</p>
 
 <div class="intro">
-  <p><strong>본 폴더 <code>docs/agents/</code> 는 모든 하네스의 미러링 본 (사람용 진입점).</strong> Claude Code 가 실제 사용하는 것은 원본 (<code>CLAUDE.md</code>, <code>.claude/</code> 안).</p>
-  <p>원본 수정 시 <code>npm run sync:harness</code> 또는 <code>npm run build</code> (prebuild) 시 본 미러 자동 갱신.</p>
+  <p><strong>이 페이지가 뭔가요?</strong> — Claude 가 본 저장소에서 일할 때 자동으로 따르는 <strong>규칙·자동 검사·작업 매뉴얼·보조 일꾼</strong>의 묶음입니다. 이 페이지는 <strong>사람이 보기 좋게 정리한 미러</strong>이고, 실제 Claude 가 읽는 원본은 <code>CLAUDE.md</code> + <code>.claude/</code> 폴더에 있어요.</p>
+  <p>원본을 수정하면 <code>npm run build</code> (또는 <code>npm run sync:harness</code>) 실행 시 본 미러가 자동으로 갱신됩니다 — 미러는 직접 수정 X.</p>
 </div>
 
 <div class="section">
-  <h2>4 개념 정의</h2>
+  <h2>4 가지 종류 (Rule · Hook · Skill · Sub-Agent)</h2>
   <table>
-    <tr><th>개념</th><th>형식</th><th>강제력</th><th>역할</th></tr>
-    <tr><td><span class="tag badge-rule">RULE</span> Rule</td><td>Markdown</td><td>권고 (~80%)</td><td>따라야 할 규칙 — 토큰·invariant·ANTI-PATTERN. 참조용 매뉴얼.</td></tr>
-    <tr><td><span class="tag badge-hook">HOOK</span> Hook</td><td>JSON + md 설명서</td><td>100% (시스템 차단)</td><td>절대 하면 안 되는 것. 등록은 settings.json (JSON 필수).</td></tr>
-    <tr><td><span class="tag badge-skill">SKILL</span> Skill</td><td>Markdown</td><td>권고 (필요 시 로드)</td><td>자동 워크플로우 / 명령 조합. step-by-step.</td></tr>
-    <tr><td><span class="tag badge-agent">AGENT</span> Sub-Agent</td><td>Markdown frontmatter</td><td>위임 시 활성</td><td>특정 영역 분리 작업. Claude Code 공식 기능.</td></tr>
+    <tr><th>종류</th><th>한 줄 설명</th><th>강제력</th><th>예시</th></tr>
+    <tr>
+      <td><span class="tag badge-rule">RULE</span> Rule (규칙)</td>
+      <td>Claude 가 코드 작업할 때 따라야 할 약속. 'NEVER ...' 같은 안 되는 것 + 토큰·이름 규약.</td>
+      <td>권고 (~80%)</td>
+      <td><code>"카테고리 매핑은 categoryMap.js 한 곳에만"</code></td>
+    </tr>
+    <tr>
+      <td><span class="tag badge-hook">HOOK</span> Hook (자동 차단)</td>
+      <td>Rule 중 회귀 위험 큰 항목을 <strong>시스템이 100% 막아주는</strong> 자동 검사. Claude 가 어겨도 시스템이 차단.</td>
+      <td>100% (시스템 차단)</td>
+      <td>"빌드 산출물 직접 수정" 시도 → 자동 거부</td>
+    </tr>
+    <tr>
+      <td><span class="tag badge-skill">SKILL</span> Skill (작업 매뉴얼)</td>
+      <td>특정 작업을 <strong>step-by-step 으로</strong> 진행하는 워크플로우. 자연어로 호출하면 Claude 가 해당 매뉴얼 따라 진행.</td>
+      <td>권고 (필요 시 로드)</td>
+      <td>"뉴스레터 만들어줘" → <code>newsletter-make</code> 스킬</td>
+    </tr>
+    <tr>
+      <td><span class="tag badge-agent">AGENT</span> Sub-Agent (보조 일꾼)</td>
+      <td>특정 영역만 보는 보조 에이전트. 메인 Claude 가 위임할 때 활성화. 보통 진단·읽기 전용.</td>
+      <td>위임 시 활성</td>
+      <td><code>data-puller</code> — 데이터 파이프라인 진단 전담</td>
+    </tr>
   </table>
 
   <div class="warn">
-    <strong>⚠ .md 안에 hook 정의 적어도 무시됨</strong> — 자동 강제는 <code>.claude/settings.json</code> (JSON) 만. <code>.md</code> 는 Claude 가 읽고 권고로 따름 (~80%).
+    <strong>⚠ Hook 만 100% 강제</strong> — Rule / Skill 은 Claude 가 읽고 권고로 따르는 수준. 절대 어기면 안 되는 것은 Hook 으로 만들어야 시스템 차단됨.
   </div>
 </div>
 
@@ -402,43 +422,44 @@ a{color:#60A5FA}
 <div class="section">
   <h2><span class="tag badge-skill">SKILL</span> Skill — 영역별 카테고리</h2>
   <p>사람이 보기 좋도록 영역별로 묶음. 원본 <code>.claude/skills/</code> 폴더는 평탄한 구조 (Claude Code 공식 컨벤션). 본 그룹핑은 미러 페이지에만 적용.</p>
+  <p style="font-size:12px;color:#94A3B8"><strong>스킬 사용법</strong> — Claude 에게 자연어로 <code>"○○ 스킬 써줘"</code> / <code>"○○ 스킬로 △△해줘"</code> 라고 말하거나, 슬래시 명령 <code>/skills ○○</code> 로 호출. Claude 가 자동 매칭도 함 (예: "뉴스레터 만들어줘" → <code>newsletter-make</code>).</p>
 
   <h3>🗂 데이터 (Data)</h3>
   <table>
-    <tr><th>Skill</th><th>담당</th></tr>
-    <tr><td><code>data</code> (인덱스)</td><td>sub-skill 매핑만</td></tr>
-    <tr><td><code>data-add</code></td><td>신규 시트 / 카테고리(PROD_IDS) 추가</td></tr>
-    <tr><td><code>data-debug</code></td><td>회귀 TDD / 시트 sync verify-after-act</td></tr>
-    <tr><td><code>data-refactor</code></td><td>거대 파서 분할 / silent fallback / 매핑 통합 / ERROR CATCHING</td></tr>
+    <tr><th>Skill</th><th>담당</th><th>이렇게 호출</th></tr>
+    <tr><td><code>data</code> (인덱스)</td><td>sub-skill 매핑만</td><td><em>직접 호출 X — 아래 3 sub 중 하나</em></td></tr>
+    <tr><td><code>data-add</code></td><td>신규 시트 / 카테고리(PROD_IDS) 추가</td><td>"data-add 스킬로 새 시트 추가해줘" / <code>/skills data-add</code></td></tr>
+    <tr><td><code>data-debug</code></td><td>회귀 TDD / 시트 sync 결과 점검</td><td>"data-debug 스킬로 sync 결과 확인해줘" / <code>/skills data-debug</code></td></tr>
+    <tr><td><code>data-refactor</code></td><td>거대 파서 분할 / silent fallback 강화 / 매핑 통합</td><td>"data-refactor 스킬로 이 파서 분할해줘" / <code>/skills data-refactor</code></td></tr>
   </table>
   <p style="font-size:12px;color:#94A3B8">참조: <code>rules/data.md</code> (5단계 ERROR CATCHING, invariant) · Sub-Agent <code>data-puller.md</code></p>
 
   <h3>🎨 디자인 (Design)</h3>
   <table>
-    <tr><th>Skill</th><th>담당</th></tr>
-    <tr><td><code>design</code> (인덱스)</td><td>sub-skill 매핑만</td></tr>
-    <tr><td><code>design-chart</code></td><td>분류 코드(L-1~T-1) 차트 / 차트+표 결합(C-24) / 신규 SVG 양식</td></tr>
-    <tr><td><code>design-component</code></td><td>신규 컴포넌트(C-XX) / 카드 변형(V4) / iframe srcdoc 미리보기</td></tr>
-    <tr><td><code>design-tune</code></td><td>이메일 호환 변환 / KO·EN 라벨 / UI 회귀 디버깅</td></tr>
+    <tr><th>Skill</th><th>담당</th><th>이렇게 호출</th></tr>
+    <tr><td><code>design</code> (인덱스)</td><td>sub-skill 매핑만</td><td><em>직접 호출 X — 아래 3 sub 중 하나</em></td></tr>
+    <tr><td><code>design-chart</code></td><td>분류 코드(L-1~T-1) 차트 / 차트+표 결합(C-24) / 신규 SVG 양식</td><td>"design-chart 스킬로 L-1 차트 그려줘" / <code>/skills design-chart</code></td></tr>
+    <tr><td><code>design-component</code></td><td>신규 컴포넌트(C-XX) / 카드 변형(V4) / iframe srcdoc</td><td>"design-component 스킬로 새 카드 만들어줘" / <code>/skills design-component</code></td></tr>
+    <tr><td><code>design-tune</code></td><td>이메일 호환 변환 / KO·EN 라벨 / UI 회귀 디버깅</td><td>"design-tune 스킬로 이메일에서 차트 안 보이는 거 고쳐줘" / <code>/skills design-tune</code></td></tr>
   </table>
   <p style="font-size:12px;color:#94A3B8">참조: <code>rules/design.md</code> (토큰·C-01~C-24·SVG 패턴) · 적용 Hook <code>block-dist.sh</code></p>
 
   <h3>📧 뉴스레터 (Newsletter)</h3>
   <table>
-    <tr><th>Skill</th><th>담당</th></tr>
-    <tr><td><code>newsletter</code> (인덱스)</td><td>sub-skill 매핑만</td></tr>
-    <tr><td><code>newsletter-make</code></td><td>신규 발행본 작성 (BOOTSTRAP-newsletter 8 step 트리거) / 새 섹션 추가</td></tr>
-    <tr><td><code>newsletter-debug</code></td><td>미출시 회귀 / 이메일 클라이언트별 깨짐 / iframe 클립</td></tr>
-    <tr><td><code>newsletter-send</code></td><td>발송 전 multi-client 검증 / SMTP 발송 / audit log</td></tr>
+    <tr><th>Skill</th><th>담당</th><th>이렇게 호출</th></tr>
+    <tr><td><code>newsletter</code> (인덱스)</td><td>sub-skill 매핑만</td><td><em>직접 호출 X — 아래 3 sub 중 하나</em></td></tr>
+    <tr><td><code>newsletter-make</code></td><td>신규 발행본 작성 (BOOTSTRAP-newsletter 8 step 트리거) / 새 섹션 추가</td><td>"newsletter-make 스킬로 5월호 뉴스레터 만들어줘" / <code>/skills newsletter-make</code></td></tr>
+    <tr><td><code>newsletter-debug</code></td><td>미출시 회귀 / 이메일 클라이언트별 깨짐 / iframe 클립</td><td>"newsletter-debug 스킬로 Outlook 에서 깨진 거 고쳐줘" / <code>/skills newsletter-debug</code></td></tr>
+    <tr><td><code>newsletter-send</code></td><td>발송 전 multi-client 검증 / SMTP 발송 / audit log</td><td>"newsletter-send 스킬로 발송 전 검증해줘" / <code>/skills newsletter-send</code></td></tr>
   </table>
   <p style="font-size:12px;color:#94A3B8">참조: <code>rules/newsletter.md</code> (NEVER, 검증 체크리스트) · <code>rules/BOOTSTRAP-newsletter.md</code> (시나리오) · 적용 Hook <code>newsletter-guard.sh</code></p>
 
   <h3>🔧 공통 / 메타</h3>
   <table>
-    <tr><th>Skill</th><th>담당</th></tr>
-    <tr><td><code>onboard</code></td><td>"이 하네스 적용해줘" — 새 프로젝트 셋업 시나리오 (BOOTSTRAP.md 트리거)</td></tr>
-    <tr><td><code>debug</code></td><td>"X 안 됨" — BOOTSTRAP.md 의 디버깅 시나리오 (15 카테고리) 매핑</td></tr>
-    <tr><td><code>prompting</code></td><td>다른 에이전트형 도구 (Cursor / Codex) 용 통합 시스템 프롬프트</td></tr>
+    <tr><th>Skill</th><th>담당</th><th>이렇게 호출</th></tr>
+    <tr><td><code>onboard</code></td><td>새 프로젝트에 본 하네스 셋업 (BOOTSTRAP.md 시나리오 트리거)</td><td>"onboard 스킬로 이 하네스 내 프로젝트에 적용해줘" / <code>/skills onboard</code></td></tr>
+    <tr><td><code>debug</code></td><td>"X 안 됨" 같은 일반 디버깅 (BOOTSTRAP.md 의 15 디버깅 시나리오 매핑)</td><td>"debug 스킬로 이거 안 되는 거 디버깅해줘" / <code>/skills debug</code></td></tr>
+    <tr><td><code>prompting</code></td><td>다른 에이전트형 도구 (Cursor / Codex) 용 통합 시스템 프롬프트 생성</td><td>"prompting 스킬로 Cursor 용 시스템 프롬프트 만들어줘" / <code>/skills prompting</code></td></tr>
   </table>
 </div>
 
