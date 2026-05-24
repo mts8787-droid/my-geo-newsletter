@@ -457,7 +457,7 @@ export function renderChartLibraryHTML({ adminMode = false } = {}) {
   }).join('')
 
   const topBar = adminMode
-    ? '<div class="top"><a class="back" href="/admin/">← 관리자</a><a class="back" href="/admin/harness" style="margin-left:14px">→ Harness Mirror</a></div>'
+    ? '<div class="top"><a class="back" href="/admin/">← 관리자</a><a class="back" href="/admin/harness" style="margin-left:14px">→ HIRO</a></div>'
     : '<div class="top"><span style="font-size:11px;color:#64748B">정적 미러 — /admin/chart-library 의 그 시점 스냅샷</span></div>'
 
   return `<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">
