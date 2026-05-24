@@ -516,6 +516,19 @@ h1{font-size:22px;color:var(--text-strong);margin-bottom:4px}
 .hiro-hero .title .cat{font-size:60px;vertical-align:middle;margin-right:8px}
 .hiro-hero .fullname{font-size:18px;font-weight:600;color:var(--accent);letter-spacing:1.5px;margin-bottom:6px}
 .hiro-hero .tagline{font-size:13px;color:var(--text-sub);font-style:italic}
+.guide-notice{background:linear-gradient(135deg,#FEF3C7 0%,#FECACA 100%);border:2px solid #DC2626;border-radius:12px;padding:18px 24px;margin-bottom:22px;color:#7F1D1D}
+.guide-notice .head{font-size:15px;font-weight:900;color:#7F1D1D;margin-bottom:8px;letter-spacing:-0.3px}
+.guide-notice .body{font-size:13px;color:#7F1D1D;line-height:1.7;margin-bottom:10px}
+.guide-notice .body strong{color:#991B1B}
+.guide-notice .links{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
+.guide-notice .links a{display:inline-block;background:#DC2626;color:#fff !important;padding:8px 14px;border-radius:6px;text-decoration:none;font-size:12px;font-weight:700;transition:background .15s}
+.guide-notice .links a:hover{background:#991B1B}
+[data-theme="dark"] .guide-notice{background:linear-gradient(135deg,#3F1D1D 0%,#451A03 100%);border-color:#F87171;color:#FCA5A5}
+[data-theme="dark"] .guide-notice .head{color:#FECACA}
+[data-theme="dark"] .guide-notice .body,[data-theme="dark"] .guide-notice .body strong{color:#FCA5A5}
+[data-theme="dark"] .guide-notice .body strong{color:#FECACA}
+[data-theme="dark"] .guide-notice .links a{background:#F87171;color:#7F1D1D !important}
+[data-theme="dark"] .guide-notice .links a:hover{background:#FECACA}
 @media (max-width:780px){
   .hiro-hero .title{font-size:48px;letter-spacing:-2px}
   .hiro-hero .title .cat{font-size:40px}
@@ -527,6 +540,18 @@ ${themeToggleButton()}
   <div class="title"><span class="cat">🐈‍⬛</span>HIRO</div>
   <div class="fullname">Harness for Interactive Reporting Optimization</div>
   <div class="tagline">Built for beginners. Engineered for repetition.</div>
+</div>
+
+<div class="guide-notice">
+  <div class="head">⚠️ 다른 프로젝트에 HIRO 적용하기 전 — 3 가이드 반드시 정독</div>
+  <div class="body">
+    HIRO 를 처음 보거나 다른 프로젝트에 적용하시려면 <strong>아래 3 가이드를 먼저 읽고 작업을 시작하세요</strong>. 셋업 / 차트 호출 / 시나리오 진행 모두 이 3 문서가 전제입니다. 건너뛰면 토큰·매핑·시나리오 호출이 의도대로 안 됩니다.
+  </div>
+  <div class="links">
+    <a href="/hiro/view?path=docs/agents/HARNESS.html">📘 전체 하네스 설명 (HARNESS)</a>
+    <a href="/hiro/chart-library">📊 차트 라이브러리 (Chart Library)</a>
+    <a href="/hiro/view?path=docs/agents/HUMAN_GUIDE.md">📗 부트스트랩 사용법 (HUMAN_GUIDE)</a>
+  </div>
 </div>
 
 <div class="usage">
