@@ -1,4 +1,5 @@
-// Harness Mirror — Claude Code 하네스(Rule·Skill·Hook·Sub-Agent) 정리 + ZIP 다운로드
+// HIRO — Harness for Interactive Reporting Optimization
+// Claude Code 하네스(Rule·Skill·Hook·Sub-Agent) 정리 + ZIP 다운로드
 // 본 페이지는 .claude/ + CLAUDE.md 의 실시간 미러. 다른 프로젝트에 적용하려고 ZIP 받을 때 사용.
 // ZIP 생성 시점에 실제 파일을 읽으므로 항상 최신. 별도 동기화 단계 없음.
 import { Router } from 'express'
@@ -239,7 +240,7 @@ function fileSize(relPath) {
 
 function generateReadme() {
   const today = new Date().toISOString().slice(0, 10)
-  return `# Claude Code Harness Mirror
+  return `# HIRO — Harness for Interactive Reporting Optimization
 
 본 ZIP 은 \`my-geo-newsletter\` 저장소의 Claude Code 하네스 (Rule·Hook·Skill·Sub-Agent) 미러링 본.
 생성일: ${today}
@@ -390,7 +391,7 @@ pre{background:#0B1220;border:1px solid #1E293B;border-radius:12px;padding:20px 
 .lang{display:inline-block;background:#334155;color:#94A3B8;padding:2px 8px;border-radius:4px;font-size:10px;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
 </style></head><body>
 <div class="topbar">
-  <a class="back" href="/admin/harness">← Harness Mirror</a>
+  <a class="back" href="/admin/harness">← HIRO</a>
   <a class="btn" href="/api/harness/file?path=${encodeURIComponent(relPath)}" target="_blank">raw 다운로드</a>
 </div>
 <h1>${titleEsc}</h1>
@@ -455,7 +456,7 @@ harnessRouter.get('/admin/harness', (req, res) => {
   res.set('Content-Type', 'text/html; charset=utf-8')
   res.send(`<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Harness Mirror — Claude Code 하네스 미러링</title>
+<title>HIRO — Harness for Interactive Reporting Optimization</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#0F172A;color:#E2E8F0;font-family:'LG Smart','Arial Narrow',Arial,sans-serif;padding:28px 32px;line-height:1.5}
@@ -492,11 +493,13 @@ h1{font-size:22px;color:#F8FAFC;margin-bottom:4px}
 <div class="top">
   <a class="back" href="/admin/">← 관리자</a>
 </div>
-<h1>Harness Mirror</h1>
-<p class="sub">Claude Code 하네스 (Rule·Skill·Hook·Sub-Agent) 의 실시간 미러링</p>
+<h1>HIRO</h1>
+<p class="sub" style="font-size:14px;color:#CBD5E1;font-weight:600;margin-bottom:4px">Harness for Interactive Reporting Optimization</p>
+<p class="sub" style="font-size:12px;color:#94A3B8;font-style:italic;margin-bottom:18px">Built for beginners. Engineered for repetition.</p>
 
 <div class="usage">
-  <h2 style="font-size:16px;color:#F8FAFC;margin-bottom:10px">📌 Harness Mirror 란?</h2>
+  <h2 style="font-size:16px;color:#F8FAFC;margin-bottom:10px">📌 HIRO 란?</h2>
+  <p style="font-size:13px;color:#CBD5E1;margin-bottom:8px">HIRO optimizes how you build interactive dashboards with Claude Code. Instead of crafting data parsers, chart components, and newsletter templates from scratch every time, HIRO ships a reusable harness — <strong style="color:#F8FAFC">skills, rules, hooks, and scenario-based bootstraps</strong> — that turns the manual workflow into a standardized, repeatable pipeline.</p>
   <p style="font-size:13px;color:#CBD5E1;margin-bottom:8px">본 페이지는 <strong style="color:#F8FAFC">Claude Code 가 본 프로젝트에서 작업할 때 따르는 Rule·Hook·Skill·Sub-Agent 모두를 한곳에 모은 페이지</strong>.</p>
   <ul style="font-size:13px;color:#CBD5E1;margin-left:22px;line-height:1.8;margin-bottom:12px">
     <li><strong style="color:#F8FAFC">왜 필요한가?</strong> 시간이 흐르면 어떤 Rule이 있는지 기억이 안 남. 한 페이지에서 다 볼 수 있게.</li>

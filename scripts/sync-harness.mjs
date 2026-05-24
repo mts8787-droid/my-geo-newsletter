@@ -158,7 +158,16 @@ fs.writeFileSync(path.join(ROOT, 'docs/agents/hooks/data.md'),   HOOKS_DATA_MD, 
 fs.writeFileSync(path.join(ROOT, 'docs/agents/hooks/design.md'), HOOKS_DESIGN_MD, 'utf8')
 
 // ─── HARNESS.md — 전체 하네스 설명 (정적) ───────────────────────────────────
-const HARNESS_MD = `# Harness — 본 프로젝트의 Claude Code 하네스 전체 설명
+const HARNESS_MD = `# HIRO — Harness for Interactive Reporting Optimization
+
+> **Built for beginners. Engineered for repetition.**
+>
+> HIRO optimizes how you build interactive dashboards with Claude Code.
+> Instead of crafting data parsers, chart components, and newsletter templates from scratch every time,
+> HIRO ships a reusable harness — skills, rules, hooks, and scenario-based bootstraps —
+> that turns the manual workflow into a standardized, repeatable pipeline.
+
+본 저장소의 Claude Code 하네스 전체 설명
 
 > 본 폴더 (\`docs/agents/\`) 는 본 저장소의 모든 하네스 컴포넌트의 **미러링 본** (사람용 진입점).
 > Claude Code 가 실제 작동에 사용하는 것은 원본 (\`CLAUDE.md\`, \`.claude/\` 안).
@@ -294,7 +303,7 @@ fs.writeFileSync(path.join(ROOT, 'docs/agents/HARNESS.md'), HARNESS_MD, 'utf8')
 const HARNESS_HTML = `<!DOCTYPE html>
 <html lang="ko"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Harness — 본 프로젝트의 Claude Code 하네스</title>
+<title>HIRO — Harness for Interactive Reporting Optimization</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#0F172A;color:#E2E8F0;font-family:'LG Smart','Arial Narrow',Arial,sans-serif;padding:28px 32px;line-height:1.6;max-width:1100px;margin:0 auto}
@@ -326,8 +335,10 @@ code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11px;color:#F8F
 a{color:#60A5FA}
 </style></head><body>
 
-<h1>Harness</h1>
-<p class="sub">본 프로젝트의 Claude Code 하네스 (Rule·Hook·Skill·Sub-Agent) 전체 설명</p>
+<h1>HIRO</h1>
+<p class="sub" style="font-size:14px;color:#CBD5E1;font-weight:600;margin-bottom:4px">Harness for Interactive Reporting Optimization</p>
+<p class="sub" style="font-size:12px;color:#94A3B8;font-style:italic;margin-bottom:14px">Built for beginners. Engineered for repetition.</p>
+<p class="sub" style="font-size:13px;color:#CBD5E1;margin-bottom:18px">HIRO optimizes how you build interactive dashboards with Claude Code. Instead of crafting data parsers, chart components, and newsletter templates from scratch every time, HIRO ships a reusable harness — <strong>skills, rules, hooks, and scenario-based bootstraps</strong> — that turns the manual workflow into a standardized, repeatable pipeline.</p>
 
 <div class="intro">
   <p><strong>이 페이지가 뭔가요?</strong> — Claude 가 본 저장소에서 일할 때 자동으로 따르는 <strong>규칙·자동 검사·작업 매뉴얼·보조 일꾼</strong>의 묶음입니다. 이 페이지는 <strong>사람이 보기 좋게 정리한 미러</strong>이고, 실제 Claude 가 읽는 원본은 <code>CLAUDE.md</code> + <code>.claude/</code> 폴더에 있어요.</p>

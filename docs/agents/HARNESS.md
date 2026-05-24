@@ -1,4 +1,13 @@
-# Harness — 본 프로젝트의 Claude Code 하네스 전체 설명
+# HIRO — Harness for Interactive Reporting Optimization
+
+> **Built for beginners. Engineered for repetition.**
+>
+> HIRO optimizes how you build interactive dashboards with Claude Code.
+> Instead of crafting data parsers, chart components, and newsletter templates from scratch every time,
+> HIRO ships a reusable harness — skills, rules, hooks, and scenario-based bootstraps —
+> that turns the manual workflow into a standardized, repeatable pipeline.
+
+본 저장소의 Claude Code 하네스 전체 설명
 
 > 본 폴더 (`docs/agents/`) 는 본 저장소의 모든 하네스 컴포넌트의 **미러링 본** (사람용 진입점).
 > Claude Code 가 실제 작동에 사용하는 것은 원본 (`CLAUDE.md`, `.claude/` 안).
