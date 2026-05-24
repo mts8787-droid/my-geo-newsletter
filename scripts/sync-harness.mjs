@@ -19,6 +19,7 @@ import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { renderChartLibraryHTML } from './render-chart-library.mjs'
+import { themeStyle, themeToggleButton } from '../lib/theme.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const ROOT = path.resolve(path.dirname(__filename), '..')
@@ -299,38 +300,48 @@ const HARNESS_HTML = `<!DOCTYPE html>
 <html lang="ko"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>HIRO — Harness for Interactive Reporting Optimization</title>
+${themeStyle()}
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#0F172A;color:#E2E8F0;font-family:'LG Smart','Arial Narrow',Arial,sans-serif;padding:28px 32px;line-height:1.6;max-width:1100px;margin:0 auto}
-h1{font-size:26px;color:#F8FAFC;margin-bottom:6px}
-.sub{font-size:14px;color:#64748B;margin-bottom:20px}
-.intro{background:#1E293B;border:1px solid #334155;border-radius:12px;padding:18px 22px;margin-bottom:18px;font-size:14px;color:#CBD5E1}
+body{background:var(--bg-primary);color:var(--text-primary);font-family:'LG Smart','Arial Narrow',Arial,sans-serif;padding:28px 32px;line-height:1.6;max-width:1100px;margin:0 auto;transition:background .2s,color .2s}
+h1{font-size:26px;color:var(--text-strong);margin-bottom:6px}
+.sub{font-size:14px;color:var(--text-muted);margin-bottom:20px}
+.intro{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:18px 22px;margin-bottom:18px;font-size:14px;color:var(--text-desc)}
 .intro p{margin-bottom:6px}
-.intro strong{color:#F8FAFC}
-table{width:100%;border-collapse:collapse;font-size:14px;margin-bottom:18px;background:#1E293B;border-radius:8px;overflow:hidden}
-th{text-align:left;color:#94A3B8;font-weight:600;padding:10px 14px;border-bottom:1px solid #334155;font-size:12px;text-transform:uppercase;letter-spacing:1px}
-td{padding:10px 14px;border-bottom:1px solid rgba(51,65,85,.5);color:#CBD5E1}
-code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;color:#F8FAFC;background:#0F172A;padding:2px 6px;border-radius:3px}
-.section{background:#1E293B;border:1px solid #334155;border-radius:12px;padding:20px 24px;margin-bottom:18px}
-.section h2{font-size:17px;font-weight:700;color:#F8FAFC;margin-bottom:12px;display:flex;align-items:center;gap:8px}
-.section h2 .tag{font-size:12px;background:#334155;color:#94A3B8;padding:2px 8px;border-radius:4px;font-weight:600;text-transform:uppercase;letter-spacing:1px}
-.section h3{font-size:14px;font-weight:600;color:#F8FAFC;margin:14px 0 6px}
-.section p{font-size:14px;color:#CBD5E1;margin-bottom:8px}
-.section ul{margin:6px 0 12px 22px;font-size:14px;color:#CBD5E1}
+.intro strong{color:var(--text-strong)}
+table{width:100%;border-collapse:collapse;font-size:14px;margin-bottom:18px;background:var(--bg-card);border-radius:8px;overflow:hidden}
+th{text-align:left;color:var(--text-sub);font-weight:600;padding:10px 14px;border-bottom:1px solid var(--border);font-size:12px;text-transform:uppercase;letter-spacing:1px}
+td{padding:10px 14px;border-bottom:1px solid var(--border-soft);color:var(--text-desc)}
+code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;color:var(--text-strong);background:var(--bg-code);padding:2px 6px;border-radius:3px}
+.section{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin-bottom:18px}
+.section h2{font-size:17px;font-weight:700;color:var(--text-strong);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.section h2 .tag{font-size:12px;background:var(--border);color:var(--text-sub);padding:2px 8px;border-radius:4px;font-weight:600;text-transform:uppercase;letter-spacing:1px}
+.section h3{font-size:14px;font-weight:600;color:var(--text-strong);margin:14px 0 6px}
+.section p{font-size:14px;color:var(--text-desc);margin-bottom:8px}
+.section ul{margin:6px 0 12px 22px;font-size:14px;color:var(--text-desc)}
 .section li{margin-bottom:4px}
-.tree{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;background:#0F172A;padding:14px 18px;border-radius:8px;color:#CBD5E1;white-space:pre;margin-bottom:14px;line-height:1.4}
+.tree{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;background:var(--bg-code);padding:14px 18px;border-radius:8px;color:var(--text-desc);white-space:pre;margin-bottom:14px;line-height:1.4}
 .badge-rule{background:#1E3A5F;color:#60A5FA;border:1px solid #2563EB}
 .badge-hook{background:#3F1D1D;color:#F87171;border:1px solid #7F1D1D}
 .badge-skill{background:#1F3A1F;color:#4ADE80;border:1px solid #15803D}
 .badge-agent{background:#3F2A1D;color:#FBBF24;border:1px solid #B45309}
+[data-theme="light"] .badge-rule{background:#DBEAFE;color:#1E40AF;border-color:#2563EB}
+[data-theme="light"] .badge-hook{background:#FEE2E2;color:#991B1B;border-color:#DC2626}
+[data-theme="light"] .badge-skill{background:#DCFCE7;color:#166534;border-color:#15803D}
+[data-theme="light"] .badge-agent{background:#FEF3C7;color:#92400E;border-color:#B45309}
 .note{background:#0F2A1F;border:1px solid #15803D;border-radius:8px;padding:12px 16px;margin-top:14px;font-size:13px;color:#86EFAC}
 .note strong{color:#4ADE80}
+[data-theme="light"] .note{background:#ECFDF5;border-color:#A7F3D0;color:#166534}
+[data-theme="light"] .note strong{color:#15803D}
 .warn{background:#3F1D1D;border:1px solid #7F1D1D;border-radius:8px;padding:12px 16px;margin-top:14px;font-size:13px;color:#FCA5A5}
 .warn strong{color:#F87171}
-a{color:#60A5FA}
-.back-link{display:inline-block;color:#CF0652;text-decoration:none;font-size:14px;margin-bottom:14px;font-weight:600}
+[data-theme="light"] .warn{background:#FEF2F2;border-color:#FECACA;color:#7F1D1D}
+[data-theme="light"] .warn strong{color:#991B1B}
+a{color:var(--accent)}
+.back-link{display:inline-block;color:var(--accent);text-decoration:none;font-size:14px;margin-bottom:14px;font-weight:600}
 .back-link:hover{text-decoration:underline}
 </style></head><body>
+${themeToggleButton()}
 
 <a class="back-link" href="/hiro">← HIRO</a>
 

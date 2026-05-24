@@ -474,6 +474,9 @@ h1{font-size:22px;color:var(--text-strong);margin-bottom:4px}
 .intro strong{color:var(--text-strong)}
 .usage{background:var(--bg-card);border:1px solid var(--accent);border-radius:12px;padding:22px 26px;margin-bottom:18px;color:var(--text-desc)}
 [data-theme="dark"] .usage{background:linear-gradient(135deg,#1F2937 0%,#2A1F3F 100%)}
+.usage h2{display:block !important;font-size:17px !important;font-weight:700;color:var(--text-strong) !important;background:var(--bg-code);border-left:4px solid var(--accent);padding:10px 14px !important;border-radius:4px;margin:18px 0 14px !important}
+.usage h2:first-of-type{margin-top:6px !important}
+.usage h3{display:block;font-size:15px;font-weight:600;color:var(--text-strong);background:var(--bg-code);border-left:3px solid var(--text-sub);padding:8px 12px;border-radius:4px;margin:16px 0 10px}
 .usage code{font-family:ui-monospace,Menlo,Consolas,monospace}
 .dl-btn{display:inline-block;background:var(--accent);color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:700;font-size:15px;margin-top:14px}
 .dl-btn:hover{background:#e0186b}
@@ -583,17 +586,6 @@ ${themeToggleButton()}
   </div>
   <a class="dl-btn" href="/api/hiro/zip">📦 전체 ZIP 다운로드</a>
   <a class="gh-btn" href="https://github.com/mts8787-droid/HIRO" target="_blank" rel="noopener noreferrer">⭐ GitHub 바로가기</a>
-</div>
-
-<div class="intro">
-  <h3 style="font-size:15px;color:#F8FAFC;margin-bottom:10px">🧩 하네스 4 개념</h3>
-  <ul style="font-size:14px;color:#CBD5E1;margin-left:22px;line-height:1.9">
-    <li><span style="color:#60A5FA;font-weight:700">Rule</span> — 따라야 할 규칙. Claude 가 권고로 따름 (~80%). 토큰·invariant·ANTI-PATTERN 매뉴얼.</li>
-    <li><span style="color:#F87171;font-weight:700">Hook</span> — 절대 하면 안 되는 것. <strong>JSON 강제 (100%)</strong>. 시스템이 자동 차단.</li>
-    <li><span style="color:#4ADE80;font-weight:700">Skill</span> — 자동 워크플로우 / 명령 조합. "L-1 차트 그려줘" 같은 호출.</li>
-    <li><span style="color:#FBBF24;font-weight:700">Sub-Agent</span> — 특정 영역 분리 작업 (예: 데이터 진단 read-only).</li>
-  </ul>
-  <p style="color:#94A3B8;font-size:12px;margin-top:10px">아래 목록의 각 컴포넌트를 클릭하면 디자인된 HTML 또는 원본 Markdown 으로 열람 가능.</p>
 </div>
 
 <div class="kpis">
