@@ -328,7 +328,11 @@ code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11px;color:#F8F
 .warn{background:#3F1D1D;border:1px solid #7F1D1D;border-radius:8px;padding:12px 16px;margin-top:14px;font-size:12px;color:#FCA5A5}
 .warn strong{color:#F87171}
 a{color:#60A5FA}
+.back-link{display:inline-block;color:#CF0652;text-decoration:none;font-size:13px;margin-bottom:14px;font-weight:600}
+.back-link:hover{text-decoration:underline}
 </style></head><body>
+
+<a class="back-link" href="/hiro">← HIRO</a>
 
 <h1>🐈‍⬛ HIRO</h1>
 <p class="sub" style="font-size:14px;color:#CBD5E1;font-weight:600;margin-bottom:4px">Harness for Interactive Reporting Optimization</p>
