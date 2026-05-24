@@ -473,6 +473,10 @@ h1{font-size:22px;color:var(--text-strong);margin-bottom:4px}
 .usage code{font-family:ui-monospace,Menlo,Consolas,monospace}
 .dl-btn{display:inline-block;background:var(--accent);color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:700;font-size:14px;margin-top:14px}
 .dl-btn:hover{background:#e0186b}
+.gh-btn{display:inline-block;background:#24292F;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:700;font-size:14px;margin-top:14px;margin-left:10px;border:1px solid #444C56}
+.gh-btn:hover{background:#32383F}
+[data-theme="light"] .gh-btn{background:#1F2328;border-color:#1F2328}
+[data-theme="light"] .gh-btn:hover{background:#24292F}
 .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:24px}
 .card{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:14px 18px}
 .card .label{font-size:11px;color:var(--text-sub);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
@@ -545,6 +549,7 @@ ${themeToggleButton()}
   </ol>
   <p style="font-size:11px;color:#64748B;margin-top:10px;font-style:italic">미러는 <code>npm run sync:harness</code> 또는 <code>npm run build</code> (prebuild) 시 자동 갱신 — 본 ZIP 은 호출 시점에 항상 최신.</p>
   <a class="dl-btn" href="/api/hiro/zip">📦 전체 ZIP 다운로드</a>
+  <a class="gh-btn" href="https://github.com/mts8787-droid/HIRO" target="_blank" rel="noopener noreferrer">⭐ GitHub 바로가기</a>
 </div>
 
 <div class="intro">
