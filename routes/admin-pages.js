@@ -13,6 +13,59 @@ import { readModeSyncData, writeModeSyncData } from '../lib/storage.js'
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const PROJECT_ROOT = join(__dirname, '..')
 
+// ─── 테마 (다크/라이트) 공통 헬퍼 — /admin/, /admin/harness 에서 사용 ──────────
+// CSS 변수로 색상 토큰 정의 + localStorage 'hiro-theme' 저장 + body 우측 상단 토글 버튼.
+// head 에 themeStyle(), body 맨 앞에 themeToggleButton() 삽입.
+export function themeStyle() {
+  return `<style>
+:root, [data-theme="dark"] {
+  --bg-primary:#0F172A; --bg-card:#1E293B; --bg-code:#0F172A;
+  --text-primary:#E2E8F0; --text-strong:#F8FAFC; --text-desc:#CBD5E1;
+  --text-sub:#94A3B8; --text-muted:#64748B;
+  --border:#334155; --border-soft:#1E293B;
+  --accent:#CF0652;
+  --hero-bg:#3F1D2A; --hero-border:#7F1D3D; --hero-hover-bg:#4F2535; --hero-title:#FCA5A5;
+}
+[data-theme="light"] {
+  --bg-primary:#F8FAFC; --bg-card:#FFFFFF; --bg-code:#F1F5F9;
+  --text-primary:#1E293B; --text-strong:#0F172A; --text-desc:#475569;
+  --text-sub:#64748B; --text-muted:#94A3B8;
+  --border:#E2E8F0; --border-soft:#F1F5F9;
+  --accent:#CF0652;
+  --hero-bg:#FFF1F5; --hero-border:#FECDD3; --hero-hover-bg:#FFE4ED; --hero-title:#BE123C;
+}
+#theme-toggle{position:fixed;top:14px;right:14px;background:var(--bg-card);border:1px solid var(--border);color:var(--text-strong);padding:6px 14px;border-radius:8px;font-size:16px;cursor:pointer;z-index:9999;font-family:inherit;box-shadow:0 2px 8px rgba(0,0,0,.15);transition:transform .15s}
+#theme-toggle:hover{transform:scale(1.05);border-color:var(--accent)}
+</style>
+<script>
+(function(){
+  var KEY='hiro-theme';
+  var saved=localStorage.getItem(KEY)||'dark';
+  document.documentElement.setAttribute('data-theme',saved);
+  window.__toggleTheme=function(){
+    var cur=document.documentElement.getAttribute('data-theme');
+    var next=cur==='light'?'dark':'light';
+    document.documentElement.setAttribute('data-theme',next);
+    localStorage.setItem(KEY,next);
+    var btn=document.getElementById('theme-toggle');
+    if(btn) btn.textContent=next==='light'?'🌙':'☀️';
+  };
+  // 페이지 로드 시 버튼 라벨 동기화
+  document.addEventListener('DOMContentLoaded',function(){
+    var btn=document.getElementById('theme-toggle');
+    if(btn){
+      var cur=document.documentElement.getAttribute('data-theme');
+      btn.textContent=cur==='light'?'🌙':'☀️';
+    }
+  });
+})();
+</script>`
+}
+
+export function themeToggleButton() {
+  return `<button id="theme-toggle" onclick="__toggleTheme()" title="테마 전환 (다크/라이트)">☀️</button>`
+}
+
 // ─── Prompting Skills — 컴포넌트 라이브 프리뷰 HTML ────────────────────────
 // .claude/skills/design/SKILL.md 의 C-01 ~ C-13 컴포넌트를 실제 렌더된 HTML 로 보여주는 갤러리.
 // MD 파일은 그대로 두고, 웹 페이지에만 갤러리 섹션 주입.
@@ -778,40 +831,47 @@ adminPagesRouter.get('/admin/', (req, res) => {
   res.send(`<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>GEO Newsletter Admin</title>
+${themeStyle()}
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{min-height:100vh;background:#0F172A;font-family:'LG Smart','Arial Narrow',Arial,sans-serif;color:#E2E8F0;padding:40px 24px}
+body{min-height:100vh;background:var(--bg-primary);font-family:'LG Smart','Arial Narrow',Arial,sans-serif;color:var(--text-primary);padding:40px 24px;transition:background .2s,color .2s}
 .wrap{max-width:1400px;margin:0 auto}
 .header{text-align:center;margin-bottom:32px}
-.logo{font-size:11px;font-weight:700;letter-spacing:3px;color:#64748B;text-transform:uppercase;margin-bottom:14px}
-h1{font-size:24px;font-weight:700;color:#F8FAFC}
+.logo{font-size:11px;font-weight:700;letter-spacing:3px;color:var(--text-muted);text-transform:uppercase;margin-bottom:14px}
+h1{font-size:24px;font-weight:700;color:var(--text-strong)}
 .columns{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;margin-bottom:32px}
 @media (max-width:1100px){.columns{grid-template-columns:1fr 1fr}}
 @media (max-width:780px){.columns{grid-template-columns:1fr}}
 .col{display:flex;flex-direction:column;gap:12px}
-a.card{display:block;background:#1E293B;border:1px solid #334155;border-radius:12px;padding:18px 20px;text-decoration:none;text-align:left;transition:border-color .2s,transform .15s}
-a.card:hover{border-color:#CF0652;transform:translateY(-2px)}
-.card-title{font-size:15px;font-weight:700;color:#F8FAFC;margin-bottom:3px}
-.card-desc{font-size:12px;color:#94A3B8;line-height:1.5}
-.section-title{font-size:12px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:2px;margin:6px 0 4px}
+a.card{display:block;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:18px 20px;text-decoration:none;text-align:left;transition:border-color .2s,transform .15s,background .2s}
+a.card:hover{border-color:var(--accent);transform:translateY(-2px)}
+.card-title{font-size:15px;font-weight:700;color:var(--text-strong);margin-bottom:3px}
+.card-desc{font-size:12px;color:var(--text-sub);line-height:1.5}
+.section-title{font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:2px;margin:6px 0 4px}
 .section-title:not(:first-child){margin-top:18px}
-.col-harness .section-title{color:#CF0652}
-.harness-entry{background:#3F1D2A;border:1px solid #7F1D3D;border-radius:12px;padding:14px 18px;margin-bottom:10px}
-.harness-entry .card-title{color:#FCA5A5}
-a.harness-entry:hover{border-color:#CF0652;background:#4F2535}
-.harness-file{display:flex;align-items:center;gap:8px;background:#1E293B;border:1px solid #334155;border-radius:8px;padding:8px 12px;text-decoration:none;color:#CBD5E1;font-size:12px;margin-bottom:6px;transition:border-color .15s}
-.harness-file:hover{border-color:#CF0652;color:#F8FAFC}
-.harness-file code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:10px;color:#94A3B8;background:#0F172A;padding:1px 6px;border-radius:3px;margin-left:auto}
+.col-harness .section-title{color:var(--accent)}
+.harness-entry{background:var(--hero-bg);border:1px solid var(--hero-border);border-radius:12px;padding:14px 18px;margin-bottom:10px}
+.harness-entry .card-title{color:var(--hero-title)}
+a.harness-entry:hover{border-color:var(--accent);background:var(--hero-hover-bg)}
+.harness-file{display:flex;align-items:center;gap:8px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:8px 12px;text-decoration:none;color:var(--text-desc);font-size:12px;margin-bottom:6px;transition:border-color .15s,background .2s,color .2s}
+.harness-file:hover{border-color:var(--accent);color:var(--text-strong)}
+.harness-file code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:10px;color:var(--text-sub);background:var(--bg-code);padding:1px 6px;border-radius:3px;margin-left:auto}
 .harness-tag{font-size:9px;padding:1px 6px;border-radius:3px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px}
 .tag-rule{background:#1E3A5F;color:#60A5FA}
 .tag-hook{background:#3F1D1D;color:#F87171}
 .tag-skill{background:#1F3A1F;color:#4ADE80}
 .tag-agent{background:#3F2A1D;color:#FBBF24}
 .tag-config{background:#2A1F3F;color:#A78BFA}
+[data-theme="light"] .tag-rule{background:#DBEAFE;color:#1E40AF}
+[data-theme="light"] .tag-hook{background:#FEE2E2;color:#991B1B}
+[data-theme="light"] .tag-skill{background:#DCFCE7;color:#166534}
+[data-theme="light"] .tag-agent{background:#FEF3C7;color:#92400E}
+[data-theme="light"] .tag-config{background:#EDE9FE;color:#5B21B6}
 .footer{text-align:center}
-.logout{background:none;border:1px solid #334155;color:#64748B;padding:10px 24px;border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit}
-.logout:hover{border-color:#64748B;color:#94A3B8}
+.logout{background:none;border:1px solid var(--border);color:var(--text-muted);padding:10px 24px;border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit;transition:border-color .15s,color .15s}
+.logout:hover{border-color:var(--text-sub);color:var(--text-sub)}
 </style></head><body>
+${themeToggleButton()}
 <div class="wrap">
   <div class="header">
     <div class="logo">GEO Newsletter</div>

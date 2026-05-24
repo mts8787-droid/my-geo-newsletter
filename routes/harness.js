@@ -6,7 +6,7 @@ import { Router } from 'express'
 import fs from 'fs'
 import path from 'path'
 import JSZip from 'jszip'
-import { renderMarkdownPage } from './admin-pages.js'
+import { renderMarkdownPage, themeStyle, themeToggleButton } from './admin-pages.js'
 
 export const harnessRouter = Router()
 
@@ -457,39 +457,44 @@ harnessRouter.get('/admin/harness', (req, res) => {
   res.send(`<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>HIRO — Harness for Interactive Reporting Optimization</title>
+${themeStyle()}
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#0F172A;color:#E2E8F0;font-family:'LG Smart','Arial Narrow',Arial,sans-serif;padding:28px 32px;line-height:1.5}
+body{background:var(--bg-primary);color:var(--text-primary);font-family:'LG Smart','Arial Narrow',Arial,sans-serif;padding:28px 32px;line-height:1.5;transition:background .2s,color .2s}
 .top{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:12px}
-.back{color:#CF0652;text-decoration:none;font-size:13px}
-h1{font-size:22px;color:#F8FAFC;margin-bottom:4px}
-.sub{font-size:13px;color:#64748B;margin-bottom:18px}
-.intro{background:#1E293B;border:1px solid #334155;border-radius:12px;padding:18px 22px;margin-bottom:18px;font-size:13px;color:#CBD5E1}
+.back{color:var(--accent);text-decoration:none;font-size:13px}
+h1{font-size:22px;color:var(--text-strong);margin-bottom:4px}
+.sub{font-size:13px;color:var(--text-muted);margin-bottom:18px}
+.intro{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:18px 22px;margin-bottom:18px;font-size:13px;color:var(--text-desc)}
 .intro p{margin-bottom:6px}
-.intro strong{color:#F8FAFC}
-.usage{background:linear-gradient(135deg,#1F2937 0%,#2A1F3F 100%);border:1px solid #CF0652;border-radius:12px;padding:22px 26px;margin-bottom:18px}
+.intro strong{color:var(--text-strong)}
+.usage{background:var(--bg-card);border:1px solid var(--accent);border-radius:12px;padding:22px 26px;margin-bottom:18px;color:var(--text-desc)}
+[data-theme="dark"] .usage{background:linear-gradient(135deg,#1F2937 0%,#2A1F3F 100%)}
 .usage code{font-family:ui-monospace,Menlo,Consolas,monospace}
-.dl-btn{display:inline-block;background:#CF0652;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:700;font-size:14px;margin-top:14px}
+.dl-btn{display:inline-block;background:var(--accent);color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:700;font-size:14px;margin-top:14px}
 .dl-btn:hover{background:#e0186b}
 .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:24px}
-.card{background:#1E293B;border:1px solid #334155;border-radius:10px;padding:14px 18px}
-.card .label{font-size:11px;color:#94A3B8;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
-.card .value{font-size:24px;font-weight:700;color:#F8FAFC}
-.section{background:#1E293B;border:1px solid #334155;border-radius:12px;padding:20px 24px;margin-bottom:18px}
-.section h2{font-size:15px;font-weight:700;color:#F8FAFC;margin-bottom:14px}
-.comp{padding:12px 0;border-bottom:1px solid rgba(51,65,85,.5)}
+.card{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:14px 18px}
+.card .label{font-size:11px;color:var(--text-sub);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
+.card .value{font-size:24px;font-weight:700;color:var(--text-strong)}
+.section{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin-bottom:18px}
+.section h2{font-size:15px;font-weight:700;color:var(--text-strong);margin-bottom:14px}
+.comp{padding:12px 0;border-bottom:1px solid var(--border-soft)}
 .comp:last-child{border-bottom:0}
 .comp-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:6px}
-.comp-label{font-weight:700;color:#F8FAFC;font-size:14px}
-.comp-path{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11px;color:#94A3B8;background:#0F172A;padding:2px 8px;border-radius:4px}
-.comp-size{font-size:11px;color:#64748B;margin-left:auto}
-.comp-desc{font-size:12px;color:#CBD5E1;margin-bottom:6px}
+.comp-label{font-weight:700;color:var(--text-strong);font-size:14px}
+.comp-path{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11px;color:var(--text-sub);background:var(--bg-code);padding:2px 8px;border-radius:4px}
+.comp-size{font-size:11px;color:var(--text-muted);margin-left:auto}
+.comp-desc{font-size:12px;color:var(--text-desc);margin-bottom:6px}
 .comp-actions{font-size:12px}
-.link{color:#CF0652;text-decoration:none}
+.link{color:var(--accent);text-decoration:none}
 .link:hover{text-decoration:underline}
 .note{background:#0F2A1F;border:1px solid #15803D;border-radius:8px;padding:12px 16px;margin-top:18px;font-size:12px;color:#86EFAC}
 .note strong{color:#4ADE80}
+[data-theme="light"] .note{background:#ECFDF5;border-color:#A7F3D0;color:#166534}
+[data-theme="light"] .note strong{color:#15803D}
 </style></head><body>
+${themeToggleButton()}
 <div class="top">
   <a class="back" href="/admin/">← 관리자</a>
 </div>
