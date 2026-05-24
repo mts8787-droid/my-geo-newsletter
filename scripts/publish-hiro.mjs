@@ -69,9 +69,15 @@ function copyRecursive(src, dst) {
   }
 }
 
+// 이전 INCLUDE 였다가 제거된 경로 — HIRO 리포 안에서 함께 청소해야 stale 잔재 방지.
+// 신규 화이트리스트 (INCLUDE) 로 옮긴 후에도 옛 경로의 파일이 그대로 남기 때문.
+const STALE = [
+  'docs/agents',
+]
+
 function cleanWhitelistedAreas(dir) {
   // HIRO 리포 안의 화이트리스트 영역만 제거 (clean slate). .git 보존.
-  for (const inc of INCLUDE) {
+  for (const inc of [...INCLUDE, ...STALE]) {
     const target = path.join(dir, inc)
     if (fs.existsSync(target)) {
       fs.rmSync(target, { recursive: true, force: true })
