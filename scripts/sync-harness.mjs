@@ -45,8 +45,12 @@ const MIRROR_MAP = [
   { src: '.claude/skills/design-tune/SKILL.md',    dst: 'docs/agents/skills/design-tune.md',    stripFrontmatter: true },
   { src: '.claude/skills/onboard/SKILL.md',        dst: 'docs/agents/skills/onboard.md',        stripFrontmatter: true },
   { src: '.claude/skills/debug/SKILL.md',          dst: 'docs/agents/skills/debug.md',          stripFrontmatter: true },
-  { src: '.claude/skills/newsletter/SKILL.md',     dst: 'docs/agents/skills/newsletter.md',     stripFrontmatter: true },
-  { src: '.claude/rules/newsletter.md',            dst: 'docs/agents/rules/newsletter.md' },
+  { src: '.claude/skills/newsletter/SKILL.md',         dst: 'docs/agents/skills/newsletter.md',         stripFrontmatter: true },
+  { src: '.claude/skills/newsletter-make/SKILL.md',    dst: 'docs/agents/skills/newsletter-make.md',    stripFrontmatter: true },
+  { src: '.claude/skills/newsletter-debug/SKILL.md',   dst: 'docs/agents/skills/newsletter-debug.md',   stripFrontmatter: true },
+  { src: '.claude/skills/newsletter-send/SKILL.md',    dst: 'docs/agents/skills/newsletter-send.md',    stripFrontmatter: true },
+  { src: '.claude/rules/newsletter.md',                dst: 'docs/agents/rules/newsletter.md' },
+  { src: '.claude/rules/BOOTSTRAP-newsletter.md',      dst: 'docs/agents/rules/BOOTSTRAP-newsletter.md' },
   // Hook 가이드 — README.md 미러 (이름만 HOOK_GUIDE 로)
   { src: '.claude/hooks/README.md',          dst: 'docs/agents/HOOK_GUIDE.md' },
   // AGENTS.md — OpenAI Codex / Antigravity 자동 로드 표준 (원본 → 미러)
@@ -239,19 +243,46 @@ docs/agents/
 - \`npm run build\` 시 자동 미러 갱신
 - 수동: \`npm run sync:harness\`
 
-## 영역별 작업 가이드
+## Skill — 영역별 카테고리
 
-### 데이터 작업
-1. Rule 매뉴얼 참조: \`rules/data.md\` (5단계 ERROR CATCHING, invariant, ANTI-PATTERN)
-2. 워크플로우 선택: \`skills/data.md\` (신규 시트 추가, 회귀 디버깅 등 8개)
-3. 적용되는 Hook: \`hooks/data.md\` (syntax-check 위주)
-4. Sub-Agent 위임 옵션: \`data-puller.md\` (read-only 진단)
+> 사람이 보기 좋도록 Skill 을 영역별 카테고리로 묶음. 원본 \`.claude/skills/\` 폴더는 평탄한 구조 (Claude Code 공식 컨벤션).
 
-### 디자인 작업
-1. Rule 매뉴얼 참조: \`rules/design.md\` (토큰, 컴포넌트 카탈로그 C-01~C-23, SVG 패턴)
-2. 워크플로우 선택: \`skills/design.md\` (신규 컴포넌트 추가, 이메일 호환 변환 등 7개)
-3. 적용되는 Hook: \`hooks/design.md\` (block-dist 위주 + syntax-check)
-4. Sub-Agent 위임 옵션: 현재 없음 (필요 시 신설)
+### 🗂 데이터 (Data)
+| Skill | 담당 |
+|---|---|
+| \`data\` (인덱스) | sub-skill 매핑만 |
+| \`data-add\` | 신규 시트 / 카테고리(PROD_IDS) 추가 |
+| \`data-debug\` | 회귀 TDD / 시트 sync verify-after-act |
+| \`data-refactor\` | 거대 파서 분할 / silent fallback / 매핑 통합 / ERROR CATCHING |
+
+참조: \`rules/data.md\` (5단계 ERROR CATCHING, invariant) · Sub-Agent \`data-puller.md\`
+
+### 🎨 디자인 (Design)
+| Skill | 담당 |
+|---|---|
+| \`design\` (인덱스) | sub-skill 매핑만 |
+| \`design-chart\` | 분류 코드(L-1~T-1) 차트 / 차트+표 결합(C-24) / 신규 SVG 양식 |
+| \`design-component\` | 신규 컴포넌트(C-XX) / 카드 변형(V4) / iframe srcdoc 미리보기 |
+| \`design-tune\` | 이메일 호환 변환 / KO·EN 라벨 / UI 회귀 디버깅 |
+
+참조: \`rules/design.md\` (토큰, 컴포넌트 카탈로그 C-01~C-24, SVG 패턴) · 적용 Hook \`block-dist.sh\`
+
+### 📧 뉴스레터 (Newsletter)
+| Skill | 담당 |
+|---|---|
+| \`newsletter\` (인덱스) | sub-skill 매핑만 |
+| \`newsletter-make\` | 신규 발행본 작성 (BOOTSTRAP-newsletter 시나리오 8 step 트리거) / 새 섹션 추가 |
+| \`newsletter-debug\` | 미출시 회귀 / 이메일 클라이언트별 깨짐 / iframe 클립 |
+| \`newsletter-send\` | 발송 전 multi-client 검증 / SMTP 발송 / audit log |
+
+참조: \`rules/newsletter.md\` (NEVER, 검증 체크리스트) · \`rules/BOOTSTRAP-newsletter.md\` (시나리오) · 적용 Hook \`newsletter-guard.sh\`
+
+### 🔧 공통 / 메타
+| Skill | 담당 |
+|---|---|
+| \`onboard\` | "이 하네스 적용해줘" — 새 프로젝트 셋업 시나리오 (BOOTSTRAP.md 트리거) |
+| \`debug\` | "X 안 됨" — BOOTSTRAP.md 의 디버깅 시나리오 (15 카테고리) 매핑 |
+| \`prompting\` | 다른 에이전트형 도구 (Cursor / Codex) 용 통합 시스템 프롬프트 |
 
 ## 강제력 격상 패턴
 
@@ -369,13 +400,46 @@ a{color:#60A5FA}
 </div>
 
 <div class="section">
-  <h2><span class="tag badge-skill">SKILL</span> Skill — 순차 워크플로우</h2>
-  <p>"이걸 할 때는 1) → 2) → 3) ..." step-by-step 명령 조합.</p>
-  <ul>
-    <li><code>skills/data.md</code> — 8 워크플로우 (신규 시트 추가, 신규 카테고리 추가, 회귀 디버깅 TDD, 거대 파서 분할, silent fallback 강화, 매핑 통합, sync verify, ERROR CATCHING 적용)</li>
-    <li><code>skills/design.md</code> — 7 워크플로우 (신규 컴포넌트 추가, SVG 차트 패턴, 뉴스레터 카드 변형, 이메일 호환 변환, KO/EN 라벨 추가, iframe srcdoc 미리보기, 회귀 디버깅)</li>
-  </ul>
-  <p>원본: <code>.claude/skills/data/SKILL.md</code>, <code>.claude/skills/design/SKILL.md</code></p>
+  <h2><span class="tag badge-skill">SKILL</span> Skill — 영역별 카테고리</h2>
+  <p>사람이 보기 좋도록 영역별로 묶음. 원본 <code>.claude/skills/</code> 폴더는 평탄한 구조 (Claude Code 공식 컨벤션). 본 그룹핑은 미러 페이지에만 적용.</p>
+
+  <h3>🗂 데이터 (Data)</h3>
+  <table>
+    <tr><th>Skill</th><th>담당</th></tr>
+    <tr><td><code>data</code> (인덱스)</td><td>sub-skill 매핑만</td></tr>
+    <tr><td><code>data-add</code></td><td>신규 시트 / 카테고리(PROD_IDS) 추가</td></tr>
+    <tr><td><code>data-debug</code></td><td>회귀 TDD / 시트 sync verify-after-act</td></tr>
+    <tr><td><code>data-refactor</code></td><td>거대 파서 분할 / silent fallback / 매핑 통합 / ERROR CATCHING</td></tr>
+  </table>
+  <p style="font-size:12px;color:#94A3B8">참조: <code>rules/data.md</code> (5단계 ERROR CATCHING, invariant) · Sub-Agent <code>data-puller.md</code></p>
+
+  <h3>🎨 디자인 (Design)</h3>
+  <table>
+    <tr><th>Skill</th><th>담당</th></tr>
+    <tr><td><code>design</code> (인덱스)</td><td>sub-skill 매핑만</td></tr>
+    <tr><td><code>design-chart</code></td><td>분류 코드(L-1~T-1) 차트 / 차트+표 결합(C-24) / 신규 SVG 양식</td></tr>
+    <tr><td><code>design-component</code></td><td>신규 컴포넌트(C-XX) / 카드 변형(V4) / iframe srcdoc 미리보기</td></tr>
+    <tr><td><code>design-tune</code></td><td>이메일 호환 변환 / KO·EN 라벨 / UI 회귀 디버깅</td></tr>
+  </table>
+  <p style="font-size:12px;color:#94A3B8">참조: <code>rules/design.md</code> (토큰·C-01~C-24·SVG 패턴) · 적용 Hook <code>block-dist.sh</code></p>
+
+  <h3>📧 뉴스레터 (Newsletter)</h3>
+  <table>
+    <tr><th>Skill</th><th>담당</th></tr>
+    <tr><td><code>newsletter</code> (인덱스)</td><td>sub-skill 매핑만</td></tr>
+    <tr><td><code>newsletter-make</code></td><td>신규 발행본 작성 (BOOTSTRAP-newsletter 8 step 트리거) / 새 섹션 추가</td></tr>
+    <tr><td><code>newsletter-debug</code></td><td>미출시 회귀 / 이메일 클라이언트별 깨짐 / iframe 클립</td></tr>
+    <tr><td><code>newsletter-send</code></td><td>발송 전 multi-client 검증 / SMTP 발송 / audit log</td></tr>
+  </table>
+  <p style="font-size:12px;color:#94A3B8">참조: <code>rules/newsletter.md</code> (NEVER, 검증 체크리스트) · <code>rules/BOOTSTRAP-newsletter.md</code> (시나리오) · 적용 Hook <code>newsletter-guard.sh</code></p>
+
+  <h3>🔧 공통 / 메타</h3>
+  <table>
+    <tr><th>Skill</th><th>담당</th></tr>
+    <tr><td><code>onboard</code></td><td>"이 하네스 적용해줘" — 새 프로젝트 셋업 시나리오 (BOOTSTRAP.md 트리거)</td></tr>
+    <tr><td><code>debug</code></td><td>"X 안 됨" — BOOTSTRAP.md 의 디버깅 시나리오 (15 카테고리) 매핑</td></tr>
+    <tr><td><code>prompting</code></td><td>다른 에이전트형 도구 (Cursor / Codex) 용 통합 시스템 프롬프트</td></tr>
+  </table>
 </div>
 
 <div class="section">

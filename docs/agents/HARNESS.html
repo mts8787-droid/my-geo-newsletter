@@ -105,13 +105,46 @@ a{color:#60A5FA}
 </div>
 
 <div class="section">
-  <h2><span class="tag badge-skill">SKILL</span> Skill — 순차 워크플로우</h2>
-  <p>"이걸 할 때는 1) → 2) → 3) ..." step-by-step 명령 조합.</p>
-  <ul>
-    <li><code>skills/data.md</code> — 8 워크플로우 (신규 시트 추가, 신규 카테고리 추가, 회귀 디버깅 TDD, 거대 파서 분할, silent fallback 강화, 매핑 통합, sync verify, ERROR CATCHING 적용)</li>
-    <li><code>skills/design.md</code> — 7 워크플로우 (신규 컴포넌트 추가, SVG 차트 패턴, 뉴스레터 카드 변형, 이메일 호환 변환, KO/EN 라벨 추가, iframe srcdoc 미리보기, 회귀 디버깅)</li>
-  </ul>
-  <p>원본: <code>.claude/skills/data/SKILL.md</code>, <code>.claude/skills/design/SKILL.md</code></p>
+  <h2><span class="tag badge-skill">SKILL</span> Skill — 영역별 카테고리</h2>
+  <p>사람이 보기 좋도록 영역별로 묶음. 원본 <code>.claude/skills/</code> 폴더는 평탄한 구조 (Claude Code 공식 컨벤션). 본 그룹핑은 미러 페이지에만 적용.</p>
+
+  <h3>🗂 데이터 (Data)</h3>
+  <table>
+    <tr><th>Skill</th><th>담당</th></tr>
+    <tr><td><code>data</code> (인덱스)</td><td>sub-skill 매핑만</td></tr>
+    <tr><td><code>data-add</code></td><td>신규 시트 / 카테고리(PROD_IDS) 추가</td></tr>
+    <tr><td><code>data-debug</code></td><td>회귀 TDD / 시트 sync verify-after-act</td></tr>
+    <tr><td><code>data-refactor</code></td><td>거대 파서 분할 / silent fallback / 매핑 통합 / ERROR CATCHING</td></tr>
+  </table>
+  <p style="font-size:12px;color:#94A3B8">참조: <code>rules/data.md</code> (5단계 ERROR CATCHING, invariant) · Sub-Agent <code>data-puller.md</code></p>
+
+  <h3>🎨 디자인 (Design)</h3>
+  <table>
+    <tr><th>Skill</th><th>담당</th></tr>
+    <tr><td><code>design</code> (인덱스)</td><td>sub-skill 매핑만</td></tr>
+    <tr><td><code>design-chart</code></td><td>분류 코드(L-1~T-1) 차트 / 차트+표 결합(C-24) / 신규 SVG 양식</td></tr>
+    <tr><td><code>design-component</code></td><td>신규 컴포넌트(C-XX) / 카드 변형(V4) / iframe srcdoc 미리보기</td></tr>
+    <tr><td><code>design-tune</code></td><td>이메일 호환 변환 / KO·EN 라벨 / UI 회귀 디버깅</td></tr>
+  </table>
+  <p style="font-size:12px;color:#94A3B8">참조: <code>rules/design.md</code> (토큰·C-01~C-24·SVG 패턴) · 적용 Hook <code>block-dist.sh</code></p>
+
+  <h3>📧 뉴스레터 (Newsletter)</h3>
+  <table>
+    <tr><th>Skill</th><th>담당</th></tr>
+    <tr><td><code>newsletter</code> (인덱스)</td><td>sub-skill 매핑만</td></tr>
+    <tr><td><code>newsletter-make</code></td><td>신규 발행본 작성 (BOOTSTRAP-newsletter 8 step 트리거) / 새 섹션 추가</td></tr>
+    <tr><td><code>newsletter-debug</code></td><td>미출시 회귀 / 이메일 클라이언트별 깨짐 / iframe 클립</td></tr>
+    <tr><td><code>newsletter-send</code></td><td>발송 전 multi-client 검증 / SMTP 발송 / audit log</td></tr>
+  </table>
+  <p style="font-size:12px;color:#94A3B8">참조: <code>rules/newsletter.md</code> (NEVER, 검증 체크리스트) · <code>rules/BOOTSTRAP-newsletter.md</code> (시나리오) · 적용 Hook <code>newsletter-guard.sh</code></p>
+
+  <h3>🔧 공통 / 메타</h3>
+  <table>
+    <tr><th>Skill</th><th>담당</th></tr>
+    <tr><td><code>onboard</code></td><td>"이 하네스 적용해줘" — 새 프로젝트 셋업 시나리오 (BOOTSTRAP.md 트리거)</td></tr>
+    <tr><td><code>debug</code></td><td>"X 안 됨" — BOOTSTRAP.md 의 디버깅 시나리오 (15 카테고리) 매핑</td></tr>
+    <tr><td><code>prompting</code></td><td>다른 에이전트형 도구 (Cursor / Codex) 용 통합 시스템 프롬프트</td></tr>
+  </table>
 </div>
 
 <div class="section">

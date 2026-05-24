@@ -94,6 +94,12 @@ const HARNESS_COMPONENTS = [
     file: '.claude/rules/BOOTSTRAP.md',
     desc: 'Claude 가 새 프로젝트 적용 시 따라가는 시나리오. 8 step (환경확인 → 도메인 인터뷰 → 도메인 파일 → 데이터 모델 → 디자인 토큰 → 외부 시스템 → 비즈니스 fact → 빌드 검증). 사람이 직접 읽는 가이드 X — Claude 가 step 별 사용자에게 질문·설명.',
   },
+  {
+    category: 'rule',
+    label: '뉴스레터 부트스트랩 시나리오 (Bootstrap-Newsletter)',
+    file: '.claude/rules/BOOTSTRAP-newsletter.md',
+    desc: 'Claude 가 신규 뉴스레터 발행본 작성 시 따라가는 시나리오. 8 step (환경확인 → 발행 종류 → 데이터 범위 → 카드 버전·섹션 → KO/EN 텍스트 → preheader/footer → 본문+Hook → 시각 검증 → 게시/발송). newsletter-make skill 이 트리거.',
+  },
 
   // ─── Hook — 절대 금지. 사람용 가이드 + JSON/Bash (For AI) ──────────────
   {
@@ -179,9 +185,27 @@ const HARNESS_COMPONENTS = [
   },
   {
     category: 'skill',
-    label: 'newsletter — 뉴스레터 발행본·발송',
+    label: 'newsletter (인덱스)',
     file: '.claude/skills/newsletter/SKILL.md',
-    desc: '신규 뉴스레터 발행본 작성, 새 섹션 추가, 발송 전 multi-client 호환 검증, 미출시 처리 회귀, SMTP 발송. KO/EN 동시 생성.',
+    desc: '뉴스레터 워크플로우는 성격별 3 sub-skill 로 분리됨 — newsletter-make / newsletter-debug / newsletter-send. 본 파일은 분기 인덱스.',
+  },
+  {
+    category: 'skill',
+    label: 'newsletter-make — 신규 발행본·섹션 추가',
+    file: '.claude/skills/newsletter-make/SKILL.md',
+    desc: '신규 뉴스레터 발행본 작성 시 BOOTSTRAP-newsletter.md 시나리오 8 step 트리거. 또는 기존 발행본에 새 섹션만 추가하는 짧은 워크플로우.',
+  },
+  {
+    category: 'skill',
+    label: 'newsletter-debug — 회귀·호환 디버깅',
+    file: '.claude/skills/newsletter-debug/SKILL.md',
+    desc: '미출시 국가 회색 처리 회귀, 이메일 클라이언트별 (Outlook/Gmail/Apple Mail) 깨짐·짤림·정렬 어긋남, iframe 미리보기 클립 디버깅.',
+  },
+  {
+    category: 'skill',
+    label: 'newsletter-send — 발송 전 검증·SMTP',
+    file: '.claude/skills/newsletter-send/SKILL.md',
+    desc: '발송 전 multi-client 호환 체크리스트, 본인 이메일 테스트 발송, 전체 SMTP 발송, audit log + 발송 사고 대응.',
   },
   {
     category: 'skill',
