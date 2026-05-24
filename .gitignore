@@ -6,3 +6,6 @@ dist-tracker
 dist-citation
 .env
 /data/
+
+# Claude Code 사용자 로컬 permissions (PC 경로 등 개인 정보 — 외부 노출 방지)
+.claude/settings.local.json
