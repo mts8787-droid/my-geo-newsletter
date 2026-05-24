@@ -51,8 +51,6 @@ const MIRROR_MAP = [
   { src: '.claude/skills/newsletter-send/SKILL.md',    dst: 'docs/agents/skills/newsletter-send.md',    stripFrontmatter: true },
   { src: '.claude/rules/newsletter.md',                dst: 'docs/agents/rules/newsletter.md' },
   { src: '.claude/rules/BOOTSTRAP-newsletter.md',      dst: 'docs/agents/rules/BOOTSTRAP-newsletter.md' },
-  // Hook 가이드 — README.md 미러 (이름만 HOOK_GUIDE 로)
-  { src: '.claude/hooks/README.md',          dst: 'docs/agents/HOOK_GUIDE.md' },
   // AGENTS.md — OpenAI Codex / Antigravity 자동 로드 표준 (원본 → 미러)
   { src: 'AGENTS.md',                        dst: 'docs/agents/AGENTS.md' },
 ]
@@ -507,50 +505,4 @@ fs.writeFileSync(path.join(ROOT, 'docs/agents/HARNESS.html'), HARNESS_HTML, 'utf
 fs.writeFileSync(path.join(ROOT, 'docs/agents/CHART_LIBRARY.html'),
   renderChartLibraryHTML({ adminMode: false }), 'utf8')
 
-// ─── HOOK_GUIDE.html — Hook 가이드 (사람용 설명서) 정적 미러 ───────────────
-// .claude/hooks/README.md 의 디자인된 HTML 버전. marked.js CDN 으로 클라이언트 렌더.
-const _hookReadme = fs.existsSync(path.join(ROOT, '.claude/hooks/README.md'))
-  ? fs.readFileSync(path.join(ROOT, '.claude/hooks/README.md'), 'utf8')
-  : '# (README.md 없음)'
-const _escapedHookReadme = JSON.stringify(_hookReadme)
-const HOOK_GUIDE_HTML = `<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Hook 가이드 (사람용 설명서)</title>
-<style>
-*{box-sizing:border-box}
-body{margin:0;background:#0F172A;color:#E2E8F0;font-family:'LG Smart','Arial Narrow',Arial,sans-serif;padding:24px 32px;line-height:1.65}
-.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px}
-.content{max-width:1040px;margin:0 auto;background:#0B1220;border:1px solid #1E293B;border-radius:12px;padding:32px 40px}
-.content h1{font-size:26px;color:#F8FAFC;margin:0 0 12px;padding-bottom:10px;border-bottom:2px solid #CF0652}
-.content h2{font-size:20px;color:#F8FAFC;margin:28px 0 12px;padding-bottom:6px;border-bottom:1px solid #334155}
-.content h3{font-size:16px;color:#F8FAFC;margin:22px 0 10px}
-.content h4{font-size:14px;color:#CBD5E1;margin:18px 0 8px}
-.content p{margin:10px 0;color:#CBD5E1;font-size:14px}
-.content ul,.content ol{margin:10px 0 10px 22px;color:#CBD5E1;font-size:14px}
-.content li{margin:4px 0}
-.content code{background:#1E293B;color:#F8C4D7;padding:2px 6px;border-radius:4px;font-family:'Consolas','Courier New',monospace;font-size:12px}
-.content pre{background:#1E293B;border:1px solid #334155;border-radius:8px;padding:14px 16px;overflow:auto;font-family:'Consolas','Courier New',monospace;font-size:12px;line-height:1.5}
-.content pre code{background:none;padding:0;color:#E2E8F0}
-.content table{border-collapse:collapse;width:100%;margin:14px 0;font-size:13px}
-.content th,.content td{border:1px solid #334155;padding:8px 12px;text-align:left;vertical-align:top;color:#CBD5E1}
-.content th{background:#1E293B;color:#F8FAFC;font-weight:700}
-.content tr:nth-child(even) td{background:#0F172A}
-.content blockquote{border-left:3px solid #CF0652;margin:14px 0;padding:6px 16px;background:#1E293B;color:#94A3B8;font-size:13px;border-radius:0 6px 6px 0}
-.content hr{border:none;border-top:1px solid #334155;margin:22px 0}
-.content a{color:#F472B6;text-decoration:none}
-.content a:hover{text-decoration:underline}
-</style></head><body>
-<div class="topbar">
-  <span style="font-size:11px;color:#64748B">Hook 가이드 — .claude/hooks/README.md 의 디자인된 사람용 설명서</span>
-</div>
-<div id="content" class="content">로딩 중…</div>
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-<script>
-  marked.use({ gfm: true, breaks: false })
-  document.getElementById('content').innerHTML = marked.parse(${_escapedHookReadme})
-</script>
-</body></html>`
-
-fs.writeFileSync(path.join(ROOT, 'docs/agents/HOOK_GUIDE.html'), HOOK_GUIDE_HTML, 'utf8')
-
-console.log(`[sync-harness] 완료. 미러 ${okCount}개, skip ${skipCount}개. 정적 생성: HARNESS.md, HARNESS.html, CHART_LIBRARY.html, HOOK_GUIDE.html, hooks/data.md, hooks/design.md`)
+console.log(`[sync-harness] 완료. 미러 ${okCount}개, skip ${skipCount}개. 정적 생성: HARNESS.md, HARNESS.html, CHART_LIBRARY.html, hooks/data.md, hooks/design.md`)

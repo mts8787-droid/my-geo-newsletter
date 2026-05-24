@@ -16,33 +16,15 @@ const HARNESS_COMPONENTS = [
   // ─── 진입점 (Entry Point) — docs/agents/ 미러 호스트 ─────────────────────
   {
     category: 'entry',
-    label: '전체 하네스 설명 (HTML)',
+    label: '전체 하네스 설명',
     file: 'docs/agents/HARNESS.html',
-    desc: '브라우저 더블클릭으로 열림. 4 개념·폴더 구조·각 컴포넌트 설명·적용 가이드 시각화.',
-  },
-  {
-    category: 'entry',
-    label: '전체 하네스 설명 (Markdown)',
-    file: 'docs/agents/HARNESS.md',
-    desc: '동일 내용 마크다운. docs/agents/ 미러 호스트의 진입점.',
+    desc: '브라우저 더블클릭으로 열림. 4 개념·폴더 구조·각 컴포넌트 설명·Skill 사용법 시각화. (같은 내용 마크다운: docs/agents/HARNESS.md)',
   },
   {
     category: 'entry',
     label: '차트 라이브러리 (정적 미러)',
     file: 'docs/agents/CHART_LIBRARY.html',
     desc: '14 차트 양식 + 툴팁 분류 카탈로그 (L-1~T-1) 정적 HTML. 라이브: /admin/chart-library.',
-  },
-  {
-    category: 'entry',
-    label: 'Hook 가이드 (HTML)',
-    file: 'docs/agents/HOOK_GUIDE.html',
-    desc: 'Hook README.md 의 디자인된 HTML 버전 — marked.js 렌더. 브라우저 더블클릭으로 인증 없이 열람 가능.',
-  },
-  {
-    category: 'entry',
-    label: 'Hook 가이드 (Markdown 미러)',
-    file: 'docs/agents/HOOK_GUIDE.md',
-    desc: '.claude/hooks/README.md 의 미러. 원본 수정 시 sync-harness 가 자동 갱신.',
   },
   {
     category: 'entry',
