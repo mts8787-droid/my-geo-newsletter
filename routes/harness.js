@@ -219,12 +219,13 @@ const HARNESS_COMPONENTS = [
   },
 ]
 
+// label 구조: { key, rest } — key 만 볼드, rest 는 일반
 const CATEGORY_LABELS = {
-  entry: '가이드 — 하네스 전체 개요 (docs/agents/ 미러)',
-  rule: 'Rule — 따라야 할 규칙. Markdown 권고 (~80%)',
-  hook: 'Hook — 절대 하면 안 되는 것. JSON 강제 (100%) + 인간용 md 설명서',
-  skill: 'Skill — 자동 워크플로우 / 명령 조합. step-by-step',
-  agent: 'Sub-Agent — 특정 영역 분리 작업 (Claude Code 공식 기능)',
+  entry: { key: '가이드', rest: ' — 하네스 전체 개요 (docs/agents/ 미러)' },
+  rule:  { key: 'Rule',  rest: ' — 따라야 할 규칙. Markdown 권고 (~80%)' },
+  hook:  { key: 'Hook',  rest: ' — 절대 하면 안 되는 것. JSON 강제 (100%) + 인간용 md 설명서' },
+  skill: { key: 'Skill', rest: ' — 자동 워크플로우 / 명령 조합. step-by-step' },
+  agent: { key: 'Sub-Agent', rest: ' — 특정 영역 분리 작업 (Claude Code 공식 기능)' },
 }
 
 const ROOT = process.cwd()
@@ -454,7 +455,7 @@ harnessRouter.get('/hiro', (req, res) => {
         </div>
       </div>
     `).join('')
-    return `<div class="section"><h2>${escHtml(label)}</h2>${rows}</div>`
+    return `<div class="section"><h2 class="section-title-bar"><strong>${escHtml(label.key)}</strong><span class="rest">${escHtml(label.rest)}</span></h2>${rows}</div>`
   }).join('')
 
   res.set('Content-Type', 'text/html; charset=utf-8')
@@ -489,7 +490,10 @@ h1{font-size:22px;color:var(--text-strong);margin-bottom:4px}
 .card .label{font-size:12px;color:var(--text-sub);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
 .card .value{font-size:24px;font-weight:700;color:var(--text-strong)}
 .section{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin-bottom:18px}
-.section h2{font-size:16px;font-weight:700;color:var(--text-strong);margin-bottom:14px}
+.section h2{font-size:16px;font-weight:400;color:var(--text-strong);margin-bottom:14px}
+.section-title-bar{background:var(--bg-code);border-left:4px solid var(--accent);padding:10px 14px;border-radius:4px;margin:-4px -4px 14px;display:block !important}
+.section-title-bar strong{font-weight:800;color:var(--text-strong);margin-right:2px}
+.section-title-bar .rest{font-weight:400;color:var(--text-desc);font-size:14px}
 .comp{padding:12px 0;border-bottom:1px solid var(--border-soft)}
 .comp:last-child{border-bottom:0}
 .comp-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:6px}
