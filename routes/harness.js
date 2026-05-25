@@ -139,9 +139,9 @@ const HARNESS_COMPONENTS = [
   },
   {
     category: 'skill',
-    label: 'data-debug — 회귀·동기화 진단',
+    label: 'data-debug — 갑자기 망가진 데이터 원인 찾기',
     file: '.claude/skills/data-debug/SKILL.md',
-    desc: 'MoM 부호 반전·정렬 깨짐·sync 결과 이상 디버깅. 재현 fixture 우선(TDD), verify-after-act invariant, 5단계 ERROR CATCHING.',
+    desc: '사용자가 "데이터 이상해", "차트 안 보여", "값 갑자기 0으로" 같이 말하면 트리거 — Claude 가 원인 추적 후 수정. 재현 테스트 우선(TDD), 시트 동기화 후 invariant 검증, 5단계 ERROR CATCHING.',
   },
   {
     category: 'skill',
@@ -175,9 +175,9 @@ const HARNESS_COMPONENTS = [
   },
   {
     category: 'skill',
-    label: 'design-tune — 호환·미세조정·회귀',
+    label: 'design-tune — 깨진 UI · 이메일 호환 고치기',
     file: '.claude/skills/design-tune/SKILL.md',
-    desc: '이메일 호환 변환(table-layout), KO/EN 라벨 추가, UI 깨짐·차트 안 보임 회귀 디버깅.',
+    desc: '사용자가 "카드 깨졌어", "이메일에서 차트 안 보임", "EN 라벨 추가" 같이 말하면 트리거 — 이메일 호환 변환(table-layout), 다국어 라벨, UI 깨짐 추적·수정.',
   },
   {
     category: 'skill',
@@ -193,9 +193,9 @@ const HARNESS_COMPONENTS = [
   },
   {
     category: 'skill',
-    label: 'newsletter-debug — 회귀·호환 디버깅',
+    label: 'newsletter-debug — 깨진 뉴스레터 / 클라이언트별 호환',
     file: '.claude/skills/newsletter-debug/SKILL.md',
-    desc: '미출시 국가 회색 처리 회귀, 이메일 클라이언트별 (Outlook/Gmail/Apple Mail) 깨짐·짤림·정렬 어긋남, iframe 미리보기 클립 디버깅.',
+    desc: '사용자가 "Outlook 에서 깨짐", "Gmail 짤림", "미출시 국가 색 잘못" 같이 말하면 트리거 — 이메일 클라이언트별 호환 문제, iframe 미리보기 클립 추적·수정.',
   },
   {
     category: 'skill',

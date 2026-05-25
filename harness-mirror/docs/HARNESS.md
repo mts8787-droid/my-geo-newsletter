@@ -84,7 +84,7 @@ harness-mirror/
 |---|---|
 | `data` (인덱스) | sub-skill 매핑만 |
 | `data-add` | 신규 시트 / 카테고리(PROD_IDS) 추가 |
-| `data-debug` | 회귀 TDD / 시트 sync verify-after-act |
+| `data-debug` | 갑자기 망가진 데이터 추적·수정 (재현 TDD + sync 검증) |
 | `data-refactor` | 거대 파서 분할 / silent fallback / 매핑 통합 / ERROR CATCHING |
 
 참조: `.claude/rules/data.md` (5단계 ERROR CATCHING, invariant) · Sub-Agent `.claude/agents/data-puller.md`
@@ -96,7 +96,7 @@ harness-mirror/
 | `design-layout` | 전체 페이지 골격 설계 (8 섹션 + 반응형 그리드) — 부트스트랩 STEP 3 시트 스키마 우선 참조, 없으면 스케치 요청 |
 | `design-chart` | 분류 코드(L-1~T-1) 차트 / 차트+표 결합(C-24) / 신규 SVG 양식 |
 | `design-component` | 신규 컴포넌트(C-XX) / 카드 변형(V4) / iframe srcdoc 미리보기 |
-| `design-tune` | 이메일 호환 변환 / KO·EN 라벨 / UI 회귀 디버깅 |
+| `design-tune` | 이메일 호환 변환 / KO·EN 라벨 / 깨진 UI 추적·수정 |
 
 참조: `.claude/rules/design.md` (토큰, 컴포넌트 카탈로그 C-01~C-24, **§5.17 페이지 레이아웃 표준 패턴**, SVG 패턴) · 적용 Hook `.claude/hooks/block-dist.sh`
 
@@ -105,7 +105,7 @@ harness-mirror/
 |---|---|
 | `newsletter` (인덱스) | sub-skill 매핑만 |
 | `newsletter-make` | 신규 발행본 작성 (BOOTSTRAP-newsletter 시나리오 8 step 트리거) / 새 섹션 추가 |
-| `newsletter-debug` | 미출시 회귀 / 이메일 클라이언트별 깨짐 / iframe 클립 |
+| `newsletter-debug` | 미출시 국가 색 잘못 / 이메일 클라이언트별 깨짐 / iframe 클립 추적·수정 |
 | `newsletter-send` | 발송 전 multi-client 검증 / SMTP 발송 / audit log |
 
 참조: `.claude/rules/newsletter.md` (NEVER, 검증 체크리스트) · `.claude/rules/BOOTSTRAP-newsletter.md` (시나리오) · 적용 Hook `.claude/hooks/newsletter-guard.sh`

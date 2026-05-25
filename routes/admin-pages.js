@@ -950,16 +950,16 @@ ${themeToggleButton()}
 
       <a class="harness-file" href="/admin/data-skills"><span class="harness-tag tag-skill">INDEX</span> data (인덱스 — 라이브 페이지) <code>data/SKILL.md</code></a>
       <a class="harness-file" href="/hiro/view?path=.claude/skills/data-add/SKILL.md" target="_blank"><span class="harness-tag tag-skill">SKILL</span> data-add — 시트·카테고리 신규 추가 <code>data-add/SKILL.md</code></a>
-      <a class="harness-file" href="/hiro/view?path=.claude/skills/data-debug/SKILL.md" target="_blank"><span class="harness-tag tag-skill">SKILL</span> data-debug — 회귀·sync 진단 <code>data-debug/SKILL.md</code></a>
+      <a class="harness-file" href="/hiro/view?path=.claude/skills/data-debug/SKILL.md" target="_blank"><span class="harness-tag tag-skill">SKILL</span> data-debug — 갑자기 망가진 데이터 원인 찾기 <code>data-debug/SKILL.md</code></a>
       <a class="harness-file" href="/hiro/view?path=.claude/skills/data-refactor/SKILL.md" target="_blank"><span class="harness-tag tag-skill">SKILL</span> data-refactor — 분할·매핑·로깅 품질 <code>data-refactor/SKILL.md</code></a>
       <a class="harness-file" href="/admin/design-skills"><span class="harness-tag tag-skill">INDEX</span> design (인덱스 — 라이브 페이지) <code>design/SKILL.md</code></a>
       <a class="harness-file" href="/hiro/view?path=.claude/skills/design-layout/SKILL.md" target="_blank"><span class="harness-tag tag-skill">SKILL</span> design-layout — 전체 페이지 레이아웃 설계 <code>design-layout/SKILL.md</code></a>
       <a class="harness-file" href="/hiro/view?path=.claude/skills/design-chart/SKILL.md" target="_blank"><span class="harness-tag tag-skill">SKILL</span> design-chart — 차트(L-1~T-1) + 차트+표 결합 <code>design-chart/SKILL.md</code></a>
       <a class="harness-file" href="/hiro/view?path=.claude/skills/design-component/SKILL.md" target="_blank"><span class="harness-tag tag-skill">SKILL</span> design-component — 카드·컴포넌트(C-XX) 추가 <code>design-component/SKILL.md</code></a>
-      <a class="harness-file" href="/hiro/view?path=.claude/skills/design-tune/SKILL.md" target="_blank"><span class="harness-tag tag-skill">SKILL</span> design-tune — 호환·KO/EN·회귀 디버깅 <code>design-tune/SKILL.md</code></a>
+      <a class="harness-file" href="/hiro/view?path=.claude/skills/design-tune/SKILL.md" target="_blank"><span class="harness-tag tag-skill">SKILL</span> design-tune — 깨진 UI · 이메일 호환 고치기 <code>design-tune/SKILL.md</code></a>
       <a class="harness-file" href="/hiro/view?path=.claude/skills/newsletter/SKILL.md" target="_blank"><span class="harness-tag tag-skill">INDEX</span> newsletter (인덱스) <code>newsletter/SKILL.md</code></a>
       <a class="harness-file" href="/hiro/view?path=.claude/skills/newsletter-make/SKILL.md" target="_blank"><span class="harness-tag tag-skill">SKILL</span> newsletter-make — 신규 발행본·섹션 추가 <code>newsletter-make/SKILL.md</code></a>
-      <a class="harness-file" href="/hiro/view?path=.claude/skills/newsletter-debug/SKILL.md" target="_blank"><span class="harness-tag tag-skill">SKILL</span> newsletter-debug — 회귀·호환 디버깅 <code>newsletter-debug/SKILL.md</code></a>
+      <a class="harness-file" href="/hiro/view?path=.claude/skills/newsletter-debug/SKILL.md" target="_blank"><span class="harness-tag tag-skill">SKILL</span> newsletter-debug — 깨진 뉴스레터 / 클라이언트별 호환 <code>newsletter-debug/SKILL.md</code></a>
       <a class="harness-file" href="/hiro/view?path=.claude/skills/newsletter-send/SKILL.md" target="_blank"><span class="harness-tag tag-skill">SKILL</span> newsletter-send — 발송 전 검증·SMTP <code>newsletter-send/SKILL.md</code></a>
       <a class="harness-file" href="/hiro/view?path=.claude/skills/prompting/SKILL.md" target="_blank"><span class="harness-tag tag-skill">SKILL</span> 프롬프팅 통합 <code>prompting/SKILL.md</code></a>
       <a class="harness-file" href="/hiro/view?path=.claude/skills/onboard/SKILL.md" target="_blank"><span class="harness-tag tag-skill">SKILL</span> Onboard (하네스 적용) <code>onboard/SKILL.md</code></a>
