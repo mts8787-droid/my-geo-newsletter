@@ -72,6 +72,35 @@ h1{font-size:26px;color:var(--text-strong);margin-bottom:6px}
 [data-theme="light"] [style*="color:#CBD5E1"]{color:#334155 !important}
 [data-theme="light"] [style*="color:#94A3B8"]{color:#475569 !important}
 [data-theme="light"] [style*="color:#64748B"]{color:#475569 !important}
+/* ─── 적응형 UI — 태블릿 (≤ 780px) ───────────────────────────────── */
+@media (max-width:780px){
+  body{padding:16px 14px}
+  .top{margin-bottom:14px}
+  h1{font-size:22px}
+  .sub{font-size:13px;margin-bottom:18px}
+  .intro{padding:14px 16px;margin-bottom:18px;font-size:13px}
+  .section{margin-bottom:22px}
+  .section-title{font-size:16px;padding-left:10px}
+  .section-desc{font-size:12px;margin-bottom:10px}
+  .chart-grid{grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+  .chart-card{padding:12px 14px}
+  .chart-name{font-size:14px;margin-bottom:8px}
+  .chart-desc{font-size:12px}
+}
+/* ─── 적응형 UI — 모바일 (≤ 480px) ───────────────────────────────── */
+@media (max-width:480px){
+  body{padding:12px 10px}
+  .top{flex-direction:column;align-items:flex-start;gap:8px}
+  h1{font-size:18px}
+  .sub{font-size:12px;margin-bottom:14px}
+  .intro{padding:12px 14px;font-size:12.5px}
+  .intro ul{margin-left:18px;font-size:12.5px}
+  .chart-grid{grid-template-columns:1fr;gap:10px}
+  .chart-card{padding:10px 12px}
+  .chart-svg svg{width:100%;height:auto}
+  .chart-desc{font-size:12px;line-height:1.4}
+  .chart-usage,.chart-cmd{font-size:11.5px}
+}
 </style></head><body>
 
 

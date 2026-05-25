@@ -408,6 +408,22 @@ h1{font-size:18px;color:var(--text-strong);margin-bottom:6px}
 .meta{font-size:13px;color:var(--text-muted);margin-bottom:18px;font-family:ui-monospace,Menlo,Consolas,monospace}
 pre{background:var(--bg-code);border:1px solid var(--border);border-radius:12px;padding:20px 24px;overflow:auto;max-width:1100px;margin:0 auto;font-family:'Consolas','Courier New',ui-monospace,monospace;font-size:14px;line-height:1.6;color:var(--text-desc);white-space:pre-wrap;word-wrap:break-word}
 .lang{display:inline-block;background:var(--border);color:var(--text-sub);padding:2px 8px;border-radius:4px;font-size:12px;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
+/* ─── 적응형 UI ─────────────────────────────────────────────── */
+@media (max-width:780px){
+  body{padding:16px 14px}
+  h1{font-size:16px}
+  .meta{font-size:12px;margin-bottom:14px}
+  .btn{padding:6px 12px;font-size:13px}
+  pre{padding:14px 16px;font-size:13px;border-radius:10px}
+}
+@media (max-width:480px){
+  body{padding:12px 10px}
+  .topbar{flex-direction:column;align-items:flex-start;gap:8px;margin-bottom:14px}
+  .btn{width:100%;text-align:center;box-sizing:border-box}
+  h1{font-size:15px;word-break:break-all}
+  .meta{font-size:11px;word-break:break-all}
+  pre{padding:12px 14px;font-size:12px;line-height:1.5}
+}
 </style></head><body>
 ${themeToggleButton()}
 <div class="topbar">
@@ -542,10 +558,54 @@ h1{font-size:22px;color:var(--text-strong);margin-bottom:4px}
 .guide-inline strong{color:var(--text-strong)}
 .guide-inline a{color:var(--accent);text-decoration:none;font-weight:600;margin:0 2px}
 .guide-inline a:hover{text-decoration:underline}
+/* ─── 적응형 UI — 태블릿 (≤ 780px) ───────────────────────────────── */
 @media (max-width:780px){
+  body{padding:16px 14px}
+  .top{margin-bottom:12px}
+  h1{font-size:20px}
+  .sub{font-size:13px;margin-bottom:14px}
+  .intro,.usage{padding:14px 16px;margin-bottom:14px;font-size:13px}
+  .usage h2{font-size:15px !important;padding:8px 12px !important;margin:14px 0 10px !important}
+  .usage h3{font-size:14px;padding:6px 10px;margin:12px 0 8px}
+  .kpis{grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:18px}
+  .card{padding:12px 14px}
+  .card .value{font-size:20px}
+  .section{padding:16px 18px;margin-bottom:14px}
+  .section-title-bar{padding:8px 12px;margin:-2px -2px 12px}
+  .comp-head{gap:8px}
+  .comp-label{font-size:14px}
+  .dl-btn,.gh-btn{font-size:14px;padding:10px 18px;margin-left:0;margin-top:10px;display:inline-block}
+  .hiro-hero{padding:24px 16px 20px;margin-bottom:18px}
   .hiro-hero .title{font-size:48px;letter-spacing:-2px}
   .hiro-hero .title .cat{font-size:40px}
   .hiro-hero .fullname{font-size:15px;letter-spacing:1px}
+  pre{padding:14px 16px;font-size:12px}
+}
+/* ─── 적응형 UI — 모바일 (≤ 480px) ───────────────────────────────── */
+@media (max-width:480px){
+  body{padding:12px 10px}
+  .topbar,.top{flex-direction:column;align-items:flex-start;gap:8px}
+  h1{font-size:18px}
+  .intro,.usage,.section{padding:12px 14px;font-size:12.5px}
+  .kpis{grid-template-columns:1fr;gap:8px}
+  .card .value{font-size:18px}
+  .card .label{font-size:11px}
+  .comp{padding:10px 0}
+  .comp-head{flex-direction:column;align-items:flex-start;gap:4px}
+  .comp-size{margin-left:0;font-size:11px}
+  .comp-path{font-size:11px;word-break:break-all}
+  .comp-desc{font-size:12px}
+  .dl-btn,.gh-btn{width:100%;text-align:center;margin-left:0;padding:12px 16px;box-sizing:border-box}
+  .gh-btn{margin-top:8px}
+  .hiro-hero{padding:20px 12px 16px;margin-bottom:14px}
+  .hiro-hero .title{font-size:38px;letter-spacing:-1.5px}
+  .hiro-hero .title .cat{font-size:32px;margin-right:4px}
+  .hiro-hero .fullname{font-size:13px}
+  .hiro-hero .tagline{font-size:12px}
+  .guide-inline{font-size:12px;padding:6px 10px}
+  .guide-inline a{display:inline-block;margin:2px 4px}
+  pre{padding:12px 14px;font-size:11.5px}
+  table{font-size:12px}
 }
 </style></head><body>
 ${themeToggleButton()}
