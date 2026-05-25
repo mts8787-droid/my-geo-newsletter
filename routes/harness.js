@@ -24,7 +24,7 @@ const HARNESS_COMPONENTS = [
   },
   {
     category: 'entry',
-    label: '차트 라이브러리 (정적 미러)',
+    label: 'Chart Library',
     file: 'harness-mirror/docs/CHART_LIBRARY.html',
     desc: '14 차트 양식 + 툴팁 분류 카탈로그 (L-1~T-1) 정적 HTML. 라이브: /admin/chart-library.',
   },

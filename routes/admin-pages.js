@@ -969,7 +969,7 @@ ${themeToggleButton()}
 
       <div class="section-title">가이드 (개요 + 미러)</div>
       <a class="harness-file" href="/hiro/view?path=harness-mirror/docs/HARNESS.html" target="_blank"><span class="harness-tag tag-rule">HTML</span> 전체 하네스 설명 (같은 내용 .md 도 있음) <code>harness-mirror/docs/HARNESS.html</code></a>
-      <a class="harness-file" href="/hiro/view?path=harness-mirror/docs/CHART_LIBRARY.html" target="_blank"><span class="harness-tag tag-rule">HTML</span> 차트 라이브러리 (정적 미러) <code>harness-mirror/docs/CHART_LIBRARY.html</code></a>
+      <a class="harness-file" href="/hiro/view?path=harness-mirror/docs/CHART_LIBRARY.html" target="_blank"><span class="harness-tag tag-rule">HTML</span> Chart Library <code>harness-mirror/docs/CHART_LIBRARY.html</code></a>
     </div>
   </div>
   <div class="footer">
