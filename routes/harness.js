@@ -34,6 +34,12 @@ const HARNESS_COMPONENTS = [
     file: 'harness-mirror/docs/HUMAN_GUIDE.md',
     desc: '사람이 직접 읽는 사용 설명서 — BOOTSTRAP 의 시나리오 (신규 프로젝트 적용 STEP 0~8 + 디버깅 DEBUG-1~15) 어떻게 트리거하고 활용하는지 + 도메인 예시 + 검증 체크리스트 + 트러블슈팅 + FAQ.',
   },
+  {
+    category: 'entry',
+    label: '스킬 사용 가이드 (Skills Usage Guide)',
+    file: 'harness-mirror/docs/SKILLS_GUIDE.md',
+    desc: 'Claude Code 의 Skill 시스템 사용법 — 자동 매칭 원리 (frontmatter description), 슬래시 명령(/skills) vs 자연어 호출 차이, 인덱스 → sub-skill 조합, 강제 호출 방법, 새 스킬 만들기 + frontmatter 작성법 + 갱신할 4 곳.',
+  },
 
   // ─── Rule — 따라야 할 규칙. Markdown. 권고 (~80%) ─────────────────────
   {
@@ -147,7 +153,13 @@ const HARNESS_COMPONENTS = [
     category: 'skill',
     label: 'design (인덱스)',
     file: '.claude/skills/design/SKILL.md',
-    desc: '디자인 워크플로우는 성격별 3 sub-skill 로 분리됨 — design-chart / design-component / design-tune. 본 파일은 분기 인덱스.',
+    desc: '디자인 워크플로우는 성격별 4 sub-skill 로 분리됨 — design-layout / design-chart / design-component / design-tune. 본 파일은 분기 인덱스.',
+  },
+  {
+    category: 'skill',
+    label: 'design-layout — 전체 페이지 레이아웃 설계',
+    file: '.claude/skills/design-layout/SKILL.md',
+    desc: '대시보드 / 신규 페이지 전체 골격 설계 (8 섹션 + 반응형 그리드 + 폴더 구조). 부트스트랩 STEP 3 시트 스키마 우선 참조, 없으면 TECHNIQUE-4 (스케치 요청).',
   },
   {
     category: 'skill',
@@ -659,10 +671,11 @@ ${themeToggleButton()}
   </ol>
   <p style="font-size:12px;color:#64748B;margin-top:10px;font-style:italic">미러는 <code>npm run sync:harness</code> 또는 <code>npm run build</code> (prebuild) 시 자동 갱신 — 본 ZIP 은 호출 시점에 항상 최신.</p>
   <div class="guide-inline">
-    ⚠️ <strong>다른 프로젝트에 HIRO 적용하기 전 — 3 가이드 반드시 정독</strong>:
+    ⚠️ <strong>다른 프로젝트에 HIRO 적용하기 전 — 4 가이드 반드시 정독</strong>:
     <a href="/hiro/view?path=harness-mirror/docs/HARNESS.html">전체 하네스 설명</a> ·
     <a href="/hiro/chart-library">차트 라이브러리</a> ·
-    <a href="/hiro/view?path=harness-mirror/docs/HUMAN_GUIDE.md">부트스트랩 사용법</a>
+    <a href="/hiro/view?path=harness-mirror/docs/HUMAN_GUIDE.md">부트스트랩 사용법</a> ·
+    <a href="/hiro/view?path=harness-mirror/docs/SKILLS_GUIDE.md">스킬 사용 가이드</a>
   </div>
   <a class="dl-btn" href="/api/hiro/zip">📦 전체 ZIP 다운로드</a>
   <a class="gh-btn" href="https://github.com/mts8787-droid/HIRO" target="_blank" rel="noopener noreferrer">⭐ GitHub 바로가기</a>

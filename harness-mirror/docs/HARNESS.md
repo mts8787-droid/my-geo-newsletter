@@ -93,11 +93,12 @@ harness-mirror/
 | Skill | 담당 |
 |---|---|
 | `design` (인덱스) | sub-skill 매핑만 |
+| `design-layout` | 전체 페이지 골격 설계 (8 섹션 + 반응형 그리드) — 부트스트랩 STEP 3 시트 스키마 우선 참조, 없으면 스케치 요청 |
 | `design-chart` | 분류 코드(L-1~T-1) 차트 / 차트+표 결합(C-24) / 신규 SVG 양식 |
 | `design-component` | 신규 컴포넌트(C-XX) / 카드 변형(V4) / iframe srcdoc 미리보기 |
 | `design-tune` | 이메일 호환 변환 / KO·EN 라벨 / UI 회귀 디버깅 |
 
-참조: `.claude/rules/design.md` (토큰, 컴포넌트 카탈로그 C-01~C-24, SVG 패턴) · 적용 Hook `.claude/hooks/block-dist.sh`
+참조: `.claude/rules/design.md` (토큰, 컴포넌트 카탈로그 C-01~C-24, **§5.17 페이지 레이아웃 표준 패턴**, SVG 패턴) · 적용 Hook `.claude/hooks/block-dist.sh`
 
 ### 📧 뉴스레터 (Newsletter)
 | Skill | 담당 |

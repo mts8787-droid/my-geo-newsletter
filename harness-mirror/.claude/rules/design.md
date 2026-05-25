@@ -818,6 +818,106 @@ function _updateChartTableCombo(prodId, monthIdx) {
 - table-layout 미지정 → 셀 내용 길이에 따라 폭 가변 → 정렬 깨짐
 - 차트 갱신 시 테이블 갱신 누락 → 필터 후 상하 데이터 불일치
 
+### 5.17 페이지 전체 레이아웃 — 표준 8 섹션 패턴
+
+대시보드·뉴스레터·리포트 페이지의 **위→아래 골격**. 본 저장소의 7 SPA (dashboard / visibility / citation / tracker-v2 / newsletter / monthly-report / weekly-report) 공통 패턴 추상화. 신규 페이지 설계 시 본 패턴 시작 → 데이터 shape 에 맞춰 섹션 선택.
+
+#### 표준 8 섹션 (위→아래)
+
+| # | 섹션 | 컴포넌트 매핑 | 데이터 요건 | 선택성 |
+|---|---|---|---|---|
+| 1 | **Hero** | C-01 큰 점수 + MoM + Gap | 단일 KPI (자사 + 비교군) | 필수 (대시보드) / 선택 (리포트) |
+| 2 | **Notice / Executive Summary** | C-02 알림 박스 / 자유 텍스트 | 사용자 명시 텍스트 또는 AI 인사이트 | 선택 |
+| 3 | **KPI 4-grid** | C-15 Summary Metric 4 개 | 4 개 핵심 metric (% / 정수 / 비율) | 선택 |
+| 4 | **필터 / 네비** | dropdown / 토글 / 탭 (GNB) | 국가·제품·시점 선택 차원 | 선택 (대시보드 / 정성 보기) |
+| 5 | **메인 트렌드** | C-07 svgLine 또는 C-08 svgMultiLine | 시계열 (월 / 주차) | 필수 (대시보드) / 선택 |
+| 6 | **그룹 비교** | C-05 vbar / C-06 가로 막대 Top N / C-19 도넛 | 카테고리·국가·브랜드 N 차원 | 선택 |
+| 7 | **카드 그리드** | C-03 / C-04 / C-21~C-23 (V1/V2/V3) | 카테고리별 상세 (각 카테고리당 1 카드) | 선택 (뉴스레터·대시보드 필수) |
+| 8 | **각주 / 출처** | C-13 footnote | 미출시·예외·기준일 명시 | 필수 (정확성 표명) |
+
+#### 페이지별 패턴 매핑 (본 저장소 사례)
+
+| 페이지 | 사용 섹션 | 비고 |
+|---|---|---|
+| **dashboard** | 1·2·4·5·6·7·8 (KPI 4-grid 생략) | 메인 KPI 페이지 — 필터 영향 범위 큼 |
+| **visibility** | 1·4·5·6·7·8 | 가시성 분석 |
+| **citation** | 4·6·7·8 (Hero X — 비교 X) | 도메인·페이지 type·범프 |
+| **tracker-v2** | 1·3·5·6·8 (카드 X) | 정성 KPI — 메트릭 그리드 |
+| **monthly-report** | 1·2·5·7·8 (필터 X — snapshot) | 월간 발행본 — 시계열 + 카드 |
+| **weekly-report** | 1·2·5·7·8 | 주간 발행본 |
+| **newsletter** | 1·2·5·7·8 (이메일 호환 table-layout) | 뉴스레터 — flex/grid 금지 |
+
+#### 그리드 시스템 (반응형)
+
+```css
+/* 데스크탑 (≥ 1100px) */
+body { max-width: 1100~1400px; padding: 28px 32px }
+.kpis { grid-template-columns: repeat(4, 1fr) }         /* 또는 auto-fit minmax(160px, 1fr) */
+.card-grid { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) }
+
+/* 태블릿 (≤ 780px) */
+@media (max-width: 780px) {
+  body { padding: 16px 14px }
+  .kpis { grid-template-columns: repeat(2, 1fr) }
+  .card-grid { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)) }
+  h1 { font-size: 22px }     /* 데스크탑 26~28px → 22px */
+  .section { padding: 16px 18px }
+}
+
+/* 모바일 (≤ 480px) */
+@media (max-width: 480px) {
+  body { padding: 12px 10px }
+  .kpis, .card-grid { grid-template-columns: 1fr }
+  .topbar, .top { flex-direction: column; align-items: flex-start }
+  .dl-btn, .cta { width: 100%; box-sizing: border-box }
+  table { display: block; overflow-x: auto; white-space: nowrap }   /* 4컬럼 가로 스크롤 */
+  pre, .tree { overflow-x: auto }
+}
+```
+
+#### 폴더 구조 (신규 페이지 생성 시)
+
+```
+src/<page>/
+├── <page>Template.js       # HTML 생성기 — generate<Page>HTML(options) export
+├── <page>Client.js         # 인라인 클라이언트 JS — 필터 / truncate 등
+├── <page>Svg.js            # SVG 헬퍼 — svgLine / svgMultiLine / brandColor
+├── <page>Format.js         # 포맷 헬퍼 — statusInfo / mdBold / cntyOfficial
+├── <page>Consts.js         # 토큰 — FONT / RED / COMP / BRAND_COLORS / T (i18n)
+└── <page>Styles.js         # CSS-in-JS — .vbar / .prod-card / .hero 등
+```
+
+생성 후:
+1. `routes/admin-pages.js` 에 `/admin/<page>` 라우트 등록
+2. `routes/publish.js` 에 `publish<Page>` 함수 등록 (PUB_DIR 정적 게시)
+3. `src/shared/sheetTabsForMode.js` 에 모드 추가 (어떤 시트 탭 필요)
+4. `vite.<page>.config.js` 추가 (어드민 SPA 빌드)
+5. `package.json` 에 `dev:<page>` / `build:<page>` 스크립트 추가
+
+#### 신규 페이지 설계 시 — design-layout 스킬 트리거
+
+본 §5.17 의 8 섹션 + 그리드 + 폴더 구조를 step-by-step 워크플로우로 안내하는 **`design-layout` 스킬** 사용:
+
+```
+사용자: "신규 매출 대시보드 페이지 만들고 싶어"
+→ design-layout 스킬 매칭 → STEP 1 (시트 스키마 확인) → STEP 2~7 진행
+```
+
+자세한 워크플로우: `.claude/skills/design-layout/SKILL.md`.
+
+#### ANTI-PATTERN (페이지 레이아웃)
+
+```
+NEVER  데이터 스키마 안 보고 레이아웃부터 → 데이터 shape 안 맞아 회귀
+NEVER  데스크탑 only 설계 → 항상 3 breakpoint (≥1100 / ≤780 / ≤480) 동시 정의
+NEVER  Hero 카드 컬러 하드코딩 (#0F172A 등) → STATUS / BRAND_COLORS 토큰
+NEVER  카드 그리드 fixed columns → auto-fit minmax 으로 반응형 자동 조정
+NEVER  필터 변경 시 영향 범위 명시 X → onFilterChange 위 주석으로 영향 컴포넌트 나열 (TECHNIQUE-18)
+NEVER  서버 HTML 생성 후 클라이언트 짝 없음 → 필터 시 깨짐 (§5.8)
+NEVER  카테고리 / 국가 / 시점 3차원 동시 적용한 페이지에 평탄 카드 그리드만 → 필터 / 그룹 비교 섹션 추가 필수
+NEVER  뉴스레터 페이지에 §5.17 데스크탑 그리드 그대로 → 이메일은 table-layout (§5.2, .claude/rules/newsletter.md)
+```
+
 ## 6. ANTI-PATTERNS (DESIGN)
 
 ```

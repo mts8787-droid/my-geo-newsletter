@@ -940,6 +940,7 @@ ${themeToggleButton()}
       <a class="harness-file" href="/hiro/view?path=.claude/rules/BOOTSTRAP.md" target="_blank"><span class="harness-tag tag-rule">RULE</span> 부트스트랩 시나리오 (Claude 용) <code>.claude/rules/BOOTSTRAP.md</code></a>
       <a class="harness-file" href="/hiro/view?path=.claude/rules/BOOTSTRAP-newsletter.md" target="_blank"><span class="harness-tag tag-rule">RULE</span> 뉴스레터 부트스트랩 시나리오 <code>.claude/rules/BOOTSTRAP-newsletter.md</code></a>
       <a class="harness-file" href="/hiro/view?path=harness-mirror/docs/HUMAN_GUIDE.md" target="_blank"><span class="harness-tag tag-rule">MD</span> 부트스트랩 사용법 (Usage Guide) <code>harness-mirror/docs/HUMAN_GUIDE.md</code></a>
+      <a class="harness-file" href="/hiro/view?path=harness-mirror/docs/SKILLS_GUIDE.md" target="_blank"><span class="harness-tag tag-rule">MD</span> 스킬 사용 가이드 (Skills Usage Guide) <code>harness-mirror/docs/SKILLS_GUIDE.md</code></a>
 
       <a class="harness-file" href="/hiro/view?path=.claude/hooks/README.md" target="_blank"><span class="harness-tag tag-hook">GUIDE</span> Hook 가이드 (사람용) <code>hooks/README.md</code></a>
       <a class="harness-file" href="/hiro/view?path=.claude/settings.json" target="_blank"><span class="harness-tag tag-config">JSON (For AI)</span> <code>.claude/settings.json</code></a>
@@ -952,6 +953,7 @@ ${themeToggleButton()}
       <a class="harness-file" href="/hiro/view?path=.claude/skills/data-debug/SKILL.md" target="_blank"><span class="harness-tag tag-skill">SKILL</span> data-debug — 회귀·sync 진단 <code>data-debug/SKILL.md</code></a>
       <a class="harness-file" href="/hiro/view?path=.claude/skills/data-refactor/SKILL.md" target="_blank"><span class="harness-tag tag-skill">SKILL</span> data-refactor — 분할·매핑·로깅 품질 <code>data-refactor/SKILL.md</code></a>
       <a class="harness-file" href="/admin/design-skills"><span class="harness-tag tag-skill">INDEX</span> design (인덱스 — 라이브 페이지) <code>design/SKILL.md</code></a>
+      <a class="harness-file" href="/hiro/view?path=.claude/skills/design-layout/SKILL.md" target="_blank"><span class="harness-tag tag-skill">SKILL</span> design-layout — 전체 페이지 레이아웃 설계 <code>design-layout/SKILL.md</code></a>
       <a class="harness-file" href="/hiro/view?path=.claude/skills/design-chart/SKILL.md" target="_blank"><span class="harness-tag tag-skill">SKILL</span> design-chart — 차트(L-1~T-1) + 차트+표 결합 <code>design-chart/SKILL.md</code></a>
       <a class="harness-file" href="/hiro/view?path=.claude/skills/design-component/SKILL.md" target="_blank"><span class="harness-tag tag-skill">SKILL</span> design-component — 카드·컴포넌트(C-XX) 추가 <code>design-component/SKILL.md</code></a>
       <a class="harness-file" href="/hiro/view?path=.claude/skills/design-tune/SKILL.md" target="_blank"><span class="harness-tag tag-skill">SKILL</span> design-tune — 호환·KO/EN·회귀 디버깅 <code>design-tune/SKILL.md</code></a>

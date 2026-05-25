@@ -79,19 +79,43 @@ function copyTree(srcRelDir, dstRelDir, opts = {}) {
 }
 
 // ─── 1) harness-mirror/ 초기화 ─────────────────────────────────────────────
-// 이전 sync 의 stale 파일 정리. HUMAN_GUIDE.md (hand-edited) 는 보존.
+// 이전 sync 의 stale 파일 정리. docs/ 안의 hand-edited 가이드 (HUMAN_GUIDE.md,
+// SKILLS_GUIDE.md 등) 는 모두 보존 — 본 sync 가 생성하는 GENERATED 파일과 충돌 시에만 덮어쓰기.
+const GENERATED_DOCS = [
+  'docs/HARNESS.md',
+  'docs/HARNESS.html',
+  'docs/CHART_LIBRARY.html',
+  'docs/hooks/data.md',
+  'docs/hooks/design.md',
+]
+
 if (fs.existsSync(MIRROR_DIR)) {
-  // HUMAN_GUIDE.md 백업 → 본 sync 가 docs/ 재생성 후 복원
-  const humanGuidePath = path.join(MIRROR_DIR, 'docs/HUMAN_GUIDE.md')
-  let humanGuideContent = null
-  if (fs.existsSync(humanGuidePath)) {
-    humanGuideContent = fs.readFileSync(humanGuidePath, 'utf8')
+  // docs/ 안의 모든 파일 백업 (GENERATED 제외 — 어차피 본 sync 가 재생성)
+  const docsDir = path.join(MIRROR_DIR, 'docs')
+  const preservedDocs = []  // { relPath, content }
+  if (fs.existsSync(docsDir)) {
+    const walk = (dir, baseRel) => {
+      for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+        const abs = path.join(dir, e.name)
+        const rel = path.join(baseRel, e.name)
+        if (e.isDirectory()) walk(abs, rel)
+        else if (e.isFile() && !GENERATED_DOCS.includes('docs/' + rel)) {
+          preservedDocs.push({ relPath: 'docs/' + rel, content: fs.readFileSync(abs, 'utf8') })
+        }
+      }
+    }
+    walk(docsDir, '')
   }
   fs.rmSync(MIRROR_DIR, { recursive: true, force: true })
   fs.mkdirSync(MIRROR_DIR, { recursive: true })
-  if (humanGuideContent != null) {
-    fs.mkdirSync(path.join(MIRROR_DIR, 'docs'), { recursive: true })
-    fs.writeFileSync(path.join(MIRROR_DIR, 'docs/HUMAN_GUIDE.md'), humanGuideContent, 'utf8')
+  // 백업한 hand-edited 가이드 복원
+  for (const { relPath, content } of preservedDocs) {
+    const abs = path.join(MIRROR_DIR, relPath)
+    fs.mkdirSync(path.dirname(abs), { recursive: true })
+    fs.writeFileSync(abs, content, 'utf8')
+  }
+  if (preservedDocs.length) {
+    console.log(`[sync-harness] 보존: docs/ 의 hand-edited 파일 ${preservedDocs.length}개 (${preservedDocs.map(p => path.basename(p.relPath)).join(', ')})`)
   }
 } else {
   fs.mkdirSync(MIRROR_DIR, { recursive: true })
@@ -274,11 +298,12 @@ harness-mirror/
 | Skill | 담당 |
 |---|---|
 | \`design\` (인덱스) | sub-skill 매핑만 |
+| \`design-layout\` | 전체 페이지 골격 설계 (8 섹션 + 반응형 그리드) — 부트스트랩 STEP 3 시트 스키마 우선 참조, 없으면 스케치 요청 |
 | \`design-chart\` | 분류 코드(L-1~T-1) 차트 / 차트+표 결합(C-24) / 신규 SVG 양식 |
 | \`design-component\` | 신규 컴포넌트(C-XX) / 카드 변형(V4) / iframe srcdoc 미리보기 |
 | \`design-tune\` | 이메일 호환 변환 / KO·EN 라벨 / UI 회귀 디버깅 |
 
-참조: \`.claude/rules/design.md\` (토큰, 컴포넌트 카탈로그 C-01~C-24, SVG 패턴) · 적용 Hook \`.claude/hooks/block-dist.sh\`
+참조: \`.claude/rules/design.md\` (토큰, 컴포넌트 카탈로그 C-01~C-24, **§5.17 페이지 레이아웃 표준 패턴**, SVG 패턴) · 적용 Hook \`.claude/hooks/block-dist.sh\`
 
 ### 📧 뉴스레터 (Newsletter)
 | Skill | 담당 |
@@ -511,7 +536,8 @@ AGENTS.md                       (OpenAI Codex / Antigravity 자동 로드)
   <h3>🎨 디자인 (Design)</h3>
   <table>
     <tr><th>Skill</th><th>담당</th><th>이렇게 호출</th></tr>
-    <tr><td><code>design</code> (인덱스)</td><td>sub-skill 매핑만</td><td><em>직접 호출 X — 아래 3 sub 중 하나</em></td></tr>
+    <tr><td><code>design</code> (인덱스)</td><td>sub-skill 매핑만</td><td><em>직접 호출 X — 아래 4 sub 중 하나</em></td></tr>
+    <tr><td><code>design-layout</code></td><td>전체 페이지 골격 설계 (8 섹션 + 반응형 그리드) — 부트스트랩 STEP 3 시트 스키마 우선 참조, 없으면 스케치 요청</td><td>"design-layout 스킬로 신규 매출 대시보드 페이지 레이아웃 짜줘" / <code>/skills design-layout</code></td></tr>
     <tr><td><code>design-chart</code></td><td>분류 코드(L-1~T-1) 차트 / 차트+표 결합(C-24) / 신규 SVG 양식</td><td>"design-chart 스킬로 L-1 차트 그려줘" / <code>/skills design-chart</code></td></tr>
     <tr><td><code>design-component</code></td><td>신규 컴포넌트(C-XX) / 카드 변형(V4) / iframe srcdoc</td><td>"design-component 스킬로 새 카드 만들어줘" / <code>/skills design-component</code></td></tr>
     <tr><td><code>design-tune</code></td><td>이메일 호환 변환 / KO·EN 라벨 / UI 회귀 디버깅</td><td>"design-tune 스킬로 이메일에서 차트 안 보이는 거 고쳐줘" / <code>/skills design-tune</code></td></tr>
