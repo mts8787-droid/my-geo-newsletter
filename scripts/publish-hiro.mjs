@@ -96,10 +96,15 @@ if (dirtyStatus) {
   console.error(dirtyStatus)
   process.exit(1)
 }
-try {
-  run(`git push origin ${srcBranch}`, { cwd: ROOT })
-} catch (e) {
-  console.error('[publish-hiro] ⚠ 본 저장소 push 실패 — 계속 진행 (HIRO mirror 만 시도)')
+// pre-push hook 안에서 호출 시 본 push 는 원래 git push 가 처리 — STEP 1 skip
+if (process.env.SKIP_MAIN_PUSH === '1') {
+  console.log('[publish-hiro] SKIP_MAIN_PUSH=1 → 본 저장소 push skip (pre-push hook 호출로 추정)')
+} else {
+  try {
+    run(`git push origin ${srcBranch}`, { cwd: ROOT })
+  } catch (e) {
+    console.error('[publish-hiro] ⚠ 본 저장소 push 실패 — 계속 진행 (HIRO mirror 만 시도)')
+  }
 }
 
 // ──────────────────────────────────────────────────────────────────
