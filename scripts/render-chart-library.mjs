@@ -67,7 +67,7 @@ const CATEGORY_LABELS = {
   hbar:     { label: 'HB — 가로 막대 (Top N)', color: '#DB2777', desc: 'Horizontal Bar — 랭킹 / Top N' },
   mixed:    { label: 'M — 콤보 차트',           color: '#A78BFA', desc: 'Mixed — Bar + Line 결합' },
   bump:     { label: 'BP — 범프 차트',          color: '#C084FC', desc: 'Bump — 순위 변화 시각화' },
-  mini:     { label: 'MT — 미니 트렌드',        color: '#94A3B8', desc: 'Mini Trend — 이메일 호환 (table-layout)' },
+  mini:     { label: 'MT — 미니 트렌드',        color: '#64748B', desc: 'Mini Trend — 이메일 호환 (table-layout)' },
   doughnut: { label: 'D — 도넛 / 파이',          color: '#FBBF24', desc: 'Doughnut / Pie — 비중 / 점유율' },
   radar:    { label: 'R — 레이더 차트',         color: '#4ADE80', desc: 'Radar — 다차원 metric' },
   bubble:   { label: 'BU — 버블 / 4분면',        color: '#22D3EE', desc: 'Bubble / Quadrant — 3변수 (X/Y/r) 또는 4사분면' },
@@ -318,7 +318,7 @@ function svgHbarTopN() {
   data.forEach((d, i) => {
     const y = 10 + i * 12
     const w = d.val * 1.8
-    s += `<text x="2" y="${y + 7}" font-size="7" fill="#94A3B8" font-family="Arial">${d.label}</text>`
+    s += `<text x="2" y="${y + 7}" font-size="7" fill="#64748B" font-family="Arial">${d.label}</text>`
     s += `<rect x="62" y="${y}" width="${w}" height="9" fill="${d.color}" opacity="0.85"/>`
     s += `<text x="${62 + w + 4}" y="${y + 7}" font-size="7" fill="#CBD5E1" font-family="Arial">${d.val}</text>`
   })
@@ -492,8 +492,8 @@ h1{font-size:26px;color:var(--text-strong);margin-bottom:6px}
 .chart-cmd code{background:var(--bg-code);color:#F8C4D7;padding:1px 6px;border-radius:3px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:14px}
 [data-theme="light"] .intro code,[data-theme="light"] .chart-cmd code{color:#BE123C}
 [data-theme="light"] [style*="color:#F8FAFC"]{color:#0F172A !important}
-[data-theme="light"] [style*="color:#CBD5E1"]{color:#334155 !important}
-[data-theme="light"] [style*="color:#94A3B8"]{color:#475569 !important}
+[data-theme="light"] [style*="color:var(--text-desc)"]{color:#334155 !important}
+[data-theme="light"] [style*="color:var(--text-sub)"]{color:#475569 !important}
 [data-theme="light"] [style*="color:#64748B"]{color:#475569 !important}
 /* ─── 적응형 UI — 태블릿 (≤ 780px) ───────────────────────────────── */
 @media (max-width:780px){
@@ -534,8 +534,8 @@ ${topBar}
 
 <div class="intro">
   <p style="font-size:17px;color:#F8FAFC;margin-bottom:10px"><strong>이 페이지가 뭔가요?</strong> Claude 한테 "이런 차트 그려줘" 라고 부탁할 때 헷갈리지 않게 <strong>차트 종류마다 짧은 코드 (예: <code>L-1</code>, <code>BP-1</code>)</strong> 를 붙여놓은 카탈로그입니다.</p>
-  <p style="font-size:16px;color:#CBD5E1;margin-bottom:14px"><strong>왜 쓰나요?</strong> <code>"라인 차트 그려줘"</code> 라고만 하면 Claude 가 어떤 모양으로 그릴지 애매해요. <code>"L-1 라인 차트 그려줘"</code> 라고 하면 정확히 같은 양식으로 그립니다. 팀 내에서도 한 양식 = 한 코드.</p>
-  <ul style="margin-left:22px;font-size:16px;color:#CBD5E1;line-height:1.9">
+  <p style="font-size:16px;color:var(--text-desc);margin-bottom:14px"><strong>왜 쓰나요?</strong> <code>"라인 차트 그려줘"</code> 라고만 하면 Claude 가 어떤 모양으로 그릴지 애매해요. <code>"L-1 라인 차트 그려줘"</code> 라고 하면 정확히 같은 양식으로 그립니다. 팀 내에서도 한 양식 = 한 코드.</p>
+  <ul style="margin-left:22px;font-size:16px;color:var(--text-desc);line-height:1.9">
     <li><code>L</code> — 라인 (시계열 / 트렌드)</li>
     <li><code>B</code> — 바 스택 (누적 / part-to-whole)</li>
     <li><code>V</code> — 그룹 막대 vbar (카테고리별 N 개)</li>
@@ -548,7 +548,7 @@ ${topBar}
     <li><code>BU</code> — 버블 / 4분면 (X/Y 산점)</li>
     <li><code>T</code> — 툴팁 (직교 — 어느 차트에든 추가)</li>
   </ul>
-  <p style="margin-top:14px;font-size:15px;color:#94A3B8">카테고리 뒤 숫자는 양식 번호 (같은 카테고리 안 변형 구분). 예: <code>L-1</code> 기본 라인 / <code>L-5</code> 베이스라인 fade 라인.</p>
+  <p style="margin-top:14px;font-size:15px;color:var(--text-sub)">카테고리 뒤 숫자는 양식 번호 (같은 카테고리 안 변형 구분). 예: <code>L-1</code> 기본 라인 / <code>L-5</code> 베이스라인 fade 라인.</p>
 </div>
 
 ${sectionsHtml}

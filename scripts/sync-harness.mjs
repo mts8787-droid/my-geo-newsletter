@@ -421,11 +421,11 @@ ${themeToggleButton()}
 <a class="back-link" href="/hiro">← HIRO</a>
 
 <h1>🐈‍⬛ HIRO</h1>
-<p class="sub" style="font-size:17px;color:#CBD5E1;font-weight:600;margin-bottom:4px">Harness for Interactive Reporting Optimization</p>
-<p class="sub" style="font-size:15px;color:#94A3B8;font-style:italic;margin-bottom:14px">Built for beginners. Engineered for repetition.</p>
-<p class="sub" style="font-size:15px;color:#94A3B8;font-style:italic;margin-bottom:14px">🐈‍⬛ 히로 (HIRO) — 본 하네스의 마스코트 검은 고양이. 부트스트랩 시나리오 같은 대화형 작업에서 친근한 안내자로 말을 건넵니다.</p>
-<p class="sub" style="font-size:16px;color:#CBD5E1;margin-bottom:10px">HIRO optimizes how you build interactive dashboards with Claude Code. Instead of crafting data parsers, chart components, and newsletter templates from scratch every time, HIRO ships a reusable harness — <strong>skills, rules, hooks, and scenario-based bootstraps</strong> — that turns the manual workflow into a standardized, repeatable pipeline.</p>
-<p class="sub" style="font-size:16px;color:#CBD5E1;margin-bottom:18px">HIRO 는 Claude Code 로 인터랙티브 대시보드를 만드는 작업을 최적화합니다. 데이터 파서, 차트 컴포넌트, 뉴스레터 템플릿을 매번 처음부터 짜는 대신, HIRO 는 재사용 가능한 하네스 — <strong>스킬·룰·훅·시나리오 기반 부트스트랩</strong> — 를 제공해 수작업 워크플로우를 표준화된 반복 가능한 파이프라인으로 바꿉니다.</p>
+<p class="sub" style="font-size:17px;color:var(--text-desc);font-weight:600;margin-bottom:4px">Harness for Interactive Reporting Optimization</p>
+<p class="sub" style="font-size:15px;color:var(--text-sub);font-style:italic;margin-bottom:14px">Built for beginners. Engineered for repetition.</p>
+<p class="sub" style="font-size:15px;color:var(--text-sub);font-style:italic;margin-bottom:14px">🐈‍⬛ 히로 (HIRO) — 본 하네스의 마스코트 검은 고양이. 부트스트랩 시나리오 같은 대화형 작업에서 친근한 안내자로 말을 건넵니다.</p>
+<p class="sub" style="font-size:16px;color:var(--text-desc);margin-bottom:10px">HIRO optimizes how you build interactive dashboards with Claude Code. Instead of crafting data parsers, chart components, and newsletter templates from scratch every time, HIRO ships a reusable harness — <strong>skills, rules, hooks, and scenario-based bootstraps</strong> — that turns the manual workflow into a standardized, repeatable pipeline.</p>
+<p class="sub" style="font-size:16px;color:var(--text-desc);margin-bottom:18px">HIRO 는 Claude Code 로 인터랙티브 대시보드를 만드는 작업을 최적화합니다. 데이터 파서, 차트 컴포넌트, 뉴스레터 템플릿을 매번 처음부터 짜는 대신, HIRO 는 재사용 가능한 하네스 — <strong>스킬·룰·훅·시나리오 기반 부트스트랩</strong> — 를 제공해 수작업 워크플로우를 표준화된 반복 가능한 파이프라인으로 바꿉니다.</p>
 
 <div class="intro">
   <p><strong>이 페이지가 뭔가요?</strong> — Claude 가 본 저장소에서 일할 때 자동으로 따르는 <strong>규칙·자동 검사·작업 매뉴얼·보조 일꾼</strong>의 묶음입니다. 본 페이지는 <strong>사람이 보기 좋게 정리한 미러</strong>이고, 실제 Claude 가 읽는 원본은 <code>CLAUDE.md</code> + <code>.claude/</code> 폴더에 있어요.</p>
@@ -525,7 +525,7 @@ AGENTS.md                       (OpenAI Codex / Antigravity 자동 로드)
 <div class="section">
   <h2><span class="tag badge-skill">SKILL</span> Skill — 영역별 카테고리</h2>
   <p>사람이 보기 좋도록 영역별로 묶음. 원본 <code>.claude/skills/</code> 폴더는 평탄한 구조 (Claude Code 공식 컨벤션). 본 그룹핑은 미러 페이지에만 적용.</p>
-  <p style="font-size:15px;color:#94A3B8"><strong>스킬 사용법</strong> — Claude 에게 자연어로 <code>"○○ 스킬 써줘"</code> / <code>"○○ 스킬로 △△해줘"</code> 라고 말하거나, 슬래시 명령 <code>/skills ○○</code> 로 호출. Claude 가 자동 매칭도 함 (예: "뉴스레터 만들어줘" → <code>newsletter-make</code>).</p>
+  <p style="font-size:15px;color:var(--text-sub)"><strong>스킬 사용법</strong> — Claude 에게 자연어로 <code>"○○ 스킬 써줘"</code> / <code>"○○ 스킬로 △△해줘"</code> 라고 말하거나, 슬래시 명령 <code>/skills ○○</code> 로 호출. Claude 가 자동 매칭도 함 (예: "뉴스레터 만들어줘" → <code>newsletter-make</code>).</p>
 
   <h3>🗂 데이터 (Data)</h3>
   <table>
@@ -535,7 +535,7 @@ AGENTS.md                       (OpenAI Codex / Antigravity 자동 로드)
     <tr><td><code>data-debug</code></td><td>갑자기 망가진 데이터 추적·수정 (재현 TDD + sync 검증)</td><td>"data-debug 스킬로 갑자기 차트 안 보이는 거 원인 찾아줘" / <code>/skills data-debug</code></td></tr>
     <tr><td><code>data-refactor</code></td><td>거대 파서 분할 / silent fallback 강화 / 매핑 통합</td><td>"data-refactor 스킬로 이 파서 분할해줘" / <code>/skills data-refactor</code></td></tr>
   </table>
-  <p style="font-size:15px;color:#94A3B8">참조: <code>.claude/rules/data.md</code> (5단계 ERROR CATCHING, invariant) · Sub-Agent <code>.claude/agents/data-puller.md</code></p>
+  <p style="font-size:15px;color:var(--text-sub)">참조: <code>.claude/rules/data.md</code> (5단계 ERROR CATCHING, invariant) · Sub-Agent <code>.claude/agents/data-puller.md</code></p>
 
   <h3>🎨 디자인 (Design)</h3>
   <table>
@@ -546,7 +546,7 @@ AGENTS.md                       (OpenAI Codex / Antigravity 자동 로드)
     <tr><td><code>design-component</code></td><td>신규 컴포넌트(C-XX) / 카드 변형(V4) / iframe srcdoc</td><td>"design-component 스킬로 새 카드 만들어줘" / <code>/skills design-component</code></td></tr>
     <tr><td><code>design-tune</code></td><td>이메일 호환 변환 / KO·EN 라벨 / 깨진 UI 추적·수정</td><td>"design-tune 스킬로 이메일에서 차트 안 보이는 거 고쳐줘" / <code>/skills design-tune</code></td></tr>
   </table>
-  <p style="font-size:15px;color:#94A3B8">참조: <code>.claude/rules/design.md</code> (토큰·C-01~C-24·SVG 패턴) · 적용 Hook <code>block-dist.sh</code></p>
+  <p style="font-size:15px;color:var(--text-sub)">참조: <code>.claude/rules/design.md</code> (토큰·C-01~C-24·SVG 패턴) · 적용 Hook <code>block-dist.sh</code></p>
 
   <h3>📧 뉴스레터 (Newsletter)</h3>
   <table>
@@ -556,7 +556,7 @@ AGENTS.md                       (OpenAI Codex / Antigravity 자동 로드)
     <tr><td><code>newsletter-debug</code></td><td>미출시 국가 색 잘못 / 이메일 클라이언트별 깨짐 / iframe 클립 추적·수정</td><td>"newsletter-debug 스킬로 Outlook 에서 깨진 거 고쳐줘" / <code>/skills newsletter-debug</code></td></tr>
     <tr><td><code>newsletter-send</code></td><td>발송 전 multi-client 검증 / SMTP 발송 / audit log</td><td>"newsletter-send 스킬로 발송 전 검증해줘" / <code>/skills newsletter-send</code></td></tr>
   </table>
-  <p style="font-size:15px;color:#94A3B8">참조: <code>.claude/rules/newsletter.md</code> (NEVER, 검증 체크리스트) · <code>.claude/rules/BOOTSTRAP-newsletter.md</code> (시나리오) · 적용 Hook <code>newsletter-guard.sh</code></p>
+  <p style="font-size:15px;color:var(--text-sub)">참조: <code>.claude/rules/newsletter.md</code> (NEVER, 검증 체크리스트) · <code>.claude/rules/BOOTSTRAP-newsletter.md</code> (시나리오) · 적용 Hook <code>newsletter-guard.sh</code></p>
 
   <h3>🔧 공통 / 메타</h3>
   <table>
@@ -577,7 +577,7 @@ AGENTS.md                       (OpenAI Codex / Antigravity 자동 로드)
 
 <div class="section">
   <h2>다른 프로젝트에 적용</h2>
-  <ol style="margin-left:22px;font-size:16px;color:#CBD5E1">
+  <ol style="margin-left:22px;font-size:16px;color:var(--text-desc)">
     <li>ZIP 다운로드 (어드민 <code>/hiro</code>) 또는 GitHub 리포 (https://github.com/mts8787-droid/HIRO) clone</li>
     <li>대상 프로젝트 루트에 <code>CLAUDE.md</code>, <code>AGENTS.md</code>, <code>.claude/</code>, <code>harness-mirror/</code> 복사</li>
     <li>
@@ -594,7 +594,7 @@ AGENTS.md                       (OpenAI Codex / Antigravity 자동 로드)
 
 <div class="section">
   <h2>본 저장소 갱신 흐름</h2>
-  <ol style="margin-left:22px;font-size:16px;color:#CBD5E1">
+  <ol style="margin-left:22px;font-size:16px;color:var(--text-desc)">
     <li>원본 파일 수정 (예: <code>.claude/rules/data.md</code>, <code>.claude/skills/data/SKILL.md</code>)</li>
     <li><code>npm run build</code> 또는 <code>npm run sync:harness</code> → <code>harness-mirror/</code> 자동 갱신</li>
     <li>미러 폴더 변경도 함께 커밋</li>

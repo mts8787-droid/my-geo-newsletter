@@ -69,8 +69,8 @@ h1{font-size:26px;color:var(--text-strong);margin-bottom:6px}
 .chart-cmd code{background:var(--bg-code);color:#F8C4D7;padding:1px 6px;border-radius:3px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:14px}
 [data-theme="light"] .intro code,[data-theme="light"] .chart-cmd code{color:#BE123C}
 [data-theme="light"] [style*="color:#F8FAFC"]{color:#0F172A !important}
-[data-theme="light"] [style*="color:#CBD5E1"]{color:#334155 !important}
-[data-theme="light"] [style*="color:#94A3B8"]{color:#475569 !important}
+[data-theme="light"] [style*="color:var(--text-desc)"]{color:#334155 !important}
+[data-theme="light"] [style*="color:var(--text-sub)"]{color:#475569 !important}
 [data-theme="light"] [style*="color:#64748B"]{color:#475569 !important}
 /* ─── 적응형 UI — 태블릿 (≤ 780px) ───────────────────────────────── */
 @media (max-width:780px){
@@ -111,8 +111,8 @@ h1{font-size:26px;color:var(--text-strong);margin-bottom:6px}
 
 <div class="intro">
   <p style="font-size:17px;color:#F8FAFC;margin-bottom:10px"><strong>이 페이지가 뭔가요?</strong> Claude 한테 "이런 차트 그려줘" 라고 부탁할 때 헷갈리지 않게 <strong>차트 종류마다 짧은 코드 (예: <code>L-1</code>, <code>BP-1</code>)</strong> 를 붙여놓은 카탈로그입니다.</p>
-  <p style="font-size:16px;color:#CBD5E1;margin-bottom:14px"><strong>왜 쓰나요?</strong> <code>"라인 차트 그려줘"</code> 라고만 하면 Claude 가 어떤 모양으로 그릴지 애매해요. <code>"L-1 라인 차트 그려줘"</code> 라고 하면 정확히 같은 양식으로 그립니다. 팀 내에서도 한 양식 = 한 코드.</p>
-  <ul style="margin-left:22px;font-size:16px;color:#CBD5E1;line-height:1.9">
+  <p style="font-size:16px;color:var(--text-desc);margin-bottom:14px"><strong>왜 쓰나요?</strong> <code>"라인 차트 그려줘"</code> 라고만 하면 Claude 가 어떤 모양으로 그릴지 애매해요. <code>"L-1 라인 차트 그려줘"</code> 라고 하면 정확히 같은 양식으로 그립니다. 팀 내에서도 한 양식 = 한 코드.</p>
+  <ul style="margin-left:22px;font-size:16px;color:var(--text-desc);line-height:1.9">
     <li><code>L</code> — 라인 (시계열 / 트렌드)</li>
     <li><code>B</code> — 바 스택 (누적 / part-to-whole)</li>
     <li><code>V</code> — 그룹 막대 vbar (카테고리별 N 개)</li>
@@ -125,7 +125,7 @@ h1{font-size:26px;color:var(--text-strong);margin-bottom:6px}
     <li><code>BU</code> — 버블 / 4분면 (X/Y 산점)</li>
     <li><code>T</code> — 툴팁 (직교 — 어느 차트에든 추가)</li>
   </ul>
-  <p style="margin-top:14px;font-size:15px;color:#94A3B8">카테고리 뒤 숫자는 양식 번호 (같은 카테고리 안 변형 구분). 예: <code>L-1</code> 기본 라인 / <code>L-5</code> 베이스라인 fade 라인.</p>
+  <p style="margin-top:14px;font-size:15px;color:var(--text-sub)">카테고리 뒤 숫자는 양식 번호 (같은 카테고리 안 변형 구분). 예: <code>L-1</code> 기본 라인 / <code>L-5</code> 베이스라인 fade 라인.</p>
 </div>
 
 <div class="section">
@@ -286,7 +286,7 @@ h1{font-size:26px;color:var(--text-strong);margin-bottom:6px}
       <div class="chart-card">
         <div class="chart-code" style="color:#DB2777">HB-1</div>
         <div class="chart-name">가로 막대 (Top N)</div>
-        <div class="chart-svg"><svg viewBox="0 0 220 80" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:220px;background:#0F172A;border-radius:6px"><text x="2" y="17" font-size="7" fill="#94A3B8" font-family="Arial">reddit.com</text><rect x="62" y="10" width="165.6" height="9" fill="#CF0652" opacity="0.85"/><text x="231.6" y="17" font-size="7" fill="#CBD5E1" font-family="Arial">92</text><text x="2" y="29" font-size="7" fill="#94A3B8" font-family="Arial">youtube.com</text><rect x="62" y="22" width="140.4" height="9" fill="#60A5FA" opacity="0.85"/><text x="206.4" y="29" font-size="7" fill="#CBD5E1" font-family="Arial">78</text><text x="2" y="41" font-size="7" fill="#94A3B8" font-family="Arial">twitter.com</text><rect x="62" y="34" width="117" height="9" fill="#4ADE80" opacity="0.85"/><text x="183" y="41" font-size="7" fill="#CBD5E1" font-family="Arial">65</text><text x="2" y="53" font-size="7" fill="#94A3B8" font-family="Arial">medium.com</text><rect x="62" y="46" width="93.60000000000001" height="9" fill="#FBBF24" opacity="0.85"/><text x="159.60000000000002" y="53" font-size="7" fill="#CBD5E1" font-family="Arial">52</text><text x="2" y="65" font-size="7" fill="#94A3B8" font-family="Arial">github.com</text><rect x="62" y="58" width="68.4" height="9" fill="#A78BFA" opacity="0.85"/><text x="134.4" y="65" font-size="7" fill="#CBD5E1" font-family="Arial">38</text></svg></div>
+        <div class="chart-svg"><svg viewBox="0 0 220 80" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:220px;background:#0F172A;border-radius:6px"><text x="2" y="17" font-size="7" fill="#64748B" font-family="Arial">reddit.com</text><rect x="62" y="10" width="165.6" height="9" fill="#CF0652" opacity="0.85"/><text x="231.6" y="17" font-size="7" fill="#CBD5E1" font-family="Arial">92</text><text x="2" y="29" font-size="7" fill="#64748B" font-family="Arial">youtube.com</text><rect x="62" y="22" width="140.4" height="9" fill="#60A5FA" opacity="0.85"/><text x="206.4" y="29" font-size="7" fill="#CBD5E1" font-family="Arial">78</text><text x="2" y="41" font-size="7" fill="#64748B" font-family="Arial">twitter.com</text><rect x="62" y="34" width="117" height="9" fill="#4ADE80" opacity="0.85"/><text x="183" y="41" font-size="7" fill="#CBD5E1" font-family="Arial">65</text><text x="2" y="53" font-size="7" fill="#64748B" font-family="Arial">medium.com</text><rect x="62" y="46" width="93.60000000000001" height="9" fill="#FBBF24" opacity="0.85"/><text x="159.60000000000002" y="53" font-size="7" fill="#CBD5E1" font-family="Arial">52</text><text x="2" y="65" font-size="7" fill="#64748B" font-family="Arial">github.com</text><rect x="62" y="58" width="68.4" height="9" fill="#A78BFA" opacity="0.85"/><text x="134.4" y="65" font-size="7" fill="#CBD5E1" font-family="Arial">38</text></svg></div>
         <div class="chart-desc">본 저장소 C-06. 도메인 / 채널 랭킹용. Top N 정렬 + 비중 표시.</div>
         <div class="chart-usage"><strong>사용:</strong> citation 의 도메인 Top N 랭킹</div>
         <div class="chart-cmd">Skill 호출 예시: <code>"HB-1 차트 그려줘"</code></div>
@@ -328,11 +328,11 @@ h1{font-size:26px;color:var(--text-strong);margin-bottom:6px}
       </div>
     </div>
     </div><div class="section">
-      <h2 class="section-title" style="border-color:#94A3B8">MT — 미니 트렌드</h2>
+      <h2 class="section-title" style="border-color:#64748B">MT — 미니 트렌드</h2>
       <p class="section-desc">Mini Trend — 이메일 호환 (table-layout)</p>
       <div class="chart-grid">
       <div class="chart-card">
-        <div class="chart-code" style="color:#94A3B8">MT-1</div>
+        <div class="chart-code" style="color:#64748B">MT-1</div>
         <div class="chart-name">미니 트렌드 바 (메일 호환)</div>
         <div class="chart-svg"><svg viewBox="0 0 220 80" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:220px;background:#0F172A;border-radius:6px"><rect x="14" y="31.5" width="22" height="38.5" fill="#CF0652" opacity="0.4"/><rect x="42" y="26.6" width="22" height="43.4" fill="#CF0652" opacity="0.5"/><rect x="70" y="29.400000000000006" width="22" height="40.599999999999994" fill="#CF0652" opacity="0.6000000000000001"/><rect x="98" y="22.400000000000006" width="22" height="47.599999999999994" fill="#CF0652" opacity="0.7000000000000001"/><rect x="126" y="19.6" width="22" height="50.4" fill="#CF0652" opacity="0.8"/><rect x="154" y="24.5" width="22" height="45.5" fill="#CF0652" opacity="0.9"/><rect x="182" y="17.5" width="22" height="52.5" fill="#CF0652" opacity="1"/><text x="110" y="78" font-size="7" fill="#64748B" font-family="Arial" text-anchor="middle">W22~W28 (이메일 table-layout 호환)</text></svg></div>
         <div class="chart-desc">본 저장소 C-10. SVG 미지원 클라이언트 (Outlook 등) 용 table-layout 기반.</div>
