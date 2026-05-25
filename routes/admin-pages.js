@@ -753,7 +753,11 @@ ${themeToggleButton()}
 <script type="module">
   import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs'
   mermaid.initialize({ startOnLoad: false, theme: 'dark', themeVariables: { darkMode: true, background: '#ffffff', primaryColor: '#CF0652', primaryTextColor: '#1A1A1A' } })
-  const md = ${mdJson}
+  let md = ${mdJson}
+  // SKILL.md / agents/*.md 의 YAML frontmatter — 사람용 viewer 에서는 접기 처리.
+  // 원본 파일은 그대로 두어 Claude 시스템 매칭 보존.
+  md = md.replace(/^---\\n([\\s\\S]*?)\\n---\\n\\n?/, (_, yaml) =>
+    '<details style="margin-bottom:18px"><summary style="cursor:pointer;font-size:12px;color:#94A3B8;font-weight:500">📋 Claude 시스템 메타데이터 (펼쳐서 보기)</summary>\\n\\n<pre style="font-size:11px;color:#94A3B8;background:#0F172A;padding:10px 14px;border-radius:6px;margin-top:8px;white-space:pre-wrap;word-break:break-word">' + yaml + '</pre>\\n\\n</details>\\n\\n')
   marked.use({ gfm: true, breaks: false })
   const renderer = new marked.Renderer()
   const origCode = renderer.code.bind(renderer)
