@@ -269,7 +269,7 @@ harness-mirror/
 
 1. **ZIP 다운로드** — \`/hiro\` 페이지 위쪽 빨간 버튼 또는 GitHub 리포 (https://github.com/mts8787-droid/HIRO) 에서 clone.
 2. 대상 프로젝트 루트에 **압축 풀기** — \`CLAUDE.md\`, \`AGENTS.md\`, \`.claude/\`, \`harness-mirror/\` 가 추가됩니다.
-3. **Hook 실행 권한 부여** — 터미널 (macOS: Terminal.app · Linux: 기본 터미널 · Windows: WSL 또는 Git Bash. cmd / PowerShell 은 chmod 없음) 을 열고, **압축 푼 프로젝트 폴더로 이동** (\`cd /your/project/path\`) 한 다음 아래 한 줄 실행:
+3. **Hook 실행 권한 부여** — Hook이 실행되려면 필수. **압축을 풀었던 프로젝트 루트 폴더로 이동** (\`cd /your/project/path\`) 한 다음 한 줄 실행:
    \`\`\`bash
    chmod +x .claude/hooks/*.sh
    \`\`\`
@@ -581,7 +581,7 @@ AGENTS.md                       (OpenAI Codex / Antigravity 자동 로드)
     <li>ZIP 다운로드 (어드민 <code>/hiro</code>) 또는 GitHub 리포 (https://github.com/mts8787-droid/HIRO) clone</li>
     <li>대상 프로젝트 루트에 <code>CLAUDE.md</code>, <code>AGENTS.md</code>, <code>.claude/</code>, <code>harness-mirror/</code> 복사</li>
     <li>
-      <strong>Hook 실행 권한 부여</strong> — 터미널 (macOS: Terminal.app · Linux: 기본 터미널 · Windows: WSL 또는 Git Bash — cmd/PowerShell 은 chmod 없음) 열고, <strong>압축 푼 프로젝트 폴더로 이동</strong> (<code>cd /your/project/path</code>) 한 다음 한 줄 실행:
+      <strong>Hook 실행 권한 부여</strong> — Hook이 실행되려면 필수. <strong>압축을 풀었던 프로젝트 루트 폴더로 이동</strong> (<code>cd /your/project/path</code>) 한 다음 한 줄 실행:
       <pre style="margin:6px 0;padding:8px 12px;background:var(--bg-code);border-radius:6px;font-size:14px"><code>chmod +x .claude/hooks/*.sh</code></pre>
       확인: <code>ls -l .claude/hooks/</code> 가 <code>-rwxr-xr-x</code> 표시하면 OK.
     </li>
