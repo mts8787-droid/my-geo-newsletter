@@ -651,7 +651,13 @@ ${themeToggleButton()}
         <li><code style="background:#0F172A;padding:1px 6px;border-radius:3px">harness-mirror/</code> — 사람용 미러 (선택 — Claude Code 작동에는 불필요)</li>
       </ul>
     </li>
-    <li><strong>실행 권한 부여</strong>: <code style="background:#0F172A;padding:2px 8px;border-radius:4px;color:#F8C4D7">chmod +x .claude/hooks/*.sh</code> — Hook이 실행되려면 필수</li>
+    <li><strong>실행 권한 부여</strong> — Hook이 실행되려면 필수.
+      <div style="margin:6px 0 0 0;font-size:15px;color:#CBD5E1;line-height:1.6">
+        터미널 (macOS: Terminal.app · Linux: 기본 터미널 · Windows: WSL 또는 Git Bash — cmd/PowerShell 은 chmod 없음) 을 열고, <strong>압축 푼 프로젝트 폴더로 이동</strong> (<code style="background:#0F172A;padding:1px 6px;border-radius:3px">cd /your/project/path</code>) 한 다음 한 줄 실행:
+      </div>
+      <pre style="margin:6px 0 0 0;padding:8px 12px;background:#0F172A;border-radius:6px;font-size:14px;color:#F8C4D7;overflow:auto"><code>chmod +x .claude/hooks/*.sh</code></pre>
+      <div style="margin:6px 0 0 0;font-size:14px;color:#94A3B8">확인: <code style="background:#0F172A;padding:1px 6px;border-radius:3px">ls -l .claude/hooks/</code> 결과에 <code style="background:#0F172A;padding:1px 6px;border-radius:3px">-rwxr-xr-x</code> 표시되면 OK.</div>
+    </li>
     <li><strong>Claude Code 실행</strong> — 자동으로 로드:
       <ul style="margin:6px 0 6px 20px;font-size:15px;color:#94A3B8;line-height:1.6">
         <li><span style="color:#60A5FA">RULE</span>: <code>CLAUDE.md</code> 항상 로드 + <code>.claude/rules/</code> 가 CLAUDE.md 명시 참조 시 로드</li>
