@@ -64,7 +64,7 @@ harness-mirror/
 
 1. **ZIP 다운로드** — `/hiro` 페이지 위쪽 빨간 버튼 또는 GitHub 리포 (https://github.com/mts8787-droid/HIRO) 에서 clone.
 2. 대상 프로젝트 루트에 **압축 풀기** — `CLAUDE.md`, `AGENTS.md`, `.claude/`, `harness-mirror/` 가 추가됩니다.
-3. **Hook 실행 권한 부여** — Hook이 실행되려면 필수. **압축을 풀었던 프로젝트 루트 폴더로 이동** (`cd /your/project/path`) 한 다음 한 줄 실행:
+3. **Hook 실행 권한 부여** — Hook이 실행되려면 필수. 터미널에서 **압축을 풀었던 프로젝트 루트 폴더로 이동** (`cd /your/project/path`) 한 다음 한 줄 실행:
    ```bash
    chmod +x .claude/hooks/*.sh
    ```

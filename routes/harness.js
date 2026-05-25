@@ -653,7 +653,7 @@ ${themeToggleButton()}
     </li>
     <li><strong>실행 권한 부여</strong> — Hook이 실행되려면 필수.
       <div style="margin:6px 0 0 0;font-size:15px;color:#CBD5E1;line-height:1.6">
-        <strong>압축을 풀었던 프로젝트 루트 폴더로 이동</strong> (<code style="background:#0F172A;padding:1px 6px;border-radius:3px">cd /your/project/path</code>) 한 다음 한 줄 실행:
+        터미널에서 <strong>압축을 풀었던 프로젝트 루트 폴더로 이동</strong> (<code style="background:#0F172A;padding:1px 6px;border-radius:3px">cd /your/project/path</code>) 한 다음 한 줄 실행:
       </div>
       <pre style="margin:6px 0 0 0;padding:8px 12px;background:#0F172A;border-radius:6px;font-size:14px;color:#F8C4D7;overflow:auto"><code>chmod +x .claude/hooks/*.sh</code></pre>
       <div style="margin:6px 0 0 0;font-size:14px;color:#94A3B8">확인: <code style="background:#0F172A;padding:1px 6px;border-radius:3px">ls -l .claude/hooks/</code> 결과에 <code style="background:#0F172A;padding:1px 6px;border-radius:3px">-rwxr-xr-x</code> 표시되면 OK.</div>
