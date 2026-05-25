@@ -640,7 +640,7 @@ ${themeToggleButton()}
   </ul>
 
   <h2 style="font-size:17px;color:#F8FAFC;margin-bottom:10px;margin-top:18px">💡 다른 프로젝트에 적용하기</h2>
-  <p style="font-size:14px;color:#CBD5E1;margin-bottom:10px">ZIP 받아서 새 프로젝트에 풀고 Claude 에게 <code style="background:#0F172A;padding:1px 6px;border-radius:3px">"이 하네스 적용해줘. 내 프로젝트는 [도메인]"</code> 하면 자동 셋업.</p>
+  <p style="font-size:14px;color:#CBD5E1;margin-bottom:10px">ZIP 받아서 새 프로젝트에 풀고 Claude 에게 <code style="background:#0F172A;padding:1px 6px;border-radius:3px">"이 하네스 적용해줘. 내 프로젝트는 [프로젝트 종류]"</code> 하면 자동 셋업. (<code style="background:#0F172A;padding:1px 6px;border-radius:3px">[프로젝트 종류]</code> = 매출 대시보드 / HR / 마케팅 KPI / 의료 등 본인 프로젝트 영역)</p>
   <ol style="font-size:14px;color:#CBD5E1;margin-left:24px;line-height:1.8">
     <li><strong>전체 ZIP 다운로드</strong> (아래 빨간 버튼) — 원본 + 미러 모두 포함</li>
     <li>대상 프로젝트 <strong>루트에 압축 풀기</strong>:

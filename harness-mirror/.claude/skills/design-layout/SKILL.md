@@ -58,7 +58,7 @@ grep -E "products|productsCnty|weekly|monthly|citations" src/shared/api.js | hea
 
 ### STEP 2 — 스키마 부재 시 사용자에게 요청
 
-위 grep 결과가 비어 있거나 (신규 도메인) 새 페이지면 **TECHNIQUE-4 활용** (`.claude/rules/BOOTSTRAP.md` TECHNIQUE-4).
+위 grep 결과가 비어 있거나 (신규 프로젝트) 새 페이지면 **TECHNIQUE-4 활용** (`.claude/rules/BOOTSTRAP.md` TECHNIQUE-4).
 
 ```
 [🐈‍⬛ 히로 (Claude) 가 사용자에게]:
@@ -85,7 +85,7 @@ C) 부분 소스코드 + 텍스트 설명
 
 ### STEP 3 — 페이지 골격 결정 (.claude/rules/design.md §5.17 표준 패턴)
 
-표준 8 섹션 중 도메인에 필요한 것 선택 (위→아래 순서):
+표준 8 섹션 중 프로젝트에 필요한 것 선택 (위→아래 순서):
 
 | 섹션 | 컴포넌트 | 데이터 요건 |
 |---|---|---|
