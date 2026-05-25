@@ -349,7 +349,7 @@ th{text-align:left;color:var(--text-sub);font-weight:600;padding:10px 14px;borde
 td{padding:10px 14px;border-bottom:1px solid var(--border-soft);color:var(--text-desc)}
 code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:14px;color:var(--text-strong);background:var(--bg-code);padding:2px 6px;border-radius:3px}
 .section{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin-bottom:18px}
-.section h2{font-size:17px;font-weight:700;color:var(--text-strong);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.section h2{font-size:18px;font-weight:700;color:var(--text-strong);margin-bottom:12px;display:flex;align-items:center;gap:8px}
 .section h2 .tag{font-size:14px;background:var(--border);color:var(--text-sub);padding:2px 8px;border-radius:4px;font-weight:600;text-transform:uppercase;letter-spacing:1px}
 .section h3{font-size:16px;font-weight:600;color:var(--text-strong);margin:14px 0 6px}
 .section p{font-size:16px;color:var(--text-desc);margin-bottom:8px}
@@ -382,7 +382,7 @@ a{color:var(--accent)}
   .sub{font-size:15px}
   .intro{padding:14px 16px;font-size:15px;margin-bottom:14px}
   .section{padding:16px 18px;margin-bottom:14px}
-  .section h2{font-size:18px;margin-bottom:10px}
+  .section h2{font-size:19px;margin-bottom:10px}
   .section h3{font-size:15px;margin:12px 0 6px}
   .section p,.section ul,.section li{font-size:15px}
   .section ul{margin-left:18px}
@@ -399,7 +399,7 @@ a{color:var(--accent)}
   .sub{font-size:14px}
   .intro{padding:12px 14px;font-size:12.5px}
   .section{padding:14px 16px}
-  .section h2{font-size:17px;flex-wrap:wrap;gap:6px}
+  .section h2{font-size:18px;flex-wrap:wrap;gap:6px}
   .section h2 .tag{font-size:10px;padding:1px 6px}
   .section p,.section ul,.section li{font-size:12.5px}
   .tree{font-size:13px;padding:10px 12px;line-height:1.35}

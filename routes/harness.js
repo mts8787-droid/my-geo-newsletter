@@ -518,7 +518,7 @@ h1{font-size:22px;color:var(--text-strong);margin-bottom:4px}
 .intro strong{color:var(--text-strong)}
 .usage{background:var(--bg-card);border:1px solid var(--accent);border-radius:12px;padding:22px 26px;margin-bottom:18px;color:var(--text-desc)}
 [data-theme="dark"] .usage{background:linear-gradient(135deg,#1F2937 0%,#2A1F3F 100%)}
-.usage h2{display:block !important;font-size:17px !important;font-weight:700;color:var(--text-strong) !important;background:var(--bg-code);border-left:4px solid var(--accent);padding:10px 14px !important;border-radius:4px;margin:18px 0 14px !important}
+.usage h2{display:block !important;font-size:18px !important;font-weight:700;color:var(--text-strong) !important;background:var(--bg-code);border-left:4px solid var(--accent);padding:10px 14px !important;border-radius:4px;margin:18px 0 14px !important}
 .usage h2:first-of-type{margin-top:6px !important}
 .usage h3{display:block;font-size:17px;font-weight:600;color:var(--text-strong);background:var(--bg-code);border-left:3px solid var(--text-sub);padding:8px 12px;border-radius:4px;margin:16px 0 10px}
 .usage code{font-family:ui-monospace,Menlo,Consolas,monospace}
@@ -533,7 +533,7 @@ h1{font-size:22px;color:var(--text-strong);margin-bottom:4px}
 .card .label{font-size:14px;color:var(--text-sub);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
 .card .value{font-size:24px;font-weight:700;color:var(--text-strong)}
 .section{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin-bottom:18px}
-.section h2{font-size:18px;font-weight:400;color:var(--text-strong);margin-bottom:14px}
+.section h2{font-size:19px;font-weight:400;color:var(--text-strong);margin-bottom:14px}
 .section-title-bar{background:var(--bg-code);border-left:4px solid var(--accent);padding:10px 14px;border-radius:4px;margin:-4px -4px 14px;display:block !important}
 .section-title-bar strong{font-weight:800;color:var(--text-strong);margin-right:2px}
 .section-title-bar .rest{font-weight:400;color:var(--text-desc);font-size:16px}
@@ -577,7 +577,7 @@ h1{font-size:22px;color:var(--text-strong);margin-bottom:4px}
   h1{font-size:20px}
   .sub{font-size:15px;margin-bottom:14px}
   .intro,.usage{padding:14px 16px;margin-bottom:14px;font-size:15px}
-  .usage h2{font-size:17px !important;padding:8px 12px !important;margin:14px 0 10px !important}
+  .usage h2{font-size:18px !important;padding:8px 12px !important;margin:14px 0 10px !important}
   .usage h3{font-size:16px;padding:6px 10px;margin:12px 0 8px}
   .kpis{grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:18px}
   .card{padding:12px 14px}
@@ -628,7 +628,7 @@ ${themeToggleButton()}
 </div>
 
 <div class="usage">
-  <h2 style="font-size:17px;color:#F8FAFC;margin-bottom:10px">📌 HIRO 란?</h2>
+  <h2 style="font-size:18px;color:#F8FAFC;margin-bottom:10px">📌 HIRO 란?</h2>
   <p style="font-size:15px;color:#94A3B8;margin-bottom:10px;font-style:italic">🐈‍⬛ 히로 (HIRO) — 본 하네스의 마스코트 검은 고양이. 사용자가 부트스트랩 시나리오 같은 대화형 작업을 할 때 친근한 안내자로 말을 건넵니다.</p>
   <p style="font-size:16px;color:#CBD5E1;margin-bottom:8px">HIRO optimizes how you build interactive dashboards with Claude Code. Instead of crafting data parsers, chart components, and newsletter templates from scratch every time, HIRO ships a reusable harness — <strong style="color:#F8FAFC">skills, rules, hooks, and scenario-based bootstraps</strong> — that turns the manual workflow into a standardized, repeatable pipeline.</p>
   <p style="font-size:16px;color:#CBD5E1;margin-bottom:8px">HIRO 는 Claude Code 로 인터랙티브 대시보드를 만드는 작업을 최적화합니다. 데이터 파서, 차트 컴포넌트, 뉴스레터 템플릿을 매번 처음부터 짜는 대신, HIRO 는 재사용 가능한 하네스 — <strong style="color:#F8FAFC">스킬·룰·훅·시나리오 기반 부트스트랩</strong> — 를 제공해 수작업 워크플로우를 표준화된 반복 가능한 파이프라인으로 바꿉니다.</p>
@@ -639,7 +639,7 @@ ${themeToggleButton()}
     <li><strong style="color:#F8FAFC">무엇을 할 수 있나?</strong> (1) 각 파일 클릭해서 보기 (2) 전체 ZIP 다운로드해서 다른 프로젝트에 적용 (3) 팀원과 공유</li>
   </ul>
 
-  <h2 style="font-size:17px;color:#F8FAFC;margin-bottom:10px;margin-top:18px">💡 다른 프로젝트에 적용하기</h2>
+  <h2 style="font-size:18px;color:#F8FAFC;margin-bottom:10px;margin-top:18px">💡 다른 프로젝트에 적용하기</h2>
   <p style="font-size:16px;color:#CBD5E1;margin-bottom:10px">ZIP 받아서 새 프로젝트에 풀고 Claude 에게 <code style="background:#0F172A;padding:1px 6px;border-radius:3px">"이 하네스 적용해줘. 내 프로젝트는 [프로젝트 종류]"</code> 하면 자동 셋업. (<code style="background:#0F172A;padding:1px 6px;border-radius:3px">[프로젝트 종류]</code> = 매출 대시보드 / HR / 마케팅 KPI / 의료 등 본인 프로젝트 영역)</p>
   <ol style="font-size:16px;color:#CBD5E1;margin-left:24px;line-height:1.8">
     <li><strong>전체 ZIP 다운로드</strong> (아래 빨간 버튼) — 원본 + 미러 모두 포함</li>

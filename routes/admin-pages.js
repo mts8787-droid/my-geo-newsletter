@@ -1242,7 +1242,7 @@ h1{font-size:22px;font-weight:700;color:#F8FAFC;margin-bottom:6px}
 .info{background:#1E3A5F;border:1px solid #2563EB;border-radius:8px;padding:12px 16px;font-size:15px;color:#93C5FD;margin-bottom:24px;line-height:1.7}
 .info strong{color:#BFDBFE}
 .section{background:#1E293B;border:1px solid #334155;border-radius:12px;padding:24px;margin-bottom:20px}
-.section h2{font-size:18px;font-weight:700;margin-bottom:16px;color:#F8FAFC}
+.section h2{font-size:19px;font-weight:700;margin-bottom:16px;color:#F8FAFC}
 .form-row{display:flex;gap:10px;margin-bottom:12px}
 .form-row input{flex:1;padding:10px 12px;border-radius:8px;border:1px solid #334155;background:#0F172A;color:#E2E8F0;font-size:16px;outline:none}
 .form-row input:focus{border-color:#CF0652}
@@ -1422,7 +1422,7 @@ body{background:#0F172A;font-family:'LG Smart','Arial Narrow',Arial,sans-serif;c
 h1{font-size:22px;font-weight:700;color:#F8FAFC;margin-bottom:6px}
 .desc{font-size:16px;color:#64748B;margin-bottom:24px}
 .section{background:#1E293B;border:1px solid #334155;border-radius:12px;padding:24px;margin-bottom:20px}
-.section h2{font-size:18px;font-weight:700;margin-bottom:12px;color:#F8FAFC}
+.section h2{font-size:19px;font-weight:700;margin-bottom:12px;color:#F8FAFC}
 .section p.hint{font-size:15px;color:#64748B;margin-bottom:12px;line-height:1.6}
 label{display:block;font-size:15px;color:#94A3B8;margin-bottom:6px;font-weight:600}
 textarea,input[type=text],select{width:100%;padding:10px 12px;border-radius:8px;border:1px solid #334155;background:#0F172A;color:#E2E8F0;font-size:16px;outline:none;font-family:inherit;line-height:1.6}
