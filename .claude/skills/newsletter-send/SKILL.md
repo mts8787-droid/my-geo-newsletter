@@ -1,6 +1,6 @@
 ---
 name: newsletter-send
-description: 뉴스레터 발송 전 multi-client 호환 검증 + SMTP 발송 워크플로우. 사용자가 "발송 전 검증해줘", "Litmus 같은 거 없이 직접 확인", "SMTP 발송 설정", "수신자 리스트 발송" 같이 요청 시 트리거. 발송 전 체크리스트(Outlook/Gmail/Apple Mail/mobile) + SMTP 자격증명 검증 + 본인 테스트 발송 → 전체 발송 + audit log. Rule 은 .claude/rules/newsletter.md §5 / §4.10.
+description: '발송 전 multi-client 호환 검증 + SMTP 발송 워크플로우 (체크리스트 → 본인 테스트 → 전체 발송 + audit log). 작성된 뉴스레터를 실제 발송 직전·발송 설정 할 때 호출 (작성은 newsletter-make). 트리거: "발송 전 검증해줘" / "SMTP 발송 설정" / "수신자 리스트 발송" / "본인 테스트 메일" 같은 요청.'
 ---
 
 # newsletter-send — 뉴스레터 발송 전 검증 + SMTP 발송 워크플로우

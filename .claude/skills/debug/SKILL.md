@@ -1,6 +1,6 @@
 ---
 name: debug
-description: 사용자가 "X 안 됨" / "이거 디버깅해줘" / "fix" / "오류" / "회귀" 같이 요청 시 본 Skill 사용. BOOTSTRAP.md 의 디버깅 시나리오 모음 (15 카테고리) 에서 증상에 맞는 시나리오 찾아 진행. 시나리오는 가이드 — 더 나은 방법 발견 시 그 방식으로 진행 가능.
+description: 'BOOTSTRAP.md 의 디버깅 시나리오 모음 (DEBUG-1~15) 중 증상 매칭 후 진행. 일반 디버깅 요청 + 특정 영역이 명확하지 않을 때 호출 (명확하면 data-debug / design-tune / newsletter-debug 우선). 트리거: "안 됨" / "오류" / "회귀" / "디버깅해줘" / "fix" 같은 일반 디버깅 요청.'
 ---
 
 # Debug — 디버깅 시나리오 호출 워크플로우

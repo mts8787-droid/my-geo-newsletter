@@ -1,6 +1,6 @@
 ---
 name: newsletter
-description: (인덱스) 뉴스레터 워크플로우는 성격별 3개 skill 로 분리됨. 신규 발행본 작성·섹션 추가 → newsletter-make / 회귀·호환 디버깅 → newsletter-debug / 발송 전 검증·SMTP 발송 → newsletter-send. 신규 발행본은 BOOTSTRAP-newsletter.md 시나리오 (newsletter-make 가 호출). 본 파일은 어느 skill 이 어느 워크플로우를 담는지 알려주는 인덱스.
+description: '뉴스레터 워크플로우 인덱스 — 신규 작성 / 회귀 디버깅 / 발송 검증 3 sub-skill 분기. 뉴스레터 작업 의도가 모호할 때 호출. 트리거: "뉴스레터 작업" 같이 모호한 요청.'
 ---
 
 # newsletter (인덱스) — 뉴스레터 워크플로우 분리

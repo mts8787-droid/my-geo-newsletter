@@ -1,6 +1,6 @@
 ---
 name: design-chart
-description: 차트 작업 워크플로우 — 분류 코드 (L-1 ~ T-1) 로 차트 그리기, 상단 차트 + 하단 표 결합 시 X 좌표 정렬 invariant 점검 (C-24), 신규 SVG 차트 양식(heatmap, sankey 등) 추가. 사용자가 "L-1 차트", "차트+표", "차트 그려줘" 등 차트 관련 요청 시 트리거. 디자인 토큰·SVG 패턴은 .claude/rules/design.md 참조.
+description: '차트 작업 워크플로우 (분류 코드 L-1~T-1 으로 그리기, 차트+표 X 좌표 정렬 C-24, 신규 SVG 차트 양식 추가). 차트 한 단위를 그리거나 새 양식 신설할 때 호출 (전체 페이지는 design-layout). 트리거: "L-1 차트" / "BP-1 범프" / "차트+표" / "차트 그려줘" / "히트맵 추가" 같은 요청.'
 ---
 
 # design-chart — 차트 작업 워크플로우

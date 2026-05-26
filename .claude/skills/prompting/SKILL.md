@@ -1,6 +1,6 @@
 ---
 name: prompting
-description: 에이전틱 코딩 도구(Claude Code/Cursor/Codex)가 본 저장소에서 작업할 때 참조하는 통합 시스템 프롬프트. PROJECT CONTEXT, COMMANDS, FILE LAYOUT, DESIGN TOKENS, DATA INTERFACES, DIRECTIVES, COMPONENT LIBRARY(C-01~C-23), ANTI-PATTERNS, VERIFICATION 통합본. 도메인 무관 일반화.
+description: '다른 에이전틱 코딩 도구 (Cursor/Codex/Antigravity) 가 본 저장소에서 작업할 때 참조하는 통합 시스템 프롬프트 (PROJECT CONTEXT, FILE LAYOUT, DESIGN TOKENS, COMPONENT LIBRARY C-01~C-23, ANTI-PATTERNS 통합본). 다른 도구용 컨텍스트를 정리할 때 호출. 트리거: "Cursor 용 프롬프트" / "Codex 시스템 프롬프트" / "다른 도구 컨텍스트 정리" 같은 요청.'
 ---
 
 > Agentic coding tool (Claude Code, Cursor, Codex) 가 본 저장소에서 작업할 때 참조하는 시스템 프롬프트.

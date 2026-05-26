@@ -1,6 +1,6 @@
 ---
 name: newsletter-debug
-description: 뉴스레터 / 이메일 클라이언트 호환 회귀 디버깅 — 미출시 국가 처리 회귀(회색 안 됨), 특정 이메일 클라이언트(Outlook/Gmail/Apple Mail)에서 깨짐·짤림·정렬 어긋남, iframe 미리보기 클립, 카드 색상·폰트 회귀. 사용자가 "Outlook 에서 깨짐", "미출시 국가가 색이 잘못", "이메일에서 차트 안 보임", "카드 깨짐" 같이 회귀 보고 시 트리거. Rule 은 .claude/rules/newsletter.md §6 ANTI-PATTERN.
+description: '뉴스레터·이메일 클라이언트 호환 회귀 디버깅 (미출시 회색 안 됨, Outlook/Gmail/Apple Mail 깨짐, iframe 클립). 발행본이 특정 클라이언트에서 깨지거나 색상 회귀 보고될 때 호출 (신규 작성은 newsletter-make). 트리거: "Outlook 에서 깨짐" / "미출시 색 잘못" / "이메일에서 차트 안 보임" / "Gmail 짤림" 같은 보고.'
 ---
 
 # newsletter-debug — 뉴스레터 회귀·디버깅 워크플로우
