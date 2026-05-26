@@ -1,6 +1,6 @@
 ---
 name: newsletter-make
-description: 뉴스레터 / 월간·주간 리포트 신규 발행본 작성 워크플로우. 사용자가 "이번 달 뉴스레터", "5월호 뉴스레터", "Q2 리포트 작성", "주간 리포트" 같이 신규 발행본 요청 시 트리거. 큰 발행본 작성은 BOOTSTRAP-newsletter.md 시나리오 (Claude 가 8 step 인터뷰 진행), 기존 발행본에 새 섹션만 추가는 본 skill 의 짧은 워크플로우. Rule·invariant 는 .claude/rules/newsletter.md.
+description: '신규 뉴스레터 발행본 작성 (큰 발행본은 BOOTSTRAP-newsletter.md 의 8 step 인터뷰, 기존 본에 섹션 추가는 짧은 워크플로우). 새 달·새 주의 발행본을 처음부터 만들거나 섹션을 더할 때 호출. 트리거: "이번 달 뉴스레터" / "5월호 뉴스레터" / "Q2 리포트" / "주간 리포트 만들어줘" 같은 요청.'
 ---
 
 # newsletter-make — 뉴스레터 작성 워크플로우

@@ -1,6 +1,6 @@
 ---
 name: data-refactor
-description: 데이터 파서 / 매핑 / 로깅 품질 향상 워크플로우 — 거대 파서(200줄+) helper 분할 (TDD baseline 후), silent fallback (return {}) 을 _logWarn 으로 강화, 분산된 매핑을 categoryMap.js single source 로 통합, 기존 파서에 5단계 ERROR CATCHING 적용. 새 기능 추가가 아닌 기존 코드 품질·일관성 작업에 트리거.
+description: '데이터 파서·매핑·로깅 코드 품질 작업 (거대 파서 분할, silent fallback → _logWarn 강화, 분산 매핑 single source 통합). 기존 코드 품질·일관성 작업이 필요할 때 호출 (새 기능 추가 X). 트리거: "이 파서 분할" / "categoryMap 통합" / "silent fallback 정리" 같은 요청.'
 ---
 
 # data-refactor — 데이터 코드 품질·리팩터 워크플로우

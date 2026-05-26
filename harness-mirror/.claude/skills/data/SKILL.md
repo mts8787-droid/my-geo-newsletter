@@ -1,6 +1,6 @@
 ---
 name: data
-description: (인덱스) 데이터 워크플로우는 성격별 3개 skill 로 분리됨. 신규 추가 → data-add / 회귀·진단 → data-debug / 코드 품질·리팩터 → data-refactor. 본 파일은 어느 skill 이 어느 워크플로우를 담는지 알려주는 인덱스. /skills 에서는 더 정밀한 매칭을 위해 각 sub-skill 을 직접 호출.
+description: '데이터 워크플로우 인덱스 — 신규 추가 / 회귀 진단 / 리팩터 3 sub-skill 분기. 데이터 작업 의도가 모호할 때 호출 (명확하면 sub-skill 직접). 트리거: "데이터 작업" / "데이터 어떻게" 같이 모호한 요청.'
 ---
 
 # data (인덱스) — 데이터 워크플로우 분리

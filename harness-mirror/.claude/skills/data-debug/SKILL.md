@@ -1,6 +1,6 @@
 ---
 name: data-debug
-description: 데이터 회귀 / 정렬 깨짐 / MoM 부호 반전 / 동기화 결과 이상 등의 디버깅 워크플로우. 재현 fixture 우선 작성 (TDD), 시트 동기화 후 verify-after-act invariant 검증, .claude/rules/data.md §6 ERROR CATCHING 5단계 흐름 적용. 데이터가 갑자기 비거나 잘못된 값일 때 트리거.
+description: '데이터 회귀·이상값 디버깅 워크플로우 (TDD 재현 fixture → verify-after-act invariant → 5단계 ERROR CATCHING). 데이터가 갑자기 비거나 잘못된 값일 때 호출. 트리거: "데이터 이상해" / "차트 안 보여" / "MoM 부호 반대" / "동기화 결과 이상" 같은 회귀 보고.'
 ---
 
 # data-debug — 데이터 회귀·진단 워크플로우

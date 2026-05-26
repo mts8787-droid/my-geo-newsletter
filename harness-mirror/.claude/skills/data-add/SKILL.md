@@ -1,6 +1,6 @@
 ---
 name: data-add
-description: 데이터 모델에 무언가를 신규로 "추가" 할 때 — Google Sheets 신규 탭(시트) 추가, PROD_IDS 에 신규 카테고리(예: 'styler') 추가. parseSheetRows 라우터 등록 / categoryMap.js single source 갱신 / 4종 매핑 + invariant 자동 검증 / 통합 테스트 작성까지의 step-by-step. Rule·매뉴얼·invariant·ANTI-PATTERN 은 .claude/rules/data.md 참조.
+description: '데이터 모델에 신규 카테고리·시트를 추가하는 워크플로우 (parseSheetRows 등록 → categoryMap.js 갱신 → invariant 검증 → 통합 테스트). 기존 데이터에 새 분류·소스를 더할 때 호출. 트리거: "신규 카테고리 추가" / "STYLER 추가" / "새 시트 등록" / "PROD_IDS 에 X 추가" 같은 요청.'
 ---
 
 # data-add — 데이터 신규 추가 워크플로우
