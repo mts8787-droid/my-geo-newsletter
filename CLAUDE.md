@@ -141,32 +141,7 @@ NEVER  파서 진입부 입력 검증 생략 — assertRows 라우터 가드 의
 
 ---
 
-## For Adopters (이식자 참고)
 
-본 헌법은 **HIRO 하네스의 4 개념 (Rule / Hook / Skill / Sub-Agent) + 자동화 규칙** 의 본 저장소 적용판. 다른 프로젝트 적용 시:
+---
 
-### 그대로 사용 가능 (도메인 무관)
-
-- **하네스 4 개념 구조** — Rule / Hook / Skill / Sub-Agent (이 구분은 모든 프로젝트 동일)
-- **자동화 Rule** — 변경 후 자동 커밋 + 푸시 + Conventional Commits 형식
-- **3-tier Boundaries** — Never (🔒 Hook 강제) / Always (패턴 권고) / Ask First (사용자 확인 후)
-- **참조 Rule 매뉴얼** — `.claude/rules/{data,design,newsletter,ai}.md` 의 핵심 패턴
-
-### 본 저장소 특정 (본인 프로젝트에 맞게 바꿔야)
-
-- **스택** — Express / Vite / React (본인 프로젝트 스택으로)
-- **디렉토리 맵** — `src/dashboard`, `src/citation` 등 본 저장소 SPA 구조 (본인 페이지 구조로)
-- **명령** — `npm run dev:dashboard` 등 (본인 npm scripts 로)
-- **리팩터링 마커** (N1 / N2 / N3 / C-XX / SEC[숫자]) — 본 저장소 컨벤션 (참고만)
-- **NEVER 의 일부** — `containerWidth > 940`, `categoryMap.js` 등 본 저장소 특정 (본인 프로젝트는 해당 X 또는 본인 이름으로)
-
-### 부트스트랩 사용법 (비개발자)
-
-`/onboard` 시작 → 🐈‍⬛ 히로가:
-
-1. 도메인 인터뷰 (어떤 분야 / 어떤 데이터 / 어떤 KPI / 이메일 발송 여부)
-2. **"시각화하고 싶은 데이터의 헤더 + 1~5행 보여주세요"** 요청
-3. 받은 데이터 분석 → 도메인 자동 추론 → 본 헌법의 패턴을 본인 프로젝트 구조로 자동 적응
-4. 본 CLAUDE.md → 본인 프로젝트용 CLAUDE.md 자동 변환 (스택 / 디렉토리 맵 / 명령 본인 것으로)
-
-→ 변수명·코드 한 줄 안 봐도 됨. 데이터만 보여주면 끝.
+**For Adopters (이식자 참고)**: 같은 가전 산업 내 영업·매출·전략·마케팅·R&D 등 다른 직무 도메인 적용 가이드 (핵심 패턴 + 부트스트랩 사용법) → `.claude/rules/HIRO_REFERENCE.md` (For Adopters 통합 섹션).
