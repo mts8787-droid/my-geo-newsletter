@@ -1,6 +1,6 @@
 ---
 name: data
-description: '데이터 워크플로우 인덱스 — 신규 추가 / 회귀 진단 / 리팩터 3 sub-skill 분기. 데이터 작업 의도가 모호할 때 호출 (명확하면 sub-skill 직접). 트리거: "데이터 작업" / "데이터 어떻게" 같이 모호한 요청.'
+description: "(인덱스) data-add / data-debug / data-refactor 분기. 의도가 명확하면 sub-skill 직접 호출 권장."
 ---
 
 # data (인덱스) — 데이터 워크플로우 분리
