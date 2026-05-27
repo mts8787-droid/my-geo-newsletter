@@ -108,61 +108,124 @@
 
 ---
 
-## STEP 2 — 프로젝트 파일 생성 (Claude 액션)
+## STEP 2 — 데이터 보여주기 (사용자 입력 — 핵심 step)
+
+> 이 step 이 부트스트랩의 진짜 핵심. 사용자는 **변수명·코드 한 줄도 안 봐도 됨** —
+> 데이터만 보여주면 Claude 가 알아서 도메인 추론 + 파일 자동 생성.
 
 ```
-[🐈‍⬛ 히로 (Claude) 가 사용자에게 설명]:
-"카테고리 / 분류의 단일 소스 파일을 만듭니다. 본 프로젝트는 src/categoryMap.js 라는
-single source 패턴을 사용합니다. 프로젝트에 맞춰 다음 항목을 채울게요."
+[🐈‍⬛ 히로 (Claude) 가 사용자에게 — 한 가지만 요청]:
 
-[Claude 가 작성]:
-- src/<domain>Map.js (또는 src/categoryMap.js)
-- 다음 항목 포함:
-  · IDS — canonical id 목록 (step 1 답변 #3 그대로)
-  · ID_TO_KR — 한글 표시명
-  · ID_TO_EN — 영문 표시명
-  · ID_TO_CODE — 약어 코드
-  · ID_TO_GROUP — 상위 그룹 (선택)
-  · NAME_TO_ID — 한/영/약어 역매핑
-  · assertMapInvariant() — 4 매핑 완전성 검증 헬퍼
+"시각화하고 싶은 데이터의 헤더 + 1~5행 그대로 복사해서 붙여주세요.
 
-[🐈‍⬛ 히로 (Claude) 가 사용자에게 검증 요청]:
-"생성된 파일 확인해주세요. ID 목록·표시명·약어 모두 의도대로인가요?"
+📊 엑셀 / Google Sheets: 위 5행 셀 선택 → 복사 → 채팅에 붙여넣기 (탭 구분 자동 인식)
+🗃️ 데이터베이스: 테이블 이름 + 컬럼 명세 (CREATE TABLE 또는 목록) + 샘플 row 1-3개
+🌐 API: endpoint URL + 응답 예시 JSON (인증 정보 빼고)
+📄 JSON / CSV 파일: 앞 10줄 그대로
+
+💡 회사 내부 데이터면 민감 정보 (이름·ID·금액) 마스킹 후 공유.
+
+예시 (매출 데이터 형식):
+| Region | Channel | Month   | Revenue | Growth |
+| US     | Online  | 2026-04 | 12500   | 0.085  |
+| US     | Offline | 2026-04 | 8200    | -0.021 |
+| KR     | Online  | 2026-04 | 5400    | 0.124  |"
+
+[Claude 가 받은 데이터 자동 분석 — 사용자 모르게 내부 처리]:
+
+1. 헤더 + 샘플 값 → 차원 분류:
+   · 카테고리 차원 (반복 값 + 텍스트): unique 갯수 카운트
+   · 시간 차원 (날짜 / 월 / 주 형식 자동 감지): parseMonthFromDate 적용 가능 형식
+   · KPI 차원 (숫자 + 컬럼명 의미 추론): 단위 (% / 정수 / 비율 / 금액)
+   · 비교 차원 (LG / Samsung 같은 브랜드, 또는 자사 / 경쟁): 있으면 식별
+
+2. 도메인 자동 추론:
+   · 컬럼명 + 값 → 도메인 추정 (매출 / HR / 트래픽 / KPI / 의료 / ...)
+   · 신뢰도 낮으면 사용자에게 확인 요청
+
+3. 차트 분류 코드 자동 매칭:
+   · 시계열 → L-1, 비중 → D-1, 랭킹 → BP-1, 카테고리별 → V-1, 4분면 → BU-2
+   · .claude/rules/design.md §5.15 의 분류 표 참조
+
+4. 5단계 ERROR CATCHING 적용 패턴 결정:
+   · 빈 셀 / null / "-" / "NA" 처리 정책
+   · 시간순 정렬 invariant
+   · 단위 정규화 (% 접미 / 콤마 천단위)
+
+[🐈‍⬛ 히로 (Claude) 가 사용자에게 추론 결과 확인]:
+
+"데이터 분석했어요. 이렇게 이해했는데 맞나요?
+
+📋 **도메인**: <추론한 도메인 — 예: 매출 (Sales)>
+📊 **카테고리** (분류 차원):
+   · Region — 5개 (US, KR, JP, BR, IN)
+   · Channel — 3개 (Online, Offline, Wholesale)
+📅 **시간**: 월 단위 (2026-04 형식)
+📈 **KPI**:
+   · Revenue (매출액 — 정수)
+   · Growth (성장률 — 소수, % 환산)
+
+다음 차트들 만들어드릴게요:
+   · 월간 매출 트렌드 (L-1)
+   · 지역별 매출 비중 (D-1)
+   · 채널별 성장률 랭킹 (BP-1)
+
+맞으면 '응' / 수정 필요하면 알려주세요 (예: 'Channel 빼줘' / 'KPI 에 Cost 도 있어')"
+
+[사용자 답변 → STEP 3 자동 생성으로 진행]
 ```
+
+**왜 이 방식?**
+- 비개발자 친화: 사용자가 들을 단어는 "데이터" / "헤더" / "행" / "도메인" / "카테고리" / "KPI" — 일상어
+- 정확도 ↑: Claude 가 추측 X, 실제 데이터 shape 보고 추론
+- 검증 가능: 사용자가 추론 결과 보고 OK 또는 수정 — 잘못된 자동화 방지
+- 도메인 자유: 가전 / 매출 / HR / 의료 / 교육 등 어떤 도메인이든 동일 흐름
 
 ---
 
-## STEP 3 — 데이터 모델 정의 (Claude 액션)
+## STEP 3 — 자동 생성 (Claude 액션)
 
 ```
-[🐈‍⬛ 히로 (Claude) 가 사용자에게 요청 — TECHNIQUE-3 (원본 데이터 직접 공유)]:
-"각 데이터 소스의 실제 데이터를 공유해주세요. 데이터 소스 종류별:
+[Claude 가 STEP 2 의 사용자 확인 답변 기반으로 자동 생성]:
 
-A) 엑셀/Sheets: 헤더 행 + 데이터 1~5행을 그대로 복사·붙여넣기 (탭/콤마 구분 OK)
-B) DB: 테이블 스키마 (CREATE TABLE 또는 컬럼 명세) + 샘플 row 1~3개
-C) API: endpoint URL + 응답 예시 JSON + 사용 파라미터 + 공식 문서 URL
+1. src/categoryMap.js (single source 매핑 파일):
+   · 카테고리 차원 값으로 IDS 채움 — 예: REGIONS = ['us','kr','jp','br','in']
+   · 표시명 매핑 (Claude 추론 또는 사용자 확인)
+   · 외부 코드 매핑 (필요 시)
+   · invariant 자동 검증 헬퍼
 
-회사 내부 데이터면 민감 정보 마스킹 후 공유.
+2. 데이터 파서:
+   · SHEET_NAMES / API endpoints / DB query 상수
+   · parseSheetRows 라우터 (switch 분기)
+   · 각 parseXxx 함수 — 5단계 ERROR CATCHING (.claude/rules/data.md §6)
+     · assertRows 진입 가드
+     · findHeaderIdx (한/영 동의어 매칭 — STEP 2 헤더 보고 동의어 추론)
+     · _logWarn 으로 silent fail 방지
+     · forEachRowSafe 로 row try/catch
+   · 시간순 정렬 invariant 적용
+   · null / "-" / "NA" 처리 정책 (STEP 2 결정대로)
 
-[Claude 가 추가 요청 — TECHNIQUE-6 (스키마 사전 학습)]:
-"데이터 객체 1개의 전체 키 구조 (JSON.stringify), 배열 길이/정렬, null 가능 여부,
-필수/옵셔널, 단위 (% / 정수 / $) 도 함께 알려주시면 어떤 차트 분류 코드 (L-1~T-1)
-가 적합한지 즉시 매칭 가능합니다."
+3. 차트 컴포넌트 — STEP 2 매칭된 분류 코드로:
+   · L-1 트렌드, D-1 비중, BP-1 랭킹 등
+   · 자동으로 디자인 토큰 (.claude/rules/design.md §4) 적용
 
-[Claude 가 작성]:
-- src/excelUtils.js (또는 동등 파서) 의 SHEET_NAMES 상수
-- parseSheetRows 라우터 (switch 분기)
-- 각 parseXxx 함수:
-  · assertRows 진입 가드
-  · findHeaderIdx (한/영 동의어 매칭)
-  · _logWarn 으로 silent fail 방지
-  · forEachRowSafe 로 row try/catch
-  · 5단계 ERROR CATCHING (.claude/rules/data.md §6 참조)
+[🐈‍⬛ 히로 (Claude) 가 사용자에게 보고]:
 
-[🐈‍⬛ 히로 (Claude) 가 사용자에게 안내]:
-"신규 시트 추가 시 .claude/skills/data/SKILL.md 의 '신규 시트 추가' 워크플로우
-8 step 을 그대로 따르면 됩니다."
+"생성된 파일:
+  📁 src/categoryMap.js — 카테고리 / 표시명 / invariant
+  📁 src/parser.js — 데이터 파싱 (5단계 ERROR CATCHING 포함)
+  📁 src/charts/<차트별>.js — 트렌드 / 비중 / 랭킹
+
+다음 단계 (STEP 4): 디자인 토큰 (회사 색상 / 폰트) 정해주세요."
+
+[사용자가 결과 확인 → STEP 4 진행]
 ```
+
+**자동 생성의 안전장치**:
+- 모든 매핑은 single source 1곳 — 다른 파일은 import 만
+- 자동 invariant 검증 — 매핑 누락 시 모듈 로드 시점에 즉시 throw
+- 5단계 ERROR CATCHING — silent fail 0
+- 사용자에게 생성 결과 보고 → 확인 후 진행 (잘못된 자동화 차단)
 
 ---
 
