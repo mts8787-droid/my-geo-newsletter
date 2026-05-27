@@ -194,30 +194,9 @@ if (monthlyTotal > USD_LIMIT) notify(`AI 비용 ${monthlyTotal} 초과`)
 
 ## Reference Example (HIRO 본 저장소)
 
-본 저장소의 AI 호출 구체 위치·변수명·도메인 type.
+본 저장소의 AI 호출 구체 위치·변수명·도메인 type 매핑 → 별도 파일: **`.claude/rules/HIRO_REFERENCE.md`** ("ai.md" 섹션).
 
-| 본문 항목 (도메인 무관) | HIRO 본 저장소 |
-|---|---|
-| AI 에이전트 모듈 | `src/shared/insightAgent.js` (Anthropic SDK 직접 호출) |
-| 프롬프트 템플릿 | `src/shared/insightPrompts.js` |
-| API 엔드포인트 | `routes/insight.js` (`/api/generate-insight`) |
-| 관측 페이지 | `routes/observability.js` (`/admin/observability`) |
-| 호출 로그 저장 | `lib/insight-runs.js` (JSONL 파일 — `insight_runs.jsonl`) |
-| 분류 함수 | `classifyError()` (insightAgent.js) |
-| 비용 단가 | `MODEL_PRICING` (lib/insight-runs.js) |
-| AI 호출 진입 함수 | `insightAgent.callClaude(prompt, type, ...)` |
-
-**비즈니스 type 예시 (가전 KPI 영역별)**: `'product'`, `'citation'`, `'monthly'`, `'weekly'`, `'visibility'`
-
-**마커 매핑** (CLAUDE.md 리팩터링 마커 표 참조):
-- `N3` — 외부 boundary 응답 검증 (Anthropic API 응답: 빈 본문 / 거절 / 길이 하한 미달 → `invalid_output` 분류)
-- `C13` — Anthropic SDK 에러 분류 (`err.kind` 분기)
-
-**§3.5 사용자 텍스트 보호 — 본 저장소 사례**:
-- 사용자가 `"Q1 결과 발표"` 라고 적으면 AI 가 `"1분기 결과 발표"` 로 다듬는 것 금지 (어휘 의도 훼손)
-
-**향후 (미구현)**:
-- `.claude/skills/ai/SKILL.md` 신설 — AI 호출 워크플로우 step-by-step 형식
+Claude 가 본 저장소 작업 시 변수명·type 정보 필요할 때 명시 import. 본문 Rule 만으로 부족 시.
 
 ---
 

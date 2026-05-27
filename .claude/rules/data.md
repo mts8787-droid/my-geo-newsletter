@@ -256,17 +256,11 @@ function parseNumber(v) {
 
 ---
 
-#### Reference Example (HIRO 본 저장소 — 가전 제품 글로벌 KPI 도메인)
+#### Reference Example (HIRO 본 저장소)
 
-- 파일: `src/categoryMap.js`
-- canonical id: `PROD_IDS = ['tv','monitor','audio','washer','fridge','dw','vacuum','cooking','rac','aircare','styler']`
-- 표시명: `PROD_ID_TO_KR` / `PROD_ID_TO_EN`
-- 외부 코드: `PROD_ID_TO_UL_CODE` (예: `styler → 'STYLER'` — 미출시 시트 UL_CODE)
-- 역매핑: `RAW_TO_PROD_ID` / `RAW_TO_KR`
-- 정규화: `UL_CODE_NORMALIZE` (예: `'WASHING MACHINE' → 'WM'`)
-- invariant 헬퍼: `assertCategoryMapInvariant()`
-- 호환 alias: `dashboard/dashboardConsts.js` 가 `export { PROD_ID_TO_UL_CODE as UL_PROD_MAP }` (기존 사용처 호환)
-- 과거 회귀: 매핑이 `excelUtils.js` + `dashboardConsts.js` + `emailTemplate.js` + `parseUnlaunched` 4곳에 분산 → STYLER 신규 추가 시 일부만 갱신되어 라벨 누락. 통합 후 재발 0.
+본 §5.5 의 HIRO 본 저장소 매핑 (`PROD_IDS`, `PROD_ID_TO_*`, `UL_CODE_NORMALIZE`, STYLER 회귀 사례 등) → 별도 파일: **`.claude/rules/HIRO_REFERENCE.md`** ("data.md §5.5" 섹션).
+
+Claude 가 본 저장소 작업 시 변수명 필요할 때 명시 import.
 
 ### 5.6 시간순 정렬 invariant
 
