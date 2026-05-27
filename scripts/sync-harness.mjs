@@ -213,7 +213,7 @@ const HARNESS_MD = `# 🐈‍⬛ HIRO — Harness for Interactive Reporting Opti
 
 Claude (또는 다른 AI 코딩 도우미) 가 새 대시보드 / 뉴스레터 / KPI 리포트를 만들 때 **같은 실수를 반복하지 않도록** 도와주는 **규칙 + 자동 검사 + 작업 매뉴얼 + 보조 일꾼** 묶음이에요. 4 가지 종류 (Rule / Hook / Skill / Sub-Agent) 로 나뉩니다.
 
-가전 KPI 도메인에서 1000+ 회 commit 으로 다듬어진 패턴 — 매출 · HR · 의료 · 교육 등 어떤 도메인이든 **데이터 5행만 보여주면 Claude 가 자동 적응**해서 셋업해줍니다 (변수명·코드 한 줄 안 봐도 됨).
+가전 GEO KPI 영역에서 1000+ 회 commit 으로 다듬어진 패턴 — 같은 가전 산업 내 **영업 · 매출 · 전략 · 마케팅 · R&D** 등 다른 직무 도메인에도 **데이터 5행만 보여주면 Claude 가 자동 적응**해서 셋업해줍니다 (변수명·코드 한 줄 안 봐도 됨).
 
 - **실제 작동 (Claude 가 자동 로드)**: \`CLAUDE.md\` + \`AGENTS.md\` + \`.claude/\`
 - **사람이 읽는 미러 (본 폴더)**: \`harness-mirror/\` — 실제 \`.claude/\` 의 1:1 복사 + 사람용 가이드 HTML
@@ -281,7 +281,7 @@ harness-mirror/
    - **자동 검사 (Hook)**: \`.claude/settings.json\` + \`.claude/hooks/*.sh\` — 절대 하면 안 되는 것 시스템 차단 (100% 강제)
    - **작업 순서 (Skill)**: \`.claude/skills/<name>/SKILL.md\` — 사용자가 "데이터 추가해줘" 같이 말하면 적절한 Skill 자동 호출
    - **보조 일꾼 (Sub-Agent)**: \`.claude/agents/<name>.md\` — 특정 영역 분리 작업
-5. **"이 하네스 적용해줘" 라고 Claude 에게 부탁** — 🐈‍⬛ 히로가 도메인 인터뷰 (2 질문) → "데이터 1~5행 보여주세요" → 자동 분석 + 추론 결과 확인 → 모든 파일 자동 생성. **변수명·코드 한 줄 안 봐도 됨**. 매출 · HR · 의료 · 교육 등 어떤 도메인이든 동일.
+5. **"이 하네스 적용해줘" 라고 Claude 에게 부탁** — 🐈‍⬛ 히로가 도메인 인터뷰 (2 질문) → "데이터 1~5행 보여주세요" → 자동 분석 + 추론 결과 확인 → 모든 파일 자동 생성. **변수명·코드 한 줄 안 봐도 됨**. 같은 가전 산업 내 영업 · 매출 · 전략 · 마케팅 · R&D 등 다른 직무 도메인에도 동일.
 
 > \`harness-mirror/\` 는 사람용 설명 사본 — 실제 작동에는 영향 X. 필요 없으면 삭제 가능.
 
@@ -436,7 +436,7 @@ ${themeToggleButton()}
 
 <div class="intro">
   <p><strong>이 페이지가 뭔가요?</strong> — Claude 가 새 대시보드 / 뉴스레터 / KPI 리포트를 만들 때 <strong>같은 실수를 반복하지 않도록</strong> 도와주는 <strong>규칙 + 자동 검사 + 작업 매뉴얼 + 보조 일꾼</strong> 묶음입니다.</p>
-  <p>가전 KPI 도메인에서 1000+ 회 commit 으로 다듬어진 패턴이에요. 매출 · HR · 의료 · 교육 등 어떤 도메인이든 <strong>데이터 5행만 보여주면 Claude 가 자동 적응</strong>해서 셋업해줍니다 (변수명·코드 한 줄 안 봐도 됨).</p>
+  <p>가전 GEO KPI 영역에서 1000+ 회 commit 으로 다듬어진 패턴이에요. 같은 가전 산업 내 <strong>영업 · 매출 · 전략 · 마케팅 · R&amp;D</strong> 등 다른 직무 도메인에도 <strong>데이터 5행만 보여주면 Claude 가 자동 적응</strong>해서 셋업해줍니다 (변수명·코드 한 줄 안 봐도 됨).</p>
   <p>본 페이지는 <strong>사람이 보기 좋게 정리한 미러</strong>이고, 실제 Claude 가 읽는 원본은 <code>CLAUDE.md</code> + <code>.claude/</code> 폴더에 있어요. 원본 수정 시 <code>npm run build</code> 실행 시 본 미러 자동 갱신.</p>
 </div>
 
@@ -603,7 +603,7 @@ AGENTS.md                       (OpenAI Codex / Antigravity 자동 로드)
       </ul>
     </li>
     <li>
-      <strong>"이 하네스 적용해줘" 라고 Claude 에게 부탁</strong> — 🐈‍⬛ 히로가 도메인 인터뷰 (2 질문) → "데이터 1~5행 보여주세요" → 자동 분석 + 추론 결과 확인 → 모든 파일 자동 생성. <strong>변수명·코드 한 줄 안 봐도 됨</strong>. 매출 · HR · 의료 · 교육 등 어떤 도메인이든 동일.
+      <strong>"이 하네스 적용해줘" 라고 Claude 에게 부탁</strong> — 🐈‍⬛ 히로가 도메인 인터뷰 (2 질문) → "데이터 1~5행 보여주세요" → 자동 분석 + 추론 결과 확인 → 모든 파일 자동 생성. <strong>변수명·코드 한 줄 안 봐도 됨</strong>. 같은 가전 산업 내 영업 · 매출 · 전략 · 마케팅 · R&amp;D 등 다른 직무 도메인에도 동일.
     </li>
   </ol>
   <div class="note">
