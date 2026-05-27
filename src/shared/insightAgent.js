@@ -106,10 +106,13 @@ export function wrapUserPrompt(rawPrompt) {
   return `<untrusted_data>\n${rawPrompt}\n</untrusted_data>`
 }
 
-// Claude Sonnet 4.5 단가 기준 비용 계산
-export function estimateCostUsd(inputTokens, outputTokens) {
+// Claude Sonnet 4.5 단가 기준 비용 계산.
+// Anthropic 프롬프트 캐싱 단가 보정 — cache write (creation): ×1.25, cache read: ×0.1 (90% 할인).
+export function estimateCostUsd(inputTokens, outputTokens, cacheCreationTokens = 0, cacheReadTokens = 0) {
   return +(
     inputTokens * CLAUDE_INPUT_USD_PER_1M / 1_000_000 +
+    cacheCreationTokens * CLAUDE_INPUT_USD_PER_1M * 1.25 / 1_000_000 +
+    cacheReadTokens * CLAUDE_INPUT_USD_PER_1M * 0.1 / 1_000_000 +
     outputTokens * CLAUDE_OUTPUT_USD_PER_1M / 1_000_000
   ).toFixed(6)
 }
@@ -164,13 +167,21 @@ export async function callClaudeInsight({ client, systemPrompt, userPrompt, mode
   /** @type {Array<{role: string, content: any}>} */
   const messages = [{ role: 'user', content: userPrompt }]
   let inputTokens = 0, outputTokens = 0
+  let cacheReadTokens = 0, cacheCreationTokens = 0
   let stopReason = null
   const toolCalls = []
   let steps = 0
   let lastMessage = null
 
   for (steps = 0; steps <= maxSteps; steps++) {
-    const req = { model, max_tokens: maxTokens, system: systemPrompt, messages }
+    // 프롬프트 캐싱 — 같은 systemPrompt 로 반복 호출 (같은 type 의 인사이트 재호출 / multi-step tool use 반복)
+    // 시 입력 토큰 비용 90% 할인. cache_control: ephemeral 은 5분 TTL.
+    // 단순 문자열 systemPrompt 면 array of content blocks 로 변환해서 cache breakpoint 표시.
+    // 짧은 프롬프트 (< 1024 토큰 — Sonnet/Opus) 면 캐싱 적용 안 됨 (Anthropic 최소치) — 자동 무시.
+    const systemBlocks = systemPrompt
+      ? [{ type: 'text', text: systemPrompt, cache_control: { type: 'ephemeral' } }]
+      : undefined
+    const req = { model, max_tokens: maxTokens, system: systemBlocks, messages }
     if (useTools) req.tools = tools
     // max_tokens 가 크면 SDK 가 비스트리밍 요청을 거부 (응답 10분+ 추정 시).
     // streaming → finalMessage() 로 동일한 message 형태 수신.
@@ -182,6 +193,8 @@ export async function callClaudeInsight({ client, systemPrompt, userPrompt, mode
     const usage = message.usage || {}
     inputTokens += usage.input_tokens || 0
     outputTokens += usage.output_tokens || 0
+    cacheReadTokens += usage.cache_read_input_tokens || 0
+    cacheCreationTokens += usage.cache_creation_input_tokens || 0
     stopReason = message.stop_reason
 
     if (!useTools) break  // 단일 호출 모드 — 즉시 종료
@@ -231,8 +244,10 @@ export async function callClaudeInsight({ client, systemPrompt, userPrompt, mode
     insight,
     inputTokens,
     outputTokens,
+    cacheReadTokens,
+    cacheCreationTokens,
     latencyMs,
-    costUsd: estimateCostUsd(inputTokens, outputTokens),
+    costUsd: estimateCostUsd(inputTokens, outputTokens, cacheCreationTokens, cacheReadTokens),
     stopReason,
     steps,
     toolCalls,

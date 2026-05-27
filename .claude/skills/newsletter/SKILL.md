@@ -1,6 +1,6 @@
 ---
 name: newsletter
-description: '뉴스레터 워크플로우 인덱스 — 신규 작성 / 회귀 디버깅 / 발송 검증 3 sub-skill 분기. 뉴스레터 작업 의도가 모호할 때 호출. 트리거: "뉴스레터 작업" 같이 모호한 요청.'
+description: "(인덱스) newsletter-make / newsletter-debug / newsletter-send 분기. 의도가 명확하면 sub-skill 직접 호출 권장."
 ---
 
 # newsletter (인덱스) — 뉴스레터 워크플로우 분리

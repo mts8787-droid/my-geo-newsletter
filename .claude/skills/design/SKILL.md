@@ -1,6 +1,6 @@
 ---
 name: design
-description: '디자인 워크플로우 인덱스 — 페이지 레이아웃 / 차트 / 컴포넌트 / 미세조정 4 sub-skill 분기. 디자인 작업 의도가 모호할 때 호출 (명확하면 sub-skill 직접). 트리거: "디자인 작업" / "UI 어떻게" 같이 모호한 요청.'
+description: "(인덱스) design-layout / design-chart / design-component / design-tune 분기. 의도가 명확하면 sub-skill 직접 호출 권장."
 ---
 
 # design (인덱스) — 디자인 워크플로우 분리
