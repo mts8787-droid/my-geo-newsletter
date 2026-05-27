@@ -199,35 +199,7 @@ NEVER  footer 누락 (발행 정보 없음) → 발신자 / 시점 정보 필수
 
 ---
 
-## For Adopters (이식자 참고)
 
-본 Rule 은 **이메일 호환 HTML / 뉴스레터** 의 공통 패턴. 본 저장소는 가전 GEO KPI 월간/주간 리포트지만, **같은 가전 산업 내 영업·매출·전략·마케팅·R&D 등 다른 직무 도메인의 뉴스레터·정기 리포트·이메일 알림** 에도 적용.
+---
 
-### 같은 가전 산업 내 다른 직무 도메인 예시
-
-- 영업 월간 / 분기 매출 리포트
-- 마케팅 캠페인 결과 메일
-- 전략 본부 정기 트렌드 알림
-- R&D 신제품 출시 안내 메일
-- 사업본부별 KPI 주간 메일
-
-### 핵심 패턴
-
-1. **table-layout 기반** — flex / grid 금지 (Outlook 깨짐)
-2. **containerWidth 940 이하** — 우측 짤림 방지
-3. **인라인 style 만** — 외부 CSS class 금지 (Gmail 제거)
-4. **이미지** — 외부 호스팅 URL 또는 base64 (100KB 이하)
-5. **preheader + footer** — inbox 미리보기 50~110자 + 발송자 메타 + unsubscribe
-6. **미출시 / 부재 처리** — 회색 + '—' 라벨 (값 없는 셀 일관 표시)
-7. **KO / EN 양 언어** — 다국어 발행 시 letter-spacing 조정 (영문 -1px)
-
-### 부트스트랩 사용법 (비개발자)
-
-`/newsletter-make` (또는 부트스트랩 `BOOTSTRAP-newsletter.md` 시나리오) 가 8 step 인터뷰로 진행. 비개발자는 다음만 답:
-
-1. 발행 종류 (월간 / 주간 / 이벤트)
-2. 기간 (예: 2026년 5월호)
-3. 본문 텍스트 (제목 / preheader / Executive Summary)
-4. 발송 여부 (게시만 / SMTP 발송까지)
-
-→ 🐈‍⬛ 히로가 본 Rule 의 모든 패턴 자동 적용 + 이메일 클라이언트 호환 검증.
+**For Adopters (이식자 참고)**: 같은 가전 산업 내 영업·매출·전략·마케팅·R&D 등 다른 직무 도메인 적용 가이드 (핵심 패턴 + 부트스트랩 사용법) → `.claude/rules/HIRO_REFERENCE.md` (For Adopters 통합 섹션).
