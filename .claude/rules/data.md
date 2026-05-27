@@ -233,29 +233,40 @@ function parseNumber(v) {
 - **WARNING**: score 가 0~100 percent 라는 가정 위에 동작. ratio 가 합법인 값 (상관계수 -1~+1, 확률 0~1) 은 본 함수 금지 — 별도 parser 필요.
 - 시트 Rule 변경 시 `pct` + `pctOrNull` 동시 수정.
 
-### 5.5 카테고리 ID 매핑 (single source)
+### 5.5 카테고리 ID 매핑 (single source pattern)
 
-**위치**: `src/categoryMap.js` — 모든 카테고리 매핑의 단일 소스. 다른 파일은 import 만.
+**원칙**: 카테고리·분류·id 같은 **참조 데이터** 는 **단 하나의 파일** 에 정의. 다른 파일은 import 만.
 
-**제공 매핑**:
-- `PROD_IDS` — canonical prodId 목록 (`tv, monitor, audio, washer, fridge, dw, vacuum, cooking, rac, aircare, styler`)
-- `PROD_ID_TO_KR` / `PROD_ID_TO_EN` — prodId → 한글/영문 표시명
-- `PROD_ID_TO_UL_CODE` — prodId → 미출시 시트 UL_CODE (예: `styler → 'STYLER'`)
-- `RAW_TO_PROD_ID` / `RAW_TO_KR` — 시트 raw 표기 (다양한 동의어) → prodId/한글
-- `UL_CODE_NORMALIZE` — 미출시 시트 raw (uppercase) → 표준 UL_CODE (예: `'WASHING MACHINE' → 'WM'`)
+**필요 항목** (이름은 자유):
+1. canonical id 목록 (도메인 값 — 제품·부서·채널·지역·시점 등)
+2. 표시명 매핑 (사용자가 보는 라벨 — 다국어면 언어별 분리)
+3. 외부 시스템 코드 매핑 (시트 raw 코드, DB 키, API 식별자 등)
+4. 역매핑 (외부 raw → id) — 외부 입력 fallback 용
+5. 정규화 함수 (외부 다양한 표기 → 표준)
+6. (선택) 상위 그룹 매핑 — 사업본부 / 부서 트리 / 카테고리 분류 등
 
-**Invariant**: `Object.values(UL_CODE_NORMALIZE) ⊆ Object.values(PROD_ID_TO_UL_CODE)` — 모듈 로드 시 자동 검증 + `assertCategoryMapInvariant()` 헬퍼로 테스트에서 강제.
-
-**호환성**:
-- `dashboard/dashboardConsts.js` 가 `export { PROD_ID_TO_UL_CODE as UL_PROD_MAP }` 로 alias re-export — 기존 사용처 (`dashboardTemplate.js` 등) 호환 유지.
-- 신규 사용처는 `categoryMap.js` 에서 직접 import 권장.
+**Invariant**: 정규화 결과 ⊆ 외부 코드 매핑 값 집합. 모듈 로드 시 자동 검증 + 테스트 헬퍼로 강제.
 
 **RULE**:
-- 신규 카테고리 추가 시 `src/categoryMap.js` **1곳만** 갱신. 다른 파일에서 매핑 재정의 금지.
-- raw 표기 추가 시 `UL_CODE_NORMALIZE` 의 결과값이 `PROD_ID_TO_UL_CODE` 의 값 집합에 포함되는지 invariant 통과 확인.
-- 사용자는 다양한 표기로 입력 가능 → lookup 시 fallback: `const id = RAW_TO_PROD_ID[raw] || raw.toLowerCase()`
+- 신규 카테고리 추가 시 single source 파일 **1곳만** 갱신
+- raw 표기 추가 시 invariant 통과 확인
+- 외부 입력 (시트·API·사용자) 은 다양한 표기 → lookup fallback 패턴 사용
 
-**ANTI-PATTERN** (이전 사례): 매핑이 `excelUtils.js (CATEGORY_ID_MAP/KR_MAP)` + `dashboardConsts.js (UL_PROD_MAP)` + `emailTemplate.js (UL_PROD_MAP 로컬 복사본)` + `parseUnlaunched 의 NORMALIZE` 4곳에 분산되어 있어 STYLER 누락이 발견됨. **재발 방지**: import 만 사용, 정의는 `categoryMap.js`.
+**ANTI-PATTERN**: 매핑이 여러 파일에 분산되면 신규 카테고리 추가 시 일부만 갱신되어 회귀 (한 파일만 새 id 추가, 다른 파일 미갱신 → 그 화면만 라벨 누락). **재발 방지**: 정의 1곳, 다른 곳은 import 만 + invariant 자동 검증.
+
+---
+
+#### Reference Example (HIRO 본 저장소 — 가전 제품 글로벌 KPI 도메인)
+
+- 파일: `src/categoryMap.js`
+- canonical id: `PROD_IDS = ['tv','monitor','audio','washer','fridge','dw','vacuum','cooking','rac','aircare','styler']`
+- 표시명: `PROD_ID_TO_KR` / `PROD_ID_TO_EN`
+- 외부 코드: `PROD_ID_TO_UL_CODE` (예: `styler → 'STYLER'` — 미출시 시트 UL_CODE)
+- 역매핑: `RAW_TO_PROD_ID` / `RAW_TO_KR`
+- 정규화: `UL_CODE_NORMALIZE` (예: `'WASHING MACHINE' → 'WM'`)
+- invariant 헬퍼: `assertCategoryMapInvariant()`
+- 호환 alias: `dashboard/dashboardConsts.js` 가 `export { PROD_ID_TO_UL_CODE as UL_PROD_MAP }` (기존 사용처 호환)
+- 과거 회귀: 매핑이 `excelUtils.js` + `dashboardConsts.js` + `emailTemplate.js` + `parseUnlaunched` 4곳에 분산 → STYLER 신규 추가 시 일부만 갱신되어 라벨 누락. 통합 후 재발 0.
 
 ### 5.6 시간순 정렬 invariant
 
@@ -868,3 +879,38 @@ _unlaunchedMap
 신규 파서 추가 시 본 문서 §5 (DIRECTIVES) 에 RULE/ANTI-PATTERN 등재. 도메인 무관 — LG/제품/국가 등 특이값 없이 일반화.
 
 신규 boundary 호출 추가 시 §7 (SELF-LOGGING) 패턴 적용 — `boundary_calls` 통합 기록 + observability dashboard 등록.
+
+---
+
+## For Adopters (이식자 참고 — 다른 도메인 적용 가이드)
+
+본 Rule 은 데이터 작업의 **공통 패턴** 을 정리한 매뉴얼이에요. 본 저장소는 가전 제품 글로벌 KPI 도메인 (LG / Samsung / Whirlpool 같은 가전 브랜드 비교) 이라 변수명·예시가 가전 색깔이지만, **패턴 자체는 어떤 도메인이든 동일**.
+
+### 다른 도메인 예시
+
+| 도메인 | 카테고리 | 측정값 |
+|---|---|---|
+| **매출** | 상품군 / 채널 / 분기 | 매출액 / 성장률 |
+| **HR** | 부서 / 직급 / 지역 | 인원수 / 이직률 |
+| **의료** | 진료과 / 시술 / 지역 | 진료건수 / 만족도 |
+| **마케팅** | 캠페인 / 매체 / 기간 | 노출 / 클릭 / 전환 |
+| **교육** | 과목 / 학년 / 학기 | 응시자 / 성적 |
+
+### 핵심 패턴 (이름 자유, 의미만 유지)
+
+1. **single source 매핑 파일** — 카테고리·분류 1곳에만 정의 (§5.5)
+2. **5단계 ERROR CATCHING** — DETECT → CLASSIFY → CAPTURE → RECOVER → SURFACE (§6)
+3. **invariant 자동 검증** — 모든 파이프라인 단계에 검증 함수 1개 (§7.4)
+4. **silent fallback 금지** — 구조화된 로그 헬퍼로 표면화 (§5.10)
+5. **시간순 정렬 유지** — 시계열 데이터는 항상 정렬 후 저장 (§5.6)
+6. **null vs 0 구분** — 빈 셀 / "NA" / "-" 는 null, 실측 0 과 분리 (§5.3)
+
+### 부트스트랩 사용법 (비개발자)
+
+본 Rule 을 직접 안 봐도 됩니다. 부트스트랩 (`/onboard`) 시작하면 🐈‍⬛ 히로가:
+
+1. 도메인 인터뷰 (어떤 분야 / 어떤 분류)
+2. "시각화하고 싶은 데이터의 헤더 + 1~5행 보여주세요" 요청
+3. 받은 데이터 분석 → 본 Rule 의 패턴을 본인 도메인에 자동 적용
+
+→ 변수명·코드 한 줄 안 봐도 됩니다.
