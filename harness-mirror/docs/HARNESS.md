@@ -6,7 +6,9 @@
 
 ## 이 페이지가 뭔가요?
 
-Claude (또는 다른 AI 코딩 도우미) 가 본 저장소에서 일할 때 **자동으로 따르는 규칙·자동 검사·작업 매뉴얼·보조 일꾼** 의 묶음이에요. 4 가지 종류 (Rule / Hook / Skill / Sub-Agent) 로 나뉩니다.
+Claude (또는 다른 AI 코딩 도우미) 가 새 대시보드 / 뉴스레터 / KPI 리포트를 만들 때 **같은 실수를 반복하지 않도록** 도와주는 **규칙 + 자동 검사 + 작업 매뉴얼 + 보조 일꾼** 묶음이에요. 4 가지 종류 (Rule / Hook / Skill / Sub-Agent) 로 나뉩니다.
+
+가전 KPI 도메인에서 1000+ 회 commit 으로 다듬어진 패턴 — 매출 · HR · 의료 · 교육 등 어떤 도메인이든 **데이터 5행만 보여주면 Claude 가 자동 적응**해서 셋업해줍니다 (변수명·코드 한 줄 안 봐도 됨).
 
 - **실제 작동 (Claude 가 자동 로드)**: `CLAUDE.md` + `AGENTS.md` + `.claude/`
 - **사람이 읽는 미러 (본 폴더)**: `harness-mirror/` — 실제 `.claude/` 의 1:1 복사 + 사람용 가이드 HTML
@@ -69,7 +71,12 @@ harness-mirror/
    chmod +x .claude/hooks/*.sh
    ```
    확인: `ls -l .claude/hooks/` 결과에 `-rwxr-xr-x` 표시되면 OK.
-4. **Claude Code 실행** → 자동으로 모두 로드됩니다.
+4. **Claude Code 실행** → 4가지 자동 로드:
+   - **규칙 (Rule)**: `CLAUDE.md` + `.claude/rules/` — Claude 가 따라야 할 패턴
+   - **자동 검사 (Hook)**: `.claude/settings.json` + `.claude/hooks/*.sh` — 절대 하면 안 되는 것 시스템 차단 (100% 강제)
+   - **작업 순서 (Skill)**: `.claude/skills/<name>/SKILL.md` — 사용자가 "데이터 추가해줘" 같이 말하면 적절한 Skill 자동 호출
+   - **보조 일꾼 (Sub-Agent)**: `.claude/agents/<name>.md` — 특정 영역 분리 작업
+5. **"이 하네스 적용해줘" 라고 Claude 에게 부탁** — 🐈‍⬛ 히로가 도메인 인터뷰 (2 질문) → "데이터 1~5행 보여주세요" → 자동 분석 + 추론 결과 확인 → 모든 파일 자동 생성. **변수명·코드 한 줄 안 봐도 됨**. 매출 · HR · 의료 · 교육 등 어떤 도메인이든 동일.
 
 > `harness-mirror/` 는 사람용 설명 사본 — 실제 작동에는 영향 X. 필요 없으면 삭제 가능.
 
