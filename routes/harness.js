@@ -628,19 +628,28 @@ ${themeToggleButton()}
 </div>
 
 <div class="usage">
-  <h2 style="font-size:18px;color:#F8FAFC;margin-bottom:10px">📌 HIRO 란?</h2>
-  <p style="font-size:15px;color:var(--text-sub);margin-bottom:10px;font-style:italic">🐈‍⬛ 히로 (HIRO) — 본 하네스의 마스코트 검은 고양이. 사용자가 부트스트랩 시나리오 같은 대화형 작업을 할 때 친근한 안내자로 말을 건넵니다.</p>
-  <p style="font-size:16px;color:var(--text-desc);margin-bottom:8px">HIRO optimizes how you build interactive dashboards with Claude Code. Instead of crafting data parsers, chart components, and newsletter templates from scratch every time, HIRO ships a reusable harness — <strong style="color:#F8FAFC">skills, rules, hooks, and scenario-based bootstraps</strong> — that turns the manual workflow into a standardized, repeatable pipeline.</p>
-  <p style="font-size:16px;color:var(--text-desc);margin-bottom:8px">HIRO 는 Claude Code 로 인터랙티브 대시보드를 만드는 작업을 최적화합니다. 데이터 파서, 차트 컴포넌트, 뉴스레터 템플릿을 매번 처음부터 짜는 대신, HIRO 는 재사용 가능한 하네스 — <strong style="color:#F8FAFC">스킬·룰·훅·시나리오 기반 부트스트랩</strong> — 를 제공해 수작업 워크플로우를 표준화된 반복 가능한 파이프라인으로 바꿉니다.</p>
-  <p style="font-size:16px;color:var(--text-desc);margin-bottom:8px">본 페이지는 <strong style="color:#F8FAFC">Claude Code 가 본 프로젝트에서 작업할 때 따르는 Rule·Hook·Skill·Sub-Agent 모두를 한곳에 모은 페이지</strong>.</p>
+  <h2 style="font-size:18px;color:#F8FAFC;margin-bottom:10px">📌 HIRO 가 뭐예요?</h2>
+  <p style="font-size:15px;color:var(--text-sub);margin-bottom:10px;font-style:italic">🐈‍⬛ 히로 (HIRO) — 본 하네스의 마스코트 검은 고양이. 부트스트랩 시작하면 친근하게 말 걸어요.</p>
+  <p style="font-size:16px;color:var(--text-desc);margin-bottom:8px"><strong style="color:#F8FAFC">한 줄 요약</strong>: Claude Code 가 새 대시보드 / 뉴스레터 / KPI 리포트를 만들 때 <strong style="color:#F8FAFC">같은 실수를 반복하지 않도록</strong> 도와주는 규칙 + 자동 검사 + 작업 매뉴얼 묶음.</p>
+  <p style="font-size:16px;color:var(--text-desc);margin-bottom:8px">가전 KPI 도메인에서 1000+ 회 commit 으로 다듬어진 패턴이에요. 매출 · HR · 의료 · 교육 등 어떤 도메인이든 <strong style="color:#F8FAFC">데이터 5행만 보여주면 Claude 가 자동으로 적응</strong>해서 셋업해줍니다.</p>
   <ul style="font-size:16px;color:var(--text-desc);margin-left:22px;line-height:1.8;margin-bottom:12px">
-    <li><strong style="color:#F8FAFC">왜 필요한가?</strong> 시간이 흐르면 어떤 Rule이 있는지 기억이 안 남. 한 페이지에서 다 볼 수 있게.</li>
-    <li><strong style="color:#F8FAFC">어떻게 만들어지나?</strong> 본 프로젝트의 <code>.claude/</code> + <code>CLAUDE.md</code> + <code>AGENTS.md</code> 가 원본. 사람용 미러는 <code>harness-mirror/</code> 폴더에 자동 생성 (원본 수정 시 빌드 시점 자동 반영).</li>
-    <li><strong style="color:#F8FAFC">무엇을 할 수 있나?</strong> (1) 각 파일 클릭해서 보기 (2) 전체 ZIP 다운로드해서 다른 프로젝트에 적용 (3) 팀원과 공유</li>
+    <li><strong style="color:#F8FAFC">왜 필요한가?</strong> 시간이 흐르면 같은 실수를 또 함 (예: 뉴스레터 우측 짤림 / 카테고리 매핑 누락 / 한국식 날짜 정렬 깨짐). 한 페이지에서 다 보고 차단.</li>
+    <li><strong style="color:#F8FAFC">무엇을 모았나?</strong> 4 가지 — <strong style="color:#60A5FA">규칙</strong> (Claude 가 따라야 할 것) · <strong style="color:#F87171">자동 검사</strong> (시스템이 차단) · <strong style="color:#4ADE80">작업 순서</strong> (정형화된 워크플로우) · <strong style="color:#FBBF24">보조 일꾼</strong> (특정 영역 분리).</li>
+    <li><strong style="color:#F8FAFC">무엇을 할 수 있나?</strong> (1) 각 파일 클릭해서 보기 (2) 전체 ZIP 받아서 다른 프로젝트에 적용 (3) 팀원과 공유.</li>
   </ul>
+  <p style="font-size:14px;color:var(--text-sub);margin-bottom:8px;font-style:italic">English summary: HIRO is a battle-tested harness for Claude Code — rules, hooks, skills, and scenario-based bootstraps. Just show your data and Claude auto-adapts to any domain.</p>
 
-  <h2 style="font-size:18px;color:#F8FAFC;margin-bottom:10px;margin-top:18px">💡 다른 프로젝트에 적용하기</h2>
-  <p style="font-size:16px;color:var(--text-desc);margin-bottom:10px">ZIP 받아서 새 프로젝트에 풀고 Claude 에게 <code style="background:#0F172A;padding:1px 6px;border-radius:3px">"이 하네스 적용해줘. 내 프로젝트는 [프로젝트 종류]"</code> 하면 자동 셋업. (<code style="background:#0F172A;padding:1px 6px;border-radius:3px">[프로젝트 종류]</code> = 매출 대시보드 / HR / 마케팅 KPI / 의료 등 본인 프로젝트 영역)</p>
+  <h2 style="font-size:18px;color:#F8FAFC;margin-bottom:10px;margin-top:18px">💡 다른 프로젝트에 적용하기 — 데이터만 보여주면 끝</h2>
+  <p style="font-size:16px;color:var(--text-desc);margin-bottom:10px"><strong style="color:#F8FAFC">사용자가 들을 단어</strong>는 "데이터 / 도메인 / 카테고리 / KPI / 색상" 같은 일상어뿐이에요. <strong style="color:#F8FAFC">변수명·코드 한 줄 안 봐도 됩니다.</strong></p>
+  <p style="font-size:16px;color:var(--text-desc);margin-bottom:10px">ZIP 받아서 새 프로젝트 폴더에 풀고 Claude 에게 <code style="background:#0F172A;padding:1px 6px;border-radius:3px">"이 하네스 적용해줘"</code> 하면, 🐈‍⬛ 히로가:</p>
+  <ol style="font-size:15px;color:var(--text-sub);margin-left:24px;line-height:1.7;margin-bottom:12px">
+    <li>"어떤 분야 대시보드 만드세요?" 1 질문</li>
+    <li>"시각화하고 싶은 데이터의 헤더 + 1~5행 보여주세요" 1 요청</li>
+    <li>받은 데이터 분석 → 도메인 추론 → 카테고리·KPI·차트 자동 매칭</li>
+    <li>"이렇게 이해했어요, 맞나요?" 사용자 확인</li>
+    <li>확인 후 → 모든 파일 자동 생성 (단일 소스 매핑 · 파서 · 차트 · 디자인 토큰)</li>
+  </ol>
+  <p style="font-size:16px;color:var(--text-desc);margin-bottom:10px">아래는 ZIP 풀고 Claude 시작하기 전의 <strong style="color:#F8FAFC">사전 준비 4 단계</strong>:</p>
   <ol style="font-size:16px;color:var(--text-desc);margin-left:24px;line-height:1.8">
     <li><strong>전체 ZIP 다운로드</strong> (아래 빨간 버튼) — 원본 + 미러 모두 포함</li>
     <li>대상 프로젝트 <strong>루트에 압축 풀기</strong>:
@@ -658,21 +667,18 @@ ${themeToggleButton()}
       <pre style="margin:6px 0 0 0;padding:8px 12px;background:#0F172A;border-radius:6px;font-size:14px;color:#F8C4D7;overflow:auto"><code>chmod +x .claude/hooks/*.sh</code></pre>
       <div style="margin:6px 0 0 0;font-size:14px;color:var(--text-sub)">확인: <code style="background:#0F172A;padding:1px 6px;border-radius:3px">ls -l .claude/hooks/</code> 결과에 <code style="background:#0F172A;padding:1px 6px;border-radius:3px">-rwxr-xr-x</code> 표시되면 OK.</div>
     </li>
-    <li><strong>Claude Code 실행</strong> — 자동으로 로드:
+    <li><strong>Claude Code 실행</strong> — 4가지 자동 로드 (사용자는 아무것도 안 해도 됨):
       <ul style="margin:6px 0 6px 20px;font-size:15px;color:var(--text-sub);line-height:1.6">
-        <li><span style="color:#60A5FA">RULE</span>: <code>CLAUDE.md</code> 항상 로드 + <code>.claude/rules/</code> 가 CLAUDE.md 명시 참조 시 로드</li>
-        <li><span style="color:#F87171">HOOK</span>: <code>.claude/settings.json</code> 등록된 Hook이 Edit/Write 시점에 시스템 자동 실행 (100% 강제)</li>
-        <li><span style="color:#4ADE80">SKILL</span>: <code>.claude/skills/&lt;name&gt;/SKILL.md</code> 의 frontmatter description 으로 트리거 — Claude 가 필요 시 자동 로드</li>
-        <li><span style="color:#FBBF24">AGENT</span>: <code>.claude/agents/&lt;name&gt;.md</code> 의 frontmatter — Claude 가 위임 시 활성</li>
+        <li><span style="color:#60A5FA">규칙 (Rule)</span> — Claude 가 따라야 할 패턴. <code>CLAUDE.md</code> + <code>.claude/rules/</code> 자동 로드.</li>
+        <li><span style="color:#F87171">자동 검사 (Hook)</span> — 절대 하면 안 되는 것 시스템 차단. <code>.claude/settings.json</code> + <code>.claude/hooks/*.sh</code> (100% 강제).</li>
+        <li><span style="color:#4ADE80">작업 순서 (Skill)</span> — 정형화된 워크플로우 묶음. 사용자가 "데이터 추가해줘" 같이 말하면 적절한 Skill 자동 호출.</li>
+        <li><span style="color:#FBBF24">보조 일꾼 (Sub-Agent)</span> — 특정 영역 분리 작업 (예: 데이터 진단 전담). Claude 가 위임 시 활성.</li>
       </ul>
     </li>
-    <li><strong>새 프로젝트에 맞게 커스터마이즈</strong>:
-      <ul style="margin:6px 0 6px 20px;font-size:15px;color:var(--text-sub);line-height:1.6">
-        <li>CLAUDE.md 의 NEVER Rule·스택·디렉토리 맵을 신규 프로젝트에 맞춰 수정</li>
-        <li>.claude/rules/ 의 Rule 매뉴얼을 도메인에 맞게 (예: 다른 데이터 모델·다른 디자인 시스템)</li>
-        <li>Hook 스크립트의 grep 패턴·차단 경로 조정</li>
-        <li>Skill 워크플로우는 신규 프로젝트의 실제 작업에 맞게 step-by-step 재작성</li>
-      </ul>
+    <li><strong>"이 하네스 적용해줘" 라고 Claude 에게 부탁</strong> — 부트스트랩 시작:
+      <div style="margin:6px 0 0 0;font-size:15px;color:var(--text-desc);line-height:1.7">
+        🐈‍⬛ 히로가 친근하게 도메인 인터뷰 (2 질문) → "데이터 1~5행 보여주세요" → 자동 분석 + 추론 결과 확인 → 모든 파일 자동 생성. <strong>커스터마이즈 (CLAUDE.md · Rule · 디렉토리 맵 · 색상) 까지 모두 Claude 가 자동</strong> 처리. 사용자가 코드 수정할 필요 X.
+      </div>
     </li>
   </ol>
   <p style="font-size:14px;color:#64748B;margin-top:10px;font-style:italic">미러는 <code>npm run sync:harness</code> 또는 <code>npm run build</code> (prebuild) 시 자동 갱신 — 본 ZIP 은 호출 시점에 항상 최신.</p>

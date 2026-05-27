@@ -211,7 +211,9 @@ const HARNESS_MD = `# 🐈‍⬛ HIRO — Harness for Interactive Reporting Opti
 
 ## 이 페이지가 뭔가요?
 
-Claude (또는 다른 AI 코딩 도우미) 가 본 저장소에서 일할 때 **자동으로 따르는 규칙·자동 검사·작업 매뉴얼·보조 일꾼** 의 묶음이에요. 4 가지 종류 (Rule / Hook / Skill / Sub-Agent) 로 나뉩니다.
+Claude (또는 다른 AI 코딩 도우미) 가 새 대시보드 / 뉴스레터 / KPI 리포트를 만들 때 **같은 실수를 반복하지 않도록** 도와주는 **규칙 + 자동 검사 + 작업 매뉴얼 + 보조 일꾼** 묶음이에요. 4 가지 종류 (Rule / Hook / Skill / Sub-Agent) 로 나뉩니다.
+
+가전 KPI 도메인에서 1000+ 회 commit 으로 다듬어진 패턴 — 매출 · HR · 의료 · 교육 등 어떤 도메인이든 **데이터 5행만 보여주면 Claude 가 자동 적응**해서 셋업해줍니다 (변수명·코드 한 줄 안 봐도 됨).
 
 - **실제 작동 (Claude 가 자동 로드)**: \`CLAUDE.md\` + \`AGENTS.md\` + \`.claude/\`
 - **사람이 읽는 미러 (본 폴더)**: \`harness-mirror/\` — 실제 \`.claude/\` 의 1:1 복사 + 사람용 가이드 HTML
@@ -274,7 +276,12 @@ harness-mirror/
    chmod +x .claude/hooks/*.sh
    \`\`\`
    확인: \`ls -l .claude/hooks/\` 결과에 \`-rwxr-xr-x\` 표시되면 OK.
-4. **Claude Code 실행** → 자동으로 모두 로드됩니다.
+4. **Claude Code 실행** → 4가지 자동 로드:
+   - **규칙 (Rule)**: \`CLAUDE.md\` + \`.claude/rules/\` — Claude 가 따라야 할 패턴
+   - **자동 검사 (Hook)**: \`.claude/settings.json\` + \`.claude/hooks/*.sh\` — 절대 하면 안 되는 것 시스템 차단 (100% 강제)
+   - **작업 순서 (Skill)**: \`.claude/skills/<name>/SKILL.md\` — 사용자가 "데이터 추가해줘" 같이 말하면 적절한 Skill 자동 호출
+   - **보조 일꾼 (Sub-Agent)**: \`.claude/agents/<name>.md\` — 특정 영역 분리 작업
+5. **"이 하네스 적용해줘" 라고 Claude 에게 부탁** — 🐈‍⬛ 히로가 도메인 인터뷰 (2 질문) → "데이터 1~5행 보여주세요" → 자동 분석 + 추론 결과 확인 → 모든 파일 자동 생성. **변수명·코드 한 줄 안 봐도 됨**. 매출 · HR · 의료 · 교육 등 어떤 도메인이든 동일.
 
 > \`harness-mirror/\` 는 사람용 설명 사본 — 실제 작동에는 영향 X. 필요 없으면 삭제 가능.
 
@@ -428,8 +435,9 @@ ${themeToggleButton()}
 <p class="sub" style="font-size:16px;color:var(--text-desc);margin-bottom:18px">HIRO 는 Claude Code 로 인터랙티브 대시보드를 만드는 작업을 최적화합니다. 데이터 파서, 차트 컴포넌트, 뉴스레터 템플릿을 매번 처음부터 짜는 대신, HIRO 는 재사용 가능한 하네스 — <strong>스킬·룰·훅·시나리오 기반 부트스트랩</strong> — 를 제공해 수작업 워크플로우를 표준화된 반복 가능한 파이프라인으로 바꿉니다.</p>
 
 <div class="intro">
-  <p><strong>이 페이지가 뭔가요?</strong> — Claude 가 본 저장소에서 일할 때 자동으로 따르는 <strong>규칙·자동 검사·작업 매뉴얼·보조 일꾼</strong>의 묶음입니다. 본 페이지는 <strong>사람이 보기 좋게 정리한 미러</strong>이고, 실제 Claude 가 읽는 원본은 <code>CLAUDE.md</code> + <code>.claude/</code> 폴더에 있어요.</p>
-  <p>원본을 수정하면 <code>npm run build</code> (또는 <code>npm run sync:harness</code>) 실행 시 본 미러가 자동으로 갱신됩니다 — 미러는 직접 수정 X.</p>
+  <p><strong>이 페이지가 뭔가요?</strong> — Claude 가 새 대시보드 / 뉴스레터 / KPI 리포트를 만들 때 <strong>같은 실수를 반복하지 않도록</strong> 도와주는 <strong>규칙 + 자동 검사 + 작업 매뉴얼 + 보조 일꾼</strong> 묶음입니다.</p>
+  <p>가전 KPI 도메인에서 1000+ 회 commit 으로 다듬어진 패턴이에요. 매출 · HR · 의료 · 교육 등 어떤 도메인이든 <strong>데이터 5행만 보여주면 Claude 가 자동 적응</strong>해서 셋업해줍니다 (변수명·코드 한 줄 안 봐도 됨).</p>
+  <p>본 페이지는 <strong>사람이 보기 좋게 정리한 미러</strong>이고, 실제 Claude 가 읽는 원본은 <code>CLAUDE.md</code> + <code>.claude/</code> 폴더에 있어요. 원본 수정 시 <code>npm run build</code> 실행 시 본 미러 자동 갱신.</p>
 </div>
 
 <div class="section">
@@ -585,7 +593,18 @@ AGENTS.md                       (OpenAI Codex / Antigravity 자동 로드)
       <pre style="margin:6px 0;padding:8px 12px;background:var(--bg-code);border-radius:6px;font-size:14px"><code>chmod +x .claude/hooks/*.sh</code></pre>
       확인: <code>ls -l .claude/hooks/</code> 가 <code>-rwxr-xr-x</code> 표시하면 OK.
     </li>
-    <li>Claude Code 실행 → 자동 로드</li>
+    <li>
+      <strong>Claude Code 실행</strong> → 4가지 자동 로드 (사용자는 아무것도 안 해도 됨):
+      <ul style="margin:6px 0 6px 20px;font-size:15px;color:var(--text-sub);line-height:1.6">
+        <li><span style="color:#60A5FA">규칙 (Rule)</span> — Claude 가 따라야 할 패턴. <code>CLAUDE.md</code> + <code>.claude/rules/</code></li>
+        <li><span style="color:#F87171">자동 검사 (Hook)</span> — 절대 하면 안 되는 것 시스템 차단 (100% 강제). <code>.claude/settings.json</code> + <code>.claude/hooks/*.sh</code></li>
+        <li><span style="color:#4ADE80">작업 순서 (Skill)</span> — "데이터 추가해줘" 같이 말하면 적절한 Skill 자동 호출. <code>.claude/skills/&lt;name&gt;/SKILL.md</code></li>
+        <li><span style="color:#FBBF24">보조 일꾼 (Sub-Agent)</span> — 특정 영역 분리 작업. <code>.claude/agents/&lt;name&gt;.md</code></li>
+      </ul>
+    </li>
+    <li>
+      <strong>"이 하네스 적용해줘" 라고 Claude 에게 부탁</strong> — 🐈‍⬛ 히로가 도메인 인터뷰 (2 질문) → "데이터 1~5행 보여주세요" → 자동 분석 + 추론 결과 확인 → 모든 파일 자동 생성. <strong>변수명·코드 한 줄 안 봐도 됨</strong>. 매출 · HR · 의료 · 교육 등 어떤 도메인이든 동일.
+    </li>
   </ol>
   <div class="note">
     <strong>💡 harness-mirror/ 는 사람용 설명 사본</strong> — 실제 작동에는 영향 X. 필요 없으면 삭제 가능 (단, GitHub 리포지토리 정리 시 손쉽게 다시 받을 수 있음).
