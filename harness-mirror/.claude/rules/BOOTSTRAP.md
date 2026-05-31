@@ -190,6 +190,9 @@
 
 A) Greenfield (빈 프로젝트 또는 신규):
    · package.json 없으면 → npm init -y
+   · ⚠ npm init -y 기본 = "type": "commonjs" — ESM (.js + export) 사용하려면
+     package.json 에 "type": "module" 추가 필수 (또는 .mjs 확장자).
+     이식 테스트로 검증된 함정 — syntax-check.sh hook 이 즉시 차단.
    · src/ 디렉토리 없으면 → mkdir -p src
    · 기본 디렉토리 구조 제안 + 사용자 확인 (예: src/data, src/charts, src/design)
 
