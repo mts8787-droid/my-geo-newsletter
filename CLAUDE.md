@@ -36,30 +36,6 @@
 | 서버 실행 | `npm start` |
 | 라우트 검증 | `node -e "import('./routes/admin-pages.js').then(()=>console.log('OK'))"` |
 
-## 디렉토리 맵
-
-```
-src/
-  dashboard/    # 대시보드 (HTML 생성기 + 클라이언트 JS + SVG)
-  citation/     # Citation 페이지 + Bump Chart
-  newsletter/   # 뉴스레터 어드민 (React)
-  visibility/   # Visibility 어드민 (React)
-  tracker-v2/   # Progress Tracker (Recharts)
-  monthly-report/ · weekly-report/
-  emailTemplate.js     # 뉴스레터 본문 (V1/V2/V3 카드, weeklyTrendHtml)
-  excelUtils.js        # 시트 파서 (parseSheetRows 라우터 + 18개 parser*)
-  categoryMap.js       # 카테고리 매핑 single source — 모든 prodId/UL_CODE 정의
-  sheetParserUtils.js  # 파서 공통 헬퍼 — _logFatal/_logWarn/assertRows/findHeaderIdx
-  shared/              # Sidebar, api, constants, insightAgent 등
-routes/
-  admin-pages.js     # /admin/* HTML 라우트
-  publish.js · published.js · ...
-docs/                # 인프라/스키마 참조 문서 (Skill은 .claude/skills/)
-.claude/
-  skills/            # 재사용 가능한 작업 매뉴얼 (design/data/prompting)
-  settings.local.json
-```
-
 ## Skill (Skill — 순차 워크플로우)
 
 Skill은 "자동으로 특정 행동을 하게 하는 명령 조합" — step-by-step 워크플로우. Rule/매뉴얼/anti-pattern 은 별도 docs/.

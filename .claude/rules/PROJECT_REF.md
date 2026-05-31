@@ -17,6 +17,34 @@ Skill 이 아닌 인프라/스키마/배포 문서는 `docs/` 에 그대로:
 
 ---
 
+## 디렉토리 맵 (본 저장소 — 가전 GEO KPI 대시보드)
+
+본 저장소의 디렉토리 구조. **이식자는 본인 프로젝트 구조로 대체** — CLAUDE.md (헌법) 에는 없음.
+
+```
+src/
+  dashboard/    # 대시보드 (HTML 생성기 + 클라이언트 JS + SVG)
+  citation/     # Citation 페이지 + Bump Chart
+  newsletter/   # 뉴스레터 어드민 (React)
+  visibility/   # Visibility 어드민 (React)
+  tracker-v2/   # Progress Tracker (Recharts)
+  monthly-report/ · weekly-report/
+  emailTemplate.js     # 뉴스레터 본문 (V1/V2/V3 카드, weeklyTrendHtml)
+  excelUtils.js        # 시트 파서 (parseSheetRows 라우터 + 18개 parser*)
+  categoryMap.js       # 카테고리 매핑 single source — 모든 prodId/UL_CODE 정의
+  sheetParserUtils.js  # 파서 공통 헬퍼 — _logFatal/_logWarn/assertRows/findHeaderIdx
+  shared/              # Sidebar, api, constants, insightAgent 등
+routes/
+  admin-pages.js     # /admin/* HTML 라우트
+  publish.js · published.js · ...
+docs/                # 인프라/스키마 참조 문서 (Skill은 .claude/skills/)
+.claude/
+  skills/            # 재사용 가능한 작업 매뉴얼 (design/data/prompting)
+  settings.local.json
+```
+
+---
+
 ## 리팩터링 마커 (코드 주석 컨벤션)
 
 코드 주석에 `N1`, `N2`, `N3`, `C12 step1~3` 같은 마커가 등장. 의미:
