@@ -47,100 +47,6 @@ const HARNESS_COMPONENTS = [
     desc: '비개발자 진입 가이드 — 모든 스킬·룰·훅의 영어 이름 ↔ 한글 풀이 + 사용 예시 한 페이지 사전. 한 번 읽으면 됨. 자연어로 부탁 (예: "뉴스레터 만들어줘") 하면 자동 매칭이라 영어 이름 직접 칠 일은 거의 없음.',
   },
 
-  // ─── Rule — 따라야 할 규칙. Markdown. 권고 (~80%) ─────────────────────
-  {
-    category: 'rule',
-    label: '프로젝트 헌법 (CLAUDE.md)',
-    file: 'CLAUDE.md',
-    desc: '본 저장소의 "프로젝트 헌법" — Claude Code 가 본 저장소에서 작업할 때 항상 로드. 하네스 4 개념 정의·스택·NEVER Rule·작업 흐름. ⚠ 보편 규범 (Karpathy 4 원칙 등) 은 사용자 글로벌 헌법 ~/.claude/CLAUDE.md 에 등록 권장 — 다른 저장소에서도 동일 행동 규범 유지. 기존 글로벌이 있으면 사용자 확인 후 병합.',
-  },
-  {
-    category: 'rule',
-    label: '에이전트 헌법 (AGENTS.md)',
-    file: 'AGENTS.md',
-    desc: '본 저장소의 "에이전트 공통 헌법" — OpenAI Codex / Antigravity 가 워크스페이스 루트의 AGENTS.md 를 자동 로드. CLAUDE.md (프로젝트 구체 지침) + Karpathy 4 원칙 융합. ⚠ 보편 규범은 사용자 글로벌 ~/.codex/AGENTS.md 또는 ~/AGENTS.md 에 등록 권장 — 기존 글로벌이 있으면 사용자 확인 후 병합.',
-  },
-  {
-    category: 'rule',
-    label: '데이터 규칙 (data.md)',
-    file: '.claude/rules/data.md',
-    desc: '데이터 작업의 토큰·invariant·ANTI-PATTERN. 5단계 ERROR CATCHING / null vs 0 / 날짜 정규화 등. Skill이 step 별로 참조.',
-  },
-  {
-    category: 'rule',
-    label: '디자인 규칙 (design.md)',
-    file: '.claude/rules/design.md',
-    desc: '디자인 토큰·컴포넌트 카탈로그 (C-01~C-23)·SVG 패턴·이메일 호환 ANTI-PATTERN. Skill이 step 별로 참조.',
-  },
-  {
-    category: 'rule',
-    label: 'AI 호출 규칙 (ai.md)',
-    file: '.claude/rules/ai.md',
-    desc: 'Anthropic API · 인사이트 생성 · N3 응답 검증 (invalid_output) · 에러 분류 · 비용 추적 · ANTI-PATTERN.',
-  },
-  {
-    category: 'rule',
-    label: '뉴스레터 규칙 (newsletter.md)',
-    file: '.claude/rules/newsletter.md',
-    desc: '이메일 호환 HTML (table-layout, 인라인 style), containerWidth 940, KO/EN 양 언어, 미출시 회색 처리, V1/V2/V3 카드, preheader/footer/SMTP, 발송 전 multi-client 검증 체크리스트.',
-  },
-  {
-    category: 'rule',
-    label: '처음 시작 시나리오 (BOOTSTRAP.md)',
-    file: '.claude/rules/BOOTSTRAP.md',
-    desc: 'Claude 가 새 프로젝트 적용 시 따라가는 시나리오. 8 step (환경확인 → 도메인 인터뷰 → 도메인 파일 → 데이터 모델 → 디자인 토큰 → 외부 시스템 → 비즈니스 fact → 빌드 검증). 사람이 직접 읽는 가이드 X — Claude 가 step 별 사용자에게 질문·설명.',
-  },
-  {
-    category: 'rule',
-    label: '뉴스레터 시작 시나리오 (BOOTSTRAP-newsletter.md)',
-    file: '.claude/rules/BOOTSTRAP-newsletter.md',
-    desc: 'Claude 가 신규 뉴스레터 발행본 작성 시 따라가는 시나리오. 8 step (환경확인 → 발행 종류 → 데이터 범위 → 카드 버전·섹션 → KO/EN 텍스트 → preheader/footer → 본문+Hook → 시각 검증 → 게시/발송). newsletter-make skill 이 트리거.',
-  },
-  {
-    category: 'rule',
-    label: '본 저장소 참조 (HIRO_REFERENCE.md)',
-    file: '.claude/rules/HIRO_REFERENCE.md',
-    desc: '본 저장소의 구체 변수명·도메인 매핑 + 이식자용 For Adopters 가이드 통합. data.md §5.5 / ai.md 의 Reference Example 분리 + 5 Rule + CLAUDE.md 의 For Adopters 박스 통합. Claude 가 본 저장소 작업 시 변수명 필요할 때 명시 import. 이식자는 부트스트랩 시 한 번 보면 됨.',
-  },
-  {
-    category: 'rule',
-    label: '프로젝트 참조 (PROJECT_REF.md)',
-    file: '.claude/rules/PROJECT_REF.md',
-    desc: 'CLAUDE.md 에서 분리된 보조 참조 — 인프라 문서 (docs/GCP_INFRA.md 등) 안내 + 리팩터링 마커 표 (N1/N2/N3/C-XX/C13/C16/SEC[숫자]). 매 turn 자동 로드 X. 마커 등장 / 인프라 작업 시 명시 import.',
-  },
-
-  // ─── Hook — 절대 금지. 사람용 가이드 + JSON/Bash (For AI) ──────────────
-  {
-    category: 'hook',
-    label: 'Hook 설명서 (사람용 README)',
-    file: '.claude/hooks/README.md',
-    desc: '각 Hook의 트리거·대상·동작·목적 + 신규 Hook 추가 가이드. 원본 README — 별도 미러 없음 (필요 시 본 파일 직접 열람).',
-  },
-  {
-    category: 'hook',
-    label: '훅 등록 설정 (settings.json)',
-    file: '.claude/settings.json',
-    desc: 'PreToolUse + PostToolUse Hook 등록. JSON 필수 — 시스템이 파싱·실행 (Claude 우회 불가).',
-  },
-  {
-    category: 'hook',
-    label: 'JS 신택스 자동 검사 (syntax-check.sh)',
-    file: '.claude/hooks/syntax-check.sh',
-    desc: 'PostToolUse: src/·routes/ 의 .js Edit/Write 직후 node --check. 실패 시 exit 2 → Claude 재시도.',
-  },
-  {
-    category: 'hook',
-    label: '빌드 산출물 보호 (block-dist.sh)',
-    file: '.claude/hooks/block-dist.sh',
-    desc: 'PreToolUse: dist-*/dist/ 빌드 산출물 직접 수정 차단. CLAUDE.md NEVER Rule 강제.',
-  },
-  {
-    category: 'hook',
-    label: '뉴스레터 호환 검사 (newsletter-guard.sh)',
-    file: '.claude/hooks/newsletter-guard.sh',
-    desc: 'PostToolUse: src/emailTemplate.js · monthly/weeklyTemplate.js · newsletter/* 수정 후 검증. containerWidth > 940 / display:flex|grid / overflow-x:hidden / body min-width 검출 시 exit 2 차단. .claude/rules/newsletter.md §3 NEVER 자동 강제.',
-  },
-
   // ─── Skill — 순차 워크플로우. 명령 조합 ────────────────────────────
   // 데이터·디자인 각각 성격별 3 sub-skill 로 분리 (/skills 정밀 매칭).
   {
@@ -240,6 +146,100 @@ const HARNESS_COMPONENTS = [
     desc: '사용자 "X 안 됨" / "fix" / "회귀" 요청 시. BOOTSTRAP 의 DEBUG-1~15 시나리오 중 증상 매칭. 시나리오는 가이드 — 더 나은 방법 발견 시 그 방식.',
   },
 
+  // ─── Rule — 따라야 할 규칙. Markdown. 권고 (~80%) ─────────────────────
+  {
+    category: 'rule',
+    label: '프로젝트 헌법 (CLAUDE.md)',
+    file: 'CLAUDE.md',
+    desc: '본 저장소의 "프로젝트 헌법" — Claude Code 가 본 저장소에서 작업할 때 항상 로드. 하네스 4 개념 정의·스택·NEVER Rule·작업 흐름. ⚠ 보편 규범 (Karpathy 4 원칙 등) 은 사용자 글로벌 헌법 ~/.claude/CLAUDE.md 에 등록 권장 — 다른 저장소에서도 동일 행동 규범 유지. 기존 글로벌이 있으면 사용자 확인 후 병합.',
+  },
+  {
+    category: 'rule',
+    label: '에이전트 헌법 (AGENTS.md)',
+    file: 'AGENTS.md',
+    desc: '본 저장소의 "에이전트 공통 헌법" — OpenAI Codex / Antigravity 가 워크스페이스 루트의 AGENTS.md 를 자동 로드. CLAUDE.md (프로젝트 구체 지침) + Karpathy 4 원칙 융합. ⚠ 보편 규범은 사용자 글로벌 ~/.codex/AGENTS.md 또는 ~/AGENTS.md 에 등록 권장 — 기존 글로벌이 있으면 사용자 확인 후 병합.',
+  },
+  {
+    category: 'rule',
+    label: '데이터 규칙 (data.md)',
+    file: '.claude/rules/data.md',
+    desc: '데이터 작업의 토큰·invariant·ANTI-PATTERN. 5단계 ERROR CATCHING / null vs 0 / 날짜 정규화 등. Skill이 step 별로 참조.',
+  },
+  {
+    category: 'rule',
+    label: '디자인 규칙 (design.md)',
+    file: '.claude/rules/design.md',
+    desc: '디자인 토큰·컴포넌트 카탈로그 (C-01~C-23)·SVG 패턴·이메일 호환 ANTI-PATTERN. Skill이 step 별로 참조.',
+  },
+  {
+    category: 'rule',
+    label: 'AI 호출 규칙 (ai.md)',
+    file: '.claude/rules/ai.md',
+    desc: 'Anthropic API · 인사이트 생성 · N3 응답 검증 (invalid_output) · 에러 분류 · 비용 추적 · ANTI-PATTERN.',
+  },
+  {
+    category: 'rule',
+    label: '뉴스레터 규칙 (newsletter.md)',
+    file: '.claude/rules/newsletter.md',
+    desc: '이메일 호환 HTML (table-layout, 인라인 style), containerWidth 940, KO/EN 양 언어, 미출시 회색 처리, V1/V2/V3 카드, preheader/footer/SMTP, 발송 전 multi-client 검증 체크리스트.',
+  },
+  {
+    category: 'rule',
+    label: '처음 시작 시나리오 (BOOTSTRAP.md)',
+    file: '.claude/rules/BOOTSTRAP.md',
+    desc: 'Claude 가 새 프로젝트 적용 시 따라가는 시나리오. 8 step (환경확인 → 도메인 인터뷰 → 도메인 파일 → 데이터 모델 → 디자인 토큰 → 외부 시스템 → 비즈니스 fact → 빌드 검증). 사람이 직접 읽는 가이드 X — Claude 가 step 별 사용자에게 질문·설명.',
+  },
+  {
+    category: 'rule',
+    label: '뉴스레터 시작 시나리오 (BOOTSTRAP-newsletter.md)',
+    file: '.claude/rules/BOOTSTRAP-newsletter.md',
+    desc: 'Claude 가 신규 뉴스레터 발행본 작성 시 따라가는 시나리오. 8 step (환경확인 → 발행 종류 → 데이터 범위 → 카드 버전·섹션 → KO/EN 텍스트 → preheader/footer → 본문+Hook → 시각 검증 → 게시/발송). newsletter-make skill 이 트리거.',
+  },
+  {
+    category: 'rule',
+    label: '본 저장소 참조 (HIRO_REFERENCE.md)',
+    file: '.claude/rules/HIRO_REFERENCE.md',
+    desc: '본 저장소의 구체 변수명·도메인 매핑 + 이식자용 For Adopters 가이드 통합. data.md §5.5 / ai.md 의 Reference Example 분리 + 5 Rule + CLAUDE.md 의 For Adopters 박스 통합. Claude 가 본 저장소 작업 시 변수명 필요할 때 명시 import. 이식자는 부트스트랩 시 한 번 보면 됨.',
+  },
+  {
+    category: 'rule',
+    label: '프로젝트 참조 (PROJECT_REF.md)',
+    file: '.claude/rules/PROJECT_REF.md',
+    desc: 'CLAUDE.md 에서 분리된 보조 참조 — 인프라 문서 (docs/GCP_INFRA.md 등) 안내 + 리팩터링 마커 표 (N1/N2/N3/C-XX/C13/C16/SEC[숫자]). 매 turn 자동 로드 X. 마커 등장 / 인프라 작업 시 명시 import.',
+  },
+
+  // ─── Hook — 절대 금지. 사람용 가이드 + JSON/Bash (For AI) ──────────────
+  {
+    category: 'hook',
+    label: 'Hook 설명서 (사람용 README)',
+    file: '.claude/hooks/README.md',
+    desc: '각 Hook의 트리거·대상·동작·목적 + 신규 Hook 추가 가이드. 원본 README — 별도 미러 없음 (필요 시 본 파일 직접 열람).',
+  },
+  {
+    category: 'hook',
+    label: '훅 등록 설정 (settings.json)',
+    file: '.claude/settings.json',
+    desc: 'PreToolUse + PostToolUse Hook 등록. JSON 필수 — 시스템이 파싱·실행 (Claude 우회 불가).',
+  },
+  {
+    category: 'hook',
+    label: 'JS 신택스 자동 검사 (syntax-check.sh)',
+    file: '.claude/hooks/syntax-check.sh',
+    desc: 'PostToolUse: src/·routes/ 의 .js Edit/Write 직후 node --check. 실패 시 exit 2 → Claude 재시도.',
+  },
+  {
+    category: 'hook',
+    label: '빌드 산출물 보호 (block-dist.sh)',
+    file: '.claude/hooks/block-dist.sh',
+    desc: 'PreToolUse: dist-*/dist/ 빌드 산출물 직접 수정 차단. CLAUDE.md NEVER Rule 강제.',
+  },
+  {
+    category: 'hook',
+    label: '뉴스레터 호환 검사 (newsletter-guard.sh)',
+    file: '.claude/hooks/newsletter-guard.sh',
+    desc: 'PostToolUse: src/emailTemplate.js · monthly/weeklyTemplate.js · newsletter/* 수정 후 검증. containerWidth > 940 / display:flex|grid / overflow-x:hidden / body min-width 검출 시 exit 2 차단. .claude/rules/newsletter.md §3 NEVER 자동 강제.',
+  },
+
   // ─── Sub-Agent — 특정 영역 분리 작업 ────────────────────────
   {
     category: 'agent',
@@ -252,9 +252,9 @@ const HARNESS_COMPONENTS = [
 // label 구조: { key, rest } — key 만 볼드, rest 는 일반
 const CATEGORY_LABELS = {
   entry: { key: '가이드', rest: ' — 하네스 전체 개요 (harness-mirror/docs/ 미러)' },
+  skill: { key: 'Skill', rest: ' — 자동 워크플로우 / 명령 조합. step-by-step' },
   rule:  { key: 'Rule',  rest: ' — 따라야 할 규칙. Markdown 권고 (~80%)' },
   hook:  { key: 'Hook',  rest: ' — 절대 하면 안 되는 것. JSON 강제 (100%) + 인간용 md 설명서' },
-  skill: { key: 'Skill', rest: ' — 자동 워크플로우 / 명령 조합. step-by-step' },
   agent: { key: 'Sub-Agent', rest: ' — 특정 영역 분리 작업 (Claude Code 공식 기능)' },
 }
 
