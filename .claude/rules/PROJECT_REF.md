@@ -17,6 +17,30 @@ Skill 이 아닌 인프라/스키마/배포 문서는 `docs/` 에 그대로:
 
 ---
 
+## 스택 (본 저장소 — 가전 GEO KPI 대시보드)
+
+본 저장소의 기술 스택. **이식자는 본인 프로젝트 스택으로 대체** — CLAUDE.md (헌법) 에는 없음.
+
+- **서버**: Node.js + Express (`server.js`, `routes/`)
+- **클라이언트**: React + Vite (어드민 SPA), Vanilla JS + SVG (게시 HTML)
+- **데이터**: Google Sheets (사용자 편집) → `parseSheet` (`src/excelUtils.js`) → React state → 게시 시 정적 HTML 인라인 임베드
+- **출력**: `dist-*/` (Vite build) + `/p/<slug>` 정적 게시본 (PUB_DIR)
+- **이메일 호환**: `src/emailTemplate.js` — table-layout 기반 (SVG 미지원 클라이언트 호환)
+
+## 명령 (본 저장소 npm scripts)
+
+본 저장소의 npm scripts. **이식자는 본인 scripts 로 대체**.
+
+| 목적 | 명령 |
+|---|---|
+| 개발 서버 | `npm run dev` (또는 모드별 `npm run dev:dashboard`/`dev:visibility`/`dev:citation`/`dev:tracker`/`dev:monthly`/`dev:weekly`) |
+| 빌드 (전체) | `npm run build` |
+| 빌드 (단일 모드) | `npm run build:dashboard` 등 |
+| 단위 테스트 | `npm test` (= `vitest run`) |
+| 타입체크 | `npm run typecheck` |
+| 서버 실행 | `npm start` |
+| 라우트 검증 | `node -e "import('./routes/admin-pages.js').then(()=>console.log('OK'))"` |
+
 ## 디렉토리 맵 (본 저장소 — 가전 GEO KPI 대시보드)
 
 본 저장소의 디렉토리 구조. **이식자는 본인 프로젝트 구조로 대체** — CLAUDE.md (헌법) 에는 없음.

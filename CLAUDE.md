@@ -16,26 +16,6 @@
 
 **핵심**: Rule = "따라야 할 규칙" / Hook = "절대 하면 안 되는 것" / Skill = "순차 워크플로우 (명령 조합)" / Sub-Agent = "영역 분리 작업"
 
-## 스택
-
-- **서버**: Node.js + Express (`server.js`, `routes/`)
-- **클라이언트**: React + Vite (어드민 SPA), Vanilla JS + SVG (게시 HTML)
-- **데이터**: Google Sheets (사용자 편집) → `parseSheet` (`src/excelUtils.js`) → React state → 게시 시 정적 HTML 인라인 임베드
-- **출력**: `dist-*/` (Vite build) + `/p/<slug>` 정적 게시본 (PUB_DIR)
-- **이메일 호환**: `src/emailTemplate.js` — table-layout 기반 (SVG 미지원 클라이언트 호환)
-
-## 명령
-
-| 목적 | 명령 |
-|---|---|
-| 개발 서버 | `npm run dev` (또는 모드별 `npm run dev:dashboard`/`dev:visibility`/`dev:citation`/`dev:tracker`/`dev:monthly`/`dev:weekly`) |
-| 빌드 (전체) | `npm run build` |
-| 빌드 (단일 모드) | `npm run build:dashboard` 등 |
-| 단위 테스트 | `npm test` (= `vitest run`) |
-| 타입체크 | `npm run typecheck` |
-| 서버 실행 | `npm start` |
-| 라우트 검증 | `node -e "import('./routes/admin-pages.js').then(()=>console.log('OK'))"` |
-
 ## Skill (Skill — 순차 워크플로우)
 
 Skill은 "자동으로 특정 행동을 하게 하는 명령 조합" — step-by-step 워크플로우. Rule/매뉴얼/anti-pattern 은 별도 docs/.
