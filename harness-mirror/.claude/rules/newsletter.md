@@ -37,7 +37,7 @@ routes/
 
 ---
 
-## 2. COMMANDS
+## 2. COMMANDS (본 저장소 npm scripts — 이식자는 본인 scripts 로 대체)
 
 | 목적 | 명령 |
 |---|---|

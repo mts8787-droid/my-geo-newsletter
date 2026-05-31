@@ -186,40 +186,51 @@
 ## STEP 3 — 자동 생성 (Claude 액션)
 
 ```
+[Claude 가 사용자 프로젝트 구조 먼저 파악]:
+
+A) Greenfield (빈 프로젝트 또는 신규):
+   · package.json 없으면 → npm init -y
+   · src/ 디렉토리 없으면 → mkdir -p src
+   · 기본 디렉토리 구조 제안 + 사용자 확인 (예: src/data, src/charts, src/design)
+
+B) Brownfield (기존 코드 있음):
+   · 사용자에게 "기존 데이터 처리 코드 위치 알려주세요" 또는 ls 결과 보여달라 요청
+   · 본인 구조 (예: lib/parsers, app/services) 안에서 생성
+
 [Claude 가 STEP 2 의 사용자 확인 답변 기반으로 자동 생성]:
 
-1. src/categoryMap.js (single source 매핑 파일):
+1. single source 매핑 파일 (예: src/categoryMap.js — 사용자 구조에 맞는 경로):
    · 카테고리 차원 값으로 IDS 채움 — 예: REGIONS = ['us','kr','jp','br','in']
    · 표시명 매핑 (Claude 추론 또는 사용자 확인)
    · 외부 코드 매핑 (필요 시)
    · invariant 자동 검증 헬퍼
 
-2. 데이터 파서:
-   · SHEET_NAMES / API endpoints / DB query 상수
-   · parseSheetRows 라우터 (switch 분기)
-   · 각 parseXxx 함수 — 5단계 ERROR CATCHING (.claude/rules/data.md §6)
-     · assertRows 진입 가드
-     · findHeaderIdx (한/영 동의어 매칭 — STEP 2 헤더 보고 동의어 추론)
-     · _logWarn 으로 silent fail 방지
-     · forEachRowSafe 로 row try/catch
+2. 데이터 파서 (사용자 데이터 소스 종류에 맞춰):
+   · 시트면 SHEET_NAMES + parseSheetRows 라우터
+   · DB면 query 함수 + 결과 매핑
+   · API면 fetch + 응답 파싱
+   · 공통: 5단계 ERROR CATCHING (.claude/rules/data.md §6)
+     · 진입 가드 / 헤더 매칭 / _logWarn / row try/catch
    · 시간순 정렬 invariant 적용
    · null / "-" / "NA" 처리 정책 (STEP 2 결정대로)
 
 3. 차트 컴포넌트 — STEP 2 매칭된 분류 코드로:
-   · L-1 트렌드, D-1 비중, BP-1 랭킹 등
-   · 자동으로 디자인 토큰 (.claude/rules/design.md §4) 적용
+   · L-1 트렌드, D-1 비중, BP-1 랭킹 등 (.claude/rules/design.md §5.15)
+   · 자동으로 디자인 토큰 (.claude/rules/design.md §4) 적용 — STEP 4 에서 토큰 정의
 
-[🐈‍⬛ 히로 (Claude) 가 사용자에게 보고]:
+[🐈‍⬛ 히로 (Claude) 가 사용자에게 보고 — 실제 생성 경로 명시]:
 
-"생성된 파일:
-  📁 src/categoryMap.js — 카테고리 / 표시명 / invariant
-  📁 src/parser.js — 데이터 파싱 (5단계 ERROR CATCHING 포함)
-  📁 src/charts/<차트별>.js — 트렌드 / 비중 / 랭킹
+"생성된 파일 (본인 프로젝트 구조에 맞춰):
+  📁 <매핑 파일 경로> — 카테고리 / 표시명 / invariant
+  📁 <파서 파일 경로> — 데이터 파싱 (5단계 ERROR CATCHING 포함)
+  📁 <차트 디렉토리> — 트렌드 / 비중 / 랭킹
 
 다음 단계 (STEP 4): 디자인 토큰 (회사 색상 / 폰트) 정해주세요."
 
 [사용자가 결과 확인 → STEP 4 진행]
 ```
+
+**Reference Example (HIRO 본 저장소 — 가전 GEO KPI)**: 본 저장소 적용 시 생성 경로 = `src/categoryMap.js`, `src/excelUtils.js`, `src/charts/...`. 다른 프로젝트는 본인 구조.
 
 **자동 생성의 안전장치**:
 - 모든 매핑은 single source 1곳 — 다른 파일은 import 만
@@ -258,8 +269,9 @@ C) 짧은 부분 소스코드 직접 작성 → 시각 의도만 표현
 - 그룹별 색상 (있다면)
 - 폰트 (없으면 시스템 fallback)"
 
-[Claude 가 작성]:
-- src/dashboard/dashboardConsts.js (또는 동등 토큰 파일):
+[Claude 가 작성 — 사용자 프로젝트 구조에 맞는 토큰 파일]:
+- 예: src/design/tokens.js / src/styles/consts.js / src/dashboard/dashboardConsts.js — 본인 구조에 맞춰 위치 결정
+- 포함 항목:
   · FONT (시스템 fallback 또는 사용자 폰트)
   · RED (사용자 primary)
   · COMP (default 비교군 회색)
@@ -267,10 +279,12 @@ C) 짧은 부분 소스코드 직접 작성 → 시각 의도만 표현
   · STATUS (lead/behind/critical — 그대로 유지, 의미 도메인 무관)
 
 [🐈‍⬛ 히로 (Claude) 가 사용자에게 안내]:
-"차트 라이브러리 (/admin/chart-library) 의 21 분류 코드 (L-1 ~ T-1) 가 이 토큰을
-사용합니다. 신규 차트 추가 시 '\"L-1 그려줘\"' 같이 코드로 호출하면 자동으로 토큰
-적용됩니다."
+"차트 라이브러리 (`harness-mirror/docs/CHART_LIBRARY.html` 정적 미러 — 브라우저 더블클릭) 의
+21 분류 코드 (L-1 ~ T-1) 가 이 토큰을 사용합니다. 신규 차트 추가 시 '\"L-1 그려줘\"'
+같이 코드로 호출하면 자동으로 토큰 적용됩니다."
 ```
+
+**Reference Example (HIRO 본 저장소)**: 토큰 파일 위치 = `src/dashboard/dashboardConsts.js`. 차트 라이브러리 운영 페이지 = `/admin/chart-library`.
 
 ---
 
@@ -320,23 +334,34 @@ C) 짧은 부분 소스코드 직접 작성 → 시각 의도만 표현
 ## STEP 7 — 첫 빌드 + 검증 (Claude 액션)
 
 ```
-[Claude 가 명령 실행 또는 사용자에게 명령 안내]:
-- npm install
-- npm test (invariant 자동 검증)
-- npm run build (산출물 생성)
-- npm start (서버 시작)
+[Claude 가 명령 실행 또는 사용자에게 명령 안내 — 사용자 프로젝트의 npm scripts 사용]:
+- npm install (의존성 설치)
+- npm test (있으면 — invariant 자동 검증)
+- npm run build (있으면)
+- npm start 또는 npm run dev (있으면)
 
-[🐈‍⬛ 히로 (Claude) 가 사용자에게 검증 체크리스트 안내 — 사용자가 브라우저로 확인]:
-"브라우저로 다음 항목 확인 부탁드립니다:
-- /admin 로그인 가능
-- 어드민 메뉴 3단 구조 (게시·인프라·하네스) 정상
-- /admin/harness — 본 프로젝트 Rule/Hook/Skill 다 노출
-- /admin/chart-library — 차트 분류 코드 + 본인 토큰 적용 확인
-- 데이터 동기화 한 번 — verifySyncResult 결과 SyncHealth 에 표시"
+[🐈‍⬛ 히로 (Claude) 가 사용자에게 검증 체크리스트 안내 — 사용자 프로젝트 형태에 맞춰]:
+
+A) 공통 (모든 프로젝트):
+   · npm test 통과 (invariant 자동 검증 — single source 매핑, 5단계 ERROR CATCHING)
+   · STEP 3 생성된 파일 import 성공 (node -e "import('./<생성된 파일>').then(()=>console.log('OK'))")
+   · 데이터 1회 파싱 성공 — Claude 가 STEP 2 의 sample 로 검증
+
+B) 어드민 페이지 있는 프로젝트 (본 저장소처럼 운영 페이지 만든 경우만):
+   · /admin 로그인 가능 (있다면)
+   · 차트 라이브러리 페이지 — 분류 코드 + 본인 토큰 적용
+   · 본 프로젝트 Rule/Hook/Skill 노출 확인 (있다면 /admin/harness 같은 페이지)
+
+C) CLI / 라이브러리 프로젝트:
+   · README 의 예제 명령 실행 → 정상 출력
+   · 단위 테스트 통과
 
 [🐈‍⬛ 히로 (Claude) 가 사용자에게 안내]:
-"검증 체크리스트 더 자세한 항목은 harness-mirror/docs/HUMAN_GUIDE.md 참조."
+"검증 체크리스트 더 자세한 항목은 harness-mirror/docs/HUMAN_GUIDE.md 참조.
+어드민 페이지 없으면 B 항목 skip."
 ```
+
+**Reference Example (HIRO 본 저장소)**: 어드민 페이지 = `/admin/harness`, `/admin/chart-library`, `/admin/observability`. 데이터 동기화 검증 = `verifySyncResult` + `SyncHealth`.
 
 ---
 
@@ -357,9 +382,9 @@ C) 짧은 부분 소스코드 직접 작성 → 시각 의도만 표현
 
 ## 시나리오 종료 조건
 
-- STEP 7 의 모든 검증 체크리스트 통과
-- 사용자가 첫 데이터 동기화 + 빌드 성공 보고
-- /admin/harness 페이지에서 본 프로젝트 Rule/Hook/Skill 노출 확인
+- STEP 7 의 공통(A) 항목 모두 통과 — npm test + STEP 3 생성 파일 import + 데이터 1회 파싱
+- 사용자가 첫 데이터 처리 성공 보고 (사용자가 STEP 2 에서 준 sample 또는 실제 데이터)
+- (어드민 페이지 있으면) Rule/Hook/Skill 노출 확인
 
 미완료 시:
 - 실패 step 으로 복귀 — Claude 가 사용자에게 다시 질문
