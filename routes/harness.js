@@ -650,11 +650,6 @@ ${themeToggleButton()}
   <p style="font-size:15px;color:var(--text-sub);margin-bottom:10px;font-style:italic">🐈‍⬛ 히로 (HIRO) — 본 하네스의 마스코트 검은 고양이. 부트스트랩 시작하면 친근하게 말 걸어요.</p>
   <p style="font-size:16px;color:var(--text-desc);margin-bottom:8px"><strong style="color:#F8FAFC">한 줄 요약</strong>: Claude Code 가 새 대시보드 / 뉴스레터 / KPI 리포트를 만들 때 <strong style="color:#F8FAFC">같은 실수를 반복하지 않도록</strong> 도와주는 규칙 + 자동 검사 + 작업 매뉴얼 묶음.</p>
   <p style="font-size:16px;color:var(--text-desc);margin-bottom:8px">가전 GEO KPI 영역에서 1000+ 회 commit 으로 다듬어진 패턴이에요. 같은 가전 산업 내 <strong style="color:#F8FAFC">영업 · 매출 · 전략 · 마케팅 · R&amp;D</strong> 등 다른 직무 도메인에도 <strong style="color:#F8FAFC">데이터 5행만 보여주면 Claude 가 자동으로 적응</strong>해서 셋업해줍니다.</p>
-  <ul style="font-size:16px;color:var(--text-desc);margin-left:22px;line-height:1.8;margin-bottom:12px">
-    <li><strong style="color:#F8FAFC">왜 필요한가?</strong> 시간이 흐르면 같은 실수를 또 함 (예: 뉴스레터 우측 짤림 / 카테고리 매핑 누락 / 한국식 날짜 정렬 깨짐). 한 페이지에서 다 보고 차단.</li>
-    <li><strong style="color:#F8FAFC">무엇을 모았나?</strong> 4 가지 — <strong style="color:#60A5FA">규칙</strong> (Claude 가 따라야 할 것) · <strong style="color:#F87171">자동 검사</strong> (시스템이 차단) · <strong style="color:#4ADE80">작업 순서</strong> (정형화된 워크플로우) · <strong style="color:#FBBF24">보조 일꾼</strong> (특정 영역 분리).</li>
-    <li><strong style="color:#F8FAFC">무엇을 할 수 있나?</strong> (1) 각 파일 클릭해서 보기 (2) 전체 ZIP 받아서 다른 프로젝트에 적용 (3) 팀원과 공유.</li>
-  </ul>
   <p style="font-size:14px;color:var(--text-sub);margin-bottom:8px;font-style:italic">English summary: HIRO is a battle-tested harness for Claude Code — rules, hooks, skills, and scenario-based bootstraps. Just show your data and Claude auto-adapts to any domain.</p>
 
   <h2 style="font-size:18px;color:#F8FAFC;margin-bottom:10px;margin-top:18px">💡 다른 프로젝트에 적용하기 — 데이터만 보여주면 끝</h2>
