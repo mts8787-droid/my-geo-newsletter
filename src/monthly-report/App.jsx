@@ -12,11 +12,11 @@ const MODE = 'monthly-report'
 const STORAGE_KEY = 'geo-monthly-report-cache'
 
 // ─── 뉴스레터 미리보기 (iframe) ──────────────────────────────────────────────
-function NewsletterPreview({ meta, total, products, citations, dotcom, productsCnty = [], citationsCnty = [], lang = 'ko', weeklyLabels, categoryStats, stakeholderStats }) {
+function NewsletterPreview({ meta, total, products, citations, dotcom, productsCnty = [], citationsCnty = [], lang = 'ko', weeklyLabels, categoryStats, stakeholderStats, cntyKeys = null }) {
   const iframeRef = useRef(null)
   const html = useMemo(
-    () => generateEmailHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, { weeklyLabels, categoryStats, stakeholderStats }),
-    [meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels]
+    () => generateEmailHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, { weeklyLabels, categoryStats, stakeholderStats, cntyKeys }),
+    [meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, cntyKeys]
   )
 
   React.useEffect(() => {
@@ -52,9 +52,9 @@ function NewsletterPreview({ meta, total, products, citations, dotcom, productsC
 }
 
 // ─── HTML 코드 뷰어 ───────────────────────────────────────────────────────────
-function HtmlCodeViewer({ meta, total, products, citations, dotcom, productsCnty = [], citationsCnty = [], lang = 'ko', weeklyLabels, categoryStats, stakeholderStats }) {
+function HtmlCodeViewer({ meta, total, products, citations, dotcom, productsCnty = [], citationsCnty = [], lang = 'ko', weeklyLabels, categoryStats, stakeholderStats, cntyKeys = null }) {
   const [copied, setCopied] = useState(false)
-  const html = useMemo(() => generateEmailHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, { weeklyLabels, categoryStats, stakeholderStats }), [meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, categoryStats])
+  const html = useMemo(() => generateEmailHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, { weeklyLabels, categoryStats, stakeholderStats, cntyKeys }), [meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, categoryStats, cntyKeys])
 
   async function handleCopy() {
     try {
@@ -127,6 +127,25 @@ export default function App() {
   const [snapMsg,    setSnapMsg]    = useState('')
   const [activeSnap, setActiveSnap] = useState(null)
   const [sidebarOpen, setSidebarOpen] = useState(true)
+  // 국가 필터 — 빈 배열 = 전체 (필터 미적용). cache 에서 복원.
+  const [selectedCountries, setSelectedCountries] = useState(() => Array.isArray(cache?.selectedCountries) ? cache.selectedCountries : [])
+
+  // productsCnty 에서 가능한 국가 추출 (TTL/TOTAL 제외, 정렬)
+  const availableCountries = useMemo(() => {
+    const set = new Set()
+    ;(productsCnty || []).forEach(r => {
+      if (r && r.country && !/^(ttl|total)$/i.test(r.country)) set.add(String(r.country).toUpperCase())
+    })
+    return Array.from(set).sort()
+  }, [productsCnty])
+
+  // cntyKeys — 선택 0개면 null (전체), 있으면 array
+  const cntyKeys = selectedCountries.length > 0 ? selectedCountries : null
+  const toggleCountry = useCallback((c) => {
+    setSelectedCountries(prev => prev.includes(c) ? prev.filter(x => x !== c) : [...prev, c])
+  }, [])
+  const selectAllCountries = useCallback(() => setSelectedCountries(availableCountries), [availableCountries])
+  const clearCountries = useCallback(() => setSelectedCountries([]), [])
 
   // tracker 데이터 fetch
   useEffect(() => {
@@ -218,8 +237,8 @@ export default function App() {
   }, [])
 
   useEffect(() => {
-    saveCache(STORAGE_KEY, { metaKo, metaEn, total, products, citations, dotcom, productsCnty, citationsCnty, weeklyLabels, weeklyAll })
-  }, [metaKo, metaEn, total, products, citations, dotcom, productsCnty, citationsCnty, weeklyLabels, weeklyAll])
+    saveCache(STORAGE_KEY, { metaKo, metaEn, total, products, citations, dotcom, productsCnty, citationsCnty, weeklyLabels, weeklyAll, selectedCountries })
+  }, [metaKo, metaEn, total, products, citations, dotcom, productsCnty, citationsCnty, weeklyLabels, weeklyAll, selectedCountries])
 
   async function handleSnapOverwrite() {
     if (!activeSnap) return
@@ -375,16 +394,40 @@ export default function App() {
           </div>
         </div>
 
+        {/* 국가 필터 — 선택 시 데이터 계산이 해당 국가들로 한정. 빈 선택 = 전체. */}
+        {availableCountries.length > 0 && (
+          <div style={{ background: '#0F172A', borderBottom: '1px solid #1E293B', padding: '10px 16px',
+            display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', flexShrink: 0 }}>
+            <span style={{ color: '#94A3B8', fontSize: 12, fontWeight: 600, marginRight: 4 }}>국가 필터</span>
+            {availableCountries.map(c => {
+              const isOn = selectedCountries.includes(c)
+              return (
+                <button key={c} onClick={() => toggleCountry(c)}
+                  style={{ padding: '4px 10px', borderRadius: 6, border: '1px solid ' + (isOn ? '#22C55E' : '#334155'),
+                    background: isOn ? '#16A34A' : '#1E293B', color: isOn ? '#fff' : '#CBD5E1',
+                    fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>{c}</button>
+              )
+            })}
+            <button onClick={selectAllCountries} style={{ padding: '4px 10px', borderRadius: 6, border: '1px solid #334155',
+              background: '#0F172A', color: '#60A5FA', fontSize: 12, cursor: 'pointer' }}>전체</button>
+            <button onClick={clearCountries} style={{ padding: '4px 10px', borderRadius: 6, border: '1px solid #334155',
+              background: '#0F172A', color: '#94A3B8', fontSize: 12, cursor: 'pointer' }}>해제</button>
+            <span style={{ color: '#64748B', fontSize: 11, marginLeft: 'auto' }}>
+              {selectedCountries.length === 0 ? '전체 국가' : `${selectedCountries.length}개 선택`}
+            </span>
+          </div>
+        )}
+
         {/* 컨텐츠 영역 */}
         {activeTab === 'preview' ? (
           <div style={{ flex: 1, overflowY: 'auto', padding: '28px 36px',
             background: 'linear-gradient(180deg, #0A0F1C 0%, #0F172A 100%)' }}>
             <div style={{ maxWidth: 960, margin: '0 auto' }}>
-              <NewsletterPreview meta={meta} total={total} products={resolved.products} citations={resolved.citations} dotcom={dotcom} productsCnty={resolved.productsCnty} citationsCnty={resolved.citationsCnty} lang={previewLang} weeklyLabels={weeklyLabels} categoryStats={categoryStats} stakeholderStats={stakeholderStats} />
+              <NewsletterPreview meta={meta} total={total} products={resolved.products} citations={resolved.citations} dotcom={dotcom} productsCnty={resolved.productsCnty} citationsCnty={resolved.citationsCnty} lang={previewLang} weeklyLabels={weeklyLabels} categoryStats={categoryStats} stakeholderStats={stakeholderStats} cntyKeys={cntyKeys} />
             </div>
           </div>
         ) : (
-          <HtmlCodeViewer meta={meta} total={total} products={resolved.products} citations={resolved.citations} dotcom={dotcom} productsCnty={resolved.productsCnty} citationsCnty={resolved.citationsCnty} lang={previewLang} weeklyLabels={weeklyLabels} categoryStats={categoryStats} stakeholderStats={stakeholderStats} />
+          <HtmlCodeViewer meta={meta} total={total} products={resolved.products} citations={resolved.citations} dotcom={dotcom} productsCnty={resolved.productsCnty} citationsCnty={resolved.citationsCnty} lang={previewLang} weeklyLabels={weeklyLabels} categoryStats={categoryStats} stakeholderStats={stakeholderStats} cntyKeys={cntyKeys} />
         )}
         <div style={{ height: 28, borderTop: '1px solid #1E293B', background: 'rgba(15,23,42,0.95)',
           display: 'flex', alignItems: 'center', justifyContent: 'flex-end', padding: '0 16px', flexShrink: 0 }}>

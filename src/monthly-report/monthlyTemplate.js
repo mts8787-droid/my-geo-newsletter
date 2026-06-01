@@ -570,7 +570,14 @@ function buildStakeholderTable(stakeholderStats, lang) {
 }
 
 export function generateMonthlyReportHTML(meta, total, products, citations, dotcom = {}, lang = 'ko', productsCnty = [], citationsCnty = [], options = {}) {
-  const { productsCntyPrev = [], productsPrev = [], categoryStats = null, stakeholderStats = null } = options
+  const { productsCntyPrev = [], productsPrev = [], categoryStats = null, stakeholderStats = null, cntyKeys = null } = options
+
+  // 국가 필터 — cntyKeys 가 명시되면 해당 국가만 포함 (대소문자 무관). null/빈 배열 이면 전체 유지.
+  if (Array.isArray(cntyKeys) && cntyKeys.length > 0) {
+    const ks = new Set(cntyKeys.map(c => String(c).toUpperCase()))
+    productsCnty = (productsCnty || []).filter(r => r && ks.has(String(r.country).toUpperCase()))
+    citationsCnty = (citationsCnty || []).filter(r => r && ks.has(String(r.country).toUpperCase()))
+  }
 
   const title = lang === 'en' ? 'GEO Monthly Report' : 'GEO 월간 보고서'
   const period = meta.period || ''

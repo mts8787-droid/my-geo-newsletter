@@ -480,9 +480,28 @@ function buildTrackerSummaryTable(categoryStats, lang) {
 
 // ─── 메인 HTML 생성 함수 ─────────────────────────────────────────────────
 export function generateWeeklyReportHTML(meta, total, products, citations, dotcom = {}, lang = 'ko', productsCnty = [], citationsCnty = [], options = {}) {
-  const { weeklyAll = {}, weeklyLabels = [], categoryStats = null } = options
+  const { weeklyAll: weeklyAllRaw = {}, weeklyLabels = [], categoryStats = null, cntyKeys = null } = options
 
-  // 주간 데이터에서 제품별/국가별 데이터 생성
+  // 국가 필터 — cntyKeys 가 명시되면 해당 국가만 포함 (Total/TTL 그룹 키는 보존).
+  let weeklyAll = weeklyAllRaw
+  if (Array.isArray(cntyKeys) && cntyKeys.length > 0) {
+    const ks = new Set(cntyKeys.map(c => String(c).toUpperCase()))
+    const isGroupKey = c => /^(total|ttl)$/i.test(String(c))
+    productsCnty = (productsCnty || []).filter(r => r && ks.has(String(r.country).toUpperCase()))
+    citationsCnty = (citationsCnty || []).filter(r => r && ks.has(String(r.country).toUpperCase()))
+    // weeklyAll = { prodId: { cnty: { brand: [...] } } } — cntyKeys 의 cnty 만 + Total 그룹 보존
+    weeklyAll = {}
+    Object.entries(weeklyAllRaw || {}).forEach(([prodId, cntyData]) => {
+      if (!cntyData) return
+      const filtered = {}
+      Object.entries(cntyData).forEach(([cnty, brandData]) => {
+        if (isGroupKey(cnty) || ks.has(String(cnty).toUpperCase())) filtered[cnty] = brandData
+      })
+      weeklyAll[prodId] = filtered
+    })
+  }
+
+  // 주간 데이터에서 제품별/국가별 데이터 생성 (필터 적용된 weeklyAll 사용)
   const weeklyData = extractWeeklyData(weeklyAll, weeklyLabels)
   const wProducts = weeklyData.products.length ? weeklyData.products : products
   const wProductsCnty = weeklyData.productsCnty.length ? weeklyData.productsCnty : productsCnty
