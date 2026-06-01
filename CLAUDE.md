@@ -56,7 +56,7 @@ NEVER  body { overflow-x:hidden } / min-width (iframe 클립)
 NEVER  사용자 텍스트 임의 다듬기 — 그대로 사용
 NEVER  4자리 연도(\d{4}) 만 매칭 → 한국식 (\d{2})년 누락 → sort 깨짐
 NEVER  Anthropic non-streaming 으로 max_tokens 큰 호출 → 403
-NEVER  카테고리 매핑을 categoryMap.js 외 다른 파일에 정의 (STYLER 누락 회귀)
+NEVER  카테고리 매핑을 single source 외 다른 파일에 정의 (회귀 위험 — 본 저장소 사례는 HIRO_REFERENCE.md)
 NEVER  silent return {} (warn 없이) — _logWarn(scope, msg, ctx) 헬퍼 사용
 NEVER  파서 진입부 입력 검증 생략 — assertRows 라우터 가드 의존 가능 (외부 직접 호출 시 자체 가드)
 ```
