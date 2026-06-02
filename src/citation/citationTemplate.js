@@ -1369,7 +1369,7 @@ function _renderCitDomTrend(enabled, allSelected, noneSelected){
     if(scopeEl)scopeEl.textContent='';
     return;
   }
-  // citDomainTrend 키 형식: '${cnty}|${k}' / val: {domain, type, months}
+  // citDomainTrend 키 형식: '<cnty>|<k>' / val: {domain, type, months}
   var byDomain={}; var typeOf={};
   Object.keys(_citDomainTrend||{}).forEach(function(key){
     var parts=key.split('|');var cnty=parts[0];
