@@ -264,13 +264,14 @@ function monthlyTrendDetailHtml(products, monthlyVis, t, lang, ulMap, periodTag)
 function insightHtml() { return '' }
 
 // ─── Hero KPI ───────────────────────────────────────────────────────────────
-function heroHtml(total, meta, t, lang) {
+function heroHtml(total, meta, t, lang, periodMode) {
   const d = +(total.score - total.prev).toFixed(1)
   const compAvg = total.vsComp || 0
   const gap = +(total.score - compAvg).toFixed(1)
   const dArrow = d > 0 ? '▲' : d < 0 ? '▼' : '─'
   const dColor = d > 0 ? '#22C55E' : d < 0 ? '#EF4444' : '#94A3B8'
-  return `<div class="hero" id="hero-section">
+  const periodAttr = periodMode === 'weekly' ? ' data-period="weekly"' : ' data-period="monthly"'
+  return `<div class="hero" id="hero-section"${periodAttr}>
     <div class="hero-top">
       <div><span class="hero-brand">LG ELECTRONICS</span></div>
       <div class="hero-ctx" id="hero-ctx">
@@ -1441,10 +1442,14 @@ export function generateDashboardHTML(meta, total, products, citations, dotcom, 
 
   const noticeHtml = meta.showNotice && meta.noticeText ? `<div class="notice-box"><div class="notice-title">${lang === 'en' ? 'NOTICE' : '공지사항'}</div><div class="notice-text">${mdBold(meta.noticeText)}</div></div>` : ''
 
-  // 주간/월간 공통 상단
-  const commonTop = [
+  // 주간/월간 hero — data-period 로 구분 (updateHeroFromCheckboxes 가 분기)
+  const weeklyTop = [
     noticeHtml,
-    meta.showTotal !== false ? heroHtml(total, meta, t, lang) : '',
+    meta.showTotal !== false ? heroHtml(total, meta, t, lang, 'weekly') : '',
+  ].join('')
+  const monthlyTop = [
+    noticeHtml,
+    meta.showTotal !== false ? heroHtml(total, meta, t, lang, 'monthly') : '',
   ].join('')
 
   // 주간 국가별: weeklyAll에서 마지막 주 데이터로 productsCnty 형태 생성
@@ -1487,7 +1492,7 @@ export function generateDashboardHTML(meta, total, products, citations, dotcom, 
 
   // 주간 콘텐츠
   const weeklyContent = [
-    commonTop,
+    weeklyTop,
     meta.showProducts !== false ? productSectionHtml(products, meta, t, lang, wLabels, ulMap, opts?.monthlyVis || [], weeklyAll, weeklyPeriodTag) : '',
     `<div id="trend-container">${trendDetailHtml(products, weeklyAll, wLabels, t, lang, ulMap, weeklyPeriodTag)}</div>`,
     meta.showCnty !== false ? countrySectionHtml(weeklyProductsCnty, meta, t, lang, ulMap, weeklyPeriodTag) : '',
@@ -1520,7 +1525,7 @@ export function generateDashboardHTML(meta, total, products, citations, dotcom, 
   const mVis = opts?.monthlyVis || []
   const monthlyPeriodTag = meta.period ? `<span style="font-size:12px;font-weight:600;color:#7C3AED;background:#F5F3FF;padding:2px 8px;border-radius:6px;border:1px solid #C4B5FD">${meta.period}</span>` : ''
   const monthlyContent = [
-    commonTop,
+    monthlyTop,
     meta.showProducts !== false ? productSectionHtml(monthlyProducts, meta, t, lang, monthlyLabels.length ? monthlyLabels : ['Feb','Mar'], ulMap, mVis, {}, monthlyPeriodTag) : '',
     `<div id="monthly-trend-container">${monthlyTrendDetailHtml(monthlyProducts, mVis, t, lang, ulMap, monthlyPeriodTag)}</div>`,
     meta.showCnty !== false ? countrySectionHtml(productsCnty, meta, t, lang, ulMap, monthlyPeriodTag) : '',

@@ -1494,19 +1494,23 @@ function updateHeroFromCheckboxes(){
   badges+='<span class="hero-ctx-badge">'+prodLabel+'</span>';
   var cntyLabel=selCountry.isAll?(allL+(_lang==='en'?' Countries':' 국가')):Object.keys(selCountry.vals).join(', ');
   badges+='<span class="hero-ctx-badge">'+cntyLabel+'</span>';
-  // Calculate filtered scores
-  var result=calcFilteredDataCB(selBU,selProd,selCountry);
-  if(!result)return;
-  var sc=result.score;var comp=result.vsComp;var compName='SAMSUNG';
-  var d=+(sc-(result.prev||sc)).toFixed(1);
-  var gap=+(sc-comp).toFixed(1);
-  var dArrow=d>0?'▲':d<0?'▼':'─';
-  var dColor=d>0?'#22C55E':d<0?'#EF4444':'#94A3B8';
+  // Calculate filtered scores — weekly/monthly 각각 (hero data-period 로 분기)
+  var weeklyResult=calcFilteredDataCBWeekly(selBU,selProd,selCountry);
+  var monthlyResult=calcFilteredDataCB(selBU,selProd,selCountry);
   heroes.forEach(function(hero){
+    var period=hero.getAttribute('data-period')||'monthly';
+    var result=period==='weekly'?weeklyResult:monthlyResult;
+    if(!result)return;
+    var sc=result.score;var comp=result.vsComp;var compName=result.compName||'SAMSUNG';
+    var d=+(sc-(result.prev||sc)).toFixed(1);
+    var gap=+(sc-comp).toFixed(1);
+    var dArrow=d>0?'▲':d<0?'▼':'─';
+    var dColor=d>0?'#22C55E':d<0?'#EF4444':'#94A3B8';
     var ctx=hero.querySelector('#hero-ctx, .hero-ctx');
     if(ctx)ctx.innerHTML=badges;
     var scoreRow=hero.querySelector('.hero-score-row');
-    if(scoreRow)scoreRow.innerHTML='<span class="hero-score">'+sc.toFixed(1)+'</span><span class="hero-pct">%</span><span class="hero-delta" style="color:'+dColor+'">'+dArrow+' '+Math.abs(d).toFixed(1)+'%p</span><span class="hero-mom">MoM</span>';
+    var momLabel=period==='weekly'?'WoW':'MoM';
+    if(scoreRow)scoreRow.innerHTML='<span class="hero-score">'+sc.toFixed(1)+'</span><span class="hero-pct">%</span><span class="hero-delta" style="color:'+dColor+'">'+dArrow+' '+Math.abs(d).toFixed(1)+'%p</span><span class="hero-mom">'+momLabel+'</span>';
     var tracks=hero.querySelectorAll('.hero-gauge-track');
     if(tracks[0]){var bar=tracks[0].querySelector('.hero-gauge-bar');if(bar)bar.style.width=Math.min(sc,100)+'%'}
     if(tracks[1]){var bar2=tracks[1].querySelector('.hero-gauge-bar');if(bar2)bar2.style.width=Math.min(comp,100)+'%'}
@@ -1515,6 +1519,71 @@ function updateHeroFromCheckboxes(){
     var compDiv=hero.querySelector('.hero-comp');
     if(compDiv&&comp>0){compDiv.innerHTML='<span class="hero-comp-label">'+compName.toUpperCase()+'</span> <span class="hero-comp-score">'+comp.toFixed(1)+'%</span><span class="hero-comp-gap" style="color:'+(gap>=0?'#22C55E':'#EF4444')+'">Gap '+(gap>=0?'+':'')+gap.toFixed(1)+'%p</span>'}
   });
+}
+// 주간 데이터 (_weeklyAll + _curWeekIdx) 기반 필터링 평균
+// 선택된 (BU × Product × Country) cell 의 LG / Samsung 점수를 _curWeekIdx (or last) 에서 평균
+function calcFilteredDataCBWeekly(selBU,selProd,selCountry){
+  if(!_weeklyAll||!Object.keys(_weeklyAll).length)return _total;
+  // 1) 주차 인덱스 결정
+  var maxLen=0;
+  Object.keys(_weeklyAll).forEach(function(pid){
+    var byC=_weeklyAll[pid]||{};
+    Object.keys(byC).forEach(function(c){
+      var brands=byC[c]||{};
+      Object.keys(brands).forEach(function(b){
+        var arr=brands[b];if(Array.isArray(arr)&&arr.length>maxLen)maxLen=arr.length;
+      });
+    });
+  });
+  if(!maxLen)return _total;
+  var wIdx=(_curWeekIdx<0||_curWeekIdx>=maxLen)?maxLen-1:_curWeekIdx;
+  var prevIdx=wIdx>0?wIdx-1:null;
+  // 2) 선택된 product id 목록
+  var selProdIds=[];
+  _products.forEach(function(p){
+    var buOk=selBU.isAll||selBU.vals[p.bu];
+    var prOk=selProd.isAll||selProd.vals[p.id];
+    if(buOk&&prOk)selProdIds.push(p.id);
+  });
+  if(!selProdIds.length)return _total;
+  // 3) 선택된 국가 (전체면 'Total')
+  var allCountryCodes=[];Object.values(_REGIONS).forEach(function(cs){cs.forEach(function(c){allCountryCodes.push(c)})});
+  var allCountriesOn=allCountryCodes.every(function(c){return selCountry.isAll||selCountry.vals[c]});
+  var cKeys=allCountriesOn?['Total']:Object.keys(selCountry.vals);
+  if(!cKeys.length)return _total;
+  // 4) Aggregate
+  var lgSum=0,lgCnt=0,ssSum=0,ssCnt=0,lgPrevSum=0,lgPrevCnt=0;
+  selProdIds.forEach(function(pid){
+    var byC=_weeklyAll[pid]||{};
+    cKeys.forEach(function(c){
+      var brands=byC[c];
+      // 국가별 데이터 없으면 Total 폴백
+      if(!brands)brands=byC['Total']||byC['TTL']||byC['TOTAL'];
+      if(!brands)return;
+      // LG
+      var lgArr=brands.LG||brands.lg||null;
+      if(Array.isArray(lgArr)){
+        var lgV=lgArr[wIdx];
+        if(lgV!=null){lgSum+=Number(lgV)||0;lgCnt++}
+        if(prevIdx!=null){var lgP=lgArr[prevIdx];if(lgP!=null){lgPrevSum+=Number(lgP)||0;lgPrevCnt++}}
+      }
+      // Samsung (이름 변형 대응)
+      var ssArr=null;
+      Object.keys(brands).forEach(function(b){
+        var bu=b.toUpperCase();
+        if(bu==='SAMSUNG'||bu==='SAMSUMG')ssArr=brands[b];
+      });
+      if(Array.isArray(ssArr)){
+        var ssV=ssArr[wIdx];
+        if(ssV!=null){ssSum+=Number(ssV)||0;ssCnt++}
+      }
+    });
+  });
+  if(!lgCnt)return _total;
+  var score=lgSum/lgCnt;
+  var prev=lgPrevCnt?lgPrevSum/lgPrevCnt:score;
+  var vsComp=ssCnt?ssSum/ssCnt:0;
+  return{score:+score.toFixed(1),prev:+prev.toFixed(1),vsComp:+vsComp.toFixed(1),compName:'SAMSUNG'};
 }
 function _getSamsungScore(item){
   if(item.allScores){var s=item.allScores.SAMSUNG||item.allScores.Samsung||item.allScores.Samsumg;if(s!=null)return s}
@@ -1597,6 +1666,12 @@ function calcFilteredDataCB(selBU,selProd,selCountry){
   }
 
   return _total;
+}
+// 초기 로드 — 주간 hero 가 처음부터 주간 데이터로 표시되게
+if(document.readyState==='loading'){
+  document.addEventListener('DOMContentLoaded',function(){if(typeof updateHeroFromCheckboxes==='function')updateHeroFromCheckboxes()});
+}else{
+  if(typeof updateHeroFromCheckboxes==='function')updateHeroFromCheckboxes();
 }
 `
 }
