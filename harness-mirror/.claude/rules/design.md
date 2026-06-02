@@ -947,7 +947,67 @@ NEVER  미니 차트 null 값을 0 으로 → _miniSvgNullAware 로 선 끊기 (
 NEVER  차트 + 테이블 결합 시 X 좌표 어긋남 → §5.16 — 차트 표식 X 와 테이블 컬럼 X 항상 일치 (labels 배열 공유 + table-layout:fixed + 좌측 padding 컬럼 일치)
 NEVER  차트만 갱신하고 테이블 수치열 안 따라옴 → 필터/기간 변경 시 두 컴포넌트 동시 재렌더
 NEVER  테이블에 차트와 다른 컬럼 수 (예: "전월 대비" 컬럼 추가) → 상하 정렬 깨짐 (별도 row 로 분리 또는 차트도 동일 컬럼 추가)
+NEVER  외부 template literal (return `…`) 안의 inline <script> 코드의 주석/문자열에 `${…}` 사용 → 외부 template 이 보간 평가 시도 → ReferenceError (예: citationTemplate.js:1372 `// 키 형식: '${cnty}|${k}'` → cnty is not defined → React useMemo throw → 빈 화면). 회피: `\${…}` 로 이스케이프하거나 `<cnty>` / `[cnty]` 같은 placeholder 사용
 ```
+
+### 6.1 Template Literal 보간 함정 (특별 주의)
+
+서버 측 HTML 생성기 (예: `dashboardTemplate.js` / `citationTemplate.js` / `monthlyTemplate.js`) 는 다음 패턴을 자주 사용:
+
+```js
+export function generateXxxHTML(meta, data, ...) {
+  // ... 설정 코드 ...
+  return `<!DOCTYPE html><html>...
+    <script>
+      // 인라인 클라이언트 JS 가 이 안에 들어감 (수백 줄)
+      var _data = ${JSON.stringify(data)};
+      function handler() { ... }
+    </script>
+  </html>`
+}
+```
+
+여기서 `<script>...</script>` 의 **전체 내용** 이 외부 template literal 의 일부 → 그 안의 어떤 `${…}` 도 JS 가 외부 스코프에서 평가하려고 시도.
+
+**위험 패턴 (모두 ReferenceError 위험)**:
+- 인라인 JS 의 주석: `// foo ${bar}` ← 주석이라도 evaluate
+- 인라인 JS 의 정규식: `/\${foo}/.test(s)` ← 정규식 패턴 안의 ${} 도 위험
+- 인라인 JS 의 문자열: `var s = '${baz}'` ← 의도적이 아니면 위험
+
+**올바른 패턴**:
+
+| 의도 | 안전한 표기 |
+|---|---|
+| 클라이언트 런타임에 키 형식 설명 (주석) | `// 키: '<cnty>\|<k>'` (`${}` 회피) |
+| 클라이언트 측에서 변수 보간하려는 의도 | `\${cnty}` (백슬래시 이스케이프) |
+| 정규식 패턴에 literal `$` 매칭 | `/\\$\\{/.test(s)` |
+| 서버에서 보간하려는 의도 (정상) | 그대로 `${var}` |
+
+**검증 명령** (신규 inline script 추가 시):
+```bash
+# 외부 template literal 안의 inline <script> 영역에서 ${...} 가 외부 보간으로 잡히는지 검출
+grep -nE "//.*\\\$\{|/\*.*\\\$\{" src/**/Template.js
+```
+
+**ANTI-PATTERN 예시 (citationTemplate.js, commit aaa89b5 회귀)**:
+```js
+// ❌ Bad
+return `...
+<script>
+  // citDomainTrend 키 형식: '${cnty}|${k}' / val: {...}
+  Object.keys(_citDomainTrend).forEach(function(key){...})
+</script>...`
+
+// ✓ Good
+return `...
+<script>
+  // citDomainTrend 키 형식: '<cnty>|<k>' / val: {...}
+  Object.keys(_citDomainTrend).forEach(function(key){...})
+</script>...`
+```
+
+**과거 회귀 (확인됨)**:
+- `citationTemplate.js:1372` (commit `aaa89b5`) — 흰 화면 + `ReferenceError: cnty is not defined` at React useMemo. dist 가 gitignored 라 PR 단계에서 자동 검출되지 않음 — 빌드 후 admin 페이지에서 처음 발견.
 
 ## 7. COMPONENT LIBRARY (HTML/SVG PATTERNS)
 

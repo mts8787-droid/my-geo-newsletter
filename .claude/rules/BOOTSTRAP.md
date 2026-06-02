@@ -743,11 +743,101 @@ C) CLI / 라이브러리 프로젝트:
 
 ---
 
+## DEBUG-17: 흰 화면 / 빈 화면 (페이지 안 보임)
+
+**증상**: 페이지 로드 후 흰 화면만 표시 / 콘텐츠 전혀 안 보임 / iframe 안 빈 상태.
+
+**원인 분류** (우선순위 순):
+
+#### 원인 A: 외부 template literal 안 inline script 의 `${…}` 보간 함정 (본 저장소 확정 사례)
+
+`generateXxxHTML(...)` 같은 서버 측 HTML 생성기가 거대한 template literal (return \`…\`) 안에 inline `<script>` 를 포함. 그 inline script 의 **주석 / 정규식 / 문자열** 안에 `${…}` 가 있으면 외부 template 이 평가하려고 시도 → 외부 함수 스코프에 변수 없으면 `ReferenceError` → React 렌더 `useMemo` 가 throw → 페이지 빈 화면.
+
+본 저장소 확정 사례 (commit `aaa89b5` → `ff80f4b` 수정):
+- `src/citation/citationTemplate.js:1372` 의 주석 `// 키 형식: '${cnty}|${k}'` → `cnty is not defined`
+- Chrome 콘솔 trace: `ReferenceError: cnty is not defined at to (citation-XXX.js:NNN:30)` (Object.useMemo 안)
+
+**진단 명령**:
+```bash
+# 외부 template 안의 inline script 주석/정규식 안 ${} 검출
+grep -nE "//.*\\\$\{|/\*.*\\\$\{" src/**/Template.js src/**/template.js
+```
+
+**수정**:
+```js
+// ❌ Bad
+return `...<script>
+  // citDomainTrend 키 형식: '${cnty}|${k}'  ← 외부 보간 시도
+</script>...`
+
+// ✓ Good
+return `...<script>
+  // citDomainTrend 키 형식: '<cnty>|<k>'    ← placeholder 표기
+</script>...`
+```
+
+자세한 ANTI-PATTERN: `.claude/rules/design.md` §6.1 Template Literal 보간 함정.
+
+#### 원인 B: React 컴포넌트 throw 후 ErrorBoundary 없음
+
+`useMemo` / `useEffect` / 컴포넌트 함수 본문에서 throw → React 가 unmount → 빈 화면. ErrorBoundary 없으면 Chrome 콘솔에만 에러 표시.
+
+**진단**:
+```
+Chrome DevTools → Console 탭
+ReferenceError / TypeError / Cannot read property 같은 메시지 + React stack trace
+```
+
+**수정**: 에러 메시지의 함수명·라인 추적 → 해당 컴포넌트 useMemo / useEffect 안 try/catch + 폴백 UI 또는 ErrorBoundary 추가.
+
+#### 원인 C: iframe srcdoc 의 HTML 자체가 깨짐
+
+iframe 안에 `doc.write(html)` 로 주입한 HTML 이 syntactically invalid → 브라우저가 빈 페이지로 fallback.
+
+**진단**:
+- iframe 우클릭 → "프레임 정보 보기" 또는 DevTools 의 frame 선택
+- iframe 안의 console 에러 별도 확인
+
+**수정**: `generateXxxHTML` 결과를 파일로 저장 후 브라우저 직접 열어 검증.
+
+#### 원인 D: 클라이언트 inline script 의 syntax error
+
+서버에서 `JSON.stringify` 데이터를 inline script 에 임베드하는데, 데이터에 `</script>` 같은 문자열 / line separator (U+2028) 가 들어가서 스크립트 종료 → 나머지 코드 실행 안 됨.
+
+**진단**: Chrome 콘솔에 `Unexpected end of input` / `SyntaxError`.
+
+**수정**: 본 저장소는 이미 `S = v => JSON.stringify(v).replace(/<\//g, '<\\/').replace(/ | /g, ...)` 헬퍼 사용 (dashboardClient.js 등). 임베드 시 항상 sanitize 헬퍼 통과.
+
+#### 원인 E: 빌드 산출물 누락 / stale
+
+`dist-*` 디렉토리에 최신 빌드 없음 → 옛 번들 로드 / 새 함수 호출 시 undefined.
+
+**진단**: `ls -lt dist-citation/assets/citation-*.js` 최신 시각 확인.
+
+**수정**: `npm run build:citation` 후 hard reload (Ctrl+Shift+R).
+
+**디버깅 순서**:
+```
+1. Chrome 콘솔 에러 메시지 확인 (가장 먼저)
+2. 에러가 ReferenceError + 변수명이 의미상 "있어야 할 게 없음" → 원인 A 강력 의심
+   → grep 으로 `// ... ${var}` 패턴 검색
+3. 에러가 React stack trace + useMemo/useEffect 에서 throw → 원인 B
+4. iframe 안 페이지만 빈 화면 (부모는 정상) → 원인 C
+5. SyntaxError → 원인 D
+6. 콘솔 에러 없는데 빈 화면 + 옛 동작 → 원인 E (빌드/캐시)
+```
+
+**관련 Rule**: design.md §6.1 Template Literal 보간 함정 / ANTI-PATTERN 표
+
+**관련 TECHNIQUE**: TECHNIQUE-2 (Chrome 콘솔), TECHNIQUE-15 (헤더 변경)
+
+---
+
 ## 디버깅 시나리오 사용법
 
 본 시나리오들은 `.claude/skills/debug/SKILL.md` 가 호출. 사용자가 `"X 안 됨"` / `"이거 디버깅해줘"` 같이 요청하면:
 
-1. Claude 가 증상으로 DEBUG-N 식별 (위 15 카테고리 중)
+1. Claude 가 증상으로 DEBUG-N 식별 (위 17 카테고리 중)
 2. 해당 시나리오의 디버깅 순서 따름
 3. **시나리오가 절대 아님** — 진행 중 더 나은 방법 발견 시 그 방식으로 진행
 4. 해결 후 → 새 시나리오로 등재 가치 있으면 사용자에게 제안 (BOOTSTRAP DEBUG-N 추가)

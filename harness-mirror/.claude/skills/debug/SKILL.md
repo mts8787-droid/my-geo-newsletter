@@ -1,11 +1,11 @@
 ---
 name: debug
-description: 'BOOTSTRAP.md 의 디버깅 시나리오 모음 (DEBUG-1~15) 중 증상 매칭 후 진행. 일반 디버깅 요청 + 특정 영역이 명확하지 않을 때 호출 (명확하면 data-debug / design-tune / newsletter-debug 우선). 트리거: "안 됨" / "오류" / "회귀" / "디버깅해줘" / "fix" 같은 일반 디버깅 요청.'
+description: 'BOOTSTRAP.md 의 디버깅 시나리오 모음 (DEBUG-1~17, 흰 화면·필터·차트·이메일 호환 등) 중 증상 매칭 후 진행. 일반 디버깅 요청 + 특정 영역이 명확하지 않을 때 호출 (명확하면 data-debug / design-tune / newsletter-debug 우선). 트리거: "안 됨" / "오류" / "회귀" / "디버깅해줘" / "fix" / "흰 화면" 같은 일반 디버깅 요청.'
 ---
 
 # Debug — 디버깅 시나리오 호출 워크플로우
 
-> 사용자가 디버깅 / 수정 요청 시 본 Skill 사용. `.claude/rules/BOOTSTRAP.md` 의 "디버깅 시나리오 모음" 15 카테고리 활용.
+> 사용자가 디버깅 / 수정 요청 시 본 Skill 사용. `.claude/rules/BOOTSTRAP.md` 의 "디버깅 시나리오 모음" 17 카테고리 활용.
 
 ---
 
