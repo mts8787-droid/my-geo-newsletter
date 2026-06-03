@@ -156,6 +156,79 @@ const messages = [{
 
 비용 절감 (입력 토큰 캐싱 시 90% 할인).
 
+### 3.7 Reasoning / Thinking 제어 (Opus 4.7+)
+
+**Extended Thinking** (Anthropic API 공식 — 검증됨):
+```js
+const message = await client.messages.create({
+  model: 'claude-opus-4-7',
+  max_tokens: 16000,
+  thinking: { type: 'enabled', budget_tokens: 4000 },
+  messages: [...],
+})
+// 응답: thinking 블록 (체인 오브 쏘트) + text 블록 분리
+```
+
+**언제 thinking 켜기**:
+- 멀티 스텝 추론 (예: monthly 인사이트 — 여러 카테고리 종합 분석)
+- 정량 비교 (vsComp / Gap / 추세 해석)
+- 복잡한 분기 의사결정 (어떤 카테고리가 우선순위인지 등)
+
+**언제 thinking 끄기 (생략)**:
+- 단순 요약 / 번역 / 포맷 변환
+- 짧은 응답 (텍스트 한 문단 이하)
+- 지연 민감 (사용자 실시간 입력 → 즉시 응답)
+
+**Adaptive Thinking** (Opus 4.8 — 향후 릴리스 — pytorch.kr 글 참조):
+- `thinking: { type: 'adaptive' }` 로 모델이 사고 깊이 자동 결정
+- ⚠ 본 시점 (2026-06) Anthropic SDK 공식 지원 여부 확인 후 사용
+- Opus 4.7 까지는 `type: 'enabled'` + 명시 `budget_tokens` 권장
+
+**Effort 파라미터** (pytorch.kr 글의 Opus 4.8 추정 기능):
+- 글에서 언급된 `effort: "xhigh" | "high" | "medium" | "low"` 는 본 시점 Anthropic API 공식 파라미터 X (OpenAI `reasoning.effort` 와 혼동 가능성).
+- 추후 Anthropic 이 도입 시 본 §3.7 갱신. 현재는 `thinking` budget_tokens 로 사실상 동등 제어 가능.
+
+**본 저장소 type 별 권장 thinking budget** (참고):
+
+| type | thinking budget | 사유 |
+|---|---|---|
+| `totalInsight` | 4000 | 전체 KPI 종합 — 깊은 분석 필요 |
+| `productInsight` | 3000 | 제품별 추세 + 경쟁 비교 |
+| `monthlyReport` | 6000 | 월간 발행 — 가장 긴 텍스트 + 다차원 분석 |
+| `weeklyReport` | 3000 | 주간 발행 — 짧지만 시계열 분석 필요 |
+| `citation` | 2000 | Citation 도메인 분포 분석 |
+| `translate` | 0 (생략) | 단순 번역 — thinking 불필요 |
+
+### 3.8 대용량 문서 상단 배치 (Prompt 구조)
+
+긴 데이터 / 참조 문서를 user 메시지에 포함할 때 — **질의(질문/지시) 보다 위에** 문서 배치 시 응답 정확도 ~30% 향상 (Anthropic 권장).
+
+**Bad 패턴**:
+```js
+const userPrompt = `다음 데이터로 인사이트를 작성하세요:
+질의: 5월 visibility 점수가 4월 대비 어떻게 변했나요?
+
+[데이터]
+${JSON.stringify(largeData)}`
+```
+
+**Good 패턴**:
+```js
+const userPrompt = `[데이터]
+${JSON.stringify(largeData)}
+
+[질의]
+5월 visibility 점수가 4월 대비 어떻게 변했나요?
+인사이트를 작성하세요.`
+```
+
+**RULE**:
+- 1KB 이상 데이터 / 참조 자료 → user 메시지 **상단** 배치
+- 짧은 질의 / 지시 → 하단 배치 (모델이 마지막에 본 내용을 우선 참조)
+- 인용 근거가 필요한 응답이면 "먼저 관련 부분을 인용한 후 답하라" 명시 → 환각 감소
+
+**본 저장소 적용 위치**: `src/shared/insightPrompts.js` 의 user prompt 구성 시 위 패턴 확인.
+
 ## 4. ANTI-PATTERNS (AI)
 
 ```
@@ -166,6 +239,9 @@ NEVER  사용자 텍스트를 AI 가 임의 다듬기 → 톤·어휘 의도 훼
 NEVER  invalid_output 거부 없이 재시도 무한 루프 → 비용 폭증
 NEVER  API key 를 client-side 코드에 노출 → 서버에서만 보유 (.env)
 NEVER  Anthropic SDK 의 deprecated 모델 사용 → 최신 모델 ID
+NEVER  대용량 데이터를 질의 아래에 배치 → 정확도 ~30% 손실, 데이터 위에 배치
+NEVER  단순 요약·번역에 thinking enabled → 비용 낭비, type 별 §3.7 표 참조
+NEVER  "thinking budget_tokens" 를 max_tokens 보다 크게 설정 → API 거부
 ```
 
 ## 5. VERIFICATION

@@ -6,6 +6,7 @@ import {
   INSIGHT_DEFAULT_MODEL,
   INSIGHT_DEFAULT_MAX_TOKENS,
   INSIGHT_DEFAULT_MAX_RETRIES,
+  INSIGHT_THINKING_BUDGET_BY_TYPE,
   loadInsightContext,
   buildSystemPrompt,
   wrapUserPrompt,
@@ -59,10 +60,14 @@ insightRouter.post('/api/generate-insight', validateBody(InsightPostSchema), asy
       }
     }
 
+    // Extended Thinking budget — type 별 디폴트 (aiSettings.thinkingBudget 으로 오버라이드 가능, 0 = 명시 비활성)
+    const thinkingBudget = typeof aiSettings.thinkingBudget === 'number'
+      ? aiSettings.thinkingBudget
+      : (INSIGHT_THINKING_BUDGET_BY_TYPE[type] || 0)
     const result = await callClaudeInsight({
       client, systemPrompt, userPrompt, model,
       maxTokens: aiSettings.maxTokens || INSIGHT_DEFAULT_MAX_TOKENS,
-      tools, executeTool,
+      tools, executeTool, thinkingBudget,
     })
 
     // N3 — 빈 본문·거절·길이 하한 검증 (실패 시 throw → catch 블록에서 invalid_output 분류)

@@ -146,6 +146,17 @@ export function loadInsightContext({ type, data, readArchives }) {
 // C1 — tool use 루프 최대 반복 횟수 (무한 루프 방지)
 export const INSIGHT_MAX_TOOL_STEPS = 5
 
+// Extended Thinking budget per type (Claude 4.x 권장). 0 = 비활성 (단순 응답).
+// `.claude/rules/ai.md` §3.7 표 참조. 운영 중 비용·지연 측정해서 조정.
+export const INSIGHT_THINKING_BUDGET_BY_TYPE = {
+  totalInsight: 4000,
+  productInsight: 3000,
+  monthlyReport: 6000,
+  weeklyReport: 3000,
+  citation: 2000,
+  translate: 0,
+}
+
 /**
  * C8 + C1 — Claude 호출. tools 미지정 시 단일 호출, 지정 시 tool use 루프.
  * @param {object} opts
@@ -157,11 +168,13 @@ export const INSIGHT_MAX_TOOL_STEPS = 5
  * @param {any[]} [opts.tools] - Anthropic tool schemas (선택). 빈/미지정이면 단일 호출.
  * @param {(call: {name: string, input: any}) => any} [opts.executeTool] - tool dispatcher
  * @param {number} [opts.maxSteps] - tool use 루프 상한 (기본 INSIGHT_MAX_TOOL_STEPS)
+ * @param {number} [opts.thinkingBudget] - Extended Thinking budget_tokens (0 = 비활성).
+ *                                          maxTokens 보다 작아야 함. Claude 4.x + 지원.
  * @returns {Promise<{ insight: string, inputTokens: number, outputTokens: number,
  *                    latencyMs: number, costUsd: number, stopReason: string,
  *                    steps: number, toolCalls: any[] }>}
  */
-export async function callClaudeInsight({ client, systemPrompt, userPrompt, model, maxTokens, tools, executeTool, maxSteps = INSIGHT_MAX_TOOL_STEPS }) {
+export async function callClaudeInsight({ client, systemPrompt, userPrompt, model, maxTokens, tools, executeTool, maxSteps = INSIGHT_MAX_TOOL_STEPS, thinkingBudget = 0 }) {
   const t0 = Date.now()
   const useTools = Array.isArray(tools) && tools.length > 0 && typeof executeTool === 'function'
   /** @type {Array<{role: string, content: any}>} */
@@ -182,6 +195,11 @@ export async function callClaudeInsight({ client, systemPrompt, userPrompt, mode
       ? [{ type: 'text', text: systemPrompt, cache_control: { type: 'ephemeral' } }]
       : undefined
     const req = { model, max_tokens: maxTokens, system: systemBlocks, messages }
+    // Extended Thinking — budget_tokens 가 max_tokens 보다 작아야 SDK 가 수용.
+    // 0 / 음수면 비활성 (기존 동작 유지).
+    if (thinkingBudget > 0 && thinkingBudget < maxTokens) {
+      req.thinking = { type: 'enabled', budget_tokens: thinkingBudget }
+    }
     if (useTools) req.tools = tools
     // max_tokens 가 크면 SDK 가 비스트리밍 요청을 거부 (응답 10분+ 추정 시).
     // streaming → finalMessage() 로 동일한 message 형태 수신.
