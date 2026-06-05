@@ -176,25 +176,10 @@ const message = await client.messages.create({
 - 짧은 응답 (텍스트 한 문단 이하)
 - 지연 민감 (사용자 실시간 입력 → 즉시 응답)
 
-**Adaptive Thinking** (Opus 4.8 — 향후 릴리스 — pytorch.kr 글 참조):
-- `thinking: { type: 'adaptive' }` 로 모델이 사고 깊이 자동 결정
-- ⚠ 본 시점 (2026-06) Anthropic SDK 공식 지원 여부 확인 후 사용
-- Opus 4.7 까지는 `type: 'enabled'` + 명시 `budget_tokens` 권장
-
-**Effort 파라미터** (pytorch.kr 글의 Opus 4.8 추정 기능):
-- 글에서 언급된 `effort: "xhigh" | "high" | "medium" | "low"` 는 본 시점 Anthropic API 공식 파라미터 X (OpenAI `reasoning.effort` 와 혼동 가능성).
-- 추후 Anthropic 이 도입 시 본 §3.7 갱신. 현재는 `thinking` budget_tokens 로 사실상 동등 제어 가능.
-
-**본 저장소 type 별 권장 thinking budget** (참고):
-
-| type | thinking budget | 사유 |
-|---|---|---|
-| `totalInsight` | 4000 | 전체 KPI 종합 — 깊은 분석 필요 |
-| `productInsight` | 3000 | 제품별 추세 + 경쟁 비교 |
-| `monthlyReport` | 6000 | 월간 발행 — 가장 긴 텍스트 + 다차원 분석 |
-| `weeklyReport` | 3000 | 주간 발행 — 짧지만 시계열 분석 필요 |
-| `citation` | 2000 | Citation 도메인 분포 분석 |
-| `translate` | 0 (생략) | 단순 번역 — thinking 불필요 |
+**본 저장소 type 별 thinking budget** (`insightAgent.js INSIGHT_THINKING_BUDGET_BY_TYPE`):
+- 현재 전부 **0** (디폴트 비활성).
+- 활성화 권장: 같은 prompt 로 `budget=0` vs `budget=N` (예: 2000) **출력 품질 사람 비교 후 type 별로 활성**.
+- 측정 없이 디폴트 활성 X — Opus output 토큰 비용 추가됨.
 
 ### 3.8 대용량 문서 상단 배치 (Prompt 구조)
 

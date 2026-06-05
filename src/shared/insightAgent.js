@@ -146,14 +146,15 @@ export function loadInsightContext({ type, data, readArchives }) {
 // C1 — tool use 루프 최대 반복 횟수 (무한 루프 방지)
 export const INSIGHT_MAX_TOOL_STEPS = 5
 
-// Extended Thinking budget per type (Claude 4.x 권장). 0 = 비활성 (단순 응답).
-// `.claude/rules/ai.md` §3.7 표 참조. 운영 중 비용·지연 측정해서 조정.
+// Extended Thinking budget per type — 본 시점 전부 0 (측정 전 디폴트 활성 X).
+// 활성화 시: A/B (thinking=0 vs N) 출력 품질 사람 비교 → 개선 확인된 type 만 N 설정.
+// aiSettings.thinkingBudget 으로 어드민에서 type 별 일시 오버라이드 가능.
 export const INSIGHT_THINKING_BUDGET_BY_TYPE = {
-  totalInsight: 4000,
-  productInsight: 3000,
-  monthlyReport: 6000,
-  weeklyReport: 3000,
-  citation: 2000,
+  totalInsight: 0,
+  productInsight: 0,
+  monthlyReport: 0,
+  weeklyReport: 0,
+  citation: 0,
   translate: 0,
 }
 

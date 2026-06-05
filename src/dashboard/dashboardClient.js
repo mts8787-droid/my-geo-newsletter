@@ -1509,8 +1509,7 @@ function updateHeroFromCheckboxes(){
     var ctx=hero.querySelector('#hero-ctx, .hero-ctx');
     if(ctx)ctx.innerHTML=badges;
     var scoreRow=hero.querySelector('.hero-score-row');
-    var momLabel=period==='weekly'?'WoW':'MoM';
-    if(scoreRow)scoreRow.innerHTML='<span class="hero-score">'+sc.toFixed(1)+'</span><span class="hero-pct">%</span><span class="hero-delta" style="color:'+dColor+'">'+dArrow+' '+Math.abs(d).toFixed(1)+'%p</span><span class="hero-mom">'+momLabel+'</span>';
+    if(scoreRow)scoreRow.innerHTML='<span class="hero-score">'+sc.toFixed(1)+'</span><span class="hero-pct">%</span><span class="hero-delta" style="color:'+dColor+'">'+dArrow+' '+Math.abs(d).toFixed(1)+'%p</span><span class="hero-mom">MoM</span>';
     var tracks=hero.querySelectorAll('.hero-gauge-track');
     if(tracks[0]){var bar=tracks[0].querySelector('.hero-gauge-bar');if(bar)bar.style.width=Math.min(sc,100)+'%'}
     if(tracks[1]){var bar2=tracks[1].querySelector('.hero-gauge-bar');if(bar2)bar2.style.width=Math.min(comp,100)+'%'}
@@ -1520,8 +1519,22 @@ function updateHeroFromCheckboxes(){
     if(compDiv&&comp>0){compDiv.innerHTML='<span class="hero-comp-label">'+compName.toUpperCase()+'</span> <span class="hero-comp-score">'+comp.toFixed(1)+'%</span><span class="hero-comp-gap" style="color:'+(gap>=0?'#22C55E':'#EF4444')+'">Gap '+(gap>=0?'+':'')+gap.toFixed(1)+'%p</span>'}
   });
 }
+// 선택 해석 — weekly/monthly 양쪽이 공유. (BU × Product) → prodIds, country 전체 여부 → countries.
+// 통합 함수가 아닌 헬퍼로 분리한 이유: monthly 는 precomputed _total.buTotals/_total.countryTotals 를
+// 활용, weekly 는 _weeklyAll 의 raw 시계열에서 직접 평균 — 데이터 shape 이 다르므로 본체는 분리 유지.
+function _resolveSelection(selBU,selProd,selCountry){
+  var prodIds=[];
+  _products.forEach(function(p){
+    var buOk=selBU.isAll||selBU.vals[p.bu];
+    var prOk=selProd.isAll||selProd.vals[p.id];
+    if(buOk&&prOk)prodIds.push(p.id);
+  });
+  var allCountryCodes=[];
+  Object.values(_REGIONS).forEach(function(cs){cs.forEach(function(c){allCountryCodes.push(c)})});
+  var allCountriesOn=allCountryCodes.every(function(c){return selCountry.isAll||selCountry.vals[c]});
+  return{prodIds:prodIds,allCountriesOn:allCountriesOn,countryKeys:Object.keys(selCountry.vals)};
+}
 // 주간 데이터 (_weeklyAll + _curWeekIdx) 기반 필터링 평균
-// 선택된 (BU × Product × Country) cell 의 LG / Samsung 점수를 _curWeekIdx (or last) 에서 평균
 function calcFilteredDataCBWeekly(selBU,selProd,selCountry){
   if(!_weeklyAll||!Object.keys(_weeklyAll).length)return _total;
   // 1) 주차 인덱스 결정
@@ -1538,22 +1551,14 @@ function calcFilteredDataCBWeekly(selBU,selProd,selCountry){
   if(!maxLen)return _total;
   var wIdx=(_curWeekIdx<0||_curWeekIdx>=maxLen)?maxLen-1:_curWeekIdx;
   var prevIdx=wIdx>0?wIdx-1:null;
-  // 2) 선택된 product id 목록
-  var selProdIds=[];
-  _products.forEach(function(p){
-    var buOk=selBU.isAll||selBU.vals[p.bu];
-    var prOk=selProd.isAll||selProd.vals[p.id];
-    if(buOk&&prOk)selProdIds.push(p.id);
-  });
-  if(!selProdIds.length)return _total;
-  // 3) 선택된 국가 (전체면 'Total')
-  var allCountryCodes=[];Object.values(_REGIONS).forEach(function(cs){cs.forEach(function(c){allCountryCodes.push(c)})});
-  var allCountriesOn=allCountryCodes.every(function(c){return selCountry.isAll||selCountry.vals[c]});
-  var cKeys=allCountriesOn?['Total']:Object.keys(selCountry.vals);
+  // 2) 선택 해석 (공통 헬퍼)
+  var sel=_resolveSelection(selBU,selProd,selCountry);
+  if(!sel.prodIds.length)return _total;
+  var cKeys=sel.allCountriesOn?['Total']:sel.countryKeys;
   if(!cKeys.length)return _total;
-  // 4) Aggregate
+  // 3) Aggregate
   var lgSum=0,lgCnt=0,ssSum=0,ssCnt=0,lgPrevSum=0,lgPrevCnt=0;
-  selProdIds.forEach(function(pid){
+  sel.prodIds.forEach(function(pid){
     var byC=_weeklyAll[pid]||{};
     cKeys.forEach(function(c){
       var brands=byC[c];
@@ -1616,9 +1621,8 @@ function calcFilteredDataCB(selBU,selProd,selCountry){
   });
   var allActiveBusFull=Object.keys(activeBUs).length>0&&Object.keys(activeBUs).every(function(b){return buFullySelected[b]});
 
-  // ── 국가 전체 선택 감지 (리전 내 모든 국가 선택 = 전체) ──
-  var allCountryCodes=[];Object.values(_REGIONS).forEach(function(cs){cs.forEach(function(c){allCountryCodes.push(c)})});
-  var allCountriesOn=allCountryCodes.every(function(c){return selCountry.isAll||selCountry.vals[c]});
+  // ── 국가 전체 선택 감지 (공통 헬퍼 사용 — weekly 와 동일 로직) ──
+  var allCountriesOn=_resolveSelection(selBU,selProd,selCountry).allCountriesOn;
 
   // 단일 국가 + 전체 BU/제품 → 시트의 country TOTAL 값 사용
   if(!allCountriesOn){
@@ -1667,11 +1671,7 @@ function calcFilteredDataCB(selBU,selProd,selCountry){
 
   return _total;
 }
-// 초기 로드 — 주간 hero 가 처음부터 주간 데이터로 표시되게
-if(document.readyState==='loading'){
-  document.addEventListener('DOMContentLoaded',function(){if(typeof updateHeroFromCheckboxes==='function')updateHeroFromCheckboxes()});
-}else{
-  if(typeof updateHeroFromCheckboxes==='function')updateHeroFromCheckboxes();
-}
+// 초기 로드 — script 가 </body> 직전이라 DOM 이미 파싱 완료 상태. 직접 호출.
+updateHeroFromCheckboxes();
 `
 }
