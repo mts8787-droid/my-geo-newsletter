@@ -33,7 +33,6 @@ routes/
 ```
 
 ---
-
 ## 2. COMMANDS (본 저장소 npm scripts — 이식자는 본인 scripts 로 대체)
 
 | 목적 | 명령 |
@@ -43,7 +42,6 @@ routes/
 | 빌드 (전체) | `npm run build` |
 
 ---
-
 ## 3. NEVER RULES (이메일 호환 핵심)
 
 본 저장소의 뉴스레터에서 절대 위반 금지. Hook (`newsletter-guard.sh`) 가 일부 자동 차단.
@@ -62,7 +60,6 @@ NEVER  KO 만 / EN 만 빌드             → 양 언어 동시 생성 (publishC
 ```
 
 ---
-
 ## 4. NEWSLETTER DIRECTIVES
 
 ### 4.1 컨테이너 너비
@@ -148,7 +145,6 @@ const valueLabel = unlaunched ? '—' : value.toFixed(1)
 - 발송 후 `insight_runs` 또는 별도 audit log 에 기록 (`.claude/rules/data.md §7.3` 패턴)
 
 ---
-
 ## 5. VERIFICATION (시각 검증 체크리스트)
 
 발송 전 반드시:
@@ -166,7 +162,6 @@ const valueLabel = unlaunched ? '—' : value.toFixed(1)
 - [ ] (옵션) Litmus / Email on Acid 같은 도구로 multi-client 테스트
 
 ---
-
 ## 6. ANTI-PATTERNS (NEWSLETTER)
 
 ```
@@ -186,7 +181,6 @@ NEVER  footer 누락 (발행 정보 없음) → 발신자 / 시점 정보 필수
 ```
 
 ---
-
 ## 7. RELATED RULES
 
 - `.claude/rules/design.md` §5.2 (newsletter containerWidth), §C-21~C-23 (V1/V2/V3 카드 정의), §C-10 (미니 트렌드 바), §4.4 (Typography KO/EN)
@@ -196,7 +190,4 @@ NEVER  footer 누락 (발행 정보 없음) → 발신자 / 시점 정보 필수
 
 ---
 
-
 ---
-
-**For Adopters (이식자 참고)**: 같은 가전 산업 내 영업·매출·전략·마케팅·R&D 등 다른 직무 도메인 적용 가이드 (핵심 패턴 + 부트스트랩 사용법) → `.claude/rules/HIRO_REFERENCE.md` (For Adopters 통합 섹션).

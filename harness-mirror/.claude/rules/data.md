@@ -258,7 +258,6 @@ function parseNumber(v) {
 **ANTI-PATTERN**: 매핑이 여러 파일에 분산되면 신규 카테고리 추가 시 일부만 갱신되어 회귀 (한 파일만 새 id 추가, 다른 파일 미갱신 → 그 화면만 라벨 누락). **재발 방지**: 정의 1곳, 다른 곳은 import 만 + invariant 자동 검증.
 
 ---
-
 #### Reference Example (HIRO 본 저장소)
 
 본 §5.5 의 HIRO 본 저장소 매핑 (`PROD_IDS`, `PROD_ID_TO_*`, `UL_CODE_NORMALIZE`, STYLER 회귀 사례 등) → 별도 파일: **`.claude/rules/HIRO_REFERENCE.md`** ("data.md §5.5" 섹션).
@@ -594,7 +593,6 @@ return out
 **RULE**: 한 행 실패가 전체 파싱을 멈추지 않게. 각 행 try/catch + skip count 집계.
 
 ---
-
 ## 7. SELF-LOGGING & HARNESS ENGINEERING
 
 코딩 에이전트가 **자기 행위를 기록·검증·반성** 하는 패턴. 단순 logging 을 넘어 "내가 한 일이 의도대로 됐는지 스스로 확인" 하는 루프.
@@ -612,62 +610,13 @@ REFLECT — 불일치 시 진단 + 수정 시도
 
 ### 7.2 구조화 로그 (Structured Log)
 
-자유 텍스트 logging 대신 **JSON 친화 구조** 로 — 후처리·필터·집계 가능.
-
-```js
-function logStructured(entry) {
-  const record = {
-    ts: Date.now(),
-    scope: entry.scope,
-    level: entry.level,        // 'info' | 'warn' | 'error' | 'fatal'
-    msg: entry.msg,
-    input: entry.input,        // 입력 sample (truncated)
-    output: entry.output,      // 결과 sample
-    duration_ms: entry.duration,
-    success: entry.success,
-    error: entry.error?.message,
-    context: entry.context,    // 추가 컨텍스트 (rowIdx 등)
-  }
-  console.log(JSON.stringify(record))  // 또는 DB 에 insert
-}
-```
-
-**RULE**:
-- 한 logical action = 한 record
-- 한 줄 JSON (grep/jq 친화)
-- 민감 정보 redact
+자유 텍스트 logging 대신 JSON 친화 구조 (한 줄 JSON, grep/jq 친화) — 후처리·필터·집계 가능. 본 저장소 실구현: `pino` (lib/logger.js).
 
 ### 7.3 외부 Boundary 기록 (Audit Trail)
 
-외부 시스템 경계 호출은 **모두 영구 기록**:
+외부 시스템 경계 호출 (Anthropic API, 시트 동기화 등) 은 영구 기록 권장.
 
-| Boundary | 기록할 정보 |
-|---|---|
-| Google Sheets API | sheet name, row count, fetch latency, success |
-| Anthropic API | model, input tokens, output tokens, cost, latency, success |
-| File IO (게시) | path, byte size, success |
-| User action (publish/sync) | user, timestamp, mode, target |
-
-본 저장소의 `insight_runs` 패턴 차용:
-```js
-async function callBoundary(scope, fn, input) {
-  const start = Date.now()
-  let result, error
-  try {
-    result = await fn(input)
-  } catch (e) {
-    error = e
-  }
-  const duration = Date.now() - start
-  await db.insert('boundary_calls', {
-    ts: start, scope, input_sample: truncate(input, 500),
-    output_sample: truncate(result, 500),
-    duration_ms: duration, success: !error, error: error?.message,
-  })
-  if (error) throw error
-  return result
-}
-```
+**본 저장소 실구현**: Anthropic API 만 — `lib/insight-runs.js` 의 `appendInsightRun()` 으로 JSONL 파일에 저장 → `/admin/observability` 시각화. 신규 boundary (시트·이메일·파일 IO) 추가 시 동일 패턴 차용.
 
 ### 7.4 자기 검증 루프 (Verify-After-Act)
 
@@ -713,34 +662,7 @@ async function syncAndVerify(sheetUrl) {
 
 ### 7.5 Decision Audit (왜 이렇게 했는지 기록)
 
-분기/fallback 선택 이유를 로그에 명시:
-
-```js
-// Bad — 결과만 기록
-unlaunchedMap = parseUnlaunched(rows)
-
-// Good — 결정 사유 기록
-let unlaunchedMap
-if (rows && rows.length > 0) {
-  const result = parseUnlaunched(rows)
-  if (Object.keys(result.unlaunchedMap).length === DEFAULT_UNLAUNCHED_COUNT) {
-    logStructured({
-      scope:'parseUnlaunched', level:'warn',
-      msg:'sheet empty, using DEFAULT_UNLAUNCHED only',
-      context: { sheetRows: rows.length, defaultCount: DEFAULT_UNLAUNCHED_COUNT }
-    })
-  }
-  unlaunchedMap = result.unlaunchedMap
-} else {
-  logStructured({
-    scope:'parseUnlaunched', level:'warn',
-    msg:'no sheet — fallback to DEFAULT only', context:{}
-  })
-  unlaunchedMap = { ...DEFAULT_UNLAUNCHED }
-}
-```
-
-후일 디버깅 시 "왜 이 데이터가 나왔지" 답을 로그가 직접 제공.
+분기 / fallback 선택 시 결과만 기록하지 말고 사유까지 로그. 본 저장소는 `_logWarn(scope, msg, ctx)` 헬퍼 사용 (`sheetParserUtils.js`).
 
 ### 7.6 Observability Dashboard
 
@@ -754,30 +676,7 @@ if (rows && rows.length > 0) {
 
 **RULE**: 외부 boundary 호출은 모두 dashboard 시각화 대상. log → DB → admin page 파이프라인 구축.
 
-### 7.7 Self-Critique Loop (에이전트의 자기 반성)
-
-코딩 에이전트가 자기 로그를 읽고 패턴 식별:
-
-```js
-// 주기적 self-check
-async function selfCheck() {
-  const recentRuns = await db.query('SELECT * FROM boundary_calls WHERE ts > NOW() - INTERVAL 24 HOUR')
-  const failureRate = recentRuns.filter(r => !r.success).length / recentRuns.length
-  if (failureRate > 0.05) {
-    notify(`[harness] 24h failure rate ${(failureRate*100).toFixed(1)}% — investigate`)
-  }
-  // 평균 지연 회귀 검출
-  const avgLatency = recentRuns.reduce((s,r) => s + r.duration_ms, 0) / recentRuns.length
-  const baseline = await db.query('SELECT AVG(duration_ms) FROM boundary_calls WHERE ts BETWEEN ... AND ...')
-  if (avgLatency > baseline * 1.5) {
-    notify(`[harness] latency regression: ${avgLatency}ms vs baseline ${baseline}ms`)
-  }
-}
-```
-
-**RULE**: 정기 self-check (cron) → 임계값 초과 시 사용자/에이전트에 알림 → 수정 시도 → 결과 재기록 → 재검증.
-
-### 7.8 Test-Verify-Document Loop
+### 7.7 Test-Verify-Document Loop
 
 신규 데이터/파서 추가 시 표준 루프:
 
@@ -791,7 +690,7 @@ async function selfCheck() {
 [7] ANTI-PAT    — 발견한 함정 §6 ANTI-PATTERN 으로 명문화
 ```
 
-### 7.9 본 저장소 적용 사례
+### 7.8 본 저장소 적용 사례
 
 | 컴포넌트 | Self-Logging 패턴 |
 |---|---|
@@ -807,13 +706,8 @@ async function selfCheck() {
 | `/admin/observability` | insight_runs 시각화 (토큰/비용/지연/실패) |
 | `syncFromGoogleSheets` | batchGet 시작/종료 로그 + 탭별 row count |
 
-**확장 방향** (현재 없음, 추가 가능):
-- 모든 파서를 `boundary_calls` 테이블로 통합 기록
-- `/admin/observability` 에 파서 메트릭스 추가 (카테고리·국가 누락 검출)
-- 정기 self-check cron (failure rate, latency regression)
 
 ---
-
 ## 8. ANTI-PATTERNS (DATA)
 
 ```
@@ -875,11 +769,8 @@ _unlaunchedMap
 
 신규 파서 추가 시 본 문서 §5 (DIRECTIVES) 에 RULE/ANTI-PATTERN 등재. 도메인 무관 — LG/제품/국가 등 특이값 없이 일반화.
 
-신규 boundary 호출 추가 시 §7 (SELF-LOGGING) 패턴 적용 — `boundary_calls` 통합 기록 + observability dashboard 등록.
+신규 boundary 호출 추가 시 §7 (SELF-LOGGING) 패턴 적용 — `appendInsightRun` 같은 영구 기록 + observability dashboard 등록.
 
 ---
 
-
 ---
-
-**For Adopters (이식자 참고)**: 같은 가전 산업 내 영업·매출·전략·마케팅·R&D 등 다른 직무 도메인 적용 가이드 (핵심 패턴 + 부트스트랩 사용법) → `.claude/rules/HIRO_REFERENCE.md` (For Adopters 통합 섹션).

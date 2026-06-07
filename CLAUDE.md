@@ -43,23 +43,22 @@ Skill이 step-by-step 이라면, Rule은 그 step 이 따라야 할 토큰·inva
 - 커밋 메시지: `feat(scope): ...` / `fix(scope): ...` / `docs(scope): ...` / `refactor(scope): ...` / `style(scope): ...` — 한국어 본문 + `Co-Authored-By: Claude Opus 4.7 (1M context)` 트레일러
 - 자동 푸시 대상: `main` 브랜치 (현재 단일 브랜치 운영)
 
-## 절대 금지 (NEVER)
+## 절대 금지 (NEVER) — 글로벌 안전
 
 ```
-NEVER  --no-verify 로 Hook 우회 (사용자 명시 지시 외)
-NEVER  --no-gpg-sign 서명 우회
+NEVER  --no-verify / --no-gpg-sign 같은 안전 우회 (사용자 명시 지시 외)
 NEVER  git push --force / --force-with-lease 를 main 에
 NEVER  rm -rf / git reset --hard / git clean -f 를 사용자 확인 없이
-NEVER  dist-* / dist 디렉토리 직접 수정 (빌드 산출물)
-NEVER  emailTemplate.js 의 containerWidth > 940 (우측 짤림)
-NEVER  body { overflow-x:hidden } / min-width (iframe 클립)
 NEVER  사용자 텍스트 임의 다듬기 — 그대로 사용
-NEVER  4자리 연도(\d{4}) 만 매칭 → 한국식 (\d{2})년 누락 → sort 깨짐
-NEVER  Anthropic non-streaming 으로 max_tokens 큰 호출 → 403
-NEVER  카테고리 매핑을 single source 외 다른 파일에 정의 (회귀 위험 — 본 저장소 사례는 HIRO_REFERENCE.md)
-NEVER  silent return {} (warn 없이) — _logWarn(scope, msg, ctx) 헬퍼 사용
-NEVER  파서 진입부 입력 검증 생략 — assertRows 라우터 가드 의존 가능 (외부 직접 호출 시 자체 가드)
 ```
+
+도메인 특정 NEVER (containerWidth / categoryMap / silent return / 날짜 정규식 등) → 해당 rule 파일 참조:
+- `.claude/rules/data.md` §8 ANTI-PATTERNS
+- `.claude/rules/design.md` §6 ANTI-PATTERNS
+- `.claude/rules/newsletter.md` §6 ANTI-PATTERNS
+- `.claude/rules/ai.md` §4 ANTI-PATTERNS
+
+Hook 으로 강제되는 항목 (dist 수정 / containerWidth>940 / overflow-x:hidden) 은 `.claude/hooks/` 참조 — Rule 중복 등재 X.
 
 ## 작업 흐름 (Workflow)
 
@@ -71,10 +70,3 @@ NEVER  파서 진입부 입력 검증 생략 — assertRows 라우터 가드 의
 5. 수정 → `npm test` (해당 영역)
 6. 자동 커밋 + 푸시
 7. 사용자에게 **재게시 안내** (파싱 변경 시 "구글 시트 동기화 → 웹사이트 게시")
-
----
-
-
----
-
-**For Adopters (이식자 참고)**: 같은 가전 산업 내 영업·매출·전략·마케팅·R&D 등 다른 직무 도메인 적용 가이드 (핵심 패턴 + 부트스트랩 사용법) → `.claude/rules/HIRO_REFERENCE.md` (For Adopters 통합 섹션).

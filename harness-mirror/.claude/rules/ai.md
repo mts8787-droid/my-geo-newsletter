@@ -255,7 +255,6 @@ if (monthlyTotal > USD_LIMIT) notify(`AI 비용 ${monthlyTotal} 초과`)
 ```
 
 ---
-
 ## Reference Example (HIRO 본 저장소)
 
 본 저장소의 AI 호출 구체 위치·변수명·도메인 type 매핑 → 별도 파일: **`.claude/rules/HIRO_REFERENCE.md`** ("ai.md" 섹션).
@@ -264,7 +263,4 @@ Claude 가 본 저장소 작업 시 변수명·type 정보 필요할 때 명시 
 
 ---
 
-
 ---
-
-**For Adopters (이식자 참고)**: 같은 가전 산업 내 영업·매출·전략·마케팅·R&D 등 다른 직무 도메인 적용 가이드 (핵심 패턴 + 부트스트랩 사용법) → `.claude/rules/HIRO_REFERENCE.md` (For Adopters 통합 섹션).
