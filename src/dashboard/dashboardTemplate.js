@@ -1392,6 +1392,15 @@ export function generateDashboardHTML(meta, total, products, citations, dotcom, 
   const monthOptionsHtml = _monthOptsRaw.map((m, i) => `<option value="${i}"${i === _monthOptsRaw.length - 1 ? ' selected' : ''}>${m}</option>`).join('')
   const dropSelStyle = `padding:3px 8px;border-radius:6px;border:1px solid #CBD5E1;font-size:13px;background:#fff;cursor:pointer;font-family:${FONT}`
 
+  // LLM Model 드롭다운 옵션 — 가용 모델 자동 추출 (Total 항상 첫번째)
+  const llmSet = new Set(['Total'])
+  ;(products || []).forEach(p => (p.monthlyScores || []).forEach(m => Object.keys(m.byLlm || {}).forEach(k => llmSet.add(k))))
+  ;(productsCnty || []).forEach(r => (r.monthlyScores || []).forEach(m => Object.keys(m.byLlm || {}).forEach(k => llmSet.add(k))))
+  ;(opts?.monthlyVis || []).forEach(r => { if (r.llmModel) llmSet.add(r.llmModel) })
+  const llmModels = ['Total', ...Array.from(llmSet).filter(x => x !== 'Total').sort((a, b) => a.localeCompare(b))]
+  const curLlm = opts?.llmModel || 'Total'
+  const llmOptionsHtml = llmModels.map(m => `<option value="${m}"${m === curLlm ? ' selected' : ''}>${m}</option>`).join('')
+
   const filterLayerHtml = `<div class="filter-layer" id="filter-layer">
     <div class="fl-row">
       ${langToggleHtml}
@@ -1416,6 +1425,10 @@ export function generateDashboardHTML(meta, total, products, citations, dotcom, 
       <div class="fl-group" id="vis-month-select-group" style="display:none">
         <span class="fl-label">${lang === 'en' ? 'Month' : '월'}</span>
         <select id="vis-month-select" onchange="switchVisMonth(parseInt(this.value))" style="${dropSelStyle}"${_monthOptsRaw.length > 0 ? '' : ' disabled'}>${monthOptionsHtml || '<option>—</option>'}</select>
+      </div>
+      <div class="fl-group" id="vis-llm-select-group"${llmModels.length > 1 ? '' : ' style="display:none"'}>
+        <span class="fl-label">LLM Model</span>
+        <select id="vis-llm-select" onchange="switchLlmModel(this.value)" style="${dropSelStyle}">${llmOptionsHtml}</select>
       </div>
     </div>
     <div class="fl-row">

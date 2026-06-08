@@ -37,6 +37,10 @@ var _curLang='${lang}';
 window.addEventListener('message',function(e){
   if(e.data&&e.data.type==='switchLang')switchLang(e.data.lang);
 });
+// LLM Model 변경 — 부모 React 어드민에게 알림 → llmModel state 갱신 → 미리보기 재렌더
+function switchLlmModel(value){
+  try { if(window.parent && window.parent!==window) window.parent.postMessage({type:'llmModel', value:value}, '*'); } catch(e){}
+}
 function switchLang(lang){
   _curLang=lang;
   document.querySelectorAll('.lang-btn').forEach(function(b){b.classList.toggle('active',b.textContent.toLowerCase()===lang)});

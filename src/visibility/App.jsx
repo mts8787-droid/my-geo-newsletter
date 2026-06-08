@@ -6,7 +6,6 @@ import { loadCache, saveCache } from '../shared/cache.js'
 import { fetchSnapshots, postSnapshot, updateSnapshot, deleteSnapshot, fetchSyncData } from '../shared/api.js'
 import { resolveDataForLang } from '../shared/utils.js'
 import Sidebar from '../shared/Sidebar.jsx'
-import LlmModelSelect from '../shared/LlmModelSelect.jsx'
 
 const MODE = 'dashboard'
 const STORAGE_KEY = 'geo-dashboard-cache'
@@ -80,6 +79,15 @@ export default function App() {
   )
 
   useEffect(() => { fetchSnapshots(MODE).then(setSnapshots) }, [])
+
+  // iframe 의 LLM Model 드롭다운 → postMessage → 부모 React state 갱신
+  useEffect(() => {
+    const handler = e => {
+      if (e?.data?.type === 'llmModel' && typeof e.data.value === 'string') setLlmModel(e.data.value)
+    }
+    window.addEventListener('message', handler)
+    return () => window.removeEventListener('message', handler)
+  }, [])
 
   const serverSyncApplied = useRef(false)
   useEffect(() => {
@@ -333,11 +341,7 @@ export default function App() {
           </div>
         </div>
 
-        {/* LLM Model 필터 (2026-06 추가) */}
-        <div style={{ display: 'flex', alignItems: 'center', padding: '6px 16px', background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
-          <LlmModelSelect value={llmModel} onChange={setLlmModel} products={resolved.products} productsCnty={resolved.productsCnty} monthlyVis={monthlyVis} />
-        </div>
-        {/* 컨텐츠 영역 */}
+        {/* 컨텐츠 영역 — LLM Model 필터는 iframe 안 filter-layer 의 Week 옆에 통합 */}
         <div style={{ flex: 1, overflow: 'hidden' }}>
           <DashboardPreview meta={meta} total={total} products={resolved.products} citations={resolved.citations} dotcom={dotcom} productsCnty={resolved.productsCnty} citationsCnty={resolved.citationsCnty} lang={previewLang} weeklyLabels={weeklyLabels} weeklyAll={weeklyAll} citationsByCnty={citationsByCnty} dotcomByCnty={dotcomByCnty} monthlyVis={monthlyVis} extra={{ weeklyPR, weeklyPRLabels, weeklyBrandPrompt, weeklyBrandPromptLabels, appendixPrompts, unlaunchedMap, weeklyLabelsFull, prTopicList, llmModel }} />
         </div>
