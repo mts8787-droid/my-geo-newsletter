@@ -409,6 +409,22 @@ function parseProductCnty(rows) {
   // 디버그: 첫 5행 출력
   console.log(`[parseProductCnty] 총 ${rows.length}행, 첫 5행:`)
   rows.slice(0, 5).forEach((r, i) => console.log(`  row${i}: [${r.slice(0, 8).map(c => JSON.stringify(String(c || '').trim())).join(', ')}]`))
+  // 진단: 시트의 raw unique dates + TTL/non-TTL 분포
+  const _dateAll = {}
+  const _ttlRows = []
+  rows.forEach((r, i) => {
+    if (i === 0) return  // header
+    const d = String(r?.[1] || '').trim()
+    const c = String(r?.[2] || '').trim().toUpperCase()
+    if (!d) return
+    _dateAll[d] = (_dateAll[d] || 0) + 1
+    if (c === 'TTL' || c === 'TOTAL') {
+      _ttlRows.push({ date: d, cat: String(r?.[3] || '').trim(), llm: String(r?.[4] || '').trim() || '(empty)', div: String(r?.[0] || '').trim() })
+    }
+  })
+  console.log(`[parseProductCnty] 모든 unique dates (시트 raw):`, _dateAll)
+  console.log(`[parseProductCnty] TTL country 행들 (date / category / llmModel):`)
+  _ttlRows.forEach(x => console.log(`  ${x.div} | ${x.date} | ${x.cat} | LLM='${x.llm}'`))
 
   // 헤더: Div, Date, Country, Category, LG, SAMSUNG, Comp3, ...
   const headerIdx = rows.findIndex(r => {
