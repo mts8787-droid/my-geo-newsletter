@@ -42,6 +42,9 @@ export function resolveProductsByLlm(products, llmModel) {
       prev: prevLlm?.score ?? p.prev,
       vsComp: latestLlm.comp ?? p.vsComp,
       allScores: latestLlm.allScores ?? p.allScores,
+      // 월간 view 가 사용하는 별도 필드 — 같은 LLM 값으로 동기화
+      monthlyScore: latestLlm.score ?? p.monthlyScore ?? p.score,
+      monthlyPrev: prevLlm?.score ?? p.monthlyPrev ?? p.prev,
       monthlyScores: ms.map(m => {
         const byL = m?.byLlm?.[llmModel]
         return byL ? { ...m, score: byL.score, comp: byL.comp, allScores: byL.allScores } : m

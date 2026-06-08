@@ -364,12 +364,9 @@ function switchPeriodMode(mode){
     var compPctEl=card.querySelector('.prod-comp-pct');
     if(compPctEl)compPctEl.style.color=c.color;
     // 그래프 sparkColor는 CSS로 직접 변경 어려움 (SVG) — 서버사이드에서 결정
-    // MoM/WoW 업데이트 — 오디오/RAC 는 MoM 표기 안 함 (4월 새 베이스라인)
-    var _pidM=card.getAttribute('data-prodid');
+    // MoM/WoW 업데이트 — baseline 제품도 표시 (사용자 요청)
     var momEl=mode==='monthly'?card.querySelector('.prod-mom'):card.querySelector('.prod-wow');
-    if(mode==='monthly'&&_isBaselineProd(_pidM)){
-      if(momEl)momEl.innerHTML='';
-    } else if(momEl&&mom){
+    if(momEl&&mom){
       var mv=parseFloat(mom);var arrow=mv>0?'▲':mv<0?'▼':'─';var clr=mv>0?'#22C55E':mv<0?'#EF4444':'#94A3B8';
       momEl.innerHTML=(mode==='monthly'?'MoM ':'WoW ')+arrow+' '+Math.abs(mv).toFixed(1)+'%p';
       momEl.style.color=clr;
@@ -1183,10 +1180,9 @@ function _renderMonthlyTrend(container,selBU,selProd,trendCnty,trendCountries){
 function _isBaselineProd(prodId){var s=String(prodId||'').toLowerCase();return s==='audio'||s==='rac'||s==='aircare'}
 function _baselineWk(prodId){var s=String(prodId||'').toLowerCase();if(s==='audio')return 13;if(s==='rac'||s==='aircare')return 16;return 0}
 function _shouldBridge(prodId){return String(prodId||'').toLowerCase()==='audio'}
-// prod-mom 텍스트 갱신 (baseline 제품은 빈 처리)
+// prod-mom 텍스트 갱신 — baseline 제품도 MoM 표시 (사용자 요청)
 function _setProdMom(card,momD){
   var el=card.querySelector('.prod-mom');if(!el)return;
-  if(_isBaselineProd(card.getAttribute('data-prodid'))){el.innerHTML='';return}
   if(momD==null||isNaN(momD)){el.innerHTML='MoM —';el.style.color='#94A3B8';return}
   var arrow=momD>0?'▲':momD<0?'▼':'─';
   var clr=momD>0?'#22C55E':momD<0?'#EF4444':'#94A3B8';

@@ -406,7 +406,7 @@ function productSectionHtml(products, meta, t, lang, wLabels, ulMap, monthlyVis,
         <div class="prod-score-row">
           <span class="prod-score">${latestScore.toFixed(1)}<small>%</small></span>
           <span class="prod-delta prod-wow" style="color:${wColor}">${wd != null ? `WoW ${wArrow} ${Math.abs(wd).toFixed(1)}%p` : 'WoW —'}</span>
-          <span class="prod-delta prod-mom" style="display:none;color:${momColor}">${(isBaselineResetProduct(p) || momD == null) ? '' : `MoM ${momArrow} ${Math.abs(momD).toFixed(1)}%p`}</span>
+          <span class="prod-delta prod-mom" style="display:none;color:${momColor}">${momD == null ? 'MoM —' : `MoM ${momArrow} ${Math.abs(momD).toFixed(1)}%p`}</span>
         </div>
         <div class="prod-chart">
           <div class="trend-weekly">${(() => {
