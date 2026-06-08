@@ -308,6 +308,8 @@ function parseVisSummary(rows) {
   const dateCol = headerRow ? headerRow.findIndex(c => /date/i.test(String(c || '').trim())) : 0
   const cntyCol = headerRow ? headerRow.findIndex(c => /countries|country/i.test(String(c || '').trim())) : 2
   const divCol = headerRow ? headerRow.findIndex(c => /divisions?/i.test(String(c || '').trim())) : 3
+  // LLM Model 컬럼 (2026-06 추가, E열) — 'LLM Model' / 'LLM' / 'Model' 모두 허용. 없으면 -1 → 모든 행 'Total' 간주.
+  const llmCol = headerRow ? headerRow.findIndex(c => /^(llm\s*model|llm|model)$/i.test(String(c || '').trim())) : -1
 
   // 전체 데이터 행 수집
   const monthlyVis = []
@@ -319,15 +321,20 @@ function parseVisSummary(rows) {
     const date = String(r[dateCol >= 0 ? dateCol : 0] || '').trim()
     const country = normCountry(r[cntyCol >= 0 ? cntyCol : 2])
     const division = String(r[divCol >= 0 ? divCol : 3] || '').trim().toUpperCase()
+    // llmModel: 빈 셀 / 미지정 → 'Total' (2,3월 호환)
+    const llmRaw = llmCol >= 0 ? String(r[llmCol] || '').trim() : ''
+    const llmModel = llmRaw || 'Total'
     const lg = pct(r[lgCol])
     const comp = pct(r[actualSsCol])
-    if (date && lg > 0) monthlyVis.push({ date, country, division, lg, comp })
+    if (date && lg > 0) monthlyVis.push({ date, country, division, llmModel, lg, comp })
   })
 
-  // 전체 TOTAL 행 (country=TOTAL, division=TOTAL) → 날짜별 정렬 → 최신월=score, 이전월=prev
+  // 전체 TOTAL 행 (country=TOTAL, division=TOTAL, llmModel=Total) → 날짜별 정렬 → 최신월=score, 이전월=prev
+  // llmModel='Total' 필터: 4월부터 추가된 모델별 행이 평균 왜곡 안 하도록.
   const totalRows = monthlyVis.filter(r =>
     (r.country === 'TOTAL' || r.country === 'TTL') &&
-    (r.division === 'TOTAL' || r.division === 'TTL' || r.division === '')
+    (r.division === 'TOTAL' || r.division === 'TTL' || r.division === '') &&
+    (r.llmModel === 'Total' || r.llmModel === 'TOTAL' || r.llmModel === 'All')
   )
   totalRows.sort((a, b) => parseMonthFromDate(a.date) - parseMonthFromDate(b.date))
   const latestTotal = totalRows[totalRows.length - 1]
@@ -356,7 +363,8 @@ function parseVisSummary(rows) {
     monthlyVis.filter(r =>
       r.date === dateFilter &&
       (r.country === 'TOTAL' || r.country === 'TTL') &&
-      r.division && r.division !== 'TOTAL' && r.division !== 'TTL' && r.division !== ''
+      r.division && r.division !== 'TOTAL' && r.division !== 'TTL' && r.division !== '' &&
+      (r.llmModel === 'Total' || r.llmModel === 'TOTAL' || r.llmModel === 'All')
     ).forEach(r => {
       out[r.division] = { lg: r.lg, comp: r.comp }
     })
@@ -371,7 +379,8 @@ function parseVisSummary(rows) {
     monthlyVis.filter(r =>
       r.date === dateFilter &&
       r.country && r.country !== 'TOTAL' && r.country !== 'TTL' &&
-      (r.division === 'TOTAL' || r.division === 'TTL' || r.division === '')
+      (r.division === 'TOTAL' || r.division === 'TTL' || r.division === '') &&
+      (r.llmModel === 'Total' || r.llmModel === 'TOTAL' || r.llmModel === 'All')
     ).forEach(r => {
       out[r.country] = { lg: r.lg, comp: r.comp }
     })
@@ -421,10 +430,12 @@ function parseProductCntyFromRow(rows, headerIdx) {
   const header = rows[headerIdx]
   const lgIdx = header.findIndex((c, i) => i >= 3 && String(c || '').trim().toUpperCase() === 'LG')
   if (lgIdx < 0) { console.warn('[parseProductCnty] LG column not found'); return {} }
+  // LLM Model 컬럼 (2026-06 추가). 보통 D(Category) 와 LG 사이 — lgIdx 가 4 이상이면 그 사이 컬럼 검출. 없으면 -1 → 'Total' 간주.
+  const llmCol = header.findIndex(c => /^(llm\s*model|llm|model)$/i.test(String(c || '').trim()))
 
-  // 경쟁사 컬럼 수집 (LG 제외)
+  // 경쟁사 컬럼 수집 — lgIdx 직후부터 (이전엔 i=4 하드코딩 — LLM Model 추가 후 회귀 위험)
   const competitors = []
-  for (let i = 4; i < header.length; i++) {
+  for (let i = lgIdx + 1; i < header.length; i++) {
     const name = String(header[i] || '').trim()
     if (name && name.toUpperCase() !== 'LG') competitors.push({ name, col: i })
   }
@@ -443,6 +454,9 @@ function parseProductCntyFromRow(rows, headerIdx) {
     const rawCountry = String(r[2] || '').trim()
     const country = normCountry(r[2]) || rawCountry
     const category = String(r[3] || '').trim()
+    // llmModel: 빈 셀 / 미지정 → 'Total' (2,3월 호환)
+    const llmRaw = llmCol >= 0 ? String(r[llmCol] || '').trim() : ''
+    const llmModel = llmRaw || 'Total'
     const lgScore = pct(r[lgIdx])
 
     const compScores = competitors
@@ -459,41 +473,57 @@ function parseProductCntyFromRow(rows, headerIdx) {
       const id = RAW_TO_PROD_ID[category] || category.toLowerCase()
       const kr = RAW_TO_KR[category] || category
       if (!ttlByProduct[id]) ttlByProduct[id] = []
-      ttlByProduct[id].push({ id, bu: div, kr, category, date, score: lgScore, vsComp: topComp.score, compName: topComp.name, allScores })
+      ttlByProduct[id].push({ id, bu: div, kr, category, date, llmModel, score: lgScore, vsComp: topComp.score, compName: topComp.name, allScores })
     } else {
       const key = `${category}|${country}`
       if (!cntyByKey[key]) cntyByKey[key] = []
-      cntyByKey[key].push({ product: category, country, date, score: lgScore, compName: topComp.name, compScore: topComp.score, gap, allScores })
+      cntyByKey[key].push({ product: category, country, date, llmModel, score: lgScore, compName: topComp.name, compScore: topComp.score, gap, allScores })
     }
   })
 
   // 제품별 월 데이터를 날짜순 정렬 → 최신월 = score, 이전월 = prev (MoM 계산용)
+  // llmModel='Total' 행만 사용 — 4월부터 추가된 모델별 행 (ChatGPT/Gemini 등) 이 평균 왜곡 안 함.
+  // 모델별 데이터는 monthlyScores 의 byLlm 에 보존 (어드민 필터 도입 시 사용).
   console.log(`[parseProductCnty] TTL 제품: ${Object.keys(ttlByProduct).join(', ') || '없음'} / 국가별: ${Object.keys(cntyByKey).length}건`)
   const productsPartial = []
-  for (const [id, entries] of Object.entries(ttlByProduct)) {
+  for (const [id, allEntries] of Object.entries(ttlByProduct)) {
+    const totalEntries = allEntries.filter(e => e.llmModel === 'Total' || e.llmModel === 'TOTAL' || e.llmModel === 'All')
+    const entries = totalEntries.length ? totalEntries : allEntries  // 폴백: Total 없으면 전체 사용
     entries.sort((a, b) => parseMonthFromDate(a.date) - parseMonthFromDate(b.date))
     const latest = entries[entries.length - 1]
     const prev = entries.length >= 2 ? entries[entries.length - 2].score : null
     console.log(`[parseProductCnty] ${id}: dates=[${entries.map(e => e.date).join(',')}] score=${latest.score} prev=${prev} vsComp=${latest.vsComp}`)
-    // 모든 월별 점수 보존 (월간 트렌드용)
-    const monthlyScores = entries.map(e => ({ date: e.date, score: e.score, comp: e.vsComp, allScores: e.allScores }))
+    // 모든 월별 점수 보존 (월간 트렌드용) — byLlm 으로 모델별 보존
+    const monthlyScores = entries.map(e => {
+      const sameDateModels = allEntries.filter(x => x.date === e.date)
+      const byLlm = {}
+      sameDateModels.forEach(x => { byLlm[x.llmModel] = { score: x.score, comp: x.vsComp, allScores: x.allScores } })
+      return { date: e.date, score: e.score, comp: e.vsComp, allScores: e.allScores, byLlm }
+    })
     productsPartial.push({ ...latest, prev, monthlyScores })
   }
 
-  // 국가별 데이터: 같은 제품+국가에 여러 월이 있으면 최신월=score, 이전월=prev
-  // 월별 점수도 보존 (월간 country×product 드롭다운 필터용)
+  // 국가별 데이터: 같은 제품+국가에 여러 월이 있으면 최신월=score, 이전월=prev — llmModel='Total' 기준
   const productsCnty = []
-  for (const entries of Object.values(cntyByKey)) {
+  for (const allEntries of Object.values(cntyByKey)) {
+    const totalEntries = allEntries.filter(e => e.llmModel === 'Total' || e.llmModel === 'TOTAL' || e.llmModel === 'All')
+    const entries = totalEntries.length ? totalEntries : allEntries
     entries.sort((a, b) => parseMonthFromDate(a.date) - parseMonthFromDate(b.date))
     const latest = entries[entries.length - 1]
     const prev = entries.length >= 2 ? entries[entries.length - 2].score : null
-    const monthlyScores = entries.map(e => ({
-      date: e.date,
-      score: e.score,
-      compScore: e.compScore,
-      compName: e.compName,
-      allScores: e.allScores,
-    }))
+    const monthlyScores = entries.map(e => {
+      const sameDateModels = allEntries.filter(x => x.date === e.date)
+      const byLlm = {}
+      sameDateModels.forEach(x => { byLlm[x.llmModel] = { score: x.score, compScore: x.compScore, compName: x.compName, allScores: x.allScores } })
+      return {
+        date: e.date,
+        score: e.score,
+        compScore: e.compScore,
+        compName: e.compName,
+        allScores: e.allScores,
+        byLlm,
+      }
+    })
     productsCnty.push({ ...latest, prev, monthlyScores })
   }
 
