@@ -6,6 +6,7 @@ import { loadCache, saveCache } from '../shared/cache.js'
 import { fetchSnapshots, postSnapshot, updateSnapshot, deleteSnapshot, fetchSyncData } from '../shared/api.js'
 import { resolveDataForLang } from '../shared/utils.js'
 import Sidebar from '../shared/Sidebar.jsx'
+import LlmModelSelect from '../shared/LlmModelSelect.jsx'
 
 const MODE = 'dashboard'
 const STORAGE_KEY = 'geo-dashboard-cache'
@@ -62,6 +63,7 @@ export default function App() {
   const [weeklyLabelsFull, setWeeklyLabelsFull] = useState(null)
   const [prTopicList, setPrTopicList] = useState(null)
   const [previewLang, setPreviewLang] = useState('ko')
+  const [llmModel, setLlmModel] = useState('Total')
   const [snapshots,  setSnapshots]  = useState([])
   const [snapName,   setSnapName]   = useState('')
   const [snapOpen,   setSnapOpen]   = useState(false)
@@ -230,7 +232,7 @@ export default function App() {
           publishEndpoint="/api/publish-visibility"
           setMonthlyVis={setMonthlyVis}
           monthlyVis={monthlyVis}
-          extra={{ weeklyPR, weeklyPRLabels, weeklyBrandPrompt, weeklyBrandPromptLabels, appendixPrompts, unlaunchedMap, weeklyLabelsFull, prTopicList }}
+          extra={{ weeklyPR, weeklyPRLabels, weeklyBrandPrompt, weeklyBrandPromptLabels, appendixPrompts, unlaunchedMap, weeklyLabelsFull, prTopicList, llmModel }}
           onSyncExtra={({ weeklyPR, weeklyPRLabels, weeklyBrandPrompt, weeklyBrandPromptLabels, appendixPrompts, unlaunchedMap: ulm, weeklyLabelsFull: wlf, prTopicList: ptl }) => {
             if (weeklyPR) setWeeklyPR(weeklyPR)
             if (weeklyPRLabels) setWeeklyPRLabels(weeklyPRLabels)
@@ -331,9 +333,13 @@ export default function App() {
           </div>
         </div>
 
+        {/* LLM Model 필터 (2026-06 추가) */}
+        <div style={{ display: 'flex', alignItems: 'center', padding: '6px 16px', background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
+          <LlmModelSelect value={llmModel} onChange={setLlmModel} products={resolved.products} productsCnty={resolved.productsCnty} monthlyVis={monthlyVis} />
+        </div>
         {/* 컨텐츠 영역 */}
         <div style={{ flex: 1, overflow: 'hidden' }}>
-          <DashboardPreview meta={meta} total={total} products={resolved.products} citations={resolved.citations} dotcom={dotcom} productsCnty={resolved.productsCnty} citationsCnty={resolved.citationsCnty} lang={previewLang} weeklyLabels={weeklyLabels} weeklyAll={weeklyAll} citationsByCnty={citationsByCnty} dotcomByCnty={dotcomByCnty} monthlyVis={monthlyVis} extra={{ weeklyPR, weeklyPRLabels, weeklyBrandPrompt, weeklyBrandPromptLabels, appendixPrompts, unlaunchedMap, weeklyLabelsFull, prTopicList }} />
+          <DashboardPreview meta={meta} total={total} products={resolved.products} citations={resolved.citations} dotcom={dotcom} productsCnty={resolved.productsCnty} citationsCnty={resolved.citationsCnty} lang={previewLang} weeklyLabels={weeklyLabels} weeklyAll={weeklyAll} citationsByCnty={citationsByCnty} dotcomByCnty={dotcomByCnty} monthlyVis={monthlyVis} extra={{ weeklyPR, weeklyPRLabels, weeklyBrandPrompt, weeklyBrandPromptLabels, appendixPrompts, unlaunchedMap, weeklyLabelsFull, prTopicList, llmModel }} />
         </div>
         <div style={{ height: 28, borderTop: '1px solid #1E293B', background: 'rgba(15,23,42,0.95)',
           display: 'flex', alignItems: 'center', justifyContent: 'flex-end', padding: '0 16px', flexShrink: 0 }}>

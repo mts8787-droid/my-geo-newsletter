@@ -7,16 +7,17 @@ import { fetchSnapshots, postSnapshot, updateSnapshot, deleteSnapshot, fetchSync
 import { resolveDataForLang } from '../shared/utils.js'
 import { computeCategoryStats, computeStakeholderStats, extractMonthFromPeriod } from '../shared/trackerCategoryStats.js'
 import Sidebar from '../shared/Sidebar.jsx'
+import LlmModelSelect from '../shared/LlmModelSelect.jsx'
 
 const MODE = 'monthly-report'
 const STORAGE_KEY = 'geo-monthly-report-cache'
 
 // ─── 뉴스레터 미리보기 (iframe) ──────────────────────────────────────────────
-function NewsletterPreview({ meta, total, products, citations, dotcom, productsCnty = [], citationsCnty = [], lang = 'ko', weeklyLabels, categoryStats, stakeholderStats, cntyKeys = null }) {
+function NewsletterPreview({ meta, total, products, citations, dotcom, productsCnty = [], citationsCnty = [], lang = 'ko', weeklyLabels, categoryStats, stakeholderStats, cntyKeys = null, llmModel, monthlyVis }) {
   const iframeRef = useRef(null)
   const html = useMemo(
-    () => generateEmailHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, { weeklyLabels, categoryStats, stakeholderStats, cntyKeys }),
-    [meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, cntyKeys]
+    () => generateEmailHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, { weeklyLabels, categoryStats, stakeholderStats, cntyKeys, llmModel, monthlyVis }),
+    [meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, cntyKeys, llmModel, monthlyVis]
   )
 
   React.useEffect(() => {
@@ -52,9 +53,9 @@ function NewsletterPreview({ meta, total, products, citations, dotcom, productsC
 }
 
 // ─── HTML 코드 뷰어 ───────────────────────────────────────────────────────────
-function HtmlCodeViewer({ meta, total, products, citations, dotcom, productsCnty = [], citationsCnty = [], lang = 'ko', weeklyLabels, categoryStats, stakeholderStats, cntyKeys = null }) {
+function HtmlCodeViewer({ meta, total, products, citations, dotcom, productsCnty = [], citationsCnty = [], lang = 'ko', weeklyLabels, categoryStats, stakeholderStats, cntyKeys = null, llmModel, monthlyVis }) {
   const [copied, setCopied] = useState(false)
-  const html = useMemo(() => generateEmailHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, { weeklyLabels, categoryStats, stakeholderStats, cntyKeys }), [meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, categoryStats, cntyKeys])
+  const html = useMemo(() => generateEmailHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, { weeklyLabels, categoryStats, stakeholderStats, cntyKeys, llmModel, monthlyVis }), [meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, categoryStats, cntyKeys, llmModel, monthlyVis])
 
   async function handleCopy() {
     try {
@@ -121,6 +122,8 @@ export default function App() {
   const [stakeholderStats, setStakeholderStats] = useState(null)
   const [activeTab, setActiveTab] = useState('preview')
   const [previewLang, setPreviewLang] = useState('ko')
+  const [llmModel, setLlmModel] = useState('Total')
+  const [monthlyVis, setMonthlyVis] = useState(cache?.monthlyVis ?? [])
   const [snapshots,  setSnapshots]  = useState([])
   const [snapName,   setSnapName]   = useState('')
   const [snapOpen,   setSnapOpen]   = useState(false)
@@ -219,6 +222,7 @@ export default function App() {
       if (d.citationsCnty) setCitationsCnty(d.citationsCnty)
       if (d.weeklyLabels)  setWeeklyLabels(d.weeklyLabels)
       if (d.weeklyAll)     setWeeklyAll(prev => ({ ...prev, ...d.weeklyAll }))
+      if (d.monthlyVis)    setMonthlyVis(d.monthlyVis)
       if (d.productsPartial) {
         setProducts(d.productsPartial.map(p => {
           const weekly = d.weeklyMap?.[p.id] || []
@@ -423,11 +427,14 @@ export default function App() {
           <div style={{ flex: 1, overflowY: 'auto', padding: '28px 36px',
             background: 'linear-gradient(180deg, #0A0F1C 0%, #0F172A 100%)' }}>
             <div style={{ maxWidth: 960, margin: '0 auto' }}>
-              <NewsletterPreview meta={meta} total={total} products={resolved.products} citations={resolved.citations} dotcom={dotcom} productsCnty={resolved.productsCnty} citationsCnty={resolved.citationsCnty} lang={previewLang} weeklyLabels={weeklyLabels} categoryStats={categoryStats} stakeholderStats={stakeholderStats} cntyKeys={cntyKeys} />
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12, padding: '6px 12px', background: '#F8FAFC', borderRadius: 6 }}>
+                <LlmModelSelect value={llmModel} onChange={setLlmModel} products={resolved.products} productsCnty={resolved.productsCnty} monthlyVis={monthlyVis} />
+              </div>
+              <NewsletterPreview meta={meta} total={total} products={resolved.products} citations={resolved.citations} dotcom={dotcom} productsCnty={resolved.productsCnty} citationsCnty={resolved.citationsCnty} lang={previewLang} weeklyLabels={weeklyLabels} categoryStats={categoryStats} stakeholderStats={stakeholderStats} cntyKeys={cntyKeys} llmModel={llmModel} monthlyVis={monthlyVis} />
             </div>
           </div>
         ) : (
-          <HtmlCodeViewer meta={meta} total={total} products={resolved.products} citations={resolved.citations} dotcom={dotcom} productsCnty={resolved.productsCnty} citationsCnty={resolved.citationsCnty} lang={previewLang} weeklyLabels={weeklyLabels} categoryStats={categoryStats} stakeholderStats={stakeholderStats} cntyKeys={cntyKeys} />
+          <HtmlCodeViewer meta={meta} total={total} products={resolved.products} citations={resolved.citations} dotcom={dotcom} productsCnty={resolved.productsCnty} citationsCnty={resolved.citationsCnty} lang={previewLang} weeklyLabels={weeklyLabels} categoryStats={categoryStats} stakeholderStats={stakeholderStats} cntyKeys={cntyKeys} llmModel={llmModel} monthlyVis={monthlyVis} />
         )}
         <div style={{ height: 28, borderTop: '1px solid #1E293B', background: 'rgba(15,23,42,0.95)',
           display: 'flex', alignItems: 'center', justifyContent: 'flex-end', padding: '0 16px', flexShrink: 0 }}>

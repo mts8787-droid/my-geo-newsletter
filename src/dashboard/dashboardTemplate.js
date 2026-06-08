@@ -12,6 +12,7 @@ import { statusInfo, fmt, mdBold, stripDomain, cntyStatus, cntyFullName, cntyOff
 import { svgLine, svgMultiLine, brandColor } from './dashboardSvg.js'
 // C12 step3 — 인라인 클라이언트 스크립트 분리 (1,186줄)
 import { buildDashboardClientScript } from './dashboardClient.js'
+import { resolveProductsByLlm, resolveProductsCntyByLlm, resolveTotalByLlm, filterMonthlyVisByLlm } from '../shared/llmModel.js'
 
 // SVG 차트(svgLine·svgMultiLine·brandColor) → ./dashboardSvg.js
 // 포맷 헬퍼(statusInfo·fmt·mdBold·stripDomain·cntyStatus·cntyFullName) → ./dashboardFormat.js
@@ -1291,10 +1292,17 @@ function brandPromptTabHtml(bpData, bpLabels, lang, stakeholderFilter, tabTitle,
 // 메인 생성 함수
 // ═══════════════════════════════════════════════════════════════════════════
 export function generateVisibilityHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty, monthlyVis, extra) {
-  return generateDashboardHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty, { visibilityOnly: true, monthlyVis, weeklyLabelsFull: extra?.weeklyLabelsFull }, extra)
+  return generateDashboardHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty, { visibilityOnly: true, monthlyVis, weeklyLabelsFull: extra?.weeklyLabelsFull, llmModel: extra?.llmModel }, extra)
 }
 
 export function generateDashboardHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty, opts, extra) {
+  // ─── LLM Model 필터 (2026-06) — opts.llmModel ('Total'/'ChatGPT'/'Gemini'/...) 적용 ───
+  if (opts?.llmModel && opts.llmModel !== 'Total') {
+    products = resolveProductsByLlm(products, opts.llmModel)
+    productsCnty = resolveProductsCntyByLlm(productsCnty, opts.llmModel)
+    total = resolveTotalByLlm(total, opts.monthlyVis, opts.llmModel)
+    if (opts.monthlyVis) opts = { ...opts, monthlyVis: filterMonthlyVisByLlm(opts.monthlyVis, opts.llmModel) }
+  }
   // ─── weekly 배열 null → 0 정규화 (대시보드 클라이언트 필터/트렌드 호환) ───
   // 뉴스레터는 null 유지(빈 셀 미표시)지만 대시보드 클라이언트 JS는 0 기반으로 동작
   products = (products || []).map(p => ({

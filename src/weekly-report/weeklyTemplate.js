@@ -1,5 +1,6 @@
 // ─── 주간 보고용 HTML 생성기 (표 기반, 주간 데이터) ────────────────────────
 import { PROD_ID_TO_KR, PROD_ID_TO_BU } from '../categoryMap.js'
+import { resolveProductsByLlm, resolveProductsCntyByLlm, resolveTotalByLlm } from '../shared/llmModel.js'
 
 const FONT = "'LGEIText','LG Smart', 'Arial Narrow', 'Malgun Gothic', Arial, sans-serif"
 
@@ -480,7 +481,14 @@ function buildTrackerSummaryTable(categoryStats, lang) {
 
 // ─── 메인 HTML 생성 함수 ─────────────────────────────────────────────────
 export function generateWeeklyReportHTML(meta, total, products, citations, dotcom = {}, lang = 'ko', productsCnty = [], citationsCnty = [], options = {}) {
-  const { weeklyAll: weeklyAllRaw = {}, weeklyLabels = [], categoryStats = null, cntyKeys = null } = options
+  const { weeklyAll: weeklyAllRaw = {}, weeklyLabels = [], categoryStats = null, cntyKeys = null, llmModel, monthlyVis } = options
+
+  // LLM Model 필터 (2026-06)
+  if (llmModel && llmModel !== 'Total') {
+    products = resolveProductsByLlm(products, llmModel)
+    productsCnty = resolveProductsCntyByLlm(productsCnty, llmModel)
+    total = resolveTotalByLlm(total, monthlyVis, llmModel)
+  }
 
   // 국가 필터 — cntyKeys 가 명시되면 해당 국가만 포함 (Total/TTL 그룹 키는 보존).
   let weeklyAll = weeklyAllRaw

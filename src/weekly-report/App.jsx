@@ -7,15 +7,16 @@ import { fetchSnapshots, postSnapshot, updateSnapshot, deleteSnapshot, fetchSync
 import { resolveDataForLang } from '../shared/utils.js'
 import { computeCategoryStats, computeStakeholderStats, extractMonthFromPeriod, previousMonth } from '../shared/trackerCategoryStats.js'
 import Sidebar from '../shared/Sidebar.jsx'
+import LlmModelSelect from '../shared/LlmModelSelect.jsx'
 
 const MODE = 'weekly-report'
 const STORAGE_KEY = 'geo-weekly-report-cache'
 
-function NewsletterPreview({ meta, total, products, citations, dotcom, productsCnty = [], citationsCnty = [], lang = 'ko', weeklyLabels, weeklyAll, categoryStats, cntyKeys = null }) {
+function NewsletterPreview({ meta, total, products, citations, dotcom, productsCnty = [], citationsCnty = [], lang = 'ko', weeklyLabels, weeklyAll, categoryStats, cntyKeys = null, llmModel, monthlyVis }) {
   const iframeRef = useRef(null)
   const html = useMemo(
-    () => generateEmailHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, { weeklyLabels, weeklyAll, categoryStats, cntyKeys }),
-    [meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, weeklyAll, categoryStats, cntyKeys]
+    () => generateEmailHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, { weeklyLabels, weeklyAll, categoryStats, cntyKeys, llmModel, monthlyVis }),
+    [meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, weeklyAll, categoryStats, cntyKeys, llmModel, monthlyVis]
   )
 
   React.useEffect(() => {
@@ -50,9 +51,9 @@ function NewsletterPreview({ meta, total, products, citations, dotcom, productsC
   )
 }
 
-function HtmlCodeViewer({ meta, total, products, citations, dotcom, productsCnty = [], citationsCnty = [], lang = 'ko', weeklyLabels, weeklyAll, categoryStats, cntyKeys = null }) {
+function HtmlCodeViewer({ meta, total, products, citations, dotcom, productsCnty = [], citationsCnty = [], lang = 'ko', weeklyLabels, weeklyAll, categoryStats, cntyKeys = null, llmModel, monthlyVis }) {
   const [copied, setCopied] = useState(false)
-  const html = useMemo(() => generateEmailHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, { weeklyLabels, weeklyAll, categoryStats, cntyKeys }), [meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, weeklyAll, categoryStats, cntyKeys])
+  const html = useMemo(() => generateEmailHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, { weeklyLabels, weeklyAll, categoryStats, cntyKeys, llmModel, monthlyVis }), [meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, weeklyAll, categoryStats, cntyKeys, llmModel, monthlyVis])
 
   async function handleCopy() {
     try { await navigator.clipboard.writeText(html) } catch {
@@ -95,6 +96,8 @@ export default function App() {
   const [categoryStats, setCategoryStats] = useState(null)
   const [activeTab, setActiveTab] = useState('preview')
   const [previewLang, setPreviewLang] = useState('ko')
+  const [llmModel, setLlmModel] = useState('Total')
+  const [monthlyVis, setMonthlyVis] = useState(cache?.monthlyVis ?? [])
   const [snapshots, setSnapshots] = useState([])
   const [snapName, setSnapName] = useState('')
   const [snapOpen, setSnapOpen] = useState(false)
@@ -187,6 +190,7 @@ export default function App() {
       if (d.citationsCnty) setCitationsCnty(d.citationsCnty)
       if (d.weeklyLabels) setWeeklyLabels(d.weeklyLabels)
       if (d.weeklyAll) setWeeklyAll(prev => ({ ...prev, ...d.weeklyAll }))
+      if (d.monthlyVis) setMonthlyVis(d.monthlyVis)
       if (d.productsPartial) {
         setProducts(d.productsPartial.map(p => {
           const weekly = d.weeklyMap?.[p.id] || []
@@ -342,11 +346,14 @@ export default function App() {
         {activeTab === 'preview' ? (
           <div style={{ flex: 1, overflowY: 'auto', padding: '28px 36px', background: 'linear-gradient(180deg, #0A0F1C 0%, #0F172A 100%)' }}>
             <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-              <NewsletterPreview meta={meta} total={total} products={resolved.products} citations={resolved.citations} dotcom={dotcom} productsCnty={resolved.productsCnty} citationsCnty={resolved.citationsCnty} lang={previewLang} weeklyLabels={weeklyLabels} weeklyAll={weeklyAll} categoryStats={categoryStats} cntyKeys={cntyKeys} />
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12, padding: '6px 12px', background: '#F8FAFC', borderRadius: 6 }}>
+                <LlmModelSelect value={llmModel} onChange={setLlmModel} products={resolved.products} productsCnty={resolved.productsCnty} monthlyVis={monthlyVis} />
+              </div>
+              <NewsletterPreview meta={meta} total={total} products={resolved.products} citations={resolved.citations} dotcom={dotcom} productsCnty={resolved.productsCnty} citationsCnty={resolved.citationsCnty} lang={previewLang} weeklyLabels={weeklyLabels} weeklyAll={weeklyAll} categoryStats={categoryStats} cntyKeys={cntyKeys} llmModel={llmModel} monthlyVis={monthlyVis} />
             </div>
           </div>
         ) : (
-          <HtmlCodeViewer meta={meta} total={total} products={resolved.products} citations={resolved.citations} dotcom={dotcom} productsCnty={resolved.productsCnty} citationsCnty={resolved.citationsCnty} lang={previewLang} weeklyLabels={weeklyLabels} weeklyAll={weeklyAll} categoryStats={categoryStats} cntyKeys={cntyKeys} />
+          <HtmlCodeViewer meta={meta} total={total} products={resolved.products} citations={resolved.citations} dotcom={dotcom} productsCnty={resolved.productsCnty} citationsCnty={resolved.citationsCnty} lang={previewLang} weeklyLabels={weeklyLabels} weeklyAll={weeklyAll} categoryStats={categoryStats} cntyKeys={cntyKeys} llmModel={llmModel} monthlyVis={monthlyVis} />
         )}
         <div style={{ height: 28, borderTop: '1px solid #1E293B', background: 'rgba(15,23,42,0.95)', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', padding: '0 16px', flexShrink: 0 }}>
           <span style={{ fontSize: 10, color: '#475569', fontFamily: FONT }}>v{__APP_VERSION__}</span>

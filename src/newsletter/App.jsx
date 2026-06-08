@@ -10,6 +10,7 @@ import { parseKPISheet } from '../tracker-v2/utils/sheetParser.js'
 // N2 — XLSX는 사용 시점에만 동적 로드 (~870KB)
 import { loadXlsx } from '../shared/loadXlsx.js'
 import Sidebar from '../shared/Sidebar.jsx'
+import LlmModelSelect from '../shared/LlmModelSelect.jsx'
 
 const TRACKER_SHEET_ID = '1lAzhlYJIjHVqDeywD3YMR1E9qf2LlDohFc0r6SAnVaE'
 const TRACKER_SHEET_NAME = '파싱시트'
@@ -18,11 +19,11 @@ const MODE = 'newsletter'
 const STORAGE_KEY = 'geo-newsletter-cache'
 
 // ─── 뉴스레터 미리보기 (iframe) ──────────────────────────────────────────────
-function NewsletterPreview({ meta, total, products, citations, dotcom, productsCnty = [], citationsCnty = [], lang = 'ko', weeklyLabels, categoryStats, unlaunchedMap = {} }) {
+function NewsletterPreview({ meta, total, products, citations, dotcom, productsCnty = [], citationsCnty = [], lang = 'ko', weeklyLabels, categoryStats, unlaunchedMap = {}, llmModel, monthlyVis }) {
   const iframeRef = useRef(null)
   const html = useMemo(
-    () => generateEmailHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, { weeklyLabels, categoryStats, unlaunchedMap, productCardVersion: meta.productCardVersion || 'v1', trendMode: meta.trendMode || 'weekly' }),
-    [meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, categoryStats, unlaunchedMap]
+    () => generateEmailHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, { weeklyLabels, categoryStats, unlaunchedMap, productCardVersion: meta.productCardVersion || 'v1', trendMode: meta.trendMode || 'weekly', llmModel, monthlyVis }),
+    [meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, categoryStats, unlaunchedMap, llmModel, monthlyVis]
   )
 
   React.useEffect(() => {
@@ -126,6 +127,8 @@ export default function App() {
   const [unlaunchedMap, setUnlaunchedMap] = useState(cache?.unlaunchedMap ?? {})
   const [activeTab, setActiveTab] = useState('preview')
   const [previewLang, setPreviewLang] = useState('ko')
+  const [llmModel, setLlmModel] = useState('Total')
+  const [monthlyVis, setMonthlyVis] = useState(cache?.monthlyVis ?? [])
   const [categoryStats, setCategoryStats] = useState(null)
   // 핵심 과제 진척 — 사용자가 사이드바에서 선택. null = 자동(데이터의 월과 동일)
   const [progressMonth, setProgressMonth] = useState(null)
@@ -247,6 +250,7 @@ export default function App() {
       if (d.weeklyLabels)  setWeeklyLabels(d.weeklyLabels)
       if (d.weeklyAll)     setWeeklyAll(prev => ({ ...prev, ...d.weeklyAll }))
       if (d.unlaunchedMap) setUnlaunchedMap(d.unlaunchedMap)
+      if (d.monthlyVis)    setMonthlyVis(d.monthlyVis)
       if (d.productsPartial) {
         setProducts(d.productsPartial.map(p => {
           const weekly = d.weeklyMap?.[p.id] || []
@@ -448,7 +452,10 @@ export default function App() {
           <div style={{ flex: 1, minWidth: 0, overflowY: 'auto', overflowX: 'hidden', padding: '28px 36px',
             background: 'linear-gradient(180deg, #0A0F1C 0%, #0F172A 100%)' }}>
             <div style={{ maxWidth: 960, width: '100%', margin: '0 auto', minWidth: 0 }}>
-              <NewsletterPreview meta={meta} total={total} products={resolved.products} citations={resolved.citations} dotcom={dotcom} productsCnty={resolved.productsCnty} citationsCnty={resolved.citationsCnty} lang={previewLang} weeklyLabels={weeklyLabels} categoryStats={categoryStats} unlaunchedMap={unlaunchedMap} />
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12, padding: '6px 12px', background: '#F8FAFC', borderRadius: 6 }}>
+                <LlmModelSelect value={llmModel} onChange={setLlmModel} products={resolved.products} productsCnty={resolved.productsCnty} monthlyVis={monthlyVis} />
+              </div>
+              <NewsletterPreview meta={meta} total={total} products={resolved.products} citations={resolved.citations} dotcom={dotcom} productsCnty={resolved.productsCnty} citationsCnty={resolved.citationsCnty} lang={previewLang} weeklyLabels={weeklyLabels} categoryStats={categoryStats} unlaunchedMap={unlaunchedMap} llmModel={llmModel} monthlyVis={monthlyVis} />
             </div>
           </div>
         ) : (

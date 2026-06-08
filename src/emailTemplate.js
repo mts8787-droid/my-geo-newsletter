@@ -1,6 +1,7 @@
 // ─── 이메일 호환 HTML 생성기 ─────────────────────────────────────────────────
 // 규칙: table 기반 레이아웃, 인라인 스타일, 외부 폰트 없음, flex/grid 없음
 import { PROD_ID_TO_UL_CODE as UL_PROD_MAP, PROD_ID_TO_UL_CODE, PROD_ID_TO_KR, PROD_ID_TO_EN, PROD_ID_TO_BU, PROD_ID_TO_ORDER, NAME_TO_PROD_ID } from './categoryMap.js'
+import { resolveProductsByLlm, resolveProductsCntyByLlm, resolveTotalByLlm } from './shared/llmModel.js'
 
 const EM_RED  = '#CF0652'
 // Citation 차트 전용 — 짙은 녹색 계열 (LG_RED 와 구분)
@@ -1471,7 +1472,13 @@ function dashboardLinkButtonHtml(lang) {
 export { escapeHtml }
 
 export function generateEmailHTML(meta, total, products, citations, dotcom = {}, lang = 'ko', productsCnty = [], citationsCnty = [], options = {}) {
-  const { containerWidth = 940, showTrendTabs = false, weeklyLabels, categoryStats = null, unlaunchedMap: ulInput = {}, productCardVersion = 'v1', trendMode = 'weekly' } = options
+  const { containerWidth = 940, showTrendTabs = false, weeklyLabels, categoryStats = null, unlaunchedMap: ulInput = {}, productCardVersion = 'v1', trendMode = 'weekly', llmModel, monthlyVis } = options
+  // LLM Model 필터 (2026-06) — 선택 모델로 products/productsCnty/total 재계산
+  if (llmModel && llmModel !== 'Total') {
+    products = resolveProductsByLlm(products, llmModel)
+    productsCnty = resolveProductsCntyByLlm(productsCnty, llmModel)
+    total = resolveTotalByLlm(total, monthlyVis, llmModel)
+  }
   // 뉴스레터 전용 미출시 오버라이드: Aircare 멕시코 미출시
   const unlaunchedMap = { ...ulInput, 'MX|AIRCARE': true }
   const t = T[lang] || T.ko

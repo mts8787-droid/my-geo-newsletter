@@ -1,4 +1,6 @@
 // ─── 월간 보고용 HTML 생성기 (단순 표 기반, 색상/그래프 없음) ─────────────
+import { resolveProductsByLlm, resolveProductsCntyByLlm, resolveTotalByLlm } from '../shared/llmModel.js'
+
 const FONT = "'LGEIText','LG Smart', 'Arial Narrow', 'Malgun Gothic', Arial, sans-serif"
 
 // 제품 표시 순서 (KR / EN / 카테고리 코드 모두 매칭, BU 코드 제외)
@@ -570,7 +572,14 @@ function buildStakeholderTable(stakeholderStats, lang) {
 }
 
 export function generateMonthlyReportHTML(meta, total, products, citations, dotcom = {}, lang = 'ko', productsCnty = [], citationsCnty = [], options = {}) {
-  const { productsCntyPrev = [], productsPrev = [], categoryStats = null, stakeholderStats = null, cntyKeys = null } = options
+  const { productsCntyPrev = [], productsPrev = [], categoryStats = null, stakeholderStats = null, cntyKeys = null, llmModel, monthlyVis } = options
+
+  // LLM Model 필터 (2026-06)
+  if (llmModel && llmModel !== 'Total') {
+    products = resolveProductsByLlm(products, llmModel)
+    productsCnty = resolveProductsCntyByLlm(productsCnty, llmModel)
+    total = resolveTotalByLlm(total, monthlyVis, llmModel)
+  }
 
   // 국가 필터 — cntyKeys 가 명시되면 해당 국가만 포함 (대소문자 무관). null/빈 배열 이면 전체 유지.
   if (Array.isArray(cntyKeys) && cntyKeys.length > 0) {
