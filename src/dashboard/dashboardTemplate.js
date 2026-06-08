@@ -158,7 +158,7 @@ function monthlyTrendDetailHtml(products, monthlyVis, t, lang, ulMap, periodTag)
   const BU_ORDER = ['MS', 'HS', 'ES']
   const MNAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
   const enMonthMap = {jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11}
-  function parseMIdx(d) { const km = String(d).match(/(\d{1,2})월/); if (km) return parseInt(km[1])-1; const em = String(d).match(/(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i); return em ? enMonthMap[em[1].toLowerCase()] : -1 }
+  function parseMIdx(d) { const s = String(d||''); const km = s.match(/(\d{1,2})월/); if (km) return parseInt(km[1])-1; const em = s.match(/(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i); if (em) return enMonthMap[em[1].toLowerCase()]; const iso = s.match(/\d{4}[-\/](\d{1,2})/); if (iso) return parseInt(iso[1])-1; return -1 }
 
   // 12개월 고정 (Jan~Dec)
   const sortedMonths = [0,1,2,3,4,5,6,7,8,9,10,11]
@@ -371,7 +371,7 @@ function productSectionHtml(products, meta, t, lang, wLabels, ulMap, monthlyVis,
       // MoM: monthlyVis에서 BU별 월간 트렌드 구성 (제품별 월간 데이터 없으면 BU 대리)
       const MLNAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
       const enMonthMap = {jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11}
-      function parseMIdx(d) { const km = String(d).match(/(\d{1,2})월/); if (km) return parseInt(km[1])-1; const em = String(d).match(/(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i); return em ? enMonthMap[em[1].toLowerCase()] : -1 }
+      function parseMIdx(d) { const s = String(d||''); const km = s.match(/(\d{1,2})월/); if (km) return parseInt(km[1])-1; const em = s.match(/(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i); if (em) return enMonthMap[em[1].toLowerCase()]; const iso = s.match(/\d{4}[-\/](\d{1,2})/); if (iso) return parseInt(iso[1])-1; return -1 }
       // monthlyScores 우선, 없으면 monthlyVis의 BU TOTAL
       let ms = (p.monthlyScores || [])
       if (ms.length < 2 && monthlyVis.length > 0) {
