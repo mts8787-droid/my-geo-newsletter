@@ -281,21 +281,30 @@ function parseMeta(rows) {
 }
 
 function parseVisSummary(rows) {
+  // 진단: 첫 5행 + 행수
+  console.log(`[parseVisSummary] 총 ${rows.length}행, 첫 5행:`)
+  rows.slice(0, 5).forEach((r, i) => console.log(`  row${i}: [${(r || []).slice(0, 8).map(c => JSON.stringify(String(c || '').trim())).join(', ')}]`))
   // 1) key-value 형식 (이전 total 시트 호환)
   const intKeys = ['rank', 'totalBrands']
   const pctKeys = ['score', 'prev', 'vsComp']
   const kvObj = {}
   let isKV = false
-  rows.forEach(r => {
+  let kvTriggerRow = -1
+  rows.forEach((r, idx) => {
     if (!r[0] || String(r[0]).startsWith('[') || String(r[0]).startsWith('※') || r[0] === 'key') return
     const k = String(r[0]).trim()
     if (pctKeys.includes(k) || intKeys.includes(k)) {
+      if (!isKV) kvTriggerRow = idx
       isKV = true
       if (intKeys.includes(k)) kvObj[k] = parseInt(r[1]) || 0
       else kvObj[k] = pct(r[1])
     }
   })
-  if (isKV && Object.keys(kvObj).length >= 2) return { total: kvObj }
+  if (isKV && Object.keys(kvObj).length >= 2) {
+    console.log(`[parseVisSummary] KV path 진입 (legacy) — trigger row${kvTriggerRow}: r[0]='${rows[kvTriggerRow]?.[0]}' / kvObj keys:`, Object.keys(kvObj))
+    return { total: kvObj }
+  }
+  console.log(`[parseVisSummary] Table path 진입`)
 
   // 2) 헤더 탐색
   const headerRow = rows.find(r => r.some(c => String(c || '').trim().toUpperCase() === 'LG'))
@@ -402,6 +411,11 @@ function parseVisSummary(rows) {
     result.derivedPeriod = latestDate
   }
   if (monthlyVis.length) result.monthlyVis = monthlyVis
+  // 진단: 최종 monthlyVis + TOTAL 행 카운트
+  const _dCount = {}
+  monthlyVis.forEach(r => { _dCount[r.date] = (_dCount[r.date] || 0) + 1 })
+  console.log(`[parseVisSummary] monthlyVis ${monthlyVis.length}행 / unique dates:`, _dCount, `/ TOTAL+TOTAL+Total 행: ${totalRows.length}`)
+  console.log(`[parseVisSummary] 반환 keys:`, Object.keys(result))
   return result
 }
 
