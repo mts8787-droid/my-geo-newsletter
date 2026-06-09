@@ -1319,7 +1319,7 @@ function parseCitTouchPoints(rows) {
     if (channel.toLowerCase() === 'total') return
     const isCountryTtl = country === 'TTL' || country === 'TOTAL'
     const llmVal = llmCol >= 0 ? String(r[llmCol] || '').trim() : ''
-    const isTotalLlm = !llmVal || /^(total|all)$/i.test(llmVal)
+    const isTotalLlm = !llmVal || /^(total|all|ttl)$/i.test(llmVal)
     const prd = prdCol >= 0 ? String(r[prdCol] || '').trim() : ''
     const isPrdTtl = !prd || /^(ttl|total)$/i.test(prd.toUpperCase())
     monthLabels.forEach(({ col, label }) => {
@@ -1360,7 +1360,7 @@ function parseCitTouchPoints(rows) {
     if (channel.toLowerCase() === 'total') return
 
     const isCountryTtl = country === 'TTL' || country === 'TOTAL'
-    const isTotalLlm = !llmVal || /^(total|all)$/i.test(llmVal)
+    const isTotalLlm = !llmVal || /^(total|all|ttl)$/i.test(llmVal)
     const prdU = prd.toUpperCase()
     const isPrdTtl = !prd || prdU === 'TTL' || prdU === 'TOTAL'
 
