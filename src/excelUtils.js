@@ -974,8 +974,12 @@ function parseCitPageType(rows) {
   // 컬럼 위치 동적 detect (이전 schema 호환)
   const llmCol = header.findIndex(c => /^(llm\s*model|llm|model)$/i.test(String(c || '').trim()))
   const cntyCol = header.findIndex(c => /^country$|countries/i.test(String(c || '').trim()))
-  // Page Type — 'Page Type' / 'Paye Type' (오타) / 'Type' 허용 (anchored)
-  const ptCol = header.findIndex(c => /^(pa[gy]e\s*type|type)$/i.test(String(c || '').trim()))
+  // Page Type — 'Page Type' / 'Paye Type' (오타) / 'Type' 허용.
+  // 보이지 않는 unicode (NBSP / ZWSP / BOM) 와 multi-space 모두 대응 — 공백 전부 제거 후 매칭.
+  const ptCol = header.findIndex(c => {
+    const s = String(c || '').replace(/[​‌‍﻿]/g, '').replace(/\s+/g, '').toLowerCase()
+    return /^pa[gy]etype$/.test(s) || s === 'type'
+  })
   const fallbackCnty = cntyCol >= 0 ? cntyCol : 0
   // Page Type 폴백 — detect 실패 시 위치 기반 (Country 다음 컬럼)
   const fallbackPt = ptCol >= 0 ? ptCol : (fallbackCnty + 1)
