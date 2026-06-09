@@ -948,6 +948,9 @@ function parseWeekly(rows, div) {
 }
 
 function parseCitPageType(rows) {
+  // 진단: 첫 5행
+  console.log(`[parseCitPageType] 총 ${rows.length}행, 첫 5행:`)
+  rows.slice(0, 5).forEach((r, i) => console.log(`  row${i}: [${(r || []).slice(0, 10).map(c => JSON.stringify(String(c || '').trim())).join(', ')}]`))
   // 헤더: [LLM Model] | Country | Page Type | Feb LG | Feb SS | Mar LG | Mar SS | ...
   // 2026-06 이후 — 시트 A열에 LLM Model 추가, 기존 컬럼 1열씩 오른쪽 시프트.
   // 이전 schema (Country, Page Type, ...) 도 호환 — 동적 detect.
@@ -967,6 +970,8 @@ function parseCitPageType(rows) {
   const ptCol = header.findIndex(c => /page\s*type/i.test(String(c || '').trim()))
   const fallbackCnty = cntyCol >= 0 ? cntyCol : 0
   const fallbackPt = ptCol >= 0 ? ptCol : 1
+  console.log(`[parseCitPageType] header row${headerIdx}: [${header.slice(0,10).map(c => JSON.stringify(String(c||'').trim())).join(', ')}]`)
+  console.log(`[parseCitPageType] llmCol=${llmCol} cntyCol=${cntyCol} ptCol=${ptCol} (fallbackCnty=${fallbackCnty} fallbackPt=${fallbackPt})`)
 
   // LG/SS 컬럼 페어 찾기 — Page Type 컬럼 이후부터 스캔
   const monthPairs = []
@@ -981,9 +986,11 @@ function parseCitPageType(rows) {
     }
   }
   if (!monthPairs.length) monthPairs.push({ lg: scanStart, ss: scanStart + 1 })
+  console.log(`[parseCitPageType] monthPairs:`, monthPairs.map(p => `LG=${p.lg}/SS=${p.ss}`).join(', '))
 
   // 데이터 필터 — Country 컬럼 (cntyCol 동적 detect) 기준
   const data = rows.slice(headerIdx + 1).filter(r => r[fallbackCnty] != null && String(r[fallbackCnty]).trim())
+  console.log(`[parseCitPageType] data ${data.length}행 (필터 통과)`)
 
   // 최신 월 데이터가 있는 페어 찾기
   let bestPair = monthPairs[0]
@@ -1138,6 +1145,7 @@ function parseCitPageType(rows) {
   if (Object.keys(byLlm).length > 1 || (Object.keys(byLlm).length === 1 && !(byLlm.Total || byLlm.TOTAL || byLlm.All))) {
     result.dotcomByLlm = byLlm
   }
+  console.log(`[parseCitPageType] 결과: dotcom.lg keys=${Object.keys(lg).join(',')||'(EMPTY)'} / dotcomByCnty=${Object.keys(dotcomByCnty).join(',')||'(EMPTY)'} / dotcomTrend keys=${Object.keys(dotcomTrend).join(',')||'(EMPTY)'} / byLlm keys=${Object.keys(byLlm).join(',')||'(EMPTY)'}`)
   return result
 }
 
