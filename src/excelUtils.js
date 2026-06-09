@@ -1282,7 +1282,7 @@ function parseCitTouchPoints(rows) {
   // 월 순 (chronological)으로 정렬 — score 역순 iteration이 "최신 월" 의미를 갖도록
   monthLabels.sort((a, b) => MONTHS_ORDER.indexOf(a.label) - MONTHS_ORDER.indexOf(b.label))
   console.log(`[parseCitTouchPoints] header row${headerIdx}: [${(header || []).slice(0,12).map(c => JSON.stringify(String(c||'').trim())).join(', ')}]`)
-  console.log(`[parseCitTouchPoints] countryCol=${countryCol} channelCol=${channelCol} prdCol=${prdCol} dataStartCol=${dataStartCol}`)
+  console.log(`[parseCitTouchPoints] countryCol=${countryCol} channelCol=${channelCol} prdCol=${prdCol} llmCol=${llmCol} dataStartCol=${dataStartCol}`)
   console.log(`[parseCitTouchPoints] monthLabels (sorted):`, monthLabels.map(m => `${m.label}@col${m.col}`).join(', '))
 
   const data = rows.slice(startRow).filter(r => r.some(c => c != null && String(c).trim()))
@@ -1390,9 +1390,17 @@ function parseCitTouchPoints(rows) {
       const v = numVal(r[col])
       if (v <= 0) return
       // (channel, month) 의 breakdown 존재 시 집계 행 (TTL country / Total LLM / TTL PRD) skip
-      if (isCountryTtl && cntyBreakdown[channel]?.[label]) return
-      if (isTotalLlm && llmBreakdown[channel]?.[label]) return
-      if (isPrdTtl && prdBreakdown[channel]?.[label]) return
+      const skipCnty = isCountryTtl && cntyBreakdown[channel]?.[label]
+      const skipLlm = isTotalLlm && llmBreakdown[channel]?.[label]
+      const skipPrd = isPrdTtl && prdBreakdown[channel]?.[label]
+      // Retail/May 만 진단 — 어떤 행이 sum 에 들어가는지 추적
+      if (channel === 'Retail' && label === 'May') {
+        const llmVal = llmCol >= 0 ? String(r[llmCol] || '').trim() : ''
+        const prd = prdCol >= 0 ? String(r[prdCol] || '').trim() : ''
+        const tag = (skipCnty || skipLlm || skipPrd) ? `SKIP(cnty=${skipCnty},llm=${skipLlm},prd=${prd ? skipPrd : 'n/a'})` : 'SUM'
+        console.log(`[parseCitTouchPoints] Retail/May ${tag}: country=${country} llm='${llmVal}' prd='${prd}' v=${v}`)
+      }
+      if (skipCnty || skipLlm || skipPrd) return
       channelMonthScores[channel][label] = (channelMonthScores[channel][label] || 0) + v
       channelCntyMonthScores[channel][cntyKey][label] = (channelCntyMonthScores[channel][cntyKey][label] || 0) + v
     })
