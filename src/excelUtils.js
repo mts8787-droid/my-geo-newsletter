@@ -967,21 +967,29 @@ function parseCitPageType(rows) {
   // 컬럼 위치 동적 detect (이전 schema 호환)
   const llmCol = header.findIndex(c => /^(llm\s*model|llm|model)$/i.test(String(c || '').trim()))
   const cntyCol = header.findIndex(c => /^country$|countries/i.test(String(c || '').trim()))
-  const ptCol = header.findIndex(c => /page\s*type/i.test(String(c || '').trim()))
+  // Page Type — 'Page Type' / 'Paye Type' (오타) / 'Type' 허용 (anchored)
+  const ptCol = header.findIndex(c => /^(pa[gy]e\s*type|type)$/i.test(String(c || '').trim()))
   const fallbackCnty = cntyCol >= 0 ? cntyCol : 0
-  const fallbackPt = ptCol >= 0 ? ptCol : 1
+  // Page Type 폴백 — detect 실패 시 위치 기반 (Country 다음 컬럼)
+  const fallbackPt = ptCol >= 0 ? ptCol : (fallbackCnty + 1)
   console.log(`[parseCitPageType] header row${headerIdx}: [${header.slice(0,10).map(c => JSON.stringify(String(c||'').trim())).join(', ')}]`)
   console.log(`[parseCitPageType] llmCol=${llmCol} cntyCol=${cntyCol} ptCol=${ptCol} (fallbackCnty=${fallbackCnty} fallbackPt=${fallbackPt})`)
 
-  // LG/SS 컬럼 페어 찾기 — Page Type 컬럼 이후부터 스캔
+  // LG/SS 컬럼 페어 찾기 — Page Type 컬럼 이후부터 스캔. 같은 월 라벨 중복 시 첫번째만 채택 (시트 오타 방지).
   const monthPairs = []
+  const seenMonth = new Set()
   const scanStart = Math.max(fallbackPt + 1, 2)
   for (let i = scanStart; i < header.length; i++) {
     const h = String(header[i] || '').trim()
     if (/\bLG\b/i.test(h)) {
       const ssCol = i + 1
       if (ssCol < header.length && /\bSS\b|\bSAMSUNG\b/i.test(String(header[ssCol] || ''))) {
-        monthPairs.push({ lg: i, ss: ssCol })
+        const monthMatch = h.match(/(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)/i)
+        const monthKey = monthMatch ? monthMatch[1].toLowerCase() : `col${i}`
+        if (!seenMonth.has(monthKey)) {
+          monthPairs.push({ lg: i, ss: ssCol })
+          seenMonth.add(monthKey)
+        }
       }
     }
   }
