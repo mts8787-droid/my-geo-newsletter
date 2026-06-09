@@ -1289,21 +1289,21 @@ function parseCitTouchPoints(rows) {
 
   // 1차: (country, channel) 단위로 TTL 행과 PRD-specific 행을 분리 수집
   // groupMap[country][channel] = { ttl: monthScores|null, prds: [{prd, monthScores}] }
+  // 2026-06 — LLM Model 컬럼 대응: Total 행 우선 사용, Total 비어있는 월은 LLM-specific 행 합으로 폴백.
+  // 시나리오: 2-4월은 Total 행만, 5월은 Total 행 없고 LLM 모델별 행 (Chat GPT/Gemini/...) 만 있는 경우.
+  // → Total 만 보면 5월 손실, LLM 합으로만 보면 2-4월 Total 과 중복 합산 위험.
+  // → 월별로 Total 데이터 우선, 없으면 LLM 합으로 채움.
   const groupMap = {}
   data.forEach(r => {
-    // 2026-06 — LLM Model 컬럼 추가된 시트: 'Total' 행만 기본 집계 (모델별 행은 byLlm 에 별도 보존 — 향후 확장).
-    // LLM Model 컬럼 없는 시트는 모든 행 통과 (호환).
-    if (llmCol >= 0) {
-      const llmVal = String(r[llmCol] || '').trim()
-      const isTotalLlm = !llmVal || /^(total|all)$/i.test(llmVal)
-      if (!isTotalLlm) return  // Total 외 LLM 행은 top-level 집계에서 제외
-    }
     const country = normCountry(r[countryCol])
     const channel = String(r[channelCol] || '').replace(/[()]/g, '').trim()
     const prd = prdCol >= 0 ? String(r[prdCol] || '').trim() : ''
     if (!country || !channel) return
     if (channel.toLowerCase() === 'total') return
     _seenCountries.add(country)
+
+    const llmVal = llmCol >= 0 ? String(r[llmCol] || '').trim() : ''
+    const isTotalLlm = !llmVal || /^(total|all)$/i.test(llmVal)
 
     const monthScores = {}
     monthLabels.forEach(({ col, label }) => {
@@ -1317,16 +1317,33 @@ function parseCitTouchPoints(rows) {
     const cntyKey = (country === 'TTL' || country === 'TOTAL') ? 'TTL' : country
 
     if (!groupMap[cntyKey]) groupMap[cntyKey] = {}
-    if (!groupMap[cntyKey][channel]) groupMap[cntyKey][channel] = { ttl: null, prds: [] }
+    if (!groupMap[cntyKey][channel]) groupMap[cntyKey][channel] = { total: null, llmAgg: null, prds: [] }
+    const grp = groupMap[cntyKey][channel]
     if (isPrdTtl) {
-      // 동일 (country, channel, PRD=TTL) 행이 여러개면 month 별 합산 (덮어쓰기 X — 시트가 월별 분할 행이어도 안전)
-      const existing = groupMap[cntyKey][channel].ttl || {}
+      // PRD=TTL 행 — Total LLM 과 LLM-specific 분리 저장
+      const targetKey = isTotalLlm ? 'total' : 'llmAgg'
+      const existing = grp[targetKey] || {}
       const merged = { ...existing }
       Object.entries(monthScores).forEach(([m, v]) => { merged[m] = (merged[m] || 0) + v })
-      groupMap[cntyKey][channel].ttl = merged
+      grp[targetKey] = merged
     } else {
-      groupMap[cntyKey][channel].prds.push({ prd, monthScores })
+      grp.prds.push({ prd, monthScores })
     }
+  })
+
+  // groupMap 후처리: 각 (country, channel) 의 최종 ttl 결정
+  // - Total LLM 행이 있으면 그것 우선
+  // - Total 에 빠진 월은 llmAgg 의 해당 월 값으로 폴백
+  Object.values(groupMap).forEach(channels => {
+    Object.values(channels).forEach(grp => {
+      const total = grp.total || {}
+      const llmAgg = grp.llmAgg || {}
+      const finalTtl = { ...total }
+      Object.entries(llmAgg).forEach(([m, v]) => {
+        if (!finalTtl[m] || finalTtl[m] === 0) finalTtl[m] = v
+      })
+      grp.ttl = Object.keys(finalTtl).length ? finalTtl : null
+    })
   })
 
   // 헬퍼: monthScores에서 latest month score
