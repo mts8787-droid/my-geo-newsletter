@@ -709,6 +709,11 @@ export function generateCitationHTML(meta, _total, _products, citations, dotcom,
           `<option value="${m}"${m === selectedMonth ? ' selected' : ''}>${m}</option>`
         ).join('')}</select>` : `<span class="fl-badge">${meta.period || '—'}</span>`}
       </div>
+      ${availLlmModels.length > 1 ? `<div class="fl-divider"></div>
+      <div class="fl-group">
+        <span class="fl-label">LLM Model</span>
+        <select id="cit-llm-select" onchange="switchCitLlmModel(this.value)" style="padding:4px 8px;border-radius:6px;border:1px solid #CBD5E1;font-size:13px;font-family:${FONT};background:#fff;cursor:pointer">${['Total', ...availLlmModels.filter(x => x !== 'Total').sort()].map(m => `<option value="${m}"${m === curLlmModel ? ' selected' : ''}>${m}</option>`).join('')}</select>
+      </div>` : ''}
       <div class="fl-divider"></div>
       <div class="fl-group">
         <span class="fl-label">Region</span>
@@ -726,11 +731,6 @@ export function generateCitationHTML(meta, _total, _products, citations, dotcom,
         <span class="fl-label">${lang === 'en' ? 'Product' : '제품'}</span>
         <label class="fl-chk-label fl-all-label"><input type="checkbox" class="fl-chk-all" data-target="prd" checked onchange="toggleAll(this,'prd')"><span>${allLabel}</span></label>
         ${prdCheckboxes}
-      </div>` : ''}
-      ${availLlmModels.length > 1 ? `<div class="fl-divider"></div>
-      <div class="fl-group">
-        <span class="fl-label">LLM Model</span>
-        <select id="cit-llm-select" onchange="switchCitLlmModel(this.value)" style="padding:4px 8px;border-radius:6px;border:1px solid #CBD5E1;font-size:13px;font-family:${FONT};background:#fff;cursor:pointer">${['Total', ...availLlmModels.filter(x => x !== 'Total').sort()].map(m => `<option value="${m}"${m === curLlmModel ? ' selected' : ''}>${m}</option>`).join('')}</select>
       </div>` : ''}
     </div>
   </div>`

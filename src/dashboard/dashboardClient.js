@@ -38,7 +38,11 @@ window.addEventListener('message',function(e){
   if(e.data&&e.data.type==='switchLang')switchLang(e.data.lang);
 });
 // LLM Model 변경 — 부모 React 어드민에게 알림 → llmModel state 갱신 → 미리보기 재렌더
+// LLM 드롭다운은 monthly 모드에서만 활성. 다른 모델 선택 시 weekly 면 monthly 로 자동 전환.
 function switchLlmModel(value){
+  if(value && value !== 'Total' && _periodMode !== 'monthly') {
+    switchPeriodPage('monthly');
+  }
   try { if(window.parent && window.parent!==window) window.parent.postMessage({type:'llmModel', value:value}, '*'); } catch(e){}
 }
 function switchLang(lang){
@@ -120,6 +124,9 @@ function switchPeriodPage(mode){
   var mnGrp=document.getElementById('vis-month-select-group');
   if(wkGrp)wkGrp.style.display=mode==='weekly'?'':'none';
   if(mnGrp)mnGrp.style.display=mode==='monthly'?'':'none';
+  // LLM Model 드롭다운 — monthly 에서만 활성
+  var llmGrp=document.getElementById('vis-llm-select-group');
+  if(llmGrp)llmGrp.style.display=mode==='monthly'?'':'none';
 }
 // 주차/월 선택 (Visibility 전용 — 제품 카드 점수 + 미니그래프 + 트렌드 truncation)
 var _curWeekIdx=-1;        // -1 = 최신 (wLabels 인덱스)

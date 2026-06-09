@@ -1426,9 +1426,9 @@ export function generateDashboardHTML(meta, total, products, citations, dotcom, 
         <span class="fl-label">${lang === 'en' ? 'Month' : '월'}</span>
         <select id="vis-month-select" onchange="switchVisMonth(parseInt(this.value))" style="${dropSelStyle}"${_monthOptsRaw.length > 0 ? '' : ' disabled'}>${monthOptionsHtml || '<option>—</option>'}</select>
       </div>
-      <div class="fl-group" id="vis-llm-select-group"${llmModels.length > 1 ? '' : ' style="display:none"'}>
+      <div class="fl-group" id="vis-llm-select-group" style="display:none">
         <span class="fl-label">LLM Model</span>
-        <select id="vis-llm-select" onchange="switchLlmModel(this.value)" style="${dropSelStyle}">${llmOptionsHtml}</select>
+        <select id="vis-llm-select" onchange="switchLlmModel(this.value)" style="${dropSelStyle}"${llmModels.length > 1 ? '' : ' disabled'}>${llmOptionsHtml}</select>
       </div>
     </div>
     <div class="fl-row">
