@@ -1472,6 +1472,14 @@ function parseCitTouchPoints(rows) {
     _monthSums[m.label] = sum
   })
   console.log(`[parseCitTouchPoints] citTouchPointsTrend 월별 합계:`, _monthSums, `→ validMonths:`, validMonths)
+  // 진단: TTL group 의 각 channel 별 최종 ttl monthScores + pickLatest 결과
+  const _ttlChannelDump = {}
+  Object.entries(groupMap.TTL || {}).forEach(([ch, grp]) => {
+    _ttlChannelDump[ch] = { total: grp.total, llmAgg: grp.llmAgg, finalTtl: grp.ttl, latestScore: pickLatest(grp.ttl || {}) }
+  })
+  console.log(`[parseCitTouchPoints] groupMap.TTL 채널별 dump:`, _ttlChannelDump)
+  // 진단: citations top 3
+  console.log(`[parseCitTouchPoints] citations top 3:`, citations.slice(0, 3).map(c => ({ source: c.source, score: c.score, monthScores: c.monthScores })))
 
   // 기본 월 자동 감지 → derivedPeriod
   // 최신 월의 데이터 양(채널 개수)이 직전 월의 50% 미만이면 직전 월을 기본으로
