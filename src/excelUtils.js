@@ -1369,6 +1369,8 @@ function parseCitTouchPoints(rows) {
     if (!isCountryTtl) _seenCountries.add(country)
 
     // PRD-specific 보존 (per-country 만 — TTL country 의 PRD-specific 는 별도 관리 없음)
+    // 2026-06 — LLM='TTL' 행은 PRD-specific 으로 보지 않음 (LLM breakdown 존재 월에선 모델별 행 sum 과 double-count).
+    // 월별로 LLM breakdown 있으면 LLM TTL 데이터는 그 월에 한해 제외.
     if (!isCountryTtl) {
       if (!groupMap[country]) groupMap[country] = {}
       if (!groupMap[country][channel]) groupMap[country][channel] = { ttl: null, prds: [] }
@@ -1376,7 +1378,10 @@ function parseCitTouchPoints(rows) {
         const pms = {}
         monthLabels.forEach(({ col, label }) => {
           const v = numVal(r[col])
-          if (v > 0) pms[label] = v
+          if (v <= 0) return
+          // (channel, month) 의 LLM breakdown 존재 시 LLM TTL 행 skip — Pass 2 sum 룰과 일관
+          if (isTotalLlm && llmBreakdown[channel]?.[label]) return
+          pms[label] = v
         })
         if (Object.keys(pms).length) groupMap[country][channel].prds.push({ prd, monthScores: pms })
       }
