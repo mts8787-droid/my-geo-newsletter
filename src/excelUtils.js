@@ -1296,10 +1296,12 @@ function parseCitTouchPoints(rows) {
 
   // 1차: (country, channel) 단위로 TTL 행과 PRD-specific 행을 분리 수집
   // groupMap[country][channel] = { ttl: monthScores|null, prds: [{prd, monthScores}] }
-  // 2026-06 — LLM Model 컬럼 대응: Total 행 우선 사용, Total 비어있는 월은 LLM-specific 행 합으로 폴백.
-  // 시나리오: 2-4월은 Total 행만, 5월은 Total 행 없고 LLM 모델별 행 (Chat GPT/Gemini/...) 만 있는 경우.
-  // → Total 만 보면 5월 손실, LLM 합으로만 보면 2-4월 Total 과 중복 합산 위험.
-  // → 월별로 Total 데이터 우선, 없으면 LLM 합으로 채움.
+  // 2026-06 — LLM Model 컬럼 대응: 각 차원의 TTL 은 그 차원 집계로 시트에 제공됨.
+  // 절대 다른 차원과 합산 X. 따라서:
+  // - LLM=Total 행만 처리 (LLM-specific 합산 X — Total = ChatGPT+Gemini+... 라서 중복)
+  // - 빈 LLM 행 skip (legacy 중복 방지)
+  // - PRD=TTL 또는 빈 PRD 행만 처리 (PRD-specific 행은 grp.prds 에 별도)
+  // - 같은 (country, channel) 의 여러 Total 행은 월별 overwrite (sum 아님 — 시트 분할 행 호환)
   const groupMap = {}
   data.forEach(r => {
     const country = normCountry(r[countryCol])
@@ -1309,11 +1311,13 @@ function parseCitTouchPoints(rows) {
     if (channel.toLowerCase() === 'total') return
     _seenCountries.add(country)
 
-    // LLM 분류: llmCol 있는 시트는 명시 'Total'/'All' 만 total 로 처리 — 빈 셀 skip (2배 합산 방지).
-    // llmCol 없는 legacy 시트는 모든 행 'Total' 로 간주 (호환).
     const llmVal = llmCol >= 0 ? String(r[llmCol] || '').trim() : ''
-    if (llmCol >= 0 && !llmVal) return  // LLM Model 칸 비어있는 행 skip (legacy 행 중복 방지)
-    const isTotalLlm = !llmVal || /^(total|all)$/i.test(llmVal)
+    // LLM Model 컬럼 있는 시트: Total/All 만 처리, 나머지 (빈 칸 / 모델별) 모두 skip
+    if (llmCol >= 0) {
+      const isTotalLlm = /^(total|all)$/i.test(llmVal)
+      if (!isTotalLlm) return  // 빈 LLM, 모델별 LLM 모두 skip
+    }
+    // llmCol 없는 legacy 시트는 모든 행 통과 (호환)
 
     const monthScores = {}
     monthLabels.forEach(({ col, label }) => {
@@ -1327,33 +1331,17 @@ function parseCitTouchPoints(rows) {
     const cntyKey = (country === 'TTL' || country === 'TOTAL') ? 'TTL' : country
 
     if (!groupMap[cntyKey]) groupMap[cntyKey] = {}
-    if (!groupMap[cntyKey][channel]) groupMap[cntyKey][channel] = { total: null, llmAgg: null, prds: [] }
+    if (!groupMap[cntyKey][channel]) groupMap[cntyKey][channel] = { ttl: null, prds: [] }
     const grp = groupMap[cntyKey][channel]
     if (isPrdTtl) {
-      // PRD=TTL 행 — Total LLM 과 LLM-specific 분리 저장
-      const targetKey = isTotalLlm ? 'total' : 'llmAgg'
-      const existing = grp[targetKey] || {}
+      // 월별 overwrite (sum 아님) — 같은 (country, channel) 여러 Total 행이 다른 월 데이터 가져도 안전
+      const existing = grp.ttl || {}
       const merged = { ...existing }
-      Object.entries(monthScores).forEach(([m, v]) => { merged[m] = (merged[m] || 0) + v })
-      grp[targetKey] = merged
+      Object.entries(monthScores).forEach(([m, v]) => { if (v > 0) merged[m] = v })
+      grp.ttl = merged
     } else {
       grp.prds.push({ prd, monthScores })
     }
-  })
-
-  // groupMap 후처리: 각 (country, channel) 의 최종 ttl 결정
-  // - Total LLM 행이 있으면 그것 우선
-  // - Total 에 빠진 월은 llmAgg 의 해당 월 값으로 폴백
-  Object.values(groupMap).forEach(channels => {
-    Object.values(channels).forEach(grp => {
-      const total = grp.total || {}
-      const llmAgg = grp.llmAgg || {}
-      const finalTtl = { ...total }
-      Object.entries(llmAgg).forEach(([m, v]) => {
-        if (!finalTtl[m] || finalTtl[m] === 0) finalTtl[m] = v
-      })
-      grp.ttl = Object.keys(finalTtl).length ? finalTtl : null
-    })
   })
 
   // 헬퍼: monthScores에서 latest month score
@@ -1472,10 +1460,10 @@ function parseCitTouchPoints(rows) {
     _monthSums[m.label] = sum
   })
   console.log(`[parseCitTouchPoints] citTouchPointsTrend 월별 합계:`, _monthSums, `→ validMonths:`, validMonths)
-  // 진단: TTL group 의 각 channel 별 최종 ttl monthScores + pickLatest 결과
+  // 진단: TTL group 의 각 channel 별 ttl monthScores + pickLatest 결과
   const _ttlChannelDump = {}
   Object.entries(groupMap.TTL || {}).forEach(([ch, grp]) => {
-    _ttlChannelDump[ch] = { total: grp.total, llmAgg: grp.llmAgg, finalTtl: grp.ttl, latestScore: pickLatest(grp.ttl || {}) }
+    _ttlChannelDump[ch] = { ttl: grp.ttl, latestScore: pickLatest(grp.ttl || {}) }
   })
   console.log(`[parseCitTouchPoints] groupMap.TTL 채널별 dump:`, _ttlChannelDump)
   // 진단: citations top 3
