@@ -311,20 +311,28 @@ describe('parseCitTouchPoints — 헤더 탐지 + 월 라벨 + citations 집계'
   const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
   beforeEach(() => { warnSpy.mockClear(); logSpy.mockClear() })
 
-  it('기본 fixture: Country/Channel/Feb/Mar → citations + citTouchPointsTrend', () => {
+  it('기본 fixture: Country/Channel/Feb/Mar → citations + citTouchPointsTrend (breakdown 감지: TTL 제외)', () => {
+    // 2026-06 규칙: 같은 (channel, month) 에 per-country 행이 있으면 TTL 행은 sum 에서 제외 (double-count 방지).
+    // Reddit Mar 는 US 행 존재 → TTL 35 제외 → Mar = US 18 만.
+    // YouTube Mar 는 TTL 만 존재 → TTL 25 사용.
     const rows = [
       ['Country', 'Channel',   'Feb', 'Mar'],
       ['TTL',     'Reddit',     30,    35],
       ['TTL',     'YouTube',    20,    25],
       ['US',      'Reddit',     15,    18],
+      ['JP',      'Reddit',     10,    12],
     ]
     const result = parseSheetRows(SHEET_NAMES.citTouchPoints, rows)
     expect(result.citations).toBeDefined()
     expect(result.citations.length).toBeGreaterThan(0)
     expect(result.citTouchPointsTrend).toBeDefined()
-    expect(result.citTouchPointsTrend.Reddit?.Mar).toBe(35)
+    // Reddit: per-country sum (TTL 제외) = 18 + 12 = 30
+    expect(result.citTouchPointsTrend.Reddit?.Mar).toBe(30)
+    // YouTube: TTL 만 존재 (breakdown 없음) → TTL 그대로 사용
+    expect(result.citTouchPointsTrend.YouTube?.Mar).toBe(25)
     // 국가별
     expect(result.citationsByCnty?.US).toBeDefined()
+    expect(result.citationsByCnty?.JP).toBeDefined()
   })
 
   it('헤더 없는 시트 → best-effort + warn', () => {

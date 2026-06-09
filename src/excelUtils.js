@@ -1296,52 +1296,102 @@ function parseCitTouchPoints(rows) {
 
   // 1차: (country, channel) 단위로 TTL 행과 PRD-specific 행을 분리 수집
   // groupMap[country][channel] = { ttl: monthScores|null, prds: [{prd, monthScores}] }
-  // 2026-06 — LLM Model 컬럼 대응: 각 차원의 TTL 은 그 차원 집계로 시트에 제공됨.
-  // 절대 다른 차원과 합산 X. 따라서:
-  // - LLM=Total 행만 처리 (LLM-specific 합산 X — Total = ChatGPT+Gemini+... 라서 중복)
-  // - 빈 LLM 행 skip (legacy 중복 방지)
-  // - PRD=TTL 또는 빈 PRD 행만 처리 (PRD-specific 행은 grp.prds 에 별도)
-  // - 같은 (country, channel) 의 여러 Total 행은 월별 overwrite (sum 아님 — 시트 분할 행 호환)
-  const groupMap = {}
+  // 2026-06 — 사용자 규칙 명확화:
+  //   국가는 무조건 TTL 빼고 (per-country sum)
+  //   PRD 는 4월부터 (= PRD breakdown 존재하는 월) TTL 빼고
+  //   모델은 4월부터 (= LLM breakdown 존재하는 월) Total 빼고
+  // → 월별로 breakdown 존재 여부 감지 후, 해당 월의 TTL/Total 행을 sum 에서 제외.
+  // → 시트의 집계 행 (Country=TTL, PRD=TTL, LLM=Total) 을 다른 차원과 중복 합산 안 함.
+
+  // Pass 1 — (channel, month) 단위로 Country/PRD/LLM breakdown 존재 감지
+  // 같은 (channel, month) 에 per-country/LLM-specific/PRD-specific 행이 있으면 그 (channel, month) 의 TTL/Total 행은 sum 에서 제외 (double-count 방지).
+  const cntyBreakdown = {}  // { channel: { month: true } }
+  const llmBreakdown = {}
+  const prdBreakdown = {}
+  data.forEach(r => {
+    const country = normCountry(r[countryCol])
+    const channel = String(r[channelCol] || '').replace(/[()]/g, '').trim()
+    if (!country || !channel) return
+    if (channel.toLowerCase() === 'total') return
+    const isCountryTtl = country === 'TTL' || country === 'TOTAL'
+    const llmVal = llmCol >= 0 ? String(r[llmCol] || '').trim() : ''
+    const isTotalLlm = !llmVal || /^(total|all)$/i.test(llmVal)
+    const prd = prdCol >= 0 ? String(r[prdCol] || '').trim() : ''
+    const isPrdTtl = !prd || /^(ttl|total)$/i.test(prd.toUpperCase())
+    monthLabels.forEach(({ col, label }) => {
+      const v = numVal(r[col])
+      if (v <= 0) return
+      if (!isCountryTtl) {
+        if (!cntyBreakdown[channel]) cntyBreakdown[channel] = {}
+        cntyBreakdown[channel][label] = true
+      }
+      if (!isTotalLlm) {
+        if (!llmBreakdown[channel]) llmBreakdown[channel] = {}
+        llmBreakdown[channel][label] = true
+      }
+      if (!isPrdTtl) {
+        if (!prdBreakdown[channel]) prdBreakdown[channel] = {}
+        prdBreakdown[channel][label] = true
+      }
+    })
+  })
+  const _bdSummary = Object.keys(cntyBreakdown).map(ch => `${ch}:[${Object.keys(cntyBreakdown[ch]).join(',')}]`).join(' ')
+  console.log(`[parseCitTouchPoints] Country breakdown 감지 (channel × month): ${_bdSummary || '(없음)'}`)
+  console.log(`[parseCitTouchPoints] LLM breakdown 감지:`, Object.keys(llmBreakdown).map(ch => `${ch}:[${Object.keys(llmBreakdown[ch]).join(',')}]`).join(' ') || '(없음)')
+  console.log(`[parseCitTouchPoints] PRD breakdown 감지:`, Object.keys(prdBreakdown).map(ch => `${ch}:[${Object.keys(prdBreakdown[ch]).join(',')}]`).join(' ') || '(없음)')
+
+  // Pass 2 — leaf row 만 sum
+  // Skip: Country=TTL 항상 / Model=Total (LLM breakdown 월) / PRD=TTL (PRD breakdown 월)
+  const channelMonthScores = {}      // citations 용: { channel: { month: sum } }
+  const channelCntyMonthScores = {}  // citationsByCnty 용: { channel: { country: { month: sum } } }
+  // PRD-specific 보존 (어드민 필터용) — citationsByPrd 등
+  const groupMap = {}  // { country: { channel: { ttl: null, prds: [{prd, monthScores}] } } } — PRD-specific 행 보존 (client PRD 필터용)
+
   data.forEach(r => {
     const country = normCountry(r[countryCol])
     const channel = String(r[channelCol] || '').replace(/[()]/g, '').trim()
     const prd = prdCol >= 0 ? String(r[prdCol] || '').trim() : ''
+    const llmVal = llmCol >= 0 ? String(r[llmCol] || '').trim() : ''
     if (!country || !channel) return
     if (channel.toLowerCase() === 'total') return
-    _seenCountries.add(country)
 
-    const llmVal = llmCol >= 0 ? String(r[llmCol] || '').trim() : ''
-    // LLM Model 컬럼 있는 시트: Total/All 만 처리, 나머지 (빈 칸 / 모델별) 모두 skip
-    if (llmCol >= 0) {
-      const isTotalLlm = /^(total|all)$/i.test(llmVal)
-      if (!isTotalLlm) return  // 빈 LLM, 모델별 LLM 모두 skip
-    }
-    // llmCol 없는 legacy 시트는 모든 행 통과 (호환)
-
-    const monthScores = {}
-    monthLabels.forEach(({ col, label }) => {
-      const val = numVal(r[col])
-      if (val > 0) monthScores[label] = val
-    })
-    if (Object.keys(monthScores).length === 0) return
-
+    const isCountryTtl = country === 'TTL' || country === 'TOTAL'
+    const isTotalLlm = !llmVal || /^(total|all)$/i.test(llmVal)
     const prdU = prd.toUpperCase()
     const isPrdTtl = !prd || prdU === 'TTL' || prdU === 'TOTAL'
-    const cntyKey = (country === 'TTL' || country === 'TOTAL') ? 'TTL' : country
 
-    if (!groupMap[cntyKey]) groupMap[cntyKey] = {}
-    if (!groupMap[cntyKey][channel]) groupMap[cntyKey][channel] = { ttl: null, prds: [] }
-    const grp = groupMap[cntyKey][channel]
-    if (isPrdTtl) {
-      // 월별 overwrite (sum 아님) — 같은 (country, channel) 여러 Total 행이 다른 월 데이터 가져도 안전
-      const existing = grp.ttl || {}
-      const merged = { ...existing }
-      Object.entries(monthScores).forEach(([m, v]) => { if (v > 0) merged[m] = v })
-      grp.ttl = merged
-    } else {
-      grp.prds.push({ prd, monthScores })
+    if (!isCountryTtl) _seenCountries.add(country)
+
+    // PRD-specific 보존 (per-country 만 — TTL country 의 PRD-specific 는 별도 관리 없음)
+    if (!isCountryTtl) {
+      if (!groupMap[country]) groupMap[country] = {}
+      if (!groupMap[country][channel]) groupMap[country][channel] = { ttl: null, prds: [] }
+      if (!isPrdTtl) {
+        const pms = {}
+        monthLabels.forEach(({ col, label }) => {
+          const v = numVal(r[col])
+          if (v > 0) pms[label] = v
+        })
+        if (Object.keys(pms).length) groupMap[country][channel].prds.push({ prd, monthScores: pms })
+      }
     }
+
+    // 월별 sum — breakdown 규칙 적용
+    if (!channelMonthScores[channel]) channelMonthScores[channel] = {}
+    if (!channelCntyMonthScores[channel]) channelCntyMonthScores[channel] = {}
+    const cntyKey = isCountryTtl ? 'TTL' : country
+    if (!channelCntyMonthScores[channel][cntyKey]) channelCntyMonthScores[channel][cntyKey] = {}
+
+    monthLabels.forEach(({ col, label }) => {
+      const v = numVal(r[col])
+      if (v <= 0) return
+      // (channel, month) 의 breakdown 존재 시 집계 행 (TTL country / Total LLM / TTL PRD) skip
+      if (isCountryTtl && cntyBreakdown[channel]?.[label]) return
+      if (isTotalLlm && llmBreakdown[channel]?.[label]) return
+      if (isPrdTtl && prdBreakdown[channel]?.[label]) return
+      channelMonthScores[channel][label] = (channelMonthScores[channel][label] || 0) + v
+      channelCntyMonthScores[channel][cntyKey][label] = (channelCntyMonthScores[channel][cntyKey][label] || 0) + v
+    })
   })
 
   // 헬퍼: monthScores에서 latest month score
@@ -1355,46 +1405,40 @@ function parseCitTouchPoints(rows) {
   // 헬퍼: PRD=TTL 행 monthScores만 사용 (폴백 없음 — 비어있는 월은 빈 채로 유지)
   const ttlScores = group => group.ttl ? { ...group.ttl } : {}
 
-  // 2차: TTL 국가 — citations / citTouchPointsTrend / citationsByPrdTtl 빌드
-  // 추가: 국가별 트렌드 (citTouchPointsTrendByCnty) — 클라이언트 필터용
+  // 2차: citations / citTouchPointsTrend — channelMonthScores 기반 (leaf row sum)
+  // 국가별 트렌드 — channelCntyMonthScores 기반 (TTL key 는 별도 — citationsByCnty 에 안 넣음)
   const citTouchPointsTrendByCnty = {}
-  Object.entries(groupMap).forEach(([country, channelMap]) => {
-    if (country === 'TTL') return
-    Object.entries(channelMap).forEach(([channel, group]) => {
-      const tScores = ttlScores(group)
-      if (Object.keys(tScores).length === 0) return
+  Object.entries(channelCntyMonthScores).forEach(([channel, byCountry]) => {
+    Object.entries(byCountry).forEach(([country, monthScores]) => {
+      if (country === 'TTL') return  // citTouchPointsTrendByCnty 는 per-country 만
+      if (Object.keys(monthScores).length === 0) return
       if (!citTouchPointsTrendByCnty[country]) citTouchPointsTrendByCnty[country] = {}
-      citTouchPointsTrendByCnty[country][channel] = tScores
+      citTouchPointsTrendByCnty[country][channel] = monthScores
     })
   })
 
-  const ttlGroup = groupMap.TTL || {}
-  Object.entries(ttlGroup).forEach(([channel, group]) => {
-    const tScores = ttlScores(group)
-    const score = pickLatest(tScores)
+  Object.entries(channelMonthScores).forEach(([channel, monthScores]) => {
+    const score = pickLatest(monthScores)
     if (score > 0) {
-      citations.push({ source: channel, category: '', score, delta: 0, ratio: 0, monthScores: tScores })
-      citTouchPointsTrend[channel] = tScores
+      citations.push({ source: channel, category: '', score, delta: 0, ratio: 0, monthScores })
+      citTouchPointsTrend[channel] = monthScores
     }
-    group.prds.forEach(({ prd, monthScores }) => {
-      const pScore = pickLatest(monthScores)
-      if (pScore > 0) {
-        if (!citationsByPrdTtl[prd]) citationsByPrdTtl[prd] = []
-        citationsByPrdTtl[prd].push({ source: channel, category: '', score: pScore, delta: 0, ratio: 0, monthScores })
-      }
-    })
   })
 
-  // 3차: 국가별 — citationsByCnty (PRD=TTL 집계행 + PRD-specific 행 보존) / citationsByPrdAgg 빌드
-  Object.entries(groupMap).forEach(([country, channelMap]) => {
-    if (country === 'TTL') return
-    Object.entries(channelMap).forEach(([channel, group]) => {
-      const tScores = ttlScores(group)
-      const aggScore = pickLatest(tScores)
+  // 3차: 국가별 — citationsByCnty (channelCntyMonthScores 기반, TTL 제외)
+  Object.entries(channelCntyMonthScores).forEach(([channel, byCountry]) => {
+    Object.entries(byCountry).forEach(([country, monthScores]) => {
+      if (country === 'TTL') return  // citationsByCnty 는 per-country 만
+      const aggScore = pickLatest(monthScores)
       if (aggScore > 0) {
         if (!citationsByCnty[country]) citationsByCnty[country] = []
-        citationsByCnty[country].push({ source: channel, category: '', score: aggScore, delta: 0, ratio: 0, monthScores: tScores, prd: '' })
+        citationsByCnty[country].push({ source: channel, category: '', score: aggScore, delta: 0, ratio: 0, monthScores, prd: '' })
       }
+    })
+  })
+  // PRD-specific 행은 groupMap 에서 추출
+  Object.entries(groupMap).forEach(([country, channelMap]) => {
+    Object.entries(channelMap).forEach(([channel, group]) => {
       group.prds.forEach(({ prd, monthScores }) => {
         const pScore = pickLatest(monthScores)
         if (pScore <= 0) return
