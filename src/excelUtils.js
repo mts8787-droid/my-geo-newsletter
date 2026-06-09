@@ -306,19 +306,26 @@ function parseVisSummary(rows) {
   }
   console.log(`[parseVisSummary] Table path 진입`)
 
-  // 2) 헤더 탐색
-  const headerRow = rows.find(r => r.some(c => String(c || '').trim().toUpperCase() === 'LG'))
-  const lgCol = headerRow ? headerRow.findIndex(c => String(c || '').trim().toUpperCase() === 'LG') : 4
-  const ssCol = headerRow
+  // 2) 헤더 탐색 — 어느 행이든 LG 또는 Date/Country/Division 키워드 있으면 헤더로 채택
+  let headerRow = rows.find(r => r.some(c => String(c || '').trim().toUpperCase() === 'LG'))
+  if (!headerRow) {
+    headerRow = rows.find(r => r.some(c => /^date$|^region$|^countries$|^country$|^divisions?$/i.test(String(c || '').trim())))
+  }
+  const lgColRaw = headerRow ? headerRow.findIndex(c => String(c || '').trim().toUpperCase() === 'LG') : -1
+  const ssColRaw = headerRow
     ? headerRow.findIndex(c => { const s = String(c || '').trim().toUpperCase(); return s === 'SAMSUNG' || s === 'SAMSUMG' })
-    : 5
-  const actualSsCol = ssCol >= 0 ? ssCol : lgCol + 1
-
+    : -1
   const dateCol = headerRow ? headerRow.findIndex(c => /date/i.test(String(c || '').trim())) : 0
   const cntyCol = headerRow ? headerRow.findIndex(c => /countries|country/i.test(String(c || '').trim())) : 2
   const divCol = headerRow ? headerRow.findIndex(c => /divisions?/i.test(String(c || '').trim())) : 3
   // LLM Model 컬럼 (2026-06 추가, E열) — 'LLM Model' / 'LLM' / 'Model' 모두 허용. 없으면 -1 → 모든 행 'Total' 간주.
   const llmCol = headerRow ? headerRow.findIndex(c => /^(llm\s*model|llm|model)$/i.test(String(c || '').trim())) : -1
+  // LG/SS 컬럼 폴백 — 헤더에 LG/SAMSUNG 텍스트 없을 때 LLM Model 다음 (또는 Division 다음) 위치 사용.
+  // 사용자 시트가 LG/SS 라벨 없이 위치 기반인 경우 호환.
+  const labelColsMax = Math.max(dateCol, cntyCol, divCol, llmCol)
+  const lgCol = lgColRaw >= 0 ? lgColRaw : (labelColsMax >= 0 ? labelColsMax + 1 : 4)
+  const actualSsCol = ssColRaw >= 0 ? ssColRaw : lgCol + 1
+  console.log(`[parseVisSummary] columns: date=${dateCol} cnty=${cntyCol} div=${divCol} llm=${llmCol} lg=${lgCol}(raw=${lgColRaw}) ss=${actualSsCol}(raw=${ssColRaw})`)
 
   // 전체 데이터 행 수집
   const monthlyVis = []
