@@ -345,13 +345,26 @@ function parseVisSummary(rows) {
     if (date && lg > 0) monthlyVis.push({ date, country, division, llmModel, lg, comp })
   })
 
-  // 전체 TOTAL 행 (country=TOTAL, division=TOTAL, llmModel=Total) → 날짜별 정렬 → 최신월=score, 이전월=prev
-  // llmModel='Total' 필터: 4월부터 추가된 모델별 행이 평균 왜곡 안 하도록.
-  const totalRows = monthlyVis.filter(r =>
+  // 전체 TOTAL 행 (country=TOTAL, division=TOTAL) → 날짜별 정렬 → 최신월=score, 이전월=prev
+  // 2026-06 — LLM breakdown 존재 월 (5월+): LLM='Total' 행 빼고 모델별 평균
+  //                LLM breakdown 없는 월 (2-4월): LLM='Total' 그대로
+  const isTotalLlmVis = m => m === 'Total' || m === 'TOTAL' || m === 'All'
+  const aggregateByLlm = group => {
+    const totalRow = group.find(r => isTotalLlmVis(r.llmModel))
+    const modelRows = group.filter(r => !isTotalLlmVis(r.llmModel))
+    if (modelRows.length === 0) return totalRow || group[0]
+    const avg = arr => arr.length ? arr.reduce((s, v) => s + v, 0) / arr.length : 0
+    return { ...group[0], llmModel: 'Total',
+      lg: avg(modelRows.map(m => m.lg || 0)),
+      comp: avg(modelRows.map(m => m.comp || 0)) }
+  }
+  const rawTotalRows = monthlyVis.filter(r =>
     (r.country === 'TOTAL' || r.country === 'TTL') &&
-    (r.division === 'TOTAL' || r.division === 'TTL' || r.division === '') &&
-    (r.llmModel === 'Total' || r.llmModel === 'TOTAL' || r.llmModel === 'All')
+    (r.division === 'TOTAL' || r.division === 'TTL' || r.division === '')
   )
+  const totalByDate = {}
+  rawTotalRows.forEach(r => { if (!totalByDate[r.date]) totalByDate[r.date] = []; totalByDate[r.date].push(r) })
+  const totalRows = Object.values(totalByDate).map(group => aggregateByLlm(group))
   totalRows.sort((a, b) => parseMonthFromDate(a.date) - parseMonthFromDate(b.date))
   const latestTotal = totalRows[totalRows.length - 1]
   const prevTotal = totalRows.length >= 2 ? totalRows[totalRows.length - 2] : null
@@ -371,39 +384,30 @@ function parseVisSummary(rows) {
   const vsComp = latestTotal.comp
   const prev = prevTotal ? prevTotal.lg : score
 
-  // 본부별 총합: 시트의 division=MS/HS/ES, country=TOTAL 행 값을 그대로 사용 (평균 계산 X)
+  // 본부별 총합: 시트의 division=MS/HS/ES, country=TOTAL 행 — 5월부터 모델별 평균
   const latestDate = latestTotal.date
   const prevDate = prevTotal ? prevTotal.date : null
-  function pickBuTotals(dateFilter) {
+  function pickGrouped(dateFilter, predicate, keyFn) {
+    const rows = monthlyVis.filter(r => r.date === dateFilter && predicate(r))
+    const byKey = {}
+    rows.forEach(r => { const k = keyFn(r); if (!byKey[k]) byKey[k] = []; byKey[k].push(r) })
     const out = {}
-    monthlyVis.filter(r =>
-      r.date === dateFilter &&
-      (r.country === 'TOTAL' || r.country === 'TTL') &&
-      r.division && r.division !== 'TOTAL' && r.division !== 'TTL' && r.division !== '' &&
-      (r.llmModel === 'Total' || r.llmModel === 'TOTAL' || r.llmModel === 'All')
-    ).forEach(r => {
-      out[r.division] = { lg: r.lg, comp: r.comp }
+    Object.entries(byKey).forEach(([k, group]) => {
+      const agg = aggregateByLlm(group)
+      out[k] = { lg: agg.lg, comp: agg.comp }
     })
     return out
   }
-  const buTotals = pickBuTotals(latestDate)
-  const buTotalsPrev = prevDate ? pickBuTotals(prevDate) : {}
+  const buPredicate = r => (r.country === 'TOTAL' || r.country === 'TTL') &&
+    r.division && r.division !== 'TOTAL' && r.division !== 'TTL' && r.division !== ''
+  const buTotals = pickGrouped(latestDate, buPredicate, r => r.division)
+  const buTotalsPrev = prevDate ? pickGrouped(prevDate, buPredicate, r => r.division) : {}
 
-  // 국가별 총합: 시트의 country=US/CA/UK/.., division=TOTAL 행 값을 그대로 사용
-  function pickCountryTotals(dateFilter) {
-    const out = {}
-    monthlyVis.filter(r =>
-      r.date === dateFilter &&
-      r.country && r.country !== 'TOTAL' && r.country !== 'TTL' &&
-      (r.division === 'TOTAL' || r.division === 'TTL' || r.division === '') &&
-      (r.llmModel === 'Total' || r.llmModel === 'TOTAL' || r.llmModel === 'All')
-    ).forEach(r => {
-      out[r.country] = { lg: r.lg, comp: r.comp }
-    })
-    return out
-  }
-  const countryTotals = pickCountryTotals(latestDate)
-  const countryTotalsPrev = prevDate ? pickCountryTotals(prevDate) : {}
+  // 국가별 총합: 시트의 country=US/CA/UK/.., division=TOTAL 행 — 5월부터 모델별 평균
+  const cntyPredicate = r => r.country && r.country !== 'TOTAL' && r.country !== 'TTL' &&
+    (r.division === 'TOTAL' || r.division === 'TTL' || r.division === '')
+  const countryTotals = pickGrouped(latestDate, cntyPredicate, r => r.country)
+  const countryTotalsPrev = prevDate ? pickGrouped(prevDate, cntyPredicate, r => r.country) : {}
 
   /** @type {any} */
   const result = {
@@ -519,13 +523,37 @@ function parseProductCntyFromRow(rows, headerIdx) {
   })
 
   // 제품별 월 데이터를 날짜순 정렬 → 최신월 = score, 이전월 = prev (MoM 계산용)
-  // llmModel='Total' 행만 사용 — 4월부터 추가된 모델별 행 (ChatGPT/Gemini 등) 이 평균 왜곡 안 함.
-  // 모델별 데이터는 monthlyScores 의 byLlm 에 보존 (어드민 필터 도입 시 사용).
+  // 2026-06 — 사용자 룰: 5월부터 (LLM breakdown 존재 월) LLM='Total' 행 빼고 모델별 평균 사용.
+  //   · LLM breakdown 없는 월 (2-4월): LLM='Total' 행 그대로
+  //   · LLM breakdown 있는 월 (5월+): 모델별 (Chat GPT/GPT Search/Perplexity/Gemini) 평균
+  // 모델별 raw 데이터는 byLlm 에 보존 — UI 에서 특정 모델 선택 시 사용.
+  const isTotalLlm = m => m === 'Total' || m === 'TOTAL' || m === 'All'
+  const aggregateMonth = group => {
+    // group: 같은 (id|country) + 같은 date 의 LLM 모델별 행 배열
+    const totalRow = group.find(e => isTotalLlm(e.llmModel))
+    const modelRows = group.filter(e => !isTotalLlm(e.llmModel))
+    if (modelRows.length === 0) return totalRow || group[0]  // breakdown 없음 — Total 그대로
+    // breakdown 존재 — 모델별 평균. allScores 도 키별 평균.
+    const avg = arr => arr.length ? arr.reduce((s, v) => s + v, 0) / arr.length : 0
+    const scoreAvg = avg(modelRows.map(e => e.score || 0))
+    const compAvg = avg(modelRows.map(e => e.vsComp ?? e.compScore ?? 0))
+    const allKeys = new Set()
+    modelRows.forEach(e => Object.keys(e.allScores || {}).forEach(k => allKeys.add(k)))
+    const allScoresAvg = {}
+    allKeys.forEach(k => {
+      const vs = modelRows.map(e => e.allScores?.[k]).filter(v => v != null)
+      if (vs.length) allScoresAvg[k] = vs.reduce((s, v) => s + v, 0) / vs.length
+    })
+    const base = totalRow || modelRows[0]
+    return { ...base, score: scoreAvg, vsComp: compAvg, compScore: compAvg, allScores: allScoresAvg, llmModel: 'Total' }
+  }
   console.log(`[parseProductCnty] TTL 제품: ${Object.keys(ttlByProduct).join(', ') || '없음'} / 국가별: ${Object.keys(cntyByKey).length}건`)
   const productsPartial = []
   for (const [id, allEntries] of Object.entries(ttlByProduct)) {
-    const totalEntries = allEntries.filter(e => e.llmModel === 'Total' || e.llmModel === 'TOTAL' || e.llmModel === 'All')
-    const entries = totalEntries.length ? totalEntries : allEntries  // 폴백: Total 없으면 전체 사용
+    // 월별 그룹화 → aggregateMonth 로 entries 생성
+    const byDate = {}
+    allEntries.forEach(e => { if (!byDate[e.date]) byDate[e.date] = []; byDate[e.date].push(e) })
+    const entries = Object.entries(byDate).map(([, group]) => aggregateMonth(group))
     entries.sort((a, b) => parseMonthFromDate(a.date) - parseMonthFromDate(b.date))
     const latest = entries[entries.length - 1]
     const prev = entries.length >= 2 ? entries[entries.length - 2].score : null
@@ -540,11 +568,13 @@ function parseProductCntyFromRow(rows, headerIdx) {
     productsPartial.push({ ...latest, prev, monthlyScores })
   }
 
-  // 국가별 데이터: 같은 제품+국가에 여러 월이 있으면 최신월=score, 이전월=prev — llmModel='Total' 기준
+  // 국가별 데이터: 같은 제품+국가에 여러 월이 있으면 최신월=score, 이전월=prev
+  // 위 룰 동일 적용 — 5월부터 모델별 평균
   const productsCnty = []
   for (const allEntries of Object.values(cntyByKey)) {
-    const totalEntries = allEntries.filter(e => e.llmModel === 'Total' || e.llmModel === 'TOTAL' || e.llmModel === 'All')
-    const entries = totalEntries.length ? totalEntries : allEntries
+    const byDate = {}
+    allEntries.forEach(e => { if (!byDate[e.date]) byDate[e.date] = []; byDate[e.date].push(e) })
+    const entries = Object.entries(byDate).map(([, group]) => aggregateMonth(group))
     entries.sort((a, b) => parseMonthFromDate(a.date) - parseMonthFromDate(b.date))
     const latest = entries[entries.length - 1]
     const prev = entries.length >= 2 ? entries[entries.length - 2].score : null
