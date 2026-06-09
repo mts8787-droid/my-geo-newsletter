@@ -1312,15 +1312,17 @@ function parseCitTouchPoints(rows) {
   const cntyBreakdown = {}  // { channel: { month: true } }
   const llmBreakdown = {}
   const prdBreakdown = {}
+  // 괄호 표기 ('(TTL)', '(Total)' 등) 도 처리 — 괄호 제거 후 매칭.
+  const stripParens = s => String(s || '').replace(/[()]/g, '').trim()
   data.forEach(r => {
     const country = normCountry(r[countryCol])
-    const channel = String(r[channelCol] || '').replace(/[()]/g, '').trim()
+    const channel = stripParens(r[channelCol])
     if (!country || !channel) return
     if (channel.toLowerCase() === 'total') return
     const isCountryTtl = country === 'TTL' || country === 'TOTAL'
-    const llmVal = llmCol >= 0 ? String(r[llmCol] || '').trim() : ''
+    const llmVal = llmCol >= 0 ? stripParens(r[llmCol]) : ''
     const isTotalLlm = !llmVal || /^(total|all|ttl)$/i.test(llmVal)
-    const prd = prdCol >= 0 ? String(r[prdCol] || '').trim() : ''
+    const prd = prdCol >= 0 ? stripParens(r[prdCol]) : ''
     const isPrdTtl = !prd || /^(ttl|total)$/i.test(prd.toUpperCase())
     monthLabels.forEach(({ col, label }) => {
       const v = numVal(r[col])
@@ -1353,9 +1355,9 @@ function parseCitTouchPoints(rows) {
 
   data.forEach(r => {
     const country = normCountry(r[countryCol])
-    const channel = String(r[channelCol] || '').replace(/[()]/g, '').trim()
-    const prd = prdCol >= 0 ? String(r[prdCol] || '').trim() : ''
-    const llmVal = llmCol >= 0 ? String(r[llmCol] || '').trim() : ''
+    const channel = stripParens(r[channelCol])
+    const prd = prdCol >= 0 ? stripParens(r[prdCol]) : ''
+    const llmVal = llmCol >= 0 ? stripParens(r[llmCol]) : ''
     if (!country || !channel) return
     if (channel.toLowerCase() === 'total') return
 
