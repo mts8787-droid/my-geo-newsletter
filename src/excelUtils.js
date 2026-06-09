@@ -1309,7 +1309,10 @@ function parseCitTouchPoints(rows) {
     if (channel.toLowerCase() === 'total') return
     _seenCountries.add(country)
 
+    // LLM 분류: llmCol 있는 시트는 명시 'Total'/'All' 만 total 로 처리 — 빈 셀 skip (2배 합산 방지).
+    // llmCol 없는 legacy 시트는 모든 행 'Total' 로 간주 (호환).
     const llmVal = llmCol >= 0 ? String(r[llmCol] || '').trim() : ''
+    if (llmCol >= 0 && !llmVal) return  // LLM Model 칸 비어있는 행 skip (legacy 행 중복 방지)
     const isTotalLlm = !llmVal || /^(total|all)$/i.test(llmVal)
 
     const monthScores = {}
