@@ -1158,6 +1158,9 @@ function parseCitPageType(rows) {
 }
 
 function parseCitTouchPoints(rows) {
+  // 진단: 첫 5행
+  console.log(`[parseCitTouchPoints] 총 ${rows.length}행, 첫 5행:`)
+  rows.slice(0, 5).forEach((r, i) => console.log(`  row${i}: [${(r || []).slice(0, 12).map(c => JSON.stringify(String(c || '').trim())).join(', ')}]`))
   // 헤더: (empty), Country, Channel, Feb, Mar, ... 또는 Country, Channel, Feb, ...
   // [Section Title] 형태의 제목 행은 건너뜀
   const headerIdx = rows.findIndex(r => {
@@ -1265,6 +1268,9 @@ function parseCitTouchPoints(rows) {
   }
   // 월 순 (chronological)으로 정렬 — score 역순 iteration이 "최신 월" 의미를 갖도록
   monthLabels.sort((a, b) => MONTHS_ORDER.indexOf(a.label) - MONTHS_ORDER.indexOf(b.label))
+  console.log(`[parseCitTouchPoints] header row${headerIdx}: [${(header || []).slice(0,12).map(c => JSON.stringify(String(c||'').trim())).join(', ')}]`)
+  console.log(`[parseCitTouchPoints] countryCol=${countryCol} channelCol=${channelCol} prdCol=${prdCol} dataStartCol=${dataStartCol}`)
+  console.log(`[parseCitTouchPoints] monthLabels (sorted):`, monthLabels.map(m => `${m.label}@col${m.col}`).join(', '))
 
   const data = rows.slice(startRow).filter(r => r.some(c => c != null && String(c).trim()))
   const citations = []
@@ -1418,6 +1424,14 @@ function parseCitTouchPoints(rows) {
   const validMonths = monthLabels.map(m => m.label).filter(label =>
     Object.values(citTouchPointsTrend).some(d => d[label] > 0)
   )
+  // 진단: citTouchPointsTrend 각 월별 합계
+  const _monthSums = {}
+  monthLabels.forEach(m => {
+    let sum = 0
+    Object.values(citTouchPointsTrend).forEach(d => { sum += (d[m.label] || 0) })
+    _monthSums[m.label] = sum
+  })
+  console.log(`[parseCitTouchPoints] citTouchPointsTrend 월별 합계:`, _monthSums, `→ validMonths:`, validMonths)
 
   // 기본 월 자동 감지 → derivedPeriod
   // 최신 월의 데이터 양(채널 개수)이 직전 월의 50% 미만이면 직전 월을 기본으로
