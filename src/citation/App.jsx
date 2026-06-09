@@ -11,11 +11,11 @@ const MODE = 'citation'
 const STORAGE_KEY = 'geo-citation-cache'
 
 // ─── Citation 대시보드 미리보기 ─────────────────────────────────────────────
-function CitationPreview({ meta, setMeta, citations, dotcom, citationsCnty = [], citationsByCnty = {}, citationsByPrd = {}, dotcomByCnty = {}, lang = 'ko', citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, dotcomTrend, dotcomTrendMonths }) {
+function CitationPreview({ meta, setMeta, citations, dotcom, citationsCnty = [], citationsByCnty = {}, citationsByPrd = {}, dotcomByCnty = {}, lang = 'ko', citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, dotcomTrend, dotcomTrendMonths, dotcomByLlm, llmModel }) {
   const iframeRef = useRef(null)
   const html = useMemo(
-    () => generateCitationHTML(meta, null, [], citations, dotcom, lang, [], citationsCnty, { citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, dotcomTrend, dotcomTrendMonths }, citationsByCnty, dotcomByCnty, citationsByPrd),
-    [meta, citations, dotcom, lang, citationsCnty, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, citationsByCnty, citationsByPrd, dotcomByCnty, dotcomTrend, dotcomTrendMonths]
+    () => generateCitationHTML(meta, null, [], citations, dotcom, lang, [], citationsCnty, { citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, dotcomTrend, dotcomTrendMonths, dotcomByLlm, llmModel }, citationsByCnty, dotcomByCnty, citationsByPrd),
+    [meta, citations, dotcom, lang, citationsCnty, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, citationsByCnty, citationsByPrd, dotcomByCnty, dotcomTrend, dotcomTrendMonths, dotcomByLlm, llmModel]
   )
 
   React.useEffect(() => {
@@ -54,6 +54,8 @@ export default function App() {
   const [citDomainMonths, setCitDomainMonths] = useState(cache?.citDomainMonths ?? [])
   const [dotcomTrend, setDotcomTrend] = useState(cache?.dotcomTrend ?? {})
   const [dotcomTrendMonths, setDotcomTrendMonths] = useState(cache?.dotcomTrendMonths ?? [])
+  const [dotcomByLlm, setDotcomByLlm] = useState(cache?.dotcomByLlm ?? null)
+  const [llmModel, setLlmModel] = useState('Total')
   const [previewLang,   setPreviewLang]   = useState('ko')
   const [snapshots,     setSnapshots]     = useState([])
   const [snapName,      setSnapName]      = useState('')
@@ -71,6 +73,15 @@ export default function App() {
   )
 
   useEffect(() => { fetchSnapshots(MODE).then(setSnapshots) }, [])
+
+  // iframe 의 LLM Model 드롭다운 → postMessage → 부모 state 갱신
+  useEffect(() => {
+    const handler = e => {
+      if (e?.data?.type === 'llmModel' && typeof e.data.value === 'string') setLlmModel(e.data.value)
+    }
+    window.addEventListener('message', handler)
+    return () => window.removeEventListener('message', handler)
+  }, [])
 
   // 서버 동기화 데이터 로드
   useEffect(() => {
@@ -97,6 +108,7 @@ export default function App() {
       if (d.citDomainMonths) setCitDomainMonths(d.citDomainMonths)
       if (d.dotcomTrend) setDotcomTrend(d.dotcomTrend)
       if (d.dotcomTrendMonths) setDotcomTrendMonths(d.dotcomTrendMonths)
+      if (d.dotcomByLlm) setDotcomByLlm(d.dotcomByLlm)
     })
     return () => { cancelled = true }
   }, [])
@@ -261,7 +273,7 @@ export default function App() {
 
         {/* 컨텐츠 영역 */}
         <div style={{ flex: 1, overflow: 'hidden' }}>
-          <CitationPreview meta={meta} setMeta={setMeta} citations={resolved.citations} dotcom={dotcom} citationsCnty={resolved.citationsCnty} citationsByCnty={citationsByCnty} citationsByPrd={citationsByPrd} dotcomByCnty={dotcomByCnty} lang={previewLang} citTouchPointsTrend={citTouchPointsTrend} citTrendMonths={citTrendMonths} citDomainTrend={citDomainTrend} citDomainMonths={citDomainMonths} dotcomTrend={dotcomTrend} dotcomTrendMonths={dotcomTrendMonths} />
+          <CitationPreview meta={meta} setMeta={setMeta} citations={resolved.citations} dotcom={dotcom} citationsCnty={resolved.citationsCnty} citationsByCnty={citationsByCnty} citationsByPrd={citationsByPrd} dotcomByCnty={dotcomByCnty} lang={previewLang} citTouchPointsTrend={citTouchPointsTrend} citTrendMonths={citTrendMonths} citDomainTrend={citDomainTrend} citDomainMonths={citDomainMonths} dotcomTrend={dotcomTrend} dotcomTrendMonths={dotcomTrendMonths} dotcomByLlm={dotcomByLlm} llmModel={llmModel} />
         </div>
         <div style={{ height: 28, borderTop: '1px solid #1E293B', background: 'rgba(15,23,42,0.95)',
           display: 'flex', alignItems: 'center', justifyContent: 'flex-end', padding: '0 16px', flexShrink: 0 }}>

@@ -504,10 +504,38 @@ function citDomainBumpChartHtml(citDomainTrend, citDomainMonths, meta, t, lang) 
 
 export function generateCitationHTML(meta, _total, _products, citations, dotcom, lang, _productsCnty, citationsCnty, trendData, citationsByCnty, dotcomByCnty, citationsByPrd) {
   const t = T[lang] || T.ko
-  const { citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, dotcomTrend, dotcomTrendMonths } = trendData || {}
+  const { citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, dotcomByLlm, llmModel: optLlmModel } = trendData || {}
+  let { dotcomTrend, dotcomTrendMonths } = trendData || {}
   citationsByCnty = citationsByCnty || {}
   citationsByPrd = citationsByPrd || {}
   dotcomByCnty = dotcomByCnty || {}
+
+  // LLM Model 필터 (2026-06) — dotcomByLlm 가 있고 선택 모델이 'Total' 외 면 dotcom 재계산
+  const curLlmModel = optLlmModel || 'Total'
+  if (dotcomByLlm && curLlmModel !== 'Total') {
+    const picked = dotcomByLlm[curLlmModel]
+    if (picked) {
+      // dotcomTrend → byMonth 재구성 (후속 month 필터에서 사용)
+      const byMonth = {}
+      Object.entries(picked.dotcomTrend || {}).forEach(([pageType, months]) => {
+        Object.entries(months || {}).forEach(([month, vals]) => {
+          if (!byMonth[month]) byMonth[month] = { lg: {}, samsung: {} }
+          if (vals && vals.lg != null) byMonth[month].lg[pageType] = vals.lg
+          if (vals && vals.samsung != null) byMonth[month].samsung[pageType] = vals.samsung
+        })
+      })
+      dotcom = { lg: picked.lg || {}, samsung: picked.samsung || {}, byMonth, byCntyByMonth: {} }
+      dotcomByCnty = picked.dotcomByCnty || {}
+      dotcomTrend = picked.dotcomTrend || {}
+      // dotcomTrendMonths 재계산
+      const MONTH_ORDER = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+      const monthSet = new Set()
+      Object.values(picked.dotcomTrend || {}).forEach(m => Object.keys(m || {}).forEach(k => monthSet.add(k)))
+      dotcomTrendMonths = MONTH_ORDER.filter(m => monthSet.has(m))
+    }
+  }
+  // 가용 LLM 모델 목록
+  const availLlmModels = dotcomByLlm ? Object.keys(dotcomByLlm) : []
 
   // 원본 데이터 보존 (클라이언트 월 전환용)
   const rawCitations = citations ? JSON.parse(JSON.stringify(citations)) : []
@@ -599,7 +627,8 @@ export function generateCitationHTML(meta, _total, _products, citations, dotcom,
   }
 
   // Dotcom 기간 필터: 선택 월 → 없으면 가장 최신 데이터 있는 월로 폴백
-  if (selectedMonth && dotcom) {
+  // ※ LLM 필터 활성 시 (Total 외) skip — 이미 LLM-resolved 된 값 그대로 유지
+  if (selectedMonth && dotcom && curLlmModel === 'Total') {
     const hasMonth = m => !!(dotcom.byMonth?.[m]) || (dotcom.byCntyByMonth?.[m] && Object.keys(dotcom.byCntyByMonth[m]).length > 0)
     let useMonth = selectedMonth
     if (!hasMonth(useMonth)) {
@@ -697,6 +726,11 @@ export function generateCitationHTML(meta, _total, _products, citations, dotcom,
         <span class="fl-label">${lang === 'en' ? 'Product' : '제품'}</span>
         <label class="fl-chk-label fl-all-label"><input type="checkbox" class="fl-chk-all" data-target="prd" checked onchange="toggleAll(this,'prd')"><span>${allLabel}</span></label>
         ${prdCheckboxes}
+      </div>` : ''}
+      ${availLlmModels.length > 1 ? `<div class="fl-divider"></div>
+      <div class="fl-group">
+        <span class="fl-label">LLM Model</span>
+        <select id="cit-llm-select" onchange="switchCitLlmModel(this.value)" style="padding:4px 8px;border-radius:6px;border:1px solid #CBD5E1;font-size:13px;font-family:${FONT};background:#fff;cursor:pointer">${['Total', ...availLlmModels.filter(x => x !== 'Total').sort()].map(m => `<option value="${m}"${m === curLlmModel ? ' selected' : ''}>${m}</option>`).join('')}</select>
       </div>` : ''}
     </div>
   </div>`
@@ -1587,6 +1621,10 @@ function switchCitLang(lang){
   else if(path.indexOf('-EN')>0)window.location.href=path.replace('-EN',lang==='ko'?'-KO':'-EN');
   // iframe 안에서 호출된 경우 부모에게 알림
   try{if(window.parent!==window)window.parent.postMessage({type:'switchLang',lang:lang},'*')}catch(e){}
+}
+function switchCitLlmModel(value){
+  // 부모 React 어드민에게 알림 → llmModel state 갱신 → 미리보기 재렌더
+  try{if(window.parent&&window.parent!==window)window.parent.postMessage({type:'llmModel',value:value},'*')}catch(e){}
 }
 function onFilterChange(){
   updateAllCheckbox('region');

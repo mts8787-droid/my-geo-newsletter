@@ -125,6 +125,25 @@ export function resolveTotalByLlm(total, monthlyVis, llmModel) {
   }
 }
 
+// dotcom 데이터를 선택 LLM Model 로 재계산.
+// 입력: dotcomByLlm = { [llmModel]: { lg, samsung, dotcomByCnty, dotcomTrend } } (parser 가 보존)
+// 출력: { dotcom, dotcomByCnty, dotcomTrend, dotcomTrendMonths } — citation page 가 사용
+export function resolveDotcomByLlm(dotcomByLlm, llmModel, fallback) {
+  if (!dotcomByLlm || !llmModel || llmModel === LLM_TOTAL) return fallback || null
+  const picked = dotcomByLlm[llmModel]
+  if (!picked) return fallback || null  // 선택 모델 데이터 없으면 폴백 (Total)
+  const dotcomTrendMonths = picked.dotcomTrend ? Array.from(new Set(Object.values(picked.dotcomTrend).flatMap(m => Object.keys(m || {})))) : []
+  // 'Jan,Feb,...' 순서로 정렬
+  const MONTH_ORDER = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+  dotcomTrendMonths.sort((a, b) => MONTH_ORDER.indexOf(a) - MONTH_ORDER.indexOf(b))
+  return {
+    dotcom: { lg: picked.lg || {}, samsung: picked.samsung || {} },
+    dotcomByCnty: picked.dotcomByCnty || {},
+    dotcomTrend: picked.dotcomTrend || {},
+    dotcomTrendMonths,
+  }
+}
+
 // 어드민 React 에서 한 번에 적용: { products, productsCnty, total, monthlyVis } → 재계산된 셋 반환
 export function applyLlmFilter(data, llmModel) {
   if (!llmModel || llmModel === LLM_TOTAL) return data
