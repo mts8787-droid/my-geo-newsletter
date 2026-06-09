@@ -1564,16 +1564,20 @@ function parseCitTouchPoints(rows) {
 }
 
 function parseCitDomain(rows) {
+  // 진단: 첫 5행 출력
+  console.log(`[parseCitDomain] 총 ${rows.length}행, 첫 5행:`)
+  rows.slice(0, 5).forEach((r, i) => console.log(`  row${i}: [${(r || []).slice(0, 14).map(c => JSON.stringify(String(c || '').trim())).join(', ')}]`))
+
   // 새 구조: No | Region | Domain | Type | Feb | Mar | Apr | ...
   // Region: Global(=TTL), US, CA, UK 등 인라인 국가
-  const REGION_MAP = { 'GLOBAL': 'TTL', 'TOTAL': 'TTL', '미국':'US','캐나다':'CA','영국':'UK','독일':'DE','스페인':'ES','브라질':'BR','멕시코':'MX','인도':'IN','호주':'AU','베트남':'VN' }
+  const REGION_MAP = { 'GLOBAL': 'TTL', 'TOTAL': 'TTL', 'TTL': 'TTL', '미국':'US','캐나다':'CA','영국':'UK','독일':'DE','스페인':'ES','브라질':'BR','멕시코':'MX','인도':'IN','호주':'AU','베트남':'VN' }
   const COUNTRIES = ['US','CA','UK','DE','ES','BR','MX','AU','VN','IN','TTL','GLOBAL']
   const MONTH_RE = /^(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|[0-9]{1,2}월)/i
 
   // 헤더 행 찾기 — No/Region/PRD 또는 Domain 키워드가 있는 행
   let headerRow = null
   let startIdx = 0
-  let noCol = -1, regionCol = -1, domainCol = -1, typeCol = -1, prdCol = -1, dataStartCol = 4
+  let noCol = -1, regionCol = -1, domainCol = -1, typeCol = -1, prdCol = -1, llmCol = -1, dataStartCol = 4
 
   for (let i = 0; i < Math.min(rows.length, 10); i++) {
     const r = rows[i]
@@ -1592,7 +1596,10 @@ function parseCitDomain(rows) {
         if (s === 'region' && regionCol < 0) regionCol = j
         if ((s === 'domain' || s === 'domian') && domainCol < 0) domainCol = j
         if (s === 'type' && typeCol < 0) typeCol = j
+        if (/^(llm\s*model|llm|model)$/i.test(s) && llmCol < 0) llmCol = j
       }
+      console.log(`[parseCitDomain] header row${i}: [${(r || []).slice(0,14).map(c => JSON.stringify(String(c||'').trim())).join(', ')}]`)
+      console.log(`[parseCitDomain] columns: prdCol=${prdCol} noCol=${noCol} regionCol=${regionCol} domainCol=${domainCol} typeCol=${typeCol} llmCol=${llmCol}`)
       break
     }
     if (String(r[0] || '').trim().startsWith('[') || !String(r[0] || '').trim()) {
@@ -1675,6 +1682,8 @@ function parseCitDomain(rows) {
       }
     })
   }
+  console.log(`[parseCitDomain] domainMonthLabels: ${domainMonthLabels.map(m => `${m.label}@col${m.col}`).join(', ') || '(없음)'}`)
+  console.log(`[parseCitDomain] monthBlocks (v3 layout): ${monthBlocks.length}개`, monthBlocks.map(b => `${b.label}@col${b.monthCol}(r${b.regionCol}/d${b.domainCol}/t${b.typeCol})`).join(', '))
 
   const result = []
   const citDomainTrend = {}
@@ -1744,6 +1753,16 @@ function parseCitDomain(rows) {
     })
     // _hasTtl 플래그 정리 (출력에 불필요)
     Object.values(citDomainTrend).forEach(v => { delete v._hasTtl })
+    // 진단: aggMap 통계 — cnty / prd 분포
+    const _cntyDist = {}, _prdDist = {}
+    Object.values(aggMap).forEach(e => {
+      _cntyDist[e.cnty] = (_cntyDist[e.cnty] || 0) + 1
+      _prdDist[e.prd || '(empty)'] = (_prdDist[e.prd || '(empty)'] || 0) + 1
+    })
+    console.log(`[parseCitDomain] aggMap entries: ${Object.keys(aggMap).length} / cnty dist:`, _cntyDist, `/ prd dist:`, _prdDist)
+    // 5월 cnty=TTL 행 sample (double-count 검증용)
+    const _mayTtlSample = Object.values(aggMap).filter(e => e.cnty === 'TTL' && (e.monthScores.May > 0)).slice(0, 5)
+    console.log(`[parseCitDomain] May cnty=TTL sample (${_mayTtlSample.length}건):`, _mayTtlSample.map(e => `${e.domain}|prd='${e.prd}'|type='${e.type}'|May=${e.monthScores.May}`).join(' / '))
     // 국가별 정렬: rank가 cntyRanks 누적 순서 기반이라 citations 큰 순으로 재정렬 후 rank 재할당
     const byCnty = {}
     result.forEach(r => { if (!byCnty[r.cnty]) byCnty[r.cnty] = []; byCnty[r.cnty].push(r) })
