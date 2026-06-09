@@ -1179,12 +1179,14 @@ function parseCitTouchPoints(rows) {
 
   // 1) 라벨 컬럼 검출 (PRD/NO/Country/Channel/example 등 — 헤더 텍스트가 명시된 비-월 컬럼)
   // 시트 예: PRD | NO | Country | Channel | example | Feb | Mar | Apr
-  let countryCol = -1, channelCol = -1, prdCol = -1
+  // 2026-06 이후 시트에 LLM Model 컬럼 추가 가능 — 자동 detect.
+  let countryCol = -1, channelCol = -1, prdCol = -1, llmCol = -1
   for (let i = 0; i < header.length; i++) {
     const s = String(header[i] || '').trim().toLowerCase()
     if (s === 'country' && countryCol < 0) countryCol = i
     if (s === 'channel' && channelCol < 0) channelCol = i
     if (s === 'prd' && prdCol < 0) prdCol = i
+    if (/^(llm\s*model|llm|model)$/i.test(s) && llmCol < 0) llmCol = i
   }
 
   // 월 라벨을 canonical 짧은 이름으로 정규화 ('Apr 2026' / '4월' / 'April' → 'Apr')
@@ -1289,6 +1291,13 @@ function parseCitTouchPoints(rows) {
   // groupMap[country][channel] = { ttl: monthScores|null, prds: [{prd, monthScores}] }
   const groupMap = {}
   data.forEach(r => {
+    // 2026-06 — LLM Model 컬럼 추가된 시트: 'Total' 행만 기본 집계 (모델별 행은 byLlm 에 별도 보존 — 향후 확장).
+    // LLM Model 컬럼 없는 시트는 모든 행 통과 (호환).
+    if (llmCol >= 0) {
+      const llmVal = String(r[llmCol] || '').trim()
+      const isTotalLlm = !llmVal || /^(total|all)$/i.test(llmVal)
+      if (!isTotalLlm) return  // Total 외 LLM 행은 top-level 집계에서 제외
+    }
     const country = normCountry(r[countryCol])
     const channel = String(r[channelCol] || '').replace(/[()]/g, '').trim()
     const prd = prdCol >= 0 ? String(r[prdCol] || '').trim() : ''
@@ -1310,7 +1319,11 @@ function parseCitTouchPoints(rows) {
     if (!groupMap[cntyKey]) groupMap[cntyKey] = {}
     if (!groupMap[cntyKey][channel]) groupMap[cntyKey][channel] = { ttl: null, prds: [] }
     if (isPrdTtl) {
-      groupMap[cntyKey][channel].ttl = monthScores
+      // 동일 (country, channel, PRD=TTL) 행이 여러개면 month 별 합산 (덮어쓰기 X — 시트가 월별 분할 행이어도 안전)
+      const existing = groupMap[cntyKey][channel].ttl || {}
+      const merged = { ...existing }
+      Object.entries(monthScores).forEach(([m, v]) => { merged[m] = (merged[m] || 0) + v })
+      groupMap[cntyKey][channel].ttl = merged
     } else {
       groupMap[cntyKey][channel].prds.push({ prd, monthScores })
     }
