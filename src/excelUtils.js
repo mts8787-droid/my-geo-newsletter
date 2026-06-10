@@ -1889,24 +1889,40 @@ function parseCitDomain(rows) {
       cntyRanks[e.cnty] = (cntyRanks[e.cnty] || 0) + 1
       result.push({ cnty: e.cnty, rank: cntyRanks[e.cnty], domain: e.domain, type: e.type, citations, monthScores: e.monthScores, prd: e.prd })
       const key = `${e.cnty}|${e.domain}`
-      // 트렌드: PRD=TTL 우선 (시트의 grand total). 다른 type/PRD 의 월 데이터도 merge (보완).
+      // 트렌드: PRD=TTL 우선권을 **월 단위** 로 부여 (per-slot 게이팅 X — 회귀:
+      // PRD=TTL 행이 일부 월만 갖고 있으면 (예: May-only) 나머지 월의 PRD-specific
+      // 데이터가 전면 차단되어 2~4월 트렌드 누락. order-dependent 이기도 했음.)
       const isTtlPrd = !e.prd || /^(ttl|total)$/i.test(e.prd)
       if (!citDomainTrend[key]) {
-        citDomainTrend[key] = { cnty: e.cnty, domain: e.domain, type: e.type, months: {}, _hasTtl: false }
+        citDomainTrend[key] = { cnty: e.cnty, domain: e.domain, type: e.type, months: {}, _ttlMonths: {} }
       }
       const slot = citDomainTrend[key]
-      // PRD=TTL 데이터가 등장하면 type/months 갱신 우선권 부여 (grand total)
       if (isTtlPrd) {
         slot.type = e.type || slot.type
-        slot._hasTtl = true
-        Object.entries(e.monthScores).forEach(([m, v]) => { if (v > 0) slot.months[m] = v })
-      } else if (!slot._hasTtl) {
-        // PRD-specific 폴백: 빈 월에만 채워넣기
-        Object.entries(e.monthScores).forEach(([m, v]) => { if (v > 0 && !slot.months[m]) slot.months[m] = v })
+        Object.entries(e.monthScores).forEach(([m, v]) => {
+          if (!(v > 0)) return
+          if (slot._ttlMonths[m]) slot.months[m] += v       // 복수 TTL 행 (type 상이) 합산
+          else { slot.months[m] = v; slot._ttlMonths[m] = true }  // TTL 이 그 월 claim — 폴백값 대체
+        })
+      } else {
+        // PRD-specific 폴백: TTL 이 claim 안 한 월에만 합산 (여러 PRD 행 = total)
+        Object.entries(e.monthScores).forEach(([m, v]) => {
+          if (!(v > 0) || slot._ttlMonths[m]) return
+          slot.months[m] = (slot.months[m] || 0) + v
+        })
       }
     })
-    // _hasTtl 플래그 정리 (출력에 불필요)
-    Object.values(citDomainTrend).forEach(v => { delete v._hasTtl })
+    // 내부 마커 정리 (출력에 불필요)
+    Object.values(citDomainTrend).forEach(v => { delete v._ttlMonths })
+    // 진단: 트렌드 월 커버리지 — TTL 키 vs 국가 키 분리 (2~4월 누락 검증용)
+    const _trendCov = { TTL: {}, CNTY: {} }
+    Object.entries(citDomainTrend).forEach(([k, v]) => {
+      const grp = k.startsWith('TTL|') ? 'TTL' : 'CNTY'
+      Object.entries(v.months).forEach(([m, val]) => {
+        if (val > 0) _trendCov[grp][m] = (_trendCov[grp][m] || 0) + 1
+      })
+    })
+    console.log(`[parseCitDomain] trend 월 커버리지 (키 수) — TTL:`, _trendCov.TTL, `/ CNTY:`, _trendCov.CNTY)
     // 진단: aggMap 통계 — cnty / prd 분포
     const _cntyDist = {}, _prdDist = {}
     Object.values(aggMap).forEach(e => {
