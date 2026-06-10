@@ -25,7 +25,11 @@ async function fetchSheet(sheetId, sheetName) {
   const XLSX = await loadXlsx()
   const wb  = XLSX.read(csv, { type: 'string' })
   const ws  = wb.Sheets[wb.SheetNames[0]]
-  return XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' })
+  const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' })
+  // 진단 — gviz CSV 가 실제로 몇 행을 반환했는지 (시트 필터로 행이 숨겨지면 gviz 가 제외함)
+  const csvLines = csv.split('\n').length
+  console.log(`[fetchSheet] "${sheetName}": csv ${csv.length}자/${csvLines}줄 → ${rows.length}행 × ${rows[0]?.length ?? 0}컬럼`)
+  return rows
 }
 
 export async function syncFromGoogleSheets(sheetId, onProgress) {

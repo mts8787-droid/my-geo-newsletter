@@ -257,13 +257,14 @@ export default function CitationSidebar({
           </div>
         )}
         {debugLog && (
-          <div style={{
-            padding: '8px 10px', borderRadius: 7, fontSize: 10, fontFamily: 'monospace', lineHeight: 1.7,
-            background: '#0F172A', color: '#94A3B8',
-            border: '1px solid #1E293B', marginBottom: 8,
-            whiteSpace: 'pre-wrap', wordBreak: 'break-all', maxHeight: 200, overflowY: 'auto',
-          }}>
-            {debugLog}
+          <div style={{ border: '1px solid #1E293B', borderRadius: 7, background: '#0F172A', marginBottom: 8 }}>
+            <div style={{
+              padding: '8px 10px', fontSize: 10, fontFamily: 'monospace', lineHeight: 1.7,
+              color: '#94A3B8',
+              whiteSpace: 'pre-wrap', wordBreak: 'break-all', maxHeight: 200, overflowY: 'auto',
+            }}>
+              {debugLog}
+            </div>
             <button
               onClick={() => {
                 const done = () => {
@@ -285,9 +286,10 @@ export default function CitationSidebar({
               }}
               id="debug-copy-btn"
               style={{
-                display: 'block', marginTop: 6, padding: '4px 10px', borderRadius: 5,
-                border: '1px solid #334155', background: '#1E293B', color: '#94A3B8',
-                fontSize: 10, fontWeight: 700, fontFamily: FONT, cursor: 'pointer',
+                display: 'block', width: '100%', padding: '8px 10px',
+                borderRadius: '0 0 7px 7px', borderWidth: '1px 0 0 0', borderStyle: 'solid', borderColor: '#334155',
+                background: '#1E293B', color: '#E2E8F0',
+                fontSize: 11, fontWeight: 700, fontFamily: FONT, cursor: 'pointer',
               }}
             >로그 복사</button>
           </div>
