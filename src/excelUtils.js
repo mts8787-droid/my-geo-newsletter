@@ -1707,12 +1707,16 @@ function parseCitDomain(rows) {
     return s
   }
   if (monthBlocks.length >= 2) {
-    // ─ v3: 월별 (Region/Domain/Type/Value) 블록 반복 — 블록 단위 파싱 후 (cnty, domain, type, prd)로 집계
-    const aggMap = {}  // key → { cnty, domain, type, prd, monthScores }
+    // ─ v3: 월별 (Region/Domain/Type/Value) 블록 반복 — 블록 단위 파싱 후 (cnty, domain, type, prd, llm)로 집계
+    // 2026-06 — LLM 컬럼 row 보존: 같은 (cnty, domain, type, prd) 의 LLM 별 row (TTL/gemini/search-gpt/perplexity)
+    // 각각 별도 row → 클라가 LLM 필터 적용 가능. 합산 시 LLM=TTL 만 사용 (double-count 방지).
+    const stripPar = s => String(s || '').replace(/[()]/g, '').trim()
+    const aggMap = {}  // key → { cnty, domain, type, prd, llm, monthScores }
     for (let i = startIdx; i < rows.length; i++) {
       const r = rows[i]
       if (!r) continue
-      const prd = prdCol >= 0 ? String(r[prdCol] || '').trim() : ''
+      const prd = prdCol >= 0 ? stripPar(r[prdCol]) : ''
+      const llm = llmCol >= 0 ? stripPar(r[llmCol]) : ''
       monthBlocks.forEach(b => {
         const domain = cleanDomain(r[b.domainCol])
         if (!domain || !domain.includes('.')) return
@@ -1722,8 +1726,8 @@ function parseCitDomain(rows) {
         const rawRegion = String(r[b.regionCol] || '').trim().toUpperCase()
         const cnty = REGION_MAP[rawRegion] || rawRegion || 'TTL'
         const type = String(r[b.typeCol] || '').trim()
-        const key = `${cnty}|${domain}|${type}|${prd}`
-        if (!aggMap[key]) aggMap[key] = { cnty, domain, type, prd, monthScores: {} }
+        const key = `${cnty}|${domain}|${type}|${prd}|${llm}`
+        if (!aggMap[key]) aggMap[key] = { cnty, domain, type, prd, llm, monthScores: {} }
         aggMap[key].monthScores[b.label] = (aggMap[key].monthScores[b.label] || 0) + val
       })
     }
@@ -1737,22 +1741,22 @@ function parseCitDomain(rows) {
       }
       if (citations <= 0) return
       cntyRanks[e.cnty] = (cntyRanks[e.cnty] || 0) + 1
-      result.push({ cnty: e.cnty, rank: cntyRanks[e.cnty], domain: e.domain, type: e.type, citations, monthScores: e.monthScores, prd: e.prd })
+      result.push({ cnty: e.cnty, rank: cntyRanks[e.cnty], domain: e.domain, type: e.type, citations, monthScores: e.monthScores, prd: e.prd, llm: e.llm })
       const key = `${e.cnty}|${e.domain}`
-      // 트렌드: PRD=TTL 우선이되 같은 (cnty, domain) 다른 type/PRD 의 월 데이터도 merge
-      // (예: Feb 'Comminity', Mar 'Community' 처럼 type 표기 다른 행이 있어도 월별 값 누락 방지)
+      // 트렌드: PRD=TTL && LLM=TTL 우선 (시트의 grand total). 다른 type/PRD/LLM 의 월 데이터도 merge (보완).
       const isTtlPrd = !e.prd || /^(ttl|total)$/i.test(e.prd)
+      const isTtlLlm = !e.llm || /^(total|all|ttl)$/i.test(e.llm)
       if (!citDomainTrend[key]) {
         citDomainTrend[key] = { cnty: e.cnty, domain: e.domain, type: e.type, months: {}, _hasTtl: false }
       }
       const slot = citDomainTrend[key]
-      // PRD=TTL 데이터가 등장하면 type/months 갱신 우선권 부여
-      if (isTtlPrd) {
+      // PRD=TTL && LLM=TTL 데이터가 등장하면 type/months 갱신 우선권 부여 (grand total)
+      if (isTtlPrd && isTtlLlm) {
         slot.type = e.type || slot.type
         slot._hasTtl = true
         Object.entries(e.monthScores).forEach(([m, v]) => { if (v > 0) slot.months[m] = v })
       } else if (!slot._hasTtl) {
-        // PRD-specific 폴백: 빈 월에만 채워넣기 (PRD=TTL 이 발견되면 덮어쓸 것)
+        // PRD-specific 또는 LLM-specific 폴백: 빈 월에만 채워넣기
         Object.entries(e.monthScores).forEach(([m, v]) => { if (v > 0 && !slot.months[m]) slot.months[m] = v })
       }
     })

@@ -109,10 +109,13 @@ function citDomainSectionHtml(citationsCnty, meta, t, citations, lang, useAggreg
   const topN = meta.citDomainTopN || 10
 
   let rows
+  // 2026-06 — double-count 방지: PRD-specific + LLM=TTL 행만 합산. cnty=TTL/Global 제외.
+  // 시트가 LLM 별 row 분리 (TTL/gemini/search-gpt/perplexity) — LLM=TTL 행만 grand total 표현.
+  const isTtlPrd = p => { const u = String(p || '').trim().toUpperCase(); return !u || u === 'TTL' || u === 'TOTAL' }
+  const isTtlLlm = m => { const u = String(m || '').trim(); return !u || /^(total|all|ttl)$/i.test(u) }
   if (useAggregated) {
-    // 선택된 국가 데이터를 도메인별로 합산 — PRD/LLM TTL 행 제외 (double-count 방지, 2026-06)
-    const isTtlPrd = p => { const u = String(p || '').trim().toUpperCase(); return !u || u === 'TTL' || u === 'TOTAL' }
-    const countryRows = citationsCnty.filter(r => r.cnty !== 'TTL' && !isTtlPrd(r.prd))
+    // 선택된 국가 데이터를 도메인별로 합산
+    const countryRows = citationsCnty.filter(r => r.cnty !== 'TTL' && !isTtlPrd(r.prd) && isTtlLlm(r.llm))
     const domainMap = {}
     countryRows.forEach(r => {
       const key = r.domain
@@ -122,7 +125,7 @@ function citDomainSectionHtml(citationsCnty, meta, t, citations, lang, useAggreg
     rows = Object.values(domainMap).sort((a, b) => b.citations - a.citations).slice(0, topN)
     rows.forEach((r, i) => { r.rank = i + 1 })
   } else {
-    rows = citationsCnty.filter(r => r.cnty === 'TTL').sort((a, b) => a.rank - b.rank).slice(0, topN)
+    rows = citationsCnty.filter(r => r.cnty === 'TTL' && isTtlLlm(r.llm)).sort((a, b) => a.rank - b.rank).slice(0, topN)
   }
   let bodyHtml
   if (!rows.length) {
@@ -1008,10 +1011,12 @@ function _domainByProduct(domain,enabledCntys){
   var ALL=['US','CA','UK','DE','ES','BR','MX','AU','VN','IN'];
   var allSelected=!enabledCntys||enabledCntys.length===0||enabledCntys.length===ALL.length;
   var isPrdSpecific=function(p){if(!p)return false;var u=String(p).toUpperCase();return u!=='TTL'&&u!=='TOTAL'};
+  var isLlmTtl=function(r){var u=String(r.llm||'').trim();return!u||/^(total|all|ttl)$/i.test(u)};
   function collect(filterFn){
     var m={};
     (_citationsCnty||[]).forEach(function(r){
       if(!isPrdSpecific(r.prd))return;
+      if(!isLlmTtl(r))return;  // LLM 모델별 row 제외 (double-count 방지)
       if(_stripDomain(r.domain).toLowerCase()!==dKey)return;
       if(!filterFn(r))return;
       m[r.prd]=(m[r.prd]||0)+(r.citations||0);
@@ -1042,9 +1047,12 @@ function renderCitDom(citCnty,useAgg,prdData,enabledCntys,enabledPrds,allPrdSel,
   var topN=_meta.citDomainTopN||10;var rows;
   // 전체 prd 선택: PRD=TTL 행 사용. 부분: enabled prd-specific 행
   var isPrdTtlRow=function(r){return!r.prd||/^(ttl|total)$/i.test(r.prd)};
+  // LLM=TTL/Total 만 합산 (LLM 모델별 row 는 별도 분리, double-count 방지)
+  var isLlmTtlRow=function(r){var u=String(r.llm||'').trim();return!u||/^(total|all|ttl)$/i.test(u)};
   var prdSet={};(enabledPrds||[]).forEach(function(p){prdSet[p]=true});
   var rowOk=function(r){
     if(nonePrdSel)return false;
+    if(!isLlmTtlRow(r))return false;  // LLM 모델별 row 제외
     if(allPrdSel)return isPrdTtlRow(r);
     return !isPrdTtlRow(r)&&!!prdSet[r.prd];
   };
@@ -1098,6 +1106,7 @@ function renderCitDom(citCnty,useAgg,prdData,enabledCntys,enabledPrds,allPrdSel,
   var prdMap={};
   (_citationsCnty||[]).forEach(function(r){
     if(!isPrdSpec(r.prd))return;
+    if(!isLlmTtlRow(r))return;  // LLM=TTL 행만 — 모델별 row 제외 (double-count 방지)
     if(prdShowSet&&!prdShowSet[r.prd])return;
     if(allowedP.indexOf(r.cnty)<0)return;
     var d=_stripDomain(r.domain);
