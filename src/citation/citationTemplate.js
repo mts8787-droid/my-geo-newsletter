@@ -551,12 +551,22 @@ function llmCompareTableHtml(title, items, models, valueFn, lang, topN = 10) {
   </div>`
 }
 
+// 데이터 없는 섹션 placeholder
+function llmEmptyCard(title, msg, lang) {
+  return `<div class="section-card"><div class="section-header"><div class="section-title">${title}</div></div><div class="section-body"><div style="padding:40px 24px;text-align:center;color:#94A3B8;font-size:13px;line-height:1.6">${msg}</div></div></div>`
+}
+
 // LLM 비교 탭 콘텐츠 생성
 function llmCompareContent(citTouchPointsByLlm, citationsCnty, dotcomByLlm, dotcom, citDomainMonths, lang) {
   const t = T[lang] || T.ko
   const sections = []
+  const NO_DATA = lang === 'en'
+    ? 'LLM model-specific data not synced. Re-sync from Citation admin (hard reload + clear localStorage) to fetch latest model breakdown.'
+    : 'LLM 모델별 데이터가 sync 되지 않음. Citation 어드민에서 다시 동기화 (hard reload + localStorage cache 삭제) 필요. 시트의 Touch Points / Domain / Dotcom 모두 모델별 row 가 있어야 함.'
+  const ONE_MODEL = lang === 'en' ? 'Only 1 LLM model found. Sheet may have only Total/TTL rows.' : '단일 모델 (Total/TTL) 만 있어 비교 불가. 시트에 gemini/search-gpt/perplexity 등 모델별 row 필요.'
 
   // 1) Top 접점채널 비교 (LLM × Channel)
+  const tpTitle = lang === 'en' ? 'Top Channels by LLM' : 'LLM 모델별 Top 접점채널 비교'
   if (citTouchPointsByLlm && Object.keys(citTouchPointsByLlm).length > 1) {
     const models = Object.keys(citTouchPointsByLlm).sort((a, b) => (a === 'Total' ? -1 : b === 'Total' ? 1 : a.localeCompare(b)))
     // 모든 채널 수집
@@ -574,47 +584,49 @@ function llmCompareContent(citTouchPointsByLlm, citationsCnty, dotcomByLlm, dotc
       })
       return months.length ? ms[months[months.length - 1]] : 0
     }
-    sections.push(llmCompareTableHtml(lang === 'en' ? 'Top Channels by LLM' : 'LLM 모델별 Top 접점채널 비교', items, models, valueFn, lang, 12))
+    sections.push(llmCompareTableHtml(tpTitle, items, models, valueFn, lang, 12))
+  } else if (citTouchPointsByLlm && Object.keys(citTouchPointsByLlm).length === 1) {
+    sections.push(llmEmptyCard(tpTitle, ONE_MODEL, lang))
+  } else {
+    sections.push(llmEmptyCard(tpTitle, NO_DATA, lang))
   }
 
   // 2) 도메인 비교 (LLM × Domain) — citationsCnty 의 llm 필드 활용
+  const domTitle = lang === 'en' ? 'Top Domains by LLM' : 'LLM 모델별 Top 도메인 비교'
+  let domHandled = false
   if (citationsCnty && citationsCnty.length) {
     const llmDist = {}
     citationsCnty.forEach(r => { const k = r.llm || '(empty)'; llmDist[k] = (llmDist[k] || 0) + 1 })
     if (typeof console !== 'undefined') console.log('[llmCompareContent] Domain citationsCnty llm 분포:', llmDist, `총 ${citationsCnty.length}건`)
+    const normLlm = v => { const u = String(v || '').trim(); return /^(total|all|ttl)$/i.test(u) ? 'Total' : u }
     const llmSet = new Set()
-    citationsCnty.forEach(r => { if (r.llm) llmSet.add(r.llm) })
-    if (llmSet.size > 0) {
-      // 'TTL' / 'Total' 모두 'Total' 로 통일 (정규화)
-      const normLlm = v => { const u = String(v || '').trim(); return /^(total|all|ttl)$/i.test(u) ? 'Total' : u }
-      const models = Array.from(new Set(Array.from(llmSet).map(normLlm))).sort((a, b) => (a === 'Total' ? -1 : b === 'Total' ? 1 : a.localeCompare(b)))
-      if (typeof console !== 'undefined') console.log('[llmCompareContent] Domain models (정규화 후):', models)
-      if (models.length <= 1) {
-        // 모델 1개 (또는 0개) — 시트에 LLM 분리 데이터 없음 안내
-        sections.push(`<div class="section-card"><div class="section-header"><div class="section-title">${lang === 'en' ? 'Top Domains by LLM' : 'LLM 모델별 Top 도메인 비교'}</div></div><div class="section-body"><div style="padding:30px;text-align:center;color:#94A3B8;font-size:13px">${lang === 'en' ? 'Only 1 LLM model in data (' + (models[0] || 'Total') + '). LLM-specific rows required in sheet.' : '시트에 LLM 분리 row 가 없거나 단일 모델 (' + (models[0] || 'Total') + ') 만 있어 비교 불가. 시트의 Model 컬럼에 gemini/search-gpt/perplexity 등 모델별 row 입력 필요.'}</div></div></div>`)
-        // skip 비교 매트릭스 — 다음 섹션 진행
-        models.length = 0  // 매트릭스 push 안 함
-      }
-      if (models.length > 0) {
-        // PRD=TTL && cnty=TTL 행만 (grand total) 별 도메인 합산
-        const isTtlPrd = p => { const u = String(p || '').trim().toUpperCase(); return !u || u === 'TTL' || u === 'TOTAL' }
-        const isTtlCnty = c => /^(ttl|total|global|all|ww|world|worldwide)$/i.test(String(c || '').trim())
-        const byDomLlm = {}  // { domain: { llm: citations } }
-        citationsCnty.forEach(r => {
-          if (!isTtlCnty(r.cnty)) return
-          if (!isTtlPrd(r.prd)) return
-          const m = normLlm(r.llm)
-          if (!byDomLlm[r.domain]) byDomLlm[r.domain] = {}
-          byDomLlm[r.domain][m] = (byDomLlm[r.domain][m] || 0) + (r.citations || 0)
-        })
-        const items = Object.entries(byDomLlm).map(([domain, byL]) => ({ label: stripDomain(domain), domain, byL }))
-        const valueFn = (item, model) => item.byL[model] || 0
-        sections.push(llmCompareTableHtml(lang === 'en' ? 'Top Domains by LLM' : 'LLM 모델별 Top 도메인 비교', items, models, valueFn, lang, 15))
-      }
+    citationsCnty.forEach(r => { if (r.llm) llmSet.add(normLlm(r.llm)) })
+    const models = Array.from(llmSet).sort((a, b) => (a === 'Total' ? -1 : b === 'Total' ? 1 : a.localeCompare(b)))
+    if (typeof console !== 'undefined') console.log('[llmCompareContent] Domain models (정규화 후):', models)
+    if (models.length > 1) {
+      const isTtlPrd = p => { const u = String(p || '').trim().toUpperCase(); return !u || u === 'TTL' || u === 'TOTAL' }
+      const isTtlCnty = c => /^(ttl|total|global|all|ww|world|worldwide)$/i.test(String(c || '').trim())
+      const byDomLlm = {}
+      citationsCnty.forEach(r => {
+        if (!isTtlCnty(r.cnty)) return
+        if (!isTtlPrd(r.prd)) return
+        const m = normLlm(r.llm)
+        if (!byDomLlm[r.domain]) byDomLlm[r.domain] = {}
+        byDomLlm[r.domain][m] = (byDomLlm[r.domain][m] || 0) + (r.citations || 0)
+      })
+      const items = Object.entries(byDomLlm).map(([domain, byL]) => ({ label: stripDomain(domain), domain, byL }))
+      const valueFn = (item, model) => item.byL[model] || 0
+      sections.push(llmCompareTableHtml(domTitle, items, models, valueFn, lang, 15))
+      domHandled = true
+    } else if (models.length === 1) {
+      sections.push(llmEmptyCard(domTitle, ONE_MODEL, lang))
+      domHandled = true
     }
   }
+  if (!domHandled) sections.push(llmEmptyCard(domTitle, NO_DATA, lang))
 
   // 3) 닷컴 페이지 type 비교 (LLM × PageType)
+  const dcTitle = lang === 'en' ? 'Dotcom Pages by LLM (LG)' : 'LLM 모델별 닷컴 페이지 비교 (LG)'
   if (dotcomByLlm && Object.keys(dotcomByLlm).length > 1) {
     const models = Object.keys(dotcomByLlm).sort((a, b) => (a === 'Total' ? -1 : b === 'Total' ? 1 : a.localeCompare(b)))
     const pageSet = new Set()
@@ -624,12 +636,11 @@ function llmCompareContent(citTouchPointsByLlm, citationsCnty, dotcomByLlm, dotc
       const d = dotcomByLlm[model] || {}
       return (d.lg && d.lg[item.page]) || 0
     }
-    sections.push(llmCompareTableHtml(lang === 'en' ? 'Dotcom Pages by LLM (LG)' : 'LLM 모델별 닷컴 페이지 비교 (LG)', items, models, valueFn, lang, 10))
-  }
-
-  if (!sections.length) {
-    const noMsg = lang === 'en' ? 'No LLM model data available. Sheet may not include LLM column or only Total model is recorded.' : 'LLM 모델별 데이터 없음. 시트에 LLM 컬럼이 없거나 Total 모델만 기록된 상태.'
-    return `<div class="section-card"><div class="section-body"><div style="padding:40px;text-align:center;color:#94A3B8">${noMsg}</div></div></div>`
+    sections.push(llmCompareTableHtml(dcTitle, items, models, valueFn, lang, 10))
+  } else if (dotcomByLlm && Object.keys(dotcomByLlm).length === 1) {
+    sections.push(llmEmptyCard(dcTitle, ONE_MODEL, lang))
+  } else {
+    sections.push(llmEmptyCard(dcTitle, NO_DATA, lang))
   }
   return sections.join('')
 }
