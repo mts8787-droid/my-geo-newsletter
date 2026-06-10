@@ -241,10 +241,12 @@ function _updateCntyMonth(){
         var hPx=Math.max(3,Math.round(lg/maxScore*BAR_H));
         var cPx=comp>0?Math.max(3,Math.round(comp/maxScore*BAR_H)):0;
         var cbPx=cb>0?Math.max(3,Math.round(cb/maxScore*BAR_H)):0;
+        // 미출시 여부 — 서버 렌더 시 is-unlaunched class 부여 (LG 점수/Gap '—' 처리)
+        var isUL=item.classList.contains('is-unlaunched');
         // LG 점수
         var lgValEl=item.querySelector('.vbar-cols > .vbar-col-wrap:first-child > .vbar-val');
         var lgColEl=item.querySelector('.vbar-cols > .vbar-col-wrap:first-child > .vbar-col');
-        if(lgValEl)lgValEl.textContent=lg.toFixed(1);
+        if(lgValEl)lgValEl.textContent=isUL?'—':lg.toFixed(1);
         if(lgColEl)lgColEl.style.height=hPx+'px';
         // Comp 점수
         var cValEl=item.querySelector('.vbar-val.comp-val');
@@ -256,16 +258,16 @@ function _updateCntyMonth(){
         var cbColEl=item.querySelector('.cbrand-bar .vbar-col');
         if(cbValEl&&cb>0)cbValEl.textContent=cb.toFixed(1);
         if(cbColEl)cbColEl.style.height=cbPx+'px';
-        // 신호등 색상 (LG/Comp 비율)
+        // 신호등 색상 (LG/Comp 비율) — 미출시면 회색
         var status=comp>0?(lg>=comp?'lead':lg>=comp*0.8?'behind':'critical'):'lead';
-        var barColor=status==='lead'?'#15803D':status==='behind'?'#D97706':'#BE123C';
+        var barColor=isUL?'#94A3B8':(status==='lead'?'#15803D':status==='behind'?'#D97706':'#BE123C');
         if(lgValEl)lgValEl.style.color=barColor;
         if(lgColEl)lgColEl.style.background=barColor;
         // Gap
         var gapEl=item.querySelector('.vbar-gap');
         if(gapEl){
-          gapEl.textContent=(gap>=0?'+':'')+gap+'%p';
-          gapEl.style.color=gap>=0?'#15803D':'#BE123C';
+          gapEl.textContent=isUL?'—':((gap>=0?'+':'')+gap+'%p');
+          gapEl.style.color=isUL?'#64748B':(gap>=0?'#15803D':'#BE123C');
         }
       });
     });

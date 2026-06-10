@@ -483,10 +483,13 @@ function cntyColHtml(r, maxScore, label, ulMap) {
   const cPx = r.compScore > 0 ? Math.max(3, Math.round(r.compScore / localMax * BAR_H)) : 0
   const cbPx = cBrandScore > 0 ? Math.max(3, Math.round(cBrandScore / localMax * BAR_H)) : 0
   const cBrandColor = '#9333EA'
+  // 미출시 (isUL): LG 점수 + 격차(gap) 수치는 '—' (사용자 요청 2026-06)
+  const lgValText = isUL ? '—' : r.score.toFixed(1)
+  const gapText = isUL ? '—' : `${gap >= 0 ? '+' : ''}${gap}%p`
   return `<div class="vbar-item${isUL ? ' is-unlaunched' : ''}" data-product="${r.product}" data-country="${r.country}" data-prodid="${prodId}">
     <div class="vbar-cols">
       <div class="vbar-col-wrap">
-        <span class="vbar-val" style="color:${barColor}">${r.score.toFixed(1)}</span>
+        <span class="vbar-val" style="color:${barColor}">${lgValText}</span>
         <div class="vbar-col" style="height:${hPx}px;background:${barColor}"></div>
         <span class="vbar-col-name">LG</span>
       </div>
@@ -501,7 +504,7 @@ function cntyColHtml(r, maxScore, label, ulMap) {
         <span class="vbar-col-name" style="color:${cBrandColor}">${cBrandName.toUpperCase()}</span>
       </div>` : ''}
     </div>
-    <span class="vbar-gap" style="color:${gapColor}">${gap >= 0 ? '+' : ''}${gap}%p</span>
+    <span class="vbar-gap" style="color:${gapColor}">${gapText}</span>
     <span class="vbar-label">${label}</span>
   </div>`
 }
