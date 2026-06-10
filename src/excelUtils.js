@@ -1352,6 +1352,8 @@ function parseCitTouchPoints(rows) {
   const channelCntyMonthScores = {}  // citationsByCnty 용: { channel: { country: { month: sum } } }
   // PRD-specific 보존 (어드민 필터용) — citationsByPrd 등
   const groupMap = {}  // { country: { channel: { ttl: null, prds: [{prd, monthScores}] } } } — PRD-specific 행 보존 (client PRD 필터용)
+  // LLM 모델별 채널 sum — { llmModel: { channel: { month: sum } } } — LLM 비교 탭용
+  const citTouchPointsByLlm = {}
 
   data.forEach(r => {
     const country = normCountry(r[countryCol])
@@ -1406,6 +1408,14 @@ function parseCitTouchPoints(rows) {
         const prd = prdCol >= 0 ? String(r[prdCol] || '').trim() : ''
         const tag = (skipCnty || skipLlm || skipPrd) ? `SKIP(cnty=${skipCnty},llm=${skipLlm},prd=${prd ? skipPrd : 'n/a'})` : 'SUM'
         console.log(`[parseCitTouchPoints] Retail/May ${tag}: country=${country} llm='${llmVal}' prd='${prd}' v=${v}`)
+      }
+      // LLM 별 채널 sum — 모델 비교 탭용. cnty=TTL + PRD=TTL skip (Pass 2 sum 룰과 일관).
+      // LLM='TTL' 도 별도 'Total' 키로 보존 (모델별 + 합 모두 비교 가능).
+      const llmKey = isTotalLlm ? 'Total' : llmVal
+      if (!skipCnty && !(isPrdTtl && prdBreakdown[channel]?.[label])) {
+        if (!citTouchPointsByLlm[llmKey]) citTouchPointsByLlm[llmKey] = {}
+        if (!citTouchPointsByLlm[llmKey][channel]) citTouchPointsByLlm[llmKey][channel] = {}
+        citTouchPointsByLlm[llmKey][channel][label] = (citTouchPointsByLlm[llmKey][channel][label] || 0) + v
       }
       if (skipCnty || skipLlm || skipPrd) return
       channelMonthScores[channel][label] = (channelMonthScores[channel][label] || 0) + v
@@ -1563,6 +1573,10 @@ function parseCitTouchPoints(rows) {
   }
   if (Object.keys(citTouchPointsTrendByCnty).length > 0) {
     result.citTouchPointsTrendByCnty = citTouchPointsTrendByCnty
+  }
+  if (Object.keys(citTouchPointsByLlm).length > 0) {
+    result.citTouchPointsByLlm = citTouchPointsByLlm
+    console.log(`[parseCitTouchPoints] citTouchPointsByLlm LLM 모델:`, Object.keys(citTouchPointsByLlm).join(', '))
   }
   if (citDerivedPeriod) result.citDerivedPeriod = citDerivedPeriod
   return result

@@ -508,9 +508,123 @@ function citDomainBumpChartHtml(citDomainTrend, citDomainMonths, meta, t, lang) 
   </div>`
 }
 
+// LLM 모델 비교 — Top N 항목 × 모델 매트릭스 표
+function llmCompareTableHtml(title, items, models, valueFn, lang, topN = 10) {
+  // items: 비교 항목 배열 (channel/domain/pageType)
+  // models: ['Total', 'gemini-2.5-flash', 'search-gpt', 'perplexity'] 등
+  // valueFn(item, model) → 수치
+  if (!items.length || !models.length) {
+    const noMsg = lang === 'en' ? 'No LLM data available.' : 'LLM 모델별 데이터 없음.'
+    return `<div class="section-card"><div class="section-header"><div class="section-title">${title}</div></div><div class="section-body"><div style="padding:30px;text-align:center;color:#94A3B8">${noMsg}</div></div></div>`
+  }
+  // 각 항목의 Total 기준 정렬 + topN slice
+  const totalKey = models.includes('Total') ? 'Total' : models[0]
+  const sorted = [...items].sort((a, b) => (valueFn(b, totalKey) || 0) - (valueFn(a, totalKey) || 0)).slice(0, topN)
+  // 모델별 max (열 단위 색상 그라데이션)
+  const colMax = {}
+  models.forEach(m => { colMax[m] = Math.max(...sorted.map(it => valueFn(it, m) || 0), 1) })
+  // 헤더
+  const headerHtml = `<th style="text-align:left;padding:10px 12px;font-size:12px;color:#64748B;background:#F8FAFC;border-bottom:2px solid #E8EDF2;position:sticky;left:0;background:#F8FAFC">${lang === 'en' ? 'Item' : '항목'}</th>` +
+    models.map(m => `<th style="text-align:right;padding:10px 12px;font-size:12px;color:#1A1A1A;background:#F8FAFC;border-bottom:2px solid #E8EDF2;font-weight:700">${m}</th>`).join('')
+  // 행: 항목 × 모델 셀
+  const fmt = n => Number(n).toLocaleString('en-US')
+  const bodyHtml = sorted.map((item, i) => {
+    const cells = models.map(m => {
+      const v = valueFn(item, m) || 0
+      const max = colMax[m]
+      // 셀 내부 막대 + 수치
+      const pct = max > 0 ? (v / max * 100).toFixed(1) : 0
+      const cellBg = v > 0 ? `linear-gradient(to right, #FEE2E5 ${pct}%, #fff ${pct}%)` : '#fff'
+      const valColor = v >= max * 0.9 ? '#BE123C' : v >= max * 0.5 ? '#1A1A1A' : '#64748B'
+      return `<td style="text-align:right;padding:8px 12px;font-size:13px;font-variant-numeric:tabular-nums;background:${cellBg};color:${valColor};border-bottom:1px solid #F1F5F9;font-weight:${v >= max * 0.5 ? 700 : 500}">${v > 0 ? fmt(v) : '—'}</td>`
+    }).join('')
+    return `<tr><td style="padding:8px 12px;font-size:13px;color:#1A1A1A;border-bottom:1px solid #F1F5F9;font-weight:600;position:sticky;left:0;background:#fff">${i + 1}. ${item.label || item.name || ''}</td>${cells}</tr>`
+  }).join('')
+  return `<div class="section-card">
+    <div class="section-header"><div class="section-title">${title}</div><span class="legend">${lang === 'en' ? 'Top ' + topN : 'Top ' + topN}</span></div>
+    <div class="section-body" style="padding:0;overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;font-family:inherit">
+        <thead><tr>${headerHtml}</tr></thead>
+        <tbody>${bodyHtml}</tbody>
+      </table>
+    </div>
+  </div>`
+}
+
+// LLM 비교 탭 콘텐츠 생성
+function llmCompareContent(citTouchPointsByLlm, citationsCnty, dotcomByLlm, dotcom, citDomainMonths, lang) {
+  const t = T[lang] || T.ko
+  const sections = []
+
+  // 1) Top 접점채널 비교 (LLM × Channel)
+  if (citTouchPointsByLlm && Object.keys(citTouchPointsByLlm).length > 1) {
+    const models = Object.keys(citTouchPointsByLlm).sort((a, b) => (a === 'Total' ? -1 : b === 'Total' ? 1 : a.localeCompare(b)))
+    // 모든 채널 수집
+    const channelSet = new Set()
+    Object.values(citTouchPointsByLlm).forEach(byCh => Object.keys(byCh).forEach(c => channelSet.add(c)))
+    // 채널별 latest month 값
+    const items = Array.from(channelSet).map(ch => ({ label: ch, channel: ch }))
+    const valueFn = (item, model) => {
+      const byCh = citTouchPointsByLlm[model] || {}
+      const ms = byCh[item.channel] || {}
+      // latest 월 (이미 monthLabels chronological 정렬)
+      const months = Object.keys(ms).sort((a, b) => {
+        const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+        return MONTHS.indexOf(a) - MONTHS.indexOf(b)
+      })
+      return months.length ? ms[months[months.length - 1]] : 0
+    }
+    sections.push(llmCompareTableHtml(lang === 'en' ? 'Top Channels by LLM' : 'LLM 모델별 Top 접점채널 비교', items, models, valueFn, lang, 12))
+  }
+
+  // 2) 도메인 비교 (LLM × Domain) — citationsCnty 의 llm 필드 활용
+  if (citationsCnty && citationsCnty.length) {
+    const llmSet = new Set()
+    citationsCnty.forEach(r => { if (r.llm) llmSet.add(r.llm) })
+    if (llmSet.size > 0) {
+      // 'TTL' / 'Total' 모두 'Total' 로 통일 (정규화)
+      const normLlm = v => { const u = String(v || '').trim(); return /^(total|all|ttl)$/i.test(u) ? 'Total' : u }
+      const models = Array.from(new Set(Array.from(llmSet).map(normLlm))).sort((a, b) => (a === 'Total' ? -1 : b === 'Total' ? 1 : a.localeCompare(b)))
+      // PRD=TTL && cnty=TTL 행만 (grand total) 별 도메인 합산
+      const isTtlPrd = p => { const u = String(p || '').trim().toUpperCase(); return !u || u === 'TTL' || u === 'TOTAL' }
+      const isTtlCnty = c => /^(ttl|total|global|all|ww|world|worldwide)$/i.test(String(c || '').trim())
+      const byDomLlm = {}  // { domain: { llm: citations } }
+      citationsCnty.forEach(r => {
+        if (!isTtlCnty(r.cnty)) return
+        if (!isTtlPrd(r.prd)) return
+        const m = normLlm(r.llm)
+        if (!byDomLlm[r.domain]) byDomLlm[r.domain] = {}
+        byDomLlm[r.domain][m] = (byDomLlm[r.domain][m] || 0) + (r.citations || 0)
+      })
+      const items = Object.entries(byDomLlm).map(([domain, byL]) => ({ label: stripDomain(domain), domain, byL }))
+      const valueFn = (item, model) => item.byL[model] || 0
+      sections.push(llmCompareTableHtml(lang === 'en' ? 'Top Domains by LLM' : 'LLM 모델별 Top 도메인 비교', items, models, valueFn, lang, 15))
+    }
+  }
+
+  // 3) 닷컴 페이지 type 비교 (LLM × PageType)
+  if (dotcomByLlm && Object.keys(dotcomByLlm).length > 1) {
+    const models = Object.keys(dotcomByLlm).sort((a, b) => (a === 'Total' ? -1 : b === 'Total' ? 1 : a.localeCompare(b)))
+    const pageSet = new Set()
+    Object.values(dotcomByLlm).forEach(d => { Object.keys(d.lg || {}).forEach(p => pageSet.add(p)) })
+    const items = Array.from(pageSet).map(p => ({ label: p, page: p }))
+    const valueFn = (item, model) => {
+      const d = dotcomByLlm[model] || {}
+      return (d.lg && d.lg[item.page]) || 0
+    }
+    sections.push(llmCompareTableHtml(lang === 'en' ? 'Dotcom Pages by LLM (LG)' : 'LLM 모델별 닷컴 페이지 비교 (LG)', items, models, valueFn, lang, 10))
+  }
+
+  if (!sections.length) {
+    const noMsg = lang === 'en' ? 'No LLM model data available. Sheet may not include LLM column or only Total model is recorded.' : 'LLM 모델별 데이터 없음. 시트에 LLM 컬럼이 없거나 Total 모델만 기록된 상태.'
+    return `<div class="section-card"><div class="section-body"><div style="padding:40px;text-align:center;color:#94A3B8">${noMsg}</div></div></div>`
+  }
+  return sections.join('')
+}
+
 export function generateCitationHTML(meta, _total, _products, citations, dotcom, lang, _productsCnty, citationsCnty, trendData, citationsByCnty, dotcomByCnty, citationsByPrd) {
   const t = T[lang] || T.ko
-  const { citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, dotcomByLlm, llmModel: optLlmModel } = trendData || {}
+  const { citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, dotcomByLlm, llmModel: optLlmModel, citTouchPointsByLlm } = trendData || {}
   let { dotcomTrend, dotcomTrendMonths } = trendData || {}
   citationsByCnty = citationsByCnty || {}
   citationsByPrd = citationsByPrd || {}
@@ -681,12 +795,17 @@ export function generateCitationHTML(meta, _total, _products, citations, dotcom,
     meta.showDotcomTrend !== false ? dotcomTrendChartHtml(dotcomTrend, dotcomTrendMonths, lang) : '',
   ].join('')
 
+  // ── LLM 모델별 비교 탭 콘텐츠 ──
+  const llmCompareHtml = llmCompareContent(citTouchPointsByLlm, citationsCnty, dotcomByLlm, dotcom, citDomainMonths, lang)
+
   const content = `<div class="cit-gnb">
       <button class="cit-gnb-btn active" data-tab="touchpoint" onclick="switchSubTab(this,'touchpoint')">${lang === 'ko' ? '외부접점채널' : 'Touch Points'}</button>
       <button class="cit-gnb-btn" data-tab="dotcom" onclick="switchSubTab(this,'dotcom')">${lang === 'ko' ? '닷컴' : 'Dotcom'}</button>
+      <button class="cit-gnb-btn" data-tab="llm-compare" onclick="switchSubTab(this,'llm-compare')">${lang === 'ko' ? 'LLM 모델별 비교' : 'LLM Model Compare'}</button>
     </div>
     <div class="sub-tab-panel" data-panel="touchpoint">${touchPointContent}</div>
-    <div class="sub-tab-panel" data-panel="dotcom" style="display:none">${dotcomContent}</div>`
+    <div class="sub-tab-panel" data-panel="dotcom" style="display:none">${dotcomContent}</div>
+    <div class="sub-tab-panel" data-panel="llm-compare" style="display:none">${llmCompareHtml}</div>`
 
   // 모든 국가를 항상 표시 (데이터 유무와 무관 — REGIONS 정의 기준)
   const countryList = allCountryCodes.slice()

@@ -11,11 +11,11 @@ const MODE = 'citation'
 const STORAGE_KEY = 'geo-citation-cache'
 
 // ─── Citation 대시보드 미리보기 ─────────────────────────────────────────────
-function CitationPreview({ meta, setMeta, citations, dotcom, citationsCnty = [], citationsByCnty = {}, citationsByPrd = {}, dotcomByCnty = {}, lang = 'ko', citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, dotcomTrend, dotcomTrendMonths, dotcomByLlm, llmModel }) {
+function CitationPreview({ meta, setMeta, citations, dotcom, citationsCnty = [], citationsByCnty = {}, citationsByPrd = {}, dotcomByCnty = {}, lang = 'ko', citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, dotcomTrend, dotcomTrendMonths, dotcomByLlm, citTouchPointsByLlm, llmModel }) {
   const iframeRef = useRef(null)
   const html = useMemo(
-    () => generateCitationHTML(meta, null, [], citations, dotcom, lang, [], citationsCnty, { citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, dotcomTrend, dotcomTrendMonths, dotcomByLlm, llmModel }, citationsByCnty, dotcomByCnty, citationsByPrd),
-    [meta, citations, dotcom, lang, citationsCnty, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, citationsByCnty, citationsByPrd, dotcomByCnty, dotcomTrend, dotcomTrendMonths, dotcomByLlm, llmModel]
+    () => generateCitationHTML(meta, null, [], citations, dotcom, lang, [], citationsCnty, { citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, dotcomTrend, dotcomTrendMonths, dotcomByLlm, citTouchPointsByLlm, llmModel }, citationsByCnty, dotcomByCnty, citationsByPrd),
+    [meta, citations, dotcom, lang, citationsCnty, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, citationsByCnty, citationsByPrd, dotcomByCnty, dotcomTrend, dotcomTrendMonths, dotcomByLlm, citTouchPointsByLlm, llmModel]
   )
 
   React.useEffect(() => {
@@ -55,6 +55,7 @@ export default function App() {
   const [dotcomTrend, setDotcomTrend] = useState(cache?.dotcomTrend ?? {})
   const [dotcomTrendMonths, setDotcomTrendMonths] = useState(cache?.dotcomTrendMonths ?? [])
   const [dotcomByLlm, setDotcomByLlm] = useState(cache?.dotcomByLlm ?? null)
+  const [citTouchPointsByLlm, setCitTouchPointsByLlm] = useState(cache?.citTouchPointsByLlm ?? null)
   const [llmModel, setLlmModel] = useState('Total')
   const [previewLang,   setPreviewLang]   = useState('ko')
   const [snapshots,     setSnapshots]     = useState([])
@@ -109,6 +110,7 @@ export default function App() {
       if (d.dotcomTrend) setDotcomTrend(d.dotcomTrend)
       if (d.dotcomTrendMonths) setDotcomTrendMonths(d.dotcomTrendMonths)
       if (d.dotcomByLlm) setDotcomByLlm(d.dotcomByLlm)
+      if (d.citTouchPointsByLlm) setCitTouchPointsByLlm(d.citTouchPointsByLlm)
     })
     return () => { cancelled = true }
   }, [])
@@ -273,7 +275,7 @@ export default function App() {
 
         {/* 컨텐츠 영역 */}
         <div style={{ flex: 1, overflow: 'hidden' }}>
-          <CitationPreview meta={meta} setMeta={setMeta} citations={resolved.citations} dotcom={dotcom} citationsCnty={resolved.citationsCnty} citationsByCnty={citationsByCnty} citationsByPrd={citationsByPrd} dotcomByCnty={dotcomByCnty} lang={previewLang} citTouchPointsTrend={citTouchPointsTrend} citTrendMonths={citTrendMonths} citDomainTrend={citDomainTrend} citDomainMonths={citDomainMonths} dotcomTrend={dotcomTrend} dotcomTrendMonths={dotcomTrendMonths} dotcomByLlm={dotcomByLlm} llmModel={llmModel} />
+          <CitationPreview meta={meta} setMeta={setMeta} citations={resolved.citations} dotcom={dotcom} citationsCnty={resolved.citationsCnty} citationsByCnty={citationsByCnty} citationsByPrd={citationsByPrd} dotcomByCnty={dotcomByCnty} lang={previewLang} citTouchPointsTrend={citTouchPointsTrend} citTrendMonths={citTrendMonths} citDomainTrend={citDomainTrend} citDomainMonths={citDomainMonths} dotcomTrend={dotcomTrend} dotcomTrendMonths={dotcomTrendMonths} dotcomByLlm={dotcomByLlm} citTouchPointsByLlm={citTouchPointsByLlm} llmModel={llmModel} />
         </div>
         <div style={{ height: 28, borderTop: '1px solid #1E293B', background: 'rgba(15,23,42,0.95)',
           display: 'flex', alignItems: 'center', justifyContent: 'flex-end', padding: '0 16px', flexShrink: 0 }}>
