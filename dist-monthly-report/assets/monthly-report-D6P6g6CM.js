@@ -716,11 +716,13 @@ function _updateCntyMonth(){
       items.forEach(function(item,i){
         var lg=rowLg[i],comp=rowComp[i],cb=rowCb[i];
         var gap=+(lg-comp).toFixed(1);
-        var hPx=Math.max(3,Math.round(lg/maxScore*BAR_H));
-        var cPx=comp>0?Math.max(3,Math.round(comp/maxScore*BAR_H)):0;
-        var cbPx=cb>0?Math.max(3,Math.round(cb/maxScore*BAR_H)):0;
         // 미출시 여부 — 서버 렌더 시 is-unlaunched class 부여 (LG 점수/Gap '—' 처리)
         var isUL=item.classList.contains('is-unlaunched');
+        // 미출시: LG 막대 크기를 '수치 1' 기준으로 고정
+        var lgForBar=isUL?1:lg;
+        var hPx=Math.max(3,Math.round(lgForBar/maxScore*BAR_H));
+        var cPx=comp>0?Math.max(3,Math.round(comp/maxScore*BAR_H)):0;
+        var cbPx=cb>0?Math.max(3,Math.round(cb/maxScore*BAR_H)):0;
         // LG 점수
         var lgValEl=item.querySelector('.vbar-cols > .vbar-col-wrap:first-child > .vbar-val');
         var lgColEl=item.querySelector('.vbar-cols > .vbar-col-wrap:first-child > .vbar-col');
@@ -2265,25 +2267,25 @@ updateHeroFromCheckboxes();
     </div>
     ${an(e.productInsight,e.showProductInsight,e.productHowToRead,e.showProductHowToRead)}
     <div class="section-body">${h}${(()=>{const p=t.filter(u=>Se(u.id||u.category,n).length>0).map(u=>`${(u.id||"").toLowerCase()==="audio"||u.kr==="오디오"?"Audio-Sound Suite":u.kr}: ${Se(u.id||u.category,n).map(f=>Gr(f,i)).join(", ")} ${i==="en"?"not launched":"미출시"}`);return(p.length?`<p style="margin:12px 0 0;font-size:12px;color:#1A1A1A;line-height:1.6;font-weight:500">* ${p.join(" / ")}</p>`:"")+qr(i)})()}</div>
-  </div>`}function Oo(t,e,o,i){const n={TV:"tv",모니터:"monitor",오디오:"audio",세탁기:"washer",냉장고:"fridge",식기세척기:"dw",청소기:"vacuum",Cooking:"cooking",RAC:"rac",Aircare:"aircare"}[t.product]||String(t.product||"").toLowerCase(),c=Ee[n]||(n||"").toUpperCase(),s=i&&i[`${t.country}|${c}`],d=zr(t.score,t.compScore),m=s?"#94A3B8":d==="lead"?"#15803D":d==="behind"?"#D97706":"#BE123C",h=+(t.score-t.compScore).toFixed(1),p=s?"#64748B":h>=0?"#15803D":"#BE123C",u=130,f=["TCL","HISENSE","HAIER"];let C="",y=0;t.allScores&&Object.entries(t.allScores).forEach(([$,N])=>{const U=String($).toUpperCase();f.some(A=>U.includes(A))&&N>y&&(C=$,y=N)});const v=Math.max(e,y),w=Math.max(3,Math.round(t.score/v*u)),x=t.compScore>0?Math.max(3,Math.round(t.compScore/v*u)):0,j=y>0?Math.max(3,Math.round(y/v*u)):0,P="#9333EA",I=s?"—":t.score.toFixed(1),G=s?"—":`${h>=0?"+":""}${h}%p`;return`<div class="vbar-item${s?" is-unlaunched":""}" data-product="${t.product}" data-country="${t.country}" data-prodid="${n}">
+  </div>`}function Oo(t,e,o,i){const n={TV:"tv",모니터:"monitor",오디오:"audio",세탁기:"washer",냉장고:"fridge",식기세척기:"dw",청소기:"vacuum",Cooking:"cooking",RAC:"rac",Aircare:"aircare"}[t.product]||String(t.product||"").toLowerCase(),c=Ee[n]||(n||"").toUpperCase(),s=i&&i[`${t.country}|${c}`],d=zr(t.score,t.compScore),m=s?"#94A3B8":d==="lead"?"#15803D":d==="behind"?"#D97706":"#BE123C",h=+(t.score-t.compScore).toFixed(1),p=s?"#64748B":h>=0?"#15803D":"#BE123C",u=130,f=["TCL","HISENSE","HAIER"];let C="",y=0;t.allScores&&Object.entries(t.allScores).forEach(([N,U])=>{const S=String(N).toUpperCase();f.some(g=>S.includes(g))&&U>y&&(C=N,y=U)});const v=Math.max(e,y),w=s?1:t.score,x=Math.max(3,Math.round(w/v*u)),j=t.compScore>0?Math.max(3,Math.round(t.compScore/v*u)):0,P=y>0?Math.max(3,Math.round(y/v*u)):0,I="#9333EA",G=s?"—":t.score.toFixed(1),$=s?"—":`${h>=0?"+":""}${h}%p`;return`<div class="vbar-item${s?" is-unlaunched":""}" data-product="${t.product}" data-country="${t.country}" data-prodid="${n}">
     <div class="vbar-cols">
       <div class="vbar-col-wrap">
-        <span class="vbar-val" style="color:${m}">${I}</span>
-        <div class="vbar-col" style="height:${w}px;background:${m}"></div>
+        <span class="vbar-val" style="color:${m}">${G}</span>
+        <div class="vbar-col" style="height:${x}px;background:${m}"></div>
         <span class="vbar-col-name">LG</span>
       </div>
       ${t.compScore>0?`<div class="vbar-col-wrap">
         <span class="vbar-val comp-val" style="color:${ue}">${t.compScore.toFixed(1)}</span>
-        <div class="vbar-col" style="height:${x}px;background:${ue}"></div>
+        <div class="vbar-col" style="height:${j}px;background:${ue}"></div>
         <span class="vbar-col-name">${t.compName.toUpperCase()==="SAMSUNG"?"SS":t.compName}</span>
       </div>`:""}
       ${y>0?`<div class="vbar-col-wrap cbrand-bar">
-        <span class="vbar-val" style="color:${P}">${y.toFixed(1)}</span>
-        <div class="vbar-col" style="height:${j}px;background:${P}"></div>
-        <span class="vbar-col-name" style="color:${P}">${C.toUpperCase()}</span>
+        <span class="vbar-val" style="color:${I}">${y.toFixed(1)}</span>
+        <div class="vbar-col" style="height:${P}px;background:${I}"></div>
+        <span class="vbar-col-name" style="color:${I}">${C.toUpperCase()}</span>
       </div>`:""}
     </div>
-    <span class="vbar-gap" style="color:${p}">${G}</span>
+    <span class="vbar-gap" style="color:${p}">${$}</span>
     <span class="vbar-label">${o}</span>
   </div>`}function No(t,e,o,i,a,n){if(!t||!t.length)return"";const c=new Map;t.forEach(f=>{c.has(f.product)||c.set(f.product,[]),c.get(f.product).push(f)});const s=e.cntyProductFilter||{},d=[...c.entries()].filter(([f])=>s[f]!==!1).map(([f,C])=>{const y=Math.max(...C.map(w=>Math.max(w.score,w.compScore)),1),v=C.map(w=>Oo(w,y,to(w.country),a)).join("");return`<div class="cnty-product" data-group-product="${f}"><div class="bu-header"><span class="bu-label">${f}</span></div><div class="vbar-chart">${v}</div></div>`}).join(""),m=new Map;t.forEach(f=>{m.has(f.country)||m.set(f.country,[]),m.get(f.country).push(f)});const h=["US","CA","UK","DE","ES","BR","MX","AU","VN","IN"],u=h.filter(f=>m.has(f)).concat([...m.keys()].filter(f=>!h.includes(f))).map(f=>{const C=m.get(f);if(!C)return"";const y=Math.max(...C.map(w=>Math.max(w.score,w.compScore)),1),v=C.map(w=>Oo(w,y,w.product,a)).join("");return`<div class="cnty-product" data-group-country="${f}"><div class="bu-header"><span class="bu-label">${to(f)}</span></div><div class="vbar-chart">${v}</div></div>`}).join("");return`<div class="section-card cnty-section">
     <div class="section-header">

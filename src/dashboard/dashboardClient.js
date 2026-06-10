@@ -238,11 +238,13 @@ function _updateCntyMonth(){
       items.forEach(function(item,i){
         var lg=rowLg[i],comp=rowComp[i],cb=rowCb[i];
         var gap=+(lg-comp).toFixed(1);
-        var hPx=Math.max(3,Math.round(lg/maxScore*BAR_H));
-        var cPx=comp>0?Math.max(3,Math.round(comp/maxScore*BAR_H)):0;
-        var cbPx=cb>0?Math.max(3,Math.round(cb/maxScore*BAR_H)):0;
         // 미출시 여부 — 서버 렌더 시 is-unlaunched class 부여 (LG 점수/Gap '—' 처리)
         var isUL=item.classList.contains('is-unlaunched');
+        // 미출시: LG 막대 크기를 '수치 1' 기준으로 고정
+        var lgForBar=isUL?1:lg;
+        var hPx=Math.max(3,Math.round(lgForBar/maxScore*BAR_H));
+        var cPx=comp>0?Math.max(3,Math.round(comp/maxScore*BAR_H)):0;
+        var cbPx=cb>0?Math.max(3,Math.round(cb/maxScore*BAR_H)):0;
         // LG 점수
         var lgValEl=item.querySelector('.vbar-cols > .vbar-col-wrap:first-child > .vbar-val');
         var lgColEl=item.querySelector('.vbar-cols > .vbar-col-wrap:first-child > .vbar-col');

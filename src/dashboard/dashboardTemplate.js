@@ -479,7 +479,9 @@ function cntyColHtml(r, maxScore, label, ulMap) {
     })
   }
   const localMax = Math.max(maxScore, cBrandScore)
-  const hPx = Math.max(3, Math.round(r.score / localMax * BAR_H))
+  // 미출시: LG 막대를 '수치 1' 크기로 고정 (시각적으로 미출시 강조)
+  const lgScoreForBar = isUL ? 1 : r.score
+  const hPx = Math.max(3, Math.round(lgScoreForBar / localMax * BAR_H))
   const cPx = r.compScore > 0 ? Math.max(3, Math.round(r.compScore / localMax * BAR_H)) : 0
   const cbPx = cBrandScore > 0 ? Math.max(3, Math.round(cBrandScore / localMax * BAR_H)) : 0
   const cBrandColor = '#9333EA'
