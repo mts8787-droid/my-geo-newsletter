@@ -579,26 +579,38 @@ function llmCompareContent(citTouchPointsByLlm, citationsCnty, dotcomByLlm, dotc
 
   // 2) 도메인 비교 (LLM × Domain) — citationsCnty 의 llm 필드 활용
   if (citationsCnty && citationsCnty.length) {
+    const llmDist = {}
+    citationsCnty.forEach(r => { const k = r.llm || '(empty)'; llmDist[k] = (llmDist[k] || 0) + 1 })
+    if (typeof console !== 'undefined') console.log('[llmCompareContent] Domain citationsCnty llm 분포:', llmDist, `총 ${citationsCnty.length}건`)
     const llmSet = new Set()
     citationsCnty.forEach(r => { if (r.llm) llmSet.add(r.llm) })
     if (llmSet.size > 0) {
       // 'TTL' / 'Total' 모두 'Total' 로 통일 (정규화)
       const normLlm = v => { const u = String(v || '').trim(); return /^(total|all|ttl)$/i.test(u) ? 'Total' : u }
       const models = Array.from(new Set(Array.from(llmSet).map(normLlm))).sort((a, b) => (a === 'Total' ? -1 : b === 'Total' ? 1 : a.localeCompare(b)))
-      // PRD=TTL && cnty=TTL 행만 (grand total) 별 도메인 합산
-      const isTtlPrd = p => { const u = String(p || '').trim().toUpperCase(); return !u || u === 'TTL' || u === 'TOTAL' }
-      const isTtlCnty = c => /^(ttl|total|global|all|ww|world|worldwide)$/i.test(String(c || '').trim())
-      const byDomLlm = {}  // { domain: { llm: citations } }
-      citationsCnty.forEach(r => {
-        if (!isTtlCnty(r.cnty)) return
-        if (!isTtlPrd(r.prd)) return
-        const m = normLlm(r.llm)
-        if (!byDomLlm[r.domain]) byDomLlm[r.domain] = {}
-        byDomLlm[r.domain][m] = (byDomLlm[r.domain][m] || 0) + (r.citations || 0)
-      })
-      const items = Object.entries(byDomLlm).map(([domain, byL]) => ({ label: stripDomain(domain), domain, byL }))
-      const valueFn = (item, model) => item.byL[model] || 0
-      sections.push(llmCompareTableHtml(lang === 'en' ? 'Top Domains by LLM' : 'LLM 모델별 Top 도메인 비교', items, models, valueFn, lang, 15))
+      if (typeof console !== 'undefined') console.log('[llmCompareContent] Domain models (정규화 후):', models)
+      if (models.length <= 1) {
+        // 모델 1개 (또는 0개) — 시트에 LLM 분리 데이터 없음 안내
+        sections.push(`<div class="section-card"><div class="section-header"><div class="section-title">${lang === 'en' ? 'Top Domains by LLM' : 'LLM 모델별 Top 도메인 비교'}</div></div><div class="section-body"><div style="padding:30px;text-align:center;color:#94A3B8;font-size:13px">${lang === 'en' ? 'Only 1 LLM model in data (' + (models[0] || 'Total') + '). LLM-specific rows required in sheet.' : '시트에 LLM 분리 row 가 없거나 단일 모델 (' + (models[0] || 'Total') + ') 만 있어 비교 불가. 시트의 Model 컬럼에 gemini/search-gpt/perplexity 등 모델별 row 입력 필요.'}</div></div></div>`)
+        // skip 비교 매트릭스 — 다음 섹션 진행
+        models.length = 0  // 매트릭스 push 안 함
+      }
+      if (models.length > 0) {
+        // PRD=TTL && cnty=TTL 행만 (grand total) 별 도메인 합산
+        const isTtlPrd = p => { const u = String(p || '').trim().toUpperCase(); return !u || u === 'TTL' || u === 'TOTAL' }
+        const isTtlCnty = c => /^(ttl|total|global|all|ww|world|worldwide)$/i.test(String(c || '').trim())
+        const byDomLlm = {}  // { domain: { llm: citations } }
+        citationsCnty.forEach(r => {
+          if (!isTtlCnty(r.cnty)) return
+          if (!isTtlPrd(r.prd)) return
+          const m = normLlm(r.llm)
+          if (!byDomLlm[r.domain]) byDomLlm[r.domain] = {}
+          byDomLlm[r.domain][m] = (byDomLlm[r.domain][m] || 0) + (r.citations || 0)
+        })
+        const items = Object.entries(byDomLlm).map(([domain, byL]) => ({ label: stripDomain(domain), domain, byL }))
+        const valueFn = (item, model) => item.byL[model] || 0
+        sections.push(llmCompareTableHtml(lang === 'en' ? 'Top Domains by LLM' : 'LLM 모델별 Top 도메인 비교', items, models, valueFn, lang, 15))
+      }
     }
   }
 
