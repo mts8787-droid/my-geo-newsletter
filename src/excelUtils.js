@@ -1708,21 +1708,11 @@ function parseCitDomain(rows) {
   }
   if (monthBlocks.length >= 2) {
     // ─ v3: 월별 (Region/Domain/Type/Value) 블록 반복 — 블록 단위 파싱 후 (cnty, domain, type, prd)로 집계
-    // 2026-06 — Touch Points 와 동일 breakdown-aware 룰:
-    //   · 같은 (cnty, domain, type) 의 PRD-specific 행이 있는 월: PRD=TTL 행 그 월에서 제외
-    //   · 같은 (domain, type, prd) 의 per-country 행이 있는 월: cnty=TTL 행 그 월에서 제외
-    //   · 같은 (cnty, domain, type, prd) 의 LLM-specific 행이 있는 월: LLM=Total 행 그 월에서 제외
-    const stripPar = s => String(s || '').replace(/[()]/g, '').trim()
-    const isTtlPrd = p => { const u = String(p || '').trim().toUpperCase(); return !u || u === 'TTL' || u === 'TOTAL' }
-    const isTtlCnty = c => c === 'TTL' || c === 'GLOBAL'
-    const isTtlLlm = m => { const u = String(m || '').trim(); return !u || /^(total|all|ttl)$/i.test(u) }
-    // 모든 leaf entry 1차 수집 (Pass 1 + Pass 2 공통 데이터)
-    const allEntries = []
+    const aggMap = {}  // key → { cnty, domain, type, prd, monthScores }
     for (let i = startIdx; i < rows.length; i++) {
       const r = rows[i]
       if (!r) continue
-      const prd = prdCol >= 0 ? stripPar(r[prdCol]) : ''
-      const llm = llmCol >= 0 ? stripPar(r[llmCol]) : ''
+      const prd = prdCol >= 0 ? String(r[prdCol] || '').trim() : ''
       monthBlocks.forEach(b => {
         const domain = cleanDomain(r[b.domainCol])
         if (!domain || !domain.includes('.')) return
@@ -1732,47 +1722,11 @@ function parseCitDomain(rows) {
         const rawRegion = String(r[b.regionCol] || '').trim().toUpperCase()
         const cnty = REGION_MAP[rawRegion] || rawRegion || 'TTL'
         const type = String(r[b.typeCol] || '').trim()
-        allEntries.push({ cnty, domain, type, prd, llm, month: b.label, val })
+        const key = `${cnty}|${domain}|${type}|${prd}`
+        if (!aggMap[key]) aggMap[key] = { cnty, domain, type, prd, monthScores: {} }
+        aggMap[key].monthScores[b.label] = (aggMap[key].monthScores[b.label] || 0) + val
       })
     }
-    // Pass 1 — breakdown 감지 (cnty / prd / llm 별)
-    const prdBreakdown = {}   // { 'cnty|domain|type': { month: true } }
-    const cntyBreakdown = {}  // { 'domain|type|prd': { month: true } }
-    const llmBreakdown = {}   // { 'cnty|domain|type|prd': { month: true } }
-    allEntries.forEach(e => {
-      if (!isTtlPrd(e.prd)) {
-        const k = `${e.cnty}|${e.domain}|${e.type}`
-        if (!prdBreakdown[k]) prdBreakdown[k] = {}
-        prdBreakdown[k][e.month] = true
-      }
-      if (!isTtlCnty(e.cnty)) {
-        const k = `${e.domain}|${e.type}|${e.prd}`
-        if (!cntyBreakdown[k]) cntyBreakdown[k] = {}
-        cntyBreakdown[k][e.month] = true
-      }
-      if (!isTtlLlm(e.llm)) {
-        const k = `${e.cnty}|${e.domain}|${e.type}|${e.prd}`
-        if (!llmBreakdown[k]) llmBreakdown[k] = {}
-        llmBreakdown[k][e.month] = true
-      }
-    })
-    const _bdCount = (obj) => Object.values(obj).reduce((s, m) => s + Object.keys(m).length, 0)
-    console.log(`[parseCitDomain] breakdown 감지: PRD ${_bdCount(prdBreakdown)} 셀 / Cnty ${_bdCount(cntyBreakdown)} 셀 / LLM ${_bdCount(llmBreakdown)} 셀`)
-    // Pass 2 — aggMap 누적, breakdown 룰 skip
-    const aggMap = {}
-    let _skipPrd = 0, _skipCnty = 0, _skipLlm = 0
-    allEntries.forEach(e => {
-      const cdt = `${e.cnty}|${e.domain}|${e.type}`
-      const dtp = `${e.domain}|${e.type}|${e.prd}`
-      const cdtp = `${e.cnty}|${e.domain}|${e.type}|${e.prd}`
-      if (isTtlPrd(e.prd) && prdBreakdown[cdt]?.[e.month]) { _skipPrd++; return }
-      if (isTtlCnty(e.cnty) && cntyBreakdown[dtp]?.[e.month]) { _skipCnty++; return }
-      if (isTtlLlm(e.llm) && llmBreakdown[cdtp]?.[e.month]) { _skipLlm++; return }
-      const key = `${e.cnty}|${e.domain}|${e.type}|${e.prd}`
-      if (!aggMap[key]) aggMap[key] = { cnty: e.cnty, domain: e.domain, type: e.type, prd: e.prd, monthScores: {} }
-      aggMap[key].monthScores[e.month] = (aggMap[key].monthScores[e.month] || 0) + e.val
-    })
-    console.log(`[parseCitDomain] Pass 2 skip 통계: PRD=${_skipPrd}건 / Cnty=${_skipCnty}건 / LLM=${_skipLlm}건 / aggMap=${Object.keys(aggMap).length}건`)
     // aggMap → result 행 + citDomainTrend
     Object.values(aggMap).forEach(e => {
       // 최신 월 citations (chronological 마지막부터 역순)
