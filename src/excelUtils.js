@@ -1740,6 +1740,7 @@ function parseCitDomain(rows) {
 
   const result = []
   const citDomainTrend = {}
+  let citDomainByLlmOut = null  // v3 + LLM Model 컬럼 시 모델별 도메인 집계 (LLM 비교 탭용)
   const cntyRanks = {}  // 국가별 순위 카운터
   let legacyCnty = 'TTL'  // 이전 구조용 국가 추적
 
@@ -1824,6 +1825,58 @@ function parseCitDomain(rows) {
       })
     })
     console.log(`[parseCitDomain] LLM collapse: ${Object.keys(aggMap).length} → ${Object.keys(collapsed).length} rows / breakdown 월 ${domBreakdown.size}건`)
+    // ─ LLM 모델별 도메인 집계 보존 (LLM 비교 탭용) — collapse 로 llm 필드가 사라지므로 별도 키로 유지
+    // shape: { [llmModel]: { [domain]: latestMonthValue } } + 'Total' (collapse 결과 — breakdown-aware)
+    const isTtlCntyVal = c => /^(ttl|total|global|all|ww|world|worldwide)$/i.test(String(c || '').trim())
+    const isTtlPrdVal = p => { const u = String(p || '').trim(); return !u || /^(ttl|total)$/i.test(u) }
+    const latestVal = months => {
+      for (let j = domainMonthLabels.length - 1; j >= 0; j--) {
+        const v = months[domainMonthLabels[j].label]
+        if (v > 0) return v
+      }
+      return 0
+    }
+    // 우선순위 버킷: TTL국가+TTL제품 > TTL국가 > TTL제품 > 나머지 — 첫 비어있지 않은 버킷만 사용 (double-count 방지)
+    const pickBucket = buckets => buckets.find(b => Object.keys(b).length) || {}
+    const accumulate = (slot, monthScores) => {
+      Object.entries(monthScores).forEach(([m, v]) => { if (v > 0) slot[m] = (slot[m] || 0) + v })
+    }
+    const llmDomAcc = {}  // llm → domain → [b0, b1, b2, b3]
+    Object.values(aggMap).forEach(e => {
+      if (isTtlLlmVal(e.llm)) return
+      const m = stripPar(e.llm)
+      if (!llmDomAcc[m]) llmDomAcc[m] = {}
+      if (!llmDomAcc[m][e.domain]) llmDomAcc[m][e.domain] = [{}, {}, {}, {}]
+      const bi = (isTtlCntyVal(e.cnty) ? 0 : 2) + (isTtlPrdVal(e.prd) ? 0 : 1)
+      accumulate(llmDomAcc[m][e.domain][bi], e.monthScores)
+    })
+    const citDomainByLlm = {}
+    Object.entries(llmDomAcc).forEach(([m, byDom]) => {
+      const out = {}
+      Object.entries(byDom).forEach(([dom, buckets]) => {
+        const v = latestVal(pickBucket(buckets))
+        if (v > 0) out[dom] = v
+      })
+      if (Object.keys(out).length) citDomainByLlm[m] = out
+    })
+    if (Object.keys(citDomainByLlm).length) {
+      // 'Total' 컬럼 — collapse 결과 (breakdown-aware 합계) 에서 동일 우선순위로
+      const totAcc = {}  // domain → [b0, b1, b2, b3]
+      Object.values(collapsed).forEach(e => {
+        if (!totAcc[e.domain]) totAcc[e.domain] = [{}, {}, {}, {}]
+        const bi = (isTtlCntyVal(e.cnty) ? 0 : 2) + (isTtlPrdVal(e.prd) ? 0 : 1)
+        accumulate(totAcc[e.domain][bi], e.monthScores)
+      })
+      const totOut = {}
+      Object.entries(totAcc).forEach(([dom, buckets]) => {
+        const v = latestVal(pickBucket(buckets))
+        if (v > 0) totOut[dom] = v
+      })
+      if (Object.keys(totOut).length) citDomainByLlm.Total = totOut
+      console.log(`[parseCitDomain] citDomainByLlm 모델:`, Object.keys(citDomainByLlm).join(', '))
+      // Total 포함 2키 이상일 때만 의미 (모델별 비교 가능)
+      if (Object.keys(citDomainByLlm).length > 1) citDomainByLlmOut = citDomainByLlm
+    }
     // collapsed → result 행 + citDomainTrend
     Object.values(collapsed).forEach(e => {
       // 최신 월 citations (chronological 마지막부터 역순)
@@ -1958,6 +2011,7 @@ function parseCitDomain(rows) {
     )
     output.citDomainMonths = validMonths
   }
+  if (citDomainByLlmOut) output.citDomainByLlm = citDomainByLlmOut
   return output
 }
 

@@ -11,11 +11,11 @@ const MODE = 'citation'
 const STORAGE_KEY = 'geo-citation-cache'
 
 // ─── Citation 대시보드 미리보기 ─────────────────────────────────────────────
-function CitationPreview({ meta, setMeta, citations, dotcom, citationsCnty = [], citationsByCnty = {}, citationsByPrd = {}, dotcomByCnty = {}, lang = 'ko', citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, dotcomTrend, dotcomTrendMonths, dotcomByLlm, citTouchPointsByLlm, llmModel }) {
+function CitationPreview({ meta, setMeta, citations, dotcom, citationsCnty = [], citationsByCnty = {}, citationsByPrd = {}, dotcomByCnty = {}, lang = 'ko', citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, dotcomTrend, dotcomTrendMonths, dotcomByLlm, citTouchPointsByLlm, citDomainByLlm, llmModel }) {
   const iframeRef = useRef(null)
   const html = useMemo(
-    () => generateCitationHTML(meta, null, [], citations, dotcom, lang, [], citationsCnty, { citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, dotcomTrend, dotcomTrendMonths, dotcomByLlm, citTouchPointsByLlm, llmModel }, citationsByCnty, dotcomByCnty, citationsByPrd),
-    [meta, citations, dotcom, lang, citationsCnty, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, citationsByCnty, citationsByPrd, dotcomByCnty, dotcomTrend, dotcomTrendMonths, dotcomByLlm, citTouchPointsByLlm, llmModel]
+    () => generateCitationHTML(meta, null, [], citations, dotcom, lang, [], citationsCnty, { citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, dotcomTrend, dotcomTrendMonths, dotcomByLlm, citTouchPointsByLlm, citDomainByLlm, llmModel }, citationsByCnty, dotcomByCnty, citationsByPrd),
+    [meta, citations, dotcom, lang, citationsCnty, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, citationsByCnty, citationsByPrd, dotcomByCnty, dotcomTrend, dotcomTrendMonths, dotcomByLlm, citTouchPointsByLlm, citDomainByLlm, llmModel]
   )
 
   React.useEffect(() => {
@@ -56,6 +56,7 @@ export default function App() {
   const [dotcomTrendMonths, setDotcomTrendMonths] = useState(cache?.dotcomTrendMonths ?? [])
   const [dotcomByLlm, setDotcomByLlm] = useState(cache?.dotcomByLlm ?? null)
   const [citTouchPointsByLlm, setCitTouchPointsByLlm] = useState(cache?.citTouchPointsByLlm ?? null)
+  const [citDomainByLlm, setCitDomainByLlm] = useState(cache?.citDomainByLlm ?? null)
   const [llmModel, setLlmModel] = useState('Total')
   const [previewLang,   setPreviewLang]   = useState('ko')
   const [snapshots,     setSnapshots]     = useState([])
@@ -111,26 +112,27 @@ export default function App() {
       if (d.dotcomTrendMonths) setDotcomTrendMonths(d.dotcomTrendMonths)
       if (d.dotcomByLlm) setDotcomByLlm(d.dotcomByLlm)
       if (d.citTouchPointsByLlm) setCitTouchPointsByLlm(d.citTouchPointsByLlm)
+      if (d.citDomainByLlm) setCitDomainByLlm(d.citDomainByLlm)
     })
     return () => { cancelled = true }
   }, [])
 
   // 캐시 저장
   useEffect(() => {
-    saveCache(STORAGE_KEY, { metaKo, metaEn, citations, citationsCnty, dotcom, citationsByCnty, citationsByPrd, dotcomByCnty, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, dotcomTrend, dotcomTrendMonths })
-  }, [metaKo, metaEn, citations, citationsCnty, dotcom, citationsByCnty, citationsByPrd, dotcomByCnty, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, dotcomTrend, dotcomTrendMonths])
+    saveCache(STORAGE_KEY, { metaKo, metaEn, citations, citationsCnty, dotcom, citationsByCnty, citationsByPrd, dotcomByCnty, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, dotcomTrend, dotcomTrendMonths, dotcomByLlm, citTouchPointsByLlm, citDomainByLlm })
+  }, [metaKo, metaEn, citations, citationsCnty, dotcom, citationsByCnty, citationsByPrd, dotcomByCnty, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, dotcomTrend, dotcomTrendMonths, dotcomByLlm, citTouchPointsByLlm, citDomainByLlm])
 
   // 스냅샷 관리
   async function handleSnapOverwrite() {
     if (!activeSnap) return
-    const data = { metaKo, metaEn, citations, citationsCnty, dotcom, citationsByCnty, citationsByPrd, dotcomByCnty, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, dotcomTrend, dotcomTrendMonths }
+    const data = { metaKo, metaEn, citations, citationsCnty, dotcom, citationsByCnty, citationsByPrd, dotcomByCnty, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, dotcomTrend, dotcomTrendMonths, dotcomByLlm, citTouchPointsByLlm, citDomainByLlm }
     const result = await updateSnapshot(MODE, activeSnap, data)
     if (result) setSnapshots(result)
     setSnapMsg(result ? '저장 완료!' : '저장 실패'); setTimeout(() => setSnapMsg(''), 2000)
   }
   async function handleSnapSaveNew() {
     const name = snapName.trim() || `${meta.period || 'Untitled'} Citation — ${new Date().toLocaleString('ko-KR')}`
-    const result = await postSnapshot(MODE, name, { metaKo, metaEn, citations, citationsCnty, dotcom, citationsByCnty, citationsByPrd, dotcomByCnty, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, dotcomTrend, dotcomTrendMonths })
+    const result = await postSnapshot(MODE, name, { metaKo, metaEn, citations, citationsCnty, dotcom, citationsByCnty, citationsByPrd, dotcomByCnty, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, dotcomTrend, dotcomTrendMonths, dotcomByLlm, citTouchPointsByLlm, citDomainByLlm })
     if (result) { setSnapshots(result); setSnapName(''); setActiveSnap(result[0]?.ts || null) }
     setSnapMsg(result ? '새로 저장 완료!' : '저장 실패'); setTimeout(() => setSnapMsg(''), 2000)
   }
@@ -148,6 +150,11 @@ export default function App() {
     if (d.citTrendMonths)      setCitTrendMonths(d.citTrendMonths)
     if (d.citDomainTrend)      setCitDomainTrend(d.citDomainTrend)
     if (d.citDomainMonths)     setCitDomainMonths(d.citDomainMonths)
+    if (d.dotcomTrend)         setDotcomTrend(d.dotcomTrend)
+    if (d.dotcomTrendMonths)   setDotcomTrendMonths(d.dotcomTrendMonths)
+    if (d.dotcomByLlm)         setDotcomByLlm(d.dotcomByLlm)
+    if (d.citTouchPointsByLlm) setCitTouchPointsByLlm(d.citTouchPointsByLlm)
+    if (d.citDomainByLlm)      setCitDomainByLlm(d.citDomainByLlm)
     setActiveSnap(snap.ts)
     setSnapMsg(`"${snap.name}" 불러옴`); setTimeout(() => setSnapMsg(''), 2000)
   }
@@ -177,6 +184,9 @@ export default function App() {
           citDomainMonths={citDomainMonths} setCitDomainMonths={setCitDomainMonths}
           dotcomTrend={dotcomTrend} setDotcomTrend={setDotcomTrend}
           dotcomTrendMonths={dotcomTrendMonths} setDotcomTrendMonths={setDotcomTrendMonths}
+          dotcomByLlm={dotcomByLlm} setDotcomByLlm={setDotcomByLlm}
+          citTouchPointsByLlm={citTouchPointsByLlm} setCitTouchPointsByLlm={setCitTouchPointsByLlm}
+          citDomainByLlm={citDomainByLlm} setCitDomainByLlm={setCitDomainByLlm}
           resolved={resolved}
           previewLang={previewLang} setPreviewLang={setPreviewLang}
           generateHTML={generateCitationHTML}
@@ -275,7 +285,7 @@ export default function App() {
 
         {/* 컨텐츠 영역 */}
         <div style={{ flex: 1, overflow: 'hidden' }}>
-          <CitationPreview meta={meta} setMeta={setMeta} citations={resolved.citations} dotcom={dotcom} citationsCnty={resolved.citationsCnty} citationsByCnty={citationsByCnty} citationsByPrd={citationsByPrd} dotcomByCnty={dotcomByCnty} lang={previewLang} citTouchPointsTrend={citTouchPointsTrend} citTrendMonths={citTrendMonths} citDomainTrend={citDomainTrend} citDomainMonths={citDomainMonths} dotcomTrend={dotcomTrend} dotcomTrendMonths={dotcomTrendMonths} dotcomByLlm={dotcomByLlm} citTouchPointsByLlm={citTouchPointsByLlm} llmModel={llmModel} />
+          <CitationPreview meta={meta} setMeta={setMeta} citations={resolved.citations} dotcom={dotcom} citationsCnty={resolved.citationsCnty} citationsByCnty={citationsByCnty} citationsByPrd={citationsByPrd} dotcomByCnty={dotcomByCnty} lang={previewLang} citTouchPointsTrend={citTouchPointsTrend} citTrendMonths={citTrendMonths} citDomainTrend={citDomainTrend} citDomainMonths={citDomainMonths} dotcomTrend={dotcomTrend} dotcomTrendMonths={dotcomTrendMonths} dotcomByLlm={dotcomByLlm} citTouchPointsByLlm={citTouchPointsByLlm} citDomainByLlm={citDomainByLlm} llmModel={llmModel} />
         </div>
         <div style={{ height: 28, borderTop: '1px solid #1E293B', background: 'rgba(15,23,42,0.95)',
           display: 'flex', alignItems: 'center', justifyContent: 'flex-end', padding: '0 16px', flexShrink: 0 }}>

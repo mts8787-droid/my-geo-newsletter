@@ -413,6 +413,13 @@ describe('parseCitDomain — v1/v2/v3 layout 자동 감지', () => {
     expect(reddit[0].monthScores.May).toBe(105)    // breakdown 월 → 모델 합산 (40+35+30), TTL 100 제외
     expect(reddit[0].citations).toBe(105)          // 최신 월 값
     expect(reddit[0].llm).toBeUndefined()          // llm 필드 제거됨
+    // citDomainByLlm — collapse 전 모델별 도메인 집계 보존 (LLM 비교 탭용)
+    expect(result.citDomainByLlm).toBeDefined()
+    expect(Object.keys(result.citDomainByLlm).sort()).toEqual(['Total', 'gemini-2.5-flash', 'perplexity', 'search-gpt'])
+    expect(result.citDomainByLlm['gemini-2.5-flash']['reddit.com']).toBe(40)
+    expect(result.citDomainByLlm['search-gpt']['reddit.com']).toBe(35)
+    expect(result.citDomainByLlm['perplexity']['reddit.com']).toBe(30)
+    expect(result.citDomainByLlm.Total['reddit.com']).toBe(105)  // collapsed 최신 월 값
   })
 
   it('병합 셀 (merged cell): Region/Domain/Type/PRD 빈값 행은 직전 행 값 forward-fill', () => {

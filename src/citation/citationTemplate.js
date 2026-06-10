@@ -557,7 +557,7 @@ function llmEmptyCard(title, msg, lang) {
 }
 
 // LLM 비교 탭 콘텐츠 생성
-function llmCompareContent(citTouchPointsByLlm, citationsCnty, dotcomByLlm, dotcom, citDomainMonths, lang) {
+function llmCompareContent(citTouchPointsByLlm, citationsCnty, dotcomByLlm, dotcom, citDomainMonths, lang, citDomainByLlm) {
   const t = T[lang] || T.ko
   const sections = []
   const NO_DATA = lang === 'en'
@@ -591,10 +591,19 @@ function llmCompareContent(citTouchPointsByLlm, citationsCnty, dotcomByLlm, dotc
     sections.push(llmEmptyCard(tpTitle, NO_DATA, lang))
   }
 
-  // 2) 도메인 비교 (LLM × Domain) — citationsCnty 의 llm 필드 활용
+  // 2) 도메인 비교 (LLM × Domain) — citDomainByLlm (파서가 collapse 전 보존한 모델별 집계) 우선
   const domTitle = lang === 'en' ? 'Top Domains by LLM' : 'LLM 모델별 Top 도메인 비교'
   let domHandled = false
-  if (citationsCnty && citationsCnty.length) {
+  if (citDomainByLlm && Object.keys(citDomainByLlm).length > 1) {
+    const models = Object.keys(citDomainByLlm).sort((a, b) => (a === 'Total' ? -1 : b === 'Total' ? 1 : a.localeCompare(b)))
+    if (typeof console !== 'undefined') console.log('[llmCompareContent] Domain citDomainByLlm models:', models)
+    const domainSet = new Set()
+    Object.values(citDomainByLlm).forEach(byDom => Object.keys(byDom).forEach(d => domainSet.add(d)))
+    const items = Array.from(domainSet).map(domain => ({ label: stripDomain(domain), domain }))
+    const valueFn = (item, model) => (citDomainByLlm[model] || {})[item.domain] || 0
+    sections.push(llmCompareTableHtml(domTitle, items, models, valueFn, lang, 15))
+    domHandled = true
+  } else if (citationsCnty && citationsCnty.length) {
     const llmDist = {}
     citationsCnty.forEach(r => { const k = r.llm || '(empty)'; llmDist[k] = (llmDist[k] || 0) + 1 })
     if (typeof console !== 'undefined') console.log('[llmCompareContent] Domain citationsCnty llm 분포:', llmDist, `총 ${citationsCnty.length}건`)
@@ -647,7 +656,7 @@ function llmCompareContent(citTouchPointsByLlm, citationsCnty, dotcomByLlm, dotc
 
 export function generateCitationHTML(meta, _total, _products, citations, dotcom, lang, _productsCnty, citationsCnty, trendData, citationsByCnty, dotcomByCnty, citationsByPrd) {
   const t = T[lang] || T.ko
-  const { citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, dotcomByLlm, llmModel: optLlmModel, citTouchPointsByLlm } = trendData || {}
+  const { citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, dotcomByLlm, llmModel: optLlmModel, citTouchPointsByLlm, citDomainByLlm } = trendData || {}
   let { dotcomTrend, dotcomTrendMonths } = trendData || {}
   citationsByCnty = citationsByCnty || {}
   citationsByPrd = citationsByPrd || {}
@@ -818,7 +827,7 @@ export function generateCitationHTML(meta, _total, _products, citations, dotcom,
   ].join('')
 
   // ── LLM 모델별 비교 탭 콘텐츠 ──
-  const llmCompareHtml = llmCompareContent(citTouchPointsByLlm, citationsCnty, dotcomByLlm, dotcom, citDomainMonths, lang)
+  const llmCompareHtml = llmCompareContent(citTouchPointsByLlm, citationsCnty, dotcomByLlm, dotcom, citDomainMonths, lang, citDomainByLlm)
 
   const content = `<div class="cit-gnb">
       <button class="cit-gnb-btn active" data-tab="touchpoint" onclick="switchSubTab(this,'touchpoint')">${lang === 'ko' ? '외부접점채널' : 'Touch Points'}</button>
