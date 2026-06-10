@@ -110,8 +110,9 @@ function citDomainSectionHtml(citationsCnty, meta, t, citations, lang, useAggreg
 
   let rows
   if (useAggregated) {
-    // 선택된 국가 데이터를 도메인별로 합산
-    const countryRows = citationsCnty.filter(r => r.cnty !== 'TTL')
+    // 선택된 국가 데이터를 도메인별로 합산 — PRD/LLM TTL 행 제외 (double-count 방지, 2026-06)
+    const isTtlPrd = p => { const u = String(p || '').trim().toUpperCase(); return !u || u === 'TTL' || u === 'TOTAL' }
+    const countryRows = citationsCnty.filter(r => r.cnty !== 'TTL' && !isTtlPrd(r.prd))
     const domainMap = {}
     countryRows.forEach(r => {
       const key = r.domain
