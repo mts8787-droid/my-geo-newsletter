@@ -493,6 +493,47 @@ describe('parseCitPageType — 월 페어 + dotcom 집계 + 트렌드', () => {
     const result = parseSheetRows(SHEET_NAMES.citPageType, rows)
     expect(result.dotcom?.lg?.Microsites).toBe(70)
   })
+
+  it('LLM breakdown 월 (May) — Total/TTL 행 제외 + 모델 행 합산 (double-count 방지)', () => {
+    const rows = [
+      ['LLM Model',        'Country', 'Page Type', 'Apr LG', 'Apr SS', 'May LG', 'May SS'],
+      ['Total',            'TTL',     'PLP',        60,       55,       100,      90],   // 집계 행 — May 는 제외돼야 함
+      ['gemini-2.5-flash', 'TTL',     'PLP',        '',       '',       40,       35],
+      ['search-gpt',       'TTL',     'PLP',        '',       '',       35,       30],
+      ['perplexity',       'TTL',     'PLP',        '',       '',       30,       25],
+    ]
+    const result = parseSheetRows(SHEET_NAMES.citPageType, rows)
+    // 최신월(May) = 모델 행 합산 (40+35+30=105), Total 행 100 제외 (포함됐다면 205)
+    expect(result.dotcom?.lg?.PLP).toBe(105)
+    expect(result.dotcom?.samsung?.PLP).toBe(90)
+    // 트렌드: Apr 는 breakdown 없음 → Total 행 (60), May 는 모델 행 합산 (105)
+    expect(result.dotcomTrend?.PLP?.Apr?.lg).toBe(60)
+    expect(result.dotcomTrend?.PLP?.May?.lg).toBe(105)
+    // byMonth 도 동일 규칙
+    expect(result.dotcom?.byMonth?.Apr?.lg?.PLP).toBe(60)
+    expect(result.dotcom?.byMonth?.May?.lg?.PLP).toBe(105)
+    // byLlm 보존 — 모델별 + Total (원본 그대로)
+    expect(result.dotcomByLlm?.['gemini-2.5-flash']?.lg?.PLP).toBe(40)
+    expect(result.dotcomByLlm?.Total?.lg?.PLP).toBe(100)  // bestPair(May) 의 Total 행 원본값 (보존용 — 집계와 무관)
+  })
+
+  it("LLM 'TTL'/'(TTL)' 표기도 집계 행으로 정규화 (Total 동일 취급)", () => {
+    const rows = [
+      ['LLM Model',  'Country', 'Page Type', 'May LG', 'May SS'],
+      ['TTL',        'TTL',     'PDP',        80,       70],   // 집계 행 (TTL 표기)
+      ['(TTL)',      'TTL',     'PLP',        50,       45],   // 집계 행 (괄호 표기)
+      ['gemini-2.5-flash', 'TTL', 'PDP',      30,       25],   // PDP 는 breakdown 존재 → TTL 행 제외
+    ]
+    const result = parseSheetRows(SHEET_NAMES.citPageType, rows)
+    // PDP: breakdown 존재 → 모델 행만 (30), TTL 행 80 제외
+    expect(result.dotcom?.lg?.PDP).toBe(30)
+    // PLP: breakdown 없음 → (TTL) 집계 행 사용
+    expect(result.dotcom?.lg?.PLP).toBe(50)
+    // byLlm: TTL/(TTL) 모두 'Total' 키로 정규화
+    expect(result.dotcomByLlm?.Total?.lg?.PDP).toBe(80)
+    expect(result.dotcomByLlm?.TTL).toBeUndefined()
+    expect(result.dotcomByLlm?.['(TTL)']).toBeUndefined()
+  })
 })
 
 // ─── verifySyncResult — sync invariant 검증 ────────────────────────────────

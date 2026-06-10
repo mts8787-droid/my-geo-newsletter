@@ -1040,8 +1040,33 @@ function parseCitPageType(rows) {
   // dotcom 월간 트렌드: { pageType: { month: { lg: val, samsung: val } } }
   const dotcomTrend = {}
 
-  // LLM Model 별 분리 — 'Total' 만 기본 집계 (기존 동작 호환).
+  // LLM Model 별 분리 — Total/TTL/(TTL)/All/빈값 모두 집계 행으로 정규화.
   // 모델별 데이터는 byLlm 에 보존 — UI 필터 도입 시 사용.
+  const _ptStripParens = s => String(s || '').trim().replace(/^\((.*)\)$/, '$1').trim()
+  const _ptIsTotalLlm = m => { const u = _ptStripParens(m); return !u || /^(total|all|ttl)$/i.test(u) }
+  const _ptCntyKey = r => {
+    const rawCountry = normCountry(r[fallbackCnty])
+    const pageType = String(r[fallbackPt] || '').replace(/[()]/g, '').trim()
+    let key = /page total|^ttl$/i.test(pageType) ? 'TTL' : pageType
+    if (key.toLowerCase() === 'microsite') key = 'Microsites'
+    return { cnty: CNTY_ALIAS[rawCountry] || rawCountry.toUpperCase(), key }
+  }
+  // Pass 1 — (cnty|pageType|월) 단위로 모델 breakdown 존재 감지.
+  // breakdown 존재 월은 집계(Total/TTL) 행을 빼고 모델 행만 합산 (double-count 방지 — Touch Points 와 동일 규칙)
+  const _ptBreakdown = new Set()
+  data.forEach(r => {
+    const llmRaw = llmCol >= 0 ? String(r[llmCol] || '').trim() : ''
+    if (_ptIsTotalLlm(llmRaw)) return
+    const { cnty, key } = _ptCntyKey(r)
+    monthPairs.forEach((mp, mi) => {
+      if (numVal(r[mp.lg]) > 0 || numVal(r[mp.ss]) > 0) _ptBreakdown.add(`${cnty}|${key}|${mi}`)
+    })
+  })
+  // 해당 월에 이 행을 집계에 포함할지 — breakdown 월이면 모델 행만, 아니면 집계 행만
+  const _ptRowCounts = (isTotal, cnty, key, mi) => _ptBreakdown.has(`${cnty}|${key}|${mi}`) ? !isTotal : isTotal
+  const bestPairIdx = monthPairs.indexOf(bestPair)
+  if (_ptBreakdown.size) console.log(`[parseCitPageType] LLM breakdown 감지: ${_ptBreakdown.size}건 (해당 월은 Total/TTL 행 제외 + 모델 행 합산)`)
+
   const byLlm = {}  // { [llmModel]: { lg, samsung, dotcomByCnty, dotcomTrend } }
   function _ensureLlm(llm) {
     if (!byLlm[llm]) byLlm[llm] = { lg: {}, samsung: {}, dotcomByCnty: {}, dotcomTrend: {} }
@@ -1049,21 +1074,15 @@ function parseCitPageType(rows) {
   }
   data.forEach(r => {
     const llmRaw = llmCol >= 0 ? String(r[llmCol] || '').trim() : ''
-    const llmModel = llmRaw || 'Total'
-    const isTotalLlm = llmModel === 'Total' || llmModel === 'TOTAL' || llmModel === 'All'
-    const rawCountry = normCountry(r[fallbackCnty])
-    const pageType = String(r[fallbackPt] || '').replace(/[()]/g, '').trim()
-
-    let key = /page total|^ttl$/i.test(pageType) ? 'TTL' : pageType
-    if (key.toLowerCase() === 'microsite') key = 'Microsites'
-
-    const cnty = CNTY_ALIAS[rawCountry] || rawCountry.toUpperCase()
+    const isTotalLlm = _ptIsTotalLlm(llmRaw)
+    const llmModel = isTotalLlm ? 'Total' : llmRaw
+    const { cnty, key } = _ptCntyKey(r)
     _ptSeenCountries.add(cnty)
 
-    // 최신 월(bestPair)로 기존 dotcom 구성 — 'Total' LLM 만 (호환)
+    // 최신 월(bestPair) dotcom 구성 — breakdown-aware (모델 breakdown 월은 모델 행 합산)
     const lgVal = numVal(r[bestPair.lg])
     const ssVal = numVal(r[bestPair.ss])
-    if (isTotalLlm) {
+    if (_ptRowCounts(isTotalLlm, cnty, key, bestPairIdx)) {
       if (cnty === 'TTL') {
         lg[key] = (lg[key] || 0) + lgVal
         samsung[key] = (samsung[key] || 0) + ssVal
@@ -1072,18 +1091,19 @@ function parseCitPageType(rows) {
         dotcomByCnty[cnty].lg[key] = (dotcomByCnty[cnty].lg[key] || 0) + lgVal
         dotcomByCnty[cnty].samsung[key] = (dotcomByCnty[cnty].samsung[key] || 0) + ssVal
       }
-      // 모든 월 트렌드 수집 (TTL만)
-      if (cnty === 'TTL') {
-        if (!dotcomTrend[key]) dotcomTrend[key] = {}
-        monthPairs.forEach((mp, mi) => {
-          const lv = numVal(r[mp.lg])
-          const sv = numVal(r[mp.ss])
-          if (lv > 0 || sv > 0) {
-            const mLabel = monthLabels[mi] || `M${mi + 1}`
-            dotcomTrend[key][mLabel] = { lg: (dotcomTrend[key][mLabel]?.lg || 0) + lv, samsung: (dotcomTrend[key][mLabel]?.samsung || 0) + sv }
-          }
-        })
-      }
+    }
+    // 모든 월 트렌드 수집 (TTL만) — 월별로 breakdown-aware
+    if (cnty === 'TTL') {
+      monthPairs.forEach((mp, mi) => {
+        if (!_ptRowCounts(isTotalLlm, cnty, key, mi)) return
+        const lv = numVal(r[mp.lg])
+        const sv = numVal(r[mp.ss])
+        if (lv > 0 || sv > 0) {
+          if (!dotcomTrend[key]) dotcomTrend[key] = {}
+          const mLabel = monthLabels[mi] || `M${mi + 1}`
+          dotcomTrend[key][mLabel] = { lg: (dotcomTrend[key][mLabel]?.lg || 0) + lv, samsung: (dotcomTrend[key][mLabel]?.samsung || 0) + sv }
+        }
+      })
     }
 
     // 모델별 보존 — 모든 LLM (Total 포함) 의 데이터 byLlm 에 저장
@@ -1120,14 +1140,10 @@ function parseCitPageType(rows) {
     const mLg = {}, mSam = {}
     data.forEach(r => {
       const llmRaw2 = llmCol >= 0 ? String(r[llmCol] || '').trim() : ''
-      const llmModel2 = llmRaw2 || 'Total'
-      const isTotalLlm2 = llmModel2 === 'Total' || llmModel2 === 'TOTAL' || llmModel2 === 'All'
-      if (!isTotalLlm2) return  // 기본 byMonth 는 Total LLM 만 (호환). byLlm 에 모델별 별도 보존됨.
-      const rawCountry = normCountry(r[fallbackCnty])
-      const pageType = String(r[fallbackPt] || '').replace(/[()]/g, '').trim()
-      let key = /page total|^ttl$/i.test(pageType) ? 'TTL' : pageType
-      if (key.toLowerCase() === 'microsite') key = 'Microsites'
-      const cnty = CNTY_ALIAS[rawCountry] || rawCountry.toUpperCase()
+      const isTotalLlm2 = _ptIsTotalLlm(llmRaw2)
+      const { cnty, key } = _ptCntyKey(r)
+      // breakdown-aware — 모델 breakdown 있는 월은 모델 행 합산, 없으면 집계(Total/TTL) 행만
+      if (!_ptRowCounts(isTotalLlm2, cnty, key, mi)) return
       const lv = numVal(r[mp.lg])
       const sv = numVal(r[mp.ss])
       if (lv <= 0 && sv <= 0) return  // 해당 월 행에 값 없음 → 스킵

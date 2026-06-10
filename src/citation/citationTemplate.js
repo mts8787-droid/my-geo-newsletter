@@ -677,8 +677,13 @@ export function generateCitationHTML(meta, _total, _products, citations, dotcom,
       dotcomTrendMonths = MONTH_ORDER.filter(m => monthSet.has(m))
     }
   }
-  // 가용 LLM 모델 목록
-  const availLlmModels = dotcomByLlm ? Object.keys(dotcomByLlm) : []
+  // 가용 LLM 모델 목록 — 닷컴(dotcomByLlm) + 접점채널(citTouchPointsByLlm) + 도메인(citationsCnty llm 필드) 전부에서 수집
+  const _isTtlLlmName = m => { const u = String(m || '').trim(); return !u || /^(total|all|ttl)$/i.test(u) }
+  const availLlmSet = new Set()
+  if (dotcomByLlm) Object.keys(dotcomByLlm).forEach(m => { if (!_isTtlLlmName(m)) availLlmSet.add(m) })
+  if (citTouchPointsByLlm) Object.keys(citTouchPointsByLlm).forEach(m => { if (!_isTtlLlmName(m)) availLlmSet.add(m) })
+  ;(citationsCnty || []).forEach(r => { if (r.llm && !_isTtlLlmName(r.llm)) availLlmSet.add(String(r.llm).trim()) })
+  const availLlmModels = [...availLlmSet]
 
   // 원본 데이터 보존 (클라이언트 월 전환용)
   const rawCitations = citations ? JSON.parse(JSON.stringify(citations)) : []
@@ -857,10 +862,10 @@ export function generateCitationHTML(meta, _total, _products, citations, dotcom,
           `<option value="${m}"${m === selectedMonth ? ' selected' : ''}>${m}</option>`
         ).join('')}</select>` : `<span class="fl-badge">${meta.period || '—'}</span>`}
       </div>
-      ${availLlmModels.length > 1 ? `<div class="fl-divider"></div>
+      ${availLlmModels.length >= 1 ? `<div class="fl-divider"></div>
       <div class="fl-group">
         <span class="fl-label">LLM Model</span>
-        <select id="cit-llm-select" onchange="switchCitLlmModel(this.value)" style="padding:4px 8px;border-radius:6px;border:1px solid #CBD5E1;font-size:13px;font-family:${FONT};background:#fff;cursor:pointer">${['Total', ...availLlmModels.filter(x => x !== 'Total').sort()].map(m => `<option value="${m}"${m === curLlmModel ? ' selected' : ''}>${m}</option>`).join('')}</select>
+        <select id="cit-llm-select" onchange="switchCitLlmModel(this.value)" style="padding:4px 8px;border-radius:6px;border:1px solid #CBD5E1;font-size:13px;font-family:${FONT};background:#fff;cursor:pointer">${['Total', ...availLlmModels.sort()].map(m => `<option value="${m}"${m === curLlmModel ? ' selected' : ''}>${m}</option>`).join('')}</select>
       </div>` : ''}
       <div class="fl-divider"></div>
       <div class="fl-group">
@@ -1016,6 +1021,7 @@ var _citations=${JSON.stringify(citations || [])};
 var _citationsByCnty=${JSON.stringify(citationsByCnty || {})};
 var _citationsByPrd=${JSON.stringify(citationsByPrd || {})};
 var _citationsCnty=${JSON.stringify(citationsCnty || [])};
+var _curLlmModel=${JSON.stringify(curLlmModel)};
 var _dotcom=${JSON.stringify(dotcom || null)};
 var _dotcomByCnty=${JSON.stringify(dotcomByCnty || {})};
 var _rawCitations=${JSON.stringify(rawCitations)};
@@ -1048,6 +1054,8 @@ function _fmt(n){return Number(n).toLocaleString('en-US')}
 function _stripDomain(d){return(d||'').replace(/\\.(com|org|net|co\\.uk|com\\.br|com\\.au|com\\.vn|com\\.mx|co\\.kr|de|es|fr|ca|in|vn)$/i,'')}
 // 2026-06 — Global / WW / Worldwide 등 TTL 류 cnty 인식 (합산 시 제외)
 function _isTtlCnty(c){return /^(ttl|total|global|all|ww|world|worldwide|globe|글로벌|전체|월드|총계)$/i.test(String(c||'').trim())}
+// LLM 모델 row 매칭 — Total 선택 시 LLM=TTL/Total/빈값 행만, 특정 모델 선택 시 그 모델 행만 (double-count 방지)
+function _llmRowOk(r){var u=String((r&&r.llm)||'').trim();if(_curLlmModel&&_curLlmModel!=='Total')return u===_curLlmModel;return!u||/^(total|all|ttl)$/i.test(u)}
 
 var _CNTY_NAMES=${JSON.stringify(COUNTRY_FULL_NAME)};
 function _cn(c){return _CNTY_NAMES[c]||_CNTY_NAMES[c&&c.toUpperCase()]||c}
@@ -1157,12 +1165,12 @@ function _domainByProduct(domain,enabledCntys){
   var ALL=['US','CA','UK','DE','ES','BR','MX','AU','VN','IN'];
   var allSelected=!enabledCntys||enabledCntys.length===0||enabledCntys.length===ALL.length;
   var isPrdSpecific=function(p){if(!p)return false;var u=String(p).toUpperCase();return u!=='TTL'&&u!=='TOTAL'};
-  var isLlmTtl=function(r){var u=String(r.llm||'').trim();return!u||/^(total|all|ttl)$/i.test(u)};
+  var isLlmTtl=_llmRowOk;
   function collect(filterFn){
     var m={};
     (_citationsCnty||[]).forEach(function(r){
       if(!isPrdSpecific(r.prd))return;
-      if(!isLlmTtl(r))return;  // LLM 모델별 row 제외 (double-count 방지)
+      if(!isLlmTtl(r))return;  // 선택 LLM 외 row 제외 (double-count 방지)
       if(_stripDomain(r.domain).toLowerCase()!==dKey)return;
       if(!filterFn(r))return;
       m[r.prd]=(m[r.prd]||0)+(r.citations||0);
@@ -1193,8 +1201,8 @@ function renderCitDom(citCnty,useAgg,prdData,enabledCntys,enabledPrds,allPrdSel,
   var topN=_meta.citDomainTopN||10;var rows;
   // 전체 prd 선택: PRD=TTL 행 사용. 부분: enabled prd-specific 행
   var isPrdTtlRow=function(r){return!r.prd||/^(ttl|total)$/i.test(r.prd)};
-  // LLM=TTL/Total 만 합산 (LLM 모델별 row 는 별도 분리, double-count 방지)
-  var isLlmTtlRow=function(r){var u=String(r.llm||'').trim();return!u||/^(total|all|ttl)$/i.test(u)};
+  // 선택 LLM 행만 합산 (Total 선택 시 LLM=TTL 행, 모델 선택 시 그 모델 행 — double-count 방지)
+  var isLlmTtlRow=_llmRowOk;
   var prdSet={};(enabledPrds||[]).forEach(function(p){prdSet[p]=true});
   var rowOk=function(r){
     if(nonePrdSel)return false;
@@ -1229,7 +1237,7 @@ function renderCitDom(citCnty,useAgg,prdData,enabledCntys,enabledPrds,allPrdSel,
   countries.forEach(function(cnty){
     var cRows;
     if(allPrdSel){
-      cRows=citCnty.filter(function(r){return r.cnty===cnty&&isPrdTtlRow(r)}).sort(function(a,b){return b.citations-a.citations});
+      cRows=citCnty.filter(function(r){return r.cnty===cnty&&isPrdTtlRow(r)&&isLlmTtlRow(r)}).sort(function(a,b){return b.citations-a.citations});
     }else{
       // 도메인별로 enabled prd-specific 합산
       var dm={};citCnty.forEach(function(r){if(r.cnty!==cnty)return;if(!rowOk(r))return;var k=r.domain;if(!dm[k])dm[k]={domain:r.domain,type:r.type,citations:0};dm[k].citations+=r.citations});
