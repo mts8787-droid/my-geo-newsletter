@@ -1735,20 +1735,16 @@ function parseCitDomain(rows) {
         allEntries.push({ cnty, domain, type, prd, llm, month: b.label, val })
       })
     }
-    // Pass 1 — breakdown 감지 (cnty / prd / llm 별)
+    // Pass 1 — breakdown 감지 (cnty=TTL 행은 raw 보존 — TTL view 용 → Cnty breakdown 룰 제거)
+    //   · PRD breakdown: 같은 (cnty, domain, type) 의 prd-specific 행 존재 월
+    //   · LLM breakdown: 같은 (cnty, domain, type, prd) 의 LLM-specific 행 존재 월
     const prdBreakdown = {}   // { 'cnty|domain|type': { month: true } }
-    const cntyBreakdown = {}  // { 'domain|type|prd': { month: true } }
     const llmBreakdown = {}   // { 'cnty|domain|type|prd': { month: true } }
     allEntries.forEach(e => {
       if (!isTtlPrd(e.prd)) {
         const k = `${e.cnty}|${e.domain}|${e.type}`
         if (!prdBreakdown[k]) prdBreakdown[k] = {}
         prdBreakdown[k][e.month] = true
-      }
-      if (!isTtlCnty(e.cnty)) {
-        const k = `${e.domain}|${e.type}|${e.prd}`
-        if (!cntyBreakdown[k]) cntyBreakdown[k] = {}
-        cntyBreakdown[k][e.month] = true
       }
       if (!isTtlLlm(e.llm)) {
         const k = `${e.cnty}|${e.domain}|${e.type}|${e.prd}`
@@ -1757,22 +1753,22 @@ function parseCitDomain(rows) {
       }
     })
     const _bdCount = (obj) => Object.values(obj).reduce((s, m) => s + Object.keys(m).length, 0)
-    console.log(`[parseCitDomain] breakdown 감지: PRD ${_bdCount(prdBreakdown)} 셀 / Cnty ${_bdCount(cntyBreakdown)} 셀 / LLM ${_bdCount(llmBreakdown)} 셀`)
+    console.log(`[parseCitDomain] breakdown 감지: PRD ${_bdCount(prdBreakdown)} 셀 / LLM ${_bdCount(llmBreakdown)} 셀 (Cnty=TTL 행은 보존)`)
     // Pass 2 — aggMap 누적, breakdown 룰 skip
+    // cnty=TTL 행은 무조건 보존 (useAggregated=false TTL view 용).
+    // PRD/LLM TTL 행은 breakdown 존재 월에서 skip — useAggregated=true 의 per-country sum 에서 double-count 방지.
     const aggMap = {}
-    let _skipPrd = 0, _skipCnty = 0, _skipLlm = 0
+    let _skipPrd = 0, _skipLlm = 0
     allEntries.forEach(e => {
       const cdt = `${e.cnty}|${e.domain}|${e.type}`
-      const dtp = `${e.domain}|${e.type}|${e.prd}`
       const cdtp = `${e.cnty}|${e.domain}|${e.type}|${e.prd}`
       if (isTtlPrd(e.prd) && prdBreakdown[cdt]?.[e.month]) { _skipPrd++; return }
-      if (isTtlCnty(e.cnty) && cntyBreakdown[dtp]?.[e.month]) { _skipCnty++; return }
       if (isTtlLlm(e.llm) && llmBreakdown[cdtp]?.[e.month]) { _skipLlm++; return }
       const key = `${e.cnty}|${e.domain}|${e.type}|${e.prd}`
       if (!aggMap[key]) aggMap[key] = { cnty: e.cnty, domain: e.domain, type: e.type, prd: e.prd, monthScores: {} }
       aggMap[key].monthScores[e.month] = (aggMap[key].monthScores[e.month] || 0) + e.val
     })
-    console.log(`[parseCitDomain] Pass 2 skip 통계: PRD=${_skipPrd}건 / Cnty=${_skipCnty}건 / LLM=${_skipLlm}건 / aggMap=${Object.keys(aggMap).length}건`)
+    console.log(`[parseCitDomain] Pass 2 skip 통계: PRD=${_skipPrd}건 / LLM=${_skipLlm}건 / aggMap=${Object.keys(aggMap).length}건`)
     // aggMap → result 행 + citDomainTrend
     Object.values(aggMap).forEach(e => {
       // 최신 월 citations (chronological 마지막부터 역순)
