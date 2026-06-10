@@ -47,8 +47,21 @@ export default function CitationSidebar({
     }
     setGsSyncing(true); setGsStatus(null); setGsMsg(''); setDebugLog('')
     const _log = []
+    // 콘솔 캡처 — 모바일에서 파서 로그([parseCitDomain] 등) 를 사이드바에서 복사 가능하게
+    const _orig = { log: console.log, warn: console.warn, error: console.error }
+    const _fmt = a => { try { return typeof a === 'string' ? a : JSON.stringify(a) } catch { return String(a) } }
+    const _capture = (level, orig) => (...args) => {
+      orig(...args)
+      const line = args.map(_fmt).join(' ')
+      _log.push((level === 'log' ? '' : `[${level.toUpperCase()}] `) + (line.length > 600 ? line.slice(0, 600) + '…' : line))
+    }
+    console.log = _capture('log', _orig.log)
+    console.warn = _capture('warn', _orig.warn)
+    console.error = _capture('error', _orig.error)
+    const _restore = () => { console.log = _orig.log; console.warn = _orig.warn; console.error = _orig.error }
     try {
       const parsed = await syncFromGoogleSheets(sheetId, msg => setGsMsg(msg))
+      _restore()
       _log.push(`[Sync] parsed keys: ${Object.keys(parsed).join(', ') || '(없음)'}`)
       _log.push(`[Sync] meta keys: ${parsed.meta ? Object.keys(parsed.meta).join(', ') : '(없음)'}`)
       _log.push(`[Sync] citations: ${parsed.citations?.length ?? 0}건`)
@@ -60,7 +73,7 @@ export default function CitationSidebar({
       _log.push(`[Sync] citTrendMonths: ${parsed.citTrendMonths?.join(', ') || '(없음)'}`)
       _log.push(`[Sync] citDomainTrend: ${parsed.citDomainTrend ? Object.keys(parsed.citDomainTrend).length + '건' : '(없음)'}`)
       _log.push(`[Sync] citDomainMonths: ${parsed.citDomainMonths?.join(', ') || '(없음)'}`)
-      _log.push(`[Sync] (브라우저 콘솔에서 [parseCitTouchPoints], [parseCitDomain] 로그를 확인하세요)`)
+      _log.push(`[Sync] (파서 콘솔 로그는 위에 캡처됨 — '로그 복사' 버튼으로 복사 가능)`)
       console.log(_log.join('\n'))
 
       if (parsed.meta) {
@@ -127,6 +140,7 @@ export default function CitationSidebar({
       setGsStatus('error'); setGsMsg(err.message)
       setDebugLog(_log.join('\n'))
     } finally {
+      _restore()
       setGsSyncing(false)
       setTimeout(() => { setGsStatus(null); setGsMsg('') }, 6000)
     }
@@ -252,10 +266,22 @@ export default function CitationSidebar({
             {debugLog}
             <button
               onClick={() => {
-                navigator.clipboard.writeText(debugLog).then(() => {
+                const done = () => {
                   const btn = document.getElementById('debug-copy-btn')
                   if (btn) { btn.textContent = '복사됨!'; setTimeout(() => { btn.textContent = '로그 복사' }, 1500) }
-                })
+                }
+                const fallback = () => {
+                  const ta = document.createElement('textarea')
+                  ta.value = debugLog
+                  ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0'
+                  document.body.appendChild(ta)
+                  ta.focus(); ta.select()
+                  try { document.execCommand('copy'); done() } catch { /* 수동 복사 안내는 패널 텍스트로 대체 */ }
+                  document.body.removeChild(ta)
+                }
+                if (navigator.clipboard?.writeText) {
+                  navigator.clipboard.writeText(debugLog).then(done).catch(fallback)
+                } else fallback()
               }}
               id="debug-copy-btn"
               style={{

@@ -646,6 +646,17 @@ function llmCompareContent(citTouchPointsByLlm, citationsCnty, dotcomByLlm, dotc
       return (d.lg && d.lg[item.page]) || 0
     }
     sections.push(llmCompareTableHtml(dcTitle, items, models, valueFn, lang, 10))
+    // 3-2) 닷컴 페이지 type 비교 — Samsung
+    const ssTitle = lang === 'en' ? 'Dotcom Pages by LLM (Samsung)' : 'LLM 모델별 닷컴 페이지 비교 (Samsung)'
+    const ssPageSet = new Set()
+    Object.values(dotcomByLlm).forEach(d => { Object.keys(d.samsung || {}).forEach(p => ssPageSet.add(p)) })
+    const ssItems = Array.from(ssPageSet).map(p => ({ label: p, page: p }))
+    const ssValueFn = (item, model) => {
+      const d = dotcomByLlm[model] || {}
+      return (d.samsung && d.samsung[item.page]) || 0
+    }
+    if (ssItems.length) sections.push(llmCompareTableHtml(ssTitle, ssItems, models, ssValueFn, lang, 10))
+    else sections.push(llmEmptyCard(ssTitle, NO_DATA, lang))
   } else if (dotcomByLlm && Object.keys(dotcomByLlm).length === 1) {
     sections.push(llmEmptyCard(dcTitle, ONE_MODEL, lang))
   } else {
