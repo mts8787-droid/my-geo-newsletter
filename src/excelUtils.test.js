@@ -395,6 +395,25 @@ describe('parseCitDomain — v1/v2/v3 layout 자동 감지', () => {
     )
     expect(headerWarn).toBe(true)
   })
+
+  it('v3 + LLM Model 컬럼: breakdown 월은 모델 행만 합산 (TTL 행 제외), 단일 row 로 collapse', () => {
+    // 레딧 double-count 회귀 (2026-06): TTL 행 + 모델 행이 같은 월에 존재 시
+    // 둘 다 합산되어 수치가 2배. breakdown 존재 월(May)은 모델 행만, 없는 월(Apr)은 TTL 행만.
+    const rows = [
+      ['PRD', 'LLM Model',        'No', 'Region', 'Domain',     'Type',      'Apr', 'Region', 'Domain',     'Type',      'May'],
+      ['tv',  'TTL',               1,   'GLOBAL', 'reddit.com', 'community',  60,   'GLOBAL', 'reddit.com', 'community',  100],
+      ['tv',  'gemini-2.5-flash',  2,   '',       '',           '',           '',   'GLOBAL', 'reddit.com', 'community',  40],
+      ['tv',  'search-gpt',        3,   '',       '',           '',           '',   'GLOBAL', 'reddit.com', 'community',  35],
+      ['tv',  'perplexity',        4,   '',       '',           '',           '',   'GLOBAL', 'reddit.com', 'community',  30],
+    ]
+    const result = parseSheetRows(SHEET_NAMES.citDomain, rows)
+    const reddit = result.citationsCnty.filter(r => r.cnty === 'TTL' && r.domain === 'reddit.com')
+    expect(reddit.length).toBe(1)                  // LLM 차원 collapse — 모델별 row 분리 X
+    expect(reddit[0].monthScores.Apr).toBe(60)     // breakdown 없는 월 → 집계(TTL) 행만
+    expect(reddit[0].monthScores.May).toBe(105)    // breakdown 월 → 모델 합산 (40+35+30), TTL 100 제외
+    expect(reddit[0].citations).toBe(105)          // 최신 월 값
+    expect(reddit[0].llm).toBeUndefined()          // llm 필드 제거됨
+  })
 })
 
 // ─── parseVisSummary — KV / 테이블 두 형식 + 시간순 정렬 ────────────────────

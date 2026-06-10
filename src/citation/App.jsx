@@ -117,8 +117,8 @@ export default function App() {
 
   // 캐시 저장
   useEffect(() => {
-    saveCache(STORAGE_KEY, { metaKo, metaEn, citations, citationsCnty, dotcom, citationsByCnty, citationsByPrd, dotcomByCnty, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, dotcomTrend, dotcomTrendMonths, dotcomByLlm, citTouchPointsByLlm })
-  }, [metaKo, metaEn, citations, citationsCnty, dotcom, citationsByCnty, citationsByPrd, dotcomByCnty, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, dotcomTrend, dotcomTrendMonths, dotcomByLlm, citTouchPointsByLlm])
+    saveCache(STORAGE_KEY, { metaKo, metaEn, citations, citationsCnty, dotcom, citationsByCnty, citationsByPrd, dotcomByCnty, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, dotcomTrend, dotcomTrendMonths })
+  }, [metaKo, metaEn, citations, citationsCnty, dotcom, citationsByCnty, citationsByPrd, dotcomByCnty, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, dotcomTrend, dotcomTrendMonths])
 
   // 스냅샷 관리
   async function handleSnapOverwrite() {

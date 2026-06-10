@@ -972,7 +972,12 @@ function parseCitPageType(rows) {
 
   const header = rows[headerIdx]
   // 컬럼 위치 동적 detect (이전 schema 호환)
-  const llmCol = header.findIndex(c => /^(llm\s*model|llm|model)$/i.test(String(c || '').trim()))
+  // LLM Model — invisible unicode (ZWSP/NBSP/BOM) + multi-space 대응 ('Paye Type' 과 동일 케이스).
+  // detect 실패 (-1) 시 모든 행이 'Total' 분류 → breakdown 감지 무력화 → Total+모델 전부 합산 double-count.
+  const llmCol = header.findIndex(c => {
+    const s = String(c || '').replace(/[​‌‍﻿ ]/g, '').replace(/\s+/g, '').toLowerCase()
+    return /^(llmmodel|llm|model)$/.test(s)
+  })
   const cntyCol = header.findIndex(c => /^country$|countries/i.test(String(c || '').trim()))
   // Page Type — 'Page Type' / 'Paye Type' (오타) / 'Type' 허용.
   // 보이지 않는 unicode (NBSP / ZWSP / BOM) 와 multi-space 모두 대응 — 공백 전부 제거 후 매칭.
@@ -985,6 +990,7 @@ function parseCitPageType(rows) {
   const fallbackPt = ptCol >= 0 ? ptCol : (fallbackCnty + 1)
   console.log(`[parseCitPageType] header row${headerIdx}: [${header.slice(0,10).map(c => JSON.stringify(String(c||'').trim())).join(', ')}]`)
   console.log(`[parseCitPageType] llmCol=${llmCol} cntyCol=${cntyCol} ptCol=${ptCol} (fallbackCnty=${fallbackCnty} fallbackPt=${fallbackPt})`)
+  if (llmCol < 0) console.warn(`[parseCitPageType] WARN: llmCol not detected — header codepoints:`, header.slice(0, 4).map(c => Array.from(String(c || '')).map(ch => ch.codePointAt(0).toString(16)).join(' ')))
 
   // LG/SS 컬럼 페어 찾기 — Page Type 컬럼 이후부터 스캔. 같은 월 라벨 중복 시 첫번째만 채택 (시트 오타 방지).
   const monthPairs = []
@@ -1760,8 +1766,31 @@ function parseCitDomain(rows) {
         aggMap[key].monthScores[b.label] = (aggMap[key].monthScores[b.label] || 0) + val
       })
     }
-    // aggMap → result 행 + citDomainTrend
+    // ─ LLM 차원 collapse (2026-06) — LLM 드롭박스 제거에 따라 (cnty,domain,type,prd) 단일 row 화.
+    // breakdown-aware: 같은 (cnty,domain,type,prd) 의 어떤 월에 모델 행 (gemini 등) 이 존재하면
+    // 그 월에서는 집계 행 (TTL/Total/빈값) 을 제외하고 모델 행만 합산 — 레딧 double-count 방지.
+    const isTtlLlmVal = m => { const u = stripPar(m); return !u || /^(total|all|ttl)$/i.test(u) }
+    const domBreakdown = new Set()  // `${baseKey}|${month}` — 모델 breakdown 존재 월
     Object.values(aggMap).forEach(e => {
+      if (isTtlLlmVal(e.llm)) return
+      const baseKey = `${e.cnty}|${e.domain}|${e.type}|${e.prd}`
+      Object.entries(e.monthScores).forEach(([m, v]) => { if (v > 0) domBreakdown.add(`${baseKey}|${m}`) })
+    })
+    const collapsed = {}
+    Object.values(aggMap).forEach(e => {
+      const baseKey = `${e.cnty}|${e.domain}|${e.type}|${e.prd}`
+      const isTtl = isTtlLlmVal(e.llm)
+      if (!collapsed[baseKey]) collapsed[baseKey] = { cnty: e.cnty, domain: e.domain, type: e.type, prd: e.prd, monthScores: {} }
+      Object.entries(e.monthScores).forEach(([m, v]) => {
+        if (!(v > 0)) return
+        // breakdown 존재 월 → 집계 행 skip / breakdown 없는 월 → 집계 행만
+        if (domBreakdown.has(`${baseKey}|${m}`) === isTtl) return
+        collapsed[baseKey].monthScores[m] = (collapsed[baseKey].monthScores[m] || 0) + v
+      })
+    })
+    console.log(`[parseCitDomain] LLM collapse: ${Object.keys(aggMap).length} → ${Object.keys(collapsed).length} rows / breakdown 월 ${domBreakdown.size}건`)
+    // collapsed → result 행 + citDomainTrend
+    Object.values(collapsed).forEach(e => {
       // 최신 월 citations (chronological 마지막부터 역순)
       let citations = 0
       for (let j = domainMonthLabels.length - 1; j >= 0; j--) {
@@ -1770,22 +1799,21 @@ function parseCitDomain(rows) {
       }
       if (citations <= 0) return
       cntyRanks[e.cnty] = (cntyRanks[e.cnty] || 0) + 1
-      result.push({ cnty: e.cnty, rank: cntyRanks[e.cnty], domain: e.domain, type: e.type, citations, monthScores: e.monthScores, prd: e.prd, llm: e.llm })
+      result.push({ cnty: e.cnty, rank: cntyRanks[e.cnty], domain: e.domain, type: e.type, citations, monthScores: e.monthScores, prd: e.prd })
       const key = `${e.cnty}|${e.domain}`
-      // 트렌드: PRD=TTL && LLM=TTL 우선 (시트의 grand total). 다른 type/PRD/LLM 의 월 데이터도 merge (보완).
+      // 트렌드: PRD=TTL 우선 (시트의 grand total). 다른 type/PRD 의 월 데이터도 merge (보완).
       const isTtlPrd = !e.prd || /^(ttl|total)$/i.test(e.prd)
-      const isTtlLlm = !e.llm || /^(total|all|ttl)$/i.test(e.llm)
       if (!citDomainTrend[key]) {
         citDomainTrend[key] = { cnty: e.cnty, domain: e.domain, type: e.type, months: {}, _hasTtl: false }
       }
       const slot = citDomainTrend[key]
-      // PRD=TTL && LLM=TTL 데이터가 등장하면 type/months 갱신 우선권 부여 (grand total)
-      if (isTtlPrd && isTtlLlm) {
+      // PRD=TTL 데이터가 등장하면 type/months 갱신 우선권 부여 (grand total)
+      if (isTtlPrd) {
         slot.type = e.type || slot.type
         slot._hasTtl = true
         Object.entries(e.monthScores).forEach(([m, v]) => { if (v > 0) slot.months[m] = v })
       } else if (!slot._hasTtl) {
-        // PRD-specific 또는 LLM-specific 폴백: 빈 월에만 채워넣기
+        // PRD-specific 폴백: 빈 월에만 채워넣기
         Object.entries(e.monthScores).forEach(([m, v]) => { if (v > 0 && !slot.months[m]) slot.months[m] = v })
       }
     })
