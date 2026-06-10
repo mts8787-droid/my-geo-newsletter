@@ -1402,13 +1402,6 @@ function parseCitTouchPoints(rows) {
       const skipCnty = isCountryTtl && cntyBreakdown[channel]?.[label]
       const skipLlm = isTotalLlm && llmBreakdown[channel]?.[label]
       const skipPrd = isPrdTtl && prdBreakdown[channel]?.[label]
-      // Retail/May 만 진단 — 어떤 행이 sum 에 들어가는지 추적
-      if (channel === 'Retail' && label === 'May') {
-        const llmVal = llmCol >= 0 ? String(r[llmCol] || '').trim() : ''
-        const prd = prdCol >= 0 ? String(r[prdCol] || '').trim() : ''
-        const tag = (skipCnty || skipLlm || skipPrd) ? `SKIP(cnty=${skipCnty},llm=${skipLlm},prd=${prd ? skipPrd : 'n/a'})` : 'SUM'
-        console.log(`[parseCitTouchPoints] Retail/May ${tag}: country=${country} llm='${llmVal}' prd='${prd}' v=${v}`)
-      }
       // LLM 별 채널 sum — 모델 비교 탭용. cnty=TTL + PRD=TTL skip (Pass 2 sum 룰과 일관).
       // LLM='TTL' 도 별도 'Total' 키로 보존 (모델별 + 합 모두 비교 가능).
       const llmKey = isTotalLlm ? 'Total' : llmVal
