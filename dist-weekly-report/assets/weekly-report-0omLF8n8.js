@@ -475,15 +475,21 @@ function switchTab(id){
 function switchCitSub(sub){
   document.querySelectorAll('#gnb-citation .gnb-sub-btn').forEach(function(b){b.classList.remove('active')});
   var btns=document.querySelectorAll('#gnb-citation .gnb-sub-btn');
-  var subMap={touchpoint:0,dotcom:1};
+  var subMap={touchpoint:0,dotcom:1,'llm-compare':2};
   if(subMap[sub]!==undefined&&btns[subMap[sub]])btns[subMap[sub]].classList.add('active');
   var tp=document.getElementById('cit-sub-touchpoint');
   var dc=document.getElementById('cit-sub-dotcom');
+  var llm=document.getElementById('cit-sub-llm-compare');
   if(tp)tp.style.display=sub==='touchpoint'?'':'none';
   if(dc){
     dc.style.display=sub==='dotcom'?'':'none';
     var iframe=document.getElementById('cit-iframe-dc');
     if(iframe&&!iframe.src&&iframe.getAttribute('data-src')){iframe.src=iframe.getAttribute('data-src')}
+  }
+  if(llm){
+    llm.style.display=sub==='llm-compare'?'':'none';
+    var iframeLlm=document.getElementById('cit-iframe-llm');
+    if(iframeLlm&&!iframeLlm.src&&iframeLlm.getAttribute('data-src')){iframeLlm.src=iframeLlm.getAttribute('data-src')}
   }
 }
 function switchVisSub(sub){
@@ -2739,6 +2745,7 @@ ${b?`
 <div id="gnb-citation" class="gnb-sub">
   <button class="gnb-sub-btn active" onclick="switchCitSub('touchpoint')">${n==="en"?"Touch Points":"외부접점채널"}</button>
   <button class="gnb-sub-btn" onclick="switchCitSub('dotcom')">${n==="en"?"Dotcom":"닷컴"}</button>
+  <button class="gnb-sub-btn" onclick="switchCitSub('llm-compare')">${n==="en"?"LLM Compare":"LLM 모델별 비교"}</button>
 </div>
 <div id="tab-visibility" class="tab-panel active">
   <div id="vis-sub-bu" class="vis-sub-panel active">
@@ -2759,6 +2766,9 @@ ${b?`
   </div>
   <div id="cit-sub-dotcom" style="display:none">
     <iframe id="cit-iframe-dc" data-src="/p/${n==="en"?"GEO-Citation-Dashboard-EN":"GEO-Citation-Dashboard-KO"}?tab=dotcom" style="width:100%;min-height:calc(100vh - 100px);border:none;background:#F1F5F9" title="Citation - Dotcom"></iframe>
+  </div>
+  <div id="cit-sub-llm-compare" style="display:none">
+    <iframe id="cit-iframe-llm" data-src="/p/${n==="en"?"GEO-Citation-Dashboard-EN":"GEO-Citation-Dashboard-KO"}?tab=llm-compare" style="width:100%;min-height:calc(100vh - 100px);border:none;background:#F1F5F9" title="Citation - LLM Compare"></iframe>
   </div>
 </div>
 ${w?`<div id="tab-readability" class="tab-panel">

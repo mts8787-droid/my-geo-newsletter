@@ -1731,11 +1731,11 @@ function switchSubTab(btn,tab){
     p.style.display=p.getAttribute('data-panel')===tab?'':'none';
   });
 }
-// 쿼리 파라미터로 탭 자동 선택 (?tab=dotcom 또는 ?tab=touchpoint)
+// 쿼리 파라미터로 탭 자동 선택 (?tab=dotcom / ?tab=touchpoint / ?tab=llm-compare)
 (function(){
   var params=new URLSearchParams(window.location.search);
   var tab=params.get('tab');
-  if(tab==='dotcom'||tab==='touchpoint'){
+  if(tab==='dotcom'||tab==='touchpoint'||tab==='llm-compare'){
     var btn=document.querySelector('.cit-gnb-btn[data-tab="'+tab+'"]');
     switchSubTab(btn,tab);
     var gnb=document.querySelector('.cit-gnb');

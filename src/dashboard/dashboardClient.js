@@ -82,15 +82,21 @@ function switchTab(id){
 function switchCitSub(sub){
   document.querySelectorAll('#gnb-citation .gnb-sub-btn').forEach(function(b){b.classList.remove('active')});
   var btns=document.querySelectorAll('#gnb-citation .gnb-sub-btn');
-  var subMap={touchpoint:0,dotcom:1};
+  var subMap={touchpoint:0,dotcom:1,'llm-compare':2};
   if(subMap[sub]!==undefined&&btns[subMap[sub]])btns[subMap[sub]].classList.add('active');
   var tp=document.getElementById('cit-sub-touchpoint');
   var dc=document.getElementById('cit-sub-dotcom');
+  var llm=document.getElementById('cit-sub-llm-compare');
   if(tp)tp.style.display=sub==='touchpoint'?'':'none';
   if(dc){
     dc.style.display=sub==='dotcom'?'':'none';
     var iframe=document.getElementById('cit-iframe-dc');
     if(iframe&&!iframe.src&&iframe.getAttribute('data-src')){iframe.src=iframe.getAttribute('data-src')}
+  }
+  if(llm){
+    llm.style.display=sub==='llm-compare'?'':'none';
+    var iframeLlm=document.getElementById('cit-iframe-llm');
+    if(iframeLlm&&!iframeLlm.src&&iframeLlm.getAttribute('data-src')){iframeLlm.src=iframeLlm.getAttribute('data-src')}
   }
 }
 function switchVisSub(sub){

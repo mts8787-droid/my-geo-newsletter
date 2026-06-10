@@ -1611,6 +1611,7 @@ ${visibilityOnly ? `
 <div id="gnb-citation" class="gnb-sub">
   <button class="gnb-sub-btn active" onclick="switchCitSub('touchpoint')">${lang === 'en' ? 'Touch Points' : '외부접점채널'}</button>
   <button class="gnb-sub-btn" onclick="switchCitSub('dotcom')">${lang === 'en' ? 'Dotcom' : '닷컴'}</button>
+  <button class="gnb-sub-btn" onclick="switchCitSub('llm-compare')">${lang === 'en' ? 'LLM Compare' : 'LLM 모델별 비교'}</button>
 </div>
 <div id="tab-visibility" class="tab-panel active">
   <div id="vis-sub-bu" class="vis-sub-panel active">
@@ -1631,6 +1632,9 @@ ${visibilityOnly ? `
   </div>
   <div id="cit-sub-dotcom" style="display:none">
     <iframe id="cit-iframe-dc" data-src="/p/${lang === 'en' ? 'GEO-Citation-Dashboard-EN' : 'GEO-Citation-Dashboard-KO'}?tab=dotcom" style="width:100%;min-height:calc(100vh - 100px);border:none;background:#F1F5F9" title="Citation - Dotcom"></iframe>
+  </div>
+  <div id="cit-sub-llm-compare" style="display:none">
+    <iframe id="cit-iframe-llm" data-src="/p/${lang === 'en' ? 'GEO-Citation-Dashboard-EN' : 'GEO-Citation-Dashboard-KO'}?tab=llm-compare" style="width:100%;min-height:calc(100vh - 100px);border:none;background:#F1F5F9" title="Citation - LLM Compare"></iframe>
   </div>
 </div>
 ${includeReadability ? `<div id="tab-readability" class="tab-panel">
