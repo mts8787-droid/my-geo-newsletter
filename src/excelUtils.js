@@ -1014,7 +1014,20 @@ function parseCitPageType(rows) {
   console.log(`[parseCitPageType] monthPairs:`, monthPairs.map(p => `LG=${p.lg}/SS=${p.ss}`).join(', '))
 
   // 데이터 필터 — Country 컬럼 (cntyCol 동적 detect) 기준
-  const data = rows.slice(headerIdx + 1).filter(r => r[fallbackCnty] != null && String(r[fallbackCnty]).trim())
+  // 병합 셀 (merged cell) 대응 — Sheets API 가 Model 병합 셀의 비앵커 행을 빈값으로 반환
+  // → 빈값을 Total 로 오분류하면 모델 행이 집계 행 취급 → breakdown 미감지 → double-count.
+  // 직전 행 Model 값 forward-fill. 완전 빈 행 (섹션 구분) 에서 carry 리셋.
+  const _llmFilled = new Map()
+  let _carryLlm = '', _llmFfCount = 0
+  rows.slice(headerIdx + 1).forEach(r => {
+    if (!r || !r.some(c => String(c || '').trim())) { _carryLlm = ''; return }
+    let v = llmCol >= 0 ? String(r[llmCol] || '').trim() : ''
+    if (v) _carryLlm = v
+    else if (llmCol >= 0 && _carryLlm) { v = _carryLlm; _llmFfCount++ }
+    _llmFilled.set(r, v)
+  })
+  if (_llmFfCount) console.log(`[parseCitPageType] merged-cell forward-fill (Model): ${_llmFfCount}건 상속`)
+  const data = rows.slice(headerIdx + 1).filter(r => r && r[fallbackCnty] != null && String(r[fallbackCnty]).trim())
   console.log(`[parseCitPageType] data ${data.length}행 (필터 통과)`)
 
   // 최신 월 데이터가 있는 페어 찾기
@@ -1061,7 +1074,7 @@ function parseCitPageType(rows) {
   // breakdown 존재 월은 집계(Total/TTL) 행을 빼고 모델 행만 합산 (double-count 방지 — Touch Points 와 동일 규칙)
   const _ptBreakdown = new Set()
   data.forEach(r => {
-    const llmRaw = llmCol >= 0 ? String(r[llmCol] || '').trim() : ''
+    const llmRaw = _llmFilled.get(r) || ''
     if (_ptIsTotalLlm(llmRaw)) return
     const { cnty, key } = _ptCntyKey(r)
     monthPairs.forEach((mp, mi) => {
@@ -1079,7 +1092,7 @@ function parseCitPageType(rows) {
     return byLlm[llm]
   }
   data.forEach(r => {
-    const llmRaw = llmCol >= 0 ? String(r[llmCol] || '').trim() : ''
+    const llmRaw = _llmFilled.get(r) || ''
     const isTotalLlm = _ptIsTotalLlm(llmRaw)
     const llmModel = isTotalLlm ? 'Total' : llmRaw
     const { cnty, key } = _ptCntyKey(r)
@@ -1145,7 +1158,7 @@ function parseCitPageType(rows) {
     if (!mLabel) return
     const mLg = {}, mSam = {}
     data.forEach(r => {
-      const llmRaw2 = llmCol >= 0 ? String(r[llmCol] || '').trim() : ''
+      const llmRaw2 = _llmFilled.get(r) || ''
       const isTotalLlm2 = _ptIsTotalLlm(llmRaw2)
       const { cnty, key } = _ptCntyKey(r)
       // breakdown-aware — 모델 breakdown 있는 월은 모델 행 합산, 없으면 집계(Total/TTL) 행만
@@ -1747,25 +1760,47 @@ function parseCitDomain(rows) {
     // 각각 별도 row → 클라가 LLM 필터 적용 가능. 합산 시 LLM=TTL 만 사용 (double-count 방지).
     const stripPar = s => String(s || '').replace(/[()]/g, '').trim()
     const aggMap = {}  // key → { cnty, domain, type, prd, llm, monthScores }
+    // 병합 셀 (merged cell) 대응 — Sheets API 가 비앵커 행을 빈값으로 반환 → 직전 행 값 forward-fill
+    const carry = monthBlocks.map(() => ({ region: '', domain: '', type: '' }))
+    let carryPrd = ''
+    let ffCount = 0, dropNoDomain = 0
     for (let i = startIdx; i < rows.length; i++) {
       const r = rows[i]
       if (!r) continue
-      const prd = prdCol >= 0 ? stripPar(r[prdCol]) : ''
+      let prd = prdCol >= 0 ? stripPar(r[prdCol]) : ''
+      if (prd) carryPrd = prd
+      else prd = carryPrd
       const llm = llmCol >= 0 ? stripPar(r[llmCol]) : ''
-      monthBlocks.forEach(b => {
-        const domain = cleanDomain(r[b.domainCol])
-        if (!domain || !domain.includes('.')) return
+      monthBlocks.forEach((b, bi) => {
+        const c = carry[bi]
+        const ownDomain = cleanDomain(r[b.domainCol])
+        if (ownDomain && ownDomain.includes('.')) {
+          c.domain = ownDomain
+          c.region = String(r[b.regionCol] || '').trim().toUpperCase()
+          c.type = String(r[b.typeCol] || '').trim()
+        }
         const rawVal = String(r[b.monthCol] || '').replace(/,/g, '').trim()
         const val = parseFloat(rawVal)
         if (isNaN(val) || val <= 0) return
-        const rawRegion = String(r[b.regionCol] || '').trim().toUpperCase()
+        let domain = ownDomain, rawRegion, type
+        if (domain && domain.includes('.')) {
+          rawRegion = String(r[b.regionCol] || '').trim().toUpperCase()
+          type = String(r[b.typeCol] || '').trim()
+        } else if (c.domain) {
+          // 값은 있는데 domain 빈값 → 병합 셀 → 직전 행에서 상속
+          domain = c.domain; rawRegion = c.region; type = c.type
+          ffCount++
+        } else {
+          dropNoDomain++
+          return
+        }
         const cnty = REGION_MAP[rawRegion] || rawRegion || 'TTL'
-        const type = String(r[b.typeCol] || '').trim()
         const key = `${cnty}|${domain}|${type}|${prd}|${llm}`
         if (!aggMap[key]) aggMap[key] = { cnty, domain, type, prd, llm, monthScores: {} }
         aggMap[key].monthScores[b.label] = (aggMap[key].monthScores[b.label] || 0) + val
       })
     }
+    if (ffCount || dropNoDomain) console.log(`[parseCitDomain] merged-cell forward-fill: 상속 ${ffCount}건 / domain 없어 drop ${dropNoDomain}건`)
     // ─ LLM 차원 collapse (2026-06) — LLM 드롭박스 제거에 따라 (cnty,domain,type,prd) 단일 row 화.
     // breakdown-aware: 같은 (cnty,domain,type,prd) 의 어떤 월에 모델 행 (gemini 등) 이 존재하면
     // 그 월에서는 집계 행 (TTL/Total/빈값) 을 제외하고 모델 행만 합산 — 레딧 double-count 방지.

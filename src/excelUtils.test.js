@@ -414,6 +414,26 @@ describe('parseCitDomain — v1/v2/v3 layout 자동 감지', () => {
     expect(reddit[0].citations).toBe(105)          // 최신 월 값
     expect(reddit[0].llm).toBeUndefined()          // llm 필드 제거됨
   })
+
+  it('병합 셀 (merged cell): Region/Domain/Type/PRD 빈값 행은 직전 행 값 forward-fill', () => {
+    // 데이터 전멸 회귀 (2026-06): Sheets API 가 세로 병합 범위의 비앵커 행을 빈값으로 반환
+    // → domain 없는 행 drop → citationsCnty 1건만 생존. 직전 행 상속으로 복구.
+    const rows = [
+      ['PRD', 'LLM Model',        'No', 'Region', 'Domain',     'Type',      'Apr', 'Region', 'Domain',     'Type',      'May'],
+      ['tv',  'TTL',               1,   'GLOBAL', 'reddit.com', 'Community',  60,   '',       '',           '',          ''],
+      ['',    'gemini-2.5-flash',  2,   '',       '',           '',           '',   'UK',     'reddit.com', 'Community',  2467],
+      ['',    'perplexity',        3,   '',       '',           '',           '',   '',       '',           '',           5830],
+      ['',    'search-gpt',        4,   '',       '',           '',           '',   '',       '',           '',           23472],
+    ]
+    const result = parseSheetRows(SHEET_NAMES.citDomain, rows)
+    // perplexity/search-gpt 행: May 블록의 Region/Domain/Type 빈값 (병합) → gemini 행에서 상속
+    const uk = result.citationsCnty.filter(r => r.cnty === 'UK' && r.domain === 'reddit.com')
+    expect(uk.length).toBe(1)
+    expect(uk[0].monthScores.May).toBe(31769)      // 2467 + 5830 + 23472 — 3행 모두 합산
+    // PRD 빈값 (병합) → 'tv' 상속됐으므로 TTL Apr 행과 같은 prd 차원 — Apr 집계 행 생존
+    const ttl = result.citationsCnty.find(r => r.cnty === 'TTL' && r.domain === 'reddit.com')
+    expect(ttl?.monthScores.Apr).toBe(60)
+  })
 })
 
 // ─── parseVisSummary — KV / 테이블 두 형식 + 시간순 정렬 ────────────────────
@@ -552,6 +572,25 @@ describe('parseCitPageType — 월 페어 + dotcom 집계 + 트렌드', () => {
     expect(result.dotcomByLlm?.Total?.lg?.PDP).toBe(80)
     expect(result.dotcomByLlm?.TTL).toBeUndefined()
     expect(result.dotcomByLlm?.['(TTL)']).toBeUndefined()
+  })
+
+  it('병합 셀 (merged cell): Model 빈값 행은 직전 행 모델명 forward-fill → Total 오분류 방지', () => {
+    // 닷컴 double-count 회귀 (2026-06): Model 세로 병합 → 비앵커 행 빈값 → Total 오분류
+    // → 모델 행이 집계 행 취급 → breakdown 미감지 → TTL + 모델 전부 합산 (2배).
+    const rows = [
+      ['LLM Model',        'Country', 'Page Type', 'Apr LG', 'Apr SS', 'May LG', 'May SS'],
+      ['Total',            'TTL',     'PLP',        60,       55,       100,      999],  // 집계 행 — May 제외돼야 함
+      ['gemini-2.5-flash', 'TTL',     'PLP',        '',       '',       40,       35],   // 앵커 행
+      ['',                 'TTL',     'PLP',        '',       '',       35,       30],   // 병합 셀 — gemini 상속
+      ['',                 'TTL',     'PLP',        '',       '',       30,       25],   // 병합 셀 — gemini 상속
+    ]
+    const result = parseSheetRows(SHEET_NAMES.citPageType, rows)
+    // May = 모델 행 합산 (40+35+30=105), Total 100 제외. forward-fill 없으면 빈값 → Total 취급 → 40 만 잡힘
+    expect(result.dotcom?.lg?.PLP).toBe(105)
+    expect(result.dotcom?.samsung?.PLP).toBe(90)   // 35+30+25 — Total 999 제외
+    // Apr 는 breakdown 없음 → Total 행 사용
+    expect(result.dotcomTrend?.PLP?.Apr?.lg).toBe(60)
+    expect(result.dotcomTrend?.PLP?.May?.lg).toBe(105)
   })
 })
 
