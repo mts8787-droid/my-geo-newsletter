@@ -109,13 +109,15 @@ function citDomainSectionHtml(citationsCnty, meta, t, citations, lang, useAggreg
   const topN = meta.citDomainTopN || 10
 
   let rows
-  // 2026-06 — double-count 방지: PRD-specific + LLM=TTL 행만 합산. cnty=TTL/Global 제외.
+  // 2026-06 — double-count 방지: PRD-specific + LLM=TTL 행만 합산. TTL/Global 류 cnty 제외.
   // 시트가 LLM 별 row 분리 (TTL/gemini/search-gpt/perplexity) — LLM=TTL 행만 grand total 표현.
   const isTtlPrd = p => { const u = String(p || '').trim().toUpperCase(); return !u || u === 'TTL' || u === 'TOTAL' }
   const isTtlLlm = m => { const u = String(m || '').trim(); return !u || /^(total|all|ttl)$/i.test(u) }
+  // Global / WW / World / Worldwide / Total / All 등 cnty 도 TTL 로 취급 → 합산에서 제외
+  const isTtlCnty = c => /^(ttl|total|global|all|ww|world|worldwide|globe|글로벌|전체|월드|총계)$/i.test(String(c || '').trim())
   if (useAggregated) {
     // 선택된 국가 데이터를 도메인별로 합산
-    const countryRows = citationsCnty.filter(r => r.cnty !== 'TTL' && !isTtlPrd(r.prd) && isTtlLlm(r.llm))
+    const countryRows = citationsCnty.filter(r => !isTtlCnty(r.cnty) && !isTtlPrd(r.prd) && isTtlLlm(r.llm))
     const domainMap = {}
     countryRows.forEach(r => {
       const key = r.domain
@@ -125,7 +127,7 @@ function citDomainSectionHtml(citationsCnty, meta, t, citations, lang, useAggreg
     rows = Object.values(domainMap).sort((a, b) => b.citations - a.citations).slice(0, topN)
     rows.forEach((r, i) => { r.rank = i + 1 })
   } else {
-    rows = citationsCnty.filter(r => r.cnty === 'TTL' && isTtlLlm(r.llm)).sort((a, b) => a.rank - b.rank).slice(0, topN)
+    rows = citationsCnty.filter(r => isTtlCnty(r.cnty) && isTtlLlm(r.llm)).sort((a, b) => a.rank - b.rank).slice(0, topN)
   }
   let bodyHtml
   if (!rows.length) {
@@ -902,6 +904,8 @@ var _DC_COLS=['TTL','PLP','Microsites','PDP','Newsroom','Support','Buying-guide'
 var _DC_SAM=['TTL','PLP','Microsites','PDP','Newsroom','Support','Buying-guide'];
 function _fmt(n){return Number(n).toLocaleString('en-US')}
 function _stripDomain(d){return(d||'').replace(/\\.(com|org|net|co\\.uk|com\\.br|com\\.au|com\\.vn|com\\.mx|co\\.kr|de|es|fr|ca|in|vn)$/i,'')}
+// 2026-06 — Global / WW / Worldwide 등 TTL 류 cnty 인식 (합산 시 제외)
+function _isTtlCnty(c){return /^(ttl|total|global|all|ww|world|worldwide|globe|글로벌|전체|월드|총계)$/i.test(String(c||'').trim())}
 
 var _CNTY_NAMES=${JSON.stringify(COUNTRY_FULL_NAME)};
 function _cn(c){return _CNTY_NAMES[c]||_CNTY_NAMES[c&&c.toUpperCase()]||c}
@@ -1025,7 +1029,7 @@ function _domainByProduct(domain,enabledCntys){
   }
   var prdMap;
   if(allSelected){
-    prdMap=collect(function(r){return r.cnty==='TTL'});
+    prdMap=collect(function(r){return _isTtlCnty(r.cnty)});
     if(Object.keys(prdMap).length===0){
       prdMap=collect(function(r){return ALL.indexOf(r.cnty)>=0});
     }
@@ -1066,11 +1070,11 @@ function renderCitDom(citCnty,useAgg,prdData,enabledCntys,enabledPrds,allPrdSel,
     return Object.values(dm).sort(function(a,b){return b.citations-a.citations}).slice(0,topN);
   }
   if(useAgg){
-    rows=aggByCnty(function(r){return r.cnty!=='TTL'&&rowOk(r)});
+    rows=aggByCnty(function(r){return !_isTtlCnty(r.cnty)&&rowOk(r)});
   } else {
-    rows=citCnty.filter(function(r){return r.cnty==='TTL'&&rowOk(r)}).sort(function(a,b){return (b.citations||0)-(a.citations||0)}).slice(0,topN);
+    rows=citCnty.filter(function(r){return _isTtlCnty(r.cnty)&&rowOk(r)}).sort(function(a,b){return (b.citations||0)-(a.citations||0)}).slice(0,topN);
     if(!rows.length){
-      rows=aggByCnty(function(r){return r.cnty!=='TTL'&&rowOk(r)});
+      rows=aggByCnty(function(r){return !_isTtlCnty(r.cnty)&&rowOk(r)});
     }
   }
   // 전체 세로 막대그래프
@@ -1342,7 +1346,7 @@ function applyFilter(){
     filteredCitCnty=[];
   }else{
     filteredCitCnty=(_citationsCnty||[]).filter(function(r){
-      var cntyOk=r.cnty==='TTL'||enabled.includes(r.cnty);
+      var cntyOk=_isTtlCnty(r.cnty)||enabled.includes(r.cnty);
       if(!cntyOk)return false;
       // 제품 필터: All 일 땐 PRD=TTL 행만 + (PRD-specific 도 By Product 카드용으로 보존)
       // 부분 선택 시: enabled PRD-specific 행만

@@ -1575,7 +1575,13 @@ function parseCitDomain(rows) {
 
   // 새 구조: No | Region | Domain | Type | Feb | Mar | Apr | ...
   // Region: Global(=TTL), US, CA, UK 등 인라인 국가
-  const REGION_MAP = { 'GLOBAL': 'TTL', 'TOTAL': 'TTL', 'TTL': 'TTL', '미국':'US','캐나다':'CA','영국':'UK','독일':'DE','스페인':'ES','브라질':'BR','멕시코':'MX','인도':'IN','호주':'AU','베트남':'VN' }
+  // 'Global' 류 동의어 → 'TTL' 매핑 (사용자 요청 2026-06: Global 도 TTL 처리하여 합산 시 제외).
+  const REGION_MAP = {
+    'GLOBAL': 'TTL', 'TOTAL': 'TTL', 'TTL': 'TTL', 'ALL': 'TTL',
+    'WW': 'TTL', 'WORLD': 'TTL', 'WORLDWIDE': 'TTL', 'GLOBE': 'TTL',
+    '글로벌': 'TTL', '전체': 'TTL', '월드': 'TTL', '총계': 'TTL',
+    '미국':'US','캐나다':'CA','영국':'UK','독일':'DE','스페인':'ES','브라질':'BR','멕시코':'MX','인도':'IN','호주':'AU','베트남':'VN',
+  }
   const COUNTRIES = ['US','CA','UK','DE','ES','BR','MX','AU','VN','IN','TTL','GLOBAL']
   const MONTH_RE = /^(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|[0-9]{1,2}월)/i
 
