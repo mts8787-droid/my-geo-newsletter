@@ -1684,5 +1684,12 @@ function calcFilteredDataCB(selBU,selProd,selCountry){
 }
 // 초기 로드 — script 가 </body> 직전이라 DOM 이미 파싱 완료 상태. 직접 호출.
 updateHeroFromCheckboxes();
+// LLM 모델 != Total 일 때 monthly 모드로 자동 전환 (iframe 재렌더 시에도 monthly 유지)
+(function(){
+  var llmSel=document.getElementById('vis-llm-select');
+  if(llmSel&&llmSel.value&&llmSel.value!=='Total'){
+    switchPeriodPage('monthly');
+  }
+})();
 `
 }

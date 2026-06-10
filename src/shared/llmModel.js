@@ -25,57 +25,63 @@ export function getAvailableLlmModels(...sources) {
 }
 
 // products[] / productsPartial[] 의 score/prev/vsComp 를 선택 LLM Model 기준으로 재계산.
-// byLlm 에 해당 모델 데이터 없으면 기존 값 유지 (2,3월 Total 폴백).
+// 2026-06 — byLlm 에 해당 모델 데이터 없는 월은 score=null (5월 데이터부터만 표시, 2-4월 빈 처리).
 export function resolveProductsByLlm(products, llmModel) {
   if (!Array.isArray(products) || !llmModel || llmModel === LLM_TOTAL) return products
   return products.map(p => {
     const ms = p?.monthlyScores || []
     if (!ms.length) return p
-    const latest = ms[ms.length - 1]
-    const prev = ms.length >= 2 ? ms[ms.length - 2] : null
-    const latestLlm = latest?.byLlm?.[llmModel]
+    // byLlm 데이터 있는 월만 필터해서 latest/prev 결정
+    const llmMonths = ms.filter(m => m?.byLlm?.[llmModel])
+    const latest = llmMonths[llmMonths.length - 1] || null
+    const prev = llmMonths.length >= 2 ? llmMonths[llmMonths.length - 2] : null
+    if (!latest) return p  // 모델 데이터 전혀 없음 → 폴백
+    const latestLlm = latest.byLlm[llmModel]
     const prevLlm = prev?.byLlm?.[llmModel]
-    if (!latestLlm) return p
     return {
       ...p,
       score: latestLlm.score ?? p.score,
-      prev: prevLlm?.score ?? p.prev,
+      prev: prevLlm?.score ?? null,
       vsComp: latestLlm.comp ?? p.vsComp,
       allScores: latestLlm.allScores ?? p.allScores,
-      // 월간 view 가 사용하는 별도 필드 — 같은 LLM 값으로 동기화
       monthlyScore: latestLlm.score ?? p.monthlyScore ?? p.score,
-      monthlyPrev: prevLlm?.score ?? p.monthlyPrev ?? p.prev,
+      monthlyPrev: prevLlm?.score ?? null,
+      // 5월부터만: byLlm 없는 월은 score=null (차트 null-aware 가 점 미렌더 + 선 끊김)
       monthlyScores: ms.map(m => {
         const byL = m?.byLlm?.[llmModel]
-        return byL ? { ...m, score: byL.score, comp: byL.comp, allScores: byL.allScores } : m
+        return byL ? { ...m, score: byL.score, comp: byL.comp, allScores: byL.allScores }
+                   : { ...m, score: null, comp: null, allScores: null }
       }),
     }
   })
 }
 
 // productsCnty[] (제품×국가) 의 score/compScore/compName 를 선택 LLM Model 기준 재계산.
+// 2026-06 — byLlm 없는 월은 score=null (5월부터만 표시).
 export function resolveProductsCntyByLlm(productsCnty, llmModel) {
   if (!Array.isArray(productsCnty) || !llmModel || llmModel === LLM_TOTAL) return productsCnty
   return productsCnty.map(r => {
     const ms = r?.monthlyScores || []
     if (!ms.length) return r
-    const latest = ms[ms.length - 1]
-    const prev = ms.length >= 2 ? ms[ms.length - 2] : null
-    const latestLlm = latest?.byLlm?.[llmModel]
+    const llmMonths = ms.filter(m => m?.byLlm?.[llmModel])
+    const latest = llmMonths[llmMonths.length - 1] || null
+    const prev = llmMonths.length >= 2 ? llmMonths[llmMonths.length - 2] : null
+    if (!latest) return r
+    const latestLlm = latest.byLlm[llmModel]
     const prevLlm = prev?.byLlm?.[llmModel]
-    if (!latestLlm) return r
     const newCompScore = latestLlm.compScore ?? r.compScore
     return {
       ...r,
       score: latestLlm.score ?? r.score,
-      prev: prevLlm?.score ?? r.prev,
+      prev: prevLlm?.score ?? null,
       compScore: newCompScore,
       compName: latestLlm.compName ?? r.compName,
       allScores: latestLlm.allScores ?? r.allScores,
       gap: +(((latestLlm.score ?? r.score) - newCompScore) || 0).toFixed(2),
       monthlyScores: ms.map(m => {
         const byL = m?.byLlm?.[llmModel]
-        return byL ? { ...m, score: byL.score, compScore: byL.compScore, compName: byL.compName, allScores: byL.allScores } : m
+        return byL ? { ...m, score: byL.score, compScore: byL.compScore, compName: byL.compName, allScores: byL.allScores }
+                   : { ...m, score: null, compScore: null, compName: null, allScores: null }
       }),
     }
   })
