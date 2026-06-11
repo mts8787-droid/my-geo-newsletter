@@ -1259,14 +1259,17 @@ const TP_TREND_12M = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'S
 const TP_BUMP_MAX = 10
 const TP_TREND_RECENT = 4  // 최근 4개월
 
-// 도메인 라벨에서 TLD 제거 (pill 좁은 셀 호환 — 좌우배치라 길이도 제한)
+// 도메인 라벨에서 TLD 제거 (잘라내기 X — 하단 테이블은 전체 표기, pill 만 emPill 로 단축)
 function emStripDomain(d) {
-  const s = String(d || '').replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\.(com|net|org|io|co|kr|jp|us|uk|de|fr|cn|in|br)(\.[a-z]{2})?$/i, '')
-  return s.length > 9 ? s.slice(0, 8) + '…' : s
+  return String(d || '').replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\.(com|net|org|io|co|kr|jp|us|uk|de|fr|cn|in|br)(\.[a-z]{2})?$/i, '')
 }
-// pill/라벨용 짧은 이름 (좌우배치 좁은 셀 — 8자 제한)
+// 정규화만 (전체 이름 유지) — 하단 실수치 테이블 라벨용
 function emShortName(name) {
-  const s = String(name || '')
+  return String(name || '')
+}
+// rank-grid pill 전용 단축 (좁은 셀 — 7자 제한). 하단 테이블에는 미적용.
+function emPill(text) {
+  const s = String(text || '')
   return s.length > 8 ? s.slice(0, 7) + '…' : s
 }
 
@@ -1315,7 +1318,7 @@ function bumpEmailSectionHtml(trend, titleText, headerLabel, lang, opts = {}) {
   })
 
   // 두 테이블 공유 colgroup — 월 X좌표 정렬 (§5.16). 좌우배치라 라벨 컬럼 축소
-  const colGroup = `<colgroup><col style="width:54px;"/>${months.map(() => '<col/>').join('')}</colgroup>`
+  const colGroup = `<colgroup><col style="width:92px;"/>${months.map(() => '<col/>').join('')}</colgroup>`
   const monthThStyle = `font-size:10px;font-weight:800;color:#475569;font-family:${EM_FONT};padding:5px 1px;text-align:center;border-bottom:2px solid #E8EDF2;white-space:nowrap;`
   const cornerStyle = `font-size:9px;font-weight:700;color:#94A3B8;font-family:${EM_FONT};padding:5px 2px;text-align:left;border-bottom:2px solid #E8EDF2;white-space:nowrap;`
 
@@ -1329,7 +1332,7 @@ function bumpEmailSectionHtml(trend, titleText, headerLabel, lang, opts = {}) {
       const cellStyle = `padding:3px 1px;text-align:center;border-bottom:1px solid #F1F5F9;`
       if (!n) { grid += `<td style="${cellStyle}"><span style="color:#E2E8F0;font-size:10px;">·</span></td>`; return }
       const c = colorOf(n)
-      grid += `<td style="${cellStyle}"><span style="display:inline-block;background:${c};color:#FFFFFF;border-radius:5px;padding:2px 4px;font-size:9px;font-weight:700;font-family:${EM_FONT};white-space:nowrap;">${shortFn(n)}</span></td>`
+      grid += `<td style="${cellStyle}"><span style="display:inline-block;background:${c};color:#FFFFFF;border-radius:5px;padding:2px 4px;font-size:9px;font-weight:700;font-family:${EM_FONT};white-space:nowrap;">${emPill(shortFn(n))}</span></td>`
     })
     grid += '</tr>'
   }
@@ -1341,7 +1344,7 @@ function bumpEmailSectionHtml(trend, titleText, headerLabel, lang, opts = {}) {
   table += `<tr><td style="${thStyle}text-align:left;">${headerLabel}</td>${months.map(m => `<td style="${thStyle}">${m}</td>`).join('')}</tr>`
   names.forEach(name => {
     const color = colorOf(name)
-    table += `<tr><td style="font-size:9px;font-weight:700;color:#334155;font-family:${EM_FONT};padding:4px 1px;border-bottom:1px solid #F1F5F9;white-space:nowrap;overflow:hidden;"><span style="display:inline-block;width:6px;height:6px;border-radius:2px;background:${color};">&nbsp;</span>&nbsp;${shortFn(name)}</td>`
+    table += `<tr><td style="font-size:9px;font-weight:700;color:#334155;font-family:${EM_FONT};padding:4px 1px;border-bottom:1px solid #F1F5F9;white-space:normal;word-break:break-word;line-height:1.25;"><span style="display:inline-block;width:6px;height:6px;border-radius:2px;background:${color};">&nbsp;</span>&nbsp;${shortFn(name)}</td>`
     months.forEach(m => {
       const val = trend[name]?.[m]
       const rank = rankings[name]?.[m]
@@ -1397,7 +1400,16 @@ function bumpChartsRowHtml(touchCard, domainCard) {
 function touchPointsBumpSectionHtml(citTouchPointsTrend, citTrendMonths, meta, lang = 'ko') {
   if (!citTouchPointsTrend || !citTrendMonths || !citTrendMonths.length) return ''
   const t = T[lang] || T.ko
-  return bumpEmailSectionHtml(citTouchPointsTrend, t.touchPointTitle, lang === 'ko' ? '채널' : 'Channel', lang)
+  // 'Brand/Manufacturer' (Brand/메뉴팩쳐) 카테고리명을 'Brand' 로 단축 (충돌 시 월값 병합)
+  const renamed = {}
+  Object.entries(citTouchPointsTrend).forEach(([name, months]) => {
+    const key = /brand/i.test(name) && /(manufacturer|메뉴팩|메뉴펙|제조)/i.test(name) ? 'Brand' : name
+    if (!renamed[key]) { renamed[key] = { ...months }; return }
+    Object.entries(months || {}).forEach(([m, v]) => {
+      renamed[key][m] = (renamed[key][m] || 0) + (v || 0)
+    })
+  })
+  return bumpEmailSectionHtml(renamed, t.touchPointTitle, lang === 'ko' ? '채널' : 'Channel', lang)
 }
 
 // 도메인 범프 — citDomainTrend: { 'cnty|domain': { cnty, domain, type, months:{label:val} } }
