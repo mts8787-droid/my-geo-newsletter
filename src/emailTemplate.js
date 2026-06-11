@@ -2085,9 +2085,9 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                 </td>
               </tr>` : ''}
 
-              ${meta.showDotcom !== false ? dotcomSectionHtml(dotcom, meta, lang) : ''}
-
               ${meta.showTouchPointsBump !== false ? touchPointsBumpSectionHtml(citTouchPointsTrend, citTrendMonths, meta, lang) : ''}
+
+              ${meta.showDotcom !== false ? dotcomSectionHtml(dotcom, meta, lang) : ''}
 
               ${meta.showTodo ? `
               <!-- ══ Action Plan (3영역: 노티스 + 인사이트 + 핵심과제 진척) ══ -->

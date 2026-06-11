@@ -355,6 +355,11 @@ export default function App() {
           setProgressMonth={setProgressMonth}
           progressDataMonth={extractMonthFromPeriod(metaKo.period) || `${new Date().getMonth() + 1}월`}
           extra={{ unlaunchedMap, citTouchPointsTrend, citTrendMonths }}
+          onSyncExtra={({ unlaunchedMap: ulm, citTouchPointsTrend: cptt, citTrendMonths: ctm }) => {
+            if (ulm) setUnlaunchedMap(ulm)
+            if (cptt) setCitTouchPointsTrend(cptt)
+            if (ctm) setCitTrendMonths(ctm)
+          }}
         />
       )}
       <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>

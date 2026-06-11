@@ -413,6 +413,8 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
           unlaunchedMap: parsed.unlaunchedMap || null,
           weeklyLabelsFull: parsed.weeklyLabelsFull || null,
           prTopicList: parsed.prTopicList || null,
+          citTouchPointsTrend: parsed.citTouchPointsTrend || null,
+          citTrendMonths: parsed.citTrendMonths || null,
         }
         onSyncExtra(syncExtra)
         // latestRef에도 extra 즉시 갱신
@@ -1094,8 +1096,8 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
             { key: 'showCitations', label: 'Citation' },
             { key: 'showCitCnty',   label: 'Citation 국가별' },
             { key: 'showCitPrd',    label: 'Citation 제품별' },
+            { key: 'showTouchPointsBump', label: '외부채널 범프차트' },
             { key: 'showDotcom',    label: '닷컴' },
-            { key: 'showTouchPointsBump', label: '외부접점채널' },
             { key: 'showTodo',      label: 'Action Plan' },
           ].map(({ key, label }) => (
             <button key={key} onClick={() => setMeta(m => ({ ...m, [key]: !m[key] }))}
