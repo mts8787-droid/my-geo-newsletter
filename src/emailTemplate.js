@@ -1490,10 +1490,20 @@ function _llmShareFromDomain(byLlm) {
 // 등장하는 LLM 모델 → 색상 고정 매핑 (두 블록 공통 범례용)
 // 필수 순서/색상: ChatGPT 초록 → Perplexity 주황 → Gemini 빨강. 그 외 모델은 팔레트 fallback.
 const EM_LLM_FIXED = [
-  { test: /chat\s*gpt|gpt|openai/i, color: '#059669' }, // ChatGPT — 초록
-  { test: /perplexity/i,           color: '#D97706' }, // Perplexity — 주황
-  { test: /gemini|google/i,        color: '#DC2626' }, // Gemini — 빨강
+  { test: /chat\s*gpt|gpt|openai/i,           color: '#059669', label: 'ChatGPT' },    // 초록
+  { test: /perplexity/i,                      color: '#D97706', label: 'Perplexity' }, // 주황
+  { test: /gemini|google|flash|bard|2\.5/i,   color: '#DC2626', label: 'Gemini' },     // 빨강
 ]
+// 모델 raw 키 → 고정 순서 index (막대 세그먼트 좌→우 정렬용)
+function _llmFixedIdx(llm) {
+  for (let i = 0; i < EM_LLM_FIXED.length; i++) if (EM_LLM_FIXED[i].test.test(llm)) return i
+  return EM_LLM_FIXED.length
+}
+// 모델 raw 키 → 표시명 (예: '2.5flash' → 'Gemini')
+function _llmDisplayName(llm) {
+  const f = EM_LLM_FIXED.find(x => x.test.test(llm))
+  return f ? f.label : llm
+}
 function _llmColorMap(...itemMaps) {
   const models = new Set()
   itemMaps.filter(Boolean).forEach(m => {
@@ -1520,7 +1530,7 @@ function _llmShareBarsHtml(itemMap, llmColorMap, topN, labelFn) {
   }).filter(r => r.total > 0).sort((a, b) => b.total - a.total).slice(0, topN)
   if (!rows.length) return ''
   return rows.map((r, i) => {
-    const segs = Object.entries(r.byLlm).filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1])
+    const segs = Object.entries(r.byLlm).filter(([, v]) => v > 0).sort((a, b) => _llmFixedIdx(a[0]) - _llmFixedIdx(b[0]) || b[1] - a[1])
     const cells = segs.map(([llm, v]) => {
       const pct = (v / r.total * 100)
       const color = llmColorMap[llm] || '#94A3B8'
@@ -1550,7 +1560,7 @@ function _llmLegendHtml(llmColorMap) {
                                   <td style="padding:0 8px 0 0;white-space:nowrap;vertical-align:middle;">
                                     <table border="0" cellpadding="0" cellspacing="0" style="display:inline-table;"><tr>
                                       <td width="10" style="background:${color};border-radius:2px;height:10px;font-size:0;line-height:0;">&nbsp;</td>
-                                      <td style="padding-left:4px;font-size:10px;color:#64748B;font-family:${EM_FONT};white-space:nowrap;">${escapeHtml(llm)}</td>
+                                      <td style="padding-left:4px;font-size:10px;color:#64748B;font-family:${EM_FONT};white-space:nowrap;">${escapeHtml(_llmDisplayName(llm))}</td>
                                     </tr></table>
                                   </td>`).join('')
   return `<table border="0" cellpadding="0" cellspacing="0"><tr>${chips}</tr></table>`
