@@ -1488,13 +1488,26 @@ function _llmShareFromDomain(byLlm) {
 }
 
 // 등장하는 LLM 모델 → 색상 고정 매핑 (두 블록 공통 범례용)
+// 필수 순서/색상: ChatGPT 초록 → Perplexity 주황 → Gemini 빨강. 그 외 모델은 팔레트 fallback.
+const EM_LLM_FIXED = [
+  { test: /chat\s*gpt|gpt|openai/i, color: '#059669' }, // ChatGPT — 초록
+  { test: /perplexity/i,           color: '#D97706' }, // Perplexity — 주황
+  { test: /gemini|google/i,        color: '#DC2626' }, // Gemini — 빨강
+]
 function _llmColorMap(...itemMaps) {
   const models = new Set()
   itemMaps.filter(Boolean).forEach(m => {
     Object.values(m).forEach(byLlm => Object.keys(byLlm).forEach(llm => models.add(llm)))
   })
+  const all = [...models]
   const map = {}
-  ;[...models].sort().forEach((llm, i) => { map[llm] = EM_LLM_COLORS[i % EM_LLM_COLORS.length] })
+  // 1) 고정 모델을 필수 순서대로 먼저 등록 (범례 순서 = 삽입 순서)
+  EM_LLM_FIXED.forEach(({ test, color }) => {
+    all.forEach(llm => { if (!map[llm] && test.test(llm)) map[llm] = color })
+  })
+  // 2) 그 외 모델은 팔레트 fallback
+  let i = 0
+  all.forEach(llm => { if (!map[llm]) map[llm] = EM_LLM_COLORS[i++ % EM_LLM_COLORS.length] })
   return map
 }
 
@@ -1519,7 +1532,7 @@ function _llmShareBarsHtml(itemMap, llmColorMap, topN, labelFn) {
                                         <td style="padding:3px 0;">
                                           <table border="0" cellpadding="0" cellspacing="0" width="100%"><tr>
                                             <td width="16" style="font-size:11px;font-weight:700;color:#94A3B8;font-family:${EM_FONT};vertical-align:middle;">${i + 1}</td>
-                                            <td width="38%" style="font-size:11px;font-weight:600;color:#1A1A1A;font-family:${EM_FONT};vertical-align:middle;padding-right:6px;letter-spacing:-0.3px;">${escapeHtml(emPill(label))}</td>
+                                            <td width="38%" style="font-size:11px;font-weight:600;color:#1A1A1A;font-family:${EM_FONT};vertical-align:middle;padding-right:6px;letter-spacing:-0.3px;word-break:break-all;">${escapeHtml(label)}</td>
                                             <td style="vertical-align:middle;">
                                               <table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;border-radius:3px;overflow:hidden;"><tr>${cells}</tr></table>
                                             </td>
@@ -1537,7 +1550,7 @@ function _llmLegendHtml(llmColorMap) {
                                   <td style="padding:0 8px 0 0;white-space:nowrap;vertical-align:middle;">
                                     <table border="0" cellpadding="0" cellspacing="0" style="display:inline-table;"><tr>
                                       <td width="10" style="background:${color};border-radius:2px;height:10px;font-size:0;line-height:0;">&nbsp;</td>
-                                      <td style="padding-left:4px;font-size:10px;color:#64748B;font-family:${EM_FONT};">${escapeHtml(emPill(llm))}</td>
+                                      <td style="padding-left:4px;font-size:10px;color:#64748B;font-family:${EM_FONT};white-space:nowrap;">${escapeHtml(llm)}</td>
                                     </tr></table>
                                   </td>`).join('')
   return `<table border="0" cellpadding="0" cellspacing="0"><tr>${chips}</tr></table>`
@@ -1563,7 +1576,7 @@ function llmCitationShareSectionHtml(citTouchPointsByLlm, citTrendMonths, citDom
                             <td style="padding-bottom:16px;">
                               <table border="0" cellpadding="0" cellspacing="0" width="100%">
                                 <tr><td style="font-size:14px;font-weight:700;color:#0F172A;font-family:${EM_FONT};padding-bottom:8px;border-bottom:1px solid #E8EDF2;">${t.llmShareTitle}</td></tr>
-                                <tr><td style="padding:8px 0;">${_llmLegendHtml(colorMap)}</td></tr>
+                                <tr><td align="right" style="padding:8px 0;">${_llmLegendHtml(colorMap)}</td></tr>
                                 <tr>
                                   <td>
                                     <table border="0" cellpadding="0" cellspacing="0" width="100%"><tr>
