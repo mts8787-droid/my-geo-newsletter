@@ -1109,6 +1109,59 @@ function dotcomSectionHtml(dotcom, meta, lang = 'ko') {
   const ttlMax = ttlCol ? Math.max(lg['TTL'] || 0, sam['TTL'] || 0, 1) : 1
   const detailMax = Math.max(...detailCols.map(c => Math.max(lg[c] || 0, sam[c] || 0)), 1)
 
+  // ── MoM — 직전 데이터 월 탐색 (byMonth 우선, 없으면 byCntyByMonth 국가 합산) ──
+  const MONTHS_EN_DC = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+  let prevLg = null, prevSam = null
+  {
+    const byM = dotcom.byMonth || {}
+    const byCM = dotcom.byCntyByMonth || {}
+    const hasM = m => !!byM[m] || !!(byCM[m] && Object.keys(byCM[m]).length > 0)
+    const dataFor = m => {
+      if (byM[m]) return { lg: byM[m].lg || {}, samsung: byM[m].samsung || {} }
+      if (byCM[m] && Object.keys(byCM[m]).length) {
+        const aLg = {}, aSam = {}
+        Object.values(byCM[m]).forEach(d => {
+          Object.entries(d.lg || {}).forEach(([k, v]) => { aLg[k] = (aLg[k] || 0) + v })
+          Object.entries(d.samsung || {}).forEach(([k, v]) => { aSam[k] = (aSam[k] || 0) + v })
+        })
+        return { lg: aLg, samsung: aSam }
+      }
+      return null
+    }
+    // 현재 월: meta.period 우선 ('5월' / 'May' 형식), 없거나 데이터 없으면 최신 데이터 월
+    let curM = null
+    const p = String(meta.period || '')
+    const km = p.match(/(\d{1,2})월/)
+    if (km) curM = MONTHS_EN_DC[parseInt(km[1]) - 1]
+    if (!curM) {
+      const em = p.match(/(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i)
+      if (em) curM = em[1].charAt(0).toUpperCase() + em[1].slice(1).toLowerCase()
+    }
+    if (!curM || !hasM(curM)) {
+      curM = null
+      for (let i = MONTHS_EN_DC.length - 1; i >= 0; i--) {
+        if (hasM(MONTHS_EN_DC[i])) { curM = MONTHS_EN_DC[i]; break }
+      }
+    }
+    if (curM) {
+      const ci = MONTHS_EN_DC.indexOf(curM)
+      for (let i = ci - 1; i >= 0; i--) {
+        if (hasM(MONTHS_EN_DC[i])) {
+          const d = dataFor(MONTHS_EN_DC[i])
+          if (d) { prevLg = d.lg; prevSam = d.samsung }
+          break
+        }
+      }
+    }
+  }
+  const hasMom = !!prevLg
+  function momRow(cur, pv) {
+    if (pv == null) return ''
+    const d = cur - pv
+    const c = d > 0 ? '#15803D' : d < 0 ? '#BE123C' : '#94A3B8'
+    return `<tr><td style="font-size:10px;font-weight:600;color:${c};font-family:${EM_FONT};text-align:center;padding-bottom:1px;white-space:nowrap;">(${d > 0 ? '+' : ''}${fmtMan(d, lang)})</td></tr>`
+  }
+
   function makeBarCol(col, localMax) {
     const lv = lg[col] || 0, sv = sam[col] || 0
     const lh = Math.max(2, Math.round(lv / localMax * BAR_MAX))
@@ -1128,6 +1181,7 @@ function dotcomSectionHtml(dotcom, meta, lang = 'ko') {
             <td style="vertical-align:bottom;text-align:center;padding:0 1px;">
               <table border="0" cellpadding="0" cellspacing="0" align="center">
                 <tr><td style="font-size:13px;font-weight:700;color:${EM_RED};font-family:${EM_FONT};text-align:center;padding-bottom:1px;">${fmtMan(lv, lang)}</td></tr>
+                ${hasMom ? momRow(lv, prevLg[col] != null ? prevLg[col] : null) : ''}
                 ${spacerL > 0 ? `<tr><td height="${spacerL}" style="font-size:0;">&nbsp;</td></tr>` : ''}
                 <tr><td height="${lh}" style="font-size:0;"><table border="0" cellpadding="0" cellspacing="0" align="center"><tr><td width="${bw}" height="${lh}" style="background:${EM_RED};border-radius:3px 3px 0 0;font-size:0;">&nbsp;</td></tr></table></td></tr>
               </table>
@@ -1135,6 +1189,7 @@ function dotcomSectionHtml(dotcom, meta, lang = 'ko') {
             ${hasSam ? `<td style="vertical-align:bottom;text-align:center;padding:0 1px;">
               <table border="0" cellpadding="0" cellspacing="0" align="center">
                 <tr><td style="font-size:13px;font-weight:600;color:#94A3B8;font-family:${EM_FONT};text-align:center;padding-bottom:1px;">${fmtMan(sv, lang)}</td></tr>
+                ${hasMom ? momRow(sv, prevSam && prevSam[col] != null ? prevSam[col] : null) : ''}
                 ${spacerS > 0 ? `<tr><td height="${spacerS}" style="font-size:0;">&nbsp;</td></tr>` : ''}
                 <tr><td height="${sh}" style="font-size:0;"><table border="0" cellpadding="0" cellspacing="0" align="center"><tr><td width="${bw}" height="${sh}" style="background:#94A3B8;border-radius:3px 3px 0 0;font-size:0;">&nbsp;</td></tr></table></td></tr>
               </table>
@@ -1183,6 +1238,7 @@ function dotcomSectionHtml(dotcom, meta, lang = 'ko') {
                               <td style="padding:0 6px 0 3px;font-size:12px;color:#94A3B8;font-family:${EM_FONT};">LG</td>
                               <td width="10" height="10" style="background:#94A3B8;border-radius:2px;font-size:0;">&nbsp;</td>
                               <td style="padding-left:3px;font-size:12px;color:#94A3B8;font-family:${EM_FONT};">SS</td>
+                              ${hasMom ? `<td style="padding-left:8px;font-size:12px;color:#94A3B8;font-family:${EM_FONT};">( ):MoM</td>` : ''}
                             </tr></table>
                           </td>
                         </tr></table>
@@ -1190,6 +1246,160 @@ function dotcomSectionHtml(dotcom, meta, lang = 'ko') {
                     </tr>
                     ${insightBlockHtml(meta.dotcomInsight, meta.showDotcomInsight, meta.dotcomHowToRead, meta.showDotcomHowToRead, lang)}
                     ${chartHtml}
+                  </table>
+                </td>
+              </tr>`
+}
+
+// ─── 외부접점채널 범프차트 (월간 트렌드) ──────────────────────────────────
+// 이메일 호환: SVG-only 금지 → SVG + 하단 실수치 테이블 병행 (citationTemplate.js citCategoryBumpChartHtml 패턴)
+const TP_BUMP_COLORS = ['#CF0652', '#1D4ED8', '#059669', '#D97706', '#7C3AED', '#DB2777', '#0D9488', '#EA580C', '#4F46E5', '#DC2626', '#0891B2', '#65A30D']
+const TP_TREND_12M = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+const TP_BUMP_MAX = 10
+
+function tpBumpChartSvg(names, rankings, months) {
+  const fixedRanks = TP_BUMP_MAX
+  const ROW_H = 52
+  const EXT_L = 80
+  const EXT_R = 20
+  const W = Math.max(months.length * 200, 600) + EXT_L + EXT_R
+  const padT = 0, padB = 30
+  const H = fixedRanks * ROW_H + padT + padB
+  const padL = 10 + EXT_L, padR = 10 + EXT_R
+  const chartW = W - padL - padR
+  const chartH = H - padT - padB
+  const ribbonW = ROW_H * 0.38
+  const RND = ribbonW
+
+  let svg = `<svg viewBox="0 0 ${W} ${H}" width="100%" preserveAspectRatio="xMidYMid meet" style="font-family:${EM_FONT};display:block">`
+
+  const sortedNames = [...names].sort((a, b) => {
+    const lastM = months[months.length - 1]
+    return (rankings[b]?.[lastM] || 999) - (rankings[a]?.[lastM] || 999)
+  })
+
+  sortedNames.forEach((name) => {
+    const color = TP_BUMP_COLORS[names.indexOf(name) % TP_BUMP_COLORS.length]
+    const points = []
+    months.forEach((m, i) => {
+      const rank = rankings[name]?.[m]
+      if (rank != null && rank <= fixedRanks) {
+        const x = padL + (i / Math.max(months.length - 1, 1)) * chartW
+        const y = padT + ((rank - 0.5) / fixedRanks) * chartH
+        points.push({ x, y })
+      }
+    })
+    if (points.length < 1) return
+
+    const first = points[0], last = points[points.length - 1]
+    const leftX = first.x - EXT_L
+    const rightX = last.x + EXT_R
+    const extPts = [{ x: leftX + RND, y: first.y }, ...points, { x: rightX - RND, y: last.y }]
+
+    let upper = '', lower = ''
+    for (let i = 0; i < extPts.length; i++) {
+      const p = extPts[i]
+      if (i === 0) {
+        upper += `M${p.x - RND},${p.y} A${RND},${ribbonW} 0 0,1 ${p.x},${p.y - ribbonW}`
+        lower = `L${p.x},${p.y + ribbonW} A${RND},${ribbonW} 0 0,1 ${p.x - RND},${p.y}`
+      } else {
+        const prev = extPts[i - 1]
+        const cx = (prev.x + p.x) / 2
+        upper += ` C${cx},${prev.y - ribbonW} ${cx},${p.y - ribbonW} ${p.x},${p.y - ribbonW}`
+        lower = ` C${cx},${p.y + ribbonW} ${cx},${prev.y + ribbonW} ${prev.x},${prev.y + ribbonW}` + lower
+      }
+    }
+    const lastExt = extPts[extPts.length - 1]
+    const ribbonPath = upper + ` A${RND},${ribbonW} 0 0,1 ${lastExt.x + RND},${lastExt.y}` + ` A${RND},${ribbonW} 0 0,1 ${lastExt.x},${lastExt.y + ribbonW}` + lower + ' Z'
+    svg += `<path d="${ribbonPath}" fill="${color}" opacity="0.6" stroke="${color}" stroke-width="0.5" stroke-opacity="0.3"/>`
+  })
+
+  names.forEach((name) => {
+    months.forEach((m, i) => {
+      const rank = rankings[name]?.[m]
+      if (rank == null || rank > fixedRanks) return
+      const x = padL + (i / Math.max(months.length - 1, 1)) * chartW
+      const y = padT + ((rank - 0.5) / fixedRanks) * chartH
+      svg += `<text x="${x}" y="${y + 8}" text-anchor="middle" fill="#0F172A" font-size="22" font-weight="700">${name}</text>`
+    })
+  })
+
+  months.forEach((m, i) => {
+    const x = padL + (i / Math.max(months.length - 1, 1)) * chartW
+    svg += `<line x1="${x}" y1="${padT + chartH + 2}" x2="${x}" y2="${padT + chartH + 8}" stroke="#94A3B8" stroke-width="1.5"/>`
+    svg += `<text x="${x}" y="${padT + chartH + 26}" text-anchor="middle" fill="#475569" font-size="26" font-weight="800">${m}</text>`
+  })
+
+  svg += '</svg>'
+  return svg
+}
+
+function touchPointsBumpSectionHtml(citTouchPointsTrend, citTrendMonths, meta, lang = 'ko') {
+  if (!citTouchPointsTrend || !citTrendMonths || !citTrendMonths.length) return ''
+  const t = T[lang] || T.ko
+  const months = TP_TREND_12M
+  const entries = Object.entries(citTouchPointsTrend)
+  if (!entries.length) return ''
+
+  // 최신 데이터 월 기준 Top 10 선정
+  const lastDataMonth = [...months].reverse().find(m => entries.some(([, d]) => d[m] > 0)) || months[months.length - 1]
+  const topEntries = [...entries].sort((a, b) => (b[1][lastDataMonth] || 0) - (a[1][lastDataMonth] || 0)).slice(0, TP_BUMP_MAX)
+  const topNames = new Set(topEntries.map(([n]) => n))
+
+  const rankings = {}
+  months.forEach(m => {
+    const scored = topEntries.map(([name, data]) => ({ name, score: data[m] || 0 }))
+      .filter(e => e.score > 0)
+      .sort((a, b) => b.score - a.score)
+    scored.forEach((e, i) => {
+      if (!rankings[e.name]) rankings[e.name] = {}
+      rankings[e.name][m] = i + 1
+    })
+  })
+
+  const names = Object.keys(rankings).filter(n => topNames.has(n))
+  if (!names.length) return ''
+
+  const svg = tpBumpChartSvg(names, rankings, months)
+
+  // 하단 실수치 테이블 — 인라인 style 만 (Gmail 이 <style> 제거)
+  const thStyle = `font-size:10px;font-weight:700;color:#64748B;font-family:${EM_FONT};padding:6px 2px;text-align:center;border-bottom:1px solid #E8EDF2;white-space:nowrap;`
+  let table = `<table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;border-collapse:collapse;">
+    <tr><td width="92" style="${thStyle}text-align:left;">${lang === 'ko' ? '채널' : 'Channel'}</td>${months.map(m => `<td style="${thStyle}">${m}</td>`).join('')}</tr>`
+  names.forEach((name, ni) => {
+    const color = TP_BUMP_COLORS[ni % TP_BUMP_COLORS.length]
+    table += `<tr><td style="font-size:10px;font-weight:700;color:#334155;font-family:${EM_FONT};padding:5px 2px;border-bottom:1px solid #F1F5F9;white-space:nowrap;overflow:hidden;"><span style="display:inline-block;width:7px;height:7px;border-radius:2px;background:${color};">&nbsp;</span>&nbsp;${name}</td>`
+    months.forEach(m => {
+      const val = citTouchPointsTrend[name]?.[m]
+      const rank = rankings[name]?.[m]
+      table += `<td style="font-size:10px;font-family:${EM_FONT};padding:5px 1px;text-align:center;border-bottom:1px solid #F1F5F9;white-space:nowrap;">${val != null && rank != null
+        ? `<span style="font-weight:700;color:#334155;">${fmtMan(val, lang)}</span><br/><span style="font-size:9px;color:#94A3B8;">#${rank}</span>`
+        : '<span style="color:#CBD5E1;">—</span>'}</td>`
+    })
+    table += '</tr>'
+  })
+  table += '</table>'
+
+  return `
+              <!-- ══ 외부접점채널 범프차트 (월간 트렌드) ══ -->
+              <tr>
+                <td style="padding-bottom:28px;">
+                  <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFFFFF;border-radius:16px;border:2px solid #E8EDF2;">
+                    <tr>
+                      <td style="padding:16px 12px 12px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;">
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%"><tr>
+                          <td style="vertical-align:middle;">
+                            <table border="0" cellpadding="0" cellspacing="0"><tr>
+                              <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
+                              <td style="padding-left:8px;font-size:16px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${t.touchPointTitle} — ${t.monthTrend}</td>
+                            </tr></table>
+                          </td>
+                          <td align="right" style="vertical-align:middle;font-size:12px;color:#94A3B8;font-family:${EM_FONT};">Top ${names.length}</td>
+                        </tr></table>
+                      </td>
+                    </tr>
+                    <tr><td style="padding:14px 12px 4px;">${svg}</td></tr>
+                    <tr><td style="padding:8px 12px 14px;">${table}</td></tr>
                   </table>
                 </td>
               </tr>`
@@ -1472,7 +1682,7 @@ function dashboardLinkButtonHtml(lang) {
 export { escapeHtml }
 
 export function generateEmailHTML(meta, total, products, citations, dotcom = {}, lang = 'ko', productsCnty = [], citationsCnty = [], options = {}) {
-  const { containerWidth = 940, showTrendTabs = false, weeklyLabels, categoryStats = null, unlaunchedMap: ulInput = {}, productCardVersion = 'v1', trendMode = 'weekly', llmModel, monthlyVis } = options
+  const { containerWidth = 940, showTrendTabs = false, weeklyLabels, categoryStats = null, unlaunchedMap: ulInput = {}, productCardVersion = 'v1', trendMode = 'weekly', llmModel, monthlyVis, citTouchPointsTrend = null, citTrendMonths = [] } = options
   // LLM Model 필터 (2026-06) — 선택 모델로 products/productsCnty/total 재계산
   if (llmModel && llmModel !== 'Total') {
     products = resolveProductsByLlm(products, llmModel)
@@ -1882,6 +2092,8 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
               </tr>` : ''}
 
               ${meta.showDotcom !== false ? dotcomSectionHtml(dotcom, meta, lang) : ''}
+
+              ${meta.showTouchPointsBump !== false ? touchPointsBumpSectionHtml(citTouchPointsTrend, citTrendMonths, meta, lang) : ''}
 
               ${meta.showTodo ? `
               <!-- ══ Action Plan (3영역: 노티스 + 인사이트 + 핵심과제 진척) ══ -->
