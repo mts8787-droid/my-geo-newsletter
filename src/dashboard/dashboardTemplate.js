@@ -879,15 +879,22 @@ function promptListTabHtml(appendixPrompts, lang) {
 }
 
 // ─── PR Visibility 탭 HTML ──────────────────────────────────────────────────
-function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang, meta, appendixPrompts, extra) {
+function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang, meta, appendixPrompts, extra, period = 'weekly') {
+  const isMonthly = period === 'monthly'
+  const P = isMonthly ? 'prm' : 'pr'  // 엘리먼트 id / window 글로벌 네임스페이스 (이중 렌더 충돌 방지)
   if (!weeklyPR || !weeklyPR.length) {
     const msg = lang === 'en' ? 'No PR Visibility data available.' : 'PR Visibility 데이터가 없습니다.'
     return `<div style="display:flex;align-items:center;justify-content:center;min-height:calc(100vh - 160px);color:#94A3B8;font-size:16px">${msg}</div>`
   }
   const ALL_COUNTRIES = ['US','CA','UK','DE','ES','BR','MX','AU','VN','IN']
-  // W5부터 시작하는 12주 고정 라벨
-  const W12 = []
-  for (let i = 0; i < 12; i++) W12.push('w' + (5 + i))
+  // 주간: W5부터 시작하는 12주 고정 라벨. 월간: 실제 라벨(monthlyPRLabels)을 그대로 컬럼으로 사용.
+  let W12
+  if (isMonthly) {
+    W12 = (weeklyPRLabels && weeklyPRLabels.length) ? weeklyPRLabels.slice() : []
+  } else {
+    W12 = []
+    for (let i = 0; i < 12; i++) W12.push('w' + (5 + i))
+  }
 
   const topics = [...new Set(weeklyPR.map(r => r.topic))].filter(Boolean)
   const types = [...new Set(weeklyPR.map(r => r.type))].filter(Boolean)
@@ -960,15 +967,15 @@ function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang, meta, appendixPromp
 
   return `<div style="max-width:1400px;margin:0 auto;padding:28px 40px;font-family:${FONT}">
     <!-- 필터 바 -->
-    <div id="pr-filters" style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin-bottom:16px;padding:10px 16px;background:#fff;border:1px solid #E8EDF2;border-radius:10px">
+    <div id="${P}-filters" style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin-bottom:16px;padding:10px 16px;background:#fff;border:1px solid #E8EDF2;border-radius:10px">
       <div style="display:flex;align-items:center;gap:6px">
         <span style="font-size:18px;font-weight:700;color:#64748B">${lang === 'en' ? 'Type' : '유형'}</span>
-        <div id="pr-type-chips"></div>
+        <div id="${P}-type-chips"></div>
       </div>
       <div style="width:1px;height:24px;background:#E8EDF2"></div>
       <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
         <span style="font-size:18px;font-weight:700;color:#64748B">${lang === 'en' ? 'Country' : '국가'}</span>
-        <div id="pr-cnty-chips" style="display:flex;gap:4px;flex-wrap:wrap"></div>
+        <div id="${P}-cnty-chips" style="display:flex;gap:4px;flex-wrap:wrap"></div>
       </div>
     </div>
     <!-- NOTICE -->
@@ -984,15 +991,15 @@ function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang, meta, appendixPromp
         <div class="section-title">${lang === 'en' ? 'PR Visibility Overview' : 'PR Visibility 현황'} <span style="font-size:12px;font-weight:600;color:#3B82F6;background:#EFF6FF;padding:2px 8px;border-radius:6px;border:1px solid #93C5FD">${weeklyPRLabels?.length ? weeklyPRLabels[weeklyPRLabels.length - 1].toUpperCase() : ''} ${lang === 'en' ? 'data' : '기준'}</span></div>
         <span class="legend"><i style="background:#15803D"></i>${lang === 'en' ? 'Lead ≥100%' : '선도 ≥100%'} <i style="background:#D97706"></i>${lang === 'en' ? 'Behind ≥80%' : '추격 ≥80%'} <i style="background:#BE123C"></i>${lang === 'en' ? 'Critical <80%' : '취약 <80%'} <span style="color:#94A3B8;font-size:11px;margin-left:6px">${lang === 'en' ? '() = vs SS ratio' : '() 는 SS 대비 경쟁비'}</span></span>
       </div>
-      <div class="section-body" id="pr-matrix"></div>
+      <div class="section-body" id="${P}-matrix"></div>
     </div>
-    <!-- 토픽별 주간 트렌드 -->
+    <!-- 토픽별 트렌드 -->
     <div class="section-card">
       <div class="section-header">
-        <div class="section-title">${lang === 'en' ? 'Weekly Competitor Trend by Topic' : '토픽별 주간 경쟁사 트렌드'}</div>
-        <span class="legend">W5–W16 (12${lang === 'en' ? ' weeks' : '주'})</span>
+        <div class="section-title">${isMonthly ? (lang === 'en' ? 'Monthly Competitor Trend by Topic' : '토픽별 월간 경쟁사 트렌드') : (lang === 'en' ? 'Weekly Competitor Trend by Topic' : '토픽별 주간 경쟁사 트렌드')}</div>
+        <span class="legend">${isMonthly ? (W12.length ? `${W12[0]}–${W12[W12.length - 1]} (${W12.length}${lang === 'en' ? ' months' : '개월'})` : '') : `W5–W16 (12${lang === 'en' ? ' weeks' : '주'})`}</span>
       </div>
-      <div class="section-body" id="pr-sections"></div>
+      <div class="section-body" id="${P}-sections"></div>
     </div>
   </div>
   <script>
@@ -1022,10 +1029,10 @@ function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang, meta, appendixPromp
     }
     function chip(txt,on,onclick){return'<span onclick="'+onclick+'" style="padding:3px 10px;border-radius:6px;font-size:17px;font-weight:600;cursor:pointer;border:1px solid '+(on?'#0F172A':'#E2E8F0')+';background:'+(on?'#0F172A':'#F8FAFC')+';color:'+(on?'#fff':'#475569')+';white-space:nowrap;user-select:none">'+txt+'</span>'}
     function renderFilters(){
-      var te=document.getElementById('pr-type-chips');if(te)te.innerHTML=TY.map(function(t){return chip(t,fType===t,"_prSetType('"+t+"')")}).join(' ');
-      var ce=document.getElementById('pr-cnty-chips');if(!ce)return;
+      var te=document.getElementById('${P}-type-chips');if(te)te.innerHTML=TY.map(function(t){return chip(t,fType===t,"_${P}SetType('"+t+"')")}).join(' ');
+      var ce=document.getElementById('${P}-cnty-chips');if(!ce)return;
       var allOn=CN.every(function(c){return fCnty[c]});
-      ce.innerHTML=chip('${lang==='en'?'All':'전체'}',allOn,'_prCntyAll()')+' '+CN.map(function(c){return chip(cf(c),!!fCnty[c],"_prCntyTog('"+c+"')")}).join(' ');
+      ce.innerHTML=chip('${lang==='en'?'All':'전체'}',allOn,'_${P}CntyAll()')+' '+CN.map(function(c){return chip(cf(c),!!fCnty[c],"_${P}CntyTog('"+c+"')")}).join(' ');
     }
     // 특정 토픽+국가+브랜드의 특정 주 값
     function val(topic,cnty,brand,wk){
@@ -1036,7 +1043,7 @@ function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang, meta, appendixPromp
     // ── 상단 매트릭스: PR Topic List 시트 전용 ──
     // PR Topic List의 토픽만 행으로 사용. 기존 토픽(oldTopic)으로 Weekly PR 데이터 JOIN.
     function renderMatrix(){
-      var el=document.getElementById('pr-matrix');if(!el)return;
+      var el=document.getElementById('${P}-matrix');if(!el)return;
       if(!_prTopicList||!_prTopicList.length){el.innerHTML='<p style="text-align:center;color:#94A3B8;padding:20px">PR Topic List 시트를 동기화해주세요.</p>';return}
       var lastW=W[W.length-1];
       var ac=CN.filter(function(c){return fCnty[c]});
@@ -1100,7 +1107,7 @@ function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang, meta, appendixPromp
     }
     // ── 토픽별 섹션 렌더 ──
     function renderSections(){
-      var el=document.getElementById('pr-sections');if(!el)return;
+      var el=document.getElementById('${P}-sections');if(!el)return;
       var N=W.length;var tblW=CW*N;var html='';
       // PR Topic List의 기존 토픽(oldTopic)이 있는 토픽만 섹션 표시
       var validTopics=[];
@@ -1163,9 +1170,9 @@ function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang, meta, appendixPromp
       el.innerHTML=html;
     }
     function renderAll(){renderFilters();renderMatrix();renderSections()}
-    window._prSetType=function(t){fType=t;renderAll()};
-    window._prCntyTog=function(c){fCnty[c]=!fCnty[c];renderAll()};
-    window._prCntyAll=function(){var on=CN.every(function(c){return fCnty[c]});CN.forEach(function(c){fCnty[c]=!on});renderAll()};
+    window._${P}SetType=function(t){fType=t;renderAll()};
+    window._${P}CntyTog=function(c){fCnty[c]=!fCnty[c];renderAll()};
+    window._${P}CntyAll=function(){var on=CN.every(function(c){return fCnty[c]});CN.forEach(function(c){fCnty[c]=!on});renderAll()};
     renderAll();
   })();
   </script>`
@@ -1574,7 +1581,8 @@ export function generateDashboardHTML(meta, total, products, citations, dotcom, 
 ${visibilityOnly ? `
 <div id="gnb-visibility" class="gnb-sub active" style="position:sticky;top:0;z-index:99">
   <button class="gnb-sub-btn active" onclick="switchVisSub('bu')">${lang === 'en' ? 'Business Division' : '사업본부'}</button>
-  <button class="gnb-sub-btn" onclick="switchVisSub('pr')">PR</button>
+  <button class="gnb-sub-btn" onclick="switchVisSub('pr')">${lang === 'en' ? 'PR (Weekly)' : 'PR (주간)'}</button>
+  <button class="gnb-sub-btn" onclick="switchVisSub('prmonthly')">${lang === 'en' ? 'PR (Monthly)' : 'PR (월간)'}</button>
   <button class="gnb-sub-btn" onclick="switchVisSub('brandprompt')">${lang === 'en' ? 'Brand Prompt Anomaly Check' : 'Brand Prompt 이상 점검'}</button>
 </div>
 <div id="vis-sub-bu" class="vis-sub-panel">
@@ -1584,6 +1592,9 @@ ${visibilityOnly ? `
 </div>
 <div id="vis-sub-pr" class="vis-sub-panel" style="display:none">
   ${prVisibilityTabHtml(extra?.weeklyPR, extra?.weeklyPRLabels, lang, meta, extra?.appendixPrompts, extra)}
+</div>
+<div id="vis-sub-prmonthly" class="vis-sub-panel" style="display:none">
+  ${prVisibilityTabHtml(extra?.monthlyPR, extra?.monthlyPRLabels, lang, meta, extra?.appendixPrompts, extra, 'monthly')}
 </div>
 <div id="vis-sub-brandprompt" class="vis-sub-panel" style="display:none">
   ${brandPromptTabHtml(extra?.weeklyBrandPrompt, extra?.weeklyBrandPromptLabels, lang, null, lang === 'en' ? 'Brand Prompt Anomaly Check' : 'Brand Prompt 이상 점검', meta)}
@@ -1605,7 +1616,8 @@ ${visibilityOnly ? `
 </div>
 <div id="gnb-visibility" class="gnb-sub active">
   <button class="gnb-sub-btn active" onclick="switchVisSub('bu')">${lang === 'en' ? 'Business Division' : '사업본부'}</button>
-  <button class="gnb-sub-btn" onclick="switchVisSub('pr')">PR</button>
+  <button class="gnb-sub-btn" onclick="switchVisSub('pr')">${lang === 'en' ? 'PR (Weekly)' : 'PR (주간)'}</button>
+  <button class="gnb-sub-btn" onclick="switchVisSub('prmonthly')">${lang === 'en' ? 'PR (Monthly)' : 'PR (월간)'}</button>
   <button class="gnb-sub-btn" onclick="switchVisSub('brandprompt')">${lang === 'en' ? 'Brand Prompt Anomaly Check' : 'Brand Prompt 이상 점검'}</button>
 </div>
 <div id="gnb-citation" class="gnb-sub">
@@ -1621,6 +1633,9 @@ ${visibilityOnly ? `
   </div>
   <div id="vis-sub-pr" class="vis-sub-panel" style="display:none">
     ${prVisibilityTabHtml(extra?.weeklyPR, extra?.weeklyPRLabels, lang, meta, extra?.appendixPrompts, extra)}
+  </div>
+  <div id="vis-sub-prmonthly" class="vis-sub-panel" style="display:none">
+    ${prVisibilityTabHtml(extra?.monthlyPR, extra?.monthlyPRLabels, lang, meta, extra?.appendixPrompts, extra, 'monthly')}
   </div>
   <div id="vis-sub-brandprompt" class="vis-sub-panel" style="display:none">
     ${brandPromptTabHtml(extra?.weeklyBrandPrompt, extra?.weeklyBrandPromptLabels, lang, null, lang === 'en' ? 'Brand Prompt Anomaly Check' : 'Brand Prompt 이상 점검', meta)}

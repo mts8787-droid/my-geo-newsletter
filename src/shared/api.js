@@ -135,6 +135,8 @@ export async function publishCombinedDashboard(generateDashboardHTML, resolveDat
     appendixPrompts: d.appendixPrompts || [],
     weeklyPR: d.weeklyPR || [],
     weeklyPRLabels: d.weeklyPRLabels || [],
+    monthlyPR: d.monthlyPR || [],
+    monthlyPRLabels: d.monthlyPRLabels || [],
     weeklyBrandPrompt: d.weeklyBrandPrompt || [],
     weeklyBrandPromptLabels: d.weeklyBrandPromptLabels || [],
     unlaunchedMap: d.unlaunchedMap || {},

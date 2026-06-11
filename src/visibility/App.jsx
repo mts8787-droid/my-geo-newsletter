@@ -55,6 +55,8 @@ export default function App() {
   const [monthlyVis, setMonthlyVis] = useState(cache?.monthlyVis ?? [])
   const [weeklyPR, setWeeklyPR] = useState([])
   const [weeklyPRLabels, setWeeklyPRLabels] = useState([])
+  const [monthlyPR, setMonthlyPR] = useState([])
+  const [monthlyPRLabels, setMonthlyPRLabels] = useState([])
   const [weeklyBrandPrompt, setWeeklyBrandPrompt] = useState([])
   const [weeklyBrandPromptLabels, setWeeklyBrandPromptLabels] = useState([])
   const [appendixPrompts, setAppendixPrompts] = useState([])
@@ -142,6 +144,8 @@ export default function App() {
       if (d.monthlyVis) setMonthlyVis(d.monthlyVis)
       if (d.weeklyPR) setWeeklyPR(d.weeklyPR)
       if (d.weeklyPRLabels) setWeeklyPRLabels(d.weeklyPRLabels)
+      if (d.monthlyPR) setMonthlyPR(d.monthlyPR)
+      if (d.monthlyPRLabels) setMonthlyPRLabels(d.monthlyPRLabels)
       if (d.weeklyBrandPrompt) setWeeklyBrandPrompt(d.weeklyBrandPrompt)
       if (d.weeklyBrandPromptLabels) setWeeklyBrandPromptLabels(d.weeklyBrandPromptLabels)
       if (d.appendixPrompts) setAppendixPrompts(d.appendixPrompts)
@@ -240,10 +244,12 @@ export default function App() {
           publishEndpoint="/api/publish-visibility"
           setMonthlyVis={setMonthlyVis}
           monthlyVis={monthlyVis}
-          extra={{ weeklyPR, weeklyPRLabels, weeklyBrandPrompt, weeklyBrandPromptLabels, appendixPrompts, unlaunchedMap, weeklyLabelsFull, prTopicList, llmModel }}
-          onSyncExtra={({ weeklyPR, weeklyPRLabels, weeklyBrandPrompt, weeklyBrandPromptLabels, appendixPrompts, unlaunchedMap: ulm, weeklyLabelsFull: wlf, prTopicList: ptl }) => {
+          extra={{ weeklyPR, weeklyPRLabels, monthlyPR, monthlyPRLabels, weeklyBrandPrompt, weeklyBrandPromptLabels, appendixPrompts, unlaunchedMap, weeklyLabelsFull, prTopicList, llmModel }}
+          onSyncExtra={({ weeklyPR, weeklyPRLabels, monthlyPR, monthlyPRLabels, weeklyBrandPrompt, weeklyBrandPromptLabels, appendixPrompts, unlaunchedMap: ulm, weeklyLabelsFull: wlf, prTopicList: ptl }) => {
             if (weeklyPR) setWeeklyPR(weeklyPR)
             if (weeklyPRLabels) setWeeklyPRLabels(weeklyPRLabels)
+            if (monthlyPR) setMonthlyPR(monthlyPR)
+            if (monthlyPRLabels) setMonthlyPRLabels(monthlyPRLabels)
             if (weeklyBrandPrompt) setWeeklyBrandPrompt(weeklyBrandPrompt)
             if (weeklyBrandPromptLabels) setWeeklyBrandPromptLabels(weeklyBrandPromptLabels)
             if (appendixPrompts) setAppendixPrompts(appendixPrompts)
@@ -343,7 +349,7 @@ export default function App() {
 
         {/* 컨텐츠 영역 — LLM Model 필터는 iframe 안 filter-layer 의 Week 옆에 통합 */}
         <div style={{ flex: 1, overflow: 'hidden' }}>
-          <DashboardPreview meta={meta} total={total} products={resolved.products} citations={resolved.citations} dotcom={dotcom} productsCnty={resolved.productsCnty} citationsCnty={resolved.citationsCnty} lang={previewLang} weeklyLabels={weeklyLabels} weeklyAll={weeklyAll} citationsByCnty={citationsByCnty} dotcomByCnty={dotcomByCnty} monthlyVis={monthlyVis} extra={{ weeklyPR, weeklyPRLabels, weeklyBrandPrompt, weeklyBrandPromptLabels, appendixPrompts, unlaunchedMap, weeklyLabelsFull, prTopicList, llmModel }} />
+          <DashboardPreview meta={meta} total={total} products={resolved.products} citations={resolved.citations} dotcom={dotcom} productsCnty={resolved.productsCnty} citationsCnty={resolved.citationsCnty} lang={previewLang} weeklyLabels={weeklyLabels} weeklyAll={weeklyAll} citationsByCnty={citationsByCnty} dotcomByCnty={dotcomByCnty} monthlyVis={monthlyVis} extra={{ weeklyPR, weeklyPRLabels, monthlyPR, monthlyPRLabels, weeklyBrandPrompt, weeklyBrandPromptLabels, appendixPrompts, unlaunchedMap, weeklyLabelsFull, prTopicList, llmModel }} />
         </div>
         <div style={{ height: 28, borderTop: '1px solid #1E293B', background: 'rgba(15,23,42,0.95)',
           display: 'flex', alignItems: 'center', justifyContent: 'flex-end', padding: '0 16px', flexShrink: 0 }}>

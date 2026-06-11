@@ -127,6 +127,8 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
             total: latest.total,
             weeklyPR: latestExtra.weeklyPR || currentSync.weeklyPR,
             weeklyPRLabels: latestExtra.weeklyPRLabels || currentSync.weeklyPRLabels,
+            monthlyPR: latestExtra.monthlyPR || currentSync.monthlyPR,
+            monthlyPRLabels: latestExtra.monthlyPRLabels || currentSync.monthlyPRLabels,
             weeklyBrandPrompt: latestExtra.weeklyBrandPrompt || currentSync.weeklyBrandPrompt,
             weeklyBrandPromptLabels: latestExtra.weeklyBrandPromptLabels || currentSync.weeklyBrandPromptLabels,
             appendixPrompts: latestExtra.appendixPrompts || currentSync.appendixPrompts,
@@ -407,6 +409,8 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
         const syncExtra = {
           weeklyPR: parsed.weeklyPR || null,
           weeklyPRLabels: parsed.weeklyPRLabels || null,
+          monthlyPR: parsed.monthlyPR || null,
+          monthlyPRLabels: parsed.monthlyPRLabels || null,
           weeklyBrandPrompt: parsed.weeklyBrandPrompt || null,
           weeklyBrandPromptLabels: parsed.weeklyBrandPromptLabels || null,
           appendixPrompts: parsed.appendixPrompts || null,

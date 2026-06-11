@@ -22,7 +22,7 @@ export const TABS_FOR_MODE = {
     S.meta, S.visSummary, S.citTouchPoints, S.citDomain, S.citPageType,
     S.productMS, S.productHS, S.productES,
     S.weeklyMS, S.weeklyHS, S.weeklyES,
-    S.weeklyPR, S.weeklyBrandPrompt,
+    S.monthlyPR, S.weeklyPR, S.weeklyBrandPrompt,
     S.appendix, S.unlaunched, S.prTopicList,
   ],
   newsletter: [

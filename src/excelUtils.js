@@ -13,7 +13,7 @@ export const SHEET_NAMES = {
   weeklyMS:       'Weekly MS Visibility',
   weeklyHS:       'Weekly HS Visibility',
   weeklyES:       'Weekly ES Visibility',
-  monthlyPR:      'Monthly PR Visibility',
+  monthlyPR:      'Monthly PR_수정',
   weeklyPR:       'Weekly PR Visibility',
   monthlyBrandPrompt: 'Monthly Brand Prompt Visibility',
   weeklyBrandPrompt:  'Weekly Brand Prompt Visibility',
