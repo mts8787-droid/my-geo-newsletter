@@ -171,6 +171,9 @@ function switchVisMonth(idx){
   var mb=document.getElementById('period-badge');
   if(mb)mb.textContent=monthName;
   _applyMonthSelectionOverride();
+  // Hero(월간 전체 수치) — 선택 월 TTL 반영 (_monthTotalOverride 가 calcFilteredDataCB 안에서 동작).
+  // onFilterChange 전체 호출 X — updateMonthlyProductScores 가 카드 점수를 최신월(data-ms)로 되돌림.
+  if(typeof updateHeroFromCheckboxes==='function')updateHeroFromCheckboxes();
   // 국가별 제품별 Visibility 카드 — _monthlyVis 기반으로 선택 월 값으로 덮어쓰기
   _updateCntyMonth();
   // #monthly-trend-container 재렌더 (updateMonthlyTrend 내부에서 _trendMultiSvg가 _curMonthIdxIn12로 truncate)
@@ -1620,6 +1623,29 @@ function _isBuFullySelected(bu,selProd){
   var ids=_allProdsOfBU(bu);if(!ids.length)return false;
   return ids.every(function(id){return selProd.vals[id]});
 }
+// 월 드롭다운 선택 시 — _monthlyVis 의 TTL 행 (country=TOTAL, division=TOTAL, llmModel=Total) 에서
+// 선택 월의 전체 수치를 가져옴. 미선택(-1) 또는 해당 월 TTL 없으면 null (호출자가 _total 폴백).
+function _monthTotalOverride(){
+  if(_curMonthIdxIn12<0||!_monthlyVis||!_monthlyVis.length)return null;
+  var ttl=_monthlyVis.filter(function(r){
+    var c=String(r.country||'').toUpperCase();
+    var d=String(r.division||'').toUpperCase();
+    var m=String(r.llmModel||'Total').toUpperCase();
+    return(c==='TOTAL'||c==='TTL')&&(d==='TOTAL'||d==='TTL'||d==='')&&(m==='TOTAL'||m==='ALL');
+  });
+  if(!ttl.length)return null;
+  ttl.sort(function(a,b){return _dateMi(a.date)-_dateMi(b.date)});
+  var idx=-1;
+  ttl.forEach(function(r,i){if(_dateMi(r.date)===_curMonthIdxIn12)idx=i});
+  if(idx<0)return null;
+  var cur=ttl[idx];var prev=idx>0?ttl[idx-1]:null;
+  return{
+    score:+(Number(cur.lg)||0).toFixed(1),
+    prev:+(Number(prev?prev.lg:cur.lg)||0).toFixed(1),
+    vsComp:+(Number(cur.comp)||0).toFixed(1),
+    compName:'SAMSUNG'
+  };
+}
 function calcFilteredDataCB(selBU,selProd,selCountry){
   var selectedProdNames={};
   _products.forEach(function(p){if(selProd.isAll||selProd.vals[p.id]){selectedProdNames[p.kr]=true;if(p.category)selectedProdNames[p.category]=true}});
@@ -1665,9 +1691,9 @@ function calcFilteredDataCB(selBU,selProd,selCountry){
     return{score:+bt.lg.toFixed(1),prev:+bt.lg.toFixed(1),vsComp:+bt.comp.toFixed(1),compName:'SAMSUNG'}
   }
 
-  // 모든 BU의 모든 제품 선택 + 전체 국가 → 시트 TTL
+  // 모든 BU의 모든 제품 선택 + 전체 국가 → 시트 TTL (월 드롭다운 선택 시 해당 월 TTL)
   if(allActiveBusFull&&allCountriesOn&&selBuKeys.length===Object.keys(buTotals).length){
-    return _total;
+    return _monthTotalOverride()||_total;
   }
 
   // Specific products (일부 제품만 선택)
@@ -1686,7 +1712,7 @@ function calcFilteredDataCB(selBU,selProd,selCountry){
     if(buCnt>0)return{score:+(buLg/buCnt).toFixed(1),prev:+(buLg/buCnt).toFixed(1),vsComp:+(buComp/buCnt).toFixed(1),compName:'SAMSUNG'};
   }
 
-  return _total;
+  return _monthTotalOverride()||_total;
 }
 // 초기 로드 — script 가 </body> 직전이라 DOM 이미 파싱 완료 상태. 직접 호출.
 updateHeroFromCheckboxes();
