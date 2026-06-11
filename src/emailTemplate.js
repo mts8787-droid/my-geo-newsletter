@@ -361,11 +361,9 @@ function productCardHtml(p, globalMax, globalMin, lang = 'ko', opts = {}) {
   const momColor = d > 0 ? '#16A34A' : d < 0 ? '#DC2626' : '#94A3B8'
   const momArrow = d > 0 ? '▲' : d < 0 ? '▼' : ''
   const _isBaseReset = isBaselineResetProduct(p)
-  const momStr = _isBaseReset
-    ? ''
-    : activePrev > 0
-      ? `<span style="font-size:12px;font-weight:700;color:${momColor};font-family:${EM_FONT};">${momArrow}${Math.abs(d).toFixed(1)}%p</span>`
-      : `<span style="font-size:12px;color:#94A3B8;font-family:${EM_FONT};">—</span>`
+  const momStr = activePrev > 0
+    ? `<span style="font-size:12px;font-weight:700;color:${momColor};font-family:${EM_FONT};">${momArrow}${Math.abs(d).toFixed(1)}%p</span>`
+    : `<span style="font-size:12px;color:#94A3B8;font-family:${EM_FONT};">—</span>`
 
   // 월간 트렌드: monthlyScores에서 구성
   const ms = p.monthlyScores || []
@@ -400,7 +398,7 @@ function productCardHtml(p, globalMax, globalMin, lang = 'ko', opts = {}) {
               <td align="right" style="vertical-align:middle;white-space:nowrap;">
                 <span style="font-size:13px;font-weight:700;color:${ratioColor};font-family:${EM_FONT};letter-spacing:-1px;">${escapeHtml(p.compName || 'Samsung')} ${lang === 'en' ? 'vs' : '대비'} ${curRatio}%${ratioDelta}</span>
                 &nbsp;<span style="display:inline-block;background:${st.bg};color:${st.color};border:1px solid ${st.border};border-radius:6px;padding:0px 5px;font-size:10px;font-weight:700;line-height:16px;font-family:${EM_FONT};vertical-align:middle;">${st.label}</span>
-                ${(_isBaseReset || !(activePrev > 0)) ? '' : `<div style="margin-top:2px;font-size:10px;color:#94A3B8;font-family:${EM_FONT};text-align:right;">${lang === 'en' ? 'MoM' : '전월대비'} <span style="color:${momColor};font-weight:700;">${momArrow}${Math.abs(d).toFixed(1)}%p</span></div>`}
+                ${!(activePrev > 0) ? '' : `<div style="margin-top:2px;font-size:10px;color:#94A3B8;font-family:${EM_FONT};text-align:right;">${lang === 'en' ? 'MoM' : '전월대비'} <span style="color:${momColor};font-weight:700;">${momArrow}${Math.abs(d).toFixed(1)}%p</span></div>`}
               </td>
             </tr>
           </table>
@@ -433,7 +431,7 @@ function productCardV2Html(p, lang = 'ko', opts = {}) {
   const ratioColor = curRatio >= 100 ? '#15803D' : curRatio >= 80 ? '#E8910C' : '#BE123C'
   const momColor = d > 0 ? '#16A34A' : d < 0 ? '#DC2626' : '#94A3B8'
   const momArrow = d > 0 ? '▲' : d < 0 ? '▼' : ''
-  const momStr = (!isBaselineResetProduct(p) && p.prev != null && p.prev > 0)
+  const momStr = (p.prev != null && p.prev > 0)
     ? `<span style="font-size:11px;font-weight:700;color:${momColor};">${momArrow}${Math.abs(d).toFixed(1)}%p</span>`
     : ''
   const prodName = opts.prodNameFn ? opts.prodNameFn(p) : p.kr
@@ -552,7 +550,7 @@ function productCardV3Html(p, lang = 'ko', opts = {}) {
   const ratioColor = curRatio >= 100 ? '#15803D' : curRatio >= 80 ? '#E8910C' : '#BE123C'
   const momColor = d > 0 ? '#16A34A' : d < 0 ? '#DC2626' : '#94A3B8'
   const momArrow = d > 0 ? '▲' : d < 0 ? '▼' : ''
-  const momStr = (!isBaselineResetProduct(p) && p.prev != null && p.prev > 0)
+  const momStr = (p.prev != null && p.prev > 0)
     ? `<span style="font-size:12px;font-weight:700;color:${momColor};letter-spacing:-1.2px;">${momArrow}${Math.abs(d).toFixed(1)}%p</span>`
     : ''
   const prodName = opts.prodNameFn ? opts.prodNameFn(p) : p.kr
@@ -1761,14 +1759,10 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
   const ulIntro = lang === 'en'
     ? 'Unlaunched countries are shown in gray status'
     : '제품 미출시 국가는 신호등 회색 표기'
-  const baselineNote = lang === 'en'
-    ? 'Audio, RAC, Aircare: MoM analysis not provided due to Prompt recalibration in April (strategic country Prompt weight adjustment, key USP-based Prompt setup)'
-    : '오디오, RAC, Aircare 는 4월 중 Prompt 재조정으로 전월비 분석 미 진행 (주요 전략 국가별 Prompt 가중치 조정, 핵심 USP 기반 Prompt 추가 셋팅 진행)'
   const ulLine = ulFootnoteParts.length
     ? `<p style="margin:12px 16px 0;font-size:13px;font-weight:700;color:#000000;font-family:${EM_FONT};line-height:1.6;">* ${ulIntro}(${ulFootnoteParts.join(' / ')})</p>`
     : ''
-  const baselineLine = `<p style="margin:4px 16px 0;font-size:13px;font-weight:700;color:#000000;font-family:${EM_FONT};line-height:1.6;">* ${baselineNote}</p>`
-  const productFootnoteHtml = ulLine + baselineLine
+  const productFootnoteHtml = ulLine
 
   const citTopN = meta.citationTopN || 10
   const citationList = (citations || []).slice(0, citTopN)
