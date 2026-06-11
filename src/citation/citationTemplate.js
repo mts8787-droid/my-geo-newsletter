@@ -889,7 +889,7 @@ export function generateCitationHTML(meta, _total, _products, citations, dotcom,
         ${countryCheckboxes}
       </div>
       ${showPrdFilter ? `<div class="fl-divider"></div>
-      <div class="fl-group">
+      <div class="fl-group" id="fl-prd-group">
         <span class="fl-label">${lang === 'en' ? 'Product' : '제품'}</span>
         <label class="fl-chk-label fl-all-label"><input type="checkbox" class="fl-chk-all" data-target="prd" checked onchange="toggleAll(this,'prd')"><span>${allLabel}</span></label>
         ${prdCheckboxes}
@@ -1792,6 +1792,13 @@ function switchSubTab(btn,tab){
   document.querySelectorAll('.sub-tab-panel').forEach(function(p){
     p.style.display=p.getAttribute('data-panel')===tab?'':'none';
   });
+  // 닷컴 탭 — 제품별 필터 비활성화 (닷컴 섹션은 prd 필터 미적용. 제거 X, disabled 만)
+  var prdGrp=document.getElementById('fl-prd-group');
+  if(prdGrp){
+    var dis=tab==='dotcom';
+    prdGrp.style.opacity=dis?'0.45':'';
+    prdGrp.querySelectorAll('input').forEach(function(i){i.disabled=dis});
+  }
 }
 // 쿼리 파라미터로 탭 자동 선택 (?tab=dotcom / ?tab=touchpoint / ?tab=llm-compare)
 (function(){

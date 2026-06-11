@@ -1433,7 +1433,7 @@ export function generateDashboardHTML(meta, total, products, citations, dotcom, 
       </div>
       <div class="fl-group" id="vis-llm-select-group" style="display:none">
         <span class="fl-label">LLM Model</span>
-        <select id="vis-llm-select" onchange="switchLlmModel(this.value)" style="${dropSelStyle}"${llmModels.length > 1 ? '' : ' disabled'}>${llmOptionsHtml}</select>
+        <select id="vis-llm-select" onchange="switchLlmModel(this.value)" style="${dropSelStyle};opacity:0.55;cursor:not-allowed" disabled>${llmOptionsHtml}</select>
       </div>
     </div>
     <div class="fl-row">
