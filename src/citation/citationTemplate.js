@@ -203,7 +203,7 @@ function dotcomSectionHtml(dotcom, meta, t, lang) {
   }
   return `<div class="section-card">
     <div class="section-header"><div class="section-title">${t.dotcomTitle}</div>
-      <span class="legend"><i style="background:${RED}"></i>LG <i style="background:${COMP}"></i>SS</span>
+      <span class="legend"><i style="background:${RED}"></i>LG <i style="background:${COMP}"></i>SS <span style="color:#94A3B8;font-weight:400">( ):MoM</span></span>
     </div>
     ${insightHtml(meta.dotcomInsight, meta.showDotcomInsight, meta.dotcomHowToRead, meta.showDotcomHowToRead, t)}
     <div class="section-body">${bodyHtml}</div>
@@ -1041,6 +1041,9 @@ var _rawDotcomByCnty=${JSON.stringify(rawDotcomByCnty)};
 var _citTouchPointsTrend=${JSON.stringify(citTouchPointsTrend || {})};
 var _citDomainTrend=${JSON.stringify(citDomainTrend || {})};
 var _TREND_12M=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+var _dcSelMonth=${JSON.stringify(selectedMonth || null)};
+var _dotcomPrev=null;
+var _dotcomPrevByCnty={};
 var _BUMP_MAX=10;
 var _BUMP_COLORS=['#CF0652','#1D4ED8','#059669','#D97706','#7C3AED','#DB2777','#0D9488','#EA580C','#4F46E5','#DC2626','#0891B2','#65A30D'];
 var _FONT=${JSON.stringify(FONT)};
@@ -1289,7 +1292,43 @@ function renderCitDom(citCnty,useAgg,prdData,enabledCntys,enabledPrds,allPrdSel,
   el.innerHTML='<div class="section-card"><div class="section-header"><div class="section-title">'+_t.citDomainTitle+'</div><span class="legend">Top '+topN+' Domains</span></div><div class="section-body">'+body+'</div></div>';
 }
 
-function _dcVBar(dc,isSmall){
+// 닷컴 MoM — 직전 데이터 월 (prev) 탐색·세팅 헬퍼
+function _dcHasM(m){return!!(_rawDotcom&&_rawDotcom.byMonth&&_rawDotcom.byMonth[m])||!!(_rawDotcom&&_rawDotcom.byCntyByMonth&&_rawDotcom.byCntyByMonth[m]&&Object.keys(_rawDotcom.byCntyByMonth[m]).length>0)}
+function _dcDataFor(m){
+  if(!_rawDotcom)return null;
+  var dM=_rawDotcom.byMonth&&_rawDotcom.byMonth[m];
+  var dCM=_rawDotcom.byCntyByMonth&&_rawDotcom.byCntyByMonth[m];
+  var main=null;
+  if(dM){main={lg:dM.lg||{},samsung:dM.samsung||{}}}
+  else if(dCM&&Object.keys(dCM).length){
+    var aLg={},aSam={};
+    Object.values(dCM).forEach(function(d){
+      Object.entries(d.lg||{}).forEach(function(e){aLg[e[0]]=(aLg[e[0]]||0)+e[1]});
+      Object.entries(d.samsung||{}).forEach(function(e){aSam[e[0]]=(aSam[e[0]]||0)+e[1]});
+    });
+    main={lg:aLg,samsung:aSam};
+  }
+  return{main:main,byCnty:dCM||{}};
+}
+function _dcSetPrev(curM){
+  _dotcomPrev=null;_dotcomPrevByCnty={};
+  var ci=_TREND_12M.indexOf(curM);
+  if(ci<0)return;
+  for(var i=ci-1;i>=0;i--){
+    if(_dcHasM(_TREND_12M[i])){
+      var d=_dcDataFor(_TREND_12M[i]);
+      if(d){_dotcomPrev=d.main;_dotcomPrevByCnty=d.byCnty}
+      return;
+    }
+  }
+}
+function _dcMomSpan(cur,prevVal,fsm){
+  if(prevVal==null)return'';
+  var d=cur-prevVal;
+  var c=d>0?'#15803D':d<0?'#BE123C':'#94A3B8';
+  return'<span style="font-size:'+fsm+'px;font-weight:600;color:'+c+';margin-bottom:1px;white-space:nowrap">('+(d>0?'+':'')+_fmt(d)+')</span>';
+}
+function _dcVBar(dc,isSmall,prev){
   if(!dc||!dc.lg)return'<div style="text-align:center;padding:12px;color:#94A3B8;font-size:12px">'+_noDataMsg+'</div>';
   var lg=dc.lg,sam=dc.samsung||{};
   var cols=_DC_COLS.filter(function(c){return(lg[c]||0)>0||(sam[c]||0)>0});
@@ -1299,6 +1338,8 @@ function _dcVBar(dc,isSmall){
   var bw=isSmall?14:22;
   var fs=isSmall?11:13;
   var fsl=isSmall?11:13;
+  var fsm=isSmall?9:10;
+  var pl=prev&&prev.lg?prev.lg:null,ps=prev&&prev.samsung?prev.samsung:null;
   return '<div style="display:flex;gap:'+(isSmall?'6':'10')+'px;padding:'+(isSmall?'4px 0 0':'8px 0 0')+';overflow-x:auto;align-items:flex-end">'+cols.map(function(col){
     var lv=lg[col]||0,sv=sam[col]||0;
     var lh=Math.max(2,Math.round(lv/maxVal*BAR_H));
@@ -1306,22 +1347,25 @@ function _dcVBar(dc,isSmall){
     var hasSam=col!=='Experience'&&sv>0;
     var diff=lv-sv;var gapColor=diff>=0?'#15803D':'#BE123C';
     var gapTxt=diff>0?'+'+_fmt(diff):diff<0?'-'+_fmt(Math.abs(diff)):'0';
+    var momL=pl?_dcMomSpan(lv,pl[col]!=null?pl[col]:null,fsm):'';
+    var momS=ps&&hasSam?_dcMomSpan(sv,ps[col]!=null?ps[col]:null,fsm):'';
     return '<div style="display:flex;flex-direction:column;align-items:center;flex:1;min-width:'+(isSmall?'40px':'0')+'">'
       +'<div style="display:flex;gap:2px;align-items:flex-end">'
-      +'<div style="display:flex;flex-direction:column;align-items:center"><span style="font-size:'+fs+'px;font-weight:700;color:#CF0652;margin-bottom:1px">'+_fmt(lv)+'</span><div style="width:'+bw+'px;height:'+lh+'px;background:#CF0652;border-radius:2px 2px 0 0"></div></div>'
-      +(hasSam?'<div style="display:flex;flex-direction:column;align-items:center"><span style="font-size:'+fs+'px;font-weight:600;color:#94A3B8;margin-bottom:1px">'+_fmt(sv)+'</span><div style="width:'+bw+'px;height:'+sh+'px;background:#94A3B8;border-radius:2px 2px 0 0"></div></div>':'')
+      +'<div style="display:flex;flex-direction:column;align-items:center"><span style="font-size:'+fs+'px;font-weight:700;color:#CF0652;margin-bottom:1px">'+_fmt(lv)+'</span>'+momL+'<div style="width:'+bw+'px;height:'+lh+'px;background:#CF0652;border-radius:2px 2px 0 0"></div></div>'
+      +(hasSam?'<div style="display:flex;flex-direction:column;align-items:center"><span style="font-size:'+fs+'px;font-weight:600;color:#94A3B8;margin-bottom:1px">'+_fmt(sv)+'</span>'+momS+'<div style="width:'+bw+'px;height:'+sh+'px;background:#94A3B8;border-radius:2px 2px 0 0"></div></div>':'')
       +'</div>'
       +'<span style="font-size:'+fsl+'px;color:#64748B;margin-top:3px;text-align:center;white-space:nowrap">'+(col==='TTL'?'Total':col)+'</span>'
       +(hasSam?'<span style="font-size:'+(isSmall?10:12)+'px;font-weight:700;color:'+gapColor+';margin-top:1px">'+gapTxt+'</span>':'')
       +'</div>';
   }).join('')+'</div>';
 }
-function renderDotcom(dc){
+function renderDotcom(dc,prev){
   var el=document.getElementById('cit-dc-wrap');
   if(!el)return;
-  var legend='<span class="legend"><i style="background:#CF0652"></i>LG <i style="background:#94A3B8"></i>SS</span>';
+  if(prev===undefined)prev=_dotcomPrev;
+  var legend='<span class="legend"><i style="background:#CF0652"></i>LG <i style="background:#94A3B8"></i>SS <span style="color:#94A3B8;font-weight:400">( ):MoM</span></span>';
   // 전체 + 국가별 하나의 섹션
-  var body=_dcVBar(dc,false);
+  var body=_dcVBar(dc,false,prev);
   // 국가별 세로 막대그래프 (항상 표시, 2개씩 1행)
   var countries=['US','CA','UK','DE','ES','BR','MX','AU','VN','IN'];
   var cntyCards=[];
@@ -1332,7 +1376,7 @@ function renderDotcom(dc){
     if(!hasData)return;
     cntyCards.push('<div style="width:calc(50% - 6px);background:#F8FAFC;border:1px solid #E8EDF2;border-radius:8px;overflow:hidden">'
       +'<div style="padding:6px 12px;border-bottom:1px solid #F1F5F9;font-size:13px;font-weight:700;color:#1A1A1A">'+_cn(cnty)+'</div>'
-      +'<div style="padding:4px 4px">'+_dcVBar(d,true)+'</div></div>');
+      +'<div style="padding:4px 4px">'+_dcVBar(d,true,_dotcomPrevByCnty[cnty]||null)+'</div></div>');
   });
   if(cntyCards.length){
     body+='<div style="border-top:1px solid #E8EDF2;margin-top:16px;padding-top:16px"><div style="font-size:14px;font-weight:700;color:#64748B;margin-bottom:10px">'+(_lang==='en'?'By Country':'국가별')+'</div><div style="display:flex;flex-wrap:wrap;gap:12px">'+cntyCards.join('')+'</div></div>';
@@ -1408,6 +1452,7 @@ function switchMonth(month){
       _dotcom={lg:{},samsung:{}};
     }
     _dotcomByCnty=dCM||{};
+    _dcSetPrev(useM);
   }
   applyFilter();
 }
@@ -1513,13 +1558,16 @@ function applyFilter(){
   renderCitDom(filteredCitCnty,!allSelected&&!noneSelected,prdData,enabled,enabledPrds,allPrdSel,nonePrdSel);
 
   // 닷컴 Citation
-  var filteredDc=_dotcom;
-  if(noneSelected){filteredDc=null}
+  var filteredDc=_dotcom,filteredDcPrev=_dotcomPrev;
+  if(noneSelected){filteredDc=null;filteredDcPrev=null}
   else if(!allSelected&&Object.keys(_dotcomByCnty).length>0){
     var lg={},samsung={};enabled.forEach(function(cnty){var d=_dotcomByCnty[cnty];if(!d)return;Object.entries(d.lg||{}).forEach(function(e){lg[e[0]]=(lg[e[0]]||0)+e[1]});Object.entries(d.samsung||{}).forEach(function(e){samsung[e[0]]=(samsung[e[0]]||0)+e[1]})});
     if(Object.keys(lg).length>0)filteredDc={lg:lg,samsung:samsung};else filteredDc=null;
+    // prev 도 동일 국가 합산 (MoM 정합)
+    var plg={},psam={};enabled.forEach(function(cnty){var d=_dotcomPrevByCnty[cnty];if(!d)return;Object.entries(d.lg||{}).forEach(function(e){plg[e[0]]=(plg[e[0]]||0)+e[1]});Object.entries(d.samsung||{}).forEach(function(e){psam[e[0]]=(psam[e[0]]||0)+e[1]})});
+    filteredDcPrev=Object.keys(plg).length>0?{lg:plg,samsung:psam}:null;
   }
-  renderDotcom(filteredDc);
+  renderDotcom(filteredDc,filteredDcPrev);
 
   // ── Citation 트렌드: 국가 필터 적용 ──
   _renderCitCatTrend(enabled, allSelected, noneSelected);
@@ -1803,6 +1851,15 @@ try{if(window.self!==window.top){
   var hdr=document.querySelector('.cit-header');if(hdr)hdr.style.display='none';
   var fl=document.querySelector('.filter-layer');if(fl)fl.style.top='0';
 }}catch(e){}
+// 닷컴 MoM 초기화 — 서버 선택 월 (없거나 데이터 없으면 최신 데이터 월) 기준 직전 데이터 월 탐색
+(function(){
+  var m=_dcSelMonth;
+  if(!m||!_dcHasM(m)){
+    m=null;
+    for(var i=_TREND_12M.length-1;i>=0;i--){if(_dcHasM(_TREND_12M[i])){m=_TREND_12M[i];break}}
+  }
+  if(m)_dcSetPrev(m);
+})();
 // 초기 로드 시 세로 막대그래프로 렌더링
 applyFilter();
 </script>
