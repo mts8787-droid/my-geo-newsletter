@@ -100,8 +100,8 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
         htmlEn = generateHTML(metaEn, latest.total, resolvedEn.products, resolvedEn.citations, latest.dotcom, 'en', resolvedEn.productsCnty, resolvedEn.citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty, mv, latestExtra)
         title = `${metaKo.period || ''} ${metaKo.title || 'KPI Dashboard'}`.trim()
       } else {
-        htmlKo = generateHTML(metaKo, latest.total, resolvedKo.products, resolvedKo.citations, dotcom, 'ko', resolvedKo.productsCnty, resolvedKo.citationsCnty, { weeklyLabels, categoryStats, unlaunchedMap: extra?.unlaunchedMap || {}, productCardVersion: meta.productCardVersion || 'v1', trendMode: meta.trendMode || 'weekly', citTouchPointsTrend: extra?.citTouchPointsTrend || null, citTrendMonths: extra?.citTrendMonths || [], citDomainTrend: extra?.citDomainTrend || null, citDomainMonths: extra?.citDomainMonths || [] })
-        htmlEn = generateHTML(metaEn, latest.total, resolvedEn.products, resolvedEn.citations, dotcom, 'en', resolvedEn.productsCnty, resolvedEn.citationsCnty, { weeklyLabels, categoryStats, unlaunchedMap: extra?.unlaunchedMap || {}, productCardVersion: meta.productCardVersion || 'v1', trendMode: meta.trendMode || 'weekly', citTouchPointsTrend: extra?.citTouchPointsTrend || null, citTrendMonths: extra?.citTrendMonths || [], citDomainTrend: extra?.citDomainTrend || null, citDomainMonths: extra?.citDomainMonths || [] })
+        htmlKo = generateHTML(metaKo, latest.total, resolvedKo.products, resolvedKo.citations, dotcom, 'ko', resolvedKo.productsCnty, resolvedKo.citationsCnty, { weeklyLabels, categoryStats, unlaunchedMap: extra?.unlaunchedMap || {}, productCardVersion: meta.productCardVersion || 'v1', trendMode: meta.trendMode || 'weekly', citTouchPointsTrend: extra?.citTouchPointsTrend || null, citTrendMonths: extra?.citTrendMonths || [], citDomainTrend: extra?.citDomainTrend || null, citDomainMonths: extra?.citDomainMonths || [], citTouchPointsByLlm: extra?.citTouchPointsByLlm || null, citDomainByLlm: extra?.citDomainByLlm || null })
+        htmlEn = generateHTML(metaEn, latest.total, resolvedEn.products, resolvedEn.citations, dotcom, 'en', resolvedEn.productsCnty, resolvedEn.citationsCnty, { weeklyLabels, categoryStats, unlaunchedMap: extra?.unlaunchedMap || {}, productCardVersion: meta.productCardVersion || 'v1', trendMode: meta.trendMode || 'weekly', citTouchPointsTrend: extra?.citTouchPointsTrend || null, citTrendMonths: extra?.citTrendMonths || [], citDomainTrend: extra?.citDomainTrend || null, citDomainMonths: extra?.citDomainMonths || [], citTouchPointsByLlm: extra?.citTouchPointsByLlm || null, citDomainByLlm: extra?.citDomainByLlm || null })
         title = `${metaKo.period || ''} ${metaKo.title || 'Newsletter'}`.trim()
       }
       const ep = publishEndpoint || (mode === 'dashboard' ? '/api/publish-dashboard' : '/api/publish')
@@ -344,7 +344,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
     setMailSent('sending')
     try {
       const latest = getLatestData()
-      const html    = generateHTML(meta, latest.total, latest.products, latest.citations, latest.dotcom, previewLang, latest.productsCnty, latest.citationsCnty, { weeklyLabels, categoryStats, unlaunchedMap: extra?.unlaunchedMap || {}, productCardVersion: meta.productCardVersion || 'v1', trendMode: meta.trendMode || 'weekly', citTouchPointsTrend: extra?.citTouchPointsTrend || null, citTrendMonths: extra?.citTrendMonths || [], citDomainTrend: extra?.citDomainTrend || null, citDomainMonths: extra?.citDomainMonths || [] })
+      const html    = generateHTML(meta, latest.total, latest.products, latest.citations, latest.dotcom, previewLang, latest.productsCnty, latest.citationsCnty, { weeklyLabels, categoryStats, unlaunchedMap: extra?.unlaunchedMap || {}, productCardVersion: meta.productCardVersion || 'v1', trendMode: meta.trendMode || 'weekly', citTouchPointsTrend: extra?.citTouchPointsTrend || null, citTrendMonths: extra?.citTrendMonths || [], citDomainTrend: extra?.citDomainTrend || null, citDomainMonths: extra?.citDomainMonths || [], citTouchPointsByLlm: extra?.citTouchPointsByLlm || null, citDomainByLlm: extra?.citDomainByLlm || null })
       const subject = `[LG GEO] ${meta.title} · ${meta.period}`
       const res = await fetch('/api/send-email', {
         method: 'POST',
@@ -417,6 +417,8 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
           citTrendMonths: parsed.citTrendMonths || null,
           citDomainTrend: parsed.citDomainTrend || null,
           citDomainMonths: parsed.citDomainMonths || null,
+          citTouchPointsByLlm: parsed.citTouchPointsByLlm || null,
+          citDomainByLlm: parsed.citDomainByLlm || null,
         }
         onSyncExtra(syncExtra)
         // latestRef에도 extra 즉시 갱신
@@ -1099,6 +1101,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
             { key: 'showCitCnty',   label: 'Citation 국가별' },
             { key: 'showCitPrd',    label: 'Citation 제품별' },
             { key: 'showTouchPointsBump', label: '외부채널 범프차트' },
+            { key: 'showLlmShare',  label: '모델별 인용비중' },
             { key: 'showDotcom',    label: '닷컴' },
             { key: 'showTodo',      label: 'Action Plan' },
           ].map(({ key, label }) => (
@@ -1116,16 +1119,26 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
         {(() => {
           const stripDom = d => String(d || '').replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\.(com|net|org|io|co|kr|jp|us|uk|de|fr|cn|in|br)(\.[a-z]{2})?$/i, '')
           const tpKey = name => /brand/i.test(name) && /(manufacturer|메뉴팩|메뉴펙|제조)/i.test(name) ? 'Brand' : name
+          const months = Array.isArray(extra?.citTrendMonths) ? extra.citTrendMonths : []
+          const lastMonth = months.length ? months[months.length - 1] : null
+          const latestOf = ms => {
+            if (!ms) return 0
+            if (lastMonth != null && ms[lastMonth] != null) return Number(ms[lastMonth]) || 0
+            const vals = Object.values(ms).map(Number).filter(v => !isNaN(v))
+            return vals.length ? vals[vals.length - 1] : 0
+          }
           const cands = []
           const seen = new Set()
-          const push = (value, label) => { if (value && !seen.has(value)) { seen.add(value); cands.push({ value, label }) } }
-          if (extra?.citTouchPointsTrend) Object.keys(extra.citTouchPointsTrend).forEach(n => { const k = tpKey(n); push(k, k) })
+          const push = (value, label, score) => { if (value && !seen.has(value)) { seen.add(value); cands.push({ value, label, score }) } }
+          if (extra?.citTouchPointsTrend) Object.entries(extra.citTouchPointsTrend).forEach(([n, ms]) => { const k = tpKey(n); push(k, k, latestOf(ms)) })
           if (extra?.citDomainTrend) {
             const ttl = Object.entries(extra.citDomainTrend).filter(([key]) => key.startsWith('TTL|'))
             const src = ttl.length ? ttl : Object.entries(extra.citDomainTrend)
-            src.forEach(([, val]) => push(val.domain, stripDom(val.domain)))
+            src.forEach(([, val]) => push(val.domain, stripDom(val.domain), latestOf(val.months)))
           }
           if (!cands.length) return null
+          cands.sort((a, b) => b.score - a.score)
+          const top = cands.slice(0, 10)
           const sel = Array.isArray(meta.bumpHighlight) ? meta.bumpHighlight : []
           const toggle = value => setMeta(m => {
             const cur = Array.isArray(m.bumpHighlight) ? m.bumpHighlight : []
@@ -1138,7 +1151,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
                 범프차트 지적 요소 (색상 강조)
               </p>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginBottom: 16 }}>
-                {cands.map(({ value, label }) => {
+                {top.map(({ value, label }) => {
                   const on = sel.includes(value)
                   return (
                     <button key={value} onClick={() => toggle(value)}
@@ -1154,6 +1167,22 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
             </>
           )
         })()}
+
+        {/* 모델별 인용비중 — 노출 순위 (Top 5 / Top 10) */}
+        {meta.showLlmShare !== false && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 16 }}>
+            <span style={{ fontSize: 11, color: '#64748B', fontFamily: FONT }}>인용비중 노출:</span>
+            {[5, 10].map(n => (
+              <button key={n} onClick={() => setMeta(m => ({ ...m, llmShareTopN: n }))}
+                style={{ padding: '5px 12px', borderRadius: 20, border: 'none', cursor: 'pointer',
+                  background: (meta.llmShareTopN === 5 ? 5 : 10) === n ? LG_RED : '#1E293B',
+                  color: (meta.llmShareTopN === 5 ? 5 : 10) === n ? '#FFFFFF' : '#475569',
+                  fontSize: 11, fontWeight: 700, fontFamily: FONT }}>
+                Top {n}
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* 제품 카드 버전 선택 */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>

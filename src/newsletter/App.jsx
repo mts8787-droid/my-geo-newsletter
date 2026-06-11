@@ -19,11 +19,11 @@ const MODE = 'newsletter'
 const STORAGE_KEY = 'geo-newsletter-cache'
 
 // ─── 뉴스레터 미리보기 (iframe) ──────────────────────────────────────────────
-function NewsletterPreview({ meta, total, products, citations, dotcom, productsCnty = [], citationsCnty = [], lang = 'ko', weeklyLabels, categoryStats, unlaunchedMap = {}, llmModel, monthlyVis, citTouchPointsTrend = null, citTrendMonths = [], citDomainTrend = null, citDomainMonths = [] }) {
+function NewsletterPreview({ meta, total, products, citations, dotcom, productsCnty = [], citationsCnty = [], lang = 'ko', weeklyLabels, categoryStats, unlaunchedMap = {}, llmModel, monthlyVis, citTouchPointsTrend = null, citTrendMonths = [], citDomainTrend = null, citDomainMonths = [], citTouchPointsByLlm = null, citDomainByLlm = null }) {
   const iframeRef = useRef(null)
   const html = useMemo(
-    () => generateEmailHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, { weeklyLabels, categoryStats, unlaunchedMap, productCardVersion: meta.productCardVersion || 'v1', trendMode: meta.trendMode || 'weekly', llmModel, monthlyVis, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths }),
-    [meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, categoryStats, unlaunchedMap, llmModel, monthlyVis, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths]
+    () => generateEmailHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, { weeklyLabels, categoryStats, unlaunchedMap, productCardVersion: meta.productCardVersion || 'v1', trendMode: meta.trendMode || 'weekly', llmModel, monthlyVis, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, citTouchPointsByLlm, citDomainByLlm }),
+    [meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, categoryStats, unlaunchedMap, llmModel, monthlyVis, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, citTouchPointsByLlm, citDomainByLlm]
   )
 
   React.useEffect(() => {
@@ -59,9 +59,9 @@ function NewsletterPreview({ meta, total, products, citations, dotcom, productsC
 }
 
 // ─── HTML 코드 뷰어 ───────────────────────────────────────────────────────────
-function HtmlCodeViewer({ meta, total, products, citations, dotcom, productsCnty = [], citationsCnty = [], lang = 'ko', weeklyLabels, categoryStats, unlaunchedMap = {}, citTouchPointsTrend = null, citTrendMonths = [], citDomainTrend = null, citDomainMonths = [] }) {
+function HtmlCodeViewer({ meta, total, products, citations, dotcom, productsCnty = [], citationsCnty = [], lang = 'ko', weeklyLabels, categoryStats, unlaunchedMap = {}, citTouchPointsTrend = null, citTrendMonths = [], citDomainTrend = null, citDomainMonths = [], citTouchPointsByLlm = null, citDomainByLlm = null }) {
   const [copied, setCopied] = useState(false)
-  const html = useMemo(() => generateEmailHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, { weeklyLabels, categoryStats, unlaunchedMap, productCardVersion: meta.productCardVersion || 'v1', trendMode: meta.trendMode || 'weekly', citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths }), [meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, categoryStats, unlaunchedMap, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths])
+  const html = useMemo(() => generateEmailHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, { weeklyLabels, categoryStats, unlaunchedMap, productCardVersion: meta.productCardVersion || 'v1', trendMode: meta.trendMode || 'weekly', citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, citTouchPointsByLlm, citDomainByLlm }), [meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, categoryStats, unlaunchedMap, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, citTouchPointsByLlm, citDomainByLlm])
 
   async function handleCopy() {
     try {
@@ -128,6 +128,8 @@ export default function App() {
   const [citTrendMonths, setCitTrendMonths] = useState(cache?.citTrendMonths ?? [])
   const [citDomainTrend, setCitDomainTrend] = useState(cache?.citDomainTrend ?? null)
   const [citDomainMonths, setCitDomainMonths] = useState(cache?.citDomainMonths ?? [])
+  const [citTouchPointsByLlm, setCitTouchPointsByLlm] = useState(cache?.citTouchPointsByLlm ?? null)
+  const [citDomainByLlm, setCitDomainByLlm] = useState(cache?.citDomainByLlm ?? null)
   const [unlaunchedMap, setUnlaunchedMap] = useState(cache?.unlaunchedMap ?? {})
   const [activeTab, setActiveTab] = useState('preview')
   const [previewLang, setPreviewLang] = useState('ko')
@@ -259,6 +261,8 @@ export default function App() {
       if (d.citTrendMonths)      setCitTrendMonths(d.citTrendMonths)
       if (d.citDomainTrend)      setCitDomainTrend(d.citDomainTrend)
       if (d.citDomainMonths)     setCitDomainMonths(d.citDomainMonths)
+      if (d.citTouchPointsByLlm) setCitTouchPointsByLlm(d.citTouchPointsByLlm)
+      if (d.citDomainByLlm)      setCitDomainByLlm(d.citDomainByLlm)
       if (d.productsPartial) {
         setProducts(d.productsPartial.map(p => {
           const weekly = d.weeklyMap?.[p.id] || []
@@ -292,19 +296,19 @@ export default function App() {
   }, [])
 
   useEffect(() => {
-    saveCache(STORAGE_KEY, { metaKo, metaEn, total, products, citations, dotcom, productsCnty, citationsCnty, weeklyLabels, weeklyAll, unlaunchedMap, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths })
-  }, [metaKo, metaEn, total, products, citations, dotcom, productsCnty, citationsCnty, weeklyLabels, weeklyAll, unlaunchedMap, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths])
+    saveCache(STORAGE_KEY, { metaKo, metaEn, total, products, citations, dotcom, productsCnty, citationsCnty, weeklyLabels, weeklyAll, unlaunchedMap, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, citTouchPointsByLlm, citDomainByLlm })
+  }, [metaKo, metaEn, total, products, citations, dotcom, productsCnty, citationsCnty, weeklyLabels, weeklyAll, unlaunchedMap, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, citTouchPointsByLlm, citDomainByLlm])
 
   async function handleSnapOverwrite() {
     if (!activeSnap) return
-    const data = { metaKo, metaEn, total, products, citations, dotcom, productsCnty, citationsCnty, weeklyLabels, weeklyAll, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths }
+    const data = { metaKo, metaEn, total, products, citations, dotcom, productsCnty, citationsCnty, weeklyLabels, weeklyAll, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, citTouchPointsByLlm, citDomainByLlm }
     const result = await updateSnapshot(MODE, activeSnap, data)
     if (result) setSnapshots(result)
     showSnapMsg(result ? '저장 완료!' : '저장 실패')
   }
   async function handleSnapSaveNew() {
     const name = snapName.trim() || `${meta.period || 'Untitled'} — ${new Date().toLocaleString('ko-KR')}`
-    const result = await postSnapshot(MODE, name, { metaKo, metaEn, total, products, citations, dotcom, productsCnty, citationsCnty, weeklyLabels, weeklyAll, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths })
+    const result = await postSnapshot(MODE, name, { metaKo, metaEn, total, products, citations, dotcom, productsCnty, citationsCnty, weeklyLabels, weeklyAll, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, citTouchPointsByLlm, citDomainByLlm })
     if (result) { setSnapshots(result); setSnapName(''); setActiveSnap(result[0]?.ts || null) }
     showSnapMsg(result ? '새로 저장 완료!' : '저장 실패')
   }
@@ -325,6 +329,8 @@ export default function App() {
     if (d.citTrendMonths)      setCitTrendMonths(d.citTrendMonths)
     if (d.citDomainTrend)      setCitDomainTrend(d.citDomainTrend)
     if (d.citDomainMonths)     setCitDomainMonths(d.citDomainMonths)
+    if (d.citTouchPointsByLlm) setCitTouchPointsByLlm(d.citTouchPointsByLlm)
+    if (d.citDomainByLlm)      setCitDomainByLlm(d.citDomainByLlm)
     setActiveSnap(snap.ts)
     showSnapMsg(`"${snap.name}" 불러옴`)
   }
@@ -360,13 +366,15 @@ export default function App() {
           progressMonth={progressMonth}
           setProgressMonth={setProgressMonth}
           progressDataMonth={extractMonthFromPeriod(metaKo.period) || `${new Date().getMonth() + 1}월`}
-          extra={{ unlaunchedMap, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths }}
-          onSyncExtra={({ unlaunchedMap: ulm, citTouchPointsTrend: cptt, citTrendMonths: ctm, citDomainTrend: cdt, citDomainMonths: cdm }) => {
+          extra={{ unlaunchedMap, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, citTouchPointsByLlm, citDomainByLlm }}
+          onSyncExtra={({ unlaunchedMap: ulm, citTouchPointsTrend: cptt, citTrendMonths: ctm, citDomainTrend: cdt, citDomainMonths: cdm, citTouchPointsByLlm: cptl, citDomainByLlm: cdl }) => {
             if (ulm) setUnlaunchedMap(ulm)
             if (cptt) setCitTouchPointsTrend(cptt)
             if (ctm) setCitTrendMonths(ctm)
             if (cdt) setCitDomainTrend(cdt)
             if (cdm) setCitDomainMonths(cdm)
+            if (cptl) setCitTouchPointsByLlm(cptl)
+            if (cdl) setCitDomainByLlm(cdl)
           }}
         />
       )}
@@ -474,11 +482,11 @@ export default function App() {
               <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12, padding: '6px 12px', background: '#F8FAFC', borderRadius: 6 }}>
                 <LlmModelSelect value={llmModel} onChange={setLlmModel} products={resolved.products} productsCnty={resolved.productsCnty} monthlyVis={monthlyVis} />
               </div>
-              <NewsletterPreview meta={meta} total={total} products={resolved.products} citations={resolved.citations} dotcom={dotcom} productsCnty={resolved.productsCnty} citationsCnty={resolved.citationsCnty} lang={previewLang} weeklyLabels={weeklyLabels} categoryStats={categoryStats} unlaunchedMap={unlaunchedMap} llmModel={llmModel} monthlyVis={monthlyVis} citTouchPointsTrend={citTouchPointsTrend} citTrendMonths={citTrendMonths} citDomainTrend={citDomainTrend} citDomainMonths={citDomainMonths} />
+              <NewsletterPreview meta={meta} total={total} products={resolved.products} citations={resolved.citations} dotcom={dotcom} productsCnty={resolved.productsCnty} citationsCnty={resolved.citationsCnty} lang={previewLang} weeklyLabels={weeklyLabels} categoryStats={categoryStats} unlaunchedMap={unlaunchedMap} llmModel={llmModel} monthlyVis={monthlyVis} citTouchPointsTrend={citTouchPointsTrend} citTrendMonths={citTrendMonths} citDomainTrend={citDomainTrend} citDomainMonths={citDomainMonths} citTouchPointsByLlm={citTouchPointsByLlm} citDomainByLlm={citDomainByLlm} />
             </div>
           </div>
         ) : (
-          <HtmlCodeViewer meta={meta} total={total} products={resolved.products} citations={resolved.citations} dotcom={dotcom} productsCnty={resolved.productsCnty} citationsCnty={resolved.citationsCnty} lang={previewLang} weeklyLabels={weeklyLabels} categoryStats={categoryStats} unlaunchedMap={unlaunchedMap} citTouchPointsTrend={citTouchPointsTrend} citTrendMonths={citTrendMonths} citDomainTrend={citDomainTrend} citDomainMonths={citDomainMonths} />
+          <HtmlCodeViewer meta={meta} total={total} products={resolved.products} citations={resolved.citations} dotcom={dotcom} productsCnty={resolved.productsCnty} citationsCnty={resolved.citationsCnty} lang={previewLang} weeklyLabels={weeklyLabels} categoryStats={categoryStats} unlaunchedMap={unlaunchedMap} citTouchPointsTrend={citTouchPointsTrend} citTrendMonths={citTrendMonths} citDomainTrend={citDomainTrend} citDomainMonths={citDomainMonths} citTouchPointsByLlm={citTouchPointsByLlm} citDomainByLlm={citDomainByLlm} />
         )}
         <div style={{ height: 28, borderTop: '1px solid #1E293B', background: 'rgba(15,23,42,0.95)',
           display: 'flex', alignItems: 'center', justifyContent: 'flex-end', padding: '0 16px', flexShrink: 0 }}>

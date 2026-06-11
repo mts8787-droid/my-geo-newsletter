@@ -102,6 +102,7 @@ export const INIT_META  = {
   showDotcom: true,
   showTouchPointsBump: true,
   bumpHighlight: [],
+  showLlmShare: true, llmShareTopN: 10,
   cntyProductFilter: {},
   citCntyDomainFilter: {},
   citCntyFilter: {},

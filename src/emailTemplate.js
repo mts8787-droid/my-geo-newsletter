@@ -149,6 +149,7 @@ const T = {
     cntyComp: '1위 경쟁사',
     citationTitle: '도메인 카테고리별 Citation 현황',
     citationDomainTitle: '도메인별 Citation 현황',
+    llmShareTitle: '모델별 인용 비중',
     citationCntyTitle: '국가별 Citation 도메인',
     touchPointTitle: '외부접점채널 Citation',
     citationLegend: 'Citation Score 건수 (비중)',
@@ -181,6 +182,7 @@ const T = {
     cntyComp: 'Top 1 Competitor',
     citationTitle: 'Citation by Domain Category',
     citationDomainTitle: 'Citation by Domain',
+    llmShareTitle: 'Citation Share by Model',
     citationCntyTitle: 'Citation Domain by Country',
     touchPointTitle: 'Touch Points Citation',
     citationLegend: 'Citation Score Count (Ratio)',
@@ -1446,6 +1448,145 @@ function domainBumpSectionHtml(citDomainTrend, citDomainMonths, meta, lang = 'ko
   return bumpEmailSectionHtml(trend, t.citationDomainTitle, lang === 'ko' ? '도메인' : 'Domain', lang, { shortFn: emStripDomain, highlight: meta.bumpHighlight })
 }
 
+// ─── LLM 모델별 인용비중 (100% 누적 가로 막대, 랭킹 1→topN) ────────────────────
+const EM_LLM_COLORS = ['#CF0652', '#1D4ED8', '#059669', '#D97706', '#7C3AED', '#DB2777', '#0D9488', '#EA580C', '#4F46E5', '#DC2626', '#0891B2', '#65A30D']
+
+// citTouchPointsByLlm { llm: { channel: { month: sum } } } → { channel: { llm: latestValue } }
+function _llmShareFromTouch(byLlm, months) {
+  if (!byLlm || !months || !months.length) return null
+  const out = {}
+  Object.entries(byLlm).forEach(([llm, byChannel]) => {
+    if (llm === 'Total') return
+    Object.entries(byChannel || {}).forEach(([channel, monthVals]) => {
+      let v = 0
+      for (let j = months.length - 1; j >= 0; j--) {
+        const mv = monthVals[months[j]]
+        if (mv > 0) { v = mv; break }
+      }
+      if (v <= 0) return
+      const key = /brand/i.test(channel) && /(manufacturer|메뉴팩|메뉴펙|제조)/i.test(channel) ? 'Brand' : channel
+      if (!out[key]) out[key] = {}
+      out[key][llm] = (out[key][llm] || 0) + v
+    })
+  })
+  return Object.keys(out).length ? out : null
+}
+
+// citDomainByLlm { llm: { domain: value } } → { domain: { llm: value } }
+function _llmShareFromDomain(byLlm) {
+  if (!byLlm) return null
+  const out = {}
+  Object.entries(byLlm).forEach(([llm, byDom]) => {
+    if (llm === 'Total') return
+    Object.entries(byDom || {}).forEach(([domain, v]) => {
+      if (v <= 0) return
+      if (!out[domain]) out[domain] = {}
+      out[domain][llm] = (out[domain][llm] || 0) + v
+    })
+  })
+  return Object.keys(out).length ? out : null
+}
+
+// 등장하는 LLM 모델 → 색상 고정 매핑 (두 블록 공통 범례용)
+function _llmColorMap(...itemMaps) {
+  const models = new Set()
+  itemMaps.filter(Boolean).forEach(m => {
+    Object.values(m).forEach(byLlm => Object.keys(byLlm).forEach(llm => models.add(llm)))
+  })
+  const map = {}
+  ;[...models].sort().forEach((llm, i) => { map[llm] = EM_LLM_COLORS[i % EM_LLM_COLORS.length] })
+  return map
+}
+
+// 100% 누적 가로 막대 블록 (랭킹 1→topN). itemMap: { item: { llm: value } }
+function _llmShareBarsHtml(itemMap, llmColorMap, topN, labelFn) {
+  if (!itemMap) return ''
+  const rows = Object.entries(itemMap).map(([item, byLlm]) => {
+    const total = Object.values(byLlm).reduce((s, v) => s + (v || 0), 0)
+    return { item, byLlm, total }
+  }).filter(r => r.total > 0).sort((a, b) => b.total - a.total).slice(0, topN)
+  if (!rows.length) return ''
+  return rows.map((r, i) => {
+    const segs = Object.entries(r.byLlm).filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1])
+    const cells = segs.map(([llm, v]) => {
+      const pct = (v / r.total * 100)
+      const color = llmColorMap[llm] || '#94A3B8'
+      return `<td width="${pct.toFixed(1)}%" style="background:${color};height:16px;font-size:0;line-height:0;mso-line-height-rule:exactly;">&nbsp;</td>`
+    }).join('')
+    const label = labelFn ? labelFn(r.item) : r.item
+    return `
+                                      <tr>
+                                        <td style="padding:3px 0;">
+                                          <table border="0" cellpadding="0" cellspacing="0" width="100%"><tr>
+                                            <td width="16" style="font-size:11px;font-weight:700;color:#94A3B8;font-family:${EM_FONT};vertical-align:middle;">${i + 1}</td>
+                                            <td width="38%" style="font-size:11px;font-weight:600;color:#1A1A1A;font-family:${EM_FONT};vertical-align:middle;padding-right:6px;letter-spacing:-0.3px;">${escapeHtml(emPill(label))}</td>
+                                            <td style="vertical-align:middle;">
+                                              <table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;border-radius:3px;overflow:hidden;"><tr>${cells}</tr></table>
+                                            </td>
+                                          </tr></table>
+                                        </td>
+                                      </tr>`
+  }).join('')
+}
+
+// LLM 모델 범례 (색상 칩 + 모델명)
+function _llmLegendHtml(llmColorMap) {
+  const entries = Object.entries(llmColorMap)
+  if (!entries.length) return ''
+  const chips = entries.map(([llm, color]) => `
+                                  <td style="padding:0 8px 0 0;white-space:nowrap;vertical-align:middle;">
+                                    <table border="0" cellpadding="0" cellspacing="0" style="display:inline-table;"><tr>
+                                      <td width="10" style="background:${color};border-radius:2px;height:10px;font-size:0;line-height:0;">&nbsp;</td>
+                                      <td style="padding-left:4px;font-size:10px;color:#64748B;font-family:${EM_FONT};">${escapeHtml(emPill(llm))}</td>
+                                    </tr></table>
+                                  </td>`).join('')
+  return `<table border="0" cellpadding="0" cellspacing="0"><tr>${chips}</tr></table>`
+}
+
+// LLM 모델별 인용비중 섹션 (citation 영역 상단) — 카테고리 도메인 + 도메인 2열
+function llmCitationShareSectionHtml(citTouchPointsByLlm, citTrendMonths, citDomainByLlm, citDomainMonths, meta, lang = 'ko') {
+  if (meta.showLlmShare === false) return ''
+  const t = T[lang] || T.ko
+  const touchMap = _llmShareFromTouch(citTouchPointsByLlm, citTrendMonths)
+  const domainMap = _llmShareFromDomain(citDomainByLlm)
+  if (!touchMap && !domainMap) return ''
+  const topN = (meta.llmShareTopN === 5) ? 5 : 10
+  const colorMap = _llmColorMap(touchMap, domainMap)
+  const touchBars = touchMap ? _llmShareBarsHtml(touchMap, colorMap, topN, null) : ''
+  const domainBars = domainMap ? _llmShareBarsHtml(domainMap, colorMap, topN, emStripDomain) : ''
+  if (!touchBars && !domainBars) return ''
+  const subTitleTouch = lang === 'ko' ? '카테고리 도메인' : 'Domain Category'
+  const subTitleDomain = lang === 'ko' ? '도메인' : 'Domain'
+  return `
+                          <!-- ══ LLM 모델별 인용비중 (100% 누적 가로 막대, 랭킹 1→${topN}) ══ -->
+                          <tr>
+                            <td style="padding-bottom:16px;">
+                              <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                <tr><td style="font-size:14px;font-weight:700;color:#0F172A;font-family:${EM_FONT};padding-bottom:8px;border-bottom:1px solid #E8EDF2;">${t.llmShareTitle}</td></tr>
+                                <tr><td style="padding:8px 0;">${_llmLegendHtml(colorMap)}</td></tr>
+                                <tr>
+                                  <td>
+                                    <table border="0" cellpadding="0" cellspacing="0" width="100%"><tr>
+                                      ${touchBars ? `<td width="50%" style="vertical-align:top;padding-right:6px;">
+                                        <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                          <tr><td style="font-size:12px;font-weight:700;color:#475569;font-family:${EM_FONT};padding-bottom:6px;">${subTitleTouch}</td></tr>
+                                          ${touchBars}
+                                        </table>
+                                      </td>` : ''}
+                                      ${domainBars ? `<td width="50%" style="vertical-align:top;padding-left:6px;">
+                                        <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                          <tr><td style="font-size:12px;font-weight:700;color:#475569;font-family:${EM_FONT};padding-bottom:6px;">${subTitleDomain}</td></tr>
+                                          ${domainBars}
+                                        </table>
+                                      </td>` : ''}
+                                    </tr></table>
+                                  </td>
+                                </tr>
+                              </table>
+                            </td>
+                          </tr>`
+}
+
 // ─── 제품별 Citation (Top 3 카테고리 + Top 3 도메인, 본부별 그룹핑 + 막대) ──
 function citationByProductHtml(citationsCnty, meta, lang) {
   if (meta.showCitPrd === false) return ''
@@ -1723,7 +1864,7 @@ function dashboardLinkButtonHtml(lang) {
 export { escapeHtml }
 
 export function generateEmailHTML(meta, total, products, citations, dotcom = {}, lang = 'ko', productsCnty = [], citationsCnty = [], options = {}) {
-  const { containerWidth = 940, showTrendTabs = false, weeklyLabels, categoryStats = null, unlaunchedMap: ulInput = {}, productCardVersion = 'v1', trendMode = 'weekly', llmModel, monthlyVis, citTouchPointsTrend = null, citTrendMonths = [], citDomainTrend = null, citDomainMonths = [] } = options
+  const { containerWidth = 940, showTrendTabs = false, weeklyLabels, categoryStats = null, unlaunchedMap: ulInput = {}, productCardVersion = 'v1', trendMode = 'weekly', llmModel, monthlyVis, citTouchPointsTrend = null, citTrendMonths = [], citDomainTrend = null, citDomainMonths = [], citTouchPointsByLlm = null, citDomainByLlm = null } = options
   // LLM Model 필터 (2026-06) — 선택 모델로 products/productsCnty/total 재계산
   if (llmModel && llmModel !== 'Total') {
     products = resolveProductsByLlm(products, llmModel)
@@ -2089,6 +2230,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                     <tr>
                       <td style="padding:16px 12px;">
                         <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                          ${llmCitationShareSectionHtml(citTouchPointsByLlm, citTrendMonths, citDomainByLlm, citDomainMonths, meta, lang)}
                           ${meta.showCitations !== false ? `
                           <!-- 도메인 카테고리별 + 도메인별 (가로 2열) -->
                           <tr>
