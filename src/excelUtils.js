@@ -14,7 +14,7 @@ export const SHEET_NAMES = {
   weeklyHS:       'Weekly HS Visibility',
   weeklyES:       'Weekly ES Visibility',
   monthlyPR:      'Monthly PR_수정',
-  weeklyPR:       'Weekly PR Visibility',
+  weeklyPR:       'weekly PR_수정',
   monthlyBrandPrompt: 'Monthly Brand Prompt Visibility',
   weeklyBrandPrompt:  'Weekly Brand Prompt Visibility',
   citPageType:    'Citation-Page Type',
