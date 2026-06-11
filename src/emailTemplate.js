@@ -1786,21 +1786,28 @@ function categoryCardsHtml(categoryStats, lang, meta) {
   }
   const fmtN = n => Number(n).toLocaleString('en-US')
   const t = lang === 'en'
-    ? { title: 'Key Task Progress', monthly: monthLabel, prev: 'Last Month', progress: 'YTD Progress' }
-    : { title: '핵심 과제 진척 사항', monthly: monthLabel, prev: '전월', progress: '연간 진척율' }
+    ? { title: 'Key Task Progress', monthly: monthLabel, progress: 'YTD Progress' }
+    : { title: '핵심 과제 진척 사항', monthly: monthLabel, progress: '연간 진척율' }
+  // 신호등 범례 (우측 상단): 초록 100%↑ / 주황 80%↑ / 빨강 80%↓
+  const legendItems = lang === 'en'
+    ? [['#16A34A', '≥100%'], ['#D97706', '≥80%'], ['#DC2626', '<80%']]
+    : [['#16A34A', '100% 이상'], ['#D97706', '80% 이상'], ['#DC2626', '80% 미만']]
+  const legendHtml = legendItems.map(([col, lbl]) => `
+        <td style="padding:0 0 0 10px;white-space:nowrap;vertical-align:middle;">
+          <table border="0" cellpadding="0" cellspacing="0" style="display:inline-table;"><tr>
+            <td width="9" style="background:${col};border-radius:50%;height:9px;font-size:0;line-height:0;">&nbsp;</td>
+            <td style="padding-left:4px;font-size:10px;color:#64748B;font-family:${EM_FONT};">${lbl}</td>
+          </tr></table>
+        </td>`).join('')
+  // 신호등: 100% 이상 초록 / 80% 이상 주황 / 80% 미만 빨강
   function statusColor(rate) {
-    if (rate >= 80) return { bg: '#F0FDF4', border: '#BBF7D0', bar: '#16A34A', text: '#15803D' }
-    if (rate >= 50) return { bg: '#FFFBEB', border: '#FDE68A', bar: '#D97706', text: '#B45309' }
+    if (rate >= 100) return { bg: '#F0FDF4', border: '#BBF7D0', bar: '#16A34A', text: '#15803D' }
+    if (rate >= 80) return { bg: '#FFFBEB', border: '#FDE68A', bar: '#D97706', text: '#B45309' }
     return { bg: '#FEF2F2', border: '#FECACA', bar: '#DC2626', text: '#BE123C' }
   }
   const cards = categoryStats.map(c => {
     const ms = statusColor(c.monthRate || 0)
     const ps = statusColor(c.progressRate || 0)
-    const prevMonthRate = c.prevMonthRate
-    const hasPrev = prevMonthRate != null && prevMonthRate > 0
-    const delta = hasPrev ? +((c.monthRate || 0) - prevMonthRate).toFixed(1) : null
-    const deltaColor = delta == null ? '#94A3B8' : delta > 0 ? '#16A34A' : delta < 0 ? '#DC2626' : '#94A3B8'
-    const deltaArrow = delta == null ? '' : delta > 0 ? '▲' : delta < 0 ? '▼' : '─'
     return `<td width="50%" valign="top" style="padding:6px;">
       <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFFFFF;border:1.5px solid #E8EDF2;border-radius:10px;">
         <tr><td style="padding:12px 14px;">
@@ -1809,7 +1816,7 @@ function categoryCardsHtml(categoryStats, lang, meta) {
           <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom:4px;">
             <tr>
               <td style="font-size:11px;color:#64748B;font-family:${EM_FONT};">${t.monthly} <span style="color:#94A3B8;">(${fmtN(c.monthActual)}/${fmtN(c.monthGoal)})</span></td>
-              <td align="right" style="font-size:13px;font-weight:700;color:${ms.text};font-family:${EM_FONT};">${(c.monthRate || 0).toFixed(0)}%${hasPrev ? ` <span style="font-size:10px;font-weight:700;color:${deltaColor};">${deltaArrow}${Math.abs(delta).toFixed(0)}%p</span>` : ''}</td>
+              <td align="right" style="font-size:13px;font-weight:700;color:${ms.text};font-family:${EM_FONT};">${(c.monthRate || 0).toFixed(0)}%</td>
             </tr>
           </table>
           <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#F1F5F9;border-radius:3px;margin-bottom:6px;">
@@ -1819,14 +1826,7 @@ function categoryCardsHtml(categoryStats, lang, meta) {
               </table>
             </td></tr>
           </table>
-          ${hasPrev ? `
-          <!-- 전월 -->
-          <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom:8px;">
-            <tr>
-              <td style="font-size:10px;color:#94A3B8;font-family:${EM_FONT};">${t.prev}</td>
-              <td align="right" style="font-size:11px;font-weight:600;color:#64748B;font-family:${EM_FONT};">${prevMonthRate.toFixed(0)}%</td>
-            </tr>
-          </table>` : '<div style="height:8px"></div>'}
+          <div style="height:8px"></div>
           <!-- 진척율 -->
           <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom:4px;">
             <tr>
@@ -1854,9 +1854,16 @@ function categoryCardsHtml(categoryStats, lang, meta) {
   }
   return `
   <div style="margin-bottom:18px;">
-    <table border="0" cellpadding="0" cellspacing="0" style="margin-bottom:12px;"><tr>
-      <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
-      <td style="padding-left:8px;font-size:16px;font-weight:800;color:#0F172A;font-family:${EM_FONT};">${t.title}</td>
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom:12px;"><tr>
+      <td valign="middle">
+        <table border="0" cellpadding="0" cellspacing="0"><tr>
+          <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
+          <td style="padding-left:8px;font-size:16px;font-weight:800;color:#0F172A;font-family:${EM_FONT};">${t.title}</td>
+        </tr></table>
+      </td>
+      <td align="right" valign="middle">
+        <table border="0" cellpadding="0" cellspacing="0"><tr>${legendHtml}</tr></table>
+      </td>
     </tr></table>
     <table border="0" cellpadding="0" cellspacing="0" width="100%">${rows.join('')}</table>
   </div>`
