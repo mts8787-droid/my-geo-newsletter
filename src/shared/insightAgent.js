@@ -10,7 +10,7 @@ const PROMPT_ROOT = join(__dirname, '..', '..', 'prompts')
 
 export const INSIGHT_ARCHIVE_LIMIT = 12
 export const INSIGHT_PAST_EXAMPLES = 3
-export const INSIGHT_DEFAULT_MODEL = 'claude-sonnet-4-5-20251001'
+export const INSIGHT_DEFAULT_MODEL = 'claude-opus-4-7'
 export const INSIGHT_DEFAULT_MAX_TOKENS = 4096
 export const INSIGHT_DEFAULT_MAX_RETRIES = 3
 export const INSIGHT_MIN_OUTPUT_LENGTH = 30
@@ -22,9 +22,9 @@ export const REFUSAL_PATTERNS = [
   /답변(?:을)?\s*드릴\s*수\s*없습니다/,
   /응답할\s*수\s*없습니다/,
 ]
-// Claude Sonnet 4.5 단가 (per 1M tokens)
-export const CLAUDE_INPUT_USD_PER_1M = 3
-export const CLAUDE_OUTPUT_USD_PER_1M = 15
+// Claude Opus 4.7 단가 (per 1M tokens)
+export const CLAUDE_INPUT_USD_PER_1M = 15
+export const CLAUDE_OUTPUT_USD_PER_1M = 75
 
 // type → archives 키 매핑
 export const ARCHIVE_KEY_MAP = {
@@ -106,7 +106,7 @@ export function wrapUserPrompt(rawPrompt) {
   return `<untrusted_data>\n${rawPrompt}\n</untrusted_data>`
 }
 
-// Claude Sonnet 4.5 단가 기준 비용 계산.
+// Claude Opus 4.7 단가 기준 비용 계산.
 // Anthropic 프롬프트 캐싱 단가 보정 — cache write (creation): ×1.25, cache read: ×0.1 (90% 할인).
 export function estimateCostUsd(inputTokens, outputTokens, cacheCreationTokens = 0, cacheReadTokens = 0) {
   return +(

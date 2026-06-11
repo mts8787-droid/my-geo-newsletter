@@ -112,8 +112,8 @@ describe('wrapUserPrompt', () => {
 })
 
 describe('estimateCostUsd', () => {
-  it('Sonnet 단가($3 in / $15 out per 1M)로 비용 계산', () => {
-    expect(estimateCostUsd(1000, 500)).toBe(0.0105) // 0.003 + 0.0075
+  it('Opus 단가($15 in / $75 out per 1M)로 비용 계산', () => {
+    expect(estimateCostUsd(1000, 500)).toBe(0.0525) // 0.015 + 0.0375
   })
 
   it('0 토큰은 0 USD', () => {
@@ -199,20 +199,20 @@ describe('callClaudeInsight (C8)', () => {
     const result = await callClaudeInsight({
       client: fakeClient,
       systemPrompt: 's', userPrompt: 'u',
-      model: 'claude-sonnet-4-5-20251001', maxTokens: 1000,
+      model: 'claude-opus-4-7', maxTokens: 1000,
     })
     expect(result.insight).toBe('본문')
     expect(result.inputTokens).toBe(1500)
     expect(result.outputTokens).toBe(400)
     expect(result.stopReason).toBe('end_turn')
-    expect(result.costUsd).toBeCloseTo(1500 * 3 / 1_000_000 + 400 * 15 / 1_000_000, 6)
+    expect(result.costUsd).toBeCloseTo(1500 * 15 / 1_000_000 + 400 * 75 / 1_000_000, 6)
     expect(result.latencyMs).toBeGreaterThanOrEqual(0)
   })
 })
 
 describe('상수', () => {
-  it('기본 모델은 Sonnet 4.5', () => {
-    expect(INSIGHT_DEFAULT_MODEL).toMatch(/sonnet-4-5/)
+  it('기본 모델은 Opus 4.7', () => {
+    expect(INSIGHT_DEFAULT_MODEL).toMatch(/opus-4-7/)
   })
 
   it('ARCHIVE_KEY_MAP은 적어도 핵심 키들을 가진다', () => {
