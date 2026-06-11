@@ -1566,6 +1566,19 @@ export function generateDashboardHTML(meta, total, products, citations, dotcom, 
   const visContent = weeklyContent
   // Citation 탭은 iframe으로 별도 사이테이션 페이지를 가져옴
 
+  // PR 탭: 주간/월간을 한 패널 안에서 내부 토글로 전환 (GNB 탭은 'PR' 하나로 통합)
+  // 주간(P='pr')·월간(P='prm')은 엘리먼트 id 네임스페이스가 달라 한 패널에 같이 렌더해도 충돌 X
+  const prToggleBtnBase = `border:none;border-radius:6px;padding:6px 18px;font-size:14px;font-weight:700;cursor:pointer;font-family:${FONT}`
+  const prPanelHtml = `
+    <div style="max-width:1400px;margin:0 auto;padding:16px 40px 0">
+      <div style="display:inline-flex;gap:2px;background:#1E293B;border-radius:8px;padding:3px">
+        <button id="pr-period-w-btn" onclick="switchPRPeriod('weekly')" style="${prToggleBtnBase};background:#fff;color:#0F172A">${lang === 'en' ? 'Weekly' : '주간'}</button>
+        <button id="pr-period-m-btn" onclick="switchPRPeriod('monthly')" style="${prToggleBtnBase};background:transparent;color:#94A3B8">${lang === 'en' ? 'Monthly' : '월간'}</button>
+      </div>
+    </div>
+    <div id="pr-period-weekly">${prVisibilityTabHtml(extra?.weeklyPR, extra?.weeklyPRLabels, lang, meta, extra?.appendixPrompts, extra)}</div>
+    <div id="pr-period-monthly" style="display:none">${prVisibilityTabHtml(extra?.monthlyPR, extra?.monthlyPRLabels, lang, meta, extra?.appendixPrompts, extra, 'monthly')}</div>`
+
   return `<!DOCTYPE html>
 <html lang="${lang === 'en' ? 'en' : 'ko'}">
 <head>
@@ -1579,8 +1592,7 @@ export function generateDashboardHTML(meta, total, products, citations, dotcom, 
 ${visibilityOnly ? `
 <div id="gnb-visibility" class="gnb-sub active" style="position:sticky;top:0;z-index:99">
   <button class="gnb-sub-btn active" onclick="switchVisSub('bu')">${lang === 'en' ? 'Business Division' : '사업본부'}</button>
-  <button class="gnb-sub-btn" onclick="switchVisSub('pr')">${lang === 'en' ? 'PR (Weekly)' : 'PR (주간)'}</button>
-  <button class="gnb-sub-btn" onclick="switchVisSub('prmonthly')">${lang === 'en' ? 'PR (Monthly)' : 'PR (월간)'}</button>
+  <button class="gnb-sub-btn" onclick="switchVisSub('pr')">PR</button>
   <button class="gnb-sub-btn" onclick="switchVisSub('brandprompt')">${lang === 'en' ? 'Brand Prompt Anomaly Check' : 'Brand Prompt 이상 점검'}</button>
 </div>
 <div id="vis-sub-bu" class="vis-sub-panel">
@@ -1589,10 +1601,7 @@ ${visibilityOnly ? `
   <div id="bu-monthly-content" class="dash-container" style="display:none">${monthlyContent}</div>
 </div>
 <div id="vis-sub-pr" class="vis-sub-panel" style="display:none">
-  ${prVisibilityTabHtml(extra?.weeklyPR, extra?.weeklyPRLabels, lang, meta, extra?.appendixPrompts, extra)}
-</div>
-<div id="vis-sub-prmonthly" class="vis-sub-panel" style="display:none">
-  ${prVisibilityTabHtml(extra?.monthlyPR, extra?.monthlyPRLabels, lang, meta, extra?.appendixPrompts, extra, 'monthly')}
+  ${prPanelHtml}
 </div>
 <div id="vis-sub-brandprompt" class="vis-sub-panel" style="display:none">
   ${brandPromptTabHtml(extra?.weeklyBrandPrompt, extra?.weeklyBrandPromptLabels, lang, null, lang === 'en' ? 'Brand Prompt Anomaly Check' : 'Brand Prompt 이상 점검', meta)}
@@ -1614,8 +1623,7 @@ ${visibilityOnly ? `
 </div>
 <div id="gnb-visibility" class="gnb-sub active">
   <button class="gnb-sub-btn active" onclick="switchVisSub('bu')">${lang === 'en' ? 'Business Division' : '사업본부'}</button>
-  <button class="gnb-sub-btn" onclick="switchVisSub('pr')">${lang === 'en' ? 'PR (Weekly)' : 'PR (주간)'}</button>
-  <button class="gnb-sub-btn" onclick="switchVisSub('prmonthly')">${lang === 'en' ? 'PR (Monthly)' : 'PR (월간)'}</button>
+  <button class="gnb-sub-btn" onclick="switchVisSub('pr')">PR</button>
   <button class="gnb-sub-btn" onclick="switchVisSub('brandprompt')">${lang === 'en' ? 'Brand Prompt Anomaly Check' : 'Brand Prompt 이상 점검'}</button>
 </div>
 <div id="gnb-citation" class="gnb-sub">
@@ -1630,10 +1638,7 @@ ${visibilityOnly ? `
     <div id="bu-monthly-content" class="dash-container" style="display:none">${monthlyContent}</div>
   </div>
   <div id="vis-sub-pr" class="vis-sub-panel" style="display:none">
-    ${prVisibilityTabHtml(extra?.weeklyPR, extra?.weeklyPRLabels, lang, meta, extra?.appendixPrompts, extra)}
-  </div>
-  <div id="vis-sub-prmonthly" class="vis-sub-panel" style="display:none">
-    ${prVisibilityTabHtml(extra?.monthlyPR, extra?.monthlyPRLabels, lang, meta, extra?.appendixPrompts, extra, 'monthly')}
+    ${prPanelHtml}
   </div>
   <div id="vis-sub-brandprompt" class="vis-sub-panel" style="display:none">
     ${brandPromptTabHtml(extra?.weeklyBrandPrompt, extra?.weeklyBrandPromptLabels, lang, null, lang === 'en' ? 'Brand Prompt Anomaly Check' : 'Brand Prompt 이상 점검', meta)}

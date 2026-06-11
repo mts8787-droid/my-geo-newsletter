@@ -108,6 +108,16 @@ function switchVisSub(sub){
   var subMap={bu:0,pr:1,brandprompt:2};
   if(subMap[sub]!==undefined&&btns[subMap[sub]])btns[subMap[sub]].classList.add('active');
 }
+function switchPRPeriod(mode){
+  var wp=document.getElementById('pr-period-weekly');
+  var mp=document.getElementById('pr-period-monthly');
+  if(wp)wp.style.display=mode==='weekly'?'':'none';
+  if(mp)mp.style.display=mode==='monthly'?'':'none';
+  var wb=document.getElementById('pr-period-w-btn');
+  var mb=document.getElementById('pr-period-m-btn');
+  if(wb){wb.style.background=mode==='weekly'?'#fff':'transparent';wb.style.color=mode==='weekly'?'#0F172A':'#94A3B8'}
+  if(mb){mb.style.background=mode==='monthly'?'#fff':'transparent';mb.style.color=mode==='monthly'?'#0F172A':'#94A3B8'}
+}
 function switchPeriodPage(mode){
   _periodMode=mode;
   var wc=document.getElementById('bu-weekly-content');
