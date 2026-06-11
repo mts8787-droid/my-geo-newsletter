@@ -1,6 +1,21 @@
 // ─── AI 인사이트 생성용 프롬프트 빌더 ─────────────────────────────────────────
 // server.js와 vite dev plugin에서 공유
 
+import { NAME_TO_PROD_ID, RAW_TO_PROD_ID, PROD_ID_TO_UL_CODE } from '../categoryMap.js'
+
+// 미출시 (country|UL_CODE) 행 제외 — 미출시국 데이터는 AI 분석 입력에서 제거
+function excludeUnlaunched(productsCnty, unlaunchedMap) {
+  if (!unlaunchedMap || !Object.keys(unlaunchedMap).length) return productsCnty || []
+  return (productsCnty || []).filter(r => {
+    const raw = String(r.product || '').trim()
+    const prodId = NAME_TO_PROD_ID[raw] || RAW_TO_PROD_ID[raw] || raw.toLowerCase()
+    const code = PROD_ID_TO_UL_CODE[prodId]
+    return !(code && unlaunchedMap[`${r.country}|${code}`])
+  })
+}
+
+const NO_UNLAUNCHED_COMMENT = '[필수: 미출시 국가×제품 데이터는 입력에서 제외되었음 — 미출시 관련 언급·코멘트·각주를 절대 작성하지 말 것]'
+
 function buProductSummary(products) {
   const buMap = {}
   products.forEach(p => {
@@ -89,7 +104,7 @@ ${comparison}`
 
   if (type === 'cnty') {
     const cntyMap = {}
-    ;(data.productsCnty || []).forEach(r => {
+    excludeUnlaunched(data.productsCnty, data.unlaunchedMap).forEach(r => {
       if (!cntyMap[r.country]) cntyMap[r.country] = []
       cntyMap[r.country].push(r)
     })
@@ -108,7 +123,8 @@ ${comparison}`
 ${list}
 
 [필수: 모든 국가를 포함하여 분석할 것]
-[필수: 경쟁비, 점수 등 수치는 위 [공식수치]만 사용]`
+[필수: 경쟁비, 점수 등 수치는 위 [공식수치]만 사용]
+${NO_UNLAUNCHED_COMMENT}`
   }
 
   if (type === 'citDomain') {
@@ -189,7 +205,7 @@ ${summary}
 
   if (type === 'totalInsight') {
     const products = data.products || []
-    const productsCnty = data.productsCnty || []
+    const productsCnty = excludeUnlaunched(data.productsCnty, data.unlaunchedMap)
     const t = data.total || {}
     const leads = products.filter(p => p.status === 'lead')
     const criticals = products.filter(p => p.status === 'critical')
@@ -222,12 +238,13 @@ ${data.todoText ? `\n액션아이템 (인사이트 마지막에 1~2줄로 요약
 [필수: 모든 본부(MS, HS, ES)를 빠짐없이 분석할 것]
 [필수: 주요 수치에 전월 대비 증감을 반드시 포함 — 예: "42.7%(전월 대비 +1.2%p)"]
 [필수: 인사이트 마지막에 위 액션아이템의 핵심 1~2개를 한 줄로 요약 추가]
-[주의: 전체 수치는 "전체 LG Visibility" 값 사용. 제품별 평균이 아님]`
+[주의: 전체 수치는 "전체 LG Visibility" 값 사용. 제품별 평균이 아님]
+${NO_UNLAUNCHED_COMMENT}`
   }
 
   if (type === 'monthlyReportBody') {
     const products = data.products || []
-    const productsCnty = data.productsCnty || []
+    const productsCnty = excludeUnlaunched(data.productsCnty, data.unlaunchedMap)
     const citations = data.citations || []
     const t = data.total || {}
     const period = data.period || ''
@@ -266,7 +283,8 @@ ${todoText ? `\n기존 Action Plan 메모 (3번 섹션 작성 시 참고):\n${to
 [필수: 모든 권역(북미/유럽/중남미/아시아) 빠짐없이 포함]
 [필수: 1·2·3 번호 매김 헤딩, 2.1·2.2·2.3 서브 헤딩 형식 준수]
 [필수: 3번 섹션 액션 아이템은 ①②③④⑤ 원형 숫자로 시작]
-[주의: 임원 보고용 톤 — 객관적·구체적 수치 인용]`
+[주의: 임원 보고용 톤 — 객관적·구체적 수치 인용]
+${NO_UNLAUNCHED_COMMENT}`
   }
 
   if (type === 'howToRead') {

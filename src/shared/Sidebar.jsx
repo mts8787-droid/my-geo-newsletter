@@ -1159,6 +1159,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
                       citations: getLatestData().citations,
                       todoText: meta.todoText || '',
                       period: meta.period || '',
+                      unlaunchedMap: getLatestData().extra?.unlaunchedMap || {},
                     }, previewLang)
                     setMeta(m => ({ ...m, monthlyReportBody: insight }))
                   } catch (err) { console.error('[AI]', err); setMeta(m => ({ ...m, monthlyReportBody: `[AI 실패: ${err.message}]` })) }
@@ -1190,7 +1191,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
           <button onClick={async () => {
               try {
                 setMeta(m => ({ ...m, totalInsight: '⏳ AI 생성 중...' }))
-                const insight = await generateAIInsight('totalInsight', { products: getLatestData().products, productsCnty: getLatestData().productsCnty, total: getLatestData().total, todoText: meta.todoText || '' }, previewLang)
+                const insight = await generateAIInsight('totalInsight', { products: getLatestData().products, productsCnty: getLatestData().productsCnty, total: getLatestData().total, todoText: meta.todoText || '', unlaunchedMap: getLatestData().extra?.unlaunchedMap || {} }, previewLang)
                 setMeta(m => ({ ...m, totalInsight: insight }))
               } catch (err) { console.error('[AI]', err); setMeta(m => ({ ...m, totalInsight: `[AI 실패: ${err.message}]` })) }
             }}
@@ -1284,7 +1285,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
             <button onClick={async () => {
                 try {
                   setMeta(m => ({ ...m, cntyInsight: '⏳ AI 생성 중...' }))
-                  const insight = await generateAIInsight('cnty', { productsCnty: getLatestData().productsCnty }, previewLang)
+                  const insight = await generateAIInsight('cnty', { productsCnty: getLatestData().productsCnty, unlaunchedMap: getLatestData().extra?.unlaunchedMap || {} }, previewLang)
                   setMeta(m => ({ ...m, cntyInsight: insight }))
                 } catch (err) { console.error('[AI]', err); setMeta(m => ({ ...m, cntyInsight: `[AI 실패: ${err.message}]` })) }
               }}
