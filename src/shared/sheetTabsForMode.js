@@ -26,7 +26,7 @@ export const TABS_FOR_MODE = {
     S.appendix, S.unlaunched, S.prTopicList,
   ],
   newsletter: [
-    S.meta, S.visSummary, S.citTouchPoints, S.citPageType,
+    S.meta, S.visSummary, S.citTouchPoints, S.citDomain, S.citPageType,
     S.productMS, S.productHS, S.productES,
     S.weeklyMS, S.weeklyHS, S.weeklyES,
     S.unlaunched,

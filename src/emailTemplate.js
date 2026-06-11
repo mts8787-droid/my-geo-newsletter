@@ -1249,126 +1249,100 @@ function dotcomSectionHtml(dotcom, meta, lang = 'ko') {
               </tr>`
 }
 
-// ─── 외부접점채널 범프차트 (월간 트렌드) ──────────────────────────────────
-// 이메일 호환: SVG-only 금지 → SVG + 하단 실수치 테이블 병행 (citationTemplate.js citCategoryBumpChartHtml 패턴)
+// ─── 범프차트 (월간 트렌드) — 이메일/Outlook 호환 ──────────────────────────────
+// SVG 는 Outlook(2007~2019) 미렌더 → table-layout rank-grid 로 대체.
+// rank-grid: 행=순위(#1..#N), 열=월. 각 셀은 그 시점·순위 항목의 컬러 pill.
+//   같은 색을 열 따라 훑으면 순위 이동(범프)이 보임. 하단 실수치 테이블이 범례 겸 정확값.
+// 두 테이블이 동일 colgroup(table-layout:fixed) 공유 → 월 X좌표 정렬 (§5.16).
 const TP_BUMP_COLORS = ['#CF0652', '#1D4ED8', '#059669', '#D97706', '#7C3AED', '#DB2777', '#0D9488', '#EA580C', '#4F46E5', '#DC2626', '#0891B2', '#65A30D']
 const TP_TREND_12M = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 const TP_BUMP_MAX = 10
+const TP_TREND_RECENT = 4  // 최근 4개월
 
-function tpBumpChartSvg(names, rankings, months) {
-  const fixedRanks = TP_BUMP_MAX
-  const ROW_H = 52
-  const EXT_L = 80
-  const EXT_R = 20
-  const W = Math.max(months.length * 200, 600) + EXT_L + EXT_R
-  const padT = 0, padB = 30
-  const H = fixedRanks * ROW_H + padT + padB
-  const padL = 10 + EXT_L, padR = 10 + EXT_R
-  const chartW = W - padL - padR
-  const chartH = H - padT - padB
-  const ribbonW = ROW_H * 0.38
-  const RND = ribbonW
-
-  let svg = `<svg viewBox="0 0 ${W} ${H}" width="100%" preserveAspectRatio="xMidYMid meet" style="font-family:${EM_FONT};display:block">`
-
-  const sortedNames = [...names].sort((a, b) => {
-    const lastM = months[months.length - 1]
-    return (rankings[b]?.[lastM] || 999) - (rankings[a]?.[lastM] || 999)
-  })
-
-  sortedNames.forEach((name) => {
-    const color = TP_BUMP_COLORS[names.indexOf(name) % TP_BUMP_COLORS.length]
-    const points = []
-    months.forEach((m, i) => {
-      const rank = rankings[name]?.[m]
-      if (rank != null && rank <= fixedRanks) {
-        const x = padL + (i / Math.max(months.length - 1, 1)) * chartW
-        const y = padT + ((rank - 0.5) / fixedRanks) * chartH
-        points.push({ x, y })
-      }
-    })
-    if (points.length < 1) return
-
-    const first = points[0], last = points[points.length - 1]
-    const leftX = first.x - EXT_L
-    const rightX = last.x + EXT_R
-    const extPts = [{ x: leftX + RND, y: first.y }, ...points, { x: rightX - RND, y: last.y }]
-
-    let upper = '', lower = ''
-    for (let i = 0; i < extPts.length; i++) {
-      const p = extPts[i]
-      if (i === 0) {
-        upper += `M${p.x - RND},${p.y} A${RND},${ribbonW} 0 0,1 ${p.x},${p.y - ribbonW}`
-        lower = `L${p.x},${p.y + ribbonW} A${RND},${ribbonW} 0 0,1 ${p.x - RND},${p.y}`
-      } else {
-        const prev = extPts[i - 1]
-        const cx = (prev.x + p.x) / 2
-        upper += ` C${cx},${prev.y - ribbonW} ${cx},${p.y - ribbonW} ${p.x},${p.y - ribbonW}`
-        lower = ` C${cx},${p.y + ribbonW} ${cx},${prev.y + ribbonW} ${prev.x},${prev.y + ribbonW}` + lower
-      }
-    }
-    const lastExt = extPts[extPts.length - 1]
-    const ribbonPath = upper + ` A${RND},${ribbonW} 0 0,1 ${lastExt.x + RND},${lastExt.y}` + ` A${RND},${ribbonW} 0 0,1 ${lastExt.x},${lastExt.y + ribbonW}` + lower + ' Z'
-    svg += `<path d="${ribbonPath}" fill="${color}" opacity="0.6" stroke="${color}" stroke-width="0.5" stroke-opacity="0.3"/>`
-  })
-
-  names.forEach((name) => {
-    months.forEach((m, i) => {
-      const rank = rankings[name]?.[m]
-      if (rank == null || rank > fixedRanks) return
-      const x = padL + (i / Math.max(months.length - 1, 1)) * chartW
-      const y = padT + ((rank - 0.5) / fixedRanks) * chartH
-      svg += `<text x="${x}" y="${y + 8}" text-anchor="middle" fill="#0F172A" font-size="22" font-weight="700">${name}</text>`
-    })
-  })
-
-  months.forEach((m, i) => {
-    const x = padL + (i / Math.max(months.length - 1, 1)) * chartW
-    svg += `<line x1="${x}" y1="${padT + chartH + 2}" x2="${x}" y2="${padT + chartH + 8}" stroke="#94A3B8" stroke-width="1.5"/>`
-    svg += `<text x="${x}" y="${padT + chartH + 26}" text-anchor="middle" fill="#475569" font-size="26" font-weight="800">${m}</text>`
-  })
-
-  svg += '</svg>'
-  return svg
+// 도메인 라벨에서 TLD 제거 (pill 좁은 셀 호환)
+function emStripDomain(d) {
+  return String(d || '').replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\.(com|net|org|io|co|kr|jp|us|uk|de|fr|cn|in|br)(\.[a-z]{2})?$/i, '')
+}
+// pill/라벨용 짧은 이름
+function emShortName(name) {
+  const s = String(name || '')
+  return s.length > 10 ? s.slice(0, 9) + '…' : s
 }
 
-function touchPointsBumpSectionHtml(citTouchPointsTrend, citTrendMonths, meta, lang = 'ko') {
-  if (!citTouchPointsTrend || !citTrendMonths || !citTrendMonths.length) return ''
+// 이메일 호환 범프 섹션 카드 1개 생성 (rank-grid + 실수치 테이블)
+//   trend: { itemName: { monthLabel: value } } 형태로 정규화된 객체
+function bumpEmailSectionHtml(trend, titleText, headerLabel, lang, opts = {}) {
+  if (!trend) return ''
   const t = T[lang] || T.ko
-  const months = TP_TREND_12M
-  const entries = Object.entries(citTouchPointsTrend)
+  const months12 = TP_TREND_12M
+  const entries = Object.entries(trend)
   if (!entries.length) return ''
 
-  // 최신 데이터 월 기준 Top 10 선정
-  const lastDataMonth = [...months].reverse().find(m => entries.some(([, d]) => d[m] > 0)) || months[months.length - 1]
-  const topEntries = [...entries].sort((a, b) => (b[1][lastDataMonth] || 0) - (a[1][lastDataMonth] || 0)).slice(0, TP_BUMP_MAX)
-  const topNames = new Set(topEntries.map(([n]) => n))
+  // 데이터 있는 월만 → 최근 4개월
+  const monthsWithData = months12.filter(m => entries.some(([, d]) => (d[m] || 0) > 0))
+  const months = monthsWithData.slice(-TP_TREND_RECENT)
+  if (!months.length) return ''
 
+  const lastDataMonth = months[months.length - 1]
+  const topEntries = [...entries]
+    .sort((a, b) => (b[1][lastDataMonth] || 0) - (a[1][lastDataMonth] || 0))
+    .slice(0, TP_BUMP_MAX)
+
+  // 월별 순위 계산
   const rankings = {}
   months.forEach(m => {
-    const scored = topEntries.map(([name, data]) => ({ name, score: data[m] || 0 }))
+    topEntries.map(([name, data]) => ({ name, score: data[m] || 0 }))
       .filter(e => e.score > 0)
       .sort((a, b) => b.score - a.score)
-    scored.forEach((e, i) => {
-      if (!rankings[e.name]) rankings[e.name] = {}
-      rankings[e.name][m] = i + 1
-    })
+      .forEach((e, i) => {
+        if (!rankings[e.name]) rankings[e.name] = {}
+        rankings[e.name][m] = i + 1
+      })
   })
 
-  const names = Object.keys(rankings).filter(n => topNames.has(n))
+  const names = topEntries.map(([n]) => n).filter(n => rankings[n])
   if (!names.length) return ''
+  const colorOf = name => TP_BUMP_COLORS[names.indexOf(name) % TP_BUMP_COLORS.length]
+  const shortFn = opts.shortFn || emShortName
 
-  const svg = tpBumpChartSvg(names, rankings, months)
+  const maxRank = Math.min(names.length, TP_BUMP_MAX)
+  // rankByMonth[m][r] = 그 달의 r위 항목명
+  const rankByMonth = {}
+  months.forEach(m => {
+    rankByMonth[m] = {}
+    names.forEach(n => { const r = rankings[n]?.[m]; if (r != null) rankByMonth[m][r] = n })
+  })
 
-  // 하단 실수치 테이블 — 인라인 style 만 (Gmail 이 <style> 제거)
-  const thStyle = `font-size:10px;font-weight:700;color:#64748B;font-family:${EM_FONT};padding:6px 2px;text-align:center;border-bottom:1px solid #E8EDF2;white-space:nowrap;`
-  let table = `<table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;border-collapse:collapse;">
-    <tr><td width="92" style="${thStyle}text-align:left;">${lang === 'ko' ? '채널' : 'Channel'}</td>${months.map(m => `<td style="${thStyle}">${m}</td>`).join('')}</tr>`
-  names.forEach((name, ni) => {
-    const color = TP_BUMP_COLORS[ni % TP_BUMP_COLORS.length]
-    table += `<tr><td style="font-size:10px;font-weight:700;color:#334155;font-family:${EM_FONT};padding:5px 2px;border-bottom:1px solid #F1F5F9;white-space:nowrap;overflow:hidden;"><span style="display:inline-block;width:7px;height:7px;border-radius:2px;background:${color};">&nbsp;</span>&nbsp;${name}</td>`
+  // 두 테이블 공유 colgroup — 월 X좌표 정렬 (§5.16)
+  const colGroup = `<colgroup><col style="width:96px;"/>${months.map(() => '<col/>').join('')}</colgroup>`
+  const monthThStyle = `font-size:11px;font-weight:800;color:#475569;font-family:${EM_FONT};padding:6px 2px;text-align:center;border-bottom:2px solid #E8EDF2;white-space:nowrap;`
+  const cornerStyle = `font-size:10px;font-weight:700;color:#94A3B8;font-family:${EM_FONT};padding:6px 4px;text-align:left;border-bottom:2px solid #E8EDF2;white-space:nowrap;`
+
+  // ── rank-grid (행=순위, 열=월) ──
+  let grid = `<table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;border-collapse:collapse;">${colGroup}`
+  grid += `<tr><td style="${cornerStyle}">${lang === 'ko' ? '순위' : 'Rank'}</td>${months.map(m => `<td style="${monthThStyle}">${m}</td>`).join('')}</tr>`
+  for (let r = 1; r <= maxRank; r++) {
+    grid += `<tr><td style="font-size:11px;font-weight:800;color:#64748B;font-family:${EM_FONT};padding:4px;text-align:left;border-bottom:1px solid #F1F5F9;white-space:nowrap;">#${r}</td>`
     months.forEach(m => {
-      const val = citTouchPointsTrend[name]?.[m]
+      const n = rankByMonth[m][r]
+      const cellStyle = `padding:4px 2px;text-align:center;border-bottom:1px solid #F1F5F9;`
+      if (!n) { grid += `<td style="${cellStyle}"><span style="color:#E2E8F0;font-size:11px;">·</span></td>`; return }
+      const c = colorOf(n)
+      grid += `<td style="${cellStyle}"><span style="display:inline-block;background:${c};color:#FFFFFF;border-radius:5px;padding:3px 5px;font-size:10px;font-weight:700;font-family:${EM_FONT};white-space:nowrap;">${shortFn(n)}</span></td>`
+    })
+    grid += '</tr>'
+  }
+  grid += '</table>'
+
+  // ── 하단 실수치 테이블 (범례 겸) ──
+  const thStyle = `font-size:10px;font-weight:700;color:#64748B;font-family:${EM_FONT};padding:6px 2px;text-align:center;border-bottom:1px solid #E8EDF2;white-space:nowrap;`
+  let table = `<table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;border-collapse:collapse;">${colGroup}`
+  table += `<tr><td style="${thStyle}text-align:left;">${headerLabel}</td>${months.map(m => `<td style="${thStyle}">${m}</td>`).join('')}</tr>`
+  names.forEach(name => {
+    const color = colorOf(name)
+    table += `<tr><td style="font-size:10px;font-weight:700;color:#334155;font-family:${EM_FONT};padding:5px 2px;border-bottom:1px solid #F1F5F9;white-space:nowrap;overflow:hidden;"><span style="display:inline-block;width:7px;height:7px;border-radius:2px;background:${color};">&nbsp;</span>&nbsp;${shortFn(name)}</td>`
+    months.forEach(m => {
+      const val = trend[name]?.[m]
       const rank = rankings[name]?.[m]
       table += `<td style="font-size:10px;font-family:${EM_FONT};padding:5px 1px;text-align:center;border-bottom:1px solid #F1F5F9;white-space:nowrap;">${val != null && rank != null
         ? `<span style="font-weight:700;color:#334155;">${fmtMan(val, lang)}</span><br/><span style="font-size:9px;color:#94A3B8;">#${rank}</span>`
@@ -1379,7 +1353,7 @@ function touchPointsBumpSectionHtml(citTouchPointsTrend, citTrendMonths, meta, l
   table += '</table>'
 
   return `
-              <!-- ══ 외부접점채널 범프차트 (월간 트렌드) ══ -->
+              <!-- ══ ${titleText} (월간 트렌드 · 범프) ══ -->
               <tr>
                 <td style="padding-bottom:28px;">
                   <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFFFFF;border-radius:16px;border:2px solid #E8EDF2;">
@@ -1389,18 +1363,55 @@ function touchPointsBumpSectionHtml(citTouchPointsTrend, citTrendMonths, meta, l
                           <td style="vertical-align:middle;">
                             <table border="0" cellpadding="0" cellspacing="0"><tr>
                               <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
-                              <td style="padding-left:8px;font-size:16px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${t.touchPointTitle} — ${t.monthTrend}</td>
+                              <td style="padding-left:8px;font-size:16px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${titleText} — ${t.monthTrend}</td>
                             </tr></table>
                           </td>
                           <td align="right" style="vertical-align:middle;font-size:12px;color:#94A3B8;font-family:${EM_FONT};">Top ${names.length}</td>
                         </tr></table>
                       </td>
                     </tr>
-                    <tr><td style="padding:14px 12px 4px;">${svg}</td></tr>
-                    <tr><td style="padding:8px 12px 14px;">${table}</td></tr>
+                    <tr><td style="padding:14px 12px 6px;">${grid}</td></tr>
+                    <tr><td style="padding:6px 12px 14px;">${table}</td></tr>
                   </table>
                 </td>
               </tr>`
+}
+
+// 외부채널(도메인 카테고리) 범프 — citTouchPointsTrend: { name: { monthLabel: value } }
+function touchPointsBumpSectionHtml(citTouchPointsTrend, citTrendMonths, meta, lang = 'ko') {
+  if (!citTouchPointsTrend || !citTrendMonths || !citTrendMonths.length) return ''
+  const t = T[lang] || T.ko
+  return bumpEmailSectionHtml(citTouchPointsTrend, t.touchPointTitle, lang === 'ko' ? '채널' : 'Channel', lang)
+}
+
+// 도메인 범프 — citDomainTrend: { 'cnty|domain': { cnty, domain, type, months:{label:val} } }
+function domainBumpSectionHtml(citDomainTrend, citDomainMonths, meta, lang = 'ko') {
+  if (!citDomainTrend || !citDomainMonths || !citDomainMonths.length) return ''
+  const t = T[lang] || T.ko
+
+  // TTL 국가의 도메인만 사용
+  let rows = Object.entries(citDomainTrend)
+    .filter(([key]) => key.startsWith('TTL|'))
+    .map(([, val]) => ({ domain: val.domain, months: val.months || {} }))
+
+  // TTL 비면 country-aggregated 폴백 (citationTemplate citDomainBumpChartHtml 패턴)
+  if (!rows.length || !rows.some(r => Object.values(r.months).some(v => v > 0))) {
+    const agg = {}
+    Object.entries(citDomainTrend).forEach(([key, val]) => {
+      if (key.startsWith('TTL|')) return
+      const k = val.domain
+      if (!agg[k]) agg[k] = { domain: val.domain, months: {} }
+      Object.entries(val.months || {}).forEach(([m, v]) => { agg[k].months[m] = (agg[k].months[m] || 0) + (v || 0) })
+    })
+    rows = Object.values(agg)
+  }
+  if (!rows.length) return ''
+
+  // bumpEmailSectionHtml 가 기대하는 { name: { monthLabel: value } } 로 정규화
+  const trend = {}
+  rows.forEach(r => { trend[r.domain] = r.months })
+
+  return bumpEmailSectionHtml(trend, t.citationDomainTitle, lang === 'ko' ? '도메인' : 'Domain', lang, { shortFn: emStripDomain })
 }
 
 // ─── 제품별 Citation (Top 3 카테고리 + Top 3 도메인, 본부별 그룹핑 + 막대) ──
@@ -1680,7 +1691,7 @@ function dashboardLinkButtonHtml(lang) {
 export { escapeHtml }
 
 export function generateEmailHTML(meta, total, products, citations, dotcom = {}, lang = 'ko', productsCnty = [], citationsCnty = [], options = {}) {
-  const { containerWidth = 940, showTrendTabs = false, weeklyLabels, categoryStats = null, unlaunchedMap: ulInput = {}, productCardVersion = 'v1', trendMode = 'weekly', llmModel, monthlyVis, citTouchPointsTrend = null, citTrendMonths = [] } = options
+  const { containerWidth = 940, showTrendTabs = false, weeklyLabels, categoryStats = null, unlaunchedMap: ulInput = {}, productCardVersion = 'v1', trendMode = 'weekly', llmModel, monthlyVis, citTouchPointsTrend = null, citTrendMonths = [], citDomainTrend = null, citDomainMonths = [] } = options
   // LLM Model 필터 (2026-06) — 선택 모델로 products/productsCnty/total 재계산
   if (llmModel && llmModel !== 'Total') {
     products = resolveProductsByLlm(products, llmModel)
@@ -2086,6 +2097,8 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
               </tr>` : ''}
 
               ${meta.showTouchPointsBump !== false ? touchPointsBumpSectionHtml(citTouchPointsTrend, citTrendMonths, meta, lang) : ''}
+
+              ${meta.showDomainBump !== false ? domainBumpSectionHtml(citDomainTrend, citDomainMonths, meta, lang) : ''}
 
               ${meta.showDotcom !== false ? dotcomSectionHtml(dotcom, meta, lang) : ''}
 
