@@ -1306,7 +1306,12 @@ function bumpEmailSectionHtml(trend, titleText, headerLabel, lang, opts = {}) {
 
   const names = topEntries.map(([n]) => n).filter(n => rankings[n])
   if (!names.length) return ''
-  const colorOf = name => TP_BUMP_COLORS[names.indexOf(name) % TP_BUMP_COLORS.length]
+  // 기본 회색 — opts.highlight 에 든 항목만 컬러 ('지적 요소만 색')
+  const highlight = Array.isArray(opts.highlight) ? opts.highlight : []
+  const BUMP_GRAY = '#94A3B8'
+  const colorOf = name => highlight.includes(name)
+    ? TP_BUMP_COLORS[names.indexOf(name) % TP_BUMP_COLORS.length]
+    : BUMP_GRAY
   const shortFn = opts.shortFn || emShortName
 
   const maxRank = Math.min(names.length, TP_BUMP_MAX)
@@ -1363,8 +1368,7 @@ function bumpEmailSectionHtml(trend, titleText, headerLabel, lang, opts = {}) {
                         <table border="0" cellpadding="0" cellspacing="0" width="100%"><tr>
                           <td style="vertical-align:middle;">
                             <table border="0" cellpadding="0" cellspacing="0"><tr>
-                              <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
-                              <td style="padding-left:7px;font-size:14px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-0.5px;">${titleText} — ${t.monthTrend}</td>
+                              <td style="font-size:14px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-0.5px;">${titleText} — ${t.monthTrend}</td>
                             </tr></table>
                           </td>
                           <td align="right" style="vertical-align:middle;font-size:11px;color:#94A3B8;font-family:${EM_FONT};white-space:nowrap;">Top ${names.length}</td>
@@ -1409,7 +1413,7 @@ function touchPointsBumpSectionHtml(citTouchPointsTrend, citTrendMonths, meta, l
       renamed[key][m] = (renamed[key][m] || 0) + (v || 0)
     })
   })
-  return bumpEmailSectionHtml(renamed, t.touchPointTitle, lang === 'ko' ? '채널' : 'Channel', lang)
+  return bumpEmailSectionHtml(renamed, t.touchPointTitle, lang === 'ko' ? '채널' : 'Channel', lang, { highlight: meta.bumpHighlight })
 }
 
 // 도메인 범프 — citDomainTrend: { 'cnty|domain': { cnty, domain, type, months:{label:val} } }
@@ -1439,7 +1443,7 @@ function domainBumpSectionHtml(citDomainTrend, citDomainMonths, meta, lang = 'ko
   const trend = {}
   rows.forEach(r => { trend[r.domain] = r.months })
 
-  return bumpEmailSectionHtml(trend, t.citationDomainTitle, lang === 'ko' ? '도메인' : 'Domain', lang, { shortFn: emStripDomain })
+  return bumpEmailSectionHtml(trend, t.citationDomainTitle, lang === 'ko' ? '도메인' : 'Domain', lang, { shortFn: emStripDomain, highlight: meta.bumpHighlight })
 }
 
 // ─── 제품별 Citation (Top 3 카테고리 + Top 3 도메인, 본부별 그룹핑 + 막대) ──
@@ -2105,6 +2109,10 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                               </tr></table>
                             </td>
                           </tr>` : ''}
+                          ${bumpChartsRowHtml(
+                            meta.showTouchPointsBump !== false ? touchPointsBumpSectionHtml(citTouchPointsTrend, citTrendMonths, meta, lang) : '',
+                            meta.showDomainBump !== false ? domainBumpSectionHtml(citDomainTrend, citDomainMonths, meta, lang) : ''
+                          )}
                           ${meta.showCitCnty !== false && citationCntyInnerHtml ? `
                           <!-- 국가별 Citation 도메인 -->
                           <tr>
@@ -2123,11 +2131,6 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                   </table>
                 </td>
               </tr>` : ''}
-
-              ${bumpChartsRowHtml(
-                meta.showTouchPointsBump !== false ? touchPointsBumpSectionHtml(citTouchPointsTrend, citTrendMonths, meta, lang) : '',
-                meta.showDomainBump !== false ? domainBumpSectionHtml(citDomainTrend, citDomainMonths, meta, lang) : ''
-              )}
 
               ${meta.showDotcom !== false ? dotcomSectionHtml(dotcom, meta, lang) : ''}
 

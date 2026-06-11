@@ -101,6 +101,7 @@ export const INIT_META  = {
   citationTopN: 10, citDomainTopN: 10,
   showDotcom: true,
   showTouchPointsBump: true,
+  bumpHighlight: [],
   cntyProductFilter: {},
   citCntyDomainFilter: {},
   citCntyFilter: {},

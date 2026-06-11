@@ -1112,6 +1112,49 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
           ))}
         </div>
 
+        {/* 범프차트 지적 요소 (색상 강조) — 기본 회색, 선택한 항목만 컬러 */}
+        {(() => {
+          const stripDom = d => String(d || '').replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\.(com|net|org|io|co|kr|jp|us|uk|de|fr|cn|in|br)(\.[a-z]{2})?$/i, '')
+          const tpKey = name => /brand/i.test(name) && /(manufacturer|메뉴팩|메뉴펙|제조)/i.test(name) ? 'Brand' : name
+          const cands = []
+          const seen = new Set()
+          const push = (value, label) => { if (value && !seen.has(value)) { seen.add(value); cands.push({ value, label }) } }
+          if (extra?.citTouchPointsTrend) Object.keys(extra.citTouchPointsTrend).forEach(n => { const k = tpKey(n); push(k, k) })
+          if (extra?.citDomainTrend) {
+            const ttl = Object.entries(extra.citDomainTrend).filter(([key]) => key.startsWith('TTL|'))
+            const src = ttl.length ? ttl : Object.entries(extra.citDomainTrend)
+            src.forEach(([, val]) => push(val.domain, stripDom(val.domain)))
+          }
+          if (!cands.length) return null
+          const sel = Array.isArray(meta.bumpHighlight) ? meta.bumpHighlight : []
+          const toggle = value => setMeta(m => {
+            const cur = Array.isArray(m.bumpHighlight) ? m.bumpHighlight : []
+            return { ...m, bumpHighlight: cur.includes(value) ? cur.filter(x => x !== value) : [...cur, value] }
+          })
+          return (
+            <>
+              <p style={{ margin: '0 0 8px 2px', fontSize: 11, fontWeight: 700, color: '#475569',
+                textTransform: 'uppercase', letterSpacing: 1, fontFamily: FONT }}>
+                범프차트 지적 요소 (색상 강조)
+              </p>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginBottom: 16 }}>
+                {cands.map(({ value, label }) => {
+                  const on = sel.includes(value)
+                  return (
+                    <button key={value} onClick={() => toggle(value)}
+                      style={{ padding: '5px 12px', borderRadius: 20, border: 'none', cursor: 'pointer',
+                        background: on ? LG_RED : '#1E293B',
+                        color: on ? '#FFFFFF' : '#475569',
+                        fontSize: 11, fontWeight: 700, fontFamily: FONT }}>
+                      {label}
+                    </button>
+                  )
+                })}
+              </div>
+            </>
+          )
+        })()}
+
         {/* 제품 카드 버전 선택 */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
           <span style={{ fontSize: 11, color: '#64748B', fontFamily: FONT }}>제품 카드:</span>
