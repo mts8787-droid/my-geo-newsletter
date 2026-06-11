@@ -887,13 +887,12 @@ function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang, meta, appendixPromp
     return `<div style="display:flex;align-items:center;justify-content:center;min-height:calc(100vh - 160px);color:#94A3B8;font-size:16px">${msg}</div>`
   }
   const ALL_COUNTRIES = ['US','CA','UK','DE','ES','BR','MX','AU','VN','IN']
-  // 주간: W5부터 시작하는 12주 고정 라벨. 월간: 실제 라벨(monthlyPRLabels)을 그대로 컬럼으로 사용.
+  // 월간: 실제 라벨(monthlyPRLabels)을 그대로 컬럼으로 사용. 주간: 실제 라벨의 최근 12주.
   let W12
   if (isMonthly) {
     W12 = (weeklyPRLabels && weeklyPRLabels.length) ? weeklyPRLabels.slice() : []
   } else {
-    W12 = []
-    for (let i = 0; i < 12; i++) W12.push('w' + (5 + i))
+    W12 = (weeklyPRLabels && weeklyPRLabels.length) ? weeklyPRLabels.slice(-12) : []
   }
 
   const topics = [...new Set(weeklyPR.map(r => r.topic))].filter(Boolean)
@@ -997,7 +996,7 @@ function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang, meta, appendixPromp
     <div class="section-card">
       <div class="section-header">
         <div class="section-title">${isMonthly ? (lang === 'en' ? 'Monthly Competitor Trend by Topic' : '토픽별 월간 경쟁사 트렌드') : (lang === 'en' ? 'Weekly Competitor Trend by Topic' : '토픽별 주간 경쟁사 트렌드')}</div>
-        <span class="legend">${isMonthly ? (W12.length ? `${W12[0]}–${W12[W12.length - 1]} (${W12.length}${lang === 'en' ? ' months' : '개월'})` : '') : `W5–W16 (12${lang === 'en' ? ' weeks' : '주'})`}</span>
+        <span class="legend">${isMonthly ? (W12.length ? `${W12[0]}–${W12[W12.length - 1]} (${W12.length}${lang === 'en' ? ' months' : '개월'})` : '') : (W12.length ? `${W12[0].toUpperCase()}–${W12[W12.length - 1].toUpperCase()} (${W12.length}${lang === 'en' ? ' weeks' : '주'})` : '')}</span>
       </div>
       <div class="section-body" id="${P}-sections"></div>
     </div>
@@ -1185,9 +1184,8 @@ function brandPromptTabHtml(bpData, bpLabels, lang, stakeholderFilter, tabTitle,
     const msg = lang === 'en' ? 'No data available.' : '데이터가 없습니다.'
     return `<div style="display:flex;align-items:center;justify-content:center;min-height:calc(100vh - 160px);color:#94A3B8;font-size:16px">${msg}</div>`
   }
-  // W5부터 12주 고정
-  const W12 = []
-  for (let i = 0; i < 12; i++) W12.push('w' + (5 + i))
+  // 실제 데이터 라벨의 최근 12주
+  const W12 = (bpLabels && bpLabels.length) ? bpLabels.slice(-12) : []
   // stakeholder별로 topic 그룹핑 (null이면 모든 stakeholder)
   const stakeholders = stakeholderFilter
     ? [stakeholderFilter]
@@ -1207,7 +1205,7 @@ function brandPromptTabHtml(bpData, bpLabels, lang, stakeholderFilter, tabTitle,
     <div class="section-card">
       <div class="section-header">
         <div class="section-title">${tabTitle || (lang === 'en' ? 'Brand Prompt Anomaly Check' : 'Brand Prompt 이상 점검')}</div>
-        <span class="legend">W5–W16 (12${lang === 'en' ? ' weeks' : '주'})</span>
+        <span class="legend">${W12.length ? `${W12[0].toUpperCase()}–${W12[W12.length - 1].toUpperCase()} (${W12.length}${lang === 'en' ? ' weeks' : '주'})` : ''}</span>
       </div>
       <div style="margin:16px 28px 0;padding:16px;background:#0F172A;border:1px solid #1E293B;border-radius:10px">
         <span style="display:block;font-size:14px;font-weight:700;color:${RED};text-transform:uppercase;margin-bottom:6px">Dashboard Guide</span>
