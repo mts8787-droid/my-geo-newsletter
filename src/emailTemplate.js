@@ -1259,14 +1259,15 @@ const TP_TREND_12M = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'S
 const TP_BUMP_MAX = 10
 const TP_TREND_RECENT = 4  // 최근 4개월
 
-// 도메인 라벨에서 TLD 제거 (pill 좁은 셀 호환)
+// 도메인 라벨에서 TLD 제거 (pill 좁은 셀 호환 — 좌우배치라 길이도 제한)
 function emStripDomain(d) {
-  return String(d || '').replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\.(com|net|org|io|co|kr|jp|us|uk|de|fr|cn|in|br)(\.[a-z]{2})?$/i, '')
+  const s = String(d || '').replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\.(com|net|org|io|co|kr|jp|us|uk|de|fr|cn|in|br)(\.[a-z]{2})?$/i, '')
+  return s.length > 9 ? s.slice(0, 8) + '…' : s
 }
-// pill/라벨용 짧은 이름
+// pill/라벨용 짧은 이름 (좌우배치 좁은 셀 — 8자 제한)
 function emShortName(name) {
   const s = String(name || '')
-  return s.length > 10 ? s.slice(0, 9) + '…' : s
+  return s.length > 8 ? s.slice(0, 7) + '…' : s
 }
 
 // 이메일 호환 범프 섹션 카드 1개 생성 (rank-grid + 실수치 테이블)
@@ -1313,66 +1314,81 @@ function bumpEmailSectionHtml(trend, titleText, headerLabel, lang, opts = {}) {
     names.forEach(n => { const r = rankings[n]?.[m]; if (r != null) rankByMonth[m][r] = n })
   })
 
-  // 두 테이블 공유 colgroup — 월 X좌표 정렬 (§5.16)
-  const colGroup = `<colgroup><col style="width:96px;"/>${months.map(() => '<col/>').join('')}</colgroup>`
-  const monthThStyle = `font-size:11px;font-weight:800;color:#475569;font-family:${EM_FONT};padding:6px 2px;text-align:center;border-bottom:2px solid #E8EDF2;white-space:nowrap;`
-  const cornerStyle = `font-size:10px;font-weight:700;color:#94A3B8;font-family:${EM_FONT};padding:6px 4px;text-align:left;border-bottom:2px solid #E8EDF2;white-space:nowrap;`
+  // 두 테이블 공유 colgroup — 월 X좌표 정렬 (§5.16). 좌우배치라 라벨 컬럼 축소
+  const colGroup = `<colgroup><col style="width:54px;"/>${months.map(() => '<col/>').join('')}</colgroup>`
+  const monthThStyle = `font-size:10px;font-weight:800;color:#475569;font-family:${EM_FONT};padding:5px 1px;text-align:center;border-bottom:2px solid #E8EDF2;white-space:nowrap;`
+  const cornerStyle = `font-size:9px;font-weight:700;color:#94A3B8;font-family:${EM_FONT};padding:5px 2px;text-align:left;border-bottom:2px solid #E8EDF2;white-space:nowrap;`
 
   // ── rank-grid (행=순위, 열=월) ──
   let grid = `<table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;border-collapse:collapse;">${colGroup}`
   grid += `<tr><td style="${cornerStyle}">${lang === 'ko' ? '순위' : 'Rank'}</td>${months.map(m => `<td style="${monthThStyle}">${m}</td>`).join('')}</tr>`
   for (let r = 1; r <= maxRank; r++) {
-    grid += `<tr><td style="font-size:11px;font-weight:800;color:#64748B;font-family:${EM_FONT};padding:4px;text-align:left;border-bottom:1px solid #F1F5F9;white-space:nowrap;">#${r}</td>`
+    grid += `<tr><td style="font-size:10px;font-weight:800;color:#64748B;font-family:${EM_FONT};padding:3px 2px;text-align:left;border-bottom:1px solid #F1F5F9;white-space:nowrap;">#${r}</td>`
     months.forEach(m => {
       const n = rankByMonth[m][r]
-      const cellStyle = `padding:4px 2px;text-align:center;border-bottom:1px solid #F1F5F9;`
-      if (!n) { grid += `<td style="${cellStyle}"><span style="color:#E2E8F0;font-size:11px;">·</span></td>`; return }
+      const cellStyle = `padding:3px 1px;text-align:center;border-bottom:1px solid #F1F5F9;`
+      if (!n) { grid += `<td style="${cellStyle}"><span style="color:#E2E8F0;font-size:10px;">·</span></td>`; return }
       const c = colorOf(n)
-      grid += `<td style="${cellStyle}"><span style="display:inline-block;background:${c};color:#FFFFFF;border-radius:5px;padding:3px 5px;font-size:10px;font-weight:700;font-family:${EM_FONT};white-space:nowrap;">${shortFn(n)}</span></td>`
+      grid += `<td style="${cellStyle}"><span style="display:inline-block;background:${c};color:#FFFFFF;border-radius:5px;padding:2px 4px;font-size:9px;font-weight:700;font-family:${EM_FONT};white-space:nowrap;">${shortFn(n)}</span></td>`
     })
     grid += '</tr>'
   }
   grid += '</table>'
 
   // ── 하단 실수치 테이블 (범례 겸) ──
-  const thStyle = `font-size:10px;font-weight:700;color:#64748B;font-family:${EM_FONT};padding:6px 2px;text-align:center;border-bottom:1px solid #E8EDF2;white-space:nowrap;`
+  const thStyle = `font-size:9px;font-weight:700;color:#64748B;font-family:${EM_FONT};padding:5px 1px;text-align:center;border-bottom:1px solid #E8EDF2;white-space:nowrap;`
   let table = `<table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;border-collapse:collapse;">${colGroup}`
   table += `<tr><td style="${thStyle}text-align:left;">${headerLabel}</td>${months.map(m => `<td style="${thStyle}">${m}</td>`).join('')}</tr>`
   names.forEach(name => {
     const color = colorOf(name)
-    table += `<tr><td style="font-size:10px;font-weight:700;color:#334155;font-family:${EM_FONT};padding:5px 2px;border-bottom:1px solid #F1F5F9;white-space:nowrap;overflow:hidden;"><span style="display:inline-block;width:7px;height:7px;border-radius:2px;background:${color};">&nbsp;</span>&nbsp;${shortFn(name)}</td>`
+    table += `<tr><td style="font-size:9px;font-weight:700;color:#334155;font-family:${EM_FONT};padding:4px 1px;border-bottom:1px solid #F1F5F9;white-space:nowrap;overflow:hidden;"><span style="display:inline-block;width:6px;height:6px;border-radius:2px;background:${color};">&nbsp;</span>&nbsp;${shortFn(name)}</td>`
     months.forEach(m => {
       const val = trend[name]?.[m]
       const rank = rankings[name]?.[m]
-      table += `<td style="font-size:10px;font-family:${EM_FONT};padding:5px 1px;text-align:center;border-bottom:1px solid #F1F5F9;white-space:nowrap;">${val != null && rank != null
-        ? `<span style="font-weight:700;color:#334155;">${fmtMan(val, lang)}</span><br/><span style="font-size:9px;color:#94A3B8;">#${rank}</span>`
+      table += `<td style="font-size:9px;font-family:${EM_FONT};padding:4px 1px;text-align:center;border-bottom:1px solid #F1F5F9;white-space:nowrap;">${val != null && rank != null
+        ? `<span style="font-weight:700;color:#334155;">${fmtMan(val, lang)}</span><br/><span style="font-size:8px;color:#94A3B8;">#${rank}</span>`
         : '<span style="color:#CBD5E1;">—</span>'}</td>`
     })
     table += '</tr>'
   })
   table += '</table>'
 
-  return `
-              <!-- ══ ${titleText} (월간 트렌드 · 범프) ══ -->
-              <tr>
-                <td style="padding-bottom:28px;">
-                  <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFFFFF;border-radius:16px;border:2px solid #E8EDF2;">
+  // 카드 1개만 반환 (외곽 tr/td 없음) — 좌우배치 셀에 넣기 위함
+  return `<table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFFFFF;border-radius:16px;border:2px solid #E8EDF2;">
                     <tr>
-                      <td style="padding:16px 12px 12px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;">
+                      <td style="padding:13px 10px 10px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;">
                         <table border="0" cellpadding="0" cellspacing="0" width="100%"><tr>
                           <td style="vertical-align:middle;">
                             <table border="0" cellpadding="0" cellspacing="0"><tr>
                               <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
-                              <td style="padding-left:8px;font-size:16px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${titleText} — ${t.monthTrend}</td>
+                              <td style="padding-left:7px;font-size:14px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-0.5px;">${titleText} — ${t.monthTrend}</td>
                             </tr></table>
                           </td>
-                          <td align="right" style="vertical-align:middle;font-size:12px;color:#94A3B8;font-family:${EM_FONT};">Top ${names.length}</td>
+                          <td align="right" style="vertical-align:middle;font-size:11px;color:#94A3B8;font-family:${EM_FONT};white-space:nowrap;">Top ${names.length}</td>
                         </tr></table>
                       </td>
                     </tr>
-                    <tr><td style="padding:14px 12px 6px;">${grid}</td></tr>
-                    <tr><td style="padding:6px 12px 14px;">${table}</td></tr>
-                  </table>
+                    <tr><td style="padding:12px 10px 5px;">${grid}</td></tr>
+                    <tr><td style="padding:5px 10px 12px;">${table}</td></tr>
+                  </table>`
+}
+
+// 두 범프 카드를 좌우배치 (50%/50%) 로 묶는 행. 한쪽만 있으면 단독 full-width.
+function bumpChartsRowHtml(touchCard, domainCard) {
+  const cards = [touchCard, domainCard].filter(Boolean)
+  if (!cards.length) return ''
+  if (cards.length === 1) {
+    return `
+              <tr><td style="padding-bottom:28px;">${cards[0]}</td></tr>`
+  }
+  return `
+              <!-- ══ Citation 범프차트 좌우배치 (외부채널 + 도메인) ══ -->
+              <tr>
+                <td style="padding-bottom:28px;">
+                  <table border="0" cellpadding="0" cellspacing="0" width="100%"><tr>
+                    <td width="50%" style="vertical-align:top;padding-right:6px;">${cards[0]}</td>
+                    <td width="50%" style="vertical-align:top;padding-left:6px;">${cards[1]}</td>
+                  </tr></table>
                 </td>
               </tr>`
 }
@@ -2096,9 +2112,10 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                 </td>
               </tr>` : ''}
 
-              ${meta.showTouchPointsBump !== false ? touchPointsBumpSectionHtml(citTouchPointsTrend, citTrendMonths, meta, lang) : ''}
-
-              ${meta.showDomainBump !== false ? domainBumpSectionHtml(citDomainTrend, citDomainMonths, meta, lang) : ''}
+              ${bumpChartsRowHtml(
+                meta.showTouchPointsBump !== false ? touchPointsBumpSectionHtml(citTouchPointsTrend, citTrendMonths, meta, lang) : '',
+                meta.showDomainBump !== false ? domainBumpSectionHtml(citDomainTrend, citDomainMonths, meta, lang) : ''
+              )}
 
               ${meta.showDotcom !== false ? dotcomSectionHtml(dotcom, meta, lang) : ''}
 
