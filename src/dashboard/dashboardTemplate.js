@@ -976,6 +976,11 @@ function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang, meta, appendixPromp
         <span style="font-size:18px;font-weight:700;color:#64748B">${lang === 'en' ? 'Country' : '국가'}</span>
         <div id="${P}-cnty-chips" style="display:flex;gap:4px;flex-wrap:wrap"></div>
       </div>
+      <div style="width:1px;height:24px;background:#E8EDF2"></div>
+      <div style="display:flex;align-items:center;gap:6px">
+        <span style="font-size:18px;font-weight:700;color:#64748B">${lang === 'en' ? 'View' : '보기'}</span>
+        <div id="${P}-view-chips" style="display:flex;gap:4px"></div>
+      </div>
     </div>
     <!-- NOTICE -->
     <div style="margin:0 0 24px;padding:16px;background:#0F172A;border:1px solid #1E293B;border-radius:10px">
@@ -1013,6 +1018,7 @@ function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang, meta, appendixPromp
     function cf(c){return _CF[c]||_CF[c&&c.toUpperCase()]||c}
     var fType=TY[0]||'non-brand';
     var fCnty={};CN.forEach(function(c){fCnty[c]=true});
+    var fView='together';
     var RED='${RED}',COMP='${COMP}';
     var BC={'LG':RED,'Samsung':COMP,'Google':'#4285F4','Apple':'#A2AAAD','Sony':'#000','Bosch':'#EA0016','Dyson':'#6B21A8'};
     var FB=['#3B82F6','#10B981','#F59E0B','#8B5CF6','#EC4899','#06B6D4','#84CC16','#F97316'];
@@ -1032,6 +1038,7 @@ function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang, meta, appendixPromp
       var ce=document.getElementById('${P}-cnty-chips');if(!ce)return;
       var allOn=CN.every(function(c){return fCnty[c]});
       ce.innerHTML=chip('${lang==='en'?'All':'전체'}',allOn,'_${P}CntyAll()')+' '+CN.map(function(c){return chip(cf(c),!!fCnty[c],"_${P}CntyTog('"+c+"')")}).join(' ');
+      var ve=document.getElementById('${P}-view-chips');if(ve)ve.innerHTML=chip('${lang==='en'?'By Country':'국가별 함께'}',fView==='together',"_${P}SetView('together')")+' '+chip('${lang==='en'?'Total':'국가 Total'}',fView==='total',"_${P}SetView('total')");
     }
     // 특정 토픽+국가+브랜드의 특정 주 값
     function val(topic,cnty,brand,wk){
@@ -1051,6 +1058,67 @@ function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang, meta, appendixPromp
         if(v!=null&&v>bestV){bestV=v;best=b}
       });
       return best;
+    }
+    // 특정 국가의 1위 경쟁사 (LG 제외) — 그 국가 최신값 최댓값
+    function topCompForCnty(topic,cnty){
+      var brands={};
+      D.forEach(function(x){if(x.topic===topic&&x.type===fType&&x.country===cnty&&x.brand&&x.brand!=='LG')brands[x.brand]=1});
+      var best=null,bestV=-1;
+      Object.keys(brands).forEach(function(b){
+        var v=lastVal(topic,cnty,b);
+        if(v!=null&&v>bestV){bestV=v;best=b}
+      });
+      return best;
+    }
+    // 경쟁비(%) 색상 — lead≥100 / behind≥80 / critical<80
+    function ratioColor(r){return r==null?'#CBD5E1':r>=100?'#15803D':r>=80?'#B45309':'#BE123C'}
+    // ── 표1: TTL 전체 브랜드 표 + 1위 경쟁사 경쟁비 행 ──
+    function buildT1(brands,chartData,comp,tblW){
+      var h='<table style="border-collapse:collapse;table-layout:fixed;width:'+(120+tblW)+'px">';
+      h+='<colgroup><col style="width:120px">';W.forEach(function(){h+='<col style="width:'+CW+'px">'});h+='</colgroup>';
+      h+='<tr style="border-bottom:1px solid #E8EDF2"><th style="text-align:left;padding:5px 8px;font-size:17px;color:#94A3B8;font-weight:600">Brand</th>';
+      W.forEach(function(wk){h+='<th style="text-align:center;padding:5px 0;font-size:17px;color:#94A3B8;font-weight:600">'+wk+'</th>'});
+      h+='</tr>';
+      brands.forEach(function(b,i){
+        var c=bc(b,i);var isLG=b==='LG';
+        h+='<tr style="background:'+(isLG?'#FFF8F9':i%2===0?'#fff':'#FAFBFC')+'"><td style="padding:5px 8px;font-size:17px;font-weight:'+(isLG?700:500)+';color:'+c+';white-space:nowrap"><i style="display:inline-block;width:6px;height:6px;border-radius:50%;background:'+c+';margin-right:4px;vertical-align:0"></i>'+b+'</td>';
+        W.forEach(function(wk,wi){var v=chartData[b][wi];h+='<td style="text-align:center;padding:5px 0;font-size:17px;color:'+(v!=null?(isLG?'#1A1A1A':'#475569'):'#CBD5E1')+';font-weight:'+(isLG?700:400)+';font-variant-numeric:tabular-nums">'+(v!=null?v.toFixed(1)+'%':'—')+'</td>'});
+        h+='</tr>';
+      });
+      var compName=comp||'${lang==='en'?'N/A':'없음'}';
+      h+='<tr style="background:#F8FAFC;border-top:2px solid #E8EDF2"><td style="padding:5px 8px;font-size:15px;font-weight:700;color:#BE123C;white-space:nowrap">${lang==='en'?'#1 Competitor':'1위 경쟁사'} ('+compName+')</td>';
+      W.forEach(function(wk,wi){
+        var lgv=chartData.LG?chartData.LG[wi]:null;
+        var cv=comp&&chartData[comp]?chartData[comp][wi]:null;
+        var rn=(lgv!=null&&cv!=null&&cv>0)?Math.round(lgv/cv*100):null;
+        h+='<td style="text-align:center;padding:5px 0;font-size:16px;font-weight:700;color:'+ratioColor(rn)+';font-variant-numeric:tabular-nums">'+(rn!=null?rn+'%':'—')+'</td>';
+      });
+      h+='</tr></table>';
+      return h;
+    }
+    // ── 표2: 국가별 — 각 국가의 1위 경쟁사 대비 경쟁비 ──
+    function buildT2(topic,ac,tblW){
+      var rows='';
+      ac.forEach(function(cn){
+        var hasLG=D.some(function(r){return r.topic===topic&&r.country===cn&&r.brand==='LG'&&r.type===fType});
+        if(!hasLG)return;
+        var cnComp=topCompForCnty(topic,cn);
+        var label=cf(cn)+(cnComp?' <span style="color:#94A3B8;font-weight:500">('+cnComp+')</span>':'');
+        var cells=W.map(function(wk){
+          var lgv=val(topic,cn,'LG',wk);
+          var cv=cnComp?val(topic,cn,cnComp,wk):null;
+          var rn=(lgv!=null&&cv!=null&&cv>0)?Math.round(lgv/cv*100):null;
+          return'<td style="width:'+CW+'px;text-align:center;padding:5px 0;font-size:16px;font-weight:600;color:'+ratioColor(rn)+';font-variant-numeric:tabular-nums">'+(rn!=null?rn+'%':'—')+'</td>';
+        }).join('');
+        rows+='<tr style="border-top:1px solid #F1F5F9"><td style="padding:5px 8px;font-size:16px;font-weight:600;color:#64748B;white-space:nowrap">'+label+'</td>'+cells+'</tr>';
+      });
+      if(!rows)return'';
+      var h='<table style="border-collapse:collapse;table-layout:fixed;width:'+(120+tblW)+'px">';
+      h+='<colgroup><col style="width:120px">';W.forEach(function(){h+='<col style="width:'+CW+'px">'});h+='</colgroup>';
+      h+='<tr style="border-bottom:1px solid #E8EDF2"><th style="text-align:left;padding:5px 8px;font-size:15px;color:#94A3B8;font-weight:600">${lang==='en'?'Country (vs #1)':'국가 (1위 경쟁사)'}</th>';
+      W.forEach(function(wk){h+='<th style="text-align:center;padding:5px 0;font-size:15px;color:#94A3B8;font-weight:600">'+wk+'</th>'});
+      h+='</tr>'+rows+'</table>';
+      return h;
     }
     // ── 상단 매트릭스: PR Topic List 시트 전용 ──
     // PR Topic List의 토픽만 행으로 사용. 기존 토픽(oldTopic)으로 Weekly PR 데이터 JOIN.
@@ -1126,6 +1194,8 @@ function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang, meta, appendixPromp
         _prTopicList.forEach(function(t){if(t.topicRow&&t.topicRow.trim())sectionTopics.push({key:t.topicRow.trim(),name:t.topic||t.topicRow.trim()})});
       }
       if(!sectionTopics.length)TP.forEach(function(t){sectionTopics.push({key:t,name:t})});
+      var bottomGroups='';  // fView==='total' 일 때 표2(국가별)를 하단에 모음
+      var ac=CN.filter(function(c){return fCnty[c]});
       sectionTopics.forEach(function(st0){
         var topic=st0.key;var topicName=st0.name;
         var ttl=D.filter(function(r){return r.topic===topic&&r.country==='TTL'&&r.type===fType});
@@ -1140,14 +1210,8 @@ function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang, meta, appendixPromp
         var ssLast=comp&&chartData[comp]?lastOf(chartData[comp]):null;
         var st=tl(lgLast,ssLast);
         var legend=brands.map(function(b,i){var c=bc(b,i);var isLG=b==='LG';return'<span style="display:inline-flex;align-items:center;gap:3px;margin-right:10px"><i style="display:inline-block;width:10px;height:3px;border-radius:1px;background:'+c+'"></i><span style="font-size:15px;color:'+(isLG?'#1A1A1A':'#94A3B8')+';font-weight:'+(isLG?700:400)+'">'+b+'</span></span>'}).join('');
-        // 국가별 LG 서브
-        var ac=CN.filter(function(c){return fCnty[c]});
-        var cntyHtml=ac.map(function(cn){
-          var cr=D.filter(function(r){return r.topic===topic&&r.country===cn&&r.brand==='LG'&&r.type===fType});
-          if(!cr.length)return'';
-          var cells=W.map(function(wk){var v=cr[0]&&cr[0].scores[wk];return'<td style="width:'+CW+'px;min-width:'+CW+'px;max-width:'+CW+'px;text-align:center;padding:5px 0;font-size:16px;color:#475569;font-variant-numeric:tabular-nums">'+(v!=null?v.toFixed(1)+'%':'—')+'</td>'}).join('');
-          return'<tr style="border-top:1px solid #F1F5F9"><td style="padding:5px 8px;font-size:16px;font-weight:600;color:#64748B;white-space:nowrap">'+cf(cn)+'</td>'+cells+'</tr>';
-        }).filter(Boolean).join('');
+        var t1=buildT1(brands,chartData,comp,tblW);
+        var t2=buildT2(topic,ac,tblW);
 
         html+='<div style="border:1px solid #E8EDF2;border-radius:12px;margin-bottom:20px;overflow:hidden">';
         // 헤더
@@ -1160,32 +1224,32 @@ function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang, meta, appendixPromp
         if(lgLast!=null)html+='<span style="font-size:18px;font-weight:700;color:#1A1A1A">LG '+lgLast.toFixed(1)+'%</span>';
         if(ssLast!=null&&comp)html+='<span style="font-size:17px;color:#94A3B8">vs '+comp+' '+ssLast.toFixed(1)+'%</span>';
         html+='<span style="margin-left:auto">'+legend+'</span></div>';
-        // 차트+테이블 (같은 너비 정렬)
+        // 차트 + 표1 (TTL 전체)
         html+='<div style="overflow-x:auto;padding:0 16px 12px"><div style="display:flex"><div style="width:120px;flex-shrink:0"></div><div style="width:'+tblW+'px;flex-shrink:0;padding:8px 0">'+svgChart(chartData,tblW,160)+'</div></div>';
-        // 테이블
-        html+='<table style="border-collapse:collapse;table-layout:fixed;width:'+(120+tblW)+'px">';
-        html+='<colgroup><col style="width:120px">';W.forEach(function(){html+='<col style="width:'+CW+'px">'});html+='</colgroup>';
-        html+='<tr style="border-bottom:1px solid #E8EDF2"><th style="text-align:left;padding:5px 8px;font-size:17px;color:#94A3B8;font-weight:600">Brand</th>';
-        W.forEach(function(wk){html+='<th style="text-align:center;padding:5px 0;font-size:17px;color:#94A3B8;font-weight:600">'+wk+'</th>'});
-        html+='</tr>';
-        brands.forEach(function(b,i){
-          var c=bc(b,i);var isLG=b==='LG';
-          html+='<tr style="background:'+(isLG?'#FFF8F9':i%2===0?'#fff':'#FAFBFC')+'"><td style="padding:5px 8px;font-size:17px;font-weight:'+(isLG?700:500)+';color:'+c+';white-space:nowrap"><i style="display:inline-block;width:6px;height:6px;border-radius:50%;background:'+c+';margin-right:4px;vertical-align:0"></i>'+b+'</td>';
-          W.forEach(function(wk,wi){var v=chartData[b][wi];html+='<td style="text-align:center;padding:5px 0;font-size:17px;color:'+(v!=null?(isLG?'#1A1A1A':'#475569'):'#CBD5E1')+';font-weight:'+(isLG?700:400)+';font-variant-numeric:tabular-nums">'+(v!=null?v.toFixed(1)+'%':'—')+'</td>'});
-          html+='</tr>';
-        });
-        if(cntyHtml){
-          html+='<tr><td colspan="'+(N+1)+'" style="padding:6px 8px;font-size:14px;font-weight:700;color:#64748B;background:#F8FAFC;border-top:2px solid #E8EDF2">${lang==='en'?'LG by Country':'LG 국가별'}</td></tr>'+cntyHtml;
+        html+='<div style="font-size:14px;font-weight:700;color:#64748B;margin:4px 0 2px">${lang==='en'?'Overall (TTL)':'전체 (TTL)'}</div>';
+        html+=t1;
+        // 표2 (국가별) — 국가별 함께 보기일 때만 토픽 안에 표시
+        if(fView==='together'&&t2){
+          html+='<div style="font-size:14px;font-weight:700;color:#64748B;margin:14px 0 2px">${lang==='en'?'By Country (vs #1 ratio)':'국가별 (1위 경쟁사 경쟁비)'}</div>';
+          html+=t2;
         }
-        html+='</table></div></div>';
+        html+='</div></div>';
+        // 국가 Total 보기일 때 — 표2를 하단에 모음
+        if(fView==='total'&&t2){
+          bottomGroups+='<div style="margin-bottom:16px"><div style="font-size:17px;font-weight:700;color:#1A1A1A;margin-bottom:6px"><span style="display:inline-block;width:4px;height:16px;border-radius:4px;background:'+RED+';vertical-align:-2px;margin-right:6px"></span>'+topicName+'</div><div style="overflow-x:auto">'+t2+'</div></div>';
+        }
       });
       if(!html)html='<div style="text-align:center;padding:60px;color:#94A3B8">${lang==='en'?'No data':'데이터 없음'}</div>';
+      if(fView==='total'&&bottomGroups){
+        html+='<div style="border-top:3px solid #E8EDF2;margin-top:8px;padding-top:18px"><div style="font-size:19px;font-weight:700;color:#1A1A1A;margin-bottom:14px">${lang==='en'?'By Country — #1 Competitor Ratio (gathered)':'국가별 — 1위 경쟁사 경쟁비 (모아보기)'}</div>'+bottomGroups+'</div>';
+      }
       el.innerHTML=html;
     }
     function renderAll(){renderFilters();renderMatrix();renderSections()}
     window._${P}SetType=function(t){fType=t;renderAll()};
     window._${P}CntyTog=function(c){fCnty[c]=!fCnty[c];renderAll()};
     window._${P}CntyAll=function(){var on=CN.every(function(c){return fCnty[c]});CN.forEach(function(c){fCnty[c]=!on});renderAll()};
+    window._${P}SetView=function(v){fView=v;renderAll()};
     renderAll();
   })();
   </script>`
