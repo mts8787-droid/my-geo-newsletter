@@ -1000,7 +1000,7 @@ function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang, meta, appendixPromp
     <div class="section-card" style="margin-bottom:24px">
       <div class="section-header">
         <div class="section-title">${lang === 'en' ? 'PR Visibility Overview' : 'PR Visibility 현황'} <span style="font-size:12px;font-weight:600;color:#3B82F6;background:#EFF6FF;padding:2px 8px;border-radius:6px;border:1px solid #93C5FD">${weeklyPRLabels?.length ? weeklyPRLabels[weeklyPRLabels.length - 1].toUpperCase() : ''} ${lang === 'en' ? 'data' : '기준'}</span></div>
-        <span class="legend"><i style="background:#15803D"></i>${lang === 'en' ? 'Lead ≥100%' : '선도 ≥100%'} <i style="background:#D97706"></i>${lang === 'en' ? 'Behind ≥80%' : '추격 ≥80%'} <i style="background:#BE123C"></i>${lang === 'en' ? 'Critical <80%' : '취약 <80%'} <span style="color:#94A3B8;font-size:11px;margin-left:6px">${lang === 'en' ? '() = vs SS ratio' : '() 는 SS 대비 경쟁비'}</span></span>
+        <span class="legend"><i style="background:#15803D"></i>${lang === 'en' ? 'Lead ≥100%' : '선도 ≥100%'} <i style="background:#D97706"></i>${lang === 'en' ? 'Behind ≥80%' : '추격 ≥80%'} <i style="background:#BE123C"></i>${lang === 'en' ? 'Critical <80%' : '취약 <80%'} <span style="color:#94A3B8;font-size:11px;margin-left:6px">${lang === 'en' ? '() = vs #1 competitor' : '() 는 1위 경쟁사 대비'}</span></span>
       </div>
       <div class="section-body" id="${P}-matrix"></div>
     </div>
