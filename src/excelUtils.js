@@ -2042,11 +2042,16 @@ function parsePRVisibility(rows, mode) {
   const header = rows[headerIdx]
   let typeCol = -1, countryCol = -1, topicCol = -1, brandCol = -1, dataStartCol = 4
   for (let i = 0; i < header.length; i++) {
-    const s = String(header[i] || '').trim().toLowerCase()
+    const s = String(header[i] || '').split(/\n/)[0].trim().toLowerCase()
     if (s === 'type' && typeCol < 0) typeCol = i
     if ((s === 'county' || s === 'country') && countryCol < 0) countryCol = i
     if ((s === 'topic' || s === 'topoc') && topicCol < 0) topicCol = i
     if (s === 'brand' && brandCol < 0) brandCol = i
+  }
+  // 월간/주간 시트 모두 topic 은 C열(index 2). 헤더명으로 못 찾으면 C열 폴백 (silent 금지)
+  if (topicCol < 0) {
+    topicCol = 2
+    _logWarn(`parsePRVisibility:${mode}`, 'topic header not found, falling back to column C (index 2)', { header: header.slice(0, 6) })
   }
   dataStartCol = Math.max(typeCol, countryCol, topicCol, brandCol) + 1
 

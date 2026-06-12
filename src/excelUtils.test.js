@@ -780,6 +780,21 @@ describe('parsePRVisibility — monthly/weekly 모드', () => {
     expect(first?.latestScore).toBe(55)
   })
 
+  it('topic 헤더명 누락 → C열(index 2) 폴백 + warn', () => {
+    const rows = [
+      ['Type', 'County', '토픽분류', 'Brand', 'Feb', 'Mar'],
+      ['T1',   'US',     'Topic1',   'LG',     50,    55],
+      ['T1',   'UK',     'Topic2',   'LG',     40,    45],
+    ]
+    const result = parseSheetRows(SHEET_NAMES.monthlyPR, rows)
+    expect(result.monthlyPR?.length).toBe(2)
+    expect(result.monthlyPR?.[0]?.topic).toBe('Topic1')
+    const fallbackWarn = warnSpy.mock.calls.some(call =>
+      String(call[1]).includes('falling back to column C')
+    )
+    expect(fallbackWarn).toBe(true)
+  })
+
   it('헤더 없는 시트 → warn + {}', () => {
     parseSheetRows(SHEET_NAMES.monthlyPR, [['x'], ['y']])
     const headerWarn = warnSpy.mock.calls.some(call =>
