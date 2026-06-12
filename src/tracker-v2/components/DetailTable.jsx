@@ -7,6 +7,12 @@ function fmtRate(rate) {
   return `${rate.toFixed(1)}%`
 }
 function _tr(lang, tr, text) { return lang === 'en' && tr && tr[text] ? tr[text] : text }
+// 카테고리: 정적 _cat 우선, 미매핑은 동적 번역(tr) 폴백
+function _trCat(lang, tr, cat) {
+  if (lang !== 'en' || !cat) return cat
+  const mapped = tCat(lang, cat)
+  return mapped !== cat ? mapped : (tr && tr[cat]) || cat
+}
 
 import { TRACKER_CATEGORY_ORDER as CATEGORY_ORDER } from '../../shared/trackerCategoryStats.js'
 function catSortKey(name) {
@@ -79,7 +85,7 @@ export default function DetailTable({ tasks, categoryStats = [], month, lang = '
             >
               {/* 카테고리명 */}
               <div>
-                <h4 style={{ margin: 0, fontSize: 17, fontWeight: 800, color: '#0F172A' }}>{tCat(lang, cat)}</h4>
+                <h4 style={{ margin: 0, fontSize: 17, fontWeight: 800, color: '#0F172A' }}>{_trCat(lang, tr, cat)}</h4>
                 <p style={{ margin: '4px 0 0', fontSize: 12, color: '#64748B' }}>
                   {rows.length}{lang === 'en' ? ' tasks' : '개 과제'}
                   {stat?.stakeholders?.length ? ` · ${stat.stakeholders.length}${lang === 'en' ? ' orgs' : '개 조직'}` : ''}

@@ -14,7 +14,7 @@ import QualitativeTable from './components/QualitativeTable'
 import CategorySummary from './components/CategorySummary'
 import RawGoalTable from './components/RawGoalTable'
 import { MONTHS } from './utils/constants'
-import { t } from '../shared/i18n.js'
+import { t, tCat } from '../shared/i18n.js'
 import { translateTexts } from '../shared/utils.js'
 
 const IS_PUBLIC = window.location.pathname.startsWith('/p/')
@@ -349,8 +349,10 @@ export default function App() {
     const goals = data.quantitativeGoals?.rows || []
     const qualGoals = data.qualitativeGoals?.rows || []
     const allTexts = new Set()
-    goals.forEach(g => { if (g.task) allTexts.add(g.task); if (g.detail) allTexts.add(g.detail) })
-    qualGoals.forEach(g => { if (g.task) allTexts.add(g.task); if (g.detail) allTexts.add(g.detail) })
+    // 정적 _cat 매핑으로 해결 안 되는 카테고리만 동적 번역 대상에 추가
+    const addCat = (cat) => { if (cat && tCat('en', cat) === cat) allTexts.add(cat) }
+    goals.forEach(g => { if (g.task) allTexts.add(g.task); if (g.detail) allTexts.add(g.detail); addCat(g.taskCategory) })
+    qualGoals.forEach(g => { if (g.task) allTexts.add(g.task); if (g.detail) allTexts.add(g.detail); addCat(g.taskCategory) })
     const toTranslate = [...allTexts].filter(t => t && /[가-힣]/.test(t) && !taskTranslations[t])
     if (!toTranslate.length) return
     translateTexts(toTranslate, { from: 'ko', to: 'en' }).then(results => {
@@ -381,6 +383,14 @@ export default function App() {
     if (!data) return null
     return computeDashboard(data, selectedMonth, selectedSH, selectedCategory)
   }, [data, selectedMonth, selectedSH, selectedCategory])
+
+  // 카테고리 소제목 번역: 정적 _cat 우선, 미매핑은 동적 번역(taskTranslations) 폴백
+  const trCat = useCallback((name) => {
+    if (lang !== 'en' || !name) return name
+    const mapped = tCat(lang, name)
+    if (mapped !== name) return mapped
+    return taskTranslations[name] || name
+  }, [lang, taskTranslations])
 
   // 게시 기능
   const [publishing, setPublishing] = useState(false)
@@ -528,6 +538,7 @@ export default function App() {
                   selectedCategory={selectedCategory}
                   onSelectCategory={setSelectedCategory}
                   lang={lang}
+                  tr={taskTranslations}
                 />
               </div>
 
@@ -584,7 +595,7 @@ export default function App() {
                       boxShadow: '0 1px 2px rgba(15,23,42,0.04)',
                     }}
                   >
-                    <SectionHeader title={c.category} accentBar legend />
+                    <SectionHeader title={trCat(c.category)} accentBar legend />
 
                     {/* 정량 과제 */}
                     <div style={{ marginBottom: 16 }}>

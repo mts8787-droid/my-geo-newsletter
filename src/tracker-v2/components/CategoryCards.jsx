@@ -2,12 +2,18 @@ import { STAKEHOLDER_COLORS, statusOf } from '../utils/constants'
 import { tSH, tCat, tMonth } from '../../shared/i18n.js'
 
 function fmt(n) { return Number(n).toLocaleString('en-US') }
+// 카테고리: 정적 _cat 우선, 미매핑은 동적 번역(tr) 폴백
+function _trCat(lang, tr, cat) {
+  if (lang !== 'en' || !cat) return cat
+  const mapped = tCat(lang, cat)
+  return mapped !== cat ? mapped : (tr && tr[cat]) || cat
+}
 
 /**
  * 과제 구분별 달성률 — 4박스 카드 레이아웃 (다크 테마)
  * 카테고리명 · 유관조직 수 · 월 달성률(바) · 누적 달성률(바) · 조직 뱃지
  */
-export default function CategoryCards({ categories, month, lang = 'ko', selectedCategory, onSelectCategory }) {
+export default function CategoryCards({ categories, month, lang = 'ko', selectedCategory, onSelectCategory, tr = {} }) {
   if (!categories || categories.length === 0) return null
 
   return (
@@ -75,7 +81,7 @@ export default function CategoryCards({ categories, month, lang = 'ko', selected
               {/* 카테고리명 + 유관조직 수 */}
               <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 8 }}>
                 <h4 style={{ margin: 0, fontSize: 18, fontWeight: 800, color: '#F8FAFC' }}>
-                  {tCat(lang, cat.category)}
+                  {_trCat(lang, tr, cat.category)}
                 </h4>
                 <span style={{ fontSize: 12, color: '#94A3B8', whiteSpace: 'nowrap' }}>
                   {lang === 'en' ? `${shCount} orgs` : `유관조직 ${shCount}개`}

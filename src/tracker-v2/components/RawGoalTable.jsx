@@ -2,6 +2,12 @@ import { MONTHS, STAKEHOLDER_COLORS, SECTION_BAR } from '../utils/constants'
 import { t, tSH, tCat, tMonth } from '../../shared/i18n.js'
 
 function _tr(lang, tr, text) { return lang === 'en' && tr && tr[text] ? tr[text] : text }
+// 카테고리: 정적 _cat 우선, 미매핑은 동적 번역(tr) 폴백
+function _trCat(lang, tr, cat) {
+  if (lang !== 'en' || !cat) return cat
+  const mapped = tCat(lang, cat)
+  return mapped !== cat ? mapped : (tr && tr[cat]) || cat
+}
 
 export default function RawGoalTable({ rows, selectedSH, selectedCategory, lang = 'ko', tr = {} }) {
   let filtered = selectedSH === '전체' ? rows : rows.filter(r => r.stakeholder === selectedSH)
@@ -44,7 +50,7 @@ export default function RawGoalTable({ rows, selectedSH, selectedCategory, lang 
                       {tSH(lang, r.stakeholder)}
                     </span>
                   </td>
-                  <td style={{ padding: '9px 12px', textAlign: 'center', color: '#64748B' }}>{tCat(lang, r.taskCategory)}</td>
+                  <td style={{ padding: '9px 12px', textAlign: 'center', color: '#64748B' }}>{_trCat(lang, tr, r.taskCategory)}</td>
                   <td style={{ padding: '9px 12px', color: '#1E293B', fontWeight: 500 }}>{_tr(lang, tr, r.task)}</td>
                   <td style={{ padding: '9px 12px', color: '#64748B' }}>{r.pageType}</td>
                   {MONTHS.map(m => {

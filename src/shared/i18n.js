@@ -189,10 +189,13 @@ export function tSH(lang, name) {
   return T.en._sh[name] || name
 }
 
-// 과제 구분 번역
+// 과제 구분 번역 — 공백 무관 매칭 (시트 raw 값은 '콘텐츠수정', _cat 키는 '콘텐츠 수정')
+const _catNoSpace = Object.fromEntries(
+  Object.entries(T.en._cat).map(([k, v]) => [k.replace(/\s+/g, ''), v])
+)
 export function tCat(lang, name) {
   if (lang === 'ko' || !name) return name
-  return T.en._cat[name] || name
+  return T.en._cat[name] || _catNoSpace[String(name).replace(/\s+/g, '')] || name
 }
 
 // 월 라벨 번역
