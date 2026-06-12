@@ -2569,8 +2569,8 @@ updateHeroFromCheckboxes();
     function ratioColor(r){return r==null?'#CBD5E1':r>=100?'#15803D':r>=80?'#B45309':'#BE123C'}
     // ── 표1: TTL 전체 브랜드 표 + 1위 경쟁사 경쟁비 행 ──
     function buildT1(brands,chartData,comp,tblW){
-      var h='<table style="border-collapse:collapse;table-layout:fixed;width:'+(120+tblW)+'px">';
-      h+='<colgroup><col style="width:120px">';W.forEach(function(){h+='<col style="width:'+CW+'px">'});h+='</colgroup>';
+      var h='<table style="border-collapse:collapse;table-layout:fixed;width:'+(240+tblW)+'px">';
+      h+='<colgroup><col style="width:240px">';W.forEach(function(){h+='<col style="width:'+CW+'px">'});h+='</colgroup>';
       h+='<tr style="border-bottom:1px solid #E8EDF2"><th style="text-align:left;padding:5px 8px;font-size:17px;color:#94A3B8;font-weight:600">Brand</th>';
       W.forEach(function(wk){h+='<th style="text-align:center;padding:5px 0;font-size:17px;color:#94A3B8;font-weight:600">'+wk+'</th>'});
       h+='</tr>';
@@ -2586,7 +2586,7 @@ updateHeroFromCheckboxes();
         var lgv=chartData.LG?chartData.LG[wi]:null;
         var cv=comp&&chartData[comp]?chartData[comp][wi]:null;
         var rn=(lgv!=null&&cv!=null&&cv>0)?Math.round(lgv/cv*100):null;
-        h+='<td style="text-align:center;padding:5px 0;font-size:16px;font-weight:700;color:'+ratioColor(rn)+';font-variant-numeric:tabular-nums">'+(rn!=null?rn+'%':'—')+'</td>';
+        h+='<td style="text-align:center;padding:5px 0;font-variant-numeric:tabular-nums">'+(cv!=null?'<div style="font-size:16px;font-weight:700;color:#475569">'+cv.toFixed(1)+'%</div>':'<div style="font-size:16px;color:#CBD5E1">—</div>')+(rn!=null?'<div style="font-size:12px;font-weight:600;color:'+ratioColor(rn)+'">('+rn+'%)</div>':'')+'</td>';
       });
       h+='</tr></table>';
       return h;
@@ -2603,13 +2603,13 @@ updateHeroFromCheckboxes();
           var lgv=val(topic,cn,'LG',wk);
           var cv=cnComp?val(topic,cn,cnComp,wk):null;
           var rn=(lgv!=null&&cv!=null&&cv>0)?Math.round(lgv/cv*100):null;
-          return'<td style="width:'+CW+'px;text-align:center;padding:5px 0;font-size:16px;font-weight:600;color:'+ratioColor(rn)+';font-variant-numeric:tabular-nums">'+(rn!=null?rn+'%':'—')+'</td>';
+          return'<td style="width:'+CW+'px;text-align:center;padding:5px 0;font-variant-numeric:tabular-nums">'+(lgv!=null?'<div style="font-size:16px;font-weight:600;color:#1A1A1A">'+lgv.toFixed(1)+'%</div>':'<div style="font-size:16px;color:#CBD5E1">—</div>')+(rn!=null?'<div style="font-size:12px;font-weight:600;color:'+ratioColor(rn)+'">('+rn+'%)</div>':'')+'</td>';
         }).join('');
         rows+='<tr style="border-top:1px solid #F1F5F9"><td style="padding:5px 8px;font-size:16px;font-weight:600;color:#64748B;white-space:nowrap">'+label+'</td>'+cells+'</tr>';
       });
       if(!rows)return'';
-      var h='<table style="border-collapse:collapse;table-layout:fixed;width:'+(120+tblW)+'px">';
-      h+='<colgroup><col style="width:120px">';W.forEach(function(){h+='<col style="width:'+CW+'px">'});h+='</colgroup>';
+      var h='<table style="border-collapse:collapse;table-layout:fixed;width:'+(240+tblW)+'px">';
+      h+='<colgroup><col style="width:240px">';W.forEach(function(){h+='<col style="width:'+CW+'px">'});h+='</colgroup>';
       h+='<tr style="border-bottom:1px solid #E8EDF2"><th style="text-align:left;padding:5px 8px;font-size:15px;color:#94A3B8;font-weight:600">${o==="en"?"Country (vs #1)":"국가 (1위 경쟁사)"}</th>';
       W.forEach(function(wk){h+='<th style="text-align:center;padding:5px 0;font-size:15px;color:#94A3B8;font-weight:600">'+wk+'</th>'});
       h+='</tr>'+rows+'</table>';
@@ -2720,12 +2720,12 @@ updateHeroFromCheckboxes();
         if(ssLast!=null&&comp)html+='<span style="font-size:17px;color:#94A3B8">vs '+comp+' '+ssLast.toFixed(1)+'%</span>';
         html+='<span style="margin-left:auto">'+legend+'</span></div>';
         // 차트 + 표1 (TTL 전체)
-        html+='<div style="overflow-x:auto;padding:0 16px 12px"><div style="display:flex"><div style="width:120px;flex-shrink:0"></div><div style="width:'+tblW+'px;flex-shrink:0;padding:8px 0">'+svgChart(chartData,tblW,160)+'</div></div>';
+        html+='<div style="overflow-x:auto;padding:0 16px 12px"><div style="display:flex"><div style="width:240px;flex-shrink:0"></div><div style="width:'+tblW+'px;flex-shrink:0;padding:8px 0">'+svgChart(chartData,tblW,160)+'</div></div>';
         html+='<div style="font-size:14px;font-weight:700;color:#64748B;margin:4px 0 2px">${o==="en"?"Overall (TTL)":"전체 (TTL)"}</div>';
         html+=t1;
         // 표2 (국가별) — 국가별 함께 보기일 때만 토픽 안에 표시
         if(fView==='together'&&t2){
-          html+='<div style="font-size:14px;font-weight:700;color:#64748B;margin:14px 0 2px">${o==="en"?"By Country (vs #1 ratio)":"국가별 (1위 경쟁사 경쟁비)"}</div>';
+          html+='<div style="font-size:14px;font-weight:700;color:#64748B;margin:24px 0 2px">${o==="en"?"By Country (vs #1 ratio)":"국가별 (1위 경쟁사 경쟁비)"}</div>';
           html+=t2;
         }
         html+='</div></div>';
