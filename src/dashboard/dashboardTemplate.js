@@ -941,14 +941,27 @@ function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang, meta, appendixPromp
       if (t.bu && !sheetCatMap[k]) sheetCatMap[k] = t.bu
     })
   })
-  // 토픽 설명: 시트(PR Topic List) + meta raw 만 사용 (하드코딩 디폴트 없음)
-  const topicDescMap = { ...sheetDescMap, ...parseKeyValRaw(meta?.prTopicDescsRaw) }
+  const DEFAULT_TOPIC_DESCS = {
+    'TV': 'OLED·QNED 등 TV 제품 라인업 관련',
+    'TV Platform': 'webOS 등 스마트 TV 플랫폼·솔루션 관련',
+    'Audio': '오디오 제품군 전반',
+    'PC': '그램(gram) 노트북·모니터 등 IT 제품 관련',
+    'IT': '모니터·그램(gram) 노트북 등 IT 제품 관련',
+  }
+  const topicDescMap = { ...DEFAULT_TOPIC_DESCS, ...sheetDescMap, ...parseKeyValRaw(meta?.prTopicDescsRaw) }
 
-  // ── 토픽 카테고리(BU) 분류: PR Topic List 시트의 BU 만 사용 (하드코딩 분류 없음) ──
+  // ── 토픽 카테고리 분류: PR Topic List 시트의 BU 기준 ──
   const topicCategoryMap = {}
   topics.forEach(tp => {
     const sheetBU = sheetCatMap[tp]
-    if (sheetBU) topicCategoryMap[tp] = sheetBU
+    if (sheetBU) {
+      topicCategoryMap[tp] = sheetBU
+    } else {
+      // 폴백: 기존 분류
+      const CONSUMER_TOPICS = ['Audio', 'Kitchen', 'Living', 'TV', 'TV Platform', 'IT', 'PC']
+      topicCategoryMap[tp] = CONSUMER_TOPICS.some(ct => tp.toLowerCase().includes(ct.toLowerCase()))
+        ? 'MS/HS' : 'CORP/ES/VS'
+    }
   })
 
   return `<div style="max-width:1400px;margin:0 auto;padding:28px 40px;font-family:${FONT}">
@@ -995,6 +1008,7 @@ function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang, meta, appendixPromp
     var TOPIC_CAT=${JSON.stringify(topicCategoryMap)};
     var TOPIC_PROMPT=${JSON.stringify(topicPromptMap).replace(/</g, '\\u003c')};
     var TOPIC_DESC=${JSON.stringify(topicDescMap).replace(/</g, '\\u003c')};
+    var _prTopicList=${JSON.stringify(prTopicList).replace(/</g, '\\u003c')};
     var _CF=${JSON.stringify(COUNTRY_FULL_NAME)};
     function cf(c){return _CF[c]||_CF[c&&c.toUpperCase()]||c}
     var fType=TY[0]||'non-brand';
@@ -1025,46 +1039,45 @@ function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang, meta, appendixPromp
       return r&&r.scores[wk]!=null?r.scores[wk]:null;
     }
     function lastVal(topic,cnty,brand){for(var i=W.length-1;i>=0;i--){var v=val(topic,cnty,brand,W[i]);if(v!=null)return v}return null}
-    // ── 상단 매트릭스: 시트의 모든 토픽(TP) 노출 ──
-    // 하드코딩/PR Topic List 필터 없음. 토픽명으로 Weekly PR 데이터 직접 매칭.
-    // BU(TOPIC_CAT)는 시트에 있을 때만 표기 — 없으면 '—' 그룹.
+    // ── 상단 매트릭스: PR Topic List 시트 전용 ──
+    // PR Topic List의 토픽만 행으로 사용. 기존 토픽(oldTopic)으로 Weekly PR 데이터 JOIN.
     function renderMatrix(){
       var el=document.getElementById('${P}-matrix');if(!el)return;
-      if(!TP||!TP.length){el.innerHTML='<p style="text-align:center;color:#94A3B8;padding:20px">${lang==='en'?'No topics.':'토픽 데이터가 없습니다.'}</p>';return}
+      if(!_prTopicList||!_prTopicList.length){el.innerHTML='<p style="text-align:center;color:#94A3B8;padding:20px">PR Topic List 시트를 동기화해주세요.</p>';return}
       var lastW=W[W.length-1];
       var ac=CN.filter(function(c){return fCnty[c]});
       var cols=['TTL'].concat(ac);
-      // BU 그룹이 인접하도록 정렬 (BU 없는 토픽은 '￿'로 뒤로)
-      var ordered=TP.slice().sort(function(a,b){
-        var ba=TOPIC_CAT[a]||'￿',bb=TOPIC_CAT[b]||'￿';
-        return ba<bb?-1:ba>bb?1:0;
-      });
       var h='<div style="overflow-x:auto"><table style="border-collapse:collapse;width:100%">';
       h+='<thead><tr><th style="padding:8px 6px;text-align:center;font-size:16px;font-weight:700;color:#64748B;border-bottom:2px solid #E8EDF2;width:60px">BU</th>';
       h+='<th style="padding:8px 10px;text-align:left;font-size:16px;font-weight:700;color:#64748B;border-bottom:2px solid #E8EDF2;min-width:120px">${lang==='en'?'Topic':'토픽'} <span style="font-weight:400;color:#94A3B8">('+lastW+')</span></th>';
       h+='<th style="padding:8px 10px;text-align:left;font-size:16px;font-weight:700;color:#64748B;border-bottom:2px solid #E8EDF2;min-width:140px">${lang==='en'?'Description':'설명'}</th>';
       cols.forEach(function(c){h+='<th style="padding:8px 6px;text-align:center;font-size:16px;font-weight:700;color:#64748B;border-bottom:2px solid #E8EDF2;min-width:56px">'+cf(c)+'</th>'});
       h+='</tr></thead><tbody>';
-      var prevBU=null;
-      ordered.forEach(function(topic,idx){
-        var bu=TOPIC_CAT[topic]||'—';
-        var isNewBU=bu!==prevBU;
+      var prevBU='';
+      _prTopicList.forEach(function(row,idx){
+        var bu=row.bu||'';
+        var isNewBU=bu&&bu!==prevBU;
         var buCount=0;
-        if(isNewBU){ordered.forEach(function(t){if((TOPIC_CAT[t]||'—')===bu)buCount++})}
+        if(isNewBU){_prTopicList.forEach(function(r){if(r.bu===bu)buCount++})}
+        var dataKey=(row.oldTopic||'').trim();
         h+='<tr style="border-bottom:1px solid #F1F5F9;'+(isNewBU&&idx>0?'border-top:2px solid #CBD5E1;':'')+'">';
         if(isNewBU){
           h+='<td rowspan="'+buCount+'" style="padding:6px 8px;font-size:15px;font-weight:700;color:#475569;vertical-align:middle;text-align:center;border-right:2px solid #E8EDF2;background:#F8FAFC;line-height:1.4;word-break:keep-all">'+bu+'</td>';
           prevBU=bu;
         }
-        h+='<td style="padding:6px 10px;font-size:16px;font-weight:600;color:#1A1A1A">'+topic+'</td>';
-        h+='<td style="padding:6px 10px;font-size:14px;color:#64748B;line-height:1.4">'+(TOPIC_DESC[topic]||'')+'</td>';
-        cols.forEach(function(cnty){
-          var lg=lastVal(topic,cnty,'LG');
-          var ss=lastVal(topic,cnty,'Samsung');
-          var s=tl(lg,ss);
-          var ratio=(lg!=null&&ss!=null&&ss>0)?Math.round(lg/ss*100)+'%':'';
-          h+='<td style="padding:4px 6px;text-align:center;background:'+s.bg+';color:'+s.color+';font-size:15px;font-weight:700;font-variant-numeric:tabular-nums;border:1px solid '+s.border+'">'+(lg!=null?lg.toFixed(1)+'%':'—')+(ratio?'<div style="font-size:13px;font-weight:400;color:#64748B">('+ratio+')</div>':'')+'</td>';
-        });
+        h+='<td style="padding:6px 10px;font-size:16px;font-weight:600;color:#1A1A1A">'+row.topic+'</td>';
+        h+='<td style="padding:6px 10px;font-size:14px;color:#64748B;line-height:1.4">'+((row.explanation||''))+'</td>';
+        if(!dataKey){
+          h+='<td colspan="'+cols.length+'" style="padding:8px 12px;text-align:center;font-size:13px;color:#94A3B8;font-style:italic;border:1px solid #F1F5F9;background:#FAFBFC">${lang==='en'?'Prompt addition/modification in progress (KPI tracking planned within April)':'Prompt 추가/수정 진행 중 (4월 내 KPI 추적 진행 예정)'}</td>';
+        }else{
+          cols.forEach(function(cnty){
+            var lg=lastVal(dataKey,cnty,'LG');
+            var ss=lastVal(dataKey,cnty,'Samsung');
+            var s=tl(lg,ss);
+            var ratio=(lg!=null&&ss!=null&&ss>0)?Math.round(lg/ss*100)+'%':'';
+            h+='<td style="padding:4px 6px;text-align:center;background:'+s.bg+';color:'+s.color+';font-size:15px;font-weight:700;font-variant-numeric:tabular-nums;border:1px solid '+s.border+'">'+(lg!=null?lg.toFixed(1)+'%':'—')+(ratio?'<div style="font-size:13px;font-weight:400;color:#64748B">('+ratio+')</div>':'')+'</td>';
+          });
+        }
         h+='</tr>';
       });
       h+='</tbody></table></div>';
@@ -1095,8 +1108,13 @@ function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang, meta, appendixPromp
     function renderSections(){
       var el=document.getElementById('${P}-sections');if(!el)return;
       var N=W.length;var tblW=CW*N;var html='';
-      // 시트의 모든 토픽(TP)을 섹션으로 노출 (PR Topic List 필터 없음)
-      TP.forEach(function(topic){
+      // PR Topic List의 기존 토픽(oldTopic)이 있는 토픽만 섹션 표시
+      var validTopics=[];
+      if(_prTopicList&&_prTopicList.length){
+        _prTopicList.forEach(function(t){if(t.oldTopic&&t.oldTopic.trim())validTopics.push(t.oldTopic.trim())});
+      }
+      var sectionTopics=validTopics.length?validTopics:TP;
+      sectionTopics.forEach(function(topic){
         var ttl=D.filter(function(r){return r.topic===topic&&r.country==='TTL'&&r.type===fType});
         if(!ttl.length)return;
         var brandMap={};
