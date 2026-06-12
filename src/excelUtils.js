@@ -2055,8 +2055,8 @@ function parsePRVisibility(rows, mode) {
   }
   dataStartCol = Math.max(typeCol, countryCol, topicCol, brandCol) + 1
 
-  // 데이터 라벨 추출 (월 또는 주차)
-  const MONTH_RE = /^(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|[0-9]{1,2}월)/i
+  // 데이터 라벨 추출 (월 또는 주차). 한국식 '26년 5월' / '2026년 5월' / ISO '2026-05' 포함 (data.md §5.1 ANTI-PATTERN: (\d{4})만 매칭 금지)
+  const MONTH_RE = /^(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|\d{1,2}월|\d{2,4}년|\d{4}[-/]\d{1,2})/i
   const WEEK_RE = /^w\d+/i
   const dataLabels = []
   // 헤더 행 및 주변 행(0~headerIdx)에서 라벨 탐색
@@ -2128,7 +2128,8 @@ function parseBrandPromptVisibility(rows, mode) {
   }
   dataStartCol = Math.max(stakeholderCol, typeCol, countryCol, topicCol) + 1
 
-  const MONTH_RE = /^(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|[0-9]{1,2}월)/i
+  // 한국식 '26년 5월' / '2026년 5월' / ISO '2026-05' 포함 (data.md §5.1 ANTI-PATTERN: (\d{4})만 매칭 금지)
+  const MONTH_RE = /^(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|\d{1,2}월|\d{2,4}년|\d{4}[-/]\d{1,2})/i
   const WEEK_RE = /^w\d+/i
   const dataLabels = []
   for (let i = dataStartCol; i < header.length; i++) {

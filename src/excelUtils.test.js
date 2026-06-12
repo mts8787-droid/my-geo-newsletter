@@ -780,6 +780,18 @@ describe('parsePRVisibility — monthly/weekly 모드', () => {
     expect(first?.latestScore).toBe(55)
   })
 
+  it('한국식 월 라벨 (26년 5월 / 2026년 5월) 인식', () => {
+    const rows = [
+      ['Type',       'Country', 'Topic',      'Brand', '26년 5월', '2026년 6월'],
+      ['non-brand',  'TTL',     '(HS) Robot', 'LG',     5.6,        7.2],
+      ['non-brand',  'TTL',     '(HS) Robot', 'Tesla',  21.5,       20.0],
+    ]
+    const result = parseSheetRows(SHEET_NAMES.monthlyPR, rows)
+    expect(result.monthlyPRLabels).toEqual(['26년 5월', '2026년 6월'])
+    expect(result.monthlyPR?.length).toBe(2)
+    expect(result.monthlyPR?.[0]?.scores).toEqual({ '26년 5월': 5.6, '2026년 6월': 7.2 })
+  })
+
   it('topic 헤더명 누락 → C열(index 2) 폴백 + warn', () => {
     const rows = [
       ['Type', 'County', '토픽분류', 'Brand', 'Feb', 'Mar'],
