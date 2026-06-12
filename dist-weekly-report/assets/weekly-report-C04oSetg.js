@@ -2036,16 +2036,46 @@ function _monthTotalOverride(){
     var m=String(r.llmModel||'Total').toUpperCase();
     return(c==='TOTAL'||c==='TTL')&&(d==='TOTAL'||d==='TTL'||d==='')&&(m==='TOTAL'||m==='ALL');
   });
-  if(!ttl.length)return null;
+  if(!ttl.length)return _monthTotalFromProducts();
   ttl.sort(function(a,b){return _dateMi(a.date)-_dateMi(b.date)});
   var idx=-1;
   ttl.forEach(function(r,i){if(_dateMi(r.date)===_curMonthIdxIn12)idx=i});
-  if(idx<0)return null;
+  if(idx<0)return _monthTotalFromProducts();
   var cur=ttl[idx];var prev=idx>0?ttl[idx-1]:null;
   return{
     score:+(Number(cur.lg)||0).toFixed(1),
     prev:+(Number(prev?prev.lg:cur.lg)||0).toFixed(1),
     vsComp:+(Number(cur.comp)||0).toFixed(1),
+    compName:'SAMSUNG'
+  };
+}
+// 폴백 — _monthlyVis TTL 행이 선택 월을 커버하지 않을 때, 작동 중인 cnty 카드/트렌드와
+// 동일한 소스(_products[].monthlyScores: score=LG, comp=1위 경쟁사)를 월별 평균해서
+// 선택 월 수치 + 직전(가용) 월 MoM 계산. _curMonthIdxIn12 미선택 시 null.
+function _monthTotalFromProducts(){
+  if(_curMonthIdxIn12<0||!_products||!_products.length)return null;
+  var byMi={};
+  _products.forEach(function(p){
+    (p.monthlyScores||[]).forEach(function(m){
+      if(m.score==null)return;
+      var mi=_dateMi(m.date);if(mi<0)return;
+      if(!byMi[mi])byMi[mi]={lgSum:0,lgCnt:0,compSum:0,compCnt:0};
+      byMi[mi].lgSum+=Number(m.score)||0;byMi[mi].lgCnt++;
+      if(m.comp!=null){byMi[mi].compSum+=Number(m.comp)||0;byMi[mi].compCnt++}
+    });
+  });
+  var mis=Object.keys(byMi).map(Number).sort(function(a,b){return a-b});
+  var pos=mis.indexOf(_curMonthIdxIn12);
+  if(pos<0||!byMi[_curMonthIdxIn12].lgCnt)return null;
+  var cur=byMi[_curMonthIdxIn12];
+  var prev=pos>0?byMi[mis[pos-1]]:null;
+  var curLg=cur.lgSum/cur.lgCnt;
+  var prevLg=prev&&prev.lgCnt?prev.lgSum/prev.lgCnt:curLg;
+  var curComp=cur.compCnt?cur.compSum/cur.compCnt:0;
+  return{
+    score:+curLg.toFixed(1),
+    prev:+prevLg.toFixed(1),
+    vsComp:+curComp.toFixed(1),
     compName:'SAMSUNG'
   };
 }
@@ -2414,7 +2444,7 @@ updateHeroFromCheckboxes();
     <div class="section-card" style="margin-bottom:24px">
       <div class="section-header">
         <div class="section-title">${o==="en"?"PR Visibility Overview":"PR Visibility 현황"} <span style="font-size:12px;font-weight:600;color:#3B82F6;background:#EFF6FF;padding:2px 8px;border-radius:6px;border:1px solid #93C5FD">${e!=null&&e.length?e[e.length-1].toUpperCase():""} ${o==="en"?"data":"기준"}</span></div>
-        <span class="legend"><i style="background:#15803D"></i>${o==="en"?"Lead ≥100%":"선도 ≥100%"} <i style="background:#D97706"></i>${o==="en"?"Behind ≥80%":"추격 ≥80%"} <i style="background:#BE123C"></i>${o==="en"?"Critical <80%":"취약 <80%"} <span style="color:#94A3B8;font-size:11px;margin-left:6px">${o==="en"?"() = vs SS ratio":"() 는 SS 대비 경쟁비"}</span></span>
+        <span class="legend"><i style="background:#15803D"></i>${o==="en"?"Lead ≥100%":"선도 ≥100%"} <i style="background:#D97706"></i>${o==="en"?"Behind ≥80%":"추격 ≥80%"} <i style="background:#BE123C"></i>${o==="en"?"Critical <80%":"취약 <80%"} <span style="color:#94A3B8;font-size:11px;margin-left:6px">${o==="en"?"() = vs #1 competitor":"() 는 1위 경쟁사 대비"}</span></span>
       </div>
       <div class="section-body" id="${p}-matrix"></div>
     </div>
