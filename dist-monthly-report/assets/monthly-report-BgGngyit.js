@@ -2554,7 +2554,7 @@ updateHeroFromCheckboxes();
         var isNewBU=bu&&bu!==prevBU;
         var buCount=0;
         if(isNewBU){_prTopicList.forEach(function(r){if(r.bu===bu)buCount++})}
-        var dataKey=(row.oldTopic||'').trim();
+        var dataKey=(row.topicRow||'').trim();
         h+='<tr style="border-bottom:1px solid #F1F5F9;'+(isNewBU&&idx>0?'border-top:2px solid #CBD5E1;':'')+'">';
         if(isNewBU){
           h+='<td rowspan="'+buCount+'" style="padding:6px 8px;font-size:15px;font-weight:700;color:#475569;vertical-align:middle;text-align:center;border-right:2px solid #E8EDF2;background:#F8FAFC;line-height:1.4;word-break:keep-all">'+bu+'</td>';
@@ -2562,17 +2562,13 @@ updateHeroFromCheckboxes();
         }
         h+='<td style="padding:6px 10px;font-size:16px;font-weight:600;color:#1A1A1A">'+row.topic+'</td>';
         h+='<td style="padding:6px 10px;font-size:14px;color:#64748B;line-height:1.4">'+((row.explanation||''))+'</td>';
-        if(!dataKey){
-          h+='<td colspan="'+cols.length+'" style="padding:8px 12px;text-align:center;font-size:13px;color:#94A3B8;font-style:italic;border:1px solid #F1F5F9;background:#FAFBFC">${o==="en"?"Prompt addition/modification in progress (KPI tracking planned within April)":"Prompt 추가/수정 진행 중 (4월 내 KPI 추적 진행 예정)"}</td>';
-        }else{
-          cols.forEach(function(cnty){
-            var lg=lastVal(dataKey,cnty,'LG');
-            var ss=lastVal(dataKey,cnty,'Samsung');
-            var s=tl(lg,ss);
-            var ratio=(lg!=null&&ss!=null&&ss>0)?Math.round(lg/ss*100)+'%':'';
-            h+='<td style="padding:4px 6px;text-align:center;background:'+s.bg+';color:'+s.color+';font-size:15px;font-weight:700;font-variant-numeric:tabular-nums;border:1px solid '+s.border+'">'+(lg!=null?lg.toFixed(1)+'%':'—')+(ratio?'<div style="font-size:13px;font-weight:400;color:#64748B">('+ratio+')</div>':'')+'</td>';
-          });
-        }
+        cols.forEach(function(cnty){
+          var lg=lastVal(dataKey,cnty,'LG');
+          var ss=lastVal(dataKey,cnty,'Samsung');
+          var s=tl(lg,ss);
+          var ratio=(lg!=null&&ss!=null&&ss>0)?Math.round(lg/ss*100)+'%':'';
+          h+='<td style="padding:4px 6px;text-align:center;background:'+s.bg+';color:'+s.color+';font-size:15px;font-weight:700;font-variant-numeric:tabular-nums;border:1px solid '+s.border+'">'+(lg!=null?lg.toFixed(1)+'%':'—')+(ratio?'<div style="font-size:13px;font-weight:400;color:#64748B">('+ratio+')</div>':'')+'</td>';
+        });
         h+='</tr>';
       });
       h+='</tbody></table></div>';
@@ -2603,13 +2599,14 @@ updateHeroFromCheckboxes();
     function renderSections(){
       var el=document.getElementById('${d}-sections');if(!el)return;
       var N=W.length;var tblW=CW*N;var html='';
-      // PR Topic List의 기존 토픽(oldTopic)이 있는 토픽만 섹션 표시
-      var validTopics=[];
+      // PR Topic List의 Topic-row(topicRow)로 데이터 매칭, 대시보드 토픽명으로 표시
+      var sectionTopics=[];
       if(_prTopicList&&_prTopicList.length){
-        _prTopicList.forEach(function(t){if(t.oldTopic&&t.oldTopic.trim())validTopics.push(t.oldTopic.trim())});
+        _prTopicList.forEach(function(t){if(t.topicRow&&t.topicRow.trim())sectionTopics.push({key:t.topicRow.trim(),name:t.topic||t.topicRow.trim()})});
       }
-      var sectionTopics=validTopics.length?validTopics:TP;
-      sectionTopics.forEach(function(topic){
+      if(!sectionTopics.length)TP.forEach(function(t){sectionTopics.push({key:t,name:t})});
+      sectionTopics.forEach(function(st0){
+        var topic=st0.key;var topicName=st0.name;
         var ttl=D.filter(function(r){return r.topic===topic&&r.country==='TTL'&&r.type===fType});
         if(!ttl.length)return;
         var brandMap={};
@@ -2634,7 +2631,7 @@ updateHeroFromCheckboxes();
         // 헤더
         html+='<div style="padding:14px 20px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;display:flex;align-items:center;gap:10px;flex-wrap:wrap">';
         html+='<span style="width:4px;height:22px;border-radius:4px;background:'+RED+';flex-shrink:0"></span>';
-        html+='<span style="font-size:21px;font-weight:700;color:#1A1A1A">'+topic+'</span>';
+        html+='<span style="font-size:21px;font-weight:700;color:#1A1A1A">'+topicName+'</span>';
         var tpPrompt=TOPIC_PROMPT[topic]||'';
         if(tpPrompt)html+='<span style="font-size:18px;color:#64748B;font-weight:500;font-style:italic;max-width:700px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">"'+tpPrompt+'"</span>';
         if(st.label!=='—')html+='<span style="font-size:17px;font-weight:700;padding:2px 10px;border-radius:10px;background:'+st.bg+';color:'+st.color+';border:1px solid '+st.border+'">'+st.label+'</span>';
