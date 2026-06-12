@@ -1538,6 +1538,8 @@ function updateHeroFromCheckboxes(){
     var dColor=d>0?'#22C55E':d<0?'#EF4444':'#94A3B8';
     var ctx=hero.querySelector('#hero-ctx, .hero-ctx');
     if(ctx)ctx.innerHTML=badges;
+    var compRatioEl=hero.querySelector('.hero-compratio-val');
+    if(compRatioEl&&comp>0){var cr=Math.round((sc/comp)*100);compRatioEl.textContent=cr+'%';compRatioEl.style.color=cr>=100?'#22C55E':cr>=80?'#FBBF24':'#EF4444'}
     var scoreRow=hero.querySelector('.hero-score-row');
     if(scoreRow)scoreRow.innerHTML='<span class="hero-score">'+sc.toFixed(1)+'</span><span class="hero-pct">%</span><span class="hero-delta" style="color:'+dColor+'">'+dArrow+' '+Math.abs(d).toFixed(1)+'%p</span><span class="hero-mom">MoM</span>';
     var tracks=hero.querySelectorAll('.hero-gauge-track');

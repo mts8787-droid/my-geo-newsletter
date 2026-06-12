@@ -43,6 +43,10 @@ body{background:#F1F5F9;font-family:${FONT};min-width:1200px;color:#1A1A1A}
 .hero-left{flex:1}
 .hero-right{flex:0 0 320px;text-align:right}
 .hero-label{font-size:16px;font-weight:600;color:#94A3B8;text-transform:uppercase;margin-bottom:8px}
+.hero-compratio{display:flex;align-items:baseline;gap:8px;margin-bottom:6px}
+.hero-compratio-cap{font-size:13px;font-weight:700;color:#64748B;letter-spacing:0.3px}
+.hero-compratio-val{font-size:20px;font-weight:900;letter-spacing:-0.5px}
+.hero-compratio-sub{font-size:13px;color:#64748B}
 .hero-score-row{margin-bottom:16px;display:flex;align-items:baseline;gap:8px}
 .hero-score{font-size:52px;font-weight:900}
 .hero-pct{font-size:20px;color:#94A3B8}

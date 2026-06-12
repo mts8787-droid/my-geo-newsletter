@@ -271,6 +271,8 @@ function heroHtml(total, meta, t, lang, periodMode) {
   const gap = +(total.score - compAvg).toFixed(1)
   const dArrow = d > 0 ? '▲' : d < 0 ? '▼' : '─'
   const dColor = d > 0 ? '#22C55E' : d < 0 ? '#EF4444' : '#94A3B8'
+  const compRatio = compAvg > 0 ? Math.round((total.score / compAvg) * 100) : null
+  const ratioColor = compRatio == null ? '#94A3B8' : compRatio >= 100 ? '#22C55E' : compRatio >= 80 ? '#FBBF24' : '#EF4444'
   const periodAttr = periodMode === 'weekly' ? ' data-period="weekly"' : ' data-period="monthly"'
   return `<div class="hero" id="hero-section"${periodAttr}>
     <div class="hero-top">
@@ -285,6 +287,11 @@ function heroHtml(total, meta, t, lang, periodMode) {
     <div class="hero-body">
       <div class="hero-left">
         <div class="hero-label">LG GEO Visibility %</div>
+        ${compRatio != null ? `<div class="hero-compratio">
+          <span class="hero-compratio-cap">${lang === 'en' ? 'Comp. Ratio' : '경쟁비'}</span>
+          <span class="hero-compratio-val" style="color:${ratioColor}">${compRatio}%</span>
+          <span class="hero-compratio-sub">${lang === 'en' ? 'vs Samsung' : '삼성 대비'}</span>
+        </div>` : ''}
         <div class="hero-score-row">
           <span class="hero-score">${total.score}</span><span class="hero-pct">%</span>
           <span class="hero-delta" style="color:${dColor}">${dArrow} ${Math.abs(d).toFixed(1)}%p</span>
