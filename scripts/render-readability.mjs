@@ -230,7 +230,6 @@ body{background:#F1F5F9;font-family:${FONT};color:#1A1A1A;line-height:1.6}
 .tab-bar .back:hover{color:#E2E8F0}
 .dash-container{max-width:1400px;margin:0 auto;padding:28px 40px}
 .page-head{margin-bottom:24px}
-.page-head h1{font-size:26px;font-weight:900;color:#1A1A1A;letter-spacing:-0.5px;margin-bottom:6px}
 .page-head .sub{font-size:15px;color:#64748B}
 .page-head .sub strong{color:#1A1A1A}
 /* ── Hero (Visibility 다크 카드) ── */
@@ -281,7 +280,6 @@ body{background:#F1F5F9;font-family:${FONT};color:#1A1A1A;line-height:1.6}
 @media (max-width:780px){
   .tab-bar{padding:10px 16px}
   .dash-container{padding:16px 14px}
-  .page-head h1{font-size:22px}
   .hero{padding:20px 18px}
   .hero-body{gap:20px}
   .hero-right{flex:1 1 100%}
@@ -295,7 +293,6 @@ body{background:#F1F5F9;font-family:${FONT};color:#1A1A1A;line-height:1.6}
 }
 @media (max-width:480px){
   .dash-container{padding:12px 10px}
-  .page-head h1{font-size:18px}
   .bar-label{flex:0 0 110px;font-size:11px;white-space:normal}
   .bar-value{flex:0 0 88px}
 }
@@ -308,7 +305,6 @@ body{background:#F1F5F9;font-family:${FONT};color:#1A1A1A;line-height:1.6}
 
 <div class="dash-container">
   <div class="page-head">
-    <h1>Readability — GEO 어딧 대시보드</h1>
     <p class="sub">측정일 <strong>${escHtml(snapshot.date)}</strong> · 생성 ${escHtml((snapshot.generatedAt || '').slice(0, 16).replace('T', ' '))} · ${escHtml(momNote)}</p>
   </div>
 
