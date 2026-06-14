@@ -141,6 +141,8 @@ export default function App() {
     iframeSrc = IFRAME_PATHS[activeTab][lang]
   } else if (activeTab === 'tracker') {
     iframeSrc = IFRAME_PATHS.tracker + '?lang=' + lang
+  } else if (activeTab === 'readability') {
+    iframeSrc = '/admin/readability'  // 자체 서버 렌더 HTML (KO 단독, lang 무관)
   }
 
   return (
@@ -202,14 +204,36 @@ export default function App() {
             {TABS.find(t => t.key === activeTab)?.label}
           </h2>
 
-          {/* Readability placeholder */}
+          {/* Readability — GEO 어딧 대시보드 (자체 서버 렌더, 우측 임베드) */}
           {activeTab === 'readability' ? (
-            <div style={{
-              background: CARD_BG, borderRadius: 10, padding: 24,
-              textAlign: 'center', color: TEXT_DIM, fontSize: 14,
-            }}>
-              {lang === 'en' ? 'Coming Soon' : '준비 중'}
-            </div>
+            <>
+              <div style={{
+                background: CARD_BG, borderRadius: 10, padding: 16,
+                color: TEXT_DIM, fontSize: 13, lineHeight: 1.7,
+              }}>
+                {lang === 'en'
+                  ? 'GEO audit readability scores across countries — page types, categories, and per-check pass rates.'
+                  : 'GEO 어딧 가독성(Readability) 점수 — 국가·페이지타입·카테고리·체크별 통과율을 집계한 대시보드입니다.'}
+              </div>
+              <a href="/admin/readability" target="_blank" rel="noopener noreferrer" style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                padding: '10px 16px', borderRadius: 8, border: 'none',
+                background: '#1D4ED8', color: '#FFFFFF',
+                fontSize: 13, fontWeight: 700, fontFamily: FONT,
+                textDecoration: 'none', cursor: 'pointer',
+              }}>
+                {lang === 'en' ? 'Open full screen' : '전체 화면으로 열기'}
+              </a>
+              <a href="/admin/readability/urls.csv" style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                padding: '10px 16px', borderRadius: 8, border: `1px solid ${BORDER}`,
+                background: 'transparent', color: TEXT,
+                fontSize: 13, fontWeight: 700, fontFamily: FONT,
+                textDecoration: 'none', cursor: 'pointer',
+              }}>
+                {lang === 'en' ? 'Download URL CSV' : '검수 URL CSV 다운로드'}
+              </a>
+            </>
           ) : (
             <>
               {/* 탭 설명 (glossary / appendix) */}
@@ -314,14 +338,7 @@ export default function App() {
 
         {/* ─── Main Content Area ─── */}
         <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-          {activeTab === 'readability' ? (
-            <div style={{
-              flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
-              color: TEXT_DIM, fontSize: 20, fontWeight: 700,
-            }}>
-              Coming Soon
-            </div>
-          ) : activeTab === 'glossary' ? (
+          {activeTab === 'glossary' ? (
             <GlossaryPage lang={lang} />
           ) : activeTab === 'appendix' ? (
             <AppendixPage lang={lang} />
