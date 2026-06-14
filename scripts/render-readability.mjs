@@ -12,6 +12,20 @@
 import { FONT, RED, COMP } from '../src/dashboard/dashboardConsts.js'
 import { statusInfo } from '../src/dashboard/dashboardFormat.js'
 
+// @font-face — 커스텀 폰트 (LGEIText / LG Smart) 실제 파일 로드.
+// FONT 토큰은 family 이름만 나열 → 이 @font-face 블록 없으면 시스템 폰트로 폴백.
+// /font 정적 경로는 routes/spa-static.js 가 서빙. weekly/citation 등 다른 서버 렌더 페이지와 동일 패턴.
+const FONT_FACE_CSS = `
+@font-face { font-family: 'LGEIText'; font-weight: 100 300; font-style: normal; src: url('/font/LGEIText%20Light.ttf') format('truetype'); font-display: swap; }
+@font-face { font-family: 'LGEIText'; font-weight: 400 500; font-style: normal; src: url('/font/LGEIText%20Regular.otf') format('opentype'), url('/font/LGEIText%20Regular.ttf') format('truetype'); font-display: swap; }
+@font-face { font-family: 'LGEIText'; font-weight: 600; font-style: normal; src: url('/font/LGEIText%20SemiBold.ttf') format('truetype'); font-display: swap; }
+@font-face { font-family: 'LGEIText'; font-weight: 700 900; font-style: normal; src: url('/font/LGEIText%20Bold.ttf') format('truetype'); font-display: swap; }
+@font-face { font-family: 'LG Smart'; font-weight: 400; font-style: normal; src: url('/font/LG%20Smart%20Regular.ttf') format('truetype'); font-display: swap; }
+@font-face { font-family: 'LG Smart'; font-weight: 600; font-style: normal; src: url('/font/LG%20Smart%20SemiBold.ttf') format('truetype'); font-display: swap; }
+@font-face { font-family: 'LG Smart'; font-weight: 700; font-style: normal; src: url('/font/LG%20Smart%20Bold.ttf') format('truetype'); font-display: swap; }
+@font-face { font-family: 'LG Smart'; font-weight: 300; font-style: normal; src: url('/font/LG%20Smart%20Light.ttf') format('truetype'); font-display: swap; }
+`
+
 const CATEGORIES = ['performance', 'accessibility', 'seo', 'ai_readiness']
 
 // cc(소문자) → 표시명
@@ -186,7 +200,8 @@ function viewBotsAndSsr(snap) {
 export function renderReadabilityHTML({ snapshot, index, adminMode = false } = {}) {
   if (!snapshot || !snapshot.overall) {
     return `<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">
-      <style>body{background:#F1F5F9;font-family:${FONT};color:#1A1A1A;padding:40px;line-height:1.6}
+      <link href="https://fonts.cdnfonts.com/css/lg-smart" rel="stylesheet" />
+      <style>${FONT_FACE_CSS}body{background:#F1F5F9;font-family:${FONT};color:#1A1A1A;padding:40px;line-height:1.6}
       a{color:${RED}}pre{background:#fff;border:1px solid #E8EDF2;border-radius:8px;padding:12px 16px}</style></head>
       <body>
       <h1>Readability 스냅샷 없음</h1>
@@ -203,7 +218,9 @@ export function renderReadabilityHTML({ snapshot, index, adminMode = false } = {
   return `<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Readability — GEO 어딧 대시보드</title>
+<link href="https://fonts.cdnfonts.com/css/lg-smart" rel="stylesheet" />
 <style>
+${FONT_FACE_CSS}
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#F1F5F9;font-family:${FONT};color:#1A1A1A;line-height:1.6}
 .tab-bar{position:sticky;top:0;z-index:100;background:#0F172A;display:flex;align-items:center;justify-content:space-between;padding:12px 40px}
