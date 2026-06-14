@@ -33,6 +33,7 @@ import { landingRouter } from './routes/landing.js'
 import { sheetDownloadRouter } from './routes/sheet-download.js'
 import { harnessRouter } from './routes/harness.js'
 import { chartLibraryRouter } from './routes/chart-library.js'
+import { readabilityRouter } from './routes/readability.js'
 
 dotenv.config()
 
@@ -172,6 +173,7 @@ app.use(adminPagesRouter)
 app.use(observabilityRouter)
 app.use(harnessRouter)
 app.use(chartLibraryRouter)
+app.use(readabilityRouter)
 app.use(sheetDownloadRouter)
 app.use(bridgeRouter)
 app.use(spaStaticRouter)

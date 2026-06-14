@@ -854,9 +854,9 @@ ${themeToggleButton()}
         <div class="card-title">Citation Editor</div>
         <div class="card-desc">Citation 분석 편집 — Citation 단독 게시</div>
       </a>
-      <a class="card" href="/admin/readability" style="opacity:0.5;pointer-events:none">
-        <div class="card-title">Readability Editor</div>
-        <div class="card-desc">추후 고도화 예정</div>
+      <a class="card" href="/admin/readability">
+        <div class="card-title">Readability 대시보드</div>
+        <div class="card-desc">GEO 어딧 결과 — 국가별 점수 · 카테고리 체크 · 페이지타입 · AI봇/SSR</div>
       </a>
       <a class="card" href="/admin/progress-tracker-v2/">
         <div class="card-title">Progress Tracker</div>
