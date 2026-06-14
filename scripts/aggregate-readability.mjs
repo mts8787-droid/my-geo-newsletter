@@ -217,12 +217,27 @@ function main() {
   const fileDates = []
   const urlRows = []  // CSV 다운로드용 per-URL 행: { url, country, pt, score }
 
+  // 국가별 최신 run 만 선택 — run_results 에 같은 국가의 여러 날짜 run 이 공존하면
+  // (예: br_2026-06-13 + br_2026-06-14) 최신 날짜 하나만 집계. 과거 run 이
+  // overall/CSV 에 이중 계상되던 버그 방지 (countries[cc] 는 덮어쓰기라 최신만 남는데
+  // overall/urlRows 는 모든 파일을 누적했었음 → 다중 날짜 국가만 inflate).
+  const latestByCc = {}
   for (const fname of files) {
     const meta = parseFileName(fname)
     if (!meta) {
       console.warn(`[aggregate-readability] WARN: 파일명 패턴 불일치, skip — ${fname}`)
       continue
     }
+    const prev = latestByCc[meta.cc]
+    if (!prev || meta.date >= prev.meta.date) {
+      if (prev) console.log(`[aggregate-readability] ${meta.cc}: 과거 run 제외 (${prev.meta.date}/${prev.meta.runId}) → 최신 채택 (${meta.date}/${meta.runId})`)
+      latestByCc[meta.cc] = { fname, meta }
+    } else {
+      console.log(`[aggregate-readability] ${meta.cc}: 과거 run 제외 (${meta.date}/${meta.runId}) — 최신 유지 (${prev.meta.date}/${prev.meta.runId})`)
+    }
+  }
+
+  for (const { fname, meta } of Object.values(latestByCc)) {
     let data
     try {
       data = JSON.parse(readFileSync(join(SRC, fname), 'utf8'))
