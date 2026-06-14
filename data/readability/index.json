@@ -2,7 +2,7 @@
   "snapshots": [
     {
       "date": "2026-06-13",
-      "generatedAt": "2026-06-14T12:08:03.689Z",
+      "generatedAt": "2026-06-14T12:23:17.172Z",
       "countries": [
         "au",
         "br",
@@ -15,8 +15,8 @@
         "us",
         "vn"
       ],
-      "overallAvg": 57.7,
-      "urlCount": 7575
+      "overallAvg": 61.6,
+      "urlCount": 6834
     }
   ]
 }

@@ -37,6 +37,21 @@ const CATEGORY_LABEL = {
   ai_readiness: 'AI Readiness',
 }
 
+// 점수 집계에서 완전 제외할 페이지타입 (분류불가/홈페이지) — 점수·카테고리·체크·페이지타입행 모두 제외
+const EXCLUDED_PT = { unknown: 1, home: 1 }
+// 페이지타입 통합 — about(회사)/content(콘텐츠매거진) → newsroom(뉴스룸) 으로 병합
+const PT_MERGE = { about: 'newsroom', content: 'newsroom' }
+// 통합/병합 결과 페이지타입의 표준 라벨 (병합 시 라벨 일관성)
+const PT_LABEL = { newsroom: '뉴스룸/Press' }
+
+// 페이지타입 정규화 — 병합 적용 + 제외 여부 판정. { id, label, excluded } 또는 null
+function resolvePt(pt) {
+  if (!pt || !pt.id) return null
+  const id = PT_MERGE[pt.id] || pt.id
+  if (EXCLUDED_PT[id]) return { id, label: pt.label || id, excluded: true }
+  return { id, label: PT_LABEL[id] || pt.label || id, excluded: false }
+}
+
 // 국가코드 → 표시명 (CSV 다운로드 국가 컬럼용)
 const CC_NAME = {
   us: 'USA', ca: 'Canada', uk: 'UK', gb: 'UK', de: 'Germany', es: 'Spain',
@@ -106,6 +121,9 @@ function accumulateChecks(target, score) {
 
 // 단일 result 를 누적기에 반영
 function accumulate(acc, result) {
+  // 분류불가(unknown)/홈페이지(home) 는 점수 집계에서 완전 제외 — 어떤 항목에도 기여 X
+  const rpt = resolvePt(result.page_type)
+  if (rpt && rpt.excluded) return
   acc.urlCount++
   const score = result.score
   const scored = score && typeof score.total === 'number'
@@ -116,11 +134,10 @@ function accumulate(acc, result) {
     acc.grades[g] = (acc.grades[g] || 0) + 1
     accumulateChecks(acc, score)
   }
-  // 페이지타입별 점수 + 체크/카테고리 (페이지타입 분해 통과율용)
-  const pt = result.page_type
-  if (pt && pt.id) {
-    if (!acc.pageTypes[pt.id]) acc.pageTypes[pt.id] = { label: pt.label || pt.id, count: 0, scoreSum: 0, scoredCount: 0, ...newCheckBins() }
-    const slot = acc.pageTypes[pt.id]
+  // 페이지타입별 점수 + 체크/카테고리 (페이지타입 분해 통과율용) — 병합 id/라벨 사용
+  if (rpt) {
+    if (!acc.pageTypes[rpt.id]) acc.pageTypes[rpt.id] = { label: rpt.label, count: 0, scoreSum: 0, scoredCount: 0, ...newCheckBins() }
+    const slot = acc.pageTypes[rpt.id]
     slot.count++
     if (scored) {
       slot.scoreSum += score.total
@@ -216,10 +233,13 @@ function main() {
       accumulate(acc, s.result)
       accumulate(overall, s.result)
       const r = s.result
+      // 제외 페이지타입(분류불가/홈페이지) 은 검수 CSV 에서도 제외 (완전 제거 일관성)
+      const rpt = resolvePt(r.page_type)
+      if (rpt && rpt.excluded) continue
       urlRows.push({
         url: s.url || r.url || '',
         country: CC_NAME[meta.cc] || meta.cc.toUpperCase(),
-        pt: (r.page_type && r.page_type.label) || '',
+        pt: rpt ? rpt.label : '',
         score: (r.score && typeof r.score.total === 'number') ? r.score.total : '',
       })
     }
