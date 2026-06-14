@@ -8,8 +8,9 @@
 // 디자인: Visibility 대시보드와 통일 (dashboardStyles.js 토큰) — 라이트 테마.
 //   body #F1F5F9 / Hero 다크 카드 #0F172A / 흰 section-card + 레드바 타이틀.
 
-const FONT = "'LGEIText','LG Smart','Arial Narrow',Arial,sans-serif"
-const RED = '#CF0652'
+// 디자인 토큰 단일 소스 — Visibility 대시보드와 동일 (하드코딩 X)
+import { FONT, RED, COMP } from '../src/dashboard/dashboardConsts.js'
+import { statusInfo } from '../src/dashboard/dashboardFormat.js'
 
 const CATEGORIES = ['performance', 'accessibility', 'seo', 'ai_readiness']
 
@@ -26,19 +27,19 @@ function escHtml(s) {
     .replace(/"/g, '&quot;')
 }
 
-// 점수(0~100) → 색 (lead/behind/critical 톤)
+// 점수(0~100) → STATUS 토큰 색 (lead/behind/critical)
 function scoreColor(v) {
-  if (v == null) return '#94A3B8'
-  if (v >= 70) return '#15803D'
-  if (v >= 50) return '#B45309'
-  return '#BE123C'
+  if (v == null) return COMP
+  if (v >= 70) return statusInfo('lead').color
+  if (v >= 50) return statusInfo('behind').color
+  return statusInfo('critical').color
 }
-// pass rate(0~100) → 색
+// pass rate(0~100) → STATUS 토큰 색
 function rateColor(v) {
-  if (v == null) return '#94A3B8'
-  if (v >= 80) return '#15803D'
-  if (v >= 50) return '#B45309'
-  return '#BE123C'
+  if (v == null) return COMP
+  if (v >= 80) return statusInfo('lead').color
+  if (v >= 50) return statusInfo('behind').color
+  return statusInfo('critical').color
 }
 
 // 가로 막대 1줄
@@ -157,13 +158,13 @@ function viewBotsAndSsr(snap) {
     .sort((a, b) => b.rate - a.rate)
   const botBars = bots.map(b =>
     // 차단율 높을수록 위험(빨강) — AI 접근 차단은 GEO 관점에서 부정적
-    barRow(b.name, b.rate, 100, b.rate >= 50 ? '#BE123C' : b.rate > 0 ? '#B45309' : '#15803D',
+    barRow(b.name, b.rate, 100, b.rate >= 50 ? statusInfo('critical').color : b.rate > 0 ? statusInfo('behind').color : statusInfo('lead').color,
       `${b.rate}% (${b.blocked.toLocaleString()}/${b.total.toLocaleString()})`)
   ).join('')
 
   const tiers = Object.entries(o.tiers || {}).sort((a, b) => b[1] - a[1])
   const tierTotal = tiers.reduce((s, [, n]) => s + n, 0)
-  const tierColor = { good: '#15803D', partial: '#B45309', poor: '#BE123C', bad: '#BE123C' }
+  const tierColor = { good: statusInfo('lead').color, partial: statusInfo('behind').color, poor: statusInfo('critical').color, bad: statusInfo('critical').color }
   const tierBars = tiers.map(([t, n]) =>
     barRow(t, n, tierTotal, tierColor[t.toLowerCase()] || '#3B82F6',
       `${n.toLocaleString()} (${tierTotal > 0 ? (n / tierTotal * 100).toFixed(1) : 0}%)`)
