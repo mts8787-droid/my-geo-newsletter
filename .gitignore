@@ -5,7 +5,10 @@ dist-visibility
 dist-tracker
 dist-citation
 .env
-/data/
+# /data/ 전체 무시하되 readability 집계 스냅샷만 예외 (부모 디렉토리 제외 시 하위 재포함 불가 → /data/* 패턴 사용)
+/data/*
+# Readability 집계 스냅샷은 예외 — 압축 KPI (120KB, raw URL/시크릿 없음). 배포 서버에서 대시보드 렌더에 필요 (원본 89MB는 별도 리포라 원격 집계 불가)
+!/data/readability/
 
 # Claude Code 사용자 로컬 permissions (PC 경로 등 개인 정보 — 외부 노출 방지)
 .claude/settings.local.json

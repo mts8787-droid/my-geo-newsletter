@@ -1,0 +1,22 @@
+{
+  "snapshots": [
+    {
+      "date": "2026-06-13",
+      "generatedAt": "2026-06-14T09:26:26.391Z",
+      "countries": [
+        "au",
+        "br",
+        "ca",
+        "de",
+        "es",
+        "in",
+        "mx",
+        "uk",
+        "us",
+        "vn"
+      ],
+      "overallAvg": 50.3,
+      "urlCount": 5226
+    }
+  ]
+}
