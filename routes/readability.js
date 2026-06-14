@@ -11,7 +11,7 @@ import { renderReadabilityHTML } from '../scripts/render-readability.mjs'
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const DATA_DIR = join(__dirname, '..', 'data', 'readability')
 
-function loadLatest() {
+export function loadLatest() {
   if (!existsSync(DATA_DIR)) return { snapshot: null, index: null }
   let index = null
   const indexPath = join(DATA_DIR, 'index.json')

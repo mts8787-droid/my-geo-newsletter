@@ -6,8 +6,30 @@ import { join } from 'path'
 import { DATA_DIR, PUB_DIR } from '../lib/storage.js'
 import { validateBody, PublishPostSchema, TrackerPublishSchema } from '../lib/validate.js'
 import { logFor } from '../lib/logger.js'
+import { loadLatest } from './readability.js'
+import { renderReadabilityHTML } from '../scripts/render-readability.mjs'
 
 const log = logFor('publish')
+
+// 대시보드 "Readability 포함" 게시 시 — 최신 스냅샷으로 standalone 페이지 생성.
+// 게시본은 인증 게이트 밖(IP allowlist)이라 /admin/readability iframe 불가 →
+// 동일출처 /p/<slug>-readability 로 별도 정적 페이지를 써서 대시보드 iframe 이 임베드.
+const READABILITY_MARKER = '<!--READABILITY_EMBED-->'
+function writeReadabilityEmbed(ch) {
+  try {
+    const { snapshot, index } = loadLatest()
+    if (!snapshot) {
+      log.warn({ tag: ch.logTag }, 'readability embed: 스냅샷 없음 — data/readability/ 비어있음')
+      return
+    }
+    const html = renderReadabilityHTML({ snapshot, index, adminMode: false })
+    writeFileSync(join(PUB_DIR, `${ch.koSlug}-readability.html`), html)
+    writeFileSync(join(PUB_DIR, `${ch.enSlug}-readability.html`), html)
+    log.info({ tag: ch.logTag, koSlug: `${ch.koSlug}-readability` }, 'readability embed written')
+  } catch (e) {
+    log.warn({ tag: ch.logTag, err: e.message }, 'readability embed failed')
+  }
+}
 
 // ─── 채널별 슬러그·메타 파일 매핑 ──────────────────────────────────────────
 export const CHANNELS = {
@@ -102,6 +124,7 @@ function buildPostHandler(ch) {
       const enPath = join(PUB_DIR, `${ch.enSlug}.html`)
       const finalKo = ch.injectLangBar ? injectLangBar(htmlKo, 'ko', ch.koSlug, ch.enSlug) : htmlKo
       const finalEn = ch.injectLangBar ? injectLangBar(htmlEn, 'en', ch.koSlug, ch.enSlug) : htmlEn
+      if (typeof finalKo === 'string' && finalKo.includes(READABILITY_MARKER)) writeReadabilityEmbed(ch)
       writeFileSync(koPath, finalKo)
       writeFileSync(enPath, finalEn)
       const meta = { title: title || ch.title, ts: Date.now() }

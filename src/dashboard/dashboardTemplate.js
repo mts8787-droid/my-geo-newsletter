@@ -1741,11 +1741,8 @@ ${visibilityOnly ? `
   </div>
 </div>
 ${includeReadability ? `<div id="tab-readability" class="tab-panel">
-  <div class="progress-placeholder"><div class="inner">
-    <div class="icon">📖</div>
-    <h2>Readability</h2>
-    <p>${t.readabilityMsg}</p>
-  </div></div>
+  <!--READABILITY_EMBED-->
+  <iframe id="readability-iframe" data-src="/p/GEO-KPI-Dashboard-${lang === 'en' ? 'EN' : 'KO'}-readability" style="width:100%;min-height:calc(100vh - 100px);border:none;background:#F1F5F9" title="Readability"></iframe>
 </div>` : ''}
 <div id="tab-progress" class="tab-panel">
   ${trackerTabContent}
