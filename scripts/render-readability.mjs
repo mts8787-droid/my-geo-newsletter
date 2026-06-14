@@ -144,22 +144,46 @@ function viewCategoryDetail(snap) {
     byCat[c.cat].push({ cid, ...c })
   }
 
-  const cards = CATEGORIES.map(cat => {
-    const avg = o.categories ? o.categories[cat] : null
-    const checks = (byCat[cat] || []).sort((a, b) => a.label.localeCompare(b.label, 'en', { numeric: true }))
-    const checkRows = checks.map(c => {
-      const rate = c.applicable > 0 ? +(c.pass / c.applicable * 100).toFixed(1) : null
+  const AI_CONTENT_IDS = { ai_faq_block: 1, ai_definition: 1, ai_summary_box: 1, ai_citable: 1 }
+  const checkRate = c => c.applicable > 0 ? +(c.pass / c.applicable * 100).toFixed(1) : null
+  const avgRate = arr => {
+    const vals = arr.map(checkRate).filter(r => r != null)
+    return vals.length ? +(vals.reduce((s, r) => s + r, 0) / vals.length).toFixed(1) : null
+  }
+  const catCard = (name, avg, sub, checksArr) => {
+    const checkRows = checksArr.slice().sort((a, b) => a.label.localeCompare(b.label, 'en', { numeric: true })).map(c => {
+      const rate = checkRate(c)
       const right = rate == null ? '—' : `${rate}% (${c.pass}/${c.applicable})`
       return barRow(c.label, rate ?? 0, 100, rateColor(rate), right)
     }).join('')
     return `<div class="cat-card">
       <div class="cat-head">
-        <span class="cat-name">${escHtml(labels[cat] || cat)}</span>
+        <span class="cat-name">${escHtml(name)}</span>
         <span class="cat-avg" style="color:${scoreColor(avg)}">${avg ?? '—'}</span>
       </div>
-      <div class="cat-sub">${checks.length} 체크 · 평균 points</div>
+      <div class="cat-sub">${checksArr.length} 체크 · ${sub}</div>
       <div class="bars sm">${checkRows}</div>
     </div>`
+  }
+
+  const cards = CATEGORIES.map(cat => {
+    const checks = byCat[cat] || []
+    if (cat === 'ai_readiness') {
+      const schema = [], content = [], platform = []
+      for (const c of checks) {
+        if (c.cid && c.cid.startsWith('ai_schema_')) schema.push(c)
+        else if (AI_CONTENT_IDS[c.cid]) content.push(c)
+        else platform.push(c)
+      }
+      const base = labels[cat] || cat
+      return [
+        catCard(`${base} · 스키마`, avgRate(schema), '평균 통과율', schema),
+        catCard(`${base} · 콘텐츠`, avgRate(content), '평균 통과율', content),
+        catCard(`${base} · 플랫폼`, avgRate(platform), '평균 통과율', platform),
+      ].join('')
+    }
+    const avg = o.categories ? o.categories[cat] : null
+    return catCard(labels[cat] || cat, avg, '평균 points', checks)
   }).join('')
 
   return sectionCard('② 카테고리 4분할 상세 — 체크별 통과율', '#3B82F6', `<div class="cat-grid">${cards}</div>`)
@@ -301,24 +325,49 @@ function readabilityClient() {
   }
 
   // 체크별 통과율 카테고리 카드 묶음 — 국가/페이지타입 탭 양쪽에서 재사용 (별도 항목별 탭 X)
+  // AI Readiness 는 스키마 / 콘텐츠 / 플랫폼 3개 서브카드로 분할 (그 외 카테고리는 단일 카드)
   function renderCategoryCards(scope) {
     var labels = RD.categoryLabels || {}
+    var AI_CONTENT_IDS = { ai_faq_block: 1, ai_definition: 1, ai_summary_box: 1, ai_citable: 1 }
     var byCat = {}; CATS.forEach(function (c) { byCat[c] = [] })
     Object.entries(scope.checks || {}).forEach(function (e) {
       var c = e[1]; if (!byCat[c.cat]) byCat[c.cat] = []; byCat[c.cat].push(Object.assign({ cid: e[0] }, c))
     })
-    return CATS.map(function (cat) {
-      var avg = scope.categories ? scope.categories[cat] : null
-      var checks = (byCat[cat] || []).sort(function (a, b) { return a.label.localeCompare(b.label, 'en', { numeric: true }) })
-      var rows = checks.map(function (c) {
-        var rate = c.applicable > 0 ? +(c.pass / c.applicable * 100).toFixed(1) : null
+    function checkRate(c) { return c.applicable > 0 ? +(c.pass / c.applicable * 100).toFixed(1) : null }
+    function avgRate(arr) {
+      var vals = arr.map(checkRate).filter(function (r) { return r != null })
+      return vals.length ? +(vals.reduce(function (s, r) { return s + r }, 0) / vals.length).toFixed(1) : null
+    }
+    function card(name, avg, sub, checksArr) {
+      var rows = checksArr.slice().sort(function (a, b) { return a.label.localeCompare(b.label, 'en', { numeric: true }) }).map(function (c) {
+        var rate = checkRate(c)
         var right = rate == null ? '—' : rate + '% (' + c.pass + '/' + c.applicable + ')'
         return barRow(c.label, rate == null ? 0 : rate, 100, rateColor(rate), right)
       }).join('')
-      return '<div class="cat-card"><div class="cat-head"><span class="cat-name">' + esc(labels[cat] || cat) + '</span>' +
+      return '<div class="cat-card"><div class="cat-head"><span class="cat-name">' + esc(name) + '</span>' +
         '<span class="cat-avg" style="color:' + scoreColor(avg) + '">' + (avg == null ? '—' : avg) + '</span></div>' +
-        '<div class="cat-sub">' + checks.length + ' 체크 · 평균 points</div><div class="bars sm">' + rows + '</div></div>'
-    }).join('')
+        '<div class="cat-sub">' + checksArr.length + ' 체크 · ' + sub + '</div><div class="bars sm">' + rows + '</div></div>'
+    }
+    var out = []
+    CATS.forEach(function (cat) {
+      var checks = byCat[cat] || []
+      if (cat === 'ai_readiness') {
+        var schema = [], content = [], platform = []
+        checks.forEach(function (c) {
+          if (c.cid && c.cid.indexOf('ai_schema_') === 0) schema.push(c)
+          else if (AI_CONTENT_IDS[c.cid]) content.push(c)
+          else platform.push(c)
+        })
+        var base = labels[cat] || cat
+        out.push(card(base + ' · 스키마', avgRate(schema), '평균 통과율', schema))
+        out.push(card(base + ' · 콘텐츠', avgRate(content), '평균 통과율', content))
+        out.push(card(base + ' · 플랫폼', avgRate(platform), '평균 통과율', platform))
+      } else {
+        var avg = scope.categories ? scope.categories[cat] : null
+        out.push(card(labels[cat] || cat, avg, '평균 points', checks))
+      }
+    })
+    return out.join('')
   }
 
   // 체크별 통과율 섹션 — 국가 + (집계기가 nest 한 경우) 페이지타입 필터 반영
