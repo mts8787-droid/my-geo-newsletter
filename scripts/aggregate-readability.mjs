@@ -42,11 +42,15 @@ const EXCLUDED_PT = { unknown: 1, home: 1 }
 // 페이지타입 통합 — about(회사)/content(콘텐츠매거진) → newsroom(뉴스룸) 으로 병합
 const PT_MERGE = { about: 'newsroom', content: 'newsroom' }
 // 통합/병합 결과 페이지타입의 표준 라벨 (병합 시 라벨 일관성)
-const PT_LABEL = { newsroom: '뉴스룸/Press' }
+const PT_LABEL = { newsroom: '뉴스룸/Press', lg_experience: 'LG Experience' }
 
-// 페이지타입 정규화 — 병합 적용 + 제외 여부 판정. { id, label, excluded } 또는 null
-function resolvePt(pt) {
+// 페이지타입 정규화 — lg-experience 분리 + 병합 적용 + 제외 여부 판정. { id, label, excluded } 또는 null
+function resolvePt(pt, url) {
   if (!pt || !pt.id) return null
+  // content(콘텐츠/매거진) 으로 분류된 /lg-experience/ URL 은 별도 lg_experience 타입으로 분리
+  if (pt.id === 'content' && url && /\/lg-experience(\/|\?|$)/i.test(url)) {
+    return { id: 'lg_experience', label: PT_LABEL.lg_experience, excluded: false }
+  }
   const id = PT_MERGE[pt.id] || pt.id
   if (EXCLUDED_PT[id]) return { id, label: pt.label || id, excluded: true }
   return { id, label: PT_LABEL[id] || pt.label || id, excluded: false }
@@ -120,9 +124,9 @@ function accumulateChecks(target, score) {
 }
 
 // 단일 result 를 누적기에 반영
-function accumulate(acc, result) {
+function accumulate(acc, result, url) {
   // 분류불가(unknown)/홈페이지(home) 는 점수 집계에서 완전 제외 — 어떤 항목에도 기여 X
-  const rpt = resolvePt(result.page_type)
+  const rpt = resolvePt(result.page_type, url)
   if (rpt && rpt.excluded) return
   acc.urlCount++
   const score = result.score
@@ -230,11 +234,11 @@ function main() {
     const summary = Array.isArray(data.summary) ? data.summary : []
     for (const s of summary) {
       if (!s || !s.result) continue
-      accumulate(acc, s.result)
-      accumulate(overall, s.result)
+      accumulate(acc, s.result, s.url || s.result.url)
+      accumulate(overall, s.result, s.url || s.result.url)
       const r = s.result
       // 제외 페이지타입(분류불가/홈페이지) 은 검수 CSV 에서도 제외 (완전 제거 일관성)
-      const rpt = resolvePt(r.page_type)
+      const rpt = resolvePt(r.page_type, s.url || r.url)
       if (rpt && rpt.excluded) continue
       urlRows.push({
         url: s.url || r.url || '',
