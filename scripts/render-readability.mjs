@@ -321,13 +321,23 @@ function readabilityClient() {
     }).join('')
   }
 
-  // 체크별 통과율 섹션 (국가 필터만 반영 — 페이지타입 분해 데이터 없음)
+  // 체크별 통과율 섹션 — 국가 + (집계기가 nest 한 경우) 페이지타입 필터 반영
   function renderCategorySection(scope, num) {
     var scopeName = state.cc === 'all' ? '전체' : ccLabel(state.cc)
-    var note = state.pt !== 'all'
-      ? '<div class="tab-note">체크별 통과율은 페이지타입 분해 데이터가 없어 «페이지 타입» 필터가 적용되지 않습니다. 국가 필터(' + esc(scopeName) + ')만 반영됩니다.</div>'
-      : ''
-    return note + sectionCard(num + ' 체크별 통과율 (' + esc(scopeName) + ')', '#3B82F6', '<div class="cat-grid">' + renderCategoryCards(scope) + '</div>')
+    if (state.pt !== 'all') {
+      var ptSlot = scope.pageTypes && scope.pageTypes[state.pt]
+      // 신규 스냅샷: pageType 슬롯에 checks nest → 페이지타입 분해 통과율
+      if (ptSlot && ptSlot.checks) {
+        var ptName = ptSlot.label || state.pt
+        var ptTitle = num + ' 체크별 통과율 (' + esc(scopeName) + ' · ' + esc(ptName) + ')'
+        var ptNote = '<div class="tab-note">표본 ' + num(ptSlot.count) + ' URL — 표본이 적은 페이지타입은 통과율 변동이 큽니다.</div>'
+        return ptNote + sectionCard(ptTitle, '#3B82F6', '<div class="cat-grid">' + renderCategoryCards(ptSlot) + '</div>')
+      }
+      // 구 스냅샷 호환: checks nest 없음 → 국가 필터만 반영 안내
+      var note = '<div class="tab-note">체크별 통과율은 이 스냅샷에 페이지타입 분해 데이터가 없어 «페이지 타입» 필터가 적용되지 않습니다. 국가 필터(' + esc(scopeName) + ')만 반영됩니다.</div>'
+      return note + sectionCard(num + ' 체크별 통과율 (' + esc(scopeName) + ')', '#3B82F6', '<div class="cat-grid">' + renderCategoryCards(scope) + '</div>')
+    }
+    return sectionCard(num + ' 체크별 통과율 (' + esc(scopeName) + ')', '#3B82F6', '<div class="cat-grid">' + renderCategoryCards(scope) + '</div>')
   }
 
   function renderPageType() {

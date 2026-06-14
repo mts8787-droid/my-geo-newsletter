@@ -67,9 +67,40 @@ function newAcc() {
     catPointsSum: { performance: 0, accessibility: 0, seo: 0, ai_readiness: 0 },
     catPointsCnt: { performance: 0, accessibility: 0, seo: 0, ai_readiness: 0 },
     checks: {},         // checkId → { label, cat, pass, applicable }
-    pageTypes: {},      // ptId → { label, count, scoreSum, scoredCount }
+    pageTypes: {},      // ptId → { label, count, scoreSum, scoredCount, ...체크 bins }
     bots: {},           // botName → { blocked, total }
     tiers: {},          // csr tier → count
+  }
+}
+
+// 체크/카테고리 누적용 빈 bins (scope-level 과 pageType-level 공용)
+function newCheckBins() {
+  return {
+    catPointsSum: { performance: 0, accessibility: 0, seo: 0, ai_readiness: 0 },
+    catPointsCnt: { performance: 0, accessibility: 0, seo: 0, ai_readiness: 0 },
+    checks: {},
+  }
+}
+
+// score.breakdown 을 target(.catPointsSum/.catPointsCnt/.checks)에 반영 — scope/pageType 공용
+function accumulateChecks(target, score) {
+  const bd = score.breakdown || {}
+  for (const cat of CATEGORIES) {
+    const c = bd[cat]
+    if (c && typeof c.points === 'number') {
+      target.catPointsSum[cat] += c.points
+      target.catPointsCnt[cat]++
+    }
+    const items = (c && c.items) || {}
+    for (const [cid, it] of Object.entries(items)) {
+      // na(true) 또는 pass===null → 미적용 (분모 제외)
+      const applicable = !(it.na === true || it.pass === null || it.pass == null)
+      if (!target.checks[cid]) target.checks[cid] = { label: it.label || cid, cat, pass: 0, applicable: 0 }
+      if (applicable) {
+        target.checks[cid].applicable++
+        if (it.pass === true) target.checks[cid].pass++
+      }
+    }
   }
 }
 
@@ -77,39 +108,24 @@ function newAcc() {
 function accumulate(acc, result) {
   acc.urlCount++
   const score = result.score
-  if (score && typeof score.total === 'number') {
+  const scored = score && typeof score.total === 'number'
+  if (scored) {
     acc.scoredCount++
     acc.scoreSum += score.total
     const g = score.grade || 'Unknown'
     acc.grades[g] = (acc.grades[g] || 0) + 1
-    const bd = score.breakdown || {}
-    for (const cat of CATEGORIES) {
-      const c = bd[cat]
-      if (c && typeof c.points === 'number') {
-        acc.catPointsSum[cat] += c.points
-        acc.catPointsCnt[cat]++
-      }
-      const items = (c && c.items) || {}
-      for (const [cid, it] of Object.entries(items)) {
-        // na(true) 또는 pass===null → 미적용 (분모 제외)
-        const applicable = !(it.na === true || it.pass === null || it.pass == null)
-        if (!acc.checks[cid]) acc.checks[cid] = { label: it.label || cid, cat, pass: 0, applicable: 0 }
-        if (applicable) {
-          acc.checks[cid].applicable++
-          if (it.pass === true) acc.checks[cid].pass++
-        }
-      }
-    }
+    accumulateChecks(acc, score)
   }
-  // 페이지타입별 점수
+  // 페이지타입별 점수 + 체크/카테고리 (페이지타입 분해 통과율용)
   const pt = result.page_type
   if (pt && pt.id) {
-    if (!acc.pageTypes[pt.id]) acc.pageTypes[pt.id] = { label: pt.label || pt.id, count: 0, scoreSum: 0, scoredCount: 0 }
+    if (!acc.pageTypes[pt.id]) acc.pageTypes[pt.id] = { label: pt.label || pt.id, count: 0, scoreSum: 0, scoredCount: 0, ...newCheckBins() }
     const slot = acc.pageTypes[pt.id]
     slot.count++
-    if (score && typeof score.total === 'number') {
+    if (scored) {
       slot.scoreSum += score.total
       slot.scoredCount++
+      accumulateChecks(slot, score)
     }
   }
   // AI 봇 차단 (robots.txt)
@@ -126,18 +142,26 @@ function accumulate(acc, result) {
   if (cr && cr.tier) acc.tiers[cr.tier] = (acc.tiers[cr.tier] || 0) + 1
 }
 
+// bins(.catPointsSum/.catPointsCnt) → 카테고리 평균 points (scope/pageType 공용)
+function finalizeCategories(bin) {
+  const out = {}
+  for (const cat of CATEGORIES) {
+    out[cat] = (bin.catPointsCnt && bin.catPointsCnt[cat]) ? +(bin.catPointsSum[cat] / bin.catPointsCnt[cat]).toFixed(1) : null
+  }
+  return out
+}
+
 // 누적기 → 출력 형태 (rate/avg 계산은 UI 에서 — 여기선 합/카운트 보존 + 편의 avg)
 function finalizeAcc(acc) {
-  const categories = {}
-  for (const cat of CATEGORIES) {
-    categories[cat] = acc.catPointsCnt[cat] ? +(acc.catPointsSum[cat] / acc.catPointsCnt[cat]).toFixed(1) : null
-  }
+  const categories = finalizeCategories(acc)
   const pageTypes = {}
   for (const [id, v] of Object.entries(acc.pageTypes)) {
     pageTypes[id] = {
       label: v.label,
       count: v.count,
       avgScore: v.scoredCount ? +(v.scoreSum / v.scoredCount).toFixed(1) : null,
+      categories: finalizeCategories(v),
+      checks: v.checks || {},
     }
   }
   return {
