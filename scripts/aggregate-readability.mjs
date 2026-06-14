@@ -248,7 +248,8 @@ function main() {
   for (const row of urlRows) {
     csvLines.push([csvCell(row.url), csvCell(row.country), csvCell(row.pt), csvCell(row.score)].join(','))
   }
-  writeFileSync(csvPath, csvLines.join('\n') + '\n')
+  // UTF-8 BOM 선두 — Excel(특히 한국어 로캘)이 CP949 로 오인해 한글 깨지는 것 방지
+  writeFileSync(csvPath, '﻿' + csvLines.join('\n') + '\n')
 
   const kb = (JSON.stringify(snapshot).length / 1024).toFixed(1)
   console.log(`[aggregate-readability] ✓ 스냅샷 저장: ${outPath} (${kb} KB, ${Object.keys(countries).length}개국)`)

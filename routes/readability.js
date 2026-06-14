@@ -51,6 +51,14 @@ readabilityRouter.get('/admin/readability', (req, res) => {
   res.send(renderReadabilityHTML({ snapshot, index, adminMode: true }))
 })
 
+// 검수 기준 체크리스트 (self-host) — 원본 onrender 가 x-frame-options:DENY 라 iframe 불가 → 동일출처 서빙
+readabilityRouter.get('/admin/readability/checklist.html', (req, res) => {
+  const file = join(DATA_DIR, 'geo-agent-checklist.html')
+  if (!existsSync(file)) return res.status(404).send('체크리스트 HTML 없음 — data/readability/geo-agent-checklist.html 필요')
+  res.set('Content-Type', 'text/html; charset=utf-8')
+  res.send(readFileSync(file, 'utf8'))
+})
+
 // 검수 URL 목록 다운로드 — 최신 urls-<date>.csv (URL · 국가 · 페이지타입 · 점수)
 readabilityRouter.get('/admin/readability/urls.csv', (req, res) => {
   const file = latestCsvFile()

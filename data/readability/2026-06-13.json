@@ -1,6 +1,6 @@
 {
   "date": "2026-06-13",
-  "generatedAt": "2026-06-14T11:28:00.252Z",
+  "generatedAt": "2026-06-14T11:44:37.890Z",
   "source": "run_results",
   "categoryLabels": {
     "performance": "Performance",
@@ -14,16 +14,17 @@
       "runId": "18aea10b022d",
       "urlCount": 615,
       "scoredCount": 615,
-      "avgScore": 43.9,
+      "avgScore": 45.4,
       "grades": {
-        "Need Improvement": 293,
-        "Poor": 322
+        "Need Improvement": 306,
+        "Poor": 307,
+        "Good": 2
       },
       "categories": {
         "performance": 52.2,
         "accessibility": 53.7,
         "seo": 50.7,
-        "ai_readiness": 34.5
+        "ai_readiness": 37.7
       },
       "checks": {
         "perf_ttfb": {
@@ -143,12 +144,6 @@
         "seo_sitemap": {
           "label": "#19 Sitemap (1개월 내)",
           "cat": "seo",
-          "pass": 0,
-          "applicable": 615
-        },
-        "ai_schema_org": {
-          "label": "#20 Schema: Organization",
-          "cat": "ai_readiness",
           "pass": 0,
           "applicable": 615
         },
@@ -290,18 +285,6 @@
           "pass": 2,
           "applicable": 2
         },
-        "ai_schema_aboutpage": {
-          "label": "#41 Schema: AboutPage",
-          "cat": "ai_readiness",
-          "pass": 0,
-          "applicable": 100
-        },
-        "ai_schema_webpage": {
-          "label": "#42 Schema: WebPage",
-          "cat": "ai_readiness",
-          "pass": 0,
-          "applicable": 73
-        },
         "ai_schema_offer": {
           "label": "#43 Schema: Offer",
           "cat": "ai_readiness",
@@ -337,12 +320,12 @@
         "home": {
           "label": "홈페이지",
           "count": 2,
-          "avgScore": 62.5
+          "avgScore": 65
         },
         "microsite": {
           "label": "마이크로사이트/캠페인",
           "count": 52,
-          "avgScore": 55.4
+          "avgScore": 58.3
         },
         "unknown": {
           "label": "분류 불가",
@@ -352,12 +335,12 @@
         "about": {
           "label": "회사/About",
           "count": 100,
-          "avgScore": 60.7
+          "avgScore": 64.7
         },
         "pdp": {
           "label": "제품 상세 (PDP)",
           "count": 71,
-          "avgScore": 62.3
+          "avgScore": 63.6
         },
         "buying_guide": {
           "label": "구매 가이드",
@@ -367,27 +350,27 @@
         "plp": {
           "label": "제품 카테고리 (PLP)",
           "count": 63,
-          "avgScore": 70.3
+          "avgScore": 72.3
         },
         "content": {
           "label": "콘텐츠/매거진",
           "count": 99,
-          "avgScore": 43.8
+          "avgScore": 44.7
         },
         "support": {
           "label": "지원/Support",
           "count": 67,
-          "avgScore": 22.9
+          "avgScore": 23
         },
         "support_troubleshoot": {
           "label": "지원 - 트러블슈팅",
           "count": 2,
-          "avgScore": 20
+          "avgScore": 21
         },
         "promotion": {
           "label": "프로모션/약관",
           "count": 21,
-          "avgScore": 21.9
+          "avgScore": 23.9
         }
       },
       "bots": {
@@ -442,16 +425,16 @@
       "runId": "da03ab1996ed",
       "urlCount": 600,
       "scoredCount": 600,
-      "avgScore": 60.3,
+      "avgScore": 62.1,
       "grades": {
-        "Need Improvement": 298,
-        "Poor": 302
+        "Need Improvement": 356,
+        "Poor": 244
       },
       "categories": {
         "performance": 53.6,
         "accessibility": 91.3,
         "seo": 78.4,
-        "ai_readiness": 48.7
+        "ai_readiness": 52.3
       },
       "checks": {
         "perf_ttfb": {
@@ -571,12 +554,6 @@
         "seo_sitemap": {
           "label": "#19 Sitemap (1개월 내)",
           "cat": "seo",
-          "pass": 0,
-          "applicable": 600
-        },
-        "ai_schema_org": {
-          "label": "#20 Schema: Organization",
-          "cat": "ai_readiness",
           "pass": 0,
           "applicable": 600
         },
@@ -718,18 +695,6 @@
           "pass": 3,
           "applicable": 3
         },
-        "ai_schema_aboutpage": {
-          "label": "#41 Schema: AboutPage",
-          "cat": "ai_readiness",
-          "pass": 0,
-          "applicable": 3
-        },
-        "ai_schema_webpage": {
-          "label": "#42 Schema: WebPage",
-          "cat": "ai_readiness",
-          "pass": 0,
-          "applicable": 82
-        },
         "ai_schema_offer": {
           "label": "#43 Schema: Offer",
           "cat": "ai_readiness",
@@ -765,57 +730,57 @@
         "home": {
           "label": "홈페이지",
           "count": 3,
-          "avgScore": 59
+          "avgScore": 61
         },
         "pdp": {
           "label": "제품 상세 (PDP)",
           "count": 93,
-          "avgScore": 62.9
+          "avgScore": 64.2
         },
         "support": {
           "label": "지원/Support",
           "count": 139,
-          "avgScore": 59.4
+          "avgScore": 61.4
         },
         "plp": {
           "label": "제품 카테고리 (PLP)",
           "count": 83,
-          "avgScore": 70.3
+          "avgScore": 72.3
         },
         "microsite": {
           "label": "마이크로사이트/캠페인",
           "count": 51,
-          "avgScore": 52
+          "avgScore": 54.5
         },
         "promotion": {
           "label": "프로모션/약관",
           "count": 31,
-          "avgScore": 58.9
+          "avgScore": 62.9
         },
         "about": {
           "label": "회사/About",
           "count": 3,
-          "avgScore": 61
+          "avgScore": 65
         },
         "buying_guide": {
           "label": "구매 가이드",
           "count": 25,
-          "avgScore": 60.4
+          "avgScore": 62
         },
         "content": {
           "label": "콘텐츠/매거진",
           "count": 71,
-          "avgScore": 57.8
+          "avgScore": 59
         },
         "support_troubleshoot": {
           "label": "지원 - 트러블슈팅",
           "count": 1,
-          "avgScore": 51
+          "avgScore": 53
         },
         "newsroom": {
           "label": "뉴스룸/Press",
           "count": 100,
-          "avgScore": 57.3
+          "avgScore": 58.6
         }
       },
       "bots": {
@@ -867,16 +832,17 @@
       "runId": "6f4a40be1d76",
       "urlCount": 403,
       "scoredCount": 403,
-      "avgScore": 60.9,
+      "avgScore": 62.9,
       "grades": {
-        "Need Improvement": 236,
-        "Poor": 167
+        "Need Improvement": 262,
+        "Poor": 140,
+        "Good": 1
       },
       "categories": {
         "performance": 56.5,
         "accessibility": 89.5,
         "seo": 78.2,
-        "ai_readiness": 50.1
+        "ai_readiness": 53.8
       },
       "checks": {
         "perf_ttfb": {
@@ -996,12 +962,6 @@
         "seo_sitemap": {
           "label": "#19 Sitemap (1개월 내)",
           "cat": "seo",
-          "pass": 0,
-          "applicable": 403
-        },
-        "ai_schema_org": {
-          "label": "#20 Schema: Organization",
-          "cat": "ai_readiness",
           "pass": 0,
           "applicable": 403
         },
@@ -1143,18 +1103,6 @@
           "pass": 1,
           "applicable": 1
         },
-        "ai_schema_aboutpage": {
-          "label": "#41 Schema: AboutPage",
-          "cat": "ai_readiness",
-          "pass": 0,
-          "applicable": 2
-        },
-        "ai_schema_webpage": {
-          "label": "#42 Schema: WebPage",
-          "cat": "ai_readiness",
-          "pass": 1,
-          "applicable": 95
-        },
         "ai_schema_offer": {
           "label": "#43 Schema: Offer",
           "cat": "ai_readiness",
@@ -1190,47 +1138,47 @@
         "home": {
           "label": "홈페이지",
           "count": 1,
-          "avgScore": 74
+          "avgScore": 76
         },
         "about": {
           "label": "회사/About",
           "count": 2,
-          "avgScore": 60
+          "avgScore": 64
         },
         "microsite": {
           "label": "마이크로사이트/캠페인",
           "count": 95,
-          "avgScore": 55.3
+          "avgScore": 58.1
         },
         "content": {
           "label": "콘텐츠/매거진",
           "count": 5,
-          "avgScore": 62.4
+          "avgScore": 63.8
         },
         "support": {
           "label": "지원/Support",
           "count": 79,
-          "avgScore": 58.5
+          "avgScore": 60.5
         },
         "pdp": {
           "label": "제품 상세 (PDP)",
           "count": 99,
-          "avgScore": 62.3
+          "avgScore": 63.6
         },
         "plp": {
           "label": "제품 카테고리 (PLP)",
           "count": 98,
-          "avgScore": 67
+          "avgScore": 68.8
         },
         "buying_guide": {
           "label": "구매 가이드",
           "count": 22,
-          "avgScore": 60
+          "avgScore": 61.9
         },
         "support_troubleshoot": {
           "label": "지원 - 트러블슈팅",
           "count": 2,
-          "avgScore": 60
+          "avgScore": 62
         }
       },
       "bots": {
@@ -1282,16 +1230,16 @@
       "runId": "b323db4797a6",
       "urlCount": 533,
       "scoredCount": 533,
-      "avgScore": 59.2,
+      "avgScore": 61,
       "grades": {
-        "Need Improvement": 232,
-        "Poor": 301
+        "Need Improvement": 273,
+        "Poor": 260
       },
       "categories": {
         "performance": 54.6,
         "accessibility": 94,
         "seo": 76.4,
-        "ai_readiness": 46.6
+        "ai_readiness": 49.8
       },
       "checks": {
         "perf_ttfb": {
@@ -1411,12 +1359,6 @@
         "seo_sitemap": {
           "label": "#19 Sitemap (1개월 내)",
           "cat": "seo",
-          "pass": 0,
-          "applicable": 533
-        },
-        "ai_schema_org": {
-          "label": "#20 Schema: Organization",
-          "cat": "ai_readiness",
           "pass": 0,
           "applicable": 533
         },
@@ -1558,18 +1500,6 @@
           "pass": 1,
           "applicable": 1
         },
-        "ai_schema_aboutpage": {
-          "label": "#41 Schema: AboutPage",
-          "cat": "ai_readiness",
-          "pass": 0,
-          "applicable": 0
-        },
-        "ai_schema_webpage": {
-          "label": "#42 Schema: WebPage",
-          "cat": "ai_readiness",
-          "pass": 0,
-          "applicable": 101
-        },
         "ai_schema_offer": {
           "label": "#43 Schema: Offer",
           "cat": "ai_readiness",
@@ -1605,52 +1535,52 @@
         "home": {
           "label": "홈페이지",
           "count": 1,
-          "avgScore": 74
+          "avgScore": 76
         },
         "microsite": {
           "label": "마이크로사이트/캠페인",
           "count": 100,
-          "avgScore": 53.1
+          "avgScore": 55.6
         },
         "support": {
           "label": "지원/Support",
           "count": 64,
-          "avgScore": 58.4
+          "avgScore": 60.4
         },
         "plp": {
           "label": "제품 카테고리 (PLP)",
           "count": 100,
-          "avgScore": 70
+          "avgScore": 71.9
         },
         "pdp": {
           "label": "제품 상세 (PDP)",
           "count": 100,
-          "avgScore": 62.6
+          "avgScore": 63.7
         },
         "buying_guide": {
           "label": "구매 가이드",
           "count": 24,
-          "avgScore": 60.5
+          "avgScore": 62.4
         },
         "content": {
           "label": "콘텐츠/매거진",
           "count": 42,
-          "avgScore": 53.5
+          "avgScore": 55.2
         },
         "newsroom": {
           "label": "뉴스룸/Press",
           "count": 100,
-          "avgScore": 53.7
+          "avgScore": 55
         },
         "promotion": {
           "label": "프로모션/약관",
           "count": 1,
-          "avgScore": 64
+          "avgScore": 68
         },
         "support_troubleshoot": {
           "label": "지원 - 트러블슈팅",
           "count": 1,
-          "avgScore": 60
+          "avgScore": 62
         }
       },
       "bots": {
@@ -1705,16 +1635,16 @@
       "runId": "905e18c27f7f",
       "urlCount": 418,
       "scoredCount": 418,
-      "avgScore": 63.3,
+      "avgScore": 65.6,
       "grades": {
-        "Need Improvement": 334,
-        "Poor": 84
+        "Need Improvement": 380,
+        "Poor": 38
       },
       "categories": {
         "performance": 55.5,
         "accessibility": 89.3,
         "seo": 77.9,
-        "ai_readiness": 54.4
+        "ai_readiness": 59.3
       },
       "checks": {
         "perf_ttfb": {
@@ -1834,12 +1764,6 @@
         "seo_sitemap": {
           "label": "#19 Sitemap (1개월 내)",
           "cat": "seo",
-          "pass": 0,
-          "applicable": 418
-        },
-        "ai_schema_org": {
-          "label": "#20 Schema: Organization",
-          "cat": "ai_readiness",
           "pass": 0,
           "applicable": 418
         },
@@ -1981,18 +1905,6 @@
           "pass": 1,
           "applicable": 1
         },
-        "ai_schema_aboutpage": {
-          "label": "#41 Schema: AboutPage",
-          "cat": "ai_readiness",
-          "pass": 0,
-          "applicable": 62
-        },
-        "ai_schema_webpage": {
-          "label": "#42 Schema: WebPage",
-          "cat": "ai_readiness",
-          "pass": 0,
-          "applicable": 42
-        },
         "ai_schema_offer": {
           "label": "#43 Schema: Offer",
           "cat": "ai_readiness",
@@ -2028,52 +1940,52 @@
         "home": {
           "label": "홈페이지",
           "count": 1,
-          "avgScore": 69
+          "avgScore": 71
         },
         "about": {
           "label": "회사/About",
           "count": 62,
-          "avgScore": 62.8
+          "avgScore": 66.8
         },
         "microsite": {
           "label": "마이크로사이트/캠페인",
           "count": 18,
-          "avgScore": 51.1
+          "avgScore": 53.7
         },
         "support": {
           "label": "지원/Support",
           "count": 87,
-          "avgScore": 61.3
+          "avgScore": 63.3
         },
         "plp": {
           "label": "제품 카테고리 (PLP)",
           "count": 98,
-          "avgScore": 68
+          "avgScore": 69.9
         },
         "promotion": {
           "label": "프로모션/약관",
           "count": 24,
-          "avgScore": 59.1
+          "avgScore": 62.9
         },
         "pdp": {
           "label": "제품 상세 (PDP)",
           "count": 100,
-          "avgScore": 64.2
+          "avgScore": 65.9
         },
         "buying_guide": {
           "label": "구매 가이드",
           "count": 26,
-          "avgScore": 62.5
+          "avgScore": 64.5
         },
         "content": {
           "label": "콘텐츠/매거진",
           "count": 1,
-          "avgScore": 53
+          "avgScore": 54
         },
         "support_troubleshoot": {
           "label": "지원 - 트러블슈팅",
           "count": 1,
-          "avgScore": 60
+          "avgScore": 62
         }
       },
       "bots": {
@@ -2125,16 +2037,16 @@
       "runId": "a6cb9b5bd701",
       "urlCount": 632,
       "scoredCount": 632,
-      "avgScore": 52.3,
+      "avgScore": 54.2,
       "grades": {
-        "Need Improvement": 222,
-        "Poor": 410
+        "Need Improvement": 309,
+        "Poor": 323
       },
       "categories": {
         "performance": 50.7,
         "accessibility": 76.1,
         "seo": 69.5,
-        "ai_readiness": 39.8
+        "ai_readiness": 43.1
       },
       "checks": {
         "perf_ttfb": {
@@ -2254,12 +2166,6 @@
         "seo_sitemap": {
           "label": "#19 Sitemap (1개월 내)",
           "cat": "seo",
-          "pass": 0,
-          "applicable": 632
-        },
-        "ai_schema_org": {
-          "label": "#20 Schema: Organization",
-          "cat": "ai_readiness",
           "pass": 0,
           "applicable": 632
         },
@@ -2401,18 +2307,6 @@
           "pass": 1,
           "applicable": 1
         },
-        "ai_schema_aboutpage": {
-          "label": "#41 Schema: AboutPage",
-          "cat": "ai_readiness",
-          "pass": 0,
-          "applicable": 100
-        },
-        "ai_schema_webpage": {
-          "label": "#42 Schema: WebPage",
-          "cat": "ai_readiness",
-          "pass": 0,
-          "applicable": 56
-        },
         "ai_schema_offer": {
           "label": "#43 Schema: Offer",
           "cat": "ai_readiness",
@@ -2448,7 +2342,7 @@
         "home": {
           "label": "홈페이지",
           "count": 1,
-          "avgScore": 71
+          "avgScore": 74
         },
         "unknown": {
           "label": "분류 불가",
@@ -2458,47 +2352,47 @@
         "microsite": {
           "label": "마이크로사이트/캠페인",
           "count": 35,
-          "avgScore": 52
+          "avgScore": 54.8
         },
         "about": {
           "label": "회사/About",
           "count": 100,
-          "avgScore": 46.4
+          "avgScore": 49.4
         },
         "plp": {
           "label": "제품 카테고리 (PLP)",
           "count": 100,
-          "avgScore": 64.4
+          "avgScore": 66.3
         },
         "pdp": {
           "label": "제품 상세 (PDP)",
           "count": 100,
-          "avgScore": 61.1
+          "avgScore": 62.8
         },
         "buying_guide": {
           "label": "구매 가이드",
           "count": 14,
-          "avgScore": 55.5
+          "avgScore": 57.3
         },
         "support": {
           "label": "지원/Support",
           "count": 94,
-          "avgScore": 56
+          "avgScore": 57.9
         },
         "content": {
           "label": "콘텐츠/매거진",
           "count": 100,
-          "avgScore": 55.5
+          "avgScore": 57.2
         },
         "support_troubleshoot": {
           "label": "지원 - 트러블슈팅",
           "count": 2,
-          "avgScore": 57
+          "avgScore": 59
         },
         "promotion": {
           "label": "프로모션/약관",
           "count": 21,
-          "avgScore": 56.4
+          "avgScore": 59.9
         }
       },
       "bots": {
@@ -2553,16 +2447,16 @@
       "runId": "3c1923145fbe",
       "urlCount": 437,
       "scoredCount": 437,
-      "avgScore": 60.7,
+      "avgScore": 62.7,
       "grades": {
-        "Need Improvement": 237,
-        "Poor": 200
+        "Need Improvement": 335,
+        "Poor": 102
       },
       "categories": {
         "performance": 55.9,
         "accessibility": 90.1,
         "seo": 78.2,
-        "ai_readiness": 48.6
+        "ai_readiness": 52.5
       },
       "checks": {
         "perf_ttfb": {
@@ -2682,12 +2576,6 @@
         "seo_sitemap": {
           "label": "#19 Sitemap (1개월 내)",
           "cat": "seo",
-          "pass": 0,
-          "applicable": 437
-        },
-        "ai_schema_org": {
-          "label": "#20 Schema: Organization",
-          "cat": "ai_readiness",
           "pass": 0,
           "applicable": 437
         },
@@ -2829,18 +2717,6 @@
           "pass": 1,
           "applicable": 1
         },
-        "ai_schema_aboutpage": {
-          "label": "#41 Schema: AboutPage",
-          "cat": "ai_readiness",
-          "pass": 0,
-          "applicable": 65
-        },
-        "ai_schema_webpage": {
-          "label": "#42 Schema: WebPage",
-          "cat": "ai_readiness",
-          "pass": 0,
-          "applicable": 29
-        },
         "ai_schema_offer": {
           "label": "#43 Schema: Offer",
           "cat": "ai_readiness",
@@ -2876,52 +2752,52 @@
         "home": {
           "label": "홈페이지",
           "count": 1,
-          "avgScore": 69
+          "avgScore": 71
         },
         "about": {
           "label": "회사/About",
           "count": 65,
-          "avgScore": 57.1
+          "avgScore": 61.1
         },
         "pdp": {
           "label": "제품 상세 (PDP)",
           "count": 100,
-          "avgScore": 62.4
+          "avgScore": 63.7
         },
         "plp": {
           "label": "제품 카테고리 (PLP)",
           "count": 98,
-          "avgScore": 67.8
+          "avgScore": 69.8
         },
         "content": {
           "label": "콘텐츠/매거진",
           "count": 43,
-          "avgScore": 57.2
+          "avgScore": 58.4
         },
         "support": {
           "label": "지원/Support",
           "count": 76,
-          "avgScore": 57.2
+          "avgScore": 59.1
         },
         "microsite": {
           "label": "마이크로사이트/캠페인",
           "count": 20,
-          "avgScore": 50.6
+          "avgScore": 53.1
         },
         "promotion": {
           "label": "프로모션/약관",
           "count": 9,
-          "avgScore": 57.2
+          "avgScore": 60.7
         },
         "buying_guide": {
           "label": "구매 가이드",
           "count": 24,
-          "avgScore": 60.7
+          "avgScore": 62.2
         },
         "support_troubleshoot": {
           "label": "지원 - 트러블슈팅",
           "count": 1,
-          "avgScore": 57
+          "avgScore": 59
         }
       },
       "bots": {
@@ -2973,16 +2849,16 @@
       "runId": "3eeacc0a5ebe",
       "urlCount": 753,
       "scoredCount": 753,
-      "avgScore": 57.8,
+      "avgScore": 60.2,
       "grades": {
-        "Need Improvement": 289,
-        "Poor": 464
+        "Need Improvement": 363,
+        "Poor": 390
       },
       "categories": {
         "performance": 54.2,
         "accessibility": 90.2,
         "seo": 73.8,
-        "ai_readiness": 45.5
+        "ai_readiness": 49.6
       },
       "checks": {
         "perf_ttfb": {
@@ -3102,12 +2978,6 @@
         "seo_sitemap": {
           "label": "#19 Sitemap (1개월 내)",
           "cat": "seo",
-          "pass": 0,
-          "applicable": 753
-        },
-        "ai_schema_org": {
-          "label": "#20 Schema: Organization",
-          "cat": "ai_readiness",
           "pass": 0,
           "applicable": 753
         },
@@ -3249,18 +3119,6 @@
           "pass": 6,
           "applicable": 6
         },
-        "ai_schema_aboutpage": {
-          "label": "#41 Schema: AboutPage",
-          "cat": "ai_readiness",
-          "pass": 0,
-          "applicable": 100
-        },
-        "ai_schema_webpage": {
-          "label": "#42 Schema: WebPage",
-          "cat": "ai_readiness",
-          "pass": 0,
-          "applicable": 200
-        },
         "ai_schema_offer": {
           "label": "#43 Schema: Offer",
           "cat": "ai_readiness",
@@ -3296,52 +3154,52 @@
         "home": {
           "label": "홈페이지",
           "count": 6,
-          "avgScore": 54.5
+          "avgScore": 56.5
         },
         "microsite": {
           "label": "마이크로사이트/캠페인",
           "count": 100,
-          "avgScore": 50.6
+          "avgScore": 53
         },
         "about": {
           "label": "회사/About",
           "count": 100,
-          "avgScore": 55.9
+          "avgScore": 59.9
         },
         "pdp": {
           "label": "제품 상세 (PDP)",
           "count": 100,
-          "avgScore": 59.9
+          "avgScore": 61.8
         },
         "buying_guide": {
           "label": "구매 가이드",
           "count": 42,
-          "avgScore": 59.9
+          "avgScore": 61.6
         },
         "plp": {
           "label": "제품 카테고리 (PLP)",
           "count": 100,
-          "avgScore": 69.7
+          "avgScore": 71.7
         },
         "content": {
           "label": "콘텐츠/매거진",
           "count": 100,
-          "avgScore": 57.5
+          "avgScore": 58.6
         },
         "support": {
           "label": "지원/Support",
           "count": 100,
-          "avgScore": 52.9
+          "avgScore": 54.6
         },
         "promotion": {
           "label": "프로모션/약관",
           "count": 100,
-          "avgScore": 58.2
+          "avgScore": 61.8
         },
         "support_troubleshoot": {
           "label": "지원 - 트러블슈팅",
           "count": 5,
-          "avgScore": 49.2
+          "avgScore": 50.6
         }
       },
       "bots": {
@@ -3395,16 +3253,16 @@
       "runId": "500f7191ba5a",
       "urlCount": 344,
       "scoredCount": 344,
-      "avgScore": 50,
+      "avgScore": 51.4,
       "grades": {
-        "Poor": 281,
-        "Need Improvement": 63
+        "Poor": 273,
+        "Need Improvement": 71
       },
       "categories": {
         "performance": 58.6,
         "accessibility": 33.1,
         "seo": 77.5,
-        "ai_readiness": 38.1
+        "ai_readiness": 40.5
       },
       "checks": {
         "perf_ttfb": {
@@ -3524,12 +3382,6 @@
         "seo_sitemap": {
           "label": "#19 Sitemap (1개월 내)",
           "cat": "seo",
-          "pass": 0,
-          "applicable": 344
-        },
-        "ai_schema_org": {
-          "label": "#20 Schema: Organization",
-          "cat": "ai_readiness",
           "pass": 0,
           "applicable": 344
         },
@@ -3671,18 +3523,6 @@
           "pass": 0,
           "applicable": 0
         },
-        "ai_schema_aboutpage": {
-          "label": "#41 Schema: AboutPage",
-          "cat": "ai_readiness",
-          "pass": 0,
-          "applicable": 0
-        },
-        "ai_schema_webpage": {
-          "label": "#42 Schema: WebPage",
-          "cat": "ai_readiness",
-          "pass": 0,
-          "applicable": 19
-        },
         "ai_schema_offer": {
           "label": "#43 Schema: Offer",
           "cat": "ai_readiness",
@@ -3718,37 +3558,37 @@
         "buying_guide": {
           "label": "구매 가이드",
           "count": 13,
-          "avgScore": 52.1
+          "avgScore": 53.8
         },
         "microsite": {
           "label": "마이크로사이트/캠페인",
           "count": 19,
-          "avgScore": 47.6
+          "avgScore": 50.3
         },
         "content": {
           "label": "콘텐츠/매거진",
           "count": 3,
-          "avgScore": 41.7
+          "avgScore": 43.7
         },
         "newsroom": {
           "label": "뉴스룸/Press",
           "count": 100,
-          "avgScore": 43.3
+          "avgScore": 44.5
         },
         "support": {
           "label": "지원/Support",
           "count": 9,
-          "avgScore": 50.3
+          "avgScore": 52
         },
         "plp": {
           "label": "제품 카테고리 (PLP)",
           "count": 100,
-          "avgScore": 59.8
+          "avgScore": 61.6
         },
         "pdp": {
           "label": "제품 상세 (PDP)",
           "count": 100,
-          "avgScore": 47.2
+          "avgScore": 48.2
         }
       },
       "bots": {
@@ -3803,16 +3643,16 @@
       "runId": "39e9e4a62e1f",
       "urlCount": 491,
       "scoredCount": 491,
-      "avgScore": 59.3,
+      "avgScore": 61.3,
       "grades": {
-        "Need Improvement": 217,
-        "Poor": 274
+        "Need Improvement": 280,
+        "Poor": 211
       },
       "categories": {
         "performance": 54.4,
         "accessibility": 87.6,
         "seo": 75.9,
-        "ai_readiness": 48.2
+        "ai_readiness": 52
       },
       "checks": {
         "perf_ttfb": {
@@ -3932,12 +3772,6 @@
         "seo_sitemap": {
           "label": "#19 Sitemap (1개월 내)",
           "cat": "seo",
-          "pass": 0,
-          "applicable": 491
-        },
-        "ai_schema_org": {
-          "label": "#20 Schema: Organization",
-          "cat": "ai_readiness",
           "pass": 0,
           "applicable": 491
         },
@@ -4079,18 +3913,6 @@
           "pass": 1,
           "applicable": 1
         },
-        "ai_schema_aboutpage": {
-          "label": "#41 Schema: AboutPage",
-          "cat": "ai_readiness",
-          "pass": 0,
-          "applicable": 25
-        },
-        "ai_schema_webpage": {
-          "label": "#42 Schema: WebPage",
-          "cat": "ai_readiness",
-          "pass": 0,
-          "applicable": 91
-        },
         "ai_schema_offer": {
           "label": "#43 Schema: Offer",
           "cat": "ai_readiness",
@@ -4126,52 +3948,52 @@
         "home": {
           "label": "홈페이지",
           "count": 1,
-          "avgScore": 69
+          "avgScore": 71
         },
         "microsite": {
           "label": "마이크로사이트/캠페인",
           "count": 64,
-          "avgScore": 51.6
+          "avgScore": 54.3
         },
         "about": {
           "label": "회사/About",
           "count": 25,
-          "avgScore": 57.6
+          "avgScore": 61.6
         },
         "promotion": {
           "label": "프로모션/약관",
           "count": 27,
-          "avgScore": 57.4
+          "avgScore": 61
         },
         "support": {
           "label": "지원/Support",
           "count": 104,
-          "avgScore": 56.3
+          "avgScore": 58.3
         },
         "buying_guide": {
           "label": "구매 가이드",
           "count": 3,
-          "avgScore": 55
+          "avgScore": 56.3
         },
         "plp": {
           "label": "제품 카테고리 (PLP)",
           "count": 100,
-          "avgScore": 66.7
+          "avgScore": 68.5
         },
         "pdp": {
           "label": "제품 상세 (PDP)",
           "count": 100,
-          "avgScore": 62.2
+          "avgScore": 63.9
         },
         "support_troubleshoot": {
           "label": "지원 - 트러블슈팅",
           "count": 3,
-          "avgScore": 54
+          "avgScore": 56
         },
         "content": {
           "label": "콘텐츠/매거진",
           "count": 64,
-          "avgScore": 57.3
+          "avgScore": 58.4
         }
       },
       "bots": {
@@ -4222,16 +4044,17 @@
   "overall": {
     "urlCount": 7575,
     "scoredCount": 7575,
-    "avgScore": 53.5,
+    "avgScore": 55.3,
     "grades": {
-      "Need Improvement": 3241,
-      "Poor": 4334
+      "Need Improvement": 3865,
+      "Poor": 3703,
+      "Good": 7
     },
     "categories": {
       "performance": 53.8,
       "accessibility": 75.4,
       "seo": 68,
-      "ai_readiness": 42.3
+      "ai_readiness": 45.6
     },
     "checks": {
       "perf_ttfb": {
@@ -4351,12 +4174,6 @@
       "seo_sitemap": {
         "label": "#19 Sitemap (1개월 내)",
         "cat": "seo",
-        "pass": 0,
-        "applicable": 7575
-      },
-      "ai_schema_org": {
-        "label": "#20 Schema: Organization",
-        "cat": "ai_readiness",
         "pass": 0,
         "applicable": 7575
       },
@@ -4498,18 +4315,6 @@
         "pass": 24,
         "applicable": 25
       },
-      "ai_schema_aboutpage": {
-        "label": "#41 Schema: AboutPage",
-        "cat": "ai_readiness",
-        "pass": 0,
-        "applicable": 457
-      },
-      "ai_schema_webpage": {
-        "label": "#42 Schema: WebPage",
-        "cat": "ai_readiness",
-        "pass": 2,
-        "applicable": 1153
-      },
       "ai_schema_offer": {
         "label": "#43 Schema: Offer",
         "cat": "ai_readiness",
@@ -4545,62 +4350,62 @@
       "home": {
         "label": "홈페이지",
         "count": 25,
-        "avgScore": 61.4
+        "avgScore": 63.5
       },
       "microsite": {
         "label": "마이크로사이트/캠페인",
         "count": 875,
-        "avgScore": 52.5
+        "avgScore": 55.1
       },
       "unknown": {
         "label": "분류 불가",
         "count": 716,
-        "avgScore": 19.5
+        "avgScore": 19.6
       },
       "about": {
         "label": "회사/About",
         "count": 457,
-        "avgScore": 56.1
+        "avgScore": 59.9
       },
       "pdp": {
         "label": "제품 상세 (PDP)",
         "count": 1383,
-        "avgScore": 60.9
+        "avgScore": 62.4
       },
       "buying_guide": {
         "label": "구매 가이드",
         "count": 313,
-        "avgScore": 52.5
+        "avgScore": 54
       },
       "plp": {
         "label": "제품 카테고리 (PLP)",
         "count": 1357,
-        "avgScore": 67.5
+        "avgScore": 69.4
       },
       "content": {
         "label": "콘텐츠/매거진",
         "count": 705,
-        "avgScore": 48.8
+        "avgScore": 50
       },
       "support": {
         "label": "지원/Support",
         "count": 1046,
-        "avgScore": 53.3
+        "avgScore": 55
       },
       "support_troubleshoot": {
         "label": "지원 - 트러블슈팅",
         "count": 20,
-        "avgScore": 47.4
+        "avgScore": 49
       },
       "promotion": {
         "label": "프로모션/약관",
         "count": 278,
-        "avgScore": 50.7
+        "avgScore": 53.9
       },
       "newsroom": {
         "label": "뉴스룸/Press",
         "count": 400,
-        "avgScore": 52.2
+        "avgScore": 53.6
       }
     },
     "bots": {

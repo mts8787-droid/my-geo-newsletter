@@ -345,13 +345,15 @@ function readabilityClient() {
 
   // 검수 기준 + 검수 URL 다운로드 탭
   function renderCriteria() {
-    var src = 'https://my-geo-89ft.onrender.com/static/geo-agent-checklist.html'
+    // 동일출처 self-host (원본 onrender 는 x-frame-options:DENY 라 iframe 불가)
+    var src = '/admin/readability/checklist.html'
+    var origin = 'https://my-geo-89ft.onrender.com/static/geo-agent-checklist.html'
     var dl = '<div class="crit-dl"><div class="crit-dl-text">' +
       '<div class="crit-dl-title">검수 URL 다운로드</div>' +
       '<div class="crit-dl-sub">측정일 ' + esc(RD.date) + ' 기준 어딧 대상 전체 URL (URL · 국가 · 페이지타입 · 점수)</div></div>' +
       '<a class="crit-dl-btn" href="/admin/readability/urls.csv" download>CSV 다운로드</a></div>'
     var frame = '<div class="crit-frame-head">검수 기준 (GEO Agent Checklist) ' +
-      '<a href="' + src + '" target="_blank" rel="noopener">원본 열기 ↗</a></div>' +
+      '<a href="' + origin + '" target="_blank" rel="noopener">원본 열기 ↗</a></div>' +
       '<iframe class="crit-frame" src="' + src + '" loading="lazy"></iframe>'
     return sectionCard('검수 기준 · 검수 URL 다운로드', '#7C3AED', dl + frame)
   }
