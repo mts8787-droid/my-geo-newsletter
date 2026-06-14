@@ -197,6 +197,165 @@ function viewBotsAndSsr(snap) {
   return sectionCard('④ AI봇 차단 (robots.txt) · CSR/SSR Tier', '#D97706', body)
 }
 
+// ─── 클라이언트 JS (탭 전환 + 국가/페이지타입 필터 재렌더) ────────────────────
+// function.toString() 으로 임베드 — 본 함수 본문은 외부 template literal 밖이라
+// design.md §6.1 (template 보간 함정) 회피. 본문은 self-contained (모듈 스코프 참조 X).
+// 서버 뷰 함수(viewXxx)는 <noscript> 폴백에서 재사용. 두 곳이 같은 마круп
+// (.section-card/.bars/.bar-row/.hero 클래스) 를 공유 — design.md §5.8 서버↔클라 짝.
+function readabilityClient() {
+  var RD = window.__RD || {}
+  var CATS = ['performance', 'accessibility', 'seo', 'ai_readiness']
+  var LEAD = '#15803D', BEHIND = '#B45309', CRIT = '#BE123C', COMP = '#94A3B8', RED = '#CF0652'
+  var state = { tab: 'country', cc: 'all', pt: 'all' }
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+  }
+  function scoreColor(v) { if (v == null) return COMP; if (v >= 70) return LEAD; if (v >= 50) return BEHIND; return CRIT }
+  function rateColor(v) { if (v == null) return COMP; if (v >= 80) return LEAD; if (v >= 50) return BEHIND; return CRIT }
+  function num(n) { return (n == null ? 0 : n).toLocaleString() }
+  function barRow(label, value, max, color, rightText) {
+    var w = max > 0 ? Math.max(0, Math.min(100, (value / max) * 100)).toFixed(1) : 0
+    return '<div class="bar-row"><span class="bar-label">' + esc(label) + '</span>' +
+      '<div class="bar-track"><div class="bar-fill" style="width:' + w + '%;background:' + color + '"></div></div>' +
+      '<span class="bar-value" style="color:' + color + '">' + esc(rightText) + '</span></div>'
+  }
+  function sectionCard(title, accent, body, right) {
+    return '<div class="section-card"><div class="section-header">' +
+      '<span class="section-title" style="--accent:' + accent + '">' + esc(title) + '</span>' +
+      (right ? '<span class="section-meta">' + right + '</span>' : '') +
+      '</div><div class="section-body">' + body + '</div></div>'
+  }
+  function getScope(cc) { return cc === 'all' ? RD.overall : (RD.countries[cc] || RD.overall) }
+  function ccLabel(cc) { return RD.ccName[cc] || cc.toUpperCase() }
+
+  function renderBotsTiers(scope) {
+    var bots = Object.entries(scope.bots || {}).map(function (e) {
+      var v = e[1]; return { name: e[0], blocked: v.blocked, total: v.total, rate: v.total > 0 ? +(v.blocked / v.total * 100).toFixed(1) : 0 }
+    }).sort(function (a, b) { return b.rate - a.rate })
+    var botBars = bots.map(function (b) {
+      var col = b.rate >= 50 ? CRIT : b.rate > 0 ? BEHIND : LEAD
+      return barRow(b.name, b.rate, 100, col, b.rate + '% (' + num(b.blocked) + '/' + num(b.total) + ')')
+    }).join('')
+    var tiers = Object.entries(scope.tiers || {}).sort(function (a, b) { return b[1] - a[1] })
+    var tt = tiers.reduce(function (s, e) { return s + e[1] }, 0)
+    var tcol = { good: LEAD, partial: BEHIND, poor: CRIT, bad: CRIT }
+    var tierBars = tiers.map(function (e) {
+      return barRow(e[0], e[1], tt, tcol[e[0].toLowerCase()] || '#3B82F6', num(e[1]) + ' (' + (tt > 0 ? (e[1] / tt * 100).toFixed(1) : 0) + '%)')
+    }).join('')
+    var body = '<div class="split"><div class="split-col"><div class="split-head">AI 봇 차단율 — 높을수록 GEO 불리</div><div class="bars sm">' + botBars + '</div></div>' +
+      '<div class="split-col"><div class="split-head">CSR/SSR Tier 분포 (' + num(tt) + ' URL)</div><div class="bars">' + tierBars + '</div></div></div>'
+    return sectionCard('④ AI봇 차단 (robots.txt) · CSR/SSR Tier', '#D97706', body)
+  }
+
+  function renderCountry() {
+    var pt = state.pt, scope = getScope(state.cc)
+    var ptLabel = pt !== 'all' && RD.overall.pageTypes[pt] ? RD.overall.pageTypes[pt].label : null
+    var heroScore = pt === 'all' ? scope.avgScore : (scope.pageTypes[pt] ? scope.pageTypes[pt].avgScore : null)
+    var grades = Object.entries(scope.grades || {}).sort(function (a, b) { return b[1] - a[1] })
+    var gradeChips = grades.map(function (e) { return '<span class="chip">' + esc(e[0]) + ' <strong>' + num(e[1]) + '</strong></span>' }).join('')
+    var scopeName = state.cc === 'all' ? '전체' : ccLabel(state.cc)
+    var hero = '<div class="hero"><div class="hero-top">' +
+      '<span class="hero-brand">GEO Readability Audit</span>' +
+      '<span class="hero-meta">측정일 ' + esc(RD.date) + '</span></div>' +
+      '<div class="hero-body"><div class="hero-left">' +
+      '<div class="hero-label">' + esc(scopeName) + (ptLabel ? ' · ' + esc(ptLabel) : '') + ' 평균</div>' +
+      '<div class="hero-score-row"><span class="hero-score" style="color:' + scoreColor(heroScore) + '">' + (heroScore == null ? '—' : heroScore) + '</span><span class="hero-pct">/ 100</span></div>' +
+      '<div class="hero-info">URL <strong>' + num(scope.urlCount) + '</strong> · 채점 <strong>' + num(scope.scoredCount) + '</strong> · 국가 <strong>' + Object.keys(RD.countries).length + '</strong></div>' +
+      '</div><div class="hero-right"><div class="hero-label">Grade 분포</div><div class="hero-grades">' + gradeChips + '</div></div></div></div>'
+
+    var ccList = state.cc === 'all' ? Object.keys(RD.countries) : [state.cc]
+    var rows = ccList.map(function (cc) {
+      var c = RD.countries[cc]
+      var v = pt === 'all' ? c.avgScore : (c.pageTypes[pt] ? c.pageTypes[pt].avgScore : null)
+      var cnt = pt === 'all' ? c.urlCount : (c.pageTypes[pt] ? c.pageTypes[pt].count : 0)
+      return { cc: cc, name: ccLabel(cc), v: v, cnt: cnt }
+    }).sort(function (a, b) { return (b.v == null ? -1 : b.v) - (a.v == null ? -1 : a.v) })
+    var bars = rows.map(function (r) {
+      return barRow(r.name + ' (' + num(r.cnt) + ')', r.v == null ? 0 : r.v, 100, scoreColor(r.v), r.v == null ? '—' : String(r.v))
+    }).join('')
+    var title = pt === 'all' ? '① 국가별 종합 점수 비교' : '① 국가별 점수 비교 — ' + ptLabel
+    var note = pt !== 'all'
+      ? '<div class="tab-note">페이지 타입 «' + esc(ptLabel) + '» 필터는 국가별/페이지타입 점수에만 적용됩니다. AI봇·SSR 지표는 페이지타입 분해 데이터가 없어 ' + esc(scopeName) + ' 전체 기준입니다.</div>'
+      : ''
+    return hero + note + sectionCard(title, RED, '<div class="bars">' + bars + '</div>') + renderBotsTiers(scope)
+  }
+
+  function renderCategory() {
+    var scope = getScope(state.cc)
+    var labels = RD.categoryLabels || {}
+    var byCat = {}; CATS.forEach(function (c) { byCat[c] = [] })
+    Object.entries(scope.checks || {}).forEach(function (e) {
+      var c = e[1]; if (!byCat[c.cat]) byCat[c.cat] = []; byCat[c.cat].push(Object.assign({ cid: e[0] }, c))
+    })
+    var cards = CATS.map(function (cat) {
+      var avg = scope.categories ? scope.categories[cat] : null
+      var checks = (byCat[cat] || []).sort(function (a, b) { return a.label.localeCompare(b.label, 'en', { numeric: true }) })
+      var rows = checks.map(function (c) {
+        var rate = c.applicable > 0 ? +(c.pass / c.applicable * 100).toFixed(1) : null
+        var right = rate == null ? '—' : rate + '% (' + c.pass + '/' + c.applicable + ')'
+        return barRow(c.label, rate == null ? 0 : rate, 100, rateColor(rate), right)
+      }).join('')
+      return '<div class="cat-card"><div class="cat-head"><span class="cat-name">' + esc(labels[cat] || cat) + '</span>' +
+        '<span class="cat-avg" style="color:' + scoreColor(avg) + '">' + (avg == null ? '—' : avg) + '</span></div>' +
+        '<div class="cat-sub">' + checks.length + ' 체크 · 평균 points</div><div class="bars sm">' + rows + '</div></div>'
+    }).join('')
+    var scopeName = state.cc === 'all' ? '전체' : ccLabel(state.cc)
+    var note = state.pt !== 'all'
+      ? '<div class="tab-note">항목별(체크 통과율)은 페이지타입 분해 데이터가 없어 «페이지 타입» 필터가 적용되지 않습니다. 국가 필터(' + esc(scopeName) + ')만 반영됩니다.</div>'
+      : ''
+    return note + sectionCard('② 카테고리 4분할 상세 — 체크별 통과율 (' + esc(scopeName) + ')', '#3B82F6', '<div class="cat-grid">' + cards + '</div>')
+  }
+
+  function renderPageType() {
+    var scope = getScope(state.cc)
+    var entries = Object.entries(scope.pageTypes || {}).map(function (e) { return Object.assign({ id: e[0] }, e[1]) })
+    if (state.pt !== 'all') entries = entries.filter(function (p) { return p.id === state.pt })
+    entries.sort(function (a, b) { return (b.avgScore == null ? -1 : b.avgScore) - (a.avgScore == null ? -1 : a.avgScore) })
+    var bars = entries.map(function (p) {
+      return barRow(p.label + ' (' + num(p.count) + ')', p.avgScore == null ? 0 : p.avgScore, 100, scoreColor(p.avgScore), p.avgScore == null ? '—' : String(p.avgScore))
+    }).join('')
+    var scopeName = state.cc === 'all' ? '전체' : ccLabel(state.cc)
+    if (!bars) bars = '<div class="tab-note">해당 조건에 데이터가 없습니다.</div>'
+    return sectionCard('③ 페이지타입별 점수 (' + esc(scopeName) + ')', '#059669', '<div class="bars">' + bars + '</div>')
+  }
+
+  function renderPanel() {
+    var el = document.getElementById('rd-panel')
+    if (!el) return
+    if (state.tab === 'country') el.innerHTML = renderCountry()
+    else if (state.tab === 'category') el.innerHTML = renderCategory()
+    else el.innerHTML = renderPageType()
+  }
+
+  function buildControls() {
+    var nav = document.getElementById('rd-tabnav')
+    var tabs = [['country', '국가별'], ['category', '항목별'], ['pagetype', '페이지 타입별']]
+    nav.innerHTML = tabs.map(function (t) {
+      return '<button data-tab="' + t[0] + '"' + (t[0] === state.tab ? ' class="active"' : '') + '>' + t[1] + '</button>'
+    }).join('')
+    nav.addEventListener('click', function (e) {
+      var b = e.target.closest('button[data-tab]'); if (!b) return
+      state.tab = b.getAttribute('data-tab')
+      Array.prototype.forEach.call(nav.querySelectorAll('button'), function (x) { x.classList.toggle('active', x.getAttribute('data-tab') === state.tab) })
+      renderPanel()
+    })
+    var ccSel = document.getElementById('rd-cc')
+    ccSel.innerHTML = ['<option value="all">전체 국가</option>'].concat(
+      Object.keys(RD.countries).sort().map(function (cc) { return '<option value="' + cc + '">' + esc(ccLabel(cc)) + '</option>' })
+    ).join('')
+    ccSel.addEventListener('change', function () { state.cc = ccSel.value; renderPanel() })
+    var ptSel = document.getElementById('rd-pt')
+    ptSel.innerHTML = ['<option value="all">전체 페이지 타입</option>'].concat(
+      Object.entries(RD.overall.pageTypes || {}).map(function (e) { return '<option value="' + e[0] + '">' + esc(e[1].label) + '</option>' })
+    ).join('')
+    ptSel.addEventListener('change', function () { state.pt = ptSel.value; renderPanel() })
+  }
+
+  buildControls()
+  renderPanel()
+}
+
 export function renderReadabilityHTML({ snapshot, index, adminMode = false } = {}) {
   if (!snapshot || !snapshot.overall) {
     return `<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">
@@ -215,6 +374,15 @@ export function renderReadabilityHTML({ snapshot, index, adminMode = false } = {
     ? `스냅샷 ${snapCount}개 — 시계열 대비 가능`
     : `스냅샷 ${snapCount}개 — 재어딧 후 MoM 대비 (현재 단일 측정분)`
 
+  // 클라이언트 인터랙티브 렌더용 데이터 (탭/필터). 서버 뷰는 <noscript> fallback 유지.
+  const clientData = {
+    date: snapshot.date,
+    categoryLabels: snapshot.categoryLabels || {},
+    ccName: Object.fromEntries(Object.keys(snapshot.countries).map(cc => [cc, CC_NAME[cc] || cc.toUpperCase()])),
+    overall: snapshot.overall,
+    countries: snapshot.countries,
+  }
+
   return `<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Readability — GEO 어딧 대시보드</title>
@@ -232,6 +400,16 @@ body{background:#F1F5F9;font-family:${FONT};color:#1A1A1A;line-height:1.6}
 .page-head{margin-bottom:24px}
 .page-head .sub{font-size:15px;color:#64748B}
 .page-head .sub strong{color:#1A1A1A}
+/* ── 탭 네비 + 필터 바 ── */
+.tab-nav{display:flex;gap:4px;margin-bottom:16px;border-bottom:2px solid #E8EDF2;flex-wrap:wrap}
+.tab-nav button{appearance:none;border:none;background:none;font-family:inherit;font-size:15px;font-weight:700;color:#94A3B8;padding:10px 18px;cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px}
+.tab-nav button.active{color:#1A1A1A;border-bottom-color:${RED}}
+.tab-nav button:hover{color:#475569}
+.filter-bar{display:flex;gap:16px;flex-wrap:wrap;align-items:center;background:#fff;border:1px solid #E8EDF2;border-radius:12px;padding:14px 18px;margin-bottom:20px}
+.filter-bar .fg{display:flex;align-items:center;gap:8px}
+.filter-bar label{font-size:13px;font-weight:700;color:#475569}
+.filter-bar select{font-family:inherit;font-size:13px;color:#1A1A1A;border:1px solid #CBD5E1;border-radius:8px;padding:6px 28px 6px 10px;background:#fff;cursor:pointer}
+.tab-note{background:#FFFBEB;border:1px solid #FDE68A;border-radius:8px;padding:10px 14px;font-size:13px;color:#B45309;margin-bottom:16px}
 /* ── Hero (Visibility 다크 카드) ── */
 .hero{background:#0F172A;border-radius:16px;padding:28px 32px;margin-bottom:24px;color:#fff}
 .hero-top{display:flex;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:8px}
@@ -308,11 +486,23 @@ body{background:#F1F5F9;font-family:${FONT};color:#1A1A1A;line-height:1.6}
     <p class="sub">측정일 <strong>${escHtml(snapshot.date)}</strong> · 생성 ${escHtml((snapshot.generatedAt || '').slice(0, 16).replace('T', ' '))} · ${escHtml(momNote)}</p>
   </div>
 
-  ${viewCountryComparison(snapshot)}
-  ${viewCategoryDetail(snapshot)}
-  ${viewPageTypes(snapshot)}
-  ${viewBotsAndSsr(snapshot)}
+  <div class="tab-nav" id="rd-tabnav"></div>
+  <div class="filter-bar">
+    <div class="fg"><label for="rd-cc">국가</label><select id="rd-cc"></select></div>
+    <div class="fg"><label for="rd-pt">페이지 타입</label><select id="rd-pt"></select></div>
+  </div>
+  <div id="rd-panel"></div>
+
+  <noscript>
+    ${viewCountryComparison(snapshot)}
+    ${viewCategoryDetail(snapshot)}
+    ${viewPageTypes(snapshot)}
+    ${viewBotsAndSsr(snapshot)}
+  </noscript>
 </div>
+
+<script>window.__RD = ${JSON.stringify(clientData).replace(/</g, '\\u003c')};</script>
+<script>(${readabilityClient.toString()})();</script>
 
 </body></html>`
 }
