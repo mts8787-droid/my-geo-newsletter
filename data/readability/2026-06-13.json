@@ -1,6 +1,6 @@
 {
   "date": "2026-06-13",
-  "generatedAt": "2026-06-14T09:26:26.391Z",
+  "generatedAt": "2026-06-14T11:28:00.252Z",
   "source": "run_results",
   "categoryLabels": {
     "performance": "Performance",
@@ -438,26 +438,26 @@
       }
     },
     "br": {
-      "auditedAt": "2026-06-13",
-      "runId": "970b9e6e8a6f",
+      "auditedAt": "2026-06-14",
+      "runId": "da03ab1996ed",
       "urlCount": 600,
       "scoredCount": 600,
-      "avgScore": 58.2,
+      "avgScore": 60.3,
       "grades": {
-        "Need Improvement": 216,
-        "Poor": 384
+        "Need Improvement": 298,
+        "Poor": 302
       },
       "categories": {
-        "performance": 53.7,
+        "performance": 53.6,
         "accessibility": 91.3,
         "seo": 78.4,
-        "ai_readiness": 44.5
+        "ai_readiness": 48.7
       },
       "checks": {
         "perf_ttfb": {
           "label": "#1 TTFB < 600ms",
           "cat": "performance",
-          "pass": 20,
+          "pass": 18,
           "applicable": 600
         },
         "perf_compression": {
@@ -589,44 +589,44 @@
         "ai_schema_faq": {
           "label": "#23 Schema: FAQPage",
           "cat": "ai_readiness",
-          "pass": 14,
-          "applicable": 225
+          "pass": 12,
+          "applicable": 169
         },
         "ai_schema_collection": {
           "label": "#24 Schema: CollectionPage (PLP)",
           "cat": "ai_readiness",
-          "pass": 91,
-          "applicable": 100
+          "pass": 80,
+          "applicable": 83
         },
         "ai_schema_product": {
           "label": "#25 Schema: Product 풀세트 (PDP)",
           "cat": "ai_readiness",
           "pass": 0,
-          "applicable": 100
+          "applicable": 93
         },
         "ai_schema_image": {
           "label": "#26 Schema: ImageObject",
           "cat": "ai_readiness",
           "pass": 0,
-          "applicable": 371
+          "applicable": 315
         },
         "ai_schema_video": {
           "label": "#27 Schema: VideoObject",
           "cat": "ai_readiness",
           "pass": 0,
-          "applicable": 371
+          "applicable": 315
         },
         "ai_schema_howto": {
           "label": "#28 Schema: HowTo",
           "cat": "ai_readiness",
           "pass": 0,
-          "applicable": 225
+          "applicable": 170
         },
         "ai_schema_article": {
           "label": "#29 Schema: Article",
           "cat": "ai_readiness",
           "pass": 0,
-          "applicable": 196
+          "applicable": 147
         },
         "ai_faq_block": {
           "label": "#32 FAQ Block (콘텐츠)",
@@ -661,20 +661,20 @@
         "ai_ssr_ratio": {
           "label": "#37 JS HTML Text Ratio ≥ 60%",
           "cat": "ai_readiness",
-          "pass": 226,
+          "pass": 503,
           "applicable": 600
         },
         "ai_pdp_thumbnails": {
           "label": "#38 PDP 썸네일 3장 이상 SSR",
           "cat": "ai_readiness",
-          "pass": 100,
-          "applicable": 100
+          "pass": 93,
+          "applicable": 93
         },
         "ai_core_element": {
           "label": "#39 PDP 핵심 element SSR (5개 영역 중 3개 이상)",
           "cat": "ai_readiness",
-          "pass": 100,
-          "applicable": 100
+          "pass": 93,
+          "applicable": 93
         },
         "ai_summary_ssr": {
           "label": "#40 Summary Content SSR",
@@ -722,25 +722,25 @@
           "label": "#41 Schema: AboutPage",
           "cat": "ai_readiness",
           "pass": 0,
-          "applicable": 0
+          "applicable": 3
         },
         "ai_schema_webpage": {
           "label": "#42 Schema: WebPage",
           "cat": "ai_readiness",
           "pass": 0,
-          "applicable": 101
+          "applicable": 82
         },
         "ai_schema_offer": {
           "label": "#43 Schema: Offer",
           "cat": "ai_readiness",
           "pass": 0,
-          "applicable": 101
+          "applicable": 124
         },
         "ai_schema_itemlist": {
           "label": "#46 Schema: ItemList",
           "cat": "ai_readiness",
-          "pass": 75,
-          "applicable": 100
+          "pass": 64,
+          "applicable": 83
         },
         "ai_schema_newsarticle": {
           "label": "#47 Schema: NewsArticle",
@@ -752,35 +752,50 @@
           "label": "#48 Schema: Person (Author)",
           "cat": "ai_readiness",
           "pass": 0,
-          "applicable": 271
+          "applicable": 222
         },
         "ai_schema_rating_or_review": {
           "label": "#44 Schema: AggregateRating OR Review",
           "cat": "ai_readiness",
           "pass": 0,
-          "applicable": 100
+          "applicable": 93
         }
       },
       "pageTypes": {
         "home": {
           "label": "홈페이지",
           "count": 3,
-          "avgScore": 58
+          "avgScore": 59
         },
         "pdp": {
           "label": "제품 상세 (PDP)",
-          "count": 100,
-          "avgScore": 62.4
+          "count": 93,
+          "avgScore": 62.9
+        },
+        "support": {
+          "label": "지원/Support",
+          "count": 139,
+          "avgScore": 59.4
         },
         "plp": {
           "label": "제품 카테고리 (PLP)",
-          "count": 100,
-          "avgScore": 68.3
+          "count": 83,
+          "avgScore": 70.3
         },
         "microsite": {
           "label": "마이크로사이트/캠페인",
-          "count": 100,
-          "avgScore": 51.1
+          "count": 51,
+          "avgScore": 52
+        },
+        "promotion": {
+          "label": "프로모션/약관",
+          "count": 31,
+          "avgScore": 58.9
+        },
+        "about": {
+          "label": "회사/About",
+          "count": 3,
+          "avgScore": 61
         },
         "buying_guide": {
           "label": "구매 가이드",
@@ -790,22 +805,17 @@
         "content": {
           "label": "콘텐츠/매거진",
           "count": 71,
-          "avgScore": 55
+          "avgScore": 57.8
         },
-        "support": {
-          "label": "지원/Support",
-          "count": 100,
-          "avgScore": 56.6
-        },
-        "promotion": {
-          "label": "프로모션/약관",
+        "support_troubleshoot": {
+          "label": "지원 - 트러블슈팅",
           "count": 1,
-          "avgScore": 61
+          "avgScore": 51
         },
         "newsroom": {
           "label": "뉴스룸/Press",
           "count": 100,
-          "avgScore": 54.6
+          "avgScore": 57.3
         }
       },
       "bots": {
@@ -850,32 +860,29 @@
           "total": 600
         }
       },
-      "tiers": {
-        "good": 304,
-        "partial": 296
-      }
+      "tiers": {}
     },
     "ca": {
-      "auditedAt": "2026-06-13",
-      "runId": "a1850a790610",
+      "auditedAt": "2026-06-14",
+      "runId": "6f4a40be1d76",
       "urlCount": 403,
       "scoredCount": 403,
-      "avgScore": 60.2,
+      "avgScore": 60.9,
       "grades": {
-        "Need Improvement": 219,
-        "Poor": 184
+        "Need Improvement": 236,
+        "Poor": 167
       },
       "categories": {
-        "performance": 56.2,
+        "performance": 56.5,
         "accessibility": 89.5,
         "seo": 78.2,
-        "ai_readiness": 48.6
+        "ai_readiness": 50.1
       },
       "checks": {
         "perf_ttfb": {
           "label": "#1 TTFB < 600ms",
           "cat": "performance",
-          "pass": 6,
+          "pass": 15,
           "applicable": 403
         },
         "perf_compression": {
@@ -1008,43 +1015,43 @@
           "label": "#23 Schema: FAQPage",
           "cat": "ai_readiness",
           "pass": 6,
-          "applicable": 223
+          "applicable": 216
         },
         "ai_schema_collection": {
           "label": "#24 Schema: CollectionPage (PLP)",
           "cat": "ai_readiness",
-          "pass": 77,
-          "applicable": 100
+          "pass": 75,
+          "applicable": 98
         },
         "ai_schema_product": {
           "label": "#25 Schema: Product 풀세트 (PDP)",
           "cat": "ai_readiness",
           "pass": 0,
-          "applicable": 100
+          "applicable": 99
         },
         "ai_schema_image": {
           "label": "#26 Schema: ImageObject",
           "cat": "ai_readiness",
           "pass": 0,
-          "applicable": 200
+          "applicable": 199
         },
         "ai_schema_video": {
           "label": "#27 Schema: VideoObject",
           "cat": "ai_readiness",
           "pass": 0,
-          "applicable": 200
+          "applicable": 199
         },
         "ai_schema_howto": {
           "label": "#28 Schema: HowTo",
           "cat": "ai_readiness",
           "pass": 0,
-          "applicable": 223
+          "applicable": 218
         },
         "ai_schema_article": {
           "label": "#29 Schema: Article",
           "cat": "ai_readiness",
           "pass": 0,
-          "applicable": 123
+          "applicable": 122
         },
         "ai_faq_block": {
           "label": "#32 FAQ Block (콘텐츠)",
@@ -1079,20 +1086,20 @@
         "ai_ssr_ratio": {
           "label": "#37 JS HTML Text Ratio ≥ 60%",
           "cat": "ai_readiness",
-          "pass": 223,
+          "pass": 302,
           "applicable": 403
         },
         "ai_pdp_thumbnails": {
           "label": "#38 PDP 썸네일 3장 이상 SSR",
           "cat": "ai_readiness",
-          "pass": 100,
-          "applicable": 100
+          "pass": 99,
+          "applicable": 99
         },
         "ai_core_element": {
           "label": "#39 PDP 핵심 element SSR (5개 영역 중 3개 이상)",
           "cat": "ai_readiness",
-          "pass": 100,
-          "applicable": 100
+          "pass": 99,
+          "applicable": 99
         },
         "ai_summary_ssr": {
           "label": "#40 Summary Content SSR",
@@ -1140,25 +1147,25 @@
           "label": "#41 Schema: AboutPage",
           "cat": "ai_readiness",
           "pass": 0,
-          "applicable": 0
+          "applicable": 2
         },
         "ai_schema_webpage": {
           "label": "#42 Schema: WebPage",
           "cat": "ai_readiness",
           "pass": 1,
-          "applicable": 100
+          "applicable": 95
         },
         "ai_schema_offer": {
           "label": "#43 Schema: Offer",
           "cat": "ai_readiness",
           "pass": 0,
-          "applicable": 100
+          "applicable": 99
         },
         "ai_schema_itemlist": {
           "label": "#46 Schema: ItemList",
           "cat": "ai_readiness",
-          "pass": 50,
-          "applicable": 100
+          "pass": 48,
+          "applicable": 98
         },
         "ai_schema_newsarticle": {
           "label": "#47 Schema: NewsArticle",
@@ -1176,44 +1183,54 @@
           "label": "#44 Schema: AggregateRating OR Review",
           "cat": "ai_readiness",
           "pass": 0,
-          "applicable": 100
+          "applicable": 99
         }
       },
       "pageTypes": {
         "home": {
           "label": "홈페이지",
           "count": 1,
-          "avgScore": 71
+          "avgScore": 74
+        },
+        "about": {
+          "label": "회사/About",
+          "count": 2,
+          "avgScore": 60
         },
         "microsite": {
           "label": "마이크로사이트/캠페인",
-          "count": 100,
-          "avgScore": 55.1
+          "count": 95,
+          "avgScore": 55.3
+        },
+        "content": {
+          "label": "콘텐츠/매거진",
+          "count": 5,
+          "avgScore": 62.4
+        },
+        "support": {
+          "label": "지원/Support",
+          "count": 79,
+          "avgScore": 58.5
         },
         "pdp": {
           "label": "제품 상세 (PDP)",
-          "count": 100,
-          "avgScore": 62.1
+          "count": 99,
+          "avgScore": 62.3
         },
         "plp": {
           "label": "제품 카테고리 (PLP)",
-          "count": 100,
+          "count": 98,
           "avgScore": 67
         },
         "buying_guide": {
           "label": "구매 가이드",
-          "count": 23,
-          "avgScore": 60.2
+          "count": 22,
+          "avgScore": 60
         },
-        "support": {
-          "label": "지원/Support",
-          "count": 77,
-          "avgScore": 56.3
-        },
-        "unknown": {
-          "label": "분류 불가",
+        "support_troubleshoot": {
+          "label": "지원 - 트러블슈팅",
           "count": 2,
-          "avgScore": 29
+          "avgScore": 60
         }
       },
       "bots": {
@@ -1258,10 +1275,7 @@
           "total": 403
         }
       },
-      "tiers": {
-        "good": 301,
-        "partial": 100
-      }
+      "tiers": {}
     },
     "de": {
       "auditedAt": "2026-06-13",
@@ -1687,50 +1701,50 @@
       }
     },
     "es": {
-      "auditedAt": "2026-06-13",
-      "runId": "3d70303753e6",
+      "auditedAt": "2026-06-14",
+      "runId": "905e18c27f7f",
       "urlCount": 418,
       "scoredCount": 418,
-      "avgScore": 48.7,
+      "avgScore": 63.3,
       "grades": {
-        "Need Improvement": 158,
-        "Poor": 260
+        "Need Improvement": 334,
+        "Poor": 84
       },
       "categories": {
-        "performance": 57.4,
-        "accessibility": 73.9,
-        "seo": 54.1,
-        "ai_readiness": 36.9
+        "performance": 55.5,
+        "accessibility": 89.3,
+        "seo": 77.9,
+        "ai_readiness": 54.4
       },
       "checks": {
         "perf_ttfb": {
           "label": "#1 TTFB < 600ms",
           "cat": "performance",
-          "pass": 76,
+          "pass": 3,
           "applicable": 418
         },
         "perf_compression": {
           "label": "#2 Compression",
           "cat": "performance",
-          "pass": 381,
+          "pass": 418,
           "applicable": 418
         },
         "perf_http_protocol": {
           "label": "#3 HTTP/2+",
           "cat": "performance",
-          "pass": 383,
+          "pass": 418,
           "applicable": 418
         },
         "perf_cache_control": {
           "label": "#4 Cache-Control max-age",
           "cat": "performance",
-          "pass": 163,
+          "pass": 187,
           "applicable": 418
         },
         "perf_html_size": {
           "label": "#5 HTML < 100KB",
           "cat": "performance",
-          "pass": 114,
+          "pass": 0,
           "applicable": 418
         },
         "perf_redirect": {
@@ -1742,67 +1756,67 @@
         "perf_mixed_content": {
           "label": "#7 Mixed Content 0",
           "cat": "performance",
-          "pass": 381,
+          "pass": 418,
           "applicable": 418
         },
         "perf_render_block": {
           "label": "#8 Render Blocking 0",
           "cat": "performance",
-          "pass": 12,
+          "pass": 0,
           "applicable": 418
         },
         "a11y_image_alt": {
           "label": "#9 Image Alt 누락 0",
           "cat": "accessibility",
-          "pass": 375,
+          "pass": 406,
           "applicable": 418
         },
         "a11y_semantic": {
           "label": "#10 Semantic HTML",
           "cat": "accessibility",
-          "pass": 254,
+          "pass": 334,
           "applicable": 418
         },
         "a11y_heading_hier": {
           "label": "#11 Heading Hierarchy",
           "cat": "accessibility",
-          "pass": 225,
+          "pass": 335,
           "applicable": 418
         },
         "a11y_aria_labels": {
           "label": "#12 ARIA 누락 < 10%",
           "cat": "accessibility",
-          "pass": 381,
+          "pass": 418,
           "applicable": 418
         },
         "seo_title": {
           "label": "#13 Title 존재",
           "cat": "seo",
-          "pass": 269,
+          "pass": 416,
           "applicable": 418
         },
         "seo_meta_desc": {
           "label": "#14 Meta Description",
           "cat": "seo",
-          "pass": 186,
+          "pass": 307,
           "applicable": 418
         },
         "seo_canonical": {
           "label": "#15 Canonical self-ref",
           "cat": "seo",
-          "pass": 254,
+          "pass": 403,
           "applicable": 418
         },
         "seo_h1": {
           "label": "#16 H1 정확히 1개",
           "cat": "seo",
-          "pass": 161,
+          "pass": 257,
           "applicable": 418
         },
         "seo_robots": {
           "label": "#17 indexing 허용",
           "cat": "seo",
-          "pass": 281,
+          "pass": 418,
           "applicable": 418
         },
         "seo_robots_hdr": {
@@ -1814,7 +1828,7 @@
         "seo_open_graph": {
           "label": "#18 Open Graph (title+image)",
           "cat": "seo",
-          "pass": 243,
+          "pass": 379,
           "applicable": 418
         },
         "seo_sitemap": {
@@ -1832,55 +1846,55 @@
         "ai_schema_breadcrumb": {
           "label": "#21 Schema: BreadcrumbList",
           "cat": "ai_readiness",
-          "pass": 269,
+          "pass": 417,
           "applicable": 418
         },
         "ai_schema_faq": {
           "label": "#23 Schema: FAQPage",
           "cat": "ai_readiness",
-          "pass": 13,
-          "applicable": 189
+          "pass": 25,
+          "applicable": 144
         },
         "ai_schema_collection": {
           "label": "#24 Schema: CollectionPage (PLP)",
           "cat": "ai_readiness",
           "pass": 92,
-          "applicable": 100
+          "applicable": 98
         },
         "ai_schema_product": {
           "label": "#25 Schema: Product 풀세트 (PDP)",
           "cat": "ai_readiness",
           "pass": 0,
-          "applicable": 63
+          "applicable": 100
         },
         "ai_schema_image": {
           "label": "#26 Schema: ImageObject",
           "cat": "ai_readiness",
           "pass": 0,
-          "applicable": 164
+          "applicable": 119
         },
         "ai_schema_video": {
           "label": "#27 Schema: VideoObject",
           "cat": "ai_readiness",
           "pass": 0,
-          "applicable": 164
+          "applicable": 119
         },
         "ai_schema_howto": {
           "label": "#28 Schema: HowTo",
           "cat": "ai_readiness",
           "pass": 0,
-          "applicable": 189
+          "applicable": 145
         },
         "ai_schema_article": {
           "label": "#29 Schema: Article",
           "cat": "ai_readiness",
           "pass": 0,
-          "applicable": 127
+          "applicable": 45
         },
         "ai_faq_block": {
           "label": "#32 FAQ Block (콘텐츠)",
           "cat": "ai_readiness",
-          "pass": 69,
+          "pass": 122,
           "applicable": 418
         },
         "ai_definition": {
@@ -1898,49 +1912,49 @@
         "ai_summary_box": {
           "label": "#35 Summary Box (콘텐츠)",
           "cat": "ai_readiness",
-          "pass": 63,
+          "pass": 110,
           "applicable": 418
         },
         "ai_citable": {
           "label": "#36 Citable Sentence ≥ 10%",
           "cat": "ai_readiness",
-          "pass": 262,
+          "pass": 388,
           "applicable": 418
         },
         "ai_ssr_ratio": {
           "label": "#37 JS HTML Text Ratio ≥ 60%",
           "cat": "ai_readiness",
-          "pass": 248,
+          "pass": 417,
           "applicable": 418
         },
         "ai_pdp_thumbnails": {
           "label": "#38 PDP 썸네일 3장 이상 SSR",
           "cat": "ai_readiness",
-          "pass": 63,
-          "applicable": 63
+          "pass": 100,
+          "applicable": 100
         },
         "ai_core_element": {
           "label": "#39 PDP 핵심 element SSR (5개 영역 중 3개 이상)",
           "cat": "ai_readiness",
-          "pass": 63,
-          "applicable": 63
+          "pass": 100,
+          "applicable": 100
         },
         "ai_summary_ssr": {
           "label": "#40 Summary Content SSR",
           "cat": "ai_readiness",
-          "pass": 269,
+          "pass": 418,
           "applicable": 418
         },
         "ai_image_filename": {
           "label": "#41 Image File Name 브랜드 포함",
           "cat": "ai_readiness",
-          "pass": 269,
+          "pass": 418,
           "applicable": 418
         },
         "ai_status_200": {
           "label": "#42 Status Code 200",
           "cat": "ai_readiness",
-          "pass": 269,
+          "pass": 418,
           "applicable": 418
         },
         "ai_soft_404": {
@@ -1971,25 +1985,25 @@
           "label": "#41 Schema: AboutPage",
           "cat": "ai_readiness",
           "pass": 0,
-          "applicable": 0
+          "applicable": 62
         },
         "ai_schema_webpage": {
           "label": "#42 Schema: WebPage",
           "cat": "ai_readiness",
           "pass": 0,
-          "applicable": 122
+          "applicable": 42
         },
         "ai_schema_offer": {
           "label": "#43 Schema: Offer",
           "cat": "ai_readiness",
           "pass": 0,
-          "applicable": 85
+          "applicable": 124
         },
         "ai_schema_itemlist": {
           "label": "#46 Schema: ItemList",
           "cat": "ai_readiness",
           "pass": 72,
-          "applicable": 100
+          "applicable": 98
         },
         "ai_schema_newsarticle": {
           "label": "#47 Schema: NewsArticle",
@@ -2001,13 +2015,13 @@
           "label": "#48 Schema: Person (Author)",
           "cat": "ai_readiness",
           "pass": 0,
-          "applicable": 101
+          "applicable": 19
         },
         "ai_schema_rating_or_review": {
           "label": "#44 Schema: AggregateRating OR Review",
           "cat": "ai_readiness",
           "pass": 0,
-          "applicable": 63
+          "applicable": 100
         }
       },
       "pageTypes": {
@@ -2016,40 +2030,50 @@
           "count": 1,
           "avgScore": 69
         },
+        "about": {
+          "label": "회사/About",
+          "count": 62,
+          "avgScore": 62.8
+        },
         "microsite": {
           "label": "마이크로사이트/캠페인",
-          "count": 100,
-          "avgScore": 52.3
+          "count": 18,
+          "avgScore": 51.1
+        },
+        "support": {
+          "label": "지원/Support",
+          "count": 87,
+          "avgScore": 61.3
         },
         "plp": {
           "label": "제품 카테고리 (PLP)",
-          "count": 100,
-          "avgScore": 67.8
+          "count": 98,
+          "avgScore": 68
+        },
+        "promotion": {
+          "label": "프로모션/약관",
+          "count": 24,
+          "avgScore": 59.1
         },
         "pdp": {
           "label": "제품 상세 (PDP)",
-          "count": 63,
-          "avgScore": 62.7
-        },
-        "unknown": {
-          "label": "분류 불가",
-          "count": 105,
-          "avgScore": 25.8
+          "count": 100,
+          "avgScore": 64.2
         },
         "buying_guide": {
           "label": "구매 가이드",
           "count": 26,
-          "avgScore": 34.7
+          "avgScore": 62.5
         },
         "content": {
           "label": "콘텐츠/매거진",
           "count": 1,
-          "avgScore": 16
+          "avgScore": 53
         },
-        "promotion": {
-          "label": "프로모션/약관",
-          "count": 22,
-          "avgScore": 31.9
+        "support_troubleshoot": {
+          "label": "지원 - 트러블슈팅",
+          "count": 1,
+          "avgScore": 60
         }
       },
       "bots": {
@@ -2094,10 +2118,7 @@
           "total": 418
         }
       },
-      "tiers": {
-        "good": 286,
-        "partial": 27
-      }
+      "tiers": {}
     },
     "in": {
       "auditedAt": "2026-06-13",
@@ -2528,50 +2549,50 @@
       }
     },
     "mx": {
-      "auditedAt": "2026-06-13",
-      "runId": "33848ee1425c",
+      "auditedAt": "2026-06-14",
+      "runId": "3c1923145fbe",
       "urlCount": 437,
       "scoredCount": 437,
-      "avgScore": 36.6,
+      "avgScore": 60.7,
       "grades": {
-        "Poor": 298,
-        "Need Improvement": 139
+        "Need Improvement": 237,
+        "Poor": 200
       },
       "categories": {
-        "performance": 50.6,
-        "accessibility": 39.1,
-        "seo": 42.1,
-        "ai_readiness": 27.4
+        "performance": 55.9,
+        "accessibility": 90.1,
+        "seo": 78.2,
+        "ai_readiness": 48.6
       },
       "checks": {
         "perf_ttfb": {
           "label": "#1 TTFB < 600ms",
           "cat": "performance",
-          "pass": 165,
+          "pass": 6,
           "applicable": 437
         },
         "perf_compression": {
           "label": "#2 Compression",
           "cat": "performance",
-          "pass": 181,
+          "pass": 437,
           "applicable": 437
         },
         "perf_http_protocol": {
           "label": "#3 HTTP/2+",
           "cat": "performance",
-          "pass": 399,
+          "pass": 437,
           "applicable": 437
         },
         "perf_cache_control": {
           "label": "#4 Cache-Control max-age",
           "cat": "performance",
-          "pass": 181,
+          "pass": 208,
           "applicable": 437
         },
         "perf_html_size": {
           "label": "#5 HTML < 100KB",
           "cat": "performance",
-          "pass": 224,
+          "pass": 0,
           "applicable": 437
         },
         "perf_redirect": {
@@ -2583,67 +2604,67 @@
         "perf_mixed_content": {
           "label": "#7 Mixed Content 0",
           "cat": "performance",
-          "pass": 181,
+          "pass": 437,
           "applicable": 437
         },
         "perf_render_block": {
           "label": "#8 Render Blocking 0",
           "cat": "performance",
-          "pass": 4,
+          "pass": 0,
           "applicable": 437
         },
         "a11y_image_alt": {
           "label": "#9 Image Alt 누락 0",
           "cat": "accessibility",
-          "pass": 173,
+          "pass": 418,
           "applicable": 437
         },
         "a11y_semantic": {
           "label": "#10 Semantic HTML",
           "cat": "accessibility",
-          "pass": 175,
+          "pass": 361,
           "applicable": 437
         },
         "a11y_heading_hier": {
           "label": "#11 Heading Hierarchy",
           "cat": "accessibility",
-          "pass": 154,
+          "pass": 359,
           "applicable": 437
         },
         "a11y_aria_labels": {
           "label": "#12 ARIA 누락 < 10%",
           "cat": "accessibility",
-          "pass": 181,
+          "pass": 437,
           "applicable": 437
         },
         "seo_title": {
           "label": "#13 Title 존재",
           "cat": "seo",
-          "pass": 177,
+          "pass": 426,
           "applicable": 437
         },
         "seo_meta_desc": {
           "label": "#14 Meta Description",
           "cat": "seo",
-          "pass": 168,
+          "pass": 321,
           "applicable": 437
         },
         "seo_canonical": {
           "label": "#15 Canonical self-ref",
           "cat": "seo",
-          "pass": 177,
+          "pass": 430,
           "applicable": 437
         },
         "seo_h1": {
           "label": "#16 H1 정확히 1개",
           "cat": "seo",
-          "pass": 164,
+          "pass": 272,
           "applicable": 437
         },
         "seo_robots": {
           "label": "#17 indexing 허용",
           "cat": "seo",
-          "pass": 181,
+          "pass": 437,
           "applicable": 437
         },
         "seo_robots_hdr": {
@@ -2655,7 +2676,7 @@
         "seo_open_graph": {
           "label": "#18 Open Graph (title+image)",
           "cat": "seo",
-          "pass": 171,
+          "pass": 404,
           "applicable": 437
         },
         "seo_sitemap": {
@@ -2673,55 +2694,55 @@
         "ai_schema_breadcrumb": {
           "label": "#21 Schema: BreadcrumbList",
           "cat": "ai_readiness",
-          "pass": 175,
+          "pass": 437,
           "applicable": 437
         },
         "ai_schema_faq": {
           "label": "#23 Schema: FAQPage",
           "cat": "ai_readiness",
-          "pass": 9,
-          "applicable": 128
+          "pass": 17,
+          "applicable": 144
         },
         "ai_schema_collection": {
           "label": "#24 Schema: CollectionPage (PLP)",
           "cat": "ai_readiness",
-          "pass": 65,
-          "applicable": 67
+          "pass": 93,
+          "applicable": 98
         },
         "ai_schema_product": {
           "label": "#25 Schema: Product 풀세트 (PDP)",
           "cat": "ai_readiness",
           "pass": 0,
-          "applicable": 96
+          "applicable": 100
         },
         "ai_schema_image": {
           "label": "#26 Schema: ImageObject",
           "cat": "ai_readiness",
           "pass": 0,
-          "applicable": 145
+          "applicable": 163
         },
         "ai_schema_video": {
           "label": "#27 Schema: VideoObject",
           "cat": "ai_readiness",
           "pass": 0,
-          "applicable": 145
+          "applicable": 163
         },
         "ai_schema_howto": {
           "label": "#28 Schema: HowTo",
           "cat": "ai_readiness",
           "pass": 0,
-          "applicable": 128
+          "applicable": 145
         },
         "ai_schema_article": {
           "label": "#29 Schema: Article",
           "cat": "ai_readiness",
           "pass": 0,
-          "applicable": 73
+          "applicable": 87
         },
         "ai_faq_block": {
           "label": "#32 FAQ Block (콘텐츠)",
           "cat": "ai_readiness",
-          "pass": 101,
+          "pass": 142,
           "applicable": 437
         },
         "ai_definition": {
@@ -2739,55 +2760,55 @@
         "ai_summary_box": {
           "label": "#35 Summary Box (콘텐츠)",
           "cat": "ai_readiness",
-          "pass": 98,
+          "pass": 117,
           "applicable": 437
         },
         "ai_citable": {
           "label": "#36 Citable Sentence ≥ 10%",
           "cat": "ai_readiness",
-          "pass": 5,
+          "pass": 13,
           "applicable": 437
         },
         "ai_ssr_ratio": {
           "label": "#37 JS HTML Text Ratio ≥ 60%",
           "cat": "ai_readiness",
-          "pass": 99,
+          "pass": 436,
           "applicable": 437
         },
         "ai_pdp_thumbnails": {
           "label": "#38 PDP 썸네일 3장 이상 SSR",
           "cat": "ai_readiness",
-          "pass": 96,
-          "applicable": 96
+          "pass": 100,
+          "applicable": 100
         },
         "ai_core_element": {
           "label": "#39 PDP 핵심 element SSR (5개 영역 중 3개 이상)",
           "cat": "ai_readiness",
-          "pass": 96,
-          "applicable": 96
+          "pass": 100,
+          "applicable": 100
         },
         "ai_summary_ssr": {
           "label": "#40 Summary Content SSR",
           "cat": "ai_readiness",
-          "pass": 177,
+          "pass": 437,
           "applicable": 437
         },
         "ai_image_filename": {
           "label": "#41 Image File Name 브랜드 포함",
           "cat": "ai_readiness",
-          "pass": 177,
+          "pass": 437,
           "applicable": 437
         },
         "ai_status_200": {
           "label": "#42 Status Code 200",
           "cat": "ai_readiness",
-          "pass": 181,
+          "pass": 437,
           "applicable": 437
         },
         "ai_soft_404": {
           "label": "#43 Soft 404 부재",
           "cat": "ai_readiness",
-          "pass": 433,
+          "pass": 437,
           "applicable": 437
         },
         "ai_llms_txt": {
@@ -2806,31 +2827,31 @@
           "label": "#40 Schema: WebSite",
           "cat": "ai_readiness",
           "pass": 1,
-          "applicable": 2
+          "applicable": 1
         },
         "ai_schema_aboutpage": {
           "label": "#41 Schema: AboutPage",
           "cat": "ai_readiness",
           "pass": 0,
-          "applicable": 0
+          "applicable": 65
         },
         "ai_schema_webpage": {
           "label": "#42 Schema: WebPage",
           "cat": "ai_readiness",
           "pass": 0,
-          "applicable": 8
+          "applicable": 29
         },
         "ai_schema_offer": {
           "label": "#43 Schema: Offer",
           "cat": "ai_readiness",
           "pass": 0,
-          "applicable": 96
+          "applicable": 109
         },
         "ai_schema_itemlist": {
           "label": "#46 Schema: ItemList",
           "cat": "ai_readiness",
-          "pass": 49,
-          "applicable": 67
+          "pass": 70,
+          "applicable": 98
         },
         "ai_schema_newsarticle": {
           "label": "#47 Schema: NewsArticle",
@@ -2842,50 +2863,65 @@
           "label": "#48 Schema: Person (Author)",
           "cat": "ai_readiness",
           "pass": 0,
-          "applicable": 49
+          "applicable": 63
         },
         "ai_schema_rating_or_review": {
           "label": "#44 Schema: AggregateRating OR Review",
           "cat": "ai_readiness",
           "pass": 0,
-          "applicable": 96
+          "applicable": 100
         }
       },
       "pageTypes": {
         "home": {
           "label": "홈페이지",
-          "count": 2,
-          "avgScore": 48.5
+          "count": 1,
+          "avgScore": 69
+        },
+        "about": {
+          "label": "회사/About",
+          "count": 65,
+          "avgScore": 57.1
         },
         "pdp": {
           "label": "제품 상세 (PDP)",
-          "count": 96,
-          "avgScore": 59.8
-        },
-        "unknown": {
-          "label": "분류 불가",
-          "count": 199,
-          "avgScore": 18.6
+          "count": 100,
+          "avgScore": 62.4
         },
         "plp": {
           "label": "제품 카테고리 (PLP)",
-          "count": 67,
-          "avgScore": 69.6
+          "count": 98,
+          "avgScore": 67.8
+        },
+        "content": {
+          "label": "콘텐츠/매거진",
+          "count": 43,
+          "avgScore": 57.2
+        },
+        "support": {
+          "label": "지원/Support",
+          "count": 76,
+          "avgScore": 57.2
         },
         "microsite": {
           "label": "마이크로사이트/캠페인",
-          "count": 8,
-          "avgScore": 47.3
+          "count": 20,
+          "avgScore": 50.6
+        },
+        "promotion": {
+          "label": "프로모션/약관",
+          "count": 9,
+          "avgScore": 57.2
         },
         "buying_guide": {
           "label": "구매 가이드",
           "count": 24,
-          "avgScore": 28.6
+          "avgScore": 60.7
         },
-        "content": {
-          "label": "콘텐츠/매거진",
-          "count": 41,
-          "avgScore": 18.2
+        "support_troubleshoot": {
+          "label": "지원 - 트러블슈팅",
+          "count": 1,
+          "avgScore": 57
         }
       },
       "bots": {
@@ -2930,10 +2966,7 @@
           "total": 437
         }
       },
-      "tiers": {
-        "good": 173,
-        "partial": 65
-      }
+      "tiers": {}
     },
     "uk": {
       "auditedAt": "2026-06-12",
@@ -3766,50 +3799,50 @@
       }
     },
     "vn": {
-      "auditedAt": "2026-06-13",
-      "runId": "c8778d8e892d",
+      "auditedAt": "2026-06-14",
+      "runId": "39e9e4a62e1f",
       "urlCount": 491,
       "scoredCount": 491,
-      "avgScore": 30.1,
+      "avgScore": 59.3,
       "grades": {
-        "Need Improvement": 88,
-        "Poor": 403
+        "Need Improvement": 217,
+        "Poor": 274
       },
       "categories": {
-        "performance": 47.4,
-        "accessibility": 23.3,
-        "seo": 30.4,
-        "ai_readiness": 23.1
+        "performance": 54.4,
+        "accessibility": 87.6,
+        "seo": 75.9,
+        "ai_readiness": 48.2
       },
       "checks": {
         "perf_ttfb": {
           "label": "#1 TTFB < 600ms",
           "cat": "performance",
-          "pass": 180,
+          "pass": 2,
           "applicable": 491
         },
         "perf_compression": {
           "label": "#2 Compression",
           "cat": "performance",
-          "pass": 126,
+          "pass": 491,
           "applicable": 491
         },
         "perf_http_protocol": {
           "label": "#3 HTTP/2+",
           "cat": "performance",
-          "pass": 457,
+          "pass": 491,
           "applicable": 491
         },
         "perf_cache_control": {
           "label": "#4 Cache-Control max-age",
           "cat": "performance",
-          "pass": 152,
+          "pass": 178,
           "applicable": 491
         },
         "perf_html_size": {
           "label": "#5 HTML < 100KB",
           "cat": "performance",
-          "pass": 331,
+          "pass": 0,
           "applicable": 491
         },
         "perf_redirect": {
@@ -3821,7 +3854,7 @@
         "perf_mixed_content": {
           "label": "#7 Mixed Content 0",
           "cat": "performance",
-          "pass": 126,
+          "pass": 489,
           "applicable": 491
         },
         "perf_render_block": {
@@ -3833,55 +3866,55 @@
         "a11y_image_alt": {
           "label": "#9 Image Alt 누락 0",
           "cat": "accessibility",
-          "pass": 118,
+          "pass": 468,
           "applicable": 491
         },
         "a11y_semantic": {
           "label": "#10 Semantic HTML",
           "cat": "accessibility",
-          "pass": 122,
+          "pass": 385,
           "applicable": 491
         },
         "a11y_heading_hier": {
           "label": "#11 Heading Hierarchy",
           "cat": "accessibility",
-          "pass": 91,
+          "pass": 377,
           "applicable": 491
         },
         "a11y_aria_labels": {
           "label": "#12 ARIA 누락 < 10%",
           "cat": "accessibility",
-          "pass": 126,
+          "pass": 491,
           "applicable": 491
         },
         "seo_title": {
           "label": "#13 Title 존재",
           "cat": "seo",
-          "pass": 125,
+          "pass": 479,
           "applicable": 491
         },
         "seo_meta_desc": {
           "label": "#14 Meta Description",
           "cat": "seo",
-          "pass": 111,
+          "pass": 324,
           "applicable": 491
         },
         "seo_canonical": {
           "label": "#15 Canonical self-ref",
           "cat": "seo",
-          "pass": 125,
+          "pass": 467,
           "applicable": 491
         },
         "seo_h1": {
           "label": "#16 H1 정확히 1개",
           "cat": "seo",
-          "pass": 109,
+          "pass": 319,
           "applicable": 491
         },
         "seo_robots": {
           "label": "#17 indexing 허용",
           "cat": "seo",
-          "pass": 126,
+          "pass": 491,
           "applicable": 491
         },
         "seo_robots_hdr": {
@@ -3893,7 +3926,7 @@
         "seo_open_graph": {
           "label": "#18 Open Graph (title+image)",
           "cat": "seo",
-          "pass": 118,
+          "pass": 406,
           "applicable": 491
         },
         "seo_sitemap": {
@@ -3911,55 +3944,55 @@
         "ai_schema_breadcrumb": {
           "label": "#21 Schema: BreadcrumbList",
           "cat": "ai_readiness",
-          "pass": 126,
+          "pass": 491,
           "applicable": 491
         },
         "ai_schema_faq": {
           "label": "#23 Schema: FAQPage",
           "cat": "ai_readiness",
-          "pass": 7,
-          "applicable": 77
+          "pass": 14,
+          "applicable": 167
         },
         "ai_schema_collection": {
           "label": "#24 Schema: CollectionPage (PLP)",
           "cat": "ai_readiness",
-          "pass": 46,
-          "applicable": 50
+          "pass": 83,
+          "applicable": 100
         },
         "ai_schema_product": {
           "label": "#25 Schema: Product 풀세트 (PDP)",
           "cat": "ai_readiness",
           "pass": 0,
-          "applicable": 61
+          "applicable": 100
         },
         "ai_schema_image": {
           "label": "#26 Schema: ImageObject",
           "cat": "ai_readiness",
           "pass": 0,
-          "applicable": 138
+          "applicable": 228
         },
         "ai_schema_video": {
           "label": "#27 Schema: VideoObject",
           "cat": "ai_readiness",
           "pass": 0,
-          "applicable": 138
+          "applicable": 228
         },
         "ai_schema_howto": {
           "label": "#28 Schema: HowTo",
           "cat": "ai_readiness",
           "pass": 0,
-          "applicable": 79
+          "applicable": 170
         },
         "ai_schema_article": {
           "label": "#29 Schema: Article",
           "cat": "ai_readiness",
           "pass": 0,
-          "applicable": 80
+          "applicable": 131
         },
         "ai_faq_block": {
           "label": "#32 FAQ Block (콘텐츠)",
           "cat": "ai_readiness",
-          "pass": 62,
+          "pass": 140,
           "applicable": 491
         },
         "ai_definition": {
@@ -3977,49 +4010,49 @@
         "ai_summary_box": {
           "label": "#35 Summary Box (콘텐츠)",
           "cat": "ai_readiness",
-          "pass": 62,
+          "pass": 109,
           "applicable": 491
         },
         "ai_citable": {
           "label": "#36 Citable Sentence ≥ 10%",
           "cat": "ai_readiness",
-          "pass": 69,
+          "pass": 130,
           "applicable": 491
         },
         "ai_ssr_ratio": {
           "label": "#37 JS HTML Text Ratio ≥ 60%",
           "cat": "ai_readiness",
-          "pass": 87,
+          "pass": 491,
           "applicable": 491
         },
         "ai_pdp_thumbnails": {
           "label": "#38 PDP 썸네일 3장 이상 SSR",
           "cat": "ai_readiness",
-          "pass": 61,
-          "applicable": 61
+          "pass": 100,
+          "applicable": 100
         },
         "ai_core_element": {
           "label": "#39 PDP 핵심 element SSR (5개 영역 중 3개 이상)",
           "cat": "ai_readiness",
-          "pass": 61,
-          "applicable": 61
+          "pass": 100,
+          "applicable": 100
         },
         "ai_summary_ssr": {
           "label": "#40 Summary Content SSR",
           "cat": "ai_readiness",
-          "pass": 126,
+          "pass": 491,
           "applicable": 491
         },
         "ai_image_filename": {
           "label": "#41 Image File Name 브랜드 포함",
           "cat": "ai_readiness",
-          "pass": 126,
+          "pass": 491,
           "applicable": 491
         },
         "ai_status_200": {
           "label": "#42 Status Code 200",
           "cat": "ai_readiness",
-          "pass": 126,
+          "pass": 491,
           "applicable": 491
         },
         "ai_soft_404": {
@@ -4050,25 +4083,25 @@
           "label": "#41 Schema: AboutPage",
           "cat": "ai_readiness",
           "pass": 0,
-          "applicable": 0
+          "applicable": 25
         },
         "ai_schema_webpage": {
           "label": "#42 Schema: WebPage",
           "cat": "ai_readiness",
           "pass": 0,
-          "applicable": 34
+          "applicable": 91
         },
         "ai_schema_offer": {
           "label": "#43 Schema: Offer",
           "cat": "ai_readiness",
           "pass": 0,
-          "applicable": 82
+          "applicable": 127
         },
         "ai_schema_itemlist": {
           "label": "#46 Schema: ItemList",
           "cat": "ai_readiness",
-          "pass": 37,
-          "applicable": 50
+          "pass": 67,
+          "applicable": 100
         },
         "ai_schema_newsarticle": {
           "label": "#47 Schema: NewsArticle",
@@ -4080,13 +4113,13 @@
           "label": "#48 Schema: Person (Author)",
           "cat": "ai_readiness",
           "pass": 0,
-          "applicable": 77
+          "applicable": 128
         },
         "ai_schema_rating_or_review": {
           "label": "#44 Schema: AggregateRating OR Review",
           "cat": "ai_readiness",
           "pass": 0,
-          "applicable": 61
+          "applicable": 100
         }
       },
       "pageTypes": {
@@ -4095,50 +4128,50 @@
           "count": 1,
           "avgScore": 69
         },
-        "unknown": {
-          "label": "분류 불가",
-          "count": 226,
-          "avgScore": 18.2
-        },
         "microsite": {
           "label": "마이크로사이트/캠페인",
-          "count": 13,
-          "avgScore": 46.8
+          "count": 64,
+          "avgScore": 51.6
+        },
+        "about": {
+          "label": "회사/About",
+          "count": 25,
+          "avgScore": 57.6
+        },
+        "promotion": {
+          "label": "프로모션/약관",
+          "count": 27,
+          "avgScore": 57.4
+        },
+        "support": {
+          "label": "지원/Support",
+          "count": 104,
+          "avgScore": 56.3
         },
         "buying_guide": {
           "label": "구매 가이드",
           "count": 3,
-          "avgScore": 19
+          "avgScore": 55
         },
         "plp": {
           "label": "제품 카테고리 (PLP)",
-          "count": 50,
-          "avgScore": 69.2
+          "count": 100,
+          "avgScore": 66.7
         },
         "pdp": {
           "label": "제품 상세 (PDP)",
-          "count": 61,
-          "avgScore": 60.5
+          "count": 100,
+          "avgScore": 62.2
         },
-        "support": {
-          "label": "지원/Support",
-          "count": 50,
-          "avgScore": 21.7
+        "support_troubleshoot": {
+          "label": "지원 - 트러블슈팅",
+          "count": 3,
+          "avgScore": 54
         },
         "content": {
           "label": "콘텐츠/매거진",
           "count": 64,
-          "avgScore": 17.8
-        },
-        "support_troubleshoot": {
-          "label": "지원 - 트러블슈팅",
-          "count": 2,
-          "avgScore": 18.5
-        },
-        "promotion": {
-          "label": "프로모션/약관",
-          "count": 21,
-          "avgScore": 23.6
+          "avgScore": 57.3
         }
       },
       "bots": {
@@ -4183,344 +4216,341 @@
           "total": 491
         }
       },
-      "tiers": {
-        "good": 146,
-        "partial": 117
-      }
+      "tiers": {}
     }
   },
   "overall": {
-    "urlCount": 5226,
-    "scoredCount": 5226,
-    "avgScore": 50.3,
+    "urlCount": 7575,
+    "scoredCount": 7575,
+    "avgScore": 53.5,
     "grades": {
-      "Need Improvement": 1919,
-      "Poor": 3307
+      "Need Improvement": 3241,
+      "Poor": 4334
     },
     "categories": {
-      "performance": 53.3,
-      "accessibility": 69,
-      "seo": 63.6,
-      "ai_readiness": 39
+      "performance": 53.8,
+      "accessibility": 75.4,
+      "seo": 68,
+      "ai_readiness": 42.3
     },
     "checks": {
       "perf_ttfb": {
         "label": "#1 TTFB < 600ms",
         "cat": "performance",
-        "pass": 676,
-        "applicable": 5226
+        "pass": 720,
+        "applicable": 7575
       },
       "perf_compression": {
         "label": "#2 Compression",
         "cat": "performance",
-        "pass": 4205,
-        "applicable": 5226
+        "pass": 6554,
+        "applicable": 7575
       },
       "perf_http_protocol": {
         "label": "#3 HTTP/2+",
         "cat": "performance",
-        "pass": 5060,
-        "applicable": 5226
+        "pass": 7409,
+        "applicable": 7575
       },
       "perf_cache_control": {
         "label": "#4 Cache-Control max-age",
         "cat": "performance",
-        "pass": 1976,
-        "applicable": 5226
+        "pass": 2913,
+        "applicable": 7575
       },
       "perf_html_size": {
         "label": "#5 HTML < 100KB",
         "cat": "performance",
-        "pass": 976,
-        "applicable": 5226
+        "pass": 978,
+        "applicable": 7575
       },
       "perf_redirect": {
         "label": "#6 Redirect ≤ 1",
         "cat": "performance",
-        "pass": 5225,
-        "applicable": 5226
+        "pass": 7573,
+        "applicable": 7575
       },
       "perf_mixed_content": {
         "label": "#7 Mixed Content 0",
         "cat": "performance",
-        "pass": 4203,
-        "applicable": 5226
+        "pass": 6549,
+        "applicable": 7575
       },
       "perf_render_block": {
         "label": "#8 Render Blocking 0",
         "cat": "performance",
         "pass": 16,
-        "applicable": 5226
+        "applicable": 7575
       },
       "a11y_image_alt": {
         "label": "#9 Image Alt 누락 0",
         "cat": "accessibility",
-        "pass": 3663,
-        "applicable": 5226
+        "pass": 5923,
+        "applicable": 7575
       },
       "a11y_semantic": {
         "label": "#10 Semantic HTML",
         "cat": "accessibility",
-        "pass": 3264,
-        "applicable": 5226
+        "pass": 5169,
+        "applicable": 7575
       },
       "a11y_heading_hier": {
         "label": "#11 Heading Hierarchy",
         "cat": "accessibility",
-        "pass": 3300,
-        "applicable": 5226
+        "pass": 5209,
+        "applicable": 7575
       },
       "a11y_aria_labels": {
         "label": "#12 ARIA 누락 < 10%",
         "cat": "accessibility",
-        "pass": 4205,
-        "applicable": 5226
+        "pass": 6554,
+        "applicable": 7575
       },
       "seo_title": {
         "label": "#13 Title 존재",
         "cat": "seo",
-        "pass": 3965,
-        "applicable": 5226
+        "pass": 6247,
+        "applicable": 7575
       },
       "seo_meta_desc": {
         "label": "#14 Meta Description",
         "cat": "seo",
-        "pass": 3086,
-        "applicable": 5226
+        "pass": 4824,
+        "applicable": 7575
       },
       "seo_canonical": {
         "label": "#15 Canonical self-ref",
         "cat": "seo",
-        "pass": 3933,
-        "applicable": 5226
+        "pass": 6192,
+        "applicable": 7575
       },
       "seo_h1": {
         "label": "#16 H1 정확히 1개",
         "cat": "seo",
-        "pass": 2855,
-        "applicable": 5226
+        "pass": 4377,
+        "applicable": 7575
       },
       "seo_robots": {
         "label": "#17 indexing 허용",
         "cat": "seo",
-        "pass": 4096,
-        "applicable": 5226
+        "pass": 6443,
+        "applicable": 7575
       },
       "seo_robots_hdr": {
         "label": "#17 X-Robots-Tag noindex 부재",
         "cat": "seo",
-        "pass": 5226,
-        "applicable": 5226
+        "pass": 7575,
+        "applicable": 7575
       },
       "seo_open_graph": {
         "label": "#18 Open Graph (title+image)",
         "cat": "seo",
-        "pass": 3414,
-        "applicable": 5226
+        "pass": 5482,
+        "applicable": 7575
       },
       "seo_sitemap": {
         "label": "#19 Sitemap (1개월 내)",
         "cat": "seo",
         "pass": 0,
-        "applicable": 5226
+        "applicable": 7575
       },
       "ai_schema_org": {
         "label": "#20 Schema: Organization",
         "cat": "ai_readiness",
         "pass": 0,
-        "applicable": 5226
+        "applicable": 7575
       },
       "ai_schema_breadcrumb": {
         "label": "#21 Schema: BreadcrumbList",
         "cat": "ai_readiness",
-        "pass": 3900,
-        "applicable": 5226
+        "pass": 6246,
+        "applicable": 7575
       },
       "ai_schema_faq": {
         "label": "#23 Schema: FAQPage",
         "cat": "ai_readiness",
-        "pass": 142,
-        "applicable": 1731
+        "pass": 216,
+        "applicable": 2571
       },
       "ai_schema_collection": {
         "label": "#24 Schema: CollectionPage (PLP)",
         "cat": "ai_readiness",
-        "pass": 764,
-        "applicable": 880
+        "pass": 1187,
+        "applicable": 1357
       },
       "ai_schema_product": {
         "label": "#25 Schema: Product 풀세트 (PDP)",
         "cat": "ai_readiness",
         "pass": 0,
-        "applicable": 891
+        "applicable": 1383
       },
       "ai_schema_image": {
         "label": "#26 Schema: ImageObject",
         "cat": "ai_readiness",
         "pass": 0,
-        "applicable": 2339
+        "applicable": 3363
       },
       "ai_schema_video": {
         "label": "#27 Schema: VideoObject",
         "cat": "ai_readiness",
         "pass": 0,
-        "applicable": 2339
+        "applicable": 3363
       },
       "ai_schema_howto": {
         "label": "#28 Schema: HowTo",
         "cat": "ai_readiness",
         "pass": 0,
-        "applicable": 1743
+        "applicable": 2591
       },
       "ai_schema_article": {
         "label": "#29 Schema: Article",
         "cat": "ai_readiness",
         "pass": 0,
-        "applicable": 1361
+        "applicable": 1893
       },
       "ai_faq_block": {
         "label": "#32 FAQ Block (콘텐츠)",
         "cat": "ai_readiness",
-        "pass": 1355,
-        "applicable": 5226
+        "pass": 2044,
+        "applicable": 7575
       },
       "ai_definition": {
         "label": "#33 Definition Paragraph",
         "cat": "ai_readiness",
         "pass": 7,
-        "applicable": 5226
+        "applicable": 7575
       },
       "ai_author_source": {
         "label": "#34 Author 또는 출처+날짜",
         "cat": "ai_readiness",
         "pass": 1,
-        "applicable": 5226
+        "applicable": 7575
       },
       "ai_summary_box": {
         "label": "#35 Summary Box (콘텐츠)",
         "cat": "ai_readiness",
-        "pass": 1168,
-        "applicable": 5226
+        "pass": 1729,
+        "applicable": 7575
       },
       "ai_citable": {
         "label": "#36 Citable Sentence ≥ 10%",
         "cat": "ai_readiness",
-        "pass": 2150,
-        "applicable": 5226
+        "pass": 3432,
+        "applicable": 7575
       },
       "ai_ssr_ratio": {
         "label": "#37 JS HTML Text Ratio ≥ 60%",
         "cat": "ai_readiness",
-        "pass": 2307,
-        "applicable": 5226
+        "pass": 4456,
+        "applicable": 7575
       },
       "ai_pdp_thumbnails": {
         "label": "#38 PDP 썸네일 3장 이상 SSR",
         "cat": "ai_readiness",
-        "pass": 791,
-        "applicable": 891
+        "pass": 1283,
+        "applicable": 1383
       },
       "ai_core_element": {
         "label": "#39 PDP 핵심 element SSR (5개 영역 중 3개 이상)",
         "cat": "ai_readiness",
-        "pass": 791,
-        "applicable": 891
+        "pass": 1283,
+        "applicable": 1383
       },
       "ai_summary_ssr": {
         "label": "#40 Summary Content SSR",
         "cat": "ai_readiness",
-        "pass": 3745,
-        "applicable": 5226
+        "pass": 6092,
+        "applicable": 7575
       },
       "ai_image_filename": {
         "label": "#41 Image File Name 브랜드 포함",
         "cat": "ai_readiness",
-        "pass": 4086,
-        "applicable": 5226
+        "pass": 6433,
+        "applicable": 7575
       },
       "ai_status_200": {
         "label": "#42 Status Code 200",
         "cat": "ai_readiness",
-        "pass": 4090,
-        "applicable": 5226
+        "pass": 6437,
+        "applicable": 7575
       },
       "ai_soft_404": {
         "label": "#43 Soft 404 부재",
         "cat": "ai_readiness",
-        "pass": 5222,
-        "applicable": 5226
+        "pass": 7571,
+        "applicable": 7575
       },
       "ai_llms_txt": {
         "label": "#44 llms.txt 존재",
         "cat": "ai_readiness",
-        "pass": 5226,
-        "applicable": 5226
+        "pass": 7575,
+        "applicable": 7575
       },
       "ai_sitemap_domain": {
         "label": "#45 Sitemap (도메인, 1개월 내)",
         "cat": "ai_readiness",
         "pass": 0,
-        "applicable": 5226
+        "applicable": 7575
       },
       "ai_schema_website": {
         "label": "#40 Schema: WebSite",
         "cat": "ai_readiness",
-        "pass": 17,
-        "applicable": 18
+        "pass": 24,
+        "applicable": 25
       },
       "ai_schema_aboutpage": {
         "label": "#41 Schema: AboutPage",
         "cat": "ai_readiness",
         "pass": 0,
-        "applicable": 300
+        "applicable": 457
       },
       "ai_schema_webpage": {
         "label": "#42 Schema: WebPage",
         "cat": "ai_readiness",
-        "pass": 1,
-        "applicable": 814
+        "pass": 2,
+        "applicable": 1153
       },
       "ai_schema_offer": {
         "label": "#43 Schema: Offer",
         "cat": "ai_readiness",
         "pass": 100,
-        "applicable": 1078
+        "applicable": 1661
       },
       "ai_schema_itemlist": {
         "label": "#46 Schema: ItemList",
         "cat": "ai_readiness",
-        "pass": 580,
-        "applicable": 880
+        "pass": 901,
+        "applicable": 1357
       },
       "ai_schema_newsarticle": {
         "label": "#47 Schema: NewsArticle",
         "cat": "ai_readiness",
         "pass": 0,
-        "applicable": 300
+        "applicable": 400
       },
       "ai_schema_person": {
         "label": "#48 Schema: Person (Author)",
         "cat": "ai_readiness",
         "pass": 0,
-        "applicable": 1448
+        "applicable": 1980
       },
       "ai_schema_rating_or_review": {
         "label": "#44 Schema: AggregateRating OR Review",
         "cat": "ai_readiness",
         "pass": 0,
-        "applicable": 891
+        "applicable": 1383
       }
     },
     "pageTypes": {
       "home": {
         "label": "홈페이지",
-        "count": 18,
-        "avgScore": 59.8
+        "count": 25,
+        "avgScore": 61.4
       },
       "microsite": {
         "label": "마이크로사이트/캠페인",
-        "count": 627,
-        "avgScore": 52.3
+        "count": 875,
+        "avgScore": 52.5
       },
       "unknown": {
         "label": "분류 불가",
@@ -4529,90 +4559,90 @@
       },
       "about": {
         "label": "회사/About",
-        "count": 300,
-        "avgScore": 54.3
+        "count": 457,
+        "avgScore": 56.1
       },
       "pdp": {
         "label": "제품 상세 (PDP)",
-        "count": 891,
-        "avgScore": 59.9
+        "count": 1383,
+        "avgScore": 60.9
       },
       "buying_guide": {
         "label": "구매 가이드",
-        "count": 213,
-        "avgScore": 48.6
+        "count": 313,
+        "avgScore": 52.5
       },
       "plp": {
         "label": "제품 카테고리 (PLP)",
-        "count": 880,
-        "avgScore": 67.3
+        "count": 1357,
+        "avgScore": 67.5
       },
       "content": {
         "label": "콘텐츠/매거진",
-        "count": 521,
-        "avgScore": 45.7
+        "count": 705,
+        "avgScore": 48.8
       },
       "support": {
         "label": "지원/Support",
-        "count": 561,
-        "avgScore": 48.8
+        "count": 1046,
+        "avgScore": 53.3
       },
       "support_troubleshoot": {
         "label": "지원 - 트러블슈팅",
-        "count": 12,
-        "avgScore": 41.4
+        "count": 20,
+        "avgScore": 47.4
       },
       "promotion": {
         "label": "프로모션/약관",
-        "count": 187,
-        "avgScore": 47
+        "count": 278,
+        "avgScore": 50.7
       },
       "newsroom": {
         "label": "뉴스룸/Press",
-        "count": 300,
-        "avgScore": 50.5
+        "count": 400,
+        "avgScore": 52.2
       }
     },
     "bots": {
       "GPTBot": {
         "blocked": 0,
-        "total": 5226
+        "total": 7575
       },
       "ChatGPT-User": {
         "blocked": 0,
-        "total": 5226
+        "total": 7575
       },
       "Google-Extended": {
         "blocked": 0,
-        "total": 5226
+        "total": 7575
       },
       "CCBot": {
         "blocked": 0,
-        "total": 5226
+        "total": 7575
       },
       "anthropic-ai": {
         "blocked": 0,
-        "total": 5226
+        "total": 7575
       },
       "Claude-Web": {
         "blocked": 0,
-        "total": 5226
+        "total": 7575
       },
       "PerplexityBot": {
         "blocked": 0,
-        "total": 5226
+        "total": 7575
       },
       "Bytespider": {
         "blocked": 0,
-        "total": 5226
+        "total": 7575
       },
       "cohere-ai": {
         "blocked": 0,
-        "total": 5226
+        "total": 7575
       },
       "YouBot": {
         "blocked": 0,
-        "total": 5226
+        "total": 7575
       }
     },
     "tiers": {

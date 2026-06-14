@@ -37,6 +37,19 @@ const CATEGORY_LABEL = {
   ai_readiness: 'AI Readiness',
 }
 
+// 국가코드 → 표시명 (CSV 다운로드 국가 컬럼용)
+const CC_NAME = {
+  us: 'USA', ca: 'Canada', uk: 'UK', gb: 'UK', de: 'Germany', es: 'Spain',
+  fr: 'France', it: 'Italy', br: 'Brazil', mx: 'Mexico', in: 'India',
+  au: 'Australia', vn: 'Vietnam', jp: 'Japan', kr: 'Korea', cn: 'China',
+}
+
+// CSV 셀 이스케이프 (쉼표/따옴표/개행 포함 시 따옴표 감싸기)
+function csvCell(v) {
+  const s = v == null ? '' : String(v)
+  return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s
+}
+
 // 파일명에서 국가코드 + 날짜 + runId 추출: <cc>_<YYYY-MM-DD>_run_<id>.json
 function parseFileName(name) {
   const m = name.match(/^([a-z]{2})_(\d{4}-\d{2}-\d{2})_run_([0-9a-f]+)\.json$/i)
@@ -157,6 +170,7 @@ function main() {
   const countries = {}
   const overall = newAcc()
   const fileDates = []
+  const urlRows = []  // CSV 다운로드용 per-URL 행: { url, country, pt, score }
 
   for (const fname of files) {
     const meta = parseFileName(fname)
@@ -177,6 +191,13 @@ function main() {
       if (!s || !s.result) continue
       accumulate(acc, s.result)
       accumulate(overall, s.result)
+      const r = s.result
+      urlRows.push({
+        url: s.url || r.url || '',
+        country: CC_NAME[meta.cc] || meta.cc.toUpperCase(),
+        pt: (r.page_type && r.page_type.label) || '',
+        score: (r.score && typeof r.score.total === 'number') ? r.score.total : '',
+      })
     }
     fileDates.push(meta.date)
     countries[meta.cc] = {
@@ -221,9 +242,18 @@ function main() {
   index.snapshots.sort((a, b) => (a.date < b.date ? -1 : 1))
   writeFileSync(indexPath, JSON.stringify(index, null, 2))
 
+  // 검수 URL 목록 CSV (url, country, page_type, score) — 어드민 다운로드용
+  const csvPath = join(OUT_DIR, `urls-${snapshotDate}.csv`)
+  const csvLines = ['url,country,page_type,score']
+  for (const row of urlRows) {
+    csvLines.push([csvCell(row.url), csvCell(row.country), csvCell(row.pt), csvCell(row.score)].join(','))
+  }
+  writeFileSync(csvPath, csvLines.join('\n') + '\n')
+
   const kb = (JSON.stringify(snapshot).length / 1024).toFixed(1)
   console.log(`[aggregate-readability] ✓ 스냅샷 저장: ${outPath} (${kb} KB, ${Object.keys(countries).length}개국)`)
   console.log(`[aggregate-readability] ✓ 인덱스: ${indexPath} (${index.snapshots.length}개 스냅샷)`)
+  console.log(`[aggregate-readability] ✓ URL CSV: ${csvPath} (${urlRows.length}개 URL)`)
 }
 
 function mostCommon(arr) {

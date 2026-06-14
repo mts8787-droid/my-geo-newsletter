@@ -36,10 +36,26 @@ function loadLatest() {
   }
 }
 
+// 최신 검수 URL CSV 파일명 (urls-<YYYY-MM-DD>.csv) — 집계 스크립트가 스냅샷과 함께 생성
+function latestCsvFile() {
+  if (!existsSync(DATA_DIR)) return null
+  const files = readdirSync(DATA_DIR).filter(f => /^urls-\d{4}-\d{2}-\d{2}\.csv$/.test(f)).sort()
+  return files.length ? files[files.length - 1] : null
+}
+
 export const readabilityRouter = Router()
 
 readabilityRouter.get('/admin/readability', (req, res) => {
   const { snapshot, index } = loadLatest()
   res.set('Content-Type', 'text/html; charset=utf-8')
   res.send(renderReadabilityHTML({ snapshot, index, adminMode: true }))
+})
+
+// 검수 URL 목록 다운로드 — 최신 urls-<date>.csv (URL · 국가 · 페이지타입 · 점수)
+readabilityRouter.get('/admin/readability/urls.csv', (req, res) => {
+  const file = latestCsvFile()
+  if (!file) return res.status(404).send('검수 URL CSV 없음 — node scripts/aggregate-readability.mjs 실행 필요')
+  res.set('Content-Type', 'text/csv; charset=utf-8')
+  res.set('Content-Disposition', `attachment; filename="${file}"`)
+  res.send(readFileSync(join(DATA_DIR, file), 'utf8'))
 })

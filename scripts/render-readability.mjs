@@ -56,13 +56,25 @@ function rateColor(v) {
   return statusInfo('critical').color
 }
 
-// 가로 막대 1줄
-function barRow(label, value, max, color, rightText) {
+// 가로 막대 1줄 — countText 주면 라벨과 막대 사이에 audit 페이지 수 컬럼 추가
+function barRow(label, value, max, color, rightText, countText) {
   const w = max > 0 ? Math.max(0, Math.min(100, (value / max) * 100)).toFixed(1) : 0
+  const countCol = (countText != null && countText !== '') ? `<span class="bar-count">${escHtml(countText)}</span>` : ''
   return `<div class="bar-row">
     <span class="bar-label">${escHtml(label)}</span>
+    ${countCol}
     <div class="bar-track"><div class="bar-fill" style="width:${w}%;background:${color}"></div></div>
     <span class="bar-value" style="color:${color}">${escHtml(rightText)}</span>
+  </div>`
+}
+
+// 막대 그룹 헤더 (라벨 / 페이지수 / 점수 컬럼명)
+function barHead(labelText, countLabel, valueLabel) {
+  return `<div class="bar-row bar-head">
+    <span class="bar-label">${escHtml(labelText)}</span>
+    <span class="bar-count">${escHtml(countLabel)}</span>
+    <div class="bar-track"></div>
+    <span class="bar-value">${escHtml(valueLabel)}</span>
   </div>`
 }
 
@@ -88,8 +100,8 @@ function viewCountryComparison(snap) {
     .map(([cc, v]) => ({ cc, name: CC_NAME[cc] || cc.toUpperCase(), avg: v.avgScore, urls: v.urlCount }))
     .sort((a, b) => (b.avg ?? -1) - (a.avg ?? -1))
 
-  const bars = rows.map(r =>
-    barRow(`${r.name} (${r.urls.toLocaleString()})`, r.avg ?? 0, 100, scoreColor(r.avg), `${r.avg ?? '—'}`)
+  const bars = barHead('국가', '페이지수', '점수') + rows.map(r =>
+    barRow(r.name, r.avg ?? 0, 100, scoreColor(r.avg), `${r.avg ?? '—'}`, r.urls.toLocaleString())
   ).join('')
 
   const hero = `<div class="hero">
@@ -158,8 +170,8 @@ function viewPageTypes(snap) {
   const pts = Object.entries(snap.overall.pageTypes || {})
     .map(([id, v]) => ({ id, ...v }))
     .sort((a, b) => (b.avgScore ?? -1) - (a.avgScore ?? -1))
-  const bars = pts.map(p =>
-    barRow(`${p.label} (${(p.count || 0).toLocaleString()})`, p.avgScore ?? 0, 100, scoreColor(p.avgScore), `${p.avgScore ?? '—'}`)
+  const bars = barHead('페이지 타입', '페이지수', '점수') + pts.map(p =>
+    barRow(p.label, p.avgScore ?? 0, 100, scoreColor(p.avgScore), `${p.avgScore ?? '—'}`, (p.count || 0).toLocaleString())
   ).join('')
   return sectionCard('③ 페이지타입별 점수', '#059669', `<div class="bars">${bars}</div>`)
 }
@@ -214,11 +226,18 @@ function readabilityClient() {
   function scoreColor(v) { if (v == null) return COMP; if (v >= 70) return LEAD; if (v >= 50) return BEHIND; return CRIT }
   function rateColor(v) { if (v == null) return COMP; if (v >= 80) return LEAD; if (v >= 50) return BEHIND; return CRIT }
   function num(n) { return (n == null ? 0 : n).toLocaleString() }
-  function barRow(label, value, max, color, rightText) {
+  function barRow(label, value, max, color, rightText, countText) {
     var w = max > 0 ? Math.max(0, Math.min(100, (value / max) * 100)).toFixed(1) : 0
-    return '<div class="bar-row"><span class="bar-label">' + esc(label) + '</span>' +
+    var countCol = (countText != null && countText !== '') ? '<span class="bar-count">' + esc(countText) + '</span>' : ''
+    return '<div class="bar-row"><span class="bar-label">' + esc(label) + '</span>' + countCol +
       '<div class="bar-track"><div class="bar-fill" style="width:' + w + '%;background:' + color + '"></div></div>' +
       '<span class="bar-value" style="color:' + color + '">' + esc(rightText) + '</span></div>'
+  }
+  function barHead(labelText, countLabel, valueLabel) {
+    return '<div class="bar-row bar-head"><span class="bar-label">' + esc(labelText) + '</span>' +
+      '<span class="bar-count">' + esc(countLabel) + '</span>' +
+      '<div class="bar-track"></div>' +
+      '<span class="bar-value">' + esc(valueLabel) + '</span></div>'
   }
   function sectionCard(title, accent, body, right) {
     return '<div class="section-card"><div class="section-header">' +
@@ -271,24 +290,24 @@ function readabilityClient() {
       var cnt = pt === 'all' ? c.urlCount : (c.pageTypes[pt] ? c.pageTypes[pt].count : 0)
       return { cc: cc, name: ccLabel(cc), v: v, cnt: cnt }
     }).sort(function (a, b) { return (b.v == null ? -1 : b.v) - (a.v == null ? -1 : a.v) })
-    var bars = rows.map(function (r) {
-      return barRow(r.name + ' (' + num(r.cnt) + ')', r.v == null ? 0 : r.v, 100, scoreColor(r.v), r.v == null ? '—' : String(r.v))
+    var bars = barHead('국가', '페이지수', '점수') + rows.map(function (r) {
+      return barRow(r.name, r.v == null ? 0 : r.v, 100, scoreColor(r.v), r.v == null ? '—' : String(r.v), num(r.cnt))
     }).join('')
     var title = pt === 'all' ? '① 국가별 종합 점수 비교' : '① 국가별 점수 비교 — ' + ptLabel
     var note = pt !== 'all'
       ? '<div class="tab-note">페이지 타입 «' + esc(ptLabel) + '» 필터는 국가별/페이지타입 점수에만 적용됩니다. AI봇·SSR 지표는 페이지타입 분해 데이터가 없어 ' + esc(scopeName) + ' 전체 기준입니다.</div>'
       : ''
-    return hero + note + sectionCard(title, RED, '<div class="bars">' + bars + '</div>') + renderBotsTiers(scope)
+    return hero + note + sectionCard(title, RED, '<div class="bars">' + bars + '</div>') + renderCategorySection(scope, '②') + renderBotsTiers(scope)
   }
 
-  function renderCategory() {
-    var scope = getScope(state.cc)
+  // 체크별 통과율 카테고리 카드 묶음 — 국가/페이지타입 탭 양쪽에서 재사용 (별도 항목별 탭 X)
+  function renderCategoryCards(scope) {
     var labels = RD.categoryLabels || {}
     var byCat = {}; CATS.forEach(function (c) { byCat[c] = [] })
     Object.entries(scope.checks || {}).forEach(function (e) {
       var c = e[1]; if (!byCat[c.cat]) byCat[c.cat] = []; byCat[c.cat].push(Object.assign({ cid: e[0] }, c))
     })
-    var cards = CATS.map(function (cat) {
+    return CATS.map(function (cat) {
       var avg = scope.categories ? scope.categories[cat] : null
       var checks = (byCat[cat] || []).sort(function (a, b) { return a.label.localeCompare(b.label, 'en', { numeric: true }) })
       var rows = checks.map(function (c) {
@@ -300,11 +319,15 @@ function readabilityClient() {
         '<span class="cat-avg" style="color:' + scoreColor(avg) + '">' + (avg == null ? '—' : avg) + '</span></div>' +
         '<div class="cat-sub">' + checks.length + ' 체크 · 평균 points</div><div class="bars sm">' + rows + '</div></div>'
     }).join('')
+  }
+
+  // 체크별 통과율 섹션 (국가 필터만 반영 — 페이지타입 분해 데이터 없음)
+  function renderCategorySection(scope, num) {
     var scopeName = state.cc === 'all' ? '전체' : ccLabel(state.cc)
     var note = state.pt !== 'all'
-      ? '<div class="tab-note">항목별(체크 통과율)은 페이지타입 분해 데이터가 없어 «페이지 타입» 필터가 적용되지 않습니다. 국가 필터(' + esc(scopeName) + ')만 반영됩니다.</div>'
+      ? '<div class="tab-note">체크별 통과율은 페이지타입 분해 데이터가 없어 «페이지 타입» 필터가 적용되지 않습니다. 국가 필터(' + esc(scopeName) + ')만 반영됩니다.</div>'
       : ''
-    return note + sectionCard('② 카테고리 4분할 상세 — 체크별 통과율 (' + esc(scopeName) + ')', '#3B82F6', '<div class="cat-grid">' + cards + '</div>')
+    return note + sectionCard(num + ' 체크별 통과율 (' + esc(scopeName) + ')', '#3B82F6', '<div class="cat-grid">' + renderCategoryCards(scope) + '</div>')
   }
 
   function renderPageType() {
@@ -312,25 +335,40 @@ function readabilityClient() {
     var entries = Object.entries(scope.pageTypes || {}).map(function (e) { return Object.assign({ id: e[0] }, e[1]) })
     if (state.pt !== 'all') entries = entries.filter(function (p) { return p.id === state.pt })
     entries.sort(function (a, b) { return (b.avgScore == null ? -1 : b.avgScore) - (a.avgScore == null ? -1 : a.avgScore) })
-    var bars = entries.map(function (p) {
-      return barRow(p.label + ' (' + num(p.count) + ')', p.avgScore == null ? 0 : p.avgScore, 100, scoreColor(p.avgScore), p.avgScore == null ? '—' : String(p.avgScore))
+    var rowsHtml = entries.map(function (p) {
+      return barRow(p.label, p.avgScore == null ? 0 : p.avgScore, 100, scoreColor(p.avgScore), p.avgScore == null ? '—' : String(p.avgScore), num(p.count))
     }).join('')
+    var bars = rowsHtml ? (barHead('페이지 타입', '페이지수', '점수') + rowsHtml) : '<div class="tab-note">해당 조건에 데이터가 없습니다.</div>'
     var scopeName = state.cc === 'all' ? '전체' : ccLabel(state.cc)
-    if (!bars) bars = '<div class="tab-note">해당 조건에 데이터가 없습니다.</div>'
-    return sectionCard('③ 페이지타입별 점수 (' + esc(scopeName) + ')', '#059669', '<div class="bars">' + bars + '</div>')
+    return sectionCard('① 페이지타입별 점수 (' + esc(scopeName) + ')', '#059669', '<div class="bars">' + bars + '</div>') + renderCategorySection(scope, '②')
+  }
+
+  // 검수 기준 + 검수 URL 다운로드 탭
+  function renderCriteria() {
+    var src = 'https://my-geo-89ft.onrender.com/static/geo-agent-checklist.html'
+    var dl = '<div class="crit-dl"><div class="crit-dl-text">' +
+      '<div class="crit-dl-title">검수 URL 다운로드</div>' +
+      '<div class="crit-dl-sub">측정일 ' + esc(RD.date) + ' 기준 어딧 대상 전체 URL (URL · 국가 · 페이지타입 · 점수)</div></div>' +
+      '<a class="crit-dl-btn" href="/admin/readability/urls.csv" download>CSV 다운로드</a></div>'
+    var frame = '<div class="crit-frame-head">검수 기준 (GEO Agent Checklist) ' +
+      '<a href="' + src + '" target="_blank" rel="noopener">원본 열기 ↗</a></div>' +
+      '<iframe class="crit-frame" src="' + src + '" loading="lazy"></iframe>'
+    return sectionCard('검수 기준 · 검수 URL 다운로드', '#7C3AED', dl + frame)
   }
 
   function renderPanel() {
     var el = document.getElementById('rd-panel')
     if (!el) return
+    var fb = document.getElementById('rd-filterbar')
+    if (fb) fb.style.display = state.tab === 'criteria' ? 'none' : ''
     if (state.tab === 'country') el.innerHTML = renderCountry()
-    else if (state.tab === 'category') el.innerHTML = renderCategory()
+    else if (state.tab === 'criteria') el.innerHTML = renderCriteria()
     else el.innerHTML = renderPageType()
   }
 
   function buildControls() {
     var nav = document.getElementById('rd-tabnav')
-    var tabs = [['country', '국가별'], ['category', '항목별'], ['pagetype', '페이지 타입별']]
+    var tabs = [['country', '국가별'], ['pagetype', '페이지 타입별'], ['criteria', '검수 기준']]
     nav.innerHTML = tabs.map(function (t) {
       return '<button data-tab="' + t[0] + '"' + (t[0] === state.tab ? ' class="active"' : '') + '>' + t[1] + '</button>'
     }).join('')
@@ -444,6 +482,19 @@ body{background:#F1F5F9;font-family:${FONT};color:#1A1A1A;line-height:1.6}
 .bars.sm .bar-track{height:14px}
 .bar-fill{height:100%;border-radius:4px;transition:width .3s}
 .bar-value{flex:0 0 130px;text-align:right;font-size:12px;font-weight:700;font-variant-numeric:tabular-nums}
+.bar-count{flex:0 0 72px;text-align:right;font-size:12px;color:#94A3B8;font-variant-numeric:tabular-nums}
+.bar-head{padding-bottom:4px;border-bottom:1px solid #F1F5F9;margin-bottom:2px}
+.bar-head .bar-label,.bar-head .bar-count,.bar-head .bar-value{font-size:11px;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:.3px}
+.bar-head .bar-track{background:none}
+/* ── 검수 기준 탭 ── */
+.crit-dl{display:flex;align-items:center;justify-content:space-between;gap:16px;background:#F8FAFC;border:1px solid #E8EDF2;border-radius:12px;padding:16px 20px;margin-bottom:20px;flex-wrap:wrap}
+.crit-dl-title{font-size:15px;font-weight:800;color:#1A1A1A}
+.crit-dl-sub{font-size:13px;color:#64748B;margin-top:2px}
+.crit-dl-btn{flex-shrink:0;background:${RED};color:#fff;text-decoration:none;font-size:14px;font-weight:700;padding:10px 20px;border-radius:8px}
+.crit-dl-btn:hover{opacity:.9}
+.crit-frame-head{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:14px;font-weight:700;color:#475569;margin-bottom:10px}
+.crit-frame-head a{color:${RED};text-decoration:none;font-weight:600}
+.crit-frame{width:100%;height:70vh;min-height:520px;border:1px solid #E8EDF2;border-radius:12px;background:#fff}
 /* ── 카테고리 4분할 ── */
 .cat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:16px}
 .cat-card{background:#fff;border:1px solid #E8EDF2;border-radius:12px;padding:16px 18px}
@@ -466,6 +517,8 @@ body{background:#F1F5F9;font-family:${FONT};color:#1A1A1A;line-height:1.6}
   .bar-label{flex:0 0 150px;font-size:12px}
   .bars.sm .bar-label{flex:0 0 130px}
   .bar-value{flex:0 0 100px;font-size:11px}
+  .bar-count{flex:0 0 56px;font-size:11px}
+  .crit-frame{height:60vh}
   .cat-grid{grid-template-columns:1fr}
   .split{grid-template-columns:1fr}
 }
@@ -473,6 +526,7 @@ body{background:#F1F5F9;font-family:${FONT};color:#1A1A1A;line-height:1.6}
   .dash-container{padding:12px 10px}
   .bar-label{flex:0 0 110px;font-size:11px;white-space:normal}
   .bar-value{flex:0 0 88px}
+  .bar-count{flex:0 0 46px;font-size:10px}
 }
 </style></head><body>
 
@@ -487,7 +541,7 @@ body{background:#F1F5F9;font-family:${FONT};color:#1A1A1A;line-height:1.6}
   </div>
 
   <div class="tab-nav" id="rd-tabnav"></div>
-  <div class="filter-bar">
+  <div class="filter-bar" id="rd-filterbar">
     <div class="fg"><label for="rd-cc">국가</label><select id="rd-cc"></select></div>
     <div class="fg"><label for="rd-pt">페이지 타입</label><select id="rd-pt"></select></div>
   </div>
