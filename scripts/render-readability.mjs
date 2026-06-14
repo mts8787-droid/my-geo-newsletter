@@ -5,9 +5,11 @@
 // 4 뷰: (1) 국가별 종합 점수 비교  (2) 카테고리 4분할 상세 (51 체크 pass rate)
 //       (3) 페이지타입별 점수      (4) AI봇 차단 / CSR·SSR tier 분포
 //
-// 디자인: theme.js shell (dark/light) + design.md 토큰. 필터 없음 → 순수 정적.
+// 디자인: Visibility 대시보드와 통일 (dashboardStyles.js 토큰) — 라이트 테마.
+//   body #F1F5F9 / Hero 다크 카드 #0F172A / 흰 section-card + 레드바 타이틀.
 
-import { themeStyle, themeToggleButton } from '../lib/theme.js'
+const FONT = "'LGEIText','LG Smart','Arial Narrow',Arial,sans-serif"
+const RED = '#CF0652'
 
 const CATEGORIES = ['performance', 'accessibility', 'seo', 'ai_readiness']
 
@@ -49,6 +51,17 @@ function barRow(label, value, max, color, rightText) {
   </div>`
 }
 
+// section-card 래퍼 — Visibility .section-card + .section-header(레드/컬러 바) + .section-body
+function sectionCard(title, accent, bodyHtml, rightHtml) {
+  return `<div class="section-card">
+    <div class="section-header">
+      <span class="section-title" style="--accent:${accent}">${escHtml(title)}</span>
+      ${rightHtml ? `<span class="section-meta">${rightHtml}</span>` : ''}
+    </div>
+    <div class="section-body">${bodyHtml}</div>
+  </div>`
+}
+
 // ─── 뷰 1: 국가별 종합 점수 비교 ─────────────────────────────────────────────
 function viewCountryComparison(snap) {
   const o = snap.overall
@@ -64,22 +77,32 @@ function viewCountryComparison(snap) {
     barRow(`${r.name} (${r.urls.toLocaleString()})`, r.avg ?? 0, 100, scoreColor(r.avg), `${r.avg ?? '—'}`)
   ).join('')
 
-  return `<div class="section">
-    <h2 class="vtitle" style="border-color:#CF0652">① 국가별 종합 점수 비교</h2>
-    <div class="hero">
-      <div class="hero-main">
-        <span class="hero-num" style="color:${scoreColor(o.avgScore)}">${o.avgScore ?? '—'}</span>
-        <span class="hero-unit">/ 100 전체 평균</span>
-      </div>
-      <div class="hero-meta">
-        URL <strong>${(o.urlCount || 0).toLocaleString()}</strong> ·
-        채점 <strong>${(o.scoredCount || 0).toLocaleString()}</strong> ·
-        국가 <strong>${Object.keys(snap.countries).length}</strong>
-      </div>
-      <div class="hero-grades">${gradeChips}</div>
+  const hero = `<div class="hero">
+    <div class="hero-top">
+      <span class="hero-brand">GEO Readability Audit</span>
+      <span class="hero-meta">측정일 ${escHtml(snap.date)}</span>
     </div>
-    <div class="bars">${bars}</div>
+    <div class="hero-body">
+      <div class="hero-left">
+        <div class="hero-label">전체 평균</div>
+        <div class="hero-score-row">
+          <span class="hero-score" style="color:${scoreColor(o.avgScore)}">${o.avgScore ?? '—'}</span>
+          <span class="hero-pct">/ 100</span>
+        </div>
+        <div class="hero-info">
+          URL <strong>${(o.urlCount || 0).toLocaleString()}</strong> ·
+          채점 <strong>${(o.scoredCount || 0).toLocaleString()}</strong> ·
+          국가 <strong>${Object.keys(snap.countries).length}</strong>
+        </div>
+      </div>
+      <div class="hero-right">
+        <div class="hero-label">Grade 분포</div>
+        <div class="hero-grades">${gradeChips}</div>
+      </div>
+    </div>
   </div>`
+
+  return hero + sectionCard('① 국가별 종합 점수 비교', RED, `<div class="bars">${bars}</div>`)
 }
 
 // ─── 뷰 2: 카테고리 4분할 상세 (51 체크 pass rate) ──────────────────────────
@@ -112,10 +135,7 @@ function viewCategoryDetail(snap) {
     </div>`
   }).join('')
 
-  return `<div class="section">
-    <h2 class="vtitle" style="border-color:#3B82F6">② 카테고리 4분할 상세 — 체크별 통과율</h2>
-    <div class="cat-grid">${cards}</div>
-  </div>`
+  return sectionCard('② 카테고리 4분할 상세 — 체크별 통과율', '#3B82F6', `<div class="cat-grid">${cards}</div>`)
 }
 
 // ─── 뷰 3: 페이지타입별 점수 ─────────────────────────────────────────────────
@@ -126,10 +146,7 @@ function viewPageTypes(snap) {
   const bars = pts.map(p =>
     barRow(`${p.label} (${(p.count || 0).toLocaleString()})`, p.avgScore ?? 0, 100, scoreColor(p.avgScore), `${p.avgScore ?? '—'}`)
   ).join('')
-  return `<div class="section">
-    <h2 class="vtitle" style="border-color:#059669">③ 페이지타입별 점수</h2>
-    <div class="bars">${bars}</div>
-  </div>`
+  return sectionCard('③ 페이지타입별 점수', '#059669', `<div class="bars">${bars}</div>`)
 }
 
 // ─── 뷰 4: AI봇 차단 / CSR·SSR tier ─────────────────────────────────────────
@@ -152,25 +169,25 @@ function viewBotsAndSsr(snap) {
       `${n.toLocaleString()} (${tierTotal > 0 ? (n / tierTotal * 100).toFixed(1) : 0}%)`)
   ).join('')
 
-  return `<div class="section">
-    <h2 class="vtitle" style="border-color:#D97706">④ AI봇 차단 (robots.txt) · CSR/SSR Tier</h2>
-    <div class="split">
-      <div class="split-col">
-        <div class="split-head">AI 봇 차단율 — 높을수록 GEO 불리</div>
-        <div class="bars sm">${botBars}</div>
-      </div>
-      <div class="split-col">
-        <div class="split-head">CSR/SSR Tier 분포 (${tierTotal.toLocaleString()} URL)</div>
-        <div class="bars">${tierBars}</div>
-      </div>
+  const body = `<div class="split">
+    <div class="split-col">
+      <div class="split-head">AI 봇 차단율 — 높을수록 GEO 불리</div>
+      <div class="bars sm">${botBars}</div>
+    </div>
+    <div class="split-col">
+      <div class="split-head">CSR/SSR Tier 분포 (${tierTotal.toLocaleString()} URL)</div>
+      <div class="bars">${tierBars}</div>
     </div>
   </div>`
+  return sectionCard('④ AI봇 차단 (robots.txt) · CSR/SSR Tier', '#D97706', body)
 }
 
 export function renderReadabilityHTML({ snapshot, index, adminMode = false } = {}) {
   if (!snapshot || !snapshot.overall) {
-    return `<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">${themeStyle()}</head>
-      <body style="font-family:sans-serif;padding:40px">
+    return `<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">
+      <style>body{background:#F1F5F9;font-family:${FONT};color:#1A1A1A;padding:40px;line-height:1.6}
+      a{color:${RED}}pre{background:#fff;border:1px solid #E8EDF2;border-radius:8px;padding:12px 16px}</style></head>
+      <body>
       <h1>Readability 스냅샷 없음</h1>
       <p>먼저 집계 스크립트를 실행하세요:</p>
       <pre>node scripts/aggregate-readability.mjs</pre>
@@ -185,48 +202,73 @@ export function renderReadabilityHTML({ snapshot, index, adminMode = false } = {
   return `<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Readability — GEO 어딧 대시보드</title>
-${themeStyle()}
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:var(--bg-primary);color:var(--text-primary);font-family:'LGEIText','LG Smart','Arial Narrow',Arial,sans-serif;padding:28px 32px;line-height:1.6;max-width:1400px;margin:0 auto;transition:background .2s,color .2s}
-.top{display:flex;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:12px}
-.back{color:var(--accent);text-decoration:none;font-size:16px}
-h1{font-size:26px;color:var(--text-strong);margin-bottom:6px}
-.sub{font-size:15px;color:var(--text-muted);margin-bottom:24px}
-.vtitle{font-size:19px;font-weight:700;color:var(--text-strong);border-left:4px solid;padding-left:12px;margin-bottom:14px}
-.section{margin-bottom:34px}
-.hero{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:20px 24px;margin-bottom:18px}
-.hero-main{display:flex;align-items:baseline;gap:10px}
-.hero-num{font-size:54px;font-weight:900;letter-spacing:-2px}
-.hero-unit{font-size:16px;color:var(--text-muted)}
-.hero-meta{font-size:14px;color:var(--text-sub);margin-top:6px}
-.hero-meta strong{color:var(--text-strong)}
-.hero-grades{margin-top:12px;display:flex;gap:8px;flex-wrap:wrap}
-.chip{background:var(--bg-code);border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:13px;color:var(--text-desc)}
-.chip strong{color:var(--text-strong)}
-.bars{display:flex;flex-direction:column;gap:7px}
+body{background:#F1F5F9;font-family:${FONT};color:#1A1A1A;line-height:1.6}
+.tab-bar{position:sticky;top:0;z-index:100;background:#0F172A;display:flex;align-items:center;justify-content:space-between;padding:12px 40px}
+.tab-bar .tb-title{font-size:17px;font-weight:700;color:#fff;display:flex;align-items:center;gap:8px}
+.tab-bar .tb-title::before{content:'';width:4px;height:20px;background:${RED};border-radius:4px}
+.tab-bar .back{color:#94A3B8;text-decoration:none;font-size:14px;font-weight:600}
+.tab-bar .back:hover{color:#E2E8F0}
+.dash-container{max-width:1400px;margin:0 auto;padding:28px 40px}
+.page-head{margin-bottom:24px}
+.page-head h1{font-size:26px;font-weight:900;color:#1A1A1A;letter-spacing:-0.5px;margin-bottom:6px}
+.page-head .sub{font-size:15px;color:#64748B}
+.page-head .sub strong{color:#1A1A1A}
+/* ── Hero (Visibility 다크 카드) ── */
+.hero{background:#0F172A;border-radius:16px;padding:28px 32px;margin-bottom:24px;color:#fff}
+.hero-top{display:flex;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:8px}
+.hero-brand{font-size:16px;font-weight:700;color:#FFCCD8}
+.hero-meta{font-size:14px;color:#FFB0C0}
+.hero-body{display:flex;gap:40px;align-items:flex-start;flex-wrap:wrap}
+.hero-left{flex:1;min-width:240px}
+.hero-right{flex:0 0 320px}
+.hero-label{font-size:14px;font-weight:600;color:#94A3B8;text-transform:uppercase;margin-bottom:8px;letter-spacing:0.5px}
+.hero-score-row{display:flex;align-items:baseline;gap:8px;margin-bottom:8px}
+.hero-score{font-size:52px;font-weight:900;letter-spacing:-2px}
+.hero-pct{font-size:20px;color:#94A3B8}
+.hero-info{font-size:14px;color:#94A3B8;line-height:1.7}
+.hero-info strong{color:#fff;font-weight:700}
+.hero-grades{display:flex;gap:8px;flex-wrap:wrap}
+.chip{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.12);border-radius:6px;padding:4px 10px;font-size:13px;color:#CBD5E1}
+.chip strong{color:#fff}
+/* ── 섹션 카드 (Visibility) ── */
+.section-card{background:#fff;border-radius:16px;border:1px solid #E8EDF2;margin-bottom:24px;overflow:hidden}
+.section-header{padding:20px 28px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.section-title{font-size:20px;font-weight:700;color:#1A1A1A;display:flex;align-items:center;gap:8px}
+.section-title::before{content:'';width:4px;height:22px;background:var(--accent,${RED});border-radius:4px;flex-shrink:0}
+.section-meta{font-size:14px;color:#94A3B8}
+.section-body{padding:24px 28px}
+/* ── 막대 ── */
+.bars{display:flex;flex-direction:column;gap:8px}
 .bars.sm{gap:5px}
 .bar-row{display:flex;align-items:center;gap:10px}
-.bar-label{flex:0 0 230px;font-size:13px;color:var(--text-desc);overflow:visible;white-space:nowrap;text-overflow:ellipsis;letter-spacing:-0.3px}
+.bar-label{flex:0 0 230px;font-size:13px;color:#475569;overflow:visible;white-space:nowrap;text-overflow:ellipsis;letter-spacing:-0.3px}
 .bars.sm .bar-label{flex:0 0 200px;font-size:12px}
-.bar-track{flex:1;background:var(--bg-code);border-radius:4px;height:18px;overflow:hidden}
+.bar-track{flex:1;background:#F1F5F9;border-radius:4px;height:18px;overflow:hidden}
 .bars.sm .bar-track{height:14px}
 .bar-fill{height:100%;border-radius:4px;transition:width .3s}
 .bar-value{flex:0 0 130px;text-align:right;font-size:12px;font-weight:700;font-variant-numeric:tabular-nums}
+/* ── 카테고리 4분할 ── */
 .cat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:16px}
-.cat-card{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+.cat-card{background:#fff;border:1px solid #E8EDF2;border-radius:12px;padding:16px 18px}
 .cat-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:2px}
-.cat-name{font-size:16px;font-weight:800;color:var(--text-strong)}
+.cat-name{font-size:16px;font-weight:800;color:#1A1A1A}
 .cat-avg{font-size:26px;font-weight:900;letter-spacing:-1px}
-.cat-sub{font-size:12px;color:var(--text-muted);margin-bottom:12px}
+.cat-sub{font-size:12px;color:#94A3B8;margin-bottom:12px}
+/* ── 2분할 ── */
 .split{display:grid;grid-template-columns:1fr 1fr;gap:20px}
-.split-col{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
-.split-head{font-size:14px;font-weight:700;color:var(--text-desc);margin-bottom:12px}
+.split-col{background:#fff;border:1px solid #E8EDF2;border-radius:12px;padding:16px 18px}
+.split-head{font-size:14px;font-weight:700;color:#475569;margin-bottom:12px}
 @media (max-width:780px){
-  body{padding:16px 14px}
-  h1{font-size:22px}
-  .vtitle{font-size:17px}
-  .hero-num{font-size:44px}
+  .tab-bar{padding:10px 16px}
+  .dash-container{padding:16px 14px}
+  .page-head h1{font-size:22px}
+  .hero{padding:20px 18px}
+  .hero-body{gap:20px}
+  .hero-right{flex:1 1 100%}
+  .hero-score{font-size:44px}
+  .section-header,.section-body{padding-left:18px;padding-right:18px}
   .bar-label{flex:0 0 150px;font-size:12px}
   .bars.sm .bar-label{flex:0 0 130px}
   .bar-value{flex:0 0 100px;font-size:11px}
@@ -234,24 +276,29 @@ h1{font-size:26px;color:var(--text-strong);margin-bottom:6px}
   .split{grid-template-columns:1fr}
 }
 @media (max-width:480px){
-  body{padding:12px 10px}
-  .top{flex-direction:column;align-items:flex-start;gap:8px}
-  h1{font-size:18px}
+  .dash-container{padding:12px 10px}
+  .page-head h1{font-size:18px}
   .bar-label{flex:0 0 110px;font-size:11px;white-space:normal}
   .bar-value{flex:0 0 88px}
 }
 </style></head><body>
-${adminMode ? themeToggleButton() : ''}
 
-<div class="top"><a class="back" href="/admin/">← 어드민</a></div>
+<div class="tab-bar">
+  <span class="tb-title">Readability — GEO 어딧</span>
+  <a class="back" href="/admin/">← 어드민</a>
+</div>
 
-<h1>Readability — GEO 어딧 대시보드</h1>
-<p class="sub">측정일 <strong>${escHtml(snapshot.date)}</strong> · 생성 ${escHtml((snapshot.generatedAt || '').slice(0, 16).replace('T', ' '))} · ${escHtml(momNote)}</p>
+<div class="dash-container">
+  <div class="page-head">
+    <h1>Readability — GEO 어딧 대시보드</h1>
+    <p class="sub">측정일 <strong>${escHtml(snapshot.date)}</strong> · 생성 ${escHtml((snapshot.generatedAt || '').slice(0, 16).replace('T', ' '))} · ${escHtml(momNote)}</p>
+  </div>
 
-${viewCountryComparison(snapshot)}
-${viewCategoryDetail(snapshot)}
-${viewPageTypes(snapshot)}
-${viewBotsAndSsr(snapshot)}
+  ${viewCountryComparison(snapshot)}
+  ${viewCategoryDetail(snapshot)}
+  ${viewPageTypes(snapshot)}
+  ${viewBotsAndSsr(snapshot)}
+</div>
 
 </body></html>`
 }
