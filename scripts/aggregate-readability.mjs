@@ -47,8 +47,8 @@ const PT_LABEL = { newsroom: '뉴스룸/Press', lg_experience: 'LG Experience' }
 // 페이지타입 정규화 — lg-experience 분리 + 병합 적용 + 제외 여부 판정. { id, label, excluded } 또는 null
 function resolvePt(pt, url) {
   if (!pt || !pt.id) return null
-  // content(콘텐츠/매거진) 으로 분류된 /lg-experience/ URL 은 별도 lg_experience 타입으로 분리
-  if (pt.id === 'content' && url && /\/lg-experience(\/|\?|$)/i.test(url)) {
+  // content(콘텐츠/매거진) 으로 분류된 /lg-experience/ 또는 /experience/ (US 경로) URL 은 별도 lg_experience 타입으로 분리
+  if (pt.id === 'content' && url && /\/(?:lg-)?experience(\/|\?|$)/i.test(url)) {
     return { id: 'lg_experience', label: PT_LABEL.lg_experience, excluded: false }
   }
   const id = PT_MERGE[pt.id] || pt.id
