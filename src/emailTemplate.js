@@ -2,6 +2,7 @@
 // 규칙: table 기반 레이아웃, 인라인 스타일, 외부 폰트 없음, flex/grid 없음
 import { PROD_ID_TO_UL_CODE as UL_PROD_MAP, PROD_ID_TO_UL_CODE, PROD_ID_TO_KR, PROD_ID_TO_EN, PROD_ID_TO_BU, PROD_ID_TO_ORDER, NAME_TO_PROD_ID } from './categoryMap.js'
 import { resolveProductsByLlm, resolveProductsCntyByLlm, resolveTotalByLlm } from './shared/llmModel.js'
+import { _logWarn } from './sheetParserUtils.js'
 
 const EM_RED  = '#CF0652'
 // Citation 차트 전용 — 짙은 녹색 계열 (LG_RED 와 구분)
@@ -1093,7 +1094,7 @@ const DC_SAM_COLS    = ['PLP','Microsites','PDP','Newsroom','Support','Buying-gu
 
 function fmtK(n) { return n >= 1000 ? Math.round(n / 1000) + 'K' : fmt(n) }
 
-function dotcomSectionHtml(dotcom, meta, lang = 'ko') {
+function dotcomSectionHtml(dotcom, meta, lang = 'ko', opts = {}) {
   if (!dotcom || !dotcom.lg) return ''
   const t = T[lang] || T.ko
   const lg = dotcom.lg, sam = dotcom.samsung || {}
@@ -1229,7 +1230,7 @@ function dotcomSectionHtml(dotcom, meta, lang = 'ko') {
                           <td style="vertical-align:middle;">
                             <table border="0" cellpadding="0" cellspacing="0"><tr>
                               <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
-                              <td style="padding-left:8px;font-size:16px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${t.dotcomTitle}</td>
+                              <td style="padding-left:8px;font-size:16px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${opts.titleOverride || t.dotcomTitle}</td>
                             </tr></table>
                           </td>
                           <td align="right" style="vertical-align:middle;">
@@ -1244,11 +1245,37 @@ function dotcomSectionHtml(dotcom, meta, lang = 'ko') {
                         </tr></table>
                       </td>
                     </tr>
-                    ${insightBlockHtml(meta.dotcomInsight, meta.showDotcomInsight, meta.dotcomHowToRead, meta.showDotcomHowToRead, lang)}
+                    ${opts.skipInsight ? '' : insightBlockHtml(meta.dotcomInsight, meta.showDotcomInsight, meta.dotcomHowToRead, meta.showDotcomHowToRead, lang)}
                     ${chartHtml}
                   </table>
                 </td>
               </tr>`
+}
+
+// GPT5.5 모델만 필터한 닷컴 Citation — 기존 페이지타입별 그래프와 동일 형식 + MoM.
+// dotcomByLlm[model] 은 byMonth 가 없고 dotcomTrend(TTL-only) 만 가짐 → byMonth 로 변환 후
+// dotcomSectionHtml 재사용 (citation/citationTemplate.js 변환 패턴 미러).
+function dotcomLlmSectionHtml(dotcomByLlm, meta, lang = 'ko') {
+  if (!dotcomByLlm || typeof dotcomByLlm !== 'object') return ''
+  // 모델 키 동적 탐색 (시트 라벨 자유) — Total/All 제외 후 GPT5.5 우선, 없으면 임의 GPT
+  const keys = Object.keys(dotcomByLlm).filter(k => !/^(total|all)$/i.test(k))
+  const modelKey = keys.find(k => /gpt.*5\.?5/i.test(k)) || keys.find(k => /gpt/i.test(k))
+  if (!modelKey) return _logWarn('dotcomLlmSectionHtml', 'GPT5.5 모델 키 없음', { keys: Object.keys(dotcomByLlm) }), ''
+  const picked = dotcomByLlm[modelKey]
+  if (!picked || !picked.lg) return _logWarn('dotcomLlmSectionHtml', '모델 dotcom 데이터 없음', { modelKey }), ''
+
+  // dotcomTrend { pageType: { month: {lg, samsung} } } → byMonth { month: { lg:{pageType}, samsung:{pageType} } }
+  const byMonth = {}
+  Object.entries(picked.dotcomTrend || {}).forEach(([pageType, months]) => {
+    Object.entries(months || {}).forEach(([month, vals]) => {
+      if (!byMonth[month]) byMonth[month] = { lg: {}, samsung: {} }
+      if (vals && vals.lg != null) byMonth[month].lg[pageType] = vals.lg
+      if (vals && vals.samsung != null) byMonth[month].samsung[pageType] = vals.samsung
+    })
+  })
+  const modelDotcom = { lg: picked.lg || {}, samsung: picked.samsung || {}, byMonth, byCntyByMonth: {} }
+  const title = lang === 'en' ? `Dotcom Citation — ${modelKey} only` : `닷컴 Citation — ${modelKey} 모델`
+  return dotcomSectionHtml(modelDotcom, meta, lang, { titleOverride: title, skipInsight: true })
 }
 
 // ─── 범프차트 (월간 트렌드) — 이메일/Outlook 호환 ──────────────────────────────
@@ -1894,7 +1921,7 @@ function dashboardLinkButtonHtml(lang) {
 export { escapeHtml }
 
 export function generateEmailHTML(meta, total, products, citations, dotcom = {}, lang = 'ko', productsCnty = [], citationsCnty = [], options = {}) {
-  const { containerWidth = 940, showTrendTabs = false, weeklyLabels, categoryStats = null, unlaunchedMap: ulInput = {}, productCardVersion = 'v1', trendMode = 'weekly', llmModel, monthlyVis, citTouchPointsTrend = null, citTrendMonths = [], citDomainTrend = null, citDomainMonths = [], citTouchPointsByLlm = null, citDomainByLlm = null } = options
+  const { containerWidth = 940, showTrendTabs = false, weeklyLabels, categoryStats = null, unlaunchedMap: ulInput = {}, productCardVersion = 'v1', trendMode = 'weekly', llmModel, monthlyVis, citTouchPointsTrend = null, citTrendMonths = [], citDomainTrend = null, citDomainMonths = [], citTouchPointsByLlm = null, citDomainByLlm = null, dotcomByLlm = null } = options
   // LLM Model 필터 (2026-06) — 선택 모델로 products/productsCnty/total 재계산
   if (llmModel && llmModel !== 'Total') {
     products = resolveProductsByLlm(products, llmModel)
@@ -2305,6 +2332,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
               </tr>` : ''}
 
               ${meta.showDotcom !== false ? dotcomSectionHtml(dotcom, meta, lang) : ''}
+              ${meta.showDotcom !== false ? dotcomLlmSectionHtml(dotcomByLlm, meta, lang) : ''}
 
               ${meta.showTodo ? `
               <!-- ══ Action Plan (3영역: 노티스 + 인사이트 + 핵심과제 진척) ══ -->
