@@ -1257,7 +1257,8 @@ function dotcomSectionHtml(dotcom, meta, lang = 'ko', opts = {}) {
 // dotcomSectionHtml 재사용 (citation/citationTemplate.js 변환 패턴 미러).
 function dotcomLlmSectionHtml(dotcomByLlm, meta, lang = 'ko') {
   // ⚠ 임시 진단 박스 — 원인 파악용. 그래프가 빈 채로 사라지는 대신 무엇이 비어있는지 화면에 표시.
-  const _dbg = msg => `<div style="margin:16px auto;max-width:940px;padding:12px 16px;border:1px dashed #BE123C;border-radius:8px;background:#FFF1F2;color:#BE123C;font-size:12px;font-family:Arial,sans-serif;line-height:1.6">[닷컴 LLM 그래프 진단] ${msg}</div>`
+  // 호출부(2354)는 <table> 안 <tr> 사이라 맨 <div> 는 파서가 버린다 → 반드시 <tr><td> 로 감쌀 것.
+  const _dbg = msg => `<tr><td style="padding:0 0 16px;"><div style="padding:12px 16px;border:1px dashed #BE123C;border-radius:8px;background:#FFF1F2;color:#BE123C;font-size:12px;font-family:Arial,sans-serif;line-height:1.6">[닷컴 LLM 그래프 진단] ${msg}</div></td></tr>`
   if (!dotcomByLlm || typeof dotcomByLlm !== 'object') return _dbg('dotcomByLlm 자체가 없음 (null/미동기화). → 구글 시트 동기화 후 재시도.')
   // 모델 키 동적 탐색 (시트 라벨 자유) — Total/All 제외 후 search-gpt 우선.
   // 시트 라벨이 정규식과 안 맞아도 그래프가 사라지지 않도록, 매칭 실패 시
