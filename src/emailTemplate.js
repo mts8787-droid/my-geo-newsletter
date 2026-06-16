@@ -1256,17 +1256,19 @@ function dotcomSectionHtml(dotcom, meta, lang = 'ko', opts = {}) {
 // dotcomByLlm[model] 은 byMonth 가 없고 dotcomTrend(TTL-only) 만 가짐 → byMonth 로 변환 후
 // dotcomSectionHtml 재사용 (citation/citationTemplate.js 변환 패턴 미러).
 function dotcomLlmSectionHtml(dotcomByLlm, meta, lang = 'ko') {
-  if (!dotcomByLlm || typeof dotcomByLlm !== 'object') return ''
+  // ⚠ 임시 진단 박스 — 원인 파악용. 그래프가 빈 채로 사라지는 대신 무엇이 비어있는지 화면에 표시.
+  const _dbg = msg => `<div style="margin:16px auto;max-width:940px;padding:12px 16px;border:1px dashed #BE123C;border-radius:8px;background:#FFF1F2;color:#BE123C;font-size:12px;font-family:Arial,sans-serif;line-height:1.6">[닷컴 LLM 그래프 진단] ${msg}</div>`
+  if (!dotcomByLlm || typeof dotcomByLlm !== 'object') return _dbg('dotcomByLlm 자체가 없음 (null/미동기화). → 구글 시트 동기화 후 재시도.')
   // 모델 키 동적 탐색 (시트 라벨 자유) — Total/All 제외 후 search-gpt 우선.
   // 시트 라벨이 정규식과 안 맞아도 그래프가 사라지지 않도록, 매칭 실패 시
   // 첫 비-Total 모델로 폴백(제목에 실제 라벨 노출 → 사용자가 시트 라벨 확인 가능).
   const keys = Object.keys(dotcomByLlm).filter(k => !/^(total|all)$/i.test(k))
-  if (!keys.length) return _logWarn('dotcomLlmSectionHtml', '비-Total 모델 키 없음(시트 LLM 컬럼 미인식 의심)', { keys: Object.keys(dotcomByLlm) }), ''
+  if (!keys.length) return _logWarn('dotcomLlmSectionHtml', '비-Total 모델 키 없음', { keys: Object.keys(dotcomByLlm) }), _dbg(`비-Total 모델 키 없음. dotcomByLlm 전체 키 = [${Object.keys(dotcomByLlm).join(', ')}] → 시트 Model 컬럼이 전부 Total 로 분류됨.`)
   const searchKey = keys.find(k => /search.*gpt|searchgpt/i.test(k)) || keys.find(k => /search/i.test(k))
   const modelKey = searchKey || keys[0]
   if (!searchKey) _logWarn('dotcomLlmSectionHtml', 'search-gpt 라벨 미매칭 → 첫 모델로 폴백', { keys, used: modelKey })
   const picked = dotcomByLlm[modelKey]
-  if (!picked) return _logWarn('dotcomLlmSectionHtml', '모델 dotcom 데이터 없음', { modelKey }), ''
+  if (!picked) return _logWarn('dotcomLlmSectionHtml', '모델 dotcom 데이터 없음', { modelKey }), _dbg(`모델 "${modelKey}" 데이터 없음. 가용 키 = [${keys.join(', ')}]`)
 
   // dotcomTrend { pageType: { month: {lg, samsung} } } → byMonth { month: { lg:{pageType}, samsung:{pageType} } }
   const MONTHS_DC = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
@@ -1288,7 +1290,7 @@ function dotcomLlmSectionHtml(dotcomByLlm, meta, lang = 'ko') {
   }
   const barLg = latestM ? byMonth[latestM].lg : (picked.lg || {})
   const barSam = latestM ? byMonth[latestM].samsung : (picked.samsung || {})
-  if (!Object.keys(barLg).length) return _logWarn('dotcomLlmSectionHtml', '모델 막대 데이터 없음', { modelKey, latestM, trendMonths: Object.keys(byMonth) }), ''
+  if (!Object.keys(barLg).length) return _logWarn('dotcomLlmSectionHtml', '모델 막대 데이터 없음', { modelKey, latestM, trendMonths: Object.keys(byMonth) }), _dbg(`모델 "${modelKey}" 막대 데이터 없음. 트렌드 월 = [${Object.keys(byMonth).join(', ') || '없음'}], picked.lg 키 = [${Object.keys(picked.lg || {}).join(', ') || '없음'}]`)
 
   const modelDotcom = { lg: barLg, samsung: barSam, byMonth, byCntyByMonth: {} }
   const title = lang === 'en' ? `Dotcom Citation — ${modelKey} only` : `닷컴 Citation — ${modelKey} 모델`
