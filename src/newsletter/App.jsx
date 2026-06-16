@@ -21,6 +21,7 @@ const STORAGE_KEY = 'geo-newsletter-cache'
 // ─── 뉴스레터 미리보기 (iframe) ──────────────────────────────────────────────
 function NewsletterPreview({ meta, total, products, citations, dotcom, productsCnty = [], citationsCnty = [], lang = 'ko', weeklyLabels, categoryStats, unlaunchedMap = {}, llmModel, monthlyVis, citTouchPointsTrend = null, citTrendMonths = [], citDomainTrend = null, citDomainMonths = [], citTouchPointsByLlm = null, citDomainByLlm = null, dotcomByLlm = null }) {
   const iframeRef = useRef(null)
+  console.log('[NewsletterPreview] dotcomByLlm at render:', dotcomByLlm ? `keys=${Object.keys(dotcomByLlm).join(',')}` : '(null)')
   const html = useMemo(
     () => generateEmailHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, { weeklyLabels, categoryStats, unlaunchedMap, productCardVersion: meta.productCardVersion || 'v1', trendMode: meta.trendMode || 'weekly', llmModel, monthlyVis, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, citTouchPointsByLlm, citDomainByLlm, dotcomByLlm }),
     [meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, categoryStats, unlaunchedMap, llmModel, monthlyVis, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, citTouchPointsByLlm, citDomainByLlm, dotcomByLlm]
