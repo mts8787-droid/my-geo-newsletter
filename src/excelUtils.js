@@ -1063,12 +1063,25 @@ function parseCitPageType(rows) {
   // 모델별 데이터는 byLlm 에 보존 — UI 필터 도입 시 사용.
   const _ptStripParens = s => String(s || '').trim().replace(/^\((.*)\)$/, '$1').trim()
   const _ptIsTotalLlm = m => { const u = _ptStripParens(m); return !u || /^(total|all|ttl)$/i.test(u) }
+  // 페이지타입 canonical 정규화 — 시트가 모델/Total 행마다 다른 casing/prefix 를 써(예: Total 은
+  // 'Support', search-gpt 행은 'support'/'lg-experience') 같은 페이지타입이 별도 key 로 쪼개짐.
+  // 이메일 템플릿(emailTemplate.js DC_DETAIL_COLS)은 정확한 canonical casing 으로만 막대를 그려
+  // → 변형 key 데이터가 누락(특정 모델이 PLP/PDP 만 보이는 회귀). 단일 지점에서 표준화해 병합.
+  const _DC_PT_CANON = {
+    plp: 'PLP', pdp: 'PDP',
+    microsite: 'Microsites', microsites: 'Microsites',
+    newsroom: 'Newsroom', support: 'Support',
+    buyingguide: 'Buying-guide', experience: 'Experience',
+  }
+  const _canonPageType = raw => {
+    const pt = String(raw || '').replace(/[()]/g, '').trim()
+    if (/page total|^ttl$/i.test(pt)) return 'TTL'
+    const norm = pt.toLowerCase().replace(/^lg[-\s]+/, '').replace(/[-\s]+/g, '')
+    return _DC_PT_CANON[norm] || pt
+  }
   const _ptCntyKey = r => {
     const rawCountry = normCountry(r[fallbackCnty])
-    const pageType = String(r[fallbackPt] || '').replace(/[()]/g, '').trim()
-    let key = /page total|^ttl$/i.test(pageType) ? 'TTL' : pageType
-    if (key.toLowerCase() === 'microsite') key = 'Microsites'
-    return { cnty: CNTY_ALIAS[rawCountry] || rawCountry.toUpperCase(), key }
+    return { cnty: CNTY_ALIAS[rawCountry] || rawCountry.toUpperCase(), key: _canonPageType(r[fallbackPt]) }
   }
   // Pass 1 — (cnty|pageType|월) 단위로 모델 breakdown 존재 감지.
   // breakdown 존재 월은 집계(Total/TTL) 행을 빼고 모델 행만 합산 (double-count 방지 — Touch Points 와 동일 규칙)
