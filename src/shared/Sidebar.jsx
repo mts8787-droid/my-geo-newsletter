@@ -423,6 +423,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
           citDomainMonths: parsed.citDomainMonths || null,
           citTouchPointsByLlm: parsed.citTouchPointsByLlm || null,
           citDomainByLlm: parsed.citDomainByLlm || null,
+          dotcomByLlm: parsed.dotcomByLlm || null,
         }
         onSyncExtra(syncExtra)
         // latestRef에도 extra 즉시 갱신
@@ -577,6 +578,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
           monthlyBrandPromptLabels: parsed.monthlyBrandPromptLabels || null,
           dotcomTrend: parsed.dotcomTrend || null,
           dotcomTrendMonths: parsed.dotcomTrendMonths || null,
+          dotcomByLlm: parsed.dotcomByLlm || null,
         })
         // C16 — 동기화 직후 신선도 배지 즉시 갱신
         setTimeout(refreshSyncMeta, 250)

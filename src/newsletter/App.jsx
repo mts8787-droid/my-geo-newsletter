@@ -369,8 +369,8 @@ export default function App() {
           progressMonth={progressMonth}
           setProgressMonth={setProgressMonth}
           progressDataMonth={extractMonthFromPeriod(metaKo.period) || `${new Date().getMonth() + 1}월`}
-          extra={{ unlaunchedMap, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, citTouchPointsByLlm, citDomainByLlm }}
-          onSyncExtra={({ unlaunchedMap: ulm, citTouchPointsTrend: cptt, citTrendMonths: ctm, citDomainTrend: cdt, citDomainMonths: cdm, citTouchPointsByLlm: cptl, citDomainByLlm: cdl }) => {
+          extra={{ unlaunchedMap, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, citTouchPointsByLlm, citDomainByLlm, dotcomByLlm }}
+          onSyncExtra={({ unlaunchedMap: ulm, citTouchPointsTrend: cptt, citTrendMonths: ctm, citDomainTrend: cdt, citDomainMonths: cdm, citTouchPointsByLlm: cptl, citDomainByLlm: cdl, dotcomByLlm: dbl }) => {
             if (ulm) setUnlaunchedMap(ulm)
             if (cptt) setCitTouchPointsTrend(cptt)
             if (ctm) setCitTrendMonths(ctm)
@@ -378,6 +378,7 @@ export default function App() {
             if (cdm) setCitDomainMonths(cdm)
             if (cptl) setCitTouchPointsByLlm(cptl)
             if (cdl) setCitDomainByLlm(cdl)
+            if (dbl) setDotcomByLlm(dbl)
           }}
         />
       )}
