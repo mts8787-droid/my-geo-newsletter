@@ -1257,10 +1257,14 @@ function dotcomSectionHtml(dotcom, meta, lang = 'ko', opts = {}) {
 // dotcomSectionHtml 재사용 (citation/citationTemplate.js 변환 패턴 미러).
 function dotcomLlmSectionHtml(dotcomByLlm, meta, lang = 'ko') {
   if (!dotcomByLlm || typeof dotcomByLlm !== 'object') return ''
-  // 모델 키 동적 탐색 (시트 라벨 자유) — Total/All 제외 후 search-gpt 우선, 없으면 임의 search
+  // 모델 키 동적 탐색 (시트 라벨 자유) — Total/All 제외 후 search-gpt 우선.
+  // 시트 라벨이 정규식과 안 맞아도 그래프가 사라지지 않도록, 매칭 실패 시
+  // 첫 비-Total 모델로 폴백(제목에 실제 라벨 노출 → 사용자가 시트 라벨 확인 가능).
   const keys = Object.keys(dotcomByLlm).filter(k => !/^(total|all)$/i.test(k))
-  const modelKey = keys.find(k => /search.*gpt|searchgpt/i.test(k)) || keys.find(k => /search/i.test(k))
-  if (!modelKey) return _logWarn('dotcomLlmSectionHtml', 'search-gpt 모델 키 없음', { keys: Object.keys(dotcomByLlm) }), ''
+  if (!keys.length) return _logWarn('dotcomLlmSectionHtml', '비-Total 모델 키 없음(시트 LLM 컬럼 미인식 의심)', { keys: Object.keys(dotcomByLlm) }), ''
+  const searchKey = keys.find(k => /search.*gpt|searchgpt/i.test(k)) || keys.find(k => /search/i.test(k))
+  const modelKey = searchKey || keys[0]
+  if (!searchKey) _logWarn('dotcomLlmSectionHtml', 'search-gpt 라벨 미매칭 → 첫 모델로 폴백', { keys, used: modelKey })
   const picked = dotcomByLlm[modelKey]
   if (!picked) return _logWarn('dotcomLlmSectionHtml', '모델 dotcom 데이터 없음', { modelKey }), ''
 
