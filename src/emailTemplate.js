@@ -1257,10 +1257,10 @@ function dotcomSectionHtml(dotcom, meta, lang = 'ko', opts = {}) {
 // dotcomSectionHtml 재사용 (citation/citationTemplate.js 변환 패턴 미러).
 function dotcomLlmSectionHtml(dotcomByLlm, meta, lang = 'ko') {
   if (!dotcomByLlm || typeof dotcomByLlm !== 'object') return ''
-  // 모델 키 동적 탐색 (시트 라벨 자유) — Total/All 제외 후 GPT5.5 우선, 없으면 임의 GPT
+  // 모델 키 동적 탐색 (시트 라벨 자유) — Total/All 제외 후 search-gpt 우선, 없으면 임의 search
   const keys = Object.keys(dotcomByLlm).filter(k => !/^(total|all)$/i.test(k))
-  const modelKey = keys.find(k => /gpt.*5\.?5/i.test(k)) || keys.find(k => /gpt/i.test(k))
-  if (!modelKey) return _logWarn('dotcomLlmSectionHtml', 'GPT5.5 모델 키 없음', { keys: Object.keys(dotcomByLlm) }), ''
+  const modelKey = keys.find(k => /search.*gpt|searchgpt/i.test(k)) || keys.find(k => /search/i.test(k))
+  if (!modelKey) return _logWarn('dotcomLlmSectionHtml', 'search-gpt 모델 키 없음', { keys: Object.keys(dotcomByLlm) }), ''
   const picked = dotcomByLlm[modelKey]
   if (!picked) return _logWarn('dotcomLlmSectionHtml', '모델 dotcom 데이터 없음', { modelKey }), ''
 
