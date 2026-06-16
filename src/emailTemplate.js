@@ -1262,9 +1262,10 @@ function dotcomLlmSectionHtml(dotcomByLlm, meta, lang = 'ko') {
   const modelKey = keys.find(k => /gpt.*5\.?5/i.test(k)) || keys.find(k => /gpt/i.test(k))
   if (!modelKey) return _logWarn('dotcomLlmSectionHtml', 'GPT5.5 모델 키 없음', { keys: Object.keys(dotcomByLlm) }), ''
   const picked = dotcomByLlm[modelKey]
-  if (!picked || !picked.lg) return _logWarn('dotcomLlmSectionHtml', '모델 dotcom 데이터 없음', { modelKey }), ''
+  if (!picked) return _logWarn('dotcomLlmSectionHtml', '모델 dotcom 데이터 없음', { modelKey }), ''
 
   // dotcomTrend { pageType: { month: {lg, samsung} } } → byMonth { month: { lg:{pageType}, samsung:{pageType} } }
+  const MONTHS_DC = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
   const byMonth = {}
   Object.entries(picked.dotcomTrend || {}).forEach(([pageType, months]) => {
     Object.entries(months || {}).forEach(([month, vals]) => {
@@ -1273,7 +1274,19 @@ function dotcomLlmSectionHtml(dotcomByLlm, meta, lang = 'ko') {
       if (vals && vals.samsung != null) byMonth[month].samsung[pageType] = vals.samsung
     })
   })
-  const modelDotcom = { lg: picked.lg || {}, samsung: picked.samsung || {}, byMonth, byCntyByMonth: {} }
+
+  // 막대는 모델 자체의 최신 트렌드 월로 구성 — 전역 bestPair(Total 최신월)와 모델 최신월이
+  // 다를 수 있어(예: Total 은 5월까지 있으나 GPT5.5 breakdown 은 4월까지) picked.lg(전역
+  // bestPair 기반)를 신뢰하면 빈 막대가 됨. 모델 트렌드의 최신월을 써 막대·MoM 정렬.
+  let latestM = null
+  for (let i = MONTHS_DC.length - 1; i >= 0; i--) {
+    if (byMonth[MONTHS_DC[i]]) { latestM = MONTHS_DC[i]; break }
+  }
+  const barLg = latestM ? byMonth[latestM].lg : (picked.lg || {})
+  const barSam = latestM ? byMonth[latestM].samsung : (picked.samsung || {})
+  if (!Object.keys(barLg).length) return _logWarn('dotcomLlmSectionHtml', '모델 막대 데이터 없음', { modelKey, latestM, trendMonths: Object.keys(byMonth) }), ''
+
+  const modelDotcom = { lg: barLg, samsung: barSam, byMonth, byCntyByMonth: {} }
   const title = lang === 'en' ? `Dotcom Citation — ${modelKey} only` : `닷컴 Citation — ${modelKey} 모델`
   return dotcomSectionHtml(modelDotcom, meta, lang, { titleOverride: title, skipInsight: true })
 }
