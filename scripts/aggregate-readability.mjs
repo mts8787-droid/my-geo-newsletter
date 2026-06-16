@@ -11,6 +11,7 @@
 import { readdirSync, readFileSync, writeFileSync, mkdirSync, existsSync } from 'fs'
 import { join, dirname, basename } from 'path'
 import { fileURLToPath } from 'url'
+import { PROD_IDS } from '../src/categoryMap.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const REPO_ROOT = join(__dirname, '..')
@@ -27,6 +28,82 @@ function parseArgs() {
 
 const DEFAULT_SRC = '/Users/dubaba/my-geo-project/my-geo-audit/data/run_results'
 const OUT_DIR = join(REPO_ROOT, 'data', 'readability')
+
+// 페이지타입별 최대 표본 수 — US(5788) 같은 대형 크롤이 집계를 압도하는 것 방지.
+// 100 을 제품군(11종) 에 균등 분배 (제품군당 floor(100/11)=9) + 잔여 용량은 초과분/미분류로 채움.
+const SAMPLE_PER_PT = 100
+
+// URL → 제품군(prodId) 추론. lg.com 카테고리 슬러그 키워드 매칭 (우선순위 순서 — 첫 매칭 채택).
+// 매칭 안 되면 null = 제품군 없는 페이지 (newsroom/press/about/promotion 등).
+// tv 를 먼저 검사 — 복합 슬러그(tv-audio-video-accessories, tv-home-theater-accessories) 의 선두 토큰 우선.
+const PROD_GROUP_URL_RULES = [
+  [/(?:^|[/-])(?:tvs?|projectors?|home-video|home-theater|webos|oled-tv|qned|nanocell)(?:[/-]|$)/, 'tv'],
+  [/(?:monitors?|laptops?|tablets?|gram|computer|copilot|\bpc\b)/, 'monitor'],
+  [/(?:refrigerator|fridge|freezer|kimchi)/, 'fridge'],
+  [/dishwasher/, 'dw'],
+  [/styler/, 'styler'],
+  [/(?:washer|dryer|laundry)/, 'washer'],
+  [/vacuum/, 'vacuum'],
+  [/(?:cooking|kitchen|cooktop|oven|microwave|burner|\brange\b|dishdrawer)/, 'cooking'],
+  [/(?:air-care|air-purifier|dehumidifier|aircare|puricare)/, 'aircare'],
+  [/(?:air-conditioner|residential-hvac|\bhvac\b|home-electrification|heat-pump)/, 'rac'],
+  [/(?:soundbar|sound-bar|speaker|headphone|earbud|home-audio|subwoofer|sound-suite|xboom|\baudio\b)/, 'audio'],
+]
+
+function inferProdGroup(url) {
+  const u = String(url || '').toLowerCase()
+  for (const [re, id] of PROD_GROUP_URL_RULES) {
+    if (re.test(u)) return id
+  }
+  return null
+}
+
+function byUrl(a, b) { return a.url < b.url ? -1 : a.url > b.url ? 1 : 0 }
+
+// 단일 페이지타입 list 표본 추출 — 제품군 균등 분배.
+function samplePageTypeList(list) {
+  const byGroup = {}   // prodId → items
+  const ungrouped = []
+  for (const it of list) {
+    const g = inferProdGroup(it.url)
+    if (g) (byGroup[g] = byGroup[g] || []).push(it)
+    else ungrouped.push(it)
+  }
+  // 제품군 없는 페이지타입 (newsroom/press 등) → 단순 cap (URL 정렬 후 앞 N — 결정적)
+  if (Object.keys(byGroup).length === 0) {
+    return [...list].sort(byUrl).slice(0, SAMPLE_PER_PT)
+  }
+  // 11 제품군 균등 분배: 기본 quota = floor(100/11)=9
+  const baseQuota = Math.floor(SAMPLE_PER_PT / PROD_IDS.length)
+  const selected = []
+  const leftovers = []
+  for (const g of PROD_IDS) {
+    const arr = (byGroup[g] || []).slice().sort(byUrl)
+    selected.push(...arr.slice(0, baseQuota))
+    leftovers.push(...arr.slice(baseQuota))
+  }
+  // 남은 용량(100 - selected) 은 초과분 + 미분류로 채움 (URL 정렬, 결정적) — 미달 제품군 quota 낭비 방지
+  leftovers.push(...ungrouped)
+  leftovers.sort(byUrl)
+  const remaining = SAMPLE_PER_PT - selected.length
+  if (remaining > 0) selected.push(...leftovers.slice(0, remaining))
+  return selected
+}
+
+// 페이지타입별 표본 추출 — items: [{ result, url, rpt }] (excluded 제거 후, 단일 국가).
+function sampleByPageType(items) {
+  const byPt = {}
+  for (const it of items) {
+    const pid = it.rpt ? it.rpt.id : '(none)'
+    ;(byPt[pid] = byPt[pid] || []).push(it)
+  }
+  const selected = []
+  for (const list of Object.values(byPt)) {
+    if (list.length <= SAMPLE_PER_PT) { selected.push(...list); continue }
+    selected.push(...samplePageTypeList(list))
+  }
+  return selected
+}
 
 // 카테고리 표시 순서 + 라벨
 const CATEGORIES = ['performance', 'accessibility', 'seo', 'ai_readiness']
@@ -247,19 +324,28 @@ function main() {
     }
     const acc = newAcc()
     const summary = Array.isArray(data.summary) ? data.summary : []
+    // 표본 추출 전 — excluded(분류불가/홈페이지) 제거 + 페이지타입 해석
+    const items = []
     for (const s of summary) {
       if (!s || !s.result) continue
-      accumulate(acc, s.result, s.url || s.result.url)
-      accumulate(overall, s.result, s.url || s.result.url)
-      const r = s.result
-      // 제외 페이지타입(분류불가/홈페이지) 은 검수 CSV 에서도 제외 (완전 제거 일관성)
-      const rpt = resolvePt(r.page_type, s.url || r.url)
+      const url = s.url || s.result.url
+      const rpt = resolvePt(s.result.page_type, url)
       if (rpt && rpt.excluded) continue
+      items.push({ result: s.result, url, rpt })
+    }
+    // 페이지타입별 max SAMPLE_PER_PT 표본 (제품군 균등 분배) — 집계 + CSV 모두 동일 표본 사용
+    const selected = sampleByPageType(items)
+    if (selected.length < items.length) {
+      console.log(`[aggregate-readability] ${meta.cc}: 표본 추출 ${items.length} → ${selected.length} (페이지타입별 max ${SAMPLE_PER_PT}, 제품군 균등 분배)`)
+    }
+    for (const it of selected) {
+      accumulate(acc, it.result, it.url)
+      accumulate(overall, it.result, it.url)
       urlRows.push({
-        url: s.url || r.url || '',
+        url: it.url || '',
         country: CC_NAME[meta.cc] || meta.cc.toUpperCase(),
-        pt: rpt ? rpt.label : '',
-        score: (r.score && typeof r.score.total === 'number') ? r.score.total : '',
+        pt: it.rpt ? it.rpt.label : '',
+        score: (it.result.score && typeof it.result.score.total === 'number') ? it.result.score.total : '',
       })
     }
     fileDates.push(meta.date)
