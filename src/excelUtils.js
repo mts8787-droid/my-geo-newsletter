@@ -1754,6 +1754,7 @@ function parseCitDomain(rows) {
   const result = []
   const citDomainTrend = {}
   let citDomainByLlmOut = null  // v3 + LLM Model 컬럼 시 모델별 도메인 집계 (LLM 비교 탭용)
+  let citDomainByLlmTrendOut = null  // 모델별 도메인 월 트렌드 (전월 vs 당월 MoM 표용)
   const cntyRanks = {}  // 국가별 순위 카운터
   let legacyCnty = 'TTL'  // 이전 구조용 국가 추적
 
@@ -1864,13 +1865,19 @@ function parseCitDomain(rows) {
       accumulate(llmDomAcc[m][e.domain][bi], e.monthScores)
     })
     const citDomainByLlm = {}
+    // 모델별 월 트렌드 보존 (전월 vs 당월 MoM 표용) — latestVal collapse 전의 {month:value} 유지
+    // shape: { [llmModel]: { [domain]: { [monthLabel]: value } } } + 'Total'
+    const citDomainByLlmTrend = {}
     Object.entries(llmDomAcc).forEach(([m, byDom]) => {
       const out = {}
+      const outTrend = {}
       Object.entries(byDom).forEach(([dom, buckets]) => {
-        const v = latestVal(pickBucket(buckets))
-        if (v > 0) out[dom] = v
+        const months = pickBucket(buckets)
+        const v = latestVal(months)
+        if (v > 0) { out[dom] = v; outTrend[dom] = months }
       })
       if (Object.keys(out).length) citDomainByLlm[m] = out
+      if (Object.keys(outTrend).length) citDomainByLlmTrend[m] = outTrend
     })
     if (Object.keys(citDomainByLlm).length) {
       // 'Total' 컬럼 — collapse 결과 (breakdown-aware 합계) 에서 동일 우선순위로
@@ -1881,14 +1888,18 @@ function parseCitDomain(rows) {
         accumulate(totAcc[e.domain][bi], e.monthScores)
       })
       const totOut = {}
+      const totTrend = {}
       Object.entries(totAcc).forEach(([dom, buckets]) => {
-        const v = latestVal(pickBucket(buckets))
-        if (v > 0) totOut[dom] = v
+        const months = pickBucket(buckets)
+        const v = latestVal(months)
+        if (v > 0) { totOut[dom] = v; totTrend[dom] = months }
       })
       if (Object.keys(totOut).length) citDomainByLlm.Total = totOut
+      if (Object.keys(totTrend).length) citDomainByLlmTrend.Total = totTrend
       console.log(`[parseCitDomain] citDomainByLlm 모델:`, Object.keys(citDomainByLlm).join(', '))
       // Total 포함 2키 이상일 때만 의미 (모델별 비교 가능)
       if (Object.keys(citDomainByLlm).length > 1) citDomainByLlmOut = citDomainByLlm
+      if (Object.keys(citDomainByLlmTrend).length > 1) citDomainByLlmTrendOut = citDomainByLlmTrend
     }
     // collapsed → result 행 + citDomainTrend
     Object.values(collapsed).forEach(e => {
@@ -2041,6 +2052,7 @@ function parseCitDomain(rows) {
     output.citDomainMonths = validMonths
   }
   if (citDomainByLlmOut) output.citDomainByLlm = citDomainByLlmOut
+  if (citDomainByLlmTrendOut) output.citDomainByLlmTrend = citDomainByLlmTrendOut
   return output
 }
 

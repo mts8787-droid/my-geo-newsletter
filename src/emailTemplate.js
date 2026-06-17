@@ -139,6 +139,7 @@ const T = {
     lead: '선도', behind: '추격', critical: '취약', normal: '보통',
     weekTrend: '주간 트렌드',
     monthTrend: '월별 트렌드',
+    monthCompare: '전월 대비',
     weeklyTab: '주별',
     monthlyTab: '월별',
     vsComp: '대비',
@@ -172,6 +173,7 @@ const T = {
     lead: 'Lead', behind: 'Behind', critical: 'Critical', normal: 'Normal',
     weekTrend: 'Weekly Trend',
     monthTrend: 'Monthly Trend',
+    monthCompare: 'MoM',
     weeklyTab: 'Weekly',
     monthlyTab: 'Monthly',
     vsComp: 'vs',
@@ -1321,7 +1323,6 @@ function dotcomCombinedSectionHtml(dotcom, dotcomByLlm, meta, lang = 'ko') {
 const TP_BUMP_COLORS = ['#CF0652', '#1D4ED8', '#059669', '#D97706', '#7C3AED', '#DB2777', '#0D9488', '#EA580C', '#4F46E5', '#DC2626', '#0891B2', '#65A30D']
 const TP_TREND_12M = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 const TP_BUMP_MAX = 10
-const TP_TREND_RECENT = 4  // 최근 4개월
 
 // 도메인 라벨에서 TLD 제거 (잘라내기 X — 하단 테이블은 전체 표기, pill 만 emPill 로 단축)
 function emStripDomain(d) {
@@ -1331,126 +1332,64 @@ function emStripDomain(d) {
 function emShortName(name) {
   return String(name || '')
 }
-// rank-grid pill 전용 단축 (좁은 셀 — 7자 제한). 하단 테이블에는 미적용.
-function emPill(text) {
-  const s = String(text || '')
-  return s.length > 8 ? s.slice(0, 7) + '…' : s
+
+// MoM 셀: 전월(pre) → 당월(cur) 변화. pre 없음 NEW(파랑) / 동일 ─ 0(회색) / 증감 화살표+값+퍼센트.
+//   pre 가 null 이면 전월 데이터 자체 부재 (월 1개뿐) → NEW 처리.
+function _momCell(cur, pre, lang) {
+  const has = v => v != null && v > 0
+  if (!has(cur)) return '<span style="color:#CBD5E1;">—</span>'
+  if (pre == null || !has(pre)) return '<span style="color:#2563EB;font-weight:700;">NEW</span>'
+  const diff = +(cur - pre).toFixed(1)
+  if (diff === 0) return '<span style="color:#94A3B8;font-weight:600;">&#8211; 0</span>'
+  const up = diff > 0
+  const arrow = up ? '&#9650;' : '&#9660;'
+  const color = up ? '#16A34A' : '#DC2626'
+  const sign = up ? '+' : ''
+  const pct = pre > 0 ? Math.round((diff / pre) * 100) : 0
+  return `<span style="color:${color};font-weight:700;">${arrow} ${sign}${fmtMan(diff, lang)}</span> <span style="color:#94A3B8;font-size:8px;">(${sign}${pct}%)</span>`
 }
 
-// 범프 grid + 실수치 테이블 생성 (카드 외곽 없음) — 서브타이틀 stacked 재사용용. 데이터 없으면 null.
+// 전월 vs 당월 2개월 MoM 비교 표 (Top 10, 당월값 내림차순). 데이터 없으면 null.
 //   trend: { itemName: { monthLabel: value } } 형태로 정규화된 객체
-function _bumpGridTable(trend, headerLabel, lang, opts = {}) {
+//   컬럼: 라벨 | 전월 | 당월 | MoM
+function _bumpMomTable(trend, headerLabel, lang, opts = {}) {
   if (!trend) return null
-  const months12 = TP_TREND_12M
   const entries = Object.entries(trend)
   if (!entries.length) return null
+  const monthsWithData = TP_TREND_12M.filter(m => entries.some(([, d]) => (d[m] || 0) > 0))
+  if (!monthsWithData.length) return null
+  const latest = monthsWithData[monthsWithData.length - 1]
+  const prev = monthsWithData.length >= 2 ? monthsWithData[monthsWithData.length - 2] : null
 
-  // 데이터 있는 월만 → 최근 4개월
-  const monthsWithData = months12.filter(m => entries.some(([, d]) => (d[m] || 0) > 0))
-  const months = monthsWithData.slice(-TP_TREND_RECENT)
-  if (!months.length) return null
-
-  const lastDataMonth = months[months.length - 1]
-  const topEntries = [...entries]
-    .sort((a, b) => (b[1][lastDataMonth] || 0) - (a[1][lastDataMonth] || 0))
+  const topEntries = entries
+    .map(([name, d]) => ({ name, cur: d[latest] || 0, pre: prev ? (d[prev] || 0) : 0 }))
+    .filter(e => e.cur > 0)
+    .sort((a, b) => b.cur - a.cur)
     .slice(0, TP_BUMP_MAX)
+  if (!topEntries.length) return null
 
-  // 월별 순위 계산
-  const rankings = {}
-  months.forEach(m => {
-    topEntries.map(([name, data]) => ({ name, score: data[m] || 0 }))
-      .filter(e => e.score > 0)
-      .sort((a, b) => b.score - a.score)
-      .forEach((e, i) => {
-        if (!rankings[e.name]) rankings[e.name] = {}
-        rankings[e.name][m] = i + 1
-      })
-  })
-
-  const names = topEntries.map(([n]) => n).filter(n => rankings[n])
-  if (!names.length) return null
-  // 기본 회색 — opts.highlight 에 든 항목만 컬러 ('지적 요소만 색')
-  const highlight = Array.isArray(opts.highlight) ? opts.highlight : []
-  const BUMP_GRAY = '#94A3B8'
-  const colorOf = name => highlight.includes(name)
-    ? TP_BUMP_COLORS[names.indexOf(name) % TP_BUMP_COLORS.length]
-    : BUMP_GRAY
   const shortFn = opts.shortFn || emShortName
+  const highlight = Array.isArray(opts.highlight) ? opts.highlight : []
+  const dotColor = name => highlight.includes(name)
+    ? TP_BUMP_COLORS[topEntries.findIndex(e => e.name === name) % TP_BUMP_COLORS.length]
+    : '#94A3B8'
 
-  const maxRank = Math.min(names.length, TP_BUMP_MAX)
-  // rankByMonth[m][r] = 그 달의 r위 항목명
-  const rankByMonth = {}
-  months.forEach(m => {
-    rankByMonth[m] = {}
-    names.forEach(n => { const r = rankings[n]?.[m]; if (r != null) rankByMonth[m][r] = n })
-  })
-
-  // 두 테이블 공유 colgroup — 월 X좌표 정렬 (§5.16). 좌우배치라 라벨 컬럼 축소
-  const colGroup = `<colgroup><col style="width:92px;"/>${months.map(() => '<col/>').join('')}</colgroup>`
-  const monthThStyle = `font-size:10px;font-weight:800;color:#475569;font-family:${EM_FONT};padding:5px 1px;text-align:center;border-bottom:2px solid #E8EDF2;white-space:nowrap;`
-  const cornerStyle = `font-size:9px;font-weight:700;color:#94A3B8;font-family:${EM_FONT};padding:5px 2px;text-align:left;border-bottom:2px solid #E8EDF2;white-space:nowrap;`
-
-  // ── rank-grid (행=순위, 열=월) ──
-  let grid = `<table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;border-collapse:collapse;">${colGroup}`
-  grid += `<tr><td style="${cornerStyle}">${lang === 'ko' ? '순위' : 'Rank'}</td>${months.map(m => `<td style="${monthThStyle}">${m}</td>`).join('')}</tr>`
-  for (let r = 1; r <= maxRank; r++) {
-    grid += `<tr><td style="font-size:10px;font-weight:800;color:#64748B;font-family:${EM_FONT};padding:3px 2px;text-align:left;border-bottom:1px solid #F1F5F9;white-space:nowrap;">#${r}</td>`
-    months.forEach(m => {
-      const n = rankByMonth[m][r]
-      const cellStyle = `padding:3px 1px;text-align:center;border-bottom:1px solid #F1F5F9;`
-      if (!n) { grid += `<td style="${cellStyle}"><span style="color:#E2E8F0;font-size:10px;">·</span></td>`; return }
-      const c = colorOf(n)
-      grid += `<td style="${cellStyle}"><span style="display:inline-block;background:${c};color:#FFFFFF;border-radius:5px;padding:2px 4px;font-size:9px;font-weight:700;font-family:${EM_FONT};white-space:nowrap;">${emPill(shortFn(n))}</span></td>`
-    })
-    grid += '</tr>'
-  }
-  grid += '</table>'
-
-  // ── 하단 실수치 테이블 (범례 겸) ──
-  const thStyle = `font-size:9px;font-weight:700;color:#64748B;font-family:${EM_FONT};padding:5px 1px;text-align:center;border-bottom:1px solid #E8EDF2;white-space:nowrap;`
+  const colGroup = `<colgroup><col/><col style="width:42px;"/><col style="width:42px;"/><col style="width:104px;"/></colgroup>`
+  const thStyle = `font-size:9px;font-weight:700;color:#64748B;font-family:${EM_FONT};padding:5px 2px;text-align:center;border-bottom:2px solid #E8EDF2;white-space:nowrap;`
+  const tdBase = `font-size:9px;font-family:${EM_FONT};padding:4px 2px;border-bottom:1px solid #F1F5F9;`
   let table = `<table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;border-collapse:collapse;">${colGroup}`
-  table += `<tr><td style="${thStyle}text-align:left;">${headerLabel}</td>${months.map(m => `<td style="${thStyle}">${m}</td>`).join('')}</tr>`
-  names.forEach(name => {
-    const color = colorOf(name)
-    table += `<tr><td style="font-size:9px;font-weight:700;color:#334155;font-family:${EM_FONT};padding:4px 1px;border-bottom:1px solid #F1F5F9;white-space:normal;word-break:break-word;line-height:1.25;"><span style="display:inline-block;width:6px;height:6px;border-radius:2px;background:${color};">&nbsp;</span>&nbsp;${shortFn(name)}</td>`
-    months.forEach(m => {
-      const val = trend[name]?.[m]
-      const rank = rankings[name]?.[m]
-      table += `<td style="font-size:9px;font-family:${EM_FONT};padding:4px 1px;text-align:center;border-bottom:1px solid #F1F5F9;white-space:nowrap;">${val != null && rank != null
-        ? `<span style="font-weight:700;color:#334155;">${fmtMan(val, lang)}</span><br/><span style="font-size:8px;color:#94A3B8;">#${rank}</span>`
-        : '<span style="color:#CBD5E1;">—</span>'}</td>`
-    })
+  table += `<tr><td style="${thStyle}text-align:left;">${headerLabel}</td><td style="${thStyle}">${prev || '&#8211;'}</td><td style="${thStyle}">${latest}</td><td style="${thStyle}">MoM</td></tr>`
+  topEntries.forEach(e => {
+    const c = dotColor(e.name)
+    table += '<tr>'
+    table += `<td style="${tdBase}font-weight:700;color:#334155;white-space:normal;word-break:break-word;line-height:1.25;"><span style="display:inline-block;width:6px;height:6px;border-radius:2px;background:${c};">&nbsp;</span>&nbsp;${shortFn(e.name)}</td>`
+    table += `<td style="${tdBase}text-align:center;white-space:nowrap;color:#94A3B8;">${prev ? fmtMan(e.pre, lang) : '&#8211;'}</td>`
+    table += `<td style="${tdBase}text-align:center;white-space:nowrap;font-weight:700;color:#334155;">${fmtMan(e.cur, lang)}</td>`
+    table += `<td style="${tdBase}text-align:center;white-space:nowrap;">${_momCell(e.cur, prev ? e.pre : null, lang)}</td>`
     table += '</tr>'
   })
   table += '</table>'
-
-  return { grid, table, count: names.length }
-}
-
-// 이메일 호환 범프 섹션 카드 1개 생성 (rank-grid + 실수치 테이블) — 단독 카드
-//   trend: { itemName: { monthLabel: value } } 형태로 정규화된 객체
-function bumpEmailSectionHtml(trend, titleText, headerLabel, lang, opts = {}) {
-  const t = T[lang] || T.ko
-  const gt = _bumpGridTable(trend, headerLabel, lang, opts)
-  if (!gt) return ''
-
-  // 카드 1개만 반환 (외곽 tr/td 없음) — 좌우배치 셀에 넣기 위함
-  return `<table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFFFFF;border-radius:16px;border:2px solid #E8EDF2;">
-                    <tr>
-                      <td style="padding:13px 10px 10px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;">
-                        <table border="0" cellpadding="0" cellspacing="0" width="100%"><tr>
-                          <td style="vertical-align:middle;">
-                            <table border="0" cellpadding="0" cellspacing="0"><tr>
-                              <td style="font-size:14px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-0.5px;">${titleText} — ${t.monthTrend}</td>
-                            </tr></table>
-                          </td>
-                          <td align="right" style="vertical-align:middle;font-size:11px;color:#94A3B8;font-family:${EM_FONT};white-space:nowrap;">Top ${gt.count}</td>
-                        </tr></table>
-                      </td>
-                    </tr>
-                    <tr><td style="padding:12px 10px 5px;">${gt.grid}</td></tr>
-                    <tr><td style="padding:5px 10px 12px;">${gt.table}</td></tr>
-                  </table>`
+  return { table, count: topEntries.length, latest, prev }
 }
 
 // 두 범프 카드를 좌우배치 (50%/50%) 로 묶는 행. 한쪽만 있으면 단독 full-width.
@@ -1486,26 +1425,10 @@ function _renameTouchChannels(src) {
   return renamed
 }
 
-// citTouchPointsByLlm { llm: { channel: { month: sum } } } → search-gpt(Chat-GPT) 모델의 grid+table
-function _touchPointsBumpChatGptGridTable(byLlm, meta, lang) {
-  if (!byLlm || typeof byLlm !== 'object') return _logWarn('_touchPointsBumpChatGptGridTable', 'citTouchPointsByLlm 없음 (null/미동기화)', {}), null
-  const keys = Object.keys(byLlm).filter(k => !/^(total|all)$/i.test(k))
-  if (!keys.length) return _logWarn('_touchPointsBumpChatGptGridTable', '비-Total 모델 키 없음', { keys: Object.keys(byLlm) }), null
-  const picked = keys.find(k => /search.*gpt|searchgpt/i.test(k)) || keys.find(k => /chat.*gpt|gpt|openai/i.test(k)) || keys.find(k => /search/i.test(k))
-  if (!picked) return _logWarn('_touchPointsBumpChatGptGridTable', 'search-gpt 모델 미매칭', { keys }), null
-  const renamed = _renameTouchChannels(byLlm[picked])
-  return _bumpGridTable(renamed, lang === 'ko' ? '채널' : 'Channel', lang, { highlight: meta.bumpHighlight })
-}
-
-// 외부채널 범프 — TTL + Chat-GPT(search-gpt) 서브타이틀 분할, 한 카드에 stacked
-//   citTouchPointsTrend(TTL): { name: { monthLabel: value } } / citTouchPointsByLlm: { llm: { channel: { month } } }
-function touchPointsBumpCombinedHtml(citTouchPointsTrend, citTrendMonths, citTouchPointsByLlm, meta, lang = 'ko') {
-  if (!citTouchPointsTrend || !citTrendMonths || !citTrendMonths.length) return ''
+// MoM 표 섹션들을 한 카드에 stacked (TTL + 모델별 서브타이틀). sections: [{label, mom:{table,count}}]
+function _momSectionsCard(titleText, sections, lang) {
+  if (!sections.length) return ''
   const t = T[lang] || T.ko
-  const ttl = _bumpGridTable(_renameTouchChannels(citTouchPointsTrend), lang === 'ko' ? '채널' : 'Channel', lang, { highlight: meta.bumpHighlight })
-  if (!ttl) return ''
-  const chat = meta.showTouchPointsBumpChatGpt !== false ? _touchPointsBumpChatGptGridTable(citTouchPointsByLlm, meta, lang) : null
-
   const subtitleRow = (label, count) => `<tr>
                       <td style="padding:11px 10px 2px;">
                         <table border="0" cellpadding="0" cellspacing="0" width="100%"><tr>
@@ -1519,28 +1442,49 @@ function touchPointsBumpCombinedHtml(citTouchPointsTrend, citTrendMonths, citTou
                         </tr></table>
                       </td>
                     </tr>`
-
+  const body = sections.map(s => `${subtitleRow(s.label, s.mom.count)}
+                    <tr><td style="padding:6px 10px 12px;">${s.mom.table}</td></tr>`).join('')
   return `<table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFFFFF;border-radius:16px;border:2px solid #E8EDF2;">
                     <tr>
                       <td style="padding:13px 10px 10px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;">
                         <table border="0" cellpadding="0" cellspacing="0"><tr>
-                          <td style="font-size:14px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-0.5px;">${t.touchPointTitle} — ${t.monthTrend}</td>
+                          <td style="font-size:14px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-0.5px;">${titleText} — ${t.monthCompare}</td>
                         </tr></table>
                       </td>
                     </tr>
-                    ${subtitleRow('TTL', ttl.count)}
-                    <tr><td style="padding:6px 10px 5px;">${ttl.grid}</td></tr>
-                    <tr><td style="padding:5px 10px ${chat ? '10' : '12'}px;">${ttl.table}</td></tr>
-                    ${chat ? `${subtitleRow('Chat-GPT', chat.count)}
-                    <tr><td style="padding:6px 10px 5px;">${chat.grid}</td></tr>
-                    <tr><td style="padding:5px 10px 12px;">${chat.table}</td></tr>` : ''}
+                    ${body}
                   </table>`
 }
 
-// 도메인 범프 — citDomainTrend: { 'cnty|domain': { cnty, domain, type, months:{label:val} } }
-function domainBumpSectionHtml(citDomainTrend, citDomainMonths, meta, lang = 'ko') {
+// 외부채널 범프 → 전월 vs 당월 MoM 표 (TTL + 모든 LLM 모델 서브타이틀, 한 카드 stacked)
+//   citTouchPointsTrend(TTL): { name: { monthLabel: value } } / citTouchPointsByLlm: { llm: { channel: { month } } }
+function touchPointsBumpCombinedHtml(citTouchPointsTrend, citTrendMonths, citTouchPointsByLlm, meta, lang = 'ko') {
+  if (!citTouchPointsTrend || !citTrendMonths || !citTrendMonths.length) return ''
+  const t = T[lang] || T.ko
+  const chLabel = lang === 'ko' ? '채널' : 'Channel'
+  const sections = []
+  const ttl = _bumpMomTable(_renameTouchChannels(citTouchPointsTrend), chLabel, lang, { highlight: meta.bumpHighlight })
+  if (ttl) sections.push({ label: 'TTL', mom: ttl })
+  // 모든 LLM 모델 (Total/All 제외) — 고정 순서 (ChatGPT → Perplexity → Gemini → 기타)
+  if (meta.showTouchPointsBumpChatGpt !== false && citTouchPointsByLlm && typeof citTouchPointsByLlm === 'object') {
+    Object.keys(citTouchPointsByLlm)
+      .filter(k => !/^(total|all)$/i.test(k))
+      .sort((a, b) => _llmFixedIdx(a) - _llmFixedIdx(b))
+      .forEach(k => {
+        const mom = _bumpMomTable(_renameTouchChannels(citTouchPointsByLlm[k]), chLabel, lang, { highlight: meta.bumpHighlight })
+        if (mom) sections.push({ label: _llmDisplayName(k), mom })
+      })
+  }
+  return _momSectionsCard(t.touchPointTitle, sections, lang)
+}
+
+// 도메인 범프 → 전월 vs 당월 MoM 표 (TTL + 모든 LLM 모델)
+//   citDomainTrend: { 'cnty|domain': { cnty, domain, type, months:{label:val} } } (TTL)
+//   citDomainByLlmTrend: { llm: { domain: { month: value } } } (모델별)
+function domainBumpSectionHtml(citDomainTrend, citDomainMonths, citDomainByLlmTrend, meta, lang = 'ko') {
   if (!citDomainTrend || !citDomainMonths || !citDomainMonths.length) return ''
   const t = T[lang] || T.ko
+  const domLabel = lang === 'ko' ? '도메인' : 'Domain'
 
   // TTL 국가의 도메인만 사용
   let rows = Object.entries(citDomainTrend)
@@ -1558,13 +1502,25 @@ function domainBumpSectionHtml(citDomainTrend, citDomainMonths, meta, lang = 'ko
     })
     rows = Object.values(agg)
   }
-  if (!rows.length) return ''
 
-  // bumpEmailSectionHtml 가 기대하는 { name: { monthLabel: value } } 로 정규화
-  const trend = {}
-  rows.forEach(r => { trend[r.domain] = r.months })
+  // TTL trend → { domain: { monthLabel: value } } 정규화
+  const ttlTrend = {}
+  rows.forEach(r => { ttlTrend[r.domain] = r.months })
 
-  return bumpEmailSectionHtml(trend, t.citationDomainTitle, lang === 'ko' ? '도메인' : 'Domain', lang, { shortFn: emStripDomain, highlight: meta.bumpHighlight })
+  const sections = []
+  const ttl = _bumpMomTable(ttlTrend, domLabel, lang, { shortFn: emStripDomain, highlight: meta.bumpHighlight })
+  if (ttl) sections.push({ label: 'TTL', mom: ttl })
+  // 모든 LLM 모델 (Total/All 제외) — citDomainByLlmTrend 가 있을 때만 (파서 v3 + LLM Model 컬럼)
+  if (citDomainByLlmTrend && typeof citDomainByLlmTrend === 'object') {
+    Object.keys(citDomainByLlmTrend)
+      .filter(k => !/^(total|all)$/i.test(k))
+      .sort((a, b) => _llmFixedIdx(a) - _llmFixedIdx(b))
+      .forEach(k => {
+        const mom = _bumpMomTable(citDomainByLlmTrend[k], domLabel, lang, { shortFn: emStripDomain, highlight: meta.bumpHighlight })
+        if (mom) sections.push({ label: _llmDisplayName(k), mom })
+      })
+  }
+  return _momSectionsCard(t.citationDomainTitle, sections, lang)
 }
 
 // ─── LLM 모델별 인용비중 (100% 누적 가로 막대, 랭킹 1→topN) ────────────────────
@@ -2013,7 +1969,7 @@ function dashboardLinkButtonHtml(lang) {
 export { escapeHtml }
 
 export function generateEmailHTML(meta, total, products, citations, dotcom = {}, lang = 'ko', productsCnty = [], citationsCnty = [], options = {}) {
-  const { containerWidth = 940, showTrendTabs = false, weeklyLabels, categoryStats = null, unlaunchedMap: ulInput = {}, productCardVersion = 'v1', trendMode = 'weekly', llmModel, monthlyVis, citTouchPointsTrend = null, citTrendMonths = [], citDomainTrend = null, citDomainMonths = [], citTouchPointsByLlm = null, citDomainByLlm = null, dotcomByLlm = null } = options
+  const { containerWidth = 940, showTrendTabs = false, weeklyLabels, categoryStats = null, unlaunchedMap: ulInput = {}, productCardVersion = 'v1', trendMode = 'weekly', llmModel, monthlyVis, citTouchPointsTrend = null, citTrendMonths = [], citDomainTrend = null, citDomainMonths = [], citTouchPointsByLlm = null, citDomainByLlm = null, citDomainByLlmTrend = null, dotcomByLlm = null } = options
   // LLM Model 필터 (2026-06) — 선택 모델로 products/productsCnty/total 재계산
   if (llmModel && llmModel !== 'Total') {
     products = resolveProductsByLlm(products, llmModel)
@@ -2402,7 +2358,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                           </tr>` : ''}
                           ${bumpChartsRowHtml(
                             meta.showTouchPointsBump !== false ? touchPointsBumpCombinedHtml(citTouchPointsTrend, citTrendMonths, citTouchPointsByLlm, meta, lang) : '',
-                            meta.showDomainBump !== false ? domainBumpSectionHtml(citDomainTrend, citDomainMonths, meta, lang) : ''
+                            meta.showDomainBump !== false ? domainBumpSectionHtml(citDomainTrend, citDomainMonths, citDomainByLlmTrend, meta, lang) : ''
                           )}
                           ${meta.showCitCnty !== false && citationCntyInnerHtml ? `
                           <!-- 국가별 Citation 도메인 -->
