@@ -1562,7 +1562,15 @@ function _gridSectionHtml(gt) {
 // 외부채널 범프 — TTL 은 범프차트(rank-grid), 모델별은 전월 vs 당월 MoM 표 (한 카드 stacked)
 //   citTouchPointsTrend(TTL): { name: { monthLabel: value } } / citTouchPointsByLlm: { llm: { channel: { month } } }
 function touchPointsBumpCombinedHtml(citTouchPointsTrend, citTrendMonths, citTouchPointsByLlm, meta, lang = 'ko') {
-  if (!citTouchPointsTrend || !citTrendMonths || !citTrendMonths.length) return ''
+  console.warn('[touchPointsBump] 진입 — 수신 데이터', {
+    TTLtrend키수: citTouchPointsTrend ? Object.keys(citTouchPointsTrend).length : '(null)',
+    월목록: citTrendMonths,
+    모델별키: citTouchPointsByLlm ? Object.keys(citTouchPointsByLlm) : '(null)',
+  })
+  if (!citTouchPointsTrend || !citTrendMonths || !citTrendMonths.length) {
+    console.warn('[touchPointsBump] EARLY RETURN — TTL trend/월목록 없음 → 섹션 전체 미렌더', { hasTrend: !!citTouchPointsTrend, monthsLen: citTrendMonths?.length })
+    return ''
+  }
   const t = T[lang] || T.ko
   const chLabel = lang === 'ko' ? '채널' : 'Channel'
   const sections = []
@@ -1590,7 +1598,15 @@ function touchPointsBumpCombinedHtml(citTouchPointsTrend, citTrendMonths, citTou
 //   citDomainTrend: { 'cnty|domain': { cnty, domain, type, months:{label:val} } } (TTL)
 //   citDomainByLlmTrend: { llm: { domain: { month: value } } } (모델별)
 function domainBumpSectionHtml(citDomainTrend, citDomainMonths, citDomainByLlmTrend, meta, lang = 'ko') {
-  if (!citDomainTrend || !citDomainMonths || !citDomainMonths.length) return ''
+  console.warn('[domainBump] 진입 — 수신 데이터', {
+    TTLtrend키수: citDomainTrend ? Object.keys(citDomainTrend).length : '(null)',
+    월목록: citDomainMonths,
+    모델별키: citDomainByLlmTrend ? Object.keys(citDomainByLlmTrend) : '(null)',
+  })
+  if (!citDomainTrend || !citDomainMonths || !citDomainMonths.length) {
+    console.warn('[domainBump] EARLY RETURN — TTL trend/월목록 없음 → 섹션 전체 미렌더', { hasTrend: !!citDomainTrend, monthsLen: citDomainMonths?.length })
+    return ''
+  }
   const t = T[lang] || T.ko
   const domLabel = lang === 'ko' ? '도메인' : 'Domain'
 
