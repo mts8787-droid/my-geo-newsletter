@@ -1105,11 +1105,11 @@ function _dotcomChartRows(dotcom, meta, lang = 'ko', subtitle = '') {
   const cols = allCols.filter(c => (lg[c] || 0) > 0 || (sam[c] || 0) > 0)
   const BAR_MAX = 80
   const bw = 36
-  // PLP/Support 강조 — 그 외 LG 막대/값은 투명도 10%(opacity:0.9), 강조 컬럼은 더 진한 red
-  const EM_RED_DARK = '#A8043F'
-  const isEmphCol = col => col === 'PLP' || col === 'Support'
-  // MoM 박스 강조 — PLP/Support + TTL
-  const isEmphBoxCol = col => col === 'PLP' || col === 'Support' || col === 'TTL'
+  // 강조 컬럼(TTL/PLP/Support)만 원래 red, 그 외 LG 막대/값은 회색
+  const EM_GRAY = '#94A3B8'
+  const isEmphCol = col => col === 'TTL' || col === 'PLP' || col === 'Support'
+  // MoM 박스 강조 — TTL/PLP/Support
+  const isEmphBoxCol = col => col === 'TTL' || col === 'PLP' || col === 'Support'
 
   const ttlCol = cols.includes('TTL') ? 'TTL' : null
   const detailCols = cols.filter(c => c !== 'TTL')
@@ -1188,8 +1188,7 @@ function _dotcomChartRows(dotcom, meta, lang = 'ko', subtitle = '') {
     const gapTxt = diff > 0 ? `+${fmtMan(diff, lang)}` : diff < 0 ? `-${fmtMan(Math.abs(diff), lang)}` : '0'
     const isTTL = col === 'TTL'
     const emph = isEmphCol(col)
-    const lgColor = emph ? EM_RED_DARK : EM_RED
-    const lgOpacity = emph ? '' : 'opacity:0.9;'
+    const lgColor = emph ? EM_RED : EM_GRAY
 
     return `<td style="vertical-align:bottom;text-align:center;padding:0 3px;">
       <table border="0" cellpadding="0" cellspacing="0" align="center" style="margin:0 auto;width:100%;">
@@ -1197,10 +1196,10 @@ function _dotcomChartRows(dotcom, meta, lang = 'ko', subtitle = '') {
           <table border="0" cellpadding="0" cellspacing="0" align="center"><tr>
             <td style="vertical-align:bottom;text-align:center;padding:0 1px;">
               <table border="0" cellpadding="0" cellspacing="0" align="center">
-                <tr><td style="font-size:13px;font-weight:700;color:${lgColor};${lgOpacity}font-family:${EM_FONT};text-align:center;padding-bottom:1px;">${fmtMan(lv, lang)}</td></tr>
+                <tr><td style="font-size:13px;font-weight:700;color:${lgColor};font-family:${EM_FONT};text-align:center;padding-bottom:1px;">${fmtMan(lv, lang)}</td></tr>
                 ${hasMom ? momRow(lv, prevLg[col] != null ? prevLg[col] : null, isEmphBoxCol(col)) : ''}
                 ${spacerL > 0 ? `<tr><td height="${spacerL}" style="font-size:0;">&nbsp;</td></tr>` : ''}
-                <tr><td height="${lh}" style="font-size:0;"><table border="0" cellpadding="0" cellspacing="0" align="center"><tr><td width="${bw}" height="${lh}" style="background:${lgColor};${lgOpacity}border-radius:3px 3px 0 0;font-size:0;">&nbsp;</td></tr></table></td></tr>
+                <tr><td height="${lh}" style="font-size:0;"><table border="0" cellpadding="0" cellspacing="0" align="center"><tr><td width="${bw}" height="${lh}" style="background:${lgColor};border-radius:3px 3px 0 0;font-size:0;">&nbsp;</td></tr></table></td></tr>
               </table>
             </td>
             ${hasSam ? `<td style="vertical-align:bottom;text-align:center;padding:0 1px;">
