@@ -1375,6 +1375,15 @@ function emPill(text) {
   const s = String(text || '')
   return s.length > 8 ? s.slice(0, 7) + '…' : s
 }
+// hex 색상을 흰색과 섞어 밝은 음영(틴트) hex 반환 — 이메일 호환(solid hex, rgba/투명 X).
+function _emTint(hex, ratio = 0.85) {
+  const m = /^#?([0-9a-fA-F]{6})$/.exec(String(hex || ''))
+  if (!m) return '#F1F5F9'
+  const n = parseInt(m[1], 16)
+  const mix = c => Math.round(c + (255 - c) * ratio)
+  const toHex = c => c.toString(16).padStart(2, '0')
+  return `#${toHex(mix((n >> 16) & 255))}${toHex(mix((n >> 8) & 255))}${toHex(mix(n & 255))}`
+}
 
 // 범프 grid + 실수치 테이블 생성 (카드 외곽 없음) — TTL 서브타이틀 stacked 재사용용. 데이터 없으면 null.
 //   trend: { itemName: { monthLabel: value } } 형태로 정규화된 객체
@@ -1451,7 +1460,8 @@ function _bumpGridTable(trend, headerLabel, lang, opts = {}) {
   table += `<tr><td style="${thStyle}text-align:left;">${headerLabel}</td>${months.map(m => `<td style="${thStyle}">${m}</td>`).join('')}</tr>`
   names.forEach(name => {
     const color = colorOf(name)
-    table += `<tr><td style="font-size:11px;font-weight:700;color:#334155;font-family:${EM_FONT};padding:4px 1px;border-bottom:1px solid #F1F5F9;white-space:normal;word-break:break-word;line-height:1.25;"><span style="display:inline-block;width:6px;height:6px;border-radius:2px;background:${color};">&nbsp;</span>&nbsp;${shortFn(name)}</td>`
+    const tint = _emTint(color)
+    table += `<tr><td style="font-size:11px;font-family:${EM_FONT};padding:4px 1px;border-bottom:1px solid #F1F5F9;white-space:normal;word-break:break-word;line-height:1.25;"><span style="display:inline-block;background:${tint};color:${color};border-radius:4px;padding:1px 6px;font-weight:700;">${shortFn(name)}</span></td>`
     months.forEach(m => {
       const val = trend[name]?.[m]
       const rank = rankings[name]?.[m]
@@ -1521,7 +1531,8 @@ function _bumpMomTable(trend, headerLabel, lang, opts = {}) {
     const isHl = highlight.includes(e.name)
     const rowBg = isHl ? 'background:#ECFDF5;' : ''
     table += '<tr>'
-    table += `<td style="${tdBase}${rowBg}font-weight:700;color:#334155;white-space:normal;word-break:break-word;line-height:1.25;"><span style="display:inline-block;width:6px;height:6px;border-radius:2px;background:${c};">&nbsp;</span>&nbsp;${shortFn(e.name)}</td>`
+    const tint = _emTint(c)
+    table += `<td style="${tdBase}${rowBg}white-space:normal;word-break:break-word;line-height:1.25;"><span style="display:inline-block;background:${tint};color:${c};border-radius:4px;padding:1px 6px;font-weight:700;">${shortFn(e.name)}</span></td>`
     table += `<td style="${tdBase}${rowBg}text-align:center;white-space:nowrap;color:#94A3B8;">${prev ? fmtMan(e.pre, lang) : '&#8211;'}</td>`
     table += `<td style="${tdBase}${rowBg}text-align:center;white-space:nowrap;font-weight:700;color:#334155;">${fmtMan(e.cur, lang)}</td>`
     table += `<td style="${tdBase}${rowBg}text-align:center;white-space:nowrap;">${_momCell(e.cur, prev ? e.pre : null, lang)}</td>`
