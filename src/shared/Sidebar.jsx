@@ -1107,6 +1107,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
             { key: 'showCitCnty',   label: 'Citation 국가별' },
             { key: 'showCitPrd',    label: 'Citation 제품별' },
             { key: 'showTouchPointsBump', label: '외부채널 범프차트' },
+            { key: 'showTouchPointsBumpChatGpt', label: '외부채널 Chat-GPT' },
             { key: 'showLlmShare',  label: '모델별 인용비중' },
             { key: 'showDotcom',    label: '닷컴' },
             { key: 'showDotcomChatGpt', label: '닷컴 Chat-GPT' },
