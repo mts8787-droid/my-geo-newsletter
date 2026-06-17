@@ -410,10 +410,12 @@ function productCardHtml(p, globalMax, globalMin, lang = 'ko', opts = {}) {
               <td style="vertical-align:middle;">
                 <span style="font-size:12px;font-weight:900;color:#1A1A1A;vertical-align:middle;font-family:${EM_FONT};letter-spacing:${lang === 'en' ? '-0.55px' : '-0.3px'};">${escapeHtml(opts.prodNameFn ? opts.prodNameFn(p) : p.kr)}</span>
               </td>
-              <td align="right" style="vertical-align:middle;white-space:nowrap;">
-                <span style="font-size:13px;font-weight:700;color:${ratioColor};font-family:${EM_FONT};letter-spacing:-1px;">${escapeHtml(p.compName || 'Samsung')} ${lang === 'en' ? 'vs' : '대비'} ${curRatio}%${ratioDelta}</span>
-                &nbsp;<span style="display:inline-block;background:${st.bg};color:${st.color};border:1px solid ${st.border};border-radius:6px;padding:0px 5px;font-size:10px;font-weight:700;line-height:16px;font-family:${EM_FONT};vertical-align:middle;">${st.label}</span>
-                ${!(activePrev > 0) ? '' : `<div style="margin-top:2px;font-size:10px;color:#94A3B8;font-family:${EM_FONT};text-align:right;">${lang === 'en' ? 'MoM' : '전월대비'} <span style="color:${momColor};font-weight:700;">${momArrow}${Math.abs(d).toFixed(1)}%p</span></div>`}
+              <td align="right" style="vertical-align:middle;">
+                <table border="0" cellpadding="0" cellspacing="0" align="right" style="float:right;"><tr>
+                  <td style="vertical-align:middle;white-space:nowrap;"><span style="font-size:13px;font-weight:700;color:${ratioColor};font-family:${EM_FONT};letter-spacing:-1px;">${escapeHtml(p.compName || 'Samsung')} ${lang === 'en' ? 'vs' : '대비'} ${curRatio}%${ratioDelta}</span></td>
+                  <td style="vertical-align:middle;white-space:nowrap;padding-left:4px;"><span style="display:inline-block;background:${st.bg};color:${st.color};border:1px solid ${st.border};border-radius:6px;padding:0px 5px;font-size:10px;font-weight:700;line-height:16px;font-family:${EM_FONT};">${st.label}</span></td>
+                </tr></table>
+                ${!(activePrev > 0) ? '' : `<div style="clear:both;margin-top:2px;font-size:10px;color:#94A3B8;font-family:${EM_FONT};text-align:right;">${lang === 'en' ? 'MoM' : '전월대비'} <span style="color:${momColor};font-weight:700;">${momArrow}${Math.abs(d).toFixed(1)}%p</span></div>`}
               </td>
             </tr>
           </table>
@@ -520,8 +522,11 @@ function productCardV2Html(p, lang = 'ko', opts = {}) {
                 <span style="font-size:14px;font-weight:900;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:${lang === 'en' ? '-0.9px' : '-0.5px'};">${escapeHtml(prodName)}</span>
                 <span style="font-size:18px;font-weight:900;color:#1A1A1A;font-family:${EM_FONT};">${p.score.toFixed(1)}<span style="font-size:11px;color:#94A3B8;">%</span></span>${momStr ? `&nbsp;${momStr}` : ''}
               </td>
-              <td align="right" style="vertical-align:middle;white-space:nowrap;">
-                <span style="font-size:13px;font-weight:700;color:${ratioColor};font-family:${EM_FONT};letter-spacing:-1px;">${escapeHtml(compShort(mainCompName) || 'SS')} ${curRatio}%</span>&nbsp;<span style="display:inline-block;background:${st.bg};color:${st.color};border:1px solid ${st.border};border-radius:5px;padding:0px 4px;font-size:10px;font-weight:700;line-height:15px;font-family:${EM_FONT};vertical-align:middle;">${st.label}</span>${p.prev != null && p.prev > 0 ? `<div style="font-size:10px;color:#94A3B8;font-family:${EM_FONT};text-align:right;margin-top:1px;">${lang === 'en' ? 'MoM' : '전월대비'} <span style="color:${momColor};font-weight:700;">${momArrow}${Math.abs(d).toFixed(1)}%p</span></div>` : ''}
+              <td align="right" style="vertical-align:middle;">
+                <table border="0" cellpadding="0" cellspacing="0" align="right" style="float:right;"><tr>
+                  <td style="vertical-align:middle;white-space:nowrap;"><span style="font-size:13px;font-weight:700;color:${ratioColor};font-family:${EM_FONT};letter-spacing:-1px;">${escapeHtml(compShort(mainCompName) || 'SS')} ${curRatio}%</span></td>
+                  <td style="vertical-align:middle;white-space:nowrap;padding-left:4px;"><span style="display:inline-block;background:${st.bg};color:${st.color};border:1px solid ${st.border};border-radius:5px;padding:0px 4px;font-size:10px;font-weight:700;line-height:15px;font-family:${EM_FONT};">${st.label}</span></td>
+                </tr></table>${p.prev != null && p.prev > 0 ? `<div style="clear:both;font-size:10px;color:#94A3B8;font-family:${EM_FONT};text-align:right;margin-top:1px;">${lang === 'en' ? 'MoM' : '전월대비'} <span style="color:${momColor};font-weight:700;">${momArrow}${Math.abs(d).toFixed(1)}%p</span></div>` : ''}
               </td>
             </tr>
           </table>
@@ -640,8 +645,11 @@ function productCardV3Html(p, lang = 'ko', opts = {}) {
                 <span style="font-size:14px;font-weight:900;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:${lang === 'en' ? '-0.9px' : '-0.5px'};">${escapeHtml(prodName)}</span>
                 <span style="font-size:18px;font-weight:900;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-1.8px;">${p.score.toFixed(1)}<span style="font-size:11px;color:#94A3B8;letter-spacing:-1.1px;">%</span></span>${momStr ? `&nbsp;${momStr}` : ''}
               </td>
-              <td align="right" style="vertical-align:middle;white-space:nowrap;">
-                <span style="font-size:13px;font-weight:700;color:${ratioColor};font-family:${EM_FONT};letter-spacing:-1.3px;">${compShort(mainCompName)} ${curRatio}%</span>&nbsp;<span style="display:inline-block;background:${st.bg};color:${st.color};border:1px solid ${st.border};border-radius:5px;padding:0px 4px;font-size:10px;font-weight:700;line-height:15px;font-family:${EM_FONT};vertical-align:middle;">${st.label}</span>
+              <td align="right" style="vertical-align:middle;">
+                <table border="0" cellpadding="0" cellspacing="0" align="right" style="float:right;"><tr>
+                  <td style="vertical-align:middle;white-space:nowrap;"><span style="font-size:13px;font-weight:700;color:${ratioColor};font-family:${EM_FONT};letter-spacing:-1.3px;">${compShort(mainCompName)} ${curRatio}%</span></td>
+                  <td style="vertical-align:middle;white-space:nowrap;padding-left:4px;"><span style="display:inline-block;background:${st.bg};color:${st.color};border:1px solid ${st.border};border-radius:5px;padding:0px 4px;font-size:10px;font-weight:700;line-height:15px;font-family:${EM_FONT};">${st.label}</span></td>
+                </tr></table>
               </td>
             </tr>
           </table>
@@ -2352,17 +2360,18 @@ function dashboardLinkButtonHtml(lang) {
   const langSuffix = lang === 'en' ? '-EN' : '-KO'
   const url = `${base}/p/GEO-KPI-Dashboard${langSuffix}`
   const label = lang === 'en' ? 'Open Integrated Dashboard' : '통합 대시보드 바로가기'
+  const btnW = lang === 'en' ? 260 : 240
   return `
   <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-top:16px;">
     <tr><td align="center">
       <!--[if mso]>
-      <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="${url}" style="height:48px;v-text-anchor:middle;width:100%;" arcsize="18%" strokecolor="${EM_RED}" fillcolor="${EM_RED}">
+      <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="${url}" style="height:48px;v-text-anchor:middle;width:${btnW}px;" arcsize="18%" strokecolor="${EM_RED}" fillcolor="${EM_RED}">
         <w:anchorlock/>
         <center style="color:#FFFFFF;font-family:'LGEIText','LG Smart',Arial,sans-serif;font-size:15px;font-weight:700;">${label}</center>
       </v:roundrect>
       <![endif]-->
       <!--[if !mso]><!-- -->
-      <a href="${url}" target="_blank" rel="noopener" style="display:block;background:${EM_RED};border:1px solid ${EM_RED};border-radius:8px;color:#FFFFFF;font-family:${EM_FONT};font-size:15px;font-weight:700;line-height:48px;text-align:center;text-decoration:none;width:100%;">${label}</a>
+      <a href="${url}" target="_blank" rel="noopener" style="display:inline-block;background:${EM_RED};border:1px solid ${EM_RED};border-radius:8px;color:#FFFFFF;font-family:${EM_FONT};font-size:15px;font-weight:700;line-height:48px;text-align:center;text-decoration:none;padding:0 28px;white-space:nowrap;">${label}</a>
       <!--<![endif]-->
     </td></tr>
   </table>`
