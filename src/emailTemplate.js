@@ -152,6 +152,11 @@ const T = {
     citationDomainTitle: '도메인별 Citation 현황',
     llmShareTitle: '모델별 인용 비중',
     citCountVBarTitle: '전월 대비 모델별 Citation 인용수',
+    allChannelLabel: '전체 채널',
+    communityChannelLabel: '커뮤니티 채널',
+    redditDomainLabel: '레딧 도메인',
+    regionProductTop10Title: '국가별 × 제품별 Top 10 — 레딧 지피티만',
+    regionProductTop10Sub: '5월 Reddit 인용수 기준 상위 10개 조합 (Global 및 TTL 제외, ChatGPT 전용)',
     citationCntyTitle: '국가별 Citation 도메인',
     touchPointTitle: '외부접점채널 Citation',
     citationLegend: 'Citation Score 건수 (비중)',
@@ -186,6 +191,11 @@ const T = {
     citationDomainTitle: 'Citation by Domain',
     llmShareTitle: 'Citation Share by Model',
     citCountVBarTitle: 'Citation Count by Model (MoM)',
+    allChannelLabel: 'All Channels',
+    communityChannelLabel: 'Community',
+    redditDomainLabel: 'Reddit Domain',
+    regionProductTop10Title: 'Region × Product Top 10 — Reddit (ChatGPT)',
+    regionProductTop10Sub: 'Top 10 combinations by May Reddit citations (excl. Global & TTL, ChatGPT only)',
     citationCntyTitle: 'Citation Domain by Country',
     touchPointTitle: 'Touch Points Citation',
     citationLegend: 'Citation Score Count (Ratio)',
@@ -1352,96 +1362,6 @@ function emPill(text) {
   return s.length > 8 ? s.slice(0, 7) + '…' : s
 }
 
-// 범프 grid + 실수치 테이블 생성 (카드 외곽 없음) — TTL 서브타이틀 stacked 재사용용. 데이터 없으면 null.
-//   trend: { itemName: { monthLabel: value } } 형태로 정규화된 객체
-function _bumpGridTable(trend, headerLabel, lang, opts = {}) {
-  if (!trend) return null
-  const months12 = TP_TREND_12M
-  const entries = Object.entries(trend)
-  if (!entries.length) return null
-
-  // 데이터 있는 월만 → 최근 4개월 (Feb 제외 — 사용자 요청)
-  const monthsWithData = months12.filter(m => m !== 'Feb' && entries.some(([, d]) => (d[m] || 0) > 0))
-  const months = monthsWithData.slice(-TP_TREND_RECENT)
-  if (!months.length) return null
-
-  const lastDataMonth = months[months.length - 1]
-  const topEntries = [...entries]
-    .sort((a, b) => (b[1][lastDataMonth] || 0) - (a[1][lastDataMonth] || 0))
-    .slice(0, TP_BUMP_MAX)
-
-  // 월별 순위 계산
-  const rankings = {}
-  months.forEach(m => {
-    topEntries.map(([name, data]) => ({ name, score: data[m] || 0 }))
-      .filter(e => e.score > 0)
-      .sort((a, b) => b.score - a.score)
-      .forEach((e, i) => {
-        if (!rankings[e.name]) rankings[e.name] = {}
-        rankings[e.name][m] = i + 1
-      })
-  })
-
-  const names = topEntries.map(([n]) => n).filter(n => rankings[n])
-  if (!names.length) return null
-  // 기본 회색 — opts.highlight 에 든 항목만 컬러 ('지적 요소만 색')
-  const highlight = Array.isArray(opts.highlight) ? opts.highlight : []
-  const BUMP_GRAY = '#94A3B8'
-  const colorOf = name => highlight.includes(name)
-    ? TP_BUMP_COLORS[names.indexOf(name) % TP_BUMP_COLORS.length]
-    : BUMP_GRAY
-  const shortFn = opts.shortFn || emShortName
-
-  const maxRank = Math.min(names.length, TP_BUMP_MAX)
-  // rankByMonth[m][r] = 그 달의 r위 항목명
-  const rankByMonth = {}
-  months.forEach(m => {
-    rankByMonth[m] = {}
-    names.forEach(n => { const r = rankings[n]?.[m]; if (r != null) rankByMonth[m][r] = n })
-  })
-
-  // 두 테이블 공유 colgroup — 월 X좌표 정렬 (§5.16). 좌우배치라 라벨 컬럼 축소
-  const colGroup = `<colgroup><col style="width:128px;"/>${months.map(() => '<col/>').join('')}</colgroup>`
-  const monthThStyle = `font-size:12px;font-weight:800;color:#475569;font-family:${EM_FONT};padding:5px 1px;text-align:center;border-bottom:2px solid #E8EDF2;white-space:nowrap;`
-  const cornerStyle = `font-size:11px;font-weight:700;color:#94A3B8;font-family:${EM_FONT};padding:5px 2px;text-align:left;border-bottom:2px solid #E8EDF2;white-space:nowrap;`
-
-  // ── rank-grid (행=순위, 열=월) ──
-  let grid = `<table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;border-collapse:collapse;">${colGroup}`
-  grid += `<tr><td style="${cornerStyle}">${lang === 'ko' ? '순위' : 'Rank'}</td>${months.map(m => `<td style="${monthThStyle}">${m}</td>`).join('')}</tr>`
-  for (let r = 1; r <= maxRank; r++) {
-    grid += `<tr><td style="font-size:11px;font-weight:800;color:#64748B;font-family:${EM_FONT};padding:3px 2px;text-align:left;border-bottom:1px solid #F1F5F9;white-space:nowrap;">#${r}</td>`
-    months.forEach(m => {
-      const n = rankByMonth[m][r]
-      const cellStyle = `padding:3px 1px;text-align:center;border-bottom:1px solid #F1F5F9;`
-      if (!n) { grid += `<td style="${cellStyle}"><span style="color:#E2E8F0;font-size:11px;">·</span></td>`; return }
-      const c = colorOf(n)
-      grid += `<td style="${cellStyle}"><span style="display:inline-block;background:${c};color:#FFFFFF;border-radius:5px;padding:2px 4px;font-size:11px;font-weight:700;font-family:${EM_FONT};white-space:nowrap;">${emPill(shortFn(n))}</span></td>`
-    })
-    grid += '</tr>'
-  }
-  grid += '</table>'
-
-  // ── 하단 실수치 테이블 (범례 겸) — 순위(#N) 미표기 ──
-  const thStyle = `font-size:11px;font-weight:700;color:#64748B;font-family:${EM_FONT};padding:5px 1px;text-align:center;border-bottom:1px solid #E8EDF2;white-space:nowrap;`
-  let table = `<table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;border-collapse:collapse;">${colGroup}`
-  table += `<tr><td style="${thStyle}text-align:left;">${headerLabel}</td>${months.map(m => `<td style="${thStyle}">${m}</td>`).join('')}</tr>`
-  names.forEach(name => {
-    const color = colorOf(name)
-    table += `<tr><td style="font-size:11px;font-weight:700;color:#334155;font-family:${EM_FONT};padding:4px 1px;border-bottom:1px solid #F1F5F9;white-space:normal;word-break:break-word;line-height:1.25;"><span style="display:inline-block;width:6px;height:6px;border-radius:2px;background:${color};">&nbsp;</span>&nbsp;${shortFn(name)}</td>`
-    months.forEach(m => {
-      const val = trend[name]?.[m]
-      const rank = rankings[name]?.[m]
-      table += `<td style="font-size:11px;font-family:${EM_FONT};padding:4px 1px;text-align:center;border-bottom:1px solid #F1F5F9;white-space:nowrap;">${val != null && rank != null
-        ? `<span style="font-weight:700;color:#334155;">${fmtMan(val, lang)}</span>`
-        : '<span style="color:#CBD5E1;">—</span>'}</td>`
-    })
-    table += '</tr>'
-  })
-  table += '</table>'
-
-  return { grid, table, count: names.length }
-}
-
 // MoM 셀: 전월(pre) → 당월(cur) 변화. pre 없음 NEW(파랑) / 동일 ─ 0(회색) / 증감 화살표+값+퍼센트.
 //   pre 가 null 이면 전월 데이터 자체 부재 (월 1개뿐) → NEW 처리.
 function _momCell(cur, pre, lang) {
@@ -1507,22 +1427,89 @@ function _bumpMomTable(trend, headerLabel, lang, opts = {}) {
   return { table, count: topEntries.length, latest, prev }
 }
 
-// 두 범프 카드를 좌우배치 (50%/50%) 로 묶는 행. 한쪽만 있으면 단독 full-width.
-function bumpChartsRowHtml(touchCard, domainCard) {
-  const cards = [touchCard, domainCard].filter(Boolean)
-  if (!cards.length) return ''
-  if (cards.length === 1) {
-    return `
-              <tr><td style="padding-bottom:28px;">${cards[0]}</td></tr>`
-  }
+// itemName → 색상 (모델 raw 키, 매칭 없으면 회색)
+function _llmColor(llm) {
+  const f = EM_LLM_FIXED.find(x => x.test.test(llm))
+  return f ? f.color : '#64748B'
+}
+// { name: { month: value } } 중 정규식 매칭 이름만 추림
+function _filterMapByRegex(src, re) {
+  const out = {}
+  Object.entries(src || {}).forEach(([name, months]) => { if (re.test(name)) out[name] = months })
+  return out
+}
+// 모델명 헤더(컬러 바) + MoM 표 한 블록. 데이터 없으면 "데이터 없음".
+function _modelMomBlock(displayName, color, momResult, lang) {
+  const header = `<table border="0" cellpadding="0" cellspacing="0"><tr>
+                          <td width="3" style="background:${color};border-radius:2px;">&nbsp;</td>
+                          <td style="padding-left:6px;font-size:12px;font-weight:700;color:${color};font-family:${EM_FONT};white-space:nowrap;">${escapeHtml(displayName)}</td>
+                        </tr></table>`
+  const body = momResult
+    ? momResult.table
+    : `<div style="font-size:11px;color:#94A3B8;font-family:${EM_FONT};padding:6px 0;">${lang === 'en' ? 'No data' : '데이터 없음'}</div>`
+  return `${header}<table border="0" cellpadding="0" cellspacing="0" width="100%"><tr><td style="height:4px;line-height:4px;font-size:1px;">&nbsp;</td></tr></table>${body}`
+}
+// 한 카테고리 컬럼 (빨강 소제목 + 모델별 MoM 블록 stacked). trendFn(k) → { name: { month: value } }
+function _momCategoryColumn(label, models, trendFn, headerLabel, lang, opts = {}) {
+  const subtitle = `<tr><td style="padding:0 0 4px;">
+                      <table border="0" cellpadding="0" cellspacing="0"><tr>
+                        <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
+                        <td style="padding-left:6px;font-size:13px;font-weight:700;color:#334155;font-family:${EM_FONT};letter-spacing:${lang === 'en' ? '-0.5px' : '-0.3px'};">${label}</td>
+                      </tr></table>
+                    </td></tr>`
+  const blocks = models.map(k => {
+    const mom = _bumpMomTable(trendFn(k), headerLabel, lang, { ...opts, tag: `${label}/${k}` })
+    return `<tr><td style="padding:8px 0 0;">${_modelMomBlock(_llmDisplayName(k), _llmColor(k), mom, lang)}</td></tr>`
+  }).join('')
+  return `<table border="0" cellpadding="0" cellspacing="0" width="100%">${subtitle}${blocks}</table>`
+}
+
+// 전월 대비 모델별 Citation 인용수 — 3 카테고리(전체 채널/커뮤니티/레딧 도메인) × 3 모델 MoM 표를 1행 3섹션으로
+//   citTouchPointsByLlm: { llm: { channel: { month: value } } } (전체 채널 + 커뮤니티)
+//   citDomainByLlmTrend: { llm: { domain:  { month: value } } } (레딧 도메인)
+function momByModelRowHtml(citTouchPointsByLlm, citDomainByLlmTrend, meta, lang = 'ko') {
+  const t = T[lang] || T.ko
+  const tp = citTouchPointsByLlm && typeof citTouchPointsByLlm === 'object' ? citTouchPointsByLlm : {}
+  const dom = citDomainByLlmTrend && typeof citDomainByLlmTrend === 'object' ? citDomainByLlmTrend : {}
+  const models = Array.from(new Set([...Object.keys(tp), ...Object.keys(dom)]))
+    .filter(k => !/^(total|all)$/i.test(k))
+    .sort((a, b) => _llmFixedIdx(a) - _llmFixedIdx(b))
+    .slice(0, 3)
+  if (!models.length) { console.warn('[momByModel] 모델 키 없음 → 섹션 미렌더', { tp키: Object.keys(tp), dom키: Object.keys(dom) }); return '' }
+  console.warn(`[momByModel] 모델 ${models.length}개`, { 모델: models })
+
+  const chLabel = lang === 'ko' ? '채널' : 'Channel'
+  const domLabel = lang === 'ko' ? '도메인' : 'Domain'
+  const commRe = /community|커뮤니티/i
+  const redditRe = /reddit/i
+  const hl = { highlight: meta.bumpHighlight }
+
+  const colAll = _momCategoryColumn(t.allChannelLabel, models, k => _renameTouchChannels(tp[k]), chLabel, lang, hl)
+  const colComm = _momCategoryColumn(t.communityChannelLabel, models, k => _filterMapByRegex(tp[k], commRe), chLabel, lang, hl)
+  const colReddit = _momCategoryColumn(t.redditDomainLabel, models, k => _filterMapByRegex(dom[k], redditRe), domLabel, lang, { shortFn: emStripDomain, ...hl })
+
   return `
-              <!-- ══ Citation 범프차트 좌우배치 (외부채널 + 도메인) ══ -->
+              <!-- ══ 전월 대비 모델별 Citation 인용수 (3 카테고리 × 3 모델) ══ -->
               <tr>
                 <td style="padding-bottom:28px;">
-                  <table border="0" cellpadding="0" cellspacing="0" width="100%"><tr>
-                    <td width="50%" style="vertical-align:top;padding-right:6px;">${cards[0]}</td>
-                    <td width="50%" style="vertical-align:top;padding-left:6px;">${cards[1]}</td>
-                  </tr></table>
+                  <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFFFFF;border-radius:16px;border:2px solid #E8EDF2;">
+                    <tr>
+                      <td style="padding:13px 14px 10px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;">
+                        <table border="0" cellpadding="0" cellspacing="0"><tr>
+                          <td style="font-size:14px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-0.5px;">${t.citCountVBarTitle} &#8212; ${t.monthTrend}</td>
+                        </tr></table>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="padding:12px 8px 14px;">
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%"><tr>
+                          <td width="33%" style="vertical-align:top;padding:0 6px;">${colAll}</td>
+                          <td width="33%" style="vertical-align:top;padding:0 6px;border-left:1px solid #F1F5F9;">${colComm}</td>
+                          <td width="34%" style="vertical-align:top;padding:0 6px;border-left:1px solid #F1F5F9;">${colReddit}</td>
+                        </tr></table>
+                      </td>
+                    </tr>
+                  </table>
                 </td>
               </tr>`
 }
@@ -1540,134 +1527,76 @@ function _renameTouchChannels(src) {
   return renamed
 }
 
-// 범프 섹션들을 한 카드에 stacked (TTL 범프 grid + 모델별 MoM 표). sections: [{label, count, html}]
-//   titleSuffix: 카드 제목 우측 보조 라벨 (TTL 범프 = 월간 트렌드 기준).
-function _momSectionsCard(titleText, titleSuffix, sections, lang) {
-  if (!sections.length) return ''
-  const subtitleRow = (label, count) => `<tr>
-                      <td style="padding:11px 10px 2px;">
-                        <table border="0" cellpadding="0" cellspacing="0" width="100%"><tr>
-                          <td style="vertical-align:middle;">
-                            <table border="0" cellpadding="0" cellspacing="0"><tr>
-                              <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
-                              <td style="padding-left:6px;font-size:13px;font-weight:700;color:#334155;font-family:${EM_FONT};letter-spacing:${lang === 'en' ? '-0.5px' : '-0.3px'};">${label}</td>
-                            </tr></table>
-                          </td>
-                          <td align="right" style="vertical-align:middle;font-size:10px;color:#94A3B8;font-family:${EM_FONT};white-space:nowrap;">Top ${count}</td>
-                        </tr></table>
-                      </td>
-                    </tr>`
-  const body = sections.map(s => `${subtitleRow(s.label, s.count)}
-                    <tr><td style="padding:6px 10px 12px;">${s.html}</td></tr>`).join('')
-  return `<table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFFFFF;border-radius:16px;border:2px solid #E8EDF2;">
+// 국가별 × 제품별 Top 10 — 레딧 (ChatGPT 전용). 사용자 제공 하드코딩 데이터, 단위 만 (소수 1자리).
+const REGION_PRODUCT_TOP10 = [
+  { c: 'UK', p: 'TV',  apr: 5566, may: 23472, diff: 17906, pct: 321.7 },
+  { c: 'DE', p: 'TV',  apr: 4012, may: 20525, diff: 16513, pct: 411.6 },
+  { c: 'US', p: 'TV',  apr: 5553, may: 16930, diff: 11377, pct: 204.9 },
+  { c: 'UK', p: 'IT',  apr: 4501, may: 16854, diff: 12353, pct: 274.5 },
+  { c: 'DE', p: 'IT',  apr: 3605, may: 16346, diff: 12741, pct: 353.4 },
+  { c: 'MX', p: 'RAC', apr: 1950, may: 15788, diff: 13838, pct: 709.6 },
+  { c: 'IN', p: 'RAC', apr: 2399, may: 15493, diff: 13094, pct: 545.8 },
+  { c: 'BR', p: 'RAC', apr: 1738, may: 15290, diff: 13552, pct: 779.7 },
+  { c: 'US', p: 'IT',  apr: 4400, may: 12638, diff: 8238,  pct: 187.2 },
+  { c: 'UK', p: 'REF', apr: 2598, may: 12193, diff: 9595,  pct: 369.3 },
+]
+function regionProductTop10Html(lang = 'ko') {
+  const t = T[lang] || T.ko
+  const man = v => lang === 'en' ? fmtMan(v, 'en') : (v / 10000).toFixed(1) + '만'
+  const aprH = lang === 'en' ? 'Apr' : '4월'
+  const mayH = lang === 'en' ? 'May' : '5월'
+  const diffH = lang === 'en' ? 'Diff' : '전월비'
+  const pctH = lang === 'en' ? '% Chg' : '증감율'
+  const rankH = lang === 'en' ? '#' : '순위'
+  const regionH = lang === 'en' ? 'Region' : '국가'
+  const prodH = lang === 'en' ? 'PRD' : '제품'
+  const thStyle = `font-size:11px;font-weight:700;color:#64748B;font-family:${EM_FONT};padding:6px 4px;border-bottom:2px solid #E8EDF2;white-space:nowrap;`
+  const tdBase = `font-size:11px;font-family:${EM_FONT};padding:5px 4px;border-bottom:1px solid #F1F5F9;white-space:nowrap;`
+  let body = ''
+  REGION_PRODUCT_TOP10.forEach((r, i) => {
+    const rowBg = i % 2 === 0 ? 'background:#FAFBFC;' : ''
+    body += '<tr>'
+    body += `<td style="${tdBase}${rowBg}text-align:center;color:#94A3B8;font-weight:700;">${i + 1}</td>`
+    body += `<td style="${tdBase}${rowBg}text-align:center;font-weight:700;color:#334155;">${escapeHtml(r.c)}</td>`
+    body += `<td style="${tdBase}${rowBg}text-align:center;font-weight:700;color:#334155;">${escapeHtml(r.p)}</td>`
+    body += `<td style="${tdBase}${rowBg}text-align:right;color:#94A3B8;">${man(r.apr)}</td>`
+    body += `<td style="${tdBase}${rowBg}text-align:right;font-weight:700;color:#334155;">${man(r.may)}</td>`
+    body += `<td style="${tdBase}${rowBg}text-align:right;color:#16A34A;font-weight:700;">&#9650; +${man(r.diff)}</td>`
+    body += `<td style="${tdBase}${rowBg}text-align:right;color:#16A34A;font-weight:700;">+${r.pct.toFixed(1)}%</td>`
+    body += '</tr>'
+  })
+  return `
+              <!-- ══ 국가별 × 제품별 Top 10 — 레딧 지피티만 ══ -->
+              <tr>
+                <td style="padding-bottom:24px;">
+                  <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFFFFF;border-radius:16px;border:2px solid #E8EDF2;">
                     <tr>
-                      <td style="padding:13px 10px 10px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;">
-                        <table border="0" cellpadding="0" cellspacing="0"><tr>
-                          <td style="font-size:14px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-0.5px;">${titleText} — ${titleSuffix}</td>
-                        </tr></table>
+                      <td style="padding:13px 14px 4px;">
+                        <div style="font-size:14px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-0.5px;">${t.regionProductTop10Title}</div>
+                        <div style="font-size:11px;color:#94A3B8;font-family:${EM_FONT};padding-top:3px;">${t.regionProductTop10Sub}</div>
                       </td>
                     </tr>
-                    ${body}
-                  </table>`
+                    <tr>
+                      <td style="padding:8px 14px 14px;">
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border-collapse:collapse;">
+                          <tr>
+                            <td style="${thStyle}text-align:center;">${rankH}</td>
+                            <td style="${thStyle}text-align:center;">${regionH}</td>
+                            <td style="${thStyle}text-align:center;">${prodH}</td>
+                            <td style="${thStyle}text-align:right;">${aprH}</td>
+                            <td style="${thStyle}text-align:right;">${mayH}</td>
+                            <td style="${thStyle}text-align:right;">${diffH}</td>
+                            <td style="${thStyle}text-align:right;">${pctH}</td>
+                          </tr>
+                          ${body}
+                        </table>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>`
 }
 
-// 범프 grid 결과(grid+table)를 한 셀 html 로 합침 (TTL 섹션용) — 사이 6px 스페이서
-function _gridSectionHtml(gt) {
-  return `${gt.grid}<table border="0" cellpadding="0" cellspacing="0" width="100%"><tr><td style="height:6px;line-height:6px;font-size:1px;">&nbsp;</td></tr></table>${gt.table}`
-}
-
-// 외부채널 범프 — TTL 은 범프차트(rank-grid), 모델별은 전월 vs 당월 MoM 표 (한 카드 stacked)
-//   citTouchPointsTrend(TTL): { name: { monthLabel: value } } / citTouchPointsByLlm: { llm: { channel: { month } } }
-function touchPointsBumpCombinedHtml(citTouchPointsTrend, citTrendMonths, citTouchPointsByLlm, meta, lang = 'ko') {
-  console.warn('[touchPointsBump] 진입 — 수신 데이터', {
-    TTLtrend키수: citTouchPointsTrend ? Object.keys(citTouchPointsTrend).length : '(null)',
-    월목록: citTrendMonths,
-    모델별키: citTouchPointsByLlm ? Object.keys(citTouchPointsByLlm) : '(null)',
-  })
-  if (!citTouchPointsTrend || !citTrendMonths || !citTrendMonths.length) {
-    console.warn('[touchPointsBump] EARLY RETURN — TTL trend/월목록 없음 → 섹션 전체 미렌더', { hasTrend: !!citTouchPointsTrend, monthsLen: citTrendMonths?.length })
-    return ''
-  }
-  const t = T[lang] || T.ko
-  const chLabel = lang === 'ko' ? '채널' : 'Channel'
-  const sections = []
-  // TTL — 범프차트 (rank-grid + 실수치 테이블)
-  const ttl = _bumpGridTable(_renameTouchChannels(citTouchPointsTrend), chLabel, lang, { highlight: meta.bumpHighlight })
-  if (ttl) sections.push({ label: 'TTL', count: ttl.count, html: _gridSectionHtml(ttl) })
-  // 모델별 — 전월 vs 당월 MoM 표 (Total/All 제외, 고정 순서 ChatGPT → Perplexity → Gemini → 기타)
-  if (meta.showTouchPointsBumpChatGpt !== false && citTouchPointsByLlm && typeof citTouchPointsByLlm === 'object') {
-    const llmKeys = Object.keys(citTouchPointsByLlm).filter(k => !/^(total|all)$/i.test(k))
-    console.warn(`[touchPointsBump] 모델별 수신 키 ${Object.keys(citTouchPointsByLlm).length}개 → 필터 후 ${llmKeys.length}개`, { 전체키: Object.keys(citTouchPointsByLlm), 모델키: llmKeys })
-    llmKeys
-      .sort((a, b) => _llmFixedIdx(a) - _llmFixedIdx(b))
-      .forEach(k => {
-        const mom = _bumpMomTable(_renameTouchChannels(citTouchPointsByLlm[k]), chLabel, lang, { highlight: meta.bumpHighlight, tag: `외부채널/${k}` })
-        if (mom) sections.push({ label: _llmDisplayName(k), count: mom.count, html: mom.table })
-      })
-  } else {
-    console.warn('[touchPointsBump] 모델별 섹션 skip', { showFlag: meta.showTouchPointsBumpChatGpt, hasByLlm: !!citTouchPointsByLlm, type: typeof citTouchPointsByLlm })
-  }
-  console.warn(`[touchPointsBump] 최종 섹션 ${sections.length}개`, { 섹션라벨: sections.map(s => s.label) })
-  return _momSectionsCard(t.touchPointTitle, t.monthTrend, sections, lang)
-}
-
-// 도메인 범프 → 전월 vs 당월 MoM 표 (TTL + 모든 LLM 모델)
-//   citDomainTrend: { 'cnty|domain': { cnty, domain, type, months:{label:val} } } (TTL)
-//   citDomainByLlmTrend: { llm: { domain: { month: value } } } (모델별)
-function domainBumpSectionHtml(citDomainTrend, citDomainMonths, citDomainByLlmTrend, meta, lang = 'ko') {
-  console.warn('[domainBump] 진입 — 수신 데이터', {
-    TTLtrend키수: citDomainTrend ? Object.keys(citDomainTrend).length : '(null)',
-    월목록: citDomainMonths,
-    모델별키: citDomainByLlmTrend ? Object.keys(citDomainByLlmTrend) : '(null)',
-  })
-  if (!citDomainTrend || !citDomainMonths || !citDomainMonths.length) {
-    console.warn('[domainBump] EARLY RETURN — TTL trend/월목록 없음 → 섹션 전체 미렌더', { hasTrend: !!citDomainTrend, monthsLen: citDomainMonths?.length })
-    return ''
-  }
-  const t = T[lang] || T.ko
-  const domLabel = lang === 'ko' ? '도메인' : 'Domain'
-
-  // TTL 국가의 도메인만 사용
-  let rows = Object.entries(citDomainTrend)
-    .filter(([key]) => key.startsWith('TTL|'))
-    .map(([, val]) => ({ domain: val.domain, months: val.months || {} }))
-
-  // TTL 비면 country-aggregated 폴백 (citationTemplate citDomainBumpChartHtml 패턴)
-  if (!rows.length || !rows.some(r => Object.values(r.months).some(v => v > 0))) {
-    const agg = {}
-    Object.entries(citDomainTrend).forEach(([key, val]) => {
-      if (key.startsWith('TTL|')) return
-      const k = val.domain
-      if (!agg[k]) agg[k] = { domain: val.domain, months: {} }
-      Object.entries(val.months || {}).forEach(([m, v]) => { agg[k].months[m] = (agg[k].months[m] || 0) + (v || 0) })
-    })
-    rows = Object.values(agg)
-  }
-
-  // TTL trend → { domain: { monthLabel: value } } 정규화
-  const ttlTrend = {}
-  rows.forEach(r => { ttlTrend[r.domain] = r.months })
-
-  const sections = []
-  // TTL — 범프차트 (rank-grid + 실수치 테이블)
-  const ttl = _bumpGridTable(ttlTrend, domLabel, lang, { shortFn: emStripDomain, highlight: meta.bumpHighlight })
-  if (ttl) sections.push({ label: 'TTL', count: ttl.count, html: _gridSectionHtml(ttl) })
-  // 모델별 — 전월 vs 당월 MoM 표 (Total/All 제외) — citDomainByLlmTrend 있을 때만 (파서 v3 + LLM Model 컬럼)
-  if (citDomainByLlmTrend && typeof citDomainByLlmTrend === 'object') {
-    const llmKeys = Object.keys(citDomainByLlmTrend).filter(k => !/^(total|all)$/i.test(k))
-    console.warn(`[domainBump] 모델별 수신 키 ${Object.keys(citDomainByLlmTrend).length}개 → 필터 후 ${llmKeys.length}개`, { 전체키: Object.keys(citDomainByLlmTrend), 모델키: llmKeys })
-    llmKeys
-      .sort((a, b) => _llmFixedIdx(a) - _llmFixedIdx(b))
-      .forEach(k => {
-        const mom = _bumpMomTable(citDomainByLlmTrend[k], domLabel, lang, { shortFn: emStripDomain, highlight: meta.bumpHighlight, tag: `도메인/${k}` })
-        if (mom) sections.push({ label: _llmDisplayName(k), count: mom.count, html: mom.table })
-      })
-  } else {
-    console.warn('[domainBump] 모델별 섹션 skip', { hasByLlmTrend: !!citDomainByLlmTrend, type: typeof citDomainByLlmTrend })
-  }
-  console.warn(`[domainBump] 최종 섹션 ${sections.length}개`, { 섹션라벨: sections.map(s => s.label) })
-  return _momSectionsCard(t.citationDomainTitle, t.monthTrend, sections, lang)
-}
 
 // ─── LLM 모델별 인용비중 (100% 누적 가로 막대, 랭킹 1→topN) ────────────────────
 const EM_LLM_COLORS = ['#CF0652', '#1D4ED8', '#059669', '#D97706', '#7C3AED', '#DB2777', '#0D9488', '#EA580C', '#4F46E5', '#DC2626', '#0891B2', '#65A30D']
@@ -2638,10 +2567,8 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                               </tr></table>
                             </td>
                           </tr>` : ''}
-                          ${bumpChartsRowHtml(
-                            meta.showTouchPointsBump !== false ? touchPointsBumpCombinedHtml(citTouchPointsTrend, citTrendMonths, citTouchPointsByLlm, meta, lang) : '',
-                            meta.showDomainBump !== false ? domainBumpSectionHtml(citDomainTrend, citDomainMonths, citDomainByLlmTrend, meta, lang) : ''
-                          )}
+                          ${momByModelRowHtml(citTouchPointsByLlm, citDomainByLlmTrend, meta, lang)}
+                          ${regionProductTop10Html(lang)}
                           ${meta.showCitCnty !== false && citationCntyInnerHtml ? `
                           <!-- 국가별 Citation 도메인 -->
                           <tr>
