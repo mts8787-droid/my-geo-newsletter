@@ -1361,8 +1361,8 @@ function _bumpGridTable(trend, headerLabel, lang, opts = {}) {
   const entries = Object.entries(trend)
   if (!entries.length) return null
 
-  // 데이터 있는 월만 → 최근 4개월
-  const monthsWithData = months12.filter(m => entries.some(([, d]) => (d[m] || 0) > 0))
+  // 데이터 있는 월만 → 최근 4개월 (Feb 제외 — 사용자 요청)
+  const monthsWithData = months12.filter(m => m !== 'Feb' && entries.some(([, d]) => (d[m] || 0) > 0))
   const months = monthsWithData.slice(-TP_TREND_RECENT)
   if (!months.length) return null
 
@@ -1402,7 +1402,7 @@ function _bumpGridTable(trend, headerLabel, lang, opts = {}) {
   })
 
   // 두 테이블 공유 colgroup — 월 X좌표 정렬 (§5.16). 좌우배치라 라벨 컬럼 축소
-  const colGroup = `<colgroup><col style="width:92px;"/>${months.map(() => '<col/>').join('')}</colgroup>`
+  const colGroup = `<colgroup><col style="width:128px;"/>${months.map(() => '<col/>').join('')}</colgroup>`
   const monthThStyle = `font-size:12px;font-weight:800;color:#475569;font-family:${EM_FONT};padding:5px 1px;text-align:center;border-bottom:2px solid #E8EDF2;white-space:nowrap;`
   const cornerStyle = `font-size:11px;font-weight:700;color:#94A3B8;font-family:${EM_FONT};padding:5px 2px;text-align:left;border-bottom:2px solid #E8EDF2;white-space:nowrap;`
 
@@ -1467,7 +1467,7 @@ function _bumpMomTable(trend, headerLabel, lang, opts = {}) {
   if (!trend) { console.warn(`[_bumpMomTable] ${tag}: trend 없음 (null)`); return null }
   const entries = Object.entries(trend)
   if (!entries.length) { console.warn(`[_bumpMomTable] ${tag}: 항목 0개`); return null }
-  const monthsWithData = TP_TREND_12M.filter(m => entries.some(([, d]) => (d[m] || 0) > 0))
+  const monthsWithData = TP_TREND_12M.filter(m => m !== 'Feb' && entries.some(([, d]) => (d[m] || 0) > 0))
   if (!monthsWithData.length) {
     console.warn(`[_bumpMomTable] ${tag}: 값>0 인 월 없음 (월 키가 Jan~Dec 아님?)`, { 항목수: entries.length, 첫항목월키: Object.keys(entries[0][1] || {}) })
     return null
