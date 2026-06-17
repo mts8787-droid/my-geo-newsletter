@@ -1447,11 +1447,15 @@ function _momCell(cur, pre, lang) {
 //   trend: { itemName: { monthLabel: value } } 형태로 정규화된 객체
 //   컬럼: 라벨 | 전월 | 당월 | MoM
 function _bumpMomTable(trend, headerLabel, lang, opts = {}) {
-  if (!trend) return null
+  const tag = opts.tag || headerLabel
+  if (!trend) { console.warn(`[_bumpMomTable] ${tag}: trend 없음 (null)`); return null }
   const entries = Object.entries(trend)
-  if (!entries.length) return null
+  if (!entries.length) { console.warn(`[_bumpMomTable] ${tag}: 항목 0개`); return null }
   const monthsWithData = TP_TREND_12M.filter(m => entries.some(([, d]) => (d[m] || 0) > 0))
-  if (!monthsWithData.length) return null
+  if (!monthsWithData.length) {
+    console.warn(`[_bumpMomTable] ${tag}: 값>0 인 월 없음 (월 키가 Jan~Dec 아님?)`, { 항목수: entries.length, 첫항목월키: Object.keys(entries[0][1] || {}) })
+    return null
+  }
   const latest = monthsWithData[monthsWithData.length - 1]
   const prev = monthsWithData.length >= 2 ? monthsWithData[monthsWithData.length - 2] : null
 
@@ -1460,7 +1464,7 @@ function _bumpMomTable(trend, headerLabel, lang, opts = {}) {
     .filter(e => e.cur > 0)
     .sort((a, b) => b.cur - a.cur)
     .slice(0, TP_BUMP_MAX)
-  if (!topEntries.length) return null
+  if (!topEntries.length) { console.warn(`[_bumpMomTable] ${tag}: 당월(${latest}) 값>0 항목 없음`); return null }
 
   const shortFn = opts.shortFn || emShortName
   const highlight = Array.isArray(opts.highlight) ? opts.highlight : []
@@ -1567,14 +1571,18 @@ function touchPointsBumpCombinedHtml(citTouchPointsTrend, citTrendMonths, citTou
   if (ttl) sections.push({ label: 'TTL', count: ttl.count, html: _gridSectionHtml(ttl) })
   // 모델별 — 전월 vs 당월 MoM 표 (Total/All 제외, 고정 순서 ChatGPT → Perplexity → Gemini → 기타)
   if (meta.showTouchPointsBumpChatGpt !== false && citTouchPointsByLlm && typeof citTouchPointsByLlm === 'object') {
-    Object.keys(citTouchPointsByLlm)
-      .filter(k => !/^(total|all)$/i.test(k))
+    const llmKeys = Object.keys(citTouchPointsByLlm).filter(k => !/^(total|all)$/i.test(k))
+    console.warn(`[touchPointsBump] 모델별 수신 키 ${Object.keys(citTouchPointsByLlm).length}개 → 필터 후 ${llmKeys.length}개`, { 전체키: Object.keys(citTouchPointsByLlm), 모델키: llmKeys })
+    llmKeys
       .sort((a, b) => _llmFixedIdx(a) - _llmFixedIdx(b))
       .forEach(k => {
-        const mom = _bumpMomTable(_renameTouchChannels(citTouchPointsByLlm[k]), chLabel, lang, { highlight: meta.bumpHighlight })
+        const mom = _bumpMomTable(_renameTouchChannels(citTouchPointsByLlm[k]), chLabel, lang, { highlight: meta.bumpHighlight, tag: `외부채널/${k}` })
         if (mom) sections.push({ label: _llmDisplayName(k), count: mom.count, html: mom.table })
       })
+  } else {
+    console.warn('[touchPointsBump] 모델별 섹션 skip', { showFlag: meta.showTouchPointsBumpChatGpt, hasByLlm: !!citTouchPointsByLlm, type: typeof citTouchPointsByLlm })
   }
+  console.warn(`[touchPointsBump] 최종 섹션 ${sections.length}개`, { 섹션라벨: sections.map(s => s.label) })
   return _momSectionsCard(t.touchPointTitle, t.monthTrend, sections, lang)
 }
 
@@ -1613,14 +1621,18 @@ function domainBumpSectionHtml(citDomainTrend, citDomainMonths, citDomainByLlmTr
   if (ttl) sections.push({ label: 'TTL', count: ttl.count, html: _gridSectionHtml(ttl) })
   // 모델별 — 전월 vs 당월 MoM 표 (Total/All 제외) — citDomainByLlmTrend 있을 때만 (파서 v3 + LLM Model 컬럼)
   if (citDomainByLlmTrend && typeof citDomainByLlmTrend === 'object') {
-    Object.keys(citDomainByLlmTrend)
-      .filter(k => !/^(total|all)$/i.test(k))
+    const llmKeys = Object.keys(citDomainByLlmTrend).filter(k => !/^(total|all)$/i.test(k))
+    console.warn(`[domainBump] 모델별 수신 키 ${Object.keys(citDomainByLlmTrend).length}개 → 필터 후 ${llmKeys.length}개`, { 전체키: Object.keys(citDomainByLlmTrend), 모델키: llmKeys })
+    llmKeys
       .sort((a, b) => _llmFixedIdx(a) - _llmFixedIdx(b))
       .forEach(k => {
-        const mom = _bumpMomTable(citDomainByLlmTrend[k], domLabel, lang, { shortFn: emStripDomain, highlight: meta.bumpHighlight })
+        const mom = _bumpMomTable(citDomainByLlmTrend[k], domLabel, lang, { shortFn: emStripDomain, highlight: meta.bumpHighlight, tag: `도메인/${k}` })
         if (mom) sections.push({ label: _llmDisplayName(k), count: mom.count, html: mom.table })
       })
+  } else {
+    console.warn('[domainBump] 모델별 섹션 skip', { hasByLlmTrend: !!citDomainByLlmTrend, type: typeof citDomainByLlmTrend })
   }
+  console.warn(`[domainBump] 최종 섹션 ${sections.length}개`, { 섹션라벨: sections.map(s => s.label) })
   return _momSectionsCard(t.citationDomainTitle, t.monthTrend, sections, lang)
 }
 
