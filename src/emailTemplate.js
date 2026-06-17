@@ -1229,7 +1229,7 @@ function _dotcomChartRows(dotcom, meta, lang = 'ko', subtitle = '') {
             ${hasSam ? `<td style="vertical-align:bottom;text-align:center;padding:0 1px;">
               <table border="0" cellpadding="0" cellspacing="0" align="center">
                 <tr><td style="font-size:13px;font-weight:600;color:${samColor};font-family:${EM_FONT};text-align:center;padding-bottom:1px;">${fmtMan(sv, lang)}</td></tr>
-                ${hasMom ? momRow(sv, prevSam && prevSam[col] != null ? prevSam[col] : null) : ''}
+                ${hasMom ? momRow(sv, prevSam && prevSam[col] != null ? prevSam[col] : null, col === 'PDP' || samRose) : ''}
                 ${spacerS > 0 ? `<tr><td height="${spacerS}" style="font-size:0;">&nbsp;</td></tr>` : ''}
                 <tr><td height="${sh}" style="font-size:0;"><table border="0" cellpadding="0" cellspacing="0" align="center"><tr><td width="${bw}" height="${sh}" style="background:${samColor};border-radius:3px 3px 0 0;font-size:0;">&nbsp;</td></tr></table></td></tr>
               </table>
