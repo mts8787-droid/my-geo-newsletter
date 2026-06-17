@@ -99,7 +99,7 @@ export const INIT_META  = {
   showTotal: true, showProducts: true, showCnty: true, showCitations: true,
   showCitDomain: true, showCitCnty: true, showCitPrd: true,
   citationTopN: 10, citDomainTopN: 10,
-  showDotcom: true,
+  showDotcom: true, showDotcomChatGpt: true,
   showTouchPointsBump: true,
   bumpHighlight: [],
   showLlmShare: true, llmShareTopN: 10,

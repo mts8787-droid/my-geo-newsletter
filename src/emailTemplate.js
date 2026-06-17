@@ -1094,13 +1094,13 @@ const DC_SAM_COLS    = ['PLP','Microsites','PDP','Newsroom','Support','Buying-gu
 
 function fmtK(n) { return n >= 1000 ? Math.round(n / 1000) + 'K' : fmt(n) }
 
-function dotcomSectionHtml(dotcom, meta, lang = 'ko', opts = {}) {
-  if (!dotcom || !dotcom.lg) return ''
-  const t = T[lang] || T.ko
+// 닷컴 차트 본문 행(소제목 + 막대 그래프) — 카드 헤더/인사이트는 호출자(dotcomCombinedSectionHtml)가 1회만 렌더.
+// subtitle 로 같은 카드 안에 여러 차트(전체 / Chat-GPT 모델)를 소제목 구분해 누적 배치.
+function _dotcomChartRows(dotcom, meta, lang = 'ko', subtitle = '') {
+  if (!dotcom || !dotcom.lg) return null
   const lg = dotcom.lg, sam = dotcom.samsung || {}
   const allCols = ['TTL', ...DC_DETAIL_COLS]
   const cols = allCols.filter(c => (lg[c] || 0) > 0 || (sam[c] || 0) > 0)
-  const maxVal = Math.max(...cols.map(c => Math.max(lg[c] || 0, sam[c] || 0)), 1)
   const BAR_MAX = 80
   const bw = 36
 
@@ -1204,6 +1204,14 @@ function dotcomSectionHtml(dotcom, meta, lang = 'ko', opts = {}) {
     </td>`
   }
 
+  // 소제목 행 (전체 / Chat-GPT 구분) — 한 카드 안에서 차트 그룹 구분
+  const subtitleRow = subtitle ? `<tr><td style="padding:12px 12px 0;">
+    <table border="0" cellpadding="0" cellspacing="0"><tr>
+      <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
+      <td style="padding-left:7px;font-size:13px;font-weight:700;color:#475569;font-family:${EM_FONT};letter-spacing:${lang === 'en' ? '-0.5px' : '-0.3px'};">${subtitle}</td>
+    </tr></table>
+  </td></tr>` : ''
+
   // TTL + 세로 실선 + 페이지별 — 한 행에 배치
   const chartHtml = `<tr><td style="padding:10px 6px 14px;">
     <table border="0" cellpadding="0" cellspacing="0" width="100%"><tr>
@@ -1219,54 +1227,21 @@ function dotcomSectionHtml(dotcom, meta, lang = 'ko', opts = {}) {
     </tr></table>
   </td></tr>`
 
-  return `
-              <!-- ══ 닷컴 Citation (경쟁사대비) ══ -->
-              <tr>
-                <td style="padding-bottom:28px;">
-                  <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFFFFF;border-radius:16px;border:2px solid #E8EDF2;">
-                    <tr>
-                      <td style="padding:16px 12px 12px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;">
-                        <table border="0" cellpadding="0" cellspacing="0" width="100%"><tr>
-                          <td style="vertical-align:middle;">
-                            <table border="0" cellpadding="0" cellspacing="0"><tr>
-                              <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
-                              <td style="padding-left:8px;font-size:16px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${opts.titleOverride || t.dotcomTitle}</td>
-                            </tr></table>
-                          </td>
-                          <td align="right" style="vertical-align:middle;">
-                            <table border="0" cellpadding="0" cellspacing="0" align="right"><tr>
-                              <td width="10" height="10" style="background:${EM_RED};border-radius:2px;font-size:0;">&nbsp;</td>
-                              <td style="padding:0 6px 0 3px;font-size:12px;color:#94A3B8;font-family:${EM_FONT};">LG</td>
-                              <td width="10" height="10" style="background:#94A3B8;border-radius:2px;font-size:0;">&nbsp;</td>
-                              <td style="padding-left:3px;font-size:12px;color:#94A3B8;font-family:${EM_FONT};">SS</td>
-                              ${hasMom ? `<td style="padding-left:8px;font-size:12px;color:#94A3B8;font-family:${EM_FONT};">( ):MoM</td>` : ''}
-                            </tr></table>
-                          </td>
-                        </tr></table>
-                      </td>
-                    </tr>
-                    ${opts.skipInsight ? '' : insightBlockHtml(meta.dotcomInsight, meta.showDotcomInsight, meta.dotcomHowToRead, meta.showDotcomHowToRead, lang)}
-                    ${chartHtml}
-                  </table>
-                </td>
-              </tr>`
+  return { rows: subtitleRow + chartHtml, hasMom }
 }
 
-// GPT5.5 모델만 필터한 닷컴 Citation — 기존 페이지타입별 그래프와 동일 형식 + MoM.
-// dotcomByLlm[model] 은 byMonth 가 없고 dotcomTrend(TTL-only) 만 가짐 → byMonth 로 변환 후
-// dotcomSectionHtml 재사용 (citation/citationTemplate.js 변환 패턴 미러).
-function dotcomLlmSectionHtml(dotcomByLlm, meta, lang = 'ko') {
-  if (!dotcomByLlm || typeof dotcomByLlm !== 'object') return _logWarn('dotcomLlmSectionHtml', 'dotcomByLlm 없음 (null/미동기화)', {}), ''
-  // 모델 키 동적 탐색 (시트 라벨 자유) — Total/All 제외 후 search-gpt 우선.
-  // 시트 라벨이 정규식과 안 맞아도 그래프가 사라지지 않도록, 매칭 실패 시
-  // 첫 비-Total 모델로 폴백(제목에 실제 라벨 노출 → 사용자가 시트 라벨 확인 가능).
+// dotcomByLlm[search-gpt] 의 dotcomTrend(TTL-only) → byMonth 변환 후 _dotcomChartRows 재사용.
+// 카드 헤더 없이 본문 행({rows,hasMom})만 반환 — 닷컴 카드 안에 'Chat-GPT' 소제목으로 합류.
+function _dotcomChatGptChartRows(dotcomByLlm, meta, lang = 'ko') {
+  if (!dotcomByLlm || typeof dotcomByLlm !== 'object') return _logWarn('_dotcomChatGptChartRows', 'dotcomByLlm 없음 (null/미동기화)', {}), null
+  // 모델 키 동적 탐색 (시트 라벨 자유) — Total/All 제외 후 search-gpt 우선. 매칭 실패 시 첫 비-Total 모델 폴백.
   const keys = Object.keys(dotcomByLlm).filter(k => !/^(total|all)$/i.test(k))
-  if (!keys.length) return _logWarn('dotcomLlmSectionHtml', '비-Total 모델 키 없음', { keys: Object.keys(dotcomByLlm) }), ''
+  if (!keys.length) return _logWarn('_dotcomChatGptChartRows', '비-Total 모델 키 없음', { keys: Object.keys(dotcomByLlm) }), null
   const searchKey = keys.find(k => /search.*gpt|searchgpt/i.test(k)) || keys.find(k => /search/i.test(k))
   const modelKey = searchKey || keys[0]
-  if (!searchKey) _logWarn('dotcomLlmSectionHtml', 'search-gpt 라벨 미매칭 → 첫 모델로 폴백', { keys, used: modelKey })
+  if (!searchKey) _logWarn('_dotcomChatGptChartRows', 'search-gpt 라벨 미매칭 → 첫 모델로 폴백', { keys, used: modelKey })
   const picked = dotcomByLlm[modelKey]
-  if (!picked) return _logWarn('dotcomLlmSectionHtml', '모델 dotcom 데이터 없음', { modelKey }), ''
+  if (!picked) return _logWarn('_dotcomChatGptChartRows', '모델 dotcom 데이터 없음', { modelKey }), null
 
   // dotcomTrend { pageType: { month: {lg, samsung} } } → byMonth { month: { lg:{pageType}, samsung:{pageType} } }
   const MONTHS_DC = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
@@ -1288,11 +1263,54 @@ function dotcomLlmSectionHtml(dotcomByLlm, meta, lang = 'ko') {
   }
   const barLg = latestM ? byMonth[latestM].lg : (picked.lg || {})
   const barSam = latestM ? byMonth[latestM].samsung : (picked.samsung || {})
-  if (!Object.keys(barLg).length) return _logWarn('dotcomLlmSectionHtml', '모델 막대 데이터 없음', { modelKey, latestM, trendMonths: Object.keys(byMonth) }), ''
+  if (!Object.keys(barLg).length) return _logWarn('_dotcomChatGptChartRows', '모델 막대 데이터 없음', { modelKey, latestM, trendMonths: Object.keys(byMonth) }), null
 
   const modelDotcom = { lg: barLg, samsung: barSam, byMonth, byCntyByMonth: {} }
-  const title = lang === 'en' ? `Dotcom Citation — ${modelKey} only` : `닷컴 Citation — ${modelKey} 모델`
-  return dotcomSectionHtml(modelDotcom, meta, lang, { titleOverride: title, skipInsight: true })
+  return _dotcomChartRows(modelDotcom, meta, lang, 'Chat-GPT')
+}
+
+// 닷컴 Citation 통합 카드 — 전체(Total) + Chat-GPT(search-gpt) 를 한 카드에 소제목으로 합침.
+// Chat-GPT 소절은 meta.showDotcomChatGpt 토글로 ON/OFF.
+function dotcomCombinedSectionHtml(dotcom, dotcomByLlm, meta, lang = 'ko') {
+  const t = T[lang] || T.ko
+  const mainSubtitle = lang === 'en' ? 'Total — Geminai, Chat-GPT, Perplexcity' : 'Total - Geminai, Chat-GPT, Perplexcity'
+  const main = _dotcomChartRows(dotcom, meta, lang, mainSubtitle)
+  if (!main) return ''
+  const chat = meta.showDotcomChatGpt !== false ? _dotcomChatGptChartRows(dotcomByLlm, meta, lang) : null
+  const hasMom = main.hasMom || (chat && chat.hasMom)
+
+  return `
+              <!-- ══ 닷컴 Citation (경쟁사대비) ══ -->
+              <tr>
+                <td style="padding-bottom:28px;">
+                  <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFFFFF;border-radius:16px;border:2px solid #E8EDF2;">
+                    <tr>
+                      <td style="padding:16px 12px 12px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;">
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%"><tr>
+                          <td style="vertical-align:middle;">
+                            <table border="0" cellpadding="0" cellspacing="0"><tr>
+                              <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
+                              <td style="padding-left:8px;font-size:16px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${t.dotcomTitle}</td>
+                            </tr></table>
+                          </td>
+                          <td align="right" style="vertical-align:middle;">
+                            <table border="0" cellpadding="0" cellspacing="0" align="right"><tr>
+                              <td width="10" height="10" style="background:${EM_RED};border-radius:2px;font-size:0;">&nbsp;</td>
+                              <td style="padding:0 6px 0 3px;font-size:12px;color:#94A3B8;font-family:${EM_FONT};">LG</td>
+                              <td width="10" height="10" style="background:#94A3B8;border-radius:2px;font-size:0;">&nbsp;</td>
+                              <td style="padding-left:3px;font-size:12px;color:#94A3B8;font-family:${EM_FONT};">SS</td>
+                              ${hasMom ? `<td style="padding-left:8px;font-size:12px;color:#94A3B8;font-family:${EM_FONT};">( ):MoM</td>` : ''}
+                            </tr></table>
+                          </td>
+                        </tr></table>
+                      </td>
+                    </tr>
+                    ${insightBlockHtml(meta.dotcomInsight, meta.showDotcomInsight, meta.dotcomHowToRead, meta.showDotcomHowToRead, lang)}
+                    ${main.rows}
+                    ${chat ? chat.rows : ''}
+                  </table>
+                </td>
+              </tr>`
 }
 
 // ─── 범프차트 (월간 트렌드) — 이메일/Outlook 호환 ──────────────────────────────
@@ -2348,8 +2366,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                 </td>
               </tr>` : ''}
 
-              ${meta.showDotcom !== false ? dotcomSectionHtml(dotcom, meta, lang) : ''}
-              ${meta.showDotcom !== false ? dotcomLlmSectionHtml(dotcomByLlm, meta, lang) : ''}
+              ${meta.showDotcom !== false ? dotcomCombinedSectionHtml(dotcom, dotcomByLlm, meta, lang) : ''}
 
               ${meta.showTodo ? `
               <!-- ══ Action Plan (3영역: 노티스 + 인사이트 + 핵심과제 진척) ══ -->

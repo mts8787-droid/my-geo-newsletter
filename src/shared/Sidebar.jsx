@@ -1109,6 +1109,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
             { key: 'showTouchPointsBump', label: '외부채널 범프차트' },
             { key: 'showLlmShare',  label: '모델별 인용비중' },
             { key: 'showDotcom',    label: '닷컴' },
+            { key: 'showDotcomChatGpt', label: '닷컴 Chat-GPT' },
             { key: 'showTodo',      label: 'Action Plan' },
           ].map(({ key, label }) => (
             <button key={key} onClick={() => setMeta(m => ({ ...m, [key]: !m[key] }))}
