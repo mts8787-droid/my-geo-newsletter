@@ -155,8 +155,8 @@ const T = {
     citScopeAll: '전체 채널',
     citScopeCommunity: '커뮤니티 채널',
     citScopeReddit: 'Reddit',
-    regionProductTop10Title: '국가별 × 제품별 Top 10 — 레딧 지피티만',
-    regionProductTop10Sub: '5월 Reddit 인용수 기준 상위 10개 조합 (Global 및 TTL 제외, ChatGPT 전용)',
+    regionProductTop10Title: 'Reddit 국가별 × 제품별 Top 10',
+    regionProductTop10Sub: '(Chat-GPT 기준)',
     citationCntyTitle: '국가별 Citation 도메인',
     touchPointTitle: '외부접점채널 Citation',
     citationLegend: 'Citation Score 건수 (비중)',
@@ -194,8 +194,8 @@ const T = {
     citScopeAll: 'All Channels',
     citScopeCommunity: 'Community Channels',
     citScopeReddit: 'Reddit',
-    regionProductTop10Title: 'Region × Product Top 10 — Reddit (ChatGPT)',
-    regionProductTop10Sub: 'Top 10 combinations by May Reddit citations (excl. Global & TTL, ChatGPT only)',
+    regionProductTop10Title: 'Reddit Region × Product Top 10',
+    regionProductTop10Sub: '(Chat-GPT)',
     citationCntyTitle: 'Citation Domain by Country',
     touchPointTitle: 'Touch Points Citation',
     citationLegend: 'Citation Score Count (Ratio)',
@@ -1602,9 +1602,8 @@ function regionProductTop10Html(lang = 'ko') {
                       <td style="padding-bottom:24px;">
                         <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFFFFF;border-radius:16px;border:2px solid #E8EDF2;">
                           <tr>
-                            <td style="padding:13px 14px 4px;">
-                              <div style="font-size:14px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-0.5px;">${t.regionProductTop10Title}</div>
-                              <div style="font-size:11px;color:#94A3B8;font-family:${EM_FONT};padding-top:3px;">${t.regionProductTop10Sub}</div>
+                            <td style="padding:13px 14px 8px;">
+                              <div style="font-size:14px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-0.5px;">${t.regionProductTop10Title} <span style="font-size:11px;font-weight:600;color:#94A3B8;">${t.regionProductTop10Sub}</span></div>
                             </td>
                           </tr>
                           <tr>
