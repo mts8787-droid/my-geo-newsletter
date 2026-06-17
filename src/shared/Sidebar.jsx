@@ -10,6 +10,28 @@ import { generateDashboardHTML } from '../dashboard/dashboardTemplate.js'
 import { generateProductInsight, generateProductHowToRead, generateCntyHowToRead } from './insights.js'
 import SheetDownload from './SheetDownload.jsx'
 
+// 두 언어(KO/EN) 이메일 HTML 을 하나의 문서로 이어붙임 — KO 본문 → 구분선 → EN 본문.
+// 각 generateHTML 은 완전한 HTML 문서를 반환하므로, KO 문서의 <body> 안에 EN 본문 내용만 삽입한다.
+function mergeBilingualEmail(htmlKo, htmlEn) {
+  const bodyRe = /<body[^>]*>([\s\S]*)<\/body>/i
+  const enBody = (htmlEn.match(bodyRe) || [])[1]
+  if (!enBody) {
+    console.warn('[mergeBilingualEmail] EN <body> 추출 실패 — KO 단독 발송')
+    return htmlKo
+  }
+  const divider = `
+  <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin:0;background:#F1F5F9;">
+    <tr><td align="center" style="padding:28px 16px;">
+      <div style="border-top:2px dashed #CBD5E1;max-width:600px;margin:0 auto;padding-top:18px;font-family:'LGEIText','LG Smart','Arial Narrow',Arial,sans-serif;font-size:12px;font-weight:700;color:#64748B;letter-spacing:2px;">&#9660;&nbsp;&nbsp;ENGLISH VERSION&nbsp;&nbsp;&#9660;</div>
+    </td></tr>
+  </table>`
+  if (!/<\/body>/i.test(htmlKo)) {
+    console.warn('[mergeBilingualEmail] KO </body> 미발견 — 단순 연결')
+    return htmlKo + divider + enBody
+  }
+  return htmlKo.replace(/<\/body>/i, `${divider}${enBody}</body>`)
+}
+
 export default
 function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, total, setTotal, products, setProducts, citations, setCitations, dotcom, setDotcom, productsCnty, setProductsCnty, citationsCnty, setCitationsCnty, resolved, previewLang, setPreviewLang, snapshots, setSnapshots, setWeeklyLabels, setWeeklyAll, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty, generateHTML, publishEndpoint, setMonthlyVis, onSyncExtra, categoryStats, extra, monthlyVis, progressMonth, setProgressMonth, progressDataMonth }) {
   // 최신 데이터 ref — AI 생성/게시 시 stale closure 방지
@@ -346,8 +368,13 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
     setMailSent('sending')
     try {
       const latest = getLatestData()
-      const html    = generateHTML(meta, latest.total, latest.products, latest.citations, latest.dotcom, previewLang, latest.productsCnty, latest.citationsCnty, { weeklyLabels, categoryStats, unlaunchedMap: extra?.unlaunchedMap || {}, productCardVersion: meta.productCardVersion || 'v1', trendMode: meta.trendMode || 'weekly', citTouchPointsTrend: extra?.citTouchPointsTrend || null, citTrendMonths: extra?.citTrendMonths || [], citDomainTrend: extra?.citDomainTrend || null, citDomainMonths: extra?.citDomainMonths || [], citTouchPointsByLlm: extra?.citTouchPointsByLlm || null, citDomainByLlm: extra?.citDomainByLlm || null, citDomainByLlmTrend: extra?.citDomainByLlmTrend || null })
-      const subject = `[LG GEO] ${meta.title} · ${meta.period}`
+      const resolvedKo = resolveDataForLang(latest.products, latest.productsCnty, latest.citations, latest.citationsCnty, 'ko')
+      const resolvedEn = resolveDataForLang(latest.products, latest.productsCnty, latest.citations, latest.citationsCnty, 'en')
+      const sharedOpts = { weeklyLabels, categoryStats, unlaunchedMap: extra?.unlaunchedMap || {}, productCardVersion: meta.productCardVersion || 'v1', trendMode: meta.trendMode || 'weekly', citTouchPointsTrend: extra?.citTouchPointsTrend || null, citTrendMonths: extra?.citTrendMonths || [], citDomainTrend: extra?.citDomainTrend || null, citDomainMonths: extra?.citDomainMonths || [], citTouchPointsByLlm: extra?.citTouchPointsByLlm || null, citDomainByLlm: extra?.citDomainByLlm || null, citDomainByLlmTrend: extra?.citDomainByLlmTrend || null }
+      const htmlKo = generateHTML(metaKo, latest.total, resolvedKo.products, resolvedKo.citations, latest.dotcom, 'ko', resolvedKo.productsCnty, resolvedKo.citationsCnty, sharedOpts)
+      const htmlEn = generateHTML(metaEn, latest.total, resolvedEn.products, resolvedEn.citations, latest.dotcom, 'en', resolvedEn.productsCnty, resolvedEn.citationsCnty, sharedOpts)
+      const html    = mergeBilingualEmail(htmlKo, htmlEn)
+      const subject = `[LG GEO] ${metaKo.title} · ${metaKo.period} (KO/EN)`
       const res = await fetch('/api/send-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
@@ -1918,7 +1945,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
           {mailSent === 'sending' ? <><RefreshCw size={12} style={{ animation: 'spin 1s linear infinite' }} /> 발송 중...</>
             : mailSent === 'ok' ? <><Check size={12} /> 발송 완료!</>
             : mailSent === 'error' ? <><Send size={12} /> 발송 실패 — 다시 시도</>
-            : <><Send size={12} /> 메일 발송</>}
+            : <><Send size={12} /> 메일 발송 (KO + EN)</>}
         </button>
         </>)}
         </>)}
