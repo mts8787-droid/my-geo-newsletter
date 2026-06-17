@@ -1105,6 +1105,9 @@ function _dotcomChartRows(dotcom, meta, lang = 'ko', subtitle = '') {
   const cols = allCols.filter(c => (lg[c] || 0) > 0 || (sam[c] || 0) > 0)
   const BAR_MAX = 80
   const bw = 36
+  // PLP/Support 강조 — 그 외 LG 막대/값은 채도 낮춘 muted red 로 약화
+  const EM_RED_MUTED = '#B5728C'
+  const isEmphCol = col => col === 'PLP' || col === 'Support'
 
   const ttlCol = cols.includes('TTL') ? 'TTL' : null
   const detailCols = cols.filter(c => c !== 'TTL')
@@ -1158,11 +1161,17 @@ function _dotcomChartRows(dotcom, meta, lang = 'ko', subtitle = '') {
     }
   }
   const hasMom = !!prevLg
-  function momRow(cur, pv) {
+  // MoM: 색상 전부 제거(회색). emphBox=true (PLP/Support 의 LG MoM) 일 때만 붉은/초록 테두리 박스 강조.
+  function momRow(cur, pv, emphBox = false) {
     if (pv == null) return ''
     const d = cur - pv
-    const c = d > 0 ? '#15803D' : d < 0 ? '#BE123C' : '#94A3B8'
-    return `<tr><td style="font-size:10px;font-weight:600;color:${c};font-family:${EM_FONT};text-align:center;padding-bottom:1px;white-space:nowrap;">(${d > 0 ? '+' : ''}${fmtMan(d, lang)})</td></tr>`
+    const txt = `(${d > 0 ? '+' : ''}${fmtMan(d, lang)})`
+    if (emphBox && d !== 0) {
+      const bc = d > 0 ? '#16A34A' : '#DC2626'
+      const bg = d > 0 ? '#ECFDF5' : '#FFF1F2'
+      return `<tr><td style="font-size:10px;font-weight:700;color:#475569;font-family:${EM_FONT};text-align:center;padding-bottom:1px;white-space:nowrap;"><span style="display:inline-block;border:1.5px solid ${bc};background:${bg};border-radius:4px;padding:0 4px;">${txt}</span></td></tr>`
+    }
+    return `<tr><td style="font-size:10px;font-weight:600;color:#94A3B8;font-family:${EM_FONT};text-align:center;padding-bottom:1px;white-space:nowrap;">${txt}</td></tr>`
   }
 
   function makeBarCol(col, localMax) {
@@ -1176,6 +1185,8 @@ function _dotcomChartRows(dotcom, meta, lang = 'ko', subtitle = '') {
     const gapColor = diff >= 0 ? '#15803D' : '#BE123C'
     const gapTxt = diff > 0 ? `+${fmtMan(diff, lang)}` : diff < 0 ? `-${fmtMan(Math.abs(diff), lang)}` : '0'
     const isTTL = col === 'TTL'
+    const emph = isEmphCol(col)
+    const lgColor = emph ? EM_RED : EM_RED_MUTED
 
     return `<td style="vertical-align:bottom;text-align:center;padding:0 3px;">
       <table border="0" cellpadding="0" cellspacing="0" align="center" style="margin:0 auto;width:100%;">
@@ -1183,10 +1194,10 @@ function _dotcomChartRows(dotcom, meta, lang = 'ko', subtitle = '') {
           <table border="0" cellpadding="0" cellspacing="0" align="center"><tr>
             <td style="vertical-align:bottom;text-align:center;padding:0 1px;">
               <table border="0" cellpadding="0" cellspacing="0" align="center">
-                <tr><td style="font-size:13px;font-weight:700;color:${EM_RED};font-family:${EM_FONT};text-align:center;padding-bottom:1px;">${fmtMan(lv, lang)}</td></tr>
-                ${hasMom ? momRow(lv, prevLg[col] != null ? prevLg[col] : null) : ''}
+                <tr><td style="font-size:13px;font-weight:700;color:${lgColor};font-family:${EM_FONT};text-align:center;padding-bottom:1px;">${fmtMan(lv, lang)}</td></tr>
+                ${hasMom ? momRow(lv, prevLg[col] != null ? prevLg[col] : null, emph) : ''}
                 ${spacerL > 0 ? `<tr><td height="${spacerL}" style="font-size:0;">&nbsp;</td></tr>` : ''}
-                <tr><td height="${lh}" style="font-size:0;"><table border="0" cellpadding="0" cellspacing="0" align="center"><tr><td width="${bw}" height="${lh}" style="background:${EM_RED};border-radius:3px 3px 0 0;font-size:0;">&nbsp;</td></tr></table></td></tr>
+                <tr><td height="${lh}" style="font-size:0;"><table border="0" cellpadding="0" cellspacing="0" align="center"><tr><td width="${bw}" height="${lh}" style="background:${lgColor};border-radius:3px 3px 0 0;font-size:0;">&nbsp;</td></tr></table></td></tr>
               </table>
             </td>
             ${hasSam ? `<td style="vertical-align:bottom;text-align:center;padding:0 1px;">
@@ -1442,7 +1453,7 @@ function _momCell(cur, pre, lang) {
   const color = up ? '#16A34A' : '#DC2626'
   const sign = up ? '+' : ''
   const pct = pre > 0 ? Math.round((diff / pre) * 100) : 0
-  return `<span style="color:${color};font-weight:700;">${arrow} ${sign}${fmtMan(diff, lang)}</span> <span style="color:#94A3B8;font-size:8px;">(${sign}${pct}%)</span>`
+  return `<span style="color:${color};font-weight:700;">${arrow} ${sign}${fmtMan(diff, lang)}</span> <span style="color:#94A3B8;font-size:11px;">(${sign}${pct}%)</span>`
 }
 
 // 전월 vs 당월 2개월 MoM 비교 표 (Top 10, 당월값 내림차순). 데이터 없으면 null.
@@ -1475,17 +1486,19 @@ function _bumpMomTable(trend, headerLabel, lang, opts = {}) {
     : '#94A3B8'
 
   const colGroup = `<colgroup><col/><col style="width:42px;"/><col style="width:42px;"/><col style="width:104px;"/></colgroup>`
-  const thStyle = `font-size:9px;font-weight:700;color:#64748B;font-family:${EM_FONT};padding:5px 2px;text-align:center;border-bottom:2px solid #E8EDF2;white-space:nowrap;`
-  const tdBase = `font-size:9px;font-family:${EM_FONT};padding:4px 2px;border-bottom:1px solid #F1F5F9;`
+  const thStyle = `font-size:11px;font-weight:700;color:#64748B;font-family:${EM_FONT};padding:5px 2px;text-align:center;border-bottom:2px solid #E8EDF2;white-space:nowrap;`
+  const tdBase = `font-size:11px;font-family:${EM_FONT};padding:4px 2px;border-bottom:1px solid #F1F5F9;`
   let table = `<table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;border-collapse:collapse;">${colGroup}`
   table += `<tr><td style="${thStyle}text-align:left;">${headerLabel}</td><td style="${thStyle}">${prev || '&#8211;'}</td><td style="${thStyle}">${latest}</td><td style="${thStyle}">MoM</td></tr>`
   topEntries.forEach(e => {
     const c = dotColor(e.name)
+    const isHl = highlight.includes(e.name)
+    const rowBg = isHl ? 'background:#ECFDF5;' : ''
     table += '<tr>'
-    table += `<td style="${tdBase}font-weight:700;color:#334155;white-space:normal;word-break:break-word;line-height:1.25;"><span style="display:inline-block;width:6px;height:6px;border-radius:2px;background:${c};">&nbsp;</span>&nbsp;${shortFn(e.name)}</td>`
-    table += `<td style="${tdBase}text-align:center;white-space:nowrap;color:#94A3B8;">${prev ? fmtMan(e.pre, lang) : '&#8211;'}</td>`
-    table += `<td style="${tdBase}text-align:center;white-space:nowrap;font-weight:700;color:#334155;">${fmtMan(e.cur, lang)}</td>`
-    table += `<td style="${tdBase}text-align:center;white-space:nowrap;">${_momCell(e.cur, prev ? e.pre : null, lang)}</td>`
+    table += `<td style="${tdBase}${rowBg}font-weight:700;color:#334155;white-space:normal;word-break:break-word;line-height:1.25;"><span style="display:inline-block;width:6px;height:6px;border-radius:2px;background:${c};">&nbsp;</span>&nbsp;${shortFn(e.name)}</td>`
+    table += `<td style="${tdBase}${rowBg}text-align:center;white-space:nowrap;color:#94A3B8;">${prev ? fmtMan(e.pre, lang) : '&#8211;'}</td>`
+    table += `<td style="${tdBase}${rowBg}text-align:center;white-space:nowrap;font-weight:700;color:#334155;">${fmtMan(e.cur, lang)}</td>`
+    table += `<td style="${tdBase}${rowBg}text-align:center;white-space:nowrap;">${_momCell(e.cur, prev ? e.pre : null, lang)}</td>`
     table += '</tr>'
   })
   table += '</table>'
