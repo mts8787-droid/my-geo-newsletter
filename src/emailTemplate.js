@@ -154,7 +154,7 @@ const T = {
     citCountVBarTitle: '전월 대비 모델별 Citation 인용수',
     citScopeAll: '전체 채널',
     citScopeCommunity: '커뮤니티 채널',
-    citScopeReddit: '레딧 도메인',
+    citScopeReddit: 'Reddit',
     regionProductTop10Title: '국가별 × 제품별 Top 10 — 레딧 지피티만',
     regionProductTop10Sub: '5월 Reddit 인용수 기준 상위 10개 조합 (Global 및 TTL 제외, ChatGPT 전용)',
     citationCntyTitle: '국가별 Citation 도메인',
@@ -193,7 +193,7 @@ const T = {
     citCountVBarTitle: 'Citation Count by Model (MoM)',
     citScopeAll: 'All Channels',
     citScopeCommunity: 'Community Channels',
-    citScopeReddit: 'Reddit Domain',
+    citScopeReddit: 'Reddit',
     regionProductTop10Title: 'Region × Product Top 10 — Reddit (ChatGPT)',
     regionProductTop10Sub: 'Top 10 combinations by May Reddit citations (excl. Global & TTL, ChatGPT only)',
     citationCntyTitle: 'Citation Domain by Country',
@@ -1576,16 +1576,24 @@ function regionProductTop10Html(lang = 'ko') {
   const thStyle = `font-size:11px;font-weight:700;color:#64748B;font-family:${EM_FONT};padding:6px 4px;border-bottom:2px solid #E8EDF2;white-space:nowrap;`
   const tdBase = `font-size:11px;font-family:${EM_FONT};padding:5px 4px;border-bottom:1px solid #F1F5F9;white-space:nowrap;`
   let body = ''
-  REGION_PRODUCT_TOP10.forEach((r, i) => {
-    const rowBg = i % 2 === 0 ? 'background:#FAFBFC;' : ''
+  REGION_PRODUCT_TOP10.slice(0, 10).forEach((r, i) => {
+    const isTop5 = i < 5
+    const rowBg = isTop5 ? 'background:#FFF1F5;' : (i % 2 === 0 ? 'background:#FAFBFC;' : '')
+    const mainColor = isTop5 ? '#1A1A1A' : '#334155'
+    const subColor = isTop5 ? '#475569' : '#94A3B8'
+    const fw = isTop5 ? '800' : '700'
+    const cellBase = isTop5 ? `${tdBase}border-bottom:1px solid #FBD0DC;` : tdBase
+    const rankCell = isTop5
+      ? `<td style="${cellBase}${rowBg}text-align:center;"><span style="display:inline-block;min-width:18px;padding:1px 5px;background:${EM_RED};color:#FFFFFF;border-radius:9px;font-weight:800;">${i + 1}</span></td>`
+      : `<td style="${cellBase}${rowBg}text-align:center;color:#94A3B8;font-weight:700;">${i + 1}</td>`
     body += '<tr>'
-    body += `<td style="${tdBase}${rowBg}text-align:center;color:#94A3B8;font-weight:700;">${i + 1}</td>`
-    body += `<td style="${tdBase}${rowBg}text-align:center;font-weight:700;color:#334155;">${escapeHtml(r.c)}</td>`
-    body += `<td style="${tdBase}${rowBg}text-align:center;font-weight:700;color:#334155;">${escapeHtml(r.p)}</td>`
-    body += `<td style="${tdBase}${rowBg}text-align:right;color:#94A3B8;">${man(r.apr)}</td>`
-    body += `<td style="${tdBase}${rowBg}text-align:right;font-weight:700;color:#334155;">${man(r.may)}</td>`
-    body += `<td style="${tdBase}${rowBg}text-align:right;color:#16A34A;font-weight:700;">&#9650; +${man(r.diff)}</td>`
-    body += `<td style="${tdBase}${rowBg}text-align:right;color:#16A34A;font-weight:700;">+${r.pct.toFixed(1)}%</td>`
+    body += rankCell
+    body += `<td style="${cellBase}${rowBg}text-align:center;font-weight:${fw};color:${mainColor};">${escapeHtml(r.c)}</td>`
+    body += `<td style="${cellBase}${rowBg}text-align:center;font-weight:${fw};color:${mainColor};">${escapeHtml(r.p)}</td>`
+    body += `<td style="${cellBase}${rowBg}text-align:right;color:${subColor};">${man(r.apr)}</td>`
+    body += `<td style="${cellBase}${rowBg}text-align:right;font-weight:${fw};color:${mainColor};">${man(r.may)}</td>`
+    body += `<td style="${cellBase}${rowBg}text-align:right;color:#16A34A;font-weight:${fw};">&#9650; +${man(r.diff)}</td>`
+    body += `<td style="${cellBase}${rowBg}text-align:right;color:#16A34A;font-weight:${fw};">+${r.pct.toFixed(1)}%</td>`
     body += '</tr>'
   })
   return `
