@@ -1125,6 +1125,8 @@ function _dotcomChartRows(dotcom, meta, lang = 'ko', subtitle = '') {
   const bw = 36
   // 강조 컬럼(TTL/PLP/Support)만 원래 red, 그 외 LG 막대/값은 회색
   const EM_GRAY = '#94A3B8'
+  // 삼성 강조색(푸른색) — PDP 컬럼 + 삼성 값이 전월 대비 상승한 컬럼
+  const EM_BLUE = '#2563EB'
   const isEmphCol = col => col === 'TTL' || col === 'PLP' || col === 'Support'
   // MoM 박스 강조 — TTL/PLP/Support
   const isEmphBoxCol = col => col === 'TTL' || col === 'PLP' || col === 'Support'
@@ -1207,6 +1209,10 @@ function _dotcomChartRows(dotcom, meta, lang = 'ko', subtitle = '') {
     const isTTL = col === 'TTL'
     const emph = isEmphCol(col)
     const lgColor = emph ? EM_RED : EM_GRAY
+    // 삼성 강조: PDP 컬럼 또는 삼성 값이 전월 대비 상승한 컬럼 → 푸른색
+    const samPrev = (hasMom && prevSam && prevSam[col] != null) ? prevSam[col] : null
+    const samRose = samPrev != null && (sv - samPrev) > 0
+    const samColor = (col === 'PDP' || samRose) ? EM_BLUE : EM_GRAY
 
     return `<td style="vertical-align:bottom;text-align:center;padding:0 3px;">
       <table border="0" cellpadding="0" cellspacing="0" align="center" style="margin:0 auto;width:100%;">
@@ -1222,10 +1228,10 @@ function _dotcomChartRows(dotcom, meta, lang = 'ko', subtitle = '') {
             </td>
             ${hasSam ? `<td style="vertical-align:bottom;text-align:center;padding:0 1px;">
               <table border="0" cellpadding="0" cellspacing="0" align="center">
-                <tr><td style="font-size:13px;font-weight:600;color:#94A3B8;font-family:${EM_FONT};text-align:center;padding-bottom:1px;">${fmtMan(sv, lang)}</td></tr>
+                <tr><td style="font-size:13px;font-weight:600;color:${samColor};font-family:${EM_FONT};text-align:center;padding-bottom:1px;">${fmtMan(sv, lang)}</td></tr>
                 ${hasMom ? momRow(sv, prevSam && prevSam[col] != null ? prevSam[col] : null) : ''}
                 ${spacerS > 0 ? `<tr><td height="${spacerS}" style="font-size:0;">&nbsp;</td></tr>` : ''}
-                <tr><td height="${sh}" style="font-size:0;"><table border="0" cellpadding="0" cellspacing="0" align="center"><tr><td width="${bw}" height="${sh}" style="background:#94A3B8;border-radius:3px 3px 0 0;font-size:0;">&nbsp;</td></tr></table></td></tr>
+                <tr><td height="${sh}" style="font-size:0;"><table border="0" cellpadding="0" cellspacing="0" align="center"><tr><td width="${bw}" height="${sh}" style="background:${samColor};border-radius:3px 3px 0 0;font-size:0;">&nbsp;</td></tr></table></td></tr>
               </table>
             </td>` : ''}
           </tr></table>
