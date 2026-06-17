@@ -151,6 +151,7 @@ const T = {
     citationTitle: '도메인 카테고리별 Citation 현황',
     citationDomainTitle: '도메인별 Citation 현황',
     llmShareTitle: '모델별 인용 비중',
+    citCountVBarTitle: '전월 대비 모델별 Citation 인용수',
     citationCntyTitle: '국가별 Citation 도메인',
     touchPointTitle: '외부접점채널 Citation',
     citationLegend: 'Citation Score 건수 (비중)',
@@ -184,6 +185,7 @@ const T = {
     citationTitle: 'Citation by Domain Category',
     citationDomainTitle: 'Citation by Domain',
     llmShareTitle: 'Citation Share by Model',
+    citCountVBarTitle: 'Citation Count by Model (MoM)',
     citationCntyTitle: 'Citation Domain by Country',
     touchPointTitle: 'Touch Points Citation',
     citationLegend: 'Citation Score Count (Ratio)',
@@ -1814,6 +1816,141 @@ function llmCitationShareSectionHtml(citTouchPointsByLlm, citTrendMonths, citDom
                           </tr>`
 }
 
+// ─── 전월 대비 모델별 Citation 인용수 (TTL/ChatGPT/Gemini/Perplexity 세로 막대) ──
+// 닷컴 세로막대(_dotcomChartRows) 스타일. 왼쪽 막대=전월(회색), 오른쪽 막대=당월(레드).
+// byLlm: { llm: { channel: { month: sum } } }  ('Total' 키 = TTL/전체 모델 합)
+function citCountByModelVBarHtml(byLlm, citTrendMonths, meta, lang = 'ko') {
+  if (meta.showCitCountVBar === false) return ''
+  const t = T[lang] || T.ko
+  if (!byLlm || typeof byLlm !== 'object') {
+    console.warn('[citCountVBar] byLlm 없음 → skip', { hasByLlm: !!byLlm })
+    return ''
+  }
+  // 모델별 월별 채널 합산 → { llmKeyOrTotal: { month: sumOverChannels } }
+  const totals = {}
+  Object.entries(byLlm).forEach(([llm, byChannel]) => {
+    const acc = {}
+    Object.values(byChannel || {}).forEach(monthVals => {
+      Object.entries(monthVals || {}).forEach(([m, v]) => { acc[m] = (acc[m] || 0) + (Number(v) || 0) })
+    })
+    totals[llm] = acc
+  })
+  const ttlTotals = totals['Total'] || totals['All'] || {}
+  const monthsWithData = TP_TREND_12M.filter(m => (ttlTotals[m] || 0) > 0)
+  if (!monthsWithData.length) {
+    console.warn('[citCountVBar] TTL 데이터 월 없음 → skip', { ttlMonthKeys: Object.keys(ttlTotals) })
+    return ''
+  }
+  const latest = monthsWithData[monthsWithData.length - 1]          // 당월 (예: May)
+  const prev = monthsWithData.length >= 2 ? monthsWithData[monthsWithData.length - 2] : null  // 전월 (예: Apr)
+
+  // 사용자 지정 순서: TTL → ChatGPT(GPT) → Gemini → Perplexity
+  const modelSpecs = [
+    { test: /chat\s*gpt|gpt|openai/i, label: 'ChatGPT' },
+    { test: /gemini|google|flash|bard|2\.5/i, label: 'Gemini' },
+    { test: /perplexity/i, label: 'Perplexity' },
+  ]
+  const modelKeys = Object.keys(totals).filter(k => !/^(total|all)$/i.test(k))
+  const groups = [{ label: 'Total', cur: ttlTotals[latest] || 0, pre: prev ? (ttlTotals[prev] || 0) : 0, isTTL: true }]
+  modelSpecs.forEach(spec => {
+    const key = modelKeys.find(k => spec.test.test(k))
+    const tt = key ? totals[key] : {}
+    groups.push({ label: spec.label, cur: tt[latest] || 0, pre: prev ? (tt[prev] || 0) : 0, isTTL: false })
+  })
+
+  const BAR_MAX = 80, bw = 24
+  const ttlMax = Math.max(groups[0].cur, groups[0].pre, 1)
+  const detailGroups = groups.slice(1)
+  const detailMax = Math.max(...detailGroups.map(g => Math.max(g.cur, g.pre)), 1)
+  const APR_COLOR = '#94A3B8', MAY_COLOR = EM_RED
+  const hasPrev = prev != null
+
+  function monLabel(m) {
+    if (!m) return ''
+    const idx = TP_TREND_12M.indexOf(m)
+    if (idx < 0) return m
+    return lang === 'en' ? m : `${idx + 1}월`
+  }
+  function momRow(cur, pv) {
+    if (pv == null) return ''
+    const d = cur - pv
+    const c = d > 0 ? '#15803D' : d < 0 ? '#BE123C' : '#94A3B8'
+    return `<tr><td style="font-size:10px;font-weight:600;color:${c};font-family:${EM_FONT};text-align:center;padding-bottom:1px;white-space:nowrap;">(${d > 0 ? '+' : ''}${fmtMan(d, lang)})</td></tr>`
+  }
+
+  function makeBarCol(g, localMax) {
+    const pv = g.pre, cv = g.cur
+    const ph = Math.max(2, Math.round(pv / localMax * BAR_MAX))
+    const ch = Math.max(2, Math.round(cv / localMax * BAR_MAX))
+    const spacerP = BAR_MAX - ph, spacerC = BAR_MAX - ch
+    return `<td style="vertical-align:bottom;text-align:center;padding:0 3px;">
+      <table border="0" cellpadding="0" cellspacing="0" align="center" style="margin:0 auto;width:100%;">
+        <tr><td style="vertical-align:bottom;text-align:center;">
+          <table border="0" cellpadding="0" cellspacing="0" align="center"><tr>
+            ${hasPrev ? `<td style="vertical-align:bottom;text-align:center;padding:0 1px;">
+              <table border="0" cellpadding="0" cellspacing="0" align="center">
+                <tr><td style="font-size:13px;font-weight:600;color:#94A3B8;font-family:${EM_FONT};text-align:center;padding-bottom:1px;">${fmtMan(pv, lang)}</td></tr>
+                ${spacerP > 0 ? `<tr><td height="${spacerP}" style="font-size:0;">&nbsp;</td></tr>` : ''}
+                <tr><td height="${ph}" style="font-size:0;"><table border="0" cellpadding="0" cellspacing="0" align="center"><tr><td width="${bw}" height="${ph}" style="background:${APR_COLOR};border-radius:3px 3px 0 0;font-size:0;">&nbsp;</td></tr></table></td></tr>
+              </table>
+            </td>` : ''}
+            <td style="vertical-align:bottom;text-align:center;padding:0 1px;">
+              <table border="0" cellpadding="0" cellspacing="0" align="center">
+                <tr><td style="font-size:13px;font-weight:700;color:${MAY_COLOR};font-family:${EM_FONT};text-align:center;padding-bottom:1px;">${fmtMan(cv, lang)}</td></tr>
+                ${hasPrev ? momRow(cv, pv) : ''}
+                ${spacerC > 0 ? `<tr><td height="${spacerC}" style="font-size:0;">&nbsp;</td></tr>` : ''}
+                <tr><td height="${ch}" style="font-size:0;"><table border="0" cellpadding="0" cellspacing="0" align="center"><tr><td width="${bw}" height="${ch}" style="background:${MAY_COLOR};border-radius:3px 3px 0 0;font-size:0;">&nbsp;</td></tr></table></td></tr>
+              </table>
+            </td>
+          </tr></table>
+        </td></tr>
+        <tr><td style="font-size:${g.isTTL ? '14' : '13'}px;font-weight:700;color:#475569;font-family:${EM_FONT};padding-top:4px;text-align:center;white-space:nowrap;">${g.label}</td></tr>
+      </table>
+    </td>`
+  }
+
+  // 범례 (전월 회색 / 당월 레드)
+  const legend = `<table border="0" cellpadding="0" cellspacing="0" align="center"><tr>
+    ${hasPrev ? `<td style="padding:0 6px;"><table border="0" cellpadding="0" cellspacing="0"><tr>
+      <td width="10" height="10" style="background:${APR_COLOR};border-radius:2px;font-size:0;">&nbsp;</td>
+      <td style="padding-left:4px;font-size:11px;font-weight:600;color:#64748B;font-family:${EM_FONT};white-space:nowrap;">${monLabel(prev)}</td>
+    </tr></table></td>` : ''}
+    <td style="padding:0 6px;"><table border="0" cellpadding="0" cellspacing="0"><tr>
+      <td width="10" height="10" style="background:${MAY_COLOR};border-radius:2px;font-size:0;">&nbsp;</td>
+      <td style="padding-left:4px;font-size:11px;font-weight:600;color:#64748B;font-family:${EM_FONT};white-space:nowrap;">${monLabel(latest)}</td>
+    </tr></table></td>
+  </tr></table>`
+
+  return `<tr>
+    <td style="padding:14px 12px 4px;">
+      <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFFFFF;border:1px solid #E8EDF2;border-radius:12px;">
+        <tr><td style="padding:12px 12px 2px;">
+          <table border="0" cellpadding="0" cellspacing="0" width="100%"><tr>
+            <td style="vertical-align:middle;"><table border="0" cellpadding="0" cellspacing="0"><tr>
+              <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
+              <td style="padding-left:7px;font-size:14px;font-weight:700;color:#0F172A;font-family:${EM_FONT};letter-spacing:${lang === 'en' ? '-0.5px' : '-0.3px'};">${t.citCountVBarTitle}</td>
+            </tr></table></td>
+            <td style="vertical-align:middle;text-align:right;">${legend}</td>
+          </tr></table>
+        </td></tr>
+        <tr><td style="padding:8px 6px 14px;">
+          <table border="0" cellpadding="0" cellspacing="0" width="100%"><tr>
+            <td width="22%" style="vertical-align:bottom;padding:0 2px;">
+              <table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;"><tr>${makeBarCol(groups[0], ttlMax)}</tr></table>
+            </td>
+            <td width="1" style="vertical-align:top;padding:0;">
+              <table border="0" cellpadding="0" cellspacing="0" height="${BAR_MAX + 30}"><tr><td width="2" style="background:#E8EDF2;font-size:0;">&nbsp;</td></tr></table>
+            </td>
+            <td style="vertical-align:bottom;padding:0 2px;">
+              <table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;"><tr>${detailGroups.map(g => makeBarCol(g, detailMax)).join('')}</tr></table>
+            </td>
+          </tr></table>
+        </td></tr>
+      </table>
+    </td>
+  </tr>`
+}
+
 // ─── 제품별 Citation (Top 3 카테고리 + Top 3 도메인, 본부별 그룹핑 + 막대) ──
 function citationByProductHtml(citationsCnty, meta, lang) {
   if (meta.showCitPrd === false) return ''
@@ -2461,6 +2598,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                       </td>
                     </tr>
                     ${insightBlockHtml(meta.citationInsight, meta.showCitationInsight, meta.citationHowToRead, meta.showCitationHowToRead, lang)}
+                    ${citCountByModelVBarHtml(citTouchPointsByLlm, citTrendMonths, meta, lang)}
                     <tr>
                       <td style="padding:16px 12px;">
                         <table border="0" cellpadding="0" cellspacing="0" width="100%">
