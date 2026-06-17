@@ -152,6 +152,9 @@ const T = {
     citationDomainTitle: '도메인별 Citation 현황',
     llmShareTitle: '모델별 인용 비중',
     citCountVBarTitle: '전월 대비 모델별 Citation 인용수',
+    citScopeAll: '전체 채널',
+    citScopeCommunity: '커뮤니티 채널',
+    citScopeReddit: '레딧 도메인',
     regionProductTop10Title: '국가별 × 제품별 Top 10 — 레딧 지피티만',
     regionProductTop10Sub: '5월 Reddit 인용수 기준 상위 10개 조합 (Global 및 TTL 제외, ChatGPT 전용)',
     citationCntyTitle: '국가별 Citation 도메인',
@@ -188,6 +191,9 @@ const T = {
     citationDomainTitle: 'Citation by Domain',
     llmShareTitle: 'Citation Share by Model',
     citCountVBarTitle: 'Citation Count by Model (MoM)',
+    citScopeAll: 'All Channels',
+    citScopeCommunity: 'Community Channels',
+    citScopeReddit: 'Reddit Domain',
     regionProductTop10Title: 'Region × Product Top 10 — Reddit (ChatGPT)',
     regionProductTop10Sub: 'Top 10 combinations by May Reddit citations (excl. Global & TTL, ChatGPT only)',
     citationCntyTitle: 'Citation Domain by Country',
@@ -1905,54 +1911,84 @@ function llmCitationShareSectionHtml(citTouchPointsByLlm, citTrendMonths, citDom
                           </tr>`
 }
 
-// ─── 전월 대비 모델별 Citation 인용수 (TTL/ChatGPT/Gemini/Perplexity 세로 막대) ──
-// 닷컴 세로막대(_dotcomChartRows) 스타일. 왼쪽 막대=전월(회색), 오른쪽 막대=당월(레드).
-// byLlm: { llm: { channel: { month: sum } } }  ('Total' 키 = TTL/전체 모델 합)
-function citCountByModelVBarHtml(byLlm, citTrendMonths, meta, lang = 'ko') {
+// ─── 전월 대비 모델별 Citation 인용수 (채널 스코프 3종 × 모델 3개 세로 막대) ──
+// 채널 스코프별로 묶고 그 안에 모델 3개(ChatGPT/Gemini/Perplexity) 막대.
+//   전체 채널 / 커뮤니티 채널 → byLlm (citTouchPointsByLlm) { llm: { channel: { month: sum } } }
+//   레딧 도메인              → citDomainByLlmTrend { llm: { domain: { month: sum } } }
+// 왼쪽 막대=전월(회색), 오른쪽 막대=당월(레드). 모델명 아래에 전월비(MoM) 표기.
+function citCountByModelVBarHtml(byLlm, citTrendMonths, meta, lang = 'ko', citDomainByLlmTrend = null, citDomainMonths = []) {
   if (meta.showCitCountVBar === false) return ''
   const t = T[lang] || T.ko
   if (!byLlm || typeof byLlm !== 'object') {
     console.warn('[citCountVBar] byLlm 없음 → skip', { hasByLlm: !!byLlm })
     return ''
   }
-  // 모델별 월별 채널 합산 → { llmKeyOrTotal: { month: sumOverChannels } }
-  const totals = {}
-  Object.entries(byLlm).forEach(([llm, byChannel]) => {
-    const acc = {}
-    Object.values(byChannel || {}).forEach(monthVals => {
-      Object.entries(monthVals || {}).forEach(([m, v]) => { acc[m] = (acc[m] || 0) + (Number(v) || 0) })
-    })
-    totals[llm] = acc
-  })
-  const ttlTotals = totals['Total'] || totals['All'] || {}
-  const monthsWithData = TP_TREND_12M.filter(m => (ttlTotals[m] || 0) > 0)
-  if (!monthsWithData.length) {
-    console.warn('[citCountVBar] TTL 데이터 월 없음 → skip', { ttlMonthKeys: Object.keys(ttlTotals) })
-    return ''
-  }
-  const latest = monthsWithData[monthsWithData.length - 1]          // 당월 (예: May)
-  const prev = monthsWithData.length >= 2 ? monthsWithData[monthsWithData.length - 2] : null  // 전월 (예: Apr)
 
-  // 사용자 지정 순서: TTL → ChatGPT(GPT) → Gemini → Perplexity
+  // 사용자 지정 순서: ChatGPT(GPT) → Gemini → Perplexity
   const modelSpecs = [
     { test: /chat\s*gpt|gpt|openai/i, label: 'ChatGPT' },
     { test: /gemini|google|flash|bard|2\.5/i, label: 'Gemini' },
     { test: /perplexity/i, label: 'Perplexity' },
   ]
-  const modelKeys = Object.keys(totals).filter(k => !/^(total|all)$/i.test(k))
-  const groups = [{ label: 'Total', cur: ttlTotals[latest] || 0, pre: prev ? (ttlTotals[prev] || 0) : 0, isTTL: true }]
-  modelSpecs.forEach(spec => {
-    const key = modelKeys.find(k => spec.test.test(k))
-    const tt = key ? totals[key] : {}
-    groups.push({ label: spec.label, cur: tt[latest] || 0, pre: prev ? (tt[prev] || 0) : 0, isTTL: false })
+  const channelKeys = Object.keys(byLlm).filter(k => !/^(total|all)$/i.test(k))
+  const domainKeys = (citDomainByLlmTrend && typeof citDomainByLlmTrend === 'object')
+    ? Object.keys(citDomainByLlmTrend).filter(k => !/^(total|all)$/i.test(k)) : []
+
+  // 채널 합산 — chanFilter null=전체, regex=매칭 채널만 → { month: sumOverChannels }
+  function chanMonthSums(llmKey, chanFilter) {
+    const byChannel = byLlm[llmKey] || {}
+    const acc = {}
+    Object.entries(byChannel).forEach(([channel, monthVals]) => {
+      if (chanFilter && !chanFilter.test(channel)) return
+      Object.entries(monthVals || {}).forEach(([m, v]) => { acc[m] = (acc[m] || 0) + (Number(v) || 0) })
+    })
+    return acc
+  }
+  // 레딧 도메인 합산 → { month: sumOverRedditDomains }
+  function redditMonthSums(llmKey) {
+    const byDomain = (citDomainByLlmTrend && citDomainByLlmTrend[llmKey]) || {}
+    const acc = {}
+    Object.entries(byDomain).forEach(([domain, monthVals]) => {
+      if (!/reddit|레딧/i.test(domain)) return
+      Object.entries(monthVals || {}).forEach(([m, v]) => { acc[m] = (acc[m] || 0) + (Number(v) || 0) })
+    })
+    return acc
+  }
+
+  const scopeDefs = [
+    { label: t.citScopeAll, resolve: spec => { const k = channelKeys.find(c => spec.test.test(c)); return k ? chanMonthSums(k, null) : {} } },
+    { label: t.citScopeCommunity, resolve: spec => { const k = channelKeys.find(c => spec.test.test(c)); return k ? chanMonthSums(k, /communit|커뮤니티/i) : {} } },
+    { label: t.citScopeReddit, resolve: spec => { const k = domainKeys.find(d => spec.test.test(d)); return k ? redditMonthSums(k) : {} } },
+  ]
+
+  // 스코프×모델 월합 계산
+  const scopeData = scopeDefs.map(sc => ({
+    label: sc.label,
+    models: modelSpecs.map(spec => ({ label: spec.label, sums: sc.resolve(spec) })),
+  }))
+
+  // 전 스코프 통합 월 존재 판단 → 단일 latest/prev (범례 일관)
+  const allSums = scopeData.flatMap(s => s.models.map(m => m.sums))
+  const monthsWithData = TP_TREND_12M.filter(m => allSums.some(s => (s[m] || 0) > 0))
+  if (!monthsWithData.length) {
+    console.warn('[citCountVBar] 데이터 월 없음 → skip', { scopeLabels: scopeDefs.map(s => s.label), hasDomainTrend: !!citDomainByLlmTrend })
+    return ''
+  }
+  const latest = monthsWithData[monthsWithData.length - 1]          // 당월 (예: May)
+  const prev = monthsWithData.length >= 2 ? monthsWithData[monthsWithData.length - 2] : null  // 전월 (예: Apr)
+  const hasPrev = prev != null
+
+  // 스코프별 막대값 + localMax (스코프 내부 상대 스케일)
+  scopeData.forEach(sc => {
+    sc.bars = sc.models.map(m => ({ label: m.label, cur: m.sums[latest] || 0, pre: prev ? (m.sums[prev] || 0) : 0 }))
+    sc.localMax = Math.max(...sc.bars.map(b => Math.max(b.cur, b.pre)), 1)
+    if (!sc.bars.some(b => b.cur > 0 || b.pre > 0)) {
+      console.warn('[citCountVBar] 스코프 데이터 비어있음 → 빈 막대 렌더', { scope: sc.label })
+    }
   })
 
-  const BAR_MAX = 80, bw = 24
-  const ttlMax = Math.max(groups[0].cur, groups[0].pre, 1)
-  const detailGroups = groups.slice(1)
-  const detailMax = Math.max(...detailGroups.map(g => Math.max(g.cur, g.pre)), 1)
+  const BAR_MAX = 70, bw = 16
   const APR_COLOR = '#94A3B8', MAY_COLOR = EM_RED
-  const hasPrev = prev != null
 
   function monLabel(m) {
     if (!m) return ''
@@ -1960,40 +1996,51 @@ function citCountByModelVBarHtml(byLlm, citTrendMonths, meta, lang = 'ko') {
     if (idx < 0) return m
     return lang === 'en' ? m : `${idx + 1}월`
   }
-  function momRow(cur, pv) {
+  function momLine(cur, pv) {
     if (pv == null) return ''
     const d = cur - pv
     const c = d > 0 ? '#15803D' : d < 0 ? '#BE123C' : '#94A3B8'
-    return `<tr><td style="font-size:10px;font-weight:600;color:${c};font-family:${EM_FONT};text-align:center;padding-bottom:1px;white-space:nowrap;">(${d > 0 ? '+' : ''}${fmtMan(d, lang)})</td></tr>`
+    return `<tr><td style="font-size:9px;font-weight:600;color:${c};font-family:${EM_FONT};text-align:center;white-space:nowrap;padding-top:1px;">(${d > 0 ? '+' : ''}${fmtMan(d, lang)})</td></tr>`
   }
 
-  function makeBarCol(g, localMax) {
-    const pv = g.pre, cv = g.cur
+  function makeBarCol(b, localMax) {
+    const pv = b.pre, cv = b.cur
     const ph = Math.max(2, Math.round(pv / localMax * BAR_MAX))
     const ch = Math.max(2, Math.round(cv / localMax * BAR_MAX))
     const spacerP = BAR_MAX - ph, spacerC = BAR_MAX - ch
-    return `<td style="vertical-align:bottom;text-align:center;padding:0 3px;">
-      <table border="0" cellpadding="0" cellspacing="0" align="center" style="margin:0 auto;width:100%;">
+    return `<td style="vertical-align:bottom;text-align:center;padding:0 2px;">
+      <table border="0" cellpadding="0" cellspacing="0" align="center" style="margin:0 auto;">
         <tr><td style="vertical-align:bottom;text-align:center;">
           <table border="0" cellpadding="0" cellspacing="0" align="center"><tr>
             ${hasPrev ? `<td style="vertical-align:bottom;text-align:center;padding:0 1px;">
               <table border="0" cellpadding="0" cellspacing="0" align="center">
-                <tr><td style="font-size:13px;font-weight:600;color:#94A3B8;font-family:${EM_FONT};text-align:center;padding-bottom:1px;">${fmtMan(pv, lang)}</td></tr>
+                <tr><td style="font-size:11px;font-weight:600;color:#94A3B8;font-family:${EM_FONT};text-align:center;padding-bottom:1px;white-space:nowrap;">${fmtMan(pv, lang)}</td></tr>
                 ${spacerP > 0 ? `<tr><td height="${spacerP}" style="font-size:0;">&nbsp;</td></tr>` : ''}
                 <tr><td height="${ph}" style="font-size:0;"><table border="0" cellpadding="0" cellspacing="0" align="center"><tr><td width="${bw}" height="${ph}" style="background:${APR_COLOR};border-radius:3px 3px 0 0;font-size:0;">&nbsp;</td></tr></table></td></tr>
               </table>
             </td>` : ''}
             <td style="vertical-align:bottom;text-align:center;padding:0 1px;">
               <table border="0" cellpadding="0" cellspacing="0" align="center">
-                <tr><td style="font-size:13px;font-weight:700;color:${MAY_COLOR};font-family:${EM_FONT};text-align:center;padding-bottom:1px;">${fmtMan(cv, lang)}</td></tr>
-                ${hasPrev ? momRow(cv, pv) : ''}
+                <tr><td style="font-size:11px;font-weight:700;color:${MAY_COLOR};font-family:${EM_FONT};text-align:center;padding-bottom:1px;white-space:nowrap;">${fmtMan(cv, lang)}</td></tr>
                 ${spacerC > 0 ? `<tr><td height="${spacerC}" style="font-size:0;">&nbsp;</td></tr>` : ''}
                 <tr><td height="${ch}" style="font-size:0;"><table border="0" cellpadding="0" cellspacing="0" align="center"><tr><td width="${bw}" height="${ch}" style="background:${MAY_COLOR};border-radius:3px 3px 0 0;font-size:0;">&nbsp;</td></tr></table></td></tr>
               </table>
             </td>
           </tr></table>
         </td></tr>
-        <tr><td style="font-size:${g.isTTL ? '14' : '13'}px;font-weight:700;color:#475569;font-family:${EM_FONT};padding-top:4px;text-align:center;white-space:nowrap;">${g.label}</td></tr>
+        <tr><td style="font-size:11px;font-weight:700;color:#475569;font-family:${EM_FONT};padding-top:4px;text-align:center;white-space:nowrap;">${b.label}</td></tr>
+        ${hasPrev ? momLine(cv, pv) : ''}
+      </table>
+    </td>`
+  }
+
+  function makeScopeCell(sc) {
+    return `<td width="33%" style="vertical-align:top;padding:0 4px;">
+      <table border="0" cellpadding="0" cellspacing="0" width="100%">
+        <tr><td style="font-size:12px;font-weight:700;color:#0F172A;font-family:${EM_FONT};text-align:center;padding-bottom:8px;letter-spacing:${lang === 'en' ? '-0.5px' : '-0.3px'};">${sc.label}</td></tr>
+        <tr><td style="vertical-align:bottom;">
+          <table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;"><tr>${sc.bars.map(b => makeBarCol(b, sc.localMax)).join('')}</tr></table>
+        </td></tr>
       </table>
     </td>`
   }
@@ -2010,6 +2057,8 @@ function citCountByModelVBarHtml(byLlm, citTrendMonths, meta, lang = 'ko') {
     </tr></table></td>
   </tr></table>`
 
+  const divider = `<td width="1" style="vertical-align:middle;padding:0;"><table border="0" cellpadding="0" cellspacing="0" height="${BAR_MAX + 60}"><tr><td width="2" style="background:#E8EDF2;font-size:0;">&nbsp;</td></tr></table></td>`
+
   return `<tr>
     <td style="padding:14px 12px 4px;">
       <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFFFFF;border:1px solid #E8EDF2;border-radius:12px;">
@@ -2024,15 +2073,7 @@ function citCountByModelVBarHtml(byLlm, citTrendMonths, meta, lang = 'ko') {
         </td></tr>
         <tr><td style="padding:8px 6px 14px;">
           <table border="0" cellpadding="0" cellspacing="0" width="100%"><tr>
-            <td width="22%" style="vertical-align:bottom;padding:0 2px;">
-              <table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;"><tr>${makeBarCol(groups[0], ttlMax)}</tr></table>
-            </td>
-            <td width="1" style="vertical-align:top;padding:0;">
-              <table border="0" cellpadding="0" cellspacing="0" height="${BAR_MAX + 30}"><tr><td width="2" style="background:#E8EDF2;font-size:0;">&nbsp;</td></tr></table>
-            </td>
-            <td style="vertical-align:bottom;padding:0 2px;">
-              <table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;"><tr>${detailGroups.map(g => makeBarCol(g, detailMax)).join('')}</tr></table>
-            </td>
+            ${scopeData.map((sc, i) => (i > 0 ? divider : '') + makeScopeCell(sc)).join('')}
           </tr></table>
         </td></tr>
       </table>
@@ -2687,7 +2728,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                       </td>
                     </tr>
                     ${insightBlockHtml(meta.citationInsight, meta.showCitationInsight, meta.citationHowToRead, meta.showCitationHowToRead, lang)}
-                    ${citCountByModelVBarHtml(citTouchPointsByLlm, citTrendMonths, meta, lang)}
+                    ${citCountByModelVBarHtml(citTouchPointsByLlm, citTrendMonths, meta, lang, citDomainByLlmTrend, citDomainMonths)}
                     <tr>
                       <td style="padding:16px 12px;">
                         <table border="0" cellpadding="0" cellspacing="0" width="100%">
