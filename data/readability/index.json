@@ -17,6 +17,24 @@
       ],
       "overallAvg": 63.5,
       "urlCount": 4812
+    },
+    {
+      "date": "2026-06-28",
+      "generatedAt": "2026-06-28T11:15:35.293Z",
+      "countries": [
+        "au",
+        "br",
+        "ca",
+        "de",
+        "es",
+        "in",
+        "mx",
+        "uk",
+        "us",
+        "vn"
+      ],
+      "overallAvg": 64.2,
+      "urlCount": 5655
     }
   ]
 }
