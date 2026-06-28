@@ -425,7 +425,7 @@ function readabilityClient() {
       '<div class="crit-dl-sub">10개국 최신 run 기준 · 카테고리/페이지타입별 감점 항목 해석본 — 원본 텍스트 그대로</div></div>' +
       '<a class="crit-dl-btn" href="/admin/readability/audit-report.txt" download="audit_report.txt">텍스트 다운로드</a></div>'
     var body = dl + '<pre id="rd-report-pre" class="report-pre">불러오는 중…</pre>'
-    return sectionCard('해석 리포트 — 감점 사유 종합', '#0EA5E9', body)
+    return sectionCard('해석 리포트 — 감점 사유 종합', RED, body)
   }
   function loadReport() {
     var pre = document.getElementById('rd-report-pre')
@@ -635,7 +635,7 @@ body{background:#F1F5F9;font-family:${FONT};color:#1A1A1A;line-height:1.6}
     ${viewCategoryDetail(snapshot)}
     ${viewPageTypes(snapshot)}
     ${viewBotsAndSsr(snapshot)}
-    ${sectionCard('해석 리포트 — 감점 사유 종합', '#0EA5E9', '<a class="crit-dl-btn" href="/admin/readability/audit-report.txt" download="audit_report.txt">해석 리포트 텍스트 열기/다운로드</a>')}
+    ${sectionCard('해석 리포트 — 감점 사유 종합', RED, '<a class="crit-dl-btn" href="/admin/readability/audit-report.txt" download="audit_report.txt">해석 리포트 텍스트 열기/다운로드</a>')}
   </noscript>
 </div>
 
