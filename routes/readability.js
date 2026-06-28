@@ -11,6 +11,17 @@ import { renderReadabilityHTML } from '../scripts/render-readability.mjs'
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const DATA_DIR = join(__dirname, '..', 'data', 'readability')
 
+// 해석 리포트(감점 사유 종합) — my-geo-audit 가 생성하는 텍스트 해석본.
+// 라이브로 읽어 항상 최신 반영. 경로는 env 로 재정의 가능 (aggregate DEFAULT_SRC 와 동일 컨벤션).
+// 외부 audit 경로가 없으면 data/readability/audit_report.txt 로컬 사본으로 폴백.
+const AUDIT_REPORT_PATH = process.env.AUDIT_REPORT_PATH ||
+  '/Users/dubaba/my-geo-project/my-geo-audit/reports/audit_report.txt'
+function resolveAuditReport() {
+  if (existsSync(AUDIT_REPORT_PATH)) return AUDIT_REPORT_PATH
+  const local = join(DATA_DIR, 'audit_report.txt')
+  return existsSync(local) ? local : null
+}
+
 export function loadLatest() {
   if (!existsSync(DATA_DIR)) return { snapshot: null, index: null }
   let index = null
@@ -56,6 +67,15 @@ readabilityRouter.get('/admin/readability/checklist.html', (req, res) => {
   const file = join(DATA_DIR, 'geo-agent-checklist.html')
   if (!existsSync(file)) return res.status(404).send('체크리스트 HTML 없음 — data/readability/geo-agent-checklist.html 필요')
   res.set('Content-Type', 'text/html; charset=utf-8')
+  res.send(readFileSync(file, 'utf8'))
+})
+
+// 해석 리포트(감점 사유 종합) 텍스트 — 라이브 서빙. 대시보드 "해석 리포트" 탭이 fetch.
+readabilityRouter.get('/admin/readability/audit-report.txt', (req, res) => {
+  const file = resolveAuditReport()
+  if (!file) return res.status(404).type('text/plain; charset=utf-8')
+    .send('해석 리포트 없음 — audit_report.txt 가 없습니다 (AUDIT_REPORT_PATH 또는 data/readability/audit_report.txt).')
+  res.set('Content-Type', 'text/plain; charset=utf-8')
   res.send(readFileSync(file, 'utf8'))
 })
 

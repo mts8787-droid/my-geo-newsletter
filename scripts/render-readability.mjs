@@ -417,19 +417,39 @@ function readabilityClient() {
     return sectionCard('검수 기준 · 검수 URL 다운로드', '#7C3AED', dl + frame)
   }
 
+  // 해석 리포트(감점 사유 종합) — audit_report.txt 를 fetch 해 원본 그대로 <pre> 표시.
+  // 텍스트는 페이지 HTML 에 임베드하지 않고 탭 진입 시 지연 로드 (본문 가벼움 유지).
+  function renderAuditReport() {
+    var dl = '<div class="crit-dl"><div class="crit-dl-text">' +
+      '<div class="crit-dl-title">해석 리포트 (감점 사유 종합)</div>' +
+      '<div class="crit-dl-sub">10개국 최신 run 기준 · 카테고리/페이지타입별 감점 항목 해석본 — 원본 텍스트 그대로</div></div>' +
+      '<a class="crit-dl-btn" href="/admin/readability/audit-report.txt" download="audit_report.txt">텍스트 다운로드</a></div>'
+    var body = dl + '<pre id="rd-report-pre" class="report-pre">불러오는 중…</pre>'
+    return sectionCard('해석 리포트 — 감점 사유 종합', '#0EA5E9', body)
+  }
+  function loadReport() {
+    var pre = document.getElementById('rd-report-pre')
+    if (!pre) return
+    fetch('/admin/readability/audit-report.txt')
+      .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.text() })
+      .then(function (t) { pre.textContent = t })
+      .catch(function (e) { pre.textContent = '리포트를 불러오지 못했습니다: ' + e })
+  }
+
   function renderPanel() {
     var el = document.getElementById('rd-panel')
     if (!el) return
     var fb = document.getElementById('rd-filterbar')
-    if (fb) fb.style.display = state.tab === 'criteria' ? 'none' : ''
+    if (fb) fb.style.display = (state.tab === 'criteria' || state.tab === 'report') ? 'none' : ''
     if (state.tab === 'country') el.innerHTML = renderCountry()
     else if (state.tab === 'criteria') el.innerHTML = renderCriteria()
+    else if (state.tab === 'report') { el.innerHTML = renderAuditReport(); loadReport() }
     else el.innerHTML = renderPageType()
   }
 
   function buildControls() {
     var nav = document.getElementById('rd-tabnav')
-    var tabs = [['country', '국가별'], ['pagetype', '페이지 타입별'], ['criteria', '검수 기준']]
+    var tabs = [['country', '국가별'], ['pagetype', '페이지 타입별'], ['report', '해석 리포트'], ['criteria', '검수 기준']]
     nav.innerHTML = tabs.map(function (t) {
       return '<button data-tab="' + t[0] + '"' + (t[0] === state.tab ? ' class="active"' : '') + '>' + t[1] + '</button>'
     }).join('')
@@ -556,6 +576,8 @@ body{background:#F1F5F9;font-family:${FONT};color:#1A1A1A;line-height:1.6}
 .crit-frame-head{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:14px;font-weight:700;color:#475569;margin-bottom:10px}
 .crit-frame-head a{color:${RED};text-decoration:none;font-weight:600}
 .crit-frame{width:100%;height:70vh;min-height:520px;border:1px solid #E8EDF2;border-radius:12px;background:#fff}
+/* ── 해석 리포트 (감점 사유 종합) ── */
+.report-pre{background:#fff;color:#1A1A1A;border:1px solid #E8EDF2;border-radius:12px;padding:20px 24px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,'D2Coding',monospace;font-size:12.5px;line-height:1.55;white-space:pre;overflow-x:auto;tab-size:2}
 /* ── 카테고리 4분할 ── */
 .cat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:16px}
 .cat-card{background:#fff;border:1px solid #E8EDF2;border-radius:12px;padding:16px 18px}
@@ -613,6 +635,7 @@ body{background:#F1F5F9;font-family:${FONT};color:#1A1A1A;line-height:1.6}
     ${viewCategoryDetail(snapshot)}
     ${viewPageTypes(snapshot)}
     ${viewBotsAndSsr(snapshot)}
+    ${sectionCard('해석 리포트 — 감점 사유 종합', '#0EA5E9', '<a class="crit-dl-btn" href="/admin/readability/audit-report.txt" download="audit_report.txt">해석 리포트 텍스트 열기/다운로드</a>')}
   </noscript>
 </div>
 
