@@ -8,7 +8,7 @@
 //
 // 사용: node scripts/aggregate-readability.mjs [--src <run_results 경로>] [--date <YYYY-MM-DD>]
 
-import { readdirSync, readFileSync, writeFileSync, mkdirSync, existsSync } from 'fs'
+import { readdirSync, readFileSync, writeFileSync, mkdirSync, existsSync, copyFileSync } from 'fs'
 import { join, dirname, basename } from 'path'
 import { fileURLToPath } from 'url'
 import { PROD_IDS } from '../src/categoryMap.js'
@@ -22,12 +22,17 @@ function parseArgs() {
   for (let i = 0; i < a.length; i++) {
     if (a[i] === '--src') out.src = a[++i]
     else if (a[i] === '--date') out.date = a[++i]
+    else if (a[i] === '--report') out.report = a[++i]
   }
   return out
 }
 
 const DEFAULT_SRC = '/Users/dubaba/my-geo-project/my-geo-audit/data/run_results'
 const OUT_DIR = join(REPO_ROOT, 'data', 'readability')
+// 해석 리포트(감점 사유 종합) 원본 — 집계 시 OUT_DIR 로 사본 복사 (대시보드 "해석 리포트" 탭이 서빙).
+// 배포본은 외부 audit 경로가 없으니 커밋되는 OUT_DIR 사본이 필요. --report 또는 env 로 재정의.
+const DEFAULT_REPORT_SRC = process.env.AUDIT_REPORT_PATH ||
+  '/Users/dubaba/my-geo-project/my-geo-audit/reports/audit_report.txt'
 
 // 페이지타입별 최대 표본 수 — US(5788) 같은 대형 크롤이 집계를 압도하는 것 방지.
 // 100 을 제품군(11종) 에 균등 분배 (제품군당 floor(100/11)=9) + 잔여 용량은 초과분/미분류로 채움.
@@ -404,6 +409,17 @@ function main() {
   console.log(`[aggregate-readability] ✓ 스냅샷 저장: ${outPath} (${kb} KB, ${Object.keys(countries).length}개국)`)
   console.log(`[aggregate-readability] ✓ 인덱스: ${indexPath} (${index.snapshots.length}개 스냅샷)`)
   console.log(`[aggregate-readability] ✓ URL CSV: ${csvPath} (${urlRows.length}개 URL)`)
+
+  // 해석 리포트 사본 갱신 — 원본 있으면 OUT_DIR 로 복사 (없으면 warn, 집계는 성공 유지)
+  const reportSrc = args.report || DEFAULT_REPORT_SRC
+  const reportDst = join(OUT_DIR, 'audit_report.txt')
+  if (existsSync(reportSrc)) {
+    copyFileSync(reportSrc, reportDst)
+    const rkb = (readFileSync(reportDst).length / 1024).toFixed(1)
+    console.log(`[aggregate-readability] ✓ 해석 리포트 사본: ${reportDst} (${rkb} KB) ← ${reportSrc}`)
+  } else {
+    console.warn(`[aggregate-readability] WARN: 해석 리포트 원본 없음, 사본 유지 — ${reportSrc} (--report 또는 AUDIT_REPORT_PATH 로 지정)`)
+  }
 }
 
 function mostCommon(arr) {
