@@ -8,7 +8,7 @@
 //
 // 사용: node scripts/aggregate-readability.mjs [--src <run_results 경로>] [--date <YYYY-MM-DD>]
 
-import { readdirSync, readFileSync, writeFileSync, mkdirSync, existsSync, copyFileSync } from 'fs'
+import { readdirSync, readFileSync, writeFileSync, mkdirSync, existsSync, copyFileSync, rmSync } from 'fs'
 import { join, dirname, basename } from 'path'
 import { fileURLToPath } from 'url'
 import { PROD_IDS } from '../src/categoryMap.js'
@@ -280,6 +280,24 @@ function finalizeAcc(acc) {
   }
 }
 
+// per-URL 실패(FAIL) 항목 추출 — 개선 리포트(국가×페이지타입×항목 조합 필터)용.
+// applicable 한 pass===false 만 수집. checkMeta(id→{label,cat}) 를 부수적으로 채움 (필터 드롭다운 메타).
+function collectFails(score, checkMeta) {
+  const out = []
+  const bd = score.breakdown || {}
+  for (const cat of CATEGORIES) {
+    const items = (bd[cat] && bd[cat].items) || {}
+    for (const [id, it] of Object.entries(items)) {
+      const applicable = !(it.na === true || it.pass === null || it.pass == null)
+      if (applicable && it.pass === false) {
+        if (!checkMeta[id]) checkMeta[id] = { label: it.label || id, cat }
+        out.push({ id, hint: it.hint || '' })
+      }
+    }
+  }
+  return out
+}
+
 function main() {
   const args = parseArgs()
   const SRC = args.src || DEFAULT_SRC
@@ -298,6 +316,10 @@ function main() {
   const overall = newAcc()
   const fileDates = []
   const urlRows = []  // CSV 다운로드용 per-URL 행: { url, country, pt, score }
+  // 개선 리포트(조합 필터)용 — 페이지별 FAIL 행 + 필터 메타 (전수 기준, 샘플링 전)
+  const failRows = []
+  const checkMeta = {}
+  const ptLabelMap = {}
 
   // 국가별 최신 run 만 선택 — run_results 에 같은 국가의 여러 날짜 run 이 공존하면
   // (예: br_2026-06-13 + br_2026-06-14) 최신 날짜 하나만 집계. 과거 run 이
@@ -337,6 +359,16 @@ function main() {
       const rpt = resolvePt(s.result.page_type, url)
       if (rpt && rpt.excluded) continue
       items.push({ result: s.result, url, rpt })
+    }
+    // 개선 리포트(조합 필터)용 — 전수 페이지의 실패 항목 수집 (샘플링 전, 최대 커버리지)
+    for (const it of items) {
+      const sc = it.result.score
+      if (!sc || typeof sc.total !== 'number') continue
+      const fails = collectFails(sc, checkMeta)
+      if (!fails.length) continue
+      const ptId = it.rpt ? it.rpt.id : '(none)'
+      if (it.rpt && !ptLabelMap[ptId]) ptLabelMap[ptId] = it.rpt.label
+      failRows.push({ cc: meta.cc, pt: ptId, url: it.url || '', score: sc.total, fails })
     }
     // 페이지타입별 max SAMPLE_PER_PT 표본 (제품군 균등 분배) — 집계 + CSV 모두 동일 표본 사용
     const selected = sampleByPageType(items)
@@ -405,8 +437,43 @@ function main() {
   // UTF-8 BOM 선두 — Excel(특히 한국어 로캘)이 CP949 로 오인해 한글 깨지는 것 방지
   writeFileSync(csvPath, '﻿' + csvLines.join('\n') + '\n')
 
+  // 개선 리포트(조합 필터 — 국가×페이지타입×항목) 데이터 — 페이지별 FAIL 만.
+  // hint 문자열 인터닝(중복 제거) — 동일 사유가 수천 건 반복 → 파일/전송 크기 대폭 축소.
+  const hintIndex = new Map()
+  const hints = []
+  const internHint = (h) => {
+    let i = hintIndex.get(h)
+    if (i === undefined) { i = hints.length; hints.push(h); hintIndex.set(h, i) }
+    return i
+  }
+  const failsRowsOut = failRows.map(r => ({
+    cc: r.cc, pt: r.pt, url: r.url, score: r.score,
+    f: r.fails.map(x => [x.id, internHint(x.hint)]),  // [checkId, hintIndex]
+  }))
+  const failsPath = join(OUT_DIR, `fails-${snapshotDate}.json`)
+  const failsDoc = {
+    date: snapshotDate,
+    generatedAt: snapshot.generatedAt,
+    countries: Object.keys(countries).sort(),
+    ccName: Object.fromEntries(Object.keys(countries).map(cc => [cc, CC_NAME[cc] || cc.toUpperCase()])),
+    pageTypes: ptLabelMap,
+    checks: checkMeta,
+    hints,        // 인터닝된 hint 사전 (f[][1] 가 인덱스)
+    rows: failsRowsOut,
+  }
+  writeFileSync(failsPath, JSON.stringify(failsDoc))
+  // 과거 fails-*.json 은 최신 1개만 유지 (현재 개선 대상만 의미 — 시계열 가치 없음, ~3MB 라 git 비대 방지)
+  for (const fn of readdirSync(OUT_DIR)) {
+    if (/^fails-\d{4}-\d{2}-\d{2}\.json$/.test(fn) && fn !== `fails-${snapshotDate}.json`) {
+      rmSync(join(OUT_DIR, fn))
+      console.log(`[aggregate-readability] 과거 fails 제거: ${fn}`)
+    }
+  }
+
   const kb = (JSON.stringify(snapshot).length / 1024).toFixed(1)
+  const fkb = (JSON.stringify(failsDoc).length / 1024).toFixed(1)
   console.log(`[aggregate-readability] ✓ 스냅샷 저장: ${outPath} (${kb} KB, ${Object.keys(countries).length}개국)`)
+  console.log(`[aggregate-readability] ✓ 개선 항목(FAIL): ${failsPath} (${fkb} KB, ${failRows.length} pages)`)
   console.log(`[aggregate-readability] ✓ 인덱스: ${indexPath} (${index.snapshots.length}개 스냅샷)`)
   console.log(`[aggregate-readability] ✓ URL CSV: ${csvPath} (${urlRows.length}개 URL)`)
 

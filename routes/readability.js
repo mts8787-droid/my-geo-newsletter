@@ -54,6 +54,13 @@ function latestCsvFile() {
   return files.length ? files[files.length - 1] : null
 }
 
+// 최신 개선 항목(FAIL) 데이터 파일명 (fails-<YYYY-MM-DD>.json)
+function latestFailsFile() {
+  if (!existsSync(DATA_DIR)) return null
+  const files = readdirSync(DATA_DIR).filter(f => /^fails-\d{4}-\d{2}-\d{2}\.json$/.test(f)).sort()
+  return files.length ? files[files.length - 1] : null
+}
+
 export const readabilityRouter = Router()
 
 readabilityRouter.get('/admin/readability', (req, res) => {
@@ -77,6 +84,14 @@ readabilityRouter.get('/admin/readability/audit-report.txt', (req, res) => {
     .send('해석 리포트 없음 — audit_report.txt 가 없습니다 (AUDIT_REPORT_PATH 또는 data/readability/audit_report.txt).')
   res.set('Content-Type', 'text/plain; charset=utf-8')
   res.send(readFileSync(file, 'utf8'))
+})
+
+// 개선 항목(FAIL) 데이터 — 최신 fails-<date>.json. "개선 항목" 탭이 조합 필터로 사용.
+readabilityRouter.get('/admin/readability/fails.json', (req, res) => {
+  const file = latestFailsFile()
+  if (!file) return res.status(404).json({ error: 'fails 데이터 없음 — node scripts/aggregate-readability.mjs 실행 필요' })
+  res.set('Content-Type', 'application/json; charset=utf-8')
+  res.send(readFileSync(join(DATA_DIR, file), 'utf8'))
 })
 
 // 검수 URL 목록 다운로드 — 최신 urls-<date>.csv (URL · 국가 · 페이지타입 · 점수)
