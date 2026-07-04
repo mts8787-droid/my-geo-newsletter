@@ -13,11 +13,30 @@
 | 개념 | 형식 | 강제력 | 위치 | 본 저장소 사례 |
 |---|---|---|---|---|
 | **Rule** | Markdown | 권고 (~80%) | `CLAUDE.md`, `docs/*.md` | 이 파일 + `.claude/rules/data.md` + `.claude/rules/design.md` |
-| **Hook** | JSON 강제 + md 설명서 | 100% (시스템 차단) | `.claude/settings.json` + `.claude/hooks/*.sh` | syntax-check, block-dist (절대 금지 자동 차단) |
+| **Hook** | JSON 강제 + md 설명서 | 100% (시스템 차단) | `.claude/settings.json` + `.claude/hooks/*.sh` | syntax-check, block-dist (절대 금지 자동 차단), **session-start (부트스트랩 주입)** |
 | **Skill** | Markdown 워크플로우 | 권고 (Claude 가 필요 시 로드) | `.claude/skills/*/SKILL.md` | `data` (8 워크플로우), `design` (7 워크플로우) |
 | **Sub-Agent** | Markdown frontmatter | Claude 가 위임 시 활성 | `.claude/agents/*.md` | `data-puller` (read-only 진단) |
 
 **핵심**: Rule = "따라야 할 규칙" / Hook = "절대 하면 안 되는 것" / Skill = "순차 워크플로우 (명령 조합)" / Sub-Agent = "영역 분리 작업"
+
+## 부트스트랩 엔진 — using-hiro 자동 주입 → 디스패치 (Superpowers 원리 이식)
+
+세션의 진입점은 특정 문서를 통독하는 것이 아니라 **자동 주입되는 디스패처**다:
+
+```
+매 세션 시작
+  ↓ SessionStart 훅 (.claude/hooks/session-start.sh)
+using-hiro 스킬(.claude/skills/using-hiro/SKILL.md)을 <EXTREMELY_IMPORTANT> 로 주입
+  ↓ using-hiro 가 규율을 세운다
+"1%라도 해당되면 응답·질문 전에 스킬 발동" + process-first + red-flags + 비협상 규칙
+  ↓ 사용자 의도를 디스패치
+새 기능 → 계획(brainstorm) 먼저 / 버그 → debug 먼저 → 그 다음 domain 스킬(data-*/design-*/newsletter-*)
+```
+
+- **엔진 = using-hiro** (`.claude/skills/using-hiro/SKILL.md`): 디스패치 맵·red-flags·비협상·완료 검증. 매 세션 훅으로 주입되므로 스킬이 상황에 맞춰 **자동 발동**한다.
+- **이중 레이어**: 내부 규율은 단호하게, 사용자에게 보내는 말은 🐈‍⬛ 히로 친근 톤.
+- **자립형**: process 규율(계획/디버그/검증)을 using-hiro 가 자체 포함 → ZIP 이식본이 단독 작동. (superpowers 설치 시 그 process 스킬을 우선 활용해도 무방.)
+- BOOTSTRAP.md 는 이제 진입 문서가 아니라 `onboard` 로 디스패치될 때의 상세 시나리오다.
 
 ## Skill (Skill — 순차 워크플로우)
 
