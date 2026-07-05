@@ -7,7 +7,7 @@
 > 사람용 참조 자료 (도메인 예시·트러블슈팅·검증 체크리스트) 는 `harness-mirror/docs/HUMAN_GUIDE.md` 참조.
 >
 > **부트스트랩 엔진 (재편됨)**: 세션 진입점은 이 파일이 아니라 **`using-hiro`** 다.
-> 매 세션 `SessionStart` 훅(`.claude/hooks/session-start.sh`)이 `using-hiro` 를 `<EXTREMELY_IMPORTANT>` 로 자동 주입 →
+> 세션 시작(startup·clear·compact)마다 `SessionStart` 훅(`.claude/hooks/session-start.sh`)이 `using-hiro` 를 `<EXTREMELY_IMPORTANT>` 로 자동 주입 →
 > `using-hiro` 가 사용자 의도를 스킬로 디스패치한다 (process-first). 본 파일은 그중
 > **"하네스 적용/셋업" 의도가 `onboard` 스킬로 디스패치됐을 때** 따르는 STEP 0-8 상세 시나리오다.
 > 즉 위→아래로 통독하는 진입 문서가 아니라, `onboard` 가 참조하는 시나리오다.

@@ -28,12 +28,8 @@ const FONT_FACE_CSS = `
 
 const CATEGORIES = ['performance', 'accessibility', 'seo', 'ai_readiness']
 
-// cc(소문자) → 표시명
-const CC_NAME = {
-  us: 'USA', ca: 'Canada', uk: 'UK', gb: 'UK', de: 'Germany', es: 'Spain',
-  fr: 'France', it: 'Italy', br: 'Brazil', mx: 'Mexico', in: 'India',
-  au: 'Australia', vn: 'Vietnam', jp: 'Japan', kr: 'Korea', cn: 'China',
-}
+// cc(소문자) → 표시명 — 집계기와 공유 single source (드리프트 방지).
+import { CC_NAME } from './readability-cc.mjs'
 
 function escHtml(s) {
   return String(s == null ? '' : s)
@@ -478,6 +474,8 @@ function readabilityClient() {
         out.push({ cc: r.cc, pt: r.pt, url: r.url, score: r.score, id: pair[0], hint: _failsData.hints[pair[1]] })
       })
     })
+    // 점수 오름차순(최저=가장 개선 시급) — 표는 상위 CAP 만 잘라 보여주므로 '상위 N' 라벨이 실제로 맞음.
+    out.sort(function (a, b) { return a.score - b.score })
     return out
   }
   function renderFailsTable() {
@@ -522,7 +520,9 @@ function readabilityClient() {
 
   function buildControls() {
     var nav = document.getElementById('rd-tabnav')
-    var tabs = [['country', '국가별'], ['pagetype', '페이지 타입별'], ['fails', '개선 항목'], ['report', '해석 리포트'], ['criteria', '검수 기준']]
+    // report·fails·criteria 탭은 /admin/* 리소스를 fetch/iframe → 비인증 게시본에선 제외.
+    var tabs = [['country', '국가별'], ['pagetype', '페이지 타입별']]
+    if (RD.adminMode) tabs.push(['fails', '개선 항목'], ['report', '해석 리포트'], ['criteria', '검수 기준'])
     nav.innerHTML = tabs.map(function (t) {
       return '<button data-tab="' + t[0] + '"' + (t[0] === state.tab ? ' class="active"' : '') + '>' + t[1] + '</button>'
     }).join('')
@@ -569,6 +569,8 @@ export function renderReadabilityHTML({ snapshot, index, adminMode = false } = {
   // 클라이언트 인터랙티브 렌더용 데이터 (탭/필터). 서버 뷰는 <noscript> fallback 유지.
   const clientData = {
     date: snapshot.date,
+    // adminMode: 해석 리포트·개선 항목 탭은 /admin/* 리소스를 fetch → 게시본(비인증)에선 숨김.
+    adminMode: !!adminMode,
     categoryLabels: snapshot.categoryLabels || {},
     ccName: Object.fromEntries(Object.keys(snapshot.countries).map(cc => [cc, CC_NAME[cc] || cc.toUpperCase()])),
     overall: snapshot.overall,
@@ -725,8 +727,8 @@ body{background:#F1F5F9;font-family:${FONT};color:#1A1A1A;line-height:1.6}
     ${viewCategoryDetail(snapshot)}
     ${viewPageTypes(snapshot)}
     ${viewBotsAndSsr(snapshot)}
-    ${sectionCard('해석 리포트 — 감점 사유 종합', RED, '<a class="crit-dl-btn" href="/admin/readability/audit-report.txt" download="audit_report.txt">해석 리포트 텍스트 열기/다운로드</a>')}
-    ${sectionCard('개선 항목 (페이지별 FAIL)', RED, '<div class="tab-note">조합 필터(국가·타입·항목) 탭은 JavaScript 가 필요합니다. 원본 데이터: <a href="/admin/readability/fails.json">fails.json</a></div>')}
+    ${adminMode ? sectionCard('해석 리포트 — 감점 사유 종합', RED, '<a class="crit-dl-btn" href="/admin/readability/audit-report.txt" download="audit_report.txt">해석 리포트 텍스트 열기/다운로드</a>') : ''}
+    ${adminMode ? sectionCard('개선 항목 (페이지별 FAIL)', RED, '<div class="tab-note">조합 필터(국가·타입·항목) 탭은 JavaScript 가 필요합니다. 원본 데이터: <a href="/admin/readability/fails.json">fails.json</a></div>') : ''}
   </noscript>
 </div>
 

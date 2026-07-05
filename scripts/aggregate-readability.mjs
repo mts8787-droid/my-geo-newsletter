@@ -8,10 +8,11 @@
 //
 // 사용: node scripts/aggregate-readability.mjs [--src <run_results 경로>] [--date <YYYY-MM-DD>]
 
-import { readdirSync, readFileSync, writeFileSync, mkdirSync, existsSync, copyFileSync, rmSync } from 'fs'
+import { readdirSync, readFileSync, writeFileSync, mkdirSync, existsSync, copyFileSync, rmSync, statSync } from 'fs'
 import { join, dirname, basename } from 'path'
 import { fileURLToPath } from 'url'
 import { PROD_IDS } from '../src/categoryMap.js'
+import { CC_NAME } from './readability-cc.mjs'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const REPO_ROOT = join(__dirname, '..')
@@ -138,12 +139,7 @@ function resolvePt(pt, url) {
   return { id, label: PT_LABEL[id] || pt.label || id, excluded: false }
 }
 
-// 국가코드 → 표시명 (CSV 다운로드 국가 컬럼용)
-const CC_NAME = {
-  us: 'USA', ca: 'Canada', uk: 'UK', gb: 'UK', de: 'Germany', es: 'Spain',
-  fr: 'France', it: 'Italy', br: 'Brazil', mx: 'Mexico', in: 'India',
-  au: 'Australia', vn: 'Vietnam', jp: 'Japan', kr: 'Korea', cn: 'China',
-}
+// 국가코드 → 표시명 (CSV 다운로드 국가 컬럼용) — 공유 single source (render 와 동일).
 
 // CSV 셀 이스케이프 (쉼표/따옴표/개행 포함 시 따옴표 감싸기)
 function csvCell(v) {
@@ -282,20 +278,28 @@ function finalizeAcc(acc) {
 
 // per-URL 실패(FAIL) 항목 추출 — 개선 리포트(국가×페이지타입×항목 조합 필터)용.
 // applicable 한 pass===false 만 수집. checkMeta(id→{label,cat}) 를 부수적으로 채움 (필터 드롭다운 메타).
-function collectFails(score, checkMeta) {
+export function collectFails(score, checkMeta) {
   const out = []
   const bd = score.breakdown || {}
   for (const cat of CATEGORIES) {
     const items = (bd[cat] && bd[cat].items) || {}
     for (const [id, it] of Object.entries(items)) {
-      const applicable = !(it.na === true || it.pass === null || it.pass == null)
-      if (applicable && it.pass === false) {
+      // applicable 한 FAIL 만: pass===false 자체가 na/null 을 이미 배제 → na!==true 만 추가 확인.
+      if (it && it.pass === false && it.na !== true) {
         if (!checkMeta[id]) checkMeta[id] = { label: it.label || id, cat }
         out.push({ id, hint: it.hint || '' })
       }
     }
   }
   return out
+}
+
+// fetch 실패(비-200) 페이지 판정 — ai_status_200 이 FAIL 이면 전 체크가 'HTML 파싱 실패'로
+// cascade-FAIL 하므로 개선 대상이 아님(gen_audit_report.py fetch_state 와 동일 취지). 개선 목록에서 제외.
+export function isFetchFailed(score) {
+  const it = ((score.breakdown || {}).ai_readiness || {}).items || {}
+  const s = it.ai_status_200
+  return !!(s && s.pass === false)
 }
 
 function main() {
@@ -360,15 +364,26 @@ function main() {
       if (rpt && rpt.excluded) continue
       items.push({ result: s.result, url, rpt })
     }
-    // 개선 리포트(조합 필터)용 — 전수 페이지의 실패 항목 수집 (샘플링 전, 최대 커버리지)
+    // 개선 리포트(조합 필터)용 — 전수 페이지의 실패 항목 수집 (샘플링 전, 최대 커버리지).
+    // per-row try/catch (data.md §6.3) — 손상된 breakdown 한 건이 전체 집계를 멈추지 않게.
+    let failSkip = 0, fetchFailSkip = 0
     for (const it of items) {
-      const sc = it.result.score
-      if (!sc || typeof sc.total !== 'number') continue
-      const fails = collectFails(sc, checkMeta)
-      if (!fails.length) continue
-      const ptId = it.rpt ? it.rpt.id : '(none)'
-      if (it.rpt && !ptLabelMap[ptId]) ptLabelMap[ptId] = it.rpt.label
-      failRows.push({ cc: meta.cc, pt: ptId, url: it.url || '', score: sc.total, fails })
+      try {
+        const sc = it.result.score
+        if (!sc || typeof sc.total !== 'number') { failSkip++; continue }
+        if (isFetchFailed(sc)) { fetchFailSkip++; continue }  // 비-200 페이지는 개선 대상 아님
+        const fails = collectFails(sc, checkMeta)
+        if (!fails.length) continue
+        const ptId = it.rpt ? it.rpt.id : '(none)'
+        if (it.rpt && !ptLabelMap[ptId]) ptLabelMap[ptId] = it.rpt.label
+        failRows.push({ cc: meta.cc, pt: ptId, url: it.url || '', score: sc.total, fails })
+      } catch (e) {
+        failSkip++
+        console.warn(`[aggregate-readability] WARN: ${meta.cc} FAIL 수집 skip — ${e.message}`, { url: it.url })
+      }
+    }
+    if (failSkip || fetchFailSkip) {
+      console.log(`[aggregate-readability] ${meta.cc}: FAIL 수집 skip ${failSkip} (미채점/손상) + fetch실패 제외 ${fetchFailSkip}`)
     }
     // 페이지타입별 max SAMPLE_PER_PT 표본 (제품군 균등 분배) — 집계 + CSV 모두 동일 표본 사용
     const selected = sampleByPageType(items)
@@ -461,17 +476,22 @@ function main() {
     hints,        // 인터닝된 hint 사전 (f[][1] 가 인덱스)
     rows: failsRowsOut,
   }
-  writeFileSync(failsPath, JSON.stringify(failsDoc))
-  // 과거 fails-*.json 은 최신 1개만 유지 (현재 개선 대상만 의미 — 시계열 가치 없음, ~3MB 라 git 비대 방지)
-  for (const fn of readdirSync(OUT_DIR)) {
-    if (/^fails-\d{4}-\d{2}-\d{2}\.json$/.test(fn) && fn !== `fails-${snapshotDate}.json`) {
+  const failsJson = JSON.stringify(failsDoc)
+  writeFileSync(failsPath, failsJson)
+  // fails-*.json 은 최신 날짜 1개만 유지 (개선 대상 현재값만 의미 — 시계열 가치 없음, ~3MB 라 git 비대 방지).
+  // 주의: snapshotDate 가 아니라 존재하는 fails 파일 중 '최신 날짜' 를 유지 → 과거 --date 로 backfill 해도
+  // 이미 있는 더 최신 fails 를 지우지 않음(latestFailsFile 이 최신 서빙 유지).
+  const failsFiles = readdirSync(OUT_DIR).filter(f => /^fails-\d{4}-\d{2}-\d{2}\.json$/.test(f)).sort()
+  const keepFails = failsFiles[failsFiles.length - 1]  // 사전순 마지막 = 최신 날짜
+  for (const fn of failsFiles) {
+    if (fn !== keepFails) {
       rmSync(join(OUT_DIR, fn))
-      console.log(`[aggregate-readability] 과거 fails 제거: ${fn}`)
+      console.log(`[aggregate-readability] 과거 fails 제거: ${fn} (유지: ${keepFails})`)
     }
   }
 
   const kb = (JSON.stringify(snapshot).length / 1024).toFixed(1)
-  const fkb = (JSON.stringify(failsDoc).length / 1024).toFixed(1)
+  const fkb = (failsJson.length / 1024).toFixed(1)
   console.log(`[aggregate-readability] ✓ 스냅샷 저장: ${outPath} (${kb} KB, ${Object.keys(countries).length}개국)`)
   console.log(`[aggregate-readability] ✓ 개선 항목(FAIL): ${failsPath} (${fkb} KB, ${failRows.length} pages)`)
   console.log(`[aggregate-readability] ✓ 인덱스: ${indexPath} (${index.snapshots.length}개 스냅샷)`)
@@ -482,7 +502,7 @@ function main() {
   const reportDst = join(OUT_DIR, 'audit_report.txt')
   if (existsSync(reportSrc)) {
     copyFileSync(reportSrc, reportDst)
-    const rkb = (readFileSync(reportDst).length / 1024).toFixed(1)
+    const rkb = (statSync(reportDst).size / 1024).toFixed(1)
     console.log(`[aggregate-readability] ✓ 해석 리포트 사본: ${reportDst} (${rkb} KB) ← ${reportSrc}`)
   } else {
     console.warn(`[aggregate-readability] WARN: 해석 리포트 원본 없음, 사본 유지 — ${reportSrc} (--report 또는 AUDIT_REPORT_PATH 로 지정)`)
@@ -496,4 +516,5 @@ function mostCommon(arr) {
   return Object.entries(cnt).sort((a, b) => b[1] - a[1])[0][0]
 }
 
-main()
+// 직접 실행 시에만 집계 수행 — import(테스트 등) 시 자동 실행 방지.
+if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) main()

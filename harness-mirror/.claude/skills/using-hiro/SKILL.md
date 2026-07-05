@@ -1,6 +1,6 @@
 ---
 name: using-hiro
-description: Use at the start of every HIRO-harness session — HIRO 스킬을 찾아 디스패치하는 방법을 정하고, 응답·질문 전에 해당 스킬을 먼저 발동하도록 강제한다. HIRO = 가전 GEO KPI 대시보드/뉴스레터/리포트 하네스 (Node+Express, React+Vite, Google Sheets 파서, 이메일 호환 HTML).
+description: 'Use at the start of every HIRO-harness session — HIRO 스킬을 찾아 디스패치하는 방법을 정하고, 응답·질문 전에 해당 스킬을 먼저 발동하도록 강제한다. HIRO = 가전 GEO KPI 대시보드/뉴스레터/리포트 하네스 (Node+Express, React+Vite, Google Sheets 파서, 이메일 호환 HTML).'
 ---
 
 <SUBAGENT-STOP>
