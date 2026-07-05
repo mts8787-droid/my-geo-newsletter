@@ -375,7 +375,8 @@ function main() {
         const fails = collectFails(sc, checkMeta)
         if (!fails.length) continue
         const ptId = it.rpt ? it.rpt.id : '(none)'
-        if (it.rpt && !ptLabelMap[ptId]) ptLabelMap[ptId] = it.rpt.label
+        // 라벨 등록 — 페이지타입 미해석(rpt null) 행은 '미분류' 로 표기(UI 에 raw '(none)' 노출 방지).
+        if (!ptLabelMap[ptId]) ptLabelMap[ptId] = it.rpt ? it.rpt.label : '미분류'
         failRows.push({ cc: meta.cc, pt: ptId, url: it.url || '', score: sc.total, fails })
       } catch (e) {
         failSkip++

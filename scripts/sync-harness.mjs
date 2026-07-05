@@ -56,6 +56,9 @@ function copyFile(srcRel, dstRel) {
   content = withHeader(srcRel, content)
   fs.mkdirSync(path.dirname(absDst), { recursive: true })
   fs.writeFileSync(absDst, content, 'utf8')
+  // .sh 훅은 실행권한 보존 — ZIP 이식본이 SessionStart/PreToolUse 훅을 바로 실행 가능하게
+  // (writeFileSync 기본 0644 → 훅 미실행). block-dist/syntax-check/session-start 등 전부 해당.
+  if (srcRel.endsWith('.sh')) fs.chmodSync(absDst, 0o755)
   return true
 }
 

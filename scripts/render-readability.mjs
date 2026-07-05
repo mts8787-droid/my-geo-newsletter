@@ -486,8 +486,12 @@ function readabilityClient() {
     if (!rows.length) { body.innerHTML = '<div class="tab-note">조건에 맞는 개선 항목이 없습니다.</div>'; return }
     var checks = _failsData.checks, ccName = _failsData.ccName, pts = _failsData.pageTypes
     var trs = rows.slice(0, CAP).map(function (r) {
+      // http(s) 만 링크로 — javascript:/data: 등 스킴은 평문 표기(admin origin 에서 실행 방지).
+      var urlCell = /^https?:\/\//i.test(r.url)
+        ? '<a href="' + esc(r.url) + '" target="_blank" rel="noopener">' + esc(r.url) + '</a>'
+        : esc(r.url)
       return '<tr><td>' + esc(ccName[r.cc] || r.cc.toUpperCase()) + '</td><td>' + esc(pts[r.pt] || r.pt) + '</td>' +
-        '<td class="fails-url"><a href="' + esc(r.url) + '" target="_blank" rel="noopener">' + esc(r.url) + '</a></td>' +
+        '<td class="fails-url">' + urlCell + '</td>' +
         '<td>' + esc((checks[r.id] || {}).label || r.id) + '</td>' +
         '<td class="fails-hint">' + esc(r.hint) + '</td>' +
         '<td class="fails-score" style="color:' + scoreColor(r.score) + '">' + r.score + '</td></tr>'
