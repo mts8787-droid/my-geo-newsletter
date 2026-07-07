@@ -1262,8 +1262,10 @@ textarea{resize:vertical;min-height:120px}
       <div>
         <label>모델</label>
         <select id="model">
+          <option value="claude-opus-4-8">Claude Opus 4.8 (최신·고품질, 권장)</option>
           <option value="claude-opus-4-7">Claude Opus 4.7 (고품질)</option>
           <option value="claude-sonnet-4-6">Claude Sonnet 4.6 (빠름, 저렴)</option>
+          <option value="claude-haiku-4-5">Claude Haiku 4.5 (가장 빠름·저렴)</option>
         </select>
       </div>
       <div>
@@ -1289,7 +1291,7 @@ async function load(){
   if(r.status===401){location.href='/admin/login';return}
   var j=await r.json();if(!j.ok)return;
   document.getElementById('rules').value=j.settings.promptRules||'';
-  document.getElementById('model').value=j.settings.model||'claude-opus-4-7';
+  document.getElementById('model').value=j.settings.model||'claude-opus-4-8';
   document.getElementById('maxTokens').value=j.settings.maxTokens||500;
   document.getElementById('useTools').checked=!!j.settings.useTools;
 }

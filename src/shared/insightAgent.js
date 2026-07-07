@@ -10,7 +10,7 @@ const PROMPT_ROOT = join(__dirname, '..', '..', 'prompts')
 
 export const INSIGHT_ARCHIVE_LIMIT = 12
 export const INSIGHT_PAST_EXAMPLES = 3
-export const INSIGHT_DEFAULT_MODEL = 'claude-opus-4-7'
+export const INSIGHT_DEFAULT_MODEL = 'claude-opus-4-8'
 export const INSIGHT_DEFAULT_MAX_TOKENS = 4096
 export const INSIGHT_DEFAULT_MAX_RETRIES = 3
 export const INSIGHT_MIN_OUTPUT_LENGTH = 30
