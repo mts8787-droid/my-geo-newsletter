@@ -755,138 +755,8 @@ function glossaryTabHtml(lang) {
   </div>`
 }
 
-function promptListTabHtml(appendixPrompts, lang) {
-  if (!appendixPrompts || appendixPrompts.length === 0) {
-    const msg = lang === 'en' ? 'No Prompt data available.' : '프롬프트 데이터가 없습니다.'
-    return `<div style="display:flex;align-items:center;justify-content:center;min-height:400px;color:#64748B;font-size:16px">${msg}</div>`
-  }
-  const title = lang === 'en' ? 'Prompt List' : 'Prompt List'
-  const subtitle = lang === 'en' ? 'List of prompts used for GEO KPI measurement.' : 'GEO KPI 측정에 사용되는 프롬프트 목록입니다.'
-  const allLabel = lang === 'en' ? 'All' : '전체'
-  const totalLabel = lang === 'en' ? 'Total' : '총'
-  const itemsLabel = lang === 'en' ? '' : '개'
-  const clearLabel = lang === 'en' ? 'Clear filters' : '필터 초기화'
-  const cols = [
-    { key: 'country', label: lang === 'en' ? 'Country' : '국가' },
-    { key: 'division', label: 'Division' },
-    { key: 'category', label: lang === 'en' ? 'Category' : '카테고리' },
-    { key: 'branded', label: lang === 'en' ? 'Type' : '유형' },
-    { key: 'cej', label: 'CEJ' },
-    { key: 'topic', label: lang === 'en' ? 'Topic' : '토픽' },
-  ]
-
-  // Build unique options per column
-  const optionsMap = {}
-  cols.forEach(c => {
-    const set = new Set()
-    appendixPrompts.forEach(p => { if (p[c.key]) set.add(p[c.key]) })
-    optionsMap[c.key] = [...set].sort()
-  })
-
-  // Embed data as JSON for client-side filtering
-  const jsonData = JSON.stringify(appendixPrompts).replace(/</g, '\\u003c').replace(/>/g, '\\u003e')
-  const jsonOptions = JSON.stringify(optionsMap).replace(/</g, '\\u003c').replace(/>/g, '\\u003e')
-
-  const divColors = JSON.stringify({ MS: '#3B82F6', HS: '#10B981', ES: '#F59E0B', PR: '#8B5CF6' })
-  const cejColors = JSON.stringify({ Awareness: '#6366F1', Interest: '#3B82F6', Conversion: '#10B981' })
-
-  return `<div style="max-width:1200px;margin:32px auto;padding:0 40px">
-    <h2 style="font-size:24px;font-weight:800;color:#1A1A1A;margin-bottom:6px">${title}</h2>
-    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
-      <span style="font-size:15px;color:#64748B">${subtitle}</span>
-      <span id="pl-count" style="font-size:12px;color:#94A3B8">${totalLabel} ${appendixPrompts.length}${itemsLabel ? ' ' + itemsLabel : ''}</span>
-      <span id="pl-clear" onclick="_plClear()" style="font-size:11px;color:#3B82F6;cursor:pointer;display:none">${clearLabel}</span>
-    </div>
-    <div style="background:#fff;border:1px solid #E2E8F0;border-radius:10px;overflow:hidden">
-      <table id="pl-table" style="width:100%;border-collapse:collapse;font-size:13px">
-        <thead>
-          <tr style="background:#F8FAFC">
-            <th style="padding:10px 12px;text-align:center;font-size:11px;font-weight:700;color:#64748B">#</th>
-            ${cols.map(c => `<th data-col="${c.key}" onclick="_plToggle('${c.key}')" style="padding:10px 12px;text-align:center;font-size:11px;font-weight:700;color:#64748B;cursor:pointer;position:relative;white-space:nowrap;user-select:none">${c.label} <span id="pl-arrow-${c.key}" style="font-size:9px;color:#94A3B8">▽</span></th>`).join('')}
-            <th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:#64748B;min-width:300px">${lang === 'en' ? 'Prompt' : '프롬프트'}</th>
-          </tr>
-        </thead>
-        <tbody id="pl-body"></tbody>
-      </table>
-    </div>
-    <!-- Filter dropdowns (hidden by default) -->
-    ${cols.map(c => `<div id="pl-dd-${c.key}" style="display:none;position:fixed;z-index:999;background:#fff;border:1px solid #E2E8F0;border-radius:8px;padding:6px;min-width:140px;max-height:240px;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,0.15)">
-      <div onclick="_plFilter('${c.key}','')" style="padding:5px 10px;border-radius:4px;cursor:pointer;font-size:12px;color:#64748B">${allLabel}</div>
-      ${optionsMap[c.key].map(v => `<div onclick="_plFilter('${c.key}','${v.replace(/'/g, "\\'")}')" style="padding:5px 10px;border-radius:4px;cursor:pointer;font-size:12px;color:#64748B">${v}</div>`).join('')}
-    </div>`).join('')}
-  </div>
-  <script>
-  (function(){
-    var _plData=${jsonData};
-    var _plFilters={};
-    var _divC=${divColors};
-    var _cejC=${cejColors};
-    var _openDD=null;
-    function badge(t,c){return '<span style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;background:'+c+'22;color:'+c+';white-space:nowrap">'+t+'</span>';}
-    function render(){
-      var f=_plData.filter(function(p){
-        for(var k in _plFilters){if(_plFilters[k]&&p[k]!==_plFilters[k])return false;}
-        return true;
-      });
-      var html='';
-      f.forEach(function(p,i){
-        html+='<tr style="border-top:1px solid #E2E8F0" onmouseenter="this.style.background=\\'#F8FAFC\\'" onmouseleave="this.style.background=\\'transparent\\'">';
-        html+='<td style="padding:8px 12px;text-align:center;font-size:13px;color:#64748B">'+(i+1)+'</td>';
-        html+='<td style="padding:8px 12px;text-align:center">'+badge(p.country,'#3B82F6')+'</td>';
-        html+='<td style="padding:8px 12px;text-align:center">'+badge(p.division,_divC[p.division]||'#64748B')+'</td>';
-        html+='<td style="padding:8px 12px;text-align:center;font-size:13px;color:#64748B">'+p.category+'</td>';
-        html+='<td style="padding:8px 12px;text-align:center">'+badge(p.branded,p.branded==='Brand'?'#A50034':'#64748B')+'</td>';
-        html+='<td style="padding:8px 12px;text-align:center">'+badge(p.cej,_cejC[p.cej]||'#64748B')+'</td>';
-        html+='<td style="padding:8px 12px;text-align:center;font-size:13px;color:#64748B">'+p.topic+'</td>';
-        html+='<td style="padding:8px 12px;text-align:left;font-size:13px;color:#1A1A1A;font-weight:500">'+p.prompt+'</td>';
-        html+='</tr>';
-      });
-      document.getElementById('pl-body').innerHTML=html;
-      document.getElementById('pl-count').textContent='${totalLabel} '+f.length+'${itemsLabel ? ' ' + itemsLabel : ''}';
-      var hasF=Object.keys(_plFilters).some(function(k){return !!_plFilters[k];});
-      document.getElementById('pl-clear').style.display=hasF?'':'none';
-      // Update arrows
-      ${JSON.stringify(cols.map(c => c.key))}.forEach(function(k){
-        document.getElementById('pl-arrow-'+k).textContent=_plFilters[k]?'▼':'▽';
-        document.getElementById('pl-arrow-'+k).style.color=_plFilters[k]?'#3B82F6':'#94A3B8';
-      });
-    }
-    window._plToggle=function(col){
-      if(_openDD===col){_closeDD();return;}
-      _closeDD();
-      var th=document.querySelector('th[data-col="'+col+'"]');
-      var rect=th.getBoundingClientRect();
-      var dd=document.getElementById('pl-dd-'+col);
-      dd.style.display='block';
-      dd.style.left=rect.left+'px';
-      dd.style.top=rect.bottom+2+'px';
-      // highlight active
-      var children=dd.children;
-      for(var i=0;i<children.length;i++){
-        var isActive=i===0?!_plFilters[col]:children[i].textContent===_plFilters[col];
-        children[i].style.color=isActive?'#3B82F6':'#64748B';
-        children[i].style.fontWeight=isActive?'700':'400';
-        children[i].style.background=isActive?'rgba(59,130,246,0.08)':'transparent';
-      }
-      _openDD=col;
-    };
-    function _closeDD(){
-      if(_openDD){document.getElementById('pl-dd-'+_openDD).style.display='none';_openDD=null;}
-    }
-    window._plFilter=function(col,val){
-      _plFilters[col]=val;_closeDD();render();
-    };
-    window._plClear=function(){_plFilters={};_closeDD();render();};
-    document.addEventListener('click',function(e){
-      if(_openDD&&!e.target.closest('th[data-col]')&&!e.target.closest('[id^="pl-dd-"]'))_closeDD();
-    });
-    render();
-  })();
-  </script>`
-}
-
 // ─── PR Visibility 탭 HTML ──────────────────────────────────────────────────
-function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang, meta, appendixPrompts, extra, period = 'weekly') {
+function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang, meta, extra, period = 'weekly') {
   const isMonthly = period === 'monthly'
   const P = isMonthly ? 'prm' : 'pr'  // 엘리먼트 id / window 글로벌 네임스페이스 (이중 렌더 충돌 방지)
   if (!weeklyPR || !weeklyPR.length) {
@@ -927,14 +797,6 @@ function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang, meta, appendixPromp
 
   // ── 토픽별 US 핵심 프롬프트 매핑 ──
   const topicPromptMap = parseKeyValRaw(meta?.prTopicPromptsRaw)
-  if (appendixPrompts && appendixPrompts.length) {
-    topics.forEach(tp => {
-      if (!topicPromptMap[tp]) {
-        const match = appendixPrompts.find(p => p.topic === tp && p.country === 'US')
-        if (match) topicPromptMap[tp] = match.prompt
-      }
-    })
-  }
 
   // ── PR Topic List 시트에서 토픽 설명/카테고리 매핑 ──
   const prTopicList = extra?.prTopicList || []
@@ -1430,7 +1292,6 @@ export function generateDashboardHTML(meta, total, products, citations, dotcom, 
     return { ...p, compName: match[0], vsComp: compScore, compRatio: ratio, status: ratio >= 100 ? 'lead' : ratio >= 80 ? 'behind' : 'critical' }
   })
   const visibilityOnly = opts?.visibilityOnly || false
-  const includePromptList = opts?.includePromptList || false
   const includeReadability = opts?.includeReadability === true
   const ulMap = extra?.unlaunchedMap || {}
   // 트래커는 v2(geo-progress-tracker-v2 통합본)만 사용 — 항상 포함
@@ -1661,8 +1522,8 @@ export function generateDashboardHTML(meta, total, products, citations, dotcom, 
         <button id="pr-period-m-btn" onclick="switchPRPeriod('monthly')" style="${prToggleBtnBase};background:transparent;color:#94A3B8">${lang === 'en' ? 'Monthly' : '월간'}</button>
       </div>
     </div>
-    <div id="pr-period-weekly">${prVisibilityTabHtml(extra?.weeklyPR, extra?.weeklyPRLabels, lang, meta, extra?.appendixPrompts, extra)}</div>
-    <div id="pr-period-monthly" style="display:none">${prVisibilityTabHtml(extra?.monthlyPR, extra?.monthlyPRLabels, lang, meta, extra?.appendixPrompts, extra, 'monthly')}</div>`
+    <div id="pr-period-weekly">${prVisibilityTabHtml(extra?.weeklyPR, extra?.weeklyPRLabels, lang, meta, extra)}</div>
+    <div id="pr-period-monthly" style="display:none">${prVisibilityTabHtml(extra?.monthlyPR, extra?.monthlyPRLabels, lang, meta, extra, 'monthly')}</div>`
 
   return `<!DOCTYPE html>
 <html lang="${lang === 'en' ? 'en' : 'ko'}">
@@ -1698,7 +1559,6 @@ ${visibilityOnly ? `
     <button class="tab-btn" onclick="switchTab('citation')">Citation</button>
     ${includeReadability ? `<button class="tab-btn" onclick="switchTab('readability')">Readability</button>` : ''}
     <button class="tab-btn" onclick="switchTab('progress')">Progress Tracker</button>
-    ${includePromptList ? `<button class="tab-btn" onclick="switchTab('promptlist')">Prompt List</button>` : ''}
     <button class="tab-btn" onclick="switchTab('glossary')">Glossary</button>
   </div>
   <div id="lang-toggle" style="display:flex;gap:2px;background:#1E293B;border-radius:6px;padding:2px">
@@ -1746,9 +1606,6 @@ ${includeReadability ? `<div id="tab-readability" class="tab-panel">
 </div>` : ''}
 <div id="tab-progress" class="tab-panel">
   ${trackerTabContent}
-</div>
-<div id="tab-promptlist" class="tab-panel">
-  ${promptListTabHtml(extra?.appendixPrompts, lang)}
 </div>
 <div id="tab-glossary" class="tab-panel">
   ${glossaryTabHtml(lang)}

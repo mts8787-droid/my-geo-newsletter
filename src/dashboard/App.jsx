@@ -4,14 +4,12 @@ import { generateDashboardHTML } from './dashboardTemplate.js'
 import { resolveDataForLang } from '../shared/utils.js'
 import { publishCombinedDashboard } from '../shared/api.js'
 import GlossaryPage from './GlossaryPage.jsx'
-import AppendixPage from './AppendixPage.jsx'
 
 const TABS = [
   { key: 'visibility', label: 'Visibility' },
   { key: 'citation',   label: 'Citation' },
   { key: 'readability', label: 'Readability' },
   { key: 'tracker',    label: 'Progress Tracker' },
-  { key: 'appendix',   label: 'Prompt List' },
   { key: 'glossary',   label: 'Glossary' },
 ]
 
@@ -28,7 +26,6 @@ const EDITOR_LINKS = {
   citation:    '/admin/citation',
   readability: null,
   tracker:     '/admin/progress-tracker-v2/',
-  appendix:    null,
   glossary:    null,
 }
 
@@ -54,7 +51,6 @@ export default function App() {
   const [publishing, setPublishing] = useState(false)
   const [publishMsg, setPublishMsg] = useState('')
   const [includeReadability, setIncludeReadability] = useState(false)
-  const [includePromptList, setIncludePromptList] = useState(false)
 
   // Hash routing
   useEffect(() => {
@@ -87,7 +83,7 @@ export default function App() {
     if (publishing) return
     setPublishing(true); setPublishMsg('')
     try {
-      const result = await publishCombinedDashboard(generateDashboardHTML, resolveDataForLang, { includePromptList, includeReadability })
+      const result = await publishCombinedDashboard(generateDashboardHTML, resolveDataForLang, { includeReadability })
       setPublishMsg(`게시 완료!\nKO: ${window.location.origin}${result.urls.ko}\nEN: ${window.location.origin}${result.urls.en}`)
       fetch('/api/publish-history').then(r => r.ok ? r.json() : null).then(d => { if (d) setPublishData(d) })
     } catch (err) {
@@ -101,8 +97,8 @@ export default function App() {
   // Derive status for active tab
   function getTabStatus(tabKey) {
     if (tabKey === 'readability') return { published: false, urls: [] }
-    if (tabKey === 'glossary' || tabKey === 'appendix') {
-      // Glossary/Prompt List는 통합 대시보드에 포함되어 게시됨
+    if (tabKey === 'glossary') {
+      // Glossary는 통합 대시보드에 포함되어 게시됨
       if (!publishData) return { published: false, urls: [] }
       const entry = publishData['dashboard']
       if (!entry) return { published: false, urls: [] }
@@ -236,7 +232,7 @@ export default function App() {
             </>
           ) : (
             <>
-              {/* 탭 설명 (glossary / appendix) */}
+              {/* 탭 설명 (glossary) */}
               {activeTab === 'glossary' && (
                 <div style={{
                   background: CARD_BG, borderRadius: 10, padding: 16,
@@ -245,16 +241,6 @@ export default function App() {
                   {lang === 'en'
                     ? 'Reference for GEO terminology used across all dashboards.'
                     : 'GEO 대시보드 전반에서 사용되는 주요 용어 설명입니다.'}
-                </div>
-              )}
-              {activeTab === 'appendix' && (
-                <div style={{
-                  background: CARD_BG, borderRadius: 10, padding: 16,
-                  color: TEXT_DIM, fontSize: 13, lineHeight: 1.7,
-                }}>
-                  {lang === 'en'
-                    ? 'Full list of prompts used for GEO KPI measurement across all countries and categories.'
-                    : 'GEO KPI 측정에 사용되는 전체 프롬프트 목록입니다. 국가/카테고리별 필터링이 가능합니다.'}
                 </div>
               )}
 
@@ -311,11 +297,6 @@ export default function App() {
                 <input type="checkbox" checked={includeReadability} onChange={e => setIncludeReadability(e.target.checked)} style={{ cursor: 'pointer' }} />
                 Readability 포함
               </label>
-              {/* Prompt List 포함 토글 */}
-              <label style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8, fontSize: 11, color: '#94A3B8', fontFamily: FONT, cursor: 'pointer' }}>
-                <input type="checkbox" checked={includePromptList} onChange={e => setIncludePromptList(e.target.checked)} style={{ cursor: 'pointer' }} />
-                Prompt List 포함
-              </label>
 
               {/* 통합 대시보드 게시 버튼 */}
               <button onClick={handlePublishCombined} disabled={publishing}
@@ -340,8 +321,6 @@ export default function App() {
         <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
           {activeTab === 'glossary' ? (
             <GlossaryPage lang={lang} />
-          ) : activeTab === 'appendix' ? (
-            <AppendixPage lang={lang} />
           ) : iframeSrc ? (
             <iframe
               key={`${activeTab}-${lang}`}

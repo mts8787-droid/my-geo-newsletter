@@ -158,7 +158,6 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
             monthlyPRLabels: latestExtra.monthlyPRLabels || currentSync.monthlyPRLabels,
             weeklyBrandPrompt: latestExtra.weeklyBrandPrompt || currentSync.weeklyBrandPrompt,
             weeklyBrandPromptLabels: latestExtra.weeklyBrandPromptLabels || currentSync.weeklyBrandPromptLabels,
-            appendixPrompts: latestExtra.appendixPrompts || currentSync.appendixPrompts,
           })
         } catch {}
       }
@@ -448,7 +447,6 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
           monthlyPRLabels: parsed.monthlyPRLabels || null,
           weeklyBrandPrompt: parsed.weeklyBrandPrompt || null,
           weeklyBrandPromptLabels: parsed.weeklyBrandPromptLabels || null,
-          appendixPrompts: parsed.appendixPrompts || null,
           unlaunchedMap: parsed.unlaunchedMap || null,
           weeklyLabelsFull: parsed.weeklyLabelsFull || null,
           prTopicList: parsed.prTopicList || null,
@@ -600,7 +598,6 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
           citationsCnty: parsed.citationsCnty || null,
           citationsByCnty: parsed.citationsByCnty || null,
           dotcomByCnty: parsed.dotcomByCnty || null,
-          appendixPrompts: parsed.appendixPrompts || null,
           unlaunchedMap: parsed.unlaunchedMap || null,
           prTopicList: parsed.prTopicList || null,
           monthlyVis: parsed.monthlyVis || null,
@@ -1492,7 +1489,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
           value={meta.prTopicPromptsRaw || ''}
           onChange={e => setMeta(m => ({ ...m, prTopicPromptsRaw: e.target.value }))}
           rows={6}
-          placeholder={"TV=Best TV to buy in 2026\nAudio=Best soundbar for home theater\n(비워두면 Appendix.Prompt List US 데이터 자동 매칭)"}
+          placeholder={"TV=Best TV to buy in 2026\nAudio=Best soundbar for home theater"}
           style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6, marginBottom: 8, fontSize: 11 }}
         />
 

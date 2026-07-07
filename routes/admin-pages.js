@@ -1,14 +1,11 @@
 // ─── Admin UI 페이지 라우트 (HTML 렌더 모음) ─────────────────────────────
-// /admin/, /admin/plan, /admin/infra, /admin/de-prompts*, /admin/ip-manager,
+// /admin/, /admin/plan, /admin/infra, /admin/ip-manager,
 // /admin/archives, /admin/ai-settings — 모두 인증 후 접근
 import { Router } from 'express'
 import express from 'express'
 import { readFileSync, writeFileSync } from 'fs'
 import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
-import XLSX from 'xlsx-js-style'
-import { parseAppendix } from '../src/excelUtils.js'
-import { readModeSyncData, writeModeSyncData } from '../lib/storage.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const PROJECT_ROOT = join(__dirname, '..')
@@ -875,10 +872,6 @@ ${themeToggleButton()}
     </div>
     <div class="col">
       <div class="section-title">공통 인프라</div>
-      <a class="card" href="/admin/dashboard#promptlist">
-        <div class="card-title">Prompt List</div>
-        <div class="card-desc">GEO KPI 측정에 사용되는 프롬프트 목록 확인</div>
-      </a>
       <a class="card" href="/admin/ip-manager">
         <div class="card-title">IP Access Manager</div>
         <div class="card-desc">게시된 리포트 열람 허용 IP 대역 관리</div>
@@ -894,10 +887,6 @@ ${themeToggleButton()}
       <a class="card" href="/admin/archives">
         <div class="card-title">Archives (학습 데이터)</div>
         <div class="card-desc">완성본 아카이빙 · AI 인사이트 생성 시 문체 학습 데이터로 활용</div>
-      </a>
-      <a class="card" href="/admin/de-prompts">
-        <div class="card-title">독일 프롬프트 예시</div>
-        <div class="card-desc">DE 국가 카테고리별·제품별·토픽별 대표 프롬프트 각 1개</div>
       </a>
 
       <div class="section-title">DB구축</div>
@@ -1041,191 +1030,6 @@ adminPagesRouter.get('/admin/data-prd.html', (req, res) => {
     res.set('Content-Disposition', 'attachment; filename="prd-data-connection.html"')
     res.send(html)
   } catch { res.status(404).send('not found') }
-})
-
-// ─── 독일(DE) 프롬프트 예시 페이지 ────────────────────────────────────────────
-function isNonBrandedPrompt(p) {
-  const v = String(p.branded || '').trim().toLowerCase().replace(/[\s\-_]/g, '')
-  // 논브랜드 표현
-  const NB = new Set(['nb', 'nonbrand', 'nonbranded', 'non', '논브랜드', '비브랜드', 'no', 'n', 'false', '0'])
-  return NB.has(v)
-}
-
-function getDePromptCombos() {
-  const vis = readModeSyncData('visibility') || {}
-  const dash = readModeSyncData('dashboard') || {}
-  const prompts = vis.appendixPrompts || dash.appendixPrompts || []
-  const source = vis.appendixPrompts ? 'visibility' : (dash.appendixPrompts ? 'dashboard' : 'none')
-  const dePrompts = prompts
-    .filter(p => String(p.country || '').toUpperCase() === 'DE')
-    .filter(isNonBrandedPrompt)
-  // (category, topic, cej) 조합당 첫 1건
-  const seen = new Set()
-  const combos = []
-  for (const p of dePrompts) {
-    const key = `${p.category || ''}||${p.topic || ''}||${p.cej || ''}`
-    if (seen.has(key)) continue
-    seen.add(key)
-    combos.push(p)
-  }
-  combos.sort((a, b) => {
-    return String(a.category || '').localeCompare(String(b.category || ''))
-      || String(a.topic || '').localeCompare(String(b.topic || ''))
-      || String(a.cej || '').localeCompare(String(b.cej || ''))
-  })
-  return { combos, totalPrompts: prompts.length, deCount: dePrompts.length, source }
-}
-
-adminPagesRouter.get('/admin/de-prompts', (req, res) => {
-  const { combos, totalPrompts, deCount, source } = getDePromptCombos()
-  function esc(s) {
-    return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
-  }
-  const rows = combos.map((p, i) => `
-    <tr>
-      <td class="num">${i + 1}</td>
-      <td>${esc(p.category)}</td>
-      <td>${esc(p.topic)}</td>
-      <td>${esc(p.cej)}</td>
-      <td class="prompt">${esc(p.prompt)}</td>
-      <td class="meta">${esc(p.division)}</td>
-      <td class="meta">${esc(p.launched)}</td>
-      <td class="meta">${esc(p.branded)}</td>
-    </tr>`).join('')
-
-  res.set('Content-Type', 'text/html; charset=utf-8')
-  res.send(`<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>독일 프롬프트 예시</title>
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{min-height:100vh;background:#0F172A;color:#E2E8F0;font-family:'LG Smart','Arial Narrow',Arial,sans-serif;padding:28px 32px;line-height:1.5}
-h1{font-size:22px;color:#F8FAFC;margin-bottom:4px}
-.sub{font-size:16px;color:#64748B;margin-bottom:18px}
-.back{color:#CF0652;text-decoration:none;font-size:16px;margin-right:14px}
-.bar{display:flex;align-items:center;gap:14px;margin-bottom:16px;flex-wrap:wrap}
-.info{font-size:15px;color:#94A3B8;background:#1E293B;border:1px solid #334155;border-radius:8px;padding:8px 14px}
-.btn{background:#CF0652;color:#fff;border:none;border-radius:8px;padding:9px 18px;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;text-decoration:none;display:inline-block}
-.btn:hover{opacity:.9}
-.wrap{background:#1E293B;border:1px solid #334155;border-radius:12px;overflow:auto}
-table{width:100%;border-collapse:collapse;font-size:15px}
-thead th{background:#0F172A;color:#94A3B8;font-weight:700;padding:10px 12px;text-align:left;border-bottom:1px solid #334155;position:sticky;top:0;white-space:nowrap}
-tbody td{padding:10px 12px;border-bottom:1px solid #1E293B;color:#E2E8F0;vertical-align:top}
-tbody tr:nth-child(even){background:#182237}
-.num{color:#64748B;font-weight:600;width:40px}
-.prompt{min-width:380px;white-space:pre-wrap;word-break:break-word;color:#F8FAFC}
-.meta{color:#94A3B8;font-size:14px}
-.empty{padding:40px;text-align:center;color:#64748B}
-.syncform{background:#1E293B;border:1px solid #334155;border-radius:10px;padding:14px 18px;margin-bottom:18px;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
-.syncform label{display:flex;flex-direction:column;font-size:14px;color:#94A3B8;gap:4px;flex:1;min-width:180px}
-.syncform input{background:#0F172A;border:1px solid #334155;border-radius:6px;padding:8px 10px;color:#E2E8F0;font-size:16px;font-family:inherit}
-.syncform .hint{font-size:14px;color:#64748B;flex-basis:100%}
-</style></head><body>
-<a class="back" href="/admin/">← 관리자</a>
-<h1>독일(DE) 프롬프트 예시</h1>
-<p class="sub">appendixPrompts 소스 · DE + 논브랜드 필터 후 (카테고리 × 토픽 × CEJ) 조합마다 대표 프롬프트 1개</p>
-<div class="bar">
-  <div class="info">소스: <strong>${esc(source)}</strong> · 전체: <strong>${totalPrompts}</strong>건 · DE: <strong>${deCount}</strong>건 · 조합: <strong>${combos.length}</strong>건</div>
-  <a class="btn" href="/admin/de-prompts.xlsx" download>엑셀 다운로드</a>
-  <a class="btn" href="/admin/de-prompts.csv" download>CSV 다운로드</a>
-</div>
-<form class="syncform" method="POST" action="/admin/de-prompts/sync-sheet">
-  <label>Google Sheet URL 또는 ID <input type="text" name="sheet" placeholder="https://docs.google.com/spreadsheets/d/..." required></label>
-  <label>탭 이름 <input type="text" name="tab" value="Appendix.Prompt List"></label>
-  <button class="btn" type="submit">시트에서 동기화</button>
-  <span class="hint">동기화하면 visibility sync-data의 appendixPrompts가 시트 최신값으로 교체됩니다.</span>
-</form>
-${combos.length === 0
-  ? `<div class="wrap"><p class="empty">DE 프롬프트가 없습니다. visibility/dashboard 동기화 후 재시도하세요.</p></div>`
-  : `<div class="wrap"><table>
-    <thead><tr>
-      <th>#</th><th>제품(Category)</th><th>토픽(Topic)</th><th>CEJ</th><th>프롬프트</th>
-      <th>Division</th><th>Launched</th><th>Branded</th>
-    </tr></thead>
-    <tbody>${rows}</tbody>
-  </table></div>`}
-</body></html>`)
-})
-
-// CSV 다운로드 (UTF-8 BOM, 엑셀 한글 호환)
-adminPagesRouter.get('/admin/de-prompts.csv', (req, res) => {
-  const { combos } = getDePromptCombos()
-  function csvCell(v) {
-    const s = String(v ?? '')
-    if (/[",\n\r]/.test(s)) return `"${s.replace(/"/g, '""')}"`
-    return s
-  }
-  const header = ['#', 'Category', 'Topic', 'CEJ', 'Prompt', 'Division', 'Launched', 'Branded']
-  const lines = [header.join(',')]
-  combos.forEach((p, i) => {
-    lines.push([i + 1, p.category, p.topic, p.cej, p.prompt, p.division, p.launched, p.branded].map(csvCell).join(','))
-  })
-  const body = '\uFEFF' + lines.join('\r\n')
-  res.set('Content-Type', 'text/csv; charset=utf-8')
-  res.set('Content-Disposition', 'attachment; filename="de-prompts.csv"')
-  res.send(body)
-})
-
-function extractSheetId(raw) {
-  const s = String(raw || '').trim()
-  const m = s.match(/\/spreadsheets\/d\/([a-zA-Z0-9_-]+)/)
-  if (m) return m[1]
-  // 공백/기호 없는 순수 ID로 간주
-  if (/^[a-zA-Z0-9_-]{20,}$/.test(s)) return s
-  return null
-}
-
-adminPagesRouter.use('/admin/de-prompts/sync-sheet', express.urlencoded({ extended: false, limit: '1mb' }))
-adminPagesRouter.post('/admin/de-prompts/sync-sheet', async (req, res) => {
-  const sheetId = extractSheetId(req.body?.sheet)
-  const tab = String(req.body?.tab || 'Appendix.Prompt List').trim() || 'Appendix.Prompt List'
-  if (!sheetId) return res.status(400).send('유효한 Google Sheet URL/ID가 아닙니다. <a href="/admin/de-prompts">뒤로</a>')
-  try {
-    const rid = `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
-    const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?sheet=${encodeURIComponent(tab)}&tqx=out:csv;reqId:${rid}&headers=1`
-    const gRes = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0' } })
-    if (!gRes.ok) return res.status(gRes.status).send(`Google Sheets 응답 실패: ${gRes.status}. 시트가 공개 보기 허용인지 확인하세요. <a href="/admin/de-prompts">뒤로</a>`)
-    const csv = await gRes.text()
-    const wb = XLSX.read(csv, { type: 'string' })
-    const ws = wb.Sheets[wb.SheetNames[0]]
-    const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' })
-    const parsed = parseAppendix(rows)
-    const appendixPrompts = parsed.appendixPrompts || []
-    if (!appendixPrompts.length) return res.status(422).send(`파싱 결과가 비어있습니다. 탭명/컬럼 헤더(country, prompts)를 확인하세요. <a href="/admin/de-prompts">뒤로</a>`)
-    // visibility sync-data에 병합 저장
-    const current = readModeSyncData('visibility') || {}
-    current.appendixPrompts = appendixPrompts
-    current.savedAt = Date.now()
-    writeModeSyncData('visibility', current)
-    console.log(`[DE-PROMPTS] sheet sync: ${appendixPrompts.length}건 저장 (sheet=${sheetId}, tab=${tab})`)
-    res.redirect('/admin/de-prompts')
-  } catch (err) {
-    console.error('[DE-PROMPTS] sync error:', err.message)
-    res.status(500).send(`동기화 실패: ${err.message}. <a href="/admin/de-prompts">뒤로</a>`)
-  }
-})
-
-// 엑셀(.xlsx) 다운로드
-adminPagesRouter.get('/admin/de-prompts.xlsx', async (req, res) => {
-  const { combos } = getDePromptCombos()
-  const data = [
-    ['#', 'Category', 'Topic', 'CEJ', 'Prompt', 'Division', 'Launched', 'Branded'],
-    ...combos.map((p, i) => [i + 1, p.category || '', p.topic || '', p.cej || '', p.prompt || '', p.division || '', p.launched || '', p.branded || '']),
-  ]
-  const ws = XLSX.utils.aoa_to_sheet(data)
-  // 컬럼 너비
-  ws['!cols'] = [{ wch: 4 }, { wch: 18 }, { wch: 22 }, { wch: 14 }, { wch: 80 }, { wch: 10 }, { wch: 10 }, { wch: 10 }]
-  // 헤더 스타일
-  const headerStyle = { font: { bold: true, color: { rgb: 'FFFFFF' } }, fill: { fgColor: { rgb: 'CF0652' } }, alignment: { vertical: 'center' } }
-  for (let c = 0; c < data[0].length; c++) {
-    const addr = XLSX.utils.encode_cell({ r: 0, c })
-    if (ws[addr]) ws[addr].s = headerStyle
-  }
-  const wb = XLSX.utils.book_new()
-  XLSX.utils.book_append_sheet(wb, ws, 'DE Prompts')
-  const buf = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' })
-  res.set('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-  res.set('Content-Disposition', 'attachment; filename="de-prompts.xlsx"')
-  res.send(buf)
 })
 
 // ─── IP Access Manager UI ────────────────────────────────────────────────────

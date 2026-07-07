@@ -59,7 +59,6 @@ export default function App() {
   const [monthlyPRLabels, setMonthlyPRLabels] = useState([])
   const [weeklyBrandPrompt, setWeeklyBrandPrompt] = useState([])
   const [weeklyBrandPromptLabels, setWeeklyBrandPromptLabels] = useState([])
-  const [appendixPrompts, setAppendixPrompts] = useState([])
   const [unlaunchedMap, setUnlaunchedMap] = useState({})
   const [weeklyLabelsFull, setWeeklyLabelsFull] = useState(null)
   const [prTopicList, setPrTopicList] = useState(null)
@@ -148,7 +147,6 @@ export default function App() {
       if (d.monthlyPRLabels) setMonthlyPRLabels(d.monthlyPRLabels)
       if (d.weeklyBrandPrompt) setWeeklyBrandPrompt(d.weeklyBrandPrompt)
       if (d.weeklyBrandPromptLabels) setWeeklyBrandPromptLabels(d.weeklyBrandPromptLabels)
-      if (d.appendixPrompts) setAppendixPrompts(d.appendixPrompts)
       if (d.unlaunchedMap) setUnlaunchedMap(d.unlaunchedMap)
       if (d.weeklyLabels)  setWeeklyLabels(d.weeklyLabels)
       if (d.weeklyLabelsFull) setWeeklyLabelsFull(d.weeklyLabelsFull)
@@ -244,15 +242,14 @@ export default function App() {
           publishEndpoint="/api/publish-visibility"
           setMonthlyVis={setMonthlyVis}
           monthlyVis={monthlyVis}
-          extra={{ weeklyPR, weeklyPRLabels, monthlyPR, monthlyPRLabels, weeklyBrandPrompt, weeklyBrandPromptLabels, appendixPrompts, unlaunchedMap, weeklyLabelsFull, prTopicList, llmModel }}
-          onSyncExtra={({ weeklyPR, weeklyPRLabels, monthlyPR, monthlyPRLabels, weeklyBrandPrompt, weeklyBrandPromptLabels, appendixPrompts, unlaunchedMap: ulm, weeklyLabelsFull: wlf, prTopicList: ptl }) => {
+          extra={{ weeklyPR, weeklyPRLabels, monthlyPR, monthlyPRLabels, weeklyBrandPrompt, weeklyBrandPromptLabels, unlaunchedMap, weeklyLabelsFull, prTopicList, llmModel }}
+          onSyncExtra={({ weeklyPR, weeklyPRLabels, monthlyPR, monthlyPRLabels, weeklyBrandPrompt, weeklyBrandPromptLabels, unlaunchedMap: ulm, weeklyLabelsFull: wlf, prTopicList: ptl }) => {
             if (weeklyPR) setWeeklyPR(weeklyPR)
             if (weeklyPRLabels) setWeeklyPRLabels(weeklyPRLabels)
             if (monthlyPR) setMonthlyPR(monthlyPR)
             if (monthlyPRLabels) setMonthlyPRLabels(monthlyPRLabels)
             if (weeklyBrandPrompt) setWeeklyBrandPrompt(weeklyBrandPrompt)
             if (weeklyBrandPromptLabels) setWeeklyBrandPromptLabels(weeklyBrandPromptLabels)
-            if (appendixPrompts) setAppendixPrompts(appendixPrompts)
             if (ulm) setUnlaunchedMap(ulm)
             if (wlf) setWeeklyLabelsFull(wlf)
             if (ptl) setPrTopicList(ptl)
@@ -349,7 +346,7 @@ export default function App() {
 
         {/* 컨텐츠 영역 — LLM Model 필터는 iframe 안 filter-layer 의 Week 옆에 통합 */}
         <div style={{ flex: 1, overflow: 'hidden' }}>
-          <DashboardPreview meta={meta} total={total} products={resolved.products} citations={resolved.citations} dotcom={dotcom} productsCnty={resolved.productsCnty} citationsCnty={resolved.citationsCnty} lang={previewLang} weeklyLabels={weeklyLabels} weeklyAll={weeklyAll} citationsByCnty={citationsByCnty} dotcomByCnty={dotcomByCnty} monthlyVis={monthlyVis} extra={{ weeklyPR, weeklyPRLabels, monthlyPR, monthlyPRLabels, weeklyBrandPrompt, weeklyBrandPromptLabels, appendixPrompts, unlaunchedMap, weeklyLabelsFull, prTopicList, llmModel }} />
+          <DashboardPreview meta={meta} total={total} products={resolved.products} citations={resolved.citations} dotcom={dotcom} productsCnty={resolved.productsCnty} citationsCnty={resolved.citationsCnty} lang={previewLang} weeklyLabels={weeklyLabels} weeklyAll={weeklyAll} citationsByCnty={citationsByCnty} dotcomByCnty={dotcomByCnty} monthlyVis={monthlyVis} extra={{ weeklyPR, weeklyPRLabels, monthlyPR, monthlyPRLabels, weeklyBrandPrompt, weeklyBrandPromptLabels, unlaunchedMap, weeklyLabelsFull, prTopicList, llmModel }} />
         </div>
         <div style={{ height: 28, borderTop: '1px solid #1E293B', background: 'rgba(15,23,42,0.95)',
           display: 'flex', alignItems: 'center', justifyContent: 'flex-end', padding: '0 16px', flexShrink: 0 }}>

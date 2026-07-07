@@ -20,7 +20,6 @@ export const SHEET_NAMES = {
   citPageType:    'Citation-Page Type',
   citTouchPoints: 'Citation-Touch Points',
   citDomain:      'Citation-Domain',
-  appendix:       'Appendix.Prompt List',
   unlaunched:     'unlaunched',
   prTopicList:    'PR Topic List',
 }
@@ -2194,43 +2193,6 @@ function parseBrandPromptVisibility(rows, mode) {
   return result
 }
 
-// ─── Appendix.Prompt List 파서 ──────────────────────────────────────────────
-// 구조: (빈) | Country | Prompts | Division | Category | launched | Branded | CEJ | Topic
-export function parseAppendix(rows) {
-  // 헤더 찾기
-  const headerIdx = findHeaderIdx(rows, [/^prompts?$/, /^country$/])
-  if (headerIdx < 0) return _logWarn('parseAppendix', 'header not found (need Prompts + Country)', { firstRows: rows.slice(0, 5).map(r => r?.slice(0, 6)) })
-
-  const header = rows[headerIdx]
-  const colMap = {}
-  const FIELDS = ['country', 'prompts', 'division', 'category', 'launched', 'branded', 'cej', 'topic']
-  for (let i = 0; i < header.length; i++) {
-    const s = String(header[i] || '').trim().toLowerCase()
-    if (FIELDS.includes(s) && !colMap[s]) colMap[s] = i
-  }
-
-  const data = rows.slice(headerIdx + 1)
-  const prompts = []
-
-  data.forEach(r => {
-    if (!r) return
-    const prompt = String(r[colMap.prompts] || '').trim()
-    if (!prompt) return
-    prompts.push({
-      country:  normCountry(r[colMap.country]),
-      prompt,
-      division: String(r[colMap.division] || '').trim(),
-      category: String(r[colMap.category] || '').trim(),
-      launched: String(r[colMap.launched] || '').trim(),
-      branded:  String(r[colMap.branded] || '').trim(),
-      cej:      String(r[colMap.cej] || '').trim(),
-      topic:    String(r[colMap.topic] || '').trim(),
-    })
-  })
-
-  return prompts.length > 0 ? { appendixPrompts: prompts } : {}
-}
-
 // ─── Unlaunched 시트 파서 ─────────────────────────────────────────────────────
 // 시트 데이터와 무관하게 항상 미출시로 간주할 (국가|제품) — Audio 는 BR/VN/IN 미출시
 const DEFAULT_UNLAUNCHED = { 'BR|AV': true, 'VN|AV': true, 'IN|AV': true }
@@ -2392,7 +2354,6 @@ export function parseSheetRows(sheetName, rows) {
 
     if (sheetName === SHEET_NAMES.citDomain) return parseCitDomain(rows)
 
-    if (sheetName === SHEET_NAMES.appendix) return parseAppendix(rows)
     if (sheetName === SHEET_NAMES.unlaunched) return parseUnlaunched(rows)
     if (sheetName === SHEET_NAMES.prTopicList) return parsePRTopicList(rows)
   } catch (e) {

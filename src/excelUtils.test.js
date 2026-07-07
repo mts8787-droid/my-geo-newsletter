@@ -831,32 +831,7 @@ describe('parseBrandPromptVisibility — monthly/weekly 모드', () => {
   })
 })
 
-// ─── parseAppendix / parsePRTopicList ───────────────────────────────────────
-describe('parseAppendix — Prompt List', () => {
-  it('Country/Prompts/Division/Category 매핑 → appendixPrompts 배열', () => {
-    const rows = [
-      ['Country', 'Prompts', 'Division', 'Category', 'launched', 'Branded', 'CEJ', 'Topic'],
-      ['US',      'q1?',     'MS',       'TV',       'yes',       'no',     'C1',  'T1'],
-      ['UK',      'q2?',     'HS',       'WM',       'yes',       'yes',    'C2',  'T2'],
-    ]
-    const result = parseSheetRows(SHEET_NAMES.appendix, rows)
-    expect(result.appendixPrompts?.length).toBe(2)
-    expect(result.appendixPrompts?.[0].country).toBe('US')
-    expect(result.appendixPrompts?.[0].prompt).toBe('q1?')
-  })
-
-  it('Prompts 빈 행은 skip', () => {
-    const rows = [
-      ['Country', 'Prompts', 'Division', 'Category', 'launched', 'Branded', 'CEJ', 'Topic'],
-      ['US',      '',        'MS',       'TV',       'yes',       'no',     'C1',  'T1'],
-      ['UK',      'q2?',     'HS',       'WM',       'yes',       'yes',    'C2',  'T2'],
-    ]
-    const result = parseSheetRows(SHEET_NAMES.appendix, rows)
-    expect(result.appendixPrompts?.length).toBe(1)
-    expect(result.appendixPrompts?.[0].country).toBe('UK')
-  })
-})
-
+// ─── parsePRTopicList ───────────────────────────────────────────────────────
 describe('parsePRTopicList — BU 병합 셀 처리', () => {
   it('BU 빈 셀은 이전 BU 유지 (병합 셀 패턴)', () => {
     const rows = [
