@@ -933,6 +933,10 @@ ${themeToggleButton()}
         <div class="card-title" style="color:#93C5FD">📊 Chart Library</div>
         <div class="card-desc">14 차트 양식 + 툴팁 카탈로그 (L-1~T-1) — 분류 코드 + 예시 SVG + 본 저장소 사용 위치</div>
       </a>
+      <a class="card harness-entry" href="/admin/dashboards">
+        <div class="card-title">📦 대시보드 소스 번들</div>
+        <div class="card-desc">대시보드 계열 코드를 진입점 import 그래프로 자동 수집 → repo 의존 없이 self-contained ZIP 다운로드 (다른 프로젝트 이식용)</div>
+      </a>
 
       <div class="section-title">실제 사용되는 하네스 도구</div>
       <a class="harness-file" href="/hiro/view?path=CLAUDE.md" target="_blank"><span class="harness-tag tag-rule">RULE</span> <code>CLAUDE.md</code> — 본 저장소 프로젝트 헌법 (Claude Code 자동 로드). 보편 규범은 글로벌 <code>~/.claude/CLAUDE.md</code> 병합 권장.</a>

@@ -34,6 +34,7 @@ import { sheetDownloadRouter } from './routes/sheet-download.js'
 import { harnessRouter } from './routes/harness.js'
 import { chartLibraryRouter } from './routes/chart-library.js'
 import { readabilityRouter } from './routes/readability.js'
+import { dashboardBundleRouter } from './routes/dashboard-bundle.js'
 
 dotenv.config()
 
@@ -174,6 +175,7 @@ app.use(observabilityRouter)
 app.use(harnessRouter)
 app.use(chartLibraryRouter)
 app.use(readabilityRouter)
+app.use(dashboardBundleRouter)
 app.use(sheetDownloadRouter)
 app.use(bridgeRouter)
 app.use(spaStaticRouter)
