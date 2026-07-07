@@ -211,8 +211,8 @@ describe('callClaudeInsight (C8)', () => {
 })
 
 describe('상수', () => {
-  it('기본 모델은 Opus 4.7', () => {
-    expect(INSIGHT_DEFAULT_MODEL).toMatch(/opus-4-7/)
+  it('기본 모델은 Opus 4.8', () => {
+    expect(INSIGHT_DEFAULT_MODEL).toMatch(/opus-4-8/)
   })
 
   it('ARCHIVE_KEY_MAP은 적어도 핵심 키들을 가진다', () => {
