@@ -138,6 +138,13 @@ function switchPeriodPage(mode){
   var weekBadge=document.getElementById('period-weekly-badge');
   if(monthBadge)monthBadge.style.display=mode==='monthly'?'':'none';
   if(weekBadge)weekBadge.style.display=mode==='weekly'?'':'none';
+  // 월간 진입 시 뱃지를 드롭다운의 선택 월로 동기화 (기본 meta.period 고정 표시 방지)
+  if(mode==='monthly'&&monthBadge){
+    var _msel=document.getElementById('vis-month-select');
+    if(_msel&&_msel.options[_msel.selectedIndex]&&_msel.options[_msel.selectedIndex].textContent!=='—'){
+      monthBadge.textContent=_msel.options[_msel.selectedIndex].textContent;
+    }
+  }
   // 주차/월 드롭다운 표시 토글
   var wkGrp=document.getElementById('vis-week-select-group');
   var mnGrp=document.getElementById('vis-month-select-group');

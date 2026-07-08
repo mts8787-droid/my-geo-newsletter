@@ -561,6 +561,9 @@ function switchTab(id){
   var gnbCit=document.getElementById('gnb-citation');
   if(gnbVis){if(id==='visibility')gnbVis.classList.add('active');else gnbVis.classList.remove('active');}
   if(gnbCit){if(id==='citation')gnbCit.classList.add('active');else gnbCit.classList.remove('active');}
+  // 활성 탭 안의 lazy iframe(data-src) 최초 1회 로드 (readability 등)
+  var actPanel=document.getElementById('tab-'+id);
+  if(actPanel){actPanel.querySelectorAll('iframe[data-src]').forEach(function(f){if(!f.src){f.src=f.getAttribute('data-src')}})}
 }
 function switchCitSub(sub){
   document.querySelectorAll('#gnb-citation .gnb-sub-btn').forEach(function(b){b.classList.remove('active')});
@@ -3021,11 +3024,8 @@ ${m?`
   </div>
 </div>
 ${C?`<div id="tab-readability" class="tab-panel">
-  <div class="progress-placeholder"><div class="inner">
-    <div class="icon">📖</div>
-    <h2>Readability</h2>
-    <p>${I.readabilityMsg}</p>
-  </div></div>
+  <!--READABILITY_EMBED-->
+  <iframe id="readability-iframe" data-src="/p/GEO-KPI-Dashboard-${n==="en"?"EN":"KO"}-readability" style="width:100%;min-height:calc(100vh - 100px);border:none;background:#F1F5F9" title="Readability"></iframe>
 </div>`:""}
 <div id="tab-progress" class="tab-panel">
   ${D}
