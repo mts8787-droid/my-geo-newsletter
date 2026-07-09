@@ -47,6 +47,74 @@ function countrySummary(productsCnty) {
   }).join('\n')
 }
 
+// 월간 증감 요인 계산 — 경쟁사(Samsung) 대비 격차 증감 + 전월 대비(MoM) 증감을
+// 본부/국가/카테고리 레벨에서 결정론적으로 산출. AI 는 이 [공식수치] 만 사용 (재계산 금지).
+function _fmtP(n) { return (n > 0 ? '+' : '') + Number(n).toFixed(1) }
+
+function monthlyDriverLines(data) {
+  const total = data.total || {}
+  const products = data.products || []
+  const out = []
+
+  // 전체
+  out.push('[전체]')
+  out.push(`[공식수치] 전체 LG Visibility = ${total.score ?? '—'}%${(total.prev != null && total.prev !== 0) ? ` (전월 ${total.prev}%, MoM ${_fmtP(total.score - total.prev)}%p)` : ''}`)
+  out.push(`[공식수치] 전체 경쟁사(Samsung) = ${total.vsComp ?? '—'}%`)
+  if (total.score != null && total.vsComp != null) out.push(`[공식수치] 전체 격차(LG−Samsung) = ${_fmtP(total.score - total.vsComp)}%p`)
+
+  // 카테고리 MoM (전월 대비 증감)
+  const catMoM = products
+    .filter(p => p.prev != null && p.score != null && p.prev !== 0)
+    .map(p => ({ name: p.kr || p.label || p.id, d: p.score - p.prev, now: p.score, prev: p.prev }))
+    .sort((a, b) => Math.abs(b.d) - Math.abs(a.d))
+  if (catMoM.length) {
+    out.push('\n[전월 대비 증감(MoM) — 카테고리별]')
+    catMoM.slice(0, 10).forEach((c, i) => out.push(`${i + 1}. ${c.name}: ${_fmtP(c.d)}%p (${c.prev}% → ${c.now}%)`))
+  }
+
+  // 카테고리 격차 증감 (전월 comp 는 monthlyScores 에서 추출)
+  const catGap = products.map(p => {
+    if (p.score == null || p.vsComp == null || p.prev == null) return null
+    const ms = p.monthlyScores || []
+    const prevEntry = ms.length >= 2 ? ms[ms.length - 2] : null
+    const prevComp = prevEntry && prevEntry.comp != null ? prevEntry.comp : null
+    if (prevComp == null) return null
+    const gnow = p.score - p.vsComp
+    const gprev = p.prev - prevComp
+    return { name: p.kr || p.label || p.id, d: gnow - gprev, gnow, gprev }
+  }).filter(Boolean).sort((a, b) => Math.abs(b.d) - Math.abs(a.d))
+  if (catGap.length) {
+    out.push('\n[삼성 대비 격차 증감 — 카테고리별]')
+    catGap.slice(0, 10).forEach((c, i) => out.push(`${i + 1}. ${c.name}: 격차 ${_fmtP(c.d)}%p (전월 ${_fmtP(c.gprev)} → 이번달 ${_fmtP(c.gnow)})`))
+  }
+
+  // 본부/국가 격차 증감 + MoM — buTotals/countryTotals 와 *Prev 로 산출
+  const levelRows = (cur, prev) => Object.entries(cur || {}).map(([k, v]) => {
+    const pv = (prev || {})[k]
+    const gnow = (v.lg != null && v.comp != null) ? v.lg - v.comp : null
+    const gprev = (pv && pv.lg != null && pv.comp != null) ? pv.lg - pv.comp : null
+    const mom = (pv && pv.lg != null && v.lg != null) ? v.lg - pv.lg : null
+    return { k, gnow, gprev, dgap: (gnow != null && gprev != null) ? gnow - gprev : null, mom, lg: v.lg, comp: v.comp }
+  })
+  const emitGap = (rows, header, limit, suffix) => {
+    const g = rows.filter(r => r.dgap != null).sort((a, b) => Math.abs(b.dgap) - Math.abs(a.dgap))
+    if (!g.length) return
+    out.push('\n' + header)
+    g.slice(0, limit).forEach((r, i) => out.push(`${i + 1}. ${r.k}${suffix}: 격차 ${_fmtP(r.dgap)}%p (전월 ${_fmtP(r.gprev)} → 이번달 ${_fmtP(r.gnow)}), LG ${r.lg}% / Samsung ${r.comp}%${r.mom != null ? `, MoM ${_fmtP(r.mom)}%p` : ''}`))
+  }
+  const buRows = levelRows(total.buTotals, total.buTotalsPrev)
+  emitGap(buRows, '[삼성 대비 격차 증감 — 본부별]', 99, '본부')
+  const ctRows = levelRows(total.countryTotals, total.countryTotalsPrev)
+  emitGap(ctRows, '[삼성 대비 격차 증감 — 국가별]', 12, '')
+  const ctMoM = ctRows.filter(r => r.mom != null).sort((a, b) => Math.abs(b.mom) - Math.abs(a.mom))
+  if (ctMoM.length) {
+    out.push('\n[전월 대비 증감(MoM) — 국가별]')
+    ctMoM.slice(0, 12).forEach((r, i) => out.push(`${i + 1}. ${r.k}: ${_fmtP(r.mom)}%p (LG ${r.lg}%)`))
+  }
+
+  return out.join('\n')
+}
+
 export function buildInsightPrompt(type, data) {
   if (type === 'product') {
     const products = data.products || []
@@ -284,6 +352,32 @@ ${todoText ? `\n기존 Action Plan 메모 (3번 섹션 작성 시 참고):\n${to
 [필수: 1·2·3 번호 매김 헤딩, 2.1·2.2·2.3 서브 헤딩 형식 준수]
 [필수: 3번 섹션 액션 아이템은 ①②③④⑤ 원형 숫자로 시작]
 [주의: 임원 보고용 톤 — 객관적·구체적 수치 인용]
+${NO_UNLAUNCHED_COMMENT}`
+  }
+
+  if (type === 'monthlyDelta') {
+    const period = data.period || '이번 달'
+    const driverLines = monthlyDriverLines(data)
+    return `[섹션: GEO 월간 보고서 — 증감 요인 분석 (경쟁사 Samsung 대비 격차 증감 + 전월 대비 증감)]
+${period} 월간 리포트의 "증감 요인 분석" 파트를 작성하세요. 반드시 아래 [공식수치] 리스트에 담긴 수치만 사용하고, 절대 새로 계산하거나 추정하지 마세요.
+
+[필수 구조 — 아래 2개 분석을 모두 포함]
+1. 경쟁사(Samsung) 대비 격차 증감 분석
+   - 격차가 확대(개선)된 본부/국가/카테고리와 축소(악화)된 항목을 각각 수치와 함께 리스트업
+   - 격차 변동에 가장 크게 기여한 상위 항목부터 정리
+2. 전월 대비(MoM) 증감 분석
+   - 상승·하락을 주도한 카테고리/국가를 수치와 함께 리스트업
+   - 증감폭이 큰 항목부터 정리
+
+[작성 형식]
+- 각 분석은 "요약 1~2문장" 후 "• 항목: 수치 (근거)" 불릿 리스트
+- 수치는 %p 단위로 명확히 표기 (예: 격차 +2.4%p, MoM −1.8%p)
+- 격차 "확대"는 LG 우위 강화/열위 축소를, "축소"는 그 반대를 의미하도록 방향을 명확히
+- 임원 보고용 톤 — 객관적·구체적
+
+${driverLines}
+
+[주의: 위 [공식수치] 리스트에 없는 항목·수치는 언급 금지. 임의 계산·추정 금지.]
 ${NO_UNLAUNCHED_COMMENT}`
   }
 

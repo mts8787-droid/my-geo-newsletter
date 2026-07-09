@@ -641,6 +641,12 @@ body, table, td, th, h1, h2, p, span, div { font-family: ${FONT} !important; }
       </tr>` : ''}
     </table>` : ''}
 
+    ${meta.showMonthlyDeltaAnalysis !== false && meta.monthlyDeltaAnalysis ? `
+    <section style="margin-bottom:28px;">
+      <h1 style="font-size:18px;font-weight:700;margin:0 0 6px;border-top:2px solid #000;padding-top:14px;font-family:${FONT};color:#000;">${lang === 'en' ? 'Change Driver Analysis' : '증감 요인 분석'}</h1>
+      ${renderReportBody(meta.monthlyDeltaAnalysis)}
+    </section>` : ''}
+
     ${buildBuTotalsTable(total?.buTotals, total?.buTotalsPrev, lang)}
     ${buildCountryTotalsTable(total?.countryTotals, total?.countryTotalsPrev, lang)}
     ${buildProductSummaryTable(products, productsPrev, lang)}

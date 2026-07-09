@@ -30,6 +30,7 @@ export const CLAUDE_OUTPUT_USD_PER_1M = 75
 export const ARCHIVE_KEY_MAP = {
   totalInsight: 'totalInsight',
   monthlyReportBody: 'monthlyReportBody',
+  monthlyDelta: 'monthlyDeltaAnalysis',
   product: 'productInsight', productHowToRead: 'productHowToRead',
   citation: 'citationInsight', citationHowToRead: 'citationHowToRead',
   dotcom: 'dotcomInsight', dotcomHowToRead: 'dotcomHowToRead',

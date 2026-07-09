@@ -1298,6 +1298,40 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
             <p style={{ margin: '0 0 14px', fontSize: 11, color: '#475569', fontFamily: FONT }}>
               <code>1. 제목</code> → H2 · <code>2.1 부제</code> → H3 · <code>**텍스트**</code> → <strong>볼드</strong>
             </p>
+
+            {/* 증감 요인 분석 (monthly-report 전용) — Samsung 격차 증감 + MoM 증감 */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+              <p style={{ margin: 0, fontSize: 11, color: '#64748B', fontFamily: FONT }}>증감 요인 분석 (Samsung 격차·MoM)</p>
+              <button onClick={async () => {
+                  try {
+                    setMeta(m => ({ ...m, monthlyDeltaAnalysis: '⏳ AI 분석 중...' }))
+                    const insight = await generateAIInsight('monthlyDelta', {
+                      total: getLatestData().total,
+                      products: getLatestData().products,
+                      productsCnty: getLatestData().productsCnty,
+                      period: meta.period || '',
+                      unlaunchedMap: getLatestData().extra?.unlaunchedMap || {},
+                    }, previewLang)
+                    setMeta(m => ({ ...m, monthlyDeltaAnalysis: insight }))
+                  } catch (err) { console.error('[AI]', err); setMeta(m => ({ ...m, monthlyDeltaAnalysis: `[AI 실패: ${err.message}]` })) }
+                }}
+                title="경쟁사(Samsung) 대비 격차 증감 + 전월 대비 증감 요인 AI 분석"
+                style={{ padding: '2px 6px', borderRadius: 4, border: 'none', cursor: 'pointer',
+                  background: '#4F46E5', color: '#FFFFFF',
+                  fontSize: 11, fontWeight: 700, fontFamily: FONT, display: 'flex', alignItems: 'center', gap: 3 }}>
+                <Sparkles size={9} /> AI 분석
+              </button>
+            </div>
+            <textarea
+              value={meta.monthlyDeltaAnalysis || ''}
+              onChange={e => setMeta(m => ({ ...m, monthlyDeltaAnalysis: e.target.value }))}
+              rows={16}
+              placeholder="Samsung 대비 격차 증감 + 전월 대비 증감 요인 분석. 'AI 분석' 버튼으로 자동 생성..."
+              style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6, marginBottom: 4 }}
+            />
+            <p style={{ margin: '0 0 14px', fontSize: 11, color: '#475569', fontFamily: FONT }}>
+              경쟁사(Samsung) 대비 격차 증감과 전월 대비 증감에 영향을 준 수치를 리스트업·정리합니다.
+            </p>
           </>
         )}
 
