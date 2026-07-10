@@ -1,6 +1,11 @@
 import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react'
 import { Save, FolderOpen, Trash2, Copy, Check, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
-import { generateEmailHTML } from '../emailTemplate'
+import { generateEmailHTML, generateSemiAnnualEmailHTML } from '../emailTemplate'
+
+// 템플릿 선택 — meta.letterTemplate 기준 생성기 디스패치 (드롭인 시그니처)
+function genHTMLFor(meta) {
+  return (meta?.letterTemplate === 'semiannual') ? generateSemiAnnualEmailHTML : generateEmailHTML
+}
 import { INIT_META, INIT_TOTAL, INIT_PRODUCTS, INIT_DOTCOM, INIT_PRODUCTS_CNTY, INIT_CITATIONS_CNTY, INIT_CITATIONS, FONT, LG_RED } from '../shared/constants.js'
 import { loadCache, saveCache } from '../shared/cache.js'
 import { fetchSnapshots, postSnapshot, updateSnapshot, deleteSnapshot, fetchSyncData } from '../shared/api.js'
@@ -22,7 +27,7 @@ const STORAGE_KEY = 'geo-newsletter-cache'
 function NewsletterPreview({ meta, total, products, citations, dotcom, productsCnty = [], citationsCnty = [], lang = 'ko', weeklyLabels, categoryStats, unlaunchedMap = {}, llmModel, monthlyVis, citTouchPointsTrend = null, citTrendMonths = [], citDomainTrend = null, citDomainMonths = [], citTouchPointsByLlm = null, citDomainByLlm = null, citDomainByLlmTrend = null, dotcomByLlm = null }) {
   const iframeRef = useRef(null)
   const html = useMemo(
-    () => generateEmailHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, { weeklyLabels, categoryStats, unlaunchedMap, productCardVersion: meta.productCardVersion || 'v1', trendMode: meta.trendMode || 'weekly', llmModel, monthlyVis, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, citTouchPointsByLlm, citDomainByLlm, citDomainByLlmTrend, dotcomByLlm }),
+    () => genHTMLFor(meta)(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, { weeklyLabels, categoryStats, unlaunchedMap, productCardVersion: meta.productCardVersion || 'v1', trendMode: meta.trendMode || 'weekly', llmModel, monthlyVis, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, citTouchPointsByLlm, citDomainByLlm, citDomainByLlmTrend, dotcomByLlm }),
     [meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, categoryStats, unlaunchedMap, llmModel, monthlyVis, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, citTouchPointsByLlm, citDomainByLlm, citDomainByLlmTrend, dotcomByLlm]
   )
 
@@ -61,7 +66,7 @@ function NewsletterPreview({ meta, total, products, citations, dotcom, productsC
 // ─── HTML 코드 뷰어 ───────────────────────────────────────────────────────────
 function HtmlCodeViewer({ meta, total, products, citations, dotcom, productsCnty = [], citationsCnty = [], lang = 'ko', weeklyLabels, categoryStats, unlaunchedMap = {}, citTouchPointsTrend = null, citTrendMonths = [], citDomainTrend = null, citDomainMonths = [], citTouchPointsByLlm = null, citDomainByLlm = null, citDomainByLlmTrend = null, dotcomByLlm = null }) {
   const [copied, setCopied] = useState(false)
-  const html = useMemo(() => generateEmailHTML(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, { weeklyLabels, categoryStats, unlaunchedMap, productCardVersion: meta.productCardVersion || 'v1', trendMode: meta.trendMode || 'weekly', citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, citTouchPointsByLlm, citDomainByLlm, citDomainByLlmTrend, dotcomByLlm }), [meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, categoryStats, unlaunchedMap, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, citTouchPointsByLlm, citDomainByLlm, citDomainByLlmTrend, dotcomByLlm])
+  const html = useMemo(() => genHTMLFor(meta)(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, { weeklyLabels, categoryStats, unlaunchedMap, productCardVersion: meta.productCardVersion || 'v1', trendMode: meta.trendMode || 'weekly', citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, citTouchPointsByLlm, citDomainByLlm, citDomainByLlmTrend, dotcomByLlm }), [meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, categoryStats, unlaunchedMap, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, citTouchPointsByLlm, citDomainByLlm, citDomainByLlmTrend, dotcomByLlm])
 
   async function handleCopy() {
     try {
@@ -367,7 +372,7 @@ export default function App() {
           setWeeklyAll={setWeeklyAll}
           weeklyLabels={weeklyLabels}
           weeklyAll={weeklyAll}
-          generateHTML={generateEmailHTML}
+          generateHTML={(mm, ...rest) => genHTMLFor(meta)(mm, ...rest)}
           categoryStats={categoryStats}
           progressMonth={progressMonth}
           setProgressMonth={setProgressMonth}
@@ -399,6 +404,24 @@ export default function App() {
                 marginRight: 4 }}>
               {sidebarOpen ? <PanelLeftClose size={16} /> : <PanelLeftOpen size={16} />}
             </button>
+            {/* 템플릿 선택 탭 (월간 / 반기) */}
+            <div style={{ display: 'flex', gap: 2, background: '#0F172A', border: '1px solid #1E293B', borderRadius: 8, padding: 2, marginRight: 6 }}>
+              {[
+                { key: 'monthly', label: '월간 레터' },
+                { key: 'semiannual', label: '반기 레터' },
+              ].map(({ key, label }) => {
+                const cur = meta.letterTemplate || 'monthly'
+                const on = cur === key
+                return (
+                  <button key={key} onClick={() => setMeta(m => ({ ...m, letterTemplate: key }))} style={{
+                    padding: '5px 12px', borderRadius: 6, border: 'none', cursor: 'pointer',
+                    background: on ? LG_RED : 'transparent', color: on ? '#FFFFFF' : '#64748B',
+                    fontSize: 11, fontWeight: on ? 700 : 500, fontFamily: FONT,
+                  }}>{label}</button>
+                )
+              })}
+            </div>
+            <div style={{ width: 1, height: 20, background: '#1E293B', margin: '0 4px' }} />
             {[
               { key: 'preview-ko', tab: 'preview', lang: 'ko', label: '뉴스레터미리보기 (KO)' },
               { key: 'preview-en', tab: 'preview', lang: 'en', label: '뉴스레터미리보기 (EN)' },
