@@ -2515,6 +2515,13 @@ function modelDeltaSectionHtml(products, meta, lang = 'ko') {
                       <td style="padding:14px 18px;">
                         ${edBlock('modelDeltaNote', meta.modelDeltaNote, { size: 13, lh: 21, color: '#555555', ph: noteDefault, lang })}
                         ${brandData.map(heatTable).join('')}
+                        ${meta.showModelDeltaInsight && (meta.modelDeltaInsight || _ED) ? `
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-top:16px;border-radius:8px;background:#FFF4F7;border:1px solid #F5CCD8;">
+                          <tr><td style="padding:12px 16px;">
+                            <p style="margin:0 0 6px;font-size:13px;font-weight:700;color:${EM_RED};font-family:${EM_FONT};letter-spacing:0.5px;">${lang === 'en' ? 'INSIGHT' : '인사이트'}</p>
+                            ${edBlock('modelDeltaInsight', meta.modelDeltaInsight, { size: 14, lh: 24, color: '#1A1A1A', accent: EM_RED, lang })}
+                          </td></tr>
+                        </table>` : ''}
                       </td>
                     </tr>
                   </table>
