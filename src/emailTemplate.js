@@ -2554,6 +2554,44 @@ function compRatioDeltaSectionHtml(products, meta, lang = 'ko') {
     </tr>`
   }).join('')
 
+  // 모델별 경쟁비 Δ (카테고리 × 모델 히트맵) — byLlm[model].comp 로 모델별 경쟁비 산출
+  const modelSet = new Set()
+  const catRows = []
+  products.forEach(p => {
+    const ms = p.monthlyScores || []
+    if (ms.length < 2) return
+    const lb = ms[ms.length - 1].byLlm || {}, pb = ms[ms.length - 2].byLlm || {}
+    const deltas = {}; let has = false
+    Object.keys(lb).forEach(m => {
+      if (m === 'Total' || m === 'TOTAL' || m === 'All') return
+      const L = lb[m], P = pb[m]
+      if (L && P && L.comp > 0 && P.comp > 0 && L.score != null && P.score != null) {
+        deltas[m] = Math.round(L.score / L.comp * 100 - P.score / P.comp * 100); modelSet.add(m); has = true
+      }
+    })
+    if (has) catRows.push({ name: prodName(p), deltas })
+  })
+  const crModels = [...modelSet].sort((a, b) => { const ia = MODEL_ORDER.indexOf(a), ib = MODEL_ORDER.indexOf(b); return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib) || a.localeCompare(b) })
+  const crAvg = {}; crModels.forEach(m => { const v = catRows.map(r => r.deltas[m]).filter(x => x != null); crAvg[m] = v.length ? Math.round(v.reduce((a, b) => a + b, 0) / v.length) : null })
+  let heatmapHtml = ''
+  if (crModels.length && catRows.length) {
+    const allV = catRows.flatMap(r => crModels.map(m => r.deltas[m])).filter(x => x != null)
+    const sc = Math.max(6, ...allV.map(Math.abs))
+    const mix = (r, g, b, a) => { const h = x => Math.round(255 - (255 - x) * a).toString(16).padStart(2, '0'); return '#' + h(r) + h(g) + h(b) }
+    const heat = v => { const t = Math.max(-1, Math.min(1, v / sc)); return t >= 0 ? mix(22, 163, 74, 0.12 + t * 0.55) : mix(220, 38, 38, 0.12 + (-t) * 0.6) }
+    const cell = v => { if (v == null) return `<td style="padding:8px 6px;border:1px solid #e5e4de;color:#c9c8c2;font-family:${EM_FONT};">–</td>`; const bg = heat(v), col = Math.abs(v) >= sc * 0.6 ? '#FFFFFF' : '#333333'; return `<td bgcolor="${bg}" style="padding:8px 6px;border:1px solid #e5e4de;background:${bg};color:${col};font-size:12px;font-weight:700;font-family:${EM_FONT};text-align:center;">${v > 0 ? '+' : ''}${v}</td>` }
+    const th = m => `<th style="padding:8px 6px;border:1px solid #e5e4de;background:#f6f5f2;font-size:11px;font-weight:600;color:#555;font-family:${EM_FONT};">${escapeHtml(m)}</th>`
+    const brows = catRows.map(r => `<tr><td style="padding:8px 10px;border:1px solid #e5e4de;background:#f6f5f2;font-size:12px;font-weight:700;color:#111;font-family:${EM_FONT};text-align:left;">${escapeHtml(r.name)}</td>${crModels.map(m => cell(r.deltas[m])).join('')}</tr>`).join('')
+    const arow = `<tr><td style="padding:8px 10px;border:1px solid #cfcec8;background:#eceae4;font-size:12px;font-weight:800;color:#111;font-family:${EM_FONT};text-align:left;">${lang === 'en' ? 'Avg' : '평균'}</td>${crModels.map(m => cell(crAvg[m])).join('')}</tr>`
+    const subT = lang === 'en' ? 'By model (Δ%p)' : '모델별 경쟁비 증감 (Δ%p)'
+    heatmapHtml = `
+                        <p style="margin:20px 0 8px;font-size:13px;font-weight:700;color:#475569;font-family:${EM_FONT};">${subT}</p>
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border-collapse:collapse;">
+                          <thead><tr><th style="padding:8px 10px;border:1px solid #e5e4de;background:#f6f5f2;"></th>${crModels.map(th).join('')}</tr></thead>
+                          <tbody>${brows}${arow}</tbody>
+                        </table>`
+  }
+
   const title = lang === 'en' ? 'Competitor Ratio MoM by Category (Δ%p)' : '제품별 경쟁비 증감 (전월 대비, Δ%p)'
   const noteDefault = lang === 'en' ? 'MoM change of competitor ratio (LG / #1 competitor × 100) by category.' : '카테고리별 경쟁비(LG / 1위 경쟁사 × 100)의 전월 대비 증감입니다. 초록=개선 / 빨강=악화.'
   return `
@@ -2571,9 +2609,11 @@ function compRatioDeltaSectionHtml(products, meta, lang = 'ko') {
                     <tr>
                       <td style="padding:16px 18px;">
                         ${edBlock('compRatioDeltaNote', meta.compRatioDeltaNote, { size: 13, lh: 21, color: '#555555', ph: noteDefault, lang })}
+                        ${heatmapHtml ? `<p style="margin:16px 0 8px;font-size:13px;font-weight:700;color:#475569;font-family:${EM_FONT};">${lang === 'en' ? 'Overall (Δ%p)' : '전체 경쟁비 증감 (Δ%p)'}</p>` : ''}
                         <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-top:10px;">
                           ${barRows}
                         </table>
+                        ${heatmapHtml}
                       </td>
                     </tr>
                   </table>
