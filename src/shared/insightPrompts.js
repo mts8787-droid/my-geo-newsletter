@@ -16,6 +16,25 @@ function excludeUnlaunched(productsCnty, unlaunchedMap) {
 
 const NO_UNLAUNCHED_COMMENT = '[필수: 미출시 국가×제품 데이터는 입력에서 제외되었음 — 미출시 관련 언급·코멘트·각주를 절대 작성하지 말 것]'
 
+// 문체 가이드 — 서술형 인사이트가 따라야 할 어조·표현 관습. 아래 예시의 숫자는 형식 예시일 뿐,
+// 실제 수치는 반드시 [공식수치]에서만 인용한다.
+const STYLE_GUIDE = `[문체 가이드 — 아래 어조·표현 관습을 따라 작성할 것. 예시 속 숫자는 형식 예시이며 실제 값은 반드시 [공식수치]만 사용]
+- 어조: 객관적·간결한 비즈니스 임원 보고체. (한국어 작성 시) 종결어미 "~하고 있습니다 / ~유지 중입니다 / ~보이고 있습니다 / ~필요합니다"; (영어 작성 시) 동등한 executive summary 톤.
+- 경쟁비(경쟁사 대비 비율) 기준 상태 표현:
+  · 100% 이상 → "선도 / 안정적 리더십 유지 / (큰) 우위"
+  · 80~100% → "추격중 / 근소한 차이 / 대등한 수준 / 소폭 열세"
+  · 80% 미만 → "열위 / 개선 필요(여지)"
+- 수치 인용 형식 (형식 예시 — 숫자는 예시일 뿐):
+  · 제품: "TV(XX.X%, 전월 대비 -X.X%p)는 ... 경쟁비 XX%로 추격중"
+  · 본부: "MS본부는 LG XX.X%로 경쟁사(XX.X%) 대비 근소한 우위"
+  · 국가: "IN(XX.X% vs XX.X%)" 또는 "US: LG XX.X% / 경쟁 XX.X%"
+  · 전월 대비 증감: "전월 대비 -X.X%p"
+- 강점 제품군(경쟁비 선도)은 리더십 유지·강화를, 취약 제품군(경쟁비 열위)은 콘텐츠 강화·개선 필요를 명확히 서술.
+- 서술 말미에 핵심 Action(실행 과제)을 제시.`
+
+// STYLE_GUIDE 를 부착할 서술형 인사이트 타입
+const STYLE_TYPES = new Set(['monthlyReportBody', 'monthlyDelta', 'totalInsight', 'product', 'cnty'])
+
 function buProductSummary(products) {
   const buMap = {}
   products.forEach(p => {
@@ -116,6 +135,11 @@ function monthlyDriverLines(data) {
 }
 
 export function buildInsightPrompt(type, data) {
+  const base = _buildInsightPromptBody(type, data)
+  return STYLE_TYPES.has(type) ? `${base}\n\n${STYLE_GUIDE}` : base
+}
+
+function _buildInsightPromptBody(type, data) {
   if (type === 'product') {
     const products = data.products || []
     const t = data.total || {}
