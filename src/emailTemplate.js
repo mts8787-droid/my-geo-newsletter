@@ -155,8 +155,6 @@ const T = {
     citScopeAll: '전체 채널',
     citScopeCommunity: '커뮤니티 채널',
     citScopeReddit: 'Reddit',
-    regionProductTop10Title: 'Reddit 국가별 × 제품별 Top 10',
-    regionProductTop10Sub: '(Chat-GPT 기준)',
     citationCntyTitle: '국가별 Citation 도메인',
     touchPointTitle: '외부접점채널 Citation',
     citationLegend: 'Citation Score 건수 (비중)',
@@ -194,8 +192,6 @@ const T = {
     citScopeAll: 'All Channels',
     citScopeCommunity: 'Community Channels',
     citScopeReddit: 'Reddit',
-    regionProductTop10Title: 'Reddit Region × Product Top 10',
-    regionProductTop10Sub: '(Chat-GPT)',
     citationCntyTitle: 'Citation Domain by Country',
     touchPointTitle: 'Touch Points Citation',
     citationLegend: 'Citation Score Count (Ratio)',
@@ -290,27 +286,49 @@ function renderReportText(text, opts = {}) {
   return rendered.map((h, i) => `<p style="margin:0 0 ${i < rendered.length - 1 ? 10 : 0}px;${base}">${h}</p>`).join('')
 }
 
-// ─── 인라인 편집 (editable) 모드 — 어드민 미리보기 전용 ──────────────────────
-// options.editable(=좌측 패널 '편집 모드' 토글) 로 활성. 게시/복사/발송 경로는 미지정 → 아티팩트 0.
-// v2: 스타일이 적용된 렌더 상태 그대로 WYSIWYG 편집 → blur 시 raw 텍스트로 직렬화해 저장.
-let _ED = false          // editable 모드 플래그
-
-// editable 일 때만 data-edit 속성 반환 (인라인 헤더 span 용)
-function edAttr(field) {
-  return _ED ? ` data-edit="${field}"` : ''
+// 사용자 편집 HTML 정화 (어드민 자체 편집이지만 script/on*/외부태그 방어)
+function sanitizeUserHtml(html) {
+  return String(html || '')
+    .replace(/<\s*(script|style|iframe|object|embed|link|meta)[\s\S]*?<\s*\/\s*\1\s*>/gi, '')
+    .replace(/<\s*(script|style|iframe|object|embed|link|meta)\b[^>]*>/gi, '')
+    .replace(/\son\w+\s*=\s*"[^"]*"/gi, '')
+    .replace(/\son\w+\s*=\s*'[^']*'/gi, '')
+    .replace(/\son\w+\s*=\s*[^\s>]+/gi, '')
+    .replace(/(href|src)\s*=\s*(["'])\s*javascript:[^"']*\2/gi, '$1="#"')
 }
 
-// 편집 가능 텍스트 블록 — 스타일 적용된 렌더 결과를 감싸는 div (raw 없으면 placeholder)
+// 편집으로 서식이 입혀진 필드는 HTML 로 저장됨 → 태그가 있으면 그대로(정화) 렌더, 없으면 raw 텍스트 렌더
+function renderMaybeHtml(value, opts = {}) {
+  const raw = String(value || '')
+  if (!raw.trim()) return ''
+  const looksHtml = /<\/?(p|div|span|strong|b|u|font|br|em|i)\b/i.test(raw)
+  if (!looksHtml) return renderReportText(raw, opts)
+  const { size = 14, lh = 24, color = '#1A1A1A' } = opts
+  return `<div style="font-size:${size}px;color:${color};line-height:${lh}px;font-family:${EM_FONT};">${sanitizeUserHtml(raw)}</div>`
+}
+
+// ─── 인라인 편집 (editable) 모드 — 어드민 미리보기 전용 ──────────────────────
+// options.editable(=좌측 패널 '편집 모드' 토글) 로 활성. 게시/복사/발송 경로는 미지정 → 아티팩트 0.
+// v3: 스타일 적용 상태 WYSIWYG 편집 + 상단바 서식 도구(execCommand). 블록은 HTML 저장, 헤더는 plain.
+let _ED = false          // editable 모드 플래그
+
+// editable 일 때만 data-edit 속성 반환 (인라인 헤더 span — 서식 없이 plain 저장)
+function edAttr(field) {
+  return _ED ? ` data-edit="${field}" data-edit-plain="1"` : ''
+}
+
+// 편집 가능 텍스트 블록 — 렌더 결과를 감싸는 div (raw 없으면 placeholder). 서식 편집 → HTML 저장.
 function edBlock(field, raw, opts = {}) {
   const ph = opts.ph || (opts.lang === 'en' ? 'Click to edit...' : '클릭하여 입력...')
   const attr = (_ED && field) ? ` data-edit="${field}"${!raw ? ` data-ph="${escapeHtml(ph)}"` : ''}` : ''
   const style = opts.wrapStyle ? ` style="${opts.wrapStyle}"` : ''
-  const body = raw ? renderReportText(raw, opts) : ''
+  const body = raw ? renderMaybeHtml(raw, opts) : ''
   return `<div${attr}${style}>${body}</div>`
 }
 
 // 에디터 스타일 + 스크립트 (editable 일 때만 </body> 직전 삽입)
-// 렌더된 HTML 을 직접 편집(볼드/색/크기 유지) → blur 시 HTML→raw 텍스트 직렬화 후 postMessage
+// 블록: 서식 적용된 HTML 그대로 편집 → blur 시 정화 HTML 저장 / 헤더: plain 텍스트 저장
+// 부모(상단바 도구)에서 postMessage({type:'format',cmd,value}) → 선택 영역에 execCommand
 function edScriptHtml() {
   if (!_ED) return ''
   return `
@@ -322,28 +340,11 @@ function edScriptHtml() {
 </style>
 <script>
 (function(){
-  function ser(el){
-    var out='';
-    function walk(node){
-      for(var i=0;i<node.childNodes.length;i++){
-        var n=node.childNodes[i];
-        if(n.nodeType===3){out+=n.nodeValue;continue;}
-        if(n.nodeType!==1)continue;
-        var tag=n.tagName.toLowerCase();
-        if(tag==='br'){out+='\\n';continue;}
-        var st=(n.getAttribute&&n.getAttribute('style'))||'';
-        var isBlock=tag==='p'||tag==='div'||/display\\s*:\\s*block/.test(st);
-        var txt=(n.textContent||'');
-        var isCallout=/^\\s*[▶※]/.test(txt);
-        var fw=(n.style&&n.style.fontWeight)||'';
-        var bold=!isCallout&&(tag==='strong'||tag==='b'||fw==='bold'||(parseInt(fw,10)>=600));
-        if(bold){out+='**';walk(n);out+='**';}
-        else walk(n);
-        if(tag==='p')out+='\\n\\n';else if(isBlock)out+='\\n';
-      }
-    }
-    walk(el);
-    return out.replace(/\\u00a0/g,' ').replace(/[ \\t]+\\n/g,'\\n').replace(/\\n{3,}/g,'\\n\\n').replace(/^\\s+|\\s+$/g,'');
+  function clean(h){
+    return String(h||'')
+      .replace(/<\\s*(script|style)[\\s\\S]*?<\\s*\\/\\s*\\1\\s*>/gi,'')
+      .replace(/\\son\\w+\\s*=\\s*"[^"]*"/gi,'')
+      .replace(/(<br>\\s*)+$/i,'').trim();
   }
   var orig='';
   document.querySelectorAll('[data-edit]').forEach(function(el){
@@ -355,8 +356,16 @@ function edScriptHtml() {
     el.addEventListener('blur',function(){
       if(el.innerHTML===orig)return;
       var f=el.getAttribute('data-edit');
-      try{window.parent.postMessage({type:'editMeta',field:f,value:ser(el)},'*');}catch(e){}
+      var plain=el.hasAttribute('data-edit-plain');
+      var v=plain?(el.innerText||'').replace(/\\u00a0/g,' ').trim():clean(el.innerHTML);
+      try{window.parent.postMessage({type:'editMeta',field:f,value:v},'*');}catch(e){}
     });
+  });
+  // 상단바 서식 도구 → 현재 편집 중인 선택 영역에 execCommand (부모 버튼이 mousedown preventDefault 로
+  // iframe 포커스/선택을 유지시켜 줌 → 저장은 blur 에서). styleWithCSS 로 인라인 스타일 출력(이메일 호환).
+  window.addEventListener('message',function(e){
+    var d=e.data; if(!d||d.type!=='format')return;
+    try{document.execCommand('styleWithCSS',false,true);document.execCommand(d.cmd,false,d.value);}catch(err){}
   });
 })();
 </script>`
@@ -1679,82 +1688,6 @@ function _renameTouchChannels(src) {
   return renamed
 }
 
-// 국가별 × 제품별 Top 10 — 레딧 (ChatGPT 전용). 사용자 제공 하드코딩 데이터, 단위 만 (소수 1자리).
-const REGION_PRODUCT_TOP10 = [
-  { c: 'UK', p: 'TV',  apr: 5566, may: 23472, diff: 17906, pct: 321.7 },
-  { c: 'DE', p: 'TV',  apr: 4012, may: 20525, diff: 16513, pct: 411.6 },
-  { c: 'US', p: 'TV',  apr: 5553, may: 16930, diff: 11377, pct: 204.9 },
-  { c: 'UK', p: 'IT',  apr: 4501, may: 16854, diff: 12353, pct: 274.5 },
-  { c: 'DE', p: 'IT',  apr: 3605, may: 16346, diff: 12741, pct: 353.4 },
-  { c: 'MX', p: 'RAC', apr: 1950, may: 15788, diff: 13838, pct: 709.6 },
-  { c: 'IN', p: 'RAC', apr: 2399, may: 15493, diff: 13094, pct: 545.8 },
-  { c: 'BR', p: 'RAC', apr: 1738, may: 15290, diff: 13552, pct: 779.7 },
-  { c: 'US', p: 'IT',  apr: 4400, may: 12638, diff: 8238,  pct: 187.2 },
-  { c: 'UK', p: 'REF', apr: 2598, may: 12193, diff: 9595,  pct: 369.3 },
-]
-function regionProductTop10Html(lang = 'ko') {
-  const t = T[lang] || T.ko
-  const man = v => lang === 'en' ? fmtMan(v, 'en') : (v / 10000).toFixed(1) + '만'
-  const aprH = lang === 'en' ? 'Apr' : '4월'
-  const mayH = lang === 'en' ? 'May' : '5월'
-  const diffH = lang === 'en' ? 'Diff' : '전월비'
-  const pctH = lang === 'en' ? '% Chg' : '증감율'
-  const rankH = lang === 'en' ? '#' : '순위'
-  const regionH = lang === 'en' ? 'Region' : '국가'
-  const prodH = lang === 'en' ? 'PRD' : '제품'
-  const thStyle = `font-size:11px;font-weight:700;color:#64748B;font-family:${EM_FONT};padding:6px 4px;border-bottom:2px solid #E8EDF2;white-space:nowrap;`
-  const tdBase = `font-size:11px;font-family:${EM_FONT};padding:5px 4px;border-bottom:1px solid #F1F5F9;white-space:nowrap;`
-  let body = ''
-  REGION_PRODUCT_TOP10.slice(0, 10).forEach((r, i) => {
-    const isTop5 = i < 5
-    const rowBg = isTop5 ? 'background:#FFF1F5;' : (i % 2 === 0 ? 'background:#FAFBFC;' : '')
-    const mainColor = isTop5 ? '#1A1A1A' : '#334155'
-    const subColor = isTop5 ? '#475569' : '#94A3B8'
-    const fw = isTop5 ? '800' : '700'
-    const cellBase = isTop5 ? `${tdBase}border-bottom:1px solid #FBD0DC;` : tdBase
-    const rankCell = isTop5
-      ? `<td style="${cellBase}${rowBg}text-align:center;"><span style="display:inline-block;min-width:18px;padding:1px 5px;background:${EM_RED};color:#FFFFFF;border-radius:9px;font-weight:800;">${i + 1}</span></td>`
-      : `<td style="${cellBase}${rowBg}text-align:center;color:#94A3B8;font-weight:700;">${i + 1}</td>`
-    body += '<tr>'
-    body += rankCell
-    body += `<td style="${cellBase}${rowBg}text-align:center;font-weight:${fw};color:${mainColor};">${escapeHtml(r.c)}</td>`
-    body += `<td style="${cellBase}${rowBg}text-align:center;font-weight:${fw};color:${mainColor};">${escapeHtml(r.p)}</td>`
-    body += `<td style="${cellBase}${rowBg}text-align:right;color:${subColor};">${man(r.apr)}</td>`
-    body += `<td style="${cellBase}${rowBg}text-align:right;font-weight:${fw};color:${mainColor};">${man(r.may)}</td>`
-    body += `<td style="${cellBase}${rowBg}text-align:right;color:#16A34A;font-weight:${fw};">&#9650; +${man(r.diff)}</td>`
-    body += `<td style="${cellBase}${rowBg}text-align:right;color:#16A34A;font-weight:${fw};">+${r.pct.toFixed(1)}%</td>`
-    body += '</tr>'
-  })
-  return `
-                    <!-- ══ 국가별 × 제품별 Top 10 — 레딧 지피티만 ══ -->
-                    <tr>
-                      <td style="padding-bottom:24px;">
-                        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFFFFF;border-radius:16px;border:2px solid #E8EDF2;">
-                          <tr>
-                            <td style="padding:13px 14px 8px;">
-                              <div style="font-size:14px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-0.5px;">${t.regionProductTop10Title} <span style="font-size:11px;font-weight:600;color:#94A3B8;">${t.regionProductTop10Sub}</span></div>
-                            </td>
-                          </tr>
-                          <tr>
-                            <td style="padding:8px 14px 14px;">
-                              <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border-collapse:collapse;">
-                                <tr>
-                                  <td style="${thStyle}text-align:center;">${rankH}</td>
-                                  <td style="${thStyle}text-align:center;">${regionH}</td>
-                                  <td style="${thStyle}text-align:center;">${prodH}</td>
-                                  <td style="${thStyle}text-align:right;">${aprH}</td>
-                                  <td style="${thStyle}text-align:right;">${mayH}</td>
-                                  <td style="${thStyle}text-align:right;">${diffH}</td>
-                                  <td style="${thStyle}text-align:right;">${pctH}</td>
-                                </tr>
-                                ${body}
-                              </table>
-                            </td>
-                          </tr>
-                        </table>
-                      </td>
-                    </tr>`
-}
 
 // 범프 섹션들을 한 카드에 stacked (TTL 범프 grid + 모델별 MoM 표). sections: [{label, count, html}]
 //   titleSuffix: 카드 제목 우측 보조 라벨 (TTL 범프 = 월간 트렌드 기준).
@@ -2985,7 +2918,6 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                             meta.showTouchPointsBump !== false ? touchPointsBumpCombinedHtml(citTouchPointsTrend, citTrendMonths, citTouchPointsByLlm, meta, lang) : '',
                             meta.showDomainBump !== false ? domainBumpSectionHtml(citDomainTrend, citDomainMonths, citDomainByLlmTrend, meta, lang) : ''
                           )}
-                          ${regionProductTop10Html(lang)}
                           ${meta.showCitCnty !== false && citationCntyInnerHtml ? `
                           <!-- 국가별 Citation 도메인 -->
                           <tr>

@@ -24,8 +24,9 @@ const MODE = 'newsletter'
 const STORAGE_KEY = 'geo-newsletter-cache'
 
 // ─── 뉴스레터 미리보기 (iframe) ──────────────────────────────────────────────
-function NewsletterPreview({ meta, total, products, citations, dotcom, productsCnty = [], citationsCnty = [], lang = 'ko', weeklyLabels, categoryStats, unlaunchedMap = {}, llmModel, monthlyVis, citTouchPointsTrend = null, citTrendMonths = [], citDomainTrend = null, citDomainMonths = [], citTouchPointsByLlm = null, citDomainByLlm = null, citDomainByLlmTrend = null, dotcomByLlm = null, editMode = false }) {
-  const iframeRef = useRef(null)
+function NewsletterPreview({ meta, total, products, citations, dotcom, productsCnty = [], citationsCnty = [], lang = 'ko', weeklyLabels, categoryStats, unlaunchedMap = {}, llmModel, monthlyVis, citTouchPointsTrend = null, citTrendMonths = [], citDomainTrend = null, citDomainMonths = [], citTouchPointsByLlm = null, citDomainByLlm = null, citDomainByLlmTrend = null, dotcomByLlm = null, editMode = false, iframeRef: externalRef = null }) {
+  const localRef = useRef(null)
+  const iframeRef = externalRef || localRef
   const html = useMemo(
     () => genHTMLFor(meta)(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, { weeklyLabels, categoryStats, unlaunchedMap, productCardVersion: meta.productCardVersion || 'v1', trendMode: meta.trendMode || 'weekly', llmModel, monthlyVis, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, citTouchPointsByLlm, citDomainByLlm, citDomainByLlmTrend, dotcomByLlm, editable: editMode }),
     [meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, categoryStats, unlaunchedMap, llmModel, monthlyVis, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, citTouchPointsByLlm, citDomainByLlm, citDomainByLlmTrend, dotcomByLlm, editMode]
@@ -152,6 +153,12 @@ export default function App() {
   const [activeSnap, setActiveSnap] = useState(null)
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [editMode, setEditMode] = useState(false)
+  const previewIframeRef = useRef(null)
+  // 상단바 서식 도구 → 미리보기 iframe 의 편집 선택 영역에 execCommand 전달
+  const sendFormat = useCallback((cmd, value) => {
+    const w = previewIframeRef.current && previewIframeRef.current.contentWindow
+    if (w) w.postMessage({ type: 'format', cmd, value }, '*')
+  }, [])
 
   const meta    = previewLang === 'en' ? metaEn : metaKo
   const setMeta = previewLang === 'en' ? setMetaEn : setMetaKo
@@ -519,6 +526,41 @@ export default function App() {
           </div>
         </div>
 
+        {/* 서식 도구 바 (편집 모드 + 미리보기일 때만) — mousedown preventDefault 로 iframe 선택 유지 */}
+        {editMode && activeTab === 'preview' && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap',
+            padding: '6px 22px', background: '#0B1220', borderBottom: '1px solid #1E293B', flexShrink: 0 }}>
+            <span style={{ fontSize: 11, color: '#64748B', fontFamily: FONT, fontWeight: 700 }}>서식</span>
+            <button title="굵게" onMouseDown={e => { e.preventDefault(); sendFormat('bold') }}
+              style={{ width: 26, height: 24, borderRadius: 5, border: '1px solid #334155', cursor: 'pointer',
+                background: '#1E293B', color: '#E2E8F0', fontSize: 13, fontWeight: 800, fontFamily: 'Georgia,serif' }}>B</button>
+            <button title="밑줄" onMouseDown={e => { e.preventDefault(); sendFormat('underline') }}
+              style={{ width: 26, height: 24, borderRadius: 5, border: '1px solid #334155', cursor: 'pointer',
+                background: '#1E293B', color: '#E2E8F0', fontSize: 13, fontWeight: 700, textDecoration: 'underline', fontFamily: 'Georgia,serif' }}>U</button>
+            <button title="기울임" onMouseDown={e => { e.preventDefault(); sendFormat('italic') }}
+              style={{ width: 26, height: 24, borderRadius: 5, border: '1px solid #334155', cursor: 'pointer',
+                background: '#1E293B', color: '#E2E8F0', fontSize: 13, fontWeight: 700, fontStyle: 'italic', fontFamily: 'Georgia,serif' }}>I</button>
+            <span style={{ width: 1, height: 18, background: '#1E293B', margin: '0 2px' }} />
+            <span style={{ fontSize: 11, color: '#64748B', fontFamily: FONT }}>크기</span>
+            {[['작게', '2'], ['보통', '3'], ['크게', '5'], ['특대', '6']].map(([label, val]) => (
+              <button key={val} title={`글자 ${label}`} onMouseDown={e => { e.preventDefault(); sendFormat('fontSize', val) }}
+                style={{ height: 24, padding: '0 8px', borderRadius: 5, border: '1px solid #334155', cursor: 'pointer',
+                  background: '#1E293B', color: '#94A3B8', fontSize: 11, fontWeight: 700, fontFamily: FONT }}>{label}</button>
+            ))}
+            <span style={{ width: 1, height: 18, background: '#1E293B', margin: '0 2px' }} />
+            <span style={{ fontSize: 11, color: '#64748B', fontFamily: FONT }}>색</span>
+            {['#1A1A1A', '#CF0652', '#1D4ED8', '#15803D', '#B45309', '#64748B'].map(c => (
+              <button key={c} title={`글자색 ${c}`} onMouseDown={e => { e.preventDefault(); sendFormat('foreColor', c) }}
+                style={{ width: 20, height: 20, borderRadius: '50%', border: '2px solid #334155', cursor: 'pointer', background: c, padding: 0 }} />
+            ))}
+            <span style={{ width: 1, height: 18, background: '#1E293B', margin: '0 2px' }} />
+            <button title="서식 지우기" onMouseDown={e => { e.preventDefault(); sendFormat('removeFormat') }}
+              style={{ height: 24, padding: '0 10px', borderRadius: 5, border: '1px solid #334155', cursor: 'pointer',
+                background: '#1E293B', color: '#94A3B8', fontSize: 11, fontWeight: 700, fontFamily: FONT }}>서식 지우기</button>
+            <span style={{ fontSize: 10, color: '#475569', fontFamily: FONT, marginLeft: 'auto' }}>미리보기에서 텍스트 선택 후 적용</span>
+          </div>
+        )}
+
         {/* 컨텐츠 영역 */}
         {activeTab === 'preview' ? (
           <div style={{ flex: 1, minWidth: 0, overflowY: 'auto', overflowX: 'hidden', padding: '28px 36px',
@@ -527,7 +569,7 @@ export default function App() {
               <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12, padding: '6px 12px', background: '#F8FAFC', borderRadius: 6 }}>
                 <LlmModelSelect value={llmModel} onChange={setLlmModel} products={resolved.products} productsCnty={resolved.productsCnty} monthlyVis={monthlyVis} />
               </div>
-              <NewsletterPreview meta={meta} total={total} products={resolved.products} citations={resolved.citations} dotcom={dotcom} productsCnty={resolved.productsCnty} citationsCnty={resolved.citationsCnty} lang={previewLang} weeklyLabels={weeklyLabels} categoryStats={categoryStats} unlaunchedMap={unlaunchedMap} llmModel={llmModel} monthlyVis={monthlyVis} citTouchPointsTrend={citTouchPointsTrend} citTrendMonths={citTrendMonths} citDomainTrend={citDomainTrend} citDomainMonths={citDomainMonths} citTouchPointsByLlm={citTouchPointsByLlm} citDomainByLlm={citDomainByLlm} citDomainByLlmTrend={citDomainByLlmTrend} dotcomByLlm={dotcomByLlm} editMode={editMode} />
+              <NewsletterPreview meta={meta} total={total} products={resolved.products} citations={resolved.citations} dotcom={dotcom} productsCnty={resolved.productsCnty} citationsCnty={resolved.citationsCnty} lang={previewLang} weeklyLabels={weeklyLabels} categoryStats={categoryStats} unlaunchedMap={unlaunchedMap} llmModel={llmModel} monthlyVis={monthlyVis} citTouchPointsTrend={citTouchPointsTrend} citTrendMonths={citTrendMonths} citDomainTrend={citDomainTrend} citDomainMonths={citDomainMonths} citTouchPointsByLlm={citTouchPointsByLlm} citDomainByLlm={citDomainByLlm} citDomainByLlmTrend={citDomainByLlmTrend} dotcomByLlm={dotcomByLlm} editMode={editMode} iframeRef={previewIframeRef} />
             </div>
           </div>
         ) : (
