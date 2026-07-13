@@ -128,7 +128,7 @@ function trendDetailHtml(products, weeklyAll, wLabels, t, lang, ulMap, periodTag
           <span style="font-size:20px;font-weight:700;color:#1A1A1A">${prodNameUL(p, ulMap)}</span>
           <span class="trend-status-badge" style="font-size:14px;font-weight:700;padding:2px 8px;border-radius:10px;background:${_trAllUL ? '#F1F5F9' : st.bg};color:${_trAllUL ? '#64748B' : st.color};border:1px solid ${_trAllUL ? '#CBD5E1' : st.border}">${_trAllUL ? (lang === 'en' ? 'Unlaunched' : '미출시') : st.label}</span>
           ${lgLatest != null ? `<span style="font-size:16px;font-weight:700;color:#1A1A1A">LG ${lgLatest.toFixed(1)}%</span>` : ''}
-          ${p.compName ? `<span style="font-size:14px;color:#94A3B8">vs ${p.compName} ${p.compRatio || ''}%</span>` : ''}
+          ${p.compName ? `<span style="font-size:14px;color:#94A3B8">vs ${p.compName} ${p.compRatio != null && p.compRatio !== '' ? Math.round(p.compRatio) : ''}%</span>` : ''}
         </div>
         <div style="border:1px solid #E8EDF2;border-radius:10px;overflow:hidden"><table style="width:100%;border-collapse:collapse;table-layout:fixed;font-family:${FONT}">${colgroup}<tbody>${chartRow}${legendRow}${thead}${tbody}</tbody></table></div>
         ${baselineNotePerProductHtml(p, lang)}
@@ -237,7 +237,7 @@ function monthlyTrendDetailHtml(products, monthlyVis, t, lang, ulMap, periodTag)
           <span style="font-size:20px;font-weight:700;color:#1A1A1A">${prodNameUL(p, ulMap)}</span>
           <span class="trend-status-badge" style="font-size:14px;font-weight:700;padding:2px 8px;border-radius:10px;background:${_trAllUL ? '#F1F5F9' : st.bg};color:${_trAllUL ? '#64748B' : st.color};border:1px solid ${_trAllUL ? '#CBD5E1' : st.border}">${_trAllUL ? (lang === 'en' ? 'Unlaunched' : '미출시') : st.label}</span>
           ${lgLatest != null ? `<span style="font-size:16px;font-weight:700;color:#1A1A1A">LG ${lgLatest.toFixed(1)}%</span>` : ''}
-          ${p.compName ? `<span style="font-size:14px;color:#94A3B8">vs ${p.compName} ${p.compRatio || ''}%</span>` : ''}
+          ${p.compName ? `<span style="font-size:14px;color:#94A3B8">vs ${p.compName} ${p.compRatio != null && p.compRatio !== '' ? Math.round(p.compRatio) : ''}%</span>` : ''}
         </div>
         <div style="border:1px solid #E8EDF2;border-radius:10px;overflow:hidden"><table style="width:100%;border-collapse:collapse;table-layout:fixed;font-family:${FONT}">${colgroup}<tbody>${chartRow}${legendRow}${thead}${tbody}</tbody></table></div>
         ${baselineNotePerProductHtml(p, lang)}
@@ -363,8 +363,8 @@ function productSectionHtml(products, meta, t, lang, wLabels, ulMap, monthlyVis,
       // 소수점까지 반영한 비율 (100% 경계 정확 판별)
       const wRatioExact = wComp > 0 ? (wScore / wComp * 100) : (mComp > 0 ? (wScore / mComp * 100) : 100)
       const mRatioExact = mComp > 0 ? (mScore / mComp * 100) : 100
-      const wRatio = Math.round(wRatioExact * 10) / 10 // 소수 1자리
-      const mRatio = Math.round(mRatioExact * 10) / 10
+      const wRatio = Math.round(wRatioExact) // 경쟁비 표기는 항상 정수 (경계 판별은 wRatioExact 사용)
+      const mRatio = Math.round(mRatioExact)
       const latestRatio = wRatio
       const latestStatus = wRatioExact >= 100 ? 'lead' : wRatioExact >= 80 ? 'behind' : 'critical'
       const st = statusInfo(latestStatus, lang)
