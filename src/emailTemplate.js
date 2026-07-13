@@ -2501,20 +2501,96 @@ function dashboardLinkButtonHtml(lang) {
 // ─── 메인 생성 함수 ───────────────────────────────────────────────────────────
 export { escapeHtml }
 
+// ─── 반기 요약(하이라이트) 섹션 — 반기 리포트 상단에만 삽입 ────────────────────
+// 전체 점수 + 삼성 격차 + 상승/하락 주도 카테고리 + (편집 가능) 반기 코멘트. table-layout.
+function semiHighlightHtml(meta, total, products, lang = 'ko') {
+  const L2 = lang === 'en'
+    ? { hl: 'Semi-Annual Highlights', overall: 'Total GEO Visibility', gap: 'Gap vs Samsung', ss: 'Samsung', vs: 'vs', rising: 'Top Risers', falling: 'Top Decliners', none: '—' }
+    : { hl: '반기 하이라이트', overall: '전체 GEO Visibility', gap: '삼성 대비 격차', ss: 'Samsung', vs: '대비', rising: '상승 주도', falling: '하락 주도', none: '—' }
+  total = total || {}
+  const compAvg = total.vsComp || 0
+  const gap = +((total.score || 0) - compAvg).toFixed(1)
+  const ratio = compAvg > 0 ? Math.round((total.score || 0) / compAvg * 100) : 100
+  const signal = ratio >= 100 ? '#22C55E' : ratio >= 80 ? '#F59E0B' : '#EF4444'
+  const d = (total.prev != null && total.prev !== 0) ? +((total.score || 0) - total.prev).toFixed(1) : null
+  const prodName = p => { const id = (p.id || '').toLowerCase(); return lang === 'en' ? (PROD_ID_TO_EN[id] || p.kr || id) : (PROD_ID_TO_KR[id] || p.kr || id) }
+  const movers = (products || []).filter(p => p.prev != null && p.score != null && p.prev !== 0).map(p => ({ name: prodName(p), d: +(p.score - p.prev).toFixed(1) }))
+  const risers = movers.filter(x => x.d > 0).sort((a, b) => b.d - a.d).slice(0, 3)
+  const fallers = movers.filter(x => x.d < 0).sort((a, b) => a.d - b.d).slice(0, 3)
+  const moverRows = (arr, color) => arr.length
+    ? arr.map(x => `<tr><td style="padding:3px 0;font-size:13px;color:#1A1A1A;font-family:${EM_FONT};">${escapeHtml(x.name)}</td><td align="right" style="padding:3px 0;font-size:13px;font-weight:700;color:${color};font-family:${EM_FONT};">${x.d > 0 ? '+' : ''}${x.d.toFixed(1)}%p</td></tr>`).join('')
+    : `<tr><td style="padding:3px 0;font-size:12px;color:#94A3B8;font-family:${EM_FONT};">${L2.none}</td></tr>`
+  return `
+        <tr>
+          <td style="background:#FFFFFF;padding:12px 28px 4px;">
+            <table border="0" cellpadding="0" cellspacing="0" width="100%">
+              <tr><td style="padding-bottom:10px;">
+                <table border="0" cellpadding="0" cellspacing="0"><tr>
+                  <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
+                  <td style="padding-left:8px;font-size:18px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${L2.hl}</td>
+                </tr></table>
+              </td></tr>
+              <tr><td>
+                <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#0F172A;border-radius:14px;"><tr>
+                  <td style="padding:20px 22px;border-top:4px solid ${signal};border-radius:14px;">
+                    <table border="0" cellpadding="0" cellspacing="0" width="100%"><tr>
+                      <td style="vertical-align:bottom;">
+                        <span style="font-size:12px;color:#94A3B8;font-family:${EM_FONT};">${L2.overall}</span><br/>
+                        <span style="font-size:44px;font-weight:900;color:#FFFFFF;font-family:${EM_FONT};">${total.score != null ? total.score : '—'}</span><span style="font-size:18px;color:#94A3B8;font-family:${EM_FONT};"> %</span>
+                        ${d != null ? `&nbsp;&nbsp;${deltaHtml(d, 15)}` : ''}
+                      </td>
+                      <td align="right" style="vertical-align:bottom;">
+                        ${compAvg > 0 ? `<span style="font-size:15px;color:#3B82F6;font-weight:800;font-family:${EM_FONT};">${L2.ss} ${compAvg}%</span><br/>
+                        <span style="font-size:15px;font-weight:800;color:${signal};font-family:${EM_FONT};">${L2.gap} ${gap > 0 ? '+' : ''}${gap}%p (${L2.vs} ${ratio}%)</span>` : ''}
+                      </td>
+                    </tr></table>
+                    ${(meta.semiHighlightText || _ED) ? `<table border="0" cellpadding="0" cellspacing="0" width="100%"><tr><td style="padding-top:12px;">${edBlock('semiHighlightText', meta.semiHighlightText, { size: 14, lh: 24, color: '#E2E8F0', accent: '#FF9EBB', lang })}</td></tr></table>` : ''}
+                  </td>
+                </tr></table>
+              </td></tr>
+              <tr><td style="padding-top:12px;">
+                <table border="0" cellpadding="0" cellspacing="0" width="100%"><tr>
+                  <td width="50%" style="vertical-align:top;padding-right:8px;">
+                    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:12px;"><tr><td style="padding:12px 16px;">
+                      <p style="margin:0 0 6px;font-size:13px;font-weight:700;color:#15803D;font-family:${EM_FONT};">▲ ${L2.rising}</p>
+                      <table border="0" cellpadding="0" cellspacing="0" width="100%">${moverRows(risers, '#16A34A')}</table>
+                    </td></tr></table>
+                  </td>
+                  <td width="50%" style="vertical-align:top;padding-left:8px;">
+                    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFF1F2;border:1px solid #FECDD3;border-radius:12px;"><tr><td style="padding:12px 16px;">
+                      <p style="margin:0 0 6px;font-size:13px;font-weight:700;color:#BE123C;font-family:${EM_FONT};">▼ ${L2.falling}</p>
+                      <table border="0" cellpadding="0" cellspacing="0" width="100%">${moverRows(fallers, '#DC2626')}</table>
+                    </td></tr></table>
+                  </td>
+                </tr></table>
+              </td></tr>
+            </table>
+          </td>
+        </tr>`
+}
+
 // ─── 반기 레터 (Semi-Annual Letter) ─────────────────────────────────────────
 // 반기 리포트 = 월간 리포트 전체 레이아웃(제품별·국가별·Citation·Action Plan 등 모든 기능
-// 동일)을 그대로 재사용하고, 트렌드만 월간(반기 6개월) 트렌드로 표시. 헤더 라벨만 반기 기본값.
+// 동일) + 상단 반기 요약(하이라이트) 섹션. 트렌드는 월간(반기 6개월) 트렌드로 표시.
 export function generateSemiAnnualEmailHTML(meta, total, products, citations, dotcom = {}, lang = 'ko', productsCnty = [], citationsCnty = [], options = {}) {
+  _ED = !!options.editable   // 반기 요약의 edBlock 이 올바른 editable 상태 사용 (generateEmailHTML 이 뒤에서 재설정)
   const semiMeta = {
     ...meta,
     reportType: meta.reportType || (lang === 'en' ? 'GEO Semi-Annual Performance Report' : 'GEO 반기 성과 분석 리포트'),
   }
-  // trendMode 를 monthly 로 고정 → 반기(6개월) 트렌드 표시. 그 외 옵션·기능은 월간과 동일.
-  return generateEmailHTML(semiMeta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, { ...options, trendMode: 'monthly' })
+  // 반기 요약은 LLM 필터 반영된 값으로 계산
+  let hp = products, ht = total
+  if (options.llmModel && options.llmModel !== 'Total') {
+    hp = resolveProductsByLlm(products, options.llmModel)
+    ht = resolveTotalByLlm(total, options.monthlyVis, options.llmModel)
+  }
+  const prependHtml = semiHighlightHtml(semiMeta, ht, hp, lang)
+  // trendMode 를 monthly 로 고정 → 반기(6개월) 트렌드. 그 외 옵션·기능은 월간과 동일.
+  return generateEmailHTML(semiMeta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, { ...options, trendMode: 'monthly', prependHtml })
 }
 
 export function generateEmailHTML(meta, total, products, citations, dotcom = {}, lang = 'ko', productsCnty = [], citationsCnty = [], options = {}) {
-  const { containerWidth = 940, showTrendTabs = false, weeklyLabels, categoryStats = null, unlaunchedMap: ulInput = {}, productCardVersion = 'v1', trendMode = 'weekly', llmModel, monthlyVis, citTouchPointsTrend = null, citTrendMonths = [], citDomainTrend = null, citDomainMonths = [], citTouchPointsByLlm = null, citDomainByLlm = null, citDomainByLlmTrend = null, dotcomByLlm = null } = options
+  const { containerWidth = 940, showTrendTabs = false, weeklyLabels, categoryStats = null, unlaunchedMap: ulInput = {}, productCardVersion = 'v1', trendMode = 'weekly', llmModel, monthlyVis, citTouchPointsTrend = null, citTrendMonths = [], citDomainTrend = null, citDomainMonths = [], citTouchPointsByLlm = null, citDomainByLlm = null, citDomainByLlmTrend = null, dotcomByLlm = null, prependHtml = '' } = options
   // 인라인 편집 모드 (어드민 미리보기 전용) — 게시/복사/발송 경로는 editable 미지정 → 항상 false 로 리셋
   _ED = !!options.editable
   // LLM Model 필터 (2026-06) — 선택 모델로 products/productsCnty/total 재계산
@@ -2696,6 +2772,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
             </table>` : ''}
           </td>
         </tr>
+        ${prependHtml || ''}
         <!-- 구분선 (직선) -->
         <tr>
           <td style="background:#FFFFFF;padding:24px 28px 0;">
