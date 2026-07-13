@@ -96,7 +96,7 @@ export const INIT_META  = {
   noticeText: '', showNotice: true,
   todoText: '', showTodo: false,
   monthlyReportBody: MONTHLY_REPORT_BODY_DEFAULT, showMonthlyReportBody: true,
-  showTotal: true, showProducts: true, showModelDelta: true, showCnty: true, showCitations: true,
+  showTotal: true, showProducts: true, showModelDelta: true, showCompRatioDelta: true, showCnty: true, showCitations: true,
   showCitDomain: true, showCitCnty: true, showCitPrd: true,
   citationTopN: 10, citDomainTopN: 10,
   showDotcom: true, showDotcomChatGpt: true,

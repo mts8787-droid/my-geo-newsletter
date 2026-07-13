@@ -2522,6 +2522,65 @@ function modelDeltaSectionHtml(products, meta, lang = 'ko') {
               </tr>`
 }
 
+// ─── 제품별 경쟁비 증감 (전월 대비) ──────────────────────────────────────────
+// products[].monthlyScores 의 최신/전월 (score, comp) 로 경쟁비(LG/경쟁×100) 전월 대비 Δ 산출.
+// 다이버징 바 (개선=초록 / 악화=빨강, 중앙 0축) + 현재 경쟁비. 이메일 호환 table-layout.
+function compRatioDeltaSectionHtml(products, meta, lang = 'ko') {
+  products = products || []
+  const prodName = p => { const id = (p.id || '').toLowerCase(); return lang === 'en' ? (PROD_ID_TO_EN[id] || p.kr || p.id) : (p.kr || PROD_ID_TO_EN[id] || p.id) }
+  const rows = []
+  products.forEach(p => {
+    const ms = p.monthlyScores || []
+    if (ms.length < 2) return
+    const L = ms[ms.length - 1], P = ms[ms.length - 2]
+    const rn = (L && L.comp > 0 && L.score != null) ? Math.round(L.score / L.comp * 100) : null
+    const rp = (P && P.comp > 0 && P.score != null) ? Math.round(P.score / P.comp * 100) : null
+    if (rn == null || rp == null) return
+    rows.push({ name: prodName(p), now: rn, d: rn - rp })
+  })
+  if (!rows.length) return ''
+  const dmax = Math.max(1, ...rows.map(r => Math.abs(r.d)))
+  const HALF = 120, UP = '#16A34A', DOWN = '#DC2626'
+  const barRows = rows.map(r => {
+    const v = r.d, neg = v < 0, color = v === 0 ? '#94A3B8' : neg ? DOWN : UP, w = Math.round(Math.abs(v) / dmax * HALF)
+    const rColor = r.now >= 100 ? '#15803D' : r.now >= 80 ? '#B45309' : '#BE123C'
+    return `<tr>
+      <td align="right" width="96" style="font-size:12px;color:#555;font-family:${EM_FONT};padding:5px 8px 5px 0;white-space:nowrap;">${escapeHtml(r.name)}</td>
+      <td width="50" align="right" style="font-size:12px;font-weight:700;color:${rColor};font-family:${EM_FONT};padding:5px 10px 5px 0;white-space:nowrap;">${r.now}%</td>
+      <td width="${HALF}" align="right" style="padding:0;">${neg && w > 0 ? `<table border="0" cellpadding="0" cellspacing="0" align="right" style="width:${w}px;"><tr><td height="16" style="background:${color};border-radius:3px 0 0 3px;font-size:0;line-height:0;">&nbsp;</td></tr></table>` : ''}</td>
+      <td width="2" style="background:#c9c8c2;font-size:0;line-height:0;">&nbsp;</td>
+      <td width="${HALF}" align="left" style="padding:0;">${!neg && w > 0 ? `<table border="0" cellpadding="0" cellspacing="0" align="left" style="width:${w}px;"><tr><td height="16" style="background:${color};border-radius:0 3px 3px 0;font-size:0;line-height:0;">&nbsp;</td></tr></table>` : ''}</td>
+      <td width="56" style="font-size:12px;font-weight:700;color:${color};font-family:${EM_FONT};padding:5px 0 5px 8px;white-space:nowrap;">${v > 0 ? '+' : ''}${v}%p</td>
+    </tr>`
+  }).join('')
+
+  const title = lang === 'en' ? 'Competitor Ratio MoM by Category (Δ%p)' : '제품별 경쟁비 증감 (전월 대비, Δ%p)'
+  const noteDefault = lang === 'en' ? 'MoM change of competitor ratio (LG / #1 competitor × 100) by category.' : '카테고리별 경쟁비(LG / 1위 경쟁사 × 100)의 전월 대비 증감입니다. 초록=개선 / 빨강=악화.'
+  return `
+              <tr>
+                <td style="padding-bottom:28px;">
+                  <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFFFFF;border-radius:16px;border:2px solid #E8EDF2;">
+                    <tr>
+                      <td style="padding:22px 16px 18px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;">
+                        <table border="0" cellpadding="0" cellspacing="0"><tr>
+                          <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
+                          <td style="padding-left:8px;font-size:19px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${title}</td>
+                        </tr></table>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="padding:16px 18px;">
+                        ${edBlock('compRatioDeltaNote', meta.compRatioDeltaNote, { size: 13, lh: 21, color: '#555555', ph: noteDefault, lang })}
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-top:10px;">
+                          ${barRows}
+                        </table>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>`
+}
+
 // ─── 반기 요약(하이라이트) 섹션 — 반기 리포트 상단에만 삽입 ────────────────────
 // 전체 점수 + 삼성 격차 + 상승/하락 주도 카테고리 + (편집 가능) 반기 코멘트. table-layout.
 function semiHighlightHtml(meta, total, products, lang = 'ko') {
@@ -2963,6 +3022,8 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
               </tr>` : ''}
 
               ${meta.showModelDelta !== false ? modelDeltaSectionHtml(products, meta, lang) : ''}
+
+              ${meta.showCompRatioDelta !== false ? compRatioDeltaSectionHtml(products, meta, lang) : ''}
 
               ${meta.showCnty !== false ? countryVisibilitySectionHtml(productsCnty, meta, lang, total, unlaunchedMap) : ''}
 
