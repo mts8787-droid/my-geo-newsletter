@@ -2441,58 +2441,64 @@ const MODEL_ORDER = ['ChatGPT', 'ChatGPT Search', 'GPT Search', 'Perplexity', 'G
 function modelDeltaSectionHtml(products, meta, lang = 'ko') {
   products = products || []
   const prodName = p => { const id = (p.id || '').toLowerCase(); return lang === 'en' ? (PROD_ID_TO_EN[id] || p.kr || p.id) : (p.kr || PROD_ID_TO_EN[id] || p.id) }
+
+  // 모델 집합 (byLlm 키 합집합, Total 제외)
   const modelSet = new Set()
-  const rows = []
   products.forEach(p => {
-    const ms = p.monthlyScores || []
-    if (ms.length < 2) return
+    const ms = p.monthlyScores || []; if (ms.length < 2) return
     const lb = ms[ms.length - 1].byLlm || {}, pb = ms[ms.length - 2].byLlm || {}
-    const deltas = {}; let has = false
-    Object.keys(lb).forEach(m => {
-      if (m === 'Total' || m === 'TOTAL' || m === 'All') return
-      if (pb[m] && lb[m] && lb[m].score != null && pb[m].score != null) {
-        deltas[m] = +(lb[m].score - pb[m].score).toFixed(1); modelSet.add(m); has = true
-      }
+    Object.keys(lb).forEach(m => { if (m !== 'Total' && m !== 'TOTAL' && m !== 'All' && pb[m]) modelSet.add(m) })
+  })
+  if (!modelSet.size) return ''
+  const models = [...modelSet].sort((a, b) => { const ia = MODEL_ORDER.indexOf(a), ib = MODEL_ORDER.indexOf(b); return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib) || a.localeCompare(b) })
+
+  // 주요 경쟁사 2개 — 최신월 allScores 합산 상위 2 (비-LG)
+  const compTot = {}
+  products.forEach(p => { const ms = p.monthlyScores || []; if (!ms.length) return; const as = ms[ms.length - 1].allScores || {}; Object.keys(as).forEach(b => { if (b === 'LG') return; compTot[b] = (compTot[b] || 0) + (Number(as[b]) || 0) }) })
+  const majorComps = Object.keys(compTot).sort((a, b) => compTot[b] - compTot[a]).slice(0, 2)
+  const brands = ['LG', ...majorComps]
+
+  // 브랜드별 카테고리 × 모델 Δ (byLlm[model].allScores[brand] 전월 대비)
+  const brandData = brands.map(brand => {
+    const rows = []
+    products.forEach(p => {
+      const ms = p.monthlyScores || []; if (ms.length < 2) return
+      const lb = ms[ms.length - 1].byLlm || {}, pb = ms[ms.length - 2].byLlm || {}
+      const deltas = {}; let has = false
+      models.forEach(m => {
+        const ln = lb[m] && lb[m].allScores ? lb[m].allScores[brand] : null
+        const pn = pb[m] && pb[m].allScores ? pb[m].allScores[brand] : null
+        if (ln != null && pn != null) { deltas[m] = +(ln - pn).toFixed(1); has = true }
+      })
+      if (has) rows.push({ name: prodName(p), deltas })
     })
-    if (has) rows.push({ name: prodName(p), deltas })
-  })
-  if (!modelSet.size || !rows.length) return ''  // 모델별 데이터 없으면 섹션 미렌더
-  const models = [...modelSet].sort((a, b) => {
-    const ia = MODEL_ORDER.indexOf(a), ib = MODEL_ORDER.indexOf(b)
-    return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib) || a.localeCompare(b)
-  })
-  const avg = {}
-  models.forEach(m => { const v = rows.map(r => r.deltas[m]).filter(x => x != null); avg[m] = v.length ? +(v.reduce((a, b) => a + b, 0) / v.length).toFixed(1) : null })
+    const avg = {}; models.forEach(m => { const v = rows.map(r => r.deltas[m]).filter(x => x != null); avg[m] = v.length ? +(v.reduce((a, b) => a + b, 0) / v.length).toFixed(1) : null })
+    return { brand, rows, avg }
+  }).filter(b => b.rows.length)
+  if (!brandData.length) return ''
 
-  // 다이버징 바 (모델 평균 Δ, +파랑 / -빨강, 중앙 0축)
-  const barMax = Math.max(1, ...models.map(m => Math.abs(avg[m] || 0)))
-  const HALF = 130, UP = '#2A78D6', DOWN = '#E34948'
-  const barModels = models.filter(m => avg[m] != null).sort((a, b) => avg[b] - avg[a])
-  const barRows = barModels.map(m => {
-    const v = avg[m], neg = v < 0, color = neg ? DOWN : UP, w = Math.round(Math.abs(v) / barMax * HALF)
-    return `<tr>
-      <td align="right" width="96" style="font-size:12px;color:#555;font-family:${EM_FONT};padding:5px 8px 5px 0;white-space:nowrap;">${escapeHtml(m)}</td>
-      <td width="${HALF}" align="right" style="padding:0;">${neg && w > 0 ? `<table border="0" cellpadding="0" cellspacing="0" align="right" style="width:${w}px;"><tr><td height="16" style="background:${color};border-radius:3px 0 0 3px;font-size:0;line-height:0;">&nbsp;</td></tr></table>` : ''}</td>
-      <td width="2" style="background:#c9c8c2;font-size:0;line-height:0;">&nbsp;</td>
-      <td width="${HALF}" align="left" style="padding:0;">${!neg && w > 0 ? `<table border="0" cellpadding="0" cellspacing="0" align="left" style="width:${w}px;"><tr><td height="16" style="background:${color};border-radius:0 3px 3px 0;font-size:0;line-height:0;">&nbsp;</td></tr></table>` : ''}</td>
-      <td width="54" style="font-size:12px;font-weight:700;color:${color};font-family:${EM_FONT};padding:5px 0 5px 8px;white-space:nowrap;">${v > 0 ? '+' : ''}${v.toFixed(1)}%p</td>
-    </tr>`
-  }).join('')
-
-  // 히트맵 (카테고리 × 모델, 셀 bgcolor)
+  // 공통 색 스케일 (브랜드 간 동일 기준)
+  const allV = brandData.flatMap(b => b.rows.flatMap(r => models.map(m => r.deltas[m]))).filter(x => x != null)
+  const sc = Math.max(5, ...allV.map(Math.abs))
   const mix = (r, g, b, a) => { const h = x => Math.round(255 - (255 - x) * a).toString(16).padStart(2, '0'); return '#' + h(r) + h(g) + h(b) }
-  const heat = v => { const t = Math.max(-1, Math.min(1, v / 5)); return t >= 0 ? mix(42, 120, 214, 0.12 + t * 0.55) : mix(227, 73, 72, 0.12 + (-t) * 0.6) }
-  const cell = v => {
-    if (v == null) return `<td style="padding:8px 6px;border:1px solid #e5e4de;color:#c9c8c2;font-family:${EM_FONT};">–</td>`
-    const bg = heat(v), col = Math.abs(v) >= 3 ? '#FFFFFF' : '#333333'
-    return `<td bgcolor="${bg}" style="padding:8px 6px;border:1px solid #e5e4de;background:${bg};color:${col};font-size:12px;font-weight:700;font-family:${EM_FONT};text-align:center;">${v > 0 ? '+' : ''}${v.toFixed(1)}</td>`
+  const heat = v => { const t = Math.max(-1, Math.min(1, v / sc)); return t >= 0 ? mix(42, 120, 214, 0.12 + t * 0.55) : mix(227, 73, 72, 0.12 + (-t) * 0.6) }
+  // 타이트 셀 (padding·line-height 축소)
+  const cell = v => { if (v == null) return `<td style="padding:3px 5px;border:1px solid #e5e4de;color:#c9c8c2;font-family:${EM_FONT};line-height:1.3;">–</td>`; const bg = heat(v), col = Math.abs(v) >= sc * 0.6 ? '#FFFFFF' : '#333333'; return `<td bgcolor="${bg}" style="padding:3px 5px;border:1px solid #e5e4de;background:${bg};color:${col};font-size:11px;font-weight:700;font-family:${EM_FONT};text-align:center;line-height:1.3;">${v > 0 ? '+' : ''}${v.toFixed(1)}</td>` }
+  const th = m => `<th style="padding:4px 5px;border:1px solid #e5e4de;background:#f6f5f2;font-size:10px;font-weight:600;color:#555;font-family:${EM_FONT};line-height:1.2;">${escapeHtml(m)}</th>`
+  const heatTable = ({ brand, rows, avg }) => {
+    const bodyRows = rows.map(r => `<tr><td style="padding:3px 8px;border:1px solid #e5e4de;background:#f6f5f2;font-size:11px;font-weight:700;color:#111;font-family:${EM_FONT};text-align:left;line-height:1.3;">${escapeHtml(r.name)}</td>${models.map(m => cell(r.deltas[m])).join('')}</tr>`).join('')
+    const avgRow = `<tr><td style="padding:3px 8px;border:1px solid #cfcec8;background:#eceae4;font-size:11px;font-weight:800;color:#111;font-family:${EM_FONT};text-align:left;line-height:1.3;">${lang === 'en' ? 'Avg' : '평균'}</td>${models.map(m => cell(avg[m])).join('')}</tr>`
+    const bColor = brand === 'LG' ? EM_RED : '#475569'
+    return `
+                        <p style="margin:14px 0 5px;font-size:13px;font-weight:800;color:${bColor};font-family:${EM_FONT};">${brand === 'LG' ? 'LG' : escapeHtml(brand)}</p>
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border-collapse:collapse;">
+                          <thead><tr><th style="padding:4px 8px;border:1px solid #e5e4de;background:#f6f5f2;font-size:10px;color:#555;font-family:${EM_FONT};"></th>${models.map(th).join('')}</tr></thead>
+                          <tbody>${bodyRows}${avgRow}</tbody>
+                        </table>`
   }
-  const th = m => `<th style="padding:8px 6px;border:1px solid #e5e4de;background:#f6f5f2;font-size:11px;font-weight:600;color:#555;font-family:${EM_FONT};">${escapeHtml(m)}</th>`
-  const bodyRows = rows.map(r => `<tr><td style="padding:8px 10px;border:1px solid #e5e4de;background:#f6f5f2;font-size:12px;font-weight:700;color:#111;font-family:${EM_FONT};text-align:left;">${escapeHtml(r.name)}</td>${models.map(m => cell(r.deltas[m])).join('')}</tr>`).join('')
-  const avgRow = `<tr><td style="padding:8px 10px;border:1px solid #cfcec8;background:#eceae4;font-size:12px;font-weight:800;color:#111;font-family:${EM_FONT};text-align:left;">${lang === 'en' ? 'Avg' : '평균'}</td>${models.map(m => cell(avg[m])).join('')}</tr>`
 
   const title = lang === 'en' ? 'Category × Model MoM Detail (Δ%p)' : '제품군 × 모델 증감 상세 (전월 대비, Δ%p)'
-  const noteDefault = lang === 'en' ? 'MoM change of LG Visibility by AI model across categories.' : '카테고리별 LG Visibility의 AI 모델별 전월 대비 증감입니다.'
+  const noteDefault = lang === 'en' ? 'MoM change of Visibility by AI model — LG and top 2 competitors.' : 'AI 모델별 Visibility 전월 대비 증감 — LG와 주요 경쟁사 2개.'
   return `
               <tr>
                 <td style="padding-bottom:28px;">
@@ -2506,15 +2512,9 @@ function modelDeltaSectionHtml(products, meta, lang = 'ko') {
                       </td>
                     </tr>
                     <tr>
-                      <td style="padding:16px 18px;">
+                      <td style="padding:14px 18px;">
                         ${edBlock('modelDeltaNote', meta.modelDeltaNote, { size: 13, lh: 21, color: '#555555', ph: noteDefault, lang })}
-                        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin:10px 0 18px;">
-                          ${barRows}
-                        </table>
-                        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border-collapse:collapse;">
-                          <thead><tr><th style="padding:8px 10px;border:1px solid #e5e4de;background:#f6f5f2;font-size:11px;color:#555;font-family:${EM_FONT};"></th>${models.map(th).join('')}</tr></thead>
-                          <tbody>${bodyRows}${avgRow}</tbody>
-                        </table>
+                        ${brandData.map(heatTable).join('')}
                       </td>
                     </tr>
                   </table>
