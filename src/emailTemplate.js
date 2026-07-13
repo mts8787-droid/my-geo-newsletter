@@ -2434,6 +2434,94 @@ function dashboardLinkButtonHtml(lang) {
 // ─── 메인 생성 함수 ───────────────────────────────────────────────────────────
 export { escapeHtml }
 
+// ─── 제품군 × 모델 전월 대비 상세 (모델별 Visibility 증감) ────────────────────
+// products[].monthlyScores[].byLlm 에서 카테고리×모델 MoM 델타 산출 → 다이버징 바 + 히트맵.
+// 이메일 호환: canvas 대신 table-layout (막대 = background 폭, 히트맵 = 셀 bgcolor).
+const MODEL_ORDER = ['ChatGPT', 'ChatGPT Search', 'GPT Search', 'Perplexity', 'Gemini', 'Google', 'Google AI Overview', 'Copilot', 'Claude']
+function modelDeltaSectionHtml(products, meta, lang = 'ko') {
+  products = products || []
+  const prodName = p => { const id = (p.id || '').toLowerCase(); return lang === 'en' ? (PROD_ID_TO_EN[id] || p.kr || p.id) : (p.kr || PROD_ID_TO_EN[id] || p.id) }
+  const modelSet = new Set()
+  const rows = []
+  products.forEach(p => {
+    const ms = p.monthlyScores || []
+    if (ms.length < 2) return
+    const lb = ms[ms.length - 1].byLlm || {}, pb = ms[ms.length - 2].byLlm || {}
+    const deltas = {}; let has = false
+    Object.keys(lb).forEach(m => {
+      if (m === 'Total' || m === 'TOTAL' || m === 'All') return
+      if (pb[m] && lb[m] && lb[m].score != null && pb[m].score != null) {
+        deltas[m] = +(lb[m].score - pb[m].score).toFixed(1); modelSet.add(m); has = true
+      }
+    })
+    if (has) rows.push({ name: prodName(p), deltas })
+  })
+  if (!modelSet.size || !rows.length) return ''  // 모델별 데이터 없으면 섹션 미렌더
+  const models = [...modelSet].sort((a, b) => {
+    const ia = MODEL_ORDER.indexOf(a), ib = MODEL_ORDER.indexOf(b)
+    return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib) || a.localeCompare(b)
+  })
+  const avg = {}
+  models.forEach(m => { const v = rows.map(r => r.deltas[m]).filter(x => x != null); avg[m] = v.length ? +(v.reduce((a, b) => a + b, 0) / v.length).toFixed(1) : null })
+
+  // 다이버징 바 (모델 평균 Δ, +파랑 / -빨강, 중앙 0축)
+  const barMax = Math.max(1, ...models.map(m => Math.abs(avg[m] || 0)))
+  const HALF = 130, UP = '#2A78D6', DOWN = '#E34948'
+  const barModels = models.filter(m => avg[m] != null).sort((a, b) => avg[b] - avg[a])
+  const barRows = barModels.map(m => {
+    const v = avg[m], neg = v < 0, color = neg ? DOWN : UP, w = Math.round(Math.abs(v) / barMax * HALF)
+    return `<tr>
+      <td align="right" width="96" style="font-size:12px;color:#555;font-family:${EM_FONT};padding:5px 8px 5px 0;white-space:nowrap;">${escapeHtml(m)}</td>
+      <td width="${HALF}" align="right" style="padding:0;">${neg && w > 0 ? `<table border="0" cellpadding="0" cellspacing="0" align="right" style="width:${w}px;"><tr><td height="16" style="background:${color};border-radius:3px 0 0 3px;font-size:0;line-height:0;">&nbsp;</td></tr></table>` : ''}</td>
+      <td width="2" style="background:#c9c8c2;font-size:0;line-height:0;">&nbsp;</td>
+      <td width="${HALF}" align="left" style="padding:0;">${!neg && w > 0 ? `<table border="0" cellpadding="0" cellspacing="0" align="left" style="width:${w}px;"><tr><td height="16" style="background:${color};border-radius:0 3px 3px 0;font-size:0;line-height:0;">&nbsp;</td></tr></table>` : ''}</td>
+      <td width="54" style="font-size:12px;font-weight:700;color:${color};font-family:${EM_FONT};padding:5px 0 5px 8px;white-space:nowrap;">${v > 0 ? '+' : ''}${v.toFixed(1)}%p</td>
+    </tr>`
+  }).join('')
+
+  // 히트맵 (카테고리 × 모델, 셀 bgcolor)
+  const mix = (r, g, b, a) => { const h = x => Math.round(255 - (255 - x) * a).toString(16).padStart(2, '0'); return '#' + h(r) + h(g) + h(b) }
+  const heat = v => { const t = Math.max(-1, Math.min(1, v / 5)); return t >= 0 ? mix(42, 120, 214, 0.12 + t * 0.55) : mix(227, 73, 72, 0.12 + (-t) * 0.6) }
+  const cell = v => {
+    if (v == null) return `<td style="padding:8px 6px;border:1px solid #e5e4de;color:#c9c8c2;font-family:${EM_FONT};">–</td>`
+    const bg = heat(v), col = Math.abs(v) >= 3 ? '#FFFFFF' : '#333333'
+    return `<td bgcolor="${bg}" style="padding:8px 6px;border:1px solid #e5e4de;background:${bg};color:${col};font-size:12px;font-weight:700;font-family:${EM_FONT};text-align:center;">${v > 0 ? '+' : ''}${v.toFixed(1)}</td>`
+  }
+  const th = m => `<th style="padding:8px 6px;border:1px solid #e5e4de;background:#f6f5f2;font-size:11px;font-weight:600;color:#555;font-family:${EM_FONT};">${escapeHtml(m)}</th>`
+  const bodyRows = rows.map(r => `<tr><td style="padding:8px 10px;border:1px solid #e5e4de;background:#f6f5f2;font-size:12px;font-weight:700;color:#111;font-family:${EM_FONT};text-align:left;">${escapeHtml(r.name)}</td>${models.map(m => cell(r.deltas[m])).join('')}</tr>`).join('')
+  const avgRow = `<tr><td style="padding:8px 10px;border:1px solid #cfcec8;background:#eceae4;font-size:12px;font-weight:800;color:#111;font-family:${EM_FONT};text-align:left;">${lang === 'en' ? 'Avg' : '평균'}</td>${models.map(m => cell(avg[m])).join('')}</tr>`
+
+  const title = lang === 'en' ? 'Category × Model MoM Detail (Δ%p)' : '제품군 × 모델 증감 상세 (전월 대비, Δ%p)'
+  const noteDefault = lang === 'en' ? 'MoM change of LG Visibility by AI model across categories.' : '카테고리별 LG Visibility의 AI 모델별 전월 대비 증감입니다.'
+  return `
+              <tr>
+                <td style="padding-bottom:28px;">
+                  <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFFFFF;border-radius:16px;border:2px solid #E8EDF2;">
+                    <tr>
+                      <td style="padding:22px 16px 18px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;">
+                        <table border="0" cellpadding="0" cellspacing="0"><tr>
+                          <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
+                          <td style="padding-left:8px;font-size:19px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${title}</td>
+                        </tr></table>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="padding:16px 18px;">
+                        ${edBlock('modelDeltaNote', meta.modelDeltaNote, { size: 13, lh: 21, color: '#555555', ph: noteDefault, lang })}
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin:10px 0 18px;">
+                          ${barRows}
+                        </table>
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border-collapse:collapse;">
+                          <thead><tr><th style="padding:8px 10px;border:1px solid #e5e4de;background:#f6f5f2;font-size:11px;color:#555;font-family:${EM_FONT};"></th>${models.map(th).join('')}</tr></thead>
+                          <tbody>${bodyRows}${avgRow}</tbody>
+                        </table>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>`
+}
+
 // ─── 반기 요약(하이라이트) 섹션 — 반기 리포트 상단에만 삽입 ────────────────────
 // 전체 점수 + 삼성 격차 + 상승/하락 주도 카테고리 + (편집 가능) 반기 코멘트. table-layout.
 function semiHighlightHtml(meta, total, products, lang = 'ko') {
@@ -2873,6 +2961,8 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                   </table>
                 </td>
               </tr>` : ''}
+
+              ${meta.showModelDelta !== false ? modelDeltaSectionHtml(products, meta, lang) : ''}
 
               ${meta.showCnty !== false ? countryVisibilitySectionHtml(productsCnty, meta, lang, total, unlaunchedMap) : ''}
 

@@ -1135,6 +1135,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
           {[
             { key: 'showTotal',     label: 'GEO 지수' },
             { key: 'showProducts',  label: '제품별' },
+            { key: 'showModelDelta', label: '제품별 모델 증감' },
             { key: 'showCnty',      label: '국가별' },
             { key: 'showCitations', label: 'Citation' },
             { key: 'showCitCnty',   label: 'Citation 국가별' },
