@@ -845,7 +845,7 @@ function insightBlockHtml(insight, showInsight, howToRead, showHowToRead, lang =
     html += `
     <tr>
       <td style="padding:10px 16px;">
-        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border-radius:8px;background:#FFF4F7;border:1px solid #F5CCD8;border-left:3px solid ${EM_RED};">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border-radius:8px;background:#FFF4F7;border:1px solid #F5CCD8;">
           <tr>
             <td style="padding:12px 16px;">
               <p style="margin:0 0 6px;font-size:13px;font-weight:700;color:${EM_RED};font-family:${EM_FONT};letter-spacing:0.5px;">${t.insight}</p>
@@ -863,7 +863,7 @@ function insightBlockHtml(insight, showInsight, howToRead, showHowToRead, lang =
     html += `
     <tr>
       <td style="padding:0 16px 10px;">
-        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border-radius:8px;background:#F8FAFC;border:1px solid #E2E8F0;border-left:3px solid #94A3B8;">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border-radius:8px;background:#F8FAFC;border:1px solid #E2E8F0;">
           <tr>
             <td style="padding:12px 16px;">
               <p style="margin:0 0 6px;font-size:13px;font-weight:700;color:#64748B;font-family:${EM_FONT};letter-spacing:0.5px;">${t.howToRead}</p>
@@ -2728,7 +2728,7 @@ export function generateSemiAnnualEmailHTML(meta, total, products, citations, do
                   <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-top:14px;background:#1E2433;border-radius:8px;"><tr>
                     <td style="padding:0;"><table border="0" cellpadding="0" cellspacing="0" width="${scoreBarW}%" style="width:${scoreBarW}%;max-width:${scoreBarW}%;"><tr><td height="10" style="background:${EM_RED};border-radius:8px;height:10px;font-size:0;line-height:0;">&nbsp;</td></tr></table></td>
                   </tr></table>
-                  ${(meta.semiHighlightText || _ED) ? `<table border="0" cellpadding="0" cellspacing="0" width="100%"><tr><td style="padding:14px 16px;margin-top:10px;background:#1E0F18;border:1px solid #3D1528;border-left:3px solid ${EM_RED};border-radius:10px;">
+                  ${(meta.semiHighlightText || _ED) ? `<table border="0" cellpadding="0" cellspacing="0" width="100%"><tr><td style="padding:14px 16px;margin-top:10px;background:#1E0F18;border:1px solid #3D1528;border-radius:10px;">
                     <div${edAttr('semiHighlightText', meta.semiHighlightText)} style="margin:6px 0 0;">${meta.semiHighlightText ? renderReportText(meta.semiHighlightText, { size: 14, lh: 24, color: '#FFFFFF', accent: '#FF9EBB' }) : `<p style="margin:0;font-size:14px;line-height:24px;font-family:${EM_FONT};">${edPlaceholder(lang)}</p>`}</div>
                   </td></tr></table>` : ''}
                 </td></tr>
@@ -2962,7 +2962,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
             <table border="0" cellpadding="0" cellspacing="0" width="100%">
               <tr><td height="14" style="font-size:0;line-height:0;">&nbsp;</td></tr>
               <tr>
-                <td style="background:#FEF2F2;border:1px solid #FECACA;border-left:3px solid ${EM_RED};border-radius:8px;padding:14px 20px;">
+                <td style="background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;padding:14px 20px;">
                   <p style="margin:0 0 6px;font-size:15px;font-weight:700;color:${EM_RED};font-family:${EM_FONT};letter-spacing:0.5px;">${t.notice}</p>
                   <div${edAttr('noticeText', meta.noticeText)}>${meta.noticeText ? renderReportText(meta.noticeText, { size: 14, lh: 23, color: '#1A1A1A' }) : `<p style="margin:0;font-size:14px;line-height:23px;font-family:${EM_FONT};">${edPlaceholder(lang)}</p>`}</div>
                 </td>
@@ -2972,7 +2972,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
             <table border="0" cellpadding="0" cellspacing="0" width="100%">
               <tr><td height="14" style="font-size:0;line-height:0;">&nbsp;</td></tr>
               <tr>
-                <td style="background:#F8FAFC;border:1px solid #E2E8F0;border-left:3px solid #94A3B8;border-radius:8px;padding:14px 20px;">
+                <td style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;padding:14px 20px;">
                   <p style="margin:0 0 6px;font-size:13px;font-weight:700;color:#64748B;font-family:${EM_FONT};letter-spacing:0.5px;">${t.kpiLogic}</p>
                   <div${edAttr('kpiLogicText', meta.kpiLogicText)}>${meta.kpiLogicText ? renderReportText(meta.kpiLogicText, { size: 14, lh: 24, color: '#475569', accent: '#64748B' }) : `<p style="margin:0;font-size:14px;line-height:24px;font-family:${EM_FONT};">${edPlaceholder(lang)}</p>`}</div>
                 </td>
@@ -3088,7 +3088,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                         <table border="0" cellpadding="0" cellspacing="0" width="100%">
                         <tr><td height="16" style="font-size:0;line-height:0;">&nbsp;</td></tr>
                           <tr>
-                            <td style="padding:16px 18px;background:#1E0F18;border:1px solid #3D1528;border-left:3px solid ${EM_RED};border-radius:10px;">
+                            <td style="padding:16px 18px;background:#1E0F18;border:1px solid #3D1528;border-radius:10px;">
                               <p style="margin:0 0 8px;font-size:14px;font-weight:700;color:${EM_RED};text-transform:uppercase;font-family:${EM_FONT};letter-spacing:1px;">INSIGHT</p>
                               <div${edAttr('totalInsight', meta.totalInsight)}>${meta.totalInsight ? renderReportText(meta.totalInsight, { size: 15, lh: 26, color: '#FFFFFF', accent: '#FF9EBB' }) : `<p style="margin:0;font-size:15px;line-height:26px;font-family:${EM_FONT};">${edPlaceholder(lang)}</p>`}</div>
                             </td>
@@ -3233,7 +3233,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                       <td style="padding:20px 16px;">
                         ${(meta.todoNotice || _ED) ? `
                         <!-- 1. 전사 핵심 과제 노티스 -->
-                        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFF4F7;border:1px solid #F5CCD8;border-left:3px solid ${EM_RED};border-radius:10px;margin-bottom:16px;">
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFF4F7;border:1px solid #F5CCD8;border-radius:10px;margin-bottom:16px;">
                           <tr><td style="padding:14px 16px;">
                             <p style="margin:0 0 6px;font-size:13px;font-weight:700;color:${EM_RED};font-family:${EM_FONT};text-transform:uppercase;letter-spacing:0.5px;">${lang === 'en' ? 'Key Initiative' : '전사 핵심 과제'}</p>
                             <div${edAttr('todoNotice', meta.todoNotice)}>${meta.todoNotice ? renderReportText(meta.todoNotice, { size: 14, lh: 24, color: '#1A1A1A' }) : `<p style="margin:0;font-size:14px;line-height:24px;font-family:${EM_FONT};">${edPlaceholder(lang)}</p>`}</div>
