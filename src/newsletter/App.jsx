@@ -27,7 +27,7 @@ const STORAGE_KEY = 'geo-newsletter-cache'
 function NewsletterPreview({ meta, total, products, citations, dotcom, productsCnty = [], citationsCnty = [], lang = 'ko', weeklyLabels, categoryStats, unlaunchedMap = {}, llmModel, monthlyVis, citTouchPointsTrend = null, citTrendMonths = [], citDomainTrend = null, citDomainMonths = [], citTouchPointsByLlm = null, citDomainByLlm = null, citDomainByLlmTrend = null, dotcomByLlm = null }) {
   const iframeRef = useRef(null)
   const html = useMemo(
-    () => genHTMLFor(meta)(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, { weeklyLabels, categoryStats, unlaunchedMap, productCardVersion: meta.productCardVersion || 'v1', trendMode: meta.trendMode || 'weekly', llmModel, monthlyVis, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, citTouchPointsByLlm, citDomainByLlm, citDomainByLlmTrend, dotcomByLlm }),
+    () => genHTMLFor(meta)(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, { weeklyLabels, categoryStats, unlaunchedMap, productCardVersion: meta.productCardVersion || 'v1', trendMode: meta.trendMode || 'weekly', llmModel, monthlyVis, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, citTouchPointsByLlm, citDomainByLlm, citDomainByLlmTrend, dotcomByLlm, editable: true }),
     [meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, categoryStats, unlaunchedMap, llmModel, monthlyVis, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, citTouchPointsByLlm, citDomainByLlm, citDomainByLlmTrend, dotcomByLlm]
   )
 
@@ -154,6 +154,18 @@ export default function App() {
 
   const meta    = previewLang === 'en' ? metaEn : metaKo
   const setMeta = previewLang === 'en' ? setMetaEn : setMetaKo
+
+  // 미리보기 iframe 인라인 편집 수신 — emailTemplate editable 모드의 postMessage({type:'editMeta'})
+  // previewLang 파생 setMeta 사용 → KO/EN 각각 올바른 meta 에 저장
+  useEffect(() => {
+    function onEditMessage(e) {
+      if (!e.data || e.data.type !== 'editMeta' || typeof e.data.field !== 'string') return
+      const { field, value } = e.data
+      setMeta(m => ({ ...m, [field]: value }))
+    }
+    window.addEventListener('message', onEditMessage)
+    return () => window.removeEventListener('message', onEditMessage)
+  }, [setMeta])
 
   const resolved = useMemo(
     () => resolveDataForLang(products, productsCnty, citations, citationsCnty, previewLang),

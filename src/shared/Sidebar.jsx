@@ -1003,8 +1003,8 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
         <div style={{ height: 1, background: '#1E293B', marginBottom: 16 }} />
 
         {mode !== 'monthly-report' && (<>
-        {/* ── 헤더 편집 (대시보드 모드는 텍스트 입력란 숨김) ── */}
-        {mode !== 'dashboard' && (<>
+        {/* ── 헤더 편집 (대시보드 모드는 텍스트 입력란 숨김 / 뉴스레터는 미리보기 인라인 편집) ── */}
+        {mode !== 'dashboard' && !isNewsletter && (<>
         <p style={{ margin: '0 0 10px 2px', fontSize: 11, fontWeight: 700, color: '#475569',
           textTransform: 'uppercase', letterSpacing: 1, fontFamily: FONT }}>
           헤더 편집
@@ -1059,7 +1059,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
               width: 12, height: 12, borderRadius: '50%', background: '#FFFFFF', transition: 'left 0.2s' }} />
           </button>
         </div>
-        {meta.showNotice && (<>
+        {meta.showNotice && !isNewsletter && (<>
           <textarea value={meta.noticeText} onChange={e => setMeta(m => ({ ...m, noticeText: e.target.value }))}
             rows={4} placeholder="Notice 내용을 입력하세요..."
             style={{ ...inputStyle, marginBottom: 4, resize: 'vertical' }} />
@@ -1077,7 +1077,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
               width: 12, height: 12, borderRadius: '50%', background: '#FFFFFF', transition: 'left 0.2s' }} />
           </button>
         </div>
-        {meta.showKpiLogic && (<>
+        {meta.showKpiLogic && !isNewsletter && (<>
           <textarea value={meta.kpiLogicText} onChange={e => setMeta(m => ({ ...m, kpiLogicText: e.target.value }))}
             rows={4} placeholder="KPI Logic 내용을 입력하세요..."
             style={{ ...inputStyle, marginBottom: 4, resize: 'vertical' }} />
@@ -1335,7 +1335,59 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
           </>
         )}
 
-        {mode !== 'monthly-report' && mode !== 'dashboard' && (<>
+        {/* ── 뉴스레터: 텍스트는 미리보기 인라인 편집 — 사이드바는 AI 생성·표시 제어만 ── */}
+        {isNewsletter && (<>
+        <div style={{ background: '#0F172A', border: '1px solid #1E293B', borderRadius: 8, padding: '8px 10px', marginBottom: 10 }}>
+          <p style={{ margin: 0, fontSize: 11, color: '#94A3B8', fontFamily: FONT, lineHeight: 1.6 }}>
+            ✏️ 텍스트는 <strong style={{ color: '#E2E8F0' }}>미리보기에서 직접 클릭</strong>해 편집하세요.<br />
+            (바깥 클릭 = 저장 · Esc = 취소)
+          </p>
+        </div>
+        {[
+          { label: 'GEO 전략 인사이트', field: 'totalInsight', type: 'totalInsight', data: () => ({ products: getLatestData().products, productsCnty: getLatestData().productsCnty, total: getLatestData().total, todoText: meta.todoText || '', unlaunchedMap: getLatestData().extra?.unlaunchedMap || {} }) },
+          { label: '제품 인사이트', field: 'productInsight', toggle: 'showProductInsight', type: 'product', data: () => ({ products: getLatestData().products, total: getLatestData().total }) },
+          { label: '제품 How to Read', field: 'productHowToRead', toggle: 'showProductHowToRead', type: 'howToRead', data: () => ({ section: '제품별 GEO Visibility' }) },
+          { label: '국가별 인사이트', field: 'cntyInsight', toggle: 'showCntyInsight', type: 'cnty', data: () => ({ productsCnty: getLatestData().productsCnty, unlaunchedMap: getLatestData().extra?.unlaunchedMap || {} }) },
+          { label: '국가별 How to Read', field: 'cntyHowToRead', toggle: 'showCntyHowToRead', type: 'howToRead', data: () => ({ section: '국가별 GEO Visibility' }) },
+          { label: 'Citation 인사이트', field: 'citationInsight', toggle: 'showCitationInsight', type: 'citation', data: () => ({ citations: getLatestData().citations }) },
+          { label: 'Citation How to Read', field: 'citationHowToRead', toggle: 'showCitationHowToRead', type: 'howToRead', data: () => ({ section: 'Citation 도메인별 현황' }) },
+          { label: '제품별 Citation 인사이트', field: 'citPrdInsight', toggle: 'showCitPrdInsight', type: 'citPrd', data: () => ({ citationsCnty: getLatestData().citationsCnty }) },
+          { label: '제품별 Citation How to Read', field: 'citPrdHowToRead', toggle: 'showCitPrdHowToRead', type: 'howToRead', data: () => ({ section: '제품별 Citation' }) },
+          { label: '닷컴 인사이트', field: 'dotcomInsight', toggle: 'showDotcomInsight', type: 'dotcom', data: () => ({ dotcom: getLatestData().dotcom }) },
+          { label: '닷컴 How to Read', field: 'dotcomHowToRead', toggle: 'showDotcomHowToRead', type: 'howToRead', data: () => ({ section: '닷컴 Citation' }) },
+          { label: 'Action Plan 인사이트', field: 'todoText', type: 'todo', data: () => ({ products: getLatestData().products }) },
+        ].map(row => (
+          <div key={row.field} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 0' }}>
+            {row.toggle ? (
+              <button onClick={() => setMeta(m => ({ ...m, [row.toggle]: !m[row.toggle] }))}
+                title="표시 / 숨김"
+                style={{ background: meta[row.toggle] ? LG_RED : '#334155', border: 'none', borderRadius: 7,
+                  width: 26, height: 13, cursor: 'pointer', position: 'relative', padding: 0, flexShrink: 0, transition: 'background 0.2s' }}>
+                <span style={{ position: 'absolute', top: 2, left: meta[row.toggle] ? 15 : 3,
+                  width: 9, height: 9, borderRadius: '50%', background: '#FFFFFF', transition: 'left 0.2s' }} />
+              </button>
+            ) : <span style={{ width: 26, flexShrink: 0 }} />}
+            <p style={{ margin: 0, flex: 1, fontSize: 11, color: '#94A3B8', fontFamily: FONT,
+              overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{row.label}</p>
+            <button onClick={async () => {
+                try {
+                  setMeta(m => ({ ...m, [row.field]: '⏳ AI 생성 중...' }))
+                  const insight = await generateAIInsight(row.type, row.data(), previewLang)
+                  setMeta(m => ({ ...m, [row.field]: insight }))
+                } catch (err) { console.error('[AI]', err); setMeta(m => ({ ...m, [row.field]: `[AI 실패: ${err.message}]` })) }
+              }}
+              title={`${row.label} AI 생성 (결과는 미리보기에 표시)`}
+              style={{ padding: '2px 6px', borderRadius: 4, border: 'none', cursor: 'pointer',
+                background: '#4F46E5', color: '#FFFFFF', fontSize: 10, fontWeight: 700, fontFamily: FONT,
+                display: 'flex', alignItems: 'center', gap: 3, flexShrink: 0 }}>
+              <Sparkles size={9} /> AI
+            </button>
+          </div>
+        ))}
+        <div style={{ height: 1, background: '#1E293B', margin: '12px 0 16px' }} />
+        </>)}
+
+        {mode !== 'monthly-report' && mode !== 'dashboard' && !isNewsletter && (<>
         {/* GEO 전략 인사이트 */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
           <p style={{ margin: 0, fontSize: 11, color: '#64748B', fontFamily: FONT }}>GEO 전략 인사이트</p>

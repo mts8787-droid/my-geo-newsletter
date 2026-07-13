@@ -259,6 +259,115 @@ function mdBold(text) {
     .replace(/\n/g, '<br>')
 }
 
+// ─── 텍스트 리포트 가독성 렌더러 ─────────────────────────────────────────────
+// mdBold 확장판 — 문단(빈 줄)·불릿(-/•/·)·콜아웃(▶/※) 구조를 살려 렌더.
+// 이메일 호환: 인라인 스타일만 사용 (hanging indent 는 padding+text-indent).
+function renderReportText(text, opts = {}) {
+  const { size = 14, lh = 24, color = '#1A1A1A', accent = EM_RED } = opts
+  const raw = String(text || '')
+  if (!raw.trim()) return ''
+  const base = `font-size:${size}px;color:${color};line-height:${lh}px;font-family:${EM_FONT};`
+  const inline = s => escapeHtml(s).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+  const paras = raw.replace(/\r\n/g, '\n').split(/\n{2,}/)
+  const rendered = paras.map(para => {
+    const parts = para.split('\n').map(line => {
+      const t = line.trim()
+      const bullet = t.match(/^[-•·]\s+(.*)$/)
+      if (bullet) return `<span style="display:block;padding-left:14px;text-indent:-14px;">•&nbsp;${inline(bullet[1])}</span>`
+      const callout = t.match(/^([▶※])\s*(.*)$/)
+      if (callout) return `<span style="display:block;font-weight:700;color:${accent};">${callout[1]} ${inline(callout[2])}</span>`
+      return inline(line)
+    })
+    let html = ''
+    parts.forEach((p, i) => {
+      const isBlock = p.startsWith('<span style="display:block')
+      const prevBlock = i > 0 && parts[i - 1].startsWith('<span style="display:block')
+      if (i > 0 && !isBlock && !prevBlock) html += '<br>'
+      html += p
+    })
+    return html
+  })
+  return rendered.map((h, i) => `<p style="margin:0 0 ${i < rendered.length - 1 ? 10 : 0}px;${base}">${h}</p>`).join('')
+}
+
+// ─── 인라인 편집 (editable) 모드 — 어드민 미리보기 전용 ──────────────────────
+// generateEmailHTML/generateSemiAnnualEmailHTML 진입 시 options.editable 로 설정.
+// 게시/HTML복사/메일발송 경로는 editable 미지정 → 아래 아티팩트가 전혀 포함되지 않음.
+let _ED = false          // editable 모드 플래그
+let _edFields = {}       // field → raw 텍스트 (에디터 스크립트의 원본 맵)
+const _edS = v => JSON.stringify(v).replace(/<\//g, '<\\/').replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029')
+
+// editable 일 때만 data-edit 속성 반환 + 원본 텍스트 등록
+function edAttr(field, raw) {
+  if (!_ED) return ''
+  _edFields[field] = raw || ''
+  return ` data-edit="${field}"`
+}
+
+// 빈 필드 placeholder (editable 모드에서만 렌더 대상이 됨)
+function edPlaceholder(lang) {
+  return `<span style="color:#94A3B8;font-style:italic;">${lang === 'en' ? 'Click to edit...' : '클릭하여 입력...'}</span>`
+}
+
+// 에디터 스타일 + 스크립트 (editable 일 때만 </body> 직전 삽입)
+function edScriptHtml() {
+  if (!_ED) return ''
+  return `
+<style>
+[data-edit]{cursor:pointer;}
+[data-edit]:hover{outline:2px dashed rgba(207,6,82,0.4);outline-offset:2px;}
+[data-edit].ed-active{outline:2px solid #CF0652;outline-offset:2px;background:rgba(207,6,82,0.04);cursor:text;}
+</style>
+<script>
+var _edRaw=${_edS(_edFields)};
+(function(){
+  var active=null,orig='';
+  function start(el){
+    if(active===el)return;
+    if(active)finish(active,true);
+    active=el;orig=el.innerHTML;
+    var f=el.getAttribute('data-edit');
+    el.classList.add('ed-active');
+    try{el.contentEditable='plaintext-only';}catch(e){}
+    if(el.contentEditable!=='plaintext-only')el.contentEditable='true';
+    el.innerText=_edRaw[f]||'';
+    el.focus();
+    try{
+      var r=document.createRange();r.selectNodeContents(el);r.collapse(false);
+      var s=window.getSelection();s.removeAllRanges();s.addRange(r);
+    }catch(e){}
+    el.addEventListener('blur',onBlur);
+    el.addEventListener('keydown',onKey);
+  }
+  function onBlur(){if(active)finish(active,true);}
+  function onKey(e){
+    if(e.key==='Escape'){e.preventDefault();if(active)finish(active,false);}
+  }
+  function finish(el,save){
+    el.removeEventListener('blur',onBlur);
+    el.removeEventListener('keydown',onKey);
+    el.contentEditable='false';
+    el.classList.remove('ed-active');
+    var f=el.getAttribute('data-edit');
+    var v=el.innerText.replace(/\\u00a0/g,' ').replace(/\\n+$/,'');
+    active=null;
+    if(save&&v!==(_edRaw[f]||'')){
+      try{window.parent.postMessage({type:'editMeta',field:f,value:v},'*');}catch(e){}
+    }else{
+      el.innerHTML=orig;
+    }
+  }
+  document.querySelectorAll('[data-edit]').forEach(function(el){
+    el.addEventListener('click',function(e){
+      if(active===el)return;
+      e.preventDefault();e.stopPropagation();
+      start(el);
+    });
+  });
+})();
+</script>`
+}
+
 // ─── 삼성 → SS 치환 ─────────────────────────────────────────────────────────
 function ssName(name) {
   if (!name) return ''
@@ -725,33 +834,40 @@ function buSectionHtml(buKey, buProducts, globalMax, globalMin, lang = 'ko', opt
 }
 
 // ─── Insight / HowToRead 블록 (이메일용) ────────────────────────────────────
-function insightBlockHtml(insight, showInsight, howToRead, showHowToRead, lang = 'ko') {
+// fields: { insight: 'productInsight', howToRead: 'productHowToRead' } — editable 모드 인라인 편집 매핑
+function insightBlockHtml(insight, showInsight, howToRead, showHowToRead, lang = 'ko', fields = {}) {
   const t = T[lang] || T.ko
   let html = ''
-  if (showInsight && insight) {
+  if (showInsight && (insight || (_ED && fields.insight))) {
+    const body = insight
+      ? renderReportText(insight, { size: 14, lh: 24, color: '#1A1A1A', accent: EM_RED })
+      : `<p style="margin:0;font-size:14px;line-height:24px;font-family:${EM_FONT};">${edPlaceholder(lang)}</p>`
     html += `
     <tr>
       <td style="padding:10px 16px;">
-        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border-radius:8px;background:#FFF4F7;border:1px solid #F5CCD8;">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border-radius:8px;background:#FFF4F7;border:1px solid #F5CCD8;border-left:3px solid ${EM_RED};">
           <tr>
-            <td style="padding:10px 14px;">
-              <p style="margin:0 0 4px;font-size:13px;font-weight:700;color:${EM_RED};font-family:${EM_FONT};">${t.insight}</p>
-              <p style="margin:0;font-size:14px;color:#1A1A1A;line-height:22px;font-family:${EM_FONT};">${mdBold(insight)}</p>
+            <td style="padding:12px 16px;">
+              <p style="margin:0 0 6px;font-size:13px;font-weight:700;color:${EM_RED};font-family:${EM_FONT};letter-spacing:0.5px;">${t.insight}</p>
+              <div${fields.insight ? edAttr(fields.insight, insight) : ''}>${body}</div>
             </td>
           </tr>
         </table>
       </td>
     </tr>`
   }
-  if (showHowToRead && howToRead) {
+  if (showHowToRead && (howToRead || (_ED && fields.howToRead))) {
+    const body = howToRead
+      ? renderReportText(howToRead, { size: 14, lh: 24, color: '#475569', accent: '#64748B' })
+      : `<p style="margin:0;font-size:14px;line-height:24px;font-family:${EM_FONT};">${edPlaceholder(lang)}</p>`
     html += `
     <tr>
       <td style="padding:0 16px 10px;">
-        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border-radius:8px;background:#F8FAFC;border:1px solid #E2E8F0;">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border-radius:8px;background:#F8FAFC;border:1px solid #E2E8F0;border-left:3px solid #94A3B8;">
           <tr>
-            <td style="padding:10px 14px;">
-              <p style="margin:0 0 4px;font-size:13px;font-weight:700;color:#64748B;font-family:${EM_FONT};">${t.howToRead}</p>
-              <p style="margin:0;font-size:14px;color:#475569;line-height:22px;font-family:${EM_FONT};">${mdBold(howToRead)}</p>
+            <td style="padding:12px 16px;">
+              <p style="margin:0 0 6px;font-size:13px;font-weight:700;color:#64748B;font-family:${EM_FONT};letter-spacing:0.5px;">${t.howToRead}</p>
+              <div${fields.howToRead ? edAttr(fields.howToRead, howToRead) : ''}>${body}</div>
             </td>
           </tr>
         </table>
@@ -931,7 +1047,7 @@ function countryVisibilitySectionHtml(productsCnty, meta, lang, total, unlaunche
                         </tr></table>
                       </td>
                     </tr>
-                    ${insightBlockHtml(meta.cntyInsight, meta.showCntyInsight, meta.cntyHowToRead, meta.showCntyHowToRead, lang)}
+                    ${insightBlockHtml(meta.cntyInsight, meta.showCntyInsight, meta.cntyHowToRead, meta.showCntyHowToRead, lang, { insight: 'cntyInsight', howToRead: 'cntyHowToRead' })}
                     <tr>
                       <td style="padding:12px 10px;">
                         <table border="0" cellpadding="0" cellspacing="0" width="100%">
@@ -1344,7 +1460,7 @@ function dotcomCombinedSectionHtml(dotcom, dotcomByLlm, meta, lang = 'ko') {
                         </tr></table>
                       </td>
                     </tr>
-                    ${insightBlockHtml(meta.dotcomInsight, meta.showDotcomInsight, meta.dotcomHowToRead, meta.showDotcomHowToRead, lang)}
+                    ${insightBlockHtml(meta.dotcomInsight, meta.showDotcomInsight, meta.dotcomHowToRead, meta.showDotcomHowToRead, lang, { insight: 'dotcomInsight', howToRead: 'dotcomHowToRead' })}
                     ${main.rows}
                     ${chat ? chat.rows : ''}
                   </table>
@@ -2248,7 +2364,7 @@ function citationByProductHtml(citationsCnty, meta, lang) {
   }).join('')
   if (!buSections) return ''
   // 인사이트 블록 (citPrdInsight) — 헤더 바로 아래 삽입
-  const insightHtml = insightBlockHtml(meta.citPrdInsight, meta.showCitPrdInsight, meta.citPrdHowToRead, meta.showCitPrdHowToRead, lang)
+  const insightHtml = insightBlockHtml(meta.citPrdInsight, meta.showCitPrdInsight, meta.citPrdHowToRead, meta.showCitPrdHowToRead, lang, { insight: 'citPrdInsight', howToRead: 'citPrdHowToRead' })
   // 비중 분석 각주
   const footnoteText = lang === 'en'
     ? 'Citation counts by product use different prompt counts per product, so they are analyzed as ratios.'
@@ -2402,6 +2518,9 @@ export { escapeHtml }
 // 월간(generateEmailHTML)과 동일한 시그니처(드롭인). table-layout / 이메일 호환.
 export function generateSemiAnnualEmailHTML(meta, total, products, citations, dotcom = {}, lang = 'ko', productsCnty = [], citationsCnty = [], options = {}) {
   const { containerWidth = 940, llmModel, monthlyVis } = options
+  // 인라인 편집 모드 (어드민 미리보기 전용) — 게시/복사/발송 경로는 editable 미지정 → 항상 false 로 리셋
+  _ED = !!options.editable
+  _edFields = {}
   if (llmModel && llmModel !== 'Total') {
     products = resolveProductsByLlm(products, llmModel)
     productsCnty = resolveProductsCntyByLlm(productsCnty, llmModel)
@@ -2566,7 +2685,7 @@ export function generateSemiAnnualEmailHTML(meta, total, products, citations, do
           <td style="background:${EM_RED};padding:10px 16px;">
             <table border="0" cellpadding="0" cellspacing="0" width="100%"><tr>
               <td style="font-size:15px;font-weight:700;color:#FFCCD8;font-family:${EM_FONT};">LG ELECTRONICS</td>
-              <td align="right" style="font-size:14px;color:#FFB0C0;font-family:${EM_FONT};">${escapeHtml(meta.reportNo)} · ${escapeHtml(meta.period)}</td>
+              <td align="right" style="font-size:14px;color:#FFB0C0;font-family:${EM_FONT};"><span${edAttr('reportNo', meta.reportNo)}>${escapeHtml(meta.reportNo)}</span> · <span${edAttr('period', meta.period)}>${escapeHtml(meta.period)}</span></td>
             </tr></table>
           </td>
         </tr>
@@ -2575,14 +2694,14 @@ export function generateSemiAnnualEmailHTML(meta, total, products, citations, do
         <tr>
           <td style="background:#FFFFFF;padding:26px 28px 16px;">
             <table border="0" cellpadding="0" cellspacing="0" width="100%"><tr>
-              <td style="font-size:14px;color:#94A3B8;font-family:${EM_FONT};">${escapeHtml(reportTypeLabel)}</td>
-              <td align="right" style="font-size:14px;color:#94A3B8;font-family:${EM_FONT};">${escapeHtml(meta.team)}</td>
+              <td style="font-size:14px;color:#94A3B8;font-family:${EM_FONT};"><span${edAttr('reportType', meta.reportType)}>${escapeHtml(reportTypeLabel)}</span></td>
+              <td align="right" style="font-size:14px;color:#94A3B8;font-family:${EM_FONT};"><span${edAttr('team', meta.team)}>${escapeHtml(meta.team)}</span></td>
             </tr></table>
             <p style="margin:16px 0 10px;text-align:center;line-height:1.2;">
-              <span style="font-size:${meta.titleFontSize || 24}px;font-weight:700;color:${meta.titleColor || '#1A1A1A'};font-family:${EM_FONT};">${escapeHtml(titleLabel)}</span>
+              <span${edAttr('title', meta.title)} style="font-size:${meta.titleFontSize || 24}px;font-weight:700;color:${meta.titleColor || '#1A1A1A'};font-family:${EM_FONT};">${escapeHtml(titleLabel)}</span>
             </p>
             <p style="margin:0;text-align:center;">
-              <span style="font-size:18px;color:#475569;font-family:${EM_FONT};">${escapeHtml(dateLineLabel)}</span>
+              <span${edAttr('dateLine', meta.dateLine)} style="font-size:18px;color:#475569;font-family:${EM_FONT};">${escapeHtml(dateLineLabel)}</span>
             </p>
           </td>
         </tr>
@@ -2609,8 +2728,8 @@ export function generateSemiAnnualEmailHTML(meta, total, products, citations, do
                   <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-top:14px;background:#1E2433;border-radius:8px;"><tr>
                     <td style="padding:0;"><table border="0" cellpadding="0" cellspacing="0" width="${scoreBarW}%" style="width:${scoreBarW}%;max-width:${scoreBarW}%;"><tr><td height="10" style="background:${EM_RED};border-radius:8px;height:10px;font-size:0;line-height:0;">&nbsp;</td></tr></table></td>
                   </tr></table>
-                  ${meta.semiHighlightText ? `<table border="0" cellpadding="0" cellspacing="0" width="100%"><tr><td style="padding:14px 16px;margin-top:10px;background:#1E0F18;border:1px solid #3D1528;border-radius:10px;">
-                    <p style="margin:6px 0 0;font-size:14px;color:#FFFFFF;line-height:22px;font-family:${EM_FONT};">${mdBold(meta.semiHighlightText)}</p>
+                  ${(meta.semiHighlightText || _ED) ? `<table border="0" cellpadding="0" cellspacing="0" width="100%"><tr><td style="padding:14px 16px;margin-top:10px;background:#1E0F18;border:1px solid #3D1528;border-left:3px solid ${EM_RED};border-radius:10px;">
+                    <div${edAttr('semiHighlightText', meta.semiHighlightText)} style="margin:6px 0 0;">${meta.semiHighlightText ? renderReportText(meta.semiHighlightText, { size: 14, lh: 24, color: '#FFFFFF', accent: '#FF9EBB' }) : `<p style="margin:0;font-size:14px;line-height:24px;font-family:${EM_FONT};">${edPlaceholder(lang)}</p>`}</div>
                   </td></tr></table>` : ''}
                 </td></tr>
               </table>
@@ -2672,12 +2791,16 @@ export function generateSemiAnnualEmailHTML(meta, total, products, citations, do
     </td>
   </tr>
 </table>
+${edScriptHtml()}
 </body>
 </html>`
 }
 
 export function generateEmailHTML(meta, total, products, citations, dotcom = {}, lang = 'ko', productsCnty = [], citationsCnty = [], options = {}) {
   const { containerWidth = 940, showTrendTabs = false, weeklyLabels, categoryStats = null, unlaunchedMap: ulInput = {}, productCardVersion = 'v1', trendMode = 'weekly', llmModel, monthlyVis, citTouchPointsTrend = null, citTrendMonths = [], citDomainTrend = null, citDomainMonths = [], citTouchPointsByLlm = null, citDomainByLlm = null, citDomainByLlmTrend = null, dotcomByLlm = null } = options
+  // 인라인 편집 모드 (어드민 미리보기 전용) — 게시/복사/발송 경로는 editable 미지정 → 항상 false 로 리셋
+  _ED = !!options.editable
+  _edFields = {}
   // LLM Model 필터 (2026-06) — 선택 모델로 products/productsCnty/total 재계산
   if (llmModel && llmModel !== 'Total') {
     products = resolveProductsByLlm(products, llmModel)
@@ -2814,7 +2937,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
             <table border="0" cellpadding="0" cellspacing="0" width="100%">
               <tr>
                 <td style="font-size:15px;font-weight:700;color:#FFCCD8;font-family:${EM_FONT};">LG ELECTRONICS</td>
-                <td align="right" style="font-size:14px;color:#FFB0C0;font-family:${EM_FONT};">${escapeHtml(meta.reportNo)} · ${escapeHtml(meta.period)}</td>
+                <td align="right" style="font-size:14px;color:#FFB0C0;font-family:${EM_FONT};"><span${edAttr('reportNo', meta.reportNo)}>${escapeHtml(meta.reportNo)}</span> · <span${edAttr('period', meta.period)}>${escapeHtml(meta.period)}</span></td>
               </tr>
             </table>
           </td>
@@ -2825,33 +2948,33 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
           <td style="background:#FFFFFF;padding:26px 28px 16px;">
             <table border="0" cellpadding="0" cellspacing="0" width="100%">
               <tr>
-                <td style="font-size:14px;color:#94A3B8;font-family:${EM_FONT};font-weight:400;">${escapeHtml(meta.reportType || (lang === 'en' ? 'GEO Monthly Performance Report' : 'GEO 월간 성과 분석 리포트'))}</td>
-                <td align="right" style="font-size:14px;color:#94A3B8;font-family:${EM_FONT};font-weight:400;">${escapeHtml(meta.team)}</td>
+                <td style="font-size:14px;color:#94A3B8;font-family:${EM_FONT};font-weight:400;"><span${edAttr('reportType', meta.reportType)}>${escapeHtml(meta.reportType || (lang === 'en' ? 'GEO Monthly Performance Report' : 'GEO 월간 성과 분석 리포트'))}</span></td>
+                <td align="right" style="font-size:14px;color:#94A3B8;font-family:${EM_FONT};font-weight:400;"><span${edAttr('team', meta.team)}>${escapeHtml(meta.team)}</span></td>
               </tr>
             </table>
             <p style="margin:16px 0 10px;text-align:center;line-height:1.2;">
-              <span style="font-size:${meta.titleFontSize || 24}px;font-weight:700;color:${meta.titleColor || '#1A1A1A'};font-family:${EM_FONT};">${escapeHtml(meta.title || (lang === 'en' ? 'Generative AI Engine Visibility Performance Analysis' : '생성형 AI 엔진 가시성(Visibility) 성과 분석'))}</span>
+              <span${edAttr('title', meta.title)} style="font-size:${meta.titleFontSize || 24}px;font-weight:700;color:${meta.titleColor || '#1A1A1A'};font-family:${EM_FONT};">${escapeHtml(meta.title || (lang === 'en' ? 'Generative AI Engine Visibility Performance Analysis' : '생성형 AI 엔진 가시성(Visibility) 성과 분석'))}</span>
             </p>
             <p style="margin:0;text-align:center;">
-              <span style="font-size:18px;color:#475569;font-family:${EM_FONT};font-weight:400;">${escapeHtml(meta.dateLine || (lang === 'en' ? 'As of ' + meta.period : meta.period + ' 기준'))}</span>
+              <span${edAttr('dateLine', meta.dateLine)} style="font-size:18px;color:#475569;font-family:${EM_FONT};font-weight:400;">${escapeHtml(meta.dateLine || (lang === 'en' ? 'As of ' + meta.period : meta.period + ' 기준'))}</span>
             </p>
-            ${meta.showNotice && meta.noticeText ? `
+            ${meta.showNotice && (meta.noticeText || _ED) ? `
             <table border="0" cellpadding="0" cellspacing="0" width="100%">
               <tr><td height="14" style="font-size:0;line-height:0;">&nbsp;</td></tr>
               <tr>
-                <td style="background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;padding:14px 20px;">
-                  <p style="margin:0 0 4px;font-size:15px;font-weight:700;color:${EM_RED};font-family:${EM_FONT};">${t.notice}</p>
-                  <p style="margin:0;font-size:14px;color:#1A1A1A;font-family:${EM_FONT};line-height:21px;">${mdBold(meta.noticeText)}</p>
+                <td style="background:#FEF2F2;border:1px solid #FECACA;border-left:3px solid ${EM_RED};border-radius:8px;padding:14px 20px;">
+                  <p style="margin:0 0 6px;font-size:15px;font-weight:700;color:${EM_RED};font-family:${EM_FONT};letter-spacing:0.5px;">${t.notice}</p>
+                  <div${edAttr('noticeText', meta.noticeText)}>${meta.noticeText ? renderReportText(meta.noticeText, { size: 14, lh: 23, color: '#1A1A1A' }) : `<p style="margin:0;font-size:14px;line-height:23px;font-family:${EM_FONT};">${edPlaceholder(lang)}</p>`}</div>
                 </td>
               </tr>
             </table>` : ''}
-            ${meta.showKpiLogic && meta.kpiLogicText ? `
+            ${meta.showKpiLogic && (meta.kpiLogicText || _ED) ? `
             <table border="0" cellpadding="0" cellspacing="0" width="100%">
               <tr><td height="14" style="font-size:0;line-height:0;">&nbsp;</td></tr>
               <tr>
-                <td style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;padding:14px 20px;">
-                  <p style="margin:0 0 4px;font-size:13px;font-weight:700;color:#64748B;font-family:${EM_FONT};">${t.kpiLogic}</p>
-                  <p style="margin:0;font-size:14px;color:#475569;font-family:${EM_FONT};line-height:22px;">${mdBold(meta.kpiLogicText)}</p>
+                <td style="background:#F8FAFC;border:1px solid #E2E8F0;border-left:3px solid #94A3B8;border-radius:8px;padding:14px 20px;">
+                  <p style="margin:0 0 6px;font-size:13px;font-weight:700;color:#64748B;font-family:${EM_FONT};letter-spacing:0.5px;">${t.kpiLogic}</p>
+                  <div${edAttr('kpiLogicText', meta.kpiLogicText)}>${meta.kpiLogicText ? renderReportText(meta.kpiLogicText, { size: 14, lh: 24, color: '#475569', accent: '#64748B' }) : `<p style="margin:0;font-size:14px;line-height:24px;font-family:${EM_FONT};">${edPlaceholder(lang)}</p>`}</div>
                 </td>
               </tr>
             </table>` : ''}
@@ -2961,13 +3084,13 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                             </td>
                           </tr>
                         </table>
-                        ${meta.totalInsight ? `
+                        ${(meta.totalInsight || _ED) ? `
                         <table border="0" cellpadding="0" cellspacing="0" width="100%">
                         <tr><td height="16" style="font-size:0;line-height:0;">&nbsp;</td></tr>
                           <tr>
-                            <td style="padding:14px 16px;background:#1E0F18;border:1px solid #3D1528;border-radius:10px;">
-                              <p style="margin:0 0 6px;font-size:14px;font-weight:700;color:${EM_RED};text-transform:uppercase;font-family:${EM_FONT};">INSIGHT</p>
-                              <p style="margin:0;font-size:15px;color:#FFFFFF;line-height:24px;font-family:${EM_FONT};">${mdBold(meta.totalInsight)}</p>
+                            <td style="padding:16px 18px;background:#1E0F18;border:1px solid #3D1528;border-left:3px solid ${EM_RED};border-radius:10px;">
+                              <p style="margin:0 0 8px;font-size:14px;font-weight:700;color:${EM_RED};text-transform:uppercase;font-family:${EM_FONT};letter-spacing:1px;">INSIGHT</p>
+                              <div${edAttr('totalInsight', meta.totalInsight)}>${meta.totalInsight ? renderReportText(meta.totalInsight, { size: 15, lh: 26, color: '#FFFFFF', accent: '#FF9EBB' }) : `<p style="margin:0;font-size:15px;line-height:26px;font-family:${EM_FONT};">${edPlaceholder(lang)}</p>`}</div>
                             </td>
                           </tr>
                         </table>` : ''}
@@ -3004,7 +3127,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                         </table>
                       </td>
                     </tr>
-                    ${insightBlockHtml(meta.productInsight, meta.showProductInsight, meta.productHowToRead, meta.showProductHowToRead, lang)}
+                    ${insightBlockHtml(meta.productInsight, meta.showProductInsight, meta.productHowToRead, meta.showProductHowToRead, lang, { insight: 'productInsight', howToRead: 'productHowToRead' })}
                     ${showTrendTabs ? `<tr>
                       <td style="padding:12px 28px 0;">
                         <div class="trend-tab-bar" style="display:inline-flex;gap:0;background:#F1F5F9;border-radius:8px;padding:3px;">
@@ -3039,7 +3162,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                         </tr></table>
                       </td>
                     </tr>
-                    ${insightBlockHtml(meta.citationInsight, meta.showCitationInsight, meta.citationHowToRead, meta.showCitationHowToRead, lang)}
+                    ${insightBlockHtml(meta.citationInsight, meta.showCitationInsight, meta.citationHowToRead, meta.showCitationHowToRead, lang, { insight: 'citationInsight', howToRead: 'citationHowToRead' })}
                     ${citCountByModelVBarHtml(citTouchPointsByLlm, citTrendMonths, meta, lang, citDomainByLlmTrend, citDomainMonths)}
                     <tr>
                       <td style="padding:16px 12px;">
@@ -3108,17 +3231,17 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                     </tr>
                     <tr>
                       <td style="padding:20px 16px;">
-                        ${meta.todoNotice ? `
+                        ${(meta.todoNotice || _ED) ? `
                         <!-- 1. 전사 핵심 과제 노티스 -->
-                        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFF4F7;border:1px solid #F5CCD8;border-radius:10px;margin-bottom:16px;">
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFF4F7;border:1px solid #F5CCD8;border-left:3px solid ${EM_RED};border-radius:10px;margin-bottom:16px;">
                           <tr><td style="padding:14px 16px;">
-                            <p style="margin:0 0 4px;font-size:13px;font-weight:700;color:${EM_RED};font-family:${EM_FONT};text-transform:uppercase;">${lang === 'en' ? 'Key Initiative' : '전사 핵심 과제'}</p>
-                            <p style="margin:0;font-size:14px;color:#1A1A1A;line-height:22px;font-family:${EM_FONT};">${mdBold(meta.todoNotice)}</p>
+                            <p style="margin:0 0 6px;font-size:13px;font-weight:700;color:${EM_RED};font-family:${EM_FONT};text-transform:uppercase;letter-spacing:0.5px;">${lang === 'en' ? 'Key Initiative' : '전사 핵심 과제'}</p>
+                            <div${edAttr('todoNotice', meta.todoNotice)}>${meta.todoNotice ? renderReportText(meta.todoNotice, { size: 14, lh: 24, color: '#1A1A1A' }) : `<p style="margin:0;font-size:14px;line-height:24px;font-family:${EM_FONT};">${edPlaceholder(lang)}</p>`}</div>
                           </td></tr>
                         </table>` : ''}
-                        ${meta.todoText ? `
+                        ${(meta.todoText || _ED) ? `
                         <!-- 2. 인사이트 -->
-                        <p style="margin:0 0 16px;font-size:14px;color:#1A1A1A;line-height:22px;font-family:${EM_FONT};">${mdBold(meta.todoText)}</p>` : ''}
+                        <div${edAttr('todoText', meta.todoText)} style="margin:0 0 16px;">${meta.todoText ? renderReportText(meta.todoText, { size: 14, lh: 24, color: '#1A1A1A' }) : `<p style="margin:0;font-size:14px;line-height:24px;font-family:${EM_FONT};">${edPlaceholder(lang)}</p>`}</div>` : ''}
                         <!-- 3. 핵심 과제 진척 사항 -->
                         ${categoryCardsHtml(categoryStats, lang, meta)}
                         ${dashboardLinkButtonHtml(lang)}
@@ -3156,6 +3279,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
 </table>
 
 <script>function switchTrend(m){document.querySelectorAll('.trend-weekly').forEach(function(e){e.style.display=m==='weekly'?'':'none'});document.querySelectorAll('.trend-monthly').forEach(function(e){e.style.display=m==='monthly'?'':'none'});document.querySelectorAll('.trend-tab-btn').forEach(function(b){b.style.background=b.getAttribute('onclick').indexOf(m)>=0?'#CF0652':'transparent';b.style.color=b.getAttribute('onclick').indexOf(m)>=0?'#fff':'#64748B'})}</script>
+${edScriptHtml()}
 </body>
 </html>`
 }
