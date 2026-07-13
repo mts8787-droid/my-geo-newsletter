@@ -13,7 +13,7 @@ import SheetDownload from './SheetDownload.jsx'
 // 발송 시 EN meta 에서 그대로 따라가야 할 "텍스트" 필드 (번역된 본문/라벨).
 // 그 외 차트/표시 토글은 metaKo 기준으로 통일 — metaKo/metaEn 가 독립 state 라
 // 미리보기 언어를 바꿔가며 토글을 만지면 KO/EN 차트가 갈라지기 때문 (handleTranslate 와 동일 화이트리스트).
-const EN_TEXT_FIELDS = ['title', 'dateLine', 'noticeText', 'totalInsight', 'reportType', 'productInsight', 'productHowToRead', 'citationInsight', 'citationHowToRead', 'dotcomInsight', 'dotcomHowToRead', 'todoText', 'todoNotice', 'kpiLogicText', 'cntyInsight', 'cntyHowToRead', 'citDomainInsight', 'citDomainHowToRead', 'citCntyInsight', 'citCntyHowToRead', 'citPrdInsight', 'citPrdHowToRead', 'period', 'team', 'reportNo', 'monthlyReportBody', 'modelDeltaInsight', 'modelDeltaNote', 'compRatioDeltaNote']
+const EN_TEXT_FIELDS = ['title', 'dateLine', 'noticeText', 'totalInsight', 'reportType', 'productInsight', 'productHowToRead', 'citationInsight', 'citationHowToRead', 'dotcomInsight', 'dotcomHowToRead', 'todoText', 'todoNotice', 'kpiLogicText', 'cntyInsight', 'cntyHowToRead', 'citDomainInsight', 'citDomainHowToRead', 'citCntyInsight', 'citCntyHowToRead', 'citPrdInsight', 'citPrdHowToRead', 'period', 'team', 'reportNo', 'monthlyReportBody', 'modelDeltaInsight', 'compRatioDeltaNote']
 
 // 두 언어(KO/EN) 이메일 HTML 을 하나의 문서로 이어붙임 — KO 본문 → 구분선 → EN 본문.
 // 각 generateHTML 은 완전한 HTML 문서를 반환하므로, KO 문서의 <body> 안에 EN 본문 내용만 삽입한다.

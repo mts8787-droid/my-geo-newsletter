@@ -2497,8 +2497,20 @@ function modelDeltaSectionHtml(products, meta, lang = 'ko') {
                         </table>`
   }
 
-  const title = lang === 'en' ? 'Category × Model MoM Detail (Δ%p)' : '제품군 × 모델 증감 상세 (전월 대비, Δ%p)'
-  const noteDefault = lang === 'en' ? 'MoM change of Visibility by AI model — LG and top 2 competitors.' : 'AI 모델별 Visibility 전월 대비 증감 — LG와 주요 경쟁사 2개.'
+  // 비교 월 라벨 (전월 vs 최신월) — 데이터에서 자동 도출
+  const monthLabel = raw => {
+    const s = String(raw || '').trim()
+    const km = s.match(/(\d{1,2})월/); if (km) return km[1] + '월'
+    const map = { jan: 1, feb: 2, mar: 3, apr: 4, may: 5, jun: 6, jul: 7, aug: 8, sep: 9, oct: 10, nov: 11, dec: 12 }
+    const en = s.match(/(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i)
+    if (en) return lang === 'en' ? s : map[en[1].toLowerCase()] + '월'
+    const iso = s.match(/\d{4}[-\/](\d{1,2})/); if (iso) return lang === 'en' ? s : parseInt(iso[1]) + '월'
+    return s
+  }
+  const _mref = products.find(p => (p.monthlyScores || []).length >= 2)
+  const _md = _mref ? _mref.monthlyScores.slice(-2).map(x => monthLabel(x.date)) : null
+  const monthRange = _md ? `${_md[0]} vs ${_md[1]}` : ''
+  const title = (lang === 'en' ? 'LLM Product Visibility by Model - Key Competitors' : 'LLM 모델별 제품 Visibility - 주요 경쟁사') + (monthRange ? ` (${monthRange})` : '')
   return `
               <tr>
                 <td style="padding-bottom:28px;">
@@ -2513,15 +2525,14 @@ function modelDeltaSectionHtml(products, meta, lang = 'ko') {
                     </tr>
                     <tr>
                       <td style="padding:14px 18px;">
-                        ${edBlock('modelDeltaNote', meta.modelDeltaNote, { size: 13, lh: 21, color: '#555555', ph: noteDefault, lang })}
-                        ${brandData.map(heatTable).join('')}
                         ${meta.showModelDeltaInsight && (meta.modelDeltaInsight || _ED) ? `
-                        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-top:16px;border-radius:8px;background:#FFF4F7;border:1px solid #F5CCD8;">
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom:4px;border-radius:8px;background:#FFF4F7;border:1px solid #F5CCD8;">
                           <tr><td style="padding:12px 16px;">
                             <p style="margin:0 0 6px;font-size:13px;font-weight:700;color:${EM_RED};font-family:${EM_FONT};letter-spacing:0.5px;">${lang === 'en' ? 'INSIGHT' : '인사이트'}</p>
                             ${edBlock('modelDeltaInsight', meta.modelDeltaInsight, { size: 14, lh: 24, color: '#1A1A1A', accent: EM_RED, lang })}
                           </td></tr>
                         </table>` : ''}
+                        ${brandData.map(heatTable).join('')}
                       </td>
                     </tr>
                   </table>
