@@ -291,77 +291,71 @@ function renderReportText(text, opts = {}) {
 }
 
 // ─── 인라인 편집 (editable) 모드 — 어드민 미리보기 전용 ──────────────────────
-// generateEmailHTML/generateSemiAnnualEmailHTML 진입 시 options.editable 로 설정.
-// 게시/HTML복사/메일발송 경로는 editable 미지정 → 아래 아티팩트가 전혀 포함되지 않음.
+// options.editable(=좌측 패널 '편집 모드' 토글) 로 활성. 게시/복사/발송 경로는 미지정 → 아티팩트 0.
+// v2: 스타일이 적용된 렌더 상태 그대로 WYSIWYG 편집 → blur 시 raw 텍스트로 직렬화해 저장.
 let _ED = false          // editable 모드 플래그
-let _edFields = {}       // field → raw 텍스트 (에디터 스크립트의 원본 맵)
-const _edS = v => JSON.stringify(v).replace(/<\//g, '<\\/').replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029')
 
-// editable 일 때만 data-edit 속성 반환 + 원본 텍스트 등록
-function edAttr(field, raw) {
-  if (!_ED) return ''
-  _edFields[field] = raw || ''
-  return ` data-edit="${field}"`
+// editable 일 때만 data-edit 속성 반환 (인라인 헤더 span 용)
+function edAttr(field) {
+  return _ED ? ` data-edit="${field}"` : ''
 }
 
-// 빈 필드 placeholder (editable 모드에서만 렌더 대상이 됨)
-function edPlaceholder(lang) {
-  return `<span style="color:#94A3B8;font-style:italic;">${lang === 'en' ? 'Click to edit...' : '클릭하여 입력...'}</span>`
+// 편집 가능 텍스트 블록 — 스타일 적용된 렌더 결과를 감싸는 div (raw 없으면 placeholder)
+function edBlock(field, raw, opts = {}) {
+  const ph = opts.ph || (opts.lang === 'en' ? 'Click to edit...' : '클릭하여 입력...')
+  const attr = (_ED && field) ? ` data-edit="${field}"${!raw ? ` data-ph="${escapeHtml(ph)}"` : ''}` : ''
+  const style = opts.wrapStyle ? ` style="${opts.wrapStyle}"` : ''
+  const body = raw ? renderReportText(raw, opts) : ''
+  return `<div${attr}${style}>${body}</div>`
 }
 
 // 에디터 스타일 + 스크립트 (editable 일 때만 </body> 직전 삽입)
+// 렌더된 HTML 을 직접 편집(볼드/색/크기 유지) → blur 시 HTML→raw 텍스트 직렬화 후 postMessage
 function edScriptHtml() {
   if (!_ED) return ''
   return `
 <style>
-[data-edit]{cursor:pointer;}
-[data-edit]:hover{outline:2px dashed rgba(207,6,82,0.4);outline-offset:2px;}
-[data-edit].ed-active{outline:2px solid #CF0652;outline-offset:2px;background:rgba(207,6,82,0.04);cursor:text;}
+[data-edit]{outline:1px dashed rgba(207,6,82,0.35);outline-offset:3px;border-radius:3px;transition:outline .12s;cursor:text;}
+[data-edit]:hover{outline:1px dashed rgba(207,6,82,0.7);}
+[data-edit]:focus{outline:2px solid #CF0652;outline-offset:3px;background:rgba(207,6,82,0.04);}
+[data-edit]:empty:before{content:attr(data-ph);color:#94A3B8;font-style:italic;}
 </style>
 <script>
-var _edRaw=${_edS(_edFields)};
 (function(){
-  var active=null,orig='';
-  function start(el){
-    if(active===el)return;
-    if(active)finish(active,true);
-    active=el;orig=el.innerHTML;
-    var f=el.getAttribute('data-edit');
-    el.classList.add('ed-active');
-    try{el.contentEditable='plaintext-only';}catch(e){}
-    if(el.contentEditable!=='plaintext-only')el.contentEditable='true';
-    el.innerText=_edRaw[f]||'';
-    el.focus();
-    try{
-      var r=document.createRange();r.selectNodeContents(el);r.collapse(false);
-      var s=window.getSelection();s.removeAllRanges();s.addRange(r);
-    }catch(e){}
-    el.addEventListener('blur',onBlur);
-    el.addEventListener('keydown',onKey);
-  }
-  function onBlur(){if(active)finish(active,true);}
-  function onKey(e){
-    if(e.key==='Escape'){e.preventDefault();if(active)finish(active,false);}
-  }
-  function finish(el,save){
-    el.removeEventListener('blur',onBlur);
-    el.removeEventListener('keydown',onKey);
-    el.contentEditable='false';
-    el.classList.remove('ed-active');
-    var f=el.getAttribute('data-edit');
-    var v=el.innerText.replace(/\\u00a0/g,' ').replace(/\\n+$/,'');
-    active=null;
-    if(save&&v!==(_edRaw[f]||'')){
-      try{window.parent.postMessage({type:'editMeta',field:f,value:v},'*');}catch(e){}
-    }else{
-      el.innerHTML=orig;
+  function ser(el){
+    var out='';
+    function walk(node){
+      for(var i=0;i<node.childNodes.length;i++){
+        var n=node.childNodes[i];
+        if(n.nodeType===3){out+=n.nodeValue;continue;}
+        if(n.nodeType!==1)continue;
+        var tag=n.tagName.toLowerCase();
+        if(tag==='br'){out+='\\n';continue;}
+        var st=(n.getAttribute&&n.getAttribute('style'))||'';
+        var isBlock=tag==='p'||tag==='div'||/display\\s*:\\s*block/.test(st);
+        var txt=(n.textContent||'');
+        var isCallout=/^\\s*[▶※]/.test(txt);
+        var fw=(n.style&&n.style.fontWeight)||'';
+        var bold=!isCallout&&(tag==='strong'||tag==='b'||fw==='bold'||(parseInt(fw,10)>=600));
+        if(bold){out+='**';walk(n);out+='**';}
+        else walk(n);
+        if(tag==='p')out+='\\n\\n';else if(isBlock)out+='\\n';
+      }
     }
+    walk(el);
+    return out.replace(/\\u00a0/g,' ').replace(/[ \\t]+\\n/g,'\\n').replace(/\\n{3,}/g,'\\n\\n').replace(/^\\s+|\\s+$/g,'');
   }
+  var orig='';
   document.querySelectorAll('[data-edit]').forEach(function(el){
-    el.addEventListener('click',function(e){
-      if(active===el)return;
-      e.preventDefault();e.stopPropagation();
-      start(el);
+    el.setAttribute('contenteditable','true');
+    el.addEventListener('focus',function(){orig=el.innerHTML;});
+    el.addEventListener('keydown',function(e){
+      if(e.key==='Escape'){e.preventDefault();el.innerHTML=orig;el.blur();}
+    });
+    el.addEventListener('blur',function(){
+      if(el.innerHTML===orig)return;
+      var f=el.getAttribute('data-edit');
+      try{window.parent.postMessage({type:'editMeta',field:f,value:ser(el)},'*');}catch(e){}
     });
   });
 })();
@@ -839,9 +833,6 @@ function insightBlockHtml(insight, showInsight, howToRead, showHowToRead, lang =
   const t = T[lang] || T.ko
   let html = ''
   if (showInsight && (insight || (_ED && fields.insight))) {
-    const body = insight
-      ? renderReportText(insight, { size: 14, lh: 24, color: '#1A1A1A', accent: EM_RED })
-      : `<p style="margin:0;font-size:14px;line-height:24px;font-family:${EM_FONT};">${edPlaceholder(lang)}</p>`
     html += `
     <tr>
       <td style="padding:10px 16px;">
@@ -849,7 +840,7 @@ function insightBlockHtml(insight, showInsight, howToRead, showHowToRead, lang =
           <tr>
             <td style="padding:12px 16px;">
               <p style="margin:0 0 6px;font-size:13px;font-weight:700;color:${EM_RED};font-family:${EM_FONT};letter-spacing:0.5px;">${t.insight}</p>
-              <div${fields.insight ? edAttr(fields.insight, insight) : ''}>${body}</div>
+              ${edBlock(fields.insight, insight, { size: 14, lh: 24, color: '#1A1A1A', accent: EM_RED, lang })}
             </td>
           </tr>
         </table>
@@ -857,9 +848,6 @@ function insightBlockHtml(insight, showInsight, howToRead, showHowToRead, lang =
     </tr>`
   }
   if (showHowToRead && (howToRead || (_ED && fields.howToRead))) {
-    const body = howToRead
-      ? renderReportText(howToRead, { size: 14, lh: 24, color: '#475569', accent: '#64748B' })
-      : `<p style="margin:0;font-size:14px;line-height:24px;font-family:${EM_FONT};">${edPlaceholder(lang)}</p>`
     html += `
     <tr>
       <td style="padding:0 16px 10px;">
@@ -867,7 +855,7 @@ function insightBlockHtml(insight, showInsight, howToRead, showHowToRead, lang =
           <tr>
             <td style="padding:12px 16px;">
               <p style="margin:0 0 6px;font-size:13px;font-weight:700;color:#64748B;font-family:${EM_FONT};letter-spacing:0.5px;">${t.howToRead}</p>
-              <div${fields.howToRead ? edAttr(fields.howToRead, howToRead) : ''}>${body}</div>
+              ${edBlock(fields.howToRead, howToRead, { size: 14, lh: 24, color: '#475569', accent: '#64748B', lang })}
             </td>
           </tr>
         </table>
@@ -2520,7 +2508,6 @@ export function generateSemiAnnualEmailHTML(meta, total, products, citations, do
   const { containerWidth = 940, llmModel, monthlyVis } = options
   // 인라인 편집 모드 (어드민 미리보기 전용) — 게시/복사/발송 경로는 editable 미지정 → 항상 false 로 리셋
   _ED = !!options.editable
-  _edFields = {}
   if (llmModel && llmModel !== 'Total') {
     products = resolveProductsByLlm(products, llmModel)
     productsCnty = resolveProductsCntyByLlm(productsCnty, llmModel)
@@ -2729,7 +2716,7 @@ export function generateSemiAnnualEmailHTML(meta, total, products, citations, do
                     <td style="padding:0;"><table border="0" cellpadding="0" cellspacing="0" width="${scoreBarW}%" style="width:${scoreBarW}%;max-width:${scoreBarW}%;"><tr><td height="10" style="background:${EM_RED};border-radius:8px;height:10px;font-size:0;line-height:0;">&nbsp;</td></tr></table></td>
                   </tr></table>
                   ${(meta.semiHighlightText || _ED) ? `<table border="0" cellpadding="0" cellspacing="0" width="100%"><tr><td style="padding:14px 16px;margin-top:10px;background:#1E0F18;border:1px solid #3D1528;border-radius:10px;">
-                    <div${edAttr('semiHighlightText', meta.semiHighlightText)} style="margin:6px 0 0;">${meta.semiHighlightText ? renderReportText(meta.semiHighlightText, { size: 14, lh: 24, color: '#FFFFFF', accent: '#FF9EBB' }) : `<p style="margin:0;font-size:14px;line-height:24px;font-family:${EM_FONT};">${edPlaceholder(lang)}</p>`}</div>
+                    ${edBlock('semiHighlightText', meta.semiHighlightText, { size: 14, lh: 24, color: '#FFFFFF', accent: '#FF9EBB', lang, wrapStyle: 'margin:6px 0 0;' })}
                   </td></tr></table>` : ''}
                 </td></tr>
               </table>
@@ -2800,7 +2787,6 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
   const { containerWidth = 940, showTrendTabs = false, weeklyLabels, categoryStats = null, unlaunchedMap: ulInput = {}, productCardVersion = 'v1', trendMode = 'weekly', llmModel, monthlyVis, citTouchPointsTrend = null, citTrendMonths = [], citDomainTrend = null, citDomainMonths = [], citTouchPointsByLlm = null, citDomainByLlm = null, citDomainByLlmTrend = null, dotcomByLlm = null } = options
   // 인라인 편집 모드 (어드민 미리보기 전용) — 게시/복사/발송 경로는 editable 미지정 → 항상 false 로 리셋
   _ED = !!options.editable
-  _edFields = {}
   // LLM Model 필터 (2026-06) — 선택 모델로 products/productsCnty/total 재계산
   if (llmModel && llmModel !== 'Total') {
     products = resolveProductsByLlm(products, llmModel)
@@ -2964,7 +2950,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
               <tr>
                 <td style="background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;padding:14px 20px;">
                   <p style="margin:0 0 6px;font-size:15px;font-weight:700;color:${EM_RED};font-family:${EM_FONT};letter-spacing:0.5px;">${t.notice}</p>
-                  <div${edAttr('noticeText', meta.noticeText)}>${meta.noticeText ? renderReportText(meta.noticeText, { size: 14, lh: 23, color: '#1A1A1A' }) : `<p style="margin:0;font-size:14px;line-height:23px;font-family:${EM_FONT};">${edPlaceholder(lang)}</p>`}</div>
+                  ${edBlock('noticeText', meta.noticeText, { size: 14, lh: 23, color: '#1A1A1A', lang })}
                 </td>
               </tr>
             </table>` : ''}
@@ -2974,7 +2960,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
               <tr>
                 <td style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;padding:14px 20px;">
                   <p style="margin:0 0 6px;font-size:13px;font-weight:700;color:#64748B;font-family:${EM_FONT};letter-spacing:0.5px;">${t.kpiLogic}</p>
-                  <div${edAttr('kpiLogicText', meta.kpiLogicText)}>${meta.kpiLogicText ? renderReportText(meta.kpiLogicText, { size: 14, lh: 24, color: '#475569', accent: '#64748B' }) : `<p style="margin:0;font-size:14px;line-height:24px;font-family:${EM_FONT};">${edPlaceholder(lang)}</p>`}</div>
+                  ${edBlock('kpiLogicText', meta.kpiLogicText, { size: 14, lh: 24, color: '#475569', accent: '#64748B', lang })}
                 </td>
               </tr>
             </table>` : ''}
@@ -3090,7 +3076,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                           <tr>
                             <td style="padding:16px 18px;background:#1E0F18;border:1px solid #3D1528;border-radius:10px;">
                               <p style="margin:0 0 8px;font-size:14px;font-weight:700;color:${EM_RED};text-transform:uppercase;font-family:${EM_FONT};letter-spacing:1px;">INSIGHT</p>
-                              <div${edAttr('totalInsight', meta.totalInsight)}>${meta.totalInsight ? renderReportText(meta.totalInsight, { size: 15, lh: 26, color: '#FFFFFF', accent: '#FF9EBB' }) : `<p style="margin:0;font-size:15px;line-height:26px;font-family:${EM_FONT};">${edPlaceholder(lang)}</p>`}</div>
+                              ${edBlock('totalInsight', meta.totalInsight, { size: 15, lh: 26, color: '#FFFFFF', accent: '#FF9EBB', lang })}
                             </td>
                           </tr>
                         </table>` : ''}
@@ -3236,12 +3222,12 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                         <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFF4F7;border:1px solid #F5CCD8;border-radius:10px;margin-bottom:16px;">
                           <tr><td style="padding:14px 16px;">
                             <p style="margin:0 0 6px;font-size:13px;font-weight:700;color:${EM_RED};font-family:${EM_FONT};text-transform:uppercase;letter-spacing:0.5px;">${lang === 'en' ? 'Key Initiative' : '전사 핵심 과제'}</p>
-                            <div${edAttr('todoNotice', meta.todoNotice)}>${meta.todoNotice ? renderReportText(meta.todoNotice, { size: 14, lh: 24, color: '#1A1A1A' }) : `<p style="margin:0;font-size:14px;line-height:24px;font-family:${EM_FONT};">${edPlaceholder(lang)}</p>`}</div>
+                            ${edBlock('todoNotice', meta.todoNotice, { size: 14, lh: 24, color: '#1A1A1A', lang })}
                           </td></tr>
                         </table>` : ''}
                         ${(meta.todoText || _ED) ? `
                         <!-- 2. 인사이트 -->
-                        <div${edAttr('todoText', meta.todoText)} style="margin:0 0 16px;">${meta.todoText ? renderReportText(meta.todoText, { size: 14, lh: 24, color: '#1A1A1A' }) : `<p style="margin:0;font-size:14px;line-height:24px;font-family:${EM_FONT};">${edPlaceholder(lang)}</p>`}</div>` : ''}
+                        ${edBlock('todoText', meta.todoText, { size: 14, lh: 24, color: '#1A1A1A', lang, wrapStyle: 'margin:0 0 16px;' })}` : ''}
                         <!-- 3. 핵심 과제 진척 사항 -->
                         ${categoryCardsHtml(categoryStats, lang, meta)}
                         ${dashboardLinkButtonHtml(lang)}

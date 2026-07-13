@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { Copy, Download, RefreshCw, Check, Send, Sparkles, Languages, Globe, Link2, Archive } from 'lucide-react'
+import { Copy, Download, RefreshCw, Check, Send, Sparkles, Languages, Globe, Link2, Archive, Pencil } from 'lucide-react'
 import { downloadTemplate } from '../excelUtils'
 import { extractSheetId, syncFromGoogleSheets } from '../googleSheetsUtils'
 import { LG_RED, FONT } from './constants.js'
@@ -38,7 +38,7 @@ function mergeBilingualEmail(htmlKo, htmlEn) {
 }
 
 export default
-function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, total, setTotal, products, setProducts, citations, setCitations, dotcom, setDotcom, productsCnty, setProductsCnty, citationsCnty, setCitationsCnty, resolved, previewLang, setPreviewLang, snapshots, setSnapshots, setWeeklyLabels, setWeeklyAll, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty, generateHTML, publishEndpoint, setMonthlyVis, onSyncExtra, categoryStats, extra, monthlyVis, progressMonth, setProgressMonth, progressDataMonth }) {
+function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, total, setTotal, products, setProducts, citations, setCitations, dotcom, setDotcom, productsCnty, setProductsCnty, citationsCnty, setCitationsCnty, resolved, previewLang, setPreviewLang, snapshots, setSnapshots, setWeeklyLabels, setWeeklyAll, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty, generateHTML, publishEndpoint, setMonthlyVis, onSyncExtra, categoryStats, extra, monthlyVis, progressMonth, setProgressMonth, progressDataMonth, editMode = false, setEditMode }) {
   // 최신 데이터 ref — AI 생성/게시 시 stale closure 방지
   const latestRef = useRef({ products, productsCnty, citations, citationsCnty, total, dotcom, extra })
   latestRef.current = { products, productsCnty, citations, citationsCnty, total, dotcom, extra }
@@ -1337,10 +1337,19 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
 
         {/* ── 뉴스레터: 텍스트는 미리보기 인라인 편집 — 사이드바는 AI 생성·표시 제어만 ── */}
         {isNewsletter && (<>
+        {/* 전체 편집 모드 토글 */}
+        <button onClick={() => setEditMode && setEditMode(v => !v)}
+          style={{ width: '100%', padding: '10px 0', borderRadius: 8, border: 'none', cursor: 'pointer',
+            background: editMode ? LG_RED : '#1E293B', color: editMode ? '#FFFFFF' : '#94A3B8',
+            fontSize: 12, fontWeight: 700, fontFamily: FONT, marginBottom: 8,
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, transition: 'all 0.2s' }}>
+          <Pencil size={13} /> {editMode ? '편집 모드 켜짐 — 끄기' : '편집 모드 켜기'}
+        </button>
         <div style={{ background: '#0F172A', border: '1px solid #1E293B', borderRadius: 8, padding: '8px 10px', marginBottom: 10 }}>
           <p style={{ margin: 0, fontSize: 11, color: '#94A3B8', fontFamily: FONT, lineHeight: 1.6 }}>
-            ✏️ 텍스트는 <strong style={{ color: '#E2E8F0' }}>미리보기에서 직접 클릭</strong>해 편집하세요.<br />
-            (바깥 클릭 = 저장 · Esc = 취소)
+            {editMode
+              ? <>✏️ 미리보기에서 텍스트를 <strong style={{ color: '#E2E8F0' }}>직접 클릭해 편집</strong> (볼드·색·크기 적용된 상태 그대로).<br />바깥 클릭 = 저장 · Esc = 취소</>
+              : <>편집 모드를 켜면 미리보기 텍스트를 직접 클릭해 편집할 수 있어요.</>}
           </p>
         </div>
         {[
