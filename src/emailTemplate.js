@@ -2437,6 +2437,78 @@ export { escapeHtml }
 // ─── 제품군 × 모델 전월 대비 상세 (모델별 Visibility 증감) ────────────────────
 // products[].monthlyScores[].byLlm 에서 카테고리×모델 MoM 델타 산출 → 다이버징 바 + 히트맵.
 // 이메일 호환: canvas 대신 table-layout (막대 = background 폭, 히트맵 = 셀 bgcolor).
+// ─── Highlight Insight — 주간 경쟁사 트렌드 (TV·냉장고·세탁기·에어컨, LG+상위3 경쟁사) ──
+// weeklyAll[prodId]['Total'] = { LG:[주별...], 경쟁사:[...] } 에서 LG + 최신값 상위 3 경쟁사만
+// 표시. 이메일 호환: 브랜드별 주간 미니 바(공통 스케일) — 카테고리당 하나의 정렬 표.
+const HL_PRODS = ['tv', 'fridge', 'washer', 'rac']
+const HL_COMP_COLORS = ['#2A78D6', '#E8910C', '#15803D']
+function highlightInsightSectionHtml(products, weeklyAll, weeklyLabels, meta, lang = 'ko') {
+  weeklyAll = weeklyAll || {}
+  const HL_KR = { tv: 'TV', fridge: '냉장고', washer: '세탁기', rac: '에어컨' }
+  const prodName = id => lang === 'en' ? (PROD_ID_TO_EN[id] || id.toUpperCase()) : (HL_KR[id] || PROD_ID_TO_KR[id] || id.toUpperCase())
+  const latestOf = arr => { const v = (arr || []).filter(x => x != null); return v.length ? v[v.length - 1] : null }
+  const blocks = HL_PRODS.map(pid => {
+    const src = weeklyAll[pid] || {}
+    const wa = src['Total'] || src['TTL'] || src['TOTAL'] || null
+    if (!wa || !Array.isArray(wa.LG)) return ''
+    const comps = Object.keys(wa).filter(b => b !== 'LG').map(b => ({ b, v: latestOf(wa[b]) })).filter(x => x.v != null).sort((a, b) => b.v - a.v).slice(0, 3).map(x => x.b)
+    const series = ['LG', ...comps]
+    const len = Math.min(10, wa.LG.length)  // 최근 10주 이내
+    const sliceW = arr => (arr || []).slice(-len)
+    const allVals = series.flatMap(b => sliceW(wa[b]).filter(v => v != null))
+    if (!allVals.length) return ''
+    const gMin = Math.min(...allVals), gMax = Math.max(...allVals), range = gMax - gMin || 1
+    const labels = (weeklyLabels && weeklyLabels.length ? weeklyLabels : wa.LG.map((_, i) => `W${i + 1}`)).slice(-len)
+    const brandRow = (b, i) => {
+      const color = b === 'LG' ? EM_RED : HL_COMP_COLORS[(i - 1) % HL_COMP_COLORS.length]
+      const cells = sliceW(wa[b]).map(v => {
+        if (v == null) return `<td style="padding:0 1px;vertical-align:bottom;height:36px;">&nbsp;</td>`
+        const h = Math.round(((v - gMin) / range) * 24) + 4, sp = 28 - h
+        return `<td style="padding:0 1px;vertical-align:bottom;text-align:center;"><table border="0" cellpadding="0" cellspacing="0" align="center" style="margin:0 auto;"><tr><td style="font-size:9px;font-weight:700;color:${color};font-family:${EM_FONT};padding-bottom:1px;line-height:1;">${v.toFixed(1)}</td></tr>${sp > 0 ? `<tr><td height="${sp}" style="font-size:0;line-height:0;">&nbsp;</td></tr>` : ''}<tr><td width="10" height="${h}" style="background:${color};border-radius:2px 2px 0 0;font-size:0;line-height:0;">&nbsp;</td></tr></table></td>`
+      }).join('')
+      return `<tr><td width="66" style="font-size:11px;font-weight:700;color:${color};font-family:${EM_FONT};white-space:nowrap;padding-right:6px;vertical-align:bottom;">${b === 'LG' ? 'LG' : escapeHtml(b)}</td>${cells}</tr>`
+    }
+    const labelRow = `<tr><td>&nbsp;</td>${labels.map(l => `<td style="font-size:9px;color:#94A3B8;text-align:center;font-family:${EM_FONT};padding-top:2px;">${escapeHtml(l)}</td>`).join('')}</tr>`
+    return `
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom:14px;border:1px solid #E8EDF2;border-radius:10px;">
+                          <tr><td style="padding:12px 14px;">
+                            <p style="margin:0 0 10px;font-size:14px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};">${escapeHtml(prodName(pid))} <span style="font-size:11px;color:#94A3B8;font-weight:600;">${lang === 'en' ? 'Weekly · LG + Top 3 competitors' : '주간 · LG + 경쟁사 Top 3'}</span></p>
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%">${series.map(brandRow).join('')}${labelRow}</table>
+                          </td></tr>
+                        </table>`
+  }).filter(Boolean).join('')
+  if (!blocks) return ''  // 주간 데이터 없으면 챕터 미렌더
+
+  const insightBox = meta.showHighlightInsight && (meta.highlightInsight || _ED) ? `
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom:14px;border-radius:8px;background:#FFF4F7;border:1px solid #F5CCD8;">
+                          <tr><td style="padding:12px 16px;">
+                            <p style="margin:0 0 6px;font-size:13px;font-weight:700;color:${EM_RED};font-family:${EM_FONT};letter-spacing:0.5px;">INSIGHT</p>
+                            ${edBlock('highlightInsight', meta.highlightInsight, { size: 14, lh: 24, color: '#1A1A1A', accent: EM_RED, lang })}
+                          </td></tr>
+                        </table>` : ''
+  return `
+              <tr>
+                <td style="padding-bottom:28px;">
+                  <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFFFFF;border-radius:16px;border:2px solid #E8EDF2;">
+                    <tr>
+                      <td style="padding:22px 16px 18px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;">
+                        <table border="0" cellpadding="0" cellspacing="0"><tr>
+                          <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
+                          <td style="padding-left:8px;font-size:19px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">Highlight Insight</td>
+                        </tr></table>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="padding:14px 18px;">
+                        ${insightBox}
+                        ${blocks}
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>`
+}
+
 const MODEL_ORDER = ['ChatGPT', 'ChatGPT Search', 'GPT Search', 'Perplexity', 'Gemini', 'Google', 'Google AI Overview', 'Copilot', 'Claude']
 function modelDeltaSectionHtml(products, meta, lang = 'ko') {
   products = products || []
@@ -2728,7 +2800,7 @@ export function generateSemiAnnualEmailHTML(meta, total, products, citations, do
 }
 
 export function generateEmailHTML(meta, total, products, citations, dotcom = {}, lang = 'ko', productsCnty = [], citationsCnty = [], options = {}) {
-  const { containerWidth = 940, showTrendTabs = false, weeklyLabels, categoryStats = null, unlaunchedMap: ulInput = {}, productCardVersion = 'v1', trendMode = 'weekly', llmModel, monthlyVis, citTouchPointsTrend = null, citTrendMonths = [], citDomainTrend = null, citDomainMonths = [], citTouchPointsByLlm = null, citDomainByLlm = null, citDomainByLlmTrend = null, dotcomByLlm = null, prependHtml = '' } = options
+  const { containerWidth = 940, showTrendTabs = false, weeklyLabels, weeklyAll = {}, categoryStats = null, unlaunchedMap: ulInput = {}, productCardVersion = 'v1', trendMode = 'weekly', llmModel, monthlyVis, citTouchPointsTrend = null, citTrendMonths = [], citDomainTrend = null, citDomainMonths = [], citTouchPointsByLlm = null, citDomainByLlm = null, citDomainByLlmTrend = null, dotcomByLlm = null, prependHtml = '' } = options
   // 인라인 편집 모드 (어드민 미리보기 전용) — 게시/복사/발송 경로는 editable 미지정 → 항상 false 로 리셋
   _ED = !!options.editable
   // LLM Model 필터 (2026-06) — 선택 모델로 products/productsCnty/total 재계산
@@ -3031,6 +3103,8 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                   </table>
                 </td>
               </tr>` : ''}
+
+              ${meta.showHighlight !== false ? highlightInsightSectionHtml(products, weeklyAll, weeklyLabels, meta, lang) : ''}
 
               ${meta.showProducts !== false ? `<!-- ══ 제품별 현황 (통합 카드) ══ -->
               <tr>

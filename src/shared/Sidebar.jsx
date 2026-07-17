@@ -13,7 +13,7 @@ import SheetDownload from './SheetDownload.jsx'
 // 발송 시 EN meta 에서 그대로 따라가야 할 "텍스트" 필드 (번역된 본문/라벨).
 // 그 외 차트/표시 토글은 metaKo 기준으로 통일 — metaKo/metaEn 가 독립 state 라
 // 미리보기 언어를 바꿔가며 토글을 만지면 KO/EN 차트가 갈라지기 때문 (handleTranslate 와 동일 화이트리스트).
-const EN_TEXT_FIELDS = ['title', 'dateLine', 'noticeText', 'totalInsight', 'reportType', 'productInsight', 'productHowToRead', 'citationInsight', 'citationHowToRead', 'dotcomInsight', 'dotcomHowToRead', 'todoText', 'todoNotice', 'kpiLogicText', 'cntyInsight', 'cntyHowToRead', 'citDomainInsight', 'citDomainHowToRead', 'citCntyInsight', 'citCntyHowToRead', 'citPrdInsight', 'citPrdHowToRead', 'period', 'team', 'reportNo', 'monthlyReportBody', 'modelDeltaInsight', 'compRatioDeltaNote']
+const EN_TEXT_FIELDS = ['title', 'dateLine', 'noticeText', 'totalInsight', 'reportType', 'productInsight', 'productHowToRead', 'citationInsight', 'citationHowToRead', 'dotcomInsight', 'dotcomHowToRead', 'todoText', 'todoNotice', 'kpiLogicText', 'cntyInsight', 'cntyHowToRead', 'citDomainInsight', 'citDomainHowToRead', 'citCntyInsight', 'citCntyHowToRead', 'citPrdInsight', 'citPrdHowToRead', 'period', 'team', 'reportNo', 'monthlyReportBody', 'modelDeltaInsight', 'compRatioDeltaNote', 'highlightInsight']
 
 // 두 언어(KO/EN) 이메일 HTML 을 하나의 문서로 이어붙임 — KO 본문 → 구분선 → EN 본문.
 // 각 generateHTML 은 완전한 HTML 문서를 반환하므로, KO 문서의 <body> 안에 EN 본문 내용만 삽입한다.
@@ -127,8 +127,8 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
         htmlEn = generateHTML(metaEn, latest.total, resolvedEn.products, resolvedEn.citations, latest.dotcom, 'en', resolvedEn.productsCnty, resolvedEn.citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty, mv, latestExtra)
         title = `${metaKo.period || ''} ${metaKo.title || 'KPI Dashboard'}`.trim()
       } else {
-        htmlKo = generateHTML(metaKo, latest.total, resolvedKo.products, resolvedKo.citations, dotcom, 'ko', resolvedKo.productsCnty, resolvedKo.citationsCnty, { weeklyLabels, categoryStats, unlaunchedMap: extra?.unlaunchedMap || {}, productCardVersion: meta.productCardVersion || 'v1', trendMode: meta.trendMode || 'weekly', citTouchPointsTrend: extra?.citTouchPointsTrend || null, citTrendMonths: extra?.citTrendMonths || [], citDomainTrend: extra?.citDomainTrend || null, citDomainMonths: extra?.citDomainMonths || [], citTouchPointsByLlm: extra?.citTouchPointsByLlm || null, citDomainByLlm: extra?.citDomainByLlm || null, citDomainByLlmTrend: extra?.citDomainByLlmTrend || null, dotcomByLlm: extra?.dotcomByLlm || null })
-        htmlEn = generateHTML(metaEn, latest.total, resolvedEn.products, resolvedEn.citations, dotcom, 'en', resolvedEn.productsCnty, resolvedEn.citationsCnty, { weeklyLabels, categoryStats, unlaunchedMap: extra?.unlaunchedMap || {}, productCardVersion: meta.productCardVersion || 'v1', trendMode: meta.trendMode || 'weekly', citTouchPointsTrend: extra?.citTouchPointsTrend || null, citTrendMonths: extra?.citTrendMonths || [], citDomainTrend: extra?.citDomainTrend || null, citDomainMonths: extra?.citDomainMonths || [], citTouchPointsByLlm: extra?.citTouchPointsByLlm || null, citDomainByLlm: extra?.citDomainByLlm || null, citDomainByLlmTrend: extra?.citDomainByLlmTrend || null, dotcomByLlm: extra?.dotcomByLlm || null })
+        htmlKo = generateHTML(metaKo, latest.total, resolvedKo.products, resolvedKo.citations, dotcom, 'ko', resolvedKo.productsCnty, resolvedKo.citationsCnty, { weeklyLabels, weeklyAll, categoryStats, unlaunchedMap: extra?.unlaunchedMap || {}, productCardVersion: meta.productCardVersion || 'v1', trendMode: meta.trendMode || 'weekly', citTouchPointsTrend: extra?.citTouchPointsTrend || null, citTrendMonths: extra?.citTrendMonths || [], citDomainTrend: extra?.citDomainTrend || null, citDomainMonths: extra?.citDomainMonths || [], citTouchPointsByLlm: extra?.citTouchPointsByLlm || null, citDomainByLlm: extra?.citDomainByLlm || null, citDomainByLlmTrend: extra?.citDomainByLlmTrend || null, dotcomByLlm: extra?.dotcomByLlm || null })
+        htmlEn = generateHTML(metaEn, latest.total, resolvedEn.products, resolvedEn.citations, dotcom, 'en', resolvedEn.productsCnty, resolvedEn.citationsCnty, { weeklyLabels, weeklyAll, categoryStats, unlaunchedMap: extra?.unlaunchedMap || {}, productCardVersion: meta.productCardVersion || 'v1', trendMode: meta.trendMode || 'weekly', citTouchPointsTrend: extra?.citTouchPointsTrend || null, citTrendMonths: extra?.citTrendMonths || [], citDomainTrend: extra?.citDomainTrend || null, citDomainMonths: extra?.citDomainMonths || [], citTouchPointsByLlm: extra?.citTouchPointsByLlm || null, citDomainByLlm: extra?.citDomainByLlm || null, citDomainByLlmTrend: extra?.citDomainByLlmTrend || null, dotcomByLlm: extra?.dotcomByLlm || null })
         title = `${metaKo.period || ''} ${metaKo.title || 'Newsletter'}`.trim()
       }
       const ep = publishEndpoint || (mode === 'dashboard' ? '/api/publish-dashboard' : '/api/publish')
@@ -374,7 +374,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
       const latest = getLatestData()
       const resolvedKo = resolveDataForLang(latest.products, latest.productsCnty, latest.citations, latest.citationsCnty, 'ko')
       const resolvedEn = resolveDataForLang(latest.products, latest.productsCnty, latest.citations, latest.citationsCnty, 'en')
-      const sharedOpts = { weeklyLabels, categoryStats, unlaunchedMap: extra?.unlaunchedMap || {}, productCardVersion: meta.productCardVersion || 'v1', trendMode: meta.trendMode || 'weekly', citTouchPointsTrend: extra?.citTouchPointsTrend || null, citTrendMonths: extra?.citTrendMonths || [], citDomainTrend: extra?.citDomainTrend || null, citDomainMonths: extra?.citDomainMonths || [], citTouchPointsByLlm: extra?.citTouchPointsByLlm || null, citDomainByLlm: extra?.citDomainByLlm || null, citDomainByLlmTrend: extra?.citDomainByLlmTrend || null, dotcomByLlm: extra?.dotcomByLlm || null }
+      const sharedOpts = { weeklyLabels, weeklyAll, categoryStats, unlaunchedMap: extra?.unlaunchedMap || {}, productCardVersion: meta.productCardVersion || 'v1', trendMode: meta.trendMode || 'weekly', citTouchPointsTrend: extra?.citTouchPointsTrend || null, citTrendMonths: extra?.citTrendMonths || [], citDomainTrend: extra?.citDomainTrend || null, citDomainMonths: extra?.citDomainMonths || [], citTouchPointsByLlm: extra?.citTouchPointsByLlm || null, citDomainByLlm: extra?.citDomainByLlm || null, citDomainByLlmTrend: extra?.citDomainByLlmTrend || null, dotcomByLlm: extra?.dotcomByLlm || null }
       // EN 발송 meta = KO 차트/표시 토글 기준 + EN 번역 텍스트만 덮어쓰기 (차트 불일치 방지)
       const metaEnForSend = { ...metaKo }
       EN_TEXT_FIELDS.forEach(k => { metaEnForSend[k] = metaEn[k] })
@@ -1134,6 +1134,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginBottom: 16 }}>
           {[
             { key: 'showTotal',     label: 'GEO 지수' },
+            { key: 'showHighlight', label: 'Highlight Insight' },
             { key: 'showProducts',  label: '제품별' },
             { key: 'showModelDelta', label: '제품별 모델 증감' },
             { key: 'showCompRatioDelta', label: '제품별 경쟁비 증감' },
@@ -1356,6 +1357,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
         </div>
         {[
           { label: 'GEO 전략 인사이트', field: 'totalInsight', type: 'totalInsight', data: () => ({ products: getLatestData().products, productsCnty: getLatestData().productsCnty, total: getLatestData().total, todoText: meta.todoText || '', unlaunchedMap: getLatestData().extra?.unlaunchedMap || {} }) },
+          { label: 'Highlight 인사이트', field: 'highlightInsight', toggle: 'showHighlightInsight', type: 'highlight', data: () => ({ products: getLatestData().products, weeklyAll }) },
           { label: '제품 인사이트', field: 'productInsight', toggle: 'showProductInsight', type: 'product', data: () => ({ products: getLatestData().products, total: getLatestData().total }) },
           { label: '모델 증감 인사이트', field: 'modelDeltaInsight', toggle: 'showModelDeltaInsight', type: 'modelDelta', data: () => ({ products: getLatestData().products }) },
           { label: '제품 How to Read', field: 'productHowToRead', toggle: 'showProductHowToRead', type: 'howToRead', data: () => ({ section: '제품별 GEO Visibility' }) },
