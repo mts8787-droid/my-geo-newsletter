@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react'
-import { Save, FolderOpen, Trash2, Copy, Check, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
+import { Save, FolderOpen, Trash2, Copy, Check, PanelLeftClose, PanelLeftOpen, MessageSquare, Send, X, Sparkles } from 'lucide-react'
 import { generateEmailHTML, generateSemiAnnualEmailHTML } from '../emailTemplate'
 
 // 템플릿 선택 — meta.letterTemplate 기준 생성기 디스패치 (드롭인 시그니처)
@@ -8,7 +8,7 @@ function genHTMLFor(meta) {
 }
 import { INIT_META, INIT_TOTAL, INIT_PRODUCTS, INIT_DOTCOM, INIT_PRODUCTS_CNTY, INIT_CITATIONS_CNTY, INIT_CITATIONS, FONT, LG_RED } from '../shared/constants.js'
 import { loadCache, saveCache } from '../shared/cache.js'
-import { fetchSnapshots, postSnapshot, updateSnapshot, deleteSnapshot, fetchSyncData } from '../shared/api.js'
+import { fetchSnapshots, postSnapshot, updateSnapshot, deleteSnapshot, fetchSyncData, generateAIInsight } from '../shared/api.js'
 import { resolveDataForLang } from '../shared/utils.js'
 import { computeCategoryStats, extractMonthFromPeriod } from '../shared/trackerCategoryStats.js'
 import { parseKPISheet } from '../tracker-v2/utils/sheetParser.js'
@@ -117,6 +117,95 @@ function HtmlCodeViewer({ meta, total, products, citations, dotcom, productsCnty
   )
 }
 
+// ─── AI 인사이트 채팅 패널 (우측) ────────────────────────────────────────────
+// 인사이트 항목 선택 + 추가 프롬프트 입력 → generateAIInsight(…, extraPrompt) 호출
+const CHAT_INSIGHT_ITEMS = [
+  { label: 'GEO 전략 인사이트', field: 'totalInsight', type: 'totalInsight', build: c => ({ products: c.products, productsCnty: c.productsCnty, total: c.total, todoText: c.meta.todoText || '', unlaunchedMap: c.unlaunchedMap }) },
+  { label: 'Highlight 인사이트', field: 'highlightInsight', type: 'highlight', showKey: 'showHighlightInsight', build: c => ({ products: c.products, weeklyAll: c.weeklyAll }) },
+  { label: '제품 인사이트', field: 'productInsight', type: 'product', showKey: 'showProductInsight', build: c => ({ products: c.products, total: c.total }) },
+  { label: '제품 How to Read', field: 'productHowToRead', type: 'howToRead', showKey: 'showProductHowToRead', build: () => ({ section: '제품별 GEO Visibility' }) },
+  { label: '모델 증감 인사이트', field: 'modelDeltaInsight', type: 'modelDelta', showKey: 'showModelDeltaInsight', build: c => ({ products: c.products }) },
+  { label: '국가별 인사이트', field: 'cntyInsight', type: 'cnty', showKey: 'showCntyInsight', build: c => ({ productsCnty: c.productsCnty, unlaunchedMap: c.unlaunchedMap }) },
+  { label: '국가별 How to Read', field: 'cntyHowToRead', type: 'howToRead', showKey: 'showCntyHowToRead', build: () => ({ section: '국가별 GEO Visibility' }) },
+  { label: 'Citation 인사이트', field: 'citationInsight', type: 'citation', showKey: 'showCitationInsight', build: c => ({ citations: c.citations }) },
+  { label: '제품별 Citation 인사이트', field: 'citPrdInsight', type: 'citPrd', showKey: 'showCitPrdInsight', build: c => ({ citationsCnty: c.citationsCnty }) },
+  { label: '닷컴 인사이트', field: 'dotcomInsight', type: 'dotcom', showKey: 'showDotcomInsight', build: c => ({ dotcom: c.dotcom }) },
+  { label: 'Action Plan 인사이트', field: 'todoText', type: 'todo', showKey: 'showTodo', build: c => ({ products: c.products }) },
+]
+
+function InsightChatPanel({ ctx, setMeta, previewLang, onClose }) {
+  const [field, setField] = useState(CHAT_INSIGHT_ITEMS[0].field)
+  const [prompt, setPrompt] = useState('')
+  const [msgs, setMsgs] = useState([])
+  const [busy, setBusy] = useState(false)
+  const scrollRef = useRef(null)
+  const item = CHAT_INSIGHT_ITEMS.find(i => i.field === field) || CHAT_INSIGHT_ITEMS[0]
+
+  useEffect(() => { if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight }, [msgs, busy])
+
+  async function generate() {
+    if (busy) return
+    const p = prompt.trim()
+    setBusy(true)
+    setMsgs(m => [...m, { role: 'user', label: item.label, prompt: p }])
+    try {
+      const insight = await generateAIInsight(item.type, item.build(ctx), previewLang, '', p)
+      setMeta(m => ({ ...m, [item.field]: insight, ...(item.showKey ? { [item.showKey]: true } : {}) }))
+      setMsgs(m => [...m, { role: 'ai', label: item.label, text: insight }])
+      setPrompt('')
+    } catch (e) {
+      setMsgs(m => [...m, { role: 'ai', label: item.label, text: `[생성 실패: ${e.message}]`, error: true }])
+    } finally { setBusy(false) }
+  }
+
+  const inputStyle = { width: '100%', background: '#0F172A', border: '1px solid #334155', borderRadius: 8, padding: '8px 10px', fontSize: 12, color: '#E2E8F0', fontFamily: FONT, outline: 'none', boxSizing: 'border-box' }
+
+  return (
+    <div style={{ width: 340, flexShrink: 0, borderLeft: '1px solid #1E293B', background: '#0B1220', display: 'flex', flexDirection: 'column', height: '100vh' }}>
+      <div style={{ height: 48, borderBottom: '1px solid #1E293B', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 14px', flexShrink: 0 }}>
+        <span style={{ fontSize: 12, fontWeight: 700, color: '#E2E8F0', fontFamily: FONT, display: 'flex', alignItems: 'center', gap: 6 }}><MessageSquare size={14} /> AI 인사이트 채팅</span>
+        <button onClick={onClose} title="닫기" style={{ background: 'transparent', border: 'none', color: '#64748B', cursor: 'pointer', display: 'flex' }}><X size={16} /></button>
+      </div>
+
+      <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', padding: '14px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {msgs.length === 0 && (
+          <p style={{ margin: 0, fontSize: 12, color: '#475569', fontFamily: FONT, lineHeight: 1.7 }}>
+            인사이트 항목을 고르고, 필요하면 추가 지시(프롬프트)를 입력한 뒤 생성하세요.<br />
+            결과는 해당 항목에 반영되고 미리보기에 표시됩니다.
+          </p>
+        )}
+        {msgs.map((m, i) => m.role === 'user' ? (
+          <div key={i} style={{ alignSelf: 'flex-end', maxWidth: '90%', background: '#1D4ED8', color: '#fff', borderRadius: '10px 10px 2px 10px', padding: '8px 11px' }}>
+            <p style={{ margin: '0 0 3px', fontSize: 10, fontWeight: 700, color: '#BFDBFE', fontFamily: FONT }}>{m.label}</p>
+            <p style={{ margin: 0, fontSize: 12, color: '#fff', fontFamily: FONT, lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>{m.prompt || '(추가 프롬프트 없음)'}</p>
+          </div>
+        ) : (
+          <div key={i} style={{ alignSelf: 'flex-start', maxWidth: '92%', background: m.error ? '#3B1418' : '#1E293B', border: `1px solid ${m.error ? '#7F1D1D' : '#334155'}`, borderRadius: '10px 10px 10px 2px', padding: '8px 11px' }}>
+            <p style={{ margin: '0 0 3px', fontSize: 10, fontWeight: 700, color: m.error ? '#FCA5A5' : '#86EFAC', fontFamily: FONT, display: 'flex', alignItems: 'center', gap: 3 }}><Sparkles size={9} /> {m.label}</p>
+            <p style={{ margin: 0, fontSize: 12, color: m.error ? '#FCA5A5' : '#CBD5E1', fontFamily: FONT, lineHeight: 1.6, whiteSpace: 'pre-wrap', maxHeight: 220, overflowY: 'auto' }}>{m.text}</p>
+          </div>
+        ))}
+        {busy && <div style={{ alignSelf: 'flex-start', fontSize: 12, color: '#64748B', fontFamily: FONT, display: 'flex', alignItems: 'center', gap: 6 }}><Sparkles size={11} /> 생성 중…</div>}
+      </div>
+
+      <div style={{ borderTop: '1px solid #1E293B', padding: '12px 14px', flexShrink: 0, background: '#0F172A' }}>
+        <label style={{ fontSize: 10, fontWeight: 700, color: '#64748B', fontFamily: FONT, display: 'block', marginBottom: 4 }}>인사이트 항목</label>
+        <select value={field} onChange={e => setField(e.target.value)} style={{ ...inputStyle, marginBottom: 8, cursor: 'pointer' }}>
+          {CHAT_INSIGHT_ITEMS.map(i => <option key={i.field} value={i.field}>{i.label}</option>)}
+        </select>
+        <textarea value={prompt} onChange={e => setPrompt(e.target.value)}
+          onKeyDown={e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); generate() } }}
+          rows={3} placeholder="추가 지시(선택) — 예: '경쟁 열위 제품 위주로, 3문장 이내'  (⌘/Ctrl+Enter 로 생성)"
+          style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.5, marginBottom: 8 }} />
+        <button onClick={generate} disabled={busy}
+          style={{ width: '100%', padding: '9px 0', borderRadius: 8, border: 'none', cursor: busy ? 'wait' : 'pointer', background: busy ? '#1E293B' : '#4F46E5', color: busy ? '#64748B' : '#fff', fontSize: 12, fontWeight: 700, fontFamily: FONT, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+          <Send size={12} /> {busy ? '생성 중…' : `${item.label} 생성`}
+        </button>
+      </div>
+    </div>
+  )
+}
+
 // ─── 메인 앱 ──────────────────────────────────────────────────────────────────
 export default function App() {
   const cache = useRef(loadCache(STORAGE_KEY)).current
@@ -153,6 +242,7 @@ export default function App() {
   const [activeSnap, setActiveSnap] = useState(null)
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [editMode, setEditMode] = useState(false)
+  const [chatOpen, setChatOpen] = useState(false)
   const previewIframeRef = useRef(null)
   // 상단바 서식 도구 → 미리보기 iframe 의 편집 선택 영역에 execCommand 전달
   const sendFormat = useCallback((cmd, value) => {
@@ -463,6 +553,12 @@ export default function App() {
             })}
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <button onClick={() => setChatOpen(v => !v)} title="AI 인사이트 채팅"
+              style={{ padding: '4px 10px', borderRadius: 6, border: 'none', cursor: 'pointer',
+                background: chatOpen ? '#4F46E5' : '#1E293B', color: chatOpen ? '#FFFFFF' : '#94A3B8',
+                fontSize: 11, fontWeight: 700, fontFamily: FONT, display: 'flex', alignItems: 'center', gap: 4 }}>
+              <MessageSquare size={12} /> AI 채팅
+            </button>
             {snapMsg && <span style={{ fontSize: 11, color: '#22C55E', fontFamily: FONT }}>{snapMsg}</span>}
             <button onClick={handleSnapOverwrite} disabled={!activeSnap}
               title={activeSnap ? '현재 버전에 덮어쓰기' : '불러온 버전이 없습니다'}
@@ -580,6 +676,14 @@ export default function App() {
           <span style={{ fontSize: 10, color: '#475569', fontFamily: FONT }}>v{__APP_VERSION__}</span>
         </div>
       </div>
+      {chatOpen && (
+        <InsightChatPanel
+          ctx={{ products: resolved.products, productsCnty: resolved.productsCnty, total, citations: resolved.citations, citationsCnty: resolved.citationsCnty, dotcom, weeklyAll, monthlyVis, unlaunchedMap, meta }}
+          setMeta={setMeta}
+          previewLang={previewLang}
+          onClose={() => setChatOpen(false)}
+        />
+      )}
     </div>
   )
 }

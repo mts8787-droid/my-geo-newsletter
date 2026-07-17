@@ -25,7 +25,7 @@ const log = logFor('insight')
 export const insightRouter = Router()
 
 insightRouter.post('/api/generate-insight', validateBody(InsightPostSchema), async (req, res) => {
-  const { type, data, lang, rules } = req.body
+  const { type, data, lang, rules, extraPrompt } = req.body
   const apiKey = process.env.ANTHROPIC_API_KEY
   if (!apiKey) return res.status(500).json({ ok: false, error: 'ANTHROPIC_API_KEY가 설정되지 않았습니다' })
 
@@ -40,8 +40,13 @@ insightRouter.post('/api/generate-insight', validateBody(InsightPostSchema), asy
     const ctx = loadInsightContext({ type, data, readArchives })
     archiveKey = ctx.archiveKey
 
+    // 기본 규칙 + (있으면) 사용자 추가 프롬프트 — 추가 프롬프트는 기본 규칙에 덧붙여 최우선 반영
+    const baseRules = rules || aiSettings.promptRules
+    const finalRules = extraPrompt && extraPrompt.trim()
+      ? `${baseRules}\n\n[사용자 추가 지시 — 우선 반영]\n${extraPrompt.trim()}`
+      : baseRules
     const systemPrompt = buildSystemPrompt({
-      rules: rules || aiSettings.promptRules,
+      rules: finalRules,
       lang,
       maskedTemplate: ctx.maskedTemplate,
       maskedPastExamples: ctx.maskedPastExamples,
