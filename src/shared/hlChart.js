@@ -33,22 +33,20 @@ export function hlLineChartSvg(series, labels, w = 500, h = 152, mark = -1) {
     if (d) svg += `<path d="${d}" fill="none" stroke="${s.color}" stroke-width="${isLG ? 2.6 : 1.6}" stroke-linejoin="round" stroke-linecap="round"/>`
     data.forEach((v, i) => { if (v != null) svg += `<circle cx="${X(i).toFixed(1)}" cy="${Y(v).toFixed(1)}" r="${isLG ? 3 : 2.3}" fill="${s.color}"/>` })
   })
-  // 값 레이블 — W20(mark)·마지막 주차만. 겹치면 1위는 위·꼴찌는 아래로 그룹 중심 기준 대칭 분산.
+  // 값 레이블 — W20(mark)·마지막 주차만. 1위(값 큰)는 포인트 위, 최하위는 그래프 아래(x축 라벨 위)로 확실히 내림.
   const labelIdxs = [...new Set([mark >= 0 && mark < N ? mark : null, N - 1].filter(i => i != null && i >= 0))]
-  const GAP = 13, top = padT + 7, bot = padT + ch
+  const GAP = 13, top = padT + 7, bottomY = padT + ch + 8  // 그래프 하단선 아래 (x축 라벨 위)
   labelIdxs.forEach(idx => {
     const items = series.map(s => ({ color: s.color, v: s.data ? s.data[idx] : null })).filter(x => x.v != null)
-      .map(x => ({ ...x, py: Y(x.v), ly: Y(x.v) })).sort((a, b) => a.py - b.py)  // 위(값 큰)→아래(값 작은)
+      .map(x => ({ ...x, py: Y(x.v) })).sort((a, b) => a.py - b.py)  // 위(값 큰)→아래(값 작은)
     const n = items.length
     if (!n) return
-    // 가까운 것만 최소 간격으로 밀어냄
-    for (let i = 1; i < n; i++) if (items[i].ly - items[i - 1].ly < GAP) items[i].ly = items[i - 1].ly + GAP
-    // 원 포인트 중심으로 재정렬 → 1위 위·꼴찌 아래로 대칭 분산 (떨어져 있으면 이동 없음)
-    const shift = (items.reduce((s, it) => s + it.py, 0) - items.reduce((s, it) => s + it.ly, 0)) / n
-    items.forEach(it => it.ly += shift)
-    // 경계 클램프 (그룹 통째로 이동)
-    if (items[0].ly < top) { const d = top - items[0].ly; items.forEach(it => it.ly += d) }
-    if (items[n - 1].ly > bot) { const d = items[n - 1].ly - bot; items.forEach(it => it.ly -= d) }
+    // 최하위 라벨은 그래프 아래 고정, 나머지는 포인트 위
+    items.forEach((it, i) => { it.ly = (n >= 2 && i === n - 1) ? bottomY : it.py - 5 })
+    // 상단 라벨들(하단 고정 제외)만 최소 간격 유지
+    for (let i = 1; i < n - 1; i++) if (items[i].ly - items[i - 1].ly < GAP) items[i].ly = items[i - 1].ly + GAP
+    // 상단 그룹 상단 경계 클램프
+    if (items[0].ly < top) { const d = top - items[0].ly; for (let i = 0; i < (n >= 2 ? n - 1 : n); i++) items[i].ly += d }
     const tx = (X(idx) - 4).toFixed(1)
     items.forEach(it => { svg += `<text x="${tx}" y="${it.ly.toFixed(1)}" text-anchor="end" font-size="9" font-weight="700" fill="${it.color}" font-family="sans-serif">${it.v.toFixed(1)}</text>` })
   })
