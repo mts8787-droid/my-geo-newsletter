@@ -104,7 +104,7 @@ export const INIT_META  = {
   showCitDomain: true, showCitCnty: true, showCitPrd: true,
   citationTopN: 10, citDomainTopN: 10,
   showDotcom: true, showDotcomChatGpt: true,
-  showTouchPointsBump: true, showTouchPointsBumpChatGpt: true,
+  showTouchPointsBump: true, showTouchPointsBumpChatGpt: true, showDomainBumpModels: true,
   bumpHighlight: [],
   showLlmShare: true, llmShareTopN: 10,
   cntyProductFilter: {},

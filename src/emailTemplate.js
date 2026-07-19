@@ -1803,7 +1803,7 @@ function domainBumpSectionHtml(citDomainTrend, citDomainMonths, citDomainByLlmTr
   const ttl = _bumpGridTable(ttlTrend, domLabel, lang, { shortFn: emStripDomain, highlight: meta.bumpHighlight })
   if (ttl) sections.push({ label: 'TTL', count: ttl.count, html: _gridSectionHtml(ttl) })
   // 모델별 — 전월 vs 당월 MoM 표 (Total/All 제외) — citDomainByLlmTrend 있을 때만 (파서 v3 + LLM Model 컬럼)
-  if (citDomainByLlmTrend && typeof citDomainByLlmTrend === 'object') {
+  if (meta.showDomainBumpModels !== false && citDomainByLlmTrend && typeof citDomainByLlmTrend === 'object') {
     const llmKeys = Object.keys(citDomainByLlmTrend).filter(k => !/^(total|all)$/i.test(k))
     console.warn(`[domainBump] 모델별 수신 키 ${Object.keys(citDomainByLlmTrend).length}개 → 필터 후 ${llmKeys.length}개`, { 전체키: Object.keys(citDomainByLlmTrend), 모델키: llmKeys })
     llmKeys
