@@ -64,9 +64,13 @@ function b64urlDecode(s) {
   return typeof atob === 'function' ? decodeURIComponent(escape(atob(b64))) : Buffer.from(b64, 'base64').toString('utf-8')
 }
 
+// 렌더 로직(레이블 배치 등)이 바뀔 때마다 +1 → d 값이 달라져 브라우저 immutable·서버 LRU 캐시 자동 무효화.
+export const CHART_REV = 2
+
 // 차트 데이터를 URL 파라미터(d)로 인코딩. 값은 소수1자리로 압축.
 export function encodeChart({ series, labels, w = 500, h = 152, mark = -1 }) {
   const compact = {
+    v: CHART_REV,
     w, h,
     m: Number.isInteger(mark) ? mark : -1,
     l: labels.map(String),
