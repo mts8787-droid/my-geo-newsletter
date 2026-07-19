@@ -33,6 +33,18 @@ export function hlLineChartSvg(series, labels, w = 500, h = 152, mark = -1) {
     if (d) svg += `<path d="${d}" fill="none" stroke="${s.color}" stroke-width="${isLG ? 2.6 : 1.6}" stroke-linejoin="round" stroke-linecap="round"/>`
     data.forEach((v, i) => { if (v != null) svg += `<circle cx="${X(i).toFixed(1)}" cy="${Y(v).toFixed(1)}" r="${isLG ? 3 : 2.3}" fill="${s.color}"/>` })
   })
+  // 값 레이블 — W20(mark)·마지막 주차만. 같은 x 에서 세로로 겹치지 않게 최소 간격 확보.
+  const labelIdxs = [...new Set([mark >= 0 && mark < N ? mark : null, N - 1].filter(i => i != null && i >= 0))]
+  labelIdxs.forEach(idx => {
+    const items = series.map(s => ({ color: s.color, v: s.data ? s.data[idx] : null })).filter(x => x.v != null)
+      .map(x => ({ ...x, y: Y(x.v) - 4 })).sort((a, b) => a.y - b.y)
+    const GAP = 11, top = padT + 7, bot = padT + ch
+    for (let i = 1; i < items.length; i++) if (items[i].y - items[i - 1].y < GAP) items[i].y = items[i - 1].y + GAP
+    // 하단 초과 시 위로 당김
+    for (let i = items.length - 1; i >= 0; i--) { if (items[i].y > bot) items[i].y = bot; if (i > 0 && items[i].y - items[i - 1].y < GAP) items[i - 1].y = items[i].y - GAP }
+    const tx = (X(idx) - 4).toFixed(1)
+    items.forEach(it => { const ty = Math.min(Math.max(it.y, top), bot).toFixed(1); svg += `<text x="${tx}" y="${ty}" text-anchor="end" font-size="9" font-weight="700" fill="${it.color}" font-family="sans-serif">${it.v.toFixed(1)}</text>` })
+  })
   svg += `</svg>`
   return svg
 }
