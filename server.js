@@ -120,6 +120,8 @@ app.use((req, res, next) => {
   if (req.path.startsWith('/api/auth/')) return next()
   if (req.path === '/api/tracker-snapshot-v2') return next()
   if (req.method === 'GET' && req.path === '/api/dashboard/sync-data') return next()
+  // 뉴스레터 이메일 차트 PNG — 수신자 메일 클라이언트가 세션 없이 fetch (GET·HEAD only, d 파라미터 엄격 검증 → 안전)
+  if ((req.method === 'GET' || req.method === 'HEAD') && req.path === '/api/hl-chart') return next()
   if (req.path.startsWith('/admin/progress-tracker-v2/assets/')) return next()
   // HIRO public 외부 게시 — 인증 없이 접근 (사용자가 외부 공유 목적으로 의도)
   if (req.path.startsWith('/hiro/') || req.path === '/hiro') return next()
