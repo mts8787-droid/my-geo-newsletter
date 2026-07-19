@@ -2451,32 +2451,42 @@ function highlightInsightSectionHtml(products, weeklyAll, weeklyLabels, meta, la
   const HL_KR = { tv: 'TV', fridge: '냉장고', washer: '세탁기', rac: '에어컨' }
   const prodName = id => lang === 'en' ? (PROD_ID_TO_EN[id] || id.toUpperCase()) : (HL_KR[id] || PROD_ID_TO_KR[id] || id.toUpperCase())
   const latestOf = arr => { const v = (arr || []).filter(x => x != null); return v.length ? v[v.length - 1] : null }
-  const blocks = HL_PRODS.map(pid => {
+  const weekNum = l => { const m = String(l).match(/(\d+)/); return m ? parseInt(m[1]) : null }
+  const cards = HL_PRODS.map(pid => {
     const src = weeklyAll[pid] || {}
     const wa = src['Total'] || src['TTL'] || src['TOTAL'] || null
     if (!wa || !Array.isArray(wa.LG)) return ''
-    const comps = Object.keys(wa).filter(b => b !== 'LG').map(b => ({ b, v: latestOf(wa[b]) })).filter(x => x.v != null).sort((a, b) => b.v - a.v).slice(0, 3).map(x => x.b)
+    // 엘지 포함 3등까지 → LG + 상위 2 경쟁사
+    const comps = Object.keys(wa).filter(b => b !== 'LG').map(b => ({ b, v: latestOf(wa[b]) })).filter(x => x.v != null).sort((a, b) => b.v - a.v).slice(0, 2).map(x => x.b)
     const series = ['LG', ...comps]
     const len = Math.min(10, wa.LG.length)  // 최근 10주 이내
     const sliceW = arr => (arr || []).slice(-len)
-    const allVals = series.flatMap(b => sliceW(wa[b]).filter(v => v != null))
-    if (!allVals.length) return ''
+    if (!series.flatMap(b => sliceW(wa[b]).filter(v => v != null)).length) return ''
     const labels = (weeklyLabels && weeklyLabels.length ? weeklyLabels : wa.LG.map((_, i) => `W${i + 1}`)).slice(-len)
+    const mark = labels.findIndex(l => weekNum(l) === 20)  // W20 세로 점선
     const chartSeries = series.map((b, i) => ({ name: b, color: b === 'LG' ? EM_RED : HL_COMP_COLORS[(i - 1) % HL_COMP_COLORS.length], data: sliceW(wa[b]) }))
-    const legend = chartSeries.map(s => `<td style="padding:0 10px 0 0;white-space:nowrap;"><table border="0" cellpadding="0" cellspacing="0"><tr><td width="12" height="3" style="background:${s.color};font-size:0;line-height:0;border-radius:2px;">&nbsp;</td><td style="padding-left:5px;font-size:11px;font-weight:700;color:${s.name === 'LG' ? '#1A1A1A' : '#475569'};font-family:${EM_FONT};">${s.name === 'LG' ? 'LG' : escapeHtml(s.name)}</td></tr></table></td>`).join('')
-    if (!chartSeries.some(s => (s.data || []).some(v => v != null))) return ''
-    // 서버 렌더 PNG (<img>) — Outlook/Gmail 호환. assetBase 로 절대 URL.
-    const imgSrc = `${assetBase}/api/hl-chart?d=${encodeChart({ series: chartSeries, labels, w: 500, h: 152 })}`
+    const legend = chartSeries.map(s => `<td style="padding:0 8px 0 0;white-space:nowrap;"><table border="0" cellpadding="0" cellspacing="0"><tr><td width="11" height="3" style="background:${s.color};font-size:0;line-height:0;border-radius:2px;">&nbsp;</td><td style="padding-left:4px;font-size:10px;font-weight:700;color:${s.name === 'LG' ? '#1A1A1A' : '#475569'};font-family:${EM_FONT};">${s.name === 'LG' ? 'LG' : escapeHtml(s.name)}</td></tr></table></td>`).join('')
+    // 서버 렌더 PNG (<img>) — Outlook/Gmail 호환. 2단 배치용으로 w=400.
+    const imgSrc = `${assetBase}/api/hl-chart?d=${encodeChart({ series: chartSeries, labels, w: 400, h: 140, mark })}`
     return `
-                        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom:14px;border:1px solid #E8EDF2;border-radius:10px;">
-                          <tr><td style="padding:12px 14px;">
-                            <p style="margin:0 0 8px;font-size:14px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};">${escapeHtml(prodName(pid))} <span style="font-size:11px;color:#94A3B8;font-weight:600;">${lang === 'en' ? 'Weekly · LG + Top 3 competitors' : '주간 · LG + 경쟁사 Top 3'}</span></p>
-                            <table border="0" cellpadding="0" cellspacing="0" style="margin-bottom:6px;"><tr>${legend}</tr></table>
-                            <img src="${imgSrc}" width="500" alt="${escapeHtml(prodName(pid))} 주간 트렌드" style="display:block;width:100%;max-width:500px;height:auto;border:0;" />
-                          </td></tr>
-                        </table>`
-  }).filter(Boolean).join('')
-  if (!blocks) return ''  // 주간 데이터 없으면 챕터 미렌더
+                          <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border:1px solid #E8EDF2;border-radius:10px;">
+                            <tr><td style="padding:11px 12px;">
+                              <p style="margin:0 0 7px;font-size:13px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};">${escapeHtml(prodName(pid))}</p>
+                              <table border="0" cellpadding="0" cellspacing="0" style="margin-bottom:5px;"><tr>${legend}</tr></table>
+                              <img src="${imgSrc}" width="400" alt="${escapeHtml(prodName(pid))} 주간 트렌드" style="display:block;width:100%;max-width:400px;height:auto;border:0;" />
+                            </td></tr>
+                          </table>`
+  }).filter(Boolean)
+  if (!cards.length) return ''  // 주간 데이터 없으면 챕터 미렌더
+  // 2단(2열) 배치
+  let grid = ''
+  for (let i = 0; i < cards.length; i += 2) {
+    grid += `<tr>
+                        <td width="50%" valign="top" style="padding:0 6px 12px 0;">${cards[i]}</td>
+                        <td width="50%" valign="top" style="padding:0 0 12px 6px;">${cards[i + 1] || ''}</td>
+                      </tr>`
+  }
+  const blocks = `<table border="0" cellpadding="0" cellspacing="0" width="100%">${grid}</table>`
 
   const insightBox = meta.showHighlightInsight && (meta.highlightInsight || _ED) ? `
                         <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom:14px;border-radius:8px;background:#FFF4F7;border:1px solid #F5CCD8;">

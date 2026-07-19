@@ -19,8 +19,8 @@ hlChartRouter.get('/api/hl-chart', (req, res) => {
   try {
     let png = cache.get(d)
     if (!png) {
-      const { series, labels, w, h } = decodeChart(d)
-      const svg = hlLineChartSvg(series, labels, w, h)
+      const { series, labels, w, h, mark } = decodeChart(d)
+      const svg = hlLineChartSvg(series, labels, w, h, mark)
       if (!svg) return res.status(400).end()
       // 2x 스케일로 선명하게 렌더 (레티나/확대 대비)
       png = new Resvg(svg, { font: { loadSystemFonts: true }, fitTo: { mode: 'width', value: w * 2 } }).render().asPng()

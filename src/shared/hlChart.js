@@ -6,7 +6,8 @@ function escapeXml(s) {
 }
 
 // 주간 꺾은선(라인) 차트 SVG 문자열. series: [{ name, color, data:[값|null...] }]
-export function hlLineChartSvg(series, labels, w = 500, h = 152) {
+// mark: 세로 점선을 그릴 라벨 인덱스 (없으면 -1)
+export function hlLineChartSvg(series, labels, w = 500, h = 152, mark = -1) {
   const padL = 30, padR = 12, padT = 12, padB = 24
   const cw = w - padL - padR, ch = h - padT - padB
   const all = series.flatMap(s => (s.data || []).filter(v => v != null))
@@ -20,6 +21,7 @@ export function hlLineChartSvg(series, labels, w = 500, h = 152) {
   let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" style="display:block;width:100%;max-width:${w}px;height:auto;">`
   svg += `<rect x="0" y="0" width="${w}" height="${h}" fill="#FFFFFF"/>`
   for (let g = 0; g <= 3; g++) { const yy = (padT + ch * g / 3).toFixed(1); svg += `<line x1="${padL}" y1="${yy}" x2="${w - padR}" y2="${yy}" stroke="#EEF0F3" stroke-width="1"/>` }
+  if (mark >= 0 && mark < N) { const mxx = X(mark).toFixed(1); svg += `<line x1="${mxx}" y1="${padT}" x2="${mxx}" y2="${(padT + ch).toFixed(1)}" stroke="#94A3B8" stroke-width="1" stroke-dasharray="3,3"/>` }
   svg += `<text x="${padL - 5}" y="${(padT + 4).toFixed(1)}" text-anchor="end" font-size="9" fill="#94A3B8" font-family="sans-serif">${Math.round(mx)}</text>`
   svg += `<text x="${padL - 5}" y="${(padT + ch).toFixed(1)}" text-anchor="end" font-size="9" fill="#94A3B8" font-family="sans-serif">${Math.round(mn)}</text>`
   labels.forEach((l, i) => { svg += `<text x="${X(i).toFixed(1)}" y="${(h - 8).toFixed(1)}" text-anchor="middle" font-size="9" fill="#94A3B8" font-family="sans-serif">${escapeXml(l)}</text>` })
@@ -46,9 +48,10 @@ function b64urlDecode(s) {
 }
 
 // 차트 데이터를 URL 파라미터(d)로 인코딩. 값은 소수1자리로 압축.
-export function encodeChart({ series, labels, w = 500, h = 152 }) {
+export function encodeChart({ series, labels, w = 500, h = 152, mark = -1 }) {
   const compact = {
     w, h,
+    m: Number.isInteger(mark) ? mark : -1,
     l: labels.map(String),
     s: (series || []).map(x => ({
       n: String(x.name),
@@ -77,5 +80,6 @@ export function decodeChart(d) {
     return { name: String((x && x.n) || '').slice(0, 24), color, data }
   })
   if (!series.length) throw new Error('empty series')
-  return { series, labels, w, h }
+  const mark = (Number.isInteger(o.m) && o.m >= 0 && o.m < labels.length) ? o.m : -1
+  return { series, labels, w, h, mark }
 }
