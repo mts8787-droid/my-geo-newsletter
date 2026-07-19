@@ -2502,7 +2502,7 @@ function highlightInsightSectionHtml(products, weeklyAll, weeklyLabels, meta, la
   const weeklyArea = (blocks || insightBox) ? `
                         <table border="0" cellpadding="0" cellspacing="0" style="margin-bottom:10px;"><tr>
                           <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
-                          <td style="padding-left:8px;font-size:16px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};">${weeklyTitle}</td>
+                          <td style="padding-left:8px;font-size:16px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};"><span${edAttr('hlWeeklyTitle')}>${escapeHtml(meta.hlWeeklyTitle || weeklyTitle)}</span></td>
                         </tr></table>
                         ${insightBox}
                         ${blocks}` : ''
@@ -2523,7 +2523,7 @@ function highlightInsightSectionHtml(products, weeklyAll, weeklyLabels, meta, la
                         <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-top:16px;border-top:1px solid #EEF0F3;"><tr><td style="padding-top:14px;">
                           <table border="0" cellpadding="0" cellspacing="0" style="margin-bottom:10px;"><tr>
                             <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
-                            <td style="padding-left:8px;font-size:16px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};">${bumpTitle}</td>
+                            <td style="padding-left:8px;font-size:16px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};"><span${edAttr('hlBumpTitle')}>${escapeHtml(meta.hlBumpTitle || bumpTitle)}</span></td>
                           </tr></table>
                           ${bumpInsightBox}
                           ${bumpChartsHtml}
@@ -2539,7 +2539,7 @@ function highlightInsightSectionHtml(products, weeklyAll, weeklyLabels, meta, la
                       <td style="padding:22px 16px 18px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;">
                         <table border="0" cellpadding="0" cellspacing="0"><tr>
                           <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
-                          <td style="padding-left:8px;font-size:19px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${chapterTitle}</td>
+                          <td style="padding-left:8px;font-size:19px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};"><span${edAttr('hlChapterTitle')}>${escapeHtml(meta.hlChapterTitle || chapterTitle)}</span></td>
                         </tr></table>
                       </td>
                     </tr>
@@ -2636,7 +2636,7 @@ function modelDeltaContentHtml(products, meta, lang = 'ko') {
                         <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-top:16px;border-top:1px solid #EEF0F3;"><tr><td style="padding-top:14px;">
                           <table border="0" cellpadding="0" cellspacing="0" style="margin-bottom:10px;"><tr>
                             <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
-                            <td style="padding-left:8px;font-size:16px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};">${title}</td>
+                            <td style="padding-left:8px;font-size:16px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};"><span${edAttr('hlModelTitle')}>${escapeHtml(meta.hlModelTitle || title)}</span></td>
                           </tr></table>
                           ${meta.showModelDeltaInsight && (meta.modelDeltaInsight || _ED) ? `
                           <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom:4px;border-radius:8px;background:#FFF4F7;border:1px solid #F5CCD8;">
