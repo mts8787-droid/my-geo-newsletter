@@ -33,17 +33,24 @@ export function hlLineChartSvg(series, labels, w = 500, h = 152, mark = -1) {
     if (d) svg += `<path d="${d}" fill="none" stroke="${s.color}" stroke-width="${isLG ? 2.6 : 1.6}" stroke-linejoin="round" stroke-linecap="round"/>`
     data.forEach((v, i) => { if (v != null) svg += `<circle cx="${X(i).toFixed(1)}" cy="${Y(v).toFixed(1)}" r="${isLG ? 3 : 2.3}" fill="${s.color}"/>` })
   })
-  // 값 레이블 — W20(mark)·마지막 주차만. 같은 x 에서 세로로 겹치지 않게 최소 간격 확보.
+  // 값 레이블 — W20(mark)·마지막 주차만. 겹치면 1위는 위·꼴찌는 아래로 그룹 중심 기준 대칭 분산.
   const labelIdxs = [...new Set([mark >= 0 && mark < N ? mark : null, N - 1].filter(i => i != null && i >= 0))]
+  const GAP = 13, top = padT + 7, bot = padT + ch
   labelIdxs.forEach(idx => {
     const items = series.map(s => ({ color: s.color, v: s.data ? s.data[idx] : null })).filter(x => x.v != null)
-      .map(x => ({ ...x, y: Y(x.v) - 4 })).sort((a, b) => a.y - b.y)
-    const GAP = 11, top = padT + 7, bot = padT + ch
-    for (let i = 1; i < items.length; i++) if (items[i].y - items[i - 1].y < GAP) items[i].y = items[i - 1].y + GAP
-    // 하단 초과 시 위로 당김
-    for (let i = items.length - 1; i >= 0; i--) { if (items[i].y > bot) items[i].y = bot; if (i > 0 && items[i].y - items[i - 1].y < GAP) items[i - 1].y = items[i].y - GAP }
+      .map(x => ({ ...x, py: Y(x.v), ly: Y(x.v) })).sort((a, b) => a.py - b.py)  // 위(값 큰)→아래(값 작은)
+    const n = items.length
+    if (!n) return
+    // 가까운 것만 최소 간격으로 밀어냄
+    for (let i = 1; i < n; i++) if (items[i].ly - items[i - 1].ly < GAP) items[i].ly = items[i - 1].ly + GAP
+    // 원 포인트 중심으로 재정렬 → 1위 위·꼴찌 아래로 대칭 분산 (떨어져 있으면 이동 없음)
+    const shift = (items.reduce((s, it) => s + it.py, 0) - items.reduce((s, it) => s + it.ly, 0)) / n
+    items.forEach(it => it.ly += shift)
+    // 경계 클램프 (그룹 통째로 이동)
+    if (items[0].ly < top) { const d = top - items[0].ly; items.forEach(it => it.ly += d) }
+    if (items[n - 1].ly > bot) { const d = items[n - 1].ly - bot; items.forEach(it => it.ly -= d) }
     const tx = (X(idx) - 4).toFixed(1)
-    items.forEach(it => { const ty = Math.min(Math.max(it.y, top), bot).toFixed(1); svg += `<text x="${tx}" y="${ty}" text-anchor="end" font-size="9" font-weight="700" fill="${it.color}" font-family="sans-serif">${it.v.toFixed(1)}</text>` })
+    items.forEach(it => { svg += `<text x="${tx}" y="${it.ly.toFixed(1)}" text-anchor="end" font-size="9" font-weight="700" fill="${it.color}" font-family="sans-serif">${it.v.toFixed(1)}</text>` })
   })
   svg += `</svg>`
   return svg
