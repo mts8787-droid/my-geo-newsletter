@@ -8,7 +8,7 @@ function genHTMLFor(meta) {
 }
 import { INIT_META, INIT_TOTAL, INIT_PRODUCTS, INIT_DOTCOM, INIT_PRODUCTS_CNTY, INIT_CITATIONS_CNTY, INIT_CITATIONS, FONT, LG_RED } from '../shared/constants.js'
 import { loadCache, saveCache } from '../shared/cache.js'
-import { fetchSnapshots, postSnapshot, updateSnapshot, deleteSnapshot, fetchSyncData, generateAIInsight } from '../shared/api.js'
+import { fetchSnapshots, postSnapshot, updateSnapshot, deleteSnapshot, fetchSyncData, generateAIInsight, fetchBackups } from '../shared/api.js'
 import { resolveDataForLang } from '../shared/utils.js'
 import { computeCategoryStats, extractMonthFromPeriod } from '../shared/trackerCategoryStats.js'
 import { parseKPISheet } from '../tracker-v2/utils/sheetParser.js'
@@ -242,7 +242,9 @@ export default function App() {
   const [activeSnap, setActiveSnap] = useState(null)
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [editMode, setEditMode] = useState(false)
-  const [chatOpen, setChatOpen] = useState(false)
+  const [chatOpen, setChatOpen] = useState(true)
+  const [backups, setBackups] = useState([])
+  const [backupOpen, setBackupOpen] = useState(false)
   const previewIframeRef = useRef(null)
   // 상단바 서식 도구 → 미리보기 iframe 의 편집 선택 영역에 execCommand 전달
   const sendFormat = useCallback((cmd, value) => {
@@ -270,7 +272,7 @@ export default function App() {
     [products, productsCnty, citations, citationsCnty, previewLang]
   )
 
-  useEffect(() => { fetchSnapshots(MODE).then(setSnapshots) }, [])
+  useEffect(() => { fetchSnapshots(MODE).then(setSnapshots); fetchBackups(MODE).then(setBackups) }, [])
 
   // tracker 데이터: Google Sheets에서 직접 가져와서 categoryStats 계산
   useEffect(() => {
@@ -461,6 +463,7 @@ export default function App() {
     const result = await deleteSnapshot(MODE, snap.ts)
     if (result) setSnapshots(result)
     if (activeSnap === snap.ts) setActiveSnap(null)
+    fetchBackups(MODE).then(setBackups)  // 삭제분이 백업에 추가됨 — 목록 갱신
   }
 
   return (
@@ -613,6 +616,42 @@ export default function App() {
                         style={{ padding: '3px 5px', borderRadius: 5, border: 'none', cursor: 'pointer',
                           background: '#7F1D1D', color: '#FCA5A5', fontSize: 11, display: 'flex' }}>
                         <Trash2 size={10} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            {/* 백업 불러오기 (삭제된 저장본 최근 5개) */}
+            <div style={{ position: 'relative' }}>
+              <button onClick={() => setBackupOpen(!backupOpen)} title="삭제된 저장본 백업 (최근 5개) 불러오기"
+                style={{ padding: '4px 10px', borderRadius: 6, border: 'none', cursor: 'pointer',
+                  background: backupOpen ? '#334155' : '#1E293B', color: '#E2E8F0', fontSize: 11, fontWeight: 700, fontFamily: FONT,
+                  display: 'flex', alignItems: 'center', gap: 4 }}>
+                <FolderOpen size={11} /> 백업 불러오기 {backups.length > 0 && <span style={{ fontSize: 11, color: '#94A3B8' }}>({backups.length})</span>}
+              </button>
+              {backupOpen && (
+                <div style={{ position: 'absolute', top: 32, right: 0, width: 320, maxHeight: 360, overflowY: 'auto',
+                  background: '#1E293B', border: '1px solid #334155', borderRadius: 10, zIndex: 100, padding: 8,
+                  boxShadow: '0 8px 24px rgba(0,0,0,0.4)' }}
+                  onClick={e => e.stopPropagation()}>
+                  <p style={{ margin: '2px 6px 8px', fontSize: 10, color: '#64748B', fontFamily: FONT }}>삭제해도 최근 5개는 자동 백업됩니다</p>
+                  {backups.length === 0 ? (
+                    <p style={{ margin: 0, padding: 12, fontSize: 11, color: '#64748B', fontFamily: FONT, textAlign: 'center' }}>백업이 없습니다</p>
+                  ) : backups.map((snap) => (
+                    <div key={snap.ts} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 10px',
+                      borderRadius: 7, marginBottom: 2, background: '#0F172A', border: '1px solid transparent' }}>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <p style={{ margin: 0, fontSize: 11, fontWeight: 700, color: '#E2E8F0', fontFamily: FONT,
+                          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{snap.name}</p>
+                        <p style={{ margin: 0, fontSize: 11, color: '#64748B', fontFamily: FONT }}>
+                          삭제 {snap.deletedAt ? new Date(snap.deletedAt).toLocaleString('ko-KR') : new Date(snap.ts).toLocaleString('ko-KR')}
+                        </p>
+                      </div>
+                      <button onClick={() => { handleSnapLoad(snap); setBackupOpen(false) }}
+                        style={{ padding: '3px 8px', borderRadius: 5, border: 'none', cursor: 'pointer',
+                          background: '#166534', color: '#FFFFFF', fontSize: 11, fontWeight: 700, fontFamily: FONT }}>
+                        복원
                       </button>
                     </div>
                   ))}

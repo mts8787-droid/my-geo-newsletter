@@ -12,6 +12,11 @@ vi.mock('../../lib/storage.js', () => ({
   writeSnapshots: vi.fn((list) => { fakeSnapshots.length = 0; fakeSnapshots.push(...list) }),
   readModeSnapshots: vi.fn((mode) => [...(fakeModeSnapshots[mode] || [])]),
   writeModeSnapshots: vi.fn((mode, list) => { fakeModeSnapshots[mode] = [...list] }),
+  BACKUP_LIMIT: 5,
+  readBackups: vi.fn(() => []),
+  writeBackups: vi.fn(),
+  readModeBackups: vi.fn(() => []),
+  writeModeBackups: vi.fn(),
 }))
 vi.mock('../../lib/lock.js', () => ({
   withFileLock: (file, fn) => fn(),

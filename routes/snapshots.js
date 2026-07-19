@@ -4,6 +4,9 @@ import {
   SNAP_FILE,
   readSnapshots, writeSnapshots,
   readModeSnapshots, writeModeSnapshots,
+  BACKUP_LIMIT,
+  readBackups, writeBackups,
+  readModeBackups, writeModeBackups,
 } from '../lib/storage.js'
 import { withFileLock } from '../lib/lock.js'
 import { validateMode } from '../lib/middleware.js'
@@ -38,11 +41,19 @@ snapshotsRouter.put('/api/snapshots/:ts', validateBody(SnapshotPutSchema), (req,
   })
 })
 
+// 삭제된 백업 목록 (글로벌)
+snapshotsRouter.get('/api/backups', (req, res) => {
+  res.json(readBackups())
+})
+
 snapshotsRouter.delete('/api/snapshots/:ts', (req, res) => {
   const ts = parseInt(req.params.ts)
   withFileLock(SNAP_FILE, () => {
-    const list = readSnapshots().filter(s => s.ts !== ts)
+    const cur = readSnapshots()
+    const removed = cur.find(s => s.ts === ts)
+    const list = cur.filter(s => s.ts !== ts)
     writeSnapshots(list)
+    if (removed) writeBackups([{ ...removed, deletedAt: Date.now() }, ...readBackups()].slice(0, BACKUP_LIMIT))
     res.json({ ok: true, snapshots: list })
   })
 })
@@ -69,9 +80,18 @@ snapshotsRouter.put('/api/:mode/snapshots/:ts', validateMode, validateBody(Snaps
   res.json({ ok: true, snapshots: list })
 })
 
+// 삭제된 백업 목록 (모드별)
+snapshotsRouter.get('/api/:mode/backups', validateMode, (req, res) => {
+  res.json(readModeBackups(req.params.mode))
+})
+
 snapshotsRouter.delete('/api/:mode/snapshots/:ts', validateMode, (req, res) => {
   const ts = parseInt(req.params.ts)
-  const list = readModeSnapshots(req.params.mode).filter(s => s.ts !== ts)
-  writeModeSnapshots(req.params.mode, list)
+  const { mode } = req.params
+  const cur = readModeSnapshots(mode)
+  const removed = cur.find(s => s.ts === ts)
+  const list = cur.filter(s => s.ts !== ts)
+  writeModeSnapshots(mode, list)
+  if (removed) writeModeBackups(mode, [{ ...removed, deletedAt: Date.now() }, ...readModeBackups(mode)].slice(0, BACKUP_LIMIT))
   res.json({ ok: true, snapshots: list })
 })

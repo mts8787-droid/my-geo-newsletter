@@ -18,6 +18,14 @@ export async function fetchSnapshots(mode) {
   } catch (err) { console.warn('[API] fetchSnapshots failed:', err.message); return [] }
 }
 
+// 삭제된 저장본 백업 (최근 5개) 조회
+export async function fetchBackups(mode) {
+  try {
+    const r = await fetch(`/api/${mode}/backups`)
+    return r.ok ? await r.json() : []
+  } catch (err) { console.warn('[API] fetchBackups failed:', err.message); return [] }
+}
+
 export async function postSnapshot(mode, name, data) {
   try {
     const r = await fetch(apiPaths(mode).snapshots, {
