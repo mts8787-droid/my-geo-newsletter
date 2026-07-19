@@ -2,15 +2,14 @@
 // Outlook 등 인라인 SVG 미지원 이메일 클라이언트용. d(base64url) → SVG → PNG 래스터화.
 import { Router } from 'express'
 import { createHash } from 'crypto'
-import { Resvg } from '@resvg/resvg-js'
-import { hlLineChartSvg, decodeChart } from '../src/shared/hlChart.js'
+import { renderChartPng } from '../lib/renderChartPng.js'
 import { logFor } from '../lib/logger.js'
 
 const log = logFor('hl-chart')
 export const hlChartRouter = Router()
 
-// 프로세스 내 LRU (미리보기 재렌더 시 재래스터화 방지)
-const CACHE_MAX = 200
+// 프로세스 내 LRU (미리보기 재렌더 시 재래스터화 방지) — 메모리 상한 위해 100개로 제한
+const CACHE_MAX = 100
 const cache = new Map() // d → Buffer
 
 hlChartRouter.get('/api/hl-chart', (req, res) => {
@@ -19,11 +18,8 @@ hlChartRouter.get('/api/hl-chart', (req, res) => {
   try {
     let png = cache.get(d)
     if (!png) {
-      const { series, labels, w, h, mark } = decodeChart(d)
-      const svg = hlLineChartSvg(series, labels, w, h, mark)
-      if (!svg) return res.status(400).end()
-      // 2x 스케일로 선명하게 렌더 (레티나/확대 대비)
-      png = new Resvg(svg, { font: { loadSystemFonts: true }, fitTo: { mode: 'width', value: w * 2 } }).render().asPng()
+      png = renderChartPng(d)
+      if (!png) return res.status(400).end()
       cache.set(d, png)
       if (cache.size > CACHE_MAX) cache.delete(cache.keys().next().value)
     }

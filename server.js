@@ -220,3 +220,13 @@ app.listen(PORT, '0.0.0.0', () => {
   }, 'server started')
   if (ADMIN_PASSWORD === 'changeme') log.warn('default ADMIN_PASSWORD detected — set env var')
 })
+
+// 프로세스 크래시 진단 — 조용히 죽어 Render 재시작만 반복되던 상황에서 실제 원인을 로그로 남김.
+// (OOM 은 커널 SIGKILL 이라 여기서 못 잡지만, 미처리 예외/rejection 은 스택과 함께 표면화)
+process.on('unhandledRejection', (reason) => {
+  log.error({ reason: reason instanceof Error ? reason.stack : String(reason) }, 'unhandledRejection')
+})
+process.on('uncaughtException', (err) => {
+  log.error({ err: err.message, stack: err.stack }, 'uncaughtException')
+  process.exit(1)
+})

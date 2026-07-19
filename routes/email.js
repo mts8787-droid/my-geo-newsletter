@@ -1,9 +1,8 @@
 // ─── Email API (월간 뉴스레터 발송) — /api/send-email ──────────────────────
 import { Router } from 'express'
 import nodemailer from 'nodemailer'
-import { Resvg } from '@resvg/resvg-js'
 import { validateBody, SendEmailSchema } from '../lib/validate.js'
-import { decodeChart, hlLineChartSvg } from '../src/shared/hlChart.js'
+import { renderChartPng } from '../lib/renderChartPng.js'
 import { logFor } from '../lib/logger.js'
 
 const log = logFor('email')
@@ -19,10 +18,8 @@ function embedChartsAsCid(html) {
     let cid = byD.get(d)
     if (!cid) {
       try {
-        const { series, labels, w, h, mark } = decodeChart(d)
-        const svg = hlLineChartSvg(series, labels, w, h, mark)
-        if (!svg) return full
-        const png = new Resvg(svg, { font: { loadSystemFonts: true }, fitTo: { mode: 'width', value: w * 2 } }).render().asPng()
+        const png = renderChartPng(d)
+        if (!png) return full
         const idx = attachments.length
         cid = `hlchart${idx}@geo-newsletter`
         attachments.push({ filename: `chart${idx}.png`, content: png, cid, contentType: 'image/png' })
