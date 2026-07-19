@@ -122,6 +122,7 @@ function HtmlCodeViewer({ meta, total, products, citations, dotcom, productsCnty
 const CHAT_INSIGHT_ITEMS = [
   { label: 'GEO 전략 인사이트', field: 'totalInsight', type: 'totalInsight', build: c => ({ products: c.products, productsCnty: c.productsCnty, total: c.total, todoText: c.meta.todoText || '', unlaunchedMap: c.unlaunchedMap }) },
   { label: 'Highlight 인사이트', field: 'highlightInsight', type: 'highlight', showKey: 'showHighlightInsight', build: c => ({ products: c.products, weeklyAll: c.weeklyAll }) },
+  { label: 'Citation 범프 인사이트', field: 'bumpInsight', type: 'bump', showKey: 'showBumpInsight', build: c => ({ citTouchPointsTrend: c.citTouchPointsTrend, citDomainTrend: c.citDomainTrend, citTrendMonths: c.citTrendMonths, citDomainMonths: c.citDomainMonths }) },
   { label: '제품 인사이트', field: 'productInsight', type: 'product', showKey: 'showProductInsight', build: c => ({ products: c.products, total: c.total }) },
   { label: '제품 How to Read', field: 'productHowToRead', type: 'howToRead', showKey: 'showProductHowToRead', build: () => ({ section: '제품별 GEO Visibility' }) },
   { label: '모델 증감 인사이트', field: 'modelDeltaInsight', type: 'modelDelta', showKey: 'showModelDeltaInsight', build: c => ({ products: c.products }) },
@@ -717,7 +718,7 @@ export default function App() {
       </div>
       {chatOpen && (
         <InsightChatPanel
-          ctx={{ products: resolved.products, productsCnty: resolved.productsCnty, total, citations: resolved.citations, citationsCnty: resolved.citationsCnty, dotcom, weeklyAll, monthlyVis, unlaunchedMap, meta }}
+          ctx={{ products: resolved.products, productsCnty: resolved.productsCnty, total, citations: resolved.citations, citationsCnty: resolved.citationsCnty, dotcom, weeklyAll, monthlyVis, unlaunchedMap, meta, citTouchPointsTrend, citDomainTrend, citTrendMonths, citDomainMonths }}
           setMeta={setMeta}
           previewLang={previewLang}
           onClose={() => setChatOpen(false)}

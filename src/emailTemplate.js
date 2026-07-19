@@ -2446,7 +2446,7 @@ const HL_COMP_COLORS = ['#2A78D6', '#E8910C', '#15803D']
 
 // 주간 꺾은선 차트 — Outlook 등 호환 위해 서버 렌더 PNG(<img>)로 임베드.
 // hlLineChartSvg/encodeChart 는 src/shared/hlChart.js (엔드포인트와 공유).
-function highlightInsightSectionHtml(products, weeklyAll, weeklyLabels, meta, lang = 'ko', assetBase = '') {
+function highlightInsightSectionHtml(products, weeklyAll, weeklyLabels, meta, lang = 'ko', assetBase = '', bumpData = {}) {
   weeklyAll = weeklyAll || {}
   const HL_KR = { tv: 'TV', fridge: '냉장고', washer: '세탁기', rac: '에어컨' }
   const prodName = id => lang === 'en' ? (PROD_ID_TO_EN[id] || id.toUpperCase()) : (HL_KR[id] || PROD_ID_TO_KR[id] || id.toUpperCase())
@@ -2507,7 +2507,32 @@ function highlightInsightSectionHtml(products, weeklyAll, weeklyLabels, meta, la
                         </tr></table>
                         ${insightBox}
                         ${blocks}` : ''
-  if (!weeklyArea && !modelContent) return ''  // 표시할 콘텐츠 없으면 챕터 미렌더
+  // Citation Top10 카테고리·도메인 범프차트 영역 — Highlight 챕터에 포함
+  const { citTouchPointsTrend, citTrendMonths, citTouchPointsByLlm, citDomainTrend, citDomainMonths, citDomainByLlmTrend } = bumpData || {}
+  const touchCard = meta.showTouchPointsBump !== false ? touchPointsBumpCombinedHtml(citTouchPointsTrend, citTrendMonths, citTouchPointsByLlm, meta, lang) : ''
+  const domainCard = meta.showDomainBump !== false ? domainBumpSectionHtml(citDomainTrend, citDomainMonths, citDomainByLlmTrend, meta, lang) : ''
+  const bumpCards = [touchCard, domainCard].filter(Boolean)
+  const bumpChartsHtml = bumpCards.length ? `<table border="0" cellpadding="0" cellspacing="0" width="100%"><tr>${bumpCards.map(c => `<td width="${Math.round(100 / bumpCards.length)}%" valign="top" style="padding:0 6px;">${c}</td>`).join('')}</tr></table>` : ''
+  const bumpInsightBox = meta.showBumpInsight && (meta.bumpInsight || _ED) ? `
+                          <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom:4px;border-radius:8px;background:#FFF4F7;border:1px solid #F5CCD8;">
+                            <tr><td style="padding:12px 16px;">
+                              <p style="margin:0 0 6px;font-size:13px;font-weight:700;color:${EM_RED};font-family:${EM_FONT};letter-spacing:0.5px;">INSIGHT</p>
+                              ${edBlock('bumpInsight', meta.bumpInsight, { size: 14, lh: 24, color: '#1A1A1A', accent: EM_RED, lang })}
+                            </td></tr>
+                          </table>` : ''
+  const bumpTitle = lang === 'en' ? 'Citation Top 10 Category·Domain (Bump)' : 'Citation Top10 카테고리·도메인 범프차트'
+  const bumpArea = (bumpChartsHtml || bumpInsightBox) ? `
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-top:16px;border-top:1px solid #EEF0F3;"><tr><td style="padding-top:14px;">
+                          <table border="0" cellpadding="0" cellspacing="0" style="margin-bottom:10px;"><tr>
+                            <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
+                            <td style="padding-left:8px;font-size:16px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};">${bumpTitle}</td>
+                          </tr></table>
+                          ${bumpInsightBox}
+                          ${bumpChartsHtml}
+                        </td></tr></table>` : ''
+  if (!weeklyArea && !modelContent && !bumpArea) return ''  // 표시할 콘텐츠 없으면 챕터 미렌더
+  const _mm = String(meta.period || '').match(/(\d{1,2})\s*월/)
+  const chapterTitle = (_mm ? _mm[1] + '월 ' : '') + 'Highlight Insight'
   return `
               <tr>
                 <td style="padding-bottom:28px;">
@@ -2516,7 +2541,7 @@ function highlightInsightSectionHtml(products, weeklyAll, weeklyLabels, meta, la
                       <td style="padding:22px 16px 18px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;">
                         <table border="0" cellpadding="0" cellspacing="0"><tr>
                           <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
-                          <td style="padding-left:8px;font-size:19px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">Highlight Insight</td>
+                          <td style="padding-left:8px;font-size:19px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${chapterTitle}</td>
                         </tr></table>
                       </td>
                     </tr>
@@ -2524,6 +2549,7 @@ function highlightInsightSectionHtml(products, weeklyAll, weeklyLabels, meta, la
                       <td style="padding:14px 18px;">
                         ${weeklyArea}
                         ${modelContent}
+                        ${bumpArea}
                       </td>
                     </tr>
                   </table>
@@ -3117,7 +3143,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                 </td>
               </tr>` : ''}
 
-              ${meta.showHighlight !== false ? highlightInsightSectionHtml(products, weeklyAll, weeklyLabels, meta, lang, assetBase) : ''}
+              ${meta.showHighlight !== false ? highlightInsightSectionHtml(products, weeklyAll, weeklyLabels, meta, lang, assetBase, { citTouchPointsTrend, citTrendMonths, citTouchPointsByLlm, citDomainTrend, citDomainMonths, citDomainByLlmTrend }) : ''}
 
               ${meta.showProducts !== false ? `<!-- ══ 제품별 현황 (통합 카드) ══ -->
               <tr>
@@ -3208,10 +3234,6 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                               </tr></table>
                             </td>
                           </tr>` : ''}
-                          ${bumpChartsRowHtml(
-                            meta.showTouchPointsBump !== false ? touchPointsBumpCombinedHtml(citTouchPointsTrend, citTrendMonths, citTouchPointsByLlm, meta, lang) : '',
-                            meta.showDomainBump !== false ? domainBumpSectionHtml(citDomainTrend, citDomainMonths, citDomainByLlmTrend, meta, lang) : ''
-                          )}
                           ${meta.showCitCnty !== false && citationCntyInnerHtml ? `
                           <!-- 국가별 Citation 도메인 -->
                           <tr>

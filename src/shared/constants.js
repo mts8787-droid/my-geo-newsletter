@@ -88,6 +88,7 @@ export const INIT_META  = {
   cntyHowToRead: '', showCntyHowToRead: false,
   modelDeltaInsight: '', showModelDeltaInsight: false,
   showHighlight: true, highlightInsight: '', showHighlightInsight: false,
+  bumpInsight: '', showBumpInsight: false,
   kpiLogicText: '', showKpiLogic: false,
   citDomainInsight: '', showCitDomainInsight: false,
   citDomainHowToRead: '', showCitDomainHowToRead: false,
