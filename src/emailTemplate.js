@@ -2477,17 +2477,20 @@ function highlightInsightSectionHtml(products, weeklyAll, weeklyLabels, meta, la
                             </td></tr>
                           </table>`
   }).filter(Boolean)
-  if (!cards.length) return ''  // 주간 데이터 없으면 챕터 미렌더
-  // 2단(2열) 배치
-  let grid = ''
-  for (let i = 0; i < cards.length; i += 2) {
-    grid += `<tr>
+  // 2단(2열) 배치 (주간 데이터 있을 때만)
+  let blocks = ''
+  if (cards.length) {
+    let grid = ''
+    for (let i = 0; i < cards.length; i += 2) {
+      grid += `<tr>
                         <td width="50%" valign="top" style="padding:0 6px 12px 0;">${cards[i]}</td>
                         <td width="50%" valign="top" style="padding:0 0 12px 6px;">${cards[i + 1] || ''}</td>
                       </tr>`
+    }
+    blocks = `<table border="0" cellpadding="0" cellspacing="0" width="100%">${grid}</table>`
   }
-  const blocks = `<table border="0" cellpadding="0" cellspacing="0" width="100%">${grid}</table>`
-
+  // 모델 증감 (LLM 모델별 제품 Visibility - 주요 경쟁사) — Highlight 챕터에 포함
+  const modelContent = meta.showModelDelta !== false ? modelDeltaContentHtml(products, meta, lang) : ''
   const insightBox = meta.showHighlightInsight && (meta.highlightInsight || _ED) ? `
                         <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom:14px;border-radius:8px;background:#FFF4F7;border:1px solid #F5CCD8;">
                           <tr><td style="padding:12px 16px;">
@@ -2495,6 +2498,7 @@ function highlightInsightSectionHtml(products, weeklyAll, weeklyLabels, meta, la
                             ${edBlock('highlightInsight', meta.highlightInsight, { size: 14, lh: 24, color: '#1A1A1A', accent: EM_RED, lang })}
                           </td></tr>
                         </table>` : ''
+  if (!blocks && !modelContent && !insightBox) return ''  // 표시할 콘텐츠 없으면 챕터 미렌더
   return `
               <tr>
                 <td style="padding-bottom:28px;">
@@ -2511,6 +2515,7 @@ function highlightInsightSectionHtml(products, weeklyAll, weeklyLabels, meta, la
                       <td style="padding:14px 18px;">
                         ${insightBox}
                         ${blocks}
+                        ${modelContent}
                       </td>
                     </tr>
                   </table>
@@ -2519,7 +2524,9 @@ function highlightInsightSectionHtml(products, weeklyAll, weeklyLabels, meta, la
 }
 
 const MODEL_ORDER = ['ChatGPT', 'ChatGPT Search', 'GPT Search', 'Perplexity', 'Gemini', 'Google', 'Google AI Overview', 'Copilot', 'Claude']
-function modelDeltaSectionHtml(products, meta, lang = 'ko') {
+// 콘텐츠 전용 빌더 (외곽 카드 없음) — Highlight Insight 챕터 내부에 임베드.
+const MODEL_EXCLUDE = /bosch|보쉬/i  // 주요 경쟁사 선정에서 제외
+function modelDeltaContentHtml(products, meta, lang = 'ko') {
   products = products || []
   const prodName = p => { const id = (p.id || '').toLowerCase(); return lang === 'en' ? (PROD_ID_TO_EN[id] || p.kr || p.id) : (p.kr || PROD_ID_TO_EN[id] || p.id) }
 
@@ -2535,7 +2542,7 @@ function modelDeltaSectionHtml(products, meta, lang = 'ko') {
 
   // 주요 경쟁사 2개 — 최신월 allScores 합산 상위 2 (비-LG)
   const compTot = {}
-  products.forEach(p => { const ms = p.monthlyScores || []; if (!ms.length) return; const as = ms[ms.length - 1].allScores || {}; Object.keys(as).forEach(b => { if (b === 'LG') return; compTot[b] = (compTot[b] || 0) + (Number(as[b]) || 0) }) })
+  products.forEach(p => { const ms = p.monthlyScores || []; if (!ms.length) return; const as = ms[ms.length - 1].allScores || {}; Object.keys(as).forEach(b => { if (b === 'LG' || MODEL_EXCLUDE.test(b)) return; compTot[b] = (compTot[b] || 0) + (Number(as[b]) || 0) }) })
   const majorComps = Object.keys(compTot).sort((a, b) => compTot[b] - compTot[a]).slice(0, 2)
   const brands = ['LG', ...majorComps]
 
@@ -2592,33 +2599,22 @@ function modelDeltaSectionHtml(products, meta, lang = 'ko') {
   const _md = _mref ? _mref.monthlyScores.slice(-2).map(x => monthLabel(x.date)) : null
   const monthRange = _md ? `${_md[0]} vs ${_md[1]}` : ''
   const title = (lang === 'en' ? 'LLM Product Visibility by Model - Key Competitors' : 'LLM 모델별 제품 Visibility - 주요 경쟁사') + (monthRange ? ` (${monthRange})` : '')
+  // 외곽 카드 없이 콘텐츠만 반환 (Highlight Insight 챕터에 임베드)
   return `
-              <tr>
-                <td style="padding-bottom:28px;">
-                  <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFFFFF;border-radius:16px;border:2px solid #E8EDF2;">
-                    <tr>
-                      <td style="padding:22px 16px 18px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;">
-                        <table border="0" cellpadding="0" cellspacing="0"><tr>
-                          <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
-                          <td style="padding-left:8px;font-size:19px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${title}</td>
-                        </tr></table>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td style="padding:14px 18px;">
-                        ${meta.showModelDeltaInsight && (meta.modelDeltaInsight || _ED) ? `
-                        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom:4px;border-radius:8px;background:#FFF4F7;border:1px solid #F5CCD8;">
-                          <tr><td style="padding:12px 16px;">
-                            <p style="margin:0 0 6px;font-size:13px;font-weight:700;color:${EM_RED};font-family:${EM_FONT};letter-spacing:0.5px;">INSIGHT</p>
-                            ${edBlock('modelDeltaInsight', meta.modelDeltaInsight, { size: 14, lh: 24, color: '#1A1A1A', accent: EM_RED, lang })}
-                          </td></tr>
-                        </table>` : ''}
-                        ${brandData.map(heatTable).join('')}
-                      </td>
-                    </tr>
-                  </table>
-                </td>
-              </tr>`
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-top:16px;border-top:1px solid #EEF0F3;"><tr><td style="padding-top:14px;">
+                          <table border="0" cellpadding="0" cellspacing="0" style="margin-bottom:10px;"><tr>
+                            <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
+                            <td style="padding-left:8px;font-size:16px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};">${title}</td>
+                          </tr></table>
+                          ${meta.showModelDeltaInsight && (meta.modelDeltaInsight || _ED) ? `
+                          <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom:4px;border-radius:8px;background:#FFF4F7;border:1px solid #F5CCD8;">
+                            <tr><td style="padding:12px 16px;">
+                              <p style="margin:0 0 6px;font-size:13px;font-weight:700;color:${EM_RED};font-family:${EM_FONT};letter-spacing:0.5px;">INSIGHT</p>
+                              ${edBlock('modelDeltaInsight', meta.modelDeltaInsight, { size: 14, lh: 24, color: '#1A1A1A', accent: EM_RED, lang })}
+                            </td></tr>
+                          </table>` : ''}
+                          ${brandData.map(heatTable).join('')}
+                        </td></tr></table>`
 }
 
 // ─── 제품별 경쟁비 증감 (전월 대비) ──────────────────────────────────────────
@@ -3161,8 +3157,6 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                   </table>
                 </td>
               </tr>` : ''}
-
-              ${meta.showModelDelta !== false ? modelDeltaSectionHtml(products, meta, lang) : ''}
 
               ${meta.showCompRatioDelta !== false ? compRatioDeltaSectionHtml(products, meta, lang) : ''}
 
