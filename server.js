@@ -16,6 +16,7 @@ const log = logFor('server')
 import { snapshotsRouter } from './routes/snapshots.js'
 import { syncRouter } from './routes/sync.js'
 import { insightRouter } from './routes/insight.js'
+import { hlChartRouter } from './routes/hl-chart.js'
 import { emailRouter } from './routes/email.js'
 import { translateRouter } from './routes/translate.js'
 import { ipRouter } from './routes/ip-allowlist.js'
@@ -164,6 +165,7 @@ app.use(publishedRouter)
 app.use(snapshotsRouter)
 app.use(syncRouter)
 app.use(insightRouter)
+app.use(hlChartRouter)
 app.use(emailRouter)
 app.use(translateRouter)
 app.use(ipRouter)

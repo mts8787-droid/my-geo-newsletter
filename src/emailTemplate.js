@@ -3,6 +3,7 @@
 import { PROD_ID_TO_UL_CODE as UL_PROD_MAP, PROD_ID_TO_UL_CODE, PROD_ID_TO_KR, PROD_ID_TO_EN, PROD_ID_TO_BU, PROD_ID_TO_ORDER, NAME_TO_PROD_ID } from './categoryMap.js'
 import { resolveProductsByLlm, resolveProductsCntyByLlm, resolveTotalByLlm } from './shared/llmModel.js'
 import { _logWarn } from './sheetParserUtils.js'
+import { encodeChart } from './shared/hlChart.js'
 
 const EM_RED  = '#CF0652'
 // Citation 차트 전용 — 짙은 녹색 계열 (LG_RED 와 구분)
@@ -2443,38 +2444,9 @@ export { escapeHtml }
 const HL_PRODS = ['tv', 'fridge', 'washer', 'rac']
 const HL_COMP_COLORS = ['#2A78D6', '#E8910C', '#15803D']
 
-// 주간 꺾은선(라인) 차트 — 인라인 SVG (벡터 이미지). 브라우저/게시본/Apple Mail 렌더.
-// series: [{ name, color, data:[값|null...] }], labels: 주차 라벨
-function hlLineChartSvg(series, labels, w = 500, h = 152) {
-  const padL = 30, padR = 12, padT = 12, padB = 24
-  const cw = w - padL - padR, ch = h - padT - padB
-  const all = series.flatMap(s => (s.data || []).filter(v => v != null))
-  if (!all.length) return ''
-  let mn = Math.min(...all), mx = Math.max(...all)
-  const pd = Math.max((mx - mn) * 0.12, 1); mn -= pd; mx += pd
-  const rng = mx - mn || 1
-  const N = labels.length
-  const X = i => padL + (N > 1 ? cw * i / (N - 1) : cw / 2)
-  const Y = v => padT + ch * (1 - (v - mn) / rng)
-  const esc = s => escapeHtml(String(s))
-  let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" style="display:block;width:100%;max-width:${w}px;height:auto;">`
-  svg += `<rect x="0" y="0" width="${w}" height="${h}" fill="#FFFFFF"/>`
-  for (let g = 0; g <= 3; g++) { const yy = (padT + ch * g / 3).toFixed(1); svg += `<line x1="${padL}" y1="${yy}" x2="${w - padR}" y2="${yy}" stroke="#EEF0F3" stroke-width="1"/>` }
-  svg += `<text x="${padL - 5}" y="${(padT + 4).toFixed(1)}" text-anchor="end" font-size="9" fill="#94A3B8" font-family="sans-serif">${Math.round(mx)}</text>`
-  svg += `<text x="${padL - 5}" y="${(padT + ch).toFixed(1)}" text-anchor="end" font-size="9" fill="#94A3B8" font-family="sans-serif">${Math.round(mn)}</text>`
-  labels.forEach((l, i) => { svg += `<text x="${X(i).toFixed(1)}" y="${(h - 8).toFixed(1)}" text-anchor="middle" font-size="9" fill="#94A3B8" font-family="sans-serif">${esc(l)}</text>` })
-  series.forEach(s => {
-    const data = s.data || []
-    let d = '', started = false
-    data.forEach((v, i) => { if (v == null) { started = false; return } d += (started ? ' L' : 'M') + X(i).toFixed(1) + ',' + Y(v).toFixed(1); started = true })
-    const isLG = s.name === 'LG'
-    if (d) svg += `<path d="${d}" fill="none" stroke="${s.color}" stroke-width="${isLG ? 2.6 : 1.6}" stroke-linejoin="round" stroke-linecap="round"/>`
-    data.forEach((v, i) => { if (v != null) svg += `<circle cx="${X(i).toFixed(1)}" cy="${Y(v).toFixed(1)}" r="${isLG ? 3 : 2.3}" fill="${s.color}"/>` })
-  })
-  svg += `</svg>`
-  return svg
-}
-function highlightInsightSectionHtml(products, weeklyAll, weeklyLabels, meta, lang = 'ko') {
+// 주간 꺾은선 차트 — Outlook 등 호환 위해 서버 렌더 PNG(<img>)로 임베드.
+// hlLineChartSvg/encodeChart 는 src/shared/hlChart.js (엔드포인트와 공유).
+function highlightInsightSectionHtml(products, weeklyAll, weeklyLabels, meta, lang = 'ko', assetBase = '') {
   weeklyAll = weeklyAll || {}
   const HL_KR = { tv: 'TV', fridge: '냉장고', washer: '세탁기', rac: '에어컨' }
   const prodName = id => lang === 'en' ? (PROD_ID_TO_EN[id] || id.toUpperCase()) : (HL_KR[id] || PROD_ID_TO_KR[id] || id.toUpperCase())
@@ -2492,14 +2464,15 @@ function highlightInsightSectionHtml(products, weeklyAll, weeklyLabels, meta, la
     const labels = (weeklyLabels && weeklyLabels.length ? weeklyLabels : wa.LG.map((_, i) => `W${i + 1}`)).slice(-len)
     const chartSeries = series.map((b, i) => ({ name: b, color: b === 'LG' ? EM_RED : HL_COMP_COLORS[(i - 1) % HL_COMP_COLORS.length], data: sliceW(wa[b]) }))
     const legend = chartSeries.map(s => `<td style="padding:0 10px 0 0;white-space:nowrap;"><table border="0" cellpadding="0" cellspacing="0"><tr><td width="12" height="3" style="background:${s.color};font-size:0;line-height:0;border-radius:2px;">&nbsp;</td><td style="padding-left:5px;font-size:11px;font-weight:700;color:${s.name === 'LG' ? '#1A1A1A' : '#475569'};font-family:${EM_FONT};">${s.name === 'LG' ? 'LG' : escapeHtml(s.name)}</td></tr></table></td>`).join('')
-    const chart = hlLineChartSvg(chartSeries, labels, 500, 152)
-    if (!chart) return ''
+    if (!chartSeries.some(s => (s.data || []).some(v => v != null))) return ''
+    // 서버 렌더 PNG (<img>) — Outlook/Gmail 호환. assetBase 로 절대 URL.
+    const imgSrc = `${assetBase}/api/hl-chart?d=${encodeChart({ series: chartSeries, labels, w: 500, h: 152 })}`
     return `
                         <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom:14px;border:1px solid #E8EDF2;border-radius:10px;">
                           <tr><td style="padding:12px 14px;">
                             <p style="margin:0 0 8px;font-size:14px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};">${escapeHtml(prodName(pid))} <span style="font-size:11px;color:#94A3B8;font-weight:600;">${lang === 'en' ? 'Weekly · LG + Top 3 competitors' : '주간 · LG + 경쟁사 Top 3'}</span></p>
                             <table border="0" cellpadding="0" cellspacing="0" style="margin-bottom:6px;"><tr>${legend}</tr></table>
-                            ${chart}
+                            <img src="${imgSrc}" width="500" alt="${escapeHtml(prodName(pid))} 주간 트렌드" style="display:block;width:100%;max-width:500px;height:auto;border:0;" />
                           </td></tr>
                         </table>`
   }).filter(Boolean).join('')
@@ -2826,7 +2799,7 @@ export function generateSemiAnnualEmailHTML(meta, total, products, citations, do
 }
 
 export function generateEmailHTML(meta, total, products, citations, dotcom = {}, lang = 'ko', productsCnty = [], citationsCnty = [], options = {}) {
-  const { containerWidth = 940, showTrendTabs = false, weeklyLabels, weeklyAll = {}, categoryStats = null, unlaunchedMap: ulInput = {}, productCardVersion = 'v1', trendMode = 'weekly', llmModel, monthlyVis, citTouchPointsTrend = null, citTrendMonths = [], citDomainTrend = null, citDomainMonths = [], citTouchPointsByLlm = null, citDomainByLlm = null, citDomainByLlmTrend = null, dotcomByLlm = null, prependHtml = '' } = options
+  const { containerWidth = 940, showTrendTabs = false, weeklyLabels, weeklyAll = {}, categoryStats = null, unlaunchedMap: ulInput = {}, productCardVersion = 'v1', trendMode = 'weekly', llmModel, monthlyVis, citTouchPointsTrend = null, citTrendMonths = [], citDomainTrend = null, citDomainMonths = [], citTouchPointsByLlm = null, citDomainByLlm = null, citDomainByLlmTrend = null, dotcomByLlm = null, prependHtml = '', assetBase = '' } = options
   // 인라인 편집 모드 (어드민 미리보기 전용) — 게시/복사/발송 경로는 editable 미지정 → 항상 false 로 리셋
   _ED = !!options.editable
   // LLM Model 필터 (2026-06) — 선택 모델로 products/productsCnty/total 재계산
@@ -3130,7 +3103,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                 </td>
               </tr>` : ''}
 
-              ${meta.showHighlight !== false ? highlightInsightSectionHtml(products, weeklyAll, weeklyLabels, meta, lang) : ''}
+              ${meta.showHighlight !== false ? highlightInsightSectionHtml(products, weeklyAll, weeklyLabels, meta, lang, assetBase) : ''}
 
               ${meta.showProducts !== false ? `<!-- ══ 제품별 현황 (통합 카드) ══ -->
               <tr>

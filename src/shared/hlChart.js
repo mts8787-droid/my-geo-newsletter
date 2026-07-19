@@ -1,0 +1,81 @@
+// Highlight 주간 라인차트 — SVG 빌더 + URL 인코딩/디코딩.
+// emailTemplate(=img src 생성) 과 routes/hl-chart(=PNG 래스터화) 가 공유.
+
+function escapeXml(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+}
+
+// 주간 꺾은선(라인) 차트 SVG 문자열. series: [{ name, color, data:[값|null...] }]
+export function hlLineChartSvg(series, labels, w = 500, h = 152) {
+  const padL = 30, padR = 12, padT = 12, padB = 24
+  const cw = w - padL - padR, ch = h - padT - padB
+  const all = series.flatMap(s => (s.data || []).filter(v => v != null))
+  if (!all.length) return ''
+  let mn = Math.min(...all), mx = Math.max(...all)
+  const pd = Math.max((mx - mn) * 0.12, 1); mn -= pd; mx += pd
+  const rng = mx - mn || 1
+  const N = labels.length
+  const X = i => padL + (N > 1 ? cw * i / (N - 1) : cw / 2)
+  const Y = v => padT + ch * (1 - (v - mn) / rng)
+  let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" style="display:block;width:100%;max-width:${w}px;height:auto;">`
+  svg += `<rect x="0" y="0" width="${w}" height="${h}" fill="#FFFFFF"/>`
+  for (let g = 0; g <= 3; g++) { const yy = (padT + ch * g / 3).toFixed(1); svg += `<line x1="${padL}" y1="${yy}" x2="${w - padR}" y2="${yy}" stroke="#EEF0F3" stroke-width="1"/>` }
+  svg += `<text x="${padL - 5}" y="${(padT + 4).toFixed(1)}" text-anchor="end" font-size="9" fill="#94A3B8" font-family="sans-serif">${Math.round(mx)}</text>`
+  svg += `<text x="${padL - 5}" y="${(padT + ch).toFixed(1)}" text-anchor="end" font-size="9" fill="#94A3B8" font-family="sans-serif">${Math.round(mn)}</text>`
+  labels.forEach((l, i) => { svg += `<text x="${X(i).toFixed(1)}" y="${(h - 8).toFixed(1)}" text-anchor="middle" font-size="9" fill="#94A3B8" font-family="sans-serif">${escapeXml(l)}</text>` })
+  series.forEach(s => {
+    const data = s.data || []
+    let d = '', started = false
+    data.forEach((v, i) => { if (v == null) { started = false; return } d += (started ? ' L' : 'M') + X(i).toFixed(1) + ',' + Y(v).toFixed(1); started = true })
+    const isLG = s.name === 'LG'
+    if (d) svg += `<path d="${d}" fill="none" stroke="${s.color}" stroke-width="${isLG ? 2.6 : 1.6}" stroke-linejoin="round" stroke-linecap="round"/>`
+    data.forEach((v, i) => { if (v != null) svg += `<circle cx="${X(i).toFixed(1)}" cy="${Y(v).toFixed(1)}" r="${isLG ? 3 : 2.3}" fill="${s.color}"/>` })
+  })
+  svg += `</svg>`
+  return svg
+}
+
+// base64url — URL 안전 (+/= 치환). Node/브라우저 공용.
+function b64urlEncode(str) {
+  const b64 = typeof btoa === 'function' ? btoa(unescape(encodeURIComponent(str))) : Buffer.from(str, 'utf-8').toString('base64')
+  return b64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+}
+function b64urlDecode(s) {
+  const b64 = s.replace(/-/g, '+').replace(/_/g, '/')
+  return typeof atob === 'function' ? decodeURIComponent(escape(atob(b64))) : Buffer.from(b64, 'base64').toString('utf-8')
+}
+
+// 차트 데이터를 URL 파라미터(d)로 인코딩. 값은 소수1자리로 압축.
+export function encodeChart({ series, labels, w = 500, h = 152 }) {
+  const compact = {
+    w, h,
+    l: labels.map(String),
+    s: (series || []).map(x => ({
+      n: String(x.name),
+      c: String(x.color),
+      d: (x.data || []).map(v => v == null ? null : Math.round(Number(v) * 10) / 10),
+    })),
+  }
+  return b64urlEncode(JSON.stringify(compact))
+}
+
+const HEX = /^#[0-9a-fA-F]{3,8}$/
+// d → { series, labels, w, h } 검증. 불량이면 throw.
+export function decodeChart(d) {
+  if (typeof d !== 'string' || d.length > 8000) throw new Error('bad d')
+  const o = JSON.parse(b64urlDecode(d))
+  const w = Math.min(Math.max(Number(o.w) || 500, 100), 800)
+  const h = Math.min(Math.max(Number(o.h) || 152, 60), 400)
+  const labels = Array.isArray(o.l) ? o.l.slice(0, 40).map(x => String(x).slice(0, 12)) : []
+  const series = (Array.isArray(o.s) ? o.s : []).slice(0, 8).map(x => {
+    const color = HEX.test(x && x.c) ? x.c : '#64748B'
+    const data = (Array.isArray(x && x.d) ? x.d : []).slice(0, 40).map(v => {
+      if (v == null) return null
+      const n = Number(v)
+      return Number.isFinite(n) ? n : null
+    })
+    return { name: String((x && x.n) || '').slice(0, 24), color, data }
+  })
+  if (!series.length) throw new Error('empty series')
+  return { series, labels, w, h }
+}
