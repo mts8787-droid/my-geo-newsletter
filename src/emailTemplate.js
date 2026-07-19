@@ -2498,7 +2498,16 @@ function highlightInsightSectionHtml(products, weeklyAll, weeklyLabels, meta, la
                             ${edBlock('highlightInsight', meta.highlightInsight, { size: 14, lh: 24, color: '#1A1A1A', accent: EM_RED, lang })}
                           </td></tr>
                         </table>` : ''
-  if (!blocks && !modelContent && !insightBox) return ''  // 표시할 콘텐츠 없으면 챕터 미렌더
+  // 주간 그래프 영역 소제목 + 인사이트 + 차트 (모델 영역과 대칭 구조)
+  const weeklyTitle = lang === 'en' ? 'Key Products Weekly Trend (Top 3 brands)' : '주요 제품 주차별 트랜드 (Top3 브랜드)'
+  const weeklyArea = (blocks || insightBox) ? `
+                        <table border="0" cellpadding="0" cellspacing="0" style="margin-bottom:10px;"><tr>
+                          <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
+                          <td style="padding-left:8px;font-size:16px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};">${weeklyTitle}</td>
+                        </tr></table>
+                        ${insightBox}
+                        ${blocks}` : ''
+  if (!weeklyArea && !modelContent) return ''  // 표시할 콘텐츠 없으면 챕터 미렌더
   return `
               <tr>
                 <td style="padding-bottom:28px;">
@@ -2513,8 +2522,7 @@ function highlightInsightSectionHtml(products, weeklyAll, weeklyLabels, meta, la
                     </tr>
                     <tr>
                       <td style="padding:14px 18px;">
-                        ${insightBox}
-                        ${blocks}
+                        ${weeklyArea}
                         ${modelContent}
                       </td>
                     </tr>
