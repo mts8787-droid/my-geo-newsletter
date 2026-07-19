@@ -2533,7 +2533,7 @@ function highlightInsightSectionHtml(products, weeklyAll, weeklyLabels, meta, la
 
 const MODEL_ORDER = ['ChatGPT', 'ChatGPT Search', 'GPT Search', 'Perplexity', 'Gemini', 'Google', 'Google AI Overview', 'Copilot', 'Claude']
 // 콘텐츠 전용 빌더 (외곽 카드 없음) — Highlight Insight 챕터 내부에 임베드.
-const MODEL_EXCLUDE = /bosch|보쉬/i  // 주요 경쟁사 선정에서 제외
+const MODEL_EXCLUDE = /bosch|보쉬|sony|소니/i  // 주요 경쟁사 선정에서 제외
 function modelDeltaContentHtml(products, meta, lang = 'ko') {
   products = products || []
   const prodName = p => { const id = (p.id || '').toLowerCase(); return lang === 'en' ? (PROD_ID_TO_EN[id] || p.kr || p.id) : (p.kr || PROD_ID_TO_EN[id] || p.id) }
@@ -2551,7 +2551,7 @@ function modelDeltaContentHtml(products, meta, lang = 'ko') {
   // 주요 경쟁사 2개 — 최신월 allScores 합산 상위 2 (비-LG)
   const compTot = {}
   products.forEach(p => { const ms = p.monthlyScores || []; if (!ms.length) return; const as = ms[ms.length - 1].allScores || {}; Object.keys(as).forEach(b => { if (b === 'LG' || MODEL_EXCLUDE.test(b)) return; compTot[b] = (compTot[b] || 0) + (Number(as[b]) || 0) }) })
-  const majorComps = Object.keys(compTot).sort((a, b) => compTot[b] - compTot[a]).slice(0, 2)
+  const majorComps = Object.keys(compTot).sort((a, b) => compTot[b] - compTot[a]).slice(0, 1)  // LG + 상위 1개(삼성)만
   const brands = ['LG', ...majorComps]
 
   // 브랜드별 카테고리 × 모델 Δ (byLlm[model].allScores[brand] 전월 대비)
