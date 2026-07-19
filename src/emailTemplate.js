@@ -2494,7 +2494,6 @@ function highlightInsightSectionHtml(products, weeklyAll, weeklyLabels, meta, la
   const insightBox = meta.showHighlightInsight && (meta.highlightInsight || _ED) ? `
                         <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom:14px;border-radius:8px;background:#FFF4F7;border:1px solid #F5CCD8;">
                           <tr><td style="padding:12px 16px;">
-                            <p style="margin:0 0 6px;font-size:13px;font-weight:700;color:${EM_RED};font-family:${EM_FONT};letter-spacing:0.5px;">INSIGHT</p>
                             ${edBlock('highlightInsight', meta.highlightInsight, { size: 14, lh: 24, color: '#1A1A1A', accent: EM_RED, lang })}
                           </td></tr>
                         </table>` : ''
@@ -2516,7 +2515,6 @@ function highlightInsightSectionHtml(products, weeklyAll, weeklyLabels, meta, la
   const bumpInsightBox = meta.showBumpInsight && (meta.bumpInsight || _ED) ? `
                           <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom:4px;border-radius:8px;background:#FFF4F7;border:1px solid #F5CCD8;">
                             <tr><td style="padding:12px 16px;">
-                              <p style="margin:0 0 6px;font-size:13px;font-weight:700;color:${EM_RED};font-family:${EM_FONT};letter-spacing:0.5px;">INSIGHT</p>
                               ${edBlock('bumpInsight', meta.bumpInsight, { size: 14, lh: 24, color: '#1A1A1A', accent: EM_RED, lang })}
                             </td></tr>
                           </table>` : ''
@@ -2643,7 +2641,6 @@ function modelDeltaContentHtml(products, meta, lang = 'ko') {
                           ${meta.showModelDeltaInsight && (meta.modelDeltaInsight || _ED) ? `
                           <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom:4px;border-radius:8px;background:#FFF4F7;border:1px solid #F5CCD8;">
                             <tr><td style="padding:12px 16px;">
-                              <p style="margin:0 0 6px;font-size:13px;font-weight:700;color:${EM_RED};font-family:${EM_FONT};letter-spacing:0.5px;">INSIGHT</p>
                               ${edBlock('modelDeltaInsight', meta.modelDeltaInsight, { size: 14, lh: 24, color: '#1A1A1A', accent: EM_RED, lang })}
                             </td></tr>
                           </table>` : ''}
@@ -3131,7 +3128,6 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                         <tr><td height="16" style="font-size:0;line-height:0;">&nbsp;</td></tr>
                           <tr>
                             <td style="padding:16px 18px;background:#1E0F18;border:1px solid #3D1528;border-radius:10px;">
-                              <p style="margin:0 0 8px;font-size:14px;font-weight:700;color:${EM_RED};text-transform:uppercase;font-family:${EM_FONT};letter-spacing:1px;">INSIGHT</p>
                               ${edBlock('totalInsight', meta.totalInsight, { size: 15, lh: 26, color: '#FFFFFF', accent: '#FF9EBB', lang })}
                             </td>
                           </tr>
