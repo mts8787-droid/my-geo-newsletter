@@ -11,18 +11,7 @@ import { renderReadabilityHTML } from '../scripts/render-readability.mjs'
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const DATA_DIR = join(__dirname, '..', 'data', 'readability')
 
-// 해석 리포트(감점 사유 종합) — 기본은 집계 시 커밋된 사본(data/readability/audit_report.txt).
-// 이 사본은 aggregate-readability.mjs 가 매 실행 시 audit 원본에서 복사 → fails-<date>.json 과
-// 같은 run 을 반영(두 탭 정합). 개발 머신에서 라이브 원본을 우선하려면 AUDIT_REPORT_PATH env 지정.
-// (하드코딩 dev 절대경로 제거 — 서버 코드에 머신 종속 경로를 두지 않음.)
-function resolveAuditReport() {
-  const envPath = process.env.AUDIT_REPORT_PATH
-  if (envPath && existsSync(envPath)) return envPath
-  const local = join(DATA_DIR, 'audit_report.txt')
-  return existsSync(local) ? local : null
-}
-
-// DATA_DIR 에서 정규식 매칭 파일 중 사전순 마지막(=최신 날짜) 반환 — csv/fails 공용.
+// DATA_DIR 에서 정규식 매칭 파일 중 사전순 마지막(=최신 날짜) 반환 — csv/checks 공용.
 function latestFile(re) {
   if (!existsSync(DATA_DIR)) return null
   const files = readdirSync(DATA_DIR).filter(f => re.test(f)).sort()
@@ -61,7 +50,7 @@ export function loadLatest() {
 }
 
 const latestCsvFile = () => latestFile(/^urls-\d{4}-\d{2}-\d{2}\.csv$/)
-const latestFailsFile = () => latestFile(/^fails-\d{4}-\d{2}-\d{2}\.json$/)
+const latestChecksFile = () => latestFile(/^checks-\d{4}-\d{2}-\d{2}\.json$/)
 
 export const readabilityRouter = Router()
 
@@ -79,18 +68,10 @@ readabilityRouter.get('/admin/readability/checklist.html', (req, res) => {
   res.send(readFileSync(file, 'utf8'))
 })
 
-// 해석 리포트(감점 사유 종합) 텍스트 — 대시보드 "해석 리포트" 탭이 fetch.
-readabilityRouter.get('/admin/readability/audit-report.txt', (req, res) => {
-  const file = resolveAuditReport()
-  if (!file) return res.status(404).type('text/plain; charset=utf-8')
-    .send('해석 리포트 없음 — audit_report.txt 가 없습니다 (AUDIT_REPORT_PATH 또는 data/readability/audit_report.txt).')
-  sendFileTyped(res, file, 'text/plain; charset=utf-8')
-})
-
-// 개선 항목(FAIL) 데이터 — 최신 fails-<date>.json. "개선 항목" 탭이 조합 필터로 사용.
-readabilityRouter.get('/admin/readability/fails.json', (req, res) => {
-  const file = latestFailsFile()
-  if (!file) return res.status(404).json({ error: 'fails 데이터 없음 — node scripts/aggregate-readability.mjs 실행 필요' })
+// Raw 데이터(PASS+FAIL) — 최신 checks-<date>.json. "Raw 데이터" 탭이 조합 필터로 사용.
+readabilityRouter.get('/admin/readability/checks.json', (req, res) => {
+  const file = latestChecksFile()
+  if (!file) return res.status(404).json({ error: 'raw 데이터 없음 — node scripts/aggregate-readability.mjs 실행 필요' })
   sendFileTyped(res, join(DATA_DIR, file), 'application/json; charset=utf-8')
 })
 

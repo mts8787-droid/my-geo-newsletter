@@ -238,8 +238,8 @@ function readabilityClient() {
   var RD = window.__RD || {}
   var CATS = ['performance', 'accessibility', 'seo', 'ai_readiness']
   var LEAD = '#15803D', BEHIND = '#B45309', CRIT = '#BE123C', COMP = '#94A3B8', RED = '#CF0652'
-  var state = { tab: 'country', cc: 'all', pt: 'all', fcheck: 'all' }
-  var _failsData = null
+  var state = { tab: 'country', cc: 'all', pt: 'all', fcheck: 'all', pf: 'all' }
+  var _rawData = null
 
   function esc(s) {
     return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
@@ -414,99 +414,89 @@ function readabilityClient() {
     return sectionCard('검수 기준 · 검수 URL 다운로드', '#7C3AED', dl + frame)
   }
 
-  // 해석 리포트(감점 사유 종합) — audit_report.txt 를 fetch 해 원본 그대로 <pre> 표시.
-  // 텍스트는 페이지 HTML 에 임베드하지 않고 탭 진입 시 지연 로드 (본문 가벼움 유지).
-  function renderAuditReport() {
-    var dl = '<div class="crit-dl"><div class="crit-dl-text">' +
-      '<div class="crit-dl-title">해석 리포트 (감점 사유 종합)</div>' +
-      '<div class="crit-dl-sub">10개국 최신 run 기준 · 카테고리/페이지타입별 감점 항목 해석본 — 원본 텍스트 그대로</div></div>' +
-      '<a class="crit-dl-btn" href="/admin/readability/audit-report.txt" download="audit_report.txt">텍스트 다운로드</a></div>'
-    var body = dl + '<pre id="rd-report-pre" class="report-pre">불러오는 중…</pre>'
-    return sectionCard('해석 리포트 — 감점 사유 종합', RED, body)
-  }
-  function loadReport() {
-    var pre = document.getElementById('rd-report-pre')
-    if (!pre) return
-    fetch('/admin/readability/audit-report.txt')
-      .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.text() })
-      .then(function (t) { pre.textContent = t })
-      .catch(function (e) { pre.textContent = '리포트를 불러오지 못했습니다: ' + e })
-  }
-
-  // ── 개선 항목 (페이지별 FAIL) — 국가·페이지타입(공유 필터 바) × 항목(자체 select) 조합 ──
-  function renderFails() {
+  // ── Raw 데이터 (페이지별 전체 체크 PASS/FAIL) — 국가·페이지타입(공유 필터 바) × 항목 · 결과 조합 ──
+  function renderRaw() {
     var head = '<div class="fails-bar">' +
       '<div class="fg"><label for="rd-fcheck">항목</label><select id="rd-fcheck"><option value="all">전체 항목</option></select></div>' +
+      '<div class="fg"><label for="rd-fpf">결과</label><select id="rd-fpf"><option value="all">전체</option><option value="pass">PASS</option><option value="fail">FAIL (논패스)</option></select></div>' +
       '<span id="rd-fails-count" class="fails-count"></span>' +
-      '<a id="rd-fails-csv" class="crit-dl-btn fails-csv" href="#">CSV 다운로드</a></div>'
-    var note = '<div class="tab-note">상단 «국가 / 페이지 타입» 필터 + 여기 «항목» 필터를 조합하면 해당 조건의 페이지와 실패 사유가 표로 나옵니다. 표는 상위 500건만, 전체는 CSV.</div>'
-    return sectionCard('개선 항목 (페이지별 FAIL) — 국가 · 타입 · 항목 조합', RED, note + head + '<div id="rd-fails-body" class="fails-body">불러오는 중…</div>')
+      '<a id="rd-fails-csv" class="crit-dl-btn fails-csv" href="#">CSV 전체 다운로드</a></div>'
+    var note = '<div class="tab-note">상단 «국가 / 페이지 타입» 필터 + 여기 «항목 · 결과(PASS/FAIL)» 필터를 조합하면 해당 조건의 페이지별 체크 결과가 표로 나옵니다. 표는 상위 500건만, 전체는 CSV.</div>'
+    return sectionCard('Raw 데이터 (페이지별 체크 PASS/FAIL) — 국가 · 타입 · 항목 · 결과 조합', RED, note + head + '<div id="rd-fails-body" class="fails-body">불러오는 중…</div>')
   }
-  function loadFails() {
+  function loadRaw() {
     function afterData() {
       var sel = document.getElementById('rd-fcheck')
       if (sel && sel.options.length <= 1) {
-        var checks = _failsData.checks
+        var checks = _rawData.checks
         var ids = Object.keys(checks).sort(function (a, b) { return checks[a].label.localeCompare(checks[b].label, 'en', { numeric: true }) })
         sel.innerHTML = '<option value="all">전체 항목</option>' +
           ids.map(function (id) { return '<option value="' + id + '">' + esc(checks[id].label) + '</option>' }).join('')
         sel.value = state.fcheck || 'all'
-        sel.addEventListener('change', function () { state.fcheck = sel.value; renderFailsTable() })
+        sel.addEventListener('change', function () { state.fcheck = sel.value; renderRawTable() })
       }
+      var pf = document.getElementById('rd-fpf')
+      if (pf && !pf._wired) { pf._wired = true; pf.value = state.pf || 'all'; pf.addEventListener('change', function () { state.pf = pf.value; renderRawTable() }) }
       var csv = document.getElementById('rd-fails-csv')
-      if (csv && !csv._wired) { csv._wired = true; csv.addEventListener('click', function (e) { e.preventDefault(); downloadFailsCsv() }) }
-      renderFailsTable()
+      if (csv && !csv._wired) { csv._wired = true; csv.addEventListener('click', function (e) { e.preventDefault(); downloadRawCsv() }) }
+      renderRawTable()
     }
-    if (_failsData) { afterData(); return }
-    fetch('/admin/readability/fails.json')
+    if (_rawData) { afterData(); return }
+    fetch('/admin/readability/checks.json')
       .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json() })
-      .then(function (d) { _failsData = d; afterData() })
-      .catch(function (e) { var b = document.getElementById('rd-fails-body'); if (b) b.textContent = '개선 항목 데이터를 불러오지 못했습니다: ' + e })
+      .then(function (d) { _rawData = d; afterData() })
+      .catch(function (e) { var b = document.getElementById('rd-fails-body'); if (b) b.textContent = 'Raw 데이터를 불러오지 못했습니다: ' + e })
   }
-  function filteredFailRows() {
-    if (!_failsData) return []
-    var cc = state.cc, pt = state.pt, chk = state.fcheck || 'all', out = []
-    _failsData.rows.forEach(function (r) {
+  function filteredRawRows() {
+    if (!_rawData) return []
+    var cc = state.cc, pt = state.pt, chk = state.fcheck || 'all', pf = state.pf || 'all', out = []
+    _rawData.rows.forEach(function (r) {
       if (cc !== 'all' && r.cc !== cc) return
       if (pt !== 'all' && r.pt !== pt) return
-      r.f.forEach(function (pair) {
-        if (chk !== 'all' && pair[0] !== chk) return
-        out.push({ cc: r.cc, pt: r.pt, url: r.url, score: r.score, id: pair[0], hint: _failsData.hints[pair[1]] })
+      r.c.forEach(function (t) {
+        // t = [checkId, pass01, hintIdx(-1=PASS)]
+        if (chk !== 'all' && t[0] !== chk) return
+        var isPass = t[1] === 1
+        if (pf === 'pass' && !isPass) return
+        if (pf === 'fail' && isPass) return
+        out.push({ cc: r.cc, pt: r.pt, url: r.url, score: r.score, id: t[0], pass: isPass, hint: isPass ? '' : _rawData.hints[t[2]] })
       })
     })
     // 점수 오름차순(최저=가장 개선 시급) — 표는 상위 CAP 만 잘라 보여주므로 '상위 N' 라벨이 실제로 맞음.
     out.sort(function (a, b) { return a.score - b.score })
     return out
   }
-  function renderFailsTable() {
+  function renderRawTable() {
     var body = document.getElementById('rd-fails-body'); if (!body) return
-    var rows = filteredFailRows(), CAP = 500
+    var rows = filteredRawRows(), CAP = 500
     var cntEl = document.getElementById('rd-fails-count')
     if (cntEl) cntEl.textContent = num(rows.length) + '건' + (rows.length > CAP ? ' · 상위 ' + CAP + '건 표시 (전체는 CSV)' : '')
-    if (!rows.length) { body.innerHTML = '<div class="tab-note">조건에 맞는 개선 항목이 없습니다.</div>'; return }
-    var checks = _failsData.checks, ccName = _failsData.ccName, pts = _failsData.pageTypes
+    if (!rows.length) { body.innerHTML = '<div class="tab-note">조건에 맞는 데이터가 없습니다.</div>'; return }
+    var checks = _rawData.checks, ccName = _rawData.ccName, pts = _rawData.pageTypes
     var trs = rows.slice(0, CAP).map(function (r) {
       // http(s) 만 링크로 — javascript:/data: 등 스킴은 평문 표기(admin origin 에서 실행 방지).
       var urlCell = /^https?:\/\//i.test(r.url)
         ? '<a href="' + esc(r.url) + '" target="_blank" rel="noopener">' + esc(r.url) + '</a>'
         : esc(r.url)
+      var resultCell = r.pass ? '<span class="rd-pass">PASS</span>' : '<span class="rd-fail">FAIL</span>'
       return '<tr><td>' + esc(ccName[r.cc] || r.cc.toUpperCase()) + '</td><td>' + esc(pts[r.pt] || r.pt) + '</td>' +
         '<td class="fails-url">' + urlCell + '</td>' +
         '<td>' + esc((checks[r.id] || {}).label || r.id) + '</td>' +
+        '<td>' + resultCell + '</td>' +
         '<td class="fails-hint">' + esc(r.hint) + '</td>' +
         '<td class="fails-score" style="color:' + scoreColor(r.score) + '">' + r.score + '</td></tr>'
     }).join('')
-    body.innerHTML = '<table class="fails-table"><thead><tr><th>국가</th><th>타입</th><th>URL</th><th>항목</th><th>실패 사유</th><th>점수</th></tr></thead><tbody>' + trs + '</tbody></table>'
+    body.innerHTML = '<table class="fails-table"><thead><tr><th>국가</th><th>타입</th><th>URL</th><th>항목</th><th>결과</th><th>실패 사유</th><th>점수</th></tr></thead><tbody>' + trs + '</tbody></table>'
   }
-  function downloadFailsCsv() {
-    if (!_failsData) return
-    var rows = filteredFailRows(), checks = _failsData.checks, ccName = _failsData.ccName, pts = _failsData.pageTypes
+  function downloadRawCsv() {
+    if (!_rawData) return
+    var rows = filteredRawRows(), checks = _rawData.checks, ccName = _rawData.ccName, pts = _rawData.pageTypes
     function cell(v) { v = String(v == null ? '' : v); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v }
-    var lines = ['country,page_type,url,check,reason,score']
-    rows.forEach(function (r) { lines.push([cell(ccName[r.cc] || r.cc), cell(pts[r.pt] || r.pt), cell(r.url), cell((checks[r.id] || {}).label || r.id), cell(r.hint), cell(r.score)].join(',')) })
+    var lines = ['country,page_type,url,check,result,reason,score']
+    rows.forEach(function (r) { lines.push([cell(ccName[r.cc] || r.cc), cell(pts[r.pt] || r.pt), cell(r.url), cell((checks[r.id] || {}).label || r.id), cell(r.pass ? 'PASS' : 'FAIL'), cell(r.hint), cell(r.score)].join(',')) })
     var blob = new Blob(['﻿' + lines.join('\n')], { type: 'text/csv;charset=utf-8' })
     var a = document.createElement('a'); a.href = URL.createObjectURL(blob)
-    a.download = 'geo-improvements-' + (_failsData.date || '') + '.csv'
+    a.download = 'geo-readability-raw-' + (_rawData.date || '') + '.csv'
     document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(a.href)
   }
 
@@ -514,19 +504,18 @@ function readabilityClient() {
     var el = document.getElementById('rd-panel')
     if (!el) return
     var fb = document.getElementById('rd-filterbar')
-    if (fb) fb.style.display = (state.tab === 'criteria' || state.tab === 'report') ? 'none' : ''
+    if (fb) fb.style.display = (state.tab === 'criteria') ? 'none' : ''
     if (state.tab === 'country') el.innerHTML = renderCountry()
     else if (state.tab === 'criteria') el.innerHTML = renderCriteria()
-    else if (state.tab === 'report') { el.innerHTML = renderAuditReport(); loadReport() }
-    else if (state.tab === 'fails') { el.innerHTML = renderFails(); loadFails() }
+    else if (state.tab === 'raw') { el.innerHTML = renderRaw(); loadRaw() }
     else el.innerHTML = renderPageType()
   }
 
   function buildControls() {
     var nav = document.getElementById('rd-tabnav')
-    // report·fails·criteria 탭은 /admin/* 리소스를 fetch/iframe → 비인증 게시본에선 제외.
+    // raw·criteria 탭은 /admin/* 리소스를 fetch/iframe → 비인증 게시본에선 제외.
     var tabs = [['country', '국가별'], ['pagetype', '페이지 타입별']]
-    if (RD.adminMode) tabs.push(['fails', '개선 항목'], ['report', '해석 리포트'], ['criteria', '검수 기준'])
+    if (RD.adminMode) tabs.push(['raw', 'Raw 데이터'], ['criteria', '검수 기준'])
     nav.innerHTML = tabs.map(function (t) {
       return '<button data-tab="' + t[0] + '"' + (t[0] === state.tab ? ' class="active"' : '') + '>' + t[1] + '</button>'
     }).join('')
@@ -573,7 +562,7 @@ export function renderReadabilityHTML({ snapshot, index, adminMode = false } = {
   // 클라이언트 인터랙티브 렌더용 데이터 (탭/필터). 서버 뷰는 <noscript> fallback 유지.
   const clientData = {
     date: snapshot.date,
-    // adminMode: 해석 리포트·개선 항목 탭은 /admin/* 리소스를 fetch → 게시본(비인증)에선 숨김.
+    // adminMode: Raw 데이터·검수 기준 탭은 /admin/* 리소스를 fetch → 게시본(비인증)에선 숨김.
     adminMode: !!adminMode,
     categoryLabels: snapshot.categoryLabels || {},
     ccName: Object.fromEntries(Object.keys(snapshot.countries).map(cc => [cc, CC_NAME[cc] || cc.toUpperCase()])),
@@ -655,9 +644,9 @@ body{background:#F1F5F9;font-family:${FONT};color:#1A1A1A;line-height:1.6}
 .crit-frame-head{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:14px;font-weight:700;color:#475569;margin-bottom:10px}
 .crit-frame-head a{color:${RED};text-decoration:none;font-weight:600}
 .crit-frame{width:100%;height:70vh;min-height:520px;border:1px solid #E8EDF2;border-radius:12px;background:#fff}
-/* ── 해석 리포트 (감점 사유 종합) ── */
-.report-pre{background:#fff;color:#1A1A1A;border:1px solid #E8EDF2;border-radius:12px;padding:20px 24px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,'D2Coding',monospace;font-size:12.5px;line-height:1.55;white-space:pre;overflow-x:auto;tab-size:2}
-/* ── 개선 항목 (페이지별 FAIL 조합 필터) ── */
+/* ── Raw 데이터 (페이지별 체크 PASS/FAIL 조합 필터) ── */
+.rd-pass{display:inline-block;padding:2px 8px;border-radius:6px;font-weight:800;font-size:11px;background:#ECFDF5;color:#15803D;border:1px solid #A7F3D0}
+.rd-fail{display:inline-block;padding:2px 8px;border-radius:6px;font-weight:800;font-size:11px;background:#FFF1F2;color:#BE123C;border:1px solid #FECDD3}
 .fails-bar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:14px}
 .fails-bar .fg{display:flex;align-items:center;gap:8px}
 .fails-bar label{font-size:13px;font-weight:700;color:#475569}
@@ -731,8 +720,7 @@ body{background:#F1F5F9;font-family:${FONT};color:#1A1A1A;line-height:1.6}
     ${viewCategoryDetail(snapshot)}
     ${viewPageTypes(snapshot)}
     ${viewBotsAndSsr(snapshot)}
-    ${adminMode ? sectionCard('해석 리포트 — 감점 사유 종합', RED, '<a class="crit-dl-btn" href="/admin/readability/audit-report.txt" download="audit_report.txt">해석 리포트 텍스트 열기/다운로드</a>') : ''}
-    ${adminMode ? sectionCard('개선 항목 (페이지별 FAIL)', RED, '<div class="tab-note">조합 필터(국가·타입·항목) 탭은 JavaScript 가 필요합니다. 원본 데이터: <a href="/admin/readability/fails.json">fails.json</a></div>') : ''}
+    ${adminMode ? sectionCard('Raw 데이터 (페이지별 체크 PASS/FAIL)', RED, '<div class="tab-note">조합 필터(국가·타입·항목·결과) 탭은 JavaScript 가 필요합니다. 원본 데이터: <a href="/admin/readability/checks.json">checks.json</a></div>') : ''}
   </noscript>
 </div>
 

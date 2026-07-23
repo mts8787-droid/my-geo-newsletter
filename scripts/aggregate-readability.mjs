@@ -294,6 +294,22 @@ export function collectFails(score, checkMeta) {
   return out
 }
 
+// per-URL 전체 체크(PASS + FAIL) 추출 — Raw 데이터(패스/논패스 전수 표기 + 필터) 용.
+// applicable 한 것만 (na/null 은 미적용이라 제외). pass===false 만 hint 보유.
+export function collectChecks(score, checkMeta) {
+  const out = []
+  const bd = score.breakdown || {}
+  for (const cat of CATEGORIES) {
+    const items = (bd[cat] && bd[cat].items) || {}
+    for (const [id, it] of Object.entries(items)) {
+      if (!it || it.na === true || it.pass == null) continue  // 미적용(na/null) 제외
+      if (!checkMeta[id]) checkMeta[id] = { label: it.label || id, cat }
+      out.push({ id, pass: it.pass === true, hint: it.pass === false ? (it.hint || '') : '' })
+    }
+  }
+  return out
+}
+
 // fetch 실패(비-200) 페이지 판정 — ai_status_200 이 FAIL 이면 전 체크가 'HTML 파싱 실패'로
 // cascade-FAIL 하므로 개선 대상이 아님(gen_audit_report.py fetch_state 와 동일 취지). 개선 목록에서 제외.
 export function isFetchFailed(score) {
@@ -320,8 +336,8 @@ function main() {
   const overall = newAcc()
   const fileDates = []
   const urlRows = []  // CSV 다운로드용 per-URL 행: { url, country, pt, score }
-  // 개선 리포트(조합 필터)용 — 페이지별 FAIL 행 + 필터 메타 (전수 기준, 샘플링 전)
-  const failRows = []
+  // Raw 데이터(조합 필터)용 — 페이지별 전체 체크(PASS+FAIL) 행 + 필터 메타 (전수 기준, 샘플링 전)
+  const checkRows = []
   const checkMeta = {}
   const ptLabelMap = {}
 
@@ -364,27 +380,27 @@ function main() {
       if (rpt && rpt.excluded) continue
       items.push({ result: s.result, url, rpt })
     }
-    // 개선 리포트(조합 필터)용 — 전수 페이지의 실패 항목 수집 (샘플링 전, 최대 커버리지).
+    // Raw 데이터(조합 필터)용 — 전수 페이지의 전체 체크(PASS+FAIL) 수집 (샘플링 전, 최대 커버리지).
     // per-row try/catch (data.md §6.3) — 손상된 breakdown 한 건이 전체 집계를 멈추지 않게.
-    let failSkip = 0, fetchFailSkip = 0
+    let chkSkip = 0, fetchFailSkip = 0
     for (const it of items) {
       try {
         const sc = it.result.score
-        if (!sc || typeof sc.total !== 'number') { failSkip++; continue }
-        if (isFetchFailed(sc)) { fetchFailSkip++; continue }  // 비-200 페이지는 개선 대상 아님
-        const fails = collectFails(sc, checkMeta)
-        if (!fails.length) continue
+        if (!sc || typeof sc.total !== 'number') { chkSkip++; continue }
+        if (isFetchFailed(sc)) { fetchFailSkip++; continue }  // 비-200 페이지는 대상 아님(전 체크 cascade-FAIL)
+        const checks = collectChecks(sc, checkMeta)
+        if (!checks.length) continue
         const ptId = it.rpt ? it.rpt.id : '(none)'
         // 라벨 등록 — 페이지타입 미해석(rpt null) 행은 '미분류' 로 표기(UI 에 raw '(none)' 노출 방지).
         if (!ptLabelMap[ptId]) ptLabelMap[ptId] = it.rpt ? it.rpt.label : '미분류'
-        failRows.push({ cc: meta.cc, pt: ptId, url: it.url || '', score: sc.total, fails })
+        checkRows.push({ cc: meta.cc, pt: ptId, url: it.url || '', score: sc.total, checks })
       } catch (e) {
-        failSkip++
-        console.warn(`[aggregate-readability] WARN: ${meta.cc} FAIL 수집 skip — ${e.message}`, { url: it.url })
+        chkSkip++
+        console.warn(`[aggregate-readability] WARN: ${meta.cc} 체크 수집 skip — ${e.message}`, { url: it.url })
       }
     }
-    if (failSkip || fetchFailSkip) {
-      console.log(`[aggregate-readability] ${meta.cc}: FAIL 수집 skip ${failSkip} (미채점/손상) + fetch실패 제외 ${fetchFailSkip}`)
+    if (chkSkip || fetchFailSkip) {
+      console.log(`[aggregate-readability] ${meta.cc}: 체크 수집 skip ${chkSkip} (미채점/손상) + fetch실패 제외 ${fetchFailSkip}`)
     }
     // 페이지타입별 max SAMPLE_PER_PT 표본 (제품군 균등 분배) — 집계 + CSV 모두 동일 표본 사용
     const selected = sampleByPageType(items)
@@ -453,8 +469,8 @@ function main() {
   // UTF-8 BOM 선두 — Excel(특히 한국어 로캘)이 CP949 로 오인해 한글 깨지는 것 방지
   writeFileSync(csvPath, '﻿' + csvLines.join('\n') + '\n')
 
-  // 개선 리포트(조합 필터 — 국가×페이지타입×항목) 데이터 — 페이지별 FAIL 만.
-  // hint 문자열 인터닝(중복 제거) — 동일 사유가 수천 건 반복 → 파일/전송 크기 대폭 축소.
+  // Raw 데이터(조합 필터 — 국가×페이지타입×항목×패스여부) — 페이지별 전체 체크(PASS+FAIL).
+  // hint 문자열 인터닝(중복 제거) — 동일 사유가 수천 건 반복 → 파일/전송 크기 대폭 축소. PASS 는 hint 없음(-1).
   const hintIndex = new Map()
   const hints = []
   const internHint = (h) => {
@@ -462,39 +478,38 @@ function main() {
     if (i === undefined) { i = hints.length; hints.push(h); hintIndex.set(h, i) }
     return i
   }
-  const failsRowsOut = failRows.map(r => ({
+  const checksRowsOut = checkRows.map(r => ({
     cc: r.cc, pt: r.pt, url: r.url, score: r.score,
-    f: r.fails.map(x => [x.id, internHint(x.hint)]),  // [checkId, hintIndex]
+    c: r.checks.map(x => [x.id, x.pass ? 1 : 0, x.pass ? -1 : internHint(x.hint)]),  // [checkId, pass01, hintIndex(-1=PASS)]
   }))
-  const failsPath = join(OUT_DIR, `fails-${snapshotDate}.json`)
-  const failsDoc = {
+  const checksPath = join(OUT_DIR, `checks-${snapshotDate}.json`)
+  const checksDoc = {
     date: snapshotDate,
     generatedAt: snapshot.generatedAt,
     countries: Object.keys(countries).sort(),
     ccName: Object.fromEntries(Object.keys(countries).map(cc => [cc, CC_NAME[cc] || cc.toUpperCase()])),
     pageTypes: ptLabelMap,
     checks: checkMeta,
-    hints,        // 인터닝된 hint 사전 (f[][1] 가 인덱스)
-    rows: failsRowsOut,
+    hints,        // 인터닝된 hint 사전 (c[][2] 가 인덱스, -1=PASS)
+    rows: checksRowsOut,
   }
-  const failsJson = JSON.stringify(failsDoc)
-  writeFileSync(failsPath, failsJson)
-  // fails-*.json 은 최신 날짜 1개만 유지 (개선 대상 현재값만 의미 — 시계열 가치 없음, ~3MB 라 git 비대 방지).
-  // 주의: snapshotDate 가 아니라 존재하는 fails 파일 중 '최신 날짜' 를 유지 → 과거 --date 로 backfill 해도
-  // 이미 있는 더 최신 fails 를 지우지 않음(latestFailsFile 이 최신 서빙 유지).
-  const failsFiles = readdirSync(OUT_DIR).filter(f => /^fails-\d{4}-\d{2}-\d{2}\.json$/.test(f)).sort()
-  const keepFails = failsFiles[failsFiles.length - 1]  // 사전순 마지막 = 최신 날짜
-  for (const fn of failsFiles) {
-    if (fn !== keepFails) {
+  const checksJson = JSON.stringify(checksDoc)
+  writeFileSync(checksPath, checksJson)
+  // checks-*.json 은 최신 날짜 1개만 유지 (현재값만 의미 — 시계열 가치 없음, git 비대 방지).
+  // 구 fails-*.json 도 정리 (raw 데이터로 대체됨).
+  const staleFiles = readdirSync(OUT_DIR).filter(f => /^(checks|fails)-\d{4}-\d{2}-\d{2}\.json$/.test(f)).sort()
+  const keepChecks = `checks-${snapshotDate}.json`
+  for (const fn of staleFiles) {
+    if (fn !== keepChecks) {
       rmSync(join(OUT_DIR, fn))
-      console.log(`[aggregate-readability] 과거 fails 제거: ${fn} (유지: ${keepFails})`)
+      console.log(`[aggregate-readability] 과거/구 데이터 제거: ${fn} (유지: ${keepChecks})`)
     }
   }
 
   const kb = (JSON.stringify(snapshot).length / 1024).toFixed(1)
-  const fkb = (failsJson.length / 1024).toFixed(1)
+  const ckb = (checksJson.length / 1024).toFixed(1)
   console.log(`[aggregate-readability] ✓ 스냅샷 저장: ${outPath} (${kb} KB, ${Object.keys(countries).length}개국)`)
-  console.log(`[aggregate-readability] ✓ 개선 항목(FAIL): ${failsPath} (${fkb} KB, ${failRows.length} pages)`)
+  console.log(`[aggregate-readability] ✓ Raw 데이터(PASS+FAIL): ${checksPath} (${ckb} KB, ${checkRows.length} pages)`)
   console.log(`[aggregate-readability] ✓ 인덱스: ${indexPath} (${index.snapshots.length}개 스냅샷)`)
   console.log(`[aggregate-readability] ✓ URL CSV: ${csvPath} (${urlRows.length}개 URL)`)
 
