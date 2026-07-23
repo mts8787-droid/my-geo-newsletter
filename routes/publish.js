@@ -11,21 +11,41 @@ import { renderReadabilityHTML } from '../scripts/render-readability.mjs'
 
 const log = logFor('publish')
 
-// 대시보드 "Readability 포함" 게시 시 — 최신 스냅샷으로 standalone 페이지 생성.
+// ─── Readability 독립 게시본 ──────────────────────────────────────────────
+// 어드민에서 별도 게시 → /p/GEO-Readability-Dashboard 로 웹 게시.
+// 통합 대시보드 뷰어는 이 웹 게시본을 재사용(embed)한다 (아래 writeReadabilityEmbed).
+const READABILITY_SLUG = 'GEO-Readability-Dashboard'
+const READABILITY_STANDALONE = join(PUB_DIR, `${READABILITY_SLUG}.html`)
+const READABILITY_META = join(DATA_DIR, 'readability-meta.json')
+
+// 최신 스냅샷으로 Readability HTML 생성 (게시용 — adminMode:false)
+function renderReadabilityPublic() {
+  const { snapshot, index } = loadLatest()
+  if (!snapshot) return null
+  return renderReadabilityHTML({ snapshot, index, adminMode: false })
+}
+
+// 대시보드 "Readability 포함" 게시 시 — 통합 뷰어가 임베드할 페이지 생성.
 // 게시본은 인증 게이트 밖(IP allowlist)이라 /admin/readability iframe 불가 →
 // 동일출처 /p/<slug>-readability 로 별도 정적 페이지를 써서 대시보드 iframe 이 임베드.
+// 우선순위: 별도 게시된 웹 게시본(GEO-Readability-Dashboard.html)을 복사 → 그게 곧 "웹 게시된 버전이
+// 통합 뷰어에서 다시 게시되는" 형태. 별도 게시 전이면 최신 스냅샷으로 폴백 생성(하위호환).
 const READABILITY_MARKER = '<!--READABILITY_EMBED-->'
 function writeReadabilityEmbed(ch) {
   try {
-    const { snapshot, index } = loadLatest()
-    if (!snapshot) {
-      log.warn({ tag: ch.logTag }, 'readability embed: 스냅샷 없음 — data/readability/ 비어있음')
-      return
+    let html = null
+    if (existsSync(READABILITY_STANDALONE)) {
+      html = readFileSync(READABILITY_STANDALONE, 'utf-8')
+    } else {
+      html = renderReadabilityPublic()
+      if (!html) {
+        log.warn({ tag: ch.logTag }, 'readability embed: 별도 게시본·스냅샷 모두 없음')
+        return
+      }
     }
-    const html = renderReadabilityHTML({ snapshot, index, adminMode: false })
     writeFileSync(join(PUB_DIR, `${ch.koSlug}-readability.html`), html)
     writeFileSync(join(PUB_DIR, `${ch.enSlug}-readability.html`), html)
-    log.info({ tag: ch.logTag, koSlug: `${ch.koSlug}-readability` }, 'readability embed written')
+    log.info({ tag: ch.logTag, koSlug: `${ch.koSlug}-readability`, fromStandalone: existsSync(READABILITY_STANDALONE) }, 'readability embed written')
   } catch (e) {
     log.warn({ tag: ch.logTag, err: e.message }, 'readability embed failed')
   }
@@ -213,6 +233,33 @@ function buildMonthlyDeleteHandler(ch) {
   }
 }
 
+// ─── Readability 독립 게시 핸들러 (최신 스냅샷 → /p/GEO-Readability-Dashboard) ─
+// 데이터가 서버측 스냅샷(data/readability/)이라 클라이언트 HTML 전송 불필요 — 서버가 직접 렌더.
+function readabilityPostHandler(req, res) {
+  try {
+    const html = renderReadabilityPublic()
+    if (!html) return res.status(400).json({ ok: false, error: 'Readability 스냅샷 없음 — data/readability/ 비어있음' })
+    writeFileSync(READABILITY_STANDALONE, html)
+    const meta = { title: 'GEO Readability Dashboard', ts: Date.now() }
+    writeFileSync(READABILITY_META, JSON.stringify(meta, null, 2))
+    log.info({ tag: 'PUBLISH-READ', slug: READABILITY_SLUG }, 'readability standalone published')
+    res.json({ ok: true, url: `/p/${READABILITY_SLUG}`, ...meta })
+  } catch (err) {
+    log.error({ tag: 'PUBLISH-READ', err: err.message }, 'readability publish failed')
+    res.status(500).json({ ok: false, error: '파일 저장 실패: ' + err.message })
+  }
+}
+function readabilityGetHandler(req, res) {
+  const meta = readMetaFile(READABILITY_META)
+  const published = existsSync(READABILITY_STANDALONE)
+  res.json({ published, ...(meta || {}), url: `/p/${READABILITY_SLUG}` })
+}
+function readabilityDeleteHandler(req, res) {
+  deleteIfExists(READABILITY_STANDALONE, 'PUBLISH-READ')
+  deleteIfExists(READABILITY_META, 'PUBLISH-READ')
+  res.json({ ok: true })
+}
+
 export const publishRouter = Router()
 
 // 5개 채널 일괄 등록 (path는 /api/publish[-{key}])
@@ -224,6 +271,11 @@ publishRouter.delete('/api/publish', buildMonthlyDeleteHandler(CHANNELS.newslett
 publishRouter.post('/api/publish-dashboard', validateBody(PublishPostSchema), buildPostHandler(CHANNELS.dashboard))
 publishRouter.get('/api/publish-dashboard', buildGetHandler(CHANNELS.dashboard))
 publishRouter.delete('/api/publish-dashboard', buildDeleteHandler(CHANNELS.dashboard))
+
+// Readability 독립 게시 — 서버 스냅샷 기반이라 body 검증 불필요 (클라이언트 HTML 미전송)
+publishRouter.post('/api/publish-readability', readabilityPostHandler)
+publishRouter.get('/api/publish-readability', readabilityGetHandler)
+publishRouter.delete('/api/publish-readability', readabilityDeleteHandler)
 
 publishRouter.post('/api/publish-citation', validateBody(PublishPostSchema), buildPostHandler(CHANNELS.citation))
 publishRouter.get('/api/publish-citation', buildGetHandler(CHANNELS.citation))

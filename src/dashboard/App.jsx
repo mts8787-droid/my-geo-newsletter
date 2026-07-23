@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react'
 import { FONT, LG_RED } from '../shared/constants.js'
 import { generateDashboardHTML } from './dashboardTemplate.js'
 import { resolveDataForLang } from '../shared/utils.js'
-import { publishCombinedDashboard } from '../shared/api.js'
+import { publishCombinedDashboard, publishReadability, fetchReadabilityStatus } from '../shared/api.js'
 import GlossaryPage from './GlossaryPage.jsx'
 
 const TABS = [
@@ -51,6 +51,9 @@ export default function App() {
   const [publishing, setPublishing] = useState(false)
   const [publishMsg, setPublishMsg] = useState('')
   const [includeReadability, setIncludeReadability] = useState(false)  // 기본 미포함
+  const [readPublishing, setReadPublishing] = useState(false)
+  const [readPublishMsg, setReadPublishMsg] = useState('')
+  const [readStatus, setReadStatus] = useState(null)
 
   // Hash routing
   useEffect(() => {
@@ -77,6 +80,25 @@ export default function App() {
       .then(d => { if (d) setTrackerData(d) })
       .catch(() => {})
   }, [])
+
+  // Readability 게시 상태 조회
+  useEffect(() => { fetchReadabilityStatus().then(setReadStatus) }, [])
+
+  // Readability 독립 게시 (별도 URL) — 게시 후 통합 대시보드 뷰어가 이 게시본을 재사용
+  async function handlePublishReadability() {
+    if (readPublishing) return
+    setReadPublishing(true); setReadPublishMsg('')
+    try {
+      const result = await publishReadability()
+      setReadPublishMsg(`게시 완료!\n${window.location.origin}${result.url}`)
+      fetchReadabilityStatus().then(setReadStatus)
+    } catch (err) {
+      setReadPublishMsg('ERROR: ' + err.message)
+    } finally {
+      setReadPublishing(false)
+      setTimeout(() => setReadPublishMsg(''), 15000)
+    }
+  }
 
   // 통합 대시보드 게시
   async function handlePublishCombined() {
@@ -229,6 +251,28 @@ export default function App() {
               }}>
                 {lang === 'en' ? 'Download URL CSV' : '검수 URL CSV 다운로드'}
               </a>
+
+              {/* Readability 독립 웹 게시 (별도 URL) */}
+              <button onClick={handlePublishReadability} disabled={readPublishing}
+                style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  padding: '10px 16px', borderRadius: 8, border: 'none', width: '100%',
+                  background: '#166534', color: '#86EFAC',
+                  fontSize: 13, fontWeight: 700, fontFamily: FONT,
+                  cursor: readPublishing ? 'wait' : 'pointer', opacity: readPublishing ? 0.6 : 1,
+                }}>
+                {readPublishing ? (lang === 'en' ? 'Publishing...' : '게시 중...') : (lang === 'en' ? 'Publish Readability (web)' : 'Readability 웹 게시')}
+              </button>
+              {readStatus?.published && (
+                <a href={readStatus.url} target="_blank" rel="noopener noreferrer" style={{
+                  fontSize: 11, color: '#86EFAC', textDecoration: 'none', textAlign: 'center', fontFamily: FONT,
+                }}>
+                  {lang === 'en' ? 'View published: ' : '게시본 보기: '}{readStatus.url}
+                </a>
+              )}
+              {readPublishMsg && (
+                <pre style={{ fontSize: 10, color: readPublishMsg.startsWith('ERROR') ? '#FCA5A5' : '#86EFAC', whiteSpace: 'pre-wrap', margin: 0, lineHeight: 1.5 }}>{readPublishMsg}</pre>
+              )}
             </>
           ) : (
             <>

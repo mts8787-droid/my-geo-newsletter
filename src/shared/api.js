@@ -164,6 +164,25 @@ export async function publishCombinedDashboard(generateDashboardHTML, resolveDat
   return result
 }
 
+// Readability 독립 게시 — 서버가 최신 스냅샷으로 직접 렌더/저장 (클라이언트 HTML 미전송).
+// 게시 후 /p/GEO-Readability-Dashboard 로 웹 공개 + 통합 대시보드 뷰어가 이 게시본을 재사용.
+export async function publishReadability() {
+  const res = await fetch('/api/publish-readability', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+  })
+  const result = await res.json()
+  if (!result.ok) throw new Error(result.error || 'Readability 게시 실패')
+  return result
+}
+
+export async function fetchReadabilityStatus() {
+  try {
+    const r = await fetch('/api/publish-readability')
+    return r.ok ? await r.json() : null
+  } catch { return null }
+}
+
 export async function saveSyncData(mode, data) {
   try {
     const r = await fetch(apiPaths(mode).syncData, {
