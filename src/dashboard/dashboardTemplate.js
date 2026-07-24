@@ -7,6 +7,7 @@ import {
   UL_PROD_MAP, DC_COLS, DC_SAM, TREND_BRAND_COL,
 } from './dashboardConsts.js'
 import { PROD_ID_TO_KR } from '../categoryMap.js'
+import { dcColLabel } from '../shared/constants.js'
 // N1 — 순수 함수 분리 (테스트 대상)
 import { statusInfo, fmt, mdBold, stripDomain, cntyStatus, cntyFullName, cntyOfficial } from './dashboardFormat.js'
 import { svgLine, svgMultiLine, brandColor } from './dashboardSvg.js'
@@ -674,7 +675,7 @@ function dotcomSectionHtml(dotcom, meta, t) {
     if (diff > 0) badge = `<span class="dc-badge lg">LG +${fmt(diff)}</span>`
     else if (diff < 0 && hasSam) badge = `<span class="dc-badge ss">SS +${fmt(Math.abs(diff))}</span>`
     return `<div class="dc-row ${isTTL ? 'ttl' : ''}">
-      <span class="dc-label">${isTTL ? t.dotcomTTL : col}${badge}</span>
+      <span class="dc-label">${isTTL ? t.dotcomTTL : dcColLabel(col)}${badge}</span>
       <div class="dc-bars">
         <div class="dc-bar-pair">
           <div class="dc-bar lg" style="width:${lgPct}%"></div>
@@ -695,8 +696,8 @@ function dotcomSectionHtml(dotcom, meta, t) {
     <div class="section-body">
       ${rows}
       <div class="dc-summary">
-        <span class="dc-sum-item lg">${t.dotcomLgWin} (${lgWins.length})</span> <span class="dc-sum-list">${lgWins.length ? lgWins.join(', ') : t.dotcomNone}</span>
-        <span class="dc-sum-item ss">${t.dotcomSsWin} (${samWins.length})</span> <span class="dc-sum-list">${samWins.length ? samWins.join(', ') : t.dotcomNone}</span>
+        <span class="dc-sum-item lg">${t.dotcomLgWin} (${lgWins.length})</span> <span class="dc-sum-list">${lgWins.length ? lgWins.map(dcColLabel).join(', ') : t.dotcomNone}</span>
+        <span class="dc-sum-item ss">${t.dotcomSsWin} (${samWins.length})</span> <span class="dc-sum-list">${samWins.length ? samWins.map(dcColLabel).join(', ') : t.dotcomNone}</span>
       </div>
     </div>
   </div>`

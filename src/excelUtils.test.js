@@ -185,6 +185,20 @@ describe('parseUnlaunched — ERROR CATCHING 5단계 동작', () => {
     expect(result.unlaunchedMap['BR|AV']).toBe(true)
   })
 
+  it('강제 출시(DEFAULT_LAUNCHED): IN 식기세척기는 시트가 미출시로 줘도 제거', () => {
+    const rows = [
+      ['country', 'category', 'launched'],
+      ['IN', 'Dishwasher', 'unlaunched'],   // 시트가 미출시로 표기해도
+      ['IN', 'DW', '미출시'],                // 정규화 키 형태도
+      ['MX', 'DW', 'unlaunched'],           // 다른 국가 식기세척기 미출시는 유지
+    ]
+    const result = parseSheetRows(SHEET_NAMES.unlaunched, rows)
+    expect(result.unlaunchedMap['IN|DW']).toBeUndefined()          // 강제 출시 → 제거
+    expect(result.unlaunchedMap['IN|DISHWASHER']).toBeUndefined()  // 원본 변형도 제거
+    expect(result.unlaunchedMap['MX|DW']).toBe(true)               // 다른 국가는 그대로 미출시
+    expect(result.unlaunchedMap['IN|AV']).toBe(true)               // IN 오디오 DEFAULT 미출시는 유지
+  })
+
   it('STYLER 카테고리 정규화 (회귀 방지: UL_PROD_MAP STYLER 누락 fix)', () => {
     const rows = [
       ['country', 'category', 'launched'],

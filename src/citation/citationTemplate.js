@@ -1,6 +1,7 @@
 // ─── GEO Citation 대시보드 — Citation 전용 독립 시각화 ───────────────────────
 // dashboardTemplate.js의 Citation 섹션만 추출하여 독립 렌더링
 import { PROD_IDS, PROD_ID_TO_ORDER, NAME_TO_PROD_ID } from '../categoryMap.js'
+import { dcColLabel } from '../shared/constants.js'
 
 // _PRD_ORDER_MAP: 클라이언트 인라인 코드에 임베드되는 정렬 순서 맵
 // prodId + 한/영/약어 시트 표기 모두 같은 순서로. categoryMap.js single source.
@@ -182,7 +183,7 @@ function dotcomSectionHtml(dotcom, meta, t, lang) {
       if (diff > 0) badge = `<span class="dc-badge lg">LG +${fmt(diff)}</span>`
       else if (diff < 0 && hasSam) badge = `<span class="dc-badge ss">SS +${fmt(Math.abs(diff))}</span>`
       return `<div class="dc-row ${isTTL ? 'ttl' : ''}">
-        <span class="dc-label">${isTTL ? t.dotcomTTL : col}${badge}</span>
+        <span class="dc-label">${isTTL ? t.dotcomTTL : dcColLabel(col)}${badge}</span>
         <div class="dc-bars">
           <div class="dc-bar-pair">
             <div class="dc-bar lg" style="width:${lgPct}%"></div>
@@ -197,8 +198,8 @@ function dotcomSectionHtml(dotcom, meta, t, lang) {
     }).join('')
     bodyHtml = `${rows}
       <div class="dc-summary">
-        <span class="dc-sum-item lg">${t.dotcomLgWin} (${lgWins.length})</span> <span class="dc-sum-list">${lgWins.length ? lgWins.join(', ') : t.dotcomNone}</span>
-        <span class="dc-sum-item ss">${t.dotcomSsWin} (${samWins.length})</span> <span class="dc-sum-list">${samWins.length ? samWins.join(', ') : t.dotcomNone}</span>
+        <span class="dc-sum-item lg">${t.dotcomLgWin} (${lgWins.length})</span> <span class="dc-sum-list">${lgWins.length ? lgWins.map(dcColLabel).join(', ') : t.dotcomNone}</span>
+        <span class="dc-sum-item ss">${t.dotcomSsWin} (${samWins.length})</span> <span class="dc-sum-list">${samWins.length ? samWins.map(dcColLabel).join(', ') : t.dotcomNone}</span>
       </div>`
   }
   return `<div class="section-card">
@@ -1061,6 +1062,7 @@ var _noDataMsg=_lang==='en'?'No data available for the selected filter.':'선택
 var _t=${JSON.stringify(t)};
 var _DC_COLS=['TTL','PLP','Microsites','PDP','Newsroom','Support','Buying-guide','Experience'];
 var _DC_SAM=['TTL','PLP','Microsites','PDP','Newsroom','Support','Buying-guide'];
+var _DC_COL_LABEL={Newsroom:'Press&Media'};function _dcColLabel(c){return _DC_COL_LABEL[c]||c}
 function _fmt(n){return Number(n).toLocaleString('en-US')}
 function _stripDomain(d){return(d||'').replace(/\\.(com|org|net|co\\.uk|com\\.br|com\\.au|com\\.vn|com\\.mx|co\\.kr|de|es|fr|ca|in|vn)$/i,'')}
 // 2026-06 — Global / WW / Worldwide 등 TTL 류 cnty 인식 (합산 시 제외)
@@ -1354,7 +1356,7 @@ function _dcVBar(dc,isSmall,prev){
       +'<div style="display:flex;flex-direction:column;align-items:center"><span style="font-size:'+fs+'px;font-weight:700;color:#CF0652;margin-bottom:1px">'+_fmt(lv)+'</span>'+momL+'<div style="width:'+bw+'px;height:'+lh+'px;background:#CF0652;border-radius:2px 2px 0 0"></div></div>'
       +(hasSam?'<div style="display:flex;flex-direction:column;align-items:center"><span style="font-size:'+fs+'px;font-weight:600;color:#94A3B8;margin-bottom:1px">'+_fmt(sv)+'</span>'+momS+'<div style="width:'+bw+'px;height:'+sh+'px;background:#94A3B8;border-radius:2px 2px 0 0"></div></div>':'')
       +'</div>'
-      +'<span style="font-size:'+fsl+'px;color:#64748B;margin-top:3px;text-align:center;white-space:nowrap">'+(col==='TTL'?'Total':col)+'</span>'
+      +'<span style="font-size:'+fsl+'px;color:#64748B;margin-top:3px;text-align:center;white-space:nowrap">'+(col==='TTL'?'Total':_dcColLabel(col))+'</span>'
       +(hasSam?'<span style="font-size:'+(isSmall?10:12)+'px;font-weight:700;color:'+gapColor+';margin-top:1px">'+gapTxt+'</span>':'')
       +'</div>';
   }).join('')+'</div>';

@@ -2196,6 +2196,9 @@ function parseBrandPromptVisibility(rows, mode) {
 // ─── Unlaunched 시트 파서 ─────────────────────────────────────────────────────
 // 시트 데이터와 무관하게 항상 미출시로 간주할 (국가|제품) — Audio 는 BR/VN/IN 미출시
 const DEFAULT_UNLAUNCHED = { 'BR|AV': true, 'VN|AV': true, 'IN|AV': true }
+// 시트가 미출시로 표기해도 항상 '출시(런칭)'로 간주할 (국가|UL_CODE) — 비즈니스 fact.
+// 최종 unlaunchedMap 에서 제거 → 정상 데이터·색상으로 표시. (인도 식기세척기 출시)
+const DEFAULT_LAUNCHED = { 'IN|DW': true }
 
 function parseUnlaunched(rows) {
   // [1] DETECT: 입력 자체 검증 — rows 가 배열이 아니거나 빈 배열이면 fatal
@@ -2282,7 +2285,15 @@ function parseUnlaunched(rows) {
       skipCount++
     }
   })
-  console.log(`[parseUnlaunched] decision=merged / 시트매칭 ${matchedRows}건 + 디폴트 ${Object.keys(DEFAULT_UNLAUNCHED).length}건 + skip ${skipCount}건 / 총행 ${totalRows} / 최종키 ${Object.keys(unlaunchedMap).length}개`)
+  // 강제 출시(런칭) 오버라이드 — 시트가 미출시로 표기해도 제거 (IN 식기세척기 등). 정규화 키 + 원본 변형(DISHWASHER) 모두.
+  let launchedOverride = 0
+  Object.keys(DEFAULT_LAUNCHED).forEach(k => {
+    const [cc, code] = k.split('|')
+    ;[code, ...Object.keys(UL_CODE_NORMALIZE).filter(raw => UL_CODE_NORMALIZE[raw] === code)].forEach(cat => {
+      if (unlaunchedMap[`${cc}|${cat}`]) { delete unlaunchedMap[`${cc}|${cat}`]; launchedOverride++ }
+    })
+  })
+  console.log(`[parseUnlaunched] decision=merged / 시트매칭 ${matchedRows}건 + 디폴트 ${Object.keys(DEFAULT_UNLAUNCHED).length}건 + 강제출시 제거 ${launchedOverride}건 + skip ${skipCount}건 / 총행 ${totalRows} / 최종키 ${Object.keys(unlaunchedMap).length}개`)
   return { unlaunchedMap }
 }
 

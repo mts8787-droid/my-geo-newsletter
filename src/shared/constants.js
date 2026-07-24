@@ -141,6 +141,11 @@ export const INIT_PRODUCTS = [
 export const DOTCOM_LG_COLS  = ['TTL','PLP','Microsites','PDP','Newsroom','Support','Buying-guide','Experience']
 export const DOTCOM_SAM_COLS = ['TTL','PLP','Microsites','PDP','Newsroom','Support','Buying-guide']
 
+// 도트컴 페이지타입 표시 라벨 — 데이터 키(예: Newsroom)는 유지, 화면 표기만 변경 (Citation/대시보드/뉴스레터 공용).
+// 데이터 키를 바꾸면 시트 컬럼 매칭이 깨지므로 표시 전용. 클라이언트 인라인 렌더는 동일 매핑을 미러(_dcColLabel).
+export const DC_COL_LABEL = { Newsroom: 'Press&Media' }
+export const dcColLabel = (c) => DC_COL_LABEL[c] || c
+
 export const INIT_DOTCOM = {
   lg:      { TTL:222447, PLP:52378, Microsites:24075, PDP:46880, Newsroom:21131, Support:15666, 'Buying-guide':14471, Experience:47846 },
   samsung: { TTL:199180, PLP:34177, Microsites:14708, PDP:35709, Newsroom:43152, Support:39144, 'Buying-guide':32290 },
