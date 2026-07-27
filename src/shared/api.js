@@ -50,6 +50,17 @@ export async function updateSnapshot(mode, ts, data) {
   } catch (err) { console.warn('[API] updateSnapshot failed:', err.message); return null }
 }
 
+// 로컬 저장본 JSON 파일 → 서버 저장본에 병합 (ts 중복은 서버가 skip)
+export async function importSnapshots(mode, snapshots) {
+  const r = await fetch(`${apiPaths(mode).snapshots}/import`, {
+    method: 'POST', headers: JSON_HEADERS,
+    body: JSON.stringify({ snapshots }),
+  })
+  const result = await r.json().catch(() => ({}))
+  if (!r.ok || !result.ok) throw new Error(result.error || '가져오기 실패')
+  return result
+}
+
 export async function deleteSnapshot(mode, ts) {
   try {
     const r = await fetch(`${apiPaths(mode).snapshots}/${ts}`, { method: 'DELETE' })

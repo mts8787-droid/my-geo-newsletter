@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react'
-import { Save, FolderOpen, Trash2, Copy, Check, PanelLeftClose, PanelLeftOpen, MessageSquare, Send, X, Sparkles } from 'lucide-react'
+import { Save, FolderOpen, Trash2, Copy, Check, PanelLeftClose, PanelLeftOpen, MessageSquare, Send, X, Sparkles, Upload } from 'lucide-react'
 import { generateEmailHTML, generateSemiAnnualEmailHTML } from '../emailTemplate'
 
 // 템플릿 선택 — meta.letterTemplate 기준 생성기 디스패치 (드롭인 시그니처)
@@ -8,7 +8,7 @@ function genHTMLFor(meta) {
 }
 import { INIT_META, INIT_TOTAL, INIT_PRODUCTS, INIT_DOTCOM, INIT_PRODUCTS_CNTY, INIT_CITATIONS_CNTY, INIT_CITATIONS, FONT, LG_RED } from '../shared/constants.js'
 import { loadCache, saveCache } from '../shared/cache.js'
-import { fetchSnapshots, postSnapshot, updateSnapshot, deleteSnapshot, fetchSyncData, generateAIInsight, fetchBackups } from '../shared/api.js'
+import { fetchSnapshots, postSnapshot, updateSnapshot, deleteSnapshot, fetchSyncData, generateAIInsight, fetchBackups, importSnapshots } from '../shared/api.js'
 import { resolveDataForLang } from '../shared/utils.js'
 import { computeCategoryStats, extractMonthFromPeriod } from '../shared/trackerCategoryStats.js'
 import { parseKPISheet } from '../tracker-v2/utils/sheetParser.js'
@@ -360,6 +360,32 @@ export default function App() {
   }
   useEffect(() => () => clearTimeout(snapMsgTimer.current), [])
 
+  // 로컬 (맥미니) data/newsletter-snapshots.json 파일 → 서버 저장본 병합 import
+  const importFileRef = useRef(null)
+  async function handleImportFile(e) {
+    const file = e.target.files && e.target.files[0]
+    e.target.value = ''  // 같은 파일 재선택 허용
+    if (!file) return
+    let parsed
+    try {
+      parsed = JSON.parse(await file.text())
+    } catch {
+      showSnapMsg('JSON 파싱 실패', 3000)
+      return
+    }
+    // 배열 그대로 또는 { snapshots: [...] } 형태 허용
+    const arr = Array.isArray(parsed) ? parsed : Array.isArray(parsed?.snapshots) ? parsed.snapshots : []
+    const items = arr.filter(s => s && typeof s.name === 'string' && typeof s.ts === 'number' && s.data != null).slice(0, 100)
+    if (items.length === 0) { showSnapMsg('가져올 저장본이 없습니다', 3000); return }
+    try {
+      const result = await importSnapshots(MODE, items)
+      fetchSnapshots(MODE).then(setSnapshots)
+      showSnapMsg(`${result.imported}개 가져옴 (중복 ${result.skipped}개 건너뜀)`, 4000)
+    } catch (err) {
+      showSnapMsg(`가져오기 실패: ${err.message}`, 4000)
+    }
+  }
+
   const userLoadedSnapshot = useRef(false)
   useEffect(() => {
     let cancelled = false
@@ -659,6 +685,16 @@ export default function App() {
                 </div>
               )}
             </div>
+            {/* 저장본 가져오기 (로컬 newsletter-snapshots.json 파일 → 서버 병합) */}
+            <input ref={importFileRef} type="file" accept=".json,application/json"
+              onChange={handleImportFile} style={{ display: 'none' }} />
+            <button onClick={() => importFileRef.current && importFileRef.current.click()}
+              title="로컬 저장본 JSON 파일 (data/newsletter-snapshots.json) 을 서버 저장본에 병합"
+              style={{ padding: '4px 10px', borderRadius: 6, border: 'none', cursor: 'pointer',
+                background: '#1E293B', color: '#E2E8F0', fontSize: 11, fontWeight: 700, fontFamily: FONT,
+                display: 'flex', alignItems: 'center', gap: 4 }}>
+              <Upload size={11} /> 저장본 가져오기
+            </button>
           </div>
         </div>
 

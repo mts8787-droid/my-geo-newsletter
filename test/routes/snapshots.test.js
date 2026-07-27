@@ -106,4 +106,43 @@ describe('Snapshots router', () => {
     }
     expect(fakeModeSnapshots.dashboard).toHaveLength(50)
   })
+
+  it('POST /api/:mode/snapshots/import — 새 항목 병합 + ts 내림차순', async () => {
+    fakeModeSnapshots.newsletter = [{ name: '기존', ts: 2000, data: { v: 1 } }]
+    const r = await request(makeApp())
+      .post('/api/newsletter/snapshots/import')
+      .send({ snapshots: [
+        { name: '로컬A', ts: 3000, data: { v: 2 } },
+        { name: '로컬B', ts: 1000, data: { v: 3 }, updatedAt: 1500 },
+      ] })
+    expect(r.status).toBe(200)
+    expect(r.body.ok).toBe(true)
+    expect(r.body.imported).toBe(2)
+    expect(r.body.skipped).toBe(0)
+    expect(r.body.snapshots.map(s => s.ts)).toEqual([3000, 2000, 1000])
+    expect(r.body.snapshots[2].updatedAt).toBe(1500)
+  })
+
+  it('POST /api/:mode/snapshots/import — ts 중복은 기존 유지 (skip)', async () => {
+    fakeModeSnapshots.newsletter = [{ name: '기존', ts: 2000, data: { v: 'server' } }]
+    const r = await request(makeApp())
+      .post('/api/newsletter/snapshots/import')
+      .send({ snapshots: [
+        { name: '로컬 덮어쓰기 시도', ts: 2000, data: { v: 'local' } },
+        { name: '신규', ts: 5000, data: {} },
+      ] })
+    expect(r.status).toBe(200)
+    expect(r.body.imported).toBe(1)
+    expect(r.body.skipped).toBe(1)
+    const kept = r.body.snapshots.find(s => s.ts === 2000)
+    expect(kept.name).toBe('기존')
+    expect(kept.data.v).toBe('server')
+  })
+
+  it('POST /api/:mode/snapshots/import — Zod 검증 실패 (snapshots 비어있음)', async () => {
+    const r = await request(makeApp())
+      .post('/api/newsletter/snapshots/import')
+      .send({ snapshots: [] })
+    expect(r.status).toBe(400)
+  })
 })

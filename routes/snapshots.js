@@ -10,7 +10,7 @@ import {
 } from '../lib/storage.js'
 import { withFileLock } from '../lib/lock.js'
 import { validateMode } from '../lib/middleware.js'
-import { validateBody, SnapshotPostSchema, SnapshotPutSchema } from '../lib/validate.js'
+import { validateBody, SnapshotPostSchema, SnapshotPutSchema, SnapshotImportSchema } from '../lib/validate.js'
 
 const SNAPSHOT_LIMIT = 50
 
@@ -70,6 +70,27 @@ snapshotsRouter.post('/api/:mode/snapshots', validateMode, validateBody(Snapshot
   const list = [snap, ...readModeSnapshots(mode)].slice(0, SNAPSHOT_LIMIT)
   writeModeSnapshots(mode, list)
   res.json({ ok: true, snapshots: list })
+})
+
+// 로컬 저장본 JSON 병합 import — ts 중복 시 기존 것 유지 (skip)
+snapshotsRouter.post('/api/:mode/snapshots/import', validateMode, validateBody(SnapshotImportSchema), (req, res) => {
+  const { mode } = req.params
+  const { snapshots } = req.body
+  const cur = readModeSnapshots(mode)
+  const existingTs = new Set(cur.map(s => s.ts))
+  let imported = 0, skipped = 0
+  const added = []
+  for (const s of snapshots) {
+    if (existingTs.has(s.ts)) { skipped++; continue }
+    existingTs.add(s.ts)
+    const snap = { name: s.name, ts: s.ts, data: s.data }
+    if (s.updatedAt != null) snap.updatedAt = s.updatedAt
+    added.push(snap)
+    imported++
+  }
+  const list = [...cur, ...added].sort((a, b) => b.ts - a.ts).slice(0, SNAPSHOT_LIMIT)
+  writeModeSnapshots(mode, list)
+  res.json({ ok: true, imported, skipped, snapshots: list })
 })
 
 snapshotsRouter.put('/api/:mode/snapshots/:ts', validateMode, validateBody(SnapshotPutSchema), (req, res) => {
