@@ -26,7 +26,8 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "typecheck": "tsc --noEmit",
-    "publish:hiro": "node scripts/publish-hiro.mjs"
+    "publish:hiro": "node scripts/publish-hiro.mjs",
+    "sync:snapshots": "node scripts/sync-snapshots-daemon.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.89.0",
