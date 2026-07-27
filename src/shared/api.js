@@ -11,11 +11,32 @@ export function apiPaths(mode) {
   }
 }
 
+// 목록 — 메타(name/ts/updatedAt)만 (data 없음). 실제 내용은 fetchSnapshotData 로 단건 조회.
 export async function fetchSnapshots(mode) {
   try {
     const r = await fetch(apiPaths(mode).snapshots)
     return r.ok ? await r.json() : []
   } catch (err) { console.warn('[API] fetchSnapshots failed:', err.message); return [] }
+}
+
+// 단건 조회 (data 포함) — 불러오기 클릭 시에만 호출 (목록 대용량 응답 → OOM 방지)
+export async function fetchSnapshotData(mode, ts) {
+  try {
+    const r = await fetch(`${apiPaths(mode).snapshots}/${ts}`)
+    if (!r.ok) return null
+    const j = await r.json()
+    return j.ok ? j.snapshot : null
+  } catch (err) { console.warn('[API] fetchSnapshotData failed:', err.message); return null }
+}
+
+// 백업 단건 조회 (data 포함) — 백업 복원 클릭 시에만 호출
+export async function fetchBackupData(mode, ts) {
+  try {
+    const r = await fetch(`/api/${mode}/backups/${ts}`)
+    if (!r.ok) return null
+    const j = await r.json()
+    return j.ok ? j.snapshot : null
+  } catch (err) { console.warn('[API] fetchBackupData failed:', err.message); return null }
 }
 
 // 삭제된 저장본 백업 (최근 5개) 조회

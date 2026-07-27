@@ -3,7 +3,7 @@ import { Save, FolderOpen, Trash2, Copy, Check, PanelLeftClose, PanelLeftOpen } 
 import { generateMonthlyReportHTML as generateEmailHTML } from './monthlyTemplate.js'
 import { INIT_META, INIT_TOTAL, INIT_PRODUCTS, INIT_DOTCOM, INIT_PRODUCTS_CNTY, INIT_CITATIONS_CNTY, INIT_CITATIONS, FONT, LG_RED } from '../shared/constants.js'
 import { loadCache, saveCache } from '../shared/cache.js'
-import { fetchSnapshots, postSnapshot, updateSnapshot, deleteSnapshot, fetchSyncData } from '../shared/api.js'
+import { fetchSnapshots, fetchSnapshotData, postSnapshot, updateSnapshot, deleteSnapshot, fetchSyncData } from '../shared/api.js'
 import { resolveDataForLang } from '../shared/utils.js'
 import { computeCategoryStats, computeStakeholderStats, extractMonthFromPeriod } from '../shared/trackerCategoryStats.js'
 import Sidebar from '../shared/Sidebar.jsx'
@@ -257,8 +257,11 @@ export default function App() {
     if (result) { setSnapshots(result); setSnapName(''); setActiveSnap(result[0]?.ts || null) }
     showSnapMsg(result ? '새로 저장 완료!' : '저장 실패')
   }
-  function handleSnapLoad(snap) {
-    const d = snap.data
+  async function handleSnapLoad(snap) {
+    // 목록은 메타만 — data 는 단건 GET (대용량 목록 응답 → 서버 OOM 방지)
+    const full = await fetchSnapshotData(MODE, snap.ts)
+    if (!full || full.data == null) { setSnapMsg('불러오기 실패 — 저장본을 찾을 수 없습니다'); return }
+    const d = full.data
     setMetaKo({ ...INIT_META, ...(d.metaKo || d.meta || {}) })
     setMetaEn({ ...INIT_META, ...(d.metaEn || {}) })
     if (d.total)     setTotal(d.total)

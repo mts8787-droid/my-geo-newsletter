@@ -3,7 +3,7 @@ import { Save, FolderOpen, Trash2, PanelLeftClose, PanelLeftOpen } from 'lucide-
 import { generateCitationHTML } from './citationTemplate.js'
 import { INIT_META, INIT_CITATIONS, INIT_CITATIONS_CNTY, INIT_DOTCOM, FONT, LG_RED } from '../shared/constants.js'
 import { loadCache, saveCache } from '../shared/cache.js'
-import { fetchSnapshots, postSnapshot, updateSnapshot, deleteSnapshot, fetchSyncData } from '../shared/api.js'
+import { fetchSnapshots, fetchSnapshotData, postSnapshot, updateSnapshot, deleteSnapshot, fetchSyncData } from '../shared/api.js'
 import { resolveDataForLang } from '../shared/utils.js'
 import CitationSidebar from './CitationSidebar.jsx'
 
@@ -136,8 +136,11 @@ export default function App() {
     if (result) { setSnapshots(result); setSnapName(''); setActiveSnap(result[0]?.ts || null) }
     setSnapMsg(result ? '새로 저장 완료!' : '저장 실패'); setTimeout(() => setSnapMsg(''), 2000)
   }
-  function handleSnapLoad(snap) {
-    const d = snap.data
+  async function handleSnapLoad(snap) {
+    // 목록은 메타만 — data 는 단건 GET (대용량 목록 응답 → 서버 OOM 방지)
+    const full = await fetchSnapshotData(MODE, snap.ts)
+    if (!full || full.data == null) { setSnapMsg('불러오기 실패 — 저장본을 찾을 수 없습니다'); return }
+    const d = full.data
     setMetaKo({ ...INIT_META, ...(d.metaKo || d.meta || {}) })
     setMetaEn({ ...INIT_META, ...(d.metaEn || {}) })
     if (d.citations)     setCitations(d.citations)

@@ -8,7 +8,7 @@ function genHTMLFor(meta) {
 }
 import { INIT_META, INIT_TOTAL, INIT_PRODUCTS, INIT_DOTCOM, INIT_PRODUCTS_CNTY, INIT_CITATIONS_CNTY, INIT_CITATIONS, FONT, LG_RED } from '../shared/constants.js'
 import { loadCache, saveCache } from '../shared/cache.js'
-import { fetchSnapshots, postSnapshot, updateSnapshot, deleteSnapshot, fetchSyncData, generateAIInsight, fetchBackups } from '../shared/api.js'
+import { fetchSnapshots, fetchSnapshotData, fetchBackupData, postSnapshot, updateSnapshot, deleteSnapshot, fetchSyncData, generateAIInsight, fetchBackups } from '../shared/api.js'
 import { resolveDataForLang } from '../shared/utils.js'
 import { computeCategoryStats, extractMonthFromPeriod } from '../shared/trackerCategoryStats.js'
 import { parseKPISheet } from '../tracker-v2/utils/sheetParser.js'
@@ -434,9 +434,12 @@ export default function App() {
     if (result) { setSnapshots(result); setSnapName(''); setActiveSnap(result[0]?.ts || null) }
     showSnapMsg(result ? '새로 저장 완료!' : '저장 실패')
   }
-  function handleSnapLoad(snap) {
+  async function handleSnapLoad(snap, isBackup = false) {
     userLoadedSnapshot.current = true
-    const d = snap.data
+    // 목록은 메타만 — data 는 단건 GET 으로 (대용량 목록 응답 → 서버 OOM 방지)
+    const full = isBackup ? await fetchBackupData(MODE, snap.ts) : await fetchSnapshotData(MODE, snap.ts)
+    if (!full || full.data == null) { showSnapMsg('불러오기 실패 — 저장본을 찾을 수 없습니다', 4000); return }
+    const d = full.data
     setMetaKo({ ...INIT_META, ...(d.metaKo || d.meta || {}) })
     setMetaEn({ ...INIT_META, ...(d.metaEn || {}) })
     if (d.total)     setTotal(d.total)
@@ -649,7 +652,7 @@ export default function App() {
                           삭제 {snap.deletedAt ? new Date(snap.deletedAt).toLocaleString('ko-KR') : new Date(snap.ts).toLocaleString('ko-KR')}
                         </p>
                       </div>
-                      <button onClick={() => { handleSnapLoad(snap); setBackupOpen(false) }}
+                      <button onClick={() => { handleSnapLoad(snap, true); setBackupOpen(false) }}
                         style={{ padding: '3px 8px', borderRadius: 5, border: 'none', cursor: 'pointer',
                           background: '#166534', color: '#FFFFFF', fontSize: 11, fontWeight: 700, fontFamily: FONT }}>
                         복원

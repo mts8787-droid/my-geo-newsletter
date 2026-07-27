@@ -59,6 +59,7 @@ async function login() {
   cookie = m[0]
 }
 
+// 목록 GET — 서버가 메타(light: name/ts/updatedAt)만 반환 (대용량 응답 → 서버 OOM 방지 구조)
 async function fetchRemoteSnapshots(mode) {
   const r = await fetch(`${REMOTE}/api/${mode}/snapshots`, { headers: { cookie } })
   if (r.status === 401) { await login(); return fetchRemoteSnapshots(mode) }  // 세션 만료 → 재로그인 1회
@@ -68,16 +69,31 @@ async function fetchRemoteSnapshots(mode) {
   return list
 }
 
-// 원격 목록을 로컬에 병합. 반환: { added, updated } (변경 없으면 write 안 함)
-function mergeIntoLocal(mode, remote) {
+// 단건 GET (data 포함) — 필요한 저장본만 개별로 내려받음
+async function fetchRemoteSnapshot(mode, ts) {
+  const r = await fetch(`${REMOTE}/api/${mode}/snapshots/${ts}`, { headers: { cookie } })
+  if (r.status === 401) { await login(); return fetchRemoteSnapshot(mode, ts) }
+  if (!r.ok) return null
+  const j = await r.json()
+  return j.ok ? j.snapshot : null
+}
+
+// [pull] 원격 light 목록과 비교해 신규/갱신분만 단건 fetch → 로컬 병합.
+async function pullIntoLocal(mode, remoteLight) {
   const local = readModeSnapshots(mode)
   const byTs = new Map(local.map(s => [s.ts, s]))
-  let added = 0, updated = 0
-  for (const r of remote) {
-    if (!r || typeof r.ts !== 'number') continue
+  // 내려받을 대상: 로컬에 없거나(신규), 원격 updatedAt 이 더 최신(갱신)
+  const need = remoteLight.filter(r => {
+    if (!r || typeof r.ts !== 'number') return false
     const cur = byTs.get(r.ts)
-    if (!cur) { byTs.set(r.ts, r); added++ }
-    else if ((r.updatedAt || 0) > (cur.updatedAt || 0)) { byTs.set(r.ts, r); updated++ }
+    return !cur || (r.updatedAt || 0) > (cur.updatedAt || 0)
+  })
+  let added = 0, updated = 0
+  for (const r of need) {
+    const full = await fetchRemoteSnapshot(mode, r.ts)
+    if (!full || full.data == null) continue  // 삭제 경합 등 — skip
+    if (byTs.has(full.ts)) updated++; else added++
+    byTs.set(full.ts, full)
   }
   if (added || updated) {
     const merged = [...byTs.values()].sort((a, b) => b.ts - a.ts).slice(0, LOCAL_CAP)
@@ -126,7 +142,7 @@ async function tick() {
   for (const mode of args.modes) {
     try {
       const remote = await fetchRemoteSnapshots(mode)
-      const { added, updated } = mergeIntoLocal(mode, remote)
+      const { added, updated } = await pullIntoLocal(mode, remote)
       if (added || updated) {
         console.log(`[sync] ${new Date().toLocaleTimeString()} ${mode}: [pull] 신규 ${added} · 갱신 ${updated} → 로컬 반영 (원격 ${remote.length}개)`)
       }
