@@ -9,6 +9,12 @@ dist-citation
 /data/*
 # Readability 집계 스냅샷은 예외 — 압축 KPI (120KB, raw URL/시크릿 없음). 배포 서버에서 대시보드 렌더에 필요 (원본 89MB는 별도 리포라 원격 집계 불가)
 !/data/readability/
+# 리포트 작성본(스냅샷·백업·인사이트 아카이브)도 예외 — git 으로 버전 관리/백업 (사용자 요청).
+# 주의: 로컬 파일만 커밋됨 — Render 디스크의 작성본은 sync-snapshots-daemon 으로 내려받아야 채워짐.
+!/data/*-snapshots.json
+!/data/*-backups.json
+!/data/snapshots.json
+!/data/archives.json
 
 # Claude Code 사용자 로컬 permissions (PC 경로 등 개인 정보 — 외부 노출 방지)
 .claude/settings.local.json
