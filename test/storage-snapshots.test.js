@@ -50,6 +50,44 @@ describe('per-file snapshot storage', () => {
     expect(storage.readModeBackup('newsletter', 2000).data.v).toBe(6)
   })
 
+  it('iterJsonArrayItems — 잘린(truncated) 파일에서 온전한 항목까지 복구', () => {
+    const f = join(TMP, 'trunc.json')
+    const fullJson = JSON.stringify([
+      { name: '살아있는1', ts: 1, data: { v: 1 } },
+      { name: '살아있는2', ts: 2, data: { v: 2 } },
+      { name: '잘린항목', ts: 3, data: { v: 3 } },
+    ], null, 2)
+    writeFileSync(f, fullJson.slice(0, fullJson.length - 30))  // OOM-kill 중 잘림 모사
+    const items = [...storage.iterJsonArrayItems(f)]
+    expect(items.map(s => s.ts)).toEqual([1, 2])               // 온전한 2건 회수
+  })
+
+  it('iterJsonArrayItems — 한글 이름이 청크 경계에 걸려도 안전 (작은 chunk 강제)', () => {
+    const f = join(TMP, 'kr.json')
+    writeFileSync(f, JSON.stringify([
+      { name: '6월호 — 한글제목입니다', ts: 1, data: { 메모: '가나다라마바사' } },
+      { name: '7월호', ts: 2, data: {} },
+    ]))
+    const items = [...storage.iterJsonArrayItems(f, 7)]        // 7바이트 청크 → 멀티바이트 분절 강제
+    expect(items).toHaveLength(2)
+    expect(items[0].name).toBe('6월호 — 한글제목입니다')
+    expect(items[0].data['메모']).toBe('가나다라마바사')
+  })
+
+  it('self-heal — 빈 인덱스 + .migrated 잔존 시 스트리밍 복구', () => {
+    // dashboard 모드로 시뮬레이션: .migrated 에 데이터, 인덱스는 빈 상태
+    const dir = join(TMP, 'snapshots', 'dashboard')
+    const { mkdirSync } = require('fs')
+    mkdirSync(dir, { recursive: true })
+    writeFileSync(join(dir, '_index.json'), '[]')
+    writeFileSync(join(TMP, 'dashboard-snapshots.json.migrated'), JSON.stringify([
+      { name: '복구대상', ts: 777, data: { saved: true } },
+    ]))
+    const idx = storage.listModeSnapshots('dashboard')
+    expect(idx.map(m => m.ts)).toEqual([777])
+    expect(storage.readModeSnapshot('dashboard', 777).data.saved).toBe(true)
+  })
+
   it('whole-list 호환 (데몬) — readModeSnapshots 전체 data / writeModeSnapshots 전체 교체', () => {
     const all = storage.readModeSnapshots('newsletter')
     expect(all).toHaveLength(1)
