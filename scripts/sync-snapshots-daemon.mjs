@@ -1,8 +1,11 @@
 #!/usr/bin/env node
-// ─── 뉴스레터 저장본 실시간 동기화 데몬 (원격 → 로컬/맥미니) ─────────────────
-// 어드민에서 "저장하기/새로 저장" 을 누르면 원격(Render) 목록이 갱신되고,
-// 본 데몬이 주기 폴링(기본 15초)으로 그 변경을 즉시 로컬 data/ 에 병합한다.
-// (맥미니는 외부에서 접근 불가 → Render 가 푸시할 수 없으므로 pull 방식이 정답)
+// ─── 뉴스레터 저장본 양방향 동기화 데몬 (맥미니 ↔ 원격/Render) ─────────────────
+// 맥미니의 로컬 파일(data/<mode>-snapshots.json)에 자동 접속해 원격과 동기화:
+//   [pull] 원격 신규·갱신 저장본 → 로컬 파일에 내려받아 병합
+//          (어드민 '저장하기/새로 저장' 이 주기 내 자동 반영)
+//   [push] 로컬 파일에만 있는 저장본 → 원격 /api/:mode/snapshots/import 로 자동 업로드
+//          (수동 파일 업로드 불필요 — 맥미니에 저장돼 있던 작성본이 서버에 자동 등장)
+// 주기 폴링 기본 15초. (맥미니는 외부 접근 불가 → 브릿지는 맥미니 쪽에서 실행)
 //
 // 사용:
 //   node scripts/sync-snapshots-daemon.mjs --remote https://<앱>.onrender.com
@@ -10,14 +13,16 @@
 //   비밀번호: env REMOTE_ADMIN_PASSWORD (없으면 ADMIN_PASSWORD — .env 자동 로드)
 //
 // 병합 규칙 (로컬은 아카이브 — 데이터 보호 우선):
-//   - 원격에만 있는 저장본(ts 기준) → 로컬에 추가
-//   - 양쪽에 있고 원격 updatedAt 이 더 최신 → 로컬 교체 (어드민 '저장하기' 덮어쓰기 반영)
-//   - 로컬에만 있는 저장본 → 유지 (원격에서 삭제돼도 로컬 아카이브 보존)
-//   - ts 내림차순, 로컬 최대 200개
+//   [pull] 원격에만 있는 저장본(ts 기준) → 로컬 추가 / 원격 updatedAt 최신 → 로컬 교체
+//          로컬 전용은 삭제 안 함 (원격에서 지워져도 로컬 아카이브 보존). ts 내림차순, 로컬 cap 200.
+//   [push] 원격에 없는 ts 만 import (원격이 중복 skip — 덮어쓰기 없음). 원격 cap(50) 밖으로
+//          밀려날 오래된 로컬 전용분은 push 대상에서 제외 (무한 재푸시 방지).
 import 'dotenv/config'
 import { readModeSnapshots, writeModeSnapshots, VALID_MODES } from '../lib/storage.js'
 
 const LOCAL_CAP = 200
+const REMOTE_CAP = 50      // 서버 SNAPSHOT_LIMIT 와 동일
+const PUSH_CHUNK = 100     // import 스키마 배열 상한
 
 function parseArgs() {
   const a = process.argv.slice(2)
@@ -81,13 +86,53 @@ function mergeIntoLocal(mode, remote) {
   return { added, updated }
 }
 
+// 이번 프로세스에서 이미 push 시도한 ts (모드별) — 원격 cap 에 밀려난 항목의 무한 재푸시 방지
+const pushedTs = new Map()  // mode → Set<ts>
+
+// [push] 로컬 파일에만 있는 저장본 → 원격 import (ts 중복은 원격이 skip — 안전)
+async function pushLocalOnly(mode, remote) {
+  const local = readModeSnapshots(mode)
+  const remoteTs = new Set(remote.map(s => s.ts))
+  if (!pushedTs.has(mode)) pushedTs.set(mode, new Set())
+  const done = pushedTs.get(mode)
+  // 원격이 cap 이면 원격 최솟값 ts 보다 오래된 로컬 전용분은 어차피 잘려나감 → 제외
+  const remoteMin = remote.length >= REMOTE_CAP ? Math.min(...remote.map(s => s.ts)) : -Infinity
+  const missing = local.filter(s =>
+    s && typeof s.ts === 'number' && !remoteTs.has(s.ts) && !done.has(s.ts) && s.ts > remoteMin
+  )
+  if (!missing.length) return { pushed: 0 }
+  let imported = 0, skipped = 0
+  for (let i = 0; i < missing.length; i += PUSH_CHUNK) {
+    const chunk = missing.slice(i, i + PUSH_CHUNK).map(s => ({
+      name: String(s.name || '이름없음'), ts: s.ts, data: s.data,
+      ...(typeof s.updatedAt === 'number' ? { updatedAt: s.updatedAt } : {}),
+    }))
+    const r = await fetch(`${REMOTE}/api/${mode}/snapshots/import`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest', cookie },
+      body: JSON.stringify({ snapshots: chunk }),
+    })
+    if (r.status === 401) { await login(); i -= PUSH_CHUNK; continue }  // 세션 만료 → 재로그인 후 같은 chunk 재시도
+    if (!r.ok) throw new Error(`push import HTTP ${r.status}`)
+    const j = await r.json()
+    imported += j.imported || 0
+    skipped += j.skipped || 0
+    chunk.forEach(s => done.add(s.ts))
+  }
+  return { pushed: missing.length, imported, skipped }
+}
+
 async function tick() {
   for (const mode of args.modes) {
     try {
       const remote = await fetchRemoteSnapshots(mode)
       const { added, updated } = mergeIntoLocal(mode, remote)
       if (added || updated) {
-        console.log(`[sync] ${new Date().toLocaleTimeString()} ${mode}: 신규 ${added} · 갱신 ${updated} → 로컬 반영 (원격 ${remote.length}개)`)
+        console.log(`[sync] ${new Date().toLocaleTimeString()} ${mode}: [pull] 신규 ${added} · 갱신 ${updated} → 로컬 반영 (원격 ${remote.length}개)`)
+      }
+      const p = await pushLocalOnly(mode, remote)
+      if (p.pushed) {
+        console.log(`[sync] ${new Date().toLocaleTimeString()} ${mode}: [push] 로컬 전용 ${p.pushed}건 → 원격 반영 ${p.imported} · 중복 skip ${p.skipped}`)
       }
     } catch (e) {
       console.warn(`[sync] WARN ${mode}: ${e.message}`)
