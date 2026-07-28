@@ -974,7 +974,7 @@ function insightV2SectionHtml(lang = 'ko') {
       </tr>
     </table>`
   const cases = [
-    { title: '📌 [실증 예시 1] 세탁기·건조기 / WM 카테고리 (UK 영국) - "가장 조용한 세탁건조기 추천"',
+    { title: '[실증 예시 1] 세탁기·건조기 / WM 카테고리 (UK 영국) - "가장 조용한 세탁건조기 추천"',
       desc: '5월 Baseline에는 삼성과 LG가 유통망 가격대와 함께 병기 추천되었으나, 6월 Target 답변에서는 <strong>삼성전자 제품 추천이 본문에서 제외되고, LG전자는 다이렉트 드라이브 모터 기술 명칭이 인용되며 추천이 유지</strong>된 대조 사례입니다.',
       prompt: 'What is the best quiet washer dryer combo?',
       b_en: 'If your top priority is a quiet, reliable washer-dryer combo in the UK, the sweet spot is usually a model with an inverter/direct-drive motor, good anti-vibration control, and a spin noise level under about 72 dB. Independent guides and user reviews consistently point toward Bosch, Samsung (Ecobubble series at £649 on Currys), LG (Direct Drive Series at £699 on Argos), and Miele as the quietest premium options available.',
@@ -982,7 +982,7 @@ function insightV2SectionHtml(lang = 'ko') {
       t_en: 'If your top priority is quiet operation, focus on machines with low spin noise (ideally under 72 dB), an inverter/direct-drive motor, and strong vibration control. In the UK market, Miele, AEG, and some LG models are generally regarded as the quietest premium options.<br/><br/>### Best Value Quiet Option: LG Direct Drive Washer-Dryer<br/>LG\'s Direct Drive models are frequently praised for low vibration and quiet operation thanks to the motor being attached directly to the drum.',
       t_ko: '조용한 작동이 최우선 과제라면 탈수 소음이 적고(이상적으로는 72dB 미만), 인버터/다이렉트 드라이브 모터 및 강력한 진동 제어 기능을 갖춘 세탁기에 집중하십시오. 영국 시장에서는 밀레, AEG 및 일부 LG 모델이 일반적으로 가장 조용한 프리미엄 옵션으로 간주됩니다.<br/><br/>### 가성비 우수 조용한 옵션: LG 다이렉트 드라이브 세탁건조기<br/>LG의 다이렉트 드라이브(Direct Drive) 모델은 모터가 드럼에 직접 부착되어 진동이 적고 조용하게 작동한다는 점에서 자주 찬사를 받습니다.',
       insight: '5월 Baseline에 병기 노출되었던 <strong>삼성 브랜드명과 에코버블(Ecobubble) 라인업 명칭은 6월 Target 답변에서 제외</strong>되었습니다. 반면 LG전자는 <strong>Direct Drive</strong> 스펙 서술을 근거로 추천 목록에 유지되어 노출이 지속되었습니다.' },
-    { title: '📌 [실증 예시 2] 세탁기 / WM 카테고리 (UK 영국) - "가장 조용한 세탁기 추천"',
+    { title: '[실증 예시 2] 세탁기 / WM 카테고리 (UK 영국) - "가장 조용한 세탁기 추천"',
       desc: '브랜드가 명시되지 않은 중립적인 스펙 추천 질문에서, 5월에는 삼성과 LG가 함께 노출·추천되었으나 <strong>6월에는 삼성이 제외되고 LG전자가 최상위 추천 제품으로 유지</strong>된 또 다른 원문 대조 사례입니다.',
       prompt: 'What is the best quiet washing machine?',
       b_en: 'Short answer: the quietest washing machines commonly recommended for UK homes tend to be models with EcoSilence or QuietPro drives from brands like Miele, Bosch, LG, and Samsung, often rated around 40–45 dB on wash and around 60–70 dB on spin. Top picks often favored in the UK market: Miele washers with ProfiEco motor and anti-vibration features are frequently cited as among the quietest... Bosch washers with EcoSilence Drive are commonly recommended... LG and Samsung models with inverter motors and noise-reduction features also perform well in real-world testing.',
@@ -1005,7 +1005,7 @@ function insightV2SectionHtml(lang = 'ko') {
               <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin:10px 0 14px;">
                 <tr>
                   <td style="padding:10px 14px;background:#FEF2F4;border:1px solid #FECDD3;border-radius:8px;">
-                    <p style="margin:0;font-size:12px;color:#1A1A1A;line-height:20px;font-family:${EM_FONT};letter-spacing:-0.3px;"><strong style="color:${EM_RED};">💡 분석 Insight</strong>&nbsp;&nbsp;${cs.insight}</p>
+                    <p style="margin:0;font-size:12px;color:#1A1A1A;line-height:20px;font-family:${EM_FONT};letter-spacing:-0.3px;"><strong style="color:${EM_RED};">분석 Insight</strong>&nbsp;&nbsp;${cs.insight}</p>
                   </td>
                 </tr>
               </table>
@@ -1058,13 +1058,13 @@ function insightV2SectionHtml(lang = 'ko') {
                         <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#0F172A;border-radius:12px;">
                           <tr>
                             <td style="padding:18px 18px 12px;">
-                              <p style="margin:0 0 10px;font-size:13px;font-weight:800;color:#FF9EBB;font-family:${EM_FONT};letter-spacing:1px;">🎯 경영진 핵심 메시지 (EXECUTIVE SUMMARY)</p>
+                              <p style="margin:0 0 10px;font-size:13px;font-weight:800;color:#FF9EBB;font-family:${EM_FONT};letter-spacing:1px;">경영진 핵심 메시지 (EXECUTIVE SUMMARY)</p>
                               <p style="margin:0 0 12px;font-size:13px;color:#E2E8F0;line-height:22px;font-family:${EM_FONT};letter-spacing:-0.3px;">2026년 6월 AI 검색(Gemini, ChatGPT 등)에서 4대 핵심 가전(TV·냉장고·세탁기·에어컨)의 브랜드 노출이 전반적으로 하락한 가운데, <strong>삼성전자의 하락 폭이 LG전자보다 컸습니다.</strong> 그 원인을 추적한 결과는 다음과 같습니다.</p>
                               <table border="0" cellpadding="0" cellspacing="0" width="100%">
                                 ${execItem('1. [현상 요약] 4대 핵심 가전 전반에서 브랜드 언급 수·Visibility 동반 하락 — 삼성전자의 하락 폭이 상대적으로 큼',
                                   '4대 가전 통합 브랜드 언급 수 감소에서 삼성전자는 <strong style="color:#FFFFFF;">-28,867회(-4.85%)</strong>, LG전자는 <strong style="color:#FFFFFF;">-26,991회(-4.08%)</strong>로, 삼성전자가 더 큰 폭으로 감소했습니다.<br/>실측 Visibility 등락에서도 삼성전자 <strong style="color:#FFFFFF;">-1.70%p(60.39%→58.70%)</strong>, LG전자 <strong style="color:#FFFFFF;">-1.68%p(64.90%→63.22%)</strong>로 삼성전자의 하락 폭이 더 크게 관찰되었습니다.')}
                                 ${execItem('2. [추정 원인] 제품별 \'독자 기술 상표어 자산\'의 비대칭',
-                                  `답변이 스펙 설명 중심으로 옮겨갈 때, LG전자의 독자 기술 상표어는 AI가 원리를 설명하는 문맥에서 인용되어 노출이 유지된 반면, 삼성전자의 명칭은 마케팅 라인업으로 분류되어 제외되는 경향이 관찰되었습니다.<br/>📺 <strong style="color:#FFFFFF;">TV</strong>: LG전자 ${termDark('Brightness Booster')} (스펙 기술어) vs 삼성전자 ${termDark('The Frame')} / ${termDark('Neo QLED')} (마케팅 라인업)<br/>🧊 <strong style="color:#FFFFFF;">냉장고</strong>: LG전자 ${termDark('Inverter Linear')} (리니어 압축 스펙) vs 삼성전자 ${termDark('Bespoke')} (디자인 라인업)<br/>🧺 <strong style="color:#FFFFFF;">세탁기</strong>: LG전자 ${termDark('Direct-Drive')} / ${termDark('TrueSteam')} (직연결 모터/스팀 스펙) vs 삼성전자 ${termDark('Bespoke AI')} / ${termDark('Ecobubble')} (마케팅 라인업)<br/>❄️ <strong style="color:#FFFFFF;">에어컨</strong>: LG전자 ${termDark('Dual Inverter')} (듀얼 인버터 압축 스펙) vs 삼성전자 ${termDark('WindFree')} (마케팅 라인업)`)}
+                                  `답변이 스펙 설명 중심으로 옮겨갈 때, LG전자의 독자 기술 상표어는 AI가 원리를 설명하는 문맥에서 인용되어 노출이 유지된 반면, 삼성전자의 명칭은 마케팅 라인업으로 분류되어 제외되는 경향이 관찰되었습니다.<br/><strong style="color:#FFFFFF;">TV</strong>: LG전자 ${termDark('Brightness Booster')} (스펙 기술어) vs 삼성전자 ${termDark('The Frame')} / ${termDark('Neo QLED')} (마케팅 라인업)<br/><strong style="color:#FFFFFF;">냉장고</strong>: LG전자 ${termDark('Inverter Linear')} (리니어 압축 스펙) vs 삼성전자 ${termDark('Bespoke')} (디자인 라인업)<br/><strong style="color:#FFFFFF;">세탁기</strong>: LG전자 ${termDark('Direct-Drive')} / ${termDark('TrueSteam')} (직연결 모터/스팀 스펙) vs 삼성전자 ${termDark('Bespoke AI')} / ${termDark('Ecobubble')} (마케팅 라인업)<br/><strong style="color:#FFFFFF;">에어컨</strong>: LG전자 ${termDark('Dual Inverter')} (듀얼 인버터 압축 스펙) vs 삼성전자 ${termDark('WindFree')} (마케팅 라인업)`)}
                                 ${execItem('3. [실증 사례] 5월 양사 병기 → 6월 LG 단독 노출 전환의 원문 대조 검증',
                                   '5월 Baseline 답변에는 삼성과 LG가 함께 노출·추천되었으나, 6월 알고리즘 변경 이후 <strong style="color:#FFFFFF;">삼성전자는 추천 목록에서 제외되고 LG전자만 노출이 유지</strong>되는 사례가 4대 가전 논브랜드 프롬프트 원문 대조를 통해 확인되었습니다.')}
                                 ${execItem('4. [대응 방향] 독자 기술 상표어 자산 강화 및 서드파티 스펙 평가 매체 다변화',
@@ -1081,7 +1081,7 @@ function insightV2SectionHtml(lang = 'ko') {
                               <table border="0" cellpadding="0" cellspacing="0">
                                 <tr>
                                   <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
-                                  <td style="padding-left:8px;font-size:15px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-0.5px;">📊 1. 4대 핵심 가전 브랜드 언급 수와 Visibility 등락 대조 <span style="font-size:11px;font-weight:600;color:#94A3B8;">(피벗 마스터 실측 기준)</span></td>
+                                  <td style="padding-left:8px;font-size:15px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-0.5px;">1. 4대 핵심 가전 브랜드 언급 수와 Visibility 등락 대조 <span style="font-size:11px;font-weight:600;color:#94A3B8;">(피벗 마스터 실측 기준)</span></td>
                                 </tr>
                               </table>
                             </td>
@@ -1109,7 +1109,7 @@ function insightV2SectionHtml(lang = 'ko') {
                               <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FEF2F4;border:1px solid #FECDD3;border-radius:8px;">
                                 <tr>
                                   <td style="padding:12px 16px;">
-                                    <p style="margin:0 0 6px;font-size:12px;font-weight:800;color:${EM_RED};font-family:${EM_FONT};letter-spacing:0.5px;">💡 GEO INSIGHT (지표 상세 해석)</p>
+                                    <p style="margin:0 0 6px;font-size:12px;font-weight:800;color:${EM_RED};font-family:${EM_FONT};letter-spacing:0.5px;">GEO INSIGHT (지표 상세 해석)</p>
                                     <p style="margin:0;font-size:12px;color:#1A1A1A;line-height:20px;font-family:${EM_FONT};letter-spacing:-0.3px;">
                                       <strong>1. 핵심 가전(냉장고/세탁기)의 삼성-LG 하락 패턴 차이</strong>: 냉장고(삼성 -6.45% vs LG -5.61%) 및 세탁기(삼성 -6.30% vs LG -4.33%) 카테고리 모두에서 삼성전자의 브랜드 언급 감소 폭이 LG전자보다 크게 나타났습니다. 이는 AI 엔진의 인용 알고리즘 변화 국면에서 삼성전자의 마케팅 브랜드 키워드가 상대적으로 넓은 범위에서 제외되었음을 시사합니다.<br/><br/>
                                       <strong>2. 에어컨(RAC)의 노출 격차</strong>: 에어컨 카테고리에서도 삼성전자의 브랜드 언급 감소율(-5.74%)이 LG전자(-3.35%) 대비 크게 나타났습니다. 양사 모두 하락했으나 LG전자는 스펙 설명 중심의 서술 문맥에서 하락 폭을 상대적으로 낮게 유지했습니다.<br/><br/>
@@ -1129,7 +1129,7 @@ function insightV2SectionHtml(lang = 'ko') {
                               <table border="0" cellpadding="0" cellspacing="0">
                                 <tr>
                                   <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
-                                  <td style="padding-left:8px;font-size:15px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-0.5px;">🔑 2. 브랜드 노출 변화 3대 관찰 패턴 및 제품군별 실증 예시</td>
+                                  <td style="padding-left:8px;font-size:15px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-0.5px;">2. 브랜드 노출 변화 3대 관찰 패턴 및 제품군별 실증 예시</td>
                                 </tr>
                               </table>
                             </td>
