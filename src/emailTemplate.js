@@ -876,6 +876,278 @@ function insightBlockHtml(insight, showInsight, howToRead, showHowToRead, lang =
   return html
 }
 
+// ─── 6월 인사이트 V2 (CEO 보고서 기반) ─────────────────────────────────────────
+// 소스: "2026년 6월 글로벌 GEO Visibility 등락 CEO 보고서" — Executive Summary + §1 + §2 (사용자 텍스트 그대로).
+// 토글: meta.showInsightV2 (Sidebar '6월 인사이트 V2'). 기존 totalInsight 블록(V1)과 독립 온오프.
+// 이메일 호환: table-layout only / 인라인 style / flex·grid 금지 (newsletter-guard).
+function insightV2SectionHtml(lang = 'ko') {
+  const MONO = "'Courier New',Courier,monospace"
+  const dC = s => String(s).indexOf('+') === 0 ? '#16A34A' : '#DC2626'
+  const term = s => `<span style="font-family:${MONO};font-weight:700;background:#F1F5F9;border-radius:4px;padding:0 4px;">${s}</span>`
+  const termDark = s => `<span style="font-family:${MONO};font-weight:700;background:#1E2433;border-radius:4px;padding:0 4px;color:#FDA4AF;">${s}</span>`
+
+  // ── [수치 테이블 1.1] 데이터 (보고서 수치 그대로) ──
+  const t11 = [
+    { prd: 'TV', brand: 'SAMSUNG (삼성전자)', c: '#3B82F6', m5: '369,634회', m6: '354,875회', d: '-14,759회', dr: '-3.99%', v5: '90.19%', v6: '89.07%', vp: '-1.13%p' },
+    { prd: 'TV', brand: 'LG (LG전자)', c: EM_RED, m5: '358,964회', m6: '345,260회', d: '-13,704회', dr: '-3.82%', v5: '87.79%', v6: '86.87%', vp: '-0.92%p' },
+    { prd: '냉장고', brand: 'SAMSUNG (삼성전자)', c: '#3B82F6', m5: '102,467회', m6: '95,860회', d: '-6,607회', dr: '-6.45%', v5: '53.18%', v6: '50.70%', vp: '-2.48%p' },
+    { prd: '냉장고', brand: 'LG (LG전자)', c: EM_RED, m5: '101,745회', m6: '96,035회', d: '-5,710회', dr: '-5.61%', v5: '52.80%', v6: '50.58%', vp: '-2.22%p' },
+    { prd: '냉장고', brand: 'Bosch (보쉬)', c: '#64748B', m5: '59,478회', m6: '60,543회', d: '+1,065회', dr: '+1.79%', v5: '38.44%', v6: '38.89%', vp: '+0.45%p' },
+    { prd: '세탁기', brand: 'LG (LG전자)', c: EM_RED, m5: '88,441회', m6: '84,610회', d: '-3,831회', dr: '-4.33%', v5: '47.56%', v6: '45.89%', vp: '-1.67%p' },
+    { prd: '세탁기', brand: 'SAMSUNG (삼성전자)', c: '#3B82F6', m5: '77,344회', m6: '72,474회', d: '-4,870회', dr: '-6.30%', v5: '43.18%', v6: '40.95%', vp: '-2.23%p' },
+    { prd: '세탁기', brand: 'Bosch (보쉬)', c: '#64748B', m5: '47,066회', m6: '46,582회', d: '-484회', dr: '-1.03%', v5: '32.33%', v6: '32.29%', vp: '-0.05%p' },
+    { prd: 'RAC (에어컨)', brand: 'LG (LG전자)', c: EM_RED, m5: '111,988회', m6: '108,242회', d: '-3,746회', dr: '-3.35%', v5: '48.45%', v6: '46.77%', vp: '-1.68%p' },
+    { prd: 'RAC (에어컨)', brand: 'SAMSUNG (삼성전자)', c: '#3B82F6', m5: '45,816회', m6: '43,185회', d: '-2,631회', dr: '-5.74%', v5: '22.46%', v6: '21.55%', vp: '-0.91%p' },
+  ]
+  const thS = `padding:8px 4px;font-size:10px;font-weight:700;color:#475569;background:#F8FAFC;border-bottom:2px solid ${EM_RED};text-align:center;font-family:${EM_FONT};letter-spacing:-0.3px;`
+  const tdS = `padding:7px 4px;font-size:11px;color:#1A1A1A;border-bottom:1px solid #F1F5F9;text-align:center;font-family:${EM_FONT};letter-spacing:-0.3px;`
+  const t11Rows = t11.map((r, i) => `
+    <tr${i % 2 === 0 ? ' style="background:#FAFBFC;"' : ''}>
+      <td style="${tdS}font-weight:700;">${r.prd}</td>
+      <td style="${tdS}text-align:left;font-weight:800;color:${r.c};">${r.brand}</td>
+      <td style="${tdS}">${r.m5}</td>
+      <td style="${tdS}">${r.m6}</td>
+      <td style="${tdS}font-weight:800;color:${dC(r.d)};">${r.d}</td>
+      <td style="${tdS}font-weight:800;color:${dC(r.dr)};">${r.dr}</td>
+      <td style="${tdS}">${r.v5}</td>
+      <td style="${tdS}font-weight:700;">${r.v6}</td>
+      <td style="${tdS}font-weight:800;color:${dC(r.vp)};">${r.vp}</td>
+    </tr>`).join('')
+
+  // ── [패턴 요약 2.1] 3대 패턴 (보고서 텍스트 그대로) ──
+  const patterns = [
+    { no: '패턴 1', pct: '57.1%', name: '리테일·모델명 지정 추천 문구 감소',
+      obs: '논브랜드 프롬프트 답변이 특정 유통몰 가격이나 모델명을 직접 추천하던 방식에서, 중립적인 제품 유형별 스펙 특징을 분석하는 서술로 무게추가 이동함',
+      def: 'LG전자는 리테일 결합 외에 기술 스펙 설명이 함께 등장하는 사례가 있어, 스펙 서술 국면에서도 본문에 잔존하는 경우가 관찰됨',
+      ex: `• ${term('What is the best quiet washer dryer combo?')} (UK)<br/>• ${term('What is the best quiet washing machine?')} (UK)` },
+    { no: '패턴 2', pct: '28.6%', name: 'LG 독자 기술 상표어의 노출 유지 경향',
+      obs: 'AI가 브랜드명 대신 중립적 기능 원리를 기술할 때, 제조사 고유의 대체 불가능한 특화 스펙 상표어는 설명 문맥상 필수로 인용되어 생존함',
+      def: `LG전자의 ${term('OLED')}, ${term('Direct-Drive')}, ${term('Inverter Linear')}, ${term('Dual Inverter')}, ${term('TrueSteam')} 등은 스펙 원리 설명 시 인용되는 경향이 있어 노출이 상대적으로 지속 유지됨`,
+      ex: `• ${term('What is the best quiet washing machine?')} (UK)` },
+    { no: '패턴 3', pct: '14.3%', name: '서드파티 스펙 평가 인용 유지',
+      obs: 'AI가 상업적 유통망 추천을 배제하더라도 독립 리뷰 매체(Rtings, Tom\'s Guide 등)의 전문적인 평가 점수와 권장 브랜드는 지면에 인용하는 경향이 유지됨',
+      def: 'Rtings, Tom\'s Guide 등 독립 평가 매체 인용 시 LG UltraGear, LG WashTower 등 스펙 문맥이 잔존하는 사례가 관찰됨',
+      ex: '• 스펙 비교형 프롬프트 전반 (Experience 단계)' },
+  ]
+  const patternCards = patterns.map(p => `
+    <tr>
+      <td style="padding-bottom:10px;">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFFFFF;border:1px solid #E8EDF2;border-radius:10px;">
+          <tr>
+            <td style="padding:12px 16px 10px;border-bottom:1px solid #F1F5F9;">
+              <span style="display:inline-block;padding:2px 9px;background:${EM_RED};color:#FFFFFF;border-radius:12px;font-size:10px;font-weight:800;font-family:${EM_FONT};letter-spacing:0.5px;">${p.no}</span>
+              <span style="display:inline-block;padding:2px 9px;background:#F1F5F9;color:#475569;border-radius:12px;font-size:10px;font-weight:800;font-family:${EM_FONT};margin-left:4px;">감소/유지 비중 ${p.pct}</span>
+              <span style="font-size:14px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-0.5px;">&nbsp;&nbsp;${p.name}</span>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:10px 16px 12px;">
+              <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                <tr>
+                  <td width="110" style="vertical-align:top;font-size:11px;font-weight:700;color:#94A3B8;font-family:${EM_FONT};padding:3px 0;">관찰된 핵심 양상</td>
+                  <td style="vertical-align:top;font-size:12px;color:#334155;line-height:19px;font-family:${EM_FONT};padding:3px 0;letter-spacing:-0.3px;">${p.obs}</td>
+                </tr>
+                <tr>
+                  <td width="110" style="vertical-align:top;font-size:11px;font-weight:700;color:${EM_RED};font-family:${EM_FONT};padding:3px 0;">LG 노출 방어 요인</td>
+                  <td style="vertical-align:top;font-size:12px;color:#334155;line-height:19px;font-family:${EM_FONT};padding:3px 0;letter-spacing:-0.3px;">${p.def}</td>
+                </tr>
+                <tr>
+                  <td width="110" style="vertical-align:top;font-size:11px;font-weight:700;color:#94A3B8;font-family:${EM_FONT};padding:3px 0;">주요 프롬프트 예시</td>
+                  <td style="vertical-align:top;font-size:12px;color:#334155;line-height:19px;font-family:${EM_FONT};padding:3px 0;letter-spacing:-0.3px;">${p.ex}</td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>`).join('')
+
+  // ── [실증 예시] 원문 대조 2건 (무삭제 원문 + 번역 그대로) ──
+  const quoteBox = (label, labelColor, en, ko) => `
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-top:8px;">
+      <tr>
+        <td style="padding:10px 14px;background:#F8FAFC;border:1px solid #E8EDF2;border-left:3px solid ${labelColor};border-radius:8px;">
+          <p style="margin:0 0 6px;font-size:10px;font-weight:800;color:${labelColor};font-family:${EM_FONT};letter-spacing:1px;">${label}</p>
+          <p style="margin:0 0 8px;font-size:11px;color:#334155;line-height:18px;font-family:${MONO};">${en}</p>
+          <p style="margin:0;font-size:11px;color:#64748B;line-height:18px;font-family:${EM_FONT};letter-spacing:-0.3px;">${ko}</p>
+        </td>
+      </tr>
+    </table>`
+  const cases = [
+    { title: '📌 [실증 예시 1] 세탁기·건조기 / WM 카테고리 (UK 영국) - "가장 조용한 세탁건조기 추천"',
+      desc: '5월 Baseline에는 삼성과 LG가 유통망 가격대와 함께 나란히 공동 추천되었으나, 6월 Target 답변에서는 <strong>삼성전자의 제품 추천이 본문에서 완전히 배제(탈락)된 반면 LG전자는 독자적인 다이렉트 드라이브 모터 기술 명칭을 레버리지 삼아 잔존 및 추천</strong>된 대표적인 대조적 케이스입니다.',
+      prompt: 'What is the best quiet washer dryer combo?',
+      b_en: 'If your top priority is a quiet, reliable washer-dryer combo in the UK, the sweet spot is usually a model with an inverter/direct-drive motor, good anti-vibration control, and a spin noise level under about 72 dB. Independent guides and user reviews consistently point toward Bosch, Samsung (Ecobubble series at £649 on Currys), LG (Direct Drive Series at £699 on Argos), and Miele as the quietest premium options available.',
+      b_ko: '영국에서 조용하고 신뢰할 수 있는 세탁 건조기 콤보가 최우선 순위라면, 인버터/다이렉트 드라이브 모터, 우수한 진동 방지 제어 및 72dB 미만의 탈수 소음 수준을 갖춘 모델이 이상적입니다. 독립 가이드 및 사용자 리뷰는 지속적으로 보쉬, 삼성(Currys에서 649파운드에 판매되는 에코버블 시리즈), LG(Argos에서 699파운드에 판매되는 다이렉트 드라이브 시리즈) 및 밀레를 사용 가능한 가장 조용한 프리미엄 옵션으로 꼽습니다.',
+      t_en: 'If your top priority is quiet operation, focus on machines with low spin noise (ideally under 72 dB), an inverter/direct-drive motor, and strong vibration control. In the UK market, Miele, AEG, and some LG models are generally regarded as the quietest premium options.<br/><br/>### Best Value Quiet Option: LG Direct Drive Washer-Dryer<br/>LG\'s Direct Drive models are frequently praised for low vibration and quiet operation thanks to the motor being attached directly to the drum.',
+      t_ko: '조용한 작동이 최우선 과제라면 탈수 소음이 적고(이상적으로는 72dB 미만), 인버터/다이렉트 드라이브 모터 및 강력한 진동 제어 기능을 갖춘 세탁기에 집중하십시오. 영국 시장에서는 밀레, AEG 및 일부 LG 모델이 일반적으로 가장 조용한 프리미엄 옵션으로 간주됩니다.<br/><br/>### 가성비 우수 조용한 옵션: LG 다이렉트 드라이브 세탁건조기<br/>LG의 다이렉트 드라이브(Direct Drive) 모델은 모터가 드럼에 직접 부착되어 진동이 적고 조용하게 작동한다는 점에서 자주 찬사를 받습니다.',
+      insight: '5월 Baseline에 나란히 노출되었던 <strong>삼성 브랜드명과 에코버블(Ecobubble) 라인업 명칭은 6월 Target 답변에서 통째로 소실</strong>되었습니다. 반면 LG전자는 <strong>Direct Drive</strong> 스펙의 구조적 우수성과 신뢰성 덕분에 삼성을 밀어내고 <strong>최종 추천 목록에 단독 생존</strong>하여 지속 노출을 이끌어냈습니다.' },
+    { title: '📌 [실증 예시 2] 세탁기 / WM 카테고리 (UK 영국) - "가장 조용한 세탁기 추천"',
+      desc: '브랜드가 명시되지 않은 중립적인 스펙 추천 질문에서, 5월에는 삼성과 LG가 함께 공동 노출되어 추천되었으나 <strong>6월에는 삼성은 완전 제외된 상태에서 LG전자가 1위 최우수 제품으로 당당하게 생존하여 단독 조명</strong>을 받은 또 다른 극적인 원문 매칭 케이스입니다.',
+      prompt: 'What is the best quiet washing machine?',
+      b_en: 'Short answer: the quietest washing machines commonly recommended for UK homes tend to be models with EcoSilence or QuietPro drives from brands like Miele, Bosch, LG, and Samsung, often rated around 40–45 dB on wash and around 60–70 dB on spin. Top picks often favored in the UK market: Miele washers with ProfiEco motor and anti-vibration features are frequently cited as among the quietest... Bosch washers with EcoSilence Drive are commonly recommended... LG and Samsung models with inverter motors and noise-reduction features also perform well in real-world testing.',
+      b_ko: '짧은 답변: 영국 가정에 일반적으로 권장되는 가장 조용한 세탁기는 대개 밀레, 보쉬, LG, 삼성과 같은 브랜드의 에코사일런스(EcoSilence) 또는 콰이어트프로(QuietPro) 드라이브가 탑재된 모델로, 보통 세탁 시 약 40-45dB, 탈수 시 약 60-70dB로 평가됩니다. 영국 시장에서 주로 선호되는 상위 추천 제품: 프로피에코(ProfiEco) 모터와 진동 방지 기능이 있는 밀레 세탁기가 가장 조용한 모델로 자주 언급됩니다... 에코사일런스 드라이브가 장착된 보쉬 세탁기도 자주 추천됩니다... 인버터 모터와 소음 감소 기능을 갖춘 LG 및 삼성 모델도 실제 테스트에서 우수한 성능을 보여줍니다.',
+      t_en: 'If your priority is a really quiet washing machine (for flats, open-plan homes, or night-time use), the best models in the UK right now tend to come from LG, Bosch, AEG, and Miele.<br/><br/>## Best overall quiet washing machine: LG front-load (Direct Drive models)<br/>LG’s front-load washers are consistently rated among the quietest because they use a direct drive motor (fewer moving parts = less noise and vibration).<br/>* Wash noise: often ~50–55 dB (very quiet)<br/>* Spin noise: ~68–72 dB<br/>* Why it’s great: extremely smooth spin cycle, low vibration, reliable at night use<br/>If you see “Inverter Direct Drive” on the label, that’s the key feature to look for.',
+      t_ko: '조용한 세탁기(아파트, 개방형 주택 또는 야간 사용 목적)를 원하신다면, 현재 영국에서 가장 우수한 모델은 주로 LG, 보쉬, AEG 및 밀레 제품입니다.<br/><br/>## 전체 최우선 추천 조용한 세탁기: LG 전면 투입식 (다이렉트 드라이브 모델)<br/>LG의 드럼 세탁기는 다이렉트 드라이브(Direct Drive) 모터를 사용하여 부품 수가 적고 소음과 진동이 적기 때문에 일관되게 가장 조용한 제품군으로 평가받습니다.<br/>* 세탁 소음: 보통 ~50–55 dB (매우 조용함)<br/>* 탈수 소음: ~68–72 dB<br/>* 장점: 극도로 부드러운 탈수 사이클, 낮은 진동, 야간 사용 시 높은 신뢰성<br/>제품 표시 라벨에 "인버터 다이렉트 드라이브 (Inverter Direct Drive)"가 적혀 있다면, 그것이 바로 당신이 찾아야 할 핵심 기능입니다.',
+      insight: '본 사례는 5월에 밀레/보쉬/LG/삼성이 균등하게 묶여 노출되었던 문맥이 6월로 전환되는 과정에서 <strong>삼성전자는 완전 탈락</strong>했으나, LG전자는 자사의 다이렉트 드라이브 모터 우위를 앞세워 <strong>독보적 1위 제품("🥇 Best overall quiet washing machine")으로 선명하게 랭크업 생존</strong>하였음을 명확한 데이터로 실증합니다.' },
+  ]
+  const caseCards = cases.map(cs => `
+    <tr>
+      <td style="padding-bottom:12px;">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFFFFF;border:1px solid #E8EDF2;border-radius:10px;">
+          <tr>
+            <td style="padding:14px 16px 4px;">
+              <p style="margin:0 0 8px;font-size:14px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-0.5px;">${cs.title}</p>
+              <p style="margin:0 0 8px;font-size:12px;color:#334155;line-height:20px;font-family:${EM_FONT};letter-spacing:-0.3px;"><strong>설명</strong>: ${cs.desc}</p>
+              <p style="margin:0;font-size:12px;color:#334155;font-family:${EM_FONT};"><strong>Exact Prompt</strong>: ${term(`"${cs.prompt}"`)}</p>
+              ${quoteBox('5월 BASELINE 원문 · 번역', '#64748B', cs.b_en, cs.b_ko)}
+              ${quoteBox('6월 TARGET 원문 · 번역', EM_RED, cs.t_en, cs.t_ko)}
+              <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin:10px 0 14px;">
+                <tr>
+                  <td style="padding:10px 14px;background:#FEF2F4;border:1px solid #FECDD3;border-radius:8px;">
+                    <p style="margin:0;font-size:12px;color:#1A1A1A;line-height:20px;font-family:${EM_FONT};letter-spacing:-0.3px;"><strong style="color:${EM_RED};">💡 분석 Insight</strong>&nbsp;&nbsp;${cs.insight}</p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>`).join('')
+
+  // ── Executive Summary 4개 항목 (보고서 텍스트 그대로) ──
+  const execItem = (title, body) => `
+    <tr>
+      <td style="padding-bottom:8px;">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#1E293B;border:1px solid #334155;border-radius:8px;">
+          <tr>
+            <td style="padding:12px 16px;">
+              <p style="margin:0 0 6px;font-size:13px;font-weight:800;color:#FFFFFF;line-height:20px;font-family:${EM_FONT};letter-spacing:-0.3px;">${title}</p>
+              <p style="margin:0;font-size:12px;color:#CBD5E1;line-height:20px;font-family:${EM_FONT};letter-spacing:-0.3px;">${body}</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>`
+
+  return `<!-- ══ 6월 인사이트 V2 (CEO 보고서) ══ -->
+              <tr>
+                <td style="padding-bottom:28px;">
+                  <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFFFFF;border-radius:16px;border:2px solid #E8EDF2;">
+                    <tr>
+                      <td style="padding:22px 16px 18px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;">
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                          <tr>
+                            <td style="vertical-align:middle;">
+                              <table border="0" cellpadding="0" cellspacing="0">
+                                <tr>
+                                  <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
+                                  <td style="padding-left:8px;font-size:19px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">6월 인사이트 <span style="color:${EM_RED};">V2</span></td>
+                                </tr>
+                              </table>
+                            </td>
+                            <td align="right" style="vertical-align:middle;font-size:12px;color:#94A3B8;font-family:${EM_FONT};">2026년 6월 글로벌 GEO Visibility &amp; 브랜드 언급 수 등락 분석</td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="padding:18px 16px 6px;">
+
+                        <!-- ── Executive Summary (경영진 핵심 요약) ── -->
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#0F172A;border-radius:12px;">
+                          <tr>
+                            <td style="padding:18px 18px 12px;">
+                              <p style="margin:0 0 10px;font-size:13px;font-weight:800;color:#FF9EBB;font-family:${EM_FONT};letter-spacing:1px;">🎯 경영진 핵심 메시지 (EXECUTIVE SUMMARY)</p>
+                              <p style="margin:0 0 12px;font-size:13px;color:#E2E8F0;line-height:22px;font-family:${EM_FONT};letter-spacing:-0.3px;">2026년 6월 AI 검색(Gemini, ChatGPT 등)에서 4대 핵심 가전(TV·냉장고·세탁기·에어컨)의 브랜드 노출이 전반적으로 하락한 가운데, <strong>삼성전자의 하락 폭이 LG전자보다 컸습니다.</strong> 그 원인을 추적한 결과는 다음과 같습니다.</p>
+                              <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                ${execItem('1. [현상 요약] 4대 핵심 가전 전반에서 브랜드 언급 수 및 Visibility 동반 하락 속 삼성전자의 감쇄 폭이 더 가파름',
+                                  '4대 가전 통합 브랜드 언급 수 감소에서 삼성전자는 <strong style="color:#FFFFFF;">-28,867회 감소(-4.85%)</strong>, LG전자는 <strong style="color:#FFFFFF;">-26,991회(-4.08%)</strong>로, 삼성이 더 큰 폭으로 감소했습니다.<br/>실측 Visibility 등락에서도 삼성전자 <strong style="color:#FFFFFF;">-1.70%p(60.39%→58.70%)</strong>, LG전자 <strong style="color:#FFFFFF;">-1.68%p(64.90%→63.22%)</strong>로 삼성전자의 하락 폭이 더 가파르게 관찰되었습니다.')}
+                                ${execItem('2. [추정 원인 분석] 삼성전자의 하락을 심화시킨 구조적 요인: 제품별 \'독자 기술 상표어 자산\'의 비대칭',
+                                  `답변이 스펙 설명 중심으로 옮겨갈 때, LG전자의 독자 기술 상표어는 AI가 원리를 설명할 때 인용되어 지속 노출된 반면, 삼성전자의 명칭은 단순 마케팅 라인업으로 취급되어 잘려나가는 양상이 확인되었습니다.<br/>📺 <strong style="color:#FFFFFF;">TV</strong>: LG전자 ${termDark('Brightness Booster')} (스펙 기술어) vs 삼성전자 ${termDark('The Frame')} / ${termDark('Neo QLED')} (마케팅 라인업)<br/>🧊 <strong style="color:#FFFFFF;">냉장고</strong>: LG전자 ${termDark('Inverter Linear')} (리니어 압축 스펙) vs 삼성전자 ${termDark('Bespoke')} (디자인 라인업)<br/>🧺 <strong style="color:#FFFFFF;">세탁기</strong>: LG전자 ${termDark('Direct-Drive')} / ${termDark('TrueSteam')} (직연결 모터/스팀 스펙) vs 삼성전자 ${termDark('Bespoke AI')} / ${termDark('Ecobubble')} (마케팅 라인업)<br/>❄️ <strong style="color:#FFFFFF;">에어컨</strong>: LG전자 ${termDark('Dual Inverter')} (듀얼 인버터 압축 스펙) vs 삼성전자 ${termDark('WindFree')} (마케팅 라인업)`)}
+                                ${execItem('3. [실증 사례 검증] 5월 공존 ➡️ 6월 삼성 완전 제외 및 LG 단독 생존의 대조적 원문 검증',
+                                  '5월 Baseline 답변에는 삼성과 LG가 동시에 노출 및 추천되었으나, 6월 알고리즘 변경 이후 <strong style="color:#FFFFFF;">삼성전자는 추천 목록에서 흔적 없이 완전히 탈락하고 LG전자만 단독 잔존 및 노출</strong>되는 극적인 실증 사례가 4대 가전 논브랜드 프롬프트 원문 대조를 통해 명확히 검증되었습니다.')}
+                                ${execItem('4. [대응 방향] 독자 기술 상표어 자산 강화 및 서드파티 스펙 평가 매체 다변화',
+                                  '리테일 추천 의존도를 낮추고, AI가 스펙 설명 시 인용하는 독자 기술 상표어와 서드파티 독립 평가 매체(Rtings, Tom\'s Guide 등) 지면을 확대하는 GEO 전략이 노출 방어에 매우 유효할 것으로 판단됩니다.')}
+                              </table>
+                            </td>
+                          </tr>
+                        </table>
+
+                        <!-- ── 1. 4대 핵심 가전 브랜드 언급 수 · Visibility 등락 대조 ── -->
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-top:20px;">
+                          <tr>
+                            <td style="padding-bottom:10px;">
+                              <table border="0" cellpadding="0" cellspacing="0">
+                                <tr>
+                                  <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
+                                  <td style="padding-left:8px;font-size:15px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-0.5px;">📊 1. 4대 핵심 가전 브랜드 언급 수와 Visibility 등락 대조 <span style="font-size:11px;font-weight:600;color:#94A3B8;">(피벗 마스터 실측 기준)</span></td>
+                                </tr>
+                              </table>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td>
+                              <table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;border-collapse:collapse;background:#FFFFFF;border:1px solid #E8EDF2;border-radius:8px;">
+                                <tr>
+                                  <th width="9%" style="${thS}">제품군</th>
+                                  <th width="17%" style="${thS}text-align:left;">주요 브랜드</th>
+                                  <th width="10%" style="${thS}">5월 언급 수</th>
+                                  <th width="10%" style="${thS}">6월 언급 수</th>
+                                  <th width="10%" style="${thS}">변동량</th>
+                                  <th width="9%" style="${thS}">감소율</th>
+                                  <th width="11%" style="${thS}">5월 Visibility</th>
+                                  <th width="12%" style="${thS}">6월 Visibility (실측)</th>
+                                  <th width="12%" style="${thS}">변동량 (%p)</th>
+                                </tr>
+                                ${t11Rows}
+                              </table>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td style="padding-top:10px;">
+                              <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FEF2F4;border:1px solid #FECDD3;border-radius:8px;">
+                                <tr>
+                                  <td style="padding:12px 16px;">
+                                    <p style="margin:0 0 6px;font-size:12px;font-weight:800;color:${EM_RED};font-family:${EM_FONT};letter-spacing:0.5px;">💡 GEO INSIGHT (지표 상세 해석)</p>
+                                    <p style="margin:0;font-size:12px;color:#1A1A1A;line-height:20px;font-family:${EM_FONT};letter-spacing:-0.3px;">
+                                      <strong>1. 핵심 가전(냉장고/세탁기)의 삼성-LG 하락 패턴 차이</strong>: 냉장고(삼성 -6.45% vs LG -5.61%) 및 세탁기(삼성 -6.30% vs LG -4.33%) 카테고리 모두에서 삼성전자의 브랜드 언급 감소 폭이 LG전자보다 깊게 형성되었습니다. 이는 AI 엔진의 정보 검색 인용 알고리즘 변화 국면에서 삼성전자의 마케팅 브랜드 키워드가 상대적으로 더 넓은 범위로 제외되었음을 방증합니다.<br/><br/>
+                                      <strong>2. 에어컨(RAC)의 노출 방어 격차</strong>: 에어컨 카테고리에서도 삼성전자의 브랜드 언급 감소율(-5.74%)이 LG전자(-3.35%) 대비 가파르게 나타났습니다. 양사 모두 하락세를 겪었으나 LG전자는 인프라 스펙 설명 우위를 바탕으로 노출 하락을 방어하고 있습니다.<br/><br/>
+                                      <strong>3. 글로벌 가전 경쟁사(Bosch)의 대비적 동향</strong>: Bosch(냉장고 멘션 +1.79%, 세탁기 -1.03%)의 경우, AI의 브랜드 추천 억제 흐름 속에서도 고유한 지면 인용(리뷰 매체 및 기술 스펙) 강점으로 노출을 성공적으로 방어하고 있어, LG전자 역시 차별화된 인용 최적화 모델이 필요함을 보여줍니다.
+                                    </p>
+                                  </td>
+                                </tr>
+                              </table>
+                            </td>
+                          </tr>
+                        </table>
+
+                        <!-- ── 2. 브랜드 노출 변화 3대 관찰 패턴 및 실증 예시 ── -->
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-top:22px;">
+                          <tr>
+                            <td style="padding-bottom:6px;">
+                              <table border="0" cellpadding="0" cellspacing="0">
+                                <tr>
+                                  <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
+                                  <td style="padding-left:8px;font-size:15px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-0.5px;">🔑 2. 브랜드 노출 변화 3대 관찰 패턴 및 제품군별 실증 예시</td>
+                                </tr>
+                              </table>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td style="padding-bottom:12px;font-size:12px;color:#475569;line-height:20px;font-family:${EM_FONT};letter-spacing:-0.3px;">AI 검색 답변 생성 방식이 변경됨에 따라 브랜드 노출 경로에 3가지 핵심 패턴적 변화가 관찰되었습니다. 각 패턴을 입증하는 <strong>제품군별 1대1 무삭제 영어 원문 및 번역 대조 케이스</strong>는 다음과 같습니다.</td>
+                          </tr>
+                          ${patternCards}
+                          ${caseCards}
+                        </table>
+
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>`
+}
+
 // ─── 국가별 Visibility ────────────────────────────────────────────────────────
 function cntyStatus(score, compScore) {
   if (compScore <= 0) return 'lead'
@@ -3124,7 +3396,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                             </td>
                           </tr>
                         </table>
-                        ${(meta.totalInsight || _ED) ? `
+                        ${(meta.showTotalInsight !== false && (meta.totalInsight || _ED)) ? `
                         <table border="0" cellpadding="0" cellspacing="0" width="100%">
                         <tr><td height="16" style="font-size:0;line-height:0;">&nbsp;</td></tr>
                           <tr>
@@ -3139,6 +3411,8 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                   </table>
                 </td>
               </tr>` : ''}
+
+              ${meta.showInsightV2 ? insightV2SectionHtml(lang) : ''}
 
               ${meta.showHighlight !== false ? highlightInsightSectionHtml(products, weeklyAll, weeklyLabels, meta, lang, assetBase, { citTouchPointsTrend, citTrendMonths, citTouchPointsByLlm, citDomainTrend, citDomainMonths, citDomainByLlmTrend }) : ''}
 

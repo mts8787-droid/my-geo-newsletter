@@ -78,6 +78,8 @@ export const INIT_META  = {
   titleFontSize: 24, titleColor: '#1A1A1A',
   dateLine: 'As of Feb 2026',
   totalInsight: '권위 있는 인용 출처와 통계 데이터를 활용한 Citation Optimization 전략은 생성형 AI 검색 엔진에서의 가시성을 최대 30~40% 향상시킬 수 있습니다. 청소기·식기세척기 카테고리의 구조화 데이터 강화가 시급히 필요합니다.',
+  showTotalInsight: true,  // 기존 인사이트 (V1 — totalInsight 블록) 온오프
+  showInsightV2: false,    // 6월 인사이트 V2 (CEO 보고서 섹션) 온오프 — 기본 OFF
   productInsight: '', showProductInsight: false,
   productHowToRead: '', showProductHowToRead: false,
   citationInsight: '', showCitationInsight: false,

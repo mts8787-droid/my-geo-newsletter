@@ -1134,6 +1134,8 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginBottom: 16 }}>
           {[
             { key: 'showTotal',     label: 'GEO 지수' },
+            { key: 'showTotalInsight', label: '인사이트 V1 (기존)' },
+            { key: 'showInsightV2', label: '6월 인사이트 V2' },
             { key: 'showHighlight', label: 'Highlight Insight' },
             { key: 'showProducts',  label: '제품별' },
             { key: 'showModelDelta', label: '제품별 모델 증감' },
