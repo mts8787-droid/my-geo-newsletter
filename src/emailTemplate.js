@@ -884,10 +884,11 @@ function insightBlockHtml(insight, showInsight, howToRead, showHowToRead, lang =
 // ─── 6월 인사이트 V2 (CEO 보고서 기반) ─────────────────────────────────────────
 // 소스: "2026년 6월 글로벌 GEO Visibility 등락 CEO 보고서" — Executive Summary + §1 + §2 (사용자 텍스트 그대로).
 // 토글: meta.showInsightV2 (Sidebar '6월 인사이트 V2'). 기존 totalInsight 블록(V1)과 독립 온오프.
+// 배치: 최상단 EXECUTIVE SUMMARY 검은 박스(V1 위치) 안에 exec 요약이 들어가고,
+//       본문(표·패턴·실증)은 같은 섹션 카드 안에 이어짐 → { execHtml, bodyHtml } 반환.
 // 이메일 호환: table-layout only / 인라인 style / flex·grid 금지 (newsletter-guard).
-// meta: 편집 모드(_ED)에서 산문 블록을 data-edit 로 인라인 편집 → 저장값(meta.v2*)이 기본 문구를 덮어씀.
-// 표 수치·영어 원문·번역 인용은 원자료라 편집 대상 제외.
-function insightV2SectionHtml(meta = {}, lang = 'ko') {
+// 편집 모드(_ED): 모든 텍스트(제목·산문·표·원문 인용 포함)를 data-edit 인라인 편집 → 저장값(meta.v2*)이 기본을 덮어씀.
+function insightV2Parts(meta = {}, lang = 'ko') {
   const M = meta || {}
   const MONO = "'Courier New',Courier,monospace"
   const dC = s => String(s).indexOf('+') === 0 ? '#16A34A' : '#DC2626'
@@ -895,6 +896,8 @@ function insightV2SectionHtml(meta = {}, lang = 'ko') {
   const termDark = s => `<span style="font-family:${MONO};font-weight:700;background:#1E2433;border-radius:4px;padding:0 4px;color:#FDA4AF;">${s}</span>`
   // 편집 가능 산문: 저장값 우선, 없으면 기본 문구 — data-edit 는 _ED 에서만 부착.
   const ed = (field, def) => `<span${edRich(field)}>${M[field] != null ? M[field] : def}</span>`
+  // 블록(표 등) 통째 편집 — div 래퍼 (span 안에 table 은 비정상 HTML)
+  const edWrap = (field, def) => `<div${edRich(field)}>${M[field] != null ? M[field] : def}</div>`
 
   // ── [수치 테이블 1.1] 데이터 (보고서 수치 그대로) ──
   const t11 = [
@@ -929,15 +932,15 @@ function insightV2SectionHtml(meta = {}, lang = 'ko') {
     { no: '패턴 1', pct: '57.1%', nameF: 'v2P1Name', name: '리테일·모델명 지정 추천 문구 감소',
       obsF: 'v2P1Obs', obs: '논브랜드 프롬프트에 대한 답변이 특정 유통몰의 가격이나 모델명을 직접 추천하던 방식에서, 제품 유형별 스펙 특징을 중립적으로 서술하는 방향으로 옮겨갔습니다.',
       defF: 'v2P1Def', def: 'LG전자는 리테일 추천과 함께 기술 스펙 설명이 등장하는 사례가 있어, 서술이 스펙 중심으로 바뀐 뒤에도 본문에 남는 경우가 관찰되었습니다.',
-      ex: `• ${term('What is the best quiet washer dryer combo?')} (UK)<br/>• ${term('What is the best quiet washing machine?')} (UK)` },
+      exF: 'v2P1Ex', ex: `• ${term('What is the best quiet washer dryer combo?')} (UK)<br/>• ${term('What is the best quiet washing machine?')} (UK)` },
     { no: '패턴 2', pct: '28.6%', nameF: 'v2P2Name', name: 'LG 독자 기술 상표어의 노출 유지 경향',
       obsF: 'v2P2Obs', obs: 'AI가 브랜드명 대신 기능의 작동 원리를 중립적으로 설명할 때, 대체하기 어려운 제조사 고유의 스펙 상표어는 설명 문맥상 인용되어 노출이 유지되었습니다.',
       defF: 'v2P2Def', def: `LG전자의 ${term('OLED')}, ${term('Direct-Drive')}, ${term('Inverter Linear')}, ${term('Dual Inverter')}, ${term('TrueSteam')} 등은 스펙 원리를 설명하는 문맥에서 인용되는 경향이 있어 노출이 비교적 꾸준히 유지되었습니다.`,
-      ex: `• ${term('What is the best quiet washing machine?')} (UK)` },
+      exF: 'v2P2Ex', ex: `• ${term('What is the best quiet washing machine?')} (UK)` },
     { no: '패턴 3', pct: '14.3%', nameF: 'v2P3Name', name: '서드파티 스펙 평가 인용 유지',
       obsF: 'v2P3Obs', obs: 'AI가 상업적 유통망 추천을 배제하더라도, 독립 리뷰 매체(Rtings, Tom\'s Guide 등)의 평가 점수와 권장 브랜드는 답변에 계속 인용되는 경향이 있었습니다.',
       defF: 'v2P3Def', def: 'Rtings, Tom\'s Guide 등 독립 평가 매체가 인용될 때 LG UltraGear, LG WashTower 등 LG 스펙이 함께 언급되는 사례가 관찰되었습니다.',
-      ex: '• 스펙 비교형 프롬프트 전반 (Experience 단계)' },
+      exF: 'v2P3Ex', ex: '• 스펙 비교형 프롬프트 전반 (Experience 단계)' },
   ]
   const patternCards = patterns.map(p => `
     <tr>
@@ -963,7 +966,7 @@ function insightV2SectionHtml(meta = {}, lang = 'ko') {
                 </tr>
                 <tr>
                   <td width="110" style="vertical-align:top;font-size:11px;font-weight:700;color:#94A3B8;font-family:${EM_FONT};padding:3px 0;">주요 프롬프트 예시</td>
-                  <td style="vertical-align:top;font-size:12px;color:#334155;line-height:19px;font-family:${EM_FONT};padding:3px 0;letter-spacing:-0.3px;">${p.ex}</td>
+                  <td style="vertical-align:top;font-size:12px;color:#334155;line-height:19px;font-family:${EM_FONT};padding:3px 0;letter-spacing:-0.3px;">${ed(p.exF, p.ex)}</td>
                 </tr>
               </table>
             </td>
@@ -973,20 +976,20 @@ function insightV2SectionHtml(meta = {}, lang = 'ko') {
     </tr>`).join('')
 
   // ── [실증 예시] 원문 대조 2건 (무삭제 원문 + 번역 그대로) ──
-  const quoteBox = (label, labelColor, en, ko) => `
+  const quoteBox = (label, labelColor, enF, en, koF, ko) => `
     <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-top:8px;">
       <tr>
         <td style="padding:10px 14px;background:#F8FAFC;border:1px solid #E8EDF2;border-left:3px solid ${labelColor};border-radius:8px;">
           <p style="margin:0 0 6px;font-size:10px;font-weight:800;color:${labelColor};font-family:${EM_FONT};letter-spacing:1px;">${label}</p>
-          <p style="margin:0 0 8px;font-size:11px;color:#334155;line-height:18px;font-family:${MONO};">${en}</p>
-          <p style="margin:0;font-size:11px;color:#64748B;line-height:18px;font-family:${EM_FONT};letter-spacing:-0.3px;">${ko}</p>
+          <p style="margin:0 0 8px;font-size:11px;color:#334155;line-height:18px;font-family:${MONO};">${ed(enF, en)}</p>
+          <p style="margin:0;font-size:11px;color:#64748B;line-height:18px;font-family:${EM_FONT};letter-spacing:-0.3px;">${ed(koF, ko)}</p>
         </td>
       </tr>
     </table>`
   const cases = [
     { titleF: 'v2C1Title', title: '[실증 예시 1] 세탁기·건조기 / WM 카테고리 (UK 영국) - "가장 조용한 세탁건조기 추천"',
       descF: 'v2C1Desc', desc: '5월 Baseline에서는 삼성과 LG가 유통망 가격대와 함께 나란히 추천되었으나, 6월 Target 답변에서는 <strong>삼성전자 제품 추천이 본문에서 빠지고 LG전자만 다이렉트 드라이브 모터 기술이 인용되며 추천이 유지</strong>된 대조 사례입니다.',
-      insF: 'v2C1Insight',
+      insF: 'v2C1Insight', pF: 'v2C1Prompt', bEnF: 'v2C1Ben', bKoF: 'v2C1Bko', tEnF: 'v2C1Ten', tKoF: 'v2C1Tko',
       prompt: 'What is the best quiet washer dryer combo?',
       b_en: 'If your top priority is a quiet, reliable washer-dryer combo in the UK, the sweet spot is usually a model with an inverter/direct-drive motor, good anti-vibration control, and a spin noise level under about 72 dB. Independent guides and user reviews consistently point toward Bosch, Samsung (Ecobubble series at £649 on Currys), LG (Direct Drive Series at £699 on Argos), and Miele as the quietest premium options available.',
       b_ko: '영국에서 조용하고 신뢰할 수 있는 세탁 건조기 콤보가 최우선 순위라면, 인버터/다이렉트 드라이브 모터, 우수한 진동 방지 제어 및 72dB 미만의 탈수 소음 수준을 갖춘 모델이 이상적입니다. 독립 가이드 및 사용자 리뷰는 지속적으로 보쉬, 삼성(Currys에서 649파운드에 판매되는 에코버블 시리즈), LG(Argos에서 699파운드에 판매되는 다이렉트 드라이브 시리즈) 및 밀레를 사용 가능한 가장 조용한 프리미엄 옵션으로 꼽습니다.',
@@ -995,7 +998,7 @@ function insightV2SectionHtml(meta = {}, lang = 'ko') {
       insight: '5월 Baseline에 함께 노출되었던 <strong>삼성 브랜드명과 에코버블(Ecobubble) 라인업 명칭이 6월 Target 답변에서는 사라졌습니다.</strong> 반면 LG전자는 <strong>Direct Drive</strong> 스펙 서술을 근거로 추천 목록에 남아 노출이 이어졌습니다.' },
     { titleF: 'v2C2Title', title: '[실증 예시 2] 세탁기 / WM 카테고리 (UK 영국) - "가장 조용한 세탁기 추천"',
       descF: 'v2C2Desc', desc: '브랜드를 지정하지 않은 중립적 스펙 추천 질문에서, 5월에는 삼성과 LG가 함께 추천되었으나 <strong>6월에는 삼성이 빠지고 LG전자가 최상위 추천 제품으로 남은</strong> 또 다른 원문 대조 사례입니다.',
-      insF: 'v2C2Insight',
+      insF: 'v2C2Insight', pF: 'v2C2Prompt', bEnF: 'v2C2Ben', bKoF: 'v2C2Bko', tEnF: 'v2C2Ten', tKoF: 'v2C2Tko',
       prompt: 'What is the best quiet washing machine?',
       b_en: 'Short answer: the quietest washing machines commonly recommended for UK homes tend to be models with EcoSilence or QuietPro drives from brands like Miele, Bosch, LG, and Samsung, often rated around 40–45 dB on wash and around 60–70 dB on spin. Top picks often favored in the UK market: Miele washers with ProfiEco motor and anti-vibration features are frequently cited as among the quietest... Bosch washers with EcoSilence Drive are commonly recommended... LG and Samsung models with inverter motors and noise-reduction features also perform well in real-world testing.',
       b_ko: '짧은 답변: 영국 가정에 일반적으로 권장되는 가장 조용한 세탁기는 대개 밀레, 보쉬, LG, 삼성과 같은 브랜드의 에코사일런스(EcoSilence) 또는 콰이어트프로(QuietPro) 드라이브가 탑재된 모델로, 보통 세탁 시 약 40-45dB, 탈수 시 약 60-70dB로 평가됩니다. 영국 시장에서 주로 선호되는 상위 추천 제품: 프로피에코(ProfiEco) 모터와 진동 방지 기능이 있는 밀레 세탁기가 가장 조용한 모델로 자주 언급됩니다... 에코사일런스 드라이브가 장착된 보쉬 세탁기도 자주 추천됩니다... 인버터 모터와 소음 감소 기능을 갖춘 LG 및 삼성 모델도 실제 테스트에서 우수한 성능을 보여줍니다.',
@@ -1011,9 +1014,9 @@ function insightV2SectionHtml(meta = {}, lang = 'ko') {
             <td style="padding:14px 16px 4px;">
               <p style="margin:0 0 8px;font-size:14px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-0.5px;">${ed(cs.titleF, cs.title)}</p>
               <p style="margin:0 0 8px;font-size:12px;color:#334155;line-height:20px;font-family:${EM_FONT};letter-spacing:-0.3px;"><strong>설명</strong>: ${ed(cs.descF, cs.desc)}</p>
-              <p style="margin:0;font-size:12px;color:#334155;font-family:${EM_FONT};"><strong>Exact Prompt</strong>: ${term(`"${cs.prompt}"`)}</p>
-              ${quoteBox('5월 BASELINE 원문 · 번역', '#64748B', cs.b_en, cs.b_ko)}
-              ${quoteBox('6월 TARGET 원문 · 번역', EM_RED, cs.t_en, cs.t_ko)}
+              <p style="margin:0;font-size:12px;color:#334155;font-family:${EM_FONT};"><strong>Exact Prompt</strong>: ${ed(cs.pF, term(`"${cs.prompt}"`))}</p>
+              ${quoteBox('5월 BASELINE 원문 · 번역', '#64748B', cs.bEnF, cs.b_en, cs.bKoF, cs.b_ko)}
+              ${quoteBox('6월 TARGET 원문 · 번역', EM_RED, cs.tEnF, cs.t_en, cs.tKoF, cs.t_ko)}
               <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin:10px 0 14px;">
                 <tr>
                   <td style="padding:10px 14px;background:#FEF2F4;border:1px solid #FECDD3;border-radius:8px;">
@@ -1042,35 +1045,8 @@ function insightV2SectionHtml(meta = {}, lang = 'ko') {
       </td>
     </tr>`
 
-  return `<!-- ══ 6월 인사이트 V2 (CEO 보고서) ══ -->
-              <tr>
-                <td style="padding-bottom:28px;">
-                  <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFFFFF;border-radius:16px;border:2px solid #E8EDF2;">
-                    <tr>
-                      <td style="padding:22px 16px 18px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;">
-                        <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                          <tr>
-                            <td style="vertical-align:middle;">
-                              <table border="0" cellpadding="0" cellspacing="0">
-                                <tr>
-                                  <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
-                                  <td style="padding-left:8px;font-size:19px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">6월 인사이트 <span style="color:${EM_RED};">V2</span></td>
-                                </tr>
-                              </table>
-                            </td>
-                            <td align="right" style="vertical-align:middle;font-size:12px;color:#94A3B8;font-family:${EM_FONT};">2026년 6월 글로벌 GEO Visibility &amp; 브랜드 언급 수 등락 분석</td>
-                          </tr>
-                        </table>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td style="padding:18px 16px 6px;">
-
-                        <!-- ── Executive Summary (경영진 핵심 요약) ── -->
-                        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#0F172A;border-radius:12px;">
-                          <tr>
-                            <td style="padding:18px 18px 12px;">
-                              <p style="margin:0 0 10px;font-size:13px;font-weight:800;color:#FF9EBB;font-family:${EM_FONT};letter-spacing:1px;">경영진 핵심 메시지 (EXECUTIVE SUMMARY)</p>
+  // ── [A] EXECUTIVE SUMMARY 내용 — 최상단 V1 검은 박스 안에 삽입 (자체 박스·라벨 없음) ──
+  const execHtml = `
                               <p style="margin:0 0 12px;font-size:13px;color:#E2E8F0;line-height:22px;font-family:${EM_FONT};letter-spacing:-0.3px;">${ed('v2ExecIntro', '2026년 6월, AI 검색(Gemini·ChatGPT 등)에서 4대 핵심 가전(TV·냉장고·세탁기·에어컨)의 브랜드 노출이 전반적으로 하락했습니다. 이 가운데 <strong>삼성전자의 하락 폭이 LG전자보다 컸으며,</strong> 그 배경을 다음과 같이 분석했습니다.')}</p>
                               <table border="0" cellpadding="0" cellspacing="0" width="100%">
                                 ${execItem('v2Exec1T', '1. 현상 요약 — 4대 핵심 가전의 브랜드 언급 수·Visibility 동반 하락, 삼성전자 하락 폭이 더 큼',
@@ -1081,26 +1057,10 @@ function insightV2SectionHtml(meta = {}, lang = 'ko') {
                                   'v2Exec3', '5월 Baseline 답변에서는 삼성과 LG가 함께 추천되었으나, 6월 알고리즘 변경 이후에는 <strong style="color:#FFFFFF;">삼성전자가 추천 목록에서 빠지고 LG전자만 노출이 유지</strong>되는 사례가 확인되었습니다. 이는 4대 가전 논브랜드 프롬프트의 원문 대조로 검증했습니다.')}
                                 ${execItem('v2Exec4T', '4. 대응 방향 — 독자 기술 상표어 강화 및 서드파티 평가 매체 다변화',
                                   'v2Exec4', '리테일 추천에 대한 의존도를 낮추고, AI가 스펙을 설명할 때 인용하는 독자 기술 상표어와 서드파티 독립 평가 매체(Rtings, Tom\'s Guide 등)의 노출 지면을 넓히는 GEO 전략이 노출 방어에 유효할 것으로 판단됩니다.')}
-                              </table>
-                            </td>
-                          </tr>
-                        </table>
+                              </table>`
 
-                        <!-- ── 1. 4대 핵심 가전 브랜드 언급 수 · Visibility 등락 대조 ── -->
-                        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-top:20px;">
-                          <tr>
-                            <td style="padding-bottom:10px;">
-                              <table border="0" cellpadding="0" cellspacing="0">
-                                <tr>
-                                  <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
-                                  <td style="padding-left:8px;font-size:15px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-0.5px;">1. 4대 핵심 가전 브랜드 언급 수와 Visibility 등락 대조 <span style="font-size:11px;font-weight:600;color:#94A3B8;">(피벗 마스터 실측 기준)</span></td>
-                                </tr>
-                              </table>
-                            </td>
-                          </tr>
-                          <tr>
-                            <td>
-                              <table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;border-collapse:collapse;background:#FFFFFF;border:1px solid #E8EDF2;border-radius:8px;">
+  // [수치 테이블 1.1] — 통째 편집(edWrap) 가능하도록 기본 HTML 을 상수로
+  const t11TableHtml = `<table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;border-collapse:collapse;background:#FFFFFF;border:1px solid #E8EDF2;border-radius:8px;">
                                 <tr>
                                   <th width="9%" style="${thS}">제품군</th>
                                   <th width="17%" style="${thS}text-align:left;">주요 브랜드</th>
@@ -1113,7 +1073,25 @@ function insightV2SectionHtml(meta = {}, lang = 'ko') {
                                   <th width="12%" style="${thS}">변동량 (%p)</th>
                                 </tr>
                                 ${t11Rows}
+                              </table>`
+
+  // ── [B] 본문 — 표·패턴·실증 (같은 섹션 카드 안, exec 박스 아래에 이어짐) ──
+  const bodyHtml = `
+                        <!-- ── 1. 4대 핵심 가전 브랜드 언급 수 · Visibility 등락 대조 ── -->
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-top:20px;">
+                          <tr>
+                            <td style="padding-bottom:10px;">
+                              <table border="0" cellpadding="0" cellspacing="0">
+                                <tr>
+                                  <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
+                                  <td style="padding-left:8px;font-size:15px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-0.5px;">${ed('v2Sec1Title', `1. 4대 핵심 가전 브랜드 언급 수와 Visibility 등락 대조 <span style="font-size:11px;font-weight:600;color:#94A3B8;">(피벗 마스터 실측 기준)</span>`)}</td>
+                                </tr>
                               </table>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td>
+                              ${edWrap('v2T11Html', t11TableHtml)}
                             </td>
                           </tr>
                           <tr>
@@ -1121,7 +1099,7 @@ function insightV2SectionHtml(meta = {}, lang = 'ko') {
                               <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FEF2F4;border:1px solid #FECDD3;border-radius:8px;">
                                 <tr>
                                   <td style="padding:12px 16px;">
-                                    <p style="margin:0 0 6px;font-size:12px;font-weight:800;color:${EM_RED};font-family:${EM_FONT};letter-spacing:0.5px;">GEO INSIGHT (지표 상세 해석)</p>
+                                    <p style="margin:0 0 6px;font-size:12px;font-weight:800;color:${EM_RED};font-family:${EM_FONT};letter-spacing:0.5px;">${ed('v2GeoInsightTitle', 'GEO INSIGHT (지표 상세 해석)')}</p>
                                     <p style="margin:0;font-size:12px;color:#1A1A1A;line-height:20px;font-family:${EM_FONT};letter-spacing:-0.3px;">${ed('v2GeoInsight', `
                                       <strong>1. 핵심 가전(냉장고·세탁기)의 하락 폭 차이</strong>: 냉장고(삼성 -6.45% vs LG -5.61%)와 세탁기(삼성 -6.30% vs LG -4.33%) 모두에서 삼성전자의 브랜드 언급 감소 폭이 LG전자보다 컸습니다. 이는 인용 알고리즘이 바뀌는 국면에서 삼성전자의 마케팅 브랜드 키워드가 상대적으로 넓은 범위에서 제외되었음을 시사합니다.<br/><br/>
                                       <strong>2. 에어컨(RAC)의 노출 격차</strong>: 에어컨에서도 삼성전자의 감소율(-5.74%)이 LG전자(-3.35%)보다 컸습니다. 양사 모두 하락했지만, LG전자는 스펙 설명 중심의 서술 덕분에 하락 폭을 상대적으로 낮게 유지했습니다.<br/><br/>
@@ -1141,7 +1119,7 @@ function insightV2SectionHtml(meta = {}, lang = 'ko') {
                               <table border="0" cellpadding="0" cellspacing="0">
                                 <tr>
                                   <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
-                                  <td style="padding-left:8px;font-size:15px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-0.5px;">2. 브랜드 노출 변화 3대 관찰 패턴 및 제품군별 실증 예시</td>
+                                  <td style="padding-left:8px;font-size:15px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-0.5px;">${ed('v2Sec2Title', '2. 브랜드 노출 변화 3대 관찰 패턴 및 제품군별 실증 예시')}</td>
                                 </tr>
                               </table>
                             </td>
@@ -1151,13 +1129,9 @@ function insightV2SectionHtml(meta = {}, lang = 'ko') {
                           </tr>
                           ${patternCards}
                           ${caseCards}
-                        </table>
+                        </table>`
 
-                      </td>
-                    </tr>
-                  </table>
-                </td>
-              </tr>`
+  return { execHtml, bodyHtml }
 }
 
 // ─── 국가별 Visibility ────────────────────────────────────────────────────────
@@ -3408,15 +3382,18 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                             </td>
                           </tr>
                         </table>
-                        ${(meta.showTotalInsight !== false && (meta.totalInsight || _ED)) ? `
+                        ${((meta.showTotalInsight !== false && (meta.totalInsight || _ED)) || meta.showInsightV2) ? `
                         <table border="0" cellpadding="0" cellspacing="0" width="100%">
                         <tr><td height="16" style="font-size:0;line-height:0;">&nbsp;</td></tr>
                           <tr>
                             <td style="padding:16px 18px;background:#1E0F18;border:1px solid #3D1528;border-radius:10px;">
-                              ${edBlock('totalInsight', meta.totalInsight, { size: 15, lh: 26, color: '#FFFFFF', accent: '#FF9EBB', lang })}
+                              ${(meta.showTotalInsight !== false && (meta.totalInsight || _ED)) ? edBlock('totalInsight', meta.totalInsight, { size: 15, lh: 26, color: '#FFFFFF', accent: '#FF9EBB', lang }) : ''}
+                              ${(meta.showTotalInsight !== false && (meta.totalInsight || _ED)) && meta.showInsightV2 ? '<table border="0" cellpadding="0" cellspacing="0" width="100%"><tr><td height="14" style="font-size:0;line-height:0;">&nbsp;</td></tr></table>' : ''}
+                              ${meta.showInsightV2 ? insightV2Parts(meta, lang).execHtml : ''}
                             </td>
                           </tr>
                         </table>` : ''}
+                        ${meta.showInsightV2 ? insightV2Parts(meta, lang).bodyHtml : ''}
                         <!-- 대시보드 바로가기 버튼은 Action Plan 섹션 아래로 이동됨 -->
                       </td>
                     </tr>
@@ -3424,7 +3401,25 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                 </td>
               </tr>` : ''}
 
-              ${meta.showInsightV2 ? insightV2SectionHtml(meta, lang) : ''}
+              ${meta.showTotal === false && meta.showInsightV2 ? `<!-- V2 폴백 — 전체 지수 섹션이 꺼진 경우 독립 렌더 (검은 박스부터 바로) -->
+              <tr>
+                <td style="padding-bottom:28px;">
+                  <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFFFFF;border-radius:16px;border:2px solid #E8EDF2;">
+                    <tr>
+                      <td style="padding:18px 16px;">
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                          <tr>
+                            <td style="padding:16px 18px;background:#1E0F18;border:1px solid #3D1528;border-radius:10px;">
+                              ${insightV2Parts(meta, lang).execHtml}
+                            </td>
+                          </tr>
+                        </table>
+                        ${insightV2Parts(meta, lang).bodyHtml}
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>` : ''}
 
               ${meta.showHighlight !== false ? highlightInsightSectionHtml(products, weeklyAll, weeklyLabels, meta, lang, assetBase, { citTouchPointsTrend, citTrendMonths, citTouchPointsByLlm, citDomainTrend, citDomainMonths, citDomainByLlmTrend }) : ''}
 
