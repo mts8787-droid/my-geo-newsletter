@@ -388,9 +388,9 @@ function switchPeriodMode(mode){
     // 점수 업데이트
     var scoreEl=card.querySelector('.prod-score');
     if(scoreEl&&sc)scoreEl.innerHTML=sc+'<small>%</small>';
-    // 경쟁비 업데이트
+    // 경쟁비 업데이트 — 실제값 그대로 (120 캡 제거: 서버 첫 렌더·뉴스레터와 수치 일치, 바 폭만 시각 클램프)
     var compEl=card.querySelector('.prod-comp-pct');
-    if(compEl&&!isNaN(ratio))compEl.textContent=Math.min(Math.round(ratio),120)+'%';
+    if(compEl&&!isNaN(ratio))compEl.textContent=Math.round(ratio)+'%';
     // 신호등 색상 업데이트
     var status=ratio>=100?'lead':ratio>=80?'behind':'critical';
     var colors={lead:{border:'#BBF7D0',bg:'#ECFDF5',color:'#15803D'},behind:{border:'#FDE68A',bg:'#FFFBEB',color:'#D97706'},critical:{border:'#FECDD3',bg:'#FFF1F2',color:'#BE123C'}};
