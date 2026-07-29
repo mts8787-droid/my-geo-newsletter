@@ -888,7 +888,7 @@ function insightBlockHtml(insight, showInsight, howToRead, showHowToRead, lang =
 //       본문(표·패턴·실증)은 같은 섹션 카드 안에 이어짐 → { execHtml, bodyHtml } 반환.
 // 이메일 호환: table-layout only / 인라인 style / flex·grid 금지 (newsletter-guard).
 // 편집 모드(_ED): 모든 텍스트(제목·산문·표·원문 인용 포함)를 data-edit 인라인 편집 → 저장값(meta.v2*)이 기본을 덮어씀.
-function insightV2Parts(meta = {}, lang = 'ko') {
+function insightV2Parts(meta = {}, lang = 'ko', products = []) {
   const M = meta || {}
   const MONO = "'Courier New',Courier,monospace"
   const dC = s => String(s).indexOf('+') === 0 ? '#16A34A' : '#DC2626'
@@ -899,22 +899,42 @@ function insightV2Parts(meta = {}, lang = 'ko') {
   // 블록(표 등) 통째 편집 — div 래퍼 (span 안에 table 은 비정상 HTML)
   const edWrap = (field, def) => `<div${edRich(field)}>${M[field] != null ? M[field] : def}</div>`
 
-  // ── [수치 테이블 1.1] 데이터 (보고서 수치 그대로) ──
+  // ── [수치 테이블 1.1] — 언급 수는 보고서 수치, Visibility 는 구글 시트 동기화 수치(마지막 2개월)로 동적 계산.
+  // 동기화 데이터 없으면 보고서 수치(v5/v6/vp)로 폴백. Bosch 행 제외 (사용자 지시 — LG·삼성만).
   const t11 = [
-    { prd: 'TV', brand: 'SAMSUNG (삼성전자)', c: '#3B82F6', m5: '369,634회', m6: '354,875회', d: '-14,759회', dr: '-3.99%', v5: '90.19%', v6: '89.07%', vp: '-1.13%p' },
-    { prd: 'TV', brand: 'LG (LG전자)', c: EM_RED, m5: '358,964회', m6: '345,260회', d: '-13,704회', dr: '-3.82%', v5: '87.79%', v6: '86.87%', vp: '-0.92%p' },
-    { prd: '냉장고', brand: 'SAMSUNG (삼성전자)', c: '#3B82F6', m5: '102,467회', m6: '95,860회', d: '-6,607회', dr: '-6.45%', v5: '53.18%', v6: '50.70%', vp: '-2.48%p' },
-    { prd: '냉장고', brand: 'LG (LG전자)', c: EM_RED, m5: '101,745회', m6: '96,035회', d: '-5,710회', dr: '-5.61%', v5: '52.80%', v6: '50.58%', vp: '-2.22%p' },
-    { prd: '냉장고', brand: 'Bosch (보쉬)', c: '#64748B', m5: '59,478회', m6: '60,543회', d: '+1,065회', dr: '+1.79%', v5: '38.44%', v6: '38.89%', vp: '+0.45%p' },
-    { prd: '세탁기', brand: 'LG (LG전자)', c: EM_RED, m5: '88,441회', m6: '84,610회', d: '-3,831회', dr: '-4.33%', v5: '47.56%', v6: '45.89%', vp: '-1.67%p' },
-    { prd: '세탁기', brand: 'SAMSUNG (삼성전자)', c: '#3B82F6', m5: '77,344회', m6: '72,474회', d: '-4,870회', dr: '-6.30%', v5: '43.18%', v6: '40.95%', vp: '-2.23%p' },
-    { prd: '세탁기', brand: 'Bosch (보쉬)', c: '#64748B', m5: '47,066회', m6: '46,582회', d: '-484회', dr: '-1.03%', v5: '32.33%', v6: '32.29%', vp: '-0.05%p' },
-    { prd: 'RAC (에어컨)', brand: 'LG (LG전자)', c: EM_RED, m5: '111,988회', m6: '108,242회', d: '-3,746회', dr: '-3.35%', v5: '48.45%', v6: '46.77%', vp: '-1.68%p' },
-    { prd: 'RAC (에어컨)', brand: 'SAMSUNG (삼성전자)', c: '#3B82F6', m5: '45,816회', m6: '43,185회', d: '-2,631회', dr: '-5.74%', v5: '22.46%', v6: '21.55%', vp: '-0.91%p' },
+    { prd: 'TV', id: 'tv', lg: false, brand: 'SAMSUNG (삼성전자)', c: '#3B82F6', m5: '369,634회', m6: '354,875회', d: '-14,759회', dr: '-3.99%', v5: '90.19%', v6: '89.07%', vp: '-1.13%p' },
+    { prd: 'TV', id: 'tv', lg: true, brand: 'LG (LG전자)', c: EM_RED, m5: '358,964회', m6: '345,260회', d: '-13,704회', dr: '-3.82%', v5: '87.79%', v6: '86.87%', vp: '-0.92%p' },
+    { prd: '냉장고', id: 'fridge', lg: false, brand: 'SAMSUNG (삼성전자)', c: '#3B82F6', m5: '102,467회', m6: '95,860회', d: '-6,607회', dr: '-6.45%', v5: '53.18%', v6: '50.70%', vp: '-2.48%p' },
+    { prd: '냉장고', id: 'fridge', lg: true, brand: 'LG (LG전자)', c: EM_RED, m5: '101,745회', m6: '96,035회', d: '-5,710회', dr: '-5.61%', v5: '52.80%', v6: '50.58%', vp: '-2.22%p' },
+    { prd: '세탁기', id: 'washer', lg: true, brand: 'LG (LG전자)', c: EM_RED, m5: '88,441회', m6: '84,610회', d: '-3,831회', dr: '-4.33%', v5: '47.56%', v6: '45.89%', vp: '-1.67%p' },
+    { prd: '세탁기', id: 'washer', lg: false, brand: 'SAMSUNG (삼성전자)', c: '#3B82F6', m5: '77,344회', m6: '72,474회', d: '-4,870회', dr: '-6.30%', v5: '43.18%', v6: '40.95%', vp: '-2.23%p' },
+    { prd: 'RAC (에어컨)', id: 'rac', lg: true, brand: 'LG (LG전자)', c: EM_RED, m5: '111,988회', m6: '108,242회', d: '-3,746회', dr: '-3.35%', v5: '48.45%', v6: '46.77%', vp: '-1.68%p' },
+    { prd: 'RAC (에어컨)', id: 'rac', lg: false, brand: 'SAMSUNG (삼성전자)', c: '#3B82F6', m5: '45,816회', m6: '43,185회', d: '-2,631회', dr: '-5.74%', v5: '22.46%', v6: '21.55%', vp: '-0.91%p' },
   ]
+  // 구글 시트 동기화 Visibility — products[].monthlyScores(시간순) 마지막 2개월의 allScores 에서 브랜드 추출
+  const _syncVis = (id, isLG) => {
+    const p = (products || []).find(x => x && x.id === id)
+    const ms = (p && Array.isArray(p.monthlyScores)) ? p.monthlyScores : []
+    const pick = m => {
+      if (!m) return null
+      const all = m.allScores || {}
+      const key = Object.keys(all).find(k => isLG ? /^lg/i.test(k) : /^(samsung|삼성)/i.test(k))
+      if (key && all[key] != null && isFinite(all[key])) return Number(all[key])
+      if (isLG && m.score != null && isFinite(m.score)) return Number(m.score)  // LG 폴백: score 필드
+      return null
+    }
+    return { prev: pick(ms[ms.length - 2]), latest: pick(ms[ms.length - 1]) }
+  }
   const thS = `padding:8px 4px;font-size:10px;font-weight:700;color:#475569;background:#F8FAFC;border-bottom:2px solid ${EM_RED};text-align:center;font-family:${EM_FONT};letter-spacing:-0.3px;`
   const tdS = `padding:7px 4px;font-size:11px;color:#1A1A1A;border-bottom:1px solid #F1F5F9;text-align:center;font-family:${EM_FONT};letter-spacing:-0.3px;`
-  const t11Rows = t11.map((r, i) => `
+  const t11Rows = t11.map((r, i) => {
+    const sv = _syncVis(r.id, r.lg)
+    const v5 = sv.prev != null ? sv.prev.toFixed(2) + '%' : r.v5
+    const v6 = sv.latest != null ? sv.latest.toFixed(2) + '%' : r.v6
+    const vp = (sv.prev != null && sv.latest != null)
+      ? ((sv.latest - sv.prev >= 0 ? '+' : '') + (sv.latest - sv.prev).toFixed(2) + '%p')
+      : r.vp
+    return `
     <tr${i % 2 === 0 ? ' style="background:#FAFBFC;"' : ''}>
       <td style="${tdS}font-weight:700;">${r.prd}</td>
       <td style="${tdS}text-align:left;font-weight:800;color:${r.c};">${r.brand}</td>
@@ -922,10 +942,11 @@ function insightV2Parts(meta = {}, lang = 'ko') {
       <td style="${tdS}">${r.m6}</td>
       <td style="${tdS}font-weight:800;color:${dC(r.d)};">${r.d}</td>
       <td style="${tdS}font-weight:800;color:${dC(r.dr)};">${r.dr}</td>
-      <td style="${tdS}">${r.v5}</td>
-      <td style="${tdS}font-weight:700;">${r.v6}</td>
-      <td style="${tdS}font-weight:800;color:${dC(r.vp)};">${r.vp}</td>
-    </tr>`).join('')
+      <td style="${tdS}">${v5}</td>
+      <td style="${tdS}font-weight:700;">${v6}</td>
+      <td style="${tdS}font-weight:800;color:${dC(vp)};">${vp}</td>
+    </tr>`
+  }).join('')
 
   // ── [패턴 요약 2.1] 3대 패턴 — obs/def 는 편집 가능(v2P*), ex 는 프롬프트 인용이라 고정 ──
   const patterns = [
@@ -3389,11 +3410,11 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                             <td style="padding:16px 18px;background:#1E0F18;border:1px solid #3D1528;border-radius:10px;">
                               ${(meta.showTotalInsight !== false && (meta.totalInsight || _ED)) ? edBlock('totalInsight', meta.totalInsight, { size: 15, lh: 26, color: '#FFFFFF', accent: '#FF9EBB', lang }) : ''}
                               ${(meta.showTotalInsight !== false && (meta.totalInsight || _ED)) && meta.showInsightV2 ? '<table border="0" cellpadding="0" cellspacing="0" width="100%"><tr><td height="14" style="font-size:0;line-height:0;">&nbsp;</td></tr></table>' : ''}
-                              ${meta.showInsightV2 ? insightV2Parts(meta, lang).execHtml : ''}
+                              ${meta.showInsightV2 ? insightV2Parts(meta, lang, products).execHtml : ''}
                             </td>
                           </tr>
                         </table>` : ''}
-                        ${meta.showInsightV2 ? insightV2Parts(meta, lang).bodyHtml : ''}
+                        ${meta.showInsightV2 ? insightV2Parts(meta, lang, products).bodyHtml : ''}
                         <!-- 대시보드 바로가기 버튼은 Action Plan 섹션 아래로 이동됨 -->
                       </td>
                     </tr>
@@ -3410,11 +3431,11 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                         <table border="0" cellpadding="0" cellspacing="0" width="100%">
                           <tr>
                             <td style="padding:16px 18px;background:#1E0F18;border:1px solid #3D1528;border-radius:10px;">
-                              ${insightV2Parts(meta, lang).execHtml}
+                              ${insightV2Parts(meta, lang, products).execHtml}
                             </td>
                           </tr>
                         </table>
-                        ${insightV2Parts(meta, lang).bodyHtml}
+                        ${insightV2Parts(meta, lang, products).bodyHtml}
                       </td>
                     </tr>
                   </table>
