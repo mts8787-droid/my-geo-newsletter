@@ -1066,22 +1066,7 @@ function insightV2Parts(meta = {}, lang = 'ko', products = []) {
                               ${edWrap('v2T11HtmlV2', t11TableHtml)}
                             </td>
                           </tr>
-                          <tr>
-                            <td style="padding-top:10px;">
-                              <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FEF2F4;border:1px solid #FECDD3;border-radius:8px;">
-                                <tr>
-                                  <td style="padding:12px 16px;">
-                                    <p style="margin:0 0 6px;font-size:12px;font-weight:800;color:${EM_RED};font-family:${EM_FONT};letter-spacing:0.5px;">${ed('v2GeoInsightTitle', 'GEO INSIGHT (지표 상세 해석)')}</p>
-                                    <p style="margin:0;font-size:12px;color:#1A1A1A;line-height:20px;font-family:${EM_FONT};letter-spacing:-0.3px;">${ed('v2GeoInsight', `
-                                      <strong>1. 핵심 가전(냉장고·세탁기)의 하락 폭 차이</strong>: 냉장고(삼성 -6.45% vs LG -5.61%)와 세탁기(삼성 -6.30% vs LG -4.33%) 모두에서 삼성전자의 브랜드 언급 감소 폭이 LG전자보다 컸습니다. 이는 인용 알고리즘이 바뀌는 국면에서 삼성전자의 마케팅 브랜드 키워드가 상대적으로 넓은 범위에서 제외되었음을 시사합니다.<br/><br/>
-                                      <strong>2. 에어컨(RAC)의 노출 격차</strong>: 에어컨에서도 삼성전자의 감소율(-5.74%)이 LG전자(-3.35%)보다 컸습니다. 양사 모두 하락했지만, LG전자는 스펙 설명 중심의 서술 덕분에 하락 폭을 상대적으로 낮게 유지했습니다.<br/><br/>
-                                      <strong>3. 경쟁사 Bosch의 대비적 동향</strong>: Bosch(냉장고 +1.79%, 세탁기 -1.03%)는 AI의 브랜드 추천이 줄어드는 흐름 속에서도 리뷰 매체·기술 스펙 인용을 기반으로 노출을 지켰습니다. LG전자에도 이와 같은 차별화된 인용 최적화 접근이 필요함을 보여줍니다.
-                                    `)}</p>
-                                  </td>
-                                </tr>
-                              </table>
-                            </td>
-                          </tr>
+                          ${/* GEO INSIGHT(지표 상세 해석) 박스 삭제 (사용자 지시) — 수치 테이블로 섹션 1 종료 */''}
                         </table>
 
                         <!-- ── 2. 자사 노출 유지 — 답변 예시 ── -->
