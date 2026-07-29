@@ -14,6 +14,9 @@ import SheetDownload from './SheetDownload.jsx'
 // 그 외 차트/표시 토글은 metaKo 기준으로 통일 — metaKo/metaEn 가 독립 state 라
 // 미리보기 언어를 바꿔가며 토글을 만지면 KO/EN 차트가 갈라지기 때문 (handleTranslate 와 동일 화이트리스트).
 const EN_TEXT_FIELDS = ['title', 'dateLine', 'noticeText', 'totalInsight', 'reportType', 'productInsight', 'productHowToRead', 'citationInsight', 'citationHowToRead', 'dotcomInsight', 'dotcomHowToRead', 'todoText', 'todoNotice', 'kpiLogicText', 'cntyInsight', 'cntyHowToRead', 'citDomainInsight', 'citDomainHowToRead', 'citCntyInsight', 'citCntyHowToRead', 'citPrdInsight', 'citPrdHowToRead', 'period', 'team', 'reportNo', 'monthlyReportBody', 'modelDeltaInsight', 'compRatioDeltaNote', 'highlightInsight', 'bumpInsight', 'hlChapterTitle', 'hlWeeklyTitle', 'hlModelTitle', 'hlBumpTitle']
+// V2 인사이트 — 편집된 필드만 번역 대상 (미편집이면 템플릿의 EN 기본 문구가 자동 렌더)
+const V2_TRANSLATE_FIELDS = ['v2ExecIntro', 'v2Exec1T', 'v2Exec1', 'v2Exec2T', 'v2Exec2', 'v2Exec3T', 'v2Exec3', 'v2Exec4T', 'v2Exec4', 'v2Sec1Title', 'v2Sec2Title2', 'v2C1Title', 'v2C1Keep', 'v2C1Bko', 'v2C1Tko', 'v2C2Title3', 'v2C2Keep', 'v2C2Bko3', 'v2C2Tko3', 'v2T11HtmlV2']
+EN_TEXT_FIELDS.push(...V2_TRANSLATE_FIELDS)
 
 // 두 언어(KO/EN) 이메일 HTML 을 하나의 문서로 이어붙임 — KO 본문 → 구분선 → EN 본문.
 // 각 generateHTML 은 완전한 HTML 문서를 반환하므로, KO 문서의 <body> 안에 EN 본문 내용만 삽입한다.
@@ -245,7 +248,10 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
       // 국가별 Citation — 고유 cnty
       const citCntyNames = [...new Set(_citationsCnty.map(r => r.cnty || '').filter(c => c && c !== 'TTL'))]
 
-      const allTexts = [...metaTexts, ...productKrTexts, ...productCompTexts, ...citCategoryTexts, ...cntyCountries, ...cntyProducts, ...cntyCompNames, ...citCntyNames].map(t => t || ' ')
+      // V2 인사이트 — 사용자가 편집한 필드만 번역 (기본 문구는 템플릿이 EN 자동 제공)
+      const v2Edited = V2_TRANSLATE_FIELDS.filter(k => src[k] != null && String(src[k]).trim() !== '')
+      const v2Texts = v2Edited.map(k => String(src[k]))
+      const allTexts = [...metaTexts, ...productKrTexts, ...productCompTexts, ...citCategoryTexts, ...cntyCountries, ...cntyProducts, ...cntyCompNames, ...citCntyNames, ...v2Texts].map(t => t || ' ')
 
       const tr = await translateTexts(allTexts, { from: 'ko', to: 'en' })
       let idx = 0
@@ -315,6 +321,9 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
       citCntyNames.forEach((v, i) => {
         citCntyMap[v] = /^[A-Z]{2,3}$/.test(v) ? v : (tr[idx + i] || v)
       })
+      idx += citCntyNames.length
+      // V2 인사이트 — 편집 필드 번역 결과 반영
+      v2Edited.forEach((k, i) => { newMetaEn[k] = tr[idx + i] || src[k] })
 
       // ★ 핵심 수정: callback form 사용 → 최신 state를 기준으로 EN 필드만 추가
       // 기존 숫자 데이터(score, weekly, vsComp 등)를 절대 덮어쓰지 않음

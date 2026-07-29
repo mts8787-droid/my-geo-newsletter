@@ -898,18 +898,20 @@ function insightV2Parts(meta = {}, lang = 'ko', products = []) {
   const ed = (field, def) => `<span${edRich(field)}>${M[field] != null ? M[field] : def}</span>`
   // 블록(표 등) 통째 편집 — div 래퍼 (span 안에 table 은 비정상 HTML)
   const edWrap = (field, def) => `<div${edRich(field)}>${M[field] != null ? M[field] : def}</div>`
+  // KO/EN 기본 문구 — EN 미리보기·발송에서 자동 영문 (편집값은 그대로, 미편집 시 언어별 기본)
+  const L = (ko, en) => lang === 'en' ? en : ko
 
   // ── [수치 테이블 1.1] — 언급 수는 보고서 수치, Visibility 는 구글 시트 동기화 수치(마지막 2개월)로 동적 계산.
   // 동기화 데이터 없으면 보고서 수치(v5/v6/vp)로 폴백. Bosch 행 제외 (사용자 지시 — LG·삼성만).
   const t11 = [
-    { prd: 'TV', id: 'tv', lg: false, brand: 'SAMSUNG (삼성전자)', c: '#3B82F6', m5: '369,634회', m6: '354,875회', d: '-14,759회', dr: '-3.99%', v5: '90.19%', v6: '89.07%', vp: '-1.13%p' },
-    { prd: 'TV', id: 'tv', lg: true, brand: 'LG (LG전자)', c: EM_RED, m5: '358,964회', m6: '345,260회', d: '-13,704회', dr: '-3.82%', v5: '87.79%', v6: '86.87%', vp: '-0.92%p' },
-    { prd: '냉장고', id: 'fridge', lg: false, brand: 'SAMSUNG (삼성전자)', c: '#3B82F6', m5: '102,467회', m6: '95,860회', d: '-6,607회', dr: '-6.45%', v5: '53.18%', v6: '50.70%', vp: '-2.48%p' },
-    { prd: '냉장고', id: 'fridge', lg: true, brand: 'LG (LG전자)', c: EM_RED, m5: '101,745회', m6: '96,035회', d: '-5,710회', dr: '-5.61%', v5: '52.80%', v6: '50.58%', vp: '-2.22%p' },
-    { prd: '세탁기', id: 'washer', lg: true, brand: 'LG (LG전자)', c: EM_RED, m5: '88,441회', m6: '84,610회', d: '-3,831회', dr: '-4.33%', v5: '47.56%', v6: '45.89%', vp: '-1.67%p' },
-    { prd: '세탁기', id: 'washer', lg: false, brand: 'SAMSUNG (삼성전자)', c: '#3B82F6', m5: '77,344회', m6: '72,474회', d: '-4,870회', dr: '-6.30%', v5: '43.18%', v6: '40.95%', vp: '-2.23%p' },
-    { prd: 'RAC (에어컨)', id: 'rac', lg: true, brand: 'LG (LG전자)', c: EM_RED, m5: '111,988회', m6: '108,242회', d: '-3,746회', dr: '-3.35%', v5: '48.45%', v6: '46.77%', vp: '-1.68%p' },
-    { prd: 'RAC (에어컨)', id: 'rac', lg: false, brand: 'SAMSUNG (삼성전자)', c: '#3B82F6', m5: '45,816회', m6: '43,185회', d: '-2,631회', dr: '-5.74%', v5: '22.46%', v6: '21.55%', vp: '-0.91%p' },
+    { prd: 'TV', prdEn: 'TV', id: 'tv', lg: false, brand: 'SAMSUNG (삼성전자)', c: '#3B82F6', m5: '369,634회', m6: '354,875회', d: '-14,759회', dr: '-3.99%', v5: '90.19%', v6: '89.07%', vp: '-1.13%p' },
+    { prd: 'TV', prdEn: 'TV', id: 'tv', lg: true, brand: 'LG (LG전자)', c: EM_RED, m5: '358,964회', m6: '345,260회', d: '-13,704회', dr: '-3.82%', v5: '87.79%', v6: '86.87%', vp: '-0.92%p' },
+    { prd: '냉장고', prdEn: 'Refrigerator', id: 'fridge', lg: false, brand: 'SAMSUNG (삼성전자)', c: '#3B82F6', m5: '102,467회', m6: '95,860회', d: '-6,607회', dr: '-6.45%', v5: '53.18%', v6: '50.70%', vp: '-2.48%p' },
+    { prd: '냉장고', prdEn: 'Refrigerator', id: 'fridge', lg: true, brand: 'LG (LG전자)', c: EM_RED, m5: '101,745회', m6: '96,035회', d: '-5,710회', dr: '-5.61%', v5: '52.80%', v6: '50.58%', vp: '-2.22%p' },
+    { prd: '세탁기', prdEn: 'Washer', id: 'washer', lg: true, brand: 'LG (LG전자)', c: EM_RED, m5: '88,441회', m6: '84,610회', d: '-3,831회', dr: '-4.33%', v5: '47.56%', v6: '45.89%', vp: '-1.67%p' },
+    { prd: '세탁기', prdEn: 'Washer', id: 'washer', lg: false, brand: 'SAMSUNG (삼성전자)', c: '#3B82F6', m5: '77,344회', m6: '72,474회', d: '-4,870회', dr: '-6.30%', v5: '43.18%', v6: '40.95%', vp: '-2.23%p' },
+    { prd: 'RAC (에어컨)', prdEn: 'RAC (Air Conditioner)', id: 'rac', lg: true, brand: 'LG (LG전자)', c: EM_RED, m5: '111,988회', m6: '108,242회', d: '-3,746회', dr: '-3.35%', v5: '48.45%', v6: '46.77%', vp: '-1.68%p' },
+    { prd: 'RAC (에어컨)', prdEn: 'RAC (Air Conditioner)', id: 'rac', lg: false, brand: 'SAMSUNG (삼성전자)', c: '#3B82F6', m5: '45,816회', m6: '43,185회', d: '-2,631회', dr: '-5.74%', v5: '22.46%', v6: '21.55%', vp: '-0.91%p' },
   ]
   // 구글 시트 동기화 Visibility — products[].monthlyScores(시간순) 마지막 2개월의 allScores 에서 브랜드 추출
   const _syncVis = (id, isLG) => {
@@ -936,11 +938,11 @@ function insightV2Parts(meta = {}, lang = 'ko', products = []) {
       : r.vp
     return `
     <tr${i % 2 === 0 ? ' style="background:#FAFBFC;"' : ''}>
-      <td style="${tdS}font-weight:700;">${r.prd}</td>
-      <td style="${tdS}text-align:left;font-weight:800;color:${r.c};">${r.brand}</td>
-      <td style="${tdS}">${r.m5}</td>
-      <td style="${tdS}">${r.m6}</td>
-      <td style="${tdS}font-weight:800;color:${dC(r.d)};">${r.d}</td>
+      <td style="${tdS}font-weight:700;">${L(r.prd, r.prdEn || r.prd)}</td>
+      <td style="${tdS}text-align:left;font-weight:800;color:${r.c};">${L(r.brand, r.brand.replace(/ \((삼성전자|LG전자)\)/, ''))}</td>
+      <td style="${tdS}">${L(r.m5, r.m5.replace(/회/g, ''))}</td>
+      <td style="${tdS}">${L(r.m6, r.m6.replace(/회/g, ''))}</td>
+      <td style="${tdS}font-weight:800;color:${dC(r.d)};">${L(r.d, r.d.replace(/회/g, ''))}</td>
       <td style="${tdS}font-weight:800;color:${dC(r.dr)};">${r.dr}</td>
       <td style="${tdS}">${v5}</td>
       <td style="${tdS}font-weight:700;">${v6}</td>
@@ -960,25 +962,25 @@ function insightV2Parts(meta = {}, lang = 'ko', products = []) {
       </tr>
     </table>`
   const cases = [
-    { titleF: 'v2C1Title', title: '[실증 예시 1] 세탁기·건조기 / WM 카테고리 (UK 영국) - "가장 조용한 세탁건조기 추천"',
+    { titleF: 'v2C1Title', title: L('[실증 예시 1] 세탁기·건조기 / WM 카테고리 (UK 영국) - "가장 조용한 세탁건조기 추천"', '[Case 1] Washer·Dryer / WM Category (UK) - "Best quiet washer-dryer recommendation"'),
       descF: 'v2C1Desc', desc: '5월 Baseline에서는 삼성과 LG가 유통망 가격대와 함께 나란히 추천되었으나, 6월 Target 답변에서는 <strong>삼성전자 제품 추천이 본문에서 빠지고 LG전자만 다이렉트 드라이브 모터 기술이 인용되며 추천이 유지</strong>된 대조 사례입니다.',
       insF: 'v2C1Insight', pF: 'v2C1Prompt', bEnF: 'v2C1Ben', bKoF: 'v2C1Bko', tEnF: 'v2C1Ten', tKoF: 'v2C1Tko',
-      keepF: 'v2C1Keep', keep: 'LG전자는 리테일 추천과 함께 기술 스펙 설명이 등장하는 사례가 있어, 서술이 스펙 중심으로 바뀐 뒤에도 본문에 남는 경우가 관찰되었습니다.',
+      keepF: 'v2C1Keep', keep: L('LG전자는 리테일 추천과 함께 기술 스펙 설명이 등장하는 사례가 있어, 서술이 스펙 중심으로 바뀐 뒤에도 본문에 남는 경우가 관찰되었습니다.', 'LG cases often pair retail recommendations with technical spec descriptions, so LG tended to remain in the body even after answers shifted to spec-centric wording.'),
       prompt: 'What is the best quiet washer dryer combo?',
       b_en: 'If your top priority is a quiet, reliable washer-dryer combo in the UK, the sweet spot is usually a model with an inverter/direct-drive motor, good anti-vibration control, and a spin noise level under about 72 dB. Independent guides and user reviews consistently point toward Bosch, Samsung (Ecobubble series at £649 on Currys), LG (Direct Drive Series at £699 on Argos), and Miele as the quietest premium options available.',
-      b_ko: '영국에서 조용하고 신뢰할 수 있는 세탁 건조기 콤보가 최우선 순위라면, 인버터/다이렉트 드라이브 모터, 우수한 진동 방지 제어 및 72dB 미만의 탈수 소음 수준을 갖춘 모델이 이상적입니다. 독립 가이드 및 사용자 리뷰는 지속적으로 보쉬, 삼성(Currys에서 649파운드에 판매되는 에코버블 시리즈), LG(Argos에서 699파운드에 판매되는 다이렉트 드라이브 시리즈) 및 밀레를 사용 가능한 가장 조용한 프리미엄 옵션으로 꼽습니다.',
+      b_ko: L('영국에서 조용하고 신뢰할 수 있는 세탁 건조기 콤보가 최우선 순위라면, 인버터/다이렉트 드라이브 모터, 우수한 진동 방지 제어 및 72dB 미만의 탈수 소음 수준을 갖춘 모델이 이상적입니다. 독립 가이드 및 사용자 리뷰는 지속적으로 보쉬, 삼성(Currys에서 649파운드에 판매되는 에코버블 시리즈), LG(Argos에서 699파운드에 판매되는 다이렉트 드라이브 시리즈) 및 밀레를 사용 가능한 가장 조용한 프리미엄 옵션으로 꼽습니다.', 'Interpretation: For the UK, the ideal quiet washer-dryer combo has an inverter/direct-drive motor, good anti-vibration control, and spin noise under ~72 dB. Independent guides and user reviews consistently point to Bosch, Samsung (Ecobubble, £649 at Currys), LG (Direct Drive, £699 at Argos), and Miele as the quietest premium options.'),
       t_en: 'If your top priority is quiet operation, focus on machines with low spin noise (ideally under 72 dB), an inverter/direct-drive motor, and strong vibration control. In the UK market, Miele, AEG, and some LG models are generally regarded as the quietest premium options.<br/><br/>### Best Value Quiet Option: LG Direct Drive Washer-Dryer<br/>LG\'s Direct Drive models are frequently praised for low vibration and quiet operation thanks to the motor being attached directly to the drum.',
-      t_ko: '조용한 작동이 최우선 과제라면 탈수 소음이 적고(이상적으로는 72dB 미만), 인버터/다이렉트 드라이브 모터 및 강력한 진동 제어 기능을 갖춘 세탁기에 집중하십시오. 영국 시장에서는 밀레, AEG 및 일부 LG 모델이 일반적으로 가장 조용한 프리미엄 옵션으로 간주됩니다.<br/><br/>### 가성비 우수 조용한 옵션: LG 다이렉트 드라이브 세탁건조기<br/>LG의 다이렉트 드라이브(Direct Drive) 모델은 모터가 드럼에 직접 부착되어 진동이 적고 조용하게 작동한다는 점에서 자주 찬사를 받습니다.',
+      t_ko: L('조용한 작동이 최우선 과제라면 탈수 소음이 적고(이상적으로는 72dB 미만), 인버터/다이렉트 드라이브 모터 및 강력한 진동 제어 기능을 갖춘 세탁기에 집중하십시오. 영국 시장에서는 밀레, AEG 및 일부 LG 모델이 일반적으로 가장 조용한 프리미엄 옵션으로 간주됩니다.<br/><br/>### 가성비 우수 조용한 옵션: LG 다이렉트 드라이브 세탁건조기<br/>LG의 다이렉트 드라이브(Direct Drive) 모델은 모터가 드럼에 직접 부착되어 진동이 적고 조용하게 작동한다는 점에서 자주 찬사를 받습니다.', 'Interpretation: If quiet operation is the top priority, focus on machines with low spin noise (ideally under 72 dB), an inverter/direct-drive motor, and strong vibration control. In the UK, Miele, AEG, and some LG models are generally regarded as the quietest premium options.<br/><br/>### Best value quiet option: LG Direct Drive washer-dryer<br/>Frequently praised for low vibration and quiet operation thanks to the motor attached directly to the drum.'),
       insight: '5월 Baseline에 함께 노출되었던 <strong>삼성 브랜드명과 에코버블(Ecobubble) 라인업 명칭이 6월 Target 답변에서는 사라졌습니다.</strong> 반면 LG전자는 <strong>Direct Drive</strong> 스펙 서술을 근거로 추천 목록에 남아 노출이 이어졌습니다.' },
-    { titleF: 'v2C2Title3', title: '[실증 예시 2] 냉장고 (IN Compare) — 제품 추천 소멸 후 LG.com이 유일한 인용 출처로 단독 생존',
+    { titleF: 'v2C2Title3', title: L('[실증 예시 2] 냉장고 (IN Compare) — 제품 추천 소멸 후 LG.com이 유일한 인용 출처로 단독 생존', '[Case 2] Refrigerator (IN Compare) — After product recommendations vanished, LG.com survived as the sole citation source'),
       descF: 'v2C2Desc3', desc: `(사이드바이사이드와 프렌치도어 냉장고 중 어느 게 나은가요? — 브랜드 미지정 중립 질문)<br/><strong>국가-제품</strong>: 인도 | 냉장고 (ChatGPT)`,
       insF: 'v2C2Ins3', pF: 'v2C2Prompt3', bEnF: 'v2C2Ben3', bKoF: 'v2C2Bko3', tEnF: 'v2C2Ten3', tKoF: 'v2C2Tko3',
-      keepF: 'v2C2Keep', keep: `LG전자의 ${term('OLED')}, ${term('Direct-Drive')}, ${term('Inverter Linear')}, ${term('Dual Inverter')}, ${term('TrueSteam')} 등은 스펙 원리를 설명하는 문맥에서 인용되는 경향이 있어 노출이 비교적 꾸준히 유지되었습니다.`,
+      keepF: 'v2C2Keep', keep: L(`LG전자의 ${term('OLED')}, ${term('Direct-Drive')}, ${term('Inverter Linear')}, ${term('Dual Inverter')}, ${term('TrueSteam')} 등은 스펙 원리를 설명하는 문맥에서 인용되는 경향이 있어 노출이 비교적 꾸준히 유지되었습니다.`, `LG's ${term('OLED')}, ${term('Direct-Drive')}, ${term('Inverter Linear')}, ${term('Dual Inverter')}, ${term('TrueSteam')} tend to be cited in contexts explaining spec principles, keeping exposure relatively steady.`),
       promptRaw: '"Which is better, a Side-by-Side or a French Door refrigerator?" (1INHSRFLNC0012)',
       b_en: `"Good examples: Haier 520 L Frost Free French 4 Door Refrigerator / Samsung 32 Cu. Ft French Door Refrigerator ... Good examples: LG 655 L Side-By-Side Refrigerator / Midea 560 L Side by Side Refrigerator ... Side-by-Side refrigerators are widely available from brands like LG, Samsung, Haier, and Panasonic. [Reddit+1]"`,
-      b_ko: `해석: 좋은 예시 — 하이얼 520L 프렌치 4도어 냉장고 / 삼성 32큐빅피트 프렌치도어 냉장고 ... 좋은 예시 — LG 655L 사이드바이사이드 냉장고 / 미디어 560L 사이드바이사이드 냉장고 ... 사이드바이사이드 냉장고는 LG, 삼성, 하이얼, 파나소닉 같은 브랜드에서 널리 판매된다. (출처: Reddit)`,
+      b_ko: L(`해석: 좋은 예시 — 하이얼 520L 프렌치 4도어 냉장고 / 삼성 32큐빅피트 프렌치도어 냉장고 ... 좋은 예시 — LG 655L 사이드바이사이드 냉장고 / 미디어 560L 사이드바이사이드 냉장고 ... 사이드바이사이드 냉장고는 LG, 삼성, 하이얼, 파나소닉 같은 브랜드에서 널리 판매된다. (출처: Reddit)`, `Interpretation: Good examples — Haier 520L Frost-Free French 4-door / Samsung 32 cu. ft French Door ... LG 655L Side-by-Side / Midea 560L Side-by-Side ... Side-by-side refrigerators are widely available from brands like LG, Samsung, Haier, and Panasonic. (Source: Reddit)`),
       t_en: `"Industry comparisons also show French door models generally offer more fresh-food space (around 70%), while side-by-side gives more freezer balance [LG AU](https://www.lg.com/in/magazine/side-by-side-vs-french-door/)."`,
-      t_ko: `해석: 업계 비교에 따르면 프렌치도어 모델은 대체로 더 많은 신선식품 공간(약 70%)을 제공하고, 사이드바이사이드는 냉동 비중의 균형이 더 좋다 — 출처: LG (lg.com/in/magazine "사이드바이사이드 vs 프렌치도어" 비교 아티클)`,
+      t_ko: L(`해석: 업계 비교에 따르면 프렌치도어 모델은 대체로 더 많은 신선식품 공간(약 70%)을 제공하고, 사이드바이사이드는 냉동 비중의 균형이 더 좋다 — 출처: LG (lg.com/in/magazine "사이드바이사이드 vs 프렌치도어" 비교 아티클)`, `Interpretation: Industry comparisons show French-door models generally offer more fresh-food space (about 70%), while side-by-side gives better freezer balance — Source: LG (lg.com/in/magazine "Side-by-Side vs French Door" article)`),
       insight: `• 6월 답변에서 브랜드 노출은 위 문장 단 한 곳뿐이며, 제품 추천이 아니라 정량 근거의 출처 표기 형태<br/>• 5월에 원리 설명의 출처 역할을 하던 Tom's Guide·KitchenAid·Whirlpool·Reddit이 6월엔 모두 사라지고, lg.com/in 매거진 아티클이 답변 전체의 유일한 인용원이 됨<br/>• 제품 나열이 무너질 때 Samsung·Haier·Panasonic·Midea는 함께 소멸했으나, LG는 질문과 1:1로 대응하는 제목("Side-by-Side vs French Door") + 인용 가능한 정량 수치("약 70%")를 갖춘 오운드 콘텐츠 덕분에 출처 지위로 생존` },
   ]
   const caseCardArr = cases.map(cs => `
@@ -989,10 +991,10 @@ function insightV2Parts(meta = {}, lang = 'ko', products = []) {
             <td style="padding:14px 16px 4px;">
               ${/* 설명·분석 Insight 박스 삭제 (사용자 지시) — 제목 → 자사 노출 유지 → 프롬프트 → 원문 인용 */''}
               <p style="margin:0 0 8px;font-size:14px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-0.5px;">${ed(cs.titleF, cs.title)}</p>
-              ${cs.keep ? `<p style="margin:0 0 8px;font-size:12px;color:#334155;line-height:20px;font-family:${EM_FONT};letter-spacing:-0.3px;"><strong style="color:${EM_RED};">자사 노출 유지</strong>: ${ed(cs.keepF, cs.keep)}</p>` : ''}
+              ${cs.keep ? `<p style="margin:0 0 8px;font-size:12px;color:#334155;line-height:20px;font-family:${EM_FONT};letter-spacing:-0.3px;"><strong style="color:${EM_RED};">${L('자사 노출 유지', 'LG Exposure Retention')}</strong>: ${ed(cs.keepF, cs.keep)}</p>` : ''}
               <p style="margin:0;font-size:12px;color:#334155;font-family:${EM_FONT};"><strong>Exact Prompt</strong>: ${ed(cs.pF, term(cs.promptRaw || `"${cs.prompt}"`))}</p>
-              ${quoteBox('5월 BASELINE 원문 · 번역', '#64748B', cs.bEnF, cs.b_en, cs.bKoF, cs.b_ko)}
-              ${quoteBox('6월 TARGET 원문 · 번역', EM_RED, cs.tEnF, cs.t_en, cs.tKoF, cs.t_ko)}
+              ${quoteBox(L('5월 BASELINE 원문 · 번역', 'MAY BASELINE — ORIGINAL · INTERPRETATION'), '#64748B', cs.bEnF, cs.b_en, cs.bKoF, cs.b_ko)}
+              ${quoteBox(L('6월 TARGET 원문 · 번역', 'JUNE TARGET — ORIGINAL · INTERPRETATION'), EM_RED, cs.tEnF, cs.t_en, cs.tKoF, cs.t_ko)}
               <table border="0" cellpadding="0" cellspacing="0" width="100%"><tr><td height="14" style="font-size:0;line-height:0;">&nbsp;</td></tr></table>
             </td>
           </tr>
@@ -1017,30 +1019,30 @@ function insightV2Parts(meta = {}, lang = 'ko', products = []) {
 
   // ── [A] EXECUTIVE SUMMARY 내용 — 최상단 V1 검은 박스 안에 삽입 (자체 박스·라벨 없음) ──
   const execHtml = `
-                              <p style="margin:0 0 12px;font-size:13px;color:#E2E8F0;line-height:22px;font-family:${EM_FONT};letter-spacing:-0.3px;">${ed('v2ExecIntro', '2026년 6월, AI 검색(Gemini·ChatGPT 등)에서 4대 핵심 가전(TV·냉장고·세탁기·에어컨)의 브랜드 노출이 전반적으로 하락했습니다. 이 가운데 <strong>삼성전자의 하락 폭이 LG전자보다 컸으며,</strong> 그 배경을 다음과 같이 분석했습니다.')}</p>
+                              <p style="margin:0 0 12px;font-size:13px;color:#E2E8F0;line-height:22px;font-family:${EM_FONT};letter-spacing:-0.3px;">${ed('v2ExecIntro', L('2026년 6월, AI 검색(Gemini·ChatGPT 등)에서 4대 핵심 가전(TV·냉장고·세탁기·에어컨)의 브랜드 노출이 전반적으로 하락했습니다. 이 가운데 <strong>삼성전자의 하락 폭이 LG전자보다 컸으며,</strong> 그 배경을 다음과 같이 분석했습니다.', 'In June 2026, brand exposure for the four key appliances (TV, refrigerator, washer, air conditioner) declined overall in AI search (Gemini, ChatGPT, etc.). <strong>Samsung declined more than LG,</strong> and we analyzed the background as follows.'))}</p>
                               <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                                ${execItem('v2Exec1T', '1. 현상 요약 — 4대 핵심 가전의 브랜드 언급 수·Visibility 동반 하락, 삼성전자 하락 폭이 더 큼',
-                                  'v2Exec1', '4대 가전 통합 브랜드 언급 수는 삼성전자가 <strong style="color:#FFFFFF;">-28,867회(-4.85%)</strong>, LG전자가 <strong style="color:#FFFFFF;">-26,991회(-4.08%)</strong> 감소해 삼성전자의 감소 폭이 더 컸습니다. 실측 Visibility 역시 삼성전자 <strong style="color:#FFFFFF;">-1.70%p(60.39%→58.70%)</strong>, LG전자 <strong style="color:#FFFFFF;">-1.68%p(64.90%→63.22%)</strong>로 같은 흐름을 보였습니다.')}
-                                ${execItem('v2Exec2T', '2. 추정 원인 — 제품별 \'독자 기술 상표어 자산\'의 비대칭',
-                                  'v2Exec2', `AI 답변이 스펙 설명 중심으로 옮겨가면서, LG전자의 독자 기술 상표어는 작동 원리를 설명하는 문맥에서 인용되어 노출이 유지된 반면, 삼성전자의 명칭은 마케팅 라인업으로 분류되어 제외되는 경향이 나타났습니다.<br/><strong style="color:#FFFFFF;">TV</strong>: LG전자 ${termDark('Brightness Booster')} (스펙 기술어) vs 삼성전자 ${termDark('The Frame')} / ${termDark('Neo QLED')} (마케팅 라인업)<br/><strong style="color:#FFFFFF;">냉장고</strong>: LG전자 ${termDark('Inverter Linear')} (리니어 압축 스펙) vs 삼성전자 ${termDark('Bespoke')} (디자인 라인업)<br/><strong style="color:#FFFFFF;">세탁기</strong>: LG전자 ${termDark('Direct-Drive')} / ${termDark('TrueSteam')} (직연결 모터/스팀 스펙) vs 삼성전자 ${termDark('Bespoke AI')} / ${termDark('Ecobubble')} (마케팅 라인업)<br/><strong style="color:#FFFFFF;">에어컨</strong>: LG전자 ${termDark('Dual Inverter')} (듀얼 인버터 압축 스펙) vs 삼성전자 ${termDark('WindFree')} (마케팅 라인업)`)}
-                                ${execItem('v2Exec3T', '3. 실증 사례 — 5월 양사 병기에서 6월 LG 단독 노출로 전환',
-                                  'v2Exec3', '5월 Baseline 답변에서는 삼성과 LG가 함께 추천되었으나, 6월 알고리즘 변경 이후에는 <strong style="color:#FFFFFF;">삼성전자가 추천 목록에서 빠지고 LG전자만 노출이 유지</strong>되는 사례가 확인되었습니다. 이는 4대 가전 논브랜드 프롬프트의 원문 대조로 검증했습니다.')}
-                                ${execItem('v2Exec4T', '4. 대응 방향 — 독자 기술 상표어 강화 및 서드파티 평가 매체 다변화',
-                                  'v2Exec4', '리테일 추천에 대한 의존도를 낮추고, AI가 스펙을 설명할 때 인용하는 독자 기술 상표어와 서드파티 독립 평가 매체(Rtings, Tom\'s Guide 등)의 노출 지면을 넓히는 GEO 전략이 노출 방어에 유효할 것으로 판단됩니다.')}
+                                ${execItem('v2Exec1T', L('1. 현상 요약 — 4대 핵심 가전의 브랜드 언급 수·Visibility 동반 하락, 삼성전자 하락 폭이 더 큼', '1. Summary — Brand mentions and Visibility fell together across the 4 key appliances; Samsung declined more'),
+                                  'v2Exec1', L('4대 가전 통합 브랜드 언급 수는 삼성전자가 <strong style="color:#FFFFFF;">-28,867회(-4.85%)</strong>, LG전자가 <strong style="color:#FFFFFF;">-26,991회(-4.08%)</strong> 감소해 삼성전자의 감소 폭이 더 컸습니다. 실측 Visibility 역시 삼성전자 <strong style="color:#FFFFFF;">-1.70%p(60.39%→58.70%)</strong>, LG전자 <strong style="color:#FFFFFF;">-1.68%p(64.90%→63.22%)</strong>로 같은 흐름을 보였습니다.', 'Combined brand mentions across the 4 appliances fell <strong style="color:#FFFFFF;">-28,867 (-4.85%)</strong> for Samsung and <strong style="color:#FFFFFF;">-26,991 (-4.08%)</strong> for LG — a larger drop for Samsung. Measured Visibility followed the same pattern: Samsung <strong style="color:#FFFFFF;">-1.70%p (60.39%→58.70%)</strong>, LG <strong style="color:#FFFFFF;">-1.68%p (64.90%→63.22%)</strong>.'))}
+                                ${execItem('v2Exec2T', L('2. 추정 원인 — 제품별 \'독자 기술 상표어 자산\'의 비대칭', '2. Probable cause — Asymmetry in proprietary spec-term assets by product'),
+                                  'v2Exec2', L(`AI 답변이 스펙 설명 중심으로 옮겨가면서, LG전자의 독자 기술 상표어는 작동 원리를 설명하는 문맥에서 인용되어 노출이 유지된 반면, 삼성전자의 명칭은 마케팅 라인업으로 분류되어 제외되는 경향이 나타났습니다.<br/><strong style="color:#FFFFFF;">TV</strong>: LG전자 ${termDark('Brightness Booster')} (스펙 기술어) vs 삼성전자 ${termDark('The Frame')} / ${termDark('Neo QLED')} (마케팅 라인업)<br/><strong style="color:#FFFFFF;">냉장고</strong>: LG전자 ${termDark('Inverter Linear')} (리니어 압축 스펙) vs 삼성전자 ${termDark('Bespoke')} (디자인 라인업)<br/><strong style="color:#FFFFFF;">세탁기</strong>: LG전자 ${termDark('Direct-Drive')} / ${termDark('TrueSteam')} (직연결 모터/스팀 스펙) vs 삼성전자 ${termDark('Bespoke AI')} / ${termDark('Ecobubble')} (마케팅 라인업)<br/><strong style="color:#FFFFFF;">에어컨</strong>: LG전자 ${termDark('Dual Inverter')} (듀얼 인버터 압축 스펙) vs 삼성전자 ${termDark('WindFree')} (마케팅 라인업)`, `As AI answers shifted toward spec-centric descriptions, LG's proprietary technology terms kept being cited in contexts explaining how features work, while Samsung's names tended to be classified as marketing lineups and excluded.<br/><strong style="color:#FFFFFF;">TV</strong>: LG ${termDark('Brightness Booster')} (spec term) vs Samsung ${termDark('The Frame')} / ${termDark('Neo QLED')} (marketing lineup)<br/><strong style="color:#FFFFFF;">Refrigerator</strong>: LG ${termDark('Inverter Linear')} (linear compressor spec) vs Samsung ${termDark('Bespoke')} (design lineup)<br/><strong style="color:#FFFFFF;">Washer</strong>: LG ${termDark('Direct-Drive')} / ${termDark('TrueSteam')} (direct-drive motor/steam spec) vs Samsung ${termDark('Bespoke AI')} / ${termDark('Ecobubble')} (marketing lineup)<br/><strong style="color:#FFFFFF;">Air Conditioner</strong>: LG ${termDark('Dual Inverter')} (dual inverter compressor spec) vs Samsung ${termDark('WindFree')} (marketing lineup)`))}
+                                ${execItem('v2Exec3T', L('3. 실증 사례 — 5월 양사 병기에서 6월 LG 단독 노출로 전환', '3. Evidence — From dual listing in May to LG-only exposure in June'),
+                                  'v2Exec3', L('5월 Baseline 답변에서는 삼성과 LG가 함께 추천되었으나, 6월 알고리즘 변경 이후에는 <strong style="color:#FFFFFF;">삼성전자가 추천 목록에서 빠지고 LG전자만 노출이 유지</strong>되는 사례가 확인되었습니다. 이는 4대 가전 논브랜드 프롬프트의 원문 대조로 검증했습니다.', 'In May Baseline answers Samsung and LG were recommended together, but after the June algorithm change we confirmed cases where <strong style="color:#FFFFFF;">Samsung dropped out of the recommendation list while only LG kept its exposure</strong>. Verified by comparing original answers to non-brand prompts across the 4 appliances.'))}
+                                ${execItem('v2Exec4T', L('4. 대응 방향 — 독자 기술 상표어 강화 및 서드파티 평가 매체 다변화', '4. Direction — Strengthen proprietary spec terms and diversify third-party review coverage'),
+                                  'v2Exec4', L('리테일 추천에 대한 의존도를 낮추고, AI가 스펙을 설명할 때 인용하는 독자 기술 상표어와 서드파티 독립 평가 매체(Rtings, Tom\'s Guide 등)의 노출 지면을 넓히는 GEO 전략이 노출 방어에 유효할 것으로 판단됩니다.', 'A GEO strategy that lowers dependence on retail recommendations and expands exposure through proprietary spec terms and independent third-party review media (Rtings, Tom\'s Guide, etc.) that AI cites when explaining specs is judged effective for defending exposure.'))}
                               </table>`
 
   // [수치 테이블 1.1] — 통째 편집(edWrap) 가능하도록 기본 HTML 을 상수로
   const t11TableHtml = `<table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;border-collapse:collapse;background:#FFFFFF;border:1px solid #E8EDF2;border-radius:8px;">
                                 <tr>
-                                  <th width="9%" style="${thS}">제품군</th>
-                                  <th width="17%" style="${thS}text-align:left;">주요 브랜드</th>
-                                  <th width="10%" style="${thS}">5월 언급 수</th>
-                                  <th width="10%" style="${thS}">6월 언급 수</th>
-                                  <th width="10%" style="${thS}">변동량</th>
-                                  <th width="9%" style="${thS}">감소율</th>
-                                  <th width="11%" style="${thS}">5월 Visibility</th>
-                                  <th width="12%" style="${thS}">6월 Visibility (실측)</th>
-                                  <th width="12%" style="${thS}">변동량 (%p)</th>
+                                  <th width="9%" style="${thS}">${L('제품군', 'Product')}</th>
+                                  <th width="17%" style="${thS}text-align:left;">${L('주요 브랜드', 'Brand')}</th>
+                                  <th width="10%" style="${thS}">${L('5월 언급 수', 'May Mentions')}</th>
+                                  <th width="10%" style="${thS}">${L('6월 언급 수', 'Jun Mentions')}</th>
+                                  <th width="10%" style="${thS}">${L('변동량', 'Δ')}</th>
+                                  <th width="9%" style="${thS}">${L('감소율', 'Δ %')}</th>
+                                  <th width="11%" style="${thS}">${L('5월 Visibility', 'May Visibility')}</th>
+                                  <th width="12%" style="${thS}">${L('6월 Visibility (실측)', 'Jun Visibility (Actual)')}</th>
+                                  <th width="12%" style="${thS}">${L('변동량 (%p)', 'Δ (%p)')}</th>
                                 </tr>
                                 ${t11Rows}
                               </table>`
@@ -1054,7 +1056,7 @@ function insightV2Parts(meta = {}, lang = 'ko', products = []) {
                               <table border="0" cellpadding="0" cellspacing="0">
                                 <tr>
                                   <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
-                                  <td style="padding-left:8px;font-size:15px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-0.5px;">${ed('v2Sec1Title', `1. 4대 핵심 가전 브랜드 언급 수와 Visibility 등락 대조 <span style="font-size:11px;font-weight:600;color:#94A3B8;">(피벗 마스터 실측 기준)</span>`)}</td>
+                                  <td style="padding-left:8px;font-size:15px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-0.5px;">${ed('v2Sec1Title', L(`1. 4대 핵심 가전 브랜드 언급 수와 Visibility 등락 대조 <span style="font-size:11px;font-weight:600;color:#94A3B8;">(피벗 마스터 실측 기준)</span>`, `1. Brand Mentions vs Visibility — 4 Key Appliances <span style="font-size:11px;font-weight:600;color:#94A3B8;">(measured, pivot master)</span>`))}</td>
                                 </tr>
                               </table>
                             </td>
@@ -1076,7 +1078,7 @@ function insightV2Parts(meta = {}, lang = 'ko', products = []) {
                               <table border="0" cellpadding="0" cellspacing="0">
                                 <tr>
                                   <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
-                                  <td style="padding-left:8px;font-size:15px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-0.5px;">${ed('v2Sec2Title2', '2. 제품군별 실증 예시')}</td>
+                                  <td style="padding-left:8px;font-size:15px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-0.5px;">${ed('v2Sec2Title2', L('2. 제품군별 실증 예시', '2. Case Studies by Product'))}</td>
                                 </tr>
                               </table>
                             </td>
