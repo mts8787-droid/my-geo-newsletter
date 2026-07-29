@@ -1016,7 +1016,7 @@ function insightV2Parts(meta = {}, lang = 'ko', products = []) {
     { titleF: 'v2C2Title2', title: '[실증 예시 2] 세탁건조기 콤보 / WM 카테고리 (UK 영국) - "가장 조용한 워셔드라이어 콤보 추천"',
       descF: 'v2C2Desc2', desc: `(가장 조용한 워셔드라이어 콤보는 무엇인가요? — 브랜드 미지정 중립 추천 질문)<br/><strong>국가-제품</strong>: 영국 | 세탁기(WM) (ChatGPT)`,
       insF: 'v2C2Ins2', insLabel: '달라진 점', pF: 'v2C2Prompt2', bEnF: 'v2C2Ben2', bKoF: 'v2C2Bko2', tEnF: 'v2C2Ten2', tKoF: 'v2C2Tko2',
-      prompt: 'What is the best quiet washer dryer combo?" (1UKHSWMLNC0083',
+      promptRaw: '"What is the best quiet washer dryer combo?" (1UKHSWMLNC0083)',
       b_en: `<strong>삼성이 추천 슬롯 하나를 차지, LG는 도입부 나열에 포함</strong><br/>"Independent guides and user reviews consistently point toward Bosch, Samsung, LG, and some newer Hisense models for low noise ... ### Best smart/modern option: Samsung Series 5 WD80TA046BE Washer Dryer — A quiet, feature-rich washer dryer ... Quiet wash operation with Samsung vibration reduction tech."`,
       b_ko: `해석: 독립 가이드와 사용자 리뷰는 저소음 기준으로 보쉬, 삼성, LG, 일부 신형 하이센스 모델을 일관되게 지목한다 ... 스마트/모던 최고 옵션 — 삼성 시리즈 5 WD80TA046BE. 삼성 진동 저감 기술로 조용한 세탁이 가능한, 기능이 풍부한 워셔드라이어.`,
       t_en: `<strong>삼성 소멸, LG가 상위 3강으로 잔존하며 작동 원리(Direct Drive)로 서술</strong><br/>"the best models in the UK right now tend to come from Miele, AEG, and some LG models ... ### Best Value Quiet Option: LG Direct Drive Washer-Dryer — LG's Direct Drive models are frequently praised for low vibration and quiet operation thanks to the motor being attached directly to the drum."<br/><br/>"For the best balance of quietness and price: LG Direct Drive washer-dryer."`,
@@ -1031,7 +1031,7 @@ function insightV2Parts(meta = {}, lang = 'ko', products = []) {
             <td style="padding:14px 16px 4px;">
               <p style="margin:0 0 8px;font-size:14px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-0.5px;">${ed(cs.titleF, cs.title)}</p>
               <p style="margin:0 0 8px;font-size:12px;color:#334155;line-height:20px;font-family:${EM_FONT};letter-spacing:-0.3px;"><strong>설명</strong>: ${ed(cs.descF, cs.desc)}</p>
-              <p style="margin:0;font-size:12px;color:#334155;font-family:${EM_FONT};"><strong>Exact Prompt</strong>: ${ed(cs.pF, term(`"${cs.prompt}"`))}</p>
+              <p style="margin:0;font-size:12px;color:#334155;font-family:${EM_FONT};"><strong>Exact Prompt</strong>: ${ed(cs.pF, term(cs.promptRaw || `"${cs.prompt}"`))}</p>
               ${quoteBox('5월 BASELINE 원문 · 번역', '#64748B', cs.bEnF, cs.b_en, cs.bKoF, cs.b_ko)}
               ${quoteBox('6월 TARGET 원문 · 번역', EM_RED, cs.tEnF, cs.t_en, cs.tKoF, cs.t_ko)}
               <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin:10px 0 14px;">
