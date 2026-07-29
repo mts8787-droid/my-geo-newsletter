@@ -987,19 +987,13 @@ function insightV2Parts(meta = {}, lang = 'ko', products = []) {
         <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFFFFF;border:1px solid #E8EDF2;border-radius:10px;">
           <tr>
             <td style="padding:14px 16px 4px;">
+              ${/* 설명·분석 Insight 박스 삭제 (사용자 지시) — 제목 → 자사 노출 유지 → 프롬프트 → 원문 인용 */''}
               <p style="margin:0 0 8px;font-size:14px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-0.5px;">${ed(cs.titleF, cs.title)}</p>
-              <p style="margin:0 0 8px;font-size:12px;color:#334155;line-height:20px;font-family:${EM_FONT};letter-spacing:-0.3px;"><strong>설명</strong>: ${ed(cs.descF, cs.desc)}</p>
               ${cs.keep ? `<p style="margin:0 0 8px;font-size:12px;color:#334155;line-height:20px;font-family:${EM_FONT};letter-spacing:-0.3px;"><strong style="color:${EM_RED};">자사 노출 유지</strong>: ${ed(cs.keepF, cs.keep)}</p>` : ''}
               <p style="margin:0;font-size:12px;color:#334155;font-family:${EM_FONT};"><strong>Exact Prompt</strong>: ${ed(cs.pF, term(cs.promptRaw || `"${cs.prompt}"`))}</p>
               ${quoteBox('5월 BASELINE 원문 · 번역', '#64748B', cs.bEnF, cs.b_en, cs.bKoF, cs.b_ko)}
               ${quoteBox('6월 TARGET 원문 · 번역', EM_RED, cs.tEnF, cs.t_en, cs.tKoF, cs.t_ko)}
-              <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin:10px 0 14px;">
-                <tr>
-                  <td style="padding:10px 14px;background:#FEF2F4;border:1px solid #FECDD3;border-radius:8px;">
-                    <p style="margin:0;font-size:12px;color:#1A1A1A;line-height:20px;font-family:${EM_FONT};letter-spacing:-0.3px;"><strong style="color:${EM_RED};">분석 Insight</strong>&nbsp;&nbsp;${ed(cs.insF, cs.insight)}</p>
-                  </td>
-                </tr>
-              </table>
+              <table border="0" cellpadding="0" cellspacing="0" width="100%"><tr><td height="14" style="font-size:0;line-height:0;">&nbsp;</td></tr></table>
             </td>
           </tr>
         </table>
