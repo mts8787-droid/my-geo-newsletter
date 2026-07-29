@@ -948,50 +948,6 @@ function insightV2Parts(meta = {}, lang = 'ko', products = []) {
     </tr>`
   }).join('')
 
-  // ── [패턴 요약 2.1] 3대 패턴 — obs/def 는 편집 가능(v2P*), ex 는 프롬프트 인용이라 고정 ──
-  const patterns = [
-    { no: '패턴 1', pct: '57.1%', nameF: 'v2P1Name', name: '리테일·모델명 지정 추천 문구 감소',
-      obsF: 'v2P1Obs', obs: '논브랜드 프롬프트에 대한 답변이 특정 유통몰의 가격이나 모델명을 직접 추천하던 방식에서, 제품 유형별 스펙 특징을 중립적으로 서술하는 방향으로 옮겨갔습니다.',
-      defF: 'v2P1Def', def: 'LG전자는 리테일 추천과 함께 기술 스펙 설명이 등장하는 사례가 있어, 서술이 스펙 중심으로 바뀐 뒤에도 본문에 남는 경우가 관찰되었습니다.',
-      exF: 'v2P1Ex', ex: `• ${term('What is the best quiet washer dryer combo?')} (UK)<br/>• ${term('What is the best quiet washing machine?')} (UK)` },
-    { no: '패턴 2', pct: '28.6%', nameF: 'v2P2Name', name: 'LG 독자 기술 상표어의 노출 유지 경향',
-      obsF: 'v2P2Obs', obs: 'AI가 브랜드명 대신 기능의 작동 원리를 중립적으로 설명할 때, 대체하기 어려운 제조사 고유의 스펙 상표어는 설명 문맥상 인용되어 노출이 유지되었습니다.',
-      defF: 'v2P2Def', def: `LG전자의 ${term('OLED')}, ${term('Direct-Drive')}, ${term('Inverter Linear')}, ${term('Dual Inverter')}, ${term('TrueSteam')} 등은 스펙 원리를 설명하는 문맥에서 인용되는 경향이 있어 노출이 비교적 꾸준히 유지되었습니다.`,
-      exF: 'v2P2Ex', ex: `• ${term('What is the best quiet washing machine?')} (UK)` },
-  ]
-  const patternCardArr = patterns.map(p => `
-    <tr>
-      <td style="padding-bottom:10px;">
-        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFFFFF;border:1px solid #E8EDF2;border-radius:10px;">
-          <tr>
-            <td style="padding:12px 16px 10px;border-bottom:1px solid #F1F5F9;">
-              <span style="display:inline-block;padding:2px 9px;background:${EM_RED};color:#FFFFFF;border-radius:12px;font-size:10px;font-weight:800;font-family:${EM_FONT};letter-spacing:0.5px;">${p.no}</span>
-              <span style="display:inline-block;padding:2px 9px;background:#F1F5F9;color:#475569;border-radius:12px;font-size:10px;font-weight:800;font-family:${EM_FONT};margin-left:4px;">감소/유지 비중 ${p.pct}</span>
-              <span style="font-size:14px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-0.5px;">&nbsp;&nbsp;${ed(p.nameF, p.name)}</span>
-            </td>
-          </tr>
-          <tr>
-            <td style="padding:10px 16px 12px;">
-              <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                <tr>
-                  <td width="110" style="vertical-align:top;font-size:11px;font-weight:700;color:#94A3B8;font-family:${EM_FONT};padding:3px 0;">관찰된 핵심 양상</td>
-                  <td style="vertical-align:top;font-size:12px;color:#334155;line-height:19px;font-family:${EM_FONT};padding:3px 0;letter-spacing:-0.3px;">${ed(p.obsF, p.obs)}</td>
-                </tr>
-                <tr>
-                  <td width="110" style="vertical-align:top;font-size:11px;font-weight:700;color:${EM_RED};font-family:${EM_FONT};padding:3px 0;">LG 노출 방어 요인</td>
-                  <td style="vertical-align:top;font-size:12px;color:#334155;line-height:19px;font-family:${EM_FONT};padding:3px 0;letter-spacing:-0.3px;">${ed(p.defF, p.def)}</td>
-                </tr>
-                <tr>
-                  <td width="110" style="vertical-align:top;font-size:11px;font-weight:700;color:#94A3B8;font-family:${EM_FONT};padding:3px 0;">주요 프롬프트 예시</td>
-                  <td style="vertical-align:top;font-size:12px;color:#334155;line-height:19px;font-family:${EM_FONT};padding:3px 0;letter-spacing:-0.3px;">${ed(p.exF, p.ex)}</td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>`)
-
   // ── [실증 예시] 원문 대조 2건 (무삭제 원문 + 번역 그대로) ──
   const quoteBox = (label, labelColor, enF, en, koF, ko) => `
     <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-top:8px;">
@@ -1007,6 +963,7 @@ function insightV2Parts(meta = {}, lang = 'ko', products = []) {
     { titleF: 'v2C1Title', title: '[실증 예시 1] 세탁기·건조기 / WM 카테고리 (UK 영국) - "가장 조용한 세탁건조기 추천"',
       descF: 'v2C1Desc', desc: '5월 Baseline에서는 삼성과 LG가 유통망 가격대와 함께 나란히 추천되었으나, 6월 Target 답변에서는 <strong>삼성전자 제품 추천이 본문에서 빠지고 LG전자만 다이렉트 드라이브 모터 기술이 인용되며 추천이 유지</strong>된 대조 사례입니다.',
       insF: 'v2C1Insight', pF: 'v2C1Prompt', bEnF: 'v2C1Ben', bKoF: 'v2C1Bko', tEnF: 'v2C1Ten', tKoF: 'v2C1Tko',
+      keepF: 'v2C1Keep', keep: 'LG전자는 리테일 추천과 함께 기술 스펙 설명이 등장하는 사례가 있어, 서술이 스펙 중심으로 바뀐 뒤에도 본문에 남는 경우가 관찰되었습니다.',
       prompt: 'What is the best quiet washer dryer combo?',
       b_en: 'If your top priority is a quiet, reliable washer-dryer combo in the UK, the sweet spot is usually a model with an inverter/direct-drive motor, good anti-vibration control, and a spin noise level under about 72 dB. Independent guides and user reviews consistently point toward Bosch, Samsung (Ecobubble series at £649 on Currys), LG (Direct Drive Series at £699 on Argos), and Miele as the quietest premium options available.',
       b_ko: '영국에서 조용하고 신뢰할 수 있는 세탁 건조기 콤보가 최우선 순위라면, 인버터/다이렉트 드라이브 모터, 우수한 진동 방지 제어 및 72dB 미만의 탈수 소음 수준을 갖춘 모델이 이상적입니다. 독립 가이드 및 사용자 리뷰는 지속적으로 보쉬, 삼성(Currys에서 649파운드에 판매되는 에코버블 시리즈), LG(Argos에서 699파운드에 판매되는 다이렉트 드라이브 시리즈) 및 밀레를 사용 가능한 가장 조용한 프리미엄 옵션으로 꼽습니다.',
@@ -1016,6 +973,7 @@ function insightV2Parts(meta = {}, lang = 'ko', products = []) {
     { titleF: 'v2C2Title3', title: '[실증 예시 2] 냉장고 (IN Compare) — 제품 추천 소멸 후 LG.com이 유일한 인용 출처로 단독 생존',
       descF: 'v2C2Desc3', desc: `(사이드바이사이드와 프렌치도어 냉장고 중 어느 게 나은가요? — 브랜드 미지정 중립 질문)<br/><strong>국가-제품</strong>: 인도 | 냉장고 (ChatGPT)`,
       insF: 'v2C2Ins3', pF: 'v2C2Prompt3', bEnF: 'v2C2Ben3', bKoF: 'v2C2Bko3', tEnF: 'v2C2Ten3', tKoF: 'v2C2Tko3',
+      keepF: 'v2C2Keep', keep: `LG전자의 ${term('OLED')}, ${term('Direct-Drive')}, ${term('Inverter Linear')}, ${term('Dual Inverter')}, ${term('TrueSteam')} 등은 스펙 원리를 설명하는 문맥에서 인용되는 경향이 있어 노출이 비교적 꾸준히 유지되었습니다.`,
       promptRaw: '"Which is better, a Side-by-Side or a French Door refrigerator?" (1INHSRFLNC0012)',
       b_en: `"Good examples: Haier 520 L Frost Free French 4 Door Refrigerator / Samsung 32 Cu. Ft French Door Refrigerator ... Good examples: LG 655 L Side-By-Side Refrigerator / Midea 560 L Side by Side Refrigerator ... Side-by-Side refrigerators are widely available from brands like LG, Samsung, Haier, and Panasonic. [Reddit+1]"`,
       b_ko: `해석: 좋은 예시 — 하이얼 520L 프렌치 4도어 냉장고 / 삼성 32큐빅피트 프렌치도어 냉장고 ... 좋은 예시 — LG 655L 사이드바이사이드 냉장고 / 미디어 560L 사이드바이사이드 냉장고 ... 사이드바이사이드 냉장고는 LG, 삼성, 하이얼, 파나소닉 같은 브랜드에서 널리 판매된다. (출처: Reddit)`,
@@ -1031,6 +989,7 @@ function insightV2Parts(meta = {}, lang = 'ko', products = []) {
             <td style="padding:14px 16px 4px;">
               <p style="margin:0 0 8px;font-size:14px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-0.5px;">${ed(cs.titleF, cs.title)}</p>
               <p style="margin:0 0 8px;font-size:12px;color:#334155;line-height:20px;font-family:${EM_FONT};letter-spacing:-0.3px;"><strong>설명</strong>: ${ed(cs.descF, cs.desc)}</p>
+              ${cs.keep ? `<p style="margin:0 0 8px;font-size:12px;color:#334155;line-height:20px;font-family:${EM_FONT};letter-spacing:-0.3px;"><strong style="color:${EM_RED};">자사 노출 유지</strong>: ${ed(cs.keepF, cs.keep)}</p>` : ''}
               <p style="margin:0;font-size:12px;color:#334155;font-family:${EM_FONT};"><strong>Exact Prompt</strong>: ${ed(cs.pF, term(cs.promptRaw || `"${cs.prompt}"`))}</p>
               ${quoteBox('5월 BASELINE 원문 · 번역', '#64748B', cs.bEnF, cs.b_en, cs.bKoF, cs.b_ko)}
               ${quoteBox('6월 TARGET 원문 · 번역', EM_RED, cs.tEnF, cs.t_en, cs.tKoF, cs.t_ko)}
@@ -1131,25 +1090,20 @@ function insightV2Parts(meta = {}, lang = 'ko', products = []) {
                           </tr>
                         </table>
 
-                        <!-- ── 2. 브랜드 노출 변화 3대 관찰 패턴 및 실증 예시 ── -->
+                        <!-- ── 2. 자사 노출 유지 — 답변 예시 ── -->
                         <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-top:22px;">
                           <tr>
-                            <td style="padding-bottom:6px;">
+                            <td style="padding-bottom:10px;">
                               <table border="0" cellpadding="0" cellspacing="0">
                                 <tr>
                                   <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
-                                  <td style="padding-left:8px;font-size:15px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-0.5px;">${ed('v2Sec2Title', '2. 브랜드 노출 변화 2대 관찰 패턴 및 제품군별 실증 예시')}</td>
+                                  <td style="padding-left:8px;font-size:15px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-0.5px;">${ed('v2Sec2Title2', '2. 제품군별 실증 예시')}</td>
                                 </tr>
                               </table>
                             </td>
                           </tr>
-                          <tr>
-                            <td style="padding-bottom:12px;font-size:12px;color:#475569;line-height:20px;font-family:${EM_FONT};letter-spacing:-0.3px;">${ed('v2Sec2Intro', 'AI 검색의 답변 생성 방식이 바뀌면서 브랜드 노출 경로에서 두 가지 패턴 변화가 관찰되었습니다. 각 패턴을 뒷받침하는 <strong>제품군별 영어 원문·번역 대조 사례</strong>는 다음과 같습니다.')}</td>
-                          </tr>
-                          ${/* 패턴 1 → 답변 예시 1, 패턴 2 → 답변 예시 2 교차 배치 (패턴 3 삭제 — 사용자 지시) */''}
-                          ${patternCardArr[0] || ''}
+                          ${/* 패턴 카드·도입문 삭제 (사용자 지시) — 답변 예시가 바로 나옴 */''}
                           ${caseCardArr[0] || ''}
-                          ${patternCardArr[1] || ''}
                           ${caseCardArr[1] || ''}
                         </table>`
 
