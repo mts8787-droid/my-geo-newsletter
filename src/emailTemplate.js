@@ -1015,11 +1015,11 @@ function insightV2Parts(meta = {}, lang = 'ko', products = []) {
       insight: '5월 Baseline에 함께 노출되었던 <strong>삼성 브랜드명과 에코버블(Ecobubble) 라인업 명칭이 6월 Target 답변에서는 사라졌습니다.</strong> 반면 LG전자는 <strong>Direct Drive</strong> 스펙 서술을 근거로 추천 목록에 남아 노출이 이어졌습니다.' },
     { titleF: 'v2C2Title2', title: '[실증 예시 2] 세탁건조기 콤보 / WM 카테고리 (UK 영국) - "가장 조용한 워셔드라이어 콤보 추천"',
       descF: 'v2C2Desc2', desc: `(가장 조용한 워셔드라이어 콤보는 무엇인가요? — 브랜드 미지정 중립 추천 질문)<br/><strong>국가-제품</strong>: 영국 | 세탁기(WM) (ChatGPT)`,
-      insF: 'v2C2Ins2', insLabel: '달라진 점', pF: 'v2C2Prompt2', bEnF: 'v2C2Ben2', bKoF: 'v2C2Bko2', tEnF: 'v2C2Ten2', tKoF: 'v2C2Tko2',
+      insF: 'v2C2Ins2', pF: 'v2C2Prompt2', bEnF: 'v2C2Ben2', bKoF: 'v2C2Bko2', tEnF: 'v2C2Ten2', tKoF: 'v2C2Tko2',
       promptRaw: '"What is the best quiet washer dryer combo?" (1UKHSWMLNC0083)',
-      b_en: `<strong>삼성이 추천 슬롯 하나를 차지, LG는 도입부 나열에 포함</strong><br/>"Independent guides and user reviews consistently point toward Bosch, Samsung, LG, and some newer Hisense models for low noise ... ### Best smart/modern option: Samsung Series 5 WD80TA046BE Washer Dryer — A quiet, feature-rich washer dryer ... Quiet wash operation with Samsung vibration reduction tech."`,
+      b_en: `"Independent guides and user reviews consistently point toward Bosch, Samsung, LG, and some newer Hisense models for low noise ... ### Best smart/modern option: Samsung Series 5 WD80TA046BE Washer Dryer — A quiet, feature-rich washer dryer ... Quiet wash operation with Samsung vibration reduction tech."`,
       b_ko: `해석: 독립 가이드와 사용자 리뷰는 저소음 기준으로 보쉬, 삼성, LG, 일부 신형 하이센스 모델을 일관되게 지목한다 ... 스마트/모던 최고 옵션 — 삼성 시리즈 5 WD80TA046BE. 삼성 진동 저감 기술로 조용한 세탁이 가능한, 기능이 풍부한 워셔드라이어.`,
-      t_en: `<strong>삼성 소멸, LG가 상위 3강으로 잔존하며 작동 원리(Direct Drive)로 서술</strong><br/>"the best models in the UK right now tend to come from Miele, AEG, and some LG models ... ### Best Value Quiet Option: LG Direct Drive Washer-Dryer — LG's Direct Drive models are frequently praised for low vibration and quiet operation thanks to the motor being attached directly to the drum."<br/><br/>"For the best balance of quietness and price: LG Direct Drive washer-dryer."`,
+      t_en: `"the best models in the UK right now tend to come from Miele, AEG, and some LG models ... ### Best Value Quiet Option: LG Direct Drive Washer-Dryer — LG's Direct Drive models are frequently praised for low vibration and quiet operation thanks to the motor being attached directly to the drum."<br/><br/>"For the best balance of quietness and price: LG Direct Drive washer-dryer."`,
       t_ko: `해석: 현재 영국에서 최고의 모델은 밀레, AEG, 그리고 일부 LG 모델이다 ... 최고의 가성비 저소음 옵션 — LG 다이렉트 드라이브 워셔드라이어. LG 다이렉트 드라이브 모델은 모터가 드럼에 직결된 구조 덕분에 낮은 진동과 조용한 작동으로 자주 호평받는다.<br/><br/>해석: 조용함과 가격의 최적 균형을 원한다면 — LG 다이렉트 드라이브 워셔드라이어.`,
       insight: `• 5월엔 도입부에서 Bosch·Samsung·LG·Hisense 4개사 병렬 + 삼성이 추천 슬롯("Best smart") 1개 보유<br/>• 6월엔 삼성·보쉬·하이센스 모두 탈락하고 Miele·AEG·LG 3강으로 재편 — LG는 추천 슬롯("Best Value Quiet") 유지 및 최종 구매 가이드에 재등장<br/>• 삼성 서술 근거였던 "vibration reduction tech"는 속성 서술이라 브랜드와 함께 소멸, LG는 "모터-드럼 직결"이라는 작동 원리 + Direct Drive 상표어 결합 서술로 생존 (①·⑤와 동일 메커니즘)` },
   ]
@@ -1037,7 +1037,7 @@ function insightV2Parts(meta = {}, lang = 'ko', products = []) {
               <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin:10px 0 14px;">
                 <tr>
                   <td style="padding:10px 14px;background:#FEF2F4;border:1px solid #FECDD3;border-radius:8px;">
-                    <p style="margin:0;font-size:12px;color:#1A1A1A;line-height:20px;font-family:${EM_FONT};letter-spacing:-0.3px;"><strong style="color:${EM_RED};">${cs.insLabel || '분석 Insight'}</strong>&nbsp;&nbsp;${ed(cs.insF, cs.insight)}</p>
+                    <p style="margin:0;font-size:12px;color:#1A1A1A;line-height:20px;font-family:${EM_FONT};letter-spacing:-0.3px;"><strong style="color:${EM_RED};">분석 Insight</strong>&nbsp;&nbsp;${ed(cs.insF, cs.insight)}</p>
                   </td>
                 </tr>
               </table>
