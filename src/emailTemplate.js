@@ -1013,15 +1013,15 @@ function insightV2Parts(meta = {}, lang = 'ko', products = []) {
       t_en: 'If your top priority is quiet operation, focus on machines with low spin noise (ideally under 72 dB), an inverter/direct-drive motor, and strong vibration control. In the UK market, Miele, AEG, and some LG models are generally regarded as the quietest premium options.<br/><br/>### Best Value Quiet Option: LG Direct Drive Washer-Dryer<br/>LG\'s Direct Drive models are frequently praised for low vibration and quiet operation thanks to the motor being attached directly to the drum.',
       t_ko: '조용한 작동이 최우선 과제라면 탈수 소음이 적고(이상적으로는 72dB 미만), 인버터/다이렉트 드라이브 모터 및 강력한 진동 제어 기능을 갖춘 세탁기에 집중하십시오. 영국 시장에서는 밀레, AEG 및 일부 LG 모델이 일반적으로 가장 조용한 프리미엄 옵션으로 간주됩니다.<br/><br/>### 가성비 우수 조용한 옵션: LG 다이렉트 드라이브 세탁건조기<br/>LG의 다이렉트 드라이브(Direct Drive) 모델은 모터가 드럼에 직접 부착되어 진동이 적고 조용하게 작동한다는 점에서 자주 찬사를 받습니다.',
       insight: '5월 Baseline에 함께 노출되었던 <strong>삼성 브랜드명과 에코버블(Ecobubble) 라인업 명칭이 6월 Target 답변에서는 사라졌습니다.</strong> 반면 LG전자는 <strong>Direct Drive</strong> 스펙 서술을 근거로 추천 목록에 남아 노출이 이어졌습니다.' },
-    { titleF: 'v2C2Title', title: '[실증 예시 2] 세탁기 / WM 카테고리 (UK 영국) - "가장 조용한 세탁기 추천"',
-      descF: 'v2C2Desc', desc: '브랜드를 지정하지 않은 중립적 스펙 추천 질문에서, 5월에는 삼성과 LG가 함께 추천되었으나 <strong>6월에는 삼성이 빠지고 LG전자가 최상위 추천 제품으로 남은</strong> 또 다른 원문 대조 사례입니다.',
-      insF: 'v2C2Insight', pF: 'v2C2Prompt', bEnF: 'v2C2Ben', bKoF: 'v2C2Bko', tEnF: 'v2C2Ten', tKoF: 'v2C2Tko',
-      prompt: 'What is the best quiet washing machine?',
-      b_en: 'Short answer: the quietest washing machines commonly recommended for UK homes tend to be models with EcoSilence or QuietPro drives from brands like Miele, Bosch, LG, and Samsung, often rated around 40–45 dB on wash and around 60–70 dB on spin. Top picks often favored in the UK market: Miele washers with ProfiEco motor and anti-vibration features are frequently cited as among the quietest... Bosch washers with EcoSilence Drive are commonly recommended... LG and Samsung models with inverter motors and noise-reduction features also perform well in real-world testing.',
-      b_ko: '짧은 답변: 영국 가정에 일반적으로 권장되는 가장 조용한 세탁기는 대개 밀레, 보쉬, LG, 삼성과 같은 브랜드의 에코사일런스(EcoSilence) 또는 콰이어트프로(QuietPro) 드라이브가 탑재된 모델로, 보통 세탁 시 약 40-45dB, 탈수 시 약 60-70dB로 평가됩니다. 영국 시장에서 주로 선호되는 상위 추천 제품: 프로피에코(ProfiEco) 모터와 진동 방지 기능이 있는 밀레 세탁기가 가장 조용한 모델로 자주 언급됩니다... 에코사일런스 드라이브가 장착된 보쉬 세탁기도 자주 추천됩니다... 인버터 모터와 소음 감소 기능을 갖춘 LG 및 삼성 모델도 실제 테스트에서 우수한 성능을 보여줍니다.',
-      t_en: 'If your priority is a really quiet washing machine (for flats, open-plan homes, or night-time use), the best models in the UK right now tend to come from LG, Bosch, AEG, and Miele.<br/><br/>## Best overall quiet washing machine: LG front-load (Direct Drive models)<br/>LG’s front-load washers are consistently rated among the quietest because they use a direct drive motor (fewer moving parts = less noise and vibration).<br/>* Wash noise: often ~50–55 dB (very quiet)<br/>* Spin noise: ~68–72 dB<br/>* Why it’s great: extremely smooth spin cycle, low vibration, reliable at night use<br/>If you see “Inverter Direct Drive” on the label, that’s the key feature to look for.',
-      t_ko: '조용한 세탁기(아파트, 개방형 주택 또는 야간 사용 목적)를 원하신다면, 현재 영국에서 가장 우수한 모델은 주로 LG, 보쉬, AEG 및 밀레 제품입니다.<br/><br/>## 전체 최우선 추천 조용한 세탁기: LG 전면 투입식 (다이렉트 드라이브 모델)<br/>LG의 드럼 세탁기는 다이렉트 드라이브(Direct Drive) 모터를 사용하여 부품 수가 적고 소음과 진동이 적기 때문에 일관되게 가장 조용한 제품군으로 평가받습니다.<br/>* 세탁 소음: 보통 ~50–55 dB (매우 조용함)<br/>* 탈수 소음: ~68–72 dB<br/>* 장점: 극도로 부드러운 탈수 사이클, 낮은 진동, 야간 사용 시 높은 신뢰성<br/>제품 표시 라벨에 "인버터 다이렉트 드라이브 (Inverter Direct Drive)"가 적혀 있다면, 그것이 바로 당신이 찾아야 할 핵심 기능입니다.',
-      insight: '5월에는 밀레·보쉬·LG·삼성이 함께 노출되었으나, 6월로 넘어오면서 <strong>삼성전자는 답변에서 빠졌습니다.</strong> 반면 LG전자는 다이렉트 드라이브 모터 서술을 근거로 <strong>최상위 추천("Best overall quiet washing machine")에 남았음</strong>을 원문 대조로 확인할 수 있습니다.' },
+    { titleF: 'v2C2Title2', title: '[실증 예시 2] 세탁건조기 콤보 / WM 카테고리 (UK 영국) - "가장 조용한 워셔드라이어 콤보 추천"',
+      descF: 'v2C2Desc2', desc: `(가장 조용한 워셔드라이어 콤보는 무엇인가요? — 브랜드 미지정 중립 추천 질문)<br/><strong>국가-제품</strong>: 영국 | 세탁기(WM) (ChatGPT)`,
+      insF: 'v2C2Ins2', insLabel: '달라진 점', pF: 'v2C2Prompt2', bEnF: 'v2C2Ben2', bKoF: 'v2C2Bko2', tEnF: 'v2C2Ten2', tKoF: 'v2C2Tko2',
+      prompt: 'What is the best quiet washer dryer combo?" (1UKHSWMLNC0083',
+      b_en: `<strong>삼성이 추천 슬롯 하나를 차지, LG는 도입부 나열에 포함</strong><br/>"Independent guides and user reviews consistently point toward Bosch, Samsung, LG, and some newer Hisense models for low noise ... ### Best smart/modern option: Samsung Series 5 WD80TA046BE Washer Dryer — A quiet, feature-rich washer dryer ... Quiet wash operation with Samsung vibration reduction tech."`,
+      b_ko: `해석: 독립 가이드와 사용자 리뷰는 저소음 기준으로 보쉬, 삼성, LG, 일부 신형 하이센스 모델을 일관되게 지목한다 ... 스마트/모던 최고 옵션 — 삼성 시리즈 5 WD80TA046BE. 삼성 진동 저감 기술로 조용한 세탁이 가능한, 기능이 풍부한 워셔드라이어.`,
+      t_en: `<strong>삼성 소멸, LG가 상위 3강으로 잔존하며 작동 원리(Direct Drive)로 서술</strong><br/>"the best models in the UK right now tend to come from Miele, AEG, and some LG models ... ### Best Value Quiet Option: LG Direct Drive Washer-Dryer — LG's Direct Drive models are frequently praised for low vibration and quiet operation thanks to the motor being attached directly to the drum."<br/><br/>"For the best balance of quietness and price: LG Direct Drive washer-dryer."`,
+      t_ko: `해석: 현재 영국에서 최고의 모델은 밀레, AEG, 그리고 일부 LG 모델이다 ... 최고의 가성비 저소음 옵션 — LG 다이렉트 드라이브 워셔드라이어. LG 다이렉트 드라이브 모델은 모터가 드럼에 직결된 구조 덕분에 낮은 진동과 조용한 작동으로 자주 호평받는다.<br/><br/>해석: 조용함과 가격의 최적 균형을 원한다면 — LG 다이렉트 드라이브 워셔드라이어.`,
+      insight: `• 5월엔 도입부에서 Bosch·Samsung·LG·Hisense 4개사 병렬 + 삼성이 추천 슬롯("Best smart") 1개 보유<br/>• 6월엔 삼성·보쉬·하이센스 모두 탈락하고 Miele·AEG·LG 3강으로 재편 — LG는 추천 슬롯("Best Value Quiet") 유지 및 최종 구매 가이드에 재등장<br/>• 삼성 서술 근거였던 "vibration reduction tech"는 속성 서술이라 브랜드와 함께 소멸, LG는 "모터-드럼 직결"이라는 작동 원리 + Direct Drive 상표어 결합 서술로 생존 (①·⑤와 동일 메커니즘)` },
   ]
   const caseCardArr = cases.map(cs => `
     <tr>
@@ -1037,7 +1037,7 @@ function insightV2Parts(meta = {}, lang = 'ko', products = []) {
               <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin:10px 0 14px;">
                 <tr>
                   <td style="padding:10px 14px;background:#FEF2F4;border:1px solid #FECDD3;border-radius:8px;">
-                    <p style="margin:0;font-size:12px;color:#1A1A1A;line-height:20px;font-family:${EM_FONT};letter-spacing:-0.3px;"><strong style="color:${EM_RED};">분석 Insight</strong>&nbsp;&nbsp;${ed(cs.insF, cs.insight)}</p>
+                    <p style="margin:0;font-size:12px;color:#1A1A1A;line-height:20px;font-family:${EM_FONT};letter-spacing:-0.3px;"><strong style="color:${EM_RED};">${cs.insLabel || '분석 Insight'}</strong>&nbsp;&nbsp;${ed(cs.insF, cs.insight)}</p>
                   </td>
                 </tr>
               </table>
