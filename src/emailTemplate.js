@@ -1112,7 +1112,9 @@ function insightV2Parts(meta = {}, lang = 'ko', products = []) {
                           </tr>
                           <tr>
                             <td>
-                              ${edWrap('v2T11Html', t11TableHtml)}
+                              ${/* 필드 버전업(v2T11Html→V2): 저장본에 남은 옛 표 편집값(Bosch 포함·구 수치)이
+                                    새 기본 표(보쉬 삭제+동기화 수치)를 덮어쓰지 않게 — 기존 저장본에도 공통 적용 */''}
+                              ${edWrap('v2T11HtmlV2', t11TableHtml)}
                             </td>
                           </tr>
                           <tr>
