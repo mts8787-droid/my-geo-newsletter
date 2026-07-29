@@ -958,12 +958,8 @@ function insightV2Parts(meta = {}, lang = 'ko', products = []) {
       obsF: 'v2P2Obs', obs: 'AI가 브랜드명 대신 기능의 작동 원리를 중립적으로 설명할 때, 대체하기 어려운 제조사 고유의 스펙 상표어는 설명 문맥상 인용되어 노출이 유지되었습니다.',
       defF: 'v2P2Def', def: `LG전자의 ${term('OLED')}, ${term('Direct-Drive')}, ${term('Inverter Linear')}, ${term('Dual Inverter')}, ${term('TrueSteam')} 등은 스펙 원리를 설명하는 문맥에서 인용되는 경향이 있어 노출이 비교적 꾸준히 유지되었습니다.`,
       exF: 'v2P2Ex', ex: `• ${term('What is the best quiet washing machine?')} (UK)` },
-    { no: '패턴 3', pct: '14.3%', nameF: 'v2P3Name', name: '서드파티 스펙 평가 인용 유지',
-      obsF: 'v2P3Obs', obs: 'AI가 상업적 유통망 추천을 배제하더라도, 독립 리뷰 매체(Rtings, Tom\'s Guide 등)의 평가 점수와 권장 브랜드는 답변에 계속 인용되는 경향이 있었습니다.',
-      defF: 'v2P3Def', def: 'Rtings, Tom\'s Guide 등 독립 평가 매체가 인용될 때 LG UltraGear, LG WashTower 등 LG 스펙이 함께 언급되는 사례가 관찰되었습니다.',
-      exF: 'v2P3Ex', ex: '• 스펙 비교형 프롬프트 전반 (Experience 단계)' },
   ]
-  const patternCards = patterns.map(p => `
+  const patternCardArr = patterns.map(p => `
     <tr>
       <td style="padding-bottom:10px;">
         <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFFFFF;border:1px solid #E8EDF2;border-radius:10px;">
@@ -994,7 +990,7 @@ function insightV2Parts(meta = {}, lang = 'ko', products = []) {
           </tr>
         </table>
       </td>
-    </tr>`).join('')
+    </tr>`)
 
   // ── [실증 예시] 원문 대조 2건 (무삭제 원문 + 번역 그대로) ──
   const quoteBox = (label, labelColor, enF, en, koF, ko) => `
@@ -1027,7 +1023,7 @@ function insightV2Parts(meta = {}, lang = 'ko', products = []) {
       t_ko: '조용한 세탁기(아파트, 개방형 주택 또는 야간 사용 목적)를 원하신다면, 현재 영국에서 가장 우수한 모델은 주로 LG, 보쉬, AEG 및 밀레 제품입니다.<br/><br/>## 전체 최우선 추천 조용한 세탁기: LG 전면 투입식 (다이렉트 드라이브 모델)<br/>LG의 드럼 세탁기는 다이렉트 드라이브(Direct Drive) 모터를 사용하여 부품 수가 적고 소음과 진동이 적기 때문에 일관되게 가장 조용한 제품군으로 평가받습니다.<br/>* 세탁 소음: 보통 ~50–55 dB (매우 조용함)<br/>* 탈수 소음: ~68–72 dB<br/>* 장점: 극도로 부드러운 탈수 사이클, 낮은 진동, 야간 사용 시 높은 신뢰성<br/>제품 표시 라벨에 "인버터 다이렉트 드라이브 (Inverter Direct Drive)"가 적혀 있다면, 그것이 바로 당신이 찾아야 할 핵심 기능입니다.',
       insight: '5월에는 밀레·보쉬·LG·삼성이 함께 노출되었으나, 6월로 넘어오면서 <strong>삼성전자는 답변에서 빠졌습니다.</strong> 반면 LG전자는 다이렉트 드라이브 모터 서술을 근거로 <strong>최상위 추천("Best overall quiet washing machine")에 남았음</strong>을 원문 대조로 확인할 수 있습니다.' },
   ]
-  const caseCards = cases.map(cs => `
+  const caseCardArr = cases.map(cs => `
     <tr>
       <td style="padding-bottom:12px;">
         <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFFFFF;border:1px solid #E8EDF2;border-radius:10px;">
@@ -1049,7 +1045,7 @@ function insightV2Parts(meta = {}, lang = 'ko', products = []) {
           </tr>
         </table>
       </td>
-    </tr>`).join('')
+    </tr>`)
 
   // ── Executive Summary 4개 항목 — title/body 편집 가능(v2Exec*) ──
   const execItem = (titleF, title, bodyF, body) => `
@@ -1142,16 +1138,19 @@ function insightV2Parts(meta = {}, lang = 'ko', products = []) {
                               <table border="0" cellpadding="0" cellspacing="0">
                                 <tr>
                                   <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
-                                  <td style="padding-left:8px;font-size:15px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-0.5px;">${ed('v2Sec2Title', '2. 브랜드 노출 변화 3대 관찰 패턴 및 제품군별 실증 예시')}</td>
+                                  <td style="padding-left:8px;font-size:15px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-0.5px;">${ed('v2Sec2Title', '2. 브랜드 노출 변화 2대 관찰 패턴 및 제품군별 실증 예시')}</td>
                                 </tr>
                               </table>
                             </td>
                           </tr>
                           <tr>
-                            <td style="padding-bottom:12px;font-size:12px;color:#475569;line-height:20px;font-family:${EM_FONT};letter-spacing:-0.3px;">${ed('v2Sec2Intro', 'AI 검색의 답변 생성 방식이 바뀌면서 브랜드 노출 경로에서 세 가지 패턴 변화가 관찰되었습니다. 각 패턴을 뒷받침하는 <strong>제품군별 영어 원문·번역 대조 사례</strong>는 다음과 같습니다.')}</td>
+                            <td style="padding-bottom:12px;font-size:12px;color:#475569;line-height:20px;font-family:${EM_FONT};letter-spacing:-0.3px;">${ed('v2Sec2Intro', 'AI 검색의 답변 생성 방식이 바뀌면서 브랜드 노출 경로에서 두 가지 패턴 변화가 관찰되었습니다. 각 패턴을 뒷받침하는 <strong>제품군별 영어 원문·번역 대조 사례</strong>는 다음과 같습니다.')}</td>
                           </tr>
-                          ${patternCards}
-                          ${caseCards}
+                          ${/* 패턴 1 → 답변 예시 1, 패턴 2 → 답변 예시 2 교차 배치 (패턴 3 삭제 — 사용자 지시) */''}
+                          ${patternCardArr[0] || ''}
+                          ${caseCardArr[0] || ''}
+                          ${patternCardArr[1] || ''}
+                          ${caseCardArr[1] || ''}
                         </table>`
 
   return { execHtml, bodyHtml }
