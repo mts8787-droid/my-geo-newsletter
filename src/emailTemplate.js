@@ -1091,110 +1091,83 @@ function insightV2Parts(meta = {}, lang = 'ko', products = []) {
   return { execHtml, bodyHtml }
 }
 
-// ─── 액션 아이템 V2 — 표 정리 + 사업부×외부접점채널 진행사항 매트릭스 ─────────
-// 토글: meta.showTodoV2 (Sidebar '액션 아이템 V2'). 기존 Action Plan(showTodo)과 독립.
-// 현행 액션 아이템(①~⑤)을 상태 표로, 진행사항을 BU(MS/HS/ES)×채널 매트릭스로 정리.
-// 표는 통째 편집(edWrapT) — 편집모드에서 셀 단위 수정, 저장값이 기본 표를 덮어씀.
+// ─── 액션 아이템 V2 — 4개 실행 영역별 [실적 수치(트래커 연동) + 본부별 활동] 통합 ──
+// 토글: meta.showTodoV2. 핵심: 콘텐츠수정·신규콘텐츠제작·외부채널관리·닷컴기술개선
+// 영역에서 "무엇을 했는지"를 실적 수치(Progress Tracker categoryStats 동일 데이터)와
+// 본부별(MS/HS/ES) 활동 내용이 한 카드 안에서 이어지도록 정리.
+// 수치는 라이브(트래커 얼라인 — 편집 대상 아님), 본부별 내용은 영역 단위 통편집(edWrap).
 function actionItemsV2SectionHtml(meta = {}, lang = 'ko', categoryStats = null) {
   const M = meta || {}
   const L = (ko, en) => lang === 'en' ? en : ko
   const edT = (field, def) => `<span${edRich(field)}>${M[field] != null ? M[field] : def}</span>`
   const edWrapT = (field, def) => `<div${edRich(field)}>${M[field] != null ? M[field] : def}</div>`
-  // 상태 배지 (이메일 호환 인라인)
-  const badge = (label, kind) => {
-    const c = kind === 'done' ? { bg: '#ECFDF5', bd: '#A7F3D0', tx: '#15803D' }
-      : kind === 'always' ? { bg: '#EFF6FF', bd: '#BFDBFE', tx: '#1D4ED8' }
-      : { bg: '#FFFBEB', bd: '#FDE68A', tx: '#B45309' }
-    return `<span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:800;background:${c.bg};border:1px solid ${c.bd};color:${c.tx};white-space:nowrap;font-family:${EM_FONT};">${label}</span>`
-  }
-  const thA = `padding:8px 8px;font-size:11px;font-weight:700;color:#475569;background:#F8FAFC;border-bottom:2px solid ${EM_RED};text-align:center;font-family:${EM_FONT};letter-spacing:-0.3px;`
-  const tdA = `padding:8px 8px;font-size:12px;color:#1A1A1A;border-bottom:1px solid #F1F5F9;vertical-align:top;font-family:${EM_FONT};letter-spacing:-0.3px;line-height:18px;`
-
-  // ── 표 1: 액션 아이템 현황 (현행 ①~⑤ 그대로) ──
-  const items = [
-    { no: '①', ko: ['Weak Content 개선 — Support Page 기술 개선', 'SSR 미적용 노출 구조 개선 · 고인용 핵심 FAQ 체계 관리 · 데이터 라벨링(스키마 마크업) 강화'], en: ['Weak Content — Support Page technical fix', 'Fix non-SSR exposure structure · manage high-citation FAQs · strengthen schema markup'], st: ['진행 중', 'In Progress', 'prog'] },
-    { no: '②', ko: ['GEO Agent 개발 및 성과 분석 PoC', 'Summary Box·FAQ 자동 생성 · 46개 항목 자가 진단·수정 · Akamai CDN 활용 (사이트 구조 무변경)'], en: ['GEO Agent & performance PoC', 'Auto Summary Box/FAQ · self-diagnosis of 46 checks · Akamai CDN (no site change)'], st: ['6월 완료', 'Done (Jun)', 'done'] },
-    { no: '③', ko: ['외부 채널 콘텐츠 관리', 'GEO 친화적 PDP 콘텐츠 자동 제작 Agent 글로벌 운영 준비 · Reddit·YouTube 커뮤니티 가이드 수립 + 글로벌 교육 완료'], en: ['External channel content ops', 'GEO-friendly PDP content Agent (global rollout prep) · Reddit/YouTube community guides + global training done'], st: ['상시 진행', 'Ongoing', 'always'] },
-    { no: '④', ko: ['Best Practice 글로벌 확대 적용', '미국 법인 우수 사례(FAQ 활용·SSR 구조) 벤치마킹 → 글로벌 GP1 LG.com 표준 확대'], en: ['Global Best Practice rollout', 'Benchmark US cases (FAQ/SSR) → expand as global GP1 LG.com standard'], st: ['상시 진행', 'Ongoing', 'always'] },
-    { no: '⑤', ko: ['Global KPI Dashboard 오픈 및 성과 관리', '실시간 대시보드 오픈 · Action Item Tracker 로 조직별 진척 모니터링 · 하반기 지역별 GEO 위원회 신설 예정'], en: ['Global KPI Dashboard & tracking', 'Live dashboard open · org-level tracking via Action Item Tracker · regional GEO councils in H2'], st: ['6월 완료', 'Done (Jun)', 'done'] },
-  ]
-  const itemsTable = `<table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;border-collapse:collapse;background:#FFFFFF;border:1px solid #E8EDF2;border-radius:8px;">
-    <tr>
-      <th width="5%" style="${thA}">No</th>
-      <th width="30%" style="${thA}text-align:left;">${L('액션 아이템', 'Action Item')}</th>
-      <th width="51%" style="${thA}text-align:left;">${L('주요 내용', 'Details')}</th>
-      <th width="14%" style="${thA}">${L('상태', 'Status')}</th>
-    </tr>
-    ${items.map((it, i) => `<tr${i % 2 === 0 ? ' style="background:#FAFBFC;"' : ''}>
-      <td style="${tdA}text-align:center;font-weight:800;color:${EM_RED};">${it.no}</td>
-      <td style="${tdA}font-weight:700;">${L(it.ko[0], it.en[0])}</td>
-      <td style="${tdA}color:#334155;">${L(it.ko[1], it.en[1])}</td>
-      <td style="${tdA}text-align:center;">${badge(L(it.st[0], it.st[1]), it.st[2])}</td>
-    </tr>`).join('')}
-  </table>`
-
-  // ── 표 2: 사업부 × 외부접점채널 진행사항 매트릭스 ──
-  // 현행 내용이 전사 공통이라 각 BU 행에 공통 진행사항 프리필 — 편집모드에서 BU 별로 수정.
-  const dot = kind => `<span style="display:inline-block;width:7px;height:7px;border-radius:4px;background:${kind === 'done' ? '#15803D' : kind === 'always' ? '#1D4ED8' : '#D97706'};margin-right:4px;"></span>`
-  const cell = {
-    dotcom: L(`${dot('prog')}Support SSR 구조 개선 진행 중<br/>${dot('done')}GEO Agent PoC 완료 (④ US 표준 확대)`, `${dot('prog')}Support SSR fix in progress<br/>${dot('done')}GEO Agent PoC done (US standard rollout)`),
-    retail: L(`${dot('prog')}PDP 콘텐츠 자동 제작 Agent 글로벌 운영 준비`, `${dot('prog')}PDP content Agent — global rollout prep`),
-    reddit: L(`${dot('done')}커뮤니티 콘텐츠 가이드 수립 · 글로벌 교육 완료`, `${dot('done')}Community guide set · global training done`),
-    youtube: L(`${dot('done')}커뮤니티 콘텐츠 가이드 수립 · 글로벌 교육 완료`, `${dot('done')}Community guide set · global training done`),
-  }
-  const buRows = ['MS', 'HS', 'ES'].map((bu, i) => `<tr${i % 2 === 0 ? ' style="background:#FAFBFC;"' : ''}>
-      <td style="${tdA}text-align:center;font-weight:800;color:#475569;background:#F8FAFC;border-right:2px solid #E8EDF2;">${bu}</td>
-      <td style="${tdA}">${cell.dotcom}</td>
-      <td style="${tdA}">${cell.retail}</td>
-      <td style="${tdA}">${cell.reddit}</td>
-      <td style="${tdA}">${cell.youtube}</td>
-    </tr>`).join('')
-  const matrixTable = `<table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;border-collapse:collapse;background:#FFFFFF;border:1px solid #E8EDF2;border-radius:8px;">
-    <tr>
-      <th width="8%" style="${thA}">BU</th>
-      <th width="26%" style="${thA}text-align:left;">${L('닷컴 (LG.com)', 'LG.com')}</th>
-      <th width="24%" style="${thA}text-align:left;">${L('리테일 · 리뷰', 'Retail · Review')}</th>
-      <th width="21%" style="${thA}text-align:left;">Reddit</th>
-      <th width="21%" style="${thA}text-align:left;">YouTube</th>
-    </tr>
-    ${buRows}
-  </table>`
-
-  // ── 목표별 진행사항 그래프 — Progress Tracker(categoryStats)와 동일 수치·동일 신호등 임계값(100/80) ──
-  // 라이브 데이터 렌더 (통편집 래핑 X — 편집으로 덮으면 트래커와 얼라인이 깨지므로 제목만 편집 가능)
   const gCol = r => r >= 100 ? '#15803D' : r >= 80 ? '#D97706' : '#BE123C'
-  const gBar = (rate, actual, goal, label) => {
-    const w = Math.min(Math.round(rate || 0), 100)
-    return `<table border="0" cellpadding="0" cellspacing="0" width="100%"><tr>
-        <td style="font-size:10px;color:#64748B;font-family:${EM_FONT};white-space:nowrap;padding-right:6px;" width="72">${label}</td>
-        <td>
-          <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#F1F5F9;border-radius:3px;"><tr>
-            <td width="${w}%" style="height:8px;background:${gCol(rate || 0)};border-radius:3px;font-size:0;line-height:0;">&nbsp;</td>
-            <td style="font-size:0;line-height:0;">&nbsp;</td>
+  const fmtN = n => Number(n || 0).toLocaleString('en-US')
+  // 실적 미니 바 (이메일 호환) — 트래커와 동일 임계값(100/80)
+  const bar = (label, rate, actual, goal) => `<table border="0" cellpadding="0" cellspacing="0" width="100%"><tr>
+      <td style="font-size:10px;color:#64748B;font-family:${EM_FONT};white-space:nowrap;padding-right:6px;" width="70">${label}</td>
+      <td><table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#F1F5F9;border-radius:3px;"><tr>
+        <td width="${Math.min(Math.round(rate || 0), 100)}%" style="height:7px;background:${gCol(rate || 0)};border-radius:3px;font-size:0;line-height:0;">&nbsp;</td>
+        <td style="font-size:0;line-height:0;">&nbsp;</td>
+      </tr></table></td>
+      <td align="right" style="font-size:12px;font-weight:800;color:${gCol(rate || 0)};font-family:${EM_FONT};white-space:nowrap;padding-left:7px;" width="40">${(rate || 0).toFixed(0)}%</td>
+      <td align="right" style="font-size:10px;color:#94A3B8;font-family:${EM_FONT};white-space:nowrap;padding-left:5px;" width="80">(${fmtN(actual)}/${fmtN(goal)})</td>
+    </tr></table>`
+  const norm = v => String(v || '').replace(/\s+/g, '')
+  const findStat = key => (categoryStats || []).find(c => norm(c.category) === key)
+  const anyStat = (categoryStats || [])[0]
+  const gMonth = (anyStat && anyStat.targetMonth) || L('이번 월', 'This Month')
+
+  // ── 4개 실행 영역 — 현행 활동 내용을 영역별로 재배치 (본부별 프리필 = 전사 공통, 편집으로 차별화) ──
+  const cats = [
+    { key: '콘텐츠수정', ko: '콘텐츠 수정', en: 'Content Fix', f: 'todoV2Cat1Bu',
+      actKo: '고인용 핵심 FAQ 체계 관리 · 데이터 라벨링(스키마 마크업) 강화 · GEO Agent 로 Summary Box·FAQ 자동 생성 적용',
+      actEn: 'Manage high-citation FAQs · strengthen schema markup · apply auto Summary Box/FAQ via GEO Agent' },
+    { key: '신규콘텐츠제작', ko: '신규 콘텐츠 제작', en: 'New Content', f: 'todoV2Cat2Bu',
+      actKo: 'GEO 친화적 PDP 콘텐츠 자동 제작 Agent 글로벌 운영 준비 · Reddit·YouTube 대응 커뮤니티 콘텐츠 제작',
+      actEn: 'GEO-friendly PDP content Agent (global rollout prep) · community content for Reddit/YouTube' },
+    { key: '외부채널관리', ko: '외부 채널 관리', en: 'External Channel Ops', f: 'todoV2Cat3Bu',
+      actKo: '리테일 채널 인용 극대화 운영 · Reddit·YouTube 커뮤니티 콘텐츠 제작 가이드 수립 + 글로벌 교육 완료',
+      actEn: 'Maximize retail-channel citations · Reddit/YouTube community guides set + global training done' },
+    { key: '닷컴기술개선', ko: '닷컴 기술 개선', en: 'Dotcom Tech Fix', f: 'todoV2Cat4Bu',
+      actKo: 'Support Page SSR 노출 구조 개선(진행 중) · GEO Agent 46개 항목 자가 진단·수정 PoC 완료(Akamai CDN) · US 우수사례(FAQ·SSR) GP1 표준 확대',
+      actEn: 'Support Page SSR fix (in progress) · GEO Agent 46-check self-diagnosis PoC done (Akamai CDN) · expand US best practice (FAQ/SSR) as GP1 standard' },
+  ]
+  const tdB = `padding:7px 10px;font-size:12px;color:#334155;border-bottom:1px solid #F1F5F9;vertical-align:top;font-family:${EM_FONT};letter-spacing:-0.3px;line-height:18px;`
+  const buTable = c => `<table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;border-collapse:collapse;">
+      ${['MS', 'HS', 'ES'].map((bu, i) => `<tr${i % 2 === 0 ? ' style="background:#FAFBFC;"' : ''}>
+        <td width="44" style="${tdB}text-align:center;font-weight:800;color:#475569;background:#F8FAFC;border-right:2px solid #E8EDF2;${i === 2 ? 'border-bottom:none;' : ''}">${bu}</td>
+        <td style="${tdB}${i === 2 ? 'border-bottom:none;' : ''}">${L(c.actKo, c.actEn)}</td>
+      </tr>`).join('')}
+    </table>`
+
+  const catBlocks = cats.map(c => {
+    const st = findStat(c.key)
+    const metrics = st
+      ? `${bar(L(`${gMonth} 달성률`, gMonth), st.monthRate, st.monthActual, st.monthGoal)}
+         <table border="0" cellpadding="0" cellspacing="0" width="100%"><tr><td height="3" style="font-size:0;line-height:0;">&nbsp;</td></tr></table>
+         ${bar(L('연간 진척율', 'YTD'), st.progressRate, st.cumActual, st.annualGoal)}`
+      : `<p style="margin:0;font-size:11px;color:#94A3B8;font-family:${EM_FONT};text-align:right;">${L('트래커 미동기 — 실적 수치 없음', 'Tracker not synced')}</p>`
+    return `<table border="0" cellpadding="0" cellspacing="0" width="100%" style="border:1px solid #E8EDF2;border-radius:10px;margin-bottom:14px;">
+      <tr>
+        <td style="padding:12px 14px 10px;background:#F8FAFC;border-bottom:1px solid #E8EDF2;">
+          <table border="0" cellpadding="0" cellspacing="0" width="100%"><tr>
+            <td style="vertical-align:middle;" width="34%">
+              <span style="display:inline-block;width:3px;height:14px;background:${EM_RED};border-radius:2px;vertical-align:middle;margin-right:7px;"></span><span style="font-size:14px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};vertical-align:middle;">${L(c.ko, c.en)}</span>
+            </td>
+            <td style="vertical-align:middle;">${metrics}</td>
           </tr></table>
         </td>
-        <td align="right" style="font-size:12px;font-weight:800;color:${gCol(rate || 0)};font-family:${EM_FONT};white-space:nowrap;padding-left:8px;" width="46">${(rate || 0).toFixed(0)}%</td>
-        <td align="right" style="font-size:10px;color:#94A3B8;font-family:${EM_FONT};white-space:nowrap;padding-left:6px;" width="88">(${Number(actual || 0).toLocaleString('en-US')}/${Number(goal || 0).toLocaleString('en-US')})</td>
-      </tr></table>`
-  }
-  const gMonth = (categoryStats && categoryStats[0] && categoryStats[0].targetMonth) || L('이번 월', 'This Month')
-  const goalProgressHtml = (categoryStats && categoryStats.length) ? `<table border="0" cellpadding="0" cellspacing="0" width="100%" style="border:1px solid #E8EDF2;border-radius:8px;">
-    ${categoryStats.map((c, i) => `<tr${i % 2 === 0 ? ' style="background:#FAFBFC;"' : ''}>
-      <td style="padding:10px 12px;${i < categoryStats.length - 1 ? 'border-bottom:1px solid #F1F5F9;' : ''}">
-        <p style="margin:0 0 6px;font-size:13px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};">${escapeHtml(lang === 'en' && c.categoryEn ? c.categoryEn : c.category)}</p>
-        ${gBar(c.monthRate, c.monthActual, c.monthGoal, L(`${gMonth} 달성률`, gMonth))}
-        <table border="0" cellpadding="0" cellspacing="0" width="100%"><tr><td height="4" style="font-size:0;line-height:0;">&nbsp;</td></tr></table>
-        ${gBar(c.progressRate, c.cumActual, c.annualGoal, L('연간 진척율', 'YTD'))}
-      </td>
-    </tr>`).join('')}
-  </table>` : `<div style="padding:12px 16px;background:#FEF3C7;border:1px solid #FCD34D;border-radius:8px;font-size:12px;color:#92400E;font-family:${EM_FONT};">${L('Progress Tracker 데이터가 없습니다 — 어드민에서 트래커 시트 동기화 후 표시됩니다.', 'Progress Tracker data not available — sync the tracker sheet in admin.')}</div>`
+      </tr>
+      <tr>
+        <td style="padding:4px 0 0;">
+          ${edWrapT(c.f, buTable(c))}
+        </td>
+      </tr>
+    </table>`
+  }).join('')
 
-  const secTitle = (field, ko, en) => `<table border="0" cellpadding="0" cellspacing="0" style="margin-bottom:10px;"><tr>
-      <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
-      <td style="padding-left:8px;font-size:15px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-0.5px;">${edT(field, L(ko, en))}</td>
-    </tr></table>`
-
-  return `<!-- ══ 액션 아이템 V2 (표 + BU×채널 매트릭스) ══ -->
+  return `<!-- ══ 액션 아이템 V2 (영역별 실적 수치 + 본부별 활동) ══ -->
               <tr>
                 <td style="padding-bottom:28px;">
                   <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFFFFF;border-radius:16px;border:2px solid #E8EDF2;">
@@ -1207,15 +1180,8 @@ function actionItemsV2SectionHtml(meta = {}, lang = 'ko', categoryStats = null) 
                       </td>
                     </tr>
                     <tr>
-                      <td style="padding:18px 16px;">
-                        ${secTitle('todoV2Sec1Title', '1. 액션 아이템 현황', '1. Action Item Status')}
-                        ${edWrapT('todoV2ItemsHtml', itemsTable)}
-                        <table border="0" cellpadding="0" cellspacing="0" width="100%"><tr><td height="20" style="font-size:0;line-height:0;">&nbsp;</td></tr></table>
-                        ${secTitle('todoV2Sec2Title', '2. 사업부 × 외부접점채널 진행사항', '2. Progress by BU × External Channel')}
-                        ${edWrapT('todoV2MatrixHtml', matrixTable)}
-                        <table border="0" cellpadding="0" cellspacing="0" width="100%"><tr><td height="20" style="font-size:0;line-height:0;">&nbsp;</td></tr></table>
-                        ${secTitle('todoV2Sec3Title', '3. 목표별 진행사항 (Progress Tracker 연동)', '3. Progress by Goal (Progress Tracker)')}
-                        ${goalProgressHtml}
+                      <td style="padding:18px 16px 6px;">
+                        ${catBlocks}
                       </td>
                     </tr>
                   </table>

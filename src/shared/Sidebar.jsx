@@ -15,7 +15,7 @@ import SheetDownload from './SheetDownload.jsx'
 // 미리보기 언어를 바꿔가며 토글을 만지면 KO/EN 차트가 갈라지기 때문 (handleTranslate 와 동일 화이트리스트).
 const EN_TEXT_FIELDS = ['title', 'dateLine', 'noticeText', 'totalInsight', 'reportType', 'productInsight', 'productHowToRead', 'citationInsight', 'citationHowToRead', 'dotcomInsight', 'dotcomHowToRead', 'todoText', 'todoNotice', 'kpiLogicText', 'cntyInsight', 'cntyHowToRead', 'citDomainInsight', 'citDomainHowToRead', 'citCntyInsight', 'citCntyHowToRead', 'citPrdInsight', 'citPrdHowToRead', 'period', 'team', 'reportNo', 'monthlyReportBody', 'modelDeltaInsight', 'compRatioDeltaNote', 'highlightInsight', 'bumpInsight', 'hlChapterTitle', 'hlWeeklyTitle', 'hlModelTitle', 'hlBumpTitle']
 // V2 인사이트 — 편집된 필드만 번역 대상 (미편집이면 템플릿의 EN 기본 문구가 자동 렌더)
-const V2_TRANSLATE_FIELDS = ['v2ExecIntro', 'v2Exec1T', 'v2Exec1', 'v2Exec2T', 'v2Exec2', 'v2Exec3T', 'v2Exec3', 'v2Exec4T', 'v2Exec4', 'v2Sec1Title', 'v2Sec2Title2', 'v2C1Title', 'v2C1Keep', 'v2C1Bko', 'v2C1Tko', 'v2C2Title3', 'v2C2Keep', 'v2C2Bko3', 'v2C2Tko3', 'v2T11HtmlV2', 'todoV2Title', 'todoV2Sec1Title', 'todoV2Sec2Title', 'todoV2ItemsHtml', 'todoV2MatrixHtml']
+const V2_TRANSLATE_FIELDS = ['v2ExecIntro', 'v2Exec1T', 'v2Exec1', 'v2Exec2T', 'v2Exec2', 'v2Exec3T', 'v2Exec3', 'v2Exec4T', 'v2Exec4', 'v2Sec1Title', 'v2Sec2Title2', 'v2C1Title', 'v2C1Keep', 'v2C1Bko', 'v2C1Tko', 'v2C2Title3', 'v2C2Keep', 'v2C2Bko3', 'v2C2Tko3', 'v2T11HtmlV2', 'todoV2Title', 'todoV2Cat1Bu', 'todoV2Cat2Bu', 'todoV2Cat3Bu', 'todoV2Cat4Bu']
 EN_TEXT_FIELDS.push(...V2_TRANSLATE_FIELDS)
 
 // 두 언어(KO/EN) 이메일 HTML 을 하나의 문서로 이어붙임 — KO 본문 → 구분선 → EN 본문.
