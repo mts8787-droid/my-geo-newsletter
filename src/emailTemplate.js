@@ -1201,19 +1201,26 @@ function actionItemsV2SectionHtml(meta = {}, lang = 'ko', categoryStats = null) 
   const noticeEn = `<p style="${noticeP1}">Key GEO improvement initiatives are underway by owning org, with D2C supporting company-wide change management.</p>` +
     `<p style="${noticeP2}">• (Initiative 1) New content creation: new product FAQs & tech contents, GEO-aware support contents (BUs/CVI)<br/>• (Initiative 2) Content fix: Agent-based auto optimization of dotcom PDP, Summary Box, FAQ (D2C) & direct fixes (BUs/CVI)<br/>• (Initiative 3) Dotcom tech fix: data labeling on product reviews & Support Pages to raise AI content recognition (D2C/CVI)<br/>• (Initiative 4) External channel ops: Action Items per high-citation channel with monthly targets per owner (each org)<br/>• Change management: KPI/stakeholder progress tracking via dashboard, alignment & training via GEO Committee (D2C)</p>`
 
-  // ── 7월 진행 예정사항 (사용자 제공 텍스트 그대로) ──
-  const nextKo = `<p style="margin:0 0 8px;font-size:12px;color:#334155;line-height:20px;font-family:${EM_FONT};letter-spacing:-0.3px;">• 신규 Chat GPT 및 AI MAX 신규 광고 상품에 대한 PoC 준비 진행 중 (상품의 마케팅 효과성 및 운영 목적에 대한 각 본부별 협업으로 진행 중)</p>
-    <p style="margin:0 0 8px;font-size:12px;color:#334155;line-height:20px;font-family:${EM_FONT};letter-spacing:-0.3px;">• AI 기반의 LLM 모델 최적화 자동 진딘 및 콘텐츠 수정 Agent의 Global PoC 진행 중<br/>&nbsp;&nbsp;: 영국 대상 Gemini / ChatGPT 답변 반영 확인 및 성과 모니터링 진행 완료(Visibility 개선 확인), 추가 국가로 전략국가 9개국 확산 검토 중(미국제외)</p>
-    <p style="margin:0;font-size:12px;color:#334155;line-height:20px;font-family:${EM_FONT};letter-spacing:-0.3px;">• 스키마 마크업 자동화 통합가이드 제작 및 검토를 진행 중 (PDP 스키마 1건 가이드 제작 완료, 개발 요건 논의 후 추가 확산 예정 - 총 12종)</p>`
-  const nextEn = `<p style="margin:0 0 8px;font-size:12px;color:#334155;line-height:20px;font-family:${EM_FONT};letter-spacing:-0.3px;">• Preparing PoC for new ChatGPT & AI MAX ad products (cross-BU collaboration on marketing effectiveness & operating purpose)</p>
-    <p style="margin:0 0 8px;font-size:12px;color:#334155;line-height:20px;font-family:${EM_FONT};letter-spacing:-0.3px;">• Global PoC of the AI-based LLM-optimization auto-diagnosis & content-fix Agent in progress<br/>&nbsp;&nbsp;: UK Gemini/ChatGPT answer reflection & performance monitoring done (Visibility improvement confirmed); expansion to 9 strategic countries under review (excl. US)</p>
-    <p style="margin:0;font-size:12px;color:#334155;line-height:20px;font-family:${EM_FONT};letter-spacing:-0.3px;">• Building & reviewing the integrated schema-markup automation guide (1 PDP schema guide done; further rollout after dev-requirement review — 12 types total)</p>`
+  // ── 7월 진행 예정사항 — 조직별 정리 (선·색 없는 표, 조직명 강조 / 사용자 제공 텍스트 그대로) ──
+  const nOrg = `vertical-align:top;padding:0 8px 14px 0;font-size:13px;font-weight:800;color:${EM_RED};font-family:${EM_FONT};letter-spacing:-0.3px;white-space:nowrap;`
+  const nTxt = `vertical-align:top;padding:0 0 14px;font-size:12px;color:#334155;line-height:20px;font-family:${EM_FONT};letter-spacing:-0.3px;word-break:break-word;`
+  const nRow = (org, body) => `<tr><td width="64" style="${nOrg}">${org}</td><td style="${nTxt}">${body}</td></tr>`
+  const nextKo = `<table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;border-collapse:collapse;">
+    ${nRow('ES', `RAC - 바잉가이드(용량(BTU), 제품 유형,사용 환경 및 주요 기능 등 구매여정 기반 정보성 인용 영역 확대) 및 아티클 4개 주제(에너지 효율, 에너지 절약, 스마트 컨트롤, 청소/관리 방법) 제작 진행 중<br/>Aircare - 바잉가이드(공간 크기, 오염 유형, 생활 패턴 등 구매여정 기반 정보성 인용 영역 확대) 및 아티클 4개 주제(필터, PM 2.5(먼지 유형), 청소/관리, 펫케어) 제작 진행 중`)}
+    ${nRow('MS', `TV: 레딧 Micro RGB, Reflection Free 체험단 리뷰 및 닷컴 AI TV FAQ 업데이트 (진행 중), Wikipedia LG Shield 등록(완료).<br/>모니터: 레딧 1000Hz 게이밍모니터 관련 discussion 컨텐츠 3건 및 GX9, G9 체험단 리뷰 발행 (완료), Wikipedia 고화질(5K2K, 6K) 모니터 등록 예정.`)}
+    ${nRow('D2C', `• 신규 Chat GPT 및 AI MAX 신규 광고 상품에 대한 PoC 준비 진행 중 (상품의 마케팅 효과성 및 운영 목적에 대한 각 본부별 협업으로 진행 중)<br/>• AI 기반의 LLM 모델 최적화 자동 진딘 및 콘텐츠 수정 Agent의 Global PoC 진행 중<br/>&nbsp;&nbsp;: 영국 대상 Gemini / ChatGPT 답변 반영 확인 및 성과 모니터링 진행 완료(Visibility 개선 확인), 추가 국가로 전략국가 9개국 확산 검토 중(미국제외)<br/>• 스키마 마크업 자동화 통합가이드 제작 완료  및 최종 개발 요건 검토(총 9종)<br/>• 제품 Review 영역의 Server-Side-Rendering 글로벌 Roll-Out (AI가 읽을 수있는 형태로 Review 데이터 변경)`)}
+  </table>`
+  const nextEn = `<table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;border-collapse:collapse;">
+    ${nRow('ES', `RAC - Buying guide (expand informative citation areas along the purchase journey: capacity (BTU), product type, usage environment, key features) & 4 article topics (energy efficiency, energy saving, smart control, cleaning/maintenance) in progress<br/>Aircare - Buying guide (room size, pollution type, lifestyle patterns) & 4 article topics (filters, PM 2.5 (dust types), cleaning/maintenance, pet care) in progress`)}
+    ${nRow('MS', `TV: Reddit Micro RGB & Reflection Free tester reviews and dotcom AI TV FAQ update (in progress); Wikipedia LG Shield registered (done).<br/>Monitor: 3 Reddit discussions on 1000Hz gaming monitors & GX9/G9 tester reviews published (done); Wikipedia high-res (5K2K, 6K) monitor registration planned.`)}
+    ${nRow('D2C', `• Preparing PoC for new ChatGPT & AI MAX ad products (cross-BU collaboration on marketing effectiveness & operating purpose)<br/>• Global PoC of the AI-based LLM-optimization auto-diagnosis & content-fix Agent in progress<br/>&nbsp;&nbsp;: UK Gemini/ChatGPT answer reflection & performance monitoring done (Visibility improvement confirmed); expansion to 9 strategic countries under review (excl. US)<br/>• Integrated schema-markup automation guide completed & final dev-requirement review (9 types total)<br/>• Global roll-out of Server-Side-Rendering for the product Review area (making review data AI-readable)`)}
+  </table>`
   const nextBlock = `<table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;border:1px solid #E8EDF2;border-radius:10px;margin-bottom:8px;">
       <tr><td style="padding:12px 14px 10px;background:#F8FAFC;border-bottom:1px solid #E8EDF2;">
         <span style="display:inline-block;width:3px;height:14px;background:${EM_RED};border-radius:2px;vertical-align:middle;margin-right:7px;"></span><span style="font-size:14px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};vertical-align:middle;">${edT('todoV2NextTitle', L('조직별 주요 진행 예정 사항', 'Key Planned Items by Org'))}</span>
       </td></tr>
       <tr><td style="padding:12px 14px;word-break:break-word;">
-        ${edWrapT('todoV2NextHtml', L(nextKo, nextEn))}
+        ${edWrapT('todoV2NextHtml2', L(nextKo, nextEn))}
       </td></tr>
     </table>`
 
