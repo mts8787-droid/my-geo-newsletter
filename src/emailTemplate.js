@@ -941,13 +941,17 @@ function insightV2Parts(meta = {}, lang = 'ko', products = []) {
     ['세탁기', 'Hisense', '3.10%', '3.10%', '-0.10%p'],
   ]
   const prdEnMap = { 'TV': 'TV', 'RAC': 'RAC', '냉장고': 'Refrigerator', '세탁기': 'Washer' }
-  const visHalf = rows => `<table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;border-collapse:separate;border-spacing:0;background:#FFFFFF;border:1px solid #E8EDF2;border-radius:10px;">
+  // Outlook(Word 엔진)은 table-layout:fixed·% 폭을 무시하고 내용대로 컬럼을 늘림 → 좌우 표 정렬 깨짐.
+  // 고정 픽셀 폭으로 양쪽 표 컬럼을 동일하게 강제 (컨테이너 940 - 28*2 - 24*2 - 18*2 = 800 → 반쪽 395px)
+  const VIS_HALF_W = 395
+  const VIS_COL_W = [70, 100, 76, 76, 73]  // 제품군/브랜드/5월/6월/변동 — 합 395
+  const visHalf = rows => `<table border="0" cellpadding="0" cellspacing="0" width="${VIS_HALF_W}" style="width:${VIS_HALF_W}px;table-layout:fixed;border-collapse:separate;border-spacing:0;background:#FFFFFF;border:1px solid #E8EDF2;border-radius:10px;">
       <tr>
-        <th width="18%" style="${thS}border-top-left-radius:9px;">${L('제품군', 'Product')}</th>
-        <th width="26%" style="${thS}text-align:left;">${L('브랜드', 'Brand')}</th>
-        <th width="19%" style="${thS}">${L('5월 Visibility', 'May Vis.')}</th>
-        <th width="19%" style="${thS}">${L('6월 Visibility', 'Jun Vis.')}</th>
-        <th width="18%" style="${thS}border-top-right-radius:9px;">${L('변동(%p)', 'Δ (%p)')}</th>
+        <th width="${VIS_COL_W[0]}" style="width:${VIS_COL_W[0]}px;${thS}border-top-left-radius:9px;">${L('제품군', 'Product')}</th>
+        <th width="${VIS_COL_W[1]}" style="width:${VIS_COL_W[1]}px;${thS}text-align:left;">${L('브랜드', 'Brand')}</th>
+        <th width="${VIS_COL_W[2]}" style="width:${VIS_COL_W[2]}px;${thS}">${L('5월 Visibility', 'May Vis.')}</th>
+        <th width="${VIS_COL_W[3]}" style="width:${VIS_COL_W[3]}px;${thS}">${L('6월 Visibility', 'Jun Vis.')}</th>
+        <th width="${VIS_COL_W[4]}" style="width:${VIS_COL_W[4]}px;${thS}border-top-right-radius:9px;">${L('변동(%p)', 'Δ (%p)')}</th>
       </tr>
       ${rows.map((r, i) => {
         const groupTop = i > 0 && r[0] !== rows[i - 1][0] ? 'border-top:2px solid #E8EDF2;' : ''
@@ -960,9 +964,9 @@ function insightV2Parts(meta = {}, lang = 'ko', products = []) {
       </tr>`
       }).join('')}
     </table>`
-  const visTblHtml = `<table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;"><tr>
-      <td width="50%" style="vertical-align:top;padding-right:5px;">${visHalf(visL)}</td>
-      <td width="50%" style="vertical-align:top;padding-left:5px;">${visHalf(visR)}</td>
+  const visTblHtml = `<table border="0" cellpadding="0" cellspacing="0" width="800" style="width:800px;table-layout:fixed;"><tr>
+      <td width="400" style="width:400px;vertical-align:top;padding-right:5px;">${visHalf(visL)}</td>
+      <td width="400" style="width:400px;vertical-align:top;padding-left:5px;">${visHalf(visR)}</td>
     </tr></table>`
 
   // ── [실증 예시] 원문 대조 2건 (무삭제 원문 + 번역 그대로) ──
@@ -1052,7 +1056,7 @@ function insightV2Parts(meta = {}, lang = 'ko', products = []) {
                                 ${execItem('v2Ex1T2', L('1. 현상 요약 — 상위 노출 브랜드 중심 동반 하락, 저노출 브랜드는 소폭 상승 (TV·세탁기·냉장고·에어컨 상세 분석)', '1. Summary — Declines concentrated in high-exposure brands; low-exposure brands edged up (TV·Washer·Refrigerator·AC detail)'), 'v2Ex1B2', L(ex1Ko, ex1En))}
                                 <tr><td style="padding:0 0 10px;">
                                   <p style="${capP}">${ed('v2T11Caption', L(cap1Ko, cap1En))}</p>
-                                  ${edWrap('v2VisTblHtml', visTblHtml)}
+                                  ${edWrap('v2VisTblHtml2', visTblHtml)}
                                 </td></tr>
                                 ${execItem('v2Ex2T2', L('2. 원인 및 답변 분석 — 기술 스펙어는 인용 유지, 마케팅 라인업은 제외 (답변 형태도 시나리오 중심으로 변화)', '2. Cause & answer analysis — Spec terms kept cited, marketing lineups excluded (answers also shifted to scenario-centric)'), 'v2Ex2B2', L(ex2Ko, ex2En))}
                                 <tr><td style="padding:0 0 2px;">
