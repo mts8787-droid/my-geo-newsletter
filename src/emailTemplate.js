@@ -923,16 +923,16 @@ function insightV2Parts(meta = {}, lang = 'ko', products = []) {
   const tdS = `padding:3px 0;font-size:13px;color:#1A1A1A;border-bottom:1px solid #F1F5F9;text-align:center;font-family:${EM_FONT};letter-spacing:-0.3px;white-space:nowrap;line-height:20px;mso-line-height-rule:exactly;`
   const brandC = b => /^lg/i.test(b) ? EM_RED : /samsung/i.test(b) ? '#3B82F6' : '#64748B'
   const visL = [
-    ['TV', 'SAMSUNG', '90.00%', '88.82%', '-1.18%p'],
-    ['TV', 'LG', '87.40%', '87.25%', '-0.15%p'],
-    ['RAC', 'LG', '44.80%', '42.96%', '-1.84%p'],
-    ['RAC', 'SAMSUNG', '18.36%', '17.14%', '-1.22%p'],
+    ['TV', 'SAMSUNG', '90.0%', '88.8%', '-1.2%p'],
+    ['TV', 'LG', '87.4%', '87.3%', '-0.2%p'],
+    ['RAC', 'LG', '44.8%', '43.0%', '-1.8%p'],
+    ['RAC', 'SAMSUNG', '18.4%', '17.1%', '-1.2%p'],
   ]
   const visR = [
-    ['냉장고', 'LG', '43.90%', '41.40%', '-2.50%p'],
-    ['냉장고', 'SAMSUNG', '44.20%', '41.30%', '-2.90%p'],
-    ['세탁기', 'LG', '39.90%', '38.30%', '-1.60%p'],
-    ['세탁기', 'SAMSUNG', '34.90%', '32.80%', '-2.10%p'],
+    ['냉장고', 'LG', '43.9%', '41.4%', '-2.5%p'],
+    ['냉장고', 'SAMSUNG', '44.2%', '41.3%', '-2.9%p'],
+    ['세탁기', 'LG', '39.9%', '38.3%', '-1.6%p'],
+    ['세탁기', 'SAMSUNG', '34.9%', '32.8%', '-2.1%p'],
   ]
   const prdEnMap = { 'TV': 'TV', 'RAC': 'RAC', '냉장고': 'Refrigerator', '세탁기': 'Washer' }
   // ── Outlook(Word 엔진) 정렬 최종안: 좌우를 "하나의 표(10컬럼)" 로 통합 ──
@@ -1053,7 +1053,7 @@ function insightV2Parts(meta = {}, lang = 'ko', products = []) {
                                 ${execItem('v2Ex1T2', L('1. 현상 요약 — 상위 노출 브랜드 중심 동반 하락, 저노출 브랜드는 소폭 상승 (TV·세탁기·냉장고·에어컨 상세 분석)', '1. Summary — Declines concentrated in high-exposure brands; low-exposure brands edged up (TV·Washer·Refrigerator·AC detail)'), 'v2Ex1B2', L(ex1Ko, ex1En))}
                                 <tr><td style="padding:0 0 10px;">
                                   <p style="${capP}">${ed('v2T11Caption', L(cap1Ko, cap1En))}</p>
-                                  ${edWrap('v2VisTblHtml7', visTblHtml)}
+                                  ${edWrap('v2VisTblHtml8', visTblHtml)}
                                 </td></tr>
                                 ${execItem('v2Ex2T2', L('2. 원인 및 답변 분석 — 기술 스펙어는 인용 유지, 마케팅 라인업은 제외 (답변 형태도 시나리오 중심으로 변화)', '2. Cause & answer analysis — Spec terms kept cited, marketing lineups excluded (answers also shifted to scenario-centric)'), 'v2Ex2B2', L(ex2Ko, ex2En))}
                                 <tr><td style="padding:0 0 2px;">
