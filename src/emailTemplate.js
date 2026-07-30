@@ -1217,12 +1217,22 @@ function actionItemsV2SectionHtml(meta = {}, lang = 'ko', categoryStats = null) 
                       <td style="padding:22px 16px 18px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;">
                         <table border="0" cellpadding="0" cellspacing="0"><tr>
                           <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
-                          <td style="padding-left:8px;font-size:19px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${edT('todoV2Title', L('액션 아이템 V2', 'Action Items V2'))}</td>
+                          <td style="padding-left:8px;font-size:19px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${edT('todoV2Title', 'Action Plan')}</td>
                         </tr></table>
                       </td>
                     </tr>
                     <tr>
                       <td style="padding:18px 16px 10px;">
+                        ${/* 전사 핵심 과제 — 기존 붉은 박스 그대로 (사용자 제공 텍스트) */''}
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFF4F7;border:1px solid #F5CCD8;border-radius:10px;margin-bottom:16px;">
+                          <tr><td style="padding:14px 16px;">
+                            <p style="margin:0 0 6px;font-size:13px;font-weight:700;color:${EM_RED};font-family:${EM_FONT};text-transform:uppercase;letter-spacing:0.5px;">${edT('todoV2NoticeLabel', L('전사 핵심 과제', 'Key Initiative'))}</p>
+                            ${edWrapT('todoV2NoticeHtml', L(`<p style="margin:0 0 8px;font-size:13px;color:#1A1A1A;line-height:21px;font-family:${EM_FONT};letter-spacing:-0.3px;">GEO 개선을 위한 핵심 과제를 선정하여 각 담당 조직별로 개선 작업 진행 중이며, D2C에서 전사변화관리를 지원하기 위한 역할 수행 중</p>
+                            <p style="margin:0;font-size:12.5px;color:#1A1A1A;line-height:21px;font-family:${EM_FONT};letter-spacing:-0.3px;">• (핵심 과제1) 신규 콘텐츠 생성 : 신규 제품 FAQ 및 기술에 대한 신규 콘텐츠, GEO 고려한 Support 콘텐츠 제작 (사업본부/고가혁)<br/>• (핵심 과제2) 기존 콘텐츠 수정 : 닷컴 PDP, Summary Box, FAQ의 Agent 기반 자동 최적화(D2C) 및 콘텐츠 직접 수정(사업본부/고가혁)<br/>• (핵심 과제3) 닷컴 기술 개선 : 제품리뷰 및 Support Page의 데이터 라벨링을 통한 AI의 콘텐츠 인식 수치 제고 (D2C/고가혁)<br/>• (핵심 과제4) 외부 채널 관리 : 고인용 채널 별 Action Item 선정 및 진행 주체별로 월별 진척 목표 수립 진행 (각 조직별)<br/>• 전사변화 관리 : 핵심 KPI/ Stakeholders 별 진척도 대시보드 기반 추적, GEO Committee 를 통한 주요 진행 방향 협의 및 교육 진행(D2C)</p>`,
+                            `<p style="margin:0 0 8px;font-size:13px;color:#1A1A1A;line-height:21px;font-family:${EM_FONT};letter-spacing:-0.3px;">Key GEO improvement initiatives are underway by owning org, with D2C supporting company-wide change management.</p>
+                            <p style="margin:0;font-size:12.5px;color:#1A1A1A;line-height:21px;font-family:${EM_FONT};letter-spacing:-0.3px;">• (Initiative 1) New content creation: new product FAQs & tech contents, GEO-aware support contents (BUs/CVI)<br/>• (Initiative 2) Content fix: Agent-based auto optimization of dotcom PDP, Summary Box, FAQ (D2C) & direct fixes (BUs/CVI)<br/>• (Initiative 3) Dotcom tech fix: data labeling on product reviews & Support Pages to raise AI content recognition (D2C/CVI)<br/>• (Initiative 4) External channel ops: Action Items per high-citation channel with monthly targets per owner (each org)<br/>• Change management: KPI/stakeholder progress tracking via dashboard, alignment & training via GEO Committee (D2C)</p>`)}
+                          </td></tr>
+                        </table>
                         <p style="margin:0 0 12px;font-size:15px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};">${edT('todoV2PerfTitle', L('◼️ 6월 주요 실적', '◼️ June Highlights'))}</p>
                         ${catBlocks}
                         <table border="0" cellpadding="0" cellspacing="0" width="100%"><tr><td height="8" style="font-size:0;line-height:0;">&nbsp;</td></tr></table>
