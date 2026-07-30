@@ -925,22 +925,14 @@ function insightV2Parts(meta = {}, lang = 'ko', products = []) {
   const visL = [
     ['TV', 'SAMSUNG', '90.00%', '88.82%', '-1.18%p'],
     ['TV', 'LG', '87.40%', '87.25%', '-0.15%p'],
-    ['TV', 'Sony', '74.90%', '74.58%', '-0.32%p'],
-    ['TV', 'TCL', '50.10%', '50.45%', '+0.35%p'],
-    ['TV', 'Hisense', '43.20%', '44.13%', '+0.93%p'],
     ['RAC', 'LG', '44.80%', '42.96%', '-1.84%p'],
-    ['RAC', 'Midea', '24.19%', '24.50%', '+0.31%p'],
     ['RAC', 'SAMSUNG', '18.36%', '17.14%', '-1.22%p'],
   ]
   const visR = [
     ['냉장고', 'LG', '43.90%', '41.40%', '-2.50%p'],
     ['냉장고', 'SAMSUNG', '44.20%', '41.30%', '-2.90%p'],
-    ['냉장고', 'Hisense', '13.80%', '13.70%', '-0.10%p'],
-    ['냉장고', 'Haier', '12.50%', '12.10%', '-0.40%p'],
     ['세탁기', 'LG', '39.90%', '38.30%', '-1.60%p'],
     ['세탁기', 'SAMSUNG', '34.90%', '32.80%', '-2.10%p'],
-    ['세탁기', 'Haier', '3.40%', '3.30%', '-0.10%p'],
-    ['세탁기', 'Hisense', '3.10%', '3.10%', '-0.10%p'],
   ]
   const prdEnMap = { 'TV': 'TV', 'RAC': 'RAC', '냉장고': 'Refrigerator', '세탁기': 'Washer' }
   // ── Outlook(Word 엔진) 정렬 최종안: 좌우를 "하나의 표(10컬럼)" 로 통합 ──
@@ -1061,7 +1053,7 @@ function insightV2Parts(meta = {}, lang = 'ko', products = []) {
                                 ${execItem('v2Ex1T2', L('1. 현상 요약 — 상위 노출 브랜드 중심 동반 하락, 저노출 브랜드는 소폭 상승 (TV·세탁기·냉장고·에어컨 상세 분석)', '1. Summary — Declines concentrated in high-exposure brands; low-exposure brands edged up (TV·Washer·Refrigerator·AC detail)'), 'v2Ex1B2', L(ex1Ko, ex1En))}
                                 <tr><td style="padding:0 0 10px;">
                                   <p style="${capP}">${ed('v2T11Caption', L(cap1Ko, cap1En))}</p>
-                                  ${edWrap('v2VisTblHtml6', visTblHtml)}
+                                  ${edWrap('v2VisTblHtml7', visTblHtml)}
                                 </td></tr>
                                 ${execItem('v2Ex2T2', L('2. 원인 및 답변 분석 — 기술 스펙어는 인용 유지, 마케팅 라인업은 제외 (답변 형태도 시나리오 중심으로 변화)', '2. Cause & answer analysis — Spec terms kept cited, marketing lineups excluded (answers also shifted to scenario-centric)'), 'v2Ex2B2', L(ex2Ko, ex2En))}
                                 <tr><td style="padding:0 0 2px;">
