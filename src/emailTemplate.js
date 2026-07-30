@@ -856,7 +856,7 @@ function insightBlockHtml(insight, showInsight, howToRead, showHowToRead, lang =
           <tr>
             <td style="padding:12px 16px;">
               <p style="margin:0 0 6px;font-size:13px;font-weight:700;color:${EM_RED};font-family:${EM_FONT};letter-spacing:0.5px;">${t.insight}</p>
-              ${edBlock(fields.insight, insight, { size: 14, lh: 24, color: '#1A1A1A', accent: EM_RED, lang })}
+              ${edBlock(fields.insight, insight, { size: 13, lh: 22, color: '#1A1A1A', accent: EM_RED, lang })}
             </td>
           </tr>
         </table>
@@ -871,7 +871,7 @@ function insightBlockHtml(insight, showInsight, howToRead, showHowToRead, lang =
           <tr>
             <td style="padding:12px 16px;">
               <p style="margin:0 0 6px;font-size:13px;font-weight:700;color:#64748B;font-family:${EM_FONT};letter-spacing:0.5px;">${t.howToRead}</p>
-              ${edBlock(fields.howToRead, howToRead, { size: 14, lh: 24, color: '#475569', accent: '#64748B', lang })}
+              ${edBlock(fields.howToRead, howToRead, { size: 13, lh: 22, color: '#475569', accent: '#64748B', lang })}
             </td>
           </tr>
         </table>
@@ -902,7 +902,7 @@ function insightV2Parts(meta = {}, lang = 'ko', products = []) {
   const L = (ko, en) => lang === 'en' ? en : ko
 
   // ── [수치 테이블 V2] Visibility 5→6월 대조 — 사용자 제공 데이터 그대로 (좌: TV·RAC / 우: 냉장고·세탁기) ──
-  const thS = `padding:8px 4px;font-size:11px;font-weight:700;color:#475569;background:#F8FAFC;border-bottom:2px solid ${EM_RED};text-align:center;font-family:${EM_FONT};letter-spacing:-0.3px;`
+  const thS = `padding:8px 4px;font-size:13px;font-weight:700;color:#475569;background:#F8FAFC;border-bottom:2px solid ${EM_RED};text-align:center;font-family:${EM_FONT};letter-spacing:-0.3px;`
   const tdS = `padding:7px 4px;font-size:13px;color:#1A1A1A;border-bottom:1px solid #F1F5F9;text-align:center;font-family:${EM_FONT};letter-spacing:-0.3px;`
   const brandC = b => /^lg/i.test(b) ? EM_RED : /samsung/i.test(b) ? '#3B82F6' : '#64748B'
   const visL = [
@@ -926,13 +926,13 @@ function insightV2Parts(meta = {}, lang = 'ko', products = []) {
     ['세탁기', 'Hisense', '3.10%', '3.10%', '-0.10%p'],
   ]
   const prdEnMap = { 'TV': 'TV', 'RAC': 'RAC', '냉장고': 'Refrigerator', '세탁기': 'Washer' }
-  const visHalf = rows => `<table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;border-collapse:collapse;background:#FFFFFF;border:1px solid #E8EDF2;border-radius:8px;">
+  const visHalf = rows => `<table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;border-collapse:separate;border-spacing:0;background:#FFFFFF;border:1px solid #E8EDF2;border-radius:10px;">
       <tr>
-        <th width="18%" style="${thS}">${L('제품군', 'Product')}</th>
+        <th width="18%" style="${thS}border-top-left-radius:9px;">${L('제품군', 'Product')}</th>
         <th width="26%" style="${thS}text-align:left;">${L('브랜드', 'Brand')}</th>
         <th width="19%" style="${thS}">${L('5월 Visibility', 'May Vis.')}</th>
         <th width="19%" style="${thS}">${L('6월 Visibility', 'Jun Vis.')}</th>
-        <th width="18%" style="${thS}">${L('변동(%p)', 'Δ (%p)')}</th>
+        <th width="18%" style="${thS}border-top-right-radius:9px;">${L('변동(%p)', 'Δ (%p)')}</th>
       </tr>
       ${rows.map((r, i) => {
         const groupTop = i > 0 && r[0] !== rows[i - 1][0] ? 'border-top:2px solid #E8EDF2;' : ''
@@ -2849,7 +2849,7 @@ function highlightInsightSectionHtml(products, weeklyAll, weeklyLabels, meta, la
   const insightBox = meta.showHighlightInsight && (meta.highlightInsight || _ED) ? `
                         <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom:14px;border-radius:8px;background:#FFF4F7;border:1px solid #F5CCD8;">
                           <tr><td style="padding:12px 16px;">
-                            ${edBlock('highlightInsight', meta.highlightInsight, { size: 14, lh: 24, color: '#1A1A1A', accent: EM_RED, lang })}
+                            ${edBlock('highlightInsight', meta.highlightInsight, { size: 13, lh: 22, color: '#1A1A1A', accent: EM_RED, lang })}
                           </td></tr>
                         </table>` : ''
   // 주간 그래프 영역 소제목 + 인사이트 + 차트 (모델 영역과 대칭 구조)
@@ -2870,7 +2870,7 @@ function highlightInsightSectionHtml(products, weeklyAll, weeklyLabels, meta, la
   const bumpInsightBox = meta.showBumpInsight && (meta.bumpInsight || _ED) ? `
                           <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom:4px;border-radius:8px;background:#FFF4F7;border:1px solid #F5CCD8;">
                             <tr><td style="padding:12px 16px;">
-                              ${edBlock('bumpInsight', meta.bumpInsight, { size: 14, lh: 24, color: '#1A1A1A', accent: EM_RED, lang })}
+                              ${edBlock('bumpInsight', meta.bumpInsight, { size: 13, lh: 22, color: '#1A1A1A', accent: EM_RED, lang })}
                             </td></tr>
                           </table>` : ''
   const bumpTitle = lang === 'en' ? 'Citation Top 10 Category·Domain (Bump)' : 'Citation Top10 카테고리·도메인 범프차트'
@@ -2996,7 +2996,7 @@ function modelDeltaContentHtml(products, meta, lang = 'ko') {
                           ${meta.showModelDeltaInsight && (meta.modelDeltaInsight || _ED) ? `
                           <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom:4px;border-radius:8px;background:#FFF4F7;border:1px solid #F5CCD8;">
                             <tr><td style="padding:12px 16px;">
-                              ${edBlock('modelDeltaInsight', meta.modelDeltaInsight, { size: 14, lh: 24, color: '#1A1A1A', accent: EM_RED, lang })}
+                              ${edBlock('modelDeltaInsight', meta.modelDeltaInsight, { size: 13, lh: 22, color: '#1A1A1A', accent: EM_RED, lang })}
                             </td></tr>
                           </table>` : ''}
                           ${brandData.map(heatTable).join('')}
@@ -3483,7 +3483,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                         <tr><td height="16" style="font-size:0;line-height:0;">&nbsp;</td></tr>
                           <tr>
                             <td style="padding:16px 18px;background:#1E0F18;border:1px solid #3D1528;border-radius:10px;">
-                              ${(meta.showTotalInsight !== false && (meta.totalInsight || _ED)) ? edBlock('totalInsight', meta.totalInsight, { size: 15, lh: 26, color: '#FFFFFF', accent: '#FF9EBB', lang }) : ''}
+                              ${(meta.showTotalInsight !== false && (meta.totalInsight || _ED)) ? edBlock('totalInsight', meta.totalInsight, { size: 13, lh: 22, color: '#FFFFFF', accent: '#FF9EBB', lang }) : ''}
                               ${(meta.showTotalInsight !== false && (meta.totalInsight || _ED)) && meta.showInsightV2 ? '<table border="0" cellpadding="0" cellspacing="0" width="100%"><tr><td height="14" style="font-size:0;line-height:0;">&nbsp;</td></tr></table>' : ''}
                               ${meta.showInsightV2 ? insightV2Parts(meta, lang, products).execHtml : ''}
                             </td>
