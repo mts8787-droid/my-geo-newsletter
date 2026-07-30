@@ -901,54 +901,54 @@ function insightV2Parts(meta = {}, lang = 'ko', products = []) {
   // KO/EN 기본 문구 — EN 미리보기·발송에서 자동 영문 (편집값은 그대로, 미편집 시 언어별 기본)
   const L = (ko, en) => lang === 'en' ? en : ko
 
-  // ── [수치 테이블 1.1] — 언급 수는 보고서 수치, Visibility 는 구글 시트 동기화 수치(마지막 2개월)로 동적 계산.
-  // 동기화 데이터 없으면 보고서 수치(v5/v6/vp)로 폴백. Bosch 행 제외 (사용자 지시 — LG·삼성만).
-  const t11 = [
-    { prd: 'TV', prdEn: 'TV', id: 'tv', lg: false, brand: 'SAMSUNG (삼성전자)', c: '#3B82F6', m5: '369,634회', m6: '354,875회', d: '-14,759회', dr: '-3.99%', v5: '90.19%', v6: '89.07%', vp: '-1.13%p' },
-    { prd: 'TV', prdEn: 'TV', id: 'tv', lg: true, brand: 'LG (LG전자)', c: EM_RED, m5: '358,964회', m6: '345,260회', d: '-13,704회', dr: '-3.82%', v5: '87.79%', v6: '86.87%', vp: '-0.92%p' },
-    { prd: '냉장고', prdEn: 'Refrigerator', id: 'fridge', lg: false, brand: 'SAMSUNG (삼성전자)', c: '#3B82F6', m5: '102,467회', m6: '95,860회', d: '-6,607회', dr: '-6.45%', v5: '53.18%', v6: '50.70%', vp: '-2.48%p' },
-    { prd: '냉장고', prdEn: 'Refrigerator', id: 'fridge', lg: true, brand: 'LG (LG전자)', c: EM_RED, m5: '101,745회', m6: '96,035회', d: '-5,710회', dr: '-5.61%', v5: '52.80%', v6: '50.58%', vp: '-2.22%p' },
-    { prd: '세탁기', prdEn: 'Washer', id: 'washer', lg: true, brand: 'LG (LG전자)', c: EM_RED, m5: '88,441회', m6: '84,610회', d: '-3,831회', dr: '-4.33%', v5: '47.56%', v6: '45.89%', vp: '-1.67%p' },
-    { prd: '세탁기', prdEn: 'Washer', id: 'washer', lg: false, brand: 'SAMSUNG (삼성전자)', c: '#3B82F6', m5: '77,344회', m6: '72,474회', d: '-4,870회', dr: '-6.30%', v5: '43.18%', v6: '40.95%', vp: '-2.23%p' },
-    { prd: 'RAC (에어컨)', prdEn: 'RAC (Air Conditioner)', id: 'rac', lg: true, brand: 'LG (LG전자)', c: EM_RED, m5: '111,988회', m6: '108,242회', d: '-3,746회', dr: '-3.35%', v5: '48.45%', v6: '46.77%', vp: '-1.68%p' },
-    { prd: 'RAC (에어컨)', prdEn: 'RAC (Air Conditioner)', id: 'rac', lg: false, brand: 'SAMSUNG (삼성전자)', c: '#3B82F6', m5: '45,816회', m6: '43,185회', d: '-2,631회', dr: '-5.74%', v5: '22.46%', v6: '21.55%', vp: '-0.91%p' },
+  // ── [수치 테이블 V2] Visibility 5→6월 대조 — 사용자 제공 데이터 그대로 (좌: TV·RAC / 우: 냉장고·세탁기) ──
+  const thS = `padding:8px 4px;font-size:11px;font-weight:700;color:#475569;background:#F8FAFC;border-bottom:2px solid ${EM_RED};text-align:center;font-family:${EM_FONT};letter-spacing:-0.3px;`
+  const tdS = `padding:7px 4px;font-size:13px;color:#1A1A1A;border-bottom:1px solid #F1F5F9;text-align:center;font-family:${EM_FONT};letter-spacing:-0.3px;`
+  const brandC = b => /^lg/i.test(b) ? EM_RED : /samsung/i.test(b) ? '#3B82F6' : '#64748B'
+  const visL = [
+    ['TV', 'SAMSUNG', '90.00%', '88.82%', '-1.18%p'],
+    ['TV', 'LG', '87.40%', '87.25%', '-0.15%p'],
+    ['TV', 'Sony', '74.90%', '74.58%', '-0.32%p'],
+    ['TV', 'TCL', '50.10%', '50.45%', '+0.35%p'],
+    ['TV', 'Hisense', '43.20%', '44.13%', '+0.93%p'],
+    ['RAC', 'LG', '44.80%', '42.96%', '-1.84%p'],
+    ['RAC', 'Midea', '24.19%', '24.50%', '+0.31%p'],
+    ['RAC', 'SAMSUNG', '18.36%', '17.14%', '-1.22%p'],
   ]
-  // 구글 시트 동기화 Visibility — products[].monthlyScores(시간순) 마지막 2개월의 allScores 에서 브랜드 추출
-  const _syncVis = (id, isLG) => {
-    const p = (products || []).find(x => x && x.id === id)
-    const ms = (p && Array.isArray(p.monthlyScores)) ? p.monthlyScores : []
-    const pick = m => {
-      if (!m) return null
-      const all = m.allScores || {}
-      const key = Object.keys(all).find(k => isLG ? /^lg/i.test(k) : /^(samsung|삼성)/i.test(k))
-      if (key && all[key] != null && isFinite(all[key])) return Number(all[key])
-      if (isLG && m.score != null && isFinite(m.score)) return Number(m.score)  // LG 폴백: score 필드
-      return null
-    }
-    return { prev: pick(ms[ms.length - 2]), latest: pick(ms[ms.length - 1]) }
-  }
-  const thS = `padding:8px 4px;font-size:10px;font-weight:700;color:#475569;background:#F8FAFC;border-bottom:2px solid ${EM_RED};text-align:center;font-family:${EM_FONT};letter-spacing:-0.3px;`
-  const tdS = `padding:7px 4px;font-size:11px;color:#1A1A1A;border-bottom:1px solid #F1F5F9;text-align:center;font-family:${EM_FONT};letter-spacing:-0.3px;`
-  const t11Rows = t11.map((r, i) => {
-    const sv = _syncVis(r.id, r.lg)
-    const v5 = sv.prev != null ? sv.prev.toFixed(2) + '%' : r.v5
-    const v6 = sv.latest != null ? sv.latest.toFixed(2) + '%' : r.v6
-    const vp = (sv.prev != null && sv.latest != null)
-      ? ((sv.latest - sv.prev >= 0 ? '+' : '') + (sv.latest - sv.prev).toFixed(2) + '%p')
-      : r.vp
-    return `
-    <tr${i % 2 === 0 ? ' style="background:#FAFBFC;"' : ''}>
-      <td style="${tdS}font-weight:700;">${L(r.prd, r.prdEn || r.prd)}</td>
-      <td style="${tdS}text-align:left;font-weight:800;color:${r.c};">${L(r.brand, r.brand.replace(/ \((삼성전자|LG전자)\)/, ''))}</td>
-      <td style="${tdS}">${L(r.m5, r.m5.replace(/회/g, ''))}</td>
-      <td style="${tdS}">${L(r.m6, r.m6.replace(/회/g, ''))}</td>
-      <td style="${tdS}font-weight:800;color:${dC(r.d)};">${L(r.d, r.d.replace(/회/g, ''))}</td>
-      <td style="${tdS}font-weight:800;color:${dC(r.dr)};">${r.dr}</td>
-      <td style="${tdS}">${v5}</td>
-      <td style="${tdS}font-weight:700;">${v6}</td>
-      <td style="${tdS}font-weight:800;color:${dC(vp)};">${vp}</td>
-    </tr>`
-  }).join('')
+  const visR = [
+    ['냉장고', 'LG', '43.90%', '41.40%', '-2.50%p'],
+    ['냉장고', 'SAMSUNG', '44.20%', '41.30%', '-2.90%p'],
+    ['냉장고', 'Hisense', '13.80%', '13.70%', '-0.10%p'],
+    ['냉장고', 'Haier', '12.50%', '12.10%', '-0.40%p'],
+    ['세탁기', 'LG', '39.90%', '38.30%', '-1.60%p'],
+    ['세탁기', 'SAMSUNG', '34.90%', '32.80%', '-2.10%p'],
+    ['세탁기', 'Haier', '3.40%', '3.30%', '-0.10%p'],
+    ['세탁기', 'Hisense', '3.10%', '3.10%', '-0.10%p'],
+  ]
+  const prdEnMap = { 'TV': 'TV', 'RAC': 'RAC', '냉장고': 'Refrigerator', '세탁기': 'Washer' }
+  const visHalf = rows => `<table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;border-collapse:collapse;background:#FFFFFF;border:1px solid #E8EDF2;border-radius:8px;">
+      <tr>
+        <th width="18%" style="${thS}">${L('제품군', 'Product')}</th>
+        <th width="26%" style="${thS}text-align:left;">${L('브랜드', 'Brand')}</th>
+        <th width="19%" style="${thS}">${L('5월 Visibility', 'May Vis.')}</th>
+        <th width="19%" style="${thS}">${L('6월 Visibility', 'Jun Vis.')}</th>
+        <th width="18%" style="${thS}">${L('변동(%p)', 'Δ (%p)')}</th>
+      </tr>
+      ${rows.map((r, i) => {
+        const groupTop = i > 0 && r[0] !== rows[i - 1][0] ? 'border-top:2px solid #E8EDF2;' : ''
+        return `<tr${i % 2 === 0 ? ' style="background:#FAFBFC;"' : ''}>
+        <td style="${tdS}${groupTop}font-weight:700;">${L(r[0], prdEnMap[r[0]] || r[0])}</td>
+        <td style="${tdS}${groupTop}text-align:left;font-weight:800;color:${brandC(r[1])};">${r[1]}</td>
+        <td style="${tdS}${groupTop}">${r[2]}</td>
+        <td style="${tdS}${groupTop}font-weight:700;">${r[3]}</td>
+        <td style="${tdS}${groupTop}font-weight:800;color:${dC(r[4])};">${r[4]}</td>
+      </tr>`
+      }).join('')}
+    </table>`
+  const visTblHtml = `<table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;"><tr>
+      <td width="50%" style="vertical-align:top;padding-right:5px;">${visHalf(visL)}</td>
+      <td width="50%" style="vertical-align:top;padding-left:5px;">${visHalf(visR)}</td>
+    </tr></table>`
 
   // ── [실증 예시] 원문 대조 2건 (무삭제 원문 + 번역 그대로) ──
   const quoteBox = (label, labelColor, enF, en, koF, ko) => `
@@ -956,8 +956,8 @@ function insightV2Parts(meta = {}, lang = 'ko', products = []) {
       <tr>
         <td style="padding:10px 14px;background:#F8FAFC;border:1px solid #E8EDF2;border-left:3px solid ${labelColor};border-radius:8px;word-break:break-word;">
           <p style="margin:0 0 6px;font-size:10px;font-weight:800;color:${labelColor};font-family:${EM_FONT};letter-spacing:1px;">${label}</p>
-          <p style="margin:0 0 8px;font-size:11px;color:#334155;line-height:18px;font-family:${MONO};word-break:break-word;overflow-wrap:anywhere;">${ed(enF, en)}</p>
-          <p style="margin:0;font-size:11px;color:#64748B;line-height:18px;font-family:${EM_FONT};letter-spacing:-0.3px;">${ed(koF, ko)}</p>
+          <p style="margin:0 0 8px;font-size:13px;color:#334155;line-height:20px;font-family:${MONO};word-break:break-word;overflow-wrap:anywhere;">${ed(enF, en)}</p>
+          <p style="margin:0;font-size:13px;color:#64748B;line-height:20px;font-family:${EM_FONT};letter-spacing:-0.3px;">${ed(koF, ko)}</p>
         </td>
       </tr>
     </table>`
@@ -991,8 +991,8 @@ function insightV2Parts(meta = {}, lang = 'ko', products = []) {
             <td style="padding:14px 16px 4px;word-break:break-word;">
               ${/* 설명·분석 Insight 박스 삭제 (사용자 지시) — 제목 → 자사 노출 유지 → 프롬프트 → 원문 인용 */''}
               <p style="margin:0 0 8px;font-size:14px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-0.5px;">${ed(cs.titleF, cs.title)}</p>
-              ${cs.keep ? `<p style="margin:0 0 8px;font-size:12px;color:#334155;line-height:20px;font-family:${EM_FONT};letter-spacing:-0.3px;"><strong style="color:${EM_RED};">${L('자사 노출 유지', 'LG Exposure Retention')}</strong>: ${ed(cs.keepF, cs.keep)}</p>` : ''}
-              <p style="margin:0;font-size:12px;color:#334155;font-family:${EM_FONT};"><strong>Exact Prompt</strong>: ${ed(cs.pF, term(cs.promptRaw || `"${cs.prompt}"`))}</p>
+              ${cs.keep ? `<p style="margin:0 0 8px;font-size:13px;color:#334155;line-height:21px;font-family:${EM_FONT};letter-spacing:-0.3px;"><strong style="color:${EM_RED};">${L('자사 노출 유지', 'LG Exposure Retention')}</strong>: ${ed(cs.keepF, cs.keep)}</p>` : ''}
+              <p style="margin:0;font-size:13px;color:#334155;font-family:${EM_FONT};"><strong>Exact Prompt</strong>: ${ed(cs.pF, term(cs.promptRaw || `"${cs.prompt}"`))}</p>
               ${quoteBox(L('5월 BASELINE 원문 · 번역', 'MAY BASELINE — ORIGINAL · INTERPRETATION'), '#64748B', cs.bEnF, cs.b_en, cs.bKoF, cs.b_ko)}
               ${quoteBox(L('6월 TARGET 원문 · 번역', 'JUNE TARGET — ORIGINAL · INTERPRETATION'), EM_RED, cs.tEnF, cs.t_en, cs.tKoF, cs.t_ko)}
               <table border="0" cellpadding="0" cellspacing="0" width="100%"><tr><td height="14" style="font-size:0;line-height:0;">&nbsp;</td></tr></table>
@@ -1010,7 +1010,7 @@ function insightV2Parts(meta = {}, lang = 'ko', products = []) {
           <tr>
             <td style="padding:12px 16px;">
               <p style="margin:0 0 6px;font-size:13px;font-weight:800;color:#FFFFFF;line-height:20px;font-family:${EM_FONT};letter-spacing:-0.3px;">${ed(titleF, title)}</p>
-              <p style="margin:0;font-size:12px;color:#CBD5E1;line-height:20px;font-family:${EM_FONT};letter-spacing:-0.3px;">${ed(bodyF, body)}</p>
+              <p style="margin:0;font-size:13px;color:#CBD5E1;line-height:21px;font-family:${EM_FONT};letter-spacing:-0.3px;">${ed(bodyF, body)}</p>
             </td>
           </tr>
         </table>
@@ -1018,21 +1018,7 @@ function insightV2Parts(meta = {}, lang = 'ko', products = []) {
     </tr>`
 
   // ── [A] EXECUTIVE SUMMARY — 1~3 항목 + 항목 아래 표·답변 예시 통합 (사용자 전체 반영본) ──
-  // [수치 테이블 1.1] — 통째 편집(edWrap) 가능하도록 기본 HTML 을 상수로
-  const t11TableHtml = `<table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;border-collapse:collapse;background:#FFFFFF;border:1px solid #E8EDF2;border-radius:8px;">
-                                <tr>
-                                  <th width="9%" style="${thS}">${L('제품군', 'Product')}</th>
-                                  <th width="17%" style="${thS}text-align:left;">${L('주요 브랜드', 'Brand')}</th>
-                                  <th width="10%" style="${thS}">${L('5월 언급 수', 'May Mentions')}</th>
-                                  <th width="10%" style="${thS}">${L('6월 언급 수', 'Jun Mentions')}</th>
-                                  <th width="10%" style="${thS}">${L('변동량', 'Δ')}</th>
-                                  <th width="9%" style="${thS}">${L('감소율', 'Δ %')}</th>
-                                  <th width="11%" style="${thS}">${L('5월 Visibility', 'May Visibility')}</th>
-                                  <th width="12%" style="${thS}">${L('6월 Visibility (실측)', 'Jun Visibility (Actual)')}</th>
-                                  <th width="12%" style="${thS}">${L('변동량 (%p)', 'Δ (%p)')}</th>
-                                </tr>
-                                ${t11Rows}
-                              </table>`
+
 
   // 항목 본문 (사용자 제공 텍스트 그대로 · 저장본 공통 적용 위해 필드 버전업 v2Exec*N)
   const ex1Ko = `주요 제품군의 브랜드 Visibility가 동반 하락한 가운데, <strong style="color:#FFFFFF;">삼성전자 -2.0%p(40.2%→38.2%)</strong>, <strong style="color:#FFFFFF;">LG전자 -1.5%p(44.8%→43.3%)</strong>로 삼성전자의 하락 폭이 더 컸습니다.<br/><br/>이번 하락은 노출이 높은 상위 브랜드에 집중되었으며, 노출이 낮은 브랜드는 오히려 소폭 상승하거나 방어되는 양상이 확인됩니다. TV의 중국 브랜드 하이센스(+0.93%p)·TCL(+0.35%p)과 에어컨의 Midea(+0.31%p)가 상승했고, 에어컨에서 노출이 낮은 삼성(-1.22%p)은 오히려 선도 브랜드 LG(-1.84%p)보다 덜 하락했습니다. 즉 절대 노출이 큰 대형 브랜드일수록 하락 폭이 컸으며, 에어컨에서 LG의 하락 폭이 상대적으로 큰 것도 LG가 해당 카테고리의 압도적 선도 브랜드(경쟁비 126%)이기 때문으로 해석됩니다.`
@@ -1045,7 +1031,7 @@ function insightV2Parts(meta = {}, lang = 'ko', products = []) {
   const cap1En = `Competitor declines were pronounced in key products — under the changed LLM answer algorithm, Samsung marketing keywords were excluded over a relatively wide range.`
   const cap2Ko = `답변 알고리즘 변경에 따라, 다 브랜드의 다양한 제품을 직접적으로 언급하는 형태에서, 소수 브랜드 언급 및 사용 시나리오 형태로 답변 형태 변경`
   const cap2En = `With the answer-algorithm change, responses shifted from directly naming diverse products across many brands to mentioning few brands with usage scenarios.`
-  const capP = `margin:2px 2px 8px;font-size:12px;color:#E2E8F0;line-height:19px;font-family:${EM_FONT};letter-spacing:-0.3px;word-break:break-word;`
+  const capP = `margin:2px 2px 8px;font-size:13px;color:#E2E8F0;line-height:20px;font-family:${EM_FONT};letter-spacing:-0.3px;word-break:break-word;`
 
   const execHtml = `
                               <p style="margin:0 0 12px;font-size:13px;color:#E2E8F0;line-height:22px;font-family:${EM_FONT};letter-spacing:-0.3px;">${ed('v2ExecIntro', L('2026년 6월, AI 검색(Gemini·ChatGPT 등)에서 4대 핵심 가전(TV·냉장고·세탁기·에어컨)의 브랜드 노출이 전반적으로 하락했습니다. 이 가운데 <strong>삼성전자의 하락 폭이 LG전자보다 컸으며,</strong> 그 배경을 다음과 같이 분석했습니다.', 'In June 2026, brand exposure for the four key appliances (TV, refrigerator, washer, air conditioner) declined overall in AI search (Gemini, ChatGPT, etc.). <strong>Samsung declined more than LG,</strong> and we analyzed the background as follows.'))}</p>
@@ -1053,7 +1039,7 @@ function insightV2Parts(meta = {}, lang = 'ko', products = []) {
                                 ${execItem('v2Exec1TN', L('1. 현상 요약 — 상위 노출 브랜드 중심 동반 하락, 저노출 브랜드는 소폭 상승 (TV·세탁기·냉장고·에어컨 상세 분석)', '1. Summary — Declines concentrated in high-exposure brands; low-exposure brands edged up (TV·Washer·Refrigerator·AC detail)'), 'v2Exec1N', L(ex1Ko, ex1En))}
                                 <tr><td style="padding:0 0 10px;">
                                   <p style="${capP}">${ed('v2T11Caption', L(cap1Ko, cap1En))}</p>
-                                  ${edWrap('v2T11HtmlV2', t11TableHtml)}
+                                  ${edWrap('v2VisTblHtml', visTblHtml)}
                                 </td></tr>
                                 ${execItem('v2Exec2TN', L('2. 원인 및 답변 분석 — 기술 스펙어 기반 라인업은 인용 유지, 마케팅 라인업은 제외 경향 (답변 형태도 소수 브랜드·시나리오 중심으로 변화)', '2. Cause & answer analysis — Spec-term lineups kept being cited while marketing lineups were excluded (answers also shifted to fewer brands & usage scenarios)'), 'v2Exec2N', L(ex2Ko, ex2En))}
                                 <tr><td style="padding:0 0 2px;">
