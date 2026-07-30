@@ -1007,7 +1007,7 @@ function insightV2Parts(meta = {}, lang = 'ko', products = []) {
               ${/* 설명·분석 Insight 박스 삭제 (사용자 지시) — 제목 → 자사 노출 유지 → 프롬프트 → 원문 인용 */''}
               <p style="margin:0 0 8px;font-size:14px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-0.5px;">${ed(cs.titleF, cs.title)}</p>
               ${cs.keep ? `<p style="margin:0 0 8px;font-size:13px;color:#334155;line-height:21px;font-family:${EM_FONT};letter-spacing:-0.3px;"><strong style="color:${EM_RED};">${L('자사 노출 유지', 'LG Exposure Retention')}</strong>: ${ed(cs.keepF, cs.keep)}</p>` : ''}
-              <p style="margin:0;font-size:13px;color:#334155;font-family:${EM_FONT};"><strong>Exact Prompt</strong>: ${ed(cs.pF, term(cs.promptRaw || `"${cs.prompt}"`))}</p>
+              <p style="margin:0;font-size:13px;color:#334155;font-family:${EM_FONT};"><strong>Prompt</strong>: ${ed(cs.pF, term(cs.promptRaw || `"${cs.prompt}"`))}</p>
               ${quoteBox(L('5월 원문 · 번역', 'MAY — ORIGINAL · INTERPRETATION'), '#64748B', cs.bEnF, cs.b_en, cs.bKoF, cs.b_ko)}
               ${quoteBox(L('6월 원문 · 번역', 'JUNE — ORIGINAL · INTERPRETATION'), EM_RED, cs.tEnF, cs.t_en, cs.tKoF, cs.t_ko)}
               <table border="0" cellpadding="0" cellspacing="0" width="100%"><tr><td height="14" style="font-size:0;line-height:0;">&nbsp;</td></tr></table>
