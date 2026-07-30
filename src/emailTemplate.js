@@ -1091,6 +1091,106 @@ function insightV2Parts(meta = {}, lang = 'ko', products = []) {
   return { execHtml, bodyHtml }
 }
 
+// ─── 액션 아이템 V2 — 표 정리 + 사업부×외부접점채널 진행사항 매트릭스 ─────────
+// 토글: meta.showTodoV2 (Sidebar '액션 아이템 V2'). 기존 Action Plan(showTodo)과 독립.
+// 현행 액션 아이템(①~⑤)을 상태 표로, 진행사항을 BU(MS/HS/ES)×채널 매트릭스로 정리.
+// 표는 통째 편집(edWrapT) — 편집모드에서 셀 단위 수정, 저장값이 기본 표를 덮어씀.
+function actionItemsV2SectionHtml(meta = {}, lang = 'ko') {
+  const M = meta || {}
+  const L = (ko, en) => lang === 'en' ? en : ko
+  const edT = (field, def) => `<span${edRich(field)}>${M[field] != null ? M[field] : def}</span>`
+  const edWrapT = (field, def) => `<div${edRich(field)}>${M[field] != null ? M[field] : def}</div>`
+  // 상태 배지 (이메일 호환 인라인)
+  const badge = (label, kind) => {
+    const c = kind === 'done' ? { bg: '#ECFDF5', bd: '#A7F3D0', tx: '#15803D' }
+      : kind === 'always' ? { bg: '#EFF6FF', bd: '#BFDBFE', tx: '#1D4ED8' }
+      : { bg: '#FFFBEB', bd: '#FDE68A', tx: '#B45309' }
+    return `<span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:800;background:${c.bg};border:1px solid ${c.bd};color:${c.tx};white-space:nowrap;font-family:${EM_FONT};">${label}</span>`
+  }
+  const thA = `padding:8px 8px;font-size:11px;font-weight:700;color:#475569;background:#F8FAFC;border-bottom:2px solid ${EM_RED};text-align:center;font-family:${EM_FONT};letter-spacing:-0.3px;`
+  const tdA = `padding:8px 8px;font-size:12px;color:#1A1A1A;border-bottom:1px solid #F1F5F9;vertical-align:top;font-family:${EM_FONT};letter-spacing:-0.3px;line-height:18px;`
+
+  // ── 표 1: 액션 아이템 현황 (현행 ①~⑤ 그대로) ──
+  const items = [
+    { no: '①', ko: ['Weak Content 개선 — Support Page 기술 개선', 'SSR 미적용 노출 구조 개선 · 고인용 핵심 FAQ 체계 관리 · 데이터 라벨링(스키마 마크업) 강화'], en: ['Weak Content — Support Page technical fix', 'Fix non-SSR exposure structure · manage high-citation FAQs · strengthen schema markup'], st: ['진행 중', 'In Progress', 'prog'] },
+    { no: '②', ko: ['GEO Agent 개발 및 성과 분석 PoC', 'Summary Box·FAQ 자동 생성 · 46개 항목 자가 진단·수정 · Akamai CDN 활용 (사이트 구조 무변경)'], en: ['GEO Agent & performance PoC', 'Auto Summary Box/FAQ · self-diagnosis of 46 checks · Akamai CDN (no site change)'], st: ['4월 완료', 'Done (Apr)', 'done'] },
+    { no: '③', ko: ['외부 채널 콘텐츠 관리', 'GEO 친화적 PDP 콘텐츠 자동 제작 Agent 글로벌 운영 준비 · Reddit·YouTube 커뮤니티 가이드 수립 + 글로벌 교육 완료'], en: ['External channel content ops', 'GEO-friendly PDP content Agent (global rollout prep) · Reddit/YouTube community guides + global training done'], st: ['상시 진행', 'Ongoing', 'always'] },
+    { no: '④', ko: ['Best Practice 글로벌 확대 적용', '미국 법인 우수 사례(FAQ 활용·SSR 구조) 벤치마킹 → 글로벌 GP1 LG.com 표준 확대'], en: ['Global Best Practice rollout', 'Benchmark US cases (FAQ/SSR) → expand as global GP1 LG.com standard'], st: ['상시 진행', 'Ongoing', 'always'] },
+    { no: '⑤', ko: ['Global KPI Dashboard 오픈 및 성과 관리', '실시간 대시보드 오픈 · Action Item Tracker 로 조직별 진척 모니터링 · 하반기 지역별 GEO 위원회 신설 예정'], en: ['Global KPI Dashboard & tracking', 'Live dashboard open · org-level tracking via Action Item Tracker · regional GEO councils in H2'], st: ['4월 완료', 'Done (Apr)', 'done'] },
+  ]
+  const itemsTable = `<table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;border-collapse:collapse;background:#FFFFFF;border:1px solid #E8EDF2;border-radius:8px;">
+    <tr>
+      <th width="5%" style="${thA}">No</th>
+      <th width="30%" style="${thA}text-align:left;">${L('액션 아이템', 'Action Item')}</th>
+      <th width="51%" style="${thA}text-align:left;">${L('주요 내용', 'Details')}</th>
+      <th width="14%" style="${thA}">${L('상태', 'Status')}</th>
+    </tr>
+    ${items.map((it, i) => `<tr${i % 2 === 0 ? ' style="background:#FAFBFC;"' : ''}>
+      <td style="${tdA}text-align:center;font-weight:800;color:${EM_RED};">${it.no}</td>
+      <td style="${tdA}font-weight:700;">${L(it.ko[0], it.en[0])}</td>
+      <td style="${tdA}color:#334155;">${L(it.ko[1], it.en[1])}</td>
+      <td style="${tdA}text-align:center;">${badge(L(it.st[0], it.st[1]), it.st[2])}</td>
+    </tr>`).join('')}
+  </table>`
+
+  // ── 표 2: 사업부 × 외부접점채널 진행사항 매트릭스 ──
+  // 현행 내용이 전사 공통이라 각 BU 행에 공통 진행사항 프리필 — 편집모드에서 BU 별로 수정.
+  const dot = kind => `<span style="display:inline-block;width:7px;height:7px;border-radius:4px;background:${kind === 'done' ? '#15803D' : kind === 'always' ? '#1D4ED8' : '#D97706'};margin-right:4px;"></span>`
+  const cell = {
+    dotcom: L(`${dot('prog')}Support SSR 구조 개선 진행 중<br/>${dot('done')}GEO Agent PoC 완료 (④ US 표준 확대)`, `${dot('prog')}Support SSR fix in progress<br/>${dot('done')}GEO Agent PoC done (US standard rollout)`),
+    retail: L(`${dot('prog')}PDP 콘텐츠 자동 제작 Agent 글로벌 운영 준비`, `${dot('prog')}PDP content Agent — global rollout prep`),
+    reddit: L(`${dot('done')}커뮤니티 콘텐츠 가이드 수립 · 글로벌 교육 완료`, `${dot('done')}Community guide set · global training done`),
+    youtube: L(`${dot('done')}커뮤니티 콘텐츠 가이드 수립 · 글로벌 교육 완료`, `${dot('done')}Community guide set · global training done`),
+  }
+  const buRows = ['MS', 'HS', 'ES'].map((bu, i) => `<tr${i % 2 === 0 ? ' style="background:#FAFBFC;"' : ''}>
+      <td style="${tdA}text-align:center;font-weight:800;color:#475569;background:#F8FAFC;border-right:2px solid #E8EDF2;">${bu}</td>
+      <td style="${tdA}">${cell.dotcom}</td>
+      <td style="${tdA}">${cell.retail}</td>
+      <td style="${tdA}">${cell.reddit}</td>
+      <td style="${tdA}">${cell.youtube}</td>
+    </tr>`).join('')
+  const matrixTable = `<table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;border-collapse:collapse;background:#FFFFFF;border:1px solid #E8EDF2;border-radius:8px;">
+    <tr>
+      <th width="8%" style="${thA}">BU</th>
+      <th width="26%" style="${thA}text-align:left;">${L('닷컴 (LG.com)', 'LG.com')}</th>
+      <th width="24%" style="${thA}text-align:left;">${L('리테일 · 리뷰', 'Retail · Review')}</th>
+      <th width="21%" style="${thA}text-align:left;">Reddit</th>
+      <th width="21%" style="${thA}text-align:left;">YouTube</th>
+    </tr>
+    ${buRows}
+  </table>`
+
+  const secTitle = (field, ko, en) => `<table border="0" cellpadding="0" cellspacing="0" style="margin-bottom:10px;"><tr>
+      <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
+      <td style="padding-left:8px;font-size:15px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-0.5px;">${edT(field, L(ko, en))}</td>
+    </tr></table>`
+
+  return `<!-- ══ 액션 아이템 V2 (표 + BU×채널 매트릭스) ══ -->
+              <tr>
+                <td style="padding-bottom:28px;">
+                  <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFFFFF;border-radius:16px;border:2px solid #E8EDF2;">
+                    <tr>
+                      <td style="padding:22px 16px 18px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;">
+                        <table border="0" cellpadding="0" cellspacing="0"><tr>
+                          <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
+                          <td style="padding-left:8px;font-size:19px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${edT('todoV2Title', L('액션 아이템 V2', 'Action Items V2'))}</td>
+                        </tr></table>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="padding:18px 16px;">
+                        ${secTitle('todoV2Sec1Title', '1. 액션 아이템 현황', '1. Action Item Status')}
+                        ${edWrapT('todoV2ItemsHtml', itemsTable)}
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%"><tr><td height="20" style="font-size:0;line-height:0;">&nbsp;</td></tr></table>
+                        ${secTitle('todoV2Sec2Title', '2. 사업부 × 외부접점채널 진행사항', '2. Progress by BU × External Channel')}
+                        ${edWrapT('todoV2MatrixHtml', matrixTable)}
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>`
+}
+
 // ─── 국가별 Visibility ────────────────────────────────────────────────────────
 function cntyStatus(score, compScore) {
   if (compScore <= 0) return 'lead'
@@ -3526,6 +3626,8 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                   </table>
                 </td>
               </tr>` : ''}
+
+              ${meta.showTodoV2 ? actionItemsV2SectionHtml(meta, lang) : ''}
 
             </table>
           </td>

@@ -101,6 +101,7 @@ export const INIT_META  = {
   citPrdHowToRead: '', showCitPrdHowToRead: false,
   noticeText: '', showNotice: true,
   todoText: '', showTodo: false,
+  showTodoV2: false,   // 액션 아이템 V2 (표 + BU×채널 매트릭스) — 기본 OFF
   monthlyReportBody: MONTHLY_REPORT_BODY_DEFAULT, showMonthlyReportBody: true,
   showTotal: true, showProducts: true, showModelDelta: true, showCompRatioDelta: true, showCnty: true, showCitations: true,
   showCitDomain: true, showCitCnty: true, showCitPrd: true,
