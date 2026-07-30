@@ -373,12 +373,18 @@ function edScriptHtml() {
   window.addEventListener('message',function(e){
     var d=e.data; if(!d||d.type!=='format')return;
     try{
-      document.execCommand('styleWithCSS',false,true);
       if(d.cmd==='fontSizePx'){
-        // 임의 px 크기 — execCommand fontSize 는 1~7 단계뿐이라 7 적용 후 px 로 치환
+        // 임의 px 크기 — fontSize 는 1~7 단계뿐이라 7 적용 후 px 로 치환.
+        // 주의: styleWithCSS=true 면 <font size=7> 대신 span(font-size:xxx-large≈48px)이 생겨
+        // 치환 대상을 못 찾고 특대로 깨짐 → px 적용 동안만 styleWithCSS 끔.
+        document.execCommand('styleWithCSS',false,false);
         document.execCommand('fontSize',false,'7');
         document.querySelectorAll('font[size="7"]').forEach(function(f){f.removeAttribute('size');f.style.fontSize=d.value+'px';});
+        // 브라우저별 방어: span(xxx-large) 형태로 생성된 경우도 px 로 치환
+        document.querySelectorAll('span[style*="xxx-large"]').forEach(function(sp){sp.style.fontSize=d.value+'px';});
+        document.execCommand('styleWithCSS',false,true);
       } else {
+        document.execCommand('styleWithCSS',false,true);
         document.execCommand(d.cmd,false,d.value);
       }
     }catch(err){}
