@@ -1095,7 +1095,7 @@ function insightV2Parts(meta = {}, lang = 'ko', products = []) {
 // 토글: meta.showTodoV2 (Sidebar '액션 아이템 V2'). 기존 Action Plan(showTodo)과 독립.
 // 현행 액션 아이템(①~⑤)을 상태 표로, 진행사항을 BU(MS/HS/ES)×채널 매트릭스로 정리.
 // 표는 통째 편집(edWrapT) — 편집모드에서 셀 단위 수정, 저장값이 기본 표를 덮어씀.
-function actionItemsV2SectionHtml(meta = {}, lang = 'ko') {
+function actionItemsV2SectionHtml(meta = {}, lang = 'ko', categoryStats = null) {
   const M = meta || {}
   const L = (ko, en) => lang === 'en' ? en : ko
   const edT = (field, def) => `<span${edRich(field)}>${M[field] != null ? M[field] : def}</span>`
@@ -1113,10 +1113,10 @@ function actionItemsV2SectionHtml(meta = {}, lang = 'ko') {
   // ── 표 1: 액션 아이템 현황 (현행 ①~⑤ 그대로) ──
   const items = [
     { no: '①', ko: ['Weak Content 개선 — Support Page 기술 개선', 'SSR 미적용 노출 구조 개선 · 고인용 핵심 FAQ 체계 관리 · 데이터 라벨링(스키마 마크업) 강화'], en: ['Weak Content — Support Page technical fix', 'Fix non-SSR exposure structure · manage high-citation FAQs · strengthen schema markup'], st: ['진행 중', 'In Progress', 'prog'] },
-    { no: '②', ko: ['GEO Agent 개발 및 성과 분석 PoC', 'Summary Box·FAQ 자동 생성 · 46개 항목 자가 진단·수정 · Akamai CDN 활용 (사이트 구조 무변경)'], en: ['GEO Agent & performance PoC', 'Auto Summary Box/FAQ · self-diagnosis of 46 checks · Akamai CDN (no site change)'], st: ['4월 완료', 'Done (Apr)', 'done'] },
+    { no: '②', ko: ['GEO Agent 개발 및 성과 분석 PoC', 'Summary Box·FAQ 자동 생성 · 46개 항목 자가 진단·수정 · Akamai CDN 활용 (사이트 구조 무변경)'], en: ['GEO Agent & performance PoC', 'Auto Summary Box/FAQ · self-diagnosis of 46 checks · Akamai CDN (no site change)'], st: ['6월 완료', 'Done (Jun)', 'done'] },
     { no: '③', ko: ['외부 채널 콘텐츠 관리', 'GEO 친화적 PDP 콘텐츠 자동 제작 Agent 글로벌 운영 준비 · Reddit·YouTube 커뮤니티 가이드 수립 + 글로벌 교육 완료'], en: ['External channel content ops', 'GEO-friendly PDP content Agent (global rollout prep) · Reddit/YouTube community guides + global training done'], st: ['상시 진행', 'Ongoing', 'always'] },
     { no: '④', ko: ['Best Practice 글로벌 확대 적용', '미국 법인 우수 사례(FAQ 활용·SSR 구조) 벤치마킹 → 글로벌 GP1 LG.com 표준 확대'], en: ['Global Best Practice rollout', 'Benchmark US cases (FAQ/SSR) → expand as global GP1 LG.com standard'], st: ['상시 진행', 'Ongoing', 'always'] },
-    { no: '⑤', ko: ['Global KPI Dashboard 오픈 및 성과 관리', '실시간 대시보드 오픈 · Action Item Tracker 로 조직별 진척 모니터링 · 하반기 지역별 GEO 위원회 신설 예정'], en: ['Global KPI Dashboard & tracking', 'Live dashboard open · org-level tracking via Action Item Tracker · regional GEO councils in H2'], st: ['4월 완료', 'Done (Apr)', 'done'] },
+    { no: '⑤', ko: ['Global KPI Dashboard 오픈 및 성과 관리', '실시간 대시보드 오픈 · Action Item Tracker 로 조직별 진척 모니터링 · 하반기 지역별 GEO 위원회 신설 예정'], en: ['Global KPI Dashboard & tracking', 'Live dashboard open · org-level tracking via Action Item Tracker · regional GEO councils in H2'], st: ['6월 완료', 'Done (Jun)', 'done'] },
   ]
   const itemsTable = `<table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;border-collapse:collapse;background:#FFFFFF;border:1px solid #E8EDF2;border-radius:8px;">
     <tr>
@@ -1160,6 +1160,35 @@ function actionItemsV2SectionHtml(meta = {}, lang = 'ko') {
     ${buRows}
   </table>`
 
+  // ── 목표별 진행사항 그래프 — Progress Tracker(categoryStats)와 동일 수치·동일 신호등 임계값(100/80) ──
+  // 라이브 데이터 렌더 (통편집 래핑 X — 편집으로 덮으면 트래커와 얼라인이 깨지므로 제목만 편집 가능)
+  const gCol = r => r >= 100 ? '#15803D' : r >= 80 ? '#D97706' : '#BE123C'
+  const gBar = (rate, actual, goal, label) => {
+    const w = Math.min(Math.round(rate || 0), 100)
+    return `<table border="0" cellpadding="0" cellspacing="0" width="100%"><tr>
+        <td style="font-size:10px;color:#64748B;font-family:${EM_FONT};white-space:nowrap;padding-right:6px;" width="72">${label}</td>
+        <td>
+          <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#F1F5F9;border-radius:3px;"><tr>
+            <td width="${w}%" style="height:8px;background:${gCol(rate || 0)};border-radius:3px;font-size:0;line-height:0;">&nbsp;</td>
+            <td style="font-size:0;line-height:0;">&nbsp;</td>
+          </tr></table>
+        </td>
+        <td align="right" style="font-size:12px;font-weight:800;color:${gCol(rate || 0)};font-family:${EM_FONT};white-space:nowrap;padding-left:8px;" width="46">${(rate || 0).toFixed(0)}%</td>
+        <td align="right" style="font-size:10px;color:#94A3B8;font-family:${EM_FONT};white-space:nowrap;padding-left:6px;" width="88">(${Number(actual || 0).toLocaleString('en-US')}/${Number(goal || 0).toLocaleString('en-US')})</td>
+      </tr></table>`
+  }
+  const gMonth = (categoryStats && categoryStats[0] && categoryStats[0].targetMonth) || L('이번 월', 'This Month')
+  const goalProgressHtml = (categoryStats && categoryStats.length) ? `<table border="0" cellpadding="0" cellspacing="0" width="100%" style="border:1px solid #E8EDF2;border-radius:8px;">
+    ${categoryStats.map((c, i) => `<tr${i % 2 === 0 ? ' style="background:#FAFBFC;"' : ''}>
+      <td style="padding:10px 12px;${i < categoryStats.length - 1 ? 'border-bottom:1px solid #F1F5F9;' : ''}">
+        <p style="margin:0 0 6px;font-size:13px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};">${escapeHtml(lang === 'en' && c.categoryEn ? c.categoryEn : c.category)}</p>
+        ${gBar(c.monthRate, c.monthActual, c.monthGoal, L(`${gMonth} 달성률`, gMonth))}
+        <table border="0" cellpadding="0" cellspacing="0" width="100%"><tr><td height="4" style="font-size:0;line-height:0;">&nbsp;</td></tr></table>
+        ${gBar(c.progressRate, c.cumActual, c.annualGoal, L('연간 진척율', 'YTD'))}
+      </td>
+    </tr>`).join('')}
+  </table>` : `<div style="padding:12px 16px;background:#FEF3C7;border:1px solid #FCD34D;border-radius:8px;font-size:12px;color:#92400E;font-family:${EM_FONT};">${L('Progress Tracker 데이터가 없습니다 — 어드민에서 트래커 시트 동기화 후 표시됩니다.', 'Progress Tracker data not available — sync the tracker sheet in admin.')}</div>`
+
   const secTitle = (field, ko, en) => `<table border="0" cellpadding="0" cellspacing="0" style="margin-bottom:10px;"><tr>
       <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
       <td style="padding-left:8px;font-size:15px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-0.5px;">${edT(field, L(ko, en))}</td>
@@ -1184,6 +1213,9 @@ function actionItemsV2SectionHtml(meta = {}, lang = 'ko') {
                         <table border="0" cellpadding="0" cellspacing="0" width="100%"><tr><td height="20" style="font-size:0;line-height:0;">&nbsp;</td></tr></table>
                         ${secTitle('todoV2Sec2Title', '2. 사업부 × 외부접점채널 진행사항', '2. Progress by BU × External Channel')}
                         ${edWrapT('todoV2MatrixHtml', matrixTable)}
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%"><tr><td height="20" style="font-size:0;line-height:0;">&nbsp;</td></tr></table>
+                        ${secTitle('todoV2Sec3Title', '3. 목표별 진행사항 (Progress Tracker 연동)', '3. Progress by Goal (Progress Tracker)')}
+                        ${goalProgressHtml}
                       </td>
                     </tr>
                   </table>
@@ -3627,7 +3659,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                 </td>
               </tr>` : ''}
 
-              ${meta.showTodoV2 ? actionItemsV2SectionHtml(meta, lang) : ''}
+              ${meta.showTodoV2 ? actionItemsV2SectionHtml(meta, lang, categoryStats) : ''}
 
             </table>
           </td>
