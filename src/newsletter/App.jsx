@@ -690,7 +690,7 @@ export default function App() {
             ))}
             <span style={{ width: 1, height: 18, background: '#1E293B', margin: '0 2px' }} />
             <span style={{ fontSize: 11, color: '#64748B', fontFamily: FONT }}>색</span>
-            {['#1A1A1A', '#CF0652', '#1D4ED8', '#15803D', '#B45309', '#64748B'].map(c => (
+            {['#1A1A1A', '#FFFFFF', '#CF0652', '#1D4ED8', '#15803D', '#B45309', '#64748B'].map(c => (
               <button key={c} title={`글자색 ${c}`} onMouseDown={e => { e.preventDefault(); sendFormat('foreColor', c) }}
                 style={{ width: 20, height: 20, borderRadius: '50%', border: '2px solid #334155', cursor: 'pointer', background: c, padding: 0 }} />
             ))}

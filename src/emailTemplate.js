@@ -1017,20 +1017,7 @@ function insightV2Parts(meta = {}, lang = 'ko', products = []) {
       </td>
     </tr>`
 
-  // ── [A] EXECUTIVE SUMMARY 내용 — 최상단 V1 검은 박스 안에 삽입 (자체 박스·라벨 없음) ──
-  const execHtml = `
-                              <p style="margin:0 0 12px;font-size:13px;color:#E2E8F0;line-height:22px;font-family:${EM_FONT};letter-spacing:-0.3px;">${ed('v2ExecIntro', L('2026년 6월, AI 검색(Gemini·ChatGPT 등)에서 4대 핵심 가전(TV·냉장고·세탁기·에어컨)의 브랜드 노출이 전반적으로 하락했습니다. 이 가운데 <strong>삼성전자의 하락 폭이 LG전자보다 컸으며,</strong> 그 배경을 다음과 같이 분석했습니다.', 'In June 2026, brand exposure for the four key appliances (TV, refrigerator, washer, air conditioner) declined overall in AI search (Gemini, ChatGPT, etc.). <strong>Samsung declined more than LG,</strong> and we analyzed the background as follows.'))}</p>
-                              <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                                ${execItem('v2Exec1T', L('1. 현상 요약 — 4대 핵심 가전의 브랜드 언급 수·Visibility 동반 하락, 삼성전자 하락 폭이 더 큼', '1. Summary — Brand mentions and Visibility fell together across the 4 key appliances; Samsung declined more'),
-                                  'v2Exec1', L('4대 가전 통합 브랜드 언급 수는 삼성전자가 <strong style="color:#FFFFFF;">-28,867회(-4.85%)</strong>, LG전자가 <strong style="color:#FFFFFF;">-26,991회(-4.08%)</strong> 감소해 삼성전자의 감소 폭이 더 컸습니다. 실측 Visibility 역시 삼성전자 <strong style="color:#FFFFFF;">-1.70%p(60.39%→58.70%)</strong>, LG전자 <strong style="color:#FFFFFF;">-1.68%p(64.90%→63.22%)</strong>로 같은 흐름을 보였습니다.', 'Combined brand mentions across the 4 appliances fell <strong style="color:#FFFFFF;">-28,867 (-4.85%)</strong> for Samsung and <strong style="color:#FFFFFF;">-26,991 (-4.08%)</strong> for LG — a larger drop for Samsung. Measured Visibility followed the same pattern: Samsung <strong style="color:#FFFFFF;">-1.70%p (60.39%→58.70%)</strong>, LG <strong style="color:#FFFFFF;">-1.68%p (64.90%→63.22%)</strong>.'))}
-                                ${execItem('v2Exec2T', L('2. 추정 원인 — 제품별 \'독자 기술 상표어 자산\'의 비대칭', '2. Probable cause — Asymmetry in proprietary spec-term assets by product'),
-                                  'v2Exec2', L(`AI 답변이 스펙 설명 중심으로 옮겨가면서, LG전자의 독자 기술 상표어는 작동 원리를 설명하는 문맥에서 인용되어 노출이 유지된 반면, 삼성전자의 명칭은 마케팅 라인업으로 분류되어 제외되는 경향이 나타났습니다.<br/><strong style="color:#FFFFFF;">TV</strong>: LG전자 ${termDark('Brightness Booster')} (스펙 기술어) vs 삼성전자 ${termDark('The Frame')} / ${termDark('Neo QLED')} (마케팅 라인업)<br/><strong style="color:#FFFFFF;">냉장고</strong>: LG전자 ${termDark('Inverter Linear')} (리니어 압축 스펙) vs 삼성전자 ${termDark('Bespoke')} (디자인 라인업)<br/><strong style="color:#FFFFFF;">세탁기</strong>: LG전자 ${termDark('Direct-Drive')} / ${termDark('TrueSteam')} (직연결 모터/스팀 스펙) vs 삼성전자 ${termDark('Bespoke AI')} / ${termDark('Ecobubble')} (마케팅 라인업)<br/><strong style="color:#FFFFFF;">에어컨</strong>: LG전자 ${termDark('Dual Inverter')} (듀얼 인버터 압축 스펙) vs 삼성전자 ${termDark('WindFree')} (마케팅 라인업)`, `As AI answers shifted toward spec-centric descriptions, LG's proprietary technology terms kept being cited in contexts explaining how features work, while Samsung's names tended to be classified as marketing lineups and excluded.<br/><strong style="color:#FFFFFF;">TV</strong>: LG ${termDark('Brightness Booster')} (spec term) vs Samsung ${termDark('The Frame')} / ${termDark('Neo QLED')} (marketing lineup)<br/><strong style="color:#FFFFFF;">Refrigerator</strong>: LG ${termDark('Inverter Linear')} (linear compressor spec) vs Samsung ${termDark('Bespoke')} (design lineup)<br/><strong style="color:#FFFFFF;">Washer</strong>: LG ${termDark('Direct-Drive')} / ${termDark('TrueSteam')} (direct-drive motor/steam spec) vs Samsung ${termDark('Bespoke AI')} / ${termDark('Ecobubble')} (marketing lineup)<br/><strong style="color:#FFFFFF;">Air Conditioner</strong>: LG ${termDark('Dual Inverter')} (dual inverter compressor spec) vs Samsung ${termDark('WindFree')} (marketing lineup)`))}
-                                ${execItem('v2Exec3T', L('3. 실증 사례 — 5월 양사 병기에서 6월 LG 단독 노출로 전환', '3. Evidence — From dual listing in May to LG-only exposure in June'),
-                                  'v2Exec3', L('5월 Baseline 답변에서는 삼성과 LG가 함께 추천되었으나, 6월 알고리즘 변경 이후에는 <strong style="color:#FFFFFF;">삼성전자가 추천 목록에서 빠지고 LG전자만 노출이 유지</strong>되는 사례가 확인되었습니다. 이는 4대 가전 논브랜드 프롬프트의 원문 대조로 검증했습니다.', 'In May Baseline answers Samsung and LG were recommended together, but after the June algorithm change we confirmed cases where <strong style="color:#FFFFFF;">Samsung dropped out of the recommendation list while only LG kept its exposure</strong>. Verified by comparing original answers to non-brand prompts across the 4 appliances.'))}
-                                ${execItem('v2Exec4T', L('4. 대응 방향 — 독자 기술 상표어 강화 및 서드파티 평가 매체 다변화', '4. Direction — Strengthen proprietary spec terms and diversify third-party review coverage'),
-                                  'v2Exec4', L('리테일 추천에 대한 의존도를 낮추고, AI가 스펙을 설명할 때 인용하는 독자 기술 상표어와 서드파티 독립 평가 매체(Rtings, Tom\'s Guide 등)의 노출 지면을 넓히는 GEO 전략이 노출 방어에 유효할 것으로 판단됩니다.', 'A GEO strategy that lowers dependence on retail recommendations and expands exposure through proprietary spec terms and independent third-party review media (Rtings, Tom\'s Guide, etc.) that AI cites when explaining specs is judged effective for defending exposure.'))}
-                              </table>`
-
+  // ── [A] EXECUTIVE SUMMARY — 1~3 항목 + 항목 아래 표·답변 예시 통합 (사용자 전체 반영본) ──
   // [수치 테이블 1.1] — 통째 편집(edWrap) 가능하도록 기본 HTML 을 상수로
   const t11TableHtml = `<table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;border-collapse:collapse;background:#FFFFFF;border:1px solid #E8EDF2;border-radius:8px;">
                                 <tr>
@@ -1047,46 +1034,38 @@ function insightV2Parts(meta = {}, lang = 'ko', products = []) {
                                 ${t11Rows}
                               </table>`
 
-  // ── [B] 본문 — 표·패턴·실증 (같은 섹션 카드 안, exec 박스 아래에 이어짐) ──
-  const bodyHtml = `
-                        <!-- ── 1. 4대 핵심 가전 브랜드 언급 수 · Visibility 등락 대조 ── -->
-                        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-top:20px;">
-                          <tr>
-                            <td style="padding-bottom:10px;">
-                              <table border="0" cellpadding="0" cellspacing="0">
-                                <tr>
-                                  <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
-                                  <td style="padding-left:8px;font-size:15px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-0.5px;">${ed('v2Sec1Title', L(`1. 4대 핵심 가전 브랜드 언급 수와 Visibility 등락 대조 <span style="font-size:11px;font-weight:600;color:#94A3B8;">(피벗 마스터 실측 기준)</span>`, `1. Brand Mentions vs Visibility — 4 Key Appliances <span style="font-size:11px;font-weight:600;color:#94A3B8;">(measured, pivot master)</span>`))}</td>
-                                </tr>
-                              </table>
-                            </td>
-                          </tr>
-                          <tr>
-                            <td>
-                              ${/* 필드 버전업(v2T11Html→V2): 저장본에 남은 옛 표 편집값(Bosch 포함·구 수치)이
-                                    새 기본 표(보쉬 삭제+동기화 수치)를 덮어쓰지 않게 — 기존 저장본에도 공통 적용 */''}
-                              ${edWrap('v2T11HtmlV2', t11TableHtml)}
-                            </td>
-                          </tr>
-                          ${/* GEO INSIGHT(지표 상세 해석) 박스 삭제 (사용자 지시) — 수치 테이블로 섹션 1 종료 */''}
-                        </table>
+  // 항목 본문 (사용자 제공 텍스트 그대로 · 저장본 공통 적용 위해 필드 버전업 v2Exec*N)
+  const ex1Ko = `주요 제품군의 브랜드 Visibility가 동반 하락한 가운데, <strong style="color:#FFFFFF;">삼성전자 -2.0%p(40.2%→38.2%)</strong>, <strong style="color:#FFFFFF;">LG전자 -1.5%p(44.8%→43.3%)</strong>로 삼성전자의 하락 폭이 더 컸습니다.<br/><br/>이번 하락은 노출이 높은 상위 브랜드에 집중되었으며, 노출이 낮은 브랜드는 오히려 소폭 상승하거나 방어되는 양상이 확인됩니다. TV의 중국 브랜드 하이센스(+0.93%p)·TCL(+0.35%p)과 에어컨의 Midea(+0.31%p)가 상승했고, 에어컨에서 노출이 낮은 삼성(-1.22%p)은 오히려 선도 브랜드 LG(-1.84%p)보다 덜 하락했습니다. 즉 절대 노출이 큰 대형 브랜드일수록 하락 폭이 컸으며, 에어컨에서 LG의 하락 폭이 상대적으로 큰 것도 LG가 해당 카테고리의 압도적 선도 브랜드(경쟁비 126%)이기 때문으로 해석됩니다.`
+  const ex1En = `While brand Visibility fell together across key product lines, <strong style="color:#FFFFFF;">Samsung -2.0%p (40.2%→38.2%)</strong> and <strong style="color:#FFFFFF;">LG -1.5%p (44.8%→43.3%)</strong> — a larger drop for Samsung.<br/><br/>The decline concentrated in high-exposure top brands, while low-exposure brands edged up or held: Hisense (+0.93%p) and TCL (+0.35%p) in TV and Midea (+0.31%p) in AC rose, and in AC the low-exposure Samsung (-1.22%p) fell less than the leading LG (-1.84%p). In short, the larger a brand's absolute exposure, the bigger the drop — LG's relatively large AC decline reflects its dominant leadership in that category (comp ratio 126%).`
+  const ex2Ko = `AI 답변이 스펙 설명 중심으로 옮겨가면서, LG전자의 독자 기술 상표어는 작동 원리를 설명하는 문맥에서 인용되어 노출이 유지된 반면, 삼성전자의 명칭은 마케팅 라인업으로 분류되어 제외되는 경향이 나타났습니다.<br/><strong style="color:#FFFFFF;">TV</strong>: LG전자 ${termDark('Brightness Booster')} (스펙 기술어) vs 삼성전자 ${termDark('The Frame')} / ${termDark('Neo QLED')} (마케팅 라인업)<br/><strong style="color:#FFFFFF;">냉장고</strong>: LG전자 ${termDark('Inverter Linear')} (리니어 압축 스펙) vs 삼성전자 ${termDark('Bespoke')} (디자인 라인업)<br/><strong style="color:#FFFFFF;">세탁기</strong>: LG전자 ${termDark('Direct-Drive')} / ${termDark('TrueSteam')} (직결 모터/스팀 스펙) vs 삼성전자 ${termDark('Bespoke AI')} / ${termDark('Ecobubble')} (마케팅 라인업)<br/><strong style="color:#FFFFFF;">에어컨</strong>: LG전자 ${termDark('Dual Inverter')} (듀얼 인버터 압축 스펙) vs 삼성전자 ${termDark('WindFree')} (마케팅 라인업)<br/><br/>답변 형태도 함께 바뀌었습니다. 5월에는 여러 브랜드의 다양한 제품이 직접 추천되었으나, 6월에는 소수 브랜드 언급과 사용 시나리오 중심으로 서술 방식이 전환되었습니다. 실제로 5월 답변에서는 삼성과 LG가 함께 추천되었으나, 6월 이후에는 <strong style="color:#FFFFFF;">삼성전자가 추천 목록에서 빠지고 LG전자만 노출이 유지</strong>되는 사례가 확인되었으며, 이는 5월 20주차부터 LLM 답변에서 지속적으로 변경되어 온 흐름입니다.`
+  const ex2En = `As AI answers shifted toward spec-centric descriptions, LG's proprietary technology terms kept being cited in contexts explaining how features work, while Samsung's names tended to be classified as marketing lineups and excluded.<br/><strong style="color:#FFFFFF;">TV</strong>: LG ${termDark('Brightness Booster')} (spec term) vs Samsung ${termDark('The Frame')} / ${termDark('Neo QLED')} (marketing lineup)<br/><strong style="color:#FFFFFF;">Refrigerator</strong>: LG ${termDark('Inverter Linear')} (linear compressor spec) vs Samsung ${termDark('Bespoke')} (design lineup)<br/><strong style="color:#FFFFFF;">Washer</strong>: LG ${termDark('Direct-Drive')} / ${termDark('TrueSteam')} (direct-drive motor/steam spec) vs Samsung ${termDark('Bespoke AI')} / ${termDark('Ecobubble')} (marketing lineup)<br/><strong style="color:#FFFFFF;">Air Conditioner</strong>: LG ${termDark('Dual Inverter')} (dual inverter compressor spec) vs Samsung ${termDark('WindFree')} (marketing lineup)<br/><br/>Answer style changed too: in May many products across many brands were directly recommended; from June, responses shifted to fewer brand mentions with usage scenarios. In May Samsung and LG were recommended together, but from June <strong style="color:#FFFFFF;">Samsung dropped out of the list while only LG kept its exposure</strong> — a trend continuously observed in LLM answers since week 20 of May.`
+  const ex3Ko = `AI가 스펙을 설명할 때 인용하는 독자 기술 상표어와 서드파티 독립 평가 매체(Rtings, Tom's Guide 등)의 노출 지면을 넓히는 GEO 전략을 지속 수행하고자 합니다. 닷컴의 경우 이미 공신력 있는 제품 스펙 정보를 축적했으므로, 각 제품 기능·스펙에 대한 사용 맥락을 반영한 콘텐츠 생산을 지속적으로 수행할 예정입니다.`
+  const ex3En = `We will continue the GEO strategy of expanding exposure through proprietary spec terms that AI cites when explaining specs and independent third-party review media (Rtings, Tom's Guide, etc.). As the dotcom has already accumulated authoritative product-spec information, we will keep producing content that reflects usage context for each product feature and spec.`
+  const cap1Ko = `주요 제품에서  경쟁사 하락 폭이 크게 나타남. 변경된 LLM 답변 알고리즘 환경에서 삼성전자의 마케팅 키워드가 상대적으로 넓은 범위로 제외됨`
+  const cap1En = `Competitor declines were pronounced in key products — under the changed LLM answer algorithm, Samsung marketing keywords were excluded over a relatively wide range.`
+  const cap2Ko = `답변 알고리즘 변경에 따라, 다 브랜드의 다양한 제품을 직접적으로 언급하는 형태에서, 소수 브랜드 언급 및 사용 시나리오 형태로 답변 형태 변경`
+  const cap2En = `With the answer-algorithm change, responses shifted from directly naming diverse products across many brands to mentioning few brands with usage scenarios.`
+  const capP = `margin:2px 2px 8px;font-size:12px;color:#E2E8F0;line-height:19px;font-family:${EM_FONT};letter-spacing:-0.3px;word-break:break-word;`
 
-                        <!-- ── 2. 자사 노출 유지 — 답변 예시 ── -->
-                        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-top:22px;">
-                          <tr>
-                            <td style="padding-bottom:10px;">
-                              <table border="0" cellpadding="0" cellspacing="0">
-                                <tr>
-                                  <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
-                                  <td style="padding-left:8px;font-size:15px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-0.5px;">${ed('v2Sec2Title2', L('2. 제품군별 실증 예시', '2. Case Studies by Product'))}</td>
-                                </tr>
-                              </table>
-                            </td>
-                          </tr>
-                          ${/* 패턴 카드·도입문 삭제 (사용자 지시) — 답변 예시가 바로 나옴 */''}
-                          ${caseCardArr[0] || ''}
-                          ${caseCardArr[1] || ''}
-                        </table>`
+  const execHtml = `
+                              <p style="margin:0 0 12px;font-size:13px;color:#E2E8F0;line-height:22px;font-family:${EM_FONT};letter-spacing:-0.3px;">${ed('v2ExecIntro', L('2026년 6월, AI 검색(Gemini·ChatGPT 등)에서 4대 핵심 가전(TV·냉장고·세탁기·에어컨)의 브랜드 노출이 전반적으로 하락했습니다. 이 가운데 <strong>삼성전자의 하락 폭이 LG전자보다 컸으며,</strong> 그 배경을 다음과 같이 분석했습니다.', 'In June 2026, brand exposure for the four key appliances (TV, refrigerator, washer, air conditioner) declined overall in AI search (Gemini, ChatGPT, etc.). <strong>Samsung declined more than LG,</strong> and we analyzed the background as follows.'))}</p>
+                              <table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;">
+                                ${execItem('v2Exec1TN', L('1. 현상 요약 — 상위 노출 브랜드 중심 동반 하락, 저노출 브랜드는 소폭 상승 (TV·세탁기·냉장고·에어컨 상세 분석)', '1. Summary — Declines concentrated in high-exposure brands; low-exposure brands edged up (TV·Washer·Refrigerator·AC detail)'), 'v2Exec1N', L(ex1Ko, ex1En))}
+                                <tr><td style="padding:0 0 10px;">
+                                  <p style="${capP}">${ed('v2T11Caption', L(cap1Ko, cap1En))}</p>
+                                  ${edWrap('v2T11HtmlV2', t11TableHtml)}
+                                </td></tr>
+                                ${execItem('v2Exec2TN', L('2. 원인 및 답변 분석 — 기술 스펙어 기반 라인업은 인용 유지, 마케팅 라인업은 제외 경향 (답변 형태도 소수 브랜드·시나리오 중심으로 변화)', '2. Cause & answer analysis — Spec-term lineups kept being cited while marketing lineups were excluded (answers also shifted to fewer brands & usage scenarios)'), 'v2Exec2N', L(ex2Ko, ex2En))}
+                                <tr><td style="padding:0 0 2px;">
+                                  <p style="${capP}">${ed('v2CaseCaption', L(cap2Ko, cap2En))}</p>
+                                </td></tr>
+                                ${caseCardArr[0] || ''}
+                                ${caseCardArr[1] || ''}
+                                ${execItem('v2Exec3TN', L('3. 대응 방향 — 독자 기술 스펙 콘텐츠 강화 및 관리 대상 외부 접점 채널 다변화 지속', '3. Direction — Keep strengthening proprietary spec content and diversifying managed external touchpoint channels'), 'v2Exec3N', L(ex3Ko, ex3En))}
+                              </table>`
+
+  // 표·답변 예시가 exec 박스 안으로 통합됨 — 하단 별도 섹션 없음
+  const bodyHtml = ''
 
   return { execHtml, bodyHtml }
 }
