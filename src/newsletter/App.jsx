@@ -235,7 +235,7 @@ export default function App() {
   const [monthlyVis, setMonthlyVis] = useState(cache?.monthlyVis ?? [])
   const [categoryStats, setCategoryStats] = useState(null)
   // 핵심 과제 진척 — 사용자가 사이드바에서 선택. null = 자동(데이터의 월과 동일)
-  const [progressMonth, setProgressMonth] = useState(null)
+  const [progressMonth, setProgressMonth] = useState(cache?.progressMonth ?? null)  // 핵심 과제 진척 월 override — 캐시·저장본에 유지 (예: 6월 기준 작성)
   const [snapshots,  setSnapshots]  = useState([])
   const [snapName,   setSnapName]   = useState('')
   const [snapOpen,   setSnapOpen]   = useState(false)
@@ -385,6 +385,7 @@ export default function App() {
       if (d.citDomainByLlm)      setCitDomainByLlm(d.citDomainByLlm)
       if (d.citDomainByLlmTrend) setCitDomainByLlmTrend(d.citDomainByLlmTrend)
       if (d.dotcomByLlm)         setDotcomByLlm(d.dotcomByLlm)
+    if (d.progressMonth !== undefined) setProgressMonth(d.progressMonth)  // 진척 월 기준(예: 6월) 저장본과 함께 복원
       if (d.productsPartial) {
         setProducts(d.productsPartial.map(p => {
           const weekly = d.weeklyMap?.[p.id] || []
@@ -418,19 +419,19 @@ export default function App() {
   }, [])
 
   useEffect(() => {
-    saveCache(STORAGE_KEY, { metaKo, metaEn, total, products, citations, dotcom, productsCnty, citationsCnty, weeklyLabels, weeklyAll, unlaunchedMap, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, citTouchPointsByLlm, citDomainByLlm, citDomainByLlmTrend, dotcomByLlm })
-  }, [metaKo, metaEn, total, products, citations, dotcom, productsCnty, citationsCnty, weeklyLabels, weeklyAll, unlaunchedMap, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, citTouchPointsByLlm, citDomainByLlm, citDomainByLlmTrend, dotcomByLlm])
+    saveCache(STORAGE_KEY, { metaKo, metaEn, total, products, citations, dotcom, productsCnty, citationsCnty, weeklyLabels, weeklyAll, unlaunchedMap, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, citTouchPointsByLlm, citDomainByLlm, citDomainByLlmTrend, dotcomByLlm, progressMonth })
+  }, [metaKo, metaEn, total, products, citations, dotcom, productsCnty, citationsCnty, weeklyLabels, weeklyAll, unlaunchedMap, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, citTouchPointsByLlm, citDomainByLlm, citDomainByLlmTrend, dotcomByLlm, progressMonth])
 
   async function handleSnapOverwrite() {
     if (!activeSnap) return
-    const data = { metaKo, metaEn, total, products, citations, dotcom, productsCnty, citationsCnty, weeklyLabels, weeklyAll, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, citTouchPointsByLlm, citDomainByLlm, citDomainByLlmTrend, dotcomByLlm }
+    const data = { metaKo, metaEn, total, products, citations, dotcom, productsCnty, citationsCnty, weeklyLabels, weeklyAll, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, citTouchPointsByLlm, citDomainByLlm, citDomainByLlmTrend, dotcomByLlm, progressMonth }
     const result = await updateSnapshot(MODE, activeSnap, data)
     if (result) setSnapshots(result)
     showSnapMsg(result ? '저장 완료!' : '저장 실패')
   }
   async function handleSnapSaveNew() {
     const name = snapName.trim() || `${meta.period || 'Untitled'} — ${new Date().toLocaleString('ko-KR')}`
-    const result = await postSnapshot(MODE, name, { metaKo, metaEn, total, products, citations, dotcom, productsCnty, citationsCnty, weeklyLabels, weeklyAll, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, citTouchPointsByLlm, citDomainByLlm, citDomainByLlmTrend, dotcomByLlm })
+    const result = await postSnapshot(MODE, name, { metaKo, metaEn, total, products, citations, dotcom, productsCnty, citationsCnty, weeklyLabels, weeklyAll, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, citTouchPointsByLlm, citDomainByLlm, citDomainByLlmTrend, dotcomByLlm, progressMonth })
     if (result) { setSnapshots(result); setSnapName(''); setActiveSnap(result[0]?.ts || null) }
     showSnapMsg(result ? '새로 저장 완료!' : '저장 실패')
   }
@@ -458,6 +459,7 @@ export default function App() {
     if (d.citDomainByLlm)      setCitDomainByLlm(d.citDomainByLlm)
     if (d.citDomainByLlmTrend) setCitDomainByLlmTrend(d.citDomainByLlmTrend)
     if (d.dotcomByLlm)         setDotcomByLlm(d.dotcomByLlm)
+    if (d.progressMonth !== undefined) setProgressMonth(d.progressMonth)  // 진척 월 기준(예: 6월) 저장본과 함께 복원
     setActiveSnap(snap.ts)
     showSnapMsg(`"${snap.name}" 불러옴`)
   }
