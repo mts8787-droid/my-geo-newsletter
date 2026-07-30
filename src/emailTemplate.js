@@ -952,11 +952,11 @@ function insightV2Parts(meta = {}, lang = 'ko', products = []) {
 
   // ── [실증 예시] 원문 대조 2건 (무삭제 원문 + 번역 그대로) ──
   const quoteBox = (label, labelColor, enF, en, koF, ko) => `
-    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-top:8px;">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;margin-top:8px;">
       <tr>
-        <td style="padding:10px 14px;background:#F8FAFC;border:1px solid #E8EDF2;border-left:3px solid ${labelColor};border-radius:8px;">
+        <td style="padding:10px 14px;background:#F8FAFC;border:1px solid #E8EDF2;border-left:3px solid ${labelColor};border-radius:8px;word-break:break-word;">
           <p style="margin:0 0 6px;font-size:10px;font-weight:800;color:${labelColor};font-family:${EM_FONT};letter-spacing:1px;">${label}</p>
-          <p style="margin:0 0 8px;font-size:11px;color:#334155;line-height:18px;font-family:${MONO};">${ed(enF, en)}</p>
+          <p style="margin:0 0 8px;font-size:11px;color:#334155;line-height:18px;font-family:${MONO};word-break:break-word;overflow-wrap:anywhere;">${ed(enF, en)}</p>
           <p style="margin:0;font-size:11px;color:#64748B;line-height:18px;font-family:${EM_FONT};letter-spacing:-0.3px;">${ed(koF, ko)}</p>
         </td>
       </tr>
@@ -986,9 +986,9 @@ function insightV2Parts(meta = {}, lang = 'ko', products = []) {
   const caseCardArr = cases.map(cs => `
     <tr>
       <td style="padding-bottom:12px;">
-        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFFFFF;border:1px solid #E8EDF2;border-radius:10px;">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;background:#FFFFFF;border:1px solid #E8EDF2;border-radius:10px;">
           <tr>
-            <td style="padding:14px 16px 4px;">
+            <td style="padding:14px 16px 4px;word-break:break-word;">
               ${/* 설명·분석 Insight 박스 삭제 (사용자 지시) — 제목 → 자사 노출 유지 → 프롬프트 → 원문 인용 */''}
               <p style="margin:0 0 8px;font-size:14px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-0.5px;">${ed(cs.titleF, cs.title)}</p>
               ${cs.keep ? `<p style="margin:0 0 8px;font-size:12px;color:#334155;line-height:20px;font-family:${EM_FONT};letter-spacing:-0.3px;"><strong style="color:${EM_RED};">${L('자사 노출 유지', 'LG Exposure Retention')}</strong>: ${ed(cs.keepF, cs.keep)}</p>` : ''}
@@ -1103,7 +1103,7 @@ function actionItemsV2SectionHtml(meta = {}, lang = 'ko', categoryStats = null) 
   const edWrapT = (field, def) => `<div${edRich(field)}>${M[field] != null ? M[field] : def}</div>`
   const gCol = r => r >= 100 ? '#15803D' : r >= 80 ? '#D97706' : '#BE123C'
   const fmtN = n => Number(n || 0).toLocaleString('en-US')
-  const bar = (label, rate, actual, goal) => `<table border="0" cellpadding="0" cellspacing="0" width="100%"><tr>
+  const bar = (label, rate, actual, goal) => `<table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;"><tr>
       <td style="font-size:10px;color:#64748B;font-family:${EM_FONT};white-space:nowrap;padding-right:6px;" width="70">${label}</td>
       <td><table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#F1F5F9;border-radius:3px;"><tr>
         <td width="${Math.min(Math.round(rate || 0), 100)}%" style="height:7px;background:${gCol(rate || 0)};border-radius:3px;font-size:0;line-height:0;">&nbsp;</td>
@@ -1159,7 +1159,7 @@ function actionItemsV2SectionHtml(meta = {}, lang = 'ko', categoryStats = null) 
           en: 'Building & reviewing the integrated schema-markup automation guide — tech fix rescheduled to H2' },
       ] },
   ]
-  const tdB = `padding:7px 10px;font-size:12px;color:#334155;border-bottom:1px solid #F1F5F9;vertical-align:top;font-family:${EM_FONT};letter-spacing:-0.3px;line-height:18px;`
+  const tdB = `padding:7px 10px;font-size:12px;color:#334155;border-bottom:1px solid #F1F5F9;vertical-align:top;font-family:${EM_FONT};letter-spacing:-0.3px;line-height:18px;word-break:break-word;`
   const buTable = c => `<table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;border-collapse:collapse;">
       ${c.rows.map((r, i) => `<tr${i % 2 === 0 ? ' style="background:#FAFBFC;"' : ''}>
         <td width="78" style="${tdB}text-align:center;font-weight:800;color:#475569;background:#F8FAFC;border-right:2px solid #E8EDF2;white-space:nowrap;${i === c.rows.length - 1 ? 'border-bottom:none;' : ''}">${L(r.org, r.orgEn)}</td>
@@ -1174,10 +1174,10 @@ function actionItemsV2SectionHtml(meta = {}, lang = 'ko', categoryStats = null) 
          <table border="0" cellpadding="0" cellspacing="0" width="100%"><tr><td height="3" style="font-size:0;line-height:0;">&nbsp;</td></tr></table>
          ${bar(L('연간 진척율', 'YTD'), st.progressRate, st.cumActual, st.annualGoal)}`
       : `<p style="margin:0;font-size:11px;color:#94A3B8;font-family:${EM_FONT};text-align:right;">${L('트래커 미동기 — 실적 수치 없음', 'Tracker not synced')}</p>`
-    return `<table border="0" cellpadding="0" cellspacing="0" width="100%" style="border:1px solid #E8EDF2;border-radius:10px;margin-bottom:14px;">
+    return `<table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;border:1px solid #E8EDF2;border-radius:10px;margin-bottom:14px;">
       <tr>
         <td style="padding:12px 14px 10px;background:#F8FAFC;border-bottom:1px solid #E8EDF2;">
-          <table border="0" cellpadding="0" cellspacing="0" width="100%"><tr>
+          <table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;"><tr>
             <td style="vertical-align:middle;" width="36%">
               <span style="display:inline-block;width:3px;height:14px;background:${EM_RED};border-radius:2px;vertical-align:middle;margin-right:7px;"></span><span style="font-size:14px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};vertical-align:middle;">${L(c.ko, c.en)}</span>
             </td>
@@ -1208,14 +1208,21 @@ function actionItemsV2SectionHtml(meta = {}, lang = 'ko', categoryStats = null) 
   const nextEn = `<p style="margin:0 0 8px;font-size:12px;color:#334155;line-height:20px;font-family:${EM_FONT};letter-spacing:-0.3px;">• Preparing PoC for new ChatGPT & AI MAX ad products (cross-BU collaboration on marketing effectiveness & operating purpose)</p>
     <p style="margin:0 0 8px;font-size:12px;color:#334155;line-height:20px;font-family:${EM_FONT};letter-spacing:-0.3px;">• Global PoC of the AI-based LLM-optimization auto-diagnosis & content-fix Agent in progress<br/>&nbsp;&nbsp;: UK Gemini/ChatGPT answer reflection & performance monitoring done (Visibility improvement confirmed); expansion to 9 strategic countries under review (excl. US)</p>
     <p style="margin:0;font-size:12px;color:#334155;line-height:20px;font-family:${EM_FONT};letter-spacing:-0.3px;">• Building & reviewing the integrated schema-markup automation guide (1 PDP schema guide done; further rollout after dev-requirement review — 12 types total)</p>`
-  const nextBlock = `<table border="0" cellpadding="0" cellspacing="0" width="100%" style="border:1px solid #E8EDF2;border-radius:10px;margin-bottom:8px;">
+  const nextBlock = `<table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;border:1px solid #E8EDF2;border-radius:10px;margin-bottom:8px;">
       <tr><td style="padding:12px 14px 10px;background:#F8FAFC;border-bottom:1px solid #E8EDF2;">
         <span style="display:inline-block;width:3px;height:14px;background:${EM_RED};border-radius:2px;vertical-align:middle;margin-right:7px;"></span><span style="font-size:14px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};vertical-align:middle;">${edT('todoV2NextTitle', L('조직별 주요 진행 예정 사항', 'Key Planned Items by Org'))}</span>
       </td></tr>
-      <tr><td style="padding:12px 14px;">
+      <tr><td style="padding:12px 14px;word-break:break-word;">
         ${edWrapT('todoV2NextHtml', L(nextKo, nextEn))}
       </td></tr>
     </table>`
+
+  // ── 대시보드 바로가기 — 풀폭 붉은 박스 (Outlook 호환: td bgcolor + block 링크) ──
+  const dashUrl = `https://my-geo-newsletter.onrender.com/p/GEO-KPI-Dashboard${lang === 'en' ? '-EN' : '-KO'}`
+  const dashBanner = `<table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;margin:14px 0 8px;"><tr>
+      <td bgcolor="${EM_RED}" align="center" style="border-radius:10px;">
+        <a href="${dashUrl}" target="_blank" rel="noopener" style="display:block;padding:15px 10px;color:#FFFFFF;font-family:${EM_FONT};font-size:15px;font-weight:800;text-decoration:none;letter-spacing:0.3px;">${L('GEO 통합 대시보드 바로가기 →', 'Open the GEO Integrated Dashboard →')}</a>
+      </td></tr></table>`
 
   return `<!-- ══ 액션 아이템 V2 (6월 주요 실적 + 7월 예정) ══ -->
               <tr>
@@ -1233,7 +1240,7 @@ function actionItemsV2SectionHtml(meta = {}, lang = 'ko', categoryStats = null) 
                       <td style="padding:18px 16px 10px;">
                         ${/* 전사 핵심 과제 — 기존 붉은 박스 그대로 (사용자 제공 텍스트) */''}
                         <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFF4F7;border:1px solid #F5CCD8;border-radius:10px;margin-bottom:16px;">
-                          <tr><td style="padding:14px 16px;">
+                          <tr><td style="padding:14px 16px;word-break:break-word;">
                             <p style="margin:0 0 6px;font-size:13px;font-weight:700;color:${EM_RED};font-family:${EM_FONT};text-transform:uppercase;letter-spacing:0.5px;">${edT('todoV2NoticeLabel', L('전사 핵심 과제', 'Key Initiative'))}</p>
                             ${edWrapT('todoV2NoticeHtml', L(noticeKo, noticeEn))}
                           </td></tr>
@@ -1243,6 +1250,7 @@ function actionItemsV2SectionHtml(meta = {}, lang = 'ko', categoryStats = null) 
                         <table border="0" cellpadding="0" cellspacing="0" width="100%"><tr><td height="8" style="font-size:0;line-height:0;">&nbsp;</td></tr></table>
                         <p style="margin:0 0 12px;font-size:15px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};">${edT('todoV2NextSecTitle', L('◼️ 7월 진행 예정사항', '◼️ Planned for July'))}</p>
                         ${nextBlock}
+                        ${dashBanner}
                       </td>
                     </tr>
                   </table>
