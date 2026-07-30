@@ -919,8 +919,8 @@ function insightV2Parts(meta = {}, lang = 'ko', products = []) {
   // ── [수치 테이블 V2] Visibility 5→6월 대조 — 사용자 제공 데이터 그대로 (좌: TV·RAC / 우: 냉장고·세탁기) ──
   // Outlook 행 높이 어긋남 방지: nowrap(줄바꿈 금지) + line-height 고정(mso-line-height-rule:exactly)
   // + th/td height 속성 — 행 높이를 픽셀 단위로 고정
-  const thS = `padding:8px 0;font-size:13px;font-weight:700;color:#475569;background:#F8FAFC;border-bottom:2px solid ${EM_RED};text-align:center;font-family:${EM_FONT};letter-spacing:-0.3px;white-space:nowrap;line-height:20px;mso-line-height-rule:exactly;`
-  const tdS = `padding:7px 0;font-size:13px;color:#1A1A1A;border-bottom:1px solid #F1F5F9;text-align:center;font-family:${EM_FONT};letter-spacing:-0.3px;white-space:nowrap;line-height:20px;mso-line-height-rule:exactly;`
+  const thS = `padding:5px 0;font-size:13px;font-weight:700;color:#475569;background:#F8FAFC;border-bottom:2px solid ${EM_RED};text-align:center;font-family:${EM_FONT};letter-spacing:-0.3px;white-space:nowrap;line-height:20px;mso-line-height-rule:exactly;`
+  const tdS = `padding:3px 0;font-size:13px;color:#1A1A1A;border-bottom:1px solid #F1F5F9;text-align:center;font-family:${EM_FONT};letter-spacing:-0.3px;white-space:nowrap;line-height:20px;mso-line-height-rule:exactly;`
   const brandC = b => /^lg/i.test(b) ? EM_RED : /samsung/i.test(b) ? '#3B82F6' : '#64748B'
   const visL = [
     ['TV', 'SAMSUNG', '90.00%', '88.82%', '-1.18%p'],
@@ -948,25 +948,29 @@ function insightV2Parts(meta = {}, lang = 'ko', products = []) {
   // 단일 표 = 같은 <tr> 공유 → 행 높이 자동 일치, width 100% → 다른 박스와 동일 너비, 넘침 없음.
   const VIS_COL_PCT = ['8%', '12%', '10%', '10%', '10%']  // 제품군/브랜드/5월/6월/변동 ×2 = 100%
   const midDiv = 'border-left:2px solid #E8EDF2;'  // 좌우 구분 세로선 (우측 절반 첫 컬럼)
-  const visHeadCells = div => `
-        <th height="36" width="${VIS_COL_PCT[0]}" style="${thS}${div}">${L('제품군', 'Product')}</th>
-        <th height="36" width="${VIS_COL_PCT[1]}" style="${thS}text-align:left;padding-left:8px;">${L('브랜드', 'Brand')}</th>
-        <th height="36" width="${VIS_COL_PCT[2]}" style="${thS}">${L('5월 Visibility', 'May Vis.')}</th>
-        <th height="36" width="${VIS_COL_PCT[3]}" style="${thS}">${L('6월 Visibility', 'Jun Vis.')}</th>
-        <th height="36" width="${VIS_COL_PCT[4]}" style="${thS}">${L('변동(%p)', 'Δ (%p)')}</th>`
-  const visRowCells = (r, groupTop, div) => `
-        <td height="34" style="${tdS}${groupTop}${div}font-weight:700;">${L(r[0], prdEnMap[r[0]] || r[0])}</td>
-        <td height="34" style="${tdS}${groupTop}text-align:left;padding-left:8px;font-weight:800;color:${brandC(r[1])};">${r[1]}</td>
-        <td height="34" style="${tdS}${groupTop}">${r[2]}</td>
-        <td height="34" style="${tdS}${groupTop}font-weight:700;">${r[3]}</td>
-        <td height="34" style="${tdS}${groupTop}font-weight:800;color:${dC(r[4])};">${r[4]}</td>`
+  // rTL/rTR: 표 전체의 좌상/우상 라운드 — 헤더 배경이 외곽 라운드 밖으로 각지게 삐져나오는 것 방지
+  const visHeadCells = (div, rTL = '', rTR = '') => `
+        <th height="30" width="${VIS_COL_PCT[0]}" style="${thS}${div}${rTL}">${L('제품군', 'Product')}</th>
+        <th height="30" width="${VIS_COL_PCT[1]}" style="${thS}text-align:left;padding-left:8px;">${L('브랜드', 'Brand')}</th>
+        <th height="30" width="${VIS_COL_PCT[2]}" style="${thS}">${L('5월 Visibility', 'May Vis.')}</th>
+        <th height="30" width="${VIS_COL_PCT[3]}" style="${thS}">${L('6월 Visibility', 'Jun Vis.')}</th>
+        <th height="30" width="${VIS_COL_PCT[4]}" style="${thS}${rTR}">${L('변동(%p)', 'Δ (%p)')}</th>`
+  // bb: 마지막 행 border-bottom 제거(외곽 라운드 위에 가로선 보이는 것 방지), rBL/rBR: 좌하/우하 라운드
+  const visRowCells = (r, groupTop, div, bb = '', rBL = '', rBR = '') => `
+        <td height="26" style="${tdS}${groupTop}${div}${bb}${rBL}font-weight:700;">${L(r[0], prdEnMap[r[0]] || r[0])}</td>
+        <td height="26" style="${tdS}${groupTop}${bb}text-align:left;padding-left:8px;font-weight:800;color:${brandC(r[1])};">${r[1]}</td>
+        <td height="26" style="${tdS}${groupTop}${bb}">${r[2]}</td>
+        <td height="26" style="${tdS}${groupTop}${bb}font-weight:700;">${r[3]}</td>
+        <td height="26" style="${tdS}${groupTop}${bb}${rBR}font-weight:800;color:${dC(r[4])};">${r[4]}</td>`
   const visTblHtml = `<table border="0" cellpadding="0" cellspacing="0" width="100%" style="width:100%;table-layout:fixed;border-collapse:separate;border-spacing:0;background:#FFFFFF;border:1px solid #E8EDF2;border-radius:10px;">
-      <tr>${visHeadCells('')}${visHeadCells(midDiv)}</tr>
+      <tr>${visHeadCells('', 'border-top-left-radius:9px;')}${visHeadCells(midDiv, '', 'border-top-right-radius:9px;')}</tr>
       ${visL.map((rL, i) => {
         const rR = visR[i]
         const gtL = i > 0 && rL[0] !== visL[i - 1][0] ? 'border-top:2px solid #E8EDF2;' : ''
         const gtR = i > 0 && rR[0] !== visR[i - 1][0] ? 'border-top:2px solid #E8EDF2;' : ''
-        return `<tr${i % 2 === 0 ? ' style="background:#FAFBFC;"' : ''}>${visRowCells(rL, gtL, '')}${visRowCells(rR, gtR, midDiv)}</tr>`
+        const isLast = i === visL.length - 1
+        const bb = isLast ? 'border-bottom:0;' : ''
+        return `<tr${i % 2 === 0 ? ' style="background:#FAFBFC;"' : ''}>${visRowCells(rL, gtL, '', bb, isLast ? 'border-bottom-left-radius:9px;' : '')}${visRowCells(rR, gtR, midDiv, bb, '', isLast ? 'border-bottom-right-radius:9px;' : '')}</tr>`
       }).join('')}
     </table>`
 
@@ -1057,7 +1061,7 @@ function insightV2Parts(meta = {}, lang = 'ko', products = []) {
                                 ${execItem('v2Ex1T2', L('1. 현상 요약 — 상위 노출 브랜드 중심 동반 하락, 저노출 브랜드는 소폭 상승 (TV·세탁기·냉장고·에어컨 상세 분석)', '1. Summary — Declines concentrated in high-exposure brands; low-exposure brands edged up (TV·Washer·Refrigerator·AC detail)'), 'v2Ex1B2', L(ex1Ko, ex1En))}
                                 <tr><td style="padding:0 0 10px;">
                                   <p style="${capP}">${ed('v2T11Caption', L(cap1Ko, cap1En))}</p>
-                                  ${edWrap('v2VisTblHtml5', visTblHtml)}
+                                  ${edWrap('v2VisTblHtml6', visTblHtml)}
                                 </td></tr>
                                 ${execItem('v2Ex2T2', L('2. 원인 및 답변 분석 — 기술 스펙어는 인용 유지, 마케팅 라인업은 제외 (답변 형태도 시나리오 중심으로 변화)', '2. Cause & answer analysis — Spec terms kept cited, marketing lineups excluded (answers also shifted to scenario-centric)'), 'v2Ex2B2', L(ex2Ko, ex2En))}
                                 <tr><td style="padding:0 0 2px;">
