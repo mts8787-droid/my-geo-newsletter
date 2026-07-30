@@ -1210,7 +1210,7 @@ function actionItemsV2SectionHtml(meta = {}, lang = 'ko', categoryStats = null) 
     <p style="margin:0;font-size:12px;color:#334155;line-height:20px;font-family:${EM_FONT};letter-spacing:-0.3px;">• Building & reviewing the integrated schema-markup automation guide (1 PDP schema guide done; further rollout after dev-requirement review — 12 types total)</p>`
   const nextBlock = `<table border="0" cellpadding="0" cellspacing="0" width="100%" style="border:1px solid #E8EDF2;border-radius:10px;margin-bottom:8px;">
       <tr><td style="padding:12px 14px 10px;background:#F8FAFC;border-bottom:1px solid #E8EDF2;">
-        <span style="display:inline-block;width:3px;height:14px;background:${EM_RED};border-radius:2px;vertical-align:middle;margin-right:7px;"></span><span style="font-size:14px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};vertical-align:middle;">${edT('todoV2NextTitle', L('7월 진행 예정사항', 'Planned for July'))}</span>
+        <span style="display:inline-block;width:3px;height:14px;background:${EM_RED};border-radius:2px;vertical-align:middle;margin-right:7px;"></span><span style="font-size:14px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};vertical-align:middle;">${edT('todoV2NextTitle', L('조직별 주요 진행 예정 사항', 'Key Planned Items by Org'))}</span>
       </td></tr>
       <tr><td style="padding:12px 14px;">
         ${edWrapT('todoV2NextHtml', L(nextKo, nextEn))}
