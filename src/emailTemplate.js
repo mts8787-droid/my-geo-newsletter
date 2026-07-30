@@ -1085,7 +1085,7 @@ function actionItemsV2SectionHtml(meta = {}, lang = 'ko', categoryStats = null) 
   const bar = (label, rate, actual, goal) => `<table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;"><tr>
       <td style="font-size:10px;color:#64748B;font-family:${EM_FONT};white-space:nowrap;padding-right:6px;" width="70">${label}</td>
       <td><table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#F1F5F9;border-radius:3px;"><tr>
-        <td width="${Math.min(Math.round(rate || 0), 100)}%" style="height:7px;background:${gCol(rate || 0)};border-radius:3px;font-size:0;line-height:0;">&nbsp;</td>
+        <td width="${Math.max(2, Math.min(Math.round(rate || 0), 100))}%" style="height:7px;background:${gCol(rate || 0)};border-radius:3px;font-size:0;line-height:0;">&nbsp;</td>
         <td style="font-size:0;line-height:0;">&nbsp;</td>
       </tr></table></td>
       <td align="right" style="font-size:12px;font-weight:800;color:${gCol(rate || 0)};font-family:${EM_FONT};white-space:nowrap;padding-left:7px;" width="40">${(rate || 0).toFixed(0)}%</td>
