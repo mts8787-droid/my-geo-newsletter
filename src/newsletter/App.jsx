@@ -14,7 +14,7 @@ import { computeCategoryStats, extractMonthFromPeriod } from '../shared/trackerC
 import { parseKPISheet } from '../tracker-v2/utils/sheetParser.js'
 // N2 — XLSX는 사용 시점에만 동적 로드 (~870KB)
 import { loadXlsx } from '../shared/loadXlsx.js'
-import Sidebar from '../shared/Sidebar.jsx'
+import Sidebar, { mergeEnMeta } from '../shared/Sidebar.jsx'
 import LlmModelSelect from '../shared/LlmModelSelect.jsx'
 
 const TRACKER_SHEET_ID = '1lAzhlYJIjHVqDeywD3YMR1E9qf2LlDohFc0r6SAnVaE'
@@ -253,7 +253,8 @@ export default function App() {
     if (w) w.postMessage({ type: 'format', cmd, value }, '*')
   }, [])
 
-  const meta    = previewLang === 'en' ? metaEn : metaKo
+  // EN 미리보기 = KO 구조 + EN 번역 텍스트 오버레이 (mergeEnMeta) — KO 변경이 EN 에 자동 반영
+  const meta    = previewLang === 'en' ? mergeEnMeta(metaKo, metaEn) : metaKo
   const setMeta = previewLang === 'en' ? setMetaEn : setMetaKo
 
   // 미리보기 iframe 인라인 편집 수신 — emailTemplate editable 모드의 postMessage({type:'editMeta'})

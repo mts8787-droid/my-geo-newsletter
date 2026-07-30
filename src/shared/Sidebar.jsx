@@ -18,6 +18,15 @@ const EN_TEXT_FIELDS = ['title', 'dateLine', 'noticeText', 'totalInsight', 'repo
 const V2_TRANSLATE_FIELDS = ['v2ExIntro2', 'v2Ex1T2', 'v2Ex1B2', 'v2Ex2T2', 'v2Ex2B2', 'v2Ex3T2', 'v2Ex3B2', 'v2T11Caption', 'v2CaseCaption', 'v2C1Title', 'v2C1Keep', 'v2C1Bko', 'v2C1Tko', 'v2C2Title4', 'v2C2Keep2', 'v2C2Bko4', 'v2C2Tko4', 'v2VisTblHtml', 'todoV2Title', 'todoV2NoticeLabel', 'todoV2NoticeHtml', 'todoV2PerfTitle', 'todoV2ChBu', 'todoV2NewBu', 'todoV2FixBu', 'todoV2TechBu', 'todoV2NextSecTitle', 'todoV2NextTitle', 'todoV2NextHtml2']
 EN_TEXT_FIELDS.push(...V2_TRANSLATE_FIELDS)
 
+// EN meta = KO 구조(토글·레이아웃·수치) 그대로 + EN 번역 텍스트만 오버레이.
+// metaEn 을 통째로 쓰면 예전 번역 시점의 구조 스냅샷이 남아 KO 변경(신규 섹션·개정 문구)이
+// EN 에 반영되지 않음 → 미리보기·게시·발송 모두 이 병합을 사용해 EN 이 KO 를 자동 추종.
+export function mergeEnMeta(metaKo, metaEn) {
+  const m = { ...metaKo }
+  EN_TEXT_FIELDS.forEach(k => { m[k] = metaEn?.[k] })
+  return m
+}
+
 // 두 언어(KO/EN) 이메일 HTML 을 하나의 문서로 이어붙임 — KO 본문 → 구분선 → EN 본문.
 // 각 generateHTML 은 완전한 HTML 문서를 반환하므로, KO 문서의 <body> 안에 EN 본문 내용만 삽입한다.
 function mergeBilingualEmail(htmlKo, htmlEn) {
@@ -127,11 +136,11 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
         const mv = monthlyVis || []
         const latestExtra = latest.extra || extra || {}
         htmlKo = generateHTML(metaKo, latest.total, resolvedKo.products, resolvedKo.citations, latest.dotcom, 'ko', resolvedKo.productsCnty, resolvedKo.citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty, mv, latestExtra)
-        htmlEn = generateHTML(metaEn, latest.total, resolvedEn.products, resolvedEn.citations, latest.dotcom, 'en', resolvedEn.productsCnty, resolvedEn.citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty, mv, latestExtra)
+        htmlEn = generateHTML(mergeEnMeta(metaKo, metaEn), latest.total, resolvedEn.products, resolvedEn.citations, latest.dotcom, 'en', resolvedEn.productsCnty, resolvedEn.citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty, mv, latestExtra)
         title = `${metaKo.period || ''} ${metaKo.title || 'KPI Dashboard'}`.trim()
       } else {
         htmlKo = generateHTML(metaKo, latest.total, resolvedKo.products, resolvedKo.citations, dotcom, 'ko', resolvedKo.productsCnty, resolvedKo.citationsCnty, { weeklyLabels, weeklyAll, categoryStats, unlaunchedMap: extra?.unlaunchedMap || {}, productCardVersion: meta.productCardVersion || 'v1', trendMode: meta.trendMode || 'weekly', assetBase: (typeof window !== "undefined" ? window.location.origin : ""), citTouchPointsTrend: extra?.citTouchPointsTrend || null, citTrendMonths: extra?.citTrendMonths || [], citDomainTrend: extra?.citDomainTrend || null, citDomainMonths: extra?.citDomainMonths || [], citTouchPointsByLlm: extra?.citTouchPointsByLlm || null, citDomainByLlm: extra?.citDomainByLlm || null, citDomainByLlmTrend: extra?.citDomainByLlmTrend || null, dotcomByLlm: extra?.dotcomByLlm || null })
-        htmlEn = generateHTML(metaEn, latest.total, resolvedEn.products, resolvedEn.citations, dotcom, 'en', resolvedEn.productsCnty, resolvedEn.citationsCnty, { weeklyLabels, weeklyAll, categoryStats, unlaunchedMap: extra?.unlaunchedMap || {}, productCardVersion: meta.productCardVersion || 'v1', trendMode: meta.trendMode || 'weekly', assetBase: (typeof window !== "undefined" ? window.location.origin : ""), citTouchPointsTrend: extra?.citTouchPointsTrend || null, citTrendMonths: extra?.citTrendMonths || [], citDomainTrend: extra?.citDomainTrend || null, citDomainMonths: extra?.citDomainMonths || [], citTouchPointsByLlm: extra?.citTouchPointsByLlm || null, citDomainByLlm: extra?.citDomainByLlm || null, citDomainByLlmTrend: extra?.citDomainByLlmTrend || null, dotcomByLlm: extra?.dotcomByLlm || null })
+        htmlEn = generateHTML(mergeEnMeta(metaKo, metaEn), latest.total, resolvedEn.products, resolvedEn.citations, dotcom, 'en', resolvedEn.productsCnty, resolvedEn.citationsCnty, { weeklyLabels, weeklyAll, categoryStats, unlaunchedMap: extra?.unlaunchedMap || {}, productCardVersion: meta.productCardVersion || 'v1', trendMode: meta.trendMode || 'weekly', assetBase: (typeof window !== "undefined" ? window.location.origin : ""), citTouchPointsTrend: extra?.citTouchPointsTrend || null, citTrendMonths: extra?.citTrendMonths || [], citDomainTrend: extra?.citDomainTrend || null, citDomainMonths: extra?.citDomainMonths || [], citTouchPointsByLlm: extra?.citTouchPointsByLlm || null, citDomainByLlm: extra?.citDomainByLlm || null, citDomainByLlmTrend: extra?.citDomainByLlmTrend || null, dotcomByLlm: extra?.dotcomByLlm || null })
         title = `${metaKo.period || ''} ${metaKo.title || 'Newsletter'}`.trim()
       }
       const ep = publishEndpoint || (mode === 'dashboard' ? '/api/publish-dashboard' : '/api/publish')
@@ -385,8 +394,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
       const resolvedEn = resolveDataForLang(latest.products, latest.productsCnty, latest.citations, latest.citationsCnty, 'en')
       const sharedOpts = { weeklyLabels, weeklyAll, categoryStats, unlaunchedMap: extra?.unlaunchedMap || {}, productCardVersion: meta.productCardVersion || 'v1', trendMode: meta.trendMode || 'weekly', assetBase: (typeof window !== "undefined" ? window.location.origin : ""), citTouchPointsTrend: extra?.citTouchPointsTrend || null, citTrendMonths: extra?.citTrendMonths || [], citDomainTrend: extra?.citDomainTrend || null, citDomainMonths: extra?.citDomainMonths || [], citTouchPointsByLlm: extra?.citTouchPointsByLlm || null, citDomainByLlm: extra?.citDomainByLlm || null, citDomainByLlmTrend: extra?.citDomainByLlmTrend || null, dotcomByLlm: extra?.dotcomByLlm || null }
       // EN 발송 meta = KO 차트/표시 토글 기준 + EN 번역 텍스트만 덮어쓰기 (차트 불일치 방지)
-      const metaEnForSend = { ...metaKo }
-      EN_TEXT_FIELDS.forEach(k => { metaEnForSend[k] = metaEn[k] })
+      const metaEnForSend = mergeEnMeta(metaKo, metaEn)
       const htmlKo = generateHTML(metaKo, latest.total, resolvedKo.products, resolvedKo.citations, latest.dotcom, 'ko', resolvedKo.productsCnty, resolvedKo.citationsCnty, sharedOpts)
       const htmlEn = generateHTML(metaEnForSend, latest.total, resolvedEn.products, resolvedEn.citations, latest.dotcom, 'en', resolvedEn.productsCnty, resolvedEn.citationsCnty, sharedOpts)
       const html    = mergeBilingualEmail(htmlKo, htmlEn)
