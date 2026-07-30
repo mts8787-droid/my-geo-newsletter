@@ -1193,6 +1193,14 @@ function actionItemsV2SectionHtml(meta = {}, lang = 'ko', categoryStats = null) 
     </table>`
   }).join('')
 
+  // ── 전사 핵심 과제 기본 문구 (사용자 제공 텍스트 그대로 — 붉은 박스 본문) ──
+  const noticeP1 = `margin:0 0 8px;font-size:13px;color:#1A1A1A;line-height:21px;font-family:${EM_FONT};letter-spacing:-0.3px;`
+  const noticeP2 = `margin:0;font-size:12.5px;color:#1A1A1A;line-height:21px;font-family:${EM_FONT};letter-spacing:-0.3px;`
+  const noticeKo = `<p style="${noticeP1}">GEO 개선을 위한 핵심 과제를 선정하여 각 담당 조직별로 개선 작업 진행 중이며, D2C에서 전사변화관리를 지원하기 위한 역할 수행 중</p>` +
+    `<p style="${noticeP2}">• (핵심 과제1) 신규 콘텐츠 생성 : 신규 제품 FAQ 및 기술에 대한 신규 콘텐츠, GEO 고려한 Support 콘텐츠 제작 (사업본부/고가혁)<br/>• (핵심 과제2) 기존 콘텐츠 수정 : 닷컴 PDP, Summary Box, FAQ의 Agent 기반 자동 최적화(D2C) 및 콘텐츠 직접 수정(사업본부/고가혁)<br/>• (핵심 과제3) 닷컴 기술 개선 : 제품리뷰 및 Support Page의 데이터 라벨링을 통한 AI의 콘텐츠 인식 수치 제고 (D2C/고가혁)<br/>• (핵심 과제4) 외부 채널 관리 : 고인용 채널 별 Action Item 선정 및 진행 주체별로 월별 진척 목표 수립 진행 (각 조직별)<br/>• 전사변화 관리 : 핵심 KPI/ Stakeholders 별 진척도 대시보드 기반 추적, GEO Committee 를 통한 주요 진행 방향 협의 및 교육 진행(D2C)</p>`
+  const noticeEn = `<p style="${noticeP1}">Key GEO improvement initiatives are underway by owning org, with D2C supporting company-wide change management.</p>` +
+    `<p style="${noticeP2}">• (Initiative 1) New content creation: new product FAQs & tech contents, GEO-aware support contents (BUs/CVI)<br/>• (Initiative 2) Content fix: Agent-based auto optimization of dotcom PDP, Summary Box, FAQ (D2C) & direct fixes (BUs/CVI)<br/>• (Initiative 3) Dotcom tech fix: data labeling on product reviews & Support Pages to raise AI content recognition (D2C/CVI)<br/>• (Initiative 4) External channel ops: Action Items per high-citation channel with monthly targets per owner (each org)<br/>• Change management: KPI/stakeholder progress tracking via dashboard, alignment & training via GEO Committee (D2C)</p>`
+
   // ── 7월 진행 예정사항 (사용자 제공 텍스트 그대로) ──
   const nextKo = `<p style="margin:0 0 8px;font-size:12px;color:#334155;line-height:20px;font-family:${EM_FONT};letter-spacing:-0.3px;">• 신규 Chat GPT 및 AI MAX 신규 광고 상품에 대한 PoC 준비 진행 중 (상품의 마케팅 효과성 및 운영 목적에 대한 각 본부별 협업으로 진행 중)</p>
     <p style="margin:0 0 8px;font-size:12px;color:#334155;line-height:20px;font-family:${EM_FONT};letter-spacing:-0.3px;">• AI 기반의 LLM 모델 최적화 자동 진딘 및 콘텐츠 수정 Agent의 Global PoC 진행 중<br/>&nbsp;&nbsp;: 영국 대상 Gemini / ChatGPT 답변 반영 확인 및 성과 모니터링 진행 완료(Visibility 개선 확인), 추가 국가로 전략국가 9개국 확산 검토 중(미국제외)</p>
@@ -1227,10 +1235,7 @@ function actionItemsV2SectionHtml(meta = {}, lang = 'ko', categoryStats = null) 
                         <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFF4F7;border:1px solid #F5CCD8;border-radius:10px;margin-bottom:16px;">
                           <tr><td style="padding:14px 16px;">
                             <p style="margin:0 0 6px;font-size:13px;font-weight:700;color:${EM_RED};font-family:${EM_FONT};text-transform:uppercase;letter-spacing:0.5px;">${edT('todoV2NoticeLabel', L('전사 핵심 과제', 'Key Initiative'))}</p>
-                            ${edWrapT('todoV2NoticeHtml', L(`<p style="margin:0 0 8px;font-size:13px;color:#1A1A1A;line-height:21px;font-family:${EM_FONT};letter-spacing:-0.3px;">GEO 개선을 위한 핵심 과제를 선정하여 각 담당 조직별로 개선 작업 진행 중이며, D2C에서 전사변화관리를 지원하기 위한 역할 수행 중</p>
-                            <p style="margin:0;font-size:12.5px;color:#1A1A1A;line-height:21px;font-family:${EM_FONT};letter-spacing:-0.3px;">• (핵심 과제1) 신규 콘텐츠 생성 : 신규 제품 FAQ 및 기술에 대한 신규 콘텐츠, GEO 고려한 Support 콘텐츠 제작 (사업본부/고가혁)<br/>• (핵심 과제2) 기존 콘텐츠 수정 : 닷컴 PDP, Summary Box, FAQ의 Agent 기반 자동 최적화(D2C) 및 콘텐츠 직접 수정(사업본부/고가혁)<br/>• (핵심 과제3) 닷컴 기술 개선 : 제품리뷰 및 Support Page의 데이터 라벨링을 통한 AI의 콘텐츠 인식 수치 제고 (D2C/고가혁)<br/>• (핵심 과제4) 외부 채널 관리 : 고인용 채널 별 Action Item 선정 및 진행 주체별로 월별 진척 목표 수립 진행 (각 조직별)<br/>• 전사변화 관리 : 핵심 KPI/ Stakeholders 별 진척도 대시보드 기반 추적, GEO Committee 를 통한 주요 진행 방향 협의 및 교육 진행(D2C)</p>`,
-                            `<p style="margin:0 0 8px;font-size:13px;color:#1A1A1A;line-height:21px;font-family:${EM_FONT};letter-spacing:-0.3px;">Key GEO improvement initiatives are underway by owning org, with D2C supporting company-wide change management.</p>
-                            <p style="margin:0;font-size:12.5px;color:#1A1A1A;line-height:21px;font-family:${EM_FONT};letter-spacing:-0.3px;">• (Initiative 1) New content creation: new product FAQs & tech contents, GEO-aware support contents (BUs/CVI)<br/>• (Initiative 2) Content fix: Agent-based auto optimization of dotcom PDP, Summary Box, FAQ (D2C) & direct fixes (BUs/CVI)<br/>• (Initiative 3) Dotcom tech fix: data labeling on product reviews & Support Pages to raise AI content recognition (D2C/CVI)<br/>• (Initiative 4) External channel ops: Action Items per high-citation channel with monthly targets per owner (each org)<br/>• Change management: KPI/stakeholder progress tracking via dashboard, alignment & training via GEO Committee (D2C)</p>`)}
+                            ${edWrapT('todoV2NoticeHtml', L(noticeKo, noticeEn))}
                           </td></tr>
                         </table>
                         <p style="margin:0 0 12px;font-size:15px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};">${edT('todoV2PerfTitle', L('◼️ 6월 주요 실적', '◼️ June Highlights'))}</p>
