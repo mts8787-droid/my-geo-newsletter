@@ -1221,7 +1221,7 @@ function actionItemsV2SectionHtml(meta = {}, lang = 'ko', categoryStats = null) 
   const dashUrl = `https://my-geo-newsletter.onrender.com/p/GEO-KPI-Dashboard${lang === 'en' ? '-EN' : '-KO'}`
   const dashBanner = `<table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;margin:14px 0 8px;"><tr>
       <td bgcolor="${EM_RED}" align="center" style="border-radius:10px;">
-        <a href="${dashUrl}" target="_blank" rel="noopener" style="display:block;padding:15px 10px;color:#FFFFFF;font-family:${EM_FONT};font-size:15px;font-weight:800;text-decoration:none;letter-spacing:0.3px;">${L('GEO 통합 대시보드 바로가기 →', 'Open the GEO Integrated Dashboard →')}</a>
+        <a href="${dashUrl}" target="_blank" rel="noopener" style="display:block;padding:15px 10px;color:#FFFFFF;font-family:${EM_FONT};font-size:15px;font-weight:800;text-decoration:none;letter-spacing:0.3px;">${L('GEO 대시보드 바로가기', 'Open the GEO Dashboard')}</a>
       </td></tr></table>`
 
   return `<!-- ══ 액션 아이템 V2 (6월 주요 실적 + 7월 예정) ══ -->
