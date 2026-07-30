@@ -372,7 +372,16 @@ function edScriptHtml() {
   // iframe 포커스/선택을 유지시켜 줌 → 저장은 blur 에서). styleWithCSS 로 인라인 스타일 출력(이메일 호환).
   window.addEventListener('message',function(e){
     var d=e.data; if(!d||d.type!=='format')return;
-    try{document.execCommand('styleWithCSS',false,true);document.execCommand(d.cmd,false,d.value);}catch(err){}
+    try{
+      document.execCommand('styleWithCSS',false,true);
+      if(d.cmd==='fontSizePx'){
+        // 임의 px 크기 — execCommand fontSize 는 1~7 단계뿐이라 7 적용 후 px 로 치환
+        document.execCommand('fontSize',false,'7');
+        document.querySelectorAll('font[size="7"]').forEach(function(f){f.removeAttribute('size');f.style.fontSize=d.value+'px';});
+      } else {
+        document.execCommand(d.cmd,false,d.value);
+      }
+    }catch(err){}
   });
 })();
 </script>`
