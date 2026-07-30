@@ -1091,11 +1091,11 @@ function insightV2Parts(meta = {}, lang = 'ko', products = []) {
   return { execHtml, bodyHtml }
 }
 
-// ─── 액션 아이템 V2 — 4개 실행 영역별 [실적 수치(트래커 연동) + 본부별 활동] 통합 ──
-// 토글: meta.showTodoV2. 핵심: 콘텐츠수정·신규콘텐츠제작·외부채널관리·닷컴기술개선
-// 영역에서 "무엇을 했는지"를 실적 수치(Progress Tracker categoryStats 동일 데이터)와
-// 본부별(MS/HS/ES) 활동 내용이 한 카드 안에서 이어지도록 정리.
-// 수치는 라이브(트래커 얼라인 — 편집 대상 아님), 본부별 내용은 영역 단위 통편집(edWrap).
+// ─── 액션 아이템 V2 — 4개 실행 영역별 [실적 수치(트래커 연동) + 조직별 활동] + 7월 예정 ──
+// 토글: meta.showTodoV2. 6월 주요 실적을 영역(외부채널/신규제작/콘텐츠수정/닷컴기술)별로,
+// 각 영역 안에 조직(MS/HS/ES/글로벌컴/브랜드/고가혁/D2C)별 활동과 실적 수치(Progress
+// Tracker categoryStats)가 이어지도록 정리. 내용은 사용자 제공 텍스트 그대로(OO건 등
+// placeholder 포함 — 편집모드에서 채움). 수치는 라이브(편집 제외 — 트래커 얼라인 보장).
 function actionItemsV2SectionHtml(meta = {}, lang = 'ko', categoryStats = null) {
   const M = meta || {}
   const L = (ko, en) => lang === 'en' ? en : ko
@@ -1103,7 +1103,6 @@ function actionItemsV2SectionHtml(meta = {}, lang = 'ko', categoryStats = null) 
   const edWrapT = (field, def) => `<div${edRich(field)}>${M[field] != null ? M[field] : def}</div>`
   const gCol = r => r >= 100 ? '#15803D' : r >= 80 ? '#D97706' : '#BE123C'
   const fmtN = n => Number(n || 0).toLocaleString('en-US')
-  // 실적 미니 바 (이메일 호환) — 트래커와 동일 임계값(100/80)
   const bar = (label, rate, actual, goal) => `<table border="0" cellpadding="0" cellspacing="0" width="100%"><tr>
       <td style="font-size:10px;color:#64748B;font-family:${EM_FONT};white-space:nowrap;padding-right:6px;" width="70">${label}</td>
       <td><table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#F1F5F9;border-radius:3px;"><tr>
@@ -1118,26 +1117,53 @@ function actionItemsV2SectionHtml(meta = {}, lang = 'ko', categoryStats = null) 
   const anyStat = (categoryStats || [])[0]
   const gMonth = (anyStat && anyStat.targetMonth) || L('이번 월', 'This Month')
 
-  // ── 4개 실행 영역 — 현행 활동 내용을 영역별로 재배치 (본부별 프리필 = 전사 공통, 편집으로 차별화) ──
+  // ── 4개 실행 영역 × 조직별 6월 실적 (사용자 제공 텍스트 그대로 — OO건/00건 placeholder 포함) ──
   const cats = [
-    { key: '콘텐츠수정', ko: '콘텐츠 수정', en: 'Content Fix', f: 'todoV2Cat1Bu',
-      actKo: '고인용 핵심 FAQ 체계 관리 · 데이터 라벨링(스키마 마크업) 강화 · GEO Agent 로 Summary Box·FAQ 자동 생성 적용',
-      actEn: 'Manage high-citation FAQs · strengthen schema markup · apply auto Summary Box/FAQ via GEO Agent' },
-    { key: '신규콘텐츠제작', ko: '신규 콘텐츠 제작', en: 'New Content', f: 'todoV2Cat2Bu',
-      actKo: 'GEO 친화적 PDP 콘텐츠 자동 제작 Agent 글로벌 운영 준비 · Reddit·YouTube 대응 커뮤니티 콘텐츠 제작',
-      actEn: 'GEO-friendly PDP content Agent (global rollout prep) · community content for Reddit/YouTube' },
-    { key: '외부채널관리', ko: '외부 채널 관리', en: 'External Channel Ops', f: 'todoV2Cat3Bu',
-      actKo: '리테일 채널 인용 극대화 운영 · Reddit·YouTube 커뮤니티 콘텐츠 제작 가이드 수립 + 글로벌 교육 완료',
-      actEn: 'Maximize retail-channel citations · Reddit/YouTube community guides set + global training done' },
-    { key: '닷컴기술개선', ko: '닷컴 기술 개선', en: 'Dotcom Tech Fix', f: 'todoV2Cat4Bu',
-      actKo: 'Support Page SSR 노출 구조 개선(진행 중) · GEO Agent 46개 항목 자가 진단·수정 PoC 완료(Akamai CDN) · US 우수사례(FAQ·SSR) GP1 표준 확대',
-      actEn: 'Support Page SSR fix (in progress) · GEO Agent 46-check self-diagnosis PoC done (Akamai CDN) · expand US best practice (FAQ/SSR) as GP1 standard' },
+    { key: '외부채널관리', ko: '1. 외부 채널 관리', en: '1. External Channel Ops', f: 'todoV2ChBu',
+      rows: [
+        { org: 'MS', orgEn: 'MS',
+          ko: 'Reddit — Megathread, 체험단 등 신규 콘텐츠 10건 제작<br/>Wikipedia — AI TV, Dynamic QNED Color, Hyper Mini LED 관련 6건 업데이트',
+          en: 'Reddit — 10 new contents incl. Megathread & tester program<br/>Wikipedia — 6 updates on AI TV, Dynamic QNED Color, Hyper Mini LED' },
+        { org: 'HS', orgEn: 'HS',
+          ko: 'LinkedIn — B2B GEO 컨텐츠 OO건 발행<br/>News — 신소재, 쿠킹/빌트인 관련 컨텐츠 00건 발행<br/>Social — Instagram GEO 대응 카드섹션/전문가 컨텐츠 00건 게시, Youtube 인플루언서 제품리뷰/전문가 컨텐츠 00건 발행',
+          en: 'LinkedIn — OO B2B GEO contents<br/>News — 00 contents on new materials, cooking/built-in<br/>Social — 00 Instagram GEO card sections/expert contents, 00 YouTube influencer reviews/expert contents' },
+        { org: '글로벌컴', orgEn: 'GlobalComm',
+          ko: 'LinkedIn — Corp / C-level 링크드인 콘텐츠 32건 발행<br/>News — 뉴스룸 GEO 최적화 보도자료 15건 발행, PRISM AI 기반 High Quality 기사 8000건 이상 발행 완료',
+          en: 'LinkedIn — 32 Corp/C-level contents<br/>News — 15 GEO-optimized newsroom releases, 8,000+ PRISM AI high-quality articles published' },
+        { org: '브랜드', orgEn: 'Brand',
+          ko: 'Wikipedia — 브랜드 토픽 및 기술영어 영문페이지 10건 개편',
+          en: 'Wikipedia — 10 English pages revamped (brand topics & technical terms)' },
+      ] },
+    { key: '신규콘텐츠제작', ko: '2. 신규 콘텐츠 제작', en: '2. New Content', f: 'todoV2NewBu',
+      rows: [
+        { org: 'HS', orgEn: 'HS',
+          ko: '신규 Micosite Contents 발행 및 FAQ 추가 21건 진행',
+          en: '21 new microsite contents & added FAQs in progress' },
+        { org: 'ES', orgEn: 'ES',
+          ko: 'AI Air Microsite 컨텐츠 4건 / PDP FAQ 10건 / Microsite FAQ 4건 신규 제작',
+          en: '4 AI Air microsite contents / 10 PDP FAQs / 4 microsite FAQs newly created' },
+      ] },
+    { key: '콘텐츠수정', ko: '3. 기존 콘텐츠 수정', en: '3. Content Fix', f: 'todoV2FixBu',
+      rows: [
+        { org: 'MS', orgEn: 'MS',
+          ko: 'PLP FAQ 제작 20건',
+          en: '20 PLP FAQs created' },
+        { org: '고가혁', orgEn: 'CVI',
+          ko: 'Support Video Contents 스키마 마크업 및 구조화된 컨텐츠 적용 10건 개선',
+          en: '10 support video contents improved with schema markup & structured content' },
+      ] },
+    { key: '닷컴기술개선', ko: '4. 닷컴 기술 개선', en: '4. Dotcom Tech Fix', f: 'todoV2TechBu',
+      rows: [
+        { org: 'D2C', orgEn: 'D2C',
+          ko: '스키마 마크업 자동화 통합가이드 제작 및 검토를 진행으로 기술개선 하반기로 일정 재조정',
+          en: 'Building & reviewing the integrated schema-markup automation guide — tech fix rescheduled to H2' },
+      ] },
   ]
   const tdB = `padding:7px 10px;font-size:12px;color:#334155;border-bottom:1px solid #F1F5F9;vertical-align:top;font-family:${EM_FONT};letter-spacing:-0.3px;line-height:18px;`
   const buTable = c => `<table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;border-collapse:collapse;">
-      ${['MS', 'HS', 'ES'].map((bu, i) => `<tr${i % 2 === 0 ? ' style="background:#FAFBFC;"' : ''}>
-        <td width="44" style="${tdB}text-align:center;font-weight:800;color:#475569;background:#F8FAFC;border-right:2px solid #E8EDF2;${i === 2 ? 'border-bottom:none;' : ''}">${bu}</td>
-        <td style="${tdB}${i === 2 ? 'border-bottom:none;' : ''}">${L(c.actKo, c.actEn)}</td>
+      ${c.rows.map((r, i) => `<tr${i % 2 === 0 ? ' style="background:#FAFBFC;"' : ''}>
+        <td width="78" style="${tdB}text-align:center;font-weight:800;color:#475569;background:#F8FAFC;border-right:2px solid #E8EDF2;white-space:nowrap;${i === c.rows.length - 1 ? 'border-bottom:none;' : ''}">${L(r.org, r.orgEn)}</td>
+        <td style="${tdB}${i === c.rows.length - 1 ? 'border-bottom:none;' : ''}">${L(r.ko, r.en)}</td>
       </tr>`).join('')}
     </table>`
 
@@ -1152,7 +1178,7 @@ function actionItemsV2SectionHtml(meta = {}, lang = 'ko', categoryStats = null) 
       <tr>
         <td style="padding:12px 14px 10px;background:#F8FAFC;border-bottom:1px solid #E8EDF2;">
           <table border="0" cellpadding="0" cellspacing="0" width="100%"><tr>
-            <td style="vertical-align:middle;" width="34%">
+            <td style="vertical-align:middle;" width="36%">
               <span style="display:inline-block;width:3px;height:14px;background:${EM_RED};border-radius:2px;vertical-align:middle;margin-right:7px;"></span><span style="font-size:14px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};vertical-align:middle;">${L(c.ko, c.en)}</span>
             </td>
             <td style="vertical-align:middle;">${metrics}</td>
@@ -1167,7 +1193,23 @@ function actionItemsV2SectionHtml(meta = {}, lang = 'ko', categoryStats = null) 
     </table>`
   }).join('')
 
-  return `<!-- ══ 액션 아이템 V2 (영역별 실적 수치 + 본부별 활동) ══ -->
+  // ── 7월 진행 예정사항 (사용자 제공 텍스트 그대로) ──
+  const nextKo = `<p style="margin:0 0 8px;font-size:12px;color:#334155;line-height:20px;font-family:${EM_FONT};letter-spacing:-0.3px;">• 신규 Chat GPT 및 AI MAX 신규 광고 상품에 대한 PoC 준비 진행 중 (상품의 마케팅 효과성 및 운영 목적에 대한 각 본부별 협업으로 진행 중)</p>
+    <p style="margin:0 0 8px;font-size:12px;color:#334155;line-height:20px;font-family:${EM_FONT};letter-spacing:-0.3px;">• AI 기반의 LLM 모델 최적화 자동 진딘 및 콘텐츠 수정 Agent의 Global PoC 진행 중<br/>&nbsp;&nbsp;: 영국 대상 Gemini / ChatGPT 답변 반영 확인 및 성과 모니터링 진행 완료(Visibility 개선 확인), 추가 국가로 전략국가 9개국 확산 검토 중(미국제외)</p>
+    <p style="margin:0;font-size:12px;color:#334155;line-height:20px;font-family:${EM_FONT};letter-spacing:-0.3px;">• 스키마 마크업 자동화 통합가이드 제작 및 검토를 진행 중 (PDP 스키마 1건 가이드 제작 완료, 개발 요건 논의 후 추가 확산 예정 - 총 12종)</p>`
+  const nextEn = `<p style="margin:0 0 8px;font-size:12px;color:#334155;line-height:20px;font-family:${EM_FONT};letter-spacing:-0.3px;">• Preparing PoC for new ChatGPT & AI MAX ad products (cross-BU collaboration on marketing effectiveness & operating purpose)</p>
+    <p style="margin:0 0 8px;font-size:12px;color:#334155;line-height:20px;font-family:${EM_FONT};letter-spacing:-0.3px;">• Global PoC of the AI-based LLM-optimization auto-diagnosis & content-fix Agent in progress<br/>&nbsp;&nbsp;: UK Gemini/ChatGPT answer reflection & performance monitoring done (Visibility improvement confirmed); expansion to 9 strategic countries under review (excl. US)</p>
+    <p style="margin:0;font-size:12px;color:#334155;line-height:20px;font-family:${EM_FONT};letter-spacing:-0.3px;">• Building & reviewing the integrated schema-markup automation guide (1 PDP schema guide done; further rollout after dev-requirement review — 12 types total)</p>`
+  const nextBlock = `<table border="0" cellpadding="0" cellspacing="0" width="100%" style="border:1px solid #E8EDF2;border-radius:10px;margin-bottom:8px;">
+      <tr><td style="padding:12px 14px 10px;background:#F8FAFC;border-bottom:1px solid #E8EDF2;">
+        <span style="display:inline-block;width:3px;height:14px;background:${EM_RED};border-radius:2px;vertical-align:middle;margin-right:7px;"></span><span style="font-size:14px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};vertical-align:middle;">${edT('todoV2NextTitle', L('7월 진행 예정사항', 'Planned for July'))}</span>
+      </td></tr>
+      <tr><td style="padding:12px 14px;">
+        ${edWrapT('todoV2NextHtml', L(nextKo, nextEn))}
+      </td></tr>
+    </table>`
+
+  return `<!-- ══ 액션 아이템 V2 (6월 주요 실적 + 7월 예정) ══ -->
               <tr>
                 <td style="padding-bottom:28px;">
                   <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFFFFF;border-radius:16px;border:2px solid #E8EDF2;">
@@ -1180,8 +1222,12 @@ function actionItemsV2SectionHtml(meta = {}, lang = 'ko', categoryStats = null) 
                       </td>
                     </tr>
                     <tr>
-                      <td style="padding:18px 16px 6px;">
+                      <td style="padding:18px 16px 10px;">
+                        <p style="margin:0 0 12px;font-size:15px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};">${edT('todoV2PerfTitle', L('◼️ 6월 주요 실적', '◼️ June Highlights'))}</p>
                         ${catBlocks}
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%"><tr><td height="8" style="font-size:0;line-height:0;">&nbsp;</td></tr></table>
+                        <p style="margin:0 0 12px;font-size:15px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};">${edT('todoV2NextSecTitle', L('◼️ 7월 진행 예정사항', '◼️ Planned for July'))}</p>
+                        ${nextBlock}
                       </td>
                     </tr>
                   </table>
