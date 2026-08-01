@@ -917,14 +917,40 @@ function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang, meta, extra, period
     }
     function lastVal(topic,cnty,brand){for(var i=W.length-1;i>=0;i--){var v=val(topic,cnty,brand,W[i]);if(v!=null)return v}return null}
     function lastOf(arr){if(!arr)return null;for(var i=arr.length-1;i>=0;i--){if(arr[i]!=null)return arr[i]}return null}
+    // ── 국가 필터 집계 헬퍼 — 부분 선택 시 선택 국가 평균(null-aware)으로 재집계 ──
+    function allSel(){return CN.every(function(c){return fCnty[c]})}
+    function selCntys(){return CN.filter(function(c){return fCnty[c]})}
+    // 토픽×브랜드의 주차별 선택 국가 평균 시리즈
+    function aggSeries(topic,brand,cntys){
+      return W.map(function(wk){
+        var sum=0,cnt=0;
+        cntys.forEach(function(cn){var v=val(topic,cn,brand,wk);if(v!=null){sum+=v;cnt++}});
+        return cnt?Math.round(sum/cnt*10)/10:null;
+      });
+    }
+    // 토픽×브랜드의 최신(뒤에서부터) 선택 국가 평균
+    function aggLatest(topic,brand,cntys){
+      for(var i=W.length-1;i>=0;i--){
+        var sum=0,cnt=0;
+        cntys.forEach(function(cn){var v=val(topic,cn,brand,W[i]);if(v!=null){sum+=v;cnt++}});
+        if(cnt)return sum/cnt;
+      }
+      return null;
+    }
     // 토픽의 1위 경쟁사 (LG 제외) — TTL 최신값 최고, TTL 없으면 국가 최신값 최댓값
     function topCompFor(topic){
       var brands={};
       D.forEach(function(x){if(x.topic===topic&&x.type===fType&&x.brand&&x.brand!=='LG')brands[x.brand]=1});
       var best=null,bestV=-1;
+      var partial=!allSel(),ac=selCntys();
       Object.keys(brands).forEach(function(b){
-        var v=lastVal(topic,'TTL',b);
-        if(v==null){CN.forEach(function(c){var cv=lastVal(topic,c,b);if(cv!=null&&(v==null||cv>v))v=cv})}
+        var v;
+        if(partial){
+          v=aggLatest(topic,b,ac);  // 부분 국가 선택: 선택 국가 평균 기준
+        }else{
+          v=lastVal(topic,'TTL',b);
+          if(v==null){CN.forEach(function(c){var cv=lastVal(topic,c,b);if(cv!=null&&(v==null||cv>v))v=cv})}
+        }
         if(v!=null&&v>bestV){bestV=v;best=b}
       });
       return best;
@@ -1068,13 +1094,25 @@ function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang, meta, extra, period
       var ac=CN.filter(function(c){return fCnty[c]});
       sectionTopics.forEach(function(st0){
         var topic=st0.key;var topicName=st0.name;
-        var ttl=D.filter(function(r){return r.topic===topic&&r.country==='TTL'&&r.type===fType});
-        if(!ttl.length)return;
-        var brandMap={};
-        ttl.forEach(function(r){if(!brandMap[r.brand])brandMap[r.brand]={}; W.forEach(function(wk){if(r.scores[wk]!=null){brandMap[r.brand][wk]=r.scores[wk]}})});
-        var brands=Object.keys(brandMap).sort(function(a,b){if(a==='LG')return -1;if(b==='LG')return 1;return 0});
-        var chartData={};
-        brands.forEach(function(b){chartData[b]=W.map(function(wk){return brandMap[b][wk]!=null?brandMap[b][wk]:null})});
+        var allOn=allSel();
+        var brands,chartData={};
+        if(allOn){
+          // 전체 선택: strict TTL 행만 (design rule — 다른 국가 합산 X)
+          var ttl=D.filter(function(r){return r.topic===topic&&r.country==='TTL'&&r.type===fType});
+          if(!ttl.length)return;
+          var brandMap={};
+          ttl.forEach(function(r){if(!brandMap[r.brand])brandMap[r.brand]={}; W.forEach(function(wk){if(r.scores[wk]!=null){brandMap[r.brand][wk]=r.scores[wk]}})});
+          brands=Object.keys(brandMap).sort(function(a,b){if(a==='LG')return -1;if(b==='LG')return 1;return 0});
+          brands.forEach(function(b){chartData[b]=W.map(function(wk){return brandMap[b][wk]!=null?brandMap[b][wk]:null})});
+        }else{
+          // 부분 국가 선택: 선택 국가 행을 평균 재집계 → 차트·표1 도 필터 반영
+          var selRows=D.filter(function(r){return r.topic===topic&&ac.indexOf(r.country)>=0&&r.type===fType});
+          if(!selRows.length)return;
+          var brandSet={};
+          selRows.forEach(function(r){if(r.brand)brandSet[r.brand]=1});
+          brands=Object.keys(brandSet).sort(function(a,b){if(a==='LG')return -1;if(b==='LG')return 1;return 0});
+          brands.forEach(function(b){chartData[b]=aggSeries(topic,b,ac)});
+        }
         var lgLast=chartData.LG?chartData.LG[N-1]:null;
         var comp=topCompFor(topic);
         var ssLast=comp&&chartData[comp]?lastOf(chartData[comp]):null;
@@ -1096,7 +1134,8 @@ function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang, meta, extra, period
         html+='<span style="margin-left:auto">'+legend+'</span></div>';
         // 차트 + 표1 (TTL 전체)
         html+='<div style="overflow-x:auto;padding:0 16px 12px"><div style="display:flex"><div style="width:240px;flex-shrink:0"></div><div style="width:'+tblW+'px;flex-shrink:0;padding:8px 0">'+svgChart(chartData,tblW,160)+'</div></div>';
-        html+='<div style="font-size:14px;font-weight:700;color:#64748B;margin:4px 0 2px">${lang==='en'?'Overall (TTL)':'전체 (TTL)'}</div>';
+        var t1Label=allOn?'${lang==='en'?'Overall (TTL)':'전체 (TTL)'}':'${lang==='en'?'Selected countries avg':'선택 국가 평균'} ('+ac.length+')';
+        html+='<div style="font-size:14px;font-weight:700;color:#64748B;margin:4px 0 2px">'+t1Label+'</div>';
         html+=t1;
         // 표2 (국가별) — 국가별 함께 보기일 때만 토픽 안에 표시
         if(fView==='together'&&t2){
