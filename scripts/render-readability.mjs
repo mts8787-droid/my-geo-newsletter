@@ -235,7 +235,9 @@ function viewBotsAndSsr(snap) {
 // 서버 뷰 함수(viewXxx)는 <noscript> 폴백에서 재사용. 두 곳이 같은 마круп
 // (.section-card/.bars/.bar-row/.hero 클래스) 를 공유 — design.md §5.8 서버↔클라 짝.
 function readabilityClient() {
+  var ALL = window.__RD_ALL || null
   var RD = window.__RD || {}
+  var LATEST_DATE = RD.date
   var CATS = ['performance', 'accessibility', 'seo', 'ai_readiness']
   var LEAD = '#15803D', BEHIND = '#B45309', CRIT = '#BE123C', COMP = '#94A3B8', RED = '#CF0652'
   var state = { tab: 'country', cc: 'all', pt: 'all', fcheck: 'all', pf: 'all' }
@@ -422,6 +424,7 @@ function readabilityClient() {
       '<span id="rd-fails-count" class="fails-count"></span>' +
       '<a id="rd-fails-csv" class="crit-dl-btn fails-csv" href="#">CSV 전체 다운로드</a></div>'
     var note = '<div class="tab-note">상단 «국가 / 페이지 타입» 필터 + 여기 «항목 · 결과(PASS/FAIL)» 필터를 조합하면 해당 조건의 페이지별 체크 결과가 표로 나옵니다. 표는 상위 500건만, 전체는 CSV.</div>'
+    if (ALL && LATEST_DATE && RD.date !== LATEST_DATE) note = '<div class="tab-note">Raw 데이터(PASS/FAIL)는 최신 측정분(' + esc(LATEST_DATE) + ') 기준만 제공됩니다 — 선택한 측정 월과 무관하게 최신 데이터가 표시됩니다.</div>' + note
     return sectionCard('Raw 데이터 (페이지별 체크 PASS/FAIL) — 국가 · 타입 · 항목 · 결과 조합', RED, note + head + '<div id="rd-fails-body" class="fails-body">불러오는 중…</div>')
   }
   function loadRaw() {
@@ -526,22 +529,47 @@ function readabilityClient() {
       renderPanel()
     })
     var ccSel = document.getElementById('rd-cc')
-    ccSel.innerHTML = ['<option value="all">전체 국가</option>'].concat(
-      Object.keys(RD.countries).sort().map(function (cc) { return '<option value="' + cc + '">' + esc(ccLabel(cc)) + '</option>' })
-    ).join('')
-    ccSel.addEventListener('change', function () { state.cc = ccSel.value; renderPanel() })
     var ptSel = document.getElementById('rd-pt')
-    ptSel.innerHTML = ['<option value="all">전체 페이지 타입</option>'].concat(
-      Object.entries(RD.overall.pageTypes || {}).map(function (e) { return '<option value="' + e[0] + '">' + esc(e[1].label) + '</option>' })
-    ).join('')
+    function rebuildCcPt() {
+      // 선택 월의 데이터 기준으로 국가/페이지타입 옵션 재구성 (없어진 값이면 all 로 복귀)
+      ccSel.innerHTML = ['<option value="all">전체 국가</option>'].concat(
+        Object.keys(RD.countries).sort().map(function (cc) { return '<option value="' + cc + '">' + esc(ccLabel(cc)) + '</option>' })
+      ).join('')
+      if (state.cc !== 'all' && !RD.countries[state.cc]) state.cc = 'all'
+      ccSel.value = state.cc
+      ptSel.innerHTML = ['<option value="all">전체 페이지 타입</option>'].concat(
+        Object.entries(RD.overall.pageTypes || {}).map(function (e) { return '<option value="' + e[0] + '">' + esc(e[1].label) + '</option>' })
+      ).join('')
+      if (state.pt !== 'all' && !(RD.overall.pageTypes || {})[state.pt]) state.pt = 'all'
+      ptSel.value = state.pt
+    }
+    rebuildCcPt()
+    ccSel.addEventListener('change', function () { state.cc = ccSel.value; renderPanel() })
     ptSel.addEventListener('change', function () { state.pt = ptSel.value; renderPanel() })
+    // ── 측정 월 필터 — 월별 최신 스냅샷 전환 ──
+    var mWrap = document.getElementById('rd-month-wrap'), mSel = document.getElementById('rd-month')
+    var mDates = ALL ? Object.keys(ALL).sort() : []
+    if (mWrap && mSel && mDates.length > 1) {
+      mWrap.style.display = ''
+      mSel.innerHTML = mDates.map(function (d) {
+        var ym = d.slice(0, 4) + '년 ' + parseInt(d.slice(5, 7), 10) + '월'
+        return '<option value="' + d + '">' + ym + ' (' + d.slice(5) + ' 측정)</option>'
+      }).join('')
+      mSel.value = RD.date
+      mSel.addEventListener('change', function () {
+        RD = ALL[mSel.value] || RD
+        var hd = document.getElementById('rd-head-date'); if (hd) hd.textContent = RD.date
+        rebuildCcPt()
+        renderPanel()
+      })
+    }
   }
 
   buildControls()
   renderPanel()
 }
 
-export function renderReadabilityHTML({ snapshot, index, adminMode = false } = {}) {
+export function renderReadabilityHTML({ snapshot, index, snapshots, adminMode = false } = {}) {
   if (!snapshot || !snapshot.overall) {
     return `<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">
       <link href="https://fonts.cdnfonts.com/css/lg-smart" rel="stylesheet" />
@@ -560,15 +588,21 @@ export function renderReadabilityHTML({ snapshot, index, adminMode = false } = {
     : `스냅샷 ${snapCount}개 — 재어딧 후 MoM 대비 (현재 단일 측정분)`
 
   // 클라이언트 인터랙티브 렌더용 데이터 (탭/필터). 서버 뷰는 <noscript> fallback 유지.
-  const clientData = {
-    date: snapshot.date,
-    // adminMode: Raw 데이터·검수 기준 탭은 /admin/* 리소스를 fetch → 게시본(비인증)에선 숨김.
+  // adminMode: Raw 데이터·검수 기준 탭은 /admin/* 리소스를 fetch → 게시본(비인증)에선 숨김.
+  const buildClientData = snap => ({
+    date: snap.date,
     adminMode: !!adminMode,
-    categoryLabels: snapshot.categoryLabels || {},
-    ccName: Object.fromEntries(Object.keys(snapshot.countries).map(cc => [cc, CC_NAME[cc] || cc.toUpperCase()])),
-    overall: snapshot.overall,
-    countries: snapshot.countries,
-  }
+    categoryLabels: snap.categoryLabels || {},
+    ccName: Object.fromEntries(Object.keys(snap.countries).map(cc => [cc, CC_NAME[cc] || cc.toUpperCase()])),
+    overall: snap.overall,
+    countries: snap.countries,
+  })
+  const clientData = buildClientData(snapshot)
+  // 측정 월 필터용 — 월별 최신 스냅샷 전체 임베드 (없으면 현재 1개)
+  const monthSnaps = (Array.isArray(snapshots) && snapshots.length ? snapshots : [snapshot]).filter(x => x && x.overall)
+  const rdAll = {}
+  monthSnaps.forEach(x => { rdAll[x.date] = buildClientData(x) })
+  if (!rdAll[snapshot.date]) rdAll[snapshot.date] = clientData
 
   return `<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -705,11 +739,12 @@ body{background:#F1F5F9;font-family:${FONT};color:#1A1A1A;line-height:1.6}
 
 <div class="dash-container">
   <div class="page-head">
-    <p class="sub">측정일 <strong>${escHtml(snapshot.date)}</strong> · 생성 ${escHtml((snapshot.generatedAt || '').slice(0, 16).replace('T', ' '))} · ${escHtml(momNote)}</p>
+    <p class="sub">측정일 <strong id="rd-head-date">${escHtml(snapshot.date)}</strong> · 생성 ${escHtml((snapshot.generatedAt || '').slice(0, 16).replace('T', ' '))} · ${escHtml(momNote)}</p>
   </div>
 
   <div class="tab-nav" id="rd-tabnav"></div>
   <div class="filter-bar" id="rd-filterbar">
+    <div class="fg" id="rd-month-wrap" style="display:none"><label for="rd-month">측정 월</label><select id="rd-month"></select></div>
     <div class="fg"><label for="rd-cc">국가</label><select id="rd-cc"></select></div>
     <div class="fg"><label for="rd-pt">페이지 타입</label><select id="rd-pt"></select></div>
   </div>
@@ -724,7 +759,8 @@ body{background:#F1F5F9;font-family:${FONT};color:#1A1A1A;line-height:1.6}
   </noscript>
 </div>
 
-<script>window.__RD = ${JSON.stringify(clientData).replace(/</g, '\\u003c')};</script>
+<script>window.__RD_ALL = ${JSON.stringify(rdAll).replace(/</g, '\\u003c')};
+window.__RD = window.__RD_ALL[${JSON.stringify(snapshot.date)}];</script>
 <script>(${readabilityClient.toString()})();</script>
 
 </body></html>`

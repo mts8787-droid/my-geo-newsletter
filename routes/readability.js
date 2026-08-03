@@ -39,14 +39,28 @@ export function loadLatest() {
     const files = readdirSync(DATA_DIR).filter(f => /^\d{4}-\d{2}-\d{2}\.json$/.test(f)).sort()
     if (files.length) latestDate = files[files.length - 1].replace('.json', '')
   }
-  if (!latestDate) return { snapshot: null, index }
+  if (!latestDate) return { snapshot: null, index, snapshots: [] }
   const snapPath = join(DATA_DIR, `${latestDate}.json`)
-  if (!existsSync(snapPath)) return { snapshot: null, index }
-  try {
-    return { snapshot: JSON.parse(readFileSync(snapPath, 'utf8')), index }
-  } catch {
-    return { snapshot: null, index }
-  }
+  if (!existsSync(snapPath)) return { snapshot: null, index, snapshots: [] }
+  let snapshot = null
+  try { snapshot = JSON.parse(readFileSync(snapPath, 'utf8')) } catch { snapshot = null }
+  if (!snapshot) return { snapshot: null, index, snapshots: [] }
+  // 월별 최신 스냅샷 목록 (측정 월 필터용) — 같은 달 복수 측정 시 그 달의 최신만
+  const byMonth = {}
+  const dates = (index && Array.isArray(index.snapshots) && index.snapshots.length)
+    ? index.snapshots.map(s => s.date)
+    : [latestDate]
+  dates.forEach(d => {
+    const m = String(d).slice(0, 7)
+    if (!byMonth[m] || byMonth[m] < d) byMonth[m] = d
+  })
+  const snapshots = Object.values(byMonth).sort().map(d => {
+    if (d === latestDate) return snapshot
+    const p = join(DATA_DIR, `${d}.json`)
+    if (!existsSync(p)) return null
+    try { return JSON.parse(readFileSync(p, 'utf8')) } catch { return null }
+  }).filter(Boolean)
+  return { snapshot, index, snapshots }
 }
 
 const latestCsvFile = () => latestFile(/^urls-\d{4}-\d{2}-\d{2}\.csv$/)
@@ -55,9 +69,9 @@ const latestChecksFile = () => latestFile(/^checks-\d{4}-\d{2}-\d{2}\.json$/)
 export const readabilityRouter = Router()
 
 readabilityRouter.get('/admin/readability', (req, res) => {
-  const { snapshot, index } = loadLatest()
+  const { snapshot, index, snapshots } = loadLatest()
   res.set('Content-Type', 'text/html; charset=utf-8')
-  res.send(renderReadabilityHTML({ snapshot, index, adminMode: true }))
+  res.send(renderReadabilityHTML({ snapshot, index, snapshots, adminMode: true }))
 })
 
 // 검수 기준 체크리스트 (self-host) — 원본 onrender 가 x-frame-options:DENY 라 iframe 불가 → 동일출처 서빙

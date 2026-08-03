@@ -20,9 +20,9 @@ const READABILITY_META = join(DATA_DIR, 'readability-meta.json')
 
 // 최신 스냅샷으로 Readability HTML 생성 (게시용 — adminMode:false)
 function renderReadabilityPublic() {
-  const { snapshot, index } = loadLatest()
+  const { snapshot, index, snapshots } = loadLatest()
   if (!snapshot) return null
-  return renderReadabilityHTML({ snapshot, index, adminMode: false })
+  return renderReadabilityHTML({ snapshot, index, snapshots, adminMode: false })
 }
 
 // 대시보드 "Readability 포함" 게시 시 — 통합 뷰어가 임베드할 페이지 생성.
