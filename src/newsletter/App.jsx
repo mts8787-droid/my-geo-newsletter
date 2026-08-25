@@ -390,8 +390,18 @@ export default function App() {
       if (d.productsPartial) {
         setProducts(d.productsPartial.map(p => {
           const weekly = d.weeklyMap?.[p.id] || []
+          const validWeekly = weekly.filter(v => v != null && v > 0)
           const ratio = p.vsComp > 0 ? (p.score / p.vsComp) * 100 : 100
-          return { ...p, weekly, monthly: [], compRatio: Math.round(ratio),
+          // 주간/월간 모드별 점수·직전값 — Sidebar 동기화 경로 (Sidebar.jsx) 와 동일 shape.
+          // 없으면 제품카드가 두 모드 모두 p.score/p.prev 로 폴백 → WoW·MoM 이 같은 값 (0.0%p) 이 됨.
+          const monthlyScore = p.score
+          const monthlyPrev = p.prev || 0
+          const weeklyScore = validWeekly.length > 0 ? validWeekly[validWeekly.length - 1] : monthlyScore
+          const weeklyPrev = validWeekly.length >= 2 ? validWeekly[validWeekly.length - 2] : 0
+          const monthly = monthlyPrev > 0 && monthlyPrev !== monthlyScore ? [monthlyPrev, monthlyScore] : []
+          return { ...p, weekly, monthly,
+            weeklyScore, weeklyPrev, monthlyScore, monthlyPrev,
+            compRatio: Math.round(ratio),
             status: ratio >= 100 ? 'lead' : ratio >= 80 ? 'behind' : 'critical' }
         }))
       } else if (d.weeklyMap) {

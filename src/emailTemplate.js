@@ -401,6 +401,47 @@ function ssName(name) {
 
 function delta(score, prev) { return +(score - prev).toFixed(1) }
 
+// ─── 기간 스탯 (위클리 / 먼슬리) ──────────────────────────────────────────────
+// score = 해당 모드의 최신 값, prev = 같은 시리즈의 직전 유효값.
+// prev 를 인덱스 고정 (validWeekly[length-5]) 으로 잡으면 유효 주차가 5개 미만일 때
+// 자기 자신을 가리켜 delta 가 항상 0.0%p 가 됨 (TV 0.0%p 회귀).
+// → 마지막 두 유효값으로 산출 (dashboardTemplate.js 의 WoW/MoM 계산과 동일 패턴).
+// prev 없으면 null → 호출부가 '—' 렌더 (0.0%p 로 위장 금지).
+function periodStats(p, mode = 'weekly') {
+  if (mode === 'monthly') {
+    const ms = (p.monthlyScores || []).filter(m => m && m.score != null && m.score > 0)
+    const score = p.monthlyScore != null ? p.monthlyScore
+      : (ms.length ? ms[ms.length - 1].score : (p.score || 0))
+    const prevRaw = ms.length >= 2 ? ms[ms.length - 2].score
+      : (p.monthlyPrev != null ? p.monthlyPrev : p.prev)
+    return { mode: 'monthly', label: 'MoM', score: score || 0, prev: prevRaw > 0 ? prevRaw : null }
+  }
+  const vw = (p.weekly || []).filter(v => v != null && v > 0)
+  const score = vw.length ? vw[vw.length - 1]
+    : (p.weeklyScore != null ? p.weeklyScore : (p.score || 0))
+  // 유효 주차 2개 미만이면 p.weeklyPrev 폴백 — 단 score 와 같은 값이면 (자기 자신) 폐기
+  const prevRaw = vw.length >= 2 ? vw[vw.length - 2]
+    : (p.weeklyPrev > 0 && p.weeklyPrev !== score ? p.weeklyPrev : null)
+  return { mode: 'weekly', label: 'WoW', score: score || 0, prev: prevRaw > 0 ? prevRaw : null }
+}
+
+// 기간 배지 — 카드의 수치가 주간인지 월간인지 표기
+function periodBadgeHtml(mode, lang) {
+  const txt = mode === 'monthly' ? (lang === 'en' ? 'Monthly' : '월간') : (lang === 'en' ? 'Weekly' : '주간')
+  return `<span style="display:inline-block;background:#F1F5F9;color:#64748B;border:1px solid #E2E8F0;border-radius:4px;padding:0 4px;font-size:9px;font-weight:700;line-height:14px;font-family:${EM_FONT};letter-spacing:0;vertical-align:middle;">${txt}</span>`
+}
+
+// WoW / MoM 델타 (라벨 포함) — prev 없으면 '—'
+function periodDeltaHtml(stat, size = 12) {
+  if (stat.prev == null) {
+    return `<span style="font-size:${size}px;color:#94A3B8;font-family:${EM_FONT};">${stat.label} —</span>`
+  }
+  const d = delta(stat.score, stat.prev)
+  const color = d > 0 ? '#16A34A' : d < 0 ? '#DC2626' : '#94A3B8'
+  const arrow = d > 0 ? '▲' : d < 0 ? '▼' : '─'
+  return `<span style="font-size:${size}px;font-weight:700;color:${color};font-family:${EM_FONT};">${stat.label} ${arrow}${Math.abs(d).toFixed(1)}%p</span>`
+}
+
 function deltaHtml(d, size = 15, mom = false) {
   if (d === 0) return `<span style="color:#94A3B8;font-size:${size}px;">─</span>`
   const arrow = d > 0 ? '▲' : '▼'
@@ -484,16 +525,18 @@ function productCardHtml(p, globalMax, globalMin, lang = 'ko', opts = {}) {
   const { showTrendTabs = false, monthlyGlobalMax = 100, monthlyGlobalMin = 0, weeklyLabels } = opts
   const useMonthly = opts.trendMode === 'monthly'
 
-  // 모드에 따른 점수 선택
-  const activeScore = useMonthly ? (p.monthlyScore || p.score) : (p.weeklyScore || p.score)
-  const activePrev = useMonthly ? (p.monthlyPrev || p.prev || 0) : (p.weeklyPrev || 0)
+  // 모드에 따른 점수 선택 — periodStats 가 마지막 두 유효값으로 prev 산출 (0.0%p 회귀 방지)
+  const wStat = periodStats(p, 'weekly')
+  const mStat = periodStats(p, 'monthly')
+  const activeStat = useMonthly ? mStat : wStat
+  const activeScore = activeStat.score
+  const activePrev = activeStat.prev || 0
   const activeComp = p.vsComp || 0
   const curRatio = activeComp > 0 ? Math.round(activeScore / activeComp * 100) : 100
   const ratioColor = curRatio >= 100 ? '#15803D' : curRatio >= 80 ? '#E8910C' : '#BE123C'
   const activeStatus = curRatio >= 100 ? 'lead' : curRatio >= 80 ? 'behind' : 'critical'
   const st = statusInfo(activeStatus, lang)
 
-  const d = delta(activeScore, activePrev)
   const sparkColor = activeStatus === 'critical' ? '#BE123C' : activeStatus === 'behind' ? '#E8910C' : '#15803D'
 
   const TREND_WEEKS = 8
@@ -507,12 +550,7 @@ function productCardHtml(p, globalMax, globalMin, lang = 'ko', opts = {}) {
     const rd = curRatio - prevRatio
     if (rd !== 0) ratioDelta = ` <span style="font-size:10px;color:${rd > 0 ? '#16A34A' : '#DC2626'};">${rd > 0 ? '+' : ''}${rd}%p</span>`
   }
-  const momColor = d > 0 ? '#16A34A' : d < 0 ? '#DC2626' : '#94A3B8'
-  const momArrow = d > 0 ? '▲' : d < 0 ? '▼' : ''
   const _isBaseReset = isBaselineResetProduct(p)
-  const momStr = activePrev > 0
-    ? `<span style="font-size:12px;font-weight:700;color:${momColor};font-family:${EM_FONT};">${momArrow}${Math.abs(d).toFixed(1)}%p</span>`
-    : `<span style="font-size:12px;color:#94A3B8;font-family:${EM_FONT};">—</span>`
 
   // 월간 트렌드: monthlyScores에서 구성
   const ms = p.monthlyScores || []
@@ -534,6 +572,20 @@ function productCardHtml(p, globalMax, globalMin, lang = 'ko', opts = {}) {
     ? `<div class="trend-weekly">${weeklyTrendHtml(trendArr, sparkColor, globalMax, globalMin, trimmedLabels, _wFadeIdx)}</div><div class="trend-monthly" style="display:none;">${weeklyTrendHtml(msData, sparkColor, msMax, msMin, msLabels, _mFadeIdx)}</div>`
     : trendGraph
 
+  // 기간 표기 (주간/월간) + WoW/MoM 델타.
+  // 탭 모드(showTrendTabs)에서는 두 벌 렌더 → 기존 switchTrend() 가 .trend-weekly/.trend-monthly 토글
+  const _scoreNum = s => `<span style="font-size:22px;font-weight:900;color:#1A1A1A;">${s.score.toFixed(1)}</span><span style="font-size:12px;color:#94A3B8;">%</span>`
+  const _deltaDivStyle = 'clear:both;margin-top:2px;font-size:10px;color:#94A3B8;font-family:' + EM_FONT + ';text-align:right;'
+  const scoreBlock = showTrendTabs
+    ? `<span class="trend-weekly">${_scoreNum(wStat)}</span><span class="trend-monthly" style="display:none;">${_scoreNum(mStat)}</span>`
+    : _scoreNum(activeStat)
+  const badgeBlock = showTrendTabs
+    ? `<span class="trend-weekly">${periodBadgeHtml('weekly', lang)}</span><span class="trend-monthly" style="display:none;">${periodBadgeHtml('monthly', lang)}</span>`
+    : periodBadgeHtml(activeStat.mode, lang)
+  const deltaBlock = showTrendTabs
+    ? `<div class="trend-weekly" style="${_deltaDivStyle}">${periodDeltaHtml(wStat, 10)}</div><div class="trend-monthly" style="display:none;${_deltaDivStyle}">${periodDeltaHtml(mStat, 10)}</div>`
+    : `<div style="${_deltaDivStyle}">${periodDeltaHtml(activeStat, 10)}</div>`
+
   return `
   <td width="33%" style="padding:3px;vertical-align:top;">
     <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border:2px solid ${st.border};border-radius:8px;background:#FFFFFF;font-family:${EM_FONT};">
@@ -549,7 +601,7 @@ function productCardHtml(p, globalMax, globalMin, lang = 'ko', opts = {}) {
                   <td style="vertical-align:middle;white-space:nowrap;"><span style="font-size:13px;font-weight:700;color:${ratioColor};font-family:${EM_FONT};letter-spacing:-1px;">${escapeHtml(p.compName || 'Samsung')} ${lang === 'en' ? 'vs' : '대비'} ${curRatio}%${ratioDelta}</span></td>
                   <td style="vertical-align:middle;white-space:nowrap;padding-left:4px;"><span style="display:inline-block;background:${st.bg};color:${st.color};border:1px solid ${st.border};border-radius:6px;padding:0px 5px;font-size:10px;font-weight:700;line-height:16px;font-family:${EM_FONT};">${st.label}</span></td>
                 </tr></table>
-                ${!(activePrev > 0) ? '' : `<div style="clear:both;margin-top:2px;font-size:10px;color:#94A3B8;font-family:${EM_FONT};text-align:right;">${lang === 'en' ? 'MoM' : '전월대비'} <span style="color:${momColor};font-weight:700;">${momArrow}${Math.abs(d).toFixed(1)}%p</span></div>`}
+                ${deltaBlock}
               </td>
             </tr>
           </table>
@@ -560,8 +612,8 @@ function productCardHtml(p, globalMax, globalMin, lang = 'ko', opts = {}) {
           <table border="0" cellpadding="0" cellspacing="0" width="100%">
             <tr>
               <td style="vertical-align:middle;">
-                <span style="font-size:22px;font-weight:900;color:#1A1A1A;">${activeScore.toFixed(1)}</span><span style="font-size:12px;color:#94A3B8;">%</span>
-                &nbsp;${momStr}
+                ${scoreBlock}
+                &nbsp;${badgeBlock}
               </td>
               <td align="right" style="vertical-align:middle;">
                 ${trendCell}
@@ -577,14 +629,25 @@ function productCardHtml(p, globalMax, globalMin, lang = 'ko', opts = {}) {
 // ─── 제품 카드 V2 (10국 Visibility 바 차트) ─────────────────────────────────────
 function productCardV2Html(p, lang = 'ko', opts = {}) {
   const st = statusInfo(p.status, lang)
-  const d = delta(p.score, p.prev)
+  const showTrendTabs = opts.showTrendTabs === true
+  const useMonthly = opts.trendMode === 'monthly'
+  // 주간/월간 모드별 점수·직전값 (periodStats — 마지막 두 유효값으로 prev 산출)
+  const wStat = periodStats(p, 'weekly')
+  const mStat = periodStats(p, 'monthly')
+  const activeStat = useMonthly ? mStat : wStat
   const curRatio = p.compRatio || Math.round(p.vsComp > 0 ? (p.score / p.vsComp) * 100 : 100)
   const ratioColor = curRatio >= 100 ? '#15803D' : curRatio >= 80 ? '#E8910C' : '#BE123C'
-  const momColor = d > 0 ? '#16A34A' : d < 0 ? '#DC2626' : '#94A3B8'
-  const momArrow = d > 0 ? '▲' : d < 0 ? '▼' : ''
-  const momStr = (p.prev != null && p.prev > 0)
-    ? `<span style="font-size:11px;font-weight:700;color:${momColor};">${momArrow}${Math.abs(d).toFixed(1)}%p</span>`
-    : ''
+  const _scoreNum = s => `<span style="font-size:18px;font-weight:900;color:#1A1A1A;font-family:${EM_FONT};">${s.score.toFixed(1)}<span style="font-size:11px;color:#94A3B8;">%</span></span>`
+  const _deltaDivStyle = 'clear:both;font-size:10px;color:#94A3B8;font-family:' + EM_FONT + ';text-align:right;margin-top:1px;'
+  const scoreBlock = showTrendTabs
+    ? `<span class="trend-weekly">${_scoreNum(wStat)}</span><span class="trend-monthly" style="display:none;">${_scoreNum(mStat)}</span>`
+    : _scoreNum(activeStat)
+  const badgeBlock = showTrendTabs
+    ? `<span class="trend-weekly">${periodBadgeHtml('weekly', lang)}</span><span class="trend-monthly" style="display:none;">${periodBadgeHtml('monthly', lang)}</span>`
+    : periodBadgeHtml(activeStat.mode, lang)
+  const deltaBlock = showTrendTabs
+    ? `<div class="trend-weekly" style="${_deltaDivStyle}">${periodDeltaHtml(wStat, 10)}</div><div class="trend-monthly" style="display:none;${_deltaDivStyle}">${periodDeltaHtml(mStat, 10)}</div>`
+    : `<div style="${_deltaDivStyle}">${periodDeltaHtml(activeStat, 10)}</div>`
   const prodName = opts.prodNameFn ? opts.prodNameFn(p) : p.kr
 
   // 10국 데이터
@@ -654,13 +717,13 @@ function productCardV2Html(p, lang = 'ko', opts = {}) {
             <tr>
               <td style="vertical-align:middle;white-space:nowrap;">
                 <span style="font-size:14px;font-weight:900;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:${lang === 'en' ? '-0.9px' : '-0.5px'};">${escapeHtml(prodName)}</span>
-                <span style="font-size:18px;font-weight:900;color:#1A1A1A;font-family:${EM_FONT};">${p.score.toFixed(1)}<span style="font-size:11px;color:#94A3B8;">%</span></span>${momStr ? `&nbsp;${momStr}` : ''}
+                ${scoreBlock}&nbsp;${badgeBlock}
               </td>
               <td align="right" style="vertical-align:middle;">
                 <table border="0" cellpadding="0" cellspacing="0" align="right" style="float:right;"><tr>
                   <td style="vertical-align:middle;white-space:nowrap;"><span style="font-size:13px;font-weight:700;color:${ratioColor};font-family:${EM_FONT};letter-spacing:-1px;">${escapeHtml(compShort(p.compName || 'Samsung') || 'SS')} ${curRatio}%</span></td>
                   <td style="vertical-align:middle;white-space:nowrap;padding-left:4px;"><span style="display:inline-block;background:${st.bg};color:${st.color};border:1px solid ${st.border};border-radius:5px;padding:0px 4px;font-size:10px;font-weight:700;line-height:15px;font-family:${EM_FONT};">${st.label}</span></td>
-                </tr></table>${p.prev != null && p.prev > 0 ? `<div style="clear:both;font-size:10px;color:#94A3B8;font-family:${EM_FONT};text-align:right;margin-top:1px;">${lang === 'en' ? 'MoM' : '전월대비'} <span style="color:${momColor};font-weight:700;">${momArrow}${Math.abs(d).toFixed(1)}%p</span></div>` : ''}
+                </tr></table>${deltaBlock}
               </td>
             </tr>
           </table>
@@ -695,18 +758,29 @@ function compShort(name) { if (!name) return ''; return name.replace(/Samsung/gi
 // ─── 제품 카드 V3 (국가별 + 지정 경쟁사 비교) ──────────────────────────────────
 function productCardV3Html(p, lang = 'ko', opts = {}) {
   const st = statusInfo(p.status, lang)
-  const d = delta(p.score, p.prev)
   // 지정 경쟁사 우선, 없으면 기존 1위 경쟁사
   const prefComp = getPreferredComp(p.id, p.allScores)
   const mainCompName = prefComp ? prefComp.name : (p.compName || 'Samsung')
   const mainCompScore = prefComp ? prefComp.score : (p.vsComp || 0)
   const curRatio = mainCompScore > 0 ? Math.round(p.score / mainCompScore * 100) : 100
   const ratioColor = curRatio >= 100 ? '#15803D' : curRatio >= 80 ? '#E8910C' : '#BE123C'
-  const momColor = d > 0 ? '#16A34A' : d < 0 ? '#DC2626' : '#94A3B8'
-  const momArrow = d > 0 ? '▲' : d < 0 ? '▼' : ''
-  const momStr = (p.prev != null && p.prev > 0)
-    ? `<span style="font-size:12px;font-weight:700;color:${momColor};letter-spacing:-1.2px;">${momArrow}${Math.abs(d).toFixed(1)}%p</span>`
-    : ''
+  const showTrendTabs = opts.showTrendTabs === true
+  const useMonthly = opts.trendMode === 'monthly'
+  // 주간/월간 모드별 점수·직전값 (periodStats — 마지막 두 유효값으로 prev 산출)
+  const wStat = periodStats(p, 'weekly')
+  const mStat = periodStats(p, 'monthly')
+  const activeStat = useMonthly ? mStat : wStat
+  const _scoreNum = s => `<span style="font-size:18px;font-weight:900;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-1.8px;">${s.score.toFixed(1)}<span style="font-size:11px;color:#94A3B8;letter-spacing:-1.1px;">%</span></span>`
+  const _deltaDivStyle = 'clear:both;font-size:10px;color:#94A3B8;font-family:' + EM_FONT + ';text-align:right;margin-top:1px;'
+  const scoreBlock = showTrendTabs
+    ? `<span class="trend-weekly">${_scoreNum(wStat)}</span><span class="trend-monthly" style="display:none;">${_scoreNum(mStat)}</span>`
+    : _scoreNum(activeStat)
+  const badgeBlock = showTrendTabs
+    ? `<span class="trend-weekly">${periodBadgeHtml('weekly', lang)}</span><span class="trend-monthly" style="display:none;">${periodBadgeHtml('monthly', lang)}</span>`
+    : periodBadgeHtml(activeStat.mode, lang)
+  const deltaBlock = showTrendTabs
+    ? `<div class="trend-weekly" style="${_deltaDivStyle}">${periodDeltaHtml(wStat, 10)}</div><div class="trend-monthly" style="display:none;${_deltaDivStyle}">${periodDeltaHtml(mStat, 10)}</div>`
+    : `<div style="${_deltaDivStyle}">${periodDeltaHtml(activeStat, 10)}</div>`
   const prodName = opts.prodNameFn ? opts.prodNameFn(p) : p.kr
 
   const cntyData = (opts.productsCnty || []).filter(r => {
@@ -777,13 +851,13 @@ function productCardV3Html(p, lang = 'ko', opts = {}) {
             <tr>
               <td style="vertical-align:middle;white-space:nowrap;">
                 <span style="font-size:14px;font-weight:900;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:${lang === 'en' ? '-0.9px' : '-0.5px'};">${escapeHtml(prodName)}</span>
-                <span style="font-size:18px;font-weight:900;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-1.8px;">${p.score.toFixed(1)}<span style="font-size:11px;color:#94A3B8;letter-spacing:-1.1px;">%</span></span>${momStr ? `&nbsp;${momStr}` : ''}
+                ${scoreBlock}&nbsp;${badgeBlock}
               </td>
               <td align="right" style="vertical-align:middle;">
                 <table border="0" cellpadding="0" cellspacing="0" align="right" style="float:right;"><tr>
                   <td style="vertical-align:middle;white-space:nowrap;"><span style="font-size:13px;font-weight:700;color:${ratioColor};font-family:${EM_FONT};letter-spacing:-1.3px;">${compShort(mainCompName)} ${curRatio}%</span></td>
                   <td style="vertical-align:middle;white-space:nowrap;padding-left:4px;"><span style="display:inline-block;background:${st.bg};color:${st.color};border:1px solid ${st.border};border-radius:5px;padding:0px 4px;font-size:10px;font-weight:700;line-height:15px;font-family:${EM_FONT};">${st.label}</span></td>
-                </tr></table>
+                </tr></table>${deltaBlock}
               </td>
             </tr>
           </table>

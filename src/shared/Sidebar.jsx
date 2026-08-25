@@ -510,8 +510,10 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
           const monthlyRatio = p.vsComp > 0 ? Math.round(monthlyScore / p.vsComp * 100) : 100
 
           // Weekly 점수 (Weekly 시트에서)
+          // prev 는 "직전 유효 주차" — 마지막 두 유효값. 인덱스 고정 (length-5) 으로 잡으면
+          // 유효 주차가 5개 미만일 때 자기 자신을 가리켜 WoW 가 항상 0.0%p 가 됨 (TV 회귀).
           const weeklyScore = validWeekly.length > 0 ? validWeekly[validWeekly.length - 1] : monthlyScore
-          const weeklyPrev = validWeekly.length >= 5 ? validWeekly[validWeekly.length - 5] : (validWeekly[0] || 0)
+          const weeklyPrev = validWeekly.length >= 2 ? validWeekly[validWeekly.length - 2] : 0
 
           // 기본 표시값은 Monthly (공식 수치)
           const score = monthlyScore
