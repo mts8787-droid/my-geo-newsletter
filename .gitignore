@@ -18,3 +18,7 @@ dist-citation
 
 # Claude Code 사용자 로컬 permissions (PC 경로 등 개인 정보 — 외부 노출 방지)
 .claude/settings.local.json
+
+# PSI 수집 원본 — 수집 완료 전에는 커밋 금지 (부분 데이터로 집계되면 #1 통과율 왜곡)
+# 완료 후 의도적으로 `git add -f data/readability/psi-*.json` 으로 추가할 것
+data/readability/psi-*.json

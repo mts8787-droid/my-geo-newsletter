@@ -120,6 +120,47 @@ describe('applyScoringOverride — #1 TTFB < 1800ms', () => {
   })
 })
 
+// PSI(Lighthouse) TTFB — 측정 정본 교체. ctx = { url, psi }
+describe('applyScoringOverride — #1 TTFB 측정 출처(PSI)', () => {
+  const withPsi = (url, psi, crawlerValue) => {
+    const s = perfScore({ perf_ttfb: { label: '#1 TTFB < 600ms', pass: true, value: crawlerValue, hint: null } })
+    applyScoringOverride(s, { url, psi })
+    return s.breakdown.performance.items.perf_ttfb
+  }
+
+  it('PSI lab 값이 있으면 크롤러 값을 무시하고 PSI 로 판정', () => {
+    // 크롤러는 2486ms(FAIL) 인데 PSI Lab 은 61ms → PASS
+    const it = withPsi('https://a', { 'https://a': { lab: 61 } }, '2486ms')
+    expect(it.pass).toBe(true)
+    expect(it.label).toBe('#1 TTFB < 1800ms (PSI)')
+  })
+
+  it('PSI lab 이 임계값 이상이면 FAIL + hint 에 출처 표기', () => {
+    const it = withPsi('https://a', { 'https://a': { lab: 2500 } }, '10ms')
+    expect(it.pass).toBe(false)
+    expect(it.hint).toBe('TTFB 2500ms (PSI) — 1800ms 미만 필요')
+  })
+
+  it('PSI 체계인데 이 URL 만 값이 없으면 채점 제외(na) — 두 측정 체계 혼합 방지', () => {
+    const it = withPsi('https://missing', { 'https://other': { lab: 61 } }, '100ms')
+    expect(it.na).toBe(true)
+  })
+
+  it('PSI 호출이 실패한 URL 도 채점 제외(na)', () => {
+    const it = withPsi('https://a', { 'https://a': { err: 'HTTP 500' } }, '100ms')
+    expect(it.na).toBe(true)
+  })
+
+  it('PSI 데이터 자체가 없으면 크롤러 값으로 같은 임계값 재판정 + 라벨에 (PSI) 없음', () => {
+    const s = perfScore({ perf_ttfb: { label: '#1 TTFB < 600ms', pass: false, value: '873ms', hint: '' } })
+    applyScoringOverride(s)                      // ctx 없음
+    const it = s.breakdown.performance.items.perf_ttfb
+    expect(it.pass).toBe(true)                   // 873 < 1800
+    expect(it.na).toBeUndefined()
+    expect(it.label).toBe('#1 TTFB < 1800ms')    // (PSI) 미표기 — 라벨과 출처 일치
+  })
+})
+
 describe('applyScoringOverride — #4 Cache-Control', () => {
   it('no-cache/no-store 가 섞여도 max-age 가 설정돼 있으면 PASS (원본 FAIL 회귀 수리)', () => {
     const s = perfScore({ perf_cache_control: { pass: false, value: 'max-age=0, no-cache, no-store', hint: 'Cache-Control 부재 또는 no-store/no-cache.' } })
