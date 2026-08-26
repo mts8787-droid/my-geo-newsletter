@@ -40,6 +40,16 @@
     line-height: 1.5;
   }
 
+  /* 항목 정의 (체크 항목 칸 안, 이름 아래) */
+  .item-def {
+    display: block;
+    margin-top: 2px;
+    font-size: 9.5px;
+    font-weight: 400;
+    color: #64748b;
+    line-height: 1.45;
+  }
+
   /* 체크리스트 테이블 */
   .check-table {
     width: 100%;
@@ -125,55 +135,53 @@
     <span class="accent">[유첨]</span> GEO Agent Readability 체크리스트 (1/2)
   </h1>
   <p class="slide-subtitle">
-    4개 카테고리 기준 <strong>40개 체크리스트</strong>를 기준으로, 자체 개발한 Agent 기반 HTTP/HTML 분석 수행 (Pass, Fail 방식)
+    4개 카테고리 기준 <strong>38개 체크리스트</strong>를 기준으로, 자체 개발한 Agent 기반 HTTP/HTML 분석 수행 (Pass, Fail 방식)
   </p>
 
   <table class="check-table">
     <thead>
       <tr>
-        <th style="width: 110px;">카테고리</th>
-        <th style="width: 40px;">번호</th>
-        <th style="width: 250px;">체크 항목 (C/L)</th>
-        <th style="width: 280px;">Pass 기준</th>
+        <th style="width: 96px;">카테고리</th>
+        <th style="width: 36px;">번호</th>
+        <th style="width: 340px;">체크 항목 (C/L)</th>
+        <th style="width: 230px;">Pass 기준</th>
         <th>측정방법</th>
       </tr>
     </thead>
     <tbody>
-      <!-- Performance (C/L 8개) -->
+      <!-- Performance (C/L 6개) — #5 HTML Size / #8 Render Blocking 삭제 (2026-08-26) -->
       <tr>
-        <td rowspan="8" class="cat-cell">Performance<span class="small">(C/L 8개 중 채점 6개)</span></td>
-        <td class="no-cell">1</td><td class="item-cell">TTFB</td>
+        <td rowspan="6" class="cat-cell">Performance<span class="small">(C/L 6개)</span></td>
+        <td class="no-cell">1</td><td class="item-cell">TTFB<span class="item-def">서버 요청 후 첫 번째 응답이 전달되기까지 걸리는 시간</span></td>
         <td class="pass-cell">&lt; 1800ms</td>
         <td class="method-cell">Server-Timing, X-Response-Time 헤더</td>
       </tr>
-      <tr><td class="no-cell">2</td><td class="item-cell">Compression</td><td class="pass-cell">gzip/br/deflate</td><td class="method-cell">Content-Encoding 헤더</td></tr>
-      <tr><td class="no-cell">3</td><td class="item-cell">HTTP Protocol</td><td class="pass-cell">HTTP/2 이상</td><td class="method-cell">Alt-Svc, :status 헤더</td></tr>
-      <tr><td class="no-cell">4</td><td class="item-cell">Cache-Control</td><td class="pass-cell">max-age 설정 (0 포함)</td><td class="method-cell">Cache-Control 헤더</td></tr>
-      <tr style="opacity:.5"><td class="no-cell">5</td><td class="item-cell">HTML Size</td><td class="pass-cell">채점 제외 (2026-08-26~)</td><td class="method-cell">Buffer.byteLength</td></tr>
-      <tr><td class="no-cell">6</td><td class="item-cell">Redirect Chain</td><td class="pass-cell">≤ 1회</td><td class="method-cell">redirectChain 메타데이터</td></tr>
-      <tr><td class="no-cell">7</td><td class="item-cell">Mixed Content</td><td class="pass-cell">0개</td><td class="method-cell">http://리소스 탐지</td></tr>
-      <tr style="opacity:.5"><td class="no-cell">8</td><td class="item-cell">Render Blocking</td><td class="pass-cell">채점 제외 (2026-08-26~)</td><td class="method-cell">defer/async 없는 script 탐지</td></tr>
+      <tr><td class="no-cell">2</td><td class="item-cell">Compression<span class="item-def">페이지 전송 용량을 줄이기 위한 HTTP 응답 압축 적용 여부</span></td><td class="pass-cell">gzip/br/deflate</td><td class="method-cell">Content-Encoding 헤더</td></tr>
+      <tr><td class="no-cell">3</td><td class="item-cell">HTTP Protocol<span class="item-def">페이지 전송에 사용되는 HTTP 통신 프로토콜 버전</span></td><td class="pass-cell">HTTP/2 이상</td><td class="method-cell">Alt-Svc, :status 헤더</td></tr>
+      <tr><td class="no-cell">4</td><td class="item-cell">Cache-Control<span class="item-def">브라우저가 리소스를 일정 기간 저장·재사용할 수 있도록 하는 캐시 유효기간</span></td><td class="pass-cell">max-age 설정 (0 포함)</td><td class="method-cell">Cache-Control 헤더</td></tr>
+      <tr><td class="no-cell">6</td><td class="item-cell">Redirect Chain<span class="item-def">최종 페이지에 도달하기 전 거치는 URL 리다이렉트 횟수</span></td><td class="pass-cell">≤ 1회</td><td class="method-cell">redirectChain 메타데이터</td></tr>
+      <tr><td class="no-cell">7</td><td class="item-cell">Mixed Content<span class="item-def">HTTPS 페이지 내 비보안(HTTP) 리소스 포함 여부</span></td><td class="pass-cell">0개</td><td class="method-cell">http://리소스 탐지</td></tr>
 
       <!-- Accessibility (C/L 4개) -->
       <tr class="cat-divider">
         <td rowspan="4" class="cat-cell">Accessibility<span class="small">(C/L 4개)</span></td>
-        <td class="no-cell">9</td><td class="item-cell">Image Alt</td>
+        <td class="no-cell">9</td><td class="item-cell">Image Alt<span class="item-def">이미지의 내용과 의미를 설명하는 대체 텍스트 제공 여부</span></td>
         <td class="pass-cell">누락 0개</td>
         <td class="method-cell">img[alt] 체크</td>
       </tr>
-      <tr><td class="no-cell">10</td><td class="item-cell">Semantic HTML</td><td class="pass-cell">Main + 랜드마크 3개 이상</td><td class="method-cell">main, nav, header, footer, article, section, aside</td></tr>
-      <tr><td class="no-cell">11</td><td class="item-cell">Heading Hierarchy</td><td class="pass-cell">위반 0개</td><td class="method-cell">h1 → h3 점프 등 탐지</td></tr>
-      <tr><td class="no-cell">12</td><td class="item-cell">ARIA Labels</td><td class="pass-cell">누락 &lt; 10%</td><td class="method-cell">Button, input, a 접근성텍스트</td></tr>
+      <tr><td class="no-cell">10</td><td class="item-cell">Semantic HTML<span class="item-def">콘텐츠의 역할과 구조를 명확하게 표현하는 의미 기반 HTML 요소 사용</span></td><td class="pass-cell">Main + 랜드마크 3개 이상</td><td class="method-cell">main, nav, header, footer, article, section, aside</td></tr>
+      <tr><td class="no-cell">11</td><td class="item-cell">Heading Hierarchy<span class="item-def">페이지의 제목과 하위 내용을 구분하는 Heading Tag의 계층 구조 적용 여부</span></td><td class="pass-cell">위반 0개</td><td class="method-cell">h1 → h3 점프 등 탐지</td></tr>
+      <tr><td class="no-cell">12</td><td class="item-cell">ARIA Labels<span class="item-def">버튼·입력창 등 UI 요소의 이름과 역할을 설명하는 정보 제공 여부</span></td><td class="pass-cell">누락 &lt; 10%</td><td class="method-cell">Button, input, a 접근성텍스트</td></tr>
 
       <!-- SEO (C/L 7개) -->
       <tr class="cat-divider">
         <td rowspan="7" class="cat-cell">SEO<span class="small">(C/L 7개)</span></td>
-        <td class="no-cell">13</td><td class="item-cell">Title</td>
+        <td class="no-cell">13</td><td class="item-cell">Title<span class="item-def">검색엔진과 사용자에게 페이지의 핵심 주제를 전달하는 페이지 제목</span></td>
         <td class="pass-cell">존재 (30~60자)</td>
         <td class="method-cell">title tag HTML 파싱 후 검증</td>
       </tr>
-      <tr><td class="no-cell">14</td><td class="item-cell">Meta Description</td><td class="pass-cell">존재 (120~160자)</td><td class="method-cell">meta[name="description"] HTML 파싱 후 검증</td></tr>
-      <tr><td class="no-cell">15</td><td class="item-cell">Canonical</td><td class="pass-cell">self-referencing</td><td class="method-cell">link[rel="canonical"] HTML 파싱 후 검증</td></tr>
+      <tr><td class="no-cell">14</td><td class="item-cell">Meta Description<span class="item-def">검색결과에서 페이지의 주요 내용을 요약해 전달하는 메타 설명 문구</span></td><td class="pass-cell">존재 (120~160자)</td><td class="method-cell">meta[name="description"] HTML 파싱 후 검증</td></tr>
+      <tr><td class="no-cell">15</td><td class="item-cell">Canonical<span class="item-def">검색엔진에 대표 페이지를 알려주는 URL 설정</span></td><td class="pass-cell">self-referencing</td><td class="method-cell">link[rel="canonical"] HTML 파싱 후 검증</td></tr>
       <tr><td class="no-cell">16</td><td class="item-cell">H1</td><td class="pass-cell">정확히 1개 존재</td><td class="method-cell">h1 tag HTML 파싱 후 검증 (카운트)</td></tr>
       <tr><td class="no-cell">17</td><td class="item-cell">Robots</td><td class="pass-cell">Indexing 허용</td><td class="method-cell">meta robots HTML 파싱 후 검증, X-Robots-Tag 헤더↑ 응답값 확인</td></tr>
       <tr><td class="no-cell">18</td><td class="item-cell">Open Graph</td><td class="pass-cell">og:title + og:image</td><td class="method-cell">og: meta 태그</td></tr>
@@ -207,7 +215,7 @@
     <tbody>
       <!-- AI Readiness (C/L 25개) -->
       <tr>
-        <td rowspan="25" class="cat-cell">AI Readiness<span class="small">(C/L 25개)</span></td>
+        <td rowspan="21" class="cat-cell">AI Readiness<span class="small">(C/L 21개)</span></td>
         <td class="no-cell">20</td><td class="item-cell">Schema Types - Organization</td>
         <td class="pass-cell">JSON-LD 필수요소 모두 존재, 파싱 성공</td>
         <td class="method-cell">contactPoint, address, geo, hasMap 존재</td>
