@@ -7,6 +7,8 @@
 // 정기 재어딧 시 본 스크립트 재실행 → 날짜별 스냅샷 누적 (시계열 MoM 대비용).
 //
 // 사용: node scripts/aggregate-readability.mjs [--src <run_results 경로>] [--date <YYYY-MM-DD>]
+//       node scripts/aggregate-readability.mjs --rebuild <YYYY-MM-DD>
+//         → 기존 스냅샷이 쓴 run 을 국가별 runId 로 고정해 그대로 재집계 (채점 기준 변경 시 과거 스냅샷 갱신용)
 
 import { readdirSync, readFileSync, writeFileSync, mkdirSync, existsSync, copyFileSync, rmSync, statSync } from 'fs'
 import { join, dirname, basename } from 'path'
@@ -24,6 +26,7 @@ function parseArgs() {
     if (a[i] === '--src') out.src = a[++i]
     else if (a[i] === '--date') out.date = a[++i]
     else if (a[i] === '--report') out.report = a[++i]
+    else if (a[i] === '--rebuild') out.rebuild = a[++i]
   }
   return out
 }
@@ -120,8 +123,11 @@ const CATEGORY_LABEL = {
   ai_readiness: 'AI Readiness',
 }
 
-// 점수 집계에서 완전 제외할 페이지타입 (분류불가/홈페이지) — 점수·카테고리·체크·페이지타입행 모두 제외
-const EXCLUDED_PT = { unknown: 1, home: 1 }
+// 점수 집계에서 완전 제외할 페이지타입 — 점수·카테고리·체크·페이지타입행·URL 카운트 모두 제외.
+//   unknown/home  : 분류불가/홈페이지 (측정 의미 없음)
+//   business      : B2B (사업자) — GEO 대상 아님 (사용자 지시, 2026-08-26)
+//   promotion     : 프로모션/약관 — 한시 페이지라 개선 대상 아님 (사용자 지시, 2026-08-26)
+const EXCLUDED_PT = { unknown: 1, home: 1, business: 1, promotion: 1 }
 // 페이지타입 통합 — about(회사)/content(콘텐츠매거진) → newsroom(뉴스룸) 으로 병합
 const PT_MERGE = { about: 'newsroom', content: 'newsroom' }
 // 통합/병합 결과 페이지타입의 표준 라벨 (병합 시 라벨 일관성)
@@ -137,6 +143,101 @@ function resolvePt(pt, url) {
   const id = PT_MERGE[pt.id] || pt.id
   if (EXCLUDED_PT[id]) return { id, label: pt.label || id, excluded: true }
   return { id, label: PT_LABEL[id] || pt.label || id, excluded: false }
+}
+
+// ── 대시보드 채점 재정의 (SCORING_OVERRIDE) ────────────────────────────────────
+// 원본 어딧(my-geo-audit/scoring_config.json)의 판정을 대시보드 집계 시점에 재평가한다.
+// 원측정값(item.value)에서 다시 판정하므로 **멱등** — 원본 config 가 나중에 같은 기준으로
+// 바뀌어도 결과는 동일하다 (이중 적용 X).
+//
+// 재정의 사유 (사용자 지시, 2026-08-26):
+//   #1 perf_ttfb        600ms → 1800ms 로 완화 (크롤러 동시성 하에서 600ms 는 비현실적)
+//   #4 perf_cache_control  "max-age 디렉티브가 설정되어 있으면 통과" 로 완화.
+//                       원본 룰은 no-cache/no-store 가 섞여 있으면 max-age 값과 무관하게
+//                       즉시 FAIL 처리 → lg.com 의 `max-age=0, no-cache, no-store` 3천여 건이
+//                       전부 FAIL 로 잡혀 통과 수가 비정상적으로 적었다.
+//   #8 perf_render_block  채점 대상에서 제외 (분모·분자 모두). na 처리라 통과율 표에서도 사라짐.
+const TTFB_MAX_MS = 1800
+// 채점 제외 체크 — na:true 로 표시해 applicable(분모)에서도 빠진다 (scoring_config 의 enabled:false 와 동등)
+const DISABLED_CHECKS = { perf_render_block: 1 }
+// 기준이 바뀐 체크의 표시 라벨 (원본 label 은 옛 임계값 문구를 담고 있음)
+const CHECK_LABEL_OVERRIDE = { perf_ttfb: `#1 TTFB < ${TTFB_MAX_MS}ms` }
+// 등급 임계값 — my-geo-audit/scoring_config.json 의 grade 와 동일 (good 80 / need_improvement 60)
+const GRADE_THRESHOLD = { good: 80, needImprovement: 60 }
+
+// Python round() 호환 (round-half-to-even) — 원본 analyzer.py 가 Python round 를 쓰므로
+// 재계산 결과가 원본과 정확히 일치하도록 동일 규칙 사용. JS Math.round 는 half-up 이라 불일치.
+function pyRound(x) {
+  const f = Math.floor(x)
+  const d = x - f
+  if (d > 0.5) return f + 1
+  if (d < 0.5) return f
+  return f % 2 === 0 ? f : f + 1
+}
+
+// 체크별 재판정기 — item.value(원측정값) 로 다시 판정. null 반환 = 원본 판정 유지.
+const RECHECK = {
+  // value 예: "873ms" / null(측정 실패)
+  perf_ttfb(it) {
+    const m = String(it.value == null ? '' : it.value).match(/([\d.]+)\s*ms/)
+    if (!m) return null                        // 측정 불가 → 원본 판정(FAIL) 유지
+    const ms = parseFloat(m[1])
+    const pass = ms < TTFB_MAX_MS
+    return { pass, hint: pass ? null : `TTFB ${m[1]}ms — ${TTFB_MAX_MS}ms 미만 필요` }
+  },
+  // value 예: "max-age=0, no-cache, no-store" / "max-age=3600" / null(헤더 없음)
+  perf_cache_control(it) {
+    const m = String(it.value == null ? '' : it.value).match(/max-age\s*=\s*(\d+)/i)
+    if (!m) return { pass: false, hint: 'Cache-Control 에 max-age 디렉티브가 없습니다.' }
+    return { pass: true, hint: null }          // max-age 가 설정되어 있으면(0 포함) 통과
+  },
+}
+
+// 단일 result.score 에 재정의를 적용하고 카테고리 points / total / grade 를 재계산 (in-place).
+// 원본 analyzer.py 와 동일한 산식: 모든 카테고리 항목을 동일 비중으로 보고 passed/applicable.
+export function applyScoringOverride(score) {
+  if (!score || !score.breakdown) return score
+  for (const cat of CATEGORIES) {
+    const bd = score.breakdown[cat]
+    if (!bd || !bd.items) continue
+    for (const [cid, it] of Object.entries(bd.items)) {
+      if (!it) continue
+      if (DISABLED_CHECKS[cid]) { it.na = true; it.hint = null; continue }
+      if (CHECK_LABEL_OVERRIDE[cid]) it.label = CHECK_LABEL_OVERRIDE[cid]
+      // 이미 미적용(na/null)인 항목은 재판정 대상 아님 (원본 applies_when 판단 존중)
+      if (it.na === true || it.pass == null) continue
+      const re = RECHECK[cid]
+      if (!re) continue
+      const v = re(it)
+      if (!v) continue
+      it.pass = v.pass
+      it.hint = v.hint
+    }
+    // 카테고리 재집계 — applicable(na!==true && pass!=null) 기준
+    let passed = 0, applicable = 0
+    for (const it of Object.values(bd.items)) {
+      if (!it || it.na === true || it.pass == null) continue
+      applicable++
+      if (it.pass === true) passed++
+    }
+    bd.passed = passed
+    bd.total = applicable
+    bd.points = applicable > 0 ? pyRound((passed / applicable) * 100) : 0
+    bd.max = 100
+  }
+  // 전체 점수 — 전 카테고리 통과 항목 합 / 전체 적용 항목 합 (analyzer.py 와 동일)
+  let tp = 0, ti = 0
+  for (const bd of Object.values(score.breakdown)) {
+    if (!bd || !bd.items) continue
+    tp += bd.passed || 0
+    ti += bd.total || 0
+  }
+  score.total = ti > 0 ? pyRound((tp / ti) * 100) : 0
+  score.max = 100
+  score.grade = score.total >= GRADE_THRESHOLD.good ? 'Good'
+    : score.total >= GRADE_THRESHOLD.needImprovement ? 'Need Improvement'
+    : 'Poor'
+  return score
 }
 
 // 국가코드 → 표시명 (CSV 다운로드 국가 컬럼용) — 공유 single source (render 와 동일).
@@ -190,6 +291,9 @@ function accumulateChecks(target, score) {
     }
     const items = (c && c.items) || {}
     for (const [cid, it] of Object.entries(items)) {
+      // 채점 제외 체크(DISABLED_CHECKS) 는 통과율 표에도 행을 만들지 않음 —
+      // 0/0 이면 '—' 로만 보여 "측정했는데 데이터 없음" 처럼 오해됨.
+      if (DISABLED_CHECKS[cid]) continue
       // na(true) 또는 pass===null → 미적용 (분모 제외)
       const applicable = !(it.na === true || it.pass === null || it.pass == null)
       if (!target.checks[cid]) target.checks[cid] = { label: it.label || cid, cat, pass: 0, applicable: 0 }
@@ -346,18 +450,43 @@ function main() {
   // overall/CSV 에 이중 계상되던 버그 방지 (countries[cc] 는 덮어쓰기라 최신만 남는데
   // overall/urlRows 는 모든 파일을 누적했었음 → 다중 날짜 국가만 inflate).
   const latestByCc = {}
+  // --rebuild <date>: 기존 스냅샷(data/readability/<date>.json)이 사용한 run 을 국가별 runId 로
+  // 그대로 고정 재집계. 채점 기준(SCORING_OVERRIDE)이 바뀌었을 때 과거 스냅샷까지 같은 기준으로
+  // 다시 만들어야 MoM 추이가 기준 변경 때문에 튀지 않는다.
+  const parsedAll = []
   for (const fname of files) {
     const meta = parseFileName(fname)
     if (!meta) {
       console.warn(`[aggregate-readability] WARN: 파일명 패턴 불일치, skip — ${fname}`)
       continue
     }
-    const prev = latestByCc[meta.cc]
-    if (!prev || meta.date >= prev.meta.date) {
-      if (prev) console.log(`[aggregate-readability] ${meta.cc}: 과거 run 제외 (${prev.meta.date}/${prev.meta.runId}) → 최신 채택 (${meta.date}/${meta.runId})`)
-      latestByCc[meta.cc] = { fname, meta }
-    } else {
-      console.log(`[aggregate-readability] ${meta.cc}: 과거 run 제외 (${meta.date}/${meta.runId}) — 최신 유지 (${prev.meta.date}/${prev.meta.runId})`)
+    parsedAll.push({ fname, meta })
+  }
+  if (args.rebuild) {
+    const snapPath = join(OUT_DIR, `${args.rebuild}.json`)
+    if (!existsSync(snapPath)) {
+      console.error(`[aggregate-readability] FATAL: --rebuild 대상 스냅샷 없음 — ${snapPath}`)
+      process.exit(1)
+    }
+    const prevSnap = JSON.parse(readFileSync(snapPath, 'utf8'))
+    for (const [cc, v] of Object.entries(prevSnap.countries || {})) {
+      const hit = parsedAll.find(x => x.meta.cc === cc && x.meta.runId === v.runId)
+      if (!hit) {
+        console.error(`[aggregate-readability] FATAL: ${cc} 의 원본 run 없음 (date=${v.auditedAt} runId=${v.runId}) — 재집계 불가`)
+        process.exit(1)
+      }
+      latestByCc[cc] = hit
+      console.log(`[aggregate-readability] ${cc}: rebuild 고정 run ${hit.meta.date}/${hit.meta.runId}`)
+    }
+  } else {
+    for (const { fname, meta } of parsedAll) {
+      const prev = latestByCc[meta.cc]
+      if (!prev || meta.date >= prev.meta.date) {
+        if (prev) console.log(`[aggregate-readability] ${meta.cc}: 과거 run 제외 (${prev.meta.date}/${prev.meta.runId}) → 최신 채택 (${meta.date}/${meta.runId})`)
+        latestByCc[meta.cc] = { fname, meta }
+      } else {
+        console.log(`[aggregate-readability] ${meta.cc}: 과거 run 제외 (${meta.date}/${meta.runId}) — 최신 유지 (${prev.meta.date}/${prev.meta.runId})`)
+      }
     }
   }
 
@@ -378,6 +507,9 @@ function main() {
       const url = s.url || s.result.url
       const rpt = resolvePt(s.result.page_type, url)
       if (rpt && rpt.excluded) continue
+      // 대시보드 채점 재정의 (TTFB 1800ms / Cache-Control 완화 / Render Blocking 제외) —
+      // checkRows(Raw 데이터) · 집계 · CSV 가 모두 같은 점수를 보도록 여기서 한 번만 적용.
+      applyScoringOverride(s.result.score)
       items.push({ result: s.result, url, rpt })
     }
     // Raw 데이터(조합 필터)용 — 전수 페이지의 전체 체크(PASS+FAIL) 수집 (샘플링 전, 최대 커버리지).
@@ -427,7 +559,7 @@ function main() {
   }
 
   // 스냅샷 날짜 = 인자 우선, 없으면 최빈 파일 날짜
-  const snapshotDate = args.date || mostCommon(fileDates) || new Date().toISOString().slice(0, 10)
+  const snapshotDate = args.rebuild || args.date || mostCommon(fileDates) || new Date().toISOString().slice(0, 10)
 
   const snapshot = {
     date: snapshotDate,
