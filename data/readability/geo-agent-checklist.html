@@ -135,7 +135,7 @@
     <span class="accent">[유첨]</span> GEO Agent Readability 체크리스트 (1/2)
   </h1>
   <p class="slide-subtitle">
-    4개 카테고리 기준 <strong>38개 체크리스트</strong>를 기준으로, 자체 개발한 Agent 기반 HTTP/HTML 분석 수행 (Pass, Fail 방식)
+    4개 카테고리 기준 <strong>42개 체크리스트</strong>를 기준으로, 자체 개발한 Agent 기반 HTTP/HTML 분석 수행 (Pass, Fail 방식)
   </p>
 
   <table class="check-table">
@@ -182,10 +182,10 @@
       </tr>
       <tr><td class="no-cell">14</td><td class="item-cell">Meta Description<span class="item-def">검색결과에서 페이지의 주요 내용을 요약해 전달하는 메타 설명 문구</span></td><td class="pass-cell">존재 (120~160자)</td><td class="method-cell">meta[name="description"] HTML 파싱 후 검증</td></tr>
       <tr><td class="no-cell">15</td><td class="item-cell">Canonical<span class="item-def">검색엔진에 대표 페이지를 알려주는 URL 설정</span></td><td class="pass-cell">self-referencing</td><td class="method-cell">link[rel="canonical"] HTML 파싱 후 검증</td></tr>
-      <tr><td class="no-cell">16</td><td class="item-cell">H1</td><td class="pass-cell">정확히 1개 존재</td><td class="method-cell">h1 tag HTML 파싱 후 검증 (카운트)</td></tr>
-      <tr><td class="no-cell">17</td><td class="item-cell">Robots</td><td class="pass-cell">Indexing 허용</td><td class="method-cell">meta robots HTML 파싱 후 검증, X-Robots-Tag 헤더↑ 응답값 확인</td></tr>
-      <tr><td class="no-cell">18</td><td class="item-cell">Open Graph</td><td class="pass-cell">og:title + og:image</td><td class="method-cell">og: meta 태그</td></tr>
-      <tr><td class="no-cell">19</td><td class="item-cell">Sitemap</td><td class="pass-cell">(Published/Update Data 1개월 내) 최신화된 Sitemap XML 존재</td><td class="method-cell">/sitemap.xml HEAD 요청, 각 국가별 Sitemap.xml 검증</td></tr>
+      <tr><td class="no-cell">16</td><td class="item-cell">H1<span class="item-def">페이지 본문의 대표 제목을 나타내는 최상위 제목 태그의 개수</span></td><td class="pass-cell">정확히 1개 존재</td><td class="method-cell">h1 tag HTML 파싱 후 검증 (카운트)</td></tr>
+      <tr><td class="no-cell">17</td><td class="item-cell">Robots<span class="item-def">검색엔진이 이 페이지를 수집하고 검색결과에 노출해도 되는지 알려주는 설정</span></td><td class="pass-cell">Indexing 허용</td><td class="method-cell">meta robots HTML 파싱 후 검증, X-Robots-Tag 헤더↑ 응답값 확인</td></tr>
+      <tr><td class="no-cell">18</td><td class="item-cell">Open Graph<span class="item-def">링크를 공유했을 때 제목·이미지가 함께 표시되도록 전달하는 정보</span></td><td class="pass-cell">og:title + og:image</td><td class="method-cell">og: meta 태그</td></tr>
+      <tr><td class="no-cell">19</td><td class="item-cell">Sitemap<span class="item-def">사이트의 전체 페이지 목록을 검색엔진에 알려주는 파일의 최신 여부</span></td><td class="pass-cell">(Published/Update Data 1개월 내) 최신화된 Sitemap XML 존재</td><td class="method-cell">/sitemap.xml HEAD 요청, 각 국가별 Sitemap.xml 검증</td></tr>
     </tbody>
   </table>
 
@@ -205,47 +205,47 @@
   <table class="check-table">
     <thead>
       <tr>
-        <th style="width: 110px;">카테고리</th>
-        <th style="width: 40px;">번호</th>
-        <th style="width: 270px;">체크 항목 (C/L)</th>
-        <th style="width: 270px;">Pass 기준</th>
+        <th style="width: 96px;">카테고리</th>
+        <th style="width: 36px;">번호</th>
+        <th style="width: 340px;">체크 항목 (C/L)</th>
+        <th style="width: 230px;">Pass 기준</th>
         <th>측정방법</th>
       </tr>
     </thead>
     <tbody>
       <!-- AI Readiness (C/L 25개) -->
       <tr>
-        <td rowspan="21" class="cat-cell">AI Readiness<span class="small">(C/L 21개)</span></td>
-        <td class="no-cell">20</td><td class="item-cell">Schema Types - Organization</td>
+        <td rowspan="25" class="cat-cell">AI Readiness<span class="small">(C/L 25개)</span></td>
+        <td class="no-cell">20</td><td class="item-cell">Schema Types - Organization<span class="item-def">회사의 이름·연락처·주소 등 기업 정보를 기계가 읽을 수 있게 표기</span></td>
         <td class="pass-cell">JSON-LD 필수요소 모두 존재, 파싱 성공</td>
         <td class="method-cell">contactPoint, address, geo, hasMap 존재</td>
       </tr>
-      <tr><td class="no-cell">21</td><td class="item-cell">Schema Types - BreadcrumbList</td><td class="pass-cell">JSON-LD 필수요소 모두 존재, 파싱 성공</td><td class="method-cell">itemListElement, item, name, position 등 존재</td></tr>
-      <tr><td class="no-cell">22</td><td class="item-cell">Schema Types - Speakable</td><td class="pass-cell">JSON-LD 필수요소 모두 존재, 파싱 성공</td><td class="method-cell">speakable.cssSelector 존재</td></tr>
-      <tr><td class="no-cell">23</td><td class="item-cell">Schema Types - FAQ</td><td class="pass-cell">JSON-LD 필수요소 모두 존재, 파싱 성공</td><td class="method-cell">mainEntity 존재</td></tr>
-      <tr><td class="no-cell">24</td><td class="item-cell">Schema Types - Collectionpage</td><td class="pass-cell">JSON-LD 필수요소 모두 존재, 파싱 성공</td><td class="method-cell">itemList, ListItem 존재</td></tr>
-      <tr><td class="no-cell">25</td><td class="item-cell">Schema Types - Product + Offer + AggregateRating + Review</td><td class="pass-cell">JSON-LD 필수요소 모두 존재, 파싱 성공</td><td class="method-cell">name, description, sku, brand, offers.price, offers.availability, aggregateRating.ratingValue, Review 존재</td></tr>
-      <tr><td class="no-cell">26</td><td class="item-cell">Schema Types - ImageObject</td><td class="pass-cell">JSON-LD 필수요소 모두 존재, 파싱 성공</td><td class="method-cell">url, name, description, uploadDate 존재</td></tr>
-      <tr><td class="no-cell">27</td><td class="item-cell">Schema Types - VideoObject</td><td class="pass-cell">JSON-LD 필수요소 모두 존재, 파싱 성공</td><td class="method-cell">url, name, description, thumbnailUrl 존재</td></tr>
-      <tr><td class="no-cell">28</td><td class="item-cell">Schema Types - HowTo</td><td class="pass-cell">JSON-LD 필수요소 모두 존재, 파싱 성공</td><td class="method-cell">HowToSupply / HowToStep 존재</td></tr>
-      <tr><td class="no-cell">29</td><td class="item-cell">Schema Types - Article</td><td class="pass-cell">JSON-LD 필수요소 모두 존재, 파싱 성공</td><td class="method-cell">headline, author, publisher, articleBody 존재</td></tr>
-      <tr><td class="no-cell">30</td><td class="item-cell">Schema Types - digitalDocument</td><td class="pass-cell">JSON-LD 필수요소 모두 존재, 파싱 성공</td><td class="method-cell">name, url, fileFormat, description 존재</td></tr>
-      <tr><td class="no-cell">31</td><td class="item-cell">Schema Types - Recipe</td><td class="pass-cell">JSON-LD 필수요소 모두 존재, 파싱 성공</td><td class="method-cell">Name, description, image, author, datepublihsed, recipeIngredient, recipeInstructions 존재</td></tr>
+      <tr><td class="no-cell">21</td><td class="item-cell">Schema Types - BreadcrumbList<span class="item-def">현재 페이지가 사이트 구조상 어느 위치에 있는지 알려주는 경로 정보</span></td><td class="pass-cell">JSON-LD 필수요소 모두 존재, 파싱 성공</td><td class="method-cell">itemListElement, item, name, position 등 존재</td></tr>
+      <tr><td class="no-cell">22</td><td class="item-cell">Schema Types - Speakable<span class="item-def">음성 서비스가 대신 읽어줄 수 있도록 핵심 문장 영역을 지정</span></td><td class="pass-cell">JSON-LD 필수요소 모두 존재, 파싱 성공</td><td class="method-cell">speakable.cssSelector 존재</td></tr>
+      <tr><td class="no-cell">23</td><td class="item-cell">Schema Types - FAQ<span class="item-def">자주 묻는 질문과 답변을 기계가 읽을 수 있게 표기</span></td><td class="pass-cell">JSON-LD 필수요소 모두 존재, 파싱 성공</td><td class="method-cell">mainEntity 존재</td></tr>
+      <tr><td class="no-cell">24</td><td class="item-cell">Schema Types - Collectionpage<span class="item-def">여러 항목을 모아 보여주는 목록형 페이지임을 기계가 읽을 수 있게 표기</span></td><td class="pass-cell">JSON-LD 필수요소 모두 존재, 파싱 성공</td><td class="method-cell">itemList, ListItem 존재</td></tr>
+      <tr><td class="no-cell">25</td><td class="item-cell">Schema Types - Product + Offer + AggregateRating + Review<span class="item-def">제품명·가격·재고·평점·후기 등 제품 정보를 기계가 읽을 수 있게 표기</span></td><td class="pass-cell">JSON-LD 필수요소 모두 존재, 파싱 성공</td><td class="method-cell">name, description, sku, brand, offers.price, offers.availability, aggregateRating.ratingValue, Review 존재</td></tr>
+      <tr><td class="no-cell">26</td><td class="item-cell">Schema Types - ImageObject<span class="item-def">이미지의 주소·이름·설명 등 이미지 정보를 기계가 읽을 수 있게 표기</span></td><td class="pass-cell">JSON-LD 필수요소 모두 존재, 파싱 성공</td><td class="method-cell">url, name, description, uploadDate 존재</td></tr>
+      <tr><td class="no-cell">27</td><td class="item-cell">Schema Types - VideoObject<span class="item-def">영상의 주소·제목·썸네일 등 영상 정보를 기계가 읽을 수 있게 표기</span></td><td class="pass-cell">JSON-LD 필수요소 모두 존재, 파싱 성공</td><td class="method-cell">url, name, description, thumbnailUrl 존재</td></tr>
+      <tr><td class="no-cell">28</td><td class="item-cell">Schema Types - HowTo<span class="item-def">준비물과 단계로 구성된 사용법·설치법 안내를 기계가 읽을 수 있게 표기</span></td><td class="pass-cell">JSON-LD 필수요소 모두 존재, 파싱 성공</td><td class="method-cell">HowToSupply / HowToStep 존재</td></tr>
+      <tr><td class="no-cell">29</td><td class="item-cell">Schema Types - Article<span class="item-def">기사·콘텐츠의 제목·작성자·발행처·본문을 기계가 읽을 수 있게 표기</span></td><td class="pass-cell">JSON-LD 필수요소 모두 존재, 파싱 성공</td><td class="method-cell">headline, author, publisher, articleBody 존재</td></tr>
+      <tr><td class="no-cell">30</td><td class="item-cell">Schema Types - digitalDocument<span class="item-def">매뉴얼·카탈로그 등 첨부 문서의 이름·형식·주소를 기계가 읽을 수 있게 표기</span></td><td class="pass-cell">JSON-LD 필수요소 모두 존재, 파싱 성공</td><td class="method-cell">name, url, fileFormat, description 존재</td></tr>
+      <tr><td class="no-cell">31</td><td class="item-cell">Schema Types - Recipe<span class="item-def">재료와 조리 단계로 구성된 레시피 정보를 기계가 읽을 수 있게 표기</span></td><td class="pass-cell">JSON-LD 필수요소 모두 존재, 파싱 성공</td><td class="method-cell">Name, description, image, author, datepublihsed, recipeIngredient, recipeInstructions 존재</td></tr>
 
-      <tr><td class="no-cell content-check">32</td><td class="item-cell content-check">FAQ Block*</td><td class="pass-cell content-check">1개 이상 존재</td><td class="method-cell">FAQPage Schema, details/summary, Q&amp;A 패턴</td></tr>
-      <tr><td class="no-cell content-check">33</td><td class="item-cell content-check">Definition Paragraph*</td><td class="pass-cell content-check">1개 이상 존재</td><td class="method-cell">"X는 Y이다", dfn, abbr 태그</td></tr>
-      <tr><td class="no-cell">34</td><td class="item-cell">Author/Source</td><td class="pass-cell">저자 또는 (출처+날짜) 존재</td><td class="method-cell">meta author, byline, datePublished</td></tr>
-      <tr><td class="no-cell content-check">35</td><td class="item-cell content-check">Summary Box*</td><td class="pass-cell content-check">1개 이상 존재</td><td class="method-cell">TL;DR, Key Takeaways, Highlights, Abstract</td></tr>
-      <tr><td class="no-cell content-check">36</td><td class="item-cell content-check">Citable Sentences*</td><td class="pass-cell content-check">밀도 ≥ 10%</td><td class="method-cell">숫자, 연도, 통계, 연구 키워드 포함 문장</td></tr>
+      <tr><td class="no-cell content-check">32</td><td class="item-cell content-check">FAQ Block*<span class="item-def">본문 안에 질문과 답변 형태로 구성된 콘텐츠가 있는지</span></td><td class="pass-cell content-check">1개 이상 존재</td><td class="method-cell">FAQPage Schema, details/summary, Q&amp;A 패턴</td></tr>
+      <tr><td class="no-cell content-check">33</td><td class="item-cell content-check">Definition Paragraph*<span class="item-def">“A는 B이다” 처럼 용어의 뜻을 풀어 설명하는 문장이 있는지</span></td><td class="pass-cell content-check">1개 이상 존재</td><td class="method-cell">"X는 Y이다", dfn, abbr 태그</td></tr>
+      <tr><td class="no-cell">34</td><td class="item-cell">Author/Source<span class="item-def">내용을 누가 언제 썼는지 알 수 있는 저자 또는 출처·날짜 표기</span></td><td class="pass-cell">저자 또는 (출처+날짜) 존재</td><td class="method-cell">meta author, byline, datePublished</td></tr>
+      <tr><td class="no-cell content-check">35</td><td class="item-cell content-check">Summary Box*<span class="item-def">본문 앞부분에 핵심 내용을 짧게 요약해 둔 영역이 있는지</span></td><td class="pass-cell content-check">1개 이상 존재</td><td class="method-cell">TL;DR, Key Takeaways, Highlights, Abstract</td></tr>
+      <tr><td class="no-cell content-check">36</td><td class="item-cell content-check">Citable Sentences*<span class="item-def">숫자·연도·통계처럼 AI가 근거로 인용하기 좋은 문장의 비중</span></td><td class="pass-cell content-check">밀도 ≥ 10%</td><td class="method-cell">숫자, 연도, 통계, 연구 키워드 포함 문장</td></tr>
 
-      <tr><td class="no-cell">37</td><td class="item-cell">(Javascript) HTML Text Ratio</td><td class="pass-cell">밀도 ≥ 60%</td><td class="method-cell">Javascript 렌더링 후 텍스트 대비 HTML Text Count 비중</td></tr>
-      <tr><td class="no-cell">38</td><td class="item-cell">(Javascript) HTML Resource</td><td class="pass-cell">PDP Image 썸네일의 1-3번째 이미지의 HTML 코드 존재</td><td class="method-cell">PDP HTML 파싱 후, 서버사이드 렌더링 확인</td></tr>
-      <tr><td class="no-cell">39</td><td class="item-cell">(Javascript) 핵심 element 체크</td><td class="pass-cell">PDP의 핵심 element이 HTML 코드로 존재</td><td class="method-cell">PDP HTML 파싱 후, 서버사이드 렌더링 확인</td></tr>
-      <tr><td class="no-cell">40</td><td class="item-cell">Image File Name</td><td class="pass-cell">브랜드명 포함</td><td class="method-cell">브랜드명 포함 등 이미지 파일 이름 규칙 검증</td></tr>
-      <tr><td class="no-cell">41</td><td class="item-cell">Status Code (200)</td><td class="pass-cell">200 Status code를 반환</td><td class="method-cell">Status Code</td></tr>
-      <tr><td class="no-cell">42</td><td class="item-cell">Status Code (Soft 404)</td><td class="pass-cell">200 Status code 반환, HTML Text Count 기준 이상일 경우</td><td class="method-cell">Status Code 및 HTML text 일정 수 미달 검증</td></tr>
-      <tr><td class="no-cell">43</td><td class="item-cell">llms.txt / llms-corepage.txt</td><td class="pass-cell">존재</td><td class="method-cell">각 국가별 llms.txt 검증</td></tr>
-      <tr><td class="no-cell">44</td><td class="item-cell">Sitemap XML</td><td class="pass-cell">(Published/Update Date 1개월 내) 최신화된 Sitemap XML 존재</td><td class="method-cell">각 국가별 Sitemap.xml 검증</td></tr>
+      <tr><td class="no-cell">37</td><td class="item-cell">(Javascript) HTML Text Ratio<span class="item-def">화면에 보이는 글 중 자바스크립트 없이도 읽히는 글의 비중</span></td><td class="pass-cell">밀도 ≥ 60%</td><td class="method-cell">Javascript 렌더링 후 텍스트 대비 HTML Text Count 비중</td></tr>
+      <tr><td class="no-cell">38</td><td class="item-cell">(Javascript) HTML Resource<span class="item-def">제품 대표 이미지가 자바스크립트 없이도 HTML 안에 들어 있는지</span></td><td class="pass-cell">PDP Image 썸네일의 1-3번째 이미지의 HTML 코드 존재</td><td class="method-cell">PDP HTML 파싱 후, 서버사이드 렌더링 확인</td></tr>
+      <tr><td class="no-cell">39</td><td class="item-cell">(Javascript) 핵심 element 체크<span class="item-def">제품 페이지의 핵심 정보가 자바스크립트 없이도 HTML 안에 들어 있는지</span></td><td class="pass-cell">PDP의 핵심 element이 HTML 코드로 존재</td><td class="method-cell">PDP HTML 파싱 후, 서버사이드 렌더링 확인</td></tr>
+      <tr><td class="no-cell">40</td><td class="item-cell">Image File Name<span class="item-def">이미지 파일 이름만으로 브랜드·제품을 알아볼 수 있는지</span></td><td class="pass-cell">브랜드명 포함</td><td class="method-cell">브랜드명 포함 등 이미지 파일 이름 규칙 검증</td></tr>
+      <tr><td class="no-cell">41</td><td class="item-cell">Status Code (200)<span class="item-def">페이지가 정상적으로 열리는 상태로 응답하는지</span></td><td class="pass-cell">200 Status code를 반환</td><td class="method-cell">Status Code</td></tr>
+      <tr><td class="no-cell">42</td><td class="item-cell">Status Code (Soft 404)<span class="item-def">정상 응답인데 실제로는 내용이 비어 있는 페이지인지</span></td><td class="pass-cell">200 Status code 반환, HTML Text Count 기준 이상일 경우</td><td class="method-cell">Status Code 및 HTML text 일정 수 미달 검증</td></tr>
+      <tr><td class="no-cell">43</td><td class="item-cell">llms.txt / llms-corepage.txt<span class="item-def">AI에게 사이트의 핵심 페이지를 안내하는 파일이 있는지</span></td><td class="pass-cell">존재</td><td class="method-cell">각 국가별 llms.txt 검증</td></tr>
+      <tr><td class="no-cell">44</td><td class="item-cell">Sitemap XML<span class="item-def">국가별 사이트맵 파일이 최근 기준으로 갱신되어 있는지</span></td><td class="pass-cell">(Published/Update Date 1개월 내) 최신화된 Sitemap XML 존재</td><td class="method-cell">각 국가별 Sitemap.xml 검증</td></tr>
     </tbody>
   </table>
 </div>
