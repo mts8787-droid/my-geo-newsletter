@@ -638,15 +638,19 @@ body{background:#F1F5F9;font-family:${FONT};color:#1A1A1A;line-height:1.6}
 .fails-score{text-align:right;font-weight:800;font-variant-numeric:tabular-nums}
 /* ── 카테고리 카드 ── */
 .cat-grid{display:grid;grid-template-columns:1fr;gap:16px}
-.bar-row.has-def{align-items:flex-start}
-.bar-row.has-def .bar-track,.bar-row.has-def .bar-value,.bar-row.has-def .bar-count{margin-top:2px}
-.bar-def{display:block;margin-top:3px;font-size:11.5px;line-height:1.5;color:#94A3B8;white-space:normal;font-weight:400;letter-spacing:-0.2px}
-.bars.sm .bar-label{flex:0 0 320px}
+/* 항목 정의를 같은 줄에 — 라벨 칸이 남는 폭을 모두 차지하고 막대는 고정 폭으로 줄인다.
+   (카드가 1열이라 가로 여유가 생겨 정의를 줄바꿈 없이 넣을 수 있음) */
+.cat-card .bars.sm .bar-label{flex:1 1 auto;min-width:0;font-size:14px;color:#1A1A1A;font-weight:600;white-space:normal}
+.cat-card .bars.sm .bar-track{flex:0 0 120px;height:12px}
+.cat-card .bars.sm .bar-value{flex:0 0 150px;font-size:14px}
+.cat-card .bars.sm .bar-row{gap:14px;align-items:baseline}
+.bar-def{font-size:13px;line-height:1.5;color:#64748B;font-weight:400;letter-spacing:-0.2px}
+.bar-def::before{content:'·';margin:0 7px;color:#CBD5E1;font-weight:700}
 .cat-card{background:#fff;border:1px solid #E8EDF2;border-radius:12px;padding:16px 18px}
 .cat-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:2px}
-.cat-name{font-size:16px;font-weight:800;color:#1A1A1A}
-.cat-avg{font-size:26px;font-weight:900;letter-spacing:-1px}
-.cat-sub{font-size:12px;color:#94A3B8;margin-bottom:12px}
+.cat-name{font-size:19px;font-weight:800;color:#1A1A1A}
+.cat-avg{font-size:30px;font-weight:900;letter-spacing:-1px}
+.cat-sub{font-size:13px;color:#94A3B8;margin-bottom:14px}
 @media (max-width:780px){
   .tab-bar{padding:10px 16px}
   .dash-container{padding:16px 14px}
@@ -657,6 +661,11 @@ body{background:#F1F5F9;font-family:${FONT};color:#1A1A1A;line-height:1.6}
   .section-header,.section-body{padding-left:18px;padding-right:18px}
   .bar-label{flex:0 0 150px;font-size:12px}
   .bars.sm .bar-label{flex:0 0 130px}
+  .cat-card .bars.sm .bar-label{flex:1 1 100%;font-size:13px}
+  .cat-card .bars.sm .bar-track{flex:0 0 90px}
+  .cat-card .bars.sm .bar-value{flex:0 0 120px;font-size:13px}
+  .bar-def{display:block;font-size:12px}
+  .bar-def::before{content:none}
   .bar-value{flex:0 0 100px;font-size:11px}
   .bar-count{flex:0 0 56px;font-size:11px}
   .crit-frame{height:60vh}
