@@ -344,11 +344,11 @@ function readabilityClient() {
   function renderCriteria() {
     // 동일출처 self-host (원본 onrender 는 x-frame-options:DENY 라 iframe 불가)
     // 점수 제외 전체 항목표 — 기준 문서로 읽히도록 통과율 열을 뺀 버전 (routes/readability.js)
-    var src = '/admin/readability/criteria.html'
+    var src = RD.paths.criteria
     var dl = '<div class="crit-dl"><div class="crit-dl-text">' +
       '<div class="crit-dl-title">검수 URL 다운로드</div>' +
       '<div class="crit-dl-sub">측정일 ' + esc(RD.date) + ' 기준 어딧 대상 전체 URL (URL · 국가 · 페이지타입 · 점수)</div></div>' +
-      '<a class="crit-dl-btn" href="/admin/readability/urls.csv" download>CSV 다운로드</a></div>'
+      '<a class="crit-dl-btn" href="' + RD.paths.csv + '" download>CSV 다운로드</a></div>'
     var frame = '<div class="crit-frame-head">검수 기준 — 6개 카테고리 41개 항목 (통과율은 위 탭에서 확인)</div>' +
       '<iframe class="crit-frame" src="' + src + '" loading="lazy"></iframe>'
     return sectionCard('검수 기준 · 검수 URL 다운로드', '#7C3AED', dl + frame)
@@ -383,7 +383,7 @@ function readabilityClient() {
       renderRawTable()
     }
     if (_rawData) { afterData(); return }
-    fetch('/admin/readability/checks.json')
+    fetch(RD.paths.checks)
       .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json() })
       .then(function (d) { _rawData = d; afterData() })
       .catch(function (e) { var b = document.getElementById('rd-fails-body'); if (b) b.textContent = 'Raw 데이터를 불러오지 못했습니다: ' + e })
@@ -456,7 +456,7 @@ function readabilityClient() {
     var nav = document.getElementById('rd-tabnav')
     // raw·criteria 탭은 /admin/* 리소스를 fetch/iframe → 비인증 게시본에선 제외.
     var tabs = [['country', '국가별'], ['pagetype', '페이지 타입별']]
-    if (RD.adminMode) tabs.push(['raw', 'Raw 데이터'], ['criteria', '검수 기준'])
+    tabs.push(['raw', 'Raw 데이터'], ['criteria', '검수 기준'])   // 어드민·게시본 동일 (RD.paths 로 게이트별 URL 분기)
     nav.innerHTML = tabs.map(function (t) {
       return '<button data-tab="' + t[0] + '"' + (t[0] === state.tab ? ' class="active"' : '') + '>' + t[1] + '</button>'
     }).join('')
@@ -507,7 +507,20 @@ function readabilityClient() {
   renderPanel()
 }
 
-export function renderReadabilityHTML({ snapshot, index, snapshots, adminMode = false } = {}) {
+// 탭이 fetch 하는 리소스 경로. 어드민은 /admin/*(세션 인증), 게시본은 /p/*(IP allowlist).
+// 게시본에서도 Raw 데이터·검수 기준 탭을 그대로 쓰기 위해 경로만 갈아끼운다.
+export const ADMIN_PATHS = {
+  checks: '/admin/readability/checks.json',
+  csv: '/admin/readability/urls.csv',
+  criteria: '/admin/readability/criteria.html',
+}
+export const PUBLIC_PATHS = {
+  checks: '/p/GEO-Readability-Dashboard/checks.json',
+  csv: '/p/GEO-Readability-Dashboard/urls.csv',
+  criteria: '/p/GEO-Readability-Criteria',
+}
+
+export function renderReadabilityHTML({ snapshot, index, snapshots, adminMode = false, paths } = {}) {
   if (!snapshot || !snapshot.overall) {
     return `<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">
       <link href="https://fonts.cdnfonts.com/css/lg-smart" rel="stylesheet" />
@@ -526,10 +539,12 @@ export function renderReadabilityHTML({ snapshot, index, snapshots, adminMode = 
     : `스냅샷 ${snapCount}개 — 재어딧 후 MoM 대비 (현재 단일 측정분)`
 
   // 클라이언트 인터랙티브 렌더용 데이터 (탭/필터). 서버 뷰는 <noscript> fallback 유지.
-  // adminMode: Raw 데이터·검수 기준 탭은 /admin/* 리소스를 fetch → 게시본(비인증)에선 숨김.
+  // adminMode 는 이제 리소스 경로 선택에만 쓰인다 (탭 구성은 어드민·게시본 동일).
+  // 게시본은 /p/* 공개 라우트(IP allowlist)를, 어드민은 /admin/*(세션 인증)를 fetch.
   const buildClientData = snap => ({
     date: snap.date,
     adminMode: !!adminMode,
+    paths: paths || (adminMode ? ADMIN_PATHS : PUBLIC_PATHS),
     categoryLabels: snap.categoryLabels || {},
     checkDefs: loadCheckDefs(),   // check id → 항목 정의 (체크리스트 문서 출처)
     ccName: Object.fromEntries(Object.keys(snap.countries).map(cc => [cc, CC_NAME[cc] || cc.toUpperCase()])),
@@ -701,7 +716,7 @@ body{background:#F1F5F9;font-family:${FONT};color:#1A1A1A;line-height:1.6}
     ${viewCountryComparison(snapshot)}
     ${viewCategoryDetail(snapshot)}
     ${viewPageTypes(snapshot)}
-    ${adminMode ? sectionCard('Raw 데이터 (페이지별 체크 PASS/FAIL)', RED, '<div class="tab-note">조합 필터(국가·타입·항목·결과) 탭은 JavaScript 가 필요합니다. 원본 데이터: <a href="/admin/readability/checks.json">checks.json</a></div>') : ''}
+    ${sectionCard('Raw 데이터 (페이지별 체크 PASS/FAIL)', RED, `<div class="tab-note">조합 필터(국가·타입·항목·결과) 탭은 JavaScript 가 필요합니다. 원본 데이터: <a href="${(paths || (adminMode ? ADMIN_PATHS : PUBLIC_PATHS)).checks}">checks.json</a></div>`)}
   </noscript>
 </div>
 

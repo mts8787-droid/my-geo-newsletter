@@ -33,19 +33,17 @@ function renderReadabilityPublic() {
 const READABILITY_MARKER = '<!--READABILITY_EMBED-->'
 function writeReadabilityEmbed(ch) {
   try {
-    let html = null
-    if (existsSync(READABILITY_STANDALONE)) {
-      html = readFileSync(READABILITY_STANDALONE, 'utf-8')
-    } else {
-      html = renderReadabilityPublic()
-      if (!html) {
-        log.warn({ tag: ch.logTag }, 'readability embed: 별도 게시본·스냅샷 모두 없음')
-        return
-      }
+    // 항상 최신 스냅샷으로 렌더 — 예전에는 별도 게시본(READABILITY_STANDALONE) 파일을
+    // 우선 복사했는데, 그 파일은 게시 시점에 굳어 있어 어드민/게시본과 어긋났다.
+    // /p/GEO-Readability-Dashboard 가 요청 시 렌더로 바뀐 뒤로는 굽는 의미도 없다.
+    const html = renderReadabilityPublic()
+    if (!html) {
+      log.warn({ tag: ch.logTag }, 'readability embed: 스냅샷 없음')
+      return
     }
     writeFileSync(join(PUB_DIR, `${ch.koSlug}-readability.html`), html)
     writeFileSync(join(PUB_DIR, `${ch.enSlug}-readability.html`), html)
-    log.info({ tag: ch.logTag, koSlug: `${ch.koSlug}-readability`, fromStandalone: existsSync(READABILITY_STANDALONE) }, 'readability embed written')
+    log.info({ tag: ch.logTag, koSlug: `${ch.koSlug}-readability` }, 'readability embed written')
   } catch (e) {
     log.warn({ tag: ch.logTag, err: e.message }, 'readability embed failed')
   }

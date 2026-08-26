@@ -64,8 +64,9 @@ export function loadLatest() {
   return { snapshot, index, snapshots }
 }
 
-const latestCsvFile = () => latestFile(/^urls-\d{4}-\d{2}-\d{2}\.csv$/)
-const latestChecksFile = () => latestFile(/^checks-\d{4}-\d{2}-\d{2}\.json$/)
+export const latestCsvFile = () => latestFile(/^urls-\d{4}-\d{2}-\d{2}\.csv$/)
+export const latestChecksFile = () => latestFile(/^checks-\d{4}-\d{2}-\d{2}\.json$/)
+export { DATA_DIR as READABILITY_DATA_DIR }
 
 export const readabilityRouter = Router()
 
