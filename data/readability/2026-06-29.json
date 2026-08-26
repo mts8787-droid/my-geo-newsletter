@@ -1,9 +1,9 @@
 {
   "date": "2026-06-29",
-  "generatedAt": "2026-08-26T13:23:07.787Z",
+  "generatedAt": "2026-08-26T13:27:51.941Z",
   "source": "run_results",
   "categoryLabels": {
-    "performance": "사이트속도",
+    "performance": "사이트 성능",
     "accessibility": "웹접근성",
     "seo": "Basic SEO",
     "geo_schema": "스키마마크업",

@@ -124,7 +124,7 @@ const SRC_CATEGORIES = ['performance', 'accessibility', 'seo', 'ai_readiness']
 // 기존에 대시보드 서브카드로만 나눠 보던 3분류를 카테고리로 승격 (사용자 지시 2026-08-26).
 const CATEGORIES = ['performance', 'accessibility', 'seo', 'geo_schema', 'geo_content', 'geo_platform']
 const CATEGORY_LABEL = {
-  performance: '사이트속도',
+  performance: '사이트 성능',
   accessibility: '웹접근성',
   seo: 'Basic SEO',
   geo_schema: '스키마마크업',

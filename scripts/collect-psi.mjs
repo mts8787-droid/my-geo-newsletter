@@ -59,7 +59,11 @@ function latestChecksDate() {
 
 const sleep = ms => new Promise(r => setTimeout(r, ms))
 
-// PSI 1건 호출 → TTFB 3종 추출. 실패 시 { err } 반환 (throw 하지 않음 — 한 건이 전체를 멈추지 않게)
+// 저장 스키마 버전 — 필드가 늘어나면 올린다. 재개 시 이 버전 미만인 항목은 다시 받는다
+// (같은 호출로 이미 오는 값을 나중에 추가하려면 전수 재수집이 필요해지므로, 처음부터 다 담는다).
+export const PSI_SCHEMA_VERSION = 2
+
+// PSI 1건 호출 → 성능 지표 추출. 실패 시 { err } 반환 (throw 하지 않음 — 한 건이 전체를 멈추지 않게)
 async function fetchPsi(url, key, strategy) {
   const q = `${ENDPOINT}?url=${encodeURIComponent(url)}&strategy=${strategy}&category=performance&key=${key}`
   const res = await fetch(q)
@@ -71,14 +75,33 @@ async function fetchPsi(url, key, strategy) {
     throw e
   }
   const d = await res.json()
-  const lab = d.lighthouseResult?.audits?.['server-response-time']?.numericValue
-  const crux = d.loadingExperience?.metrics?.EXPERIMENTAL_TIME_TO_FIRST_BYTE
-  const org = d.originLoadingExperience?.metrics?.EXPERIMENTAL_TIME_TO_FIRST_BYTE
+  const A = d.lighthouseResult?.audits || {}
+  const num = k => typeof A[k]?.numericValue === 'number' ? Math.round(A[k].numericValue) : null
+  const le = d.loadingExperience?.metrics || {}
+  const oe = d.originLoadingExperience?.metrics || {}
+  const cx = k => le[k]?.percentile ?? null
   return {
-    lab: typeof lab === 'number' ? Math.round(lab) : null,   // 채점 정본 (server-response-time, ms)
-    crux: crux?.percentile ?? null,                          // 참고: CrUX 실사용자 (이 URL)
+    v: PSI_SCHEMA_VERSION,
+    // ── 채점 정본 ──
+    lab: num('server-response-time'),                        // #1 TTFB (server-response-time, ms)
+    // ── 코어 웹 바이탈 (lab) — scoring_config 의 #9 LCP / #10 CLS / #11 INP 가
+    //    'PSI API 의존' 사유로 비활성 상태다. 활성화 시 재수집 없이 바로 쓰도록 지금 저장.
+    lcp: num('largest-contentful-paint'),
+    cls: typeof A['cumulative-layout-shift']?.numericValue === 'number'
+      ? +A['cumulative-layout-shift'].numericValue.toFixed(3) : null,   // CLS 는 0~1 소수라 반올림 금지
+    tbt: num('total-blocking-time'),                         // INP 의 lab 대용 지표
+    fcp: num('first-contentful-paint'),
+    si: num('speed-index'),
+    tti: num('interactive'),
+    perfScore: typeof d.lighthouseResult?.categories?.performance?.score === 'number'
+      ? Math.round(d.lighthouseResult.categories.performance.score * 100) : null,
+    // ── CrUX 실사용자 (참고) ──
+    crux: cx('EXPERIMENTAL_TIME_TO_FIRST_BYTE'),             // 이 URL 의 실사용자 TTFB
+    cruxLcp: cx('LARGEST_CONTENTFUL_PAINT_MS'),
+    cruxCls: cx('CUMULATIVE_LAYOUT_SHIFT_SCORE'),
+    cruxInp: cx('INTERACTION_TO_NEXT_PAINT') ?? cx('EXPERIMENTAL_INTERACTION_TO_NEXT_PAINT'),
     cruxFallback: !!d.loadingExperience?.origin_fallback,     // true = URL 데이터 없어 도메인값 대체
-    cruxOrigin: org?.percentile ?? null,                     // 참고: CrUX 도메인 전체
+    cruxOrigin: oe.EXPERIMENTAL_TIME_TO_FIRST_BYTE?.percentile ?? null,
     at: new Date().toISOString(),
   }
 }
@@ -136,7 +159,10 @@ async function main() {
   }
 
   // 재개 — 이미 성공한 URL 은 건너뜀 (err 만 있는 건 재시도 대상)
-  const done = new Set(Object.entries(store.results).filter(([, v]) => v && !v.err).map(([k]) => k))
+  const done = new Set(Object.entries(store.results)
+    .filter(([, v]) => v && !v.err && (v.v || 1) >= PSI_SCHEMA_VERSION).map(([k]) => k))
+  const stale = Object.values(store.results).filter(v => v && !v.err && (v.v || 1) < PSI_SCHEMA_VERSION).length
+  if (stale) _logInfo('collect-psi', `구 스키마(v<${PSI_SCHEMA_VERSION}) ${stale}건 재수집 대상`)
   const todo = urls.filter(u => !done.has(u))
   if (args.limit) todo.length = Math.min(todo.length, args.limit)
 
@@ -153,7 +179,8 @@ async function main() {
   // complete: 대상 URL 을 전부 커버했는지. 부분 수집분으로 집계가 돌아가면 #1 통과율이
   // 표본 20건 같은 소수 기준이 되어 오해를 부르므로, 집계는 이 플래그가 true 일 때만 PSI 를 쓴다.
   const markComplete = () => {
-    const good = new Set(Object.entries(store.results).filter(([, v]) => v && !v.err && v.lab != null).map(([k]) => k))
+    const good = new Set(Object.entries(store.results)
+      .filter(([, v]) => v && !v.err && v.lab != null && (v.v || 1) >= PSI_SCHEMA_VERSION).map(([k]) => k))
     store.complete = urls.every(u => good.has(u))
     store.coverage = { total: urls.length, ok: good.size }
     return store.complete
