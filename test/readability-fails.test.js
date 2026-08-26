@@ -161,6 +161,46 @@ describe('applyScoringOverride — #1 TTFB 측정 출처(PSI)', () => {
   })
 })
 
+// #34 Author/출처 — 에디토리얼 페이지타입에만 적용 (applies_when 보정)
+describe('applyScoringOverride — 페이지타입 적용 조건', () => {
+  const authorScore = () => ({
+    total: 0,
+    breakdown: {
+      performance: { points: 0, max: 100, passed: 0, total: 0, items: {} },
+      accessibility: { points: 0, max: 100, passed: 0, total: 0, items: {} },
+      seo: { points: 0, max: 100, passed: 0, total: 0, items: {} },
+      ai_readiness: {
+        points: 0, max: 100, passed: 0, total: 0,
+        items: {
+          ai_author_source: { label: '#34 Author 또는 출처+날짜', pass: false, value: null, hint: '저자 없음' },
+          ai_llms_txt: { label: '#44 llms.txt 존재', pass: true, value: null, hint: null },
+        },
+      },
+    },
+  })
+
+  it.each(['newsroom', 'buying_guide', 'lg_experience'])('에디토리얼(%s) 은 채점 대상', (pt) => {
+    const s = authorScore()
+    applyScoringOverride(s, { pt })
+    expect(s.breakdown.ai_readiness.items.ai_author_source.na).toBeUndefined()
+    expect(s.breakdown.ai_readiness.total).toBe(2)   // author + llms.txt 둘 다 적용
+  })
+
+  it.each(['pdp', 'plp', 'support', 'support_troubleshoot', 'microsite'])('비에디토리얼(%s) 은 na — 구조상 byline 이 불가능한 페이지', (pt) => {
+    const s = authorScore()
+    applyScoringOverride(s, { pt })
+    expect(s.breakdown.ai_readiness.items.ai_author_source.na).toBe(true)
+    expect(s.breakdown.ai_readiness.total).toBe(1)   // llms.txt 만 적용 → 분모에서 빠짐
+    expect(s.breakdown.ai_readiness.points).toBe(100)
+  })
+
+  it('페이지타입 정보가 없으면 na (안전 측)', () => {
+    const s = authorScore()
+    applyScoringOverride(s, {})
+    expect(s.breakdown.ai_readiness.items.ai_author_source.na).toBe(true)
+  })
+})
+
 describe('applyScoringOverride — #4 Cache-Control', () => {
   it('no-cache/no-store 가 섞여도 max-age 가 설정돼 있으면 PASS (원본 FAIL 회귀 수리)', () => {
     const s = perfScore({ perf_cache_control: { pass: false, value: 'max-age=0, no-cache, no-store', hint: 'Cache-Control 부재 또는 no-store/no-cache.' } })

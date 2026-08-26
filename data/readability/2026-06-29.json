@@ -1,6 +1,6 @@
 {
   "date": "2026-06-29",
-  "generatedAt": "2026-08-26T12:59:57.515Z",
+  "generatedAt": "2026-08-26T13:14:27.918Z",
   "source": "run_results",
   "categoryLabels": {
     "performance": "사이트 속도",
@@ -16,10 +16,10 @@
       "runId": "5107491889d4",
       "urlCount": 625,
       "scoredCount": 625,
-      "avgScore": 75.5,
+      "avgScore": 76.6,
       "grades": {
-        "Need Improvement": 594,
-        "Good": 30,
+        "Need Improvement": 568,
+        "Good": 56,
         "Poor": 1
       },
       "categories": {
@@ -27,8 +27,8 @@
         "accessibility": 88.6,
         "seo": 83.1,
         "geo_schema": 37.3,
-        "geo_content": 40.6,
-        "geo_platform": 90.8
+        "geo_content": 42,
+        "geo_platform": 100
       },
       "checks": {
         "perf_ttfb": {
@@ -201,9 +201,9 @@
         },
         "ai_author_source": {
           "label": "#34 Author 또는 출처+날짜",
-          "cat": "geo_platform",
-          "pass": 193,
-          "applicable": 625
+          "cat": "geo_content",
+          "pass": 94,
+          "applicable": 183
         },
         "ai_summary_box": {
           "label": "#35 Summary Box (콘텐츠)",
@@ -288,8 +288,8 @@
             "accessibility": 87.3,
             "seo": 75,
             "geo_schema": 49.1,
-            "geo_content": 25.8,
-            "geo_platform": 99.2
+            "geo_content": 39.4,
+            "geo_platform": 100
           },
           "checks": {
             "perf_ttfb": {
@@ -462,7 +462,7 @@
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
-              "cat": "geo_platform",
+              "cat": "geo_content",
               "pass": 94,
               "applicable": 100
             },
@@ -543,14 +543,14 @@
         "microsite": {
           "label": "마이크로사이트/캠페인",
           "count": 100,
-          "avgScore": 74.5,
+          "avgScore": 76.5,
           "categories": {
             "performance": 85,
             "accessibility": 71.8,
             "seo": 85,
             "geo_schema": 26.7,
             "geo_content": 67.8,
-            "geo_platform": 86
+            "geo_platform": 100
           },
           "checks": {
             "perf_ttfb": {
@@ -723,9 +723,9 @@
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
-              "cat": "geo_platform",
+              "cat": "geo_content",
               "pass": 0,
-              "applicable": 100
+              "applicable": 0
             },
             "ai_summary_box": {
               "label": "#35 Summary Box (콘텐츠)",
@@ -810,8 +810,8 @@
             "accessibility": 89.7,
             "seo": 79.6,
             "geo_schema": 33.8,
-            "geo_content": 38.2,
-            "geo_platform": 86
+            "geo_content": 30.6,
+            "geo_platform": 100
           },
           "checks": {
             "perf_ttfb": {
@@ -984,7 +984,7 @@
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
-              "cat": "geo_platform",
+              "cat": "geo_content",
               "pass": 0,
               "applicable": 17
             },
@@ -1071,8 +1071,8 @@
             "accessibility": 99.2,
             "seo": 87.6,
             "geo_schema": 33,
-            "geo_content": 28.8,
-            "geo_platform": 86
+            "geo_content": 23,
+            "geo_platform": 100
           },
           "checks": {
             "perf_ttfb": {
@@ -1245,7 +1245,7 @@
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
-              "cat": "geo_platform",
+              "cat": "geo_content",
               "pass": 0,
               "applicable": 66
             },
@@ -1326,14 +1326,14 @@
         "pdp": {
           "label": "제품 상세 (PDP)",
           "count": 92,
-          "avgScore": 74.8,
+          "avgScore": 76.8,
           "categories": {
             "performance": 83.7,
             "accessibility": 73.1,
             "seo": 88,
             "geo_schema": 20.1,
             "geo_content": 74.2,
-            "geo_platform": 89
+            "geo_platform": 100
           },
           "checks": {
             "perf_ttfb": {
@@ -1506,9 +1506,9 @@
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
-              "cat": "geo_platform",
+              "cat": "geo_content",
               "pass": 0,
-              "applicable": 92
+              "applicable": 0
             },
             "ai_summary_box": {
               "label": "#35 Summary Box (콘텐츠)",
@@ -1587,14 +1587,14 @@
         "plp": {
           "label": "제품 카테고리 (PLP)",
           "count": 53,
-          "avgScore": 76.9,
+          "avgScore": 79,
           "categories": {
             "performance": 85.6,
             "accessibility": 94.3,
             "seo": 86.8,
             "geo_schema": 56.1,
             "geo_content": 30.7,
-            "geo_platform": 86
+            "geo_platform": 100
           },
           "checks": {
             "perf_ttfb": {
@@ -1767,9 +1767,9 @@
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
-              "cat": "geo_platform",
+              "cat": "geo_content",
               "pass": 0,
-              "applicable": 53
+              "applicable": 0
             },
             "ai_summary_box": {
               "label": "#35 Summary Box (콘텐츠)",
@@ -1848,14 +1848,14 @@
         "support": {
           "label": "지원/Support",
           "count": 97,
-          "avgScore": 74.3,
+          "avgScore": 77.2,
           "categories": {
             "performance": 83.4,
             "accessibility": 99.7,
             "seo": 75.5,
             "geo_schema": 49.8,
             "geo_content": 26.3,
-            "geo_platform": 86
+            "geo_platform": 100
           },
           "checks": {
             "perf_ttfb": {
@@ -2028,9 +2028,9 @@
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
-              "cat": "geo_platform",
+              "cat": "geo_content",
               "pass": 0,
-              "applicable": 97
+              "applicable": 0
             },
             "ai_summary_box": {
               "label": "#35 Summary Box (콘텐츠)",
@@ -2109,14 +2109,14 @@
         "support_troubleshoot": {
           "label": "지원 - 트러블슈팅",
           "count": 100,
-          "avgScore": 78,
+          "avgScore": 77,
           "categories": {
             "performance": 83.3,
             "accessibility": 100,
             "seo": 87.7,
             "geo_schema": 33,
             "geo_content": 25,
-            "geo_platform": 99.9
+            "geo_platform": 100
           },
           "checks": {
             "perf_ttfb": {
@@ -2289,9 +2289,9 @@
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
-              "cat": "geo_platform",
-              "pass": 99,
-              "applicable": 100
+              "cat": "geo_content",
+              "pass": 0,
+              "applicable": 0
             },
             "ai_summary_box": {
               "label": "#35 Summary Box (콘텐츠)",
@@ -2417,19 +2417,19 @@
       "runId": "61d060a216ed",
       "urlCount": 487,
       "scoredCount": 487,
-      "avgScore": 73.5,
+      "avgScore": 74.7,
       "grades": {
-        "Need Improvement": 463,
-        "Poor": 2,
-        "Good": 22
+        "Need Improvement": 448,
+        "Poor": 1,
+        "Good": 38
       },
       "categories": {
         "performance": 83.9,
         "accessibility": 94.1,
         "seo": 82.7,
         "geo_schema": 38.6,
-        "geo_content": 26.1,
-        "geo_platform": 87
+        "geo_content": 29,
+        "geo_platform": 97.7
       },
       "checks": {
         "perf_ttfb": {
@@ -2602,9 +2602,9 @@
         },
         "ai_author_source": {
           "label": "#34 Author 또는 출처+날짜",
-          "cat": "geo_platform",
+          "cat": "geo_content",
           "pass": 90,
-          "applicable": 487
+          "applicable": 224
         },
         "ai_summary_box": {
           "label": "#35 Summary Box (콘텐츠)",
@@ -2683,14 +2683,14 @@
         "microsite": {
           "label": "마이크로사이트/캠페인",
           "count": 26,
-          "avgScore": 66.2,
+          "avgScore": 68,
           "categories": {
             "performance": 83.7,
             "accessibility": 93.3,
             "seo": 66.3,
             "geo_schema": 25.8,
             "geo_content": 18.3,
-            "geo_platform": 86
+            "geo_platform": 100
           },
           "checks": {
             "perf_ttfb": {
@@ -2863,9 +2863,9 @@
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
-              "cat": "geo_platform",
+              "cat": "geo_content",
               "pass": 0,
-              "applicable": 26
+              "applicable": 0
             },
             "ai_summary_box": {
               "label": "#35 Summary Box (콘텐츠)",
@@ -2950,8 +2950,8 @@
             "accessibility": 100,
             "seo": 83.7,
             "geo_schema": 49.8,
-            "geo_content": 7,
-            "geo_platform": 98.6
+            "geo_content": 23.6,
+            "geo_platform": 100
           },
           "checks": {
             "perf_ttfb": {
@@ -3124,7 +3124,7 @@
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
-              "cat": "geo_platform",
+              "cat": "geo_content",
               "pass": 90,
               "applicable": 100
             },
@@ -3211,8 +3211,8 @@
             "accessibility": 100,
             "seo": 82.3,
             "geo_schema": 27.8,
-            "geo_content": 20,
-            "geo_platform": 86
+            "geo_content": 16,
+            "geo_platform": 100
           },
           "checks": {
             "perf_ttfb": {
@@ -3385,7 +3385,7 @@
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
-              "cat": "geo_platform",
+              "cat": "geo_content",
               "pass": 0,
               "applicable": 25
             },
@@ -3472,8 +3472,8 @@
             "accessibility": 99.5,
             "seo": 86.1,
             "geo_schema": 33,
-            "geo_content": 7.8,
-            "geo_platform": 86
+            "geo_content": 6.3,
+            "geo_platform": 100
           },
           "checks": {
             "perf_ttfb": {
@@ -3646,7 +3646,7 @@
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
-              "cat": "geo_platform",
+              "cat": "geo_content",
               "pass": 0,
               "applicable": 99
             },
@@ -3727,14 +3727,14 @@
         "pdp": {
           "label": "제품 상세 (PDP)",
           "count": 93,
-          "avgScore": 71.8,
+          "avgScore": 73.8,
           "categories": {
             "performance": 83.5,
             "accessibility": 74.7,
             "seo": 87.6,
             "geo_schema": 20,
             "geo_content": 73.7,
-            "geo_platform": 78
+            "geo_platform": 88
           },
           "checks": {
             "perf_ttfb": {
@@ -3907,9 +3907,9 @@
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
-              "cat": "geo_platform",
+              "cat": "geo_content",
               "pass": 0,
-              "applicable": 93
+              "applicable": 0
             },
             "ai_summary_box": {
               "label": "#35 Summary Box (콘텐츠)",
@@ -3988,14 +3988,14 @@
         "plp": {
           "label": "제품 카테고리 (PLP)",
           "count": 53,
-          "avgScore": 77,
+          "avgScore": 79,
           "categories": {
             "performance": 86.5,
             "accessibility": 99.1,
             "seo": 87.5,
             "geo_schema": 53.8,
             "geo_content": 26.4,
-            "geo_platform": 86
+            "geo_platform": 100
           },
           "checks": {
             "perf_ttfb": {
@@ -4168,9 +4168,9 @@
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
-              "cat": "geo_platform",
+              "cat": "geo_content",
               "pass": 0,
-              "applicable": 53
+              "applicable": 0
             },
             "ai_summary_box": {
               "label": "#35 Summary Box (콘텐츠)",
@@ -4249,14 +4249,14 @@
         "support": {
           "label": "지원/Support",
           "count": 90,
-          "avgScore": 73.6,
+          "avgScore": 76.4,
           "categories": {
             "performance": 83.8,
             "accessibility": 97.5,
             "seo": 75.4,
             "geo_schema": 49.6,
             "geo_content": 22.2,
-            "geo_platform": 86
+            "geo_platform": 100
           },
           "checks": {
             "perf_ttfb": {
@@ -4429,9 +4429,9 @@
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
-              "cat": "geo_platform",
+              "cat": "geo_content",
               "pass": 0,
-              "applicable": 90
+              "applicable": 0
             },
             "ai_summary_box": {
               "label": "#35 Summary Box (콘텐츠)",
@@ -4510,14 +4510,14 @@
         "support_troubleshoot": {
           "label": "지원 - 트러블슈팅",
           "count": 1,
-          "avgScore": 66,
+          "avgScore": 68,
           "categories": {
             "performance": 100,
             "accessibility": 100,
             "seo": 50,
             "geo_schema": 33,
             "geo_content": 25,
-            "geo_platform": 71
+            "geo_platform": 83
           },
           "checks": {
             "perf_ttfb": {
@@ -4690,9 +4690,9 @@
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
-              "cat": "geo_platform",
+              "cat": "geo_content",
               "pass": 0,
-              "applicable": 1
+              "applicable": 0
             },
             "ai_summary_box": {
               "label": "#35 Summary Box (콘텐츠)",
@@ -4818,18 +4818,18 @@
       "runId": "ea1f073d9db7",
       "urlCount": 282,
       "scoredCount": 282,
-      "avgScore": 71.9,
+      "avgScore": 73.8,
       "grades": {
-        "Need Improvement": 274,
-        "Good": 8
+        "Need Improvement": 251,
+        "Good": 31
       },
       "categories": {
         "performance": 85.1,
         "accessibility": 85.5,
         "seo": 79.1,
         "geo_schema": 34,
-        "geo_content": 43.6,
-        "geo_platform": 83.5
+        "geo_content": 43.2,
+        "geo_platform": 96.1
       },
       "checks": {
         "perf_ttfb": {
@@ -5002,9 +5002,9 @@
         },
         "ai_author_source": {
           "label": "#34 Author 또는 출처+날짜",
-          "cat": "geo_platform",
-          "pass": 3,
-          "applicable": 282
+          "cat": "geo_content",
+          "pass": 2,
+          "applicable": 30
         },
         "ai_summary_box": {
           "label": "#35 Summary Box (콘텐츠)",
@@ -5089,8 +5089,8 @@
             "accessibility": 97.7,
             "seo": 77.5,
             "geo_schema": 22.7,
-            "geo_content": 26.1,
-            "geo_platform": 86
+            "geo_content": 20.9,
+            "geo_platform": 100
           },
           "checks": {
             "perf_ttfb": {
@@ -5263,7 +5263,7 @@
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
-              "cat": "geo_platform",
+              "cat": "geo_content",
               "pass": 0,
               "applicable": 22
             },
@@ -5350,7 +5350,7 @@
             "accessibility": 100,
             "seo": 62,
             "geo_schema": 50,
-            "geo_content": 25,
+            "geo_content": 40,
             "geo_platform": 100
           },
           "checks": {
@@ -5524,7 +5524,7 @@
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
-              "cat": "geo_platform",
+              "cat": "geo_content",
               "pass": 2,
               "applicable": 2
             },
@@ -5605,14 +5605,14 @@
         "microsite": {
           "label": "마이크로사이트/캠페인",
           "count": 35,
-          "avgScore": 69.9,
+          "avgScore": 71.9,
           "categories": {
             "performance": 83,
             "accessibility": 92.9,
             "seo": 76.5,
             "geo_schema": 24.6,
             "geo_content": 31.4,
-            "geo_platform": 86
+            "geo_platform": 100
           },
           "checks": {
             "perf_ttfb": {
@@ -5785,9 +5785,9 @@
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
-              "cat": "geo_platform",
+              "cat": "geo_content",
               "pass": 0,
-              "applicable": 35
+              "applicable": 0
             },
             "ai_summary_box": {
               "label": "#35 Summary Box (콘텐츠)",
@@ -5872,8 +5872,8 @@
             "accessibility": 95.8,
             "seo": 85.8,
             "geo_schema": 33,
-            "geo_content": 37.5,
-            "geo_platform": 86
+            "geo_content": 30,
+            "geo_platform": 100
           },
           "checks": {
             "perf_ttfb": {
@@ -6046,7 +6046,7 @@
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
-              "cat": "geo_platform",
+              "cat": "geo_content",
               "pass": 0,
               "applicable": 6
             },
@@ -6127,14 +6127,14 @@
         "pdp": {
           "label": "제품 상세 (PDP)",
           "count": 89,
-          "avgScore": 72.1,
+          "avgScore": 74.1,
           "categories": {
             "performance": 85.1,
             "accessibility": 73.3,
             "seo": 88,
             "geo_schema": 20.6,
             "geo_content": 75,
-            "geo_platform": 78
+            "geo_platform": 88
           },
           "checks": {
             "perf_ttfb": {
@@ -6307,9 +6307,9 @@
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
-              "cat": "geo_platform",
+              "cat": "geo_content",
               "pass": 0,
-              "applicable": 89
+              "applicable": 0
             },
             "ai_summary_box": {
               "label": "#35 Summary Box (콘텐츠)",
@@ -6388,14 +6388,14 @@
         "plp": {
           "label": "제품 카테고리 (PLP)",
           "count": 62,
-          "avgScore": 73,
+          "avgScore": 74.8,
           "categories": {
             "performance": 86.8,
             "accessibility": 87.9,
             "seo": 79.2,
             "geo_schema": 46.4,
             "geo_content": 27,
-            "geo_platform": 86
+            "geo_platform": 100
           },
           "checks": {
             "perf_ttfb": {
@@ -6568,9 +6568,9 @@
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
-              "cat": "geo_platform",
+              "cat": "geo_content",
               "pass": 0,
-              "applicable": 62
+              "applicable": 0
             },
             "ai_summary_box": {
               "label": "#35 Summary Box (콘텐츠)",
@@ -6649,14 +6649,14 @@
         "support": {
           "label": "지원/Support",
           "count": 64,
-          "avgScore": 72,
+          "avgScore": 74.5,
           "categories": {
             "performance": 84.1,
             "accessibility": 90.2,
             "seo": 68.6,
             "geo_schema": 49.5,
             "geo_content": 30.5,
-            "geo_platform": 86.2
+            "geo_platform": 100
           },
           "checks": {
             "perf_ttfb": {
@@ -6829,9 +6829,9 @@
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
-              "cat": "geo_platform",
-              "pass": 1,
-              "applicable": 64
+              "cat": "geo_content",
+              "pass": 0,
+              "applicable": 0
             },
             "ai_summary_box": {
               "label": "#35 Summary Box (콘텐츠)",
@@ -6910,14 +6910,14 @@
         "support_troubleshoot": {
           "label": "지원 - 트러블슈팅",
           "count": 2,
-          "avgScore": 72,
+          "avgScore": 74,
           "categories": {
             "performance": 91.5,
             "accessibility": 100,
             "seo": 81.5,
             "geo_schema": 33,
             "geo_content": 25,
-            "geo_platform": 71
+            "geo_platform": 83
           },
           "checks": {
             "perf_ttfb": {
@@ -7090,9 +7090,9 @@
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
-              "cat": "geo_platform",
+              "cat": "geo_content",
               "pass": 0,
-              "applicable": 2
+              "applicable": 0
             },
             "ai_summary_box": {
               "label": "#35 Summary Box (콘텐츠)",
@@ -7218,10 +7218,10 @@
       "runId": "55bbb4e85506",
       "urlCount": 579,
       "scoredCount": 579,
-      "avgScore": 73.1,
+      "avgScore": 74,
       "grades": {
-        "Need Improvement": 572,
-        "Good": 6,
+        "Need Improvement": 453,
+        "Good": 125,
         "Poor": 1
       },
       "categories": {
@@ -7229,8 +7229,8 @@
         "accessibility": 89.1,
         "seo": 83.1,
         "geo_schema": 33.1,
-        "geo_content": 31.3,
-        "geo_platform": 88.9
+        "geo_content": 33.5,
+        "geo_platform": 97
       },
       "checks": {
         "perf_ttfb": {
@@ -7403,9 +7403,9 @@
         },
         "ai_author_source": {
           "label": "#34 Author 또는 출처+날짜",
-          "cat": "geo_platform",
-          "pass": 200,
-          "applicable": 579
+          "cat": "geo_content",
+          "pass": 100,
+          "applicable": 215
         },
         "ai_summary_box": {
           "label": "#35 Summary Box (콘텐츠)",
@@ -7484,14 +7484,14 @@
         "microsite": {
           "label": "마이크로사이트/캠페인",
           "count": 15,
-          "avgScore": 72.1,
+          "avgScore": 74.1,
           "categories": {
             "performance": 83,
             "accessibility": 98.3,
             "seo": 80.2,
             "geo_schema": 31.7,
             "geo_content": 31.7,
-            "geo_platform": 86
+            "geo_platform": 100
           },
           "checks": {
             "perf_ttfb": {
@@ -7664,9 +7664,9 @@
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
-              "cat": "geo_platform",
+              "cat": "geo_content",
               "pass": 0,
-              "applicable": 15
+              "applicable": 0
             },
             "ai_summary_box": {
               "label": "#35 Summary Box (콘텐츠)",
@@ -7751,7 +7751,7 @@
             "accessibility": 95.3,
             "seo": 64.6,
             "geo_schema": 50,
-            "geo_content": 25,
+            "geo_content": 40,
             "geo_platform": 100
           },
           "checks": {
@@ -7925,7 +7925,7 @@
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
-              "cat": "geo_platform",
+              "cat": "geo_content",
               "pass": 100,
               "applicable": 100
             },
@@ -8012,8 +8012,8 @@
             "accessibility": 100,
             "seo": 78.3,
             "geo_schema": 25.8,
-            "geo_content": 26.3,
-            "geo_platform": 86
+            "geo_content": 21,
+            "geo_platform": 100
           },
           "checks": {
             "perf_ttfb": {
@@ -8186,7 +8186,7 @@
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
-              "cat": "geo_platform",
+              "cat": "geo_content",
               "pass": 0,
               "applicable": 20
             },
@@ -8273,8 +8273,8 @@
             "accessibility": 74.7,
             "seo": 87.9,
             "geo_schema": 0,
-            "geo_content": 7.4,
-            "geo_platform": 85.8
+            "geo_content": 5.9,
+            "geo_platform": 99.8
           },
           "checks": {
             "perf_ttfb": {
@@ -8447,7 +8447,7 @@
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
-              "cat": "geo_platform",
+              "cat": "geo_content",
               "pass": 0,
               "applicable": 95
             },
@@ -8528,14 +8528,14 @@
         "pdp": {
           "label": "제품 상세 (PDP)",
           "count": 100,
-          "avgScore": 75.1,
+          "avgScore": 77.1,
           "categories": {
             "performance": 86.2,
             "accessibility": 68.8,
             "seo": 87.9,
             "geo_schema": 22.5,
             "geo_content": 75,
-            "geo_platform": 89
+            "geo_platform": 100
           },
           "checks": {
             "perf_ttfb": {
@@ -8708,9 +8708,9 @@
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
-              "cat": "geo_platform",
+              "cat": "geo_content",
               "pass": 0,
-              "applicable": 100
+              "applicable": 0
             },
             "ai_summary_box": {
               "label": "#35 Summary Box (콘텐츠)",
@@ -8789,14 +8789,14 @@
         "plp": {
           "label": "제품 카테고리 (PLP)",
           "count": 49,
-          "avgScore": 76.4,
+          "avgScore": 78.4,
           "categories": {
             "performance": 85.4,
             "accessibility": 93.9,
             "seo": 88,
             "geo_schema": 53.6,
             "geo_content": 27.6,
-            "geo_platform": 86
+            "geo_platform": 100
           },
           "checks": {
             "perf_ttfb": {
@@ -8969,9 +8969,9 @@
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
-              "cat": "geo_platform",
+              "cat": "geo_content",
               "pass": 0,
-              "applicable": 49
+              "applicable": 0
             },
             "ai_summary_box": {
               "label": "#35 Summary Box (콘텐츠)",
@@ -9050,14 +9050,14 @@
         "support": {
           "label": "지원/Support",
           "count": 100,
-          "avgScore": 77,
+          "avgScore": 80,
           "categories": {
             "performance": 84.2,
             "accessibility": 100,
             "seo": 86.6,
             "geo_schema": 50,
             "geo_content": 25.8,
-            "geo_platform": 86
+            "geo_platform": 100
           },
           "checks": {
             "perf_ttfb": {
@@ -9230,9 +9230,9 @@
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
-              "cat": "geo_platform",
+              "cat": "geo_content",
               "pass": 0,
-              "applicable": 100
+              "applicable": 0
             },
             "ai_summary_box": {
               "label": "#35 Summary Box (콘텐츠)",
@@ -9311,14 +9311,14 @@
         "support_troubleshoot": {
           "label": "지원 - 트러블슈팅",
           "count": 100,
-          "avgScore": 75.1,
+          "avgScore": 74.1,
           "categories": {
             "performance": 83.5,
             "accessibility": 100,
             "seo": 88,
             "geo_schema": 33,
             "geo_content": 25,
-            "geo_platform": 86
+            "geo_platform": 83
           },
           "checks": {
             "perf_ttfb": {
@@ -9491,9 +9491,9 @@
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
-              "cat": "geo_platform",
-              "pass": 100,
-              "applicable": 100
+              "cat": "geo_content",
+              "pass": 0,
+              "applicable": 0
             },
             "ai_summary_box": {
               "label": "#35 Summary Box (콘텐츠)",
@@ -9619,19 +9619,19 @@
       "runId": "64eec9923e60",
       "urlCount": 597,
       "scoredCount": 597,
-      "avgScore": 72.6,
+      "avgScore": 73.5,
       "grades": {
-        "Need Improvement": 573,
-        "Good": 20,
-        "Poor": 4
+        "Need Improvement": 547,
+        "Good": 47,
+        "Poor": 3
       },
       "categories": {
         "performance": 81.4,
         "accessibility": 90.9,
         "seo": 79.5,
         "geo_schema": 33.3,
-        "geo_content": 33.3,
-        "geo_platform": 88.7
+        "geo_content": 34.6,
+        "geo_platform": 97.1
       },
       "checks": {
         "perf_ttfb": {
@@ -9804,9 +9804,9 @@
         },
         "ai_author_source": {
           "label": "#34 Author 또는 출처+날짜",
-          "cat": "geo_platform",
-          "pass": 196,
-          "applicable": 597
+          "cat": "geo_content",
+          "pass": 96,
+          "applicable": 225
         },
         "ai_summary_box": {
           "label": "#35 Summary Box (콘텐츠)",
@@ -9891,8 +9891,8 @@
             "accessibility": 99.7,
             "seo": 57.3,
             "geo_schema": 50,
-            "geo_content": 25,
-            "geo_platform": 99.6
+            "geo_content": 39.4,
+            "geo_platform": 100
           },
           "checks": {
             "perf_ttfb": {
@@ -10065,7 +10065,7 @@
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
-              "cat": "geo_platform",
+              "cat": "geo_content",
               "pass": 96,
               "applicable": 99
             },
@@ -10152,8 +10152,8 @@
             "accessibility": 99,
             "seo": 82.5,
             "geo_schema": 27.9,
-            "geo_content": 33.7,
-            "geo_platform": 86
+            "geo_content": 26.9,
+            "geo_platform": 100
           },
           "checks": {
             "perf_ttfb": {
@@ -10326,7 +10326,7 @@
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
-              "cat": "geo_platform",
+              "cat": "geo_content",
               "pass": 0,
               "applicable": 26
             },
@@ -10413,8 +10413,8 @@
             "accessibility": 75,
             "seo": 87.7,
             "geo_schema": 0,
-            "geo_content": 24.5,
-            "geo_platform": 85.7
+            "geo_content": 19.6,
+            "geo_platform": 99.7
           },
           "checks": {
             "perf_ttfb": {
@@ -10587,7 +10587,7 @@
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
-              "cat": "geo_platform",
+              "cat": "geo_content",
               "pass": 0,
               "applicable": 100
             },
@@ -10668,14 +10668,14 @@
         "microsite": {
           "label": "마이크로사이트/캠페인",
           "count": 16,
-          "avgScore": 65.1,
+          "avgScore": 66.8,
           "categories": {
             "performance": 85.1,
             "accessibility": 85.9,
             "seo": 61.6,
             "geo_schema": 25.9,
             "geo_content": 25,
-            "geo_platform": 86
+            "geo_platform": 100
           },
           "checks": {
             "perf_ttfb": {
@@ -10848,9 +10848,9 @@
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
-              "cat": "geo_platform",
+              "cat": "geo_content",
               "pass": 0,
-              "applicable": 16
+              "applicable": 0
             },
             "ai_summary_box": {
               "label": "#35 Summary Box (콘텐츠)",
@@ -10929,14 +10929,14 @@
         "pdp": {
           "label": "제품 상세 (PDP)",
           "count": 90,
-          "avgScore": 74.8,
+          "avgScore": 76.8,
           "categories": {
             "performance": 85.8,
             "accessibility": 73.3,
             "seo": 86.7,
             "geo_schema": 22.4,
             "geo_content": 74.2,
-            "geo_platform": 89
+            "geo_platform": 100
           },
           "checks": {
             "perf_ttfb": {
@@ -11109,9 +11109,9 @@
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
-              "cat": "geo_platform",
+              "cat": "geo_content",
               "pass": 0,
-              "applicable": 90
+              "applicable": 0
             },
             "ai_summary_box": {
               "label": "#35 Summary Box (콘텐츠)",
@@ -11190,14 +11190,14 @@
         "plp": {
           "label": "제품 카테고리 (PLP)",
           "count": 66,
-          "avgScore": 76.6,
+          "avgScore": 78.6,
           "categories": {
             "performance": 85.8,
             "accessibility": 97,
             "seo": 87,
             "geo_schema": 52.9,
             "geo_content": 28,
-            "geo_platform": 86
+            "geo_platform": 100
           },
           "checks": {
             "perf_ttfb": {
@@ -11370,9 +11370,9 @@
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
-              "cat": "geo_platform",
+              "cat": "geo_content",
               "pass": 0,
-              "applicable": 66
+              "applicable": 0
             },
             "ai_summary_box": {
               "label": "#35 Summary Box (콘텐츠)",
@@ -11451,14 +11451,14 @@
         "support": {
           "label": "지원/Support",
           "count": 100,
-          "avgScore": 74.3,
+          "avgScore": 77.2,
           "categories": {
             "performance": 83.2,
             "accessibility": 99.5,
             "seo": 75.5,
             "geo_schema": 49.8,
             "geo_content": 26.5,
-            "geo_platform": 86
+            "geo_platform": 100
           },
           "checks": {
             "perf_ttfb": {
@@ -11631,9 +11631,9 @@
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
-              "cat": "geo_platform",
+              "cat": "geo_content",
               "pass": 0,
-              "applicable": 100
+              "applicable": 0
             },
             "ai_summary_box": {
               "label": "#35 Summary Box (콘텐츠)",
@@ -11712,14 +11712,14 @@
         "support_troubleshoot": {
           "label": "지원 - 트러블슈팅",
           "count": 100,
-          "avgScore": 75.1,
+          "avgScore": 74.1,
           "categories": {
             "performance": 83.3,
             "accessibility": 100,
             "seo": 88,
             "geo_schema": 33,
             "geo_content": 25,
-            "geo_platform": 86
+            "geo_platform": 83
           },
           "checks": {
             "perf_ttfb": {
@@ -11892,9 +11892,9 @@
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
-              "cat": "geo_platform",
-              "pass": 100,
-              "applicable": 100
+              "cat": "geo_content",
+              "pass": 0,
+              "applicable": 0
             },
             "ai_summary_box": {
               "label": "#35 Summary Box (콘텐츠)",
@@ -12020,10 +12020,10 @@
       "runId": "bc61f4ada85c",
       "urlCount": 538,
       "scoredCount": 538,
-      "avgScore": 72.5,
+      "avgScore": 73.5,
       "grades": {
-        "Need Improvement": 522,
-        "Good": 14,
+        "Need Improvement": 501,
+        "Good": 35,
         "Poor": 2
       },
       "categories": {
@@ -12031,8 +12031,8 @@
         "accessibility": 90.8,
         "seo": 83.4,
         "geo_schema": 42.4,
-        "geo_content": 13.2,
-        "geo_platform": 87.9
+        "geo_content": 15.4,
+        "geo_platform": 96.8
       },
       "checks": {
         "perf_ttfb": {
@@ -12205,9 +12205,9 @@
         },
         "ai_author_source": {
           "label": "#34 Author 또는 출처+날짜",
-          "cat": "geo_platform",
-          "pass": 162,
-          "applicable": 538
+          "cat": "geo_content",
+          "pass": 63,
+          "applicable": 114
         },
         "ai_summary_box": {
           "label": "#35 Summary Box (콘텐츠)",
@@ -12292,8 +12292,8 @@
             "accessibility": 99,
             "seo": 80.6,
             "geo_schema": 44.2,
-            "geo_content": 3.3,
-            "geo_platform": 94.8
+            "geo_content": 15.2,
+            "geo_platform": 100
           },
           "checks": {
             "perf_ttfb": {
@@ -12466,7 +12466,7 @@
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
-              "cat": "geo_platform",
+              "cat": "geo_content",
               "pass": 63,
               "applicable": 100
             },
@@ -12547,14 +12547,14 @@
         "microsite": {
           "label": "마이크로사이트/캠페인",
           "count": 78,
-          "avgScore": 72.9,
+          "avgScore": 74.8,
           "categories": {
             "performance": 85.4,
             "accessibility": 80.4,
             "seo": 83.8,
             "geo_schema": 40.1,
             "geo_content": 34.6,
-            "geo_platform": 86
+            "geo_platform": 100
           },
           "checks": {
             "perf_ttfb": {
@@ -12727,9 +12727,9 @@
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
-              "cat": "geo_platform",
+              "cat": "geo_content",
               "pass": 0,
-              "applicable": 78
+              "applicable": 0
             },
             "ai_summary_box": {
               "label": "#35 Summary Box (콘텐츠)",
@@ -12814,8 +12814,8 @@
             "accessibility": 94.6,
             "seo": 72.4,
             "geo_schema": 22.9,
-            "geo_content": 1.8,
-            "geo_platform": 86
+            "geo_content": 1.4,
+            "geo_platform": 100
           },
           "checks": {
             "perf_ttfb": {
@@ -12988,7 +12988,7 @@
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
-              "cat": "geo_platform",
+              "cat": "geo_content",
               "pass": 0,
               "applicable": 14
             },
@@ -13069,14 +13069,14 @@
         "plp": {
           "label": "제품 카테고리 (PLP)",
           "count": 95,
-          "avgScore": 73.9,
+          "avgScore": 75.9,
           "categories": {
             "performance": 86.4,
             "accessibility": 80.8,
             "seo": 87.9,
             "geo_schema": 59.5,
             "geo_content": 12.4,
-            "geo_platform": 86
+            "geo_platform": 100
           },
           "checks": {
             "perf_ttfb": {
@@ -13249,9 +13249,9 @@
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
-              "cat": "geo_platform",
+              "cat": "geo_content",
               "pass": 0,
-              "applicable": 95
+              "applicable": 0
             },
             "ai_summary_box": {
               "label": "#35 Summary Box (콘텐츠)",
@@ -13330,14 +13330,14 @@
         "pdp": {
           "label": "제품 상세 (PDP)",
           "count": 51,
-          "avgScore": 71.5,
+          "avgScore": 73.5,
           "categories": {
             "performance": 84.3,
             "accessibility": 75,
             "seo": 88,
             "geo_schema": 19.5,
             "geo_content": 52.5,
-            "geo_platform": 89
+            "geo_platform": 100
           },
           "checks": {
             "perf_ttfb": {
@@ -13510,9 +13510,9 @@
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
-              "cat": "geo_platform",
+              "cat": "geo_content",
               "pass": 0,
-              "applicable": 51
+              "applicable": 0
             },
             "ai_summary_box": {
               "label": "#35 Summary Box (콘텐츠)",
@@ -13591,14 +13591,14 @@
         "support": {
           "label": "지원/Support",
           "count": 100,
-          "avgScore": 71.4,
+          "avgScore": 73.5,
           "categories": {
             "performance": 83.3,
             "accessibility": 99,
             "seo": 76,
             "geo_schema": 50,
             "geo_content": 2,
-            "geo_platform": 86
+            "geo_platform": 100
           },
           "checks": {
             "perf_ttfb": {
@@ -13771,9 +13771,9 @@
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
-              "cat": "geo_platform",
+              "cat": "geo_content",
               "pass": 0,
-              "applicable": 100
+              "applicable": 0
             },
             "ai_summary_box": {
               "label": "#35 Summary Box (콘텐츠)",
@@ -13852,14 +13852,14 @@
         "support_troubleshoot": {
           "label": "지원 - 트러블슈팅",
           "count": 100,
-          "avgScore": 72,
+          "avgScore": 71,
           "categories": {
             "performance": 83.3,
             "accessibility": 99.8,
             "seo": 88,
             "geo_schema": 33,
             "geo_content": 0,
-            "geo_platform": 85.8
+            "geo_platform": 83
           },
           "checks": {
             "perf_ttfb": {
@@ -14032,9 +14032,9 @@
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
-              "cat": "geo_platform",
-              "pass": 99,
-              "applicable": 100
+              "cat": "geo_content",
+              "pass": 0,
+              "applicable": 0
             },
             "ai_summary_box": {
               "label": "#35 Summary Box (콘텐츠)",
@@ -14160,19 +14160,19 @@
       "runId": "3c253bf23348",
       "urlCount": 523,
       "scoredCount": 523,
-      "avgScore": 71.5,
+      "avgScore": 72.3,
       "grades": {
-        "Need Improvement": 520,
+        "Need Improvement": 515,
         "Poor": 2,
-        "Good": 1
+        "Good": 6
       },
       "categories": {
         "performance": 84.1,
         "accessibility": 93.6,
         "seo": 79.5,
         "geo_schema": 38.8,
-        "geo_content": 11.5,
-        "geo_platform": 88.8
+        "geo_content": 14.3,
+        "geo_platform": 96.7
       },
       "checks": {
         "perf_ttfb": {
@@ -14345,9 +14345,9 @@
         },
         "ai_author_source": {
           "label": "#34 Author 또는 출처+날짜",
-          "cat": "geo_platform",
-          "pass": 184,
-          "applicable": 523
+          "cat": "geo_content",
+          "pass": 84,
+          "applicable": 152
         },
         "ai_summary_box": {
           "label": "#35 Summary Box (콘텐츠)",
@@ -14432,8 +14432,8 @@
             "accessibility": 96.8,
             "seo": 63.3,
             "geo_schema": 49.8,
-            "geo_content": 0.8,
-            "geo_platform": 97.8
+            "geo_content": 17.4,
+            "geo_platform": 100
           },
           "checks": {
             "perf_ttfb": {
@@ -14606,7 +14606,7 @@
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
-              "cat": "geo_platform",
+              "cat": "geo_content",
               "pass": 84,
               "applicable": 100
             },
@@ -14693,8 +14693,8 @@
             "accessibility": 97.9,
             "seo": 80.5,
             "geo_schema": 29.4,
-            "geo_content": 15.6,
-            "geo_platform": 86
+            "geo_content": 12.5,
+            "geo_platform": 100
           },
           "checks": {
             "perf_ttfb": {
@@ -14867,7 +14867,7 @@
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
-              "cat": "geo_platform",
+              "cat": "geo_content",
               "pass": 0,
               "applicable": 24
             },
@@ -14954,8 +14954,8 @@
             "accessibility": 90.2,
             "seo": 82.9,
             "geo_schema": 32.7,
-            "geo_content": 17,
-            "geo_platform": 86
+            "geo_content": 13.6,
+            "geo_platform": 100
           },
           "checks": {
             "perf_ttfb": {
@@ -15128,7 +15128,7 @@
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
-              "cat": "geo_platform",
+              "cat": "geo_content",
               "pass": 0,
               "applicable": 28
             },
@@ -15209,14 +15209,14 @@
         "pdp": {
           "label": "제품 상세 (PDP)",
           "count": 94,
-          "avgScore": 72.8,
+          "avgScore": 74.8,
           "categories": {
             "performance": 86.1,
             "accessibility": 75,
             "seo": 88,
             "geo_schema": 21.6,
             "geo_content": 50,
-            "geo_platform": 89
+            "geo_platform": 100
           },
           "checks": {
             "perf_ttfb": {
@@ -15389,9 +15389,9 @@
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
-              "cat": "geo_platform",
+              "cat": "geo_content",
               "pass": 0,
-              "applicable": 94
+              "applicable": 0
             },
             "ai_summary_box": {
               "label": "#35 Summary Box (콘텐츠)",
@@ -15470,14 +15470,14 @@
         "microsite": {
           "label": "마이크로사이트/캠페인",
           "count": 25,
-          "avgScore": 66.6,
+          "avgScore": 68.6,
           "categories": {
             "performance": 83,
             "accessibility": 96,
             "seo": 71.9,
             "geo_schema": 27.6,
             "geo_content": 6,
-            "geo_platform": 86
+            "geo_platform": 100
           },
           "checks": {
             "perf_ttfb": {
@@ -15650,9 +15650,9 @@
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
-              "cat": "geo_platform",
+              "cat": "geo_content",
               "pass": 0,
-              "applicable": 25
+              "applicable": 0
             },
             "ai_summary_box": {
               "label": "#35 Summary Box (콘텐츠)",
@@ -15731,14 +15731,14 @@
         "plp": {
           "label": "제품 카테고리 (PLP)",
           "count": 52,
-          "avgScore": 73.7,
+          "avgScore": 75.7,
           "categories": {
             "performance": 86.9,
             "accessibility": 96.2,
             "seo": 87.8,
             "geo_schema": 51.7,
             "geo_content": 2.4,
-            "geo_platform": 86
+            "geo_platform": 100
           },
           "checks": {
             "perf_ttfb": {
@@ -15911,9 +15911,9 @@
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
-              "cat": "geo_platform",
+              "cat": "geo_content",
               "pass": 0,
-              "applicable": 52
+              "applicable": 0
             },
             "ai_summary_box": {
               "label": "#35 Summary Box (콘텐츠)",
@@ -15992,14 +15992,14 @@
         "support": {
           "label": "지원/Support",
           "count": 100,
-          "avgScore": 71.2,
+          "avgScore": 73.3,
           "categories": {
             "performance": 83,
             "accessibility": 99.5,
             "seo": 75.7,
             "geo_schema": 49.8,
             "geo_content": 1,
-            "geo_platform": 86
+            "geo_platform": 100
           },
           "checks": {
             "perf_ttfb": {
@@ -16172,9 +16172,9 @@
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
-              "cat": "geo_platform",
+              "cat": "geo_content",
               "pass": 0,
-              "applicable": 100
+              "applicable": 0
             },
             "ai_summary_box": {
               "label": "#35 Summary Box (콘텐츠)",
@@ -16253,14 +16253,14 @@
         "support_troubleshoot": {
           "label": "지원 - 트러블슈팅",
           "count": 100,
-          "avgScore": 72.1,
+          "avgScore": 71.1,
           "categories": {
             "performance": 83.3,
             "accessibility": 100,
             "seo": 88,
             "geo_schema": 33,
             "geo_content": 0,
-            "geo_platform": 86
+            "geo_platform": 83
           },
           "checks": {
             "perf_ttfb": {
@@ -16433,9 +16433,9 @@
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
-              "cat": "geo_platform",
-              "pass": 100,
-              "applicable": 100
+              "cat": "geo_content",
+              "pass": 0,
+              "applicable": 0
             },
             "ai_summary_box": {
               "label": "#35 Summary Box (콘텐츠)",
@@ -16561,18 +16561,18 @@
       "runId": "2a763b7039c3",
       "urlCount": 589,
       "scoredCount": 589,
-      "avgScore": 72.1,
+      "avgScore": 73,
       "grades": {
-        "Need Improvement": 587,
-        "Good": 2
+        "Need Improvement": 576,
+        "Good": 13
       },
       "categories": {
         "performance": 84.2,
         "accessibility": 93,
         "seo": 77.8,
         "geo_schema": 38.4,
-        "geo_content": 29,
-        "geo_platform": 84.4
+        "geo_content": 30.8,
+        "geo_platform": 92.4
       },
       "checks": {
         "perf_ttfb": {
@@ -16745,9 +16745,9 @@
         },
         "ai_author_source": {
           "label": "#34 Author 또는 출처+날짜",
-          "cat": "geo_platform",
-          "pass": 193,
-          "applicable": 589
+          "cat": "geo_content",
+          "pass": 94,
+          "applicable": 235
         },
         "ai_summary_box": {
           "label": "#35 Summary Box (콘텐츠)",
@@ -16826,14 +16826,14 @@
         "microsite": {
           "label": "마이크로사이트/캠페인",
           "count": 25,
-          "avgScore": 68.2,
+          "avgScore": 70.2,
           "categories": {
             "performance": 85.7,
             "accessibility": 91,
             "seo": 73,
             "geo_schema": 24,
             "geo_content": 25,
-            "geo_platform": 86
+            "geo_platform": 100
           },
           "checks": {
             "perf_ttfb": {
@@ -17006,9 +17006,9 @@
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
-              "cat": "geo_platform",
+              "cat": "geo_content",
               "pass": 0,
-              "applicable": 25
+              "applicable": 0
             },
             "ai_summary_box": {
               "label": "#35 Summary Box (콘텐츠)",
@@ -17093,8 +17093,8 @@
             "accessibility": 99.3,
             "seo": 57.6,
             "geo_schema": 49.8,
-            "geo_content": 18.8,
-            "geo_platform": 99.2
+            "geo_content": 33.8,
+            "geo_platform": 100
           },
           "checks": {
             "perf_ttfb": {
@@ -17267,7 +17267,7 @@
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
-              "cat": "geo_platform",
+              "cat": "geo_content",
               "pass": 94,
               "applicable": 100
             },
@@ -17354,8 +17354,8 @@
             "accessibility": 98.3,
             "seo": 77.5,
             "geo_schema": 27.5,
-            "geo_content": 27.3,
-            "geo_platform": 86
+            "geo_content": 21.8,
+            "geo_platform": 100
           },
           "checks": {
             "perf_ttfb": {
@@ -17528,7 +17528,7 @@
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
-              "cat": "geo_platform",
+              "cat": "geo_content",
               "pass": 0,
               "applicable": 44
             },
@@ -17615,8 +17615,8 @@
             "accessibility": 99.7,
             "seo": 88,
             "geo_schema": 32.9,
-            "geo_content": 12.6,
-            "geo_platform": 86
+            "geo_content": 10.1,
+            "geo_platform": 100
           },
           "checks": {
             "perf_ttfb": {
@@ -17789,7 +17789,7 @@
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
-              "cat": "geo_platform",
+              "cat": "geo_content",
               "pass": 0,
               "applicable": 91
             },
@@ -17870,14 +17870,14 @@
         "pdp": {
           "label": "제품 상세 (PDP)",
           "count": 90,
-          "avgScore": 71.6,
+          "avgScore": 73.6,
           "categories": {
             "performance": 86.4,
             "accessibility": 67.2,
             "seo": 88,
             "geo_schema": 26.4,
             "geo_content": 67.5,
-            "geo_platform": 78
+            "geo_platform": 88
           },
           "checks": {
             "perf_ttfb": {
@@ -18050,9 +18050,9 @@
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
-              "cat": "geo_platform",
+              "cat": "geo_content",
               "pass": 0,
-              "applicable": 90
+              "applicable": 0
             },
             "ai_summary_box": {
               "label": "#35 Summary Box (콘텐츠)",
@@ -18131,14 +18131,14 @@
         "plp": {
           "label": "제품 카테고리 (PLP)",
           "count": 39,
-          "avgScore": 75.7,
+          "avgScore": 77.9,
           "categories": {
             "performance": 86.9,
             "accessibility": 82.1,
             "seo": 88,
             "geo_schema": 56.3,
             "geo_content": 30.1,
-            "geo_platform": 86
+            "geo_platform": 100
           },
           "checks": {
             "perf_ttfb": {
@@ -18311,9 +18311,9 @@
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
-              "cat": "geo_platform",
+              "cat": "geo_content",
               "pass": 0,
-              "applicable": 39
+              "applicable": 0
             },
             "ai_summary_box": {
               "label": "#35 Summary Box (콘텐츠)",
@@ -18392,14 +18392,14 @@
         "support": {
           "label": "지원/Support",
           "count": 100,
-          "avgScore": 73.7,
+          "avgScore": 76.6,
           "categories": {
             "performance": 83.5,
             "accessibility": 99.5,
             "seo": 86.6,
             "geo_schema": 49.8,
             "geo_content": 25,
-            "geo_platform": 71
+            "geo_platform": 83
           },
           "checks": {
             "perf_ttfb": {
@@ -18572,9 +18572,9 @@
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
-              "cat": "geo_platform",
+              "cat": "geo_content",
               "pass": 0,
-              "applicable": 100
+              "applicable": 0
             },
             "ai_summary_box": {
               "label": "#35 Summary Box (콘텐츠)",
@@ -18653,14 +18653,14 @@
         "support_troubleshoot": {
           "label": "지원 - 트러블슈팅",
           "count": 100,
-          "avgScore": 70.5,
+          "avgScore": 69.6,
           "categories": {
             "performance": 83.8,
             "accessibility": 100,
             "seo": 68.1,
             "geo_schema": 33,
             "geo_content": 25,
-            "geo_platform": 85.8
+            "geo_platform": 83
           },
           "checks": {
             "perf_ttfb": {
@@ -18833,9 +18833,9 @@
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
-              "cat": "geo_platform",
-              "pass": 99,
-              "applicable": 100
+              "cat": "geo_content",
+              "pass": 0,
+              "applicable": 0
             },
             "ai_summary_box": {
               "label": "#35 Summary Box (콘텐츠)",
@@ -18961,19 +18961,19 @@
       "runId": "806dddbee389",
       "urlCount": 449,
       "scoredCount": 449,
-      "avgScore": 71.1,
+      "avgScore": 72.7,
       "grades": {
-        "Need Improvement": 372,
-        "Poor": 29,
-        "Good": 48
+        "Need Improvement": 318,
+        "Poor": 28,
+        "Good": 103
       },
       "categories": {
         "performance": 86.1,
         "accessibility": 80.2,
         "seo": 88.8,
         "geo_schema": 18,
-        "geo_content": 36,
-        "geo_platform": 77.5
+        "geo_content": 34.6,
+        "geo_platform": 89.7
       },
       "checks": {
         "perf_ttfb": {
@@ -19146,9 +19146,9 @@
         },
         "ai_author_source": {
           "label": "#34 Author 또는 출처+날짜",
-          "cat": "geo_platform",
+          "cat": "geo_content",
           "pass": 0,
-          "applicable": 449
+          "applicable": 142
         },
         "ai_summary_box": {
           "label": "#35 Summary Box (콘텐츠)",
@@ -19233,8 +19233,8 @@
             "accessibility": 73.1,
             "seo": 90.8,
             "geo_schema": 0,
-            "geo_content": 57.7,
-            "geo_platform": 86
+            "geo_content": 46.2,
+            "geo_platform": 100
           },
           "checks": {
             "perf_ttfb": {
@@ -19407,7 +19407,7 @@
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
-              "cat": "geo_platform",
+              "cat": "geo_content",
               "pass": 0,
               "applicable": 13
             },
@@ -19494,8 +19494,8 @@
             "accessibility": 76.3,
             "seo": 86.8,
             "geo_schema": 0,
-            "geo_content": 8.5,
-            "geo_platform": 71.2
+            "geo_content": 6.8,
+            "geo_platform": 83.2
           },
           "checks": {
             "perf_ttfb": {
@@ -19668,7 +19668,7 @@
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
-              "cat": "geo_platform",
+              "cat": "geo_content",
               "pass": 0,
               "applicable": 100
             },
@@ -19755,8 +19755,8 @@
             "accessibility": 75,
             "seo": 89.2,
             "geo_schema": 0,
-            "geo_content": 50.9,
-            "geo_platform": 86
+            "geo_content": 40.7,
+            "geo_platform": 100
           },
           "checks": {
             "perf_ttfb": {
@@ -19929,7 +19929,7 @@
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
-              "cat": "geo_platform",
+              "cat": "geo_content",
               "pass": 0,
               "applicable": 29
             },
@@ -20010,14 +20010,14 @@
         "microsite": {
           "label": "마이크로사이트/캠페인",
           "count": 7,
-          "avgScore": 73.7,
+          "avgScore": 76.1,
           "categories": {
             "performance": 85.6,
             "accessibility": 75,
             "seo": 93.1,
             "geo_schema": 14.1,
             "geo_content": 46.4,
-            "geo_platform": 86
+            "geo_platform": 100
           },
           "checks": {
             "perf_ttfb": {
@@ -20190,9 +20190,9 @@
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
-              "cat": "geo_platform",
+              "cat": "geo_content",
               "pass": 0,
-              "applicable": 7
+              "applicable": 0
             },
             "ai_summary_box": {
               "label": "#35 Summary Box (콘텐츠)",
@@ -20271,14 +20271,14 @@
         "pdp": {
           "label": "제품 상세 (PDP)",
           "count": 100,
-          "avgScore": 75.8,
+          "avgScore": 77.8,
           "categories": {
             "performance": 87.1,
             "accessibility": 100,
             "seo": 88,
             "geo_schema": 40,
             "geo_content": 50.8,
-            "geo_platform": 78
+            "geo_platform": 88
           },
           "checks": {
             "perf_ttfb": {
@@ -20451,9 +20451,9 @@
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
-              "cat": "geo_platform",
+              "cat": "geo_content",
               "pass": 0,
-              "applicable": 100
+              "applicable": 0
             },
             "ai_summary_box": {
               "label": "#35 Summary Box (콘텐츠)",
@@ -20532,14 +20532,14 @@
         "plp": {
           "label": "제품 카테고리 (PLP)",
           "count": 100,
-          "avgScore": 77.2,
+          "avgScore": 80,
           "categories": {
             "performance": 91,
             "accessibility": 73.5,
             "seo": 92,
             "geo_schema": 39.9,
             "geo_content": 51.5,
-            "geo_platform": 85.7
+            "geo_platform": 99.7
           },
           "checks": {
             "perf_ttfb": {
@@ -20712,9 +20712,9 @@
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
-              "cat": "geo_platform",
+              "cat": "geo_content",
               "pass": 0,
-              "applicable": 100
+              "applicable": 0
             },
             "ai_summary_box": {
               "label": "#35 Summary Box (콘텐츠)",
@@ -20793,14 +20793,14 @@
         "support_troubleshoot": {
           "label": "지원 - 트러블슈팅",
           "count": 100,
-          "avgScore": 65.8,
+          "avgScore": 67.8,
           "categories": {
             "performance": 85.9,
             "accessibility": 73.8,
             "seo": 87.9,
             "geo_schema": 0,
             "geo_content": 25.3,
-            "geo_platform": 71
+            "geo_platform": 83
           },
           "checks": {
             "perf_ttfb": {
@@ -20973,9 +20973,9 @@
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
-              "cat": "geo_platform",
+              "cat": "geo_content",
               "pass": 0,
-              "applicable": 100
+              "applicable": 0
             },
             "ai_summary_box": {
               "label": "#35 Summary Box (콘텐츠)",
@@ -21101,18 +21101,19 @@
       "runId": "9d17cca2f252",
       "urlCount": 513,
       "scoredCount": 513,
-      "avgScore": 72.4,
+      "avgScore": 73.2,
       "grades": {
-        "Need Improvement": 510,
-        "Poor": 3
+        "Need Improvement": 495,
+        "Poor": 2,
+        "Good": 16
       },
       "categories": {
         "performance": 83.5,
         "accessibility": 94.3,
         "seo": 79.6,
         "geo_schema": 38.6,
-        "geo_content": 14.8,
-        "geo_platform": 91.5
+        "geo_content": 17.6,
+        "geo_platform": 100
       },
       "checks": {
         "perf_ttfb": {
@@ -21285,9 +21286,9 @@
         },
         "ai_author_source": {
           "label": "#34 Author 또는 출처+날짜",
-          "cat": "geo_platform",
-          "pass": 184,
-          "applicable": 513
+          "cat": "geo_content",
+          "pass": 84,
+          "applicable": 160
         },
         "ai_summary_box": {
           "label": "#35 Summary Box (콘텐츠)",
@@ -21366,14 +21367,14 @@
         "microsite": {
           "label": "마이크로사이트/캠페인",
           "count": 15,
-          "avgScore": 65.4,
+          "avgScore": 67.1,
           "categories": {
             "performance": 83,
             "accessibility": 95,
             "seo": 67.5,
             "geo_schema": 25.7,
             "geo_content": 8.3,
-            "geo_platform": 86
+            "geo_platform": 100
           },
           "checks": {
             "perf_ttfb": {
@@ -21546,9 +21547,9 @@
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
-              "cat": "geo_platform",
+              "cat": "geo_content",
               "pass": 0,
-              "applicable": 15
+              "applicable": 0
             },
             "ai_summary_box": {
               "label": "#35 Summary Box (콘텐츠)",
@@ -21633,8 +21634,8 @@
             "accessibility": 98.8,
             "seo": 64.2,
             "geo_schema": 47.6,
-            "geo_content": 7.5,
-            "geo_platform": 97.8
+            "geo_content": 22.8,
+            "geo_platform": 100
           },
           "checks": {
             "perf_ttfb": {
@@ -21807,7 +21808,7 @@
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
-              "cat": "geo_platform",
+              "cat": "geo_content",
               "pass": 84,
               "applicable": 100
             },
@@ -21894,8 +21895,8 @@
             "accessibility": 98.7,
             "seo": 85.5,
             "geo_schema": 33,
-            "geo_content": 8.8,
-            "geo_platform": 86
+            "geo_content": 7,
+            "geo_platform": 100
           },
           "checks": {
             "perf_ttfb": {
@@ -22068,7 +22069,7 @@
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
-              "cat": "geo_platform",
+              "cat": "geo_content",
               "pass": 0,
               "applicable": 57
             },
@@ -22156,7 +22157,7 @@
             "seo": 70.7,
             "geo_schema": 25,
             "geo_content": 0,
-            "geo_platform": 86
+            "geo_platform": 100
           },
           "checks": {
             "perf_ttfb": {
@@ -22329,7 +22330,7 @@
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
-              "cat": "geo_platform",
+              "cat": "geo_content",
               "pass": 0,
               "applicable": 3
             },
@@ -22410,14 +22411,14 @@
         "pdp": {
           "label": "제품 상세 (PDP)",
           "count": 87,
-          "avgScore": 71.9,
+          "avgScore": 73.9,
           "categories": {
             "performance": 84.2,
             "accessibility": 74.7,
             "seo": 88,
             "geo_schema": 20.4,
             "geo_content": 55.5,
-            "geo_platform": 89
+            "geo_platform": 100
           },
           "checks": {
             "perf_ttfb": {
@@ -22590,9 +22591,9 @@
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
-              "cat": "geo_platform",
+              "cat": "geo_content",
               "pass": 0,
-              "applicable": 87
+              "applicable": 0
             },
             "ai_summary_box": {
               "label": "#35 Summary Box (콘텐츠)",
@@ -22671,14 +22672,14 @@
         "plp": {
           "label": "제품 카테고리 (PLP)",
           "count": 51,
-          "avgScore": 76.1,
+          "avgScore": 78.1,
           "categories": {
             "performance": 86.7,
             "accessibility": 93.1,
             "seo": 88,
             "geo_schema": 51,
             "geo_content": 26,
-            "geo_platform": 86
+            "geo_platform": 100
           },
           "checks": {
             "perf_ttfb": {
@@ -22851,9 +22852,9 @@
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
-              "cat": "geo_platform",
+              "cat": "geo_content",
               "pass": 0,
-              "applicable": 51
+              "applicable": 0
             },
             "ai_summary_box": {
               "label": "#35 Summary Box (콘텐츠)",
@@ -22932,14 +22933,14 @@
         "support": {
           "label": "지원/Support",
           "count": 100,
-          "avgScore": 70.7,
+          "avgScore": 72.8,
           "categories": {
             "performance": 83,
             "accessibility": 99.3,
             "seo": 73.9,
             "geo_schema": 50,
             "geo_content": 0.8,
-            "geo_platform": 86
+            "geo_platform": 100
           },
           "checks": {
             "perf_ttfb": {
@@ -23112,9 +23113,9 @@
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
-              "cat": "geo_platform",
+              "cat": "geo_content",
               "pass": 0,
-              "applicable": 100
+              "applicable": 0
             },
             "ai_summary_box": {
               "label": "#35 Summary Box (콘텐츠)",
@@ -23193,7 +23194,7 @@
         "support_troubleshoot": {
           "label": "지원 - 트러블슈팅",
           "count": 100,
-          "avgScore": 75.2,
+          "avgScore": 74.2,
           "categories": {
             "performance": 83.8,
             "accessibility": 100,
@@ -23373,9 +23374,9 @@
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
-              "cat": "geo_platform",
-              "pass": 100,
-              "applicable": 100
+              "cat": "geo_content",
+              "pass": 0,
+              "applicable": 0
             },
             "ai_summary_box": {
               "label": "#35 Summary Box (콘텐츠)",
@@ -23500,19 +23501,19 @@
   "overall": {
     "urlCount": 5182,
     "scoredCount": 5182,
-    "avgScore": 72.7,
+    "avgScore": 73.8,
     "grades": {
-      "Need Improvement": 4987,
-      "Good": 151,
-      "Poor": 44
+      "Need Improvement": 4672,
+      "Good": 470,
+      "Poor": 40
     },
     "categories": {
       "performance": 83.7,
       "accessibility": 90.4,
       "seo": 81.7,
       "geo_schema": 35.6,
-      "geo_content": 27.5,
-      "geo_platform": 87.3
+      "geo_content": 29.1,
+      "geo_platform": 96.5
     },
     "checks": {
       "perf_ttfb": {
@@ -23685,9 +23686,9 @@
       },
       "ai_author_source": {
         "label": "#34 Author 또는 출처+날짜",
-        "cat": "geo_platform",
-        "pass": 1405,
-        "applicable": 5182
+        "cat": "geo_content",
+        "pass": 707,
+        "applicable": 1680
       },
       "ai_summary_box": {
         "label": "#35 Summary Box (콘텐츠)",
@@ -23772,8 +23773,8 @@
           "accessibility": 94.7,
           "seo": 70.3,
           "geo_schema": 43.4,
-          "geo_content": 13.5,
-          "geo_platform": 95.3
+          "geo_content": 26.5,
+          "geo_platform": 98.1
         },
         "checks": {
           "perf_ttfb": {
@@ -23946,7 +23947,7 @@
           },
           "ai_author_source": {
             "label": "#34 Author 또는 출처+날짜",
-            "cat": "geo_platform",
+            "cat": "geo_content",
             "pass": 707,
             "applicable": 901
           },
@@ -24027,14 +24028,14 @@
       "microsite": {
         "label": "마이크로사이트/캠페인",
         "count": 342,
-        "avgScore": 71,
+        "avgScore": 73,
         "categories": {
           "performance": 84.5,
           "accessibility": 83.6,
           "seo": 78.7,
           "geo_schema": 29.2,
           "geo_content": 38.5,
-          "geo_platform": 86
+          "geo_platform": 100
         },
         "checks": {
           "perf_ttfb": {
@@ -24207,9 +24208,9 @@
           },
           "ai_author_source": {
             "label": "#34 Author 또는 출처+날짜",
-            "cat": "geo_platform",
+            "cat": "geo_content",
             "pass": 0,
-            "applicable": 342
+            "applicable": 0
           },
           "ai_summary_box": {
             "label": "#35 Summary Box (콘텐츠)",
@@ -24294,8 +24295,8 @@
           "accessibility": 96,
           "seo": 79.7,
           "geo_schema": 25.6,
-          "geo_content": 26.3,
-          "geo_platform": 86
+          "geo_content": 21.1,
+          "geo_platform": 100
         },
         "checks": {
           "perf_ttfb": {
@@ -24468,7 +24469,7 @@
           },
           "ai_author_source": {
             "label": "#34 Author 또는 출처+날짜",
-            "cat": "geo_platform",
+            "cat": "geo_content",
             "pass": 0,
             "applicable": 208
           },
@@ -24555,8 +24556,8 @@
           "accessibility": 89.3,
           "seo": 87.1,
           "geo_schema": 20,
-          "geo_content": 16.9,
-          "geo_platform": 85.9
+          "geo_content": 13.5,
+          "geo_platform": 99.9
         },
         "checks": {
           "perf_ttfb": {
@@ -24729,7 +24730,7 @@
           },
           "ai_author_source": {
             "label": "#34 Author 또는 출처+날짜",
-            "cat": "geo_platform",
+            "cat": "geo_content",
             "pass": 0,
             "applicable": 571
           },
@@ -24810,14 +24811,14 @@
       "pdp": {
         "label": "제품 상세 (PDP)",
         "count": 886,
-        "avgScore": 73.3,
+        "avgScore": 75.3,
         "categories": {
           "performance": 85.3,
           "accessibility": 75.7,
           "seo": 87.8,
           "geo_schema": 23.7,
           "geo_content": 65.3,
-          "geo_platform": 84.4
+          "geo_platform": 95
         },
         "checks": {
           "perf_ttfb": {
@@ -24990,9 +24991,9 @@
           },
           "ai_author_source": {
             "label": "#34 Author 또는 출처+날짜",
-            "cat": "geo_platform",
+            "cat": "geo_content",
             "pass": 0,
-            "applicable": 886
+            "applicable": 0
           },
           "ai_summary_box": {
             "label": "#35 Summary Box (콘텐츠)",
@@ -25071,14 +25072,14 @@
       "plp": {
         "label": "제품 카테고리 (PLP)",
         "count": 620,
-        "avgScore": 75.6,
+        "avgScore": 77.7,
         "categories": {
           "performance": 87.1,
           "accessibility": 88.2,
           "seo": 87.5,
           "geo_schema": 51.5,
           "geo_content": 27.2,
-          "geo_platform": 86
+          "geo_platform": 99.9
         },
         "checks": {
           "perf_ttfb": {
@@ -25251,9 +25252,9 @@
           },
           "ai_author_source": {
             "label": "#34 Author 또는 출처+날짜",
-            "cat": "geo_platform",
+            "cat": "geo_content",
             "pass": 0,
-            "applicable": 620
+            "applicable": 0
           },
           "ai_summary_box": {
             "label": "#35 Summary Box (콘텐츠)",
@@ -25332,14 +25333,14 @@
       "support": {
         "label": "지원/Support",
         "count": 851,
-        "avgScore": 73.2,
+        "avgScore": 75.8,
         "categories": {
           "performance": 83.5,
           "accessibility": 98.6,
           "seo": 77.5,
           "geo_schema": 49.8,
           "geo_content": 17.2,
-          "geo_platform": 84.3
+          "geo_platform": 98
         },
         "checks": {
           "perf_ttfb": {
@@ -25512,9 +25513,9 @@
           },
           "ai_author_source": {
             "label": "#34 Author 또는 출처+날짜",
-            "cat": "geo_platform",
-            "pass": 1,
-            "applicable": 851
+            "cat": "geo_content",
+            "pass": 0,
+            "applicable": 0
           },
           "ai_summary_box": {
             "label": "#35 Summary Box (콘텐츠)",
@@ -25593,14 +25594,14 @@
       "support_troubleshoot": {
         "label": "지원 - 트러블슈팅",
         "count": 803,
-        "avgScore": 72.9,
+        "avgScore": 72.3,
         "categories": {
           "performance": 83.8,
           "accessibility": 96.7,
           "seo": 85.4,
           "geo_schema": 28.9,
           "geo_content": 15.7,
-          "geo_platform": 87.5
+          "geo_platform": 87.2
         },
         "checks": {
           "perf_ttfb": {
@@ -25773,9 +25774,9 @@
           },
           "ai_author_source": {
             "label": "#34 Author 또는 출처+날짜",
-            "cat": "geo_platform",
-            "pass": 697,
-            "applicable": 803
+            "cat": "geo_content",
+            "pass": 0,
+            "applicable": 0
           },
           "ai_summary_box": {
             "label": "#35 Summary Box (콘텐츠)",

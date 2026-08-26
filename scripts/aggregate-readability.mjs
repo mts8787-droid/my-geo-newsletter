@@ -136,12 +136,26 @@ const CATEGORY_LABEL = {
 //   스키마  : ai_schema_* (구조화 데이터 마크업)
 //   콘텐츠  : 본문에 들어가야 하는 서술 패턴 (FAQ / 정의 / 요약 / 인용가능 문장)
 //   플랫폼  : 그 외 (SSR 렌더링 · 상태코드 · 파일명 · llms.txt 등 기반 항목)
-const GEO_CONTENT_IDS = { ai_faq_block: 1, ai_definition: 1, ai_summary_box: 1, ai_citable: 1 }
+//   ai_author_source(#34 저자/출처+날짜) 는 '플랫폼' 이 아니라 콘텐츠 속성이다 —
+//   AI 가 인용할 때 쓰는 신뢰 근거이므로 콘텐츠로 분류 (사용자 결정 2026-08-26).
+const GEO_CONTENT_IDS = { ai_faq_block: 1, ai_definition: 1, ai_summary_box: 1, ai_citable: 1, ai_author_source: 1 }
 function catOf(srcCat, cid) {
   if (srcCat !== 'ai_readiness') return srcCat
   if (String(cid).startsWith('ai_schema_')) return 'geo_schema'
   if (GEO_CONTENT_IDS[cid]) return 'geo_content'
   return 'geo_platform'
+}
+
+// ── 페이지타입 적용 조건 (applies_when 보정) ────────────────────────────────
+// 원본 scoring_config 의 ai_author_source 에는 applies_when 게이트가 없어 전 페이지에
+// 무조건 적용된다. 그런데 저자/byline 은 에디토리얼 콘텐츠에만 성립하는 개념이라
+// PDP·PLP·지원 페이지가 구조적으로 불가능한 항목으로 감점당하고 있었다.
+//   실측 2026-07-31: 뉴스룸 70.3% / PDP 5.4% / PLP 0.2% / 지원 0.1% / 가이드·Experience 0%
+// → 에디토리얼 페이지타입에만 적용하고 그 외는 na (분모에서 제외).
+//   (근본 수정은 audit 쪽 scoring_config 에 applies_when 추가 — 다음 감사분부터)
+const EDITORIAL_PT = { newsroom: 1, buying_guide: 1, lg_experience: 1 }
+const PT_SCOPED_CHECKS = {
+  ai_author_source: ctx => !!(ctx && ctx.pt && EDITORIAL_PT[ctx.pt]),
 }
 
 // 점수 집계에서 완전 제외할 페이지타입 — 점수·카테고리·체크·페이지타입행·URL 카운트 모두 제외.
@@ -251,6 +265,9 @@ export function applyScoringOverride(score, ctx) {
     for (const [cid, it] of Object.entries(bd.items)) {
       if (!it) continue
       if (DISABLED_CHECKS[cid]) { it.na = true; it.hint = null; continue }
+      // 페이지타입상 적용 대상이 아니면 na — 구조적으로 불가능한 항목으로 감점되는 것 방지
+      const scoped = PT_SCOPED_CHECKS[cid]
+      if (scoped && !scoped(ctx)) { it.na = true; it.hint = null; continue }
       const lbl = checkLabelOverride(cid, ctx)
       if (lbl) it.label = lbl
       // 이미 미적용(na/null)인 항목은 재판정 대상 아님 (원본 applies_when 판단 존중)
@@ -609,7 +626,7 @@ function main() {
       if (rpt && rpt.excluded) continue
       // 대시보드 채점 재정의 (TTFB 1800ms / Cache-Control 완화 / Render Blocking 제외) —
       // checkRows(Raw 데이터) · 집계 · CSV 가 모두 같은 점수를 보도록 여기서 한 번만 적용.
-      applyScoringOverride(s.result.score, { url, psi: psiResults })
+      applyScoringOverride(s.result.score, { url, psi: psiResults, pt: rpt ? rpt.id : null })
       // [DETECT] 측정 성립 여부 — 여기서 걸러야 점수·통과율·페이지타입·CSV·Raw 데이터가 모두
       // 같은 모집단을 본다. 이전에는 Raw 데이터만 isFetchFailed 로 걸러 기준이 어긋나 있었다.
       //   제외: 404 / 500 / fetch 자체 실패 (ai_status_200 FAIL) — 전 체크가 cascade-FAIL 이라
