@@ -8,6 +8,11 @@ import { fileURLToPath } from 'url'
 import { PUB_DIR } from '../lib/storage.js'
 import { isIpAllowed } from '../lib/network.js'
 import { CHANNELS, readMetaFile } from './publish.js'
+import { renderCriteriaHTML, loadRows } from '../scripts/render-criteria.mjs'
+import { loadLatest } from './readability.js'
+import { logFor } from '../lib/logger.js'
+
+const log = logFor('published')
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const PROJECT_ROOT = join(__dirname, '..')
@@ -158,6 +163,26 @@ publishedRouter.get('/p/GEO-Monthly-Report-EN', (req, res) => {
   setPublishedSecurityHeaders(res)
   res.set('Content-Type', 'text/html; charset=utf-8')
   res.send(renderNewsletterHub('en'))
+})
+
+// ─── /p/GEO-Readability-Criteria (검수 기준 전체 항목표 — 요청 시 렌더) ──
+// 파일로 굽지 않고 매 요청 렌더하는 이유:
+//   1) PUB_DIR(/data/published) 은 .gitignore 대상이라 배포본에 파일이 안 올라간다
+//   2) Render 디스크는 재배포 시 초기화돼 런타임에 구운 파일도 사라진다
+//   3) 입력(geo-agent-checklist.html · 스냅샷)은 모두 커밋되므로 서버에서 바로 생성 가능
+// → 기준·스냅샷이 갱신되면 별도 게시 조작 없이 그대로 반영된다.
+publishedRouter.get('/p/GEO-Readability-Criteria', (req, res) => {
+  if (!isIpAllowed(req)) return send403Page(res)
+  try {
+    const { snapshot } = loadLatest()
+    const html = renderCriteriaHTML({ rows: loadRows(), snapshot, withScores: !!snapshot })
+    setPublishedSecurityHeaders(res)
+    res.set('Content-Type', 'text/html; charset=utf-8')
+    res.send(html)
+  } catch (e) {
+    log.warn({ err: e.message }, 'readability criteria render failed')
+    res.status(500).send('검수 기준 생성 실패')
+  }
 })
 
 // ─── /p/:slug (게시된 HTML 단일 파일 + CSP) ─────────────────────────────

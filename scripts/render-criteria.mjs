@@ -6,9 +6,11 @@
 //   → 통과율은 최신 스냅샷(data/readability/<date>.json)에서 check id 로 조인
 //
 // 산출물:
-//   data/published/GEO-Readability-Criteria.html   점수 포함 (웹 게시 /p/GEO-Readability-Criteria)
-//   docs/GEO-AUDIT-CRITERIA.md                     점수 제외 (audit 리포 반영용)
-//   (점수 제외 HTML 은 routes/readability.js 가 /admin/readability/criteria.html 로 서빙)
+//   docs/GEO-AUDIT-CRITERIA.md   점수 제외 Markdown (audit 리포 반영용) — 이 스크립트가 유일하게 파일로 씀
+//
+// HTML 두 버전은 파일로 굽지 않고 요청 시 렌더한다 (PUB_DIR 은 gitignore + Render 디스크는 재배포 시 초기화):
+//   /p/GEO-Readability-Criteria          점수 포함 — routes/published.js
+//   /admin/readability/criteria.html     점수 제외 — routes/readability.js (대시보드 '검수 기준' 탭 iframe)
 //
 // 사용: node scripts/render-criteria.mjs
 
@@ -389,7 +391,6 @@ export function loadRows() {
 
 function main() {
   const rows = loadRows()
-  const { loadLatest } = { loadLatest: null }
   // 스냅샷 직접 로드 (routes 의존 회피)
   const files = existsSync(DATA_DIR)
     ? readFileSync(join(DATA_DIR, 'index.json'), 'utf8') : null
@@ -402,18 +403,13 @@ function main() {
       if (existsSync(p)) snapshot = JSON.parse(readFileSync(p, 'utf8'))
     }
   }
-  const PUB = join(ROOT, 'data', 'published')
-  if (!existsSync(PUB)) mkdirSync(PUB, { recursive: true })
-  const scored = renderCriteriaHTML({ rows, snapshot, withScores: !!snapshot })
-  writeFileSync(join(PUB, 'GEO-Readability-Criteria.html'), scored)
-  console.log(`[render-criteria] ✓ 웹 게시본: /p/GEO-Readability-Criteria (${(scored.length / 1024).toFixed(1)} KB)`)
-
   const DOCS = join(ROOT, 'docs')
   if (!existsSync(DOCS)) mkdirSync(DOCS, { recursive: true })
   const md = renderCriteriaMarkdown({ rows, generatedAt: snapshot ? snapshot.date : 'n/a' })
   writeFileSync(join(DOCS, 'GEO-AUDIT-CRITERIA.md'), md)
   console.log(`[render-criteria] ✓ Markdown: docs/GEO-AUDIT-CRITERIA.md (${(md.length / 1024).toFixed(1)} KB, ${md.split('\n').length} 줄)`)
-  console.log(`[render-criteria]   행 ${rows.length} · 카테고리 ${CAT_ORDER.length}`)
+  console.log(`[render-criteria]   행 ${rows.length} · 카테고리 ${CAT_ORDER.length} · 채점 ${CAT_ORDER.reduce((a, c) => a + scoredCount(rows, c), 0)}개`)
+  console.log('[render-criteria]   HTML 은 파일로 굽지 않음 — /p/GEO-Readability-Criteria · /admin/readability/criteria.html 이 요청 시 렌더')
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) main()
