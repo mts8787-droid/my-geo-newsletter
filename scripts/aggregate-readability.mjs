@@ -15,6 +15,7 @@ import { join, dirname, basename } from 'path'
 import { fileURLToPath } from 'url'
 import { PROD_IDS } from '../src/categoryMap.js'
 import { CC_NAME } from './readability-cc.mjs'
+import { _logInfo, _logWarn } from '../src/sheetParserUtils.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const REPO_ROOT = join(__dirname, '..')
@@ -502,6 +503,8 @@ function main() {
     const summary = Array.isArray(data.summary) ? data.summary : []
     // 표본 추출 전 — excluded(분류불가/홈페이지) 제거 + 페이지타입 해석
     const items = []
+    // 측정이 성립하지 않은 페이지 제외 카운터 — 아래 [DETECT] 참조
+    let skipNoScore = 0, skipFetchFail = 0
     for (const s of summary) {
       if (!s || !s.result) continue
       const url = s.url || s.result.url
@@ -510,16 +513,26 @@ function main() {
       // 대시보드 채점 재정의 (TTFB 1800ms / Cache-Control 완화 / Render Blocking 제외) —
       // checkRows(Raw 데이터) · 집계 · CSV 가 모두 같은 점수를 보도록 여기서 한 번만 적용.
       applyScoringOverride(s.result.score)
+      // [DETECT] 측정 성립 여부 — 여기서 걸러야 점수·통과율·페이지타입·CSV·Raw 데이터가 모두
+      // 같은 모집단을 본다. 이전에는 Raw 데이터만 isFetchFailed 로 걸러 기준이 어긋나 있었다.
+      //   제외: 404 / 500 / fetch 자체 실패 (ai_status_200 FAIL) — 전 체크가 cascade-FAIL 이라
+      //         '개선 대상'이 아니고 평균만 끌어내린다 (해당 페이지 평균 34.1점).
+      //   유지: soft-404 (200 응답인데 본문이 빈 페이지) — 측정은 성립했고 실제 개선 대상이므로 채점.
+      const sc = s.result.score
+      if (!sc || typeof sc.total !== 'number') { skipNoScore++; continue }
+      if (isFetchFailed(sc)) { skipFetchFail++; continue }
       items.push({ result: s.result, url, rpt })
+    }
+    if (skipNoScore || skipFetchFail) {
+      _logInfo('aggregate-readability', `${meta.cc}: 측정 미성립 제외 — 비-200/fetch실패 ${skipFetchFail}, 미채점 ${skipNoScore}`)
     }
     // Raw 데이터(조합 필터)용 — 전수 페이지의 전체 체크(PASS+FAIL) 수집 (샘플링 전, 최대 커버리지).
     // per-row try/catch (data.md §6.3) — 손상된 breakdown 한 건이 전체 집계를 멈추지 않게.
-    let chkSkip = 0, fetchFailSkip = 0
+    let chkSkip = 0
     for (const it of items) {
       try {
+        // items 단계에서 미채점/비-200 은 이미 제외됨 — 여기선 체크 수집만.
         const sc = it.result.score
-        if (!sc || typeof sc.total !== 'number') { chkSkip++; continue }
-        if (isFetchFailed(sc)) { fetchFailSkip++; continue }  // 비-200 페이지는 대상 아님(전 체크 cascade-FAIL)
         const checks = collectChecks(sc, checkMeta)
         if (!checks.length) continue
         const ptId = it.rpt ? it.rpt.id : '(none)'
@@ -531,8 +544,8 @@ function main() {
         console.warn(`[aggregate-readability] WARN: ${meta.cc} 체크 수집 skip — ${e.message}`, { url: it.url })
       }
     }
-    if (chkSkip || fetchFailSkip) {
-      console.log(`[aggregate-readability] ${meta.cc}: 체크 수집 skip ${chkSkip} (미채점/손상) + fetch실패 제외 ${fetchFailSkip}`)
+    if (chkSkip) {
+      _logWarn('aggregate-readability', `${meta.cc}: 체크 수집 skip ${chkSkip} (손상 breakdown)`)
     }
     // 페이지타입별 max SAMPLE_PER_PT 표본 (제품군 균등 분배) — 집계 + CSV 모두 동일 표본 사용
     const selected = sampleByPageType(items)

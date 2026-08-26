@@ -74,6 +74,13 @@ describe('isFetchFailed', () => {
     expect(isFetchFailed(score({ ai: { ai_status_200: { pass: true } } }))).toBe(false)
     expect(isFetchFailed(score({}))).toBe(false)
   })
+
+  // 집계 제외 경계 — 측정 미성립(404/500/fetch실패)만 제외하고, soft-404 는 채점 유지.
+  // soft-404 는 200 응답이라 측정은 성립했고 실제 개선 대상이므로 모집단에 남긴다.
+  it('soft-404(200 응답인데 본문 빈 페이지) 는 제외 대상이 아니다', () => {
+    const s = score({ ai: { ai_status_200: { pass: true }, ai_soft_404: { pass: false, hint: '본문 0자' } } })
+    expect(isFetchFailed(s)).toBe(false)
+  })
 })
 
 // ── SCORING_OVERRIDE (대시보드 채점 재정의) ────────────────────────────────
