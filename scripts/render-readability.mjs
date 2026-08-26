@@ -3,7 +3,7 @@
 // 라우트 routes/readability.js 가 요청 시 최신 스냅샷을 읽어 본 함수에 주입.
 //
 // 4 뷰: (1) 국가별 종합 점수 비교  (2) 카테고리 4분할 상세 (51 체크 pass rate)
-//       (3) 페이지타입별 점수      (4) AI봇 차단 / CSR·SSR tier 분포
+//       (3) 페이지타입별 점수 분포
 //
 // 디자인: Visibility 대시보드와 통일 (dashboardStyles.js 토큰) — 라이트 테마.
 //   body #F1F5F9 / Hero 다크 카드 #0F172A / 흰 section-card + 레드바 타이틀.
@@ -196,39 +196,6 @@ function viewPageTypes(snap) {
   return sectionCard('③ 페이지타입별 점수', '#059669', `<div class="bars">${bars}</div>`)
 }
 
-// ─── 뷰 4: AI봇 차단 / CSR·SSR tier ─────────────────────────────────────────
-function viewBotsAndSsr(snap) {
-  const o = snap.overall
-  const bots = Object.entries(o.bots || {})
-    .map(([name, v]) => ({ name, blocked: v.blocked, total: v.total, rate: v.total > 0 ? +(v.blocked / v.total * 100).toFixed(1) : 0 }))
-    .sort((a, b) => b.rate - a.rate)
-  const botBars = bots.map(b =>
-    // 차단율 높을수록 위험(빨강) — AI 접근 차단은 GEO 관점에서 부정적
-    barRow(b.name, b.rate, 100, b.rate >= 50 ? statusInfo('critical').color : b.rate > 0 ? statusInfo('behind').color : statusInfo('lead').color,
-      `${b.rate}% (${b.blocked.toLocaleString()}/${b.total.toLocaleString()})`)
-  ).join('')
-
-  const tiers = Object.entries(o.tiers || {}).sort((a, b) => b[1] - a[1])
-  const tierTotal = tiers.reduce((s, [, n]) => s + n, 0)
-  const tierColor = { good: statusInfo('lead').color, partial: statusInfo('behind').color, poor: statusInfo('critical').color, bad: statusInfo('critical').color }
-  const tierBars = tiers.map(([t, n]) =>
-    barRow(t, n, tierTotal, tierColor[t.toLowerCase()] || '#3B82F6',
-      `${n.toLocaleString()} (${tierTotal > 0 ? (n / tierTotal * 100).toFixed(1) : 0}%)`)
-  ).join('')
-
-  const body = `<div class="split">
-    <div class="split-col">
-      <div class="split-head">AI 봇 차단율 — 높을수록 GEO 불리</div>
-      <div class="bars sm">${botBars}</div>
-    </div>
-    <div class="split-col">
-      <div class="split-head">CSR/SSR Tier 분포 (${tierTotal.toLocaleString()} URL)</div>
-      <div class="bars">${tierBars}</div>
-    </div>
-  </div>`
-  return sectionCard('④ AI봇 차단 (robots.txt) · CSR/SSR Tier', '#D97706', body)
-}
-
 // ─── 클라이언트 JS (탭 전환 + 국가/페이지타입 필터 재렌더) ────────────────────
 // function.toString() 으로 임베드 — 본 함수 본문은 외부 template literal 밖이라
 // design.md §6.1 (template 보간 함정) 회피. 본문은 self-contained (모듈 스코프 참조 X).
@@ -271,25 +238,6 @@ function readabilityClient() {
   function getScope(cc) { return cc === 'all' ? RD.overall : (RD.countries[cc] || RD.overall) }
   function ccLabel(cc) { return RD.ccName[cc] || cc.toUpperCase() }
 
-  function renderBotsTiers(scope) {
-    var bots = Object.entries(scope.bots || {}).map(function (e) {
-      var v = e[1]; return { name: e[0], blocked: v.blocked, total: v.total, rate: v.total > 0 ? +(v.blocked / v.total * 100).toFixed(1) : 0 }
-    }).sort(function (a, b) { return b.rate - a.rate })
-    var botBars = bots.map(function (b) {
-      var col = b.rate >= 50 ? CRIT : b.rate > 0 ? BEHIND : LEAD
-      return barRow(b.name, b.rate, 100, col, b.rate + '% (' + num(b.blocked) + '/' + num(b.total) + ')')
-    }).join('')
-    var tiers = Object.entries(scope.tiers || {}).sort(function (a, b) { return b[1] - a[1] })
-    var tt = tiers.reduce(function (s, e) { return s + e[1] }, 0)
-    var tcol = { good: LEAD, partial: BEHIND, poor: CRIT, bad: CRIT }
-    var tierBars = tiers.map(function (e) {
-      return barRow(e[0], e[1], tt, tcol[e[0].toLowerCase()] || '#3B82F6', num(e[1]) + ' (' + (tt > 0 ? (e[1] / tt * 100).toFixed(1) : 0) + '%)')
-    }).join('')
-    var body = '<div class="split"><div class="split-col"><div class="split-head">AI 봇 차단율 — 높을수록 GEO 불리</div><div class="bars sm">' + botBars + '</div></div>' +
-      '<div class="split-col"><div class="split-head">CSR/SSR Tier 분포 (' + num(tt) + ' URL)</div><div class="bars">' + tierBars + '</div></div></div>'
-    return sectionCard('④ AI봇 차단 (robots.txt) · CSR/SSR Tier', '#D97706', body)
-  }
-
   function renderCountry() {
     var pt = state.pt, scope = getScope(state.cc)
     var ptLabel = pt !== 'all' && RD.overall.pageTypes[pt] ? RD.overall.pageTypes[pt].label : null
@@ -318,9 +266,9 @@ function readabilityClient() {
     }).join('')
     var title = pt === 'all' ? '① 국가별 종합 점수 비교' : '① 국가별 점수 비교 — ' + ptLabel
     var note = pt !== 'all'
-      ? '<div class="tab-note">페이지 타입 «' + esc(ptLabel) + '» 필터는 국가별/페이지타입 점수에만 적용됩니다. AI봇·SSR 지표는 페이지타입 분해 데이터가 없어 ' + esc(scopeName) + ' 전체 기준입니다.</div>'
+      ? '<div class="tab-note">페이지 타입 «' + esc(ptLabel) + '» 필터가 적용된 국가별 점수입니다.</div>'
       : ''
-    return hero + note + sectionCard(title, RED, '<div class="bars">' + bars + '</div>') + renderCategorySection(scope, '②') + renderBotsTiers(scope)
+    return hero + note + sectionCard(title, RED, '<div class="bars">' + bars + '</div>') + renderCategorySection(scope, '②')
   }
 
   // 체크별 통과율 카테고리 카드 묶음 — 국가/페이지타입 탭 양쪽에서 재사용 (별도 항목별 탭 X)
@@ -704,10 +652,6 @@ body{background:#F1F5F9;font-family:${FONT};color:#1A1A1A;line-height:1.6}
 .cat-name{font-size:16px;font-weight:800;color:#1A1A1A}
 .cat-avg{font-size:26px;font-weight:900;letter-spacing:-1px}
 .cat-sub{font-size:12px;color:#94A3B8;margin-bottom:12px}
-/* ── 2분할 ── */
-.split{display:grid;grid-template-columns:1fr 1fr;gap:20px}
-.split-col{background:#fff;border:1px solid #E8EDF2;border-radius:12px;padding:16px 18px}
-.split-head{font-size:14px;font-weight:700;color:#475569;margin-bottom:12px}
 @media (max-width:780px){
   .tab-bar{padding:10px 16px}
   .dash-container{padding:16px 14px}
@@ -722,7 +666,6 @@ body{background:#F1F5F9;font-family:${FONT};color:#1A1A1A;line-height:1.6}
   .bar-count{flex:0 0 56px;font-size:11px}
   .crit-frame{height:60vh}
   .cat-grid{grid-template-columns:1fr}
-  .split{grid-template-columns:1fr}
 }
 @media (max-width:480px){
   .dash-container{padding:12px 10px}
@@ -754,7 +697,6 @@ body{background:#F1F5F9;font-family:${FONT};color:#1A1A1A;line-height:1.6}
     ${viewCountryComparison(snapshot)}
     ${viewCategoryDetail(snapshot)}
     ${viewPageTypes(snapshot)}
-    ${viewBotsAndSsr(snapshot)}
     ${adminMode ? sectionCard('Raw 데이터 (페이지별 체크 PASS/FAIL)', RED, '<div class="tab-note">조합 필터(국가·타입·항목·결과) 탭은 JavaScript 가 필요합니다. 원본 데이터: <a href="/admin/readability/checks.json">checks.json</a></div>') : ''}
   </noscript>
 </div>
