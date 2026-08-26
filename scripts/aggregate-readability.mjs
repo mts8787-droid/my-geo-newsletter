@@ -189,7 +189,12 @@ function resolvePt(pt, url) {
 //   #1 perf_ttfb        측정 정본을 PageSpeed Insights(Lighthouse) 의 server-response-time 으로 교체.
 //                       어딧 크롤러의 자체 TTFB 는 동시 크롤 큐잉에 오염돼 실제보다 6~200배
 //                       크게 잡혔다 (2026-08-26 실측: UK 크롤러 1088ms vs PSI Lab 11ms,
-//                       US 2486ms vs 61ms). 임계값은 1800ms 유지 (사용자 결정).
+//                       US 2486ms vs 61ms). PSI 1,536건 대조에서도 같은 URL 기준
+//                       크롤러 통과 12.4% vs PSI 97.7% 로 재현.
+//                       임계값은 600ms — Google Lighthouse 권장값이자 원래 기준이다.
+//                       1800ms 로 완화했던 건 망가진 측정값을 보정하려던 것이라,
+//                       측정이 정확해진 뒤에는 원래 기준으로 되돌린다 (사용자 결정 2026-08-27).
+//                       PSI 실측 분포: 중앙값 221ms / p90 662ms → 600ms 에서 88.2% 통과.
 //                       PSI 값은 scripts/collect-psi.mjs 가 psi-<date>.json 으로 수집.
 //   #4 perf_cache_control  "max-age 디렉티브가 설정되어 있으면 통과" 로 완화.
 //                       원본 룰은 no-cache/no-store 가 섞여 있으면 max-age 값과 무관하게
@@ -201,7 +206,7 @@ function resolvePt(pt, url) {
 //                       "가벼운 좋은 페이지"가 아니라 "깨진 페이지"를 통과로 잡던 반전 지표였다.
 //                       기준 상향/지표 재정의는 별도 논의 (렌더 DOM 기준 측정은 audit 쪽 작업).
 //   #8 perf_render_block  채점 대상에서 제외 (분모·분자 모두). na 처리라 통과율 표에서도 사라짐.
-const TTFB_MAX_MS = 1800
+const TTFB_MAX_MS = 600
 // 채점 제외 체크 — na:true 로 표시해 applicable(분모)에서도 빠진다 (scoring_config 의 enabled:false 와 동등)
 const DISABLED_CHECKS = { perf_html_size: 1, perf_render_block: 1 }
 // 기준이 바뀐 체크의 표시 라벨 (원본 label 은 옛 임계값 문구를 담고 있음).
@@ -212,6 +217,38 @@ function checkLabelOverride(cid, ctx) {
 }
 // 등급 임계값 — my-geo-audit/scoring_config.json 의 grade 와 동일 (good 80 / need_improvement 60)
 const GRADE_THRESHOLD = { good: 80, needImprovement: 60 }
+
+// 표본 측정분에서 셀(국가×페이지타입) TTFB 중앙값 테이블을 만든다.
+// 미측정 페이지는 이 대표값으로 #1 을 판정한다 (RECHECK.perf_ttfb 참조).
+// url→(cc,pt) 는 checks-<date>.json 에서 가져온다 — PSI 파일 자체엔 국가·타입이 없다.
+// 반환: (cc, pt) => 중앙값 ms | null.  폴백: 셀 → 국가 → 전체
+function buildTtfbMedian(psiResults, date) {
+  let rows = []
+  try {
+    const p = join(OUT_DIR, `checks-${date}.json`)
+    if (existsSync(p)) rows = JSON.parse(readFileSync(p, 'utf8')).rows || []
+  } catch (e) { _logWarn('aggregate-readability', `TTFB 대표값 — checks 로드 실패: ${e.message}`) }
+  if (!rows.length) return () => null
+
+  const med = arr => { const a = arr.slice().sort((x, y) => x - y); return a.length ? a[Math.floor((a.length - 1) / 2)] : null }
+  const cell = {}, country = {}, all = []
+  for (const r of rows) {
+    const v = psiResults[r.url]
+    if (!v || v.err || v.lab == null) continue
+    ;(cell[`${r.cc}|${r.pt}`] = cell[`${r.cc}|${r.pt}`] || []).push(v.lab)
+    ;(country[r.cc] = country[r.cc] || []).push(v.lab)
+    all.push(v.lab)
+  }
+  const cellMed = Object.fromEntries(Object.entries(cell).map(([k, a]) => [k, med(a)]))
+  const ccMed = Object.fromEntries(Object.entries(country).map(([k, a]) => [k, med(a)]))
+  const allMed = med(all)
+  _logInfo('aggregate-readability', `TTFB 대표값 — 셀 ${Object.keys(cellMed).length}개 / 국가 ${Object.keys(ccMed).length}개 / 전체 중앙값 ${allMed}ms (미측정 페이지 보정용)`)
+  return (cc, pt) => {
+    if (cc && pt && cellMed[`${cc}|${pt}`] != null) return cellMed[`${cc}|${pt}`]
+    if (cc && ccMed[cc] != null) return ccMed[cc]
+    return allMed
+  }
+}
 
 // Python round() 호환 (round-half-to-even) — 원본 analyzer.py 가 Python round 를 쓰므로
 // 재계산 결과가 원본과 정확히 일치하도록 동일 규칙 사용. JS Math.round 는 half-up 이라 불일치.
@@ -236,9 +273,18 @@ const RECHECK = {
       const pass = p.lab < TTFB_MAX_MS
       return { pass, hint: pass ? null : `TTFB ${p.lab}ms (PSI) — ${TTFB_MAX_MS}ms 미만 필요` }
     }
-    // PSI 체계로 채점 중인데 이 URL 만 값이 없음 → 채점 제외. 두 측정 체계(PSI/크롤러)를
-    // 섞으면 통과율이 서로 다른 척도의 혼합이 되어 해석 불가해진다.
-    if (ctx && ctx.psi) return { na: true }
+    // 표본 측정이라 값이 없는 페이지 → 그 페이지가 속한 셀(국가×페이지타입)의 TTFB
+    // 중앙값을 대표값으로 삼아 일괄 판정한다 (사용자 결정 2026-08-27).
+    //   폴백 순서: 셀 중앙값 → 국가 중앙값 → 전체 중앙값
+    // ⚠ 한 셀이 통째로 PASS 또는 FAIL 로 처리되므로 셀 내부 편차는 사라진다.
+    //   (예: 셀 통과율 88% 여도 미측정분은 전부 PASS). 통과율을 셀별 실제 비율로
+    //   반영하려면 기대값 보정이 필요하나, 현 정책은 대표값 일괄 판정이다.
+    if (ctx && ctx.psi) {
+      const med = ctx.ttfbMedian ? ctx.ttfbMedian(ctx.cc, ctx.pt) : null
+      if (med == null) return { na: true }   // 참조할 측정치가 하나도 없을 때만 제외
+      const pass = med < TTFB_MAX_MS
+      return { pass, hint: pass ? null : `TTFB ${med}ms (PSI 셀 대표값) — ${TTFB_MAX_MS}ms 미만 필요` }
+    }
     // PSI 파일 자체가 없음 → 크롤러 값으로 폴백하되 임계값은 동일하게 재판정.
     // (원본 run_results 의 pass 는 수집 당시 config 기준이라 라벨과 어긋날 수 있음)
     const m = String(it.value == null ? '' : it.value).match(/([\d.]+)\s*ms/)
@@ -518,7 +564,7 @@ function main() {
 
   // PSI(Lighthouse) TTFB 데이터 로드 — #1 채점 정본. 없으면 크롤러 값으로 폴백(하위 호환).
   // 스냅샷 날짜 확정 전이라 --rebuild/--date 인자 기준으로 먼저 찾고, 없으면 최신 psi-*.json.
-  let psiResults = null, psiDate = null
+  let psiResults = null, psiDate = null, ttfbMedian = null
   {
     const want = args.rebuild || args.date
     const cand = want ? [`psi-${want}.json`] : []
@@ -546,6 +592,7 @@ function main() {
       const n = Object.keys(psiResults).length
       const okN = Object.values(psiResults).filter(v => v && !v.err && v.lab != null).length
       _logInfo('aggregate-readability', `PSI TTFB 로드 — ${psiDate}: ${okN}/${n} URL 유효 (#1 은 PSI server-response-time 기준으로 채점)`)
+      ttfbMedian = buildTtfbMedian(psiResults, psiDate)
     } else {
       _logWarn('aggregate-readability', '#1 TTFB — PSI 데이터 없음, 크롤러 자체 측정값으로 폴백 (node scripts/collect-psi.mjs 로 수집 권장)')
     }
@@ -626,7 +673,7 @@ function main() {
       if (rpt && rpt.excluded) continue
       // 대시보드 채점 재정의 (TTFB 1800ms / Cache-Control 완화 / Render Blocking 제외) —
       // checkRows(Raw 데이터) · 집계 · CSV 가 모두 같은 점수를 보도록 여기서 한 번만 적용.
-      applyScoringOverride(s.result.score, { url, psi: psiResults, pt: rpt ? rpt.id : null })
+      applyScoringOverride(s.result.score, { url, psi: psiResults, pt: rpt ? rpt.id : null, cc: meta.cc, ttfbMedian })
       // [DETECT] 측정 성립 여부 — 여기서 걸러야 점수·통과율·페이지타입·CSV·Raw 데이터가 모두
       // 같은 모집단을 본다. 이전에는 Raw 데이터만 isFetchFailed 로 걸러 기준이 어긋나 있었다.
       //   제외: 404 / 500 / fetch 자체 실패 (ai_status_200 FAIL) — 전 체크가 cascade-FAIL 이라

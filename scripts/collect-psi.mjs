@@ -34,6 +34,7 @@ function parseArgs() {
     else if (a[i] === '--concurrency') out.concurrency = parseInt(a[++i])
     else if (a[i] === '--date') out.date = a[++i]
     else if (a[i] === '--strategy') out.strategy = a[++i]
+    else if (a[i] === '--sample') out.sample = parseInt(a[++i])
   }
   return out
 }
@@ -141,14 +142,6 @@ async function main() {
   const strategy = args.strategy || 'mobile'
   const concurrency = args.concurrency || 12   // 실측상 12 이하에서 500/429 거의 없음 (40 은 44% 실패)
 
-  const checksPath = join(DATA_DIR, `checks-${date}.json`)
-  if (!existsSync(checksPath)) {
-    console.error(`[collect-psi] FATAL: ${checksPath} 없음`)
-    process.exit(1)
-  }
-  const checks = JSON.parse(readFileSync(checksPath, 'utf8'))
-  let urls = [...new Set((checks.rows || []).map(r => r.url).filter(Boolean))]
-
   const outPath = join(DATA_DIR, `psi-${date}.json`)
   let store = { date, strategy, generatedAt: null, results: {} }
   if (existsSync(outPath)) {
@@ -157,6 +150,43 @@ async function main() {
       store.results = store.results || {}
     } catch { /* 손상 시 새로 시작 */ }
   }
+
+  const checksPath = join(DATA_DIR, `checks-${date}.json`)
+  if (!existsSync(checksPath)) {
+    console.error(`[collect-psi] FATAL: ${checksPath} 없음`)
+    process.exit(1)
+  }
+  const checks = JSON.parse(readFileSync(checksPath, 'utf8'))
+  let urls = [...new Set((checks.rows || []).map(r => r.url).filter(Boolean))]
+  let mode = 'full'
+
+  // --sample N : 국가×페이지타입당 최대 N건만 측정 (1차 추출용).
+  // PSI 가 초당 처리량이 낮아(실측 ~180건/시간) 전수는 20시간대라, 국가·타입별 비교에
+  // 필요한 만큼만 뽑는다. 이미 측정된 URL 을 각 셀에서 우선 채택해 재측정을 피한다.
+  if (args.sample > 0) {
+    mode = `sample:${args.sample}`
+    const meta = new Map((checks.rows || []).map(r => [r.url, { cc: r.cc, pt: r.pt }]))
+    const cells = {}
+    for (const u of urls) {
+      const m = meta.get(u); if (!m) continue
+      const k = `${m.cc}|${m.pt}`
+      ;(cells[k] = cells[k] || []).push(u)
+    }
+    const already = new Set(Object.entries(store.results || {})
+      .filter(([, v]) => v && !v.err && v.lab != null && (v.v || 1) >= PSI_SCHEMA_VERSION).map(([k]) => k))
+    const picked = []
+    for (const k of Object.keys(cells).sort()) {
+      // 측정 완료분 우선 + 나머지는 URL 정렬 순 (결정적)
+      const arr = cells[k].slice().sort((a, b) => {
+        const da = already.has(a) ? 0 : 1, db = already.has(b) ? 0 : 1
+        return da !== db ? da - db : (a < b ? -1 : a > b ? 1 : 0)
+      })
+      picked.push(...arr.slice(0, args.sample))
+    }
+    urls = picked
+    _logInfo('collect-psi', `표본 모드 — 국가×페이지타입당 최대 ${args.sample}건 → 대상 ${urls.length} (셀 ${Object.keys(cells).length}개)`)
+  }
+
 
   // 재개 — 이미 성공한 URL 은 건너뜀 (err 만 있는 건 재시도 대상)
   const done = new Set(Object.entries(store.results)
@@ -182,7 +212,8 @@ async function main() {
     const good = new Set(Object.entries(store.results)
       .filter(([, v]) => v && !v.err && v.lab != null && (v.v || 1) >= PSI_SCHEMA_VERSION).map(([k]) => k))
     store.complete = urls.every(u => good.has(u))
-    store.coverage = { total: urls.length, ok: good.size }
+    store.mode = mode
+    store.coverage = { total: urls.length, ok: urls.filter(u => good.has(u)).length, stored: good.size }
     return store.complete
   }
   const save = () => {

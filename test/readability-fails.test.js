@@ -95,22 +95,22 @@ const perfScore = (items) => ({
   },
 })
 
-describe('applyScoringOverride — #1 TTFB < 1800ms', () => {
-  it('600~1800ms 는 원본 FAIL 이었어도 PASS 로 뒤집힌다', () => {
-    const s = perfScore({ perf_ttfb: { label: '#1 TTFB < 600ms', pass: false, value: '873ms', hint: 'TTFB 873ms — 600ms 미만 필요' } })
+describe('applyScoringOverride — #1 TTFB < 600ms', () => {
+  it('600ms 미만이면 PASS + 라벨에 임계값 표기', () => {
+    const s = perfScore({ perf_ttfb: { label: '#1 TTFB < 600ms', pass: false, value: '221ms', hint: '' } })
     applyScoringOverride(s)
     const it = s.breakdown.performance.items.perf_ttfb
     expect(it.pass).toBe(true)
     expect(it.hint).toBeNull()
-    expect(it.label).toBe('#1 TTFB < 1800ms')   // 라벨도 새 기준으로 표기
+    expect(it.label).toBe('#1 TTFB < 600ms')
   })
 
-  it('1800ms 이상은 FAIL 유지 + hint 가 새 임계값을 표기', () => {
-    const s = perfScore({ perf_ttfb: { label: '#1 TTFB < 600ms', pass: false, value: '1949ms', hint: 'TTFB 1949ms — 600ms 미만 필요' } })
+  it('600ms 이상은 FAIL + hint 가 임계값을 표기', () => {
+    const s = perfScore({ perf_ttfb: { label: '#1 TTFB < 600ms', pass: false, value: '873ms', hint: '' } })
     applyScoringOverride(s)
     const it = s.breakdown.performance.items.perf_ttfb
     expect(it.pass).toBe(false)
-    expect(it.hint).toBe('TTFB 1949ms — 1800ms 미만 필요')
+    expect(it.hint).toBe('TTFB 873ms — 600ms 미만 필요')
   })
 
   it('측정 불가(value null) 는 원본 판정을 유지', () => {
@@ -132,32 +132,61 @@ describe('applyScoringOverride — #1 TTFB 측정 출처(PSI)', () => {
     // 크롤러는 2486ms(FAIL) 인데 PSI Lab 은 61ms → PASS
     const it = withPsi('https://a', { 'https://a': { lab: 61 } }, '2486ms')
     expect(it.pass).toBe(true)
-    expect(it.label).toBe('#1 TTFB < 1800ms (PSI)')
+    expect(it.label).toBe('#1 TTFB < 600ms (PSI)')
   })
 
   it('PSI lab 이 임계값 이상이면 FAIL + hint 에 출처 표기', () => {
     const it = withPsi('https://a', { 'https://a': { lab: 2500 } }, '10ms')
     expect(it.pass).toBe(false)
-    expect(it.hint).toBe('TTFB 2500ms (PSI) — 1800ms 미만 필요')
+    expect(it.hint).toBe('TTFB 2500ms (PSI) — 600ms 미만 필요')
   })
 
-  it('PSI 체계인데 이 URL 만 값이 없으면 채점 제외(na) — 두 측정 체계 혼합 방지', () => {
+  it('표본 미측정 URL 은 셀 대표값(중앙값)으로 판정', () => {
+    const s = perfScore({ perf_ttfb: { label: '#1 TTFB < 600ms', pass: true, value: '10ms', hint: null } })
+    applyScoringOverride(s, {
+      url: 'https://missing', pt: 'pdp', cc: 'us',
+      psi: { 'https://other': { lab: 61 } },
+      ttfbMedian: () => 480,                       // 셀 중앙값 480ms
+    })
+    const it = s.breakdown.performance.items.perf_ttfb
+    expect(it.na).toBeUndefined()
+    expect(it.pass).toBe(true)                     // 480 < 600
+  })
+
+  it('셀 대표값이 임계값 이상이면 FAIL + 대표값 출처를 hint 에 표기', () => {
+    const s = perfScore({ perf_ttfb: { label: '#1 TTFB < 600ms', pass: true, value: '10ms', hint: null } })
+    applyScoringOverride(s, {
+      url: 'https://missing', pt: 'pdp', cc: 'ca',
+      psi: { 'https://other': { lab: 61 } },
+      ttfbMedian: () => 900,
+    })
+    const it = s.breakdown.performance.items.perf_ttfb
+    expect(it.pass).toBe(false)
+    expect(it.hint).toBe('TTFB 900ms (PSI 셀 대표값) — 600ms 미만 필요')
+  })
+
+  it('참조할 측정치가 하나도 없으면(대표값 null) 채점 제외', () => {
     const it = withPsi('https://missing', { 'https://other': { lab: 61 } }, '100ms')
     expect(it.na).toBe(true)
   })
 
-  it('PSI 호출이 실패한 URL 도 채점 제외(na)', () => {
-    const it = withPsi('https://a', { 'https://a': { err: 'HTTP 500' } }, '100ms')
-    expect(it.na).toBe(true)
+  it('PSI 호출이 실패한 URL 도 셀 대표값으로 보정', () => {
+    const s = perfScore({ perf_ttfb: { label: '#1 TTFB < 600ms', pass: true, value: '10ms', hint: null } })
+    applyScoringOverride(s, {
+      url: 'https://a', pt: 'pdp', cc: 'us',
+      psi: { 'https://a': { err: 'HTTP 500' } },
+      ttfbMedian: () => 200,
+    })
+    expect(s.breakdown.performance.items.perf_ttfb.pass).toBe(true)
   })
 
   it('PSI 데이터 자체가 없으면 크롤러 값으로 같은 임계값 재판정 + 라벨에 (PSI) 없음', () => {
-    const s = perfScore({ perf_ttfb: { label: '#1 TTFB < 600ms', pass: false, value: '873ms', hint: '' } })
+    const s = perfScore({ perf_ttfb: { label: '#1 TTFB < 600ms', pass: false, value: '221ms', hint: '' } })
     applyScoringOverride(s)                      // ctx 없음
     const it = s.breakdown.performance.items.perf_ttfb
-    expect(it.pass).toBe(true)                   // 873 < 1800
+    expect(it.pass).toBe(true)                   // 221 < 600
     expect(it.na).toBeUndefined()
-    expect(it.label).toBe('#1 TTFB < 1800ms')    // (PSI) 미표기 — 라벨과 출처 일치
+    expect(it.label).toBe('#1 TTFB < 600ms')     // (PSI) 미표기 — 라벨과 출처 일치
   })
 })
 
@@ -255,7 +284,7 @@ describe('applyScoringOverride — #5 HTML Size / #8 Render Blocking 채점 제�
 describe('applyScoringOverride — 총점 재계산', () => {
   it('전 카테고리 통과항목 합 / 적용항목 합 (analyzer.py 와 동일 산식) + 등급', () => {
     const s = perfScore({
-      perf_ttfb: { pass: false, value: '900ms', hint: '' },            // → PASS (1800 기준)
+      perf_ttfb: { pass: false, value: '221ms', hint: '' },            // → PASS (600 기준)
       perf_cache_control: { pass: false, value: 'max-age=0, no-store', hint: '' },  // → PASS
       perf_render_block: { pass: false, value: '2개', hint: '' },      // → 제외
       perf_compression: { pass: true, value: 'gzip', hint: null },     // PASS
