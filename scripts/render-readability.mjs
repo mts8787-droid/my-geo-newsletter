@@ -26,6 +26,21 @@ const FONT_FACE_CSS = `
 @font-face { font-family: 'LG Smart'; font-weight: 300; font-style: normal; src: url('/font/LG%20Smart%20Light.ttf') format('truetype'); font-display: swap; }
 `
 
+import { loadRows, DOC_TO_CHECK } from './render-criteria.mjs'
+
+// check id → 항목 정의. 체크리스트 문서(geo-agent-checklist.html)가 정의의 단일 출처.
+// 카드에 통과율만 있으면 항목명이 축약어라 무슨 기준인지 알 수 없어 정의를 같이 싣는다.
+// 파싱 실패해도 대시보드는 정의 없이 정상 동작 (빈 맵 폴백).
+function loadCheckDefs() {
+  try {
+    const defs = {}
+    for (const r of loadRows()) {
+      for (const cid of (DOC_TO_CHECK[r.no] || [])) if (r.def) defs[cid] = r.def
+    }
+    return defs
+  } catch { return {} }
+}
+
 // 스냅샷의 categoryLabels 와 순서가 일치해야 함 (aggregate-readability.mjs 의 CATEGORIES)
 const CATEGORIES = ['performance', 'accessibility', 'seo', 'geo_schema', 'geo_content', 'geo_platform']
 
@@ -54,11 +69,12 @@ function rateColor(v) {
 }
 
 // 가로 막대 1줄 — countText 주면 라벨과 막대 사이에 audit 페이지 수 컬럼 추가
-function barRow(label, value, max, color, rightText, countText) {
+function barRow(label, value, max, color, rightText, countText, defText) {
   const w = max > 0 ? Math.max(0, Math.min(100, (value / max) * 100)).toFixed(1) : 0
   const countCol = (countText != null && countText !== '') ? `<span class="bar-count">${escHtml(countText)}</span>` : ''
-  return `<div class="bar-row">
-    <span class="bar-label">${escHtml(label)}</span>
+  const def = defText ? `<span class="bar-def">${escHtml(defText)}</span>` : ''
+  return `<div class="bar-row${def ? ' has-def' : ''}">
+    <span class="bar-label">${escHtml(label)}${def}</span>
     ${countCol}
     <div class="bar-track"><div class="bar-fill" style="width:${w}%;background:${color}"></div></div>
     <span class="bar-value" style="color:${color}">${escHtml(rightText)}</span>
@@ -142,11 +158,12 @@ function viewCategoryDetail(snap) {
   }
 
   const checkRate = c => c.applicable > 0 ? +(c.pass / c.applicable * 100).toFixed(1) : null
+  const DEFS = loadCheckDefs()
   const catCard = (name, avg, sub, checksArr) => {
     const checkRows = checksArr.slice().sort((a, b) => a.label.localeCompare(b.label, 'en', { numeric: true })).map(c => {
       const rate = checkRate(c)
       const right = rate == null ? '—' : `${rate}% (${c.pass}/${c.applicable})`
-      return barRow(c.label, rate ?? 0, 100, rateColor(rate), right)
+      return barRow(c.label, rate ?? 0, 100, rateColor(rate), right, '', DEFS[c.cid])
     }).join('')
     return `<div class="cat-card">
       <div class="cat-head">
@@ -199,10 +216,11 @@ function readabilityClient() {
   function scoreColor(v) { if (v == null) return COMP; if (v >= 70) return LEAD; if (v >= 50) return BEHIND; return CRIT }
   function rateColor(v) { if (v == null) return COMP; if (v >= 80) return LEAD; if (v >= 50) return BEHIND; return CRIT }
   function num(n) { return (n == null ? 0 : n).toLocaleString() }
-  function barRow(label, value, max, color, rightText, countText) {
+  function barRow(label, value, max, color, rightText, countText, defText) {
     var w = max > 0 ? Math.max(0, Math.min(100, (value / max) * 100)).toFixed(1) : 0
     var countCol = (countText != null && countText !== '') ? '<span class="bar-count">' + esc(countText) + '</span>' : ''
-    return '<div class="bar-row"><span class="bar-label">' + esc(label) + '</span>' + countCol +
+    var def = defText ? '<span class="bar-def">' + esc(defText) + '</span>' : ''
+    return '<div class="bar-row' + (def ? ' has-def' : '') + '"><span class="bar-label">' + esc(label) + def + '</span>' + countCol +
       '<div class="bar-track"><div class="bar-fill" style="width:' + w + '%;background:' + color + '"></div></div>' +
       '<span class="bar-value" style="color:' + color + '">' + esc(rightText) + '</span></div>'
   }
@@ -268,10 +286,11 @@ function readabilityClient() {
       return vals.length ? +(vals.reduce(function (s, r) { return s + r }, 0) / vals.length).toFixed(1) : null
     }
     function card(name, avg, sub, checksArr) {
+      var defs = RD.checkDefs || {}
       var rows = checksArr.slice().sort(function (a, b) { return a.label.localeCompare(b.label, 'en', { numeric: true }) }).map(function (c) {
         var rate = checkRate(c)
         var right = rate == null ? '—' : rate + '% (' + c.pass + '/' + c.applicable + ')'
-        return barRow(c.label, rate == null ? 0 : rate, 100, rateColor(rate), right)
+        return barRow(c.label, rate == null ? 0 : rate, 100, rateColor(rate), right, '', defs[c.cid])
       }).join('')
       return '<div class="cat-card"><div class="cat-head"><span class="cat-name">' + esc(name) + '</span>' +
         '<span class="cat-avg" style="color:' + scoreColor(avg) + '">' + (avg == null ? '—' : avg) + '</span></div>' +
@@ -512,6 +531,7 @@ export function renderReadabilityHTML({ snapshot, index, snapshots, adminMode = 
     date: snap.date,
     adminMode: !!adminMode,
     categoryLabels: snap.categoryLabels || {},
+    checkDefs: loadCheckDefs(),   // check id → 항목 정의 (체크리스트 문서 출처)
     ccName: Object.fromEntries(Object.keys(snap.countries).map(cc => [cc, CC_NAME[cc] || cc.toUpperCase()])),
     overall: snap.overall,
     countries: snap.countries,
@@ -617,7 +637,11 @@ body{background:#F1F5F9;font-family:${FONT};color:#1A1A1A;line-height:1.6}
 .fails-hint{color:#475569;max-width:300px}
 .fails-score{text-align:right;font-weight:800;font-variant-numeric:tabular-nums}
 /* ── 카테고리 카드 ── */
-.cat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:16px}
+.cat-grid{display:grid;grid-template-columns:1fr;gap:16px}
+.bar-row.has-def{align-items:flex-start}
+.bar-row.has-def .bar-track,.bar-row.has-def .bar-value,.bar-row.has-def .bar-count{margin-top:2px}
+.bar-def{display:block;margin-top:3px;font-size:11.5px;line-height:1.5;color:#94A3B8;white-space:normal;font-weight:400;letter-spacing:-0.2px}
+.bars.sm .bar-label{flex:0 0 320px}
 .cat-card{background:#fff;border:1px solid #E8EDF2;border-radius:12px;padding:16px 18px}
 .cat-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:2px}
 .cat-name{font-size:16px;font-weight:800;color:#1A1A1A}
