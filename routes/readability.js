@@ -7,6 +7,7 @@ import { readFileSync, existsSync, readdirSync } from 'fs'
 import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
 import { renderReadabilityHTML } from '../scripts/render-readability.mjs'
+import { renderCriteriaHTML, loadRows } from '../scripts/render-criteria.mjs'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const DATA_DIR = join(__dirname, '..', 'data', 'readability')
@@ -80,6 +81,19 @@ readabilityRouter.get('/admin/readability/checklist.html', (req, res) => {
   if (!existsSync(file)) return res.status(404).send('체크리스트 HTML 없음 — data/readability/geo-agent-checklist.html 필요')
   res.set('Content-Type', 'text/html; charset=utf-8')
   res.send(readFileSync(file, 'utf8'))
+})
+
+// 검수 기준 전체 항목표 (점수 제외) — 대시보드 '검수 기준' 탭이 iframe 으로 임베드.
+// 웹 게시본(/p/GEO-Readability-Criteria)과 같은 내용이되 통과율 열만 뺀다 —
+// 기준 문서로서 읽히게 하고, 실측치는 대시보드 본문에서 보게 분리.
+readabilityRouter.get('/admin/readability/criteria.html', (req, res) => {
+  try {
+    const rows = loadRows()
+    res.set('Content-Type', 'text/html; charset=utf-8')
+    res.send(renderCriteriaHTML({ rows, snapshot: null, withScores: false }))
+  } catch (e) {
+    res.status(404).send(`검수 기준 생성 실패 — ${e.message}`)
+  }
 })
 
 // Raw 데이터(PASS+FAIL) — 최신 checks-<date>.json. "Raw 데이터" 탭이 조합 필터로 사용.

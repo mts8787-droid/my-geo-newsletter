@@ -324,12 +324,13 @@ function readabilityClient() {
   // 검수 기준 + 검수 URL 다운로드 탭
   function renderCriteria() {
     // 동일출처 self-host (원본 onrender 는 x-frame-options:DENY 라 iframe 불가)
-    var src = '/admin/readability/checklist.html'
+    // 점수 제외 전체 항목표 — 기준 문서로 읽히도록 통과율 열을 뺀 버전 (routes/readability.js)
+    var src = '/admin/readability/criteria.html'
     var dl = '<div class="crit-dl"><div class="crit-dl-text">' +
       '<div class="crit-dl-title">검수 URL 다운로드</div>' +
       '<div class="crit-dl-sub">측정일 ' + esc(RD.date) + ' 기준 어딧 대상 전체 URL (URL · 국가 · 페이지타입 · 점수)</div></div>' +
       '<a class="crit-dl-btn" href="/admin/readability/urls.csv" download>CSV 다운로드</a></div>'
-    var frame = '<div class="crit-frame-head">검수 기준 (GEO Agent Checklist)</div>' +
+    var frame = '<div class="crit-frame-head">검수 기준 — 6개 카테고리 41개 항목 (통과율은 위 탭에서 확인)</div>' +
       '<iframe class="crit-frame" src="' + src + '" loading="lazy"></iframe>'
     return sectionCard('검수 기준 · 검수 URL 다운로드', '#7C3AED', dl + frame)
   }
