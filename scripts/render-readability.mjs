@@ -35,7 +35,9 @@ function loadCheckDefs() {
   try {
     const defs = {}
     for (const r of loadRows()) {
-      for (const cid of (DOC_TO_CHECK[r.no] || [])) if (r.def) defs[cid] = r.def
+      for (const cid of (DOC_TO_CHECK[r.no] || [])) {
+        if (r.def || r.pass) defs[cid] = { def: r.def || '', pass: r.pass || '' }
+      }
     }
     return defs
   } catch { return {} }
@@ -69,12 +71,15 @@ function rateColor(v) {
 }
 
 // 가로 막대 1줄 — countText 주면 라벨과 막대 사이에 audit 페이지 수 컬럼 추가
-function barRow(label, value, max, color, rightText, countText, defText) {
+function barRow(label, value, max, color, rightText, countText, meta) {
   const w = max > 0 ? Math.max(0, Math.min(100, (value / max) * 100)).toFixed(1) : 0
   const countCol = (countText != null && countText !== '') ? `<span class="bar-count">${escHtml(countText)}</span>` : ''
-  const def = defText ? `<span class="bar-def">${escHtml(defText)}</span>` : ''
-  return `<div class="bar-row${def ? ' has-def' : ''}">
-    <span class="bar-label">${escHtml(label)}${def}</span>
+  // meta 가 있으면 항목명·정의·Pass 기준을 각각 고정 열로 — 정의가 항상 같은 x 에서 시작한다
+  const labelInner = meta
+    ? `<span class="bar-name">${escHtml(label)}</span><span class="bar-def">${escHtml(meta.def || '')}</span><span class="bar-pass">${escHtml(meta.pass || '')}</span>`
+    : escHtml(label)
+  return `<div class="bar-row${meta ? ' has-def' : ''}">
+    <span class="bar-label">${labelInner}</span>
     ${countCol}
     <div class="bar-track"><div class="bar-fill" style="width:${w}%;background:${color}"></div></div>
     <span class="bar-value" style="color:${color}">${escHtml(rightText)}</span>
@@ -159,8 +164,11 @@ function viewCategoryDetail(snap) {
 
   const checkRate = c => c.applicable > 0 ? +(c.pass / c.applicable * 100).toFixed(1) : null
   const DEFS = loadCheckDefs()
+  const cardHead = `<div class="bar-row bar-head has-def">
+    <span class="bar-label"><span class="bar-name">항목</span><span class="bar-def">정의</span><span class="bar-pass">Pass 기준</span></span>
+    <div class="bar-track"></div><span class="bar-value">통과율</span></div>`
   const catCard = (name, avg, sub, checksArr) => {
-    const checkRows = checksArr.slice().sort((a, b) => a.label.localeCompare(b.label, 'en', { numeric: true })).map(c => {
+    const checkRows = cardHead + checksArr.slice().sort((a, b) => a.label.localeCompare(b.label, 'en', { numeric: true })).map(c => {
       const rate = checkRate(c)
       const right = rate == null ? '—' : `${rate}% (${c.pass}/${c.applicable})`
       return barRow(c.label, rate ?? 0, 100, rateColor(rate), right, '', DEFS[c.cid])
@@ -216,11 +224,13 @@ function readabilityClient() {
   function scoreColor(v) { if (v == null) return COMP; if (v >= 70) return LEAD; if (v >= 50) return BEHIND; return CRIT }
   function rateColor(v) { if (v == null) return COMP; if (v >= 80) return LEAD; if (v >= 50) return BEHIND; return CRIT }
   function num(n) { return (n == null ? 0 : n).toLocaleString() }
-  function barRow(label, value, max, color, rightText, countText, defText) {
+  function barRow(label, value, max, color, rightText, countText, meta) {
     var w = max > 0 ? Math.max(0, Math.min(100, (value / max) * 100)).toFixed(1) : 0
     var countCol = (countText != null && countText !== '') ? '<span class="bar-count">' + esc(countText) + '</span>' : ''
-    var def = defText ? '<span class="bar-def">' + esc(defText) + '</span>' : ''
-    return '<div class="bar-row' + (def ? ' has-def' : '') + '"><span class="bar-label">' + esc(label) + def + '</span>' + countCol +
+    var labelInner = meta
+      ? '<span class="bar-name">' + esc(label) + '</span><span class="bar-def">' + esc(meta.def || '') + '</span><span class="bar-pass">' + esc(meta.pass || '') + '</span>'
+      : esc(label)
+    return '<div class="bar-row' + (meta ? ' has-def' : '') + '"><span class="bar-label">' + labelInner + '</span>' + countCol +
       '<div class="bar-track"><div class="bar-fill" style="width:' + w + '%;background:' + color + '"></div></div>' +
       '<span class="bar-value" style="color:' + color + '">' + esc(rightText) + '</span></div>'
   }
@@ -287,7 +297,10 @@ function readabilityClient() {
     }
     function card(name, avg, sub, checksArr) {
       var defs = RD.checkDefs || {}
-      var rows = checksArr.slice().sort(function (a, b) { return a.label.localeCompare(b.label, 'en', { numeric: true }) }).map(function (c) {
+      var head = '<div class="bar-row bar-head has-def"><span class="bar-label">' +
+        '<span class="bar-name">항목</span><span class="bar-def">정의</span><span class="bar-pass">Pass 기준</span></span>' +
+        '<div class="bar-track"></div><span class="bar-value">통과율</span></div>'
+      var rows = head + checksArr.slice().sort(function (a, b) { return a.label.localeCompare(b.label, 'en', { numeric: true }) }).map(function (c) {
         var rate = checkRate(c)
         var right = rate == null ? '—' : rate + '% (' + c.pass + '/' + c.applicable + ')'
         return barRow(c.label, rate == null ? 0 : rate, 100, rateColor(rate), right, '', defs[c.cid])
@@ -653,14 +666,16 @@ body{background:#F1F5F9;font-family:${FONT};color:#1A1A1A;line-height:1.6}
 .fails-score{text-align:right;font-weight:800;font-variant-numeric:tabular-nums}
 /* ── 카테고리 카드 ── */
 .cat-grid{display:grid;grid-template-columns:1fr;gap:16px}
-/* 항목 정의를 같은 줄에 — 라벨 칸이 남는 폭을 모두 차지하고 막대는 고정 폭으로 줄인다.
-   (카드가 1열이라 가로 여유가 생겨 정의를 줄바꿈 없이 넣을 수 있음) */
-.cat-card .bars.sm .bar-label{flex:1 1 auto;min-width:0;font-size:14px;color:#1A1A1A;font-weight:600;white-space:normal}
-.cat-card .bars.sm .bar-track{flex:0 0 120px;height:12px}
-.cat-card .bars.sm .bar-value{flex:0 0 150px;font-size:14px}
-.cat-card .bars.sm .bar-row{gap:14px;align-items:baseline}
-.bar-def{font-size:13px;line-height:1.5;color:#64748B;font-weight:400;letter-spacing:-0.2px}
-.bar-def::before{content:'·';margin:0 7px;color:#CBD5E1;font-weight:700}
+/* 카드 항목 행 — 항목명 · 정의 · Pass 기준을 각각 고정 열로 두어
+   정의와 기준이 모든 행에서 같은 x 에서 시작하게 한다 (붙어 있어 안 읽히던 문제). */
+.cat-card .bars.sm .bar-label{display:flex;align-items:baseline;flex:1 1 auto;min-width:0;white-space:normal}
+.cat-card .bars.sm .bar-track{flex:0 0 96px;height:12px}
+.cat-card .bars.sm .bar-value{flex:0 0 148px;font-size:14px}
+.cat-card .bars.sm .bar-row{gap:16px;align-items:baseline}
+.bar-name{flex:0 0 236px;padding-right:20px;font-size:14px;font-weight:600;color:#1A1A1A;letter-spacing:-0.3px}
+.bar-def{flex:1 1 auto;min-width:0;padding-right:20px;font-size:13px;line-height:1.5;color:#64748B;font-weight:400;letter-spacing:-0.2px}
+.bar-pass{flex:0 0 178px;font-size:12.5px;line-height:1.5;color:#94A3B8;font-weight:500;letter-spacing:-0.2px}
+.bar-head.has-def .bar-name,.bar-head.has-def .bar-def,.bar-head.has-def .bar-pass{font-size:11px;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:.3px}
 .cat-card{background:#fff;border:1px solid #E8EDF2;border-radius:12px;padding:16px 18px}
 .cat-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:2px}
 .cat-name{font-size:19px;font-weight:800;color:#1A1A1A}
@@ -676,11 +691,13 @@ body{background:#F1F5F9;font-family:${FONT};color:#1A1A1A;line-height:1.6}
   .section-header,.section-body{padding-left:18px;padding-right:18px}
   .bar-label{flex:0 0 150px;font-size:12px}
   .bars.sm .bar-label{flex:0 0 130px}
-  .cat-card .bars.sm .bar-label{flex:1 1 100%;font-size:13px}
-  .cat-card .bars.sm .bar-track{flex:0 0 90px}
-  .cat-card .bars.sm .bar-value{flex:0 0 120px;font-size:13px}
-  .bar-def{display:block;font-size:12px}
-  .bar-def::before{content:none}
+  .cat-card .bars.sm .bar-label{flex:1 1 100%;flex-wrap:wrap}
+  .cat-card .bars.sm .bar-track{flex:0 0 80px}
+  .cat-card .bars.sm .bar-value{flex:0 0 118px;font-size:13px}
+  .bar-name{flex:1 1 100%;padding-right:0;font-size:13px}
+  .bar-def{flex:1 1 100%;padding-right:0;margin-top:2px;font-size:12px}
+  .bar-pass{flex:1 1 100%;margin-top:2px;font-size:11.5px}
+  .bar-head.has-def{display:none}
   .bar-value{flex:0 0 100px;font-size:11px}
   .bar-count{flex:0 0 56px;font-size:11px}
   .crit-frame{height:60vh}
