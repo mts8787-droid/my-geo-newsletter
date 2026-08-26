@@ -161,7 +161,7 @@
     <tbody>
       <!-- Performance (C/L 6개) — #5 HTML Size / #8 Render Blocking 삭제 (2026-08-26) -->
       <tr>
-        <td rowspan="6" class="cat-cell">Performance<span class="small">(C/L 6개)</span></td>
+        <td rowspan="6" class="cat-cell">사이트 속도<span class="small">Performance (C/L 6개)</span></td>
         <td class="no-cell">1</td><td class="item-cell">TTFB<span class="item-def">서버 요청 후 첫 번째 응답이 전달되기까지 걸리는 시간</span></td>
         <td class="pass-cell">&lt; 1800ms</td>
         <td class="method-cell">Server-Timing, X-Response-Time 헤더</td>
@@ -174,7 +174,7 @@
 
       <!-- Accessibility (C/L 4개) -->
       <tr class="cat-divider">
-        <td rowspan="4" class="cat-cell">Accessibility<span class="small">(C/L 4개)</span></td>
+        <td rowspan="4" class="cat-cell">웹접근성<span class="small">Accessibility (C/L 4개)</span></td>
         <td class="no-cell">9</td><td class="item-cell">Image Alt<span class="item-def">이미지의 내용과 의미를 설명하는 대체 텍스트 제공 여부</span></td>
         <td class="pass-cell">누락 0개</td>
         <td class="method-cell">img[alt] 체크</td>
@@ -185,7 +185,7 @@
 
       <!-- SEO (C/L 7개) -->
       <tr class="cat-divider">
-        <td rowspan="7" class="cat-cell">SEO<span class="small">(C/L 7개)</span></td>
+        <td rowspan="7" class="cat-cell">Basic SEO 요소<span class="small">SEO (C/L 7개)</span></td>
         <td class="no-cell">13</td><td class="item-cell">Title<span class="item-def">검색엔진과 사용자에게 페이지의 핵심 주제를 전달하는 페이지 제목</span></td>
         <td class="pass-cell">존재 (30~60자)</td>
         <td class="method-cell">title tag HTML 파싱 후 검증</td>
@@ -225,7 +225,7 @@
     <tbody>
       <!-- AI Readiness (C/L 25개) -->
       <tr class="pending-row">
-        <td rowspan="24" class="cat-cell">AI Readiness<span class="small">(C/L 24개)</span></td>
+        <td rowspan="24" class="cat-cell">Basic GEO 요소<span class="small">AI Readiness (C/L 24개)</span></td>
         <td class="no-cell">20</td><td class="item-cell">Schema Types - Organization<span class="item-def">회사의 이름·연락처·주소 등 기업 정보를 AI가 읽을 수 있게 표기</span></td>
         <td class="pass-cell">JSON-LD 필수요소 모두 존재, 파싱 성공<span class="pend-note">추후 개선항목 확인 후 정리</span></td>
         <td class="method-cell">contactPoint, address, geo, hasMap 존재</td>

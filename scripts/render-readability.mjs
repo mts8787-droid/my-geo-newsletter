@@ -2,7 +2,7 @@
 // 입력: aggregate-readability.mjs 가 만든 스냅샷 + 인덱스 (data/readability/*.json)
 // 라우트 routes/readability.js 가 요청 시 최신 스냅샷을 읽어 본 함수에 주입.
 //
-// 4 뷰: (1) 국가별 종합 점수 비교  (2) 카테고리 4분할 상세 (51 체크 pass rate)
+// 3 뷰: (1) 국가별 종합 점수 비교  (2) 카테고리별 상세 (체크 pass rate)
 //       (3) 페이지타입별 점수 분포
 //
 // 디자인: Visibility 대시보드와 통일 (dashboardStyles.js 토큰) — 라이트 테마.
@@ -26,7 +26,8 @@ const FONT_FACE_CSS = `
 @font-face { font-family: 'LG Smart'; font-weight: 300; font-style: normal; src: url('/font/LG%20Smart%20Light.ttf') format('truetype'); font-display: swap; }
 `
 
-const CATEGORIES = ['performance', 'accessibility', 'seo', 'ai_readiness']
+// 스냅샷의 categoryLabels 와 순서가 일치해야 함 (aggregate-readability.mjs 의 CATEGORIES)
+const CATEGORIES = ['performance', 'accessibility', 'seo', 'geo_schema', 'geo_content', 'geo_platform']
 
 // cc(소문자) → 표시명 — 집계기와 공유 single source (드리프트 방지).
 import { CC_NAME } from './readability-cc.mjs'
@@ -128,7 +129,7 @@ function viewCountryComparison(snap) {
   return hero + sectionCard('① 국가별 종합 점수 비교', RED, `<div class="bars">${bars}</div>`)
 }
 
-// ─── 뷰 2: 카테고리 4분할 상세 (51 체크 pass rate) ──────────────────────────
+// ─── 뷰 2: 카테고리별 상세 (체크 pass rate) ─────────────────────────────────
 function viewCategoryDetail(snap) {
   const o = snap.overall
   const labels = snap.categoryLabels || {}
@@ -140,12 +141,7 @@ function viewCategoryDetail(snap) {
     byCat[c.cat].push({ cid, ...c })
   }
 
-  const AI_CONTENT_IDS = { ai_faq_block: 1, ai_definition: 1, ai_summary_box: 1, ai_citable: 1 }
   const checkRate = c => c.applicable > 0 ? +(c.pass / c.applicable * 100).toFixed(1) : null
-  const avgRate = arr => {
-    const vals = arr.map(checkRate).filter(r => r != null)
-    return vals.length ? +(vals.reduce((s, r) => s + r, 0) / vals.length).toFixed(1) : null
-  }
   const catCard = (name, avg, sub, checksArr) => {
     const checkRows = checksArr.slice().sort((a, b) => a.label.localeCompare(b.label, 'en', { numeric: true })).map(c => {
       const rate = checkRate(c)
@@ -162,27 +158,14 @@ function viewCategoryDetail(snap) {
     </div>`
   }
 
+  // GEO 3분류가 카테고리로 승격돼 특수 분기 불필요 — 전부 동일 경로 (평균 points 로 통일)
   const cards = CATEGORIES.map(cat => {
     const checks = byCat[cat] || []
-    if (cat === 'ai_readiness') {
-      const schema = [], content = [], platform = []
-      for (const c of checks) {
-        if (c.cid && c.cid.startsWith('ai_schema_')) schema.push(c)
-        else if (AI_CONTENT_IDS[c.cid]) content.push(c)
-        else platform.push(c)
-      }
-      const base = labels[cat] || cat
-      return [
-        catCard(`${base} · 스키마`, avgRate(schema), '평균 통과율', schema),
-        catCard(`${base} · 콘텐츠`, avgRate(content), '평균 통과율', content),
-        catCard(`${base} · 플랫폼`, avgRate(platform), '평균 통과율', platform),
-      ].join('')
-    }
     const avg = o.categories ? o.categories[cat] : null
     return catCard(labels[cat] || cat, avg, '평균 points', checks)
   }).join('')
 
-  return sectionCard('② 카테고리 4분할 상세 — 체크별 통과율', '#3B82F6', `<div class="cat-grid">${cards}</div>`)
+  return sectionCard(`② 카테고리 ${CATEGORIES.length}분할 상세 — 체크별 통과율`, '#3B82F6', `<div class="cat-grid">${cards}</div>`)
 }
 
 // ─── 뷰 3: 페이지타입별 점수 ─────────────────────────────────────────────────
@@ -205,7 +188,7 @@ function readabilityClient() {
   var ALL = window.__RD_ALL || null
   var RD = window.__RD || {}
   var LATEST_DATE = RD.date
-  var CATS = ['performance', 'accessibility', 'seo', 'ai_readiness']
+  var CATS = Object.keys(RD.categoryLabels || {})   // 스냅샷이 정의한 카테고리 순서 그대로 (6분류)
   var LEAD = '#15803D', BEHIND = '#B45309', CRIT = '#BE123C', COMP = '#94A3B8', RED = '#CF0652'
   var state = { tab: 'country', cc: 'all', pt: 'all', fcheck: 'all', pf: 'all' }
   var _rawData = null
@@ -272,10 +255,9 @@ function readabilityClient() {
   }
 
   // 체크별 통과율 카테고리 카드 묶음 — 국가/페이지타입 탭 양쪽에서 재사용 (별도 항목별 탭 X)
-  // AI Readiness 는 스키마 / 콘텐츠 / 플랫폼 3개 서브카드로 분할 (그 외 카테고리는 단일 카드)
+  // 카테고리는 스냅샷의 categoryLabels 순서를 그대로 따른다 (GEO 3분류 승격 후 6개)
   function renderCategoryCards(scope) {
     var labels = RD.categoryLabels || {}
-    var AI_CONTENT_IDS = { ai_faq_block: 1, ai_definition: 1, ai_summary_box: 1, ai_citable: 1 }
     var byCat = {}; CATS.forEach(function (c) { byCat[c] = [] })
     Object.entries(scope.checks || {}).forEach(function (e) {
       var c = e[1]; if (!byCat[c.cat]) byCat[c.cat] = []; byCat[c.cat].push(Object.assign({ cid: e[0] }, c))
@@ -298,21 +280,11 @@ function readabilityClient() {
     var out = []
     CATS.forEach(function (cat) {
       var checks = byCat[cat] || []
-      if (cat === 'ai_readiness') {
-        var schema = [], content = [], platform = []
-        checks.forEach(function (c) {
-          if (c.cid && c.cid.indexOf('ai_schema_') === 0) schema.push(c)
-          else if (AI_CONTENT_IDS[c.cid]) content.push(c)
-          else platform.push(c)
-        })
-        var base = labels[cat] || cat
-        out.push(card(base + ' · 스키마', avgRate(schema), '평균 통과율', schema))
-        out.push(card(base + ' · 콘텐츠', avgRate(content), '평균 통과율', content))
-        out.push(card(base + ' · 플랫폼', avgRate(platform), '평균 통과율', platform))
-      } else {
-        var avg = scope.categories ? scope.categories[cat] : null
-        out.push(card(labels[cat] || cat, avg, '평균 points', checks))
-      }
+      // GEO 3분류가 카테고리로 승격돼 특수 분기 불필요 — 전부 동일 경로.
+      // 지표도 '평균 통과율'(체크 단순평균) 이 아니라 다른 카테고리와 같은 '평균 points'
+      // (페이지별 통과/적용 → 평균) 로 통일된다.
+      var avg = scope.categories ? scope.categories[cat] : null
+      out.push(card(labels[cat] || cat, avg, '평균 points', checks))
     })
     return out.join('')
   }
@@ -645,7 +617,7 @@ body{background:#F1F5F9;font-family:${FONT};color:#1A1A1A;line-height:1.6}
 .fails-url a:hover{text-decoration:underline}
 .fails-hint{color:#475569;max-width:300px}
 .fails-score{text-align:right;font-weight:800;font-variant-numeric:tabular-nums}
-/* ── 카테고리 4분할 ── */
+/* ── 카테고리 카드 ── */
 .cat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:16px}
 .cat-card{background:#fff;border:1px solid #E8EDF2;border-radius:12px;padding:16px 18px}
 .cat-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:2px}

@@ -83,17 +83,22 @@ async function fetchPsi(url, key, strategy) {
   }
 }
 
-// 429/5xx 는 지수 백오프 재시도, 4xx(429 제외) 는 즉시 포기 (URL 문제 — 재시도 무의미)
-async function fetchWithRetry(url, key, strategy, maxTry = 4) {
-  let wait = 5000
+// 429/5xx 는 지수 백오프 재시도, 4xx(429 제외) 는 즉시 포기 (URL 문제 — 재시도 무의미).
+//
+// PSI 는 동시 요청이 많으면 429 대신 500 "Unable to process request. Please wait a while"
+// 를 돌려준다 (2026-08-26 실측: 병렬 40 에서 500 이 134건 / 429 가 28건). 즉 500 도
+// 사실상 레이트리밋 신호라 넉넉히 기다렸다 재시도해야 한다. 지터를 섞어 워커들이
+// 같은 시점에 몰려 재시도하는 것(thundering herd)도 방지.
+async function fetchWithRetry(url, key, strategy, maxTry = 6) {
+  let wait = 10000
   for (let t = 1; t <= maxTry; t++) {
     try {
       return await fetchPsi(url, key, strategy)
     } catch (e) {
       const retriable = e.status === 429 || e.status >= 500 || e.status === undefined
       if (!retriable || t === maxTry) return { err: e.message, errBody: e.body, at: new Date().toISOString() }
-      await sleep(wait)
-      wait *= 2
+      await sleep(wait + Math.floor(Math.random() * 5000))
+      wait = Math.min(wait * 2, 120000)
     }
   }
 }
@@ -111,7 +116,7 @@ async function main() {
     process.exit(1)
   }
   const strategy = args.strategy || 'mobile'
-  const concurrency = args.concurrency || 20
+  const concurrency = args.concurrency || 12   // 실측상 12 이하에서 500/429 거의 없음 (40 은 44% 실패)
 
   const checksPath = join(DATA_DIR, `checks-${date}.json`)
   if (!existsSync(checksPath)) {

@@ -115,13 +115,33 @@ function sampleByPageType(items) {
   return selected
 }
 
-// 카테고리 표시 순서 + 라벨
-const CATEGORIES = ['performance', 'accessibility', 'seo', 'ai_readiness']
+// 원본 run_results 의 score.breakdown 키 (어딧이 만든 4분류) — 순회용. 바꾸면 파싱이 깨진다.
+const SRC_CATEGORIES = ['performance', 'accessibility', 'seo', 'ai_readiness']
+
+// 대시보드 표시 카테고리 (6분류) — 표시 순서 + 라벨.
+// AI Readiness 23개는 성격이 크게 달라 하나로 묶으면 실제 상태가 가려진다
+// (단일 57.7 안에 스키마 35.6 / 콘텐츠 27.5 / 플랫폼 85.6 이 섞여 있었음).
+// 기존에 대시보드 서브카드로만 나눠 보던 3분류를 카테고리로 승격 (사용자 지시 2026-08-26).
+const CATEGORIES = ['performance', 'accessibility', 'seo', 'geo_schema', 'geo_content', 'geo_platform']
 const CATEGORY_LABEL = {
-  performance: 'Performance',
-  accessibility: 'Accessibility',
-  seo: 'SEO',
-  ai_readiness: 'AI Readiness',
+  performance: '사이트 속도',
+  accessibility: '웹접근성',
+  seo: 'Basic SEO 요소',
+  geo_schema: 'Basic GEO · 스키마',
+  geo_content: 'Basic GEO · 콘텐츠',
+  geo_platform: 'Basic GEO · 플랫폼',
+}
+
+// ai_readiness 를 3분류로 가르는 기준 — 기존 render-readability 의 서브카드 분류와 동일.
+//   스키마  : ai_schema_* (구조화 데이터 마크업)
+//   콘텐츠  : 본문에 들어가야 하는 서술 패턴 (FAQ / 정의 / 요약 / 인용가능 문장)
+//   플랫폼  : 그 외 (SSR 렌더링 · 상태코드 · 파일명 · llms.txt 등 기반 항목)
+const GEO_CONTENT_IDS = { ai_faq_block: 1, ai_definition: 1, ai_summary_box: 1, ai_citable: 1 }
+function catOf(srcCat, cid) {
+  if (srcCat !== 'ai_readiness') return srcCat
+  if (String(cid).startsWith('ai_schema_')) return 'geo_schema'
+  if (GEO_CONTENT_IDS[cid]) return 'geo_content'
+  return 'geo_platform'
 }
 
 // 점수 집계에서 완전 제외할 페이지타입 — 점수·카테고리·체크·페이지타입행·URL 카운트 모두 제외.
@@ -225,7 +245,7 @@ const RECHECK = {
 // 원본 analyzer.py 와 동일한 산식: 모든 카테고리 항목을 동일 비중으로 보고 passed/applicable.
 export function applyScoringOverride(score, ctx) {
   if (!score || !score.breakdown) return score
-  for (const cat of CATEGORIES) {
+  for (const cat of SRC_CATEGORIES) {
     const bd = score.breakdown[cat]
     if (!bd || !bd.items) continue
     for (const [cid, it] of Object.entries(bd.items)) {
@@ -292,8 +312,8 @@ function newAcc() {
     scoredCount: 0,     // score 있는 URL 수
     scoreSum: 0,        // score.total 합 (scoredCount 분모)
     grades: {},         // grade → count
-    catPointsSum: { performance: 0, accessibility: 0, seo: 0, ai_readiness: 0 },
-    catPointsCnt: { performance: 0, accessibility: 0, seo: 0, ai_readiness: 0 },
+    catPointsSum: zeroByCat(),
+    catPointsCnt: zeroByCat(),
     checks: {},         // checkId → { label, cat, pass, applicable }
     pageTypes: {},      // ptId → { label, count, scoreSum, scoredCount, ...체크 bins }
     bots: {},           // botName → { blocked, total }
@@ -302,10 +322,14 @@ function newAcc() {
 }
 
 // 체크/카테고리 누적용 빈 bins (scope-level 과 pageType-level 공용)
+function zeroByCat() {
+  return Object.fromEntries(CATEGORIES.map(c => [c, 0]))
+}
+
 function newCheckBins() {
   return {
-    catPointsSum: { performance: 0, accessibility: 0, seo: 0, ai_readiness: 0 },
-    catPointsCnt: { performance: 0, accessibility: 0, seo: 0, ai_readiness: 0 },
+    catPointsSum: zeroByCat(),
+    catPointsCnt: zeroByCat(),
     checks: {},
   }
 }
@@ -313,25 +337,34 @@ function newCheckBins() {
 // score.breakdown 을 target(.catPointsSum/.catPointsCnt/.checks)에 반영 — scope/pageType 공용
 function accumulateChecks(target, score) {
   const bd = score.breakdown || {}
-  for (const cat of CATEGORIES) {
-    const c = bd[cat]
-    if (c && typeof c.points === 'number') {
-      target.catPointsSum[cat] += c.points
-      target.catPointsCnt[cat]++
-    }
+  // 이 페이지의 출력 카테고리별 통과/적용 — bd[cat].points 를 그대로 쓰지 않고 항목에서
+  // 다시 센다 (ai_readiness 가 3개로 갈라져 원본 카테고리 points 를 못 쓰기 때문).
+  // 산식은 analyzer.py 와 동일: 카테고리 points = 통과 / 적용 × 100.
+  const perCat = {}
+  for (const src of SRC_CATEGORIES) {
+    const c = bd[src]
     const items = (c && c.items) || {}
     for (const [cid, it] of Object.entries(items)) {
+      if (!it) continue
       // 채점 제외 체크(DISABLED_CHECKS) 는 통과율 표에도 행을 만들지 않음 —
       // 0/0 이면 '—' 로만 보여 "측정했는데 데이터 없음" 처럼 오해됨.
       if (DISABLED_CHECKS[cid]) continue
+      const cat = catOf(src, cid)
       // na(true) 또는 pass===null → 미적용 (분모 제외)
       const applicable = !(it.na === true || it.pass === null || it.pass == null)
       if (!target.checks[cid]) target.checks[cid] = { label: it.label || cid, cat, pass: 0, applicable: 0 }
-      if (applicable) {
-        target.checks[cid].applicable++
-        if (it.pass === true) target.checks[cid].pass++
-      }
+      if (!applicable) continue
+      target.checks[cid].applicable++
+      if (it.pass === true) target.checks[cid].pass++
+      const b = perCat[cat] || (perCat[cat] = { p: 0, a: 0 })
+      b.a++
+      if (it.pass === true) b.p++
     }
+  }
+  for (const [cat, b] of Object.entries(perCat)) {
+    if (!b.a || target.catPointsSum[cat] === undefined) continue
+    target.catPointsSum[cat] += pyRound(b.p / b.a * 100)
+    target.catPointsCnt[cat]++
   }
 }
 
@@ -415,12 +448,12 @@ function finalizeAcc(acc) {
 export function collectFails(score, checkMeta) {
   const out = []
   const bd = score.breakdown || {}
-  for (const cat of CATEGORIES) {
+  for (const cat of SRC_CATEGORIES) {
     const items = (bd[cat] && bd[cat].items) || {}
     for (const [id, it] of Object.entries(items)) {
       // applicable 한 FAIL 만: pass===false 자체가 na/null 을 이미 배제 → na!==true 만 추가 확인.
       if (it && it.pass === false && it.na !== true) {
-        if (!checkMeta[id]) checkMeta[id] = { label: it.label || id, cat }
+        if (!checkMeta[id]) checkMeta[id] = { label: it.label || id, cat: catOf(cat, id) }
         out.push({ id, hint: it.hint || '' })
       }
     }
@@ -433,11 +466,11 @@ export function collectFails(score, checkMeta) {
 export function collectChecks(score, checkMeta) {
   const out = []
   const bd = score.breakdown || {}
-  for (const cat of CATEGORIES) {
+  for (const cat of SRC_CATEGORIES) {
     const items = (bd[cat] && bd[cat].items) || {}
     for (const [id, it] of Object.entries(items)) {
       if (!it || it.na === true || it.pass == null) continue  // 미적용(na/null) 제외
-      if (!checkMeta[id]) checkMeta[id] = { label: it.label || id, cat }
+      if (!checkMeta[id]) checkMeta[id] = { label: it.label || id, cat: catOf(cat, id) }
       out.push({ id, pass: it.pass === true, hint: it.pass === false ? (it.hint || '') : '' })
     }
   }
