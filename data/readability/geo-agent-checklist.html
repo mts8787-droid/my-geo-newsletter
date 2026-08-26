@@ -141,7 +141,7 @@
     <tbody>
       <!-- Performance (C/L 8개) -->
       <tr>
-        <td rowspan="8" class="cat-cell">Performance<span class="small">(C/L 8개 중 채점 7개)</span></td>
+        <td rowspan="8" class="cat-cell">Performance<span class="small">(C/L 8개 중 채점 6개)</span></td>
         <td class="no-cell">1</td><td class="item-cell">TTFB</td>
         <td class="pass-cell">&lt; 1800ms</td>
         <td class="method-cell">Server-Timing, X-Response-Time 헤더</td>
@@ -149,7 +149,7 @@
       <tr><td class="no-cell">2</td><td class="item-cell">Compression</td><td class="pass-cell">gzip/br/deflate</td><td class="method-cell">Content-Encoding 헤더</td></tr>
       <tr><td class="no-cell">3</td><td class="item-cell">HTTP Protocol</td><td class="pass-cell">HTTP/2 이상</td><td class="method-cell">Alt-Svc, :status 헤더</td></tr>
       <tr><td class="no-cell">4</td><td class="item-cell">Cache-Control</td><td class="pass-cell">max-age 설정 (0 포함)</td><td class="method-cell">Cache-Control 헤더</td></tr>
-      <tr><td class="no-cell">5</td><td class="item-cell">HTML Size</td><td class="pass-cell">&lt; 100KB</td><td class="method-cell">Buffer.byteLength</td></tr>
+      <tr style="opacity:.5"><td class="no-cell">5</td><td class="item-cell">HTML Size</td><td class="pass-cell">채점 제외 (2026-08-26~)</td><td class="method-cell">Buffer.byteLength</td></tr>
       <tr><td class="no-cell">6</td><td class="item-cell">Redirect Chain</td><td class="pass-cell">≤ 1회</td><td class="method-cell">redirectChain 메타데이터</td></tr>
       <tr><td class="no-cell">7</td><td class="item-cell">Mixed Content</td><td class="pass-cell">0개</td><td class="method-cell">http://리소스 탐지</td></tr>
       <tr style="opacity:.5"><td class="no-cell">8</td><td class="item-cell">Render Blocking</td><td class="pass-cell">채점 제외 (2026-08-26~)</td><td class="method-cell">defer/async 없는 script 탐지</td></tr>

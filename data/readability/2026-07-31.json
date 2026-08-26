@@ -1,6 +1,6 @@
 {
   "date": "2026-07-31",
-  "generatedAt": "2026-08-26T07:32:28.498Z",
+  "generatedAt": "2026-08-26T07:36:28.191Z",
   "source": "run_results",
   "categoryLabels": {
     "performance": "Performance",
@@ -14,14 +14,13 @@
       "runId": "39d08baa97d8",
       "urlCount": 685,
       "scoredCount": 685,
-      "avgScore": 73.3,
+      "avgScore": 75.4,
       "grades": {
-        "Need Improvement": 669,
-        "Good": 13,
-        "Poor": 3
+        "Need Improvement": 641,
+        "Good": 44
       },
       "categories": {
-        "performance": 74.1,
+        "performance": 86.5,
         "accessibility": 88.1,
         "seo": 83.5,
         "ai_readiness": 63
@@ -49,12 +48,6 @@
           "label": "#4 Cache-Control max-age",
           "cat": "performance",
           "pass": 685,
-          "applicable": 685
-        },
-        "perf_html_size": {
-          "label": "#5 HTML < 100KB",
-          "cat": "performance",
-          "pass": 0,
           "applicable": 685
         },
         "perf_redirect": {
@@ -284,9 +277,9 @@
         "newsroom": {
           "label": "뉴스룸/Press",
           "count": 100,
-          "avgScore": 73.5,
+          "avgScore": 75.6,
           "categories": {
-            "performance": 72,
+            "performance": 84.2,
             "accessibility": 87.3,
             "seo": 75,
             "ai_readiness": 68.5
@@ -314,12 +307,6 @@
               "label": "#4 Cache-Control max-age",
               "cat": "performance",
               "pass": 100,
-              "applicable": 100
-            },
-            "perf_html_size": {
-              "label": "#5 HTML < 100KB",
-              "cat": "performance",
-              "pass": 0,
               "applicable": 100
             },
             "perf_redirect": {
@@ -549,9 +536,9 @@
         "microsite": {
           "label": "마이크로사이트/캠페인",
           "count": 100,
-          "avgScore": 73.8,
+          "avgScore": 76.1,
           "categories": {
-            "performance": 74.8,
+            "performance": 87.3,
             "accessibility": 69.3,
             "seo": 88,
             "ai_readiness": 67.1
@@ -579,12 +566,6 @@
               "label": "#4 Cache-Control max-age",
               "cat": "performance",
               "pass": 100,
-              "applicable": 100
-            },
-            "perf_html_size": {
-              "label": "#5 HTML < 100KB",
-              "cat": "performance",
-              "pass": 0,
               "applicable": 100
             },
             "perf_redirect": {
@@ -814,9 +795,9 @@
         "buying_guide": {
           "label": "구매 가이드",
           "count": 17,
-          "avgScore": 71,
+          "avgScore": 73.1,
           "categories": {
-            "performance": 77.2,
+            "performance": 90,
             "accessibility": 89.7,
             "seo": 79.6,
             "ai_readiness": 58.5
@@ -844,12 +825,6 @@
               "label": "#4 Cache-Control max-age",
               "cat": "performance",
               "pass": 17,
-              "applicable": 17
-            },
-            "perf_html_size": {
-              "label": "#5 HTML < 100KB",
-              "cat": "performance",
-              "pass": 0,
               "applicable": 17
             },
             "perf_redirect": {
@@ -1079,9 +1054,9 @@
         "lg_experience": {
           "label": "LG Experience",
           "count": 72,
-          "avgScore": 74.1,
+          "avgScore": 76.1,
           "categories": {
-            "performance": 75.4,
+            "performance": 88,
             "accessibility": 99.3,
             "seo": 87.6,
             "ai_readiness": 57.9
@@ -1109,12 +1084,6 @@
               "label": "#4 Cache-Control max-age",
               "cat": "performance",
               "pass": 72,
-              "applicable": 72
-            },
-            "perf_html_size": {
-              "label": "#5 HTML < 100KB",
-              "cat": "performance",
-              "pass": 0,
               "applicable": 72
             },
             "perf_redirect": {
@@ -1344,9 +1313,9 @@
         "pdp": {
           "label": "제품 상세 (PDP)",
           "count": 99,
-          "avgScore": 72.6,
+          "avgScore": 74.6,
           "categories": {
-            "performance": 71.2,
+            "performance": 83.2,
             "accessibility": 73.7,
             "seo": 88,
             "ai_readiness": 66.5
@@ -1374,12 +1343,6 @@
               "label": "#4 Cache-Control max-age",
               "cat": "performance",
               "pass": 99,
-              "applicable": 99
-            },
-            "perf_html_size": {
-              "label": "#5 HTML < 100KB",
-              "cat": "performance",
-              "pass": 0,
               "applicable": 99
             },
             "perf_redirect": {
@@ -1609,9 +1572,9 @@
         "plp": {
           "label": "제품 카테고리 (PLP)",
           "count": 98,
-          "avgScore": 73.6,
+          "avgScore": 76,
           "categories": {
-            "performance": 79.4,
+            "performance": 92.5,
             "accessibility": 90.6,
             "seo": 83.9,
             "ai_readiness": 60.8
@@ -1639,12 +1602,6 @@
               "label": "#4 Cache-Control max-age",
               "cat": "performance",
               "pass": 98,
-              "applicable": 98
-            },
-            "perf_html_size": {
-              "label": "#5 HTML < 100KB",
-              "cat": "performance",
-              "pass": 0,
               "applicable": 98
             },
             "perf_redirect": {
@@ -1874,9 +1831,9 @@
         "support": {
           "label": "지원/Support",
           "count": 99,
-          "avgScore": 72.9,
+          "avgScore": 75,
           "categories": {
-            "performance": 74.3,
+            "performance": 86.8,
             "accessibility": 99.7,
             "seo": 75.8,
             "ai_readiness": 62.3
@@ -1904,12 +1861,6 @@
               "label": "#4 Cache-Control max-age",
               "cat": "performance",
               "pass": 99,
-              "applicable": 99
-            },
-            "perf_html_size": {
-              "label": "#5 HTML < 100KB",
-              "cat": "performance",
-              "pass": 0,
               "applicable": 99
             },
             "perf_redirect": {
@@ -2139,9 +2090,9 @@
         "support_troubleshoot": {
           "label": "지원 - 트러블슈팅",
           "count": 100,
-          "avgScore": 73,
+          "avgScore": 75,
           "categories": {
-            "performance": 71.5,
+            "performance": 83.5,
             "accessibility": 100,
             "seo": 87.7,
             "ai_readiness": 57
@@ -2169,12 +2120,6 @@
               "label": "#4 Cache-Control max-age",
               "cat": "performance",
               "pass": 100,
-              "applicable": 100
-            },
-            "perf_html_size": {
-              "label": "#5 HTML < 100KB",
-              "cat": "performance",
-              "pass": 0,
               "applicable": 100
             },
             "perf_redirect": {
@@ -2451,14 +2396,13 @@
       "runId": "9c23bc993a49",
       "urlCount": 518,
       "scoredCount": 518,
-      "avgScore": 74.2,
+      "avgScore": 76.4,
       "grades": {
-        "Need Improvement": 490,
-        "Good": 25,
-        "Poor": 3
+        "Need Improvement": 420,
+        "Good": 98
       },
       "categories": {
-        "performance": 71.7,
+        "performance": 83.8,
         "accessibility": 94.2,
         "seo": 94.6,
         "ai_readiness": 58.6
@@ -2486,12 +2430,6 @@
           "label": "#4 Cache-Control max-age",
           "cat": "performance",
           "pass": 518,
-          "applicable": 518
-        },
-        "perf_html_size": {
-          "label": "#5 HTML < 100KB",
-          "cat": "performance",
-          "pass": 0,
           "applicable": 518
         },
         "perf_redirect": {
@@ -2721,9 +2659,9 @@
         "newsroom": {
           "label": "뉴스룸/Press",
           "count": 100,
-          "avgScore": 77.5,
+          "avgScore": 80.2,
           "categories": {
-            "performance": 71.2,
+            "performance": 83.2,
             "accessibility": 100,
             "seo": 96,
             "ai_readiness": 63.2
@@ -2751,12 +2689,6 @@
               "label": "#4 Cache-Control max-age",
               "cat": "performance",
               "pass": 100,
-              "applicable": 100
-            },
-            "perf_html_size": {
-              "label": "#5 HTML < 100KB",
-              "cat": "performance",
-              "pass": 0,
               "applicable": 100
             },
             "perf_redirect": {
@@ -2986,9 +2918,9 @@
         "microsite": {
           "label": "마이크로사이트/캠페인",
           "count": 15,
-          "avgScore": 65.3,
+          "avgScore": 67.3,
           "categories": {
-            "performance": 69.1,
+            "performance": 80.9,
             "accessibility": 96.7,
             "seo": 73.1,
             "ai_readiness": 50.2
@@ -3016,12 +2948,6 @@
               "label": "#4 Cache-Control max-age",
               "cat": "performance",
               "pass": 15,
-              "applicable": 15
-            },
-            "perf_html_size": {
-              "label": "#5 HTML < 100KB",
-              "cat": "performance",
-              "pass": 0,
               "applicable": 15
             },
             "perf_redirect": {
@@ -3251,9 +3177,9 @@
         "buying_guide": {
           "label": "구매 가이드",
           "count": 25,
-          "avgScore": 72,
+          "avgScore": 74.2,
           "categories": {
-            "performance": 72.2,
+            "performance": 84.4,
             "accessibility": 100,
             "seo": 94.7,
             "ai_readiness": 52.8
@@ -3281,12 +3207,6 @@
               "label": "#4 Cache-Control max-age",
               "cat": "performance",
               "pass": 25,
-              "applicable": 25
-            },
-            "perf_html_size": {
-              "label": "#5 HTML < 100KB",
-              "cat": "performance",
-              "pass": 0,
               "applicable": 25
             },
             "perf_redirect": {
@@ -3516,9 +3436,9 @@
         "lg_experience": {
           "label": "LG Experience",
           "count": 99,
-          "avgScore": 73.6,
+          "avgScore": 75.6,
           "categories": {
-            "performance": 72.1,
+            "performance": 84.2,
             "accessibility": 99.5,
             "seo": 98.1,
             "ai_readiness": 52.2
@@ -3546,12 +3466,6 @@
               "label": "#4 Cache-Control max-age",
               "cat": "performance",
               "pass": 99,
-              "applicable": 99
-            },
-            "perf_html_size": {
-              "label": "#5 HTML < 100KB",
-              "cat": "performance",
-              "pass": 0,
               "applicable": 99
             },
             "perf_redirect": {
@@ -3781,9 +3695,9 @@
         "pdp": {
           "label": "제품 상세 (PDP)",
           "count": 93,
-          "avgScore": 73,
+          "avgScore": 75,
           "categories": {
-            "performance": 72,
+            "performance": 84.1,
             "accessibility": 74.7,
             "seo": 99.6,
             "ai_readiness": 60.9
@@ -3811,12 +3725,6 @@
               "label": "#4 Cache-Control max-age",
               "cat": "performance",
               "pass": 93,
-              "applicable": 93
-            },
-            "perf_html_size": {
-              "label": "#5 HTML < 100KB",
-              "cat": "performance",
-              "pass": 0,
               "applicable": 93
             },
             "perf_redirect": {
@@ -4046,9 +3954,9 @@
         "plp": {
           "label": "제품 카테고리 (PLP)",
           "count": 95,
-          "avgScore": 74,
+          "avgScore": 76.7,
           "categories": {
-            "performance": 72,
+            "performance": 84.1,
             "accessibility": 96.6,
             "seo": 94,
             "ai_readiness": 58.7
@@ -4076,12 +3984,6 @@
               "label": "#4 Cache-Control max-age",
               "cat": "performance",
               "pass": 95,
-              "applicable": 95
-            },
-            "perf_html_size": {
-              "label": "#5 HTML < 100KB",
-              "cat": "performance",
-              "pass": 0,
               "applicable": 95
             },
             "perf_redirect": {
@@ -4311,9 +4213,9 @@
         "support": {
           "label": "지원/Support",
           "count": 90,
-          "avgScore": 74.5,
+          "avgScore": 76.6,
           "categories": {
-            "performance": 71.5,
+            "performance": 83.6,
             "accessibility": 97.5,
             "seo": 88.4,
             "ai_readiness": 61
@@ -4341,12 +4243,6 @@
               "label": "#4 Cache-Control max-age",
               "cat": "performance",
               "pass": 90,
-              "applicable": 90
-            },
-            "perf_html_size": {
-              "label": "#5 HTML < 100KB",
-              "cat": "performance",
-              "pass": 0,
               "applicable": 90
             },
             "perf_redirect": {
@@ -4576,9 +4472,9 @@
         "support_troubleshoot": {
           "label": "지원 - 트러블슈팅",
           "count": 1,
-          "avgScore": 64,
+          "avgScore": 66,
           "categories": {
-            "performance": 71,
+            "performance": 83,
             "accessibility": 100,
             "seo": 62,
             "ai_readiness": 50
@@ -4606,12 +4502,6 @@
               "label": "#4 Cache-Control max-age",
               "cat": "performance",
               "pass": 1,
-              "applicable": 1
-            },
-            "perf_html_size": {
-              "label": "#5 HTML < 100KB",
-              "cat": "performance",
-              "pass": 0,
               "applicable": 1
             },
             "perf_redirect": {
@@ -4888,14 +4778,13 @@
       "runId": "53a6d6122257",
       "urlCount": 279,
       "scoredCount": 279,
-      "avgScore": 72.5,
+      "avgScore": 74.7,
       "grades": {
-        "Need Improvement": 267,
-        "Good": 11,
-        "Poor": 1
+        "Need Improvement": 240,
+        "Good": 39
       },
       "categories": {
-        "performance": 72.4,
+        "performance": 84.6,
         "accessibility": 86.2,
         "seo": 90.2,
         "ai_readiness": 59.7
@@ -4923,12 +4812,6 @@
           "label": "#4 Cache-Control max-age",
           "cat": "performance",
           "pass": 279,
-          "applicable": 279
-        },
-        "perf_html_size": {
-          "label": "#5 HTML < 100KB",
-          "cat": "performance",
-          "pass": 0,
           "applicable": 279
         },
         "perf_redirect": {
@@ -5158,9 +5041,9 @@
         "buying_guide": {
           "label": "구매 가이드",
           "count": 22,
-          "avgScore": 70.2,
+          "avgScore": 72.5,
           "categories": {
-            "performance": 71.7,
+            "performance": 83.8,
             "accessibility": 97.7,
             "seo": 90,
             "ai_readiness": 52
@@ -5188,12 +5071,6 @@
               "label": "#4 Cache-Control max-age",
               "cat": "performance",
               "pass": 22,
-              "applicable": 22
-            },
-            "perf_html_size": {
-              "label": "#5 HTML < 100KB",
-              "cat": "performance",
-              "pass": 0,
               "applicable": 22
             },
             "perf_redirect": {
@@ -5423,9 +5300,9 @@
         "newsroom": {
           "label": "뉴스룸/Press",
           "count": 2,
-          "avgScore": 75,
+          "avgScore": 77,
           "categories": {
-            "performance": 71,
+            "performance": 83,
             "accessibility": 100,
             "seo": 75,
             "ai_readiness": 69
@@ -5453,12 +5330,6 @@
               "label": "#4 Cache-Control max-age",
               "cat": "performance",
               "pass": 2,
-              "applicable": 2
-            },
-            "perf_html_size": {
-              "label": "#5 HTML < 100KB",
-              "cat": "performance",
-              "pass": 0,
               "applicable": 2
             },
             "perf_redirect": {
@@ -5688,9 +5559,9 @@
         "microsite": {
           "label": "마이크로사이트/캠페인",
           "count": 6,
-          "avgScore": 76.2,
+          "avgScore": 78.7,
           "categories": {
-            "performance": 71,
+            "performance": 83,
             "accessibility": 79.2,
             "seo": 98,
             "ai_readiness": 66.8
@@ -5718,12 +5589,6 @@
               "label": "#4 Cache-Control max-age",
               "cat": "performance",
               "pass": 6,
-              "applicable": 6
-            },
-            "perf_html_size": {
-              "label": "#5 HTML < 100KB",
-              "cat": "performance",
-              "pass": 0,
               "applicable": 6
             },
             "perf_redirect": {
@@ -5953,9 +5818,9 @@
         "lg_experience": {
           "label": "LG Experience",
           "count": 6,
-          "avgScore": 76.5,
+          "avgScore": 78.5,
           "categories": {
-            "performance": 71,
+            "performance": 83,
             "accessibility": 95.8,
             "seo": 98,
             "ai_readiness": 60.5
@@ -5983,12 +5848,6 @@
               "label": "#4 Cache-Control max-age",
               "cat": "performance",
               "pass": 6,
-              "applicable": 6
-            },
-            "perf_html_size": {
-              "label": "#5 HTML < 100KB",
-              "cat": "performance",
-              "pass": 0,
               "applicable": 6
             },
             "perf_redirect": {
@@ -6218,9 +6077,9 @@
         "pdp": {
           "label": "제품 상세 (PDP)",
           "count": 85,
-          "avgScore": 72.7,
+          "avgScore": 74.7,
           "categories": {
-            "performance": 72.4,
+            "performance": 84.6,
             "accessibility": 75,
             "seo": 99.3,
             "ai_readiness": 60.4
@@ -6248,12 +6107,6 @@
               "label": "#4 Cache-Control max-age",
               "cat": "performance",
               "pass": 85,
-              "applicable": 85
-            },
-            "perf_html_size": {
-              "label": "#5 HTML < 100KB",
-              "cat": "performance",
-              "pass": 0,
               "applicable": 85
             },
             "perf_redirect": {
@@ -6483,9 +6336,9 @@
         "plp": {
           "label": "제품 카테고리 (PLP)",
           "count": 84,
-          "avgScore": 72.3,
+          "avgScore": 74.8,
           "categories": {
-            "performance": 73.3,
+            "performance": 85.6,
             "accessibility": 89.6,
             "seo": 89.9,
             "ai_readiness": 57.7
@@ -6513,12 +6366,6 @@
               "label": "#4 Cache-Control max-age",
               "cat": "performance",
               "pass": 84,
-              "applicable": 84
-            },
-            "perf_html_size": {
-              "label": "#5 HTML < 100KB",
-              "cat": "performance",
-              "pass": 0,
               "applicable": 84
             },
             "perf_redirect": {
@@ -6748,9 +6595,9 @@
         "support": {
           "label": "지원/Support",
           "count": 72,
-          "avgScore": 72.3,
+          "avgScore": 74.7,
           "categories": {
-            "performance": 71.6,
+            "performance": 83.7,
             "accessibility": 91,
             "seo": 78.8,
             "ai_readiness": 63.2
@@ -6778,12 +6625,6 @@
               "label": "#4 Cache-Control max-age",
               "cat": "performance",
               "pass": 72,
-              "applicable": 72
-            },
-            "perf_html_size": {
-              "label": "#5 HTML < 100KB",
-              "cat": "performance",
-              "pass": 0,
               "applicable": 72
             },
             "perf_redirect": {
@@ -7013,9 +6854,9 @@
         "support_troubleshoot": {
           "label": "지원 - 트러블슈팅",
           "count": 2,
-          "avgScore": 73,
+          "avgScore": 75,
           "categories": {
-            "performance": 78.5,
+            "performance": 91.5,
             "accessibility": 100,
             "seo": 94,
             "ai_readiness": 50
@@ -7043,12 +6884,6 @@
               "label": "#4 Cache-Control max-age",
               "cat": "performance",
               "pass": 2,
-              "applicable": 2
-            },
-            "perf_html_size": {
-              "label": "#5 HTML < 100KB",
-              "cat": "performance",
-              "pass": 0,
               "applicable": 2
             },
             "perf_redirect": {
@@ -7325,14 +7160,14 @@
       "runId": "2c9b139f2e68",
       "urlCount": 609,
       "scoredCount": 609,
-      "avgScore": 73.5,
+      "avgScore": 75.8,
       "grades": {
-        "Need Improvement": 594,
-        "Good": 13,
-        "Poor": 2
+        "Need Improvement": 479,
+        "Good": 129,
+        "Poor": 1
       },
       "categories": {
-        "performance": 69.6,
+        "performance": 81.4,
         "accessibility": 88.7,
         "seo": 95.4,
         "ai_readiness": 58.9
@@ -7360,12 +7195,6 @@
           "label": "#4 Cache-Control max-age",
           "cat": "performance",
           "pass": 514,
-          "applicable": 609
-        },
-        "perf_html_size": {
-          "label": "#5 HTML < 100KB",
-          "cat": "performance",
-          "pass": 0,
           "applicable": 609
         },
         "perf_redirect": {
@@ -7595,9 +7424,9 @@
         "newsroom": {
           "label": "뉴스룸/Press",
           "count": 100,
-          "avgScore": 75,
+          "avgScore": 77,
           "categories": {
-            "performance": 71,
+            "performance": 83,
             "accessibility": 95.3,
             "seo": 77.6,
             "ai_readiness": 69
@@ -7625,12 +7454,6 @@
               "label": "#4 Cache-Control max-age",
               "cat": "performance",
               "pass": 100,
-              "applicable": 100
-            },
-            "perf_html_size": {
-              "label": "#5 HTML < 100KB",
-              "cat": "performance",
-              "pass": 0,
               "applicable": 100
             },
             "perf_redirect": {
@@ -7860,9 +7683,9 @@
         "microsite": {
           "label": "마이크로사이트/캠페인",
           "count": 7,
-          "avgScore": 73.4,
+          "avgScore": 75.9,
           "categories": {
-            "performance": 69,
+            "performance": 80.7,
             "accessibility": 100,
             "seo": 93.1,
             "ai_readiness": 58.7
@@ -7890,12 +7713,6 @@
               "label": "#4 Cache-Control max-age",
               "cat": "performance",
               "pass": 7,
-              "applicable": 7
-            },
-            "perf_html_size": {
-              "label": "#5 HTML < 100KB",
-              "cat": "performance",
-              "pass": 0,
               "applicable": 7
             },
             "perf_redirect": {
@@ -8125,9 +7942,9 @@
         "buying_guide": {
           "label": "구매 가이드",
           "count": 20,
-          "avgScore": 71.8,
+          "avgScore": 74.2,
           "categories": {
-            "performance": 71,
+            "performance": 83,
             "accessibility": 100,
             "seo": 90.8,
             "ai_readiness": 54.8
@@ -8155,12 +7972,6 @@
               "label": "#4 Cache-Control max-age",
               "cat": "performance",
               "pass": 20,
-              "applicable": 20
-            },
-            "perf_html_size": {
-              "label": "#5 HTML < 100KB",
-              "cat": "performance",
-              "pass": 0,
               "applicable": 20
             },
             "perf_redirect": {
@@ -8390,9 +8201,9 @@
         "lg_experience": {
           "label": "LG Experience",
           "count": 94,
-          "avgScore": 64.6,
+          "avgScore": 66.6,
           "categories": {
-            "performance": 57.7,
+            "performance": 67.9,
             "accessibility": 74.7,
             "seo": 99.9,
             "ai_readiness": 44.5
@@ -8418,12 +8229,6 @@
             },
             "perf_cache_control": {
               "label": "#4 Cache-Control max-age",
-              "cat": "performance",
-              "pass": 0,
-              "applicable": 94
-            },
-            "perf_html_size": {
-              "label": "#5 HTML < 100KB",
               "cat": "performance",
               "pass": 0,
               "applicable": 94
@@ -8655,9 +8460,9 @@
         "pdp": {
           "label": "제품 상세 (PDP)",
           "count": 90,
-          "avgScore": 75.7,
+          "avgScore": 77.8,
           "categories": {
-            "performance": 72.3,
+            "performance": 84.5,
             "accessibility": 67.5,
             "seo": 99.9,
             "ai_readiness": 67.8
@@ -8685,12 +8490,6 @@
               "label": "#4 Cache-Control max-age",
               "cat": "performance",
               "pass": 90,
-              "applicable": 90
-            },
-            "perf_html_size": {
-              "label": "#5 HTML < 100KB",
-              "cat": "performance",
-              "pass": 0,
               "applicable": 90
             },
             "perf_redirect": {
@@ -8920,9 +8719,9 @@
         "plp": {
           "label": "제품 카테고리 (PLP)",
           "count": 98,
-          "avgScore": 75.1,
+          "avgScore": 77.8,
           "categories": {
-            "performance": 72.5,
+            "performance": 84.7,
             "accessibility": 88.5,
             "seo": 98.5,
             "ai_readiness": 60.7
@@ -8950,12 +8749,6 @@
               "label": "#4 Cache-Control max-age",
               "cat": "performance",
               "pass": 97,
-              "applicable": 98
-            },
-            "perf_html_size": {
-              "label": "#5 HTML < 100KB",
-              "cat": "performance",
-              "pass": 0,
               "applicable": 98
             },
             "perf_redirect": {
@@ -9185,9 +8978,9 @@
         "support": {
           "label": "지원/Support",
           "count": 100,
-          "avgScore": 77.8,
+          "avgScore": 80.8,
           "categories": {
-            "performance": 71.6,
+            "performance": 83.7,
             "accessibility": 100,
             "seo": 98.7,
             "ai_readiness": 62.1
@@ -9215,12 +9008,6 @@
               "label": "#4 Cache-Control max-age",
               "cat": "performance",
               "pass": 100,
-              "applicable": 100
-            },
-            "perf_html_size": {
-              "label": "#5 HTML < 100KB",
-              "cat": "performance",
-              "pass": 0,
               "applicable": 100
             },
             "perf_redirect": {
@@ -9450,9 +9237,9 @@
         "support_troubleshoot": {
           "label": "지원 - 트러블슈팅",
           "count": 100,
-          "avgScore": 73.1,
+          "avgScore": 75.1,
           "categories": {
-            "performance": 71.6,
+            "performance": 83.7,
             "accessibility": 100,
             "seo": 100,
             "ai_readiness": 50
@@ -9480,12 +9267,6 @@
               "label": "#4 Cache-Control max-age",
               "cat": "performance",
               "pass": 100,
-              "applicable": 100
-            },
-            "perf_html_size": {
-              "label": "#5 HTML < 100KB",
-              "cat": "performance",
-              "pass": 0,
               "applicable": 100
             },
             "perf_redirect": {
@@ -9762,14 +9543,13 @@
       "runId": "5e624d993ae4",
       "urlCount": 623,
       "scoredCount": 623,
-      "avgScore": 72.9,
+      "avgScore": 75.1,
       "grades": {
-        "Need Improvement": 601,
-        "Good": 20,
-        "Poor": 2
+        "Need Improvement": 577,
+        "Good": 46
       },
       "categories": {
-        "performance": 69.3,
+        "performance": 81.1,
         "accessibility": 90.8,
         "seo": 92.1,
         "ai_readiness": 59
@@ -9797,12 +9577,6 @@
           "label": "#4 Cache-Control max-age",
           "cat": "performance",
           "pass": 523,
-          "applicable": 623
-        },
-        "perf_html_size": {
-          "label": "#5 HTML < 100KB",
-          "cat": "performance",
-          "pass": 0,
           "applicable": 623
         },
         "perf_redirect": {
@@ -10032,9 +9806,9 @@
         "newsroom": {
           "label": "뉴스룸/Press",
           "count": 99,
-          "avgScore": 73.5,
+          "avgScore": 75.6,
           "categories": {
-            "performance": 71,
+            "performance": 83,
             "accessibility": 99.7,
             "seo": 69.7,
             "ai_readiness": 68.4
@@ -10062,12 +9836,6 @@
               "label": "#4 Cache-Control max-age",
               "cat": "performance",
               "pass": 99,
-              "applicable": 99
-            },
-            "perf_html_size": {
-              "label": "#5 HTML < 100KB",
-              "cat": "performance",
-              "pass": 0,
               "applicable": 99
             },
             "perf_redirect": {
@@ -10297,9 +10065,9 @@
         "buying_guide": {
           "label": "구매 가이드",
           "count": 21,
-          "avgScore": 73.7,
+          "avgScore": 76,
           "categories": {
-            "performance": 71,
+            "performance": 83,
             "accessibility": 98.8,
             "seo": 97,
             "ai_readiness": 56
@@ -10327,12 +10095,6 @@
               "label": "#4 Cache-Control max-age",
               "cat": "performance",
               "pass": 21,
-              "applicable": 21
-            },
-            "perf_html_size": {
-              "label": "#5 HTML < 100KB",
-              "cat": "performance",
-              "pass": 0,
               "applicable": 21
             },
             "perf_redirect": {
@@ -10562,9 +10324,9 @@
         "lg_experience": {
           "label": "LG Experience",
           "count": 100,
-          "avgScore": 66.2,
+          "avgScore": 68.2,
           "categories": {
-            "performance": 57.7,
+            "performance": 67.8,
             "accessibility": 75,
             "seo": 99.8,
             "ai_readiness": 48.5
@@ -10590,12 +10352,6 @@
             },
             "perf_cache_control": {
               "label": "#4 Cache-Control max-age",
-              "cat": "performance",
-              "pass": 0,
-              "applicable": 100
-            },
-            "perf_html_size": {
-              "label": "#5 HTML < 100KB",
               "cat": "performance",
               "pass": 0,
               "applicable": 100
@@ -10827,9 +10583,9 @@
         "microsite": {
           "label": "마이크로사이트/캠페인",
           "count": 10,
-          "avgScore": 66.3,
+          "avgScore": 68.3,
           "categories": {
-            "performance": 71,
+            "performance": 83,
             "accessibility": 87.5,
             "seo": 76.3,
             "ai_readiness": 52.8
@@ -10857,12 +10613,6 @@
               "label": "#4 Cache-Control max-age",
               "cat": "performance",
               "pass": 10,
-              "applicable": 10
-            },
-            "perf_html_size": {
-              "label": "#5 HTML < 100KB",
-              "cat": "performance",
-              "pass": 0,
               "applicable": 10
             },
             "perf_redirect": {
@@ -11092,9 +10842,9 @@
         "pdp": {
           "label": "제품 상세 (PDP)",
           "count": 94,
-          "avgScore": 75.4,
+          "avgScore": 77.5,
           "categories": {
-            "performance": 71.5,
+            "performance": 83.5,
             "accessibility": 73.4,
             "seo": 98.9,
             "ai_readiness": 66.9
@@ -11122,12 +10872,6 @@
               "label": "#4 Cache-Control max-age",
               "cat": "performance",
               "pass": 94,
-              "applicable": 94
-            },
-            "perf_html_size": {
-              "label": "#5 HTML < 100KB",
-              "cat": "performance",
-              "pass": 0,
               "applicable": 94
             },
             "perf_redirect": {
@@ -11357,9 +11101,9 @@
         "plp": {
           "label": "제품 카테고리 (PLP)",
           "count": 99,
-          "avgScore": 75,
+          "avgScore": 77.8,
           "categories": {
-            "performance": 73.7,
+            "performance": 86.1,
             "accessibility": 94.7,
             "seo": 96.5,
             "ai_readiness": 59.4
@@ -11387,12 +11131,6 @@
               "label": "#4 Cache-Control max-age",
               "cat": "performance",
               "pass": 99,
-              "applicable": 99
-            },
-            "perf_html_size": {
-              "label": "#5 HTML < 100KB",
-              "cat": "performance",
-              "pass": 0,
               "applicable": 99
             },
             "perf_redirect": {
@@ -11622,9 +11360,9 @@
         "support": {
           "label": "지원/Support",
           "count": 100,
-          "avgScore": 75.2,
+          "avgScore": 77.2,
           "categories": {
-            "performance": 70.9,
+            "performance": 82.8,
             "accessibility": 99.5,
             "seo": 88.5,
             "ai_readiness": 62.3
@@ -11652,12 +11390,6 @@
               "label": "#4 Cache-Control max-age",
               "cat": "performance",
               "pass": 100,
-              "applicable": 100
-            },
-            "perf_html_size": {
-              "label": "#5 HTML < 100KB",
-              "cat": "performance",
-              "pass": 0,
               "applicable": 100
             },
             "perf_redirect": {
@@ -11887,9 +11619,9 @@
         "support_troubleshoot": {
           "label": "지원 - 트러블슈팅",
           "count": 100,
-          "avgScore": 73,
+          "avgScore": 75,
           "categories": {
-            "performance": 71,
+            "performance": 83,
             "accessibility": 100,
             "seo": 100,
             "ai_readiness": 50
@@ -11917,12 +11649,6 @@
               "label": "#4 Cache-Control max-age",
               "cat": "performance",
               "pass": 100,
-              "applicable": 100
-            },
-            "perf_html_size": {
-              "label": "#5 HTML < 100KB",
-              "cat": "performance",
-              "pass": 0,
               "applicable": 100
             },
             "perf_redirect": {
@@ -12199,14 +11925,14 @@
       "runId": "bb535c8d2fa8",
       "urlCount": 531,
       "scoredCount": 531,
-      "avgScore": 70.3,
+      "avgScore": 72.4,
       "grades": {
-        "Need Improvement": 522,
-        "Good": 1,
-        "Poor": 8
+        "Need Improvement": 514,
+        "Good": 15,
+        "Poor": 2
       },
       "categories": {
-        "performance": 76.4,
+        "performance": 89.1,
         "accessibility": 91.1,
         "seo": 82.4,
         "ai_readiness": 54.8
@@ -12234,12 +11960,6 @@
           "label": "#4 Cache-Control max-age",
           "cat": "performance",
           "pass": 531,
-          "applicable": 531
-        },
-        "perf_html_size": {
-          "label": "#5 HTML < 100KB",
-          "cat": "performance",
-          "pass": 0,
           "applicable": 531
         },
         "perf_redirect": {
@@ -12469,9 +12189,9 @@
         "newsroom": {
           "label": "뉴스룸/Press",
           "count": 100,
-          "avgScore": 72.7,
+          "avgScore": 74.8,
           "categories": {
-            "performance": 74.8,
+            "performance": 87.3,
             "accessibility": 99,
             "seo": 80.7,
             "ai_readiness": 59
@@ -12499,12 +12219,6 @@
               "label": "#4 Cache-Control max-age",
               "cat": "performance",
               "pass": 100,
-              "applicable": 100
-            },
-            "perf_html_size": {
-              "label": "#5 HTML < 100KB",
-              "cat": "performance",
-              "pass": 0,
               "applicable": 100
             },
             "perf_redirect": {
@@ -12734,9 +12448,9 @@
         "plp": {
           "label": "제품 카테고리 (PLP)",
           "count": 100,
-          "avgScore": 70.1,
+          "avgScore": 72.3,
           "categories": {
-            "performance": 82.5,
+            "performance": 96.1,
             "accessibility": 83.8,
             "seo": 81.2,
             "ai_readiness": 54.5
@@ -12764,12 +12478,6 @@
               "label": "#4 Cache-Control max-age",
               "cat": "performance",
               "pass": 100,
-              "applicable": 100
-            },
-            "perf_html_size": {
-              "label": "#5 HTML < 100KB",
-              "cat": "performance",
-              "pass": 0,
               "applicable": 100
             },
             "perf_redirect": {
@@ -12999,9 +12707,9 @@
         "buying_guide": {
           "label": "구매 가이드",
           "count": 11,
-          "avgScore": 65.3,
+          "avgScore": 67.3,
           "categories": {
-            "performance": 83.3,
+            "performance": 96.9,
             "accessibility": 95.5,
             "seo": 71.5,
             "ai_readiness": 45.9
@@ -13029,12 +12737,6 @@
               "label": "#4 Cache-Control max-age",
               "cat": "performance",
               "pass": 11,
-              "applicable": 11
-            },
-            "perf_html_size": {
-              "label": "#5 HTML < 100KB",
-              "cat": "performance",
-              "pass": 0,
               "applicable": 11
             },
             "perf_redirect": {
@@ -13264,9 +12966,9 @@
         "microsite": {
           "label": "마이크로사이트/캠페인",
           "count": 59,
-          "avgScore": 73.6,
+          "avgScore": 75.9,
           "categories": {
-            "performance": 78.9,
+            "performance": 91.9,
             "accessibility": 77.5,
             "seo": 86.7,
             "ai_readiness": 63.6
@@ -13294,12 +12996,6 @@
               "label": "#4 Cache-Control max-age",
               "cat": "performance",
               "pass": 59,
-              "applicable": 59
-            },
-            "perf_html_size": {
-              "label": "#5 HTML < 100KB",
-              "cat": "performance",
-              "pass": 0,
               "applicable": 59
             },
             "perf_redirect": {
@@ -13529,9 +13225,9 @@
         "pdp": {
           "label": "제품 상세 (PDP)",
           "count": 61,
-          "avgScore": 69.9,
+          "avgScore": 71.9,
           "categories": {
-            "performance": 73.7,
+            "performance": 86.1,
             "accessibility": 75,
             "seo": 85.9,
             "ai_readiness": 61.1
@@ -13559,12 +13255,6 @@
               "label": "#4 Cache-Control max-age",
               "cat": "performance",
               "pass": 61,
-              "applicable": 61
-            },
-            "perf_html_size": {
-              "label": "#5 HTML < 100KB",
-              "cat": "performance",
-              "pass": 0,
               "applicable": 61
             },
             "perf_redirect": {
@@ -13794,9 +13484,9 @@
         "support": {
           "label": "지원/Support",
           "count": 100,
-          "avgScore": 70.4,
+          "avgScore": 72.4,
           "categories": {
-            "performance": 76.1,
+            "performance": 88.8,
             "accessibility": 99,
             "seo": 76,
             "ai_readiness": 54.6
@@ -13824,12 +13514,6 @@
               "label": "#4 Cache-Control max-age",
               "cat": "performance",
               "pass": 100,
-              "applicable": 100
-            },
-            "perf_html_size": {
-              "label": "#5 HTML < 100KB",
-              "cat": "performance",
-              "pass": 0,
               "applicable": 100
             },
             "perf_redirect": {
@@ -14059,9 +13743,9 @@
         "support_troubleshoot": {
           "label": "지원 - 트러블슈팅",
           "count": 100,
-          "avgScore": 67.1,
+          "avgScore": 69.1,
           "categories": {
-            "performance": 71.6,
+            "performance": 83.7,
             "accessibility": 99.8,
             "seo": 88,
             "ai_readiness": 43
@@ -14089,12 +13773,6 @@
               "label": "#4 Cache-Control max-age",
               "cat": "performance",
               "pass": 100,
-              "applicable": 100
-            },
-            "perf_html_size": {
-              "label": "#5 HTML < 100KB",
-              "cat": "performance",
-              "pass": 0,
               "applicable": 100
             },
             "perf_redirect": {
@@ -14371,13 +14049,13 @@
       "runId": "eb9b2f21456b",
       "urlCount": 543,
       "scoredCount": 543,
-      "avgScore": 71.5,
+      "avgScore": 73.5,
       "grades": {
-        "Need Improvement": 540,
-        "Poor": 3
+        "Need Improvement": 531,
+        "Good": 12
       },
       "categories": {
-        "performance": 71.8,
+        "performance": 83.9,
         "accessibility": 93.5,
         "seo": 90.6,
         "ai_readiness": 54.3
@@ -14405,12 +14083,6 @@
           "label": "#4 Cache-Control max-age",
           "cat": "performance",
           "pass": 543,
-          "applicable": 543
-        },
-        "perf_html_size": {
-          "label": "#5 HTML < 100KB",
-          "cat": "performance",
-          "pass": 0,
           "applicable": 543
         },
         "perf_redirect": {
@@ -14640,9 +14312,9 @@
         "newsroom": {
           "label": "뉴스룸/Press",
           "count": 100,
-          "avgScore": 71.5,
+          "avgScore": 73.5,
           "categories": {
-            "performance": 71.2,
+            "performance": 83.2,
             "accessibility": 96.8,
             "seo": 76.3,
             "ai_readiness": 60.9
@@ -14670,12 +14342,6 @@
               "label": "#4 Cache-Control max-age",
               "cat": "performance",
               "pass": 100,
-              "applicable": 100
-            },
-            "perf_html_size": {
-              "label": "#5 HTML < 100KB",
-              "cat": "performance",
-              "pass": 0,
               "applicable": 100
             },
             "perf_redirect": {
@@ -14905,9 +14571,9 @@
         "buying_guide": {
           "label": "구매 가이드",
           "count": 24,
-          "avgScore": 71,
+          "avgScore": 73.1,
           "categories": {
-            "performance": 71.6,
+            "performance": 83.7,
             "accessibility": 97.9,
             "seo": 92.8,
             "ai_readiness": 52.3
@@ -14935,12 +14601,6 @@
               "label": "#4 Cache-Control max-age",
               "cat": "performance",
               "pass": 24,
-              "applicable": 24
-            },
-            "perf_html_size": {
-              "label": "#5 HTML < 100KB",
-              "cat": "performance",
-              "pass": 0,
               "applicable": 24
             },
             "perf_redirect": {
@@ -15170,9 +14830,9 @@
         "lg_experience": {
           "label": "LG Experience",
           "count": 29,
-          "avgScore": 72.6,
+          "avgScore": 74.6,
           "categories": {
-            "performance": 71,
+            "performance": 83,
             "accessibility": 90.5,
             "seo": 95.3,
             "ai_readiness": 54.4
@@ -15200,12 +14860,6 @@
               "label": "#4 Cache-Control max-age",
               "cat": "performance",
               "pass": 29,
-              "applicable": 29
-            },
-            "perf_html_size": {
-              "label": "#5 HTML < 100KB",
-              "cat": "performance",
-              "pass": 0,
               "applicable": 29
             },
             "perf_redirect": {
@@ -15435,9 +15089,9 @@
         "pdp": {
           "label": "제품 상세 (PDP)",
           "count": 94,
-          "avgScore": 73.7,
+          "avgScore": 75.7,
           "categories": {
-            "performance": 72.4,
+            "performance": 84.6,
             "accessibility": 75,
             "seo": 100,
             "ai_readiness": 61.9
@@ -15465,12 +15119,6 @@
               "label": "#4 Cache-Control max-age",
               "cat": "performance",
               "pass": 94,
-              "applicable": 94
-            },
-            "perf_html_size": {
-              "label": "#5 HTML < 100KB",
-              "cat": "performance",
-              "pass": 0,
               "applicable": 94
             },
             "perf_redirect": {
@@ -15700,9 +15348,9 @@
         "microsite": {
           "label": "마이크로사이트/캠페인",
           "count": 6,
-          "avgScore": 69.8,
+          "avgScore": 72,
           "categories": {
-            "performance": 71,
+            "performance": 83,
             "accessibility": 91.7,
             "seo": 91.8,
             "ai_readiness": 52
@@ -15730,12 +15378,6 @@
               "label": "#4 Cache-Control max-age",
               "cat": "performance",
               "pass": 6,
-              "applicable": 6
-            },
-            "perf_html_size": {
-              "label": "#5 HTML < 100KB",
-              "cat": "performance",
-              "pass": 0,
               "applicable": 6
             },
             "perf_redirect": {
@@ -15965,9 +15607,9 @@
         "plp": {
           "label": "제품 카테고리 (PLP)",
           "count": 90,
-          "avgScore": 69.9,
+          "avgScore": 72,
           "categories": {
-            "performance": 73,
+            "performance": 85.3,
             "accessibility": 95,
             "seo": 86.2,
             "ai_readiness": 52.3
@@ -15995,12 +15637,6 @@
               "label": "#4 Cache-Control max-age",
               "cat": "performance",
               "pass": 90,
-              "applicable": 90
-            },
-            "perf_html_size": {
-              "label": "#5 HTML < 100KB",
-              "cat": "performance",
-              "pass": 0,
               "applicable": 90
             },
             "perf_redirect": {
@@ -16230,9 +15866,9 @@
         "support": {
           "label": "지원/Support",
           "count": 100,
-          "avgScore": 72.3,
+          "avgScore": 74.3,
           "categories": {
-            "performance": 71.3,
+            "performance": 83.3,
             "accessibility": 99.5,
             "seo": 88.6,
             "ai_readiness": 54.3
@@ -16260,12 +15896,6 @@
               "label": "#4 Cache-Control max-age",
               "cat": "performance",
               "pass": 100,
-              "applicable": 100
-            },
-            "perf_html_size": {
-              "label": "#5 HTML < 100KB",
-              "cat": "performance",
-              "pass": 0,
               "applicable": 100
             },
             "perf_redirect": {
@@ -16495,9 +16125,9 @@
         "support_troubleshoot": {
           "label": "지원 - 트러블슈팅",
           "count": 100,
-          "avgScore": 70.1,
+          "avgScore": 72.1,
           "categories": {
-            "performance": 71.5,
+            "performance": 83.5,
             "accessibility": 100,
             "seo": 100,
             "ai_readiness": 43
@@ -16525,12 +16155,6 @@
               "label": "#4 Cache-Control max-age",
               "cat": "performance",
               "pass": 100,
-              "applicable": 100
-            },
-            "perf_html_size": {
-              "label": "#5 HTML < 100KB",
-              "cat": "performance",
-              "pass": 0,
               "applicable": 100
             },
             "perf_redirect": {
@@ -16807,13 +16431,13 @@
       "runId": "f9c1aed6cab6",
       "urlCount": 645,
       "scoredCount": 645,
-      "avgScore": 73.1,
+      "avgScore": 75.2,
       "grades": {
-        "Need Improvement": 640,
-        "Good": 5
+        "Need Improvement": 603,
+        "Good": 42
       },
       "categories": {
-        "performance": 71.7,
+        "performance": 83.7,
         "accessibility": 92.1,
         "seo": 93.2,
         "ai_readiness": 57.1
@@ -16841,12 +16465,6 @@
           "label": "#4 Cache-Control max-age",
           "cat": "performance",
           "pass": 645,
-          "applicable": 645
-        },
-        "perf_html_size": {
-          "label": "#5 HTML < 100KB",
-          "cat": "performance",
-          "pass": 0,
           "applicable": 645
         },
         "perf_redirect": {
@@ -17076,9 +16694,9 @@
         "microsite": {
           "label": "마이크로사이트/캠페인",
           "count": 15,
-          "avgScore": 66.3,
+          "avgScore": 68.3,
           "categories": {
-            "performance": 71,
+            "performance": 83,
             "accessibility": 88.3,
             "seo": 80.1,
             "ai_readiness": 50.8
@@ -17106,12 +16724,6 @@
               "label": "#4 Cache-Control max-age",
               "cat": "performance",
               "pass": 15,
-              "applicable": 15
-            },
-            "perf_html_size": {
-              "label": "#5 HTML < 100KB",
-              "cat": "performance",
-              "pass": 0,
               "applicable": 15
             },
             "perf_redirect": {
@@ -17341,9 +16953,9 @@
         "newsroom": {
           "label": "뉴스룸/Press",
           "count": 100,
-          "avgScore": 73,
+          "avgScore": 75.2,
           "categories": {
-            "performance": 71,
+            "performance": 83,
             "accessibility": 99.3,
             "seo": 69.9,
             "ai_readiness": 67.3
@@ -17371,12 +16983,6 @@
               "label": "#4 Cache-Control max-age",
               "cat": "performance",
               "pass": 100,
-              "applicable": 100
-            },
-            "perf_html_size": {
-              "label": "#5 HTML < 100KB",
-              "cat": "performance",
-              "pass": 0,
               "applicable": 100
             },
             "perf_redirect": {
@@ -17606,9 +17212,9 @@
         "buying_guide": {
           "label": "구매 가이드",
           "count": 44,
-          "avgScore": 71.5,
+          "avgScore": 73.7,
           "categories": {
-            "performance": 72.4,
+            "performance": 84.6,
             "accessibility": 98.3,
             "seo": 89.9,
             "ai_readiness": 54.1
@@ -17636,12 +17242,6 @@
               "label": "#4 Cache-Control max-age",
               "cat": "performance",
               "pass": 44,
-              "applicable": 44
-            },
-            "perf_html_size": {
-              "label": "#5 HTML < 100KB",
-              "cat": "performance",
-              "pass": 0,
               "applicable": 44
             },
             "perf_redirect": {
@@ -17871,9 +17471,9 @@
         "lg_experience": {
           "label": "LG Experience",
           "count": 91,
-          "avgScore": 74.6,
+          "avgScore": 76.6,
           "categories": {
-            "performance": 70.5,
+            "performance": 82.5,
             "accessibility": 99.7,
             "seo": 100,
             "ai_readiness": 54
@@ -17901,12 +17501,6 @@
               "label": "#4 Cache-Control max-age",
               "cat": "performance",
               "pass": 91,
-              "applicable": 91
-            },
-            "perf_html_size": {
-              "label": "#5 HTML < 100KB",
-              "cat": "performance",
-              "pass": 0,
               "applicable": 91
             },
             "perf_redirect": {
@@ -18136,9 +17730,9 @@
         "pdp": {
           "label": "제품 상세 (PDP)",
           "count": 99,
-          "avgScore": 72.1,
+          "avgScore": 74.1,
           "categories": {
-            "performance": 72.2,
+            "performance": 84.4,
             "accessibility": 67.4,
             "seo": 100,
             "ai_readiness": 60.8
@@ -18166,12 +17760,6 @@
               "label": "#4 Cache-Control max-age",
               "cat": "performance",
               "pass": 99,
-              "applicable": 99
-            },
-            "perf_html_size": {
-              "label": "#5 HTML < 100KB",
-              "cat": "performance",
-              "pass": 0,
               "applicable": 99
             },
             "perf_redirect": {
@@ -18401,9 +17989,9 @@
         "plp": {
           "label": "제품 카테고리 (PLP)",
           "count": 96,
-          "avgScore": 73.2,
+          "avgScore": 75.5,
           "categories": {
-            "performance": 73.2,
+            "performance": 85.5,
             "accessibility": 84.9,
             "seo": 94.7,
             "ai_readiness": 58.5
@@ -18431,12 +18019,6 @@
               "label": "#4 Cache-Control max-age",
               "cat": "performance",
               "pass": 96,
-              "applicable": 96
-            },
-            "perf_html_size": {
-              "label": "#5 HTML < 100KB",
-              "cat": "performance",
-              "pass": 0,
               "applicable": 96
             },
             "perf_redirect": {
@@ -18666,9 +18248,9 @@
         "support": {
           "label": "지원/Support",
           "count": 100,
-          "avgScore": 74.6,
+          "avgScore": 76.6,
           "categories": {
-            "performance": 71.2,
+            "performance": 83.2,
             "accessibility": 99.5,
             "seo": 98.7,
             "ai_readiness": 54
@@ -18696,12 +18278,6 @@
               "label": "#4 Cache-Control max-age",
               "cat": "performance",
               "pass": 100,
-              "applicable": 100
-            },
-            "perf_html_size": {
-              "label": "#5 HTML < 100KB",
-              "cat": "performance",
-              "pass": 0,
               "applicable": 100
             },
             "perf_redirect": {
@@ -18931,9 +18507,9 @@
         "support_troubleshoot": {
           "label": "지원 - 트러블슈팅",
           "count": 100,
-          "avgScore": 73.1,
+          "avgScore": 75.1,
           "categories": {
-            "performance": 71.6,
+            "performance": 83.7,
             "accessibility": 100,
             "seo": 99.9,
             "ai_readiness": 50
@@ -18961,12 +18537,6 @@
               "label": "#4 Cache-Control max-age",
               "cat": "performance",
               "pass": 100,
-              "applicable": 100
-            },
-            "perf_html_size": {
-              "label": "#5 HTML < 100KB",
-              "cat": "performance",
-              "pass": 0,
               "applicable": 100
             },
             "perf_redirect": {
@@ -19243,14 +18813,14 @@
       "runId": "765d1a7d5451",
       "urlCount": 446,
       "scoredCount": 446,
-      "avgScore": 69,
+      "avgScore": 71.1,
       "grades": {
-        "Need Improvement": 397,
-        "Poor": 37,
-        "Good": 12
+        "Need Improvement": 383,
+        "Poor": 30,
+        "Good": 33
       },
       "categories": {
-        "performance": 70.4,
+        "performance": 82.4,
         "accessibility": 79.9,
         "seo": 88.6,
         "ai_readiness": 54.1
@@ -19278,12 +18848,6 @@
           "label": "#4 Cache-Control max-age",
           "cat": "performance",
           "pass": 391,
-          "applicable": 446
-        },
-        "perf_html_size": {
-          "label": "#5 HTML < 100KB",
-          "cat": "performance",
-          "pass": 0,
           "applicable": 446
         },
         "perf_redirect": {
@@ -19513,9 +19077,9 @@
         "buying_guide": {
           "label": "구매 가이드",
           "count": 14,
-          "avgScore": 66.1,
+          "avgScore": 68.1,
           "categories": {
-            "performance": 71.1,
+            "performance": 83.1,
             "accessibility": 73.2,
             "seo": 82.4,
             "ai_readiness": 52.6
@@ -19543,12 +19107,6 @@
               "label": "#4 Cache-Control max-age",
               "cat": "performance",
               "pass": 14,
-              "applicable": 14
-            },
-            "perf_html_size": {
-              "label": "#5 HTML < 100KB",
-              "cat": "performance",
-              "pass": 0,
               "applicable": 14
             },
             "perf_redirect": {
@@ -19778,9 +19336,9 @@
         "newsroom": {
           "label": "뉴스룸/Press",
           "count": 100,
-          "avgScore": 62.1,
+          "avgScore": 64.3,
           "categories": {
-            "performance": 64.9,
+            "performance": 76,
             "accessibility": 76.3,
             "seo": 86.8,
             "ai_readiness": 40.6
@@ -19808,12 +19366,6 @@
               "label": "#4 Cache-Control max-age",
               "cat": "performance",
               "pass": 47,
-              "applicable": 100
-            },
-            "perf_html_size": {
-              "label": "#5 HTML < 100KB",
-              "cat": "performance",
-              "pass": 0,
               "applicable": 100
             },
             "perf_redirect": {
@@ -20043,9 +19595,9 @@
         "lg_experience": {
           "label": "LG Experience",
           "count": 29,
-          "avgScore": 70.8,
+          "avgScore": 72.8,
           "categories": {
-            "performance": 73.6,
+            "performance": 85.9,
             "accessibility": 75,
             "seo": 88.3,
             "ai_readiness": 57.5
@@ -20073,12 +19625,6 @@
               "label": "#4 Cache-Control max-age",
               "cat": "performance",
               "pass": 29,
-              "applicable": 29
-            },
-            "perf_html_size": {
-              "label": "#5 HTML < 100KB",
-              "cat": "performance",
-              "pass": 0,
               "applicable": 29
             },
             "perf_redirect": {
@@ -20308,9 +19854,9 @@
         "microsite": {
           "label": "마이크로사이트/캠페인",
           "count": 7,
-          "avgScore": 70,
+          "avgScore": 72,
           "categories": {
-            "performance": 69,
+            "performance": 80.7,
             "accessibility": 75,
             "seo": 93.1,
             "ai_readiness": 56
@@ -20338,12 +19884,6 @@
               "label": "#4 Cache-Control max-age",
               "cat": "performance",
               "pass": 6,
-              "applicable": 7
-            },
-            "perf_html_size": {
-              "label": "#5 HTML < 100KB",
-              "cat": "performance",
-              "pass": 0,
               "applicable": 7
             },
             "perf_redirect": {
@@ -20573,9 +20113,9 @@
         "pdp": {
           "label": "제품 상세 (PDP)",
           "count": 96,
-          "avgScore": 76,
+          "avgScore": 78,
           "categories": {
-            "performance": 71.6,
+            "performance": 83.7,
             "accessibility": 100,
             "seo": 88,
             "ai_readiness": 66.8
@@ -20603,12 +20143,6 @@
               "label": "#4 Cache-Control max-age",
               "cat": "performance",
               "pass": 96,
-              "applicable": 96
-            },
-            "perf_html_size": {
-              "label": "#5 HTML < 100KB",
-              "cat": "performance",
-              "pass": 0,
               "applicable": 96
             },
             "perf_redirect": {
@@ -20838,9 +20372,9 @@
         "plp": {
           "label": "제품 카테고리 (PLP)",
           "count": 100,
-          "avgScore": 74.5,
+          "avgScore": 76.8,
           "categories": {
-            "performance": 73.3,
+            "performance": 85.6,
             "accessibility": 73.3,
             "seo": 92.7,
             "ai_readiness": 65.3
@@ -20868,12 +20402,6 @@
               "label": "#4 Cache-Control max-age",
               "cat": "performance",
               "pass": 99,
-              "applicable": 100
-            },
-            "perf_html_size": {
-              "label": "#5 HTML < 100KB",
-              "cat": "performance",
-              "pass": 0,
               "applicable": 100
             },
             "perf_redirect": {
@@ -21103,9 +20631,9 @@
         "support_troubleshoot": {
           "label": "지원 - 트러블슈팅",
           "count": 100,
-          "avgScore": 63.6,
+          "avgScore": 65.5,
           "categories": {
-            "performance": 71.2,
+            "performance": 83.2,
             "accessibility": 73.8,
             "seo": 87.3,
             "ai_readiness": 43.1
@@ -21133,12 +20661,6 @@
               "label": "#4 Cache-Control max-age",
               "cat": "performance",
               "pass": 100,
-              "applicable": 100
-            },
-            "perf_html_size": {
-              "label": "#5 HTML < 100KB",
-              "cat": "performance",
-              "pass": 0,
               "applicable": 100
             },
             "perf_redirect": {
@@ -21415,13 +20937,14 @@
       "runId": "db9329a40d4f",
       "urlCount": 559,
       "scoredCount": 559,
-      "avgScore": 72.5,
+      "avgScore": 74.6,
       "grades": {
-        "Need Improvement": 550,
-        "Poor": 9
+        "Need Improvement": 535,
+        "Good": 23,
+        "Poor": 1
       },
       "categories": {
-        "performance": 71.6,
+        "performance": 83.6,
         "accessibility": 93.6,
         "seo": 92.1,
         "ai_readiness": 56
@@ -21449,12 +20972,6 @@
           "label": "#4 Cache-Control max-age",
           "cat": "performance",
           "pass": 559,
-          "applicable": 559
-        },
-        "perf_html_size": {
-          "label": "#5 HTML < 100KB",
-          "cat": "performance",
-          "pass": 1,
           "applicable": 559
         },
         "perf_redirect": {
@@ -21684,9 +21201,9 @@
         "microsite": {
           "label": "마이크로사이트/캠페인",
           "count": 6,
-          "avgScore": 68.3,
+          "avgScore": 70.3,
           "categories": {
-            "performance": 71,
+            "performance": 83,
             "accessibility": 100,
             "seo": 85.7,
             "ai_readiness": 49
@@ -21714,12 +21231,6 @@
               "label": "#4 Cache-Control max-age",
               "cat": "performance",
               "pass": 6,
-              "applicable": 6
-            },
-            "perf_html_size": {
-              "label": "#5 HTML < 100KB",
-              "cat": "performance",
-              "pass": 0,
               "applicable": 6
             },
             "perf_redirect": {
@@ -21949,9 +21460,9 @@
         "newsroom": {
           "label": "뉴스룸/Press",
           "count": 100,
-          "avgScore": 72.2,
+          "avgScore": 74.2,
           "categories": {
-            "performance": 69.9,
+            "performance": 81.7,
             "accessibility": 98.8,
             "seo": 77.1,
             "ai_readiness": 62.2
@@ -21979,12 +21490,6 @@
               "label": "#4 Cache-Control max-age",
               "cat": "performance",
               "pass": 100,
-              "applicable": 100
-            },
-            "perf_html_size": {
-              "label": "#5 HTML < 100KB",
-              "cat": "performance",
-              "pass": 0,
               "applicable": 100
             },
             "perf_redirect": {
@@ -22214,9 +21719,9 @@
         "buying_guide": {
           "label": "구매 가이드",
           "count": 3,
-          "avgScore": 66,
+          "avgScore": 68,
           "categories": {
-            "performance": 71,
+            "performance": 83,
             "accessibility": 91.7,
             "seo": 83.7,
             "ai_readiness": 47
@@ -22244,12 +21749,6 @@
               "label": "#4 Cache-Control max-age",
               "cat": "performance",
               "pass": 3,
-              "applicable": 3
-            },
-            "perf_html_size": {
-              "label": "#5 HTML < 100KB",
-              "cat": "performance",
-              "pass": 0,
               "applicable": 3
             },
             "perf_redirect": {
@@ -22479,9 +21978,9 @@
         "lg_experience": {
           "label": "LG Experience",
           "count": 57,
-          "avgScore": 73.4,
+          "avgScore": 75.4,
           "categories": {
-            "performance": 71.5,
+            "performance": 83.6,
             "accessibility": 98.7,
             "seo": 97.6,
             "ai_readiness": 52.5
@@ -22509,12 +22008,6 @@
               "label": "#4 Cache-Control max-age",
               "cat": "performance",
               "pass": 57,
-              "applicable": 57
-            },
-            "perf_html_size": {
-              "label": "#5 HTML < 100KB",
-              "cat": "performance",
-              "pass": 0,
               "applicable": 57
             },
             "perf_redirect": {
@@ -22744,9 +22237,9 @@
         "pdp": {
           "label": "제품 상세 (PDP)",
           "count": 95,
-          "avgScore": 73,
+          "avgScore": 75,
           "categories": {
-            "performance": 71.9,
+            "performance": 84.1,
             "accessibility": 74.2,
             "seo": 100,
             "ai_readiness": 61.3
@@ -22774,12 +22267,6 @@
               "label": "#4 Cache-Control max-age",
               "cat": "performance",
               "pass": 95,
-              "applicable": 95
-            },
-            "perf_html_size": {
-              "label": "#5 HTML < 100KB",
-              "cat": "performance",
-              "pass": 0,
               "applicable": 95
             },
             "perf_redirect": {
@@ -23009,9 +22496,9 @@
         "plp": {
           "label": "제품 카테고리 (PLP)",
           "count": 98,
-          "avgScore": 72.4,
+          "avgScore": 74.9,
           "categories": {
-            "performance": 73.1,
+            "performance": 85.3,
             "accessibility": 91.1,
             "seo": 94.4,
             "ai_readiness": 55.4
@@ -23039,12 +22526,6 @@
               "label": "#4 Cache-Control max-age",
               "cat": "performance",
               "pass": 98,
-              "applicable": 98
-            },
-            "perf_html_size": {
-              "label": "#5 HTML < 100KB",
-              "cat": "performance",
-              "pass": 1,
               "applicable": 98
             },
             "perf_redirect": {
@@ -23274,9 +22755,9 @@
         "support": {
           "label": "지원/Support",
           "count": 100,
-          "avgScore": 71.9,
+          "avgScore": 73.9,
           "categories": {
-            "performance": 71.5,
+            "performance": 83.5,
             "accessibility": 99.5,
             "seo": 87.1,
             "ai_readiness": 54.2
@@ -23304,12 +22785,6 @@
               "label": "#4 Cache-Control max-age",
               "cat": "performance",
               "pass": 100,
-              "applicable": 100
-            },
-            "perf_html_size": {
-              "label": "#5 HTML < 100KB",
-              "cat": "performance",
-              "pass": 0,
               "applicable": 100
             },
             "perf_redirect": {
@@ -23539,9 +23014,9 @@
         "support_troubleshoot": {
           "label": "지원 - 트러블슈팅",
           "count": 100,
-          "avgScore": 73.1,
+          "avgScore": 75.1,
           "categories": {
-            "performance": 71.5,
+            "performance": 83.5,
             "accessibility": 100,
             "seo": 100,
             "ai_readiness": 50
@@ -23569,12 +23044,6 @@
               "label": "#4 Cache-Control max-age",
               "cat": "performance",
               "pass": 100,
-              "applicable": 100
-            },
-            "perf_html_size": {
-              "label": "#5 HTML < 100KB",
-              "cat": "performance",
-              "pass": 0,
               "applicable": 100
             },
             "perf_redirect": {
@@ -23850,14 +23319,14 @@
   "overall": {
     "urlCount": 5438,
     "scoredCount": 5438,
-    "avgScore": 72.4,
+    "avgScore": 74.6,
     "grades": {
-      "Need Improvement": 5270,
-      "Good": 100,
-      "Poor": 68
+      "Need Improvement": 4923,
+      "Good": 481,
+      "Poor": 34
     },
     "categories": {
-      "performance": 71.9,
+      "performance": 84,
       "accessibility": 90.2,
       "seo": 90.3,
       "ai_readiness": 57.7
@@ -23885,12 +23354,6 @@
         "label": "#4 Cache-Control max-age",
         "cat": "performance",
         "pass": 5188,
-        "applicable": 5438
-      },
-      "perf_html_size": {
-        "label": "#5 HTML < 100KB",
-        "cat": "performance",
-        "pass": 1,
         "applicable": 5438
       },
       "perf_redirect": {
@@ -24120,9 +23583,9 @@
       "newsroom": {
         "label": "뉴스룸/Press",
         "count": 901,
-        "avgScore": 72.3,
+        "avgScore": 74.5,
         "categories": {
-          "performance": 70.8,
+          "performance": 82.7,
           "accessibility": 94.7,
           "seo": 78.8,
           "ai_readiness": 62.1
@@ -24150,12 +23613,6 @@
             "label": "#4 Cache-Control max-age",
             "cat": "performance",
             "pass": 848,
-            "applicable": 901
-          },
-          "perf_html_size": {
-            "label": "#5 HTML < 100KB",
-            "cat": "performance",
-            "pass": 0,
             "applicable": 901
           },
           "perf_redirect": {
@@ -24385,9 +23842,9 @@
       "microsite": {
         "label": "마이크로사이트/캠페인",
         "count": 231,
-        "avgScore": 72.1,
+        "avgScore": 74.3,
         "categories": {
-          "performance": 74.4,
+          "performance": 86.8,
           "accessibility": 77.9,
           "seo": 86.3,
           "ai_readiness": 62
@@ -24415,12 +23872,6 @@
             "label": "#4 Cache-Control max-age",
             "cat": "performance",
             "pass": 230,
-            "applicable": 231
-          },
-          "perf_html_size": {
-            "label": "#5 HTML < 100KB",
-            "cat": "performance",
-            "pass": 0,
             "applicable": 231
           },
           "perf_redirect": {
@@ -24650,9 +24101,9 @@
       "buying_guide": {
         "label": "구매 가이드",
         "count": 201,
-        "avgScore": 70.8,
+        "avgScore": 73,
         "categories": {
-          "performance": 72.8,
+          "performance": 85,
           "accessibility": 95.9,
           "seo": 89.2,
           "ai_readiness": 53.5
@@ -24680,12 +24131,6 @@
             "label": "#4 Cache-Control max-age",
             "cat": "performance",
             "pass": 201,
-            "applicable": 201
-          },
-          "perf_html_size": {
-            "label": "#5 HTML < 100KB",
-            "cat": "performance",
-            "pass": 0,
             "applicable": 201
           },
           "perf_redirect": {
@@ -24915,9 +24360,9 @@
       "lg_experience": {
         "label": "LG Experience",
         "count": 577,
-        "avgScore": 70.9,
+        "avgScore": 72.9,
         "categories": {
-          "performance": 67.4,
+          "performance": 78.8,
           "accessibility": 89.4,
           "seo": 97,
           "ai_readiness": 51.8
@@ -24945,12 +24390,6 @@
             "label": "#4 Cache-Control max-age",
             "cat": "performance",
             "pass": 383,
-            "applicable": 577
-          },
-          "perf_html_size": {
-            "label": "#5 HTML < 100KB",
-            "cat": "performance",
-            "pass": 0,
             "applicable": 577
           },
           "perf_redirect": {
@@ -25180,9 +24619,9 @@
       "pdp": {
         "label": "제품 상세 (PDP)",
         "count": 906,
-        "avgScore": 73.5,
+        "avgScore": 75.6,
         "categories": {
-          "performance": 72.1,
+          "performance": 84.2,
           "accessibility": 75.7,
           "seo": 96.2,
           "ai_readiness": 63.5
@@ -25210,12 +24649,6 @@
             "label": "#4 Cache-Control max-age",
             "cat": "performance",
             "pass": 906,
-            "applicable": 906
-          },
-          "perf_html_size": {
-            "label": "#5 HTML < 100KB",
-            "cat": "performance",
-            "pass": 0,
             "applicable": 906
           },
           "perf_redirect": {
@@ -25445,9 +24878,9 @@
       "plp": {
         "label": "제품 카테고리 (PLP)",
         "count": 958,
-        "avgScore": 73.1,
+        "avgScore": 75.5,
         "categories": {
-          "performance": 74.7,
+          "performance": 87.1,
           "accessibility": 88.7,
           "seo": 91.2,
           "ai_readiness": 58.4
@@ -25475,12 +24908,6 @@
             "label": "#4 Cache-Control max-age",
             "cat": "performance",
             "pass": 956,
-            "applicable": 958
-          },
-          "perf_html_size": {
-            "label": "#5 HTML < 100KB",
-            "cat": "performance",
-            "pass": 1,
             "applicable": 958
           },
           "perf_redirect": {
@@ -25710,9 +25137,9 @@
       "support": {
         "label": "지원/Support",
         "count": 861,
-        "avgScore": 73.6,
+        "avgScore": 75.8,
         "categories": {
-          "performance": 72.2,
+          "performance": 84.4,
           "accessibility": 98.6,
           "seo": 87,
           "ai_readiness": 58.5
@@ -25740,12 +25167,6 @@
             "label": "#4 Cache-Control max-age",
             "cat": "performance",
             "pass": 861,
-            "applicable": 861
-          },
-          "perf_html_size": {
-            "label": "#5 HTML < 100KB",
-            "cat": "performance",
-            "pass": 0,
             "applicable": 861
           },
           "perf_redirect": {
@@ -25975,9 +25396,9 @@
       "support_troubleshoot": {
         "label": "지원 - 트러블슈팅",
         "count": 803,
-        "avgScore": 70.8,
+        "avgScore": 72.8,
         "categories": {
-          "performance": 71.4,
+          "performance": 83.5,
           "accessibility": 96.7,
           "seo": 95.3,
           "ai_readiness": 48.3
@@ -26005,12 +25426,6 @@
             "label": "#4 Cache-Control max-age",
             "cat": "performance",
             "pass": 803,
-            "applicable": 803
-          },
-          "perf_html_size": {
-            "label": "#5 HTML < 100KB",
-            "cat": "performance",
-            "pass": 0,
             "applicable": 803
           },
           "perf_redirect": {

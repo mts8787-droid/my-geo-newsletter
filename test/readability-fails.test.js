@@ -142,19 +142,32 @@ describe('applyScoringOverride — #4 Cache-Control', () => {
   })
 })
 
-describe('applyScoringOverride — #8 Render Blocking 채점 제외', () => {
-  it('na:true 로 바뀌어 분모(applicable)에서도 빠진다', () => {
+describe('applyScoringOverride — #5 HTML Size / #8 Render Blocking 채점 제외', () => {
+  it('둘 다 na:true 로 바뀌어 분모(applicable)에서도 빠진다', () => {
     const s = perfScore({
+      perf_html_size: { pass: false, value: '1360.1KB', hint: '1360.1KB — 100.0KB 미만 필요' },
       perf_render_block: { pass: false, value: '3개', hint: 'head 내 blocking script 3개' },
       perf_compression: { pass: true, value: 'gzip', hint: null },
     })
     applyScoringOverride(s)
+    expect(s.breakdown.performance.items.perf_html_size.na).toBe(true)
     expect(s.breakdown.performance.items.perf_render_block.na).toBe(true)
     expect(s.breakdown.performance.total).toBe(1)     // compression 만 적용
     expect(s.breakdown.performance.passed).toBe(1)
     expect(s.breakdown.performance.points).toBe(100)
     // collectChecks 도 na 항목을 제외 → 통과율 표/Raw 데이터에서 사라짐
     expect(collectChecks(s, {}).map(c => c.id)).toEqual(['perf_compression'])
+  })
+
+  it('제외 체크가 PASS 였어도 분자에 들어가지 않는다 (통과 상태와 무관하게 제외)', () => {
+    const s = perfScore({
+      perf_html_size: { pass: true, value: '73.7KB', hint: null },
+      perf_compression: { pass: false, value: '(none)', hint: '압축 없음' },
+    })
+    applyScoringOverride(s)
+    expect(s.breakdown.performance.passed).toBe(0)
+    expect(s.breakdown.performance.total).toBe(1)
+    expect(s.breakdown.performance.points).toBe(0)
   })
 })
 
@@ -165,7 +178,8 @@ describe('applyScoringOverride — 총점 재계산', () => {
       perf_cache_control: { pass: false, value: 'max-age=0, no-store', hint: '' },  // → PASS
       perf_render_block: { pass: false, value: '2개', hint: '' },      // → 제외
       perf_compression: { pass: true, value: 'gzip', hint: null },     // PASS
-      perf_html_size: { pass: false, value: '1360.1KB', hint: '' },    // FAIL 유지
+      perf_html_size: { pass: false, value: '1360.1KB', hint: '' },    // → 채점 제외
+      perf_redirect: { pass: false, value: '3회 리다이렉트', hint: '' }, // FAIL 유지
     })
     s.breakdown.seo.items = { seo_h1: { pass: true }, seo_title: { pass: false } }
     applyScoringOverride(s)

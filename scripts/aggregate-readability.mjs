@@ -157,10 +157,15 @@ function resolvePt(pt, url) {
 //                       원본 룰은 no-cache/no-store 가 섞여 있으면 max-age 값과 무관하게
 //                       즉시 FAIL 처리 → lg.com 의 `max-age=0, no-cache, no-store` 3천여 건이
 //                       전부 FAIL 로 잡혀 통과 수가 비정상적으로 적었다.
+//   #5 perf_html_size      채점 대상에서 제외. 측정 자체는 정확하나(응답 본문 바이트, 압축 해제 기준)
+//                       lg.com HTML 중앙값이 1,536KB 라 100KB 기준의 실질 통과율이 0.0%(1/5438).
+//                       게다가 비-200 제외 전에는 통과 90건 중 89건이 본문 0자인 빈 404 셸이라
+//                       "가벼운 좋은 페이지"가 아니라 "깨진 페이지"를 통과로 잡던 반전 지표였다.
+//                       기준 상향/지표 재정의는 별도 논의 (렌더 DOM 기준 측정은 audit 쪽 작업).
 //   #8 perf_render_block  채점 대상에서 제외 (분모·분자 모두). na 처리라 통과율 표에서도 사라짐.
 const TTFB_MAX_MS = 1800
 // 채점 제외 체크 — na:true 로 표시해 applicable(분모)에서도 빠진다 (scoring_config 의 enabled:false 와 동등)
-const DISABLED_CHECKS = { perf_render_block: 1 }
+const DISABLED_CHECKS = { perf_html_size: 1, perf_render_block: 1 }
 // 기준이 바뀐 체크의 표시 라벨 (원본 label 은 옛 임계값 문구를 담고 있음)
 const CHECK_LABEL_OVERRIDE = { perf_ttfb: `#1 TTFB < ${TTFB_MAX_MS}ms` }
 // 등급 임계값 — my-geo-audit/scoring_config.json 의 grade 와 동일 (good 80 / need_improvement 60)
