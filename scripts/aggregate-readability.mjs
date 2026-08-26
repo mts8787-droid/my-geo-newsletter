@@ -129,7 +129,7 @@ const CATEGORY_LABEL = {
   seo: 'Basic SEO',
   geo_schema: '스키마마크업',
   geo_content: '고인용 콘텐츠',
-  geo_platform: 'AI 클로러빌리티',
+  geo_platform: 'AI Crawlability',
 }
 
 // ai_readiness 를 3분류로 가르는 기준 — 기존 render-readability 의 서브카드 분류와 동일.

@@ -1,6 +1,6 @@
 {
   "date": "2026-06-14",
-  "generatedAt": "2026-08-26T13:20:21.077Z",
+  "generatedAt": "2026-08-26T13:23:07.207Z",
   "source": "run_results",
   "categoryLabels": {
     "performance": "사이트속도",
@@ -8,7 +8,7 @@
     "seo": "Basic SEO",
     "geo_schema": "스키마마크업",
     "geo_content": "고인용 콘텐츠",
-    "geo_platform": "AI 클로러빌리티"
+    "geo_platform": "AI Crawlability"
   },
   "countries": {
     "au": {
