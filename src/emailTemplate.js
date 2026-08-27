@@ -595,7 +595,7 @@ function productCardHtml(p, globalMax, globalMin, lang = 'ko', opts = {}) {
   // 기간 표기 (주간/월간) + WoW/MoM 델타.
   // 탭 모드(showTrendTabs)에서는 두 벌 렌더 → 기존 switchTrend() 가 .trend-weekly/.trend-monthly 토글
   const _scoreNum = s => `<span style="font-size:22px;font-weight:900;color:#1A1A1A;">${s.score.toFixed(1)}</span><span style="font-size:12px;color:#94A3B8;">%</span>`
-  const _deltaDivStyle = 'clear:both;margin-top:2px;font-size:10px;color:#94A3B8;font-family:' + EM_FONT + ';text-align:right;'
+  const _deltaDivStyle = 'clear:both;margin-top:2px;font-size:10px;color:#94A3B8;font-family:' + EM_FONT + ';text-align:left;'
   const scoreBlock = showTrendTabs
     ? `<span class="trend-weekly">${_scoreNum(wStat)}</span><span class="trend-monthly" style="display:none;">${_scoreNum(mStat)}</span>`
     : _scoreNum(activeStat)
@@ -621,7 +621,6 @@ function productCardHtml(p, globalMax, globalMin, lang = 'ko', opts = {}) {
                   <td style="vertical-align:middle;white-space:nowrap;"><span style="font-size:13px;font-weight:700;color:${ratioColor};font-family:${EM_FONT};letter-spacing:-1px;">${escapeHtml(p.compName || 'Samsung')} ${compScoreStr(activeComp)} · ${ratioX(p.score, activeComp)}${ratioDelta}</span></td>
                   <td style="vertical-align:middle;white-space:nowrap;padding-left:4px;"><span style="display:inline-block;background:${st.bg};color:${st.color};border:1px solid ${st.border};border-radius:6px;padding:0px 5px;font-size:10px;font-weight:700;line-height:16px;font-family:${EM_FONT};">${st.label}</span></td>
                 </tr></table>
-                ${deltaBlock}
               </td>
             </tr>
           </table>
@@ -634,6 +633,7 @@ function productCardHtml(p, globalMax, globalMin, lang = 'ko', opts = {}) {
               <td style="vertical-align:middle;">
                 ${scoreBlock}
                 &nbsp;${badgeBlock}
+                ${deltaBlock}
               </td>
               <td align="right" style="vertical-align:middle;">
                 ${trendCell}
@@ -658,7 +658,7 @@ function productCardV2Html(p, lang = 'ko', opts = {}) {
   const curRatio = p.compRatio || Math.round(p.vsComp > 0 ? (p.score / p.vsComp) * 100 : 100)
   const ratioColor = curRatio >= 100 ? '#15803D' : curRatio >= 80 ? '#E8910C' : '#BE123C'
   const _scoreNum = s => `<span style="font-size:18px;font-weight:900;color:#1A1A1A;font-family:${EM_FONT};">${s.score.toFixed(1)}<span style="font-size:11px;color:#94A3B8;">%</span></span>`
-  const _deltaDivStyle = 'clear:both;font-size:10px;color:#94A3B8;font-family:' + EM_FONT + ';text-align:right;margin-top:1px;'
+  const _deltaDivStyle = 'clear:both;font-size:10px;color:#94A3B8;font-family:' + EM_FONT + ';text-align:left;margin-top:1px;'
   const scoreBlock = showTrendTabs
     ? `<span class="trend-weekly">${_scoreNum(wStat)}</span><span class="trend-monthly" style="display:none;">${_scoreNum(mStat)}</span>`
     : _scoreNum(activeStat)
@@ -738,12 +738,13 @@ function productCardV2Html(p, lang = 'ko', opts = {}) {
               <td style="vertical-align:middle;white-space:nowrap;">
                 <span style="font-size:14px;font-weight:900;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:${lang === 'en' ? '-0.9px' : '-0.5px'};">${escapeHtml(prodName)}</span>
                 ${scoreBlock}&nbsp;${badgeBlock}
+                ${deltaBlock}
               </td>
               <td align="right" style="vertical-align:middle;">
                 <table border="0" cellpadding="0" cellspacing="0" align="right" style="float:right;"><tr>
                   <td style="vertical-align:middle;white-space:nowrap;"><span style="font-size:13px;font-weight:700;color:${ratioColor};font-family:${EM_FONT};letter-spacing:-1px;">${escapeHtml(compShort(p.compName || 'Samsung') || 'SS')} ${compScoreStr(p.vsComp)} · ${ratioX(p.score, p.vsComp)}</span></td>
                   <td style="vertical-align:middle;white-space:nowrap;padding-left:4px;"><span style="display:inline-block;background:${st.bg};color:${st.color};border:1px solid ${st.border};border-radius:5px;padding:0px 4px;font-size:10px;font-weight:700;line-height:15px;font-family:${EM_FONT};">${st.label}</span></td>
-                </tr></table>${deltaBlock}
+                </tr></table>
               </td>
             </tr>
           </table>
@@ -791,7 +792,7 @@ function productCardV3Html(p, lang = 'ko', opts = {}) {
   const mStat = periodStats(p, 'monthly')
   const activeStat = useMonthly ? mStat : wStat
   const _scoreNum = s => `<span style="font-size:18px;font-weight:900;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-1.8px;">${s.score.toFixed(1)}<span style="font-size:11px;color:#94A3B8;letter-spacing:-1.1px;">%</span></span>`
-  const _deltaDivStyle = 'clear:both;font-size:10px;color:#94A3B8;font-family:' + EM_FONT + ';text-align:right;margin-top:1px;'
+  const _deltaDivStyle = 'clear:both;font-size:10px;color:#94A3B8;font-family:' + EM_FONT + ';text-align:left;margin-top:1px;'
   const scoreBlock = showTrendTabs
     ? `<span class="trend-weekly">${_scoreNum(wStat)}</span><span class="trend-monthly" style="display:none;">${_scoreNum(mStat)}</span>`
     : _scoreNum(activeStat)
@@ -872,12 +873,13 @@ function productCardV3Html(p, lang = 'ko', opts = {}) {
               <td style="vertical-align:middle;white-space:nowrap;">
                 <span style="font-size:14px;font-weight:900;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:${lang === 'en' ? '-0.9px' : '-0.5px'};">${escapeHtml(prodName)}</span>
                 ${scoreBlock}&nbsp;${badgeBlock}
+                ${deltaBlock}
               </td>
               <td align="right" style="vertical-align:middle;">
                 <table border="0" cellpadding="0" cellspacing="0" align="right" style="float:right;"><tr>
                   <td style="vertical-align:middle;white-space:nowrap;"><span style="font-size:13px;font-weight:700;color:${ratioColor};font-family:${EM_FONT};letter-spacing:-1.3px;">${compShort(mainCompName)} ${compScoreStr(mainCompScore)} · ${ratioX(p.score, mainCompScore)}</span></td>
                   <td style="vertical-align:middle;white-space:nowrap;padding-left:4px;"><span style="display:inline-block;background:${st.bg};color:${st.color};border:1px solid ${st.border};border-radius:5px;padding:0px 4px;font-size:10px;font-weight:700;line-height:15px;font-family:${EM_FONT};">${st.label}</span></td>
-                </tr></table>${deltaBlock}
+                </tr></table>
               </td>
             </tr>
           </table>
