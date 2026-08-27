@@ -3282,6 +3282,63 @@ function rdFootnotes(lines, field) {
 }
 
 
+
+// 스키마마크업 경쟁사 비교 — 항목별 LG.com / SS.com 세로 2열 막대 (독일 기준).
+// 이메일 호환: SVG·flex 미사용, <td height> 로 막대 높이를 표현하는 table-layout.
+// 값은 meta.rd_schemaCompare 로 덮어쓸 수 있다 (기본값은 사용자 제공 표).
+const RD_SCHEMA_COMPARE = [
+  { name: 'FAQ Page', lg: 18, ss: 33 },
+  { name: 'Product', lg: 0, ss: 64 },
+  { name: 'VideoObject', lg: 0, ss: 3 },
+  { name: 'ImageObject', lg: 0, ss: 0 },
+  { name: 'Article', lg: 0, ss: 0 },
+  { name: 'HowTo', lg: 0, ss: 0 },
+  { name: 'CollectionPage', lg: 58, ss: 0 },
+  { name: 'BreadcrumbList', lg: 88, ss: 73 },
+]
+const RD_LG_COLOR = '#CF0652'
+const RD_SS_COLOR = '#64748B'
+
+function rdSchemaCompareHtml(meta = {}, lang = 'ko') {
+  const rows = Array.isArray(meta.rd_schemaCompare) && meta.rd_schemaCompare.length
+    ? meta.rd_schemaCompare : RD_SCHEMA_COMPARE
+  const H = 84                                   // 막대 최대 높이(px)
+  const max = Math.max(...rows.map(r => Math.max(r.lg || 0, r.ss || 0)), 1)
+  const bar = (v, color) => {
+    const h = v > 0 ? Math.max(3, Math.round((v / max) * H)) : 0
+    // 0 은 막대 없이 바닥선만 — "측정했는데 0" 과 "막대 잘림" 을 구분
+    return `<table cellpadding="0" cellspacing="0" border="0" align="center"><tr>
+      <td align="center" style="font-size:9.5px;font-weight:800;color:${v > 0 ? color : '#CBD5E1'};line-height:1.2;padding-bottom:2px;font-family:${EM_FONT};">${v}</td>
+    </tr><tr>
+      <td width="16" height="${h}" style="background:${h ? color : 'transparent'};border-radius:2px 2px 0 0;font-size:0;line-height:0;">&nbsp;</td>
+    </tr></table>`
+  }
+  const cols = rows.map(r => `<td valign="bottom" align="center" style="padding:0 3px;">
+      <table cellpadding="0" cellspacing="0" border="0" align="center"><tr>
+        <td valign="bottom" style="padding-right:2px;">${bar(r.lg || 0, RD_LG_COLOR)}</td>
+        <td valign="bottom">${bar(r.ss || 0, RD_SS_COLOR)}</td>
+      </tr></table>
+      <div style="margin-top:5px;font-size:9px;color:#475569;line-height:1.3;letter-spacing:-0.3px;font-family:${EM_FONT};">${escapeHtml(r.name)}</div>
+    </td>`).join('')
+
+  const legend = `<table cellpadding="0" cellspacing="0" border="0" align="center"><tr>
+      <td width="9" height="9" style="background:${RD_LG_COLOR};border-radius:2px;font-size:0;line-height:0;">&nbsp;</td>
+      <td style="padding:0 12px 0 5px;font-size:10.5px;font-weight:700;color:#475569;font-family:${EM_FONT};">LG.com</td>
+      <td width="9" height="9" style="background:${RD_SS_COLOR};border-radius:2px;font-size:0;line-height:0;">&nbsp;</td>
+      <td style="padding-left:5px;font-size:10.5px;font-weight:700;color:#475569;font-family:${EM_FONT};">SS.com</td>
+    </tr></table>`
+
+  return `<table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FAFBFC;border:1px solid #E8EDF2;border-radius:10px;margin:2px 0 16px;">
+    <tr><td style="padding:12px 14px 10px;">
+      <table cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
+        <td style="font-size:11.5px;font-weight:800;color:#475569;font-family:${EM_FONT};">${lang === 'en' ? 'Schema adoption vs. competitor (Germany, %)' : '스키마 적용률 경쟁사 비교 (독일, %)'}</td>
+        <td align="right">${legend}</td>
+      </tr></table>
+      <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-top:10px;"><tr>${cols}</tr></table>
+    </td></tr>
+  </table>`
+}
+
 // 본 섹션의 기본 문안 — 사용자 제공 원문 그대로. meta 로 덮어쓸 수 있다.
 const RD_TEXT = {
   intro: 'Readability는 AI 관점에서의 가독성을 뜻하며, 웹페이지의 콘텐츠가 AI가 읽고 활용하기 좋은 상태인지 평가하는 지표입니다. ‘26년 7월부터 LG.com의 Readability 현황을 파악하기 위해 10개 전략 국가의 8개 주요 페이지 유형, 총 5,438개 페이지를 평가했습니다. Readability 점수는 전체 평가항목 중 기준을 충족한 항목의 비율(%)을 100점 기준으로 환산한 점수입니다. 평가는 사이트 성능, AI 웹접근성, Basic SEO 적합도, 스키마마크업, 고인용 콘텐츠, AI Crawlability의 6개 영역, 총 37개 체크리스트를 기준으로 진행했습니다.',
@@ -3361,7 +3418,8 @@ function readabilityHighlightHtml(rd, meta = {}, lang = 'ko', contentWidth = 848
     ['d4Title', 'd4', null],
   ].map(([tk, bk, notes]) => `
     <p${edRich('rd_' + tk)} style="margin:0 0 8px;font-size:13px;font-weight:800;color:${EM_RED};line-height:1.6;font-family:${EM_FONT};letter-spacing:-0.3px;">${escapeHtml(tx(tk))}</p>
-    ${rdPara(tx(bk), { gap: notes ? 6 : 20, field: 'rd_' + bk })}
+    ${rdPara(tx(bk), { gap: (notes || bk === 'd3') ? 6 : 20, field: 'rd_' + bk })}
+    ${bk === 'd3' ? rdSchemaCompareHtml(meta, lang) : ''}
     ${notes ? rdFootnotes(meta.rd_d1Notes || notes, 'rd_d1Notes') : ''}`).join('')
 
   // 외곽 카드 없이 콘텐츠만 반환 — 상위 Highlight 챕터 카드 안에 임베드된다.

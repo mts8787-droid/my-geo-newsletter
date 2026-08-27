@@ -521,7 +521,7 @@ export default function App() {
           progressMonth={progressMonth}
           setProgressMonth={setProgressMonth}
           progressDataMonth={extractMonthFromPeriod(metaKo.period) || `${new Date().getMonth() + 1}월`}
-          extra={{ unlaunchedMap, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, citTouchPointsByLlm, citDomainByLlm, citDomainByLlmTrend, dotcomByLlm }}
+          extra={{ unlaunchedMap, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, citTouchPointsByLlm, citDomainByLlm, citDomainByLlmTrend, dotcomByLlm, readability }}
           onSyncExtra={({ unlaunchedMap: ulm, citTouchPointsTrend: cptt, citTrendMonths: ctm, citDomainTrend: cdt, citDomainMonths: cdm, citTouchPointsByLlm: cptl, citDomainByLlm: cdl, citDomainByLlmTrend: cdlt, dotcomByLlm: dbl }) => {
             if (ulm) setUnlaunchedMap(ulm)
             if (cptt) setCitTouchPointsTrend(cptt)
