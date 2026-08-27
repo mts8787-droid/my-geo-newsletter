@@ -1,6 +1,6 @@
 {
   "date": "2026-07-31",
-  "generatedAt": "2026-08-27T02:09:19.123Z",
+  "generatedAt": "2026-08-27T04:26:11.278Z",
   "source": "run_results",
   "categoryLabels": {
     "performance": "사이트 성능",
@@ -16,15 +16,15 @@
       "runId": "39d08baa97d8",
       "urlCount": 685,
       "scoredCount": 685,
-      "avgScore": 79.5,
+      "avgScore": 78.8,
       "grades": {
-        "Need Improvement": 221,
-        "Good": 464
+        "Need Improvement": 390,
+        "Good": 295
       },
       "categories": {
         "performance": 99.6,
         "accessibility": 88.1,
-        "seo": 83.5,
+        "seo": 80.9,
         "geo_schema": 37.1,
         "geo_content": 42.4,
         "geo_platform": 100
@@ -115,13 +115,7 @@
           "applicable": 685
         },
         "seo_robots": {
-          "label": "#17 indexing 허용",
-          "cat": "seo",
-          "pass": 684,
-          "applicable": 685
-        },
-        "seo_robots_hdr": {
-          "label": "#17 X-Robots-Tag noindex 부재",
+          "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
           "cat": "seo",
           "pass": 685,
           "applicable": 685
@@ -281,11 +275,11 @@
         "newsroom": {
           "label": "뉴스룸/Press",
           "count": 100,
-          "avgScore": 78.4,
+          "avgScore": 77.8,
           "categories": {
             "performance": 98.6,
             "accessibility": 87.3,
-            "seo": 75,
+            "seo": 71.3,
             "geo_schema": 49.1,
             "geo_content": 39.4,
             "geo_platform": 100
@@ -376,13 +370,7 @@
               "applicable": 100
             },
             "seo_robots": {
-              "label": "#17 indexing 허용",
-              "cat": "seo",
-              "pass": 100,
-              "applicable": 100
-            },
-            "seo_robots_hdr": {
-              "label": "#17 X-Robots-Tag noindex 부재",
+              "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
               "pass": 100,
               "applicable": 100
@@ -542,11 +530,11 @@
         "microsite": {
           "label": "마이크로사이트/캠페인",
           "count": 100,
-          "avgScore": 80.3,
+          "avgScore": 80,
           "categories": {
             "performance": 99.8,
             "accessibility": 69.3,
-            "seo": 88,
+            "seo": 86,
             "geo_schema": 27.6,
             "geo_content": 73.8,
             "geo_platform": 100
@@ -637,13 +625,7 @@
               "applicable": 100
             },
             "seo_robots": {
-              "label": "#17 indexing 허용",
-              "cat": "seo",
-              "pass": 100,
-              "applicable": 100
-            },
-            "seo_robots_hdr": {
-              "label": "#17 X-Robots-Tag noindex 부재",
+              "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
               "pass": 100,
               "applicable": 100
@@ -803,11 +785,11 @@
         "buying_guide": {
           "label": "구매 가이드",
           "count": 17,
-          "avgScore": 74.9,
+          "avgScore": 74.1,
           "categories": {
             "performance": 100,
             "accessibility": 89.7,
-            "seo": 79.6,
+            "seo": 76.5,
             "geo_schema": 33.8,
             "geo_content": 30.6,
             "geo_platform": 100
@@ -898,13 +880,7 @@
               "applicable": 17
             },
             "seo_robots": {
-              "label": "#17 indexing 허용",
-              "cat": "seo",
-              "pass": 17,
-              "applicable": 17
-            },
-            "seo_robots_hdr": {
-              "label": "#17 X-Robots-Tag noindex 부재",
+              "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
               "pass": 17,
               "applicable": 17
@@ -1064,11 +1040,11 @@
         "lg_experience": {
           "label": "LG Experience",
           "count": 72,
-          "avgScore": 78.2,
+          "avgScore": 77.3,
           "categories": {
             "performance": 99.8,
             "accessibility": 99.3,
-            "seo": 87.6,
+            "seo": 85.6,
             "geo_schema": 33,
             "geo_content": 22.5,
             "geo_platform": 100
@@ -1159,13 +1135,7 @@
               "applicable": 72
             },
             "seo_robots": {
-              "label": "#17 indexing 허용",
-              "cat": "seo",
-              "pass": 72,
-              "applicable": 72
-            },
-            "seo_robots_hdr": {
-              "label": "#17 X-Robots-Tag noindex 부재",
+              "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
               "pass": 72,
               "applicable": 72
@@ -1325,11 +1295,11 @@
         "pdp": {
           "label": "제품 상세 (PDP)",
           "count": 99,
-          "avgScore": 79.5,
+          "avgScore": 78.5,
           "categories": {
             "performance": 99.7,
             "accessibility": 73.7,
-            "seo": 88,
+            "seo": 86,
             "geo_schema": 19.8,
             "geo_content": 74.2,
             "geo_platform": 100
@@ -1420,13 +1390,7 @@
               "applicable": 99
             },
             "seo_robots": {
-              "label": "#17 indexing 허용",
-              "cat": "seo",
-              "pass": 99,
-              "applicable": 99
-            },
-            "seo_robots_hdr": {
-              "label": "#17 X-Robots-Tag noindex 부재",
+              "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
               "pass": 99,
               "applicable": 99
@@ -1586,11 +1550,11 @@
         "plp": {
           "label": "제품 카테고리 (PLP)",
           "count": 98,
-          "avgScore": 79.4,
+          "avgScore": 78.9,
           "categories": {
             "performance": 100,
             "accessibility": 90.6,
-            "seo": 83.9,
+            "seo": 81.5,
             "geo_schema": 47.2,
             "geo_content": 31.9,
             "geo_platform": 100
@@ -1681,13 +1645,7 @@
               "applicable": 98
             },
             "seo_robots": {
-              "label": "#17 indexing 허용",
-              "cat": "seo",
-              "pass": 97,
-              "applicable": 98
-            },
-            "seo_robots_hdr": {
-              "label": "#17 X-Robots-Tag noindex 부재",
+              "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
               "pass": 98,
               "applicable": 98
@@ -1847,11 +1805,11 @@
         "support": {
           "label": "지원/Support",
           "count": 99,
-          "avgScore": 80.2,
+          "avgScore": 79.3,
           "categories": {
             "performance": 99.7,
             "accessibility": 99.7,
-            "seo": 75.8,
+            "seo": 71.9,
             "geo_schema": 49.8,
             "geo_content": 26.3,
             "geo_platform": 100
@@ -1942,13 +1900,7 @@
               "applicable": 99
             },
             "seo_robots": {
-              "label": "#17 indexing 허용",
-              "cat": "seo",
-              "pass": 99,
-              "applicable": 99
-            },
-            "seo_robots_hdr": {
-              "label": "#17 X-Robots-Tag noindex 부재",
+              "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
               "pass": 99,
               "applicable": 99
@@ -2108,11 +2060,11 @@
         "support_troubleshoot": {
           "label": "지원 - 트러블슈팅",
           "count": 100,
-          "avgScore": 80.9,
+          "avgScore": 79.9,
           "categories": {
             "performance": 99.8,
             "accessibility": 100,
-            "seo": 87.7,
+            "seo": 85.7,
             "geo_schema": 33,
             "geo_content": 25,
             "geo_platform": 100
@@ -2203,13 +2155,7 @@
               "applicable": 100
             },
             "seo_robots": {
-              "label": "#17 indexing 허용",
-              "cat": "seo",
-              "pass": 100,
-              "applicable": 100
-            },
-            "seo_robots_hdr": {
-              "label": "#17 X-Robots-Tag noindex 부재",
+              "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
               "pass": 100,
               "applicable": 100
@@ -2416,15 +2362,15 @@
       "runId": "9c23bc993a49",
       "urlCount": 518,
       "scoredCount": 518,
-      "avgScore": 80.2,
+      "avgScore": 79.6,
       "grades": {
-        "Need Improvement": 164,
-        "Good": 354
+        "Need Improvement": 257,
+        "Good": 261
       },
       "categories": {
         "performance": 97.8,
         "accessibility": 94.2,
-        "seo": 94.6,
+        "seo": 93.9,
         "geo_schema": 38.7,
         "geo_content": 28.7,
         "geo_platform": 97.8
@@ -2515,13 +2461,7 @@
           "applicable": 518
         },
         "seo_robots": {
-          "label": "#17 indexing 허용",
-          "cat": "seo",
-          "pass": 511,
-          "applicable": 518
-        },
-        "seo_robots_hdr": {
-          "label": "#17 X-Robots-Tag noindex 부재",
+          "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
           "cat": "seo",
           "pass": 518,
           "applicable": 518
@@ -2681,11 +2621,11 @@
         "newsroom": {
           "label": "뉴스룸/Press",
           "count": 100,
-          "avgScore": 82.7,
+          "avgScore": 82,
           "categories": {
             "performance": 96.1,
             "accessibility": 100,
-            "seo": 96,
+            "seo": 95.4,
             "geo_schema": 49.8,
             "geo_content": 23.6,
             "geo_platform": 100
@@ -2776,13 +2716,7 @@
               "applicable": 100
             },
             "seo_robots": {
-              "label": "#17 indexing 허용",
-              "cat": "seo",
-              "pass": 100,
-              "applicable": 100
-            },
-            "seo_robots_hdr": {
-              "label": "#17 X-Robots-Tag noindex 부재",
+              "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
               "pass": 100,
               "applicable": 100
@@ -2942,11 +2876,11 @@
         "microsite": {
           "label": "마이크로사이트/캠페인",
           "count": 15,
-          "avgScore": 72.1,
+          "avgScore": 71.1,
           "categories": {
             "performance": 96.6,
             "accessibility": 96.7,
-            "seo": 73.1,
+            "seo": 69.4,
             "geo_schema": 23.7,
             "geo_content": 16.7,
             "geo_platform": 100
@@ -3037,13 +2971,7 @@
               "applicable": 15
             },
             "seo_robots": {
-              "label": "#17 indexing 허용",
-              "cat": "seo",
-              "pass": 15,
-              "applicable": 15
-            },
-            "seo_robots_hdr": {
-              "label": "#17 X-Robots-Tag noindex 부재",
+              "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
               "pass": 15,
               "applicable": 15
@@ -3203,11 +3131,11 @@
         "buying_guide": {
           "label": "구매 가이드",
           "count": 25,
-          "avgScore": 75.8,
+          "avgScore": 75,
           "categories": {
             "performance": 93.9,
             "accessibility": 100,
-            "seo": 94.7,
+            "seo": 93.8,
             "geo_schema": 29.6,
             "geo_content": 17.6,
             "geo_platform": 100
@@ -3298,13 +3226,7 @@
               "applicable": 25
             },
             "seo_robots": {
-              "label": "#17 indexing 허용",
-              "cat": "seo",
-              "pass": 25,
-              "applicable": 25
-            },
-            "seo_robots_hdr": {
-              "label": "#17 X-Robots-Tag noindex 부재",
+              "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
               "pass": 25,
               "applicable": 25
@@ -3464,11 +3386,11 @@
         "lg_experience": {
           "label": "LG Experience",
           "count": 99,
-          "avgScore": 77.8,
+          "avgScore": 77.1,
           "categories": {
             "performance": 96.7,
             "accessibility": 99.5,
-            "seo": 98.1,
+            "seo": 97.9,
             "geo_schema": 33,
             "geo_content": 6.3,
             "geo_platform": 100
@@ -3559,13 +3481,7 @@
               "applicable": 99
             },
             "seo_robots": {
-              "label": "#17 indexing 허용",
-              "cat": "seo",
-              "pass": 99,
-              "applicable": 99
-            },
-            "seo_robots_hdr": {
-              "label": "#17 X-Robots-Tag noindex 부재",
+              "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
               "pass": 99,
               "applicable": 99
@@ -3725,11 +3641,11 @@
         "pdp": {
           "label": "제품 상세 (PDP)",
           "count": 93,
-          "avgScore": 79.6,
+          "avgScore": 78.6,
           "categories": {
             "performance": 99.3,
             "accessibility": 74.7,
-            "seo": 99.6,
+            "seo": 99.8,
             "geo_schema": 20,
             "geo_content": 73.7,
             "geo_platform": 88
@@ -3820,13 +3736,7 @@
               "applicable": 93
             },
             "seo_robots": {
-              "label": "#17 indexing 허용",
-              "cat": "seo",
-              "pass": 91,
-              "applicable": 93
-            },
-            "seo_robots_hdr": {
-              "label": "#17 X-Robots-Tag noindex 부재",
+              "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
               "pass": 93,
               "applicable": 93
@@ -3986,11 +3896,11 @@
         "plp": {
           "label": "제품 카테고리 (PLP)",
           "count": 95,
-          "avgScore": 81.4,
+          "avgScore": 81.2,
           "categories": {
             "performance": 99.1,
             "accessibility": 96.6,
-            "seo": 94,
+            "seo": 93.8,
             "geo_schema": 45.9,
             "geo_content": 24.5,
             "geo_platform": 100
@@ -4081,13 +3991,7 @@
               "applicable": 95
             },
             "seo_robots": {
-              "label": "#17 indexing 허용",
-              "cat": "seo",
-              "pass": 90,
-              "applicable": 95
-            },
-            "seo_robots_hdr": {
-              "label": "#17 X-Robots-Tag noindex 부재",
+              "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
               "pass": 95,
               "applicable": 95
@@ -4247,11 +4151,11 @@
         "support": {
           "label": "지원/Support",
           "count": 90,
-          "avgScore": 82.3,
+          "avgScore": 82.1,
           "categories": {
             "performance": 99.4,
             "accessibility": 97.5,
-            "seo": 88.4,
+            "seo": 86.4,
             "geo_schema": 49.6,
             "geo_content": 22.2,
             "geo_platform": 100
@@ -4342,13 +4246,7 @@
               "applicable": 90
             },
             "seo_robots": {
-              "label": "#17 indexing 허용",
-              "cat": "seo",
-              "pass": 90,
-              "applicable": 90
-            },
-            "seo_robots_hdr": {
-              "label": "#17 X-Robots-Tag noindex 부재",
+              "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
               "pass": 90,
               "applicable": 90
@@ -4508,11 +4406,11 @@
         "support_troubleshoot": {
           "label": "지원 - 트러블슈팅",
           "count": 1,
-          "avgScore": 71,
+          "avgScore": 70,
           "categories": {
             "performance": 100,
             "accessibility": 100,
-            "seo": 62,
+            "seo": 57,
             "geo_schema": 33,
             "geo_content": 25,
             "geo_platform": 83
@@ -4603,13 +4501,7 @@
               "applicable": 1
             },
             "seo_robots": {
-              "label": "#17 indexing 허용",
-              "cat": "seo",
-              "pass": 1,
-              "applicable": 1
-            },
-            "seo_robots_hdr": {
-              "label": "#17 X-Robots-Tag noindex 부재",
+              "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
               "pass": 1,
               "applicable": 1
@@ -4816,15 +4708,15 @@
       "runId": "53a6d6122257",
       "urlCount": 279,
       "scoredCount": 279,
-      "avgScore": 78.2,
+      "avgScore": 77.4,
       "grades": {
-        "Need Improvement": 142,
-        "Good": 137
+        "Need Improvement": 196,
+        "Good": 83
       },
       "categories": {
         "performance": 93.4,
         "accessibility": 86.2,
-        "seo": 90.2,
+        "seo": 88.7,
         "geo_schema": 35.3,
         "geo_content": 41.5,
         "geo_platform": 96
@@ -4915,13 +4807,7 @@
           "applicable": 279
         },
         "seo_robots": {
-          "label": "#17 indexing 허용",
-          "cat": "seo",
-          "pass": 279,
-          "applicable": 279
-        },
-        "seo_robots_hdr": {
-          "label": "#17 X-Robots-Tag noindex 부재",
+          "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
           "cat": "seo",
           "pass": 279,
           "applicable": 279
@@ -5081,11 +4967,11 @@
         "buying_guide": {
           "label": "구매 가이드",
           "count": 22,
-          "avgScore": 73.8,
+          "avgScore": 72.9,
           "categories": {
             "performance": 91.5,
             "accessibility": 97.7,
-            "seo": 90,
+            "seo": 88.4,
             "geo_schema": 24.8,
             "geo_content": 20,
             "geo_platform": 100
@@ -5176,13 +5062,7 @@
               "applicable": 22
             },
             "seo_robots": {
-              "label": "#17 indexing 허용",
-              "cat": "seo",
-              "pass": 22,
-              "applicable": 22
-            },
-            "seo_robots_hdr": {
-              "label": "#17 X-Robots-Tag noindex 부재",
+              "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
               "pass": 22,
               "applicable": 22
@@ -5342,11 +5222,11 @@
         "newsroom": {
           "label": "뉴스룸/Press",
           "count": 2,
-          "avgScore": 79,
+          "avgScore": 78.5,
           "categories": {
             "performance": 91.5,
             "accessibility": 100,
-            "seo": 75,
+            "seo": 71,
             "geo_schema": 50,
             "geo_content": 40,
             "geo_platform": 100
@@ -5437,13 +5317,7 @@
               "applicable": 2
             },
             "seo_robots": {
-              "label": "#17 indexing 허용",
-              "cat": "seo",
-              "pass": 2,
-              "applicable": 2
-            },
-            "seo_robots_hdr": {
-              "label": "#17 X-Robots-Tag noindex 부재",
+              "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
               "pass": 2,
               "applicable": 2
@@ -5603,11 +5477,11 @@
         "microsite": {
           "label": "마이크로사이트/캠페인",
           "count": 6,
-          "avgScore": 82,
+          "avgScore": 81.5,
           "categories": {
             "performance": 91.5,
             "accessibility": 79.2,
-            "seo": 98,
+            "seo": 97.7,
             "geo_schema": 33.3,
             "geo_content": 66.7,
             "geo_platform": 100
@@ -5698,13 +5572,7 @@
               "applicable": 6
             },
             "seo_robots": {
-              "label": "#17 indexing 허용",
-              "cat": "seo",
-              "pass": 6,
-              "applicable": 6
-            },
-            "seo_robots_hdr": {
-              "label": "#17 X-Robots-Tag noindex 부재",
+              "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
               "pass": 6,
               "applicable": 6
@@ -5864,11 +5732,11 @@
         "lg_experience": {
           "label": "LG Experience",
           "count": 6,
-          "avgScore": 81.5,
+          "avgScore": 81.3,
           "categories": {
             "performance": 100,
             "accessibility": 95.8,
-            "seo": 98,
+            "seo": 97.7,
             "geo_schema": 33,
             "geo_content": 30,
             "geo_platform": 100
@@ -5959,13 +5827,7 @@
               "applicable": 6
             },
             "seo_robots": {
-              "label": "#17 indexing 허용",
-              "cat": "seo",
-              "pass": 6,
-              "applicable": 6
-            },
-            "seo_robots_hdr": {
-              "label": "#17 X-Robots-Tag noindex 부재",
+              "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
               "pass": 6,
               "applicable": 6
@@ -6125,11 +5987,11 @@
         "pdp": {
           "label": "제품 상세 (PDP)",
           "count": 85,
-          "avgScore": 77.9,
+          "avgScore": 77,
           "categories": {
             "performance": 92.6,
             "accessibility": 75,
-            "seo": 99.3,
+            "seo": 99.2,
             "geo_schema": 20.5,
             "geo_content": 71.8,
             "geo_platform": 87.2
@@ -6220,13 +6082,7 @@
               "applicable": 85
             },
             "seo_robots": {
-              "label": "#17 indexing 허용",
-              "cat": "seo",
-              "pass": 85,
-              "applicable": 85
-            },
-            "seo_robots_hdr": {
-              "label": "#17 X-Robots-Tag noindex 부재",
+              "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
               "pass": 85,
               "applicable": 85
@@ -6386,11 +6242,11 @@
         "plp": {
           "label": "제품 카테고리 (PLP)",
           "count": 84,
-          "avgScore": 78.3,
+          "avgScore": 77.8,
           "categories": {
             "performance": 94.1,
             "accessibility": 89.6,
-            "seo": 89.9,
+            "seo": 88.4,
             "geo_schema": 40.8,
             "geo_content": 26.5,
             "geo_platform": 100
@@ -6481,13 +6337,7 @@
               "applicable": 84
             },
             "seo_robots": {
-              "label": "#17 indexing 허용",
-              "cat": "seo",
-              "pass": 84,
-              "applicable": 84
-            },
-            "seo_robots_hdr": {
-              "label": "#17 X-Robots-Tag noindex 부재",
+              "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
               "pass": 84,
               "applicable": 84
@@ -6647,11 +6497,11 @@
         "support": {
           "label": "지원/Support",
           "count": 72,
-          "avgScore": 78.9,
+          "avgScore": 78.2,
           "categories": {
             "performance": 93.4,
             "accessibility": 91,
-            "seo": 78.8,
+            "seo": 75.7,
             "geo_schema": 49.5,
             "geo_content": 29.2,
             "geo_platform": 100
@@ -6742,13 +6592,7 @@
               "applicable": 72
             },
             "seo_robots": {
-              "label": "#17 indexing 허용",
-              "cat": "seo",
-              "pass": 72,
-              "applicable": 72
-            },
-            "seo_robots_hdr": {
-              "label": "#17 X-Robots-Tag noindex 부재",
+              "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
               "pass": 72,
               "applicable": 72
@@ -6908,11 +6752,11 @@
         "support_troubleshoot": {
           "label": "지원 - 트러블슈팅",
           "count": 2,
-          "avgScore": 79,
+          "avgScore": 78.5,
           "categories": {
             "performance": 100,
             "accessibility": 100,
-            "seo": 94,
+            "seo": 93,
             "geo_schema": 33,
             "geo_content": 25,
             "geo_platform": 83
@@ -7003,13 +6847,7 @@
               "applicable": 2
             },
             "seo_robots": {
-              "label": "#17 indexing 허용",
-              "cat": "seo",
-              "pass": 2,
-              "applicable": 2
-            },
-            "seo_robots_hdr": {
-              "label": "#17 X-Robots-Tag noindex 부재",
+              "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
               "pass": 2,
               "applicable": 2
@@ -7216,15 +7054,16 @@
       "runId": "2c9b139f2e68",
       "urlCount": 609,
       "scoredCount": 609,
-      "avgScore": 80.4,
+      "avgScore": 79.6,
       "grades": {
-        "Good": 478,
-        "Need Improvement": 131
+        "Good": 457,
+        "Need Improvement": 151,
+        "Poor": 1
       },
       "categories": {
         "performance": 97.2,
         "accessibility": 88.7,
-        "seo": 95.4,
+        "seo": 94.7,
         "geo_schema": 33.2,
         "geo_content": 34.1,
         "geo_platform": 97.2
@@ -7315,13 +7154,7 @@
           "applicable": 609
         },
         "seo_robots": {
-          "label": "#17 indexing 허용",
-          "cat": "seo",
-          "pass": 609,
-          "applicable": 609
-        },
-        "seo_robots_hdr": {
-          "label": "#17 X-Robots-Tag noindex 부재",
+          "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
           "cat": "seo",
           "pass": 609,
           "applicable": 609
@@ -7481,11 +7314,11 @@
         "newsroom": {
           "label": "뉴스룸/Press",
           "count": 100,
-          "avgScore": 81,
+          "avgScore": 80,
           "categories": {
             "performance": 100,
             "accessibility": 95.3,
-            "seo": 77.6,
+            "seo": 74,
             "geo_schema": 50,
             "geo_content": 40,
             "geo_platform": 100
@@ -7576,13 +7409,7 @@
               "applicable": 100
             },
             "seo_robots": {
-              "label": "#17 indexing 허용",
-              "cat": "seo",
-              "pass": 100,
-              "applicable": 100
-            },
-            "seo_robots_hdr": {
-              "label": "#17 X-Robots-Tag noindex 부재",
+              "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
               "pass": 100,
               "applicable": 100
@@ -7742,11 +7569,11 @@
         "microsite": {
           "label": "마이크로사이트/캠페인",
           "count": 7,
-          "avgScore": 81.3,
+          "avgScore": 80.4,
           "categories": {
             "performance": 97.6,
             "accessibility": 100,
-            "seo": 93.1,
+            "seo": 92,
             "geo_schema": 35,
             "geo_content": 39.3,
             "geo_platform": 100
@@ -7837,13 +7664,7 @@
               "applicable": 7
             },
             "seo_robots": {
-              "label": "#17 indexing 허용",
-              "cat": "seo",
-              "pass": 7,
-              "applicable": 7
-            },
-            "seo_robots_hdr": {
-              "label": "#17 X-Robots-Tag noindex 부재",
+              "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
               "pass": 7,
               "applicable": 7
@@ -8003,11 +7824,11 @@
         "buying_guide": {
           "label": "구매 가이드",
           "count": 20,
-          "avgScore": 77,
+          "avgScore": 76.3,
           "categories": {
             "performance": 100,
             "accessibility": 100,
-            "seo": 90.8,
+            "seo": 89.3,
             "geo_schema": 28,
             "geo_content": 25,
             "geo_platform": 100
@@ -8098,13 +7919,7 @@
               "applicable": 20
             },
             "seo_robots": {
-              "label": "#17 indexing 허용",
-              "cat": "seo",
-              "pass": 20,
-              "applicable": 20
-            },
-            "seo_robots_hdr": {
-              "label": "#17 X-Robots-Tag noindex 부재",
+              "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
               "pass": 20,
               "applicable": 20
@@ -8264,7 +8079,7 @@
         "lg_experience": {
           "label": "LG Experience",
           "count": 94,
-          "avgScore": 69.4,
+          "avgScore": 68.4,
           "categories": {
             "performance": 83,
             "accessibility": 74.7,
@@ -8359,13 +8174,7 @@
               "applicable": 94
             },
             "seo_robots": {
-              "label": "#17 indexing 허용",
-              "cat": "seo",
-              "pass": 94,
-              "applicable": 94
-            },
-            "seo_robots_hdr": {
-              "label": "#17 X-Robots-Tag noindex 부재",
+              "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
               "pass": 94,
               "applicable": 94
@@ -8525,11 +8334,11 @@
         "pdp": {
           "label": "제품 상세 (PDP)",
           "count": 90,
-          "avgScore": 82.2,
+          "avgScore": 81.3,
           "categories": {
             "performance": 99.4,
             "accessibility": 67.5,
-            "seo": 99.9,
+            "seo": 99.8,
             "geo_schema": 22.7,
             "geo_content": 75,
             "geo_platform": 100
@@ -8620,13 +8429,7 @@
               "applicable": 90
             },
             "seo_robots": {
-              "label": "#17 indexing 허용",
-              "cat": "seo",
-              "pass": 90,
-              "applicable": 90
-            },
-            "seo_robots_hdr": {
-              "label": "#17 X-Robots-Tag noindex 부재",
+              "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
               "pass": 90,
               "applicable": 90
@@ -8786,11 +8589,11 @@
         "plp": {
           "label": "제품 카테고리 (PLP)",
           "count": 98,
-          "avgScore": 82.6,
+          "avgScore": 82.3,
           "categories": {
             "performance": 99.7,
             "accessibility": 88.5,
-            "seo": 98.5,
+            "seo": 98.3,
             "geo_schema": 41.6,
             "geo_content": 37.2,
             "geo_platform": 99.8
@@ -8881,13 +8684,7 @@
               "applicable": 98
             },
             "seo_robots": {
-              "label": "#17 indexing 허용",
-              "cat": "seo",
-              "pass": 98,
-              "applicable": 98
-            },
-            "seo_robots_hdr": {
-              "label": "#17 X-Robots-Tag noindex 부재",
+              "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
               "pass": 98,
               "applicable": 98
@@ -9047,11 +8844,11 @@
         "support": {
           "label": "지원/Support",
           "count": 100,
-          "avgScore": 86.6,
+          "avgScore": 85.7,
           "categories": {
             "performance": 99.8,
             "accessibility": 100,
-            "seo": 98.7,
+            "seo": 98.4,
             "geo_schema": 50,
             "geo_content": 25.5,
             "geo_platform": 100
@@ -9142,13 +8939,7 @@
               "applicable": 100
             },
             "seo_robots": {
-              "label": "#17 indexing 허용",
-              "cat": "seo",
-              "pass": 100,
-              "applicable": 100
-            },
-            "seo_robots_hdr": {
-              "label": "#17 X-Robots-Tag noindex 부재",
+              "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
               "pass": 100,
               "applicable": 100
@@ -9308,7 +9099,7 @@
         "support_troubleshoot": {
           "label": "지원 - 트러블슈팅",
           "count": 100,
-          "avgScore": 81,
+          "avgScore": 80,
           "categories": {
             "performance": 100,
             "accessibility": 100,
@@ -9403,13 +9194,7 @@
               "applicable": 100
             },
             "seo_robots": {
-              "label": "#17 indexing 허용",
-              "cat": "seo",
-              "pass": 100,
-              "applicable": 100
-            },
-            "seo_robots_hdr": {
-              "label": "#17 X-Robots-Tag noindex 부재",
+              "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
               "pass": 100,
               "applicable": 100
@@ -9616,15 +9401,15 @@
       "runId": "5e624d993ae4",
       "urlCount": 623,
       "scoredCount": 623,
-      "avgScore": 79.6,
+      "avgScore": 79,
       "grades": {
-        "Good": 411,
-        "Need Improvement": 212
+        "Good": 409,
+        "Need Improvement": 214
       },
       "categories": {
         "performance": 97.2,
         "accessibility": 90.8,
-        "seo": 92.1,
+        "seo": 91.1,
         "geo_schema": 33.4,
         "geo_content": 34.1,
         "geo_platform": 97.2
@@ -9715,13 +9500,7 @@
           "applicable": 623
         },
         "seo_robots": {
-          "label": "#17 indexing 허용",
-          "cat": "seo",
-          "pass": 615,
-          "applicable": 623
-        },
-        "seo_robots_hdr": {
-          "label": "#17 X-Robots-Tag noindex 부재",
+          "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
           "cat": "seo",
           "pass": 623,
           "applicable": 623
@@ -9881,11 +9660,11 @@
         "newsroom": {
           "label": "뉴스룸/Press",
           "count": 99,
-          "avgScore": 78.9,
+          "avgScore": 78.4,
           "categories": {
             "performance": 99.8,
             "accessibility": 99.7,
-            "seo": 69.7,
+            "seo": 65.4,
             "geo_schema": 50,
             "geo_content": 38.2,
             "geo_platform": 100
@@ -9976,13 +9755,7 @@
               "applicable": 99
             },
             "seo_robots": {
-              "label": "#17 indexing 허용",
-              "cat": "seo",
-              "pass": 99,
-              "applicable": 99
-            },
-            "seo_robots_hdr": {
-              "label": "#17 X-Robots-Tag noindex 부재",
+              "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
               "pass": 99,
               "applicable": 99
@@ -10142,11 +9915,11 @@
         "buying_guide": {
           "label": "구매 가이드",
           "count": 21,
-          "avgScore": 78.8,
+          "avgScore": 78.3,
           "categories": {
             "performance": 100,
             "accessibility": 98.8,
-            "seo": 97,
+            "seo": 96.6,
             "geo_schema": 30.7,
             "geo_content": 26.7,
             "geo_platform": 100
@@ -10237,13 +10010,7 @@
               "applicable": 21
             },
             "seo_robots": {
-              "label": "#17 indexing 허용",
-              "cat": "seo",
-              "pass": 21,
-              "applicable": 21
-            },
-            "seo_robots_hdr": {
-              "label": "#17 X-Robots-Tag noindex 부재",
+              "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
               "pass": 21,
               "applicable": 21
@@ -10403,11 +10170,11 @@
         "lg_experience": {
           "label": "LG Experience",
           "count": 100,
-          "avgScore": 71,
+          "avgScore": 70,
           "categories": {
             "performance": 83,
             "accessibility": 75,
-            "seo": 99.8,
+            "seo": 99.7,
             "geo_schema": 0,
             "geo_content": 19.6,
             "geo_platform": 99.7
@@ -10498,13 +10265,7 @@
               "applicable": 100
             },
             "seo_robots": {
-              "label": "#17 indexing 허용",
-              "cat": "seo",
-              "pass": 100,
-              "applicable": 100
-            },
-            "seo_robots_hdr": {
-              "label": "#17 X-Robots-Tag noindex 부재",
+              "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
               "pass": 100,
               "applicable": 100
@@ -10664,11 +10425,11 @@
         "microsite": {
           "label": "마이크로사이트/캠페인",
           "count": 10,
-          "avgScore": 73.4,
+          "avgScore": 72.5,
           "categories": {
             "performance": 100,
             "accessibility": 87.5,
-            "seo": 76.3,
+            "seo": 72.9,
             "geo_schema": 27,
             "geo_content": 25,
             "geo_platform": 100
@@ -10759,13 +10520,7 @@
               "applicable": 10
             },
             "seo_robots": {
-              "label": "#17 indexing 허용",
-              "cat": "seo",
-              "pass": 10,
-              "applicable": 10
-            },
-            "seo_robots_hdr": {
-              "label": "#17 X-Robots-Tag noindex 부재",
+              "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
               "pass": 10,
               "applicable": 10
@@ -10925,11 +10680,11 @@
         "pdp": {
           "label": "제품 상세 (PDP)",
           "count": 94,
-          "avgScore": 82.1,
+          "avgScore": 81.5,
           "categories": {
             "performance": 100,
             "accessibility": 73.4,
-            "seo": 98.9,
+            "seo": 99.7,
             "geo_schema": 22.6,
             "geo_content": 72.9,
             "geo_platform": 100
@@ -11020,13 +10775,7 @@
               "applicable": 94
             },
             "seo_robots": {
-              "label": "#17 indexing 허용",
-              "cat": "seo",
-              "pass": 87,
-              "applicable": 94
-            },
-            "seo_robots_hdr": {
-              "label": "#17 X-Robots-Tag noindex 부재",
+              "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
               "pass": 94,
               "applicable": 94
@@ -11186,11 +10935,11 @@
         "plp": {
           "label": "제품 카테고리 (PLP)",
           "count": 99,
-          "avgScore": 82.3,
+          "avgScore": 82.1,
           "categories": {
             "performance": 100,
             "accessibility": 94.7,
-            "seo": 96.5,
+            "seo": 96.1,
             "geo_schema": 45.8,
             "geo_content": 27.8,
             "geo_platform": 100
@@ -11281,13 +11030,7 @@
               "applicable": 99
             },
             "seo_robots": {
-              "label": "#17 indexing 허용",
-              "cat": "seo",
-              "pass": 98,
-              "applicable": 99
-            },
-            "seo_robots_hdr": {
-              "label": "#17 X-Robots-Tag noindex 부재",
+              "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
               "pass": 99,
               "applicable": 99
@@ -11451,7 +11194,7 @@
           "categories": {
             "performance": 99.5,
             "accessibility": 99.5,
-            "seo": 88.5,
+            "seo": 86.5,
             "geo_schema": 49.8,
             "geo_content": 26.3,
             "geo_platform": 100
@@ -11542,13 +11285,7 @@
               "applicable": 100
             },
             "seo_robots": {
-              "label": "#17 indexing 허용",
-              "cat": "seo",
-              "pass": 100,
-              "applicable": 100
-            },
-            "seo_robots_hdr": {
-              "label": "#17 X-Robots-Tag noindex 부재",
+              "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
               "pass": 100,
               "applicable": 100
@@ -11708,7 +11445,7 @@
         "support_troubleshoot": {
           "label": "지원 - 트러블슈팅",
           "count": 100,
-          "avgScore": 81,
+          "avgScore": 80,
           "categories": {
             "performance": 100,
             "accessibility": 100,
@@ -11803,13 +11540,7 @@
               "applicable": 100
             },
             "seo_robots": {
-              "label": "#17 indexing 허용",
-              "cat": "seo",
-              "pass": 100,
-              "applicable": 100
-            },
-            "seo_robots_hdr": {
-              "label": "#17 X-Robots-Tag noindex 부재",
+              "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
               "pass": 100,
               "applicable": 100
@@ -12016,16 +11747,16 @@
       "runId": "bb535c8d2fa8",
       "urlCount": 531,
       "scoredCount": 531,
-      "avgScore": 76.1,
+      "avgScore": 75.3,
       "grades": {
-        "Good": 105,
-        "Need Improvement": 425,
-        "Poor": 1
+        "Good": 99,
+        "Need Improvement": 430,
+        "Poor": 2
       },
       "categories": {
         "performance": 99.8,
         "accessibility": 91.1,
-        "seo": 82.4,
+        "seo": 79.6,
         "geo_schema": 41,
         "geo_content": 15.6,
         "geo_platform": 96.8
@@ -12116,13 +11847,7 @@
           "applicable": 531
         },
         "seo_robots": {
-          "label": "#17 indexing 허용",
-          "cat": "seo",
-          "pass": 531,
-          "applicable": 531
-        },
-        "seo_robots_hdr": {
-          "label": "#17 X-Robots-Tag noindex 부재",
+          "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
           "cat": "seo",
           "pass": 531,
           "applicable": 531
@@ -12282,11 +12007,11 @@
         "newsroom": {
           "label": "뉴스룸/Press",
           "count": 100,
-          "avgScore": 77.3,
+          "avgScore": 76.4,
           "categories": {
             "performance": 99.8,
             "accessibility": 99,
-            "seo": 80.7,
+            "seo": 77.8,
             "geo_schema": 44.2,
             "geo_content": 16.4,
             "geo_platform": 100
@@ -12377,13 +12102,7 @@
               "applicable": 100
             },
             "seo_robots": {
-              "label": "#17 indexing 허용",
-              "cat": "seo",
-              "pass": 100,
-              "applicable": 100
-            },
-            "seo_robots_hdr": {
-              "label": "#17 X-Robots-Tag noindex 부재",
+              "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
               "pass": 100,
               "applicable": 100
@@ -12543,11 +12262,11 @@
         "plp": {
           "label": "제품 카테고리 (PLP)",
           "count": 100,
-          "avgScore": 74.9,
+          "avgScore": 74.1,
           "categories": {
             "performance": 100,
             "accessibility": 83.8,
-            "seo": 81.2,
+            "seo": 78.3,
             "geo_schema": 45.8,
             "geo_content": 8.8,
             "geo_platform": 100
@@ -12638,13 +12357,7 @@
               "applicable": 100
             },
             "seo_robots": {
-              "label": "#17 indexing 허용",
-              "cat": "seo",
-              "pass": 100,
-              "applicable": 100
-            },
-            "seo_robots_hdr": {
-              "label": "#17 X-Robots-Tag noindex 부재",
+              "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
               "pass": 100,
               "applicable": 100
@@ -12804,11 +12517,11 @@
         "buying_guide": {
           "label": "구매 가이드",
           "count": 11,
-          "avgScore": 67.3,
+          "avgScore": 66.1,
           "categories": {
             "performance": 96.9,
             "accessibility": 95.5,
-            "seo": 71.5,
+            "seo": 67.5,
             "geo_schema": 22.3,
             "geo_content": 1.8,
             "geo_platform": 100
@@ -12899,13 +12612,7 @@
               "applicable": 11
             },
             "seo_robots": {
-              "label": "#17 indexing 허용",
-              "cat": "seo",
-              "pass": 11,
-              "applicable": 11
-            },
-            "seo_robots_hdr": {
-              "label": "#17 X-Robots-Tag noindex 부재",
+              "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
               "pass": 11,
               "applicable": 11
@@ -13065,11 +12772,11 @@
         "microsite": {
           "label": "마이크로사이트/캠페인",
           "count": 59,
-          "avgScore": 79.5,
+          "avgScore": 79.1,
           "categories": {
             "performance": 100,
             "accessibility": 77.5,
-            "seo": 86.7,
+            "seo": 84.5,
             "geo_schema": 44.7,
             "geo_content": 44.9,
             "geo_platform": 100
@@ -13160,13 +12867,7 @@
               "applicable": 59
             },
             "seo_robots": {
-              "label": "#17 indexing 허용",
-              "cat": "seo",
-              "pass": 59,
-              "applicable": 59
-            },
-            "seo_robots_hdr": {
-              "label": "#17 X-Robots-Tag noindex 부재",
+              "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
               "pass": 59,
               "applicable": 59
@@ -13326,11 +13027,11 @@
         "pdp": {
           "label": "제품 상세 (PDP)",
           "count": 61,
-          "avgScore": 76.3,
+          "avgScore": 75.3,
           "categories": {
             "performance": 99.7,
             "accessibility": 75,
-            "seo": 85.9,
+            "seo": 83.5,
             "geo_schema": 26.1,
             "geo_content": 48,
             "geo_platform": 100
@@ -13421,13 +13122,7 @@
               "applicable": 61
             },
             "seo_robots": {
-              "label": "#17 indexing 허용",
-              "cat": "seo",
-              "pass": 61,
-              "applicable": 61
-            },
-            "seo_robots_hdr": {
-              "label": "#17 X-Robots-Tag noindex 부재",
+              "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
               "pass": 61,
               "applicable": 61
@@ -13587,11 +13282,11 @@
         "support": {
           "label": "지원/Support",
           "count": 100,
-          "avgScore": 77.3,
+          "avgScore": 76.4,
           "categories": {
             "performance": 100,
             "accessibility": 99,
-            "seo": 76,
+            "seo": 72.2,
             "geo_schema": 50,
             "geo_content": 2,
             "geo_platform": 100
@@ -13682,13 +13377,7 @@
               "applicable": 100
             },
             "seo_robots": {
-              "label": "#17 indexing 허용",
-              "cat": "seo",
-              "pass": 100,
-              "applicable": 100
-            },
-            "seo_robots_hdr": {
-              "label": "#17 X-Robots-Tag noindex 부재",
+              "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
               "pass": 100,
               "applicable": 100
@@ -13848,11 +13537,11 @@
         "support_troubleshoot": {
           "label": "지원 - 트러블슈팅",
           "count": 100,
-          "avgScore": 73.9,
+          "avgScore": 72.9,
           "categories": {
             "performance": 99.7,
             "accessibility": 99.8,
-            "seo": 88,
+            "seo": 86,
             "geo_schema": 33,
             "geo_content": 0,
             "geo_platform": 83
@@ -13943,13 +13632,7 @@
               "applicable": 100
             },
             "seo_robots": {
-              "label": "#17 indexing 허용",
-              "cat": "seo",
-              "pass": 100,
-              "applicable": 100
-            },
-            "seo_robots_hdr": {
-              "label": "#17 X-Robots-Tag noindex 부재",
+              "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
               "pass": 100,
               "applicable": 100
@@ -14156,15 +13839,15 @@
       "runId": "eb9b2f21456b",
       "urlCount": 543,
       "scoredCount": 543,
-      "avgScore": 78,
+      "avgScore": 77.4,
       "grades": {
-        "Need Improvement": 323,
-        "Good": 220
+        "Need Improvement": 499,
+        "Good": 44
       },
       "categories": {
         "performance": 99.9,
         "accessibility": 93.5,
-        "seo": 90.6,
+        "seo": 89.1,
         "geo_schema": 38.9,
         "geo_content": 14.1,
         "geo_platform": 96.9
@@ -14255,13 +13938,7 @@
           "applicable": 543
         },
         "seo_robots": {
-          "label": "#17 indexing 허용",
-          "cat": "seo",
-          "pass": 543,
-          "applicable": 543
-        },
-        "seo_robots_hdr": {
-          "label": "#17 X-Robots-Tag noindex 부재",
+          "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
           "cat": "seo",
           "pass": 543,
           "applicable": 543
@@ -14421,11 +14098,11 @@
         "newsroom": {
           "label": "뉴스룸/Press",
           "count": 100,
-          "avgScore": 76.5,
+          "avgScore": 76.3,
           "categories": {
             "performance": 100,
             "accessibility": 96.8,
-            "seo": 76.3,
+            "seo": 72.5,
             "geo_schema": 49.8,
             "geo_content": 17.4,
             "geo_platform": 100
@@ -14516,13 +14193,7 @@
               "applicable": 100
             },
             "seo_robots": {
-              "label": "#17 indexing 허용",
-              "cat": "seo",
-              "pass": 100,
-              "applicable": 100
-            },
-            "seo_robots_hdr": {
-              "label": "#17 X-Robots-Tag noindex 부재",
+              "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
               "pass": 100,
               "applicable": 100
@@ -14682,11 +14353,11 @@
         "buying_guide": {
           "label": "구매 가이드",
           "count": 24,
-          "avgScore": 75.9,
+          "avgScore": 75,
           "categories": {
             "performance": 99.3,
             "accessibility": 97.9,
-            "seo": 92.8,
+            "seo": 91.8,
             "geo_schema": 31.3,
             "geo_content": 14.2,
             "geo_platform": 100
@@ -14777,13 +14448,7 @@
               "applicable": 24
             },
             "seo_robots": {
-              "label": "#17 indexing 허용",
-              "cat": "seo",
-              "pass": 24,
-              "applicable": 24
-            },
-            "seo_robots_hdr": {
-              "label": "#17 X-Robots-Tag noindex 부재",
+              "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
               "pass": 24,
               "applicable": 24
@@ -14943,11 +14608,11 @@
         "lg_experience": {
           "label": "LG Experience",
           "count": 29,
-          "avgScore": 77.5,
+          "avgScore": 76.8,
           "categories": {
             "performance": 99.4,
             "accessibility": 90.5,
-            "seo": 95.3,
+            "seo": 94.5,
             "geo_schema": 32.7,
             "geo_content": 13.1,
             "geo_platform": 100
@@ -15038,13 +14703,7 @@
               "applicable": 29
             },
             "seo_robots": {
-              "label": "#17 indexing 허용",
-              "cat": "seo",
-              "pass": 29,
-              "applicable": 29
-            },
-            "seo_robots_hdr": {
-              "label": "#17 X-Robots-Tag noindex 부재",
+              "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
               "pass": 29,
               "applicable": 29
@@ -15204,7 +14863,7 @@
         "pdp": {
           "label": "제품 상세 (PDP)",
           "count": 94,
-          "avgScore": 80.2,
+          "avgScore": 79.2,
           "categories": {
             "performance": 100,
             "accessibility": 75,
@@ -15299,13 +14958,7 @@
               "applicable": 94
             },
             "seo_robots": {
-              "label": "#17 indexing 허용",
-              "cat": "seo",
-              "pass": 94,
-              "applicable": 94
-            },
-            "seo_robots_hdr": {
-              "label": "#17 X-Robots-Tag noindex 부재",
+              "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
               "pass": 94,
               "applicable": 94
@@ -15465,11 +15118,11 @@
         "microsite": {
           "label": "마이크로사이트/캠페인",
           "count": 6,
-          "avgScore": 77,
+          "avgScore": 76.3,
           "categories": {
             "performance": 100,
             "accessibility": 91.7,
-            "seo": 91.8,
+            "seo": 90.5,
             "geo_schema": 30.8,
             "geo_content": 16.7,
             "geo_platform": 100
@@ -15560,13 +15213,7 @@
               "applicable": 6
             },
             "seo_robots": {
-              "label": "#17 indexing 허용",
-              "cat": "seo",
-              "pass": 6,
-              "applicable": 6
-            },
-            "seo_robots_hdr": {
-              "label": "#17 X-Robots-Tag noindex 부재",
+              "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
               "pass": 6,
               "applicable": 6
@@ -15726,11 +15373,11 @@
         "plp": {
           "label": "제품 카테고리 (PLP)",
           "count": 90,
-          "avgScore": 76.6,
+          "avgScore": 75.6,
           "categories": {
             "performance": 100,
             "accessibility": 95,
-            "seo": 86.2,
+            "seo": 84,
             "geo_schema": 43.7,
             "geo_content": 3.3,
             "geo_platform": 100
@@ -15821,13 +15468,7 @@
               "applicable": 90
             },
             "seo_robots": {
-              "label": "#17 indexing 허용",
-              "cat": "seo",
-              "pass": 90,
-              "applicable": 90
-            },
-            "seo_robots_hdr": {
-              "label": "#17 X-Robots-Tag noindex 부재",
+              "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
               "pass": 90,
               "applicable": 90
@@ -15987,11 +15628,11 @@
         "support": {
           "label": "지원/Support",
           "count": 100,
-          "avgScore": 80.2,
+          "avgScore": 79.3,
           "categories": {
             "performance": 100,
             "accessibility": 99.5,
-            "seo": 88.6,
+            "seo": 86.7,
             "geo_schema": 49.8,
             "geo_content": 1,
             "geo_platform": 100
@@ -16082,13 +15723,7 @@
               "applicable": 100
             },
             "seo_robots": {
-              "label": "#17 indexing 허용",
-              "cat": "seo",
-              "pass": 100,
-              "applicable": 100
-            },
-            "seo_robots_hdr": {
-              "label": "#17 X-Robots-Tag noindex 부재",
+              "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
               "pass": 100,
               "applicable": 100
@@ -16343,13 +15978,7 @@
               "applicable": 100
             },
             "seo_robots": {
-              "label": "#17 indexing 허용",
-              "cat": "seo",
-              "pass": 100,
-              "applicable": 100
-            },
-            "seo_robots_hdr": {
-              "label": "#17 X-Robots-Tag noindex 부재",
+              "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
               "pass": 100,
               "applicable": 100
@@ -16556,15 +16185,15 @@
       "runId": "f9c1aed6cab6",
       "urlCount": 645,
       "scoredCount": 645,
-      "avgScore": 79.6,
+      "avgScore": 79,
       "grades": {
-        "Need Improvement": 254,
-        "Good": 391
+        "Need Improvement": 318,
+        "Good": 327
       },
       "categories": {
         "performance": 99.8,
         "accessibility": 92.1,
-        "seo": 93.2,
+        "seo": 92.2,
         "geo_schema": 38.2,
         "geo_content": 30.8,
         "geo_platform": 92.9
@@ -16655,13 +16284,7 @@
           "applicable": 645
         },
         "seo_robots": {
-          "label": "#17 indexing 허용",
-          "cat": "seo",
-          "pass": 645,
-          "applicable": 645
-        },
-        "seo_robots_hdr": {
-          "label": "#17 X-Robots-Tag noindex 부재",
+          "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
           "cat": "seo",
           "pass": 645,
           "applicable": 645
@@ -16821,11 +16444,11 @@
         "microsite": {
           "label": "마이크로사이트/캠페인",
           "count": 15,
-          "avgScore": 73.2,
+          "avgScore": 72.2,
           "categories": {
             "performance": 98.9,
             "accessibility": 88.3,
-            "seo": 80.1,
+            "seo": 77,
             "geo_schema": 22,
             "geo_content": 23.3,
             "geo_platform": 100
@@ -16916,13 +16539,7 @@
               "applicable": 15
             },
             "seo_robots": {
-              "label": "#17 indexing 허용",
-              "cat": "seo",
-              "pass": 15,
-              "applicable": 15
-            },
-            "seo_robots_hdr": {
-              "label": "#17 X-Robots-Tag noindex 부재",
+              "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
               "pass": 15,
               "applicable": 15
@@ -17082,11 +16699,11 @@
         "newsroom": {
           "label": "뉴스룸/Press",
           "count": 100,
-          "avgScore": 78.3,
+          "avgScore": 77.9,
           "categories": {
             "performance": 99.8,
             "accessibility": 99.3,
-            "seo": 69.9,
+            "seo": 65.8,
             "geo_schema": 49.8,
             "geo_content": 35.4,
             "geo_platform": 100
@@ -17177,13 +16794,7 @@
               "applicable": 100
             },
             "seo_robots": {
-              "label": "#17 indexing 허용",
-              "cat": "seo",
-              "pass": 100,
-              "applicable": 100
-            },
-            "seo_robots_hdr": {
-              "label": "#17 X-Robots-Tag noindex 부재",
+              "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
               "pass": 100,
               "applicable": 100
@@ -17343,11 +16954,11 @@
         "buying_guide": {
           "label": "구매 가이드",
           "count": 44,
-          "avgScore": 76.2,
+          "avgScore": 75.5,
           "categories": {
             "performance": 99.6,
             "accessibility": 98.3,
-            "seo": 89.9,
+            "seo": 88.4,
             "geo_schema": 28.5,
             "geo_content": 22.3,
             "geo_platform": 100
@@ -17438,13 +17049,7 @@
               "applicable": 44
             },
             "seo_robots": {
-              "label": "#17 indexing 허용",
-              "cat": "seo",
-              "pass": 44,
-              "applicable": 44
-            },
-            "seo_robots_hdr": {
-              "label": "#17 X-Robots-Tag noindex 부재",
+              "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
               "pass": 44,
               "applicable": 44
@@ -17604,7 +17209,7 @@
         "lg_experience": {
           "label": "LG Experience",
           "count": 91,
-          "avgScore": 79.6,
+          "avgScore": 79,
           "categories": {
             "performance": 99.4,
             "accessibility": 99.7,
@@ -17699,13 +17304,7 @@
               "applicable": 91
             },
             "seo_robots": {
-              "label": "#17 indexing 허용",
-              "cat": "seo",
-              "pass": 91,
-              "applicable": 91
-            },
-            "seo_robots_hdr": {
-              "label": "#17 X-Robots-Tag noindex 부재",
+              "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
               "pass": 91,
               "applicable": 91
@@ -17865,7 +17464,7 @@
         "pdp": {
           "label": "제품 상세 (PDP)",
           "count": 99,
-          "avgScore": 78.6,
+          "avgScore": 77.6,
           "categories": {
             "performance": 99.7,
             "accessibility": 67.4,
@@ -17960,13 +17559,7 @@
               "applicable": 99
             },
             "seo_robots": {
-              "label": "#17 indexing 허용",
-              "cat": "seo",
-              "pass": 99,
-              "applicable": 99
-            },
-            "seo_robots_hdr": {
-              "label": "#17 X-Robots-Tag noindex 부재",
+              "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
               "pass": 99,
               "applicable": 99
@@ -18126,11 +17719,11 @@
         "plp": {
           "label": "제품 카테고리 (PLP)",
           "count": 96,
-          "avgScore": 80.2,
+          "avgScore": 79.8,
           "categories": {
             "performance": 100,
             "accessibility": 84.9,
-            "seo": 94.7,
+            "seo": 93.9,
             "geo_schema": 43.2,
             "geo_content": 27.1,
             "geo_platform": 100
@@ -18221,13 +17814,7 @@
               "applicable": 96
             },
             "seo_robots": {
-              "label": "#17 indexing 허용",
-              "cat": "seo",
-              "pass": 96,
-              "applicable": 96
-            },
-            "seo_robots_hdr": {
-              "label": "#17 X-Robots-Tag noindex 부재",
+              "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
               "pass": 96,
               "applicable": 96
@@ -18387,11 +17974,11 @@
         "support": {
           "label": "지원/Support",
           "count": 100,
-          "avgScore": 82.6,
+          "avgScore": 82.5,
           "categories": {
             "performance": 100,
             "accessibility": 99.5,
-            "seo": 98.7,
+            "seo": 98.5,
             "geo_schema": 49.8,
             "geo_content": 25,
             "geo_platform": 83
@@ -18482,13 +18069,7 @@
               "applicable": 100
             },
             "seo_robots": {
-              "label": "#17 indexing 허용",
-              "cat": "seo",
-              "pass": 100,
-              "applicable": 100
-            },
-            "seo_robots_hdr": {
-              "label": "#17 X-Robots-Tag noindex 부재",
+              "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
               "pass": 100,
               "applicable": 100
@@ -18648,7 +18229,7 @@
         "support_troubleshoot": {
           "label": "지원 - 트러블슈팅",
           "count": 100,
-          "avgScore": 81,
+          "avgScore": 80,
           "categories": {
             "performance": 100,
             "accessibility": 100,
@@ -18743,13 +18324,7 @@
               "applicable": 100
             },
             "seo_robots": {
-              "label": "#17 indexing 허용",
-              "cat": "seo",
-              "pass": 100,
-              "applicable": 100
-            },
-            "seo_robots_hdr": {
-              "label": "#17 X-Robots-Tag noindex 부재",
+              "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
               "pass": 100,
               "applicable": 100
@@ -18956,16 +18531,16 @@
       "runId": "765d1a7d5451",
       "urlCount": 446,
       "scoredCount": 446,
-      "avgScore": 75.3,
+      "avgScore": 74.5,
       "grades": {
-        "Need Improvement": 263,
-        "Poor": 9,
-        "Good": 174
+        "Need Improvement": 264,
+        "Poor": 11,
+        "Good": 171
       },
       "categories": {
         "performance": 97.8,
         "accessibility": 79.9,
-        "seo": 88.6,
+        "seo": 86.8,
         "geo_schema": 17.4,
         "geo_content": 41,
         "geo_platform": 89.9
@@ -19056,13 +18631,7 @@
           "applicable": 446
         },
         "seo_robots": {
-          "label": "#17 indexing 허용",
-          "cat": "seo",
-          "pass": 446,
-          "applicable": 446
-        },
-        "seo_robots_hdr": {
-          "label": "#17 X-Robots-Tag noindex 부재",
+          "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
           "cat": "seo",
           "pass": 446,
           "applicable": 446
@@ -19222,11 +18791,11 @@
         "buying_guide": {
           "label": "구매 가이드",
           "count": 14,
-          "avgScore": 70.9,
+          "avgScore": 69.9,
           "categories": {
             "performance": 98.8,
             "accessibility": 73.2,
-            "seo": 82.4,
+            "seo": 79.5,
             "geo_schema": 0,
             "geo_content": 41.4,
             "geo_platform": 100
@@ -19317,13 +18886,7 @@
               "applicable": 14
             },
             "seo_robots": {
-              "label": "#17 indexing 허용",
-              "cat": "seo",
-              "pass": 14,
-              "applicable": 14
-            },
-            "seo_robots_hdr": {
-              "label": "#17 X-Robots-Tag noindex 부재",
+              "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
               "pass": 14,
               "applicable": 14
@@ -19483,11 +19046,11 @@
         "newsroom": {
           "label": "뉴스룸/Press",
           "count": 100,
-          "avgScore": 67,
+          "avgScore": 66,
           "categories": {
             "performance": 91,
             "accessibility": 76.3,
-            "seo": 86.8,
+            "seo": 85,
             "geo_schema": 0,
             "geo_content": 6.8,
             "geo_platform": 83.2
@@ -19578,13 +19141,7 @@
               "applicable": 100
             },
             "seo_robots": {
-              "label": "#17 indexing 허용",
-              "cat": "seo",
-              "pass": 100,
-              "applicable": 100
-            },
-            "seo_robots_hdr": {
-              "label": "#17 X-Robots-Tag noindex 부재",
+              "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
               "pass": 100,
               "applicable": 100
@@ -19744,11 +19301,11 @@
         "lg_experience": {
           "label": "LG Experience",
           "count": 29,
-          "avgScore": 75.3,
+          "avgScore": 74.3,
           "categories": {
             "performance": 100,
             "accessibility": 75,
-            "seo": 88.3,
+            "seo": 86.4,
             "geo_schema": 0,
             "geo_content": 41.4,
             "geo_platform": 100
@@ -19839,13 +19396,7 @@
               "applicable": 29
             },
             "seo_robots": {
-              "label": "#17 indexing 허용",
-              "cat": "seo",
-              "pass": 29,
-              "applicable": 29
-            },
-            "seo_robots_hdr": {
-              "label": "#17 X-Robots-Tag noindex 부재",
+              "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
               "pass": 29,
               "applicable": 29
@@ -20005,11 +19556,11 @@
         "microsite": {
           "label": "마이크로사이트/캠페인",
           "count": 7,
-          "avgScore": 77,
+          "avgScore": 76.7,
           "categories": {
             "performance": 97.6,
             "accessibility": 75,
-            "seo": 93.1,
+            "seo": 92,
             "geo_schema": 10.7,
             "geo_content": 46.4,
             "geo_platform": 100
@@ -20100,13 +19651,7 @@
               "applicable": 7
             },
             "seo_robots": {
-              "label": "#17 indexing 허용",
-              "cat": "seo",
-              "pass": 7,
-              "applicable": 7
-            },
-            "seo_robots_hdr": {
-              "label": "#17 X-Robots-Tag noindex 부재",
+              "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
               "pass": 7,
               "applicable": 7
@@ -20266,11 +19811,11 @@
         "pdp": {
           "label": "제품 상세 (PDP)",
           "count": 96,
-          "avgScore": 82.9,
+          "avgScore": 81.9,
           "categories": {
             "performance": 100,
             "accessibility": 100,
-            "seo": 88,
+            "seo": 86,
             "geo_schema": 40,
             "geo_content": 74.2,
             "geo_platform": 88
@@ -20361,13 +19906,7 @@
               "applicable": 96
             },
             "seo_robots": {
-              "label": "#17 indexing 허용",
-              "cat": "seo",
-              "pass": 96,
-              "applicable": 96
-            },
-            "seo_robots_hdr": {
-              "label": "#17 X-Robots-Tag noindex 부재",
+              "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
               "pass": 96,
               "applicable": 96
@@ -20527,11 +20066,11 @@
         "plp": {
           "label": "제품 카테고리 (PLP)",
           "count": 100,
-          "avgScore": 81.8,
+          "avgScore": 81.2,
           "categories": {
             "performance": 99.8,
             "accessibility": 73.3,
-            "seo": 92.7,
+            "seo": 91.5,
             "geo_schema": 37,
             "geo_content": 57.5,
             "geo_platform": 99.8
@@ -20622,13 +20161,7 @@
               "applicable": 100
             },
             "seo_robots": {
-              "label": "#17 indexing 허용",
-              "cat": "seo",
-              "pass": 100,
-              "applicable": 100
-            },
-            "seo_robots_hdr": {
-              "label": "#17 X-Robots-Tag noindex 부재",
+              "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
               "pass": 100,
               "applicable": 100
@@ -20788,11 +20321,11 @@
         "support_troubleshoot": {
           "label": "지원 - 트러블슈팅",
           "count": 100,
-          "avgScore": 70.5,
+          "avgScore": 69.5,
           "categories": {
             "performance": 99.7,
             "accessibility": 73.8,
-            "seo": 87.3,
+            "seo": 85.3,
             "geo_schema": 1.3,
             "geo_content": 26.3,
             "geo_platform": 83.7
@@ -20883,13 +20416,7 @@
               "applicable": 100
             },
             "seo_robots": {
-              "label": "#17 indexing 허용",
-              "cat": "seo",
-              "pass": 100,
-              "applicable": 100
-            },
-            "seo_robots_hdr": {
-              "label": "#17 X-Robots-Tag noindex 부재",
+              "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
               "pass": 100,
               "applicable": 100
@@ -21096,16 +20623,16 @@
       "runId": "db9329a40d4f",
       "urlCount": 559,
       "scoredCount": 559,
-      "avgScore": 79.3,
+      "avgScore": 78.5,
       "grades": {
-        "Need Improvement": 210,
-        "Good": 348,
+        "Need Improvement": 329,
+        "Good": 229,
         "Poor": 1
       },
       "categories": {
         "performance": 99.7,
         "accessibility": 93.6,
-        "seo": 92.1,
+        "seo": 90.9,
         "geo_schema": 38,
         "geo_content": 17.4,
         "geo_platform": 99.9
@@ -21196,13 +20723,7 @@
           "applicable": 559
         },
         "seo_robots": {
-          "label": "#17 indexing 허용",
-          "cat": "seo",
-          "pass": 558,
-          "applicable": 559
-        },
-        "seo_robots_hdr": {
-          "label": "#17 X-Robots-Tag noindex 부재",
+          "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
           "cat": "seo",
           "pass": 559,
           "applicable": 559
@@ -21362,11 +20883,11 @@
         "microsite": {
           "label": "마이크로사이트/캠페인",
           "count": 6,
-          "avgScore": 74.8,
+          "avgScore": 73.8,
           "categories": {
             "performance": 97.2,
             "accessibility": 100,
-            "seo": 85.7,
+            "seo": 83.5,
             "geo_schema": 23.3,
             "geo_content": 12.5,
             "geo_platform": 100
@@ -21457,13 +20978,7 @@
               "applicable": 6
             },
             "seo_robots": {
-              "label": "#17 indexing 허용",
-              "cat": "seo",
-              "pass": 6,
-              "applicable": 6
-            },
-            "seo_robots_hdr": {
-              "label": "#17 X-Robots-Tag noindex 부재",
+              "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
               "pass": 6,
               "applicable": 6
@@ -21623,11 +21138,11 @@
         "newsroom": {
           "label": "뉴스룸/Press",
           "count": 100,
-          "avgScore": 77.4,
+          "avgScore": 77,
           "categories": {
             "performance": 98.5,
             "accessibility": 98.8,
-            "seo": 77.1,
+            "seo": 73.5,
             "geo_schema": 47.6,
             "geo_content": 22.8,
             "geo_platform": 100
@@ -21718,13 +21233,7 @@
               "applicable": 100
             },
             "seo_robots": {
-              "label": "#17 indexing 허용",
-              "cat": "seo",
-              "pass": 100,
-              "applicable": 100
-            },
-            "seo_robots_hdr": {
-              "label": "#17 X-Robots-Tag noindex 부재",
+              "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
               "pass": 100,
               "applicable": 100
@@ -21884,11 +21393,11 @@
         "buying_guide": {
           "label": "구매 가이드",
           "count": 3,
-          "avgScore": 71,
+          "avgScore": 70,
           "categories": {
             "performance": 100,
             "accessibility": 91.7,
-            "seo": 83.7,
+            "seo": 81,
             "geo_schema": 25,
             "geo_content": 0,
             "geo_platform": 100
@@ -21979,13 +21488,7 @@
               "applicable": 3
             },
             "seo_robots": {
-              "label": "#17 indexing 허용",
-              "cat": "seo",
-              "pass": 3,
-              "applicable": 3
-            },
-            "seo_robots_hdr": {
-              "label": "#17 X-Robots-Tag noindex 부재",
+              "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
               "pass": 3,
               "applicable": 3
@@ -22145,11 +21648,11 @@
         "lg_experience": {
           "label": "LG Experience",
           "count": 57,
-          "avgScore": 78.3,
+          "avgScore": 77.5,
           "categories": {
             "performance": 100,
             "accessibility": 98.7,
-            "seo": 97.6,
+            "seo": 97.2,
             "geo_schema": 33,
             "geo_content": 7,
             "geo_platform": 100
@@ -22240,13 +21743,7 @@
               "applicable": 57
             },
             "seo_robots": {
-              "label": "#17 indexing 허용",
-              "cat": "seo",
-              "pass": 57,
-              "applicable": 57
-            },
-            "seo_robots_hdr": {
-              "label": "#17 X-Robots-Tag noindex 부재",
+              "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
               "pass": 57,
               "applicable": 57
@@ -22406,7 +21903,7 @@
         "pdp": {
           "label": "제품 상세 (PDP)",
           "count": 95,
-          "avgScore": 79.6,
+          "avgScore": 78.7,
           "categories": {
             "performance": 99.8,
             "accessibility": 74.2,
@@ -22501,13 +21998,7 @@
               "applicable": 95
             },
             "seo_robots": {
-              "label": "#17 indexing 허용",
-              "cat": "seo",
-              "pass": 95,
-              "applicable": 95
-            },
-            "seo_robots_hdr": {
-              "label": "#17 X-Robots-Tag noindex 부재",
+              "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
               "pass": 95,
               "applicable": 95
@@ -22667,11 +22158,11 @@
         "plp": {
           "label": "제품 카테고리 (PLP)",
           "count": 98,
-          "avgScore": 79.5,
+          "avgScore": 79.1,
           "categories": {
             "performance": 100,
             "accessibility": 91.1,
-            "seo": 94.4,
+            "seo": 93.6,
             "geo_schema": 42.3,
             "geo_content": 16.6,
             "geo_platform": 99.5
@@ -22762,13 +22253,7 @@
               "applicable": 98
             },
             "seo_robots": {
-              "label": "#17 indexing 허용",
-              "cat": "seo",
-              "pass": 98,
-              "applicable": 98
-            },
-            "seo_robots_hdr": {
-              "label": "#17 X-Robots-Tag noindex 부재",
+              "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
               "pass": 98,
               "applicable": 98
@@ -22928,11 +22413,11 @@
         "support": {
           "label": "지원/Support",
           "count": 100,
-          "avgScore": 79.8,
+          "avgScore": 78.9,
           "categories": {
             "performance": 100,
             "accessibility": 99.5,
-            "seo": 87.1,
+            "seo": 85.1,
             "geo_schema": 50,
             "geo_content": 0.8,
             "geo_platform": 100
@@ -23023,13 +22508,7 @@
               "applicable": 100
             },
             "seo_robots": {
-              "label": "#17 indexing 허용",
-              "cat": "seo",
-              "pass": 99,
-              "applicable": 100
-            },
-            "seo_robots_hdr": {
-              "label": "#17 X-Robots-Tag noindex 부재",
+              "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
               "pass": 100,
               "applicable": 100
@@ -23189,7 +22668,7 @@
         "support_troubleshoot": {
           "label": "지원 - 트러블슈팅",
           "count": 100,
-          "avgScore": 81,
+          "avgScore": 80,
           "categories": {
             "performance": 100,
             "accessibility": 100,
@@ -23284,13 +22763,7 @@
               "applicable": 100
             },
             "seo_robots": {
-              "label": "#17 indexing 허용",
-              "cat": "seo",
-              "pass": 100,
-              "applicable": 100
-            },
-            "seo_robots_hdr": {
-              "label": "#17 X-Robots-Tag noindex 부재",
+              "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
               "pass": 100,
               "applicable": 100
@@ -23496,16 +22969,16 @@
   "overall": {
     "urlCount": 5438,
     "scoredCount": 5438,
-    "avgScore": 78.8,
+    "avgScore": 78.1,
     "grades": {
-      "Need Improvement": 2345,
-      "Good": 3082,
-      "Poor": 11
+      "Need Improvement": 3048,
+      "Good": 2375,
+      "Poor": 15
     },
     "categories": {
       "performance": 98.5,
       "accessibility": 90.2,
-      "seo": 90.3,
+      "seo": 88.8,
       "geo_schema": 35.5,
       "geo_content": 29.7,
       "geo_platform": 96.6
@@ -23596,13 +23069,7 @@
         "applicable": 5438
       },
       "seo_robots": {
-        "label": "#17 indexing 허용",
-        "cat": "seo",
-        "pass": 5421,
-        "applicable": 5438
-      },
-      "seo_robots_hdr": {
-        "label": "#17 X-Robots-Tag noindex 부재",
+        "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
         "cat": "seo",
         "pass": 5438,
         "applicable": 5438
@@ -23762,11 +23229,11 @@
       "newsroom": {
         "label": "뉴스룸/Press",
         "count": 901,
-        "avgScore": 77.5,
+        "avgScore": 76.9,
         "categories": {
           "performance": 98.2,
           "accessibility": 94.7,
-          "seo": 78.8,
+          "seo": 75.6,
           "geo_schema": 43.4,
           "geo_content": 26.7,
           "geo_platform": 98.1
@@ -23857,13 +23324,7 @@
             "applicable": 901
           },
           "seo_robots": {
-            "label": "#17 indexing 허용",
-            "cat": "seo",
-            "pass": 901,
-            "applicable": 901
-          },
-          "seo_robots_hdr": {
-            "label": "#17 X-Robots-Tag noindex 부재",
+            "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
             "cat": "seo",
             "pass": 901,
             "applicable": 901
@@ -24023,11 +23484,11 @@
       "microsite": {
         "label": "마이크로사이트/캠페인",
         "count": 231,
-        "avgScore": 78.6,
+        "avgScore": 78.1,
         "categories": {
           "performance": 99.2,
           "accessibility": 77.9,
-          "seo": 86.3,
+          "seo": 84.1,
           "geo_schema": 31.1,
           "geo_content": 52.2,
           "geo_platform": 100
@@ -24118,13 +23579,7 @@
             "applicable": 231
           },
           "seo_robots": {
-            "label": "#17 indexing 허용",
-            "cat": "seo",
-            "pass": 231,
-            "applicable": 231
-          },
-          "seo_robots_hdr": {
-            "label": "#17 X-Robots-Tag noindex 부재",
+            "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
             "cat": "seo",
             "pass": 231,
             "applicable": 231
@@ -24284,11 +23739,11 @@
       "buying_guide": {
         "label": "구매 가이드",
         "count": 201,
-        "avgScore": 75.2,
+        "avgScore": 74.4,
         "categories": {
           "performance": 97.9,
           "accessibility": 95.9,
-          "seo": 89.2,
+          "seo": 87.5,
           "geo_schema": 26.8,
           "geo_content": 21.8,
           "geo_platform": 100
@@ -24379,13 +23834,7 @@
             "applicable": 201
           },
           "seo_robots": {
-            "label": "#17 indexing 허용",
-            "cat": "seo",
-            "pass": 201,
-            "applicable": 201
-          },
-          "seo_robots_hdr": {
-            "label": "#17 X-Robots-Tag noindex 부재",
+            "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
             "cat": "seo",
             "pass": 201,
             "applicable": 201
@@ -24545,11 +23994,11 @@
       "lg_experience": {
         "label": "LG Experience",
         "count": 577,
-        "avgScore": 75.5,
+        "avgScore": 74.7,
         "categories": {
           "performance": 93.6,
           "accessibility": 89.4,
-          "seo": 97,
+          "seo": 96.5,
           "geo_schema": 20.2,
           "geo_content": 13.8,
           "geo_platform": 99.9
@@ -24640,13 +24089,7 @@
             "applicable": 577
           },
           "seo_robots": {
-            "label": "#17 indexing 허용",
-            "cat": "seo",
-            "pass": 577,
-            "applicable": 577
-          },
-          "seo_robots_hdr": {
-            "label": "#17 X-Robots-Tag noindex 부재",
+            "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
             "cat": "seo",
             "pass": 577,
             "applicable": 577
@@ -24806,11 +24249,11 @@
       "pdp": {
         "label": "제품 상세 (PDP)",
         "count": 906,
-        "avgScore": 80,
+        "avgScore": 79.1,
         "categories": {
           "performance": 99.1,
           "accessibility": 75.7,
-          "seo": 96.2,
+          "seo": 95.7,
           "geo_schema": 24,
           "geo_content": 66.6,
           "geo_platform": 95
@@ -24901,13 +24344,7 @@
             "applicable": 906
           },
           "seo_robots": {
-            "label": "#17 indexing 허용",
-            "cat": "seo",
-            "pass": 897,
-            "applicable": 906
-          },
-          "seo_robots_hdr": {
-            "label": "#17 X-Robots-Tag noindex 부재",
+            "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
             "cat": "seo",
             "pass": 906,
             "applicable": 906
@@ -25067,11 +24504,11 @@
       "plp": {
         "label": "제품 카테고리 (PLP)",
         "count": 958,
-        "avgScore": 79.7,
+        "avgScore": 79.2,
         "categories": {
           "performance": 99.3,
           "accessibility": 88.7,
-          "seo": 91.2,
+          "seo": 90,
           "geo_schema": 43.3,
           "geo_content": 26.3,
           "geo_platform": 99.9
@@ -25162,13 +24599,7 @@
             "applicable": 958
           },
           "seo_robots": {
-            "label": "#17 indexing 허용",
-            "cat": "seo",
-            "pass": 951,
-            "applicable": 958
-          },
-          "seo_robots_hdr": {
-            "label": "#17 X-Robots-Tag noindex 부재",
+            "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
             "cat": "seo",
             "pass": 958,
             "applicable": 958
@@ -25328,11 +24759,11 @@
       "support": {
         "label": "지원/Support",
         "count": 861,
-        "avgScore": 81.3,
+        "avgScore": 80.7,
         "categories": {
           "performance": 99.3,
           "accessibility": 98.6,
-          "seo": 87,
+          "seo": 84.9,
           "geo_schema": 49.8,
           "geo_content": 17.1,
           "geo_platform": 98
@@ -25423,13 +24854,7 @@
             "applicable": 861
           },
           "seo_robots": {
-            "label": "#17 indexing 허용",
-            "cat": "seo",
-            "pass": 860,
-            "applicable": 861
-          },
-          "seo_robots_hdr": {
-            "label": "#17 X-Robots-Tag noindex 부재",
+            "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
             "cat": "seo",
             "pass": 861,
             "applicable": 861
@@ -25589,11 +25014,11 @@
       "support_troubleshoot": {
         "label": "지원 - 트러블슈팅",
         "count": 803,
-        "avgScore": 78.3,
+        "avgScore": 77.4,
         "categories": {
           "performance": 99.9,
           "accessibility": 96.7,
-          "seo": 95.3,
+          "seo": 94.6,
           "geo_schema": 29.1,
           "geo_content": 15.8,
           "geo_platform": 87.3
@@ -25684,13 +25109,7 @@
             "applicable": 803
           },
           "seo_robots": {
-            "label": "#17 indexing 허용",
-            "cat": "seo",
-            "pass": 803,
-            "applicable": 803
-          },
-          "seo_robots_hdr": {
-            "label": "#17 X-Robots-Tag noindex 부재",
+            "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
             "cat": "seo",
             "pass": 803,
             "applicable": 803

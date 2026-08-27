@@ -209,6 +209,17 @@ function resolvePt(pt, url) {
 const TTFB_MAX_MS = 600
 // 채점 제외 체크 — na:true 로 표시해 applicable(분모)에서도 빠진다 (scoring_config 의 enabled:false 와 동등)
 const DISABLED_CHECKS = { perf_html_size: 1, perf_render_block: 1 }
+
+// OR 통합 체크 — 여러 체크 중 하나만 통과해도 통과로 본다 (대표 체크에 결과를 몰고 나머지는 na).
+//   #17 Robots: meta robots(seo_robots) 와 X-Robots-Tag 헤더(seo_robots_hdr) 는
+//   같은 목적(색인 허용)을 두 경로로 확인하는 것이라, 둘 중 하나만 조치되면 통과다.
+//   기존에는 AND 로 둘 다 채점돼 한쪽 미설정이 그대로 감점이었다 (사용자 지시 2026-08-27).
+const OR_GROUPS = [
+  { primary: 'seo_robots', members: ['seo_robots', 'seo_robots_hdr'], label: '#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)' },
+]
+// OR 통합에서 대표가 아닌 체크 — 통과율 표에 별도 행을 만들지 않는다
+const ABSORBED_CHECKS = Object.fromEntries(
+  OR_GROUPS.flatMap(g => g.members.filter(m => m !== g.primary).map(m => [m, 1])))
 // 기준이 바뀐 체크의 표시 라벨 (원본 label 은 옛 임계값 문구를 담고 있음).
 // perf_ttfb 는 실제 채점에 PSI 를 썼을 때만 '(PSI)' 를 붙인다 — 라벨과 측정 출처를 일치시킴.
 function checkLabelOverride(cid, ctx) {
@@ -342,6 +353,26 @@ export function applyScoringOverride(score, ctx) {
       it.pass = v.pass
       it.hint = v.hint
     }
+    // OR 통합 — 그룹 중 하나라도 통과면 대표 체크를 통과 처리하고 나머지는 na
+    for (const g of OR_GROUPS) {
+      const present = g.members.filter(m => bd.items[m])
+      if (present.length < 2) continue
+      const anyPass = present.some(m => bd.items[m].pass === true)
+      const anyApplicable = present.some(m => bd.items[m].na !== true && bd.items[m].pass != null)
+      for (const m of present) {
+        if (m === g.primary) {
+          bd.items[m].label = g.label
+          if (!anyApplicable) { bd.items[m].na = true; continue }
+          delete bd.items[m].na
+          bd.items[m].pass = anyPass
+          bd.items[m].hint = anyPass ? null : '색인 허용 설정 없음 — meta robots 또는 X-Robots-Tag 중 하나 필요'
+        } else {
+          bd.items[m].na = true   // 대표 체크로 흡수 — 분모 이중 계상 방지
+          bd.items[m].hint = null
+        }
+      }
+    }
+
     // 카테고리 재집계 — applicable(na!==true && pass!=null) 기준
     let passed = 0, applicable = 0
     for (const it of Object.values(bd.items)) {
@@ -428,6 +459,7 @@ function accumulateChecks(target, score) {
       // 채점 제외 체크(DISABLED_CHECKS) 는 통과율 표에도 행을 만들지 않음 —
       // 0/0 이면 '—' 로만 보여 "측정했는데 데이터 없음" 처럼 오해됨.
       if (DISABLED_CHECKS[cid]) continue
+      if (ABSORBED_CHECKS[cid]) continue   // OR 통합으로 대표 체크에 흡수됨 — 별도 행 X
       const cat = catOf(src, cid)
       // na(true) 또는 pass===null → 미적용 (분모 제외)
       const applicable = !(it.na === true || it.pass === null || it.pass == null)

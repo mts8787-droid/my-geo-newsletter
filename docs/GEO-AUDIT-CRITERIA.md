@@ -1,6 +1,6 @@
 # GEO Agent Readability 검수 기준
 
-> 6개 카테고리 41개 채점 항목 + 9월 감사 시행 예정 4항목.
+> 6개 카테고리 40개 채점 항목 + 9월 감사 시행 예정 4항목.
 > 점수·통과율은 제외한 **기준 정의 문서**입니다. 실측치는 Readability 대시보드에서 확인하세요.
 > 생성: `scripts/render-criteria.mjs` (source: `data/readability/geo-agent-checklist.html`) — 2026-07-31
 
@@ -10,7 +10,7 @@
 | :-- | :-: | :-- |
 | 사이트 성능 | 6 | 서버가 페이지를 얼마나 빠르고 안전하게 전달하는가 — 전송 계층 |
 | 웹접근성 | 4 | 사람과 기계가 문서 구조를 읽어낼 수 있는가 |
-| Basic SEO | 8 | 검색엔진이 페이지를 수집하고 표시할 수 있는가 |
+| Basic SEO | 7 | 검색엔진이 페이지를 수집하고 표시할 수 있는가 |
 | 스키마마크업 | 10 | AI가 읽을 수 있는 구조화 데이터가 있는가 |
 | 고인용 콘텐츠 | 5 | AI가 인용할 만한 서술이 본문에 있는가 |
 | AI Crawlability | 8 | AI 크롤러가 원문을 실제로 가져갈 수 있는가 |
@@ -143,9 +143,9 @@
 
 ### #17 — Robots
 - **정의**: 검색엔진이 이 페이지를 수집하고 검색결과에 노출해도 되는지 알려주는 설정
-- **PASS**: Indexing 허용
+- **PASS**: Indexing 허용 — meta robots 또는 X-Robots-Tag 중 하나만 충족해도 통과
 - **측정방법**: meta robots HTML 파싱 후 검증, X-Robots-Tag 헤더↑ 응답값 확인
-- **check id**: `seo_robots`, `seo_robots_hdr`
+- **check id**: `seo_robots`
 
 ### #18 — Open Graph
 - **정의**: 링크를 공유했을 때 제목·이미지가 함께 표시되도록 전달하는 정보

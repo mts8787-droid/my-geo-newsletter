@@ -31,7 +31,8 @@ export const DOC_TO_CHECK = {
   '6': ['perf_redirect'], '7': ['perf_mixed_content'],
   '9': ['a11y_image_alt'], '10': ['a11y_semantic'], '11': ['a11y_heading_hier'], '12': ['a11y_aria_labels'],
   '13': ['seo_title'], '14': ['seo_meta_desc'], '15': ['seo_canonical'], '16': ['seo_h1'],
-  '17': ['seo_robots', 'seo_robots_hdr'], '18': ['seo_open_graph'], '19': ['seo_sitemap'],
+  '17': ['seo_robots'],   // seo_robots_hdr 는 OR 통합으로 흡수 (aggregate 의 OR_GROUPS)
+  '18': ['seo_open_graph'], '19': ['seo_sitemap'],
   '20': [], '21': ['ai_schema_breadcrumb'], '22': [], '23': ['ai_schema_faq'], '24': ['ai_schema_collection'],
   '25': ['ai_schema_product', 'ai_schema_offer'], '26': ['ai_schema_image'], '27': ['ai_schema_video'],
   '28': ['ai_schema_howto'], '29': ['ai_schema_article'], '30': [], '31': [],
@@ -202,9 +203,10 @@ ${orphans}
     </ul></div>
   </div>`
 
+  const total = CAT_ORDER.reduce((a, c) => a + scoredCount(rows, c), 0)
   const subtitle = withScores
-    ? `6개 카테고리 41개 항목으로 lg.com 글로벌 사이트의 AI 가독성을 채점합니다. 통과율은 ${esc(snapshot.date)} 측정분 기준이며, 9월 감사부터 시행할 예정 항목 4개를 함께 표기했습니다.`
-    : `6개 카테고리 41개 항목의 정의와 Pass 기준입니다. 9월 감사부터 시행할 예정 항목 4개를 함께 표기했습니다.`
+    ? `6개 카테고리 ${total}개 항목으로 lg.com 글로벌 사이트의 AI 가독성을 채점합니다. 통과율은 ${esc(snapshot.date)} 측정분 기준이며, 9월 감사부터 시행할 예정 항목 4개를 함께 표기했습니다.`
+    : `6개 카테고리 ${total}개 항목의 정의와 Pass 기준입니다. 9월 감사부터 시행할 예정 항목 4개를 함께 표기했습니다.`
 
   return `<!DOCTYPE html>
 <html lang="ko"><head><meta charset="utf-8">
@@ -315,7 +317,7 @@ export function renderCriteriaMarkdown({ rows, generatedAt }) {
   const L = []
   L.push('# GEO Agent Readability 검수 기준')
   L.push('')
-  L.push('> 6개 카테고리 41개 채점 항목 + 9월 감사 시행 예정 4항목.')
+  L.push(`> 6개 카테고리 ${CAT_ORDER.reduce((a, c) => a + scoredCount(rows, c), 0)}개 채점 항목 + 9월 감사 시행 예정 4항목.`)
   L.push('> 점수·통과율은 제외한 **기준 정의 문서**입니다. 실측치는 Readability 대시보드에서 확인하세요.')
   L.push(`> 생성: \`scripts/render-criteria.mjs\` (source: \`data/readability/geo-agent-checklist.html\`) — ${generatedAt}`)
   L.push('')

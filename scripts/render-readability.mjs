@@ -31,6 +31,14 @@ import { loadRows, DOC_TO_CHECK } from './render-criteria.mjs'
 // check id → 항목 정의. 체크리스트 문서(geo-agent-checklist.html)가 정의의 단일 출처.
 // 카드에 통과율만 있으면 항목명이 축약어라 무슨 기준인지 알 수 없어 정의를 같이 싣는다.
 // 파싱 실패해도 대시보드는 정의 없이 정상 동작 (빈 맵 폴백).
+// 항목명에서 괄호와 그 안의 내용을 제거 (사용자 지시 2026-08-27).
+//   '#24 Schema: CollectionPage (PLP)' → '#24 Schema: CollectionPage'
+//   '#1 TTFB < 600ms (PSI)'           → '#1 TTFB < 600ms'
+// 표시 단계에서만 적용 — 스냅샷·Raw 데이터의 원본 라벨은 그대로 둔다.
+function stripParens(label) {
+  return String(label == null ? '' : label).replace(/\s*[（(][^)）]*[)）]/g, '').trim()
+}
+
 function loadCheckDefs() {
   try {
     const defs = {}
@@ -110,10 +118,6 @@ function sectionCard(title, accent, bodyHtml, rightHtml) {
 // ─── 뷰 1: 국가별 종합 점수 비교 ─────────────────────────────────────────────
 function viewCountryComparison(snap) {
   const o = snap.overall
-  const gradeEntries = Object.entries(o.grades || {}).sort((a, b) => b[1] - a[1])
-  const gradeChips = gradeEntries.map(([g, n]) =>
-    `<span class="chip">${escHtml(g)} <strong>${n.toLocaleString()}</strong></span>`).join('')
-
   const rows = Object.entries(snap.countries)
     .map(([cc, v]) => ({ cc, name: CC_NAME[cc] || cc.toUpperCase(), avg: v.avgScore, urls: v.urlCount }))
     .sort((a, b) => (b.avg ?? -1) - (a.avg ?? -1))
@@ -139,10 +143,6 @@ function viewCountryComparison(snap) {
           채점 <strong>${(o.scoredCount || 0).toLocaleString()}</strong> ·
           국가 <strong>${Object.keys(snap.countries).length}</strong>
         </div>
-      </div>
-      <div class="hero-right">
-        <div class="hero-label">Grade 분포</div>
-        <div class="hero-grades">${gradeChips}</div>
       </div>
     </div>
   </div>`
@@ -171,7 +171,7 @@ function viewCategoryDetail(snap) {
     const checkRows = cardHead + checksArr.slice().sort((a, b) => a.label.localeCompare(b.label, 'en', { numeric: true })).map(c => {
       const rate = checkRate(c)
       const right = rate == null ? '—' : `${rate}% (${c.pass}/${c.applicable})`
-      return barRow(c.label, rate ?? 0, 100, rateColor(rate), right, '', DEFS[c.cid])
+      return barRow(stripParens(c.label), rate ?? 0, 100, rateColor(rate), right, '', DEFS[c.cid])
     }).join('')
     return `<div class="cat-card">
       <div class="cat-head">
@@ -253,8 +253,6 @@ function readabilityClient() {
     var pt = state.pt, scope = getScope(state.cc)
     var ptLabel = pt !== 'all' && RD.overall.pageTypes[pt] ? RD.overall.pageTypes[pt].label : null
     var heroScore = pt === 'all' ? scope.avgScore : (scope.pageTypes[pt] ? scope.pageTypes[pt].avgScore : null)
-    var grades = Object.entries(scope.grades || {}).sort(function (a, b) { return b[1] - a[1] })
-    var gradeChips = grades.map(function (e) { return '<span class="chip">' + esc(e[0]) + ' <strong>' + num(e[1]) + '</strong></span>' }).join('')
     var scopeName = state.cc === 'all' ? '전체' : ccLabel(state.cc)
     var hero = '<div class="hero"><div class="hero-top">' +
       '<span class="hero-brand">GEO Readability Audit</span>' +
@@ -263,7 +261,7 @@ function readabilityClient() {
       '<div class="hero-label">' + esc(scopeName) + (ptLabel ? ' · ' + esc(ptLabel) : '') + ' 평균</div>' +
       '<div class="hero-score-row"><span class="hero-score" style="color:' + scoreColor(heroScore) + '">' + (heroScore == null ? '—' : heroScore) + '</span><span class="hero-pct">/ 100</span></div>' +
       '<div class="hero-info">URL <strong>' + num(scope.urlCount) + '</strong> · 채점 <strong>' + num(scope.scoredCount) + '</strong> · 국가 <strong>' + Object.keys(RD.countries).length + '</strong></div>' +
-      '</div><div class="hero-right"><div class="hero-label">Grade 분포</div><div class="hero-grades">' + gradeChips + '</div></div></div></div>'
+      '</div></div></div>'
 
     var ccList = state.cc === 'all' ? Object.keys(RD.countries) : [state.cc]
     var rows = ccList.map(function (cc) {
@@ -295,6 +293,7 @@ function readabilityClient() {
       var vals = arr.map(checkRate).filter(function (r) { return r != null })
       return vals.length ? +(vals.reduce(function (s, r) { return s + r }, 0) / vals.length).toFixed(1) : null
     }
+    function stripParens(l) { return String(l == null ? '' : l).replace(/\s*[（(][^)）]*[)）]/g, '').trim() }
     function card(name, avg, sub, checksArr) {
       var defs = RD.checkDefs || {}
       var head = '<div class="bar-row bar-head has-def"><span class="bar-label">' +
@@ -303,7 +302,7 @@ function readabilityClient() {
       var rows = head + checksArr.slice().sort(function (a, b) { return a.label.localeCompare(b.label, 'en', { numeric: true }) }).map(function (c) {
         var rate = checkRate(c)
         var right = rate == null ? '—' : rate + '% (' + c.pass + '/' + c.applicable + ')'
-        return barRow(c.label, rate == null ? 0 : rate, 100, rateColor(rate), right, '', defs[c.cid])
+        return barRow(stripParens(c.label), rate == null ? 0 : rate, 100, rateColor(rate), right, '', defs[c.cid])
       }).join('')
       return '<div class="cat-card"><div class="cat-head"><span class="cat-name">' + esc(name) + '</span>' +
         '<span class="cat-avg" style="color:' + scoreColor(avg) + '">' + (avg == null ? '—' : avg) + '</span></div>' +
@@ -605,15 +604,12 @@ body{background:#F1F5F9;font-family:${FONT};color:#1A1A1A;line-height:1.6}
 .hero-meta{font-size:14px;color:#FFB0C0}
 .hero-body{display:flex;gap:40px;align-items:flex-start;flex-wrap:wrap}
 .hero-left{flex:1;min-width:240px}
-.hero-right{flex:0 0 320px}
 .hero-label{font-size:14px;font-weight:600;color:#94A3B8;text-transform:uppercase;margin-bottom:8px;letter-spacing:0.5px}
 .hero-score-row{display:flex;align-items:baseline;gap:8px;margin-bottom:8px}
 .hero-score{font-size:52px;font-weight:900;letter-spacing:-2px}
 .hero-pct{font-size:20px;color:#94A3B8}
 .hero-info{font-size:14px;color:#94A3B8;line-height:1.7}
 .hero-info strong{color:#fff;font-weight:700}
-.hero-grades{display:flex;gap:8px;flex-wrap:wrap}
-.chip{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.12);border-radius:6px;padding:4px 10px;font-size:13px;color:#CBD5E1}
 .chip strong{color:#fff}
 /* ── 섹션 카드 (Visibility) ── */
 .section-card{background:#fff;border-radius:16px;border:1px solid #E8EDF2;margin-bottom:24px;overflow:hidden}
@@ -672,9 +668,9 @@ body{background:#F1F5F9;font-family:${FONT};color:#1A1A1A;line-height:1.6}
 .cat-card .bars.sm .bar-track{flex:0 0 96px;height:12px}
 .cat-card .bars.sm .bar-value{flex:0 0 148px;font-size:14px}
 .cat-card .bars.sm .bar-row{gap:16px;align-items:baseline}
-.bar-name{flex:0 0 236px;padding-right:20px;font-size:14px;font-weight:600;color:#1A1A1A;letter-spacing:-0.3px}
-.bar-def{flex:1 1 auto;min-width:0;padding-right:20px;font-size:13px;line-height:1.5;color:#64748B;font-weight:400;letter-spacing:-0.2px}
-.bar-pass{flex:0 0 178px;font-size:12.5px;line-height:1.5;color:#94A3B8;font-weight:500;letter-spacing:-0.2px}
+.bar-name{flex:0 0 196px;padding-right:16px;font-size:14px;font-weight:600;color:#1A1A1A;letter-spacing:-0.3px}
+.bar-def{flex:1 1 auto;min-width:0;padding-right:16px;font-size:13px;line-height:1.5;color:#64748B;font-weight:400;letter-spacing:-0.2px}
+.bar-pass{flex:0 0 224px;font-size:12.5px;line-height:1.5;color:#94A3B8;font-weight:500;letter-spacing:-0.2px}
 .bar-head.has-def .bar-name,.bar-head.has-def .bar-def,.bar-head.has-def .bar-pass{font-size:11px;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:.3px}
 .cat-card{background:#fff;border:1px solid #E8EDF2;border-radius:12px;padding:16px 18px}
 .cat-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:2px}
@@ -686,7 +682,6 @@ body{background:#F1F5F9;font-family:${FONT};color:#1A1A1A;line-height:1.6}
   .dash-container{padding:16px 14px}
   .hero{padding:20px 18px}
   .hero-body{gap:20px}
-  .hero-right{flex:1 1 100%}
   .hero-score{font-size:44px}
   .section-header,.section-body{padding-left:18px;padding-right:18px}
   .bar-label{flex:0 0 150px;font-size:12px}
