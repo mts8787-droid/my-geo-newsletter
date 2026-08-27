@@ -745,32 +745,30 @@ describe('parseProductCnty — TTL/국가별 분리 + 시간순 정렬 invariant
   })
 })
 
-// ─── parseMeta — key-value 시트 ─────────────────────────────────────────────
-describe('parseMeta — key-value 매핑 + 한→영 변환', () => {
-  it('numKeys/boolKeys/alwaysOff 처리', () => {
+// ─── meta 시트 — 동기화에서 무시 (2026-08-27) ───────────────────────────────
+// noticeText·How to Read 등 문구는 서버 기본값(INIT_META)만 쓰고 시트에서 끌어오지 않는다.
+// 시트에 옛 문구가 남아 있어도 발행본에 되살아나지 않아야 한다.
+describe('meta 시트 — 동기화 무시', () => {
+  it('값이 있어도 빈 객체를 반환한다 (문구가 시트에서 유입되지 않음)', () => {
     const rows = [
       ['key',            'value'],
       ['titleFontSize',  '28'],
       ['showProducts',   'y'],
-      ['showNotice',     'y'],         // alwaysOff — 강제 false
-      ['period',         '2026년 4월'], // 한→영 변환
-      ['someText',       'foo'],
+      ['period',         '2026년 4월'],
+      ['noticeText',     '시트에 남아있던 옛 공지'],
     ]
-    const result = parseSheetRows(SHEET_NAMES.meta, rows)
-    expect(result.meta?.titleFontSize).toBe(28)
-    expect(result.meta?.showProducts).toBe(true)
-    expect(result.meta?.showNotice).toBe(false)  // alwaysOff 강제
-    expect(result.meta?.period).toBe('Apr 2026')  // 한→영
-    expect(result.meta?.someText).toBe('foo')
+    expect(parseSheetRows(SHEET_NAMES.meta, rows)).toEqual({})
   })
 
-  it('weeklyLabels 콤마 문자열 → 배열', () => {
-    const rows = [
-      ['key',           'value'],
-      ['weeklyLabels',  'W5,W6,W7,W8'],
-    ]
-    const result = parseSheetRows(SHEET_NAMES.meta, rows)
-    expect(result.meta?.weeklyLabels).toEqual(['W5', 'W6', 'W7', 'W8'])
+  it('weeklyLabels 같은 배열 키도 유입되지 않는다', () => {
+    const rows = [['key', 'value'], ['weeklyLabels', 'W5,W6,W7,W8']]
+    expect(parseSheetRows(SHEET_NAMES.meta, rows)).toEqual({})
+  })
+
+  it('sheetTabsForMode 어느 모드에도 meta 탭이 없다 (애초에 fetch 하지 않음)', async () => {
+    const { TABS_FOR_MODE } = await import('./shared/sheetTabsForMode.js')
+    const withMeta = Object.entries(TABS_FOR_MODE).filter(([, tabs]) => tabs.includes(SHEET_NAMES.meta))
+    expect(withMeta.map(([m]) => m)).toEqual([])
   })
 })
 
@@ -883,10 +881,11 @@ describe('parseSheetRows 라우터 — DETECT + unknown sheet', () => {
     expect(errorSpy).toHaveBeenCalled()
   })
 
-  it('라우터 try/catch — 손상된 rows 가 파서를 throw 시켜도 sync 격리 (parseMeta)', () => {
-    // rows=[null] 은 Array.isArray=true 라 assertRows 통과. parseMeta 안에서 r[0] 접근 시 TypeError.
+  it('라우터 try/catch — 손상된 rows 가 파서를 throw 시켜도 sync 격리 (parseVisSummary)', () => {
+    // rows=[null] 은 Array.isArray=true 라 assertRows 통과. 파서 안에서 r[0] 접근 시 TypeError.
     // 라우터 try/catch 가 catch → _logFatal → {} 반환.
-    const result = parseSheetRows(SHEET_NAMES.meta, [null])
+    // (meta 는 2026-08-27 부터 무시되므로 throw 격리 검증을 다른 파서로 옮김)
+    const result = parseSheetRows(SHEET_NAMES.visSummary, [null])
     expect(result).toEqual({})
     expect(errorSpy).toHaveBeenCalled()
   })

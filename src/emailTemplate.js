@@ -2941,8 +2941,16 @@ function highlightInsightSectionHtml(products, weeklyAll, weeklyLabels, meta, la
   // Readability Highlight — 별도 카드가 아니라 본 챕터 안에 같은 디자인으로 편입 (2026-08)
   const rdArea = (meta.showReadability && readability) ? readabilityHighlightHtml(readability, meta, lang) : ''
   if (!weeklyArea && !rdArea) return ''  // 표시할 콘텐츠 없으면 챕터 미렌더
+  // 챕터 제목은 KO/EN 모두 영문 표기 (사용자 지시 2026-08-27) — 'August Highlights'.
+  // period 가 '2026년 8월' / 'Aug 2026' 어느 형식이든 영문 월명으로 통일.
+  const MON_EN_FULL = ['January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December']
   const _mm = String(meta.period || '').match(/(\d{1,2})\s*월/)
-  const chapterTitle = (_mm ? _mm[1] + '월 ' : '') + (lang === 'en' ? 'Highlights' : '하이라이트')
+  const _me = String(meta.period || '').match(/\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i)
+  const _mi = _mm ? parseInt(_mm[1]) - 1
+    : _me ? ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'].indexOf(_me[1].toLowerCase())
+    : -1
+  const chapterTitle = (_mi >= 0 ? MON_EN_FULL[_mi] + ' ' : '') + 'Highlights'
   return `
               <tr>
                 <td style="padding-bottom:28px;">
@@ -3175,7 +3183,10 @@ function readabilityHighlightHtml(rd, meta = {}, lang = 'ko', contentWidth = 848
     .sort((a, b) => b.avg - a.avg)
     .map(p => rdBarRow(p.label, p.avg, 100, { labelW: 118, pad: 2, barH: 8 })).join('')
   const half = Math.floor(contentWidth / 2) - 8
-  const scoreTables = `<table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:0 0 18px;">
+  // 평가 영역별 점수와 동일한 회색 박스로 감싼다 (사용자 지시 2026-08-27)
+  const scoreTables = `<table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#F8FAFC;border:1px solid #E8EDF2;border-radius:10px;margin:0 0 14px;">
+    <tr><td style="padding:12px 16px;">
+    <table cellpadding="0" cellspacing="0" border="0" width="100%">
     <tr>
       <td width="${half}" valign="top" style="padding-right:16px;">
         <p style="margin:0 0 8px;font-size:12px;font-weight:800;color:#475569;font-family:${EM_FONT};">${lang === 'en' ? 'By Country' : '국가별 점수'}</p>
@@ -3186,6 +3197,8 @@ function readabilityHighlightHtml(rd, meta = {}, lang = 'ko', contentWidth = 848
         <table cellpadding="0" cellspacing="0" border="0" width="100%">${ptRows}</table>
       </td>
     </tr>
+    </table>
+    </td></tr>
   </table>`
 
   // ③ 6개 영역 점수 — 원본 이미지 대체 (크기 이슈로 HTML 로 재작성)

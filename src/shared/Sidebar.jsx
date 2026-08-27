@@ -8,6 +8,7 @@ import { resolveDataForLang, translateTexts } from './utils.js'
 import { saveSyncData, fetchSyncData, fetchSyncMeta, publishCombinedDashboard, generateAIInsight } from './api.js'
 import { generateDashboardHTML } from '../dashboard/dashboardTemplate.js'
 import { generateProductInsight, generateProductHowToRead, generateCntyHowToRead } from './insights.js'
+import { derivedMetaFor, volFor, dateLineFor } from './reportPeriod.js'
 
 // 발송 시 EN meta 에서 그대로 따라가야 할 "텍스트" 필드 (번역된 본문/라벨).
 // 그 외 차트/표시 토글은 metaKo 기준으로 통일 — metaKo/metaEn 가 독립 state 라
@@ -1041,16 +1042,29 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
         {/* 보고서 번호 + 기간 (레드바) */}
         <div style={{ display: 'flex', gap: 6, marginBottom: 8 }}>
           <div style={{ flex: 1 }}>
-            <p style={{ margin: '0 0 3px', fontSize: 11, color: '#64748B', fontFamily: FONT }}>보고서 번호</p>
+            <p style={{ margin: '0 0 3px', fontSize: 11, color: '#64748B', fontFamily: FONT }}>보고서 번호 <span style={{ color: '#334155' }}>(자동)</span></p>
             <input value={meta.reportNo} onChange={e => setMeta(m => ({ ...m, reportNo: e.target.value }))}
               style={{ ...inputStyle }} />
           </div>
           <div style={{ flex: 1.4 }}>
-            <p style={{ margin: '0 0 3px', fontSize: 11, color: '#64748B', fontFamily: FONT }}>기간 <span style={{ color: '#334155' }}>(레드바)</span></p>
-            <input value={meta.period} onChange={e => setMeta(m => ({ ...m, period: e.target.value }))}
+            <p style={{ margin: '0 0 3px', fontSize: 11, color: '#64748B', fontFamily: FONT }}>발행월 <span style={{ color: '#334155' }}>(레드바)</span></p>
+            {/* 발행월을 바꾸면 Vol 번호와 데이터 기준(dateLine)이 함께 갱신된다.
+                Vol 은 Feb 2026 = Vol.03 기준 월 +1, 데이터 기준은 전월 (shared/reportPeriod.js). */}
+            <input value={meta.period}
+              onChange={e => {
+                const period = e.target.value
+                setMeta(m => ({ ...m, period, ...derivedMetaFor(period) }))
+                setMetaEn && setMetaEn(m => ({ ...m, period, ...derivedMetaFor(period) }))
+              }}
               style={{ ...inputStyle }} />
           </div>
         </div>
+        {volFor(meta.period) && (
+          <p style={{ margin: '-4px 0 8px', fontSize: 10.5, color: '#64748B', fontFamily: FONT, lineHeight: 1.5 }}>
+            자동 연동 — 보고서 번호 <span style={{ color: '#94A3B8', fontWeight: 700 }}>{volFor(meta.period)}</span>
+            {' · '}데이터 기준 <span style={{ color: '#94A3B8', fontWeight: 700 }}>{dateLineFor(meta.period, 'ko')}</span>
+          </p>
+        )}
 
         {/* 제목 텍스트 */}
         <p style={{ margin: '0 0 3px', fontSize: 11, color: '#64748B', fontFamily: FONT }}>제목 텍스트</p>

@@ -1,7 +1,7 @@
 // N2 — XLSX는 downloadTemplate에서만 쓰이므로 함수 내부에서 동적 로드
 import { loadXlsx } from './shared/loadXlsx.js'
 import { RAW_TO_PROD_ID, RAW_TO_KR, UL_CODE_NORMALIZE } from './categoryMap.js'
-import { _logFatal, _logWarn, assertRows, findHeaderIdx } from './sheetParserUtils.js'
+import { _logFatal, _logWarn, _logInfo, assertRows, findHeaderIdx } from './sheetParserUtils.js'
 
 // ─── 시트 이름 (Google Sheets 동기화용 — 새 데이터 원천) ─────────────────────────
 export const SHEET_NAMES = {
@@ -2341,7 +2341,13 @@ export function parseSheetRows(sheetName, rows) {
   // [2] CLASSIFY + [4] RECOVER: 파서 throw 시 sync 전체 중단되지 않도록 격리.
   // 한 시트가 망가져도 다른 시트는 계속 동기화. _logFatal 로 fatal 표면화 + {} 반환.
   try {
-    if (sheetName === SHEET_NAMES.meta) return parseMeta(rows)
+    // meta 시트는 동기화에서 무시 (사용자 지시 2026-08-27) —
+    // noticeText·How to Read 등 문구는 서버 기본값(INIT_META)을 쓰고 시트에서 끌어오지 않는다.
+    // 시트가 옛 문구를 갖고 있어도 발행본에 되살아나지 않도록 파서 자체를 통과시킨다.
+    if (sheetName === SHEET_NAMES.meta) {
+      _logInfo('parseSheetRows', 'meta 시트 무시 — 문구는 서버 기본값 사용')
+      return {}
+    }
 
     if (sheetName === SHEET_NAMES.visSummary) return parseVisSummary(rows)
 
