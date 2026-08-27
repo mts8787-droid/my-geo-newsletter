@@ -6,7 +6,6 @@ import { inputStyle } from '../shared/components.jsx'
 import { resolveDataForLang } from '../shared/utils.js'
 import { saveSyncData, publishCombinedDashboard } from '../shared/api.js'
 import { generateDashboardHTML } from '../dashboard/dashboardTemplate.js'
-import SheetDownload from '../shared/SheetDownload.jsx'
 
 export default function CitationSidebar({
   mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn,
@@ -295,8 +294,6 @@ export default function CitationSidebar({
           </div>
         )}
 
-        {/* ── 시트 다운로드 (citation 탭만 CSV ZIP) ── */}
-        <SheetDownload url={gsUrl} downloadName="citation-sheet" mode="citation" />
 
         <div style={{ height: 1, background: '#1E293B', marginBottom: 16 }} />
 

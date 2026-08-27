@@ -8,7 +8,6 @@ import { resolveDataForLang, translateTexts } from './utils.js'
 import { saveSyncData, fetchSyncData, fetchSyncMeta, publishCombinedDashboard, generateAIInsight } from './api.js'
 import { generateDashboardHTML } from '../dashboard/dashboardTemplate.js'
 import { generateProductInsight, generateProductHowToRead, generateCntyHowToRead } from './insights.js'
-import SheetDownload from './SheetDownload.jsx'
 
 // 발송 시 EN meta 에서 그대로 따라가야 할 "텍스트" 필드 (번역된 본문/라벨).
 // 그 외 차트/표시 토글은 metaKo 기준으로 통일 — metaKo/metaEn 가 독립 state 라
@@ -760,9 +759,6 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
             >로그 복사</button>
           </div>
         )}
-
-        {/* ── 시트 다운로드 (해당 대시보드의 탭만 CSV ZIP) ── */}
-        <SheetDownload url={gsUrl} downloadName={`${mode||'dashboard'}-sheet`} mode={mode||'dashboard'} />
 
         <div style={{ height: 1, background: '#1E293B', marginBottom: 16 }} />
 
