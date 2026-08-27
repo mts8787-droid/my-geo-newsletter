@@ -76,6 +76,45 @@ readabilityRouter.get('/admin/readability', (req, res) => {
   res.send(renderReadabilityHTML({ snapshot, index, snapshots, adminMode: true }))
 })
 
+// 뉴스레터 Highlight 섹션용 요약 — 최신 스냅샷에서 필요한 것만 추려 반환.
+// 뉴스레터 어드민(React)이 이걸 fetch 해 generateEmailHTML 의 options.readability 로 넘긴다.
+// 전체 스냅샷(390KB)을 그대로 물리면 미리보기가 무거워지므로 수 KB 로 압축.
+readabilityRouter.get('/api/readability-summary', (req, res) => {
+  const { snapshot } = loadLatest()
+  if (!snapshot) return res.status(404).json({ ok: false, error: 'Readability 스냅샷 없음' })
+  const o = snapshot.overall
+  const rate = (scope, cid) => {
+    const c = (scope.checks || {})[cid]
+    return c && c.applicable ? +(c.pass / c.applicable * 100).toFixed(1) : null
+  }
+  // 본문에서 인용하는 체크만 (전체 38개를 다 싣지 않음)
+  const CITED = ['ai_ssr_ratio', 'a11y_heading_hier', 'seo_h1', 'seo_meta_desc', 'seo_sitemap', 'ai_citable', 'ai_author_source']
+  const checks = {}
+  for (const cid of CITED) {
+    const c = (o.checks || {})[cid]
+    if (!c) continue
+    checks[cid] = { label: c.label, rate: rate(o, cid) }
+  }
+  const byPt = {}
+  for (const [id, v] of Object.entries(o.pageTypes || {})) {
+    byPt[id] = { label: v.label, avgScore: v.avgScore, checks: Object.fromEntries(CITED.map(c => [c, rate(v, c)])) }
+  }
+  res.json({
+    ok: true,
+    date: snapshot.date,
+    urlCount: o.urlCount,
+    avgScore: o.avgScore,
+    countryCount: Object.keys(snapshot.countries || {}).length,
+    categoryLabels: snapshot.categoryLabels,
+    categories: o.categories,
+    countries: Object.entries(snapshot.countries || {})
+      .map(([cc, v]) => ({ cc, avgScore: v.avgScore, checks: Object.fromEntries(CITED.map(c => [c, rate(v, c)])) }))
+      .sort((a, b) => b.avgScore - a.avgScore),
+    pageTypes: byPt,
+    checks,
+  })
+})
+
 // 검수 기준 체크리스트 (self-host) — 원본 onrender 가 x-frame-options:DENY 라 iframe 불가 → 동일출처 서빙
 readabilityRouter.get('/admin/readability/checklist.html', (req, res) => {
   const file = join(DATA_DIR, 'geo-agent-checklist.html')

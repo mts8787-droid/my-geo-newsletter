@@ -3201,6 +3201,166 @@ function compRatioDeltaSectionHtml(products, meta, lang = 'ko') {
               </tr>`
 }
 
+
+// ─── Readability Highlight 섹션 (8월호 신설) ─────────────────────────────────
+// 구성: ① Readability란? 박스(별도 영역) ② 국가별·페이지타입별 점수 ③ 6개 영역 점수
+//       ④ 영역별 상세 4개 문단.  이메일 호환 table-layout — flex/grid 미사용.
+// 데이터: options.readability (뉴스레터 어드민이 /api/readability-summary 로 받아 주입).
+//        본문 문안은 meta 로 편집 가능하며, 기본값은 사용자 제공 원문 그대로 사용한다.
+const RD_CAT_ORDER = ['performance', 'geo_platform', 'accessibility', 'seo', 'geo_schema', 'geo_content']
+const RD_CAT_DESC = {
+  performance: '페이지 응답 및 정보 제공 속도',
+  geo_platform: 'AI 크롤러가 원문을 가져갈 수 있는 기술 환경',
+  accessibility: '사람과 AI가 문서 구조를 읽어낼 수 체계',
+  seo: '제목·페이지 주제 설명 등 검색되기위한 기본 정보',
+  geo_schema: '제품·FAQ·이미지 등 정보의 종류와 관계를 알려주는 구조화 데이터',
+  geo_content: 'AI가 인용할만한 서술의 존재',
+}
+const RD_CC_KO = { au: '호주', br: '브라질', ca: '캐나다', de: '독일', es: '스페인', in: '인도', mx: '멕시코', uk: '영국', us: '미국', vn: '베트남' }
+const RD_CC_EN = { au: 'Australia', br: 'Brazil', ca: 'Canada', de: 'Germany', es: 'Spain', in: 'India', mx: 'Mexico', uk: 'UK', us: 'USA', vn: 'Vietnam' }
+
+// 점수 → 색 (대시보드 STATUS 토큰과 동일 기준)
+function rdColor(v) {
+  return v == null ? '#94A3B8' : v >= 90 ? '#15803D' : v >= 60 ? '#B45309' : '#BE123C'
+}
+
+// 가로 막대 한 줄 — table-layout (이메일 호환)
+function rdBarRow(label, value, max, opts = {}) {
+  const w = max > 0 ? Math.max(2, Math.min(100, (value / max) * 100)).toFixed(1) : 0
+  const color = opts.color || rdColor(value)
+  const sub = opts.sub ? `<div style="font-size:11px;color:#94A3B8;line-height:1.45;margin-top:2px;font-family:${EM_FONT};">${escapeHtml(opts.sub)}</div>` : ''
+  return `<tr>
+    <td style="padding:5px 10px 5px 0;vertical-align:top;width:${opts.labelW || 150}px;">
+      <div style="font-size:12px;font-weight:700;color:#1A1A1A;line-height:1.4;font-family:${EM_FONT};">${escapeHtml(label)}</div>${sub}
+    </td>
+    <td style="padding:5px 10px 5px 0;vertical-align:middle;">
+      <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#F1F5F9;border-radius:4px;">
+        <tr><td width="${w}%" height="12" style="background:${color};border-radius:4px;font-size:0;line-height:0;">&nbsp;</td><td>&nbsp;</td></tr>
+      </table>
+    </td>
+    <td align="right" style="padding:5px 0;vertical-align:middle;width:52px;font-size:13px;font-weight:800;color:${color};font-family:${EM_FONT};">${value == null ? '—' : value}</td>
+  </tr>`
+}
+
+// 소제목 (I 표기)
+function rdHeading(text) {
+  return `<p style="margin:0 0 12px;font-size:17px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-0.4px;">
+    <span style="color:${EM_RED};">I</span> ${escapeHtml(text)}</p>`
+}
+
+// 본문 문단 (줄바꿈 유지, **볼드** 지원)
+function rdPara(text, opts = {}) {
+  if (!text) return ''
+  const html = escapeHtml(text).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/\r?\n/g, '<br>')
+  return `<p style="margin:0 0 ${opts.gap || 10}px;font-size:13px;color:#334155;line-height:1.75;font-family:${EM_FONT};letter-spacing:-0.2px;">${html}</p>`
+}
+
+// 각주 (* 로 시작하는 용어 설명)
+function rdFootnotes(lines) {
+  if (!lines || !lines.length) return ''
+  return `<div style="margin:2px 0 14px;padding:10px 12px;background:#F8FAFC;border-radius:6px;">
+    ${lines.map(l => `<div style="font-size:11px;color:#64748B;line-height:1.65;font-family:${EM_FONT};">${escapeHtml(l)}</div>`).join('')}
+  </div>`
+}
+
+
+// 본 섹션의 기본 문안 — 사용자 제공 원문 그대로. meta 로 덮어쓸 수 있다.
+const RD_TEXT = {
+  intro: 'Readability는 AI 관점에서의 가독성을 뜻하며, 웹페이지의 콘텐츠가 AI가 읽고 활용하기 좋은 상태인지 평가하는 지표입니다. ‘26년 7월부터 LG.com의 Readability 현황을 파악하기 위해 10개 전략 국가의 8개 주요 페이지 유형, 총 5,438개 페이지를 평가했습니다. Readability 점수는 전체 평가항목 중 기준을 충족한 항목의 비율(%)을 100점 기준으로 환산한 점수입니다. 평가는 사이트 성능, AI 웹접근성, Basic SEO 적합도, 스키마마크업, 고인용 콘텐츠, AI Crawlability의 6개 영역, 총 37개 체크리스트를 기준으로 진행했습니다.',
+  introNotes: [
+    '*전략 10개국가 : 독일, 영국, 호주, 브라질, 베트남, 스페인, 미국, 멕시코, 인도, 캐나다',
+    '*8개 페이지 유형 : PDP(제품 상세 페이지), PLP (제품 카테고리 페이지), Microsite, Newsroom, Buying Guide, LG Experience, Support, Support-Trouble Shooting',
+  ],
+  summary: '7월 LG.com의 전체적인 Readability 점수는 77.5점을 기록했으며, 국가별로는 브라질이 79.1점으로 가장 높았고, 가장 점수가 낮은 인도가 74.4점으로 편차가 크지 않은 상황입니다.\n페이지 타입별로도 Support 80.1점, Buying Guide 73.4점으로 유사한 분포를 보이고 있습니다.',
+  areaIntro: '반면 평가 영역별로는 점수 차이가 뚜렷하게 나타났습니다.\n사이트 성능 98.5점 (페이지 응답 및 정보 제공 속도), AI Crawlability 96.8점 (AI 크롤러가 원문을 가져갈 수 있는 기술 환경), 웹접근성 90.2점 (사람과 AI가 문서 구조를 읽어낼 수 체계), Basic SEO 88.8점 (제목·페이지 주제 설명 등 검색되기위한 기본 정보)으로 비교적 양호했습니다.\n반면, 스키마마크업 35.5점 (제품·FAQ·이미지 등 정보의 종류와 관계를 알려주는 구조화 데이터), 고인용 콘텐츠 29.7점 (AI가 인용할만한 서술의 존재)은 상대적으로 낮았습니다.',
+  d1Title: '사이트 성능과 AI Crawlability는 전반적으로 우수하나, 초기 HTML 내 텍스트 제공 비중 보완 필요',
+  d1: '사이트 성능 영역은 98.5점으로 가장 높은 점수를 기록하여 LG.com의 빠르고 안정적인 페이지 전달 수준을 확인할 수 있었습니다.\nAI Crawlability 또한 96.8점으로 상대적으로 높지만, JS HTML Text Ratio(Javascript 렌더링 후 텍스트 대비 초기 HTML Text Count 비중이 60% 이상) 충족률은 82.1%였습니다.\n특히 Support-Trouble Shooting 페이지는 37.4%, PDP는 58.8%로 낮아, 일부 주요 콘텐츠가 페이지를 처음 불러오는 시점에는 포함되지 않고 화면이 열린 후 추가로 불러와지는 방식(CSR)으로 제공되고 있었습니다.\n사용자가 최종 화면에서 콘텐츠를 확인하는 데는 문제가 없을 수 있지만, 페이지를 처음 전달받은 상태를 중심으로 정보를 수집하는 일부 AI는 주요 내용을 충분히 확인하지 못할 가능성이 있습니다.\n때문에 현재 고객가치혁신 및 D2C에서는 Support 페이지와 PDP내 주요 정보가 페이지를 처음 불러오는 시점부터 포함되도록 SSR 방식으로 전환하는 작업을 추진 중입니다.',
+  d1Notes: [
+    '*초기 HTML : 웹페이지에 접속했을 때 서버가 가장 먼저 전달하는 기본 페이지 정보로, JavaScript 실행 전에도 AI가 확인할 수 있는 내용',
+    '*Javascript 렌더링 : 페이지가 열린 뒤 JavaScript가 실행되면서 정보를 추가로 불러와 화면에 표시하는 방식',
+    '*Client-Side Rendering(CSR) : 서버가 기본적인 페이지 틀을 먼저 전달하고, 사용자의 브라우저에서 JavaScript를 실행해 주요 콘텐츠를 불러오고 화면을 완성하는 방식',
+    '*Server-Side Rendering(SSR) : 서버에서 주요 콘텐츠가 포함된 HTML을 미리 생성해 전달하는 방식',
+  ],
+  d2Title: 'Basic SEO와 웹접근성은 전반적으로 양호하나, 기본적인 페이지 구조의 일관성 보완 필요',
+  d2: '웹접근성은 90.2점으로 높았지만, 제목과 소제목이 순서에 맞게 구성됐는지를 확인하는 Heading Hierarchy 충족률은 68.2%로 상대적으로 낮았습니다.\nAI가 페이지의 주제와 세부 내용을 보다 명확하게 구분할 수 있도록, 페이지 유형별 제목 구조를 표준화할 필요가 있습니다.\nBasic SEO 영역 역시 전체 점수는 88.8점으로 양호하지만, 페이지의 제목인 H1이 정확하게 1개만 존재하는 비율은 74%, Meta Description 충족률은 84.8%로 개선 여지가 확인됐습니다.\n특히 Newsroom 페이지에서 H1과 Meta Description 누락이 반복적으로 나타나(H1 충족률 46.4%, Meta Description 충족률 34.4%), 개별 콘텐츠보다는 페이지 템플릿이나 콘텐츠 발행 과정에서 기본 정보가 자동으로 적용되도록 개선할 필요가 있습니다.\nSitemap 충족률도 77.6%로 지속적인 최신화 작업이 필요합니다.',
+  d3Title: '스키마마크업은 페이지 타입과 콘텐츠에 맞춘 최적화가 필요',
+  d3: '스키마 영역은 35.5점으로 상대적으로 낮게 나타났습니다. Schema는 AI가 FAQ·제품·이미지·영상·사용방법 등 정보의 종류를 구분할 수 있게 해주는 정해진 형식으로, 페이지 유형과 콘텐츠 특성에 맞춰 주요 Schema의 적용 범위를 확대할 필요가 있습니다.\n상세 현황 파악을 위해 독일 LG.com과 Samsung.com 확인해보았을 때, PDP의 핵심 스키마인 Product(LG 0%, SS 64%) 스키마는 경쟁사 대비 충족률이 낮았고, PLP의 경우 특히 FAQPage 스키마 적용률 격차가 크게 나타났습니다(LG 13%, SS 71%). 이 외에도 VideoObject, ImageObject, HowTo, Article 모두 주요 스키마로 전 페이지 타입에 걸쳐 개선이 필요한 상황입니다. 이에 D2C에서 추진 중인 Schema 자동화를 통해, 국가와 페이지별로 개별 대응하기 보다 주요 Schema가 일관되게 생성, 적용되는 구조를 마련하는 중입니다.',
+  d4Title: '고인용 콘텐츠는 AI 답변에 적합한 콘텐츠 형식 확대와 작성자 정보 보완 필요',
+  d4: '콘텐츠 영역은 29.7점으로 전체 평가 영역 중 가장 낮았습니다. AI가 질문에 대한 직접적인 답변으로 활용하기 쉬운 FAQ Block, Summary Box, Definition Paragraph 등의 콘텐츠가 충분하지 않아 보완이 필요한 상황이며, 현재 FAQ Block을 중심으로 각 사업본부 및 고객가치혁신의 주요 개선 과제로 추진 중입니다.\n한편, Citable Sentence(숫자, 연도, 통계, 연구 키워드 포함 문장)의 경우 전체 충족률은 57.2%였습니다. 독일, 스페인, 호주, 캐나다의 경우 충족률 80% 이상인 반면, 나머지 국가에서는 상대적으로 낮게 나타나 국가별 편차가 큰 상황입니다. 7월 독일 사이트를 비교해본 결과, LG.com의 Citable Sentence 충족률은 86.1%로 Samsung.com의 19.4%보다 크게 높아, LG 콘텐츠의 경쟁 우위 요소로 확인되었습니다. 향후 인도, 멕시코, 베트남, 미국 등 상대적으로 충족률이 낮은 국가에서도 Citable Sentence 확대를 통해 경쟁 우위 요소를 강화할 필요가 있습니다.\n콘텐츠의 작성자/출처/날짜 정보 충족률 또한 42.3%로 낮게 나타났습니다. 이는 AI가 콘텐츠의 신뢰성과 최신성을 판단하는 데 참고할 수 있는 요소인 만큼, 정보성 콘텐츠를 중심으로 보완이 필요합니다. 다만 해당 요소의 중요도가 높은 Newsroom의 경우 충족률이 78.8%로 비교적 양호했습니다.',
+}
+
+// Readability Highlight 섹션 본체
+function readabilityHighlightHtml(rd, meta = {}, lang = 'ko', containerWidth = 940) {
+  if (!rd) return ''
+  const tx = (k) => (meta[`rd_${k}`] != null && meta[`rd_${k}`] !== '') ? meta[`rd_${k}`] : RD_TEXT[k]
+  const CCN = lang === 'en' ? RD_CC_EN : RD_CC_KO
+  const title = lang === 'en' ? 'Readability Highlights' : 'Readability Highlight'
+
+  // ① Readability란? — 별도 박스로 영역 구분
+  const introBox = `<table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FEF2F4;border:1px solid #FECDD3;border-radius:10px;margin:0 0 22px;">
+    <tr><td style="padding:16px 20px;">
+      ${rdPara(tx('intro'), { gap: 8 })}
+      ${(meta.rd_introNotes || RD_TEXT.introNotes).map(l => `<div style="font-size:11px;color:#64748B;line-height:1.65;font-family:${EM_FONT};">${escapeHtml(l)}</div>`).join('')}
+    </td></tr>
+  </table>`
+
+  // ② 국가별 · 페이지타입별 점수 (둘 다 — 팀장님 피드백)
+  const ccRows = (rd.countries || []).map(c => rdBarRow(CCN[c.cc] || c.cc.toUpperCase(), c.avgScore, 100, { labelW: 76 })).join('')
+  const ptRows = Object.entries(rd.pageTypes || {})
+    .map(([id, v]) => ({ id, label: v.label, avg: v.avgScore }))
+    .sort((a, b) => b.avg - a.avg)
+    .map(p => rdBarRow(p.label, p.avg, 100, { labelW: 130 })).join('')
+  const half = Math.floor((containerWidth - 56) / 2) - 8
+  const scoreTables = `<table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:0 0 18px;">
+    <tr>
+      <td width="${half}" valign="top" style="padding-right:16px;">
+        <p style="margin:0 0 8px;font-size:12px;font-weight:800;color:#475569;font-family:${EM_FONT};">${lang === 'en' ? 'By Country' : '국가별 점수'}</p>
+        <table cellpadding="0" cellspacing="0" border="0" width="100%">${ccRows}</table>
+      </td>
+      <td width="${half}" valign="top">
+        <p style="margin:0 0 8px;font-size:12px;font-weight:800;color:#475569;font-family:${EM_FONT};">${lang === 'en' ? 'By Page Type' : '페이지 타입별 점수'}</p>
+        <table cellpadding="0" cellspacing="0" border="0" width="100%">${ptRows}</table>
+      </td>
+    </tr>
+  </table>`
+
+  // ③ 6개 영역 점수 — 원본 이미지 대체 (크기 이슈로 HTML 로 재작성)
+  const catRows = RD_CAT_ORDER.filter(k => rd.categories && rd.categories[k] != null)
+    .map(k => rdBarRow((rd.categoryLabels || {})[k] || k, rd.categories[k], 100, { labelW: 150, sub: RD_CAT_DESC[k] })).join('')
+  const catTable = `<table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#F8FAFC;border:1px solid #E8EDF2;border-radius:10px;margin:0 0 24px;">
+    <tr><td style="padding:16px 20px;">
+      <p style="margin:0 0 10px;font-size:12px;font-weight:800;color:#475569;font-family:${EM_FONT};">${lang === 'en' ? 'By Area' : '평가 영역별 점수'}</p>
+      <table cellpadding="0" cellspacing="0" border="0" width="100%">${catRows}</table>
+    </td></tr>
+  </table>`
+
+  // ④ 영역별 상세
+  const detail = [
+    ['d1Title', 'd1', RD_TEXT.d1Notes],
+    ['d2Title', 'd2', null],
+    ['d3Title', 'd3', null],
+    ['d4Title', 'd4', null],
+  ].map(([tk, bk, notes]) => `
+    <p style="margin:0 0 8px;font-size:13px;font-weight:800;color:${EM_RED};line-height:1.6;font-family:${EM_FONT};letter-spacing:-0.3px;">${escapeHtml(tx(tk))}</p>
+    ${rdPara(tx(bk), { gap: notes ? 6 : 20 })}
+    ${notes ? rdFootnotes(meta.rd_d1Notes || notes) : ''}`).join('')
+
+  return `<table cellpadding="0" cellspacing="0" border="0" align="center" width="${containerWidth}" style="width:${containerWidth}px;background:#fff;border:1px solid #E8EDF2;border-radius:12px;margin:0 0 24px;">
+    <tr><td style="padding:24px 28px;">
+      <p style="margin:0 0 16px;font-size:19px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-0.5px;">
+        <span style="color:${EM_RED};">&lt;</span>${escapeHtml(title)}<span style="color:${EM_RED};">&gt;</span></p>
+      ${rdHeading(lang === 'en' ? 'What is Readability?' : 'Readability란?')}
+      ${introBox}
+      ${rdPara(tx('summary'), { gap: 14 })}
+      ${scoreTables}
+      ${rdPara(tx('areaIntro'), { gap: 14 })}
+      ${catTable}
+      ${rdHeading(lang === 'en' ? 'Detailed status and improvement direction by area' : '영역별 상세 Readability 현황 및 개선 방향')}
+      ${detail}
+    </td></tr>
+  </table>`
+}
+
 // ─── 반기 요약(하이라이트) 섹션 — 반기 리포트 상단에만 삽입 ────────────────────
 // 전체 점수 + 삼성 격차 + 상승/하락 주도 카테고리 + (편집 가능) 반기 코멘트. table-layout.
 function semiHighlightHtml(meta, total, products, lang = 'ko') {
@@ -3290,7 +3450,7 @@ export function generateSemiAnnualEmailHTML(meta, total, products, citations, do
 }
 
 export function generateEmailHTML(meta, total, products, citations, dotcom = {}, lang = 'ko', productsCnty = [], citationsCnty = [], options = {}) {
-  const { containerWidth = 940, showTrendTabs = false, weeklyLabels, weeklyAll = {}, categoryStats = null, unlaunchedMap: ulInput = {}, productCardVersion = 'v1', trendMode = 'weekly', llmModel, monthlyVis, citTouchPointsTrend = null, citTrendMonths = [], citDomainTrend = null, citDomainMonths = [], citTouchPointsByLlm = null, citDomainByLlm = null, citDomainByLlmTrend = null, dotcomByLlm = null, prependHtml = '', assetBase = '' } = options
+  const { containerWidth = 940, showTrendTabs = false, weeklyLabels, weeklyAll = {}, categoryStats = null, unlaunchedMap: ulInput = {}, productCardVersion = 'v1', trendMode = 'weekly', llmModel, monthlyVis, citTouchPointsTrend = null, citTrendMonths = [], citDomainTrend = null, citDomainMonths = [], citTouchPointsByLlm = null, citDomainByLlm = null, citDomainByLlmTrend = null, dotcomByLlm = null, prependHtml = '', assetBase = '', readability = null } = options
   // 인라인 편집 모드 (어드민 미리보기 전용) — 게시/복사/발송 경로는 editable 미지정 → 항상 false 로 리셋
   _ED = !!options.editable
   // LLM Model 필터 (2026-06) — 선택 모델로 products/productsCnty/total 재계산
@@ -3473,6 +3633,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
           </td>
         </tr>
         ${prependHtml || ''}
+        ${meta.showReadability && readability ? `<tr><td style="background:#FFFFFF;padding:24px 28px 0;">${readabilityHighlightHtml(readability, meta, lang, containerWidth - 56)}</td></tr>` : ''}
         <!-- 구분선 (직선) -->
         <tr>
           <td style="background:#FFFFFF;padding:24px 28px 0;">

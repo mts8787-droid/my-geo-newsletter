@@ -1156,6 +1156,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
             { key: 'showTotalInsight', label: '인사이트 V1 (기존)' },
             { key: 'showInsightV2', label: '6월 인사이트 V2' },
             { key: 'showHighlight', label: 'Highlight Insight' },
+            { key: 'showReadability', label: 'Readability Highlight' },
             { key: 'showProducts',  label: '제품별' },
             { key: 'showModelDelta', label: '제품별 모델 증감' },
             { key: 'showCompRatioDelta', label: '제품별 경쟁비 증감' },
