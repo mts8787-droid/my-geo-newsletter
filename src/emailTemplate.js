@@ -147,7 +147,7 @@ const T = {
     categories: '개 카테고리',
     productTitle: '제품별 GEO Visibility 현황',
     legendLead: '선도 ≥1.0', legendBehind: '추격 ≥0.8', legendCritical: '취약 <0.8',
-    lgBasis: 'LG/1위 기준',
+    lgBasis: 'LG/1위 기준', ratioNote: '%는 Visibility · ( )는 경쟁비',
     cntyTitle: '국가별 GEO Visibility 현황',
     cntyComp: '1위 경쟁사',
     citationTitle: '도메인 카테고리별 Citation 현황',
@@ -184,7 +184,7 @@ const T = {
     categories: ' Categories',
     productTitle: 'GEO Visibility by Product',
     legendLead: 'Lead ≥1.0', legendBehind: 'Behind ≥0.8', legendCritical: 'Critical <0.8',
-    lgBasis: 'LG/Top 1 Basis',
+    lgBasis: 'LG/Top 1 Basis', ratioNote: '% = Visibility · ( ) = comp ratio',
     cntyTitle: 'GEO Visibility by Country',
     cntyComp: 'Top 1 Competitor',
     citationTitle: 'Citation by Domain Category',
@@ -1545,9 +1545,10 @@ function countryVisibilitySectionHtml(productsCnty, meta, lang, total, unlaunche
                   <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFFFFF;border-radius:16px;border:2px solid #E8EDF2;">
                     <tr>
                       <td style="padding:16px 12px 12px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;">
-                        <table border="0" cellpadding="0" cellspacing="0"><tr>
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%"><tr>
                           <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
                           <td style="padding-left:8px;font-size:16px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${t.cntyTitle}</td>
+                          <td align="right" style="font-size:12px;color:#94A3B8;font-family:${EM_FONT};white-space:nowrap;">${t.ratioNote}</td>
                         </tr></table>
                       </td>
                     </tr>
@@ -3686,7 +3687,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                               </table>
                             </td>
                             <td align="right" style="vertical-align:middle;font-size:13px;color:#94A3B8;font-family:${EM_FONT};">
-                              ${t.lgBasis} &nbsp;
+                              ${t.ratioNote} &nbsp;&nbsp; ${t.lgBasis} &nbsp;
                               <span style="color:#15803D;">●</span> ${t.legendLead} &nbsp;
                               <span style="color:#E8910C;">●</span> ${t.legendBehind} &nbsp;
                               <span style="color:#BE123C;">●</span> ${t.legendCritical}
