@@ -3209,10 +3209,13 @@ function rdPara(text, opts = {}) {
 }
 
 // 각주 (* 로 시작하는 용어 설명)
-function rdFootnotes(lines, field) {
+// 각주는 여러 줄이라 한 덩어리로 편집 (줄바꿈 유지).
+// opts.plain — 배경/여백 없이 텍스트만. 이미 색이 있는 박스 안에 들어갈 때 사용
+// (Readability란 박스 안의 각주가 흰 박스로 겹쳐 보이던 문제).
+function rdFootnotes(lines, field, opts = {}) {
   if (!lines || !lines.length) return ''
-  // 각주는 여러 줄이라 한 덩어리로 편집 (줄바꿈 유지)
-  return `<div${field ? edRich(field) : ''} style="margin:2px 0 14px;padding:10px 12px;background:#F8FAFC;border-radius:6px;">
+  const box = opts.plain ? 'margin:2px 0 0;' : 'margin:2px 0 14px;padding:10px 12px;background:#F8FAFC;border-radius:6px;'
+  return `<div${field ? edRich(field) : ''} style="${box}">
     ${lines.map(l => `<div style="font-size:11px;color:#64748B;line-height:1.65;font-family:${EM_FONT};">${escapeHtml(l)}</div>`).join('')}
   </div>`
 }
@@ -3310,7 +3313,7 @@ function readabilityHighlightHtml(rd, meta = {}, lang = 'ko', contentWidth = 848
   const introBox = `<table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FEF2F4;border:1px solid #FECDD3;border-radius:10px;margin:0 0 22px;">
     <tr><td style="padding:16px 20px;">
       ${rdPara(tx('intro'), { gap: 8, field: 'rd_intro' })}
-      ${rdFootnotes(meta.rd_introNotes || RD_TEXT.introNotes, 'rd_introNotes')}
+      ${rdFootnotes(meta.rd_introNotes || RD_TEXT.introNotes, 'rd_introNotes', { plain: true })}
     </td></tr>
   </table>`
 
