@@ -223,20 +223,36 @@ const GRADE_THRESHOLD = { good: 80, needImprovement: 60 }
 // url→(cc,pt) 는 checks-<date>.json 에서 가져온다 — PSI 파일 자체엔 국가·타입이 없다.
 // 반환: (cc, pt) => 중앙값 ms | null.  폴백: 셀 → 국가 → 전체
 function buildTtfbMedian(psiResults, date) {
-  let rows = []
-  try {
-    const p = join(OUT_DIR, `checks-${date}.json`)
-    if (existsSync(p)) rows = JSON.parse(readFileSync(p, 'utf8')).rows || []
-  } catch (e) { _logWarn('aggregate-readability', `TTFB 대표값 — checks 로드 실패: ${e.message}`) }
-  if (!rows.length) return () => null
+  // 1순위: PSI 결과에 동봉된 cc/pt (collect-psi 가 저장). 2순위: checks-*.json 조인.
+  // checks 파일은 재집계가 최신 1개만 남기고 지우므로 실행 순서에 따라 없을 수 있다.
+  const meta = {}
+  for (const [url, v] of Object.entries(psiResults)) {
+    if (v && v.cc && v.pt) meta[url] = { cc: v.cc, pt: v.pt }
+  }
+  if (!Object.keys(meta).length) {
+    try {
+      const cand = [`checks-${date}.json`, ...(existsSync(OUT_DIR)
+        ? readdirSync(OUT_DIR).filter(f => /^checks-\d{4}-\d{2}-\d{2}\.json$/.test(f)).sort().reverse() : [])]
+      for (const fn of cand) {
+        const p = join(OUT_DIR, fn)
+        if (!existsSync(p)) continue
+        for (const r of (JSON.parse(readFileSync(p, 'utf8')).rows || [])) meta[r.url] = { cc: r.cc, pt: r.pt }
+        break
+      }
+    } catch (e) { _logWarn('aggregate-readability', `TTFB 대표값 — checks 로드 실패: ${e.message}`) }
+  }
+  if (!Object.keys(meta).length) {
+    _logWarn('aggregate-readability', 'TTFB 대표값 — 국가/페이지타입 정보 없음, 미측정 페이지 보정 불가')
+    return () => null
+  }
 
   const med = arr => { const a = arr.slice().sort((x, y) => x - y); return a.length ? a[Math.floor((a.length - 1) / 2)] : null }
   const cell = {}, country = {}, all = []
-  for (const r of rows) {
-    const v = psiResults[r.url]
+  for (const [url, m] of Object.entries(meta)) {
+    const v = psiResults[url]
     if (!v || v.err || v.lab == null) continue
-    ;(cell[`${r.cc}|${r.pt}`] = cell[`${r.cc}|${r.pt}`] || []).push(v.lab)
-    ;(country[r.cc] = country[r.cc] || []).push(v.lab)
+    ;(cell[`${m.cc}|${m.pt}`] = cell[`${m.cc}|${m.pt}`] || []).push(v.lab)
+    ;(country[m.cc] = country[m.cc] || []).push(v.lab)
     all.push(v.lab)
   }
   const cellMed = Object.fromEntries(Object.entries(cell).map(([k, a]) => [k, med(a)]))

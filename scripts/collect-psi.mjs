@@ -158,6 +158,7 @@ async function main() {
   }
   const checks = JSON.parse(readFileSync(checksPath, 'utf8'))
   let urls = [...new Set((checks.rows || []).map(r => r.url).filter(Boolean))]
+  const urlMeta = new Map((checks.rows || []).map(r => [r.url, { cc: r.cc, pt: r.pt }]))
   let mode = 'full'
 
   // --sample N : 국가×페이지타입당 최대 N건만 측정 (1차 추출용).
@@ -165,10 +166,9 @@ async function main() {
   // 필요한 만큼만 뽑는다. 이미 측정된 URL 을 각 셀에서 우선 채택해 재측정을 피한다.
   if (args.sample > 0) {
     mode = `sample:${args.sample}`
-    const meta = new Map((checks.rows || []).map(r => [r.url, { cc: r.cc, pt: r.pt }]))
     const cells = {}
     for (const u of urls) {
-      const m = meta.get(u); if (!m) continue
+      const m = urlMeta.get(u); if (!m) continue
       const k = `${m.cc}|${m.pt}`
       ;(cells[k] = cells[k] || []).push(u)
     }
@@ -211,9 +211,19 @@ async function main() {
   const markComplete = () => {
     const good = new Set(Object.entries(store.results)
       .filter(([, v]) => v && !v.err && v.lab != null && (v.v || 1) >= PSI_SCHEMA_VERSION).map(([k]) => k))
-    store.complete = urls.every(u => good.has(u))
+    // 완료 판정 = 대상 URL 이 전부 '측정됨' 또는 '재시도 소진 후 실패' 인 상태.
+    // PSI 가 특정 URL 에 반복적으로 500/502/400 을 돌려주는 경우가 있어(우리 요청 문제 아님)
+    // 무기한 재시도해도 채워지지 않는다. 그 건들은 대상에서 소진 처리하고 집계를 진행한다
+    // (미측정 페이지는 셀 대표값 보정으로 채점되므로 실질 영향은 제한적).
+    const failed = new Set(Object.entries(store.results).filter(([, v]) => v && v.err).map(([k]) => k))
+    store.complete = urls.every(u => good.has(u) || failed.has(u))
     store.mode = mode
-    store.coverage = { total: urls.length, ok: urls.filter(u => good.has(u)).length, stored: good.size }
+    store.coverage = {
+      total: urls.length,
+      ok: urls.filter(u => good.has(u)).length,
+      failed: urls.filter(u => !good.has(u) && failed.has(u)).length,
+      stored: good.size,
+    }
     return store.complete
   }
   const save = () => {
@@ -226,6 +236,10 @@ async function main() {
     while (idx < todo.length) {
       const url = todo[idx++]
       const r = await fetchWithRetry(url, key, strategy)
+      // 국가·페이지타입 동봉 — 집계의 셀 대표값 계산이 checks-<date>.json 존재 여부에
+      // 의존하지 않도록 (재집계가 그 파일을 최신 1개만 남기고 지운다).
+      const mt = urlMeta.get(url)
+      if (mt) { r.cc = mt.cc; r.pt = mt.pt }
       store.results[url] = r
       if (r.err) { fail++; _logWarn('collect-psi', `실패 — ${r.err}`, { url }) } else ok++
       // 25건마다 중간 저장 — 중단돼도 진행분 보존

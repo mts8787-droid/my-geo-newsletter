@@ -1,6 +1,6 @@
 {
   "date": "2026-07-31",
-  "generatedAt": "2026-08-26T13:27:52.502Z",
+  "generatedAt": "2026-08-27T02:09:19.123Z",
   "source": "run_results",
   "categoryLabels": {
     "performance": "사이트 성능",
@@ -16,13 +16,13 @@
       "runId": "39d08baa97d8",
       "urlCount": 685,
       "scoredCount": 685,
-      "avgScore": 77,
+      "avgScore": 79.5,
       "grades": {
-        "Need Improvement": 581,
-        "Good": 104
+        "Need Improvement": 221,
+        "Good": 464
       },
       "categories": {
-        "performance": 86.5,
+        "performance": 99.6,
         "accessibility": 88.1,
         "seo": 83.5,
         "geo_schema": 37.1,
@@ -31,9 +31,9 @@
       },
       "checks": {
         "perf_ttfb": {
-          "label": "#1 TTFB < 1800ms",
+          "label": "#1 TTFB < 600ms (PSI)",
           "cat": "performance",
-          "pass": 142,
+          "pass": 671,
           "applicable": 685
         },
         "perf_compression": {
@@ -281,9 +281,9 @@
         "newsroom": {
           "label": "뉴스룸/Press",
           "count": 100,
-          "avgScore": 75.6,
+          "avgScore": 78.4,
           "categories": {
-            "performance": 84.2,
+            "performance": 98.6,
             "accessibility": 87.3,
             "seo": 75,
             "geo_schema": 49.1,
@@ -292,9 +292,9 @@
           },
           "checks": {
             "perf_ttfb": {
-              "label": "#1 TTFB < 1800ms",
+              "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 7,
+              "pass": 92,
               "applicable": 100
             },
             "perf_compression": {
@@ -542,9 +542,9 @@
         "microsite": {
           "label": "마이크로사이트/캠페인",
           "count": 100,
-          "avgScore": 78.1,
+          "avgScore": 80.3,
           "categories": {
-            "performance": 87.3,
+            "performance": 99.8,
             "accessibility": 69.3,
             "seo": 88,
             "geo_schema": 27.6,
@@ -553,9 +553,9 @@
           },
           "checks": {
             "perf_ttfb": {
-              "label": "#1 TTFB < 1800ms",
+              "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 26,
+              "pass": 100,
               "applicable": 100
             },
             "perf_compression": {
@@ -803,9 +803,9 @@
         "buying_guide": {
           "label": "구매 가이드",
           "count": 17,
-          "avgScore": 73.1,
+          "avgScore": 74.9,
           "categories": {
-            "performance": 90,
+            "performance": 100,
             "accessibility": 89.7,
             "seo": 79.6,
             "geo_schema": 33.8,
@@ -814,9 +814,9 @@
           },
           "checks": {
             "perf_ttfb": {
-              "label": "#1 TTFB < 1800ms",
+              "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 7,
+              "pass": 17,
               "applicable": 17
             },
             "perf_compression": {
@@ -1064,9 +1064,9 @@
         "lg_experience": {
           "label": "LG Experience",
           "count": 72,
-          "avgScore": 76.1,
+          "avgScore": 78.2,
           "categories": {
-            "performance": 88,
+            "performance": 99.8,
             "accessibility": 99.3,
             "seo": 87.6,
             "geo_schema": 33,
@@ -1075,9 +1075,9 @@
           },
           "checks": {
             "perf_ttfb": {
-              "label": "#1 TTFB < 1800ms",
+              "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 21,
+              "pass": 71,
               "applicable": 72
             },
             "perf_compression": {
@@ -1325,9 +1325,9 @@
         "pdp": {
           "label": "제품 상세 (PDP)",
           "count": 99,
-          "avgScore": 76.6,
+          "avgScore": 79.5,
           "categories": {
-            "performance": 83.2,
+            "performance": 99.7,
             "accessibility": 73.7,
             "seo": 88,
             "geo_schema": 19.8,
@@ -1336,9 +1336,9 @@
           },
           "checks": {
             "perf_ttfb": {
-              "label": "#1 TTFB < 1800ms",
+              "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 1,
+              "pass": 97,
               "applicable": 99
             },
             "perf_compression": {
@@ -1586,9 +1586,9 @@
         "plp": {
           "label": "제품 카테고리 (PLP)",
           "count": 98,
-          "avgScore": 78.1,
+          "avgScore": 79.4,
           "categories": {
-            "performance": 92.5,
+            "performance": 100,
             "accessibility": 90.6,
             "seo": 83.9,
             "geo_schema": 47.2,
@@ -1597,9 +1597,9 @@
           },
           "checks": {
             "perf_ttfb": {
-              "label": "#1 TTFB < 1800ms",
+              "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 55,
+              "pass": 98,
               "applicable": 98
             },
             "perf_compression": {
@@ -1847,9 +1847,9 @@
         "support": {
           "label": "지원/Support",
           "count": 99,
-          "avgScore": 77.9,
+          "avgScore": 80.2,
           "categories": {
-            "performance": 86.8,
+            "performance": 99.7,
             "accessibility": 99.7,
             "seo": 75.8,
             "geo_schema": 49.8,
@@ -1858,9 +1858,9 @@
           },
           "checks": {
             "perf_ttfb": {
-              "label": "#1 TTFB < 1800ms",
+              "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 22,
+              "pass": 97,
               "applicable": 99
             },
             "perf_compression": {
@@ -2108,9 +2108,9 @@
         "support_troubleshoot": {
           "label": "지원 - 트러블슈팅",
           "count": 100,
-          "avgScore": 77,
+          "avgScore": 80.9,
           "categories": {
-            "performance": 83.5,
+            "performance": 99.8,
             "accessibility": 100,
             "seo": 87.7,
             "geo_schema": 33,
@@ -2119,9 +2119,9 @@
           },
           "checks": {
             "perf_ttfb": {
-              "label": "#1 TTFB < 1800ms",
+              "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 3,
+              "pass": 99,
               "applicable": 100
             },
             "perf_compression": {
@@ -2416,13 +2416,13 @@
       "runId": "9c23bc993a49",
       "urlCount": 518,
       "scoredCount": 518,
-      "avgScore": 77.7,
+      "avgScore": 80.2,
       "grades": {
-        "Need Improvement": 303,
-        "Good": 215
+        "Need Improvement": 164,
+        "Good": 354
       },
       "categories": {
-        "performance": 83.8,
+        "performance": 97.8,
         "accessibility": 94.2,
         "seo": 94.6,
         "geo_schema": 38.7,
@@ -2431,9 +2431,9 @@
       },
       "checks": {
         "perf_ttfb": {
-          "label": "#1 TTFB < 1800ms",
+          "label": "#1 TTFB < 600ms (PSI)",
           "cat": "performance",
-          "pass": 27,
+          "pass": 456,
           "applicable": 518
         },
         "perf_compression": {
@@ -2681,9 +2681,9 @@
         "newsroom": {
           "label": "뉴스룸/Press",
           "count": 100,
-          "avgScore": 80.2,
+          "avgScore": 82.7,
           "categories": {
-            "performance": 83.2,
+            "performance": 96.1,
             "accessibility": 100,
             "seo": 96,
             "geo_schema": 49.8,
@@ -2692,9 +2692,9 @@
           },
           "checks": {
             "perf_ttfb": {
-              "label": "#1 TTFB < 1800ms",
+              "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 1,
+              "pass": 77,
               "applicable": 100
             },
             "perf_compression": {
@@ -2942,9 +2942,9 @@
         "microsite": {
           "label": "마이크로사이트/캠페인",
           "count": 15,
-          "avgScore": 69.2,
+          "avgScore": 72.1,
           "categories": {
-            "performance": 80.9,
+            "performance": 96.6,
             "accessibility": 96.7,
             "seo": 73.1,
             "geo_schema": 23.7,
@@ -2953,9 +2953,9 @@
           },
           "checks": {
             "perf_ttfb": {
-              "label": "#1 TTFB < 1800ms",
+              "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 0,
+              "pass": 14,
               "applicable": 15
             },
             "perf_compression": {
@@ -3203,9 +3203,9 @@
         "buying_guide": {
           "label": "구매 가이드",
           "count": 25,
-          "avgScore": 74.2,
+          "avgScore": 75.8,
           "categories": {
-            "performance": 84.4,
+            "performance": 93.9,
             "accessibility": 100,
             "seo": 94.7,
             "geo_schema": 29.6,
@@ -3214,9 +3214,9 @@
           },
           "checks": {
             "perf_ttfb": {
-              "label": "#1 TTFB < 1800ms",
+              "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 2,
+              "pass": 16,
               "applicable": 25
             },
             "perf_compression": {
@@ -3464,9 +3464,9 @@
         "lg_experience": {
           "label": "LG Experience",
           "count": 99,
-          "avgScore": 75.6,
+          "avgScore": 77.8,
           "categories": {
-            "performance": 84.2,
+            "performance": 96.7,
             "accessibility": 99.5,
             "seo": 98.1,
             "geo_schema": 33,
@@ -3475,9 +3475,9 @@
           },
           "checks": {
             "perf_ttfb": {
-              "label": "#1 TTFB < 1800ms",
+              "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 7,
+              "pass": 80,
               "applicable": 99
             },
             "perf_compression": {
@@ -3725,9 +3725,9 @@
         "pdp": {
           "label": "제품 상세 (PDP)",
           "count": 93,
-          "avgScore": 76.9,
+          "avgScore": 79.6,
           "categories": {
-            "performance": 84.1,
+            "performance": 99.3,
             "accessibility": 74.7,
             "seo": 99.6,
             "geo_schema": 20,
@@ -3736,9 +3736,9 @@
           },
           "checks": {
             "perf_ttfb": {
-              "label": "#1 TTFB < 1800ms",
+              "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 6,
+              "pass": 89,
               "applicable": 93
             },
             "perf_compression": {
@@ -3986,9 +3986,9 @@
         "plp": {
           "label": "제품 카테고리 (PLP)",
           "count": 95,
-          "avgScore": 78.7,
+          "avgScore": 81.4,
           "categories": {
-            "performance": 84.1,
+            "performance": 99.1,
             "accessibility": 96.6,
             "seo": 94,
             "geo_schema": 45.9,
@@ -3997,9 +3997,9 @@
           },
           "checks": {
             "perf_ttfb": {
-              "label": "#1 TTFB < 1800ms",
+              "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 8,
+              "pass": 92,
               "applicable": 95
             },
             "perf_compression": {
@@ -4247,9 +4247,9 @@
         "support": {
           "label": "지원/Support",
           "count": 90,
-          "avgScore": 79.5,
+          "avgScore": 82.3,
           "categories": {
-            "performance": 83.6,
+            "performance": 99.4,
             "accessibility": 97.5,
             "seo": 88.4,
             "geo_schema": 49.6,
@@ -4258,9 +4258,9 @@
           },
           "checks": {
             "perf_ttfb": {
-              "label": "#1 TTFB < 1800ms",
+              "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 3,
+              "pass": 87,
               "applicable": 90
             },
             "perf_compression": {
@@ -4508,9 +4508,9 @@
         "support_troubleshoot": {
           "label": "지원 - 트러블슈팅",
           "count": 1,
-          "avgScore": 68,
+          "avgScore": 71,
           "categories": {
-            "performance": 83,
+            "performance": 100,
             "accessibility": 100,
             "seo": 62,
             "geo_schema": 33,
@@ -4519,9 +4519,9 @@
           },
           "checks": {
             "perf_ttfb": {
-              "label": "#1 TTFB < 1800ms",
+              "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 0,
+              "pass": 1,
               "applicable": 1
             },
             "perf_compression": {
@@ -4816,13 +4816,13 @@
       "runId": "53a6d6122257",
       "urlCount": 279,
       "scoredCount": 279,
-      "avgScore": 76.6,
+      "avgScore": 78.2,
       "grades": {
-        "Need Improvement": 197,
-        "Good": 82
+        "Need Improvement": 142,
+        "Good": 137
       },
       "categories": {
-        "performance": 84.6,
+        "performance": 93.4,
         "accessibility": 86.2,
         "seo": 90.2,
         "geo_schema": 35.3,
@@ -4831,9 +4831,9 @@
       },
       "checks": {
         "perf_ttfb": {
-          "label": "#1 TTFB < 1800ms",
+          "label": "#1 TTFB < 600ms (PSI)",
           "cat": "performance",
-          "pass": 26,
+          "pass": 170,
           "applicable": 279
         },
         "perf_compression": {
@@ -5081,9 +5081,9 @@
         "buying_guide": {
           "label": "구매 가이드",
           "count": 22,
-          "avgScore": 72.5,
+          "avgScore": 73.8,
           "categories": {
-            "performance": 83.8,
+            "performance": 91.5,
             "accessibility": 97.7,
             "seo": 90,
             "geo_schema": 24.8,
@@ -5092,9 +5092,9 @@
           },
           "checks": {
             "perf_ttfb": {
-              "label": "#1 TTFB < 1800ms",
+              "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 1,
+              "pass": 11,
               "applicable": 22
             },
             "perf_compression": {
@@ -5342,9 +5342,9 @@
         "newsroom": {
           "label": "뉴스룸/Press",
           "count": 2,
-          "avgScore": 77,
+          "avgScore": 79,
           "categories": {
-            "performance": 83,
+            "performance": 91.5,
             "accessibility": 100,
             "seo": 75,
             "geo_schema": 50,
@@ -5353,9 +5353,9 @@
           },
           "checks": {
             "perf_ttfb": {
-              "label": "#1 TTFB < 1800ms",
+              "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 0,
+              "pass": 1,
               "applicable": 2
             },
             "perf_compression": {
@@ -5603,9 +5603,9 @@
         "microsite": {
           "label": "마이크로사이트/캠페인",
           "count": 6,
-          "avgScore": 80.5,
+          "avgScore": 82,
           "categories": {
-            "performance": 83,
+            "performance": 91.5,
             "accessibility": 79.2,
             "seo": 98,
             "geo_schema": 33.3,
@@ -5614,9 +5614,9 @@
           },
           "checks": {
             "perf_ttfb": {
-              "label": "#1 TTFB < 1800ms",
+              "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 0,
+              "pass": 3,
               "applicable": 6
             },
             "perf_compression": {
@@ -5864,9 +5864,9 @@
         "lg_experience": {
           "label": "LG Experience",
           "count": 6,
-          "avgScore": 78.5,
+          "avgScore": 81.5,
           "categories": {
-            "performance": 83,
+            "performance": 100,
             "accessibility": 95.8,
             "seo": 98,
             "geo_schema": 33,
@@ -5875,9 +5875,9 @@
           },
           "checks": {
             "perf_ttfb": {
-              "label": "#1 TTFB < 1800ms",
+              "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 0,
+              "pass": 6,
               "applicable": 6
             },
             "perf_compression": {
@@ -6125,9 +6125,9 @@
         "pdp": {
           "label": "제품 상세 (PDP)",
           "count": 85,
-          "avgScore": 76.5,
+          "avgScore": 77.9,
           "categories": {
-            "performance": 84.6,
+            "performance": 92.6,
             "accessibility": 75,
             "seo": 99.3,
             "geo_schema": 20.5,
@@ -6136,9 +6136,9 @@
           },
           "checks": {
             "perf_ttfb": {
-              "label": "#1 TTFB < 1800ms",
+              "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 8,
+              "pass": 48,
               "applicable": 85
             },
             "perf_compression": {
@@ -6386,9 +6386,9 @@
         "plp": {
           "label": "제품 카테고리 (PLP)",
           "count": 84,
-          "avgScore": 76.8,
+          "avgScore": 78.3,
           "categories": {
-            "performance": 85.6,
+            "performance": 94.1,
             "accessibility": 89.6,
             "seo": 89.9,
             "geo_schema": 40.8,
@@ -6397,9 +6397,9 @@
           },
           "checks": {
             "perf_ttfb": {
-              "label": "#1 TTFB < 1800ms",
+              "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 13,
+              "pass": 55,
               "applicable": 84
             },
             "perf_compression": {
@@ -6647,9 +6647,9 @@
         "support": {
           "label": "지원/Support",
           "count": 72,
-          "avgScore": 77.1,
+          "avgScore": 78.9,
           "categories": {
-            "performance": 83.7,
+            "performance": 93.4,
             "accessibility": 91,
             "seo": 78.8,
             "geo_schema": 49.5,
@@ -6658,9 +6658,9 @@
           },
           "checks": {
             "perf_ttfb": {
-              "label": "#1 TTFB < 1800ms",
+              "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 3,
+              "pass": 44,
               "applicable": 72
             },
             "perf_compression": {
@@ -6908,9 +6908,9 @@
         "support_troubleshoot": {
           "label": "지원 - 트러블슈팅",
           "count": 2,
-          "avgScore": 77,
+          "avgScore": 79,
           "categories": {
-            "performance": 91.5,
+            "performance": 100,
             "accessibility": 100,
             "seo": 94,
             "geo_schema": 33,
@@ -6919,9 +6919,9 @@
           },
           "checks": {
             "perf_ttfb": {
-              "label": "#1 TTFB < 1800ms",
+              "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 1,
+              "pass": 2,
               "applicable": 2
             },
             "perf_compression": {
@@ -7216,14 +7216,13 @@
       "runId": "2c9b139f2e68",
       "urlCount": 609,
       "scoredCount": 609,
-      "avgScore": 77.2,
+      "avgScore": 80.4,
       "grades": {
-        "Need Improvement": 369,
-        "Good": 239,
-        "Poor": 1
+        "Good": 478,
+        "Need Improvement": 131
       },
       "categories": {
-        "performance": 81.4,
+        "performance": 97.2,
         "accessibility": 88.7,
         "seo": 95.4,
         "geo_schema": 33.2,
@@ -7232,9 +7231,9 @@
       },
       "checks": {
         "perf_ttfb": {
-          "label": "#1 TTFB < 1800ms",
+          "label": "#1 TTFB < 600ms (PSI)",
           "cat": "performance",
-          "pass": 33,
+          "pass": 605,
           "applicable": 609
         },
         "perf_compression": {
@@ -7482,9 +7481,9 @@
         "newsroom": {
           "label": "뉴스룸/Press",
           "count": 100,
-          "avgScore": 77,
+          "avgScore": 81,
           "categories": {
-            "performance": 83,
+            "performance": 100,
             "accessibility": 95.3,
             "seo": 77.6,
             "geo_schema": 50,
@@ -7493,9 +7492,9 @@
           },
           "checks": {
             "perf_ttfb": {
-              "label": "#1 TTFB < 1800ms",
+              "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 0,
+              "pass": 100,
               "applicable": 100
             },
             "perf_compression": {
@@ -7743,9 +7742,9 @@
         "microsite": {
           "label": "마이크로사이트/캠페인",
           "count": 7,
-          "avgScore": 78.1,
+          "avgScore": 81.3,
           "categories": {
-            "performance": 80.7,
+            "performance": 97.6,
             "accessibility": 100,
             "seo": 93.1,
             "geo_schema": 35,
@@ -7754,9 +7753,9 @@
           },
           "checks": {
             "perf_ttfb": {
-              "label": "#1 TTFB < 1800ms",
+              "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 0,
+              "pass": 7,
               "applicable": 7
             },
             "perf_compression": {
@@ -8004,9 +8003,9 @@
         "buying_guide": {
           "label": "구매 가이드",
           "count": 20,
-          "avgScore": 74.2,
+          "avgScore": 77,
           "categories": {
-            "performance": 83,
+            "performance": 100,
             "accessibility": 100,
             "seo": 90.8,
             "geo_schema": 28,
@@ -8015,9 +8014,9 @@
           },
           "checks": {
             "perf_ttfb": {
-              "label": "#1 TTFB < 1800ms",
+              "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 0,
+              "pass": 20,
               "applicable": 20
             },
             "perf_compression": {
@@ -8265,9 +8264,9 @@
         "lg_experience": {
           "label": "LG Experience",
           "count": 94,
-          "avgScore": 66.6,
+          "avgScore": 69.4,
           "categories": {
-            "performance": 67.9,
+            "performance": 83,
             "accessibility": 74.7,
             "seo": 99.9,
             "geo_schema": 0,
@@ -8276,9 +8275,9 @@
           },
           "checks": {
             "perf_ttfb": {
-              "label": "#1 TTFB < 1800ms",
+              "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 5,
+              "pass": 94,
               "applicable": 94
             },
             "perf_compression": {
@@ -8526,9 +8525,9 @@
         "pdp": {
           "label": "제품 상세 (PDP)",
           "count": 90,
-          "avgScore": 79.6,
+          "avgScore": 82.2,
           "categories": {
-            "performance": 84.5,
+            "performance": 99.4,
             "accessibility": 67.5,
             "seo": 99.9,
             "geo_schema": 22.7,
@@ -8537,9 +8536,9 @@
           },
           "checks": {
             "perf_ttfb": {
-              "label": "#1 TTFB < 1800ms",
+              "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 8,
+              "pass": 87,
               "applicable": 90
             },
             "perf_compression": {
@@ -8787,9 +8786,9 @@
         "plp": {
           "label": "제품 카테고리 (PLP)",
           "count": 98,
-          "avgScore": 79.9,
+          "avgScore": 82.6,
           "categories": {
-            "performance": 84.7,
+            "performance": 99.7,
             "accessibility": 88.5,
             "seo": 98.5,
             "geo_schema": 41.6,
@@ -8798,9 +8797,9 @@
           },
           "checks": {
             "perf_ttfb": {
-              "label": "#1 TTFB < 1800ms",
+              "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 12,
+              "pass": 98,
               "applicable": 98
             },
             "perf_compression": {
@@ -9048,9 +9047,9 @@
         "support": {
           "label": "지원/Support",
           "count": 100,
-          "avgScore": 82.9,
+          "avgScore": 86.6,
           "categories": {
-            "performance": 83.7,
+            "performance": 99.8,
             "accessibility": 100,
             "seo": 98.7,
             "geo_schema": 50,
@@ -9059,9 +9058,9 @@
           },
           "checks": {
             "perf_ttfb": {
-              "label": "#1 TTFB < 1800ms",
+              "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 4,
+              "pass": 99,
               "applicable": 100
             },
             "perf_compression": {
@@ -9309,9 +9308,9 @@
         "support_troubleshoot": {
           "label": "지원 - 트러블슈팅",
           "count": 100,
-          "avgScore": 77.2,
+          "avgScore": 81,
           "categories": {
-            "performance": 83.7,
+            "performance": 100,
             "accessibility": 100,
             "seo": 100,
             "geo_schema": 33,
@@ -9320,9 +9319,9 @@
           },
           "checks": {
             "perf_ttfb": {
-              "label": "#1 TTFB < 1800ms",
+              "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 4,
+              "pass": 100,
               "applicable": 100
             },
             "perf_compression": {
@@ -9617,13 +9616,13 @@
       "runId": "5e624d993ae4",
       "urlCount": 623,
       "scoredCount": 623,
-      "avgScore": 76.5,
+      "avgScore": 79.6,
       "grades": {
-        "Need Improvement": 379,
-        "Good": 244
+        "Good": 411,
+        "Need Improvement": 212
       },
       "categories": {
-        "performance": 81.1,
+        "performance": 97.2,
         "accessibility": 90.8,
         "seo": 92.1,
         "geo_schema": 33.4,
@@ -9632,9 +9631,9 @@
       },
       "checks": {
         "perf_ttfb": {
-          "label": "#1 TTFB < 1800ms",
+          "label": "#1 TTFB < 600ms (PSI)",
           "cat": "performance",
-          "pass": 27,
+          "pass": 621,
           "applicable": 623
         },
         "perf_compression": {
@@ -9882,9 +9881,9 @@
         "newsroom": {
           "label": "뉴스룸/Press",
           "count": 99,
-          "avgScore": 75.6,
+          "avgScore": 78.9,
           "categories": {
-            "performance": 83,
+            "performance": 99.8,
             "accessibility": 99.7,
             "seo": 69.7,
             "geo_schema": 50,
@@ -9893,9 +9892,9 @@
           },
           "checks": {
             "perf_ttfb": {
-              "label": "#1 TTFB < 1800ms",
+              "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 0,
+              "pass": 98,
               "applicable": 99
             },
             "perf_compression": {
@@ -10143,9 +10142,9 @@
         "buying_guide": {
           "label": "구매 가이드",
           "count": 21,
-          "avgScore": 76,
+          "avgScore": 78.8,
           "categories": {
-            "performance": 83,
+            "performance": 100,
             "accessibility": 98.8,
             "seo": 97,
             "geo_schema": 30.7,
@@ -10154,9 +10153,9 @@
           },
           "checks": {
             "perf_ttfb": {
-              "label": "#1 TTFB < 1800ms",
+              "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 0,
+              "pass": 21,
               "applicable": 21
             },
             "perf_compression": {
@@ -10404,9 +10403,9 @@
         "lg_experience": {
           "label": "LG Experience",
           "count": 100,
-          "avgScore": 68.2,
+          "avgScore": 71,
           "categories": {
-            "performance": 67.8,
+            "performance": 83,
             "accessibility": 75,
             "seo": 99.8,
             "geo_schema": 0,
@@ -10415,9 +10414,9 @@
           },
           "checks": {
             "perf_ttfb": {
-              "label": "#1 TTFB < 1800ms",
+              "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 5,
+              "pass": 100,
               "applicable": 100
             },
             "perf_compression": {
@@ -10665,9 +10664,9 @@
         "microsite": {
           "label": "마이크로사이트/캠페인",
           "count": 10,
-          "avgScore": 70.4,
+          "avgScore": 73.4,
           "categories": {
-            "performance": 83,
+            "performance": 100,
             "accessibility": 87.5,
             "seo": 76.3,
             "geo_schema": 27,
@@ -10676,9 +10675,9 @@
           },
           "checks": {
             "perf_ttfb": {
-              "label": "#1 TTFB < 1800ms",
+              "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 0,
+              "pass": 10,
               "applicable": 10
             },
             "perf_compression": {
@@ -10926,9 +10925,9 @@
         "pdp": {
           "label": "제품 상세 (PDP)",
           "count": 94,
-          "avgScore": 79.3,
+          "avgScore": 82.1,
           "categories": {
-            "performance": 83.5,
+            "performance": 100,
             "accessibility": 73.4,
             "seo": 98.9,
             "geo_schema": 22.6,
@@ -10937,9 +10936,9 @@
           },
           "checks": {
             "perf_ttfb": {
-              "label": "#1 TTFB < 1800ms",
+              "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 3,
+              "pass": 94,
               "applicable": 94
             },
             "perf_compression": {
@@ -11187,9 +11186,9 @@
         "plp": {
           "label": "제품 카테고리 (PLP)",
           "count": 99,
-          "avgScore": 79.8,
+          "avgScore": 82.3,
           "categories": {
-            "performance": 86.1,
+            "performance": 100,
             "accessibility": 94.7,
             "seo": 96.5,
             "geo_schema": 45.8,
@@ -11198,9 +11197,9 @@
           },
           "checks": {
             "perf_ttfb": {
-              "label": "#1 TTFB < 1800ms",
+              "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 18,
+              "pass": 99,
               "applicable": 99
             },
             "perf_compression": {
@@ -11448,9 +11447,9 @@
         "support": {
           "label": "지원/Support",
           "count": 100,
-          "avgScore": 80.2,
+          "avgScore": 83.1,
           "categories": {
-            "performance": 82.8,
+            "performance": 99.5,
             "accessibility": 99.5,
             "seo": 88.5,
             "geo_schema": 49.8,
@@ -11459,9 +11458,9 @@
           },
           "checks": {
             "perf_ttfb": {
-              "label": "#1 TTFB < 1800ms",
+              "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 1,
+              "pass": 99,
               "applicable": 100
             },
             "perf_compression": {
@@ -11709,9 +11708,9 @@
         "support_troubleshoot": {
           "label": "지원 - 트러블슈팅",
           "count": 100,
-          "avgScore": 77,
+          "avgScore": 81,
           "categories": {
-            "performance": 83,
+            "performance": 100,
             "accessibility": 100,
             "seo": 100,
             "geo_schema": 33,
@@ -11720,9 +11719,9 @@
           },
           "checks": {
             "perf_ttfb": {
-              "label": "#1 TTFB < 1800ms",
+              "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 0,
+              "pass": 100,
               "applicable": 100
             },
             "perf_compression": {
@@ -12017,14 +12016,14 @@
       "runId": "bb535c8d2fa8",
       "urlCount": 531,
       "scoredCount": 531,
-      "avgScore": 74.1,
+      "avgScore": 76.1,
       "grades": {
-        "Need Improvement": 478,
-        "Good": 51,
-        "Poor": 2
+        "Good": 105,
+        "Need Improvement": 425,
+        "Poor": 1
       },
       "categories": {
-        "performance": 89.1,
+        "performance": 99.8,
         "accessibility": 91.1,
         "seo": 82.4,
         "geo_schema": 41,
@@ -12033,9 +12032,9 @@
       },
       "checks": {
         "perf_ttfb": {
-          "label": "#1 TTFB < 1800ms",
+          "label": "#1 TTFB < 600ms (PSI)",
           "cat": "performance",
-          "pass": 191,
+          "pass": 525,
           "applicable": 531
         },
         "perf_compression": {
@@ -12283,9 +12282,9 @@
         "newsroom": {
           "label": "뉴스룸/Press",
           "count": 100,
-          "avgScore": 74.8,
+          "avgScore": 77.3,
           "categories": {
-            "performance": 87.3,
+            "performance": 99.8,
             "accessibility": 99,
             "seo": 80.7,
             "geo_schema": 44.2,
@@ -12294,9 +12293,9 @@
           },
           "checks": {
             "perf_ttfb": {
-              "label": "#1 TTFB < 1800ms",
+              "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 25,
+              "pass": 99,
               "applicable": 100
             },
             "perf_compression": {
@@ -12544,9 +12543,9 @@
         "plp": {
           "label": "제품 카테고리 (PLP)",
           "count": 100,
-          "avgScore": 74.2,
+          "avgScore": 74.9,
           "categories": {
-            "performance": 96.1,
+            "performance": 100,
             "accessibility": 83.8,
             "seo": 81.2,
             "geo_schema": 45.8,
@@ -12555,9 +12554,9 @@
           },
           "checks": {
             "perf_ttfb": {
-              "label": "#1 TTFB < 1800ms",
+              "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 77,
+              "pass": 100,
               "applicable": 100
             },
             "perf_compression": {
@@ -12816,7 +12815,7 @@
           },
           "checks": {
             "perf_ttfb": {
-              "label": "#1 TTFB < 1800ms",
+              "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
               "pass": 9,
               "applicable": 11
@@ -13066,9 +13065,9 @@
         "microsite": {
           "label": "마이크로사이트/캠페인",
           "count": 59,
-          "avgScore": 78.1,
+          "avgScore": 79.5,
           "categories": {
-            "performance": 91.9,
+            "performance": 100,
             "accessibility": 77.5,
             "seo": 86.7,
             "geo_schema": 44.7,
@@ -13077,9 +13076,9 @@
           },
           "checks": {
             "perf_ttfb": {
-              "label": "#1 TTFB < 1800ms",
+              "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 31,
+              "pass": 59,
               "applicable": 59
             },
             "perf_compression": {
@@ -13327,9 +13326,9 @@
         "pdp": {
           "label": "제품 상세 (PDP)",
           "count": 61,
-          "avgScore": 73.9,
+          "avgScore": 76.3,
           "categories": {
-            "performance": 86.1,
+            "performance": 99.7,
             "accessibility": 75,
             "seo": 85.9,
             "geo_schema": 26.1,
@@ -13338,9 +13337,9 @@
           },
           "checks": {
             "perf_ttfb": {
-              "label": "#1 TTFB < 1800ms",
+              "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 11,
+              "pass": 60,
               "applicable": 61
             },
             "perf_compression": {
@@ -13588,9 +13587,9 @@
         "support": {
           "label": "지원/Support",
           "count": 100,
-          "avgScore": 74.7,
+          "avgScore": 77.3,
           "categories": {
-            "performance": 88.8,
+            "performance": 100,
             "accessibility": 99,
             "seo": 76,
             "geo_schema": 50,
@@ -13599,9 +13598,9 @@
           },
           "checks": {
             "perf_ttfb": {
-              "label": "#1 TTFB < 1800ms",
+              "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 34,
+              "pass": 100,
               "applicable": 100
             },
             "perf_compression": {
@@ -13849,9 +13848,9 @@
         "support_troubleshoot": {
           "label": "지원 - 트러블슈팅",
           "count": 100,
-          "avgScore": 71.1,
+          "avgScore": 73.9,
           "categories": {
-            "performance": 83.7,
+            "performance": 99.7,
             "accessibility": 99.8,
             "seo": 88,
             "geo_schema": 33,
@@ -13860,9 +13859,9 @@
           },
           "checks": {
             "perf_ttfb": {
-              "label": "#1 TTFB < 1800ms",
+              "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 4,
+              "pass": 98,
               "applicable": 100
             },
             "perf_compression": {
@@ -14157,13 +14156,13 @@
       "runId": "eb9b2f21456b",
       "urlCount": 543,
       "scoredCount": 543,
-      "avgScore": 75.1,
+      "avgScore": 78,
       "grades": {
-        "Need Improvement": 508,
-        "Good": 35
+        "Need Improvement": 323,
+        "Good": 220
       },
       "categories": {
-        "performance": 83.9,
+        "performance": 99.9,
         "accessibility": 93.5,
         "seo": 90.6,
         "geo_schema": 38.9,
@@ -14172,9 +14171,9 @@
       },
       "checks": {
         "perf_ttfb": {
-          "label": "#1 TTFB < 1800ms",
+          "label": "#1 TTFB < 600ms (PSI)",
           "cat": "performance",
-          "pass": 28,
+          "pass": 541,
           "applicable": 543
         },
         "perf_compression": {
@@ -14422,9 +14421,9 @@
         "newsroom": {
           "label": "뉴스룸/Press",
           "count": 100,
-          "avgScore": 73.5,
+          "avgScore": 76.5,
           "categories": {
-            "performance": 83.2,
+            "performance": 100,
             "accessibility": 96.8,
             "seo": 76.3,
             "geo_schema": 49.8,
@@ -14433,9 +14432,9 @@
           },
           "checks": {
             "perf_ttfb": {
-              "label": "#1 TTFB < 1800ms",
+              "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 1,
+              "pass": 100,
               "applicable": 100
             },
             "perf_compression": {
@@ -14683,9 +14682,9 @@
         "buying_guide": {
           "label": "구매 가이드",
           "count": 24,
-          "avgScore": 73.1,
+          "avgScore": 75.9,
           "categories": {
-            "performance": 83.7,
+            "performance": 99.3,
             "accessibility": 97.9,
             "seo": 92.8,
             "geo_schema": 31.3,
@@ -14694,9 +14693,9 @@
           },
           "checks": {
             "perf_ttfb": {
-              "label": "#1 TTFB < 1800ms",
+              "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 1,
+              "pass": 23,
               "applicable": 24
             },
             "perf_compression": {
@@ -14944,9 +14943,9 @@
         "lg_experience": {
           "label": "LG Experience",
           "count": 29,
-          "avgScore": 74.6,
+          "avgScore": 77.5,
           "categories": {
-            "performance": 83,
+            "performance": 99.4,
             "accessibility": 90.5,
             "seo": 95.3,
             "geo_schema": 32.7,
@@ -14955,9 +14954,9 @@
           },
           "checks": {
             "perf_ttfb": {
-              "label": "#1 TTFB < 1800ms",
+              "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 0,
+              "pass": 28,
               "applicable": 29
             },
             "perf_compression": {
@@ -15205,9 +15204,9 @@
         "pdp": {
           "label": "제품 상세 (PDP)",
           "count": 94,
-          "avgScore": 77.5,
+          "avgScore": 80.2,
           "categories": {
-            "performance": 84.6,
+            "performance": 100,
             "accessibility": 75,
             "seo": 100,
             "geo_schema": 21.6,
@@ -15216,9 +15215,9 @@
           },
           "checks": {
             "perf_ttfb": {
-              "label": "#1 TTFB < 1800ms",
+              "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 9,
+              "pass": 94,
               "applicable": 94
             },
             "perf_compression": {
@@ -15466,9 +15465,9 @@
         "microsite": {
           "label": "마이크로사이트/캠페인",
           "count": 6,
-          "avgScore": 74,
+          "avgScore": 77,
           "categories": {
-            "performance": 83,
+            "performance": 100,
             "accessibility": 91.7,
             "seo": 91.8,
             "geo_schema": 30.8,
@@ -15477,9 +15476,9 @@
           },
           "checks": {
             "perf_ttfb": {
-              "label": "#1 TTFB < 1800ms",
+              "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 0,
+              "pass": 6,
               "applicable": 6
             },
             "perf_compression": {
@@ -15727,9 +15726,9 @@
         "plp": {
           "label": "제품 카테고리 (PLP)",
           "count": 90,
-          "avgScore": 73.9,
+          "avgScore": 76.6,
           "categories": {
-            "performance": 85.3,
+            "performance": 100,
             "accessibility": 95,
             "seo": 86.2,
             "geo_schema": 43.7,
@@ -15738,9 +15737,9 @@
           },
           "checks": {
             "perf_ttfb": {
-              "label": "#1 TTFB < 1800ms",
+              "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 12,
+              "pass": 90,
               "applicable": 90
             },
             "perf_compression": {
@@ -15988,9 +15987,9 @@
         "support": {
           "label": "지원/Support",
           "count": 100,
-          "avgScore": 77.2,
+          "avgScore": 80.2,
           "categories": {
-            "performance": 83.3,
+            "performance": 100,
             "accessibility": 99.5,
             "seo": 88.6,
             "geo_schema": 49.8,
@@ -15999,9 +15998,9 @@
           },
           "checks": {
             "perf_ttfb": {
-              "label": "#1 TTFB < 1800ms",
+              "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 2,
+              "pass": 100,
               "applicable": 100
             },
             "perf_compression": {
@@ -16249,9 +16248,9 @@
         "support_troubleshoot": {
           "label": "지원 - 트러블슈팅",
           "count": 100,
-          "avgScore": 74.1,
+          "avgScore": 77,
           "categories": {
-            "performance": 83.5,
+            "performance": 100,
             "accessibility": 100,
             "seo": 100,
             "geo_schema": 33,
@@ -16260,9 +16259,9 @@
           },
           "checks": {
             "perf_ttfb": {
-              "label": "#1 TTFB < 1800ms",
+              "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 3,
+              "pass": 100,
               "applicable": 100
             },
             "perf_compression": {
@@ -16557,13 +16556,13 @@
       "runId": "f9c1aed6cab6",
       "urlCount": 645,
       "scoredCount": 645,
-      "avgScore": 76.6,
+      "avgScore": 79.6,
       "grades": {
-        "Need Improvement": 484,
-        "Good": 161
+        "Need Improvement": 254,
+        "Good": 391
       },
       "categories": {
-        "performance": 83.7,
+        "performance": 99.8,
         "accessibility": 92.1,
         "seo": 93.2,
         "geo_schema": 38.2,
@@ -16572,9 +16571,9 @@
       },
       "checks": {
         "perf_ttfb": {
-          "label": "#1 TTFB < 1800ms",
+          "label": "#1 TTFB < 600ms (PSI)",
           "cat": "performance",
-          "pass": 34,
+          "pass": 643,
           "applicable": 645
         },
         "perf_compression": {
@@ -16822,9 +16821,9 @@
         "microsite": {
           "label": "마이크로사이트/캠페인",
           "count": 15,
-          "avgScore": 70.4,
+          "avgScore": 73.2,
           "categories": {
-            "performance": 83,
+            "performance": 98.9,
             "accessibility": 88.3,
             "seo": 80.1,
             "geo_schema": 22,
@@ -16833,9 +16832,9 @@
           },
           "checks": {
             "perf_ttfb": {
-              "label": "#1 TTFB < 1800ms",
+              "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 1,
+              "pass": 15,
               "applicable": 15
             },
             "perf_compression": {
@@ -17083,9 +17082,9 @@
         "newsroom": {
           "label": "뉴스룸/Press",
           "count": 100,
-          "avgScore": 75.2,
+          "avgScore": 78.3,
           "categories": {
-            "performance": 83,
+            "performance": 99.8,
             "accessibility": 99.3,
             "seo": 69.9,
             "geo_schema": 49.8,
@@ -17094,9 +17093,9 @@
           },
           "checks": {
             "perf_ttfb": {
-              "label": "#1 TTFB < 1800ms",
+              "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 1,
+              "pass": 100,
               "applicable": 100
             },
             "perf_compression": {
@@ -17344,9 +17343,9 @@
         "buying_guide": {
           "label": "구매 가이드",
           "count": 44,
-          "avgScore": 73.7,
+          "avgScore": 76.2,
           "categories": {
-            "performance": 84.6,
+            "performance": 99.6,
             "accessibility": 98.3,
             "seo": 89.9,
             "geo_schema": 28.5,
@@ -17355,9 +17354,9 @@
           },
           "checks": {
             "perf_ttfb": {
-              "label": "#1 TTFB < 1800ms",
+              "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 5,
+              "pass": 44,
               "applicable": 44
             },
             "perf_compression": {
@@ -17605,9 +17604,9 @@
         "lg_experience": {
           "label": "LG Experience",
           "count": 91,
-          "avgScore": 76.6,
+          "avgScore": 79.6,
           "categories": {
-            "performance": 82.5,
+            "performance": 99.4,
             "accessibility": 99.7,
             "seo": 100,
             "geo_schema": 32.9,
@@ -17616,9 +17615,9 @@
           },
           "checks": {
             "perf_ttfb": {
-              "label": "#1 TTFB < 1800ms",
+              "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 0,
+              "pass": 91,
               "applicable": 91
             },
             "perf_compression": {
@@ -17866,9 +17865,9 @@
         "pdp": {
           "label": "제품 상세 (PDP)",
           "count": 99,
-          "avgScore": 75.9,
+          "avgScore": 78.6,
           "categories": {
-            "performance": 84.4,
+            "performance": 99.7,
             "accessibility": 67.4,
             "seo": 100,
             "geo_schema": 26.4,
@@ -17877,9 +17876,9 @@
           },
           "checks": {
             "perf_ttfb": {
-              "label": "#1 TTFB < 1800ms",
+              "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 8,
+              "pass": 97,
               "applicable": 99
             },
             "perf_compression": {
@@ -18127,9 +18126,9 @@
         "plp": {
           "label": "제품 카테고리 (PLP)",
           "count": 96,
-          "avgScore": 77.6,
+          "avgScore": 80.2,
           "categories": {
-            "performance": 85.5,
+            "performance": 100,
             "accessibility": 84.9,
             "seo": 94.7,
             "geo_schema": 43.2,
@@ -18138,9 +18137,9 @@
           },
           "checks": {
             "perf_ttfb": {
-              "label": "#1 TTFB < 1800ms",
+              "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 14,
+              "pass": 96,
               "applicable": 96
             },
             "perf_compression": {
@@ -18388,9 +18387,9 @@
         "support": {
           "label": "지원/Support",
           "count": 100,
-          "avgScore": 79.6,
+          "avgScore": 82.6,
           "categories": {
-            "performance": 83.2,
+            "performance": 100,
             "accessibility": 99.5,
             "seo": 98.7,
             "geo_schema": 49.8,
@@ -18399,9 +18398,9 @@
           },
           "checks": {
             "perf_ttfb": {
-              "label": "#1 TTFB < 1800ms",
+              "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 1,
+              "pass": 100,
               "applicable": 100
             },
             "perf_compression": {
@@ -18649,9 +18648,9 @@
         "support_troubleshoot": {
           "label": "지원 - 트러블슈팅",
           "count": 100,
-          "avgScore": 77.1,
+          "avgScore": 81,
           "categories": {
-            "performance": 83.7,
+            "performance": 100,
             "accessibility": 100,
             "seo": 99.9,
             "geo_schema": 33,
@@ -18660,9 +18659,9 @@
           },
           "checks": {
             "perf_ttfb": {
-              "label": "#1 TTFB < 1800ms",
+              "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 4,
+              "pass": 100,
               "applicable": 100
             },
             "perf_compression": {
@@ -18957,14 +18956,14 @@
       "runId": "765d1a7d5451",
       "urlCount": 446,
       "scoredCount": 446,
-      "avgScore": 72.6,
+      "avgScore": 75.3,
       "grades": {
-        "Need Improvement": 269,
-        "Poor": 30,
-        "Good": 147
+        "Need Improvement": 263,
+        "Poor": 9,
+        "Good": 174
       },
       "categories": {
-        "performance": 82.4,
+        "performance": 97.8,
         "accessibility": 79.9,
         "seo": 88.6,
         "geo_schema": 17.4,
@@ -18973,9 +18972,9 @@
       },
       "checks": {
         "perf_ttfb": {
-          "label": "#1 TTFB < 1800ms",
+          "label": "#1 TTFB < 600ms (PSI)",
           "cat": "performance",
-          "pass": 38,
+          "pass": 446,
           "applicable": 446
         },
         "perf_compression": {
@@ -19223,9 +19222,9 @@
         "buying_guide": {
           "label": "구매 가이드",
           "count": 14,
-          "avgScore": 68.1,
+          "avgScore": 70.9,
           "categories": {
-            "performance": 83.1,
+            "performance": 98.8,
             "accessibility": 73.2,
             "seo": 82.4,
             "geo_schema": 0,
@@ -19234,9 +19233,9 @@
           },
           "checks": {
             "perf_ttfb": {
-              "label": "#1 TTFB < 1800ms",
+              "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 1,
+              "pass": 14,
               "applicable": 14
             },
             "perf_compression": {
@@ -19484,9 +19483,9 @@
         "newsroom": {
           "label": "뉴스룸/Press",
           "count": 100,
-          "avgScore": 64.3,
+          "avgScore": 67,
           "categories": {
-            "performance": 76,
+            "performance": 91,
             "accessibility": 76.3,
             "seo": 86.8,
             "geo_schema": 0,
@@ -19495,9 +19494,9 @@
           },
           "checks": {
             "perf_ttfb": {
-              "label": "#1 TTFB < 1800ms",
+              "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 9,
+              "pass": 100,
               "applicable": 100
             },
             "perf_compression": {
@@ -19745,9 +19744,9 @@
         "lg_experience": {
           "label": "LG Experience",
           "count": 29,
-          "avgScore": 72.8,
+          "avgScore": 75.3,
           "categories": {
-            "performance": 85.9,
+            "performance": 100,
             "accessibility": 75,
             "seo": 88.3,
             "geo_schema": 0,
@@ -19756,9 +19755,9 @@
           },
           "checks": {
             "perf_ttfb": {
-              "label": "#1 TTFB < 1800ms",
+              "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 5,
+              "pass": 29,
               "applicable": 29
             },
             "perf_compression": {
@@ -20006,9 +20005,9 @@
         "microsite": {
           "label": "마이크로사이트/캠페인",
           "count": 7,
-          "avgScore": 74,
+          "avgScore": 77,
           "categories": {
-            "performance": 80.7,
+            "performance": 97.6,
             "accessibility": 75,
             "seo": 93.1,
             "geo_schema": 10.7,
@@ -20017,9 +20016,9 @@
           },
           "checks": {
             "perf_ttfb": {
-              "label": "#1 TTFB < 1800ms",
+              "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 0,
+              "pass": 7,
               "applicable": 7
             },
             "perf_compression": {
@@ -20267,9 +20266,9 @@
         "pdp": {
           "label": "제품 상세 (PDP)",
           "count": 96,
-          "avgScore": 80,
+          "avgScore": 82.9,
           "categories": {
-            "performance": 83.7,
+            "performance": 100,
             "accessibility": 100,
             "seo": 88,
             "geo_schema": 40,
@@ -20278,9 +20277,9 @@
           },
           "checks": {
             "perf_ttfb": {
-              "label": "#1 TTFB < 1800ms",
+              "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 4,
+              "pass": 96,
               "applicable": 96
             },
             "perf_compression": {
@@ -20528,9 +20527,9 @@
         "plp": {
           "label": "제품 카테고리 (PLP)",
           "count": 100,
-          "avgScore": 79.1,
+          "avgScore": 81.8,
           "categories": {
-            "performance": 85.6,
+            "performance": 99.8,
             "accessibility": 73.3,
             "seo": 92.7,
             "geo_schema": 37,
@@ -20539,9 +20538,9 @@
           },
           "checks": {
             "perf_ttfb": {
-              "label": "#1 TTFB < 1800ms",
+              "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 16,
+              "pass": 100,
               "applicable": 100
             },
             "perf_compression": {
@@ -20789,9 +20788,9 @@
         "support_troubleshoot": {
           "label": "지원 - 트러블슈팅",
           "count": 100,
-          "avgScore": 67.6,
+          "avgScore": 70.5,
           "categories": {
-            "performance": 83.2,
+            "performance": 99.7,
             "accessibility": 73.8,
             "seo": 87.3,
             "geo_schema": 1.3,
@@ -20800,9 +20799,9 @@
           },
           "checks": {
             "perf_ttfb": {
-              "label": "#1 TTFB < 1800ms",
+              "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 3,
+              "pass": 100,
               "applicable": 100
             },
             "perf_compression": {
@@ -21097,14 +21096,14 @@
       "runId": "db9329a40d4f",
       "urlCount": 559,
       "scoredCount": 559,
-      "avgScore": 76.2,
+      "avgScore": 79.3,
       "grades": {
-        "Need Improvement": 482,
-        "Good": 76,
+        "Need Improvement": 210,
+        "Good": 348,
         "Poor": 1
       },
       "categories": {
-        "performance": 83.6,
+        "performance": 99.7,
         "accessibility": 93.6,
         "seo": 92.1,
         "geo_schema": 38,
@@ -21113,9 +21112,9 @@
       },
       "checks": {
         "perf_ttfb": {
-          "label": "#1 TTFB < 1800ms",
+          "label": "#1 TTFB < 600ms (PSI)",
           "cat": "performance",
-          "pass": 29,
+          "pass": 558,
           "applicable": 559
         },
         "perf_compression": {
@@ -21363,9 +21362,9 @@
         "microsite": {
           "label": "마이크로사이트/캠페인",
           "count": 6,
-          "avgScore": 72.3,
+          "avgScore": 74.8,
           "categories": {
-            "performance": 83,
+            "performance": 97.2,
             "accessibility": 100,
             "seo": 85.7,
             "geo_schema": 23.3,
@@ -21374,9 +21373,9 @@
           },
           "checks": {
             "perf_ttfb": {
-              "label": "#1 TTFB < 1800ms",
+              "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 1,
+              "pass": 6,
               "applicable": 6
             },
             "perf_compression": {
@@ -21624,9 +21623,9 @@
         "newsroom": {
           "label": "뉴스룸/Press",
           "count": 100,
-          "avgScore": 74.2,
+          "avgScore": 77.4,
           "categories": {
-            "performance": 81.7,
+            "performance": 98.5,
             "accessibility": 98.8,
             "seo": 77.1,
             "geo_schema": 47.6,
@@ -21635,9 +21634,9 @@
           },
           "checks": {
             "perf_ttfb": {
-              "label": "#1 TTFB < 1800ms",
+              "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 1,
+              "pass": 100,
               "applicable": 100
             },
             "perf_compression": {
@@ -21885,9 +21884,9 @@
         "buying_guide": {
           "label": "구매 가이드",
           "count": 3,
-          "avgScore": 68,
+          "avgScore": 71,
           "categories": {
-            "performance": 83,
+            "performance": 100,
             "accessibility": 91.7,
             "seo": 83.7,
             "geo_schema": 25,
@@ -21896,9 +21895,9 @@
           },
           "checks": {
             "perf_ttfb": {
-              "label": "#1 TTFB < 1800ms",
+              "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 0,
+              "pass": 3,
               "applicable": 3
             },
             "perf_compression": {
@@ -22146,9 +22145,9 @@
         "lg_experience": {
           "label": "LG Experience",
           "count": 57,
-          "avgScore": 75.4,
+          "avgScore": 78.3,
           "categories": {
-            "performance": 83.6,
+            "performance": 100,
             "accessibility": 98.7,
             "seo": 97.6,
             "geo_schema": 33,
@@ -22157,9 +22156,9 @@
           },
           "checks": {
             "perf_ttfb": {
-              "label": "#1 TTFB < 1800ms",
+              "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 2,
+              "pass": 57,
               "applicable": 57
             },
             "perf_compression": {
@@ -22407,9 +22406,9 @@
         "pdp": {
           "label": "제품 상세 (PDP)",
           "count": 95,
-          "avgScore": 76.9,
+          "avgScore": 79.6,
           "categories": {
-            "performance": 84.1,
+            "performance": 99.8,
             "accessibility": 74.2,
             "seo": 100,
             "geo_schema": 20.6,
@@ -22418,9 +22417,9 @@
           },
           "checks": {
             "perf_ttfb": {
-              "label": "#1 TTFB < 1800ms",
+              "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 6,
+              "pass": 94,
               "applicable": 95
             },
             "perf_compression": {
@@ -22668,9 +22667,9 @@
         "plp": {
           "label": "제품 카테고리 (PLP)",
           "count": 98,
-          "avgScore": 76.8,
+          "avgScore": 79.5,
           "categories": {
-            "performance": 85.3,
+            "performance": 100,
             "accessibility": 91.1,
             "seo": 94.4,
             "geo_schema": 42.3,
@@ -22679,9 +22678,9 @@
           },
           "checks": {
             "perf_ttfb": {
-              "label": "#1 TTFB < 1800ms",
+              "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 13,
+              "pass": 98,
               "applicable": 98
             },
             "perf_compression": {
@@ -22929,9 +22928,9 @@
         "support": {
           "label": "지원/Support",
           "count": 100,
-          "avgScore": 76.8,
+          "avgScore": 79.8,
           "categories": {
-            "performance": 83.5,
+            "performance": 100,
             "accessibility": 99.5,
             "seo": 87.1,
             "geo_schema": 50,
@@ -22940,9 +22939,9 @@
           },
           "checks": {
             "perf_ttfb": {
-              "label": "#1 TTFB < 1800ms",
+              "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 3,
+              "pass": 100,
               "applicable": 100
             },
             "perf_compression": {
@@ -23190,9 +23189,9 @@
         "support_troubleshoot": {
           "label": "지원 - 트러블슈팅",
           "count": 100,
-          "avgScore": 77.1,
+          "avgScore": 81,
           "categories": {
-            "performance": 83.5,
+            "performance": 100,
             "accessibility": 100,
             "seo": 100,
             "geo_schema": 33,
@@ -23201,9 +23200,9 @@
           },
           "checks": {
             "perf_ttfb": {
-              "label": "#1 TTFB < 1800ms",
+              "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 3,
+              "pass": 100,
               "applicable": 100
             },
             "perf_compression": {
@@ -23497,14 +23496,14 @@
   "overall": {
     "urlCount": 5438,
     "scoredCount": 5438,
-    "avgScore": 76,
+    "avgScore": 78.8,
     "grades": {
-      "Need Improvement": 4050,
-      "Good": 1354,
-      "Poor": 34
+      "Need Improvement": 2345,
+      "Good": 3082,
+      "Poor": 11
     },
     "categories": {
-      "performance": 84,
+      "performance": 98.5,
       "accessibility": 90.2,
       "seo": 90.3,
       "geo_schema": 35.5,
@@ -23513,9 +23512,9 @@
     },
     "checks": {
       "perf_ttfb": {
-        "label": "#1 TTFB < 1800ms",
+        "label": "#1 TTFB < 600ms (PSI)",
         "cat": "performance",
-        "pass": 575,
+        "pass": 5236,
         "applicable": 5438
       },
       "perf_compression": {
@@ -23763,9 +23762,9 @@
       "newsroom": {
         "label": "뉴스룸/Press",
         "count": 901,
-        "avgScore": 74.5,
+        "avgScore": 77.5,
         "categories": {
-          "performance": 82.7,
+          "performance": 98.2,
           "accessibility": 94.7,
           "seo": 78.8,
           "geo_schema": 43.4,
@@ -23774,9 +23773,9 @@
         },
         "checks": {
           "perf_ttfb": {
-            "label": "#1 TTFB < 1800ms",
+            "label": "#1 TTFB < 600ms (PSI)",
             "cat": "performance",
-            "pass": 45,
+            "pass": 867,
             "applicable": 901
           },
           "perf_compression": {
@@ -24024,9 +24023,9 @@
       "microsite": {
         "label": "마이크로사이트/캠페인",
         "count": 231,
-        "avgScore": 76.4,
+        "avgScore": 78.6,
         "categories": {
-          "performance": 86.8,
+          "performance": 99.2,
           "accessibility": 77.9,
           "seo": 86.3,
           "geo_schema": 31.1,
@@ -24035,9 +24034,9 @@
         },
         "checks": {
           "perf_ttfb": {
-            "label": "#1 TTFB < 1800ms",
+            "label": "#1 TTFB < 600ms (PSI)",
             "cat": "performance",
-            "pass": 59,
+            "pass": 227,
             "applicable": 231
           },
           "perf_compression": {
@@ -24285,9 +24284,9 @@
       "buying_guide": {
         "label": "구매 가이드",
         "count": 201,
-        "avgScore": 73,
+        "avgScore": 75.2,
         "categories": {
-          "performance": 85,
+          "performance": 97.9,
           "accessibility": 95.9,
           "seo": 89.2,
           "geo_schema": 26.8,
@@ -24296,9 +24295,9 @@
         },
         "checks": {
           "perf_ttfb": {
-            "label": "#1 TTFB < 1800ms",
+            "label": "#1 TTFB < 600ms (PSI)",
             "cat": "performance",
-            "pass": 26,
+            "pass": 178,
             "applicable": 201
           },
           "perf_compression": {
@@ -24546,9 +24545,9 @@
       "lg_experience": {
         "label": "LG Experience",
         "count": 577,
-        "avgScore": 72.9,
+        "avgScore": 75.5,
         "categories": {
-          "performance": 78.8,
+          "performance": 93.6,
           "accessibility": 89.4,
           "seo": 97,
           "geo_schema": 20.2,
@@ -24557,9 +24556,9 @@
         },
         "checks": {
           "perf_ttfb": {
-            "label": "#1 TTFB < 1800ms",
+            "label": "#1 TTFB < 600ms (PSI)",
             "cat": "performance",
-            "pass": 45,
+            "pass": 556,
             "applicable": 577
           },
           "perf_compression": {
@@ -24807,9 +24806,9 @@
       "pdp": {
         "label": "제품 상세 (PDP)",
         "count": 906,
-        "avgScore": 77.4,
+        "avgScore": 80,
         "categories": {
-          "performance": 84.2,
+          "performance": 99.1,
           "accessibility": 75.7,
           "seo": 96.2,
           "geo_schema": 24,
@@ -24818,9 +24817,9 @@
         },
         "checks": {
           "perf_ttfb": {
-            "label": "#1 TTFB < 1800ms",
+            "label": "#1 TTFB < 600ms (PSI)",
             "cat": "performance",
-            "pass": 64,
+            "pass": 856,
             "applicable": 906
           },
           "perf_compression": {
@@ -25068,9 +25067,9 @@
       "plp": {
         "label": "제품 카테고리 (PLP)",
         "count": 958,
-        "avgScore": 77.5,
+        "avgScore": 79.7,
         "categories": {
-          "performance": 87.1,
+          "performance": 99.3,
           "accessibility": 88.7,
           "seo": 91.2,
           "geo_schema": 43.3,
@@ -25079,9 +25078,9 @@
         },
         "checks": {
           "perf_ttfb": {
-            "label": "#1 TTFB < 1800ms",
+            "label": "#1 TTFB < 600ms (PSI)",
             "cat": "performance",
-            "pass": 238,
+            "pass": 926,
             "applicable": 958
           },
           "perf_compression": {
@@ -25329,9 +25328,9 @@
       "support": {
         "label": "지원/Support",
         "count": 861,
-        "avgScore": 78.5,
+        "avgScore": 81.3,
         "categories": {
-          "performance": 84.4,
+          "performance": 99.3,
           "accessibility": 98.6,
           "seo": 87,
           "geo_schema": 49.8,
@@ -25340,9 +25339,9 @@
         },
         "checks": {
           "perf_ttfb": {
-            "label": "#1 TTFB < 1800ms",
+            "label": "#1 TTFB < 600ms (PSI)",
             "cat": "performance",
-            "pass": 73,
+            "pass": 826,
             "applicable": 861
           },
           "perf_compression": {
@@ -25590,9 +25589,9 @@
       "support_troubleshoot": {
         "label": "지원 - 트러블슈팅",
         "count": 803,
-        "avgScore": 74.8,
+        "avgScore": 78.3,
         "categories": {
-          "performance": 83.5,
+          "performance": 99.9,
           "accessibility": 96.7,
           "seo": 95.3,
           "geo_schema": 29.1,
@@ -25601,9 +25600,9 @@
         },
         "checks": {
           "perf_ttfb": {
-            "label": "#1 TTFB < 1800ms",
+            "label": "#1 TTFB < 600ms (PSI)",
             "cat": "performance",
-            "pass": 25,
+            "pass": 800,
             "applicable": 803
           },
           "perf_compression": {

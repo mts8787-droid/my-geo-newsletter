@@ -23,7 +23,7 @@
 
 ### #1 — TTFB
 - **정의**: 서버 요청 후 첫 번째 응답이 전달되기까지 걸리는 시간
-- **PASS**: < 1800ms
+- **PASS**: < 600ms
 - **측정방법**: Server-Timing, X-Response-Time 헤더
 - **check id**: `perf_ttfb`
 
