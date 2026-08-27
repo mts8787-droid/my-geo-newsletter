@@ -2,6 +2,7 @@
 // server.js와 vite dev plugin에서 공유
 
 import { NAME_TO_PROD_ID, RAW_TO_PROD_ID, PROD_ID_TO_UL_CODE } from '../categoryMap.js'
+import { compRatioStr } from './compRatio.js'
 import { mergeCitDomainRows, isTtlLlmVal } from './citDomainAgg.js'
 
 // 미출시 (country|UL_CODE) 행 제외 — 미출시국 데이터는 AI 분석 입력에서 제거
@@ -15,18 +16,26 @@ function excludeUnlaunched(productsCnty, unlaunchedMap) {
   })
 }
 
+// 수치 표기 규칙 — 모든 인사이트 타입에 강제 부착 (사용자 지시 2026-08-27).
+// Visibility 는 %, 경쟁비는 % 없는 배수. 표기가 섞이면 리포트에서 두 수치가 구분되지 않는다.
+const NOTATION_RULE = `[표기 규칙 — 예외 없이 지킬 것]
+- Visibility(가시성) 점수에는 반드시 % 를 붙인다. 예: "LG 38.3%", "삼성 32.7%", "전월 대비 -1.6%p"
+- 경쟁비(경쟁사 대비 비율)에는 % 를 절대 붙이지 않는다. 소수점 1자리 배수로만 쓴다. 예: "경쟁비 1.2", "경쟁비 0.9"
+- 경쟁비를 "117%" / "98%" 같은 백분율로 쓰지 말 것. [공식수치]에 배수로 제공된 값을 그대로 인용한다.
+- 경쟁비 증감은 "%p" 가 아니라 배수 차이로 쓴다. 예: "경쟁비 1.2 → 1.1"`
+
 const NO_UNLAUNCHED_COMMENT = '[필수: 미출시 국가×제품 데이터는 입력에서 제외되었음 — 미출시 관련 언급·코멘트·각주를 절대 작성하지 말 것]'
 
 // 문체 가이드 — 서술형 인사이트가 따라야 할 어조·표현 관습. 아래 예시의 숫자는 형식 예시일 뿐,
 // 실제 수치는 반드시 [공식수치]에서만 인용한다.
 const STYLE_GUIDE = `[문체 가이드 — 아래 어조·표현 관습을 따라 작성할 것. 예시 속 숫자는 형식 예시이며 실제 값은 반드시 [공식수치]만 사용]
 - 어조: 객관적·간결한 비즈니스 임원 보고체. (한국어 작성 시) 종결어미 "~하고 있습니다 / ~유지 중입니다 / ~보이고 있습니다 / ~필요합니다"; (영어 작성 시) 동등한 executive summary 톤.
-- 경쟁비(경쟁사 대비 비율) 기준 상태 표현:
-  · 100% 이상 → "선도 / 안정적 리더십 유지 / (큰) 우위"
-  · 80~100% → "추격중 / 근소한 차이 / 대등한 수준 / 소폭 열세"
-  · 80% 미만 → "열위 / 개선 필요(여지)"
+- 경쟁비(경쟁사 대비 비율) 기준 상태 표현 — 경쟁비는 % 없는 배수로 표기:
+  · 1.0 이상 → "선도 / 안정적 리더십 유지 / (큰) 우위"
+  · 0.8~1.0 → "추격중 / 근소한 차이 / 대등한 수준 / 소폭 열세"
+  · 0.8 미만 → "열위 / 개선 필요(여지)"
 - 수치 인용 형식 (형식 예시 — 숫자는 예시일 뿐):
-  · 제품: "TV(XX.X%, 전월 대비 -X.X%p)는 ... 경쟁비 XX%로 추격중"
+  · 제품: "TV(XX.X%, 전월 대비 -X.X%p)는 ... 경쟁비 X.X로 추격중"
   · 본부: "MS본부는 LG XX.X%로 경쟁사(XX.X%) 대비 근소한 우위"
   · 국가: "IN(XX.X% vs XX.X%)" 또는 "US: LG XX.X% / 경쟁 XX.X%"
   · 전월 대비 증감: "전월 대비 -X.X%p"`
@@ -198,7 +207,9 @@ function monthlyDriverLines(data) {
 
 export function buildInsightPrompt(type, data) {
   const base = _buildInsightPromptBody(type, data)
-  return STYLE_TYPES.has(type) ? `${base}\n\n${STYLE_GUIDE}` : base
+  // NOTATION_RULE 은 타입 무관 항상 부착 — 수치 표기는 서술형/표형 가리지 않고 동일해야 한다.
+  const withNotation = `${base}\n\n${NOTATION_RULE}`
+  return STYLE_TYPES.has(type) ? `${withNotation}\n\n${STYLE_GUIDE}` : withNotation
 }
 
 function _buildInsightPromptBody(type, data) {
@@ -206,7 +217,7 @@ function _buildInsightPromptBody(type, data) {
     const products = data.products || []
     const t = data.total || {}
     const prevDelta = t.prev && t.prev !== t.score ? ` (전월 ${t.prev}%, ${(t.score - t.prev) > 0 ? '+' : ''}${(t.score - t.prev).toFixed(1)}%p)` : ''
-    const compPrevDelta = t.prev && t.vsComp ? ` (전월 경쟁비 ${Math.round((t.prev / t.vsComp) * 100)}%)` : ''
+    const compPrevDelta = t.prev && t.vsComp ? ` (전월 경쟁비 ${compRatioStr(t.prev, t.vsComp)})` : ''
     const countryTotals = t.countryTotals || {}
     const cntyLines = Object.entries(countryTotals).map(([c, v]) => `[공식수치] ${c} LG = ${v.lg}% / 경쟁 = ${v.comp}%`).join('\n')
 
@@ -264,8 +275,7 @@ ${comparison}`
     })
     const list = Object.entries(cntyMap).map(([cnty, rows]) => {
       const lines = rows.map(r => {
-        const ratio = r.compScore > 0 ? Math.round((r.score / r.compScore) * 100) : '—'
-        return `  [공식수치] ${r.product}: LG ${r.score}% vs ${r.compName || '경쟁'} ${r.compScore || '—'}% (경쟁비: ${ratio}%)`
+        return `  [공식수치] ${r.product}: LG ${r.score}% vs ${r.compName || '경쟁'} ${r.compScore || '—'}% (경쟁비: ${compRatioStr(r.score, r.compScore)})`
       }).join('\n')
       return `[${cnty}]\n${lines}`
     }).join('\n')
