@@ -65,20 +65,8 @@ function NewsletterPreview({ meta, total, products, citations, dotcom, productsC
 }
 
 // ─── HTML 코드 뷰어 ───────────────────────────────────────────────────────────
-function HtmlCodeViewer({ meta, total, products, citations, dotcom, productsCnty = [], citationsCnty = [], lang = 'ko', weeklyLabels, weeklyAll = {}, categoryStats, unlaunchedMap = {}, citTouchPointsTrend = null, citTrendMonths = [], citDomainTrend = null, citDomainMonths = [], citTouchPointsByLlm = null, citDomainByLlm = null, citDomainByLlmTrend = null, dotcomByLlm = null }) {
+function HtmlCodeViewer({ meta, total, products, citations, dotcom, productsCnty = [], citationsCnty = [], lang = 'ko', weeklyLabels, weeklyAll = {}, categoryStats, unlaunchedMap = {}, citTouchPointsTrend = null, citTrendMonths = [], citDomainTrend = null, citDomainMonths = [], citTouchPointsByLlm = null, citDomainByLlm = null, citDomainByLlmTrend = null, dotcomByLlm = null, readability = null }) {
   const [copied, setCopied] = useState(false)
-  // Readability Highlight 데이터 — /api/readability-summary (최신 스냅샷 요약, 수 KB).
-  // meta.showReadability 가 켜져 있을 때만 섹션이 렌더된다.
-  const [readability, setReadability] = useState(null)
-  useEffect(() => {
-    let cancelled = false
-    fetch('/api/readability-summary')
-      .then(r => r.ok ? r.json() : null)
-      .then(j => { if (!cancelled && j && j.ok) setReadability(j) })
-      .catch(() => {})
-    return () => { cancelled = true }
-  }, [])
-
   const html = useMemo(() => genHTMLFor(meta)(meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, { weeklyLabels, weeklyAll, categoryStats, unlaunchedMap, productCardVersion: meta.productCardVersion || 'v1', trendMode: meta.trendMode || 'weekly', assetBase: (typeof window !== "undefined" ? window.location.origin : ""), citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, citTouchPointsByLlm, citDomainByLlm, citDomainByLlmTrend, dotcomByLlm, readability }), [meta, total, products, citations, dotcom, lang, productsCnty, citationsCnty, weeklyLabels, weeklyAll, categoryStats, unlaunchedMap, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, citTouchPointsByLlm, citDomainByLlm, citDomainByLlmTrend, dotcomByLlm, readability])
 
   async function handleCopy() {
@@ -221,6 +209,19 @@ function InsightChatPanel({ ctx, setMeta, previewLang, onClose }) {
 
 // ─── 메인 앱 ──────────────────────────────────────────────────────────────────
 export default function App() {
+  // Readability Highlight 데이터 — /api/readability-summary (최신 스냅샷 요약, 4KB).
+  // 미리보기·코드뷰어 두 자식이 함께 쓰므로 여기서 한 번만 받아 내려준다.
+  // meta.showReadability 가 켜져 있을 때만 섹션이 렌더된다.
+  const [readability, setReadability] = useState(null)
+  useEffect(() => {
+    let cancelled = false
+    fetch('/api/readability-summary')
+      .then(r => r.ok ? r.json() : null)
+      .then(j => { if (!cancelled && j && j.ok) setReadability(j) })
+      .catch(() => {})
+    return () => { cancelled = true }
+  }, [])
+
   const cache = useRef(loadCache(STORAGE_KEY)).current
   const [metaKo,    setMetaKo]    = useState({ ...INIT_META, ...(cache?.metaKo ?? cache?.meta ?? {}) })
   const [metaEn,    setMetaEn]    = useState({ ...INIT_META, ...(cache?.metaEn ?? {}) })
@@ -737,7 +738,7 @@ export default function App() {
             </div>
           </div>
         ) : (
-          <HtmlCodeViewer meta={meta} total={total} products={resolved.products} citations={resolved.citations} dotcom={dotcom} productsCnty={resolved.productsCnty} citationsCnty={resolved.citationsCnty} lang={previewLang} weeklyLabels={weeklyLabels} weeklyAll={weeklyAll} categoryStats={categoryStats} unlaunchedMap={unlaunchedMap} citTouchPointsTrend={citTouchPointsTrend} citTrendMonths={citTrendMonths} citDomainTrend={citDomainTrend} citDomainMonths={citDomainMonths} citTouchPointsByLlm={citTouchPointsByLlm} citDomainByLlm={citDomainByLlm} citDomainByLlmTrend={citDomainByLlmTrend} dotcomByLlm={dotcomByLlm} />
+          <HtmlCodeViewer meta={meta} total={total} products={resolved.products} citations={resolved.citations} dotcom={dotcom} productsCnty={resolved.productsCnty} citationsCnty={resolved.citationsCnty} lang={previewLang} weeklyLabels={weeklyLabels} weeklyAll={weeklyAll} categoryStats={categoryStats} unlaunchedMap={unlaunchedMap} citTouchPointsTrend={citTouchPointsTrend} citTrendMonths={citTrendMonths} citDomainTrend={citDomainTrend} citDomainMonths={citDomainMonths} citTouchPointsByLlm={citTouchPointsByLlm} citDomainByLlm={citDomainByLlm} citDomainByLlmTrend={citDomainByLlmTrend} dotcomByLlm={dotcomByLlm} readability={readability} />
         )}
         <div style={{ height: 28, borderTop: '1px solid #1E293B', background: 'rgba(15,23,42,0.95)',
           display: 'flex', alignItems: 'center', justifyContent: 'flex-end', padding: '0 16px', flexShrink: 0 }}>
