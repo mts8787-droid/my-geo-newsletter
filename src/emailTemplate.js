@@ -434,12 +434,13 @@ function periodStats(p, mode = 'weekly') {
 }
 
 // 기간 배지 — 카드의 수치가 주간인지 월간인지 표기
-// 경쟁비 표기 — % 대신 배수(소수 1자리). 117% → '1.2' (사용자 지시 2026-08-27).
+// 경쟁비 표기 — % 대신 배수(소수 1자리) + 괄호. 117% → '(1.2)' (사용자 지시 2026-08-27).
+// % 는 Visibility 전용, 괄호는 경쟁비 전용 — 두 수치를 시각적으로 분리.
 // compScore 가 0/누락이면 비교 불가 → '—'.
 function ratioX(score, compScore) {
   const c = Number(compScore) || 0
   if (c <= 0 || score == null) return '—'
-  return (Number(score) / c).toFixed(1)
+  return '(' + (Number(score) / c).toFixed(1) + ')'
 }
 // 경쟁사 Visibility 점수 표기 (소수 1자리 + % — Visibility 수치엔 항상 % 부착)
 function compScoreStr(compScore) {
@@ -618,7 +619,7 @@ function productCardHtml(p, globalMax, globalMin, lang = 'ko', opts = {}) {
               </td>
               <td align="right" style="vertical-align:middle;">
                 <table border="0" cellpadding="0" cellspacing="0" align="right" style="float:right;"><tr>
-                  <td style="vertical-align:middle;white-space:nowrap;"><span style="font-size:13px;font-weight:700;color:${ratioColor};font-family:${EM_FONT};letter-spacing:-1px;">${escapeHtml(p.compName || 'Samsung')} ${compScoreStr(activeComp)} · ${ratioX(p.score, activeComp)}${ratioDelta}</span></td>
+                  <td style="vertical-align:middle;white-space:nowrap;"><span style="font-size:13px;font-weight:700;color:${ratioColor};font-family:${EM_FONT};letter-spacing:-1px;">${escapeHtml(p.compName || 'Samsung')} ${compScoreStr(activeComp)} ${ratioX(p.score, activeComp)}${ratioDelta}</span></td>
                   <td style="vertical-align:middle;white-space:nowrap;padding-left:4px;"><span style="display:inline-block;background:${st.bg};color:${st.color};border:1px solid ${st.border};border-radius:6px;padding:0px 5px;font-size:10px;font-weight:700;line-height:16px;font-family:${EM_FONT};">${st.label}</span></td>
                 </tr></table>
               </td>
@@ -716,14 +717,14 @@ function productCardV2Html(p, lang = 'ko', opts = {}) {
     const labelColor = unlaunched ? '#94A3B8' : baseBarColor
     const barH = Math.max(3, Math.round(r.score / maxCnty * BAR_H))
     const spacer = BAR_H - barH
-    const compTxt = r.compScore > 0 ? `${cRatio}%` : ''
+    const compTxt = r.compScore > 0 ? `${compShort(r.compName)} ${compScoreStr(r.compScore)}<br/>${ratioX(r.score, r.compScore)}` : ''
     return `<td style="vertical-align:bottom;text-align:center;padding:0 1px;width:10%;">
       <table border="0" cellpadding="0" cellspacing="0" align="center" style="width:100%;">
         ${spacer > 0 ? `<tr><td height="${spacer}" style="font-size:0;">&nbsp;</td></tr>` : ''}
         <tr><td height="${barH}" style="font-size:0;"><table border="0" cellpadding="0" cellspacing="0" align="center"><tr><td width="16" height="${barH}" style="background:${barColor};border-radius:2px 2px 0 0;font-size:0;">&nbsp;</td></tr></table></td></tr>
         <tr><td style="font-size:10px;font-weight:700;color:${labelColor};font-family:${EM_FONT};text-align:center;padding-top:1px;">${r.score != null ? r.score.toFixed(0) + '%' : '—'}</td></tr>
         <tr><td style="font-size:8px;font-weight:700;color:${labelColor};font-family:${EM_FONT};text-align:center;line-height:1.1;letter-spacing:-0.3px;">${cntyLabel2Line(c, lang)}</td></tr>
-        <tr><td style="font-size:10px;color:#94A3B8;font-family:${EM_FONT};text-align:center;">${compTxt}</td></tr>
+        <tr><td style="font-size:10px;color:#94A3B8;font-family:${EM_FONT};text-align:center;white-space:nowrap;letter-spacing:-0.5px;line-height:1.2;">${compTxt}</td></tr>
       </table>
     </td>`
   }).join('')
@@ -742,7 +743,7 @@ function productCardV2Html(p, lang = 'ko', opts = {}) {
               </td>
               <td align="right" style="vertical-align:middle;">
                 <table border="0" cellpadding="0" cellspacing="0" align="right" style="float:right;"><tr>
-                  <td style="vertical-align:middle;white-space:nowrap;"><span style="font-size:13px;font-weight:700;color:${ratioColor};font-family:${EM_FONT};letter-spacing:-1px;">${escapeHtml(compShort(p.compName || 'Samsung') || 'SS')} ${compScoreStr(p.vsComp)} · ${ratioX(p.score, p.vsComp)}</span></td>
+                  <td style="vertical-align:middle;white-space:nowrap;"><span style="font-size:13px;font-weight:700;color:${ratioColor};font-family:${EM_FONT};letter-spacing:-1px;">${escapeHtml(compShort(p.compName || 'Samsung') || 'SS')} ${compScoreStr(p.vsComp)} ${ratioX(p.score, p.vsComp)}</span></td>
                   <td style="vertical-align:middle;white-space:nowrap;padding-left:4px;"><span style="display:inline-block;background:${st.bg};color:${st.color};border:1px solid ${st.border};border-radius:5px;padding:0px 4px;font-size:10px;font-weight:700;line-height:15px;font-family:${EM_FONT};">${st.label}</span></td>
                 </tr></table>
               </td>
@@ -877,7 +878,7 @@ function productCardV3Html(p, lang = 'ko', opts = {}) {
               </td>
               <td align="right" style="vertical-align:middle;">
                 <table border="0" cellpadding="0" cellspacing="0" align="right" style="float:right;"><tr>
-                  <td style="vertical-align:middle;white-space:nowrap;"><span style="font-size:13px;font-weight:700;color:${ratioColor};font-family:${EM_FONT};letter-spacing:-1.3px;">${compShort(mainCompName)} ${compScoreStr(mainCompScore)} · ${ratioX(p.score, mainCompScore)}</span></td>
+                  <td style="vertical-align:middle;white-space:nowrap;"><span style="font-size:13px;font-weight:700;color:${ratioColor};font-family:${EM_FONT};letter-spacing:-1.3px;">${compShort(mainCompName)} ${compScoreStr(mainCompScore)} ${ratioX(p.score, mainCompScore)}</span></td>
                   <td style="vertical-align:middle;white-space:nowrap;padding-left:4px;"><span style="display:inline-block;background:${st.bg};color:${st.color};border:1px solid ${st.border};border-radius:5px;padding:0px 4px;font-size:10px;font-weight:700;line-height:15px;font-family:${EM_FONT};">${st.label}</span></td>
                 </tr></table>
               </td>
@@ -923,7 +924,7 @@ function buSectionHtml(buKey, buProducts, globalMax, globalMin, lang = 'ko', opt
   const buRatio = buTotal && buTotal.comp > 0 ? Math.round(buTotal.lg / buTotal.comp * 100) : null
   const buRatioColor = buRatio ? (buRatio >= 100 ? '#15803D' : buRatio >= 80 ? '#E8910C' : '#BE123C') : '#94A3B8'
   const buScoreHtml = buRatio
-    ? `<span style="font-size:14px;font-weight:700;color:${buRatioColor};font-family:${EM_FONT};">vs SS ${buRatio}%</span><span style="font-size:13px;color:#94A3B8;font-family:${EM_FONT};"> · ${buProducts.length}${t.categories}</span>`
+    ? `<span style="font-size:14px;font-weight:700;color:${buRatioColor};font-family:${EM_FONT};">vs SS ${compScoreStr(buTotal.comp)} ${ratioX(buTotal.lg, buTotal.comp)}</span><span style="font-size:13px;color:#94A3B8;font-family:${EM_FONT};"> · ${buProducts.length}${t.categories}</span>`
     : `<span style="font-size:14px;color:#94A3B8;font-family:${EM_FONT};">${buProducts.length}${t.categories}</span>`
 
   return `
