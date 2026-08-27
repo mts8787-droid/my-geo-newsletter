@@ -2888,7 +2888,36 @@ export { escapeHtml }
 // ─── 제품군 × 모델 전월 대비 상세 (모델별 Visibility 증감) ────────────────────
 // products[].monthlyScores[].byLlm 에서 카테고리×모델 MoM 델타 산출 → 다이버징 바 + 히트맵.
 // 이메일 호환: canvas 대신 table-layout (막대 = background 폭, 히트맵 = 셀 bgcolor).
-// ─── 하이라이트 챕터 — Readability · 모델 증감 · Citation 범프차트 ─────────────
+// ─── Citation Top10 카테고리·도메인 범프차트 ────────────────────────────────
+// 2026-08-27: Highlight 챕터에서 Citation 섹션의 '전월 대비 모델별 Citation 인용수'
+// 바로 아래로 이동 (사용자 지시). 반환값은 <tr> — Citation 섹션 표의 행으로 삽입된다.
+function citationBumpRowHtml(bumpData, meta, lang = 'ko') {
+  // Citation Top10 카테고리·도메인 범프차트 영역 — Highlight 챕터에 포함
+  const { citTouchPointsTrend, citTrendMonths, citTouchPointsByLlm, citDomainTrend, citDomainMonths, citDomainByLlmTrend } = bumpData || {}
+  const touchCard = meta.showTouchPointsBump !== false ? touchPointsBumpCombinedHtml(citTouchPointsTrend, citTrendMonths, citTouchPointsByLlm, meta, lang) : ''
+  const domainCard = meta.showDomainBump !== false ? domainBumpSectionHtml(citDomainTrend, citDomainMonths, citDomainByLlmTrend, meta, lang) : ''
+  const bumpCards = [touchCard, domainCard].filter(Boolean)
+  const bumpChartsHtml = bumpCards.length ? `<table border="0" cellpadding="0" cellspacing="0" width="100%"><tr>${bumpCards.map(c => `<td width="${Math.round(100 / bumpCards.length)}%" valign="top" style="padding:0 6px;">${c}</td>`).join('')}</tr></table>` : ''
+  const bumpInsightBox = meta.showBumpInsight && (meta.bumpInsight || _ED) ? `
+                          <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom:4px;border-radius:8px;background:#FFF4F7;border:1px solid #F5CCD8;">
+                            <tr><td style="padding:12px 16px;">
+                              ${edBlock('bumpInsight', meta.bumpInsight, { size: 13, lh: 22, color: '#1A1A1A', accent: EM_RED, lang })}
+                            </td></tr>
+                          </table>` : ''
+  const bumpTitle = lang === 'en' ? 'Citation Top 10 Category·Domain (Bump)' : 'Citation Top10 카테고리·도메인 범프차트'
+  const inner = (bumpChartsHtml || bumpInsightBox) ? `
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%"><tr><td>
+                          <table border="0" cellpadding="0" cellspacing="0" style="margin-bottom:10px;"><tr>
+                            <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
+                            <td style="padding-left:8px;font-size:16px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};"><span${edAttr('hlBumpTitle')}>${escapeHtml(meta.hlBumpTitle || bumpTitle)}</span></td>
+                          </tr></table>
+                          ${bumpInsightBox}
+                          ${bumpChartsHtml}
+                        </td></tr></table>` : ''
+  return inner ? `<tr><td style="padding:4px 12px 16px;">${inner}</td></tr>` : ''
+}
+
+// ─── 하이라이트 챕터 — Readability · 모델 증감 ────────────────────────────────
 // '주요 제품 주차별 트랜드' 는 2026-08-27 삭제 (사용자 지시). 주간 꺾은선 PNG 임베드와
 // 전용 상수(HL_PRODS/HL_COMP_COLORS)도 함께 제거. weeklyAll/weeklyLabels/assetBase 는
 // 호출부 시그니처 호환을 위해 남겨둔다.
@@ -2904,31 +2933,9 @@ function highlightInsightSectionHtml(products, weeklyAll, weeklyLabels, meta, la
   // '주요 제품 주차별 트랜드' 영역 삭제 (사용자 지시 2026-08-27) — 소제목·주간 꺾은선 차트 모두 제거.
   // 인사이트 박스(meta.highlightInsight)는 유지 — 챕터 도입부 코멘트로 계속 쓰인다.
   const weeklyArea = insightBox || ''
-  // Citation Top10 카테고리·도메인 범프차트 영역 — Highlight 챕터에 포함
-  const { citTouchPointsTrend, citTrendMonths, citTouchPointsByLlm, citDomainTrend, citDomainMonths, citDomainByLlmTrend } = bumpData || {}
-  const touchCard = meta.showTouchPointsBump !== false ? touchPointsBumpCombinedHtml(citTouchPointsTrend, citTrendMonths, citTouchPointsByLlm, meta, lang) : ''
-  const domainCard = meta.showDomainBump !== false ? domainBumpSectionHtml(citDomainTrend, citDomainMonths, citDomainByLlmTrend, meta, lang) : ''
-  const bumpCards = [touchCard, domainCard].filter(Boolean)
-  const bumpChartsHtml = bumpCards.length ? `<table border="0" cellpadding="0" cellspacing="0" width="100%"><tr>${bumpCards.map(c => `<td width="${Math.round(100 / bumpCards.length)}%" valign="top" style="padding:0 6px;">${c}</td>`).join('')}</tr></table>` : ''
-  const bumpInsightBox = meta.showBumpInsight && (meta.bumpInsight || _ED) ? `
-                          <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom:4px;border-radius:8px;background:#FFF4F7;border:1px solid #F5CCD8;">
-                            <tr><td style="padding:12px 16px;">
-                              ${edBlock('bumpInsight', meta.bumpInsight, { size: 13, lh: 22, color: '#1A1A1A', accent: EM_RED, lang })}
-                            </td></tr>
-                          </table>` : ''
-  const bumpTitle = lang === 'en' ? 'Citation Top 10 Category·Domain (Bump)' : 'Citation Top10 카테고리·도메인 범프차트'
-  const bumpArea = (bumpChartsHtml || bumpInsightBox) ? `
-                        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-top:16px;border-top:1px solid #EEF0F3;"><tr><td style="padding-top:14px;">
-                          <table border="0" cellpadding="0" cellspacing="0" style="margin-bottom:10px;"><tr>
-                            <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
-                            <td style="padding-left:8px;font-size:16px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};"><span${edAttr('hlBumpTitle')}>${escapeHtml(meta.hlBumpTitle || bumpTitle)}</span></td>
-                          </tr></table>
-                          ${bumpInsightBox}
-                          ${bumpChartsHtml}
-                        </td></tr></table>` : ''
   // Readability Highlight — 별도 카드가 아니라 본 챕터 안에 같은 디자인으로 편입 (2026-08)
   const rdArea = (meta.showReadability && readability) ? readabilityHighlightHtml(readability, meta, lang) : ''
-  if (!weeklyArea && !modelContent && !bumpArea && !rdArea) return ''  // 표시할 콘텐츠 없으면 챕터 미렌더
+  if (!weeklyArea && !modelContent && !rdArea) return ''  // 표시할 콘텐츠 없으면 챕터 미렌더
   const _mm = String(meta.period || '').match(/(\d{1,2})\s*월/)
   const chapterTitle = (_mm ? _mm[1] + '월 ' : '') + (lang === 'en' ? 'Highlights' : '하이라이트')
   return `
@@ -2948,7 +2955,6 @@ function highlightInsightSectionHtml(products, weeklyAll, weeklyLabels, meta, la
                         ${rdArea}
                         ${weeklyArea}
                         ${modelContent}
-                        ${bumpArea}
                       </td>
                     </tr>
                   </table>
@@ -3178,12 +3184,17 @@ function rdBarRow(label, value, max, opts = {}) {
   const color = opts.color || rdColor(value)
   const pad = opts.pad != null ? opts.pad : 3
   const barH = opts.barH || 9
-  const sub = opts.sub
-    ? `<span style="font-size:10.5px;font-weight:400;color:#94A3B8;font-family:${EM_FONT};">&nbsp;&nbsp;${escapeHtml(opts.sub)}</span>`
-    : ''
+  // 설명(sub)이 있으면 항목명을 고정 폭 칸에 두고 설명을 그 옆 칸에서 시작 —
+  // 항목명 길이와 무관하게 설명 시작 x 가 모든 행에서 같아진다 (opts.nameW).
+  const nameCell = opts.sub
+    ? `<table cellpadding="0" cellspacing="0" border="0"><tr>
+        <td style="width:${opts.nameW || 120}px;padding-right:14px;vertical-align:middle;font-size:11.5px;font-weight:700;color:#1A1A1A;line-height:1.35;font-family:${EM_FONT};white-space:nowrap;">${escapeHtml(label)}</td>
+        <td style="vertical-align:middle;font-size:10.5px;font-weight:400;color:#94A3B8;line-height:1.4;font-family:${EM_FONT};">${escapeHtml(opts.sub)}</td>
+      </tr></table>`
+    : `<span style="font-size:11.5px;font-weight:700;color:#1A1A1A;line-height:1.35;font-family:${EM_FONT};">${escapeHtml(label)}</span>`
   return `<tr>
     <td style="padding:${pad}px 10px ${pad}px 0;vertical-align:middle;width:${opts.labelW || 150}px;">
-      <span style="font-size:11.5px;font-weight:700;color:#1A1A1A;line-height:1.35;font-family:${EM_FONT};">${escapeHtml(label)}</span>${sub}
+      ${nameCell}
     </td>
     <td style="padding:${pad}px 10px ${pad}px 0;vertical-align:middle;">
       <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#F1F5F9;border-radius:3px;">
@@ -3341,7 +3352,7 @@ function readabilityHighlightHtml(rd, meta = {}, lang = 'ko', contentWidth = 848
   // 라벨 칸을 넓혀 설명을 같은 줄에 붙이고, 그만큼 막대를 줄인다 (높이·폭 동시 절감)
   const catRows = RD_CAT_ORDER.filter(k => rd.categories && rd.categories[k] != null)
     .map(k => rdBarRow((rd.categoryLabels || {})[k] || k, rd.categories[k], 100,
-      { labelW: 440, sub: RD_CAT_DESC[k], pad: 3, barH: 9 })).join('')
+      { labelW: 440, nameW: 108, sub: RD_CAT_DESC[k], pad: 4, barH: 9 })).join('')
   const catTable = `<table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#F8FAFC;border:1px solid #E8EDF2;border-radius:10px;margin:0 0 18px;">
     <tr><td style="padding:12px 16px;">
       <p style="margin:0 0 10px;font-size:12px;font-weight:800;color:#475569;font-family:${EM_FONT};">${lang === 'en' ? 'By Area' : '평가 영역별 점수'}</p>
@@ -3854,6 +3865,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                     </tr>
                     ${insightBlockHtml(meta.citationInsight, meta.showCitationInsight, meta.citationHowToRead, meta.showCitationHowToRead, lang, { insight: 'citationInsight', howToRead: 'citationHowToRead' })}
                     ${citCountByModelVBarHtml(citTouchPointsByLlm, citTrendMonths, meta, lang, citDomainByLlmTrend, citDomainMonths)}
+                    ${citationBumpRowHtml({ citTouchPointsTrend, citTrendMonths, citTouchPointsByLlm, citDomainTrend, citDomainMonths, citDomainByLlmTrend }, meta, lang)}
                     <tr>
                       <td style="padding:16px 12px;">
                         <table border="0" cellpadding="0" cellspacing="0" width="100%">
