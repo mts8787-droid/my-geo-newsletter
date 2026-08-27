@@ -3,7 +3,6 @@
 import { PROD_ID_TO_UL_CODE as UL_PROD_MAP, PROD_ID_TO_UL_CODE, PROD_ID_TO_KR, PROD_ID_TO_EN, PROD_ID_TO_BU, PROD_ID_TO_ORDER, NAME_TO_PROD_ID } from './categoryMap.js'
 import { resolveProductsByLlm, resolveProductsCntyByLlm, resolveTotalByLlm } from './shared/llmModel.js'
 import { _logWarn } from './sheetParserUtils.js'
-import { encodeChart } from './shared/hlChart.js'
 import { dcColLabel } from './shared/constants.js'
 import { mergeCitDomainRows, isTtlLlmVal } from './shared/citDomainAgg.js'
 
@@ -1656,9 +1655,10 @@ function citationCntyTableHtml(citationsCnty, lang) {
 // ─── Citation 통합 행 (카테고리 + 도메인 공용) ────────────────────────────────
 function citUnifiedRow(rank, label, score, ratio, maxScore, isLast, lang) {
   const isTop3 = rank <= 3
-  const rankBg = isTop3 ? CIT_GREEN : '#F1F5F9'
-  const rankColor = isTop3 ? '#FFFFFF' : '#94A3B8'
-  const barColor = isTop3 ? CIT_GREEN : '#475569'
+  // 회색 강등 제거 — 상위 3위는 붉은색, 그 외는 푸른색으로 구분 (사용자 지시 2026-08-27)
+  const rankBg = isTop3 ? EM_RED : '#2563EB'
+  const rankColor = '#FFFFFF'
+  const barColor = isTop3 ? EM_RED : '#2563EB'
   const barPct = Math.min(Math.round((score / maxScore) * 55), 55)
   const ratioStr = ratio > 0 ? ratio.toFixed(1) + '%' : ''
 
@@ -1672,7 +1672,7 @@ function citUnifiedRow(rank, label, score, ratio, maxScore, isLast, lang) {
         <td width="${barPct}%" style="background:${barColor};border-radius:4px;height:16px;font-size:0;">&nbsp;</td>
         <td style="padding-left:6px;white-space:nowrap;vertical-align:middle;">
           <span style="font-size:12px;font-weight:700;color:${barColor};font-family:${EM_FONT};">${fmtMan(score, lang)}</span>
-          <span style="font-size:11px;color:#94A3B8;font-family:${EM_FONT};">&nbsp;(${ratioStr})</span>
+          <span style="font-size:11px;color:${barColor};font-family:${EM_FONT};">&nbsp;(${ratioStr})</span>
         </td>
       </tr></table>
     </td>
@@ -1698,13 +1698,9 @@ function _dotcomChartRows(dotcom, meta, lang = 'ko', subtitle = '') {
   const cols = allCols.filter(c => (lg[c] || 0) > 0 || (sam[c] || 0) > 0)
   const BAR_MAX = 80
   const bw = 36
-  // 강조 컬럼(TTL/PLP/Support)만 원래 red, 그 외 LG 막대/값은 회색
-  const EM_GRAY = '#94A3B8'
-  // 삼성 강조색(푸른색) — PDP 컬럼 + 삼성 값이 전월 대비 상승한 컬럼
+  // 컬럼별 회색 강등을 없애고 브랜드 색상으로 통일 (사용자 지시 2026-08-27) —
+  // LG 는 전 컬럼 붉은색, 삼성은 전 컬럼 푸른색. MoM 박스 강조도 제거하고 숫자만 남긴다.
   const EM_BLUE = '#2563EB'
-  const isEmphCol = col => col === 'TTL' || col === 'PLP' || col === 'Support'
-  // MoM 박스 강조 — TTL/PLP/Support
-  const isEmphBoxCol = col => col === 'TTL' || col === 'PLP' || col === 'Support'
 
   const ttlCol = cols.includes('TTL') ? 'TTL' : null
   const detailCols = cols.filter(c => c !== 'TTL')
@@ -1759,16 +1755,12 @@ function _dotcomChartRows(dotcom, meta, lang = 'ko', subtitle = '') {
   }
   const hasMom = !!prevLg
   // MoM: 색상 전부 제거(회색). emphBox=true (PLP/Support 의 LG MoM) 일 때만 붉은/초록 테두리 박스 강조.
-  function momRow(cur, pv, emphBox = false) {
+  // MoM — 박스·배경 없이 숫자만. 색은 해당 브랜드 색을 따른다 (회색 미사용).
+  function momRow(cur, pv, color) {
     if (pv == null) return ''
     const d = cur - pv
     const txt = `(${d > 0 ? '+' : ''}${fmtMan(d, lang)})`
-    if (emphBox && d !== 0) {
-      const bc = d > 0 ? '#16A34A' : '#DC2626'
-      const bg = d > 0 ? '#ECFDF5' : '#FFF1F2'
-      return `<tr><td style="font-size:10px;font-weight:700;color:#475569;font-family:${EM_FONT};text-align:center;padding-bottom:1px;white-space:nowrap;"><span style="display:inline-block;border:1.5px solid ${bc};background:${bg};border-radius:4px;padding:0 4px;">${txt}</span></td></tr>`
-    }
-    return `<tr><td style="font-size:10px;font-weight:600;color:#94A3B8;font-family:${EM_FONT};text-align:center;padding-bottom:1px;white-space:nowrap;">${txt}</td></tr>`
+    return `<tr><td style="font-size:10px;font-weight:600;color:${color};font-family:${EM_FONT};text-align:center;padding-bottom:1px;white-space:nowrap;">${txt}</td></tr>`
   }
 
   function makeBarCol(col, localMax) {
@@ -1782,12 +1774,8 @@ function _dotcomChartRows(dotcom, meta, lang = 'ko', subtitle = '') {
     const gapColor = diff >= 0 ? '#15803D' : '#BE123C'
     const gapTxt = diff > 0 ? `+${fmtMan(diff, lang)}` : diff < 0 ? `-${fmtMan(Math.abs(diff), lang)}` : '0'
     const isTTL = col === 'TTL'
-    const emph = isEmphCol(col)
-    const lgColor = emph ? EM_RED : EM_GRAY
-    // 삼성 강조: PDP 컬럼 또는 삼성 값이 전월 대비 상승한 컬럼 → 푸른색
-    const samPrev = (hasMom && prevSam && prevSam[col] != null) ? prevSam[col] : null
-    const samRose = samPrev != null && (sv - samPrev) > 0
-    const samColor = (col === 'PDP' || samRose) ? EM_BLUE : EM_GRAY
+    const lgColor = EM_RED
+    const samColor = EM_BLUE
 
     return `<td style="vertical-align:bottom;text-align:center;padding:0 3px;">
       <table border="0" cellpadding="0" cellspacing="0" align="center" style="margin:0 auto;width:100%;">
@@ -1796,7 +1784,7 @@ function _dotcomChartRows(dotcom, meta, lang = 'ko', subtitle = '') {
             <td style="vertical-align:bottom;text-align:center;padding:0 1px;">
               <table border="0" cellpadding="0" cellspacing="0" align="center">
                 <tr><td style="font-size:13px;font-weight:700;color:${lgColor};font-family:${EM_FONT};text-align:center;padding-bottom:1px;">${fmtMan(lv, lang)}</td></tr>
-                ${hasMom ? momRow(lv, prevLg[col] != null ? prevLg[col] : null, isEmphBoxCol(col)) : ''}
+                ${hasMom ? momRow(lv, prevLg[col] != null ? prevLg[col] : null, lgColor) : ''}
                 ${spacerL > 0 ? `<tr><td height="${spacerL}" style="font-size:0;">&nbsp;</td></tr>` : ''}
                 <tr><td height="${lh}" style="font-size:0;"><table border="0" cellpadding="0" cellspacing="0" align="center"><tr><td width="${bw}" height="${lh}" style="background:${lgColor};border-radius:3px 3px 0 0;font-size:0;">&nbsp;</td></tr></table></td></tr>
               </table>
@@ -1804,7 +1792,7 @@ function _dotcomChartRows(dotcom, meta, lang = 'ko', subtitle = '') {
             ${hasSam ? `<td style="vertical-align:bottom;text-align:center;padding:0 1px;">
               <table border="0" cellpadding="0" cellspacing="0" align="center">
                 <tr><td style="font-size:13px;font-weight:600;color:${samColor};font-family:${EM_FONT};text-align:center;padding-bottom:1px;">${fmtMan(sv, lang)}</td></tr>
-                ${hasMom ? momRow(sv, prevSam && prevSam[col] != null ? prevSam[col] : null, col === 'PDP' || samRose) : ''}
+                ${hasMom ? momRow(sv, prevSam && prevSam[col] != null ? prevSam[col] : null, samColor) : ''}
                 ${spacerS > 0 ? `<tr><td height="${spacerS}" style="font-size:0;">&nbsp;</td></tr>` : ''}
                 <tr><td height="${sh}" style="font-size:0;"><table border="0" cellpadding="0" cellspacing="0" align="center"><tr><td width="${bw}" height="${sh}" style="background:${samColor};border-radius:3px 3px 0 0;font-size:0;">&nbsp;</td></tr></table></td></tr>
               </table>
@@ -2900,57 +2888,11 @@ export { escapeHtml }
 // ─── 제품군 × 모델 전월 대비 상세 (모델별 Visibility 증감) ────────────────────
 // products[].monthlyScores[].byLlm 에서 카테고리×모델 MoM 델타 산출 → 다이버징 바 + 히트맵.
 // 이메일 호환: canvas 대신 table-layout (막대 = background 폭, 히트맵 = 셀 bgcolor).
-// ─── Highlight Insight — 주간 경쟁사 트렌드 (TV·냉장고·세탁기·에어컨, LG+상위3 경쟁사) ──
-// weeklyAll[prodId]['Total'] = { LG:[주별...], 경쟁사:[...] } 에서 LG + 최신값 상위 3 경쟁사만
-// 표시. 이메일 호환: 브랜드별 주간 미니 바(공통 스케일) — 카테고리당 하나의 정렬 표.
-const HL_PRODS = ['tv', 'fridge', 'washer', 'rac']
-const HL_COMP_COLORS = ['#2A78D6', '#E8910C', '#15803D']
-
-// 주간 꺾은선 차트 — Outlook 등 호환 위해 서버 렌더 PNG(<img>)로 임베드.
-// hlLineChartSvg/encodeChart 는 src/shared/hlChart.js (엔드포인트와 공유).
+// ─── 하이라이트 챕터 — Readability · 모델 증감 · Citation 범프차트 ─────────────
+// '주요 제품 주차별 트랜드' 는 2026-08-27 삭제 (사용자 지시). 주간 꺾은선 PNG 임베드와
+// 전용 상수(HL_PRODS/HL_COMP_COLORS)도 함께 제거. weeklyAll/weeklyLabels/assetBase 는
+// 호출부 시그니처 호환을 위해 남겨둔다.
 function highlightInsightSectionHtml(products, weeklyAll, weeklyLabels, meta, lang = 'ko', assetBase = '', bumpData = {}, readability = null) {
-  weeklyAll = weeklyAll || {}
-  const HL_KR = { tv: 'TV', fridge: '냉장고', washer: '세탁기', rac: '에어컨' }
-  const prodName = id => lang === 'en' ? (PROD_ID_TO_EN[id] || id.toUpperCase()) : (HL_KR[id] || PROD_ID_TO_KR[id] || id.toUpperCase())
-  const latestOf = arr => { const v = (arr || []).filter(x => x != null); return v.length ? v[v.length - 1] : null }
-  const weekNum = l => { const m = String(l).match(/(\d+)/); return m ? parseInt(m[1]) : null }
-  const cards = HL_PRODS.map(pid => {
-    const src = weeklyAll[pid] || {}
-    const wa = src['Total'] || src['TTL'] || src['TOTAL'] || null
-    if (!wa || !Array.isArray(wa.LG)) return ''
-    // 엘지 포함 3등까지 → LG + 상위 2 경쟁사
-    const comps = Object.keys(wa).filter(b => b !== 'LG').map(b => ({ b, v: latestOf(wa[b]) })).filter(x => x.v != null).sort((a, b) => b.v - a.v).slice(0, 2).map(x => x.b)
-    const series = ['LG', ...comps]
-    const len = Math.min(10, wa.LG.length)  // 최근 10주 이내
-    const sliceW = arr => (arr || []).slice(-len)
-    if (!series.flatMap(b => sliceW(wa[b]).filter(v => v != null)).length) return ''
-    const labels = (weeklyLabels && weeklyLabels.length ? weeklyLabels : wa.LG.map((_, i) => `W${i + 1}`)).slice(-len)
-    const mark = labels.findIndex(l => weekNum(l) === 20)  // W20 세로 점선
-    const chartSeries = series.map((b, i) => ({ name: b, color: b === 'LG' ? EM_RED : HL_COMP_COLORS[(i - 1) % HL_COMP_COLORS.length], data: sliceW(wa[b]) }))
-    const legend = chartSeries.map(s => `<td style="padding:0 8px 0 0;white-space:nowrap;"><table border="0" cellpadding="0" cellspacing="0"><tr><td width="11" height="3" style="background:${s.color};font-size:0;line-height:0;border-radius:2px;">&nbsp;</td><td style="padding-left:4px;font-size:10px;font-weight:700;color:${s.name === 'LG' ? '#1A1A1A' : '#475569'};font-family:${EM_FONT};">${s.name === 'LG' ? 'LG' : escapeHtml(s.name)}</td></tr></table></td>`).join('')
-    // 서버 렌더 PNG (<img>) — Outlook/Gmail 호환. 2단 배치용으로 w=400.
-    const imgSrc = `${assetBase}/api/hl-chart?d=${encodeChart({ series: chartSeries, labels, w: 400, h: 140, mark })}`
-    return `
-                          <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border:1px solid #E8EDF2;border-radius:10px;">
-                            <tr><td style="padding:11px 12px;">
-                              <p style="margin:0 0 7px;font-size:13px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};">${escapeHtml(prodName(pid))}</p>
-                              <table border="0" cellpadding="0" cellspacing="0" style="margin-bottom:5px;"><tr>${legend}</tr></table>
-                              <img src="${imgSrc}" width="400" alt="${escapeHtml(prodName(pid))} 주간 트렌드" style="display:block;width:100%;max-width:400px;height:auto;border:0;" />
-                            </td></tr>
-                          </table>`
-  }).filter(Boolean)
-  // 2단(2열) 배치 (주간 데이터 있을 때만)
-  let blocks = ''
-  if (cards.length) {
-    let grid = ''
-    for (let i = 0; i < cards.length; i += 2) {
-      grid += `<tr>
-                        <td width="50%" valign="top" style="padding:0 6px 12px 0;">${cards[i]}</td>
-                        <td width="50%" valign="top" style="padding:0 0 12px 6px;">${cards[i + 1] || ''}</td>
-                      </tr>`
-    }
-    blocks = `<table border="0" cellpadding="0" cellspacing="0" width="100%">${grid}</table>`
-  }
   // 모델 증감 (LLM 모델별 제품 Visibility - 주요 경쟁사) — Highlight 챕터에 포함
   const modelContent = meta.showModelDelta !== false ? modelDeltaContentHtml(products, meta, lang) : ''
   const insightBox = meta.showHighlightInsight && (meta.highlightInsight || _ED) ? `
@@ -2959,15 +2901,9 @@ function highlightInsightSectionHtml(products, weeklyAll, weeklyLabels, meta, la
                             ${edBlock('highlightInsight', meta.highlightInsight, { size: 13, lh: 22, color: '#1A1A1A', accent: EM_RED, lang })}
                           </td></tr>
                         </table>` : ''
-  // 주간 그래프 영역 소제목 + 인사이트 + 차트 (모델 영역과 대칭 구조)
-  const weeklyTitle = lang === 'en' ? 'Key Products Weekly Trend (Top 3 brands)' : '주요 제품 주차별 트랜드 (Top3 브랜드)'
-  const weeklyArea = (blocks || insightBox) ? `
-                        <table border="0" cellpadding="0" cellspacing="0" style="margin-bottom:10px;"><tr>
-                          <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
-                          <td style="padding-left:8px;font-size:16px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};"><span${edAttr('hlWeeklyTitle')}>${escapeHtml(meta.hlWeeklyTitle || weeklyTitle)}</span></td>
-                        </tr></table>
-                        ${insightBox}
-                        ${blocks}` : ''
+  // '주요 제품 주차별 트랜드' 영역 삭제 (사용자 지시 2026-08-27) — 소제목·주간 꺾은선 차트 모두 제거.
+  // 인사이트 박스(meta.highlightInsight)는 유지 — 챕터 도입부 코멘트로 계속 쓰인다.
+  const weeklyArea = insightBox || ''
   // Citation Top10 카테고리·도메인 범프차트 영역 — Highlight 챕터에 포함
   const { citTouchPointsTrend, citTrendMonths, citTouchPointsByLlm, citDomainTrend, citDomainMonths, citDomainByLlmTrend } = bumpData || {}
   const touchCard = meta.showTouchPointsBump !== false ? touchPointsBumpCombinedHtml(citTouchPointsTrend, citTrendMonths, citTouchPointsByLlm, meta, lang) : ''
