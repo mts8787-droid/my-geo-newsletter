@@ -1152,6 +1152,44 @@ function insightV2Parts(meta = {}, lang = 'ko', products = []) {
   return { execHtml, bodyHtml }
 }
 
+
+// ─── Executive Summary V3 (8월호) ────────────────────────────────────────────
+// 6월 V2(CEO 보고서)를 대체. 구조·색상은 V2 와 동일 — 짙은 남색 박스(#1E293B)에
+// 번호 항목 제목 + 본문. 토글: meta.showInsightV3 (Sidebar '8월 인사이트 V3').
+// 본문은 사용자 제공 원문 그대로 (임의 다듬기 없음). 편집 필드: v3Ex*.
+function insightV3Parts(meta = {}, lang = 'ko') {
+  const L = (ko, en) => (lang === 'en' ? en : ko)
+  const ed = (field, val) => (_ED ? `<span${edRich(field)}>${val}</span>` : (meta[field] != null && meta[field] !== '' ? sanitizeUserHtml(meta[field]) : val))
+
+  // V2 의 execItem 과 동일한 짙은 남색 박스
+  const execItem = (titleF, title, bodyF, body) => `
+    <tr>
+      <td style="padding-bottom:8px;">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#1E293B;border:1px solid #334155;border-radius:8px;">
+          <tr>
+            <td style="padding:12px 16px;">
+              <p style="margin:0 0 6px;font-size:13px;font-weight:800;color:#FFFFFF;line-height:20px;font-family:${EM_FONT};letter-spacing:-0.3px;">${ed(titleF, title)}</p>
+              <p style="margin:0;font-size:13px;color:#CBD5E1;line-height:21px;font-family:${EM_FONT};letter-spacing:-0.3px;">${ed(bodyF, body)}</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>`
+
+  const ex1Ko = `자사는 AI 검색에서의 브랜드 노출을 지속 확대하기 위해, Visibility에 영향을 미치는 근본 요인인 Readability와 Citation을 선행·보조 지표로 함께 관리하고 있습니다. 특히 Readability는 인용을 위한 기본적인 AI 친화도를 평가하는 척도로 LG.com의 컨텐츠와 구조가 AI가 읽고 이해하여 답변의 근거로 채택하기 좋은 상태인지 확인할수 있습니다.<br/><br/>이에 '26년 7월부터 Readability 평가 체계와 대시보드를 새롭게 구축해 LG.com 콘텐츠가 AI가 읽고 활용하기 좋은 상태인지 함께 점검하고자 합니다.<br/>전략 10개 국가의 8개 주요 페이지 유형, 총 5,438개 페이지를 대상으로 AI 봇의 1) 사이트 성능, 2) 웹접근성, 3) Basic SEO, 4) 스키마마크업, 5) 고인용 콘텐츠, 6) AI Crawlability 총 6개 영역에서 첫 평가를 진행한 결과, <strong style="color:#FFFFFF;">LG.com의 전체 Readability 평균은 78.8점</strong>으로 나타났습니다.<br/><br/>영역별로는 사이트 성능 98.5점, AI Crawlability 96.6, Basic SEO 90.3점, 웹접근성 90.2점으로 기본적인 페이지 접근성과 기술 환경은 비교적 양호했습니다. 반면, <strong style="color:#FFFFFF;">스키마마크업 35.5점, 고인용 콘텐츠 29.7점</strong>은 상대적으로 낮아 개선이 필요한 영역으로 확인됐습니다.<br/><br/>이에 대응하여 FAQ 등 AI 답변에 적합한 콘텐츠 형식 확대, 스키마마크업 자동화, Support 및 PDP 주요 정보의 초기 제공 구조 개선(SSR)을 지속 수행하고자 합니다. 동시에 현재 강점을 보이는 항목은 지속 관리하여 Readability 개선이 Citation과 Visibility 상승으로 이어질 수 있는 기반을 강화할 계획입니다.`
+  const ex2Ko = `'26년 7월에는 ChatGPT Search를 중심으로 AI 인용 출처가 브랜드 공식 사이트로 확대되면서, <strong style="color:#FFFFFF;">LG.com의 인용이 전월 대비 40.6%(총276,929건)</strong>, Samsung.com은 47.4%(총293,675건) 증가했습니다.<br/><br/>AI  답변이 제품을 나열하는 방식에서 구매 기준과 기능 중심을 설명하는 방식으로 일부 변경되어 인용 출처가 PDP에서 Buying Guide로 이동하는 현상이 나타났고, <strong style="color:#FFFFFF;">LG Buying Guide 인용은 117.1% 증가(+9,687건)</strong>하였으며, 삼성은 83.4% 증가(+23,247건)했습니다.<br/>다음으로 인용이 많이 증가한 Support 페이지의 경우, LG는 36.8% 증가(+5,484건), 삼성은 64.9% 증가(+21,325건) 하였으며, 증가분이 Trouble Shooting 아티클에 집중되고 비디오 튜토리얼은 감소해, 설명을 텍스트로 담은 문서가 선택되는 같은 방향이 두 유형에 공통으로 나타났습니다.<br/>즉, AI가 근거로 삼는 페이지가 바뀐 것으로, 해당 제품군의 Buying Guide/Support 페이지를 보유했는지가 곧 인용 기회로 직결되었습니다.<br/><br/><span style="color:#FDA4AF;">일부 국가에서는 현지 콘텐츠 부족으로 미국 페이지가 대신 인용되는 구조가 확인되기도 하여, 독일 프롬프트에서 인용된 LG Support 페이지의 64.5%가 미국 경로였고 독일 경로는 26.2%에 그친 반면, 삼성은 독일 경로가 90.1%였습니다. 따라서 법인/제품군별 Buying Guide/Support - Trouble Shooting 콘텐츠의 현지 커버리지 확대가 필요합니다.</span>`
+
+  const ex1En = `To keep expanding brand exposure in AI search, we manage Readability and Citation — the underlying drivers of Visibility — as leading and supporting indicators. Readability in particular measures basic AI-friendliness for citation: whether LG.com's content and structure are in good shape for AI to read, understand and adopt as grounds for its answers.<br/><br/>From July 2026 we built a new Readability evaluation framework and dashboard to check whether LG.com content is in good shape for AI to read and use.<br/>Across 10 strategic countries and 8 major page types — 5,438 pages in total — the first evaluation covered six areas: 1) Site Performance, 2) Web Accessibility, 3) Basic SEO, 4) Schema Markup, 5) Citable Content, 6) AI Crawlability. <strong style="color:#FFFFFF;">LG.com's overall Readability average was 78.8.</strong><br/><br/>By area, Site Performance 98.5, AI Crawlability 96.6, Basic SEO 90.3 and Web Accessibility 90.2 showed relatively sound page accessibility and technical environment. In contrast, <strong style="color:#FFFFFF;">Schema Markup 35.5 and Citable Content 29.7</strong> were relatively low and identified as areas needing improvement.<br/><br/>In response, we will continue expanding AI-answer-friendly content formats such as FAQ, automating schema markup, and improving the initial delivery structure (SSR) of key Support and PDP information. At the same time, we will keep managing current strengths to strengthen the basis for Readability gains to lead to higher Citation and Visibility.`
+  const ex2En = `In July 2026, as AI citation sources expanded toward official brand sites led by ChatGPT Search, <strong style="color:#FFFFFF;">LG.com citations rose 40.6% MoM (276,929 total)</strong> and Samsung.com 47.4% (293,675 total).<br/><br/>AI answers partly shifted from listing products to explaining purchase criteria and features, moving citation sources from PDP to Buying Guide: <strong style="color:#FFFFFF;">LG Buying Guide citations rose 117.1% (+9,687)</strong> and Samsung 83.4% (+23,247).<br/>Support pages, the next largest gainer, rose 36.8% (+5,484) for LG and 64.9% (+21,325) for Samsung; the increase concentrated in troubleshooting articles while video tutorials declined — the same direction across both types, favoring documents that carry explanations as text.<br/>In short, the pages AI grounds its answers on have changed, and whether a product line has Buying Guide/Support pages now translates directly into citation opportunity.<br/><br/><span style="color:#FDA4AF;">In some countries, a lack of local content led US pages to be cited instead: 64.5% of LG Support pages cited in German prompts were US paths and only 26.2% German, whereas 90.1% of Samsung's were German paths. Expanding local coverage of Buying Guide / Support-Troubleshooting content by subsidiary and product line is therefore needed.</span>`
+
+  const execHtml = `
+                              <table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;">
+                                ${execItem('v3Ex1T', L('1. Readabilty 평가 체계 도입 및 개선 필요 영역 보완 지속', '1. Introducing the Readability framework and continuing to close gaps'), 'v3Ex1B', L(ex1Ko, ex1En))}
+                                ${execItem('v3Ex2T', L('2. 인용 출처의 변화 - 브랜드 닷컴의 인용비중 증가/PDP를 대신하여 설명형 콘텐츠(Buying Guide/Support) 인용 확대', '2. Shift in citation sources — brand dotcom share up; explanatory content (Buying Guide/Support) cited in place of PDP'), 'v3Ex2B', L(ex2Ko, ex2En))}
+                              </table>`
+  return { execHtml }
+}
+
 // ─── 액션 아이템 V2 — 4개 실행 영역별 [실적 수치(트래커 연동) + 조직별 활동] + 7월 예정 ──
 // 토글: meta.showTodoV2. 6월 주요 실적을 영역(외부채널/신규제작/콘텐츠수정/닷컴기술)별로,
 // 각 영역 안에 조직(MS/HS/ES/글로벌컴/브랜드/고가혁/D2C)별 활동과 실적 수치(Progress
@@ -2885,9 +2923,49 @@ function dashboardLinkButtonHtml(lang) {
 // ─── 메인 생성 함수 ───────────────────────────────────────────────────────────
 export { escapeHtml }
 
-// ─── 제품군 × 모델 전월 대비 상세 (모델별 Visibility 증감) ────────────────────
-// products[].monthlyScores[].byLlm 에서 카테고리×모델 MoM 델타 산출 → 다이버징 바 + 히트맵.
-// 이메일 호환: canvas 대신 table-layout (막대 = background 폭, 히트맵 = 셀 bgcolor).
+// ─── 하이라이트 챕터 — Readability ─────────────────────────────────────────────
+// '주요 제품 주차별 트랜드' 는 2026-08-27 삭제 (사용자 지시). 주간 꺾은선 PNG 임베드와
+// 전용 상수(HL_PRODS/HL_COMP_COLORS)도 함께 제거. weeklyAll/weeklyLabels/assetBase 는
+// 호출부 시그니처 호환을 위해 남겨둔다.
+function highlightInsightSectionHtml(products, weeklyAll, weeklyLabels, meta, lang = 'ko', assetBase = '', bumpData = {}, readability = null) {
+  // 'LLM 모델별 제품 Visibility - 주요 경쟁사' 영역 삭제 (사용자 지시 2026-08-27)
+  const insightBox = meta.showHighlightInsight && (meta.highlightInsight || _ED) ? `
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom:14px;border-radius:8px;background:#FFF4F7;border:1px solid #F5CCD8;">
+                          <tr><td style="padding:12px 16px;">
+                            ${edBlock('highlightInsight', meta.highlightInsight, { size: 13, lh: 22, color: '#1A1A1A', accent: EM_RED, lang })}
+                          </td></tr>
+                        </table>` : ''
+  // '주요 제품 주차별 트랜드' 영역 삭제 (사용자 지시 2026-08-27) — 소제목·주간 꺾은선 차트 모두 제거.
+  // 인사이트 박스(meta.highlightInsight)는 유지 — 챕터 도입부 코멘트로 계속 쓰인다.
+  const weeklyArea = insightBox || ''
+  // Readability Highlight — 별도 카드가 아니라 본 챕터 안에 같은 디자인으로 편입 (2026-08)
+  const rdArea = (meta.showReadability && readability) ? readabilityHighlightHtml(readability, meta, lang) : ''
+  if (!weeklyArea && !rdArea) return ''  // 표시할 콘텐츠 없으면 챕터 미렌더
+  const _mm = String(meta.period || '').match(/(\d{1,2})\s*월/)
+  const chapterTitle = (_mm ? _mm[1] + '월 ' : '') + (lang === 'en' ? 'Highlights' : '하이라이트')
+  return `
+              <tr>
+                <td style="padding-bottom:28px;">
+                  <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFFFFF;border-radius:16px;border:2px solid #E8EDF2;">
+                    <tr>
+                      <td style="padding:22px 16px 18px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;">
+                        <table border="0" cellpadding="0" cellspacing="0"><tr>
+                          <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
+                          <td style="padding-left:8px;font-size:19px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};"><span${edAttr('hlChapterTitle')}>${escapeHtml(meta.hlChapterTitle || chapterTitle)}</span></td>
+                        </tr></table>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="padding:14px 18px;">
+                        ${rdArea}
+                        ${weeklyArea}
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>`
+}
+
 // ─── Citation Top10 카테고리·도메인 범프차트 ────────────────────────────────
 // 2026-08-27: Highlight 챕터에서 Citation 섹션의 '전월 대비 모델별 Citation 인용수'
 // 바로 아래로 이동 (사용자 지시). 반환값은 <tr> — Citation 섹션 표의 행으로 삽입된다.
@@ -2916,244 +2994,6 @@ function citationBumpRowHtml(bumpData, meta, lang = 'ko') {
                         </td></tr></table>` : ''
   return inner ? `<tr><td style="padding:4px 12px 16px;">${inner}</td></tr>` : ''
 }
-
-// ─── 하이라이트 챕터 — Readability · 모델 증감 ────────────────────────────────
-// '주요 제품 주차별 트랜드' 는 2026-08-27 삭제 (사용자 지시). 주간 꺾은선 PNG 임베드와
-// 전용 상수(HL_PRODS/HL_COMP_COLORS)도 함께 제거. weeklyAll/weeklyLabels/assetBase 는
-// 호출부 시그니처 호환을 위해 남겨둔다.
-function highlightInsightSectionHtml(products, weeklyAll, weeklyLabels, meta, lang = 'ko', assetBase = '', bumpData = {}, readability = null) {
-  // 모델 증감 (LLM 모델별 제품 Visibility - 주요 경쟁사) — Highlight 챕터에 포함
-  const modelContent = meta.showModelDelta !== false ? modelDeltaContentHtml(products, meta, lang) : ''
-  const insightBox = meta.showHighlightInsight && (meta.highlightInsight || _ED) ? `
-                        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom:14px;border-radius:8px;background:#FFF4F7;border:1px solid #F5CCD8;">
-                          <tr><td style="padding:12px 16px;">
-                            ${edBlock('highlightInsight', meta.highlightInsight, { size: 13, lh: 22, color: '#1A1A1A', accent: EM_RED, lang })}
-                          </td></tr>
-                        </table>` : ''
-  // '주요 제품 주차별 트랜드' 영역 삭제 (사용자 지시 2026-08-27) — 소제목·주간 꺾은선 차트 모두 제거.
-  // 인사이트 박스(meta.highlightInsight)는 유지 — 챕터 도입부 코멘트로 계속 쓰인다.
-  const weeklyArea = insightBox || ''
-  // Readability Highlight — 별도 카드가 아니라 본 챕터 안에 같은 디자인으로 편입 (2026-08)
-  const rdArea = (meta.showReadability && readability) ? readabilityHighlightHtml(readability, meta, lang) : ''
-  if (!weeklyArea && !modelContent && !rdArea) return ''  // 표시할 콘텐츠 없으면 챕터 미렌더
-  const _mm = String(meta.period || '').match(/(\d{1,2})\s*월/)
-  const chapterTitle = (_mm ? _mm[1] + '월 ' : '') + (lang === 'en' ? 'Highlights' : '하이라이트')
-  return `
-              <tr>
-                <td style="padding-bottom:28px;">
-                  <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFFFFF;border-radius:16px;border:2px solid #E8EDF2;">
-                    <tr>
-                      <td style="padding:22px 16px 18px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;">
-                        <table border="0" cellpadding="0" cellspacing="0"><tr>
-                          <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
-                          <td style="padding-left:8px;font-size:19px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};"><span${edAttr('hlChapterTitle')}>${escapeHtml(meta.hlChapterTitle || chapterTitle)}</span></td>
-                        </tr></table>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td style="padding:14px 18px;">
-                        ${rdArea}
-                        ${weeklyArea}
-                        ${modelContent}
-                      </td>
-                    </tr>
-                  </table>
-                </td>
-              </tr>`
-}
-
-const MODEL_ORDER = ['ChatGPT', 'ChatGPT Search', 'GPT Search', 'Perplexity', 'Gemini', 'Google', 'Google AI Overview', 'Copilot', 'Claude']
-// 콘텐츠 전용 빌더 (외곽 카드 없음) — Highlight Insight 챕터 내부에 임베드.
-const MODEL_EXCLUDE = /bosch|보쉬|sony|소니/i  // 주요 경쟁사 선정에서 제외
-function modelDeltaContentHtml(products, meta, lang = 'ko') {
-  products = products || []
-  const prodName = p => { const id = (p.id || '').toLowerCase(); return lang === 'en' ? (PROD_ID_TO_EN[id] || p.kr || p.id) : (p.kr || PROD_ID_TO_EN[id] || p.id) }
-
-  // 모델 집합 (byLlm 키 합집합, Total 제외)
-  const modelSet = new Set()
-  products.forEach(p => {
-    const ms = p.monthlyScores || []; if (ms.length < 2) return
-    const lb = ms[ms.length - 1].byLlm || {}, pb = ms[ms.length - 2].byLlm || {}
-    Object.keys(lb).forEach(m => { if (m !== 'Total' && m !== 'TOTAL' && m !== 'All' && pb[m]) modelSet.add(m) })
-  })
-  if (!modelSet.size) return ''
-  const models = [...modelSet].sort((a, b) => { const ia = MODEL_ORDER.indexOf(a), ib = MODEL_ORDER.indexOf(b); return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib) || a.localeCompare(b) })
-
-  // 주요 경쟁사 2개 — 최신월 allScores 합산 상위 2 (비-LG)
-  const compTot = {}
-  products.forEach(p => { const ms = p.monthlyScores || []; if (!ms.length) return; const as = ms[ms.length - 1].allScores || {}; Object.keys(as).forEach(b => { if (b === 'LG' || MODEL_EXCLUDE.test(b)) return; compTot[b] = (compTot[b] || 0) + (Number(as[b]) || 0) }) })
-  const majorComps = Object.keys(compTot).sort((a, b) => compTot[b] - compTot[a]).slice(0, 1)  // LG + 상위 1개(삼성)만
-  const brands = ['LG', ...majorComps]
-
-  // 브랜드별 카테고리 × 모델 Δ (byLlm[model].allScores[brand] 전월 대비)
-  const brandData = brands.map(brand => {
-    const rows = []
-    products.forEach(p => {
-      const ms = p.monthlyScores || []; if (ms.length < 2) return
-      const lb = ms[ms.length - 1].byLlm || {}, pb = ms[ms.length - 2].byLlm || {}
-      const deltas = {}; let has = false
-      models.forEach(m => {
-        const ln = lb[m] && lb[m].allScores ? lb[m].allScores[brand] : null
-        const pn = pb[m] && pb[m].allScores ? pb[m].allScores[brand] : null
-        if (ln != null && pn != null) { deltas[m] = +(ln - pn).toFixed(1); has = true }
-      })
-      if (has) rows.push({ name: prodName(p), deltas })
-    })
-    const avg = {}; models.forEach(m => { const v = rows.map(r => r.deltas[m]).filter(x => x != null); avg[m] = v.length ? +(v.reduce((a, b) => a + b, 0) / v.length).toFixed(1) : null })
-    return { brand, rows, avg }
-  }).filter(b => b.rows.length)
-  if (!brandData.length) return ''
-
-  // 공통 색 스케일 (브랜드 간 동일 기준)
-  const allV = brandData.flatMap(b => b.rows.flatMap(r => models.map(m => r.deltas[m]))).filter(x => x != null)
-  const sc = Math.max(5, ...allV.map(Math.abs))
-  const mix = (r, g, b, a) => { const h = x => Math.round(255 - (255 - x) * a).toString(16).padStart(2, '0'); return '#' + h(r) + h(g) + h(b) }
-  const heat = v => { const t = Math.max(-1, Math.min(1, v / sc)); return t >= 0 ? mix(42, 120, 214, 0.12 + t * 0.55) : mix(227, 73, 72, 0.12 + (-t) * 0.6) }
-  // 타이트 셀 (padding·line-height 축소)
-  const cell = v => { if (v == null) return `<td style="padding:3px 5px;border:1px solid #e5e4de;color:#c9c8c2;font-family:${EM_FONT};line-height:1.3;">–</td>`; const bg = heat(v), col = Math.abs(v) >= sc * 0.6 ? '#FFFFFF' : '#333333'; return `<td bgcolor="${bg}" style="padding:3px 5px;border:1px solid #e5e4de;background:${bg};color:${col};font-size:11px;font-weight:700;font-family:${EM_FONT};text-align:center;line-height:1.3;">${v > 0 ? '+' : ''}${v.toFixed(1)}</td>` }
-  const th = m => `<th style="padding:4px 5px;border:1px solid #e5e4de;background:#f6f5f2;font-size:10px;font-weight:600;color:#555;font-family:${EM_FONT};line-height:1.2;">${escapeHtml(m)}</th>`
-  const heatTable = ({ brand, rows, avg }) => {
-    const bodyRows = rows.map(r => `<tr><td style="padding:3px 8px;border:1px solid #e5e4de;background:#f6f5f2;font-size:11px;font-weight:700;color:#111;font-family:${EM_FONT};text-align:left;line-height:1.3;">${escapeHtml(r.name)}</td>${models.map(m => cell(r.deltas[m])).join('')}</tr>`).join('')
-    const avgRow = `<tr><td style="padding:3px 8px;border:1px solid #cfcec8;background:#eceae4;font-size:11px;font-weight:800;color:#111;font-family:${EM_FONT};text-align:left;line-height:1.3;">${lang === 'en' ? 'Avg' : '평균'}</td>${models.map(m => cell(avg[m])).join('')}</tr>`
-    const bColor = brand === 'LG' ? EM_RED : '#475569'
-    return `
-                        <p style="margin:14px 0 5px;font-size:13px;font-weight:800;color:${bColor};font-family:${EM_FONT};">${brand === 'LG' ? 'LG' : escapeHtml(brand)}</p>
-                        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border-collapse:collapse;">
-                          <thead><tr><th style="padding:4px 8px;border:1px solid #e5e4de;background:#f6f5f2;font-size:10px;color:#555;font-family:${EM_FONT};"></th>${models.map(th).join('')}</tr></thead>
-                          <tbody>${bodyRows}${avgRow}</tbody>
-                        </table>`
-  }
-
-  // 비교 월 라벨 (전월 vs 최신월) — 데이터에서 자동 도출
-  const monthLabel = raw => {
-    const s = String(raw || '').trim()
-    const km = s.match(/(\d{1,2})월/); if (km) return km[1] + '월'
-    const map = { jan: 1, feb: 2, mar: 3, apr: 4, may: 5, jun: 6, jul: 7, aug: 8, sep: 9, oct: 10, nov: 11, dec: 12 }
-    const en = s.match(/(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i)
-    if (en) return lang === 'en' ? s : map[en[1].toLowerCase()] + '월'
-    const iso = s.match(/\d{4}[-\/](\d{1,2})/); if (iso) return lang === 'en' ? s : parseInt(iso[1]) + '월'
-    return s
-  }
-  const _mref = products.find(p => (p.monthlyScores || []).length >= 2)
-  const _md = _mref ? _mref.monthlyScores.slice(-2).map(x => monthLabel(x.date)) : null
-  const monthRange = _md ? `${_md[0]} vs ${_md[1]}` : ''
-  const title = (lang === 'en' ? 'LLM Product Visibility by Model - Key Competitors' : 'LLM 모델별 제품 Visibility - 주요 경쟁사') + (monthRange ? ` (${monthRange})` : '')
-  // 외곽 카드 없이 콘텐츠만 반환 (Highlight Insight 챕터에 임베드)
-  return `
-                        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-top:16px;border-top:1px solid #EEF0F3;"><tr><td style="padding-top:14px;">
-                          <table border="0" cellpadding="0" cellspacing="0" style="margin-bottom:10px;"><tr>
-                            <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
-                            <td style="padding-left:8px;font-size:16px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};"><span${edAttr('hlModelTitle')}>${escapeHtml(meta.hlModelTitle || title)}</span></td>
-                          </tr></table>
-                          ${meta.showModelDeltaInsight && (meta.modelDeltaInsight || _ED) ? `
-                          <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom:4px;border-radius:8px;background:#FFF4F7;border:1px solid #F5CCD8;">
-                            <tr><td style="padding:12px 16px;">
-                              ${edBlock('modelDeltaInsight', meta.modelDeltaInsight, { size: 13, lh: 22, color: '#1A1A1A', accent: EM_RED, lang })}
-                            </td></tr>
-                          </table>` : ''}
-                          ${brandData.map(heatTable).join('')}
-                        </td></tr></table>`
-}
-
-// ─── 제품별 경쟁비 증감 (전월 대비) ──────────────────────────────────────────
-// products[].monthlyScores 의 최신/전월 (score, comp) 로 경쟁비(LG/경쟁×100) 전월 대비 Δ 산출.
-// 다이버징 바 (개선=초록 / 악화=빨강, 중앙 0축) + 현재 경쟁비. 이메일 호환 table-layout.
-function compRatioDeltaSectionHtml(products, meta, lang = 'ko') {
-  products = products || []
-  const prodName = p => { const id = (p.id || '').toLowerCase(); return lang === 'en' ? (PROD_ID_TO_EN[id] || p.kr || p.id) : (p.kr || PROD_ID_TO_EN[id] || p.id) }
-  const rows = []
-  products.forEach(p => {
-    const ms = p.monthlyScores || []
-    if (ms.length < 2) return
-    const L = ms[ms.length - 1], P = ms[ms.length - 2]
-    const rn = (L && L.comp > 0 && L.score != null) ? Math.round(L.score / L.comp * 100) : null
-    const rp = (P && P.comp > 0 && P.score != null) ? Math.round(P.score / P.comp * 100) : null
-    if (rn == null || rp == null) return
-    rows.push({ name: prodName(p), now: rn, d: rn - rp })
-  })
-  if (!rows.length) return ''
-  const dmax = Math.max(1, ...rows.map(r => Math.abs(r.d)))
-  const HALF = 120, UP = '#16A34A', DOWN = '#DC2626'
-  const barRows = rows.map(r => {
-    const v = r.d, neg = v < 0, color = v === 0 ? '#94A3B8' : neg ? DOWN : UP, w = Math.round(Math.abs(v) / dmax * HALF)
-    const rColor = r.now >= 100 ? '#15803D' : r.now >= 80 ? '#B45309' : '#BE123C'
-    return `<tr>
-      <td align="right" width="96" style="font-size:12px;color:#555;font-family:${EM_FONT};padding:5px 8px 5px 0;white-space:nowrap;">${escapeHtml(r.name)}</td>
-      <td width="50" align="right" style="font-size:12px;font-weight:700;color:${rColor};font-family:${EM_FONT};padding:5px 10px 5px 0;white-space:nowrap;">${r.now}%</td>
-      <td width="${HALF}" align="right" style="padding:0;">${neg && w > 0 ? `<table border="0" cellpadding="0" cellspacing="0" align="right" style="width:${w}px;"><tr><td height="16" style="background:${color};border-radius:3px 0 0 3px;font-size:0;line-height:0;">&nbsp;</td></tr></table>` : ''}</td>
-      <td width="2" style="background:#c9c8c2;font-size:0;line-height:0;">&nbsp;</td>
-      <td width="${HALF}" align="left" style="padding:0;">${!neg && w > 0 ? `<table border="0" cellpadding="0" cellspacing="0" align="left" style="width:${w}px;"><tr><td height="16" style="background:${color};border-radius:0 3px 3px 0;font-size:0;line-height:0;">&nbsp;</td></tr></table>` : ''}</td>
-      <td width="56" style="font-size:12px;font-weight:700;color:${color};font-family:${EM_FONT};padding:5px 0 5px 8px;white-space:nowrap;">${v > 0 ? '+' : ''}${v}%p</td>
-    </tr>`
-  }).join('')
-
-  // 모델별 경쟁비 Δ (카테고리 × 모델 히트맵) — byLlm[model].comp 로 모델별 경쟁비 산출
-  const modelSet = new Set()
-  const catRows = []
-  products.forEach(p => {
-    const ms = p.monthlyScores || []
-    if (ms.length < 2) return
-    const lb = ms[ms.length - 1].byLlm || {}, pb = ms[ms.length - 2].byLlm || {}
-    const deltas = {}; let has = false
-    Object.keys(lb).forEach(m => {
-      if (m === 'Total' || m === 'TOTAL' || m === 'All') return
-      const L = lb[m], P = pb[m]
-      if (L && P && L.comp > 0 && P.comp > 0 && L.score != null && P.score != null) {
-        deltas[m] = Math.round(L.score / L.comp * 100 - P.score / P.comp * 100); modelSet.add(m); has = true
-      }
-    })
-    if (has) catRows.push({ name: prodName(p), deltas })
-  })
-  const crModels = [...modelSet].sort((a, b) => { const ia = MODEL_ORDER.indexOf(a), ib = MODEL_ORDER.indexOf(b); return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib) || a.localeCompare(b) })
-  const crAvg = {}; crModels.forEach(m => { const v = catRows.map(r => r.deltas[m]).filter(x => x != null); crAvg[m] = v.length ? Math.round(v.reduce((a, b) => a + b, 0) / v.length) : null })
-  let heatmapHtml = ''
-  if (crModels.length && catRows.length) {
-    const allV = catRows.flatMap(r => crModels.map(m => r.deltas[m])).filter(x => x != null)
-    const sc = Math.max(6, ...allV.map(Math.abs))
-    const mix = (r, g, b, a) => { const h = x => Math.round(255 - (255 - x) * a).toString(16).padStart(2, '0'); return '#' + h(r) + h(g) + h(b) }
-    const heat = v => { const t = Math.max(-1, Math.min(1, v / sc)); return t >= 0 ? mix(22, 163, 74, 0.12 + t * 0.55) : mix(220, 38, 38, 0.12 + (-t) * 0.6) }
-    const cell = v => { if (v == null) return `<td style="padding:8px 6px;border:1px solid #e5e4de;color:#c9c8c2;font-family:${EM_FONT};">–</td>`; const bg = heat(v), col = Math.abs(v) >= sc * 0.6 ? '#FFFFFF' : '#333333'; return `<td bgcolor="${bg}" style="padding:8px 6px;border:1px solid #e5e4de;background:${bg};color:${col};font-size:12px;font-weight:700;font-family:${EM_FONT};text-align:center;">${v > 0 ? '+' : ''}${v}</td>` }
-    const th = m => `<th style="padding:8px 6px;border:1px solid #e5e4de;background:#f6f5f2;font-size:11px;font-weight:600;color:#555;font-family:${EM_FONT};">${escapeHtml(m)}</th>`
-    const brows = catRows.map(r => `<tr><td style="padding:8px 10px;border:1px solid #e5e4de;background:#f6f5f2;font-size:12px;font-weight:700;color:#111;font-family:${EM_FONT};text-align:left;">${escapeHtml(r.name)}</td>${crModels.map(m => cell(r.deltas[m])).join('')}</tr>`).join('')
-    const arow = `<tr><td style="padding:8px 10px;border:1px solid #cfcec8;background:#eceae4;font-size:12px;font-weight:800;color:#111;font-family:${EM_FONT};text-align:left;">${lang === 'en' ? 'Avg' : '평균'}</td>${crModels.map(m => cell(crAvg[m])).join('')}</tr>`
-    const subT = lang === 'en' ? 'By model (Δ%p)' : '모델별 경쟁비 증감 (Δ%p)'
-    heatmapHtml = `
-                        <p style="margin:20px 0 8px;font-size:13px;font-weight:700;color:#475569;font-family:${EM_FONT};">${subT}</p>
-                        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border-collapse:collapse;">
-                          <thead><tr><th style="padding:8px 10px;border:1px solid #e5e4de;background:#f6f5f2;"></th>${crModels.map(th).join('')}</tr></thead>
-                          <tbody>${brows}${arow}</tbody>
-                        </table>`
-  }
-
-  const title = lang === 'en' ? 'Competitor Ratio MoM by Category (Δ%p)' : '제품별 경쟁비 증감 (전월 대비, Δ%p)'
-  const noteDefault = lang === 'en' ? 'MoM change of competitor ratio (LG / #1 competitor × 100) by category.' : '카테고리별 경쟁비(LG / 1위 경쟁사 × 100)의 전월 대비 증감입니다. 초록=개선 / 빨강=악화.'
-  return `
-              <tr>
-                <td style="padding-bottom:28px;">
-                  <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#FFFFFF;border-radius:16px;border:2px solid #E8EDF2;">
-                    <tr>
-                      <td style="padding:22px 16px 18px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;">
-                        <table border="0" cellpadding="0" cellspacing="0"><tr>
-                          <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
-                          <td style="padding-left:8px;font-size:19px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};">${title}</td>
-                        </tr></table>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td style="padding:16px 18px;">
-                        ${edBlock('compRatioDeltaNote', meta.compRatioDeltaNote, { size: 13, lh: 21, color: '#555555', ph: noteDefault, lang })}
-                        ${heatmapHtml ? `<p style="margin:16px 0 8px;font-size:13px;font-weight:700;color:#475569;font-family:${EM_FONT};">${lang === 'en' ? 'Overall (Δ%p)' : '전체 경쟁비 증감 (Δ%p)'}</p>` : ''}
-                        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-top:10px;">
-                          ${barRows}
-                        </table>
-                        ${heatmapHtml}
-                      </td>
-                    </tr>
-                  </table>
-                </td>
-              </tr>`
-}
-
 
 // ─── Readability Highlight 섹션 (8월호 신설) ─────────────────────────────────
 // 구성: ① Readability란? 박스(별도 영역) ② 국가별·페이지타입별 점수 ③ 6개 영역 점수
@@ -3759,7 +3599,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                             </td>
                           </tr>
                         </table>
-                        ${((meta.showTotalInsight !== false && (meta.totalInsight || _ED)) || meta.showInsightV2) ? `
+                        ${((meta.showTotalInsight !== false && (meta.totalInsight || _ED)) || meta.showInsightV2 || meta.showInsightV3) ? `
                         <table border="0" cellpadding="0" cellspacing="0" width="100%">
                         <tr><td height="16" style="font-size:0;line-height:0;">&nbsp;</td></tr>
                           <tr>
@@ -3767,6 +3607,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                               ${(meta.showTotalInsight !== false && (meta.totalInsight || _ED)) ? edBlock('totalInsight', meta.totalInsight, { size: 13, lh: 22, color: '#FFFFFF', accent: '#FF9EBB', lang }) : ''}
                               ${(meta.showTotalInsight !== false && (meta.totalInsight || _ED)) && meta.showInsightV2 ? '<table border="0" cellpadding="0" cellspacing="0" width="100%"><tr><td height="14" style="font-size:0;line-height:0;">&nbsp;</td></tr></table>' : ''}
                               ${meta.showInsightV2 ? insightV2Parts(meta, lang, products).execHtml : ''}
+                              ${meta.showInsightV3 ? insightV3Parts(meta, lang).execHtml : ''}
                             </td>
                           </tr>
                         </table>` : ''}
@@ -3847,7 +3688,6 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                 </td>
               </tr>` : ''}
 
-              ${meta.showCompRatioDelta !== false ? compRatioDeltaSectionHtml(products, meta, lang) : ''}
 
               ${meta.showCnty !== false ? countryVisibilitySectionHtml(productsCnty, meta, lang, total, unlaunchedMap) : ''}
 

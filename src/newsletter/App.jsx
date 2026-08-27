@@ -125,7 +125,6 @@ const CHAT_INSIGHT_ITEMS = [
   { label: 'Citation 범프 인사이트', field: 'bumpInsight', type: 'bump', showKey: 'showBumpInsight', build: c => ({ citTouchPointsTrend: c.citTouchPointsTrend, citDomainTrend: c.citDomainTrend, citTrendMonths: c.citTrendMonths, citDomainMonths: c.citDomainMonths }) },
   { label: '제품 인사이트', field: 'productInsight', type: 'product', showKey: 'showProductInsight', build: c => ({ products: c.products, total: c.total }) },
   { label: '제품 How to Read', field: 'productHowToRead', type: 'howToRead', showKey: 'showProductHowToRead', build: () => ({ section: '제품별 GEO Visibility' }) },
-  { label: '모델 증감 인사이트', field: 'modelDeltaInsight', type: 'modelDelta', showKey: 'showModelDeltaInsight', build: c => ({ products: c.products }) },
   { label: '국가별 인사이트', field: 'cntyInsight', type: 'cnty', showKey: 'showCntyInsight', build: c => ({ productsCnty: c.productsCnty, unlaunchedMap: c.unlaunchedMap }) },
   { label: '국가별 How to Read', field: 'cntyHowToRead', type: 'howToRead', showKey: 'showCntyHowToRead', build: () => ({ section: '국가별 GEO Visibility' }) },
   { label: 'Citation 인사이트', field: 'citationInsight', type: 'citation', showKey: 'showCitationInsight', build: c => ({ citations: c.citations }) },

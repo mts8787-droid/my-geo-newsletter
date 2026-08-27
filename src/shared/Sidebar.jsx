@@ -13,7 +13,7 @@ import SheetDownload from './SheetDownload.jsx'
 // 발송 시 EN meta 에서 그대로 따라가야 할 "텍스트" 필드 (번역된 본문/라벨).
 // 그 외 차트/표시 토글은 metaKo 기준으로 통일 — metaKo/metaEn 가 독립 state 라
 // 미리보기 언어를 바꿔가며 토글을 만지면 KO/EN 차트가 갈라지기 때문 (handleTranslate 와 동일 화이트리스트).
-const EN_TEXT_FIELDS = ['title', 'dateLine', 'noticeText', 'totalInsight', 'reportType', 'productInsight', 'productHowToRead', 'citationInsight', 'citationHowToRead', 'dotcomInsight', 'dotcomHowToRead', 'todoText', 'todoNotice', 'kpiLogicText', 'cntyInsight', 'cntyHowToRead', 'citDomainInsight', 'citDomainHowToRead', 'citCntyInsight', 'citCntyHowToRead', 'citPrdInsight', 'citPrdHowToRead', 'period', 'team', 'reportNo', 'monthlyReportBody', 'modelDeltaInsight', 'compRatioDeltaNote', 'highlightInsight', 'bumpInsight', 'hlChapterTitle', 'hlWeeklyTitle', 'hlModelTitle', 'hlBumpTitle']
+const EN_TEXT_FIELDS = ['title', 'dateLine', 'noticeText', 'totalInsight', 'reportType', 'productInsight', 'productHowToRead', 'citationInsight', 'citationHowToRead', 'dotcomInsight', 'dotcomHowToRead', 'todoText', 'todoNotice', 'kpiLogicText', 'cntyInsight', 'cntyHowToRead', 'citDomainInsight', 'citDomainHowToRead', 'citCntyInsight', 'citCntyHowToRead', 'citPrdInsight', 'citPrdHowToRead', 'period', 'team', 'reportNo', 'monthlyReportBody', 'highlightInsight', 'bumpInsight', 'hlChapterTitle', 'hlWeeklyTitle', 'hlModelTitle', 'hlBumpTitle']
 // V2 인사이트 — 편집된 필드만 번역 대상 (미편집이면 템플릿의 EN 기본 문구가 자동 렌더)
 const V2_TRANSLATE_FIELDS = ['v2ExIntro2', 'v2Ex1T2', 'v2Ex1B2', 'v2Ex2T2', 'v2Ex2B2', 'v2Ex3T2', 'v2Ex3B2', 'v2T11Caption', 'v2CaseCaption', 'v2C1Title', 'v2C1Keep', 'v2C1Bko', 'v2C1Tko', 'v2C2Title4', 'v2C2Keep2', 'v2C2Bko4', 'v2C2Tko4', 'v2VisTblHtml8', 'todoV2Title', 'todoV2NoticeLabel', 'todoV2NoticeHtml', 'todoV2PerfTitle', 'todoV2ChBu', 'todoV2NewBu', 'todoV2FixBu', 'todoV2TechBu', 'todoV2NextSecTitle', 'todoV2NextTitle', 'todoV2NextHtml3']
 EN_TEXT_FIELDS.push(...V2_TRANSLATE_FIELDS)
@@ -22,6 +22,9 @@ EN_TEXT_FIELDS.push(...V2_TRANSLATE_FIELDS)
 const RD_TRANSLATE_FIELDS = ['rd_h1', 'rd_intro', 'rd_introNotes', 'rd_summary', 'rd_areaIntro', 'rd_h2',
   'rd_d1Title', 'rd_d1', 'rd_d1Notes', 'rd_d2Title', 'rd_d2', 'rd_d3Title', 'rd_d3', 'rd_d4Title', 'rd_d4']
 EN_TEXT_FIELDS.push(...RD_TRANSLATE_FIELDS)
+// 8월 Executive Summary V3 — 편집 시 EN 번역 대상
+const V3_TRANSLATE_FIELDS = ['v3Ex1T', 'v3Ex1B', 'v3Ex2T', 'v3Ex2B']
+EN_TEXT_FIELDS.push(...V3_TRANSLATE_FIELDS)
 
 // EN meta = KO 구조(토글·레이아웃·수치) 그대로 + EN 번역 텍스트만 오버레이.
 // metaEn 을 통째로 쓰면 예전 번역 시점의 구조 스냅샷이 남아 KO 변경(신규 섹션·개정 문구)이
@@ -1160,11 +1163,10 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
             { key: 'showTotal',     label: 'GEO 지수' },
             { key: 'showTotalInsight', label: '인사이트 V1 (기존)' },
             { key: 'showInsightV2', label: '6월 인사이트 V2' },
+            { key: 'showInsightV3', label: '8월 Executive Summary' },
             { key: 'showHighlight', label: 'Highlight Insight' },
             { key: 'showReadability', label: 'Readability Highlight' },
             { key: 'showProducts',  label: '제품별' },
-            { key: 'showModelDelta', label: '제품별 모델 증감' },
-            { key: 'showCompRatioDelta', label: '제품별 경쟁비 증감' },
             { key: 'showCnty',      label: '국가별' },
             { key: 'showCitations', label: 'Citation' },
             { key: 'showCitCnty',   label: 'Citation 국가별' },
@@ -1389,7 +1391,6 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
           { label: 'Highlight 인사이트', field: 'highlightInsight', toggle: 'showHighlightInsight', type: 'highlight', data: () => ({ products: getLatestData().products, weeklyAll }) },
           { label: 'Citation 범프 인사이트', field: 'bumpInsight', toggle: 'showBumpInsight', type: 'bump', data: () => ({ citTouchPointsTrend: extra?.citTouchPointsTrend, citDomainTrend: extra?.citDomainTrend, citTrendMonths: extra?.citTrendMonths, citDomainMonths: extra?.citDomainMonths }) },
           { label: '제품 인사이트', field: 'productInsight', toggle: 'showProductInsight', type: 'product', data: () => ({ products: getLatestData().products, total: getLatestData().total }) },
-          { label: '모델 증감 인사이트', field: 'modelDeltaInsight', toggle: 'showModelDeltaInsight', type: 'modelDelta', data: () => ({ products: getLatestData().products }) },
           { label: '제품 How to Read', field: 'productHowToRead', toggle: 'showProductHowToRead', type: 'howToRead', data: () => ({ section: '제품별 GEO Visibility' }) },
           { label: '국가별 인사이트', field: 'cntyInsight', toggle: 'showCntyInsight', type: 'cnty', data: () => ({ productsCnty: getLatestData().productsCnty, unlaunchedMap: getLatestData().extra?.unlaunchedMap || {} }) },
           { label: '국가별 How to Read', field: 'cntyHowToRead', toggle: 'showCntyHowToRead', type: 'howToRead', data: () => ({ section: '국가별 GEO Visibility' }) },
