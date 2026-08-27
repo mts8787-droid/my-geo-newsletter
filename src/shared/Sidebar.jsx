@@ -13,7 +13,7 @@ import { derivedMetaFor, volFor, dateLineFor } from './reportPeriod.js'
 // 발송 시 EN meta 에서 그대로 따라가야 할 "텍스트" 필드 (번역된 본문/라벨).
 // 그 외 차트/표시 토글은 metaKo 기준으로 통일 — metaKo/metaEn 가 독립 state 라
 // 미리보기 언어를 바꿔가며 토글을 만지면 KO/EN 차트가 갈라지기 때문 (handleTranslate 와 동일 화이트리스트).
-const EN_TEXT_FIELDS = ['title', 'dateLine', 'noticeText', 'totalInsight', 'reportType', 'productInsight', 'productHowToRead', 'citationInsight', 'citationHowToRead', 'dotcomInsight', 'dotcomHowToRead', 'todoText', 'todoNotice', 'kpiLogicText', 'cntyInsight', 'cntyHowToRead', 'citDomainInsight', 'citDomainHowToRead', 'citCntyInsight', 'citCntyHowToRead', 'citPrdInsight', 'citPrdHowToRead', 'period', 'team', 'reportNo', 'monthlyReportBody', 'highlightInsight', 'bumpInsight', 'hlChapterTitle', 'hlWeeklyTitle', 'hlModelTitle', 'hlBumpTitle']
+const EN_TEXT_FIELDS = ['title', 'dateLine', 'noticeText', 'totalInsight', 'reportType', 'productInsight', 'productHowToRead', 'citationInsight', 'citationHowToRead', 'dotcomInsight', 'dotcomHowToRead', 'todoText', 'todoNotice', 'kpiLogicText', 'cntyInsight', 'cntyHowToRead', 'citDomainInsight', 'citDomainHowToRead', 'citCntyInsight', 'citCntyHowToRead', 'citPrdInsight', 'citPrdHowToRead', 'period', 'team', 'reportNo', 'monthlyReportBody', 'highlightInsight', 'bumpInsight', 'hlChapterTitle', 'hlWeeklyTitle', 'hlModelTitle', 'hlBumpTitle', 'semiHighlightText']
 // V2 인사이트 — 편집된 필드만 번역 대상 (미편집이면 템플릿의 EN 기본 문구가 자동 렌더)
 const V2_TRANSLATE_FIELDS = ['v2ExIntro2', 'v2Ex1T2', 'v2Ex1B2', 'v2Ex2T2', 'v2Ex2B2', 'v2Ex3T2', 'v2Ex3B2', 'v2T11Caption', 'v2CaseCaption', 'v2C1Title', 'v2C1Keep', 'v2C1Bko', 'v2C1Tko', 'v2C2Title4', 'v2C2Keep2', 'v2C2Bko4', 'v2C2Tko4', 'v2VisTblHtml8', 'todoV2Title', 'todoV2NoticeLabel', 'todoV2NoticeHtml', 'todoV2PerfTitle', 'todoV2ChBu', 'todoV2NewBu', 'todoV2FixBu', 'todoV2TechBu', 'todoV2NextSecTitle', 'todoV2NextTitle', 'todoV2NextHtml3']
 EN_TEXT_FIELDS.push(...V2_TRANSLATE_FIELDS)
@@ -29,9 +29,18 @@ EN_TEXT_FIELDS.push(...V3_TRANSLATE_FIELDS)
 // EN meta = KO 구조(토글·레이아웃·수치) 그대로 + EN 번역 텍스트만 오버레이.
 // metaEn 을 통째로 쓰면 예전 번역 시점의 구조 스냅샷이 남아 KO 변경(신규 섹션·개정 문구)이
 // EN 에 반영되지 않음 → 미리보기·게시·발송 모두 이 병합을 사용해 EN 이 KO 를 자동 추종.
+// rd_* 는 하이라이트 표/그래프 라벨까지 동적으로 늘어나므로 정적 목록으로 못 따라간다.
+// prefix 로 일괄 오버레이하되 문자열만 — rd_schemaCompare 같은 구조 데이터는 KO 것을 그대로 쓴다.
+function isTranslatableRdKey(k, v) {
+  return k.startsWith('rd_') && (typeof v === 'string' || v == null)
+}
+
 export function mergeEnMeta(metaKo, metaEn) {
   const m = { ...metaKo }
   EN_TEXT_FIELDS.forEach(k => { m[k] = metaEn?.[k] })
+  // 동적 rd_* 필드 (하이라이트 표·그래프 라벨) 도 EN 오버레이 대상
+  new Set([...Object.keys(metaKo || {}), ...Object.keys(metaEn || {})])
+    .forEach(k => { if (isTranslatableRdKey(k, metaKo?.[k])) m[k] = metaEn?.[k] })
   return m
 }
 
@@ -400,7 +409,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
       const latest = getLatestData()
       const resolvedKo = resolveDataForLang(latest.products, latest.productsCnty, latest.citations, latest.citationsCnty, 'ko')
       const resolvedEn = resolveDataForLang(latest.products, latest.productsCnty, latest.citations, latest.citationsCnty, 'en')
-      const sharedOpts = { weeklyLabels, weeklyAll, categoryStats, unlaunchedMap: extra?.unlaunchedMap || {}, productCardVersion: meta.productCardVersion || 'v1', trendMode: meta.trendMode || 'weekly', assetBase: (typeof window !== "undefined" ? window.location.origin : ""), citTouchPointsTrend: extra?.citTouchPointsTrend || null, citTrendMonths: extra?.citTrendMonths || [], citDomainTrend: extra?.citDomainTrend || null, citDomainMonths: extra?.citDomainMonths || [], citTouchPointsByLlm: extra?.citTouchPointsByLlm || null, citDomainByLlm: extra?.citDomainByLlm || null, citDomainByLlmTrend: extra?.citDomainByLlmTrend || null, dotcomByLlm: extra?.dotcomByLlm || null }
+      const sharedOpts = { weeklyLabels, weeklyAll, categoryStats, unlaunchedMap: extra?.unlaunchedMap || {}, productCardVersion: meta.productCardVersion || 'v1', trendMode: meta.trendMode || 'weekly', assetBase: (typeof window !== "undefined" ? window.location.origin : ""), citTouchPointsTrend: extra?.citTouchPointsTrend || null, citTrendMonths: extra?.citTrendMonths || [], citDomainTrend: extra?.citDomainTrend || null, citDomainMonths: extra?.citDomainMonths || [], citTouchPointsByLlm: extra?.citTouchPointsByLlm || null, citDomainByLlm: extra?.citDomainByLlm || null, citDomainByLlmTrend: extra?.citDomainByLlmTrend || null, dotcomByLlm: extra?.dotcomByLlm || null, readability: extra?.readability || null }
       // EN 발송 meta = KO 차트/표시 토글 기준 + EN 번역 텍스트만 덮어쓰기 (차트 불일치 방지)
       const metaEnForSend = mergeEnMeta(metaKo, metaEn)
       const htmlKo = generateHTML(metaKo, latest.total, resolvedKo.products, resolvedKo.citations, latest.dotcom, 'ko', resolvedKo.productsCnty, resolvedKo.citationsCnty, sharedOpts)

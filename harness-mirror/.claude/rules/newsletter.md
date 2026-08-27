@@ -184,7 +184,31 @@ NEVER  footer 누락 (발행 정보 없음) → 발신자 / 시점 정보 필수
 ```
 
 ---
-## 7. RELATED RULES
+## 7. 수치 표기 규칙 (Visibility / 경쟁비)
+
+리포트·뉴스레터·AI 인사이트 전반에서 두 수치를 표기로 구분한다 (사용자 결정 2026-08-27).
+
+| 수치 | 표기 | 예 |
+|---|---|---|
+| Visibility (가시성 점수) | **% 부착** | `LG 38.3%`, `삼성 32.7%`, `전월 대비 -1.6%p` |
+| 경쟁비 (경쟁사 대비 비율) | **% 없이 배수**, 소수 1자리 (0.1 미만은 2자리) | `1.2`, `0.9`, `0.08` |
+
+- 포맷 single source: `src/shared/compRatio.js` — `compRatioStr(score, comp)` / `pctToRatioStr(pct)` / `fmtRatio(x)`
+- 카드·표에서는 경쟁비를 **괄호**로 감싼다 (`emailTemplate.js` 의 `ratioX`) → `SS 32.7% (1.2)`
+- 섹션 헤더에 안내 문구 노출: `%는 Visibility · ( )는 경쟁비` (T 토큰 `ratioNote`)
+- AI 생성물도 동일 — `src/shared/insightPrompts.js` 의 `NOTATION_RULE` 이 **모든 타입**에 부착되고,
+  `[공식수치]` 블록도 경쟁비를 배수로 미리 포맷해 모델이 그대로 인용하게 한다.
+
+**ANTI-PATTERN**
+```
+NEVER  경쟁비를 '117%' 같은 백분율로 표기 → 배수(1.2). Visibility 와 구분 불가해짐
+NEVER  Visibility 점수에서 % 누락 → 항상 % 부착
+NEVER  경쟁비 포맷을 화면마다 인라인 작성 → src/shared/compRatio.js 만 정의
+NEVER  AI 프롬프트에 경쟁비를 백분율로 주입 → 모델이 그대로 백분율로 출력
+```
+
+---
+## 8. RELATED RULES
 
 - `.claude/rules/design.md` §5.2 (newsletter containerWidth), §C-21~C-23 (V1/V2/V3 카드 정의), §C-10 (미니 트렌드 바), §4.4 (Typography KO/EN)
 - `.claude/rules/data.md` §5.5 (categoryMap.js single source — UL_CODE), §5.8 (DEFAULT_UNLAUNCHED 병합)

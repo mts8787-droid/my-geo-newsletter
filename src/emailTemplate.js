@@ -3036,6 +3036,24 @@ const RD_CAT_DESC = {
   geo_schema: '제품·FAQ·이미지 등 정보의 종류와 관계를 알려주는 구조화 데이터',
   geo_content: 'AI가 인용할만한 서술의 존재',
 }
+// EN 기본 번역 — 없으면 EN 발송본 그래프 라벨에 한국어가 그대로 남는다.
+const RD_CAT_DESC_EN = {
+  performance: 'Page response and content delivery speed',
+  geo_platform: 'Technical conditions that let AI crawlers retrieve the source',
+  accessibility: 'Structure that both people and AI can parse',
+  seo: 'Baseline information needed to be found — titles, page descriptions',
+  geo_schema: 'Structured data signaling the type of information and how it relates',
+  geo_content: 'Presence of statements AI can quote',
+}
+// 스냅샷의 categoryLabels 는 한국어 → EN 대응표
+const RD_CAT_LABEL_EN = {
+  performance: 'Site Performance',
+  geo_platform: 'AI Crawlability',
+  accessibility: 'Accessibility',
+  seo: 'Basic SEO',
+  geo_schema: 'Schema Markup',
+  geo_content: 'Citable Content',
+}
 const RD_CC_KO = { au: '호주', br: '브라질', ca: '캐나다', de: '독일', es: '스페인', in: '인도', mx: '멕시코', uk: '영국', us: '미국', vn: '베트남' }
 const RD_CC_EN = { au: 'Australia', br: 'Brazil', ca: 'Canada', de: 'Germany', es: 'Spain', in: 'India', mx: 'Mexico', uk: 'UK', us: 'USA', vn: 'Vietnam' }
 
@@ -3052,12 +3070,13 @@ function rdBarRow(label, value, max, opts = {}) {
   const barH = opts.barH || 9
   // 설명(sub)이 있으면 항목명을 고정 폭 칸에 두고 설명을 그 옆 칸에서 시작 —
   // 항목명 길이와 무관하게 설명 시작 x 가 모든 행에서 같아진다 (opts.nameW).
+  // 라벨·설명은 편집모드에서 직접 수정 가능 (opts.labelField / opts.subField)
   const nameCell = opts.sub
     ? `<table cellpadding="0" cellspacing="0" border="0"><tr>
-        <td style="width:${opts.nameW || 120}px;padding-right:14px;vertical-align:middle;font-size:11.5px;font-weight:700;color:#1A1A1A;line-height:1.35;font-family:${EM_FONT};white-space:nowrap;">${escapeHtml(label)}</td>
-        <td style="vertical-align:middle;font-size:10.5px;font-weight:400;color:#94A3B8;line-height:1.4;font-family:${EM_FONT};">${escapeHtml(opts.sub)}</td>
+        <td${opts.labelField ? edAttr(opts.labelField) : ''} style="width:${opts.nameW || 120}px;padding-right:14px;vertical-align:middle;font-size:11.5px;font-weight:700;color:#1A1A1A;line-height:1.35;font-family:${EM_FONT};white-space:nowrap;">${escapeHtml(label)}</td>
+        <td${opts.subField ? edAttr(opts.subField) : ''} style="vertical-align:middle;font-size:10.5px;font-weight:400;color:#94A3B8;line-height:1.4;font-family:${EM_FONT};">${escapeHtml(opts.sub)}</td>
       </tr></table>`
-    : `<span style="font-size:11.5px;font-weight:700;color:#1A1A1A;line-height:1.35;font-family:${EM_FONT};">${escapeHtml(label)}</span>`
+    : `<span${opts.labelField ? edAttr(opts.labelField) : ''} style="font-size:11.5px;font-weight:700;color:#1A1A1A;line-height:1.35;font-family:${EM_FONT};">${escapeHtml(label)}</span>`
   return `<tr>
     <td style="padding:${pad}px 10px ${pad}px 0;vertical-align:middle;width:${opts.labelW || 150}px;">
       ${nameCell}
@@ -3118,6 +3137,8 @@ const RD_SS_COLOR = '#64748B'
 function rdSchemaCompareHtml(meta = {}, lang = 'ko') {
   const rows = Array.isArray(meta.rd_schemaCompare) && meta.rd_schemaCompare.length
     ? meta.rd_schemaCompare : RD_SCHEMA_COMPARE
+  // 항목명·제목은 편집모드에서 직접 수정 가능 (meta 우선)
+  const sLbl = (field, fallback) => (meta[field] != null && meta[field] !== '') ? meta[field] : fallback
   const H = 84                                   // 막대 최대 높이(px)
   const max = Math.max(...rows.map(r => Math.max(r.lg || 0, r.ss || 0)), 1)
   const bar = (v, color) => {
@@ -3129,12 +3150,12 @@ function rdSchemaCompareHtml(meta = {}, lang = 'ko') {
       <td width="16" height="${h}" style="background:${h ? color : 'transparent'};border-radius:2px 2px 0 0;font-size:0;line-height:0;">&nbsp;</td>
     </tr></table>`
   }
-  const cols = rows.map(r => `<td valign="bottom" align="center" style="padding:0 3px;">
+  const cols = rows.map((r, i) => `<td valign="bottom" align="center" style="padding:0 3px;">
       <table cellpadding="0" cellspacing="0" border="0" align="center"><tr>
         <td valign="bottom" style="padding-right:2px;">${bar(r.lg || 0, RD_LG_COLOR)}</td>
         <td valign="bottom">${bar(r.ss || 0, RD_SS_COLOR)}</td>
       </tr></table>
-      <div style="margin-top:5px;font-size:9px;color:#475569;line-height:1.3;letter-spacing:-0.3px;font-family:${EM_FONT};">${escapeHtml(r.name)}</div>
+      <div${edAttr(`rd_lblSchema_${i}`)} style="margin-top:5px;font-size:9px;color:#475569;line-height:1.3;letter-spacing:-0.3px;font-family:${EM_FONT};">${escapeHtml(sLbl(`rd_lblSchema_${i}`, r.name))}</div>
     </td>`).join('')
 
   const legend = `<table cellpadding="0" cellspacing="0" border="0" align="center"><tr>
@@ -3147,7 +3168,7 @@ function rdSchemaCompareHtml(meta = {}, lang = 'ko') {
   return `<table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FAFBFC;border:1px solid #E8EDF2;border-radius:10px;margin:2px 0 16px;">
     <tr><td style="padding:12px 14px 10px;">
       <table cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
-        <td style="font-size:11.5px;font-weight:800;color:#475569;font-family:${EM_FONT};">${lang === 'en' ? 'Schema adoption vs. competitor (Germany, %)' : '스키마 적용률 경쟁사 비교 (독일, %)'}</td>
+        <td${edAttr('rd_schemaTitle')} style="font-size:11.5px;font-weight:800;color:#475569;font-family:${EM_FONT};">${sLbl('rd_schemaTitle', lang === 'en' ? 'Schema adoption vs. competitor (Germany, %)' : '스키마 적용률 경쟁사 비교 (독일, %)')}</td>
         <td align="right">${legend}</td>
       </tr></table>
       <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-top:10px;"><tr>${cols}</tr></table>
@@ -3180,26 +3201,65 @@ const RD_TEXT = {
   d4: '콘텐츠 영역은 29.7점으로 전체 평가 영역 중 가장 낮았습니다. AI가 질문에 대한 직접적인 답변으로 활용하기 쉬운 FAQ Block, Summary Box, Definition Paragraph 등의 콘텐츠가 충분하지 않아 보완이 필요한 상황이며, 현재 FAQ Block을 중심으로 각 사업본부 및 고객가치혁신의 주요 개선 과제로 추진 중입니다.\n한편, Citable Sentence(숫자, 연도, 통계, 연구 키워드 포함 문장)의 경우 전체 충족률은 57.2%였습니다. 독일, 스페인, 호주, 캐나다의 경우 충족률 80% 이상인 반면, 나머지 국가에서는 상대적으로 낮게 나타나 국가별 편차가 큰 상황입니다. 7월 독일 사이트를 비교해본 결과, LG.com의 Citable Sentence 충족률은 86.1%로 Samsung.com의 19.4%보다 크게 높아, LG 콘텐츠의 경쟁 우위 요소로 확인되었습니다. 향후 인도, 멕시코, 베트남, 미국 등 상대적으로 충족률이 낮은 국가에서도 Citable Sentence 확대를 통해 경쟁 우위 요소를 강화할 필요가 있습니다.\n콘텐츠의 작성자/출처/날짜 정보 충족률 또한 42.3%로 낮게 나타났습니다. 이는 AI가 콘텐츠의 신뢰성과 최신성을 판단하는 데 참고할 수 있는 요소인 만큼, 정보성 콘텐츠를 중심으로 보완이 필요합니다. 다만 해당 요소의 중요도가 높은 Newsroom의 경우 충족률이 78.8%로 비교적 양호했습니다.',
 }
 
+// EN 기본 번역 — RD_TEXT 의 영문본. 이게 없으면 EN 발송본에 한국어가 그대로 나온다
+// (사용자 보고 2026-08-28: "영문번역이 다 되어있지 않은 채로 나와").
+// 사용자가 EN 사이드바에 직접 입력하면 meta.rd_* 가 우선한다.
+const RD_TEXT_EN = {
+  intro: 'Readability measures how well a web page can be read and used by AI. From July 2026 we began assessing LG.com\u2019s Readability across 5,438 pages spanning 8 major page types in 10 strategic countries. The Readability score is the share of checklist items meeting the bar, normalized to a 100-point scale. The assessment covers 6 areas \u2014 Site Performance, AI Accessibility, Basic SEO, Schema Markup, Citable Content, and AI Crawlability \u2014 across 37 checklist items in total.',
+  introNotes: [
+    '*10 strategic countries: Germany, UK, Australia, Brazil, Vietnam, Spain, USA, Mexico, India, Canada',
+    '*8 page types: PDP (Product Detail Page), PLP (Product List Page), Microsite, Newsroom, Buying Guide, LG Experience, Support, Support-Troubleshooting',
+  ],
+  summary: 'LG.com scored 77.5 overall for Readability in July. By country, Brazil led at 79.1 and India trailed at 74.4 \u2014 a narrow spread.\nPage types show a similar distribution: Support 80.1, Buying Guide 73.4.',
+  areaIntro: 'By assessment area, however, the gaps are pronounced.\nSite Performance 98.5 (page response and content delivery speed), AI Crawlability 96.8 (the technical conditions that let AI crawlers retrieve the source), Accessibility 90.2 (structure that both people and AI can parse), and Basic SEO 88.8 (the baseline information needed to be found \u2014 titles, page descriptions) were relatively strong.\nSchema Markup 35.5 (structured data that signals the type of information and how it relates) and Citable Content 29.7 (the presence of statements AI can quote) were comparatively low.',
+  d1Title: 'Site Performance and AI Crawlability are strong overall, but the share of text delivered in the initial HTML needs work',
+  d1: 'Site Performance scored highest at 98.5, confirming that LG.com delivers pages quickly and reliably.\nAI Crawlability was also relatively high at 96.8, but the JS HTML Text Ratio (initial-HTML text accounting for 60% or more of post-JavaScript text) was met on only 82.1% of pages.\nSupport-Troubleshooting (37.4%) and PDP (58.8%) were especially low, meaning some key content is not present when the page is first delivered and is instead fetched after the view opens (CSR).\nThis may pose no problem for users viewing the final screen, but AI systems that collect information primarily from the initially delivered page may fail to see key content.\nCustomer Value Innovation and D2C are therefore migrating Support pages and key PDP information to SSR so that they are included from the first page load.',
+  d1Notes: [
+    '*Initial HTML: the base page a server delivers first on access \u2014 content AI can read even before JavaScript runs',
+    '*JavaScript rendering: fetching additional information and painting it after the page opens, via JavaScript',
+    '*Client-Side Rendering (CSR): the server sends a basic page shell and the browser runs JavaScript to fetch the main content and complete the view',
+    '*Server-Side Rendering (SSR): the server pre-builds and delivers HTML that already contains the main content',
+  ],
+  d2Title: 'Basic SEO and Accessibility are sound overall, but baseline page structure needs to be made consistent',
+  d2: 'Accessibility scored a high 90.2, yet Heading Hierarchy \u2014 whether headings and subheadings follow a correct order \u2014 was met on only 68.2% of pages.\nHeading structures should be standardized per page type so AI can more clearly separate a page\u2019s topic from its details.\nBasic SEO likewise scored a sound 88.8 overall, but only 74% of pages carry exactly one H1 and 84.8% meet the Meta Description bar \u2014 both leave room to improve.\nMissing H1s and Meta Descriptions recur on Newsroom pages in particular (H1 46.4%, Meta Description 34.4%), suggesting the fix belongs in the page template or the publishing flow rather than in individual pieces of content.\nSitemap coverage at 77.6% also calls for ongoing maintenance.',
+  d3Title: 'Schema Markup needs optimization tailored to page type and content',
+  d3: 'Schema came in relatively low at 35.5. Schema is the agreed format that lets AI distinguish types of information \u2014 FAQ, product, image, video, how-to \u2014 so its coverage should be widened to match page type and content characteristics.\nComparing LG.com and Samsung.com in Germany for detail, Product schema \u2014 the core schema for PDPs \u2014 lagged the competitor (LG 0%, SS 64%), and on PLPs the FAQPage adoption gap was especially wide (LG 13%, SS 71%). VideoObject, ImageObject, HowTo, and Article are all major schemas needing improvement across every page type. Through the schema automation D2C is pursuing, we are building a structure that generates and applies the major schemas consistently rather than handling them country by country and page by page.',
+  d4Title: 'Citable Content needs both a wider range of AI-answer-ready formats and better author attribution',
+  d4: 'Content scored 29.7, the lowest of all areas. There is not enough of the content AI can readily use as a direct answer \u2014 FAQ Blocks, Summary Boxes, Definition Paragraphs \u2014 and FAQ Blocks in particular are being driven as a key improvement task across the business units and Customer Value Innovation.\nCitable Sentences (sentences containing numbers, years, statistics, or research keywords) were met at 57.2% overall. Germany, Spain, Australia, and Canada exceeded 80%, while the remaining countries were relatively low \u2014 a wide country-level spread. Comparing German sites in July, LG.com met Citable Sentence at 86.1% versus Samsung.com\u2019s 19.4%, confirming it as a competitive advantage for LG content. Expanding Citable Sentences in the lower-scoring countries \u2014 India, Mexico, Vietnam, and the USA \u2014 would reinforce that advantage.\nAuthor / source / date attribution was also low at 42.3%. Because AI uses these signals to judge credibility and recency, informational content in particular should be reinforced. Newsroom, where these signals matter most, was comparatively sound at 78.8%.',
+}
+
 // Readability Highlight 섹션 본체
 function readabilityHighlightHtml(rd, meta = {}, lang = 'ko', contentWidth = 848) {
   if (!rd) return ''
-  const tx = (k) => (meta[`rd_${k}`] != null && meta[`rd_${k}`] !== '') ? meta[`rd_${k}`] : RD_TEXT[k]
+  // 우선순위: 사용자가 입력한 meta.rd_* > 해당 언어 기본 문안. EN 은 RD_TEXT_EN 이 없으면 KO 로 폴백.
+  const BASE = lang === 'en' ? RD_TEXT_EN : RD_TEXT
+  const tx = (k) => (meta[`rd_${k}`] != null && meta[`rd_${k}`] !== '')
+    ? meta[`rd_${k}`]
+    : (BASE[k] != null ? BASE[k] : RD_TEXT[k])
   const CCN = lang === 'en' ? RD_CC_EN : RD_CC_KO
 
   // ① Readability란? — 별도 박스로 영역 구분
   const introBox = `<table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FEF2F4;border:1px solid #FECDD3;border-radius:10px;margin:0 0 22px;">
     <tr><td style="padding:16px 20px;">
       ${rdPara(tx('intro'), { gap: 8, field: 'rd_intro' })}
-      ${rdFootnotes(meta.rd_introNotes || RD_TEXT.introNotes, 'rd_introNotes', { plain: true })}
+      ${rdFootnotes(tx('introNotes'), 'rd_introNotes', { plain: true })}
     </td></tr>
   </table>`
 
   // ② 국가별 · 페이지타입별 점수 (둘 다 — 팀장님 피드백)
-  const ccRows = (rd.countries || []).map(c => rdBarRow(CCN[c.cc] || c.cc.toUpperCase(), c.avgScore, 100, { labelW: 62, pad: 2, barH: 8 })).join('')
+  // 라벨은 meta.rd_lblCc_* / rd_lblPt_* 로 덮어쓸 수 있고, 편집모드에서 직접 수정 가능
+  const lbl = (field, fallback) => (meta[field] != null && meta[field] !== '') ? meta[field] : fallback
+  const ccRows = (rd.countries || []).map(c => {
+    const f = `rd_lblCc_${c.cc}`
+    return rdBarRow(lbl(f, CCN[c.cc] || c.cc.toUpperCase()), c.avgScore, 100, { labelW: 62, pad: 2, barH: 8, labelField: f })
+  }).join('')
   const ptRows = Object.entries(rd.pageTypes || {})
     .map(([id, v]) => ({ id, label: v.label, avg: v.avgScore }))
     .sort((a, b) => b.avg - a.avg)
-    .map(p => rdBarRow(p.label, p.avg, 100, { labelW: 118, pad: 2, barH: 8 })).join('')
+    .map(p => {
+      const f = `rd_lblPt_${p.id}`
+      return rdBarRow(lbl(f, p.label), p.avg, 100, { labelW: 118, pad: 2, barH: 8, labelField: f })
+    }).join('')
   const half = Math.floor(contentWidth / 2) - 8
   // 평가 영역별 점수와 동일한 회색 박스로 감싼다 (사용자 지시 2026-08-27)
   const scoreTables = `<table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#F8FAFC;border:1px solid #E8EDF2;border-radius:10px;margin:0 0 14px;">
@@ -3207,11 +3267,11 @@ function readabilityHighlightHtml(rd, meta = {}, lang = 'ko', contentWidth = 848
     <table cellpadding="0" cellspacing="0" border="0" width="100%">
     <tr>
       <td width="${half}" valign="top" style="padding-right:16px;">
-        <p style="margin:0 0 8px;font-size:12px;font-weight:800;color:#475569;font-family:${EM_FONT};">${lang === 'en' ? 'By Country' : '국가별 점수'}</p>
+        <p${edAttr('rd_ccTitle')} style="margin:0 0 8px;font-size:12px;font-weight:800;color:#475569;font-family:${EM_FONT};">${lbl('rd_ccTitle', lang === 'en' ? 'By Country' : '국가별 점수')}</p>
         <table cellpadding="0" cellspacing="0" border="0" width="100%">${ccRows}</table>
       </td>
       <td width="${half}" valign="top">
-        <p style="margin:0 0 8px;font-size:12px;font-weight:800;color:#475569;font-family:${EM_FONT};">${lang === 'en' ? 'By Page Type' : '페이지 타입별 점수'}</p>
+        <p${edAttr('rd_ptTitle')} style="margin:0 0 8px;font-size:12px;font-weight:800;color:#475569;font-family:${EM_FONT};">${lbl('rd_ptTitle', lang === 'en' ? 'By Page Type' : '페이지 타입별 점수')}</p>
         <table cellpadding="0" cellspacing="0" border="0" width="100%">${ptRows}</table>
       </td>
     </tr>
@@ -3221,19 +3281,24 @@ function readabilityHighlightHtml(rd, meta = {}, lang = 'ko', contentWidth = 848
 
   // ③ 6개 영역 점수 — 원본 이미지 대체 (크기 이슈로 HTML 로 재작성)
   // 라벨 칸을 넓혀 설명을 같은 줄에 붙이고, 그만큼 막대를 줄인다 (높이·폭 동시 절감)
+  const CAT_LBL = lang === 'en' ? RD_CAT_LABEL_EN : (rd.categoryLabels || {})
+  const CAT_DESC = lang === 'en' ? RD_CAT_DESC_EN : RD_CAT_DESC
   const catRows = RD_CAT_ORDER.filter(k => rd.categories && rd.categories[k] != null)
-    .map(k => rdBarRow((rd.categoryLabels || {})[k] || k, rd.categories[k], 100,
-      { labelW: 440, nameW: 108, sub: RD_CAT_DESC[k], pad: 4, barH: 9 })).join('')
+    .map(k => {
+      const lf = `rd_lblCat_${k}`, sf = `rd_descCat_${k}`
+      return rdBarRow(lbl(lf, CAT_LBL[k] || (rd.categoryLabels || {})[k] || k), rd.categories[k], 100,
+        { labelW: 440, nameW: 108, sub: lbl(sf, CAT_DESC[k] || RD_CAT_DESC[k]), pad: 4, barH: 9, labelField: lf, subField: sf })
+    }).join('')
   const catTable = `<table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#F8FAFC;border:1px solid #E8EDF2;border-radius:10px;margin:0 0 18px;">
     <tr><td style="padding:12px 16px;">
-      <p style="margin:0 0 10px;font-size:12px;font-weight:800;color:#475569;font-family:${EM_FONT};">${lang === 'en' ? 'By Area' : '평가 영역별 점수'}</p>
+      <p${edAttr('rd_catTitle')} style="margin:0 0 10px;font-size:12px;font-weight:800;color:#475569;font-family:${EM_FONT};">${lbl('rd_catTitle', lang === 'en' ? 'By Area' : '평가 영역별 점수')}</p>
       <table cellpadding="0" cellspacing="0" border="0" width="100%">${catRows}</table>
     </td></tr>
   </table>`
 
   // ④ 영역별 상세
   const detail = [
-    ['d1Title', 'd1', RD_TEXT.d1Notes],
+    ['d1Title', 'd1', 'd1Notes'],
     ['d2Title', 'd2', null],
     ['d3Title', 'd3', null],
     ['d4Title', 'd4', null],
@@ -3241,7 +3306,7 @@ function readabilityHighlightHtml(rd, meta = {}, lang = 'ko', contentWidth = 848
     <p${edRich('rd_' + tk)} style="margin:0 0 8px;font-size:13px;font-weight:800;color:${EM_RED};line-height:1.6;font-family:${EM_FONT};letter-spacing:-0.3px;">${escapeHtml(tx(tk))}</p>
     ${rdPara(tx(bk), { gap: (notes || bk === 'd3') ? 6 : 20, field: 'rd_' + bk })}
     ${bk === 'd3' ? rdSchemaCompareHtml(meta, lang) : ''}
-    ${notes ? rdFootnotes(meta.rd_d1Notes || notes, 'rd_d1Notes') : ''}`).join('')
+    ${notes ? rdFootnotes(tx(notes), 'rd_' + notes) : ''}`).join('')
 
   // 외곽 카드 없이 콘텐츠만 반환 — 상위 Highlight 챕터 카드 안에 임베드된다.
   return `${rdHeading(lang === 'en' ? 'What is Readability?' : 'Readability란?', 'rd_h1')}
