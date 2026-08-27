@@ -1479,7 +1479,9 @@ function countryCardHtml(cntyCode, rows, lang, countryTotals, unlaunchedMap = {}
         <tr><td height="${ulBarH}" style="font-size:0;line-height:0;"><table border="0" cellpadding="0" cellspacing="0" align="center"><tr><td width="18" height="${ulBarH}" style="background:#94A3B8;border-radius:3px 3px 0 0;font-size:0;">&nbsp;</td></tr></table></td></tr>
         <tr><td height="16" style="height:16px;font-size:11px;font-weight:800;color:#94A3B8;font-family:${EM_FONT};padding-top:2px;white-space:nowrap;line-height:14px;">—</td></tr>
         <tr><td style="font-size:10px;font-weight:700;color:#94A3B8;font-family:${EM_FONT};padding:1px 0 0;line-height:11px;letter-spacing:-0.3px;vertical-align:top;">${prodLabel2Line(r.product, lang)}</td></tr>
-        <tr><td style="font-size:10px;color:#94A3B8;font-family:${EM_FONT};padding:2px 0 0;white-space:nowrap;line-height:13px;vertical-align:top;">—<br/>—</td></tr>
+        <tr><td style="font-size:10px;color:#94A3B8;font-family:${EM_FONT};padding:2px 0 0;white-space:nowrap;line-height:12px;vertical-align:top;">—</td></tr>
+        <tr><td style="font-size:10px;color:#94A3B8;font-family:${EM_FONT};padding:0;white-space:nowrap;line-height:12px;vertical-align:top;">—</td></tr>
+        <tr><td style="font-size:10px;color:#94A3B8;font-family:${EM_FONT};padding:0;white-space:nowrap;line-height:12px;vertical-align:top;">—</td></tr>
       </table>
     </td>`
     }
@@ -1487,15 +1489,16 @@ function countryCardHtml(cntyCode, rows, lang, countryTotals, unlaunchedMap = {}
     const labelColor = baseBarColor
     const barH = Math.max(Math.round((r.score / maxScore) * BAR_MAX), 3)
     const spacerH = BAR_MAX - barH
-    const ratio = r.compScore > 0 ? Math.round(r.score / r.compScore * 100) : 100
 
     return `<td width="${colWidth}%" style="vertical-align:bottom;text-align:center;padding:0 1px;">
       <table border="0" cellpadding="0" cellspacing="0" align="center" style="margin:0 auto;table-layout:fixed;width:100%;">
         ${spacerH > 0 ? `<tr><td height="${spacerH}" style="font-size:0;line-height:0;">&nbsp;</td></tr>` : ''}
         <tr><td height="${barH}" style="font-size:0;line-height:0;"><table border="0" cellpadding="0" cellspacing="0" align="center"><tr><td width="18" height="${barH}" style="background:${barColor};border-radius:3px 3px 0 0;font-size:0;">&nbsp;</td></tr></table></td></tr>
-        <tr><td height="16" style="height:16px;font-size:11px;font-weight:800;color:${labelColor};font-family:${EM_FONT};padding-top:2px;white-space:nowrap;line-height:14px;">${r.score != null ? r.score.toFixed(1) : '—'}</td></tr>
+        <tr><td height="16" style="height:16px;font-size:11px;font-weight:800;color:${labelColor};font-family:${EM_FONT};padding-top:2px;white-space:nowrap;line-height:14px;">${r.score != null ? r.score.toFixed(1) + '%' : '—'}</td></tr>
         <tr><td style="font-size:10px;font-weight:700;color:${labelColor};font-family:${EM_FONT};padding:1px 0 0;line-height:11px;letter-spacing:-0.3px;vertical-align:top;">${prodLabel2Line(r.product, lang)}</td></tr>
-        <tr><td style="font-size:10px;color:#94A3B8;font-family:${EM_FONT};padding:2px 0 0;white-space:nowrap;line-height:13px;vertical-align:top;">${ssName(r.compName)}<br/>${ratio}%</td></tr>
+        <tr><td style="font-size:10px;color:#94A3B8;font-family:${EM_FONT};padding:2px 0 0;white-space:nowrap;line-height:12px;letter-spacing:-0.3px;vertical-align:top;">${ssName(r.compName)}</td></tr>
+        <tr><td style="font-size:10px;color:#94A3B8;font-family:${EM_FONT};padding:0;white-space:nowrap;line-height:12px;letter-spacing:-0.3px;vertical-align:top;">${compScoreStr(r.compScore)}</td></tr>
+        <tr><td style="font-size:10px;font-weight:700;color:${labelColor};font-family:${EM_FONT};padding:0;white-space:nowrap;line-height:12px;letter-spacing:-0.3px;vertical-align:top;">${ratioX(r.score, r.compScore)}</td></tr>
       </table>
     </td>`
   }).join('')
