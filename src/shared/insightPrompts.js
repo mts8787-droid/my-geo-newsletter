@@ -2,6 +2,7 @@
 // server.js와 vite dev plugin에서 공유
 
 import { NAME_TO_PROD_ID, RAW_TO_PROD_ID, PROD_ID_TO_UL_CODE } from '../categoryMap.js'
+import { mergeCitDomainRows, isTtlLlmVal } from './citDomainAgg.js'
 
 // 미출시 (country|UL_CODE) 행 제외 — 미출시국 데이터는 AI 분석 입력에서 제거
 function excludeUnlaunched(productsCnty, unlaunchedMap) {
@@ -281,7 +282,10 @@ ${NO_UNLAUNCHED_COMMENT}`
   }
 
   if (type === 'citDomain') {
-    const list = (data.citationsCnty || []).filter(r => r.cnty === 'TTL').slice(0, 10).map((r, i) =>
+    // 도메인 단위 병합 필수 — 중복 도메인이 AI 프롬프트에 2회 들어가면 인사이트 수치가 틀어짐
+    const list = mergeCitDomainRows(
+      (data.citationsCnty || []).filter(r => r.cnty === 'TTL' && isTtlLlmVal(r.llm))
+    ).slice(0, 10).map((r, i) =>
       `${i + 1}. ${r.domain} (${r.type || ''}) — ${r.citations}건`
     ).join('\n')
     return `[섹션: 도메인별 Citation 현황]
@@ -294,13 +298,15 @@ ${list}`
 
   if (type === 'citCnty') {
     const cntyMap = {}
-    ;(data.citationsCnty || []).filter(r => r.cnty !== 'TTL').forEach(r => {
+    ;(data.citationsCnty || []).filter(r => r.cnty !== 'TTL' && isTtlLlmVal(r.llm)).forEach(r => {
       if (!cntyMap[r.cnty]) cntyMap[r.cnty] = []
       cntyMap[r.cnty].push(r)
     })
-    const summary = Object.entries(cntyMap).map(([cnty, rows]) => {
+    const summary = Object.entries(cntyMap).map(([cnty, rawRows]) => {
+      // 도메인 단위 병합 — 중복 도메인이 프롬프트에 2회 들어가고 total 도 이중 계상됨
+      const rows = mergeCitDomainRows(rawRows)
       const total = rows.reduce((s, r) => s + r.citations, 0)
-      const top3 = rows.sort((a, b) => b.citations - a.citations).slice(0, 3)
+      const top3 = rows.slice(0, 3)
       return `${cnty}: 전체 ${total}건 — 1위 ${top3[0]?.domain}(${top3[0]?.citations}건), 2위 ${top3[1]?.domain || ''}(${top3[1]?.citations || ''}건), 3위 ${top3[2]?.domain || ''}(${top3[2]?.citations || ''}건)`
     }).join('\n')
     return `[섹션: 국가별 Citation 도메인]
@@ -321,6 +327,7 @@ ${summary}
     const prdGroups = {}
     ;(data.citationsCnty || []).forEach(r => {
       if (!isPrdSpec(r.prd)) return
+      if (!isTtlLlmVal(r.llm)) return   // LLM 모델별 행 제외 — 합계에 이중 계상 방지
       if (!prdGroups[r.prd]) prdGroups[r.prd] = []
       prdGroups[r.prd].push(r)
     })

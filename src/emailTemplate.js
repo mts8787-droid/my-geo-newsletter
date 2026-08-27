@@ -5,6 +5,7 @@ import { resolveProductsByLlm, resolveProductsCntyByLlm, resolveTotalByLlm } fro
 import { _logWarn } from './sheetParserUtils.js'
 import { encodeChart } from './shared/hlChart.js'
 import { dcColLabel } from './shared/constants.js'
+import { mergeCitDomainRows, isTtlLlmVal } from './shared/citDomainAgg.js'
 
 const EM_RED  = '#CF0652'
 // Citation 차트 전용 — 짙은 녹색 계열 (LG_RED 와 구분)
@@ -1532,7 +1533,11 @@ function citationDomainSectionHtml(citationsCnty, meta, lang, citations) {
   const t = T[lang] || T.ko
 
   const domTopN = meta.citDomainTopN || 10
-  const ttlRows = citationsCnty.filter(r => r.cnty === 'TTL').sort((a, b) => a.rank - b.rank).slice(0, domTopN)
+  // 도메인 단위 병합 필수 — 같은 도메인이 type/prd 차이로 복수 행 (rtings 2회 노출 회귀).
+  // 병합 규칙 = excelUtils.js citDomainTrend 와 동일 (shared/citDomainAgg.js single source).
+  const ttlRows = mergeCitDomainRows(
+    citationsCnty.filter(r => r.cnty === 'TTL' && isTtlLlmVal(r.llm))
+  ).slice(0, domTopN)
   if (!ttlRows.length) return { html: '', css: '' }
 
   {
@@ -1598,9 +1603,12 @@ function citationCntyTableHtml(citationsCnty, lang) {
   const cntyMap = new Map()
   citationsCnty.forEach(row => {
     if (row.cnty === 'TTL') return
+    if (!isTtlLlmVal(row.llm)) return
     if (!cntyMap.has(row.cnty)) cntyMap.set(row.cnty, [])
     cntyMap.get(row.cnty).push(row)
   })
+  // 국가별로도 도메인 단위 병합 — 같은 도메인이 type/prd 차이로 한 국가 안에 중복 노출 방지
+  cntyMap.forEach((rows, cnty) => cntyMap.set(cnty, mergeCitDomainRows(rows)))
 
   const _CO = ['US','CA','UK','DE','ES','BR','MX','AU','VN','IN']
   const countries = _CO.filter(c => cntyMap.has(c)).concat([...cntyMap.keys()].filter(c => !_CO.includes(c)))
@@ -2623,6 +2631,7 @@ function citationByProductHtml(citationsCnty, meta, lang) {
   const prdGroups = {}
   citationsCnty.forEach(r => {
     if (!isPrdSpec(r.prd)) return
+    if (!isTtlLlmVal(r.llm)) return   // LLM 모델별 행 제외 — 합계에 이중 계상 방지
     if (!prdGroups[r.prd]) prdGroups[r.prd] = []
     prdGroups[r.prd].push(r)
   })

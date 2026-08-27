@@ -8,6 +8,7 @@ import {
 } from './dashboardConsts.js'
 import { PROD_ID_TO_KR } from '../categoryMap.js'
 import { dcColLabel } from '../shared/constants.js'
+import { mergeCitDomainRows, isTtlLlmVal } from '../shared/citDomainAgg.js'
 // N1 — 순수 함수 분리 (테스트 대상)
 import { statusInfo, fmt, mdBold, stripDomain, cntyStatus, cntyFullName, cntyOfficial } from './dashboardFormat.js'
 import { svgLine, svgMultiLine, brandColor } from './dashboardSvg.js'
@@ -621,7 +622,11 @@ function citDomainSectionHtml(citationsCnty, meta, t, citations, lang) {
 
   // 각 국가별 도메인 리스트 HTML 생성
   const panels = cntyNames.map(cnty => {
-    const rows = citationsCnty.filter(r => r.cnty === cnty).sort((a, b) => a.rank - b.rank).slice(0, topN)
+    // 도메인 단위 병합 필수 — 같은 도메인이 type/prd 차이로 복수 행 (rtings 2회 노출 회귀).
+    // shared/citDomainAgg.js single source (= excelUtils.js citDomainTrend 병합 규칙).
+    const rows = mergeCitDomainRows(
+      citationsCnty.filter(r => r.cnty === cnty && isTtlLlmVal(r.llm))
+    ).slice(0, topN)
     if (!rows.length) return ''
     const maxScore = Math.max(...rows.map(r => r.citations), 1)
     const totalCit = cnty === 'TTL' && citations && citations.length

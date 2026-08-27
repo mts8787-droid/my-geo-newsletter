@@ -1,5 +1,6 @@
 // ─── 월간 보고용 HTML 생성기 (단순 표 기반, 색상/그래프 없음) ─────────────
 import { resolveProductsByLlm, resolveProductsCntyByLlm, resolveTotalByLlm } from '../shared/llmModel.js'
+import { mergeCitDomainRows, isTtlLlmVal } from '../shared/citDomainAgg.js'
 
 const FONT = "'LGEIText','LG Smart', 'Arial Narrow', 'Malgun Gothic', Arial, sans-serif"
 
@@ -377,9 +378,12 @@ function buildCitationCategoryTable(citations, lang) {
 
 // 도메인별 Citation 표 (TTL Top N)
 function buildCitationDomainTable(citationsCnty, lang) {
-  const ttlRows = (citationsCnty || []).filter(r => r.cnty === 'TTL' || r.cnty === 'TOTAL' || !r.cnty)
+  // 도메인 단위 병합 필수 — 같은 도메인이 type/prd 차이로 복수 행 (rtings 2회 노출 회귀).
+  // shared/citDomainAgg.js single source (= excelUtils.js citDomainTrend 병합 규칙).
+  const ttlRows = mergeCitDomainRows(
+    (citationsCnty || []).filter(r => (r.cnty === 'TTL' || r.cnty === 'TOTAL' || !r.cnty) && isTtlLlmVal(r.llm))
+  )
   if (!ttlRows.length) return ''
-  ttlRows.sort((a, b) => (b.citations || 0) - (a.citations || 0))
   const top = ttlRows.slice(0, 20)
   const t = lang === 'en'
     ? { title: 'Citation by Domain (Top 20)', rank: 'Rank', domain: 'Domain', type: 'Type', score: 'Citations' }
@@ -412,9 +416,13 @@ function buildCitationCntyTable(citationsCnty, lang) {
   const cntyMap = {}
   ;(citationsCnty || []).forEach(r => {
     if (!r.cnty || r.cnty === 'TTL' || r.cnty === 'TOTAL') return
+    if (!isTtlLlmVal(r.llm)) return
     if (!cntyMap[r.cnty]) cntyMap[r.cnty] = []
     cntyMap[r.cnty].push(r)
   })
+  // 국가별로도 도메인 단위 병합 — 같은 도메인이 type/prd 차이로 복수 행이면
+  // Top 5 슬롯을 중복 점유하고 total 도 이중 계상됨 (shared/citDomainAgg.js single source).
+  Object.keys(cntyMap).forEach(c => { cntyMap[c] = mergeCitDomainRows(cntyMap[c]) })
   const countries = sortCountries(Object.keys(cntyMap))
   if (!countries.length) return ''
   const t = lang === 'en'
@@ -422,7 +430,7 @@ function buildCitationCntyTable(citationsCnty, lang) {
     : { title: '국가별 Citation Top 5 도메인', country: '국가', total: '전체' }
   const TOPN = 5
   const rows = countries.map(cnty => {
-    const sorted = cntyMap[cnty].sort((a, b) => (b.citations || 0) - (a.citations || 0))
+    const sorted = cntyMap[cnty]   // mergeCitDomainRows 가 이미 citations 내림차순 정렬
     const total = sorted.reduce((s, r) => s + (r.citations || 0), 0)
     const top = sorted.slice(0, TOPN)
     const cells = []

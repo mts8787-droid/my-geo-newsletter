@@ -1,6 +1,7 @@
 // ─── 주간 보고용 HTML 생성기 (표 기반, 주간 데이터) ────────────────────────
 import { PROD_ID_TO_KR, PROD_ID_TO_BU } from '../categoryMap.js'
 import { resolveProductsByLlm, resolveProductsCntyByLlm, resolveTotalByLlm } from '../shared/llmModel.js'
+import { mergeCitDomainRows, isTtlLlmVal } from '../shared/citDomainAgg.js'
 
 const FONT = "'LGEIText','LG Smart', 'Arial Narrow', 'Malgun Gothic', Arial, sans-serif"
 
@@ -375,9 +376,12 @@ function buildCitationCategoryTable(citations, lang) {
 }
 
 function buildCitationDomainTable(citationsCnty, lang) {
-  const ttlRows = (citationsCnty || []).filter(r => r.cnty === 'TTL' || r.cnty === 'TOTAL' || !r.cnty)
+  // 도메인 단위 병합 필수 — 같은 도메인이 type/prd 차이로 복수 행 (rtings 2회 노출 회귀).
+  // shared/citDomainAgg.js single source (= excelUtils.js citDomainTrend 병합 규칙).
+  const ttlRows = mergeCitDomainRows(
+    (citationsCnty || []).filter(r => (r.cnty === 'TTL' || r.cnty === 'TOTAL' || !r.cnty) && isTtlLlmVal(r.llm))
+  )
   if (!ttlRows.length) return ''
-  ttlRows.sort((a, b) => (b.citations || 0) - (a.citations || 0))
   const top = ttlRows.slice(0, 20)
   const t = lang === 'en'
     ? { title: 'Citation by Domain (Top 20)', rank: 'Rank', domain: 'Domain', type: 'Type', score: 'Citations' }

@@ -2,6 +2,7 @@
 // dashboardTemplate.js의 Citation 섹션만 추출하여 독립 렌더링
 import { PROD_IDS, PROD_ID_TO_ORDER, NAME_TO_PROD_ID } from '../categoryMap.js'
 import { dcColLabel } from '../shared/constants.js'
+import { mergeCitDomainRows } from '../shared/citDomainAgg.js'
 
 // _PRD_ORDER_MAP: 클라이언트 인라인 코드에 임베드되는 정렬 순서 맵
 // prodId + 한/영/약어 시트 표기 모두 같은 순서로. categoryMap.js single source.
@@ -128,7 +129,9 @@ function citDomainSectionHtml(citationsCnty, meta, t, citations, lang, useAggreg
     rows = Object.values(domainMap).sort((a, b) => b.citations - a.citations).slice(0, topN)
     rows.forEach((r, i) => { r.rank = i + 1 })
   } else {
-    rows = citationsCnty.filter(r => isTtlCnty(r.cnty) && isTtlLlm(r.llm)).sort((a, b) => a.rank - b.rank).slice(0, topN)
+    // 도메인 단위 병합 필수 — 같은 도메인이 type/prd 차이로 복수 행 (rtings 2회 노출 회귀).
+    // 병합 없이 rank 순 slice 하면 중복 노출 + ratio 분모 부풀림 (shared/citDomainAgg.js single source).
+    rows = mergeCitDomainRows(citationsCnty.filter(r => isTtlCnty(r.cnty) && isTtlLlm(r.llm))).slice(0, topN)
   }
   let bodyHtml
   if (!rows.length) {
@@ -1221,19 +1224,27 @@ function renderCitDom(citCnty,useAgg,prdData,enabledCntys,enabledPrds,allPrdSel,
     if(allPrdSel)return isPrdTtlRow(r);
     return !isPrdTtlRow(r)&&!!prdSet[r.prd];
   };
-  function aggByCnty(filterFn){
+  // 도메인 단위 병합 — 같은 도메인이 type 표기 차이로 복수 행이 되어 rtings 가 2회 노출되던 회귀.
+  // 서버 짝: shared/citDomainAgg.js mergeCitDomainRows (동일 규칙, 인라인 클라 구현).
+  // rowOk 가 이미 PRD/LLM 계열을 하나로 좁혀 놓으므로 여기서는 단순 도메인 합산으로 충분.
+  function mergeDom(list){
     var dm={};
-    citCnty.filter(filterFn).forEach(function(r){
-      var k=r.domain;
-      if(!dm[k])dm[k]={domain:r.domain,type:r.type,citations:0};
-      dm[k].citations+=r.citations;
+    (list||[]).forEach(function(r){
+      var k=r.domain;if(!k)return;
+      var c=Number(r.citations)||0;
+      if(!dm[k])dm[k]={domain:r.domain,type:r.type||'',citations:0,_top:0};
+      dm[k].citations+=c;
+      if(c>dm[k]._top){dm[k]._top=c;dm[k].type=r.type||dm[k].type}   // 최대 기여 행의 type 채택
     });
-    return Object.values(dm).sort(function(a,b){return b.citations-a.citations}).slice(0,topN);
+    return Object.values(dm).sort(function(a,b){return b.citations-a.citations});
+  }
+  function aggByCnty(filterFn){
+    return mergeDom(citCnty.filter(filterFn)).slice(0,topN);
   }
   if(useAgg){
     rows=aggByCnty(function(r){return !_isTtlCnty(r.cnty)&&rowOk(r)});
   } else {
-    rows=citCnty.filter(function(r){return _isTtlCnty(r.cnty)&&rowOk(r)}).sort(function(a,b){return (b.citations||0)-(a.citations||0)}).slice(0,topN);
+    rows=mergeDom(citCnty.filter(function(r){return _isTtlCnty(r.cnty)&&rowOk(r)})).slice(0,topN);
     if(!rows.length){
       rows=aggByCnty(function(r){return !_isTtlCnty(r.cnty)&&rowOk(r)});
     }
@@ -1246,14 +1257,9 @@ function renderCitDom(citCnty,useAgg,prdData,enabledCntys,enabledPrds,allPrdSel,
   var countries=enabledCntys&&enabledCntys.length?ALL.filter(function(c){return enabledCntys.indexOf(c)>=0}):ALL;
   var cntyCards=[];
   countries.forEach(function(cnty){
-    var cRows;
-    if(allPrdSel){
-      cRows=citCnty.filter(function(r){return r.cnty===cnty&&isPrdTtlRow(r)}).sort(function(a,b){return b.citations-a.citations});
-    }else{
-      // 도메인별로 enabled prd-specific 합산
-      var dm={};citCnty.forEach(function(r){if(r.cnty!==cnty)return;if(!rowOk(r))return;var k=r.domain;if(!dm[k])dm[k]={domain:r.domain,type:r.type,citations:0};dm[k].citations+=r.citations});
-      cRows=Object.values(dm).sort(function(a,b){return b.citations-a.citations});
-    }
+    // rowOk = allPrdSel 이면 PRD=TTL 행, 부분 선택이면 enabled PRD-specific 행 (+ LLM=TTL 행만).
+    // 두 경우 모두 도메인 단위 병합 후 사용 — 중복 도메인 카드 노출 방지.
+    var cRows=mergeDom(citCnty.filter(function(r){return r.cnty===cnty&&rowOk(r)}));
     if(!cRows.length)return;
     cntyCards.push(_vbarCard(_cn(cnty),_citVBar(_domToVBarData(cRows,8),8,true,null,false,0.7)));
   });

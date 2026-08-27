@@ -1,4 +1,5 @@
 import { DOTCOM_SAM_COLS } from './constants.js'
+import { mergeCitDomainRows, isTtlLlmVal } from './citDomainAgg.js'
 
 export function generateProductInsight(products) {
   const fmtN = n => Number(n).toLocaleString('en-US')
@@ -73,8 +74,10 @@ export function generateCntyHowToRead() {
 export function generateCitDomainInsight(citationsCnty) {
   if (!citationsCnty || !citationsCnty.length) return ''
   const fmtN = n => Number(n).toLocaleString('en-US')
-  const ttlRows = citationsCnty.filter(r => r.cnty === 'TTL').sort((a, b) => a.rank - b.rank)
-  if (!ttlRows.length) return ''
+  // 도메인 단위 병합 필수 — 같은 도메인이 type/prd 차이로 복수 행 (rtings 2회 노출 회귀).
+  // shared/citDomainAgg.js single source (= excelUtils.js citDomainTrend 병합 규칙).
+  const ttlRows = mergeCitDomainRows(citationsCnty.filter(r => r.cnty === 'TTL' && isTtlLlmVal(r.llm)))
+  if (ttlRows.length < 3) return ''
   const total = ttlRows.reduce((s, r) => s + r.citations, 0)
   const top3 = ttlRows.slice(0, 3)
   const top3Sum = top3.reduce((s, r) => s + r.citations, 0)
@@ -93,13 +96,15 @@ export function generateCitCntyInsight(citationsCnty) {
   if (!citationsCnty || !citationsCnty.length) return ''
   const fmtN = n => Number(n).toLocaleString('en-US')
   const cntyMap = new Map()
-  citationsCnty.filter(r => r.cnty !== 'TTL').forEach(r => {
+  citationsCnty.filter(r => r.cnty !== 'TTL' && isTtlLlmVal(r.llm)).forEach(r => {
     if (!cntyMap.has(r.cnty)) cntyMap.set(r.cnty, [])
     cntyMap.get(r.cnty).push(r)
   })
-  const cntySums = [...cntyMap.entries()].map(([cnty, rows]) => ({
-    cnty, total: rows.reduce((s, r) => s + r.citations, 0), top: rows.sort((a, b) => b.citations - a.citations)[0]
-  })).sort((a, b) => b.total - a.total)
+  // 국가별로도 도메인 단위 병합 — 중복 행이 국가 합계·1위 도메인을 왜곡
+  const cntySums = [...cntyMap.entries()].map(([cnty, rawRows]) => {
+    const rows = mergeCitDomainRows(rawRows)
+    return { cnty, total: rows.reduce((s, r) => s + r.citations, 0), top: rows[0] }
+  }).filter(e => e.top).sort((a, b) => b.total - a.total)
   if (!cntySums.length) return ''
   const lines = []
   const topCnty = cntySums[0]
