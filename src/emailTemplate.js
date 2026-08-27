@@ -146,7 +146,7 @@ const T = {
     vsComp: '대비',
     categories: '개 카테고리',
     productTitle: '제품별 GEO Visibility 현황',
-    legendLead: '선도 ≥100%', legendBehind: '추격 ≥80%', legendCritical: '취약 <80%',
+    legendLead: '선도 ≥1.0', legendBehind: '추격 ≥0.8', legendCritical: '취약 <0.8',
     lgBasis: 'LG/1위 기준',
     cntyTitle: '국가별 GEO Visibility 현황',
     cntyComp: '1위 경쟁사',
@@ -183,7 +183,7 @@ const T = {
     vsComp: 'vs',
     categories: ' Categories',
     productTitle: 'GEO Visibility by Product',
-    legendLead: 'Lead ≥100%', legendBehind: 'Behind ≥80%', legendCritical: 'Critical <80%',
+    legendLead: 'Lead ≥1.0', legendBehind: 'Behind ≥0.8', legendCritical: 'Critical <0.8',
     lgBasis: 'LG/Top 1 Basis',
     cntyTitle: 'GEO Visibility by Country',
     cntyComp: 'Top 1 Competitor',
@@ -434,6 +434,18 @@ function periodStats(p, mode = 'weekly') {
 }
 
 // 기간 배지 — 카드의 수치가 주간인지 월간인지 표기
+// 경쟁비 표기 — % 대신 배수(소수 1자리). 117% → '1.2' (사용자 지시 2026-08-27).
+// compScore 가 0/누락이면 비교 불가 → '—'.
+function ratioX(score, compScore) {
+  const c = Number(compScore) || 0
+  if (c <= 0 || score == null) return '—'
+  return (Number(score) / c).toFixed(1)
+}
+// 경쟁사 점수 표기 (소수 1자리)
+function compScoreStr(compScore) {
+  return (compScore != null && Number(compScore) > 0) ? Number(compScore).toFixed(1) : '—'
+}
+
 function periodBadgeHtml(mode, lang) {
   const txt = mode === 'monthly' ? (lang === 'en' ? 'Monthly' : '월간') : (lang === 'en' ? 'Weekly' : '주간')
   return `<span style="display:inline-block;background:#F1F5F9;color:#64748B;border:1px solid #E2E8F0;border-radius:4px;padding:0 4px;font-size:9px;font-weight:700;line-height:14px;font-family:${EM_FONT};letter-spacing:0;vertical-align:middle;">${txt}</span>`
@@ -606,7 +618,7 @@ function productCardHtml(p, globalMax, globalMin, lang = 'ko', opts = {}) {
               </td>
               <td align="right" style="vertical-align:middle;">
                 <table border="0" cellpadding="0" cellspacing="0" align="right" style="float:right;"><tr>
-                  <td style="vertical-align:middle;white-space:nowrap;"><span style="font-size:13px;font-weight:700;color:${ratioColor};font-family:${EM_FONT};letter-spacing:-1px;">${escapeHtml(p.compName || 'Samsung')} ${lang === 'en' ? 'vs' : '대비'} ${curRatio}%${ratioDelta}</span></td>
+                  <td style="vertical-align:middle;white-space:nowrap;"><span style="font-size:13px;font-weight:700;color:${ratioColor};font-family:${EM_FONT};letter-spacing:-1px;">${escapeHtml(p.compName || 'Samsung')} ${compScoreStr(activeComp)} · ${ratioX(p.score, activeComp)}${ratioDelta}</span></td>
                   <td style="vertical-align:middle;white-space:nowrap;padding-left:4px;"><span style="display:inline-block;background:${st.bg};color:${st.color};border:1px solid ${st.border};border-radius:6px;padding:0px 5px;font-size:10px;font-weight:700;line-height:16px;font-family:${EM_FONT};">${st.label}</span></td>
                 </tr></table>
                 ${deltaBlock}
@@ -729,7 +741,7 @@ function productCardV2Html(p, lang = 'ko', opts = {}) {
               </td>
               <td align="right" style="vertical-align:middle;">
                 <table border="0" cellpadding="0" cellspacing="0" align="right" style="float:right;"><tr>
-                  <td style="vertical-align:middle;white-space:nowrap;"><span style="font-size:13px;font-weight:700;color:${ratioColor};font-family:${EM_FONT};letter-spacing:-1px;">${escapeHtml(compShort(p.compName || 'Samsung') || 'SS')} ${curRatio}%</span></td>
+                  <td style="vertical-align:middle;white-space:nowrap;"><span style="font-size:13px;font-weight:700;color:${ratioColor};font-family:${EM_FONT};letter-spacing:-1px;">${escapeHtml(compShort(p.compName || 'Samsung') || 'SS')} ${compScoreStr(p.vsComp)} · ${ratioX(p.score, p.vsComp)}</span></td>
                   <td style="vertical-align:middle;white-space:nowrap;padding-left:4px;"><span style="display:inline-block;background:${st.bg};color:${st.color};border:1px solid ${st.border};border-radius:5px;padding:0px 4px;font-size:10px;font-weight:700;line-height:15px;font-family:${EM_FONT};">${st.label}</span></td>
                 </tr></table>${deltaBlock}
               </td>
@@ -845,7 +857,7 @@ function productCardV3Html(p, lang = 'ko', opts = {}) {
         <tr><td height="${barH}" style="font-size:0;"><table border="0" cellpadding="0" cellspacing="0" align="center"><tr><td width="16" height="${barH}" style="background:${barColor};border-radius:2px 2px 0 0;font-size:0;">&nbsp;</td></tr></table></td></tr>
         <tr><td style="font-size:10px;font-weight:700;color:${labelColor};font-family:${EM_FONT};text-align:center;padding-top:1px;">${r.score != null ? r.score.toFixed(0) : '—'}</td></tr>
         <tr><td style="font-size:8px;font-weight:700;color:${labelColor};font-family:${EM_FONT};text-align:center;line-height:1.1;letter-spacing:-0.3px;">${cntyLabel2Line(c, lang)}</td></tr>
-        <tr><td style="font-size:10px;color:#94A3B8;font-family:${EM_FONT};text-align:center;white-space:nowrap;letter-spacing:-0.5px;">${compShort(cCompName)}<br/>${cCompScore > 0 ? cRatio + '%' : ''}</td></tr>
+        <tr><td style="font-size:10px;color:#94A3B8;font-family:${EM_FONT};text-align:center;white-space:nowrap;letter-spacing:-0.5px;">${compShort(cCompName)} ${compScoreStr(cCompScore)}<br/>${cCompScore > 0 ? ratioX(r.score, cCompScore) : ''}</td></tr>
       </table>
     </td>`
   }).join('')
@@ -863,7 +875,7 @@ function productCardV3Html(p, lang = 'ko', opts = {}) {
               </td>
               <td align="right" style="vertical-align:middle;">
                 <table border="0" cellpadding="0" cellspacing="0" align="right" style="float:right;"><tr>
-                  <td style="vertical-align:middle;white-space:nowrap;"><span style="font-size:13px;font-weight:700;color:${ratioColor};font-family:${EM_FONT};letter-spacing:-1.3px;">${compShort(mainCompName)} ${curRatio}%</span></td>
+                  <td style="vertical-align:middle;white-space:nowrap;"><span style="font-size:13px;font-weight:700;color:${ratioColor};font-family:${EM_FONT};letter-spacing:-1.3px;">${compShort(mainCompName)} ${compScoreStr(mainCompScore)} · ${ratioX(p.score, mainCompScore)}</span></td>
                   <td style="vertical-align:middle;white-space:nowrap;padding-left:4px;"><span style="display:inline-block;background:${st.bg};color:${st.color};border:1px solid ${st.border};border-radius:5px;padding:0px 4px;font-size:10px;font-weight:700;line-height:15px;font-family:${EM_FONT};">${st.label}</span></td>
                 </tr></table>${deltaBlock}
               </td>
@@ -1400,7 +1412,7 @@ function countryProductSectionHtml(productName, rows, lang) {
     const spacerH  = BAR_MAX - barH
     const ratio    = r.compScore > 0 ? Math.round((r.score / r.compScore) * 100) : 100
     const gapColor = ratio >= 100 ? '#15803D' : ratio >= 80 ? '#E8910C' : '#BE123C'
-    const gapStr   = ratio + '%'
+    const gapStr   = ratioX(r.score, r.compScore)
 
     return `<td width="${colWidth}%" style="vertical-align:bottom;text-align:center;padding:0 1px;overflow:hidden;">
       <table border="0" cellpadding="0" cellspacing="0" align="center" style="margin:0 auto;table-layout:fixed;width:100%;">
