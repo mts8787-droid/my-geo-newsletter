@@ -1,6 +1,6 @@
 # GEO Agent Readability 검수 기준
 
-> 6개 카테고리 40개 채점 항목 + 9월 감사 시행 예정 4항목.
+> 6개 카테고리 38개 채점 항목 + 9월 감사 시행 예정 4항목.
 > 점수·통과율은 제외한 **기준 정의 문서**입니다. 실측치는 Readability 대시보드에서 확인하세요.
 > 생성: `scripts/render-criteria.mjs` (source: `data/readability/geo-agent-checklist.html`) — 2026-07-31
 
@@ -11,9 +11,9 @@
 | 사이트 성능 | 6 | 서버가 페이지를 얼마나 빠르고 안전하게 전달하는가 — 전송 계층 |
 | 웹접근성 | 4 | 사람과 기계가 문서 구조를 읽어낼 수 있는가 |
 | Basic SEO | 7 | 검색엔진이 페이지를 수집하고 표시할 수 있는가 |
-| 스키마마크업 | 10 | AI가 읽을 수 있는 구조화 데이터가 있는가 |
+| 스키마마크업 | 9 | AI가 읽을 수 있는 구조화 데이터가 있는가 |
 | 고인용 콘텐츠 | 5 | AI가 인용할 만한 서술이 본문에 있는가 |
-| AI Crawlability | 8 | AI 크롤러가 원문을 실제로 가져갈 수 있는가 |
+| AI Crawlability | 7 | AI 크롤러가 원문을 실제로 가져갈 수 있는가 |
 
 ---
 
@@ -237,11 +237,6 @@
 - **측정방법**: Name, description, image, author, datepublihsed, recipeIngredient, recipeInstructions 존재
 - **상태**: 미채점 — 추후 개선항목 확인 후 정리 (scoring_config `enabled: false`)
 
-### #49 Schema: WebSite
-- **정의**: 체크리스트 문서에 대응 행이 없는 채점 항목
-- **비고**: 적용 페이지 0건
-- **check id**: `ai_schema_website`
-
 ---
 
 ## 고인용 콘텐츠
@@ -330,11 +325,6 @@
 - **측정방법**: 각 국가별 llms.txt 검증
 - **check id**: `ai_llms_txt`
 
-### #40 Summary Content SSR
-- **정의**: 체크리스트 문서에 대응 행이 없는 채점 항목
-- **비고**: 문서 미등재
-- **check id**: `ai_summary_ssr`
-
 ---
 
 ## 예외 처리
@@ -344,6 +334,7 @@
 - **#8 Render Blocking 0** — 통과율 2.3%로 변별력 없음
 - **#44 Sitemap XML** — #19 Sitemap과 rule이 완전히 동일한 중복 (`sitemap_recent` / `/sitemap.xml` / 30일). 어딧에서도 `ai_sitemap_domain` 이 이미 `enabled: false`
 - **#20 Organization · #22 Speakable · #30 digitalDocument · #31 Recipe** — `scoring_config` 에서 `enabled: false`
+- **#49 Schema: WebSite · #40 Summary Content SSR** — 체크리스트 문서에 대응 행이 없어 정의·Pass 기준을 제시할 수 없으므로 채점 제외 (2026-08-27)
 
 ### 집계 대상에서 빠지는 페이지
 - **B2B(사업자) · 프로모션/약관** — GEO 대상이 아니라 점수·통과율·URL 카운트 전부에서 제외
@@ -356,6 +347,5 @@
 - **#34 Author 또는 출처+날짜** — byline 은 에디토리얼에만 성립하는 개념이라 `newsroom` · `buying_guide` · `lg_experience` 에만 적용. 그 외 페이지타입은 `na` (분모 제외)
 
 ### 문서 번호와 채점 항목이 1:1이 아닌 곳
-- **#17 Robots** — `seo_robots`(meta) + `seo_robots_hdr`(X-Robots-Tag), 두 개로 채점
+- **#17 Robots** — `seo_robots`(meta) 와 `seo_robots_hdr`(X-Robots-Tag) 중 **하나만 충족해도 통과** (OR). 대표 체크 `seo_robots` 하나로 채점
 - **#25 Product 풀세트** — `ai_schema_product` + `ai_schema_offer`, 두 개로 채점
-- **#49 Schema: WebSite · #40 Summary Content SSR** — 채점은 되지만 체크리스트 문서에 대응 행이 없음

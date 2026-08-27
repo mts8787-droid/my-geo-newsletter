@@ -206,9 +206,13 @@ function resolvePt(pt, url) {
 //                       "가벼운 좋은 페이지"가 아니라 "깨진 페이지"를 통과로 잡던 반전 지표였다.
 //                       기준 상향/지표 재정의는 별도 논의 (렌더 DOM 기준 측정은 audit 쪽 작업).
 //   #8 perf_render_block  채점 대상에서 제외 (분모·분자 모두). na 처리라 통과율 표에서도 사라짐.
+//   ai_summary_ssr / ai_schema_website  채점 제외 (사용자 결정 2026-08-27).
+//                       체크리스트 문서에 대응 행이 없어 항목 정의·Pass 기준을 제시할 수
+//                       없는 항목이다. 정의 없는 채점은 근거를 설명할 수 없으므로 제외.
+//                       (ai_schema_website 은 적용 페이지도 0건이었다)
 const TTFB_MAX_MS = 600
 // 채점 제외 체크 — na:true 로 표시해 applicable(분모)에서도 빠진다 (scoring_config 의 enabled:false 와 동등)
-const DISABLED_CHECKS = { perf_html_size: 1, perf_render_block: 1 }
+const DISABLED_CHECKS = { perf_html_size: 1, perf_render_block: 1, ai_summary_ssr: 1, ai_schema_website: 1 }
 
 // OR 통합 체크 — 여러 체크 중 하나만 통과해도 통과로 본다 (대표 체크에 결과를 몰고 나머지는 na).
 //   #17 Robots: meta robots(seo_robots) 와 X-Robots-Tag 헤더(seo_robots_hdr) 는

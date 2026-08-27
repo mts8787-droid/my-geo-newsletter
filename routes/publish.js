@@ -11,12 +11,10 @@ import { renderReadabilityHTML } from '../scripts/render-readability.mjs'
 
 const log = logFor('publish')
 
-// ─── Readability 독립 게시본 ──────────────────────────────────────────────
-// 어드민에서 별도 게시 → /p/GEO-Readability-Dashboard 로 웹 게시.
-// 통합 대시보드 뷰어는 이 웹 게시본을 재사용(embed)한다 (아래 writeReadabilityEmbed).
-const READABILITY_SLUG = 'GEO-Readability-Dashboard'
-const READABILITY_STANDALONE = join(PUB_DIR, `${READABILITY_SLUG}.html`)
-const READABILITY_META = join(DATA_DIR, 'readability-meta.json')
+// ─── Readability 임베드 ──────────────────────────────────────────────────
+// 웹 공개본 /p/GEO-Readability-Dashboard 는 routes/published.js 가 요청 시 렌더한다
+// (게시 조작 없음). 여기서는 통합 대시보드 게시본이 iframe 으로 물고 갈
+// /p/<slug>-readability 정적 페이지만 만든다.
 
 // 최신 스냅샷으로 Readability HTML 생성 (게시용 — adminMode:false)
 function renderReadabilityPublic() {
@@ -231,33 +229,6 @@ function buildMonthlyDeleteHandler(ch) {
   }
 }
 
-// ─── Readability 독립 게시 핸들러 (최신 스냅샷 → /p/GEO-Readability-Dashboard) ─
-// 데이터가 서버측 스냅샷(data/readability/)이라 클라이언트 HTML 전송 불필요 — 서버가 직접 렌더.
-function readabilityPostHandler(req, res) {
-  try {
-    const html = renderReadabilityPublic()
-    if (!html) return res.status(400).json({ ok: false, error: 'Readability 스냅샷 없음 — data/readability/ 비어있음' })
-    writeFileSync(READABILITY_STANDALONE, html)
-    const meta = { title: 'GEO Readability Dashboard', ts: Date.now() }
-    writeFileSync(READABILITY_META, JSON.stringify(meta, null, 2))
-    log.info({ tag: 'PUBLISH-READ', slug: READABILITY_SLUG }, 'readability standalone published')
-    res.json({ ok: true, url: `/p/${READABILITY_SLUG}`, ...meta })
-  } catch (err) {
-    log.error({ tag: 'PUBLISH-READ', err: err.message }, 'readability publish failed')
-    res.status(500).json({ ok: false, error: '파일 저장 실패: ' + err.message })
-  }
-}
-function readabilityGetHandler(req, res) {
-  const meta = readMetaFile(READABILITY_META)
-  const published = existsSync(READABILITY_STANDALONE)
-  res.json({ published, ...(meta || {}), url: `/p/${READABILITY_SLUG}` })
-}
-function readabilityDeleteHandler(req, res) {
-  deleteIfExists(READABILITY_STANDALONE, 'PUBLISH-READ')
-  deleteIfExists(READABILITY_META, 'PUBLISH-READ')
-  res.json({ ok: true })
-}
-
 export const publishRouter = Router()
 
 // 5개 채널 일괄 등록 (path는 /api/publish[-{key}])
@@ -271,9 +242,9 @@ publishRouter.get('/api/publish-dashboard', buildGetHandler(CHANNELS.dashboard))
 publishRouter.delete('/api/publish-dashboard', buildDeleteHandler(CHANNELS.dashboard))
 
 // Readability 독립 게시 — 서버 스냅샷 기반이라 body 검증 불필요 (클라이언트 HTML 미전송)
-publishRouter.post('/api/publish-readability', readabilityPostHandler)
-publishRouter.get('/api/publish-readability', readabilityGetHandler)
-publishRouter.delete('/api/publish-readability', readabilityDeleteHandler)
+// Readability 게시 API 는 제거됨 (2026-08-27) —
+// /p/GEO-Readability-Dashboard 가 요청 시 렌더라 게시 조작 자체가 불필요하다.
+// (routes/published.js 의 전용 라우트 참조)
 
 publishRouter.post('/api/publish-citation', validateBody(PublishPostSchema), buildPostHandler(CHANNELS.citation))
 publishRouter.get('/api/publish-citation', buildGetHandler(CHANNELS.citation))

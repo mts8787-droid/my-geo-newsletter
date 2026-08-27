@@ -41,11 +41,9 @@ export const DOC_TO_CHECK = {
   '41': ['ai_status_200'], '42': ['ai_soft_404'], '43': ['ai_llms_txt'],
 }
 
-// 채점은 되지만 체크리스트 문서에 대응 행이 없는 항목
-export const ORPHAN_CHECKS = {
-  '스키마마크업': [{ cid: 'ai_schema_website', label: '#49 Schema: WebSite', note: '적용 페이지 0건' }],
-  'AI Crawlability': [{ cid: 'ai_summary_ssr', label: '#40 Summary Content SSR', note: '문서 미등재' }],
-}
+// 체크리스트 문서에 대응 행이 없던 항목들 — 정의·Pass 기준을 제시할 수 없어
+// 2026-08-27 채점에서 제외됐다 (aggregate 의 DISABLED_CHECKS). 표에도 노출하지 않는다.
+export const ORPHAN_CHECKS = {}
 
 export const CAT_ORDER = ['사이트 성능', '웹접근성', 'Basic SEO', '스키마마크업', '고인용 콘텐츠', 'AI Crawlability']
 export const CAT_KEY = {
@@ -197,9 +195,8 @@ ${orphans}
       <li><b>#34 Author 또는 출처+날짜</b> — byline은 에디토리얼에만 성립하는 개념이라 뉴스룸 · 구매 가이드 · LG Experience에만 적용</li>
     </ul></div>
     <div><h3>문서 번호와 채점 항목이 1:1이 아닌 곳</h3><ul>
-      <li><b>#17 Robots</b> — meta robots와 X-Robots-Tag 헤더, 두 개로 채점</li>
+      <li><b>#17 Robots</b> — meta robots와 X-Robots-Tag 헤더 중 <b>하나만 충족해도 통과</b> (OR 조건). 대표 체크 하나로 채점</li>
       <li><b>#25 Product 풀세트</b> — Product와 Offer, 두 개로 채점</li>
-      <li><b>#49 Schema: WebSite · #40 Summary Content SSR</b> — 채점은 되지만 체크리스트 문서에 대응 행이 없음</li>
     </ul></div>
   </div>`
 
@@ -367,6 +364,7 @@ export function renderCriteriaMarkdown({ rows, generatedAt }) {
   L.push('- **#8 Render Blocking 0** — 통과율 2.3%로 변별력 없음')
   L.push('- **#44 Sitemap XML** — #19 Sitemap과 rule이 완전히 동일한 중복 (`sitemap_recent` / `/sitemap.xml` / 30일). 어딧에서도 `ai_sitemap_domain` 이 이미 `enabled: false`')
   L.push('- **#20 Organization · #22 Speakable · #30 digitalDocument · #31 Recipe** — `scoring_config` 에서 `enabled: false`')
+  L.push('- **#49 Schema: WebSite · #40 Summary Content SSR** — 체크리스트 문서에 대응 행이 없어 정의·Pass 기준을 제시할 수 없으므로 채점 제외 (2026-08-27)')
   L.push('')
   L.push('### 집계 대상에서 빠지는 페이지')
   L.push('- **B2B(사업자) · 프로모션/약관** — GEO 대상이 아니라 점수·통과율·URL 카운트 전부에서 제외')
@@ -379,9 +377,8 @@ export function renderCriteriaMarkdown({ rows, generatedAt }) {
   L.push('- **#34 Author 또는 출처+날짜** — byline 은 에디토리얼에만 성립하는 개념이라 `newsroom` · `buying_guide` · `lg_experience` 에만 적용. 그 외 페이지타입은 `na` (분모 제외)')
   L.push('')
   L.push('### 문서 번호와 채점 항목이 1:1이 아닌 곳')
-  L.push('- **#17 Robots** — `seo_robots`(meta) + `seo_robots_hdr`(X-Robots-Tag), 두 개로 채점')
+  L.push('- **#17 Robots** — `seo_robots`(meta) 와 `seo_robots_hdr`(X-Robots-Tag) 중 **하나만 충족해도 통과** (OR). 대표 체크 `seo_robots` 하나로 채점')
   L.push('- **#25 Product 풀세트** — `ai_schema_product` + `ai_schema_offer`, 두 개로 채점')
-  L.push('- **#49 Schema: WebSite · #40 Summary Content SSR** — 채점은 되지만 체크리스트 문서에 대응 행이 없음')
   L.push('')
   return L.join('\n')
 }
