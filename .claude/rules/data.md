@@ -421,6 +421,22 @@ if (result.weeklyLabels?.every((l, i) => l === `W${i + 1}`)) {
 - fallback 은 console.log 로 명시 (디버깅 시 어떤 derived 데이터인지 추적 가능)
 - verifySyncResult 가 자동 생성된 라벨 같은 stale 상태 감지 → SyncHealth 에 surface
 
+### 5.13 Readability 신호등 기준 (single source)
+
+Readability 대시보드·뉴스레터·검수기준 페이지가 **같은 0~100 점수를 서로 다른 색으로** 표시하던 회귀가 있었다 (기준 4벌 분산). 정의는 `src/shared/readabilityBand.js` **1곳**.
+
+```js
+import { RD_BAND, RD_BAND_COLOR, rdBandKey, rdBandColor } from './shared/readabilityBand.js'
+// RD_BAND = { good: 80, warn: 50 }
+```
+
+**RULE**:
+- 점수(총점·국가·영역·페이지타입)와 항목 통과율을 **구분하지 않는다** — 영역 점수는 항목 통과율의 가중평균이라 같은 척도.
+- 임계값·색상 하드코딩 금지. 신규 화면도 `rdBandColor(v)` / `rdBandKey(v)` 사용.
+- 클라이언트 인라인 스크립트(`render-readability.mjs` 의 `readabilityClient`)는 import 불가 → 서버가 `__RD.band` / `__RD.bandColor` 로 주입, 클라는 그것을 읽는다 (design.md §5.8 서버↔클라 짝).
+
+**ANTI-PATTERN**: 화면마다 `v >= 70 ? green : ...` 인라인 작성 → 같은 값이 화면마다 다른 색 (US 75.1 이 대시보드 녹색 / 뉴스레터 주황 회귀).
+
 ## 6. ERROR CATCHING PROCESS
 
 데이터 파이프라인 곳곳에서 발생 가능한 오류를 **단계별로 탐지·분류·기록·복구**하는 표준 프로세스. 외부 입력(시트, API)·파싱 로직·다운스트림 변환 모든 경계점에 적용.
@@ -722,6 +738,7 @@ NEVER  카테고리 매핑을 여러 파일에 정의 → src/categoryMap.js 만
 NEVER  parseSheetRows 라우터에서 미매칭 시트명 silent skip → _logWarn(unknown sheet) 으로 알림
 NEVER  파서 진입부 입력 검증 생략 → assertRows() 라우터 가드 + 외부 직접 호출 시 자체 가드
 NEVER  같은 헤더 동의어 정규식을 파서마다 인라인 작성 → findHeaderIdx(rows, [regex, ...]) 헬퍼 사용 (AND 매칭)
+NEVER  Readability 신호등 임계값을 화면마다 인라인 작성 → src/shared/readabilityBand.js 만 정의 (§5.13)
 NEVER  pct() 로 ratio 값 (상관계수 -1~+1, 확률 0~1) 파싱 → ×100 자동 변환 트랩, 별도 parser 필요
 NEVER  파서 throw 가 sync 전체 중단 → parseSheetRows 라우터 try/catch + _logFatal 격리 (다른 시트 계속)
 ```

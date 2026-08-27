@@ -9,8 +9,7 @@
 //   body #F1F5F9 / Hero 다크 카드 #0F172A / 흰 section-card + 레드바 타이틀.
 
 // 디자인 토큰 단일 소스 — Visibility 대시보드와 동일 (하드코딩 X)
-import { FONT, RED, COMP } from '../src/dashboard/dashboardConsts.js'
-import { statusInfo } from '../src/dashboard/dashboardFormat.js'
+import { FONT, RED } from '../src/dashboard/dashboardConsts.js'
 
 // @font-face — 커스텀 폰트 (LGEIText / LG Smart) 실제 파일 로드.
 // FONT 토큰은 family 이름만 나열 → 이 @font-face 블록 없으면 시스템 폰트로 폴백.
@@ -56,6 +55,8 @@ const CATEGORIES = ['performance', 'accessibility', 'seo', 'geo_schema', 'geo_co
 
 // cc(소문자) → 표시명 — 집계기와 공유 single source (드리프트 방지).
 import { CC_NAME } from './readability-cc.mjs'
+// 신호등 기준 single source — 대시보드/뉴스레터/검수기준 공통 (src/shared/readabilityBand.js)
+import { RD_BAND, RD_BAND_COLOR, rdBandColor } from '../src/shared/readabilityBand.js'
 
 function escHtml(s) {
   return String(s == null ? '' : s)
@@ -63,20 +64,9 @@ function escHtml(s) {
     .replace(/"/g, '&quot;')
 }
 
-// 점수(0~100) → STATUS 토큰 색 (lead/behind/critical)
-function scoreColor(v) {
-  if (v == null) return COMP
-  if (v >= 70) return statusInfo('lead').color
-  if (v >= 50) return statusInfo('behind').color
-  return statusInfo('critical').color
-}
-// pass rate(0~100) → STATUS 토큰 색
-function rateColor(v) {
-  if (v == null) return COMP
-  if (v >= 80) return statusInfo('lead').color
-  if (v >= 50) return statusInfo('behind').color
-  return statusInfo('critical').color
-}
+// 점수·통과율(0~100) → 신호등 색. 기준은 readabilityBand.js single source.
+const scoreColor = rdBandColor
+const rateColor = rdBandColor
 
 // 가로 막대 1줄 — countText 주면 라벨과 막대 사이에 audit 페이지 수 컬럼 추가
 function barRow(label, value, max, color, rightText, countText, meta) {
@@ -214,15 +204,19 @@ function readabilityClient() {
   var RD = window.__RD || {}
   var LATEST_DATE = RD.date
   var CATS = Object.keys(RD.categoryLabels || {})   // 스냅샷이 정의한 카테고리 순서 그대로 (6분류)
-  var LEAD = '#15803D', BEHIND = '#B45309', CRIT = '#BE123C', COMP = '#94A3B8', RED = '#CF0652'
+  // 신호등 색·임계값은 서버가 __RD 로 주입 (readabilityBand.js single source)
+  var BC = RD.bandColor || { good: '#15803D', warn: '#B45309', crit: '#BE123C', na: '#94A3B8' }
+  var BAND = RD.band || { good: 80, warn: 50 }
+  var LEAD = BC.good, BEHIND = BC.warn, CRIT = BC.crit, COMP = BC.na, RED = '#CF0652'
   var state = { tab: 'country', cc: 'all', pt: 'all', fcheck: 'all', pf: 'all' }
   var _rawData = null
 
   function esc(s) {
     return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
   }
-  function scoreColor(v) { if (v == null) return COMP; if (v >= 70) return LEAD; if (v >= 50) return BEHIND; return CRIT }
-  function rateColor(v) { if (v == null) return COMP; if (v >= 80) return LEAD; if (v >= 50) return BEHIND; return CRIT }
+  // 서버 rdBandColor 의 클라이언트 짝 (design.md §5.8) — 점수/통과율 동일 기준
+  function scoreColor(v) { if (v == null) return COMP; if (v >= BAND.good) return LEAD; if (v >= BAND.warn) return BEHIND; return CRIT }
+  var rateColor = scoreColor
   function num(n) { return (n == null ? 0 : n).toLocaleString() }
   function barRow(label, value, max, color, rightText, countText, meta) {
     var w = max > 0 ? Math.max(0, Math.min(100, (value / max) * 100)).toFixed(1) : 0
@@ -556,6 +550,8 @@ export function renderReadabilityHTML({ snapshot, index, snapshots, adminMode = 
   const buildClientData = snap => ({
     date: snap.date,
     adminMode: !!adminMode,
+    band: RD_BAND,           // 신호등 임계값 — 클라 짝이 서버와 같은 기준 쓰도록 주입
+    bandColor: RD_BAND_COLOR,
     paths: paths || (adminMode ? ADMIN_PATHS : PUBLIC_PATHS),
     categoryLabels: snap.categoryLabels || {},
     checkDefs: loadCheckDefs(),   // check id → 항목 정의 (체크리스트 문서 출처)

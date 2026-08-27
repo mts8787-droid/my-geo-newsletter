@@ -1,6 +1,7 @@
 // ─── 이메일 호환 HTML 생성기 ─────────────────────────────────────────────────
 // 규칙: table 기반 레이아웃, 인라인 스타일, 외부 폰트 없음, flex/grid 없음
 import { PROD_ID_TO_UL_CODE as UL_PROD_MAP, PROD_ID_TO_UL_CODE, PROD_ID_TO_KR, PROD_ID_TO_EN, PROD_ID_TO_BU, PROD_ID_TO_ORDER, NAME_TO_PROD_ID } from './categoryMap.js'
+import { rdBandColor } from './shared/readabilityBand.js'
 import { resolveProductsByLlm, resolveProductsCntyByLlm, resolveTotalByLlm } from './shared/llmModel.js'
 import { _logWarn } from './sheetParserUtils.js'
 import { dcColLabel } from './shared/constants.js'
@@ -3040,9 +3041,8 @@ const RD_CC_KO = { au: '호주', br: '브라질', ca: '캐나다', de: '독일',
 const RD_CC_EN = { au: 'Australia', br: 'Brazil', ca: 'Canada', de: 'Germany', es: 'Spain', in: 'India', mx: 'Mexico', uk: 'UK', us: 'USA', vn: 'Vietnam' }
 
 // 점수 → 색 (대시보드 STATUS 토큰과 동일 기준)
-function rdColor(v) {
-  return v == null ? '#94A3B8' : v >= 90 ? '#15803D' : v >= 60 ? '#B45309' : '#BE123C'
-}
+// 신호등 색 — 대시보드/검수기준과 동일 기준 (src/shared/readabilityBand.js single source)
+const rdColor = rdBandColor
 
 // 가로 막대 한 줄 — table-layout (이메일 호환)
 // 막대 한 줄 — table-layout. opts.sub 는 라벨과 같은 줄에 이어 붙인다(높이 절감).

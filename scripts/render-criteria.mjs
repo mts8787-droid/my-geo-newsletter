@@ -15,6 +15,7 @@
 // 사용: node scripts/render-criteria.mjs
 
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs'
+import { rdBandKey } from '../src/shared/readabilityBand.js'
 import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
 
@@ -84,7 +85,8 @@ export function parseChecklist(html) {
   return rows
 }
 
-const band = r => r == null ? 'na' : r >= 90 ? 'good' : r >= 60 ? 'warn' : 'crit'
+// 신호등 밴드 — 대시보드/뉴스레터와 동일 기준 (src/shared/readabilityBand.js single source)
+const band = rdBandKey
 
 // 카테고리별 실제 채점 항목 수 — 문서 행 수가 아니라 check id 개수.
 // #17 Robots(2개) · #25 Product 풀세트(2개) 처럼 한 행이 두 체크인 경우가 있어 행 수로 세면 어긋난다.
