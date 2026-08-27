@@ -3045,6 +3045,17 @@ const RD_CAT_DESC_EN = {
   geo_schema: 'Structured data signaling the type of information and how it relates',
   geo_content: 'Presence of statements AI can quote',
 }
+// 스냅샷의 pageTypes[].label 도 한국어 → EN 대응표 (없으면 EN 발송본 그래프에 한국어 잔존)
+const RD_PT_LABEL_EN = {
+  newsroom: 'Newsroom / Press',
+  microsite: 'Microsite / Campaign',
+  buying_guide: 'Buying Guide',
+  lg_experience: 'LG Experience',
+  pdp: 'Product Detail (PDP)',
+  plp: 'Product Category (PLP)',
+  support: 'Support',
+  support_troubleshoot: 'Support - Troubleshooting',
+}
 // 스냅샷의 categoryLabels 는 한국어 → EN 대응표
 const RD_CAT_LABEL_EN = {
   performance: 'Site Performance',
@@ -3258,7 +3269,8 @@ function readabilityHighlightHtml(rd, meta = {}, lang = 'ko', contentWidth = 848
     .sort((a, b) => b.avg - a.avg)
     .map(p => {
       const f = `rd_lblPt_${p.id}`
-      return rdBarRow(lbl(f, p.label), p.avg, 100, { labelW: 118, pad: 2, barH: 8, labelField: f })
+      const base = lang === 'en' ? (RD_PT_LABEL_EN[p.id] || p.label) : p.label
+      return rdBarRow(lbl(f, base), p.avg, 100, { labelW: 118, pad: 2, barH: 8, labelField: f })
     }).join('')
   const half = Math.floor(contentWidth / 2) - 8
   // 평가 영역별 점수와 동일한 회색 박스로 감싼다 (사용자 지시 2026-08-27)
