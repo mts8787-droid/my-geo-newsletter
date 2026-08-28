@@ -35,6 +35,14 @@ function isTranslatableRdKey(k, v) {
   return k.startsWith('rd_') && (typeof v === 'string' || v == null)
 }
 
+// 해당 key 가 "EN 번역 대상 텍스트" 인지 판정.
+// 텍스트가 아닌 것(토글·색상·폰트크기·카드버전 등 구조/표시 설정)은 KO 를 단일 소스로 쓴다 —
+// EN 미리보기에서 토글을 바꿔도 metaEn 에 저장되면 mergeEnMeta 가 무시해 반영이 안 됐다
+// (사용자 보고 2026-08-28: "인사이트 보기 on/off 가 영문에서 작동 안 함").
+export function isEnTextField(key, value) {
+  return EN_TEXT_FIELDS.includes(key) || isTranslatableRdKey(key, value)
+}
+
 export function mergeEnMeta(metaKo, metaEn) {
   const m = { ...metaKo }
   EN_TEXT_FIELDS.forEach(k => { m[k] = metaEn?.[k] })

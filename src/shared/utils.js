@@ -29,8 +29,37 @@ export function resolveDataForLang(products, productsCnty, citations, citationsC
 }
 
 // ─── 클라이언트 측 Google Translate (비공식 API) ─────────────────────────────
+// 번역 — 서버 프록시(/api/translate) 경유가 기본.
+//
+// 과거에는 브라우저에서 translate.googleapis.com 의 비공식 gtx 엔드포인트를
+// 텍스트 1개당 1요청(60+건, 20 병렬)으로 직접 호출했다. Google 이 IP 단위로
+// 강하게 rate-limit 해서 운영 환경에서 429 로 통째 실패 → "번역 버튼이 안 먹는"
+// 증상이 됐다 (사용자 보고 2026-08-28). routes/translate.js 가 이미 있으므로
+// 그쪽(google-translate-api-x, 배열 배치 지원)을 쓴다.
+//
+// 서버 경로가 실패하면 기존 직접 호출로 폴백 — dev 서버에 라우트가 없을 때 대비.
 export async function translateTexts(texts, { from = 'ko', to = 'en' } = {}) {
-  const BATCH = 20
+  try {
+    const res = await fetch('/api/translate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+      body: JSON.stringify({ texts, from, to }),
+    })
+    const data = await res.json().catch(() => ({}))
+    if (!res.ok || !data.ok) throw new Error(data.error || `번역 실패 (${res.status})`)
+    if (!Array.isArray(data.translated) || data.translated.length !== texts.length) {
+      throw new Error(`번역 결과 길이 불일치 (${data.translated?.length} ≠ ${texts.length})`)
+    }
+    return data.translated
+  } catch (err) {
+    console.warn('[translate] 서버 프록시 실패 → 직접 호출 폴백:', err.message)
+    return translateTextsDirect(texts, { from, to })
+  }
+}
+
+// 폴백 — 브라우저에서 직접 호출 (rate-limit 취약, 서버 경로 불가 시에만)
+async function translateTextsDirect(texts, { from = 'ko', to = 'en' } = {}) {
+  const BATCH = 5
   const translated = []
   for (let i = 0; i < texts.length; i += BATCH) {
     const batch = texts.slice(i, i + BATCH)

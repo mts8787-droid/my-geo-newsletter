@@ -36,3 +36,20 @@ describe('Readability Highlight — EN 기본 번역 내장', () => {
     expect(body.match(/[가-힣]/g)).toBeNull()
   })
 })
+
+describe('isEnTextField — EN 쓰기 라우팅', () => {
+  it('번역 대상 텍스트는 true', async () => {
+    const { isEnTextField } = await import('../src/shared/Sidebar.jsx')
+    expect(isEnTextField('productInsight', 'x')).toBe(true)
+    expect(isEnTextField('cntyInsight', 'x')).toBe(true)
+    expect(isEnTextField('rd_lblCc_br', 'Brazil')).toBe(true)
+  })
+  it('토글·구조 설정은 false → KO 에 저장돼야 함', async () => {
+    const { isEnTextField } = await import('../src/shared/Sidebar.jsx')
+    expect(isEnTextField('showProductInsight', true)).toBe(false)
+    expect(isEnTextField('showCntyInsight', false)).toBe(false)
+    expect(isEnTextField('showReadability', true)).toBe(false)
+    expect(isEnTextField('productCardVersion', 'v3')).toBe(false)
+    expect(isEnTextField('rd_schemaCompare', [{ name: 'FAQ' }])).toBe(false)
+  })
+})

@@ -14,7 +14,7 @@ import { computeCategoryStats, extractMonthFromPeriod } from '../shared/trackerC
 import { parseKPISheet } from '../tracker-v2/utils/sheetParser.js'
 // N2 — XLSX는 사용 시점에만 동적 로드 (~870KB)
 import { loadXlsx } from '../shared/loadXlsx.js'
-import Sidebar, { mergeEnMeta } from '../shared/Sidebar.jsx'
+import Sidebar, { mergeEnMeta, isEnTextField } from '../shared/Sidebar.jsx'
 import LlmModelSelect from '../shared/LlmModelSelect.jsx'
 
 const TRACKER_SHEET_ID = '1lAzhlYJIjHVqDeywD3YMR1E9qf2LlDohFc0r6SAnVaE'
@@ -178,7 +178,21 @@ export default function App() {
 
   // EN 미리보기 = KO 구조 + EN 번역 텍스트 오버레이 (mergeEnMeta) — KO 변경이 EN 에 자동 반영
   const meta    = previewLang === 'en' ? mergeEnMeta(metaKo, metaEn) : metaKo
-  const setMeta = previewLang === 'en' ? setMetaEn : setMetaKo
+  // EN 미리보기에서의 쓰기는 key 종류로 갈라 보낸다:
+  //   번역 대상 텍스트 → metaEn (언어별로 다른 값)
+  //   그 외 (토글·색상·폰트·카드버전 등 구조 설정) → metaKo (양 언어 공용 단일 소스)
+  // 전부 metaEn 으로 보내면 mergeEnMeta 가 구조 필드를 무시해서 토글이 안 먹었다.
+  const setMetaEnAware = useCallback(updater => {
+    const cur = mergeEnMeta(metaKo, metaEn)
+    const next = typeof updater === 'function' ? updater(cur) : updater
+    const changed = Object.keys(next).filter(k => next[k] !== cur[k])
+    if (!changed.length) return
+    const textKeys = changed.filter(k => isEnTextField(k, next[k]))
+    const structKeys = changed.filter(k => !isEnTextField(k, next[k]))
+    if (textKeys.length) setMetaEn(m => { const o = { ...m }; textKeys.forEach(k => { o[k] = next[k] }); return o })
+    if (structKeys.length) setMetaKo(m => { const o = { ...m }; structKeys.forEach(k => { o[k] = next[k] }); return o })
+  }, [metaKo, metaEn])
+  const setMeta = previewLang === 'en' ? setMetaEnAware : setMetaKo
 
   // 미리보기 iframe 인라인 편집 수신 — emailTemplate editable 모드의 postMessage({type:'editMeta'})
   // previewLang 파생 setMeta 사용 → KO/EN 각각 올바른 meta 에 저장
