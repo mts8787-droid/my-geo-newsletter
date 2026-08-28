@@ -777,15 +777,36 @@ function getPreferredComp(prodId, allScores) {
 }
 function compShort(name) { if (!name) return ''; return name.replace(/Samsung/gi,'SS').replace(/삼성/g,'SS').slice(0,6) }
 
+// ─── 경합(Tie) 판정 — V4 카드 전용 ────────────────────────────────────────────
+// 경쟁비가 TIE_RATIO_MAX 이하인 항목을 '경합' 으로 묶어 검은색으로 표기 (사용자 지시 2026-08-28).
+// ⚠ 여기서 말하는 '경합' 은 접전(1.0 근방)이 아니라 경쟁비 0.05 이하 구간이다 —
+//   사용자가 두 해석 중 이쪽을 명시 선택했다. 기준 변경 시 이 상수만 고친다.
+const TIE_RATIO_MAX = 0.05
+const TIE_COLOR = '#1A1A1A'   // 검은색
+const TIE_STYLE = { bg: '#F1F5F9', border: '#CBD5E1', color: TIE_COLOR }
+
+function isTieRatio(score, compScore) {
+  const c = Number(compScore) || 0
+  if (c <= 0 || score == null) return false
+  return (Number(score) / c) <= TIE_RATIO_MAX
+}
+function tieInfo(lang) {
+  return { ...TIE_STYLE, label: lang === 'en' ? 'Tie' : '경합' }
+}
+
 // ─── 제품 카드 V3 (국가별 + 지정 경쟁사 비교) ──────────────────────────────────
 function productCardV3Html(p, lang = 'ko', opts = {}) {
-  const st = statusInfo(p.status, lang)
+  // opts.tieMode (= V4) — 경쟁비 0.05 이하를 '경합' 으로 묶어 검은색 표기
+  const tieMode = opts.tieMode === true
   // 지정 경쟁사 우선, 없으면 기존 1위 경쟁사
   const prefComp = getPreferredComp(p.id, p.allScores)
   const mainCompName = prefComp ? prefComp.name : (p.compName || 'Samsung')
   const mainCompScore = prefComp ? prefComp.score : (p.vsComp || 0)
+  const headTie = tieMode && isTieRatio(p.score, mainCompScore)
+  const st = headTie ? tieInfo(lang) : statusInfo(p.status, lang)
   const curRatio = mainCompScore > 0 ? Math.round(p.score / mainCompScore * 100) : 100
-  const ratioColor = curRatio >= 100 ? '#15803D' : curRatio >= 80 ? '#E8910C' : '#BE123C'
+  const ratioColor = headTie ? TIE_COLOR
+    : curRatio >= 100 ? '#15803D' : curRatio >= 80 ? '#E8910C' : '#BE123C'
   const showTrendTabs = opts.showTrendTabs === true
   const useMonthly = opts.trendMode === 'monthly'
   // 주간/월간 모드별 점수·직전값 (periodStats — 마지막 두 유효값으로 prev 산출)
@@ -848,7 +869,9 @@ function productCardV3Html(p, lang = 'ko', opts = {}) {
     const cCompScore = r.compScore || 0
     const cRatio = cCompScore > 0 ? Math.round(r.score / cCompScore * 100) : 100
     const cStatus = cRatio >= 100 ? 'lead' : cRatio >= 80 ? 'behind' : 'critical'
-    const baseBarColor = cStatus === 'lead' ? '#15803D' : cStatus === 'behind' ? '#E8910C' : '#BE123C'
+    const cTie = tieMode && isTieRatio(r.score, cCompScore)
+    const baseBarColor = cTie ? TIE_COLOR
+      : cStatus === 'lead' ? '#15803D' : cStatus === 'behind' ? '#E8910C' : '#BE123C'
     const barColor = unlaunched ? '#94A3B8' : baseBarColor
     const labelColor = unlaunched ? '#94A3B8' : baseBarColor
     const barH = Math.max(3, Math.round(r.score / maxCnty * BAR_H))
@@ -897,6 +920,13 @@ function productCardV3Html(p, lang = 'ko', opts = {}) {
   </td>`
 }
 
+// ─── 제품 카드 V4 (경합 표기) ─────────────────────────────────────────────────
+// V3 와 레이아웃 동일 — 경쟁비 0.05 이하 항목만 '경합' 배지 + 검은색으로 분리 표기.
+// V3 를 복제하지 않고 tieMode 로 분기한다 (카드 레이아웃 중복 = 회귀 원인).
+function productCardV4Html(p, lang = 'ko', opts = {}) {
+  return productCardV3Html(p, lang, { ...opts, tieMode: true })
+}
+
 // ─── BU 섹션 ──────────────────────────────────────────────────────────────────
 function buSectionHtml(buKey, buProducts, globalMax, globalMin, lang = 'ko', opts = {}) {
   const t = T[lang] || T.ko
@@ -909,7 +939,8 @@ function buSectionHtml(buKey, buProducts, globalMax, globalMin, lang = 'ko', opt
   }
 
   const cardVersion = opts.productCardVersion || 'v1'
-  const cardFn = cardVersion === 'v3' ? productCardV3Html
+  const cardFn = cardVersion === 'v4' ? productCardV4Html
+    : cardVersion === 'v3' ? productCardV3Html
     : cardVersion === 'v2' ? productCardV2Html : null
 
   const rowsHtml = rows.map(row => `

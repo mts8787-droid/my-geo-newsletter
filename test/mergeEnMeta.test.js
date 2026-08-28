@@ -53,3 +53,34 @@ describe('isEnTextField — EN 쓰기 라우팅', () => {
     expect(isEnTextField('rd_schemaCompare', [{ name: 'FAQ' }])).toBe(false)
   })
 })
+
+describe('제품 카드 V4 — 경합 표기 (경쟁비 ≤ 0.05)', () => {
+  const mk = (score, comp) => ({
+    id: 'dw', bu: 'HS', kr: '식기세척기', label: '식기세척기', score, prev: score,
+    vsComp: comp, compName: 'Bosch', status: 'critical', weekly: [score], monthlyScores: [],
+    cntyRows: [{ country: 'DE', score, compScore: comp, compName: 'Bosch' }],
+  })
+  const render = async (p, ver) => {
+    const { generateEmailHTML } = await import('../src/emailTemplate.js')
+    return generateEmailHTML({}, { score: 40 }, [p], [], {}, 'ko', [], [],
+      { productCardVersion: ver, unlaunchedMap: {} })
+  }
+  it('경쟁비 0.03 → 경합 배지 + 검은색', async () => {
+    const html = await render(mk(1.2, 40.0), 'v4')
+    expect(html).toContain('경합')
+    expect(html).toContain('#1A1A1A')
+  })
+  it('경계값 0.05 는 포함, 0.06 은 제외', async () => {
+    expect(await render(mk(2.0, 40.0), 'v4')).toContain('경합')   // 0.050
+    expect(await render(mk(2.4, 40.0), 'v4')).not.toContain('경합') // 0.060
+  })
+  it('V3 는 경합 표기를 하지 않는다 (V4 전용)', async () => {
+    expect(await render(mk(1.2, 40.0), 'v3')).not.toContain('경합')
+  })
+  it('EN 은 Tie 로 표기', async () => {
+    const { generateEmailHTML } = await import('../src/emailTemplate.js')
+    const html = generateEmailHTML({}, { score: 40 }, [mk(1.2, 40.0)], [], {}, 'en', [], [],
+      { productCardVersion: 'v4', unlaunchedMap: {} })
+    expect(html).toContain('Tie')
+  })
+})

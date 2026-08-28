@@ -43,6 +43,38 @@ export function isEnTextField(key, value) {
   return EN_TEXT_FIELDS.includes(key) || isTranslatableRdKey(key, value)
 }
 
+// 선택 탭 그룹 — "카테고리(제목) + 그 안의 대안(버튼)" 한 단위.
+// 기존에는 같은 인라인 버튼 스타일이 선택지마다 복붙돼 있어 그룹 경계가 안 보였다.
+function TabGroup({ label, value, options, onSelect, accent = LG_RED }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+      <span style={{ width: 66, flexShrink: 0, fontSize: 11, color: '#64748B', fontFamily: FONT }}>{label}</span>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+        {options.map(o => {
+          const on = value === o.value
+          return (
+            <button key={o.value} onClick={() => onSelect(o.value)} title={o.hint || ''}
+              style={{ padding: '3px 9px', borderRadius: 4, border: 'none', cursor: 'pointer',
+                background: on ? (o.accent || accent) : '#1E293B',
+                color: on ? '#FFFFFF' : '#64748B',
+                fontSize: 10, fontWeight: 700, fontFamily: FONT }}>
+              {o.label}
+            </button>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+// 카테고리 소제목 — 선택 탭 묶음 위에 붙는 구분선
+function TabSectionTitle({ children }) {
+  return (
+    <p style={{ margin: '14px 0 8px 2px', fontSize: 10, fontWeight: 700, color: '#475569',
+      textTransform: 'uppercase', letterSpacing: 1, fontFamily: FONT }}>{children}</p>
+  )
+}
+
 export function mergeEnMeta(metaKo, metaEn) {
   const m = { ...metaKo }
   EN_TEXT_FIELDS.forEach(k => { m[k] = metaEn?.[k] })
@@ -1270,50 +1302,27 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
           )
         })()}
 
-        {/* 모델별 인용비중 — 노출 순위 (Top 5 / Top 10) */}
-        {meta.showLlmShare !== false && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 16 }}>
-            <span style={{ fontSize: 11, color: '#64748B', fontFamily: FONT }}>인용비중 노출:</span>
-            {[5, 10].map(n => (
-              <button key={n} onClick={() => setMeta(m => ({ ...m, llmShareTopN: n }))}
-                style={{ padding: '5px 12px', borderRadius: 20, border: 'none', cursor: 'pointer',
-                  background: (meta.llmShareTopN === 5 ? 5 : 10) === n ? LG_RED : '#1E293B',
-                  color: (meta.llmShareTopN === 5 ? 5 : 10) === n ? '#FFFFFF' : '#475569',
-                  fontSize: 11, fontWeight: 700, fontFamily: FONT }}>
-                Top {n}
-              </button>
-            ))}
-          </div>
-        )}
+        {/* ── Citation ── */}
+        {meta.showLlmShare !== false && (<>
+          <TabSectionTitle>Citation</TabSectionTitle>
+          <TabGroup label="인용비중" value={meta.llmShareTopN === 5 ? 5 : 10}
+            options={[{ value: 5, label: 'Top 5' }, { value: 10, label: 'Top 10' }]}
+            onSelect={n => setMeta(m => ({ ...m, llmShareTopN: n }))} />
+        </>)}
 
-        {/* 제품 카드 버전 선택 */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
-          <span style={{ fontSize: 11, color: '#64748B', fontFamily: FONT }}>제품 카드:</span>
-          <button onClick={() => setMeta(m => ({ ...m, productCardVersion: 'v1' }))} style={{
-            padding: '2px 8px', borderRadius: 4, border: 'none', cursor: 'pointer',
-            background: (meta.productCardVersion || 'v1') === 'v1' ? LG_RED : '#1E293B',
-            color: (meta.productCardVersion || 'v1') === 'v1' ? '#FFF' : '#64748B',
-            fontSize: 10, fontWeight: 700, fontFamily: FONT }}>V1 트렌드</button>
-          <span style={{ width: 1, height: 14, background: '#334155', margin: '0 4px' }}></span>
-          <button onClick={() => setMeta(m => ({ ...m, trendMode: (m.trendMode || 'weekly') === 'weekly' ? 'monthly' : 'weekly' }))} style={{
-            padding: '2px 8px', borderRadius: 4, border: 'none', cursor: 'pointer',
-            background: meta.trendMode === 'monthly' ? '#166534' : '#1E293B',
-            color: meta.trendMode === 'monthly' ? '#86EFAC' : '#64748B',
-            fontSize: 10, fontWeight: 700, fontFamily: FONT }}>{meta.trendMode === 'monthly' ? 'Monthly' : 'Weekly'}</button>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
-          <span style={{ fontSize: 11, color: '#64748B', fontFamily: FONT }}>카드 타입:</span>
-          <button onClick={() => setMeta(m => ({ ...m, productCardVersion: 'v2' }))} style={{
-            padding: '2px 8px', borderRadius: 4, border: 'none', cursor: 'pointer',
-            background: meta.productCardVersion === 'v2' ? LG_RED : '#1E293B',
-            color: meta.productCardVersion === 'v2' ? '#FFF' : '#64748B',
-            fontSize: 10, fontWeight: 700, fontFamily: FONT }}>V2 국가별</button>
-          <button onClick={() => setMeta(m => ({ ...m, productCardVersion: 'v3' }))} style={{
-            padding: '2px 8px', borderRadius: 4, border: 'none', cursor: 'pointer',
-            background: meta.productCardVersion === 'v3' ? LG_RED : '#1E293B',
-            color: meta.productCardVersion === 'v3' ? '#FFF' : '#64748B',
-            fontSize: 10, fontWeight: 700, fontFamily: FONT }}>V3 경쟁사</button>
-        </div>
+        {/* ── 제품 카드 ── 버전과 트렌드 기준을 한 카테고리로 묶음 */}
+        <TabSectionTitle>제품 카드</TabSectionTitle>
+        <TabGroup label="버전" value={meta.productCardVersion || 'v1'}
+          options={[
+            { value: 'v1', label: 'V1 트렌드', hint: '점수 + MoM + 미니 트렌드' },
+            { value: 'v2', label: 'V2 국가별', hint: '10개국 막대' },
+            { value: 'v3', label: 'V3 경쟁사', hint: '국가별 1위 경쟁사 비교' },
+            { value: 'v4', label: 'V4 경합', hint: '경쟁비 0.05 이하를 경합으로 검은색 표기', accent: '#1A1A1A' },
+          ]}
+          onSelect={v => setMeta(m => ({ ...m, productCardVersion: v }))} />
+        <TabGroup label="트렌드 기준" value={meta.trendMode || 'weekly'}
+          options={[{ value: 'weekly', label: 'Weekly' }, { value: 'monthly', label: 'Monthly' }]}
+          onSelect={v => setMeta(m => ({ ...m, trendMode: v }))} accent="#166534" />
 
         {/* ── 콘텐츠 편집 ── */}
         <p style={{ margin: '0 0 10px 2px', fontSize: 11, fontWeight: 700, color: '#475569',
