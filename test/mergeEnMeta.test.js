@@ -90,8 +90,7 @@ describe('제품 카드 V4 — 경합 표기 (경쟁비 ≤ 0.05)', () => {
 })
 
 describe('SECTION_GROUPS — 섹션 표시 토글 영역 분류', () => {
-  const ALL = ['showTotal', 'showTotalInsight', 'showInsightV2', 'showInsightV3', 'showHighlight',
-    'showReadability', 'showProducts', 'showCnty', 'showCitations', 'showCitCnty', 'showCitPrd',
+  const ALL = ['showProducts', 'showCnty', 'showCitations', 'showCitCnty', 'showCitPrd',
     'showTouchPointsBump', 'showTouchPointsBumpChatGpt', 'showDomainBumpModels', 'showLlmShare',
     'showDotcom', 'showDotcomChatGpt', 'showTodo', 'showTodoV2']
   const load = async () => (await import('../src/shared/Sidebar.jsx')).SECTION_GROUPS
@@ -100,10 +99,26 @@ describe('SECTION_GROUPS — 섹션 표시 토글 영역 분류', () => {
     expect(new Set(keys).size).toBe(keys.length)
     expect(keys.sort()).toEqual([...ALL].sort())
   })
-  it('제품 카드 계열은 비저빌리티에 모인다', async () => {
+  it('제품 카드 계열은 비저빌리티에 모인다 (GEO 지수는 Exec Summary 로 이관)', async () => {
     const g = (await load()).find(x => x.label === '비저빌리티')
-    expect(g.items.map(i => i.key)).toContain('showProducts')
-    expect(g.items.map(i => i.key)).toContain('showCnty')
+    expect(g.items.map(i => i.key)).toEqual(['showProducts', 'showCnty'])
+  })
+  it('월별 변형은 드롭다운으로 — 토글 그리드에 남아있지 않다', async () => {
+    const keys = (await load()).flatMap(g => g.items.map(i => i.key))
+    for (const k of ['showTotal', 'showTotalInsight', 'showInsightV2', 'showInsightV3',
+      'showHighlight', 'showReadability']) expect(keys).not.toContain(k)
+  })
+  it('7월 하이라이트는 Highlight + Readability 를 함께 켠다', async () => {
+    const { HIGHLIGHT_VARIANTS } = await import('../src/shared/Sidebar.jsx')
+    const jul = HIGHLIGHT_VARIANTS.find(v => v.value === '2026-07')
+    expect(jul.keys.sort()).toEqual(['showHighlight', 'showReadability'])
+    expect(jul.label).toBe('7월 하이라이트')
+  })
+  it('8월 Executive Summary 가 GEO 지수를 흡수한다', async () => {
+    const { EXEC_VARIANTS } = await import('../src/shared/Sidebar.jsx')
+    const aug = EXEC_VARIANTS.find(v => v.value === '2026-08')
+    expect(aug.keys).toContain('showInsightV3')
+    expect(aug.keys).toContain('showTotal')
   })
   it('범프차트 계열은 사이테이션에 모인다', async () => {
     const keys = (await load()).find(x => x.label === '사이테이션').items.map(i => i.key)
@@ -144,5 +159,20 @@ describe('MoM — score·prev 계열 일치', () => {
       monthlyScore: 87.3, monthlyPrev: 87.5,
     }))
     expect(html).toContain('MoM')
+  })
+})
+
+describe('MoM 반올림 — 표시값 기준', () => {
+  it('TV 87.2 vs 87.25 → ▼0.1%p (음수 0 아님)', async () => {
+    const { generateEmailHTML } = await import('../src/emailTemplate.js')
+    const p = { id: 'tv', bu: 'MS', kr: 'TV', label: 'TV', score: 87.2, prev: 87.25,
+      vsComp: 88.4, compName: 'Samsung', status: 'behind', weekly: [],
+      monthlyScores: [{ date: '26년 6월', score: 87.25 }, { date: '26년 7월', score: 87.2 }],
+      monthlyScore: 87.2, monthlyPrev: 87.25 }
+    const html = generateEmailHTML({}, { score: 43 }, [p], [], {}, 'ko', [], [],
+      { productCardVersion: 'v1', trendMode: 'monthly', unlaunchedMap: {} })
+    const mom = html.replace(/<[^>]+>/g, ' ').match(/MoM\s*([─▲▼])\s*([\d.]+)%p/)
+    expect(mom[1]).toBe('▼')
+    expect(mom[2]).toBe('0.1')
   })
 })

@@ -89,17 +89,62 @@ function ToggleGroup({ label, items, meta, setMeta }) {
   )
 }
 
+// 월별로 내용이 갈리는 섹션(하이라이트·Executive Summary)은 버튼 나열 대신 드롭다운.
+// 새 달을 추가할 땐 아래 배열에 한 줄만 넣으면 된다 — 토글 버튼을 늘리지 않는다.
+//   { value: '2026-09', label: '9월 하이라이트', keys: ['showXxx', ...] }
+// keys 에 적힌 show* 플래그만 켜고, 같은 그룹의 나머지 키는 모두 끈다 (상호 배타).
+export const HIGHLIGHT_VARIANTS = [
+  { value: '', label: '표시 안 함', keys: [] },
+  { value: '2026-06', label: '6월 하이라이트 인사이트', keys: ['showInsightV2'] },
+  { value: '2026-07', label: '7월 하이라이트', keys: ['showHighlight', 'showReadability'] },
+]
+
+// GEO 지수(showTotal) 는 8월 Executive Summary 와 같은 내용이라 여기로 통합 —
+// 별도 섹션 버튼을 두지 않는다 (사용자 지시 2026-08-29).
+// showTotalInsight('인사이트 V1 기존') 는 구버전이라 어떤 변형에도 넣지 않는다 → 항상 꺼짐.
+export const EXEC_VARIANTS = [
+  { value: '', label: '표시 안 함', keys: [] },
+  { value: '2026-08', label: '8월 Executive Summary', keys: ['showInsightV3', 'showTotal'] },
+]
+const EXEC_ALL_KEYS = ['showInsightV3', 'showTotal', 'showTotalInsight']
+
+// 변형 목록에서 "지금 켜져 있는" 값을 역산 — keys 가 전부 켜진 첫 변형
+function activeVariant(variants, meta) {
+  const hit = variants.find(v => v.keys.length && v.keys.every(k => meta[k]))
+  return hit ? hit.value : ''
+}
+
+// 드롭다운 한 줄 — 라벨 + select
+function SelectGroup({ label, value, variants, allKeys, setMeta }) {
+  const universe = allKeys || [...new Set(variants.flatMap(v => v.keys))]
+  return (
+    <div style={{ marginBottom: 12 }}>
+      <p style={{ margin: '0 0 6px 2px', fontSize: 10, fontWeight: 700, color: '#64748B',
+        letterSpacing: 0.5, fontFamily: FONT }}>{label}</p>
+      <select value={value}
+        onChange={e => {
+          const v = variants.find(x => x.value === e.target.value)
+          setMeta(m => {
+            const o = { ...m }
+            universe.forEach(k => { o[k] = false })
+            ;(v?.keys || []).forEach(k => { o[k] = true })
+            return o
+          })
+        }}
+        style={{ width: '100%', padding: '6px 8px', borderRadius: 6, cursor: 'pointer',
+          background: '#1E293B', color: '#E2E8F0', border: '1px solid #334155',
+          fontSize: 11, fontWeight: 700, fontFamily: FONT }}>
+        {variants.map(v => <option key={v.value} value={v.value}>{v.label}</option>)}
+      </select>
+    </div>
+  )
+}
+
 // 섹션 표시 토글의 영역 구분 — 제품카드 계열은 비저빌리티, 범프차트 계열은 사이테이션으로 모음
 export const SECTION_GROUPS = [
-  { label: '하이라이트', items: [
-    { key: 'showTotalInsight', label: '인사이트 V1 (기존)' },
-    { key: 'showInsightV2', label: '6월 인사이트 V2' },
-    { key: 'showInsightV3', label: '8월 Executive Summary' },
-    { key: 'showHighlight', label: 'Highlight Insight' },
-    { key: 'showReadability', label: 'Readability Highlight' },
-  ] },
+  // 하이라이트 / Executive Summary 는 월별 변형이라 드롭다운으로 분리
+  // (HIGHLIGHT_VARIANTS · EXEC_VARIANTS) — 여기엔 두지 않는다.
   { label: '비저빌리티', items: [
-    { key: 'showTotal', label: 'GEO 지수' },
     { key: 'showProducts', label: '제품별' },
     { key: 'showCnty', label: '국가별' },
   ] },
@@ -1273,6 +1318,10 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
           섹션 표시
         </p>
         <div style={{ marginBottom: 16 }}>
+          <SelectGroup label="익스큐티브 서머리" variants={EXEC_VARIANTS} allKeys={EXEC_ALL_KEYS}
+            value={activeVariant(EXEC_VARIANTS, meta)} setMeta={setMeta} />
+          <SelectGroup label="하이라이트" variants={HIGHLIGHT_VARIANTS}
+            value={activeVariant(HIGHLIGHT_VARIANTS, meta)} setMeta={setMeta} />
           {SECTION_GROUPS.map(g => (
             <ToggleGroup key={g.label} label={g.label} items={g.items} meta={meta} setMeta={setMeta} />
           ))}

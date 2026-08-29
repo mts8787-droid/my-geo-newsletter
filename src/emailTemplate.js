@@ -398,7 +398,15 @@ function ssName(name) {
   return escapeHtml(name.replace(/삼성전자/g, 'SS').replace(/삼성/g, 'SS').replace(/Samsung/gi, 'SS'))
 }
 
-function delta(score, prev) { return +(score - prev).toFixed(1) }
+// 증감(%p) — 카드에 표시되는 값과 같은 자리수로 먼저 반올림한 뒤 뺀다.
+// 원시값끼리 빼면 카드가 보여주는 숫자로는 검산이 안 된다:
+//   TV 7월 87.2 / 6월 87.25 → 원시 차 -0.04999… → toFixed(1) 이 '-0.0'(음수 0)
+//   → 화면엔 87.2 vs (직전 보고서의) 87.3 인데 MoM 은 '0.0%p' 로 나왔다 (사용자 보고 2026-08-29).
+// 표시값 기준(87.2 - 87.3)으로 계산하면 -0.1 — 읽는 사람이 검산 가능하고 음수 0 도 사라진다.
+function delta(score, prev) {
+  const r1 = v => Math.round(Number(v) * 10) / 10
+  return +(r1(score) - r1(prev)).toFixed(1)
+}
 
 // ─── 기간 스탯 (위클리 / 먼슬리) ──────────────────────────────────────────────
 // score = 해당 모드의 최신 값, prev = 같은 시리즈의 직전 유효값.
