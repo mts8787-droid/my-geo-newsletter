@@ -1344,9 +1344,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
         <TabGroup label="버전" value={meta.productCardVersion || 'v1'}
           options={[
             { value: 'v1', label: 'V1 트렌드', hint: '점수 + MoM + 미니 트렌드' },
-            { value: 'v2', label: 'V2 국가별', hint: '10개국 막대' },
-            { value: 'v3', label: 'V3 경쟁사', hint: '국가별 1위 경쟁사 비교' },
-            { value: 'v4', label: 'V4 경합', hint: '경쟁비 0.05 이하를 경합으로 검은색 표기', accent: '#1A1A1A' },
+            { value: 'v4', label: 'V4 경합', hint: 'V1 트렌드 + 경쟁비 0.05 이하는 검은색', accent: '#1A1A1A' },
           ]}
           onSelect={v => setMeta(m => ({ ...m, productCardVersion: v }))} />
         <TabGroup label="트렌드 기준" value={meta.trendMode || 'weekly'}

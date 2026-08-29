@@ -65,6 +65,10 @@ describe('제품 카드 V4 — 경합 표기 (경쟁비 ≤ 0.05)', () => {
     return generateEmailHTML({}, { score: 40 }, [p], [], {}, 'ko', [], [],
       { productCardVersion: ver, unlaunchedMap: {} })
   }
+  it('경쟁비 관련 %p 꼬리표는 더 이상 붙지 않는다', async () => {
+    const html = await render(mk(24.0, 40.0), 'v1')
+    expect(html).not.toMatch(/\([\d.]+\)\s*<span[^>]*>[+-]\d+%p/)
+  })
   it('경쟁비 0.03 → 경합 배지 + 검은색', async () => {
     const html = await render(mk(1.2, 40.0), 'v4')
     expect(html).toContain('경합')
@@ -74,8 +78,8 @@ describe('제품 카드 V4 — 경합 표기 (경쟁비 ≤ 0.05)', () => {
     expect(await render(mk(2.0, 40.0), 'v4')).toContain('경합')   // 0.050
     expect(await render(mk(2.4, 40.0), 'v4')).not.toContain('경합') // 0.060
   })
-  it('V3 는 경합 표기를 하지 않는다 (V4 전용)', async () => {
-    expect(await render(mk(1.2, 40.0), 'v3')).not.toContain('경합')
+  it('V1 은 경합 표기를 하지 않는다 (V4 전용)', async () => {
+    expect(await render(mk(1.2, 40.0), 'v1')).not.toContain('경합')
   })
   it('EN 은 Tie 로 표기', async () => {
     const { generateEmailHTML } = await import('../src/emailTemplate.js')
@@ -106,5 +110,39 @@ describe('SECTION_GROUPS — 섹션 표시 토글 영역 분류', () => {
     expect(keys).toContain('showTouchPointsBump')
     expect(keys).toContain('showTouchPointsBumpChatGpt')
     expect(keys).toContain('showDomainBumpModels')
+  })
+})
+
+describe('MoM — score·prev 계열 일치', () => {
+  const render = async (p) => {
+    const { generateEmailHTML } = await import('../src/emailTemplate.js')
+    return generateEmailHTML({}, { score: 40 }, [p], [], {}, 'ko', [], [],
+      { productCardVersion: 'v1', trendMode: 'monthly', unlaunchedMap: {} })
+  }
+  const tv = extra => ({
+    id: 'tv', bu: 'MS', kr: 'TV', label: 'TV', score: 87.3, prev: 87.5,
+    vsComp: 89.1, compName: 'Samsung', status: 'behind', weekly: [], ...extra,
+  })
+  it('monthlyScores 인접 두 달로 MoM 을 낸다 (요약값과 어긋나도)', async () => {
+    // 시트 요약값(monthlyPrev)이 3개월 전 값으로 잘못 들어온 상황
+    const html = await render(tv({
+      monthlyScores: [
+        { date: '26년 5월', score: 80.0 },
+        { date: '26년 6월', score: 88.1 },
+        { date: '26년 7월', score: 87.3 },
+      ],
+      monthlyScore: 87.3, monthlyPrev: 80.0,
+    }))
+    const mom = html.replace(/<[^>]+>/g, ' ').match(/MoM\s*[▲▼]?\s*[\d.]+%p/)
+    expect(mom).not.toBeNull()
+    expect(mom[0]).toMatch(/0\.8%p/)   // 87.3 - 88.1 = -0.8 (인접 월)
+    expect(mom[0]).not.toMatch(/7\.3%p/) // 87.3 - 80.0 = +7.3 (건너뛴 월) 이면 오류
+  })
+  it('유효 월이 1개뿐이면 요약값 쌍으로 폴백', async () => {
+    const html = await render(tv({
+      monthlyScores: [{ date: '26년 7월', score: 87.3 }],
+      monthlyScore: 87.3, monthlyPrev: 87.5,
+    }))
+    expect(html).toContain('MoM')
   })
 })

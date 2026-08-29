@@ -30,11 +30,6 @@ const CNTY_EN = {
   TTL: 'Total', TOTAL: 'Total', GLOBAL: 'Total',
 }
 // 2줄 표기용 (짧은 이름은 &nbsp;로 높이 정렬) — 좁은 셀에 맞춰 약어 사용
-const CNTY_EN_2LINE = {
-  US: 'USA', CA: 'Canada', UK: 'UK', GB: 'UK',
-  DE: 'Germany', ES: 'Spain', BR: 'Brazil', MX: 'Mexico',
-  AU: 'AU', VN: 'Vietnam', IN: 'India',
-}
 function cntyKr(c) {
   const k = String(c || '').trim().toUpperCase()
   return CNTY_KR[k] || c
@@ -46,12 +41,6 @@ function cntyEn(c) {
 function cntyLabel(c, lang) {
   return lang === 'en' ? cntyEn(c) : cntyKr(c)
 }
-function cntyLabel2Line(c, lang) {
-  const k = String(c || '').trim().toUpperCase()
-  if (lang === 'en') return CNTY_EN_2LINE[k] || (CNTY_EN[k] || c) + '<br/>&nbsp;'
-  return CNTY_KR[k] || c
-}
-
 // 제품명 라벨 — 단일 라인 우선 (긴 이름만 2줄로 자연 wrap)
 const PROD_LABEL_KR = {
   'TV': 'TV', '모니터': '모니터', '오디오': '오디오',
@@ -420,10 +409,16 @@ function delta(score, prev) { return +(score - prev).toFixed(1) }
 function periodStats(p, mode = 'weekly') {
   if (mode === 'monthly') {
     const ms = (p.monthlyScores || []).filter(m => m && m.score != null && m.score > 0)
+    // score 와 prev 는 반드시 같은 계열에서 뽑는다.
+    // 기존 코드는 score 를 p.monthlyScore(시트 요약값)에서, prev 를 monthlyScores 배열에서
+    // 각각 가져와 — 두 소스가 어긋나면 인접하지 않은 두 달의 차가 MoM 으로 나왔다.
+    // 정렬된 월 배열에 유효 월이 2개 이상이면 그 인접 쌍이 정답 (data.md §5.6 시간순 invariant).
+    if (ms.length >= 2) {
+      return { mode: 'monthly', label: 'MoM', score: ms[ms.length - 1].score, prev: ms[ms.length - 2].score }
+    }
     const score = p.monthlyScore != null ? p.monthlyScore
       : (ms.length ? ms[ms.length - 1].score : (p.score || 0))
-    const prevRaw = ms.length >= 2 ? ms[ms.length - 2].score
-      : (p.monthlyPrev != null ? p.monthlyPrev : p.prev)
+    const prevRaw = p.monthlyPrev != null ? p.monthlyPrev : p.prev
     return { mode: 'monthly', label: 'MoM', score: score || 0, prev: prevRaw > 0 ? prevRaw : null }
   }
   const vw = (p.weekly || []).filter(v => v != null && v > 0)
@@ -554,23 +549,20 @@ function productCardHtml(p, globalMax, globalMin, lang = 'ko', opts = {}) {
   const activePrev = activeStat.prev || 0
   const activeComp = p.vsComp || 0
   const curRatio = activeComp > 0 ? Math.round(activeScore / activeComp * 100) : 100
-  const ratioColor = curRatio >= 100 ? '#15803D' : curRatio >= 80 ? '#E8910C' : '#BE123C'
   const activeStatus = curRatio >= 100 ? 'lead' : curRatio >= 80 ? 'behind' : 'critical'
-  const st = statusInfo(activeStatus, lang)
-
-  const sparkColor = activeStatus === 'critical' ? '#BE123C' : activeStatus === 'behind' ? '#E8910C' : '#15803D'
+  // V4(tieMode) — 경쟁비 0.05 이하면 배지·경쟁비·트렌드 선을 모두 검은색으로. 레이아웃은 V1 그대로.
+  const tie = opts.tieMode === true && isTieRatio(activeScore, activeComp)
+  const st = tie ? tieInfo(lang) : statusInfo(activeStatus, lang)
+  const ratioColor = tie ? TIE_COLOR
+    : curRatio >= 100 ? '#15803D' : curRatio >= 80 ? '#E8910C' : '#BE123C'
+  const sparkColor = tie ? TIE_COLOR
+    : activeStatus === 'critical' ? '#BE123C' : activeStatus === 'behind' ? '#E8910C' : '#15803D'
 
   const TREND_WEEKS = 8
   const fullWeekly = p.weekly || []
   const trendArr = fullWeekly.slice(-TREND_WEEKS)
   const trimmedLabels = weeklyLabels && weeklyLabels.length >= TREND_WEEKS ? weeklyLabels.slice(-TREND_WEEKS) : weeklyLabels
 
-  let ratioDelta = ''
-  if (activePrev > 0 && activeComp > 0) {
-    const prevRatio = Math.round(activePrev / activeComp * 100)
-    const rd = curRatio - prevRatio
-    if (rd !== 0) ratioDelta = ` <span style="font-size:10px;color:${rd > 0 ? '#16A34A' : '#DC2626'};">${rd > 0 ? '+' : ''}${rd}%p</span>`
-  }
   const _isBaseReset = isBaselineResetProduct(p)
 
   // 월간 트렌드: monthlyScores에서 구성
@@ -619,7 +611,7 @@ function productCardHtml(p, globalMax, globalMin, lang = 'ko', opts = {}) {
               </td>
               <td align="right" style="vertical-align:middle;">
                 <table border="0" cellpadding="0" cellspacing="0" align="right" style="float:right;"><tr>
-                  <td style="vertical-align:middle;white-space:nowrap;"><span style="font-size:13px;font-weight:700;color:${ratioColor};font-family:${EM_FONT};letter-spacing:-1px;">${escapeHtml(p.compName || 'Samsung')} ${compScoreStr(activeComp)} ${ratioX(p.score, activeComp)}${ratioDelta}</span></td>
+                  <td style="vertical-align:middle;white-space:nowrap;"><span style="font-size:13px;font-weight:700;color:${ratioColor};font-family:${EM_FONT};letter-spacing:-1px;">${escapeHtml(p.compName || 'Samsung')} ${compScoreStr(activeComp)} ${ratioX(p.score, activeComp)}</span></td>
                   <td style="vertical-align:middle;white-space:nowrap;padding-left:4px;"><span style="display:inline-block;background:${st.bg};color:${st.color};border:1px solid ${st.border};border-radius:6px;padding:0px 5px;font-size:10px;font-weight:700;line-height:16px;font-family:${EM_FONT};">${st.label}</span></td>
                 </tr></table>
               </td>
@@ -647,136 +639,6 @@ function productCardHtml(p, globalMax, globalMin, lang = 'ko', opts = {}) {
   </td>`
 }
 
-// ─── 제품 카드 V2 (10국 Visibility 바 차트) ─────────────────────────────────────
-function productCardV2Html(p, lang = 'ko', opts = {}) {
-  const st = statusInfo(p.status, lang)
-  const showTrendTabs = opts.showTrendTabs === true
-  const useMonthly = opts.trendMode === 'monthly'
-  // 주간/월간 모드별 점수·직전값 (periodStats — 마지막 두 유효값으로 prev 산출)
-  const wStat = periodStats(p, 'weekly')
-  const mStat = periodStats(p, 'monthly')
-  const activeStat = useMonthly ? mStat : wStat
-  const curRatio = p.compRatio || Math.round(p.vsComp > 0 ? (p.score / p.vsComp) * 100 : 100)
-  const ratioColor = curRatio >= 100 ? '#15803D' : curRatio >= 80 ? '#E8910C' : '#BE123C'
-  const _scoreNum = s => `<span style="font-size:18px;font-weight:900;color:#1A1A1A;font-family:${EM_FONT};">${s.score.toFixed(1)}<span style="font-size:11px;color:#94A3B8;">%</span></span>`
-  const _deltaDivStyle = 'clear:both;font-size:10px;color:#94A3B8;font-family:' + EM_FONT + ';text-align:left;margin-top:1px;'
-  const scoreBlock = showTrendTabs
-    ? `<span class="trend-weekly">${_scoreNum(wStat)}</span><span class="trend-monthly" style="display:none;">${_scoreNum(mStat)}</span>`
-    : _scoreNum(activeStat)
-  const badgeBlock = showTrendTabs
-    ? `<span class="trend-weekly">${periodBadgeHtml('weekly', lang)}</span><span class="trend-monthly" style="display:none;">${periodBadgeHtml('monthly', lang)}</span>`
-    : periodBadgeHtml(activeStat.mode, lang)
-  const deltaBlock = showTrendTabs
-    ? `<div class="trend-weekly" style="${_deltaDivStyle}">${periodDeltaHtml(wStat, 10)}</div><div class="trend-monthly" style="display:none;${_deltaDivStyle}">${periodDeltaHtml(mStat, 10)}</div>`
-    : `<div style="${_deltaDivStyle}">${periodDeltaHtml(activeStat, 10)}</div>`
-  const prodName = opts.prodNameFn ? opts.prodNameFn(p) : p.kr
-
-  // 10국 데이터
-  const cntyData = (opts.productsCnty || []).filter(r => {
-    const prodId = (p.id || '').toLowerCase()
-    const rProd = (r.product || '').toLowerCase()
-    return rProd === prodId || rProd === (p.category || '').toLowerCase() || rProd === (p.kr || '').toLowerCase()
-  })
-  const ALL_COUNTRIES = ['US','CA','UK','DE','ES','BR','MX','AU','VN','IN']
-  const cntyMap = {}
-  cntyData.forEach(r => { cntyMap[r.country] = r })
-  const maxCnty = Math.max(...ALL_COUNTRIES.map(c => cntyMap[c]?.score || 0), 1)
-  const BAR_H = 32
-  const ulMap = opts.unlaunchedMap || {}
-
-  // 순서: 그래프 → 점수 → 국가명 → 경쟁비
-  const countryBars = ALL_COUNTRIES.map(c => {
-    const r = cntyMap[c]
-    const unlaunched = isUnlaunched(ulMap, c, p.id)
-    // 해당 제품이 그 국가에 미출시면 가는 회색 막대(약 1%)와 '—' 라벨로 정렬 유지
-    if (unlaunched) {
-      const ulBarH = 2
-      const ulSpacer = BAR_H - ulBarH
-      return `<td style="vertical-align:bottom;text-align:center;padding:0 1px;width:10%;">
-      <table border="0" cellpadding="0" cellspacing="0" align="center" style="width:100%;">
-        <tr><td height="${ulSpacer}" style="font-size:0;">&nbsp;</td></tr>
-        <tr><td height="${ulBarH}" style="font-size:0;"><table border="0" cellpadding="0" cellspacing="0" align="center"><tr><td width="16" height="${ulBarH}" style="background:#94A3B8;border-radius:2px 2px 0 0;font-size:0;">&nbsp;</td></tr></table></td></tr>
-        <tr><td style="font-size:10px;font-weight:700;color:#94A3B8;font-family:${EM_FONT};text-align:center;padding-top:1px;">—</td></tr>
-        <tr><td style="font-size:8px;font-weight:700;color:#94A3B8;font-family:${EM_FONT};text-align:center;line-height:1.1;letter-spacing:-0.3px;">${cntyLabel2Line(c, lang)}</td></tr>
-        <tr><td style="font-size:10px;color:#94A3B8;font-family:${EM_FONT};text-align:center;">—</td></tr>
-      </table>
-    </td>`
-    }
-    if (!r || r.score <= 0) return `<td style="vertical-align:bottom;text-align:center;padding:0 1px;width:10%;">
-      <table border="0" cellpadding="0" cellspacing="0" align="center" style="width:100%;">
-        ${BAR_H > 0 ? `<tr><td height="${BAR_H}" style="font-size:0;">&nbsp;</td></tr>` : ''}
-        <tr><td style="font-size:10px;color:#CBD5E1;font-family:${EM_FONT};text-align:center;">—</td></tr>
-        <tr><td style="font-size:8px;color:#94A3B8;font-family:${EM_FONT};text-align:center;line-height:1.1;letter-spacing:-0.3px;">${cntyLabel2Line(c, lang)}</td></tr>
-        <tr><td style="font-size:10px;color:#CBD5E1;font-family:${EM_FONT};text-align:center;">—</td></tr>
-      </table>
-    </td>`
-    const cRatio = r.compScore > 0 ? Math.round(r.score / r.compScore * 100) : 100
-    const cStatus = cRatio >= 100 ? 'lead' : cRatio >= 80 ? 'behind' : 'critical'
-    const baseBarColor = cStatus === 'lead' ? '#15803D' : cStatus === 'behind' ? '#E8910C' : '#BE123C'
-    const barColor = unlaunched ? '#94A3B8' : baseBarColor
-    const labelColor = unlaunched ? '#94A3B8' : baseBarColor
-    const barH = Math.max(3, Math.round(r.score / maxCnty * BAR_H))
-    const spacer = BAR_H - barH
-    const compTxt = r.compScore > 0 ? `${compShort(r.compName)} ${compScoreStr(r.compScore)}<br/>${ratioX(r.score, r.compScore)}` : ''
-    return `<td style="vertical-align:bottom;text-align:center;padding:0 1px;width:10%;">
-      <table border="0" cellpadding="0" cellspacing="0" align="center" style="width:100%;">
-        ${spacer > 0 ? `<tr><td height="${spacer}" style="font-size:0;">&nbsp;</td></tr>` : ''}
-        <tr><td height="${barH}" style="font-size:0;"><table border="0" cellpadding="0" cellspacing="0" align="center"><tr><td width="16" height="${barH}" style="background:${barColor};border-radius:2px 2px 0 0;font-size:0;">&nbsp;</td></tr></table></td></tr>
-        <tr><td style="font-size:10px;font-weight:700;color:${labelColor};font-family:${EM_FONT};text-align:center;padding-top:1px;">${r.score != null ? r.score.toFixed(0) + '%' : '—'}</td></tr>
-        <tr><td style="font-size:8px;font-weight:700;color:${labelColor};font-family:${EM_FONT};text-align:center;line-height:1.1;letter-spacing:-0.3px;">${cntyLabel2Line(c, lang)}</td></tr>
-        <tr><td style="font-size:10px;color:#94A3B8;font-family:${EM_FONT};text-align:center;white-space:nowrap;letter-spacing:-0.5px;line-height:1.2;">${compTxt}</td></tr>
-      </table>
-    </td>`
-  }).join('')
-
-  return `
-  <td width="33%" style="padding:3px;vertical-align:top;">
-    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border:2px solid ${st.border};border-radius:8px;background:#FFFFFF;font-family:${EM_FONT};">
-      <tr>
-        <td style="padding:5px 6px 3px;">
-          <table border="0" cellpadding="0" cellspacing="0" width="100%">
-            <tr>
-              <td style="vertical-align:middle;white-space:nowrap;">
-                <span style="font-size:14px;font-weight:900;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:${lang === 'en' ? '-0.9px' : '-0.5px'};">${escapeHtml(prodName)}</span>
-                ${scoreBlock}&nbsp;${badgeBlock}
-                ${deltaBlock}
-              </td>
-              <td align="right" style="vertical-align:middle;">
-                <table border="0" cellpadding="0" cellspacing="0" align="right" style="float:right;"><tr>
-                  <td style="vertical-align:middle;white-space:nowrap;"><span style="font-size:13px;font-weight:700;color:${ratioColor};font-family:${EM_FONT};letter-spacing:-1px;">${escapeHtml(compShort(p.compName || 'Samsung') || 'SS')} ${compScoreStr(p.vsComp)} ${ratioX(p.score, p.vsComp)}</span></td>
-                  <td style="vertical-align:middle;white-space:nowrap;padding-left:4px;"><span style="display:inline-block;background:${st.bg};color:${st.color};border:1px solid ${st.border};border-radius:5px;padding:0px 4px;font-size:10px;font-weight:700;line-height:15px;font-family:${EM_FONT};">${st.label}</span></td>
-                </tr></table>
-              </td>
-            </tr>
-          </table>
-        </td>
-      </tr>
-      <tr>
-        <td style="padding:2px 4px 6px;">
-          <table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;">
-            <tr>${countryBars}</tr>
-          </table>
-        </td>
-      </tr>
-    </table>
-  </td>`
-}
-
-// ─── 제품별 기본 비교 경쟁사 ──────────────────────────────────────────────────
-// 기본은 1위 경쟁사(자사 제외 최고 비저빌리티) 자동 선정.
-// 여기 항목 추가 시 해당 제품 카드 상단의 'SS XX%' 비교 대상이 고정됨.
-const PREFERRED_COMP = {
-  aircare: 'Xiaomi',
-}
-function getPreferredComp(prodId, allScores) {
-  const pref = PREFERRED_COMP[(prodId || '').toLowerCase()]
-  if (!pref || !allScores) return null
-  // 대소문자 무시 매칭
-  const match = Object.entries(allScores).find(([k]) => k.toLowerCase() === pref.toLowerCase() && k.toLowerCase() !== 'lg')
-  return match ? { name: match[0], score: match[1] } : null
-}
-function compShort(name) { if (!name) return ''; return name.replace(/Samsung/gi,'SS').replace(/삼성/g,'SS').slice(0,6) }
-
 // ─── 경합(Tie) 판정 — V4 카드 전용 ────────────────────────────────────────────
 // 경쟁비가 TIE_RATIO_MAX 이하인 항목을 '경합' 으로 묶어 검은색으로 표기 (사용자 지시 2026-08-28).
 // ⚠ 여기서 말하는 '경합' 은 접전(1.0 근방)이 아니라 경쟁비 0.05 이하 구간이다 —
@@ -794,138 +656,13 @@ function tieInfo(lang) {
   return { ...TIE_STYLE, label: lang === 'en' ? 'Tie' : '경합' }
 }
 
-// ─── 제품 카드 V3 (국가별 + 지정 경쟁사 비교) ──────────────────────────────────
-function productCardV3Html(p, lang = 'ko', opts = {}) {
-  // opts.tieMode (= V4) — 경쟁비 0.05 이하를 '경합' 으로 묶어 검은색 표기
-  const tieMode = opts.tieMode === true
-  // 지정 경쟁사 우선, 없으면 기존 1위 경쟁사
-  const prefComp = getPreferredComp(p.id, p.allScores)
-  const mainCompName = prefComp ? prefComp.name : (p.compName || 'Samsung')
-  const mainCompScore = prefComp ? prefComp.score : (p.vsComp || 0)
-  const headTie = tieMode && isTieRatio(p.score, mainCompScore)
-  const st = headTie ? tieInfo(lang) : statusInfo(p.status, lang)
-  const curRatio = mainCompScore > 0 ? Math.round(p.score / mainCompScore * 100) : 100
-  const ratioColor = headTie ? TIE_COLOR
-    : curRatio >= 100 ? '#15803D' : curRatio >= 80 ? '#E8910C' : '#BE123C'
-  const showTrendTabs = opts.showTrendTabs === true
-  const useMonthly = opts.trendMode === 'monthly'
-  // 주간/월간 모드별 점수·직전값 (periodStats — 마지막 두 유효값으로 prev 산출)
-  const wStat = periodStats(p, 'weekly')
-  const mStat = periodStats(p, 'monthly')
-  const activeStat = useMonthly ? mStat : wStat
-  const _scoreNum = s => `<span style="font-size:18px;font-weight:900;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-1.8px;">${s.score.toFixed(1)}<span style="font-size:11px;color:#94A3B8;letter-spacing:-1.1px;">%</span></span>`
-  const _deltaDivStyle = 'clear:both;font-size:10px;color:#94A3B8;font-family:' + EM_FONT + ';text-align:left;margin-top:1px;'
-  const scoreBlock = showTrendTabs
-    ? `<span class="trend-weekly">${_scoreNum(wStat)}</span><span class="trend-monthly" style="display:none;">${_scoreNum(mStat)}</span>`
-    : _scoreNum(activeStat)
-  const badgeBlock = showTrendTabs
-    ? `<span class="trend-weekly">${periodBadgeHtml('weekly', lang)}</span><span class="trend-monthly" style="display:none;">${periodBadgeHtml('monthly', lang)}</span>`
-    : periodBadgeHtml(activeStat.mode, lang)
-  const deltaBlock = showTrendTabs
-    ? `<div class="trend-weekly" style="${_deltaDivStyle}">${periodDeltaHtml(wStat, 10)}</div><div class="trend-monthly" style="display:none;${_deltaDivStyle}">${periodDeltaHtml(mStat, 10)}</div>`
-    : `<div style="${_deltaDivStyle}">${periodDeltaHtml(activeStat, 10)}</div>`
-  const prodName = opts.prodNameFn ? opts.prodNameFn(p) : p.kr
-
-  const cntyData = (opts.productsCnty || []).filter(r => {
-    const prodId = (p.id || '').toLowerCase()
-    const rProd = (r.product || '').toLowerCase()
-    return rProd === prodId || rProd === (p.category || '').toLowerCase() || rProd === (p.kr || '').toLowerCase()
-  })
-  const ALL_COUNTRIES = ['US','CA','UK','DE','ES','BR','MX','AU','VN','IN']
-  const cntyMap = {}
-  cntyData.forEach(r => { cntyMap[r.country] = r })
-  const maxCnty = Math.max(...ALL_COUNTRIES.map(c => cntyMap[c]?.score || 0), 1)
-  const BAR_H = 28
-  const ulMap = opts.unlaunchedMap || {}
-
-  const countryBars = ALL_COUNTRIES.map(c => {
-    const r = cntyMap[c]
-    const unlaunched = isUnlaunched(ulMap, c, p.id)
-    // 해당 제품이 그 국가에 미출시면 가는 회색 막대(약 1%)와 '—' 라벨로 정렬 유지
-    if (unlaunched) {
-      const ulBarH = 2
-      const ulSpacer = BAR_H - ulBarH
-      return `<td style="vertical-align:bottom;text-align:center;padding:0 1px;width:10%;">
-      <table border="0" cellpadding="0" cellspacing="0" align="center" style="width:100%;">
-        <tr><td height="${ulSpacer}" style="font-size:0;">&nbsp;</td></tr>
-        <tr><td height="${ulBarH}" style="font-size:0;"><table border="0" cellpadding="0" cellspacing="0" align="center"><tr><td width="16" height="${ulBarH}" style="background:#94A3B8;border-radius:2px 2px 0 0;font-size:0;">&nbsp;</td></tr></table></td></tr>
-        <tr><td style="font-size:10px;font-weight:700;color:#94A3B8;font-family:${EM_FONT};text-align:center;padding-top:1px;">—</td></tr>
-        <tr><td style="font-size:8px;font-weight:700;color:#94A3B8;font-family:${EM_FONT};text-align:center;line-height:1.1;letter-spacing:-0.3px;">${cntyLabel2Line(c, lang)}</td></tr>
-        <tr><td style="font-size:10px;color:#94A3B8;font-family:${EM_FONT};text-align:center;white-space:nowrap;letter-spacing:-0.5px;">—<br/>—</td></tr>
-      </table>
-    </td>`
-    }
-    if (!r || r.score <= 0) return `<td style="vertical-align:bottom;text-align:center;padding:0 1px;width:10%;">
-      <table border="0" cellpadding="0" cellspacing="0" align="center" style="width:100%;">
-        <tr><td height="${BAR_H}" style="font-size:0;">&nbsp;</td></tr>
-        <tr><td style="font-size:10px;color:#CBD5E1;text-align:center;">—</td></tr>
-        <tr><td style="font-size:8px;color:#94A3B8;font-family:${EM_FONT};text-align:center;line-height:1.1;letter-spacing:-0.3px;">${cntyLabel2Line(c, lang)}</td></tr>
-        <tr><td style="font-size:0;height:10px;">&nbsp;</td></tr>
-      </table>
-    </td>`
-    // 국가별 막대는 항상 해당 국가의 1위 경쟁사와 비교 (PREFERRED_COMP 무시)
-    // — 카드 상단의 mainComp(고정 브랜드, 예: Aircare→Xiaomi)와 별개 운영
-    const cCompName = r.compName || ''
-    const cCompScore = r.compScore || 0
-    const cRatio = cCompScore > 0 ? Math.round(r.score / cCompScore * 100) : 100
-    const cStatus = cRatio >= 100 ? 'lead' : cRatio >= 80 ? 'behind' : 'critical'
-    const cTie = tieMode && isTieRatio(r.score, cCompScore)
-    const baseBarColor = cTie ? TIE_COLOR
-      : cStatus === 'lead' ? '#15803D' : cStatus === 'behind' ? '#E8910C' : '#BE123C'
-    const barColor = unlaunched ? '#94A3B8' : baseBarColor
-    const labelColor = unlaunched ? '#94A3B8' : baseBarColor
-    const barH = Math.max(3, Math.round(r.score / maxCnty * BAR_H))
-    const spacer = BAR_H - barH
-    return `<td style="vertical-align:bottom;text-align:center;padding:0 1px;width:10%;">
-      <table border="0" cellpadding="0" cellspacing="0" align="center" style="width:100%;">
-        ${spacer > 0 ? `<tr><td height="${spacer}" style="font-size:0;">&nbsp;</td></tr>` : ''}
-        <tr><td height="${barH}" style="font-size:0;"><table border="0" cellpadding="0" cellspacing="0" align="center"><tr><td width="16" height="${barH}" style="background:${barColor};border-radius:2px 2px 0 0;font-size:0;">&nbsp;</td></tr></table></td></tr>
-        <tr><td style="font-size:10px;font-weight:700;color:${labelColor};font-family:${EM_FONT};text-align:center;padding-top:1px;">${r.score != null ? r.score.toFixed(0) + '%' : '—'}</td></tr>
-        <tr><td style="font-size:8px;font-weight:700;color:${labelColor};font-family:${EM_FONT};text-align:center;line-height:1.1;letter-spacing:-0.3px;">${cntyLabel2Line(c, lang)}</td></tr>
-        <tr><td style="font-size:10px;color:#94A3B8;font-family:${EM_FONT};text-align:center;white-space:nowrap;letter-spacing:-0.5px;">${compShort(cCompName)} ${compScoreStr(cCompScore)}<br/>${cCompScore > 0 ? ratioX(r.score, cCompScore) : ''}</td></tr>
-      </table>
-    </td>`
-  }).join('')
-
-  return `
-  <td width="33%" style="padding:3px;vertical-align:top;">
-    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border:2px solid ${st.border};border-radius:8px;background:#FFFFFF;font-family:${EM_FONT};">
-      <tr>
-        <td style="padding:5px 6px 3px;">
-          <table border="0" cellpadding="0" cellspacing="0" width="100%">
-            <tr>
-              <td style="vertical-align:middle;white-space:nowrap;">
-                <span style="font-size:14px;font-weight:900;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:${lang === 'en' ? '-0.9px' : '-0.5px'};">${escapeHtml(prodName)}</span>
-                ${scoreBlock}&nbsp;${badgeBlock}
-                ${deltaBlock}
-              </td>
-              <td align="right" style="vertical-align:middle;">
-                <table border="0" cellpadding="0" cellspacing="0" align="right" style="float:right;"><tr>
-                  <td style="vertical-align:middle;white-space:nowrap;"><span style="font-size:13px;font-weight:700;color:${ratioColor};font-family:${EM_FONT};letter-spacing:-1.3px;">${compShort(mainCompName)} ${compScoreStr(mainCompScore)} ${ratioX(p.score, mainCompScore)}</span></td>
-                  <td style="vertical-align:middle;white-space:nowrap;padding-left:4px;"><span style="display:inline-block;background:${st.bg};color:${st.color};border:1px solid ${st.border};border-radius:5px;padding:0px 4px;font-size:10px;font-weight:700;line-height:15px;font-family:${EM_FONT};">${st.label}</span></td>
-                </tr></table>
-              </td>
-            </tr>
-          </table>
-        </td>
-      </tr>
-      <tr>
-        <td style="padding:2px 4px 6px;">
-          <table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;">
-            <tr>${countryBars}</tr>
-          </table>
-        </td>
-      </tr>
-    </table>
-  </td>`
+// ─── 제품 카드 V4 (경합) ──────────────────────────────────────────────────────
+// V1 트렌드 카드와 레이아웃 동일 — 경쟁비 0.05 이하일 때 색상만 검은색으로 바꾼다
+// (사용자 지시 2026-08-29: "트렌드 버전에서 경합인 경우 색상만 바꾸는 버전").
+function productCardV4Html(p, globalMax, globalMin, lang = 'ko', opts = {}) {
+  return productCardHtml(p, globalMax, globalMin, lang, { ...opts, tieMode: true })
 }
 
-// ─── 제품 카드 V4 (경합 표기) ─────────────────────────────────────────────────
-// V3 와 레이아웃 동일 — 경쟁비 0.05 이하 항목만 '경합' 배지 + 검은색으로 분리 표기.
-// V3 를 복제하지 않고 tieMode 로 분기한다 (카드 레이아웃 중복 = 회귀 원인).
-function productCardV4Html(p, lang = 'ko', opts = {}) {
-  return productCardV3Html(p, lang, { ...opts, tieMode: true })
-}
 
 // ─── BU 섹션 ──────────────────────────────────────────────────────────────────
 function buSectionHtml(buKey, buProducts, globalMax, globalMin, lang = 'ko', opts = {}) {
@@ -939,15 +676,14 @@ function buSectionHtml(buKey, buProducts, globalMax, globalMin, lang = 'ko', opt
   }
 
   const cardVersion = opts.productCardVersion || 'v1'
-  const cardFn = cardVersion === 'v4' ? productCardV4Html
-    : cardVersion === 'v3' ? productCardV3Html
-    : cardVersion === 'v2' ? productCardV2Html : null
+  // V1 트렌드 / V4 경합 두 종만 운영 (V2 국가별·V3 경쟁사별 제거 — 사용자 지시 2026-08-29)
+  const cardFn = cardVersion === 'v4' ? productCardV4Html : productCardHtml
 
   const rowsHtml = rows.map(row => `
     <tr>
       ${row.map(p => {
         if (p === null) return '<td width="33%" style="padding:5px;"></td>'
-        return cardFn ? cardFn(p, lang, opts) : productCardHtml(p, globalMax, globalMin, lang, opts)
+        return cardFn(p, globalMax, globalMin, lang, opts)
       }).join('')}
     </tr>`).join('')
 
