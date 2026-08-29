@@ -67,6 +67,61 @@ function TabGroup({ label, value, options, onSelect, accent = LG_RED }) {
   )
 }
 
+// 섹션 표시 토글 묶음 — 카테고리 라벨 + 그 카테고리에 속한 섹션들.
+// 19개가 한 덩어리로 나열돼 있어 어느 섹션이 어느 영역인지 안 보였다 (사용자 지시 2026-08-29).
+function ToggleGroup({ label, items, meta, setMeta }) {
+  return (
+    <div style={{ marginBottom: 12 }}>
+      <p style={{ margin: '0 0 6px 2px', fontSize: 10, fontWeight: 700, color: '#64748B',
+        letterSpacing: 0.5, fontFamily: FONT }}>{label}</p>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
+        {items.map(({ key, label: lb }) => (
+          <button key={key} onClick={() => setMeta(m => ({ ...m, [key]: !m[key] }))}
+            style={{ padding: '5px 12px', borderRadius: 20, border: 'none', cursor: 'pointer',
+              background: meta[key] ? LG_RED : '#1E293B',
+              color: meta[key] ? '#FFFFFF' : '#475569',
+              fontSize: 11, fontWeight: 700, fontFamily: FONT }}>
+            {lb}
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+// 섹션 표시 토글의 영역 구분 — 제품카드 계열은 비저빌리티, 범프차트 계열은 사이테이션으로 모음
+export const SECTION_GROUPS = [
+  { label: '하이라이트', items: [
+    { key: 'showTotalInsight', label: '인사이트 V1 (기존)' },
+    { key: 'showInsightV2', label: '6월 인사이트 V2' },
+    { key: 'showInsightV3', label: '8월 Executive Summary' },
+    { key: 'showHighlight', label: 'Highlight Insight' },
+    { key: 'showReadability', label: 'Readability Highlight' },
+  ] },
+  { label: '비저빌리티', items: [
+    { key: 'showTotal', label: 'GEO 지수' },
+    { key: 'showProducts', label: '제품별' },
+    { key: 'showCnty', label: '국가별' },
+  ] },
+  { label: '사이테이션', items: [
+    { key: 'showCitations', label: 'Citation' },
+    { key: 'showCitCnty', label: 'Citation 국가별' },
+    { key: 'showCitPrd', label: 'Citation 제품별' },
+    { key: 'showTouchPointsBump', label: '외부채널 범프차트' },
+    { key: 'showTouchPointsBumpChatGpt', label: '외부채널 모델별(3개)' },
+    { key: 'showDomainBumpModels', label: '도메인 모델별(3개)' },
+    { key: 'showLlmShare', label: '모델별 인용비중' },
+  ] },
+  { label: '닷컴', items: [
+    { key: 'showDotcom', label: '닷컴' },
+    { key: 'showDotcomChatGpt', label: '닷컴 Chat-GPT' },
+  ] },
+  { label: 'Action Plan', items: [
+    { key: 'showTodo', label: 'Action Plan' },
+    { key: 'showTodoV2', label: '액션 아이템 V2' },
+  ] },
+]
+
 // 카테고리 소제목 — 선택 탭 묶음 위에 붙는 구분선
 function TabSectionTitle({ children }) {
   return (
@@ -1212,40 +1267,14 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
 
         <div style={{ height: 1, background: '#1E293B', marginBottom: 16 }} />
 
-        {/* 섹션 표시/숨김 토글 */}
+        {/* 섹션 표시/숨김 토글 — 영역별 그룹 (SECTION_GROUPS) */}
         <p style={{ margin: '0 0 8px 2px', fontSize: 11, fontWeight: 700, color: '#475569',
           textTransform: 'uppercase', letterSpacing: 1, fontFamily: FONT }}>
           섹션 표시
         </p>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginBottom: 16 }}>
-          {[
-            { key: 'showTotal',     label: 'GEO 지수' },
-            { key: 'showTotalInsight', label: '인사이트 V1 (기존)' },
-            { key: 'showInsightV2', label: '6월 인사이트 V2' },
-            { key: 'showInsightV3', label: '8월 Executive Summary' },
-            { key: 'showHighlight', label: 'Highlight Insight' },
-            { key: 'showReadability', label: 'Readability Highlight' },
-            { key: 'showProducts',  label: '제품별' },
-            { key: 'showCnty',      label: '국가별' },
-            { key: 'showCitations', label: 'Citation' },
-            { key: 'showCitCnty',   label: 'Citation 국가별' },
-            { key: 'showCitPrd',    label: 'Citation 제품별' },
-            { key: 'showTouchPointsBump', label: '외부채널 범프차트' },
-            { key: 'showTouchPointsBumpChatGpt', label: '외부채널 모델별(3개)' },
-            { key: 'showDomainBumpModels', label: '도메인 모델별(3개)' },
-            { key: 'showLlmShare',  label: '모델별 인용비중' },
-            { key: 'showDotcom',    label: '닷컴' },
-            { key: 'showDotcomChatGpt', label: '닷컴 Chat-GPT' },
-            { key: 'showTodo',      label: 'Action Plan' },
-            { key: 'showTodoV2',    label: '액션 아이템 V2' },
-          ].map(({ key, label }) => (
-            <button key={key} onClick={() => setMeta(m => ({ ...m, [key]: !m[key] }))}
-              style={{ padding: '5px 12px', borderRadius: 20, border: 'none', cursor: 'pointer',
-                background: meta[key] ? LG_RED : '#1E293B',
-                color: meta[key] ? '#FFFFFF' : '#475569',
-                fontSize: 11, fontWeight: 700, fontFamily: FONT }}>
-              {label}
-            </button>
+        <div style={{ marginBottom: 16 }}>
+          {SECTION_GROUPS.map(g => (
+            <ToggleGroup key={g.label} label={g.label} items={g.items} meta={meta} setMeta={setMeta} />
           ))}
         </div>
 

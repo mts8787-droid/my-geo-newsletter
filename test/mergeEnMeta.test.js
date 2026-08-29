@@ -84,3 +84,27 @@ describe('제품 카드 V4 — 경합 표기 (경쟁비 ≤ 0.05)', () => {
     expect(html).toContain('Tie')
   })
 })
+
+describe('SECTION_GROUPS — 섹션 표시 토글 영역 분류', () => {
+  const ALL = ['showTotal', 'showTotalInsight', 'showInsightV2', 'showInsightV3', 'showHighlight',
+    'showReadability', 'showProducts', 'showCnty', 'showCitations', 'showCitCnty', 'showCitPrd',
+    'showTouchPointsBump', 'showTouchPointsBumpChatGpt', 'showDomainBumpModels', 'showLlmShare',
+    'showDotcom', 'showDotcomChatGpt', 'showTodo', 'showTodoV2']
+  const load = async () => (await import('../src/shared/Sidebar.jsx')).SECTION_GROUPS
+  it('토글이 하나도 유실·중복되지 않는다', async () => {
+    const keys = (await load()).flatMap(g => g.items.map(i => i.key))
+    expect(new Set(keys).size).toBe(keys.length)
+    expect(keys.sort()).toEqual([...ALL].sort())
+  })
+  it('제품 카드 계열은 비저빌리티에 모인다', async () => {
+    const g = (await load()).find(x => x.label === '비저빌리티')
+    expect(g.items.map(i => i.key)).toContain('showProducts')
+    expect(g.items.map(i => i.key)).toContain('showCnty')
+  })
+  it('범프차트 계열은 사이테이션에 모인다', async () => {
+    const keys = (await load()).find(x => x.label === '사이테이션').items.map(i => i.key)
+    expect(keys).toContain('showTouchPointsBump')
+    expect(keys).toContain('showTouchPointsBumpChatGpt')
+    expect(keys).toContain('showDomainBumpModels')
+  })
+})
