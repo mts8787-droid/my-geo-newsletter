@@ -119,6 +119,16 @@ describe('SECTION_GROUPS — 섹션 표시 토글 영역 분류', () => {
     const aug = EXEC_VARIANTS.find(v => v.value === '2026-08')
     expect(aug.keys).toContain('showInsightV3')
     expect(aug.keys).toContain('showTotal')
+    // 번호 항목 위 자유 텍스트(totalInsight) 도 같이 살아나야 한다
+    expect(aug.keys).toContain('showTotalInsight')
+  })
+  it('8월 선택 시 번호 항목 위 텍스트 블록이 렌더된다', async () => {
+    const { generateEmailHTML } = await import('../src/emailTemplate.js')
+    const { EXEC_VARIANTS } = await import('../src/shared/Sidebar.jsx')
+    const meta = { totalInsight: '상반기 GEO 성과 요약 문장입니다.' }
+    EXEC_VARIANTS.find(v => v.value === '2026-08').keys.forEach(k => { meta[k] = true })
+    const html = generateEmailHTML(meta, { score: 43 }, [], [], {}, 'ko', [], [], { unlaunchedMap: {} })
+    expect(html).toContain('상반기 GEO 성과 요약 문장입니다.')
   })
   it('범프차트 계열은 사이테이션에 모인다', async () => {
     const keys = (await load()).find(x => x.label === '사이테이션').items.map(i => i.key)

@@ -101,10 +101,13 @@ export const HIGHLIGHT_VARIANTS = [
 
 // GEO 지수(showTotal) 는 8월 Executive Summary 와 같은 내용이라 여기로 통합 —
 // 별도 섹션 버튼을 두지 않는다 (사용자 지시 2026-08-29).
-// showTotalInsight('인사이트 V1 기존') 는 구버전이라 어떤 변형에도 넣지 않는다 → 항상 꺼짐.
+// showTotalInsight 는 '인사이트 V1' 이 아니라 번호 항목(1. Readability …) 위의
+// 자유 텍스트 블록(totalInsight)을 제어한다. 처음엔 구버전으로 보고 제외했다가
+// 그 문장이 통째로 사라져 다시 포함 (사용자 보고 2026-08-29).
 export const EXEC_VARIANTS = [
   { value: '', label: '표시 안 함', keys: [] },
-  { value: '2026-08', label: '8월 Executive Summary', keys: ['showInsightV3', 'showTotal'] },
+  { value: '2026-08', label: '8월 Executive Summary',
+    keys: ['showInsightV3', 'showTotal', 'showTotalInsight'] },
 ]
 const EXEC_ALL_KEYS = ['showInsightV3', 'showTotal', 'showTotalInsight']
 
