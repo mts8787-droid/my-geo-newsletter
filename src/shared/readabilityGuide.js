@@ -15,6 +15,14 @@
 //   구조화 데이터 → '라벨'  ·  SSR/초기 HTML → '원본 소스'  ·  CSR → '나중에 불러오는 방식'
 //   JavaScript · 렌더링 · 리소스 같은 개발 용어는 쓰지 않는다.
 //     byPt   — 페이지타입마다 고칠 위치나 방법이 다를 때만 { where, action } 덮어쓰기
+//     byCc   — 국가(사이트)마다 다를 때만 { where, action } 덮어쓰기
+//     notes  — 특정 필터에서만 보여줄 문장. 조건이 맞을 때만 노출된다.
+//              { cc:[...] }    해당 국가에서만
+//              { ccNot:[...] } 해당 국가를 제외한 곳에서만
+//              { pt:[...] }    해당 페이지타입에서만
+//              조건을 여러 개 쓰면 모두 만족해야 노출 (AND)
+//
+// 적용 순서: base → byCc → byPt (뒤가 이김). notes 는 조건에 맞는 것만 추가 노출.
 //
 // ⚠ 신규 체크 추가 시 여기에도 한 줄 추가할 것 (npm test 가 누락을 잡는다).
 
@@ -210,7 +218,12 @@ export const GUIDE = {
     why: 'AI가 제품을 특정하고 비교하는 핵심 근거입니다. 없으면 추천 후보에서 빠집니다.',
     where: 'PDP 페이지 전달 방식 · 스키마 자동화',
     action: '제품 정보 라벨을 원본 소스에 함께 내려보냅니다.',
-    byPt: { pdp: { where: 'PDP 페이지 전달 방식 (D2C 추진 중)', action: '라벨은 이미 만들어져 있는데 화면이 뜬 뒤에 붙습니다. 원본 소스에 함께 실리도록 바꿉니다. 표기도 product → Product 로 교정 필요.' } },
+    byPt: { pdp: { where: 'PDP 페이지 전달 방식 (D2C 추진 중)', action: '라벨은 이미 만들어져 있는데 화면이 뜬 뒤에 붙습니다. 원본 소스에 함께 실리도록 바꿉니다.' } },
+    notes: [
+      { cc: ['us'], text: '미국은 일부 원본 소스에 실리고 있습니다 (8.1%). 적용 방식을 다른 국가에 확산하는 것이 빠른 길입니다.' },
+      { ccNot: ['us'], text: '미국을 제외한 전 국가가 0% 입니다. 라벨은 생성되지만 원본 소스에 실리지 않습니다.' },
+      { pt: ['pdp'], text: '표기 오류도 함께 확인이 필요합니다 — 라벨 종류가 소문자 product 로 적혀 있어 원본 소스에 실어도 인식되지 않을 수 있습니다.' },
+    ],
   },
   ai_schema_image: {
     what: '이미지에 "이건 이미지이고 설명은 이렇다" 라벨을 붙였는지 봅니다.',
@@ -306,6 +319,10 @@ export const GUIDE = {
       pdp: { where: 'PDP 페이지 전달 방식 (D2C 전환 추진 중)', action: '현재 60%대로 하위입니다. 스펙·설명·리뷰 요약을 원본 소스에 담습니다.' },
       support_troubleshoot: { where: '지원 페이지 전달 방식 (고객가치혁신 전환 추진 중)', action: '현재 35%대로 전 타입 중 최저입니다. 해결 단계 본문을 원본 소스에 담습니다.' },
     },
+    notes: [
+      { ccNot: ['us', 'vn', 'au', 'global'], text: '국가별 편차가 큽니다. 베트남·호주는 이미 99% 이상이므로 그 국가의 구성 방식을 참고할 수 있습니다.' },
+      { cc: ['ca', 'uk', 'br'], text: '이 사이트는 37~49%로 전 국가 중 최하위입니다. 우선 대상으로 잡아야 합니다.' },
+    ],
   },
   ai_pdp_thumbnails: {
     what: '제품 썸네일 3장 이상이 원본 소스에 담겨 있는지 봅니다.',
@@ -345,10 +362,26 @@ export const GUIDE = {
   },
 }
 
-// 특정 체크 × 페이지타입의 { where, action } — byPt 있으면 그것, 없으면 기본
-export function guideFor(checkId, ptId) {
+// notes 한 건이 현재 필터(국가·페이지타입)에서 노출 대상인지
+function noteVisible(n, ccId, ptId) {
+  if (n.cc && !(ccId && n.cc.indexOf(ccId) >= 0)) return false
+  if (n.ccNot && (!ccId || n.ccNot.indexOf(ccId) >= 0)) return false
+  if (n.pt && !(ptId && n.pt.indexOf(ptId) >= 0)) return false
+  return true
+}
+
+// 특정 체크를 현재 필터(국가 × 페이지타입)에 맞춰 해석 — base → byCc → byPt 순으로 덮어쓴다.
+// notes 는 조건이 맞는 문장만 골라 반환한다.
+export function guideFor(checkId, ptId, ccId) {
   const g = GUIDE[checkId]
   if (!g) return null
-  const o = (ptId && g.byPt && g.byPt[ptId]) || {}
-  return { what: g.what, why: g.why, where: o.where || g.where, action: o.action || g.action }
+  const c = (ccId && g.byCc && g.byCc[ccId]) || {}
+  const p = (ptId && g.byPt && g.byPt[ptId]) || {}
+  return {
+    what: g.what,
+    why: g.why,
+    where: p.where || c.where || g.where,
+    action: p.action || c.action || g.action,
+    notes: (g.notes || []).filter(function (n) { return noteVisible(n, ccId, ptId) }).map(function (n) { return n.text }),
+  }
 }

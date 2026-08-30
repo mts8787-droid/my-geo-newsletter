@@ -342,9 +342,21 @@ function readabilityClient() {
       var rate = +(c.pass / c.applicable * 100).toFixed(1)
       if (rate >= CRITICAL_MAX) return
       var g = G[cid]; if (!g) return
-      var o = (slot && g.byPt && g.byPt[pt]) || {}
+      // base → byCc → byPt 순으로 덮어쓰기. notes 는 현재 필터 조건에 맞는 문장만.
+      var ccId = state.cc === 'all' ? null : state.cc
+      var ptId = slot ? pt : null
+      var byC = (ccId && g.byCc && g.byCc[ccId]) || {}
+      var byP = (ptId && g.byPt && g.byPt[ptId]) || {}
+      var notes = (g.notes || []).filter(function (n) {
+        if (n.cc && !(ccId && n.cc.indexOf(ccId) >= 0)) return false
+        if (n.ccNot && (!ccId || n.ccNot.indexOf(ccId) >= 0)) return false
+        if (n.pt && !(ptId && n.pt.indexOf(ptId) >= 0)) return false
+        return true
+      }).map(function (n) { return n.text })
       rows.push({ label: c.label, rate: rate, gap: c.applicable - c.pass,
-        what: g.what, why: g.why, where: o.where || g.where, act: o.action || g.action })
+        what: g.what, why: g.why,
+        where: byP.where || byC.where || g.where,
+        act: byP.action || byC.action || g.action, notes: notes })
     })
     if (!rows.length) {
       return sectionCard(title, '#BE123C',
@@ -363,6 +375,9 @@ function readabilityClient() {
         '<div class="gd-line"><span class="gd-k">리스크</span>' + esc(r.why) + '</div>' +
         '<div class="gd-line gd-fix"><span class="gd-k gd-k-where">담당 영역</span>' + esc(r.where) + '</div>' +
         '<div class="gd-line gd-fix"><span class="gd-k gd-k-act">조치 사항</span>' + esc(r.act) + '</div>' +
+        (r.notes.length ? r.notes.map(function (t) {
+          return '<div class="gd-line gd-note"><span class="gd-k">참고</span>' + esc(t) + '</div>'
+        }).join('') : '') +
       '</div>'
     }).join('')
     var note = '<div class="tab-note">통과율 ' + CRITICAL_MAX + '% 미만 ' + rows.length +
@@ -704,6 +719,7 @@ body{background:#F1F5F9;font-family:${FONT};color:#1A1A1A;line-height:1.6}
 .gd-gap{font-size:12px;color:#94A3B8;font-variant-numeric:tabular-nums;white-space:nowrap}
 .gd-line{font-size:13px;line-height:1.65;color:#475569;display:flex;gap:8px;align-items:baseline;margin-top:3px}
 .gd-line.gd-fix{color:#1A1A1A}
+.gd-line.gd-note{color:#64748B;font-size:12.5px}
 .gd-k{flex:0 0 66px;font-size:11px;font-weight:800;color:#94A3B8;text-align:right}
 .gd-k-where{color:#BE123C}
 .gd-k-act{color:#BE123C}

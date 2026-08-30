@@ -294,3 +294,46 @@ describe('개선 가이드 — 체크 × 페이지타입', () => {
     expect(bad).toEqual([])
   })
 })
+
+describe('개선 가이드 — 필터 조건부 문장', () => {
+  const G = async () => await import('../src/shared/readabilityGuide.js')
+  it('국가 조건(cc)에 맞을 때만 문장이 나온다', async () => {
+    const { guideFor } = await G()
+    const us = guideFor('ai_schema_product', 'pdp', 'us').notes.join(' ')
+    const de = guideFor('ai_schema_product', 'pdp', 'de').notes.join(' ')
+    expect(us).toContain('미국은 일부')
+    expect(de).not.toContain('미국은 일부')
+  })
+  it('제외 조건(ccNot)은 해당 국가에서만 숨는다', async () => {
+    const { guideFor } = await G()
+    expect(guideFor('ai_schema_product', 'pdp', 'de').notes.join(' ')).toContain('미국을 제외한')
+    expect(guideFor('ai_schema_product', 'pdp', 'us').notes.join(' ')).not.toContain('미국을 제외한')
+  })
+  it('국가 미선택(전체)이면 cc·ccNot 문장 모두 숨는다', async () => {
+    const { guideFor } = await G()
+    const n = guideFor('ai_schema_product', 'pdp', null).notes.join(' ')
+    expect(n).not.toContain('미국은 일부')
+    expect(n).not.toContain('미국을 제외한')
+  })
+  it('페이지타입 조건(pt)도 독립적으로 걸린다', async () => {
+    const { guideFor } = await G()
+    expect(guideFor('ai_schema_product', 'pdp', 'de').notes.join(' ')).toContain('소문자 product')
+    expect(guideFor('ai_schema_product', null, 'de').notes.join(' ')).not.toContain('소문자 product')
+  })
+  it('byCc 가 있으면 base 를, byPt 가 있으면 byCc 를 이긴다', async () => {
+    const { guideFor, GUIDE } = await G()
+    expect(guideFor('ai_ssr_ratio', 'pdp', 'us').action).toBe(GUIDE.ai_ssr_ratio.byPt.pdp.action)
+    expect(guideFor('ai_ssr_ratio', null, 'us').action).toBe(GUIDE.ai_ssr_ratio.action)
+  })
+  it('notes 의 cc·ccNot·pt 키가 실제 코드여야 한다', async () => {
+    const { GUIDE, PT_LABEL } = await G()
+    const { CC_NAME } = await import('../scripts/readability-cc.mjs')
+    const bad = []
+    Object.entries(GUIDE).forEach(([cid, g]) => (g.notes || []).forEach((n, i) => {
+      ;[...(n.cc || []), ...(n.ccNot || [])].forEach(c => { if (!CC_NAME[c]) bad.push(`${cid}.notes[${i}].cc=${c}`) })
+      ;(n.pt || []).forEach(p => { if (!PT_LABEL[p]) bad.push(`${cid}.notes[${i}].pt=${p}`) })
+      if (!n.text) bad.push(`${cid}.notes[${i}] text 없음`)
+    }))
+    expect(bad).toEqual([])
+  })
+})
