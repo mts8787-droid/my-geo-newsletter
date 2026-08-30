@@ -10,6 +10,11 @@ export const T = {
     pageTitle: 'Readability — GEO 어딧',
     backAdmin: '← 어드민',
     howToRead: 'How to Read',
+    docHeading: 'Readability - Dot Com Audit',
+    // How to Read 본문 — {n} 은 평가 페이지 수 (스냅샷에서 주입)
+    htrP1: (n) => `<strong>Readability</strong>는 <strong>AI 관점에서의 가독성</strong>을 뜻하며, 웹페이지의 콘텐츠가 AI가 읽고 활용하기 좋은 상태인지 평가하는 지표입니다. ‘26년 6월부터 LG.com의 Readability 현황을 파악하기 위해 <strong>10개 전략 국가</strong>의 주요 페이지 유형, 총 <strong id="htr-urlcount">${n}개 페이지</strong>를 평가했습니다(<span class="htr-em">매월 마지막 주차 진행</span>). 10개 국가 사이트에 더해 <strong>글로벌 대표 사이트(lg.com/global)</strong>를 별도 사이트로 포함했습니다.`,
+    htrP2: '<strong>Readability 점수</strong>는 <strong>전체 평가항목 중 기준을 충족한 항목의 비율(%)을 100점 기준으로 환산</strong>한 점수입니다. 평가는 사이트 성능, AI 웹접근성, Basic SEO 적합도, 스키마마크업, 고인용 콘텐츠, AI Crawlability의 <strong>6개 영역, 총 38개 체크리스트</strong>를 기준으로 진행했습니다. 각 항목의 정의와 판정 기준은 <strong>검수 기준 탭</strong>과 대시보드 내 <strong>항목별 간략 설명</strong>에서 확인하실 수 있습니다.',
+    htrP3: '각 국가·페이지 담당 부서에서는 <strong>국가별 / 페이지 타입별 탭</strong>을 통해 담당 범위의 검수 결과를 확인하실 수 있습니다. 각 탭에서 <span class="htr-step">(1) 전체 점수</span> <span class="htr-step">(2) 세부 항목별 점수</span> <span class="htr-step">(3) 시급 개선 항목</span> 을 순서대로 살펴보시면, 현재 보완이 필요한 영역을 파악하고 <strong>개선 과제를 도출하여 업무에 활용</strong>하실 수 있습니다.',
     // ── 탭
     tabCountry: '국가별', tabPageType: '페이지 타입별', tabRaw: 'Raw 데이터', tabCriteria: '검수 기준',
     // ── 필터
@@ -76,6 +81,10 @@ export const T = {
     pageTitle: 'Readability — GEO Audit',
     backAdmin: '← Admin',
     howToRead: 'How to Read',
+    docHeading: 'Readability - Dot Com Audit',
+    htrP1: (n) => `<strong>Readability</strong> measures <strong>how readable a page is from an AI's point of view</strong> — whether the content is in a state AI can read and make use of. Since June 2026 we have been assessing LG.com's Readability across the major page types in <strong>10 strategic countries</strong>, covering <strong id="htr-urlcount">${n} pages</strong> in total (<span class="htr-em">run in the last week of each month</span>). Alongside the 10 country sites, the <strong>global flagship site (lg.com/global)</strong> is included as its own site.`,
+    htrP2: 'The <strong>Readability score</strong> is <strong>the share of checklist items meeting the bar, normalised to a 100-point scale</strong>. The assessment covers <strong>6 areas and 38 checklist items in total</strong> — Site Performance, AI Accessibility, Basic SEO, Schema Markup, Citable Content, and AI Crawlability. Definitions and pass criteria for each item are on the <strong>Criteria tab</strong> and in the <strong>per-item notes</strong> on this dashboard.',
+    htrP3: 'Teams owning a country or page type can review their own scope through the <strong>By Country / By Page Type tabs</strong>. Working through <span class="htr-step">(1) the overall score</span> <span class="htr-step">(2) scores by item</span> <span class="htr-step">(3) urgent items</span> in order shows where attention is needed and <strong>turns it into improvement tasks you can act on</strong>.',
     tabCountry: 'By Country', tabPageType: 'By Page Type', tabRaw: 'Raw Data', tabCriteria: 'Criteria',
     fMonth: 'Month', fCountry: 'Country', fPageType: 'Page Type', fCheck: 'Item', fResult: 'Result',
     allCountries: 'All countries', allPageTypes: 'All page types', allChecks: 'All items', allResults: 'All',

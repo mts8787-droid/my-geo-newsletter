@@ -17,10 +17,10 @@ const log = logFor('publish')
 // /p/<slug>-readability 정적 페이지만 만든다.
 
 // 최신 스냅샷으로 Readability HTML 생성 (게시용 — adminMode:false)
-function renderReadabilityPublic() {
+function renderReadabilityPublic(lang = 'ko') {
   const { snapshot, index, snapshots } = loadLatest()
   if (!snapshot) return null
-  return renderReadabilityHTML({ snapshot, index, snapshots, adminMode: false })
+  return renderReadabilityHTML({ snapshot, index, snapshots, adminMode: false, lang, embed: true })
 }
 
 // 대시보드 "Readability 포함" 게시 시 — 통합 뷰어가 임베드할 페이지 생성.
@@ -34,13 +34,16 @@ function writeReadabilityEmbed(ch) {
     // 항상 최신 스냅샷으로 렌더 — 예전에는 별도 게시본(READABILITY_STANDALONE) 파일을
     // 우선 복사했는데, 그 파일은 게시 시점에 굳어 있어 어드민/게시본과 어긋났다.
     // /p/GEO-Readability-Dashboard 가 요청 시 렌더로 바뀐 뒤로는 굽는 의미도 없다.
-    const html = renderReadabilityPublic()
-    if (!html) {
+    // KO/EN 을 각각 렌더 — 예전에는 한 번 렌더해 두 슬러그에 같은 파일을 써서
+    // EN 대시보드의 Readability 탭이 한국어로 나왔다 (사용자 보고 2026-08-30).
+    const koHtml = renderReadabilityPublic('ko')
+    const enHtml = renderReadabilityPublic('en')
+    if (!koHtml) {
       log.warn({ tag: ch.logTag }, 'readability embed: 스냅샷 없음')
       return
     }
-    writeFileSync(join(PUB_DIR, `${ch.koSlug}-readability.html`), html)
-    writeFileSync(join(PUB_DIR, `${ch.enSlug}-readability.html`), html)
+    writeFileSync(join(PUB_DIR, `${ch.koSlug}-readability.html`), koHtml)
+    writeFileSync(join(PUB_DIR, `${ch.enSlug}-readability.html`), enHtml)
     log.info({ tag: ch.logTag, koSlug: `${ch.koSlug}-readability` }, 'readability embed written')
   } catch (e) {
     log.warn({ tag: ch.logTag, err: e.message }, 'readability embed failed')

@@ -137,7 +137,7 @@ function viewCountryComparison(snap) {
   const hero = `<div class="hero">
     <div class="hero-top">
       <span class="hero-brand">GEO Readability Audit</span>
-      <span class="hero-meta">측정일 ${escHtml(snap.date)}</span>
+      <span class="hero-meta">${escHtml(TT().measuredAt)} ${escHtml(snap.date)}</span>
     </div>
     <div class="hero-body">
       <div class="hero-left">
@@ -155,7 +155,7 @@ function viewCountryComparison(snap) {
     </div>
   </div>`
 
-  return hero + sectionCard('① 국가별 종합 점수 비교', RED, `<div class="bars">${bars}</div>`)
+  return hero + sectionCard('① ' + TT().secCountryScore, RED, `<div class="bars">${bars}</div>`)
 }
 
 // ─── 뷰 2: 카테고리별 상세 (체크 pass rate) ─────────────────────────────────
@@ -173,8 +173,8 @@ function viewCategoryDetail(snap) {
   const checkRate = c => c.applicable > 0 ? +(c.pass / c.applicable * 100).toFixed(1) : null
   const DEFS = loadCheckDefs(_LANG)
   const cardHead = `<div class="bar-row bar-head has-def">
-    <span class="bar-label"><span class="bar-name">항목</span><span class="bar-def">정의</span><span class="bar-pass">Pass 기준</span></span>
-    <div class="bar-track"></div><span class="bar-value">통과율</span></div>`
+    <span class="bar-label"><span class="bar-name">${escHtml(TT().thItem)}</span><span class="bar-def">${escHtml(TT().thDef)}</span><span class="bar-pass">${escHtml(TT().thPass)}</span></span>
+    <div class="bar-track"></div><span class="bar-value">${escHtml(TT().thRate)}</span></div>`
   // 클라이언트 짝(renderCategoryCards)과 동일 구조 — design.md §5.8 서버↔클라 짝.
   // 카테고리 설명(what)은 제목 옆, why 는 그 아래 줄.
   const catCard = (name, avg, sub, checksArr, catKey) => {
@@ -202,7 +202,7 @@ function viewCategoryDetail(snap) {
     return catCard(labels[cat] || cat, avg, '평균 points', checks, cat)
   }).join('')
 
-  return sectionCard(`② 카테고리 ${CATEGORIES.length}분할 상세 — 체크별 통과율`, '#3B82F6', `<div class="cat-grid">${cards}</div>`)
+  return sectionCard(`② ${TT().secCheckRate}`, '#3B82F6', `<div class="cat-grid">${cards}</div>`)
 }
 
 // ─── 뷰 3: 페이지타입별 점수 ─────────────────────────────────────────────────
@@ -328,8 +328,8 @@ function readabilityClient() {
     function card(name, avg, sub, checksArr, catKey) {
       var defs = RD.checkDefs || {}
       var head = '<div class="bar-row bar-head has-def"><span class="bar-label">' +
-        '<span class="bar-name">항목</span><span class="bar-def">정의</span><span class="bar-pass">Pass 기준</span></span>' +
-        '<div class="bar-track"></div><span class="bar-value">통과율</span></div>'
+        '<span class="bar-name">${escHtml(TT().thItem)}</span><span class="bar-def">${escHtml(TT().thDef)}</span><span class="bar-pass">${escHtml(TT().thPass)}</span></span>' +
+        '<div class="bar-track"></div><span class="bar-value">${escHtml(TT().thRate)}</span></div>'
       var rows = head + checksArr.slice().sort(function (a, b) { return a.label.localeCompare(b.label, 'en', { numeric: true }) }).map(function (c) {
         var rate = checkRate(c)
         var right = rate == null ? '—' : rate + '% (' + c.pass + '/' + c.applicable + ')'
@@ -534,7 +534,7 @@ function readabilityClient() {
     }).join('')
     var bars = rowsHtml ? (barHead('페이지 타입', '페이지수', '점수') + rowsHtml) : '<div class="tab-note">해당 조건에 데이터가 없습니다.</div>'
     var scopeName = state.cc === 'all' ? '전체' : ccLabel(state.cc)
-    return sectionCard('① 페이지타입별 점수 (' + esc(scopeName) + ')', '#059669', '<div class="bars">' + bars + '</div>') + renderCategorySection(scope, '②') + renderGuideSection(scope, '③')
+    return sectionCard('① ' + TT().secPageTypeScore + ' (' + esc(scopeName) + ')', '#059669', '<div class="bars">' + bars + '</div>') + renderCategorySection(scope, '②') + renderGuideSection(scope, '③')
   }
 
   // 검수 기준 + 검수 URL 다운로드 탭
@@ -730,7 +730,7 @@ export const PUBLIC_PATHS = {
   criteria: '/p/GEO-Readability-Criteria',
 }
 
-export function renderReadabilityHTML({ snapshot, index, snapshots, adminMode = false, paths, lang = 'ko' } = {}) {
+export function renderReadabilityHTML({ snapshot, index, snapshots, adminMode = false, paths, lang = 'ko', embed = false } = {}) {
   _LANG = lang === 'en' ? 'en' : 'ko'
   const LANG = _LANG
   const t = TT()
@@ -790,6 +790,8 @@ body{background:#F1F5F9;font-family:${FONT};color:#1A1A1A;line-height:1.6}
 .tab-bar .back:hover{color:#E2E8F0}
 .dash-container{max-width:1400px;margin:0 auto;padding:28px 40px}
 /* ── 탭 네비 + 필터 바 ── */
+.doc-heading{margin:4px 0 16px;font-size:26px;font-weight:900;color:#1A1A1A;letter-spacing:-0.6px}
+@media(max-width:780px){.doc-heading{font-size:21px;margin-bottom:12px}}
 .htr{background:#fff;border:1px solid #E8EDF2;border-left:4px solid ${RED};border-radius:12px;padding:20px 24px;margin-bottom:20px}
 .htr-title{margin:0 0 12px;font-size:18px;font-weight:800;color:#1A1A1A;letter-spacing:-0.3px}
 .htr-p{margin:0 0 9px;font-size:14px;line-height:1.75;color:#475569}
@@ -931,31 +933,20 @@ body{background:#F1F5F9;font-family:${FONT};color:#1A1A1A;line-height:1.6}
 }
 </style></head><body>
 
-<div class="tab-bar">
+${embed ? '' : `<div class="tab-bar">
   <span class="tb-title">${escHtml(t.pageTitle)}</span>
   <a class="back" href="/admin/">${escHtml(t.backAdmin)}</a>
-</div>
+</div>`}
 
 <div class="dash-container">
+  <h1 class="doc-heading">${escHtml(t.docHeading)}</h1>
+
   <!-- How to Read — 사용자 제공 원문 그대로, 강조만 덧입힘 (사용자 지시 2026-08-30) -->
   <section class="htr">
     <h2 class="htr-title">${escHtml(t.howToRead)}</h2>
-    <p class="htr-p"><strong>Readability</strong>는 <strong>AI 관점에서의 가독성</strong>을 뜻하며, 웹페이지의 콘텐츠가
-      AI가 읽고 활용하기 좋은 상태인지 평가하는 지표입니다. ‘26년 6월부터 LG.com의 Readability 현황을 파악하기 위해
-      <strong>10개 전략 국가</strong>의 주요 페이지 유형,
-      총 <strong id="htr-urlcount">${escHtml((snapshot.overall.urlCount || 0).toLocaleString('en-US'))}개 페이지</strong>를
-      평가했습니다(<span class="htr-em">매월 마지막 주차 진행</span>). 10개 국가 사이트에 더해
-      <strong>글로벌 대표 사이트(lg.com/global)</strong>를 별도 사이트로 포함했습니다.</p>
-    <p class="htr-p">Readability 점수는 <strong>전체 평가항목 중 기준을 충족한 항목의 비율(%)을 100점 기준으로 환산</strong>한
-      점수입니다. 평가는 사이트 성능, AI 웹접근성, Basic SEO 적합도, 스키마마크업, 고인용 콘텐츠, AI Crawlability의
-      <strong>6개 영역, 총 38개 체크리스트</strong>를 기준으로 진행했습니다.
-      각 항목의 정의와 판정 기준은 <strong>검수 기준 탭</strong>과 대시보드 내 <strong>항목별 간략 설명</strong>에서
-      확인하실 수 있습니다.</p>
-    <p class="htr-p">각 국가·페이지 담당 부서에서는 <strong>국가별 / 페이지 타입별 탭</strong>을 통해 담당 범위의 검수 결과를
-      확인하실 수 있습니다. 각 탭에서
-      <span class="htr-step">(1) 전체 점수</span> <span class="htr-step">(2) 세부 항목별 점수</span>
-      <span class="htr-step">(3) 시급 개선 항목</span> 을 순서대로 살펴보시면,
-      현재 보완이 필요한 영역을 파악하고 <strong>개선 과제를 도출하여 업무에 활용</strong>하실 수 있습니다.</p>
+    <p class="htr-p">${t.htrP1((snapshot.overall.urlCount || 0).toLocaleString('en-US'))}</p>
+    <p class="htr-p">${t.htrP2}</p>
+    <p class="htr-p">${t.htrP3}</p>
   </section>
 
   <div class="tab-nav" id="rd-tabnav"></div>
