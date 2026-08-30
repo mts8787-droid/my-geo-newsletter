@@ -227,7 +227,7 @@ publishedRouter.get('/p/GEO-Readability-Criteria', (req, res) => {
   if (!isIpAllowed(req)) return send403Page(res)
   try {
     const { snapshot } = loadLatest()
-    const html = renderCriteriaHTML({ rows: loadRows(), snapshot, withScores: !!snapshot })
+    const html = renderCriteriaHTML({ rows: loadRows(), snapshot, withScores: !!snapshot, lang: readabilityLang(req) })
     setPublishedSecurityHeaders(res)
     res.set('Content-Type', 'text/html; charset=utf-8')
     res.send(html)

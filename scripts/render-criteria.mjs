@@ -16,6 +16,8 @@
 
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs'
 import { rdBandKey } from '../src/shared/readabilityBand.js'
+import { checklistEn } from '../src/shared/readabilityChecklistEn.js'
+import { CATEGORY_GUIDE, pick } from '../src/shared/readabilityGuide.js'
 import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
 
@@ -51,14 +53,18 @@ export const CAT_KEY = {
   '사이트 성능': 'performance', '웹접근성': 'accessibility', 'Basic SEO': 'seo',
   '스키마마크업': 'geo_schema', '고인용 콘텐츠': 'geo_content', 'AI Crawlability': 'geo_platform',
 }
-export const CAT_NOTE = {
-  '사이트 성능': '서버가 페이지를 얼마나 빠르고 안전하게 전달하는가 — 전송 계층',
-  '웹접근성': '사람과 기계가 문서 구조를 읽어낼 수 있는가',
-  'Basic SEO': '검색엔진이 페이지를 수집하고 표시할 수 있는가',
-  '스키마마크업': 'AI가 읽을 수 있는 구조화 데이터가 있는가',
-  '고인용 콘텐츠': 'AI가 인용할 만한 서술이 본문에 있는가',
-  'AI Crawlability': 'AI 크롤러가 원문을 실제로 가져갈 수 있는가',
+// 카테고리 설명 — 대시보드·뉴스레터와 같은 문구를 쓴다 (CATEGORY_GUIDE single source).
+// 예전에는 여기에 별도 문구를 두어 같은 영역을 세 곳이 다르게 설명하고 있었다 (감사 2026-08-30).
+export const CAT_NOTE = Object.fromEntries(
+  Object.entries(CAT_KEY).map(([ko, key]) => [ko, pick(CATEGORY_GUIDE[key]?.what, 'ko')]))
+// 카테고리 표시명 EN
+export const CAT_NAME_EN = {
+  '사이트 성능': 'Site Performance', '웹접근성': 'Accessibility', 'Basic SEO': 'Basic SEO',
+  '스키마마크업': 'Schema Markup', '고인용 콘텐츠': 'Citable Content', 'AI Crawlability': 'AI Crawlability',
 }
+// 카테고리 이름·설명을 언어에 맞춰
+export function catName(ko, lang) { return lang === 'en' ? (CAT_NAME_EN[ko] || ko) : ko }
+export function catNote(ko, lang) { return pick(CATEGORY_GUIDE[CAT_KEY[ko]]?.what, lang) || '' }
 
 const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 const unent = s => String(s).replace(/<[^>]+>/g, '').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
@@ -85,6 +91,17 @@ export function parseChecklist(html) {
   return rows
 }
 
+// 행 목록을 지정 언어로 변환 — EN 이면 name/def/pass 를 사전에서 갈아끼운다.
+// 사전에 없으면 KO 를 그대로 둔다 (누락은 npm test 가 잡는다).
+export function localizeRows(rows, lang) {
+  if (lang !== 'en') return rows
+  let plannedIdx = 0
+  return rows.map(r => {
+    const en = checklistEn(r.no, r.no === '예정' ? plannedIdx++ : 0)
+    return en ? { ...r, name: en.name, def: en.def, pass: en.pass, method: en.method || r.method } : r
+  })
+}
+
 // 신호등 밴드 — 대시보드/뉴스레터와 동일 기준 (src/shared/readabilityBand.js single source)
 const band = rdBandKey
 
@@ -98,7 +115,92 @@ export function scoredCount(rows, cat) {
 }
 
 // ─── HTML ────────────────────────────────────────────────────────────────
-export function renderCriteriaHTML({ rows, snapshot, withScores }) {
+// 검수 기준 페이지 UI 문구 (KO/EN) — 대시보드 i18n 과 같은 원칙
+const CRIT_T = {
+  ko: {
+    title: 'GEO 검수 기준', scored: (n) => `채점 ${n}개`, scoredLabel: '채점 항목',
+    tagPlan: '9월 감사부터', tagPend: '미채점 · 추후 정리',
+    thNo: '번호', thItem: '항목 · 정의', thPass: 'Pass 기준', thMethod: '측정방법', thRate: '통과율',
+    orphanDef: (note) => `체크리스트 문서에 행이 없는 채점 항목 — ${note}`,
+    mDate: '측정일', mCountries: '대상 국가', mPages: '대상 페이지', mItems: '채점 항목', mScore: '종합 점수',
+    legGood: '90% 이상', legCrit: '60% 미만',
+    notesH: '읽는 법 · 예외 처리',
+    nExcluded: '채점에서 제외된 항목', nSkipped: '집계 대상에서 빠지는 페이지',
+    nChanged: '측정 기준이 바뀐 항목', nMapping: '문서 번호와 채점 항목이 1:1이 아닌 곳',
+    planned: '예정',
+    footWith: (d, c, u) => `측정일 ${d} · lg.com ${c}개국 ${u}페이지 · 통과율은 해당 항목이 적용된 페이지 대비 비율`,
+    footPlain: 'GEO Agent Readability 검수 기준 · 통과율은 대시보드에서 확인',
+    h1: '검수 기준 · 전체 항목표',
+    docTitle: (sc) => `GEO 검수 기준표${sc ? '' : ' (기준)'}`,
+    unitCount: '개',
+    subWith: (n, d) => `6개 카테고리 ${n}개 항목으로 lg.com 글로벌 사이트의 AI 가독성을 채점합니다. 통과율은 ${d} 측정분 기준이며, 9월 감사부터 시행할 예정 항목 4개를 함께 표기했습니다.`,
+    subPlain: (n) => `6개 카테고리 ${n}개 항목의 정의와 Pass 기준입니다. 9월 감사부터 시행할 예정 항목 4개를 함께 표기했습니다.`,
+    nx: [
+      '<b>#5 HTML &lt; 100KB</b> — 측정은 정확하나 lg.com HTML 중앙값이 1,536KB라 실질 통과율 0.0%. 통과 건의 대부분이 본문 0자인 빈 404 셸이라 지표 방향이 반대였음',
+      '<b>#8 Render Blocking 0</b> — 통과율 2.3%로 변별력 없음',
+      '<b>#44 Sitemap XML</b> — #19 Sitemap과 rule이 완전히 동일한 중복 (어딧에서도 이미 비활성)',
+      '<b>#20 Organization · #22 Speakable · #30 digitalDocument · #31 Recipe</b> — scoring_config에서 비활성. 문서에는 회색으로 남겨둠',
+    ],
+    ns: [
+      '<b>B2B(사업자) · 프로모션/약관</b> — GEO 대상이 아니라 점수·통과율·URL 카운트 전부에서 제외',
+      '<b>비-200 페이지</b> (404 · 500 · fetch 실패) — 전 체크가 cascade-FAIL이라 개선 대상이 아님',
+      '<b>분류불가 · 홈페이지</b> — 측정 의미 없음',
+    ],
+    nc: [
+      '<b>#1 TTFB</b> — 어딧 크롤러 자체 측정값이 동시 크롤 큐잉에 오염돼 실제보다 6~200배 크게 잡혔음. PageSpeed Insights의 server-response-time을 정본으로 교체',
+      '<b>#4 Cache-Control</b> — 원래 룰이 no-cache/no-store가 섞이면 max-age 값과 무관하게 즉시 FAIL 처리했음. max-age 디렉티브가 설정돼 있으면 통과로 완화',
+      '<b>#34 Author 또는 출처+날짜</b> — byline은 에디토리얼에만 성립하는 개념이라 Global Newsroom · Press &amp; Media · 구매 가이드 · LG Experience에만 적용',
+    ],
+    nm: [
+      '<b>#17 Robots</b> — meta robots와 X-Robots-Tag 헤더 중 <b>하나만 충족해도 통과</b> (OR 조건). 대표 체크 하나로 채점',
+      '<b>#25 Product 풀세트</b> — Product와 Offer, 두 개로 채점',
+    ],
+  },
+  en: {
+    title: 'GEO Audit Criteria', scored: (n) => `${n} scored`, scoredLabel: 'Scored items',
+    tagPlan: 'From the September audit', tagPend: 'Not scored · to be settled',
+    thNo: 'No.', thItem: 'Item · definition', thPass: 'Pass criteria', thMethod: 'How it is measured', thRate: 'Pass rate',
+    orphanDef: (note) => `Scored item with no row in the checklist document — ${note}`,
+    mDate: 'Measured', mCountries: 'Sites', mPages: 'Pages', mItems: 'Scored items', mScore: 'Overall score',
+    legGood: '90% and above', legCrit: 'Below 60%',
+    notesH: 'How to read · exceptions',
+    nExcluded: 'Items excluded from scoring', nSkipped: 'Pages excluded from aggregation',
+    nChanged: 'Items whose measurement basis changed', nMapping: 'Where document numbers are not 1:1 with scored items',
+    planned: 'Planned',
+    footWith: (d, c, u) => `Measured ${d} · lg.com — ${c} sites, ${u} pages · pass rate is against pages the item applies to`,
+    footPlain: 'GEO Agent Readability criteria · pass rates are on the dashboard',
+    h1: 'Criteria · full item list',
+    docTitle: (sc) => `GEO Audit Criteria${sc ? '' : ' (definitions)'}`,
+    unitCount: '',
+    subWith: (n, d) => `${n} items across 6 categories score the AI readability of lg.com sites. Pass rates are from the ${d} run, and the 4 items planned for the September audit are listed alongside.`,
+    subPlain: (n) => `Definitions and pass criteria for ${n} items across 6 categories. The 4 items planned for the September audit are listed alongside.`,
+    nx: [
+      '<b>#5 HTML &lt; 100KB</b> — measurement is accurate, but lg.com’s median HTML is 1,536KB so the real pass rate is 0.0%. Most passing cases were empty 404 shells with no body text, inverting the signal',
+      '<b>#8 Render Blocking 0</b> — 2.3% pass rate, no discriminating power',
+      '<b>#44 Sitemap XML</b> — exact rule duplicate of #19 Sitemap (already disabled upstream)',
+      '<b>#20 Organization · #22 Speakable · #30 digitalDocument · #31 Recipe</b> — disabled in scoring_config; kept greyed out in this document',
+    ],
+    ns: [
+      '<b>B2B · promotion / terms pages</b> — out of GEO scope, excluded from scores, pass rates, and URL counts',
+      '<b>Non-200 pages</b> (404 · 500 · fetch failure) — every check cascade-fails, so they are not improvement targets',
+      '<b>Unclassified · home</b> — no meaningful measurement',
+    ],
+    nc: [
+      '<b>#1 TTFB</b> — the crawler’s own measurement was contaminated by concurrent-crawl queuing and ran 6–200× high. Replaced with PageSpeed Insights server-response-time as the source of truth',
+      '<b>#4 Cache-Control</b> — the original rule failed immediately when no-cache/no-store appeared, ignoring max-age. Relaxed to pass when a max-age directive is present',
+      '<b>#34 Author or source + date</b> — a byline only makes sense for editorial content, so it applies only to Global Newsroom · Press &amp; Media · Buying Guide · LG Experience',
+    ],
+    nm: [
+      '<b>#17 Robots</b> — passes if <b>either</b> meta robots or the X-Robots-Tag header allows indexing (OR condition). Scored as a single representative check',
+      '<b>#25 Product full set</b> — scored as two items: Product and Offer',
+    ],
+  },
+}
+
+export function renderCriteriaHTML({ rows, snapshot, withScores, lang = 'ko' }) {
+  const L2 = lang === 'en' ? 'en' : 'ko'
+  const ct = CRIT_T[L2]
+  rows = localizeRows(rows, L2)
   const CH = (snapshot && snapshot.overall && snapshot.overall.checks) || {}
   const rate = cid => { const c = CH[cid]; return c && c.applicable ? +(c.pass / c.applicable * 100).toFixed(1) : null }
   const frac = cid => { const c = CH[cid]; return c ? `${c.pass.toLocaleString()}/${c.applicable.toLocaleString()}` : '' }
@@ -109,11 +211,11 @@ export function renderCriteriaHTML({ rows, snapshot, withScores }) {
   const tiles = CAT_ORDER.map(c => {
     const sc = withScores && snapshot ? snapshot.overall.categories[CAT_KEY[c]] : null
     return `<article class="tile">
-      <h3>${esc(c)}</h3>
-      <p class="tile-note">${esc(CAT_NOTE[c])}</p>
+      <h3>${esc(catName(c, L2))}</h3>
+      <p class="tile-note">${esc(catNote(c, L2))}</p>
       <div class="tile-foot">
-        ${sc != null ? `<span class="tile-score ${band(sc)}">${sc}</span>` : `<span class="tile-score plain">${activeCount(c)}<i>개</i></span>`}
-        <span class="tile-n">${sc != null ? `채점 ${activeCount(c)}개` : '채점 항목'}</span>
+        ${sc != null ? `<span class="tile-score ${band(sc)}">${sc}</span>` : `<span class="tile-score plain">${activeCount(c)}<i>${esc(ct.unitCount)}</i></span>`}
+        <span class="tile-n">${sc != null ? esc(ct.scored(activeCount(c))) : esc(ct.scoredLabel)}</span>
       </div>
       ${sc != null ? `<div class="meter"><i class="${band(sc)}" style="width:${sc}%"></i></div>` : ''}
     </article>`
@@ -132,10 +234,10 @@ export function renderCriteriaHTML({ rows, snapshot, withScores }) {
   const sections = CAT_ORDER.map(c => {
     const body = (byCat[c] || []).map(r => {
       const cls = r.no === '예정' ? ' class="planned"' : r.pendNote ? ' class="pending"' : ''
-      const tag = r.planNote ? `<span class="tag plan">9월 감사부터</span>`
-        : r.pendNote ? `<span class="tag pend">미채점 · 추후 정리</span>` : ''
+      const tag = r.planNote ? `<span class="tag plan">${esc(ct.tagPlan)}</span>`
+        : r.pendNote ? `<span class="tag pend">${esc(ct.tagPend)}</span>` : ''
       return `<tr${cls}>
-        <td class="c-no">${esc(r.no)}</td>
+        <td class="c-no">${esc(r.no === '예정' ? ct.planned : r.no)}</td>
         <td class="c-item"><b>${esc(r.name)}</b><span class="def">${esc(r.def)}</span></td>
         <td class="c-pass">${esc(r.pass)}${tag}</td>
         <td class="c-method">${esc(r.method)}</td>
@@ -144,7 +246,7 @@ export function renderCriteriaHTML({ rows, snapshot, withScores }) {
     }).join('\n')
     const orphans = (ORPHAN_CHECKS[c] || []).map(o => `<tr class="orphan">
         <td class="c-no">·</td>
-        <td class="c-item"><b>${esc(o.label)}</b><span class="def">체크리스트 문서에 행이 없는 채점 항목 — ${esc(o.note)}</span></td>
+        <td class="c-item"><b>${esc(o.label)}</b><span class="def">${esc(ct.orphanDef(o.note))}</span></td>
         <td class="c-pass">—</td>
         <td class="c-method">—</td>
         ${withScores ? `<td class="c-rate">${rateCell([o.cid])}</td>` : ''}
@@ -152,11 +254,11 @@ export function renderCriteriaHTML({ rows, snapshot, withScores }) {
     const sc = withScores && snapshot ? snapshot.overall.categories[CAT_KEY[c]] : null
     return `<section class="cat">
       <header class="cat-head">
-        <div><h2>${esc(c)}</h2><p>${esc(CAT_NOTE[c])}</p></div>
+        <div><h2>${esc(catName(c, L2))}</h2><p>${esc(catNote(c, L2))}</p></div>
         ${sc != null ? `<span class="cat-score ${band(sc)}">${sc}</span>` : ''}
       </header>
       <div class="tw"><table>
-        <thead><tr><th>번호</th><th>항목 · 정의</th><th>Pass 기준</th><th>측정방법</th>${withScores ? '<th>통과율</th>' : ''}</tr></thead>
+        <thead><tr><th>${esc(ct.thNo)}</th><th>${esc(ct.thItem)}</th><th>${esc(ct.thPass)}</th><th>${esc(ct.thMethod)}</th>${withScores ? `<th>${esc(ct.thRate)}</th>` : ''}</tr></thead>
         <tbody>
 ${body}
 ${orphans}
@@ -166,51 +268,35 @@ ${orphans}
   }).join('\n')
 
   const meta = withScores && snapshot ? `<dl class="meta">
-      <div><dt>측정일</dt><dd>${esc(snapshot.date)}</dd></div>
-      <div><dt>대상 국가</dt><dd>${Object.keys(snapshot.countries || {}).length}</dd></div>
-      <div><dt>대상 페이지</dt><dd>${snapshot.overall.urlCount.toLocaleString()}</dd></div>
-      <div><dt>채점 항목</dt><dd>${Object.keys(CH).length}</dd></div>
-      <div><dt>종합 점수</dt><dd class="${band(snapshot.overall.avgScore)}">${snapshot.overall.avgScore}</dd></div>
+      <div><dt>${esc(ct.mDate)}</dt><dd>${esc(snapshot.date)}</dd></div>
+      <div><dt>${esc(ct.mCountries)}</dt><dd>${Object.keys(snapshot.countries || {}).length}</dd></div>
+      <div><dt>${esc(ct.mPages)}</dt><dd>${snapshot.overall.urlCount.toLocaleString()}</dd></div>
+      <div><dt>${esc(ct.mItems)}</dt><dd>${Object.keys(CH).length}</dd></div>
+      <div><dt>${esc(ct.mScore)}</dt><dd class="${band(snapshot.overall.avgScore)}">${snapshot.overall.avgScore}</dd></div>
     </dl>
     <div class="legend">
-      <span><i class="dot" style="background:var(--good)"></i>90% 이상</span>
+      <span><i class="dot" style="background:var(--good)"></i>${esc(ct.legGood)}</span>
       <span><i class="dot" style="background:var(--warn)"></i>60–89%</span>
-      <span><i class="dot" style="background:var(--crit)"></i>60% 미만</span>
+      <span><i class="dot" style="background:var(--crit)"></i>${esc(ct.legCrit)}</span>
     </div>` : ''
 
   const notes = `<div class="notes">
-    <h2>읽는 법 · 예외 처리</h2>
-    <div><h3>채점에서 제외된 항목</h3><ul>
-      <li><b>#5 HTML &lt; 100KB</b> — 측정은 정확하나 lg.com HTML 중앙값이 1,536KB라 실질 통과율 0.0%. 통과 건의 대부분이 본문 0자인 빈 404 셸이라 지표 방향이 반대였음</li>
-      <li><b>#8 Render Blocking 0</b> — 통과율 2.3%로 변별력 없음</li>
-      <li><b>#44 Sitemap XML</b> — #19 Sitemap과 rule이 완전히 동일한 중복 (어딧에서도 이미 비활성)</li>
-      <li><b>#20 Organization · #22 Speakable · #30 digitalDocument · #31 Recipe</b> — scoring_config에서 비활성. 문서에는 회색으로 남겨둠</li>
-    </ul></div>
-    <div><h3>집계 대상에서 빠지는 페이지</h3><ul>
-      <li><b>B2B(사업자) · 프로모션/약관</b> — GEO 대상이 아니라 점수·통과율·URL 카운트 전부에서 제외</li>
-      <li><b>비-200 페이지</b> (404 · 500 · fetch 실패) — 전 체크가 cascade-FAIL이라 개선 대상이 아님</li>
-      <li><b>분류불가 · 홈페이지</b> — 측정 의미 없음</li>
-    </ul></div>
-    <div><h3>측정 기준이 바뀐 항목</h3><ul>
-      <li><b>#1 TTFB</b> — 어딧 크롤러 자체 측정값이 동시 크롤 큐잉에 오염돼 실제보다 6~200배 크게 잡혔음. PageSpeed Insights의 server-response-time을 정본으로 교체, 임계값 1800ms</li>
-      <li><b>#4 Cache-Control</b> — 원래 룰이 no-cache/no-store가 섞이면 max-age 값과 무관하게 즉시 FAIL 처리했음. max-age 디렉티브가 설정돼 있으면 통과로 완화</li>
-      <li><b>#34 Author 또는 출처+날짜</b> — byline은 에디토리얼에만 성립하는 개념이라 뉴스룸 · 구매 가이드 · LG Experience에만 적용</li>
-    </ul></div>
-    <div><h3>문서 번호와 채점 항목이 1:1이 아닌 곳</h3><ul>
-      <li><b>#17 Robots</b> — meta robots와 X-Robots-Tag 헤더 중 <b>하나만 충족해도 통과</b> (OR 조건). 대표 체크 하나로 채점</li>
-      <li><b>#25 Product 풀세트</b> — Product와 Offer, 두 개로 채점</li>
-    </ul></div>
+    <h2>${esc(ct.notesH)}</h2>
+    <div><h3>${esc(ct.nExcluded)}</h3><ul>${ct.nx.map(x => `<li>${x}</li>`).join('')}</ul></div>
+    <div><h3>${esc(ct.nSkipped)}</h3><ul>${ct.ns.map(x => `<li>${x}</li>`).join('')}</ul></div>
+    <div><h3>${esc(ct.nChanged)}</h3><ul>${ct.nc.map(x => `<li>${x}</li>`).join('')}</ul></div>
+    <div><h3>${esc(ct.nMapping)}</h3><ul>${ct.nm.map(x => `<li>${x}</li>`).join('')}</ul></div>
   </div>`
 
   const total = CAT_ORDER.reduce((a, c) => a + scoredCount(rows, c), 0)
   const subtitle = withScores
-    ? `6개 카테고리 ${total}개 항목으로 lg.com 글로벌 사이트의 AI 가독성을 채점합니다. 통과율은 ${esc(snapshot.date)} 측정분 기준이며, 9월 감사부터 시행할 예정 항목 4개를 함께 표기했습니다.`
-    : `6개 카테고리 ${total}개 항목의 정의와 Pass 기준입니다. 9월 감사부터 시행할 예정 항목 4개를 함께 표기했습니다.`
+    ? ct.subWith(total, snapshot.date)
+    : ct.subPlain(total)
 
   return `<!DOCTYPE html>
 <html lang="ko"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>GEO 검수 기준표${withScores ? '' : ' (기준)'}</title>
+<title>${esc(ct.docTitle(withScores))}</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
 <style>
 :root{--ground:#F7F8FA;--surface:#FFFFFF;--raise:#FBFCFD;--ink:#1A1A1A;--ink2:#475569;--ink3:#94A3B8;
@@ -295,7 +381,7 @@ footer{color:var(--ink3);font-size:12px;border-top:1px solid var(--rule);padding
 <div class="wrap">
   <header class="head">
     <span class="eyebrow">GEO Agent Readability</span>
-    <h1>검수 기준 · 전체 항목표</h1>
+    <h1>${esc(ct.h1)}</h1>
     <p class="sub">${subtitle}</p>
     ${meta}
   </header>
@@ -304,7 +390,7 @@ ${tiles}
   </div>
 ${sections}
 ${notes}
-  <footer>${withScores && snapshot ? `측정일 ${esc(snapshot.date)} · lg.com ${Object.keys(snapshot.countries || {}).length}개국 ${snapshot.overall.urlCount.toLocaleString()}페이지 · 통과율은 해당 항목이 적용된 페이지 대비 비율` : 'GEO Agent Readability 검수 기준 · 통과율은 대시보드에서 확인'}</footer>
+  <footer>${withScores && snapshot ? esc(ct.footWith(snapshot.date, Object.keys(snapshot.countries || {}).length, snapshot.overall.urlCount.toLocaleString())) : esc(ct.footPlain)}</footer>
 </div>
 </body></html>`
 }

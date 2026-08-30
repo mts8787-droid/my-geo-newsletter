@@ -438,3 +438,53 @@ describe('영역 설명 — 대시보드 ↔ 뉴스레터 동일', () => {
     expect(bad).toEqual([])
   })
 })
+
+describe('영문본 — 한글 잔존 0', () => {
+  const load = async () => {
+    const fs = await import('fs')
+    const { fileURLToPath } = await import('url')
+    const { dirname, join } = await import('path')
+    const root = join(dirname(fileURLToPath(import.meta.url)), '..')
+    const idx = JSON.parse(fs.readFileSync(join(root, 'data/readability/index.json'), 'utf8'))
+    const snaps = idx.snapshots.map(m =>
+      JSON.parse(fs.readFileSync(join(root, `data/readability/${m.date}.json`), 'utf8')))
+    return { idx, snaps }
+  }
+  const korOf = h => h.replace(/<[^>]+>/g, ' ').match(/[^ ]*[가-힣][^ ]*/g) || []
+
+  it('검수 기준 페이지 EN 에 한글이 없다', async () => {
+    const { renderCriteriaHTML, loadRows } = await import('../scripts/render-criteria.mjs')
+    const { snaps } = await load()
+    const h = renderCriteriaHTML({ rows: loadRows(), snapshot: snaps[snaps.length - 1], withScores: true, lang: 'en' })
+    expect(korOf(h)).toEqual([])
+  })
+  it('체크리스트 EN 사전이 모든 행을 덮는다', async () => {
+    const { loadRows } = await import('../scripts/render-criteria.mjs')
+    const { CHECKLIST_EN, CHECKLIST_EN_PLANNED } = await import('../src/shared/readabilityChecklistEn.js')
+    const rows = await loadRows()
+    const numbered = rows.filter(r => r.no !== '예정')
+    expect(numbered.filter(r => !CHECKLIST_EN[r.no]).map(r => r.no)).toEqual([])
+    expect(rows.filter(r => r.no === '예정').length).toBe(CHECKLIST_EN_PLANNED.length)
+    // 모든 EN 항목이 name·def·pass·method 를 갖는다
+    const bad = Object.entries(CHECKLIST_EN)
+      .filter(([, v]) => !v.name || !v.def || !v.pass || !v.method).map(([k]) => k)
+    expect(bad).toEqual([])
+  })
+  it('영문 CSV 에 한글이 없고 행 수가 같다', async () => {
+    const fs = await import('fs')
+    const { fileURLToPath } = await import('url')
+    const { dirname, join } = await import('path')
+    const root = join(dirname(fileURLToPath(import.meta.url)), '..')
+    const { localizeUrlsCsv } = await import('../src/shared/readabilityCsv.js')
+    const { idx } = await load()
+    const d = idx.snapshots[idx.snapshots.length - 1].date
+    const csv = fs.readFileSync(join(root, `data/readability/urls-${d}.csv`), 'utf8')
+    const en = localizeUrlsCsv(csv, 'en')
+    expect(en.match(/[가-힣]/g)).toBeNull()
+    expect(en.split('\n').length).toBe(csv.split('\n').length)
+  })
+  it('i18n 사전의 KO/EN 키가 일치한다', async () => {
+    const { T } = await import('../src/shared/readabilityI18n.js')
+    expect(Object.keys(T.ko).sort()).toEqual(Object.keys(T.en).sort())
+  })
+})

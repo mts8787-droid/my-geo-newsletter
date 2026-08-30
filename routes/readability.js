@@ -133,7 +133,7 @@ readabilityRouter.get('/admin/readability/criteria.html', (req, res) => {
   try {
     const rows = loadRows()
     res.set('Content-Type', 'text/html; charset=utf-8')
-    res.send(renderCriteriaHTML({ rows, snapshot: null, withScores: false }))
+    res.send(renderCriteriaHTML({ rows, snapshot: null, withScores: false, lang: String(req.query.lang || '').toLowerCase() === 'en' ? 'en' : 'ko' }))
   } catch (e) {
     res.status(404).send(`검수 기준 생성 실패 — ${e.message}`)
   }

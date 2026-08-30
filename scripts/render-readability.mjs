@@ -25,7 +25,7 @@ const FONT_FACE_CSS = `
 @font-face { font-family: 'LG Smart'; font-weight: 300; font-style: normal; src: url('/font/LG%20Smart%20Light.ttf') format('truetype'); font-display: swap; }
 `
 
-import { loadRows, DOC_TO_CHECK } from './render-criteria.mjs'
+import { loadRows, localizeRows, DOC_TO_CHECK } from './render-criteria.mjs'
 
 // check id → 항목 정의. 체크리스트 문서(geo-agent-checklist.html)가 정의의 단일 출처.
 // 카드에 통과율만 있으면 항목명이 축약어라 무슨 기준인지 알 수 없어 정의를 같이 싣는다.
@@ -38,12 +38,13 @@ function stripParens(label) {
   return String(label == null ? '' : label).replace(/\s*[（(][^)）]*[)）]/g, '').trim()
 }
 
-function loadCheckDefs() {
+// 체크 id → { def, pass, label } — 체크리스트 문서 출처. lang 에 맞춰 EN 사전을 적용한다.
+function loadCheckDefs(lang = 'ko') {
   try {
     const defs = {}
-    for (const r of loadRows()) {
+    for (const r of localizeRows(loadRows(), lang)) {
       for (const cid of (DOC_TO_CHECK[r.no] || [])) {
-        if (r.def || r.pass) defs[cid] = { def: r.def || '', pass: r.pass || '' }
+        if (r.def || r.pass || r.name) defs[cid] = { def: r.def || '', pass: r.pass || '', label: r.name || '' }
       }
     }
     return defs
@@ -170,7 +171,7 @@ function viewCategoryDetail(snap) {
   }
 
   const checkRate = c => c.applicable > 0 ? +(c.pass / c.applicable * 100).toFixed(1) : null
-  const DEFS = loadCheckDefs()
+  const DEFS = loadCheckDefs(_LANG)
   const cardHead = `<div class="bar-row bar-head has-def">
     <span class="bar-label"><span class="bar-name">항목</span><span class="bar-def">정의</span><span class="bar-pass">Pass 기준</span></span>
     <div class="bar-track"></div><span class="bar-value">통과율</span></div>`
@@ -332,7 +333,8 @@ function readabilityClient() {
       var rows = head + checksArr.slice().sort(function (a, b) { return a.label.localeCompare(b.label, 'en', { numeric: true }) }).map(function (c) {
         var rate = checkRate(c)
         var right = rate == null ? '—' : rate + '% (' + c.pass + '/' + c.applicable + ')'
-        return barRow(stripParens(c.label), rate == null ? 0 : rate, 100, rateColor(rate), right, '', defs[c.cid])
+        var lb = (defs[c.cid] && defs[c.cid].label) || c.label
+        return barRow(stripParens(lb), rate == null ? 0 : rate, 100, rateColor(rate), right, '', defs[c.cid])
       }).join('')
       // 이 영역이 무엇을 보는 영역인지 — 제목 바로 옆에 붙인다 (사용자 지시 2026-08-30).
       // what 은 제목 옆 인라인, why(안 되면 생기는 일)는 그 아래 줄.
@@ -463,7 +465,8 @@ function readabilityClient() {
         if (n.pt && !(ptId && n.pt.indexOf(ptId) >= 0)) return false
         return true
       }).map(function (n) { return P(n.text) })
-      rows.push({ label: c.label, rate: rate, gap: c.applicable - c.pass,
+      var D = (RD.checkDefs || {})[cid]
+      rows.push({ label: (D && D.label) || c.label, rate: rate, gap: c.applicable - c.pass,
         what: P(g.what), why: P(g.why), pin: g.pin === true,
         where: P(byP.where || byC.where || g.where),
         act: P(byP.action || byC.action || g.action),
@@ -746,7 +749,7 @@ export function renderReadabilityHTML({ snapshot, index, snapshots, adminMode = 
     // EN 이면 CSV·검수기준 링크에 lang 을 붙여 영문본을 받도록 한다
     paths: withLang(paths || (adminMode ? ADMIN_PATHS : PUBLIC_PATHS), LANG),
     categoryLabels: snap.categoryLabels || {},
-    checkDefs: loadCheckDefs(),   // check id → 항목 정의 (체크리스트 문서 출처)
+    checkDefs: loadCheckDefs(LANG),   // check id → 항목 정의·라벨 (체크리스트 문서 출처, 언어 반영)
     ccName: Object.fromEntries(Object.keys(snap.countries).map(cc => [cc, CC_NAME[cc] || cc.toUpperCase()])),
     overall: snap.overall,
     countries: snap.countries,
