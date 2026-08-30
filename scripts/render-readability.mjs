@@ -224,6 +224,9 @@ function readabilityClient() {
   // 서버 rdBandColor 의 클라이언트 짝 (design.md §5.8) — 점수/통과율 동일 기준
   function scoreColor(v) { if (v == null) return COMP; if (v >= BAND.good) return LEAD; if (v >= BAND.warn) return BEHIND; return CRIT }
   var rateColor = scoreColor
+  // 항목 라벨의 괄호 부연 제거 — renderCategoryCards·renderGuideSection 공용이라 최상위에 둔다.
+  // (renderCategoryCards 안에 중첩돼 있어 renderGuideSection 에서 ReferenceError 가 났다)
+  function stripParens(l) { return String(l == null ? '' : l).replace(/\s*[（(][^)）]*[)）]/g, '').trim() }
   function num(n) { return (n == null ? 0 : n).toLocaleString() }
   function barRow(label, value, max, color, rightText, countText, meta) {
     var w = max > 0 ? Math.max(0, Math.min(100, (value / max) * 100)).toFixed(1) : 0
@@ -294,7 +297,6 @@ function readabilityClient() {
       var vals = arr.map(checkRate).filter(function (r) { return r != null })
       return vals.length ? +(vals.reduce(function (s, r) { return s + r }, 0) / vals.length).toFixed(1) : null
     }
-    function stripParens(l) { return String(l == null ? '' : l).replace(/\s*[（(][^)）]*[)）]/g, '').trim() }
     function card(name, avg, sub, checksArr, catKey) {
       var defs = RD.checkDefs || {}
       var head = '<div class="bar-row bar-head has-def"><span class="bar-label">' +

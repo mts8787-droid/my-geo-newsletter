@@ -355,3 +355,34 @@ describe('개선 가이드 — 실측 수치 하드코딩 금지', () => {
     expect(bad).toEqual([])
   })
 })
+
+describe('대시보드 클라이언트 — 스코프 회귀 방지', () => {
+  // 클라이언트 스크립트는 문자열로 임베드돼 빌드가 잡아주지 못한다.
+  // renderGuideSection 이 renderCategoryCards 안에 중첩된 stripParens 를 호출해
+  // 국가별·페이지타입별 탭이 통째로 열리지 않는 회귀가 있었다 (2026-08-30).
+  it('클라이언트 최상위 함수가 다른 함수 안에 중첩된 헬퍼를 부르지 않는다', async () => {
+    const fs = await import('fs')
+    const { fileURLToPath } = await import('url')
+    const { dirname, join } = await import('path')
+    const root = join(dirname(fileURLToPath(import.meta.url)), '..')
+    const src = fs.readFileSync(join(root, 'scripts/render-readability.mjs'), 'utf8')
+    const cli = src.slice(src.indexOf('function readabilityClient()'))
+    // 최상위(들여쓰기 2칸) 함수들을 본문째로 자른다
+    const tops = [...cli.matchAll(/^ {2}function (\w+)\s*\([\s\S]*?\n {2}\}/gm)]
+      .map(m => ({ name: m[1], body: m[0] }))
+    // 각 최상위 함수 안에 중첩된(4칸 이상) 헬퍼 이름 수집 → 소유자 기록
+    const owner = {}
+    tops.forEach(t => {
+      ;[...t.body.matchAll(/^ {4,}function (\w+)\s*\(/gm)].forEach(m => { owner[m[1]] = t.name })
+    })
+    // 소유자가 아닌 다른 최상위 함수가 그 헬퍼를 호출하면 ReferenceError
+    const bad = []
+    tops.forEach(t => {
+      Object.entries(owner).forEach(([helper, own]) => {
+        if (own === t.name) return
+        if (new RegExp('\\b' + helper + '\\s*\\(').test(t.body)) bad.push(`${t.name} → ${helper} (정의: ${own} 내부)`)
+      })
+    })
+    expect(bad).toEqual([])
+  })
+})
