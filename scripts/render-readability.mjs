@@ -848,9 +848,9 @@ body{background:#F1F5F9;font-family:${FONT};color:#1A1A1A;line-height:1.6}
 .cat-card .bars.sm .bar-track{flex:0 0 96px;height:12px}
 .cat-card .bars.sm .bar-value{flex:0 0 148px;font-size:14px}
 .cat-card .bars.sm .bar-row{gap:16px;align-items:baseline}
-.bar-name{flex:0 0 196px;padding-right:16px;font-size:14px;font-weight:600;color:#1A1A1A;letter-spacing:-0.3px}
+.bar-name{flex:0 0 236px;padding-right:16px;font-size:14px;font-weight:600;color:#1A1A1A;letter-spacing:-0.3px}
 .bar-def{flex:1 1 auto;min-width:0;padding-right:16px;font-size:13px;line-height:1.5;color:#64748B;font-weight:400;letter-spacing:-0.2px}
-.bar-pass{flex:0 0 224px;font-size:12.5px;line-height:1.5;color:#94A3B8;font-weight:500;letter-spacing:-0.2px}
+.bar-pass{flex:0 0 284px;font-size:12.5px;line-height:1.5;color:#94A3B8;font-weight:500;letter-spacing:-0.2px}
 .bar-head.has-def .bar-name,.bar-head.has-def .bar-def,.bar-head.has-def .bar-pass{font-size:11px;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:.3px}
 .cat-card{background:#fff;border:1px solid #E8EDF2;border-radius:12px;padding:16px 18px}
 .cat-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:2px}
