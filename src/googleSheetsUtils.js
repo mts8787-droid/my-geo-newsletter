@@ -1,6 +1,6 @@
 // N2 — XLSX는 fetchSheet 호출 시에만 필요 → 동적 로드
 import { loadXlsx } from './shared/loadXlsx.js'
-import { SHEET_NAMES, parseSheetRows } from './excelUtils'
+import { SHEET_NAMES, parseSheetRows } from './excelUtils.js'
 import { PROD_ID_TO_KR, PROD_ID_TO_BU } from './categoryMap.js'
 import { verifySyncResult } from './sheetParserUtils.js'
 
@@ -11,12 +11,18 @@ export function extractSheetId(url) {
 
 async function fetchSheet(sheetId, sheetName) {
   const rid = `${Date.now()}_${Math.random().toString(36).slice(2,8)}`
+  // 서버(Node)에서는 상대 URL fetch 불가 → docs.google.com 직결 (routes/proxy.js 가 하는 일과 동일).
+  // 브라우저는 CORS 때문에 기존 /gsheets-proxy 경유 유지. 캐시 회피는 reqId 랜덤 파라미터가 담당.
+  const isNode = typeof window === 'undefined'
+  const base = isNode ? 'https://docs.google.com' : '/gsheets-proxy'
   // sheet 파라미터를 &headers=1과 함께 전달 — gviz는 sheet 이름으로 탭 선택
-  const url = `/gsheets-proxy/spreadsheets/d/${sheetId}/gviz/tq?sheet=${encodeURIComponent(sheetName)}&tqx=out:csv;reqId:${rid}&headers=1`
+  const url = `${base}/spreadsheets/d/${sheetId}/gviz/tq?sheet=${encodeURIComponent(sheetName)}&tqx=out:csv;reqId:${rid}&headers=1`
   // URL logged only in dev for debugging
   const res = await fetch(url, {
     cache: 'no-store',
-    headers: { 'Cache-Control': 'no-cache, no-store', 'Pragma': 'no-cache' },
+    headers: isNode
+      ? { 'User-Agent': 'Mozilla/5.0', 'Cache-Control': 'no-cache, no-store', 'Pragma': 'no-cache' }
+      : { 'Cache-Control': 'no-cache, no-store', 'Pragma': 'no-cache' },
   })
   if (!res.ok) throw new Error(
     `"${sheetName}" 시트를 가져올 수 없습니다 (HTTP ${res.status}).`

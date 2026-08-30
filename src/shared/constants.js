@@ -299,3 +299,10 @@ export const INIT_CITATIONS = [
   { rank: 6, source: '디지털타임스',    category: 'TV',         score: 64, delta: -2.5, ratio: 13.6 },
   { rank: 7, source: 'PCMag',           category: '모니터',     score: 61, delta: +1.9, ratio: 13.0 },
 ]
+
+// 시트 동기화가 덮어쓰면 안 되는 "사용자 작성 텍스트" meta 키 — single source.
+// Sidebar.handleGsSync(브라우저)와 lib/republish.mjs(서버 통합 게시)가 같은 목록을 사용해
+// 시트 재동기화 시 인사이트·공지 등 사용자 편집 본문이 시트 값으로 밀리지 않게 한다.
+export const META_TEXT_KEYS = ['totalInsight','productInsight','productHowToRead','citationInsight','citationHowToRead',
+  'dotcomInsight','dotcomHowToRead','cntyInsight','cntyHowToRead','citDomainInsight','citDomainHowToRead',
+  'citCntyInsight','citCntyHowToRead','citPrdInsight','citPrdHowToRead','noticeText','kpiLogicText','todoText','todoNotice','aiPromptRules','monthlyReportBody']

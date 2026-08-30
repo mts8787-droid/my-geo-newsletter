@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import { Copy, Download, RefreshCw, Check, Send, Sparkles, Languages, Globe, Link2, Archive, Pencil } from 'lucide-react'
 import { downloadTemplate } from '../excelUtils'
 import { extractSheetId, syncFromGoogleSheets } from '../googleSheetsUtils'
-import { LG_RED, FONT } from './constants.js'
+import { LG_RED, FONT, META_TEXT_KEYS } from './constants.js'
 import { inputStyle, DataFreshnessBadge } from './components.jsx'
 import { resolveDataForLang, translateTexts } from './utils.js'
 import { saveSyncData, fetchSyncData, fetchSyncMeta, publishCombinedDashboard, generateAIInsight } from './api.js'
@@ -13,35 +13,9 @@ import { derivedMetaFor, volFor, dateLineFor } from './reportPeriod.js'
 // 발송 시 EN meta 에서 그대로 따라가야 할 "텍스트" 필드 (번역된 본문/라벨).
 // 그 외 차트/표시 토글은 metaKo 기준으로 통일 — metaKo/metaEn 가 독립 state 라
 // 미리보기 언어를 바꿔가며 토글을 만지면 KO/EN 차트가 갈라지기 때문 (handleTranslate 와 동일 화이트리스트).
-const EN_TEXT_FIELDS = ['title', 'dateLine', 'noticeText', 'totalInsight', 'reportType', 'productInsight', 'productHowToRead', 'citationInsight', 'citationHowToRead', 'dotcomInsight', 'dotcomHowToRead', 'todoText', 'todoNotice', 'kpiLogicText', 'cntyInsight', 'cntyHowToRead', 'citDomainInsight', 'citDomainHowToRead', 'citCntyInsight', 'citCntyHowToRead', 'citPrdInsight', 'citPrdHowToRead', 'period', 'team', 'reportNo', 'monthlyReportBody', 'highlightInsight', 'bumpInsight', 'hlChapterTitle', 'hlWeeklyTitle', 'hlModelTitle', 'hlBumpTitle', 'semiHighlightText']
-// V2 인사이트 — 편집된 필드만 번역 대상 (미편집이면 템플릿의 EN 기본 문구가 자동 렌더)
-const V2_TRANSLATE_FIELDS = ['v2ExIntro2', 'v2Ex1T2', 'v2Ex1B2', 'v2Ex2T2', 'v2Ex2B2', 'v2Ex3T2', 'v2Ex3B2', 'v2T11Caption', 'v2CaseCaption', 'v2C1Title', 'v2C1Keep', 'v2C1Bko', 'v2C1Tko', 'v2C2Title4', 'v2C2Keep2', 'v2C2Bko4', 'v2C2Tko4', 'v2VisTblHtml8', 'todoV2Title', 'todoV2NoticeLabel', 'todoV2NoticeHtml', 'todoV2PerfTitle', 'todoV2ChBu', 'todoV2NewBu', 'todoV2FixBu', 'todoV2TechBu', 'todoV2NextSecTitle', 'todoV2NextTitle', 'todoV2NextHtml3']
-EN_TEXT_FIELDS.push(...V2_TRANSLATE_FIELDS)
-// Readability Highlight (2026-08 신설) — 이 목록에 없으면 mergeEnMeta 가 undefined 로 덮어
-// 템플릿의 한국어 기본 문안이 그대로 EN 본문에 나온다 (영문본 미번역 증상).
-const RD_TRANSLATE_FIELDS = ['rd_h1', 'rd_intro', 'rd_introNotes', 'rd_summary', 'rd_areaIntro', 'rd_h2',
-  'rd_d1Title', 'rd_d1', 'rd_d1Notes', 'rd_d2Title', 'rd_d2', 'rd_d3Title', 'rd_d3', 'rd_d4Title', 'rd_d4']
-EN_TEXT_FIELDS.push(...RD_TRANSLATE_FIELDS)
-// 8월 Executive Summary V3 — 편집 시 EN 번역 대상
-const V3_TRANSLATE_FIELDS = ['v3Ex1T', 'v3Ex1B', 'v3Ex2T', 'v3Ex2B']
-EN_TEXT_FIELDS.push(...V3_TRANSLATE_FIELDS)
-
-// EN meta = KO 구조(토글·레이아웃·수치) 그대로 + EN 번역 텍스트만 오버레이.
-// metaEn 을 통째로 쓰면 예전 번역 시점의 구조 스냅샷이 남아 KO 변경(신규 섹션·개정 문구)이
-// EN 에 반영되지 않음 → 미리보기·게시·발송 모두 이 병합을 사용해 EN 이 KO 를 자동 추종.
-// rd_* 는 하이라이트 표/그래프 라벨까지 동적으로 늘어나므로 정적 목록으로 못 따라간다.
-// prefix 로 일괄 오버레이하되 문자열만 — rd_schemaCompare 같은 구조 데이터는 KO 것을 그대로 쓴다.
-function isTranslatableRdKey(k, v) {
-  return k.startsWith('rd_') && (typeof v === 'string' || v == null)
-}
-
-// 해당 key 가 "EN 번역 대상 텍스트" 인지 판정.
-// 텍스트가 아닌 것(토글·색상·폰트크기·카드버전 등 구조/표시 설정)은 KO 를 단일 소스로 쓴다 —
-// EN 미리보기에서 토글을 바꿔도 metaEn 에 저장되면 mergeEnMeta 가 무시해 반영이 안 됐다
-// (사용자 보고 2026-08-28: "인사이트 보기 on/off 가 영문에서 작동 안 함").
-export function isEnTextField(key, value) {
-  return EN_TEXT_FIELDS.includes(key) || isTranslatableRdKey(key, value)
-}
+// EN 번역 필드 목록·병합은 순수 모듈로 분리 (서버 게시 엔진 공용) — enMeta.js
+import { isEnTextField, mergeEnMeta } from './enMeta.js'
+export { isEnTextField, mergeEnMeta }
 
 // 선택 탭 그룹 — "카테고리(제목) + 그 안의 대안(버튼)" 한 단위.
 // 기존에는 같은 인라인 버튼 스타일이 선택지마다 복붙돼 있어 그룹 경계가 안 보였다.
@@ -178,14 +152,6 @@ function TabSectionTitle({ children }) {
   )
 }
 
-export function mergeEnMeta(metaKo, metaEn) {
-  const m = { ...metaKo }
-  EN_TEXT_FIELDS.forEach(k => { m[k] = metaEn?.[k] })
-  // 동적 rd_* 필드 (하이라이트 표·그래프 라벨) 도 EN 오버레이 대상
-  new Set([...Object.keys(metaKo || {}), ...Object.keys(metaEn || {})])
-    .forEach(k => { if (isTranslatableRdKey(k, metaKo?.[k])) m[k] = metaEn?.[k] })
-  return m
-}
 
 // 두 언어(KO/EN) 이메일 HTML 을 하나의 문서로 이어붙임 — KO 본문 → 구분선 → EN 본문.
 // 각 generateHTML 은 완전한 HTML 문서를 반환하므로, KO 문서의 <body> 안에 EN 본문 내용만 삽입한다.
@@ -210,7 +176,7 @@ function mergeBilingualEmail(htmlKo, htmlEn) {
 }
 
 export default
-function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, total, setTotal, products, setProducts, citations, setCitations, dotcom, setDotcom, productsCnty, setProductsCnty, citationsCnty, setCitationsCnty, resolved, previewLang, setPreviewLang, snapshots, setSnapshots, setWeeklyLabels, setWeeklyAll, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty, generateHTML, publishEndpoint, setMonthlyVis, onSyncExtra, categoryStats, extra, monthlyVis, progressMonth, setProgressMonth, progressDataMonth, editMode = false, setEditMode }) {
+function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, total, setTotal, products, setProducts, citations, setCitations, dotcom, setDotcom, productsCnty, setProductsCnty, citationsCnty, setCitationsCnty, resolved, previewLang, setPreviewLang, snapshots, setSnapshots, setWeeklyLabels, setWeeklyAll, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty, generateHTML, publishEndpoint, setMonthlyVis, onSyncExtra, categoryStats, extra, monthlyVis, progressMonth, setProgressMonth, progressDataMonth, editMode = false, setEditMode, hidePublish = false }) {
   // 최신 데이터 ref — AI 생성/게시 시 stale closure 방지
   const latestRef = useRef({ products, productsCnty, citations, citationsCnty, total, dotcom, extra })
   latestRef.current = { products, productsCnty, citations, citationsCnty, total, dotcom, extra }
@@ -595,9 +561,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
       _log.push(`[Sync] productsCnty: ${parsed.productsCnty?.length ?? 0}건`)
       if (parsed.meta) {
         // 텍스트 칸: 기존 값이 있으면 덮어쓰지 않음 (빈 값인 경우에만 적용)
-        const textKeys = ['totalInsight','productInsight','productHowToRead','citationInsight','citationHowToRead',
-          'dotcomInsight','dotcomHowToRead','cntyInsight','cntyHowToRead','citDomainInsight','citDomainHowToRead',
-          'citCntyInsight','citCntyHowToRead','citPrdInsight','citPrdHowToRead','noticeText','kpiLogicText','todoText','todoNotice','aiPromptRules','monthlyReportBody']
+        const textKeys = META_TEXT_KEYS  // single source — constants.js (서버 게시 엔진과 공유)
         setMetaKo(m => {
           const merged = { ...m }
           for (const [k, v] of Object.entries(parsed.meta)) {
@@ -1018,7 +982,14 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
           </div>
         )}
 
-        {/* 웹 게시 (KO+EN 동시) */}
+        {/* 웹 게시 (KO+EN 동시) — 통합 게시로 일원화된 모드(visibility 등)는 숨김 */}
+        {hidePublish ? (
+          <div style={{ padding: '8px 10px', borderRadius: 7, fontSize: 11, fontFamily: FONT, lineHeight: 1.7,
+            background: '#1E293B', color: '#94A3B8', marginBottom: 8 }}>
+            게시는 <b style={{ color: '#CBD5E1' }}>통합 대시보드 어드민</b>의 "전체 게시" 버튼으로 일원화되었습니다.
+            매일 00시(KST)에 자동 새로고침·게시됩니다.
+          </div>
+        ) : (<>
         <button onClick={handlePublish} disabled={publishing} style={{
           width: '100%', padding: '9px 0',
           background: publishing ? '#1E293B' : '#7C3AED',
@@ -1060,6 +1031,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
             )}
           </>
         )}
+        </>)}
         </>)}
 
         {/* 아카이빙 (AI 학습 데이터) */}

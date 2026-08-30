@@ -23,6 +23,7 @@ import { ipRouter } from './routes/ip-allowlist.js'
 import { aiSettingsRouter } from './routes/ai-settings.js'
 import { archivesRouter } from './routes/archives.js'
 import { publishRouter } from './routes/publish.js'
+import { startPublishScheduler } from './lib/publish-scheduler.js'
 import { proxyRouter } from './routes/proxy.js'
 import { authRouter } from './routes/auth-api.js'
 import { publishedRouter } from './routes/published.js'
@@ -103,6 +104,7 @@ app.use('/api/', apiLimiter)
 app.use('/api/generate-insight', expensiveLimiter)
 app.use('/api/translate', expensiveLimiter)
 app.use('/api/publish', expensiveLimiter)
+app.use('/api/publish-all', expensiveLimiter)
 app.use('/api/publish-dashboard', expensiveLimiter)
 app.use('/api/publish-citation', expensiveLimiter)
 app.use('/api/publish-monthly-report', expensiveLimiter)
@@ -217,6 +219,8 @@ app.listen(PORT, '0.0.0.0', () => {
     snapshotsCount: snapCount,
   }, 'server started')
   if (ADMIN_PASSWORD === 'changeme') log.warn('default ADMIN_PASSWORD detected — set env var')
+  // 매일 00시 KST 자동 데이터 새로고침 + 통합 게시 (production 또는 AUTO_PUBLISH=1 에서만)
+  startPublishScheduler()
 })
 
 // 프로세스 크래시 진단 — 조용히 죽어 Render 재시작만 반복되던 상황에서 실제 원인을 로그로 남김.

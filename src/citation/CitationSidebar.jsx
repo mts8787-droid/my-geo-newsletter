@@ -23,10 +23,7 @@ export default function CitationSidebar({
   const [gsStatus,  setGsStatus]  = useState(null)
   const [gsMsg,     setGsMsg]     = useState('')
   const [debugLog,  setDebugLog]  = useState('')
-  const [publishing, setPublishing] = useState(false)
   const [publishMsg, setPublishMsg] = useState('')
-  const [combPublishing, setCombPublishing] = useState(false)
-  const [combMsg, setCombMsg] = useState('')
   const [publishInfo, setPublishInfo] = useState(null)
 
   // 게시 상태 로드
@@ -145,35 +142,6 @@ export default function CitationSidebar({
     }
   }
 
-  async function handlePublish() {
-    if (publishing) return
-    setPublishing(true); setPublishMsg('')
-    try {
-      const resolvedKo = resolveDataForLang([], [], citations, citationsCnty, 'ko')
-      const resolvedEn = resolveDataForLang([], [], citations, citationsCnty, 'en')
-      const trendData = { citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, dotcomTrend, dotcomTrendMonths, dotcomByLlm, citTouchPointsByLlm, citDomainByLlm }
-      const htmlKo = generateHTML(metaKo, null, [], resolvedKo.citations, dotcom, 'ko', [], resolvedKo.citationsCnty, trendData, citationsByCnty, dotcomByCnty, citationsByPrd)
-      const htmlEn = generateHTML(metaEn, null, [], resolvedEn.citations, dotcom, 'en', [], resolvedEn.citationsCnty, trendData, citationsByCnty, dotcomByCnty, citationsByPrd)
-      const title = `${metaKo.period || ''} Citation Dashboard`.trim()
-      const res = await fetch('/api/publish-citation', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-        body: JSON.stringify({ title, htmlKo, htmlEn }),
-      })
-      const data = await res.json()
-      if (!data.ok) throw new Error(data.error || '게시 실패')
-      setPublishInfo({ ...data, published: true })
-      const koUrl = `${window.location.origin}${data.urls.ko}`
-      const enUrl = `${window.location.origin}${data.urls.en}`
-      try { await navigator.clipboard.writeText(koUrl + '\n' + enUrl) } catch {}
-      setPublishMsg(`KO: ${koUrl}\nEN: ${enUrl}`)
-    } catch (err) {
-      setPublishMsg('ERROR: ' + err.message)
-    } finally {
-      setPublishing(false)
-      setTimeout(() => setPublishMsg(''), 20000)
-    }
-  }
 
   async function handleUnpublish() {
     try {
@@ -183,19 +151,6 @@ export default function CitationSidebar({
     } catch {}
   }
 
-  async function handleCombinedPublish() {
-    if (combPublishing) return
-    setCombPublishing(true); setCombMsg('')
-    try {
-      const result = await publishCombinedDashboard(generateDashboardHTML, resolveDataForLang)
-      setCombMsg(`통합 게시 완료!\nKO: ${window.location.origin}${result.urls.ko}\nEN: ${window.location.origin}${result.urls.en}`)
-    } catch (err) {
-      setCombMsg('ERROR: ' + err.message)
-    } finally {
-      setCombPublishing(false)
-      setTimeout(() => setCombMsg(''), 15000)
-    }
-  }
 
   return (
     <div style={{ width: 520, minWidth: 520, borderRight: '1px solid #1E293B',
@@ -360,26 +315,15 @@ export default function CitationSidebar({
           textTransform: 'uppercase', letterSpacing: 1, fontFamily: FONT }}>
           웹 게시
         </p>
-        <button onClick={handlePublish} disabled={publishing}
-          style={{ width: '100%', padding: '10px 0', borderRadius: 8, border: 'none',
-            background: publishing ? '#1E293B' : '#166534', color: publishing ? '#94A3B8' : '#86EFAC',
-            fontSize: 12, fontWeight: 700, fontFamily: FONT, cursor: publishing ? 'wait' : 'pointer',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginBottom: 8 }}>
-          <Globe size={13} /> {publishing ? '게시 중...' : '웹 게시 (KO + EN)'}
-        </button>
-        <button onClick={handleCombinedPublish} disabled={combPublishing}
-          style={{ width: '100%', padding: '10px 0', borderRadius: 8, border: 'none',
-            background: combPublishing ? '#1E293B' : '#1D4ED8', color: combPublishing ? '#94A3B8' : '#FFFFFF',
-            fontSize: 12, fontWeight: 700, fontFamily: FONT, cursor: combPublishing ? 'wait' : 'pointer',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginBottom: 8 }}>
-          <Globe size={13} /> {combPublishing ? '통합 게시 중...' : '통합 대시보드 게시'}
-        </button>
-        {combMsg && (
-          <div style={{ padding: '8px 10px', borderRadius: 7, fontSize: 11, fontFamily: FONT, lineHeight: 1.6,
-            background: combMsg.startsWith('ERROR') ? '#450A0A' : '#14532D',
-            color: combMsg.startsWith('ERROR') ? '#FCA5A5' : '#86EFAC',
-            marginBottom: 8, wordBreak: 'break-all', whiteSpace: 'pre-line' }}>{combMsg.startsWith('ERROR:') ? combMsg.slice(6) : combMsg}</div>
-        )}
+        {/* 게시 버튼 제거 (2026-08-30) — 게시는 통합 대시보드 어드민의 "전체 게시" 로 일원화.
+            ⚠ 여기서 편집한 인사이트 텍스트는 "스냅샷 저장" 을 해야 다음 통합/자동 게시에 반영된다
+            (citation 은 meta 를 sync-data 에 남기지 않는 구조 — 서버가 최신 스냅샷에서 읽음). */}
+        <div style={{ padding: '8px 10px', borderRadius: 7, fontSize: 11, fontFamily: FONT, lineHeight: 1.7,
+          background: '#1E293B', color: '#94A3B8', marginBottom: 8 }}>
+          게시는 <b style={{ color: '#CBD5E1' }}>통합 대시보드 어드민</b>의 "전체 게시" 버튼으로 일원화되었습니다.
+          매일 00시(KST)에 자동 새로고침·게시됩니다.<br />
+          편집한 텍스트는 <b style={{ color: '#CBD5E1' }}>스냅샷 저장</b> 후에 게시에 반영됩니다.
+        </div>
         {publishMsg && (
           <div style={{ padding: '8px 10px', borderRadius: 7, fontSize: 11, fontFamily: FONT, lineHeight: 1.6,
             background: publishMsg.startsWith('ERROR') ? '#450A0A' : '#14532D',

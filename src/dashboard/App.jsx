@@ -1,8 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { FONT, LG_RED } from '../shared/constants.js'
-import { generateDashboardHTML } from './dashboardTemplate.js'
-import { resolveDataForLang } from '../shared/utils.js'
-import { publishCombinedDashboard } from '../shared/api.js'
 import GlossaryPage from './GlossaryPage.jsx'
 
 const TABS = [
@@ -50,7 +47,15 @@ export default function App() {
   const [trackerData, setTrackerData] = useState(null)
   const [publishing, setPublishing] = useState(false)
   const [publishMsg, setPublishMsg] = useState('')
-  const [includeReadability, setIncludeReadability] = useState(false)  // 기본 미포함
+  const [includeReadability, setIncludeReadability] = useState(true)  // 서버 config 에서 로드
+  const [autoPublishInfo, setAutoPublishInfo] = useState(null)  // 마지막 자동/수동 게시 메타
+  useEffect(() => {
+    fetch('/api/publish-all').then(r => r.ok ? r.json() : null).then(d => {
+      if (!d) return
+      if (d.config) setIncludeReadability(d.config.includeReadability !== false)
+      if (d.lastRun) setAutoPublishInfo(d.lastRun)
+    }).catch(() => {})
+  }, [])
 
   // Hash routing
   useEffect(() => {
@@ -78,19 +83,36 @@ export default function App() {
       .catch(() => {})
   }, [])
 
-  // 통합 대시보드 게시
+  // 통합 게시 — 서버가 시트 동기화 → 3개 대시보드(KPI·Visibility·Citation) 렌더 → 일괄 게시.
+  // 브라우저 렌더(publishCombinedDashboard) 방식은 폐기 (2026-08-30) — 매일 00시 KST
+  // 자동 게시(lib/publish-scheduler.js)와 완전히 같은 서버 경로를 타야 결과가 동일하다.
   async function handlePublishCombined() {
     if (publishing) return
-    setPublishing(true); setPublishMsg('')
+    setPublishing(true); setPublishMsg('서버에서 시트 동기화 + 3개 대시보드 게시 중...')
     try {
-      const result = await publishCombinedDashboard(generateDashboardHTML, resolveDataForLang, { includeReadability })
-      setPublishMsg(`게시 완료!\nKO: ${window.location.origin}${result.urls.ko}\nEN: ${window.location.origin}${result.urls.en}`)
+      const res = await fetch('/api/publish-all', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+        body: JSON.stringify({ includeReadability }),
+      })
+      const result = await res.json()
+      if (!res.ok || !result.ok) {
+        const detail = (result.errors || []).map(e => `${e.step}: ${e.error}`).join('\n') || result.error || '게시 실패'
+        throw new Error(detail)
+      }
+      const o = window.location.origin
+      const lines = ['전체 게시 완료!']
+      if (result.channels.dashboard) lines.push(`통합: ${o}${result.channels.dashboard.urls.ko}`)
+      if (result.channels.visibility) lines.push(`Visibility: ${o}${result.channels.visibility.urls.ko}`)
+      if (result.channels.citation) lines.push(`Citation: ${o}${result.channels.citation.urls.ko}`)
+      if (result.syncIssues?.length) lines.push(`⚠ sync 경고 ${result.syncIssues.length}건`)
+      setPublishMsg(lines.join('\n'))
       fetch('/api/publish-history').then(r => r.ok ? r.json() : null).then(d => { if (d) setPublishData(d) })
     } catch (err) {
       setPublishMsg('ERROR: ' + err.message)
     } finally {
       setPublishing(false)
-      setTimeout(() => setPublishMsg(''), 15000)
+      setTimeout(() => setPublishMsg(''), 20000)
     }
   }
 
@@ -324,10 +346,17 @@ export default function App() {
                   cursor: publishing ? 'wait' : 'pointer',
                   opacity: publishing ? 0.6 : 1,
                 }}>
-                {publishing ? '게시 중...' : '통합 대시보드 게시'}
+                {publishing ? '게시 중...' : '전체 게시 (시트 새로고침 + 3개 대시보드)'}
               </button>
               {publishMsg && (
                 <pre style={{ fontSize: 10, color: publishMsg.startsWith('ERROR') ? '#FCA5A5' : '#86EFAC', whiteSpace: 'pre-wrap', margin: 0, lineHeight: 1.5 }}>{publishMsg}</pre>
+              )}
+              {autoPublishInfo && (
+                <div style={{ fontSize: 10, color: '#64748B', fontFamily: FONT, lineHeight: 1.5 }}>
+                  매일 00시(KST) 자동 게시 · 마지막 실행 {new Date(autoPublishInfo.ts).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })}
+                  {autoPublishInfo.trigger === 'cron' ? ' (자동)' : autoPublishInfo.trigger === 'catchup' ? ' (보상 실행)' : ' (수동)'}
+                  {autoPublishInfo.ok === false ? ' — ⚠ 오류 있음' : ''}
+                </div>
               )}
             </>
           )}

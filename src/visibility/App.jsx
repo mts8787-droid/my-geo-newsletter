@@ -243,6 +243,7 @@ export default function App() {
           dotcomByCnty={dotcomByCnty}
           generateHTML={generateVisibilityHTML}
           publishEndpoint="/api/publish-visibility"
+          hidePublish // 게시는 통합 대시보드 어드민의 "전체 게시" 로 일원화 (2026-08-30)
           setMonthlyVis={setMonthlyVis}
           monthlyVis={monthlyVis}
           extra={{ weeklyPR, weeklyPRLabels, monthlyPR, monthlyPRLabels, weeklyBrandPrompt, weeklyBrandPromptLabels, unlaunchedMap, weeklyLabelsFull, prTopicList, llmModel }}
