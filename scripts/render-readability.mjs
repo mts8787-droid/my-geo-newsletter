@@ -762,15 +762,9 @@ body{background:#F1F5F9;font-family:${FONT};color:#1A1A1A;line-height:1.6}
 .htr-title{margin:0 0 12px;font-size:18px;font-weight:800;color:#1A1A1A;letter-spacing:-0.3px}
 .htr-p{margin:0 0 9px;font-size:14px;line-height:1.75;color:#475569}
 .htr-p strong{color:#1A1A1A;font-weight:700}
-.htr-p em{font-style:normal;color:${RED};font-weight:700}
 .htr-em{background:#FFF1F2;color:${RED};font-weight:700;border-radius:4px;padding:1px 6px}
-.htr-cta{margin-top:14px;padding-top:14px;border-top:1px dashed #E2E8F0}
-.htr-cta-h{margin:0 0 8px;font-size:14px;font-weight:800;color:#1A1A1A}
-.htr-steps{margin:8px 0 0;padding-left:20px}
-.htr-steps li{font-size:14px;line-height:1.9;color:#475569}
-.htr-steps li strong{color:#1A1A1A}
-.htr-note{margin:10px 0 0;font-size:13px;color:#94A3B8;line-height:1.6}
-@media(max-width:780px){.htr{padding:16px 16px}.htr-p,.htr-steps li{font-size:13px}}
+.htr-step{display:inline-block;background:#F1F5F9;color:#1A1A1A;border:1px solid #E2E8F0;border-radius:5px;padding:1px 8px;font-size:13px;font-weight:700;margin:0 2px}
+@media(max-width:780px){.htr{padding:16px 16px}.htr-p{font-size:13px}}
 .tab-nav{display:flex;gap:4px;margin-bottom:16px;border-bottom:2px solid #E8EDF2;flex-wrap:wrap}
 .tab-nav button{appearance:none;border:none;background:none;font-family:inherit;font-size:15px;font-weight:700;color:#94A3B8;padding:10px 18px;cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px}
 .tab-nav button.active{color:#1A1A1A;border-bottom-color:${RED}}
@@ -915,27 +909,23 @@ body{background:#F1F5F9;font-family:${FONT};color:#1A1A1A;line-height:1.6}
     <p class="sub">측정일 <strong id="rd-head-date">${escHtml(snapshot.date)}</strong> · 생성 ${escHtml((snapshot.generatedAt || '').slice(0, 16).replace('T', ' '))} · ${escHtml(momNote)}</p>
   </div>
 
-  <!-- How to Read — 처음 보는 사람이 지표와 사용법을 먼저 이해하도록 최상단 고정 -->
+  <!-- How to Read — 사용자 제공 원문 그대로, 강조만 덧입힘 (사용자 지시 2026-08-30) -->
   <section class="htr">
     <h2 class="htr-title">How to Read</h2>
-    <p class="htr-p"><strong>Readability</strong> 는 <em>AI 관점의 가독성</em> 입니다. 우리 페이지가
-      AI가 읽고 인용하기 좋은 상태인지를 보는 지표예요.</p>
-    <p class="htr-p">‘26년 7월부터 <strong>10개 전략 국가</strong> 와 <strong>글로벌 대표 사이트(lg.com/global)</strong> 의
-      주요 페이지 유형을 대상으로, <strong id="htr-urlcount">${escHtml((snapshot.overall.urlCount || 0).toLocaleString('en-US'))}개 페이지</strong> 를
-      평가하고 있습니다. <span class="htr-em">매월 마지막 주</span> 에 새로 측정합니다.</p>
-    <p class="htr-p">점수는 <strong>전체 평가항목 중 기준을 충족한 항목의 비율</strong> 을 100점으로 환산한 값입니다.
-      사이트 성능 · AI 웹접근성 · Basic SEO · 스키마마크업 · 고인용 콘텐츠 · AI Crawlability
-      <strong>6개 영역, 38개 항목</strong> 을 봅니다.</p>
-    <div class="htr-cta">
-      <p class="htr-cta-h">담당 부서에서는 이렇게 보시면 됩니다</p>
-      <p class="htr-p">위의 <strong>국가별 · 페이지 타입별 탭</strong> 에서 담당 범위를 고른 뒤, 아래 세 가지를 차례로 확인하세요.</p>
-      <ol class="htr-steps">
-        <li><strong>전체 점수</strong> — 지금 어디쯤 서 있는지</li>
-        <li><strong>세부 항목별 점수</strong> — 어떤 항목이 발목을 잡는지</li>
-        <li><strong>시급 개선 항목</strong> — 무엇을, 어디를, 어떻게 고칠지</li>
-      </ol>
-      <p class="htr-note">필터를 바꾸면 해석과 조치 사항도 해당 국가 · 페이지 타입에 맞춰 함께 바뀝니다.</p>
-    </div>
+    <p class="htr-p"><strong>Readability</strong>는 <strong>AI 관점에서의 가독성</strong>을 뜻하며, 웹페이지의 콘텐츠가
+      AI가 읽고 활용하기 좋은 상태인지 평가하는 지표입니다. ‘26년 7월부터 LG.com의 Readability 현황을 파악하기 위해
+      <strong>10개 전략 국가</strong>의 주요 페이지 유형,
+      총 <strong id="htr-urlcount">${escHtml((snapshot.overall.urlCount || 0).toLocaleString('en-US'))}개 페이지</strong>를
+      평가했습니다(<span class="htr-em">매월 마지막 주차 진행</span>). 10개 국가 사이트에 더해
+      <strong>글로벌 대표 사이트(lg.com/global)</strong>를 별도 사이트로 포함했습니다.</p>
+    <p class="htr-p">Readability 점수는 <strong>전체 평가항목 중 기준을 충족한 항목의 비율(%)을 100점 기준으로 환산</strong>한
+      점수입니다. 평가는 사이트 성능, AI 웹접근성, Basic SEO 적합도, 스키마마크업, 고인용 콘텐츠, AI Crawlability의
+      <strong>6개 영역, 총 38개 체크리스트</strong>를 기준으로 진행했습니다.</p>
+    <p class="htr-p">각 국가별 페이지별 담당 부서에서는 <strong>국가별 / 페이지 타입별 탭</strong>을 통해서 현재 부족한 영역에 대한
+      검수결과를 확인하고, 각 탭별로
+      <span class="htr-step">(1) 전체 점수</span> <span class="htr-step">(2) 세부 항목별 점수</span>
+      <span class="htr-step">(3) 시급 개선 항목</span> 을 확인하여,
+      <strong>개선 사항에 대한 인사이트를 발굴하고 개별 개선 과제를 확인</strong>할 수 있습니다.</p>
   </section>
 
   <div class="tab-nav" id="rd-tabnav"></div>
