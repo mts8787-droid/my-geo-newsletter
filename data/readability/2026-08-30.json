@@ -1,6 +1,6 @@
 {
   "date": "2026-08-30",
-  "generatedAt": "2026-08-30T03:20:00.606Z",
+  "generatedAt": "2026-08-30T03:59:36.349Z",
   "source": "run_results",
   "categoryLabels": {
     "performance": "사이트 성능",
@@ -16,10 +16,10 @@
       "runId": "d31a3cda973e",
       "urlCount": 623,
       "scoredCount": 623,
-      "avgScore": 76.5,
+      "avgScore": 76.6,
       "grades": {
-        "Need Improvement": 548,
-        "Good": 73,
+        "Need Improvement": 549,
+        "Good": 72,
         "Poor": 2
       },
       "categories": {
@@ -27,7 +27,7 @@
         "accessibility": 90.7,
         "seo": 76.8,
         "geo_schema": 38.1,
-        "geo_content": 33.7,
+        "geo_content": 36.1,
         "geo_platform": 100
       },
       "checks": {
@@ -202,8 +202,8 @@
         "ai_author_source": {
           "label": "#34 Author 또는 출처+날짜",
           "cat": "geo_content",
-          "pass": 0,
-          "applicable": 118
+          "pass": 99,
+          "applicable": 218
         },
         "ai_summary_box": {
           "label": "#35 Summary Box (콘텐츠)",
@@ -1722,13 +1722,13 @@
         "press_media": {
           "label": "프레스앤미디어",
           "count": 100,
-          "avgScore": 74.9,
+          "avgScore": 75.8,
           "categories": {
             "performance": 99.5,
             "accessibility": 92.5,
             "seo": 63.4,
             "geo_schema": 49.8,
-            "geo_content": 25,
+            "geo_content": 39.8,
             "geo_platform": 100
           },
           "checks": {
@@ -1903,8 +1903,8 @@
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
               "cat": "geo_content",
-              "pass": 0,
-              "applicable": 0
+              "pass": 99,
+              "applicable": 100
             },
             "ai_summary_box": {
               "label": "#35 Summary Box (콘텐츠)",
@@ -2498,7 +2498,7 @@
       "runId": "40724cc2c93c",
       "urlCount": 552,
       "scoredCount": 552,
-      "avgScore": 76.1,
+      "avgScore": 76.2,
       "grades": {
         "Good": 137,
         "Need Improvement": 412,
@@ -2509,7 +2509,7 @@
         "accessibility": 88.6,
         "seo": 86.2,
         "geo_schema": 41.6,
-        "geo_content": 26.1,
+        "geo_content": 29.1,
         "geo_platform": 97.4
       },
       "checks": {
@@ -2678,8 +2678,8 @@
         "ai_author_source": {
           "label": "#34 Author 또는 출처+날짜",
           "cat": "geo_content",
-          "pass": 18,
-          "applicable": 126
+          "pass": 107,
+          "applicable": 226
         },
         "ai_summary_box": {
           "label": "#35 Summary Box (콘텐츠)",
@@ -4204,13 +4204,13 @@
         "press_media": {
           "label": "프레스앤미디어",
           "count": 100,
-          "avgScore": 80.2,
+          "avgScore": 80.5,
           "categories": {
             "performance": 96.9,
             "accessibility": 100,
             "seo": 91.6,
             "geo_schema": 48.3,
-            "geo_content": 7.5,
+            "geo_content": 23.8,
             "geo_platform": 100
           },
           "checks": {
@@ -4379,8 +4379,8 @@
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
               "cat": "geo_content",
-              "pass": 0,
-              "applicable": 0
+              "pass": 89,
+              "applicable": 100
             },
             "ai_summary_box": {
               "label": "#35 Summary Box (콘텐츠)",
@@ -4991,7 +4991,7 @@
         "accessibility": 88.8,
         "seo": 90.3,
         "geo_schema": 33,
-        "geo_content": 39.3,
+        "geo_content": 39.4,
         "geo_platform": 93.5
       },
       "checks": {
@@ -5160,8 +5160,8 @@
         "ai_author_source": {
           "label": "#34 Author 또는 출처+날짜",
           "cat": "geo_content",
-          "pass": 14,
-          "applicable": 87
+          "pass": 16,
+          "applicable": 89
         },
         "ai_summary_box": {
           "label": "#35 Summary Box (콘텐츠)",
@@ -6686,13 +6686,13 @@
         "press_media": {
           "label": "프레스앤미디어",
           "count": 25,
-          "avgScore": 77.8,
+          "avgScore": 77.9,
           "categories": {
             "performance": 99.3,
             "accessibility": 98,
             "seo": 72.2,
             "geo_schema": 50,
-            "geo_content": 25,
+            "geo_content": 26.2,
             "geo_platform": 100
           },
           "checks": {
@@ -6867,8 +6867,8 @@
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
               "cat": "geo_content",
-              "pass": 0,
-              "applicable": 0
+              "pass": 2,
+              "applicable": 2
             },
             "ai_summary_box": {
               "label": "#35 Summary Box (콘텐츠)",
@@ -7464,8 +7464,8 @@
       "scoredCount": 576,
       "avgScore": 77.2,
       "grades": {
-        "Need Improvement": 391,
-        "Good": 169,
+        "Need Improvement": 392,
+        "Good": 168,
         "Poor": 16
       },
       "categories": {
@@ -7473,7 +7473,7 @@
         "accessibility": 88.4,
         "seo": 88.1,
         "geo_schema": 38.6,
-        "geo_content": 34.5,
+        "geo_content": 36,
         "geo_platform": 92.5
       },
       "checks": {
@@ -7642,8 +7642,8 @@
         "ai_author_source": {
           "label": "#34 Author 또는 출처+날짜",
           "cat": "geo_content",
-          "pass": 3,
-          "applicable": 68
+          "pass": 71,
+          "applicable": 168
         },
         "ai_summary_box": {
           "label": "#35 Summary Box (콘텐츠)",
@@ -9174,7 +9174,7 @@
             "accessibility": 90.3,
             "seo": 74.6,
             "geo_schema": 44.7,
-            "geo_content": 25,
+            "geo_content": 33.6,
             "geo_platform": 93.8
           },
           "checks": {
@@ -9349,8 +9349,8 @@
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
               "cat": "geo_content",
-              "pass": 0,
-              "applicable": 0
+              "pass": 68,
+              "applicable": 100
             },
             "ai_summary_box": {
               "label": "#35 Summary Box (콘텐츠)",
@@ -12186,7 +12186,7 @@
       "runId": "539e9093c56e",
       "urlCount": 621,
       "scoredCount": 621,
-      "avgScore": 73.2,
+      "avgScore": 73.4,
       "grades": {
         "Poor": 9,
         "Need Improvement": 589,
@@ -12197,7 +12197,7 @@
         "accessibility": 92.6,
         "seo": 79,
         "geo_schema": 39.1,
-        "geo_content": 13.4,
+        "geo_content": 16.5,
         "geo_platform": 96.6
       },
       "checks": {
@@ -12372,8 +12372,8 @@
         "ai_author_source": {
           "label": "#34 Author 또는 출처+날짜",
           "cat": "geo_content",
-          "pass": 19,
-          "applicable": 112
+          "pass": 118,
+          "applicable": 212
         },
         "ai_summary_box": {
           "label": "#35 Summary Box (콘텐츠)",
@@ -13649,13 +13649,13 @@
         "press_media": {
           "label": "프레스앤미디어",
           "count": 100,
-          "avgScore": 74.8,
+          "avgScore": 75.8,
           "categories": {
             "performance": 100,
             "accessibility": 99.8,
             "seo": 73.8,
             "geo_schema": 50,
-            "geo_content": 1.8,
+            "geo_content": 21.2,
             "geo_platform": 100
           },
           "checks": {
@@ -13830,8 +13830,8 @@
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
               "cat": "geo_content",
-              "pass": 0,
-              "applicable": 0
+              "pass": 99,
+              "applicable": 100
             },
             "ai_summary_box": {
               "label": "#35 Summary Box (콘텐츠)",
@@ -14427,7 +14427,7 @@
       "runId": "e54b05d6e350",
       "urlCount": 592,
       "scoredCount": 592,
-      "avgScore": 74.7,
+      "avgScore": 74.6,
       "grades": {
         "Need Improvement": 521,
         "Good": 63,
@@ -14438,7 +14438,7 @@
         "accessibility": 90.2,
         "seo": 86.2,
         "geo_schema": 39.9,
-        "geo_content": 12.9,
+        "geo_content": 13.3,
         "geo_platform": 96.5
       },
       "checks": {
@@ -14607,8 +14607,8 @@
         "ai_author_source": {
           "label": "#34 Author 또는 출처+날짜",
           "cat": "geo_content",
-          "pass": 16,
-          "applicable": 98
+          "pass": 28,
+          "applicable": 127
         },
         "ai_summary_box": {
           "label": "#35 Summary Box (콘텐츠)",
@@ -16133,13 +16133,13 @@
         "press_media": {
           "label": "프레스앤미디어",
           "count": 100,
-          "avgScore": 74.2,
+          "avgScore": 73.8,
           "categories": {
             "performance": 100,
             "accessibility": 99,
             "seo": 69.2,
             "geo_schema": 57.5,
-            "geo_content": 1,
+            "geo_content": 3.4,
             "geo_platform": 100
           },
           "checks": {
@@ -16308,8 +16308,8 @@
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
               "cat": "geo_content",
-              "pass": 0,
-              "applicable": 0
+              "pass": 12,
+              "applicable": 29
             },
             "ai_summary_box": {
               "label": "#35 Summary Box (콘텐츠)",
@@ -16909,7 +16909,7 @@
       "runId": "35109956ad6f",
       "urlCount": 692,
       "scoredCount": 692,
-      "avgScore": 75.6,
+      "avgScore": 75.7,
       "grades": {
         "Good": 75,
         "Need Improvement": 614,
@@ -16920,7 +16920,7 @@
         "accessibility": 90.2,
         "seo": 87.5,
         "geo_schema": 37.7,
-        "geo_content": 24.9,
+        "geo_content": 27.5,
         "geo_platform": 92.1
       },
       "checks": {
@@ -17095,8 +17095,8 @@
         "ai_author_source": {
           "label": "#34 Author 또는 출처+날짜",
           "cat": "geo_content",
-          "pass": 0,
-          "applicable": 143
+          "pass": 100,
+          "applicable": 243
         },
         "ai_summary_box": {
           "label": "#35 Summary Box (콘텐츠)",
@@ -18615,13 +18615,13 @@
         "press_media": {
           "label": "프레스앤미디어",
           "count": 100,
-          "avgScore": 73.6,
+          "avgScore": 74.6,
           "categories": {
             "performance": 99.8,
             "accessibility": 100,
             "seo": 64.7,
             "geo_schema": 49.8,
-            "geo_content": 10,
+            "geo_content": 28,
             "geo_platform": 100
           },
           "checks": {
@@ -18796,8 +18796,8 @@
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
               "cat": "geo_content",
-              "pass": 0,
-              "applicable": 0
+              "pass": 100,
+              "applicable": 100
             },
             "ai_summary_box": {
               "label": "#35 Summary Box (콘텐츠)",
@@ -19393,10 +19393,10 @@
       "runId": "1ca743dadba8",
       "urlCount": 556,
       "scoredCount": 556,
-      "avgScore": 76,
+      "avgScore": 75.6,
       "grades": {
-        "Good": 124,
-        "Need Improvement": 424,
+        "Good": 123,
+        "Need Improvement": 425,
         "Poor": 8
       },
       "categories": {
@@ -19404,7 +19404,7 @@
         "accessibility": 82.7,
         "seo": 89.7,
         "geo_schema": 14,
-        "geo_content": 42.6,
+        "geo_content": 42.3,
         "geo_platform": 97.6
       },
       "checks": {
@@ -19580,7 +19580,7 @@
           "label": "#34 Author 또는 출처+날짜",
           "cat": "geo_content",
           "pass": 0,
-          "applicable": 49
+          "applicable": 149
         },
         "ai_summary_box": {
           "label": "#35 Summary Box (콘텐츠)",
@@ -21099,13 +21099,13 @@
         "press_media": {
           "label": "프레스앤미디어",
           "count": 100,
-          "avgScore": 69.6,
+          "avgScore": 67.1,
           "categories": {
             "performance": 90,
             "accessibility": 75.5,
             "seo": 85,
             "geo_schema": 0,
-            "geo_content": 8.8,
+            "geo_content": 7,
             "geo_platform": 100
           },
           "checks": {
@@ -21281,7 +21281,7 @@
               "label": "#34 Author 또는 출처+날짜",
               "cat": "geo_content",
               "pass": 0,
-              "applicable": 0
+              "applicable": 100
             },
             "ai_summary_box": {
               "label": "#35 Summary Box (콘텐츠)",
@@ -24115,8 +24115,8 @@
     "scoredCount": 5652,
     "avgScore": 75.9,
     "grades": {
-      "Need Improvement": 4645,
-      "Good": 942,
+      "Need Improvement": 4648,
+      "Good": 939,
       "Poor": 65
     },
     "categories": {
@@ -24124,7 +24124,7 @@
       "accessibility": 88.7,
       "seo": 85.7,
       "geo_schema": 36,
-      "geo_content": 27.7,
+      "geo_content": 29.1,
       "geo_platform": 96.1
     },
     "checks": {
@@ -24299,8 +24299,8 @@
       "ai_author_source": {
         "label": "#34 Author 또는 출처+날짜",
         "cat": "geo_content",
-        "pass": 70,
-        "applicable": 915
+        "pass": 539,
+        "applicable": 1546
       },
       "ai_summary_box": {
         "label": "#35 Summary Box (콘텐츠)",
@@ -25819,13 +25819,13 @@
       "press_media": {
         "label": "프레스앤미디어",
         "count": 725,
-        "avgScore": 74.8,
+        "avgScore": 74.9,
         "categories": {
           "performance": 98.1,
           "accessibility": 94,
           "seo": 74.5,
           "geo_schema": 43.1,
-          "geo_content": 11.8,
+          "geo_content": 22.5,
           "geo_platform": 99.1
         },
         "checks": {
@@ -26000,8 +26000,8 @@
           "ai_author_source": {
             "label": "#34 Author 또는 출처+날짜",
             "cat": "geo_content",
-            "pass": 0,
-            "applicable": 0
+            "pass": 469,
+            "applicable": 631
           },
           "ai_summary_box": {
             "label": "#35 Summary Box (콘텐츠)",

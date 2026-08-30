@@ -163,7 +163,13 @@ function catOf(srcCat, cid) {
 //   실측 2026-07-31: 뉴스룸 70.3% / PDP 5.4% / PLP 0.2% / 지원 0.1% / 가이드·Experience 0%
 // → 에디토리얼 페이지타입에만 적용하고 그 외는 na (분모에서 제외).
 //   (근본 수정은 audit 쪽 scoring_config 에 applies_when 추가 — 다음 감사분부터)
-const EDITORIAL_PT = { newsroom: 1, buying_guide: 1, lg_experience: 1 }
+// 2026-08-26 우리가 먼저 넣은 게이트. 2026-08-30 런부터 크롤러도 같은 게이트를 자체 도입했다:
+//   hint "이 항목은 newsroom, press_media, buying_guide, content 페이지에서만 평가됩니다"
+// 상류의 content 는 우리 라벨의 lg_experience 에 해당. press_media 가 우리 쪽에만 빠져 있어
+// 통과율 높은 프레스앤미디어(725p)가 통째로 분모에서 빠지고 실패군만 남아
+// #34 가 42.3% → 7.7% 로 급락한 것처럼 보였다 (사용자 지적 2026-08-30).
+// ⚠ 상류 게이트와 항상 동일 집합을 유지할 것 — 어긋나면 통과율이 왜곡된다.
+const EDITORIAL_PT = { newsroom: 1, press_media: 1, buying_guide: 1, lg_experience: 1 }
 const PT_SCOPED_CHECKS = {
   ai_author_source: ctx => !!(ctx && ctx.pt && EDITORIAL_PT[ctx.pt]),
 }
