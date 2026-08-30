@@ -58,7 +58,16 @@ import { CC_NAME } from './readability-cc.mjs'
 // 신호등 기준 single source — 대시보드/뉴스레터/검수기준 공통 (src/shared/readabilityBand.js)
 import { RD_BAND, RD_BAND_COLOR, rdBandColor } from '../src/shared/readabilityBand.js'
 // 개선 가이드 (체크 × 페이지타입) — 필터 선택에 맞춰 해석·액션 아이템을 뽑는다
-import { GUIDE, CATEGORY_GUIDE } from '../src/shared/readabilityGuide.js'
+import { GUIDE, CATEGORY_GUIDE, PT_LABEL as GUIDE_PT_LABEL, pick } from '../src/shared/readabilityGuide.js'
+// UI 문구 사전 (KO/EN) — 서버는 T[lang], 클라는 __RD.i18n 으로 받는다
+import { T as UI, toClientDict } from '../src/shared/readabilityI18n.js'
+
+// 현재 렌더 중인 언어 — renderReadabilityHTML 진입 시 설정한다.
+// 서버 뷰 함수(viewCountry·catCard 등)가 모듈 최상위라 인자로 넘기지 않고 여기서 읽는다.
+// 렌더는 동기 실행이므로 요청 간 섞이지 않는다.
+let _LANG = 'ko'
+const P = v => pick(v, _LANG)        // { ko, en } 쌍 → 현재 언어 문자열
+const TT = () => UI[_LANG] || UI.ko  // UI 문구 사전
 
 function escHtml(s) {
   return String(s == null ? '' : s)
@@ -171,7 +180,7 @@ function viewCategoryDetail(snap) {
     return `<div class="cat-card">
       <div class="cat-head">
         <span class="cat-name">${escHtml(name)}</span>
-        ${cg ? `<span class="cat-what">${escHtml(cg.what)}</span>` : ''}
+        ${cg ? `<span class="cat-what">${escHtml(P(cg.what))}</span>` : ''}
         <span class="cat-avg" style="color:${scoreColor(avg)}">${avg ?? '—'}</span>
       </div>
       <div class="cat-sub">${checksArr.length} 체크 · ${sub}</div>
@@ -211,6 +220,19 @@ function readabilityClient() {
   var LATEST_DATE = RD.date
   var CATS = Object.keys(RD.categoryLabels || {})   // 스냅샷이 정의한 카테고리 순서 그대로 (6분류)
   // 신호등 색·임계값은 서버가 __RD 로 주입 (readabilityBand.js single source)
+  // UI 문구 사전 · 언어 — 서버가 __RD 로 주입 (readabilityI18n.js single source)
+  var I = RD.i18n || {}
+  var LANG = RD.lang === 'en' ? 'en' : 'ko'
+  // { ko, en } 쌍에서 현재 언어를 꺼낸다 (문자열이면 그대로 — 구버전 스냅샷 호환)
+  function P(v) { if (v == null) return v; if (typeof v === 'string') return v; return v[LANG] != null ? v[LANG] : v.ko }
+  // '{max}% 미만 {n}개' 같은 템플릿 치환
+  function TPL(key, vars) {
+    var out = I[key] || ''
+    Object.keys(vars || {}).forEach(function (k) { out = out.split('{' + k + '}').join(vars[k]) })
+    return out
+  }
+  // 페이지타입 라벨 — 스냅샷 label 대신 이중언어 사전 우선
+  function ptLabel(id, fallback) { var g = (RD.ptLabel || {})[id]; return g ? P(g) : (fallback || id) }
   var BC = RD.bandColor || { good: '#15803D', warn: '#B45309', crit: '#BE123C', na: '#94A3B8' }
   var BAND = RD.band || { good: 80, warn: 50 }
   var LEAD = BC.good, BEHIND = BC.warn, CRIT = BC.crit, COMP = BC.na, RED = '#CF0652'
@@ -309,7 +331,7 @@ function readabilityClient() {
       // 이 영역이 무엇을 보는 영역인지 — 제목 바로 옆에 붙인다 (사용자 지시 2026-08-30).
       // what 은 제목 옆 인라인, why(안 되면 생기는 일)는 그 아래 줄.
       var cg = (RD.catGuide || {})[catKey] || null
-      var whatInline = cg ? '<span class="cat-what">' + esc(cg.what) + '</span>' : ''
+      var whatInline = cg ? '<span class="cat-what">' + esc(P(cg.what)) + '</span>' : ''
       return '<div class="cat-card">' +
         '<div class="cat-head">' +
           '<span class="cat-name">' + esc(name) + '</span>' + whatInline +
@@ -362,53 +384,42 @@ function readabilityClient() {
   }
   function autoNotes(cid, rate, scope, ccId, ptId) {
     var out = []
-    var ptName = ptId ? ((RD.overall.pageTypes[ptId] || {}).label || ptId) : null
+    var ptName = ptId ? ptLabel(ptId, (RD.overall.pageTypes[ptId] || {}).label) : null
+    var ptBasis = ptName ? TPL('tplPtBasis', { p: ptName }) : ''
 
-    // ① 같은 조건의 전체 평균 대비 위치.
-    //    페이지타입을 골랐으면 '그 타입의 전 사이트 평균' 과 비교해야 한다 —
-    //    전체(모든 타입) 평균과 비교하면 타입 특성 차이가 편차로 둔갑한다.
+    // ① 같은 조건의 전체 평균 대비 위치. 페이지타입을 골랐으면 '그 타입의 전 사이트 평균' 과 비교한다.
     var baseBag = ptId && RD.overall.pageTypes && RD.overall.pageTypes[ptId]
       ? RD.overall.pageTypes[ptId].checks : RD.overall.checks
-    var baseName = ptId ? (ptName + ' 전체 평균') : '전체 평균'
+    var baseName = ptId ? TPL('tplBasePt', { p: ptName }) : (I.tplBaseAll || '')
     var allRate = rateOf(baseBag, cid)
     if (allRate != null && Math.abs(rate - allRate) >= 3) {
       var d = +(rate - allRate).toFixed(1)
-      out.push(baseName + ' ' + allRate + '% 대비 ' + (d > 0 ? '+' : '') + d + '%p ' +
-        (d > 0 ? '높습니다' : '낮습니다') + '.')
+      out.push(TPL(d > 0 ? 'tplDiffHigh' : 'tplDiffLow',
+        { base: baseName, r: allRate, d: Math.abs(d).toFixed(1) }))
     }
-    // ② 국가를 골랐을 때 — 사이트 간 순위와 벤치마크
+    // ② 국가 선택 시 — 사이트 간 순위와 벤치마크
     if (ccId) {
       var byCc = ratesByCc(cid, ptId)
       var idx = -1
       for (var i = 0; i < byCc.length; i++) if (byCc[i].cc === ccId) idx = i
       if (idx >= 0 && byCc.length >= 3) {
         var best = byCc[0], worst = byCc[byCc.length - 1]
-        var pos = (idx + 1) + '위 / ' + byCc.length + '개 사이트'
-        if (idx === 0) {
-          out.push((ptName ? ptName + ' 기준 ' : '') + '전 사이트 중 1위입니다. 다른 사이트가 참고할 기준점이 됩니다.')
-        } else if (idx === byCc.length - 1) {
-          out.push((ptName ? ptName + ' 기준 ' : '') + '전 사이트 중 최하위입니다 (' + pos + '). 최고인 ' +
-            ccLabel(best.cc) + '(' + best.rate + '%) 의 구성 방식을 확인해 볼 수 있습니다.')
-        } else {
-          out.push((ptName ? ptName + ' 기준 ' : '') + pos + ' — 최고 ' + ccLabel(best.cc) + ' ' + best.rate +
-            '% / 최저 ' + ccLabel(worst.cc) + ' ' + worst.rate + '%.')
-        }
+        var pos = TPL('tplPos', { i: idx + 1, n: byCc.length })
+        if (idx === 0) out.push(TPL('tplTop', { p: ptBasis }))
+        else if (idx === byCc.length - 1) out.push(TPL('tplBottom', { p: ptBasis, pos: pos, best: ccLabel(best.cc), br: best.rate }))
+        else out.push(TPL('tplMid', { p: ptBasis, pos: pos, best: ccLabel(best.cc), br: best.rate, worst: ccLabel(worst.cc), wr: worst.rate }))
       }
     }
-    // ③ 페이지타입을 골랐을 때 — 타입 간 순위
+    // ③ 페이지타입 선택 시 — 같은 사이트 내 타입 간 순위
     if (ptId) {
       var byPt = ratesByPt(cid, scope)
       var j = -1
       for (var k = 0; k < byPt.length; k++) if (byPt[k].pt === ptId) j = k
       if (j >= 0 && byPt.length >= 3) {
         var bp = byPt[0]
-        if (j === byPt.length - 1) {
-          out.push('이 사이트의 ' + byPt.length + '개 페이지타입 중 이 타입이 가장 낮습니다. 같은 사이트의 ' +
-            bp.label + '(' + bp.rate + '%) 와 비교해 보면 원인이 좁혀집니다.')
-        } else if (j > 0) {
-          out.push('이 사이트 내 ' + (j + 1) + '위 / ' + byPt.length + '개 타입 — 최고는 ' +
-            bp.label + ' ' + bp.rate + '%.')
-        }
+        var bpName = ptLabel(bp.pt, bp.label)
+        if (j === byPt.length - 1) out.push(TPL('tplPtBottom', { n: byPt.length, best: bpName, br: bp.rate }))
+        else if (j > 0) out.push(TPL('tplPtMid', { i: j + 1, n: byPt.length, best: bpName, br: bp.rate }))
       }
     }
     return out
@@ -424,9 +435,9 @@ function readabilityClient() {
     var slot = (pt !== 'all' && scope.pageTypes && scope.pageTypes[pt] && scope.pageTypes[pt].checks)
       ? scope.pageTypes[pt] : null
     var checks = slot ? slot.checks : (scope.checks || {})
-    var ptName = slot ? (slot.label || pt) : '전체 타입'
-    var scopeName = state.cc === 'all' ? '전체' : ccLabel(state.cc)
-    var title = secNo + ' 시급 개선 항목 (' + esc(scopeName) + ' · ' + esc(ptName) + ')'
+    var ptName = slot ? ptLabel(pt, slot.label) : (I.scopeAllPt || '전체 타입')
+    var scopeName = state.cc === 'all' ? (I.scopeAll || '전체') : ccLabel(state.cc)
+    var title = secNo + ' ' + TPL('tplSecUrgent', { scope: scopeName, type: ptName })
 
     var rows = []
     Object.keys(checks).forEach(function (cid) {
@@ -445,16 +456,16 @@ function readabilityClient() {
         if (n.ccNot && (!ccId || n.ccNot.indexOf(ccId) >= 0)) return false
         if (n.pt && !(ptId && n.pt.indexOf(ptId) >= 0)) return false
         return true
-      }).map(function (n) { return n.text })
+      }).map(function (n) { return P(n.text) })
       rows.push({ label: c.label, rate: rate, gap: c.applicable - c.pass,
-        what: g.what, why: g.why, pin: g.pin === true,
-        where: byP.where || byC.where || g.where,
-        act: byP.action || byC.action || g.action,
+        what: P(g.what), why: P(g.why), pin: g.pin === true,
+        where: P(byP.where || byC.where || g.where),
+        act: P(byP.action || byC.action || g.action),
         notes: notes, auto: autoNotes(cid, rate, scope, ccId, ptId) })
     })
     if (!rows.length) {
       return sectionCard(title, '#BE123C',
-        '<div class="tab-note">이 조건에서는 통과율 ' + CRITICAL_MAX + '% 미만 항목이 없습니다.</div>')
+        '<div class="tab-note">' + esc(TPL('tplUrgentNone', { max: CRITICAL_MAX })) + '</div>')
     }
     // pin 항목(선행 조건)은 통과율과 무관하게 맨 위 — 이게 막히면 나머지가 의미 없다
     rows.sort(function (a, b) {
@@ -465,24 +476,23 @@ function readabilityClient() {
     var html = rows.map(function (r) {
       return '<div class="gd-row">' +
         '<div class="gd-head">' +
-          (r.pin ? '<span class="gd-pin">선행</span>' : '') +
+          (r.pin ? '<span class="gd-pin">' + esc(I.gPin) + '</span>' : '') +
           '<span class="gd-name">' + esc(stripParens(r.label)) + '</span>' +
           '<span class="gd-rate" style="color:' + rateColor(r.rate) + '">' + r.rate + '%</span>' +
-          '<span class="gd-gap">미통과 ' + num(r.gap) + 'p</span>' +
+          '<span class="gd-gap">' + esc(I.gGap) + ' ' + num(r.gap) + 'p</span>' +
         '</div>' +
-        '<div class="gd-line"><span class="gd-k">점검 내용</span>' + esc(r.what) + '</div>' +
-        '<div class="gd-line"><span class="gd-k">리스크</span>' + esc(r.why) + '</div>' +
-        '<div class="gd-line gd-fix"><span class="gd-k gd-k-where">담당 영역</span>' + esc(r.where) + '</div>' +
-        '<div class="gd-line gd-fix"><span class="gd-k gd-k-act">조치 사항</span>' + esc(r.act) + '</div>' +
-        (r.auto.length ? '<div class="gd-line gd-note"><span class="gd-k">현재 위치</span>' +
+        '<div class="gd-line"><span class="gd-k">' + esc(I.gWhat) + '</span>' + esc(r.what) + '</div>' +
+        '<div class="gd-line"><span class="gd-k">' + esc(I.gWhy) + '</span>' + esc(r.why) + '</div>' +
+        '<div class="gd-line gd-fix"><span class="gd-k gd-k-where">' + esc(I.gWhere) + '</span>' + esc(r.where) + '</div>' +
+        '<div class="gd-line gd-fix"><span class="gd-k gd-k-act">' + esc(I.gAct) + '</span>' + esc(r.act) + '</div>' +
+        (r.auto.length ? '<div class="gd-line gd-note"><span class="gd-k">' + esc(I.gNow) + '</span>' +
           esc(r.auto.join(' ')) + '</div>' : '') +
         (r.notes.length ? r.notes.map(function (t) {
-          return '<div class="gd-line gd-note"><span class="gd-k">참고</span>' + esc(t) + '</div>'
+          return '<div class="gd-line gd-note"><span class="gd-k">' + esc(I.gNote) + '</span>' + esc(t) + '</div>'
         }).join('') : '') +
       '</div>'
     }).join('')
-    var note = '<div class="tab-note">통과율 ' + CRITICAL_MAX + '% 미만 ' + rows.length +
-      '개 — 낮은 순. 필터를 바꾸면 해당 국가·페이지타입에 맞는 조치로 바뀝니다.</div>'
+    var note = '<div class="tab-note">' + esc(TPL('tplUrgentNote', { max: CRITICAL_MAX, n: rows.length })) + '</div>'
     return note + sectionCard(title, '#BE123C', '<div class="gd-list">' + html + '</div>')
   }
 
@@ -697,7 +707,10 @@ export const PUBLIC_PATHS = {
   criteria: '/p/GEO-Readability-Criteria',
 }
 
-export function renderReadabilityHTML({ snapshot, index, snapshots, adminMode = false, paths } = {}) {
+export function renderReadabilityHTML({ snapshot, index, snapshots, adminMode = false, paths, lang = 'ko' } = {}) {
+  _LANG = lang === 'en' ? 'en' : 'ko'
+  const LANG = _LANG
+  const t = TT()
   if (!snapshot || !snapshot.overall) {
     return `<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">
       <link href="https://fonts.cdnfonts.com/css/lg-smart" rel="stylesheet" />
@@ -719,6 +732,9 @@ export function renderReadabilityHTML({ snapshot, index, snapshots, adminMode = 
     adminMode: !!adminMode,
     band: RD_BAND,           // 신호등 임계값 — 클라 짝이 서버와 같은 기준 쓰도록 주입
     bandColor: RD_BAND_COLOR,
+    lang: LANG,              // 클라가 { ko, en } 쌍에서 어느 쪽을 꺼낼지
+    i18n: toClientDict(LANG), // UI 문구 사전 (함수 제외 — 직렬화 가능한 것만)
+    ptLabel: GUIDE_PT_LABEL,  // 페이지타입 라벨 { ko, en } — 스냅샷 label 보다 우선
     guide: GUIDE,            // 개선 가이드 — 필터(국가×페이지타입) 변경 시 클라가 해석·액션 재생성
     catGuide: CATEGORY_GUIDE, // 6개 평가 영역이 각각 무엇을 보는지 (카드 상단 설명)
     paths: paths || (adminMode ? ADMIN_PATHS : PUBLIC_PATHS),
@@ -892,14 +908,14 @@ body{background:#F1F5F9;font-family:${FONT};color:#1A1A1A;line-height:1.6}
 </style></head><body>
 
 <div class="tab-bar">
-  <span class="tb-title">Readability — GEO 어딧</span>
-  <a class="back" href="/admin/">← 어드민</a>
+  <span class="tb-title">${escHtml(t.pageTitle)}</span>
+  <a class="back" href="/admin/">${escHtml(t.backAdmin)}</a>
 </div>
 
 <div class="dash-container">
   <!-- How to Read — 사용자 제공 원문 그대로, 강조만 덧입힘 (사용자 지시 2026-08-30) -->
   <section class="htr">
-    <h2 class="htr-title">How to Read</h2>
+    <h2 class="htr-title">${escHtml(t.howToRead)}</h2>
     <p class="htr-p"><strong>Readability</strong>는 <strong>AI 관점에서의 가독성</strong>을 뜻하며, 웹페이지의 콘텐츠가
       AI가 읽고 활용하기 좋은 상태인지 평가하는 지표입니다. ‘26년 6월부터 LG.com의 Readability 현황을 파악하기 위해
       <strong>10개 전략 국가</strong>의 주요 페이지 유형,
@@ -920,9 +936,9 @@ body{background:#F1F5F9;font-family:${FONT};color:#1A1A1A;line-height:1.6}
 
   <div class="tab-nav" id="rd-tabnav"></div>
   <div class="filter-bar" id="rd-filterbar">
-    <div class="fg" id="rd-month-wrap" style="display:none"><label for="rd-month">측정 월</label><select id="rd-month"></select></div>
-    <div class="fg"><label for="rd-cc">국가</label><select id="rd-cc"></select></div>
-    <div class="fg"><label for="rd-pt">페이지 타입</label><select id="rd-pt"></select></div>
+    <div class="fg" id="rd-month-wrap" style="display:none"><label for="rd-month">${escHtml(t.fMonth)}</label><select id="rd-month"></select></div>
+    <div class="fg"><label for="rd-cc">${escHtml(t.fCountry)}</label><select id="rd-cc"></select></div>
+    <div class="fg"><label for="rd-pt">${escHtml(t.fPageType)}</label><select id="rd-pt"></select></div>
   </div>
   <div id="rd-panel"></div>
 

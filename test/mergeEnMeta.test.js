@@ -267,7 +267,8 @@ describe('개선 가이드 — 체크 × 페이지타입', () => {
   it('모든 항목이 what·why·where·action 을 갖는다', async () => {
     const { GUIDE } = await import('../src/shared/readabilityGuide.js')
     const bad = Object.entries(GUIDE)
-      .filter(([, g]) => !g.what || !g.why || !g.where || !g.action).map(([k]) => k)
+      .filter(([, g]) => ['what', 'why', 'where', 'action']
+        .some(f => !g[f] || !g[f].ko || !g[f].en)).map(([k]) => k)
     expect(bad).toEqual([])
   })
   it('6개 평가 영역 설명이 모두 있다', async () => {
@@ -275,15 +276,15 @@ describe('개선 가이드 — 체크 × 페이지타입', () => {
     const snap = await load()
     const cats = [...new Set(Object.values(snap.overall.checks).map(c => c.cat))]
     expect(cats.filter(c => !CATEGORY_GUIDE[c])).toEqual([])
-    expect(Object.values(CATEGORY_GUIDE).filter(g => !g.what)).toEqual([])
+    expect(Object.values(CATEGORY_GUIDE).filter(g => !g.what || !g.what.ko || !g.what.en)).toEqual([])
   })
   it('페이지타입 오버라이드가 어디/조치를 바꾼다', async () => {
-    const { guideFor, GUIDE } = await import('../src/shared/readabilityGuide.js')
+    const { guideFor, GUIDE, pick } = await import('../src/shared/readabilityGuide.js')
     const pdp = guideFor('ai_ssr_ratio', 'pdp')
-    expect(pdp.action).not.toBe(GUIDE.ai_ssr_ratio.action)
-    expect(pdp.where).not.toBe(GUIDE.ai_ssr_ratio.where)
+    expect(pdp.action).not.toBe(pick(GUIDE.ai_ssr_ratio.action, 'ko'))
+    expect(pdp.where).not.toBe(pick(GUIDE.ai_ssr_ratio.where, 'ko'))
     // 오버라이드 없는 타입은 기본값
-    expect(guideFor('ai_ssr_ratio', 'plp').action).toBe(GUIDE.ai_ssr_ratio.action)
+    expect(guideFor('ai_ssr_ratio', 'plp').action).toBe(pick(GUIDE.ai_ssr_ratio.action, 'ko'))
     expect(guideFor('없는체크', 'pdp')).toBeNull()
   })
   it('byPt 키가 실제 페이지타입 id 여야 한다', async () => {
@@ -299,22 +300,25 @@ describe('개선 가이드 — 필터 조건부 문장', () => {
   const G = async () => await import('../src/shared/readabilityGuide.js')
   it('국가 조건(cc)에 맞을 때만 문장이 나온다', async () => {
     const { guideFor, GUIDE } = await G()
-    const only = GUIDE.ai_schema_product.notes.find(n => n.cc && n.cc.includes('us')).text
+    const { pick } = await G()
+    const only = pick(GUIDE.ai_schema_product.notes.find(n => n.cc && n.cc.includes('us')).text, 'ko')
     expect(guideFor('ai_schema_product', 'pdp', 'us').notes).toContain(only)
     expect(guideFor('ai_schema_product', 'pdp', 'de').notes).not.toContain(only)
   })
   it('제외 조건(ccNot)은 해당 국가에서만 숨는다', async () => {
     const { guideFor, GUIDE } = await G()
     // 문구가 바뀌어도 깨지지 않도록 ccNot 노트 본문을 정의에서 직접 가져와 비교
-    const excl = GUIDE.ai_schema_product.notes.find(n => n.ccNot).text
+    const { pick } = await G()
+    const excl = pick(GUIDE.ai_schema_product.notes.find(n => n.ccNot).text, 'ko')
     expect(guideFor('ai_schema_product', 'pdp', 'de').notes).toContain(excl)
     expect(guideFor('ai_schema_product', 'pdp', 'us').notes).not.toContain(excl)
   })
   it('국가 미선택(전체)이면 cc·ccNot 문장 모두 숨는다', async () => {
     const { guideFor, GUIDE } = await G()
+    const { pick } = await G()
     const n = guideFor('ai_schema_product', 'pdp', null).notes
     GUIDE.ai_schema_product.notes.filter(x => x.cc || x.ccNot)
-      .forEach(x => expect(n).not.toContain(x.text))
+      .forEach(x => expect(n).not.toContain(pick(x.text, 'ko')))
   })
   it('페이지타입 조건(pt)도 독립적으로 걸린다', async () => {
     const { guideFor } = await G()
@@ -323,8 +327,9 @@ describe('개선 가이드 — 필터 조건부 문장', () => {
   })
   it('byCc 가 있으면 base 를, byPt 가 있으면 byCc 를 이긴다', async () => {
     const { guideFor, GUIDE } = await G()
-    expect(guideFor('ai_ssr_ratio', 'pdp', 'us').action).toBe(GUIDE.ai_ssr_ratio.byPt.pdp.action)
-    expect(guideFor('ai_ssr_ratio', null, 'us').action).toBe(GUIDE.ai_ssr_ratio.action)
+    const { pick } = await G()
+    expect(guideFor('ai_ssr_ratio', 'pdp', 'us').action).toBe(pick(GUIDE.ai_ssr_ratio.byPt.pdp.action, 'ko'))
+    expect(guideFor('ai_ssr_ratio', null, 'us').action).toBe(pick(GUIDE.ai_ssr_ratio.action, 'ko'))
   })
   it('notes 의 cc·ccNot·pt 키가 실제 코드여야 한다', async () => {
     const { GUIDE, PT_LABEL } = await G()
@@ -346,11 +351,15 @@ describe('개선 가이드 — 실측 수치 하드코딩 금지', () => {
   it('action·notes 에 % 수치가 없다', async () => {
     const { GUIDE } = await import('../src/shared/readabilityGuide.js')
     const bad = []
+    const { pick } = await import('../src/shared/readabilityGuide.js')
     Object.entries(GUIDE).forEach(([cid, g]) => {
-      const texts = [g.action, ...Object.values(g.byPt || {}).map(o => o.action),
+      const raw = [g.action, ...Object.values(g.byPt || {}).map(o => o.action),
         ...Object.values(g.byCc || {}).map(o => o.action),
         ...(g.notes || []).map(n => n.text)].filter(Boolean)
-      texts.forEach(t => { if (/\d+(\.\d+)?%/.test(t)) bad.push(`${cid}: ${t.slice(0, 40)}`) })
+      raw.forEach(v => ['ko', 'en'].forEach(lg => {
+        const t = pick(v, lg)
+        if (t && /\d+(\.\d+)?%/.test(t)) bad.push(`${cid}[${lg}]: ${t.slice(0, 40)}`)
+      }))
     })
     expect(bad).toEqual([])
   })
@@ -424,7 +433,8 @@ describe('영역 설명 — 대시보드 ↔ 뉴스레터 동일', () => {
     const blk = src.slice(i, src.indexOf('}', i) + 1)
     const nl = {}
     ;[...blk.matchAll(/(\w+):\s*'([^']+)'/g)].forEach(m => { nl[m[1]] = m[2] })
-    const bad = Object.keys(CATEGORY_GUIDE).filter(k => CATEGORY_GUIDE[k].what !== nl[k])
+    const { pick } = await import('../src/shared/readabilityGuide.js')
+    const bad = Object.keys(CATEGORY_GUIDE).filter(k => pick(CATEGORY_GUIDE[k].what, 'ko') !== nl[k])
     expect(bad).toEqual([])
   })
 })
