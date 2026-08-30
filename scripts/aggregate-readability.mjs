@@ -169,7 +169,13 @@ function catOf(srcCat, cid) {
 // 통과율 높은 프레스앤미디어(725p)가 통째로 분모에서 빠지고 실패군만 남아
 // #34 가 42.3% → 7.7% 로 급락한 것처럼 보였다 (사용자 지적 2026-08-30).
 // ⚠ 상류 게이트와 항상 동일 집합을 유지할 것 — 어긋나면 통과율이 왜곡된다.
-const EDITORIAL_PT = { newsroom: 1, press_media: 1, buying_guide: 1, lg_experience: 1 }
+// 상류 scoring_config.json 의 ai_author_source.applies_to_page_types 와 동일 집합.
+//   상류: ['newsroom', 'press_media', 'buying_guide', 'experience']
+//   (상류 experience = 우리 라벨 lg_experience)
+// 2026-08-30 런부터 상류가 스스로 na 를 찍으므로 신포맷 행에는 이 게이트가 필요 없다.
+// 구포맷(ai_readiness) 행이 같은 스냅샷에 섞여 있는 동안만 보정용으로 유지 —
+// 전 국가가 신포맷으로 넘어가면 이 상수와 PT_SCOPED_CHECKS 를 통째로 제거할 것.
+const EDITORIAL_PT = { newsroom: 1, press_media: 1, buying_guide: 1, lg_experience: 1, experience: 1 }
 const PT_SCOPED_CHECKS = {
   ai_author_source: ctx => !!(ctx && ctx.pt && EDITORIAL_PT[ctx.pt]),
 }
@@ -228,6 +234,10 @@ function resolvePt(pt, url) {
 //                       (ai_schema_website 은 적용 페이지도 0건이었다)
 const TTFB_MAX_MS = 600
 // 채점 제외 체크 — na:true 로 표시해 applicable(분모)에서도 빠진다 (scoring_config 의 enabled:false 와 동등)
+// 채점 제외 — 상류 config 의 enabled:false 와 별개로 우리 쪽에서도 유지해야 한다.
+// 상류 enabled:false 는 '앞으로의 런' 에만 걸리고, 이미 수집된 run_results 에는
+// 값이 그대로 남아 있어 집계에 잡힌다 (8/30 데이터에서 #5 0% · #8 0.6% 로 사이트 성능 -7.2 유발).
+// #5 HTML<100KB · #8 Render Blocking 은 사용자 결정으로 제외된 항목 (2026-08-26).
 const DISABLED_CHECKS = { perf_html_size: 1, perf_render_block: 1, ai_summary_ssr: 1, ai_schema_website: 1 }
 
 // OR 통합 체크 — 여러 체크 중 하나만 통과해도 통과로 본다 (대표 체크에 결과를 몰고 나머지는 na).
@@ -314,6 +324,13 @@ const RECHECK = {
   //  - psi 파일 자체가 없으면 → null (크롤러 값 기반 원본 판정 유지, 하위 호환)
   //  - psi 는 있는데 이 URL 만 없거나 실패면 → na (채점 제외). 두 측정 체계를 섞으면
   //    통과율이 서로 다른 척도의 혼합이 되어 해석 불가해지므로 분모에서 뺀다.
+  // 상류 header_max_age_min(min_seconds:0) 과 결과가 다르다 (81.5% vs 95.4%).
+  // 사용자 기준은 "max-age 디렉티브가 있으면 통과" (2026-08-26) — 우리 판정 유지.
+  perf_cache_control(it) {
+    const m = String(it.value == null ? '' : it.value).match(/max-age\s*=\s*(\d+)/i)
+    if (!m) return { pass: false, hint: 'Cache-Control 에 max-age 디렉티브가 없습니다.' }
+    return { pass: true, hint: null }
+  },
   perf_ttfb(it, ctx) {
     const p = ctx && ctx.psi ? ctx.psi[ctx.url] : null
     if (p && !p.err && p.lab != null) {
@@ -341,11 +358,6 @@ const RECHECK = {
     return { pass, hint: pass ? null : `TTFB ${m[1]}ms — ${TTFB_MAX_MS}ms 미만 필요` }
   },
   // value 예: "max-age=0, no-cache, no-store" / "max-age=3600" / null(헤더 없음)
-  perf_cache_control(it) {   // ctx 불필요 — value 만으로 판정
-    const m = String(it.value == null ? '' : it.value).match(/max-age\s*=\s*(\d+)/i)
-    if (!m) return { pass: false, hint: 'Cache-Control 에 max-age 디렉티브가 없습니다.' }
-    return { pass: true, hint: null }          // max-age 가 설정되어 있으면(0 포함) 통과
-  },
 }
 
 // 단일 result.score 에 재정의를 적용하고 카테고리 points / total / grade 를 재계산 (in-place).
@@ -359,8 +371,10 @@ export function applyScoringOverride(score, ctx) {
       if (!it) continue
       if (DISABLED_CHECKS[cid]) { it.na = true; it.hint = null; continue }
       // 페이지타입상 적용 대상이 아니면 na — 구조적으로 불가능한 항목으로 감점되는 것 방지
+      // 신포맷(상류가 applies_to_page_types 를 자체 적용)이면 상류 판정을 그대로 따른다.
+      // 구포맷 행에만 우리 게이트로 보정 (사용자 지시 2026-08-30: 상류 최신 데이터를 따를 것).
       const scoped = PT_SCOPED_CHECKS[cid]
-      if (scoped && !scoped(ctx)) { it.na = true; it.hint = null; continue }
+      if (scoped && !ctx.upstreamGated && !scoped(ctx)) { it.na = true; it.hint = null; continue }
       const lbl = checkLabelOverride(cid, ctx)
       if (lbl) it.label = lbl
       // 이미 미적용(na/null)인 항목은 재판정 대상 아님 (원본 applies_when 판단 존중)
@@ -743,7 +757,9 @@ function main() {
       if (rpt && rpt.excluded) continue
       // 대시보드 채점 재정의 (TTFB 1800ms / Cache-Control 완화 / Render Blocking 제외) —
       // checkRows(Raw 데이터) · 집계 · CSV 가 모두 같은 점수를 보도록 여기서 한 번만 적용.
-      applyScoringOverride(s.result.score, { url, psi: psiResults, pt: rpt ? rpt.id : null, cc: meta.cc, ttfbMedian })
+      // upstreamGated — 신포맷(6분류) 행이면 상류가 applies_to_page_types 를 이미 적용했다는 표식
+      const upstreamGated = !!(s.result.score && s.result.score.breakdown && s.result.score.breakdown.citable_content)
+      applyScoringOverride(s.result.score, { url, psi: psiResults, pt: rpt ? rpt.id : null, cc: meta.cc, ttfbMedian, upstreamGated })
       // [DETECT] 측정 성립 여부 — 여기서 걸러야 점수·통과율·페이지타입·CSV·Raw 데이터가 모두
       // 같은 모집단을 본다. 이전에는 Raw 데이터만 isFetchFailed 로 걸러 기준이 어긋나 있었다.
       //   제외: 404 / 500 / fetch 자체 실패 (ai_status_200 FAIL) — 전 체크가 cascade-FAIL 이라
