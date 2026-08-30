@@ -18,6 +18,11 @@ const src = fs.readFileSync('src/emailTemplate.js', 'utf8')
 const ko = src.slice(src.indexOf('const RD_TEXT ='), src.indexOf('const RD_TEXT_EN'))
 const en = src.slice(src.indexOf('const RD_TEXT_EN'), src.indexOf('// Readability Highlight 섹션 본체'))
 const dash = fs.readFileSync('scripts/render-readability.mjs', 'utf8')
+// 대시보드는 **렌더 결과**로 검사한다 — 문구가 사전(readabilityI18n)으로 옮겨가도 따라감
+const { renderReadabilityHTML } = await import('./render-readability.mjs')
+const allSnaps = idx.snapshots.map(m => JSON.parse(fs.readFileSync(`data/readability/${m.date}.json`, 'utf8')))
+const rd = lang => renderReadabilityHTML({ snapshot: S, index: idx, allSnapshots: allSnaps, adminMode: false, lang })
+const dashKo = rd('ko'), dashEn = rd('en')
 
 const fail = [], warn = []
 const chk = (cond, msg) => { if (!cond) fail.push(msg) }
@@ -98,7 +103,9 @@ console.log(`  실제: 체크 ${nChecks} · 영역 ${nCats} · 타입 ${nPts} ·
 
 // ── 6. 대시보드 How to Read 숫자
 console.log('\n[6] 대시보드 How to Read')
-;[['38개 체크리스트', dash], ['6개 영역', dash], ['10개 전략 국가', dash], ["‘26년 6월부터", dash]]
+// ⚠ 렌더러 소스가 아니라 **렌더 결과**를 본다 — 문구가 사전(readabilityI18n)으로 이동해도 따라간다
+;[['38개 체크리스트', dashKo], ['6개 영역', dashKo], ['10개 전략 국가', dashKo], ["‘26년 6월부터", dashKo],
+  ['38 checklist items', dashEn], ['10 strategic countries', dashEn], ['Since June 2026', dashEn]]
   .forEach(([t, body]) => { const hit = body.includes(t); chk(hit, `대시보드 표기 없음: ${t}`); console.log(`  ${t.padEnd(20)} ${hit ? '✓' : '✗'}`) })
 
 // ── 7. EN 한국어 잔존
