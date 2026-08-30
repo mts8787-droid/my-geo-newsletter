@@ -410,3 +410,21 @@ describe('개선 가이드 — 선행 조건(pin) 항목', () => {
     }
   })
 })
+
+describe('영역 설명 — 대시보드 ↔ 뉴스레터 동일', () => {
+  // 같은 6개 영역을 두 곳이 다른 문구로 설명하던 것을 통일 (감사 2026-08-30).
+  it('CATEGORY_GUIDE.what 과 RD_CAT_DESC 가 같다', async () => {
+    const fs = await import('fs')
+    const { fileURLToPath } = await import('url')
+    const { dirname, join } = await import('path')
+    const root = join(dirname(fileURLToPath(import.meta.url)), '..')
+    const { CATEGORY_GUIDE } = await import('../src/shared/readabilityGuide.js')
+    const src = fs.readFileSync(join(root, 'src/emailTemplate.js'), 'utf8')
+    const i = src.indexOf('const RD_CAT_DESC = {')
+    const blk = src.slice(i, src.indexOf('}', i) + 1)
+    const nl = {}
+    ;[...blk.matchAll(/(\w+):\s*'([^']+)'/g)].forEach(m => { nl[m[1]] = m[2] })
+    const bad = Object.keys(CATEGORY_GUIDE).filter(k => CATEGORY_GUIDE[k].what !== nl[k])
+    expect(bad).toEqual([])
+  })
+})

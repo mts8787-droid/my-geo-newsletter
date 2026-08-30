@@ -2803,22 +2803,23 @@ function citationBumpRowHtml(bumpData, meta, lang = 'ko') {
 // 데이터: options.readability (뉴스레터 어드민이 /api/readability-summary 로 받아 주입).
 //        본문 문안은 meta 로 편집 가능하며, 기본값은 사용자 제공 원문 그대로 사용한다.
 const RD_CAT_ORDER = ['performance', 'geo_platform', 'accessibility', 'seo', 'geo_schema', 'geo_content']
+// 6개 평가 영역 설명 — 대시보드(readabilityGuide.CATEGORY_GUIDE)와 같은 문구를 쓴다.
+// 두 곳이 갈리면 같은 지표를 다른 말로 설명하게 된다 (감사 2026-08-30 에서 6개 전부 불일치 발견).
 const RD_CAT_DESC = {
-  performance: '페이지 응답 및 정보 제공 속도',
-  geo_platform: 'AI 크롤러가 원문을 가져갈 수 있는 기술 환경',
-  accessibility: '사람과 AI가 문서 구조를 읽어낼 수 체계',
-  seo: '제목·페이지 주제 설명 등 검색되기위한 기본 정보',
-  geo_schema: '제품·FAQ·이미지 등 정보의 종류와 관계를 알려주는 구조화 데이터',
-  geo_content: 'AI가 인용할만한 서술의 존재',
+  performance: '페이지의 정보를 빠르고 안정적으로 전달하는지',
+  geo_platform: 'AI 크롤러가 원문을 실제로 가져갈 수 있는지',
+  accessibility: '사람과 AI가 문서 구조를 읽어낼 수 있는지',
+  seo: '페이지 제목과 설명 등 기본 정보가 잘 갖춰져 있는지',
+  geo_schema: '제품·이미지·영상·사용방법 등 정보의 종류를 AI가 구분할 수 있는지',
+  geo_content: 'AI가 답변에 인용하기 좋은 형태로 콘텐츠가 작성되어 있는지',
 }
-// EN 기본 번역 — 없으면 EN 발송본 그래프 라벨에 한국어가 그대로 남는다.
 const RD_CAT_DESC_EN = {
-  performance: 'Page response and content delivery speed',
-  geo_platform: 'Technical conditions that let AI crawlers retrieve the source',
-  accessibility: 'Structure that both people and AI can parse',
-  seo: 'Baseline information needed to be found — titles, page descriptions',
-  geo_schema: 'Structured data signaling the type of information and how it relates',
-  geo_content: 'Presence of statements AI can quote',
+  performance: 'Whether page information is delivered quickly and reliably',
+  geo_platform: 'Whether AI crawlers can actually retrieve the source',
+  accessibility: 'Whether people and AI can read the document structure',
+  seo: 'Whether the basics — page title and description — are in place',
+  geo_schema: 'Whether AI can tell what kind of information it is — product, image, video, how-to',
+  geo_content: 'Whether content is written in a form AI can quote in answers',
 }
 // 스냅샷의 pageTypes[].label 도 한국어 → EN 대응표 (없으면 EN 발송본 그래프에 한국어 잔존)
 const RD_PT_LABEL_EN = {
