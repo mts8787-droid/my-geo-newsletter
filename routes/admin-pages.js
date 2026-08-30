@@ -793,10 +793,19 @@ body{min-height:100vh;background:var(--bg-primary);font-family:'LG Smart','Arial
 .header{text-align:center;margin-bottom:32px}
 .logo{font-size:14px;font-weight:700;letter-spacing:3px;color:var(--text-muted);text-transform:uppercase;margin-bottom:14px}
 h1{font-size:24px;font-weight:700;color:var(--text-strong)}
-.columns{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;margin-bottom:32px}
-@media (max-width:1100px){.columns{grid-template-columns:1fr 1fr}}
-@media (max-width:780px){.columns{grid-template-columns:1fr}}
+.tab-bar{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-bottom:28px}
+.tab-btn{background:var(--bg-card);border:1px solid var(--border);color:var(--text-sub);padding:10px 22px;border-radius:10px;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;transition:border-color .15s,color .15s,background .2s}
+.tab-btn:hover{border-color:var(--accent);color:var(--text-strong)}
+.tab-btn.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.tab-panel{display:none;margin-bottom:32px}
+.tab-panel.active{display:block}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:8px}
+@media (max-width:1100px){.grid{grid-template-columns:1fr 1fr}}
+@media (max-width:780px){.grid{grid-template-columns:1fr}}
 .col{display:flex;flex-direction:column;gap:12px}
+.hiro-wrap{max-width:940px;margin:0 auto}
+.tab-panel .section-title{margin:18px 0 10px;text-align:left}
+.tab-panel .section-title:first-child{margin-top:0}
 a.card{display:block;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:18px 20px;text-decoration:none;text-align:left;transition:border-color .2s,transform .15s,background .2s}
 a.card:hover{border-color:var(--accent);transform:translateY(-2px)}
 .card-title{font-size:18px;font-weight:700;color:var(--text-strong);margin-bottom:3px}
@@ -831,14 +840,17 @@ ${themeToggleButton()}
     <div class="logo">GEO Newsletter</div>
     <h1>Admin Dashboard</h1>
   </div>
-  <div class="columns">
-    <div class="col">
-      <div class="section-title">뉴스레터 관리</div>
-      <a class="card" href="/admin/newsletter">
-        <div class="card-title">Newsletter Generator</div>
-        <div class="card-desc">GEO 모니터링 리포트 생성, 편집 및 발송</div>
-      </a>
-      <div class="section-title">대시보드 관리</div>
+  <!-- 카테고리 탭 (2026-08-30 재편) — 3단 그리드 → 탭. 해시(#dashboards 등)로 딥링크 -->
+  <div class="tab-bar">
+    <button class="tab-btn active" data-tab="dashboards" onclick="switchAdminTab('dashboards')">대시보드</button>
+    <button class="tab-btn" data-tab="reports" onclick="switchAdminTab('reports')">뉴스레터 · 리포트</button>
+    <button class="tab-btn" data-tab="infra" onclick="switchAdminTab('infra')">인프라 · 설정</button>
+    <button class="tab-btn" data-tab="hiro" onclick="switchAdminTab('hiro')">🐈‍⬛ HIRO 하네스</button>
+  </div>
+
+  <div id="tab-dashboards" class="tab-panel active">
+    <div class="section-title">대시보드 관리</div>
+    <div class="grid">
       <a class="card" href="/admin/dashboard">
         <div class="card-title">Dashboard Viewer</div>
         <div class="card-desc">Visibility · Citation · Readability · Tracker 통합 뷰어 — 여기서 통합 대시보드 게시</div>
@@ -859,8 +871,19 @@ ${themeToggleButton()}
         <div class="card-title">Progress Tracker</div>
         <div class="card-desc">GEO 과제 진행 현황 대시보드 — 카테고리별 정량/정성 KPI</div>
       </a>
+    </div>
+  </div>
 
-      <div class="section-title">리포트</div>
+  <div id="tab-reports" class="tab-panel">
+    <div class="section-title">뉴스레터</div>
+    <div class="grid">
+      <a class="card" href="/admin/newsletter">
+        <div class="card-title">Newsletter Generator</div>
+        <div class="card-desc">GEO 모니터링 리포트 생성, 편집 및 발송</div>
+      </a>
+    </div>
+    <div class="section-title">보고용 리포트</div>
+    <div class="grid">
       <a class="card" href="/admin/monthly-report">
         <div class="card-title">Monthly Report</div>
         <div class="card-desc">월간 보고용 단순 표 형태 리포트 — 색상/그래프 없음</div>
@@ -870,8 +893,11 @@ ${themeToggleButton()}
         <div class="card-desc">주간 보고용 표 리포트 — 국가별 제품별 전주대비 포함</div>
       </a>
     </div>
-    <div class="col">
-      <div class="section-title">공통 인프라</div>
+  </div>
+
+  <div id="tab-infra" class="tab-panel">
+    <div class="section-title">공통 인프라</div>
+    <div class="grid">
       <a class="card" href="/admin/ip-manager">
         <div class="card-title">IP Access Manager</div>
         <div class="card-desc">게시된 리포트 열람 허용 IP 대역 관리</div>
@@ -888,8 +914,9 @@ ${themeToggleButton()}
         <div class="card-title">Archives (학습 데이터)</div>
         <div class="card-desc">완성본 아카이빙 · AI 인사이트 생성 시 문체 학습 데이터로 활용</div>
       </a>
-
-      <div class="section-title">DB구축</div>
+    </div>
+    <div class="section-title">DB구축</div>
+    <div class="grid">
       <a class="card" href="/admin/plan">
         <div class="card-title">시스템 기획서</div>
         <div class="card-desc">현행 아키텍처 · 코드/보안 리뷰 · 기능 로드맵</div>
@@ -911,8 +938,10 @@ ${themeToggleButton()}
         <div class="card-desc">두 저장소(writer·reader) 간 단일 결합 지점 — 테이블·시스템 컬럼 규약</div>
       </a>
     </div>
+  </div>
 
-    <div class="col col-harness">
+  <div id="tab-hiro" class="tab-panel">
+    <div class="col col-harness hiro-wrap">
       <div class="section-title">HIRO (Harness for Interactive Reporting Optimization)</div>
       <a class="card harness-entry" href="/hiro">
         <div class="card-title">🐈‍⬛ HIRO</div>
@@ -972,7 +1001,23 @@ ${themeToggleButton()}
   <div class="footer">
     <button class="logout" onclick="fetch('/api/auth/logout',{method:'POST'}).then(function(){location.href='/admin/login'})">로그아웃</button>
   </div>
-</div></body></html>`)
+</div>
+<script>
+var ADMIN_TABS = ['dashboards','reports','infra','hiro']
+function switchAdminTab(id, skipHash) {
+  if (ADMIN_TABS.indexOf(id) < 0) return
+  document.querySelectorAll('.tab-panel').forEach(function(p){ p.classList.toggle('active', p.id === 'tab-' + id) })
+  document.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.toggle('active', b.dataset.tab === id) })
+  if (!skipHash) history.replaceState(null, '', '#' + id)
+}
+// 해시 딥링크 복원 (#infra 등) + 뒤로가기 대응
+;(function(){
+  var h = (location.hash || '').slice(1)
+  if (h) switchAdminTab(h, true)
+  window.addEventListener('hashchange', function(){ switchAdminTab((location.hash || '').slice(1) || 'dashboards', true) })
+})()
+</script>
+</body></html>`)
 })
 
 // ─── 마크다운 문서 페이지 (헬퍼 사용) ──────────────────────────────────────
