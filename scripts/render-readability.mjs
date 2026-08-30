@@ -159,17 +159,22 @@ function viewCategoryDetail(snap) {
   const cardHead = `<div class="bar-row bar-head has-def">
     <span class="bar-label"><span class="bar-name">항목</span><span class="bar-def">정의</span><span class="bar-pass">Pass 기준</span></span>
     <div class="bar-track"></div><span class="bar-value">통과율</span></div>`
-  const catCard = (name, avg, sub, checksArr) => {
+  // 클라이언트 짝(renderCategoryCards)과 동일 구조 — design.md §5.8 서버↔클라 짝.
+  // 카테고리 설명(what)은 제목 옆, why 는 그 아래 줄.
+  const catCard = (name, avg, sub, checksArr, catKey) => {
     const checkRows = cardHead + checksArr.slice().sort((a, b) => a.label.localeCompare(b.label, 'en', { numeric: true })).map(c => {
       const rate = checkRate(c)
       const right = rate == null ? '—' : `${rate}% (${c.pass}/${c.applicable})`
       return barRow(stripParens(c.label), rate ?? 0, 100, rateColor(rate), right, '', DEFS[c.cid])
     }).join('')
+    const cg = CATEGORY_GUIDE[catKey] || null
     return `<div class="cat-card">
       <div class="cat-head">
         <span class="cat-name">${escHtml(name)}</span>
+        ${cg ? `<span class="cat-what">${escHtml(cg.what)}</span>` : ''}
         <span class="cat-avg" style="color:${scoreColor(avg)}">${avg ?? '—'}</span>
       </div>
+      ${cg ? `<div class="cat-why">${escHtml(cg.why)}</div>` : ''}
       <div class="cat-sub">${checksArr.length} 체크 · ${sub}</div>
       <div class="bars sm">${checkRows}</div>
     </div>`
@@ -179,7 +184,7 @@ function viewCategoryDetail(snap) {
   const cards = CATEGORIES.map(cat => {
     const checks = byCat[cat] || []
     const avg = o.categories ? o.categories[cat] : null
-    return catCard(labels[cat] || cat, avg, '평균 points', checks)
+    return catCard(labels[cat] || cat, avg, '평균 points', checks, cat)
   }).join('')
 
   return sectionCard(`② 카테고리 ${CATEGORIES.length}분할 상세 — 체크별 통과율`, '#3B82F6', `<div class="cat-grid">${cards}</div>`)
@@ -300,13 +305,17 @@ function readabilityClient() {
         var right = rate == null ? '—' : rate + '% (' + c.pass + '/' + c.applicable + ')'
         return barRow(stripParens(c.label), rate == null ? 0 : rate, 100, rateColor(rate), right, '', defs[c.cid])
       }).join('')
-      // 이 영역이 무엇을 보는 영역인지 — 담당자가 바로 알아듣게 (CATEGORY_GUIDE)
+      // 이 영역이 무엇을 보는 영역인지 — 제목 바로 옆에 붙인다 (사용자 지시 2026-08-30).
+      // what 은 제목 옆 인라인, why(안 되면 생기는 일)는 그 아래 줄.
       var cg = (RD.catGuide || {})[catKey] || null
-      var cgHtml = cg ? '<div class="cat-guide"><div class="cat-guide-what">' + esc(cg.what) + '</div>' +
-        '<div class="cat-guide-why">' + esc(cg.why) + '</div></div>' : ''
-      return '<div class="cat-card"><div class="cat-head"><span class="cat-name">' + esc(name) + '</span>' +
-        '<span class="cat-avg" style="color:' + scoreColor(avg) + '">' + (avg == null ? '—' : avg) + '</span></div>' +
-        '<div class="cat-sub">' + checksArr.length + ' 체크 · ' + sub + '</div>' + cgHtml +
+      var whatInline = cg ? '<span class="cat-what">' + esc(cg.what) + '</span>' : ''
+      var whyHtml = cg ? '<div class="cat-why">' + esc(cg.why) + '</div>' : ''
+      return '<div class="cat-card">' +
+        '<div class="cat-head">' +
+          '<span class="cat-name">' + esc(name) + '</span>' + whatInline +
+          '<span class="cat-avg" style="color:' + scoreColor(avg) + '">' + (avg == null ? '—' : avg) + '</span>' +
+        '</div>' + whyHtml +
+        '<div class="cat-sub">' + checksArr.length + ' 체크 · ' + sub + '</div>' +
         '<div class="bars sm">' + rows + '</div></div>'
     }
     var out = []
@@ -810,9 +819,9 @@ body{background:#F1F5F9;font-family:${FONT};color:#1A1A1A;line-height:1.6}
 .gd-k{flex:0 0 66px;font-size:11px;font-weight:800;color:#94A3B8;text-align:right}
 .gd-k-where{color:#BE123C}
 .gd-k-act{color:#BE123C}
-.cat-guide{border-left:2px solid #E2E8F0;padding:2px 0 2px 10px;margin:8px 0 12px}
-.cat-guide-what{font-size:12.5px;font-weight:700;color:#1A1A1A;line-height:1.55}
-.cat-guide-why{font-size:12.5px;color:#64748B;line-height:1.55;margin-top:2px}
+.cat-what{flex:1 1 auto;min-width:0;font-size:12.5px;font-weight:500;color:#475569;line-height:1.5;padding-left:2px}
+.cat-why{font-size:12.5px;color:#94A3B8;line-height:1.55;margin:4px 0 0}
+@media(max-width:780px){.cat-head{flex-wrap:wrap}.cat-what{flex:1 1 100%;order:3;padding-left:0;margin-top:3px}}
 @media(max-width:780px){.gd-head{flex-wrap:wrap;gap:6px}.gd-name{flex:1 1 100%}.gd-line{flex-direction:column;gap:1px}.gd-k{text-align:left;flex:none}}
 .rd-pass{display:inline-block;padding:2px 8px;border-radius:6px;font-weight:800;font-size:11px;background:#ECFDF5;color:#15803D;border:1px solid #A7F3D0}
 .rd-fail{display:inline-block;padding:2px 8px;border-radius:6px;font-weight:800;font-size:11px;background:#FFF1F2;color:#BE123C;border:1px solid #FECDD3}
@@ -845,9 +854,9 @@ body{background:#F1F5F9;font-family:${FONT};color:#1A1A1A;line-height:1.6}
 .bar-pass{flex:0 0 224px;font-size:12.5px;line-height:1.5;color:#94A3B8;font-weight:500;letter-spacing:-0.2px}
 .bar-head.has-def .bar-name,.bar-head.has-def .bar-def,.bar-head.has-def .bar-pass{font-size:11px;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:.3px}
 .cat-card{background:#fff;border:1px solid #E8EDF2;border-radius:12px;padding:16px 18px}
-.cat-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:2px}
-.cat-name{font-size:19px;font-weight:800;color:#1A1A1A}
-.cat-avg{font-size:30px;font-weight:900;letter-spacing:-1px}
+.cat-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:2px}
+.cat-name{flex:0 0 auto;white-space:nowrap;font-size:19px;font-weight:800;color:#1A1A1A}
+.cat-avg{flex:0 0 auto;font-size:30px;font-weight:900;letter-spacing:-1px}
 .cat-sub{font-size:13px;color:#94A3B8;margin-bottom:14px}
 @media (max-width:780px){
   .tab-bar{padding:10px 16px}
