@@ -116,7 +116,13 @@ function sampleByPageType(items) {
 }
 
 // 원본 run_results 의 score.breakdown 키 (어딧이 만든 4분류) — 순회용. 바꾸면 파싱이 깨진다.
-const SRC_CATEGORIES = ['performance', 'accessibility', 'seo', 'ai_readiness']
+// 크롤러(analyzer.py) 가 내보내는 원본 카테고리 키.
+// 2026-08-30 런부터 ai_readiness 가 상류에서 schema_markup / citable_content / ai_crawlability
+// 3개로 분리됐다. 구/신 포맷이 한 스냅샷에 섞이므로 양쪽을 모두 나열한다.
+// ⚠ 여기 누락되면 그 카테고리 항목이 통째로 집계에서 빠진다 — 8/30 최초 집계 때
+//    신포맷 9,811행의 스키마·콘텐츠·크롤 항목이 전부 드롭돼 총점이 74.2 로 잘못 나왔다.
+const SRC_CATEGORIES = ['performance', 'accessibility', 'seo', 'ai_readiness',
+  'schema_markup', 'citable_content', 'ai_crawlability']
 
 // 대시보드 표시 카테고리 (6분류) — 표시 순서 + 라벨.
 // AI Readiness 23개는 성격이 크게 달라 하나로 묶으면 실제 상태가 가려진다
@@ -140,6 +146,10 @@ const CATEGORY_LABEL = {
 //   AI 가 인용할 때 쓰는 신뢰 근거이므로 콘텐츠로 분류 (사용자 결정 2026-08-26).
 const GEO_CONTENT_IDS = { ai_faq_block: 1, ai_definition: 1, ai_summary_box: 1, ai_citable: 1, ai_author_source: 1 }
 function catOf(srcCat, cid) {
+  // 신포맷(2026-08-30~) — 상류가 이미 3분류로 내보내므로 출력 키로만 환산
+  if (srcCat === 'schema_markup') return 'geo_schema'
+  if (srcCat === 'citable_content') return 'geo_content'
+  if (srcCat === 'ai_crawlability') return 'geo_platform'
   if (srcCat !== 'ai_readiness') return srcCat
   if (String(cid).startsWith('ai_schema_')) return 'geo_schema'
   if (GEO_CONTENT_IDS[cid]) return 'geo_content'
@@ -595,7 +605,9 @@ export function collectChecks(score, checkMeta) {
 // fetch 실패(비-200) 페이지 판정 — ai_status_200 이 FAIL 이면 전 체크가 'HTML 파싱 실패'로
 // cascade-FAIL 하므로 개선 대상이 아님(gen_audit_report.py fetch_state 와 동일 취지). 개선 목록에서 제외.
 export function isFetchFailed(score) {
-  const it = ((score.breakdown || {}).ai_readiness || {}).items || {}
+  // ai_status_200 은 구포맷에선 ai_readiness, 신포맷에선 ai_crawlability 아래에 있다
+  const bd = score.breakdown || {}
+  const it = { ...((bd.ai_readiness || {}).items || {}), ...((bd.ai_crawlability || {}).items || {}) }
   const s = it.ai_status_200
   return !!(s && s.pass === false)
 }
