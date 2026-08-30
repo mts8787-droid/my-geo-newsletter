@@ -37,10 +37,12 @@ const core = [
   ['평가 페이지수', S.overall.urlCount.toLocaleString('en-US')],
 ]
 Object.entries(S.overall.categories).forEach(([k, v]) => core.push([S.categoryLabels[k] || k, v]))
+// ⚠ 경고로만 표면화 — 뉴스레터 본문 수치는 사람이 검수·유지 (사용자 지시 2026-08-31
+//   "숫자 연동 자동으로 하지 마"). 이 감사는 검수용 diff 리포트 역할.
 core.forEach(([lb, v]) => {
   const inKo = ko.includes(String(v)), inEn = en.includes(String(v))
-  chk(inKo, `KO 누락: ${lb} = ${v}`)
-  chk(inEn, `EN 누락: ${lb} = ${v}`)
+  chkW(inKo, `KO 본문 수치 상이(검수 필요): ${lb} = ${v}`)
+  chkW(inEn, `EN 본문 수치 상이(검수 필요): ${lb} = ${v}`)
   console.log(`  ${String(lb).padEnd(16)} ${String(v).padStart(8)}  KO ${inKo ? '✓' : '✗'}  EN ${inEn ? '✓' : '✗'}`)
 })
 
@@ -104,8 +106,8 @@ console.log(`  실제: 체크 ${nChecks} · 영역 ${nCats} · 타입 ${nPts} ·
 // ── 6. 대시보드 How to Read 숫자
 console.log('\n[6] 대시보드 How to Read')
 // ⚠ 렌더러 소스가 아니라 **렌더 결과**를 본다 — 문구가 사전(readabilityI18n)으로 이동해도 따라간다
-;[['38개 체크리스트', dashKo], ['6개 영역', dashKo], ['10개 전략 국가', dashKo], ["‘26년 6월부터", dashKo],
-  ['38 checklist items', dashEn], ['10 strategic countries', dashEn], ['Since June 2026', dashEn]]
+;[['37개 체크리스트', dashKo], ['6개 영역', dashKo], ['10개 전략 국가', dashKo], ["‘26년 6월부터", dashKo],
+  ['37 checklist items', dashEn], ['10 strategic countries', dashEn], ['Since June 2026', dashEn]]
   .forEach(([t, body]) => { const hit = body.includes(t); chk(hit, `대시보드 표기 없음: ${t}`); console.log(`  ${t.padEnd(20)} ${hit ? '✓' : '✗'}`) })
 
 // ── 7. EN 한국어 잔존

@@ -327,9 +327,10 @@ function readabilityClient() {
     }
     function card(name, avg, sub, checksArr, catKey) {
       var defs = RD.checkDefs || {}
+      // ⚠ 클라이언트 코드 — 서버 사전 접근자 사용 금지, 주입 사전 I 만 (2026-08-31 회귀 수리)
       var head = '<div class="bar-row bar-head has-def"><span class="bar-label">' +
-        '<span class="bar-name">${escHtml(TT().thItem)}</span><span class="bar-def">${escHtml(TT().thDef)}</span><span class="bar-pass">${escHtml(TT().thPass)}</span></span>' +
-        '<div class="bar-track"></div><span class="bar-value">${escHtml(TT().thRate)}</span></div>'
+        '<span class="bar-name">' + esc(I.thItem || '항목') + '</span><span class="bar-def">' + esc(I.thDef || '정의') + '</span><span class="bar-pass">' + esc(I.thPass || 'Pass 기준') + '</span></span>' +
+        '<div class="bar-track"></div><span class="bar-value">' + esc(I.thRate || '통과율') + '</span></div>'
       var rows = head + checksArr.slice().sort(function (a, b) { return a.label.localeCompare(b.label, 'en', { numeric: true }) }).map(function (c) {
         var rate = checkRate(c)
         var right = rate == null ? '—' : rate + '% (' + c.pass + '/' + c.applicable + ')'
@@ -534,7 +535,7 @@ function readabilityClient() {
     }).join('')
     var bars = rowsHtml ? (barHead('페이지 타입', '페이지수', '점수') + rowsHtml) : '<div class="tab-note">해당 조건에 데이터가 없습니다.</div>'
     var scopeName = state.cc === 'all' ? '전체' : ccLabel(state.cc)
-    return sectionCard('① ' + TT().secPageTypeScore + ' (' + esc(scopeName) + ')', '#059669', '<div class="bars">' + bars + '</div>') + renderCategorySection(scope, '②') + renderGuideSection(scope, '③')
+    return sectionCard('① ' + (I.secPageTypeScore || '페이지타입별 점수') + ' (' + esc(scopeName) + ')', '#059669', '<div class="bars">' + bars + '</div>') + renderCategorySection(scope, '②') + renderGuideSection(scope, '③')
   }
 
   // 검수 기준 + 검수 URL 다운로드 탭

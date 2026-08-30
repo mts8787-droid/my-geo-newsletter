@@ -196,12 +196,12 @@ describe('Readability 채점 항목 — 38항목 체계 고정', () => {
     const root = join(dirname(fileURLToPath(import.meta.url)), '..')
     return JSON.parse(fs.readFileSync(join(root, 'data/readability/2026-08-30.json'), 'utf8'))
   }
-  it('제외 4건이 스냅샷에 없고 총 38항목이다', async () => {
+  it('제외 4건이 스냅샷에 없고 총 37항목이다', async () => {
     const snap = await loadSnap()
     const ids = Object.keys(snap.overall.checks)
     for (const k of ['perf_html_size', 'perf_render_block', 'ai_summary_ssr', 'ai_schema_website'])
       expect(ids).not.toContain(k)
-    expect(ids.length).toBe(38)
+    expect(ids.length).toBe(37)  // #43 Offer 가 #25 Product 풀세트로 AND 병합 (2026-08-31) — 38→37
   })
   it('제외 페이지타입이 집계에 없다', async () => {
     const snap = await loadSnap()
@@ -212,7 +212,11 @@ describe('Readability 채점 항목 — 38항목 체계 고정', () => {
 
 // A안 — 대시보드(스냅샷)와 뉴스레터 본문 수치가 항상 같아야 한다 (사용자 결정 2026-08-30).
 // 새 스냅샷이 들어오면 이 테스트가 먼저 깨져서 본문 갱신 누락을 잡는다.
-describe('뉴스레터 본문 ↔ 최신 스냅샷 수치 일치', () => {
+// ⏸ 자동 일치 강제 해제 (사용자 지시 2026-08-31: "숫자 연동 자동으로 하지 마 — 사람이 검수").
+// 뉴스레터 본문 수치는 이제 사람이 검수·유지한다. 재집계 때마다 이 테스트가 기본 문안
+// 재작성을 강제하면 그게 곧 자동 연동이라 정책과 충돌한다. 참고용으로 skip 보존 —
+// 검수 시 수동 실행: npx vitest run -t "뉴스레터 본문" (skip 해제 후)
+describe.skip('뉴스레터 본문 ↔ 최신 스냅샷 수치 일치', () => {
   const load = async () => {
     const fs = await import('fs')
     const { fileURLToPath } = await import('url')
@@ -393,6 +397,22 @@ describe('대시보드 클라이언트 — 스코프 회귀 방지', () => {
       })
     })
     expect(bad).toEqual([])
+  })
+
+  it('클라이언트 함수 안에 서버 전용 심볼(TT()·${} 보간)이 없다', async () => {
+    // 회귀 (2026-08-31): 서버 지역변수 t → TT() 일괄 치환이 클라이언트 함수 안까지 적용됨.
+    // 브라우저에 TT 는 없어 페이지타입 탭이 ReferenceError 로 죽고("필터가 안 먹는" 증상),
+    // 문자열 안 ${...} 는 보간되지 않고 리터럴로 화면에 노출됐다. 클라는 주입 사전 I 만 사용.
+    const fs = await import('fs')
+    const { fileURLToPath } = await import('url')
+    const { dirname, join } = await import('path')
+    const root = join(dirname(fileURLToPath(import.meta.url)), '..')
+    const src = fs.readFileSync(join(root, 'scripts/render-readability.mjs'), 'utf8')
+    const start = src.indexOf('function readabilityClient()')
+    const end = src.indexOf('\n}', start)
+    const cli = src.slice(start, end)
+    expect(cli.includes('TT(')).toBe(false)
+    expect(cli.includes('${')).toBe(false)
   })
 })
 

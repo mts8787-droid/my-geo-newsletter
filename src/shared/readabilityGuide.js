@@ -215,7 +215,7 @@ export const GUIDE = {
     action: L('PLP 템플릿에 모음 라벨과 목록에 담긴 제품들을 함께 표시합니다.', 'Add the collection label to the PLP template along with the products it contains.'),
   },
   ai_schema_product: {
-    what: L('제품 페이지에 제품명·이미지·설명·모델코드·브랜드·가격 라벨이 원본 소스(Server-Side Rendering)에 붙었는지 봅니다.', 'Whether product name, image, description, model code, brand, and price labels are present in the source HTML (Server-Side Rendering).'),
+    what: L('제품 페이지에 제품명·이미지·설명·모델코드·브랜드·가격, 그리고 가격 통화·재고 상태(Offer) 라벨이 원본 소스(Server-Side Rendering)에 붙었는지 봅니다.', 'Whether product name, image, description, model code, brand, price, plus currency and availability (Offer) labels are present in the source HTML (Server-Side Rendering).'),
     why: L('AI가 제품을 특정하고 비교하는 핵심 근거입니다. 없으면 추천 후보에서 빠집니다.', 'This is the core evidence AI uses to identify and compare products. Without it the product drops out of consideration.'),
     where: L('PDP 페이지 전달 방식 · 스키마 자동화', 'PDP delivery method · schema automation'),
     action: L('제품 정보 라벨을 원본 소스에 함께 내려보냅니다.', 'Ship the product labels together with the source HTML.'),
@@ -257,12 +257,8 @@ export const GUIDE = {
       buying_guide: { where: L('구매 가이드 템플릿', 'Buying guide template'), action: L('가이드에 글 라벨을 붙여 작성자와 발행일이 함께 나오게 합니다.', 'Label guides as articles so the author and date appear with them.') },
     },
   },
-  ai_schema_offer: {
-    what: L('가격·재고 상태를 라벨로 붙였는지 봅니다.', 'Whether price and availability are labelled.'),
-    why: L('AI가 답변에 가격이나 구매 가능 여부를 반영할 수 있게 됩니다.', 'It lets AI reflect price and purchasability in its answers.'),
-    where: L('PDP 가격 영역 · 스키마 자동화', 'PDP pricing area · schema automation'),
-    action: L('제품 정보 라벨 안에 가격·통화·재고 상태를 채웁니다.', 'Fill price, currency, and availability inside the product label.'),
-  },
+  // ai_schema_offer 는 #25 Product 풀세트로 AND 병합됨 (2026-08-31) — 대시보드에 별도 행 없음.
+  // 가격·재고 안내는 ai_schema_product 항목의 액션에 포함.
 
   // ── 고인용 콘텐츠 ─────────────────────────────────────────────────────────
   ai_faq_block: {

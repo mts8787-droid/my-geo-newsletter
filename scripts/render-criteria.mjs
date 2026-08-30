@@ -153,7 +153,7 @@ const CRIT_T = {
     ],
     nm: [
       '<b>#17 Robots</b> — meta robots와 X-Robots-Tag 헤더 중 <b>하나만 충족해도 통과</b> (OR 조건). 대표 체크 하나로 채점',
-      '<b>#25 Product 풀세트</b> — Product와 Offer, 두 개로 채점',
+      '<b>#25 Product 풀세트</b> — Product·Offer 를 하나로 병합 채점 (둘 다 충족해야 통과, 2026-08-31 병합)',
     ],
   },
   en: {
@@ -192,7 +192,7 @@ const CRIT_T = {
     ],
     nm: [
       '<b>#17 Robots</b> — passes if <b>either</b> meta robots or the X-Robots-Tag header allows indexing (OR condition). Scored as a single representative check',
-      '<b>#25 Product full set</b> — scored as two items: Product and Offer',
+      '<b>#25 Product full set</b> — Product and Offer merged into one check (both required to pass, merged 2026-08-31)',
     ],
   },
 }
@@ -466,7 +466,7 @@ export function renderCriteriaMarkdown({ rows, generatedAt }) {
   L.push('')
   L.push('### 문서 번호와 채점 항목이 1:1이 아닌 곳')
   L.push('- **#17 Robots** — `seo_robots`(meta) 와 `seo_robots_hdr`(X-Robots-Tag) 중 **하나만 충족해도 통과** (OR). 대표 체크 `seo_robots` 하나로 채점')
-  L.push('- **#25 Product 풀세트** — `ai_schema_product` + `ai_schema_offer`, 두 개로 채점')
+  L.push('- **#25 Product 풀세트** — `ai_schema_product` + `ai_schema_offer` 를 AND 병합해 한 행으로 채점 (2026-08-31)')
   L.push('')
   return L.join('\n')
 }

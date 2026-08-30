@@ -271,9 +271,17 @@ const DISABLED_CHECKS = { perf_html_size: 1, perf_render_block: 1, ai_summary_ss
 const OR_GROUPS = [
   { primary: 'seo_robots', members: ['seo_robots', 'seo_robots_hdr'], label: '#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)' },
 ]
-// OR 통합에서 대표가 아닌 체크 — 통과율 표에 별도 행을 만들지 않는다
+// AND 통합 체크 — 모든 멤버가 통과해야 통과 (대표 체크에 결과를 몰고 나머지는 na).
+//   #25 Product 풀세트: 상류가 Product(6필드)와 Offer(#43, 3필드) 두 체크로 쪼개 채점하는데,
+//   둘 다 "PDP 제품 스키마" 라 대시보드에 같은 것이 두 행으로 나오고 통과율도 크게 갈렸다
+//   (8/30: Product 0.9% vs Offer 10.4% — US 만 SSR 이라 US Offer 97.3%).
+//   '풀세트' 취지대로 하나로 병합: 둘 다 갖춰야 통과 (사용자 지시 2026-08-31).
+const AND_GROUPS = [
+  { primary: 'ai_schema_product', members: ['ai_schema_product', 'ai_schema_offer'], label: '#25 Schema: Product 풀세트 (Product+Offer, PDP)' },
+]
+// 통합에서 대표가 아닌 체크 — 통과율 표에 별도 행을 만들지 않는다
 const ABSORBED_CHECKS = Object.fromEntries(
-  OR_GROUPS.flatMap(g => g.members.filter(m => m !== g.primary).map(m => [m, 1])))
+  [...OR_GROUPS, ...AND_GROUPS].flatMap(g => g.members.filter(m => m !== g.primary).map(m => [m, 1])))
 // 기준이 바뀐 체크의 표시 라벨 (원본 label 은 옛 임계값 문구를 담고 있음).
 // perf_ttfb 는 실제 채점에 PSI 를 썼을 때만 '(PSI)' 를 붙인다 — 라벨과 측정 출처를 일치시킴.
 function checkLabelOverride(cid, ctx) {
@@ -435,6 +443,26 @@ export function applyScoringOverride(score, ctx) {
           delete bd.items[m].na
           bd.items[m].pass = anyPass
           bd.items[m].hint = anyPass ? null : '색인 허용 설정 없음 — meta robots 또는 X-Robots-Tag 중 하나 필요'
+        } else {
+          bd.items[m].na = true   // 대표 체크로 흡수 — 분모 이중 계상 방지
+          bd.items[m].hint = null
+        }
+      }
+    }
+
+    // AND 통합 — 모든 applicable 멤버가 통과해야 대표 체크 통과 (#25 Product 풀세트)
+    for (const g of AND_GROUPS) {
+      const present = g.members.filter(m => bd.items[m])
+      if (present.length < 2) continue
+      const applicables = present.filter(m => bd.items[m].na !== true && bd.items[m].pass != null)
+      const allPass = applicables.length > 0 && applicables.every(m => bd.items[m].pass === true)
+      for (const m of present) {
+        if (m === g.primary) {
+          bd.items[m].label = g.label
+          if (!applicables.length) { bd.items[m].na = true; continue }
+          delete bd.items[m].na
+          bd.items[m].pass = allPass
+          bd.items[m].hint = allPass ? null : 'Product 풀세트 미충족 — Product(name·description·sku·brand·offers)와 Offer(price·priceCurrency·availability) 모두 필요'
         } else {
           bd.items[m].na = true   // 대표 체크로 흡수 — 분모 이중 계상 방지
           bd.items[m].hint = null

@@ -1,6 +1,6 @@
 {
   "date": "2026-06-29",
-  "generatedAt": "2026-08-30T09:57:26.823Z",
+  "generatedAt": "2026-08-30T23:36:36.651Z",
   "source": "run_results",
   "categoryLabels": {
     "performance": "사이트 성능",
@@ -16,16 +16,16 @@
       "runId": "5107491889d4",
       "urlCount": 648,
       "scoredCount": 648,
-      "avgScore": 78.2,
+      "avgScore": 78.5,
       "grades": {
-        "Need Improvement": 499,
-        "Good": 149
+        "Need Improvement": 418,
+        "Good": 230
       },
       "categories": {
         "performance": 99.7,
         "accessibility": 88.4,
         "seo": 80.3,
-        "geo_schema": 37.1,
+        "geo_schema": 37.8,
         "geo_content": 42.4,
         "geo_platform": 100
       },
@@ -151,7 +151,7 @@
           "applicable": 53
         },
         "ai_schema_product": {
-          "label": "#25 Schema: Product 풀세트 (PDP)",
+          "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
           "cat": "geo_schema",
           "pass": 0,
           "applicable": 92
@@ -251,12 +251,6 @@
           "cat": "geo_platform",
           "pass": 648,
           "applicable": 648
-        },
-        "ai_schema_offer": {
-          "label": "#43 Schema: Offer",
-          "cat": "geo_schema",
-          "pass": 0,
-          "applicable": 92
         }
       },
       "pageTypes": {
@@ -394,7 +388,7 @@
               "applicable": 0
             },
             "ai_schema_product": {
-              "label": "#25 Schema: Product 풀세트 (PDP)",
+              "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
               "cat": "geo_schema",
               "pass": 0,
               "applicable": 0
@@ -494,12 +488,6 @@
               "cat": "geo_platform",
               "pass": 110,
               "applicable": 110
-            },
-            "ai_schema_offer": {
-              "label": "#43 Schema: Offer",
-              "cat": "geo_schema",
-              "pass": 0,
-              "applicable": 0
             }
           }
         },
@@ -637,7 +625,7 @@
               "applicable": 0
             },
             "ai_schema_product": {
-              "label": "#25 Schema: Product 풀세트 (PDP)",
+              "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
               "cat": "geo_schema",
               "pass": 0,
               "applicable": 0
@@ -737,12 +725,6 @@
               "cat": "geo_platform",
               "pass": 113,
               "applicable": 113
-            },
-            "ai_schema_offer": {
-              "label": "#43 Schema: Offer",
-              "cat": "geo_schema",
-              "pass": 0,
-              "applicable": 0
             }
           }
         },
@@ -880,7 +862,7 @@
               "applicable": 0
             },
             "ai_schema_product": {
-              "label": "#25 Schema: Product 풀세트 (PDP)",
+              "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
               "cat": "geo_schema",
               "pass": 0,
               "applicable": 0
@@ -980,12 +962,6 @@
               "cat": "geo_platform",
               "pass": 17,
               "applicable": 17
-            },
-            "ai_schema_offer": {
-              "label": "#43 Schema: Offer",
-              "cat": "geo_schema",
-              "pass": 0,
-              "applicable": 0
             }
           }
         },
@@ -1123,7 +1099,7 @@
               "applicable": 0
             },
             "ai_schema_product": {
-              "label": "#25 Schema: Product 풀세트 (PDP)",
+              "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
               "cat": "geo_schema",
               "pass": 0,
               "applicable": 0
@@ -1223,24 +1199,18 @@
               "cat": "geo_platform",
               "pass": 66,
               "applicable": 66
-            },
-            "ai_schema_offer": {
-              "label": "#43 Schema: Offer",
-              "cat": "geo_schema",
-              "pass": 0,
-              "applicable": 0
             }
           }
         },
         "pdp": {
           "label": "제품 상세 (PDP)",
           "count": 92,
-          "avgScore": 78.5,
+          "avgScore": 80.6,
           "categories": {
             "performance": 99.6,
             "accessibility": 73.1,
             "seo": 86,
-            "geo_schema": 20.1,
+            "geo_schema": 25.1,
             "geo_content": 74.2,
             "geo_platform": 100
           },
@@ -1366,7 +1336,7 @@
               "applicable": 0
             },
             "ai_schema_product": {
-              "label": "#25 Schema: Product 풀세트 (PDP)",
+              "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
               "cat": "geo_schema",
               "pass": 0,
               "applicable": 92
@@ -1465,12 +1435,6 @@
               "label": "#44 llms.txt 존재",
               "cat": "geo_platform",
               "pass": 92,
-              "applicable": 92
-            },
-            "ai_schema_offer": {
-              "label": "#43 Schema: Offer",
-              "cat": "geo_schema",
-              "pass": 0,
               "applicable": 92
             }
           }
@@ -1609,7 +1573,7 @@
               "applicable": 53
             },
             "ai_schema_product": {
-              "label": "#25 Schema: Product 풀세트 (PDP)",
+              "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
               "cat": "geo_schema",
               "pass": 0,
               "applicable": 0
@@ -1709,12 +1673,6 @@
               "cat": "geo_platform",
               "pass": 53,
               "applicable": 53
-            },
-            "ai_schema_offer": {
-              "label": "#43 Schema: Offer",
-              "cat": "geo_schema",
-              "pass": 0,
-              "applicable": 0
             }
           }
         },
@@ -1852,7 +1810,7 @@
               "applicable": 0
             },
             "ai_schema_product": {
-              "label": "#25 Schema: Product 풀세트 (PDP)",
+              "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
               "cat": "geo_schema",
               "pass": 0,
               "applicable": 0
@@ -1952,12 +1910,6 @@
               "cat": "geo_platform",
               "pass": 97,
               "applicable": 97
-            },
-            "ai_schema_offer": {
-              "label": "#43 Schema: Offer",
-              "cat": "geo_schema",
-              "pass": 0,
-              "applicable": 0
             }
           }
         },
@@ -2095,7 +2047,7 @@
               "applicable": 0
             },
             "ai_schema_product": {
-              "label": "#25 Schema: Product 풀세트 (PDP)",
+              "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
               "cat": "geo_schema",
               "pass": 0,
               "applicable": 0
@@ -2195,12 +2147,6 @@
               "cat": "geo_platform",
               "pass": 100,
               "applicable": 100
-            },
-            "ai_schema_offer": {
-              "label": "#43 Schema: Offer",
-              "cat": "geo_schema",
-              "pass": 0,
-              "applicable": 0
             }
           }
         }
@@ -2254,7 +2200,7 @@
       "runId": "61d060a216ed",
       "urlCount": 499,
       "scoredCount": 499,
-      "avgScore": 75.9,
+      "avgScore": 76.2,
       "grades": {
         "Need Improvement": 429,
         "Good": 70
@@ -2263,7 +2209,7 @@
         "performance": 97.8,
         "accessibility": 94.3,
         "seo": 80,
-        "geo_schema": 39,
+        "geo_schema": 39.9,
         "geo_content": 28.8,
         "geo_platform": 97.4
       },
@@ -2389,7 +2335,7 @@
           "applicable": 53
         },
         "ai_schema_product": {
-          "label": "#25 Schema: Product 풀세트 (PDP)",
+          "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
           "cat": "geo_schema",
           "pass": 0,
           "applicable": 93
@@ -2489,12 +2435,6 @@
           "cat": "geo_platform",
           "pass": 499,
           "applicable": 499
-        },
-        "ai_schema_offer": {
-          "label": "#43 Schema: Offer",
-          "cat": "geo_schema",
-          "pass": 0,
-          "applicable": 93
         }
       },
       "pageTypes": {
@@ -2632,7 +2572,7 @@
               "applicable": 0
             },
             "ai_schema_product": {
-              "label": "#25 Schema: Product 풀세트 (PDP)",
+              "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
               "cat": "geo_schema",
               "pass": 0,
               "applicable": 0
@@ -2732,12 +2672,6 @@
               "cat": "geo_platform",
               "pass": 26,
               "applicable": 26
-            },
-            "ai_schema_offer": {
-              "label": "#43 Schema: Offer",
-              "cat": "geo_schema",
-              "pass": 0,
-              "applicable": 0
             }
           }
         },
@@ -2875,7 +2809,7 @@
               "applicable": 0
             },
             "ai_schema_product": {
-              "label": "#25 Schema: Product 풀세트 (PDP)",
+              "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
               "cat": "geo_schema",
               "pass": 0,
               "applicable": 0
@@ -2975,12 +2909,6 @@
               "cat": "geo_platform",
               "pass": 112,
               "applicable": 112
-            },
-            "ai_schema_offer": {
-              "label": "#43 Schema: Offer",
-              "cat": "geo_schema",
-              "pass": 0,
-              "applicable": 0
             }
           }
         },
@@ -3118,7 +3046,7 @@
               "applicable": 0
             },
             "ai_schema_product": {
-              "label": "#25 Schema: Product 풀세트 (PDP)",
+              "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
               "cat": "geo_schema",
               "pass": 0,
               "applicable": 0
@@ -3218,12 +3146,6 @@
               "cat": "geo_platform",
               "pass": 25,
               "applicable": 25
-            },
-            "ai_schema_offer": {
-              "label": "#43 Schema: Offer",
-              "cat": "geo_schema",
-              "pass": 0,
-              "applicable": 0
             }
           }
         },
@@ -3361,7 +3283,7 @@
               "applicable": 0
             },
             "ai_schema_product": {
-              "label": "#25 Schema: Product 풀세트 (PDP)",
+              "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
               "cat": "geo_schema",
               "pass": 0,
               "applicable": 0
@@ -3461,24 +3383,18 @@
               "cat": "geo_platform",
               "pass": 99,
               "applicable": 99
-            },
-            "ai_schema_offer": {
-              "label": "#43 Schema: Offer",
-              "cat": "geo_schema",
-              "pass": 0,
-              "applicable": 0
             }
           }
         },
         "pdp": {
           "label": "제품 상세 (PDP)",
           "count": 93,
-          "avgScore": 75.6,
+          "avgScore": 77.6,
           "categories": {
             "performance": 99.3,
             "accessibility": 74.7,
             "seo": 85.8,
-            "geo_schema": 20,
+            "geo_schema": 24.9,
             "geo_content": 73.7,
             "geo_platform": 86
           },
@@ -3604,7 +3520,7 @@
               "applicable": 0
             },
             "ai_schema_product": {
-              "label": "#25 Schema: Product 풀세트 (PDP)",
+              "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
               "cat": "geo_schema",
               "pass": 0,
               "applicable": 93
@@ -3703,12 +3619,6 @@
               "label": "#44 llms.txt 존재",
               "cat": "geo_platform",
               "pass": 93,
-              "applicable": 93
-            },
-            "ai_schema_offer": {
-              "label": "#43 Schema: Offer",
-              "cat": "geo_schema",
-              "pass": 0,
               "applicable": 93
             }
           }
@@ -3847,7 +3757,7 @@
               "applicable": 53
             },
             "ai_schema_product": {
-              "label": "#25 Schema: Product 풀세트 (PDP)",
+              "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
               "cat": "geo_schema",
               "pass": 0,
               "applicable": 0
@@ -3947,12 +3857,6 @@
               "cat": "geo_platform",
               "pass": 53,
               "applicable": 53
-            },
-            "ai_schema_offer": {
-              "label": "#43 Schema: Offer",
-              "cat": "geo_schema",
-              "pass": 0,
-              "applicable": 0
             }
           }
         },
@@ -4090,7 +3994,7 @@
               "applicable": 0
             },
             "ai_schema_product": {
-              "label": "#25 Schema: Product 풀세트 (PDP)",
+              "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
               "cat": "geo_schema",
               "pass": 0,
               "applicable": 0
@@ -4190,12 +4094,6 @@
               "cat": "geo_platform",
               "pass": 90,
               "applicable": 90
-            },
-            "ai_schema_offer": {
-              "label": "#43 Schema: Offer",
-              "cat": "geo_schema",
-              "pass": 0,
-              "applicable": 0
             }
           }
         },
@@ -4333,7 +4231,7 @@
               "applicable": 0
             },
             "ai_schema_product": {
-              "label": "#25 Schema: Product 풀세트 (PDP)",
+              "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
               "cat": "geo_schema",
               "pass": 0,
               "applicable": 0
@@ -4433,12 +4331,6 @@
               "cat": "geo_platform",
               "pass": 1,
               "applicable": 1
-            },
-            "ai_schema_offer": {
-              "label": "#43 Schema: Offer",
-              "cat": "geo_schema",
-              "pass": 0,
-              "applicable": 0
             }
           }
         }
@@ -4492,7 +4384,7 @@
       "runId": "ea1f073d9db7",
       "urlCount": 282,
       "scoredCount": 282,
-      "avgScore": 73.9,
+      "avgScore": 74.6,
       "grades": {
         "Need Improvement": 245,
         "Good": 37
@@ -4501,7 +4393,7 @@
         "performance": 93.9,
         "accessibility": 85.5,
         "seo": 75.9,
-        "geo_schema": 34,
+        "geo_schema": 35.6,
         "geo_content": 43.2,
         "geo_platform": 95.4
       },
@@ -4627,7 +4519,7 @@
           "applicable": 62
         },
         "ai_schema_product": {
-          "label": "#25 Schema: Product 풀세트 (PDP)",
+          "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
           "cat": "geo_schema",
           "pass": 0,
           "applicable": 89
@@ -4727,12 +4619,6 @@
           "cat": "geo_platform",
           "pass": 282,
           "applicable": 282
-        },
-        "ai_schema_offer": {
-          "label": "#43 Schema: Offer",
-          "cat": "geo_schema",
-          "pass": 0,
-          "applicable": 89
         }
       },
       "pageTypes": {
@@ -4870,7 +4756,7 @@
               "applicable": 0
             },
             "ai_schema_product": {
-              "label": "#25 Schema: Product 풀세트 (PDP)",
+              "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
               "cat": "geo_schema",
               "pass": 0,
               "applicable": 0
@@ -4970,12 +4856,6 @@
               "cat": "geo_platform",
               "pass": 22,
               "applicable": 22
-            },
-            "ai_schema_offer": {
-              "label": "#43 Schema: Offer",
-              "cat": "geo_schema",
-              "pass": 0,
-              "applicable": 0
             }
           }
         },
@@ -5113,7 +4993,7 @@
               "applicable": 0
             },
             "ai_schema_product": {
-              "label": "#25 Schema: Product 풀세트 (PDP)",
+              "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
               "cat": "geo_schema",
               "pass": 0,
               "applicable": 0
@@ -5213,12 +5093,6 @@
               "cat": "geo_platform",
               "pass": 2,
               "applicable": 2
-            },
-            "ai_schema_offer": {
-              "label": "#43 Schema: Offer",
-              "cat": "geo_schema",
-              "pass": 0,
-              "applicable": 0
             }
           }
         },
@@ -5356,7 +5230,7 @@
               "applicable": 0
             },
             "ai_schema_product": {
-              "label": "#25 Schema: Product 풀세트 (PDP)",
+              "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
               "cat": "geo_schema",
               "pass": 0,
               "applicable": 0
@@ -5456,12 +5330,6 @@
               "cat": "geo_platform",
               "pass": 35,
               "applicable": 35
-            },
-            "ai_schema_offer": {
-              "label": "#43 Schema: Offer",
-              "cat": "geo_schema",
-              "pass": 0,
-              "applicable": 0
             }
           }
         },
@@ -5599,7 +5467,7 @@
               "applicable": 0
             },
             "ai_schema_product": {
-              "label": "#25 Schema: Product 풀세트 (PDP)",
+              "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
               "cat": "geo_schema",
               "pass": 0,
               "applicable": 0
@@ -5699,24 +5567,18 @@
               "cat": "geo_platform",
               "pass": 6,
               "applicable": 6
-            },
-            "ai_schema_offer": {
-              "label": "#43 Schema: Offer",
-              "cat": "geo_schema",
-              "pass": 0,
-              "applicable": 0
             }
           }
         },
         "pdp": {
           "label": "제품 상세 (PDP)",
           "count": 89,
-          "avgScore": 74.7,
+          "avgScore": 76.7,
           "categories": {
             "performance": 93.9,
             "accessibility": 73.3,
             "seo": 86,
-            "geo_schema": 20.6,
+            "geo_schema": 25.6,
             "geo_content": 75,
             "geo_platform": 86
           },
@@ -5842,7 +5704,7 @@
               "applicable": 0
             },
             "ai_schema_product": {
-              "label": "#25 Schema: Product 풀세트 (PDP)",
+              "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
               "cat": "geo_schema",
               "pass": 0,
               "applicable": 89
@@ -5941,12 +5803,6 @@
               "label": "#44 llms.txt 존재",
               "cat": "geo_platform",
               "pass": 89,
-              "applicable": 89
-            },
-            "ai_schema_offer": {
-              "label": "#43 Schema: Offer",
-              "cat": "geo_schema",
-              "pass": 0,
               "applicable": 89
             }
           }
@@ -6085,7 +5941,7 @@
               "applicable": 62
             },
             "ai_schema_product": {
-              "label": "#25 Schema: Product 풀세트 (PDP)",
+              "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
               "cat": "geo_schema",
               "pass": 0,
               "applicable": 0
@@ -6185,12 +6041,6 @@
               "cat": "geo_platform",
               "pass": 62,
               "applicable": 62
-            },
-            "ai_schema_offer": {
-              "label": "#43 Schema: Offer",
-              "cat": "geo_schema",
-              "pass": 0,
-              "applicable": 0
             }
           }
         },
@@ -6328,7 +6178,7 @@
               "applicable": 0
             },
             "ai_schema_product": {
-              "label": "#25 Schema: Product 풀세트 (PDP)",
+              "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
               "cat": "geo_schema",
               "pass": 0,
               "applicable": 0
@@ -6428,12 +6278,6 @@
               "cat": "geo_platform",
               "pass": 64,
               "applicable": 64
-            },
-            "ai_schema_offer": {
-              "label": "#43 Schema: Offer",
-              "cat": "geo_schema",
-              "pass": 0,
-              "applicable": 0
             }
           }
         },
@@ -6571,7 +6415,7 @@
               "applicable": 0
             },
             "ai_schema_product": {
-              "label": "#25 Schema: Product 풀세트 (PDP)",
+              "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
               "cat": "geo_schema",
               "pass": 0,
               "applicable": 0
@@ -6671,12 +6515,6 @@
               "cat": "geo_platform",
               "pass": 2,
               "applicable": 2
-            },
-            "ai_schema_offer": {
-              "label": "#43 Schema: Offer",
-              "cat": "geo_schema",
-              "pass": 0,
-              "applicable": 0
             }
           }
         }
@@ -6730,16 +6568,16 @@
       "runId": "55bbb4e85506",
       "urlCount": 599,
       "scoredCount": 599,
-      "avgScore": 75.6,
+      "avgScore": 75.9,
       "grades": {
-        "Need Improvement": 455,
-        "Good": 144
+        "Need Improvement": 386,
+        "Good": 213
       },
       "categories": {
         "performance": 97.1,
         "accessibility": 89.3,
         "seo": 80.3,
-        "geo_schema": 33.6,
+        "geo_schema": 34.6,
         "geo_content": 33.1,
         "geo_platform": 96.7
       },
@@ -6865,7 +6703,7 @@
           "applicable": 49
         },
         "ai_schema_product": {
-          "label": "#25 Schema: Product 풀세트 (PDP)",
+          "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
           "cat": "geo_schema",
           "pass": 0,
           "applicable": 101
@@ -6965,12 +6803,6 @@
           "cat": "geo_platform",
           "pass": 599,
           "applicable": 599
-        },
-        "ai_schema_offer": {
-          "label": "#43 Schema: Offer",
-          "cat": "geo_schema",
-          "pass": 0,
-          "applicable": 101
         }
       },
       "pageTypes": {
@@ -7108,7 +6940,7 @@
               "applicable": 0
             },
             "ai_schema_product": {
-              "label": "#25 Schema: Product 풀세트 (PDP)",
+              "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
               "cat": "geo_schema",
               "pass": 0,
               "applicable": 0
@@ -7208,12 +7040,6 @@
               "cat": "geo_platform",
               "pass": 15,
               "applicable": 15
-            },
-            "ai_schema_offer": {
-              "label": "#43 Schema: Offer",
-              "cat": "geo_schema",
-              "pass": 0,
-              "applicable": 0
             }
           }
         },
@@ -7351,7 +7177,7 @@
               "applicable": 0
             },
             "ai_schema_product": {
-              "label": "#25 Schema: Product 풀세트 (PDP)",
+              "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
               "cat": "geo_schema",
               "pass": 0,
               "applicable": 0
@@ -7451,12 +7277,6 @@
               "cat": "geo_platform",
               "pass": 118,
               "applicable": 118
-            },
-            "ai_schema_offer": {
-              "label": "#43 Schema: Offer",
-              "cat": "geo_schema",
-              "pass": 0,
-              "applicable": 0
             }
           }
         },
@@ -7594,7 +7414,7 @@
               "applicable": 0
             },
             "ai_schema_product": {
-              "label": "#25 Schema: Product 풀세트 (PDP)",
+              "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
               "cat": "geo_schema",
               "pass": 0,
               "applicable": 0
@@ -7694,12 +7514,6 @@
               "cat": "geo_platform",
               "pass": 20,
               "applicable": 20
-            },
-            "ai_schema_offer": {
-              "label": "#43 Schema: Offer",
-              "cat": "geo_schema",
-              "pass": 0,
-              "applicable": 0
             }
           }
         },
@@ -7837,7 +7651,7 @@
               "applicable": 0
             },
             "ai_schema_product": {
-              "label": "#25 Schema: Product 풀세트 (PDP)",
+              "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
               "cat": "geo_schema",
               "pass": 0,
               "applicable": 0
@@ -7937,24 +7751,18 @@
               "cat": "geo_platform",
               "pass": 95,
               "applicable": 95
-            },
-            "ai_schema_offer": {
-              "label": "#43 Schema: Offer",
-              "cat": "geo_schema",
-              "pass": 0,
-              "applicable": 0
             }
           }
         },
         "pdp": {
           "label": "제품 상세 (PDP)",
           "count": 101,
-          "avgScore": 78.3,
+          "avgScore": 80.4,
           "categories": {
             "performance": 99.5,
             "accessibility": 68.6,
             "seo": 85.9,
-            "geo_schema": 22.6,
+            "geo_schema": 28.2,
             "geo_content": 75,
             "geo_platform": 100
           },
@@ -8080,7 +7888,7 @@
               "applicable": 0
             },
             "ai_schema_product": {
-              "label": "#25 Schema: Product 풀세트 (PDP)",
+              "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
               "cat": "geo_schema",
               "pass": 0,
               "applicable": 101
@@ -8179,12 +7987,6 @@
               "label": "#44 llms.txt 존재",
               "cat": "geo_platform",
               "pass": 101,
-              "applicable": 101
-            },
-            "ai_schema_offer": {
-              "label": "#43 Schema: Offer",
-              "cat": "geo_schema",
-              "pass": 0,
               "applicable": 101
             }
           }
@@ -8323,7 +8125,7 @@
               "applicable": 49
             },
             "ai_schema_product": {
-              "label": "#25 Schema: Product 풀세트 (PDP)",
+              "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
               "cat": "geo_schema",
               "pass": 0,
               "applicable": 0
@@ -8423,12 +8225,6 @@
               "cat": "geo_platform",
               "pass": 49,
               "applicable": 49
-            },
-            "ai_schema_offer": {
-              "label": "#43 Schema: Offer",
-              "cat": "geo_schema",
-              "pass": 0,
-              "applicable": 0
             }
           }
         },
@@ -8566,7 +8362,7 @@
               "applicable": 0
             },
             "ai_schema_product": {
-              "label": "#25 Schema: Product 풀세트 (PDP)",
+              "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
               "cat": "geo_schema",
               "pass": 0,
               "applicable": 0
@@ -8666,12 +8462,6 @@
               "cat": "geo_platform",
               "pass": 101,
               "applicable": 101
-            },
-            "ai_schema_offer": {
-              "label": "#43 Schema: Offer",
-              "cat": "geo_schema",
-              "pass": 0,
-              "applicable": 0
             }
           }
         },
@@ -8809,7 +8599,7 @@
               "applicable": 0
             },
             "ai_schema_product": {
-              "label": "#25 Schema: Product 풀세트 (PDP)",
+              "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
               "cat": "geo_schema",
               "pass": 0,
               "applicable": 0
@@ -8909,12 +8699,6 @@
               "cat": "geo_platform",
               "pass": 100,
               "applicable": 100
-            },
-            "ai_schema_offer": {
-              "label": "#43 Schema: Offer",
-              "cat": "geo_schema",
-              "pass": 0,
-              "applicable": 0
             }
           }
         }
@@ -8968,16 +8752,16 @@
       "runId": "64eec9923e60",
       "urlCount": 597,
       "scoredCount": 597,
-      "avgScore": 75,
+      "avgScore": 75.4,
       "grades": {
-        "Need Improvement": 520,
-        "Good": 77
+        "Need Improvement": 462,
+        "Good": 135
       },
       "categories": {
         "performance": 97,
         "accessibility": 90.9,
         "seo": 76.6,
-        "geo_schema": 33.3,
+        "geo_schema": 34.1,
         "geo_content": 34.6,
         "geo_platform": 96.6
       },
@@ -9103,7 +8887,7 @@
           "applicable": 66
         },
         "ai_schema_product": {
-          "label": "#25 Schema: Product 풀세트 (PDP)",
+          "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
           "cat": "geo_schema",
           "pass": 0,
           "applicable": 90
@@ -9203,12 +8987,6 @@
           "cat": "geo_platform",
           "pass": 597,
           "applicable": 597
-        },
-        "ai_schema_offer": {
-          "label": "#43 Schema: Offer",
-          "cat": "geo_schema",
-          "pass": 0,
-          "applicable": 90
         }
       },
       "pageTypes": {
@@ -9346,7 +9124,7 @@
               "applicable": 0
             },
             "ai_schema_product": {
-              "label": "#25 Schema: Product 풀세트 (PDP)",
+              "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
               "cat": "geo_schema",
               "pass": 0,
               "applicable": 0
@@ -9446,12 +9224,6 @@
               "cat": "geo_platform",
               "pass": 99,
               "applicable": 99
-            },
-            "ai_schema_offer": {
-              "label": "#43 Schema: Offer",
-              "cat": "geo_schema",
-              "pass": 0,
-              "applicable": 0
             }
           }
         },
@@ -9589,7 +9361,7 @@
               "applicable": 0
             },
             "ai_schema_product": {
-              "label": "#25 Schema: Product 풀세트 (PDP)",
+              "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
               "cat": "geo_schema",
               "pass": 0,
               "applicable": 0
@@ -9689,12 +9461,6 @@
               "cat": "geo_platform",
               "pass": 26,
               "applicable": 26
-            },
-            "ai_schema_offer": {
-              "label": "#43 Schema: Offer",
-              "cat": "geo_schema",
-              "pass": 0,
-              "applicable": 0
             }
           }
         },
@@ -9832,7 +9598,7 @@
               "applicable": 0
             },
             "ai_schema_product": {
-              "label": "#25 Schema: Product 풀세트 (PDP)",
+              "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
               "cat": "geo_schema",
               "pass": 0,
               "applicable": 0
@@ -9932,12 +9698,6 @@
               "cat": "geo_platform",
               "pass": 100,
               "applicable": 100
-            },
-            "ai_schema_offer": {
-              "label": "#43 Schema: Offer",
-              "cat": "geo_schema",
-              "pass": 0,
-              "applicable": 0
             }
           }
         },
@@ -10075,7 +9835,7 @@
               "applicable": 0
             },
             "ai_schema_product": {
-              "label": "#25 Schema: Product 풀세트 (PDP)",
+              "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
               "cat": "geo_schema",
               "pass": 0,
               "applicable": 0
@@ -10175,24 +9935,18 @@
               "cat": "geo_platform",
               "pass": 16,
               "applicable": 16
-            },
-            "ai_schema_offer": {
-              "label": "#43 Schema: Offer",
-              "cat": "geo_schema",
-              "pass": 0,
-              "applicable": 0
             }
           }
         },
         "pdp": {
           "label": "제품 상세 (PDP)",
           "count": 90,
-          "avgScore": 78.2,
+          "avgScore": 80.5,
           "categories": {
             "performance": 100,
             "accessibility": 73.3,
             "seo": 85.7,
-            "geo_schema": 22.4,
+            "geo_schema": 27.6,
             "geo_content": 74.2,
             "geo_platform": 100
           },
@@ -10318,7 +10072,7 @@
               "applicable": 0
             },
             "ai_schema_product": {
-              "label": "#25 Schema: Product 풀세트 (PDP)",
+              "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
               "cat": "geo_schema",
               "pass": 0,
               "applicable": 90
@@ -10417,12 +10171,6 @@
               "label": "#44 llms.txt 존재",
               "cat": "geo_platform",
               "pass": 90,
-              "applicable": 90
-            },
-            "ai_schema_offer": {
-              "label": "#43 Schema: Offer",
-              "cat": "geo_schema",
-              "pass": 0,
               "applicable": 90
             }
           }
@@ -10561,7 +10309,7 @@
               "applicable": 66
             },
             "ai_schema_product": {
-              "label": "#25 Schema: Product 풀세트 (PDP)",
+              "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
               "cat": "geo_schema",
               "pass": 0,
               "applicable": 0
@@ -10661,12 +10409,6 @@
               "cat": "geo_platform",
               "pass": 66,
               "applicable": 66
-            },
-            "ai_schema_offer": {
-              "label": "#43 Schema: Offer",
-              "cat": "geo_schema",
-              "pass": 0,
-              "applicable": 0
             }
           }
         },
@@ -10804,7 +10546,7 @@
               "applicable": 0
             },
             "ai_schema_product": {
-              "label": "#25 Schema: Product 풀세트 (PDP)",
+              "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
               "cat": "geo_schema",
               "pass": 0,
               "applicable": 0
@@ -10904,12 +10646,6 @@
               "cat": "geo_platform",
               "pass": 100,
               "applicable": 100
-            },
-            "ai_schema_offer": {
-              "label": "#43 Schema: Offer",
-              "cat": "geo_schema",
-              "pass": 0,
-              "applicable": 0
             }
           }
         },
@@ -11047,7 +10783,7 @@
               "applicable": 0
             },
             "ai_schema_product": {
-              "label": "#25 Schema: Product 풀세트 (PDP)",
+              "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
               "cat": "geo_schema",
               "pass": 0,
               "applicable": 0
@@ -11147,12 +10883,6 @@
               "cat": "geo_platform",
               "pass": 100,
               "applicable": 100
-            },
-            "ai_schema_offer": {
-              "label": "#43 Schema: Offer",
-              "cat": "geo_schema",
-              "pass": 0,
-              "applicable": 0
             }
           }
         }
@@ -11206,17 +10936,17 @@
       "runId": "bc61f4ada85c",
       "urlCount": 629,
       "scoredCount": 629,
-      "avgScore": 74.7,
+      "avgScore": 74.9,
       "grades": {
-        "Need Improvement": 540,
-        "Good": 86,
+        "Need Improvement": 538,
+        "Good": 88,
         "Poor": 3
       },
       "categories": {
         "performance": 99.8,
         "accessibility": 92.1,
         "seo": 80.6,
-        "geo_schema": 41.9,
+        "geo_schema": 42.2,
         "geo_content": 14.9,
         "geo_platform": 96.8
       },
@@ -11342,7 +11072,7 @@
           "applicable": 95
         },
         "ai_schema_product": {
-          "label": "#25 Schema: Product 풀세트 (PDP)",
+          "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
           "cat": "geo_schema",
           "pass": 0,
           "applicable": 51
@@ -11442,12 +11172,6 @@
           "cat": "geo_platform",
           "pass": 629,
           "applicable": 629
-        },
-        "ai_schema_offer": {
-          "label": "#43 Schema: Offer",
-          "cat": "geo_schema",
-          "pass": 0,
-          "applicable": 51
         }
       },
       "pageTypes": {
@@ -11585,7 +11309,7 @@
               "applicable": 0
             },
             "ai_schema_product": {
-              "label": "#25 Schema: Product 풀세트 (PDP)",
+              "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
               "cat": "geo_schema",
               "pass": 0,
               "applicable": 0
@@ -11685,12 +11409,6 @@
               "cat": "geo_platform",
               "pass": 191,
               "applicable": 191
-            },
-            "ai_schema_offer": {
-              "label": "#43 Schema: Offer",
-              "cat": "geo_schema",
-              "pass": 0,
-              "applicable": 0
             }
           }
         },
@@ -11828,7 +11546,7 @@
               "applicable": 0
             },
             "ai_schema_product": {
-              "label": "#25 Schema: Product 풀세트 (PDP)",
+              "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
               "cat": "geo_schema",
               "pass": 0,
               "applicable": 0
@@ -11928,12 +11646,6 @@
               "cat": "geo_platform",
               "pass": 78,
               "applicable": 78
-            },
-            "ai_schema_offer": {
-              "label": "#43 Schema: Offer",
-              "cat": "geo_schema",
-              "pass": 0,
-              "applicable": 0
             }
           }
         },
@@ -12071,7 +11783,7 @@
               "applicable": 0
             },
             "ai_schema_product": {
-              "label": "#25 Schema: Product 풀세트 (PDP)",
+              "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
               "cat": "geo_schema",
               "pass": 0,
               "applicable": 0
@@ -12171,12 +11883,6 @@
               "cat": "geo_platform",
               "pass": 14,
               "applicable": 14
-            },
-            "ai_schema_offer": {
-              "label": "#43 Schema: Offer",
-              "cat": "geo_schema",
-              "pass": 0,
-              "applicable": 0
             }
           }
         },
@@ -12314,7 +12020,7 @@
               "applicable": 95
             },
             "ai_schema_product": {
-              "label": "#25 Schema: Product 풀세트 (PDP)",
+              "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
               "cat": "geo_schema",
               "pass": 0,
               "applicable": 0
@@ -12414,24 +12120,18 @@
               "cat": "geo_platform",
               "pass": 95,
               "applicable": 95
-            },
-            "ai_schema_offer": {
-              "label": "#43 Schema: Offer",
-              "cat": "geo_schema",
-              "pass": 0,
-              "applicable": 0
             }
           }
         },
         "pdp": {
           "label": "제품 상세 (PDP)",
           "count": 51,
-          "avgScore": 75,
+          "avgScore": 77.2,
           "categories": {
             "performance": 99.7,
             "accessibility": 75,
             "seo": 86,
-            "geo_schema": 19.5,
+            "geo_schema": 23.5,
             "geo_content": 52.5,
             "geo_platform": 100
           },
@@ -12557,7 +12257,7 @@
               "applicable": 0
             },
             "ai_schema_product": {
-              "label": "#25 Schema: Product 풀세트 (PDP)",
+              "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
               "cat": "geo_schema",
               "pass": 0,
               "applicable": 51
@@ -12656,12 +12356,6 @@
               "label": "#44 llms.txt 존재",
               "cat": "geo_platform",
               "pass": 51,
-              "applicable": 51
-            },
-            "ai_schema_offer": {
-              "label": "#43 Schema: Offer",
-              "cat": "geo_schema",
-              "pass": 0,
               "applicable": 51
             }
           }
@@ -12800,7 +12494,7 @@
               "applicable": 0
             },
             "ai_schema_product": {
-              "label": "#25 Schema: Product 풀세트 (PDP)",
+              "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
               "cat": "geo_schema",
               "pass": 0,
               "applicable": 0
@@ -12900,12 +12594,6 @@
               "cat": "geo_platform",
               "pass": 100,
               "applicable": 100
-            },
-            "ai_schema_offer": {
-              "label": "#43 Schema: Offer",
-              "cat": "geo_schema",
-              "pass": 0,
-              "applicable": 0
             }
           }
         },
@@ -13043,7 +12731,7 @@
               "applicable": 0
             },
             "ai_schema_product": {
-              "label": "#25 Schema: Product 풀세트 (PDP)",
+              "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
               "cat": "geo_schema",
               "pass": 0,
               "applicable": 0
@@ -13143,12 +12831,6 @@
               "cat": "geo_platform",
               "pass": 100,
               "applicable": 100
-            },
-            "ai_schema_offer": {
-              "label": "#43 Schema: Offer",
-              "cat": "geo_schema",
-              "pass": 0,
-              "applicable": 0
             }
           }
         }
@@ -13202,17 +12884,17 @@
       "runId": "3c253bf23348",
       "urlCount": 547,
       "scoredCount": 547,
-      "avgScore": 73.4,
+      "avgScore": 73.8,
       "grades": {
-        "Need Improvement": 537,
-        "Good": 9,
+        "Need Improvement": 530,
+        "Good": 16,
         "Poor": 1
       },
       "categories": {
         "performance": 99.9,
         "accessibility": 93.7,
         "seo": 76,
-        "geo_schema": 37.7,
+        "geo_schema": 38.6,
         "geo_content": 14.4,
         "geo_platform": 96.3
       },
@@ -13338,7 +13020,7 @@
           "applicable": 52
         },
         "ai_schema_product": {
-          "label": "#25 Schema: Product 풀세트 (PDP)",
+          "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
           "cat": "geo_schema",
           "pass": 0,
           "applicable": 94
@@ -13438,12 +13120,6 @@
           "cat": "geo_platform",
           "pass": 547,
           "applicable": 547
-        },
-        "ai_schema_offer": {
-          "label": "#43 Schema: Offer",
-          "cat": "geo_schema",
-          "pass": 0,
-          "applicable": 94
         }
       },
       "pageTypes": {
@@ -13581,7 +13257,7 @@
               "applicable": 0
             },
             "ai_schema_product": {
-              "label": "#25 Schema: Product 풀세트 (PDP)",
+              "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
               "cat": "geo_schema",
               "pass": 0,
               "applicable": 0
@@ -13681,12 +13357,6 @@
               "cat": "geo_platform",
               "pass": 124,
               "applicable": 124
-            },
-            "ai_schema_offer": {
-              "label": "#43 Schema: Offer",
-              "cat": "geo_schema",
-              "pass": 0,
-              "applicable": 0
             }
           }
         },
@@ -13824,7 +13494,7 @@
               "applicable": 0
             },
             "ai_schema_product": {
-              "label": "#25 Schema: Product 풀세트 (PDP)",
+              "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
               "cat": "geo_schema",
               "pass": 0,
               "applicable": 0
@@ -13924,12 +13594,6 @@
               "cat": "geo_platform",
               "pass": 24,
               "applicable": 24
-            },
-            "ai_schema_offer": {
-              "label": "#43 Schema: Offer",
-              "cat": "geo_schema",
-              "pass": 0,
-              "applicable": 0
             }
           }
         },
@@ -14067,7 +13731,7 @@
               "applicable": 0
             },
             "ai_schema_product": {
-              "label": "#25 Schema: Product 풀세트 (PDP)",
+              "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
               "cat": "geo_schema",
               "pass": 0,
               "applicable": 0
@@ -14167,24 +13831,18 @@
               "cat": "geo_platform",
               "pass": 28,
               "applicable": 28
-            },
-            "ai_schema_offer": {
-              "label": "#43 Schema: Offer",
-              "cat": "geo_schema",
-              "pass": 0,
-              "applicable": 0
             }
           }
         },
         "pdp": {
           "label": "제품 상세 (PDP)",
           "count": 94,
-          "avgScore": 76.2,
+          "avgScore": 78.2,
           "categories": {
             "performance": 100,
             "accessibility": 75,
             "seo": 86,
-            "geo_schema": 21.6,
+            "geo_schema": 27,
             "geo_content": 50,
             "geo_platform": 100
           },
@@ -14310,7 +13968,7 @@
               "applicable": 0
             },
             "ai_schema_product": {
-              "label": "#25 Schema: Product 풀세트 (PDP)",
+              "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
               "cat": "geo_schema",
               "pass": 0,
               "applicable": 94
@@ -14409,12 +14067,6 @@
               "label": "#44 llms.txt 존재",
               "cat": "geo_platform",
               "pass": 94,
-              "applicable": 94
-            },
-            "ai_schema_offer": {
-              "label": "#43 Schema: Offer",
-              "cat": "geo_schema",
-              "pass": 0,
               "applicable": 94
             }
           }
@@ -14553,7 +14205,7 @@
               "applicable": 0
             },
             "ai_schema_product": {
-              "label": "#25 Schema: Product 풀세트 (PDP)",
+              "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
               "cat": "geo_schema",
               "pass": 0,
               "applicable": 0
@@ -14653,12 +14305,6 @@
               "cat": "geo_platform",
               "pass": 25,
               "applicable": 25
-            },
-            "ai_schema_offer": {
-              "label": "#43 Schema: Offer",
-              "cat": "geo_schema",
-              "pass": 0,
-              "applicable": 0
             }
           }
         },
@@ -14796,7 +14442,7 @@
               "applicable": 52
             },
             "ai_schema_product": {
-              "label": "#25 Schema: Product 풀세트 (PDP)",
+              "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
               "cat": "geo_schema",
               "pass": 0,
               "applicable": 0
@@ -14896,12 +14542,6 @@
               "cat": "geo_platform",
               "pass": 52,
               "applicable": 52
-            },
-            "ai_schema_offer": {
-              "label": "#43 Schema: Offer",
-              "cat": "geo_schema",
-              "pass": 0,
-              "applicable": 0
             }
           }
         },
@@ -15039,7 +14679,7 @@
               "applicable": 0
             },
             "ai_schema_product": {
-              "label": "#25 Schema: Product 풀세트 (PDP)",
+              "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
               "cat": "geo_schema",
               "pass": 0,
               "applicable": 0
@@ -15139,12 +14779,6 @@
               "cat": "geo_platform",
               "pass": 100,
               "applicable": 100
-            },
-            "ai_schema_offer": {
-              "label": "#43 Schema: Offer",
-              "cat": "geo_schema",
-              "pass": 0,
-              "applicable": 0
             }
           }
         },
@@ -15282,7 +14916,7 @@
               "applicable": 0
             },
             "ai_schema_product": {
-              "label": "#25 Schema: Product 풀세트 (PDP)",
+              "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
               "cat": "geo_schema",
               "pass": 0,
               "applicable": 0
@@ -15382,12 +15016,6 @@
               "cat": "geo_platform",
               "pass": 100,
               "applicable": 100
-            },
-            "ai_schema_offer": {
-              "label": "#43 Schema: Offer",
-              "cat": "geo_schema",
-              "pass": 0,
-              "applicable": 0
             }
           }
         }
@@ -15441,7 +15069,7 @@
       "runId": "2a763b7039c3",
       "urlCount": 592,
       "scoredCount": 592,
-      "avgScore": 74.3,
+      "avgScore": 74.6,
       "grades": {
         "Need Improvement": 559,
         "Good": 33
@@ -15450,7 +15078,7 @@
         "performance": 99.8,
         "accessibility": 93.1,
         "seo": 74.3,
-        "geo_schema": 38.5,
+        "geo_schema": 39.5,
         "geo_content": 30.8,
         "geo_platform": 91.1
       },
@@ -15576,7 +15204,7 @@
           "applicable": 39
         },
         "ai_schema_product": {
-          "label": "#25 Schema: Product 풀세트 (PDP)",
+          "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
           "cat": "geo_schema",
           "pass": 0,
           "applicable": 90
@@ -15676,12 +15304,6 @@
           "cat": "geo_platform",
           "pass": 592,
           "applicable": 592
-        },
-        "ai_schema_offer": {
-          "label": "#43 Schema: Offer",
-          "cat": "geo_schema",
-          "pass": 0,
-          "applicable": 90
         }
       },
       "pageTypes": {
@@ -15819,7 +15441,7 @@
               "applicable": 0
             },
             "ai_schema_product": {
-              "label": "#25 Schema: Product 풀세트 (PDP)",
+              "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
               "cat": "geo_schema",
               "pass": 0,
               "applicable": 0
@@ -15919,12 +15541,6 @@
               "cat": "geo_platform",
               "pass": 25,
               "applicable": 25
-            },
-            "ai_schema_offer": {
-              "label": "#43 Schema: Offer",
-              "cat": "geo_schema",
-              "pass": 0,
-              "applicable": 0
             }
           }
         },
@@ -16062,7 +15678,7 @@
               "applicable": 0
             },
             "ai_schema_product": {
-              "label": "#25 Schema: Product 풀세트 (PDP)",
+              "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
               "cat": "geo_schema",
               "pass": 0,
               "applicable": 0
@@ -16162,12 +15778,6 @@
               "cat": "geo_platform",
               "pass": 103,
               "applicable": 103
-            },
-            "ai_schema_offer": {
-              "label": "#43 Schema: Offer",
-              "cat": "geo_schema",
-              "pass": 0,
-              "applicable": 0
             }
           }
         },
@@ -16305,7 +15915,7 @@
               "applicable": 0
             },
             "ai_schema_product": {
-              "label": "#25 Schema: Product 풀세트 (PDP)",
+              "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
               "cat": "geo_schema",
               "pass": 0,
               "applicable": 0
@@ -16405,12 +16015,6 @@
               "cat": "geo_platform",
               "pass": 44,
               "applicable": 44
-            },
-            "ai_schema_offer": {
-              "label": "#43 Schema: Offer",
-              "cat": "geo_schema",
-              "pass": 0,
-              "applicable": 0
             }
           }
         },
@@ -16548,7 +16152,7 @@
               "applicable": 0
             },
             "ai_schema_product": {
-              "label": "#25 Schema: Product 풀세트 (PDP)",
+              "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
               "cat": "geo_schema",
               "pass": 0,
               "applicable": 0
@@ -16648,24 +16252,18 @@
               "cat": "geo_platform",
               "pass": 91,
               "applicable": 91
-            },
-            "ai_schema_offer": {
-              "label": "#43 Schema: Offer",
-              "cat": "geo_schema",
-              "pass": 0,
-              "applicable": 0
             }
           }
         },
         "pdp": {
           "label": "제품 상세 (PDP)",
           "count": 90,
-          "avgScore": 74.9,
+          "avgScore": 76.9,
           "categories": {
             "performance": 99.6,
             "accessibility": 67.2,
             "seo": 86,
-            "geo_schema": 26.4,
+            "geo_schema": 32.8,
             "geo_content": 67.5,
             "geo_platform": 86
           },
@@ -16791,7 +16389,7 @@
               "applicable": 0
             },
             "ai_schema_product": {
-              "label": "#25 Schema: Product 풀세트 (PDP)",
+              "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
               "cat": "geo_schema",
               "pass": 0,
               "applicable": 90
@@ -16890,12 +16488,6 @@
               "label": "#44 llms.txt 존재",
               "cat": "geo_platform",
               "pass": 90,
-              "applicable": 90
-            },
-            "ai_schema_offer": {
-              "label": "#43 Schema: Offer",
-              "cat": "geo_schema",
-              "pass": 0,
               "applicable": 90
             }
           }
@@ -17034,7 +16626,7 @@
               "applicable": 39
             },
             "ai_schema_product": {
-              "label": "#25 Schema: Product 풀세트 (PDP)",
+              "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
               "cat": "geo_schema",
               "pass": 0,
               "applicable": 0
@@ -17134,12 +16726,6 @@
               "cat": "geo_platform",
               "pass": 39,
               "applicable": 39
-            },
-            "ai_schema_offer": {
-              "label": "#43 Schema: Offer",
-              "cat": "geo_schema",
-              "pass": 0,
-              "applicable": 0
             }
           }
         },
@@ -17277,7 +16863,7 @@
               "applicable": 0
             },
             "ai_schema_product": {
-              "label": "#25 Schema: Product 풀세트 (PDP)",
+              "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
               "cat": "geo_schema",
               "pass": 0,
               "applicable": 0
@@ -17377,12 +16963,6 @@
               "cat": "geo_platform",
               "pass": 100,
               "applicable": 100
-            },
-            "ai_schema_offer": {
-              "label": "#43 Schema: Offer",
-              "cat": "geo_schema",
-              "pass": 0,
-              "applicable": 0
             }
           }
         },
@@ -17520,7 +17100,7 @@
               "applicable": 0
             },
             "ai_schema_product": {
-              "label": "#25 Schema: Product 풀세트 (PDP)",
+              "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
               "cat": "geo_schema",
               "pass": 0,
               "applicable": 0
@@ -17620,12 +17200,6 @@
               "cat": "geo_platform",
               "pass": 100,
               "applicable": 100
-            },
-            "ai_schema_offer": {
-              "label": "#43 Schema: Offer",
-              "cat": "geo_schema",
-              "pass": 0,
-              "applicable": 0
             }
           }
         }
@@ -17679,7 +17253,7 @@
       "runId": "806dddbee389",
       "urlCount": 451,
       "scoredCount": 451,
-      "avgScore": 74.5,
+      "avgScore": 74.3,
       "grades": {
         "Need Improvement": 379,
         "Good": 63,
@@ -17689,7 +17263,7 @@
         "performance": 97.9,
         "accessibility": 80,
         "seo": 87.1,
-        "geo_schema": 18,
+        "geo_schema": 14.7,
         "geo_content": 34.6,
         "geo_platform": 96.9
       },
@@ -17815,7 +17389,7 @@
           "applicable": 101
         },
         "ai_schema_product": {
-          "label": "#25 Schema: Product 풀세트 (PDP)",
+          "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
           "cat": "geo_schema",
           "pass": 0,
           "applicable": 100
@@ -17915,12 +17489,6 @@
           "cat": "geo_platform",
           "pass": 451,
           "applicable": 451
-        },
-        "ai_schema_offer": {
-          "label": "#43 Schema: Offer",
-          "cat": "geo_schema",
-          "pass": 100,
-          "applicable": 100
         }
       },
       "pageTypes": {
@@ -18058,7 +17626,7 @@
               "applicable": 0
             },
             "ai_schema_product": {
-              "label": "#25 Schema: Product 풀세트 (PDP)",
+              "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
               "cat": "geo_schema",
               "pass": 0,
               "applicable": 0
@@ -18158,12 +17726,6 @@
               "cat": "geo_platform",
               "pass": 13,
               "applicable": 13
-            },
-            "ai_schema_offer": {
-              "label": "#43 Schema: Offer",
-              "cat": "geo_schema",
-              "pass": 0,
-              "applicable": 0
             }
           }
         },
@@ -18301,7 +17863,7 @@
               "applicable": 0
             },
             "ai_schema_product": {
-              "label": "#25 Schema: Product 풀세트 (PDP)",
+              "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
               "cat": "geo_schema",
               "pass": 0,
               "applicable": 0
@@ -18401,12 +17963,6 @@
               "cat": "geo_platform",
               "pass": 101,
               "applicable": 101
-            },
-            "ai_schema_offer": {
-              "label": "#43 Schema: Offer",
-              "cat": "geo_schema",
-              "pass": 0,
-              "applicable": 0
             }
           }
         },
@@ -18544,7 +18100,7 @@
               "applicable": 0
             },
             "ai_schema_product": {
-              "label": "#25 Schema: Product 풀세트 (PDP)",
+              "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
               "cat": "geo_schema",
               "pass": 0,
               "applicable": 0
@@ -18644,12 +18200,6 @@
               "cat": "geo_platform",
               "pass": 29,
               "applicable": 29
-            },
-            "ai_schema_offer": {
-              "label": "#43 Schema: Offer",
-              "cat": "geo_schema",
-              "pass": 0,
-              "applicable": 0
             }
           }
         },
@@ -18787,7 +18337,7 @@
               "applicable": 0
             },
             "ai_schema_product": {
-              "label": "#25 Schema: Product 풀세트 (PDP)",
+              "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
               "cat": "geo_schema",
               "pass": 0,
               "applicable": 0
@@ -18887,24 +18437,18 @@
               "cat": "geo_platform",
               "pass": 7,
               "applicable": 7
-            },
-            "ai_schema_offer": {
-              "label": "#43 Schema: Offer",
-              "cat": "geo_schema",
-              "pass": 0,
-              "applicable": 0
             }
           }
         },
         "pdp": {
           "label": "제품 상세 (PDP)",
           "count": 100,
-          "avgScore": 79.1,
+          "avgScore": 78.1,
           "categories": {
             "performance": 100,
             "accessibility": 100,
             "seo": 86,
-            "geo_schema": 40,
+            "geo_schema": 25,
             "geo_content": 50.8,
             "geo_platform": 86
           },
@@ -19030,7 +18574,7 @@
               "applicable": 0
             },
             "ai_schema_product": {
-              "label": "#25 Schema: Product 풀세트 (PDP)",
+              "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
               "cat": "geo_schema",
               "pass": 0,
               "applicable": 100
@@ -19128,12 +18672,6 @@
             "ai_llms_txt": {
               "label": "#44 llms.txt 존재",
               "cat": "geo_platform",
-              "pass": 100,
-              "applicable": 100
-            },
-            "ai_schema_offer": {
-              "label": "#43 Schema: Offer",
-              "cat": "geo_schema",
               "pass": 100,
               "applicable": 100
             }
@@ -19273,7 +18811,7 @@
               "applicable": 101
             },
             "ai_schema_product": {
-              "label": "#25 Schema: Product 풀세트 (PDP)",
+              "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
               "cat": "geo_schema",
               "pass": 0,
               "applicable": 0
@@ -19373,12 +18911,6 @@
               "cat": "geo_platform",
               "pass": 101,
               "applicable": 101
-            },
-            "ai_schema_offer": {
-              "label": "#43 Schema: Offer",
-              "cat": "geo_schema",
-              "pass": 0,
-              "applicable": 0
             }
           }
         },
@@ -19516,7 +19048,7 @@
               "applicable": 0
             },
             "ai_schema_product": {
-              "label": "#25 Schema: Product 풀세트 (PDP)",
+              "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
               "cat": "geo_schema",
               "pass": 0,
               "applicable": 0
@@ -19616,12 +19148,6 @@
               "cat": "geo_platform",
               "pass": 100,
               "applicable": 100
-            },
-            "ai_schema_offer": {
-              "label": "#43 Schema: Offer",
-              "cat": "geo_schema",
-              "pass": 0,
-              "applicable": 0
             }
           }
         }
@@ -19675,16 +19201,16 @@
       "runId": "9d17cca2f252",
       "urlCount": 505,
       "scoredCount": 505,
-      "avgScore": 74.8,
+      "avgScore": 75.2,
       "grades": {
-        "Need Improvement": 459,
-        "Good": 46
+        "Need Improvement": 450,
+        "Good": 55
       },
       "categories": {
         "performance": 99.6,
         "accessibility": 94.4,
         "seo": 76.7,
-        "geo_schema": 38.8,
+        "geo_schema": 39.5,
         "geo_content": 17.6,
         "geo_platform": 100
       },
@@ -19810,7 +19336,7 @@
           "applicable": 51
         },
         "ai_schema_product": {
-          "label": "#25 Schema: Product 풀세트 (PDP)",
+          "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
           "cat": "geo_schema",
           "pass": 0,
           "applicable": 87
@@ -19910,12 +19436,6 @@
           "cat": "geo_platform",
           "pass": 505,
           "applicable": 505
-        },
-        "ai_schema_offer": {
-          "label": "#43 Schema: Offer",
-          "cat": "geo_schema",
-          "pass": 0,
-          "applicable": 87
         }
       },
       "pageTypes": {
@@ -20053,7 +19573,7 @@
               "applicable": 0
             },
             "ai_schema_product": {
-              "label": "#25 Schema: Product 풀세트 (PDP)",
+              "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
               "cat": "geo_schema",
               "pass": 0,
               "applicable": 0
@@ -20153,12 +19673,6 @@
               "cat": "geo_platform",
               "pass": 15,
               "applicable": 15
-            },
-            "ai_schema_offer": {
-              "label": "#43 Schema: Offer",
-              "cat": "geo_schema",
-              "pass": 0,
-              "applicable": 0
             }
           }
         },
@@ -20296,7 +19810,7 @@
               "applicable": 0
             },
             "ai_schema_product": {
-              "label": "#25 Schema: Product 풀세트 (PDP)",
+              "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
               "cat": "geo_schema",
               "pass": 0,
               "applicable": 0
@@ -20396,12 +19910,6 @@
               "cat": "geo_platform",
               "pass": 91,
               "applicable": 91
-            },
-            "ai_schema_offer": {
-              "label": "#43 Schema: Offer",
-              "cat": "geo_schema",
-              "pass": 0,
-              "applicable": 0
             }
           }
         },
@@ -20539,7 +20047,7 @@
               "applicable": 0
             },
             "ai_schema_product": {
-              "label": "#25 Schema: Product 풀세트 (PDP)",
+              "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
               "cat": "geo_schema",
               "pass": 0,
               "applicable": 0
@@ -20639,12 +20147,6 @@
               "cat": "geo_platform",
               "pass": 57,
               "applicable": 57
-            },
-            "ai_schema_offer": {
-              "label": "#43 Schema: Offer",
-              "cat": "geo_schema",
-              "pass": 0,
-              "applicable": 0
             }
           }
         },
@@ -20782,7 +20284,7 @@
               "applicable": 0
             },
             "ai_schema_product": {
-              "label": "#25 Schema: Product 풀세트 (PDP)",
+              "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
               "cat": "geo_schema",
               "pass": 0,
               "applicable": 0
@@ -20882,24 +20384,18 @@
               "cat": "geo_platform",
               "pass": 3,
               "applicable": 3
-            },
-            "ai_schema_offer": {
-              "label": "#43 Schema: Offer",
-              "cat": "geo_schema",
-              "pass": 0,
-              "applicable": 0
             }
           }
         },
         "pdp": {
           "label": "제품 상세 (PDP)",
           "count": 87,
-          "avgScore": 75.5,
+          "avgScore": 77.7,
           "categories": {
             "performance": 99.8,
             "accessibility": 74.7,
             "seo": 86,
-            "geo_schema": 20.4,
+            "geo_schema": 24.7,
             "geo_content": 55.5,
             "geo_platform": 100
           },
@@ -21025,7 +20521,7 @@
               "applicable": 0
             },
             "ai_schema_product": {
-              "label": "#25 Schema: Product 풀세트 (PDP)",
+              "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
               "cat": "geo_schema",
               "pass": 0,
               "applicable": 87
@@ -21124,12 +20620,6 @@
               "label": "#44 llms.txt 존재",
               "cat": "geo_platform",
               "pass": 87,
-              "applicable": 87
-            },
-            "ai_schema_offer": {
-              "label": "#43 Schema: Offer",
-              "cat": "geo_schema",
-              "pass": 0,
               "applicable": 87
             }
           }
@@ -21268,7 +20758,7 @@
               "applicable": 51
             },
             "ai_schema_product": {
-              "label": "#25 Schema: Product 풀세트 (PDP)",
+              "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
               "cat": "geo_schema",
               "pass": 0,
               "applicable": 0
@@ -21368,12 +20858,6 @@
               "cat": "geo_platform",
               "pass": 51,
               "applicable": 51
-            },
-            "ai_schema_offer": {
-              "label": "#43 Schema: Offer",
-              "cat": "geo_schema",
-              "pass": 0,
-              "applicable": 0
             }
           }
         },
@@ -21511,7 +20995,7 @@
               "applicable": 0
             },
             "ai_schema_product": {
-              "label": "#25 Schema: Product 풀세트 (PDP)",
+              "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
               "cat": "geo_schema",
               "pass": 0,
               "applicable": 0
@@ -21611,12 +21095,6 @@
               "cat": "geo_platform",
               "pass": 101,
               "applicable": 101
-            },
-            "ai_schema_offer": {
-              "label": "#43 Schema: Offer",
-              "cat": "geo_schema",
-              "pass": 0,
-              "applicable": 0
             }
           }
         },
@@ -21754,7 +21232,7 @@
               "applicable": 0
             },
             "ai_schema_product": {
-              "label": "#25 Schema: Product 풀세트 (PDP)",
+              "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
               "cat": "geo_schema",
               "pass": 0,
               "applicable": 0
@@ -21854,12 +21332,6 @@
               "cat": "geo_platform",
               "pass": 100,
               "applicable": 100
-            },
-            "ai_schema_offer": {
-              "label": "#43 Schema: Offer",
-              "cat": "geo_schema",
-              "pass": 0,
-              "applicable": 0
             }
           }
         }
@@ -21912,17 +21384,17 @@
   "overall": {
     "urlCount": 5349,
     "scoredCount": 5349,
-    "avgScore": 75.1,
+    "avgScore": 75.4,
     "grades": {
-      "Need Improvement": 4622,
-      "Good": 714,
+      "Need Improvement": 4396,
+      "Good": 940,
       "Poor": 13
     },
     "categories": {
       "performance": 98.5,
       "accessibility": 90.5,
       "seo": 78.8,
-      "geo_schema": 35.6,
+      "geo_schema": 36.1,
       "geo_content": 28.9,
       "geo_platform": 96.8
     },
@@ -22048,7 +21520,7 @@
         "applicable": 621
       },
       "ai_schema_product": {
-        "label": "#25 Schema: Product 풀세트 (PDP)",
+        "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
         "cat": "geo_schema",
         "pass": 0,
         "applicable": 887
@@ -22148,12 +21620,6 @@
         "cat": "geo_platform",
         "pass": 5349,
         "applicable": 5349
-      },
-      "ai_schema_offer": {
-        "label": "#43 Schema: Offer",
-        "cat": "geo_schema",
-        "pass": 100,
-        "applicable": 887
       }
     },
     "pageTypes": {
@@ -22291,7 +21757,7 @@
             "applicable": 0
           },
           "ai_schema_product": {
-            "label": "#25 Schema: Product 풀세트 (PDP)",
+            "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
             "cat": "geo_schema",
             "pass": 0,
             "applicable": 0
@@ -22391,12 +21857,6 @@
             "cat": "geo_platform",
             "pass": 1051,
             "applicable": 1051
-          },
-          "ai_schema_offer": {
-            "label": "#43 Schema: Offer",
-            "cat": "geo_schema",
-            "pass": 0,
-            "applicable": 0
           }
         }
       },
@@ -22534,7 +21994,7 @@
             "applicable": 0
           },
           "ai_schema_product": {
-            "label": "#25 Schema: Product 풀세트 (PDP)",
+            "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
             "cat": "geo_schema",
             "pass": 0,
             "applicable": 0
@@ -22634,12 +22094,6 @@
             "cat": "geo_platform",
             "pass": 355,
             "applicable": 355
-          },
-          "ai_schema_offer": {
-            "label": "#43 Schema: Offer",
-            "cat": "geo_schema",
-            "pass": 0,
-            "applicable": 0
           }
         }
       },
@@ -22777,7 +22231,7 @@
             "applicable": 0
           },
           "ai_schema_product": {
-            "label": "#25 Schema: Product 풀세트 (PDP)",
+            "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
             "cat": "geo_schema",
             "pass": 0,
             "applicable": 0
@@ -22877,12 +22331,6 @@
             "cat": "geo_platform",
             "pass": 208,
             "applicable": 208
-          },
-          "ai_schema_offer": {
-            "label": "#43 Schema: Offer",
-            "cat": "geo_schema",
-            "pass": 0,
-            "applicable": 0
           }
         }
       },
@@ -23020,7 +22468,7 @@
             "applicable": 0
           },
           "ai_schema_product": {
-            "label": "#25 Schema: Product 풀세트 (PDP)",
+            "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
             "cat": "geo_schema",
             "pass": 0,
             "applicable": 0
@@ -23120,24 +22568,18 @@
             "cat": "geo_platform",
             "pass": 571,
             "applicable": 571
-          },
-          "ai_schema_offer": {
-            "label": "#43 Schema: Offer",
-            "cat": "geo_schema",
-            "pass": 0,
-            "applicable": 0
           }
         }
       },
       "pdp": {
         "label": "제품 상세 (PDP)",
         "count": 887,
-        "avgScore": 76.7,
+        "avgScore": 78.5,
         "categories": {
           "performance": 99.1,
           "accessibility": 75.7,
           "seo": 85.9,
-          "geo_schema": 23.7,
+          "geo_schema": 26.6,
           "geo_content": 65.3,
           "geo_platform": 94.1
         },
@@ -23263,7 +22705,7 @@
             "applicable": 0
           },
           "ai_schema_product": {
-            "label": "#25 Schema: Product 풀세트 (PDP)",
+            "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
             "cat": "geo_schema",
             "pass": 0,
             "applicable": 887
@@ -23362,12 +22804,6 @@
             "label": "#44 llms.txt 존재",
             "cat": "geo_platform",
             "pass": 887,
-            "applicable": 887
-          },
-          "ai_schema_offer": {
-            "label": "#43 Schema: Offer",
-            "cat": "geo_schema",
-            "pass": 100,
             "applicable": 887
           }
         }
@@ -23506,7 +22942,7 @@
             "applicable": 621
           },
           "ai_schema_product": {
-            "label": "#25 Schema: Product 풀세트 (PDP)",
+            "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
             "cat": "geo_schema",
             "pass": 0,
             "applicable": 0
@@ -23606,12 +23042,6 @@
             "cat": "geo_platform",
             "pass": 621,
             "applicable": 621
-          },
-          "ai_schema_offer": {
-            "label": "#43 Schema: Offer",
-            "cat": "geo_schema",
-            "pass": 0,
-            "applicable": 0
           }
         }
       },
@@ -23749,7 +23179,7 @@
             "applicable": 0
           },
           "ai_schema_product": {
-            "label": "#25 Schema: Product 풀세트 (PDP)",
+            "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
             "cat": "geo_schema",
             "pass": 0,
             "applicable": 0
@@ -23849,12 +23279,6 @@
             "cat": "geo_platform",
             "pass": 853,
             "applicable": 853
-          },
-          "ai_schema_offer": {
-            "label": "#43 Schema: Offer",
-            "cat": "geo_schema",
-            "pass": 0,
-            "applicable": 0
           }
         }
       },
@@ -23992,7 +23416,7 @@
             "applicable": 0
           },
           "ai_schema_product": {
-            "label": "#25 Schema: Product 풀세트 (PDP)",
+            "label": "#25 Schema: Product 풀세트 (Product+Offer, PDP)",
             "cat": "geo_schema",
             "pass": 0,
             "applicable": 0
@@ -24092,12 +23516,6 @@
             "cat": "geo_platform",
             "pass": 803,
             "applicable": 803
-          },
-          "ai_schema_offer": {
-            "label": "#43 Schema: Offer",
-            "cat": "geo_schema",
-            "pass": 0,
-            "applicable": 0
           }
         }
       }

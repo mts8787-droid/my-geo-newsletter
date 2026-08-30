@@ -2989,7 +2989,7 @@ function rdSchemaCompareHtml(meta = {}, lang = 'ko') {
 
 // 본 섹션의 기본 문안 — 사용자 제공 원문 그대로. meta 로 덮어쓸 수 있다.
 const RD_TEXT = {
-  intro: 'Readability는 AI 관점에서의 가독성을 뜻하며, 웹페이지의 콘텐츠가 AI가 읽고 활용하기 좋은 상태인지 평가하는 지표입니다. ‘26년 6월부터 LG.com의 Readability 현황을 파악하기 위해 10개 전략 국가의 주요 페이지 유형, 총 9,284개 페이지를 평가했습니다(8월 30일 기준, 전수). 10개 국가 사이트에 더해 글로벌 대표 사이트(lg.com/global)를 별도 사이트로 포함했습니다. Readability 점수는 전체 평가항목 중 기준을 충족한 항목의 비율(%)을 100점 기준으로 환산한 점수입니다. 평가는 사이트 성능, AI 웹접근성, Basic SEO 적합도, 스키마마크업, 고인용 콘텐츠, AI Crawlability의 6개 영역, 총 38개 체크리스트를 기준으로 진행했습니다. 각 항목의 정의와 판정 기준은 검수 기준 탭과 대시보드 내 항목별 간략 설명에서 확인하실 수 있습니다.',
+  intro: 'Readability는 AI 관점에서의 가독성을 뜻하며, 웹페이지의 콘텐츠가 AI가 읽고 활용하기 좋은 상태인지 평가하는 지표입니다. ‘26년 6월부터 LG.com의 Readability 현황을 파악하기 위해 10개 전략 국가의 주요 페이지 유형, 총 9,284개 페이지를 평가했습니다(8월 30일 기준, 전수). 10개 국가 사이트에 더해 글로벌 대표 사이트(lg.com/global)를 별도 사이트로 포함했습니다. Readability 점수는 전체 평가항목 중 기준을 충족한 항목의 비율(%)을 100점 기준으로 환산한 점수입니다. 평가는 사이트 성능, AI 웹접근성, Basic SEO 적합도, 스키마마크업, 고인용 콘텐츠, AI Crawlability의 6개 영역, 총 37개 체크리스트를 기준으로 진행했습니다. 각 항목의 정의와 판정 기준은 검수 기준 탭과 대시보드 내 항목별 간략 설명에서 확인하실 수 있습니다.',
   introNotes: [
     '*전략 10개국가 : 독일, 영국, 호주, 브라질, 베트남, 스페인, 미국, 멕시코, 인도, 캐나다',
     '*9개 페이지 유형 : PDP(제품 상세 페이지), PLP(제품 카테고리 페이지), Microsite, Global Newsroom, Press & Media, Buying Guide, LG Experience, Support - 일반, Support - Troubleshoot',
@@ -3016,7 +3016,7 @@ const RD_TEXT = {
 // (사용자 보고 2026-08-28: "영문번역이 다 되어있지 않은 채로 나와").
 // 사용자가 EN 사이드바에 직접 입력하면 meta.rd_* 가 우선한다.
 const RD_TEXT_EN = {
-  intro: 'Readability measures how well a web page can be read and used by AI. From June 2026 we began assessing LG.com\u2019s Readability across 9,284 pages spanning the major page types in 10 strategic countries plus the global flagship site (lg.com/global), counted as its own site (full census, as of Aug 30). The Readability score is the share of checklist items meeting the bar, normalized to a 100-point scale. The assessment covers 6 areas \u2014 Site Performance, AI Accessibility, Basic SEO, Schema Markup, Citable Content, and AI Crawlability \u2014 across 38 checklist items in total. Definitions and pass criteria for each item are available on the Criteria tab and in the per-item notes on the dashboard.',
+  intro: 'Readability measures how well a web page can be read and used by AI. From June 2026 we began assessing LG.com\u2019s Readability across 9,284 pages spanning the major page types in 10 strategic countries plus the global flagship site (lg.com/global), counted as its own site (full census, as of Aug 30). The Readability score is the share of checklist items meeting the bar, normalized to a 100-point scale. The assessment covers 6 areas \u2014 Site Performance, AI Accessibility, Basic SEO, Schema Markup, Citable Content, and AI Crawlability \u2014 across 37 checklist items in total. Definitions and pass criteria for each item are available on the Criteria tab and in the per-item notes on the dashboard.',
   introNotes: [
     '*10 strategic countries: Germany, UK, Australia, Brazil, Vietnam, Spain, USA, Mexico, India, Canada',
     '*9 page types: PDP (Product Detail Page), PLP (Product List Page), Microsite, Global Newsroom, Press & Media, Buying Guide, LG Experience, Support, Support - Troubleshoot',
