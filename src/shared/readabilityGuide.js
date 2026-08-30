@@ -12,6 +12,8 @@
 //     action — 조치 사항: 무엇을 하면 되는지 (한 줄, 명령형)
 //     byPt   — 페이지타입마다 고칠 위치나 방법이 다를 때만 { where, action } 덮어쓰기
 //     byCc   — 국가(사이트)마다 다를 때만 { where, action } 덮어쓰기
+//     pin    — true 면 통과율과 무관하게 '시급 개선 항목' 목록 맨 위로 고정.
+//              다른 항목의 점수가 아무리 좋아도 이게 막히면 의미가 없는 선행 조건일 때만 쓴다.
 //     notes  — 특정 필터에서만 보여줄 문장. 조건이 맞을 때만 노출된다.
 //              { cc:[...] } 해당 국가에서만 / { ccNot:[...] } 그 국가 제외
 //              { pt:[...] } 해당 페이지타입에서만 / 여러 조건은 AND
@@ -31,11 +33,13 @@
 //
 // ⚠ 신규 체크 추가 시 여기에도 한 줄 추가할 것 (npm test 가 누락을 잡는다).
 
+// 집계기(scripts/aggregate-readability.mjs)의 PT_LABEL 과 같은 값을 쓴다.
+// 두 곳이 갈리면 대시보드 카드와 가이드 문구가 다른 이름으로 같은 타입을 부른다.
 export const PT_LABEL = {
-  pdp: '제품 상세(PDP)', plp: '제품 카테고리(PLP)', support: '지원/Support',
-  support_troubleshoot: '지원-트러블슈팅', press_media: '프레스앤미디어',
-  newsroom: '뉴스룸/Press', buying_guide: '구매 가이드',
-  lg_experience: 'LG Experience', microsite: '마이크로사이트/캠페인',
+  pdp: '제품 상세 (PDP)', plp: '제품 카테고리 (PLP)', support: 'Support - 일반',
+  support_troubleshoot: 'Support - Troubleshoot', press_media: 'Press & Media',
+  newsroom: 'Global Newsroom', buying_guide: '구매 가이드',
+  lg_experience: 'LG Experience', microsite: 'Microsite',
 }
 
 // 6개 평가 영역이 각각 무엇을 보는 영역인지.
@@ -305,11 +309,15 @@ export const GUIDE = {
     why: '지금은 화면이 뜬 뒤에 본문을 따로 불러옵니다. AI는 원본 소스만 보고 판단해 본문을 놓칩니다.',
     where: '페이지 전달 방식',
     action: '주요 본문을 원본 소스에 담아 내려보냅니다.',
+    // 이게 막히면 다른 항목이 아무리 좋아도 AI 눈에는 아무것도 안 보인다 → 항상 맨 위 (사용자 지시 2026-08-30)
+    pin: true,
     byPt: {
       pdp: { where: 'PDP 페이지 전달 방식 (D2C 전환 추진 중)', action: '스펙·설명·리뷰 요약을 원본 소스에 담습니다.' },
       support_troubleshoot: { where: '지원 페이지 전달 방식 (고객가치혁신 전환 추진 중)', action: '해결 단계 본문을 원본 소스에 담습니다.' },
     },
     notes: [
+      { text: '이 항목이 미달이면 다른 항목의 점수는 사실상 의미가 없습니다. 원본 소스에 본문이 없으면 LLM 봇은 이 페이지에서 아무것도 읽어가지 못하기 때문에, 스키마·콘텐츠를 아무리 잘 갖춰도 인식되지 않습니다. 가장 먼저 해결해야 할 선행 과제입니다.' },
+      { text: '다만 제미나이(Gemini)는 구글 검색 인프라를 함께 쓰기 때문에, 원본 소스에 없어도 일부 스키마와 주요 항목은 인식될 수 있습니다. 그 외 LLM 봇에는 해당되지 않습니다.' },
       { ccNot: ['us', 'vn', 'au', 'global'], text: '국가별 편차가 큽니다. 상위 사이트의 구성 방식을 참고할 수 있습니다.' },
       { cc: ['ca', 'uk', 'br'], text: '전 사이트 중 하위권이라 우선 대상으로 잡아야 합니다.' },
     ],

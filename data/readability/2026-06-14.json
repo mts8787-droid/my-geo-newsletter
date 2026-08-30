@@ -1,6 +1,6 @@
 {
   "date": "2026-06-14",
-  "generatedAt": "2026-08-30T06:06:57.477Z",
+  "generatedAt": "2026-08-30T09:57:26.231Z",
   "source": "run_results",
   "categoryLabels": {
     "performance": "사이트 성능",
@@ -262,7 +262,7 @@
       },
       "pageTypes": {
         "microsite": {
-          "label": "마이크로사이트/캠페인",
+          "label": "Microsite",
           "count": 51,
           "avgScore": 70.3,
           "categories": {
@@ -505,7 +505,7 @@
           }
         },
         "newsroom": {
-          "label": "뉴스룸/Press",
+          "label": "Global Newsroom",
           "count": 100,
           "avgScore": 75.7,
           "categories": {
@@ -1477,7 +1477,7 @@
           }
         },
         "support": {
-          "label": "지원/Support",
+          "label": "Support - 일반",
           "count": 4,
           "avgScore": 74,
           "categories": {
@@ -2261,7 +2261,7 @@
           }
         },
         "support": {
-          "label": "지원/Support",
+          "label": "Support - 일반",
           "count": 139,
           "avgScore": 74.5,
           "categories": {
@@ -2747,7 +2747,7 @@
           }
         },
         "microsite": {
-          "label": "마이크로사이트/캠페인",
+          "label": "Microsite",
           "count": 51,
           "avgScore": 65.9,
           "categories": {
@@ -2990,7 +2990,7 @@
           }
         },
         "newsroom": {
-          "label": "뉴스룸/Press",
+          "label": "Global Newsroom",
           "count": 103,
           "avgScore": 72,
           "categories": {
@@ -3719,7 +3719,7 @@
           }
         },
         "support_troubleshoot": {
-          "label": "지원 - 트러블슈팅",
+          "label": "Support - Troubleshoot",
           "count": 1,
           "avgScore": 64,
           "categories": {
@@ -4257,7 +4257,7 @@
       },
       "pageTypes": {
         "newsroom": {
-          "label": "뉴스룸/Press",
+          "label": "Global Newsroom",
           "count": 2,
           "avgScore": 73,
           "categories": {
@@ -4500,7 +4500,7 @@
           }
         },
         "microsite": {
-          "label": "마이크로사이트/캠페인",
+          "label": "Microsite",
           "count": 95,
           "avgScore": 70.2,
           "categories": {
@@ -4986,7 +4986,7 @@
           }
         },
         "support": {
-          "label": "지원/Support",
+          "label": "Support - 일반",
           "count": 77,
           "avgScore": 72.6,
           "categories": {
@@ -5958,7 +5958,7 @@
           }
         },
         "support_troubleshoot": {
-          "label": "지원 - 트러블슈팅",
+          "label": "Support - Troubleshoot",
           "count": 2,
           "avgScore": 73,
           "categories": {
@@ -6496,7 +6496,7 @@
       },
       "pageTypes": {
         "microsite": {
-          "label": "마이크로사이트/캠페인",
+          "label": "Microsite",
           "count": 100,
           "avgScore": 67.9,
           "categories": {
@@ -6739,7 +6739,7 @@
           }
         },
         "support": {
-          "label": "지원/Support",
+          "label": "Support - 일반",
           "count": 64,
           "avgScore": 72.9,
           "categories": {
@@ -7954,7 +7954,7 @@
           }
         },
         "newsroom": {
-          "label": "뉴스룸/Press",
+          "label": "Global Newsroom",
           "count": 129,
           "avgScore": 67.2,
           "categories": {
@@ -8197,7 +8197,7 @@
           }
         },
         "support_troubleshoot": {
-          "label": "지원 - 트러블슈팅",
+          "label": "Support - Troubleshoot",
           "count": 1,
           "avgScore": 75,
           "categories": {
@@ -8738,7 +8738,7 @@
       },
       "pageTypes": {
         "newsroom": {
-          "label": "뉴스룸/Press",
+          "label": "Global Newsroom",
           "count": 62,
           "avgScore": 78.3,
           "categories": {
@@ -8981,7 +8981,7 @@
           }
         },
         "microsite": {
-          "label": "마이크로사이트/캠페인",
+          "label": "Microsite",
           "count": 18,
           "avgScore": 64.8,
           "categories": {
@@ -9224,7 +9224,7 @@
           }
         },
         "support": {
-          "label": "지원/Support",
+          "label": "Support - 일반",
           "count": 87,
           "avgScore": 76.8,
           "categories": {
@@ -10439,7 +10439,7 @@
           }
         },
         "support_troubleshoot": {
-          "label": "지원 - 트러블슈팅",
+          "label": "Support - Troubleshoot",
           "count": 1,
           "avgScore": 75,
           "categories": {
@@ -10977,7 +10977,7 @@
       },
       "pageTypes": {
         "microsite": {
-          "label": "마이크로사이트/캠페인",
+          "label": "Microsite",
           "count": 32,
           "avgScore": 69.1,
           "categories": {
@@ -11220,7 +11220,7 @@
           }
         },
         "newsroom": {
-          "label": "뉴스룸/Press",
+          "label": "Global Newsroom",
           "count": 164,
           "avgScore": 71.2,
           "categories": {
@@ -12192,7 +12192,7 @@
           }
         },
         "support": {
-          "label": "지원/Support",
+          "label": "Support - 일반",
           "count": 94,
           "avgScore": 69.8,
           "categories": {
@@ -12435,7 +12435,7 @@
           }
         },
         "support_troubleshoot": {
-          "label": "지원 - 트러블슈팅",
+          "label": "Support - Troubleshoot",
           "count": 2,
           "avgScore": 69.5,
           "categories": {
@@ -12976,7 +12976,7 @@
       },
       "pageTypes": {
         "newsroom": {
-          "label": "뉴스룸/Press",
+          "label": "Global Newsroom",
           "count": 67,
           "avgScore": 71,
           "categories": {
@@ -13705,7 +13705,7 @@
           }
         },
         "support": {
-          "label": "지원/Support",
+          "label": "Support - 일반",
           "count": 76,
           "avgScore": 71.7,
           "categories": {
@@ -13948,7 +13948,7 @@
           }
         },
         "microsite": {
-          "label": "마이크로사이트/캠페인",
+          "label": "Microsite",
           "count": 20,
           "avgScore": 64.5,
           "categories": {
@@ -14677,7 +14677,7 @@
           }
         },
         "support_troubleshoot": {
-          "label": "지원 - 트러블슈팅",
+          "label": "Support - Troubleshoot",
           "count": 1,
           "avgScore": 71,
           "categories": {
@@ -15215,7 +15215,7 @@
       },
       "pageTypes": {
         "microsite": {
-          "label": "마이크로사이트/캠페인",
+          "label": "Microsite",
           "count": 100,
           "avgScore": 64,
           "categories": {
@@ -15458,7 +15458,7 @@
           }
         },
         "newsroom": {
-          "label": "뉴스룸/Press",
+          "label": "Global Newsroom",
           "count": 125,
           "avgScore": 70.1,
           "categories": {
@@ -16673,7 +16673,7 @@
           }
         },
         "support": {
-          "label": "지원/Support",
+          "label": "Support - 일반",
           "count": 100,
           "avgScore": 66.2,
           "categories": {
@@ -16916,7 +16916,7 @@
           }
         },
         "support_troubleshoot": {
-          "label": "지원 - 트러블슈팅",
+          "label": "Support - Troubleshoot",
           "count": 5,
           "avgScore": 60.6,
           "categories": {
@@ -18183,7 +18183,7 @@
           }
         },
         "newsroom": {
-          "label": "뉴스룸/Press",
+          "label": "Global Newsroom",
           "count": 770,
           "avgScore": 70.1,
           "categories": {
@@ -18669,7 +18669,7 @@
           }
         },
         "microsite": {
-          "label": "마이크로사이트/캠페인",
+          "label": "Microsite",
           "count": 4,
           "avgScore": 79.8,
           "categories": {
@@ -18912,7 +18912,7 @@
           }
         },
         "support": {
-          "label": "지원/Support",
+          "label": "Support - 일반",
           "count": 8,
           "avgScore": 75,
           "categories": {
@@ -19155,7 +19155,7 @@
           }
         },
         "support_troubleshoot": {
-          "label": "지원 - 트러블슈팅",
+          "label": "Support - Troubleshoot",
           "count": 1,
           "avgScore": 76,
           "categories": {
@@ -19695,7 +19695,7 @@
       },
       "pageTypes": {
         "microsite": {
-          "label": "마이크로사이트/캠페인",
+          "label": "Microsite",
           "count": 64,
           "avgScore": 65.7,
           "categories": {
@@ -19938,7 +19938,7 @@
           }
         },
         "newsroom": {
-          "label": "뉴스룸/Press",
+          "label": "Global Newsroom",
           "count": 25,
           "avgScore": 71.8,
           "categories": {
@@ -20181,7 +20181,7 @@
           }
         },
         "support": {
-          "label": "지원/Support",
+          "label": "Support - 일반",
           "count": 104,
           "avgScore": 70.7,
           "categories": {
@@ -21153,7 +21153,7 @@
           }
         },
         "support_troubleshoot": {
-          "label": "지원 - 트러블슈팅",
+          "label": "Support - Troubleshoot",
           "count": 3,
           "avgScore": 67.7,
           "categories": {
@@ -21933,7 +21933,7 @@
     },
     "pageTypes": {
       "microsite": {
-        "label": "마이크로사이트/캠페인",
+        "label": "Microsite",
         "count": 535,
         "avgScore": 67.3,
         "categories": {
@@ -22176,7 +22176,7 @@
         }
       },
       "newsroom": {
-        "label": "뉴스룸/Press",
+        "label": "Global Newsroom",
         "count": 1547,
         "avgScore": 70.9,
         "categories": {
@@ -23148,7 +23148,7 @@
         }
       },
       "support": {
-        "label": "지원/Support",
+        "label": "Support - 일반",
         "count": 753,
         "avgScore": 72,
         "categories": {
@@ -23634,7 +23634,7 @@
         }
       },
       "support_troubleshoot": {
-        "label": "지원 - 트러블슈팅",
+        "label": "Support - Troubleshoot",
         "count": 17,
         "avgScore": 67.8,
         "categories": {

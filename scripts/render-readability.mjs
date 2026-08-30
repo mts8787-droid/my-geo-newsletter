@@ -447,7 +447,7 @@ function readabilityClient() {
         return true
       }).map(function (n) { return n.text })
       rows.push({ label: c.label, rate: rate, gap: c.applicable - c.pass,
-        what: g.what, why: g.why,
+        what: g.what, why: g.why, pin: g.pin === true,
         where: byP.where || byC.where || g.where,
         act: byP.action || byC.action || g.action,
         notes: notes, auto: autoNotes(cid, rate, scope, ccId, ptId) })
@@ -456,11 +456,16 @@ function readabilityClient() {
       return sectionCard(title, '#BE123C',
         '<div class="tab-note">이 조건에서는 통과율 ' + CRITICAL_MAX + '% 미만 항목이 없습니다.</div>')
     }
-    rows.sort(function (a, b) { return (a.rate - b.rate) || (b.gap - a.gap) })
+    // pin 항목(선행 조건)은 통과율과 무관하게 맨 위 — 이게 막히면 나머지가 의미 없다
+    rows.sort(function (a, b) {
+      if (a.pin !== b.pin) return a.pin ? -1 : 1
+      return (a.rate - b.rate) || (b.gap - a.gap)
+    })
 
     var html = rows.map(function (r) {
       return '<div class="gd-row">' +
         '<div class="gd-head">' +
+          (r.pin ? '<span class="gd-pin">선행</span>' : '') +
           '<span class="gd-name">' + esc(stripParens(r.label)) + '</span>' +
           '<span class="gd-rate" style="color:' + rateColor(r.rate) + '">' + r.rate + '%</span>' +
           '<span class="gd-gap">미통과 ' + num(r.gap) + 'p</span>' +
@@ -753,6 +758,19 @@ body{background:#F1F5F9;font-family:${FONT};color:#1A1A1A;line-height:1.6}
 .page-head .sub{font-size:15px;color:#64748B}
 .page-head .sub strong{color:#1A1A1A}
 /* ── 탭 네비 + 필터 바 ── */
+.htr{background:#fff;border:1px solid #E8EDF2;border-left:4px solid ${RED};border-radius:12px;padding:20px 24px;margin-bottom:20px}
+.htr-title{margin:0 0 12px;font-size:18px;font-weight:800;color:#1A1A1A;letter-spacing:-0.3px}
+.htr-p{margin:0 0 9px;font-size:14px;line-height:1.75;color:#475569}
+.htr-p strong{color:#1A1A1A;font-weight:700}
+.htr-p em{font-style:normal;color:${RED};font-weight:700}
+.htr-em{background:#FFF1F2;color:${RED};font-weight:700;border-radius:4px;padding:1px 6px}
+.htr-cta{margin-top:14px;padding-top:14px;border-top:1px dashed #E2E8F0}
+.htr-cta-h{margin:0 0 8px;font-size:14px;font-weight:800;color:#1A1A1A}
+.htr-steps{margin:8px 0 0;padding-left:20px}
+.htr-steps li{font-size:14px;line-height:1.9;color:#475569}
+.htr-steps li strong{color:#1A1A1A}
+.htr-note{margin:10px 0 0;font-size:13px;color:#94A3B8;line-height:1.6}
+@media(max-width:780px){.htr{padding:16px 16px}.htr-p,.htr-steps li{font-size:13px}}
 .tab-nav{display:flex;gap:4px;margin-bottom:16px;border-bottom:2px solid #E8EDF2;flex-wrap:wrap}
 .tab-nav button{appearance:none;border:none;background:none;font-family:inherit;font-size:15px;font-weight:700;color:#94A3B8;padding:10px 18px;cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px}
 .tab-nav button.active{color:#1A1A1A;border-bottom-color:${RED}}
@@ -811,6 +829,7 @@ body{background:#F1F5F9;font-family:${FONT};color:#1A1A1A;line-height:1.6}
 .gd-row{border:1px solid #FECDD3;border-left:3px solid #BE123C;border-radius:8px;padding:10px 14px;background:#fff}
 .gd-head{display:flex;align-items:baseline;gap:10px;margin-bottom:4px}
 .gd-name{font-size:14px;font-weight:800;color:#1A1A1A;flex:1}
+.gd-pin{flex:0 0 auto;background:#BE123C;color:#fff;border-radius:4px;padding:1px 7px;font-size:11px;font-weight:800;letter-spacing:0.3px}
 .gd-rate{font-size:14px;font-weight:800;font-variant-numeric:tabular-nums}
 .gd-gap{font-size:12px;color:#94A3B8;font-variant-numeric:tabular-nums;white-space:nowrap}
 .gd-line{font-size:13px;line-height:1.65;color:#475569;display:flex;gap:8px;align-items:baseline;margin-top:3px}
@@ -895,6 +914,29 @@ body{background:#F1F5F9;font-family:${FONT};color:#1A1A1A;line-height:1.6}
   <div class="page-head">
     <p class="sub">측정일 <strong id="rd-head-date">${escHtml(snapshot.date)}</strong> · 생성 ${escHtml((snapshot.generatedAt || '').slice(0, 16).replace('T', ' '))} · ${escHtml(momNote)}</p>
   </div>
+
+  <!-- How to Read — 처음 보는 사람이 지표와 사용법을 먼저 이해하도록 최상단 고정 -->
+  <section class="htr">
+    <h2 class="htr-title">How to Read</h2>
+    <p class="htr-p"><strong>Readability</strong> 는 <em>AI 관점의 가독성</em> 입니다. 우리 페이지가
+      AI가 읽고 인용하기 좋은 상태인지를 보는 지표예요.</p>
+    <p class="htr-p">‘26년 7월부터 <strong>10개 전략 국가</strong> 와 <strong>글로벌 대표 사이트(lg.com/global)</strong> 의
+      주요 페이지 유형을 대상으로, <strong id="htr-urlcount">${escHtml((snapshot.overall.urlCount || 0).toLocaleString('en-US'))}개 페이지</strong> 를
+      평가하고 있습니다. <span class="htr-em">매월 마지막 주</span> 에 새로 측정합니다.</p>
+    <p class="htr-p">점수는 <strong>전체 평가항목 중 기준을 충족한 항목의 비율</strong> 을 100점으로 환산한 값입니다.
+      사이트 성능 · AI 웹접근성 · Basic SEO · 스키마마크업 · 고인용 콘텐츠 · AI Crawlability
+      <strong>6개 영역, 38개 항목</strong> 을 봅니다.</p>
+    <div class="htr-cta">
+      <p class="htr-cta-h">담당 부서에서는 이렇게 보시면 됩니다</p>
+      <p class="htr-p">위의 <strong>국가별 · 페이지 타입별 탭</strong> 에서 담당 범위를 고른 뒤, 아래 세 가지를 차례로 확인하세요.</p>
+      <ol class="htr-steps">
+        <li><strong>전체 점수</strong> — 지금 어디쯤 서 있는지</li>
+        <li><strong>세부 항목별 점수</strong> — 어떤 항목이 발목을 잡는지</li>
+        <li><strong>시급 개선 항목</strong> — 무엇을, 어디를, 어떻게 고칠지</li>
+      </ol>
+      <p class="htr-note">필터를 바꾸면 해석과 조치 사항도 해당 국가 · 페이지 타입에 맞춰 함께 바뀝니다.</p>
+    </div>
+  </section>
 
   <div class="tab-nav" id="rd-tabnav"></div>
   <div class="filter-bar" id="rd-filterbar">

@@ -386,3 +386,27 @@ describe('대시보드 클라이언트 — 스코프 회귀 방지', () => {
     expect(bad).toEqual([])
   })
 })
+
+describe('개선 가이드 — 선행 조건(pin) 항목', () => {
+  it('SSR 항목이 pin 으로 표시돼 있다', async () => {
+    const { GUIDE } = await import('../src/shared/readabilityGuide.js')
+    expect(GUIDE.ai_ssr_ratio.pin).toBe(true)
+    // 선행 조건은 하나만 — 여러 개면 '가장 시급' 의 의미가 흐려진다
+    expect(Object.entries(GUIDE).filter(([, g]) => g.pin).map(([k]) => k)).toEqual(['ai_ssr_ratio'])
+  })
+  it('SSR 미달 시 다른 항목 점수가 무의미하다는 문장과 Gemini 예외가 함께 있다', async () => {
+    const { guideFor } = await import('../src/shared/readabilityGuide.js')
+    const notes = guideFor('ai_ssr_ratio', null, null).notes.join(' ')
+    expect(notes).toContain('다른 항목의 점수는 사실상 의미가 없습니다')
+    expect(notes).toContain('제미나이')
+    expect(notes).toContain('구글 검색 인프라')
+  })
+  it('두 문장은 필터와 무관하게 항상 노출된다', async () => {
+    const { guideFor } = await import('../src/shared/readabilityGuide.js')
+    for (const [pt, cc] of [[null, null], ['pdp', 'ca'], ['support_troubleshoot', 'us']]) {
+      const n = guideFor('ai_ssr_ratio', pt, cc).notes.join(' ')
+      expect(n).toContain('선행 과제')
+      expect(n).toContain('제미나이')
+    }
+  })
+})

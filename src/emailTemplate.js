@@ -2840,8 +2840,16 @@ const RD_CAT_LABEL_EN = {
   geo_schema: 'Schema Markup',
   geo_content: 'Citable Content',
 }
-const RD_CC_KO = { au: '호주', br: '브라질', ca: '캐나다', de: '독일', es: '스페인', in: '인도', mx: '멕시코', uk: '영국', us: '미국', vn: '베트남' }
-const RD_CC_EN = { au: 'Australia', br: 'Brazil', ca: 'Canada', de: 'Germany', es: 'Spain', in: 'India', mx: 'Mexico', uk: 'UK', us: 'USA', vn: 'Vietnam' }
+const RD_CC_KO = { au: '호주', br: '브라질', ca: '캐나다', de: '독일', es: '스페인', in: '인도', mx: '멕시코', uk: '영국', us: '미국', vn: '베트남', global: 'Global-site' }
+// 페이지타입 라벨 EN — 'Support - 일반' 처럼 한국어가 섞인 것만 영문으로 치환.
+// 나머지(Press & Media · Global Newsroom · Microsite 등)는 이미 영문이라 그대로 쓴다.
+const RD_PT_EN_OVERRIDE = {
+  'Support - 일반': 'Support - General',
+  '제품 상세 (PDP)': 'Product Detail (PDP)',
+  '제품 카테고리 (PLP)': 'Product Category (PLP)',
+  '구매 가이드': 'Buying Guide',
+}
+const RD_CC_EN = { au: 'Australia', br: 'Brazil', ca: 'Canada', de: 'Germany', es: 'Spain', in: 'India', mx: 'Mexico', uk: 'UK', us: 'USA', vn: 'Vietnam', global: 'Global-site' }
 
 // 점수 → 색 (대시보드 STATUS 토큰과 동일 기준)
 // 신호등 색 — 대시보드/검수기준과 동일 기준 (src/shared/readabilityBand.js single source)
@@ -2967,12 +2975,12 @@ const RD_TEXT = {
   intro: 'Readability는 AI 관점에서의 가독성을 뜻하며, 웹페이지의 콘텐츠가 AI가 읽고 활용하기 좋은 상태인지 평가하는 지표입니다. ‘26년 7월부터 LG.com의 Readability 현황을 파악하기 위해 10개 전략 국가의 주요 페이지 유형, 총 9,284개 페이지를 평가했습니다(8월 30일 기준, 전수). 10개 국가 사이트에 더해 글로벌 대표 사이트(lg.com/global)를 별도 사이트로 포함했습니다. Readability 점수는 전체 평가항목 중 기준을 충족한 항목의 비율(%)을 100점 기준으로 환산한 점수입니다. 평가는 사이트 성능, AI 웹접근성, Basic SEO 적합도, 스키마마크업, 고인용 콘텐츠, AI Crawlability의 6개 영역, 총 38개 체크리스트를 기준으로 진행했습니다.',
   introNotes: [
     '*전략 10개국가 : 독일, 영국, 호주, 브라질, 베트남, 스페인, 미국, 멕시코, 인도, 캐나다',
-    '*8개 페이지 유형 : PDP(제품 상세 페이지), PLP (제품 카테고리 페이지), Microsite, Newsroom, Buying Guide, LG Experience, Support, Support-Trouble Shooting',
+    '*9개 페이지 유형 : PDP(제품 상세 페이지), PLP(제품 카테고리 페이지), Microsite, Global Newsroom, Press & Media, Buying Guide, LG Experience, Support - 일반, Support - Troubleshoot',
   ],
-  summary: '8월 LG.com의 전체적인 Readability 점수는 78.5점으로 전월 대비 1.0점 상승했습니다. 사이트별로는 글로벌 대표 사이트(lg.com/global)가 87.7점으로 가장 높았고, 국가 사이트 중에서는 베트남 81.8점이 최고, 캐나다 76.2점이 최저로 편차가 크지 않은 상황입니다.\n페이지 타입별로도 프레스앤미디어 79.5점, 마이크로사이트 76.4점으로 유사한 분포를 보이고 있습니다.',
+  summary: '8월 LG.com의 전체적인 Readability 점수는 78.5점으로 전월 대비 1.0점 상승했습니다. 사이트별로는 글로벌 대표 사이트(lg.com/global)가 87.7점으로 가장 높았고, 국가 사이트 중에서는 베트남 81.8점이 최고, 캐나다 76.2점이 최저로 편차가 크지 않은 상황입니다.\n페이지 타입별로도 Press & Media 79.5점, Microsite 76.4점으로 유사한 분포를 보이고 있습니다.',
   areaIntro: '반면 평가 영역별로는 점수 차이가 뚜렷하게 나타났습니다.\n사이트 성능 99.4점 (페이지 응답 및 정보 제공 속도), AI Crawlability 95.4점 (AI 크롤러가 원문을 가져갈 수 있는 기술 환경), Basic SEO 89.2점 (제목·페이지 주제 설명 등 검색되기위한 기본 정보), 웹접근성 83.5점 (사람과 AI가 문서 구조를 읽어낼 수 체계)으로 비교적 양호했습니다.\n반면, 스키마마크업 31.7점 (제품·FAQ·이미지 등 정보의 종류와 관계를 알려주는 구조화 데이터), 고인용 콘텐츠 56.3점 (AI가 인용할만한 서술의 존재)은 상대적으로 낮았습니다.',
   d1Title: '사이트 성능과 AI Crawlability는 전반적으로 우수하나, 초기 HTML 내 텍스트 제공 비중 보완 필요',
-  d1: '사이트 성능 영역은 99.4점으로 가장 높은 점수를 기록하여 LG.com의 빠르고 안정적인 페이지 전달 수준을 확인할 수 있었습니다.\nAI Crawlability 또한 95.4점으로 상대적으로 높지만, JS HTML Text Ratio(Javascript 렌더링 후 텍스트 대비 초기 HTML Text Count 비중이 60% 이상) 충족률은 71.8%였습니다.\n특히 Support-Trouble Shooting 페이지는 34.5%, PDP는 60.3%로 낮아, 일부 주요 콘텐츠가 페이지를 처음 불러오는 시점에는 포함되지 않고 화면이 열린 후 추가로 불러와지는 방식(CSR)으로 제공되고 있었습니다.\n사용자가 최종 화면에서 콘텐츠를 확인하는 데는 문제가 없을 수 있지만, 페이지를 처음 전달받은 상태를 중심으로 정보를 수집하는 일부 AI는 주요 내용을 충분히 확인하지 못할 가능성이 있습니다.\n때문에 현재 고객가치혁신 및 D2C에서는 Support 페이지와 PDP내 주요 정보가 페이지를 처음 불러오는 시점부터 포함되도록 SSR 방식으로 전환하는 작업을 추진 중입니다.',
+  d1: '사이트 성능 영역은 99.4점으로 가장 높은 점수를 기록하여 LG.com의 빠르고 안정적인 페이지 전달 수준을 확인할 수 있었습니다.\nAI Crawlability 또한 95.4점으로 상대적으로 높지만, JS HTML Text Ratio(Javascript 렌더링 후 텍스트 대비 초기 HTML Text Count 비중이 60% 이상) 충족률은 71.8%였습니다.\n특히 Support - Troubleshoot 페이지는 34.5%, PDP는 60.3%로 낮아, 일부 주요 콘텐츠가 페이지를 처음 불러오는 시점에는 포함되지 않고 화면이 열린 후 추가로 불러와지는 방식(CSR)으로 제공되고 있었습니다.\n사용자가 최종 화면에서 콘텐츠를 확인하는 데는 문제가 없을 수 있지만, 페이지를 처음 전달받은 상태를 중심으로 정보를 수집하는 일부 AI는 주요 내용을 충분히 확인하지 못할 가능성이 있습니다.\n때문에 현재 고객가치혁신 및 D2C에서는 Support 페이지와 PDP내 주요 정보가 페이지를 처음 불러오는 시점부터 포함되도록 SSR 방식으로 전환하는 작업을 추진 중입니다.',
   d1Notes: [
     '*초기 HTML : 웹페이지에 접속했을 때 서버가 가장 먼저 전달하는 기본 페이지 정보로, JavaScript 실행 전에도 AI가 확인할 수 있는 내용',
     '*Javascript 렌더링 : 페이지가 열린 뒤 JavaScript가 실행되면서 정보를 추가로 불러와 화면에 표시하는 방식',
@@ -2984,7 +2992,7 @@ const RD_TEXT = {
   d3Title: '스키마마크업은 페이지 타입과 콘텐츠에 맞춘 최적화가 필요',
   d3: '스키마 영역은 31.7점으로 전월(35.7점) 대비 하락하며 전체 평가 영역 중 가장 낮았습니다. Schema는 AI가 FAQ·제품·이미지·영상·사용방법 등 정보의 종류를 구분할 수 있게 해주는 정해진 형식으로, 페이지 유형과 콘텐츠 특성에 맞춰 주요 Schema의 적용 범위를 확대할 필요가 있습니다.\n상세 현황 파악을 위해 독일 LG.com과 Samsung.com 확인해보았을 때, PDP의 핵심 스키마인 Product(LG 0%, SS 64%) 스키마는 경쟁사 대비 충족률이 낮았고, PLP의 경우 특히 FAQPage 스키마 적용률 격차가 크게 나타났습니다(LG 13%, SS 71%). 이 외에도 VideoObject, ImageObject, HowTo, Article 모두 주요 스키마로 전 페이지 타입에 걸쳐 개선이 필요한 상황입니다. 이에 D2C에서 추진 중인 Schema 자동화를 통해, 국가와 페이지별로 개별 대응하기 보다 주요 Schema가 일관되게 생성, 적용되는 구조를 마련하는 중입니다.',
   d4Title: '고인용 콘텐츠는 AI 답변에 적합한 콘텐츠 형식 확대와 작성자 정보 보완 필요',
-  d4: '콘텐츠 영역은 56.3점으로 전월(29.3점) 대비 크게 상승했으나 스키마마크업 다음으로 낮은 수준입니다. FAQ Block(28.5%→57.2%), 정의 문단(1.7%→42.9%), 요약 박스(23.9%→53.1%)가 고르게 개선된 결과입니다. AI가 질문에 대한 직접적인 답변으로 활용하기 쉬운 FAQ Block, Summary Box, Definition Paragraph 등의 콘텐츠가 충분하지 않아 보완이 필요한 상황이며, 현재 FAQ Block을 중심으로 각 사업본부 및 고객가치혁신의 주요 개선 과제로 추진 중입니다.\n한편, Citable Sentence(숫자, 연도, 통계, 연구 키워드 포함 문장)의 경우 전체 충족률은 72.9%였습니다. 독일(99.2%), 글로벌(98.5%), 호주(98.4%), 영국(95.8%)은 충족률 95% 이상인 반면, 캐나다(43.6%)·멕시코(43.9%)·브라질(46.4%)·인도(49.8%)는 크게 낮아 국가별 편차가 여전히 큰 상황입니다. 7월 독일 사이트를 비교해본 결과, LG.com의 Citable Sentence 충족률은 86.1%로 Samsung.com의 19.4%보다 크게 높아, LG 콘텐츠의 경쟁 우위 요소로 확인되었습니다. 향후 캐나다, 멕시코, 브라질, 인도 등 상대적으로 충족률이 낮은 국가에서도 Citable Sentence 확대를 통해 경쟁 우위 요소를 강화할 필요가 있습니다.\n콘텐츠의 작성자/출처/날짜 정보 충족률 또한 39.4%로 낮게 나타났습니다. 이는 AI가 콘텐츠의 신뢰성과 최신성을 판단하는 데 참고할 수 있는 요소인 만큼, 정보성 콘텐츠를 중심으로 보완이 필요합니다. 페이지 타입별로 보면 각 국가 사이트의 보도자료(Press&Media)는 74.3%로 양호한 반면, 구매 가이드와 LG Experience는 0%로 보완이 시급합니다.',
+  d4: '콘텐츠 영역은 56.3점으로 전월(29.3점) 대비 크게 상승했으나 스키마마크업 다음으로 낮은 수준입니다. FAQ Block(28.5%→57.2%), 정의 문단(1.7%→42.9%), 요약 박스(23.9%→53.1%)가 고르게 개선된 결과입니다. AI가 질문에 대한 직접적인 답변으로 활용하기 쉬운 FAQ Block, Summary Box, Definition Paragraph 등의 콘텐츠가 충분하지 않아 보완이 필요한 상황이며, 현재 FAQ Block을 중심으로 각 사업본부 및 고객가치혁신의 주요 개선 과제로 추진 중입니다.\n한편, Citable Sentence(숫자, 연도, 통계, 연구 키워드 포함 문장)의 경우 전체 충족률은 72.9%였습니다. 독일(99.2%), 글로벌(98.5%), 호주(98.4%), 영국(95.8%)은 충족률 95% 이상인 반면, 캐나다(43.6%)·멕시코(43.9%)·브라질(46.4%)·인도(49.8%)는 크게 낮아 국가별 편차가 여전히 큰 상황입니다. 7월 독일 사이트를 비교해본 결과, LG.com의 Citable Sentence 충족률은 86.1%로 Samsung.com의 19.4%보다 크게 높아, LG 콘텐츠의 경쟁 우위 요소로 확인되었습니다. 향후 캐나다, 멕시코, 브라질, 인도 등 상대적으로 충족률이 낮은 국가에서도 Citable Sentence 확대를 통해 경쟁 우위 요소를 강화할 필요가 있습니다.\n콘텐츠의 작성자/출처/날짜 정보 충족률 또한 39.4%로 낮게 나타났습니다. 이는 AI가 콘텐츠의 신뢰성과 최신성을 판단하는 데 참고할 수 있는 요소인 만큼, 정보성 콘텐츠를 중심으로 보완이 필요합니다. 페이지 타입별로 보면 각 국가 사이트의 보도자료(Press & Media)는 74.3%로 양호한 반면, 구매 가이드와 LG Experience는 0%로 보완이 시급합니다.',
 }
 
 // EN 기본 번역 — RD_TEXT 의 영문본. 이게 없으면 EN 발송본에 한국어가 그대로 나온다
@@ -2994,7 +3002,7 @@ const RD_TEXT_EN = {
   intro: 'Readability measures how well a web page can be read and used by AI. From July 2026 we began assessing LG.com\u2019s Readability across 9,284 pages spanning the major page types in 10 strategic countries plus the global flagship site (lg.com/global), counted as its own site (full census, as of Aug 30). The Readability score is the share of checklist items meeting the bar, normalized to a 100-point scale. The assessment covers 6 areas \u2014 Site Performance, AI Accessibility, Basic SEO, Schema Markup, Citable Content, and AI Crawlability \u2014 across 38 checklist items in total.',
   introNotes: [
     '*10 strategic countries: Germany, UK, Australia, Brazil, Vietnam, Spain, USA, Mexico, India, Canada',
-    '*8 page types: PDP (Product Detail Page), PLP (Product List Page), Microsite, Newsroom, Buying Guide, LG Experience, Support, Support-Troubleshooting',
+    '*9 page types: PDP (Product Detail Page), PLP (Product List Page), Microsite, Global Newsroom, Press & Media, Buying Guide, LG Experience, Support, Support - Troubleshoot',
   ],
   summary: 'LG.com scored 78.5 overall for Readability in August, up 1.0 point month over month. By site, the global flagship (lg.com/global) led at 87.7; among country sites Vietnam was highest at 81.8 and Canada lowest at 76.2 \u2014 a narrow spread.\nPage types show a similar distribution: Press & Media 79.5, Microsite 76.4.',
   areaIntro: 'By assessment area, however, the gaps are pronounced.\nSite Performance 99.4 (page response and content delivery speed), AI Crawlability 95.4 (the technical conditions that let AI crawlers retrieve the source), Basic SEO 89.2 (the baseline information needed to be found \u2014 titles, page descriptions), and Accessibility 83.5 (structure that both people and AI can parse) were relatively strong.\nSchema Markup 31.7 (structured data that signals the type of information and how it relates) and Citable Content 56.3 (the presence of statements AI can quote) were comparatively low.',
@@ -3044,7 +3052,9 @@ function readabilityHighlightHtml(rd, meta = {}, lang = 'ko', contentWidth = 848
     .sort((a, b) => b.avg - a.avg)
     .map(p => {
       const f = `rd_lblPt_${p.id}`
-      const base = lang === 'en' ? (RD_PT_LABEL_EN[p.id] || p.label) : p.label
+      const base = lang === 'en'
+        ? (RD_PT_EN_OVERRIDE[p.label] || RD_PT_LABEL_EN[p.id] || p.label)
+        : p.label
       return rdBarRow(lbl(f, base), p.avg, 100, { labelW: 118, pad: 2, barH: 8, labelField: f })
     }).join('')
   const half = Math.floor(contentWidth / 2) - 8

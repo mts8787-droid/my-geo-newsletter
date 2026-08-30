@@ -195,7 +195,19 @@ function isExcludedUrl(url) { return EXCLUDED_URL_RE.test(String(url || '')) }
 // 페이지타입 통합 — about(회사)/content(콘텐츠매거진) → newsroom(뉴스룸) 으로 병합
 const PT_MERGE = { about: 'newsroom', content: 'newsroom' }
 // 통합/병합 결과 페이지타입의 표준 라벨 (병합 시 라벨 일관성)
-const PT_LABEL = { newsroom: '뉴스룸/Press', lg_experience: 'LG Experience' }
+// 페이지타입 표준 라벨 — 크롤러가 주는 label 대신 여기 값이 우선한다.
+// 뉴스레터·대시보드·개선가이드가 같은 이름을 쓰도록 통일 (사용자 지시 2026-08-30).
+const PT_LABEL = {
+  newsroom: 'Global Newsroom',
+  press_media: 'Press & Media',
+  microsite: 'Microsite',
+  support: 'Support - 일반',
+  support_troubleshoot: 'Support - Troubleshoot',
+  lg_experience: 'LG Experience',
+  buying_guide: '구매 가이드',
+  pdp: '제품 상세 (PDP)',
+  plp: '제품 카테고리 (PLP)',
+}
 
 // 페이지타입 정규화 — lg-experience 분리 + 병합 적용 + 제외 여부 판정. { id, label, excluded } 또는 null
 function resolvePt(pt, url) {
