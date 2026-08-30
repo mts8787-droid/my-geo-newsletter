@@ -57,6 +57,8 @@ const CATEGORIES = ['performance', 'accessibility', 'seo', 'geo_schema', 'geo_co
 import { CC_NAME } from './readability-cc.mjs'
 // 신호등 기준 single source — 대시보드/뉴스레터/검수기준 공통 (src/shared/readabilityBand.js)
 import { RD_BAND, RD_BAND_COLOR, rdBandColor } from '../src/shared/readabilityBand.js'
+// 개선 가이드 (체크 × 페이지타입) — 필터 선택에 맞춰 해석·액션 아이템을 뽑는다
+import { GUIDE } from '../src/shared/readabilityGuide.js'
 
 function escHtml(s) {
   return String(s == null ? '' : s)
@@ -271,7 +273,7 @@ function readabilityClient() {
     var note = pt !== 'all'
       ? '<div class="tab-note">페이지 타입 «' + esc(ptLabel) + '» 필터가 적용된 국가별 점수입니다.</div>'
       : ''
-    return hero + note + sectionCard(title, RED, '<div class="bars">' + bars + '</div>') + renderCategorySection(scope, '②')
+    return hero + note + sectionCard(title, RED, '<div class="bars">' + bars + '</div>') + renderCategorySection(scope, '②') + renderGuideSection(scope, '③')
   }
 
   // 체크별 통과율 카테고리 카드 묶음 — 국가/페이지타입 탭 양쪽에서 재사용 (별도 항목별 탭 X)
@@ -314,6 +316,52 @@ function readabilityClient() {
     return out.join('')
   }
 
+  // ── 개선 가이드 — 현재 필터(국가 × 페이지타입)에 맞춘 해석 + 액션 아이템 ──────
+  // 통과율이 낮은 순으로 정렬하고, 미통과 페이지 수가 큰 항목을 우선 노출한다.
+  // 액션 문구는 RD.guide[cid].byPt[pt] 가 있으면 그것, 없으면 기본 action.
+  function renderGuideSection(scope, secNo) {
+    var G = RD.guide || {}
+    var pt = state.pt
+    var slot = (pt !== 'all' && scope.pageTypes && scope.pageTypes[pt] && scope.pageTypes[pt].checks)
+      ? scope.pageTypes[pt] : null
+    var checks = slot ? slot.checks : (scope.checks || {})
+    var ptName = slot ? (slot.label || pt) : '전체 타입'
+    var scopeName = state.cc === 'all' ? '전체' : ccLabel(state.cc)
+
+    var rows = []
+    Object.keys(checks).forEach(function (cid) {
+      var c = checks[cid]
+      if (!c || !c.applicable) return
+      var rate = +(c.pass / c.applicable * 100).toFixed(1)
+      if (rate >= BAND.good) return            // 통과 구간은 개선 대상 아님
+      var g = G[cid]; if (!g) return
+      var act = (slot && g.byPt && g.byPt[pt]) || g.action
+      rows.push({ cid: cid, label: c.label, rate: rate, gap: c.applicable - c.pass, why: g.why, act: act })
+    })
+    if (!rows.length) {
+      return sectionCard(secNo + ' 개선 가이드 (' + esc(scopeName) + ' · ' + esc(ptName) + ')', '#7C3AED',
+        '<div class="tab-note">이 조건에서는 기준 미달 항목이 없습니다.</div>')
+    }
+    // 미통과 페이지 수 우선, 같으면 통과율 낮은 순
+    rows.sort(function (a, b) { return (b.gap - a.gap) || (a.rate - b.rate) })
+
+    var html = rows.map(function (r) {
+      return '<div class="gd-row">' +
+        '<div class="gd-head">' +
+          '<span class="gd-name">' + esc(stripParens(r.label)) + '</span>' +
+          '<span class="gd-rate" style="color:' + rateColor(r.rate) + '">' + r.rate + '%</span>' +
+          '<span class="gd-gap">미통과 ' + num(r.gap) + 'p</span>' +
+        '</div>' +
+        '<div class="gd-why">' + esc(r.why) + '</div>' +
+        '<div class="gd-act"><span class="gd-tag">액션</span>' + esc(r.act) + '</div>' +
+      '</div>'
+    }).join('')
+    var note = '<div class="tab-note">' + esc(scopeName) + ' · ' + esc(ptName) +
+      ' 기준 미달 ' + rows.length + '개 항목 — 미통과 페이지 수가 많은 순. 필터를 바꾸면 해석과 액션도 함께 바뀝니다.</div>'
+    return note + sectionCard(secNo + ' 개선 가이드 (' + esc(scopeName) + ' · ' + esc(ptName) + ')', '#7C3AED',
+      '<div class="gd-list">' + html + '</div>')
+  }
+
   // 체크별 통과율 섹션 — 국가 + (집계기가 nest 한 경우) 페이지타입 필터 반영
   function renderCategorySection(scope, secNo) {
     var scopeName = state.cc === 'all' ? '전체' : ccLabel(state.cc)
@@ -343,7 +391,7 @@ function readabilityClient() {
     }).join('')
     var bars = rowsHtml ? (barHead('페이지 타입', '페이지수', '점수') + rowsHtml) : '<div class="tab-note">해당 조건에 데이터가 없습니다.</div>'
     var scopeName = state.cc === 'all' ? '전체' : ccLabel(state.cc)
-    return sectionCard('① 페이지타입별 점수 (' + esc(scopeName) + ')', '#059669', '<div class="bars">' + bars + '</div>') + renderCategorySection(scope, '②')
+    return sectionCard('① 페이지타입별 점수 (' + esc(scopeName) + ')', '#059669', '<div class="bars">' + bars + '</div>') + renderCategorySection(scope, '②') + renderGuideSection(scope, '③')
   }
 
   // 검수 기준 + 검수 URL 다운로드 탭
@@ -552,6 +600,7 @@ export function renderReadabilityHTML({ snapshot, index, snapshots, adminMode = 
     adminMode: !!adminMode,
     band: RD_BAND,           // 신호등 임계값 — 클라 짝이 서버와 같은 기준 쓰도록 주입
     bandColor: RD_BAND_COLOR,
+    guide: GUIDE,            // 개선 가이드 — 필터(국가×페이지타입) 변경 시 클라가 해석·액션 재생성
     paths: paths || (adminMode ? ADMIN_PATHS : PUBLIC_PATHS),
     categoryLabels: snap.categoryLabels || {},
     checkDefs: loadCheckDefs(),   // check id → 항목 정의 (체크리스트 문서 출처)
@@ -638,6 +687,16 @@ body{background:#F1F5F9;font-family:${FONT};color:#1A1A1A;line-height:1.6}
 .crit-frame-head a{color:${RED};text-decoration:none;font-weight:600}
 .crit-frame{width:100%;height:70vh;min-height:520px;border:1px solid #E8EDF2;border-radius:12px;background:#fff}
 /* ── Raw 데이터 (페이지별 체크 PASS/FAIL 조합 필터) ── */
+.gd-list{display:flex;flex-direction:column;gap:10px}
+.gd-row{border:1px solid #E8EDF2;border-left:3px solid #7C3AED;border-radius:8px;padding:10px 14px;background:#fff}
+.gd-head{display:flex;align-items:baseline;gap:10px;margin-bottom:4px}
+.gd-name{font-size:14px;font-weight:800;color:#1A1A1A;flex:1}
+.gd-rate{font-size:14px;font-weight:800;font-variant-numeric:tabular-nums}
+.gd-gap{font-size:12px;color:#94A3B8;font-variant-numeric:tabular-nums;white-space:nowrap}
+.gd-why{font-size:13px;color:#64748B;line-height:1.6;margin-bottom:6px}
+.gd-act{font-size:13px;color:#1A1A1A;line-height:1.6}
+.gd-tag{display:inline-block;background:#F3E8FF;color:#7C3AED;border-radius:4px;padding:1px 7px;font-size:11px;font-weight:800;margin-right:7px}
+@media(max-width:780px){.gd-head{flex-wrap:wrap;gap:6px}.gd-name{flex:1 1 100%}}
 .rd-pass{display:inline-block;padding:2px 8px;border-radius:6px;font-weight:800;font-size:11px;background:#ECFDF5;color:#15803D;border:1px solid #A7F3D0}
 .rd-fail{display:inline-block;padding:2px 8px;border-radius:6px;font-weight:800;font-size:11px;background:#FFF1F2;color:#BE123C;border:1px solid #FECDD3}
 .fails-bar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:14px}

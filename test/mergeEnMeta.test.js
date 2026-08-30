@@ -241,3 +241,45 @@ describe('뉴스레터 본문 ↔ 최신 스냅샷 수치 일치', () => {
     expect(body).toContain(snap.overall.urlCount.toLocaleString('en-US'))
   })
 })
+
+describe('개선 가이드 — 체크 × 페이지타입', () => {
+  const load = async () => {
+    const fs = await import('fs')
+    const { fileURLToPath } = await import('url')
+    const { dirname, join } = await import('path')
+    const root = join(dirname(fileURLToPath(import.meta.url)), '..')
+    const idx = JSON.parse(fs.readFileSync(join(root, 'data/readability/index.json'), 'utf8'))
+    const d = idx.snapshots[idx.snapshots.length - 1].date
+    return JSON.parse(fs.readFileSync(join(root, `data/readability/${d}.json`), 'utf8'))
+  }
+  it('스냅샷의 모든 체크에 가이드가 있다', async () => {
+    const { GUIDE } = await import('../src/shared/readabilityGuide.js')
+    const snap = await load()
+    const missing = Object.keys(snap.overall.checks).filter(c => !GUIDE[c])
+    expect(missing).toEqual([])
+  })
+  it('가이드에 스냅샷에 없는 체크가 없다', async () => {
+    const { GUIDE } = await import('../src/shared/readabilityGuide.js')
+    const snap = await load()
+    const ids = Object.keys(snap.overall.checks)
+    expect(Object.keys(GUIDE).filter(c => !ids.includes(c))).toEqual([])
+  })
+  it('모든 항목이 why 와 action 을 갖는다', async () => {
+    const { GUIDE } = await import('../src/shared/readabilityGuide.js')
+    const bad = Object.entries(GUIDE).filter(([, g]) => !g.why || !g.action).map(([k]) => k)
+    expect(bad).toEqual([])
+  })
+  it('페이지타입 오버라이드가 기본 액션과 다른 문구를 반환한다', async () => {
+    const { actionFor, GUIDE } = await import('../src/shared/readabilityGuide.js')
+    expect(actionFor('ai_ssr_ratio', 'pdp')).not.toBe(GUIDE.ai_ssr_ratio.action)
+    expect(actionFor('ai_ssr_ratio', 'plp')).toBe(GUIDE.ai_ssr_ratio.action)  // 오버라이드 없음 → 기본
+    expect(actionFor('없는체크', 'pdp')).toBeNull()
+  })
+  it('byPt 키가 실제 페이지타입 id 여야 한다', async () => {
+    const { GUIDE, PT_LABEL } = await import('../src/shared/readabilityGuide.js')
+    const bad = []
+    Object.entries(GUIDE).forEach(([cid, g]) =>
+      Object.keys(g.byPt || {}).forEach(pt => { if (!PT_LABEL[pt]) bad.push(`${cid}.${pt}`) }))
+    expect(bad).toEqual([])
+  })
+})
