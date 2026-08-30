@@ -2,7 +2,7 @@
   "snapshots": [
     {
       "date": "2026-06-14",
-      "generatedAt": "2026-08-30T04:28:35.167Z",
+      "generatedAt": "2026-08-30T06:06:57.477Z",
       "countries": [
         "au",
         "br",
@@ -16,11 +16,11 @@
         "vn"
       ],
       "overallAvg": 75.9,
-      "urlCount": 9387
+      "urlCount": 9326
     },
     {
       "date": "2026-06-29",
-      "generatedAt": "2026-08-30T04:28:35.764Z",
+      "generatedAt": "2026-08-30T06:06:58.033Z",
       "countries": [
         "au",
         "br",
@@ -34,11 +34,11 @@
         "vn"
       ],
       "overallAvg": 75.1,
-      "urlCount": 5398
+      "urlCount": 5349
     },
     {
       "date": "2026-07-31",
-      "generatedAt": "2026-08-30T04:28:36.340Z",
+      "generatedAt": "2026-08-30T06:06:58.582Z",
       "countries": [
         "au",
         "br",
@@ -51,26 +51,27 @@
         "us",
         "vn"
       ],
-      "overallAvg": 77.4,
-      "urlCount": 5675
+      "overallAvg": 77.5,
+      "urlCount": 5623
     },
     {
       "date": "2026-08-30",
-      "generatedAt": "2026-08-30T04:28:37.164Z",
+      "generatedAt": "2026-08-30T06:07:26.123Z",
       "countries": [
         "au",
         "br",
         "ca",
         "de",
         "es",
+        "global",
         "in",
         "mx",
         "uk",
         "us",
         "vn"
       ],
-      "overallAvg": 76.6,
-      "urlCount": 9291
+      "overallAvg": 76.7,
+      "urlCount": 9284
     }
   ]
 }

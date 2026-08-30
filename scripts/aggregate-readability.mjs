@@ -185,6 +185,13 @@ const PT_SCOPED_CHECKS = {
 //   business      : B2B (사업자) — GEO 대상 아님 (사용자 지시, 2026-08-26)
 //   promotion     : 프로모션/약관 — 한시 페이지라 개선 대상 아님 (사용자 지시, 2026-08-26)
 const EXCLUDED_PT = { unknown: 1, home: 1, business: 1, promotion: 1 }
+
+// 영구 제외 URL 패턴 — 브랜드 스토리/캠페인 계열. GEO KPI 대상이 아니다
+// (사용자 결정 2026-08-30. 상류 my-geo-audit 의 수집 목록에서도 동일하게 제외 예정).
+// 이 페이지들이 press_media·newsroom 버킷에 섞여 보도자료 지표를 왜곡하고 있었다
+// (예: lg.com/au/lifesgood/ 가 '뉴스룸/Press' 로 분류돼 최저 점수 원인이 됨).
+const EXCLUDED_URL_RE = /\/(lg-story|lifesgood|lifes-good)(\/|$)/i
+function isExcludedUrl(url) { return EXCLUDED_URL_RE.test(String(url || '')) }
 // 페이지타입 통합 — about(회사)/content(콘텐츠매거진) → newsroom(뉴스룸) 으로 병합
 const PT_MERGE = { about: 'newsroom', content: 'newsroom' }
 // 통합/병합 결과 페이지타입의 표준 라벨 (병합 시 라벨 일관성)
@@ -458,9 +465,11 @@ function csvCell(v) {
   return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s
 }
 
-// 파일명에서 국가코드 + 날짜 + runId 추출: <cc>_<YYYY-MM-DD>_run_<id>.json
+// 파일명에서 사이트코드 + 날짜 + runId 추출: <cc>_<YYYY-MM-DD>_run_<id>.json
+// [a-z]{2} 로 2글자 고정이던 것을 2~10 으로 확장 — 'global_...' 이 매칭 실패로 통째 skip 되고
+// 있었다 (lg.com/global 대표 사이트 100p 가 집계에서 빠짐. 사용자 지적 2026-08-30).
 function parseFileName(name) {
-  const m = name.match(/^([a-z]{2})_(\d{4}-\d{2}-\d{2})_run_([0-9a-f]+)\.json$/i)
+  const m = name.match(/^([a-z]{2,10})_(\d{4}-\d{2}-\d{2})_run_([0-9a-f]+)\.json$/i)
   if (!m) return null
   return { cc: m[1].toLowerCase(), date: m[2], runId: m[3] }
 }
@@ -766,11 +775,14 @@ function main() {
     const items = []
     // 측정이 성립하지 않은 페이지 제외 카운터 — 아래 [DETECT] 참조
     let skipNoScore = 0, skipFetchFail = 0
+    let skipExcludedUrl = 0
     for (const s of summary) {
       if (!s || !s.result) continue
       const url = s.url || s.result.url
       const rpt = resolvePt(s.result.page_type, url)
       if (rpt && rpt.excluded) continue
+      // 영구 제외 URL (lg-story / lifesgood) — 집계·Raw·CSV 어디에도 넣지 않는다
+      if (isExcludedUrl(url)) { skipExcludedUrl++; continue }
       // 대시보드 채점 재정의 (TTFB 1800ms / Cache-Control 완화 / Render Blocking 제외) —
       // checkRows(Raw 데이터) · 집계 · CSV 가 모두 같은 점수를 보도록 여기서 한 번만 적용.
       // upstreamGated — 신포맷(6분류) 행이면 상류가 applies_to_page_types 를 이미 적용했다는 표식
@@ -788,6 +800,9 @@ function main() {
     }
     if (skipNoScore || skipFetchFail) {
       _logInfo('aggregate-readability', `${meta.cc}: 측정 미성립 제외 — 비-200/fetch실패 ${skipFetchFail}, 미채점 ${skipNoScore}`)
+    }
+    if (skipExcludedUrl) {
+      _logInfo('aggregate-readability', `${meta.cc}: 영구 제외 URL ${skipExcludedUrl}건 (lg-story/lifesgood)`)
     }
     // Raw 데이터(조합 필터)용 — 전수 페이지의 전체 체크(PASS+FAIL) 수집 (샘플링 전, 최대 커버리지).
     // per-row try/catch (data.md §6.3) — 손상된 breakdown 한 건이 전체 집계를 멈추지 않게.

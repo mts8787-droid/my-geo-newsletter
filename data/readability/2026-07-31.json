@@ -1,6 +1,6 @@
 {
   "date": "2026-07-31",
-  "generatedAt": "2026-08-30T04:28:36.340Z",
+  "generatedAt": "2026-08-30T06:06:58.582Z",
   "source": "run_results",
   "categoryLabels": {
     "performance": "사이트 성능",
@@ -14,129 +14,129 @@
     "au": {
       "auditedAt": "2026-07-31",
       "runId": "39d08baa97d8",
-      "urlCount": 712,
-      "scoredCount": 712,
-      "avgScore": 77.9,
+      "urlCount": 696,
+      "scoredCount": 696,
+      "avgScore": 78.1,
       "grades": {
-        "Need Improvement": 542,
-        "Good": 170
+        "Need Improvement": 527,
+        "Good": 169
       },
       "categories": {
-        "performance": 99.6,
-        "accessibility": 88.2,
-        "seo": 80.3,
-        "geo_schema": 36.8,
-        "geo_content": 41.8,
+        "performance": 99.7,
+        "accessibility": 88.3,
+        "seo": 80.7,
+        "geo_schema": 37.1,
+        "geo_content": 42.2,
         "geo_platform": 100
       },
       "checks": {
         "perf_ttfb": {
           "label": "#1 TTFB < 600ms (PSI)",
           "cat": "performance",
-          "pass": 698,
-          "applicable": 712
+          "pass": 683,
+          "applicable": 696
         },
         "perf_compression": {
           "label": "#2 Compression",
           "cat": "performance",
-          "pass": 712,
-          "applicable": 712
+          "pass": 696,
+          "applicable": 696
         },
         "perf_http_protocol": {
           "label": "#3 HTTP/2+",
           "cat": "performance",
-          "pass": 712,
-          "applicable": 712
+          "pass": 696,
+          "applicable": 696
         },
         "perf_cache_control": {
           "label": "#4 Cache-Control max-age",
           "cat": "performance",
-          "pass": 712,
-          "applicable": 712
+          "pass": 696,
+          "applicable": 696
         },
         "perf_redirect": {
           "label": "#6 Redirect ≤ 1",
           "cat": "performance",
-          "pass": 711,
-          "applicable": 712
+          "pass": 695,
+          "applicable": 696
         },
         "perf_mixed_content": {
           "label": "#7 Mixed Content 0",
           "cat": "performance",
-          "pass": 712,
-          "applicable": 712
+          "pass": 696,
+          "applicable": 696
         },
         "a11y_image_alt": {
           "label": "#9 Image Alt 누락 0",
           "cat": "accessibility",
-          "pass": 642,
-          "applicable": 712
+          "pass": 626,
+          "applicable": 696
         },
         "a11y_semantic": {
           "label": "#10 Semantic HTML",
           "cat": "accessibility",
-          "pass": 712,
-          "applicable": 712
+          "pass": 696,
+          "applicable": 696
         },
         "a11y_heading_hier": {
           "label": "#11 Heading Hierarchy",
           "cat": "accessibility",
-          "pass": 445,
-          "applicable": 712
+          "pass": 439,
+          "applicable": 696
         },
         "a11y_aria_labels": {
           "label": "#12 ARIA 누락 < 10%",
           "cat": "accessibility",
-          "pass": 712,
-          "applicable": 712
+          "pass": 696,
+          "applicable": 696
         },
         "seo_title": {
           "label": "#13 Title 존재",
           "cat": "seo",
-          "pass": 712,
-          "applicable": 712
+          "pass": 696,
+          "applicable": 696
         },
         "seo_meta_desc": {
           "label": "#14 Meta Description",
           "cat": "seo",
-          "pass": 606,
-          "applicable": 712
+          "pass": 601,
+          "applicable": 696
         },
         "seo_canonical": {
           "label": "#15 Canonical self-ref",
           "cat": "seo",
-          "pass": 702,
-          "applicable": 712
+          "pass": 686,
+          "applicable": 696
         },
         "seo_h1": {
           "label": "#16 H1 정확히 1개",
           "cat": "seo",
-          "pass": 584,
-          "applicable": 712
+          "pass": 579,
+          "applicable": 696
         },
         "seo_robots": {
           "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
           "cat": "seo",
-          "pass": 712,
-          "applicable": 712
+          "pass": 696,
+          "applicable": 696
         },
         "seo_open_graph": {
           "label": "#18 Open Graph (title+image)",
           "cat": "seo",
-          "pass": 683,
-          "applicable": 712
+          "pass": 667,
+          "applicable": 696
         },
         "seo_sitemap": {
           "label": "#19 Sitemap (1개월 내)",
           "cat": "seo",
           "pass": 0,
-          "applicable": 712
+          "applicable": 696
         },
         "ai_schema_breadcrumb": {
           "label": "#21 Schema: BreadcrumbList",
           "cat": "geo_schema",
-          "pass": 711,
-          "applicable": 712
+          "pass": 695,
+          "applicable": 696
         },
         "ai_schema_faq": {
           "label": "#23 Schema: FAQPage",
@@ -160,13 +160,13 @@
           "label": "#26 Schema: ImageObject",
           "cat": "geo_schema",
           "pass": 0,
-          "applicable": 712
+          "applicable": 696
         },
         "ai_schema_video": {
           "label": "#27 Schema: VideoObject",
           "cat": "geo_schema",
           "pass": 0,
-          "applicable": 52
+          "applicable": 38
         },
         "ai_schema_howto": {
           "label": "#28 Schema: HowTo",
@@ -178,43 +178,43 @@
           "label": "#29 Schema: Article",
           "cat": "geo_schema",
           "pass": 0,
-          "applicable": 218
+          "applicable": 202
         },
         "ai_faq_block": {
           "label": "#32 FAQ Block (콘텐츠)",
           "cat": "geo_content",
-          "pass": 256,
-          "applicable": 712
+          "pass": 255,
+          "applicable": 696
         },
         "ai_definition": {
           "label": "#33 Definition Paragraph",
           "cat": "geo_content",
           "pass": 0,
-          "applicable": 712
+          "applicable": 696
         },
         "ai_author_source": {
           "label": "#34 Author 또는 출처+날짜",
           "cat": "geo_content",
           "pass": 97,
-          "applicable": 215
+          "applicable": 199
         },
         "ai_summary_box": {
           "label": "#35 Summary Box (콘텐츠)",
           "cat": "geo_content",
-          "pass": 219,
-          "applicable": 712
+          "pass": 214,
+          "applicable": 696
         },
         "ai_citable": {
           "label": "#36 Citable Sentence ≥ 10%",
           "cat": "geo_content",
-          "pass": 687,
-          "applicable": 712
+          "pass": 672,
+          "applicable": 696
         },
         "ai_ssr_ratio": {
           "label": "#37 JS HTML Text Ratio ≥ 60%",
           "cat": "geo_platform",
-          "pass": 712,
-          "applicable": 712
+          "pass": 696,
+          "applicable": 696
         },
         "ai_pdp_thumbnails": {
           "label": "#38 PDP 썸네일 3장 이상 SSR",
@@ -231,26 +231,26 @@
         "ai_image_filename": {
           "label": "#41 Image File Name 브랜드 포함",
           "cat": "geo_platform",
-          "pass": 712,
-          "applicable": 712
+          "pass": 696,
+          "applicable": 696
         },
         "ai_status_200": {
           "label": "#42 Status Code 200",
           "cat": "geo_platform",
-          "pass": 712,
-          "applicable": 712
+          "pass": 696,
+          "applicable": 696
         },
         "ai_soft_404": {
           "label": "#43 Soft 404 부재",
           "cat": "geo_platform",
-          "pass": 712,
-          "applicable": 712
+          "pass": 696,
+          "applicable": 696
         },
         "ai_llms_txt": {
           "label": "#44 llms.txt 존재",
           "cat": "geo_platform",
-          "pass": 712,
-          "applicable": 712
+          "pass": 696,
+          "applicable": 696
         },
         "ai_schema_offer": {
           "label": "#43 Schema: Offer",
@@ -262,124 +262,124 @@
       "pageTypes": {
         "newsroom": {
           "label": "뉴스룸/Press",
-          "count": 126,
-          "avgScore": 75.6,
+          "count": 110,
+          "avgScore": 76.6,
           "categories": {
             "performance": 98.9,
-            "accessibility": 87.7,
-            "seo": 70.2,
-            "geo_schema": 44.9,
-            "geo_content": 36.7,
+            "accessibility": 88.2,
+            "seo": 70.9,
+            "geo_schema": 47.7,
+            "geo_content": 38.2,
             "geo_platform": 100
           },
           "checks": {
             "perf_ttfb": {
               "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 118,
-              "applicable": 126
+              "pass": 103,
+              "applicable": 110
             },
             "perf_compression": {
               "label": "#2 Compression",
               "cat": "performance",
-              "pass": 126,
-              "applicable": 126
+              "pass": 110,
+              "applicable": 110
             },
             "perf_http_protocol": {
               "label": "#3 HTTP/2+",
               "cat": "performance",
-              "pass": 126,
-              "applicable": 126
+              "pass": 110,
+              "applicable": 110
             },
             "perf_cache_control": {
               "label": "#4 Cache-Control max-age",
               "cat": "performance",
-              "pass": 126,
-              "applicable": 126
+              "pass": 110,
+              "applicable": 110
             },
             "perf_redirect": {
               "label": "#6 Redirect ≤ 1",
               "cat": "performance",
-              "pass": 126,
-              "applicable": 126
+              "pass": 110,
+              "applicable": 110
             },
             "perf_mixed_content": {
               "label": "#7 Mixed Content 0",
               "cat": "performance",
-              "pass": 126,
-              "applicable": 126
+              "pass": 110,
+              "applicable": 110
             },
             "a11y_image_alt": {
               "label": "#9 Image Alt 누락 0",
               "cat": "accessibility",
-              "pass": 99,
-              "applicable": 126
+              "pass": 83,
+              "applicable": 110
             },
             "a11y_semantic": {
               "label": "#10 Semantic HTML",
               "cat": "accessibility",
-              "pass": 126,
-              "applicable": 126
+              "pass": 110,
+              "applicable": 110
             },
             "a11y_heading_hier": {
               "label": "#11 Heading Hierarchy",
               "cat": "accessibility",
-              "pass": 91,
-              "applicable": 126
+              "pass": 85,
+              "applicable": 110
             },
             "a11y_aria_labels": {
               "label": "#12 ARIA 누락 < 10%",
               "cat": "accessibility",
-              "pass": 126,
-              "applicable": 126
+              "pass": 110,
+              "applicable": 110
             },
             "seo_title": {
               "label": "#13 Title 존재",
               "cat": "seo",
-              "pass": 126,
-              "applicable": 126
+              "pass": 110,
+              "applicable": 110
             },
             "seo_meta_desc": {
               "label": "#14 Meta Description",
               "cat": "seo",
-              "pass": 35,
-              "applicable": 126
+              "pass": 30,
+              "applicable": 110
             },
             "seo_canonical": {
               "label": "#15 Canonical self-ref",
               "cat": "seo",
-              "pass": 126,
-              "applicable": 126
+              "pass": 110,
+              "applicable": 110
             },
             "seo_h1": {
               "label": "#16 H1 정확히 1개",
               "cat": "seo",
-              "pass": 103,
-              "applicable": 126
+              "pass": 98,
+              "applicable": 110
             },
             "seo_robots": {
               "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
-              "pass": 126,
-              "applicable": 126
+              "pass": 110,
+              "applicable": 110
             },
             "seo_open_graph": {
               "label": "#18 Open Graph (title+image)",
               "cat": "seo",
-              "pass": 105,
-              "applicable": 126
+              "pass": 89,
+              "applicable": 110
             },
             "seo_sitemap": {
               "label": "#19 Sitemap (1개월 내)",
               "cat": "seo",
               "pass": 0,
-              "applicable": 126
+              "applicable": 110
             },
             "ai_schema_breadcrumb": {
               "label": "#21 Schema: BreadcrumbList",
               "cat": "geo_schema",
-              "pass": 125,
-              "applicable": 126
+              "pass": 109,
+              "applicable": 110
             },
             "ai_schema_faq": {
               "label": "#23 Schema: FAQPage",
@@ -403,13 +403,13 @@
               "label": "#26 Schema: ImageObject",
               "cat": "geo_schema",
               "pass": 0,
-              "applicable": 126
+              "applicable": 110
             },
             "ai_schema_video": {
               "label": "#27 Schema: VideoObject",
               "cat": "geo_schema",
               "pass": 0,
-              "applicable": 17
+              "applicable": 3
             },
             "ai_schema_howto": {
               "label": "#28 Schema: HowTo",
@@ -421,43 +421,43 @@
               "label": "#29 Schema: Article",
               "cat": "geo_schema",
               "pass": 0,
-              "applicable": 28
+              "applicable": 12
             },
             "ai_faq_block": {
               "label": "#32 FAQ Block (콘텐츠)",
               "cat": "geo_content",
-              "pass": 2,
-              "applicable": 126
+              "pass": 1,
+              "applicable": 110
             },
             "ai_definition": {
               "label": "#33 Definition Paragraph",
               "cat": "geo_content",
               "pass": 0,
-              "applicable": 126
+              "applicable": 110
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
               "cat": "geo_content",
               "pass": 97,
-              "applicable": 126
+              "applicable": 110
             },
             "ai_summary_box": {
               "label": "#35 Summary Box (콘텐츠)",
               "cat": "geo_content",
-              "pass": 8,
-              "applicable": 126
+              "pass": 3,
+              "applicable": 110
             },
             "ai_citable": {
               "label": "#36 Citable Sentence ≥ 10%",
               "cat": "geo_content",
-              "pass": 124,
-              "applicable": 126
+              "pass": 109,
+              "applicable": 110
             },
             "ai_ssr_ratio": {
               "label": "#37 JS HTML Text Ratio ≥ 60%",
               "cat": "geo_platform",
-              "pass": 126,
-              "applicable": 126
+              "pass": 110,
+              "applicable": 110
             },
             "ai_pdp_thumbnails": {
               "label": "#38 PDP 썸네일 3장 이상 SSR",
@@ -474,26 +474,26 @@
             "ai_image_filename": {
               "label": "#41 Image File Name 브랜드 포함",
               "cat": "geo_platform",
-              "pass": 126,
-              "applicable": 126
+              "pass": 110,
+              "applicable": 110
             },
             "ai_status_200": {
               "label": "#42 Status Code 200",
               "cat": "geo_platform",
-              "pass": 126,
-              "applicable": 126
+              "pass": 110,
+              "applicable": 110
             },
             "ai_soft_404": {
               "label": "#43 Soft 404 부재",
               "cat": "geo_platform",
-              "pass": 126,
-              "applicable": 126
+              "pass": 110,
+              "applicable": 110
             },
             "ai_llms_txt": {
               "label": "#44 llms.txt 존재",
               "cat": "geo_platform",
-              "pass": 126,
-              "applicable": 126
+              "pass": 110,
+              "applicable": 110
             },
             "ai_schema_offer": {
               "label": "#43 Schema: Offer",
@@ -2208,43 +2208,43 @@
       "bots": {
         "GPTBot": {
           "blocked": 0,
-          "total": 712
+          "total": 696
         },
         "ChatGPT-User": {
           "blocked": 0,
-          "total": 712
+          "total": 696
         },
         "Google-Extended": {
           "blocked": 0,
-          "total": 712
+          "total": 696
         },
         "CCBot": {
           "blocked": 0,
-          "total": 712
+          "total": 696
         },
         "anthropic-ai": {
           "blocked": 0,
-          "total": 712
+          "total": 696
         },
         "Claude-Web": {
           "blocked": 0,
-          "total": 712
+          "total": 696
         },
         "PerplexityBot": {
           "blocked": 0,
-          "total": 712
+          "total": 696
         },
         "Bytespider": {
           "blocked": 0,
-          "total": 712
+          "total": 696
         },
         "cohere-ai": {
           "blocked": 0,
-          "total": 712
+          "total": 696
         },
         "YouBot": {
           "blocked": 0,
-          "total": 712
+          "total": 696
         }
       },
       "tiers": {}
@@ -2252,16 +2252,16 @@
     "br": {
       "auditedAt": "2026-07-31",
       "runId": "9c23bc993a49",
-      "urlCount": 531,
-      "scoredCount": 531,
+      "urlCount": 530,
+      "scoredCount": 530,
       "avgScore": 79.1,
       "grades": {
-        "Need Improvement": 289,
+        "Need Improvement": 288,
         "Good": 242
       },
       "categories": {
         "performance": 97.8,
-        "accessibility": 94.4,
+        "accessibility": 94.3,
         "seo": 93.9,
         "geo_schema": 39,
         "geo_content": 28.5,
@@ -2271,110 +2271,110 @@
         "perf_ttfb": {
           "label": "#1 TTFB < 600ms (PSI)",
           "cat": "performance",
-          "pass": 466,
-          "applicable": 531
+          "pass": 465,
+          "applicable": 530
         },
         "perf_compression": {
           "label": "#2 Compression",
           "cat": "performance",
-          "pass": 531,
-          "applicable": 531
+          "pass": 530,
+          "applicable": 530
         },
         "perf_http_protocol": {
           "label": "#3 HTTP/2+",
           "cat": "performance",
-          "pass": 531,
-          "applicable": 531
+          "pass": 530,
+          "applicable": 530
         },
         "perf_cache_control": {
           "label": "#4 Cache-Control max-age",
           "cat": "performance",
-          "pass": 531,
-          "applicable": 531
+          "pass": 530,
+          "applicable": 530
         },
         "perf_redirect": {
           "label": "#6 Redirect ≤ 1",
           "cat": "performance",
-          "pass": 527,
-          "applicable": 531
+          "pass": 526,
+          "applicable": 530
         },
         "perf_mixed_content": {
           "label": "#7 Mixed Content 0",
           "cat": "performance",
-          "pass": 531,
-          "applicable": 531
+          "pass": 530,
+          "applicable": 530
         },
         "a11y_image_alt": {
           "label": "#9 Image Alt 누락 0",
           "cat": "accessibility",
-          "pass": 524,
-          "applicable": 531
+          "pass": 523,
+          "applicable": 530
         },
         "a11y_semantic": {
           "label": "#10 Semantic HTML",
           "cat": "accessibility",
-          "pass": 531,
-          "applicable": 531
+          "pass": 530,
+          "applicable": 530
         },
         "a11y_heading_hier": {
           "label": "#11 Heading Hierarchy",
           "cat": "accessibility",
-          "pass": 418,
-          "applicable": 531
+          "pass": 417,
+          "applicable": 530
         },
         "a11y_aria_labels": {
           "label": "#12 ARIA 누락 < 10%",
           "cat": "accessibility",
-          "pass": 531,
-          "applicable": 531
+          "pass": 530,
+          "applicable": 530
         },
         "seo_title": {
           "label": "#13 Title 존재",
           "cat": "seo",
-          "pass": 530,
-          "applicable": 531
+          "pass": 529,
+          "applicable": 530
         },
         "seo_meta_desc": {
           "label": "#14 Meta Description",
           "cat": "seo",
-          "pass": 498,
-          "applicable": 531
+          "pass": 497,
+          "applicable": 530
         },
         "seo_canonical": {
           "label": "#15 Canonical self-ref",
           "cat": "seo",
-          "pass": 526,
-          "applicable": 531
+          "pass": 525,
+          "applicable": 530
         },
         "seo_h1": {
           "label": "#16 H1 정확히 1개",
           "cat": "seo",
           "pass": 370,
-          "applicable": 531
+          "applicable": 530
         },
         "seo_robots": {
           "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
           "cat": "seo",
-          "pass": 531,
-          "applicable": 531
+          "pass": 530,
+          "applicable": 530
         },
         "seo_open_graph": {
           "label": "#18 Open Graph (title+image)",
           "cat": "seo",
-          "pass": 500,
-          "applicable": 531
+          "pass": 499,
+          "applicable": 530
         },
         "seo_sitemap": {
           "label": "#19 Sitemap (1개월 내)",
           "cat": "seo",
-          "pass": 531,
-          "applicable": 531
+          "pass": 530,
+          "applicable": 530
         },
         "ai_schema_breadcrumb": {
           "label": "#21 Schema: BreadcrumbList",
           "cat": "geo_schema",
-          "pass": 531,
-          "applicable": 531
+          "pass": 530,
+          "applicable": 530
         },
         "ai_schema_faq": {
           "label": "#23 Schema: FAQPage",
@@ -2398,13 +2398,13 @@
           "label": "#26 Schema: ImageObject",
           "cat": "geo_schema",
           "pass": 0,
-          "applicable": 531
+          "applicable": 530
         },
         "ai_schema_video": {
           "label": "#27 Schema: VideoObject",
           "cat": "geo_schema",
           "pass": 0,
-          "applicable": 33
+          "applicable": 32
         },
         "ai_schema_howto": {
           "label": "#28 Schema: HowTo",
@@ -2416,43 +2416,43 @@
           "label": "#29 Schema: Article",
           "cat": "geo_schema",
           "pass": 0,
-          "applicable": 140
+          "applicable": 139
         },
         "ai_faq_block": {
           "label": "#32 FAQ Block (콘텐츠)",
           "cat": "geo_content",
           "pass": 124,
-          "applicable": 531
+          "applicable": 530
         },
         "ai_definition": {
           "label": "#33 Definition Paragraph",
           "cat": "geo_content",
           "pass": 0,
-          "applicable": 531
+          "applicable": 530
         },
         "ai_author_source": {
           "label": "#34 Author 또는 출처+날짜",
           "cat": "geo_content",
           "pass": 99,
-          "applicable": 237
+          "applicable": 236
         },
         "ai_summary_box": {
           "label": "#35 Summary Box (콘텐츠)",
           "cat": "geo_content",
-          "pass": 105,
-          "applicable": 531
+          "pass": 104,
+          "applicable": 530
         },
         "ai_citable": {
           "label": "#36 Citable Sentence ≥ 10%",
           "cat": "geo_content",
           "pass": 313,
-          "applicable": 531
+          "applicable": 530
         },
         "ai_ssr_ratio": {
           "label": "#37 JS HTML Text Ratio ≥ 60%",
           "cat": "geo_platform",
-          "pass": 437,
-          "applicable": 531
+          "pass": 436,
+          "applicable": 530
         },
         "ai_pdp_thumbnails": {
           "label": "#38 PDP 썸네일 3장 이상 SSR",
@@ -2469,26 +2469,26 @@
         "ai_image_filename": {
           "label": "#41 Image File Name 브랜드 포함",
           "cat": "geo_platform",
-          "pass": 531,
-          "applicable": 531
+          "pass": 530,
+          "applicable": 530
         },
         "ai_status_200": {
           "label": "#42 Status Code 200",
           "cat": "geo_platform",
-          "pass": 531,
-          "applicable": 531
+          "pass": 530,
+          "applicable": 530
         },
         "ai_soft_404": {
           "label": "#43 Soft 404 부재",
           "cat": "geo_platform",
-          "pass": 531,
-          "applicable": 531
+          "pass": 530,
+          "applicable": 530
         },
         "ai_llms_txt": {
           "label": "#44 llms.txt 존재",
           "cat": "geo_platform",
-          "pass": 531,
-          "applicable": 531
+          "pass": 530,
+          "applicable": 530
         },
         "ai_schema_offer": {
           "label": "#43 Schema: Offer",
@@ -2500,13 +2500,13 @@
       "pageTypes": {
         "newsroom": {
           "label": "뉴스룸/Press",
-          "count": 113,
-          "avgScore": 81.2,
+          "count": 112,
+          "avgScore": 81.3,
           "categories": {
             "performance": 96.1,
             "accessibility": 100,
-            "seo": 94.9,
-            "geo_schema": 49.8,
+            "seo": 95,
+            "geo_schema": 50,
             "geo_content": 23,
             "geo_platform": 100
           },
@@ -2514,110 +2514,110 @@
             "perf_ttfb": {
               "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 87,
-              "applicable": 113
+              "pass": 86,
+              "applicable": 112
             },
             "perf_compression": {
               "label": "#2 Compression",
               "cat": "performance",
-              "pass": 113,
-              "applicable": 113
+              "pass": 112,
+              "applicable": 112
             },
             "perf_http_protocol": {
               "label": "#3 HTTP/2+",
               "cat": "performance",
-              "pass": 113,
-              "applicable": 113
+              "pass": 112,
+              "applicable": 112
             },
             "perf_cache_control": {
               "label": "#4 Cache-Control max-age",
               "cat": "performance",
-              "pass": 113,
-              "applicable": 113
+              "pass": 112,
+              "applicable": 112
             },
             "perf_redirect": {
               "label": "#6 Redirect ≤ 1",
               "cat": "performance",
-              "pass": 113,
-              "applicable": 113
+              "pass": 112,
+              "applicable": 112
             },
             "perf_mixed_content": {
               "label": "#7 Mixed Content 0",
               "cat": "performance",
-              "pass": 113,
-              "applicable": 113
+              "pass": 112,
+              "applicable": 112
             },
             "a11y_image_alt": {
               "label": "#9 Image Alt 누락 0",
               "cat": "accessibility",
-              "pass": 113,
-              "applicable": 113
+              "pass": 112,
+              "applicable": 112
             },
             "a11y_semantic": {
               "label": "#10 Semantic HTML",
               "cat": "accessibility",
-              "pass": 113,
-              "applicable": 113
+              "pass": 112,
+              "applicable": 112
             },
             "a11y_heading_hier": {
               "label": "#11 Heading Hierarchy",
               "cat": "accessibility",
-              "pass": 113,
-              "applicable": 113
+              "pass": 112,
+              "applicable": 112
             },
             "a11y_aria_labels": {
               "label": "#12 ARIA 누락 < 10%",
               "cat": "accessibility",
-              "pass": 113,
-              "applicable": 113
+              "pass": 112,
+              "applicable": 112
             },
             "seo_title": {
               "label": "#13 Title 존재",
               "cat": "seo",
-              "pass": 113,
-              "applicable": 113
+              "pass": 112,
+              "applicable": 112
             },
             "seo_meta_desc": {
               "label": "#14 Meta Description",
               "cat": "seo",
-              "pass": 107,
-              "applicable": 113
+              "pass": 106,
+              "applicable": 112
             },
             "seo_canonical": {
               "label": "#15 Canonical self-ref",
               "cat": "seo",
-              "pass": 113,
-              "applicable": 113
+              "pass": 112,
+              "applicable": 112
             },
             "seo_h1": {
               "label": "#16 H1 정확히 1개",
               "cat": "seo",
               "pass": 79,
-              "applicable": 113
+              "applicable": 112
             },
             "seo_robots": {
               "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
-              "pass": 113,
-              "applicable": 113
+              "pass": 112,
+              "applicable": 112
             },
             "seo_open_graph": {
               "label": "#18 Open Graph (title+image)",
               "cat": "seo",
-              "pass": 112,
-              "applicable": 113
+              "pass": 111,
+              "applicable": 112
             },
             "seo_sitemap": {
               "label": "#19 Sitemap (1개월 내)",
               "cat": "seo",
-              "pass": 113,
-              "applicable": 113
+              "pass": 112,
+              "applicable": 112
             },
             "ai_schema_breadcrumb": {
               "label": "#21 Schema: BreadcrumbList",
               "cat": "geo_schema",
-              "pass": 113,
-              "applicable": 113
+              "pass": 112,
+              "applicable": 112
             },
             "ai_schema_faq": {
               "label": "#23 Schema: FAQPage",
@@ -2641,13 +2641,13 @@
               "label": "#26 Schema: ImageObject",
               "cat": "geo_schema",
               "pass": 0,
-              "applicable": 113
+              "applicable": 112
             },
             "ai_schema_video": {
               "label": "#27 Schema: VideoObject",
               "cat": "geo_schema",
               "pass": 0,
-              "applicable": 1
+              "applicable": 0
             },
             "ai_schema_howto": {
               "label": "#28 Schema: HowTo",
@@ -2659,43 +2659,43 @@
               "label": "#29 Schema: Article",
               "cat": "geo_schema",
               "pass": 0,
-              "applicable": 1
+              "applicable": 0
             },
             "ai_faq_block": {
               "label": "#32 FAQ Block (콘텐츠)",
               "cat": "geo_content",
               "pass": 0,
-              "applicable": 113
+              "applicable": 112
             },
             "ai_definition": {
               "label": "#33 Definition Paragraph",
               "cat": "geo_content",
               "pass": 0,
-              "applicable": 113
+              "applicable": 112
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
               "cat": "geo_content",
               "pass": 99,
-              "applicable": 113
+              "applicable": 112
             },
             "ai_summary_box": {
               "label": "#35 Summary Box (콘텐츠)",
               "cat": "geo_content",
-              "pass": 2,
-              "applicable": 113
+              "pass": 1,
+              "applicable": 112
             },
             "ai_citable": {
               "label": "#36 Citable Sentence ≥ 10%",
               "cat": "geo_content",
               "pass": 29,
-              "applicable": 113
+              "applicable": 112
             },
             "ai_ssr_ratio": {
               "label": "#37 JS HTML Text Ratio ≥ 60%",
               "cat": "geo_platform",
-              "pass": 113,
-              "applicable": 113
+              "pass": 112,
+              "applicable": 112
             },
             "ai_pdp_thumbnails": {
               "label": "#38 PDP 썸네일 3장 이상 SSR",
@@ -2712,26 +2712,26 @@
             "ai_image_filename": {
               "label": "#41 Image File Name 브랜드 포함",
               "cat": "geo_platform",
-              "pass": 113,
-              "applicable": 113
+              "pass": 112,
+              "applicable": 112
             },
             "ai_status_200": {
               "label": "#42 Status Code 200",
               "cat": "geo_platform",
-              "pass": 113,
-              "applicable": 113
+              "pass": 112,
+              "applicable": 112
             },
             "ai_soft_404": {
               "label": "#43 Soft 404 부재",
               "cat": "geo_platform",
-              "pass": 113,
-              "applicable": 113
+              "pass": 112,
+              "applicable": 112
             },
             "ai_llms_txt": {
               "label": "#44 llms.txt 존재",
               "cat": "geo_platform",
-              "pass": 113,
-              "applicable": 113
+              "pass": 112,
+              "applicable": 112
             },
             "ai_schema_offer": {
               "label": "#43 Schema: Offer",
@@ -4446,43 +4446,43 @@
       "bots": {
         "GPTBot": {
           "blocked": 0,
-          "total": 531
+          "total": 530
         },
         "ChatGPT-User": {
           "blocked": 0,
-          "total": 531
+          "total": 530
         },
         "Google-Extended": {
           "blocked": 0,
-          "total": 531
+          "total": 530
         },
         "CCBot": {
           "blocked": 0,
-          "total": 531
+          "total": 530
         },
         "anthropic-ai": {
           "blocked": 0,
-          "total": 531
+          "total": 530
         },
         "Claude-Web": {
           "blocked": 0,
-          "total": 531
+          "total": 530
         },
         "PerplexityBot": {
           "blocked": 0,
-          "total": 531
+          "total": 530
         },
         "Bytespider": {
           "blocked": 0,
-          "total": 531
+          "total": 530
         },
         "cohere-ai": {
           "blocked": 0,
-          "total": 531
+          "total": 530
         },
         "YouBot": {
           "blocked": 0,
-          "total": 531
+          "total": 530
         }
       },
       "tiers": {}
@@ -11204,130 +11204,130 @@
     "in": {
       "auditedAt": "2026-07-31",
       "runId": "bb535c8d2fa8",
-      "urlCount": 662,
-      "scoredCount": 662,
+      "urlCount": 656,
+      "scoredCount": 656,
       "avgScore": 74.7,
       "grades": {
-        "Need Improvement": 570,
+        "Need Improvement": 564,
         "Good": 90,
         "Poor": 2
       },
       "categories": {
         "performance": 99.8,
-        "accessibility": 92,
-        "seo": 79.6,
-        "geo_schema": 42,
-        "geo_content": 15.8,
+        "accessibility": 92.1,
+        "seo": 79.5,
+        "geo_schema": 42.2,
+        "geo_content": 15.9,
         "geo_platform": 97
       },
       "checks": {
         "perf_ttfb": {
           "label": "#1 TTFB < 600ms (PSI)",
           "cat": "performance",
-          "pass": 656,
-          "applicable": 662
+          "pass": 650,
+          "applicable": 656
         },
         "perf_compression": {
           "label": "#2 Compression",
           "cat": "performance",
-          "pass": 662,
-          "applicable": 662
+          "pass": 656,
+          "applicable": 656
         },
         "perf_http_protocol": {
           "label": "#3 HTTP/2+",
           "cat": "performance",
-          "pass": 662,
-          "applicable": 662
+          "pass": 656,
+          "applicable": 656
         },
         "perf_cache_control": {
           "label": "#4 Cache-Control max-age",
           "cat": "performance",
-          "pass": 662,
-          "applicable": 662
+          "pass": 656,
+          "applicable": 656
         },
         "perf_redirect": {
           "label": "#6 Redirect ≤ 1",
           "cat": "performance",
-          "pass": 661,
-          "applicable": 662
+          "pass": 655,
+          "applicable": 656
         },
         "perf_mixed_content": {
           "label": "#7 Mixed Content 0",
           "cat": "performance",
-          "pass": 662,
-          "applicable": 662
+          "pass": 656,
+          "applicable": 656
         },
         "a11y_image_alt": {
           "label": "#9 Image Alt 누락 0",
           "cat": "accessibility",
-          "pass": 658,
-          "applicable": 662
+          "pass": 652,
+          "applicable": 656
         },
         "a11y_semantic": {
           "label": "#10 Semantic HTML",
           "cat": "accessibility",
-          "pass": 660,
-          "applicable": 662
+          "pass": 654,
+          "applicable": 656
         },
         "a11y_heading_hier": {
           "label": "#11 Heading Hierarchy",
           "cat": "accessibility",
-          "pass": 458,
-          "applicable": 662
+          "pass": 456,
+          "applicable": 656
         },
         "a11y_aria_labels": {
           "label": "#12 ARIA 누락 < 10%",
           "cat": "accessibility",
-          "pass": 660,
-          "applicable": 662
+          "pass": 654,
+          "applicable": 656
         },
         "seo_title": {
           "label": "#13 Title 존재",
           "cat": "seo",
-          "pass": 662,
-          "applicable": 662
+          "pass": 656,
+          "applicable": 656
         },
         "seo_meta_desc": {
           "label": "#14 Meta Description",
           "cat": "seo",
-          "pass": 595,
-          "applicable": 662
+          "pass": 589,
+          "applicable": 656
         },
         "seo_canonical": {
           "label": "#15 Canonical self-ref",
           "cat": "seo",
-          "pass": 659,
-          "applicable": 662
+          "pass": 653,
+          "applicable": 656
         },
         "seo_h1": {
           "label": "#16 H1 정확히 1개",
           "cat": "seo",
-          "pass": 461,
-          "applicable": 662
+          "pass": 456,
+          "applicable": 656
         },
         "seo_robots": {
           "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
           "cat": "seo",
-          "pass": 662,
-          "applicable": 662
+          "pass": 656,
+          "applicable": 656
         },
         "seo_open_graph": {
           "label": "#18 Open Graph (title+image)",
           "cat": "seo",
-          "pass": 645,
-          "applicable": 662
+          "pass": 639,
+          "applicable": 656
         },
         "seo_sitemap": {
           "label": "#19 Sitemap (1개월 내)",
           "cat": "seo",
           "pass": 0,
-          "applicable": 662
+          "applicable": 656
         },
         "ai_schema_breadcrumb": {
           "label": "#21 Schema: BreadcrumbList",
           "cat": "geo_schema",
-          "pass": 662,
-          "applicable": 662
+          "pass": 656,
+          "applicable": 656
         },
         "ai_schema_faq": {
           "label": "#23 Schema: FAQPage",
@@ -11351,13 +11351,13 @@
           "label": "#26 Schema: ImageObject",
           "cat": "geo_schema",
           "pass": 0,
-          "applicable": 662
+          "applicable": 656
         },
         "ai_schema_video": {
           "label": "#27 Schema: VideoObject",
           "cat": "geo_schema",
           "pass": 0,
-          "applicable": 70
+          "applicable": 65
         },
         "ai_schema_howto": {
           "label": "#28 Schema: HowTo",
@@ -11369,43 +11369,43 @@
           "label": "#29 Schema: Article",
           "cat": "geo_schema",
           "pass": 0,
-          "applicable": 169
+          "applicable": 163
         },
         "ai_faq_block": {
           "label": "#32 FAQ Block (콘텐츠)",
           "cat": "geo_content",
-          "pass": 200,
-          "applicable": 662
+          "pass": 199,
+          "applicable": 656
         },
         "ai_definition": {
           "label": "#33 Definition Paragraph",
           "cat": "geo_content",
           "pass": 0,
-          "applicable": 662
+          "applicable": 656
         },
         "ai_author_source": {
           "label": "#34 Author 또는 출처+날짜",
           "cat": "geo_content",
           "pass": 103,
-          "applicable": 208
+          "applicable": 202
         },
         "ai_summary_box": {
           "label": "#35 Summary Box (콘텐츠)",
           "cat": "geo_content",
           "pass": 113,
-          "applicable": 662
+          "applicable": 656
         },
         "ai_citable": {
           "label": "#36 Citable Sentence ≥ 10%",
           "cat": "geo_content",
           "pass": 32,
-          "applicable": 662
+          "applicable": 656
         },
         "ai_ssr_ratio": {
           "label": "#37 JS HTML Text Ratio ≥ 60%",
           "cat": "geo_platform",
-          "pass": 562,
-          "applicable": 662
+          "pass": 556,
+          "applicable": 656
         },
         "ai_pdp_thumbnails": {
           "label": "#38 PDP 썸네일 3장 이상 SSR",
@@ -11422,26 +11422,26 @@
         "ai_image_filename": {
           "label": "#41 Image File Name 브랜드 포함",
           "cat": "geo_platform",
-          "pass": 662,
-          "applicable": 662
+          "pass": 656,
+          "applicable": 656
         },
         "ai_status_200": {
           "label": "#42 Status Code 200",
           "cat": "geo_platform",
-          "pass": 662,
-          "applicable": 662
+          "pass": 656,
+          "applicable": 656
         },
         "ai_soft_404": {
           "label": "#43 Soft 404 부재",
           "cat": "geo_platform",
-          "pass": 662,
-          "applicable": 662
+          "pass": 656,
+          "applicable": 656
         },
         "ai_llms_txt": {
           "label": "#44 llms.txt 존재",
           "cat": "geo_platform",
-          "pass": 662,
-          "applicable": 662
+          "pass": 656,
+          "applicable": 656
         },
         "ai_schema_offer": {
           "label": "#43 Schema: Offer",
@@ -11453,124 +11453,124 @@
       "pageTypes": {
         "newsroom": {
           "label": "뉴스룸/Press",
-          "count": 197,
-          "avgScore": 74.9,
+          "count": 191,
+          "avgScore": 75.1,
           "categories": {
             "performance": 99.9,
-            "accessibility": 98.7,
-            "seo": 79,
-            "geo_schema": 41.2,
-            "geo_content": 14.6,
+            "accessibility": 99.2,
+            "seo": 78.8,
+            "geo_schema": 41.7,
+            "geo_content": 15,
             "geo_platform": 100
           },
           "checks": {
             "perf_ttfb": {
               "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 196,
-              "applicable": 197
+              "pass": 190,
+              "applicable": 191
             },
             "perf_compression": {
               "label": "#2 Compression",
               "cat": "performance",
-              "pass": 197,
-              "applicable": 197
+              "pass": 191,
+              "applicable": 191
             },
             "perf_http_protocol": {
               "label": "#3 HTTP/2+",
               "cat": "performance",
-              "pass": 197,
-              "applicable": 197
+              "pass": 191,
+              "applicable": 191
             },
             "perf_cache_control": {
               "label": "#4 Cache-Control max-age",
               "cat": "performance",
-              "pass": 197,
-              "applicable": 197
+              "pass": 191,
+              "applicable": 191
             },
             "perf_redirect": {
               "label": "#6 Redirect ≤ 1",
               "cat": "performance",
-              "pass": 197,
-              "applicable": 197
+              "pass": 191,
+              "applicable": 191
             },
             "perf_mixed_content": {
               "label": "#7 Mixed Content 0",
               "cat": "performance",
-              "pass": 197,
-              "applicable": 197
+              "pass": 191,
+              "applicable": 191
             },
             "a11y_image_alt": {
               "label": "#9 Image Alt 누락 0",
               "cat": "accessibility",
-              "pass": 194,
-              "applicable": 197
+              "pass": 188,
+              "applicable": 191
             },
             "a11y_semantic": {
               "label": "#10 Semantic HTML",
               "cat": "accessibility",
-              "pass": 197,
-              "applicable": 197
+              "pass": 191,
+              "applicable": 191
             },
             "a11y_heading_hier": {
               "label": "#11 Heading Hierarchy",
               "cat": "accessibility",
-              "pass": 190,
-              "applicable": 197
+              "pass": 188,
+              "applicable": 191
             },
             "a11y_aria_labels": {
               "label": "#12 ARIA 누락 < 10%",
               "cat": "accessibility",
-              "pass": 197,
-              "applicable": 197
+              "pass": 191,
+              "applicable": 191
             },
             "seo_title": {
               "label": "#13 Title 존재",
               "cat": "seo",
-              "pass": 197,
-              "applicable": 197
+              "pass": 191,
+              "applicable": 191
             },
             "seo_meta_desc": {
               "label": "#14 Meta Description",
               "cat": "seo",
-              "pass": 155,
-              "applicable": 197
+              "pass": 149,
+              "applicable": 191
             },
             "seo_canonical": {
               "label": "#15 Canonical self-ref",
               "cat": "seo",
-              "pass": 197,
-              "applicable": 197
+              "pass": 191,
+              "applicable": 191
             },
             "seo_h1": {
               "label": "#16 H1 정확히 1개",
               "cat": "seo",
-              "pass": 144,
-              "applicable": 197
+              "pass": 139,
+              "applicable": 191
             },
             "seo_robots": {
               "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
-              "pass": 197,
-              "applicable": 197
+              "pass": 191,
+              "applicable": 191
             },
             "seo_open_graph": {
               "label": "#18 Open Graph (title+image)",
               "cat": "seo",
-              "pass": 197,
-              "applicable": 197
+              "pass": 191,
+              "applicable": 191
             },
             "seo_sitemap": {
               "label": "#19 Sitemap (1개월 내)",
               "cat": "seo",
               "pass": 0,
-              "applicable": 197
+              "applicable": 191
             },
             "ai_schema_breadcrumb": {
               "label": "#21 Schema: BreadcrumbList",
               "cat": "geo_schema",
-              "pass": 197,
-              "applicable": 197
+              "pass": 191,
+              "applicable": 191
             },
             "ai_schema_faq": {
               "label": "#23 Schema: FAQPage",
@@ -11594,13 +11594,13 @@
               "label": "#26 Schema: ImageObject",
               "cat": "geo_schema",
               "pass": 0,
-              "applicable": 197
+              "applicable": 191
             },
             "ai_schema_video": {
               "label": "#27 Schema: VideoObject",
               "cat": "geo_schema",
               "pass": 0,
-              "applicable": 6
+              "applicable": 1
             },
             "ai_schema_howto": {
               "label": "#28 Schema: HowTo",
@@ -11612,43 +11612,43 @@
               "label": "#29 Schema: Article",
               "cat": "geo_schema",
               "pass": 0,
-              "applicable": 99
+              "applicable": 93
             },
             "ai_faq_block": {
               "label": "#32 FAQ Block (콘텐츠)",
               "cat": "geo_content",
-              "pass": 19,
-              "applicable": 197
+              "pass": 18,
+              "applicable": 191
             },
             "ai_definition": {
               "label": "#33 Definition Paragraph",
               "cat": "geo_content",
               "pass": 0,
-              "applicable": 197
+              "applicable": 191
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
               "cat": "geo_content",
               "pass": 103,
-              "applicable": 197
+              "applicable": 191
             },
             "ai_summary_box": {
               "label": "#35 Summary Box (콘텐츠)",
               "cat": "geo_content",
               "pass": 8,
-              "applicable": 197
+              "applicable": 191
             },
             "ai_citable": {
               "label": "#36 Citable Sentence ≥ 10%",
               "cat": "geo_content",
               "pass": 14,
-              "applicable": 197
+              "applicable": 191
             },
             "ai_ssr_ratio": {
               "label": "#37 JS HTML Text Ratio ≥ 60%",
               "cat": "geo_platform",
-              "pass": 197,
-              "applicable": 197
+              "pass": 191,
+              "applicable": 191
             },
             "ai_pdp_thumbnails": {
               "label": "#38 PDP 썸네일 3장 이상 SSR",
@@ -11665,26 +11665,26 @@
             "ai_image_filename": {
               "label": "#41 Image File Name 브랜드 포함",
               "cat": "geo_platform",
-              "pass": 197,
-              "applicable": 197
+              "pass": 191,
+              "applicable": 191
             },
             "ai_status_200": {
               "label": "#42 Status Code 200",
               "cat": "geo_platform",
-              "pass": 197,
-              "applicable": 197
+              "pass": 191,
+              "applicable": 191
             },
             "ai_soft_404": {
               "label": "#43 Soft 404 부재",
               "cat": "geo_platform",
-              "pass": 197,
-              "applicable": 197
+              "pass": 191,
+              "applicable": 191
             },
             "ai_llms_txt": {
               "label": "#44 llms.txt 존재",
               "cat": "geo_platform",
-              "pass": 197,
-              "applicable": 197
+              "pass": 191,
+              "applicable": 191
             },
             "ai_schema_offer": {
               "label": "#43 Schema: Offer",
@@ -13156,43 +13156,43 @@
       "bots": {
         "GPTBot": {
           "blocked": 0,
-          "total": 662
+          "total": 656
         },
         "ChatGPT-User": {
           "blocked": 0,
-          "total": 662
+          "total": 656
         },
         "Google-Extended": {
           "blocked": 0,
-          "total": 662
+          "total": 656
         },
         "CCBot": {
           "blocked": 0,
-          "total": 662
+          "total": 656
         },
         "anthropic-ai": {
           "blocked": 0,
-          "total": 662
+          "total": 656
         },
         "Claude-Web": {
           "blocked": 0,
-          "total": 662
+          "total": 656
         },
         "PerplexityBot": {
           "blocked": 0,
-          "total": 662
+          "total": 656
         },
         "Bytespider": {
           "blocked": 0,
-          "total": 662
+          "total": 656
         },
         "cohere-ai": {
           "blocked": 0,
-          "total": 662
+          "total": 656
         },
         "YouBot": {
           "blocked": 0,
-          "total": 662
+          "total": 656
         }
       },
       "tiers": {}
@@ -13200,18 +13200,18 @@
     "mx": {
       "auditedAt": "2026-07-31",
       "runId": "eb9b2f21456b",
-      "urlCount": 578,
-      "scoredCount": 578,
-      "avgScore": 76.5,
+      "urlCount": 567,
+      "scoredCount": 567,
+      "avgScore": 76.6,
       "grades": {
-        "Need Improvement": 536,
-        "Good": 42
+        "Need Improvement": 526,
+        "Good": 41
       },
       "categories": {
         "performance": 99.9,
-        "accessibility": 93.6,
+        "accessibility": 93.7,
         "seo": 88.8,
-        "geo_schema": 37.6,
+        "geo_schema": 37.8,
         "geo_content": 14.1,
         "geo_platform": 96.5
       },
@@ -13219,110 +13219,110 @@
         "perf_ttfb": {
           "label": "#1 TTFB < 600ms (PSI)",
           "cat": "performance",
-          "pass": 576,
-          "applicable": 578
+          "pass": 565,
+          "applicable": 567
         },
         "perf_compression": {
           "label": "#2 Compression",
           "cat": "performance",
-          "pass": 578,
-          "applicable": 578
+          "pass": 567,
+          "applicable": 567
         },
         "perf_http_protocol": {
           "label": "#3 HTTP/2+",
           "cat": "performance",
-          "pass": 578,
-          "applicable": 578
+          "pass": 567,
+          "applicable": 567
         },
         "perf_cache_control": {
           "label": "#4 Cache-Control max-age",
           "cat": "performance",
-          "pass": 578,
-          "applicable": 578
+          "pass": 567,
+          "applicable": 567
         },
         "perf_redirect": {
           "label": "#6 Redirect ≤ 1",
           "cat": "performance",
-          "pass": 578,
-          "applicable": 578
+          "pass": 567,
+          "applicable": 567
         },
         "perf_mixed_content": {
           "label": "#7 Mixed Content 0",
           "cat": "performance",
-          "pass": 578,
-          "applicable": 578
+          "pass": 567,
+          "applicable": 567
         },
         "a11y_image_alt": {
           "label": "#9 Image Alt 누락 0",
           "cat": "accessibility",
-          "pass": 570,
-          "applicable": 578
+          "pass": 559,
+          "applicable": 567
         },
         "a11y_semantic": {
           "label": "#10 Semantic HTML",
           "cat": "accessibility",
-          "pass": 578,
-          "applicable": 578
+          "pass": 567,
+          "applicable": 567
         },
         "a11y_heading_hier": {
           "label": "#11 Heading Hierarchy",
           "cat": "accessibility",
-          "pass": 437,
-          "applicable": 578
+          "pass": 431,
+          "applicable": 567
         },
         "a11y_aria_labels": {
           "label": "#12 ARIA 누락 < 10%",
           "cat": "accessibility",
-          "pass": 578,
-          "applicable": 578
+          "pass": 567,
+          "applicable": 567
         },
         "seo_title": {
           "label": "#13 Title 존재",
           "cat": "seo",
-          "pass": 578,
-          "applicable": 578
+          "pass": 567,
+          "applicable": 567
         },
         "seo_meta_desc": {
           "label": "#14 Meta Description",
           "cat": "seo",
-          "pass": 455,
-          "applicable": 578
+          "pass": 445,
+          "applicable": 567
         },
         "seo_canonical": {
           "label": "#15 Canonical self-ref",
           "cat": "seo",
-          "pass": 574,
-          "applicable": 578
+          "pass": 563,
+          "applicable": 567
         },
         "seo_h1": {
           "label": "#16 H1 정확히 1개",
           "cat": "seo",
-          "pass": 283,
-          "applicable": 578
+          "pass": 278,
+          "applicable": 567
         },
         "seo_robots": {
           "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
           "cat": "seo",
-          "pass": 578,
-          "applicable": 578
+          "pass": 567,
+          "applicable": 567
         },
         "seo_open_graph": {
           "label": "#18 Open Graph (title+image)",
           "cat": "seo",
-          "pass": 547,
-          "applicable": 578
+          "pass": 536,
+          "applicable": 567
         },
         "seo_sitemap": {
           "label": "#19 Sitemap (1개월 내)",
           "cat": "seo",
-          "pass": 578,
-          "applicable": 578
+          "pass": 567,
+          "applicable": 567
         },
         "ai_schema_breadcrumb": {
           "label": "#21 Schema: BreadcrumbList",
           "cat": "geo_schema",
-          "pass": 565,
-          "applicable": 578
+          "pass": 554,
+          "applicable": 567
         },
         "ai_schema_faq": {
           "label": "#23 Schema: FAQPage",
@@ -13346,13 +13346,13 @@
           "label": "#26 Schema: ImageObject",
           "cat": "geo_schema",
           "pass": 0,
-          "applicable": 578
+          "applicable": 567
         },
         "ai_schema_video": {
           "label": "#27 Schema: VideoObject",
           "cat": "geo_schema",
           "pass": 0,
-          "applicable": 46
+          "applicable": 36
         },
         "ai_schema_howto": {
           "label": "#28 Schema: HowTo",
@@ -13364,43 +13364,43 @@
           "label": "#29 Schema: Article",
           "cat": "geo_schema",
           "pass": 0,
-          "applicable": 95
+          "applicable": 84
         },
         "ai_faq_block": {
           "label": "#32 FAQ Block (콘텐츠)",
           "cat": "geo_content",
-          "pass": 132,
-          "applicable": 578
+          "pass": 131,
+          "applicable": 567
         },
         "ai_definition": {
           "label": "#33 Definition Paragraph",
           "cat": "geo_content",
           "pass": 0,
-          "applicable": 578
+          "applicable": 567
         },
         "ai_author_source": {
           "label": "#34 Author 또는 출처+날짜",
           "cat": "geo_content",
           "pass": 97,
-          "applicable": 188
+          "applicable": 177
         },
         "ai_summary_box": {
           "label": "#35 Summary Box (콘텐츠)",
           "cat": "geo_content",
-          "pass": 110,
-          "applicable": 578
+          "pass": 105,
+          "applicable": 567
         },
         "ai_citable": {
           "label": "#36 Citable Sentence ≥ 10%",
           "cat": "geo_content",
-          "pass": 17,
-          "applicable": 578
+          "pass": 16,
+          "applicable": 567
         },
         "ai_ssr_ratio": {
           "label": "#37 JS HTML Text Ratio ≥ 60%",
           "cat": "geo_platform",
-          "pass": 478,
-          "applicable": 578
+          "pass": 467,
+          "applicable": 567
         },
         "ai_pdp_thumbnails": {
           "label": "#38 PDP 썸네일 3장 이상 SSR",
@@ -13417,26 +13417,26 @@
         "ai_image_filename": {
           "label": "#41 Image File Name 브랜드 포함",
           "cat": "geo_platform",
-          "pass": 578,
-          "applicable": 578
+          "pass": 567,
+          "applicable": 567
         },
         "ai_status_200": {
           "label": "#42 Status Code 200",
           "cat": "geo_platform",
-          "pass": 578,
-          "applicable": 578
+          "pass": 567,
+          "applicable": 567
         },
         "ai_soft_404": {
           "label": "#43 Soft 404 부재",
           "cat": "geo_platform",
-          "pass": 578,
-          "applicable": 578
+          "pass": 567,
+          "applicable": 567
         },
         "ai_llms_txt": {
           "label": "#44 llms.txt 존재",
           "cat": "geo_platform",
-          "pass": 578,
-          "applicable": 578
+          "pass": 567,
+          "applicable": 567
         },
         "ai_schema_offer": {
           "label": "#43 Schema: Offer",
@@ -13448,124 +13448,124 @@
       "pageTypes": {
         "newsroom": {
           "label": "뉴스룸/Press",
-          "count": 135,
-          "avgScore": 74.6,
+          "count": 124,
+          "avgScore": 74.7,
           "categories": {
             "performance": 100,
-            "accessibility": 96.3,
-            "seo": 75.7,
-            "geo_schema": 41.5,
-            "geo_content": 16.6,
+            "accessibility": 97,
+            "seo": 74.4,
+            "geo_schema": 42.9,
+            "geo_content": 16.9,
             "geo_platform": 100
           },
           "checks": {
             "perf_ttfb": {
               "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 135,
-              "applicable": 135
+              "pass": 124,
+              "applicable": 124
             },
             "perf_compression": {
               "label": "#2 Compression",
               "cat": "performance",
-              "pass": 135,
-              "applicable": 135
+              "pass": 124,
+              "applicable": 124
             },
             "perf_http_protocol": {
               "label": "#3 HTTP/2+",
               "cat": "performance",
-              "pass": 135,
-              "applicable": 135
+              "pass": 124,
+              "applicable": 124
             },
             "perf_cache_control": {
               "label": "#4 Cache-Control max-age",
               "cat": "performance",
-              "pass": 135,
-              "applicable": 135
+              "pass": 124,
+              "applicable": 124
             },
             "perf_redirect": {
               "label": "#6 Redirect ≤ 1",
               "cat": "performance",
-              "pass": 135,
-              "applicable": 135
+              "pass": 124,
+              "applicable": 124
             },
             "perf_mixed_content": {
               "label": "#7 Mixed Content 0",
               "cat": "performance",
-              "pass": 135,
-              "applicable": 135
+              "pass": 124,
+              "applicable": 124
             },
             "a11y_image_alt": {
               "label": "#9 Image Alt 누락 0",
               "cat": "accessibility",
-              "pass": 135,
-              "applicable": 135
+              "pass": 124,
+              "applicable": 124
             },
             "a11y_semantic": {
               "label": "#10 Semantic HTML",
               "cat": "accessibility",
-              "pass": 135,
-              "applicable": 135
+              "pass": 124,
+              "applicable": 124
             },
             "a11y_heading_hier": {
               "label": "#11 Heading Hierarchy",
               "cat": "accessibility",
-              "pass": 115,
-              "applicable": 135
+              "pass": 109,
+              "applicable": 124
             },
             "a11y_aria_labels": {
               "label": "#12 ARIA 누락 < 10%",
               "cat": "accessibility",
-              "pass": 135,
-              "applicable": 135
+              "pass": 124,
+              "applicable": 124
             },
             "seo_title": {
               "label": "#13 Title 존재",
               "cat": "seo",
-              "pass": 135,
-              "applicable": 135
+              "pass": 124,
+              "applicable": 124
             },
             "seo_meta_desc": {
               "label": "#14 Meta Description",
               "cat": "seo",
-              "pass": 35,
-              "applicable": 135
+              "pass": 25,
+              "applicable": 124
             },
             "seo_canonical": {
               "label": "#15 Canonical self-ref",
               "cat": "seo",
-              "pass": 135,
-              "applicable": 135
+              "pass": 124,
+              "applicable": 124
             },
             "seo_h1": {
               "label": "#16 H1 정확히 1개",
               "cat": "seo",
-              "pass": 28,
-              "applicable": 135
+              "pass": 23,
+              "applicable": 124
             },
             "seo_robots": {
               "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
-              "pass": 135,
-              "applicable": 135
+              "pass": 124,
+              "applicable": 124
             },
             "seo_open_graph": {
               "label": "#18 Open Graph (title+image)",
               "cat": "seo",
-              "pass": 115,
-              "applicable": 135
+              "pass": 104,
+              "applicable": 124
             },
             "seo_sitemap": {
               "label": "#19 Sitemap (1개월 내)",
               "cat": "seo",
-              "pass": 135,
-              "applicable": 135
+              "pass": 124,
+              "applicable": 124
             },
             "ai_schema_breadcrumb": {
               "label": "#21 Schema: BreadcrumbList",
               "cat": "geo_schema",
-              "pass": 122,
-              "applicable": 135
+              "pass": 111,
+              "applicable": 124
             },
             "ai_schema_faq": {
               "label": "#23 Schema: FAQPage",
@@ -13589,13 +13589,13 @@
               "label": "#26 Schema: ImageObject",
               "cat": "geo_schema",
               "pass": 0,
-              "applicable": 135
+              "applicable": 124
             },
             "ai_schema_video": {
               "label": "#27 Schema: VideoObject",
               "cat": "geo_schema",
               "pass": 0,
-              "applicable": 19
+              "applicable": 9
             },
             "ai_schema_howto": {
               "label": "#28 Schema: HowTo",
@@ -13607,43 +13607,43 @@
               "label": "#29 Schema: Article",
               "cat": "geo_schema",
               "pass": 0,
-              "applicable": 36
+              "applicable": 25
             },
             "ai_faq_block": {
               "label": "#32 FAQ Block (콘텐츠)",
               "cat": "geo_content",
-              "pass": 2,
-              "applicable": 135
+              "pass": 1,
+              "applicable": 124
             },
             "ai_definition": {
               "label": "#33 Definition Paragraph",
               "cat": "geo_content",
               "pass": 0,
-              "applicable": 135
+              "applicable": 124
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
               "cat": "geo_content",
               "pass": 97,
-              "applicable": 135
+              "applicable": 124
             },
             "ai_summary_box": {
               "label": "#35 Summary Box (콘텐츠)",
               "cat": "geo_content",
-              "pass": 5,
-              "applicable": 135
+              "pass": 0,
+              "applicable": 124
             },
             "ai_citable": {
               "label": "#36 Citable Sentence ≥ 10%",
               "cat": "geo_content",
-              "pass": 8,
-              "applicable": 135
+              "pass": 7,
+              "applicable": 124
             },
             "ai_ssr_ratio": {
               "label": "#37 JS HTML Text Ratio ≥ 60%",
               "cat": "geo_platform",
-              "pass": 135,
-              "applicable": 135
+              "pass": 124,
+              "applicable": 124
             },
             "ai_pdp_thumbnails": {
               "label": "#38 PDP 썸네일 3장 이상 SSR",
@@ -13660,26 +13660,26 @@
             "ai_image_filename": {
               "label": "#41 Image File Name 브랜드 포함",
               "cat": "geo_platform",
-              "pass": 135,
-              "applicable": 135
+              "pass": 124,
+              "applicable": 124
             },
             "ai_status_200": {
               "label": "#42 Status Code 200",
               "cat": "geo_platform",
-              "pass": 135,
-              "applicable": 135
+              "pass": 124,
+              "applicable": 124
             },
             "ai_soft_404": {
               "label": "#43 Soft 404 부재",
               "cat": "geo_platform",
-              "pass": 135,
-              "applicable": 135
+              "pass": 124,
+              "applicable": 124
             },
             "ai_llms_txt": {
               "label": "#44 llms.txt 존재",
               "cat": "geo_platform",
-              "pass": 135,
-              "applicable": 135
+              "pass": 124,
+              "applicable": 124
             },
             "ai_schema_offer": {
               "label": "#43 Schema: Offer",
@@ -15394,43 +15394,43 @@
       "bots": {
         "GPTBot": {
           "blocked": 0,
-          "total": 578
+          "total": 567
         },
         "ChatGPT-User": {
           "blocked": 0,
-          "total": 578
+          "total": 567
         },
         "Google-Extended": {
           "blocked": 0,
-          "total": 578
+          "total": 567
         },
         "CCBot": {
           "blocked": 0,
-          "total": 578
+          "total": 567
         },
         "anthropic-ai": {
           "blocked": 0,
-          "total": 578
+          "total": 567
         },
         "Claude-Web": {
           "blocked": 0,
-          "total": 578
+          "total": 567
         },
         "PerplexityBot": {
           "blocked": 0,
-          "total": 578
+          "total": 567
         },
         "Bytespider": {
           "blocked": 0,
-          "total": 578
+          "total": 567
         },
         "cohere-ai": {
           "blocked": 0,
-          "total": 578
+          "total": 567
         },
         "YouBot": {
           "blocked": 0,
-          "total": 578
+          "total": 567
         }
       },
       "tiers": {}
@@ -17676,130 +17676,130 @@
     "us": {
       "auditedAt": "2026-07-31",
       "runId": "765d1a7d5451",
-      "urlCount": 450,
-      "scoredCount": 450,
-      "avgScore": 75,
+      "urlCount": 447,
+      "scoredCount": 447,
+      "avgScore": 75.1,
       "grades": {
-        "Need Improvement": 279,
+        "Need Improvement": 276,
         "Poor": 9,
         "Good": 162
       },
       "categories": {
-        "performance": 97.8,
-        "accessibility": 79.9,
-        "seo": 86.7,
-        "geo_schema": 17.2,
-        "geo_content": 40.7,
+        "performance": 97.9,
+        "accessibility": 79.8,
+        "seo": 86.8,
+        "geo_schema": 17.3,
+        "geo_content": 41,
         "geo_platform": 97
       },
       "checks": {
         "perf_ttfb": {
           "label": "#1 TTFB < 600ms (PSI)",
           "cat": "performance",
-          "pass": 450,
-          "applicable": 450
+          "pass": 447,
+          "applicable": 447
         },
         "perf_compression": {
           "label": "#2 Compression",
           "cat": "performance",
-          "pass": 450,
-          "applicable": 450
+          "pass": 447,
+          "applicable": 447
         },
         "perf_http_protocol": {
           "label": "#3 HTTP/2+",
           "cat": "performance",
-          "pass": 450,
-          "applicable": 450
+          "pass": 447,
+          "applicable": 447
         },
         "perf_cache_control": {
           "label": "#4 Cache-Control max-age",
           "cat": "performance",
           "pass": 395,
-          "applicable": 450
+          "applicable": 447
         },
         "perf_redirect": {
           "label": "#6 Redirect ≤ 1",
           "cat": "performance",
-          "pass": 449,
-          "applicable": 450
+          "pass": 446,
+          "applicable": 447
         },
         "perf_mixed_content": {
           "label": "#7 Mixed Content 0",
           "cat": "performance",
-          "pass": 448,
-          "applicable": 450
+          "pass": 445,
+          "applicable": 447
         },
         "a11y_image_alt": {
           "label": "#9 Image Alt 누락 0",
           "cat": "accessibility",
-          "pass": 432,
-          "applicable": 450
+          "pass": 429,
+          "applicable": 447
         },
         "a11y_semantic": {
           "label": "#10 Semantic HTML",
           "cat": "accessibility",
-          "pass": 450,
-          "applicable": 450
+          "pass": 447,
+          "applicable": 447
         },
         "a11y_heading_hier": {
           "label": "#11 Heading Hierarchy",
           "cat": "accessibility",
-          "pass": 106,
-          "applicable": 450
+          "pass": 103,
+          "applicable": 447
         },
         "a11y_aria_labels": {
           "label": "#12 ARIA 누락 < 10%",
           "cat": "accessibility",
-          "pass": 450,
-          "applicable": 450
+          "pass": 447,
+          "applicable": 447
         },
         "seo_title": {
           "label": "#13 Title 존재",
           "cat": "seo",
-          "pass": 420,
-          "applicable": 450
+          "pass": 417,
+          "applicable": 447
         },
         "seo_meta_desc": {
           "label": "#14 Meta Description",
           "cat": "seo",
-          "pass": 410,
-          "applicable": 450
+          "pass": 407,
+          "applicable": 447
         },
         "seo_canonical": {
           "label": "#15 Canonical self-ref",
           "cat": "seo",
-          "pass": 334,
-          "applicable": 450
+          "pass": 333,
+          "applicable": 447
         },
         "seo_h1": {
           "label": "#16 H1 정확히 1개",
           "cat": "seo",
           "pass": 439,
-          "applicable": 450
+          "applicable": 447
         },
         "seo_robots": {
           "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
           "cat": "seo",
-          "pass": 450,
-          "applicable": 450
+          "pass": 447,
+          "applicable": 447
         },
         "seo_open_graph": {
           "label": "#18 Open Graph (title+image)",
           "cat": "seo",
-          "pass": 223,
-          "applicable": 450
+          "pass": 220,
+          "applicable": 447
         },
         "seo_sitemap": {
           "label": "#19 Sitemap (1개월 내)",
           "cat": "seo",
-          "pass": 450,
-          "applicable": 450
+          "pass": 447,
+          "applicable": 447
         },
         "ai_schema_breadcrumb": {
           "label": "#21 Schema: BreadcrumbList",
           "cat": "geo_schema",
           "pass": 182,
-          "applicable": 450
+          "applicable": 447
         },
         "ai_schema_faq": {
           "label": "#23 Schema: FAQPage",
@@ -17823,13 +17823,13 @@
           "label": "#26 Schema: ImageObject",
           "cat": "geo_schema",
           "pass": 0,
-          "applicable": 391
+          "applicable": 388
         },
         "ai_schema_video": {
           "label": "#27 Schema: VideoObject",
           "cat": "geo_schema",
           "pass": 0,
-          "applicable": 57
+          "applicable": 54
         },
         "ai_schema_howto": {
           "label": "#28 Schema: HowTo",
@@ -17841,43 +17841,43 @@
           "label": "#29 Schema: Article",
           "cat": "geo_schema",
           "pass": 0,
-          "applicable": 54
+          "applicable": 51
         },
         "ai_faq_block": {
           "label": "#32 FAQ Block (콘텐츠)",
           "cat": "geo_content",
           "pass": 250,
-          "applicable": 450
+          "applicable": 447
         },
         "ai_definition": {
           "label": "#33 Definition Paragraph",
           "cat": "geo_content",
           "pass": 96,
-          "applicable": 450
+          "applicable": 447
         },
         "ai_author_source": {
           "label": "#34 Author 또는 출처+날짜",
           "cat": "geo_content",
           "pass": 0,
-          "applicable": 147
+          "applicable": 144
         },
         "ai_summary_box": {
           "label": "#35 Summary Box (콘텐츠)",
           "cat": "geo_content",
-          "pass": 269,
-          "applicable": 450
+          "pass": 268,
+          "applicable": 447
         },
         "ai_citable": {
           "label": "#36 Citable Sentence ≥ 10%",
           "cat": "geo_content",
           "pass": 143,
-          "applicable": 450
+          "applicable": 447
         },
         "ai_ssr_ratio": {
           "label": "#37 JS HTML Text Ratio ≥ 60%",
           "cat": "geo_platform",
-          "pass": 354,
-          "applicable": 450
+          "pass": 351,
+          "applicable": 447
         },
         "ai_pdp_thumbnails": {
           "label": "#38 PDP 썸네일 3장 이상 SSR",
@@ -17894,26 +17894,26 @@
         "ai_image_filename": {
           "label": "#41 Image File Name 브랜드 포함",
           "cat": "geo_platform",
-          "pass": 450,
-          "applicable": 450
+          "pass": 447,
+          "applicable": 447
         },
         "ai_status_200": {
           "label": "#42 Status Code 200",
           "cat": "geo_platform",
-          "pass": 450,
-          "applicable": 450
+          "pass": 447,
+          "applicable": 447
         },
         "ai_soft_404": {
           "label": "#43 Soft 404 부재",
           "cat": "geo_platform",
-          "pass": 450,
-          "applicable": 450
+          "pass": 447,
+          "applicable": 447
         },
         "ai_llms_txt": {
           "label": "#44 llms.txt 존재",
           "cat": "geo_platform",
-          "pass": 450,
-          "applicable": 450
+          "pass": 447,
+          "applicable": 447
         },
         "ai_schema_offer": {
           "label": "#43 Schema: Offer",
@@ -18168,12 +18168,12 @@
         },
         "newsroom": {
           "label": "뉴스룸/Press",
-          "count": 104,
-          "avgScore": 68.1,
+          "count": 101,
+          "avgScore": 68.3,
           "categories": {
-            "performance": 91.3,
-            "accessibility": 76.2,
-            "seo": 84.7,
+            "performance": 91.6,
+            "accessibility": 75.5,
+            "seo": 85,
             "geo_schema": 0,
             "geo_content": 6.9,
             "geo_platform": 100
@@ -18182,110 +18182,110 @@
             "perf_ttfb": {
               "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 104,
-              "applicable": 104
+              "pass": 101,
+              "applicable": 101
             },
             "perf_compression": {
               "label": "#2 Compression",
               "cat": "performance",
-              "pass": 104,
-              "applicable": 104
+              "pass": 101,
+              "applicable": 101
             },
             "perf_http_protocol": {
               "label": "#3 HTTP/2+",
               "cat": "performance",
-              "pass": 104,
-              "applicable": 104
+              "pass": 101,
+              "applicable": 101
             },
             "perf_cache_control": {
               "label": "#4 Cache-Control max-age",
               "cat": "performance",
               "pass": 51,
-              "applicable": 104
+              "applicable": 101
             },
             "perf_redirect": {
               "label": "#6 Redirect ≤ 1",
               "cat": "performance",
-              "pass": 104,
-              "applicable": 104
+              "pass": 101,
+              "applicable": 101
             },
             "perf_mixed_content": {
               "label": "#7 Mixed Content 0",
               "cat": "performance",
-              "pass": 104,
-              "applicable": 104
+              "pass": 101,
+              "applicable": 101
             },
             "a11y_image_alt": {
               "label": "#9 Image Alt 누락 0",
               "cat": "accessibility",
-              "pass": 102,
-              "applicable": 104
+              "pass": 99,
+              "applicable": 101
             },
             "a11y_semantic": {
               "label": "#10 Semantic HTML",
               "cat": "accessibility",
-              "pass": 104,
-              "applicable": 104
+              "pass": 101,
+              "applicable": 101
             },
             "a11y_heading_hier": {
               "label": "#11 Heading Hierarchy",
               "cat": "accessibility",
-              "pass": 7,
-              "applicable": 104
+              "pass": 4,
+              "applicable": 101
             },
             "a11y_aria_labels": {
               "label": "#12 ARIA 누락 < 10%",
               "cat": "accessibility",
-              "pass": 104,
-              "applicable": 104
+              "pass": 101,
+              "applicable": 101
             },
             "seo_title": {
               "label": "#13 Title 존재",
               "cat": "seo",
-              "pass": 75,
-              "applicable": 104
+              "pass": 72,
+              "applicable": 101
             },
             "seo_meta_desc": {
               "label": "#14 Meta Description",
               "cat": "seo",
-              "pass": 67,
-              "applicable": 104
+              "pass": 64,
+              "applicable": 101
             },
             "seo_canonical": {
               "label": "#15 Canonical self-ref",
               "cat": "seo",
-              "pass": 102,
-              "applicable": 104
+              "pass": 101,
+              "applicable": 101
             },
             "seo_h1": {
               "label": "#16 H1 정확히 1개",
               "cat": "seo",
               "pass": 101,
-              "applicable": 104
+              "applicable": 101
             },
             "seo_robots": {
               "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
-              "pass": 104,
-              "applicable": 104
+              "pass": 101,
+              "applicable": 101
             },
             "seo_open_graph": {
               "label": "#18 Open Graph (title+image)",
               "cat": "seo",
-              "pass": 64,
-              "applicable": 104
+              "pass": 61,
+              "applicable": 101
             },
             "seo_sitemap": {
               "label": "#19 Sitemap (1개월 내)",
               "cat": "seo",
-              "pass": 104,
-              "applicable": 104
+              "pass": 101,
+              "applicable": 101
             },
             "ai_schema_breadcrumb": {
               "label": "#21 Schema: BreadcrumbList",
               "cat": "geo_schema",
               "pass": 0,
-              "applicable": 104
+              "applicable": 101
             },
             "ai_schema_faq": {
               "label": "#23 Schema: FAQPage",
@@ -18309,13 +18309,13 @@
               "label": "#26 Schema: ImageObject",
               "cat": "geo_schema",
               "pass": 0,
-              "applicable": 104
+              "applicable": 101
             },
             "ai_schema_video": {
               "label": "#27 Schema: VideoObject",
               "cat": "geo_schema",
               "pass": 0,
-              "applicable": 3
+              "applicable": 0
             },
             "ai_schema_howto": {
               "label": "#28 Schema: HowTo",
@@ -18327,43 +18327,43 @@
               "label": "#29 Schema: Article",
               "cat": "geo_schema",
               "pass": 0,
-              "applicable": 4
+              "applicable": 1
             },
             "ai_faq_block": {
               "label": "#32 FAQ Block (콘텐츠)",
               "cat": "geo_content",
               "pass": 2,
-              "applicable": 104
+              "applicable": 101
             },
             "ai_definition": {
               "label": "#33 Definition Paragraph",
               "cat": "geo_content",
               "pass": 0,
-              "applicable": 104
+              "applicable": 101
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
               "cat": "geo_content",
               "pass": 0,
-              "applicable": 104
+              "applicable": 101
             },
             "ai_summary_box": {
               "label": "#35 Summary Box (콘텐츠)",
               "cat": "geo_content",
-              "pass": 22,
-              "applicable": 104
+              "pass": 21,
+              "applicable": 101
             },
             "ai_citable": {
               "label": "#36 Citable Sentence ≥ 10%",
               "cat": "geo_content",
               "pass": 12,
-              "applicable": 104
+              "applicable": 101
             },
             "ai_ssr_ratio": {
               "label": "#37 JS HTML Text Ratio ≥ 60%",
               "cat": "geo_platform",
-              "pass": 104,
-              "applicable": 104
+              "pass": 101,
+              "applicable": 101
             },
             "ai_pdp_thumbnails": {
               "label": "#38 PDP 썸네일 3장 이상 SSR",
@@ -18380,26 +18380,26 @@
             "ai_image_filename": {
               "label": "#41 Image File Name 브랜드 포함",
               "cat": "geo_platform",
-              "pass": 104,
-              "applicable": 104
+              "pass": 101,
+              "applicable": 101
             },
             "ai_status_200": {
               "label": "#42 Status Code 200",
               "cat": "geo_platform",
-              "pass": 104,
-              "applicable": 104
+              "pass": 101,
+              "applicable": 101
             },
             "ai_soft_404": {
               "label": "#43 Soft 404 부재",
               "cat": "geo_platform",
-              "pass": 104,
-              "applicable": 104
+              "pass": 101,
+              "applicable": 101
             },
             "ai_llms_txt": {
               "label": "#44 llms.txt 존재",
               "cat": "geo_platform",
-              "pass": 104,
-              "applicable": 104
+              "pass": 101,
+              "applicable": 101
             },
             "ai_schema_offer": {
               "label": "#43 Schema: Offer",
@@ -19628,43 +19628,43 @@
       "bots": {
         "GPTBot": {
           "blocked": 0,
-          "total": 450
+          "total": 447
         },
         "ChatGPT-User": {
           "blocked": 0,
-          "total": 450
+          "total": 447
         },
         "Google-Extended": {
           "blocked": 0,
-          "total": 450
+          "total": 447
         },
         "CCBot": {
           "blocked": 0,
-          "total": 450
+          "total": 447
         },
         "anthropic-ai": {
           "blocked": 0,
-          "total": 450
+          "total": 447
         },
         "Claude-Web": {
           "blocked": 0,
-          "total": 450
+          "total": 447
         },
         "PerplexityBot": {
           "blocked": 0,
-          "total": 450
+          "total": 447
         },
         "Bytespider": {
           "blocked": 0,
-          "total": 450
+          "total": 447
         },
         "cohere-ai": {
           "blocked": 0,
-          "total": 450
+          "total": 447
         },
         "YouBot": {
           "blocked": 0,
-          "total": 450
+          "total": 447
         }
       },
       "tiers": {}
@@ -19672,130 +19672,130 @@
     "vn": {
       "auditedAt": "2026-07-31",
       "runId": "db9329a40d4f",
-      "urlCount": 565,
-      "scoredCount": 565,
-      "avgScore": 77.7,
+      "urlCount": 550,
+      "scoredCount": 550,
+      "avgScore": 77.9,
       "grades": {
-        "Need Improvement": 467,
-        "Good": 97,
+        "Need Improvement": 454,
+        "Good": 95,
         "Poor": 1
       },
       "categories": {
         "performance": 99.7,
-        "accessibility": 93.4,
-        "seo": 90.7,
-        "geo_schema": 37.9,
-        "geo_content": 17.2,
+        "accessibility": 93.6,
+        "seo": 91,
+        "geo_schema": 38.2,
+        "geo_content": 17.5,
         "geo_platform": 99.9
       },
       "checks": {
         "perf_ttfb": {
           "label": "#1 TTFB < 600ms (PSI)",
           "cat": "performance",
-          "pass": 564,
-          "applicable": 565
+          "pass": 549,
+          "applicable": 550
         },
         "perf_compression": {
           "label": "#2 Compression",
           "cat": "performance",
-          "pass": 565,
-          "applicable": 565
+          "pass": 550,
+          "applicable": 550
         },
         "perf_http_protocol": {
           "label": "#3 HTTP/2+",
           "cat": "performance",
-          "pass": 565,
-          "applicable": 565
+          "pass": 550,
+          "applicable": 550
         },
         "perf_cache_control": {
           "label": "#4 Cache-Control max-age",
           "cat": "performance",
-          "pass": 565,
-          "applicable": 565
+          "pass": 550,
+          "applicable": 550
         },
         "perf_redirect": {
           "label": "#6 Redirect ≤ 1",
           "cat": "performance",
-          "pass": 564,
-          "applicable": 565
+          "pass": 549,
+          "applicable": 550
         },
         "perf_mixed_content": {
           "label": "#7 Mixed Content 0",
           "cat": "performance",
-          "pass": 556,
-          "applicable": 565
+          "pass": 541,
+          "applicable": 550
         },
         "a11y_image_alt": {
           "label": "#9 Image Alt 누락 0",
           "cat": "accessibility",
-          "pass": 558,
-          "applicable": 565
+          "pass": 543,
+          "applicable": 550
         },
         "a11y_semantic": {
           "label": "#10 Semantic HTML",
           "cat": "accessibility",
-          "pass": 563,
-          "applicable": 565
+          "pass": 548,
+          "applicable": 550
         },
         "a11y_heading_hier": {
           "label": "#11 Heading Hierarchy",
           "cat": "accessibility",
-          "pass": 425,
-          "applicable": 565
+          "pass": 420,
+          "applicable": 550
         },
         "a11y_aria_labels": {
           "label": "#12 ARIA 누락 < 10%",
           "cat": "accessibility",
-          "pass": 564,
-          "applicable": 565
+          "pass": 549,
+          "applicable": 550
         },
         "seo_title": {
           "label": "#13 Title 존재",
           "cat": "seo",
-          "pass": 564,
-          "applicable": 565
+          "pass": 549,
+          "applicable": 550
         },
         "seo_meta_desc": {
           "label": "#14 Meta Description",
           "cat": "seo",
-          "pass": 434,
-          "applicable": 565
+          "pass": 430,
+          "applicable": 550
         },
         "seo_canonical": {
           "label": "#15 Canonical self-ref",
           "cat": "seo",
-          "pass": 553,
-          "applicable": 565
+          "pass": 538,
+          "applicable": 550
         },
         "seo_h1": {
           "label": "#16 H1 정확히 1개",
           "cat": "seo",
-          "pass": 361,
-          "applicable": 565
+          "pass": 356,
+          "applicable": 550
         },
         "seo_robots": {
           "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
           "cat": "seo",
-          "pass": 565,
-          "applicable": 565
+          "pass": 550,
+          "applicable": 550
         },
         "seo_open_graph": {
           "label": "#18 Open Graph (title+image)",
           "cat": "seo",
-          "pass": 546,
-          "applicable": 565
+          "pass": 531,
+          "applicable": 550
         },
         "seo_sitemap": {
           "label": "#19 Sitemap (1개월 내)",
           "cat": "seo",
-          "pass": 565,
-          "applicable": 565
+          "pass": 550,
+          "applicable": 550
         },
         "ai_schema_breadcrumb": {
           "label": "#21 Schema: BreadcrumbList",
           "cat": "geo_schema",
-          "pass": 564,
-          "applicable": 565
+          "pass": 549,
+          "applicable": 550
         },
         "ai_schema_faq": {
           "label": "#23 Schema: FAQPage",
@@ -19819,13 +19819,13 @@
           "label": "#26 Schema: ImageObject",
           "cat": "geo_schema",
           "pass": 0,
-          "applicable": 564
+          "applicable": 549
         },
         "ai_schema_video": {
           "label": "#27 Schema: VideoObject",
           "cat": "geo_schema",
           "pass": 0,
-          "applicable": 84
+          "applicable": 72
         },
         "ai_schema_howto": {
           "label": "#28 Schema: HowTo",
@@ -19837,43 +19837,43 @@
           "label": "#29 Schema: Article",
           "cat": "geo_schema",
           "pass": 0,
-          "applicable": 81
+          "applicable": 66
         },
         "ai_faq_block": {
           "label": "#32 FAQ Block (콘텐츠)",
           "cat": "geo_content",
-          "pass": 115,
-          "applicable": 565
+          "pass": 114,
+          "applicable": 550
         },
         "ai_definition": {
           "label": "#33 Definition Paragraph",
           "cat": "geo_content",
           "pass": 0,
-          "applicable": 565
+          "applicable": 550
         },
         "ai_author_source": {
           "label": "#34 Author 또는 출처+날짜",
           "cat": "geo_content",
           "pass": 84,
-          "applicable": 166
+          "applicable": 151
         },
         "ai_summary_box": {
           "label": "#35 Summary Box (콘텐츠)",
           "cat": "geo_content",
-          "pass": 104,
-          "applicable": 565
+          "pass": 100,
+          "applicable": 550
         },
         "ai_citable": {
           "label": "#36 Citable Sentence ≥ 10%",
           "cat": "geo_content",
-          "pass": 113,
-          "applicable": 565
+          "pass": 112,
+          "applicable": 550
         },
         "ai_ssr_ratio": {
           "label": "#37 JS HTML Text Ratio ≥ 60%",
           "cat": "geo_platform",
-          "pass": 565,
-          "applicable": 565
+          "pass": 550,
+          "applicable": 550
         },
         "ai_pdp_thumbnails": {
           "label": "#38 PDP 썸네일 3장 이상 SSR",
@@ -19890,26 +19890,26 @@
         "ai_image_filename": {
           "label": "#41 Image File Name 브랜드 포함",
           "cat": "geo_platform",
-          "pass": 564,
-          "applicable": 565
+          "pass": 549,
+          "applicable": 550
         },
         "ai_status_200": {
           "label": "#42 Status Code 200",
           "cat": "geo_platform",
-          "pass": 565,
-          "applicable": 565
+          "pass": 550,
+          "applicable": 550
         },
         "ai_soft_404": {
           "label": "#43 Soft 404 부재",
           "cat": "geo_platform",
-          "pass": 564,
-          "applicable": 565
+          "pass": 549,
+          "applicable": 550
         },
         "ai_llms_txt": {
           "label": "#44 llms.txt 존재",
           "cat": "geo_platform",
-          "pass": 565,
-          "applicable": 565
+          "pass": 550,
+          "applicable": 550
         },
         "ai_schema_offer": {
           "label": "#43 Schema: Offer",
@@ -20164,124 +20164,124 @@
         },
         "newsroom": {
           "label": "뉴스룸/Press",
-          "count": 106,
-          "avgScore": 75.4,
+          "count": 91,
+          "avgScore": 76.4,
           "categories": {
-            "performance": 98.6,
-            "accessibility": 97.4,
-            "seo": 73.3,
-            "geo_schema": 46.4,
-            "geo_content": 21.5,
+            "performance": 98.3,
+            "accessibility": 99.7,
+            "seo": 72.3,
+            "geo_schema": 49.6,
+            "geo_content": 23.7,
             "geo_platform": 100
           },
           "checks": {
             "perf_ttfb": {
               "label": "#1 TTFB < 600ms (PSI)",
               "cat": "performance",
-              "pass": 106,
-              "applicable": 106
+              "pass": 91,
+              "applicable": 91
             },
             "perf_compression": {
               "label": "#2 Compression",
               "cat": "performance",
-              "pass": 106,
-              "applicable": 106
+              "pass": 91,
+              "applicable": 91
             },
             "perf_http_protocol": {
               "label": "#3 HTTP/2+",
               "cat": "performance",
-              "pass": 106,
-              "applicable": 106
+              "pass": 91,
+              "applicable": 91
             },
             "perf_cache_control": {
               "label": "#4 Cache-Control max-age",
               "cat": "performance",
-              "pass": 106,
-              "applicable": 106
+              "pass": 91,
+              "applicable": 91
             },
             "perf_redirect": {
               "label": "#6 Redirect ≤ 1",
               "cat": "performance",
-              "pass": 106,
-              "applicable": 106
+              "pass": 91,
+              "applicable": 91
             },
             "perf_mixed_content": {
               "label": "#7 Mixed Content 0",
               "cat": "performance",
-              "pass": 97,
-              "applicable": 106
+              "pass": 82,
+              "applicable": 91
             },
             "a11y_image_alt": {
               "label": "#9 Image Alt 누락 0",
               "cat": "accessibility",
-              "pass": 106,
-              "applicable": 106
+              "pass": 91,
+              "applicable": 91
             },
             "a11y_semantic": {
               "label": "#10 Semantic HTML",
               "cat": "accessibility",
-              "pass": 106,
-              "applicable": 106
+              "pass": 91,
+              "applicable": 91
             },
             "a11y_heading_hier": {
               "label": "#11 Heading Hierarchy",
               "cat": "accessibility",
-              "pass": 95,
-              "applicable": 106
+              "pass": 90,
+              "applicable": 91
             },
             "a11y_aria_labels": {
               "label": "#12 ARIA 누락 < 10%",
               "cat": "accessibility",
-              "pass": 106,
-              "applicable": 106
+              "pass": 91,
+              "applicable": 91
             },
             "seo_title": {
               "label": "#13 Title 존재",
               "cat": "seo",
-              "pass": 106,
-              "applicable": 106
+              "pass": 91,
+              "applicable": 91
             },
             "seo_meta_desc": {
               "label": "#14 Meta Description",
               "cat": "seo",
-              "pass": 8,
-              "applicable": 106
+              "pass": 4,
+              "applicable": 91
             },
             "seo_canonical": {
               "label": "#15 Canonical self-ref",
               "cat": "seo",
-              "pass": 106,
-              "applicable": 106
+              "pass": 91,
+              "applicable": 91
             },
             "seo_h1": {
               "label": "#16 H1 정확히 1개",
               "cat": "seo",
-              "pass": 10,
-              "applicable": 106
+              "pass": 5,
+              "applicable": 91
             },
             "seo_robots": {
               "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
               "cat": "seo",
-              "pass": 106,
-              "applicable": 106
+              "pass": 91,
+              "applicable": 91
             },
             "seo_open_graph": {
               "label": "#18 Open Graph (title+image)",
               "cat": "seo",
-              "pass": 105,
-              "applicable": 106
+              "pass": 90,
+              "applicable": 91
             },
             "seo_sitemap": {
               "label": "#19 Sitemap (1개월 내)",
               "cat": "seo",
-              "pass": 106,
-              "applicable": 106
+              "pass": 91,
+              "applicable": 91
             },
             "ai_schema_breadcrumb": {
               "label": "#21 Schema: BreadcrumbList",
               "cat": "geo_schema",
-              "pass": 106,
-              "applicable": 106
+              "pass": 91,
+              "applicable": 91
             },
             "ai_schema_faq": {
               "label": "#23 Schema: FAQPage",
@@ -20305,13 +20305,13 @@
               "label": "#26 Schema: ImageObject",
               "cat": "geo_schema",
               "pass": 0,
-              "applicable": 106
+              "applicable": 91
             },
             "ai_schema_video": {
               "label": "#27 Schema: VideoObject",
               "cat": "geo_schema",
               "pass": 0,
-              "applicable": 14
+              "applicable": 2
             },
             "ai_schema_howto": {
               "label": "#28 Schema: HowTo",
@@ -20323,43 +20323,43 @@
               "label": "#29 Schema: Article",
               "cat": "geo_schema",
               "pass": 0,
-              "applicable": 15
+              "applicable": 0
             },
             "ai_faq_block": {
               "label": "#32 FAQ Block (콘텐츠)",
               "cat": "geo_content",
-              "pass": 1,
-              "applicable": 106
+              "pass": 0,
+              "applicable": 91
             },
             "ai_definition": {
               "label": "#33 Definition Paragraph",
               "cat": "geo_content",
               "pass": 0,
-              "applicable": 106
+              "applicable": 91
             },
             "ai_author_source": {
               "label": "#34 Author 또는 출처+날짜",
               "cat": "geo_content",
               "pass": 84,
-              "applicable": 106
+              "applicable": 91
             },
             "ai_summary_box": {
               "label": "#35 Summary Box (콘텐츠)",
               "cat": "geo_content",
-              "pass": 7,
-              "applicable": 106
+              "pass": 3,
+              "applicable": 91
             },
             "ai_citable": {
               "label": "#36 Citable Sentence ≥ 10%",
               "cat": "geo_content",
-              "pass": 22,
-              "applicable": 106
+              "pass": 21,
+              "applicable": 91
             },
             "ai_ssr_ratio": {
               "label": "#37 JS HTML Text Ratio ≥ 60%",
               "cat": "geo_platform",
-              "pass": 106,
-              "applicable": 106
+              "pass": 91,
+              "applicable": 91
             },
             "ai_pdp_thumbnails": {
               "label": "#38 PDP 썸네일 3장 이상 SSR",
@@ -20376,26 +20376,26 @@
             "ai_image_filename": {
               "label": "#41 Image File Name 브랜드 포함",
               "cat": "geo_platform",
-              "pass": 106,
-              "applicable": 106
+              "pass": 91,
+              "applicable": 91
             },
             "ai_status_200": {
               "label": "#42 Status Code 200",
               "cat": "geo_platform",
-              "pass": 106,
-              "applicable": 106
+              "pass": 91,
+              "applicable": 91
             },
             "ai_soft_404": {
               "label": "#43 Soft 404 부재",
               "cat": "geo_platform",
-              "pass": 106,
-              "applicable": 106
+              "pass": 91,
+              "applicable": 91
             },
             "ai_llms_txt": {
               "label": "#44 llms.txt 존재",
               "cat": "geo_platform",
-              "pass": 106,
-              "applicable": 106
+              "pass": 91,
+              "applicable": 91
             },
             "ai_schema_offer": {
               "label": "#43 Schema: Offer",
@@ -21867,173 +21867,173 @@
       "bots": {
         "GPTBot": {
           "blocked": 0,
-          "total": 565
+          "total": 550
         },
         "ChatGPT-User": {
           "blocked": 0,
-          "total": 565
+          "total": 550
         },
         "Google-Extended": {
           "blocked": 0,
-          "total": 565
+          "total": 550
         },
         "CCBot": {
           "blocked": 0,
-          "total": 565
+          "total": 550
         },
         "anthropic-ai": {
           "blocked": 0,
-          "total": 565
+          "total": 550
         },
         "Claude-Web": {
           "blocked": 0,
-          "total": 565
+          "total": 550
         },
         "PerplexityBot": {
           "blocked": 0,
-          "total": 565
+          "total": 550
         },
         "Bytespider": {
           "blocked": 0,
-          "total": 565
+          "total": 550
         },
         "cohere-ai": {
           "blocked": 0,
-          "total": 565
+          "total": 550
         },
         "YouBot": {
           "blocked": 0,
-          "total": 565
+          "total": 550
         }
       },
       "tiers": {}
     }
   },
   "overall": {
-    "urlCount": 5675,
-    "scoredCount": 5675,
-    "avgScore": 77.4,
+    "urlCount": 5623,
+    "scoredCount": 5623,
+    "avgScore": 77.5,
     "grades": {
-      "Need Improvement": 4041,
-      "Good": 1622,
+      "Need Improvement": 3993,
+      "Good": 1618,
       "Poor": 12
     },
     "categories": {
       "performance": 98.5,
-      "accessibility": 90.3,
-      "seo": 88.4,
-      "geo_schema": 35.6,
-      "geo_content": 29.2,
+      "accessibility": 90.4,
+      "seo": 88.5,
+      "geo_schema": 35.7,
+      "geo_content": 29.3,
       "geo_platform": 96.9
     },
     "checks": {
       "perf_ttfb": {
         "label": "#1 TTFB < 600ms (PSI)",
         "cat": "performance",
-        "pass": 5469,
-        "applicable": 5675
+        "pass": 5418,
+        "applicable": 5623
       },
       "perf_compression": {
         "label": "#2 Compression",
         "cat": "performance",
-        "pass": 5675,
-        "applicable": 5675
+        "pass": 5623,
+        "applicable": 5623
       },
       "perf_http_protocol": {
         "label": "#3 HTTP/2+",
         "cat": "performance",
-        "pass": 5675,
-        "applicable": 5675
+        "pass": 5623,
+        "applicable": 5623
       },
       "perf_cache_control": {
         "label": "#4 Cache-Control max-age",
         "cat": "performance",
-        "pass": 5425,
-        "applicable": 5675
+        "pass": 5376,
+        "applicable": 5623
       },
       "perf_redirect": {
         "label": "#6 Redirect ≤ 1",
         "cat": "performance",
-        "pass": 5656,
-        "applicable": 5675
+        "pass": 5604,
+        "applicable": 5623
       },
       "perf_mixed_content": {
         "label": "#7 Mixed Content 0",
         "cat": "performance",
-        "pass": 5663,
-        "applicable": 5675
+        "pass": 5611,
+        "applicable": 5623
       },
       "a11y_image_alt": {
         "label": "#9 Image Alt 누락 0",
         "cat": "accessibility",
-        "pass": 5271,
-        "applicable": 5675
+        "pass": 5219,
+        "applicable": 5623
       },
       "a11y_semantic": {
         "label": "#10 Semantic HTML",
         "cat": "accessibility",
-        "pass": 5670,
-        "applicable": 5675
+        "pass": 5618,
+        "applicable": 5623
       },
       "a11y_heading_hier": {
         "label": "#11 Heading Hierarchy",
         "cat": "accessibility",
-        "pass": 3894,
-        "applicable": 5675
+        "pass": 3871,
+        "applicable": 5623
       },
       "a11y_aria_labels": {
         "label": "#12 ARIA 누락 < 10%",
         "cat": "accessibility",
-        "pass": 5671,
-        "applicable": 5675
+        "pass": 5619,
+        "applicable": 5623
       },
       "seo_title": {
         "label": "#13 Title 존재",
         "cat": "seo",
-        "pass": 5621,
-        "applicable": 5675
+        "pass": 5569,
+        "applicable": 5623
       },
       "seo_meta_desc": {
         "label": "#14 Meta Description",
         "cat": "seo",
-        "pass": 4795,
-        "applicable": 5675
+        "pass": 4766,
+        "applicable": 5623
       },
       "seo_canonical": {
         "label": "#15 Canonical self-ref",
         "cat": "seo",
-        "pass": 5513,
-        "applicable": 5675
+        "pass": 5463,
+        "applicable": 5623
       },
       "seo_h1": {
         "label": "#16 H1 정확히 1개",
         "cat": "seo",
-        "pass": 4166,
-        "applicable": 5675
+        "pass": 4146,
+        "applicable": 5623
       },
       "seo_robots": {
         "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
         "cat": "seo",
-        "pass": 5675,
-        "applicable": 5675
+        "pass": 5623,
+        "applicable": 5623
       },
       "seo_open_graph": {
         "label": "#18 Open Graph (title+image)",
         "cat": "seo",
-        "pass": 5034,
-        "applicable": 5675
+        "pass": 4982,
+        "applicable": 5623
       },
       "seo_sitemap": {
         "label": "#19 Sitemap (1개월 내)",
         "cat": "seo",
-        "pass": 4301,
-        "applicable": 5675
+        "pass": 4271,
+        "applicable": 5623
       },
       "ai_schema_breadcrumb": {
         "label": "#21 Schema: BreadcrumbList",
         "cat": "geo_schema",
-        "pass": 5197,
-        "applicable": 5675
+        "pass": 5148,
+        "applicable": 5623
       },
       "ai_schema_faq": {
         "label": "#23 Schema: FAQPage",
@@ -22057,13 +22057,13 @@
         "label": "#26 Schema: ImageObject",
         "cat": "geo_schema",
         "pass": 0,
-        "applicable": 5615
+        "applicable": 5563
       },
       "ai_schema_video": {
         "label": "#27 Schema: VideoObject",
         "cat": "geo_schema",
         "pass": 0,
-        "applicable": 588
+        "applicable": 543
       },
       "ai_schema_howto": {
         "label": "#28 Schema: HowTo",
@@ -22075,43 +22075,43 @@
         "label": "#29 Schema: Article",
         "cat": "geo_schema",
         "pass": 0,
-        "applicable": 1193
+        "applicable": 1141
       },
       "ai_faq_block": {
         "label": "#32 FAQ Block (콘텐츠)",
         "cat": "geo_content",
-        "pass": 1609,
-        "applicable": 5675
+        "pass": 1605,
+        "applicable": 5623
       },
       "ai_definition": {
         "label": "#33 Definition Paragraph",
         "cat": "geo_content",
         "pass": 96,
-        "applicable": 5675
+        "applicable": 5623
       },
       "ai_author_source": {
         "label": "#34 Author 또는 출처+날짜",
         "cat": "geo_content",
         "pass": 775,
-        "applicable": 1881
+        "applicable": 1829
       },
       "ai_summary_box": {
         "label": "#35 Summary Box (콘텐츠)",
         "cat": "geo_content",
-        "pass": 1358,
-        "applicable": 5675
+        "pass": 1342,
+        "applicable": 5623
       },
       "ai_citable": {
         "label": "#36 Citable Sentence ≥ 10%",
         "cat": "geo_content",
-        "pass": 3180,
-        "applicable": 5675
+        "pass": 3163,
+        "applicable": 5623
       },
       "ai_ssr_ratio": {
         "label": "#37 JS HTML Text Ratio ≥ 60%",
         "cat": "geo_platform",
-        "pass": 4699,
-        "applicable": 5675
+        "pass": 4647,
+        "applicable": 5623
       },
       "ai_pdp_thumbnails": {
         "label": "#38 PDP 썸네일 3장 이상 SSR",
@@ -22128,26 +22128,26 @@
       "ai_image_filename": {
         "label": "#41 Image File Name 브랜드 포함",
         "cat": "geo_platform",
-        "pass": 5674,
-        "applicable": 5675
+        "pass": 5622,
+        "applicable": 5623
       },
       "ai_status_200": {
         "label": "#42 Status Code 200",
         "cat": "geo_platform",
-        "pass": 5675,
-        "applicable": 5675
+        "pass": 5623,
+        "applicable": 5623
       },
       "ai_soft_404": {
         "label": "#43 Soft 404 부재",
         "cat": "geo_platform",
-        "pass": 5674,
-        "applicable": 5675
+        "pass": 5622,
+        "applicable": 5623
       },
       "ai_llms_txt": {
         "label": "#44 llms.txt 존재",
         "cat": "geo_platform",
-        "pass": 5675,
-        "applicable": 5675
+        "pass": 5623,
+        "applicable": 5623
       },
       "ai_schema_offer": {
         "label": "#43 Schema: Offer",
@@ -22159,124 +22159,124 @@
     "pageTypes": {
       "newsroom": {
         "label": "뉴스룸/Press",
-        "count": 1103,
-        "avgScore": 75.9,
+        "count": 1051,
+        "avgScore": 76.2,
         "categories": {
           "performance": 98.4,
-          "accessibility": 94.9,
-          "seo": 76.4,
-          "geo_schema": 41.7,
-          "geo_content": 24.7,
+          "accessibility": 95.3,
+          "seo": 76.3,
+          "geo_schema": 42.6,
+          "geo_content": 25.2,
           "geo_platform": 100
         },
         "checks": {
           "perf_ttfb": {
             "label": "#1 TTFB < 600ms (PSI)",
             "cat": "performance",
-            "pass": 1065,
-            "applicable": 1103
+            "pass": 1014,
+            "applicable": 1051
           },
           "perf_compression": {
             "label": "#2 Compression",
             "cat": "performance",
-            "pass": 1103,
-            "applicable": 1103
+            "pass": 1051,
+            "applicable": 1051
           },
           "perf_http_protocol": {
             "label": "#3 HTTP/2+",
             "cat": "performance",
-            "pass": 1103,
-            "applicable": 1103
+            "pass": 1051,
+            "applicable": 1051
           },
           "perf_cache_control": {
             "label": "#4 Cache-Control max-age",
             "cat": "performance",
-            "pass": 1050,
-            "applicable": 1103
+            "pass": 1001,
+            "applicable": 1051
           },
           "perf_redirect": {
             "label": "#6 Redirect ≤ 1",
             "cat": "performance",
-            "pass": 1101,
-            "applicable": 1103
+            "pass": 1049,
+            "applicable": 1051
           },
           "perf_mixed_content": {
             "label": "#7 Mixed Content 0",
             "cat": "performance",
-            "pass": 1093,
-            "applicable": 1103
+            "pass": 1041,
+            "applicable": 1051
           },
           "a11y_image_alt": {
             "label": "#9 Image Alt 누락 0",
             "cat": "accessibility",
-            "pass": 1069,
-            "applicable": 1103
+            "pass": 1017,
+            "applicable": 1051
           },
           "a11y_semantic": {
             "label": "#10 Semantic HTML",
             "cat": "accessibility",
-            "pass": 1103,
-            "applicable": 1103
+            "pass": 1051,
+            "applicable": 1051
           },
           "a11y_heading_hier": {
             "label": "#11 Heading Hierarchy",
             "cat": "accessibility",
-            "pass": 911,
-            "applicable": 1103
+            "pass": 888,
+            "applicable": 1051
           },
           "a11y_aria_labels": {
             "label": "#12 ARIA 누락 < 10%",
             "cat": "accessibility",
-            "pass": 1103,
-            "applicable": 1103
+            "pass": 1051,
+            "applicable": 1051
           },
           "seo_title": {
             "label": "#13 Title 존재",
             "cat": "seo",
-            "pass": 1074,
-            "applicable": 1103
+            "pass": 1022,
+            "applicable": 1051
           },
           "seo_meta_desc": {
             "label": "#14 Meta Description",
             "cat": "seo",
-            "pass": 457,
-            "applicable": 1103
+            "pass": 428,
+            "applicable": 1051
           },
           "seo_canonical": {
             "label": "#15 Canonical self-ref",
             "cat": "seo",
-            "pass": 1101,
-            "applicable": 1103
+            "pass": 1051,
+            "applicable": 1051
           },
           "seo_h1": {
             "label": "#16 H1 정확히 1개",
             "cat": "seo",
-            "pass": 543,
-            "applicable": 1103
+            "pass": 523,
+            "applicable": 1051
           },
           "seo_robots": {
             "label": "#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)",
             "cat": "seo",
-            "pass": 1103,
-            "applicable": 1103
+            "pass": 1051,
+            "applicable": 1051
           },
           "seo_open_graph": {
             "label": "#18 Open Graph (title+image)",
             "cat": "seo",
-            "pass": 851,
-            "applicable": 1103
+            "pass": 799,
+            "applicable": 1051
           },
           "seo_sitemap": {
             "label": "#19 Sitemap (1개월 내)",
             "cat": "seo",
-            "pass": 780,
-            "applicable": 1103
+            "pass": 750,
+            "applicable": 1051
           },
           "ai_schema_breadcrumb": {
             "label": "#21 Schema: BreadcrumbList",
             "cat": "geo_schema",
-            "pass": 985,
-            "applicable": 1103
+            "pass": 936,
+            "applicable": 1051
           },
           "ai_schema_faq": {
             "label": "#23 Schema: FAQPage",
@@ -22300,13 +22300,13 @@
             "label": "#26 Schema: ImageObject",
             "cat": "geo_schema",
             "pass": 0,
-            "applicable": 1103
+            "applicable": 1051
           },
           "ai_schema_video": {
             "label": "#27 Schema: VideoObject",
             "cat": "geo_schema",
             "pass": 0,
-            "applicable": 61
+            "applicable": 16
           },
           "ai_schema_howto": {
             "label": "#28 Schema: HowTo",
@@ -22318,43 +22318,43 @@
             "label": "#29 Schema: Article",
             "cat": "geo_schema",
             "pass": 0,
-            "applicable": 183
+            "applicable": 131
           },
           "ai_faq_block": {
             "label": "#32 FAQ Block (콘텐츠)",
             "cat": "geo_content",
-            "pass": 26,
-            "applicable": 1103
+            "pass": 22,
+            "applicable": 1051
           },
           "ai_definition": {
             "label": "#33 Definition Paragraph",
             "cat": "geo_content",
             "pass": 0,
-            "applicable": 1103
+            "applicable": 1051
           },
           "ai_author_source": {
             "label": "#34 Author 또는 출처+날짜",
             "cat": "geo_content",
             "pass": 775,
-            "applicable": 1103
+            "applicable": 1051
           },
           "ai_summary_box": {
             "label": "#35 Summary Box (콘텐츠)",
             "cat": "geo_content",
-            "pass": 52,
-            "applicable": 1103
+            "pass": 36,
+            "applicable": 1051
           },
           "ai_citable": {
             "label": "#36 Citable Sentence ≥ 10%",
             "cat": "geo_content",
-            "pass": 507,
-            "applicable": 1103
+            "pass": 490,
+            "applicable": 1051
           },
           "ai_ssr_ratio": {
             "label": "#37 JS HTML Text Ratio ≥ 60%",
             "cat": "geo_platform",
-            "pass": 1103,
-            "applicable": 1103
+            "pass": 1051,
+            "applicable": 1051
           },
           "ai_pdp_thumbnails": {
             "label": "#38 PDP 썸네일 3장 이상 SSR",
@@ -22371,26 +22371,26 @@
           "ai_image_filename": {
             "label": "#41 Image File Name 브랜드 포함",
             "cat": "geo_platform",
-            "pass": 1103,
-            "applicable": 1103
+            "pass": 1051,
+            "applicable": 1051
           },
           "ai_status_200": {
             "label": "#42 Status Code 200",
             "cat": "geo_platform",
-            "pass": 1103,
-            "applicable": 1103
+            "pass": 1051,
+            "applicable": 1051
           },
           "ai_soft_404": {
             "label": "#43 Soft 404 부재",
             "cat": "geo_platform",
-            "pass": 1103,
-            "applicable": 1103
+            "pass": 1051,
+            "applicable": 1051
           },
           "ai_llms_txt": {
             "label": "#44 llms.txt 존재",
             "cat": "geo_platform",
-            "pass": 1103,
-            "applicable": 1103
+            "pass": 1051,
+            "applicable": 1051
           },
           "ai_schema_offer": {
             "label": "#43 Schema: Offer",
@@ -24105,43 +24105,43 @@
     "bots": {
       "GPTBot": {
         "blocked": 0,
-        "total": 5675
+        "total": 5623
       },
       "ChatGPT-User": {
         "blocked": 0,
-        "total": 5675
+        "total": 5623
       },
       "Google-Extended": {
         "blocked": 0,
-        "total": 5675
+        "total": 5623
       },
       "CCBot": {
         "blocked": 0,
-        "total": 5675
+        "total": 5623
       },
       "anthropic-ai": {
         "blocked": 0,
-        "total": 5675
+        "total": 5623
       },
       "Claude-Web": {
         "blocked": 0,
-        "total": 5675
+        "total": 5623
       },
       "PerplexityBot": {
         "blocked": 0,
-        "total": 5675
+        "total": 5623
       },
       "Bytespider": {
         "blocked": 0,
-        "total": 5675
+        "total": 5623
       },
       "cohere-ai": {
         "blocked": 0,
-        "total": 5675
+        "total": 5623
       },
       "YouBot": {
         "blocked": 0,
-        "total": 5675
+        "total": 5623
       }
     },
     "tiers": {}
