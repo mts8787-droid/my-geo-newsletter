@@ -58,7 +58,7 @@ import { CC_NAME } from './readability-cc.mjs'
 // 신호등 기준 single source — 대시보드/뉴스레터/검수기준 공통 (src/shared/readabilityBand.js)
 import { RD_BAND, RD_BAND_COLOR, rdBandColor } from '../src/shared/readabilityBand.js'
 // 개선 가이드 (체크 × 페이지타입) — 필터 선택에 맞춰 해석·액션 아이템을 뽑는다
-import { GUIDE } from '../src/shared/readabilityGuide.js'
+import { GUIDE, CATEGORY_GUIDE } from '../src/shared/readabilityGuide.js'
 
 function escHtml(s) {
   return String(s == null ? '' : s)
@@ -290,7 +290,7 @@ function readabilityClient() {
       return vals.length ? +(vals.reduce(function (s, r) { return s + r }, 0) / vals.length).toFixed(1) : null
     }
     function stripParens(l) { return String(l == null ? '' : l).replace(/\s*[（(][^)）]*[)）]/g, '').trim() }
-    function card(name, avg, sub, checksArr) {
+    function card(name, avg, sub, checksArr, catKey) {
       var defs = RD.checkDefs || {}
       var head = '<div class="bar-row bar-head has-def"><span class="bar-label">' +
         '<span class="bar-name">항목</span><span class="bar-def">정의</span><span class="bar-pass">Pass 기준</span></span>' +
@@ -300,9 +300,14 @@ function readabilityClient() {
         var right = rate == null ? '—' : rate + '% (' + c.pass + '/' + c.applicable + ')'
         return barRow(stripParens(c.label), rate == null ? 0 : rate, 100, rateColor(rate), right, '', defs[c.cid])
       }).join('')
+      // 이 영역이 무엇을 보는 영역인지 — 담당자가 바로 알아듣게 (CATEGORY_GUIDE)
+      var cg = (RD.catGuide || {})[catKey] || null
+      var cgHtml = cg ? '<div class="cat-guide"><div class="cat-guide-what">' + esc(cg.what) + '</div>' +
+        '<div class="cat-guide-why">' + esc(cg.why) + '</div></div>' : ''
       return '<div class="cat-card"><div class="cat-head"><span class="cat-name">' + esc(name) + '</span>' +
         '<span class="cat-avg" style="color:' + scoreColor(avg) + '">' + (avg == null ? '—' : avg) + '</span></div>' +
-        '<div class="cat-sub">' + checksArr.length + ' 체크 · ' + sub + '</div><div class="bars sm">' + rows + '</div></div>'
+        '<div class="cat-sub">' + checksArr.length + ' 체크 · ' + sub + '</div>' + cgHtml +
+        '<div class="bars sm">' + rows + '</div></div>'
     }
     var out = []
     CATS.forEach(function (cat) {
@@ -311,14 +316,15 @@ function readabilityClient() {
       // 지표도 '평균 통과율'(체크 단순평균) 이 아니라 다른 카테고리와 같은 '평균 points'
       // (페이지별 통과/적용 → 평균) 로 통일된다.
       var avg = scope.categories ? scope.categories[cat] : null
-      out.push(card(labels[cat] || cat, avg, '평균 points', checks))
+      out.push(card(labels[cat] || cat, avg, '평균 points', checks, cat))
     })
     return out.join('')
   }
 
-  // ── 개선 가이드 — 현재 필터(국가 × 페이지타입)에 맞춘 해석 + 액션 아이템 ──────
-  // 통과율이 낮은 순으로 정렬하고, 미통과 페이지 수가 큰 항목을 우선 노출한다.
-  // 액션 문구는 RD.guide[cid].byPt[pt] 가 있으면 그것, 없으면 기본 action.
+  // ── 개선 가이드 — 현재 필터(국가 × 페이지타입)에서 심각한 항목만 ──────────────
+  // 임계값 70 — 80(신호등 '주의') 이 아니라 더 좁힌다. 개선 여력이 아니라
+  // "지금 당장 손봐야 하는 것" 만 남기기 위함 (사용자 지시 2026-08-30).
+  var CRITICAL_MAX = 70
   function renderGuideSection(scope, secNo) {
     var G = RD.guide || {}
     var pt = state.pt
@@ -327,23 +333,24 @@ function readabilityClient() {
     var checks = slot ? slot.checks : (scope.checks || {})
     var ptName = slot ? (slot.label || pt) : '전체 타입'
     var scopeName = state.cc === 'all' ? '전체' : ccLabel(state.cc)
+    var title = secNo + ' 시급 개선 항목 (' + esc(scopeName) + ' · ' + esc(ptName) + ')'
 
     var rows = []
     Object.keys(checks).forEach(function (cid) {
       var c = checks[cid]
       if (!c || !c.applicable) return
       var rate = +(c.pass / c.applicable * 100).toFixed(1)
-      if (rate >= BAND.good) return            // 통과 구간은 개선 대상 아님
+      if (rate >= CRITICAL_MAX) return
       var g = G[cid]; if (!g) return
-      var act = (slot && g.byPt && g.byPt[pt]) || g.action
-      rows.push({ cid: cid, label: c.label, rate: rate, gap: c.applicable - c.pass, why: g.why, act: act })
+      var o = (slot && g.byPt && g.byPt[pt]) || {}
+      rows.push({ label: c.label, rate: rate, gap: c.applicable - c.pass,
+        what: g.what, why: g.why, where: o.where || g.where, act: o.action || g.action })
     })
     if (!rows.length) {
-      return sectionCard(secNo + ' 개선 가이드 (' + esc(scopeName) + ' · ' + esc(ptName) + ')', '#7C3AED',
-        '<div class="tab-note">이 조건에서는 기준 미달 항목이 없습니다.</div>')
+      return sectionCard(title, '#BE123C',
+        '<div class="tab-note">이 조건에서는 통과율 ' + CRITICAL_MAX + '% 미만 항목이 없습니다.</div>')
     }
-    // 미통과 페이지 수 우선, 같으면 통과율 낮은 순
-    rows.sort(function (a, b) { return (b.gap - a.gap) || (a.rate - b.rate) })
+    rows.sort(function (a, b) { return (a.rate - b.rate) || (b.gap - a.gap) })
 
     var html = rows.map(function (r) {
       return '<div class="gd-row">' +
@@ -352,14 +359,15 @@ function readabilityClient() {
           '<span class="gd-rate" style="color:' + rateColor(r.rate) + '">' + r.rate + '%</span>' +
           '<span class="gd-gap">미통과 ' + num(r.gap) + 'p</span>' +
         '</div>' +
-        '<div class="gd-why">' + esc(r.why) + '</div>' +
-        '<div class="gd-act"><span class="gd-tag">액션</span>' + esc(r.act) + '</div>' +
+        '<div class="gd-line"><span class="gd-k">무엇을 보나</span>' + esc(r.what) + '</div>' +
+        '<div class="gd-line"><span class="gd-k">안 되면</span>' + esc(r.why) + '</div>' +
+        '<div class="gd-line gd-fix"><span class="gd-k gd-k-where">어디를</span>' + esc(r.where) + '</div>' +
+        '<div class="gd-line gd-fix"><span class="gd-k gd-k-act">고칠 일</span>' + esc(r.act) + '</div>' +
       '</div>'
     }).join('')
-    var note = '<div class="tab-note">' + esc(scopeName) + ' · ' + esc(ptName) +
-      ' 기준 미달 ' + rows.length + '개 항목 — 미통과 페이지 수가 많은 순. 필터를 바꾸면 해석과 액션도 함께 바뀝니다.</div>'
-    return note + sectionCard(secNo + ' 개선 가이드 (' + esc(scopeName) + ' · ' + esc(ptName) + ')', '#7C3AED',
-      '<div class="gd-list">' + html + '</div>')
+    var note = '<div class="tab-note">통과율 ' + CRITICAL_MAX + '% 미만 ' + rows.length +
+      '개 — 낮은 순. 필터를 바꾸면 해당 국가·페이지타입에 맞는 조치로 바뀝니다.</div>'
+    return note + sectionCard(title, '#BE123C', '<div class="gd-list">' + html + '</div>')
   }
 
   // 체크별 통과율 섹션 — 국가 + (집계기가 nest 한 경우) 페이지타입 필터 반영
@@ -601,6 +609,7 @@ export function renderReadabilityHTML({ snapshot, index, snapshots, adminMode = 
     band: RD_BAND,           // 신호등 임계값 — 클라 짝이 서버와 같은 기준 쓰도록 주입
     bandColor: RD_BAND_COLOR,
     guide: GUIDE,            // 개선 가이드 — 필터(국가×페이지타입) 변경 시 클라가 해석·액션 재생성
+    catGuide: CATEGORY_GUIDE, // 6개 평가 영역이 각각 무엇을 보는지 (카드 상단 설명)
     paths: paths || (adminMode ? ADMIN_PATHS : PUBLIC_PATHS),
     categoryLabels: snap.categoryLabels || {},
     checkDefs: loadCheckDefs(),   // check id → 항목 정의 (체크리스트 문서 출처)
@@ -688,15 +697,20 @@ body{background:#F1F5F9;font-family:${FONT};color:#1A1A1A;line-height:1.6}
 .crit-frame{width:100%;height:70vh;min-height:520px;border:1px solid #E8EDF2;border-radius:12px;background:#fff}
 /* ── Raw 데이터 (페이지별 체크 PASS/FAIL 조합 필터) ── */
 .gd-list{display:flex;flex-direction:column;gap:10px}
-.gd-row{border:1px solid #E8EDF2;border-left:3px solid #7C3AED;border-radius:8px;padding:10px 14px;background:#fff}
+.gd-row{border:1px solid #FECDD3;border-left:3px solid #BE123C;border-radius:8px;padding:10px 14px;background:#fff}
 .gd-head{display:flex;align-items:baseline;gap:10px;margin-bottom:4px}
 .gd-name{font-size:14px;font-weight:800;color:#1A1A1A;flex:1}
 .gd-rate{font-size:14px;font-weight:800;font-variant-numeric:tabular-nums}
 .gd-gap{font-size:12px;color:#94A3B8;font-variant-numeric:tabular-nums;white-space:nowrap}
-.gd-why{font-size:13px;color:#64748B;line-height:1.6;margin-bottom:6px}
-.gd-act{font-size:13px;color:#1A1A1A;line-height:1.6}
-.gd-tag{display:inline-block;background:#F3E8FF;color:#7C3AED;border-radius:4px;padding:1px 7px;font-size:11px;font-weight:800;margin-right:7px}
-@media(max-width:780px){.gd-head{flex-wrap:wrap;gap:6px}.gd-name{flex:1 1 100%}}
+.gd-line{font-size:13px;line-height:1.65;color:#475569;display:flex;gap:8px;align-items:baseline;margin-top:3px}
+.gd-line.gd-fix{color:#1A1A1A}
+.gd-k{flex:0 0 62px;font-size:11px;font-weight:800;color:#94A3B8;text-align:right}
+.gd-k-where{color:#BE123C}
+.gd-k-act{color:#BE123C}
+.cat-guide{border-left:2px solid #E2E8F0;padding:2px 0 2px 10px;margin:8px 0 12px}
+.cat-guide-what{font-size:12.5px;font-weight:700;color:#1A1A1A;line-height:1.55}
+.cat-guide-why{font-size:12.5px;color:#64748B;line-height:1.55;margin-top:2px}
+@media(max-width:780px){.gd-head{flex-wrap:wrap;gap:6px}.gd-name{flex:1 1 100%}.gd-line{flex-direction:column;gap:1px}.gd-k{text-align:left;flex:none}}
 .rd-pass{display:inline-block;padding:2px 8px;border-radius:6px;font-weight:800;font-size:11px;background:#ECFDF5;color:#15803D;border:1px solid #A7F3D0}
 .rd-fail{display:inline-block;padding:2px 8px;border-radius:6px;font-weight:800;font-size:11px;background:#FFF1F2;color:#BE123C;border:1px solid #FECDD3}
 .fails-bar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:14px}

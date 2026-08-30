@@ -264,16 +264,27 @@ describe('개선 가이드 — 체크 × 페이지타입', () => {
     const ids = Object.keys(snap.overall.checks)
     expect(Object.keys(GUIDE).filter(c => !ids.includes(c))).toEqual([])
   })
-  it('모든 항목이 why 와 action 을 갖는다', async () => {
+  it('모든 항목이 what·why·where·action 을 갖는다', async () => {
     const { GUIDE } = await import('../src/shared/readabilityGuide.js')
-    const bad = Object.entries(GUIDE).filter(([, g]) => !g.why || !g.action).map(([k]) => k)
+    const bad = Object.entries(GUIDE)
+      .filter(([, g]) => !g.what || !g.why || !g.where || !g.action).map(([k]) => k)
     expect(bad).toEqual([])
   })
-  it('페이지타입 오버라이드가 기본 액션과 다른 문구를 반환한다', async () => {
-    const { actionFor, GUIDE } = await import('../src/shared/readabilityGuide.js')
-    expect(actionFor('ai_ssr_ratio', 'pdp')).not.toBe(GUIDE.ai_ssr_ratio.action)
-    expect(actionFor('ai_ssr_ratio', 'plp')).toBe(GUIDE.ai_ssr_ratio.action)  // 오버라이드 없음 → 기본
-    expect(actionFor('없는체크', 'pdp')).toBeNull()
+  it('6개 평가 영역 설명이 모두 있다', async () => {
+    const { CATEGORY_GUIDE } = await import('../src/shared/readabilityGuide.js')
+    const snap = await load()
+    const cats = [...new Set(Object.values(snap.overall.checks).map(c => c.cat))]
+    expect(cats.filter(c => !CATEGORY_GUIDE[c])).toEqual([])
+    expect(Object.values(CATEGORY_GUIDE).filter(g => !g.what || !g.why)).toEqual([])
+  })
+  it('페이지타입 오버라이드가 어디/조치를 바꾼다', async () => {
+    const { guideFor, GUIDE } = await import('../src/shared/readabilityGuide.js')
+    const pdp = guideFor('ai_ssr_ratio', 'pdp')
+    expect(pdp.action).not.toBe(GUIDE.ai_ssr_ratio.action)
+    expect(pdp.where).not.toBe(GUIDE.ai_ssr_ratio.where)
+    // 오버라이드 없는 타입은 기본값
+    expect(guideFor('ai_ssr_ratio', 'plp').action).toBe(GUIDE.ai_ssr_ratio.action)
+    expect(guideFor('없는체크', 'pdp')).toBeNull()
   })
   it('byPt 키가 실제 페이지타입 id 여야 한다', async () => {
     const { GUIDE, PT_LABEL } = await import('../src/shared/readabilityGuide.js')
