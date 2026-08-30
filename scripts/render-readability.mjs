@@ -674,7 +674,6 @@ function readabilityClient() {
       mSel.value = RD.date
       mSel.addEventListener('change', function () {
         RD = ALL[mSel.value] || RD
-        var hd = document.getElementById('rd-head-date'); if (hd) hd.textContent = RD.date
         rebuildCcPt()
         renderPanel()
       })
@@ -711,10 +710,6 @@ export function renderReadabilityHTML({ snapshot, index, snapshots, adminMode = 
       <p><a href="/admin/">← 어드민</a></p></body></html>`
   }
 
-  const snapCount = (index && Array.isArray(index.snapshots)) ? index.snapshots.length : 1
-  const momNote = snapCount >= 2
-    ? `스냅샷 ${snapCount}개 — 시계열 대비 가능`
-    : `스냅샷 ${snapCount}개 — 재어딧 후 MoM 대비 (현재 단일 측정분)`
 
   // 클라이언트 인터랙티브 렌더용 데이터 (탭/필터). 서버 뷰는 <noscript> fallback 유지.
   // adminMode 는 이제 리소스 경로 선택에만 쓰인다 (탭 구성은 어드민·게시본 동일).
@@ -754,9 +749,6 @@ body{background:#F1F5F9;font-family:${FONT};color:#1A1A1A;line-height:1.6}
 .tab-bar .back{color:#94A3B8;text-decoration:none;font-size:14px;font-weight:600}
 .tab-bar .back:hover{color:#E2E8F0}
 .dash-container{max-width:1400px;margin:0 auto;padding:28px 40px}
-.page-head{margin-bottom:24px}
-.page-head .sub{font-size:15px;color:#64748B}
-.page-head .sub strong{color:#1A1A1A}
 /* ── 탭 네비 + 필터 바 ── */
 .htr{background:#fff;border:1px solid #E8EDF2;border-left:4px solid ${RED};border-radius:12px;padding:20px 24px;margin-bottom:20px}
 .htr-title{margin:0 0 12px;font-size:18px;font-weight:800;color:#1A1A1A;letter-spacing:-0.3px}
@@ -905,10 +897,6 @@ body{background:#F1F5F9;font-family:${FONT};color:#1A1A1A;line-height:1.6}
 </div>
 
 <div class="dash-container">
-  <div class="page-head">
-    <p class="sub">측정일 <strong id="rd-head-date">${escHtml(snapshot.date)}</strong> · 생성 ${escHtml((snapshot.generatedAt || '').slice(0, 16).replace('T', ' '))} · ${escHtml(momNote)}</p>
-  </div>
-
   <!-- How to Read — 사용자 제공 원문 그대로, 강조만 덧입힘 (사용자 지시 2026-08-30) -->
   <section class="htr">
     <h2 class="htr-title">How to Read</h2>
