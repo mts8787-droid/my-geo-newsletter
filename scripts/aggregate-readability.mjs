@@ -234,7 +234,12 @@ function resolvePt(pt, url) {
 //                       (ai_schema_website 은 적용 페이지도 0건이었다)
 const TTFB_MAX_MS = 600
 // 채점 제외 체크 — na:true 로 표시해 applicable(분모)에서도 빠진다 (scoring_config 의 enabled:false 와 동등)
-// 채점 제외 — 상류 config 의 enabled:false 와 별개로 우리 쪽에서도 유지해야 한다.
+// 채점 제외 (38항목 체계) — 4건 모두 사용자 결정으로 확정.
+//   perf_html_size(#5)    — 측정이 HTML DOM 크기를 반영 못함 (2026-08-26)
+//   perf_render_block(#8) — 기준 제외 (2026-08-26)
+//   ai_summary_ssr(#31)   — #35 Summary Box 와 중복 계측 + 클래스명 문자열 매칭 오탐 (2026-08-30)
+//   ai_schema_website(#22)— home 전용인데 home 은 EXCLUDED_PT 라 분모 0 → 표에 '—' 만 남음 (2026-08-30)
+// 상류 config 의 enabled:false 와 별개로 우리 쪽에서도 유지해야 한다.
 // 상류 enabled:false 는 '앞으로의 런' 에만 걸리고, 이미 수집된 run_results 에는
 // 값이 그대로 남아 있어 집계에 잡힌다 (8/30 데이터에서 #5 0% · #8 0.6% 로 사이트 성능 -7.2 유발).
 // #5 HTML<100KB · #8 Render Blocking 은 사용자 결정으로 제외된 항목 (2026-08-26).

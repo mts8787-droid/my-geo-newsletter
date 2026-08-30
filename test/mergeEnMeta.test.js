@@ -186,3 +186,20 @@ describe('MoM 반올림 — 표시값 기준', () => {
     expect(mom[2]).toBe('0.1')
   })
 })
+
+describe('Readability 채점 항목 — 38항목 체계 고정', () => {
+  it('제외 4건이 스냅샷에 없고 총 38항목이다', async () => {
+    const fs = await import('fs')
+    const snap = JSON.parse(fs.readFileSync('data/readability/2026-08-30.json', 'utf8'))
+    const ids = Object.keys(snap.overall.checks)
+    for (const k of ['perf_html_size', 'perf_render_block', 'ai_summary_ssr', 'ai_schema_website'])
+      expect(ids).not.toContain(k)
+    expect(ids.length).toBe(38)
+  })
+  it('제외 페이지타입이 집계에 없다', async () => {
+    const fs = await import('fs')
+    const snap = JSON.parse(fs.readFileSync('data/readability/2026-08-30.json', 'utf8'))
+    const pts = Object.keys(snap.overall.pageTypes)
+    for (const k of ['unknown', 'home', 'business', 'promotion']) expect(pts).not.toContain(k)
+  })
+})
