@@ -479,7 +479,16 @@ function switchTab(id){
   // 활성 탭 안의 lazy iframe(data-src) 최초 1회 로드 (readability 등)
   var actPanel=document.getElementById('tab-'+id);
   if(actPanel){actPanel.querySelectorAll('iframe[data-src]').forEach(function(f){if(!f.src){f.src=f.getAttribute('data-src')}})}
+  // 주소창 hash 갱신 — 탭을 연 상태로 링크를 복사·공유할 수 있게 한다.
+  // (복원 로직은 있었는데 갱신이 없어 링크가 항상 첫 탭으로 열렸다)
+  // replaceState 라 뒤로가기 히스토리를 더럽히지 않는다.
+  try{if(window.history&&history.replaceState)history.replaceState(null,'','#'+id);else window.location.hash=id}catch(e){}
 }
+// 해시로 직접 들어온 경우(#citation 등) 뒤늦은 hashchange 도 반영
+window.addEventListener('hashchange',function(){
+  var h=window.location.hash.replace('#','');
+  if(h&&document.getElementById('tab-'+h))switchTab(h);
+});
 function switchCitSub(sub){
   document.querySelectorAll('#gnb-citation .gnb-sub-btn').forEach(function(b){b.classList.remove('active')});
   var btns=document.querySelectorAll('#gnb-citation .gnb-sub-btn');

@@ -1794,9 +1794,20 @@ function _bumpChartSvgJS(names, rankings, months, maxRank, labelFn){
   return svg;
 }
 
+// 해시로 서브탭 복원 (#dotcom · #llm-compare 등) — 링크로 바로 그 탭이 열리게
+function _citRestoreTab(){
+  var h=(window.location.hash||'').replace('#','');
+  if(!h)return;
+  var btn=document.querySelector('.cit-gnb-btn[data-tab="'+h+'"]');
+  if(btn)switchSubTab(btn,h);
+}
+window.addEventListener('DOMContentLoaded',_citRestoreTab);
+window.addEventListener('hashchange',_citRestoreTab);
 function switchSubTab(btn,tab){
   document.querySelectorAll('.cit-gnb-btn').forEach(function(t){t.classList.remove('active')});
   if(btn)btn.classList.add('active');
+  // 주소창 hash 갱신 — 서브탭을 연 상태로 링크 공유 가능하게
+  try{if(window.history&&history.replaceState)history.replaceState(null,'','#'+tab);else window.location.hash=tab}catch(e){}
   document.querySelectorAll('.sub-tab-panel').forEach(function(p){
     p.style.display=p.getAttribute('data-panel')===tab?'':'none';
   });

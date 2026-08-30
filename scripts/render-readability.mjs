@@ -652,16 +652,30 @@ function readabilityClient() {
   function buildControls() {
     var nav = document.getElementById('rd-tabnav')
     // raw·criteria 탭은 /admin/* 리소스를 fetch/iframe → 비인증 게시본에선 제외.
-    var tabs = [['country', '국가별'], ['pagetype', '페이지 타입별']]
-    tabs.push(['raw', 'Raw 데이터'], ['criteria', '검수 기준'])   // 어드민·게시본 동일 (RD.paths 로 게이트별 URL 분기)
+    var tabs = [['country', I.tabCountry], ['pagetype', I.tabPageType]]
+    tabs.push(['raw', I.tabRaw], ['criteria', I.tabCriteria])   // 어드민·게시본 동일 (RD.paths 로 게이트별 URL 분기)
+    var TAB_IDS = tabs.map(function (t) { return t[0] })
+    // 진입 시 hash 로 탭 복원 (#raw · #criteria 등) — 링크로 특정 탭을 바로 열 수 있게
+    var h0 = (window.location.hash || '').replace('#', '')
+    if (TAB_IDS.indexOf(h0) >= 0) state.tab = h0
     nav.innerHTML = tabs.map(function (t) {
-      return '<button data-tab="' + t[0] + '"' + (t[0] === state.tab ? ' class="active"' : '') + '>' + t[1] + '</button>'
+      return '<button data-tab="' + t[0] + '"' + (t[0] === state.tab ? ' class="active"' : '') + '>' + esc(t[1]) + '</button>'
     }).join('')
+    function activate(id, pushHash) {
+      if (TAB_IDS.indexOf(id) < 0) return
+      state.tab = id
+      Array.prototype.forEach.call(nav.querySelectorAll('button'), function (x) { x.classList.toggle('active', x.getAttribute('data-tab') === id) })
+      // 주소창 hash 갱신 — 탭을 연 상태로 링크 공유 가능. replaceState 라 히스토리를 더럽히지 않는다.
+      if (pushHash) { try { if (window.history && history.replaceState) history.replaceState(null, '', '#' + id); else window.location.hash = id } catch (e) {} }
+      renderPanel()
+    }
     nav.addEventListener('click', function (e) {
       var b = e.target.closest('button[data-tab]'); if (!b) return
-      state.tab = b.getAttribute('data-tab')
-      Array.prototype.forEach.call(nav.querySelectorAll('button'), function (x) { x.classList.toggle('active', x.getAttribute('data-tab') === state.tab) })
-      renderPanel()
+      activate(b.getAttribute('data-tab'), true)
+    })
+    // 주소창에서 직접 hash 를 바꾸거나 뒤로가기로 온 경우
+    window.addEventListener('hashchange', function () {
+      activate((window.location.hash || '').replace('#', ''), false)
     })
     var ccSel = document.getElementById('rd-cc')
     var ptSel = document.getElementById('rd-pt')

@@ -488,3 +488,31 @@ describe('영문본 — 한글 잔존 0', () => {
     expect(Object.keys(T.ko).sort()).toEqual(Object.keys(T.en).sort())
   })
 })
+
+describe('대시보드 탭 — # 링크', () => {
+  const read = async (rel) => {
+    const fs = await import('fs')
+    const { fileURLToPath } = await import('url')
+    const { dirname, join } = await import('path')
+    return fs.readFileSync(join(dirname(fileURLToPath(import.meta.url)), '..', rel), 'utf8')
+  }
+  it('메인 대시보드 — 복원·갱신·hashchange 세 가지가 모두 있다', async () => {
+    const s = await read('src/dashboard/dashboardClient.js')
+    expect(s).toMatch(/location\.hash\.replace/)          // 복원
+    expect(s).toMatch(/replaceState\(null,'','#'\+id\)/)  // 갱신
+    expect(s).toMatch(/addEventListener\('hashchange'/)   // 주소창 직접 변경
+  })
+  it('Citation 서브탭 — 복원·갱신이 있다', async () => {
+    const s = await read('src/citation/citationTemplate.js')
+    expect(s).toMatch(/replaceState\(null,'','#'\+tab\)/)
+    expect(s).toMatch(/_citRestoreTab/)
+  })
+  it('Readability — 복원·갱신·hashchange 가 있고 탭 id 를 화이트리스트로 검증한다', async () => {
+    const s = await read('scripts/render-readability.mjs')
+    expect(s).toMatch(/TAB_IDS\.indexOf\(h0\) >= 0/)      // 복원 (유효 id 만)
+    expect(s).toMatch(/history\.replaceState\(null, '', '#' \+ id\)/)
+    expect(s).toMatch(/addEventListener\('hashchange'/)
+    // 임의 hash 로 state 가 오염되지 않아야 한다
+    expect(s).toMatch(/if \(TAB_IDS\.indexOf\(id\) < 0\) return/)
+  })
+})
