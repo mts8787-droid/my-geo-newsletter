@@ -329,8 +329,19 @@ const RECHECK = {
   //  - psi 파일 자체가 없으면 → null (크롤러 값 기반 원본 판정 유지, 하위 호환)
   //  - psi 는 있는데 이 URL 만 없거나 실패면 → na (채점 제외). 두 측정 체계를 섞으면
   //    통과율이 서로 다른 척도의 혼합이 되어 해석 불가해지므로 분모에서 뺀다.
-  // 상류 header_max_age_min(min_seconds:0) 과 결과가 다르다 (81.5% vs 95.4%).
-  // 사용자 기준은 "max-age 디렉티브가 있으면 통과" (2026-08-26) — 우리 판정 유지.
+  // #4 Cache-Control — 룰 A "max-age 디렉티브가 있으면 통과" 로 확정 (사용자 결정 2026-08-30).
+  //
+  // 상류 현재 룰(header_max_age_min, min_seconds:0)과 로직이 동일하다. 그런데 8/30 크롤은
+  // 옛 룰(no-cache/no-store 가 보이면 max-age 를 보지도 않고 FAIL)로 돌아 저장 판정이 낡았다
+  // — 1,123건이 어긋난다. 그래서 저장된 value 문자열로 재판정한다
+  // (상류도 gen_dashboard_data.py 에서 같은 백필을 한다). 다음 크롤이 새 룰로 돌면 제거 가능.
+  //
+  // 검토한 대안 (8/30 실측 11,761건 기준) — 재론 방지용 기록:
+  //   A 디렉티브 존재만                    96.8%  ← 채택
+  //   B 실제 캐시 가능(no-store X, age>0)  60.6%  세션·개인화 페이지의 정당한 no-store 까지 감점
+  //   C no-store 만 실패                   87.2%
+  // A 는 변별력이 거의 없지만(96.8%), 캐싱의 실질 신호인 응답 속도는 #1 TTFB 를 PSI 로
+  // 직접 측정하므로 중복이다. 8월호 발행 중 점수 급변을 피하려 A 유지.
   perf_cache_control(it) {
     const m = String(it.value == null ? '' : it.value).match(/max-age\s*=\s*(\d+)/i)
     if (!m) return { pass: false, hint: 'Cache-Control 에 max-age 디렉티브가 없습니다.' }
