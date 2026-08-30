@@ -321,6 +321,90 @@ function readabilityClient() {
     return out.join('')
   }
 
+  // ── 필터 조합별 자동 해석 ─────────────────────────────────────────────────
+  // 손으로 쓴 notes 만으로는 11사이트 × 9타입 조합을 다 덮을 수 없다.
+  // 현재 선택된 국가·타입의 실제 수치를 스냅샷에서 계산해 문장을 만든다
+  // (사용자 지시 2026-08-30: 모든 필터마다, 중복 선택에서도 달라져야 함).
+  function rateOf(bag, cid) {
+    var c = bag && bag[cid]
+    return (c && c.applicable) ? +(c.pass / c.applicable * 100).toFixed(1) : null
+  }
+  // 선택된 페이지타입 기준으로 사이트별 통과율 — pt 가 all 이면 사이트 전체 기준
+  function ratesByCc(cid, ptId) {
+    var out = []
+    Object.keys(RD.countries || {}).forEach(function (cc) {
+      var v = RD.countries[cc]
+      var bag = ptId && v.pageTypes && v.pageTypes[ptId] && v.pageTypes[ptId].checks
+        ? v.pageTypes[ptId].checks : v.checks
+      var r = rateOf(bag, cid)
+      if (r != null) out.push({ cc: cc, rate: r })
+    })
+    return out.sort(function (a, b) { return b.rate - a.rate })
+  }
+  // 선택된 국가 기준으로 페이지타입별 통과율
+  function ratesByPt(cid, scope) {
+    var out = []
+    Object.keys(scope.pageTypes || {}).forEach(function (id) {
+      var p = scope.pageTypes[id]
+      var r = rateOf(p.checks, cid)
+      if (r != null) out.push({ pt: id, label: p.label || id, rate: r })
+    })
+    return out.sort(function (a, b) { return b.rate - a.rate })
+  }
+  function autoNotes(cid, rate, scope, ccId, ptId) {
+    var out = []
+    var ptName = ptId ? ((RD.overall.pageTypes[ptId] || {}).label || ptId) : null
+
+    // ① 같은 조건의 전체 평균 대비 위치.
+    //    페이지타입을 골랐으면 '그 타입의 전 사이트 평균' 과 비교해야 한다 —
+    //    전체(모든 타입) 평균과 비교하면 타입 특성 차이가 편차로 둔갑한다.
+    var baseBag = ptId && RD.overall.pageTypes && RD.overall.pageTypes[ptId]
+      ? RD.overall.pageTypes[ptId].checks : RD.overall.checks
+    var baseName = ptId ? (ptName + ' 전체 평균') : '전체 평균'
+    var allRate = rateOf(baseBag, cid)
+    if (allRate != null && Math.abs(rate - allRate) >= 3) {
+      var d = +(rate - allRate).toFixed(1)
+      out.push(baseName + ' ' + allRate + '% 대비 ' + (d > 0 ? '+' : '') + d + '%p ' +
+        (d > 0 ? '높습니다' : '낮습니다') + '.')
+    }
+    // ② 국가를 골랐을 때 — 사이트 간 순위와 벤치마크
+    if (ccId) {
+      var byCc = ratesByCc(cid, ptId)
+      var idx = -1
+      for (var i = 0; i < byCc.length; i++) if (byCc[i].cc === ccId) idx = i
+      if (idx >= 0 && byCc.length >= 3) {
+        var best = byCc[0], worst = byCc[byCc.length - 1]
+        var pos = (idx + 1) + '위 / ' + byCc.length + '개 사이트'
+        if (idx === 0) {
+          out.push((ptName ? ptName + ' 기준 ' : '') + '전 사이트 중 1위입니다. 다른 사이트가 참고할 기준점이 됩니다.')
+        } else if (idx === byCc.length - 1) {
+          out.push((ptName ? ptName + ' 기준 ' : '') + '전 사이트 중 최하위입니다 (' + pos + '). 최고인 ' +
+            ccLabel(best.cc) + '(' + best.rate + '%) 의 구성 방식을 확인해 볼 수 있습니다.')
+        } else {
+          out.push((ptName ? ptName + ' 기준 ' : '') + pos + ' — 최고 ' + ccLabel(best.cc) + ' ' + best.rate +
+            '% / 최저 ' + ccLabel(worst.cc) + ' ' + worst.rate + '%.')
+        }
+      }
+    }
+    // ③ 페이지타입을 골랐을 때 — 타입 간 순위
+    if (ptId) {
+      var byPt = ratesByPt(cid, scope)
+      var j = -1
+      for (var k = 0; k < byPt.length; k++) if (byPt[k].pt === ptId) j = k
+      if (j >= 0 && byPt.length >= 3) {
+        var bp = byPt[0]
+        if (j === byPt.length - 1) {
+          out.push('이 사이트의 ' + byPt.length + '개 페이지타입 중 이 타입이 가장 낮습니다. 같은 사이트의 ' +
+            bp.label + '(' + bp.rate + '%) 와 비교해 보면 원인이 좁혀집니다.')
+        } else if (j > 0) {
+          out.push('이 사이트 내 ' + (j + 1) + '위 / ' + byPt.length + '개 타입 — 최고는 ' +
+            bp.label + ' ' + bp.rate + '%.')
+        }
+      }
+    }
+    return out
+  }
+
   // ── 개선 가이드 — 현재 필터(국가 × 페이지타입)에서 심각한 항목만 ──────────────
   // 임계값 70 — 80(신호등 '주의') 이 아니라 더 좁힌다. 개선 여력이 아니라
   // "지금 당장 손봐야 하는 것" 만 남기기 위함 (사용자 지시 2026-08-30).
@@ -356,7 +440,8 @@ function readabilityClient() {
       rows.push({ label: c.label, rate: rate, gap: c.applicable - c.pass,
         what: g.what, why: g.why,
         where: byP.where || byC.where || g.where,
-        act: byP.action || byC.action || g.action, notes: notes })
+        act: byP.action || byC.action || g.action,
+        notes: notes, auto: autoNotes(cid, rate, scope, ccId, ptId) })
     })
     if (!rows.length) {
       return sectionCard(title, '#BE123C',
@@ -375,6 +460,8 @@ function readabilityClient() {
         '<div class="gd-line"><span class="gd-k">리스크</span>' + esc(r.why) + '</div>' +
         '<div class="gd-line gd-fix"><span class="gd-k gd-k-where">담당 영역</span>' + esc(r.where) + '</div>' +
         '<div class="gd-line gd-fix"><span class="gd-k gd-k-act">조치 사항</span>' + esc(r.act) + '</div>' +
+        (r.auto.length ? '<div class="gd-line gd-note"><span class="gd-k">현재 위치</span>' +
+          esc(r.auto.join(' ')) + '</div>' : '') +
         (r.notes.length ? r.notes.map(function (t) {
           return '<div class="gd-line gd-note"><span class="gd-k">참고</span>' + esc(t) + '</div>'
         }).join('') : '') +
