@@ -794,11 +794,11 @@ function main() {
     if (chkSkip) {
       _logWarn('aggregate-readability', `${meta.cc}: 체크 수집 skip ${chkSkip} (손상 breakdown)`)
     }
-    // 페이지타입별 max SAMPLE_PER_PT 표본 (제품군 균등 분배) — 집계 + CSV 모두 동일 표본 사용
-    const selected = sampleByPageType(items)
-    if (selected.length < items.length) {
-      console.log(`[aggregate-readability] ${meta.cc}: 표본 추출 ${items.length} → ${selected.length} (페이지타입별 max ${SAMPLE_PER_PT}, 제품군 균등 분배)`)
-    }
+    // 전수 집계 — 상류(my-geo-audit)와 동일 기준 (사용자 결정 2026-08-30).
+    // 이전에는 페이지타입별 max SAMPLE_PER_PT 표본을 썼다 (US 같은 대형 크롤이 집계를
+    // 압도하는 것 방지 목적). 상류가 전수라 두 시스템 숫자가 어긋나 전수로 통일.
+    // ⚠ 국가별 URL 수 편차가 그대로 가중치가 된다 — 국가 비교 시 감안할 것.
+    const selected = items
     for (const it of selected) {
       accumulate(acc, it.result, it.url)
       accumulate(overall, it.result, it.url)

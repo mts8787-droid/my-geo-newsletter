@@ -2,61 +2,7 @@
   "snapshots": [
     {
       "date": "2026-06-14",
-      "generatedAt": "2026-08-27T04:59:35.277Z",
-      "countries": [
-        "au",
-        "br",
-        "ca",
-        "de",
-        "es",
-        "in",
-        "mx",
-        "uk",
-        "us",
-        "vn"
-      ],
-      "overallAvg": 73.9,
-      "urlCount": 4431
-    },
-    {
-      "date": "2026-06-29",
-      "generatedAt": "2026-08-27T04:59:35.889Z",
-      "countries": [
-        "au",
-        "br",
-        "ca",
-        "de",
-        "es",
-        "in",
-        "mx",
-        "uk",
-        "us",
-        "vn"
-      ],
-      "overallAvg": 75.2,
-      "urlCount": 5182
-    },
-    {
-      "date": "2026-07-31",
-      "generatedAt": "2026-08-27T04:59:36.474Z",
-      "countries": [
-        "au",
-        "br",
-        "ca",
-        "de",
-        "es",
-        "in",
-        "mx",
-        "uk",
-        "us",
-        "vn"
-      ],
-      "overallAvg": 77.5,
-      "urlCount": 5438
-    },
-    {
-      "date": "2026-08-30",
-      "generatedAt": "2026-08-30T04:19:27.515Z",
+      "generatedAt": "2026-08-30T04:28:35.167Z",
       "countries": [
         "au",
         "br",
@@ -70,7 +16,61 @@
         "vn"
       ],
       "overallAvg": 75.9,
-      "urlCount": 5652
+      "urlCount": 9387
+    },
+    {
+      "date": "2026-06-29",
+      "generatedAt": "2026-08-30T04:28:35.764Z",
+      "countries": [
+        "au",
+        "br",
+        "ca",
+        "de",
+        "es",
+        "in",
+        "mx",
+        "uk",
+        "us",
+        "vn"
+      ],
+      "overallAvg": 75.1,
+      "urlCount": 5398
+    },
+    {
+      "date": "2026-07-31",
+      "generatedAt": "2026-08-30T04:28:36.340Z",
+      "countries": [
+        "au",
+        "br",
+        "ca",
+        "de",
+        "es",
+        "in",
+        "mx",
+        "uk",
+        "us",
+        "vn"
+      ],
+      "overallAvg": 77.4,
+      "urlCount": 5675
+    },
+    {
+      "date": "2026-08-30",
+      "generatedAt": "2026-08-30T04:28:37.164Z",
+      "countries": [
+        "au",
+        "br",
+        "ca",
+        "de",
+        "es",
+        "in",
+        "mx",
+        "uk",
+        "us",
+        "vn"
+      ],
+      "overallAvg": 76.6,
+      "urlCount": 9291
     }
   ]
 }
