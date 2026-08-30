@@ -901,7 +901,7 @@ body{background:#F1F5F9;font-family:${FONT};color:#1A1A1A;line-height:1.6}
   <section class="htr">
     <h2 class="htr-title">How to Read</h2>
     <p class="htr-p"><strong>Readability</strong>는 <strong>AI 관점에서의 가독성</strong>을 뜻하며, 웹페이지의 콘텐츠가
-      AI가 읽고 활용하기 좋은 상태인지 평가하는 지표입니다. ‘26년 7월부터 LG.com의 Readability 현황을 파악하기 위해
+      AI가 읽고 활용하기 좋은 상태인지 평가하는 지표입니다. ‘26년 6월부터 LG.com의 Readability 현황을 파악하기 위해
       <strong>10개 전략 국가</strong>의 주요 페이지 유형,
       총 <strong id="htr-urlcount">${escHtml((snapshot.overall.urlCount || 0).toLocaleString('en-US'))}개 페이지</strong>를
       평가했습니다(<span class="htr-em">매월 마지막 주차 진행</span>). 10개 국가 사이트에 더해
