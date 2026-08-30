@@ -908,12 +908,14 @@ body{background:#F1F5F9;font-family:${FONT};color:#1A1A1A;line-height:1.6}
       <strong>글로벌 대표 사이트(lg.com/global)</strong>를 별도 사이트로 포함했습니다.</p>
     <p class="htr-p">Readability 점수는 <strong>전체 평가항목 중 기준을 충족한 항목의 비율(%)을 100점 기준으로 환산</strong>한
       점수입니다. 평가는 사이트 성능, AI 웹접근성, Basic SEO 적합도, 스키마마크업, 고인용 콘텐츠, AI Crawlability의
-      <strong>6개 영역, 총 38개 체크리스트</strong>를 기준으로 진행했습니다.</p>
-    <p class="htr-p">각 국가별 페이지별 담당 부서에서는 <strong>국가별 / 페이지 타입별 탭</strong>을 통해서 현재 부족한 영역에 대한
-      검수결과를 확인하고, 각 탭별로
+      <strong>6개 영역, 총 38개 체크리스트</strong>를 기준으로 진행했습니다.
+      각 항목의 정의와 판정 기준은 <strong>검수 기준 탭</strong>과 대시보드 내 <strong>항목별 간략 설명</strong>에서
+      확인하실 수 있습니다.</p>
+    <p class="htr-p">각 국가·페이지 담당 부서에서는 <strong>국가별 / 페이지 타입별 탭</strong>을 통해 담당 범위의 검수 결과를
+      확인하실 수 있습니다. 각 탭에서
       <span class="htr-step">(1) 전체 점수</span> <span class="htr-step">(2) 세부 항목별 점수</span>
-      <span class="htr-step">(3) 시급 개선 항목</span> 을 확인하여,
-      <strong>개선 사항에 대한 인사이트를 발굴하고 개별 개선 과제를 확인</strong>할 수 있습니다.</p>
+      <span class="htr-step">(3) 시급 개선 항목</span> 을 순서대로 살펴보시면,
+      현재 보완이 필요한 영역을 파악하고 <strong>개선 과제를 도출하여 업무에 활용</strong>하실 수 있습니다.</p>
   </section>
 
   <div class="tab-nav" id="rd-tabnav"></div>
