@@ -209,3 +209,35 @@ describe('Readability 채점 항목 — 38항목 체계 고정', () => {
     for (const k of ['unknown', 'home', 'business', 'promotion']) expect(pts).not.toContain(k)
   })
 })
+
+// A안 — 대시보드(스냅샷)와 뉴스레터 본문 수치가 항상 같아야 한다 (사용자 결정 2026-08-30).
+// 새 스냅샷이 들어오면 이 테스트가 먼저 깨져서 본문 갱신 누락을 잡는다.
+describe('뉴스레터 본문 ↔ 최신 스냅샷 수치 일치', () => {
+  const load = async () => {
+    const fs = await import('fs')
+    const { fileURLToPath } = await import('url')
+    const { dirname, join } = await import('path')
+    const root = join(dirname(fileURLToPath(import.meta.url)), '..')
+    const idx = JSON.parse(fs.readFileSync(join(root, 'data/readability/index.json'), 'utf8'))
+    const latest = idx.snapshots[idx.snapshots.length - 1].date
+    const snap = JSON.parse(fs.readFileSync(join(root, `data/readability/${latest}.json`), 'utf8'))
+    const src = fs.readFileSync(join(root, 'src/emailTemplate.js'), 'utf8')
+    const body = src.slice(src.indexOf('const RD_TEXT ='), src.indexOf('// Readability Highlight 섹션 본체'))
+    return { snap, body, latest }
+  }
+  it('총점이 본문에 그대로 인용돼 있다', async () => {
+    const { snap, body } = await load()
+    expect(body).toContain(String(snap.overall.avgScore))
+  })
+  it('6개 영역 점수가 모두 본문에 인용돼 있다', async () => {
+    const { snap, body } = await load()
+    const missing = Object.entries(snap.overall.categories)
+      .filter(([, v]) => !body.includes(v.toFixed(1)) && !body.includes(String(v)))
+      .map(([k, v]) => `${k}=${v}`)
+    expect(missing).toEqual([])
+  })
+  it('평가 페이지 수가 본문에 인용돼 있다', async () => {
+    const { snap, body } = await load()
+    expect(body).toContain(snap.overall.urlCount.toLocaleString('en-US'))
+  })
+})
