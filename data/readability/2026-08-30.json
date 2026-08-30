@@ -1,6 +1,6 @@
 {
   "date": "2026-08-30",
-  "generatedAt": "2026-08-30T06:07:26.123Z",
+  "generatedAt": "2026-08-30T08:28:49.695Z",
   "source": "run_results",
   "categoryLabels": {
     "performance": "사이트 성능",
@@ -16,10 +16,10 @@
       "runId": "d31a3cda973e",
       "urlCount": 1078,
       "scoredCount": 1078,
-      "avgScore": 77.1,
+      "avgScore": 78.2,
       "grades": {
-        "Need Improvement": 1001,
-        "Good": 75,
+        "Need Improvement": 897,
+        "Good": 179,
         "Poor": 2
       },
       "categories": {
@@ -27,7 +27,7 @@
         "accessibility": 82.3,
         "seo": 80.8,
         "geo_schema": 31.4,
-        "geo_content": 52.4,
+        "geo_content": 59.6,
         "geo_platform": 99.9
       },
       "checks": {
@@ -196,7 +196,7 @@
         "ai_definition": {
           "label": "#33 Definition Paragraph",
           "cat": "geo_content",
-          "pass": 0,
+          "pass": 305,
           "applicable": 1078
         },
         "ai_author_source": {
@@ -208,13 +208,13 @@
         "ai_summary_box": {
           "label": "#35 Summary Box (콘텐츠)",
           "cat": "geo_content",
-          "pass": 578,
+          "pass": 583,
           "applicable": 1078
         },
         "ai_citable": {
           "label": "#36 Citable Sentence ≥ 10%",
           "cat": "geo_content",
-          "pass": 1024,
+          "pass": 1061,
           "applicable": 1078
         },
         "ai_ssr_ratio": {
@@ -264,13 +264,13 @@
         "buying_guide": {
           "label": "구매 가이드",
           "count": 18,
-          "avgScore": 72.3,
+          "avgScore": 74.6,
           "categories": {
             "performance": 100,
             "accessibility": 88.9,
             "seo": 73.8,
             "geo_schema": 33.3,
-            "geo_content": 30,
+            "geo_content": 45.6,
             "geo_platform": 100
           },
           "checks": {
@@ -439,7 +439,7 @@
             "ai_definition": {
               "label": "#33 Definition Paragraph",
               "cat": "geo_content",
-              "pass": 0,
+              "pass": 11,
               "applicable": 18
             },
             "ai_author_source": {
@@ -457,7 +457,7 @@
             "ai_citable": {
               "label": "#36 Citable Sentence ≥ 10%",
               "cat": "geo_content",
-              "pass": 15,
+              "pass": 18,
               "applicable": 18
             },
             "ai_ssr_ratio": {
@@ -507,13 +507,13 @@
         "lg_experience": {
           "label": "LG Experience",
           "count": 88,
-          "avgScore": 76.5,
+          "avgScore": 79.9,
           "categories": {
             "performance": 99.8,
             "accessibility": 99.1,
             "seo": 85.5,
             "geo_schema": 32.8,
-            "geo_content": 20.2,
+            "geo_content": 41.4,
             "geo_platform": 100
           },
           "checks": {
@@ -682,7 +682,7 @@
             "ai_definition": {
               "label": "#33 Definition Paragraph",
               "cat": "geo_content",
-              "pass": 0,
+              "pass": 80,
               "applicable": 88
             },
             "ai_author_source": {
@@ -694,13 +694,13 @@
             "ai_summary_box": {
               "label": "#35 Summary Box (콘텐츠)",
               "cat": "geo_content",
-              "pass": 4,
+              "pass": 6,
               "applicable": 88
             },
             "ai_citable": {
               "label": "#36 Citable Sentence ≥ 10%",
               "cat": "geo_content",
-              "pass": 64,
+              "pass": 75,
               "applicable": 88
             },
             "ai_ssr_ratio": {
@@ -750,13 +750,13 @@
         "microsite": {
           "label": "마이크로사이트/캠페인",
           "count": 16,
-          "avgScore": 71.1,
+          "avgScore": 72.5,
           "categories": {
             "performance": 100,
             "accessibility": 93.8,
             "seo": 71.3,
             "geo_schema": 23.4,
-            "geo_content": 25,
+            "geo_content": 35.9,
             "geo_platform": 100
           },
           "checks": {
@@ -925,7 +925,7 @@
             "ai_definition": {
               "label": "#33 Definition Paragraph",
               "cat": "geo_content",
-              "pass": 0,
+              "pass": 6,
               "applicable": 16
             },
             "ai_author_source": {
@@ -943,7 +943,7 @@
             "ai_citable": {
               "label": "#36 Citable Sentence ≥ 10%",
               "cat": "geo_content",
-              "pass": 15,
+              "pass": 16,
               "applicable": 16
             },
             "ai_ssr_ratio": {
@@ -993,13 +993,13 @@
         "plp": {
           "label": "제품 카테고리 (PLP)",
           "count": 89,
-          "avgScore": 74.5,
+          "avgScore": 75.5,
           "categories": {
             "performance": 100,
             "accessibility": 88.2,
             "seo": 71.1,
             "geo_schema": 42.2,
-            "geo_content": 31.5,
+            "geo_content": 39.3,
             "geo_platform": 100
           },
           "checks": {
@@ -1168,7 +1168,7 @@
             "ai_definition": {
               "label": "#33 Definition Paragraph",
               "cat": "geo_content",
-              "pass": 0,
+              "pass": 28,
               "applicable": 89
             },
             "ai_author_source": {
@@ -1236,13 +1236,13 @@
         "pdp": {
           "label": "제품 상세 (PDP)",
           "count": 567,
-          "avgScore": 77.7,
+          "avgScore": 78.3,
           "categories": {
             "performance": 100,
             "accessibility": 70.6,
             "seo": 85.8,
             "geo_schema": 22.8,
-            "geo_content": 73.7,
+            "geo_content": 78.7,
             "geo_platform": 99.7
           },
           "checks": {
@@ -1411,7 +1411,7 @@
             "ai_definition": {
               "label": "#33 Definition Paragraph",
               "cat": "geo_content",
-              "pass": 0,
+              "pass": 96,
               "applicable": 567
             },
             "ai_author_source": {
@@ -1429,7 +1429,7 @@
             "ai_citable": {
               "label": "#36 Citable Sentence ≥ 10%",
               "cat": "geo_content",
-              "pass": 548,
+              "pass": 566,
               "applicable": 567
             },
             "ai_ssr_ratio": {
@@ -1479,13 +1479,13 @@
         "press_media": {
           "label": "프레스앤미디어",
           "count": 100,
-          "avgScore": 75.8,
+          "avgScore": 78.7,
           "categories": {
             "performance": 99.5,
             "accessibility": 92.5,
             "seo": 63.4,
             "geo_schema": 49.8,
-            "geo_content": 39.8,
+            "geo_content": 56.2,
             "geo_platform": 100
           },
           "checks": {
@@ -1654,7 +1654,7 @@
             "ai_definition": {
               "label": "#33 Definition Paragraph",
               "cat": "geo_content",
-              "pass": 0,
+              "pass": 76,
               "applicable": 100
             },
             "ai_author_source": {
@@ -1666,13 +1666,13 @@
             "ai_summary_box": {
               "label": "#35 Summary Box (콘텐츠)",
               "cat": "geo_content",
-              "pass": 3,
+              "pass": 6,
               "applicable": 100
             },
             "ai_citable": {
               "label": "#36 Citable Sentence ≥ 10%",
               "cat": "geo_content",
-              "pass": 97,
+              "pass": 100,
               "applicable": 100
             },
             "ai_ssr_ratio": {
@@ -1722,13 +1722,13 @@
         "support": {
           "label": "지원/Support",
           "count": 100,
-          "avgScore": 78.2,
+          "avgScore": 78.5,
           "categories": {
             "performance": 99.8,
             "accessibility": 97.3,
             "seo": 72,
             "geo_schema": 50,
-            "geo_content": 26.8,
+            "geo_content": 29,
             "geo_platform": 100
           },
           "checks": {
@@ -1897,7 +1897,7 @@
             "ai_definition": {
               "label": "#33 Definition Paragraph",
               "cat": "geo_content",
-              "pass": 0,
+              "pass": 8,
               "applicable": 100
             },
             "ai_author_source": {
@@ -1915,7 +1915,7 @@
             "ai_citable": {
               "label": "#36 Citable Sentence ≥ 10%",
               "cat": "geo_content",
-              "pass": 97,
+              "pass": 98,
               "applicable": 100
             },
             "ai_ssr_ratio": {
@@ -2257,18 +2257,18 @@
       "runId": "40724cc2c93c",
       "urlCount": 897,
       "scoredCount": 897,
-      "avgScore": 76.6,
+      "avgScore": 76.8,
       "grades": {
-        "Good": 155,
-        "Need Improvement": 738,
-        "Poor": 4
+        "Good": 220,
+        "Need Improvement": 666,
+        "Poor": 11
       },
       "categories": {
         "performance": 99.2,
         "accessibility": 82.4,
         "seo": 91.4,
         "geo_schema": 33.8,
-        "geo_content": 45.7,
+        "geo_content": 46.2,
         "geo_platform": 92.8
       },
       "checks": {
@@ -2431,7 +2431,7 @@
         "ai_definition": {
           "label": "#33 Definition Paragraph",
           "cat": "geo_content",
-          "pass": 0,
+          "pass": 265,
           "applicable": 897
         },
         "ai_author_source": {
@@ -2449,7 +2449,7 @@
         "ai_citable": {
           "label": "#36 Citable Sentence ≥ 10%",
           "cat": "geo_content",
-          "pass": 632,
+          "pass": 416,
           "applicable": 897
         },
         "ai_ssr_ratio": {
@@ -2505,13 +2505,13 @@
         "buying_guide": {
           "label": "구매 가이드",
           "count": 26,
-          "avgScore": 75,
+          "avgScore": 78.4,
           "categories": {
             "performance": 94.1,
             "accessibility": 100,
             "seo": 94.1,
             "geo_schema": 32.5,
-            "geo_content": 20,
+            "geo_content": 42.3,
             "geo_platform": 100
           },
           "checks": {
@@ -2674,7 +2674,7 @@
             "ai_definition": {
               "label": "#33 Definition Paragraph",
               "cat": "geo_content",
-              "pass": 0,
+              "pass": 21,
               "applicable": 26
             },
             "ai_author_source": {
@@ -2692,7 +2692,7 @@
             "ai_citable": {
               "label": "#36 Citable Sentence ≥ 10%",
               "cat": "geo_content",
-              "pass": 7,
+              "pass": 15,
               "applicable": 26
             },
             "ai_ssr_ratio": {
@@ -2748,13 +2748,13 @@
         "newsroom": {
           "label": "뉴스룸/Press",
           "count": 28,
-          "avgScore": 72.9,
+          "avgScore": 75,
           "categories": {
             "performance": 100,
             "accessibility": 98.2,
             "seo": 81.6,
             "geo_schema": 12.1,
-            "geo_content": 30,
+            "geo_content": 42.1,
             "geo_platform": 100
           },
           "checks": {
@@ -2923,7 +2923,7 @@
             "ai_definition": {
               "label": "#33 Definition Paragraph",
               "cat": "geo_content",
-              "pass": 0,
+              "pass": 22,
               "applicable": 28
             },
             "ai_author_source": {
@@ -2941,7 +2941,7 @@
             "ai_citable": {
               "label": "#36 Citable Sentence ≥ 10%",
               "cat": "geo_content",
-              "pass": 18,
+              "pass": 13,
               "applicable": 28
             },
             "ai_ssr_ratio": {
@@ -2991,13 +2991,13 @@
         "lg_experience": {
           "label": "LG Experience",
           "count": 60,
-          "avgScore": 75.6,
+          "avgScore": 77.5,
           "categories": {
             "performance": 97.2,
             "accessibility": 97.9,
             "seo": 93.8,
             "geo_schema": 32.5,
-            "geo_content": 7.7,
+            "geo_content": 19,
             "geo_platform": 100
           },
           "checks": {
@@ -3160,7 +3160,7 @@
             "ai_definition": {
               "label": "#33 Definition Paragraph",
               "cat": "geo_content",
-              "pass": 0,
+              "pass": 45,
               "applicable": 60
             },
             "ai_author_source": {
@@ -3178,7 +3178,7 @@
             "ai_citable": {
               "label": "#36 Citable Sentence ≥ 10%",
               "cat": "geo_content",
-              "pass": 22,
+              "pass": 11,
               "applicable": 60
             },
             "ai_ssr_ratio": {
@@ -3234,13 +3234,13 @@
         "microsite": {
           "label": "마이크로사이트/캠페인",
           "count": 18,
-          "avgScore": 69.2,
+          "avgScore": 68.1,
           "categories": {
             "performance": 98.1,
             "accessibility": 93.1,
             "seo": 67.3,
             "geo_schema": 23.6,
-            "geo_content": 16.7,
+            "geo_content": 9.7,
             "geo_platform": 100
           },
           "checks": {
@@ -3403,7 +3403,7 @@
             "ai_definition": {
               "label": "#33 Definition Paragraph",
               "cat": "geo_content",
-              "pass": 0,
+              "pass": 3,
               "applicable": 18
             },
             "ai_author_source": {
@@ -3421,7 +3421,7 @@
             "ai_citable": {
               "label": "#36 Citable Sentence ≥ 10%",
               "cat": "geo_content",
-              "pass": 12,
+              "pass": 4,
               "applicable": 18
             },
             "ai_ssr_ratio": {
@@ -3477,13 +3477,13 @@
         "pdp": {
           "label": "제품 상세 (PDP)",
           "count": 457,
-          "avgScore": 77.1,
+          "avgScore": 76.7,
           "categories": {
             "performance": 100,
             "accessibility": 73.1,
             "seo": 99.1,
             "geo_schema": 21.1,
-            "geo_content": 70.9,
+            "geo_content": 67.6,
             "geo_platform": 85.9
           },
           "checks": {
@@ -3652,7 +3652,7 @@
             "ai_definition": {
               "label": "#33 Definition Paragraph",
               "cat": "geo_content",
-              "pass": 0,
+              "pass": 64,
               "applicable": 457
             },
             "ai_author_source": {
@@ -3670,7 +3670,7 @@
             "ai_citable": {
               "label": "#36 Citable Sentence ≥ 10%",
               "cat": "geo_content",
-              "pass": 400,
+              "pass": 275,
               "applicable": 457
             },
             "ai_ssr_ratio": {
@@ -3720,13 +3720,13 @@
         "plp": {
           "label": "제품 카테고리 (PLP)",
           "count": 99,
-          "avgScore": 76,
+          "avgScore": 75.3,
           "categories": {
             "performance": 99.6,
             "accessibility": 95.2,
             "seo": 83.4,
             "geo_schema": 42.9,
-            "geo_content": 20.7,
+            "geo_content": 16.4,
             "geo_platform": 99.6
           },
           "checks": {
@@ -3889,7 +3889,7 @@
             "ai_definition": {
               "label": "#33 Definition Paragraph",
               "cat": "geo_content",
-              "pass": 0,
+              "pass": 26,
               "applicable": 99
             },
             "ai_author_source": {
@@ -3907,7 +3907,7 @@
             "ai_citable": {
               "label": "#36 Citable Sentence ≥ 10%",
               "cat": "geo_content",
-              "pass": 71,
+              "pass": 28,
               "applicable": 99
             },
             "ai_ssr_ratio": {
@@ -3963,13 +3963,13 @@
         "press_media": {
           "label": "프레스앤미디어",
           "count": 100,
-          "avgScore": 80.5,
+          "avgScore": 83.6,
           "categories": {
             "performance": 96.9,
             "accessibility": 100,
             "seo": 91.6,
             "geo_schema": 48.3,
-            "geo_content": 23.8,
+            "geo_content": 41.8,
             "geo_platform": 100
           },
           "checks": {
@@ -4132,7 +4132,7 @@
             "ai_definition": {
               "label": "#33 Definition Paragraph",
               "cat": "geo_content",
-              "pass": 0,
+              "pass": 71,
               "applicable": 100
             },
             "ai_author_source": {
@@ -4150,7 +4150,7 @@
             "ai_citable": {
               "label": "#36 Citable Sentence ≥ 10%",
               "cat": "geo_content",
-              "pass": 30,
+              "pass": 49,
               "applicable": 100
             },
             "ai_ssr_ratio": {
@@ -4206,13 +4206,13 @@
         "support": {
           "label": "지원/Support",
           "count": 93,
-          "avgScore": 74.8,
+          "avgScore": 73.9,
           "categories": {
             "performance": 99.6,
             "accessibility": 74.7,
             "seo": 70.6,
             "geo_schema": 77.4,
-            "geo_content": 18,
+            "geo_content": 12.1,
             "geo_platform": 100
           },
           "checks": {
@@ -4375,7 +4375,7 @@
             "ai_definition": {
               "label": "#33 Definition Paragraph",
               "cat": "geo_content",
-              "pass": 0,
+              "pass": 13,
               "applicable": 93
             },
             "ai_author_source": {
@@ -4393,7 +4393,7 @@
             "ai_citable": {
               "label": "#36 Citable Sentence ≥ 10%",
               "cat": "geo_content",
-              "pass": 56,
+              "pass": 21,
               "applicable": 93
             },
             "ai_ssr_ratio": {
@@ -4449,13 +4449,13 @@
         "support_troubleshoot": {
           "label": "지원 - 트러블슈팅",
           "count": 16,
-          "avgScore": 74.5,
+          "avgScore": 70.6,
           "categories": {
             "performance": 100,
             "accessibility": 76.6,
             "seo": 71.9,
             "geo_schema": 50,
-            "geo_content": 25,
+            "geo_content": 0,
             "geo_platform": 100
           },
           "checks": {
@@ -4642,7 +4642,7 @@
             "ai_citable": {
               "label": "#36 Citable Sentence ≥ 10%",
               "cat": "geo_content",
-              "pass": 16,
+              "pass": 0,
               "applicable": 16
             },
             "ai_ssr_ratio": {
@@ -4739,18 +4739,18 @@
       "runId": "0387b1c88e54",
       "urlCount": 879,
       "scoredCount": 879,
-      "avgScore": 77.5,
+      "avgScore": 76.2,
       "grades": {
-        "Good": 95,
-        "Need Improvement": 781,
-        "Poor": 3
+        "Good": 106,
+        "Need Improvement": 768,
+        "Poor": 5
       },
       "categories": {
         "performance": 99.2,
         "accessibility": 83.2,
         "seo": 93.9,
         "geo_schema": 28,
-        "geo_content": 53.1,
+        "geo_content": 43.9,
         "geo_platform": 90.3
       },
       "checks": {
@@ -4913,7 +4913,7 @@
         "ai_definition": {
           "label": "#33 Definition Paragraph",
           "cat": "geo_content",
-          "pass": 0,
+          "pass": 153,
           "applicable": 879
         },
         "ai_author_source": {
@@ -4925,13 +4925,13 @@
         "ai_summary_box": {
           "label": "#35 Summary Box (콘텐츠)",
           "cat": "geo_content",
-          "pass": 491,
+          "pass": 500,
           "applicable": 879
         },
         "ai_citable": {
           "label": "#36 Citable Sentence ≥ 10%",
           "cat": "geo_content",
-          "pass": 866,
+          "pass": 383,
           "applicable": 879
         },
         "ai_ssr_ratio": {
@@ -4987,13 +4987,13 @@
         "buying_guide": {
           "label": "구매 가이드",
           "count": 22,
-          "avgScore": 73.1,
+          "avgScore": 73.8,
           "categories": {
             "performance": 91.5,
             "accessibility": 97.7,
             "seo": 88.4,
             "geo_schema": 28.6,
-            "geo_content": 23.6,
+            "geo_content": 29.1,
             "geo_platform": 100
           },
           "checks": {
@@ -5156,7 +5156,7 @@
             "ai_definition": {
               "label": "#33 Definition Paragraph",
               "cat": "geo_content",
-              "pass": 0,
+              "pass": 12,
               "applicable": 22
             },
             "ai_author_source": {
@@ -5174,7 +5174,7 @@
             "ai_citable": {
               "label": "#36 Citable Sentence ≥ 10%",
               "cat": "geo_content",
-              "pass": 18,
+              "pass": 12,
               "applicable": 22
             },
             "ai_ssr_ratio": {
@@ -5230,13 +5230,13 @@
         "newsroom": {
           "label": "뉴스룸/Press",
           "count": 17,
-          "avgScore": 73.4,
+          "avgScore": 73.2,
           "categories": {
             "performance": 100,
             "accessibility": 94.1,
             "seo": 81.6,
             "geo_schema": 5.8,
-            "geo_content": 40,
+            "geo_content": 37.6,
             "geo_platform": 100
           },
           "checks": {
@@ -5405,7 +5405,7 @@
             "ai_definition": {
               "label": "#33 Definition Paragraph",
               "cat": "geo_content",
-              "pass": 0,
+              "pass": 8,
               "applicable": 17
             },
             "ai_author_source": {
@@ -5423,7 +5423,7 @@
             "ai_citable": {
               "label": "#36 Citable Sentence ≥ 10%",
               "cat": "geo_content",
-              "pass": 16,
+              "pass": 6,
               "applicable": 17
             },
             "ai_ssr_ratio": {
@@ -5473,13 +5473,13 @@
         "lg_experience": {
           "label": "LG Experience",
           "count": 48,
-          "avgScore": 80,
+          "avgScore": 79.6,
           "categories": {
             "performance": 100,
             "accessibility": 79.2,
             "seo": 97.6,
             "geo_schema": 32.2,
-            "geo_content": 45.4,
+            "geo_content": 42.5,
             "geo_platform": 100
           },
           "checks": {
@@ -5642,7 +5642,7 @@
             "ai_definition": {
               "label": "#33 Definition Paragraph",
               "cat": "geo_content",
-              "pass": 0,
+              "pass": 20,
               "applicable": 48
             },
             "ai_author_source": {
@@ -5660,7 +5660,7 @@
             "ai_citable": {
               "label": "#36 Citable Sentence ≥ 10%",
               "cat": "geo_content",
-              "pass": 47,
+              "pass": 20,
               "applicable": 48
             },
             "ai_ssr_ratio": {
@@ -5716,13 +5716,13 @@
         "microsite": {
           "label": "마이크로사이트/캠페인",
           "count": 43,
-          "avgScore": 77.7,
+          "avgScore": 77.3,
           "categories": {
             "performance": 99.6,
             "accessibility": 85.5,
             "seo": 89.4,
             "geo_schema": 26.4,
-            "geo_content": 47.1,
+            "geo_content": 44.8,
             "geo_platform": 100
           },
           "checks": {
@@ -5885,7 +5885,7 @@
             "ai_definition": {
               "label": "#33 Definition Paragraph",
               "cat": "geo_content",
-              "pass": 0,
+              "pass": 15,
               "applicable": 43
             },
             "ai_author_source": {
@@ -5903,7 +5903,7 @@
             "ai_citable": {
               "label": "#36 Citable Sentence ≥ 10%",
               "cat": "geo_content",
-              "pass": 42,
+              "pass": 23,
               "applicable": 43
             },
             "ai_ssr_ratio": {
@@ -5959,13 +5959,13 @@
         "pdp": {
           "label": "제품 상세 (PDP)",
           "count": 454,
-          "avgScore": 77.5,
+          "avgScore": 76.5,
           "categories": {
             "performance": 99.7,
             "accessibility": 74.7,
             "seo": 99.3,
             "geo_schema": 21.1,
-            "geo_content": 73.3,
+            "geo_content": 65.5,
             "geo_platform": 85.6
           },
           "checks": {
@@ -6134,7 +6134,7 @@
             "ai_definition": {
               "label": "#33 Definition Paragraph",
               "cat": "geo_content",
-              "pass": 0,
+              "pass": 59,
               "applicable": 454
             },
             "ai_author_source": {
@@ -6152,7 +6152,7 @@
             "ai_citable": {
               "label": "#36 Citable Sentence ≥ 10%",
               "cat": "geo_content",
-              "pass": 452,
+              "pass": 251,
               "applicable": 454
             },
             "ai_ssr_ratio": {
@@ -6202,13 +6202,13 @@
         "plp": {
           "label": "제품 카테고리 (PLP)",
           "count": 99,
-          "avgScore": 75.9,
+          "avgScore": 73.7,
           "categories": {
             "performance": 99.1,
             "accessibility": 89.6,
             "seo": 84.8,
             "geo_schema": 36.4,
-            "geo_content": 27.5,
+            "geo_content": 12.4,
             "geo_platform": 100
           },
           "checks": {
@@ -6377,7 +6377,7 @@
             "ai_definition": {
               "label": "#33 Definition Paragraph",
               "cat": "geo_content",
-              "pass": 0,
+              "pass": 17,
               "applicable": 99
             },
             "ai_author_source": {
@@ -6389,13 +6389,13 @@
             "ai_summary_box": {
               "label": "#35 Summary Box (콘텐츠)",
               "cat": "geo_content",
-              "pass": 6,
+              "pass": 7,
               "applicable": 99
             },
             "ai_citable": {
               "label": "#36 Citable Sentence ≥ 10%",
               "cat": "geo_content",
-              "pass": 96,
+              "pass": 18,
               "applicable": 99
             },
             "ai_ssr_ratio": {
@@ -6445,13 +6445,13 @@
         "press_media": {
           "label": "프레스앤미디어",
           "count": 25,
-          "avgScore": 77.9,
+          "avgScore": 80.8,
           "categories": {
             "performance": 99.3,
             "accessibility": 98,
             "seo": 72.2,
             "geo_schema": 50,
-            "geo_content": 26.2,
+            "geo_content": 47.8,
             "geo_platform": 100
           },
           "checks": {
@@ -6620,7 +6620,7 @@
             "ai_definition": {
               "label": "#33 Definition Paragraph",
               "cat": "geo_content",
-              "pass": 0,
+              "pass": 16,
               "applicable": 25
             },
             "ai_author_source": {
@@ -6632,13 +6632,13 @@
             "ai_summary_box": {
               "label": "#35 Summary Box (콘텐츠)",
               "cat": "geo_content",
-              "pass": 0,
+              "pass": 8,
               "applicable": 25
             },
             "ai_citable": {
               "label": "#36 Citable Sentence ≥ 10%",
               "cat": "geo_content",
-              "pass": 25,
+              "pass": 23,
               "applicable": 25
             },
             "ai_ssr_ratio": {
@@ -6688,13 +6688,13 @@
         "support": {
           "label": "지원/Support",
           "count": 71,
-          "avgScore": 78.3,
+          "avgScore": 76.5,
           "categories": {
             "performance": 96.6,
             "accessibility": 93.3,
             "seo": 76.2,
             "geo_schema": 49.3,
-            "geo_content": 29.2,
+            "geo_content": 17.3,
             "geo_platform": 100
           },
           "checks": {
@@ -6857,7 +6857,7 @@
             "ai_definition": {
               "label": "#33 Definition Paragraph",
               "cat": "geo_content",
-              "pass": 0,
+              "pass": 6,
               "applicable": 71
             },
             "ai_author_source": {
@@ -6875,7 +6875,7 @@
             "ai_citable": {
               "label": "#36 Citable Sentence ≥ 10%",
               "cat": "geo_content",
-              "pass": 70,
+              "pass": 30,
               "applicable": 71
             },
             "ai_ssr_ratio": {
@@ -6931,13 +6931,13 @@
         "support_troubleshoot": {
           "label": "지원 - 트러블슈팅",
           "count": 100,
-          "avgScore": 79,
+          "avgScore": 75,
           "categories": {
             "performance": 100,
             "accessibility": 100,
             "seo": 99.9,
             "geo_schema": 33,
-            "geo_content": 25,
+            "geo_content": 0,
             "geo_platform": 80
           },
           "checks": {
@@ -7118,7 +7118,7 @@
             "ai_citable": {
               "label": "#36 Citable Sentence ≥ 10%",
               "cat": "geo_content",
-              "pass": 100,
+              "pass": 0,
               "applicable": 100
             },
             "ai_ssr_ratio": {
@@ -7221,18 +7221,18 @@
       "runId": "cb6a08bc991e",
       "urlCount": 842,
       "scoredCount": 842,
-      "avgScore": 78.2,
+      "avgScore": 79.2,
       "grades": {
-        "Need Improvement": 446,
-        "Good": 380,
-        "Poor": 16
+        "Need Improvement": 369,
+        "Good": 469,
+        "Poor": 4
       },
       "categories": {
         "performance": 99.9,
         "accessibility": 83.9,
         "seo": 91.6,
         "geo_schema": 33.3,
-        "geo_content": 47.7,
+        "geo_content": 54.4,
         "geo_platform": 94.9
       },
       "checks": {
@@ -7395,7 +7395,7 @@
         "ai_definition": {
           "label": "#33 Definition Paragraph",
           "cat": "geo_content",
-          "pass": 0,
+          "pass": 239,
           "applicable": 842
         },
         "ai_author_source": {
@@ -7407,13 +7407,13 @@
         "ai_summary_box": {
           "label": "#35 Summary Box (콘텐츠)",
           "cat": "geo_content",
-          "pass": 372,
+          "pass": 373,
           "applicable": 842
         },
         "ai_citable": {
           "label": "#36 Citable Sentence ≥ 10%",
           "cat": "geo_content",
-          "pass": 826,
+          "pass": 835,
           "applicable": 842
         },
         "ai_ssr_ratio": {
@@ -7469,13 +7469,13 @@
         "buying_guide": {
           "label": "구매 가이드",
           "count": 24,
-          "avgScore": 75.5,
+          "avgScore": 79,
           "categories": {
             "performance": 100,
             "accessibility": 100,
             "seo": 86.3,
             "geo_schema": 31,
-            "geo_content": 26.7,
+            "geo_content": 49.2,
             "geo_platform": 100
           },
           "checks": {
@@ -7638,7 +7638,7 @@
             "ai_definition": {
               "label": "#33 Definition Paragraph",
               "cat": "geo_content",
-              "pass": 0,
+              "pass": 22,
               "applicable": 24
             },
             "ai_author_source": {
@@ -7656,7 +7656,7 @@
             "ai_citable": {
               "label": "#36 Citable Sentence ≥ 10%",
               "cat": "geo_content",
-              "pass": 19,
+              "pass": 24,
               "applicable": 24
             },
             "ai_ssr_ratio": {
@@ -7712,13 +7712,13 @@
         "lg_experience": {
           "label": "LG Experience",
           "count": 4,
-          "avgScore": 75.3,
+          "avgScore": 80.8,
           "categories": {
             "performance": 80.8,
             "accessibility": 87.5,
             "seo": 96.5,
             "geo_schema": 24.8,
-            "geo_content": 37.5,
+            "geo_content": 71.3,
             "geo_platform": 95
           },
           "checks": {
@@ -7887,7 +7887,7 @@
             "ai_definition": {
               "label": "#33 Definition Paragraph",
               "cat": "geo_content",
-              "pass": 0,
+              "pass": 4,
               "applicable": 4
             },
             "ai_author_source": {
@@ -7899,13 +7899,13 @@
             "ai_summary_box": {
               "label": "#35 Summary Box (콘텐츠)",
               "cat": "geo_content",
-              "pass": 3,
+              "pass": 4,
               "applicable": 4
             },
             "ai_citable": {
               "label": "#36 Citable Sentence ≥ 10%",
               "cat": "geo_content",
-              "pass": 3,
+              "pass": 4,
               "applicable": 4
             },
             "ai_ssr_ratio": {
@@ -7955,13 +7955,13 @@
         "newsroom": {
           "label": "뉴스룸/Press",
           "count": 31,
-          "avgScore": 65.3,
+          "avgScore": 68.4,
           "categories": {
             "performance": 100,
             "accessibility": 87.9,
             "seo": 69.5,
             "geo_schema": 12.1,
-            "geo_content": 25.8,
+            "geo_content": 45.8,
             "geo_platform": 81.3
           },
           "checks": {
@@ -8124,7 +8124,7 @@
             "ai_definition": {
               "label": "#33 Definition Paragraph",
               "cat": "geo_content",
-              "pass": 0,
+              "pass": 28,
               "applicable": 31
             },
             "ai_author_source": {
@@ -8142,7 +8142,7 @@
             "ai_citable": {
               "label": "#36 Citable Sentence ≥ 10%",
               "cat": "geo_content",
-              "pass": 28,
+              "pass": 31,
               "applicable": 31
             },
             "ai_ssr_ratio": {
@@ -8198,13 +8198,13 @@
         "microsite": {
           "label": "마이크로사이트/캠페인",
           "count": 5,
-          "avgScore": 78.4,
+          "avgScore": 80.6,
           "categories": {
             "performance": 100,
             "accessibility": 100,
             "seo": 91.6,
             "geo_schema": 30,
-            "geo_content": 35,
+            "geo_content": 50,
             "geo_platform": 100
           },
           "checks": {
@@ -8367,7 +8367,7 @@
             "ai_definition": {
               "label": "#33 Definition Paragraph",
               "cat": "geo_content",
-              "pass": 0,
+              "pass": 3,
               "applicable": 5
             },
             "ai_author_source": {
@@ -8441,13 +8441,13 @@
         "pdp": {
           "label": "제품 상세 (PDP)",
           "count": 371,
-          "avgScore": 79.8,
+          "avgScore": 80.4,
           "categories": {
             "performance": 100,
             "accessibility": 73.9,
             "seo": 98.3,
             "geo_schema": 21.3,
-            "geo_content": 72.1,
+            "geo_content": 76.8,
             "geo_platform": 99.1
           },
           "checks": {
@@ -8616,7 +8616,7 @@
             "ai_definition": {
               "label": "#33 Definition Paragraph",
               "cat": "geo_content",
-              "pass": 0,
+              "pass": 69,
               "applicable": 371
             },
             "ai_author_source": {
@@ -8634,7 +8634,7 @@
             "ai_citable": {
               "label": "#36 Citable Sentence ≥ 10%",
               "cat": "geo_content",
-              "pass": 367,
+              "pass": 368,
               "applicable": 371
             },
             "ai_ssr_ratio": {
@@ -8684,13 +8684,13 @@
         "plp": {
           "label": "제품 카테고리 (PLP)",
           "count": 107,
-          "avgScore": 77.1,
+          "avgScore": 78.3,
           "categories": {
             "performance": 100,
             "accessibility": 87.6,
             "seo": 88.1,
             "geo_schema": 38.1,
-            "geo_content": 30.6,
+            "geo_content": 39.3,
             "geo_platform": 100
           },
           "checks": {
@@ -8859,7 +8859,7 @@
             "ai_definition": {
               "label": "#33 Definition Paragraph",
               "cat": "geo_content",
-              "pass": 0,
+              "pass": 38,
               "applicable": 107
             },
             "ai_author_source": {
@@ -8877,7 +8877,7 @@
             "ai_citable": {
               "label": "#36 Citable Sentence ≥ 10%",
               "cat": "geo_content",
-              "pass": 106,
+              "pass": 105,
               "applicable": 107
             },
             "ai_ssr_ratio": {
@@ -8927,13 +8927,13 @@
         "press_media": {
           "label": "프레스앤미디어",
           "count": 100,
-          "avgScore": 75.7,
+          "avgScore": 77.6,
           "categories": {
             "performance": 100,
             "accessibility": 90.3,
             "seo": 74.6,
             "geo_schema": 44.7,
-            "geo_content": 33.6,
+            "geo_content": 46.4,
             "geo_platform": 93.8
           },
           "checks": {
@@ -9102,7 +9102,7 @@
             "ai_definition": {
               "label": "#33 Definition Paragraph",
               "cat": "geo_content",
-              "pass": 0,
+              "pass": 64,
               "applicable": 100
             },
             "ai_author_source": {
@@ -9170,13 +9170,13 @@
         "support": {
           "label": "지원/Support",
           "count": 100,
-          "avgScore": 80.2,
+          "avgScore": 80.6,
           "categories": {
             "performance": 100,
             "accessibility": 89,
             "seo": 87,
             "geo_schema": 69,
-            "geo_content": 25.5,
+            "geo_content": 28.3,
             "geo_platform": 92.4
           },
           "checks": {
@@ -9339,7 +9339,7 @@
             "ai_definition": {
               "label": "#33 Definition Paragraph",
               "cat": "geo_content",
-              "pass": 0,
+              "pass": 11,
               "applicable": 100
             },
             "ai_author_source": {
@@ -9706,18 +9706,18 @@
       "runId": "d6907f7db662",
       "urlCount": 797,
       "scoredCount": 797,
-      "avgScore": 78.5,
+      "avgScore": 78.3,
       "grades": {
-        "Need Improvement": 369,
-        "Good": 418,
-        "Poor": 10
+        "Need Improvement": 399,
+        "Good": 385,
+        "Poor": 13
       },
       "categories": {
         "performance": 99.2,
         "accessibility": 80.5,
         "seo": 92.9,
         "geo_schema": 30.9,
-        "geo_content": 52.2,
+        "geo_content": 51.1,
         "geo_platform": 97.4
       },
       "checks": {
@@ -9880,7 +9880,7 @@
         "ai_definition": {
           "label": "#33 Definition Paragraph",
           "cat": "geo_content",
-          "pass": 0,
+          "pass": 75,
           "applicable": 797
         },
         "ai_author_source": {
@@ -9898,7 +9898,7 @@
         "ai_citable": {
           "label": "#36 Citable Sentence ≥ 10%",
           "cat": "geo_content",
-          "pass": 756,
+          "pass": 645,
           "applicable": 797
         },
         "ai_ssr_ratio": {
@@ -9954,13 +9954,13 @@
         "buying_guide": {
           "label": "구매 가이드",
           "count": 19,
-          "avgScore": 75.8,
+          "avgScore": 77,
           "categories": {
             "performance": 100,
             "accessibility": 96.1,
             "seo": 94.1,
             "geo_schema": 30,
-            "geo_content": 23.2,
+            "geo_content": 31.6,
             "geo_platform": 100
           },
           "checks": {
@@ -10123,7 +10123,7 @@
             "ai_definition": {
               "label": "#33 Definition Paragraph",
               "cat": "geo_content",
-              "pass": 0,
+              "pass": 7,
               "applicable": 19
             },
             "ai_author_source": {
@@ -10141,7 +10141,7 @@
             "ai_citable": {
               "label": "#36 Citable Sentence ≥ 10%",
               "cat": "geo_content",
-              "pass": 14,
+              "pass": 15,
               "applicable": 19
             },
             "ai_ssr_ratio": {
@@ -10932,7 +10932,7 @@
             "accessibility": 72.4,
             "seo": 99.3,
             "geo_schema": 20.8,
-            "geo_content": 73.9,
+            "geo_content": 74.5,
             "geo_platform": 99.9
           },
           "checks": {
@@ -11101,7 +11101,7 @@
             "ai_definition": {
               "label": "#33 Definition Paragraph",
               "cat": "geo_content",
-              "pass": 0,
+              "pass": 65,
               "applicable": 440
             },
             "ai_author_source": {
@@ -11119,7 +11119,7 @@
             "ai_citable": {
               "label": "#36 Citable Sentence ≥ 10%",
               "cat": "geo_content",
-              "pass": 428,
+              "pass": 375,
               "applicable": 440
             },
             "ai_ssr_ratio": {
@@ -11169,13 +11169,13 @@
         "plp": {
           "label": "제품 카테고리 (PLP)",
           "count": 116,
-          "avgScore": 75.4,
+          "avgScore": 74.8,
           "categories": {
             "performance": 100,
             "accessibility": 89.7,
             "seo": 79.7,
             "geo_schema": 40.1,
-            "geo_content": 28.9,
+            "geo_content": 24.1,
             "geo_platform": 100
           },
           "checks": {
@@ -11344,7 +11344,7 @@
             "ai_definition": {
               "label": "#33 Definition Paragraph",
               "cat": "geo_content",
-              "pass": 0,
+              "pass": 3,
               "applicable": 116
             },
             "ai_author_source": {
@@ -11362,7 +11362,7 @@
             "ai_citable": {
               "label": "#36 Citable Sentence ≥ 10%",
               "cat": "geo_content",
-              "pass": 111,
+              "pass": 86,
               "applicable": 116
             },
             "ai_ssr_ratio": {
@@ -11655,13 +11655,13 @@
         "support_troubleshoot": {
           "label": "지원 - 트러블슈팅",
           "count": 100,
-          "avgScore": 79,
+          "avgScore": 77.6,
           "categories": {
             "performance": 100,
             "accessibility": 99.8,
             "seo": 99.9,
             "geo_schema": 33.2,
-            "geo_content": 25,
+            "geo_content": 16.5,
             "geo_platform": 80
           },
           "checks": {
@@ -11842,7 +11842,7 @@
             "ai_citable": {
               "label": "#36 Citable Sentence ≥ 10%",
               "cat": "geo_content",
-              "pass": 100,
+              "pass": 66,
               "applicable": 100
             },
             "ai_ssr_ratio": {
@@ -11945,17 +11945,16 @@
       "runId": "851984c3f546",
       "urlCount": 67,
       "scoredCount": 67,
-      "avgScore": 79.6,
+      "avgScore": 87.7,
       "grades": {
-        "Need Improvement": 51,
-        "Good": 16
+        "Good": 67
       },
       "categories": {
         "performance": 100,
         "accessibility": 100,
         "seo": 88.7,
         "geo_schema": 50,
-        "geo_content": 20.3,
+        "geo_content": 67.2,
         "geo_platform": 100
       },
       "checks": {
@@ -12124,7 +12123,7 @@
         "ai_definition": {
           "label": "#33 Definition Paragraph",
           "cat": "geo_content",
-          "pass": 0,
+          "pass": 30,
           "applicable": 67
         },
         "ai_author_source": {
@@ -12136,13 +12135,13 @@
         "ai_summary_box": {
           "label": "#35 Summary Box (콘텐츠)",
           "cat": "geo_content",
-          "pass": 0,
+          "pass": 62,
           "applicable": 67
         },
         "ai_citable": {
           "label": "#36 Citable Sentence ≥ 10%",
           "cat": "geo_content",
-          "pass": 1,
+          "pass": 66,
           "applicable": 67
         },
         "ai_ssr_ratio": {
@@ -12192,13 +12191,13 @@
         "newsroom": {
           "label": "뉴스룸/Press",
           "count": 67,
-          "avgScore": 79.6,
+          "avgScore": 87.7,
           "categories": {
             "performance": 100,
             "accessibility": 100,
             "seo": 88.7,
             "geo_schema": 50,
-            "geo_content": 20.3,
+            "geo_content": 67.2,
             "geo_platform": 100
           },
           "checks": {
@@ -12367,7 +12366,7 @@
             "ai_definition": {
               "label": "#33 Definition Paragraph",
               "cat": "geo_content",
-              "pass": 0,
+              "pass": 30,
               "applicable": 67
             },
             "ai_author_source": {
@@ -12379,13 +12378,13 @@
             "ai_summary_box": {
               "label": "#35 Summary Box (콘텐츠)",
               "cat": "geo_content",
-              "pass": 0,
+              "pass": 62,
               "applicable": 67
             },
             "ai_citable": {
               "label": "#36 Citable Sentence ≥ 10%",
               "cat": "geo_content",
-              "pass": 1,
+              "pass": 66,
               "applicable": 67
             },
             "ai_ssr_ratio": {
@@ -12482,18 +12481,18 @@
       "runId": "539e9093c56e",
       "urlCount": 936,
       "scoredCount": 936,
-      "avgScore": 74,
+      "avgScore": 77.1,
       "grades": {
         "Poor": 11,
-        "Need Improvement": 900,
-        "Good": 25
+        "Need Improvement": 637,
+        "Good": 288
       },
       "categories": {
         "performance": 100,
         "accessibility": 87.1,
         "seo": 81.1,
         "geo_schema": 35.2,
-        "geo_content": 27.9,
+        "geo_content": 49.6,
         "geo_platform": 97.4
       },
       "checks": {
@@ -12662,7 +12661,7 @@
         "ai_definition": {
           "label": "#33 Definition Paragraph",
           "cat": "geo_content",
-          "pass": 0,
+          "pass": 459,
           "applicable": 936
         },
         "ai_author_source": {
@@ -12674,13 +12673,13 @@
         "ai_summary_box": {
           "label": "#35 Summary Box (콘텐츠)",
           "cat": "geo_content",
-          "pass": 420,
+          "pass": 422,
           "applicable": 936
         },
         "ai_citable": {
           "label": "#36 Citable Sentence ≥ 10%",
           "cat": "geo_content",
-          "pass": 58,
+          "pass": 466,
           "applicable": 936
         },
         "ai_ssr_ratio": {
@@ -12730,13 +12729,13 @@
         "buying_guide": {
           "label": "구매 가이드",
           "count": 13,
-          "avgScore": 64.5,
+          "avgScore": 67.5,
           "categories": {
             "performance": 100,
             "accessibility": 96.2,
             "seo": 66.9,
             "geo_schema": 21.9,
-            "geo_content": 3.1,
+            "geo_content": 21.5,
             "geo_platform": 100
           },
           "checks": {
@@ -12905,7 +12904,7 @@
             "ai_definition": {
               "label": "#33 Definition Paragraph",
               "cat": "geo_content",
-              "pass": 0,
+              "pass": 9,
               "applicable": 13
             },
             "ai_author_source": {
@@ -12923,7 +12922,7 @@
             "ai_citable": {
               "label": "#36 Citable Sentence ≥ 10%",
               "cat": "geo_content",
-              "pass": 0,
+              "pass": 3,
               "applicable": 13
             },
             "ai_ssr_ratio": {
@@ -12973,13 +12972,13 @@
         "newsroom": {
           "label": "뉴스룸/Press",
           "count": 93,
-          "avgScore": 73.9,
+          "avgScore": 77.6,
           "categories": {
             "performance": 100,
             "accessibility": 98.9,
             "seo": 85.2,
             "geo_schema": 33,
-            "geo_content": 12.5,
+            "geo_content": 32.3,
             "geo_platform": 100
           },
           "checks": {
@@ -13148,7 +13147,7 @@
             "ai_definition": {
               "label": "#33 Definition Paragraph",
               "cat": "geo_content",
-              "pass": 0,
+              "pass": 70,
               "applicable": 93
             },
             "ai_author_source": {
@@ -13166,7 +13165,7 @@
             "ai_citable": {
               "label": "#36 Citable Sentence ≥ 10%",
               "cat": "geo_content",
-              "pass": 3,
+              "pass": 25,
               "applicable": 93
             },
             "ai_ssr_ratio": {
@@ -13216,13 +13215,13 @@
         "microsite": {
           "label": "마이크로사이트/캠페인",
           "count": 22,
-          "avgScore": 67.6,
+          "avgScore": 70.7,
           "categories": {
             "performance": 100,
             "accessibility": 92,
             "seo": 66.8,
             "geo_schema": 27.3,
-            "geo_content": 9.1,
+            "geo_content": 31.8,
             "geo_platform": 100
           },
           "checks": {
@@ -13391,7 +13390,7 @@
             "ai_definition": {
               "label": "#33 Definition Paragraph",
               "cat": "geo_content",
-              "pass": 0,
+              "pass": 10,
               "applicable": 22
             },
             "ai_author_source": {
@@ -13409,7 +13408,7 @@
             "ai_citable": {
               "label": "#36 Citable Sentence ≥ 10%",
               "cat": "geo_content",
-              "pass": 2,
+              "pass": 12,
               "applicable": 22
             },
             "ai_ssr_ratio": {
@@ -13459,13 +13458,13 @@
         "pdp": {
           "label": "제품 상세 (PDP)",
           "count": 422,
-          "avgScore": 75.3,
+          "avgScore": 78.7,
           "categories": {
             "performance": 100,
             "accessibility": 76.1,
             "seo": 84.9,
             "geo_schema": 27.7,
-            "geo_content": 50.8,
+            "geo_content": 79.3,
             "geo_platform": 98.9
           },
           "checks": {
@@ -13634,7 +13633,7 @@
             "ai_definition": {
               "label": "#33 Definition Paragraph",
               "cat": "geo_content",
-              "pass": 0,
+              "pass": 226,
               "applicable": 422
             },
             "ai_author_source": {
@@ -13652,7 +13651,7 @@
             "ai_citable": {
               "label": "#36 Citable Sentence ≥ 10%",
               "cat": "geo_content",
-              "pass": 47,
+              "pass": 301,
               "applicable": 422
             },
             "ai_ssr_ratio": {
@@ -13702,13 +13701,13 @@
         "plp": {
           "label": "제품 카테고리 (PLP)",
           "count": 86,
-          "avgScore": 72.4,
+          "avgScore": 74.7,
           "categories": {
             "performance": 100,
             "accessibility": 86,
             "seo": 76.8,
             "geo_schema": 46.2,
-            "geo_content": 9.3,
+            "geo_content": 25.6,
             "geo_platform": 100
           },
           "checks": {
@@ -13877,7 +13876,7 @@
             "ai_definition": {
               "label": "#33 Definition Paragraph",
               "cat": "geo_content",
-              "pass": 0,
+              "pass": 42,
               "applicable": 86
             },
             "ai_author_source": {
@@ -13895,7 +13894,7 @@
             "ai_citable": {
               "label": "#36 Citable Sentence ≥ 10%",
               "cat": "geo_content",
-              "pass": 1,
+              "pass": 15,
               "applicable": 86
             },
             "ai_ssr_ratio": {
@@ -13945,13 +13944,13 @@
         "press_media": {
           "label": "프레스앤미디어",
           "count": 100,
-          "avgScore": 75.8,
+          "avgScore": 82.2,
           "categories": {
             "performance": 100,
             "accessibility": 99.8,
             "seo": 73.8,
             "geo_schema": 50,
-            "geo_content": 21.2,
+            "geo_content": 55.8,
             "geo_platform": 100
           },
           "checks": {
@@ -14120,7 +14119,7 @@
             "ai_definition": {
               "label": "#33 Definition Paragraph",
               "cat": "geo_content",
-              "pass": 0,
+              "pass": 90,
               "applicable": 100
             },
             "ai_author_source": {
@@ -14132,13 +14131,13 @@
             "ai_summary_box": {
               "label": "#35 Summary Box (콘텐츠)",
               "cat": "geo_content",
-              "pass": 2,
+              "pass": 4,
               "applicable": 100
             },
             "ai_citable": {
               "label": "#36 Citable Sentence ≥ 10%",
               "cat": "geo_content",
-              "pass": 5,
+              "pass": 86,
               "applicable": 100
             },
             "ai_ssr_ratio": {
@@ -14188,13 +14187,13 @@
         "support": {
           "label": "지원/Support",
           "count": 100,
-          "avgScore": 74.3,
+          "avgScore": 75.5,
           "categories": {
             "performance": 100,
             "accessibility": 96,
             "seo": 72.5,
             "geo_schema": 50,
-            "geo_content": 3.5,
+            "geo_content": 11.8,
             "geo_platform": 100
           },
           "checks": {
@@ -14363,7 +14362,7 @@
             "ai_definition": {
               "label": "#33 Definition Paragraph",
               "cat": "geo_content",
-              "pass": 0,
+              "pass": 9,
               "applicable": 100
             },
             "ai_author_source": {
@@ -14381,7 +14380,7 @@
             "ai_citable": {
               "label": "#36 Citable Sentence ≥ 10%",
               "cat": "geo_content",
-              "pass": 0,
+              "pass": 24,
               "applicable": 100
             },
             "ai_ssr_ratio": {
@@ -14431,13 +14430,13 @@
         "support_troubleshoot": {
           "label": "지원 - 트러블슈팅",
           "count": 100,
-          "avgScore": 71,
+          "avgScore": 71.1,
           "categories": {
             "performance": 100,
             "accessibility": 99.8,
             "seo": 86,
             "geo_schema": 33,
-            "geo_content": 0,
+            "geo_content": 0.8,
             "geo_platform": 80
           },
           "checks": {
@@ -14606,7 +14605,7 @@
             "ai_definition": {
               "label": "#33 Definition Paragraph",
               "cat": "geo_content",
-              "pass": 0,
+              "pass": 3,
               "applicable": 100
             },
             "ai_author_source": {
@@ -14723,18 +14722,18 @@
       "runId": "e54b05d6e350",
       "urlCount": 945,
       "scoredCount": 945,
-      "avgScore": 75.6,
+      "avgScore": 77.8,
       "grades": {
-        "Need Improvement": 830,
-        "Good": 100,
-        "Poor": 15
+        "Good": 359,
+        "Need Improvement": 572,
+        "Poor": 14
       },
       "categories": {
         "performance": 100,
         "accessibility": 84.2,
         "seo": 90.5,
         "geo_schema": 32.9,
-        "geo_content": 27.2,
+        "geo_content": 43.9,
         "geo_platform": 97.6
       },
       "checks": {
@@ -14897,7 +14896,7 @@
         "ai_definition": {
           "label": "#33 Definition Paragraph",
           "cat": "geo_content",
-          "pass": 0,
+          "pass": 295,
           "applicable": 945
         },
         "ai_author_source": {
@@ -14915,7 +14914,7 @@
         "ai_citable": {
           "label": "#36 Citable Sentence ≥ 10%",
           "cat": "geo_content",
-          "pass": 52,
+          "pass": 415,
           "applicable": 945
         },
         "ai_ssr_ratio": {
@@ -14971,13 +14970,13 @@
         "buying_guide": {
           "label": "구매 가이드",
           "count": 24,
-          "avgScore": 75.2,
+          "avgScore": 79.7,
           "categories": {
             "performance": 99.3,
             "accessibility": 97.9,
             "seo": 91.8,
             "geo_schema": 34.8,
-            "geo_content": 17.5,
+            "geo_content": 46.7,
             "geo_platform": 100
           },
           "checks": {
@@ -15140,7 +15139,7 @@
             "ai_definition": {
               "label": "#33 Definition Paragraph",
               "cat": "geo_content",
-              "pass": 0,
+              "pass": 19,
               "applicable": 24
             },
             "ai_author_source": {
@@ -15158,7 +15157,7 @@
             "ai_citable": {
               "label": "#36 Citable Sentence ≥ 10%",
               "cat": "geo_content",
-              "pass": 1,
+              "pass": 17,
               "applicable": 24
             },
             "ai_ssr_ratio": {
@@ -15214,13 +15213,13 @@
         "newsroom": {
           "label": "뉴스룸/Press",
           "count": 28,
-          "avgScore": 71.7,
+          "avgScore": 74.8,
           "categories": {
             "performance": 100,
             "accessibility": 97.3,
             "seo": 81.1,
             "geo_schema": 13.3,
-            "geo_content": 17.1,
+            "geo_content": 35.7,
             "geo_platform": 100
           },
           "checks": {
@@ -15383,7 +15382,7 @@
             "ai_definition": {
               "label": "#33 Definition Paragraph",
               "cat": "geo_content",
-              "pass": 0,
+              "pass": 16,
               "applicable": 28
             },
             "ai_author_source": {
@@ -15401,7 +15400,7 @@
             "ai_citable": {
               "label": "#36 Citable Sentence ≥ 10%",
               "cat": "geo_content",
-              "pass": 4,
+              "pass": 14,
               "applicable": 28
             },
             "ai_ssr_ratio": {
@@ -15457,13 +15456,13 @@
         "lg_experience": {
           "label": "LG Experience",
           "count": 34,
-          "avgScore": 76.2,
+          "avgScore": 79.5,
           "categories": {
             "performance": 99.5,
             "accessibility": 90.4,
             "seo": 94.9,
             "geo_schema": 32.1,
-            "geo_content": 14.1,
+            "geo_content": 34.7,
             "geo_platform": 100
           },
           "checks": {
@@ -15626,7 +15625,7 @@
             "ai_definition": {
               "label": "#33 Definition Paragraph",
               "cat": "geo_content",
-              "pass": 0,
+              "pass": 27,
               "applicable": 34
             },
             "ai_author_source": {
@@ -15644,7 +15643,7 @@
             "ai_citable": {
               "label": "#36 Citable Sentence ≥ 10%",
               "cat": "geo_content",
-              "pass": 2,
+              "pass": 10,
               "applicable": 34
             },
             "ai_ssr_ratio": {
@@ -15700,13 +15699,13 @@
         "microsite": {
           "label": "마이크로사이트/캠페인",
           "count": 8,
-          "avgScore": 74.8,
+          "avgScore": 79.5,
           "categories": {
             "performance": 100,
             "accessibility": 93.8,
             "seo": 92.9,
             "geo_schema": 28.1,
-            "geo_content": 12.5,
+            "geo_content": 46.9,
             "geo_platform": 100
           },
           "checks": {
@@ -15869,7 +15868,7 @@
             "ai_definition": {
               "label": "#33 Definition Paragraph",
               "cat": "geo_content",
-              "pass": 0,
+              "pass": 6,
               "applicable": 8
             },
             "ai_author_source": {
@@ -15887,7 +15886,7 @@
             "ai_citable": {
               "label": "#36 Citable Sentence ≥ 10%",
               "cat": "geo_content",
-              "pass": 1,
+              "pass": 6,
               "applicable": 8
             },
             "ai_ssr_ratio": {
@@ -15943,13 +15942,13 @@
         "pdp": {
           "label": "제품 상세 (PDP)",
           "count": 461,
-          "avgScore": 77.1,
+          "avgScore": 79.2,
           "categories": {
             "performance": 100,
             "accessibility": 74.3,
             "seo": 98,
             "geo_schema": 21,
-            "geo_content": 49.5,
+            "geo_content": 66.4,
             "geo_platform": 99.5
           },
           "checks": {
@@ -16118,7 +16117,7 @@
             "ai_definition": {
               "label": "#33 Definition Paragraph",
               "cat": "geo_content",
-              "pass": 0,
+              "pass": 124,
               "applicable": 461
             },
             "ai_author_source": {
@@ -16136,7 +16135,7 @@
             "ai_citable": {
               "label": "#36 Citable Sentence ≥ 10%",
               "cat": "geo_content",
-              "pass": 31,
+              "pass": 218,
               "applicable": 461
             },
             "ai_ssr_ratio": {
@@ -16186,13 +16185,13 @@
         "plp": {
           "label": "제품 카테고리 (PLP)",
           "count": 104,
-          "avgScore": 73,
+          "avgScore": 74.5,
           "categories": {
             "performance": 100,
             "accessibility": 92.1,
             "seo": 83.6,
             "geo_schema": 37.1,
-            "geo_content": 4.8,
+            "geo_content": 16.1,
             "geo_platform": 100
           },
           "checks": {
@@ -16361,7 +16360,7 @@
             "ai_definition": {
               "label": "#33 Definition Paragraph",
               "cat": "geo_content",
-              "pass": 0,
+              "pass": 22,
               "applicable": 104
             },
             "ai_author_source": {
@@ -16379,7 +16378,7 @@
             "ai_citable": {
               "label": "#36 Citable Sentence ≥ 10%",
               "cat": "geo_content",
-              "pass": 7,
+              "pass": 32,
               "applicable": 104
             },
             "ai_ssr_ratio": {
@@ -16429,13 +16428,13 @@
         "press_media": {
           "label": "프레스앤미디어",
           "count": 100,
-          "avgScore": 73.8,
+          "avgScore": 79.5,
           "categories": {
             "performance": 100,
             "accessibility": 99,
             "seo": 69.2,
             "geo_schema": 57.5,
-            "geo_content": 3.4,
+            "geo_content": 40.6,
             "geo_platform": 100
           },
           "checks": {
@@ -16598,7 +16597,7 @@
             "ai_definition": {
               "label": "#33 Definition Paragraph",
               "cat": "geo_content",
-              "pass": 0,
+              "pass": 66,
               "applicable": 100
             },
             "ai_author_source": {
@@ -16616,7 +16615,7 @@
             "ai_citable": {
               "label": "#36 Citable Sentence ≥ 10%",
               "cat": "geo_content",
-              "pass": 4,
+              "pass": 96,
               "applicable": 100
             },
             "ai_ssr_ratio": {
@@ -16672,13 +16671,13 @@
         "support": {
           "label": "지원/Support",
           "count": 86,
-          "avgScore": 74.2,
+          "avgScore": 75.6,
           "categories": {
             "performance": 100,
             "accessibility": 80.8,
             "seo": 73.3,
             "geo_schema": 69.6,
-            "geo_content": 6.7,
+            "geo_content": 16,
             "geo_platform": 100
           },
           "checks": {
@@ -16841,7 +16840,7 @@
             "ai_definition": {
               "label": "#33 Definition Paragraph",
               "cat": "geo_content",
-              "pass": 0,
+              "pass": 12,
               "applicable": 86
             },
             "ai_author_source": {
@@ -16859,7 +16858,7 @@
             "ai_citable": {
               "label": "#36 Citable Sentence ≥ 10%",
               "cat": "geo_content",
-              "pass": 2,
+              "pass": 22,
               "applicable": 86
             },
             "ai_ssr_ratio": {
@@ -16915,13 +16914,13 @@
         "support_troubleshoot": {
           "label": "지원 - 트러블슈팅",
           "count": 100,
-          "avgScore": 75,
+          "avgScore": 75.1,
           "categories": {
             "performance": 100,
             "accessibility": 99.8,
             "seo": 99.9,
             "geo_schema": 33.2,
-            "geo_content": 0,
+            "geo_content": 0.8,
             "geo_platform": 80
           },
           "checks": {
@@ -17084,7 +17083,7 @@
             "ai_definition": {
               "label": "#33 Definition Paragraph",
               "cat": "geo_content",
-              "pass": 0,
+              "pass": 3,
               "applicable": 100
             },
             "ai_author_source": {
@@ -17205,18 +17204,18 @@
       "runId": "35109956ad6f",
       "urlCount": 1064,
       "scoredCount": 1064,
-      "avgScore": 75.7,
+      "avgScore": 80.5,
       "grades": {
-        "Good": 76,
-        "Need Improvement": 984,
-        "Poor": 4
+        "Good": 785,
+        "Need Improvement": 278,
+        "Poor": 1
       },
       "categories": {
         "performance": 99.8,
         "accessibility": 84.6,
         "seo": 91.6,
         "geo_schema": 31.9,
-        "geo_content": 38.3,
+        "geo_content": 73.4,
         "geo_platform": 90
       },
       "checks": {
@@ -17385,7 +17384,7 @@
         "ai_definition": {
           "label": "#33 Definition Paragraph",
           "cat": "geo_content",
-          "pass": 0,
+          "pass": 1059,
           "applicable": 1064
         },
         "ai_author_source": {
@@ -17403,7 +17402,7 @@
         "ai_citable": {
           "label": "#36 Citable Sentence ≥ 10%",
           "cat": "geo_content",
-          "pass": 511,
+          "pass": 1019,
           "applicable": 1064
         },
         "ai_ssr_ratio": {
@@ -17453,13 +17452,13 @@
         "buying_guide": {
           "label": "구매 가이드",
           "count": 44,
-          "avgScore": 73.4,
+          "avgScore": 78.6,
           "categories": {
             "performance": 100,
             "accessibility": 98.3,
             "seo": 89.3,
             "geo_schema": 29.9,
-            "geo_content": 17.3,
+            "geo_content": 50,
             "geo_platform": 100
           },
           "checks": {
@@ -17628,7 +17627,7 @@
             "ai_definition": {
               "label": "#33 Definition Paragraph",
               "cat": "geo_content",
-              "pass": 0,
+              "pass": 44,
               "applicable": 44
             },
             "ai_author_source": {
@@ -17646,7 +17645,7 @@
             "ai_citable": {
               "label": "#36 Citable Sentence ≥ 10%",
               "cat": "geo_content",
-              "pass": 14,
+              "pass": 42,
               "applicable": 44
             },
             "ai_ssr_ratio": {
@@ -17696,13 +17695,13 @@
         "newsroom": {
           "label": "뉴스룸/Press",
           "count": 1,
-          "avgScore": 69,
+          "avgScore": 72,
           "categories": {
             "performance": 100,
             "accessibility": 100,
             "seo": 57,
             "geo_schema": 33,
-            "geo_content": 20,
+            "geo_content": 40,
             "geo_platform": 100
           },
           "checks": {
@@ -17871,7 +17870,7 @@
             "ai_definition": {
               "label": "#33 Definition Paragraph",
               "cat": "geo_content",
-              "pass": 0,
+              "pass": 1,
               "applicable": 1
             },
             "ai_author_source": {
@@ -17939,13 +17938,13 @@
         "lg_experience": {
           "label": "LG Experience",
           "count": 99,
-          "avgScore": 75.5,
+          "avgScore": 80.4,
           "categories": {
             "performance": 100,
             "accessibility": 90.7,
             "seo": 91.8,
             "geo_schema": 32.8,
-            "geo_content": 17,
+            "geo_content": 46,
             "geo_platform": 100
           },
           "checks": {
@@ -18114,7 +18113,7 @@
             "ai_definition": {
               "label": "#33 Definition Paragraph",
               "cat": "geo_content",
-              "pass": 0,
+              "pass": 99,
               "applicable": 99
             },
             "ai_author_source": {
@@ -18132,7 +18131,7 @@
             "ai_citable": {
               "label": "#36 Citable Sentence ≥ 10%",
               "cat": "geo_content",
-              "pass": 37,
+              "pass": 81,
               "applicable": 99
             },
             "ai_ssr_ratio": {
@@ -18182,13 +18181,13 @@
         "microsite": {
           "label": "마이크로사이트/캠페인",
           "count": 53,
-          "avgScore": 76,
+          "avgScore": 81.8,
           "categories": {
             "performance": 100,
             "accessibility": 79.7,
             "seo": 93,
             "geo_schema": 40.9,
-            "geo_content": 21.2,
+            "geo_content": 63.2,
             "geo_platform": 100
           },
           "checks": {
@@ -18357,7 +18356,7 @@
             "ai_definition": {
               "label": "#33 Definition Paragraph",
               "cat": "geo_content",
-              "pass": 0,
+              "pass": 53,
               "applicable": 53
             },
             "ai_author_source": {
@@ -18375,7 +18374,7 @@
             "ai_citable": {
               "label": "#36 Citable Sentence ≥ 10%",
               "cat": "geo_content",
-              "pass": 8,
+              "pass": 44,
               "applicable": 53
             },
             "ai_ssr_ratio": {
@@ -18425,13 +18424,13 @@
         "pdp": {
           "label": "제품 상세 (PDP)",
           "count": 472,
-          "avgScore": 75.6,
+          "avgScore": 80.4,
           "categories": {
             "performance": 99.9,
             "accessibility": 73.8,
             "seo": 99.1,
             "geo_schema": 21.3,
-            "geo_content": 57.8,
+            "geo_content": 97.6,
             "geo_platform": 86
           },
           "checks": {
@@ -18600,7 +18599,7 @@
             "ai_definition": {
               "label": "#33 Definition Paragraph",
               "cat": "geo_content",
-              "pass": 0,
+              "pass": 468,
               "applicable": 472
             },
             "ai_author_source": {
@@ -18618,7 +18617,7 @@
             "ai_citable": {
               "label": "#36 Citable Sentence ≥ 10%",
               "cat": "geo_content",
-              "pass": 178,
+              "pass": 462,
               "applicable": 472
             },
             "ai_ssr_ratio": {
@@ -18668,13 +18667,13 @@
         "plp": {
           "label": "제품 카테고리 (PLP)",
           "count": 95,
-          "avgScore": 75.7,
+          "avgScore": 81,
           "categories": {
             "performance": 99.2,
             "accessibility": 85.8,
             "seo": 88.7,
             "geo_schema": 40.7,
-            "geo_content": 21.1,
+            "geo_content": 59.7,
             "geo_platform": 99.8
           },
           "checks": {
@@ -18843,7 +18842,7 @@
             "ai_definition": {
               "label": "#33 Definition Paragraph",
               "cat": "geo_content",
-              "pass": 0,
+              "pass": 94,
               "applicable": 95
             },
             "ai_author_source": {
@@ -18861,7 +18860,7 @@
             "ai_citable": {
               "label": "#36 Citable Sentence ≥ 10%",
               "cat": "geo_content",
-              "pass": 37,
+              "pass": 90,
               "applicable": 95
             },
             "ai_ssr_ratio": {
@@ -18911,13 +18910,13 @@
         "press_media": {
           "label": "프레스앤미디어",
           "count": 100,
-          "avgScore": 74.6,
+          "avgScore": 80.8,
           "categories": {
             "performance": 99.8,
             "accessibility": 100,
             "seo": 64.7,
             "geo_schema": 49.8,
-            "geo_content": 28,
+            "geo_content": 60,
             "geo_platform": 100
           },
           "checks": {
@@ -19086,7 +19085,7 @@
             "ai_definition": {
               "label": "#33 Definition Paragraph",
               "cat": "geo_content",
-              "pass": 0,
+              "pass": 100,
               "applicable": 100
             },
             "ai_author_source": {
@@ -19104,7 +19103,7 @@
             "ai_citable": {
               "label": "#36 Citable Sentence ≥ 10%",
               "cat": "geo_content",
-              "pass": 40,
+              "pass": 100,
               "applicable": 100
             },
             "ai_ssr_ratio": {
@@ -19154,13 +19153,13 @@
         "support": {
           "label": "지원/Support",
           "count": 100,
-          "avgScore": 75.9,
+          "avgScore": 79.3,
           "categories": {
             "performance": 100,
             "accessibility": 95.3,
             "seo": 80.3,
             "geo_schema": 49.8,
-            "geo_content": 26.3,
+            "geo_content": 52,
             "geo_platform": 80
           },
           "checks": {
@@ -19329,7 +19328,7 @@
             "ai_definition": {
               "label": "#33 Definition Paragraph",
               "cat": "geo_content",
-              "pass": 0,
+              "pass": 100,
               "applicable": 100
             },
             "ai_author_source": {
@@ -19347,7 +19346,7 @@
             "ai_citable": {
               "label": "#36 Citable Sentence ≥ 10%",
               "cat": "geo_content",
-              "pass": 96,
+              "pass": 99,
               "applicable": 100
             },
             "ai_ssr_ratio": {
@@ -19397,13 +19396,13 @@
         "support_troubleshoot": {
           "label": "지원 - 트러블슈팅",
           "count": 100,
-          "avgScore": 78.3,
+          "avgScore": 81.4,
           "categories": {
             "performance": 100,
             "accessibility": 99.3,
             "seo": 97.9,
             "geo_schema": 33,
-            "geo_content": 25,
+            "geo_content": 50,
             "geo_platform": 80
           },
           "checks": {
@@ -19572,7 +19571,7 @@
             "ai_definition": {
               "label": "#33 Definition Paragraph",
               "cat": "geo_content",
-              "pass": 0,
+              "pass": 100,
               "applicable": 100
             },
             "ai_author_source": {
@@ -19689,18 +19688,17 @@
       "runId": "1ca743dadba8",
       "urlCount": 960,
       "scoredCount": 960,
-      "avgScore": 77.3,
+      "avgScore": 78.9,
       "grades": {
-        "Need Improvement": 635,
-        "Good": 316,
-        "Poor": 9
+        "Need Improvement": 555,
+        "Good": 405
       },
       "categories": {
         "performance": 96.4,
         "accessibility": 84.2,
         "seo": 88.3,
         "geo_schema": 26.1,
-        "geo_content": 51.6,
+        "geo_content": 62.7,
         "geo_platform": 93.8
       },
       "checks": {
@@ -19869,7 +19867,7 @@
         "ai_definition": {
           "label": "#33 Definition Paragraph",
           "cat": "geo_content",
-          "pass": 200,
+          "pass": 281,
           "applicable": 960
         },
         "ai_author_source": {
@@ -19887,7 +19885,7 @@
         "ai_citable": {
           "label": "#36 Citable Sentence ≥ 10%",
           "cat": "geo_content",
-          "pass": 365,
+          "pass": 754,
           "applicable": 960
         },
         "ai_ssr_ratio": {
@@ -19937,13 +19935,13 @@
         "plp": {
           "label": "제품 카테고리 (PLP)",
           "count": 127,
-          "avgScore": 81.2,
+          "avgScore": 84.7,
           "categories": {
             "performance": 98.9,
             "accessibility": 76.8,
             "seo": 94.4,
             "geo_schema": 41.9,
-            "geo_content": 56.1,
+            "geo_content": 81.9,
             "geo_platform": 100
           },
           "checks": {
@@ -20112,7 +20110,7 @@
             "ai_definition": {
               "label": "#33 Definition Paragraph",
               "cat": "geo_content",
-              "pass": 1,
+              "pass": 76,
               "applicable": 127
             },
             "ai_author_source": {
@@ -20130,7 +20128,7 @@
             "ai_citable": {
               "label": "#36 Citable Sentence ≥ 10%",
               "cat": "geo_content",
-              "pass": 32,
+              "pass": 88,
               "applicable": 127
             },
             "ai_ssr_ratio": {
@@ -20180,13 +20178,13 @@
         "pdp": {
           "label": "제품 상세 (PDP)",
           "count": 480,
-          "avgScore": 79.4,
+          "avgScore": 80.5,
           "categories": {
             "performance": 99.5,
             "accessibility": 87.8,
             "seo": 85.7,
             "geo_schema": 40.8,
-            "geo_content": 66,
+            "geo_content": 75.1,
             "geo_platform": 87.7
           },
           "checks": {
@@ -20355,7 +20353,7 @@
             "ai_definition": {
               "label": "#33 Definition Paragraph",
               "cat": "geo_content",
-              "pass": 0,
+              "pass": 43,
               "applicable": 480
             },
             "ai_author_source": {
@@ -20373,7 +20371,7 @@
             "ai_citable": {
               "label": "#36 Citable Sentence ≥ 10%",
               "cat": "geo_content",
-              "pass": 308,
+              "pass": 439,
               "applicable": 480
             },
             "ai_ssr_ratio": {
@@ -20423,13 +20421,13 @@
         "newsroom": {
           "label": "뉴스룸/Press",
           "count": 1,
-          "avgScore": 62,
+          "avgScore": 66,
           "categories": {
             "performance": 80,
             "accessibility": 75,
             "seo": 86,
             "geo_schema": 0,
-            "geo_content": 0,
+            "geo_content": 20,
             "geo_platform": 100
           },
           "checks": {
@@ -20616,7 +20614,7 @@
             "ai_citable": {
               "label": "#36 Citable Sentence ≥ 10%",
               "cat": "geo_content",
-              "pass": 0,
+              "pass": 1,
               "applicable": 1
             },
             "ai_ssr_ratio": {
@@ -20666,13 +20664,13 @@
         "lg_experience": {
           "label": "LG Experience",
           "count": 29,
-          "avgScore": 72.9,
+          "avgScore": 76.7,
           "categories": {
             "performance": 100,
             "accessibility": 75,
             "seo": 86.4,
             "geo_schema": 0,
-            "geo_content": 43.4,
+            "geo_content": 64.8,
             "geo_platform": 100
           },
           "checks": {
@@ -20841,7 +20839,7 @@
             "ai_definition": {
               "label": "#33 Definition Paragraph",
               "cat": "geo_content",
-              "pass": 0,
+              "pass": 23,
               "applicable": 29
             },
             "ai_author_source": {
@@ -20859,7 +20857,7 @@
             "ai_citable": {
               "label": "#36 Citable Sentence ≥ 10%",
               "cat": "geo_content",
-              "pass": 5,
+              "pass": 13,
               "applicable": 29
             },
             "ai_ssr_ratio": {
@@ -20909,13 +20907,13 @@
         "buying_guide": {
           "label": "구매 가이드",
           "count": 16,
-          "avgScore": 69.8,
+          "avgScore": 72,
           "categories": {
             "performance": 100,
             "accessibility": 73.4,
             "seo": 86.7,
             "geo_schema": 0,
-            "geo_content": 46.3,
+            "geo_content": 61.3,
             "geo_platform": 100
           },
           "checks": {
@@ -21084,7 +21082,7 @@
             "ai_definition": {
               "label": "#33 Definition Paragraph",
               "cat": "geo_content",
-              "pass": 0,
+              "pass": 10,
               "applicable": 16
             },
             "ai_author_source": {
@@ -21102,7 +21100,7 @@
             "ai_citable": {
               "label": "#36 Citable Sentence ≥ 10%",
               "cat": "geo_content",
-              "pass": 5,
+              "pass": 7,
               "applicable": 16
             },
             "ai_ssr_ratio": {
@@ -21152,13 +21150,13 @@
         "microsite": {
           "label": "마이크로사이트/캠페인",
           "count": 7,
-          "avgScore": 75.7,
+          "avgScore": 77.1,
           "categories": {
             "performance": 97.1,
             "accessibility": 75,
             "seo": 92,
             "geo_schema": 10.7,
-            "geo_content": 53.6,
+            "geo_content": 64.3,
             "geo_platform": 100
           },
           "checks": {
@@ -21327,7 +21325,7 @@
             "ai_definition": {
               "label": "#33 Definition Paragraph",
               "cat": "geo_content",
-              "pass": 0,
+              "pass": 2,
               "applicable": 7
             },
             "ai_author_source": {
@@ -21345,7 +21343,7 @@
             "ai_citable": {
               "label": "#36 Citable Sentence ≥ 10%",
               "cat": "geo_content",
-              "pass": 3,
+              "pass": 4,
               "applicable": 7
             },
             "ai_ssr_ratio": {
@@ -21395,13 +21393,13 @@
         "press_media": {
           "label": "프레스앤미디어",
           "count": 100,
-          "avgScore": 67.1,
+          "avgScore": 73.5,
           "categories": {
             "performance": 90,
             "accessibility": 75.5,
             "seo": 85,
             "geo_schema": 0,
-            "geo_content": 7,
+            "geo_content": 41.8,
             "geo_platform": 100
           },
           "checks": {
@@ -21570,7 +21568,7 @@
             "ai_definition": {
               "label": "#33 Definition Paragraph",
               "cat": "geo_content",
-              "pass": 0,
+              "pass": 85,
               "applicable": 100
             },
             "ai_author_source": {
@@ -21588,7 +21586,7 @@
             "ai_citable": {
               "label": "#36 Citable Sentence ≥ 10%",
               "cat": "geo_content",
-              "pass": 11,
+              "pass": 100,
               "applicable": 100
             },
             "ai_ssr_ratio": {
@@ -21638,13 +21636,13 @@
         "support": {
           "label": "지원/Support",
           "count": 100,
-          "avgScore": 78,
+          "avgScore": 77.7,
           "categories": {
             "performance": 80.2,
             "accessibility": 99.5,
             "seo": 99.2,
             "geo_schema": 1,
-            "geo_content": 26.5,
+            "geo_content": 24.8,
             "geo_platform": 100
           },
           "checks": {
@@ -21813,7 +21811,7 @@
             "ai_definition": {
               "label": "#33 Definition Paragraph",
               "cat": "geo_content",
-              "pass": 99,
+              "pass": 4,
               "applicable": 100
             },
             "ai_author_source": {
@@ -21831,7 +21829,7 @@
             "ai_citable": {
               "label": "#36 Citable Sentence ≥ 10%",
               "cat": "geo_content",
-              "pass": 1,
+              "pass": 89,
               "applicable": 100
             },
             "ai_ssr_ratio": {
@@ -21881,13 +21879,13 @@
         "support_troubleshoot": {
           "label": "지원 - 트러블슈팅",
           "count": 100,
-          "avgScore": 74.9,
+          "avgScore": 73,
           "categories": {
             "performance": 100,
             "accessibility": 75,
             "seo": 86,
             "geo_schema": 0,
-            "geo_content": 49.8,
+            "geo_content": 37.5,
             "geo_platform": 100
           },
           "checks": {
@@ -22056,7 +22054,7 @@
             "ai_definition": {
               "label": "#33 Definition Paragraph",
               "cat": "geo_content",
-              "pass": 100,
+              "pass": 38,
               "applicable": 100
             },
             "ai_author_source": {
@@ -22074,7 +22072,7 @@
             "ai_citable": {
               "label": "#36 Citable Sentence ≥ 10%",
               "cat": "geo_content",
-              "pass": 0,
+              "pass": 13,
               "applicable": 100
             },
             "ai_ssr_ratio": {
@@ -22171,18 +22169,17 @@
       "runId": "136c5db7dc23",
       "urlCount": 819,
       "scoredCount": 819,
-      "avgScore": 76.5,
+      "avgScore": 81.8,
       "grades": {
-        "Need Improvement": 682,
-        "Good": 132,
-        "Poor": 5
+        "Need Improvement": 204,
+        "Good": 615
       },
       "categories": {
         "performance": 100,
         "accessibility": 81,
         "seo": 92.4,
         "geo_schema": 32,
-        "geo_content": 34.2,
+        "geo_content": 74.6,
         "geo_platform": 99.8
       },
       "checks": {
@@ -22345,7 +22342,7 @@
         "ai_definition": {
           "label": "#33 Definition Paragraph",
           "cat": "geo_content",
-          "pass": 0,
+          "pass": 818,
           "applicable": 819
         },
         "ai_author_source": {
@@ -22363,7 +22360,7 @@
         "ai_citable": {
           "label": "#36 Citable Sentence ≥ 10%",
           "cat": "geo_content",
-          "pass": 180,
+          "pass": 704,
           "applicable": 819
         },
         "ai_ssr_ratio": {
@@ -22419,13 +22416,13 @@
         "buying_guide": {
           "label": "구매 가이드",
           "count": 3,
-          "avgScore": 69,
+          "avgScore": 75,
           "categories": {
             "performance": 100,
             "accessibility": 91.7,
             "seo": 81,
             "geo_schema": 25,
-            "geo_content": 0,
+            "geo_content": 40,
             "geo_platform": 100
           },
           "checks": {
@@ -22588,7 +22585,7 @@
             "ai_definition": {
               "label": "#33 Definition Paragraph",
               "cat": "geo_content",
-              "pass": 0,
+              "pass": 3,
               "applicable": 3
             },
             "ai_author_source": {
@@ -22606,7 +22603,7 @@
             "ai_citable": {
               "label": "#36 Citable Sentence ≥ 10%",
               "cat": "geo_content",
-              "pass": 0,
+              "pass": 3,
               "applicable": 3
             },
             "ai_ssr_ratio": {
@@ -22662,13 +22659,13 @@
         "lg_experience": {
           "label": "LG Experience",
           "count": 55,
-          "avgScore": 76.9,
+          "avgScore": 81.4,
           "categories": {
             "performance": 100,
             "accessibility": 96.8,
             "seo": 96.6,
             "geo_schema": 32.6,
-            "geo_content": 9.1,
+            "geo_content": 37.1,
             "geo_platform": 100
           },
           "checks": {
@@ -22831,7 +22828,7 @@
             "ai_definition": {
               "label": "#33 Definition Paragraph",
               "cat": "geo_content",
-              "pass": 0,
+              "pass": 55,
               "applicable": 55
             },
             "ai_author_source": {
@@ -22849,7 +22846,7 @@
             "ai_citable": {
               "label": "#36 Citable Sentence ≥ 10%",
               "cat": "geo_content",
-              "pass": 5,
+              "pass": 27,
               "applicable": 55
             },
             "ai_ssr_ratio": {
@@ -22905,13 +22902,13 @@
         "microsite": {
           "label": "마이크로사이트/캠페인",
           "count": 5,
-          "avgScore": 72.6,
+          "avgScore": 76.8,
           "categories": {
             "performance": 100,
             "accessibility": 100,
             "seo": 80.2,
             "geo_schema": 23,
-            "geo_content": 10,
+            "geo_content": 45,
             "geo_platform": 100
           },
           "checks": {
@@ -23074,7 +23071,7 @@
             "ai_definition": {
               "label": "#33 Definition Paragraph",
               "cat": "geo_content",
-              "pass": 0,
+              "pass": 5,
               "applicable": 5
             },
             "ai_author_source": {
@@ -23092,7 +23089,7 @@
             "ai_citable": {
               "label": "#36 Citable Sentence ≥ 10%",
               "cat": "geo_content",
-              "pass": 1,
+              "pass": 3,
               "applicable": 5
             },
             "ai_ssr_ratio": {
@@ -23148,13 +23145,13 @@
         "pdp": {
           "label": "제품 상세 (PDP)",
           "count": 461,
-          "avgScore": 77.7,
+          "avgScore": 82.5,
           "categories": {
             "performance": 100,
             "accessibility": 73.1,
             "seo": 98.6,
             "geo_schema": 21.8,
-            "geo_content": 56.5,
+            "geo_content": 95.8,
             "geo_platform": 99.7
           },
           "checks": {
@@ -23323,7 +23320,7 @@
             "ai_definition": {
               "label": "#33 Definition Paragraph",
               "cat": "geo_content",
-              "pass": 0,
+              "pass": 461,
               "applicable": 461
             },
             "ai_author_source": {
@@ -23341,7 +23338,7 @@
             "ai_citable": {
               "label": "#36 Citable Sentence ≥ 10%",
               "cat": "geo_content",
-              "pass": 145,
+              "pass": 410,
               "applicable": 461
             },
             "ai_ssr_ratio": {
@@ -23391,13 +23388,13 @@
         "plp": {
           "label": "제품 카테고리 (PLP)",
           "count": 98,
-          "avgScore": 72.6,
+          "avgScore": 78,
           "categories": {
             "performance": 100,
             "accessibility": 90.3,
             "seo": 83.1,
             "geo_schema": 33.4,
-            "geo_content": 9.2,
+            "geo_content": 48.2,
             "geo_platform": 100
           },
           "checks": {
@@ -23566,7 +23563,7 @@
             "ai_definition": {
               "label": "#33 Definition Paragraph",
               "cat": "geo_content",
-              "pass": 0,
+              "pass": 97,
               "applicable": 98
             },
             "ai_author_source": {
@@ -23584,7 +23581,7 @@
             "ai_citable": {
               "label": "#36 Citable Sentence ≥ 10%",
               "cat": "geo_content",
-              "pass": 24,
+              "pass": 80,
               "applicable": 98
             },
             "ai_ssr_ratio": {
@@ -23634,13 +23631,13 @@
         "support": {
           "label": "지원/Support",
           "count": 97,
-          "avgScore": 72.4,
+          "avgScore": 78.8,
           "categories": {
             "performance": 100,
             "accessibility": 80.4,
             "seo": 64.6,
             "geo_schema": 78.4,
-            "geo_content": 5.2,
+            "geo_content": 49.7,
             "geo_platform": 100
           },
           "checks": {
@@ -23803,7 +23800,7 @@
             "ai_definition": {
               "label": "#33 Definition Paragraph",
               "cat": "geo_content",
-              "pass": 0,
+              "pass": 97,
               "applicable": 97
             },
             "ai_author_source": {
@@ -23821,7 +23818,7 @@
             "ai_citable": {
               "label": "#36 Citable Sentence ≥ 10%",
               "cat": "geo_content",
-              "pass": 5,
+              "pass": 81,
               "applicable": 97
             },
             "ai_ssr_ratio": {
@@ -23877,13 +23874,13 @@
         "support_troubleshoot": {
           "label": "지원 - 트러블슈팅",
           "count": 100,
-          "avgScore": 78.7,
+          "avgScore": 85.7,
           "categories": {
             "performance": 100,
             "accessibility": 99.3,
             "seo": 98.7,
             "geo_schema": 33.5,
-            "geo_content": 0,
+            "geo_content": 50,
             "geo_platform": 100
           },
           "checks": {
@@ -24046,7 +24043,7 @@
             "ai_definition": {
               "label": "#33 Definition Paragraph",
               "cat": "geo_content",
-              "pass": 0,
+              "pass": 100,
               "applicable": 100
             },
             "ai_author_source": {
@@ -24064,7 +24061,7 @@
             "ai_citable": {
               "label": "#36 Citable Sentence ≥ 10%",
               "cat": "geo_content",
-              "pass": 0,
+              "pass": 100,
               "applicable": 100
             },
             "ai_ssr_ratio": {
@@ -24166,18 +24163,18 @@
   "overall": {
     "urlCount": 9284,
     "scoredCount": 9284,
-    "avgScore": 76.7,
+    "avgScore": 78.5,
     "grades": {
-      "Need Improvement": 7417,
-      "Good": 1788,
-      "Poor": 79
+      "Need Improvement": 5345,
+      "Good": 3878,
+      "Poor": 61
     },
     "categories": {
       "performance": 99.4,
       "accessibility": 83.5,
       "seo": 89.2,
       "geo_schema": 31.7,
-      "geo_content": 42.8,
+      "geo_content": 56.3,
       "geo_platform": 95.4
     },
     "checks": {
@@ -24346,7 +24343,7 @@
       "ai_definition": {
         "label": "#33 Definition Paragraph",
         "cat": "geo_content",
-        "pass": 200,
+        "pass": 3979,
         "applicable": 9284
       },
       "ai_author_source": {
@@ -24358,13 +24355,13 @@
       "ai_summary_box": {
         "label": "#35 Summary Box (콘텐츠)",
         "cat": "geo_content",
-        "pass": 4848,
+        "pass": 4927,
         "applicable": 9284
       },
       "ai_citable": {
         "label": "#36 Citable Sentence ≥ 10%",
         "cat": "geo_content",
-        "pass": 5271,
+        "pass": 6764,
         "applicable": 9284
       },
       "ai_ssr_ratio": {
@@ -24414,13 +24411,13 @@
       "buying_guide": {
         "label": "구매 가이드",
         "count": 209,
-        "avgScore": 73.2,
+        "avgScore": 76.5,
         "categories": {
           "performance": 98.3,
           "accessibility": 95.5,
           "seo": 87.1,
           "geo_schema": 28.2,
-          "geo_content": 22.1,
+          "geo_content": 43.3,
           "geo_platform": 100
         },
         "checks": {
@@ -24589,7 +24586,7 @@
           "ai_definition": {
             "label": "#33 Definition Paragraph",
             "cat": "geo_content",
-            "pass": 0,
+            "pass": 158,
             "applicable": 209
           },
           "ai_author_source": {
@@ -24607,7 +24604,7 @@
           "ai_citable": {
             "label": "#36 Citable Sentence ≥ 10%",
             "cat": "geo_content",
-            "pass": 93,
+            "pass": 156,
             "applicable": 209
           },
           "ai_ssr_ratio": {
@@ -24657,13 +24654,13 @@
       "lg_experience": {
         "label": "LG Experience",
         "count": 435,
-        "avgScore": 75.7,
+        "avgScore": 78.8,
         "categories": {
           "performance": 97.8,
           "accessibility": 91.1,
           "seo": 91.8,
           "geo_schema": 29,
-          "geo_content": 19.9,
+          "geo_content": 38.9,
           "geo_platform": 100
         },
         "checks": {
@@ -24832,7 +24829,7 @@
           "ai_definition": {
             "label": "#33 Definition Paragraph",
             "cat": "geo_content",
-            "pass": 0,
+            "pass": 353,
             "applicable": 435
           },
           "ai_author_source": {
@@ -24844,13 +24841,13 @@
           "ai_summary_box": {
             "label": "#35 Summary Box (콘텐츠)",
             "cat": "geo_content",
-            "pass": 68,
+            "pass": 71,
             "applicable": 435
           },
           "ai_citable": {
             "label": "#36 Citable Sentence ≥ 10%",
             "cat": "geo_content",
-            "pass": 194,
+            "pass": 250,
             "applicable": 435
           },
           "ai_ssr_ratio": {
@@ -24900,13 +24897,13 @@
       "microsite": {
         "label": "마이크로사이트/캠페인",
         "count": 186,
-        "avgScore": 74,
+        "avgScore": 76.4,
         "categories": {
           "performance": 99.6,
           "accessibility": 87,
           "seo": 83.4,
           "geo_schema": 29.7,
-          "geo_content": 26.9,
+          "geo_content": 44.5,
           "geo_platform": 100
         },
         "checks": {
@@ -25075,7 +25072,7 @@
           "ai_definition": {
             "label": "#33 Definition Paragraph",
             "cat": "geo_content",
-            "pass": 0,
+            "pass": 103,
             "applicable": 186
           },
           "ai_author_source": {
@@ -25093,7 +25090,7 @@
           "ai_citable": {
             "label": "#36 Citable Sentence ≥ 10%",
             "cat": "geo_content",
-            "pass": 97,
+            "pass": 125,
             "applicable": 186
           },
           "ai_ssr_ratio": {
@@ -25143,13 +25140,13 @@
       "plp": {
         "label": "제품 카테고리 (PLP)",
         "count": 1020,
-        "avgScore": 75.6,
+        "avgScore": 77.2,
         "categories": {
           "performance": 99.7,
           "accessibility": 87.9,
           "seo": 83.8,
           "geo_schema": 39.8,
-          "geo_content": 25,
+          "geo_content": 37.3,
           "geo_platform": 99.9
         },
         "checks": {
@@ -25318,7 +25315,7 @@
           "ai_definition": {
             "label": "#33 Definition Paragraph",
             "cat": "geo_content",
-            "pass": 1,
+            "pass": 443,
             "applicable": 1020
           },
           "ai_author_source": {
@@ -25330,13 +25327,13 @@
           "ai_summary_box": {
             "label": "#35 Summary Box (콘텐츠)",
             "cat": "geo_content",
-            "pass": 172,
+            "pass": 173,
             "applicable": 1020
           },
           "ai_citable": {
             "label": "#36 Citable Sentence ≥ 10%",
             "cat": "geo_content",
-            "pass": 573,
+            "pass": 630,
             "applicable": 1020
           },
           "ai_ssr_ratio": {
@@ -25386,13 +25383,13 @@
       "pdp": {
         "label": "제품 상세 (PDP)",
         "count": 4585,
-        "avgScore": 77.7,
+        "avgScore": 79.3,
         "categories": {
           "performance": 99.9,
           "accessibility": 75,
           "seo": 94.6,
           "geo_schema": 24,
-          "geo_content": 64.6,
+          "geo_content": 77.8,
           "geo_platform": 94.1
         },
         "checks": {
@@ -25561,7 +25558,7 @@
           "ai_definition": {
             "label": "#33 Definition Paragraph",
             "cat": "geo_content",
-            "pass": 0,
+            "pass": 1675,
             "applicable": 4585
           },
           "ai_author_source": {
@@ -25579,7 +25576,7 @@
           "ai_citable": {
             "label": "#36 Citable Sentence ≥ 10%",
             "cat": "geo_content",
-            "pass": 2904,
+            "pass": 3665,
             "applicable": 4585
           },
           "ai_ssr_ratio": {
@@ -25629,13 +25626,13 @@
       "press_media": {
         "label": "프레스앤미디어",
         "count": 725,
-        "avgScore": 74.9,
+        "avgScore": 79.5,
         "categories": {
           "performance": 98.1,
           "accessibility": 94,
           "seo": 74.5,
           "geo_schema": 43.1,
-          "geo_content": 22.5,
+          "geo_content": 48.9,
           "geo_platform": 99.1
         },
         "checks": {
@@ -25804,7 +25801,7 @@
           "ai_definition": {
             "label": "#33 Definition Paragraph",
             "cat": "geo_content",
-            "pass": 0,
+            "pass": 568,
             "applicable": 725
           },
           "ai_author_source": {
@@ -25816,13 +25813,13 @@
           "ai_summary_box": {
             "label": "#35 Summary Box (콘텐츠)",
             "cat": "geo_content",
-            "pass": 27,
+            "pass": 40,
             "applicable": 725
           },
           "ai_citable": {
             "label": "#36 Citable Sentence ≥ 10%",
             "cat": "geo_content",
-            "pass": 312,
+            "pass": 654,
             "applicable": 725
           },
           "ai_ssr_ratio": {
@@ -25872,13 +25869,13 @@
       "support": {
         "label": "지원/Support",
         "count": 939,
-        "avgScore": 76.4,
+        "avgScore": 77.5,
         "categories": {
           "performance": 97.6,
           "accessibility": 89.1,
           "seo": 77.2,
           "geo_schema": 56.3,
-          "geo_content": 19.2,
+          "geo_content": 27.1,
           "geo_platform": 97.1
         },
         "checks": {
@@ -26047,7 +26044,7 @@
           "ai_definition": {
             "label": "#33 Definition Paragraph",
             "cat": "geo_content",
-            "pass": 99,
+            "pass": 260,
             "applicable": 939
           },
           "ai_author_source": {
@@ -26065,7 +26062,7 @@
           "ai_citable": {
             "label": "#36 Citable Sentence ≥ 10%",
             "cat": "geo_content",
-            "pass": 508,
+            "pass": 645,
             "applicable": 939
           },
           "ai_ssr_ratio": {
@@ -26115,13 +26112,13 @@
       "support_troubleshoot": {
         "label": "지원 - 트러블슈팅",
         "count": 916,
-        "avgScore": 77,
+        "avgScore": 77.3,
         "categories": {
           "performance": 100,
           "accessibility": 96.6,
           "seo": 94.4,
           "geo_schema": 29.8,
-          "geo_content": 19.5,
+          "geo_content": 22.4,
           "geo_platform": 86.9
         },
         "checks": {
@@ -26290,7 +26287,7 @@
           "ai_definition": {
             "label": "#33 Definition Paragraph",
             "cat": "geo_content",
-            "pass": 100,
+            "pass": 244,
             "applicable": 916
           },
           "ai_author_source": {
@@ -26308,7 +26305,7 @@
           "ai_citable": {
             "label": "#36 Citable Sentence ≥ 10%",
             "cat": "geo_content",
-            "pass": 516,
+            "pass": 479,
             "applicable": 916
           },
           "ai_ssr_ratio": {
@@ -26358,13 +26355,13 @@
       "newsroom": {
         "label": "뉴스룸/Press",
         "count": 269,
-        "avgScore": 73.9,
+        "avgScore": 78.1,
         "categories": {
           "performance": 99.9,
           "accessibility": 97.3,
           "seo": 83,
           "geo_schema": 28.8,
-          "geo_content": 20.1,
+          "geo_content": 44.1,
           "geo_platform": 97.8
         },
         "checks": {
@@ -26533,7 +26530,7 @@
           "ai_definition": {
             "label": "#33 Definition Paragraph",
             "cat": "geo_content",
-            "pass": 0,
+            "pass": 175,
             "applicable": 269
           },
           "ai_author_source": {
@@ -26545,13 +26542,13 @@
           "ai_summary_box": {
             "label": "#35 Summary Box (콘텐츠)",
             "cat": "geo_content",
-            "pass": 10,
+            "pass": 72,
             "applicable": 269
           },
           "ai_citable": {
             "label": "#36 Citable Sentence ≥ 10%",
             "cat": "geo_content",
-            "pass": 74,
+            "pass": 160,
             "applicable": 269
           },
           "ai_ssr_ratio": {

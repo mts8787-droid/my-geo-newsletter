@@ -298,22 +298,23 @@ describe('개선 가이드 — 체크 × 페이지타입', () => {
 describe('개선 가이드 — 필터 조건부 문장', () => {
   const G = async () => await import('../src/shared/readabilityGuide.js')
   it('국가 조건(cc)에 맞을 때만 문장이 나온다', async () => {
-    const { guideFor } = await G()
-    const us = guideFor('ai_schema_product', 'pdp', 'us').notes.join(' ')
-    const de = guideFor('ai_schema_product', 'pdp', 'de').notes.join(' ')
-    expect(us).toContain('미국은 일부')
-    expect(de).not.toContain('미국은 일부')
+    const { guideFor, GUIDE } = await G()
+    const only = GUIDE.ai_schema_product.notes.find(n => n.cc && n.cc.includes('us')).text
+    expect(guideFor('ai_schema_product', 'pdp', 'us').notes).toContain(only)
+    expect(guideFor('ai_schema_product', 'pdp', 'de').notes).not.toContain(only)
   })
   it('제외 조건(ccNot)은 해당 국가에서만 숨는다', async () => {
-    const { guideFor } = await G()
-    expect(guideFor('ai_schema_product', 'pdp', 'de').notes.join(' ')).toContain('미국을 제외한')
-    expect(guideFor('ai_schema_product', 'pdp', 'us').notes.join(' ')).not.toContain('미국을 제외한')
+    const { guideFor, GUIDE } = await G()
+    // 문구가 바뀌어도 깨지지 않도록 ccNot 노트 본문을 정의에서 직접 가져와 비교
+    const excl = GUIDE.ai_schema_product.notes.find(n => n.ccNot).text
+    expect(guideFor('ai_schema_product', 'pdp', 'de').notes).toContain(excl)
+    expect(guideFor('ai_schema_product', 'pdp', 'us').notes).not.toContain(excl)
   })
   it('국가 미선택(전체)이면 cc·ccNot 문장 모두 숨는다', async () => {
-    const { guideFor } = await G()
-    const n = guideFor('ai_schema_product', 'pdp', null).notes.join(' ')
-    expect(n).not.toContain('미국은 일부')
-    expect(n).not.toContain('미국을 제외한')
+    const { guideFor, GUIDE } = await G()
+    const n = guideFor('ai_schema_product', 'pdp', null).notes
+    GUIDE.ai_schema_product.notes.filter(x => x.cc || x.ccNot)
+      .forEach(x => expect(n).not.toContain(x.text))
   })
   it('페이지타입 조건(pt)도 독립적으로 걸린다', async () => {
     const { guideFor } = await G()
@@ -334,6 +335,23 @@ describe('개선 가이드 — 필터 조건부 문장', () => {
       ;(n.pt || []).forEach(p => { if (!PT_LABEL[p]) bad.push(`${cid}.notes[${i}].pt=${p}`) })
       if (!n.text) bad.push(`${cid}.notes[${i}] text 없음`)
     }))
+    expect(bad).toEqual([])
+  })
+})
+
+describe('개선 가이드 — 실측 수치 하드코딩 금지', () => {
+  // 통과율 같은 실측치를 문구에 박으면 데이터 갱신 때마다 어긋난다.
+  // 현재 수치는 대시보드 autoNotes 가 스냅샷에서 계산해 '현재 위치' 줄로 보여준다.
+  // what 은 기준값(예: "60% 이상")을 담으므로 검사 대상에서 제외.
+  it('action·notes 에 % 수치가 없다', async () => {
+    const { GUIDE } = await import('../src/shared/readabilityGuide.js')
+    const bad = []
+    Object.entries(GUIDE).forEach(([cid, g]) => {
+      const texts = [g.action, ...Object.values(g.byPt || {}).map(o => o.action),
+        ...Object.values(g.byCc || {}).map(o => o.action),
+        ...(g.notes || []).map(n => n.text)].filter(Boolean)
+      texts.forEach(t => { if (/\d+(\.\d+)?%/.test(t)) bad.push(`${cid}: ${t.slice(0, 40)}`) })
+    })
     expect(bad).toEqual([])
   })
 })
