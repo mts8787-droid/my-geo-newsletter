@@ -2715,7 +2715,7 @@ function dashboardLinkButtonHtml(lang) {
 }
 
 // ─── 메인 생성 함수 ───────────────────────────────────────────────────────────
-export { escapeHtml }
+export { escapeHtml, rdRichHtml }
 
 // ─── 하이라이트 챕터 — Readability ─────────────────────────────────────────────
 // '주요 제품 주차별 트랜드' 는 2026-08-27 삭제 (사용자 지시). 주간 꺾은선 PNG 임베드와
@@ -2892,9 +2892,21 @@ function rdHeading(text, field) {
 }
 
 // 본문 문단 (줄바꿈 유지, **볼드** 지원)
+// edRich(WYSIWYG) 필드 렌더 — HTML 라운드트립 안전판.
+// 편집모드 blur 저장은 innerHTML(엔티티 &amp; + <strong> 태그 포함)을 meta 에 남기는데,
+// 그걸 escapeHtml 로 또 이스케이프하면 화면에 '&amp;' 와 '<strong>' 코드가 그대로 노출된다
+// (사용자 보고 2026-08-31: "특수문자에 ;amp 붙음 / 볼드 적용하면 HTML 코드 노출").
+// 태그·엔티티가 보이면 이미 HTML 저장분 → 정화만 하고 그대로, 아니면 기존 escape+**볼드**+줄바꿈.
+function rdRichHtml(text) {
+  const raw = String(text ?? '')
+  const looksHtml = /<\/?[a-z][^>]*>/i.test(raw) || /&(amp|lt|gt|quot|nbsp|#\d+);/i.test(raw)
+  if (looksHtml) return sanitizeUserHtml(raw)
+  return escapeHtml(raw).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/\r?\n/g, '<br>')
+}
+
 function rdPara(text, opts = {}) {
   if (!text && !opts.field) return ''
-  const html = escapeHtml(text || '').replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/\r?\n/g, '<br>')
+  const html = rdRichHtml(text)
   // opts.field 가 있으면 편집모드에서 인라인 수정 가능 (meta.rd_* 로 저장)
   return `<p${opts.field ? edRich(opts.field) : ''} style="margin:0 0 ${opts.gap || 10}px;font-size:13px;color:#334155;line-height:1.75;font-family:${EM_FONT};letter-spacing:-0.2px;">${html}</p>`
 }
@@ -2906,8 +2918,12 @@ function rdPara(text, opts = {}) {
 function rdFootnotes(lines, field, opts = {}) {
   if (!lines || !lines.length) return ''
   const box = opts.plain ? 'margin:2px 0 0;' : 'margin:2px 0 14px;padding:10px 12px;background:#F8FAFC;border-radius:6px;'
+  // 편집모드로 저장되면 배열이 아니라 HTML 문자열이 온다 → 정화 후 그대로 (rdRichHtml 과 동일 원칙)
+  const body = Array.isArray(lines)
+    ? lines.map(l => `<div style="font-size:11px;color:#64748B;line-height:1.65;font-family:${EM_FONT};">${rdRichHtml(l)}</div>`).join('')
+    : `<div style="font-size:11px;color:#64748B;line-height:1.65;font-family:${EM_FONT};">${rdRichHtml(lines)}</div>`
   return `<div${field ? edRich(field) : ''} style="${box}">
-    ${lines.map(l => `<div style="font-size:11px;color:#64748B;line-height:1.65;font-family:${EM_FONT};">${escapeHtml(l)}</div>`).join('')}
+    ${body}
   </div>`
 }
 
@@ -3101,7 +3117,7 @@ function readabilityHighlightHtml(rd, meta = {}, lang = 'ko', contentWidth = 848
     ['d3Title', 'd3', null],
     ['d4Title', 'd4', null],
   ].map(([tk, bk, notes]) => `
-    <p${edRich('rd_' + tk)} style="margin:0 0 8px;font-size:13px;font-weight:800;color:${EM_RED};line-height:1.6;font-family:${EM_FONT};letter-spacing:-0.3px;">${escapeHtml(tx(tk))}</p>
+    <p${edRich('rd_' + tk)} style="margin:0 0 8px;font-size:13px;font-weight:800;color:${EM_RED};line-height:1.6;font-family:${EM_FONT};letter-spacing:-0.3px;">${rdRichHtml(tx(tk))}</p>
     ${rdPara(tx(bk), { gap: (notes || bk === 'd3') ? 6 : 20, field: 'rd_' + bk })}
     ${bk === 'd3' ? rdSchemaCompareHtml(meta, lang) : ''}
     ${notes ? rdFootnotes(tx(notes), 'rd_' + notes) : ''}`).join('')

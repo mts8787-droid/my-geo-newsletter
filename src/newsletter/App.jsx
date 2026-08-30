@@ -120,20 +120,27 @@ function HtmlCodeViewer({ meta, total, products, citations, dotcom, productsCnty
 
 // ─── 메인 앱 ──────────────────────────────────────────────────────────────────
 export default function App() {
-  // Readability Highlight 데이터 — /api/readability-summary (최신 스냅샷 요약, 4KB).
-  // 미리보기·코드뷰어 두 자식이 함께 쓰므로 여기서 한 번만 받아 내려준다.
-  // meta.showReadability 가 켜져 있을 때만 섹션이 렌더된다.
-  const [readability, setReadability] = useState(null)
-  useEffect(() => {
-    let cancelled = false
-    fetch('/api/readability-summary')
-      .then(r => r.ok ? r.json() : null)
-      .then(j => { if (!cancelled && j && j.ok) setReadability(j) })
-      .catch(() => {})
-    return () => { cancelled = true }
-  }, [])
-
   const cache = useRef(loadCache(STORAGE_KEY)).current
+  // Readability Highlight 수치 — 자동 연동 해제 (사용자 결정 2026-08-31).
+  // 이전에는 마운트마다 /api/readability-summary(최신 어딧 스냅샷)를 자동 fetch 해서,
+  // 어딧 쪽 재집계가 있으면 뉴스레터 표·그래프 숫자가 본문 프로즈와 다르게 소리 없이
+  // 바뀌었다. 이제 수치는 캐시·스냅샷에 얼려 두고, 사람이 탑바의
+  // "Readability 수치 불러오기" 버튼으로 명시적으로만 갱신·검수한다.
+  const [readability, setReadability] = useState(cache?.readability ?? null)
+  const [rdLoadMsg, setRdLoadMsg] = useState('')
+  async function loadReadabilityNumbers() {
+    setRdLoadMsg('불러오는 중...')
+    try {
+      const r = await fetch('/api/readability-summary')
+      const j = r.ok ? await r.json() : null
+      if (!j || !j.ok) throw new Error('스냅샷 없음')
+      setReadability(j)
+      setRdLoadMsg(`기준 ${j.date} 수치 로드 — 본문 숫자와 일치하는지 검수 후 저장하세요`)
+    } catch (e) {
+      setRdLoadMsg('로드 실패: ' + e.message)
+    }
+    setTimeout(() => setRdLoadMsg(''), 8000)
+  }
   const [metaKo,    setMetaKo]    = useState({ ...INIT_META, ...(cache?.metaKo ?? cache?.meta ?? {}) })
   const [metaEn,    setMetaEn]    = useState({ ...INIT_META, ...(cache?.metaEn ?? {}) })
   const [total,     setTotal]     = useState(cache?.total     ?? INIT_TOTAL)
@@ -315,7 +322,8 @@ export default function App() {
       if (d.weeklyAll)     setWeeklyAll(prev => ({ ...prev, ...d.weeklyAll }))
       if (d.unlaunchedMap) setUnlaunchedMap(d.unlaunchedMap)
       if (d.monthlyVis)    setMonthlyVis(d.monthlyVis)
-      if (d.citTouchPointsTrend) setCitTouchPointsTrend(d.citTouchPointsTrend)
+      if (d.readability) setReadability(d.readability)  // 발행 시점에 얼린 수치 복원 (자동 연동 X)
+    if (d.citTouchPointsTrend) setCitTouchPointsTrend(d.citTouchPointsTrend)
       if (d.citTrendMonths)      setCitTrendMonths(d.citTrendMonths)
       if (d.citDomainTrend)      setCitDomainTrend(d.citDomainTrend)
       if (d.citDomainMonths)     setCitDomainMonths(d.citDomainMonths)
@@ -367,19 +375,19 @@ export default function App() {
   }, [])
 
   useEffect(() => {
-    saveCache(STORAGE_KEY, { metaKo, metaEn, total, products, citations, dotcom, productsCnty, citationsCnty, weeklyLabels, weeklyAll, unlaunchedMap, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, citTouchPointsByLlm, citDomainByLlm, citDomainByLlmTrend, dotcomByLlm, progressMonth })
-  }, [metaKo, metaEn, total, products, citations, dotcom, productsCnty, citationsCnty, weeklyLabels, weeklyAll, unlaunchedMap, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, citTouchPointsByLlm, citDomainByLlm, citDomainByLlmTrend, dotcomByLlm, progressMonth])
+    saveCache(STORAGE_KEY, { metaKo, metaEn, total, products, citations, dotcom, productsCnty, citationsCnty, weeklyLabels, weeklyAll, unlaunchedMap, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, citTouchPointsByLlm, citDomainByLlm, citDomainByLlmTrend, dotcomByLlm, progressMonth, readability })
+  }, [metaKo, metaEn, total, products, citations, dotcom, productsCnty, citationsCnty, weeklyLabels, weeklyAll, unlaunchedMap, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, citTouchPointsByLlm, citDomainByLlm, citDomainByLlmTrend, dotcomByLlm, progressMonth, readability])
 
   async function handleSnapOverwrite() {
     if (!activeSnap) return
-    const data = { metaKo, metaEn, total, products, citations, dotcom, productsCnty, citationsCnty, weeklyLabels, weeklyAll, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, citTouchPointsByLlm, citDomainByLlm, citDomainByLlmTrend, dotcomByLlm, progressMonth }
+    const data = { metaKo, metaEn, total, products, citations, dotcom, productsCnty, citationsCnty, weeklyLabels, weeklyAll, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, citTouchPointsByLlm, citDomainByLlm, citDomainByLlmTrend, dotcomByLlm, progressMonth, readability }
     const result = await updateSnapshot(MODE, activeSnap, data)
     if (result) setSnapshots(result)
     showSnapMsg(result ? '저장 완료!' : '저장 실패')
   }
   async function handleSnapSaveNew() {
     const name = snapName.trim() || `${meta.period || 'Untitled'} — ${new Date().toLocaleString('ko-KR')}`
-    const result = await postSnapshot(MODE, name, { metaKo, metaEn, total, products, citations, dotcom, productsCnty, citationsCnty, weeklyLabels, weeklyAll, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, citTouchPointsByLlm, citDomainByLlm, citDomainByLlmTrend, dotcomByLlm, progressMonth })
+    const result = await postSnapshot(MODE, name, { metaKo, metaEn, total, products, citations, dotcom, productsCnty, citationsCnty, weeklyLabels, weeklyAll, citTouchPointsTrend, citTrendMonths, citDomainTrend, citDomainMonths, citTouchPointsByLlm, citDomainByLlm, citDomainByLlmTrend, dotcomByLlm, progressMonth, readability })
     if (result) { setSnapshots(result); setSnapName(''); setActiveSnap(result[0]?.ts || null) }
     showSnapMsg(result ? '새로 저장 완료!' : '저장 실패')
   }
@@ -399,6 +407,7 @@ export default function App() {
     if (d.citationsCnty) setCitationsCnty(d.citationsCnty)
     setWeeklyLabels(d.weeklyLabels || null)
     setWeeklyAll(d.weeklyAll || {})
+    if (d.readability) setReadability(d.readability)  // 발행 시점에 얼린 수치 복원 (자동 연동 X)
     if (d.citTouchPointsTrend) setCitTouchPointsTrend(d.citTouchPointsTrend)
     if (d.citTrendMonths)      setCitTrendMonths(d.citTrendMonths)
     if (d.citDomainTrend)      setCitDomainTrend(d.citDomainTrend)
@@ -510,6 +519,13 @@ export default function App() {
             })}
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            {rdLoadMsg && <span style={{ fontSize: 11, color: rdLoadMsg.startsWith('로드 실패') ? '#FCA5A5' : '#FBBF24', fontFamily: FONT }}>{rdLoadMsg}</span>}
+            <button onClick={loadReadabilityNumbers}
+              title={readability ? `현재 수치 기준: ${readability.date} — 자동 갱신 안 됨, 클릭 시에만 최신으로 교체` : 'Readability 하이라이트 수치를 수동으로 불러옵니다 (자동 연동 없음)'}
+              style={{ padding: '4px 10px', borderRadius: 6, border: '1px solid #334155', cursor: 'pointer',
+                background: 'transparent', color: '#94A3B8', fontSize: 11, fontWeight: 700, fontFamily: FONT }}>
+              Readability 수치 {readability ? `(${readability.date})` : '불러오기'}
+            </button>
             {snapMsg && <span style={{ fontSize: 11, color: '#22C55E', fontFamily: FONT }}>{snapMsg}</span>}
             <button onClick={handleSnapOverwrite} disabled={!activeSnap}
               title={activeSnap ? '현재 버전에 덮어쓰기' : '불러온 버전이 없습니다'}
