@@ -2,7 +2,7 @@
 
 > 6개 카테고리 38개 채점 항목 + 9월 감사 시행 예정 4항목.
 > 점수·통과율은 제외한 **기준 정의 문서**입니다. 실측치는 Readability 대시보드에서 확인하세요.
-> 생성: `scripts/render-criteria.mjs` (source: `data/readability/geo-agent-checklist.html`) — 2026-07-31
+> 생성: `scripts/render-criteria.mjs` (source: `data/readability/geo-agent-checklist.html`) — 2026-08-30
 
 ## 카테고리
 
@@ -143,19 +143,19 @@
 
 ### #17 — Robots
 - **정의**: 검색엔진이 이 페이지를 수집하고 검색결과에 노출해도 되는지 알려주는 설정
-- **PASS**: Indexing 허용 — meta robots 또는 X-Robots-Tag 중 하나만 충족해도 통과
+- **PASS**: meta robots 또는 X-Robots-Tag 중 하나로 Indexing 허용
 - **측정방법**: meta robots HTML 파싱 후 검증, X-Robots-Tag 헤더↑ 응답값 확인
 - **check id**: `seo_robots`
 
 ### #18 — Open Graph
 - **정의**: 링크를 공유했을 때 제목·이미지가 함께 표시되도록 전달하는 정보
-- **PASS**: og:title + og:image
+- **PASS**: 메타 태그 영역에 OG 태그 존재
 - **측정방법**: og: meta 태그
 - **check id**: `seo_open_graph`
 
 ### #19 — Sitemap
 - **정의**: 사이트의 전체 페이지 목록을 검색엔진에 알려주는 파일의 최신 여부
-- **PASS**: (Published/Update Data 1개월 내) 최신화된 Sitemap XML 존재
+- **PASS**: 1개월 내 Published/Update 된 Sitemap XML 존재
 - **측정방법**: /sitemap.xml HEAD 요청, 각 국가별 Sitemap.xml 검증
 - **check id**: `seo_sitemap`
 
@@ -315,7 +315,7 @@
 
 ### #42 — Status Code (Soft 404)
 - **정의**: 정상 응답인데 실제로는 내용이 비어 있는 페이지인지
-- **PASS**: 200 Status code 반환, HTML Text Count 기준 이상일 경우
+- **PASS**: 200 Status Page 중 HTML Text Count 기준 이상(200자)
 - **측정방법**: Status Code 및 HTML text 일정 수 미달 검증
 - **check id**: `ai_soft_404`
 

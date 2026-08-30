@@ -207,9 +207,9 @@
       <tr><td class="no-cell">14</td><td class="item-cell">Meta Description<span class="item-def">검색결과에서 페이지의 주요 내용을 요약해 전달하는 메타 설명 문구</span></td><td class="pass-cell">존재 (120~160자)</td><td class="method-cell">meta[name="description"] HTML 파싱 후 검증</td></tr>
       <tr><td class="no-cell">15</td><td class="item-cell">Canonical<span class="item-def">검색엔진에 대표 페이지를 알려주는 URL 설정</span></td><td class="pass-cell">self-referencing</td><td class="method-cell">link[rel="canonical"] HTML 파싱 후 검증</td></tr>
       <tr><td class="no-cell">16</td><td class="item-cell">H1<span class="item-def">페이지 본문의 대표 제목을 나타내는 최상위 제목 태그의 개수</span></td><td class="pass-cell">정확히 1개 존재</td><td class="method-cell">h1 tag HTML 파싱 후 검증 (카운트)</td></tr>
-      <tr><td class="no-cell">17</td><td class="item-cell">Robots<span class="item-def">검색엔진이 이 페이지를 수집하고 검색결과에 노출해도 되는지 알려주는 설정</span></td><td class="pass-cell">Indexing 허용 — meta robots 또는 X-Robots-Tag 중 하나만 충족해도 통과</td><td class="method-cell">meta robots HTML 파싱 후 검증, X-Robots-Tag 헤더↑ 응답값 확인</td></tr>
-      <tr><td class="no-cell">18</td><td class="item-cell">Open Graph<span class="item-def">링크를 공유했을 때 제목·이미지가 함께 표시되도록 전달하는 정보</span></td><td class="pass-cell">og:title + og:image</td><td class="method-cell">og: meta 태그</td></tr>
-      <tr><td class="no-cell">19</td><td class="item-cell">Sitemap<span class="item-def">사이트의 전체 페이지 목록을 검색엔진에 알려주는 파일의 최신 여부</span></td><td class="pass-cell">(Published/Update Data 1개월 내) 최신화된 Sitemap XML 존재</td><td class="method-cell">/sitemap.xml HEAD 요청, 각 국가별 Sitemap.xml 검증</td></tr>
+      <tr><td class="no-cell">17</td><td class="item-cell">Robots<span class="item-def">검색엔진이 이 페이지를 수집하고 검색결과에 노출해도 되는지 알려주는 설정</span></td><td class="pass-cell">meta robots 또는 X-Robots-Tag 중 하나로 Indexing 허용</td><td class="method-cell">meta robots HTML 파싱 후 검증, X-Robots-Tag 헤더↑ 응답값 확인</td></tr>
+      <tr><td class="no-cell">18</td><td class="item-cell">Open Graph<span class="item-def">링크를 공유했을 때 제목·이미지가 함께 표시되도록 전달하는 정보</span></td><td class="pass-cell">메타 태그 영역에 OG 태그 존재</td><td class="method-cell">og: meta 태그</td></tr>
+      <tr><td class="no-cell">19</td><td class="item-cell">Sitemap<span class="item-def">사이트의 전체 페이지 목록을 검색엔진에 알려주는 파일의 최신 여부</span></td><td class="pass-cell">1개월 내 Published/Update 된 Sitemap XML 존재</td><td class="method-cell">/sitemap.xml HEAD 요청, 각 국가별 Sitemap.xml 검증</td></tr>
     </tbody>
   </table>
 
@@ -267,7 +267,7 @@
       <tr><td class="no-cell">39</td><td class="item-cell">(Javascript) 핵심 element 체크<span class="item-def">제품 페이지의 핵심 정보가 자바스크립트 없이도 HTML 안에 들어 있는지</span></td><td class="pass-cell">PDP의 핵심 element이 HTML 코드로 존재</td><td class="method-cell">PDP HTML 파싱 후, 서버사이드 렌더링 확인</td></tr>
       <tr><td class="no-cell">40</td><td class="item-cell">Image File Name<span class="item-def">이미지 파일 이름만으로 브랜드·제품을 알아볼 수 있는지</span></td><td class="pass-cell">브랜드명 포함</td><td class="method-cell">브랜드명 포함 등 이미지 파일 이름 규칙 검증</td></tr>
       <tr><td class="no-cell">41</td><td class="item-cell">Status Code (200)<span class="item-def">페이지가 정상적으로 열리는 상태로 응답하는지</span></td><td class="pass-cell">200 Status code를 반환</td><td class="method-cell">Status Code</td></tr>
-      <tr><td class="no-cell">42</td><td class="item-cell">Status Code (Soft 404)<span class="item-def">정상 응답인데 실제로는 내용이 비어 있는 페이지인지</span></td><td class="pass-cell">200 Status code 반환, HTML Text Count 기준 이상일 경우</td><td class="method-cell">Status Code 및 HTML text 일정 수 미달 검증</td></tr>
+      <tr><td class="no-cell">42</td><td class="item-cell">Status Code (Soft 404)<span class="item-def">정상 응답인데 실제로는 내용이 비어 있는 페이지인지</span></td><td class="pass-cell">200 Status Page 중 HTML Text Count 기준 이상(200자)</td><td class="method-cell">Status Code 및 HTML text 일정 수 미달 검증</td></tr>
       <tr><td class="no-cell">43</td><td class="item-cell">llms.txt / llms-corepage.txt<span class="item-def">AI에게 사이트의 핵심 페이지를 안내하는 파일이 있는지</span></td><td class="pass-cell">존재</td><td class="method-cell">각 국가별 llms.txt 검증</td></tr>
     </tbody>
   </table>
