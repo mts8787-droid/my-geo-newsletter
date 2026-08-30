@@ -67,6 +67,12 @@ import { T as UI, toClientDict } from '../src/shared/readabilityI18n.js'
 // 렌더는 동기 실행이므로 요청 간 섞이지 않는다.
 let _LANG = 'ko'
 const P = v => pick(v, _LANG)        // { ko, en } 쌍 → 현재 언어 문자열
+// 리소스 경로에 언어 파라미터 부착 — CSV·검수기준을 같은 언어로 받게 한다
+function withLang(paths, lang) {
+  if (lang !== 'en') return paths
+  const q = u => u + (u.includes('?') ? '&' : '?') + 'lang=en'
+  return { ...paths, csv: q(paths.csv), criteria: q(paths.criteria) }
+}
 const TT = () => UI[_LANG] || UI.ko  // UI 문구 사전
 
 function escHtml(s) {
@@ -737,7 +743,8 @@ export function renderReadabilityHTML({ snapshot, index, snapshots, adminMode = 
     ptLabel: GUIDE_PT_LABEL,  // 페이지타입 라벨 { ko, en } — 스냅샷 label 보다 우선
     guide: GUIDE,            // 개선 가이드 — 필터(국가×페이지타입) 변경 시 클라가 해석·액션 재생성
     catGuide: CATEGORY_GUIDE, // 6개 평가 영역이 각각 무엇을 보는지 (카드 상단 설명)
-    paths: paths || (adminMode ? ADMIN_PATHS : PUBLIC_PATHS),
+    // EN 이면 CSV·검수기준 링크에 lang 을 붙여 영문본을 받도록 한다
+    paths: withLang(paths || (adminMode ? ADMIN_PATHS : PUBLIC_PATHS), LANG),
     categoryLabels: snap.categoryLabels || {},
     checkDefs: loadCheckDefs(),   // check id → 항목 정의 (체크리스트 문서 출처)
     ccName: Object.fromEntries(Object.keys(snap.countries).map(cc => [cc, CC_NAME[cc] || cc.toUpperCase()])),

@@ -1,6 +1,7 @@
 // ─── 게시본 공개 라우트 — /p/:slug, /p/progress-tracker ─────────────────
 // IP 화이트리스트 검증을 통과한 클라이언트만 열람 가능
 import { Router } from 'express'
+import { localizeUrlsCsv } from '../src/shared/readabilityCsv.js'
 import express from 'express'
 import { readFileSync, existsSync } from 'fs'
 import { join, dirname } from 'path'
@@ -171,24 +172,31 @@ publishedRouter.get('/p/GEO-Monthly-Report-EN', (req, res) => {
 // Render 디스크 초기화) 이고, 무엇보다 **어드민(/admin/readability)과 항상 같은 내용**을
 // 보장하기 위해서다. 게시 시점에 구운 파일은 그 뒤 스냅샷·렌더러가 바뀌면 즉시 어긋난다.
 // 화면 구성은 어드민과 동일하고, 탭이 fetch 하는 리소스 경로만 /p/* 공개 라우트로 바뀐다.
-publishedRouter.get('/p/GEO-Readability-Dashboard', (req, res) => {
+// 언어는 슬러그(-EN) 또는 ?lang=en 으로 결정. 집안 패턴(GEO-KPI-Dashboard-EN)과 동일.
+function readabilityLang(req) {
+  if (/-EN$/i.test(req.path)) return 'en'
+  return String(req.query.lang || '').toLowerCase() === 'en' ? 'en' : 'ko'
+}
+const renderReadabilityPage = (req, res) => {
   if (!isIpAllowed(req)) return send403Page(res)
   try {
     const { snapshot, index, snapshots } = loadLatest()
     if (!snapshot) return res.status(404).send('Readability 스냅샷 없음')
     setPublishedSecurityHeaders(res)
     res.set('Content-Type', 'text/html; charset=utf-8')
-    res.send(renderReadabilityHTML({ snapshot, index, snapshots, adminMode: false }))
+    res.send(renderReadabilityHTML({ snapshot, index, snapshots, adminMode: false, lang: readabilityLang(req) }))
   } catch (e) {
     log.warn({ err: e.message }, 'readability dashboard render failed')
     res.status(500).send('Readability 대시보드 생성 실패')
   }
-})
+}
+publishedRouter.get('/p/GEO-Readability-Dashboard', renderReadabilityPage)
+publishedRouter.get('/p/GEO-Readability-Dashboard-EN', renderReadabilityPage)
 
 // Raw 데이터 탭이 fetch 하는 원본 — 게시본은 인증이 없으므로 /admin/* 대신 이 경로를 쓴다.
 // (기존에는 게시본이 /admin/readability/checks.json 을 불러 로그인 HTML 이 돌아왔고,
 //  "Unexpected token '<' ... is not valid JSON" 으로 실패했다.)
-publishedRouter.get('/p/GEO-Readability-Dashboard/checks.json', (req, res) => {
+publishedRouter.get(['/p/GEO-Readability-Dashboard/checks.json', '/p/GEO-Readability-Dashboard-EN/checks.json'], (req, res) => {
   if (!isIpAllowed(req)) return res.status(403).json({ error: 'forbidden' })
   const file = latestChecksFile()
   if (!file) return res.status(404).json({ error: 'raw 데이터 없음' })
@@ -196,13 +204,17 @@ publishedRouter.get('/p/GEO-Readability-Dashboard/checks.json', (req, res) => {
   res.sendFile(join(READABILITY_DATA_DIR, file), err => { if (err && !res.headersSent) res.status(500).end() })
 })
 
-publishedRouter.get('/p/GEO-Readability-Dashboard/urls.csv', (req, res) => {
+publishedRouter.get(['/p/GEO-Readability-Dashboard/urls.csv', '/p/GEO-Readability-Dashboard-EN/urls.csv'], (req, res) => {
   if (!isIpAllowed(req)) return send403Page(res, 'simple')
   const file = latestCsvFile()
   if (!file) return res.status(404).send('검수 URL CSV 없음')
+  // EN 요청이면 page_type 컬럼을 영문 라벨로 변환해 내려보낸다 (CSV 는 한 벌만 굽는다)
+  const lang = readabilityLang(req)
+  const body = localizeUrlsCsv(readFileSync(join(READABILITY_DATA_DIR, file), 'utf8'), lang)
+  const name = lang === 'en' ? file.replace(/\.csv$/, '-en.csv') : file
   res.set('Content-Type', 'text/csv; charset=utf-8')
-  res.set('Content-Disposition', `attachment; filename="${file}"`)
-  res.send(readFileSync(join(READABILITY_DATA_DIR, file), 'utf8'))
+  res.set('Content-Disposition', `attachment; filename="${name}"`)
+  res.send(body)
 })
 
 // ─── /p/GEO-Readability-Criteria (검수 기준 전체 항목표 — 요청 시 렌더) ──

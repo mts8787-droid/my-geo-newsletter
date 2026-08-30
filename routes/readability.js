@@ -3,6 +3,7 @@
 // 데이터는 .gitignore (/data/) — 로컬 내부 데이터. 인증 게이트 (/admin/*) 안.
 
 import { Router } from 'express'
+import { localizeUrlsCsv } from '../src/shared/readabilityCsv.js'
 import { readFileSync, existsSync, readdirSync } from 'fs'
 import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
@@ -70,10 +71,12 @@ export { DATA_DIR as READABILITY_DATA_DIR }
 
 export const readabilityRouter = Router()
 
+// ?lang=en 으로 영문본. 게시본(/p/GEO-Readability-Dashboard-EN)과 같은 렌더러를 쓴다.
 readabilityRouter.get('/admin/readability', (req, res) => {
   const { snapshot, index, snapshots } = loadLatest()
+  const lang = String(req.query.lang || '').toLowerCase() === 'en' ? 'en' : 'ko'
   res.set('Content-Type', 'text/html; charset=utf-8')
-  res.send(renderReadabilityHTML({ snapshot, index, snapshots, adminMode: true }))
+  res.send(renderReadabilityHTML({ snapshot, index, snapshots, adminMode: true, lang }))
 })
 
 // 뉴스레터 Highlight 섹션용 요약 — 최신 스냅샷에서 필요한 것만 추려 반환.
@@ -147,7 +150,11 @@ readabilityRouter.get('/admin/readability/checks.json', (req, res) => {
 readabilityRouter.get('/admin/readability/urls.csv', (req, res) => {
   const file = latestCsvFile()
   if (!file) return res.status(404).send('검수 URL CSV 없음 — node scripts/aggregate-readability.mjs 실행 필요')
+  // ?lang=en 이면 page_type 컬럼을 영문 라벨로 변환 (CSV 원본은 한 벌)
+  const lang = String(req.query.lang || '').toLowerCase() === 'en' ? 'en' : 'ko'
+  const body = localizeUrlsCsv(readFileSync(join(DATA_DIR, file), 'utf8'), lang)
+  const name = lang === 'en' ? file.replace(/\.csv$/, '-en.csv') : file
   res.set('Content-Type', 'text/csv; charset=utf-8')
-  res.set('Content-Disposition', `attachment; filename="${file}"`)
-  res.send(readFileSync(join(DATA_DIR, file), 'utf8'))
+  res.set('Content-Disposition', `attachment; filename="${name}"`)
+  res.send(body)
 })
