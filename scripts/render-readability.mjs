@@ -174,7 +174,6 @@ function viewCategoryDetail(snap) {
         ${cg ? `<span class="cat-what">${escHtml(cg.what)}</span>` : ''}
         <span class="cat-avg" style="color:${scoreColor(avg)}">${avg ?? '—'}</span>
       </div>
-      ${cg ? `<div class="cat-why">${escHtml(cg.why)}</div>` : ''}
       <div class="cat-sub">${checksArr.length} 체크 · ${sub}</div>
       <div class="bars sm">${checkRows}</div>
     </div>`
@@ -311,12 +310,11 @@ function readabilityClient() {
       // what 은 제목 옆 인라인, why(안 되면 생기는 일)는 그 아래 줄.
       var cg = (RD.catGuide || {})[catKey] || null
       var whatInline = cg ? '<span class="cat-what">' + esc(cg.what) + '</span>' : ''
-      var whyHtml = cg ? '<div class="cat-why">' + esc(cg.why) + '</div>' : ''
       return '<div class="cat-card">' +
         '<div class="cat-head">' +
           '<span class="cat-name">' + esc(name) + '</span>' + whatInline +
           '<span class="cat-avg" style="color:' + scoreColor(avg) + '">' + (avg == null ? '—' : avg) + '</span>' +
-        '</div>' + whyHtml +
+        '</div>' +
         '<div class="cat-sub">' + checksArr.length + ' 체크 · ' + sub + '</div>' +
         '<div class="bars sm">' + rows + '</div></div>'
     }
@@ -822,7 +820,6 @@ body{background:#F1F5F9;font-family:${FONT};color:#1A1A1A;line-height:1.6}
 .gd-k-where{color:#BE123C}
 .gd-k-act{color:#BE123C}
 .cat-what{flex:1 1 auto;min-width:0;font-size:12.5px;font-weight:500;color:#475569;line-height:1.5;padding-left:2px}
-.cat-why{font-size:12.5px;color:#94A3B8;line-height:1.55;margin:4px 0 0}
 @media(max-width:780px){.cat-head{flex-wrap:wrap}.cat-what{flex:1 1 100%;order:3;padding-left:0;margin-top:3px}}
 @media(max-width:780px){.gd-head{flex-wrap:wrap;gap:6px}.gd-name{flex:1 1 100%}.gd-line{flex-direction:column;gap:1px}.gd-k{text-align:left;flex:none}}
 .rd-pass{display:inline-block;padding:2px 8px;border-radius:6px;font-weight:800;font-size:11px;background:#ECFDF5;color:#15803D;border:1px solid #A7F3D0}

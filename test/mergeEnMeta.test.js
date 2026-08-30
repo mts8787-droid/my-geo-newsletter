@@ -275,7 +275,7 @@ describe('개선 가이드 — 체크 × 페이지타입', () => {
     const snap = await load()
     const cats = [...new Set(Object.values(snap.overall.checks).map(c => c.cat))]
     expect(cats.filter(c => !CATEGORY_GUIDE[c])).toEqual([])
-    expect(Object.values(CATEGORY_GUIDE).filter(g => !g.what || !g.why)).toEqual([])
+    expect(Object.values(CATEGORY_GUIDE).filter(g => !g.what)).toEqual([])
   })
   it('페이지타입 오버라이드가 어디/조치를 바꾼다', async () => {
     const { guideFor, GUIDE } = await import('../src/shared/readabilityGuide.js')
