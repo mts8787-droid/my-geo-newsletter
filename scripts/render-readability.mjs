@@ -359,10 +359,10 @@ function readabilityClient() {
           '<span class="gd-rate" style="color:' + rateColor(r.rate) + '">' + r.rate + '%</span>' +
           '<span class="gd-gap">미통과 ' + num(r.gap) + 'p</span>' +
         '</div>' +
-        '<div class="gd-line"><span class="gd-k">무엇을 보나</span>' + esc(r.what) + '</div>' +
-        '<div class="gd-line"><span class="gd-k">안 되면</span>' + esc(r.why) + '</div>' +
-        '<div class="gd-line gd-fix"><span class="gd-k gd-k-where">어디를</span>' + esc(r.where) + '</div>' +
-        '<div class="gd-line gd-fix"><span class="gd-k gd-k-act">고칠 일</span>' + esc(r.act) + '</div>' +
+        '<div class="gd-line"><span class="gd-k">점검 내용</span>' + esc(r.what) + '</div>' +
+        '<div class="gd-line"><span class="gd-k">리스크</span>' + esc(r.why) + '</div>' +
+        '<div class="gd-line gd-fix"><span class="gd-k gd-k-where">담당 영역</span>' + esc(r.where) + '</div>' +
+        '<div class="gd-line gd-fix"><span class="gd-k gd-k-act">조치 사항</span>' + esc(r.act) + '</div>' +
       '</div>'
     }).join('')
     var note = '<div class="tab-note">통과율 ' + CRITICAL_MAX + '% 미만 ' + rows.length +
@@ -704,7 +704,7 @@ body{background:#F1F5F9;font-family:${FONT};color:#1A1A1A;line-height:1.6}
 .gd-gap{font-size:12px;color:#94A3B8;font-variant-numeric:tabular-nums;white-space:nowrap}
 .gd-line{font-size:13px;line-height:1.65;color:#475569;display:flex;gap:8px;align-items:baseline;margin-top:3px}
 .gd-line.gd-fix{color:#1A1A1A}
-.gd-k{flex:0 0 62px;font-size:11px;font-weight:800;color:#94A3B8;text-align:right}
+.gd-k{flex:0 0 66px;font-size:11px;font-weight:800;color:#94A3B8;text-align:right}
 .gd-k-where{color:#BE123C}
 .gd-k-act{color:#BE123C}
 .cat-guide{border-left:2px solid #E2E8F0;padding:2px 0 2px 10px;margin:8px 0 12px}
