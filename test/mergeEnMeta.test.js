@@ -188,17 +188,23 @@ describe('MoM 반올림 — 표시값 기준', () => {
 })
 
 describe('Readability 채점 항목 — 38항목 체계 고정', () => {
-  it('제외 4건이 스냅샷에 없고 총 38항목이다', async () => {
+  // 스냅샷 경로는 파일 기준 절대경로로 — cwd 에 의존하면 실행 위치에 따라 깨진다
+  const loadSnap = async () => {
     const fs = await import('fs')
-    const snap = JSON.parse(fs.readFileSync('data/readability/2026-08-30.json', 'utf8'))
+    const { fileURLToPath } = await import('url')
+    const { dirname, join } = await import('path')
+    const root = join(dirname(fileURLToPath(import.meta.url)), '..')
+    return JSON.parse(fs.readFileSync(join(root, 'data/readability/2026-08-30.json'), 'utf8'))
+  }
+  it('제외 4건이 스냅샷에 없고 총 38항목이다', async () => {
+    const snap = await loadSnap()
     const ids = Object.keys(snap.overall.checks)
     for (const k of ['perf_html_size', 'perf_render_block', 'ai_summary_ssr', 'ai_schema_website'])
       expect(ids).not.toContain(k)
     expect(ids.length).toBe(38)
   })
   it('제외 페이지타입이 집계에 없다', async () => {
-    const fs = await import('fs')
-    const snap = JSON.parse(fs.readFileSync('data/readability/2026-08-30.json', 'utf8'))
+    const snap = await loadSnap()
     const pts = Object.keys(snap.overall.pageTypes)
     for (const k of ['unknown', 'home', 'business', 'promotion']) expect(pts).not.toContain(k)
   })
