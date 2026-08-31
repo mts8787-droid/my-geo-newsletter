@@ -141,6 +141,13 @@ export default function App() {
     }
     setTimeout(() => setRdLoadMsg(''), 8000)
   }
+  // 얼려둔 값이 아예 없으면 1회 자동 시드 — 자동 연동 해제 직후 기존 브라우저에는
+  // 저장값이 없어 하이라이트 표·그래프가 통째로 사라졌다 (사용자 보고 2026-08-31).
+  // 시드 이후에는 캐시·스냅샷에 얼려지므로 수동 버튼으로만 갱신된다 (정책 유지).
+  useEffect(() => {
+    if (!readability) loadReadabilityNumbers()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
   const [metaKo,    setMetaKo]    = useState({ ...INIT_META, ...(cache?.metaKo ?? cache?.meta ?? {}) })
   const [metaEn,    setMetaEn]    = useState({ ...INIT_META, ...(cache?.metaEn ?? {}) })
   const [total,     setTotal]     = useState(cache?.total     ?? INIT_TOTAL)
