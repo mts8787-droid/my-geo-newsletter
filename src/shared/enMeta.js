@@ -13,7 +13,9 @@ const RD_TRANSLATE_FIELDS = ['rd_h1', 'rd_intro', 'rd_introNotes', 'rd_summary',
   'rd_d1Title', 'rd_d1', 'rd_d1Notes', 'rd_d2Title', 'rd_d2', 'rd_d3Title', 'rd_d3', 'rd_d4Title', 'rd_d4']
 EN_TEXT_FIELDS.push(...RD_TRANSLATE_FIELDS)
 // 8월 Executive Summary V3 — 편집 시 EN 번역 대상
-const V3_TRANSLATE_FIELDS = ['v3Ex1T', 'v3Ex1B', 'v3Ex2T', 'v3Ex2B']
+// 7월호 개편 (2026-08-31): 인트로 + 3항목, 필드 버전업 (v3Ex*T2/B2). 구 필드도 호환 유지.
+const V3_TRANSLATE_FIELDS = ['v3Ex1T', 'v3Ex1B', 'v3Ex2T', 'v3Ex2B',
+  'v3ExIntro', 'v3Ex1T2', 'v3Ex1B2', 'v3Ex2T2', 'v3Ex2B2', 'v3Ex3T2', 'v3Ex3B2']
 EN_TEXT_FIELDS.push(...V3_TRANSLATE_FIELDS)
 
 // EN meta = KO 구조(토글·레이아웃·수치) 그대로 + EN 번역 텍스트만 오버레이.
