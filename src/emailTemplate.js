@@ -951,6 +951,9 @@ function insightV2Parts(meta = {}, lang = 'ko', products = []) {
 //   LG 막대 색 = 경쟁비 신호등(≥100% 녹 / ≥80% 주황 / <80% 적), 경쟁사 회색, C브랜드 보라.
 //   막대 아래 [브랜드 라벨] → [LG-경쟁사 격차 ±%p] → [국가명].
 const CB_BRANDS = ['TCL', 'Hisense', 'Haier', 'Midea']          // "C브랜드" 후보 (1등 선별)
+// 제품별 C브랜드 고정 — TV 는 TCL 기준 (사용자 지시 2026-08-31: 호주 등에서 Hisense 가
+// 수치상 앞서도 TV 분석 서사는 TCL 중심). 값이 없으면 1등 자동 선별로 폴백.
+const CB_PIN = { TV: 'TCL' }
 const CB_CNTY_ORDER = ['US', 'CA', 'UK', 'DE', 'ES', 'BR', 'MX', 'IN', 'AU', 'VN']
 const CB_CNTY_LABEL = { US: 'USA', CA: 'Canada', UK: 'UK', DE: 'Germany', ES: 'Spain', BR: 'Brazil', MX: 'Mexico', IN: 'India', AU: 'Australia', VN: 'Vietnam' }
 const CB_PRODUCTS = ['TV', 'WM', 'REF']
@@ -984,10 +987,17 @@ function cBrandCompareChartHtml(productsCnty, lang = 'ko') {
       const lg = Number(all.LG ?? r.score) || 0
       const compName = r.compName || 'SS'
       const comp = Number(r.compScore ?? all[compName]) || 0
-      // 1등 C브랜드 — allScores 에서 후보군 최고값 (대소문자 무관 매칭)
+      // C브랜드 선택 — 제품별 고정(CB_PIN) 우선, 없으면 후보군 최고값 (대소문자 무관)
       let cbName = '', cbVal = 0
-      for (const [k, v] of Object.entries(all)) {
-        if (CB_BRANDS.some(b => b.toLowerCase() === String(k).toLowerCase()) && Number(v) > cbVal) { cbName = k; cbVal = Number(v) }
+      const pin = CB_PIN[prod]
+      if (pin) {
+        const k = Object.keys(all).find(k => k.toLowerCase() === pin.toLowerCase())
+        if (k && Number(all[k]) > 0) { cbName = k; cbVal = Number(all[k]) }
+      }
+      if (!cbName) {
+        for (const [k, v] of Object.entries(all)) {
+          if (CB_BRANDS.some(b => b.toLowerCase() === String(k).toLowerCase()) && Number(v) > cbVal) { cbName = k; cbVal = Number(v) }
+        }
       }
       const ratio = comp > 0 ? lg / comp * 100 : 100
       const lgColor = ratio >= 100 ? '#15803D' : ratio >= 80 ? '#EA580C' : '#DC2626'
@@ -3026,64 +3036,6 @@ function rdFootnotes(lines, field, opts = {}) {
 
 
 
-// 스키마마크업 경쟁사 비교 — 항목별 LG.com / SS.com 세로 2열 막대 (독일 기준).
-// 이메일 호환: SVG·flex 미사용, <td height> 로 막대 높이를 표현하는 table-layout.
-// 값은 meta.rd_schemaCompare 로 덮어쓸 수 있다 (기본값은 사용자 제공 표).
-const RD_SCHEMA_COMPARE = [
-  { name: 'FAQ Page', lg: 18, ss: 33 },
-  { name: 'Product', lg: 0, ss: 64 },
-  { name: 'VideoObject', lg: 0, ss: 3 },
-  { name: 'ImageObject', lg: 0, ss: 0 },
-  { name: 'Article', lg: 0, ss: 0 },
-  { name: 'HowTo', lg: 0, ss: 0 },
-  { name: 'CollectionPage', lg: 58, ss: 0 },
-  { name: 'BreadcrumbList', lg: 88, ss: 73 },
-]
-const RD_LG_COLOR = '#CF0652'
-const RD_SS_COLOR = '#64748B'
-
-function rdSchemaCompareHtml(meta = {}, lang = 'ko') {
-  const rows = Array.isArray(meta.rd_schemaCompare) && meta.rd_schemaCompare.length
-    ? meta.rd_schemaCompare : RD_SCHEMA_COMPARE
-  // 항목명·제목은 편집모드에서 직접 수정 가능 (meta 우선)
-  const sLbl = (field, fallback) => (meta[field] != null && meta[field] !== '') ? meta[field] : fallback
-  const H = 84                                   // 막대 최대 높이(px)
-  const max = Math.max(...rows.map(r => Math.max(r.lg || 0, r.ss || 0)), 1)
-  const bar = (v, color) => {
-    const h = v > 0 ? Math.max(3, Math.round((v / max) * H)) : 0
-    // 0 은 막대 없이 바닥선만 — "측정했는데 0" 과 "막대 잘림" 을 구분
-    return `<table cellpadding="0" cellspacing="0" border="0" align="center"><tr>
-      <td align="center" style="font-size:9.5px;font-weight:800;color:${v > 0 ? color : '#CBD5E1'};line-height:1.2;padding-bottom:2px;font-family:${EM_FONT};">${v}</td>
-    </tr><tr>
-      <td width="16" height="${h}" style="background:${h ? color : 'transparent'};border-radius:2px 2px 0 0;font-size:0;line-height:0;">&nbsp;</td>
-    </tr></table>`
-  }
-  const cols = rows.map((r, i) => `<td valign="bottom" align="center" style="padding:0 3px;">
-      <table cellpadding="0" cellspacing="0" border="0" align="center"><tr>
-        <td valign="bottom" style="padding-right:2px;">${bar(r.lg || 0, RD_LG_COLOR)}</td>
-        <td valign="bottom">${bar(r.ss || 0, RD_SS_COLOR)}</td>
-      </tr></table>
-      <div${edAttr(`rd_lblSchema_${i}`)} style="margin-top:5px;font-size:9px;color:#475569;line-height:1.3;letter-spacing:-0.3px;font-family:${EM_FONT};">${escapeHtml(sLbl(`rd_lblSchema_${i}`, r.name))}</div>
-    </td>`).join('')
-
-  const legend = `<table cellpadding="0" cellspacing="0" border="0" align="center"><tr>
-      <td width="9" height="9" style="background:${RD_LG_COLOR};border-radius:2px;font-size:0;line-height:0;">&nbsp;</td>
-      <td style="padding:0 12px 0 5px;font-size:10.5px;font-weight:700;color:#475569;font-family:${EM_FONT};">LG.com</td>
-      <td width="9" height="9" style="background:${RD_SS_COLOR};border-radius:2px;font-size:0;line-height:0;">&nbsp;</td>
-      <td style="padding-left:5px;font-size:10.5px;font-weight:700;color:#475569;font-family:${EM_FONT};">SS.com</td>
-    </tr></table>`
-
-  return `<table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FAFBFC;border:1px solid #E8EDF2;border-radius:10px;margin:2px 0 16px;">
-    <tr><td style="padding:12px 14px 10px;">
-      <table cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
-        <td${edAttr('rd_schemaTitle')} style="font-size:11.5px;font-weight:800;color:#475569;font-family:${EM_FONT};">${sLbl('rd_schemaTitle', lang === 'en' ? 'Schema adoption vs. competitor (Germany, %)' : '스키마 적용률 경쟁사 비교 (독일, %)')}</td>
-        <td align="right">${legend}</td>
-      </tr></table>
-      <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-top:10px;"><tr>${cols}</tr></table>
-    </td></tr>
-  </table>`
-}
-
 // 본 섹션의 기본 문안 — 사용자 제공 원문 그대로. meta 로 덮어쓸 수 있다.
 const RD_TEXT = {
   // 7월 하이라이트 축약본 — 사용자 구글 문서 원문 그대로 (2026-08-31, 임의 다듬기 없음).
@@ -3196,9 +3148,9 @@ function readabilityHighlightHtml(rd, meta = {}, lang = 'ko', contentWidth = 848
 
   // ④ 영역별 상세 — 단일 블록 (7월 축약본: 기존 d1~d4 소제목 4블록을 문서에서 통합, 2026-08-31)
   //    순서도 문서대로: 점수표 → 요약 → 영역 차트 → 상세 → 스키마 비교 차트 → 각주
+  // 스키마 적용률 경쟁사 비교 차트는 제거됨 (사용자 지시 2026-08-31)
   const detail = `
     ${rdPara(tx('areaDetail'), { gap: 6, field: 'rd_areaDetail' })}
-    ${rdSchemaCompareHtml(meta, lang)}
     ${rdFootnotes(tx('d1Notes'), 'rd_d1Notes')}`
 
   // 외곽 카드 없이 콘텐츠만 반환 — 상위 Highlight 챕터 카드 안에 임베드된다.
