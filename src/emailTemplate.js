@@ -958,18 +958,22 @@ const CB_PRODUCTS = ['TV', 'WM', 'REF']
 function cBrandCompareChartHtml(productsCnty, lang = 'ko') {
   if (!Array.isArray(productsCnty) || !productsCnty.length) return ''
   const H = 54                      // 막대 최대 높이(px) — 절대 스케일 0~100
-  // 막대 폭 15px 고정 — table-layout:fixed 로 값 라벨("87.9" 등) 길이가 폭을 흔들지 않게
-  // (라벨은 overflow:visible 로 삐져나옴 허용). 사용자 지적 2026-08-31 "막대 크기 통일".
+  // 막대·라벨 지오메트리 완전 고정 (사용자 지적 2026-08-31 "막대 위치·폭·세로 위치 고정"):
+  //   국가 셀 = 3열 × 19px 고정(table-layout:fixed) — 라벨 길이가 열을 못 밀게
+  //   막대 행 높이 = H+14 고정 (값 라벨 포함, valign bottom) — 막대 밑변이 전 국가 동일선
+  //   브랜드 라벨 행 높이 = 18px 고정 — 긴 이름(WHIRLPOOL 등)은 두 줄로 줄바꿈
+  const COLW = 19
   const barTd = (v, color) => {
     const h = v > 0 ? Math.max(2, Math.round(v / 100 * H)) : 0
-    return `<td width="15" valign="bottom" style="padding:0 1px;">
-      <table cellpadding="0" cellspacing="0" border="0" width="15" style="table-layout:fixed;"><tr>
-        <td align="center" style="font-size:8.5px;font-weight:800;color:${color};font-family:${EM_FONT};letter-spacing:-0.5px;line-height:1.1;padding-bottom:1px;white-space:nowrap;overflow:visible;">${v > 0 ? v.toFixed(1) : '—'}</td>
+    return `<td width="${COLW}" height="${H + 14}" valign="bottom" style="padding:0 1px;">
+      <table cellpadding="0" cellspacing="0" border="0" width="15" align="center" style="table-layout:fixed;"><tr>
+        <td align="center" style="font-size:8px;font-weight:800;color:${color};font-family:${EM_FONT};letter-spacing:-0.5px;line-height:1.1;padding-bottom:1px;white-space:nowrap;overflow:visible;">${v > 0 ? v.toFixed(1) : '—'}</td>
       </tr><tr>
         <td height="${h}" style="background:${h ? color : 'transparent'};border-radius:2px 2px 0 0;font-size:0;line-height:0;">&nbsp;</td>
       </tr></table>
     </td>`
   }
+  const lblTd = (name, color) => `<td width="${COLW}" height="18" valign="top" align="center" style="font-size:7.5px;color:${color};font-family:${EM_FONT};font-weight:700;letter-spacing:-0.4px;line-height:9px;word-break:break-all;white-space:normal;">${name}</td>`
   const brandLbl = name => escapeHtml(String(name || '').replace(/SAMSUNG|삼성전자|삼성/gi, 'SS')).toUpperCase()
 
   const rowsHtml = CB_PRODUCTS.map(prod => {
@@ -989,15 +993,13 @@ function cBrandCompareChartHtml(productsCnty, lang = 'ko') {
       const lgColor = ratio >= 100 ? '#15803D' : ratio >= 80 ? '#EA580C' : '#DC2626'
       const gap = +(lg - comp).toFixed(1)
       const gapColor = gap >= 0 ? '#15803D' : '#DC2626'
-      return `<td align="center" valign="bottom" style="padding:4px 1px 0;">
-        <table cellpadding="0" cellspacing="0" border="0" align="center"><tr>
+      return `<td align="center" valign="top" style="padding:4px 1px 0;">
+        <table cellpadding="0" cellspacing="0" border="0" align="center" width="${COLW * 3 + 6}" style="table-layout:fixed;"><tr>
           ${barTd(lg, lgColor)}${barTd(comp, '#94A3B8')}${barTd(cbVal, '#9333EA')}
         </tr><tr>
-          <td align="center" style="font-size:8px;color:${lgColor};font-family:${EM_FONT};font-weight:700;">LG</td>
-          <td align="center" style="font-size:8px;color:#94A3B8;font-family:${EM_FONT};font-weight:700;letter-spacing:-0.4px;overflow:visible;white-space:nowrap;">${brandLbl(compName)}</td>
-          <td align="center" style="font-size:8px;color:#9333EA;font-family:${EM_FONT};font-weight:700;letter-spacing:-0.4px;overflow:visible;white-space:nowrap;">${brandLbl(cbName)}</td>
+          ${lblTd('LG', lgColor)}${lblTd(brandLbl(compName), '#94A3B8')}${lblTd(brandLbl(cbName), '#9333EA')}
         </tr></table>
-        <div style="margin-top:3px;font-size:10px;font-weight:800;color:${gapColor};font-family:${EM_FONT};letter-spacing:-0.3px;">${gap >= 0 ? '+' : ''}${gap}%p</div>
+        <div style="margin-top:2px;font-size:10px;font-weight:800;color:${gapColor};font-family:${EM_FONT};letter-spacing:-0.3px;">${gap >= 0 ? '+' : ''}${gap}%p</div>
         <div style="margin-top:1px;font-size:10px;font-weight:700;color:#334155;font-family:${EM_FONT};letter-spacing:-0.3px;">${CB_CNTY_LABEL[cc] || cc}</div>
       </td>`
     }).join('')
@@ -3000,7 +3002,10 @@ function rdPara(text, opts = {}) {
   if (!text && !opts.field) return ''
   const html = rdRichHtml(text)
   // opts.field 가 있으면 편집모드에서 인라인 수정 가능 (meta.rd_* 로 저장)
-  return `<p${opts.field ? edRich(opts.field) : ''} style="margin:0 0 ${opts.gap || 10}px;font-size:13px;color:#334155;line-height:1.75;font-family:${EM_FONT};letter-spacing:-0.2px;">${html}</p>`
+  // 래퍼는 div — 편집기로 단락을 나누면 <div>/<p> 블록이 저장되는데, <p> 래퍼는 HTML 규칙상
+  // 블록을 품지 못해 내용이 밖으로 튕겨 스타일(13px)을 잃고 편집 영역에서도 벗어났다
+  // (사용자 보고 2026-08-31 "큰 글씨체로 고정되고 수정도 안 됨").
+  return `<div${opts.field ? edRich(opts.field) : ''} style="margin:0 0 ${opts.gap || 10}px;font-size:13px;color:#334155;line-height:1.75;font-family:${EM_FONT};letter-spacing:-0.2px;">${html}</div>`
 }
 
 // 각주 (* 로 시작하는 용어 설명)
