@@ -943,16 +943,90 @@ function insightV2Parts(meta = {}, lang = 'ko', products = []) {
 }
 
 
+
+// ─── C브랜드 Visibility 비교 차트 (Exec Summary 박스 1 하단) ─────────────────
+// 세 제품군(TV/WM/REF) × 10개국 — LG · 주요 경쟁사 · 1등 C브랜드 3막대 비교.
+// 데이터: productsCnty[].allScores (시트 동기화분 — 제품카드와 동일 소스).
+// 이메일 호환: table-layout 막대 (SVG·flex 금지). 사용자 제공 이미지 사양 (2026-08-31):
+//   LG 막대 색 = 경쟁비 신호등(≥100% 녹 / ≥80% 주황 / <80% 적), 경쟁사 회색, C브랜드 보라.
+//   막대 아래 [브랜드 라벨] → [LG-경쟁사 격차 ±%p] → [국가명].
+const CB_BRANDS = ['TCL', 'Hisense', 'Haier', 'Midea']          // "C브랜드" 후보 (1등 선별)
+const CB_CNTY_ORDER = ['US', 'CA', 'UK', 'DE', 'ES', 'BR', 'MX', 'IN', 'AU', 'VN']
+const CB_CNTY_LABEL = { US: 'USA', CA: 'Canada', UK: 'UK', DE: 'Germany', ES: 'Spain', BR: 'Brazil', MX: 'Mexico', IN: 'India', AU: 'Australia', VN: 'Vietnam' }
+const CB_PRODUCTS = ['TV', 'WM', 'REF']
+
+function cBrandCompareChartHtml(productsCnty, lang = 'ko') {
+  if (!Array.isArray(productsCnty) || !productsCnty.length) return ''
+  const H = 54                      // 막대 최대 높이(px) — 절대 스케일 0~100
+  const barTd = (v, color) => {
+    const h = v > 0 ? Math.max(2, Math.round(v / 100 * H)) : 0
+    return `<td width="13" valign="bottom" style="padding:0 1px;">
+      <table cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
+        <td align="center" style="font-size:8px;font-weight:800;color:${color};font-family:${EM_FONT};letter-spacing:-0.5px;line-height:1.1;padding-bottom:1px;white-space:nowrap;">${v > 0 ? v.toFixed(1) : '—'}</td>
+      </tr><tr>
+        <td height="${h}" style="background:${h ? color : 'transparent'};border-radius:2px 2px 0 0;font-size:0;line-height:0;">&nbsp;</td>
+      </tr></table>
+    </td>`
+  }
+  const brandLbl = name => escapeHtml(String(name || '').replace(/SAMSUNG|삼성전자|삼성/gi, 'SS')).toUpperCase()
+
+  const rowsHtml = CB_PRODUCTS.map(prod => {
+    const cells = CB_CNTY_ORDER.map(cc => {
+      const r = productsCnty.find(x => x.product === prod && x.country === cc)
+      if (!r) return `<td align="center" style="padding:6px 1px;font-size:9px;color:#94A3B8;font-family:${EM_FONT};">—</td>`
+      const all = r.allScores || {}
+      const lg = Number(all.LG ?? r.score) || 0
+      const compName = r.compName || 'SS'
+      const comp = Number(r.compScore ?? all[compName]) || 0
+      // 1등 C브랜드 — allScores 에서 후보군 최고값 (대소문자 무관 매칭)
+      let cbName = '', cbVal = 0
+      for (const [k, v] of Object.entries(all)) {
+        if (CB_BRANDS.some(b => b.toLowerCase() === String(k).toLowerCase()) && Number(v) > cbVal) { cbName = k; cbVal = Number(v) }
+      }
+      const ratio = comp > 0 ? lg / comp * 100 : 100
+      const lgColor = ratio >= 100 ? '#15803D' : ratio >= 80 ? '#EA580C' : '#DC2626'
+      const gap = +(lg - comp).toFixed(1)
+      const gapColor = gap >= 0 ? '#15803D' : '#DC2626'
+      return `<td align="center" valign="bottom" style="padding:6px 1px 0;">
+        <table cellpadding="0" cellspacing="0" border="0" align="center"><tr>
+          ${barTd(lg, lgColor)}${barTd(comp, '#94A3B8')}${barTd(cbVal, '#9333EA')}
+        </tr><tr>
+          <td align="center" style="font-size:6.5px;color:${lgColor};font-family:${EM_FONT};font-weight:700;">LG</td>
+          <td align="center" style="font-size:6.5px;color:#94A3B8;font-family:${EM_FONT};font-weight:700;letter-spacing:-0.4px;overflow:visible;white-space:nowrap;">${brandLbl(compName)}</td>
+          <td align="center" style="font-size:6.5px;color:#9333EA;font-family:${EM_FONT};font-weight:700;letter-spacing:-0.4px;overflow:visible;white-space:nowrap;">${brandLbl(cbName)}</td>
+        </tr></table>
+        <div style="margin-top:3px;font-size:9px;font-weight:800;color:${gapColor};font-family:${EM_FONT};letter-spacing:-0.3px;">${gap >= 0 ? '+' : ''}${gap}%p</div>
+        <div style="margin-top:1px;font-size:9px;font-weight:700;color:#334155;font-family:${EM_FONT};letter-spacing:-0.3px;">${CB_CNTY_LABEL[cc] || cc}</div>
+      </td>`
+    }).join('')
+    return `<tr><td style="padding:10px 0 2px;">
+        <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#F1F5F9;border-radius:6px;"><tr>
+          <td style="padding:5px 10px;font-size:10.5px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:0.5px;">${prod}</td>
+        </tr></table>
+      </td></tr>
+      <tr><td>
+        <table cellpadding="0" cellspacing="0" border="0" width="100%" style="table-layout:fixed;"><tr>${cells}</tr></table>
+      </td></tr>`
+  }).join('')
+
+  // 다크 박스 안의 흰 카드 — 이미지와 동일하게 밝은 배경 위에 차트
+  return `<table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FFFFFF;border-radius:8px;margin-top:10px;">
+    <tr><td style="padding:4px 10px 12px;">
+      <table cellpadding="0" cellspacing="0" border="0" width="100%">${rowsHtml}</table>
+    </td></tr>
+  </table>`
+}
+
 // ─── Executive Summary V3 (7월호 — 사용자 구글 문서 반영 2026-08-31) ─────────
 // 인트로 + 번호 항목 3개(각각 짙은 남색 박스 #1E293B). 토글: meta.showInsightV3.
 // 본문은 사용자 제공 구글 문서 원문 그대로 (임의 다듬기 없음 — 오탈자 포함).
 // 편집 필드 v3ExIntro / v3Ex*T2 / v3Ex*B2 — 옛 저장본(v3Ex*T/B)이 덮지 않게 버전업.
-function insightV3Parts(meta = {}, lang = 'ko') {
+function insightV3Parts(meta = {}, lang = 'ko', productsCnty = []) {
   const L = (ko, en) => (lang === 'en' ? en : ko)
   const ed = (field, val) => (_ED ? `<span${edRich(field)}>${val}</span>` : (meta[field] != null && meta[field] !== '' ? sanitizeUserHtml(meta[field]) : val))
 
   // V2 의 execItem 과 동일한 짙은 남색 박스
-  const execItem = (titleF, title, bodyF, body) => `
+  const execItem = (titleF, title, bodyF, body, extra = '') => `
     <tr>
       <td style="padding-bottom:8px;">
         <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#1E293B;border:1px solid #334155;border-radius:8px;">
@@ -960,6 +1034,7 @@ function insightV3Parts(meta = {}, lang = 'ko') {
             <td style="padding:12px 16px;">
               <p style="margin:0 0 6px;font-size:13px;font-weight:800;color:#FFFFFF;line-height:20px;font-family:${EM_FONT};letter-spacing:-0.3px;">${ed(titleF, title)}</p>
               <p style="margin:0;font-size:13px;color:#CBD5E1;line-height:21px;font-family:${EM_FONT};letter-spacing:-0.3px;">${ed(bodyF, body)}</p>
+              ${extra}
             </td>
           </tr>
         </table>
@@ -971,8 +1046,8 @@ function insightV3Parts(meta = {}, lang = 'ko') {
   const introKo = `<strong style="color:#FFFFFF;">26년 7월 글로벌 10개국 대상 Visibility는 43.4%를 기록하며 삼성(37.9%) 대비 리더십을 유지하고 있습니다.</strong><br/>제품별로도 세탁기(LG 37%, 경쟁비 118%)와 에어컨(LG 42%, 경쟁비 127%)은 확실한 우위, TV(LG 87.2%, 경쟁비 99%)와 냉장고(LG 40.4%, 경쟁비 102%)는 삼성과 접점을 유지하여 전월과 유사한 트렌드가 이어지고 있습니다.<br/><br/>이번 7월 뉴스레터에서는 C브랜드의 Visibility가 상대적으로 높은 TV·냉장고·세탁기를 중심으로 국가별 경쟁 현황을 공유드리고, Citation의 트렌드 변화, Readability 신규 모니터링 체계 정비 및 주요 평가 결과를 함께 공유하고자 합니다.`
   const introEn = `<strong style="color:#FFFFFF;">In July 2026, Visibility across the 10 global countries stood at 43.4%, maintaining leadership over Samsung (37.9%).</strong><br/>By product as well, Washer (LG 37%, comp ratio 118%) and AC (LG 42%, comp ratio 127%) hold a clear lead, while TV (LG 87.2%, comp ratio 99%) and Refrigerator (LG 40.4%, comp ratio 102%) remain in close contest with Samsung — a trend similar to last month.<br/><br/>In this July newsletter we share country-level competitive status centered on TV, Refrigerator and Washer where C-brand Visibility is relatively high, along with Citation trend changes and the newly organized Readability monitoring framework and key evaluation results.`
 
-  const ex1Ko = `본 분석은 LG와 TCL·Hisense·Haier 등 C브랜드의 국가별 GEO Visibility를 비교하여, 제품별 경쟁 강도와 중국 브랜드의 실질적인 침투 수준을 확인하는 데 목적이 있습니다. 이를 위해 LG Visibility ÷ C브랜드 Visibility를 경쟁비로 정의하였습니다. 경쟁비가 1.0에 가까울수록 C브랜드가 LG와 유사한 수준까지 근접했다는 의미이며, 수치가 클수록 LG의 상대적 우위가 크다는 의미입니다.<br/><br/><strong style="color:#FFFFFF;">TV의 10개국 평균 Visibility는 LG 86.9%, C브랜드 55.4%로 경쟁비는 1.6</strong>이며, 세 제품군 중 C브랜드가 LG에 가장 근접하였습니다. 특히 브라질(TCL 63.3%)과 인도(TCL 61.4%)에서 C브랜드 Visibility가 60%를 넘어섰으며, 경쟁비는 1.4 입니다. 미국·캐나다·멕시코·베트남에서도 50% 이상의 Visibility를 보이며 경쟁비는 1.5 수준을 기록했습니다. LG는 전체 TV 주제에서 우위를 유지하고 있지만, TCL이 Mini LED TV와 115인치 TV 등 특정 기술 및 제품 관련 프롬프트에서 높은 Visibility를 보이는 만큼, 해당 영향력이 일반적인 구매·추천 영역으로 확장되는지 지속적인 모니터링이 필요합니다.<br/><br/><strong style="color:#FFFFFF;">냉장고는 10개국 평균 Visibility가 LG 41.4%, C브랜드 16.7% (경쟁비 2.5)</strong>로 TV보다는 격차가 크지만 일부 국가에서 C브랜드의 추격이 확인됐습니다. 특히 인도는 LG 50.2%, Haier 38.7%로 경쟁비가 1.3에 불과하며, 영국은 LG 40.4%,와 Hisense 29.3%로 경쟁비 1.4로 양사간 격차가 상대적으로 작았습니다. 호주와 스페인도 경쟁비가 각각 1.6, 1.7로 C브랜드가 추격중인 상황입니다. 반면 미국은 경쟁비 11.0, 캐나다 9.6, 베트남 16.6, 브라질 53으로 C브랜드의 존재감이 매누 제한적입니다. <span style="color:#FDA4AF;">따라서 C브랜드 대응은 경쟁비가 2.0 이하인 국가를 우선 관리 대상으로 설정하는 방식이 효과적입니다.</span><br/><br/><strong style="color:#FFFFFF;">세탁기는 10개국 평균 Visibility가 LG 39.7%, C브랜드 6.0%로, 경쟁비 6.6</strong>으로 세 제품군 중 LG와 C브랜드의 격차가 가장 컸습니다. 다만 호주에서는 LG 48.3%, Haier 19.5%로 경쟁비 2.5이며, 인도에서는 LG 48.7%, Haier 14.1%로 경쟁비 3.5을 기록해 다른 국가보다 상대적으로 높은 침투 수준을 보였습니다. 독일은 LG 17.0%와 Hisense 4.6%로 경쟁비가 3.7이지만, LG의 핵심 경쟁상대는 34.4%를 기록하고 있는 Bosch입니다. 반면 미국, 캐나다, 베트남에서는 C브랜드의 Visibility가 1% 내외로 아직 GEO 측면에서의 존재감이 미미한 상황입니다.`
-  const ex1En = `This analysis compares country-level GEO Visibility between LG and C-brands such as TCL, Hisense and Haier to gauge competitive intensity by product and the actual penetration of Chinese brands. For this we define the competition ratio as LG Visibility ÷ C-brand Visibility: the closer to 1.0, the closer the C-brand has come to LG's level; the larger the number, the greater LG's relative lead.<br/><br/><strong style="color:#FFFFFF;">TV's 10-country average Visibility is LG 86.9% vs C-brand 55.4% — a competition ratio of 1.6</strong>, the closest a C-brand comes to LG among the three product lines. C-brand Visibility exceeded 60% in Brazil (TCL 63.3%) and India (TCL 61.4%) with a ratio of 1.4, and the US, Canada, Mexico and Vietnam also showed 50%+ Visibility at around 1.5. LG keeps the lead on overall TV topics, but as TCL shows high Visibility on prompts about specific technologies and products such as Mini LED TV and 115-inch TV, continued monitoring is needed on whether that influence extends into general purchase and recommendation territory.<br/><br/><strong style="color:#FFFFFF;">Refrigerator: 10-country average Visibility is LG 41.4% vs C-brand 16.7% (ratio 2.5)</strong> — a wider gap than TV, but C-brand pursuit is visible in some countries. India stands at LG 50.2% vs Haier 38.7% (ratio just 1.3) and the UK at LG 40.4% vs Hisense 29.3% (ratio 1.4), with relatively small gaps. Australia and Spain are also being chased at ratios of 1.6 and 1.7. By contrast, the ratio is 11.0 in the US, 9.6 in Canada, 16.6 in Vietnam and 53 in Brazil, where C-brand presence is very limited. <span style="color:#FDA4AF;">Accordingly, prioritizing countries with a ratio of 2.0 or below is an effective way to manage the C-brand response.</span><br/><br/><strong style="color:#FFFFFF;">Washer: 10-country average Visibility is LG 39.7% vs C-brand 6.0% — a ratio of 6.6</strong>, the widest gap of the three product lines. Still, Australia recorded LG 48.3% vs Haier 19.5% (ratio 2.5) and India LG 48.7% vs Haier 14.1% (ratio 3.5), showing relatively higher penetration than elsewhere. Germany is LG 17.0% vs Hisense 4.6% (ratio 3.7), but LG's key competitor there is Bosch at 34.4%. In the US, Canada and Vietnam, C-brand Visibility is around 1% — still negligible presence in GEO terms.`
+  const ex1Ko = `<span style="color:#FDA4AF;">본 분석은 LG와 TCL·Hisense·Haier 등 C브랜드의 국가별 GEO Visibility를 비교하여, 제품별 경쟁 강도와 중국 브랜드의 실질적인 침투 수준을 확인하는 데 목적이 있습니다. 이를 위해 LG Visibility ÷ C브랜드 Visibility를 경쟁비로 정의하였습니다. 경쟁비가 1.0에 가까울수록 C브랜드가 LG와 유사한 수준까지 근접했다는 의미이며, 수치가 클수록 LG의 상대적 우위가 크다는 의미입니다.</span><br/><br/><strong style="color:#FFFFFF;">TV의 10개국 평균 Visibility는 LG 86.9%, C브랜드 55.4%로 경쟁비는 1.6</strong>이며, 세 제품군 중 C브랜드가 LG에 가장 근접하였습니다. 특히 브라질(TCL 63.3%)과 인도(TCL 61.4%)에서 C브랜드 Visibility가 60%를 넘어섰으며, 경쟁비는 1.4 입니다. 미국·캐나다·멕시코·베트남에서도 50% 이상의 Visibility를 보이며 경쟁비는 1.5 수준을 기록했습니다. LG는 전체 TV 주제에서 우위를 유지하고 있지만, TCL이 Mini LED TV와 115인치 TV 등 특정 기술 및 제품 관련 프롬프트에서 높은 Visibility를 보이는 만큼, 해당 영향력이 일반적인 구매·추천 영역으로 확장되는지 지속적인 모니터링이 필요합니다.<br/><br/><strong style="color:#FFFFFF;">냉장고는 10개국 평균 Visibility가 LG 41.4%, C브랜드 16.7% (경쟁비 2.5)</strong>로 TV보다는 격차가 크지만 일부 국가에서 C브랜드의 추격이 확인됐습니다. 특히 인도는 LG 50.2%, Haier 38.7%로 경쟁비가 1.3에 불과하며, 영국은 LG 40.4%,와 Hisense 29.3%로 경쟁비 1.4로 양사간 격차가 상대적으로 작았습니다. 호주와 스페인도 경쟁비가 각각 1.6, 1.7로 C브랜드가 추격중인 상황입니다. 반면 미국은 경쟁비 11.0, 캐나다 9.6, 베트남 16.6, 브라질 53으로 C브랜드의 존재감이 매누 제한적입니다. <span style="color:#FFFFFF;">따라서 C브랜드 대응은 경쟁비가 2.0 이하인 국가를 우선 관리 대상으로 설정하는 방식이 효과적입니다.</span><br/><br/><strong style="color:#FFFFFF;">세탁기는 10개국 평균 Visibility가 LG 39.7%, C브랜드 6.0%로, 경쟁비 6.6</strong>으로 세 제품군 중 LG와 C브랜드의 격차가 가장 컸습니다. 다만 호주에서는 LG 48.3%, Haier 19.5%로 경쟁비 2.5이며, 인도에서는 LG 48.7%, Haier 14.1%로 경쟁비 3.5을 기록해 다른 국가보다 상대적으로 높은 침투 수준을 보였습니다. 독일은 LG 17.0%와 Hisense 4.6%로 경쟁비가 3.7이지만, LG의 핵심 경쟁상대는 34.4%를 기록하고 있는 Bosch입니다. 반면 미국, 캐나다, 베트남에서는 C브랜드의 Visibility가 1% 내외로 아직 GEO 측면에서의 존재감이 미미한 상황입니다.`
+  const ex1En = `<span style="color:#FDA4AF;">This analysis compares country-level GEO Visibility between LG and C-brands such as TCL, Hisense and Haier to gauge competitive intensity by product and the actual penetration of Chinese brands. For this we define the competition ratio as LG Visibility ÷ C-brand Visibility: the closer to 1.0, the closer the C-brand has come to LG's level; the larger the number, the greater LG's relative lead.</span><br/><br/><strong style="color:#FFFFFF;">TV's 10-country average Visibility is LG 86.9% vs C-brand 55.4% — a competition ratio of 1.6</strong>, the closest a C-brand comes to LG among the three product lines. C-brand Visibility exceeded 60% in Brazil (TCL 63.3%) and India (TCL 61.4%) with a ratio of 1.4, and the US, Canada, Mexico and Vietnam also showed 50%+ Visibility at around 1.5. LG keeps the lead on overall TV topics, but as TCL shows high Visibility on prompts about specific technologies and products such as Mini LED TV and 115-inch TV, continued monitoring is needed on whether that influence extends into general purchase and recommendation territory.<br/><br/><strong style="color:#FFFFFF;">Refrigerator: 10-country average Visibility is LG 41.4% vs C-brand 16.7% (ratio 2.5)</strong> — a wider gap than TV, but C-brand pursuit is visible in some countries. India stands at LG 50.2% vs Haier 38.7% (ratio just 1.3) and the UK at LG 40.4% vs Hisense 29.3% (ratio 1.4), with relatively small gaps. Australia and Spain are also being chased at ratios of 1.6 and 1.7. By contrast, the ratio is 11.0 in the US, 9.6 in Canada, 16.6 in Vietnam and 53 in Brazil, where C-brand presence is very limited. <span style="color:#FFFFFF;">Accordingly, prioritizing countries with a ratio of 2.0 or below is an effective way to manage the C-brand response.</span><br/><br/><strong style="color:#FFFFFF;">Washer: 10-country average Visibility is LG 39.7% vs C-brand 6.0% — a ratio of 6.6</strong>, the widest gap of the three product lines. Still, Australia recorded LG 48.3% vs Haier 19.5% (ratio 2.5) and India LG 48.7% vs Haier 14.1% (ratio 3.5), showing relatively higher penetration than elsewhere. Germany is LG 17.0% vs Hisense 4.6% (ratio 3.7), but LG's key competitor there is Bosch at 34.4%. In the US, Canada and Vietnam, C-brand Visibility is around 1% — still negligible presence in GEO terms.`
 
   const ex2Ko = `'26년 7월에는 ChatGPT Search를 중심으로 AI 인용 출처가 브랜드 공식 사이트로 확대되면서, <strong style="color:#FFFFFF;">LG.com의 인용이 전월 대비 40.6%(총276,929건)</strong>, Samsung.com은 47.4%(총293,675건) 증가했습니다.<br/><br/>AI 답변이 제품을 나열하는 방식에서 구매 기준과 기능 중심을 설명하는 방식으로 일부 변경되어 인용 출처가 PDP에서 Buying Guide로 이동하는 현상이 나타났고, <strong style="color:#FFFFFF;">LG Buying Guide 인용은 117.1% 증가(+9,687건)</strong>하였으며, 삼성은 83.4% 증가(+23,247건)했습니다.<br/><br/>다음으로 인용이 많이 증가한 Support 페이지의 경우, LG는 36.8% 증가(+5,484건), 삼성은 64.9% 증가(+21,325건) 하였으며, 증가분이 Trouble Shooting 아티클에 집중되고 비디오 튜토리얼은 감소해, 설명을 텍스트로 담은 문서가 선택되는 같은 방향이 두 유형에 공통으로 나타났습니다.<br/><br/>즉, AI가 근거로 삼는 페이지가 바뀐 것으로, 해당 제품군의 Buying Guide/Support 페이지를 보유했는지가 곧 인용 기회로 직결되었습니다.<br/><br/><span style="color:#FDA4AF;">일부 국가에서는 현지 콘텐츠 부족으로 미국 페이지가 대신 인용되는 구조가 확인되기도 하여, 독일 프롬프트에서 인용된 LG Support 페이지의 64.5%가 미국 경로였고 독일 경로는 26.2%에 그친 반면, 삼성은 독일 경로가 90.1%였습니다. 따라서 법인/제품군별 Buying Guide/Support - Trouble Shooting 콘텐츠의 현지 커버리지 확대가 필요합니다.</span>`
   const ex2En = `In July 2026, as AI citation sources expanded toward official brand sites led by ChatGPT Search, <strong style="color:#FFFFFF;">LG.com citations rose 40.6% MoM (276,929 total)</strong> and Samsung.com 47.4% (293,675 total).<br/><br/>AI answers partly shifted from listing products to explaining purchase criteria and features, moving citation sources from PDP to Buying Guide: <strong style="color:#FFFFFF;">LG Buying Guide citations rose 117.1% (+9,687)</strong> and Samsung 83.4% (+23,247).<br/><br/>Support pages, the next largest gainer, rose 36.8% (+5,484) for LG and 64.9% (+21,325) for Samsung; the increase concentrated in troubleshooting articles while video tutorials declined — the same direction across both types, favoring documents that carry explanations as text.<br/><br/>In short, the pages AI grounds its answers on have changed, and whether a product line has Buying Guide/Support pages now translates directly into citation opportunity.<br/><br/><span style="color:#FDA4AF;">In some countries, a lack of local content led US pages to be cited instead: 64.5% of LG Support pages cited in German prompts were US paths and only 26.2% German, whereas 90.1% of Samsung's were German paths. Expanding local coverage of Buying Guide / Support-Troubleshooting content by subsidiary and product line is therefore needed.</span>`
@@ -983,7 +1058,7 @@ function insightV3Parts(meta = {}, lang = 'ko') {
   const execHtml = `
                               <p style="margin:0 0 12px;font-size:13px;color:#E2E8F0;line-height:22px;font-family:${EM_FONT};letter-spacing:-0.3px;">${ed('v3ExIntro', L(introKo, introEn))}</p>
                               <table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;">
-                                ${execItem('v3Ex1T2', L('1. C브랜드 Visibility 현황 분석 – TV·세탁기·냉장고를 중심으로', '1. C-brand Visibility analysis — centered on TV, Washer and Refrigerator'), 'v3Ex1B2', L(ex1Ko, ex1En))}
+                                ${execItem('v3Ex1T2', L('1. C브랜드 Visibility 현황 분석 – TV·세탁기·냉장고를 중심으로', '1. C-brand Visibility analysis — centered on TV, Washer and Refrigerator'), 'v3Ex1B2', L(ex1Ko, ex1En), cBrandCompareChartHtml(productsCnty, lang))}
                                 ${execItem('v3Ex2T2', L('2. 인용 출처의 변화 - 브랜드 닷컴의 인용비중 증가/PDP를 대신하여 설명형 콘텐츠(Buying Guide/Support) 인용 확대', '2. Shift in citation sources — brand dotcom share up; explanatory content (Buying Guide/Support) cited in place of PDP'), 'v3Ex2B2', L(ex2Ko, ex2En))}
                                 ${execItem('v3Ex3T2', L('3. Readabilty 평가 체계 도입 및 개선 필요 영역 보완 지속', '3. Introducing the Readability framework and continuing to close gaps'), 'v3Ex3B2', L(ex3Ko, ex3En))}
                               </table>`
@@ -3527,7 +3602,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                               ${(meta.showTotalInsight !== false && (meta.totalInsight || _ED)) ? edBlock('totalInsight', meta.totalInsight, { size: 13, lh: 22, color: '#FFFFFF', accent: '#FF9EBB', lang }) : ''}
                               ${(meta.showTotalInsight !== false && (meta.totalInsight || _ED)) && meta.showInsightV2 ? '<table border="0" cellpadding="0" cellspacing="0" width="100%"><tr><td height="14" style="font-size:0;line-height:0;">&nbsp;</td></tr></table>' : ''}
                               ${meta.showInsightV2 ? insightV2Parts(meta, lang, products).execHtml : ''}
-                              ${meta.showInsightV3 ? insightV3Parts(meta, lang).execHtml : ''}
+                              ${meta.showInsightV3 ? insightV3Parts(meta, lang, productsCnty).execHtml : ''}
                             </td>
                           </tr>
                         </table>` : ''}
