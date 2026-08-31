@@ -2848,7 +2848,10 @@ function highlightInsightSectionHtml(products, weeklyAll, weeklyLabels, meta, la
   const _mi = _mm ? parseInt(_mm[1]) - 1
     : _me ? ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'].indexOf(_me[1].toLowerCase())
     : -1
-  const chapterTitle = (_mi >= 0 ? MON_EN_FULL[_mi] + ' ' : '') + 'Highlights'
+  // 제목: '<월> Highlights' → '닷컴 Readability' (사용자 지시 2026-08-31).
+  // 월명 파생 로직은 보존 (되돌릴 때 대비) — 현재 미사용.
+  void MON_EN_FULL; void _mi
+  const chapterTitle = lang === 'en' ? 'Dotcom Readability' : '닷컴 Readability'
   return `
               <tr>
                 <td style="padding-bottom:28px;">
@@ -2857,7 +2860,7 @@ function highlightInsightSectionHtml(products, weeklyAll, weeklyLabels, meta, la
                       <td style="padding:22px 16px 18px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;">
                         <table border="0" cellpadding="0" cellspacing="0"><tr>
                           <td width="3" style="background:${EM_RED};border-radius:2px;">&nbsp;</td>
-                          <td style="padding-left:8px;font-size:19px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};"><span${edAttr('hlChapterTitle')}>${escapeHtml(meta.hlChapterTitle || chapterTitle)}</span></td>
+                          <td style="padding-left:8px;font-size:19px;font-weight:700;color:#1A1A1A;font-family:${EM_FONT};"><span${edAttr('hlChapterTitle2')}>${escapeHtml(meta.hlChapterTitle2 || chapterTitle)}</span></td>
                         </tr></table>
                       </td>
                     </tr>
@@ -3579,7 +3582,6 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                 </td>
               </tr>` : ''}
 
-              ${meta.showHighlight !== false ? highlightInsightSectionHtml(products, weeklyAll, weeklyLabels, meta, lang, assetBase, { citTouchPointsTrend, citTrendMonths, citTouchPointsByLlm, citDomainTrend, citDomainMonths, citDomainByLlmTrend }, readability) : ''}
 
               ${meta.showProducts !== false ? `<!-- ══ 제품별 현황 (통합 카드) ══ -->
               <tr>
@@ -3690,6 +3692,9 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
               </tr>` : ''}
 
               ${meta.showDotcom !== false ? dotcomCombinedSectionHtml(dotcom, dotcomByLlm, meta, lang) : ''}
+
+              <!-- 하이라이트(닷컴 Readability) 챕터 — Citation·닷컴과 Action Plan 사이로 이동 (사용자 지시 2026-08-31) -->
+              ${meta.showHighlight !== false ? highlightInsightSectionHtml(products, weeklyAll, weeklyLabels, meta, lang, assetBase, { citTouchPointsTrend, citTrendMonths, citTouchPointsByLlm, citDomainTrend, citDomainMonths, citDomainByLlmTrend }, readability) : ''}
 
               ${meta.showTodo ? `
               <!-- ══ Action Plan (3영역: 노티스 + 인사이트 + 핵심과제 진척) ══ -->
