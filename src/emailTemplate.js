@@ -958,11 +958,13 @@ const CB_PRODUCTS = ['TV', 'WM', 'REF']
 function cBrandCompareChartHtml(productsCnty, lang = 'ko') {
   if (!Array.isArray(productsCnty) || !productsCnty.length) return ''
   const H = 54                      // 막대 최대 높이(px) — 절대 스케일 0~100
+  // 막대 폭 15px 고정 — table-layout:fixed 로 값 라벨("87.9" 등) 길이가 폭을 흔들지 않게
+  // (라벨은 overflow:visible 로 삐져나옴 허용). 사용자 지적 2026-08-31 "막대 크기 통일".
   const barTd = (v, color) => {
     const h = v > 0 ? Math.max(2, Math.round(v / 100 * H)) : 0
-    return `<td width="13" valign="bottom" style="padding:0 1px;">
-      <table cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
-        <td align="center" style="font-size:8px;font-weight:800;color:${color};font-family:${EM_FONT};letter-spacing:-0.5px;line-height:1.1;padding-bottom:1px;white-space:nowrap;">${v > 0 ? v.toFixed(1) : '—'}</td>
+    return `<td width="15" valign="bottom" style="padding:0 1px;">
+      <table cellpadding="0" cellspacing="0" border="0" width="15" style="table-layout:fixed;"><tr>
+        <td align="center" style="font-size:8.5px;font-weight:800;color:${color};font-family:${EM_FONT};letter-spacing:-0.5px;line-height:1.1;padding-bottom:1px;white-space:nowrap;overflow:visible;">${v > 0 ? v.toFixed(1) : '—'}</td>
       </tr><tr>
         <td height="${h}" style="background:${h ? color : 'transparent'};border-radius:2px 2px 0 0;font-size:0;line-height:0;">&nbsp;</td>
       </tr></table>
@@ -987,19 +989,19 @@ function cBrandCompareChartHtml(productsCnty, lang = 'ko') {
       const lgColor = ratio >= 100 ? '#15803D' : ratio >= 80 ? '#EA580C' : '#DC2626'
       const gap = +(lg - comp).toFixed(1)
       const gapColor = gap >= 0 ? '#15803D' : '#DC2626'
-      return `<td align="center" valign="bottom" style="padding:6px 1px 0;">
+      return `<td align="center" valign="bottom" style="padding:4px 1px 0;">
         <table cellpadding="0" cellspacing="0" border="0" align="center"><tr>
           ${barTd(lg, lgColor)}${barTd(comp, '#94A3B8')}${barTd(cbVal, '#9333EA')}
         </tr><tr>
-          <td align="center" style="font-size:6.5px;color:${lgColor};font-family:${EM_FONT};font-weight:700;">LG</td>
-          <td align="center" style="font-size:6.5px;color:#94A3B8;font-family:${EM_FONT};font-weight:700;letter-spacing:-0.4px;overflow:visible;white-space:nowrap;">${brandLbl(compName)}</td>
-          <td align="center" style="font-size:6.5px;color:#9333EA;font-family:${EM_FONT};font-weight:700;letter-spacing:-0.4px;overflow:visible;white-space:nowrap;">${brandLbl(cbName)}</td>
+          <td align="center" style="font-size:8px;color:${lgColor};font-family:${EM_FONT};font-weight:700;">LG</td>
+          <td align="center" style="font-size:8px;color:#94A3B8;font-family:${EM_FONT};font-weight:700;letter-spacing:-0.4px;overflow:visible;white-space:nowrap;">${brandLbl(compName)}</td>
+          <td align="center" style="font-size:8px;color:#9333EA;font-family:${EM_FONT};font-weight:700;letter-spacing:-0.4px;overflow:visible;white-space:nowrap;">${brandLbl(cbName)}</td>
         </tr></table>
-        <div style="margin-top:3px;font-size:9px;font-weight:800;color:${gapColor};font-family:${EM_FONT};letter-spacing:-0.3px;">${gap >= 0 ? '+' : ''}${gap}%p</div>
-        <div style="margin-top:1px;font-size:9px;font-weight:700;color:#334155;font-family:${EM_FONT};letter-spacing:-0.3px;">${CB_CNTY_LABEL[cc] || cc}</div>
+        <div style="margin-top:3px;font-size:10px;font-weight:800;color:${gapColor};font-family:${EM_FONT};letter-spacing:-0.3px;">${gap >= 0 ? '+' : ''}${gap}%p</div>
+        <div style="margin-top:1px;font-size:10px;font-weight:700;color:#334155;font-family:${EM_FONT};letter-spacing:-0.3px;">${CB_CNTY_LABEL[cc] || cc}</div>
       </td>`
     }).join('')
-    return `<tr><td style="padding:10px 0 2px;">
+    return `<tr><td style="padding:4px 0 2px;">
         <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#F1F5F9;border-radius:6px;"><tr>
           <td style="padding:5px 10px;font-size:10.5px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:0.5px;">${prod}</td>
         </tr></table>
@@ -1023,7 +1025,12 @@ function cBrandCompareChartHtml(productsCnty, lang = 'ko') {
 // 편집 필드 v3ExIntro / v3Ex*T2 / v3Ex*B2 — 옛 저장본(v3Ex*T/B)이 덮지 않게 버전업.
 function insightV3Parts(meta = {}, lang = 'ko', productsCnty = []) {
   const L = (ko, en) => (lang === 'en' ? en : ko)
-  const ed = (field, val) => (_ED ? `<span${edRich(field)}>${val}</span>` : (meta[field] != null && meta[field] !== '' ? sanitizeUserHtml(meta[field]) : val))
+  // 편집모드에서도 저장값(meta) 우선 — 기본문안(val)을 보여주면 편집할 때마다
+  // 저장분이 원복돼 보인다 (사용자 보고 2026-08-31 "수정하면 원복됨").
+  const ed = (field, val) => {
+    const cur = (meta[field] != null && meta[field] !== '') ? sanitizeUserHtml(meta[field]) : val
+    return _ED ? `<span${edRich(field)}>${cur}</span>` : cur
+  }
 
   // V2 의 execItem 과 동일한 짙은 남색 박스
   const execItem = (titleF, title, bodyF, body, extra = '') => `
@@ -3074,54 +3081,41 @@ function rdSchemaCompareHtml(meta = {}, lang = 'ko') {
 
 // 본 섹션의 기본 문안 — 사용자 제공 원문 그대로. meta 로 덮어쓸 수 있다.
 const RD_TEXT = {
-  intro: 'Readability는 AI 관점에서의 가독성을 뜻하며, 웹페이지의 콘텐츠가 AI가 읽고 활용하기 좋은 상태인지 평가하는 지표입니다. ‘26년 6월부터 LG.com의 Readability 현황을 파악하기 위해 10개 전략 국가의 주요 페이지 유형, 총 9,284개 페이지를 평가했습니다(8월 30일 기준, 전수). 10개 국가 사이트에 더해 글로벌 대표 사이트(lg.com/global)를 별도 사이트로 포함했습니다. Readability 점수는 전체 평가항목 중 기준을 충족한 항목의 비율(%)을 100점 기준으로 환산한 점수입니다. 평가는 사이트 성능, AI 웹접근성, Basic SEO 적합도, 스키마마크업, 고인용 콘텐츠, AI Crawlability의 6개 영역, 총 37개 체크리스트를 기준으로 진행했습니다. 각 항목의 정의와 판정 기준은 검수 기준 탭과 대시보드 내 항목별 간략 설명에서 확인하실 수 있습니다.',
+  // 7월 하이라이트 축약본 — 사용자 구글 문서 원문 그대로 (2026-08-31, 임의 다듬기 없음).
+  // 필드 버전업 (intro2·summary2·areaDetail): 옛 편집 저장본(rd_intro 등)이 새 문안을 덮지 않게.
+  // 기존 d1~d4 소제목 4블록은 문서에서 단일 상세 블록으로 통합됨.
+  intro2: 'Readability는 AI 관점에서의 가독성을 뜻하며, 웹페이지의 콘텐츠가 AI가 읽고 활용하기 좋은 상태인지 평가하는 지표입니다. LG.com의 Readability 현황을 파악하기 위해 10개 전략 국가 및 글로벌 대표 사이트의 주요 9개 페이지 유형, 총 9,284개 페이지를 평가했습니다(8월 30일 기준, 전수). Readability 점수는 전체 평가항목 중 기준을 충족한 항목의 비율(%)을 100점 기준으로 환산한 점수입니다. 평가는 사이트 성능, AI 웹접근성, Basic SEO 적합도, 스키마마크업, 고인용 콘텐츠, AI Crawlability의 6개 영역, 총 37개 체크리스트를 기준으로 진행했습니다. 각 항목의 정의와 판정 기준은 Readability 대시보드의 검수 기준 탭과 대시보드 내 항목별 간략 설명에서 확인하실 수 있습니다.',
   introNotes: [
     '*전략 10개국가 : 독일, 영국, 호주, 브라질, 베트남, 스페인, 미국, 멕시코, 인도, 캐나다',
     '*9개 페이지 유형 : PDP(제품 상세 페이지), PLP(제품 카테고리 페이지), Microsite, Global Newsroom, Press & Media, Buying Guide, LG Experience, Support - 일반, Support - Troubleshoot',
   ],
-  summary: '8월 LG.com의 전체적인 Readability 점수는 78.5점으로 전월 대비 1.0점 상승했습니다. 사이트별로는 글로벌 대표 사이트(lg.com/global)가 87.7점으로 가장 높았고, 국가 사이트 중에서는 베트남 81.8점이 최고, 캐나다 76.2점이 최저로 편차가 크지 않은 상황입니다.\n페이지 타입별로도 Press & Media 79.5점, Microsite 76.4점으로 유사한 분포를 보이고 있습니다.',
-  areaIntro: '반면 평가 영역별로는 점수 차이가 뚜렷하게 나타났습니다.\n사이트 성능 99.4점 (페이지 응답 및 정보 제공 속도), AI Crawlability 95.4점 (AI 크롤러가 원문을 가져갈 수 있는 기술 환경), Basic SEO 89.2점 (제목·페이지 주제 설명 등 검색되기위한 기본 정보), 웹접근성 83.5점 (사람과 AI가 문서 구조를 읽어낼 수 체계)으로 비교적 양호했습니다.\n반면, 스키마마크업 31.7점 (제품·FAQ·이미지 등 정보의 종류와 관계를 알려주는 구조화 데이터), 고인용 콘텐츠 56.3점 (AI가 인용할만한 서술의 존재)은 상대적으로 낮았습니다.',
-  d1Title: '사이트 성능과 AI Crawlability는 전반적으로 우수하나, 초기 HTML 내 텍스트 제공 비중 보완 필요',
-  d1: '사이트 성능 영역은 99.4점으로 가장 높은 점수를 기록하여 LG.com의 빠르고 안정적인 페이지 전달 수준을 확인할 수 있었습니다.\nAI Crawlability 또한 95.4점으로 상대적으로 높지만, JS HTML Text Ratio(Javascript 렌더링 후 텍스트 대비 초기 HTML Text Count 비중이 60% 이상) 충족률은 71.8%였습니다.\n특히 Support - Troubleshoot 페이지는 34.5%, PDP는 60.3%로 낮아, 일부 주요 콘텐츠가 페이지를 처음 불러오는 시점에는 포함되지 않고 화면이 열린 후 추가로 불러와지는 방식(CSR)으로 제공되고 있었습니다.\n사용자가 최종 화면에서 콘텐츠를 확인하는 데는 문제가 없을 수 있지만, 페이지를 처음 전달받은 상태를 중심으로 정보를 수집하는 일부 AI는 주요 내용을 충분히 확인하지 못할 가능성이 있습니다.\n때문에 현재 고객가치혁신 및 D2C에서는 Support 페이지와 PDP내 주요 정보가 페이지를 처음 불러오는 시점부터 포함되도록 SSR 방식으로 전환하는 작업을 추진 중입니다.',
+  summary2: '8월 LG.com의 전체적인 Readability 점수는 79.7점을 기록했으며, 국가 별로는 베트남이 83.2점으로 가장 높았고, 가장 점수가 낮은 캐나다가 77.5점으로 편차가 크지 않은 상황입니다.\n페이지 타입 별로도 Press & Media 79.5점, Microsite 76.4점으로 유사한 분포를 보이고 있습니다.',
+  areaDetail: '반면 평가 영역별로는 점수 차이가 뚜렷하게 나타났습니다.\n\n사이트 성능 99.4점, AI Crawlability 95.4점으로 페이지 전달 속도 및 AI 접근 환경은 우수한 수준입니다. 다만 HTML Text Ratio(Javascript 렌더링 후 텍스트 대비 초기 HTML Text Count 비중이 60% 이상) 충족률은 71.8%로, 특히 Support-Trouble Shooting 페이지는 34.5%, PDP는 60.3%로 낮아, 페이지가 열린 후 추가로 불러와지는 방식(CSR)으로 제공되고 있었습니다. 이에 현재 D2C 및 고객가치혁신에서는 PDP내 리뷰 영역과 Support 페이지의 SSR 전환을 진행하고 있으며, 10월 내 전환 예정입니다. Basic SEO와 웹접근성은 89.2점, 83.5점으로 전반적으로 페이지의 기본 정보와 구조가 갖춰진 정도는 양호하였습니다. 다만 제목과 소제목이 순서에 맞게 구성됐는지를 확인하는 Heading Hierarchy 충족률은 43.7%, 페이지의 제목인 H1이 정확하게 1개만 존재하는 비율은 83.4%, Meta Description 충족률은 86.4%로 페이지 구조의 일관성을 보완할 필요가 있습니다. 특히 Press & Media 페이지에서 H1과 Meta Description 누락이 반복적으로 나타나(H1 충족률 44.6%, Meta Description 충족률 34.1%), 개별 콘텐츠보다는 페이지 템플릿이나 콘텐츠 발행 과정에서 기본 정보가 자동으로 적용되도록 개선할 필요가 있습니다.\n\n한편 고인용 컨텐츠는 56.3점으로 AI가 답변에 인용할 수 있는 콘텐츠 보완이 필요합니다. 전월(29.3점) 대비는 크게 상승했으나, 여전히 AI가 직접적인 답변으로 활용하기 쉬운 FAQ Block, Summary Box, Definition Paragraph가 충분하지 않은 상황이며, 현재 FAQ Block을 중심으로 각 사업본부 및 고객가치혁신의 주요 개선 과제로 추진 중입니다. Citable Sentence의 경우 독일, 호주, 영국 충족률은 95% 이상인 반면 캐나다, 멕시코, 브라질, 인도는 40%대로 국가별 편차가 있어 상향 평준화가 필요합니다. AI가 컨텐츠의 최신성과 신뢰성을 판단하는 지표로 삼을 수 있는 Author/Source 또한 충족률이 39.4%로, Press & Media는 74.3%로 양호하지만, 구매가이드와 LG Experience는 0%로 보완이 시급합니다. 스키마마크업은 33.2점으로 가장 저조하였습니다. Schema는 AI가 FAQ·제품·이미지·영상·사용방법 등 정보의 종류를 구분할 수 있게 해주는 정해진 형식으로, 페이지 유형과 콘텐츠 특성에 맞춰 주요 Schema의 적용 범위를 확대할 필요가 있습니다. 상세 현황 파악을 위해 독일 LG.com과 Samsung.com 확인해보았을 때, PDP의 핵심 스키마인 Product(LG 0%, SS 64%) 스키마는 경쟁사 대비 충족률이 낮았고, PLP의 경우 특히 FAQPage 스키마 적용률 격차가 크게 나타났습니다(LG 5%, SS 71%). 이 외에도 VideoObject, ImageObject, HowTo, Article 모두 주요 스키마로 전 페이지 타입에 걸쳐 개선이 필요한 상황입니다. 이에 D2C에서 추진 중인 Schema 자동화를 통해, 국가와 페이지별로 개별 대응하기 보다 주요 Schema가 일관되게 생성, 적용되는 구조를 마련하는 중이며, 연내 최소 6개의 스키마 자동화를 완료할 예정입니다.',
   d1Notes: [
     '*초기 HTML : 웹페이지에 접속했을 때 서버가 가장 먼저 전달하는 기본 페이지 정보로, JavaScript 실행 전에도 AI가 확인할 수 있는 내용',
     '*Javascript 렌더링 : 페이지가 열린 뒤 JavaScript가 실행되면서 정보를 추가로 불러와 화면에 표시하는 방식',
     '*Client-Side Rendering(CSR) : 서버가 기본적인 페이지 틀을 먼저 전달하고, 사용자의 브라우저에서 JavaScript를 실행해 주요 콘텐츠를 불러오고 화면을 완성하는 방식',
     '*Server-Side Rendering(SSR) : 서버에서 주요 콘텐츠가 포함된 HTML을 미리 생성해 전달하는 방식',
   ],
-  d2Title: 'Basic SEO와 웹접근성은 전반적으로 양호하나, 기본적인 페이지 구조의 일관성 보완 필요',
-  d2: '웹접근성은 83.5점으로 전월(90.4점) 대비 하락했으며, 제목과 소제목이 순서에 맞게 구성됐는지를 확인하는 Heading Hierarchy 충족률이 43.7%로 크게 낮아진 것이 주된 원인입니다.\nAI가 페이지의 주제와 세부 내용을 보다 명확하게 구분할 수 있도록, 페이지 유형별 제목 구조를 표준화할 필요가 있습니다.\nBasic SEO 영역은 89.2점으로 전월(88.5점) 대비 소폭 상승했으며, 페이지의 제목인 H1이 정확하게 1개만 존재하는 비율은 83.4%, Meta Description 충족률은 86.4%로 모두 개선됐습니다.\n7월에 지적했던 Newsroom 페이지의 기본 정보 누락도 크게 개선되어 H1 충족률이 75.5%, Meta Description 충족률이 76.2%로 상승했습니다. 페이지 템플릿 차원의 개선이 효과를 낸 것으로 보이며, 추가 보완 여지는 남아 있습니다.\nSitemap 충족률은 73.0%로 전월(76.0%) 대비 소폭 하락해 지속적인 최신화 작업이 필요합니다.',
-  d3Title: '스키마마크업은 페이지 타입과 콘텐츠에 맞춘 최적화가 필요',
-  d3: '스키마 영역은 31.7점으로 전월(35.7점) 대비 하락하며 전체 평가 영역 중 가장 낮았습니다. Schema는 AI가 FAQ·제품·이미지·영상·사용방법 등 정보의 종류를 구분할 수 있게 해주는 정해진 형식으로, 페이지 유형과 콘텐츠 특성에 맞춰 주요 Schema의 적용 범위를 확대할 필요가 있습니다.\n상세 현황 파악을 위해 독일 LG.com과 Samsung.com 확인해보았을 때, PDP의 핵심 스키마인 Product(LG 0%, SS 64%) 스키마는 경쟁사 대비 충족률이 낮았고, PLP의 경우 특히 FAQPage 스키마 적용률 격차가 크게 나타났습니다(LG 13%, SS 71%). 이 외에도 VideoObject, ImageObject, HowTo, Article 모두 주요 스키마로 전 페이지 타입에 걸쳐 개선이 필요한 상황입니다. 이에 D2C에서 추진 중인 Schema 자동화를 통해, 국가와 페이지별로 개별 대응하기 보다 주요 Schema가 일관되게 생성, 적용되는 구조를 마련하는 중입니다.',
-  d4Title: '고인용 콘텐츠는 AI 답변에 적합한 콘텐츠 형식 확대와 작성자 정보 보완 필요',
-  d4: '콘텐츠 영역은 56.3점으로 전월(29.3점) 대비 크게 상승했으나 스키마마크업 다음으로 낮은 수준입니다. FAQ Block(28.5%→57.2%), 정의 문단(1.7%→42.9%), 요약 박스(23.9%→53.1%)가 고르게 개선된 결과입니다. AI가 질문에 대한 직접적인 답변으로 활용하기 쉬운 FAQ Block, Summary Box, Definition Paragraph 등의 콘텐츠가 충분하지 않아 보완이 필요한 상황이며, 현재 FAQ Block을 중심으로 각 사업본부 및 고객가치혁신의 주요 개선 과제로 추진 중입니다.\n한편, Citable Sentence(숫자, 연도, 통계, 연구 키워드 포함 문장)의 경우 전체 충족률은 72.9%였습니다. 독일(99.2%), 글로벌(98.5%), 호주(98.4%), 영국(95.8%)은 충족률 95% 이상인 반면, 캐나다(43.6%)·멕시코(43.9%)·브라질(46.4%)·인도(49.8%)는 크게 낮아 국가별 편차가 여전히 큰 상황입니다. 7월 독일 사이트를 비교해본 결과, LG.com의 Citable Sentence 충족률은 86.1%로 Samsung.com의 19.4%보다 크게 높아, LG 콘텐츠의 경쟁 우위 요소로 확인되었습니다. 향후 캐나다, 멕시코, 브라질, 인도 등 상대적으로 충족률이 낮은 국가에서도 Citable Sentence 확대를 통해 경쟁 우위 요소를 강화할 필요가 있습니다.\n콘텐츠의 작성자/출처/날짜 정보 충족률 또한 39.4%로 낮게 나타났습니다. 이는 AI가 콘텐츠의 신뢰성과 최신성을 판단하는 데 참고할 수 있는 요소인 만큼, 정보성 콘텐츠를 중심으로 보완이 필요합니다. 페이지 타입별로 보면 각 국가 사이트의 보도자료(Press & Media)는 74.3%로 양호한 반면, 구매 가이드와 LG Experience는 0%로 보완이 시급합니다.',
 }
 
 // EN 기본 번역 — RD_TEXT 의 영문본. 이게 없으면 EN 발송본에 한국어가 그대로 나온다
 // (사용자 보고 2026-08-28: "영문번역이 다 되어있지 않은 채로 나와").
 // 사용자가 EN 사이드바에 직접 입력하면 meta.rd_* 가 우선한다.
 const RD_TEXT_EN = {
-  intro: 'Readability measures how well a web page can be read and used by AI. From June 2026 we began assessing LG.com\u2019s Readability across 9,284 pages spanning the major page types in 10 strategic countries plus the global flagship site (lg.com/global), counted as its own site (full census, as of Aug 30). The Readability score is the share of checklist items meeting the bar, normalized to a 100-point scale. The assessment covers 6 areas \u2014 Site Performance, AI Accessibility, Basic SEO, Schema Markup, Citable Content, and AI Crawlability \u2014 across 37 checklist items in total. Definitions and pass criteria for each item are available on the Criteria tab and in the per-item notes on the dashboard.',
+  intro2: 'Readability measures how well a web page can be read and used by AI \u2014 whether the content is in good shape for AI to read and make use of. To assess LG.com\u2019s Readability we evaluated 9,284 pages across the 9 major page types of the 10 strategic countries plus the global flagship site (full census, as of Aug 30). The Readability score is the share of checklist items meeting the bar, normalized to a 100-point scale. The assessment covers 6 areas \u2014 Site Performance, AI Accessibility, Basic SEO, Schema Markup, Citable Content, and AI Crawlability \u2014 across 37 checklist items in total. Definitions and pass criteria for each item are available on the Criteria tab of the Readability dashboard and in the per-item notes on the dashboard.',
   introNotes: [
     '*10 strategic countries: Germany, UK, Australia, Brazil, Vietnam, Spain, USA, Mexico, India, Canada',
     '*9 page types: PDP (Product Detail Page), PLP (Product List Page), Microsite, Global Newsroom, Press & Media, Buying Guide, LG Experience, Support, Support - Troubleshoot',
   ],
-  summary: 'LG.com scored 78.5 overall for Readability in August, up 1.0 point month over month. By site, the global flagship (lg.com/global) led at 87.7; among country sites Vietnam was highest at 81.8 and Canada lowest at 76.2 \u2014 a narrow spread.\nPage types show a similar distribution: Press & Media 79.5, Microsite 76.4.',
-  areaIntro: 'By assessment area, however, the gaps are pronounced.\nSite Performance 99.4 (page response and content delivery speed), AI Crawlability 95.4 (the technical conditions that let AI crawlers retrieve the source), Basic SEO 89.2 (the baseline information needed to be found \u2014 titles, page descriptions), and Accessibility 83.5 (structure that both people and AI can parse) were relatively strong.\nSchema Markup 31.7 (structured data that signals the type of information and how it relates) and Citable Content 56.3 (the presence of statements AI can quote) were comparatively low.',
-  d1Title: 'Site Performance and AI Crawlability are strong overall, but the share of text delivered in the initial HTML needs work',
-  d1: 'Site Performance scored highest at 99.4, confirming that LG.com delivers pages quickly and reliably.\nAI Crawlability was also relatively high at 95.4, but the JS HTML Text Ratio (initial-HTML text accounting for 60% or more of post-JavaScript text) was met on only 71.8% of pages.\nSupport-Troubleshooting (34.5%) and PDP (60.3%) were especially low, meaning some key content is not present when the page is first delivered and is instead fetched after the view opens (CSR).\nThis may pose no problem for users viewing the final screen, but AI systems that collect information primarily from the initially delivered page may fail to see key content.\nCustomer Value Innovation and D2C are therefore migrating Support pages and key PDP information to SSR so that they are included from the first page load.',
+  summary2: 'LG.com scored 79.7 overall for Readability in August; by country Vietnam was highest at 83.2 and Canada lowest at 77.5 \u2014 a narrow spread.\nPage types show a similar distribution: Press & Media 79.5, Microsite 76.4.',
+  areaDetail: 'By assessment area, however, the score gaps are pronounced.\n\nSite Performance (99.4) and AI Crawlability (95.4) show excellent page delivery speed and AI access conditions. However, the HTML Text Ratio (initial-HTML text accounting for 60% or more of post-JavaScript text) was met on only 71.8% of pages \u2014 especially low on Support-Troubleshooting (34.5%) and PDP (60.3%) \u2014 meaning content is fetched after the page opens (CSR). D2C and Customer Value Innovation are migrating the PDP review area and Support pages to SSR, with the transition due within October. Basic SEO (89.2) and Accessibility (83.5) show generally sound baseline information and structure. Still, Heading Hierarchy \u2014 whether headings and subheadings follow a correct order \u2014 was met on 43.7% of pages, exactly one H1 on 83.4%, and Meta Description on 86.4%, so structural consistency needs work. H1 and Meta Description omissions recur on Press & Media pages in particular (H1 44.6%, Meta Description 34.1%), so baseline information should be applied automatically at the page-template or publishing-process level rather than per content item.\n\nCitable Content, at 56.3, needs more content AI can quote in answers. Though sharply up from July (29.3), FAQ Blocks, Summary Boxes and Definition Paragraphs \u2014 the formats AI most readily uses as direct answers \u2014 remain insufficient, and FAQ Blocks are being driven as a key improvement task across the business units and Customer Value Innovation. Citable Sentence coverage exceeds 95% in Germany, Australia and the UK but sits in the 40% range in Canada, Mexico, Brazil and India \u2014 leveling up is needed. Author/Source, which AI can use to judge recency and credibility, was met on just 39.4% \u2014 sound on Press & Media (74.3%) but 0% on Buying Guide and LG Experience, requiring urgent attention. Schema Markup was lowest at 33.2. Schema is the agreed format that lets AI distinguish types of information \u2014 FAQ, product, image, video, how-to \u2014 and its coverage should be widened to match page type and content characteristics. Comparing LG.com and Samsung.com in Germany, Product schema \u2014 the core schema for PDPs \u2014 lagged the competitor (LG 0%, SS 64%), and on PLPs the FAQPage adoption gap was especially wide (LG 5%, SS 71%). VideoObject, ImageObject, HowTo and Article are all major schemas needing improvement across every page type. Through the schema automation D2C is pursuing, we are building a structure that generates and applies the major schemas consistently rather than handling them country by country and page by page, with at least six schema automations to be completed within the year.',
   d1Notes: [
     '*Initial HTML: the base page a server delivers first on access \u2014 content AI can read even before JavaScript runs',
     '*JavaScript rendering: fetching additional information and painting it after the page opens, via JavaScript',
     '*Client-Side Rendering (CSR): the server sends a basic page shell and the browser runs JavaScript to fetch the main content and complete the view',
     '*Server-Side Rendering (SSR): the server pre-builds and delivers HTML that already contains the main content',
   ],
-  d2Title: 'Basic SEO and Accessibility are sound overall, but baseline page structure needs to be made consistent',
-  d2: 'Accessibility fell to 83.5 from 90.4, driven mainly by Heading Hierarchy \u2014 whether headings and subheadings follow a correct order \u2014 dropping to 43.7% of pages.\nHeading structures should be standardized per page type so AI can more clearly separate a page\u2019s topic from its details.\nBasic SEO edged up to 89.2 from 88.5: 83.4% of pages now carry exactly one H1 and 86.4% meet the Meta Description bar \u2014 both improved.\nThe Newsroom gaps flagged in July improved sharply, reaching 75.5% for H1 and 76.2% for Meta Description. The page-template fix appears to be working, though room remains.\nSitemap coverage slipped to 73.0% from 76.0% and calls for ongoing maintenance.',
-  d3Title: 'Schema Markup needs optimization tailored to page type and content',
-  d3: 'Schema fell to 31.7 from 35.7 in July, the lowest of all areas. Schema is the agreed format that lets AI distinguish types of information \u2014 FAQ, product, image, video, how-to \u2014 so its coverage should be widened to match page type and content characteristics.\nComparing LG.com and Samsung.com in Germany for detail, Product schema \u2014 the core schema for PDPs \u2014 lagged the competitor (LG 0%, SS 64%), and on PLPs the FAQPage adoption gap was especially wide (LG 13%, SS 71%). VideoObject, ImageObject, HowTo, and Article are all major schemas needing improvement across every page type. Through the schema automation D2C is pursuing, we are building a structure that generates and applies the major schemas consistently rather than handling them country by country and page by page.',
-  d4Title: 'Citable Content needs both a wider range of AI-answer-ready formats and better author attribution',
-  d4: 'Content rose sharply to 56.3 from 29.3, though it remains the second-lowest area after Schema Markup. FAQ Blocks (28.5%\u219257.2%), definition paragraphs (1.7%\u219242.9%), and summary boxes (23.9%\u219253.1%) all improved together. There is not enough of the content AI can readily use as a direct answer \u2014 FAQ Blocks, Summary Boxes, Definition Paragraphs \u2014 and FAQ Blocks in particular are being driven as a key improvement task across the business units and Customer Value Innovation.\nCitable Sentences (sentences containing numbers, years, statistics, or research keywords) were met at 72.9% overall. Germany (99.2%), Global (98.5%), Australia (98.4%), and the UK (95.8%) exceeded 95%, while Canada (43.6%), Mexico (43.9%), Brazil (46.4%), and India (49.8%) were far lower \u2014 still a wide country-level spread. Comparing German sites in July, LG.com met Citable Sentence at 86.1% versus Samsung.com\u2019s 19.4%, confirming it as a competitive advantage for LG content. Expanding Citable Sentences in the lower-scoring countries \u2014 Canada, Mexico, Brazil, and India \u2014 would reinforce that advantage.\nAuthor / source / date attribution was also low at 39.4%. Because AI uses these signals to judge credibility and recency, informational content in particular should be reinforced. By page type, Press & Media \u2014 the press releases on each country site \u2014 was sound at 74.3%, while Buying Guide and LG Experience sat at 0% and need urgent attention.',
 }
 
 // Readability Highlight 섹션 본체
@@ -3137,7 +3131,7 @@ function readabilityHighlightHtml(rd, meta = {}, lang = 'ko', contentWidth = 848
   // ① Readability란? — 별도 박스로 영역 구분
   const introBox = `<table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FEF2F4;border:1px solid #FECDD3;border-radius:10px;margin:0 0 22px;">
     <tr><td style="padding:16px 20px;">
-      ${rdPara(tx('intro'), { gap: 8, field: 'rd_intro' })}
+      ${rdPara(tx('intro2'), { gap: 8, field: 'rd_intro2' })}
       ${rdFootnotes(tx('introNotes'), 'rd_introNotes', { plain: true })}
     </td></tr>
   </table>`
@@ -3195,24 +3189,18 @@ function readabilityHighlightHtml(rd, meta = {}, lang = 'ko', contentWidth = 848
     </td></tr>
   </table>`
 
-  // ④ 영역별 상세
-  const detail = [
-    ['d1Title', 'd1', 'd1Notes'],
-    ['d2Title', 'd2', null],
-    ['d3Title', 'd3', null],
-    ['d4Title', 'd4', null],
-  ].map(([tk, bk, notes]) => `
-    <p${edRich('rd_' + tk)} style="margin:0 0 8px;font-size:13px;font-weight:800;color:${EM_RED};line-height:1.6;font-family:${EM_FONT};letter-spacing:-0.3px;">${rdRichHtml(tx(tk))}</p>
-    ${rdPara(tx(bk), { gap: (notes || bk === 'd3') ? 6 : 20, field: 'rd_' + bk })}
-    ${bk === 'd3' ? rdSchemaCompareHtml(meta, lang) : ''}
-    ${notes ? rdFootnotes(tx(notes), 'rd_' + notes) : ''}`).join('')
+  // ④ 영역별 상세 — 단일 블록 (7월 축약본: 기존 d1~d4 소제목 4블록을 문서에서 통합, 2026-08-31)
+  //    순서도 문서대로: 점수표 → 요약 → 영역 차트 → 상세 → 스키마 비교 차트 → 각주
+  const detail = `
+    ${rdPara(tx('areaDetail'), { gap: 6, field: 'rd_areaDetail' })}
+    ${rdSchemaCompareHtml(meta, lang)}
+    ${rdFootnotes(tx('d1Notes'), 'rd_d1Notes')}`
 
   // 외곽 카드 없이 콘텐츠만 반환 — 상위 Highlight 챕터 카드 안에 임베드된다.
   return `${rdHeading(lang === 'en' ? 'What is Readability?' : 'Readability란?', 'rd_h1')}
       ${introBox}
-      ${rdPara(tx('summary'), { gap: 14, field: 'rd_summary' })}
       ${scoreTables}
-      ${rdPara(tx('areaIntro'), { gap: 14, field: 'rd_areaIntro' })}
+      ${rdPara(tx('summary2'), { gap: 14, field: 'rd_summary2' })}
       ${catTable}
       ${rdHeading(lang === 'en' ? 'Detailed status and improvement direction by area' : '영역별 상세 Readability 현황 및 개선 방향', 'rd_h2')}
       ${detail}`
