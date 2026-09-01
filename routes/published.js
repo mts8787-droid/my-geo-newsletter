@@ -237,12 +237,31 @@ publishedRouter.get('/p/GEO-Readability-Criteria', (req, res) => {
   }
 })
 
+// ─── 게시본 슬러그 리다이렉트 ───────────────────────────────────────────
+// 이미 메일로 나간 지난 호 링크를 최신 호로 돌린다.
+//
+// 302(임시)인 이유: 월간 리포트는 각 호가 독립된 발행물이지 이전된 페이지가
+// 아니다. "당분간 최신 호를 보여준다"는 편집 결정이라 이 표에서 줄만 지우면
+// 원래 호가 그대로 다시 열려야 한다. 301 을 쓰면 브라우저가 무기한 캐시해
+// 표를 지워도 되돌릴 수 없다.
+const SLUG_REDIRECTS = {
+  'GEO-Monthly-Report-KO-2026-07': 'GEO-Monthly-Report-KO-2026-08',
+  'GEO-Monthly-Report-EN-2026-07': 'GEO-Monthly-Report-EN-2026-08',
+}
+
 // ─── /p/:slug (게시된 HTML 단일 파일 + CSP) ─────────────────────────────
 publishedRouter.get('/p/:slug', (req, res) => {
   if (!isIpAllowed(req)) return send403Page(res)
   const slug = req.params.slug
   // 경로 traversal 방어 (Appendix B S9)
   if (!/^[a-zA-Z0-9\-]+$/.test(slug)) return res.status(400).send('Invalid slug')
+  // 대상이 실제로 게시돼 있을 때만 돌린다 — 아직 8월 호가 안 올라갔는데
+  // 리다이렉트하면 살아있던 7월 호까지 404 가 된다.
+  const target = SLUG_REDIRECTS[slug]
+  if (target && existsSync(join(PUB_DIR, `${target}.html`))) {
+    log.info(`redirect /p/${slug} → /p/${target}`)
+    return res.redirect(302, `/p/${target}`)
+  }
   const file = join(PUB_DIR, `${slug}.html`)
   if (!existsSync(file)) return res.status(404).send('Not found')
   setPublishedSecurityHeaders(res)
