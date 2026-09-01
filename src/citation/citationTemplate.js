@@ -217,7 +217,8 @@ function dotcomSectionHtml(dotcom, meta, t, lang) {
 
 // ─── 닷컴 콘텐츠별 월간 트렌드 차트 ─────────────────────────────────────────
 function dotcomTrendChartHtml(dotcomTrend, dotcomTrendMonths, lang) {
-  if (!dotcomTrend || !dotcomTrendMonths || dotcomTrendMonths.length < 1) return ''
+  dotcomTrendMonths = monthsOrDerive(dotcomTrendMonths, dotcomTrend)
+  if (!dotcomTrend || dotcomTrendMonths.length < 1) return ''
   const ALL_MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
   const months = ALL_MONTHS // 항상 12개월 표시
   const pageTypes = Object.keys(dotcomTrend).filter(k => k !== 'TTL')
@@ -297,6 +298,27 @@ const REGIONS = {
 const BUMP_COLORS = ['#CF0652','#1D4ED8','#059669','#D97706','#7C3AED','#DB2777','#0D9488','#EA580C','#4F46E5','#DC2626','#0891B2','#65A30D']
 // 12개월 고정 (Jan~Dec)
 const TREND_12M = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+// months 배열 폴백 — 트렌드 데이터에서 값이 있는 월을 유도한다.
+// 서버 통합 게시에서 sync-data 에 months 키만 비어 트렌드 객체는 멀쩡한데
+// 범프·닷컴 트렌드 차트가 통째로 사라지는 회귀가 있었다 (2026-09-01).
+// months 는 어차피 렌더 축(TREND_12M)이 아니라 "표시할 게 있냐" 가드에만 쓰인다.
+function monthsOrDerive(months, trendObj) {
+  if (Array.isArray(months) && months.length) return months
+  if (!trendObj) return []
+  const has = new Set()
+  Object.values(trendObj).forEach(d => {
+    if (!d || typeof d !== 'object') return
+    // 도메인 트렌드는 { cnty, domain, type, months:{Apr:n,…} } 로 months 가 중첩 — 양쪽 지원
+    const bag = (d.months && typeof d.months === 'object') ? d.months : d
+    Object.keys(bag).forEach(m => {
+      const v = bag[m]
+      if (Number(v) > 0) has.add(m)
+      // 닷컴 트렌드는 { 월: { lg: n, samsung: n } } 이중 중첩 — 브랜드 값 중 하나라도 있으면 그 월 유효
+      else if (v && typeof v === 'object' && Object.values(v).some(x => Number(x) > 0)) has.add(m)
+    })
+  })
+  return TREND_12M.filter(m => has.has(m))
+}
 const BUMP_MAX = 10 // 최대 표시 개수
 
 function bumpChartSvg(names, rankings, months, maxRank, labelFn) {
@@ -384,7 +406,8 @@ function bumpChartSvg(names, rankings, months, maxRank, labelFn) {
 
 // ─── 도메인 카테고리 범프차트 (월간 트렌드) ─────────────────────────────────
 function citCategoryBumpChartHtml(citTouchPointsTrend, citTrendMonths, meta, t, lang) {
-  if (!citTouchPointsTrend || !citTrendMonths || citTrendMonths.length < 1) return ''
+  citTrendMonths = monthsOrDerive(citTrendMonths, citTouchPointsTrend)
+  if (!citTouchPointsTrend || citTrendMonths.length < 1) return ''
   const months = TREND_12M
   const entries = Object.entries(citTouchPointsTrend)
   if (!entries.length) return ''
@@ -439,7 +462,8 @@ function citCategoryBumpChartHtml(citTouchPointsTrend, citTrendMonths, meta, t, 
 
 // ─── 도메인별 범프차트 (월간 트렌드) ──────────────────────────────────────────
 function citDomainBumpChartHtml(citDomainTrend, citDomainMonths, meta, t, lang) {
-  if (!citDomainTrend || !citDomainMonths || citDomainMonths.length < 1) return ''
+  citDomainMonths = monthsOrDerive(citDomainMonths, citDomainTrend)
+  if (!citDomainTrend || citDomainMonths.length < 1) return ''
   const months = TREND_12M
   const topN = BUMP_MAX
 
