@@ -1,6 +1,6 @@
 ==============================================================================
 LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
-생성: 2026-08-30 02:07 UTC
+생성: 2026-09-01 00:46 UTC
 대상: 10개국 최신 run / 국가별 page_type ≤100 샘플
 
 [채점 기준 주의] 2026-06-17 Render 재배포로 #11(헤딩 역순)·#23(FAQ plp)·
@@ -9,7 +9,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 ==============================================================================
 
 ##############################################################################
-## AU   run=au_2026-08-29_run_d31a3cda973e.json
+## AU   run=au_2026-08-30_run_d31a3cda973e.json
    URL 1320건 · 감사성공 1290 · [config] 신(2026-06-17 재배포)
    등급(성공 기준): Good 359 / Need Improvement 926 / Poor 5
    ⚠ 감사 불가(fetch 실패) 30건 — 아래 감점 집계에서 제외:
@@ -21,8 +21,6 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 ### [pdp] 제품 상세 (PDP) — 567건  (감점 항목 28개)
   - seo_sitemap (#19 · seo · 1점) — FAIL 567/567 (100%)  «#19 Sitemap (1개월 내)»
       · 567건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
-  - ai_definition (#33 · citable_content · 1점) — FAIL 567/567 (100%)  «#33 Definition Paragraph»
-      · 567건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 566/566 (100%)  «#26 Schema: ImageObject»
       · 566건: @type='ImageObject' 노드 없음
   - ai_schema_product (#25 · schema_markup · 1점) — FAIL 565/565 (100%)  «#25 Schema: Product 풀세트 (PDP)»
@@ -46,6 +44,8 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   1건: @type='CollectionPage' 노드 없음
   - a11y_heading_hier (a11y#11 · accessibility · 1점) — FAIL 557/567 (98%)  «#11 Heading Hierarchy»
       · 557건: 헤딩 역순 N건 — 첫 헤딩(hN)보다 상위 레벨이 뒤에 등장 [측정 1~2]
+  - ai_definition (#33 · citable_content · 1점) — FAIL 471/567 (83%)  «#33 Definition Paragraph»
+      · 471건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_schema_faq (#23 · schema_markup · 1점) — FAIL 457/566 (81%)  «#23 Schema: FAQPage»
       · 457건: @type='FAQPage' 노드 없음
   - a11y_image_alt (a11y#9 · accessibility · 1점) — FAIL 109/567 (19%)  «#9 Image Alt 누락 0»
@@ -53,8 +53,6 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
   - perf_ttfb (#1 · performance · 1점) — FAIL 13/168 (8%)  «#1 TTFB < 600ms (PSI Lab)»
       ·  10건: TTFB Nms — Nms 미만 필요 [측정 2744~33156]
       ·   3건: server_response_time_ms Nms — Nms 미만 필요 [측정 613~1433]
-  - ai_citable (#36 · citable_content · 1점) — FAIL 19/567 (3%)  «#36 Citable Sentence ≥ 10%»
-      ·  19건: 인용 가능 밀도 N% — N% 이상 필요 [측정 0~10]
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 5/567 (1%)  «#32 FAQ Block (콘텐츠)»
       ·   5건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
   - ai_summary_box (#35 · citable_content · 1점) — FAIL 5/567 (1%)  «#35 Summary Box (콘텐츠)»
@@ -76,6 +74,8 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   1건: 누락: title, image
   - ai_schema_breadcrumb (#21 · schema_markup · 1점) — FAIL 1/567 (0%)  «#21 Schema: BreadcrumbList»
       ·   1건: @type='BreadcrumbList' 노드 없음
+  - ai_citable (#36 · citable_content · 1점) — FAIL 1/567 (0%)  «#36 Citable Sentence ≥ 10%»
+      ·   1건: 인용 가능 밀도 N% — N% 이상 필요 [측정 0]
   - ai_image_filename (#40 · ai_crawlability · 1점) — FAIL 1/567 (0%)  «#40 Image File Name 브랜드 포함»
       ·   1건: img 태그가 없습니다.
   - ai_summary_ssr (#40 · ai_crawlability · 1점) — FAIL 1/567 (0%)  «#40 Summary Content SSR»
@@ -88,19 +88,19 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       · 100건: @type='ImageObject' 노드 없음
   - ai_schema_article (#29 · schema_markup · 1점) — FAIL 100/100 (100%)  «#29 Schema: Article»
       · 100건: @type='Article' 노드 없음
-  - ai_definition (#33 · citable_content · 1점) — FAIL 100/100 (100%)  «#33 Definition Paragraph»
-      · 100건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_author_source (#34 · citable_content · 1점) — FAIL 100/100 (100%)  «#34 Author 또는 출처+날짜»
       · 100건: JSON-LD author 또는 (datePublished+publisher) 조합 없음
   - ai_schema_video (#27 · schema_markup · 1점) — FAIL 12/12 (100%)  «#27 Schema: VideoObject»
       ·  10건: @type='VideoObject' 노드 없음
       ·   2건: 필수 필드 누락: url
-  - ai_summary_box (#35 · citable_content · 1점) — FAIL 91/100 (91%)  «#35 Summary Box (콘텐츠)»
-      ·  91건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
+  - ai_summary_box (#35 · citable_content · 1점) — FAIL 89/100 (89%)  «#35 Summary Box (콘텐츠)»
+      ·  89건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 78/100 (78%)  «#32 FAQ Block (콘텐츠)»
       ·  78건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
-  - ai_citable (#36 · citable_content · 1점) — FAIL 26/100 (26%)  «#36 Citable Sentence ≥ 10%»
-      ·  26건: 인용 가능 밀도 N% — N% 이상 필요 [측정 6.2~9.9]
+  - ai_citable (#36 · citable_content · 1점) — FAIL 15/100 (15%)  «#36 Citable Sentence ≥ 10%»
+      ·  15건: 인용 가능 밀도 N% — N% 이상 필요 [측정 6.4~9.9]
+  - ai_definition (#33 · citable_content · 1점) — FAIL 12/100 (12%)  «#33 Definition Paragraph»
+      ·  12건: 정의문 N건 — N건 이상 필요 [측정 0]
   - seo_meta_desc (#14 · seo · 1점) — FAIL 9/100 (9%)  «#14 Meta Description»
       ·   9건: 'meta[name='description' i]' 요소를 찾을 수 없습니다.
   - seo_h1 (#16 · seo · 1점) — FAIL 7/100 (7%)  «#16 H1 정확히 1개»
@@ -111,31 +111,29 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
   - a11y_image_alt (a11y#9 · accessibility · 1점) — FAIL 3/100 (3%)  «#9 Image Alt 누락 0»
       ·   3건: N개 요소에 'alt' 속성이 없습니다. [측정 3~10]
 
-### [press_media] 프레스앤미디어 — 100건  (감점 항목 13개)
+### [press_media] 프레스앤미디어 — 100건  (감점 항목 12개)
   - seo_sitemap (#19 · seo · 1점) — FAIL 100/100 (100%)  «#19 Sitemap (1개월 내)»
       · 100건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 100/100 (100%)  «#26 Schema: ImageObject»
       · 100건: @type='ImageObject' 노드 없음
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 100/100 (100%)  «#32 FAQ Block (콘텐츠)»
       · 100건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
-  - ai_definition (#33 · citable_content · 1점) — FAIL 100/100 (100%)  «#33 Definition Paragraph»
-      · 100건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_schema_video (#27 · schema_markup · 1점) — FAIL 1/1 (100%)  «#27 Schema: VideoObject»
       ·   1건: @type='VideoObject' 노드 없음
-  - ai_summary_box (#35 · citable_content · 1점) — FAIL 97/100 (97%)  «#35 Summary Box (콘텐츠)»
-      ·  97건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
+  - ai_summary_box (#35 · citable_content · 1점) — FAIL 94/100 (94%)  «#35 Summary Box (콘텐츠)»
+      ·  94건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
   - seo_meta_desc (#14 · seo · 1점) — FAIL 89/100 (89%)  «#14 Meta Description»
       ·  89건: 'meta[name='description' i]' 요소를 찾을 수 없습니다.
   - seo_h1 (#16 · seo · 1점) — FAIL 62/100 (62%)  «#16 H1 정확히 1개»
       ·  62건: 'hN' N개 — == N 필요 [측정 1]
   - a11y_image_alt (a11y#9 · accessibility · 1점) — FAIL 25/100 (25%)  «#9 Image Alt 누락 0»
       ·  25건: N개 요소에 'alt' 속성이 없습니다. [측정 1]
+  - ai_definition (#33 · citable_content · 1점) — FAIL 24/100 (24%)  «#33 Definition Paragraph»
+      ·  24건: 정의문 N건 — N건 이상 필요 [측정 0]
   - a11y_heading_hier (a11y#11 · accessibility · 1점) — FAIL 5/100 (5%)  «#11 Heading Hierarchy»
       ·   5건: 헤딩 역순 N건 — 첫 헤딩(hN)보다 상위 레벨이 뒤에 등장 [측정 1]
   - seo_open_graph (#18 · seo · 1점) — FAIL 4/100 (4%)  «#18 Open Graph (title+image)»
       ·   4건: 누락: title
-  - ai_citable (#36 · citable_content · 1점) — FAIL 3/100 (3%)  «#36 Citable Sentence ≥ 10%»
-      ·   3건: 인용 가능 밀도 N% — N% 이상 필요 [측정 9~9.4]
   - ai_author_source (#34 · citable_content · 1점) — FAIL 1/100 (1%)  «#34 Author 또는 출처+날짜»
       ·   1건: JSON-LD author 또는 (datePublished+publisher) 조합 없음
 
@@ -146,12 +144,12 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       · 100건: @type='Offer' 노드 없음
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 100/100 (100%)  «#26 Schema: ImageObject»
       · 100건: @type='ImageObject' 노드 없음
-  - ai_definition (#33 · citable_content · 1점) — FAIL 100/100 (100%)  «#33 Definition Paragraph»
-      · 100건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_summary_box (#35 · citable_content · 1점) — FAIL 100/100 (100%)  «#35 Summary Box (콘텐츠)»
       · 100건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 99/100 (99%)  «#32 FAQ Block (콘텐츠)»
       ·  99건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
+  - ai_definition (#33 · citable_content · 1점) — FAIL 96/100 (96%)  «#33 Definition Paragraph»
+      ·  96건: 정의문 N건 — N건 이상 필요 [측정 0]
   - seo_meta_desc (#14 · seo · 1점) — FAIL 81/100 (81%)  «#14 Meta Description»
       ·  81건: 'meta[name='description' i]' 요소를 찾을 수 없습니다.
   - seo_h1 (#16 · seo · 1점) — FAIL 67/100 (67%)  «#16 H1 정확히 1개»
@@ -175,12 +173,12 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       · 100건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 100/100 (100%)  «#26 Schema: ImageObject»
       · 100건: @type='ImageObject' 노드 없음
-  - ai_definition (#33 · citable_content · 1점) — FAIL 100/100 (100%)  «#33 Definition Paragraph»
-      · 100건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_summary_box (#35 · citable_content · 1점) — FAIL 98/100 (98%)  «#35 Summary Box (콘텐츠)»
       ·  98건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 92/100 (92%)  «#32 FAQ Block (콘텐츠)»
       ·  92건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
+  - ai_definition (#33 · citable_content · 1점) — FAIL 92/100 (92%)  «#33 Definition Paragraph»
+      ·  92건: 정의문 N건 — N건 이상 필요 [측정 0]
   - seo_h1 (#16 · seo · 1점) — FAIL 54/100 (54%)  «#16 H1 정확히 1개»
       ·  54건: 'hN' N개 — == N 필요 [측정 1]
   - seo_canonical (#15 · seo · 1점) — FAIL 35/100 (35%)  «#15 Canonical self-ref»
@@ -190,8 +188,8 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·  11건: 헤딩 태그가 없습니다.
   - seo_meta_desc (#14 · seo · 1점) — FAIL 5/100 (5%)  «#14 Meta Description»
       ·   5건: 'meta[name='description' i]' 요소를 찾을 수 없습니다.
-  - ai_citable (#36 · citable_content · 1점) — FAIL 3/100 (3%)  «#36 Citable Sentence ≥ 10%»
-      ·   3건: 인용 가능 밀도 N% — N% 이상 필요 [측정 5.5~9.9]
+  - ai_citable (#36 · citable_content · 1점) — FAIL 2/100 (2%)  «#36 Citable Sentence ≥ 10%»
+      ·   2건: 인용 가능 밀도 N% — N% 이상 필요 [측정 7.2~9.7]
 
 ### [support_troubleshoot] 지원 - 트러블슈팅 — 100건  (감점 항목 8개)
   - seo_sitemap (#19 · seo · 1점) — FAIL 100/100 (100%)  «#19 Sitemap (1개월 내)»
@@ -222,8 +220,6 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·  94건: @type='Offer' 노드 없음
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 94/94 (100%)  «#26 Schema: ImageObject»
       ·  94건: @type='ImageObject' 노드 없음
-  - ai_definition (#33 · citable_content · 1점) — FAIL 94/94 (100%)  «#33 Definition Paragraph»
-      ·  94건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_ssr_ratio (#37 · ai_crawlability · 1점) — FAIL 94/94 (100%)  «#37 JS HTML Text Ratio ≥ 60%»
       ·  94건: SSR 비율 N% — N% 이상 필요 [측정 57]
   - ai_schema_video (#27 · schema_markup · 1점) — FAIL 7/7 (100%)  «#27 Schema: VideoObject»
@@ -232,6 +228,8 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·  87건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 85/94 (90%)  «#32 FAQ Block (콘텐츠)»
       ·  85건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
+  - ai_definition (#33 · citable_content · 1점) — FAIL 69/94 (73%)  «#33 Definition Paragraph»
+      ·  69건: 정의문 N건 — N건 이상 필요 [측정 0]
   - seo_meta_desc (#14 · seo · 1점) — FAIL 33/94 (35%)  «#14 Meta Description»
       ·  33건: 'meta[name='description' i]' 요소를 찾을 수 없습니다.
   - seo_h1 (#16 · seo · 1점) — FAIL 30/94 (32%)  «#16 H1 정확히 1개»
@@ -239,20 +237,18 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
   - a11y_heading_hier (a11y#11 · accessibility · 1점) — FAIL 27/94 (29%)  «#11 Heading Hierarchy»
       ·  19건: 헤딩 태그가 없습니다.
       ·   8건: 헤딩 역순 N건 — 첫 헤딩(hN)보다 상위 레벨이 뒤에 등장 [측정 1~4]
-  - ai_citable (#36 · citable_content · 1점) — FAIL 16/94 (17%)  «#36 Citable Sentence ≥ 10%»
-      ·  16건: 인용 가능 밀도 N% — N% 이상 필요 [측정 7.5~9.9]
   - a11y_image_alt (a11y#9 · accessibility · 1점) — FAIL 1/94 (1%)  «#9 Image Alt 누락 0»
       ·   1건: N개 요소에 'alt' 속성이 없습니다. [측정 1]
   - ai_schema_breadcrumb (#21 · schema_markup · 1점) — FAIL 1/94 (1%)  «#21 Schema: BreadcrumbList»
       ·   1건: @type='BreadcrumbList' 노드 없음
+  - ai_citable (#36 · citable_content · 1점) — FAIL 1/94 (1%)  «#36 Citable Sentence ≥ 10%»
+      ·   1건: 인용 가능 밀도 N% — N% 이상 필요 [측정 9.3]
 
 ### [plp] 제품 카테고리 (PLP) — 89건  (감점 항목 19개)
   - seo_sitemap (#19 · seo · 1점) — FAIL 89/89 (100%)  «#19 Sitemap (1개월 내)»
       ·  89건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 89/89 (100%)  «#26 Schema: ImageObject»
       ·  89건: @type='ImageObject' 노드 없음
-  - ai_definition (#33 · citable_content · 1점) — FAIL 89/89 (100%)  «#33 Definition Paragraph»
-      ·  89건: 정의문 N건 — N건 이상 필요 [측정 0]
   - perf_html_size (#5 · performance · 1점) — FAIL 13/13 (100%)  «#5 HTML < 100KB»
       ·  13건: NKB — NKB 미만 필요 [측정 1457.6~1874.9]
   - ai_author_source (#34 · citable_content · 1점) — FAIL 13/13 (100%)  «#34 Author 또는 출처+날짜»
@@ -266,6 +262,8 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·  69건: @type='FAQPage' 노드 없음
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 67/89 (75%)  «#32 FAQ Block (콘텐츠)»
       ·  67건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
+  - ai_definition (#33 · citable_content · 1점) — FAIL 61/89 (69%)  «#33 Definition Paragraph»
+      ·  61건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_schema_collection (#24 · schema_markup · 1점) — FAIL 46/89 (52%)  «#24 Schema: CollectionPage (PLP)»
       ·  46건: @type='CollectionPage' 노드 없음
   - seo_meta_desc (#14 · seo · 1점) — FAIL 38/89 (43%)  «#14 Meta Description»
@@ -291,15 +289,13 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
   - ai_citable (#36 · citable_content · 1점) — FAIL 1/89 (1%)  «#36 Citable Sentence ≥ 10%»
       ·   1건: 인용 가능 밀도 N% — N% 이상 필요 [측정 9.2]
 
-### [buying_guide] 구매 가이드 — 18건  (감점 항목 15개)
+### [buying_guide] 구매 가이드 — 18건  (감점 항목 14개)
   - seo_sitemap (#19 · seo · 1점) — FAIL 18/18 (100%)  «#19 Sitemap (1개월 내)»
       ·  18건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 18/18 (100%)  «#26 Schema: ImageObject»
       ·  18건: @type='ImageObject' 노드 없음
   - ai_schema_article (#29 · schema_markup · 1점) — FAIL 18/18 (100%)  «#29 Schema: Article»
       ·  18건: @type='Article' 노드 없음
-  - ai_definition (#33 · citable_content · 1점) — FAIL 18/18 (100%)  «#33 Definition Paragraph»
-      ·  18건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_author_source (#34 · citable_content · 1점) — FAIL 18/18 (100%)  «#34 Author 또는 출처+날짜»
       ·  18건: JSON-LD author 또는 (datePublished+publisher) 조합 없음
   - ai_schema_video (#27 · schema_markup · 1점) — FAIL 6/6 (100%)  «#27 Schema: VideoObject»
@@ -314,6 +310,8 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
   - seo_open_graph (#18 · seo · 1점) — FAIL 8/18 (44%)  «#18 Open Graph (title+image)»
       ·   5건: 누락: image
       ·   3건: 누락: title
+  - ai_definition (#33 · citable_content · 1점) — FAIL 7/18 (39%)  «#33 Definition Paragraph»
+      ·   7건: 정의문 N건 — N건 이상 필요 [측정 0]
   - a11y_image_alt (a11y#9 · accessibility · 1점) — FAIL 4/18 (22%)  «#9 Image Alt 누락 0»
       ·   4건: N개 요소에 'alt' 속성이 없습니다. [측정 5~9]
   - a11y_heading_hier (a11y#11 · accessibility · 1점) — FAIL 4/18 (22%)  «#11 Heading Hierarchy»
@@ -323,10 +321,8 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   4건: 'meta[name='description' i]' 요소를 찾을 수 없습니다.
   - seo_h1 (#16 · seo · 1점) — FAIL 3/18 (17%)  «#16 H1 정확히 1개»
       ·   3건: 'hN' N개 — == N 필요 [측정 1]
-  - ai_citable (#36 · citable_content · 1점) — FAIL 3/18 (17%)  «#36 Citable Sentence ≥ 10%»
-      ·   3건: 인용 가능 밀도 N% — N% 이상 필요 [측정 9.4~9.8]
 
-### [microsite] 마이크로사이트/캠페인 — 16건  (감점 항목 14개)
+### [microsite] 마이크로사이트/캠페인 — 16건  (감점 항목 13개)
   - seo_sitemap (#19 · seo · 1점) — FAIL 16/16 (100%)  «#19 Sitemap (1개월 내)»
       ·  16건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
   - ai_schema_faq (#23 · schema_markup · 1점) — FAIL 16/16 (100%)  «#23 Schema: FAQPage»
@@ -335,8 +331,6 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·  16건: @type='ImageObject' 노드 없음
   - ai_schema_article (#29 · schema_markup · 1점) — FAIL 16/16 (100%)  «#29 Schema: Article»
       ·  16건: @type='Article' 노드 없음
-  - ai_definition (#33 · citable_content · 1점) — FAIL 16/16 (100%)  «#33 Definition Paragraph»
-      ·  16건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_summary_box (#35 · citable_content · 1점) — FAIL 16/16 (100%)  «#35 Summary Box (콘텐츠)»
       ·  16건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
   - ai_schema_video (#27 · schema_markup · 1점) — FAIL 5/5 (100%)  «#27 Schema: VideoObject»
@@ -344,6 +338,8 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   2건: @type='VideoObject' 노드 없음
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 15/16 (94%)  «#32 FAQ Block (콘텐츠)»
       ·  15건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
+  - ai_definition (#33 · citable_content · 1점) — FAIL 10/16 (62%)  «#33 Definition Paragraph»
+      ·  10건: 정의문 N건 — N건 이상 필요 [측정 0]
   - seo_meta_desc (#14 · seo · 1점) — FAIL 8/16 (50%)  «#14 Meta Description»
       ·   8건: 'meta[name='description' i]' 요소를 찾을 수 없습니다.
   - seo_h1 (#16 · seo · 1점) — FAIL 6/16 (38%)  «#16 H1 정확히 1개»
@@ -356,8 +352,6 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
   - seo_open_graph (#18 · seo · 1점) — FAIL 2/16 (12%)  «#18 Open Graph (title+image)»
       ·   1건: 누락: image
       ·   1건: 누락: title
-  - ai_citable (#36 · citable_content · 1점) — FAIL 1/16 (6%)  «#36 Citable Sentence ≥ 10%»
-      ·   1건: 인용 가능 밀도 N% — N% 이상 필요 [측정 9.5]
 
 ### [unknown] 분류 불가 — 3건  (감점 항목 22개)
   - seo_meta_desc (#14 · seo · 1점) — FAIL 3/3 (100%)  «#14 Meta Description»
@@ -375,8 +369,6 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   3건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_summary_box (#35 · citable_content · 1점) — FAIL 3/3 (100%)  «#35 Summary Box (콘텐츠)»
       ·   3건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
-  - ai_citable (#36 · citable_content · 1점) — FAIL 3/3 (100%)  «#36 Citable Sentence ≥ 10%»
-      ·   3건: 인용 가능 밀도 N% — N% 이상 필요 [측정 0~5.2]
   - ai_summary_ssr (#40 · ai_crawlability · 1점) — FAIL 3/3 (100%)  «#40 Summary Content SSR»
       ·   3건: '[class*='summary'], [class*='Summary'], [id*='summary'], [class*='overview'], [class*='Overview'], [class*='highlight'], [class*='Product-KeyFeatures'], [class*='Product-Features']' 요소를 찾을 수 없습니다.
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 1/1 (100%)  «#26 Schema: ImageObject»
@@ -393,6 +385,8 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   2건: canonical 태그 없음
   - seo_h1 (#16 · seo · 1점) — FAIL 2/3 (67%)  «#16 H1 정확히 1개»
       ·   2건: 'hN' N개 — == N 필요 [측정 1]
+  - ai_citable (#36 · citable_content · 1점) — FAIL 2/3 (67%)  «#36 Citable Sentence ≥ 10%»
+      ·   2건: 인용 가능 밀도 N% — N% 이상 필요 [측정 0]
   - ai_image_filename (#40 · ai_crawlability · 1점) — FAIL 2/3 (67%)  «#40 Image File Name 브랜드 포함»
       ·   1건: 브랜드 키워드 포함 이미지 N/N (N%) [측정 0]
       ·   1건: img 태그가 없습니다.
@@ -407,15 +401,13 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
   - seo_robots (#17 · seo · 1점) — FAIL 1/3 (33%)  «#17 indexing 허용»
       ·   1건: 'noindex'가 포함되어 있습니다.
 
-### [home] 홈페이지 — 3건  (감점 항목 14개)
+### [home] 홈페이지 — 3건  (감점 항목 13개)
   - seo_sitemap (#19 · seo · 1점) — FAIL 3/3 (100%)  «#19 Sitemap (1개월 내)»
       ·   3건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 3/3 (100%)  «#26 Schema: ImageObject»
       ·   3건: @type='ImageObject' 노드 없음
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 3/3 (100%)  «#32 FAQ Block (콘텐츠)»
       ·   3건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
-  - ai_definition (#33 · citable_content · 1점) — FAIL 3/3 (100%)  «#33 Definition Paragraph»
-      ·   3건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_summary_box (#35 · citable_content · 1점) — FAIL 3/3 (100%)  «#35 Summary Box (콘텐츠)»
       ·   3건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
   - ai_schema_video (#27 · schema_markup · 1점) — FAIL 2/2 (100%)  «#27 Schema: VideoObject»
@@ -430,8 +422,8 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   1건: @type='BreadcrumbList' 노드 없음
   - ai_schema_website (#49 · schema_markup · 1점) — FAIL 1/3 (33%)  «#49 Schema: WebSite»
       ·   1건: @type='WebSite' 노드 없음
-  - ai_citable (#36 · citable_content · 1점) — FAIL 1/3 (33%)  «#36 Citable Sentence ≥ 10%»
-      ·   1건: 인용 가능 밀도 N% — N% 이상 필요 [측정 3]
+  - ai_definition (#33 · citable_content · 1점) — FAIL 1/3 (33%)  «#33 Definition Paragraph»
+      ·   1건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_image_filename (#40 · ai_crawlability · 1점) — FAIL 1/3 (33%)  «#40 Image File Name 브랜드 포함»
       ·   1건: 브랜드 키워드 포함 이미지 N/N (N%) [측정 0]
   - ai_summary_ssr (#40 · ai_crawlability · 1점) — FAIL 1/3 (33%)  «#40 Summary Content SSR»
@@ -450,8 +442,6 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 457/457 (100%)  «#26 Schema: ImageObject»
       · 441건: @type='ImageObject' 노드 없음
       ·  16건: 필수 필드 누락: url, uploadDate
-  - ai_definition (#33 · citable_content · 1점) — FAIL 457/457 (100%)  «#33 Definition Paragraph»
-      · 457건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_schema_product (#25 · schema_markup · 1점) — FAIL 452/452 (100%)  «#25 Schema: Product 풀세트 (PDP)»
       · 358건: @type='Product/ProductGroup' 노드 없음
       ·  94건: @type='Product' 노드 없음
@@ -483,8 +473,10 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   1건: 헤딩 태그가 없습니다.
   - ai_schema_faq (#23 · schema_markup · 1점) — FAIL 422/457 (92%)  «#23 Schema: FAQPage»
       · 422건: @type='FAQPage' 노드 없음
-  - ai_citable (#36 · citable_content · 1점) — FAIL 57/457 (12%)  «#36 Citable Sentence ≥ 10%»
-      ·  57건: 인용 가능 밀도 N% — N% 이상 필요 [측정 5~9.9]
+  - ai_definition (#33 · citable_content · 1점) — FAIL 393/457 (86%)  «#33 Definition Paragraph»
+      · 393건: 정의문 N건 — N건 이상 필요 [측정 0]
+  - ai_citable (#36 · citable_content · 1점) — FAIL 182/457 (40%)  «#36 Citable Sentence ≥ 10%»
+      · 182건: 인용 가능 밀도 N% — N% 이상 필요 [측정 0~9.7]
   - a11y_image_alt (a11y#9 · accessibility · 1점) — FAIL 46/457 (10%)  «#9 Image Alt 누락 0»
       ·  46건: N개 요소에 'alt' 속성이 없습니다. [측정 1~13]
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 9/457 (2%)  «#32 FAQ Block (콘텐츠)»
@@ -516,10 +508,6 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       · 100건: @type='Offer' 노드 없음
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 100/100 (100%)  «#26 Schema: ImageObject»
       · 100건: @type='ImageObject' 노드 없음
-  - ai_definition (#33 · citable_content · 1점) — FAIL 100/100 (100%)  «#33 Definition Paragraph»
-      · 100건: 정의문 N건 — N건 이상 필요 [측정 0]
-  - ai_citable (#36 · citable_content · 1점) — FAIL 100/100 (100%)  «#36 Citable Sentence ≥ 10%»
-      · 100건: 인용 가능 밀도 N% — N% 이상 필요 [측정 0~7.9]
   - ai_ssr_ratio (#37 · ai_crawlability · 1점) — FAIL 100/100 (100%)  «#37 JS HTML Text Ratio ≥ 60%»
       · 100건: SSR 비율 N% — N% 이상 필요 [측정 57]
   - ai_schema_video (#27 · schema_markup · 1점) — FAIL 7/7 (100%)  «#27 Schema: VideoObject»
@@ -532,6 +520,10 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   3건: head 내 blocking script N개 [측정 1]
   - ai_author_source (#34 · citable_content · 1점) — FAIL 3/3 (100%)  «#34 Author 또는 출처+날짜»
       ·   3건: JSON-LD author 또는 (datePublished+publisher) 조합 없음
+  - ai_definition (#33 · citable_content · 1점) — FAIL 82/100 (82%)  «#33 Definition Paragraph»
+      ·  82건: 정의문 N건 — N건 이상 필요 [측정 0]
+  - ai_citable (#36 · citable_content · 1점) — FAIL 75/100 (75%)  «#36 Citable Sentence ≥ 10%»
+      ·  75건: 인용 가능 밀도 N% — N% 이상 필요 [측정 0~8.9]
   - a11y_heading_hier (a11y#11 · accessibility · 1점) — FAIL 68/100 (68%)  «#11 Heading Hierarchy»
       ·  65건: 헤딩 역순 N건 — 첫 헤딩(hN)보다 상위 레벨이 뒤에 등장 [측정 1]
       ·   3건: 헤딩 태그가 없습니다.
@@ -551,8 +543,6 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       · 100건: @type='ImageObject' 노드 없음
   - ai_schema_article (#29 · schema_markup · 1점) — FAIL 100/100 (100%)  «#29 Schema: Article»
       · 100건: @type='Article' 노드 없음
-  - ai_definition (#33 · citable_content · 1점) — FAIL 100/100 (100%)  «#33 Definition Paragraph»
-      · 100건: 정의문 N건 — N건 이상 필요 [측정 0]
   - perf_ttfb (#1 · performance · 1점) — FAIL 71/71 (100%)  «#1 TTFB < 600ms»
       ·  71건: TTFB Nms — Nms 미만 필요 [측정 1038~23980]
   - perf_html_size (#5 · performance · 1점) — FAIL 71/71 (100%)  «#5 HTML < 100KB»
@@ -569,12 +559,14 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
   - ai_author_source (#34 · citable_content · 1점) — FAIL 82/100 (82%)  «#34 Author 또는 출처+날짜»
       ·  68건: JSON-LD author 또는 (datePublished+publisher) 조합 없음
       ·  14건: 저자(meta/byline) 또는 (출처+datePublished) 조합 없음
+  - ai_citable (#36 · citable_content · 1점) — FAIL 73/100 (73%)  «#36 Citable Sentence ≥ 10%»
+      ·  73건: 인용 가능 밀도 N% — N% 이상 필요 [측정 0~9.8]
   - perf_cache_control (#4 · performance · 1점) — FAIL 69/100 (69%)  «#4 Cache-Control max-age 설정»
       ·  69건: Cache-Control 부재 또는 no-store/no-cache.
-  - ai_citable (#36 · citable_content · 1점) — FAIL 59/100 (59%)  «#36 Citable Sentence ≥ 10%»
-      ·  59건: 인용 가능 밀도 N% — N% 이상 필요 [측정 3.1~9.7]
   - seo_h1 (#16 · seo · 1점) — FAIL 33/100 (33%)  «#16 H1 정확히 1개»
       ·  33건: 'hN' N개 — == N 필요 [측정 1]
+  - ai_definition (#33 · citable_content · 1점) — FAIL 27/100 (27%)  «#33 Definition Paragraph»
+      ·  27건: 정의문 N건 — N건 이상 필요 [측정 0]
   - seo_open_graph (#18 · seo · 1점) — FAIL 24/100 (24%)  «#18 Open Graph (title+image)»
       ·  17건: 누락: image
       ·   7건: 누락: title
@@ -594,8 +586,6 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       · 100건: @type='ImageObject' 노드 없음
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 100/100 (100%)  «#32 FAQ Block (콘텐츠)»
       · 100건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
-  - ai_definition (#33 · citable_content · 1점) — FAIL 100/100 (100%)  «#33 Definition Paragraph»
-      · 100건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_summary_box (#35 · citable_content · 1점) — FAIL 100/100 (100%)  «#35 Summary Box (콘텐츠)»
       · 100건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
   - perf_ttfb (#1 · performance · 1점) — FAIL 94/94 (100%)  «#1 TTFB < 600ms»
@@ -608,10 +598,12 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·  10건: @type='VideoObject' 노드 없음
   - perf_cache_control (#4 · performance · 1점) — FAIL 94/100 (94%)  «#4 Cache-Control max-age»
       ·  94건: Cache-Control 부재 또는 no-store/no-cache.
-  - ai_citable (#36 · citable_content · 1점) — FAIL 70/100 (70%)  «#36 Citable Sentence ≥ 10%»
-      ·  70건: 인용 가능 밀도 N% — N% 이상 필요 [측정 5.6~9.9]
+  - ai_citable (#36 · citable_content · 1점) — FAIL 51/100 (51%)  «#36 Citable Sentence ≥ 10%»
+      ·  51건: 인용 가능 밀도 N% — N% 이상 필요 [측정 3.3~9.8]
   - seo_h1 (#16 · seo · 1점) — FAIL 34/100 (34%)  «#16 H1 정확히 1개»
       ·  34건: 'hN' N개 — == N 필요 [측정 1]
+  - ai_definition (#33 · citable_content · 1점) — FAIL 29/100 (29%)  «#33 Definition Paragraph»
+      ·  29건: 정의문 N건 — N건 이상 필요 [측정 0]
   - seo_meta_desc (#14 · seo · 1점) — FAIL 14/100 (14%)  «#14 Meta Description»
       ·  14건: 'meta[name='description' i]' 요소를 찾을 수 없습니다.
   - ai_author_source (#34 · citable_content · 1점) — FAIL 11/100 (11%)  «#34 Author 또는 출처+날짜»
@@ -625,8 +617,6 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 ### [promotion] 프로모션/약관 — 100건  (감점 항목 16개)
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 100/100 (100%)  «#26 Schema: ImageObject»
       · 100건: @type='ImageObject' 노드 없음
-  - ai_definition (#33 · citable_content · 1점) — FAIL 100/100 (100%)  «#33 Definition Paragraph»
-      · 100건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_schema_offer (#43 · schema_markup · 1점) — FAIL 100/100 (100%)  «#43 Schema: Offer»
       · 100건: @type='Offer' 노드 없음
   - perf_ttfb (#1 · performance · 1점) — FAIL 66/66 (100%)  «#1 TTFB < 600ms»
@@ -640,6 +630,8 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
   - ai_schema_video (#27 · schema_markup · 1점) — FAIL 9/9 (100%)  «#27 Schema: VideoObject»
       ·   7건: 필수 필드 누락: url
       ·   2건: @type='VideoObject' 노드 없음
+  - ai_definition (#33 · citable_content · 1점) — FAIL 94/100 (94%)  «#33 Definition Paragraph»
+      ·  94건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_summary_box (#35 · citable_content · 1점) — FAIL 67/100 (67%)  «#35 Summary Box (콘텐츠)»
       ·  67건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
   - seo_meta_desc (#14 · seo · 1점) — FAIL 66/100 (66%)  «#14 Meta Description»
@@ -648,19 +640,17 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·  66건: 'hN' N개 — == N 필요 [측정 1]
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 64/100 (64%)  «#32 FAQ Block (콘텐츠)»
       ·  64건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
+  - ai_citable (#36 · citable_content · 1점) — FAIL 54/100 (54%)  «#36 Citable Sentence ≥ 10%»
+      ·  54건: 인용 가능 밀도 N% — N% 이상 필요 [측정 0~9.8]
   - perf_cache_control (#4 · performance · 1점) — FAIL 52/100 (52%)  «#4 Cache-Control max-age»
       ·  52건: Cache-Control 부재 또는 no-store/no-cache.
   - a11y_heading_hier (a11y#11 · accessibility · 1점) — FAIL 43/100 (43%)  «#11 Heading Hierarchy»
       ·  35건: 헤딩 역순 N건 — 첫 헤딩(hN)보다 상위 레벨이 뒤에 등장 [측정 1~4]
       ·   8건: 헤딩 태그가 없습니다.
-  - ai_citable (#36 · citable_content · 1점) — FAIL 5/100 (5%)  «#36 Citable Sentence ≥ 10%»
-      ·   5건: 인용 가능 밀도 N% — N% 이상 필요 [측정 7.3~9.9]
   - a11y_image_alt (a11y#9 · accessibility · 1점) — FAIL 2/100 (2%)  «#9 Image Alt 누락 0»
       ·   2건: N개 요소에 'alt' 속성이 없습니다. [측정 1]
 
 ### [plp] 제품 카테고리 (PLP) — 99건  (감점 항목 24개)
-  - ai_definition (#33 · citable_content · 1점) — FAIL 99/99 (100%)  «#33 Definition Paragraph»
-      ·  99건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 84/84 (100%)  «#26 Schema: ImageObject»
       ·  84건: @type='ImageObject' 노드 없음
   - perf_ttfb (#1 · performance · 1점) — FAIL 43/43 (100%)  «#1 TTFB < 600ms»
@@ -685,14 +675,16 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·  76건: @type='FAQPage' 노드 없음
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 89/99 (90%)  «#32 FAQ Block (콘텐츠)»
       ·  89건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
+  - ai_definition (#33 · citable_content · 1점) — FAIL 73/99 (74%)  «#33 Definition Paragraph»
+      ·  73건: 정의문 N건 — N건 이상 필요 [측정 0]
+  - ai_citable (#36 · citable_content · 1점) — FAIL 71/99 (72%)  «#36 Citable Sentence ≥ 10%»
+      ·  71건: 인용 가능 밀도 N% — N% 이상 필요 [측정 0~9.7]
   - ai_schema_collection (#24 · schema_markup · 1점) — FAIL 43/83 (52%)  «#24 Schema: CollectionPage (PLP)»
       ·  43건: @type='CollectionPage' 노드 없음
   - seo_h1 (#16 · seo · 1점) — FAIL 41/99 (41%)  «#16 H1 정확히 1개»
       ·  41건: 'hN' N개 — == N 필요 [측정 1]
   - seo_sitemap (#19 · seo · 1점) — FAIL 29/99 (29%)  «#19 Sitemap (1개월 내)»
       ·  29건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
-  - ai_citable (#36 · citable_content · 1점) — FAIL 28/99 (28%)  «#36 Citable Sentence ≥ 10%»
-      ·  28건: 인용 가능 밀도 N% — N% 이상 필요 [측정 0~9.9]
   - seo_meta_desc (#14 · seo · 1점) — FAIL 27/99 (27%)  «#14 Meta Description»
       ·  27건: 'meta[name='description' i]' 요소를 찾을 수 없습니다.
   - a11y_heading_hier (a11y#11 · accessibility · 1점) — FAIL 18/99 (18%)  «#11 Heading Hierarchy»
@@ -714,8 +706,6 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   1건: @type='BreadcrumbList' 노드 없음
 
 ### [support] 지원/Support — 93건  (감점 항목 21개)
-  - ai_definition (#33 · citable_content · 1점) — FAIL 93/93 (100%)  «#33 Definition Paragraph»
-      ·  93건: 정의문 N건 — N건 이상 필요 [측정 0]
   - perf_ttfb (#1 · performance · 1점) — FAIL 63/63 (100%)  «#1 TTFB < 600ms»
       ·  63건: TTFB Nms — Nms 미만 필요 [측정 835~16107]
   - perf_html_size (#5 · performance · 1점) — FAIL 63/63 (100%)  «#5 HTML < 100KB»
@@ -733,6 +723,10 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·  91건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 84/93 (90%)  «#32 FAQ Block (콘텐츠)»
       ·  84건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
+  - ai_definition (#33 · citable_content · 1점) — FAIL 80/93 (86%)  «#33 Definition Paragraph»
+      ·  80건: 정의문 N건 — N건 이상 필요 [측정 0]
+  - ai_citable (#36 · citable_content · 1점) — FAIL 72/93 (77%)  «#36 Citable Sentence ≥ 10%»
+      ·  72건: 인용 가능 밀도 N% — N% 이상 필요 [측정 0~9.5]
   - perf_cache_control (#4 · performance · 1점) — FAIL 63/93 (68%)  «#4 Cache-Control max-age 설정»
       ·  63건: Cache-Control 부재 또는 no-store/no-cache.
   - seo_h1 (#16 · seo · 1점) — FAIL 54/93 (58%)  «#16 H1 정확히 1개»
@@ -745,8 +739,6 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·  26건: 헤딩 태그가 없습니다.
       ·   7건: 레벨 점프 N건 발견 (예: hN→hN) [측정 1~3]
       ·   4건: 헤딩 역순 N건 — 첫 헤딩(hN)보다 상위 레벨이 뒤에 등장 [측정 1~2]
-  - ai_citable (#36 · citable_content · 1점) — FAIL 37/93 (40%)  «#36 Citable Sentence ≥ 10%»
-      ·  37건: 인용 가능 밀도 N% — N% 이상 필요 [측정 0.9~9.9]
   - a11y_semantic (a11y#10 · accessibility · 1점) — FAIL 36/93 (39%)  «#10 Semantic HTML»
       ·  36건: main N개, 랜드마크 합계 N — main N+ AND 합계 N+ 필요 [측정 0]
   - seo_meta_desc (#14 · seo · 1점) — FAIL 36/93 (39%)  «#14 Meta Description»
@@ -765,8 +757,6 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·  26건: @type='ImageObject' 노드 없음
   - ai_schema_article (#29 · schema_markup · 1점) — FAIL 26/26 (100%)  «#29 Schema: Article»
       ·  26건: @type='Article' 노드 없음
-  - ai_definition (#33 · citable_content · 1점) — FAIL 26/26 (100%)  «#33 Definition Paragraph»
-      ·  26건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_author_source (#34 · citable_content · 1점) — FAIL 26/26 (100%)  «#34 Author 또는 출처+날짜»
       ·  26건: JSON-LD author 또는 (datePublished+publisher) 조합 없음
   - perf_ttfb (#1 · performance · 1점) — FAIL 25/25 (100%)  «#1 TTFB < 600ms»
@@ -782,14 +772,16 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·  24건: Cache-Control 부재 또는 no-store/no-cache.
   - ai_summary_box (#35 · citable_content · 1점) — FAIL 19/26 (73%)  «#35 Summary Box (콘텐츠)»
       ·  19건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
-  - ai_citable (#36 · citable_content · 1점) — FAIL 19/26 (73%)  «#36 Citable Sentence ≥ 10%»
-      ·  19건: 인용 가능 밀도 N% — N% 이상 필요 [측정 4.3~9.3]
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 14/26 (54%)  «#32 FAQ Block (콘텐츠)»
       ·  14건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
   - ai_schema_faq (#23 · schema_markup · 1점) — FAIL 13/26 (50%)  «#23 Schema: FAQPage»
       ·  13건: @type='FAQPage' 노드 없음
+  - ai_citable (#36 · citable_content · 1점) — FAIL 11/26 (42%)  «#36 Citable Sentence ≥ 10%»
+      ·  11건: 인용 가능 밀도 N% — N% 이상 필요 [측정 0~9.9]
   - seo_open_graph (#18 · seo · 1점) — FAIL 9/26 (35%)  «#18 Open Graph (title+image)»
       ·   9건: 누락: image
+  - ai_definition (#33 · citable_content · 1점) — FAIL 5/26 (19%)  «#33 Definition Paragraph»
+      ·   5건: 정의문 N건 — N건 이상 필요 [측정 0]
   - seo_h1 (#16 · seo · 1점) — FAIL 2/26 (8%)  «#16 H1 정확히 1개»
       ·   2건: 'hN' N개 — == N 필요 [측정 1]
 
@@ -802,8 +794,6 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·  18건: @type='Article' 노드 없음
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 18/18 (100%)  «#32 FAQ Block (콘텐츠)»
       ·  18건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
-  - ai_definition (#33 · citable_content · 1점) — FAIL 18/18 (100%)  «#33 Definition Paragraph»
-      ·  18건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_summary_box (#35 · citable_content · 1점) — FAIL 18/18 (100%)  «#35 Summary Box (콘텐츠)»
       ·  18건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
   - perf_ttfb (#1 · performance · 1점) — FAIL 14/14 (100%)  «#1 TTFB < 600ms»
@@ -817,23 +807,25 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
   - ai_schema_video (#27 · schema_markup · 1점) — FAIL 5/5 (100%)  «#27 Schema: VideoObject»
       ·   3건: @type='VideoObject' 노드 없음
       ·   2건: 필수 필드 누락: url
+  - ai_definition (#33 · citable_content · 1점) — FAIL 15/18 (83%)  «#33 Definition Paragraph»
+      ·  15건: 정의문 N건 — N건 이상 필요 [측정 0]
   - seo_meta_desc (#14 · seo · 1점) — FAIL 14/18 (78%)  «#14 Meta Description»
       ·  14건: 'meta[name='description' i]' 요소를 찾을 수 없습니다.
   - seo_h1 (#16 · seo · 1점) — FAIL 14/18 (78%)  «#16 H1 정확히 1개»
       ·  14건: 'hN' N개 — == N 필요 [측정 1]
+  - ai_citable (#36 · citable_content · 1점) — FAIL 14/18 (78%)  «#36 Citable Sentence ≥ 10%»
+      ·  14건: 인용 가능 밀도 N% — N% 이상 필요 [측정 0~6.4]
   - perf_cache_control (#4 · performance · 1점) — FAIL 13/18 (72%)  «#4 Cache-Control max-age 설정»
       ·  13건: Cache-Control 부재 또는 no-store/no-cache.
   - seo_open_graph (#18 · seo · 1점) — FAIL 13/18 (72%)  «#18 Open Graph (title+image)»
       ·  10건: 누락: image
       ·   3건: 누락: title, image
-  - ai_citable (#36 · citable_content · 1점) — FAIL 6/18 (33%)  «#36 Citable Sentence ≥ 10%»
-      ·   6건: 인용 가능 밀도 N% — N% 이상 필요 [측정 5.5~9.6]
   - a11y_heading_hier (a11y#11 · accessibility · 1점) — FAIL 5/18 (28%)  «#11 Heading Hierarchy»
       ·   5건: 헤딩 태그가 없습니다.
   - perf_redirect (#6 · performance · 1점) — FAIL 1/18 (6%)  «#6 Redirect ≤ 1»
       ·   1건: 리다이렉트 N회 — N회 이하 권장 [측정 2]
 
-### [support_troubleshoot] 지원 - 트러블슈팅 — 16건  (감점 항목 13개)
+### [support_troubleshoot] 지원 - 트러블슈팅 — 16건  (감점 항목 14개)
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 16/16 (100%)  «#26 Schema: ImageObject»
       ·  16건: @type='ImageObject' 노드 없음
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 16/16 (100%)  «#32 FAQ Block (콘텐츠)»
@@ -842,6 +834,8 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·  16건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_summary_box (#35 · citable_content · 1점) — FAIL 16/16 (100%)  «#35 Summary Box (콘텐츠)»
       ·  16건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
+  - ai_citable (#36 · citable_content · 1점) — FAIL 16/16 (100%)  «#36 Citable Sentence ≥ 10%»
+      ·  16건: 인용 가능 밀도 N% — N% 이상 필요 [측정 0]
   - perf_ttfb (#1 · performance · 1점) — FAIL 1/1 (100%)  «#1 TTFB < 600ms»
       ·   1건: TTFB Nms — Nms 미만 필요 [측정 2313]
   - perf_html_size (#5 · performance · 1점) — FAIL 1/1 (100%)  «#5 HTML < 100KB»
@@ -864,6 +858,8 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 ### [home] 홈페이지 — 3건  (감점 항목 14개)
   - ai_definition (#33 · citable_content · 1점) — FAIL 3/3 (100%)  «#33 Definition Paragraph»
       ·   3건: 정의문 N건 — N건 이상 필요 [측정 0]
+  - ai_summary_box (#35 · citable_content · 1점) — FAIL 3/3 (100%)  «#35 Summary Box (콘텐츠)»
+      ·   3건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 2/2 (100%)  «#26 Schema: ImageObject»
       ·   2건: @type='ImageObject' 노드 없음
   - perf_ttfb (#1 · performance · 1점) — FAIL 1/1 (100%)  «#1 TTFB < 600ms»
@@ -878,8 +874,6 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   2건: 'hN' N개 — == N 필요 [측정 1]
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 2/3 (67%)  «#32 FAQ Block (콘텐츠)»
       ·   2건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
-  - ai_summary_box (#35 · citable_content · 1점) — FAIL 2/3 (67%)  «#35 Summary Box (콘텐츠)»
-      ·   2건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
   - ai_ssr_ratio (#37 · ai_crawlability · 1점) — FAIL 2/3 (67%)  «#37 JS HTML Text Ratio ≥ 60%»
       ·   2건: SSR 비율 N% — N% 이상 필요 [측정 45]
   - perf_redirect (#6 · performance · 1점) — FAIL 1/3 (33%)  «#6 Redirect ≤ 1»
@@ -904,8 +898,6 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 454/454 (100%)  «#26 Schema: ImageObject»
       · 446건: @type='ImageObject' 노드 없음
       ·   8건: 필수 필드 누락: url, uploadDate
-  - ai_definition (#33 · citable_content · 1점) — FAIL 454/454 (100%)  «#33 Definition Paragraph»
-      · 454건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_schema_product (#25 · schema_markup · 1점) — FAIL 453/453 (100%)  «#25 Schema: Product 풀세트 (PDP)»
       · 342건: @type='Product/ProductGroup' 노드 없음
       · 110건: @type='Product' 노드 없음
@@ -929,6 +921,10 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   2건: 헤딩 태그가 없습니다.
   - ai_schema_faq (#23 · schema_markup · 1점) — FAIL 416/454 (92%)  «#23 Schema: FAQPage»
       · 416건: @type='FAQPage' 노드 없음
+  - ai_definition (#33 · citable_content · 1점) — FAIL 395/454 (87%)  «#33 Definition Paragraph»
+      · 395건: 정의문 N건 — N건 이상 필요 [측정 0]
+  - ai_citable (#36 · citable_content · 1점) — FAIL 203/454 (45%)  «#36 Citable Sentence ≥ 10%»
+      · 203건: 인용 가능 밀도 N% — N% 이상 필요 [측정 0~9.8]
   - a11y_image_alt (a11y#9 · accessibility · 1점) — FAIL 17/454 (4%)  «#9 Image Alt 누락 0»
       ·  17건: N개 요소에 'alt' 속성이 없습니다. [측정 1~16]
   - ai_summary_box (#35 · citable_content · 1점) — FAIL 15/454 (3%)  «#35 Summary Box (콘텐츠)»
@@ -948,8 +944,6 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   2건: Cache-Control 부재 또는 no-store/no-cache.
   - seo_robots (#17 · seo · 1점) — FAIL 2/454 (0%)  «#17 indexing 허용»
       ·   2건: 'noindex'가 포함되어 있습니다.
-  - ai_citable (#36 · citable_content · 1점) — FAIL 2/454 (0%)  «#36 Citable Sentence ≥ 10%»
-      ·   2건: 인용 가능 밀도 N% — N% 이상 필요 [측정 8.9~9.9]
 
 ### [business] B2B (사업자) — 100건  (감점 항목 13개)
   - ai_schema_product (#25 · schema_markup · 1점) — FAIL 100/100 (100%)  «#25 Schema: Product 풀세트 (PDP)»
@@ -958,21 +952,21 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       · 100건: @type='Offer' 노드 없음
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 100/100 (100%)  «#26 Schema: ImageObject»
       · 100건: @type='ImageObject' 노드 없음
-  - ai_definition (#33 · citable_content · 1점) — FAIL 100/100 (100%)  «#33 Definition Paragraph»
-      · 100건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_ssr_ratio (#37 · ai_crawlability · 1점) — FAIL 100/100 (100%)  «#37 JS HTML Text Ratio ≥ 60%»
       · 100건: SSR 비율 N% — N% 이상 필요 [측정 57]
   - ai_schema_video (#27 · schema_markup · 1점) — FAIL 12/12 (100%)  «#27 Schema: VideoObject»
       ·   7건: @type='VideoObject' 노드 없음
       ·   5건: 필수 필드 누락: url
-  - ai_citable (#36 · citable_content · 1점) — FAIL 97/100 (97%)  «#36 Citable Sentence ≥ 10%»
-      ·  97건: 인용 가능 밀도 N% — N% 이상 필요 [측정 2.1~9.6]
   - ai_summary_box (#35 · citable_content · 1점) — FAIL 77/100 (77%)  «#35 Summary Box (콘텐츠)»
       ·  77건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 74/100 (74%)  «#32 FAQ Block (콘텐츠)»
       ·  74건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
   - seo_h1 (#16 · seo · 1점) — FAIL 69/100 (69%)  «#16 H1 정확히 1개»
       ·  69건: 'hN' N개 — == N 필요 [측정 1]
+  - ai_citable (#36 · citable_content · 1점) — FAIL 59/100 (59%)  «#36 Citable Sentence ≥ 10%»
+      ·  59건: 인용 가능 밀도 N% — N% 이상 필요 [측정 0~9.7]
+  - ai_definition (#33 · citable_content · 1점) — FAIL 58/100 (58%)  «#33 Definition Paragraph»
+      ·  58건: 정의문 N건 — N건 이상 필요 [측정 0]
   - a11y_heading_hier (a11y#11 · accessibility · 1점) — FAIL 23/100 (23%)  «#11 Heading Hierarchy»
       ·  23건: 헤딩 역순 N건 — 첫 헤딩(hN)보다 상위 레벨이 뒤에 등장 [측정 1]
   - seo_meta_desc (#14 · seo · 1점) — FAIL 10/100 (10%)  «#14 Meta Description»
@@ -981,7 +975,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   3건: 누락: title
       ·   1건: 누락: image
 
-### [support_troubleshoot] 지원 - 트러블슈팅 — 100건  (감점 항목 12개)
+### [support_troubleshoot] 지원 - 트러블슈팅 — 100건  (감점 항목 13개)
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 100/100 (100%)  «#26 Schema: ImageObject»
       · 100건: @type='ImageObject' 노드 없음
   - ai_schema_howto (#28 · schema_markup · 1점) — FAIL 100/100 (100%)  «#28 Schema: HowTo»
@@ -992,6 +986,8 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       · 100건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_summary_box (#35 · citable_content · 1점) — FAIL 100/100 (100%)  «#35 Summary Box (콘텐츠)»
       · 100건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
+  - ai_citable (#36 · citable_content · 1점) — FAIL 100/100 (100%)  «#36 Citable Sentence ≥ 10%»
+      · 100건: 인용 가능 밀도 N% — N% 이상 필요 [측정 2.9~5.9]
   - ai_ssr_ratio (#37 · ai_crawlability · 1점) — FAIL 100/100 (100%)  «#37 JS HTML Text Ratio ≥ 60%»
       · 100건: SSR 비율 N% — N% 이상 필요 [측정 46]
   - perf_html_size (#5 · performance · 1점) — FAIL 2/2 (100%)  «#5 HTML < 100KB»
@@ -1008,8 +1004,6 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   1건: 'hN' N개 — == N 필요 [측정 1]
 
 ### [plp] 제품 카테고리 (PLP) — 99건  (감점 항목 21개)
-  - ai_definition (#33 · citable_content · 1점) — FAIL 99/99 (100%)  «#33 Definition Paragraph»
-      ·  99건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 98/98 (100%)  «#26 Schema: ImageObject»
       ·  98건: @type='ImageObject' 노드 없음
   - perf_ttfb (#1 · performance · 1점) — FAIL 23/23 (100%)  «#1 TTFB < 600ms»
@@ -1026,10 +1020,14 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   7건: @type='VideoObject' 노드 없음
   - ai_schema_faq (#23 · schema_markup · 1점) — FAIL 94/98 (96%)  «#23 Schema: FAQPage»
       ·  94건: @type='FAQPage' 노드 없음
-  - ai_summary_box (#35 · citable_content · 1점) — FAIL 93/99 (94%)  «#35 Summary Box (콘텐츠)»
-      ·  93건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 92/99 (93%)  «#32 FAQ Block (콘텐츠)»
       ·  92건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
+  - ai_summary_box (#35 · citable_content · 1점) — FAIL 92/99 (93%)  «#35 Summary Box (콘텐츠)»
+      ·  92건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
+  - ai_definition (#33 · citable_content · 1점) — FAIL 82/99 (83%)  «#33 Definition Paragraph»
+      ·  82건: 정의문 N건 — N건 이상 필요 [측정 0]
+  - ai_citable (#36 · citable_content · 1점) — FAIL 81/99 (82%)  «#36 Citable Sentence ≥ 10%»
+      ·  81건: 인용 가능 밀도 N% — N% 이상 필요 [측정 0~9.8]
   - ai_schema_collection (#24 · schema_markup · 1점) — FAIL 55/99 (56%)  «#24 Schema: CollectionPage (PLP)»
       ·  55건: @type='CollectionPage' 노드 없음
   - seo_h1 (#16 · seo · 1점) — FAIL 48/99 (48%)  «#16 H1 정확히 1개»
@@ -1045,8 +1043,6 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   2건: 누락: title, image
   - perf_cache_control (#4 · performance · 1점) — FAIL 5/99 (5%)  «#4 Cache-Control max-age 설정»
       ·   5건: Cache-Control 부재 또는 no-store/no-cache.
-  - ai_citable (#36 · citable_content · 1점) — FAIL 3/99 (3%)  «#36 Citable Sentence ≥ 10%»
-      ·   3건: 인용 가능 밀도 N% — N% 이상 필요 [측정 0~9.9]
   - a11y_image_alt (a11y#9 · accessibility · 1점) — FAIL 1/99 (1%)  «#9 Image Alt 누락 0»
       ·   1건: N개 요소에 'alt' 속성이 없습니다. [측정 1]
   - a11y_semantic (a11y#10 · accessibility · 1점) — FAIL 1/99 (1%)  «#10 Semantic HTML»
@@ -1059,8 +1055,6 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 ### [support] 지원/Support — 71건  (감점 항목 18개)
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 71/71 (100%)  «#26 Schema: ImageObject»
       ·  71건: @type='ImageObject' 노드 없음
-  - ai_definition (#33 · citable_content · 1점) — FAIL 71/71 (100%)  «#33 Definition Paragraph»
-      ·  71건: 정의문 N건 — N건 이상 필요 [측정 0]
   - perf_ttfb (#1 · performance · 1점) — FAIL 32/32 (100%)  «#1 TTFB < 600ms»
       ·  32건: TTFB Nms — Nms 미만 필요 [측정 896~28738]
   - perf_html_size (#5 · performance · 1점) — FAIL 32/32 (100%)  «#5 HTML < 100KB»
@@ -1071,10 +1065,14 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·  69건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
   - ai_author_source (#34 · citable_content · 1점) — FAIL 31/32 (97%)  «#34 Author 또는 출처+날짜»
       ·  31건: JSON-LD author 또는 (datePublished+publisher) 조합 없음
+  - ai_definition (#33 · citable_content · 1점) — FAIL 65/71 (92%)  «#33 Definition Paragraph»
+      ·  65건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 60/71 (85%)  «#32 FAQ Block (콘텐츠)»
       ·  60건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
   - seo_h1 (#16 · seo · 1점) — FAIL 49/71 (69%)  «#16 H1 정확히 1개»
       ·  49건: 'hN' N개 — == N 필요 [측정 1]
+  - ai_citable (#36 · citable_content · 1점) — FAIL 41/71 (58%)  «#36 Citable Sentence ≥ 10%»
+      ·  41건: 인용 가능 밀도 N% — N% 이상 필요 [측정 0~9.5]
   - seo_canonical (#15 · seo · 1점) — FAIL 38/71 (54%)  «#15 Canonical self-ref»
       ·  38건: canonical 태그 없음
   - perf_cache_control (#4 · performance · 1점) — FAIL 30/71 (42%)  «#4 Cache-Control max-age»
@@ -1092,16 +1090,12 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   2건: N개 요소에 'alt' 속성이 없습니다. [측정 4~7]
   - ai_schema_breadcrumb (#21 · schema_markup · 1점) — FAIL 1/71 (1%)  «#21 Schema: BreadcrumbList»
       ·   1건: @type='BreadcrumbList' 노드 없음
-  - ai_citable (#36 · citable_content · 1점) — FAIL 1/71 (1%)  «#36 Citable Sentence ≥ 10%»
-      ·   1건: 인용 가능 밀도 N% — N% 이상 필요 [측정 8.8]
 
 ### [content] 콘텐츠/매거진 — 65건  (감점 항목 19개)
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 65/65 (100%)  «#26 Schema: ImageObject»
       ·  65건: @type='ImageObject' 노드 없음
   - ai_schema_article (#29 · schema_markup · 1점) — FAIL 65/65 (100%)  «#29 Schema: Article»
       ·  65건: @type='Article' 노드 없음
-  - ai_definition (#33 · citable_content · 1점) — FAIL 65/65 (100%)  «#33 Definition Paragraph»
-      ·  65건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_schema_video (#27 · schema_markup · 1점) — FAIL 12/12 (100%)  «#27 Schema: VideoObject»
       ·  11건: 필수 필드 누락: url
       ·   1건: @type='VideoObject' 노드 없음
@@ -1115,6 +1109,10 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·  51건: JSON-LD author 또는 (datePublished+publisher) 조합 없음
   - ai_summary_box (#35 · citable_content · 1점) — FAIL 42/65 (65%)  «#35 Summary Box (콘텐츠)»
       ·  42건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
+  - ai_citable (#36 · citable_content · 1점) — FAIL 39/65 (60%)  «#36 Citable Sentence ≥ 10%»
+      ·  39건: 인용 가능 밀도 N% — N% 이상 필요 [측정 0~9.6]
+  - ai_definition (#33 · citable_content · 1점) — FAIL 37/65 (57%)  «#33 Definition Paragraph»
+      ·  37건: 정의문 N건 — N건 이상 필요 [측정 0]
   - a11y_heading_hier (a11y#11 · accessibility · 1점) — FAIL 27/65 (42%)  «#11 Heading Hierarchy»
       ·  25건: 헤딩 역순 N건 — 첫 헤딩(hN)보다 상위 레벨이 뒤에 등장 [측정 1]
       ·   2건: 헤딩 태그가 없습니다.
@@ -1133,8 +1131,6 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   6건: Cache-Control 부재 또는 no-store/no-cache.
   - seo_meta_desc (#14 · seo · 1점) — FAIL 4/65 (6%)  «#14 Meta Description»
       ·   4건: 'meta[name='description' i]' 요소를 찾을 수 없습니다.
-  - ai_citable (#36 · citable_content · 1점) — FAIL 2/65 (3%)  «#36 Citable Sentence ≥ 10%»
-      ·   2건: 인용 가능 밀도 N% — N% 이상 필요 [측정 8.1~9.4]
   - seo_robots (#17 · seo · 1점) — FAIL 1/65 (2%)  «#17 indexing 허용»
       ·   1건: 'noindex'가 포함되어 있습니다.
 
@@ -1143,8 +1139,6 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·  43건: @type='ImageObject' 노드 없음
   - ai_schema_article (#29 · schema_markup · 1점) — FAIL 43/43 (100%)  «#29 Schema: Article»
       ·  43건: @type='Article' 노드 없음
-  - ai_definition (#33 · citable_content · 1점) — FAIL 43/43 (100%)  «#33 Definition Paragraph»
-      ·  43건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_schema_video (#27 · schema_markup · 1점) — FAIL 8/8 (100%)  «#27 Schema: VideoObject»
       ·   5건: @type='VideoObject' 노드 없음
       ·   3건: 필수 필드 누락: url
@@ -1158,6 +1152,8 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   3건: JSON-LD author 또는 (datePublished+publisher) 조합 없음
   - ai_schema_faq (#23 · schema_markup · 1점) — FAIL 38/43 (88%)  «#23 Schema: FAQPage»
       ·  38건: @type='FAQPage' 노드 없음
+  - ai_definition (#33 · citable_content · 1점) — FAIL 28/43 (65%)  «#33 Definition Paragraph»
+      ·  28건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_summary_box (#35 · citable_content · 1점) — FAIL 24/43 (56%)  «#35 Summary Box (콘텐츠)»
       ·  24건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
   - a11y_heading_hier (a11y#11 · accessibility · 1점) — FAIL 23/43 (53%)  «#11 Heading Hierarchy»
@@ -1165,6 +1161,8 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   2건: 헤딩 태그가 없습니다.
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 23/43 (53%)  «#32 FAQ Block (콘텐츠)»
       ·  23건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
+  - ai_citable (#36 · citable_content · 1점) — FAIL 20/43 (47%)  «#36 Citable Sentence ≥ 10%»
+      ·  20건: 인용 가능 밀도 N% — N% 이상 필요 [측정 0~9.7]
   - seo_h1 (#16 · seo · 1점) — FAIL 14/43 (33%)  «#16 H1 정확히 1개»
       ·  14건: 'hN' N개 — == N 필요 [측정 1]
   - seo_open_graph (#18 · seo · 1점) — FAIL 10/43 (23%)  «#18 Open Graph (title+image)»
@@ -1178,18 +1176,12 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   1건: Cache-Control 부재 또는 no-store/no-cache.
   - ai_schema_breadcrumb (#21 · schema_markup · 1점) — FAIL 1/43 (2%)  «#21 Schema: BreadcrumbList»
       ·   1건: @type='BreadcrumbList' 노드 없음
-  - ai_citable (#36 · citable_content · 1점) — FAIL 1/43 (2%)  «#36 Citable Sentence ≥ 10%»
-      ·   1건: 인용 가능 밀도 N% — N% 이상 필요 [측정 3.2]
 
-### [press_media] 프레스앤미디어 — 25건  (감점 항목 11개)
+### [press_media] 프레스앤미디어 — 25건  (감점 항목 12개)
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 25/25 (100%)  «#26 Schema: ImageObject»
       ·  25건: @type='ImageObject' 노드 없음
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 25/25 (100%)  «#32 FAQ Block (콘텐츠)»
       ·  25건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
-  - ai_definition (#33 · citable_content · 1점) — FAIL 25/25 (100%)  «#33 Definition Paragraph»
-      ·  25건: 정의문 N건 — N건 이상 필요 [측정 0]
-  - ai_summary_box (#35 · citable_content · 1점) — FAIL 25/25 (100%)  «#35 Summary Box (콘텐츠)»
-      ·  25건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
   - perf_ttfb (#1 · performance · 1점) — FAIL 2/2 (100%)  «#1 TTFB < 600ms»
       ·   2건: TTFB Nms — Nms 미만 필요 [측정 5113~5175]
   - perf_html_size (#5 · performance · 1점) — FAIL 2/2 (100%)  «#5 HTML < 100KB»
@@ -1200,10 +1192,16 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·  24건: 'meta[name='description' i]' 요소를 찾을 수 없습니다.
   - seo_h1 (#16 · seo · 1점) — FAIL 24/25 (96%)  «#16 H1 정확히 1개»
       ·  24건: 'hN' N개 — == N 필요 [측정 1]
+  - ai_summary_box (#35 · citable_content · 1점) — FAIL 17/25 (68%)  «#35 Summary Box (콘텐츠)»
+      ·  17건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
+  - ai_definition (#33 · citable_content · 1점) — FAIL 9/25 (36%)  «#33 Definition Paragraph»
+      ·   9건: 정의문 N건 — N건 이상 필요 [측정 0]
   - perf_cache_control (#4 · performance · 1점) — FAIL 2/25 (8%)  «#4 Cache-Control max-age 설정»
       ·   2건: Cache-Control 부재 또는 no-store/no-cache.
   - a11y_image_alt (a11y#9 · accessibility · 1점) — FAIL 2/25 (8%)  «#9 Image Alt 누락 0»
       ·   2건: N개 요소에 'alt' 속성이 없습니다. [측정 1]
+  - ai_citable (#36 · citable_content · 1점) — FAIL 2/25 (8%)  «#36 Citable Sentence ≥ 10%»
+      ·   2건: 인용 가능 밀도 N% — N% 이상 필요 [측정 0~9.4]
 
 ### [buying_guide] 구매 가이드 — 22건  (감점 항목 17개)
   - perf_ttfb (#1 · performance · 1점) — FAIL 22/22 (100%)  «#1 TTFB < 600ms»
@@ -1216,8 +1214,6 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·  22건: @type='ImageObject' 노드 없음
   - ai_schema_article (#29 · schema_markup · 1점) — FAIL 22/22 (100%)  «#29 Schema: Article»
       ·  22건: @type='Article' 노드 없음
-  - ai_definition (#33 · citable_content · 1점) — FAIL 22/22 (100%)  «#33 Definition Paragraph»
-      ·  22건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_author_source (#34 · citable_content · 1점) — FAIL 22/22 (100%)  «#34 Author 또는 출처+날짜»
       ·  22건: JSON-LD author 또는 (datePublished+publisher) 조합 없음
   - ai_schema_video (#27 · schema_markup · 1점) — FAIL 14/14 (100%)  «#27 Schema: VideoObject»
@@ -1234,18 +1230,18 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   2건: 누락: title
   - perf_cache_control (#4 · performance · 1점) — FAIL 10/22 (45%)  «#4 Cache-Control max-age»
       ·  10건: Cache-Control 부재 또는 no-store/no-cache.
+  - ai_definition (#33 · citable_content · 1점) — FAIL 10/22 (45%)  «#33 Definition Paragraph»
+      ·  10건: 정의문 N건 — N건 이상 필요 [측정 0]
+  - ai_citable (#36 · citable_content · 1점) — FAIL 10/22 (45%)  «#36 Citable Sentence ≥ 10%»
+      ·  10건: 인용 가능 밀도 N% — N% 이상 필요 [측정 0~9.5]
   - seo_h1 (#16 · seo · 1점) — FAIL 4/22 (18%)  «#16 H1 정확히 1개»
       ·   4건: 'hN' N개 — == N 필요 [측정 1]
-  - ai_citable (#36 · citable_content · 1점) — FAIL 4/22 (18%)  «#36 Citable Sentence ≥ 10%»
-      ·   4건: 인용 가능 밀도 N% — N% 이상 필요 [측정 8.3~9.8]
   - seo_meta_desc (#14 · seo · 1점) — FAIL 3/22 (14%)  «#14 Meta Description»
       ·   3건: 'meta[name='description' i]' 요소를 찾을 수 없습니다.
   - a11y_heading_hier (a11y#11 · accessibility · 1점) — FAIL 2/22 (9%)  «#11 Heading Hierarchy»
       ·   2건: 헤딩 태그가 없습니다.
 
-### [home] 홈페이지 — 2건  (감점 항목 13개)
-  - ai_definition (#33 · citable_content · 1점) — FAIL 2/2 (100%)  «#33 Definition Paragraph»
-      ·   2건: 정의문 N건 — N건 이상 필요 [측정 0]
+### [home] 홈페이지 — 2건  (감점 항목 14개)
   - perf_ttfb (#1 · performance · 1점) — FAIL 1/1 (100%)  «#1 TTFB < 600ms»
       ·   1건: TTFB Nms — Nms 미만 필요 [측정 17376]
   - perf_html_size (#5 · performance · 1점) — FAIL 1/1 (100%)  «#5 HTML < 100KB»
@@ -1270,16 +1266,18 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   1건: @type='BreadcrumbList' 노드 없음
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 1/2 (50%)  «#32 FAQ Block (콘텐츠)»
       ·   1건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
+  - ai_definition (#33 · citable_content · 1점) — FAIL 1/2 (50%)  «#33 Definition Paragraph»
+      ·   1건: 정의문 N건 — N건 이상 필요 [측정 0]
+  - ai_summary_box (#35 · citable_content · 1점) — FAIL 1/2 (50%)  «#35 Summary Box (콘텐츠)»
+      ·   1건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
 
-### [promotion] 프로모션/약관 — 2건  (감점 항목 9개)
+### [promotion] 프로모션/약관 — 2건  (감점 항목 10개)
   - seo_h1 (#16 · seo · 1점) — FAIL 2/2 (100%)  «#16 H1 정확히 1개»
       ·   2건: 'hN' N개 — == N 필요 [측정 1]
   - ai_schema_offer (#43 · schema_markup · 1점) — FAIL 2/2 (100%)  «#43 Schema: Offer»
       ·   2건: @type='Offer' 노드 없음
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 2/2 (100%)  «#26 Schema: ImageObject»
       ·   2건: @type='ImageObject' 노드 없음
-  - ai_definition (#33 · citable_content · 1점) — FAIL 2/2 (100%)  «#33 Definition Paragraph»
-      ·   2건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_summary_box (#35 · citable_content · 1점) — FAIL 2/2 (100%)  «#35 Summary Box (콘텐츠)»
       ·   2건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
   - a11y_heading_hier (a11y#11 · accessibility · 1점) — FAIL 1/2 (50%)  «#11 Heading Hierarchy»
@@ -1290,6 +1288,10 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   1건: 누락: title, image
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 1/2 (50%)  «#32 FAQ Block (콘텐츠)»
       ·   1건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
+  - ai_definition (#33 · citable_content · 1점) — FAIL 1/2 (50%)  «#33 Definition Paragraph»
+      ·   1건: 정의문 N건 — N건 이상 필요 [측정 0]
+  - ai_citable (#36 · citable_content · 1점) — FAIL 1/2 (50%)  «#36 Citable Sentence ≥ 10%»
+      ·   1건: 인용 가능 밀도 N% — N% 이상 필요 [측정 0]
 
 ##############################################################################
 ## DE   run=de_2026-08-30_run_cb6a08bc991e.json
@@ -1301,8 +1303,6 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 ##############################################################################
 
 ### [pdp] 제품 상세 (PDP) — 371건  (감점 항목 27개)
-  - ai_definition (#33 · citable_content · 1점) — FAIL 371/371 (100%)  «#33 Definition Paragraph»
-      · 371건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 370/370 (100%)  «#26 Schema: ImageObject»
       · 361건: @type='ImageObject' 노드 없음
       ·   9건: 필수 필드 누락: url, uploadDate
@@ -1333,6 +1333,8 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   2건: 헤딩 태그가 없습니다.
   - ai_schema_faq (#23 · schema_markup · 1점) — FAIL 333/370 (90%)  «#23 Schema: FAQPage»
       · 333건: @type='FAQPage' 노드 없음
+  - ai_definition (#33 · citable_content · 1점) — FAIL 302/371 (81%)  «#33 Definition Paragraph»
+      · 302건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_schema_collection (#24 · schema_markup · 1점) — FAIL 3/4 (75%)  «#24 Schema: CollectionPage (PLP)»
       ·   3건: @type='CollectionPage' 노드 없음
   - a11y_image_alt (a11y#9 · accessibility · 1점) — FAIL 43/371 (12%)  «#9 Image Alt 누락 0»
@@ -1354,11 +1356,11 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
   - seo_meta_desc (#14 · seo · 1점) — FAIL 8/371 (2%)  «#14 Meta Description»
       ·   7건: 'meta[name='description' i]' 요소를 찾을 수 없습니다.
       ·   1건: 'content' 속성이 없거나 N자 미만입니다. [측정 1]
-  - ai_citable (#36 · citable_content · 1점) — FAIL 4/371 (1%)  «#36 Citable Sentence ≥ 10%»
-      ·   4건: 인용 가능 밀도 N% — N% 이상 필요 [측정 8.4~9.5]
   - seo_open_graph (#18 · seo · 1점) — FAIL 3/371 (1%)  «#18 Open Graph (title+image)»
       ·   2건: 누락: title
       ·   1건: 누락: title, image
+  - ai_citable (#36 · citable_content · 1점) — FAIL 3/371 (1%)  «#36 Citable Sentence ≥ 10%»
+      ·   3건: 인용 가능 밀도 N% — N% 이상 필요 [측정 8.7~9.8]
   - perf_cache_control (#4 · performance · 1점) — FAIL 2/371 (1%)  «#4 Cache-Control max-age 설정»
       ·   2건: Cache-Control 부재 또는 no-store/no-cache.
   - seo_canonical (#15 · seo · 1점) — FAIL 1/371 (0%)  «#15 Canonical self-ref»
@@ -1367,8 +1369,6 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   1건: @type='BreadcrumbList' 노드 없음
 
 ### [plp] 제품 카테고리 (PLP) — 107건  (감점 항목 22개)
-  - ai_definition (#33 · citable_content · 1점) — FAIL 107/107 (100%)  «#33 Definition Paragraph»
-      · 107건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 98/98 (100%)  «#26 Schema: ImageObject»
       ·  98건: @type='ImageObject' 노드 없음
   - perf_html_size (#5 · performance · 1점) — FAIL 36/36 (100%)  «#5 HTML < 100KB»
@@ -1393,6 +1393,8 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·  96건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 93/107 (87%)  «#32 FAQ Block (콘텐츠)»
       ·  93건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
+  - ai_definition (#33 · citable_content · 1점) — FAIL 69/107 (64%)  «#33 Definition Paragraph»
+      ·  69건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_schema_collection (#24 · schema_markup · 1점) — FAIL 63/100 (63%)  «#24 Schema: CollectionPage (PLP)»
       ·  63건: @type='CollectionPage' 노드 없음
   - a11y_heading_hier (a11y#11 · accessibility · 1점) — FAIL 48/107 (45%)  «#11 Heading Hierarchy»
@@ -1412,18 +1414,16 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   9건: Cache-Control 부재 또는 no-store/no-cache.
   - a11y_image_alt (a11y#9 · accessibility · 1점) — FAIL 4/107 (4%)  «#9 Image Alt 누락 0»
       ·   4건: N개 요소에 'alt' 속성이 없습니다. [측정 1~2]
+  - ai_citable (#36 · citable_content · 1점) — FAIL 2/107 (2%)  «#36 Citable Sentence ≥ 10%»
+      ·   2건: 인용 가능 밀도 N% — N% 이상 필요 [측정 9.6]
   - a11y_semantic (a11y#10 · accessibility · 1점) — FAIL 1/107 (1%)  «#10 Semantic HTML»
       ·   1건: 헤딩 N + 랜드마크 N = N — 의미 구조 N+ 필요 [측정 0]
-  - ai_citable (#36 · citable_content · 1점) — FAIL 1/107 (1%)  «#36 Citable Sentence ≥ 10%»
-      ·   1건: 인용 가능 밀도 N% — N% 이상 필요 [측정 7.8]
 
 ### [press_media] 프레스앤미디어 — 100건  (감점 항목 15개)
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 100/100 (100%)  «#26 Schema: ImageObject»
       · 100건: @type='ImageObject' 노드 없음
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 100/100 (100%)  «#32 FAQ Block (콘텐츠)»
       · 100건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
-  - ai_definition (#33 · citable_content · 1점) — FAIL 100/100 (100%)  «#33 Definition Paragraph»
-      · 100건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_summary_box (#35 · citable_content · 1점) — FAIL 100/100 (100%)  «#35 Summary Box (콘텐츠)»
       · 100건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
   - perf_ttfb (#1 · performance · 1점) — FAIL 32/32 (100%)  «#1 TTFB < 600ms»
@@ -1441,6 +1441,8 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
   - a11y_heading_hier (a11y#11 · accessibility · 1점) — FAIL 39/100 (39%)  «#11 Heading Hierarchy»
       ·  36건: 헤딩 역순 N건 — 첫 헤딩(hN)보다 상위 레벨이 뒤에 등장 [측정 1]
       ·   3건: 레벨 점프 N건 발견 (예: hN→hN) [측정 1]
+  - ai_definition (#33 · citable_content · 1점) — FAIL 36/100 (36%)  «#33 Definition Paragraph»
+      ·  36건: 정의문 N건 — N건 이상 필요 [측정 0]
   - perf_cache_control (#4 · performance · 1점) — FAIL 32/100 (32%)  «#4 Cache-Control max-age 설정»
       ·  32건: Cache-Control 부재 또는 no-store/no-cache.
   - ai_author_source (#34 · citable_content · 1점) — FAIL 32/100 (32%)  «#34 Author 또는 출처+날짜»
@@ -1452,8 +1454,6 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·  31건: SSR 비율 N% — N% 이상 필요 [측정 48]
 
 ### [support] 지원/Support — 100건  (감점 항목 19개)
-  - ai_definition (#33 · citable_content · 1점) — FAIL 100/100 (100%)  «#33 Definition Paragraph»
-      · 100건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_summary_box (#35 · citable_content · 1점) — FAIL 100/100 (100%)  «#35 Summary Box (콘텐츠)»
       · 100건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 62/62 (100%)  «#26 Schema: ImageObject»
@@ -1469,6 +1469,8 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   7건: JSON-LD author 또는 (datePublished+publisher) 조합 없음
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 96/100 (96%)  «#32 FAQ Block (콘텐츠)»
       ·  96건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
+  - ai_definition (#33 · citable_content · 1점) — FAIL 89/100 (89%)  «#33 Definition Paragraph»
+      ·  89건: 정의문 N건 — N건 이상 필요 [측정 0]
   - perf_cache_control (#4 · performance · 1점) — FAIL 43/100 (43%)  «#4 Cache-Control max-age 설정»
       ·  43건: Cache-Control 부재 또는 no-store/no-cache.
   - a11y_semantic (a11y#10 · accessibility · 1점) — FAIL 38/100 (38%)  «#10 Semantic HTML»
@@ -1491,7 +1493,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
   - seo_open_graph (#18 · seo · 1점) — FAIL 2/100 (2%)  «#18 Open Graph (title+image)»
       ·   2건: 누락: title
   - ai_citable (#36 · citable_content · 1점) — FAIL 2/100 (2%)  «#36 Citable Sentence ≥ 10%»
-      ·   2건: 인용 가능 밀도 N% — N% 이상 필요 [측정 5.7~6.4]
+      ·   2건: 인용 가능 밀도 N% — N% 이상 필요 [측정 6.6~9.1]
 
 ### [support_troubleshoot] 지원 - 트러블슈팅 — 100건  (감점 항목 13개)
   - ai_schema_howto (#28 · schema_markup · 1점) — FAIL 100/100 (100%)  «#28 Schema: HowTo»
@@ -1522,8 +1524,6 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   1건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
 
 ### [promotion] 프로모션/약관 — 99건  (감점 항목 22개)
-  - ai_definition (#33 · citable_content · 1점) — FAIL 99/99 (100%)  «#33 Definition Paragraph»
-      ·  99건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 98/98 (100%)  «#26 Schema: ImageObject»
       ·  98건: @type='ImageObject' 노드 없음
   - ai_schema_offer (#43 · schema_markup · 1점) — FAIL 81/81 (100%)  «#43 Schema: Offer»
@@ -1548,6 +1548,8 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·  98건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
   - ai_schema_faq (#23 · schema_markup · 1점) — FAIL 16/17 (94%)  «#23 Schema: FAQPage»
       ·  16건: @type='FAQPage' 노드 없음
+  - ai_definition (#33 · citable_content · 1점) — FAIL 93/99 (94%)  «#33 Definition Paragraph»
+      ·  93건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_schema_collection (#24 · schema_markup · 1점) — FAIL 3/4 (75%)  «#24 Schema: CollectionPage (PLP)»
       ·   3건: @type='CollectionPage' 노드 없음
   - seo_h1 (#16 · seo · 1점) — FAIL 74/99 (75%)  «#16 H1 정확히 1개»
@@ -1581,8 +1583,6 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·  98건: @type='Offer' 노드 없음
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 98/98 (100%)  «#26 Schema: ImageObject»
       ·  98건: @type='ImageObject' 노드 없음
-  - ai_definition (#33 · citable_content · 1점) — FAIL 98/98 (100%)  «#33 Definition Paragraph»
-      ·  98건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_ssr_ratio (#37 · ai_crawlability · 1점) — FAIL 98/98 (100%)  «#37 JS HTML Text Ratio ≥ 60%»
       ·  98건: SSR 비율 N% — N% 이상 필요 [측정 57]
   - ai_schema_video (#27 · schema_markup · 1점) — FAIL 17/17 (100%)  «#27 Schema: VideoObject»
@@ -1597,6 +1597,8 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   2건: JSON-LD author 또는 (datePublished+publisher) 조합 없음
   - a11y_heading_hier (a11y#11 · accessibility · 1점) — FAIL 89/98 (91%)  «#11 Heading Hierarchy»
       ·  89건: 헤딩 역순 N건 — 첫 헤딩(hN)보다 상위 레벨이 뒤에 등장 [측정 1~11]
+  - ai_definition (#33 · citable_content · 1점) — FAIL 73/98 (74%)  «#33 Definition Paragraph»
+      ·  73건: 정의문 N건 — N건 이상 필요 [측정 0]
   - a11y_image_alt (a11y#9 · accessibility · 1점) — FAIL 15/98 (15%)  «#9 Image Alt 누락 0»
       ·  15건: N개 요소에 'alt' 속성이 없습니다. [측정 1~14]
   - seo_h1 (#16 · seo · 1점) — FAIL 13/98 (13%)  «#16 H1 정확히 1개»
@@ -1605,16 +1607,14 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   9건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
   - ai_summary_box (#35 · citable_content · 1점) — FAIL 9/98 (9%)  «#35 Summary Box (콘텐츠)»
       ·   9건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
-  - ai_citable (#36 · citable_content · 1점) — FAIL 7/98 (7%)  «#36 Citable Sentence ≥ 10%»
-      ·   7건: 인용 가능 밀도 N% — N% 이상 필요 [측정 5.9~9.4]
   - seo_canonical (#15 · seo · 1점) — FAIL 1/98 (1%)  «#15 Canonical self-ref»
       ·   1건: canonical='https://www.lg.com/de/monitore/ergo-monitore/NunNp-b/' ≠ 현재 URL [측정 32]
+  - ai_citable (#36 · citable_content · 1점) — FAIL 1/98 (1%)  «#36 Citable Sentence ≥ 10%»
+      ·   1건: 인용 가능 밀도 N% — N% 이상 필요 [측정 6.9]
 
-### [content] 콘텐츠/매거진 — 47건  (감점 항목 22개)
+### [content] 콘텐츠/매거진 — 47건  (감점 항목 21개)
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 47/47 (100%)  «#26 Schema: ImageObject»
       ·  47건: @type='ImageObject' 노드 없음
-  - ai_definition (#33 · citable_content · 1점) — FAIL 47/47 (100%)  «#33 Definition Paragraph»
-      ·  47건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_schema_video (#27 · schema_markup · 1점) — FAIL 46/46 (100%)  «#27 Schema: VideoObject»
       ·  37건: @type='VideoObject' 노드 없음
       ·   9건: 필수 필드 누락: url
@@ -1634,10 +1634,10 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·  42건: SSR 비율 N% — N% 이상 필요 [측정 54]
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 39/47 (83%)  «#32 FAQ Block (콘텐츠)»
       ·  39건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
-  - ai_summary_box (#35 · citable_content · 1점) — FAIL 39/47 (83%)  «#35 Summary Box (콘텐츠)»
-      ·  39건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
   - perf_cache_control (#4 · performance · 1점) — FAIL 38/47 (81%)  «#4 Cache-Control max-age»
       ·  38건: Cache-Control 부재 또는 no-store/no-cache.
+  - ai_summary_box (#35 · citable_content · 1점) — FAIL 38/47 (81%)  «#35 Summary Box (콘텐츠)»
+      ·  38건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
   - seo_h1 (#16 · seo · 1점) — FAIL 29/47 (62%)  «#16 H1 정확히 1개»
       ·  29건: 'hN' N개 — == N 필요 [측정 1]
   - seo_open_graph (#18 · seo · 1점) — FAIL 17/47 (36%)  «#18 Open Graph (title+image)»
@@ -1647,11 +1647,11 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·  17건: @type='BreadcrumbList' 노드 없음
   - a11y_semantic (a11y#10 · accessibility · 1점) — FAIL 15/47 (32%)  «#10 Semantic HTML»
       ·  15건: main N개, 랜드마크 합계 N — main N+ AND 합계 N+ 필요 [측정 0]
+  - ai_definition (#33 · citable_content · 1점) — FAIL 7/47 (15%)  «#33 Definition Paragraph»
+      ·   7건: 정의문 N건 — N건 이상 필요 [측정 0]
   - a11y_heading_hier (a11y#11 · accessibility · 1점) — FAIL 4/47 (9%)  «#11 Heading Hierarchy»
       ·   3건: 헤딩 태그가 없습니다.
       ·   1건: 레벨 점프 N건 발견 (예: hN→hN) [측정 1]
-  - ai_citable (#36 · citable_content · 1점) — FAIL 4/47 (9%)  «#36 Citable Sentence ≥ 10%»
-      ·   4건: 인용 가능 밀도 N% — N% 이상 필요 [측정 7~9.8]
   - perf_redirect (#6 · performance · 1점) — FAIL 3/47 (6%)  «#6 Redirect ≤ 1»
       ·   3건: 리다이렉트 N회 — N회 이하 권장 [측정 2~5]
   - a11y_image_alt (a11y#9 · accessibility · 1점) — FAIL 2/47 (4%)  «#9 Image Alt 누락 0»
@@ -1659,7 +1659,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
   - seo_meta_desc (#14 · seo · 1점) — FAIL 2/47 (4%)  «#14 Meta Description»
       ·   2건: 'meta[name='description' i]' 요소를 찾을 수 없습니다.
 
-### [buying_guide] 구매 가이드 — 24건  (감점 항목 18개)
+### [buying_guide] 구매 가이드 — 24건  (감점 항목 17개)
   - perf_ttfb (#1 · performance · 1점) — FAIL 24/24 (100%)  «#1 TTFB < 600ms»
       ·  24건: TTFB Nms — Nms 미만 필요 [측정 1621~14995]
   - perf_cache_control (#4 · performance · 1점) — FAIL 24/24 (100%)  «#4 Cache-Control max-age»
@@ -1670,8 +1670,6 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·  24건: head 내 blocking script N개 [측정 1]
   - ai_schema_article (#29 · schema_markup · 1점) — FAIL 24/24 (100%)  «#29 Schema: Article»
       ·  24건: @type='Article' 노드 없음
-  - ai_definition (#33 · citable_content · 1점) — FAIL 24/24 (100%)  «#33 Definition Paragraph»
-      ·  24건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_author_source (#34 · citable_content · 1점) — FAIL 24/24 (100%)  «#34 Author 또는 출처+날짜»
       ·  20건: JSON-LD author 또는 (datePublished+publisher) 조합 없음
       ·   4건: 저자(meta/byline) 또는 (출처+datePublished) 조합 없음
@@ -1693,20 +1691,18 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
   - seo_open_graph (#18 · seo · 1점) — FAIL 8/24 (33%)  «#18 Open Graph (title+image)»
       ·   6건: 누락: image
       ·   2건: 누락: title, image
-  - ai_citable (#36 · citable_content · 1점) — FAIL 5/24 (21%)  «#36 Citable Sentence ≥ 10%»
-      ·   5건: 인용 가능 밀도 N% — N% 이상 필요 [측정 8.7~9.9]
   - seo_sitemap (#19 · seo · 1점) — FAIL 4/24 (17%)  «#19 Sitemap (1개월 내)»
       ·   4건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
   - seo_meta_desc (#14 · seo · 1점) — FAIL 3/24 (12%)  «#14 Meta Description»
       ·   3건: 'meta[name='description' i]' 요소를 찾을 수 없습니다.
+  - ai_definition (#33 · citable_content · 1점) — FAIL 2/24 (8%)  «#33 Definition Paragraph»
+      ·   2건: 정의문 N건 — N건 이상 필요 [측정 0]
 
 ### [microsite] 마이크로사이트/캠페인 — 5건  (감점 항목 15개)
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 5/5 (100%)  «#26 Schema: ImageObject»
       ·   5건: @type='ImageObject' 노드 없음
   - ai_schema_article (#29 · schema_markup · 1점) — FAIL 5/5 (100%)  «#29 Schema: Article»
       ·   5건: @type='Article' 노드 없음
-  - ai_definition (#33 · citable_content · 1점) — FAIL 5/5 (100%)  «#33 Definition Paragraph»
-      ·   5건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_summary_box (#35 · citable_content · 1점) — FAIL 5/5 (100%)  «#35 Summary Box (콘텐츠)»
       ·   5건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
   - perf_ttfb (#1 · performance · 1점) — FAIL 4/4 (100%)  «#1 TTFB < 600ms»
@@ -1726,6 +1722,8 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   3건: @type='FAQPage' 노드 없음
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 3/5 (60%)  «#32 FAQ Block (콘텐츠)»
       ·   3건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
+  - ai_definition (#33 · citable_content · 1점) — FAIL 2/5 (40%)  «#33 Definition Paragraph»
+      ·   2건: 정의문 N건 — N건 이상 필요 [측정 0]
   - seo_meta_desc (#14 · seo · 1점) — FAIL 1/5 (20%)  «#14 Meta Description»
       ·   1건: 'meta[name='description' i]' 요소를 찾을 수 없습니다.
   - seo_h1 (#16 · seo · 1점) — FAIL 1/5 (20%)  «#16 H1 정확히 1개»
@@ -1733,9 +1731,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
   - seo_open_graph (#18 · seo · 1점) — FAIL 1/5 (20%)  «#18 Open Graph (title+image)»
       ·   1건: 누락: image
 
-### [home] 홈페이지 — 2건  (감점 항목 12개)
-  - ai_definition (#33 · citable_content · 1점) — FAIL 2/2 (100%)  «#33 Definition Paragraph»
-      ·   2건: 정의문 N건 — N건 이상 필요 [측정 0]
+### [home] 홈페이지 — 2건  (감점 항목 13개)
   - perf_ttfb (#1 · performance · 1점) — FAIL 1/1 (100%)  «#1 TTFB < 600ms»
       ·   1건: TTFB Nms — Nms 미만 필요 [측정 12359]
   - perf_html_size (#5 · performance · 1점) — FAIL 1/1 (100%)  «#5 HTML < 100KB»
@@ -1758,8 +1754,12 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   1건: @type='BreadcrumbList' 노드 없음
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 1/2 (50%)  «#32 FAQ Block (콘텐츠)»
       ·   1건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
+  - ai_definition (#33 · citable_content · 1점) — FAIL 1/2 (50%)  «#33 Definition Paragraph»
+      ·   1건: 정의문 N건 — N건 이상 필요 [측정 0]
+  - ai_summary_box (#35 · citable_content · 1점) — FAIL 1/2 (50%)  «#35 Summary Box (콘텐츠)»
+      ·   1건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
 
-### [unknown] 분류 불가 — 1건  (감점 항목 5개)
+### [unknown] 분류 불가 — 1건  (감점 항목 4개)
   - a11y_heading_hier (a11y#11 · accessibility · 1점) — FAIL 1/1 (100%)  «#11 Heading Hierarchy»
       ·   1건: 헤딩 역순 N건 — 첫 헤딩(hN)보다 상위 레벨이 뒤에 등장 [측정 1]
   - seo_open_graph (#18 · seo · 1점) — FAIL 1/1 (100%)  «#18 Open Graph (title+image)»
@@ -1768,8 +1768,6 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   1건: @type='ImageObject' 노드 없음
   - ai_schema_video (#27 · schema_markup · 1점) — FAIL 1/1 (100%)  «#27 Schema: VideoObject»
       ·   1건: @type='VideoObject' 노드 없음
-  - ai_definition (#33 · citable_content · 1점) — FAIL 1/1 (100%)  «#33 Definition Paragraph»
-      ·   1건: 정의문 N건 — N건 이상 필요 [측정 0]
 
 ##############################################################################
 ## ES   run=es_2026-08-30_run_d6907f7db662.json
@@ -1784,8 +1782,6 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 440/440 (100%)  «#26 Schema: ImageObject»
       · 416건: @type='ImageObject' 노드 없음
       ·  24건: 필수 필드 누락: url, uploadDate
-  - ai_definition (#33 · citable_content · 1점) — FAIL 440/440 (100%)  «#33 Definition Paragraph»
-      · 440건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_schema_product (#25 · schema_markup · 1점) — FAIL 439/439 (100%)  «#25 Schema: Product 풀세트 (PDP)»
       · 328건: @type='Product/ProductGroup' 노드 없음
       · 111건: @type='Product' 노드 없음
@@ -1812,10 +1808,12 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   2건: 헤딩 태그가 없습니다.
   - ai_schema_faq (#23 · schema_markup · 1점) — FAIL 403/440 (92%)  «#23 Schema: FAQPage»
       · 403건: @type='FAQPage' 노드 없음
+  - ai_definition (#33 · citable_content · 1점) — FAIL 375/440 (85%)  «#33 Definition Paragraph»
+      · 375건: 정의문 N건 — N건 이상 필요 [측정 0]
+  - ai_citable (#36 · citable_content · 1점) — FAIL 65/440 (15%)  «#36 Citable Sentence ≥ 10%»
+      ·  65건: 인용 가능 밀도 N% — N% 이상 필요 [측정 0~9.7]
   - a11y_image_alt (a11y#9 · accessibility · 1점) — FAIL 53/440 (12%)  «#9 Image Alt 누락 0»
       ·  53건: N개 요소에 'alt' 속성이 없습니다. [측정 1~14]
-  - ai_citable (#36 · citable_content · 1점) — FAIL 12/440 (3%)  «#36 Citable Sentence ≥ 10%»
-      ·  12건: 인용 가능 밀도 N% — N% 이상 필요 [측정 6.5~9.9]
   - seo_h1 (#16 · seo · 1점) — FAIL 8/440 (2%)  «#16 H1 정확히 1개»
       ·   8건: 'hN' N개 — == N 필요 [측정 1]
   - seo_sitemap (#19 · seo · 1점) — FAIL 6/440 (1%)  «#19 Sitemap (1개월 내)»
@@ -1836,8 +1834,6 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   2건: 'noindex'가 포함되어 있습니다.
 
 ### [plp] 제품 카테고리 (PLP) — 116건  (감점 항목 22개)
-  - ai_definition (#33 · citable_content · 1점) — FAIL 116/116 (100%)  «#33 Definition Paragraph»
-      · 116건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_schema_faq (#23 · schema_markup · 1점) — FAIL 103/103 (100%)  «#23 Schema: FAQPage»
       · 103건: @type='FAQPage' 노드 없음
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 103/103 (100%)  «#26 Schema: ImageObject»
@@ -1858,6 +1854,8 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   3건: @type='HowTo' 노드 없음
   - ai_schema_article (#29 · schema_markup · 1점) — FAIL 3/3 (100%)  «#29 Schema: Article»
       ·   3건: @type='Article' 노드 없음
+  - ai_definition (#33 · citable_content · 1점) — FAIL 113/116 (97%)  «#33 Definition Paragraph»
+      · 113건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_summary_box (#35 · citable_content · 1점) — FAIL 105/116 (91%)  «#35 Summary Box (콘텐츠)»
       · 105건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 104/116 (90%)  «#32 FAQ Block (콘텐츠)»
@@ -1871,6 +1869,8 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
   - a11y_heading_hier (a11y#11 · accessibility · 1점) — FAIL 47/116 (41%)  «#11 Heading Hierarchy»
       ·  24건: 헤딩 태그가 없습니다.
       ·  23건: 헤딩 역순 N건 — 첫 헤딩(hN)보다 상위 레벨이 뒤에 등장 [측정 1~3]
+  - ai_citable (#36 · citable_content · 1점) — FAIL 30/116 (26%)  «#36 Citable Sentence ≥ 10%»
+      ·  30건: 인용 가능 밀도 N% — N% 이상 필요 [측정 0~9.5]
   - seo_open_graph (#18 · seo · 1점) — FAIL 22/116 (19%)  «#18 Open Graph (title+image)»
       ·  19건: 누락: title
       ·   3건: 누락: image
@@ -1878,16 +1878,12 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·  16건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
   - seo_canonical (#15 · seo · 1점) — FAIL 8/116 (7%)  «#15 Canonical self-ref»
       ·   8건: canonical 태그 없음
-  - ai_citable (#36 · citable_content · 1점) — FAIL 5/116 (4%)  «#36 Citable Sentence ≥ 10%»
-      ·   5건: 인용 가능 밀도 N% — N% 이상 필요 [측정 0~9.5]
   - perf_cache_control (#4 · performance · 1점) — FAIL 3/116 (3%)  «#4 Cache-Control max-age 설정»
       ·   3건: Cache-Control 부재 또는 no-store/no-cache.
   - a11y_semantic (a11y#10 · accessibility · 1점) — FAIL 1/116 (1%)  «#10 Semantic HTML»
       ·   1건: 헤딩 N + 랜드마크 N = N — 의미 구조 N+ 필요 [측정 0]
 
 ### [business] B2B (사업자) — 100건  (감점 항목 21개)
-  - ai_definition (#33 · citable_content · 1점) — FAIL 100/100 (100%)  «#33 Definition Paragraph»
-      · 100건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_schema_product (#25 · schema_markup · 1점) — FAIL 99/99 (100%)  «#25 Schema: Product 풀세트 (PDP)»
       ·  99건: @type='Product' 노드 없음
   - ai_schema_offer (#43 · schema_markup · 1점) — FAIL 99/99 (100%)  «#43 Schema: Offer»
@@ -1897,10 +1893,12 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
   - ai_schema_video (#27 · schema_markup · 1점) — FAIL 2/2 (100%)  «#27 Schema: VideoObject»
       ·   1건: @type='VideoObject' 노드 없음
       ·   1건: 필수 필드 누락: url
-  - ai_citable (#36 · citable_content · 1점) — FAIL 99/100 (99%)  «#36 Citable Sentence ≥ 10%»
-      ·  99건: 인용 가능 밀도 N% — N% 이상 필요 [측정 0~8.1]
   - ai_ssr_ratio (#37 · ai_crawlability · 1점) — FAIL 99/100 (99%)  «#37 JS HTML Text Ratio ≥ 60%»
       ·  99건: SSR 비율 N% — N% 이상 필요 [측정 57]
+  - ai_definition (#33 · citable_content · 1점) — FAIL 90/100 (90%)  «#33 Definition Paragraph»
+      ·  90건: 정의문 N건 — N건 이상 필요 [측정 0]
+  - ai_citable (#36 · citable_content · 1점) — FAIL 65/100 (65%)  «#36 Citable Sentence ≥ 10%»
+      ·  65건: 인용 가능 밀도 N% — N% 이상 필요 [측정 0~9.7]
   - a11y_heading_hier (a11y#11 · accessibility · 1점) — FAIL 61/100 (61%)  «#11 Heading Hierarchy»
       ·  55건: 헤딩 역순 N건 — 첫 헤딩(hN)보다 상위 레벨이 뒤에 등장 [측정 1~13]
       ·   6건: 헤딩 태그가 없습니다.
@@ -1932,7 +1930,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
   - ai_summary_ssr (#40 · ai_crawlability · 1점) — FAIL 1/100 (1%)  «#40 Summary Content SSR»
       ·   1건: '[class*='summary'], [class*='Summary'], [id*='summary'], [class*='overview'], [class*='Overview'], [class*='highlight'], [class*='Product-KeyFeatures'], [class*='Product-Features']' 요소를 찾을 수 없습니다.
 
-### [support_troubleshoot] 지원 - 트러블슈팅 — 100건  (감점 항목 13개)
+### [support_troubleshoot] 지원 - 트러블슈팅 — 100건  (감점 항목 14개)
   - ai_schema_howto (#28 · schema_markup · 1점) — FAIL 100/100 (100%)  «#28 Schema: HowTo»
       · 100건: @type='HowTo' 노드 없음
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 100/100 (100%)  «#32 FAQ Block (콘텐츠)»
@@ -1953,6 +1951,8 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   1건: head 내 blocking script N개 [측정 1]
   - ai_author_source (#34 · citable_content · 1점) — FAIL 1/1 (100%)  «#34 Author 또는 출처+날짜»
       ·   1건: 저자(meta/byline) 또는 (출처+datePublished) 조합 없음
+  - ai_citable (#36 · citable_content · 1점) — FAIL 34/100 (34%)  «#36 Citable Sentence ≥ 10%»
+      ·  34건: 인용 가능 밀도 N% — N% 이상 필요 [측정 4.3~4.5]
   - perf_cache_control (#4 · performance · 1점) — FAIL 1/100 (1%)  «#4 Cache-Control max-age 설정»
       ·   1건: Cache-Control 부재 또는 no-store/no-cache.
   - a11y_semantic (a11y#10 · accessibility · 1점) — FAIL 1/100 (1%)  «#10 Semantic HTML»
@@ -1994,8 +1994,8 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
   - a11y_heading_hier (a11y#11 · accessibility · 1점) — FAIL 30/94 (32%)  «#11 Heading Hierarchy»
       ·  20건: 헤딩 태그가 없습니다.
       ·  10건: 헤딩 역순 N건 — 첫 헤딩(hN)보다 상위 레벨이 뒤에 등장 [측정 1~2]
-  - ai_citable (#36 · citable_content · 1점) — FAIL 1/94 (1%)  «#36 Citable Sentence ≥ 10%»
-      ·   1건: 인용 가능 밀도 N% — N% 이상 필요 [측정 8.9]
+  - ai_citable (#36 · citable_content · 1점) — FAIL 2/94 (2%)  «#36 Citable Sentence ≥ 10%»
+      ·   2건: 인용 가능 밀도 N% — N% 이상 필요 [측정 8.3~8.9]
 
 ### [support] 지원/Support — 92건  (감점 항목 19개)
   - ai_definition (#33 · citable_content · 1점) — FAIL 92/92 (100%)  «#33 Definition Paragraph»
@@ -2097,8 +2097,6 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·  19건: @type='ImageObject' 노드 없음
   - ai_schema_article (#29 · schema_markup · 1점) — FAIL 19/19 (100%)  «#29 Schema: Article»
       ·  19건: @type='Article' 노드 없음
-  - ai_definition (#33 · citable_content · 1점) — FAIL 19/19 (100%)  «#33 Definition Paragraph»
-      ·  19건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_author_source (#34 · citable_content · 1점) — FAIL 19/19 (100%)  «#34 Author 또는 출처+날짜»
       ·  19건: JSON-LD author 또는 (datePublished+publisher) 조합 없음
   - ai_schema_video (#27 · schema_markup · 1점) — FAIL 11/11 (100%)  «#27 Schema: VideoObject»
@@ -2112,11 +2110,13 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·  13건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
   - ai_schema_faq (#23 · schema_markup · 1점) — FAIL 12/19 (63%)  «#23 Schema: FAQPage»
       ·  12건: @type='FAQPage' 노드 없음
+  - ai_definition (#33 · citable_content · 1점) — FAIL 12/19 (63%)  «#33 Definition Paragraph»
+      ·  12건: 정의문 N건 — N건 이상 필요 [측정 0]
   - seo_open_graph (#18 · seo · 1점) — FAIL 6/19 (32%)  «#18 Open Graph (title+image)»
       ·   5건: 누락: image
       ·   1건: 누락: title
-  - ai_citable (#36 · citable_content · 1점) — FAIL 5/19 (26%)  «#36 Citable Sentence ≥ 10%»
-      ·   5건: 인용 가능 밀도 N% — N% 이상 필요 [측정 6.4~8.2]
+  - ai_citable (#36 · citable_content · 1점) — FAIL 4/19 (21%)  «#36 Citable Sentence ≥ 10%»
+      ·   4건: 인용 가능 밀도 N% — N% 이상 필요 [측정 0~9.1]
   - a11y_heading_hier (a11y#11 · accessibility · 1점) — FAIL 3/19 (16%)  «#11 Heading Hierarchy»
       ·   2건: 헤딩 역순 N건 — 첫 헤딩(hN)보다 상위 레벨이 뒤에 등장 [측정 1]
       ·   1건: 헤딩 태그가 없습니다.
@@ -2195,7 +2195,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   1건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
 
 ##############################################################################
-## IN   run=in_2026-08-29_run_539e9093c56e.json
+## IN   run=in_2026-08-30_run_539e9093c56e.json
    URL 1183건 · 감사성공 1101 · [config] 신(2026-06-17 재배포)
    등급(성공 기준): Good 135 / Need Improvement 956 / Poor 10
    ⚠ 감사 불가(fetch 실패) 82건 — 아래 감점 집계에서 제외:
@@ -2211,8 +2211,6 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 422/422 (100%)  «#26 Schema: ImageObject»
       · 421건: @type='ImageObject' 노드 없음
       ·   1건: 필수 필드 누락: url, uploadDate
-  - ai_definition (#33 · citable_content · 1점) — FAIL 422/422 (100%)  «#33 Definition Paragraph»
-      · 422건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_schema_product (#25 · schema_markup · 1점) — FAIL 417/417 (100%)  «#25 Schema: Product 풀세트 (PDP)»
       · 383건: @type='Product/ProductGroup' 노드 없음
       ·  32건: @type='Product' 노드 없음
@@ -2236,12 +2234,14 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
   - a11y_heading_hier (a11y#11 · accessibility · 1점) — FAIL 390/422 (92%)  «#11 Heading Hierarchy»
       · 388건: 헤딩 역순 N건 — 첫 헤딩(hN)보다 상위 레벨이 뒤에 등장 [측정 1~2]
       ·   2건: 헤딩 태그가 없습니다.
-  - ai_citable (#36 · citable_content · 1점) — FAIL 375/422 (89%)  «#36 Citable Sentence ≥ 10%»
-      · 375건: 인용 가능 밀도 N% — N% 이상 필요 [측정 1.4~9.8]
   - ai_schema_collection (#24 · schema_markup · 1점) — FAIL 4/5 (80%)  «#24 Schema: CollectionPage (PLP)»
       ·   4건: @type='CollectionPage' 노드 없음
   - ai_schema_faq (#23 · schema_markup · 1점) — FAIL 220/422 (52%)  «#23 Schema: FAQPage»
       · 220건: @type='FAQPage' 노드 없음
+  - ai_definition (#33 · citable_content · 1점) — FAIL 196/422 (46%)  «#33 Definition Paragraph»
+      · 196건: 정의문 N건 — N건 이상 필요 [측정 0]
+  - ai_citable (#36 · citable_content · 1점) — FAIL 121/422 (29%)  «#36 Citable Sentence ≥ 10%»
+      · 121건: 인용 가능 밀도 N% — N% 이상 필요 [측정 2.3~9.9]
   - ai_ssr_ratio (#37 · ai_crawlability · 1점) — FAIL 21/422 (5%)  «#37 JS HTML Text Ratio ≥ 60%»
       ·  21건: SSR 비율 N% — N% 이상 필요 [측정 58]
   - ai_summary_box (#35 · citable_content · 1점) — FAIL 18/422 (4%)  «#35 Summary Box (콘텐츠)»
@@ -2272,8 +2272,6 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       · 100건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 100/100 (100%)  «#26 Schema: ImageObject»
       · 100건: @type='ImageObject' 노드 없음
-  - ai_definition (#33 · citable_content · 1점) — FAIL 100/100 (100%)  «#33 Definition Paragraph»
-      · 100건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_schema_product (#25 · schema_markup · 1점) — FAIL 99/99 (100%)  «#25 Schema: Product 풀세트 (PDP)»
       ·  99건: @type='Product/ProductGroup' 노드 없음
   - ai_schema_offer (#43 · schema_markup · 1점) — FAIL 99/99 (100%)  «#43 Schema: Offer»
@@ -2282,12 +2280,14 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   6건: @type='VideoObject' 노드 없음
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 99/100 (99%)  «#32 FAQ Block (콘텐츠)»
       ·  99건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
-  - ai_citable (#36 · citable_content · 1점) — FAIL 99/100 (99%)  «#36 Citable Sentence ≥ 10%»
-      ·  99건: 인용 가능 밀도 N% — N% 이상 필요 [측정 0~9.8]
   - ai_ssr_ratio (#37 · ai_crawlability · 1점) — FAIL 99/100 (99%)  «#37 JS HTML Text Ratio ≥ 60%»
       ·  99건: SSR 비율 N% — N% 이상 필요 [측정 57]
-  - ai_summary_box (#35 · citable_content · 1점) — FAIL 97/100 (97%)  «#35 Summary Box (콘텐츠)»
-      ·  97건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
+  - ai_summary_box (#35 · citable_content · 1점) — FAIL 95/100 (95%)  «#35 Summary Box (콘텐츠)»
+      ·  95건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
+  - ai_citable (#36 · citable_content · 1점) — FAIL 60/100 (60%)  «#36 Citable Sentence ≥ 10%»
+      ·  60건: 인용 가능 밀도 N% — N% 이상 필요 [측정 0~10]
+  - ai_definition (#33 · citable_content · 1점) — FAIL 56/100 (56%)  «#33 Definition Paragraph»
+      ·  56건: 정의문 N건 — N건 이상 필요 [측정 0]
   - seo_h1 (#16 · seo · 1점) — FAIL 36/100 (36%)  «#16 H1 정확히 1개»
       ·  36건: 'hN' N개 — == N 필요 [측정 1]
   - seo_meta_desc (#14 · seo · 1점) — FAIL 17/100 (17%)  «#14 Meta Description»
@@ -2320,21 +2320,21 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 100/100 (100%)  «#26 Schema: ImageObject»
       ·  81건: @type='ImageObject' 노드 없음
       ·  19건: 필수 필드 누락: name, description, uploadDate
-  - ai_definition (#33 · citable_content · 1점) — FAIL 100/100 (100%)  «#33 Definition Paragraph»
-      · 100건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_schema_article (#29 · schema_markup · 1점) — FAIL 99/99 (100%)  «#29 Schema: Article»
       ·  88건: @type='Article' 노드 없음
       ·  11건: 필수 필드 누락: articleBody
   - ai_schema_video (#27 · schema_markup · 1점) — FAIL 5/5 (100%)  «#27 Schema: VideoObject»
       ·   5건: @type='VideoObject' 노드 없음
-  - ai_citable (#36 · citable_content · 1점) — FAIL 96/100 (96%)  «#36 Citable Sentence ≥ 10%»
-      ·  96건: 인용 가능 밀도 N% — N% 이상 필요 [측정 1.1~9.5]
   - ai_summary_box (#35 · citable_content · 1점) — FAIL 91/100 (91%)  «#35 Summary Box (콘텐츠)»
       ·  91건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
   - ai_author_source (#34 · citable_content · 1점) — FAIL 80/99 (81%)  «#34 Author 또는 출처+날짜»
       ·  80건: JSON-LD author 또는 (datePublished+publisher) 조합 없음
+  - ai_citable (#36 · citable_content · 1점) — FAIL 73/100 (73%)  «#36 Citable Sentence ≥ 10%»
+      ·  73건: 인용 가능 밀도 N% — N% 이상 필요 [측정 0~9.8]
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 71/100 (71%)  «#32 FAQ Block (콘텐츠)»
       ·  71건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
+  - ai_definition (#33 · citable_content · 1점) — FAIL 24/100 (24%)  «#33 Definition Paragraph»
+      ·  24건: 정의문 N건 — N건 이상 필요 [측정 0]
   - a11y_heading_hier (a11y#11 · accessibility · 1점) — FAIL 5/100 (5%)  «#11 Heading Hierarchy»
       ·   4건: 헤딩 역순 N건 — 첫 헤딩(hN)보다 상위 레벨이 뒤에 등장 [측정 1~4]
       ·   1건: 헤딩 태그가 없습니다.
@@ -2354,16 +2354,16 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       · 100건: @type='ImageObject' 노드 없음
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 100/100 (100%)  «#32 FAQ Block (콘텐츠)»
       · 100건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
-  - ai_definition (#33 · citable_content · 1점) — FAIL 100/100 (100%)  «#33 Definition Paragraph»
-      · 100건: 정의문 N건 — N건 이상 필요 [측정 0]
-  - ai_summary_box (#35 · citable_content · 1점) — FAIL 98/100 (98%)  «#35 Summary Box (콘텐츠)»
-      ·  98건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
-  - ai_citable (#36 · citable_content · 1점) — FAIL 95/100 (95%)  «#36 Citable Sentence ≥ 10%»
-      ·  95건: 인용 가능 밀도 N% — N% 이상 필요 [측정 2.5~9.5]
+  - ai_summary_box (#35 · citable_content · 1점) — FAIL 96/100 (96%)  «#35 Summary Box (콘텐츠)»
+      ·  96건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
   - seo_meta_desc (#14 · seo · 1점) — FAIL 42/100 (42%)  «#14 Meta Description»
       ·  42건: 'meta[name='description' i]' 요소를 찾을 수 없습니다.
   - seo_h1 (#16 · seo · 1점) — FAIL 42/100 (42%)  «#16 H1 정확히 1개»
       ·  42건: 'hN' N개 — == N 필요 [측정 1]
+  - ai_citable (#36 · citable_content · 1점) — FAIL 14/100 (14%)  «#36 Citable Sentence ≥ 10%»
+      ·  14건: 인용 가능 밀도 N% — N% 이상 필요 [측정 0~9.7]
+  - ai_definition (#33 · citable_content · 1점) — FAIL 10/100 (10%)  «#33 Definition Paragraph»
+      ·  10건: 정의문 N건 — N건 이상 필요 [측정 0]
   - a11y_image_alt (a11y#9 · accessibility · 1점) — FAIL 1/100 (1%)  «#9 Image Alt 누락 0»
       ·   1건: N개 요소에 'alt' 속성이 없습니다. [측정 2]
   - ai_author_source (#34 · citable_content · 1점) — FAIL 1/100 (1%)  «#34 Author 또는 출처+날짜»
@@ -2374,14 +2374,14 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       · 100건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 100/100 (100%)  «#26 Schema: ImageObject»
       · 100건: @type='ImageObject' 노드 없음
-  - ai_definition (#33 · citable_content · 1점) — FAIL 100/100 (100%)  «#33 Definition Paragraph»
-      · 100건: 정의문 N건 — N건 이상 필요 [측정 0]
-  - ai_citable (#36 · citable_content · 1점) — FAIL 100/100 (100%)  «#36 Citable Sentence ≥ 10%»
-      · 100건: 인용 가능 밀도 N% — N% 이상 필요 [측정 0.9~7.1]
   - ai_summary_box (#35 · citable_content · 1점) — FAIL 98/100 (98%)  «#35 Summary Box (콘텐츠)»
       ·  98건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
+  - ai_definition (#33 · citable_content · 1점) — FAIL 91/100 (91%)  «#33 Definition Paragraph»
+      ·  91건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 88/100 (88%)  «#32 FAQ Block (콘텐츠)»
       ·  88건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
+  - ai_citable (#36 · citable_content · 1점) — FAIL 76/100 (76%)  «#36 Citable Sentence ≥ 10%»
+      ·  76건: 인용 가능 밀도 N% — N% 이상 필요 [측정 0~8.6]
   - seo_h1 (#16 · seo · 1점) — FAIL 53/100 (53%)  «#16 H1 정확히 1개»
       ·  53건: 'hN' N개 — == N 필요 [측정 1]
   - seo_canonical (#15 · seo · 1점) — FAIL 30/100 (30%)  «#15 Canonical self-ref»
@@ -2403,22 +2403,20 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       · 100건: @type='HowTo' 노드 없음
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 100/100 (100%)  «#32 FAQ Block (콘텐츠)»
       · 100건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
-  - ai_definition (#33 · citable_content · 1점) — FAIL 100/100 (100%)  «#33 Definition Paragraph»
-      · 100건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_summary_box (#35 · citable_content · 1점) — FAIL 100/100 (100%)  «#35 Summary Box (콘텐츠)»
       · 100건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
   - ai_citable (#36 · citable_content · 1점) — FAIL 100/100 (100%)  «#36 Citable Sentence ≥ 10%»
-      · 100건: 인용 가능 밀도 N% — N% 이상 필요 [측정 4.8~5.4]
+      · 100건: 인용 가능 밀도 N% — N% 이상 필요 [측정 0~8.3]
   - ai_ssr_ratio (#37 · ai_crawlability · 1점) — FAIL 100/100 (100%)  «#37 JS HTML Text Ratio ≥ 60%»
       · 100건: SSR 비율 N% — N% 이상 필요 [측정 45]
+  - ai_definition (#33 · citable_content · 1점) — FAIL 97/100 (97%)  «#33 Definition Paragraph»
+      ·  97건: 정의문 N건 — N건 이상 필요 [측정 0]
   - a11y_heading_hier (a11y#11 · accessibility · 1점) — FAIL 1/100 (1%)  «#11 Heading Hierarchy»
       ·   1건: 헤딩 역순 N건 — 첫 헤딩(hN)보다 상위 레벨이 뒤에 등장 [측정 1]
 
 ### [plp] 제품 카테고리 (PLP) — 86건  (감점 항목 24개)
   - seo_sitemap (#19 · seo · 1점) — FAIL 86/86 (100%)  «#19 Sitemap (1개월 내)»
       ·  86건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
-  - ai_definition (#33 · citable_content · 1점) — FAIL 86/86 (100%)  «#33 Definition Paragraph»
-      ·  86건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 82/82 (100%)  «#26 Schema: ImageObject»
       ·  82건: @type='ImageObject' 노드 없음
   - ai_schema_video (#27 · schema_markup · 1점) — FAIL 13/13 (100%)  «#27 Schema: VideoObject»
@@ -2441,8 +2439,8 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   1건: @type='Offer' 노드 없음
   - ai_summary_box (#35 · citable_content · 1점) — FAIL 85/86 (99%)  «#35 Summary Box (콘텐츠)»
       ·  85건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
-  - ai_citable (#36 · citable_content · 1점) — FAIL 85/86 (99%)  «#36 Citable Sentence ≥ 10%»
-      ·  85건: 인용 가능 밀도 N% — N% 이상 필요 [측정 0~8.6]
+  - ai_citable (#36 · citable_content · 1점) — FAIL 71/86 (83%)  «#36 Citable Sentence ≥ 10%»
+      ·  71건: 인용 가능 밀도 N% — N% 이상 필요 [측정 0~9.8]
   - perf_ttfb (#1 · performance · 1점) — FAIL 10/13 (77%)  «#1 TTFB < 600ms»
       ·  10건: TTFB Nms — Nms 미만 필요 [측정 1879~15740]
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 56/86 (65%)  «#32 FAQ Block (콘텐츠)»
@@ -2452,6 +2450,8 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
   - a11y_heading_hier (a11y#11 · accessibility · 1점) — FAIL 44/86 (51%)  «#11 Heading Hierarchy»
       ·  32건: 헤딩 역순 N건 — 첫 헤딩(hN)보다 상위 레벨이 뒤에 등장 [측정 1~3]
       ·  12건: 헤딩 태그가 없습니다.
+  - ai_definition (#33 · citable_content · 1점) — FAIL 44/86 (51%)  «#33 Definition Paragraph»
+      ·  44건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_schema_collection (#24 · schema_markup · 1점) — FAIL 40/83 (48%)  «#24 Schema: CollectionPage (PLP)»
       ·  40건: @type='CollectionPage' 노드 없음
   - seo_h1 (#16 · seo · 1점) — FAIL 32/86 (37%)  «#16 H1 정확히 1개»
@@ -2478,14 +2478,14 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·  56건: @type='ImageObject' 노드 없음
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 56/56 (100%)  «#32 FAQ Block (콘텐츠)»
       ·  56건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
-  - ai_definition (#33 · citable_content · 1점) — FAIL 56/56 (100%)  «#33 Definition Paragraph»
-      ·  56건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_summary_box (#35 · citable_content · 1점) — FAIL 56/56 (100%)  «#35 Summary Box (콘텐츠)»
       ·  56건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
   - ai_schema_video (#27 · schema_markup · 1점) — FAIL 2/2 (100%)  «#27 Schema: VideoObject»
       ·   2건: 필수 필드 누락: url
-  - ai_citable (#36 · citable_content · 1점) — FAIL 46/56 (82%)  «#36 Citable Sentence ≥ 10%»
-      ·  46건: 인용 가능 밀도 N% — N% 이상 필요 [측정 1.7~9.9]
+  - ai_definition (#33 · citable_content · 1점) — FAIL 45/56 (80%)  «#33 Definition Paragraph»
+      ·  45건: 정의문 N건 — N건 이상 필요 [측정 0]
+  - ai_citable (#36 · citable_content · 1점) — FAIL 31/56 (55%)  «#36 Citable Sentence ≥ 10%»
+      ·  31건: 인용 가능 밀도 N% — N% 이상 필요 [측정 0~9.1]
   - seo_meta_desc (#14 · seo · 1점) — FAIL 25/56 (45%)  «#14 Meta Description»
       ·  25건: 'meta[name='description' i]' 요소를 찾을 수 없습니다.
   - seo_h1 (#16 · seo · 1점) — FAIL 20/56 (36%)  «#16 H1 정확히 1개»
@@ -2501,8 +2501,6 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·  22건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 22/22 (100%)  «#26 Schema: ImageObject»
       ·  22건: @type='ImageObject' 노드 없음
-  - ai_definition (#33 · citable_content · 1점) — FAIL 22/22 (100%)  «#33 Definition Paragraph»
-      ·  22건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_schema_article (#29 · schema_markup · 1점) — FAIL 21/21 (100%)  «#29 Schema: Article»
       ·  21건: @type='Article' 노드 없음
   - ai_schema_video (#27 · schema_markup · 1점) — FAIL 10/10 (100%)  «#27 Schema: VideoObject»
@@ -2510,8 +2508,6 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   4건: 필수 필드 누락: url
   - ai_summary_box (#35 · citable_content · 1점) — FAIL 20/22 (91%)  «#35 Summary Box (콘텐츠)»
       ·  20건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
-  - ai_citable (#36 · citable_content · 1점) — FAIL 20/22 (91%)  «#36 Citable Sentence ≥ 10%»
-      ·  20건: 인용 가능 밀도 N% — N% 이상 필요 [측정 1.6~9.6]
   - ai_schema_faq (#23 · schema_markup · 1점) — FAIL 19/22 (86%)  «#23 Schema: FAQPage»
       ·  19건: @type='FAQPage' 노드 없음
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 18/22 (82%)  «#32 FAQ Block (콘텐츠)»
@@ -2520,6 +2516,10 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·  14건: 'hN' N개 — == N 필요 [측정 1]
   - seo_meta_desc (#14 · seo · 1점) — FAIL 12/22 (55%)  «#14 Meta Description»
       ·  12건: 'meta[name='description' i]' 요소를 찾을 수 없습니다.
+  - ai_definition (#33 · citable_content · 1점) — FAIL 12/22 (55%)  «#33 Definition Paragraph»
+      ·  12건: 정의문 N건 — N건 이상 필요 [측정 0]
+  - ai_citable (#36 · citable_content · 1점) — FAIL 10/22 (45%)  «#36 Citable Sentence ≥ 10%»
+      ·  10건: 인용 가능 밀도 N% — N% 이상 필요 [측정 0~7.7]
   - a11y_heading_hier (a11y#11 · accessibility · 1점) — FAIL 6/22 (27%)  «#11 Heading Hierarchy»
       ·   4건: 헤딩 역순 N건 — 첫 헤딩(hN)보다 상위 레벨이 뒤에 등장 [측정 1]
       ·   2건: 헤딩 태그가 없습니다.
@@ -2538,12 +2538,8 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·  13건: @type='ImageObject' 노드 없음
   - ai_schema_article (#29 · schema_markup · 1점) — FAIL 13/13 (100%)  «#29 Schema: Article»
       ·  13건: @type='Article' 노드 없음
-  - ai_definition (#33 · citable_content · 1점) — FAIL 13/13 (100%)  «#33 Definition Paragraph»
-      ·  13건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_author_source (#34 · citable_content · 1점) — FAIL 13/13 (100%)  «#34 Author 또는 출처+날짜»
       ·  13건: JSON-LD author 또는 (datePublished+publisher) 조합 없음
-  - ai_citable (#36 · citable_content · 1점) — FAIL 13/13 (100%)  «#36 Citable Sentence ≥ 10%»
-      ·  13건: 인용 가능 밀도 N% — N% 이상 필요 [측정 1~8.1]
   - ai_schema_video (#27 · schema_markup · 1점) — FAIL 8/8 (100%)  «#27 Schema: VideoObject»
       ·   7건: @type='VideoObject' 노드 없음
       ·   1건: 필수 필드 누락: url
@@ -2551,18 +2547,22 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·  12건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
   - ai_summary_box (#35 · citable_content · 1점) — FAIL 12/13 (92%)  «#35 Summary Box (콘텐츠)»
       ·  12건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
+  - ai_citable (#36 · citable_content · 1점) — FAIL 10/13 (77%)  «#36 Citable Sentence ≥ 10%»
+      ·  10건: 인용 가능 밀도 N% — N% 이상 필요 [측정 0~9.7]
   - seo_open_graph (#18 · seo · 1점) — FAIL 8/13 (62%)  «#18 Open Graph (title+image)»
       ·   7건: 누락: image
       ·   1건: 누락: title
   - seo_h1 (#16 · seo · 1점) — FAIL 6/13 (46%)  «#16 H1 정확히 1개»
       ·   6건: 'hN' N개 — == N 필요 [측정 1]
+  - ai_definition (#33 · citable_content · 1점) — FAIL 4/13 (31%)  «#33 Definition Paragraph»
+      ·   4건: 정의문 N건 — N건 이상 필요 [측정 0]
   - seo_meta_desc (#14 · seo · 1점) — FAIL 3/13 (23%)  «#14 Meta Description»
       ·   3건: 'meta[name='description' i]' 요소를 찾을 수 없습니다.
   - a11y_heading_hier (a11y#11 · accessibility · 1점) — FAIL 2/13 (15%)  «#11 Heading Hierarchy»
       ·   1건: 헤딩 태그가 없습니다.
       ·   1건: 헤딩 역순 N건 — 첫 헤딩(hN)보다 상위 레벨이 뒤에 등장 [측정 1]
 
-### [home] 홈페이지 — 2건  (감점 항목 14개)
+### [home] 홈페이지 — 2건  (감점 항목 13개)
   - seo_sitemap (#19 · seo · 1점) — FAIL 2/2 (100%)  «#19 Sitemap (1개월 내)»
       ·   2건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 2/2 (100%)  «#26 Schema: ImageObject»
@@ -2583,8 +2583,6 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   1건: @type='WebSite' 노드 없음
   - ai_summary_box (#35 · citable_content · 1점) — FAIL 1/2 (50%)  «#35 Summary Box (콘텐츠)»
       ·   1건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
-  - ai_citable (#36 · citable_content · 1점) — FAIL 1/2 (50%)  «#36 Citable Sentence ≥ 10%»
-      ·   1건: 인용 가능 밀도 N% — N% 이상 필요 [측정 3]
   - ai_ssr_ratio (#37 · ai_crawlability · 1점) — FAIL 1/2 (50%)  «#37 JS HTML Text Ratio ≥ 60%»
       ·   1건: SSR 비율 N% — N% 이상 필요 [측정 56]
   - ai_image_filename (#40 · ai_crawlability · 1점) — FAIL 1/2 (50%)  «#40 Image File Name 브랜드 포함»
@@ -2602,8 +2600,6 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 ##############################################################################
 
 ### [pdp] 제품 상세 (PDP) — 461건  (감점 항목 24개)
-  - ai_definition (#33 · citable_content · 1점) — FAIL 461/461 (100%)  «#33 Definition Paragraph»
-      · 461건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 460/460 (100%)  «#26 Schema: ImageObject»
       · 449건: @type='ImageObject' 노드 없음
       ·  11건: 필수 필드 누락: url, uploadDate
@@ -2634,10 +2630,12 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       · 423건: 헤딩 역순 N건 — 첫 헤딩(hN)보다 상위 레벨이 뒤에 등장 [측정 1~2]
       ·  10건: 헤딩 태그가 없습니다.
       ·   5건: 레벨 점프 N건 발견 (예: hN→hN) [측정 1]
-  - ai_citable (#36 · citable_content · 1점) — FAIL 430/461 (93%)  «#36 Citable Sentence ≥ 10%»
-      · 430건: 인용 가능 밀도 N% — N% 이상 필요 [측정 1.7~9.9]
   - ai_schema_faq (#23 · schema_markup · 1점) — FAIL 418/460 (91%)  «#23 Schema: FAQPage»
       · 418건: @type='FAQPage' 노드 없음
+  - ai_definition (#33 · citable_content · 1점) — FAIL 337/461 (73%)  «#33 Definition Paragraph»
+      · 337건: 정의문 N건 — N건 이상 필요 [측정 0]
+  - ai_citable (#36 · citable_content · 1점) — FAIL 243/461 (53%)  «#36 Citable Sentence ≥ 10%»
+      · 243건: 인용 가능 밀도 N% — N% 이상 필요 [측정 0~9.8]
   - a11y_image_alt (a11y#9 · accessibility · 1점) — FAIL 36/461 (8%)  «#9 Image Alt 누락 0»
       ·  36건: N개 요소에 'alt' 속성이 없습니다. [측정 1~14]
   - seo_h1 (#16 · seo · 1점) — FAIL 21/461 (5%)  «#16 H1 정확히 1개»
@@ -2659,8 +2657,6 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   3건: Cache-Control 부재 또는 no-store/no-cache.
 
 ### [plp] 제품 카테고리 (PLP) — 104건  (감점 항목 23개)
-  - ai_definition (#33 · citable_content · 1점) — FAIL 104/104 (100%)  «#33 Definition Paragraph»
-      · 104건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 98/98 (100%)  «#26 Schema: ImageObject»
       ·  98건: @type='ImageObject' 노드 없음
   - perf_html_size (#5 · performance · 1점) — FAIL 41/41 (100%)  «#5 HTML < 100KB»
@@ -2683,10 +2679,12 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·  99건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
   - perf_ttfb (#1 · performance · 1점) — FAIL 39/41 (95%)  «#1 TTFB < 600ms»
       ·  39건: TTFB Nms — Nms 미만 필요 [측정 1570~19926]
-  - ai_citable (#36 · citable_content · 1점) — FAIL 97/104 (93%)  «#36 Citable Sentence ≥ 10%»
-      ·  97건: 인용 가능 밀도 N% — N% 이상 필요 [측정 0~9.8]
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 96/104 (92%)  «#32 FAQ Block (콘텐츠)»
       ·  96건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
+  - ai_definition (#33 · citable_content · 1점) — FAIL 82/104 (79%)  «#33 Definition Paragraph»
+      ·  82건: 정의문 N건 — N건 이상 필요 [측정 0]
+  - ai_citable (#36 · citable_content · 1점) — FAIL 72/104 (69%)  «#36 Citable Sentence ≥ 10%»
+      ·  72건: 인용 가능 밀도 N% — N% 이상 필요 [측정 0~9.8]
   - ai_schema_collection (#24 · schema_markup · 1점) — FAIL 58/101 (57%)  «#24 Schema: CollectionPage (PLP)»
       ·  58건: @type='CollectionPage' 노드 없음
   - seo_h1 (#16 · seo · 1점) — FAIL 52/104 (50%)  «#16 H1 정확히 1개»
@@ -2714,8 +2712,6 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 ### [press_media] 프레스앤미디어 — 100건  (감점 항목 15개)
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 100/100 (100%)  «#32 FAQ Block (콘텐츠)»
       · 100건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
-  - ai_definition (#33 · citable_content · 1점) — FAIL 100/100 (100%)  «#33 Definition Paragraph»
-      · 100건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_summary_box (#35 · citable_content · 1점) — FAIL 100/100 (100%)  «#35 Summary Box (콘텐츠)»
       · 100건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 85/85 (100%)  «#26 Schema: ImageObject»
@@ -2728,13 +2724,13 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·  29건: head 내 blocking script N개 [측정 1]
   - seo_meta_desc (#14 · seo · 1점) — FAIL 99/100 (99%)  «#14 Meta Description»
       ·  99건: 'meta[name='description' i]' 요소를 찾을 수 없습니다.
-  - ai_citable (#36 · citable_content · 1점) — FAIL 96/100 (96%)  «#36 Citable Sentence ≥ 10%»
-      ·  96건: 인용 가능 밀도 N% — N% 이상 필요 [측정 1.8~8]
   - seo_h1 (#16 · seo · 1점) — FAIL 94/100 (94%)  «#16 H1 정확히 1개»
       ·  94건: 'hN' N개 — == N 필요 [측정 1]
   - ai_author_source (#34 · citable_content · 1점) — FAIL 17/29 (59%)  «#34 Author 또는 출처+날짜»
       ·  15건: 저자(meta/byline) 또는 (출처+datePublished) 조합 없음
       ·   2건: JSON-LD author 또는 (datePublished+publisher) 조합 없음
+  - ai_definition (#33 · citable_content · 1점) — FAIL 34/100 (34%)  «#33 Definition Paragraph»
+      ·  34건: 정의문 N건 — N건 이상 필요 [측정 0]
   - perf_cache_control (#4 · performance · 1점) — FAIL 29/100 (29%)  «#4 Cache-Control max-age 설정»
       ·  29건: Cache-Control 부재 또는 no-store/no-cache.
   - seo_sitemap (#19 · seo · 1점) — FAIL 15/100 (15%)  «#19 Sitemap (1개월 내)»
@@ -2744,18 +2740,18 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
   - a11y_heading_hier (a11y#11 · accessibility · 1점) — FAIL 4/100 (4%)  «#11 Heading Hierarchy»
       ·   3건: 헤딩 역순 N건 — 첫 헤딩(hN)보다 상위 레벨이 뒤에 등장 [측정 1]
       ·   1건: 헤딩 태그가 없습니다.
+  - ai_citable (#36 · citable_content · 1점) — FAIL 4/100 (4%)  «#36 Citable Sentence ≥ 10%»
+      ·   4건: 인용 가능 밀도 N% — N% 이상 필요 [측정 0~9.4]
 
 ### [support_troubleshoot] 지원 - 트러블슈팅 — 100건  (감점 항목 14개)
   - ai_schema_howto (#28 · schema_markup · 1점) — FAIL 100/100 (100%)  «#28 Schema: HowTo»
       · 100건: @type='HowTo' 노드 없음
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 100/100 (100%)  «#32 FAQ Block (콘텐츠)»
       · 100건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
-  - ai_definition (#33 · citable_content · 1점) — FAIL 100/100 (100%)  «#33 Definition Paragraph»
-      · 100건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_summary_box (#35 · citable_content · 1점) — FAIL 100/100 (100%)  «#35 Summary Box (콘텐츠)»
       · 100건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
   - ai_citable (#36 · citable_content · 1점) — FAIL 100/100 (100%)  «#36 Citable Sentence ≥ 10%»
-      · 100건: 인용 가능 밀도 N% — N% 이상 필요 [측정 3.8~4.1]
+      · 100건: 인용 가능 밀도 N% — N% 이상 필요 [측정 4.2~8.7]
   - ai_ssr_ratio (#37 · ai_crawlability · 1점) — FAIL 100/100 (100%)  «#37 JS HTML Text Ratio ≥ 60%»
       · 100건: SSR 비율 N% — N% 이상 필요 [측정 21]
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 99/99 (100%)  «#26 Schema: ImageObject»
@@ -2769,6 +2765,8 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
   - ai_author_source (#34 · citable_content · 1점) — FAIL 4/4 (100%)  «#34 Author 또는 출처+날짜»
       ·   3건: JSON-LD author 또는 (datePublished+publisher) 조합 없음
       ·   1건: 저자(meta/byline) 또는 (출처+datePublished) 조합 없음
+  - ai_definition (#33 · citable_content · 1점) — FAIL 97/100 (97%)  «#33 Definition Paragraph»
+      ·  97건: 정의문 N건 — N건 이상 필요 [측정 0]
   - perf_cache_control (#4 · performance · 1점) — FAIL 1/100 (1%)  «#4 Cache-Control max-age 설정»
       ·   1건: Cache-Control 부재 또는 no-store/no-cache.
   - a11y_semantic (a11y#10 · accessibility · 1점) — FAIL 1/100 (1%)  «#10 Semantic HTML»
@@ -2783,18 +2781,18 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·  95건: @type='Offer' 노드 없음
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 95/95 (100%)  «#26 Schema: ImageObject»
       ·  95건: @type='ImageObject' 노드 없음
-  - ai_definition (#33 · citable_content · 1점) — FAIL 95/95 (100%)  «#33 Definition Paragraph»
-      ·  95건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_summary_box (#35 · citable_content · 1점) — FAIL 95/95 (100%)  «#35 Summary Box (콘텐츠)»
       ·  95건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
-  - ai_citable (#36 · citable_content · 1점) — FAIL 95/95 (100%)  «#36 Citable Sentence ≥ 10%»
-      ·  95건: 인용 가능 밀도 N% — N% 이상 필요 [측정 0~7.1]
   - ai_ssr_ratio (#37 · ai_crawlability · 1점) — FAIL 95/95 (100%)  «#37 JS HTML Text Ratio ≥ 60%»
       ·  95건: SSR 비율 N% — N% 이상 필요 [측정 57]
   - ai_schema_video (#27 · schema_markup · 1점) — FAIL 27/27 (100%)  «#27 Schema: VideoObject»
       ·  27건: @type='VideoObject' 노드 없음
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 89/95 (94%)  «#32 FAQ Block (콘텐츠)»
       ·  89건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
+  - ai_citable (#36 · citable_content · 1점) — FAIL 60/95 (63%)  «#36 Citable Sentence ≥ 10%»
+      ·  60건: 인용 가능 밀도 N% — N% 이상 필요 [측정 0~9.1]
+  - ai_definition (#33 · citable_content · 1점) — FAIL 56/95 (59%)  «#33 Definition Paragraph»
+      ·  56건: 정의문 N건 — N건 이상 필요 [측정 0]
   - seo_h1 (#16 · seo · 1점) — FAIL 15/95 (16%)  «#16 H1 정확히 1개»
       ·  15건: 'hN' N개 — == N 필요 [측정 1]
   - seo_meta_desc (#14 · seo · 1점) — FAIL 2/95 (2%)  «#14 Meta Description»
@@ -2809,8 +2807,6 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 ### [promotion] 프로모션/약관 — 91건  (감점 항목 16개)
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 91/91 (100%)  «#26 Schema: ImageObject»
       ·  91건: @type='ImageObject' 노드 없음
-  - ai_definition (#33 · citable_content · 1점) — FAIL 91/91 (100%)  «#33 Definition Paragraph»
-      ·  91건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_schema_offer (#43 · schema_markup · 1점) — FAIL 91/91 (100%)  «#43 Schema: Offer»
       ·  91건: @type='Offer' 노드 없음
   - perf_html_size (#5 · performance · 1점) — FAIL 62/62 (100%)  «#5 HTML < 100KB»
@@ -2831,8 +2827,10 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·  89건: 'hN' N개 — == N 필요 [측정 1]
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 87/91 (96%)  «#32 FAQ Block (콘텐츠)»
       ·  87건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
-  - ai_citable (#36 · citable_content · 1점) — FAIL 85/91 (93%)  «#36 Citable Sentence ≥ 10%»
-      ·  85건: 인용 가능 밀도 N% — N% 이상 필요 [측정 1.6~9.8]
+  - ai_definition (#33 · citable_content · 1점) — FAIL 86/91 (95%)  «#33 Definition Paragraph»
+      ·  86건: 정의문 N건 — N건 이상 필요 [측정 0]
+  - ai_citable (#36 · citable_content · 1점) — FAIL 66/91 (73%)  «#36 Citable Sentence ≥ 10%»
+      ·  66건: 인용 가능 밀도 N% — N% 이상 필요 [측정 0~8.7]
   - perf_cache_control (#4 · performance · 1점) — FAIL 51/91 (56%)  «#4 Cache-Control max-age»
       ·  51건: Cache-Control 부재 또는 no-store/no-cache.
   - a11y_heading_hier (a11y#11 · accessibility · 1점) — FAIL 37/91 (41%)  «#11 Heading Hierarchy»
@@ -2842,8 +2840,6 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   4건: 누락: title
 
 ### [support] 지원/Support — 86건  (감점 항목 20개)
-  - ai_definition (#33 · citable_content · 1점) — FAIL 86/86 (100%)  «#33 Definition Paragraph»
-      ·  86건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 52/52 (100%)  «#26 Schema: ImageObject»
       ·  52건: @type='ImageObject' 노드 없음
   - perf_ttfb (#1 · performance · 1점) — FAIL 47/47 (100%)  «#1 TTFB < 600ms»
@@ -2857,12 +2853,14 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·  13건: JSON-LD author 또는 (datePublished+publisher) 조합 없음
   - ai_schema_video (#27 · schema_markup · 1점) — FAIL 1/1 (100%)  «#27 Schema: VideoObject»
       ·   1건: @type='VideoObject' 노드 없음
-  - ai_citable (#36 · citable_content · 1점) — FAIL 84/86 (98%)  «#36 Citable Sentence ≥ 10%»
-      ·  84건: 인용 가능 밀도 N% — N% 이상 필요 [측정 1.1~8.2]
   - ai_summary_box (#35 · citable_content · 1점) — FAIL 78/86 (91%)  «#35 Summary Box (콘텐츠)»
       ·  78건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
+  - ai_definition (#33 · citable_content · 1점) — FAIL 74/86 (86%)  «#33 Definition Paragraph»
+      ·  74건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 73/86 (85%)  «#32 FAQ Block (콘텐츠)»
       ·  73건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
+  - ai_citable (#36 · citable_content · 1점) — FAIL 64/86 (74%)  «#36 Citable Sentence ≥ 10%»
+      ·  64건: 인용 가능 밀도 N% — N% 이상 필요 [측정 0~9.5]
   - seo_h1 (#16 · seo · 1점) — FAIL 53/86 (62%)  «#16 H1 정확히 1개»
       ·  53건: 'hN' N개 — == N 필요 [측정 1]
   - perf_cache_control (#4 · performance · 1점) — FAIL 47/86 (55%)  «#4 Cache-Control max-age 설정»
@@ -2891,8 +2889,6 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·  74건: @type='ImageObject' 노드 없음
   - ai_schema_article (#29 · schema_markup · 1점) — FAIL 74/74 (100%)  «#29 Schema: Article»
       ·  74건: @type='Article' 노드 없음
-  - ai_definition (#33 · citable_content · 1점) — FAIL 74/74 (100%)  «#33 Definition Paragraph»
-      ·  74건: 정의문 N건 — N건 이상 필요 [측정 0]
   - perf_ttfb (#1 · performance · 1점) — FAIL 66/66 (100%)  «#1 TTFB < 600ms»
       ·  66건: TTFB Nms — Nms 미만 필요 [측정 1449~26959]
   - perf_html_size (#5 · performance · 1점) — FAIL 66/66 (100%)  «#5 HTML < 100KB»
@@ -2900,8 +2896,6 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
   - ai_schema_video (#27 · schema_markup · 1점) — FAIL 27/27 (100%)  «#27 Schema: VideoObject»
       ·  18건: @type='VideoObject' 노드 없음
       ·   9건: 필수 필드 누락: url
-  - ai_citable (#36 · citable_content · 1점) — FAIL 67/74 (91%)  «#36 Citable Sentence ≥ 10%»
-      ·  67건: 인용 가능 밀도 N% — N% 이상 필요 [측정 1.2~7.9]
   - perf_render_block (#8 · performance · 1점) — FAIL 59/66 (89%)  «#8 Render Blocking 0»
       ·  59건: head 내 blocking script N개 [측정 1]
   - ai_summary_box (#35 · citable_content · 1점) — FAIL 66/74 (89%)  «#35 Summary Box (콘텐츠)»
@@ -2913,8 +2907,12 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   1건: 저자(meta/byline) 또는 (출처+datePublished) 조합 없음
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 49/74 (66%)  «#32 FAQ Block (콘텐츠)»
       ·  49건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
+  - ai_citable (#36 · citable_content · 1점) — FAIL 46/74 (62%)  «#36 Citable Sentence ≥ 10%»
+      ·  46건: 인용 가능 밀도 N% — N% 이상 필요 [측정 0~9.8]
   - seo_h1 (#16 · seo · 1점) — FAIL 29/74 (39%)  «#16 H1 정확히 1개»
       ·  29건: 'hN' N개 — == N 필요 [측정 1]
+  - ai_definition (#33 · citable_content · 1점) — FAIL 25/74 (34%)  «#33 Definition Paragraph»
+      ·  25건: 정의문 N건 — N건 이상 필요 [측정 0]
   - seo_open_graph (#18 · seo · 1점) — FAIL 18/74 (24%)  «#18 Open Graph (title+image)»
       ·  16건: 누락: image
       ·   2건: 누락: title
@@ -2941,15 +2939,11 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·  24건: @type='ImageObject' 노드 없음
   - ai_schema_article (#29 · schema_markup · 1점) — FAIL 24/24 (100%)  «#29 Schema: Article»
       ·  24건: @type='Article' 노드 없음
-  - ai_definition (#33 · citable_content · 1점) — FAIL 24/24 (100%)  «#33 Definition Paragraph»
-      ·  24건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_author_source (#34 · citable_content · 1점) — FAIL 24/24 (100%)  «#34 Author 또는 출처+날짜»
       ·  24건: JSON-LD author 또는 (datePublished+publisher) 조합 없음
   - ai_schema_video (#27 · schema_markup · 1점) — FAIL 14/14 (100%)  «#27 Schema: VideoObject»
       ·  10건: @type='VideoObject' 노드 없음
       ·   4건: 필수 필드 누락: url
-  - ai_citable (#36 · citable_content · 1점) — FAIL 23/24 (96%)  «#36 Citable Sentence ≥ 10%»
-      ·  23건: 인용 가능 밀도 N% — N% 이상 필요 [측정 1.6~8.4]
   - ai_summary_box (#35 · citable_content · 1점) — FAIL 17/24 (71%)  «#35 Summary Box (콘텐츠)»
       ·  17건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
   - perf_cache_control (#4 · performance · 1점) — FAIL 15/24 (62%)  «#4 Cache-Control max-age»
@@ -2961,6 +2955,10 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
   - seo_open_graph (#18 · seo · 1점) — FAIL 9/24 (38%)  «#18 Open Graph (title+image)»
       ·   7건: 누락: image
       ·   2건: 누락: title
+  - ai_citable (#36 · citable_content · 1점) — FAIL 7/24 (29%)  «#36 Citable Sentence ≥ 10%»
+      ·   7건: 인용 가능 밀도 N% — N% 이상 필요 [측정 0~8.4]
+  - ai_definition (#33 · citable_content · 1점) — FAIL 5/24 (21%)  «#33 Definition Paragraph»
+      ·   5건: 정의문 N건 — N건 이상 필요 [측정 0]
   - seo_h1 (#16 · seo · 1점) — FAIL 3/24 (12%)  «#16 H1 정확히 1개»
       ·   3건: 'hN' N개 — == N 필요 [측정 1]
   - a11y_heading_hier (a11y#11 · accessibility · 1점) — FAIL 2/24 (8%)  «#11 Heading Hierarchy»
@@ -2974,8 +2972,6 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   8건: @type='ImageObject' 노드 없음
   - ai_schema_article (#29 · schema_markup · 1점) — FAIL 8/8 (100%)  «#29 Schema: Article»
       ·   8건: @type='Article' 노드 없음
-  - ai_definition (#33 · citable_content · 1점) — FAIL 8/8 (100%)  «#33 Definition Paragraph»
-      ·   8건: 정의문 N건 — N건 이상 필요 [측정 0]
   - perf_ttfb (#1 · performance · 1점) — FAIL 6/6 (100%)  «#1 TTFB < 600ms»
       ·   6건: TTFB Nms — Nms 미만 필요 [측정 3017~3446]
   - perf_html_size (#5 · performance · 1점) — FAIL 6/6 (100%)  «#5 HTML < 100KB»
@@ -2989,8 +2985,6 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   2건: 필수 필드 누락: url
   - ai_summary_box (#35 · citable_content · 1점) — FAIL 7/8 (88%)  «#35 Summary Box (콘텐츠)»
       ·   7건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
-  - ai_citable (#36 · citable_content · 1점) — FAIL 7/8 (88%)  «#36 Citable Sentence ≥ 10%»
-      ·   7건: 인용 가능 밀도 N% — N% 이상 필요 [측정 2.6~7.7]
   - ai_schema_faq (#23 · schema_markup · 1점) — FAIL 6/8 (75%)  «#23 Schema: FAQPage»
       ·   6건: @type='FAQPage' 노드 없음
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 6/8 (75%)  «#32 FAQ Block (콘텐츠)»
@@ -2999,6 +2993,10 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   4건: Cache-Control 부재 또는 no-store/no-cache.
   - seo_h1 (#16 · seo · 1점) — FAIL 3/8 (38%)  «#16 H1 정확히 1개»
       ·   3건: 'hN' N개 — == N 필요 [측정 1]
+  - ai_definition (#33 · citable_content · 1점) — FAIL 2/8 (25%)  «#33 Definition Paragraph»
+      ·   2건: 정의문 N건 — N건 이상 필요 [측정 0]
+  - ai_citable (#36 · citable_content · 1점) — FAIL 2/8 (25%)  «#36 Citable Sentence ≥ 10%»
+      ·   2건: 인용 가능 밀도 N% — N% 이상 필요 [측정 3~4.5]
   - a11y_image_alt (a11y#9 · accessibility · 1점) — FAIL 1/8 (12%)  «#9 Image Alt 누락 0»
       ·   1건: N개 요소에 'alt' 속성이 없습니다. [측정 1]
   - a11y_heading_hier (a11y#11 · accessibility · 1점) — FAIL 1/8 (12%)  «#11 Heading Hierarchy»
@@ -3006,9 +3004,9 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
   - seo_meta_desc (#14 · seo · 1점) — FAIL 1/8 (12%)  «#14 Meta Description»
       ·   1건: 'meta[name='description' i]' 요소를 찾을 수 없습니다.
 
-### [home] 홈페이지 — 2건  (감점 항목 14개)
-  - ai_definition (#33 · citable_content · 1점) — FAIL 2/2 (100%)  «#33 Definition Paragraph»
-      ·   2건: 정의문 N건 — N건 이상 필요 [측정 0]
+### [home] 홈페이지 — 2건  (감점 항목 13개)
+  - ai_summary_box (#35 · citable_content · 1점) — FAIL 2/2 (100%)  «#35 Summary Box (콘텐츠)»
+      ·   2건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
   - perf_ttfb (#1 · performance · 1점) — FAIL 1/1 (100%)  «#1 TTFB < 600ms»
       ·   1건: TTFB Nms — Nms 미만 필요 [측정 788]
   - perf_html_size (#5 · performance · 1점) — FAIL 1/1 (100%)  «#5 HTML < 100KB»
@@ -3031,13 +3029,11 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   1건: @type='BreadcrumbList' 노드 없음
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 1/2 (50%)  «#32 FAQ Block (콘텐츠)»
       ·   1건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
-  - ai_summary_box (#35 · citable_content · 1점) — FAIL 1/2 (50%)  «#35 Summary Box (콘텐츠)»
-      ·   1건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
-  - ai_citable (#36 · citable_content · 1점) — FAIL 1/2 (50%)  «#36 Citable Sentence ≥ 10%»
-      ·   1건: 인용 가능 밀도 N% — N% 이상 필요 [측정 7.6]
+  - ai_definition (#33 · citable_content · 1점) — FAIL 1/2 (50%)  «#33 Definition Paragraph»
+      ·   1건: 정의문 N건 — N건 이상 필요 [측정 0]
 
 ##############################################################################
-## UK   run=uk_2026-08-29_run_35109956ad6f.json
+## UK   run=uk_2026-08-30_run_35109956ad6f.json
    URL 1299건 · 감사성공 1261 · [config] 신(2026-06-17 재배포)
    등급(성공 기준): Good 317 / Need Improvement 935 / Poor 9
    ⚠ 감사 불가(fetch 실패) 38건 — 아래 감점 집계에서 제외:
@@ -3049,8 +3045,6 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 472/472 (100%)  «#26 Schema: ImageObject»
       · 465건: @type='ImageObject' 노드 없음
       ·   7건: 필수 필드 누락: url, uploadDate
-  - ai_definition (#33 · citable_content · 1점) — FAIL 472/472 (100%)  «#33 Definition Paragraph»
-      · 472건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_schema_product (#25 · schema_markup · 1점) — FAIL 465/465 (100%)  «#25 Schema: Product 풀세트 (PDP)»
       · 359건: @type='Product/ProductGroup' 노드 없음
       · 104건: @type='Product' 노드 없음
@@ -3083,8 +3077,6 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   9건: 저자(meta/byline) 또는 (출처+datePublished) 조합 없음
   - ai_schema_faq (#23 · schema_markup · 1점) — FAIL 428/463 (92%)  «#23 Schema: FAQPage»
       · 428건: @type='FAQPage' 노드 없음
-  - ai_citable (#36 · citable_content · 1점) — FAIL 294/472 (62%)  «#36 Citable Sentence ≥ 10%»
-      · 294건: 인용 가능 밀도 N% — N% 이상 필요 [측정 0~9.9]
   - a11y_image_alt (a11y#9 · accessibility · 1점) — FAIL 42/472 (9%)  «#9 Image Alt 누락 0»
       ·  42건: N개 요소에 'alt' 속성이 없습니다. [측정 1~8]
   - seo_h1 (#16 · seo · 1점) — FAIL 19/472 (4%)  «#16 H1 정확히 1개»
@@ -3093,8 +3085,12 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·  19건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 12/472 (3%)  «#32 FAQ Block (콘텐츠)»
       ·  12건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
+  - ai_citable (#36 · citable_content · 1점) — FAIL 10/472 (2%)  «#36 Citable Sentence ≥ 10%»
+      ·  10건: 인용 가능 밀도 N% — N% 이상 필요 [측정 1.8~9.7]
   - seo_sitemap (#19 · seo · 1점) — FAIL 9/472 (2%)  «#19 Sitemap (1개월 내)»
       ·   9건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
+  - ai_definition (#33 · citable_content · 1점) — FAIL 4/472 (1%)  «#33 Definition Paragraph»
+      ·   4건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_core_element (#39 · ai_crawlability · 1점) — FAIL 3/457 (1%)  «#39 PDP 핵심 element SSR (5개 영역 중 3개 이상)»
       ·   2건: 매칭: [제품명(jsonld), 갤러리(dom)] · 누락: [가격, 사양, 리뷰] · 최소 N개 필요 [측정 3]
       ·   1건: 매칭: [제품명(dom), 갤러리(dom)] · 누락: [가격, 사양, 리뷰] · 최소 N개 필요 [측정 3]
@@ -3107,11 +3103,9 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
   - ai_schema_breadcrumb (#21 · schema_markup · 1점) — FAIL 1/472 (0%)  «#21 Schema: BreadcrumbList»
       ·   1건: @type='BreadcrumbList' 노드 없음
 
-### [content] 콘텐츠/매거진 — 100건  (감점 항목 13개)
+### [content] 콘텐츠/매거진 — 100건  (감점 항목 12개)
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 100/100 (100%)  «#26 Schema: ImageObject»
       · 100건: @type='ImageObject' 노드 없음
-  - ai_definition (#33 · citable_content · 1점) — FAIL 100/100 (100%)  «#33 Definition Paragraph»
-      · 100건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_schema_article (#29 · schema_markup · 1점) — FAIL 99/99 (100%)  «#29 Schema: Article»
       ·  99건: @type='Article' 노드 없음
   - ai_author_source (#34 · citable_content · 1점) — FAIL 99/99 (100%)  «#34 Author 또는 출처+날짜»
@@ -3121,8 +3115,6 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   2건: @type='VideoObject' 노드 없음
   - ai_summary_box (#35 · citable_content · 1점) — FAIL 93/100 (93%)  «#35 Summary Box (콘텐츠)»
       ·  93건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
-  - ai_citable (#36 · citable_content · 1점) — FAIL 62/100 (62%)  «#36 Citable Sentence ≥ 10%»
-      ·  62건: 인용 가능 밀도 N% — N% 이상 필요 [측정 4.7~9.8]
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 60/100 (60%)  «#32 FAQ Block (콘텐츠)»
       ·  60건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
   - a11y_heading_hier (a11y#11 · accessibility · 1점) — FAIL 29/100 (29%)  «#11 Heading Hierarchy»
@@ -3132,18 +3124,18 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·  29건: 'meta[name='description' i]' 요소를 찾을 수 없습니다.
   - seo_h1 (#16 · seo · 1점) — FAIL 29/100 (29%)  «#16 H1 정확히 1개»
       ·  29건: 'hN' N개 — == N 필요 [측정 1]
+  - ai_citable (#36 · citable_content · 1점) — FAIL 18/100 (18%)  «#36 Citable Sentence ≥ 10%»
+      ·  18건: 인용 가능 밀도 N% — N% 이상 필요 [측정 5.6~9.8]
   - a11y_image_alt (a11y#9 · accessibility · 1점) — FAIL 8/100 (8%)  «#9 Image Alt 누락 0»
       ·   8건: N개 요소에 'alt' 속성이 없습니다. [측정 1~5]
   - seo_open_graph (#18 · seo · 1점) — FAIL 1/100 (1%)  «#18 Open Graph (title+image)»
       ·   1건: 누락: title
 
-### [press_media] 프레스앤미디어 — 100건  (감점 항목 10개)
+### [press_media] 프레스앤미디어 — 100건  (감점 항목 8개)
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 100/100 (100%)  «#26 Schema: ImageObject»
       · 100건: @type='ImageObject' 노드 없음
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 100/100 (100%)  «#32 FAQ Block (콘텐츠)»
       · 100건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
-  - ai_definition (#33 · citable_content · 1점) — FAIL 100/100 (100%)  «#33 Definition Paragraph»
-      · 100건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_summary_box (#35 · citable_content · 1점) — FAIL 100/100 (100%)  «#35 Summary Box (콘텐츠)»
       · 100건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
   - ai_schema_video (#27 · schema_markup · 1점) — FAIL 1/1 (100%)  «#27 Schema: VideoObject»
@@ -3154,16 +3146,12 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·  74건: 'meta[name='description' i]' 요소를 찾을 수 없습니다.
   - seo_open_graph (#18 · seo · 1점) — FAIL 74/100 (74%)  «#18 Open Graph (title+image)»
       ·  74건: 누락: title
-  - ai_citable (#36 · citable_content · 1점) — FAIL 60/100 (60%)  «#36 Citable Sentence ≥ 10%»
-      ·  60건: 인용 가능 밀도 N% — N% 이상 필요 [측정 6.1~9.9]
   - perf_mixed_content (#7 · performance · 1점) — FAIL 1/100 (1%)  «#7 Mixed Content 0»
       ·   1건: http:// 리소스 N개: <img> [측정 1]
 
-### [support] 지원/Support — 100건  (감점 항목 14개)
+### [support] 지원/Support — 100건  (감점 항목 13개)
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 100/100 (100%)  «#26 Schema: ImageObject»
       · 100건: @type='ImageObject' 노드 없음
-  - ai_definition (#33 · citable_content · 1점) — FAIL 100/100 (100%)  «#33 Definition Paragraph»
-      · 100건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_ssr_ratio (#37 · ai_crawlability · 1점) — FAIL 100/100 (100%)  «#37 JS HTML Text Ratio ≥ 60%»
       · 100건: SSR 비율 N% — N% 이상 필요 [측정 60]
   - ai_schema_video (#27 · schema_markup · 1점) — FAIL 1/1 (100%)  «#27 Schema: VideoObject»
@@ -3185,20 +3173,18 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   5건: 헤딩 역순 N건 — 첫 헤딩(hN)보다 상위 레벨이 뒤에 등장 [측정 1~5]
   - seo_title (#13 · seo · 1점) — FAIL 17/100 (17%)  «#13 Title 존재»
       ·  17건: 텍스트 길이 N — N자 이상 필요 [측정 0]
-  - ai_citable (#36 · citable_content · 1점) — FAIL 4/100 (4%)  «#36 Citable Sentence ≥ 10%»
-      ·   4건: 인용 가능 밀도 N% — N% 이상 필요 [측정 4.3~8.4]
   - a11y_image_alt (a11y#9 · accessibility · 1점) — FAIL 2/100 (2%)  «#9 Image Alt 누락 0»
       ·   2건: N개 요소에 'alt' 속성이 없습니다. [측정 7~11]
+  - ai_citable (#36 · citable_content · 1점) — FAIL 1/100 (1%)  «#36 Citable Sentence ≥ 10%»
+      ·   1건: 인용 가능 밀도 N% — N% 이상 필요 [측정 9]
 
-### [support_troubleshoot] 지원 - 트러블슈팅 — 100건  (감점 항목 11개)
+### [support_troubleshoot] 지원 - 트러블슈팅 — 100건  (감점 항목 10개)
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 100/100 (100%)  «#26 Schema: ImageObject»
       · 100건: @type='ImageObject' 노드 없음
   - ai_schema_howto (#28 · schema_markup · 1점) — FAIL 100/100 (100%)  «#28 Schema: HowTo»
       · 100건: @type='HowTo' 노드 없음
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 100/100 (100%)  «#32 FAQ Block (콘텐츠)»
       · 100건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
-  - ai_definition (#33 · citable_content · 1점) — FAIL 100/100 (100%)  «#33 Definition Paragraph»
-      · 100건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_summary_box (#35 · citable_content · 1점) — FAIL 100/100 (100%)  «#35 Summary Box (콘텐츠)»
       · 100건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
   - ai_ssr_ratio (#37 · ai_crawlability · 1점) — FAIL 100/100 (100%)  «#37 JS HTML Text Ratio ≥ 60%»
@@ -3214,13 +3200,11 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
   - seo_meta_desc (#14 · seo · 1점) — FAIL 3/100 (3%)  «#14 Meta Description»
       ·   3건: 'meta[name='description' i]' 요소를 찾을 수 없습니다.
 
-### [promotion] 프로모션/약관 — 98건  (감점 항목 13개)
+### [promotion] 프로모션/약관 — 98건  (감점 항목 11개)
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 98/98 (100%)  «#26 Schema: ImageObject»
       ·  98건: @type='ImageObject' 노드 없음
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 98/98 (100%)  «#32 FAQ Block (콘텐츠)»
       ·  98건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
-  - ai_definition (#33 · citable_content · 1점) — FAIL 98/98 (100%)  «#33 Definition Paragraph»
-      ·  98건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_schema_offer (#43 · schema_markup · 1점) — FAIL 97/97 (100%)  «#43 Schema: Offer»
       ·  97건: @type='Offer' 노드 없음
   - ai_schema_video (#27 · schema_markup · 1점) — FAIL 7/7 (100%)  «#27 Schema: VideoObject»
@@ -3232,8 +3216,6 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·  97건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
   - seo_h1 (#16 · seo · 1점) — FAIL 61/98 (62%)  «#16 H1 정확히 1개»
       ·  61건: 'hN' N개 — == N 필요 [측정 1]
-  - ai_citable (#36 · citable_content · 1점) — FAIL 27/98 (28%)  «#36 Citable Sentence ≥ 10%»
-      ·  27건: 인용 가능 밀도 N% — N% 이상 필요 [측정 8.1~9.9]
   - a11y_heading_hier (a11y#11 · accessibility · 1점) — FAIL 22/98 (22%)  «#11 Heading Hierarchy»
       ·  11건: 헤딩 태그가 없습니다.
       ·  11건: 헤딩 역순 N건 — 첫 헤딩(hN)보다 상위 레벨이 뒤에 등장 [측정 1~6]
@@ -3253,16 +3235,16 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·  96건: @type='Offer' 노드 없음
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 96/96 (100%)  «#26 Schema: ImageObject»
       ·  96건: @type='ImageObject' 노드 없음
-  - ai_definition (#33 · citable_content · 1점) — FAIL 96/96 (100%)  «#33 Definition Paragraph»
-      ·  96건: 정의문 N건 — N건 이상 필요 [측정 0]
-  - ai_citable (#36 · citable_content · 1점) — FAIL 96/96 (100%)  «#36 Citable Sentence ≥ 10%»
-      ·  96건: 인용 가능 밀도 N% — N% 이상 필요 [측정 0~8.5]
   - ai_ssr_ratio (#37 · ai_crawlability · 1점) — FAIL 96/96 (100%)  «#37 JS HTML Text Ratio ≥ 60%»
       ·  96건: SSR 비율 N% — N% 이상 필요 [측정 57]
   - ai_schema_video (#27 · schema_markup · 1점) — FAIL 9/9 (100%)  «#27 Schema: VideoObject»
       ·   9건: @type='VideoObject' 노드 없음
+  - ai_definition (#33 · citable_content · 1점) — FAIL 63/96 (66%)  «#33 Definition Paragraph»
+      ·  63건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_summary_box (#35 · citable_content · 1점) — FAIL 57/96 (59%)  «#35 Summary Box (콘텐츠)»
       ·  57건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
+  - ai_citable (#36 · citable_content · 1점) — FAIL 53/96 (55%)  «#36 Citable Sentence ≥ 10%»
+      ·  53건: 인용 가능 밀도 N% — N% 이상 필요 [측정 1.3~9.8]
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 46/96 (48%)  «#32 FAQ Block (콘텐츠)»
       ·  46건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
   - a11y_heading_hier (a11y#11 · accessibility · 1점) — FAIL 37/96 (39%)  «#11 Heading Hierarchy»
@@ -3273,8 +3255,6 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   1건: N개 요소에 'alt' 속성이 없습니다. [측정 1]
 
 ### [plp] 제품 카테고리 (PLP) — 95건  (감점 항목 32개)
-  - ai_definition (#33 · citable_content · 1점) — FAIL 95/95 (100%)  «#33 Definition Paragraph»
-      ·  95건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 94/94 (100%)  «#26 Schema: ImageObject»
       ·  94건: @type='ImageObject' 노드 없음
   - ai_schema_video (#27 · schema_markup · 1점) — FAIL 32/32 (100%)  «#27 Schema: VideoObject»
@@ -3301,8 +3281,6 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·  11건: TTFB Nms — Nms 미만 필요 [측정 2371~13113]
   - ai_schema_faq (#23 · schema_markup · 1점) — FAIL 62/92 (67%)  «#23 Schema: FAQPage»
       ·  62건: @type='FAQPage' 노드 없음
-  - ai_citable (#36 · citable_content · 1점) — FAIL 58/95 (61%)  «#36 Citable Sentence ≥ 10%»
-      ·  58건: 인용 가능 밀도 N% — N% 이상 필요 [측정 0~9.9]
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 57/95 (60%)  «#32 FAQ Block (콘텐츠)»
       ·  57건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
   - ai_schema_collection (#24 · schema_markup · 1점) — FAIL 44/87 (51%)  «#24 Schema: CollectionPage (PLP)»
@@ -3325,6 +3303,8 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
   - perf_cache_control (#4 · performance · 1점) — FAIL 6/95 (6%)  «#4 Cache-Control max-age 설정»
       ·   5건: Cache-Control 부재 또는 no-store/no-cache.
       ·   1건: max-age 디렉티브가 없습니다.
+  - ai_citable (#36 · citable_content · 1점) — FAIL 5/95 (5%)  «#36 Citable Sentence ≥ 10%»
+      ·   5건: 인용 가능 밀도 N% — N% 이상 필요 [측정 2.9~8.5]
   - perf_redirect (#6 · performance · 1점) — FAIL 2/95 (2%)  «#6 Redirect ≤ 1»
       ·   2건: 리다이렉트 N회 — N회 이하 권장 [측정 2]
   - a11y_semantic (a11y#10 · accessibility · 1점) — FAIL 2/95 (2%)  «#10 Semantic HTML»
@@ -3339,25 +3319,23 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   1건: canonical 태그 없음
   - ai_schema_breadcrumb (#21 · schema_markup · 1점) — FAIL 1/95 (1%)  «#21 Schema: BreadcrumbList»
       ·   1건: @type='BreadcrumbList' 노드 없음
+  - ai_definition (#33 · citable_content · 1점) — FAIL 1/95 (1%)  «#33 Definition Paragraph»
+      ·   1건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_ssr_ratio (#37 · ai_crawlability · 1점) — FAIL 1/95 (1%)  «#37 JS HTML Text Ratio ≥ 60%»
       ·   1건: SSR 비율 N% — N% 이상 필요 [측정 57]
   - ai_summary_ssr (#40 · ai_crawlability · 1점) — FAIL 1/95 (1%)  «#40 Summary Content SSR»
       ·   1건: '[class*='summary'], [class*='Summary'], [id*='summary'], [class*='overview'], [class*='Overview'], [class*='highlight'], [class*='Product-KeyFeatures'], [class*='Product-Features']' 요소를 찾을 수 없습니다.
 
-### [microsite] 마이크로사이트/캠페인 — 53건  (감점 항목 13개)
+### [microsite] 마이크로사이트/캠페인 — 53건  (감점 항목 12개)
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 53/53 (100%)  «#26 Schema: ImageObject»
       ·  53건: @type='ImageObject' 노드 없음
   - ai_schema_article (#29 · schema_markup · 1점) — FAIL 53/53 (100%)  «#29 Schema: Article»
       ·  53건: @type='Article' 노드 없음
-  - ai_definition (#33 · citable_content · 1점) — FAIL 53/53 (100%)  «#33 Definition Paragraph»
-      ·  53건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_summary_box (#35 · citable_content · 1점) — FAIL 53/53 (100%)  «#35 Summary Box (콘텐츠)»
       ·  53건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
   - ai_schema_video (#27 · schema_markup · 1점) — FAIL 11/11 (100%)  «#27 Schema: VideoObject»
       ·  10건: @type='VideoObject' 노드 없음
       ·   1건: 필수 필드 누락: url
-  - ai_citable (#36 · citable_content · 1점) — FAIL 45/53 (85%)  «#36 Citable Sentence ≥ 10%»
-      ·  45건: 인용 가능 밀도 N% — N% 이상 필요 [측정 5.6~9.3]
   - a11y_image_alt (a11y#9 · accessibility · 1점) — FAIL 36/53 (68%)  «#9 Image Alt 누락 0»
       ·  36건: N개 요소에 'alt' 속성이 없습니다. [측정 5~11]
   - ai_schema_faq (#23 · schema_markup · 1점) — FAIL 17/53 (32%)  «#23 Schema: FAQPage»
@@ -3369,19 +3347,19 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   4건: 누락: image
   - seo_meta_desc (#14 · seo · 1점) — FAIL 12/53 (23%)  «#14 Meta Description»
       ·  12건: 'meta[name='description' i]' 요소를 찾을 수 없습니다.
+  - ai_citable (#36 · citable_content · 1점) — FAIL 9/53 (17%)  «#36 Citable Sentence ≥ 10%»
+      ·   9건: 인용 가능 밀도 N% — N% 이상 필요 [측정 7.7~9.9]
   - a11y_heading_hier (a11y#11 · accessibility · 1점) — FAIL 7/53 (13%)  «#11 Heading Hierarchy»
       ·   6건: 헤딩 역순 N건 — 첫 헤딩(hN)보다 상위 레벨이 뒤에 등장 [측정 1]
       ·   1건: 헤딩 태그가 없습니다.
   - seo_h1 (#16 · seo · 1점) — FAIL 1/53 (2%)  «#16 H1 정확히 1개»
       ·   1건: 'hN' N개 — == N 필요 [측정 1]
 
-### [buying_guide] 구매 가이드 — 44건  (감점 항목 14개)
+### [buying_guide] 구매 가이드 — 44건  (감점 항목 13개)
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 44/44 (100%)  «#26 Schema: ImageObject»
       ·  44건: @type='ImageObject' 노드 없음
   - ai_schema_article (#29 · schema_markup · 1점) — FAIL 44/44 (100%)  «#29 Schema: Article»
       ·  44건: @type='Article' 노드 없음
-  - ai_definition (#33 · citable_content · 1점) — FAIL 44/44 (100%)  «#33 Definition Paragraph»
-      ·  44건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_author_source (#34 · citable_content · 1점) — FAIL 44/44 (100%)  «#34 Author 또는 출처+날짜»
       ·  44건: JSON-LD author 또는 (datePublished+publisher) 조합 없음
   - ai_schema_video (#27 · schema_markup · 1점) — FAIL 23/23 (100%)  «#27 Schema: VideoObject»
@@ -3389,8 +3367,6 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   7건: 필수 필드 누락: url
   - ai_summary_box (#35 · citable_content · 1점) — FAIL 35/44 (80%)  «#35 Summary Box (콘텐츠)»
       ·  35건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
-  - ai_citable (#36 · citable_content · 1점) — FAIL 30/44 (68%)  «#36 Citable Sentence ≥ 10%»
-      ·  30건: 인용 가능 밀도 N% — N% 이상 필요 [측정 4.8~9.9]
   - ai_schema_faq (#23 · schema_markup · 1점) — FAIL 29/44 (66%)  «#23 Schema: FAQPage»
       ·  29건: @type='FAQPage' 노드 없음
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 29/44 (66%)  «#32 FAQ Block (콘텐츠)»
@@ -3404,12 +3380,14 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   7건: 'meta[name='description' i]' 요소를 찾을 수 없습니다.
   - a11y_image_alt (a11y#9 · accessibility · 1점) — FAIL 2/44 (5%)  «#9 Image Alt 누락 0»
       ·   2건: N개 요소에 'alt' 속성이 없습니다. [측정 2~5]
+  - ai_citable (#36 · citable_content · 1점) — FAIL 2/44 (5%)  «#36 Citable Sentence ≥ 10%»
+      ·   2건: 인용 가능 밀도 N% — N% 이상 필요 [측정 8.9~9.9]
   - a11y_heading_hier (a11y#11 · accessibility · 1점) — FAIL 1/44 (2%)  «#11 Heading Hierarchy»
       ·   1건: 헤딩 역순 N건 — 첫 헤딩(hN)보다 상위 레벨이 뒤에 등장 [측정 1]
 
 ### [home] 홈페이지 — 3건  (감점 항목 9개)
-  - ai_definition (#33 · citable_content · 1점) — FAIL 3/3 (100%)  «#33 Definition Paragraph»
-      ·   3건: 정의문 N건 — N건 이상 필요 [측정 0]
+  - ai_summary_box (#35 · citable_content · 1점) — FAIL 3/3 (100%)  «#35 Summary Box (콘텐츠)»
+      ·   3건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 2/2 (100%)  «#26 Schema: ImageObject»
       ·   2건: @type='ImageObject' 노드 없음
   - ai_schema_video (#27 · schema_markup · 1점) — FAIL 2/2 (100%)  «#27 Schema: VideoObject»
@@ -3418,146 +3396,145 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   2건: 리다이렉트 N회 — N회 이하 권장 [측정 2]
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 2/3 (67%)  «#32 FAQ Block (콘텐츠)»
       ·   2건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
-  - ai_summary_box (#35 · citable_content · 1점) — FAIL 2/3 (67%)  «#35 Summary Box (콘텐츠)»
-      ·   2건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
   - a11y_heading_hier (a11y#11 · accessibility · 1점) — FAIL 1/3 (33%)  «#11 Heading Hierarchy»
       ·   1건: 헤딩 역순 N건 — 첫 헤딩(hN)보다 상위 레벨이 뒤에 등장 [측정 30]
   - a11y_aria_labels (a11y#12 · accessibility · 1점) — FAIL 1/3 (33%)  «#12 ARIA 누락 < 10%»
       ·   1건: 누락 N% — N% 미만 필요 [측정 22.1]
   - ai_schema_breadcrumb (#21 · schema_markup · 1점) — FAIL 1/3 (33%)  «#21 Schema: BreadcrumbList»
       ·   1건: @type='BreadcrumbList' 노드 없음
+  - ai_definition (#33 · citable_content · 1점) — FAIL 1/3 (33%)  «#33 Definition Paragraph»
+      ·   1건: 정의문 N건 — N건 이상 필요 [측정 0]
 
 ##############################################################################
-## US   run=us_2026-08-29_run_1ca743dadba8.json
-   URL 1077건 · 감사성공 1035 · [config] 신(2026-06-17 재배포)
-   등급(성공 기준): Good 302 / Need Improvement 704 / Poor 29
-   ⚠ 감사 불가(fetch 실패) 42건 — 아래 감점 집계에서 제외:
-        · 25건: status code 없음
+## US   run=us_2026-08-30_run_1ca743dadba8.json
+   URL 1151건 · 감사성공 1101 · [config] 신(2026-06-17 재배포)
+   등급(성공 기준): Good 306 / Need Improvement 765 / Poor 30
+   ⚠ 감사 불가(fetch 실패) 54건 — 아래 감점 집계에서 제외:
+        · 37건: status code 없음
         · 13건: HTTP 404 — 200 기대
         · 3건: HTTP 403 — 200 기대
         · 1건: HTTP 500 — 200 기대
 ##############################################################################
 
-### [pdp] 제품 상세 (PDP) — 480건  (감점 항목 23개)
-  - ai_schema_faq (#23 · schema_markup · 1점) — FAIL 480/480 (100%)  «#23 Schema: FAQPage»
-      · 480건: @type='FAQPage' 노드 없음
-  - ai_definition (#33 · citable_content · 1점) — FAIL 480/480 (100%)  «#33 Definition Paragraph»
-      · 480건: 정의문 N건 — N건 이상 필요 [측정 0]
-  - ai_schema_image (#26 · schema_markup · 1점) — FAIL 478/478 (100%)  «#26 Schema: ImageObject»
-      · 478건: @type='ImageObject' 노드 없음
-  - perf_html_size (#5 · performance · 1점) — FAIL 260/260 (100%)  «#5 HTML < 100KB»
-      · 260건: NKB — NKB 미만 필요 [측정 811.7~1798.3]
-  - perf_render_block (#8 · performance · 1점) — FAIL 260/260 (100%)  «#8 Render Blocking 0»
-      · 260건: head 내 blocking script N개 [측정 1]
-  - ai_author_source (#34 · citable_content · 1점) — FAIL 260/260 (100%)  «#34 Author 또는 출처+날짜»
-      · 222건: 저자(meta/byline) 또는 (출처+datePublished) 조합 없음
+### [pdp] 제품 상세 (PDP) — 524건  (감점 항목 23개)
+  - ai_schema_faq (#23 · schema_markup · 1점) — FAIL 524/524 (100%)  «#23 Schema: FAQPage»
+      · 524건: @type='FAQPage' 노드 없음
+  - ai_schema_image (#26 · schema_markup · 1점) — FAIL 522/522 (100%)  «#26 Schema: ImageObject»
+      · 522건: @type='ImageObject' 노드 없음
+  - perf_html_size (#5 · performance · 1점) — FAIL 302/302 (100%)  «#5 HTML < 100KB»
+      · 302건: NKB — NKB 미만 필요 [측정 811.7~1798.3]
+  - perf_render_block (#8 · performance · 1점) — FAIL 302/302 (100%)  «#8 Render Blocking 0»
+      · 302건: head 내 blocking script N개 [측정 1]
+  - ai_author_source (#34 · citable_content · 1점) — FAIL 302/302 (100%)  «#34 Author 또는 출처+날짜»
+      · 264건: 저자(meta/byline) 또는 (출처+datePublished) 조합 없음
       ·  38건: JSON-LD author 또는 (datePublished+publisher) 조합 없음
   - ai_schema_video (#27 · schema_markup · 1점) — FAIL 1/1 (100%)  «#27 Schema: VideoObject»
       ·   1건: @type='VideoObject' 노드 없음
-  - seo_open_graph (#18 · seo · 1점) — FAIL 473/480 (99%)  «#18 Open Graph (title+image)»
-      · 471건: 누락: title, image
+  - seo_open_graph (#18 · seo · 1점) — FAIL 517/524 (99%)  «#18 Open Graph (title+image)»
+      · 515건: 누락: title, image
       ·   2건: 누락: image
-  - perf_ttfb (#1 · performance · 1점) — FAIL 245/260 (94%)  «#1 TTFB < 600ms»
-      · 245건: TTFB Nms — Nms 미만 필요 [측정 649~26796]
-  - ai_schema_product (#25 · schema_markup · 1점) — FAIL 440/479 (92%)  «#25 Schema: Product 풀세트 (PDP)»
-      · 381건: 필수 필드 누락: sku
-      ·  45건: @type='Product' 노드 없음
+  - perf_ttfb (#1 · performance · 1점) — FAIL 283/302 (94%)  «#1 TTFB < 600ms»
+      · 283건: TTFB Nms — Nms 미만 필요 [측정 649~26796]
+  - ai_schema_product (#25 · schema_markup · 1점) — FAIL 483/523 (92%)  «#25 Schema: Product 풀세트 (PDP)»
+      · 389건: 필수 필드 누락: sku
+      ·  80건: @type='Product' 노드 없음
       ·   6건: @type='Product/ProductGroup' 노드 없음
       ·   5건: 필수 필드 누락: offers.price
       · …외 사유 2종
-  - ai_ssr_ratio (#37 · ai_crawlability · 1점) — FAIL 413/480 (86%)  «#37 JS HTML Text Ratio ≥ 60%»
-      · 404건: SSR 비율 N% — N% 이상 필요 [측정 24~59]
-      ·   9건: CSR 비율 측정 불가 (Playwright 미설치 또는 차단)
-  - a11y_heading_hier (a11y#11 · accessibility · 1점) — FAIL 235/480 (49%)  «#11 Heading Hierarchy»
-      · 221건: 레벨 점프 N건 발견 (예: hN→hN) [측정 1]
+  - ai_definition (#33 · citable_content · 1점) — FAIL 481/524 (92%)  «#33 Definition Paragraph»
+      · 481건: 정의문 N건 — N건 이상 필요 [측정 0]
+  - ai_ssr_ratio (#37 · ai_crawlability · 1점) — FAIL 422/524 (81%)  «#37 JS HTML Text Ratio ≥ 60%»
+      · 412건: SSR 비율 N% — N% 이상 필요 [측정 24~59]
+      ·  10건: CSR 비율 측정 불가 (Playwright 미설치 또는 차단)
+  - a11y_heading_hier (a11y#11 · accessibility · 1점) — FAIL 277/524 (53%)  «#11 Heading Hierarchy»
+      · 263건: 레벨 점프 N건 발견 (예: hN→hN) [측정 1]
       ·  14건: 헤딩 역순 N건 — 첫 헤딩(hN)보다 상위 레벨이 뒤에 등장 [측정 1~14]
-  - ai_citable (#36 · citable_content · 1점) — FAIL 172/480 (36%)  «#36 Citable Sentence ≥ 10%»
-      · 172건: 인용 가능 밀도 N% — N% 이상 필요 [측정 0~9.7]
-  - ai_schema_offer (#43 · schema_markup · 1점) — FAIL 13/479 (3%)  «#43 Schema: Offer»
+  - ai_citable (#36 · citable_content · 1점) — FAIL 51/524 (10%)  «#36 Citable Sentence ≥ 10%»
+      ·  51건: 인용 가능 밀도 N% — N% 이상 필요 [측정 5~9.5]
+  - ai_schema_offer (#43 · schema_markup · 1점) — FAIL 13/523 (2%)  «#43 Schema: Offer»
       ·   8건: @type='Offer' 노드 없음
       ·   5건: 필수 필드 누락: price
-  - perf_cache_control (#4 · performance · 1점) — FAIL 11/480 (2%)  «#4 Cache-Control max-age 설정»
+  - perf_cache_control (#4 · performance · 1점) — FAIL 11/524 (2%)  «#4 Cache-Control max-age 설정»
       ·  11건: max-age 디렉티브가 없습니다.
-  - ai_pdp_thumbnails (#38 · ai_crawlability · 1점) — FAIL 9/479 (2%)  «#38 PDP 썸네일 3장 이상 SSR»
+  - ai_pdp_thumbnails (#38 · ai_crawlability · 1점) — FAIL 9/523 (2%)  «#38 PDP 썸네일 3장 이상 SSR»
       ·   9건: 'img[src*='PDPGalleryThumbnail'], [class*='Product-ImageGrid'] img, .c-summary-gallery img, .c-gallery img, .swiper-wrapper .swiper-slide img' N개 — >= N 필요 [측정 0]
-  - ai_schema_breadcrumb (#21 · schema_markup · 1점) — FAIL 7/480 (1%)  «#21 Schema: BreadcrumbList»
+  - ai_schema_breadcrumb (#21 · schema_markup · 1점) — FAIL 7/524 (1%)  «#21 Schema: BreadcrumbList»
       ·   7건: @type='BreadcrumbList' 노드 없음
-  - seo_canonical (#15 · seo · 1점) — FAIL 6/480 (1%)  «#15 Canonical self-ref»
+  - seo_canonical (#15 · seo · 1점) — FAIL 6/524 (1%)  «#15 Canonical self-ref»
       ·   3건: canonical='https://solutions.lg.com/us/collaboration-displays/lg-NtrNdk-b' ≠ 현재 URL [측정 75]
       ·   2건: canonical 태그 없음
       ·   1건: canonical='https://solutions.lg.com/us/business/computer-monitors/lg-NgnNb-b' ≠ 현재 URL [측정 27]
-  - seo_meta_desc (#14 · seo · 1점) — FAIL 4/480 (1%)  «#14 Meta Description»
+  - seo_meta_desc (#14 · seo · 1점) — FAIL 4/524 (1%)  «#14 Meta Description»
       ·   4건: 'meta[name='description' i]' 요소를 찾을 수 없습니다.
-  - seo_h1 (#16 · seo · 1점) — FAIL 4/480 (1%)  «#16 H1 정확히 1개»
+  - seo_h1 (#16 · seo · 1점) — FAIL 4/524 (1%)  «#16 H1 정확히 1개»
       ·   4건: 'hN' N개 — == N 필요 [측정 1]
-  - perf_redirect (#6 · performance · 1점) — FAIL 2/480 (0%)  «#6 Redirect ≤ 1»
+  - perf_redirect (#6 · performance · 1점) — FAIL 2/524 (0%)  «#6 Redirect ≤ 1»
       ·   2건: 리다이렉트 N회 — N회 이하 권장 [측정 2]
-  - seo_title (#13 · seo · 1점) — FAIL 1/480 (0%)  «#13 Title 존재»
-      ·   1건: 텍스트 길이 N — N자 이상 필요 [측정 0]
-  - seo_robots (#17 · seo · 1점) — FAIL 1/480 (0%)  «#17 indexing 허용»
+  - seo_robots (#17 · seo · 1점) — FAIL 1/522 (0%)  «#17 indexing 허용»
       ·   1건: 'noindex'가 포함되어 있습니다.
+  - seo_title (#13 · seo · 1점) — FAIL 1/524 (0%)  «#13 Title 존재»
+      ·   1건: 텍스트 길이 N — N자 이상 필요 [측정 0]
 
-### [plp] 제품 카테고리 (PLP) — 127건  (감점 항목 23개)
-  - ai_schema_faq (#23 · schema_markup · 1점) — FAIL 107/107 (100%)  «#23 Schema: FAQPage»
-      · 107건: @type='FAQPage' 노드 없음
-  - ai_schema_image (#26 · schema_markup · 1점) — FAIL 72/72 (100%)  «#26 Schema: ImageObject»
-      ·  72건: @type='ImageObject' 노드 없음
-  - ai_schema_video (#27 · schema_markup · 1점) — FAIL 24/24 (100%)  «#27 Schema: VideoObject»
-      ·  24건: @type='VideoObject' 노드 없음
-  - perf_html_size (#5 · performance · 1점) — FAIL 20/20 (100%)  «#5 HTML < 100KB»
-      ·  20건: NKB — NKB 미만 필요 [측정 300.3~1159.7]
-  - perf_render_block (#8 · performance · 1점) — FAIL 20/20 (100%)  «#8 Render Blocking 0»
-      ·  20건: head 내 blocking script N개 [측정 1~2]
-  - ai_author_source (#34 · citable_content · 1점) — FAIL 20/20 (100%)  «#34 Author 또는 출처+날짜»
-      ·  20건: 저자(meta/byline) 또는 (출처+datePublished) 조합 없음
-  - ai_definition (#33 · citable_content · 1점) — FAIL 126/127 (99%)  «#33 Definition Paragraph»
-      · 126건: 정의문 N건 — N건 이상 필요 [측정 0]
-  - perf_ttfb (#1 · performance · 1점) — FAIL 18/20 (90%)  «#1 TTFB < 600ms»
-      ·  18건: TTFB Nms — Nms 미만 필요 [측정 946~3913]
-  - a11y_heading_hier (a11y#11 · accessibility · 1점) — FAIL 109/127 (86%)  «#11 Heading Hierarchy»
-      · 107건: 헤딩 역순 N건 — 첫 헤딩(hN)보다 상위 레벨이 뒤에 등장 [측정 1~37]
+### [plp] 제품 카테고리 (PLP) — 142건  (감점 항목 23개)
+  - ai_schema_faq (#23 · schema_markup · 1점) — FAIL 119/119 (100%)  «#23 Schema: FAQPage»
+      · 119건: @type='FAQPage' 노드 없음
+  - ai_schema_image (#26 · schema_markup · 1점) — FAIL 84/84 (100%)  «#26 Schema: ImageObject»
+      ·  84건: @type='ImageObject' 노드 없음
+  - perf_html_size (#5 · performance · 1점) — FAIL 34/34 (100%)  «#5 HTML < 100KB»
+      ·  34건: NKB — NKB 미만 필요 [측정 300.3~1725.8]
+  - perf_render_block (#8 · performance · 1점) — FAIL 34/34 (100%)  «#8 Render Blocking 0»
+      ·  34건: head 내 blocking script N개 [측정 1~2]
+  - ai_author_source (#34 · citable_content · 1점) — FAIL 34/34 (100%)  «#34 Author 또는 출처+날짜»
+      ·  23건: 저자(meta/byline) 또는 (출처+datePublished) 조합 없음
+      ·  11건: JSON-LD author 또는 (datePublished+publisher) 조합 없음
+  - ai_schema_video (#27 · schema_markup · 1점) — FAIL 27/27 (100%)  «#27 Schema: VideoObject»
+      ·  27건: @type='VideoObject' 노드 없음
+  - perf_ttfb (#1 · performance · 1점) — FAIL 32/34 (94%)  «#1 TTFB < 600ms»
+      ·  32건: TTFB Nms — Nms 미만 필요 [측정 946~15186]
+  - a11y_heading_hier (a11y#11 · accessibility · 1점) — FAIL 121/142 (85%)  «#11 Heading Hierarchy»
+      · 119건: 헤딩 역순 N건 — 첫 헤딩(hN)보다 상위 레벨이 뒤에 등장 [측정 1~37]
       ·   2건: 레벨 점프 N건 발견 (예: hN→hN) [측정 1~2]
-  - ai_citable (#36 · citable_content · 1점) — FAIL 95/127 (75%)  «#36 Citable Sentence ≥ 10%»
-      ·  95건: 인용 가능 밀도 N% — N% 이상 필요 [측정 0~9.6]
-  - ai_schema_collection (#24 · schema_markup · 1점) — FAIL 57/127 (45%)  «#24 Schema: CollectionPage (PLP)»
-      ·  57건: @type='CollectionPage' 노드 없음
-  - ai_schema_breadcrumb (#21 · schema_markup · 1점) — FAIL 34/127 (27%)  «#21 Schema: BreadcrumbList»
-      ·  34건: @type='BreadcrumbList' 노드 없음
-  - seo_open_graph (#18 · seo · 1점) — FAIL 29/127 (23%)  «#18 Open Graph (title+image)»
-      ·  28건: 누락: image
+  - ai_schema_collection (#24 · schema_markup · 1점) — FAIL 71/142 (50%)  «#24 Schema: CollectionPage (PLP)»
+      ·  71건: @type='CollectionPage' 노드 없음
+  - ai_definition (#33 · citable_content · 1점) — FAIL 65/142 (46%)  «#33 Definition Paragraph»
+      ·  65건: 정의문 N건 — N건 이상 필요 [측정 0]
+  - ai_citable (#36 · citable_content · 1점) — FAIL 50/142 (35%)  «#36 Citable Sentence ≥ 10%»
+      ·  50건: 인용 가능 밀도 N% — N% 이상 필요 [측정 0~9.5]
+  - ai_schema_breadcrumb (#21 · schema_markup · 1점) — FAIL 37/142 (26%)  «#21 Schema: BreadcrumbList»
+      ·  37건: @type='BreadcrumbList' 노드 없음
+  - seo_open_graph (#18 · seo · 1점) — FAIL 35/142 (25%)  «#18 Open Graph (title+image)»
+      ·  34건: 누락: image
       ·   1건: 누락: title, image
-  - a11y_image_alt (a11y#9 · accessibility · 1점) — FAIL 9/127 (7%)  «#9 Image Alt 누락 0»
+  - perf_cache_control (#4 · performance · 1점) — FAIL 9/142 (6%)  «#4 Cache-Control max-age 설정»
+      ·   9건: Cache-Control 부재 또는 no-store/no-cache.
+  - a11y_image_alt (a11y#9 · accessibility · 1점) — FAIL 9/142 (6%)  «#9 Image Alt 누락 0»
       ·   9건: N개 요소에 'alt' 속성이 없습니다. [측정 1~17]
-  - seo_h1 (#16 · seo · 1점) — FAIL 9/127 (7%)  «#16 H1 정확히 1개»
+  - seo_h1 (#16 · seo · 1점) — FAIL 9/142 (6%)  «#16 H1 정확히 1개»
       ·   9건: 'hN' N개 — == N 필요 [측정 1]
-  - seo_canonical (#15 · seo · 1점) — FAIL 8/127 (6%)  «#15 Canonical self-ref»
+  - seo_canonical (#15 · seo · 1점) — FAIL 8/142 (6%)  «#15 Canonical self-ref»
       ·   2건: canonical 태그 없음
       ·   2건: canonical='https://solutions.lg.com/resources' ≠ 현재 URL
       ·   1건: canonical='https://solutions.lg.com/us/commercial-displays/bim-library' ≠ 현재 URL
       ·   1건: canonical='https://solutions.us.lg.com/us/commercial-displays' ≠ 현재 URL
       · …외 사유 2종
-  - perf_cache_control (#4 · performance · 1점) — FAIL 6/127 (5%)  «#4 Cache-Control max-age 설정»
-      ·   6건: Cache-Control 부재 또는 no-store/no-cache.
-  - perf_redirect (#6 · performance · 1점) — FAIL 6/127 (5%)  «#6 Redirect ≤ 1»
+  - perf_redirect (#6 · performance · 1점) — FAIL 6/142 (4%)  «#6 Redirect ≤ 1»
       ·   6건: 리다이렉트 N회 — N회 이하 권장 [측정 2]
-  - seo_meta_desc (#14 · seo · 1점) — FAIL 4/127 (3%)  «#14 Meta Description»
+  - seo_meta_desc (#14 · seo · 1점) — FAIL 4/142 (3%)  «#14 Meta Description»
       ·   4건: 'content' 속성이 없거나 N자 미만입니다. [측정 1]
-  - seo_robots (#17 · seo · 1점) — FAIL 2/127 (2%)  «#17 indexing 허용»
+  - seo_robots (#17 · seo · 1점) — FAIL 2/141 (1%)  «#17 indexing 허용»
       ·   2건: 'noindex'가 포함되어 있습니다.
-  - ai_faq_block (#32 · citable_content · 1점) — FAIL 1/127 (1%)  «#32 FAQ Block (콘텐츠)»
-      ·   1건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
-  - ai_summary_box (#35 · citable_content · 1점) — FAIL 1/127 (1%)  «#35 Summary Box (콘텐츠)»
-      ·   1건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
-  - ai_summary_ssr (#40 · ai_crawlability · 1점) — FAIL 1/127 (1%)  «#40 Summary Content SSR»
+  - ai_summary_ssr (#40 · ai_crawlability · 1점) — FAIL 1/141 (1%)  «#40 Summary Content SSR»
       ·   1건: '[class*='summary'], [class*='Summary'], [id*='summary'], [class*='overview'], [class*='Overview'], [class*='highlight'], [class*='Product-KeyFeatures'], [class*='Product-Features']' 요소를 찾을 수 없습니다.
+  - ai_faq_block (#32 · citable_content · 1점) — FAIL 1/142 (1%)  «#32 FAQ Block (콘텐츠)»
+      ·   1건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
+  - ai_summary_box (#35 · citable_content · 1점) — FAIL 1/142 (1%)  «#35 Summary Box (콘텐츠)»
+      ·   1건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
 
-### [press_media] 프레스앤미디어 — 100건  (감점 항목 14개)
+### [press_media] 프레스앤미디어 — 100건  (감점 항목 13개)
   - ai_schema_breadcrumb (#21 · schema_markup · 1점) — FAIL 100/100 (100%)  «#21 Schema: BreadcrumbList»
       · 100건: @type='BreadcrumbList' 노드 없음
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 100/100 (100%)  «#26 Schema: ImageObject»
       · 100건: @type='ImageObject' 노드 없음
-  - ai_definition (#33 · citable_content · 1점) — FAIL 100/100 (100%)  «#33 Definition Paragraph»
-      · 100건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_author_source (#34 · citable_content · 1점) — FAIL 100/100 (100%)  «#34 Author 또는 출처+날짜»
       · 100건: JSON-LD 노드 없음 (author/source 스키마 검증 불가)
   - ai_summary_ssr (#40 · ai_crawlability · 1점) — FAIL 100/100 (100%)  «#40 Summary Content SSR»
@@ -3566,8 +3543,6 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·  98건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
   - a11y_heading_hier (a11y#11 · accessibility · 1점) — FAIL 97/100 (97%)  «#11 Heading Hierarchy»
       ·  97건: 헤딩 역순 N건 — 첫 헤딩(hN)보다 상위 레벨이 뒤에 등장 [측정 1]
-  - ai_citable (#36 · citable_content · 1점) — FAIL 89/100 (89%)  «#36 Citable Sentence ≥ 10%»
-      ·  89건: 인용 가능 밀도 N% — N% 이상 필요 [측정 0~9.6]
   - ai_summary_box (#35 · citable_content · 1점) — FAIL 78/100 (78%)  «#35 Summary Box (콘텐츠)»
       ·  78건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
   - perf_cache_control (#4 · performance · 1점) — FAIL 50/100 (50%)  «#4 Cache-Control max-age 설정»
@@ -3578,6 +3553,8 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·  37건: 'content' 속성이 없거나 N자 미만입니다. [측정 1]
   - seo_title (#13 · seo · 1점) — FAIL 29/100 (29%)  «#13 Title 존재»
       ·  29건: 텍스트 길이 N — N자 이상 필요 [측정 0]
+  - ai_definition (#33 · citable_content · 1점) — FAIL 15/100 (15%)  «#33 Definition Paragraph»
+      ·  15건: 정의문 N건 — N건 이상 필요 [측정 0]
   - a11y_image_alt (a11y#9 · accessibility · 1점) — FAIL 1/100 (1%)  «#9 Image Alt 누락 0»
       ·   1건: N개 요소에 'alt' 속성이 없습니다. [측정 1]
 
@@ -3590,16 +3567,18 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·  99건: max-age 디렉티브가 없습니다.
   - ai_schema_breadcrumb (#21 · schema_markup · 1점) — FAIL 99/100 (99%)  «#21 Schema: BreadcrumbList»
       ·  99건: @type='BreadcrumbList' 노드 없음
-  - ai_citable (#36 · citable_content · 1점) — FAIL 99/100 (99%)  «#36 Citable Sentence ≥ 10%»
-      ·  99건: 인용 가능 밀도 N% — N% 이상 필요 [측정 0~1]
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 98/100 (98%)  «#32 FAQ Block (콘텐츠)»
       ·  98건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
   - ai_summary_ssr (#40 · ai_crawlability · 1점) — FAIL 97/100 (97%)  «#40 Summary Content SSR»
       ·  97건: '[class*='summary'], [class*='Summary'], [id*='summary'], [class*='overview'], [class*='Overview'], [class*='highlight'], [class*='Product-KeyFeatures'], [class*='Product-Features']' 요소를 찾을 수 없습니다.
+  - ai_definition (#33 · citable_content · 1점) — FAIL 96/100 (96%)  «#33 Definition Paragraph»
+      ·  96건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_summary_box (#35 · citable_content · 1점) — FAIL 96/100 (96%)  «#35 Summary Box (콘텐츠)»
       ·  96건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
   - seo_robots (#17 · seo · 1점) — FAIL 87/100 (87%)  «#17 indexing 허용»
       ·  87건: 'noindex'가 포함되어 있습니다.
+  - ai_citable (#36 · citable_content · 1점) — FAIL 11/100 (11%)  «#36 Citable Sentence ≥ 10%»
+      ·  11건: 인용 가능 밀도 N% — N% 이상 필요 [측정 0~6.4]
   - seo_h1 (#16 · seo · 1점) — FAIL 3/100 (3%)  «#16 H1 정확히 1개»
       ·   3건: 'hN' N개 — == N 필요 [측정 1]
   - a11y_image_alt (a11y#9 · accessibility · 1점) — FAIL 1/100 (1%)  «#9 Image Alt 누락 0»
@@ -3612,10 +3591,8 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   1건: canonical 태그 없음
   - seo_open_graph (#18 · seo · 1점) — FAIL 1/100 (1%)  «#18 Open Graph (title+image)»
       ·   1건: 누락: title, image
-  - ai_definition (#33 · citable_content · 1점) — FAIL 1/100 (1%)  «#33 Definition Paragraph»
-      ·   1건: 정의문 N건 — N건 이상 필요 [측정 0]
 
-### [support_troubleshoot] 지원 - 트러블슈팅 — 100건  (감점 항목 10개)
+### [support_troubleshoot] 지원 - 트러블슈팅 — 100건  (감점 항목 11개)
   - a11y_heading_hier (a11y#11 · accessibility · 1점) — FAIL 100/100 (100%)  «#11 Heading Hierarchy»
       · 100건: 헤딩 역순 N건 — 첫 헤딩(hN)보다 상위 레벨이 뒤에 등장 [측정 1]
   - seo_canonical (#15 · seo · 1점) — FAIL 100/100 (100%)  «#15 Canonical self-ref»
@@ -3632,12 +3609,14 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       · 100건: @type='HowTo' 노드 없음
   - ai_summary_box (#35 · citable_content · 1점) — FAIL 100/100 (100%)  «#35 Summary Box (콘텐츠)»
       · 100건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
-  - ai_citable (#36 · citable_content · 1점) — FAIL 100/100 (100%)  «#36 Citable Sentence ≥ 10%»
-      · 100건: 인용 가능 밀도 N% — N% 이상 필요 [측정 0~3.2]
   - ai_summary_ssr (#40 · ai_crawlability · 1점) — FAIL 100/100 (100%)  «#40 Summary Content SSR»
       · 100건: '[class*='summary'], [class*='Summary'], [id*='summary'], [class*='overview'], [class*='Overview'], [class*='highlight'], [class*='Product-KeyFeatures'], [class*='Product-Features']' 요소를 찾을 수 없습니다.
   - ai_schema_video (#27 · schema_markup · 1점) — FAIL 1/1 (100%)  «#27 Schema: VideoObject»
       ·   1건: @type='VideoObject' 노드 없음
+  - ai_citable (#36 · citable_content · 1점) — FAIL 87/100 (87%)  «#36 Citable Sentence ≥ 10%»
+      ·  87건: 인용 가능 밀도 N% — N% 이상 필요 [측정 2~8.9]
+  - ai_definition (#33 · citable_content · 1점) — FAIL 62/100 (62%)  «#33 Definition Paragraph»
+      ·  62건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 1/100 (1%)  «#32 FAQ Block (콘텐츠)»
       ·   1건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
 
@@ -3648,10 +3627,6 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·  36건: @type='Product/ProductGroup' 노드 없음
   - ai_schema_offer (#43 · schema_markup · 1점) — FAIL 36/36 (100%)  «#43 Schema: Offer»
       ·  36건: @type='Offer' 노드 없음
-  - ai_definition (#33 · citable_content · 1점) — FAIL 36/36 (100%)  «#33 Definition Paragraph»
-      ·  36건: 정의문 N건 — N건 이상 필요 [측정 0]
-  - ai_citable (#36 · citable_content · 1점) — FAIL 36/36 (100%)  «#36 Citable Sentence ≥ 10%»
-      ·  36건: 인용 가능 밀도 N% — N% 이상 필요 [측정 0~8.6]
   - ai_ssr_ratio (#37 · ai_crawlability · 1점) — FAIL 36/36 (100%)  «#37 JS HTML Text Ratio ≥ 60%»
       ·  36건: SSR 비율 N% — N% 이상 필요 [측정 57]
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 35/35 (100%)  «#26 Schema: ImageObject»
@@ -3668,6 +3643,8 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·  22건: '[class*='summary'], [class*='Summary'], [id*='summary'], [class*='overview'], [class*='Overview'], [class*='highlight'], [class*='Product-KeyFeatures'], [class*='Product-Features']' 요소를 찾을 수 없습니다.
   - perf_cache_control (#4 · performance · 1점) — FAIL 20/36 (56%)  «#4 Cache-Control max-age 설정»
       ·  20건: max-age 디렉티브가 없습니다.
+  - ai_citable (#36 · citable_content · 1점) — FAIL 20/36 (56%)  «#36 Citable Sentence ≥ 10%»
+      ·  20건: 인용 가능 밀도 N% — N% 이상 필요 [측정 0~8.8]
   - seo_open_graph (#18 · seo · 1점) — FAIL 14/36 (39%)  «#18 Open Graph (title+image)»
       ·  10건: 누락: title
       ·   3건: 누락: image
@@ -3677,6 +3654,8 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   1건: canonical='https://www.lg.com/us/air-care-solutions/lg-ASNDWRN-air-purifier' ≠ 현재 URL [측정 560]
       ·   1건: canonical='https://www.lg.com/us/air-care-solutions/lg-asNdwrN-air-purifier' ≠ 현재 URL [측정 330]
       ·   1건: canonical='httpss://www.lg.com/us/business/commercial-display//resources/all-downloads' ≠ 현재 URL
+  - ai_definition (#33 · citable_content · 1점) — FAIL 6/36 (17%)  «#33 Definition Paragraph»
+      ·   6건: 정의문 N건 — N건 이상 필요 [측정 0]
   - a11y_image_alt (a11y#9 · accessibility · 1점) — FAIL 5/36 (14%)  «#9 Image Alt 누락 0»
       ·   5건: N개 요소에 'alt' 속성이 없습니다. [측정 1~41]
   - seo_meta_desc (#14 · seo · 1점) — FAIL 5/36 (14%)  «#14 Meta Description»
@@ -3697,8 +3676,6 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·  33건: @type='ImageObject' 노드 없음
   - ai_schema_article (#29 · schema_markup · 1점) — FAIL 33/33 (100%)  «#29 Schema: Article»
       ·  33건: @type='Article' 노드 없음
-  - ai_definition (#33 · citable_content · 1점) — FAIL 33/33 (100%)  «#33 Definition Paragraph»
-      ·  33건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_author_source (#34 · citable_content · 1점) — FAIL 33/33 (100%)  «#34 Author 또는 출처+날짜»
       ·  30건: JSON-LD author 또는 (datePublished+publisher) 조합 없음
       ·   3건: JSON-LD 노드 없음 (author/source 스키마 검증 불가)
@@ -3706,11 +3683,13 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   3건: @type='VideoObject' 노드 없음
   - a11y_heading_hier (a11y#11 · accessibility · 1점) — FAIL 30/33 (91%)  «#11 Heading Hierarchy»
       ·  30건: 헤딩 역순 N건 — 첫 헤딩(hN)보다 상위 레벨이 뒤에 등장 [측정 3~27]
-  - ai_citable (#36 · citable_content · 1점) — FAIL 28/33 (85%)  «#36 Citable Sentence ≥ 10%»
-      ·  28건: 인용 가능 밀도 N% — N% 이상 필요 [측정 0.6~7.4]
   - seo_open_graph (#18 · seo · 1점) — FAIL 26/33 (79%)  «#18 Open Graph (title+image)»
       ·  25건: 누락: image
       ·   1건: 누락: title
+  - ai_citable (#36 · citable_content · 1점) — FAIL 19/33 (58%)  «#36 Citable Sentence ≥ 10%»
+      ·  19건: 인용 가능 밀도 N% — N% 이상 필요 [측정 1.8~9.2]
+  - ai_definition (#33 · citable_content · 1점) — FAIL 7/33 (21%)  «#33 Definition Paragraph»
+      ·   7건: 정의문 N건 — N건 이상 필요 [측정 0]
   - seo_canonical (#15 · seo · 1점) — FAIL 5/33 (15%)  «#15 Canonical self-ref»
       ·   2건: canonical 태그 없음
       ·   1건: canonical='https://www.lg.com/us/experience ' ≠ 현재 URL
@@ -3736,19 +3715,19 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 ### [promotion] 프로모션/약관 — 20건  (감점 항목 13개)
   - ai_schema_offer (#43 · schema_markup · 1점) — FAIL 20/20 (100%)  «#43 Schema: Offer»
       ·  20건: @type='Offer' 노드 없음
-  - ai_definition (#33 · citable_content · 1점) — FAIL 20/20 (100%)  «#33 Definition Paragraph»
-      ·  20건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 14/14 (100%)  «#26 Schema: ImageObject»
       ·  14건: @type='ImageObject' 노드 없음
   - ai_schema_video (#27 · schema_markup · 1점) — FAIL 1/1 (100%)  «#27 Schema: VideoObject»
       ·   1건: @type='VideoObject' 노드 없음
   - a11y_heading_hier (a11y#11 · accessibility · 1점) — FAIL 19/20 (95%)  «#11 Heading Hierarchy»
       ·  19건: 헤딩 역순 N건 — 첫 헤딩(hN)보다 상위 레벨이 뒤에 등장 [측정 1~9]
+  - ai_definition (#33 · citable_content · 1점) — FAIL 17/20 (85%)  «#33 Definition Paragraph»
+      ·  17건: 정의문 N건 — N건 이상 필요 [측정 0]
+  - ai_citable (#36 · citable_content · 1점) — FAIL 5/20 (25%)  «#36 Citable Sentence ≥ 10%»
+      ·   5건: 인용 가능 밀도 N% — N% 이상 필요 [측정 5.3~9.1]
   - seo_open_graph (#18 · seo · 1점) — FAIL 4/20 (20%)  «#18 Open Graph (title+image)»
       ·   3건: 누락: image
       ·   1건: 누락: title
-  - ai_citable (#36 · citable_content · 1점) — FAIL 4/20 (20%)  «#36 Citable Sentence ≥ 10%»
-      ·   4건: 인용 가능 밀도 N% — N% 이상 필요 [측정 3.7~9.8]
   - seo_h1 (#16 · seo · 1점) — FAIL 3/20 (15%)  «#16 H1 정확히 1개»
       ·   3건: 'hN' N개 — == N 필요 [측정 1]
   - ai_schema_breadcrumb (#21 · schema_markup · 1점) — FAIL 3/20 (15%)  «#21 Schema: BreadcrumbList»
@@ -3771,8 +3750,6 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·  16건: @type='FAQPage' 노드 없음
   - ai_schema_article (#29 · schema_markup · 1점) — FAIL 16/16 (100%)  «#29 Schema: Article»
       ·  16건: @type='Article' 노드 없음
-  - ai_definition (#33 · citable_content · 1점) — FAIL 16/16 (100%)  «#33 Definition Paragraph»
-      ·  16건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_author_source (#34 · citable_content · 1점) — FAIL 16/16 (100%)  «#34 Author 또는 출처+날짜»
       ·  16건: JSON-LD author 또는 (datePublished+publisher) 조합 없음
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 14/14 (100%)  «#26 Schema: ImageObject»
@@ -3781,8 +3758,10 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·  12건: @type='VideoObject' 노드 없음
   - seo_open_graph (#18 · seo · 1점) — FAIL 12/16 (75%)  «#18 Open Graph (title+image)»
       ·  12건: 누락: image
-  - ai_citable (#36 · citable_content · 1점) — FAIL 11/16 (69%)  «#36 Citable Sentence ≥ 10%»
-      ·  11건: 인용 가능 밀도 N% — N% 이상 필요 [측정 2.8~9.6]
+  - ai_citable (#36 · citable_content · 1점) — FAIL 9/16 (56%)  «#36 Citable Sentence ≥ 10%»
+      ·   9건: 인용 가능 밀도 N% — N% 이상 필요 [측정 4.3~9.8]
+  - ai_definition (#33 · citable_content · 1점) — FAIL 6/16 (38%)  «#33 Definition Paragraph»
+      ·   6건: 정의문 N건 — N건 이상 필요 [측정 0]
   - seo_canonical (#15 · seo · 1점) — FAIL 3/16 (19%)  «#15 Canonical self-ref»
       ·   1건: canonical='https://www.lg.com/us/tv-buying-guide/picture-quality-tv-guide' ≠ 현재 URL
       ·   1건: canonical='https://www.lg.com/us/tv-buying-guide/right-tv-size-for-my-room' ≠ 현재 URL
@@ -3790,19 +3769,68 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
   - a11y_image_alt (a11y#9 · accessibility · 1점) — FAIL 1/16 (6%)  «#9 Image Alt 누락 0»
       ·   1건: N개 요소에 'alt' 속성이 없습니다. [측정 152]
 
+### [unknown] 분류 불가 — 13건  (감점 항목 23개)
+  - ai_schema_image (#26 · schema_markup · 1점) — FAIL 9/9 (100%)  «#26 Schema: ImageObject»
+      ·   9건: @type='ImageObject' 노드 없음
+  - ai_schema_video (#27 · schema_markup · 1점) — FAIL 6/6 (100%)  «#27 Schema: VideoObject»
+      ·   6건: @type='VideoObject' 노드 없음
+  - perf_ttfb (#1 · performance · 1점) — FAIL 6/6 (100%)  «#1 TTFB < 600ms»
+      ·   6건: TTFB Nms — Nms 미만 필요 [측정 1393~9070]
+  - perf_html_size (#5 · performance · 1점) — FAIL 6/6 (100%)  «#5 HTML < 100KB»
+      ·   6건: NKB — NKB 미만 필요 [측정 259.3~1715.5]
+  - perf_render_block (#8 · performance · 1점) — FAIL 6/6 (100%)  «#8 Render Blocking 0»
+      ·   6건: head 내 blocking script N개 [측정 1~2]
+  - ai_author_source (#34 · citable_content · 1점) — FAIL 6/6 (100%)  «#34 Author 또는 출처+날짜»
+      ·   6건: 저자(meta/byline) 또는 (출처+datePublished) 조합 없음
+  - ai_schema_breadcrumb (#21 · schema_markup · 1점) — FAIL 11/13 (85%)  «#21 Schema: BreadcrumbList»
+      ·  11건: @type='BreadcrumbList' 노드 없음
+  - seo_open_graph (#18 · seo · 1점) — FAIL 10/13 (77%)  «#18 Open Graph (title+image)»
+      ·  10건: 누락: image
+  - perf_cache_control (#4 · performance · 1점) — FAIL 9/13 (69%)  «#4 Cache-Control max-age 설정»
+      ·   6건: Cache-Control 부재 또는 no-store/no-cache.
+      ·   2건: Cache-Control 헤더가 없습니다.
+      ·   1건: max-age 디렉티브가 없습니다.
+  - ai_definition (#33 · citable_content · 1점) — FAIL 7/13 (54%)  «#33 Definition Paragraph»
+      ·   7건: 정의문 N건 — N건 이상 필요 [측정 0]
+  - ai_citable (#36 · citable_content · 1점) — FAIL 7/13 (54%)  «#36 Citable Sentence ≥ 10%»
+      ·   7건: 인용 가능 밀도 N% — N% 이상 필요 [측정 0~5.6]
+  - seo_canonical (#15 · seo · 1점) — FAIL 6/13 (46%)  «#15 Canonical self-ref»
+      ·   3건: canonical 태그 없음
+      ·   2건: canonical='https://solutions.lg.com/resources' ≠ 현재 URL
+      ·   1건: canonical='https://www.lg.com/us/business' ≠ 현재 URL
+  - a11y_heading_hier (a11y#11 · accessibility · 1점) — FAIL 5/13 (38%)  «#11 Heading Hierarchy»
+      ·   4건: 헤딩 역순 N건 — 첫 헤딩(hN)보다 상위 레벨이 뒤에 등장 [측정 1~8]
+      ·   1건: 레벨 점프 N건 발견 (예: hN→hN) [측정 1]
+  - perf_redirect (#6 · performance · 1점) — FAIL 3/13 (23%)  «#6 Redirect ≤ 1»
+      ·   3건: 리다이렉트 N회 — N회 이하 권장 [측정 2]
+  - seo_h1 (#16 · seo · 1점) — FAIL 3/13 (23%)  «#16 H1 정확히 1개»
+      ·   3건: 'hN' N개 — == N 필요 [측정 1]
+  - seo_robots (#17 · seo · 1점) — FAIL 2/12 (17%)  «#17 indexing 허용»
+      ·   2건: 'noindex'가 포함되어 있습니다.
+  - ai_summary_ssr (#40 · ai_crawlability · 1점) — FAIL 2/12 (17%)  «#40 Summary Content SSR»
+      ·   2건: '[class*='summary'], [class*='Summary'], [id*='summary'], [class*='overview'], [class*='Overview'], [class*='highlight'], [class*='Product-KeyFeatures'], [class*='Product-Features']' 요소를 찾을 수 없습니다.
+  - ai_summary_box (#35 · citable_content · 1점) — FAIL 2/13 (15%)  «#35 Summary Box (콘텐츠)»
+      ·   2건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
+  - perf_http_protocol (#3 · performance · 1점) — FAIL 1/13 (8%)  «#3 HTTP/2+»
+      ·   1건: HTTP/N — HTTP/N 이상 필요 [측정 1.1]
+  - a11y_image_alt (a11y#9 · accessibility · 1점) — FAIL 1/13 (8%)  «#9 Image Alt 누락 0»
+      ·   1건: N개 요소에 'alt' 속성이 없습니다. [측정 1]
+  - a11y_aria_labels (a11y#12 · accessibility · 1점) — FAIL 1/13 (8%)  «#12 ARIA 누락 < 10%»
+      ·   1건: 누락 N% — N% 미만 필요 [측정 68.8]
+  - ai_faq_block (#32 · citable_content · 1점) — FAIL 1/13 (8%)  «#32 FAQ Block (콘텐츠)»
+      ·   1건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
+  - ai_ssr_ratio (#37 · ai_crawlability · 1점) — FAIL 1/13 (8%)  «#37 JS HTML Text Ratio ≥ 60%»
+      ·   1건: CSR 비율 측정 불가 (Playwright 미설치 또는 차단)
+
 ### [home] 홈페이지 — 10건  (감점 항목 19개)
   - ai_schema_breadcrumb (#21 · schema_markup · 1점) — FAIL 10/10 (100%)  «#21 Schema: BreadcrumbList»
       ·  10건: @type='BreadcrumbList' 노드 없음
-  - ai_definition (#33 · citable_content · 1점) — FAIL 10/10 (100%)  «#33 Definition Paragraph»
-      ·  10건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 6/6 (100%)  «#26 Schema: ImageObject»
       ·   6건: @type='ImageObject' 노드 없음
   - ai_schema_video (#27 · schema_markup · 1점) — FAIL 6/6 (100%)  «#27 Schema: VideoObject»
       ·   6건: @type='VideoObject' 노드 없음
   - ai_schema_website (#49 · schema_markup · 1점) — FAIL 9/10 (90%)  «#49 Schema: WebSite»
       ·   9건: @type='WebSite' 노드 없음
-  - ai_citable (#36 · citable_content · 1점) — FAIL 9/10 (90%)  «#36 Citable Sentence ≥ 10%»
-      ·   9건: 인용 가능 밀도 N% — N% 이상 필요 [측정 0]
   - a11y_heading_hier (a11y#11 · accessibility · 1점) — FAIL 7/10 (70%)  «#11 Heading Hierarchy»
       ·   7건: 헤딩 역순 N건 — 첫 헤딩(hN)보다 상위 레벨이 뒤에 등장 [측정 23~30]
   - perf_redirect (#6 · performance · 1점) — FAIL 6/10 (60%)  «#6 Redirect ≤ 1»
@@ -3821,8 +3849,12 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   3건: 누락: title, image
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 3/10 (30%)  «#32 FAQ Block (콘텐츠)»
       ·   3건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
+  - ai_definition (#33 · citable_content · 1점) — FAIL 3/10 (30%)  «#33 Definition Paragraph»
+      ·   3건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_summary_box (#35 · citable_content · 1점) — FAIL 3/10 (30%)  «#35 Summary Box (콘텐츠)»
       ·   3건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
+  - ai_citable (#36 · citable_content · 1점) — FAIL 3/10 (30%)  «#36 Citable Sentence ≥ 10%»
+      ·   3건: 인용 가능 밀도 N% — N% 이상 필요 [측정 4.8]
   - ai_image_filename (#40 · ai_crawlability · 1점) — FAIL 3/10 (30%)  «#40 Image File Name 브랜드 포함»
       ·   3건: 브랜드 키워드 포함 이미지 N/N (N%) [측정 0]
   - ai_summary_ssr (#40 · ai_crawlability · 1점) — FAIL 3/10 (30%)  «#40 Summary Content SSR»
@@ -3835,20 +3867,20 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   7건: @type='FAQPage' 노드 없음
   - ai_schema_article (#29 · schema_markup · 1점) — FAIL 7/7 (100%)  «#29 Schema: Article»
       ·   7건: @type='Article' 노드 없음
-  - ai_definition (#33 · citable_content · 1점) — FAIL 7/7 (100%)  «#33 Definition Paragraph»
-      ·   7건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 5/5 (100%)  «#26 Schema: ImageObject»
       ·   5건: @type='ImageObject' 노드 없음
   - ai_schema_video (#27 · schema_markup · 1점) — FAIL 1/1 (100%)  «#27 Schema: VideoObject»
       ·   1건: @type='VideoObject' 노드 없음
   - a11y_heading_hier (a11y#11 · accessibility · 1점) — FAIL 6/7 (86%)  «#11 Heading Hierarchy»
       ·   6건: 헤딩 역순 N건 — 첫 헤딩(hN)보다 상위 레벨이 뒤에 등장 [측정 3~16]
+  - ai_definition (#33 · citable_content · 1점) — FAIL 5/7 (71%)  «#33 Definition Paragraph»
+      ·   5건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_schema_breadcrumb (#21 · schema_markup · 1점) — FAIL 4/7 (57%)  «#21 Schema: BreadcrumbList»
       ·   4건: @type='BreadcrumbList' 노드 없음
-  - ai_citable (#36 · citable_content · 1점) — FAIL 4/7 (57%)  «#36 Citable Sentence ≥ 10%»
-      ·   4건: 인용 가능 밀도 N% — N% 이상 필요 [측정 4.1~9.1]
   - seo_open_graph (#18 · seo · 1점) — FAIL 3/7 (43%)  «#18 Open Graph (title+image)»
       ·   3건: 누락: image
+  - ai_citable (#36 · citable_content · 1점) — FAIL 3/7 (43%)  «#36 Citable Sentence ≥ 10%»
+      ·   3건: 인용 가능 밀도 N% — N% 이상 필요 [측정 5.6~8.3]
   - perf_cache_control (#4 · performance · 1점) — FAIL 1/7 (14%)  «#4 Cache-Control max-age 설정»
       ·   1건: max-age 디렉티브가 없습니다.
   - a11y_image_alt (a11y#9 · accessibility · 1점) — FAIL 1/7 (14%)  «#9 Image Alt 누락 0»
@@ -3860,45 +3892,6 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
   - ai_summary_box (#35 · citable_content · 1점) — FAIL 1/7 (14%)  «#35 Summary Box (콘텐츠)»
       ·   1건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
 
-### [unknown] 분류 불가 — 6건  (감점 항목 17개)
-  - ai_definition (#33 · citable_content · 1점) — FAIL 6/6 (100%)  «#33 Definition Paragraph»
-      ·   6건: 정의문 N건 — N건 이상 필요 [측정 0]
-  - ai_citable (#36 · citable_content · 1점) — FAIL 6/6 (100%)  «#36 Citable Sentence ≥ 10%»
-      ·   6건: 인용 가능 밀도 N% — N% 이상 필요 [측정 0]
-  - ai_schema_image (#26 · schema_markup · 1점) — FAIL 2/2 (100%)  «#26 Schema: ImageObject»
-      ·   2건: @type='ImageObject' 노드 없음
-  - ai_schema_video (#27 · schema_markup · 1점) — FAIL 1/1 (100%)  «#27 Schema: VideoObject»
-      ·   1건: @type='VideoObject' 노드 없음
-  - seo_canonical (#15 · seo · 1점) — FAIL 5/6 (83%)  «#15 Canonical self-ref»
-      ·   2건: canonical 태그 없음
-      ·   2건: canonical='https://solutions.lg.com/resources' ≠ 현재 URL
-      ·   1건: canonical='https://www.lg.com/us/business' ≠ 현재 URL
-  - seo_open_graph (#18 · seo · 1점) — FAIL 4/6 (67%)  «#18 Open Graph (title+image)»
-      ·   4건: 누락: image
-  - ai_schema_breadcrumb (#21 · schema_markup · 1점) — FAIL 4/6 (67%)  «#21 Schema: BreadcrumbList»
-      ·   4건: @type='BreadcrumbList' 노드 없음
-  - perf_cache_control (#4 · performance · 1점) — FAIL 3/6 (50%)  «#4 Cache-Control max-age 설정»
-      ·   2건: Cache-Control 헤더가 없습니다.
-      ·   1건: max-age 디렉티브가 없습니다.
-  - perf_redirect (#6 · performance · 1점) — FAIL 3/6 (50%)  «#6 Redirect ≤ 1»
-      ·   3건: 리다이렉트 N회 — N회 이하 권장 [측정 2]
-  - a11y_heading_hier (a11y#11 · accessibility · 1점) — FAIL 3/6 (50%)  «#11 Heading Hierarchy»
-      ·   3건: 헤딩 역순 N건 — 첫 헤딩(hN)보다 상위 레벨이 뒤에 등장 [측정 1~8]
-  - seo_h1 (#16 · seo · 1점) — FAIL 3/6 (50%)  «#16 H1 정확히 1개»
-      ·   3건: 'hN' N개 — == N 필요 [측정 1]
-  - seo_robots (#17 · seo · 1점) — FAIL 2/6 (33%)  «#17 indexing 허용»
-      ·   2건: 'noindex'가 포함되어 있습니다.
-  - perf_http_protocol (#3 · performance · 1점) — FAIL 1/6 (17%)  «#3 HTTP/2+»
-      ·   1건: HTTP/N — HTTP/N 이상 필요 [측정 1.1]
-  - a11y_aria_labels (a11y#12 · accessibility · 1점) — FAIL 1/6 (17%)  «#12 ARIA 누락 < 10%»
-      ·   1건: 누락 N% — N% 미만 필요 [측정 68.8]
-  - ai_faq_block (#32 · citable_content · 1점) — FAIL 1/6 (17%)  «#32 FAQ Block (콘텐츠)»
-      ·   1건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
-  - ai_summary_box (#35 · citable_content · 1점) — FAIL 1/6 (17%)  «#35 Summary Box (콘텐츠)»
-      ·   1건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
-  - ai_summary_ssr (#40 · ai_crawlability · 1점) — FAIL 1/6 (17%)  «#40 Summary Content SSR»
-      ·   1건: '[class*='summary'], [class*='Summary'], [id*='summary'], [class*='overview'], [class*='Overview'], [class*='highlight'], [class*='Product-KeyFeatures'], [class*='Product-Features']' 요소를 찾을 수 없습니다.
-
 ##############################################################################
 ## VN   run=vn_2026-08-30_run_136c5db7dc23.json
    URL 1033건 · 감사성공 989 · [config] 신(2026-06-17 재배포)
@@ -3909,9 +3902,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
         · 3건: HTTP 500 — 200 기대
 ##############################################################################
 
-### [pdp] 제품 상세 (PDP) — 461건  (감점 항목 24개)
-  - ai_definition (#33 · citable_content · 1점) — FAIL 461/461 (100%)  «#33 Definition Paragraph»
-      · 461건: 정의문 N건 — N건 이상 필요 [측정 0]
+### [pdp] 제품 상세 (PDP) — 461건  (감점 항목 23개)
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 460/460 (100%)  «#26 Schema: ImageObject»
       · 457건: @type='ImageObject' 노드 없음
       ·   3건: 필수 필드 누락: url, uploadDate
@@ -3944,10 +3935,10 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   2건: 헤딩 태그가 없습니다.
   - ai_schema_faq (#23 · schema_markup · 1점) — FAIL 373/460 (81%)  «#23 Schema: FAQPage»
       · 373건: @type='FAQPage' 노드 없음
-  - ai_citable (#36 · citable_content · 1점) — FAIL 316/461 (69%)  «#36 Citable Sentence ≥ 10%»
-      · 316건: 인용 가능 밀도 N% — N% 이상 필요 [측정 2.3~9.8]
   - a11y_image_alt (a11y#9 · accessibility · 1점) — FAIL 62/461 (13%)  «#9 Image Alt 누락 0»
       ·  62건: N개 요소에 'alt' 속성이 없습니다. [측정 1~16]
+  - ai_citable (#36 · citable_content · 1점) — FAIL 51/461 (11%)  «#36 Citable Sentence ≥ 10%»
+      ·  51건: 인용 가능 밀도 N% — N% 이상 필요 [측정 7~9.9]
   - seo_sitemap (#19 · seo · 1점) — FAIL 22/461 (5%)  «#19 Sitemap (1개월 내)»
       ·  22건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
   - seo_meta_desc (#14 · seo · 1점) — FAIL 13/461 (3%)  «#14 Meta Description»
@@ -3967,7 +3958,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
   - perf_cache_control (#4 · performance · 1점) — FAIL 2/461 (0%)  «#4 Cache-Control max-age 설정»
       ·   2건: Cache-Control 부재 또는 no-store/no-cache.
 
-### [business] B2B (사업자) — 100건  (감점 항목 19개)
+### [business] B2B (사업자) — 100건  (감점 항목 18개)
   - ai_schema_product (#25 · schema_markup · 1점) — FAIL 100/100 (100%)  «#25 Schema: Product 풀세트 (PDP)»
       ·  97건: @type='Product' 노드 없음
       ·   2건: 필수 필드 누락: description, sku
@@ -3975,10 +3966,6 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 100/100 (100%)  «#26 Schema: ImageObject»
       ·  99건: @type='ImageObject' 노드 없음
       ·   1건: 필수 필드 누락: name, description, uploadDate
-  - ai_definition (#33 · citable_content · 1점) — FAIL 100/100 (100%)  «#33 Definition Paragraph»
-      · 100건: 정의문 N건 — N건 이상 필요 [측정 0]
-  - ai_citable (#36 · citable_content · 1점) — FAIL 100/100 (100%)  «#36 Citable Sentence ≥ 10%»
-      · 100건: 인용 가능 밀도 N% — N% 이상 필요 [측정 1.4~9.9]
   - ai_ssr_ratio (#37 · ai_crawlability · 1점) — FAIL 100/100 (100%)  «#37 JS HTML Text Ratio ≥ 60%»
       · 100건: SSR 비율 N% — N% 이상 필요 [측정 57]
   - ai_schema_video (#27 · schema_markup · 1점) — FAIL 10/10 (100%)  «#27 Schema: VideoObject»
@@ -3998,6 +3985,8 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·  76건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 73/100 (73%)  «#32 FAQ Block (콘텐츠)»
       ·  73건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
+  - ai_citable (#36 · citable_content · 1점) — FAIL 42/100 (42%)  «#36 Citable Sentence ≥ 10%»
+      ·  42건: 인용 가능 밀도 N% — N% 이상 필요 [측정 3.4~9.9]
   - a11y_heading_hier (a11y#11 · accessibility · 1점) — FAIL 32/100 (32%)  «#11 Heading Hierarchy»
       ·  25건: 헤딩 역순 N건 — 첫 헤딩(hN)보다 상위 레벨이 뒤에 등장 [측정 1]
       ·   7건: 헤딩 태그가 없습니다.
@@ -4014,17 +4003,13 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
   - ai_schema_breadcrumb (#21 · schema_markup · 1점) — FAIL 1/100 (1%)  «#21 Schema: BreadcrumbList»
       ·   1건: @type='BreadcrumbList' 노드 없음
 
-### [support_troubleshoot] 지원 - 트러블슈팅 — 100건  (감점 항목 18개)
+### [support_troubleshoot] 지원 - 트러블슈팅 — 100건  (감점 항목 16개)
   - ai_schema_howto (#28 · schema_markup · 1점) — FAIL 100/100 (100%)  «#28 Schema: HowTo»
       · 100건: @type='HowTo' 노드 없음
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 100/100 (100%)  «#32 FAQ Block (콘텐츠)»
       · 100건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
-  - ai_definition (#33 · citable_content · 1점) — FAIL 100/100 (100%)  «#33 Definition Paragraph»
-      · 100건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_summary_box (#35 · citable_content · 1점) — FAIL 100/100 (100%)  «#35 Summary Box (콘텐츠)»
       · 100건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
-  - ai_citable (#36 · citable_content · 1점) — FAIL 100/100 (100%)  «#36 Citable Sentence ≥ 10%»
-      · 100건: 인용 가능 밀도 N% — N% 이상 필요 [측정 6.8~8.8]
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 97/97 (100%)  «#26 Schema: ImageObject»
       ·  97건: @type='ImageObject' 노드 없음
   - perf_ttfb (#1 · performance · 1점) — FAIL 3/3 (100%)  «#1 TTFB < 600ms»
@@ -4054,8 +4039,6 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   1건: 'hN' N개 — == N 필요 [측정 1]
 
 ### [plp] 제품 카테고리 (PLP) — 98건  (감점 항목 22개)
-  - ai_definition (#33 · citable_content · 1점) — FAIL 98/98 (100%)  «#33 Definition Paragraph»
-      ·  98건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 92/92 (100%)  «#26 Schema: ImageObject»
       ·  92건: @type='ImageObject' 노드 없음
   - perf_html_size (#5 · performance · 1점) — FAIL 35/35 (100%)  «#5 HTML < 100KB»
@@ -4080,8 +4063,6 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·  88건: @type='FAQPage' 노드 없음
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 90/98 (92%)  «#32 FAQ Block (콘텐츠)»
       ·  90건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
-  - ai_citable (#36 · citable_content · 1점) — FAIL 74/98 (76%)  «#36 Citable Sentence ≥ 10%»
-      ·  74건: 인용 가능 밀도 N% — N% 이상 필요 [측정 1.9~9.8]
   - ai_schema_collection (#24 · schema_markup · 1점) — FAIL 69/93 (74%)  «#24 Schema: CollectionPage (PLP)»
       ·  69건: @type='CollectionPage' 노드 없음
   - seo_meta_desc (#14 · seo · 1점) — FAIL 48/98 (49%)  «#14 Meta Description»
@@ -4094,6 +4075,8 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
   - seo_open_graph (#18 · seo · 1점) — FAIL 21/98 (21%)  «#18 Open Graph (title+image)»
       ·  18건: 누락: title
       ·   3건: 누락: image
+  - ai_citable (#36 · citable_content · 1점) — FAIL 18/98 (18%)  «#36 Citable Sentence ≥ 10%»
+      ·  18건: 인용 가능 밀도 N% — N% 이상 필요 [측정 1.6~9.9]
   - seo_sitemap (#19 · seo · 1점) — FAIL 11/98 (11%)  «#19 Sitemap (1개월 내)»
       ·  11건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
   - perf_cache_control (#4 · performance · 1점) — FAIL 8/98 (8%)  «#4 Cache-Control max-age 설정»
@@ -4102,10 +4085,10 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   1건: N개 요소에 'alt' 속성이 없습니다. [측정 2]
   - a11y_semantic (a11y#10 · accessibility · 1점) — FAIL 1/98 (1%)  «#10 Semantic HTML»
       ·   1건: 헤딩 N + 랜드마크 N = N — 의미 구조 N+ 필요 [측정 0]
+  - ai_definition (#33 · citable_content · 1점) — FAIL 1/98 (1%)  «#33 Definition Paragraph»
+      ·   1건: 정의문 N건 — N건 이상 필요 [측정 0]
 
-### [support] 지원/Support — 97건  (감점 항목 19개)
-  - ai_definition (#33 · citable_content · 1점) — FAIL 97/97 (100%)  «#33 Definition Paragraph»
-      ·  97건: 정의문 N건 — N건 이상 필요 [측정 0]
+### [support] 지원/Support — 97건  (감점 항목 18개)
   - perf_ttfb (#1 · performance · 1점) — FAIL 61/61 (100%)  «#1 TTFB < 600ms»
       ·  61건: TTFB Nms — Nms 미만 필요 [측정 963~20046]
   - perf_html_size (#5 · performance · 1점) — FAIL 61/61 (100%)  «#5 HTML < 100KB»
@@ -4119,8 +4102,6 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·  42건: @type='ImageObject' 노드 없음
   - ai_summary_box (#35 · citable_content · 1점) — FAIL 95/97 (98%)  «#35 Summary Box (콘텐츠)»
       ·  95건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
-  - ai_citable (#36 · citable_content · 1점) — FAIL 92/97 (95%)  «#36 Citable Sentence ≥ 10%»
-      ·  92건: 인용 가능 밀도 N% — N% 이상 필요 [측정 2~9.8]
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 84/97 (87%)  «#32 FAQ Block (콘텐츠)»
       ·  84건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
   - seo_h1 (#16 · seo · 1점) — FAIL 82/97 (85%)  «#16 H1 정확히 1개»
@@ -4141,6 +4122,8 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·  13건: 헤딩 태그가 없습니다.
       ·   7건: 레벨 점프 N건 발견 (예: hN→hN) [측정 1]
       ·   1건: 헤딩 역순 N건 — 첫 헤딩(hN)보다 상위 레벨이 뒤에 등장 [측정 1]
+  - ai_citable (#36 · citable_content · 1점) — FAIL 16/97 (16%)  «#36 Citable Sentence ≥ 10%»
+      ·  16건: 인용 가능 밀도 N% — N% 이상 필요 [측정 3.1~9.8]
   - seo_title (#13 · seo · 1점) — FAIL 11/97 (11%)  «#13 Title 존재»
       ·  11건: 텍스트 길이 N — N자 이상 필요 [측정 0]
   - seo_canonical (#15 · seo · 1점) — FAIL 7/97 (7%)  «#15 Canonical self-ref»
@@ -4150,13 +4133,11 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
   - a11y_image_alt (a11y#9 · accessibility · 1점) — FAIL 1/97 (1%)  «#9 Image Alt 누락 0»
       ·   1건: N개 요소에 'alt' 속성이 없습니다. [측정 7]
 
-### [content] 콘텐츠/매거진 — 70건  (감점 항목 18개)
+### [content] 콘텐츠/매거진 — 70건  (감점 항목 17개)
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 70/70 (100%)  «#26 Schema: ImageObject»
       ·  70건: @type='ImageObject' 노드 없음
   - ai_schema_article (#29 · schema_markup · 1점) — FAIL 70/70 (100%)  «#29 Schema: Article»
       ·  70건: @type='Article' 노드 없음
-  - ai_definition (#33 · citable_content · 1점) — FAIL 70/70 (100%)  «#33 Definition Paragraph»
-      ·  70건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_author_source (#34 · citable_content · 1점) — FAIL 70/70 (100%)  «#34 Author 또는 출처+날짜»
       ·  68건: JSON-LD author 또는 (datePublished+publisher) 조합 없음
       ·   2건: 저자(meta/byline) 또는 (출처+datePublished) 조합 없음
@@ -4173,10 +4154,10 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·  66건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
   - perf_cache_control (#4 · performance · 1점) — FAIL 64/70 (91%)  «#4 Cache-Control max-age»
       ·  64건: Cache-Control 부재 또는 no-store/no-cache.
-  - ai_citable (#36 · citable_content · 1점) — FAIL 64/70 (91%)  «#36 Citable Sentence ≥ 10%»
-      ·  64건: 인용 가능 밀도 N% — N% 이상 필요 [측정 2.3~9.9]
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 49/70 (70%)  «#32 FAQ Block (콘텐츠)»
       ·  49건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
+  - ai_citable (#36 · citable_content · 1점) — FAIL 36/70 (51%)  «#36 Citable Sentence ≥ 10%»
+      ·  36건: 인용 가능 밀도 N% — N% 이상 필요 [측정 3~9.5]
   - seo_meta_desc (#14 · seo · 1점) — FAIL 18/70 (26%)  «#14 Meta Description»
       ·  18건: 'meta[name='description' i]' 요소를 찾을 수 없습니다.
   - seo_h1 (#16 · seo · 1점) — FAIL 11/70 (16%)  «#16 H1 정확히 1개»
@@ -4191,13 +4172,11 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
   - seo_sitemap (#19 · seo · 1점) — FAIL 2/70 (3%)  «#19 Sitemap (1개월 내)»
       ·   2건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
 
-### [promotion] 프로모션/약관 — 53건  (감점 항목 17개)
+### [promotion] 프로모션/약관 — 53건  (감점 항목 16개)
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 53/53 (100%)  «#26 Schema: ImageObject»
       ·  53건: @type='ImageObject' 노드 없음
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 53/53 (100%)  «#32 FAQ Block (콘텐츠)»
       ·  53건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
-  - ai_definition (#33 · citable_content · 1점) — FAIL 53/53 (100%)  «#33 Definition Paragraph»
-      ·  53건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_summary_box (#35 · citable_content · 1점) — FAIL 53/53 (100%)  «#35 Summary Box (콘텐츠)»
       ·  53건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
   - ai_schema_offer (#43 · schema_markup · 1점) — FAIL 52/52 (100%)  «#43 Schema: Offer»
@@ -4214,8 +4193,6 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   2건: 필수 필드 누락: url
   - seo_h1 (#16 · seo · 1점) — FAIL 40/53 (75%)  «#16 H1 정확히 1개»
       ·  40건: 'hN' N개 — == N 필요 [측정 1]
-  - ai_citable (#36 · citable_content · 1점) — FAIL 40/53 (75%)  «#36 Citable Sentence ≥ 10%»
-      ·  40건: 인용 가능 밀도 N% — N% 이상 필요 [측정 3.1~9.6]
   - perf_cache_control (#4 · performance · 1점) — FAIL 37/53 (70%)  «#4 Cache-Control max-age»
       ·  37건: Cache-Control 부재 또는 no-store/no-cache.
   - seo_meta_desc (#14 · seo · 1점) — FAIL 34/53 (64%)  «#14 Meta Description»
@@ -4226,10 +4203,12 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
   - seo_open_graph (#18 · seo · 1점) — FAIL 6/53 (11%)  «#18 Open Graph (title+image)»
       ·   5건: 누락: title
       ·   1건: 누락: image
+  - ai_citable (#36 · citable_content · 1점) — FAIL 3/53 (6%)  «#36 Citable Sentence ≥ 10%»
+      ·   3건: 인용 가능 밀도 N% — N% 이상 필요 [측정 6.8~9.4]
   - seo_canonical (#15 · seo · 1점) — FAIL 1/53 (2%)  «#15 Canonical self-ref»
       ·   1건: canonical 태그 없음
 
-### [microsite] 마이크로사이트/캠페인 — 5건  (감점 항목 16개)
+### [microsite] 마이크로사이트/캠페인 — 5건  (감점 항목 15개)
   - perf_ttfb (#1 · performance · 1점) — FAIL 5/5 (100%)  «#1 TTFB < 600ms»
       ·   5건: TTFB Nms — Nms 미만 필요 [측정 7779~17286]
   - perf_cache_control (#4 · performance · 1점) — FAIL 5/5 (100%)  «#4 Cache-Control max-age»
@@ -4248,22 +4227,20 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   5건: @type='Article' 노드 없음
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 5/5 (100%)  «#32 FAQ Block (콘텐츠)»
       ·   5건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
-  - ai_definition (#33 · citable_content · 1점) — FAIL 5/5 (100%)  «#33 Definition Paragraph»
-      ·   5건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_author_source (#34 · citable_content · 1점) — FAIL 5/5 (100%)  «#34 Author 또는 출처+날짜»
       ·   5건: JSON-LD author 또는 (datePublished+publisher) 조합 없음
   - ai_schema_video (#27 · schema_markup · 1점) — FAIL 2/2 (100%)  «#27 Schema: VideoObject»
       ·   2건: 필수 필드 누락: url
   - ai_summary_box (#35 · citable_content · 1점) — FAIL 4/5 (80%)  «#35 Summary Box (콘텐츠)»
       ·   4건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
-  - ai_citable (#36 · citable_content · 1점) — FAIL 4/5 (80%)  «#36 Citable Sentence ≥ 10%»
-      ·   4건: 인용 가능 밀도 N% — N% 이상 필요 [측정 3.8~7.9]
+  - ai_citable (#36 · citable_content · 1점) — FAIL 2/5 (40%)  «#36 Citable Sentence ≥ 10%»
+      ·   2건: 인용 가능 밀도 N% — N% 이상 필요 [측정 8.9~9.1]
   - seo_h1 (#16 · seo · 1점) — FAIL 1/5 (20%)  «#16 H1 정확히 1개»
       ·   1건: 'hN' N개 — == N 필요 [측정 1]
   - seo_open_graph (#18 · seo · 1점) — FAIL 1/5 (20%)  «#18 Open Graph (title+image)»
       ·   1건: 누락: title
 
-### [buying_guide] 구매 가이드 — 3건  (감점 항목 15개)
+### [buying_guide] 구매 가이드 — 3건  (감점 항목 13개)
   - perf_ttfb (#1 · performance · 1점) — FAIL 3/3 (100%)  «#1 TTFB < 600ms»
       ·   3건: TTFB Nms — Nms 미만 필요 [측정 2654~4246]
   - perf_cache_control (#4 · performance · 1점) — FAIL 3/3 (100%)  «#4 Cache-Control max-age»
@@ -4282,22 +4259,18 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   3건: @type='Article' 노드 없음
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 3/3 (100%)  «#32 FAQ Block (콘텐츠)»
       ·   3건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
-  - ai_definition (#33 · citable_content · 1점) — FAIL 3/3 (100%)  «#33 Definition Paragraph»
-      ·   3건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_author_source (#34 · citable_content · 1점) — FAIL 3/3 (100%)  «#34 Author 또는 출처+날짜»
       ·   3건: JSON-LD author 또는 (datePublished+publisher) 조합 없음
   - ai_summary_box (#35 · citable_content · 1점) — FAIL 3/3 (100%)  «#35 Summary Box (콘텐츠)»
       ·   3건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
-  - ai_citable (#36 · citable_content · 1점) — FAIL 3/3 (100%)  «#36 Citable Sentence ≥ 10%»
-      ·   3건: 인용 가능 밀도 N% — N% 이상 필요 [측정 6.3~8.7]
   - a11y_heading_hier (a11y#11 · accessibility · 1점) — FAIL 1/3 (33%)  «#11 Heading Hierarchy»
       ·   1건: 헤딩 태그가 없습니다.
   - seo_h1 (#16 · seo · 1점) — FAIL 1/3 (33%)  «#16 H1 정확히 1개»
       ·   1건: 'hN' N개 — == N 필요 [측정 1]
 
 ### [home] 홈페이지 — 2건  (감점 항목 14개)
-  - ai_definition (#33 · citable_content · 1점) — FAIL 2/2 (100%)  «#33 Definition Paragraph»
-      ·   2건: 정의문 N건 — N건 이상 필요 [측정 0]
+  - ai_summary_box (#35 · citable_content · 1점) — FAIL 2/2 (100%)  «#35 Summary Box (콘텐츠)»
+      ·   2건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
   - perf_ttfb (#1 · performance · 1점) — FAIL 1/1 (100%)  «#1 TTFB < 600ms»
       ·   1건: TTFB Nms — Nms 미만 필요 [측정 18276]
   - perf_html_size (#5 · performance · 1점) — FAIL 1/1 (100%)  «#5 HTML < 100KB»
@@ -4322,6 +4295,6 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   1건: @type='BreadcrumbList' 노드 없음
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 1/2 (50%)  «#32 FAQ Block (콘텐츠)»
       ·   1건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
-  - ai_summary_box (#35 · citable_content · 1점) — FAIL 1/2 (50%)  «#35 Summary Box (콘텐츠)»
-      ·   1건: 키워드(summary, 요약, tldr...)를 포함한 요소를 찾을 수 없습니다.
+  - ai_definition (#33 · citable_content · 1점) — FAIL 1/2 (50%)  «#33 Definition Paragraph»
+      ·   1건: 정의문 N건 — N건 이상 필요 [측정 0]
 

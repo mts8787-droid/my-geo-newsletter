@@ -184,7 +184,10 @@ const PT_SCOPED_CHECKS = {
 //   unknown/home  : 분류불가/홈페이지 (측정 의미 없음)
 //   business      : B2B (사업자) — GEO 대상 아님 (사용자 지시, 2026-08-26)
 //   promotion     : 프로모션/약관 — 한시 페이지라 개선 대상 아님 (사용자 지시, 2026-08-26)
-const EXCLUDED_PT = { unknown: 1, home: 1, business: 1, promotion: 1 }
+// about  : 회사소개 — 상류가 2026-08-28 부터 감사 자체를 안 한다(SKIP_TYPES).
+// content: 상류에서 experience(익스피어리언스)로 좁혀졌다. /experience/ 경로가 아닌
+//          잔여 content 는 상류 재분류상 unknown 이므로 집계에서 뺀다.
+const EXCLUDED_PT = { unknown: 1, home: 1, business: 1, promotion: 1, about: 1, content: 1 }
 
 // 영구 제외 URL 패턴 — 브랜드 스토리/캠페인 계열. GEO KPI 대상이 아니다
 // (사용자 결정 2026-08-30. 상류 my-geo-audit 의 수집 목록에서도 동일하게 제외 예정).
@@ -192,8 +195,19 @@ const EXCLUDED_PT = { unknown: 1, home: 1, business: 1, promotion: 1 }
 // (예: lg.com/au/lifesgood/ 가 '뉴스룸/Press' 로 분류돼 최저 점수 원인이 됨).
 const EXCLUDED_URL_RE = /\/(lg-story|lifesgood|lifes-good)(\/|$)/i
 function isExcludedUrl(url) { return EXCLUDED_URL_RE.test(String(url || '')) }
-// 페이지타입 통합 — about(회사)/content(콘텐츠매거진) → newsroom(뉴스룸) 으로 병합
-const PT_MERGE = { about: 'newsroom', content: 'newsroom' }
+// 페이지타입 통합. about/content 를 newsroom 으로 병합하던 규칙은 2026-09-01 제거했다 —
+// 아래 GLOBAL_NEWSROOM_RE 주석 참조.
+const PT_MERGE = { experience: 'lg_experience' }
+
+// 뉴스룸은 lg.com/global/newsroom 전용이다. 저장된 page_type 이 아니라 URL 로 판정한다.
+//
+// 이유 1 — 저장값은 감사 시점 분류라 낡는다. press_media 분리(2026-08-30) 이전 런에는
+//          국가별 보도자료(DE /newsroom 등)가 newsroom 으로 들어가 있다.
+// 이유 2 — about/content 를 newsroom 으로 병합하던 규칙이 회사소개·콘텐츠매거진까지
+//          뉴스룸에 합쳐 넣었다.
+// 두 경로가 겹쳐 뉴스룸 269건 / 78.1점이 나왔는데, 실제 Global-Site 는 100건 / 86.2점이다.
+// 뉴스룸 = Global-Site 국가와 1:1 로 맞아야 한다(같은 페이지 집합이므로).
+const GLOBAL_NEWSROOM_RE = /^https?:\/\/www\.lg\.com\/global\/newsroom\//i
 // 통합/병합 결과 페이지타입의 표준 라벨 (병합 시 라벨 일관성)
 // 페이지타입 표준 라벨 — 크롤러가 주는 label 대신 여기 값이 우선한다.
 // 뉴스레터·대시보드·개선가이드가 같은 이름을 쓰도록 통일 (사용자 지시 2026-08-30).
@@ -212,6 +226,15 @@ const PT_LABEL = {
 // 페이지타입 정규화 — lg-experience 분리 + 병합 적용 + 제외 여부 판정. { id, label, excluded } 또는 null
 function resolvePt(pt, url) {
   if (!pt || !pt.id) return null
+  // 뉴스룸은 URL 로만 판정 — 저장된 page_type 을 믿지 않는다 (GLOBAL_NEWSROOM_RE 주석 참조).
+  // lg-story 는 호출부 isExcludedUrl 에서 이미 걸러진다.
+  if (url && GLOBAL_NEWSROOM_RE.test(url)) {
+    return { id: 'newsroom', label: PT_LABEL.newsroom, excluded: false }
+  }
+  // global/newsroom 이 아닌데 newsroom 으로 저장된 건 국가별 보도자료다.
+  if (pt.id === 'newsroom') {
+    return { id: 'press_media', label: PT_LABEL.press_media, excluded: false }
+  }
   // content(콘텐츠/매거진) 으로 분류된 /lg-experience/ 또는 /experience/ (US 경로) URL 은 별도 lg_experience 타입으로 분리
   if (pt.id === 'content' && url && /\/(?:lg-)?experience(\/|\?|$)/i.test(url)) {
     return { id: 'lg_experience', label: PT_LABEL.lg_experience, excluded: false }
@@ -269,7 +292,10 @@ const DISABLED_CHECKS = { perf_html_size: 1, perf_render_block: 1, ai_summary_ss
 //   같은 목적(색인 허용)을 두 경로로 확인하는 것이라, 둘 중 하나만 조치되면 통과다.
 //   기존에는 AND 로 둘 다 채점돼 한쪽 미설정이 그대로 감점이었다 (사용자 지시 2026-08-27).
 const OR_GROUPS = [
-  { primary: 'seo_robots', members: ['seo_robots', 'seo_robots_hdr'], label: '#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)' },
+  //   상류가 2026-08-31 부터 이 통합을 자체 항목 seo_indexable 로 emit 한다. 재감사한
+  //   국가는 seo_indexable, 아직 안 한 국가는 seo_robots(+_hdr) 로 같은 스냅샷에 섞인다.
+  //   셋을 한 그룹에 넣어 대표(seo_robots) 한 행으로 몰면 양쪽 포맷이 그대로 합쳐진다.
+  { primary: 'seo_robots', members: ['seo_robots', 'seo_robots_hdr', 'seo_indexable'], label: '#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)' },
 ]
 // AND 통합 체크 — 모든 멤버가 통과해야 통과 (대표 체크에 결과를 몰고 나머지는 na).
 //   #25 Product 풀세트: 상류가 Product(6필드)와 Offer(#43, 3필드) 두 체크로 쪼개 채점하는데,
