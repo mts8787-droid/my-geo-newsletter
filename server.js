@@ -120,6 +120,8 @@ app.use((req, res, next) => {
   if (req.path === '/admin/login') return next()
   if (req.path.startsWith('/api/auth/')) return next()
   if (req.path === '/api/tracker-snapshot-v2') return next()
+  // 자동 게시 헬스 — 비밀정보 없음 (armed·다음/마지막 실행 시각뿐), GET only
+  if (req.method === 'GET' && req.path === '/api/publish-health') return next()
   if (req.method === 'GET' && req.path === '/api/dashboard/sync-data') return next()
   // 뉴스레터 이메일 차트 PNG — 수신자 메일 클라이언트가 세션 없이 fetch (GET·HEAD only, d 파라미터 엄격 검증 → 안전)
   if ((req.method === 'GET' || req.method === 'HEAD') && req.path === '/api/hl-chart') return next()

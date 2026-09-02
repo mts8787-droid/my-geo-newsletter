@@ -10,6 +10,7 @@ import { logFor } from '../lib/logger.js'
 const log = logFor('publish')
 import { CHANNELS, readMetaFile, publishChannel, injectLangBar } from '../lib/publish-core.js'
 import { runUnifiedPublish, readUnifiedPublishMeta, readPublishConfig, writePublishConfig } from '../lib/republish.mjs'
+import { schedulerHealth } from '../lib/publish-scheduler.js'
 // 기존 import 경로 호환 (routes/landing.js · routes/published.js 가 여기서 가져감)
 export { CHANNELS, readMetaFile }
 
@@ -178,6 +179,12 @@ publishRouter.post('/api/publish-all', async (req, res) => {
 })
 publishRouter.get('/api/publish-all', (req, res) => {
   res.json({ lastRun: readUnifiedPublishMeta(), config: readPublishConfig(), running: unifiedRunning })
+})
+
+// 공개 헬스 — 자동 게시 스케줄러 상태 (비밀정보 없음: armed 여부·다음/마지막 실행뿐).
+// 서버 로그 접근 없이 "자동 게시가 안 됐다" 를 진단하기 위함 (2026-09-02).
+publishRouter.get('/api/publish-health', (req, res) => {
+  res.json({ ok: true, ...schedulerHealth() })
 })
 
 // 통합 이력 조회

@@ -23,6 +23,9 @@ async function fetchSheet(sheetId, sheetName) {
     headers: isNode
       ? { 'User-Agent': 'Mozilla/5.0', 'Cache-Control': 'no-cache, no-store', 'Pragma': 'no-cache' }
       : { 'Cache-Control': 'no-cache, no-store', 'Pragma': 'no-cache' },
+    // 서버(cron) 경로 무한대기 방지 — fetch 가 안 끝나면 통합 게시 전체가 영원히 멈추고
+    // _running 가드에 막혀 이후 자동 게시도 전부 스킵된다 (2026-09-02 자동 게시 미실행 보강)
+    ...(isNode && typeof AbortSignal !== 'undefined' && AbortSignal.timeout ? { signal: AbortSignal.timeout(30_000) } : {}),
   })
   if (!res.ok) throw new Error(
     `"${sheetName}" 시트를 가져올 수 없습니다 (HTTP ${res.status}).`
