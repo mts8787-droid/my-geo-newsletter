@@ -130,10 +130,12 @@ describe('assemble — sync-data ∪ 스냅샷 EN 오버레이', () => {
     expect(a.metaEn.totalInsight).toBe('User-written total insight')
     expect(a.hasMetaEn).toBe(true)
   })
-  it('citation: 사용자 편집 meta 는 스냅샷에서, 시트 구조는 sync-data 에서', () => {
+  it('citation: 스냅샷에서는 사용자 텍스트만 — 낡은 토글·설정은 오염 금지', () => {
     const c = assembleCitationData()
-    expect(c.metaKo.citationInsight).toBe('사용자가 쓴 사이테이션 인사이트') // 스냅샷 텍스트
-    expect(c.metaKo.citationTopN).toBe(8)                                    // 스냅샷 설정
+    expect(c.metaKo.citationInsight).toBe('사용자가 쓴 사이테이션 인사이트') // 스냅샷 텍스트 (META_TEXT_KEYS)
+    // 스냅샷의 설정·토글은 가져오지 않는다 — 운영에서 3월 옛 스냅샷의 낡은 토글이
+    // fresh 데이터를 덮어 범프차트 소실 + 'Mar 2026' 제목 회귀 (2026-09-02)
+    expect(c.metaKo.citationTopN).toBeUndefined()
     expect(c.metaKo.period).toBe('Jul 2026')                                 // sync-data 구조
     expect(c.trendData.citTrendMonths).toEqual(['Jun', 'Jul'])
   })
