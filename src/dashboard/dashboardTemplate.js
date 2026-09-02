@@ -1338,6 +1338,42 @@ export function generateDashboardHTML(meta, total, products, citations, dotcom, 
   })
   const visibilityOnly = opts?.visibilityOnly || false
   const includeReadability = opts?.includeReadability === true
+  // Raw 데이터 다운로드 탭 (2026-09-02) — 서버 통합 게시가 저장한 시트별 gviz CSV 원문
+  // (opts.sheetRaw = DATA_DIR/sheet-raw/index.json, 메타 시트 제외). 게시 시점 정적 렌더.
+  const sheetRaw = opts?.sheetRaw || null
+  const rawDataTabHtml = () => {
+    const wrap = inner => `<div class="dash-container" style="max-width:900px;margin:0 auto;padding:28px 16px;">${inner}</div>`
+    if (!sheetRaw || !sheetRaw.sheets?.length) {
+      return wrap(`<div style="background:#fff;border:1px solid #E8EDF2;border-radius:12px;padding:28px;text-align:center;color:#64748B;font-size:14px;">${lang === 'en' ? 'No raw data stored yet — generated at the next data refresh (daily 00:00 KST or "Publish All").' : '아직 저장된 원본 데이터가 없습니다 — 다음 데이터 새로고침(매일 00시 KST 또는 "전체 게시") 때 생성됩니다.'}</div>`)
+    }
+    const syncedAt = new Date(sheetRaw.syncedAt).toLocaleString(lang === 'en' ? 'en-US' : 'ko-KR', { timeZone: 'Asia/Seoul' })
+    const fmtKb = b => b >= 1048576 ? (b / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(b / 1024)) + ' KB'
+    const rows = sheetRaw.sheets.map((sh, i) => `
+      <tr style="border-bottom:1px solid #F1F5F9;${i % 2 === 0 ? 'background:#FAFBFC;' : ''}">
+        <td style="padding:10px 14px;font-size:13px;font-weight:600;color:#1A1A1A;">${sh.name}</td>
+        <td style="padding:10px 14px;font-size:12px;color:#64748B;text-align:right;font-variant-numeric:tabular-nums;">${(sh.rows || 0).toLocaleString('en-US')}${lang === 'en' ? ' rows' : '행'}</td>
+        <td style="padding:10px 14px;font-size:12px;color:#64748B;text-align:right;font-variant-numeric:tabular-nums;">${fmtKb(sh.bytes || 0)}</td>
+        <td style="padding:10px 14px;text-align:right;">
+          <a href="/p/sheet-raw/${sh.slug}.csv" download style="display:inline-block;padding:5px 14px;border-radius:6px;background:#CF0652;color:#fff;font-size:12px;font-weight:700;text-decoration:none;">CSV</a>
+        </td>
+      </tr>`).join('')
+    return wrap(`
+      <div style="background:#fff;border:1px solid #E8EDF2;border-radius:12px;overflow:hidden;">
+        <div style="padding:16px 18px;background:#FAFBFC;border-bottom:1px solid #F1F5F9;">
+          <div style="font-size:16px;font-weight:800;color:#1A1A1A;">${lang === 'en' ? 'Raw Data Download' : 'Raw 데이터 다운로드'}</div>
+          <div style="margin-top:4px;font-size:12px;color:#64748B;">${lang === 'en' ? `Source sheets as of ${syncedAt} (KST) — refreshed on every data sync. Meta sheet excluded.` : `${syncedAt} (KST) 동기화 기준 원본 시트 — 데이터 동기화 때마다 갱신됩니다. 메타 시트 제외.`}</div>
+        </div>
+        <table style="width:100%;border-collapse:collapse;">
+          <thead><tr style="border-bottom:2px solid #E8EDF2;">
+            <th style="padding:9px 14px;text-align:left;font-size:11px;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:1px;">${lang === 'en' ? 'Sheet' : '시트'}</th>
+            <th style="padding:9px 14px;text-align:right;font-size:11px;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:1px;">${lang === 'en' ? 'Rows' : '행수'}</th>
+            <th style="padding:9px 14px;text-align:right;font-size:11px;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:1px;">${lang === 'en' ? 'Size' : '용량'}</th>
+            <th style="padding:9px 14px;"></th>
+          </tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>`)
+  }
   const ulMap = extra?.unlaunchedMap || {}
   // 트래커는 v2(geo-progress-tracker-v2 통합본)만 사용 — 항상 포함
   const trackerSrc = `/p/progress-tracker-v2/?lang=${lang}`
@@ -1605,6 +1641,7 @@ ${visibilityOnly ? `
     ${includeReadability ? `<button class="tab-btn" onclick="switchTab('readability')">Readability</button>` : ''}
     <button class="tab-btn" onclick="switchTab('progress')">Progress Tracker</button>
     <button class="tab-btn" onclick="switchTab('glossary')">Glossary</button>
+    <button class="tab-btn" onclick="switchTab('rawdata')">${lang === 'en' ? 'Raw Data' : 'Raw 데이터'}</button>
   </div>
   <div id="lang-toggle" style="display:flex;gap:2px;background:#1E293B;border-radius:6px;padding:2px">
     <button class="lang-btn${lang === 'ko' ? ' active' : ''}" onclick="switchLang('ko')">KO</button>
@@ -1654,6 +1691,9 @@ ${includeReadability ? `<div id="tab-readability" class="tab-panel">
 </div>
 <div id="tab-glossary" class="tab-panel">
   ${glossaryTabHtml(lang)}
+</div>
+<div id="tab-rawdata" class="tab-panel">
+  ${rawDataTabHtml()}
 </div>
 `}
 <div class="dash-footer">

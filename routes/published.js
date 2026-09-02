@@ -6,7 +6,7 @@ import express from 'express'
 import { readFileSync, existsSync } from 'fs'
 import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
-import { PUB_DIR } from '../lib/storage.js'
+import { PUB_DIR, DATA_DIR } from '../lib/storage.js'
 import { isIpAllowed } from '../lib/network.js'
 import { CHANNELS, readMetaFile } from './publish.js'
 import { renderCriteriaHTML, loadRows } from '../scripts/render-criteria.mjs'
@@ -248,6 +248,35 @@ const SLUG_REDIRECTS = {
   'GEO-Monthly-Report-KO-2026-07': 'GEO-Monthly-Report-KO-2026-08',
   'GEO-Monthly-Report-EN-2026-07': 'GEO-Monthly-Report-EN-2026-08',
 }
+
+// ─── /p/sheet-raw/* — 시트별 원본 CSV 다운로드 (Raw 데이터 탭, 2026-09-02) ────
+// 매 동기화(자동 게시) 때 lib/republish.mjs 가 저장한 gviz CSV 원문. 메타 시트 제외.
+// /p/ 네임스페이스 = 게시본과 동일 보호 (인증 예외 + IP allowlist).
+publishedRouter.get('/p/sheet-raw/index.json', (req, res) => {
+  if (!isIpAllowed(req)) return send403Page(res)
+  const file = join(DATA_DIR, 'sheet-raw', 'index.json')
+  if (!existsSync(file)) return res.status(404).json({ ok: false, error: '아직 저장된 시트 데이터가 없습니다 (다음 동기화 후 생성)' })
+  res.set('Content-Type', 'application/json; charset=utf-8')
+  res.send(readFileSync(file, 'utf-8'))
+})
+publishedRouter.get('/p/sheet-raw/:slug.csv', (req, res) => {
+  if (!isIpAllowed(req)) return send403Page(res)
+  const slug = req.params.slug
+  if (!/^[a-z0-9\-]+$/.test(slug)) return res.status(400).send('Invalid slug')   // traversal 방어
+  const file = join(DATA_DIR, 'sheet-raw', `${slug}.csv`)
+  if (!existsSync(file)) return res.status(404).send('Not found')
+  // 원래 시트 이름을 다운로드 파일명으로 (한글 지원 — RFC 5987 filename*)
+  let dlName = slug
+  try {
+    const idx = JSON.parse(readFileSync(join(DATA_DIR, 'sheet-raw', 'index.json'), 'utf-8'))
+    dlName = idx.sheets.find(x => x.slug === slug)?.name || slug
+  } catch {}
+  const csv = readFileSync(file, 'utf-8')
+  res.set('Content-Type', 'text/csv; charset=utf-8')
+  res.set('Content-Disposition', `attachment; filename="${slug}.csv"; filename*=UTF-8''${encodeURIComponent(dlName)}.csv`)
+  // BOM — 한글이 Excel 에서 깨지지 않게 (원문에 없을 때만 부착)
+  res.send(csv.startsWith('\uFEFF') ? csv : '\uFEFF' + csv)
+})
 
 // ─── /p/:slug (게시된 HTML 단일 파일 + CSP) ─────────────────────────────
 publishedRouter.get('/p/:slug', (req, res) => {

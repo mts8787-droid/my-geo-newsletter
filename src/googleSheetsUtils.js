@@ -38,16 +38,18 @@ async function fetchSheet(sheetId, sheetName) {
   // 진단 — gviz CSV 가 실제로 몇 행을 반환했는지 (시트 필터로 행이 숨겨지면 gviz 가 제외함)
   const csvLines = csv.split('\n').length
   console.log(`[fetchSheet] "${sheetName}": csv ${csv.length}자/${csvLines}줄 → ${rows.length}행 × ${rows[0]?.length ?? 0}컬럼`)
-  return rows
+  return { rows, csv }
 }
 
-export async function syncFromGoogleSheets(sheetId, onProgress) {
+// opts.onRaw(name, csv, rowCount) — 시트별 원본 CSV 수신 콜백 (서버 통합 게시의
+// raw 데이터 다운로드 탭용, 2026-09-02). 브라우저 호출부는 opts 미전달 — 동작 불변.
+export async function syncFromGoogleSheets(sheetId, onProgress, opts = {}) {
   const names = Object.values(SHEET_NAMES)
   const result = {}
 
   onProgress?.(`${names.length}개 시트 병렬 로드 중...`)
   const fetched = await Promise.allSettled(
-    names.map(name => fetchSheet(sheetId, name).then(rows => ({ name, rows })))
+    names.map(name => fetchSheet(sheetId, name).then(({ rows, csv }) => ({ name, rows, csv })))
   )
 
   for (let i = 0; i < names.length; i++) {
@@ -59,7 +61,8 @@ export async function syncFromGoogleSheets(sheetId, onProgress) {
       continue
     }
     try {
-      const { rows } = entry.value
+      const { rows, csv } = entry.value
+      try { opts.onRaw?.(name, csv, rows.length) } catch (e) { console.warn('[SYNC] onRaw 실패:', e.message) }
       const parsed = parseSheetRows(name, rows)
       // 스마트 병합: 배열은 합치고(단 weeklyLabels는 덮어쓰기), 객체는 병합, 나머지는 덮어쓰기
       for (const [key, val] of Object.entries(parsed)) {
