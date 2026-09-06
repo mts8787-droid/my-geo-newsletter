@@ -856,6 +856,14 @@ function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang, meta, extra, period
         <span style="font-size:18px;font-weight:700;color:#64748B">${lang === 'en' ? 'View' : '보기'}</span>
         <div id="${P}-view-chips" style="display:flex;gap:4px"></div>
       </div>
+      <div style="width:1px;height:24px;background:#E8EDF2"></div>
+      <div style="display:flex;align-items:center;gap:6px">
+        <span style="font-size:18px;font-weight:700;color:#64748B">${isMonthly ? (lang === 'en' ? 'Month' : '월') : (lang === 'en' ? 'Week' : '주차')}</span>
+        <select id="${P}-period-sel" onchange="_${P}SetPeriod(this.selectedIndex)"
+          style="padding:4px 10px;border-radius:6px;border:1px solid #E2E8F0;background:#F8FAFC;color:#0F172A;font-size:16px;font-weight:600;font-family:${FONT};cursor:pointer">
+          ${W12.map((w, i) => `<option value="${i}"${i === W12.length - 1 ? ' selected' : ''}>${isMonthly ? w : String(w).toUpperCase()}</option>`).join('')}
+        </select>
+      </div>
     </div>
     <!-- NOTICE -->
     <div style="margin:0 0 24px;padding:16px;background:#0F172A;border:1px solid #1E293B;border-radius:10px">
@@ -867,7 +875,7 @@ function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang, meta, extra, period
     <!-- 상단 요약 매트릭스 -->
     <div class="section-card" style="margin-bottom:24px">
       <div class="section-header">
-        <div class="section-title">${lang === 'en' ? 'PR Visibility Overview' : 'PR Visibility 현황'} <span style="font-size:12px;font-weight:600;color:#3B82F6;background:#EFF6FF;padding:2px 8px;border-radius:6px;border:1px solid #93C5FD">${weeklyPRLabels?.length ? weeklyPRLabels[weeklyPRLabels.length - 1].toUpperCase() : ''} ${lang === 'en' ? 'data' : '기준'}</span></div>
+        <div class="section-title">${lang === 'en' ? 'PR Visibility Overview' : 'PR Visibility 현황'} <span id="${P}-basis-tag" style="font-size:12px;font-weight:600;color:#3B82F6;background:#EFF6FF;padding:2px 8px;border-radius:6px;border:1px solid #93C5FD">${weeklyPRLabels?.length ? weeklyPRLabels[weeklyPRLabels.length - 1].toUpperCase() : ''} ${lang === 'en' ? 'data' : '기준'}</span></div>
         <span class="legend"><i style="background:#15803D"></i>${lang === 'en' ? 'Lead ≥100%' : '선도 ≥100%'} <i style="background:#D97706"></i>${lang === 'en' ? 'Behind ≥80%' : '추격 ≥80%'} <i style="background:#BE123C"></i>${lang === 'en' ? 'Critical <80%' : '취약 <80%'} <span style="color:#94A3B8;font-size:11px;margin-left:6px">${lang === 'en' ? '() = vs #1 competitor' : '() 는 1위 경쟁사 대비'}</span></span>
       </div>
       <div class="section-body" id="${P}-matrix"></div>
@@ -876,14 +884,17 @@ function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang, meta, extra, period
     <div class="section-card">
       <div class="section-header">
         <div class="section-title">${isMonthly ? (lang === 'en' ? 'Monthly Competitor Trend by Topic' : '토픽별 월간 경쟁사 트렌드') : (lang === 'en' ? 'Weekly Competitor Trend by Topic' : '토픽별 주간 경쟁사 트렌드')}</div>
-        <span class="legend">${isMonthly ? (W12.length ? `${W12[0]}–${W12[W12.length - 1]} (${W12.length}${lang === 'en' ? ' months' : '개월'})` : '') : (W12.length ? `${W12[0].toUpperCase()}–${W12[W12.length - 1].toUpperCase()} (${W12.length}${lang === 'en' ? ' weeks' : '주'})` : '')}</span>
+        <span class="legend" id="${P}-trend-range">${isMonthly ? (W12.length ? `${W12[0]}–${W12[W12.length - 1]} (${W12.length}${lang === 'en' ? ' months' : '개월'})` : '') : (W12.length ? `${W12[0].toUpperCase()}–${W12[W12.length - 1].toUpperCase()} (${W12.length}${lang === 'en' ? ' weeks' : '주'})` : '')}</span>
       </div>
       <div class="section-body" id="${P}-sections"></div>
     </div>
   </div>
   <script>
   (function(){
-    var D=${jsonPR},W=${jsonW12},TP=${jsonTopics},TY=${jsonTypes},CN=${jsonCountries};
+    var D=${jsonPR},W_ALL=${jsonW12},TP=${jsonTopics},TY=${jsonTypes},CN=${jsonCountries};
+    // 기간 필터 (2026-09-06) — 선택 시점까지 W 를 잘라 매트릭스·트렌드·기준 태그가 일괄 반영
+    var fPeriod=W_ALL.length-1;
+    var W=W_ALL.slice();
     var CW=${CW};
     var TOPIC_CAT=${JSON.stringify(topicCategoryMap)};
     var TOPIC_PROMPT=${JSON.stringify(topicPromptMap).replace(/</g, '\\u003c')};
@@ -1159,11 +1170,19 @@ function prVisibilityTabHtml(weeklyPR, weeklyPRLabels, lang, meta, extra, period
       }
       el.innerHTML=html;
     }
-    function renderAll(){renderFilters();renderMatrix();renderSections()}
+    function updatePeriodTags(){
+      var last=W.length?W[W.length-1]:'';
+      var disp=${isMonthly ? 'last' : 'String(last).toUpperCase()'};
+      var b=document.getElementById('${P}-basis-tag');if(b)b.textContent=disp+' ${lang === 'en' ? 'data' : '기준'}';
+      var tr=document.getElementById('${P}-trend-range');
+      if(tr&&W.length){var f=${isMonthly ? 'W[0]' : 'String(W[0]).toUpperCase()'};tr.textContent=f+'\u2013'+disp+' ('+W.length+'${isMonthly ? (lang === 'en' ? ' months' : '개월') : (lang === 'en' ? ' weeks' : '주')})';}
+    }
+    function renderAll(){renderFilters();renderMatrix();renderSections();updatePeriodTags()}
     window._${P}SetType=function(t){fType=t;renderAll()};
     window._${P}CntyTog=function(c){fCnty[c]=!fCnty[c];renderAll()};
     window._${P}CntyAll=function(){var on=CN.every(function(c){return fCnty[c]});CN.forEach(function(c){fCnty[c]=!on});renderAll()};
     window._${P}SetView=function(v){fView=v;renderAll()};
+    window._${P}SetPeriod=function(i){fPeriod=i;W=W_ALL.slice(0,i+1);renderAll()};
     renderAll();
   })();
   </script>`
