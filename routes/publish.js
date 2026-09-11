@@ -11,6 +11,7 @@ const log = logFor('publish')
 import { CHANNELS, readMetaFile, publishChannel, injectLangBar } from '../lib/publish-core.js'
 import { runUnifiedPublish, readUnifiedPublishMeta, readPublishConfig, writePublishConfig } from '../lib/republish.mjs'
 import { schedulerHealth } from '../lib/publish-scheduler.js'
+import { enrichSnapshotI18n } from '../lib/tracker-i18n.js'
 // 기존 import 경로 호환 (routes/landing.js · routes/published.js 가 여기서 가져감)
 export { CHANNELS, readMetaFile }
 
@@ -218,10 +219,13 @@ publishRouter.get('/api/publish-history', (req, res) => {
 const TRACKER_V2_SNAP = join(DATA_DIR, 'tracker-v2-snapshot.json')
 const TRACKER_V2_META = join(DATA_DIR, 'tracker-v2-meta.json')
 
-publishRouter.post('/api/publish-tracker-v2', validateBody(TrackerPublishSchema), (req, res) => {
+publishRouter.post('/api/publish-tracker-v2', validateBody(TrackerPublishSchema), async (req, res) => {
   const { data, dashboard, month } = req.body
   try {
     const snap = { ...data, _dashboard: dashboard || null, _month: month || null }
+    // EN 사전 번역 내장 — 게시본(비인증)은 /api/translate 를 못 쓰므로 저장 시점에 번역
+    // (실패해도 게시는 진행 — 통합 게시의 셀프힐이 다음 기회에 채움)
+    try { await enrichSnapshotI18n(snap) } catch (e) { log.warn({ tag: 'PUBLISH-TRACKER-V2', err: e.message }, 'tracker i18n enrich failed') }
     writeFileSync(TRACKER_V2_SNAP, JSON.stringify(snap, null, 2))
     const meta = { title: 'GEO KPI Progress Tracker v2', ts: Date.now() }
     writeFileSync(TRACKER_V2_META, JSON.stringify(meta, null, 2))

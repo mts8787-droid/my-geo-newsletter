@@ -343,9 +343,18 @@ export default function App() {
   // Reset category filter when stakeholder changes
   useEffect(() => { setSelectedCategory(null) }, [selectedSH])
 
-  // EN 모드일 때 과제명/상세 자동 번역
+  // 스냅샷에 내장된 사전 번역(_i18n.en) 시드 — 게시 시점에 서버가 번역해 둔 맵.
+  // 게시본(비인증)은 /api/translate 가 401 이라 이것이 유일한 번역 소스다 (2026-09-11).
   useEffect(() => {
-    if (lang !== 'en' || !data) return
+    const seeded = data?._i18n?.en
+    if (seeded && Object.keys(seeded).length) {
+      setTaskTranslations(prev => ({ ...seeded, ...prev }))
+    }
+  }, [data])
+
+  // EN 모드일 때 과제명/상세 자동 번역 (어드민 전용 — 게시본은 401이라 시도 자체가 소음)
+  useEffect(() => {
+    if (lang !== 'en' || !data || IS_PUBLIC) return
     const goals = data.quantitativeGoals?.rows || []
     const qualGoals = data.qualitativeGoals?.rows || []
     const allTexts = new Set()
