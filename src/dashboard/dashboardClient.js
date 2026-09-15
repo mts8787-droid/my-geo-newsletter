@@ -745,6 +745,7 @@ function updateMonthlyProductScores(selCountry){
   var avgByProdId={};
   _productsCnty.forEach(function(r){
     if(countries.indexOf(r.country||'')<0)return;
+    if(_isUnlaunched(r.country||'',prodId))return; // 미출시 국가 제외 (2026-09-15)
     var rKey=(r.product||'').toUpperCase();
     var prodId=prodKeyMap[rKey];
     if(!prodId)return;
@@ -1047,6 +1048,7 @@ function filterTrend(selBU,selProd,selCountry){
     }
     var allBrands={};
     trendCountries.forEach(function(c){
+      if(_isUnlaunched(c,prodId))return; // 미출시 국가는 평균·Total 폴백 모두 제외 (2026-09-15)
       var cData=prodData[c];
       if(!cData||!Object.keys(cData).length)cData=prodData['Total']||prodData['TTL']||_pickAnyCountry(prodData);
       Object.keys(cData).forEach(function(brand){
@@ -1244,7 +1246,9 @@ function _filteredMonthlySeries(prodId,countries){
   var prod=_products.find(function(p){return p.id===prodId});if(!prod)return null;
   var prodKeys=[(prod.category||'').toUpperCase(),prod.id.toUpperCase(),(prod.kr||'').toUpperCase(),(prod.en||'').toUpperCase()].filter(Boolean);
   var matched=_productsCnty.filter(function(r){
-    return countries.indexOf(r.country||'')>=0 && prodKeys.indexOf((r.product||'').toUpperCase())>=0;
+    // 미출시 국가는 평균에서 제외 (사용자 지시 2026-09-15) — 시트에 점수가 실려 있어도 집계 오염 방지
+    return countries.indexOf(r.country||'')>=0 && prodKeys.indexOf((r.product||'').toUpperCase())>=0
+      && !_isUnlaunched(r.country||'',prodId);
   });
   if(!matched.length)return null;
   var byDate={};
@@ -1275,6 +1279,7 @@ function _filteredMomD(prodId,countries){
   var lastSum=0,lastCnt=0,prevSum=0,prevCnt=0;
   _productsCnty.forEach(function(r){
     if(countries.indexOf(r.country||'')<0)return;
+    if(_isUnlaunched(r.country||'',prodId))return; // 미출시 국가 제외 (2026-09-15)
     var rKey=(r.product||'').toUpperCase();
     if(prodKeys.indexOf(rKey)<0)return;
     var ms=r.monthlyScores||[];if(ms.length<2)return;
@@ -1437,12 +1442,14 @@ function _getWeeklyForCountries(prodId,countries){
     var lg=d&&d.LG?d.LG:null;
     return lg&&lg.length?lg:totalLG;
   }
-  // 다중 국가 → LG 브랜드 평균
+  // 다중 국가 → LG 브랜드 평균 (미출시 국가 제외 — 2026-09-15)
+  var live=countries.filter(function(c){return !_isUnlaunched(c,prodId)});
+  if(!live.length)return totalLG; // 전부 미출시면 Total (카드 레벨에서 회색 처리)
   var result=[];var maxLen=0;
-  countries.forEach(function(c){var d=(prodData[c]||{}).LG||[];if(d.length>maxLen)maxLen=d.length});
+  live.forEach(function(c){var d=(prodData[c]||{}).LG||[];if(d.length>maxLen)maxLen=d.length});
   if(!maxLen)return totalLG;
   for(var i=0;i<maxLen;i++){var sum=0;var cnt=0;
-    countries.forEach(function(c){var v=(prodData[c]||{}).LG;if(v&&v[i]!=null){sum+=v[i];cnt++}});
+    live.forEach(function(c){var v=(prodData[c]||{}).LG;if(v&&v[i]!=null){sum+=v[i];cnt++}});
     result.push(cnt>0?sum/cnt:null);
   }
   return result;
