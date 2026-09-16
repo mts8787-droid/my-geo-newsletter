@@ -99,6 +99,29 @@ describe('updateSyncDataFromParsed — 사용자 텍스트 보존 병합', () =>
     expect(d.total.vsComp).toBe(70)  // (90+50)/2
     seedDashboardSync(); seedCitationSync()
   })
+
+  it('newsletter sync-data 도 갱신된다 — 시트 파생 키 + 사용자 텍스트·readability 보존', () => {
+    // 뉴스레터 어드민이 마운트마다 로드하는 파일 — 통합 동기화가 안 쓰면
+    // "동기화해도 사이테이션이 안 바뀌는" 데이터 섬이 된다 (2026-09-16)
+    writeModeSyncData('newsletter', {
+      meta: { totalInsight: '뉴스레터 사용자 텍스트' },
+      readability: { date: '2026-08-30', avgScore: 79.7 },   // 얼려둔 수치
+      citations: [{ category: 'TV', count: 1 }],             // 옛 데이터
+    })
+    updateSyncDataFromParsed({
+      meta: { period: 'Aug 2026' },
+      citations: [{ category: 'TV', count: 999 }],
+      citTouchPointsTrend: { Retail: { Aug: 5 } },
+      citTrendMonths: ['Jul', 'Aug'],
+    })
+    const nl = readModeSyncData('newsletter')
+    expect(nl.citations[0].count).toBe(999)                        // 시트 파생 갱신
+    expect(nl.citTrendMonths).toEqual(['Jul', 'Aug'])
+    expect(nl.meta.totalInsight).toBe('뉴스레터 사용자 텍스트')     // 텍스트 보존
+    expect(nl.readability.avgScore).toBe(79.7)                     // 얼린 수치 보존
+    seedDashboardSync(); seedCitationSync()
+    writeModeSyncData('newsletter', {})
+  })
 })
 
 describe('recomputePeriod / deriveProducts — visibility SPA 파생 로직 이식', () => {
