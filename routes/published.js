@@ -244,10 +244,8 @@ publishedRouter.get('/p/GEO-Readability-Criteria', (req, res) => {
 // 아니다. "당분간 최신 호를 보여준다"는 편집 결정이라 이 표에서 줄만 지우면
 // 원래 호가 그대로 다시 열려야 한다. 301 을 쓰면 브라우저가 무기한 캐시해
 // 표를 지워도 되돌릴 수 없다.
-const SLUG_REDIRECTS = {
-  'GEO-Monthly-Report-KO-2026-07': 'GEO-Monthly-Report-KO-2026-08',
-  'GEO-Monthly-Report-EN-2026-07': 'GEO-Monthly-Report-EN-2026-08',
-}
+// 7월호 → 8월호 리다이렉트는 해제됨 (사용자 지시 2026-09-16) — 7월호 직접 접속 가능.
+const SLUG_REDIRECTS = {}
 
 // ─── /p/sheet-raw/* — 시트별 원본 CSV 다운로드 (Raw 데이터 탭, 2026-09-02) ────
 // 매 동기화(자동 게시) 때 lib/republish.mjs 가 저장한 gviz CSV 원문. 메타 시트 제외.
