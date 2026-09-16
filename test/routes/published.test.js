@@ -87,15 +87,16 @@ describe('GET /p/:slug', () => {
 })
 
 describe('GET /p/:slug — 지난 호 리다이렉트', () => {
+  // 7월→8월 리다이렉트는 해제됨 (사용자 지시 2026-09-16) — 7월호는 직접 접속된다.
   it.each([
     ['GEO-Monthly-Report-KO-2026-07', 'GEO-Monthly-Report-KO-2026-08'],
     ['GEO-Monthly-Report-EN-2026-07', 'GEO-Monthly-Report-EN-2026-08'],
-  ])('%s → 302 → %s', async (from, to) => {
+  ])('%s 는 리다이렉트 없이 200 (8월호가 있어도)', async (from, to) => {
     writeFileSync(join(TMP_PUB, `${from}.html`), '<html><body>7월</body></html>')
     writeFileSync(join(TMP_PUB, `${to}.html`), '<html><body>8월</body></html>')
     const res = await request(makeApp()).get(`/p/${from}`)
-    expect(res.status).toBe(302)
-    expect(res.headers.location).toBe(`/p/${to}`)
+    expect(res.status).toBe(200)
+    expect(res.text).toContain('7월')
   })
 
   it('대상 월이 아직 미게시면 리다이렉트하지 않고 원래 호를 그대로 준다', async () => {
