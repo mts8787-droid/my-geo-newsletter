@@ -3,6 +3,7 @@
 import { PROD_ID_TO_UL_CODE as UL_PROD_MAP, PROD_ID_TO_UL_CODE, PROD_ID_TO_KR, PROD_ID_TO_EN, PROD_ID_TO_BU, PROD_ID_TO_ORDER, NAME_TO_PROD_ID } from './categoryMap.js'
 import { rdBandColor } from './shared/readabilityBand.js'
 import { compRatioStr } from './shared/compRatio.js'
+import { parsePeriod } from './shared/reportPeriod.js'
 import { resolveProductsByLlm, resolveProductsCntyByLlm, resolveTotalByLlm } from './shared/llmModel.js'
 import { _logWarn } from './sheetParserUtils.js'
 import { dcColLabel } from './shared/constants.js'
@@ -125,6 +126,22 @@ function escapeHtml(str) {
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;')
 }
+// 언어별 발행월·데이터 기준 표기 — meta.period 가 '2026년 8월' 같은 한글 포맷으로 저장돼
+// 있어도 EN 본문에는 'Aug 2026' 으로 나오게 렌더 시점에 정규화 (사용자 보고 2026-09-18).
+const _MONTHS_EN_DISP = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+function periodDisp(period, lang) {
+  const p = parsePeriod(period)
+  if (!p) return period || ''
+  return lang === 'ko' ? `${p.year}년 ${p.month}월` : `${_MONTHS_EN_DISP[p.month - 1]} ${p.year}`
+}
+function dateLineDisp(dateLine, period, lang) {
+  // dateLine 저장값이 있으면 그 월을 파싱해 언어별 재표기, 없으면 period 로 파생
+  const src = dateLine || period
+  const p = parsePeriod(src)
+  if (!p) return dateLine || ''
+  return lang === 'ko' ? `${p.year}년 ${p.month}월 기준` : `As of ${_MONTHS_EN_DISP[p.month - 1]} ${p.year}`
+}
+
 
 // ─── 다국어 번역 ─────────────────────────────────────────────────────────────
 const T = {
@@ -3237,7 +3254,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>LG GEO Newsletter ${escapeHtml(meta.period)}</title>
+  <title>LG GEO Newsletter ${escapeHtml(periodDisp(meta.period, lang))}</title>
   <link href="https://fonts.cdnfonts.com/css/lg-smart" rel="stylesheet" />
   <!--[if mso]>
   <style type="text/css">
@@ -3272,7 +3289,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
             <table border="0" cellpadding="0" cellspacing="0" width="100%">
               <tr>
                 <td style="font-size:15px;font-weight:700;color:#FFCCD8;font-family:${EM_FONT};">LG ELECTRONICS</td>
-                <td align="right" style="font-size:14px;color:#FFB0C0;font-family:${EM_FONT};"><span${edAttr('reportNo', meta.reportNo)}>${escapeHtml(meta.reportNo)}</span> · <span${edAttr('period', meta.period)}>${escapeHtml(meta.period)}</span></td>
+                <td align="right" style="font-size:14px;color:#FFB0C0;font-family:${EM_FONT};"><span${edAttr('reportNo', meta.reportNo)}>${escapeHtml(meta.reportNo)}</span> · <span${edAttr('period', meta.period)}>${escapeHtml(periodDisp(meta.period, lang))}</span></td>
               </tr>
             </table>
           </td>
@@ -3291,7 +3308,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
               <span${edAttr('title', meta.title)} style="font-size:${meta.titleFontSize || 24}px;font-weight:700;color:${meta.titleColor || '#1A1A1A'};font-family:${EM_FONT};">${escapeHtml(meta.title || (lang === 'en' ? 'Generative AI Engine Visibility Performance Analysis' : '생성형 AI 엔진 가시성(Visibility) 성과 분석'))}</span>
             </p>
             <p style="margin:0;text-align:center;">
-              <span${edAttr('dateLine', meta.dateLine)} style="font-size:18px;color:#475569;font-family:${EM_FONT};font-weight:400;">${escapeHtml(meta.dateLine || (lang === 'en' ? 'As of ' + meta.period : meta.period + ' 기준'))}</span>
+              <span${edAttr('dateLine', meta.dateLine)} style="font-size:18px;color:#475569;font-family:${EM_FONT};font-weight:400;">${escapeHtml(dateLineDisp(meta.dateLine, meta.period, lang))}</span>
             </p>
             ${meta.showNotice && (meta.noticeText || _ED) ? `
             <table border="0" cellpadding="0" cellspacing="0" width="100%">
