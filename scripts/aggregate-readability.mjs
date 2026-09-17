@@ -275,6 +275,7 @@ function resolvePt(pt, url) {
 //                       없는 항목이다. 정의 없는 채점은 근거를 설명할 수 없으므로 제외.
 //                       (ai_schema_website 은 적용 페이지도 0건이었다)
 const TTFB_MAX_MS = 600
+const CITABLE_MIN_COUNT = 5
 // 채점 제외 체크 — na:true 로 표시해 applicable(분모)에서도 빠진다 (scoring_config 의 enabled:false 와 동등)
 // 채점 제외 (38항목 체계) — 4건 모두 사용자 결정으로 확정.
 //   perf_html_size(#5)    — 측정이 HTML DOM 크기를 반영 못함 (2026-08-26)
@@ -311,6 +312,7 @@ const ABSORBED_CHECKS = Object.fromEntries(
 // 기준이 바뀐 체크의 표시 라벨 (원본 label 은 옛 임계값 문구를 담고 있음).
 // perf_ttfb 는 실제 채점에 PSI 를 썼을 때만 '(PSI)' 를 붙인다 — 라벨과 측정 출처를 일치시킴.
 function checkLabelOverride(cid, ctx) {
+  if (cid === 'ai_citable') return `#36 Citable Sentence ≥ ${CITABLE_MIN_COUNT}개`
   if (cid !== 'perf_ttfb') return null
   return `#1 TTFB < ${TTFB_MAX_MS}ms${ctx && ctx.psi ? ' (PSI)' : ''}`
 }
@@ -395,6 +397,18 @@ const RECHECK = {
   //   C no-store 만 실패                   87.2%
   // A 는 변별력이 거의 없지만(96.8%), 캐싱의 실질 신호인 응답 속도는 #1 TTFB 를 PSI 로
   // 직접 측정하므로 중복이다. 8월호 발행 중 점수 급변을 피하려 A 유지.
+  // #36 Citable Sentence — 비율(≥10%) → 개수(≥5개) 로 기준 변경 (사용자 결정 2026-09-17).
+  // 비율은 본문이 길수록 불리하다. 문서가 길다고 인용 가치가 떨어지는 게 아닌데 긴 서포트
+  // 문서가 짧은 PLP 보다 낮게 나왔다. AI 가 인용할 문장이 몇 개 있느냐가 보려던 것이다.
+  // value("6/42 (14.3%)")의 앞 숫자가 실측 개수라 재수집 없이 다시 판정한다.
+  // 임계값 10개도 검토했으나 뉴스룸 92%→47%, PDP 79%→43% 로 낙폭이 커 5개로 확정.
+  ai_citable(it) {
+    const m = String(it.value == null ? '' : it.value).match(/^\s*(\d+)\s*\//)
+    if (!m) return null
+    const n = parseInt(m[1], 10)
+    const pass = n >= CITABLE_MIN_COUNT
+    return { pass, hint: pass ? null : `인용 가능 문장 ${n}개 — ${CITABLE_MIN_COUNT}개 이상 필요` }
+  },
   perf_cache_control(it) {
     const m = String(it.value == null ? '' : it.value).match(/max-age\s*=\s*(\d+)/i)
     if (!m) return { pass: false, hint: 'Cache-Control 에 max-age 디렉티브가 없습니다.' }
