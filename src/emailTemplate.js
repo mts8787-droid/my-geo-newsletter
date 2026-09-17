@@ -944,93 +944,6 @@ function insightV2Parts(meta = {}, lang = 'ko', products = []) {
 
 
 
-// ─── C브랜드 Visibility 비교 차트 (Exec Summary 박스 1 하단) ─────────────────
-// 세 제품군(TV/WM/REF) × 10개국 — LG · 주요 경쟁사 · 1등 C브랜드 3막대 비교.
-// 데이터: productsCnty[].allScores (시트 동기화분 — 제품카드와 동일 소스).
-// 이메일 호환: table-layout 막대 (SVG·flex 금지). 사용자 제공 이미지 사양 (2026-08-31):
-//   LG 막대 색 = 경쟁비 신호등(≥100% 녹 / ≥80% 주황 / <80% 적), 경쟁사 회색, C브랜드 보라.
-//   막대 아래 [브랜드 라벨] → [LG-경쟁사 격차 ±%p] → [국가명].
-const CB_BRANDS = ['TCL', 'Hisense', 'Haier', 'Midea']          // "C브랜드" 후보 (1등 선별)
-// 제품별 C브랜드 고정 — TV 는 TCL 기준 (사용자 지시 2026-08-31: 호주 등에서 Hisense 가
-// 수치상 앞서도 TV 분석 서사는 TCL 중심). 값이 없으면 1등 자동 선별로 폴백.
-const CB_PIN = { TV: 'TCL' }
-const CB_CNTY_ORDER = ['US', 'CA', 'UK', 'DE', 'ES', 'BR', 'MX', 'IN', 'AU', 'VN']
-const CB_CNTY_LABEL = { US: 'USA', CA: 'Canada', UK: 'UK', DE: 'Germany', ES: 'Spain', BR: 'Brazil', MX: 'Mexico', IN: 'India', AU: 'Australia', VN: 'Vietnam' }
-const CB_PRODUCTS = ['TV', 'WM', 'REF']
-
-function cBrandCompareChartHtml(productsCnty, lang = 'ko') {
-  if (!Array.isArray(productsCnty) || !productsCnty.length) return ''
-  const H = 54                      // 막대 최대 높이(px) — 절대 스케일 0~100
-  // 막대·라벨 지오메트리 완전 고정 (사용자 지적 2026-08-31 "막대 위치·폭·세로 위치 고정"):
-  //   국가 셀 = 3열 × 19px 고정(table-layout:fixed) — 라벨 길이가 열을 못 밀게
-  //   막대 행 높이 = H+14 고정 (값 라벨 포함, valign bottom) — 막대 밑변이 전 국가 동일선
-  //   브랜드 라벨 행 높이 = 18px 고정 — 긴 이름(WHIRLPOOL 등)은 두 줄로 줄바꿈
-  const COLW = 19
-  const barTd = (v, color) => {
-    const h = v > 0 ? Math.max(2, Math.round(v / 100 * H)) : 0
-    return `<td width="${COLW}" height="${H + 14}" valign="bottom" style="padding:0 1px;">
-      <table cellpadding="0" cellspacing="0" border="0" width="15" align="center" style="table-layout:fixed;"><tr>
-        <td align="center" style="font-size:8px;font-weight:800;color:${color};font-family:${EM_FONT};letter-spacing:-0.5px;line-height:1.1;padding-bottom:1px;white-space:nowrap;overflow:visible;">${v > 0 ? v.toFixed(1) : '—'}</td>
-      </tr><tr>
-        <td height="${h}" style="background:${h ? color : 'transparent'};border-radius:2px 2px 0 0;font-size:0;line-height:0;">&nbsp;</td>
-      </tr></table>
-    </td>`
-  }
-  const lblTd = (name, color) => `<td width="${COLW}" height="18" valign="top" align="center" style="font-size:7.5px;color:${color};font-family:${EM_FONT};font-weight:700;letter-spacing:-0.4px;line-height:9px;word-break:break-all;white-space:normal;">${name}</td>`
-  const brandLbl = name => escapeHtml(String(name || '').replace(/SAMSUNG|삼성전자|삼성/gi, 'SS')).toUpperCase()
-
-  const rowsHtml = CB_PRODUCTS.map(prod => {
-    const cells = CB_CNTY_ORDER.map(cc => {
-      const r = productsCnty.find(x => x.product === prod && x.country === cc)
-      if (!r) return `<td align="center" style="padding:6px 1px;font-size:9px;color:#94A3B8;font-family:${EM_FONT};">—</td>`
-      const all = r.allScores || {}
-      const lg = Number(all.LG ?? r.score) || 0
-      const compName = r.compName || 'SS'
-      const comp = Number(r.compScore ?? all[compName]) || 0
-      // C브랜드 선택 — 제품별 고정(CB_PIN) 우선, 없으면 후보군 최고값 (대소문자 무관)
-      let cbName = '', cbVal = 0
-      const pin = CB_PIN[prod]
-      if (pin) {
-        const k = Object.keys(all).find(k => k.toLowerCase() === pin.toLowerCase())
-        if (k && Number(all[k]) > 0) { cbName = k; cbVal = Number(all[k]) }
-      }
-      if (!cbName) {
-        for (const [k, v] of Object.entries(all)) {
-          if (CB_BRANDS.some(b => b.toLowerCase() === String(k).toLowerCase()) && Number(v) > cbVal) { cbName = k; cbVal = Number(v) }
-        }
-      }
-      const ratio = comp > 0 ? lg / comp * 100 : 100
-      const lgColor = ratio >= 100 ? '#15803D' : ratio >= 80 ? '#EA580C' : '#DC2626'
-      const gap = +(lg - comp).toFixed(1)
-      const gapColor = gap >= 0 ? '#15803D' : '#DC2626'
-      return `<td align="center" valign="top" style="padding:4px 1px 0;">
-        <table cellpadding="0" cellspacing="0" border="0" align="center" width="${COLW * 3 + 6}" style="table-layout:fixed;"><tr>
-          ${barTd(lg, lgColor)}${barTd(comp, '#94A3B8')}${barTd(cbVal, '#9333EA')}
-        </tr><tr>
-          ${lblTd('LG', lgColor)}${lblTd(brandLbl(compName), '#94A3B8')}${lblTd(brandLbl(cbName), '#9333EA')}
-        </tr></table>
-        <div style="margin-top:2px;font-size:10px;font-weight:800;color:${gapColor};font-family:${EM_FONT};letter-spacing:-0.3px;">${gap >= 0 ? '+' : ''}${gap}%p</div>
-        <div style="margin-top:1px;font-size:10px;font-weight:700;color:#334155;font-family:${EM_FONT};letter-spacing:-0.3px;">${CB_CNTY_LABEL[cc] || cc}</div>
-      </td>`
-    }).join('')
-    return `<tr><td style="padding:4px 0 2px;">
-        <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#F1F5F9;border-radius:6px;"><tr>
-          <td style="padding:5px 10px;font-size:10.5px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:0.5px;">${prod}</td>
-        </tr></table>
-      </td></tr>
-      <tr><td>
-        <table cellpadding="0" cellspacing="0" border="0" width="100%" style="table-layout:fixed;"><tr>${cells}</tr></table>
-      </td></tr>`
-  }).join('')
-
-  // 다크 박스 안의 흰 카드 — 이미지와 동일하게 밝은 배경 위에 차트
-  return `<table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FFFFFF;border-radius:8px;margin-top:10px;">
-    <tr><td style="padding:4px 10px 12px;">
-      <table cellpadding="0" cellspacing="0" border="0" width="100%">${rowsHtml}</table>
-    </td></tr>
-  </table>`
-}
-
 // ─── Executive Summary V3 (7월호 — 사용자 구글 문서 반영 2026-08-31) ─────────
 // 인트로 + 번호 항목 3개(각각 짙은 남색 박스 #1E293B). 토글: meta.showInsightV3.
 // 본문은 사용자 제공 구글 문서 원문 그대로 (임의 다듬기 없음 — 오탈자 포함).
@@ -1077,7 +990,7 @@ function insightV3Parts(meta = {}, lang = 'ko', productsCnty = []) {
   const execHtml = `
                               <p style="margin:0 0 12px;font-size:13px;color:#E2E8F0;line-height:22px;font-family:${EM_FONT};letter-spacing:-0.3px;">${ed('v3ExIntro', L(introKo, introEn))}</p>
                               <table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;">
-                                ${execItem('v3Ex1T2', L('1. C브랜드 Visibility 현황 분석 – TV·세탁기·냉장고를 중심으로', '1. C-brand Visibility analysis — centered on TV, Washer and Refrigerator'), 'v3Ex1B2', L(ex1Ko, ex1En), cBrandCompareChartHtml(productsCnty, lang))}
+                                ${execItem('v3Ex1T2', L('1. C브랜드 Visibility 현황 분석 – TV·세탁기·냉장고를 중심으로', '1. C-brand Visibility analysis — centered on TV, Washer and Refrigerator'), 'v3Ex1B2', L(ex1Ko, ex1En))}
                                 ${execItem('v3Ex2T2', L('2. 인용 출처의 변화 - 브랜드 닷컴의 인용비중 증가/PDP를 대신하여 설명형 콘텐츠(Buying Guide/Support) 인용 확대', '2. Shift in citation sources — brand dotcom share up; explanatory content (Buying Guide/Support) cited in place of PDP'), 'v3Ex2B2', L(ex2Ko, ex2En))}
                                 ${execItem('v3Ex3T2', L('3. Readabilty 평가 체계 도입 및 개선 필요 영역 보완 지속', '3. Introducing the Readability framework and continuing to close gaps'), 'v3Ex3B2', L(ex3Ko, ex3En))}
                               </table>`
@@ -3086,16 +2999,16 @@ function readabilityHighlightHtml(rd, meta = {}, lang = 'ko', contentWidth = 848
     }).join('')
   const half = Math.floor(contentWidth / 2) - 8
   // 평가 영역별 점수와 동일한 회색 박스로 감싼다 (사용자 지시 2026-08-27)
-  const scoreTables = `<table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#F8FAFC;border:1px solid #E8EDF2;border-radius:10px;margin:0 0 14px;">
+  const scoreTables = `<table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FFFFFF;border:1px solid #E8EDF2;border-radius:10px;margin:0 0 14px;">
     <tr><td style="padding:12px 16px;">
     <table cellpadding="0" cellspacing="0" border="0" width="100%">
     <tr>
       <td width="${half}" valign="top" style="padding-right:16px;">
-        <p${edAttr('rd_ccTitle')} style="margin:0 0 10px;font-size:15px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-0.3px;">${lbl('rd_ccTitle', lang === 'en' ? 'By Country' : '국가별 점수')}</p>
+        <table cellpadding="0" cellspacing="0" border="0" style="margin:0 0 12px;"><tr><td width="4" style="background:${EM_RED};border-radius:2px;font-size:0;line-height:0;">&nbsp;</td><td${edAttr('rd_ccTitle')} style="padding-left:8px;font-size:16px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-0.4px;">${lbl('rd_ccTitle', lang === 'en' ? 'By Country' : '국가별 점수')}</td></tr></table>
         <table cellpadding="0" cellspacing="0" border="0" width="100%">${ccRows}</table>
       </td>
       <td width="${half}" valign="top">
-        <p${edAttr('rd_ptTitle')} style="margin:0 0 10px;font-size:15px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-0.3px;">${lbl('rd_ptTitle', lang === 'en' ? 'By Page Type' : '페이지 타입별 점수')}</p>
+        <table cellpadding="0" cellspacing="0" border="0" style="margin:0 0 12px;"><tr><td width="4" style="background:${EM_RED};border-radius:2px;font-size:0;line-height:0;">&nbsp;</td><td${edAttr('rd_ptTitle')} style="padding-left:8px;font-size:16px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-0.4px;">${lbl('rd_ptTitle', lang === 'en' ? 'By Page Type' : '페이지 타입별 점수')}</td></tr></table>
         <table cellpadding="0" cellspacing="0" border="0" width="100%">${ptRows}</table>
       </td>
     </tr>
@@ -3113,9 +3026,9 @@ function readabilityHighlightHtml(rd, meta = {}, lang = 'ko', contentWidth = 848
       return rdBarRow(lbl(lf, CAT_LBL[k] || (rd.categoryLabels || {})[k] || k), rd.categories[k], 100,
         { labelW: 440, nameW: 108, sub: lbl(sf, CAT_DESC[k] || RD_CAT_DESC[k]), pad: 4, barH: 9, labelField: lf, subField: sf })
     }).join('')
-  const catTable = `<table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#F8FAFC;border:1px solid #E8EDF2;border-radius:10px;margin:0 0 18px;">
+  const catTable = `<table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FFFFFF;border:1px solid #E8EDF2;border-radius:10px;margin:0 0 18px;">
     <tr><td style="padding:12px 16px;">
-      <p${edAttr('rd_catTitle')} style="margin:0 0 10px;font-size:15px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-0.3px;">${lbl('rd_catTitle', lang === 'en' ? 'By Area' : '평가 영역별 점수')}</p>
+      <table cellpadding="0" cellspacing="0" border="0" style="margin:0 0 12px;"><tr><td width="4" style="background:${EM_RED};border-radius:2px;font-size:0;line-height:0;">&nbsp;</td><td${edAttr('rd_catTitle')} style="padding-left:8px;font-size:16px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-0.4px;">${lbl('rd_catTitle', lang === 'en' ? 'By Area' : '평가 영역별 점수')}</td></tr></table>
       <table cellpadding="0" cellspacing="0" border="0" width="100%">${catRows}</table>
     </td></tr>
   </table>`
