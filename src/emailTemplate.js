@@ -995,7 +995,7 @@ function insightV3Parts(meta = {}, lang = 'ko', productsCnty = [], assetBase = '
   // [A] LG·삼성 모델별 Visibility 트렌드 라인차트 (5~8월) — 이메일 호환 PNG (/api/hl-chart)
   //     수치는 사용자 제공 표 그대로 (Brand Prompt 월별 — 하드코딩, 다음 호에서 갱신)
   const LLM_TREND = {
-    months: lang === 'en' ? ['May', 'Jun', 'Jul', 'Aug'] : ['5월', '6월', '7월', '8월'],
+    months: ['May', 'Jun', 'Jul', 'Aug'],  // 한글 월 표기는 차트 PNG 폰트에서 깨짐 — 영문 고정 (사용자 지시 2026-09-18)
     lg: { TOTAL: [44.8, 43.3, 43.4, 41.6], CHATGPT: [45.6, 45.6, 45.7, 46.7], 'GPT SEARCH': [47.1, 44.2, 45.9, 45.5], PERPLEXITY: [39.6, 30.9, 39.3, 35.2], GEMINI: [47.0, 44.6, 42.6, 39.1] },
     ss: { TOTAL: [40.2, 38.2, 37.9, 36.6], CHATGPT: [44.7, 44.6, 44.7, 45.4], 'GPT SEARCH': [39.0, 36.6, 37.7, 38.6], PERPLEXITY: [33.4, 32.4, 32.5, 29.3], GEMINI: [43.7, 39.3, 36.6, 33.1] },
   }
