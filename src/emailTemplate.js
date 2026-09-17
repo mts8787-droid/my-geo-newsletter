@@ -2878,14 +2878,14 @@ function rdBarRow(label, value, max, opts = {}) {
         <td${opts.labelField ? edAttr(opts.labelField) : ''} style="width:${opts.nameW || 120}px;padding-right:14px;vertical-align:middle;font-size:11.5px;font-weight:700;color:#1A1A1A;line-height:1.35;font-family:${EM_FONT};white-space:nowrap;">${escapeHtml(label)}</td>
         <td${opts.subField ? edAttr(opts.subField) : ''} style="vertical-align:middle;font-size:10.5px;font-weight:400;color:#94A3B8;line-height:1.4;font-family:${EM_FONT};">${escapeHtml(opts.sub)}</td>
       </tr></table>`
-    : `<span${opts.labelField ? edAttr(opts.labelField) : ''} style="font-size:11.5px;font-weight:700;color:#1A1A1A;line-height:1.35;font-family:${EM_FONT};">${escapeHtml(label)}</span>`
+    : `<span${opts.labelField ? edAttr(opts.labelField) : ''} style="font-size:${opts.labelFs || 11.5}px;font-weight:700;color:#1A1A1A;line-height:1.35;font-family:${EM_FONT};letter-spacing:-0.4px;white-space:nowrap;">${escapeHtml(label)}</span>`
   return `<tr>
     <td style="padding:${pad}px 10px ${pad}px 0;vertical-align:middle;width:${opts.labelW || 150}px;">
       ${nameCell}
     </td>
     <td style="padding:${pad}px 10px ${pad}px 0;vertical-align:middle;">
-      <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#F1F5F9;border-radius:3px;">
-        <tr><td width="${w}%" height="${barH}" style="background:${color};border-radius:3px;font-size:0;line-height:0;">&nbsp;</td><td>&nbsp;</td></tr>
+      <table cellpadding="0" cellspacing="0" border="0" width="100%" style="border-radius:3px;">
+        <tr><td width="${w}%" height="${barH}" style="background:${color};border-radius:3px;font-size:0;line-height:0;">&nbsp;</td><td style="background:#FFFFFF;font-size:0;line-height:0;">&nbsp;</td></tr>
       </table>
     </td>
     <td align="right" style="padding:${pad}px 0;vertical-align:middle;width:46px;font-size:12px;font-weight:800;color:${color};font-family:${EM_FONT};">${value == null ? '—' : value}</td>
@@ -2995,7 +2995,9 @@ function readabilityHighlightHtml(rd, meta = {}, lang = 'ko', contentWidth = 848
       const base = lang === 'en'
         ? (RD_PT_EN_OVERRIDE[p.label] || RD_PT_LABEL_EN[p.id] || p.label)
         : p.label
-      return rdBarRow(lbl(f, base), p.avg, 100, { labelW: 118, pad: 2, barH: 8, labelField: f })
+      // 라벨 한 줄 고정 — 'Support - Troubleshoot' 가 두 줄로 꺾이며 옆 국가별 차트와
+      // 행 라인이 어긋났다 (사용자 보고 2026-09-17): 라벨 폭 118→150 + 폰트 10.5 + nowrap
+      return rdBarRow(lbl(f, base), p.avg, 100, { labelW: 150, pad: 2, barH: 8, labelField: f, labelFs: 10.5 })
     }).join('')
   const half = Math.floor(contentWidth / 2) - 8
   // 평가 영역별 점수와 동일한 회색 박스로 감싼다 (사용자 지시 2026-08-27)
@@ -3021,6 +3023,7 @@ function readabilityHighlightHtml(rd, meta = {}, lang = 'ko', contentWidth = 848
   const CAT_LBL = lang === 'en' ? RD_CAT_LABEL_EN : (rd.categoryLabels || {})
   const CAT_DESC = lang === 'en' ? RD_CAT_DESC_EN : RD_CAT_DESC
   const catRows = RD_CAT_ORDER.filter(k => rd.categories && rd.categories[k] != null)
+    .sort((a, b) => rd.categories[b] - rd.categories[a])   // 점수 높은 순 (사용자 지시 2026-09-17)
     .map(k => {
       const lf = `rd_lblCat_${k}`, sf = `rd_descCat_${k}`
       return rdBarRow(lbl(lf, CAT_LBL[k] || (rd.categoryLabels || {})[k] || k), rd.categories[k], 100,
