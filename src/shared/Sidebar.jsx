@@ -383,8 +383,16 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
       // 국가별 Citation — 고유 cnty
       const citCntyNames = [...new Set(_citationsCnty.map(r => r.cnty || '').filter(c => c && c !== 'TTL'))]
 
-      // V2 인사이트 — 사용자가 편집한 필드만 번역 (기본 문구는 템플릿이 EN 자동 제공)
-      const v2Edited = V2_TRANSLATE_FIELDS.filter(k => src[k] != null && String(src[k]).trim() !== '')
+      // 추가 편집 필드 — 위 고정 목록 밖에서 사용자가 편집한 EN 번역 대상 전부
+      // (V2·V3·rd_* 하이라이트·챕터 제목 등 — 판정은 enMeta.isEnTextField 단일 소스).
+      // ※ 8/31 리팩터링 때 V2_TRANSLATE_FIELDS 가 enMeta.js 로 이동하면서 여기 참조가
+      //   깨져 번역 버튼 전체가 ReferenceError 로 죽었다 (사용자 보고 2026-09-18 수리).
+      const FIXED_TRANSLATED = new Set(['title', 'dateLine', 'noticeText', 'totalInsight', 'reportType',
+        'productInsight', 'productHowToRead', 'citationInsight', 'citationHowToRead', 'dotcomInsight', 'dotcomHowToRead',
+        'todoText', 'todoNotice', 'kpiLogicText', 'cntyInsight', 'cntyHowToRead', 'citDomainInsight', 'citDomainHowToRead',
+        'citCntyInsight', 'citCntyHowToRead', 'citPrdInsight', 'citPrdHowToRead', 'period', 'team', 'reportNo', 'monthlyReportBody'])
+      const v2Edited = Object.keys(src).filter(k =>
+        !FIXED_TRANSLATED.has(k) && typeof src[k] === 'string' && src[k].trim() !== '' && isEnTextField(k, src[k]))
       const v2Texts = v2Edited.map(k => String(src[k]))
       const allTexts = [...metaTexts, ...productKrTexts, ...productCompTexts, ...citCategoryTexts, ...cntyCountries, ...cntyProducts, ...cntyCompNames, ...citCntyNames, ...v2Texts].map(t => t || ' ')
 
@@ -457,7 +465,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
         citCntyMap[v] = /^[A-Z]{2,3}$/.test(v) ? v : (tr[idx + i] || v)
       })
       idx += citCntyNames.length
-      // V2 인사이트 — 편집 필드 번역 결과 반영
+      // 추가 편집 필드(V2·V3·rd_* 등) 번역 결과 반영
       v2Edited.forEach((k, i) => { newMetaEn[k] = tr[idx + i] || src[k] })
 
       // ★ 핵심 수정: callback form 사용 → 최신 state를 기준으로 EN 필드만 추가
