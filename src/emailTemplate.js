@@ -147,7 +147,7 @@ const T = {
     citCountVBarTitle: '전월 대비 모델별 Citation 인용수',
     citScopeAll: '전체 채널',
     citScopeCommunity: '커뮤니티 채널',
-    citScopeReddit: 'Reddit',
+    citScopeBrand: '브랜드/제조사',
     citationCntyTitle: '국가별 Citation 도메인',
     touchPointTitle: '외부접점채널 Citation',
     citationLegend: 'Citation Score 건수 (비중)',
@@ -184,7 +184,7 @@ const T = {
     citCountVBarTitle: 'Citation Count by Model (MoM)',
     citScopeAll: 'All Channels',
     citScopeCommunity: 'Community Channels',
-    citScopeReddit: 'Reddit',
+    citScopeBrand: 'Brand/Manufacturer',
     citationCntyTitle: 'Citation Domain by Country',
     touchPointTitle: 'Touch Points Citation',
     citationLegend: 'Citation Score Count (Ratio)',
@@ -2386,9 +2386,6 @@ function citCountByModelVBarHtml(byLlm, citTrendMonths, meta, lang = 'ko', citDo
     { test: /perplexity/i, label: 'Perplexity' },
   ]
   const channelKeys = Object.keys(byLlm).filter(k => !/^(total|all)$/i.test(k))
-  const domainKeys = (citDomainByLlmTrend && typeof citDomainByLlmTrend === 'object')
-    ? Object.keys(citDomainByLlmTrend).filter(k => !/^(total|all)$/i.test(k)) : []
-
   // 채널 합산 — chanFilter null=전체, regex=매칭 채널만 → { month: sumOverChannels }
   function chanMonthSums(llmKey, chanFilter) {
     const byChannel = byLlm[llmKey] || {}
@@ -2399,21 +2396,11 @@ function citCountByModelVBarHtml(byLlm, citTrendMonths, meta, lang = 'ko', citDo
     })
     return acc
   }
-  // 레딧 도메인 합산 → { month: sumOverRedditDomains }
-  function redditMonthSums(llmKey) {
-    const byDomain = (citDomainByLlmTrend && citDomainByLlmTrend[llmKey]) || {}
-    const acc = {}
-    Object.entries(byDomain).forEach(([domain, monthVals]) => {
-      if (!/reddit|레딧/i.test(domain)) return
-      Object.entries(monthVals || {}).forEach(([m, v]) => { acc[m] = (acc[m] || 0) + (Number(v) || 0) })
-    })
-    return acc
-  }
-
+  // 순서: 전체 채널 → 브랜드/제조사 → 커뮤니티 채널. Reddit 스코프는 제거 (사용자 지시 2026-09-17)
   const scopeDefs = [
     { label: t.citScopeAll, resolve: spec => { const k = channelKeys.find(c => spec.test.test(c)); return k ? chanMonthSums(k, null) : {} } },
+    { label: t.citScopeBrand, resolve: spec => { const k = channelKeys.find(c => spec.test.test(c)); return k ? chanMonthSums(k, /brand|manufact|제조사/i) : {} } },
     { label: t.citScopeCommunity, resolve: spec => { const k = channelKeys.find(c => spec.test.test(c)); return k ? chanMonthSums(k, /communit|커뮤니티/i) : {} } },
-    { label: t.citScopeReddit, resolve: spec => { const k = domainKeys.find(d => spec.test.test(d)); return k ? redditMonthSums(k) : {} } },
   ]
 
   // 스코프×모델 월합 계산
@@ -3049,14 +3036,6 @@ const RD_TEXT = {
     '*전략 10개국가 : 독일, 영국, 호주, 브라질, 베트남, 스페인, 미국, 멕시코, 인도, 캐나다',
     '*9개 페이지 유형 : PDP(제품 상세 페이지), PLP(제품 카테고리 페이지), Microsite, Global Newsroom, Press & Media, Buying Guide, LG Experience, Support - 일반, Support - Troubleshoot',
   ],
-  summary2: '8월 LG.com의 전체적인 Readability 점수는 79.7점을 기록했으며, 국가 별로는 베트남이 83.2점으로 가장 높았고, 가장 점수가 낮은 캐나다가 77.5점으로 편차가 크지 않은 상황입니다.\n페이지 타입 별로도 Press & Media 79.5점, Microsite 76.4점으로 유사한 분포를 보이고 있습니다.',
-  areaDetail: '반면 평가 영역별로는 점수 차이가 뚜렷하게 나타났습니다.\n\n사이트 성능 99.4점, AI Crawlability 95.4점으로 페이지 전달 속도 및 AI 접근 환경은 우수한 수준입니다. 다만 HTML Text Ratio(Javascript 렌더링 후 텍스트 대비 초기 HTML Text Count 비중이 60% 이상) 충족률은 71.8%로, 특히 Support-Trouble Shooting 페이지는 34.5%, PDP는 60.3%로 낮아, 페이지가 열린 후 추가로 불러와지는 방식(CSR)으로 제공되고 있었습니다. 이에 현재 D2C 및 고객가치혁신에서는 PDP내 리뷰 영역과 Support 페이지의 SSR 전환을 진행하고 있으며, 10월 내 전환 예정입니다. Basic SEO와 웹접근성은 89.2점, 83.5점으로 전반적으로 페이지의 기본 정보와 구조가 갖춰진 정도는 양호하였습니다. 다만 제목과 소제목이 순서에 맞게 구성됐는지를 확인하는 Heading Hierarchy 충족률은 43.7%, 페이지의 제목인 H1이 정확하게 1개만 존재하는 비율은 83.4%, Meta Description 충족률은 86.4%로 페이지 구조의 일관성을 보완할 필요가 있습니다. 특히 Press & Media 페이지에서 H1과 Meta Description 누락이 반복적으로 나타나(H1 충족률 44.6%, Meta Description 충족률 34.1%), 개별 콘텐츠보다는 페이지 템플릿이나 콘텐츠 발행 과정에서 기본 정보가 자동으로 적용되도록 개선할 필요가 있습니다.\n\n한편 고인용 컨텐츠는 56.3점으로 AI가 답변에 인용할 수 있는 콘텐츠 보완이 필요합니다. 전월(29.3점) 대비는 크게 상승했으나, 여전히 AI가 직접적인 답변으로 활용하기 쉬운 FAQ Block, Summary Box, Definition Paragraph가 충분하지 않은 상황이며, 현재 FAQ Block을 중심으로 각 사업본부 및 고객가치혁신의 주요 개선 과제로 추진 중입니다. Citable Sentence의 경우 독일, 호주, 영국 충족률은 95% 이상인 반면 캐나다, 멕시코, 브라질, 인도는 40%대로 국가별 편차가 있어 상향 평준화가 필요합니다. AI가 컨텐츠의 최신성과 신뢰성을 판단하는 지표로 삼을 수 있는 Author/Source 또한 충족률이 39.4%로, Press & Media는 74.3%로 양호하지만, 구매가이드와 LG Experience는 0%로 보완이 시급합니다. 스키마마크업은 33.2점으로 가장 저조하였습니다. Schema는 AI가 FAQ·제품·이미지·영상·사용방법 등 정보의 종류를 구분할 수 있게 해주는 정해진 형식으로, 페이지 유형과 콘텐츠 특성에 맞춰 주요 Schema의 적용 범위를 확대할 필요가 있습니다. 상세 현황 파악을 위해 독일 LG.com과 Samsung.com 확인해보았을 때, PDP의 핵심 스키마인 Product(LG 0%, SS 64%) 스키마는 경쟁사 대비 충족률이 낮았고, PLP의 경우 특히 FAQPage 스키마 적용률 격차가 크게 나타났습니다(LG 5%, SS 71%). 이 외에도 VideoObject, ImageObject, HowTo, Article 모두 주요 스키마로 전 페이지 타입에 걸쳐 개선이 필요한 상황입니다. 이에 D2C에서 추진 중인 Schema 자동화를 통해, 국가와 페이지별로 개별 대응하기 보다 주요 Schema가 일관되게 생성, 적용되는 구조를 마련하는 중이며, 연내 최소 6개의 스키마 자동화를 완료할 예정입니다.',
-  d1Notes: [
-    '*초기 HTML : 웹페이지에 접속했을 때 서버가 가장 먼저 전달하는 기본 페이지 정보로, JavaScript 실행 전에도 AI가 확인할 수 있는 내용',
-    '*Javascript 렌더링 : 페이지가 열린 뒤 JavaScript가 실행되면서 정보를 추가로 불러와 화면에 표시하는 방식',
-    '*Client-Side Rendering(CSR) : 서버가 기본적인 페이지 틀을 먼저 전달하고, 사용자의 브라우저에서 JavaScript를 실행해 주요 콘텐츠를 불러오고 화면을 완성하는 방식',
-    '*Server-Side Rendering(SSR) : 서버에서 주요 콘텐츠가 포함된 HTML을 미리 생성해 전달하는 방식',
-  ],
 }
 
 // EN 기본 번역 — RD_TEXT 의 영문본. 이게 없으면 EN 발송본에 한국어가 그대로 나온다
@@ -3067,14 +3046,6 @@ const RD_TEXT_EN = {
   introNotes: [
     '*10 strategic countries: Germany, UK, Australia, Brazil, Vietnam, Spain, USA, Mexico, India, Canada',
     '*9 page types: PDP (Product Detail Page), PLP (Product List Page), Microsite, Global Newsroom, Press & Media, Buying Guide, LG Experience, Support, Support - Troubleshoot',
-  ],
-  summary2: 'LG.com scored 79.7 overall for Readability in August; by country Vietnam was highest at 83.2 and Canada lowest at 77.5 \u2014 a narrow spread.\nPage types show a similar distribution: Press & Media 79.5, Microsite 76.4.',
-  areaDetail: 'By assessment area, however, the score gaps are pronounced.\n\nSite Performance (99.4) and AI Crawlability (95.4) show excellent page delivery speed and AI access conditions. However, the HTML Text Ratio (initial-HTML text accounting for 60% or more of post-JavaScript text) was met on only 71.8% of pages \u2014 especially low on Support-Troubleshooting (34.5%) and PDP (60.3%) \u2014 meaning content is fetched after the page opens (CSR). D2C and Customer Value Innovation are migrating the PDP review area and Support pages to SSR, with the transition due within October. Basic SEO (89.2) and Accessibility (83.5) show generally sound baseline information and structure. Still, Heading Hierarchy \u2014 whether headings and subheadings follow a correct order \u2014 was met on 43.7% of pages, exactly one H1 on 83.4%, and Meta Description on 86.4%, so structural consistency needs work. H1 and Meta Description omissions recur on Press & Media pages in particular (H1 44.6%, Meta Description 34.1%), so baseline information should be applied automatically at the page-template or publishing-process level rather than per content item.\n\nCitable Content, at 56.3, needs more content AI can quote in answers. Though sharply up from July (29.3), FAQ Blocks, Summary Boxes and Definition Paragraphs \u2014 the formats AI most readily uses as direct answers \u2014 remain insufficient, and FAQ Blocks are being driven as a key improvement task across the business units and Customer Value Innovation. Citable Sentence coverage exceeds 95% in Germany, Australia and the UK but sits in the 40% range in Canada, Mexico, Brazil and India \u2014 leveling up is needed. Author/Source, which AI can use to judge recency and credibility, was met on just 39.4% \u2014 sound on Press & Media (74.3%) but 0% on Buying Guide and LG Experience, requiring urgent attention. Schema Markup was lowest at 33.2. Schema is the agreed format that lets AI distinguish types of information \u2014 FAQ, product, image, video, how-to \u2014 and its coverage should be widened to match page type and content characteristics. Comparing LG.com and Samsung.com in Germany, Product schema \u2014 the core schema for PDPs \u2014 lagged the competitor (LG 0%, SS 64%), and on PLPs the FAQPage adoption gap was especially wide (LG 5%, SS 71%). VideoObject, ImageObject, HowTo and Article are all major schemas needing improvement across every page type. Through the schema automation D2C is pursuing, we are building a structure that generates and applies the major schemas consistently rather than handling them country by country and page by page, with at least six schema automations to be completed within the year.',
-  d1Notes: [
-    '*Initial HTML: the base page a server delivers first on access \u2014 content AI can read even before JavaScript runs',
-    '*JavaScript rendering: fetching additional information and painting it after the page opens, via JavaScript',
-    '*Client-Side Rendering (CSR): the server sends a basic page shell and the browser runs JavaScript to fetch the main content and complete the view',
-    '*Server-Side Rendering (SSR): the server pre-builds and delivers HTML that already contains the main content',
   ],
 }
 
@@ -3120,11 +3091,11 @@ function readabilityHighlightHtml(rd, meta = {}, lang = 'ko', contentWidth = 848
     <table cellpadding="0" cellspacing="0" border="0" width="100%">
     <tr>
       <td width="${half}" valign="top" style="padding-right:16px;">
-        <p${edAttr('rd_ccTitle')} style="margin:0 0 8px;font-size:12px;font-weight:800;color:#475569;font-family:${EM_FONT};">${lbl('rd_ccTitle', lang === 'en' ? 'By Country' : '국가별 점수')}</p>
+        <p${edAttr('rd_ccTitle')} style="margin:0 0 10px;font-size:15px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-0.3px;">${lbl('rd_ccTitle', lang === 'en' ? 'By Country' : '국가별 점수')}</p>
         <table cellpadding="0" cellspacing="0" border="0" width="100%">${ccRows}</table>
       </td>
       <td width="${half}" valign="top">
-        <p${edAttr('rd_ptTitle')} style="margin:0 0 8px;font-size:12px;font-weight:800;color:#475569;font-family:${EM_FONT};">${lbl('rd_ptTitle', lang === 'en' ? 'By Page Type' : '페이지 타입별 점수')}</p>
+        <p${edAttr('rd_ptTitle')} style="margin:0 0 10px;font-size:15px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-0.3px;">${lbl('rd_ptTitle', lang === 'en' ? 'By Page Type' : '페이지 타입별 점수')}</p>
         <table cellpadding="0" cellspacing="0" border="0" width="100%">${ptRows}</table>
       </td>
     </tr>
@@ -3144,26 +3115,17 @@ function readabilityHighlightHtml(rd, meta = {}, lang = 'ko', contentWidth = 848
     }).join('')
   const catTable = `<table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#F8FAFC;border:1px solid #E8EDF2;border-radius:10px;margin:0 0 18px;">
     <tr><td style="padding:12px 16px;">
-      <p${edAttr('rd_catTitle')} style="margin:0 0 10px;font-size:12px;font-weight:800;color:#475569;font-family:${EM_FONT};">${lbl('rd_catTitle', lang === 'en' ? 'By Area' : '평가 영역별 점수')}</p>
+      <p${edAttr('rd_catTitle')} style="margin:0 0 10px;font-size:15px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-0.3px;">${lbl('rd_catTitle', lang === 'en' ? 'By Area' : '평가 영역별 점수')}</p>
       <table cellpadding="0" cellspacing="0" border="0" width="100%">${catRows}</table>
     </td></tr>
   </table>`
 
-  // ④ 영역별 상세 — 단일 블록 (7월 축약본: 기존 d1~d4 소제목 4블록을 문서에서 통합, 2026-08-31)
-  //    순서도 문서대로: 점수표 → 요약 → 영역 차트 → 상세 → 스키마 비교 차트 → 각주
-  // 스키마 적용률 경쟁사 비교 차트는 제거됨 (사용자 지시 2026-08-31)
-  const detail = `
-    ${rdPara(tx('areaDetail'), { gap: 6, field: 'rd_areaDetail' })}
-    ${rdFootnotes(tx('d1Notes'), 'rd_d1Notes')}`
-
+  // 9월호 정리 (사용자 지시 2026-09-17): 'Readability란?' 소제목, 점수표 아래 요약 텍스트,
+  // 영역 점수 아래 상세 텍스트(제목·각주 포함) 모두 삭제 — 인트로 박스 + 차트 3종만 남긴다.
   // 외곽 카드 없이 콘텐츠만 반환 — 상위 Highlight 챕터 카드 안에 임베드된다.
-  return `${rdHeading(lang === 'en' ? 'What is Readability?' : 'Readability란?', 'rd_h1')}
-      ${introBox}
+  return `${introBox}
       ${scoreTables}
-      ${rdPara(tx('summary2'), { gap: 14, field: 'rd_summary2' })}
-      ${catTable}
-      ${rdHeading(lang === 'en' ? 'Detailed status and improvement direction by area' : '영역별 상세 Readability 현황 및 개선 방향', 'rd_h2')}
-      ${detail}`
+      ${catTable}`
 }
 
 // ─── 반기 요약(하이라이트) 섹션 — 반기 리포트 상단에만 삽입 ────────────────────
