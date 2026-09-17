@@ -319,7 +319,14 @@ export default function App() {
       if (cancelled || !d) return
       // 사용자가 이미 snapshot을 로드했으면 server sync data가 덮어쓰지 않도록 보호
       if (userLoadedSnapshot.current) return
-      if (d.meta)          setMetaKo(m => ({ ...m, ...d.meta }))
+      if (d.meta)          setMetaKo(m => {
+        const merged = { ...m, ...d.meta }
+        // 발행 정보(호수·발행월·데이터 기준·제목)는 사용자 결정 — 서버 sync-data 의
+        // 낡은 값이 접속 때마다 되덮어 "Vol·발행월이 수정 안 되는(고정)" 증상이 됐다
+        // (사용자 보고 2026-09-17). 로컬에 값이 있으면 유지.
+        ;['period', 'reportNo', 'dateLine', 'title'].forEach(k => { if (m[k]) merged[k] = m[k] })
+        return merged
+      })
       if (d.total)         setTotal(t => ({ ...t, ...d.total }))
       if (d.citations)     setCitations(d.citations)
       if (d.dotcom)        setDotcom(prev => ({ ...prev, ...d.dotcom }))
