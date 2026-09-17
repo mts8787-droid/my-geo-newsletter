@@ -10,6 +10,7 @@
 //       node scripts/aggregate-readability.mjs --rebuild <YYYY-MM-DD>
 //         → 기존 스냅샷이 쓴 run 을 국가별 runId 로 고정해 그대로 재집계 (채점 기준 변경 시 과거 스냅샷 갱신용)
 
+import { createHash } from 'crypto'
 import { readdirSync, readFileSync, writeFileSync, mkdirSync, existsSync, copyFileSync, rmSync, statSync } from 'fs'
 import { join, dirname, basename } from 'path'
 import { fileURLToPath } from 'url'
@@ -618,6 +619,26 @@ function accumulateChecks(target, score) {
   }
 }
 
+// 페이지타입별 집계 상한. 상류 gen_dashboard_data.py TYPE_CAP 과 값·방식을 맞춘다.
+const TYPE_CAP = 100
+const TYPE_CAP_EXEMPT = { pdp: 1 }
+function capByPageType(items) {
+  const keep = [], over = new Map()
+  for (const it of items) {
+    const id = it.rpt ? it.rpt.id : '(none)'
+    if (TYPE_CAP_EXEMPT[id]) { keep.push(it); continue }
+    if (!over.has(id)) over.set(id, [])
+    over.get(id).push(it)
+  }
+  for (const [, group] of over) {
+    if (group.length <= TYPE_CAP) { keep.push(...group); continue }
+    group.sort((a, b) => createHash('sha1').update(String(a.url || '')).digest('hex')
+                         .localeCompare(createHash('sha1').update(String(b.url || '')).digest('hex')))
+    keep.push(...group.slice(0, TYPE_CAP))
+  }
+  return keep
+}
+
 // 단일 result 를 누적기에 반영
 function accumulate(acc, result, url) {
   // 분류불가(unknown)/홈페이지(home) 는 점수 집계에서 완전 제외 — 어떤 항목에도 기여 X
@@ -905,11 +926,13 @@ function main() {
     if (chkSkip) {
       _logWarn('aggregate-readability', `${meta.cc}: 체크 수집 skip ${chkSkip} (손상 breakdown)`)
     }
-    // 전수 집계 — 상류(my-geo-audit)와 동일 기준 (사용자 결정 2026-08-30).
-    // 이전에는 페이지타입별 max SAMPLE_PER_PT 표본을 썼다 (US 같은 대형 크롤이 집계를
-    // 압도하는 것 방지 목적). 상류가 전수라 두 시스템 숫자가 어긋나 전수로 통일.
-    // ⚠ 국가별 URL 수 편차가 그대로 가중치가 된다 — 국가 비교 시 감안할 것.
-    const selected = items
+    // 페이지타입별 집계 상한 100 — 상류 gen_dashboard_data.py 의 TYPE_CAP 과 동일 기준
+    // (사용자 결정 2026-09-17). 국가마다 타입 비중이 제각각이면 국가 점수가 콘텐츠
+    // 품질이 아니라 표본 구성을 반영한다 — US 는 트러블슈팅이 34%(418건)인데 그 타입
+    // 평균이 70.8 로 가장 낮고, UK 는 430건이지만 평균 81.8 이라 정반대로 작용했다.
+    // PDP 는 제품군이 수십 종이라 100 으로 자르면 카테고리 대표성이 깨져 면제.
+    // 선별은 URL 해시 순 — 무작위지만 실행마다 같은 결과가 나온다(상류와 동일 방식).
+    const selected = capByPageType(items)
     for (const it of selected) {
       accumulate(acc, it.result, it.url)
       accumulate(overall, it.result, it.url)
