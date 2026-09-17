@@ -302,12 +302,7 @@ ${orphans}
 :root{--ground:#F7F8FA;--surface:#FFFFFF;--raise:#FBFCFD;--ink:#1A1A1A;--ink2:#475569;--ink3:#94A3B8;
 --rule:#E2E8F0;--rule2:#F1F5F9;--accent:#CF0652;--good:#15803D;--warn:#B45309;--crit:#BE123C;
 --plan-bg:#FFFBEB;--pend-bg:#F8FAFC}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--ground:#0F1419;--surface:#171C23;--raise:#1C222B;
---ink:#E8EDF2;--ink2:#9AA7B6;--ink3:#64748B;--rule:#252D37;--rule2:#1E252E;--accent:#FF4D82;
---good:#4ADE80;--warn:#FBBF24;--crit:#FB7185;--plan-bg:#241D10;--pend-bg:#161B22}}
-:root[data-theme="dark"]{--ground:#0F1419;--surface:#171C23;--raise:#1C222B;--ink:#E8EDF2;--ink2:#9AA7B6;
---ink3:#64748B;--rule:#252D37;--rule2:#1E252E;--accent:#FF4D82;--good:#4ADE80;--warn:#FBBF24;--crit:#FB7185;
---plan-bg:#241D10;--pend-bg:#161B22}
+/* 다크모드 미적용 — 검수 기준 문서는 인쇄·공유본 기준을 라이트로 고정한다 (사용자 지시 2026-09-17) */
 *{box-sizing:border-box}
 body{margin:0;background:var(--ground);color:var(--ink);font-family:'IBM Plex Sans KR',-apple-system,BlinkMacSystemFont,'Malgun Gothic',sans-serif;font-size:15px;line-height:1.65;-webkit-font-smoothing:antialiased}
 .wrap{max-width:1160px;margin:0 auto;padding:52px 26px 88px;display:flex;flex-direction:column;gap:42px}
