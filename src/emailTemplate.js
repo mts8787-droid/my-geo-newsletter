@@ -1021,11 +1021,11 @@ function insightV3Parts(meta = {}, lang = 'ko', productsCnty = [], assetBase = '
           <table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;">
             <tr>
               <td width="50%" style="padding-right:6px;vertical-align:top;">
-                <p style="margin:0 0 4px;font-size:12px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-0.4px;">${lang === 'en' ? 'LG Visibility by LLM Model (May\u2013Aug)' : 'LG 5-8\uC6D4 LLM \uBAA8\uB378\uBCC4 Visibility'}</p>
+                <p style="margin:0 0 4px;font-size:12px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-0.4px;"><span style="display:inline-block;width:3px;height:11px;background:${EM_RED};border-radius:1px;vertical-align:-1px;margin-right:6px;"></span>${ed('v3ChartT1', lang === 'en' ? 'LG Visibility by LLM Model (May\u2013Aug)' : 'LG 5-8\uC6D4 LLM \uBAA8\uB378\uBCC4 Visibility')}</p>
                 ${img(mk(LLM_TREND.lg), 'LG Visibility trend by LLM')}
               </td>
               <td width="50%" style="padding-left:6px;vertical-align:top;">
-                <p style="margin:0 0 4px;font-size:12px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-0.4px;">${lang === 'en' ? 'Samsung Visibility by LLM Model (May\u2013Aug)' : 'Samsung 5-8\uC6D4 LLM \uBAA8\uB378\uBCC4 Visibility'}</p>
+                <p style="margin:0 0 4px;font-size:12px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-0.4px;"><span style="display:inline-block;width:3px;height:11px;background:${EM_RED};border-radius:1px;vertical-align:-1px;margin-right:6px;"></span>${ed('v3ChartT2', lang === 'en' ? 'Samsung Visibility by LLM Model (May\u2013Aug)' : 'Samsung 5-8\uC6D4 LLM \uBAA8\uB378\uBCC4 Visibility')}</p>
                 ${img(mk(LLM_TREND.ss), 'Samsung Visibility trend by LLM')}
               </td>
             </tr>
@@ -1036,10 +1036,10 @@ function insightV3Parts(meta = {}, lang = 'ko', productsCnty = [], assetBase = '
   }
 
   // [B] 차트 아래 이어지는 본문 (선택 편집 — 본문을 차트 앞/뒤로 나눠 쓸 수 있게)
-  const bodyCont = (field) => {
+  const bodyCont = (field, phKo, phEn) => {
     const val = (meta[field] != null && meta[field] !== '') ? sanitizeUserHtml(meta[field]) : ''
     if (!val && !_ED) return ''
-    return `<div${edRich(field)} style="margin:10px 0 0;font-size:13px;color:#CBD5E1;line-height:21px;font-family:${EM_FONT};letter-spacing:-0.3px;">${val || (lang === 'en' ? '(continued text — click to edit)' : '(차트 아래 이어지는 본문 — 클릭하여 입력)')}</div>`
+    return `<div${edRich(field)} style="margin:10px 0 0;font-size:13px;color:#CBD5E1;line-height:21px;font-family:${EM_FONT};letter-spacing:-0.3px;">${val || (lang === 'en' ? (phEn || '(continued text — click to edit)') : (phKo || '(차트 아래 이어지는 본문 — 클릭하여 입력)'))}</div>`
   }
 
   // [C] 답변 예시 카드 — V2 quoteBox 양식 재사용 (흰 카드 + 좌측 컬러 보더 인용 2개)
@@ -1091,7 +1091,7 @@ function insightV3Parts(meta = {}, lang = 'ko', productsCnty = [], assetBase = '
   const execHtml = `
                               <div style="margin:0 0 12px;font-size:13px;color:#E2E8F0;line-height:22px;font-family:${EM_FONT};letter-spacing:-0.3px;">${ed('v3ExIntro', L(introKo, introEn))}</div>
                               <table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;">
-                                ${execItem('v3Ex1T2', L('1. C브랜드 Visibility 현황 분석 – TV·세탁기·냉장고를 중심으로', '1. C-brand Visibility analysis — centered on TV, Washer and Refrigerator'), 'v3Ex1B2', L(ex1Ko, ex1En), llmTrendChartHtml() + bodyCont('v3Ex1B2b') + v3CaseCardHtml())}
+                                ${execItem('v3Ex1T2', L('1. C브랜드 Visibility 현황 분석 – TV·세탁기·냉장고를 중심으로', '1. C-brand Visibility analysis — centered on TV, Washer and Refrigerator'), 'v3Ex1B2', L(ex1Ko, ex1En), llmTrendChartHtml() + bodyCont('v3Ex1B2b') + v3CaseCardHtml() + bodyCont('v3Ex1B2c', '(\uB2F5\uBCC0 \uC608\uC2DC \uC544\uB798 \uBCF8\uBB38 \u2014 \uD074\uB9AD\uD558\uC5EC \uC785\uB825)', '(text below the case card \u2014 click to edit)'))}
                                 ${execItem('v3Ex2T2', L('2. 인용 출처의 변화 - 브랜드 닷컴의 인용비중 증가/PDP를 대신하여 설명형 콘텐츠(Buying Guide/Support) 인용 확대', '2. Shift in citation sources — brand dotcom share up; explanatory content (Buying Guide/Support) cited in place of PDP'), 'v3Ex2B2', L(ex2Ko, ex2En), v3Ex2NoteHtml)}
                                 ${execItem('v3Ex3T2', L('3. Readabilty 평가 체계 도입 및 개선 필요 영역 보완 지속', '3. Introducing the Readability framework and continuing to close gaps'), 'v3Ex3B2', L(ex3Ko, ex3En))}
                               </table>`
