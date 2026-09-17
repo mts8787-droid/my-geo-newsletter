@@ -1,6 +1,6 @@
 {
   "date": "2026-09-16",
-  "generatedAt": "2026-09-17T10:08:04.012Z",
+  "generatedAt": "2026-09-17T10:51:51.927Z",
   "source": "run_results",
   "categoryLabels": {
     "performance": "사이트 성능",
@@ -17543,17 +17543,17 @@
       "runId": "2904e51ce500",
       "urlCount": 918,
       "scoredCount": 918,
-      "avgScore": 76.8,
+      "avgScore": 77.1,
       "grades": {
-        "Good": 171,
-        "Need Improvement": 747
+        "Good": 176,
+        "Need Improvement": 742
       },
       "categories": {
         "performance": 96.7,
         "accessibility": 84.6,
         "seo": 88,
         "geo_schema": 18.9,
-        "geo_content": 47.5,
+        "geo_content": 49.7,
         "geo_platform": 94.1
       },
       "checks": {
@@ -17722,7 +17722,7 @@
         "ai_summary_box": {
           "label": "#35 Summary Box (콘텐츠)",
           "cat": "geo_content",
-          "pass": 643,
+          "pass": 722,
           "applicable": 918
         },
         "ai_citable": {
@@ -19443,13 +19443,13 @@
         "support_troubleshoot": {
           "label": "Support - Troubleshoot",
           "count": 100,
-          "avgScore": 70.9,
+          "avgScore": 73.7,
           "categories": {
             "performance": 100,
             "accessibility": 75,
             "seo": 83.2,
             "geo_schema": 0,
-            "geo_content": 22,
+            "geo_content": 41.8,
             "geo_platform": 100
           },
           "checks": {
@@ -19618,7 +19618,7 @@
             "ai_summary_box": {
               "label": "#35 Summary Box (콘텐츠)",
               "cat": "geo_content",
-              "pass": 0,
+              "pass": 79,
               "applicable": 100
             },
             "ai_citable": {
@@ -21675,8 +21675,8 @@
     "scoredCount": 9255,
     "avgScore": 79.7,
     "grades": {
-      "Need Improvement": 3972,
-      "Good": 5246,
+      "Need Improvement": 3967,
+      "Good": 5251,
       "Poor": 37
     },
     "categories": {
@@ -21684,7 +21684,7 @@
       "accessibility": 84.1,
       "seo": 90,
       "geo_schema": 34.1,
-      "geo_content": 54,
+      "geo_content": 54.2,
       "geo_platform": 95.3
     },
     "checks": {
@@ -21859,7 +21859,7 @@
       "ai_summary_box": {
         "label": "#35 Summary Box (콘텐츠)",
         "cat": "geo_content",
-        "pass": 4812,
+        "pass": 4891,
         "applicable": 9255
       },
       "ai_citable": {
@@ -23574,13 +23574,13 @@
       "support_troubleshoot": {
         "label": "Support - Troubleshoot",
         "count": 1000,
-        "avgScore": 77.6,
+        "avgScore": 77.8,
         "categories": {
           "performance": 100,
           "accessibility": 97.5,
           "seo": 97.6,
           "geo_schema": 29.7,
-          "geo_content": 19.3,
+          "geo_content": 21.3,
           "geo_platform": 86
         },
         "checks": {
@@ -23755,7 +23755,7 @@
           "ai_summary_box": {
             "label": "#35 Summary Box (콘텐츠)",
             "cat": "geo_content",
-            "pass": 0,
+            "pass": 79,
             "applicable": 1000
           },
           "ai_citable": {
