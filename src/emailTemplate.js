@@ -982,8 +982,8 @@ function insightV3Parts(meta = {}, lang = 'ko', productsCnty = [], assetBase = '
         <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#1E293B;border:1px solid #334155;border-radius:8px;">
           <tr>
             <td style="padding:12px 16px;">
-              <p style="margin:0 0 6px;font-size:13px;font-weight:800;color:#FFFFFF;line-height:20px;font-family:${EM_FONT};letter-spacing:-0.3px;">${ed(titleF, title)}</p>
-              <p style="margin:0;font-size:13px;color:#CBD5E1;line-height:21px;font-family:${EM_FONT};letter-spacing:-0.3px;">${ed(bodyF, body)}</p>
+              <div style="margin:0 0 6px;font-size:13px;font-weight:800;color:#FFFFFF;line-height:20px;font-family:${EM_FONT};letter-spacing:-0.3px;">${ed(titleF, title)}</div>
+              <div style="margin:0;font-size:13px;color:#CBD5E1;line-height:21px;font-family:${EM_FONT};letter-spacing:-0.3px;">${ed(bodyF, body)}</div>
               ${extra}
             </td>
           </tr>
@@ -1001,30 +1001,37 @@ function insightV3Parts(meta = {}, lang = 'ko', productsCnty = [], assetBase = '
   }
   const LLM_COLORS = { TOTAL: EM_RED, CHATGPT: '#3B82F6', 'GPT SEARCH': '#059669', PERPLEXITY: '#D97706', GEMINI: '#7C3AED' }
   const llmTrendChartHtml = () => {
-    const mk = (bag, totalName) => encodeChart({
+    // Total 은 양쪽 모두 레드 + 굵은 선 (시리즈명 'LG' 가 빌더의 굵기 트리거 — 표시엔 안 쓰임).
+    // mark:0 → 첫 월(5월)에도 값 라벨. 높이 200 — 5개 시리즈 라벨 겹침 방지 (사용자 허용).
+    const mk = (bag) => encodeChart({
       series: Object.entries(bag).map(([k, data]) => ({
-        name: k === 'TOTAL' ? totalName : k,
-        color: k === 'TOTAL' ? (totalName === 'LG' ? EM_RED : '#0F172A') : LLM_COLORS[k],
+        name: k === 'TOTAL' ? 'LG' : k,
+        color: k === 'TOTAL' ? EM_RED : LLM_COLORS[k],
         data,
       })),
-      labels: LLM_TREND.months, w: 396, h: 168,
+      labels: LLM_TREND.months, w: 380, h: 200, mark: 0,
     })
-    const img = (d, alt) => `<img src="${assetBase}/api/hl-chart?d=${d}" width="396" alt="${alt}" style="display:block;width:100%;max-width:396px;height:auto;border:0;" />`
+    const img = (d, alt) => `<img src="${assetBase}/api/hl-chart?d=${d}" width="380" alt="${alt}" style="display:block;width:100%;max-width:380px;height:auto;border:0;" />`
     const legend = Object.entries(LLM_COLORS).map(([k, c]) =>
-      `<td style="padding:2px 8px 0 0;white-space:nowrap;"><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:${c};">&nbsp;</span> <span style="font-size:10px;color:#CBD5E1;font-family:${EM_FONT};">${k === 'TOTAL' ? (lang === 'en' ? 'Total' : '전체') : k}</span></td>`).join('')
+      `<td style="padding:2px 10px 0 0;white-space:nowrap;"><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:${c};">&nbsp;</span> <span style="font-size:10px;font-weight:700;color:#475569;font-family:${EM_FONT};">${k === 'TOTAL' ? 'Total' : k}</span></td>`).join('')
+    // 제목·차트·범례를 하나의 흰 카드로 — 다크 박스 위에서 뭉개지지 않게 구분 (사용자 지시 2026-09-19)
     return `
-      <table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;margin-top:10px;">
-        <tr>
-          <td width="50%" style="padding-right:6px;vertical-align:top;">
-            <p style="margin:0 0 4px;font-size:11px;font-weight:800;color:#FFFFFF;font-family:${EM_FONT};">LG</p>
-            ${img(mk(LLM_TREND.lg, 'LG'), 'LG Visibility trend by LLM')}
-          </td>
-          <td width="50%" style="padding-left:6px;vertical-align:top;">
-            <p style="margin:0 0 4px;font-size:11px;font-weight:800;color:#FFFFFF;font-family:${EM_FONT};">SAMSUNG</p>
-            ${img(mk(LLM_TREND.ss, 'SAMSUNG'), 'Samsung Visibility trend by LLM')}
-          </td>
-        </tr>
-        <tr><td colspan="2" style="padding-top:6px;"><table border="0" cellpadding="0" cellspacing="0"><tr>${legend}</tr></table></td></tr>
+      <table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;background:#FFFFFF;border:1px solid #E8EDF2;border-radius:10px;margin-top:12px;">
+        <tr><td style="padding:12px 14px;">
+          <table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;">
+            <tr>
+              <td width="50%" style="padding-right:6px;vertical-align:top;">
+                <p style="margin:0 0 4px;font-size:12px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};">LG</p>
+                ${img(mk(LLM_TREND.lg), 'LG Visibility trend by LLM')}
+              </td>
+              <td width="50%" style="padding-left:6px;vertical-align:top;">
+                <p style="margin:0 0 4px;font-size:12px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};">SAMSUNG</p>
+                ${img(mk(LLM_TREND.ss), 'Samsung Visibility trend by LLM')}
+              </td>
+            </tr>
+            <tr><td colspan="2" style="padding-top:8px;border-top:1px solid #F1F5F9;"><table border="0" cellpadding="0" cellspacing="0"><tr>${legend}</tr></table></td></tr>
+          </table>
+        </td></tr>
       </table>`
   }
 
@@ -1032,7 +1039,7 @@ function insightV3Parts(meta = {}, lang = 'ko', productsCnty = [], assetBase = '
   const bodyCont = (field) => {
     const val = (meta[field] != null && meta[field] !== '') ? sanitizeUserHtml(meta[field]) : ''
     if (!val && !_ED) return ''
-    return `<p${edRich(field)} style="margin:10px 0 0;font-size:13px;color:#CBD5E1;line-height:21px;font-family:${EM_FONT};letter-spacing:-0.3px;">${val || (lang === 'en' ? '(continued text — click to edit)' : '(차트 아래 이어지는 본문 — 클릭하여 입력)')}</p>`
+    return `<div${edRich(field)} style="margin:10px 0 0;font-size:13px;color:#CBD5E1;line-height:21px;font-family:${EM_FONT};letter-spacing:-0.3px;">${val || (lang === 'en' ? '(continued text — click to edit)' : '(차트 아래 이어지는 본문 — 클릭하여 입력)')}</div>`
   }
 
   // [C] 답변 예시 카드 — V2 quoteBox 양식 재사용 (흰 카드 + 좌측 컬러 보더 인용 2개)
@@ -1040,9 +1047,9 @@ function insightV3Parts(meta = {}, lang = 'ko', productsCnty = [], assetBase = '
     <table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;margin-top:8px;">
       <tr>
         <td style="padding:10px 14px;background:#F8FAFC;border:1px solid #E8EDF2;border-left:3px solid ${labelColor};border-radius:8px;word-break:break-word;">
-          <p style="margin:0 0 6px;font-size:10px;font-weight:800;color:${labelColor};font-family:${EM_FONT};letter-spacing:1px;">${label}</p>
-          <p style="margin:0 0 8px;font-size:13px;color:#334155;line-height:20px;font-family:'Courier New',Courier,monospace;word-break:break-word;overflow-wrap:anywhere;">${ed(enF, en)}</p>
-          <p style="margin:0;font-size:13px;color:#64748B;line-height:20px;font-family:${EM_FONT};letter-spacing:-0.3px;">${ed(koF, ko)}</p>
+          <div style="margin:0 0 6px;font-size:10px;font-weight:800;color:${labelColor};font-family:${EM_FONT};letter-spacing:1px;">${label}</div>
+          <div style="margin:0 0 8px;font-size:13px;color:#334155;line-height:20px;font-family:'Courier New',Courier,monospace;word-break:break-word;overflow-wrap:anywhere;">${ed(enF, en)}</div>
+          <div style="margin:0;font-size:13px;color:#64748B;line-height:20px;font-family:${EM_FONT};letter-spacing:-0.3px;">${ed(koF, ko)}</div>
         </td>
       </tr>
     </table>`
@@ -1056,8 +1063,8 @@ function insightV3Parts(meta = {}, lang = 'ko', productsCnty = [], assetBase = '
     <table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;background:#FFFFFF;border:1px solid #E8EDF2;border-radius:10px;margin-top:12px;">
       <tr>
         <td style="padding:14px 16px;word-break:break-word;">
-          <p style="margin:0 0 8px;font-size:14px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-0.5px;">${ed('v3C1Title', L('[답변 예시] Perplexity, 냉장고 (영국) - "답변 길이 축소와 함께 브랜드 언급 개수의 감소(N 개→0 ~1 개)"', '[Case] Perplexity, Refrigerator (UK) - "Shorter answers with brand mentions dropping (N → 0–1)"'))}</p>
-          <p style="margin:0;font-size:13px;color:#334155;font-family:${EM_FONT};"><strong>Prompt</strong>: ${ed('v3C1Prompt', `"What's the average price for a Multi Door Fridge Freezer?"`)}</p>
+          <div style="margin:0 0 8px;font-size:14px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-0.5px;">${ed('v3C1Title', L('[답변 예시] Perplexity, 냉장고 (영국) - "답변 길이 축소와 함께 브랜드 언급 개수의 감소(N 개→0 ~1 개)"', '[Case] Perplexity, Refrigerator (UK) - "Shorter answers with brand mentions dropping (N → 0–1)"'))}</div>
+          <div style="margin:0;font-size:13px;color:#334155;font-family:${EM_FONT};"><strong>Prompt</strong>: ${ed('v3C1Prompt', `"What's the average price for a Multi Door Fridge Freezer?"`)}</div>
           ${v3QuoteBox(L('7월 원문 · 번역', 'JULY — ORIGINAL · INTERPRETATION'), '#64748B', 'v3C1Ben', c1JulEn, 'v3C1Bko', c1JulKo)}
           ${v3QuoteBox(L('8월 원문 · 번역', 'AUGUST — ORIGINAL · INTERPRETATION'), EM_RED, 'v3C1Ten', c1AugEn, 'v3C1Tko', c1AugKo)}
         </td>
@@ -1065,7 +1072,7 @@ function insightV3Parts(meta = {}, lang = 'ko', productsCnty = [], assetBase = '
     </table>`
 
   // [D] 2번 박스 각주 — 작고 흐린 출처 표기
-  const v3Ex2NoteHtml = `<p${edRich('v3Ex2Note')} style="margin:10px 0 0;font-size:10.5px;color:#64748B;line-height:1.6;font-family:${EM_FONT};">${(meta.v3Ex2Note != null && meta.v3Ex2Note !== '') ? sanitizeUserHtml(meta.v3Ex2Note) : `1) ${lang === 'en' ? 'Source' : '출처'}: OpenAI Help Center, “Shopping with ChatGPT Search”<br/><a href="https://help.openai.com/en/articles/11128490-shopping-with-chatgpt-search" style="color:#64748B;text-decoration:underline;">https://help.openai.com/en/articles/11128490-shopping-with-chatgpt-search</a>`}</p>`
+  const v3Ex2NoteHtml = `<div${edRich('v3Ex2Note')} style="margin:10px 0 0;font-size:10.5px;color:#64748B;line-height:1.6;font-family:${EM_FONT};">${(meta.v3Ex2Note != null && meta.v3Ex2Note !== '') ? sanitizeUserHtml(meta.v3Ex2Note) : `1) ${lang === 'en' ? 'Source' : '출처'}: OpenAI Help Center, “Shopping with ChatGPT Search”<br/><a href="https://help.openai.com/en/articles/11128490-shopping-with-chatgpt-search" style="color:#64748B;text-decoration:underline;">https://help.openai.com/en/articles/11128490-shopping-with-chatgpt-search</a>`}</div>`
 
   // ── 7월호 Executive Summary (사용자 제공 구글 문서 원문 그대로 — 임의 다듬기 없음, 2026-08-31) ──
   // 필드 버전업 (v3Ex*T2/B2): 옛 저장본(v3Ex1T/B = 8월 2항목 구성)이 새 기본 문안을 덮지 않게.
@@ -1082,7 +1089,7 @@ function insightV3Parts(meta = {}, lang = 'ko', productsCnty = [], assetBase = '
   const ex3En = `From July 2026 we built a new Readability evaluation framework and dashboard to check whether LG.com content is in good shape for AI to read and use.<br/><br/>Across the 10 strategic countries plus the global flagship site — 9 major page types, 9,284 pages in total — the first evaluation covered six areas for AI bots: 1) Site Performance, 2) Web Accessibility, 3) Basic SEO, 4) Schema Markup, 5) Citable Content, 6) AI Crawlability. <strong style="color:#FFFFFF;">LG.com's overall Readability average was 79.7.</strong><br/><br/>By area, Site Performance 99.4, AI Crawlability 95.4, Basic SEO 89.2 and Web Accessibility 83.5 showed relatively sound page accessibility and technical environment. In contrast, <strong style="color:#FFFFFF;">Schema Markup 33.2 and Citable Content 56.3</strong> were relatively low and identified as areas needing improvement.<br/><br/><span style="color:#FDA4AF;">In response, we will continue expanding AI-answer-friendly content formats such as FAQ, automating schema markup, and improving the initial delivery structure (SSR) of key Support and PDP information. Areas needing rapid improvement will be brought up to the September Committee, strengthening the basis for Visibility gains.</span>`
 
   const execHtml = `
-                              <p style="margin:0 0 12px;font-size:13px;color:#E2E8F0;line-height:22px;font-family:${EM_FONT};letter-spacing:-0.3px;">${ed('v3ExIntro', L(introKo, introEn))}</p>
+                              <div style="margin:0 0 12px;font-size:13px;color:#E2E8F0;line-height:22px;font-family:${EM_FONT};letter-spacing:-0.3px;">${ed('v3ExIntro', L(introKo, introEn))}</div>
                               <table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;">
                                 ${execItem('v3Ex1T2', L('1. C브랜드 Visibility 현황 분석 – TV·세탁기·냉장고를 중심으로', '1. C-brand Visibility analysis — centered on TV, Washer and Refrigerator'), 'v3Ex1B2', L(ex1Ko, ex1En), llmTrendChartHtml() + bodyCont('v3Ex1B2b') + v3CaseCardHtml())}
                                 ${execItem('v3Ex2T2', L('2. 인용 출처의 변화 - 브랜드 닷컴의 인용비중 증가/PDP를 대신하여 설명형 콘텐츠(Buying Guide/Support) 인용 확대', '2. Shift in citation sources — brand dotcom share up; explanatory content (Buying Guide/Support) cited in place of PDP'), 'v3Ex2B2', L(ex2Ko, ex2En), v3Ex2NoteHtml)}

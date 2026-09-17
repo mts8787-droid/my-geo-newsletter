@@ -21,7 +21,7 @@ export function hlLineChartSvg(series, labels, w = 500, h = 152, mark = -1) {
   let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" style="display:block;width:100%;max-width:${w}px;height:auto;">`
   svg += `<rect x="0" y="0" width="${w}" height="${h}" fill="#FFFFFF"/>`
   for (let g = 0; g <= 3; g++) { const yy = (padT + ch * g / 3).toFixed(1); svg += `<line x1="${padL}" y1="${yy}" x2="${w - padR}" y2="${yy}" stroke="#EEF0F3" stroke-width="1"/>` }
-  if (mark >= 0 && mark < N) { const mxx = X(mark).toFixed(1); svg += `<line x1="${mxx}" y1="${padT}" x2="${mxx}" y2="${(padT + ch).toFixed(1)}" stroke="#94A3B8" stroke-width="1" stroke-dasharray="3,3"/>` }
+  if (mark > 0 && mark < N) { const mxx = X(mark).toFixed(1); svg += `<line x1="${mxx}" y1="${padT}" x2="${mxx}" y2="${(padT + ch).toFixed(1)}" stroke="#94A3B8" stroke-width="1" stroke-dasharray="3,3"/>` }
   svg += `<text x="${padL - 5}" y="${(padT + 4).toFixed(1)}" text-anchor="end" font-size="9" fill="#94A3B8" font-family="sans-serif">${Math.round(mx)}</text>`
   svg += `<text x="${padL - 5}" y="${(padT + ch).toFixed(1)}" text-anchor="end" font-size="9" fill="#94A3B8" font-family="sans-serif">${Math.round(mn)}</text>`
   labels.forEach((l, i) => { svg += `<text x="${X(i).toFixed(1)}" y="${(h - 8).toFixed(1)}" text-anchor="middle" font-size="9" fill="#94A3B8" font-family="sans-serif">${escapeXml(l)}</text>` })
@@ -47,8 +47,9 @@ export function hlLineChartSvg(series, labels, w = 500, h = 152, mark = -1) {
     for (let i = 1; i < n - 1; i++) if (items[i].ly - items[i - 1].ly < GAP) items[i].ly = items[i - 1].ly + GAP
     // 상단 그룹 상단 경계 클램프
     if (items[0].ly < top) { const d = top - items[0].ly; for (let i = 0; i < (n >= 2 ? n - 1 : n); i++) items[i].ly += d }
-    const tx = (X(idx) - 4).toFixed(1)
-    items.forEach(it => { svg += `<text x="${tx}" y="${it.ly.toFixed(1)}" text-anchor="end" font-size="9" font-weight="700" fill="${it.color}" font-family="sans-serif">${it.v.toFixed(1)}</text>` })
+    const first = idx === 0  // 첫 시점 라벨은 포인트 오른쪽으로 (y축 숫자와 충돌 방지)
+    const tx = (X(idx) + (first ? 4 : -4)).toFixed(1)
+    items.forEach(it => { svg += `<text x="${tx}" y="${it.ly.toFixed(1)}" text-anchor="${first ? 'start' : 'end'}" font-size="9" font-weight="700" fill="${it.color}" font-family="sans-serif">${it.v.toFixed(1)}</text>` })
   })
   svg += `</svg>`
   return svg
@@ -65,7 +66,7 @@ function b64urlDecode(s) {
 }
 
 // 렌더 로직(레이블 배치 등)이 바뀔 때마다 +1 → d 값이 달라져 브라우저 immutable·서버 LRU 캐시 자동 무효화.
-export const CHART_REV = 2
+export const CHART_REV = 3
 
 // 차트 데이터를 URL 파라미터(d)로 인코딩. 값은 소수1자리로 압축.
 export function encodeChart({ series, labels, w = 500, h = 152, mark = -1 }) {
