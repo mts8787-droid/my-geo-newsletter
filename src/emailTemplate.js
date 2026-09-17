@@ -1009,11 +1009,11 @@ function insightV3Parts(meta = {}, lang = 'ko', productsCnty = [], assetBase = '
         color: k === 'TOTAL' ? EM_RED : LLM_COLORS[k],
         data,
       })),
-      labels: LLM_TREND.months, w: 380, h: 200, mark: 0,
+      labels: LLM_TREND.months, w: 380, h: 200, mark: 0, boldX: true,
     })
     const img = (d, alt) => `<img src="${assetBase}/api/hl-chart?d=${d}" width="380" alt="${alt}" style="display:block;width:100%;max-width:380px;height:auto;border:0;" />`
     const legend = Object.entries(LLM_COLORS).map(([k, c]) =>
-      `<td style="padding:2px 10px 0 0;white-space:nowrap;"><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:${c};">&nbsp;</span> <span style="font-size:10px;font-weight:700;color:#475569;font-family:${EM_FONT};">${k === 'TOTAL' ? 'Total' : k}</span></td>`).join('')
+      `<td style="padding:2px 10px 0 0;white-space:nowrap;"><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:${c};vertical-align:middle;margin-right:4px;"></span><span style="font-size:10px;font-weight:700;color:#475569;font-family:${EM_FONT};vertical-align:middle;">${k === 'TOTAL' ? 'Total' : k}</span></td>`).join('')
     // 제목·차트·범례를 하나의 흰 카드로 — 다크 박스 위에서 뭉개지지 않게 구분 (사용자 지시 2026-09-19)
     return `
       <table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;background:#FFFFFF;border:1px solid #E8EDF2;border-radius:10px;margin-top:12px;">
@@ -1021,11 +1021,11 @@ function insightV3Parts(meta = {}, lang = 'ko', productsCnty = [], assetBase = '
           <table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;">
             <tr>
               <td width="50%" style="padding-right:6px;vertical-align:top;">
-                <p style="margin:0 0 4px;font-size:12px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};">LG</p>
+                <p style="margin:0 0 4px;font-size:12px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-0.4px;">${lang === 'en' ? 'LG Visibility by LLM Model (May\u2013Aug)' : 'LG 5-8\uC6D4 LLM \uBAA8\uB378\uBCC4 Visibility'}</p>
                 ${img(mk(LLM_TREND.lg), 'LG Visibility trend by LLM')}
               </td>
               <td width="50%" style="padding-left:6px;vertical-align:top;">
-                <p style="margin:0 0 4px;font-size:12px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};">SAMSUNG</p>
+                <p style="margin:0 0 4px;font-size:12px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-0.4px;">${lang === 'en' ? 'Samsung Visibility by LLM Model (May\u2013Aug)' : 'Samsung 5-8\uC6D4 LLM \uBAA8\uB378\uBCC4 Visibility'}</p>
                 ${img(mk(LLM_TREND.ss), 'Samsung Visibility trend by LLM')}
               </td>
             </tr>
