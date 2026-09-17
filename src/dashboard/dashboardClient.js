@@ -616,7 +616,7 @@ var _products=${S(products.map(p => ({ id: p.id, bu: p.bu, kr: p.kr, en: p.en ||
 var _productsCnty=${S(productsCnty || [])};
 var _unlaunchedMap=${S(ulMap)};
 var _PROD_TO_UL=${S(PROD_ID_TO_UL_CODE)};
-function _isUnlaunched(cnty,prodId){var code=_PROD_TO_UL[prodId]||prodId.toUpperCase();return!!_unlaunchedMap[cnty+'|'+code]}
+function _isUnlaunched(cnty,prodId){if(prodId==null)return false;var code=_PROD_TO_UL[prodId]||String(prodId).toUpperCase();return!!_unlaunchedMap[cnty+'|'+code]}
 function _unlaunchedCntys(prodId){var code=_PROD_TO_UL[prodId]||prodId.toUpperCase();var r=[];Object.keys(_unlaunchedMap).forEach(function(k){if(k.endsWith('|'+code))r.push(k.split('|')[0])});return r}
 var _monthlyVis=${S(opts?.monthlyVis || [])};
 var _total=${S(total)};
@@ -745,10 +745,12 @@ function updateMonthlyProductScores(selCountry){
   var avgByProdId={};
   _productsCnty.forEach(function(r){
     if(countries.indexOf(r.country||'')<0)return;
-    if(_isUnlaunched(r.country||'',prodId))return; // 미출시 국가 제외 (2026-09-15)
     var rKey=(r.product||'').toUpperCase();
     var prodId=prodKeyMap[rKey];
     if(!prodId)return;
+    // 미출시 국가 제외 (2026-09-15) — 반드시 prodId 확정 뒤에 (앞에 두면 var 호이스팅으로
+    // undefined 참조 → 이 집계 전체가 죽어 국가 선택 시 월별 기능이 무반응이 됐다, 2026-09-17 수리)
+    if(_isUnlaunched(r.country||'',prodId))return;
     if(!avgByProdId[prodId])avgByProdId[prodId]={scores:[],compScores:[]};
     // 월 드롭다운 활성 시 해당 월의 score/compScore 사용, 아니면 r.score/r.compScore(최신)
     var sc=r.score,cs=r.compScore;
