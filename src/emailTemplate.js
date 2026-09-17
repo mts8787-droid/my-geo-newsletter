@@ -4,6 +4,7 @@ import { PROD_ID_TO_UL_CODE as UL_PROD_MAP, PROD_ID_TO_UL_CODE, PROD_ID_TO_KR, P
 import { rdBandColor } from './shared/readabilityBand.js'
 import { compRatioStr } from './shared/compRatio.js'
 import { parsePeriod } from './shared/reportPeriod.js'
+import { encodeChart } from './shared/hlChart.js'
 import { resolveProductsByLlm, resolveProductsCntyByLlm, resolveTotalByLlm } from './shared/llmModel.js'
 import { _logWarn } from './sheetParserUtils.js'
 import { dcColLabel } from './shared/constants.js'
@@ -965,7 +966,7 @@ function insightV2Parts(meta = {}, lang = 'ko', products = []) {
 // 인트로 + 번호 항목 3개(각각 짙은 남색 박스 #1E293B). 토글: meta.showInsightV3.
 // 본문은 사용자 제공 구글 문서 원문 그대로 (임의 다듬기 없음 — 오탈자 포함).
 // 편집 필드 v3ExIntro / v3Ex*T2 / v3Ex*B2 — 옛 저장본(v3Ex*T/B)이 덮지 않게 버전업.
-function insightV3Parts(meta = {}, lang = 'ko', productsCnty = []) {
+function insightV3Parts(meta = {}, lang = 'ko', productsCnty = [], assetBase = '') {
   const L = (ko, en) => (lang === 'en' ? en : ko)
   // 편집모드에서도 저장값(meta) 우선 — 기본문안(val)을 보여주면 편집할 때마다
   // 저장분이 원복돼 보인다 (사용자 보고 2026-08-31 "수정하면 원복됨").
@@ -990,6 +991,82 @@ function insightV3Parts(meta = {}, lang = 'ko', productsCnty = []) {
       </td>
     </tr>`
 
+  // ── 9월호 추가 블록 (사용자 지시 2026-09-19) ────────────────────────────────
+  // [A] LG·삼성 모델별 Visibility 트렌드 라인차트 (5~8월) — 이메일 호환 PNG (/api/hl-chart)
+  //     수치는 사용자 제공 표 그대로 (Brand Prompt 월별 — 하드코딩, 다음 호에서 갱신)
+  const LLM_TREND = {
+    months: lang === 'en' ? ['May', 'Jun', 'Jul', 'Aug'] : ['5월', '6월', '7월', '8월'],
+    lg: { TOTAL: [44.8, 43.3, 43.4, 41.6], CHATGPT: [45.6, 45.6, 45.7, 46.7], 'GPT SEARCH': [47.1, 44.2, 45.9, 45.5], PERPLEXITY: [39.6, 30.9, 39.3, 35.2], GEMINI: [47.0, 44.6, 42.6, 39.1] },
+    ss: { TOTAL: [40.2, 38.2, 37.9, 36.6], CHATGPT: [44.7, 44.6, 44.7, 45.4], 'GPT SEARCH': [39.0, 36.6, 37.7, 38.6], PERPLEXITY: [33.4, 32.4, 32.5, 29.3], GEMINI: [43.7, 39.3, 36.6, 33.1] },
+  }
+  const LLM_COLORS = { TOTAL: EM_RED, CHATGPT: '#3B82F6', 'GPT SEARCH': '#059669', PERPLEXITY: '#D97706', GEMINI: '#7C3AED' }
+  const llmTrendChartHtml = () => {
+    const mk = (bag, totalName) => encodeChart({
+      series: Object.entries(bag).map(([k, data]) => ({
+        name: k === 'TOTAL' ? totalName : k,
+        color: k === 'TOTAL' ? (totalName === 'LG' ? EM_RED : '#0F172A') : LLM_COLORS[k],
+        data,
+      })),
+      labels: LLM_TREND.months, w: 396, h: 168,
+    })
+    const img = (d, alt) => `<img src="${assetBase}/api/hl-chart?d=${d}" width="396" alt="${alt}" style="display:block;width:100%;max-width:396px;height:auto;border:0;" />`
+    const legend = Object.entries(LLM_COLORS).map(([k, c]) =>
+      `<td style="padding:2px 8px 0 0;white-space:nowrap;"><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:${c};">&nbsp;</span> <span style="font-size:10px;color:#CBD5E1;font-family:${EM_FONT};">${k === 'TOTAL' ? (lang === 'en' ? 'Total' : '전체') : k}</span></td>`).join('')
+    return `
+      <table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;margin-top:10px;">
+        <tr>
+          <td width="50%" style="padding-right:6px;vertical-align:top;">
+            <p style="margin:0 0 4px;font-size:11px;font-weight:800;color:#FFFFFF;font-family:${EM_FONT};">LG</p>
+            ${img(mk(LLM_TREND.lg, 'LG'), 'LG Visibility trend by LLM')}
+          </td>
+          <td width="50%" style="padding-left:6px;vertical-align:top;">
+            <p style="margin:0 0 4px;font-size:11px;font-weight:800;color:#FFFFFF;font-family:${EM_FONT};">SAMSUNG</p>
+            ${img(mk(LLM_TREND.ss, 'SAMSUNG'), 'Samsung Visibility trend by LLM')}
+          </td>
+        </tr>
+        <tr><td colspan="2" style="padding-top:6px;"><table border="0" cellpadding="0" cellspacing="0"><tr>${legend}</tr></table></td></tr>
+      </table>`
+  }
+
+  // [B] 차트 아래 이어지는 본문 (선택 편집 — 본문을 차트 앞/뒤로 나눠 쓸 수 있게)
+  const bodyCont = (field) => {
+    const val = (meta[field] != null && meta[field] !== '') ? sanitizeUserHtml(meta[field]) : ''
+    if (!val && !_ED) return ''
+    return `<p${edRich(field)} style="margin:10px 0 0;font-size:13px;color:#CBD5E1;line-height:21px;font-family:${EM_FONT};letter-spacing:-0.3px;">${val || (lang === 'en' ? '(continued text — click to edit)' : '(차트 아래 이어지는 본문 — 클릭하여 입력)')}</p>`
+  }
+
+  // [C] 답변 예시 카드 — V2 quoteBox 양식 재사용 (흰 카드 + 좌측 컬러 보더 인용 2개)
+  const v3QuoteBox = (label, labelColor, enF, en, koF, ko) => `
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;margin-top:8px;">
+      <tr>
+        <td style="padding:10px 14px;background:#F8FAFC;border:1px solid #E8EDF2;border-left:3px solid ${labelColor};border-radius:8px;word-break:break-word;">
+          <p style="margin:0 0 6px;font-size:10px;font-weight:800;color:${labelColor};font-family:${EM_FONT};letter-spacing:1px;">${label}</p>
+          <p style="margin:0 0 8px;font-size:13px;color:#334155;line-height:20px;font-family:'Courier New',Courier,monospace;word-break:break-word;overflow-wrap:anywhere;">${ed(enF, en)}</p>
+          <p style="margin:0;font-size:13px;color:#64748B;line-height:20px;font-family:${EM_FONT};letter-spacing:-0.3px;">${ed(koF, ko)}</p>
+        </td>
+      </tr>
+    </table>`
+  const c1JulEn = `Prices for multi-door fridge freezers in the UK vary widely, but you can expect typical new models to range roughly from about £900 to £3,500, with many common mid-range options landing in the £1,200–£2,000 bracket. Higher-end American-style or premium brands can push above £2,500–£3,500. Premium/large-capacity models (600–900+ litres, French-door or door-in-door) commonly range £2,000–£3,500, especially when brand prestige (Samsung, LG, Smeg, AEG, Bosch) or extra features are involved.`
+  const c1JulKo = L(`영국 양문형 냉장고 가격은 매우 다양하지만, 일반적인 신제품은 대략 £900~£3,500 범위이며 흔한 중가형 옵션은 £1,200~£2,000 대에 몰려 있습니다. 고급형 미국식 또는 프리미엄 브랜드는 £2,500~£3,500 이상까지 올라갈 수 있습니다. 프리미엄/대용량 모델(600~900L 이상, 프렌치도어 또는 도어인도어)은 브랜드 프리미엄(삼성, LG, 스메그, AEG, 보쉬)이나 추가 기능이 있을 경우 일반적으로 £2,000~£3,500 범위입니다`,
+    `Interpretation: A brand-rich answer — typical price bands plus premium brand names (Samsung, LG, Smeg, AEG, Bosch) are all cited.`)
+  const c1AugEn = `The average price for a multi-door fridge freezer in the UK appears to be around £345 based on Which? data, with a typical range from roughly £265 to £1,099 depending on size and features. Example average/typical prices: £345 (average in past six months) and £265 (cheapest in past six months) for certain models.`
+  const c1AugKo = L(`영국 양문형 냉장고의 평균 가격은 Which? 데이터를 기준으로 약 £345 이며, 크기와 기능에 따라 대략 £265~£1,099 범위로 나타납니다. 예시 평균/일반 가격: 특정 모델 기준 £345(최근 6 개월 평균), £265(최근 6 개월 최저가).`,
+    `Interpretation: The August answer shrinks to a short Which?-based price summary — brand mentions drop from many to zero–one.`)
+  const v3CaseCardHtml = () => `
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;background:#FFFFFF;border:1px solid #E8EDF2;border-radius:10px;margin-top:12px;">
+      <tr>
+        <td style="padding:14px 16px;word-break:break-word;">
+          <p style="margin:0 0 8px;font-size:14px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-0.5px;">${ed('v3C1Title', L('[답변 예시] Perplexity, 냉장고 (영국) - "답변 길이 축소와 함께 브랜드 언급 개수의 감소(N 개→0 ~1 개)"', '[Case] Perplexity, Refrigerator (UK) - "Shorter answers with brand mentions dropping (N → 0–1)"'))}</p>
+          <p style="margin:0;font-size:13px;color:#334155;font-family:${EM_FONT};"><strong>Prompt</strong>: ${ed('v3C1Prompt', `"What's the average price for a Multi Door Fridge Freezer?"`)}</p>
+          ${v3QuoteBox(L('7월 원문 · 번역', 'JULY — ORIGINAL · INTERPRETATION'), '#64748B', 'v3C1Ben', c1JulEn, 'v3C1Bko', c1JulKo)}
+          ${v3QuoteBox(L('8월 원문 · 번역', 'AUGUST — ORIGINAL · INTERPRETATION'), EM_RED, 'v3C1Ten', c1AugEn, 'v3C1Tko', c1AugKo)}
+        </td>
+      </tr>
+    </table>`
+
+  // [D] 2번 박스 각주 — 작고 흐린 출처 표기
+  const v3Ex2NoteHtml = `<p${edRich('v3Ex2Note')} style="margin:10px 0 0;font-size:10.5px;color:#64748B;line-height:1.6;font-family:${EM_FONT};">${(meta.v3Ex2Note != null && meta.v3Ex2Note !== '') ? sanitizeUserHtml(meta.v3Ex2Note) : `1) ${lang === 'en' ? 'Source' : '출처'}: OpenAI Help Center, “Shopping with ChatGPT Search”<br/><a href="https://help.openai.com/en/articles/11128490-shopping-with-chatgpt-search" style="color:#64748B;text-decoration:underline;">https://help.openai.com/en/articles/11128490-shopping-with-chatgpt-search</a>`}</p>`
+
   // ── 7월호 Executive Summary (사용자 제공 구글 문서 원문 그대로 — 임의 다듬기 없음, 2026-08-31) ──
   // 필드 버전업 (v3Ex*T2/B2): 옛 저장본(v3Ex1T/B = 8월 2항목 구성)이 새 기본 문안을 덮지 않게.
   const introKo = `<strong style="color:#FFFFFF;">26년 7월 글로벌 10개국 대상 Visibility는 43.4%를 기록하며 삼성(37.9%) 대비 리더십을 유지하고 있습니다.</strong><br/>제품별로도 세탁기(LG 37%, 경쟁비 118%)와 에어컨(LG 42%, 경쟁비 127%)은 확실한 우위, TV(LG 87.2%, 경쟁비 99%)와 냉장고(LG 40.4%, 경쟁비 102%)는 삼성과 접점을 유지하여 전월과 유사한 트렌드가 이어지고 있습니다.<br/><br/>이번 7월 뉴스레터에서는 C브랜드의 Visibility가 상대적으로 높은 TV·냉장고·세탁기를 중심으로 국가별 경쟁 현황을 공유드리고, Citation의 트렌드 변화, Readability 신규 모니터링 체계 정비 및 주요 평가 결과를 함께 공유하고자 합니다.`
@@ -1007,8 +1084,8 @@ function insightV3Parts(meta = {}, lang = 'ko', productsCnty = []) {
   const execHtml = `
                               <p style="margin:0 0 12px;font-size:13px;color:#E2E8F0;line-height:22px;font-family:${EM_FONT};letter-spacing:-0.3px;">${ed('v3ExIntro', L(introKo, introEn))}</p>
                               <table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;">
-                                ${execItem('v3Ex1T2', L('1. C브랜드 Visibility 현황 분석 – TV·세탁기·냉장고를 중심으로', '1. C-brand Visibility analysis — centered on TV, Washer and Refrigerator'), 'v3Ex1B2', L(ex1Ko, ex1En))}
-                                ${execItem('v3Ex2T2', L('2. 인용 출처의 변화 - 브랜드 닷컴의 인용비중 증가/PDP를 대신하여 설명형 콘텐츠(Buying Guide/Support) 인용 확대', '2. Shift in citation sources — brand dotcom share up; explanatory content (Buying Guide/Support) cited in place of PDP'), 'v3Ex2B2', L(ex2Ko, ex2En))}
+                                ${execItem('v3Ex1T2', L('1. C브랜드 Visibility 현황 분석 – TV·세탁기·냉장고를 중심으로', '1. C-brand Visibility analysis — centered on TV, Washer and Refrigerator'), 'v3Ex1B2', L(ex1Ko, ex1En), llmTrendChartHtml() + bodyCont('v3Ex1B2b') + v3CaseCardHtml())}
+                                ${execItem('v3Ex2T2', L('2. 인용 출처의 변화 - 브랜드 닷컴의 인용비중 증가/PDP를 대신하여 설명형 콘텐츠(Buying Guide/Support) 인용 확대', '2. Shift in citation sources — brand dotcom share up; explanatory content (Buying Guide/Support) cited in place of PDP'), 'v3Ex2B2', L(ex2Ko, ex2En), v3Ex2NoteHtml)}
                                 ${execItem('v3Ex3T2', L('3. Readabilty 평가 체계 도입 및 개선 필요 영역 보완 지속', '3. Introducing the Readability framework and continuing to close gaps'), 'v3Ex3B2', L(ex3Ko, ex3En))}
                               </table>`
   return { execHtml }
@@ -3445,7 +3522,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
                               ${(meta.showTotalInsight !== false && (meta.totalInsight || _ED)) ? edBlock('totalInsight', meta.totalInsight, { size: 13, lh: 22, color: '#FFFFFF', accent: '#FF9EBB', lang }) : ''}
                               ${(meta.showTotalInsight !== false && (meta.totalInsight || _ED)) && meta.showInsightV2 ? '<table border="0" cellpadding="0" cellspacing="0" width="100%"><tr><td height="14" style="font-size:0;line-height:0;">&nbsp;</td></tr></table>' : ''}
                               ${meta.showInsightV2 ? insightV2Parts(meta, lang, products).execHtml : ''}
-                              ${meta.showInsightV3 ? insightV3Parts(meta, lang, productsCnty).execHtml : ''}
+                              ${meta.showInsightV3 ? insightV3Parts(meta, lang, productsCnty, options?.assetBase || '').execHtml : ''}
                             </td>
                           </tr>
                         </table>` : ''}
