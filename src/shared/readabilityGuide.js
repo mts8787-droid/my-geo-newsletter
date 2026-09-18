@@ -170,7 +170,7 @@ export const GUIDE = {
     action: L('가장 큰 제목을 페이지당 하나만 두고, 로고나 배너에 붙은 큰 제목 태그를 뗍니다.', 'Keep one top-level heading per page and strip the ones attached to logos or banners.'),
     byPt: { newsroom: { where: L('기사 발행 템플릿', 'Article publishing template'), action: L('기사 제목만 가장 큰 제목으로 두고 사이트 로고에 붙은 것을 뗍니다.', 'Keep only the article title as the top-level heading and remove the one on the site logo.') } },
   },
-  seo_robots: {
+  seo_indexable: {
     what: L('검색·AI 수집을 막는 설정이 걸려 있지 않은지 봅니다.', 'Whether anything blocks search and AI collection.'),
     why: L('이 설정이 켜져 있으면 그 페이지는 AI 색인에서 완전히 빠집니다.', 'If it is on, the page drops out of AI indexing entirely.'),
     where: L('각 페이지별 Meta 태그 영역 · 서버 응답 헤더', 'Per-page meta tag area · server response headers'),

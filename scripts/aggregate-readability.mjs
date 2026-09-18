@@ -297,7 +297,9 @@ const OR_GROUPS = [
   //   상류가 2026-08-31 부터 이 통합을 자체 항목 seo_indexable 로 emit 한다. 재감사한
   //   국가는 seo_indexable, 아직 안 한 국가는 seo_robots(+_hdr) 로 같은 스냅샷에 섞인다.
   //   셋을 한 그룹에 넣어 대표(seo_robots) 한 행으로 몰면 양쪽 포맷이 그대로 합쳐진다.
-  { primary: 'seo_robots', members: ['seo_robots', 'seo_robots_hdr', 'seo_indexable'], label: '#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)' },
+  //   2026-09-18: 전 국가 재감사로 상류가 seo_indexable 만 내보내게 됐다. 대표를
+  //   seo_indexable 로 옮기고 구 키(seo_robots·_hdr)는 과거 스냅샷 호환용으로 남긴다.
+  { primary: 'seo_indexable', members: ['seo_indexable', 'seo_robots', 'seo_robots_hdr'], label: '#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)' },
 ]
 // AND 통합 체크 — 모든 멤버가 통과해야 통과 (대표 체크에 결과를 몰고 나머지는 na).
 //   #25 Product 풀세트: 상류가 Product(6필드)와 Offer(#43, 3필드) 두 체크로 쪼개 채점하는데,
