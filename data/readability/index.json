@@ -75,7 +75,7 @@
     },
     {
       "date": "2026-09-16",
-      "generatedAt": "2026-09-20T11:15:58.839Z",
+      "generatedAt": "2026-09-20T18:53:22.008Z",
       "countries": [
         "au",
         "br",
@@ -89,8 +89,8 @@
         "us",
         "vn"
       ],
-      "overallAvg": 77.8,
-      "urlCount": 7988
+      "overallAvg": 79.2,
+      "urlCount": 8184
     }
   ]
 }
