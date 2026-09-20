@@ -188,7 +188,9 @@ const PT_SCOPED_CHECKS = {
 // about  : 회사소개 — 상류가 2026-08-28 부터 감사 자체를 안 한다(SKIP_TYPES).
 // content: 상류에서 experience(익스피어리언스)로 좁혀졌다. /experience/ 경로가 아닌
 //          잔여 content 는 상류 재분류상 unknown 이므로 집계에서 뺀다.
-const EXCLUDED_PT = { unknown: 1, home: 1, business: 1, promotion: 1, about: 1, content: 1 }
+// support: 서포트-일반 — 아웃데이트된 URL 이 많아 집계·감사 모두 제외 (사용자 지시,
+//          2026-09-20). support_troubleshoot(트러블슈팅)은 별개 타입으로 유지.
+const EXCLUDED_PT = { unknown: 1, home: 1, business: 1, promotion: 1, about: 1, content: 1, support: 1 }
 
 // 영구 제외 URL 패턴 — 브랜드 스토리/캠페인 계열. GEO KPI 대상이 아니다
 // (사용자 결정 2026-08-30. 상류 my-geo-audit 의 수집 목록에서도 동일하게 제외 예정).
