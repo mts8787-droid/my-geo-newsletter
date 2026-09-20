@@ -316,6 +316,8 @@ const ABSORBED_CHECKS = Object.fromEntries(
 // perf_ttfb 는 실제 채점에 PSI 를 썼을 때만 '(PSI)' 를 붙인다 — 라벨과 측정 출처를 일치시킴.
 function checkLabelOverride(cid, ctx) {
   if (cid === 'ai_citable') return `#36 Citable Sentence ≥ ${CITABLE_MIN_COUNT}개`
+  // #15: 2026-09-17 경로 일치(self-ref) → host 일치로 완화. 구 스냅샷 라벨 교정.
+  if (cid === 'seo_canonical') return '#15 Canonical (동일 host)'
   if (cid !== 'perf_ttfb') return null
   return `#1 TTFB < ${TTFB_MAX_MS}ms${ctx && ctx.psi ? ' (PSI)' : ''}`
 }

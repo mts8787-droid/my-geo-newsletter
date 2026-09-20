@@ -95,14 +95,14 @@
 
 ### #10 — Semantic HTML
 - **정의**: 콘텐츠의 역할과 구조를 명확하게 표현하는 의미 기반 HTML 요소 사용
-- **PASS**: Main + 랜드마크 3개 이상
-- **측정방법**: main, nav, header, footer, article, section, aside
+- **PASS**: 헤딩+랜드마크 합계 8개 이상 (main 필수 아님)
+- **측정방법**: main(role=main 인정), nav, header, footer, article, section, aside + 헤딩 합산
 - **check id**: `a11y_semantic`
 
 ### #11 — Heading Hierarchy
 - **정의**: 페이지의 제목과 하위 내용을 구분하는 Heading Tag의 계층 구조 적용 여부
-- **PASS**: 위반 0개
-- **측정방법**: h1 → h3 점프 등 탐지
+- **PASS**: 본문 헤딩 역순 0건
+- **측정방법**: 본문 첫 헤딩보다 상위 레벨이 뒤에 오는 역순 탐지 (GNB·푸터 헤딩 제외, 레벨 점프 허용)
 - **check id**: `a11y_heading_hier`
 
 ### #12 — ARIA Labels
@@ -131,8 +131,8 @@
 
 ### #15 — Canonical
 - **정의**: 검색엔진에 대표 페이지를 알려주는 URL 설정
-- **PASS**: self-referencing
-- **측정방법**: link[rel="canonical"] HTML 파싱 후 검증
+- **PASS**: 존재 + 동일 host (경로 차이 허용)
+- **측정방법**: link[rel="canonical"] host 일치 검증
 - **check id**: `seo_canonical`
 
 ### #16 — H1
@@ -186,7 +186,7 @@
 ### #23 — Schema Types - FAQ
 - **정의**: 자주 묻는 질문과 답변을 AI가 읽을 수 있게 표기
 - **PASS**: JSON-LD 필수요소 모두 존재, 파싱 성공
-- **측정방법**: mainEntity 존재
+- **측정방법**: mainEntity 존재 — FAQ 섹션이 있는 페이지만 평가(없으면 N/A)
 - **check id**: `ai_schema_faq`
 
 ### #24 — Schema Types - Collectionpage
@@ -204,25 +204,25 @@
 ### #26 — Schema Types - ImageObject
 - **정의**: 이미지의 주소·이름·설명 등 이미지 정보를 AI가 읽을 수 있게 표기
 - **PASS**: JSON-LD 필수요소 모두 존재, 파싱 성공
-- **측정방법**: url, name, description, uploadDate 존재
+- **측정방법**: url, name, description, uploadDate 존재 — 본문 콘텐츠 이미지가 있는 페이지만 평가(없으면 N/A)
 - **check id**: `ai_schema_image`
 
 ### #27 — Schema Types - VideoObject
 - **정의**: 영상의 주소·제목·썸네일 등 영상 정보를 AI가 읽을 수 있게 표기
 - **PASS**: JSON-LD 필수요소 모두 존재, 파싱 성공
-- **측정방법**: url, name, description, thumbnailUrl 존재
+- **측정방법**: url, name, description, thumbnailUrl 존재 — 영상이 있는 페이지만 평가(없으면 N/A)
 - **check id**: `ai_schema_video`
 
 ### #28 — Schema Types - HowTo
 - **정의**: 준비물과 단계로 구성된 사용법·설치법 안내를 AI가 읽을 수 있게 표기
 - **PASS**: JSON-LD 필수요소 모두 존재, 파싱 성공
-- **측정방법**: HowToSupply / HowToStep 존재
+- **측정방법**: HowToSupply / HowToStep 존재 — 절차(단계 목록)가 있는 트러블슈팅 페이지만 평가(없으면 N/A)
 - **check id**: `ai_schema_howto`
 
 ### #29 — Schema Types - Article
 - **정의**: 기사·콘텐츠의 제목·작성자·발행처·본문을 AI가 읽을 수 있게 표기
 - **PASS**: JSON-LD 필수요소 모두 존재, 파싱 성공
-- **측정방법**: headline, author, publisher, articleBody 존재
+- **측정방법**: headline, author, publisher, articleBody 존재 — 기사 구조가 있는 페이지만 평가(없으면 N/A)
 - **check id**: `ai_schema_article`
 
 ### #30 — Schema Types - digitalDocument
@@ -260,19 +260,19 @@
 ### #34 — Author/Source
 - **정의**: 내용을 누가 언제 썼는지 알 수 있는 저자 또는 출처·날짜 표기
 - **PASS**: 저자 또는 (출처+날짜) 존재
-- **측정방법**: meta author, byline, datePublished
+- **측정방법**: JSON-LD author 또는 (datePublished + publisher) — newsroom·press_media 타입만 평가
 - **check id**: `ai_author_source`
 
 ### #35 — Summary Box*
 - **정의**: 본문 앞부분에 핵심 내용을 짧게 요약해 둔 영역이 있는지
 - **PASS**: 1개 이상 존재
-- **측정방법**: TL;DR, Key Takeaways, Highlights, Abstract
+- **측정방법**: 헤딩 문구(At a Glance·요약 등 다국어) 또는 요약 블록 p.info-desc — class명 매칭은 오탐으로 제거
 - **check id**: `ai_summary_box`
 - **분류**: Contents 체크 항목
 
 ### #36 — Citable Sentences*
-- **정의**: 숫자·연도·통계처럼 AI가 근거로 인용하기 좋은 문장의 비중
-- **PASS**: 밀도 ≥ 10%
+- **정의**: 숫자·연도·통계처럼 AI가 근거로 인용하기 좋은 문장이 충분히 있는지
+- **PASS**: 5개 이상
 - **측정방법**: 숫자, 연도, 통계, 연구 키워드 포함 문장
 - **check id**: `ai_citable`
 - **분류**: Contents 체크 항목
@@ -303,8 +303,8 @@
 
 ### #40 — Image File Name
 - **정의**: 이미지 파일 이름만으로 브랜드·제품을 알아볼 수 있는지
-- **PASS**: 브랜드명 포함
-- **측정방법**: 브랜드명 포함 등 이미지 파일 이름 규칙 검증
+- **PASS**: 브랜드·제품 키워드 포함 이미지 ≥ 30%
+- **측정방법**: 이미지 파일명 키워드 검증 (logo·icon 파일 제외)
 - **check id**: `ai_image_filename`
 
 ### #41 — Status Code (200)
@@ -315,8 +315,8 @@
 
 ### #42 — Status Code (Soft 404)
 - **정의**: 정상 응답인데 실제로는 내용이 비어 있는 페이지인지
-- **PASS**: 200 Status Page 중 HTML Text Count 기준 이상(200자)
-- **측정방법**: Status Code 및 HTML text 일정 수 미달 검증
+- **PASS**: 200 응답 본문에 404 안내 문구 없음
+- **측정방법**: 본문 404 문구 탐지 (본문 200자 미만은 보조 신호)
 - **check id**: `ai_soft_404`
 
 ### #43 — llms.txt / llms-corepage.txt

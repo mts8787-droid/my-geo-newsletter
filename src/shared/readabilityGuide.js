@@ -300,10 +300,10 @@ export const GUIDE = {
     byPt: { support_troubleshoot: { where: L('트러블슈팅 문서 상단', 'Top of troubleshooting documents'), action: L('문서 맨 위에 "요약: 증상 / 원인 / 해결" 세 줄 상자를 둡니다.', 'Put a three-line "Summary: symptom / cause / fix" box at the very top.') } },
   },
   ai_citable: {
-    what: L('숫자·연도·통계가 들어간 문장이 본문의 10% 이상인지 봅니다.', 'Whether at least 10% of sentences contain numbers, years, or statistics.'),
+    what: L('숫자·연도·통계가 들어간 문장이 본문에 5개 이상 있는지 봅니다.', 'Whether the body carries at least five sentences with numbers, years, or statistics.'),
     why: L('구체적인 수치가 담긴 문장을 AI가 근거로 우선 인용합니다.', 'AI preferentially cites sentences carrying concrete figures.'),
     where: L('콘텐츠 본문 작성 가이드', 'Content writing guidelines'),
-    action: L('본문에 수치·연도·비교 데이터를 담은 문장 비중을 늘립니다.', 'Increase the share of sentences carrying figures, years, and comparisons.'),
+    action: L('본문에 수치·연도·비교 데이터를 담은 문장을 늘립니다.', 'Add more sentences carrying figures, years, and comparisons.'),
     byPt: { pdp: { where: L('PDP 제품 설명 영역', 'PDP product description area'), action: L('스펙 수치를 표에만 넣지 말고 본문 문장으로도 풀어 씁니다.', 'Do not confine spec figures to tables — write them into body sentences too.') } },
   },
 

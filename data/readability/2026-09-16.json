@@ -1,6 +1,6 @@
 {
   "date": "2026-09-16",
-  "generatedAt": "2026-09-20T00:51:13.698Z",
+  "generatedAt": "2026-09-20T11:07:31.989Z",
   "source": "run_results",
   "categoryLabels": {
     "performance": "사이트 성능",
@@ -104,7 +104,7 @@
           "applicable": 1001
         },
         "seo_canonical": {
-          "label": "#15 Canonical self-ref",
+          "label": "#15 Canonical (동일 host)",
           "cat": "seo",
           "pass": 967,
           "applicable": 1001
@@ -341,7 +341,7 @@
               "applicable": 485
             },
             "seo_canonical": {
-              "label": "#15 Canonical self-ref",
+              "label": "#15 Canonical (동일 host)",
               "cat": "seo",
               "pass": 485,
               "applicable": 485
@@ -578,7 +578,7 @@
               "applicable": 86
             },
             "seo_canonical": {
-              "label": "#15 Canonical self-ref",
+              "label": "#15 Canonical (동일 host)",
               "cat": "seo",
               "pass": 86,
               "applicable": 86
@@ -815,7 +815,7 @@
               "applicable": 18
             },
             "seo_canonical": {
-              "label": "#15 Canonical self-ref",
+              "label": "#15 Canonical (동일 host)",
               "cat": "seo",
               "pass": 18,
               "applicable": 18
@@ -1052,7 +1052,7 @@
               "applicable": 12
             },
             "seo_canonical": {
-              "label": "#15 Canonical self-ref",
+              "label": "#15 Canonical (동일 host)",
               "cat": "seo",
               "pass": 12,
               "applicable": 12
@@ -1289,7 +1289,7 @@
               "applicable": 100
             },
             "seo_canonical": {
-              "label": "#15 Canonical self-ref",
+              "label": "#15 Canonical (동일 host)",
               "cat": "seo",
               "pass": 100,
               "applicable": 100
@@ -1526,7 +1526,7 @@
               "applicable": 100
             },
             "seo_canonical": {
-              "label": "#15 Canonical self-ref",
+              "label": "#15 Canonical (동일 host)",
               "cat": "seo",
               "pass": 100,
               "applicable": 100
@@ -1763,7 +1763,7 @@
               "applicable": 100
             },
             "seo_canonical": {
-              "label": "#15 Canonical self-ref",
+              "label": "#15 Canonical (동일 host)",
               "cat": "seo",
               "pass": 66,
               "applicable": 100
@@ -2000,7 +2000,7 @@
               "applicable": 100
             },
             "seo_canonical": {
-              "label": "#15 Canonical self-ref",
+              "label": "#15 Canonical (동일 host)",
               "cat": "seo",
               "pass": 100,
               "applicable": 100
@@ -2289,7 +2289,7 @@
           "applicable": 913
         },
         "seo_canonical": {
-          "label": "#15 Canonical self-ref",
+          "label": "#15 Canonical (동일 host)",
           "cat": "seo",
           "pass": 867,
           "applicable": 913
@@ -2526,7 +2526,7 @@
               "applicable": 423
             },
             "seo_canonical": {
-              "label": "#15 Canonical self-ref",
+              "label": "#15 Canonical (동일 host)",
               "cat": "seo",
               "pass": 423,
               "applicable": 423
@@ -2763,7 +2763,7 @@
               "applicable": 26
             },
             "seo_canonical": {
-              "label": "#15 Canonical self-ref",
+              "label": "#15 Canonical (동일 host)",
               "cat": "seo",
               "pass": 26,
               "applicable": 26
@@ -3000,7 +3000,7 @@
               "applicable": 60
             },
             "seo_canonical": {
-              "label": "#15 Canonical self-ref",
+              "label": "#15 Canonical (동일 host)",
               "cat": "seo",
               "pass": 60,
               "applicable": 60
@@ -3237,7 +3237,7 @@
               "applicable": 50
             },
             "seo_canonical": {
-              "label": "#15 Canonical self-ref",
+              "label": "#15 Canonical (동일 host)",
               "cat": "seo",
               "pass": 50,
               "applicable": 50
@@ -3474,7 +3474,7 @@
               "applicable": 59
             },
             "seo_canonical": {
-              "label": "#15 Canonical self-ref",
+              "label": "#15 Canonical (동일 host)",
               "cat": "seo",
               "pass": 59,
               "applicable": 59
@@ -3711,7 +3711,7 @@
               "applicable": 100
             },
             "seo_canonical": {
-              "label": "#15 Canonical self-ref",
+              "label": "#15 Canonical (동일 host)",
               "cat": "seo",
               "pass": 100,
               "applicable": 100
@@ -3948,7 +3948,7 @@
               "applicable": 95
             },
             "seo_canonical": {
-              "label": "#15 Canonical self-ref",
+              "label": "#15 Canonical (동일 host)",
               "cat": "seo",
               "pass": 49,
               "applicable": 95
@@ -4185,7 +4185,7 @@
               "applicable": 100
             },
             "seo_canonical": {
-              "label": "#15 Canonical self-ref",
+              "label": "#15 Canonical (동일 host)",
               "cat": "seo",
               "pass": 100,
               "applicable": 100
@@ -4474,7 +4474,7 @@
           "applicable": 830
         },
         "seo_canonical": {
-          "label": "#15 Canonical self-ref",
+          "label": "#15 Canonical (동일 host)",
           "cat": "seo",
           "pass": 791,
           "applicable": 830
@@ -4711,7 +4711,7 @@
               "applicable": 442
             },
             "seo_canonical": {
-              "label": "#15 Canonical self-ref",
+              "label": "#15 Canonical (동일 host)",
               "cat": "seo",
               "pass": 442,
               "applicable": 442
@@ -4948,7 +4948,7 @@
               "applicable": 22
             },
             "seo_canonical": {
-              "label": "#15 Canonical self-ref",
+              "label": "#15 Canonical (동일 host)",
               "cat": "seo",
               "pass": 22,
               "applicable": 22
@@ -5185,7 +5185,7 @@
               "applicable": 48
             },
             "seo_canonical": {
-              "label": "#15 Canonical self-ref",
+              "label": "#15 Canonical (동일 host)",
               "cat": "seo",
               "pass": 48,
               "applicable": 48
@@ -5422,7 +5422,7 @@
               "applicable": 44
             },
             "seo_canonical": {
-              "label": "#15 Canonical self-ref",
+              "label": "#15 Canonical (동일 host)",
               "cat": "seo",
               "pass": 44,
               "applicable": 44
@@ -5659,7 +5659,7 @@
               "applicable": 71
             },
             "seo_canonical": {
-              "label": "#15 Canonical self-ref",
+              "label": "#15 Canonical (동일 host)",
               "cat": "seo",
               "pass": 71,
               "applicable": 71
@@ -5896,7 +5896,7 @@
               "applicable": 25
             },
             "seo_canonical": {
-              "label": "#15 Canonical self-ref",
+              "label": "#15 Canonical (동일 host)",
               "cat": "seo",
               "pass": 25,
               "applicable": 25
@@ -6133,7 +6133,7 @@
               "applicable": 78
             },
             "seo_canonical": {
-              "label": "#15 Canonical self-ref",
+              "label": "#15 Canonical (동일 host)",
               "cat": "seo",
               "pass": 39,
               "applicable": 78
@@ -6370,7 +6370,7 @@
               "applicable": 100
             },
             "seo_canonical": {
-              "label": "#15 Canonical self-ref",
+              "label": "#15 Canonical (동일 host)",
               "cat": "seo",
               "pass": 100,
               "applicable": 100
@@ -6659,7 +6659,7 @@
           "applicable": 887
         },
         "seo_canonical": {
-          "label": "#15 Canonical self-ref",
+          "label": "#15 Canonical (동일 host)",
           "cat": "seo",
           "pass": 864,
           "applicable": 887
@@ -6896,7 +6896,7 @@
               "applicable": 366
             },
             "seo_canonical": {
-              "label": "#15 Canonical self-ref",
+              "label": "#15 Canonical (동일 host)",
               "cat": "seo",
               "pass": 366,
               "applicable": 366
@@ -7133,7 +7133,7 @@
               "applicable": 21
             },
             "seo_canonical": {
-              "label": "#15 Canonical self-ref",
+              "label": "#15 Canonical (동일 host)",
               "cat": "seo",
               "pass": 21,
               "applicable": 21
@@ -7370,7 +7370,7 @@
               "applicable": 100
             },
             "seo_canonical": {
-              "label": "#15 Canonical self-ref",
+              "label": "#15 Canonical (동일 host)",
               "cat": "seo",
               "pass": 100,
               "applicable": 100
@@ -7607,7 +7607,7 @@
               "applicable": 100
             },
             "seo_canonical": {
-              "label": "#15 Canonical self-ref",
+              "label": "#15 Canonical (동일 host)",
               "cat": "seo",
               "pass": 100,
               "applicable": 100
@@ -7844,7 +7844,7 @@
               "applicable": 100
             },
             "seo_canonical": {
-              "label": "#15 Canonical self-ref",
+              "label": "#15 Canonical (동일 host)",
               "cat": "seo",
               "pass": 100,
               "applicable": 100
@@ -8081,7 +8081,7 @@
               "applicable": 100
             },
             "seo_canonical": {
-              "label": "#15 Canonical self-ref",
+              "label": "#15 Canonical (동일 host)",
               "cat": "seo",
               "pass": 77,
               "applicable": 100
@@ -8318,7 +8318,7 @@
               "applicable": 100
             },
             "seo_canonical": {
-              "label": "#15 Canonical self-ref",
+              "label": "#15 Canonical (동일 host)",
               "cat": "seo",
               "pass": 100,
               "applicable": 100
@@ -8607,7 +8607,7 @@
           "applicable": 744
         },
         "seo_canonical": {
-          "label": "#15 Canonical self-ref",
+          "label": "#15 Canonical (동일 host)",
           "cat": "seo",
           "pass": 695,
           "applicable": 744
@@ -8844,7 +8844,7 @@
               "applicable": 404
             },
             "seo_canonical": {
-              "label": "#15 Canonical self-ref",
+              "label": "#15 Canonical (동일 host)",
               "cat": "seo",
               "pass": 404,
               "applicable": 404
@@ -9081,7 +9081,7 @@
               "applicable": 19
             },
             "seo_canonical": {
-              "label": "#15 Canonical self-ref",
+              "label": "#15 Canonical (동일 host)",
               "cat": "seo",
               "pass": 19,
               "applicable": 19
@@ -9318,7 +9318,7 @@
               "applicable": 17
             },
             "seo_canonical": {
-              "label": "#15 Canonical self-ref",
+              "label": "#15 Canonical (동일 host)",
               "cat": "seo",
               "pass": 17,
               "applicable": 17
@@ -9555,7 +9555,7 @@
               "applicable": 38
             },
             "seo_canonical": {
-              "label": "#15 Canonical self-ref",
+              "label": "#15 Canonical (동일 host)",
               "cat": "seo",
               "pass": 38,
               "applicable": 38
@@ -9792,7 +9792,7 @@
               "applicable": 66
             },
             "seo_canonical": {
-              "label": "#15 Canonical self-ref",
+              "label": "#15 Canonical (동일 host)",
               "cat": "seo",
               "pass": 66,
               "applicable": 66
@@ -10029,7 +10029,7 @@
               "applicable": 100
             },
             "seo_canonical": {
-              "label": "#15 Canonical self-ref",
+              "label": "#15 Canonical (동일 host)",
               "cat": "seo",
               "pass": 51,
               "applicable": 100
@@ -10266,7 +10266,7 @@
               "applicable": 100
             },
             "seo_canonical": {
-              "label": "#15 Canonical self-ref",
+              "label": "#15 Canonical (동일 host)",
               "cat": "seo",
               "pass": 100,
               "applicable": 100
@@ -10554,7 +10554,7 @@
           "applicable": 100
         },
         "seo_canonical": {
-          "label": "#15 Canonical self-ref",
+          "label": "#15 Canonical (동일 host)",
           "cat": "seo",
           "pass": 100,
           "applicable": 100
@@ -10791,7 +10791,7 @@
               "applicable": 100
             },
             "seo_canonical": {
-              "label": "#15 Canonical self-ref",
+              "label": "#15 Canonical (동일 host)",
               "cat": "seo",
               "pass": 100,
               "applicable": 100
@@ -11080,7 +11080,7 @@
           "applicable": 847
         },
         "seo_canonical": {
-          "label": "#15 Canonical self-ref",
+          "label": "#15 Canonical (동일 host)",
           "cat": "seo",
           "pass": 817,
           "applicable": 847
@@ -11317,7 +11317,7 @@
               "applicable": 372
             },
             "seo_canonical": {
-              "label": "#15 Canonical self-ref",
+              "label": "#15 Canonical (동일 host)",
               "cat": "seo",
               "pass": 372,
               "applicable": 372
@@ -11554,7 +11554,7 @@
               "applicable": 15
             },
             "seo_canonical": {
-              "label": "#15 Canonical self-ref",
+              "label": "#15 Canonical (동일 host)",
               "cat": "seo",
               "pass": 15,
               "applicable": 15
@@ -11791,7 +11791,7 @@
               "applicable": 100
             },
             "seo_canonical": {
-              "label": "#15 Canonical self-ref",
+              "label": "#15 Canonical (동일 host)",
               "cat": "seo",
               "pass": 100,
               "applicable": 100
@@ -12028,7 +12028,7 @@
               "applicable": 60
             },
             "seo_canonical": {
-              "label": "#15 Canonical self-ref",
+              "label": "#15 Canonical (동일 host)",
               "cat": "seo",
               "pass": 60,
               "applicable": 60
@@ -12265,7 +12265,7 @@
               "applicable": 100
             },
             "seo_canonical": {
-              "label": "#15 Canonical self-ref",
+              "label": "#15 Canonical (동일 host)",
               "cat": "seo",
               "pass": 100,
               "applicable": 100
@@ -12502,7 +12502,7 @@
               "applicable": 100
             },
             "seo_canonical": {
-              "label": "#15 Canonical self-ref",
+              "label": "#15 Canonical (동일 host)",
               "cat": "seo",
               "pass": 70,
               "applicable": 100
@@ -12739,7 +12739,7 @@
               "applicable": 100
             },
             "seo_canonical": {
-              "label": "#15 Canonical self-ref",
+              "label": "#15 Canonical (동일 host)",
               "cat": "seo",
               "pass": 100,
               "applicable": 100
@@ -13028,7 +13028,7 @@
           "applicable": 907
         },
         "seo_canonical": {
-          "label": "#15 Canonical self-ref",
+          "label": "#15 Canonical (동일 host)",
           "cat": "seo",
           "pass": 867,
           "applicable": 907
@@ -13265,7 +13265,7 @@
               "applicable": 424
             },
             "seo_canonical": {
-              "label": "#15 Canonical self-ref",
+              "label": "#15 Canonical (동일 host)",
               "cat": "seo",
               "pass": 424,
               "applicable": 424
@@ -13502,7 +13502,7 @@
               "applicable": 24
             },
             "seo_canonical": {
-              "label": "#15 Canonical self-ref",
+              "label": "#15 Canonical (동일 host)",
               "cat": "seo",
               "pass": 24,
               "applicable": 24
@@ -13739,7 +13739,7 @@
               "applicable": 34
             },
             "seo_canonical": {
-              "label": "#15 Canonical self-ref",
+              "label": "#15 Canonical (동일 host)",
               "cat": "seo",
               "pass": 34,
               "applicable": 34
@@ -13976,7 +13976,7 @@
               "applicable": 40
             },
             "seo_canonical": {
-              "label": "#15 Canonical self-ref",
+              "label": "#15 Canonical (동일 host)",
               "cat": "seo",
               "pass": 40,
               "applicable": 40
@@ -14213,7 +14213,7 @@
               "applicable": 100
             },
             "seo_canonical": {
-              "label": "#15 Canonical self-ref",
+              "label": "#15 Canonical (동일 host)",
               "cat": "seo",
               "pass": 100,
               "applicable": 100
@@ -14450,7 +14450,7 @@
               "applicable": 100
             },
             "seo_canonical": {
-              "label": "#15 Canonical self-ref",
+              "label": "#15 Canonical (동일 host)",
               "cat": "seo",
               "pass": 100,
               "applicable": 100
@@ -14687,7 +14687,7 @@
               "applicable": 85
             },
             "seo_canonical": {
-              "label": "#15 Canonical self-ref",
+              "label": "#15 Canonical (동일 host)",
               "cat": "seo",
               "pass": 45,
               "applicable": 85
@@ -14924,7 +14924,7 @@
               "applicable": 100
             },
             "seo_canonical": {
-              "label": "#15 Canonical self-ref",
+              "label": "#15 Canonical (동일 host)",
               "cat": "seo",
               "pass": 100,
               "applicable": 100
@@ -15213,7 +15213,7 @@
           "applicable": 1026
         },
         "seo_canonical": {
-          "label": "#15 Canonical self-ref",
+          "label": "#15 Canonical (동일 host)",
           "cat": "seo",
           "pass": 962,
           "applicable": 1026
@@ -15450,7 +15450,7 @@
               "applicable": 424
             },
             "seo_canonical": {
-              "label": "#15 Canonical self-ref",
+              "label": "#15 Canonical (동일 host)",
               "cat": "seo",
               "pass": 424,
               "applicable": 424
@@ -15687,7 +15687,7 @@
               "applicable": 33
             },
             "seo_canonical": {
-              "label": "#15 Canonical self-ref",
+              "label": "#15 Canonical (동일 host)",
               "cat": "seo",
               "pass": 33,
               "applicable": 33
@@ -15924,7 +15924,7 @@
               "applicable": 93
             },
             "seo_canonical": {
-              "label": "#15 Canonical self-ref",
+              "label": "#15 Canonical (동일 host)",
               "cat": "seo",
               "pass": 93,
               "applicable": 93
@@ -16161,7 +16161,7 @@
               "applicable": 76
             },
             "seo_canonical": {
-              "label": "#15 Canonical self-ref",
+              "label": "#15 Canonical (동일 host)",
               "cat": "seo",
               "pass": 76,
               "applicable": 76
@@ -16398,7 +16398,7 @@
               "applicable": 100
             },
             "seo_canonical": {
-              "label": "#15 Canonical self-ref",
+              "label": "#15 Canonical (동일 host)",
               "cat": "seo",
               "pass": 100,
               "applicable": 100
@@ -16635,7 +16635,7 @@
               "applicable": 100
             },
             "seo_canonical": {
-              "label": "#15 Canonical self-ref",
+              "label": "#15 Canonical (동일 host)",
               "cat": "seo",
               "pass": 100,
               "applicable": 100
@@ -16872,7 +16872,7 @@
               "applicable": 100
             },
             "seo_canonical": {
-              "label": "#15 Canonical self-ref",
+              "label": "#15 Canonical (동일 host)",
               "cat": "seo",
               "pass": 36,
               "applicable": 100
@@ -17109,7 +17109,7 @@
               "applicable": 100
             },
             "seo_canonical": {
-              "label": "#15 Canonical self-ref",
+              "label": "#15 Canonical (동일 host)",
               "cat": "seo",
               "pass": 100,
               "applicable": 100
@@ -17397,7 +17397,7 @@
           "applicable": 889
         },
         "seo_canonical": {
-          "label": "#15 Canonical self-ref",
+          "label": "#15 Canonical (동일 host)",
           "cat": "seo",
           "pass": 882,
           "applicable": 889
@@ -17634,7 +17634,7 @@
               "applicable": 492
             },
             "seo_canonical": {
-              "label": "#15 Canonical self-ref",
+              "label": "#15 Canonical (동일 host)",
               "cat": "seo",
               "pass": 490,
               "applicable": 492
@@ -17871,7 +17871,7 @@
               "applicable": 100
             },
             "seo_canonical": {
-              "label": "#15 Canonical self-ref",
+              "label": "#15 Canonical (동일 host)",
               "cat": "seo",
               "pass": 99,
               "applicable": 100
@@ -18108,7 +18108,7 @@
               "applicable": 3
             },
             "seo_canonical": {
-              "label": "#15 Canonical self-ref",
+              "label": "#15 Canonical (동일 host)",
               "cat": "seo",
               "pass": 3,
               "applicable": 3
@@ -18345,7 +18345,7 @@
               "applicable": 94
             },
             "seo_canonical": {
-              "label": "#15 Canonical self-ref",
+              "label": "#15 Canonical (동일 host)",
               "cat": "seo",
               "pass": 94,
               "applicable": 94
@@ -18582,7 +18582,7 @@
               "applicable": 100
             },
             "seo_canonical": {
-              "label": "#15 Canonical self-ref",
+              "label": "#15 Canonical (동일 host)",
               "cat": "seo",
               "pass": 96,
               "applicable": 100
@@ -18819,7 +18819,7 @@
               "applicable": 100
             },
             "seo_canonical": {
-              "label": "#15 Canonical self-ref",
+              "label": "#15 Canonical (동일 host)",
               "cat": "seo",
               "pass": 100,
               "applicable": 100
@@ -19107,7 +19107,7 @@
           "applicable": 746
         },
         "seo_canonical": {
-          "label": "#15 Canonical self-ref",
+          "label": "#15 Canonical (동일 host)",
           "cat": "seo",
           "pass": 740,
           "applicable": 746
@@ -19344,7 +19344,7 @@
               "applicable": 441
             },
             "seo_canonical": {
-              "label": "#15 Canonical self-ref",
+              "label": "#15 Canonical (동일 host)",
               "cat": "seo",
               "pass": 441,
               "applicable": 441
@@ -19581,7 +19581,7 @@
               "applicable": 55
             },
             "seo_canonical": {
-              "label": "#15 Canonical self-ref",
+              "label": "#15 Canonical (동일 host)",
               "cat": "seo",
               "pass": 55,
               "applicable": 55
@@ -19818,7 +19818,7 @@
               "applicable": 3
             },
             "seo_canonical": {
-              "label": "#15 Canonical self-ref",
+              "label": "#15 Canonical (동일 host)",
               "cat": "seo",
               "pass": 3,
               "applicable": 3
@@ -20055,7 +20055,7 @@
               "applicable": 51
             },
             "seo_canonical": {
-              "label": "#15 Canonical self-ref",
+              "label": "#15 Canonical (동일 host)",
               "cat": "seo",
               "pass": 51,
               "applicable": 51
@@ -20292,7 +20292,7 @@
               "applicable": 52
             },
             "seo_canonical": {
-              "label": "#15 Canonical self-ref",
+              "label": "#15 Canonical (동일 host)",
               "cat": "seo",
               "pass": 52,
               "applicable": 52
@@ -20529,7 +20529,7 @@
               "applicable": 44
             },
             "seo_canonical": {
-              "label": "#15 Canonical self-ref",
+              "label": "#15 Canonical (동일 host)",
               "cat": "seo",
               "pass": 38,
               "applicable": 44
@@ -20766,7 +20766,7 @@
               "applicable": 100
             },
             "seo_canonical": {
-              "label": "#15 Canonical self-ref",
+              "label": "#15 Canonical (동일 host)",
               "cat": "seo",
               "pass": 100,
               "applicable": 100
@@ -21054,7 +21054,7 @@
         "applicable": 8890
       },
       "seo_canonical": {
-        "label": "#15 Canonical self-ref",
+        "label": "#15 Canonical (동일 host)",
         "cat": "seo",
         "pass": 8552,
         "applicable": 8890
@@ -21291,7 +21291,7 @@
             "applicable": 4273
           },
           "seo_canonical": {
-            "label": "#15 Canonical self-ref",
+            "label": "#15 Canonical (동일 host)",
             "cat": "seo",
             "pass": 4271,
             "applicable": 4273
@@ -21528,7 +21528,7 @@
             "applicable": 393
           },
           "seo_canonical": {
-            "label": "#15 Canonical self-ref",
+            "label": "#15 Canonical (동일 host)",
             "cat": "seo",
             "pass": 393,
             "applicable": 393
@@ -21765,7 +21765,7 @@
             "applicable": 181
           },
           "seo_canonical": {
-            "label": "#15 Canonical self-ref",
+            "label": "#15 Canonical (동일 host)",
             "cat": "seo",
             "pass": 181,
             "applicable": 181
@@ -22002,7 +22002,7 @@
             "applicable": 514
           },
           "seo_canonical": {
-            "label": "#15 Canonical self-ref",
+            "label": "#15 Canonical (동일 host)",
             "cat": "seo",
             "pass": 514,
             "applicable": 514
@@ -22239,7 +22239,7 @@
             "applicable": 808
           },
           "seo_canonical": {
-            "label": "#15 Canonical self-ref",
+            "label": "#15 Canonical (동일 host)",
             "cat": "seo",
             "pass": 807,
             "applicable": 808
@@ -22476,7 +22476,7 @@
             "applicable": 719
           },
           "seo_canonical": {
-            "label": "#15 Canonical self-ref",
+            "label": "#15 Canonical (동일 host)",
             "cat": "seo",
             "pass": 719,
             "applicable": 719
@@ -22713,7 +22713,7 @@
             "applicable": 902
           },
           "seo_canonical": {
-            "label": "#15 Canonical self-ref",
+            "label": "#15 Canonical (동일 host)",
             "cat": "seo",
             "pass": 567,
             "applicable": 902
@@ -22950,7 +22950,7 @@
             "applicable": 1000
           },
           "seo_canonical": {
-            "label": "#15 Canonical self-ref",
+            "label": "#15 Canonical (동일 host)",
             "cat": "seo",
             "pass": 1000,
             "applicable": 1000
@@ -23187,7 +23187,7 @@
             "applicable": 100
           },
           "seo_canonical": {
-            "label": "#15 Canonical self-ref",
+            "label": "#15 Canonical (동일 host)",
             "cat": "seo",
             "pass": 100,
             "applicable": 100
