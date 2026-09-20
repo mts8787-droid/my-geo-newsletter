@@ -266,7 +266,7 @@
 ### #35 — Summary Box*
 - **정의**: 본문 앞부분에 핵심 내용을 짧게 요약해 둔 영역이 있는지
 - **PASS**: 1개 이상 존재
-- **측정방법**: 헤딩 문구(At a Glance·요약 등 다국어) 또는 요약 블록 p.info-desc — class명 매칭은 오탐으로 제거
+- **측정방법**: 헤딩·라벨 문구(At a Glance·Key features·요약 등 다국어) 또는 요약 블록 p.info-desc — class명 매칭은 오탐으로 제거
 - **check id**: `ai_summary_box`
 - **분류**: Contents 체크 항목
 
