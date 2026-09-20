@@ -2,7 +2,7 @@
 
 > 6개 카테고리 38개 채점 항목 + 9월 감사 시행 예정 4항목.
 > 점수·통과율은 제외한 **기준 정의 문서**입니다. 실측치는 Readability 대시보드에서 확인하세요.
-> 생성: `scripts/render-criteria.mjs` (source: `data/readability/geo-agent-checklist.html`) — 2026-08-30
+> 생성: `scripts/render-criteria.mjs` (source: `data/readability/geo-agent-checklist.html`) — 2026-09-16
 
 ## 카테고리
 
@@ -348,4 +348,4 @@
 
 ### 문서 번호와 채점 항목이 1:1이 아닌 곳
 - **#17 Robots** — `seo_robots`(meta) 와 `seo_robots_hdr`(X-Robots-Tag) 중 **하나만 충족해도 통과** (OR). 대표 체크 `seo_robots` 하나로 채점
-- **#25 Product 풀세트** — `ai_schema_product` + `ai_schema_offer`, 두 개로 채점
+- **#25 Product 풀세트** — `ai_schema_product` + `ai_schema_offer` 를 AND 병합해 한 행으로 채점 (2026-08-31)
