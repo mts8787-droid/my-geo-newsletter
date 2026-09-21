@@ -198,6 +198,36 @@ const EXCLUDED_PT = { unknown: 1, home: 1, business: 1, promotion: 1, about: 1, 
 // (예: lg.com/au/lifesgood/ 가 '뉴스룸/Press' 로 분류돼 최저 점수 원인이 됨).
 const EXCLUDED_URL_RE = /\/(lg-story|lifesgood|lifes-good)(\/|$)/i
 function isExcludedUrl(url) { return EXCLUDED_URL_RE.test(String(url || '')) }
+
+// ── 단종/비활성 PDP 제외 (사용자 지시 2026-09-21) ──────────────────────────
+// PLP 상품 API(Coveo) 활성 목록(상류 reports/plp/<cc>.txt) 밖의 PDP 는 단종·
+// 판매종료로 보고 제외. 상류 gen_dashboard_data.is_inactive_pdp_url 과 동일 판정.
+// 목록 파일이 없는 국가는 판정 불가 → 제외하지 않는다.
+const PDP_SEG2CC = { us: 'us', uk: 'uk', de: 'de', es: 'es', ca_en: 'ca',
+                     au: 'au', br: 'br', mx: 'mx', in: 'in', vn: 'vn' }
+let _activePdp = null
+function activePdpSets(srcDir) {
+  if (_activePdp) return _activePdp
+  _activePdp = {}
+  const plpDir = join(srcDir || DEFAULT_SRC, '..', '..', 'reports', 'plp')
+  for (const cc of new Set(Object.values(PDP_SEG2CC))) {
+    try {
+      const urls = readFileSync(join(plpDir, `${cc}.txt`), 'utf8').split('\n')
+        .filter(l => l.trim().startsWith('http'))
+        .map(l => l.trim().split('?')[0].split('#')[0].replace(/\/+$/, '').toLowerCase())
+      if (urls.length) _activePdp[cc] = new Set(urls)
+    } catch { /* 목록 없음 → 해당 국가 판정 안 함 */ }
+  }
+  return _activePdp
+}
+function isInactivePdp(url) {
+  const u = String(url || '')
+  const seg = (u.split('://').pop().split('/')[1] || '').toLowerCase()
+  const cc = PDP_SEG2CC[seg]
+  const sets = activePdpSets()
+  if (!cc || !sets[cc]) return false
+  return !sets[cc].has(u.split('?')[0].split('#')[0].replace(/\/+$/, '').toLowerCase())
+}
 // 페이지타입 통합. about/content 를 newsroom 으로 병합하던 규칙은 2026-09-01 제거했다 —
 // 아래 GLOBAL_NEWSROOM_RE 주석 참조.
 const PT_MERGE = { experience: 'lg_experience' }
@@ -244,6 +274,10 @@ function resolvePt(pt, url) {
   }
   const id = PT_MERGE[pt.id] || pt.id
   if (EXCLUDED_PT[id]) return { id, label: pt.label || id, excluded: true }
+  // 단종/비활성 PDP — Coveo 활성 목록 밖 (2026-09-21)
+  if (id === 'pdp' && isInactivePdp(url)) {
+    return { id, label: PT_LABEL[id] || pt.label || id, excluded: true }
+  }
   return { id, label: PT_LABEL[id] || pt.label || id, excluded: false }
 }
 
