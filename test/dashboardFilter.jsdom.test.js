@@ -52,4 +52,42 @@ describe('대시보드 필터 — 임베디드 클라이언트 (jsdom)', () => {
     await new Promise(r => setTimeout(r, 200))
     expect(hero()).not.toBe(before)
   }, 30000)
+
+  // 회귀 (2026-09-21): 월간+국가별 보기에서 최상단 전체 점수가 선택 월과 무관하게 최신 월로 고정.
+  // 원인 — calcFilteredDataCB 국가 분기가 countryTotals(최신월)·r.score(최신월)만 사용, _curMonthIdxIn12 미반영.
+  it('단일 국가 + 월 드롭다운 변경 시 Hero 가 선택 월의 국가 TTL 값을 보여야 한다 (실데이터)', async () => {
+    const { dom } = await load()
+    const w = dom.window, doc = w.document
+    // 실데이터의 US 월별 TTL 필요 — 없으면(CI 최소 픽스처) skip
+    if (!Array.isArray(w._monthlyVis)) return
+    const usRows = w._monthlyVis.filter(r => r.country === 'US' &&
+      ['TOTAL', 'TTL', ''].includes(String(r.division || '').toUpperCase()) &&
+      ['TOTAL', 'ALL'].includes(String(r.llmModel || 'Total').toUpperCase()))
+    if (usRows.length < 2) return
+    // US 단일 국가 선택
+    const cn = [...doc.querySelectorAll('input[data-filter="country"]')]
+    if (!cn.length) return
+    cn.forEach(b => { b.checked = b.value === 'US'; b.dispatchEvent(new w.Event('change', { bubbles: true })) })
+    await new Promise(r => setTimeout(r, 200))
+    // 최신이 아닌 월 하나 선택 (드롭다운 텍스트는 3-letter 영문으로 정규화됨)
+    const sel = doc.getElementById('vis-month-select')
+    if (!sel || sel.options.length < 2) return
+    const MN = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+    const latestOpt = sel.options[sel.options.length - 1]
+    const pickOpt = [...sel.options].find(o => o.textContent !== latestOpt.textContent)
+    sel.value = pickOpt.value
+    w.switchVisMonth(parseInt(pickOpt.value))
+    await new Promise(r => setTimeout(r, 200))
+    // 기대값 — 선택 월의 US TTL lg
+    const mi = MN.indexOf(pickOpt.textContent)
+    const expected = usRows.find(r => {
+      const km = String(r.date).match(/(\d{1,2})월/)
+      return km && parseInt(km[1]) - 1 === mi
+    })
+    if (!expected) return
+    const monthlyHero = [...doc.querySelectorAll('#hero-section, .hero')]
+      .find(h => (h.getAttribute('data-period') || 'monthly') === 'monthly')
+    const scoreEl = monthlyHero && monthlyHero.querySelector('.hero-score')
+    expect(scoreEl && scoreEl.textContent).toBe((+expected.lg).toFixed(1))
+  }, 30000)
 })
