@@ -43,12 +43,15 @@ export function hlLineChartSvg(series, labels, w = 500, h = 152, mark = -1, opts
       .map(x => ({ ...x, py: Y(x.v) })).sort((a, b) => a.py - b.py)  // 위(값 큰)→아래(값 작은)
     const n = items.length
     if (!n) return
-    // 최하위 라벨은 그래프 아래 고정, 나머지는 포인트 위
-    items.forEach((it, i) => { it.ly = (n >= 2 && i === n - 1) ? bottomY : it.py - 5 })
+    // 최하위 하단 고정은 2-시리즈(주간 LG vs 경쟁)만 — 3+ 시리즈(LLM 모델별)에서 고정하면
+    // 최하위(Perplexity)가 자기 선에서 떨어져 바닥에 깔림 (회귀 2026-09-21)
+    const pinBottom = n === 2
+    items.forEach((it, i) => { it.ly = (pinBottom && i === n - 1) ? bottomY : it.py - 5 })
+    const upperN = pinBottom ? n - 1 : n
     // 상단 라벨들(하단 고정 제외)만 최소 간격 유지
-    for (let i = 1; i < n - 1; i++) if (items[i].ly - items[i - 1].ly < GAP) items[i].ly = items[i - 1].ly + GAP
+    for (let i = 1; i < upperN; i++) if (items[i].ly - items[i - 1].ly < GAP) items[i].ly = items[i - 1].ly + GAP
     // 상단 그룹 상단 경계 클램프
-    if (items[0].ly < top) { const d = top - items[0].ly; for (let i = 0; i < (n >= 2 ? n - 1 : n); i++) items[i].ly += d }
+    if (items[0].ly < top) { const d = top - items[0].ly; for (let i = 0; i < upperN; i++) items[i].ly += d }
     const first = idx === 0  // 첫 시점 라벨은 포인트 오른쪽으로 (y축 숫자와 충돌 방지)
     const tx = (X(idx) + (first ? 4 : -4)).toFixed(1)
     items.forEach(it => { svg += `<text x="${tx}" y="${it.ly.toFixed(1)}" text-anchor="${first ? 'start' : 'end'}" font-size="9" font-weight="700" fill="${it.color}" font-family="sans-serif">${it.v.toFixed(1)}</text>` })
@@ -68,7 +71,7 @@ function b64urlDecode(s) {
 }
 
 // 렌더 로직(레이블 배치 등)이 바뀔 때마다 +1 → d 값이 달라져 브라우저 immutable·서버 LRU 캐시 자동 무효화.
-export const CHART_REV = 4
+export const CHART_REV = 5
 
 // 차트 데이터를 URL 파라미터(d)로 인코딩. 값은 소수1자리로 압축.
 export function encodeChart({ series, labels, w = 500, h = 152, mark = -1, boldX = false }) {
