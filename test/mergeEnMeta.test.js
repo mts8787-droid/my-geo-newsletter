@@ -20,6 +20,24 @@ describe('mergeEnMeta — 하이라이트 rd_* 동적 필드 EN 오버레이', (
   })
 })
 
+describe('mergeEnMeta — 9월호 V3 신설 블록 KO/EN 독립 (회귀 2026-09-22)', () => {
+  it('LLM 차트 아래 본문(v3Ex1B2b·v3Ex1B2c)은 언어별 값이 분리된다', () => {
+    const ko = { v3Ex1B2b: '한글 본문', v3Ex1B2c: '한글 각주' }
+    const en = { v3Ex1B2b: 'English body' }
+    const m = mergeEnMeta(ko, en)
+    expect(m.v3Ex1B2b).toBe('English body')          // KO 편집이 EN 을 덮지 않음
+    expect(m.v3Ex1B2c).toBeUndefined()                // EN 미편집 → 템플릿 EN 기본/placeholder
+  })
+  it('차트 제목·답변예시 카드 필드도 EN 오버레이 대상', () => {
+    const ko = { v3ChartT1: 'LG 5-8월', v3C1Title: '[답변 예시] 한글', v3C1Bko: '한글 해석' }
+    const en = { v3ChartT1: 'LG May-Aug', v3C1Title: '[Case] EN', v3C1Bko: 'EN interp' }
+    const m = mergeEnMeta(ko, en)
+    expect(m.v3ChartT1).toBe('LG May-Aug')
+    expect(m.v3C1Title).toBe('[Case] EN')
+    expect(m.v3C1Bko).toBe('EN interp')
+  })
+})
+
 describe('Readability Highlight — EN 기본 번역 내장', () => {
   it('meta 가 비어도 EN 렌더 결과에 한국어가 남지 않는다', async () => {
     const { generateEmailHTML } = await import('../src/emailTemplate.js')

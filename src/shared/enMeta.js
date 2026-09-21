@@ -17,7 +17,14 @@ EN_TEXT_FIELDS.push(...RD_TRANSLATE_FIELDS)
 // 8월 Executive Summary V3 — 편집 시 EN 번역 대상
 // 7월호 개편 (2026-08-31): 인트로 + 3항목, 필드 버전업 (v3Ex*T2/B2). 구 필드도 호환 유지.
 const V3_TRANSLATE_FIELDS = ['v3Ex1T', 'v3Ex1B', 'v3Ex2T', 'v3Ex2B',
-  'v3ExIntro', 'v3Ex1T2', 'v3Ex1B2', 'v3Ex2T2', 'v3Ex2B2', 'v3Ex3T2', 'v3Ex3B2']
+  'v3ExIntro', 'v3Ex1T2', 'v3Ex1B2', 'v3Ex2T2', 'v3Ex2B2', 'v3Ex3T2', 'v3Ex3B2',
+  // 9월호 신설 블록 (2026-09-19 커밋 92872dd·efc90a1) — 목록 누락 시 EN 이 KO 값을 그대로 추종해
+  // "한쪽 수정하면 다른 쪽도 바뀜" 증상 (사용자 보고 2026-09-22: LLM 차트 아래 본문)
+  'v3Ex1B2b', 'v3Ex1B2c',                    // 차트 아래 · 답변예시 아래 본문 슬롯
+  'v3ChartT1', 'v3ChartT2',                  // LLM 차트 패널 제목
+  'v3C1Title', 'v3C1Prompt',                 // 답변예시 카드 제목·프롬프트
+  'v3C1Ben', 'v3C1Bko', 'v3C1Ten', 'v3C1Tko', // 답변예시 인용 (7월·8월 원문/해석)
+  'v3Ex2Note']                               // 항목2 각주
 EN_TEXT_FIELDS.push(...V3_TRANSLATE_FIELDS)
 
 // EN meta = KO 구조(토글·레이아웃·수치) 그대로 + EN 번역 텍스트만 오버레이.
