@@ -228,6 +228,34 @@ function isInactivePdp(url) {
   if (!cc || !sets[cc]) return false
   return !sets[cc].has(u.split('?')[0].split('#')[0].replace(/\/+$/, '').toLowerCase())
 }
+
+// ── 악세사리 PDP 제외 (사용자 지시 2026-09-21) ─────────────────────────────
+// 필터·리모컨·설치키트 등은 콘텐츠가 빈약해 PDP 평균을 왜곡한다 (실측 -2.7).
+// 상류 gen_dashboard_data.is_accessory_pdp_url 과 동일: Coveo 카테고리
+// (reports/plp/<cc>_cat.json) 와 URL 키워드의 합집합.
+const ACC_CAT_RE = /(acces+or|pe[çc]as e acess[óo]rios|\bremotes\b|installation kit|keyboard-mouse)/i
+const ACC_URL_RE = /(accessor|acessorio|accesorio|zubehoer|zubeh[öo]r|phu-kien|-kit\b|installation-kit|remote|-grille|-filter|wall-mount|bracket)/i
+let _pdpCats = null
+function pdpCategories(srcDir) {
+  if (_pdpCats) return _pdpCats
+  _pdpCats = new Map()
+  const plpDir = join(srcDir || DEFAULT_SRC, '..', '..', 'reports', 'plp')
+  try {
+    for (const f of readdirSync(plpDir).filter(f => f.endsWith('_cat.json'))) {
+      const m = JSON.parse(readFileSync(join(plpDir, f), 'utf8'))
+      for (const [u, c] of Object.entries(m)) {
+        _pdpCats.set(u.split('?')[0].split('#')[0].replace(/\/+$/, '').toLowerCase(), c || '')
+      }
+    }
+  } catch { /* 매핑 없음 → URL 키워드만으로 판정 */ }
+  return _pdpCats
+}
+function isAccessoryPdp(url) {
+  const u = String(url || '')
+  if (ACC_URL_RE.test(u)) return true
+  const cat = pdpCategories().get(u.split('?')[0].split('#')[0].replace(/\/+$/, '').toLowerCase())
+  return !!(cat && ACC_CAT_RE.test(cat))
+}
 // 페이지타입 통합. about/content 를 newsroom 으로 병합하던 규칙은 2026-09-01 제거했다 —
 // 아래 GLOBAL_NEWSROOM_RE 주석 참조.
 const PT_MERGE = { experience: 'lg_experience' }
@@ -274,8 +302,8 @@ function resolvePt(pt, url) {
   }
   const id = PT_MERGE[pt.id] || pt.id
   if (EXCLUDED_PT[id]) return { id, label: pt.label || id, excluded: true }
-  // 단종/비활성 PDP — Coveo 활성 목록 밖 (2026-09-21)
-  if (id === 'pdp' && isInactivePdp(url)) {
+  // 단종/비활성·악세사리 PDP 제외 (2026-09-21)
+  if (id === 'pdp' && (isInactivePdp(url) || isAccessoryPdp(url))) {
     return { id, label: PT_LABEL[id] || pt.label || id, excluded: true }
   }
   return { id, label: PT_LABEL[id] || pt.label || id, excluded: false }
