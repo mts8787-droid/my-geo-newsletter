@@ -3320,8 +3320,12 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
   const ulIntro = lang === 'en'
     ? 'Unlaunched countries are shown in gray status'
     : '제품 미출시 국가는 신호등 회색 표기'
-  const ulLine = ulFootnoteParts.length
-    ? `<p style="margin:12px 16px 0;font-size:13px;font-weight:700;color:#000000;font-family:${EM_FONT};line-height:1.6;">* ${ulIntro}(${ulFootnoteParts.join(' / ')})</p>`
+  // 편집 가능 (2026-09-22): 자동 생성 문구는 기본값 — meta.productUlFootnote 편집 시 그 값 사용
+  // (언어별 독립: enMeta EN_TEXT_FIELDS 등재 → KO/EN 각자 저장)
+  const ulDefault = ulFootnoteParts.length ? `* ${ulIntro}(${ulFootnoteParts.join(' / ')})` : ''
+  const ulText = (meta.productUlFootnote != null && meta.productUlFootnote !== '') ? sanitizeUserHtml(meta.productUlFootnote) : ulDefault
+  const ulLine = (ulText || _ED)
+    ? `<p${edRich('productUlFootnote')} style="margin:12px 16px 0;font-size:13px;font-weight:700;color:#000000;font-family:${EM_FONT};line-height:1.6;">${ulText}</p>`
     : ''
   const productFootnoteHtml = ulLine
 

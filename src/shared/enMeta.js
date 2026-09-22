@@ -26,6 +26,8 @@ const V3_TRANSLATE_FIELDS = ['v3Ex1T', 'v3Ex1B', 'v3Ex2T', 'v3Ex2B',
   'v3C1Ben', 'v3C1Bko', 'v3C1Ten', 'v3C1Tko', // 답변예시 인용 (7월·8월 원문/해석)
   'v3Ex2Note']                               // 항목2 각주
 EN_TEXT_FIELDS.push(...V3_TRANSLATE_FIELDS)
+// 제품별 Visibility 하단 미출시 각주 (2026-09-22) — 자동 생성 기본값 + 언어별 편집
+EN_TEXT_FIELDS.push('productUlFootnote')
 
 // EN meta = KO 구조(토글·레이아웃·수치) 그대로 + EN 번역 텍스트만 오버레이.
 // metaEn 을 통째로 쓰면 예전 번역 시점의 구조 스냅샷이 남아 KO 변경(신규 섹션·개정 문구)이
