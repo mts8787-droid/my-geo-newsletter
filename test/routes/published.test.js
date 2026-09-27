@@ -21,6 +21,7 @@ vi.mock('../../lib/storage.js', () => ({
 const fakeAllowlist = []
 
 const { publishedRouter } = await import('../../routes/published.js')
+const { IP_ALLOWLIST_OFF } = await import('../../lib/network.js')
 
 function makeApp() {
   const app = express()
@@ -70,7 +71,8 @@ describe('GET /p/:slug', () => {
     expect(res.status).toBe(400)
   })
 
-  it('IP allowlist 차단 → 403 페이지', async () => {
+  // IP_ALLOWLIST_OFF(임시 전면 허용, 2026-09-28) 동안 skip — lib/network.js 스위치 false 복구 시 자동 재활성
+  it.skipIf(IP_ALLOWLIST_OFF)('IP allowlist 차단 → 403 페이지', async () => {
     fakeAllowlist.push({ cidr: '99.99.99.99/32' }) // 127.0.0.1과 다름
     writeFileSync(join(TMP_PUB, 'GEO-Blocked.html'), '<html>x</html>')
     const res = await request(makeApp()).get('/p/GEO-Blocked')

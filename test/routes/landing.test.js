@@ -20,6 +20,7 @@ vi.mock('../../lib/storage.js', () => ({
 
 // landing.js → publish.js → storage.js 의존성 체인 — publish 모듈이 mocked storage로 로드
 const { landingRouter } = await import('../../routes/landing.js')
+const { IP_ALLOWLIST_OFF } = await import('../../lib/network.js')
 const { CHANNELS } = await import('../../routes/publish.js')
 
 function makeApp() {
@@ -54,7 +55,8 @@ describe('GET /', () => {
     expect(res.text).toContain('admin')
   })
 
-  it('IP 화이트리스트 차단 → 403 페이지', async () => {
+  // IP_ALLOWLIST_OFF(임시 전면 허용, 2026-09-28) 동안 skip — lib/network.js 스위치 false 복구 시 자동 재활성
+  it.skipIf(IP_ALLOWLIST_OFF)('IP 화이트리스트 차단 → 403 페이지', async () => {
     fakeAllowlist.push({ cidr: '99.99.99.99/32' })
     const res = await request(makeApp()).get('/')
     expect(res.status).toBe(403)
