@@ -11,7 +11,7 @@ import { isIpAllowed } from '../lib/network.js'
 import { CHANNELS, readMetaFile } from './publish.js'
 import { renderCriteriaHTML, loadRows } from '../scripts/render-criteria.mjs'
 import { renderReadabilityHTML } from '../scripts/render-readability.mjs'
-import { loadLatest, latestChecksFile, latestCsvFile, READABILITY_DATA_DIR } from './readability.js'
+import { loadLatest, latestChecksFile, latestCsvFile, csvFileFor, checksFileFor, READABILITY_DATA_DIR } from './readability.js'
 import { logFor } from '../lib/logger.js'
 
 const log = logFor('published')
@@ -180,7 +180,7 @@ function readabilityLang(req) {
 const renderReadabilityPage = (req, res) => {
   if (!isIpAllowed(req)) return send403Page(res)
   try {
-    const { snapshot, index, snapshots } = loadLatest()
+    const { snapshot, index, snapshots } = loadLatest('published')
     if (!snapshot) return res.status(404).send('Readability 스냅샷 없음')
     setPublishedSecurityHeaders(res)
     res.set('Content-Type', 'text/html; charset=utf-8')
@@ -198,7 +198,8 @@ publishedRouter.get('/p/GEO-Readability-Dashboard-EN', renderReadabilityPage)
 //  "Unexpected token '<' ... is not valid JSON" 으로 실패했다.)
 publishedRouter.get(['/p/GEO-Readability-Dashboard/checks.json', '/p/GEO-Readability-Dashboard-EN/checks.json'], (req, res) => {
   if (!isIpAllowed(req)) return res.status(403).json({ error: 'forbidden' })
-  const file = latestChecksFile()
+  const { snapshot } = loadLatest('published')
+  const file = snapshot ? checksFileFor(snapshot.date) : latestChecksFile()
   if (!file) return res.status(404).json({ error: 'raw 데이터 없음' })
   res.set('Content-Type', 'application/json; charset=utf-8')
   res.sendFile(join(READABILITY_DATA_DIR, file), err => { if (err && !res.headersSent) res.status(500).end() })
@@ -206,7 +207,8 @@ publishedRouter.get(['/p/GEO-Readability-Dashboard/checks.json', '/p/GEO-Readabi
 
 publishedRouter.get(['/p/GEO-Readability-Dashboard/urls.csv', '/p/GEO-Readability-Dashboard-EN/urls.csv'], (req, res) => {
   if (!isIpAllowed(req)) return send403Page(res, 'simple')
-  const file = latestCsvFile()
+  const { snapshot } = loadLatest('published')
+  const file = snapshot ? csvFileFor(snapshot.date) : latestCsvFile()
   if (!file) return res.status(404).send('검수 URL CSV 없음')
   // EN 요청이면 page_type 컬럼을 영문 라벨로 변환해 내려보낸다 (CSV 는 한 벌만 굽는다)
   const lang = readabilityLang(req)
@@ -226,7 +228,7 @@ publishedRouter.get(['/p/GEO-Readability-Dashboard/urls.csv', '/p/GEO-Readabilit
 publishedRouter.get('/p/GEO-Readability-Criteria', (req, res) => {
   if (!isIpAllowed(req)) return send403Page(res)
   try {
-    const { snapshot } = loadLatest()
+    const { snapshot } = loadLatest('published')
     const html = renderCriteriaHTML({ rows: loadRows(), snapshot, withScores: !!snapshot, lang: readabilityLang(req) })
     setPublishedSecurityHeaders(res)
     res.set('Content-Type', 'text/html; charset=utf-8')

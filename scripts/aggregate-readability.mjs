@@ -29,6 +29,7 @@ function parseArgs() {
     else if (a[i] === '--date') out.date = a[++i]
     else if (a[i] === '--report') out.report = a[++i]
     else if (a[i] === '--rebuild') out.rebuild = a[++i]
+    else if (a[i] === '--staging') out.staging = true
   }
   return out
 }
@@ -1023,7 +1024,12 @@ function main() {
   // 스냅샷 날짜 = 인자 우선, 없으면 최빈 파일 날짜
   const snapshotDate = args.rebuild || args.date || mostCommon(fileDates) || new Date().toISOString().slice(0, 10)
 
+  // --staging: 테스트 어딧 채널 — 공개 게시본(/p/*)에는 노출되지 않고
+  // 내부 스테이징 대시보드(/admin/readability)에만 뜬다. 승격은 어드민 버튼 또는
+  // POST /admin/readability/promote/<date>.
+  const channel = args.staging ? 'staging' : 'published'
   const snapshot = {
+    channel,
     date: snapshotDate,
     generatedAt: new Date().toISOString(),
     source: basename(SRC),
@@ -1044,6 +1050,7 @@ function main() {
   }
   const entry = {
     date: snapshotDate,
+    channel,
     generatedAt: snapshot.generatedAt,
     countries: Object.keys(countries).sort(),
     overallAvg: snapshot.overall.avgScore,
@@ -1092,11 +1099,17 @@ function main() {
   // checks-*.json 은 최신 날짜 1개만 유지 (현재값만 의미 — 시계열 가치 없음, git 비대 방지).
   // 구 fails-*.json 도 정리 (raw 데이터로 대체됨).
   const staleFiles = readdirSync(OUT_DIR).filter(f => /^(checks|fails)-\d{4}-\d{2}-\d{2}\.json$/.test(f)).sort()
-  const keepChecks = `checks-${snapshotDate}.json`
+  // 채널별 최신 1개씩 유지 — staging 집계가 공개본의 checks 를 지우면
+  // 공개 대시보드 Raw 탭이 깨진다 (2026-09-28 채널 분리).
+  const keepSet = new Set([`checks-${snapshotDate}.json`])
+  for (const ch of ['published', 'staging']) {
+    const latest = (index.snapshots || []).filter(e => (e.channel || 'published') === ch).pop()
+    if (latest) keepSet.add(`checks-${latest.date}.json`)
+  }
   for (const fn of staleFiles) {
-    if (fn !== keepChecks) {
+    if (!keepSet.has(fn)) {
       rmSync(join(OUT_DIR, fn))
-      console.log(`[aggregate-readability] 과거/구 데이터 제거: ${fn} (유지: ${keepChecks})`)
+      console.log(`[aggregate-readability] 과거/구 데이터 제거: ${fn} (유지: ${[...keepSet].join(', ')})`)
     }
   }
 

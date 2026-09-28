@@ -4,7 +4,7 @@
 
 import { Router } from 'express'
 import { localizeUrlsCsv } from '../src/shared/readabilityCsv.js'
-import { readFileSync, existsSync, readdirSync } from 'fs'
+import { readFileSync, writeFileSync, existsSync, readdirSync } from 'fs'
 import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
 import { renderReadabilityHTML } from '../scripts/render-readability.mjs'
@@ -26,17 +26,26 @@ function sendFileTyped(res, file, contentType) {
   res.sendFile(file, err => { if (err && !res.headersSent) res.status(500).end() })
 }
 
-export function loadLatest() {
+// channel: 'published'(기본) — staging 스냅샷을 제외한 최신. 공개 게시본(/p/*)과
+//          뉴스레터 요약이 쓴다.
+//          'staging' — staging 포함 전체의 최신. 내부 스테이징 대시보드
+//          (/admin/readability)가 쓴다. 테스트 어딧을 공개 전에 전체 화면으로
+//          검수하기 위한 채널 분리 (사용자 결정 2026-09-28).
+// channel 필드가 없는 기존 스냅샷은 published 로 취급한다.
+export function loadLatest(channel = 'published') {
   if (!existsSync(DATA_DIR)) return { snapshot: null, index: null }
   let index = null
   const indexPath = join(DATA_DIR, 'index.json')
   if (existsSync(indexPath)) {
     try { index = JSON.parse(readFileSync(indexPath, 'utf8')) } catch { index = null }
   }
+  const inChannel = (e) => channel === 'staging' || (e.channel || 'published') !== 'staging'
   // 최신 날짜 결정: index 우선, 없으면 디렉토리 스캔
   let latestDate = null
+  let channelEntries = null
   if (index && Array.isArray(index.snapshots) && index.snapshots.length) {
-    latestDate = index.snapshots[index.snapshots.length - 1].date
+    channelEntries = index.snapshots.filter(inChannel)
+    if (channelEntries.length) latestDate = channelEntries[channelEntries.length - 1].date
   } else {
     const files = readdirSync(DATA_DIR).filter(f => /^\d{4}-\d{2}-\d{2}\.json$/.test(f)).sort()
     if (files.length) latestDate = files[files.length - 1].replace('.json', '')
@@ -49,8 +58,8 @@ export function loadLatest() {
   if (!snapshot) return { snapshot: null, index, snapshots: [] }
   // 월별 최신 스냅샷 목록 (측정 월 필터용) — 같은 달 복수 측정 시 그 달의 최신만
   const byMonth = {}
-  const dates = (index && Array.isArray(index.snapshots) && index.snapshots.length)
-    ? index.snapshots.map(s => s.date)
+  const dates = (channelEntries && channelEntries.length)
+    ? channelEntries.map(s => s.date)
     : [latestDate]
   dates.forEach(d => {
     const m = String(d).slice(0, 7)
@@ -67,23 +76,66 @@ export function loadLatest() {
 
 export const latestCsvFile = () => latestFile(/^urls-\d{4}-\d{2}-\d{2}\.csv$/)
 export const latestChecksFile = () => latestFile(/^checks-\d{4}-\d{2}-\d{2}\.json$/)
+// 채널 분리 후에는 '최신 파일'이 아니라 해당 스냅샷 날짜의 파일을 서빙한다.
+export const csvFileFor = (date) => {
+  const f = `urls-${date}.csv`
+  return existsSync(join(DATA_DIR, f)) ? f : latestCsvFile()
+}
+export const checksFileFor = (date) => {
+  const f = `checks-${date}.json`
+  return existsSync(join(DATA_DIR, f)) ? f : latestChecksFile()
+}
 export { DATA_DIR as READABILITY_DATA_DIR }
 
 export const readabilityRouter = Router()
 
 // ?lang=en 으로 영문본. 게시본(/p/GEO-Readability-Dashboard-EN)과 같은 렌더러를 쓴다.
 readabilityRouter.get('/admin/readability', (req, res) => {
-  const { snapshot, index, snapshots } = loadLatest()
+  // 어드민 = 스테이징 대시보드: staging 포함 최신을 공개본과 동일한 화면으로 렌더.
+  const { snapshot, index, snapshots } = loadLatest('staging')
   const lang = String(req.query.lang || '').toLowerCase() === 'en' ? 'en' : 'ko'
   res.set('Content-Type', 'text/html; charset=utf-8')
-  res.send(renderReadabilityHTML({ snapshot, index, snapshots, adminMode: true, lang }))
+  let html = renderReadabilityHTML({ snapshot, index, snapshots, adminMode: true, lang })
+  if (snapshot && (snapshot.channel || 'published') === 'staging') {
+    const banner = `<div style="position:sticky;top:0;z-index:999;background:#b45309;color:#fff;` +
+      `padding:10px 16px;font:600 13px/-apple-system,sans-serif;display:flex;align-items:center;gap:12px;">` +
+      `<span>⚠ STAGING — ${snapshot.date} 테스트 어딧 (공개 대시보드에는 반영되지 않음)</span>` +
+      `<button onclick="if(confirm('${snapshot.date} 스냅샷을 공개 대시보드로 승격할까요?'))` +
+      `fetch('/admin/readability/promote/${snapshot.date}',{method:'POST'})` +
+      `.then(r=>r.json()).then(j=>{alert(j.ok?'승격 완료 — 공개 대시보드에 반영됩니다.':'실패: '+j.error);location.reload()})" ` +
+      `style="background:#fff;color:#b45309;border:0;border-radius:6px;padding:4px 12px;font-weight:700;cursor:pointer;">` +
+      `공개로 승격</button></div>`
+    html = html.replace(/(<body[^>]*>)/i, `$1${banner}`)
+  }
+  res.send(html)
+})
+
+// staging 스냅샷 승격 — channel 을 published 로 전환 (스냅샷 파일 + index 양쪽).
+readabilityRouter.post('/admin/readability/promote/:date', (req, res) => {
+  const date = String(req.params.date || '')
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return res.status(400).json({ ok: false, error: '날짜 형식 오류' })
+  const snapPath = join(DATA_DIR, `${date}.json`)
+  if (!existsSync(snapPath)) return res.status(404).json({ ok: false, error: '스냅샷 없음' })
+  try {
+    const snap = JSON.parse(readFileSync(snapPath, 'utf8'))
+    snap.channel = 'published'
+    snap.promotedAt = new Date().toISOString()
+    writeFileSync(snapPath, JSON.stringify(snap))
+    const indexPath = join(DATA_DIR, 'index.json')
+    const idx = JSON.parse(readFileSync(indexPath, 'utf8'))
+    for (const e of idx.snapshots || []) if (e.date === date) { e.channel = 'published' }
+    writeFileSync(indexPath, JSON.stringify(idx, null, 2))
+    res.json({ ok: true, date })
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message })
+  }
 })
 
 // 뉴스레터 Highlight 섹션용 요약 — 최신 스냅샷에서 필요한 것만 추려 반환.
 // 뉴스레터 어드민(React)이 이걸 fetch 해 generateEmailHTML 의 options.readability 로 넘긴다.
 // 전체 스냅샷(390KB)을 그대로 물리면 미리보기가 무거워지므로 수 KB 로 압축.
 readabilityRouter.get('/api/readability-summary', (req, res) => {
-  const { snapshot } = loadLatest()
+  const { snapshot } = loadLatest('published')
   if (!snapshot) return res.status(404).json({ ok: false, error: 'Readability 스냅샷 없음' })
   const o = snapshot.overall
   const rate = (scope, cid) => {
@@ -141,14 +193,16 @@ readabilityRouter.get('/admin/readability/criteria.html', (req, res) => {
 
 // Raw 데이터(PASS+FAIL) — 최신 checks-<date>.json. "Raw 데이터" 탭이 조합 필터로 사용.
 readabilityRouter.get('/admin/readability/checks.json', (req, res) => {
-  const file = latestChecksFile()
+  const { snapshot } = loadLatest('staging')
+  const file = snapshot ? checksFileFor(snapshot.date) : latestChecksFile()
   if (!file) return res.status(404).json({ error: 'raw 데이터 없음 — node scripts/aggregate-readability.mjs 실행 필요' })
   sendFileTyped(res, join(DATA_DIR, file), 'application/json; charset=utf-8')
 })
 
 // 검수 URL 목록 다운로드 — 최신 urls-<date>.csv (URL · 국가 · 페이지타입 · 점수)
 readabilityRouter.get('/admin/readability/urls.csv', (req, res) => {
-  const file = latestCsvFile()
+  const { snapshot } = loadLatest('staging')
+  const file = snapshot ? csvFileFor(snapshot.date) : latestCsvFile()
   if (!file) return res.status(404).send('검수 URL CSV 없음 — node scripts/aggregate-readability.mjs 실행 필요')
   // ?lang=en 이면 page_type 컬럼을 영문 라벨로 변환 (CSV 원본은 한 벌)
   const lang = String(req.query.lang || '').toLowerCase() === 'en' ? 'en' : 'ko'
