@@ -205,7 +205,7 @@ function isExcludedUrl(url) { return EXCLUDED_URL_RE.test(String(url || '')) }
 // 판매종료로 보고 제외. 상류 gen_dashboard_data.is_inactive_pdp_url 과 동일 판정.
 // 목록 파일이 없는 국가는 판정 불가 → 제외하지 않는다.
 const PDP_SEG2CC = { us: 'us', uk: 'uk', de: 'de', es: 'es', ca_en: 'ca',
-                     au: 'au', br: 'br', mx: 'mx', in: 'in', vn: 'vn' }
+                     au: 'au', br: 'br', mx: 'mx', in: 'in', vn: 'vn', be: 'be', nl: 'nl' }
 let _activePdp = null
 function activePdpSets(srcDir) {
   if (_activePdp) return _activePdp
