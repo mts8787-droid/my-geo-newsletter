@@ -1,11 +1,11 @@
 ==============================================================================
 LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
-생성: 2026-09-24 17:45 UTC
-대상: 10개국 최신 run / 국가별 page_type ≤100 샘플
+생성: 2026-09-29 01:03 UTC
+대상: 12개국 최신 run / 국가별 page_type ≤100 샘플
 
 [채점 기준 주의] 2026-06-17 Render 재배포로 #11(헤딩 역순)·#23(FAQ plp)·
 #34(author 스키마) 로직이 바뀌었습니다.
-전 국가(10개) 신(新) 기준으로 채점됨 — 국가 간 직접 비교 가능(각 국가 헤더 [config] 표기).
+전 국가(12개) 신(新) 기준으로 채점됨 — 국가 간 직접 비교 가능(각 국가 헤더 [config] 표기).
 ==============================================================================
 
 ##############################################################################
@@ -329,6 +329,275 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   1건: 인용 가능 문장 N개 — N개 이상 필요 [측정 1]
   - ai_image_filename (#40 · ai_crawlability · 1점) — FAIL 1/2 (50%)  «#40 Image File Name 브랜드 포함»
       ·   1건: 서술적 파일명 N/N (N%) — N% 이상 필요 [측정 0]
+
+##############################################################################
+## BE   run=be_2026-09-29_run_9fad43364553.json
+   URL 1019건 · 감사성공 923 · [config] 신(2026-06-17 재배포)
+   등급(성공 기준): Good 460 / Need Improvement 457 / Poor 6
+   ⚠ 감사 불가(fetch 실패) 96건 — 아래 감점 집계에서 제외:
+        · 95건: HTTP 404 — 200 기대
+        · 1건: HTTP 500 — 200 기대
+##############################################################################
+
+### [pdp] 제품 상세 (PDP) — 407건  (감점 항목 12개)
+  - ai_schema_product (#25 · schema_markup · 1점) — FAIL 407/407 (100%)  «#25 Schema: Product 풀세트 (PDP)»
+      · 272건: 필수 필드 누락: sku, offers.price, offers.availability
+      · 126건: 필수 필드 누락: sku
+      ·   8건: @type='Product/ProductGroup' 노드 없음
+      ·   1건: 필수 필드 누락: sku, offers.availability
+  - ai_schema_image (#26 · schema_markup · 1점) — FAIL 407/407 (100%)  «#26 Schema: ImageObject»
+      · 400건: @type='ImageObject' 노드 없음
+      ·   7건: 필수 필드 누락: url, uploadDate
+  - ai_schema_video (#27 · schema_markup · 1점) — FAIL 361/361 (100%)  «#27 Schema: VideoObject»
+      · 304건: 필수 필드 누락: url
+      ·  57건: @type='VideoObject' 노드 없음
+  - ai_schema_offer (#43 · schema_markup · 1점) — FAIL 281/407 (69%)  «#43 Schema: Offer»
+      · 280건: @type='Offer' 노드 없음
+      ·   1건: 필수 필드 누락: availability
+  - ai_schema_faq (#23 · schema_markup · 1점) — FAIL 233/407 (57%)  «#23 Schema: FAQPage»
+      · 233건: @type='FAQPage' 노드 없음
+  - ai_definition (#33 · citable_content · 1점) — FAIL 171/407 (42%)  «#33 Definition Paragraph»
+      · 171건: 정의문 N건 — N건 이상 필요 [측정 0]
+  - ai_image_filename (#40 · ai_crawlability · 1점) — FAIL 143/407 (35%)  «#40 Image File Name 브랜드 포함»
+      · 143건: 서술적 파일명 N/N (N%) — N% 이상 필요 [측정 13~35]
+  - a11y_image_alt (a11y#9 · accessibility · 1점) — FAIL 80/407 (20%)  «#9 Image Alt 누락 0»
+      ·  80건: N개 요소에 'alt' 속성이 없습니다. [측정 1~20]
+  - seo_h1 (#16 · seo · 1점) — FAIL 33/407 (8%)  «#16 H1 정확히 1개»
+      ·  33건: 'hN' N개 — == N 필요 [측정 1]
+  - ai_citable (#36 · citable_content · 1점) — FAIL 12/407 (3%)  «#36 Citable Sentence ≥ 5개»
+      ·  12건: 인용 가능 문장 N개 — N개 이상 필요 [측정 0~4]
+  - ai_summary_box (#35 · citable_content · 1점) — FAIL 10/407 (2%)  «#35 Summary Box (콘텐츠)»
+      ·  10건: 요약 블록(헤딩 문구·selector)을 찾지 못했습니다.
+  - seo_meta_desc (#14 · seo · 1점) — FAIL 2/407 (0%)  «#14 Meta Description»
+      ·   2건: 'content' 속성이 없거나 N자 미만입니다. [측정 1]
+
+### [business] B2B (사업자) — 101건  (감점 항목 19개)
+  - ai_schema_product (#25 · schema_markup · 1점) — FAIL 101/101 (100%)  «#25 Schema: Product 풀세트 (PDP)»
+      ·  53건: @type='Product/ProductGroup' 노드 없음
+      ·  47건: 필수 필드 누락: sku, offers.price, offers.availability
+      ·   1건: 필수 필드 누락: description, sku
+  - ai_schema_image (#26 · schema_markup · 1점) — FAIL 101/101 (100%)  «#26 Schema: ImageObject»
+      · 101건: @type='ImageObject' 노드 없음
+  - ai_ssr_ratio (#37 · ai_crawlability · 1점) — FAIL 101/101 (100%)  «#37 JS HTML Text Ratio ≥ 60%»
+      · 101건: SSR 비율 N% — N% 이상 필요 [측정 57]
+  - ai_schema_video (#27 · schema_markup · 1점) — FAIL 26/26 (100%)  «#27 Schema: VideoObject»
+      ·  26건: 필수 필드 누락: url
+  - ai_schema_offer (#43 · schema_markup · 1점) — FAIL 100/101 (99%)  «#43 Schema: Offer»
+      · 100건: @type='Offer' 노드 없음
+  - ai_image_filename (#40 · ai_crawlability · 1점) — FAIL 77/101 (76%)  «#40 Image File Name 브랜드 포함»
+      ·  77건: 서술적 파일명 N/N (N%) — N% 이상 필요 [측정 3~18]
+  - ai_definition (#33 · citable_content · 1점) — FAIL 76/101 (75%)  «#33 Definition Paragraph»
+      ·  76건: 정의문 N건 — N건 이상 필요 [측정 0]
+  - ai_summary_box (#35 · citable_content · 1점) — FAIL 59/101 (58%)  «#35 Summary Box (콘텐츠)»
+      ·  59건: 요약 블록(헤딩 문구·selector)을 찾지 못했습니다.
+  - ai_citable (#36 · citable_content · 1점) — FAIL 42/101 (42%)  «#36 Citable Sentence ≥ 5개»
+      ·  42건: 인용 가능 문장 N개 — N개 이상 필요 [측정 0~4]
+  - seo_h1 (#16 · seo · 1점) — FAIL 26/101 (26%)  «#16 H1 정확히 1개»
+      ·  26건: 'hN' N개 — == N 필요 [측정 1]
+  - ai_faq_block (#32 · citable_content · 1점) — FAIL 17/101 (17%)  «#32 FAQ Block (콘텐츠)»
+      ·  17건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
+  - seo_meta_desc (#14 · seo · 1점) — FAIL 10/101 (10%)  «#14 Meta Description»
+      ·  10건: 'meta[name='description' i]' 요소를 찾을 수 없습니다.
+  - seo_open_graph (#18 · seo · 1점) — FAIL 8/101 (8%)  «#18 Open Graph (title+image)»
+      ·   8건: 누락: title
+  - a11y_heading_hier (a11y#11 · accessibility · 1점) — FAIL 5/101 (5%)  «#11 Heading Hierarchy»
+      ·   4건: 본문 영역에 헤딩 태그가 없습니다.
+      ·   1건: 헤딩 역순 N건 — 첫 헤딩(hN)보다 상위 레벨이 뒤에 등장 [측정 1]
+  - a11y_semantic (a11y#10 · accessibility · 1점) — FAIL 4/101 (4%)  «#10 Semantic HTML»
+      ·   4건: 헤딩 N + 랜드마크 N = N — 의미 구조 N+ 필요 [측정 0]
+  - a11y_image_alt (a11y#9 · accessibility · 1점) — FAIL 2/101 (2%)  «#9 Image Alt 누락 0»
+      ·   2건: N개 요소에 'alt' 속성이 없습니다. [측정 10]
+  - perf_redirect (#6 · performance · 1점) — FAIL 1/101 (1%)  «#6 Redirect ≤ 1»
+      ·   1건: 리다이렉트 N회 — N회 이하 권장 [측정 2]
+  - a11y_aria_labels (a11y#12 · accessibility · 1점) — FAIL 1/101 (1%)  «#12 ARIA 누락 < 10%»
+      ·   1건: 누락 N% — N% 미만 필요 [측정 21.1]
+  - ai_schema_breadcrumb (#21 · schema_markup · 1점) — FAIL 1/101 (1%)  «#21 Schema: BreadcrumbList»
+      ·   1건: @type='BreadcrumbList' 노드 없음
+
+### [experience] 익스피어리언스 — 100건  (감점 항목 11개)
+  - ai_schema_image (#26 · schema_markup · 1점) — FAIL 100/100 (100%)  «#26 Schema: ImageObject»
+      · 100건: @type='ImageObject' 노드 없음
+  - ai_summary_box (#35 · citable_content · 1점) — FAIL 100/100 (100%)  «#35 Summary Box (콘텐츠)»
+      · 100건: 요약 블록(헤딩 문구·selector)을 찾지 못했습니다.
+  - ai_schema_article (#29 · schema_markup · 1점) — FAIL 93/93 (100%)  «#29 Schema: Article»
+      ·  93건: @type='Article' 노드 없음
+  - ai_schema_video (#27 · schema_markup · 1점) — FAIL 1/1 (100%)  «#27 Schema: VideoObject»
+      ·   1건: 필수 필드 누락: url
+  - ai_definition (#33 · citable_content · 1점) — FAIL 92/100 (92%)  «#33 Definition Paragraph»
+      ·  92건: 정의문 N건 — N건 이상 필요 [측정 0]
+  - ai_faq_block (#32 · citable_content · 1점) — FAIL 83/100 (83%)  «#32 FAQ Block (콘텐츠)»
+      ·  83건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
+  - ai_citable (#36 · citable_content · 1점) — FAIL 43/100 (43%)  «#36 Citable Sentence ≥ 5개»
+      ·  43건: 인용 가능 문장 N개 — N개 이상 필요 [측정 0~4]
+  - seo_meta_desc (#14 · seo · 1점) — FAIL 8/100 (8%)  «#14 Meta Description»
+      ·   8건: 'meta[name='description' i]' 요소를 찾을 수 없습니다.
+  - a11y_image_alt (a11y#9 · accessibility · 1점) — FAIL 4/100 (4%)  «#9 Image Alt 누락 0»
+      ·   4건: N개 요소에 'alt' 속성이 없습니다. [측정 2~20]
+  - seo_h1 (#16 · seo · 1점) — FAIL 1/100 (1%)  «#16 H1 정확히 1개»
+      ·   1건: 'hN' N개 — == N 필요 [측정 1]
+  - seo_open_graph (#18 · seo · 1점) — FAIL 1/100 (1%)  «#18 Open Graph (title+image)»
+      ·   1건: 누락: title
+
+### [support_troubleshoot] 지원 - 트러블슈팅 — 100건  (감점 항목 6개)
+  - ai_schema_image (#26 · schema_markup · 1점) — FAIL 100/100 (100%)  «#26 Schema: ImageObject»
+      · 100건: @type='ImageObject' 노드 없음
+  - ai_schema_howto (#28 · schema_markup · 1점) — FAIL 100/100 (100%)  «#28 Schema: HowTo»
+      · 100건: @type='HowTo' 노드 없음
+  - ai_definition (#33 · citable_content · 1점) — FAIL 100/100 (100%)  «#33 Definition Paragraph»
+      · 100건: 정의문 N건 — N건 이상 필요 [측정 0]
+  - ai_summary_box (#35 · citable_content · 1점) — FAIL 100/100 (100%)  «#35 Summary Box (콘텐츠)»
+      · 100건: 요약 블록(헤딩 문구·selector)을 찾지 못했습니다.
+  - ai_citable (#36 · citable_content · 1점) — FAIL 100/100 (100%)  «#36 Citable Sentence ≥ 5개»
+      · 100건: 인용 가능 문장 N개 — N개 이상 필요 [측정 0~1]
+  - ai_ssr_ratio (#37 · ai_crawlability · 1점) — FAIL 100/100 (100%)  «#37 JS HTML Text Ratio ≥ 60%»
+      · 100건: SSR 비율 N% — N% 이상 필요 [측정 47]
+
+### [promotion] 프로모션/약관 — 84건  (감점 항목 14개)
+  - ai_schema_offer (#43 · schema_markup · 1점) — FAIL 84/84 (100%)  «#43 Schema: Offer»
+      ·  84건: @type='Offer' 노드 없음
+  - ai_schema_image (#26 · schema_markup · 1점) — FAIL 84/84 (100%)  «#26 Schema: ImageObject»
+      ·  84건: @type='ImageObject' 노드 없음
+  - ai_faq_block (#32 · citable_content · 1점) — FAIL 84/84 (100%)  «#32 FAQ Block (콘텐츠)»
+      ·  84건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
+  - ai_definition (#33 · citable_content · 1점) — FAIL 84/84 (100%)  «#33 Definition Paragraph»
+      ·  84건: 정의문 N건 — N건 이상 필요 [측정 0]
+  - ai_summary_box (#35 · citable_content · 1점) — FAIL 84/84 (100%)  «#35 Summary Box (콘텐츠)»
+      ·  84건: 요약 블록(헤딩 문구·selector)을 찾지 못했습니다.
+  - ai_schema_video (#27 · schema_markup · 1점) — FAIL 5/5 (100%)  «#27 Schema: VideoObject»
+      ·   5건: 필수 필드 누락: url
+  - seo_meta_desc (#14 · seo · 1점) — FAIL 79/84 (94%)  «#14 Meta Description»
+      ·  79건: 'meta[name='description' i]' 요소를 찾을 수 없습니다.
+  - ai_citable (#36 · citable_content · 1점) — FAIL 71/84 (85%)  «#36 Citable Sentence ≥ 5개»
+      ·  71건: 인용 가능 문장 N개 — N개 이상 필요 [측정 0~4]
+  - seo_h1 (#16 · seo · 1점) — FAIL 70/84 (83%)  «#16 H1 정확히 1개»
+      ·  70건: 'hN' N개 — == N 필요 [측정 1]
+  - seo_open_graph (#18 · seo · 1점) — FAIL 19/84 (23%)  «#18 Open Graph (title+image)»
+      ·  18건: 누락: title
+      ·   1건: 누락: image
+  - a11y_heading_hier (a11y#11 · accessibility · 1점) — FAIL 15/84 (18%)  «#11 Heading Hierarchy»
+      ·  10건: 본문 영역에 헤딩 태그가 없습니다.
+      ·   5건: 헤딩 역순 N건 — 첫 헤딩(hN)보다 상위 레벨이 뒤에 등장 [측정 1~2]
+  - a11y_semantic (a11y#10 · accessibility · 1점) — FAIL 10/84 (12%)  «#10 Semantic HTML»
+      ·  10건: 헤딩 N + 랜드마크 N = N — 의미 구조 N+ 필요 [측정 0]
+  - a11y_image_alt (a11y#9 · accessibility · 1점) — FAIL 7/84 (8%)  «#9 Image Alt 누락 0»
+      ·   7건: N개 요소에 'alt' 속성이 없습니다. [측정 9~10]
+  - ai_image_filename (#40 · ai_crawlability · 1점) — FAIL 1/84 (1%)  «#40 Image File Name 브랜드 포함»
+      ·   1건: 서술적 파일명 N/N (N%) — N% 이상 필요 [측정 13]
+
+### [microsite] 마이크로사이트/캠페인 — 68건  (감점 항목 15개)
+  - ai_schema_image (#26 · schema_markup · 1점) — FAIL 68/68 (100%)  «#26 Schema: ImageObject»
+      ·  68건: @type='ImageObject' 노드 없음
+  - ai_summary_box (#35 · citable_content · 1점) — FAIL 68/68 (100%)  «#35 Summary Box (콘텐츠)»
+      ·  68건: 요약 블록(헤딩 문구·selector)을 찾지 못했습니다.
+  - ai_schema_video (#27 · schema_markup · 1점) — FAIL 21/21 (100%)  «#27 Schema: VideoObject»
+      ·  17건: 필수 필드 누락: url
+      ·   4건: @type='VideoObject' 노드 없음
+  - ai_schema_article (#29 · schema_markup · 1점) — FAIL 5/5 (100%)  «#29 Schema: Article»
+      ·   5건: @type='Article' 노드 없음
+  - ai_faq_block (#32 · citable_content · 1점) — FAIL 64/68 (94%)  «#32 FAQ Block (콘텐츠)»
+      ·  64건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
+  - ai_definition (#33 · citable_content · 1점) — FAIL 61/68 (90%)  «#33 Definition Paragraph»
+      ·  61건: 정의문 N건 — N건 이상 필요 [측정 0]
+  - seo_h1 (#16 · seo · 1점) — FAIL 56/68 (82%)  «#16 H1 정확히 1개»
+      ·  56건: 'hN' N개 — == N 필요 [측정 1]
+  - seo_meta_desc (#14 · seo · 1점) — FAIL 53/68 (78%)  «#14 Meta Description»
+      ·  53건: 'meta[name='description' i]' 요소를 찾을 수 없습니다.
+  - ai_citable (#36 · citable_content · 1점) — FAIL 36/68 (53%)  «#36 Citable Sentence ≥ 5개»
+      ·  36건: 인용 가능 문장 N개 — N개 이상 필요 [측정 0~4]
+  - seo_open_graph (#18 · seo · 1점) — FAIL 19/68 (28%)  «#18 Open Graph (title+image)»
+      ·  17건: 누락: title
+      ·   2건: 누락: image
+  - ai_schema_faq (#23 · schema_markup · 1점) — FAIL 1/4 (25%)  «#23 Schema: FAQPage»
+      ·   1건: @type='FAQPage' 노드 없음
+  - a11y_heading_hier (a11y#11 · accessibility · 1점) — FAIL 10/68 (15%)  «#11 Heading Hierarchy»
+      ·   8건: 본문 영역에 헤딩 태그가 없습니다.
+      ·   2건: 헤딩 역순 N건 — 첫 헤딩(hN)보다 상위 레벨이 뒤에 등장 [측정 1~2]
+  - a11y_semantic (a11y#10 · accessibility · 1점) — FAIL 8/68 (12%)  «#10 Semantic HTML»
+      ·   8건: 헤딩 N + 랜드마크 N = N — 의미 구조 N+ 필요 [측정 0]
+  - a11y_image_alt (a11y#9 · accessibility · 1점) — FAIL 4/68 (6%)  «#9 Image Alt 누락 0»
+      ·   4건: N개 요소에 'alt' 속성이 없습니다. [측정 2~6]
+  - ai_image_filename (#40 · ai_crawlability · 1점) — FAIL 2/68 (3%)  «#40 Image File Name 브랜드 포함»
+      ·   2건: 서술적 파일명 N/N (N%) — N% 이상 필요 [측정 42~43]
+
+### [plp] 제품 카테고리 (PLP) — 42건  (감점 항목 15개)
+  - ai_schema_image (#26 · schema_markup · 1점) — FAIL 42/42 (100%)  «#26 Schema: ImageObject»
+      ·  42건: @type='ImageObject' 노드 없음
+  - ai_schema_video (#27 · schema_markup · 1점) — FAIL 4/4 (100%)  «#27 Schema: VideoObject»
+      ·   4건: @type='VideoObject' 노드 없음
+  - ai_schema_faq (#23 · schema_markup · 1점) — FAIL 2/2 (100%)  «#23 Schema: FAQPage»
+      ·   2건: @type='FAQPage' 노드 없음
+  - ai_summary_box (#35 · citable_content · 1점) — FAIL 41/42 (98%)  «#35 Summary Box (콘텐츠)»
+      ·  41건: 요약 블록(헤딩 문구·selector)을 찾지 못했습니다.
+  - ai_faq_block (#32 · citable_content · 1점) — FAIL 39/42 (93%)  «#32 FAQ Block (콘텐츠)»
+      ·  39건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
+  - ai_definition (#33 · citable_content · 1점) — FAIL 39/42 (93%)  «#33 Definition Paragraph»
+      ·  39건: 정의문 N건 — N건 이상 필요 [측정 0]
+  - ai_citable (#36 · citable_content · 1점) — FAIL 36/42 (86%)  «#36 Citable Sentence ≥ 5개»
+      ·  36건: 인용 가능 문장 N개 — N개 이상 필요 [측정 0~4]
+  - a11y_heading_hier (a11y#11 · accessibility · 1점) — FAIL 23/42 (55%)  «#11 Heading Hierarchy»
+      ·  13건: 본문 영역에 헤딩 태그가 없습니다.
+      ·  10건: 헤딩 역순 N건 — 첫 헤딩(hN)보다 상위 레벨이 뒤에 등장 [측정 1]
+  - seo_h1 (#16 · seo · 1점) — FAIL 20/42 (48%)  «#16 H1 정확히 1개»
+      ·  20건: 'hN' N개 — == N 필요 [측정 1]
+  - ai_schema_collection (#24 · schema_markup · 1점) — FAIL 19/42 (45%)  «#24 Schema: CollectionPage (PLP)»
+      ·  19건: @type='CollectionPage' 노드 없음
+  - a11y_semantic (a11y#10 · accessibility · 1점) — FAIL 13/42 (31%)  «#10 Semantic HTML»
+      ·  13건: 헤딩 N + 랜드마크 N = N — 의미 구조 N+ 필요 [측정 0]
+  - seo_meta_desc (#14 · seo · 1점) — FAIL 13/42 (31%)  «#14 Meta Description»
+      ·  13건: 'meta[name='description' i]' 요소를 찾을 수 없습니다.
+  - seo_open_graph (#18 · seo · 1점) — FAIL 13/42 (31%)  «#18 Open Graph (title+image)»
+      ·   6건: 누락: image
+      ·   4건: 누락: title, image
+      ·   3건: 누락: title
+  - ai_schema_breadcrumb (#21 · schema_markup · 1점) — FAIL 3/42 (7%)  «#21 Schema: BreadcrumbList»
+      ·   3건: @type='BreadcrumbList' 노드 없음
+  - ai_image_filename (#40 · ai_crawlability · 1점) — FAIL 1/42 (2%)  «#40 Image File Name 브랜드 포함»
+      ·   1건: 로고·아이콘을 제외하면 판정할 img 가 없습니다.
+
+### [buying_guide] 구매 가이드 — 20건  (감점 항목 12개)
+  - ai_schema_image (#26 · schema_markup · 1점) — FAIL 20/20 (100%)  «#26 Schema: ImageObject»
+      ·  20건: @type='ImageObject' 노드 없음
+  - ai_schema_video (#27 · schema_markup · 1점) — FAIL 13/13 (100%)  «#27 Schema: VideoObject»
+      ·  12건: @type='VideoObject' 노드 없음
+      ·   1건: 필수 필드 누락: url
+  - ai_summary_box (#35 · citable_content · 1점) — FAIL 18/20 (90%)  «#35 Summary Box (콘텐츠)»
+      ·  18건: 요약 블록(헤딩 문구·selector)을 찾지 못했습니다.
+  - ai_faq_block (#32 · citable_content · 1점) — FAIL 16/20 (80%)  «#32 FAQ Block (콘텐츠)»
+      ·  16건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
+  - seo_open_graph (#18 · seo · 1점) — FAIL 10/20 (50%)  «#18 Open Graph (title+image)»
+      ·   9건: 누락: image
+      ·   1건: 누락: title
+  - ai_definition (#33 · citable_content · 1점) — FAIL 9/20 (45%)  «#33 Definition Paragraph»
+      ·   9건: 정의문 N건 — N건 이상 필요 [측정 0]
+  - ai_citable (#36 · citable_content · 1점) — FAIL 6/20 (30%)  «#36 Citable Sentence ≥ 5개»
+      ·   6건: 인용 가능 문장 N개 — N개 이상 필요 [측정 0~4]
+  - ai_image_filename (#40 · ai_crawlability · 1점) — FAIL 5/20 (25%)  «#40 Image File Name 브랜드 포함»
+      ·   5건: 서술적 파일명 N/N (N%) — N% 이상 필요 [측정 13~27]
+  - a11y_heading_hier (a11y#11 · accessibility · 1점) — FAIL 4/20 (20%)  «#11 Heading Hierarchy»
+      ·   3건: 본문 영역에 헤딩 태그가 없습니다.
+      ·   1건: 헤딩 역순 N건 — 첫 헤딩(hN)보다 상위 레벨이 뒤에 등장 [측정 1]
+  - seo_h1 (#16 · seo · 1점) — FAIL 4/20 (20%)  «#16 H1 정확히 1개»
+      ·   4건: 'hN' N개 — == N 필요 [측정 1]
+  - a11y_semantic (a11y#10 · accessibility · 1점) — FAIL 3/20 (15%)  «#10 Semantic HTML»
+      ·   3건: 헤딩 N + 랜드마크 N = N — 의미 구조 N+ 필요 [측정 0]
+  - seo_meta_desc (#14 · seo · 1점) — FAIL 3/20 (15%)  «#14 Meta Description»
+      ·   3건: 'meta[name='description' i]' 요소를 찾을 수 없습니다.
+
+### [home] 홈페이지 — 1건  (감점 항목 7개)
+  - a11y_heading_hier (a11y#11 · accessibility · 1점) — FAIL 1/1 (100%)  «#11 Heading Hierarchy»
+      ·   1건: 헤딩 역순 N건 — 첫 헤딩(hN)보다 상위 레벨이 뒤에 등장 [측정 2]
+  - seo_h1 (#16 · seo · 1점) — FAIL 1/1 (100%)  «#16 H1 정확히 1개»
+      ·   1건: 'hN' N개 — == N 필요 [측정 1]
+  - ai_schema_image (#26 · schema_markup · 1점) — FAIL 1/1 (100%)  «#26 Schema: ImageObject»
+      ·   1건: @type='ImageObject' 노드 없음
+  - ai_faq_block (#32 · citable_content · 1점) — FAIL 1/1 (100%)  «#32 FAQ Block (콘텐츠)»
+      ·   1건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
+  - ai_definition (#33 · citable_content · 1점) — FAIL 1/1 (100%)  «#33 Definition Paragraph»
+      ·   1건: 정의문 N건 — N건 이상 필요 [측정 0]
+  - ai_summary_box (#35 · citable_content · 1점) — FAIL 1/1 (100%)  «#35 Summary Box (콘텐츠)»
+      ·   1건: 요약 블록(헤딩 문구·selector)을 찾지 못했습니다.
+  - ai_citable (#36 · citable_content · 1점) — FAIL 1/1 (100%)  «#36 Citable Sentence ≥ 5개»
+      ·   1건: 인용 가능 문장 N개 — N개 이상 필요 [측정 3]
 
 ##############################################################################
 ## BR   run=br_2026-09-24_run_0da0a651efd2.json
@@ -2195,6 +2464,265 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   2건: 인용 가능 문장 N개 — N개 이상 필요 [측정 0]
   - ai_ssr_ratio (#37 · ai_crawlability · 1점) — FAIL 2/2 (100%)  «#37 JS HTML Text Ratio ≥ 60%»
       ·   2건: SSR 비율 N% — N% 이상 필요 [측정 21]
+
+##############################################################################
+## NL   run=nl_2026-09-29_run_2ceadc0cf8ee.json
+   URL 1048건 · 감사성공 1004 · [config] 신(2026-06-17 재배포)
+   등급(성공 기준): Good 746 / Need Improvement 254 / Poor 4
+   ⚠ 감사 불가(fetch 실패) 44건 — 아래 감점 집계에서 제외:
+        · 31건: HTTP 404 — 200 기대
+        · 13건: status code 없음
+##############################################################################
+
+### [pdp] 제품 상세 (PDP) — 464건  (감점 항목 13개)
+  - ai_schema_product (#25 · schema_markup · 1점) — FAIL 464/464 (100%)  «#25 Schema: Product 풀세트 (PDP)»
+      · 236건: 필수 필드 누락: sku
+      · 227건: 필수 필드 누락: sku, offers.price, offers.availability
+      ·   1건: 필수 필드 누락: description, sku, offers.price, offers.availability
+  - ai_schema_image (#26 · schema_markup · 1점) — FAIL 464/464 (100%)  «#26 Schema: ImageObject»
+      · 439건: @type='ImageObject' 노드 없음
+      ·  23건: 필수 필드 누락: url, uploadDate
+      ·   2건: 필수 필드 누락: url, description, uploadDate
+  - ai_schema_video (#27 · schema_markup · 1점) — FAIL 335/335 (100%)  «#27 Schema: VideoObject»
+      · 265건: 필수 필드 누락: url
+      ·  70건: @type='VideoObject' 노드 없음
+  - ai_schema_faq (#23 · schema_markup · 1점) — FAIL 277/464 (60%)  «#23 Schema: FAQPage»
+      · 277건: @type='FAQPage' 노드 없음
+  - ai_definition (#33 · citable_content · 1점) — FAIL 256/464 (55%)  «#33 Definition Paragraph»
+      · 256건: 정의문 N건 — N건 이상 필요 [측정 0]
+  - ai_schema_offer (#43 · schema_markup · 1점) — FAIL 228/464 (49%)  «#43 Schema: Offer»
+      · 228건: @type='Offer' 노드 없음
+  - ai_image_filename (#40 · ai_crawlability · 1점) — FAIL 126/464 (27%)  «#40 Image File Name 브랜드 포함»
+      · 126건: 서술적 파일명 N/N (N%) — N% 이상 필요 [측정 22~35]
+  - a11y_image_alt (a11y#9 · accessibility · 1점) — FAIL 75/464 (16%)  «#9 Image Alt 누락 0»
+      ·  75건: N개 요소에 'alt' 속성이 없습니다. [측정 1~14]
+  - seo_h1 (#16 · seo · 1점) — FAIL 31/464 (7%)  «#16 H1 정확히 1개»
+      ·  31건: 'hN' N개 — == N 필요 [측정 1]
+  - ai_summary_box (#35 · citable_content · 1점) — FAIL 15/464 (3%)  «#35 Summary Box (콘텐츠)»
+      ·  15건: 요약 블록(헤딩 문구·selector)을 찾지 못했습니다.
+  - ai_citable (#36 · citable_content · 1점) — FAIL 6/464 (1%)  «#36 Citable Sentence ≥ 5개»
+      ·   6건: 인용 가능 문장 N개 — N개 이상 필요 [측정 4]
+  - seo_meta_desc (#14 · seo · 1점) — FAIL 1/464 (0%)  «#14 Meta Description»
+      ·   1건: 'content' 속성이 없거나 N자 미만입니다. [측정 1]
+  - seo_indexable (#17 · seo · 1점) — FAIL 1/464 (0%)  «#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)»
+      ·   1건: 'noindex' 선언으로 색인이 차단됩니다.
+
+### [experience] 익스피어리언스 — 100건  (감점 항목 9개)
+  - ai_schema_image (#26 · schema_markup · 1점) — FAIL 100/100 (100%)  «#26 Schema: ImageObject»
+      · 100건: @type='ImageObject' 노드 없음
+  - ai_summary_box (#35 · citable_content · 1점) — FAIL 100/100 (100%)  «#35 Summary Box (콘텐츠)»
+      · 100건: 요약 블록(헤딩 문구·selector)을 찾지 못했습니다.
+  - ai_schema_article (#29 · schema_markup · 1점) — FAIL 95/95 (100%)  «#29 Schema: Article»
+      ·  95건: @type='Article' 노드 없음
+  - ai_schema_video (#27 · schema_markup · 1점) — FAIL 1/1 (100%)  «#27 Schema: VideoObject»
+      ·   1건: 필수 필드 누락: url
+  - ai_definition (#33 · citable_content · 1점) — FAIL 92/100 (92%)  «#33 Definition Paragraph»
+      ·  92건: 정의문 N건 — N건 이상 필요 [측정 0]
+  - ai_faq_block (#32 · citable_content · 1점) — FAIL 83/100 (83%)  «#32 FAQ Block (콘텐츠)»
+      ·  83건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
+  - seo_meta_desc (#14 · seo · 1점) — FAIL 7/100 (7%)  «#14 Meta Description»
+      ·   7건: 'meta[name='description' i]' 요소를 찾을 수 없습니다.
+  - a11y_image_alt (a11y#9 · accessibility · 1점) — FAIL 3/100 (3%)  «#9 Image Alt 누락 0»
+      ·   3건: N개 요소에 'alt' 속성이 없습니다. [측정 2~20]
+  - seo_h1 (#16 · seo · 1점) — FAIL 1/100 (1%)  «#16 H1 정확히 1개»
+      ·   1건: 'hN' N개 — == N 필요 [측정 1]
+
+### [support_troubleshoot] 지원 - 트러블슈팅 — 100건  (감점 항목 5개)
+  - ai_schema_image (#26 · schema_markup · 1점) — FAIL 100/100 (100%)  «#26 Schema: ImageObject»
+      · 100건: @type='ImageObject' 노드 없음
+  - ai_schema_howto (#28 · schema_markup · 1점) — FAIL 100/100 (100%)  «#28 Schema: HowTo»
+      · 100건: @type='HowTo' 노드 없음
+  - ai_definition (#33 · citable_content · 1점) — FAIL 100/100 (100%)  «#33 Definition Paragraph»
+      · 100건: 정의문 N건 — N건 이상 필요 [측정 0]
+  - ai_summary_box (#35 · citable_content · 1점) — FAIL 100/100 (100%)  «#35 Summary Box (콘텐츠)»
+      · 100건: 요약 블록(헤딩 문구·selector)을 찾지 못했습니다.
+  - ai_ssr_ratio (#37 · ai_crawlability · 1점) — FAIL 100/100 (100%)  «#37 JS HTML Text Ratio ≥ 60%»
+      · 100건: SSR 비율 N% — N% 이상 필요 [측정 47]
+
+### [business] B2B (사업자) — 98건  (감점 항목 18개)
+  - ai_schema_product (#25 · schema_markup · 1점) — FAIL 98/98 (100%)  «#25 Schema: Product 풀세트 (PDP)»
+      ·  80건: 필수 필드 누락: sku, offers.price, offers.availability
+      ·  18건: @type='Product/ProductGroup' 노드 없음
+  - ai_schema_offer (#43 · schema_markup · 1점) — FAIL 98/98 (100%)  «#43 Schema: Offer»
+      ·  98건: @type='Offer' 노드 없음
+  - ai_schema_image (#26 · schema_markup · 1점) — FAIL 98/98 (100%)  «#26 Schema: ImageObject»
+      ·  98건: @type='ImageObject' 노드 없음
+  - ai_ssr_ratio (#37 · ai_crawlability · 1점) — FAIL 98/98 (100%)  «#37 JS HTML Text Ratio ≥ 60%»
+      ·  98건: SSR 비율 N% — N% 이상 필요 [측정 57]
+  - ai_schema_video (#27 · schema_markup · 1점) — FAIL 26/26 (100%)  «#27 Schema: VideoObject»
+      ·  24건: 필수 필드 누락: url
+      ·   2건: @type='VideoObject' 노드 없음
+  - ai_image_filename (#40 · ai_crawlability · 1점) — FAIL 71/98 (72%)  «#40 Image File Name 브랜드 포함»
+      ·  71건: 서술적 파일명 N/N (N%) — N% 이상 필요 [측정 4~19]
+  - ai_definition (#33 · citable_content · 1점) — FAIL 56/98 (57%)  «#33 Definition Paragraph»
+      ·  56건: 정의문 N건 — N건 이상 필요 [측정 0]
+  - seo_h1 (#16 · seo · 1점) — FAIL 26/98 (27%)  «#16 H1 정확히 1개»
+      ·  26건: 'hN' N개 — == N 필요 [측정 1]
+  - ai_summary_box (#35 · citable_content · 1점) — FAIL 25/98 (26%)  «#35 Summary Box (콘텐츠)»
+      ·  25건: 요약 블록(헤딩 문구·selector)을 찾지 못했습니다.
+  - ai_faq_block (#32 · citable_content · 1점) — FAIL 17/98 (17%)  «#32 FAQ Block (콘텐츠)»
+      ·  17건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
+  - seo_meta_desc (#14 · seo · 1점) — FAIL 10/98 (10%)  «#14 Meta Description»
+      ·  10건: 'meta[name='description' i]' 요소를 찾을 수 없습니다.
+  - ai_citable (#36 · citable_content · 1점) — FAIL 10/98 (10%)  «#36 Citable Sentence ≥ 5개»
+      ·  10건: 인용 가능 문장 N개 — N개 이상 필요 [측정 4]
+  - seo_open_graph (#18 · seo · 1점) — FAIL 8/98 (8%)  «#18 Open Graph (title+image)»
+      ·   8건: 누락: title
+  - a11y_heading_hier (a11y#11 · accessibility · 1점) — FAIL 5/98 (5%)  «#11 Heading Hierarchy»
+      ·   4건: 본문 영역에 헤딩 태그가 없습니다.
+      ·   1건: 헤딩 역순 N건 — 첫 헤딩(hN)보다 상위 레벨이 뒤에 등장 [측정 1]
+  - a11y_semantic (a11y#10 · accessibility · 1점) — FAIL 4/98 (4%)  «#10 Semantic HTML»
+      ·   4건: 헤딩 N + 랜드마크 N = N — 의미 구조 N+ 필요 [측정 0]
+  - perf_redirect (#6 · performance · 1점) — FAIL 1/98 (1%)  «#6 Redirect ≤ 1»
+      ·   1건: 리다이렉트 N회 — N회 이하 권장 [측정 2]
+  - a11y_aria_labels (a11y#12 · accessibility · 1점) — FAIL 1/98 (1%)  «#12 ARIA 누락 < 10%»
+      ·   1건: 누락 N% — N% 미만 필요 [측정 21.1]
+  - ai_schema_breadcrumb (#21 · schema_markup · 1점) — FAIL 1/98 (1%)  «#21 Schema: BreadcrumbList»
+      ·   1건: @type='BreadcrumbList' 노드 없음
+
+### [promotion] 프로모션/약관 — 93건  (감점 항목 14개)
+  - ai_schema_offer (#43 · schema_markup · 1점) — FAIL 93/93 (100%)  «#43 Schema: Offer»
+      ·  93건: @type='Offer' 노드 없음
+  - ai_schema_image (#26 · schema_markup · 1점) — FAIL 93/93 (100%)  «#26 Schema: ImageObject»
+      ·  93건: @type='ImageObject' 노드 없음
+  - ai_faq_block (#32 · citable_content · 1점) — FAIL 93/93 (100%)  «#32 FAQ Block (콘텐츠)»
+      ·  93건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
+  - ai_definition (#33 · citable_content · 1점) — FAIL 93/93 (100%)  «#33 Definition Paragraph»
+      ·  93건: 정의문 N건 — N건 이상 필요 [측정 0]
+  - ai_summary_box (#35 · citable_content · 1점) — FAIL 93/93 (100%)  «#35 Summary Box (콘텐츠)»
+      ·  93건: 요약 블록(헤딩 문구·selector)을 찾지 못했습니다.
+  - ai_schema_video (#27 · schema_markup · 1점) — FAIL 5/5 (100%)  «#27 Schema: VideoObject»
+      ·   3건: 필수 필드 누락: url
+      ·   2건: @type='VideoObject' 노드 없음
+  - seo_meta_desc (#14 · seo · 1점) — FAIL 87/93 (94%)  «#14 Meta Description»
+      ·  87건: 'meta[name='description' i]' 요소를 찾을 수 없습니다.
+  - seo_h1 (#16 · seo · 1점) — FAIL 79/93 (85%)  «#16 H1 정확히 1개»
+      ·  79건: 'hN' N개 — == N 필요 [측정 1]
+  - seo_open_graph (#18 · seo · 1점) — FAIL 19/93 (20%)  «#18 Open Graph (title+image)»
+      ·  18건: 누락: title
+      ·   1건: 누락: image
+  - a11y_heading_hier (a11y#11 · accessibility · 1점) — FAIL 12/93 (13%)  «#11 Heading Hierarchy»
+      ·   6건: 헤딩 역순 N건 — 첫 헤딩(hN)보다 상위 레벨이 뒤에 등장 [측정 1~2]
+      ·   6건: 본문 영역에 헤딩 태그가 없습니다.
+  - a11y_image_alt (a11y#9 · accessibility · 1점) — FAIL 7/93 (8%)  «#9 Image Alt 누락 0»
+      ·   7건: N개 요소에 'alt' 속성이 없습니다. [측정 3~10]
+  - a11y_semantic (a11y#10 · accessibility · 1점) — FAIL 6/93 (6%)  «#10 Semantic HTML»
+      ·   6건: 헤딩 N + 랜드마크 N = N — 의미 구조 N+ 필요 [측정 0]
+  - perf_redirect (#6 · performance · 1점) — FAIL 3/93 (3%)  «#6 Redirect ≤ 1»
+      ·   3건: 리다이렉트 N회 — N회 이하 권장 [측정 2]
+  - seo_indexable (#17 · seo · 1점) — FAIL 3/93 (3%)  «#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)»
+      ·   3건: 'noindex' 선언으로 색인이 차단됩니다.
+
+### [microsite] 마이크로사이트/캠페인 — 65건  (감점 항목 14개)
+  - ai_schema_image (#26 · schema_markup · 1점) — FAIL 65/65 (100%)  «#26 Schema: ImageObject»
+      ·  65건: @type='ImageObject' 노드 없음
+  - ai_summary_box (#35 · citable_content · 1점) — FAIL 65/65 (100%)  «#35 Summary Box (콘텐츠)»
+      ·  65건: 요약 블록(헤딩 문구·selector)을 찾지 못했습니다.
+  - ai_schema_video (#27 · schema_markup · 1점) — FAIL 24/24 (100%)  «#27 Schema: VideoObject»
+      ·  20건: @type='VideoObject' 노드 없음
+      ·   4건: 필수 필드 누락: url
+  - ai_schema_article (#29 · schema_markup · 1점) — FAIL 5/5 (100%)  «#29 Schema: Article»
+      ·   5건: @type='Article' 노드 없음
+  - ai_faq_block (#32 · citable_content · 1점) — FAIL 59/65 (91%)  «#32 FAQ Block (콘텐츠)»
+      ·  59건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
+  - ai_definition (#33 · citable_content · 1점) — FAIL 57/65 (88%)  «#33 Definition Paragraph»
+      ·  57건: 정의문 N건 — N건 이상 필요 [측정 0]
+  - seo_h1 (#16 · seo · 1점) — FAIL 48/65 (74%)  «#16 H1 정확히 1개»
+      ·  48건: 'hN' N개 — == N 필요 [측정 1]
+  - seo_meta_desc (#14 · seo · 1점) — FAIL 43/65 (66%)  «#14 Meta Description»
+      ·  43건: 'meta[name='description' i]' 요소를 찾을 수 없습니다.
+  - seo_open_graph (#18 · seo · 1점) — FAIL 23/65 (35%)  «#18 Open Graph (title+image)»
+      ·  16건: 누락: title
+      ·   7건: 누락: image
+  - ai_schema_faq (#23 · schema_markup · 1점) — FAIL 1/4 (25%)  «#23 Schema: FAQPage»
+      ·   1건: @type='FAQPage' 노드 없음
+  - a11y_heading_hier (a11y#11 · accessibility · 1점) — FAIL 11/65 (17%)  «#11 Heading Hierarchy»
+      ·   7건: 본문 영역에 헤딩 태그가 없습니다.
+      ·   4건: 헤딩 역순 N건 — 첫 헤딩(hN)보다 상위 레벨이 뒤에 등장 [측정 1~2]
+  - a11y_semantic (a11y#10 · accessibility · 1점) — FAIL 7/65 (11%)  «#10 Semantic HTML»
+      ·   7건: 헤딩 N + 랜드마크 N = N — 의미 구조 N+ 필요 [측정 0]
+  - a11y_image_alt (a11y#9 · accessibility · 1점) — FAIL 5/65 (8%)  «#9 Image Alt 누락 0»
+      ·   5건: N개 요소에 'alt' 속성이 없습니다. [측정 1~6]
+  - ai_image_filename (#40 · ai_crawlability · 1점) — FAIL 2/65 (3%)  «#40 Image File Name 브랜드 포함»
+      ·   2건: 서술적 파일명 N/N (N%) — N% 이상 필요 [측정 51~52]
+
+### [plp] 제품 카테고리 (PLP) — 48건  (감점 항목 14개)
+  - ai_schema_image (#26 · schema_markup · 1점) — FAIL 48/48 (100%)  «#26 Schema: ImageObject»
+      ·  48건: @type='ImageObject' 노드 없음
+  - ai_schema_video (#27 · schema_markup · 1점) — FAIL 16/16 (100%)  «#27 Schema: VideoObject»
+      ·  16건: @type='VideoObject' 노드 없음
+  - ai_summary_box (#35 · citable_content · 1점) — FAIL 47/48 (98%)  «#35 Summary Box (콘텐츠)»
+      ·  47건: 요약 블록(헤딩 문구·selector)을 찾지 못했습니다.
+  - ai_faq_block (#32 · citable_content · 1점) — FAIL 37/48 (77%)  «#32 FAQ Block (콘텐츠)»
+      ·  37건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
+  - ai_definition (#33 · citable_content · 1점) — FAIL 35/48 (73%)  «#33 Definition Paragraph»
+      ·  35건: 정의문 N건 — N건 이상 필요 [측정 0]
+  - a11y_heading_hier (a11y#11 · accessibility · 1점) — FAIL 24/48 (50%)  «#11 Heading Hierarchy»
+      ·  16건: 헤딩 역순 N건 — 첫 헤딩(hN)보다 상위 레벨이 뒤에 등장 [측정 1~2]
+      ·   8건: 본문 영역에 헤딩 태그가 없습니다.
+  - ai_schema_collection (#24 · schema_markup · 1점) — FAIL 17/48 (35%)  «#24 Schema: CollectionPage (PLP)»
+      ·  17건: @type='CollectionPage' 노드 없음
+  - seo_h1 (#16 · seo · 1점) — FAIL 13/48 (27%)  «#16 H1 정확히 1개»
+      ·  13건: 'hN' N개 — == N 필요 [측정 1]
+  - a11y_image_alt (a11y#9 · accessibility · 1점) — FAIL 9/48 (19%)  «#9 Image Alt 누락 0»
+      ·   9건: N개 요소에 'alt' 속성이 없습니다. [측정 3~8]
+  - seo_meta_desc (#14 · seo · 1점) — FAIL 9/48 (19%)  «#14 Meta Description»
+      ·   9건: 'meta[name='description' i]' 요소를 찾을 수 없습니다.
+  - a11y_semantic (a11y#10 · accessibility · 1점) — FAIL 8/48 (17%)  «#10 Semantic HTML»
+      ·   8건: 헤딩 N + 랜드마크 N = N — 의미 구조 N+ 필요 [측정 0]
+  - seo_open_graph (#18 · seo · 1점) — FAIL 7/48 (15%)  «#18 Open Graph (title+image)»
+      ·   3건: 누락: title
+      ·   2건: 누락: image
+      ·   2건: 누락: title, image
+  - ai_citable (#36 · citable_content · 1점) — FAIL 4/48 (8%)  «#36 Citable Sentence ≥ 5개»
+      ·   4건: 인용 가능 문장 N개 — N개 이상 필요 [측정 4]
+  - ai_image_filename (#40 · ai_crawlability · 1점) — FAIL 1/48 (2%)  «#40 Image File Name 브랜드 포함»
+      ·   1건: 로고·아이콘을 제외하면 판정할 img 가 없습니다.
+
+### [buying_guide] 구매 가이드 — 35건  (감점 항목 12개)
+  - ai_schema_image (#26 · schema_markup · 1점) — FAIL 35/35 (100%)  «#26 Schema: ImageObject»
+      ·  35건: @type='ImageObject' 노드 없음
+  - ai_schema_video (#27 · schema_markup · 1점) — FAIL 19/19 (100%)  «#27 Schema: VideoObject»
+      ·  12건: @type='VideoObject' 노드 없음
+      ·   7건: 필수 필드 누락: url
+  - ai_schema_article (#29 · schema_markup · 1점) — FAIL 2/2 (100%)  «#29 Schema: Article»
+      ·   2건: @type='Article' 노드 없음
+  - ai_summary_box (#35 · citable_content · 1점) — FAIL 33/35 (94%)  «#35 Summary Box (콘텐츠)»
+      ·  33건: 요약 블록(헤딩 문구·selector)을 찾지 못했습니다.
+  - ai_definition (#33 · citable_content · 1점) — FAIL 18/35 (51%)  «#33 Definition Paragraph»
+      ·  18건: 정의문 N건 — N건 이상 필요 [측정 0]
+  - ai_faq_block (#32 · citable_content · 1점) — FAIL 14/35 (40%)  «#32 FAQ Block (콘텐츠)»
+      ·  14건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
+  - seo_open_graph (#18 · seo · 1점) — FAIL 12/35 (34%)  «#18 Open Graph (title+image)»
+      ·   9건: 누락: image
+      ·   3건: 누락: title
+  - seo_h1 (#16 · seo · 1점) — FAIL 10/35 (29%)  «#16 H1 정확히 1개»
+      ·  10건: 'hN' N개 — == N 필요 [측정 1]
+  - a11y_heading_hier (a11y#11 · accessibility · 1점) — FAIL 9/35 (26%)  «#11 Heading Hierarchy»
+      ·   5건: 헤딩 역순 N건 — 첫 헤딩(hN)보다 상위 레벨이 뒤에 등장 [측정 1]
+      ·   4건: 본문 영역에 헤딩 태그가 없습니다.
+  - seo_meta_desc (#14 · seo · 1점) — FAIL 5/35 (14%)  «#14 Meta Description»
+      ·   5건: 'meta[name='description' i]' 요소를 찾을 수 없습니다.
+  - a11y_semantic (a11y#10 · accessibility · 1점) — FAIL 4/35 (11%)  «#10 Semantic HTML»
+      ·   4건: 헤딩 N + 랜드마크 N = N — 의미 구조 N+ 필요 [측정 0]
+  - a11y_image_alt (a11y#9 · accessibility · 1점) — FAIL 1/35 (3%)  «#9 Image Alt 누락 0»
+      ·   1건: N개 요소에 'alt' 속성이 없습니다. [측정 5]
+
+### [home] 홈페이지 — 1건  (감점 항목 7개)
+  - a11y_heading_hier (a11y#11 · accessibility · 1점) — FAIL 1/1 (100%)  «#11 Heading Hierarchy»
+      ·   1건: 헤딩 역순 N건 — 첫 헤딩(hN)보다 상위 레벨이 뒤에 등장 [측정 2]
+  - seo_h1 (#16 · seo · 1점) — FAIL 1/1 (100%)  «#16 H1 정확히 1개»
+      ·   1건: 'hN' N개 — == N 필요 [측정 1]
+  - ai_schema_image (#26 · schema_markup · 1점) — FAIL 1/1 (100%)  «#26 Schema: ImageObject»
+      ·   1건: @type='ImageObject' 노드 없음
+  - ai_schema_video (#27 · schema_markup · 1점) — FAIL 1/1 (100%)  «#27 Schema: VideoObject»
+      ·   1건: @type='VideoObject' 노드 없음
+  - ai_faq_block (#32 · citable_content · 1점) — FAIL 1/1 (100%)  «#32 FAQ Block (콘텐츠)»
+      ·   1건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
+  - ai_definition (#33 · citable_content · 1점) — FAIL 1/1 (100%)  «#33 Definition Paragraph»
+      ·   1건: 정의문 N건 — N건 이상 필요 [측정 0]
+  - ai_summary_box (#35 · citable_content · 1점) — FAIL 1/1 (100%)  «#35 Summary Box (콘텐츠)»
+      ·   1건: 요약 블록(헤딩 문구·selector)을 찾지 못했습니다.
 
 ##############################################################################
 ## UK   run=uk_2026-09-24_run_511601681e9c.json

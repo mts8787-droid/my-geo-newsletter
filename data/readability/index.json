@@ -111,6 +111,28 @@
       ],
       "overallAvg": 81.3,
       "urlCount": 7992
+    },
+    {
+      "date": "2026-09-29",
+      "channel": "staging",
+      "generatedAt": "2026-09-29T01:04:15.626Z",
+      "countries": [
+        "au",
+        "be",
+        "br",
+        "ca",
+        "de",
+        "es",
+        "global",
+        "in",
+        "mx",
+        "nl",
+        "uk",
+        "us",
+        "vn"
+      ],
+      "overallAvg": 81.6,
+      "urlCount": 9536
     }
   ]
 }
