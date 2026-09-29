@@ -17,6 +17,7 @@
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs'
 import { rdBandKey } from '../src/shared/readabilityBand.js'
 import { checklistEn } from '../src/shared/readabilityChecklistEn.js'
+import { criteriaDetail } from '../src/shared/readabilityCriteriaDetail.js'
 import { CATEGORY_GUIDE, pick } from '../src/shared/readabilityGuide.js'
 import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
@@ -135,6 +136,8 @@ const CRIT_T = {
     unitCount: '개',
     subWith: (n, d) => `6개 카테고리 ${n}개 항목으로 lg.com 글로벌 사이트의 AI 가독성을 채점합니다. 통과율은 ${d} 측정분 기준이며, 9월 감사부터 시행할 예정 항목 4개를 함께 표기했습니다.`,
     subPlain: (n) => `6개 카테고리 ${n}개 항목의 정의와 Pass 기준입니다. 9월 감사부터 시행할 예정 항목 4개를 함께 표기했습니다.`,
+    dSrc: '검수 대상', dLogic: '판정 로직', dExcept: '예외 · 별도 조건',
+    modelNote: '검수에 사용하는 LLM 모델은 <b>Claude Fable 5</b> 입니다. 아래 판정 로직의 패턴 요소(키워드·정규식·셀렉터)는 lg.com <b>실 콘텐츠 예시를 기반으로 패턴화</b>한 것입니다.',
     nx: [
       '<b>#5 HTML &lt; 100KB</b> — 측정은 정확하나 lg.com HTML 중앙값이 1,536KB라 실질 통과율 0.0%. 통과 건의 대부분이 본문 0자인 빈 404 셸이라 지표 방향이 반대였음',
       '<b>#8 Render Blocking 0</b> — 통과율 2.3%로 변별력 없음',
@@ -144,12 +147,15 @@ const CRIT_T = {
     ns: [
       '<b>B2B(사업자) · 프로모션/약관</b> — GEO 대상이 아니라 점수·통과율·URL 카운트 전부에서 제외',
       '<b>비-200 페이지</b> (404 · 500 · fetch 실패) — 전 체크가 cascade-FAIL이라 개선 대상이 아님',
-      '<b>분류불가 · 홈페이지</b> — 측정 의미 없음',
+      '<b>분류불가 · 홈페이지 · 회사소개 · 서포트-일반</b> — 측정 의미 없음 / 아웃데이트 URL 다수 (서포트-트러블슈팅은 별개 타입으로 유지)',
+      '<b>브랜드 스토리/캠페인 URL</b> (lg-story · lifesgood 경로) — GEO KPI 대상 아님. 뉴스룸/Press 버킷에 섞여 지표를 왜곡하던 것을 제외',
+      '<b>단종·비활성 PDP</b> (PLP 상품 API 활성 목록 밖) 및 <b>악세사리 PDP</b> (필터·리모컨·설치키트 — 카테고리와 URL 키워드로 판정) — 콘텐츠가 빈약해 PDP 평균을 왜곡',
+      '<b>페이지타입별 표본 상한 100페이지</b> — URL SHA1 해시 순 결정적 표본 (재집계해도 같은 표본). PDP 는 상한 없음',
     ],
     nc: [
       '<b>#1 TTFB</b> — 어딧 크롤러 자체 측정값이 동시 크롤 큐잉에 오염돼 실제보다 6~200배 크게 잡혔음. PageSpeed Insights의 server-response-time을 정본으로 교체',
       '<b>#4 Cache-Control</b> — 원래 룰이 no-cache/no-store가 섞이면 max-age 값과 무관하게 즉시 FAIL 처리했음. max-age 디렉티브가 설정돼 있으면 통과로 완화',
-      '<b>#34 Author 또는 출처+날짜</b> — byline은 에디토리얼에만 성립하는 개념이라 Global Newsroom · Press &amp; Media · 구매 가이드 · LG Experience에만 적용',
+      '<b>#34 Author 또는 출처+날짜</b> — byline은 에디토리얼에만 성립하는 개념이라 Global Newsroom · Press &amp; Media에만 적용 (초기에는 구매 가이드 · LG Experience 포함)',
     ],
     nm: [
       '<b>#17 Robots</b> — meta robots와 X-Robots-Tag 헤더 중 <b>하나만 충족해도 통과</b> (OR 조건). 대표 체크 하나로 채점',
@@ -174,6 +180,8 @@ const CRIT_T = {
     unitCount: '',
     subWith: (n, d) => `${n} items across 6 categories score the AI readability of lg.com sites. Pass rates are from the ${d} run, and the 4 items planned for the September audit are listed alongside.`,
     subPlain: (n) => `Definitions and pass criteria for ${n} items across 6 categories. The 4 items planned for the September audit are listed alongside.`,
+    dSrc: 'Audit target', dLogic: 'Decision logic', dExcept: 'Exceptions · special conditions',
+    modelNote: 'The LLM model used for the audit is <b>Claude Fable 5</b>. Pattern elements in the decision logic below (keywords, regexes, selectors) are <b>patterned from real lg.com content examples</b>.',
     nx: [
       '<b>#5 HTML &lt; 100KB</b> — measurement is accurate, but lg.com’s median HTML is 1,536KB so the real pass rate is 0.0%. Most passing cases were empty 404 shells with no body text, inverting the signal',
       '<b>#8 Render Blocking 0</b> — 2.3% pass rate, no discriminating power',
@@ -183,12 +191,15 @@ const CRIT_T = {
     ns: [
       '<b>B2B · promotion / terms pages</b> — out of GEO scope, excluded from scores, pass rates, and URL counts',
       '<b>Non-200 pages</b> (404 · 500 · fetch failure) — every check cascade-fails, so they are not improvement targets',
-      '<b>Unclassified · home</b> — no meaningful measurement',
+      '<b>Unclassified · home · about · general support</b> — no meaningful measurement / many outdated URLs (support-troubleshoot remains a separate type)',
+      '<b>Brand story / campaign URLs</b> (lg-story · lifesgood paths) — not a GEO KPI target; they were skewing the newsroom/press buckets',
+      '<b>Discontinued/inactive PDPs</b> (outside the PLP product-API active list) and <b>accessory PDPs</b> (filters, remotes, installation kits — judged by category and URL keywords) — thin content that distorted the PDP average',
+      '<b>Per-page-type sample cap of 100 pages</b> — a deterministic sample in URL SHA1 order (identical across re-aggregations). PDP is exempt from the cap',
     ],
     nc: [
       '<b>#1 TTFB</b> — the crawler’s own measurement was contaminated by concurrent-crawl queuing and ran 6–200× high. Replaced with PageSpeed Insights server-response-time as the source of truth',
       '<b>#4 Cache-Control</b> — the original rule failed immediately when no-cache/no-store appeared, ignoring max-age. Relaxed to pass when a max-age directive is present',
-      '<b>#34 Author or source + date</b> — a byline only makes sense for editorial content, so it applies only to Global Newsroom · Press &amp; Media · Buying Guide · LG Experience',
+      '<b>#34 Author or source + date</b> — a byline only makes sense for editorial content, so it applies only to Global Newsroom · Press &amp; Media (initially also Buying Guide · LG Experience)',
     ],
     nm: [
       '<b>#17 Robots</b> — passes if <b>either</b> meta robots or the X-Robots-Tag header allows indexing (OR condition). Scored as a single representative check',
@@ -236,13 +247,22 @@ export function renderCriteriaHTML({ rows, snapshot, withScores, lang = 'ko' }) 
       const cls = r.no === '예정' ? ' class="planned"' : r.pendNote ? ' class="pending"' : ''
       const tag = r.planNote ? `<span class="tag plan">${esc(ct.tagPlan)}</span>`
         : r.pendNote ? `<span class="tag pend">${esc(ct.tagPend)}</span>` : ''
-      return `<tr${cls}>
+      const row = `<tr${cls}>
         <td class="c-no">${esc(r.no === '예정' ? ct.planned : r.no)}</td>
         <td class="c-item"><b>${esc(r.name)}</b><span class="def">${esc(r.def)}</span></td>
         <td class="c-pass">${esc(r.pass)}${tag}</td>
         <td class="c-method">${esc(r.method)}</td>
         ${withScores ? `<td class="c-rate">${r.no === '예정' || r.pendNote ? '<span class="dash">—</span>' : rateCell(DOC_TO_CHECK[r.no] || [])}</td>` : ''}
       </tr>`
+      // 점수 제외(기준 문서) 버전에만 항목별 상세 — 검수 대상 소스 · 판정 로직 · 예외 (2026-09-29)
+      const det = !withScores ? criteriaDetail(r.no, L2) : null
+      if (!det) return row
+      return row + `
+      <tr class="detail"><td></td><td colspan="3">
+        <div class="d-line"><span class="d-k">${esc(ct.dSrc)}</span><span class="d-v">${det.src}</span></div>
+        <div class="d-line"><span class="d-k">${esc(ct.dLogic)}</span><span class="d-v">${det.logic}</span></div>
+        <div class="d-line"><span class="d-k">${esc(ct.dExcept)}</span><span class="d-v">${det.except}</span></div>
+      </td></tr>`
     }).join('\n')
     const orphans = (ORPHAN_CHECKS[c] || []).map(o => `<tr class="orphan">
         <td class="c-no">·</td>
@@ -292,6 +312,8 @@ ${orphans}
   const subtitle = withScores
     ? ct.subWith(total, snapshot.date)
     : ct.subPlain(total)
+  // 검수 모델·패턴 출처 안내 — 기준 문서(점수 제외) 버전에만 (사용자 지시 2026-09-29)
+  const modelNote = withScores ? '' : `<div class="model-note">${ct.modelNote}</div>`
 
   return `<!DOCTYPE html>
 <html lang="ko"><head><meta charset="utf-8">
@@ -361,6 +383,16 @@ tbody tr:last-child td{border-bottom:0}
 .tag.pend{background:var(--pend-bg);color:var(--ink3)}
 tr.planned{background:var(--plan-bg)}
 tr.pending td,tr.orphan td{opacity:.62}
+tr.detail td{padding:0 16px 15px;border-bottom:1px solid var(--rule2);background:var(--raise)}
+tr.detail td:first-child{background:var(--raise)}
+.d-line{display:flex;gap:12px;padding:7px 0;border-top:1px dashed var(--rule2)}
+.d-line:first-child{border-top:0;padding-top:10px}
+.d-k{flex:none;width:96px;font-size:11px;font-weight:600;color:var(--accent);letter-spacing:.02em;padding-top:2px}
+.d-v{flex:1;font-size:12.5px;color:var(--ink2);line-height:1.7;min-width:0;overflow-wrap:anywhere}
+.d-v code{font-family:'IBM Plex Mono',monospace;font-size:11px;background:var(--rule2);border-radius:4px;padding:1px 5px;color:var(--ink)}
+.d-v b{color:var(--ink);font-weight:600}
+.model-note{background:#FEF2F4;border:1px solid #F5CCD8;border-radius:10px;padding:12px 16px;font-size:13px;color:var(--ink2);line-height:1.65}
+.model-note b{color:var(--accent);font-weight:600}
 .notes{background:var(--surface);border:1px solid var(--rule);border-radius:12px;padding:22px 24px;display:flex;flex-direction:column;gap:16px}
 .notes h2{margin:0;font-size:17px;font-weight:700}
 .notes h3{margin:0 0 5px;font-size:13px;font-weight:600;color:var(--accent)}
@@ -378,6 +410,7 @@ footer{color:var(--ink3);font-size:12px;border-top:1px solid var(--rule);padding
     <span class="eyebrow">GEO Agent Readability</span>
     <h1>${esc(ct.h1)}</h1>
     <p class="sub">${subtitle}</p>
+    ${modelNote}
     ${meta}
   </header>
   <div class="tiles">

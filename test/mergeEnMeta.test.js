@@ -496,6 +496,23 @@ describe('영문본 — 한글 잔존 0', () => {
     const h = renderCriteriaHTML({ rows: loadRows(), snapshot: snaps[snaps.length - 1], withScores: true, lang: 'en' })
     expect(korOf(h)).toEqual([])
   })
+  it('검수 기준 상세(점수 제외 버전) EN 에 한글이 없다', async () => {
+    const { renderCriteriaHTML, loadRows } = await import('../scripts/render-criteria.mjs')
+    const h = renderCriteriaHTML({ rows: loadRows(), snapshot: null, withScores: false, lang: 'en' })
+    expect(korOf(h)).toEqual([])
+    expect(h).toContain('Claude Fable 5')                      // 검수 모델 안내 (2026-09-29)
+    expect((h.match(/tr class="detail"/g) || []).length).toBeGreaterThan(0)
+  })
+  it('채점 항목 전부에 상세(검수 대상·판정 로직·예외)가 KO/EN 으로 있다', async () => {
+    const { loadRows, DOC_TO_CHECK } = await import('../scripts/render-criteria.mjs')
+    const { CRITERIA_DETAIL } = await import('../src/shared/readabilityCriteriaDetail.js')
+    const scored = loadRows().filter(r => r.no !== '예정' && (DOC_TO_CHECK[r.no] || []).length)
+    const missing = scored.filter(r => {
+      const d = CRITERIA_DETAIL[r.no]
+      return !d || ['ko', 'en'].some(l => !d[l] || !d[l].src || !d[l].logic || !d[l].except)
+    }).map(r => r.no)
+    expect(missing).toEqual([])
+  })
   it('체크리스트 EN 사전이 모든 행을 덮는다', async () => {
     const { loadRows } = await import('../scripts/render-criteria.mjs')
     const { CHECKLIST_EN, CHECKLIST_EN_PLANNED } = await import('../src/shared/readabilityChecklistEn.js')
