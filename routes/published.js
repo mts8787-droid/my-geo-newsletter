@@ -229,8 +229,10 @@ publishedRouter.get(['/p/GEO-Readability-Dashboard/urls.csv', '/p/GEO-Readabilit
 publishedRouter.get('/p/GEO-Readability-Criteria', (req, res) => {
   if (!isIpAllowed(req)) return send403Page(res)
   try {
-    const { snapshot } = loadLatest('published')
-    const html = renderCriteriaHTML({ rows: loadRows(), snapshot, withScores: !!snapshot, lang: readabilityLang(req) })
+    // 스테이징(/admin/readability/criteria.html)과 완전히 동일한 렌더 —
+    // 점수 결합(withScores) 분기 제거 (사용자 지시 2026-09-30: 공개 기준은
+    // 스테이징 criteria 를 그대로 반영, 실측치는 대시보드 본문에서 본다).
+    const html = renderCriteriaHTML({ rows: loadRows(), snapshot: null, withScores: false, lang: readabilityLang(req) })
     setPublishedSecurityHeaders(res)
     res.set('Content-Type', 'text/html; charset=utf-8')
     res.send(html)
