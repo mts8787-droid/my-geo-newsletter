@@ -9,6 +9,7 @@ import { fileURLToPath } from 'url'
 import { PUB_DIR, DATA_DIR } from '../lib/storage.js'
 import { isIpAllowed } from '../lib/network.js'
 import { CHANNELS, readMetaFile } from './publish.js'
+import { renderReadabilityPublic } from '../lib/publish-core.js'
 import { renderCriteriaHTML, loadRows } from '../scripts/render-criteria.mjs'
 import { renderReadabilityHTML } from '../scripts/render-readability.mjs'
 import { loadLatest, latestChecksFile, latestCsvFile, csvFileFor, checksFileFor, READABILITY_DATA_DIR } from './readability.js'
@@ -276,6 +277,26 @@ publishedRouter.get('/p/sheet-raw/:slug.csv', (req, res) => {
   res.set('Content-Disposition', `attachment; filename="${slug}.csv"; filename*=UTF-8''${encodeURIComponent(dlName)}.csv`)
   // BOM — 한글이 Excel 에서 깨지지 않게 (원문에 없을 때만 부착)
   res.send(csv.startsWith('\uFEFF') ? csv : '\uFEFF' + csv)
+})
+
+// ─── KPI 대시보드 Readability 탭 임베드 — 요청 시 렌더 ─────────────────
+// 종전에는 게시 시점 정적 사본(PUB_DIR/<slug>-readability.html)을 서빙해
+// 검수 기준·항목 정의가 게시 시점에 굳었다 (2026-09-30 사용자 리포트: 9월
+// 기준 개편이 KPI 대시보드 Readability 탭에 반영되지 않음). /p/:slug 보다
+// 먼저 등록해 구 사본을 가리고 항상 최신 published 스냅샷으로 렌더한다.
+publishedRouter.get(['/p/GEO-KPI-Dashboard-KO-readability', '/p/GEO-KPI-Dashboard-EN-readability'], (req, res) => {
+  if (!isIpAllowed(req)) return send403Page(res)
+  try {
+    const lang = /-EN-readability$/i.test(req.path) ? 'en' : 'ko'
+    const html = renderReadabilityPublic(lang)
+    if (!html) return res.status(404).send('Readability 스냅샷 없음')
+    setPublishedSecurityHeaders(res)
+    res.set('Content-Type', 'text/html; charset=utf-8')
+    res.send(html)
+  } catch (e) {
+    log.warn({ err: e.message }, 'readability embed render failed')
+    res.status(500).send('Readability 렌더 실패')
+  }
 })
 
 // ─── /p/:slug (게시된 HTML 단일 파일 + CSP) ─────────────────────────────
