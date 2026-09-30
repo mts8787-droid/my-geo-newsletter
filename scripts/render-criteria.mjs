@@ -522,6 +522,16 @@ function main() {
   if (!existsSync(DOCS)) mkdirSync(DOCS, { recursive: true })
   const md = renderCriteriaMarkdown({ rows, generatedAt: snapshot ? snapshot.date : 'n/a' })
   writeFileSync(join(DOCS, 'GEO-AUDIT-CRITERIA.md'), md)
+  // 공개용 체크리스트 동기화 — audit 리포 static/ 은 my-geo 사이트가 공개 서빙한다.
+  // 원본(data/readability/geo-agent-checklist.html)만 고치고 이걸 잊으면 공개본이
+  // 구버전으로 남는다 (2026-09-30 실측: 5월본이 그대로 서빙되고 있었다).
+  const auditStatic = join(ROOT, '..', 'my-geo-audit', 'static', 'geo-agent-checklist.html')
+  try {
+    if (existsSync(dirname(auditStatic))) {
+      writeFileSync(auditStatic, readFileSync(CHECKLIST, 'utf8'))
+      console.log(`[render-criteria] ✓ 공개용 동기화: ${auditStatic}`)
+    }
+  } catch (e) { console.warn(`[render-criteria] WARN 공개용 동기화 실패: ${e.message}`) }
   console.log(`[render-criteria] ✓ Markdown: docs/GEO-AUDIT-CRITERIA.md (${(md.length / 1024).toFixed(1)} KB, ${md.split('\n').length} 줄)`)
   console.log(`[render-criteria]   행 ${rows.length} · 카테고리 ${CAT_ORDER.length} · 채점 ${CAT_ORDER.reduce((a, c) => a + scoredCount(rows, c), 0)}개`)
   console.log('[render-criteria]   HTML 은 파일로 굽지 않음 — /p/GEO-Readability-Criteria · /admin/readability/criteria.html 이 요청 시 렌더')
