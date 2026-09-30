@@ -64,10 +64,14 @@ export function loadLatest(channel = 'published') {
   const entries = (channelEntries && channelEntries.length)
     ? channelEntries
     : [{ date: latestDate }]
+  // dedup 키 = 월 + 커버 국가 구성. 같은 국가 구성의 재측정만 서로를 대체한다 —
+  // 9/20(11국 확정본)과 9/29(베네룩스 2국)는 보완 관계라 둘 다 노출해야 한다
+  // (2026-09-30: 승격 후 9/29 가 9/20 을 공개·스테이징 양쪽에서 가렸다).
   entries.filter(e => (e.channel || 'published') !== 'staging')
-    .forEach(({ date: d }) => {
-      const m = String(d).slice(0, 7)
-      if (!byMonth[m] || byMonth[m] < d) byMonth[m] = d
+    .forEach(e => {
+      const d = e.date
+      const k = String(d).slice(0, 7) + '|' + (Array.isArray(e.countries) ? [...e.countries].sort().join(',') : '')
+      if (!byMonth[k] || byMonth[k] < d) byMonth[k] = d
     })
   const dateList = new Set(Object.values(byMonth))
   entries.filter(e => (e.channel || 'published') === 'staging')
