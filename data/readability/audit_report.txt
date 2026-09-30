@@ -1,6 +1,6 @@
 ==============================================================================
 LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
-생성: 2026-09-29 01:03 UTC
+생성: 2026-09-30 03:36 UTC
 대상: 12개국 최신 run / 국가별 page_type ≤100 샘플
 
 [채점 기준 주의] 2026-06-17 Render 재배포로 #11(헤딩 역순)·#23(FAQ plp)·
@@ -11,13 +11,15 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 ##############################################################################
 ## AU   run=au_2026-09-24_run_d67f6168f4b5.json
    URL 1279건 · 감사성공 1205 · [config] 신(2026-06-17 재배포)
-   등급(성공 기준): Good 586 / Need Improvement 591 / Poor 28
+   등급(성공 기준): Good 511 / Need Improvement 666 / Poor 28
    ⚠ 감사 불가(fetch 실패) 74건 — 아래 감점 집계에서 제외:
         · 71건: HTTP 404 — 200 기대
         · 3건: status code 없음
 ##############################################################################
 
 ### [pdp] 제품 상세 (PDP) — 439건  (감점 항목 11개)
+  - seo_sitemap (#19 · seo · 1점) — FAIL 439/439 (100%)  «#19 Sitemap (1개월 내)»
+      · 439건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_product (#25 · schema_markup · 1점) — FAIL 439/439 (100%)  «#25 Schema: Product 풀세트 (PDP)»
       · 269건: 필수 필드 누락: sku, offers.price, offers.availability
       · 170건: 필수 필드 누락: sku
@@ -33,8 +35,6 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       · 247건: N개 요소에 'alt' 속성이 없습니다. [측정 1~20]
   - ai_schema_faq (#23 · schema_markup · 1점) — FAIL 230/439 (52%)  «#23 Schema: FAQPage»
       · 230건: @type='FAQPage' 노드 없음
-  - seo_sitemap (#19 · seo · 1점) — FAIL 127/439 (29%)  «#19 Sitemap (1개월 내)»
-      · 127건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
   - ai_definition (#33 · citable_content · 1점) — FAIL 76/439 (17%)  «#33 Definition Paragraph»
       ·  76건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_citable (#36 · citable_content · 1점) — FAIL 51/439 (12%)  «#36 Citable Sentence ≥ 5개»
@@ -46,7 +46,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 
 ### [support_troubleshoot] 지원 - 트러블슈팅 — 148건  (감점 항목 7개)
   - seo_sitemap (#19 · seo · 1점) — FAIL 148/148 (100%)  «#19 Sitemap (1개월 내)»
-      · 148건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
+      · 148건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 148/148 (100%)  «#26 Schema: ImageObject»
       · 148건: @type='ImageObject' 노드 없음
   - ai_schema_howto (#28 · schema_markup · 1점) — FAIL 148/148 (100%)  «#28 Schema: HowTo»
@@ -62,7 +62,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 
 ### [plp] 제품 카테고리 (PLP) — 122건  (감점 항목 18개)
   - seo_sitemap (#19 · seo · 1점) — FAIL 122/122 (100%)  «#19 Sitemap (1개월 내)»
-      · 122건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
+      · 122건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 122/122 (100%)  «#26 Schema: ImageObject»
       · 122건: @type='ImageObject' 노드 없음
   - ai_schema_video (#27 · schema_markup · 1점) — FAIL 4/4 (100%)  «#27 Schema: VideoObject»
@@ -102,7 +102,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 
 ### [microsite] 마이크로사이트/캠페인 — 100건  (감점 항목 18개)
   - seo_sitemap (#19 · seo · 1점) — FAIL 100/100 (100%)  «#19 Sitemap (1개월 내)»
-      · 100건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
+      · 100건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 100/100 (100%)  «#26 Schema: ImageObject»
       · 100건: @type='ImageObject' 노드 없음
   - ai_schema_product (#25 · schema_markup · 1점) — FAIL 93/93 (100%)  «#25 Schema: Product 풀세트 (PDP)»
@@ -140,7 +140,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 
 ### [press_media] 프레스앤미디어 — 100건  (감점 항목 13개)
   - seo_sitemap (#19 · seo · 1점) — FAIL 100/100 (100%)  «#19 Sitemap (1개월 내)»
-      · 100건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
+      · 100건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 100/100 (100%)  «#26 Schema: ImageObject»
       · 100건: @type='ImageObject' 노드 없음
   - ai_schema_video (#27 · schema_markup · 1점) — FAIL 1/1 (100%)  «#27 Schema: VideoObject»
@@ -168,7 +168,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 
 ### [promotion] 프로모션/약관 — 98건  (감점 항목 14개)
   - seo_sitemap (#19 · seo · 1점) — FAIL 98/98 (100%)  «#19 Sitemap (1개월 내)»
-      ·  98건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
+      ·  98건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_offer (#43 · schema_markup · 1점) — FAIL 98/98 (100%)  «#43 Schema: Offer»
       ·  98건: @type='Offer' 노드 없음
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 98/98 (100%)  «#26 Schema: ImageObject»
@@ -201,7 +201,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 
 ### [business] B2B (사업자) — 90건  (감점 항목 23개)
   - seo_sitemap (#19 · seo · 1점) — FAIL 90/90 (100%)  «#19 Sitemap (1개월 내)»
-      ·  90건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
+      ·  90건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_product (#25 · schema_markup · 1점) — FAIL 89/89 (100%)  «#25 Schema: Product 풀세트 (PDP)»
       ·  82건: @type='Product/ProductGroup' 노드 없음
       ·   7건: 필수 필드 누락: sku, offers.price, offers.availability
@@ -251,7 +251,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 
 ### [experience] 익스피어리언스 — 88건  (감점 항목 11개)
   - seo_sitemap (#19 · seo · 1점) — FAIL 88/88 (100%)  «#19 Sitemap (1개월 내)»
-      ·  88건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
+      ·  88건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 88/88 (100%)  «#26 Schema: ImageObject»
       ·  88건: @type='ImageObject' 노드 없음
   - ai_schema_article (#29 · schema_markup · 1점) — FAIL 85/85 (100%)  «#29 Schema: Article»
@@ -275,7 +275,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 
 ### [buying_guide] 구매 가이드 — 18건  (감점 항목 13개)
   - seo_sitemap (#19 · seo · 1점) — FAIL 18/18 (100%)  «#19 Sitemap (1개월 내)»
-      ·  18건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
+      ·  18건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 18/18 (100%)  «#26 Schema: ImageObject»
       ·  18건: @type='ImageObject' 노드 없음
   - ai_schema_video (#27 · schema_markup · 1점) — FAIL 6/6 (100%)  «#27 Schema: VideoObject»
@@ -306,7 +306,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 
 ### [home] 홈페이지 — 2건  (감점 항목 12개)
   - seo_sitemap (#19 · seo · 1점) — FAIL 2/2 (100%)  «#19 Sitemap (1개월 내)»
-      ·   2건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
+      ·   2건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 2/2 (100%)  «#26 Schema: ImageObject»
       ·   2건: @type='ImageObject' 노드 없음
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 2/2 (100%)  «#32 FAQ Block (콘텐츠)»
@@ -331,47 +331,50 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   1건: 서술적 파일명 N/N (N%) — N% 이상 필요 [측정 0]
 
 ##############################################################################
-## BE   run=be_2026-09-29_run_9fad43364553.json
-   URL 1019건 · 감사성공 923 · [config] 신(2026-06-17 재배포)
-   등급(성공 기준): Good 460 / Need Improvement 457 / Poor 6
-   ⚠ 감사 불가(fetch 실패) 96건 — 아래 감점 집계에서 제외:
-        · 95건: HTTP 404 — 200 기대
+## BE   run=be_2026-09-29_run_6ff488a49b94.json
+   URL 1019건 · 감사성공 893 · [config] 신(2026-06-17 재배포)
+   등급(성공 기준): Good 395 / Need Improvement 490 / Poor 8
+   ⚠ 감사 불가(fetch 실패) 126건 — 아래 감점 집계에서 제외:
+        · 93건: HTTP 404 — 200 기대
+        · 32건: status code 없음
         · 1건: HTTP 500 — 200 기대
 ##############################################################################
 
-### [pdp] 제품 상세 (PDP) — 407건  (감점 항목 12개)
-  - ai_schema_product (#25 · schema_markup · 1점) — FAIL 407/407 (100%)  «#25 Schema: Product 풀세트 (PDP)»
-      · 272건: 필수 필드 누락: sku, offers.price, offers.availability
-      · 126건: 필수 필드 누락: sku
+### [pdp] 제품 상세 (PDP) — 377건  (감점 항목 13개)
+  - seo_sitemap (#19 · seo · 1점) — FAIL 377/377 (100%)  «#19 Sitemap (1개월 내)»
+      · 377건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
+  - ai_schema_product (#25 · schema_markup · 1점) — FAIL 377/377 (100%)  «#25 Schema: Product 풀세트 (PDP)»
+      · 254건: 필수 필드 누락: sku, offers.price, offers.availability
+      · 114건: 필수 필드 누락: sku
       ·   8건: @type='Product/ProductGroup' 노드 없음
       ·   1건: 필수 필드 누락: sku, offers.availability
-  - ai_schema_image (#26 · schema_markup · 1점) — FAIL 407/407 (100%)  «#26 Schema: ImageObject»
-      · 400건: @type='ImageObject' 노드 없음
-      ·   7건: 필수 필드 누락: url, uploadDate
-  - ai_schema_video (#27 · schema_markup · 1점) — FAIL 361/361 (100%)  «#27 Schema: VideoObject»
-      · 304건: 필수 필드 누락: url
-      ·  57건: @type='VideoObject' 노드 없음
-  - ai_schema_offer (#43 · schema_markup · 1점) — FAIL 281/407 (69%)  «#43 Schema: Offer»
-      · 280건: @type='Offer' 노드 없음
+  - ai_schema_image (#26 · schema_markup · 1점) — FAIL 377/377 (100%)  «#26 Schema: ImageObject»
+      · 376건: @type='ImageObject' 노드 없음
+      ·   1건: 필수 필드 누락: url, uploadDate
+  - ai_schema_video (#27 · schema_markup · 1점) — FAIL 334/334 (100%)  «#27 Schema: VideoObject»
+      · 285건: 필수 필드 누락: url
+      ·  49건: @type='VideoObject' 노드 없음
+  - ai_schema_offer (#43 · schema_markup · 1점) — FAIL 263/377 (70%)  «#43 Schema: Offer»
+      · 262건: @type='Offer' 노드 없음
       ·   1건: 필수 필드 누락: availability
-  - ai_schema_faq (#23 · schema_markup · 1점) — FAIL 233/407 (57%)  «#23 Schema: FAQPage»
-      · 233건: @type='FAQPage' 노드 없음
-  - ai_definition (#33 · citable_content · 1점) — FAIL 171/407 (42%)  «#33 Definition Paragraph»
-      · 171건: 정의문 N건 — N건 이상 필요 [측정 0]
-  - ai_image_filename (#40 · ai_crawlability · 1점) — FAIL 143/407 (35%)  «#40 Image File Name 브랜드 포함»
-      · 143건: 서술적 파일명 N/N (N%) — N% 이상 필요 [측정 13~35]
-  - a11y_image_alt (a11y#9 · accessibility · 1점) — FAIL 80/407 (20%)  «#9 Image Alt 누락 0»
-      ·  80건: N개 요소에 'alt' 속성이 없습니다. [측정 1~20]
-  - seo_h1 (#16 · seo · 1점) — FAIL 33/407 (8%)  «#16 H1 정확히 1개»
+  - ai_schema_faq (#23 · schema_markup · 1점) — FAIL 216/377 (57%)  «#23 Schema: FAQPage»
+      · 216건: @type='FAQPage' 노드 없음
+  - ai_image_filename (#40 · ai_crawlability · 1점) — FAIL 134/377 (36%)  «#40 Image File Name 브랜드 포함»
+      · 134건: 서술적 파일명 N/N (N%) — N% 이상 필요 [측정 13~35]
+  - a11y_image_alt (a11y#9 · accessibility · 1점) — FAIL 73/377 (19%)  «#9 Image Alt 누락 0»
+      ·  73건: N개 요소에 'alt' 속성이 없습니다. [측정 1~20]
+  - ai_definition (#33 · citable_content · 1점) — FAIL 68/377 (18%)  «#33 Definition Paragraph»
+      ·  68건: 정의문 N건 — N건 이상 필요 [측정 0]
+  - seo_h1 (#16 · seo · 1점) — FAIL 33/377 (9%)  «#16 H1 정확히 1개»
       ·  33건: 'hN' N개 — == N 필요 [측정 1]
-  - ai_citable (#36 · citable_content · 1점) — FAIL 12/407 (3%)  «#36 Citable Sentence ≥ 5개»
-      ·  12건: 인용 가능 문장 N개 — N개 이상 필요 [측정 0~4]
-  - ai_summary_box (#35 · citable_content · 1점) — FAIL 10/407 (2%)  «#35 Summary Box (콘텐츠)»
+  - ai_citable (#36 · citable_content · 1점) — FAIL 13/377 (3%)  «#36 Citable Sentence ≥ 5개»
+      ·  13건: 인용 가능 문장 N개 — N개 이상 필요 [측정 1~4]
+  - ai_summary_box (#35 · citable_content · 1점) — FAIL 10/377 (3%)  «#35 Summary Box (콘텐츠)»
       ·  10건: 요약 블록(헤딩 문구·selector)을 찾지 못했습니다.
-  - seo_meta_desc (#14 · seo · 1점) — FAIL 2/407 (0%)  «#14 Meta Description»
-      ·   2건: 'content' 속성이 없거나 N자 미만입니다. [측정 1]
+  - seo_meta_desc (#14 · seo · 1점) — FAIL 1/377 (0%)  «#14 Meta Description»
+      ·   1건: 'content' 속성이 없거나 N자 미만입니다. [측정 1]
 
-### [business] B2B (사업자) — 101건  (감점 항목 19개)
+### [business] B2B (사업자) — 101건  (감점 항목 20개)
   - ai_schema_product (#25 · schema_markup · 1점) — FAIL 101/101 (100%)  «#25 Schema: Product 풀세트 (PDP)»
       ·  53건: @type='Product/ProductGroup' 노드 없음
       ·  47건: 필수 필드 누락: sku, offers.price, offers.availability
@@ -382,16 +385,18 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       · 101건: SSR 비율 N% — N% 이상 필요 [측정 57]
   - ai_schema_video (#27 · schema_markup · 1점) — FAIL 26/26 (100%)  «#27 Schema: VideoObject»
       ·  26건: 필수 필드 누락: url
+  - seo_sitemap (#19 · seo · 1점) — FAIL 100/101 (99%)  «#19 Sitemap (1개월 내)»
+      · 100건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_offer (#43 · schema_markup · 1점) — FAIL 100/101 (99%)  «#43 Schema: Offer»
       · 100건: @type='Offer' 노드 없음
   - ai_image_filename (#40 · ai_crawlability · 1점) — FAIL 77/101 (76%)  «#40 Image File Name 브랜드 포함»
       ·  77건: 서술적 파일명 N/N (N%) — N% 이상 필요 [측정 3~18]
-  - ai_definition (#33 · citable_content · 1점) — FAIL 76/101 (75%)  «#33 Definition Paragraph»
-      ·  76건: 정의문 N건 — N건 이상 필요 [측정 0]
-  - ai_summary_box (#35 · citable_content · 1점) — FAIL 59/101 (58%)  «#35 Summary Box (콘텐츠)»
-      ·  59건: 요약 블록(헤딩 문구·selector)을 찾지 못했습니다.
-  - ai_citable (#36 · citable_content · 1점) — FAIL 42/101 (42%)  «#36 Citable Sentence ≥ 5개»
-      ·  42건: 인용 가능 문장 N개 — N개 이상 필요 [측정 0~4]
+  - ai_definition (#33 · citable_content · 1점) — FAIL 74/101 (73%)  «#33 Definition Paragraph»
+      ·  74건: 정의문 N건 — N건 이상 필요 [측정 0]
+  - ai_summary_box (#35 · citable_content · 1점) — FAIL 58/101 (57%)  «#35 Summary Box (콘텐츠)»
+      ·  58건: 요약 블록(헤딩 문구·selector)을 찾지 못했습니다.
+  - ai_citable (#36 · citable_content · 1점) — FAIL 47/101 (47%)  «#36 Citable Sentence ≥ 5개»
+      ·  47건: 인용 가능 문장 N개 — N개 이상 필요 [측정 0~4]
   - seo_h1 (#16 · seo · 1점) — FAIL 26/101 (26%)  «#16 H1 정확히 1개»
       ·  26건: 'hN' N개 — == N 필요 [측정 1]
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 17/101 (17%)  «#32 FAQ Block (콘텐츠)»
@@ -415,20 +420,20 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   1건: @type='BreadcrumbList' 노드 없음
 
 ### [experience] 익스피어리언스 — 100건  (감점 항목 11개)
+  - seo_sitemap (#19 · seo · 1점) — FAIL 100/100 (100%)  «#19 Sitemap (1개월 내)»
+      · 100건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 100/100 (100%)  «#26 Schema: ImageObject»
       · 100건: @type='ImageObject' 노드 없음
-  - ai_summary_box (#35 · citable_content · 1점) — FAIL 100/100 (100%)  «#35 Summary Box (콘텐츠)»
-      · 100건: 요약 블록(헤딩 문구·selector)을 찾지 못했습니다.
   - ai_schema_article (#29 · schema_markup · 1점) — FAIL 93/93 (100%)  «#29 Schema: Article»
       ·  93건: @type='Article' 노드 없음
   - ai_schema_video (#27 · schema_markup · 1점) — FAIL 1/1 (100%)  «#27 Schema: VideoObject»
       ·   1건: 필수 필드 누락: url
-  - ai_definition (#33 · citable_content · 1점) — FAIL 92/100 (92%)  «#33 Definition Paragraph»
-      ·  92건: 정의문 N건 — N건 이상 필요 [측정 0]
-  - ai_faq_block (#32 · citable_content · 1점) — FAIL 83/100 (83%)  «#32 FAQ Block (콘텐츠)»
-      ·  83건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
-  - ai_citable (#36 · citable_content · 1점) — FAIL 43/100 (43%)  «#36 Citable Sentence ≥ 5개»
-      ·  43건: 인용 가능 문장 N개 — N개 이상 필요 [측정 0~4]
+  - ai_summary_box (#35 · citable_content · 1점) — FAIL 98/100 (98%)  «#35 Summary Box (콘텐츠)»
+      ·  98건: 요약 블록(헤딩 문구·selector)을 찾지 못했습니다.
+  - ai_definition (#33 · citable_content · 1점) — FAIL 48/100 (48%)  «#33 Definition Paragraph»
+      ·  48건: 정의문 N건 — N건 이상 필요 [측정 0]
+  - ai_citable (#36 · citable_content · 1점) — FAIL 42/100 (42%)  «#36 Citable Sentence ≥ 5개»
+      ·  42건: 인용 가능 문장 N개 — N개 이상 필요 [측정 0~4]
   - seo_meta_desc (#14 · seo · 1점) — FAIL 8/100 (8%)  «#14 Meta Description»
       ·   8건: 'meta[name='description' i]' 요소를 찾을 수 없습니다.
   - a11y_image_alt (a11y#9 · accessibility · 1점) — FAIL 4/100 (4%)  «#9 Image Alt 누락 0»
@@ -438,33 +443,35 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
   - seo_open_graph (#18 · seo · 1점) — FAIL 1/100 (1%)  «#18 Open Graph (title+image)»
       ·   1건: 누락: title
 
-### [support_troubleshoot] 지원 - 트러블슈팅 — 100건  (감점 항목 6개)
+### [support_troubleshoot] 지원 - 트러블슈팅 — 100건  (감점 항목 7개)
+  - seo_sitemap (#19 · seo · 1점) — FAIL 100/100 (100%)  «#19 Sitemap (1개월 내)»
+      · 100건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 100/100 (100%)  «#26 Schema: ImageObject»
       · 100건: @type='ImageObject' 노드 없음
   - ai_schema_howto (#28 · schema_markup · 1점) — FAIL 100/100 (100%)  «#28 Schema: HowTo»
       · 100건: @type='HowTo' 노드 없음
-  - ai_definition (#33 · citable_content · 1점) — FAIL 100/100 (100%)  «#33 Definition Paragraph»
-      · 100건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_summary_box (#35 · citable_content · 1점) — FAIL 100/100 (100%)  «#35 Summary Box (콘텐츠)»
       · 100건: 요약 블록(헤딩 문구·selector)을 찾지 못했습니다.
   - ai_citable (#36 · citable_content · 1점) — FAIL 100/100 (100%)  «#36 Citable Sentence ≥ 5개»
-      · 100건: 인용 가능 문장 N개 — N개 이상 필요 [측정 0~1]
+      · 100건: 인용 가능 문장 N개 — N개 이상 필요 [측정 0~3]
   - ai_ssr_ratio (#37 · ai_crawlability · 1점) — FAIL 100/100 (100%)  «#37 JS HTML Text Ratio ≥ 60%»
       · 100건: SSR 비율 N% — N% 이상 필요 [측정 47]
+  - ai_definition (#33 · citable_content · 1점) — FAIL 98/100 (98%)  «#33 Definition Paragraph»
+      ·  98건: 정의문 N건 — N건 이상 필요 [측정 0]
 
 ### [promotion] 프로모션/약관 — 84건  (감점 항목 14개)
+  - seo_sitemap (#19 · seo · 1점) — FAIL 84/84 (100%)  «#19 Sitemap (1개월 내)»
+      ·  84건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_offer (#43 · schema_markup · 1점) — FAIL 84/84 (100%)  «#43 Schema: Offer»
       ·  84건: @type='Offer' 노드 없음
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 84/84 (100%)  «#26 Schema: ImageObject»
       ·  84건: @type='ImageObject' 노드 없음
-  - ai_faq_block (#32 · citable_content · 1점) — FAIL 84/84 (100%)  «#32 FAQ Block (콘텐츠)»
-      ·  84건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
-  - ai_definition (#33 · citable_content · 1점) — FAIL 84/84 (100%)  «#33 Definition Paragraph»
-      ·  84건: 정의문 N건 — N건 이상 필요 [측정 0]
-  - ai_summary_box (#35 · citable_content · 1점) — FAIL 84/84 (100%)  «#35 Summary Box (콘텐츠)»
-      ·  84건: 요약 블록(헤딩 문구·selector)을 찾지 못했습니다.
   - ai_schema_video (#27 · schema_markup · 1점) — FAIL 5/5 (100%)  «#27 Schema: VideoObject»
       ·   5건: 필수 필드 누락: url
+  - ai_definition (#33 · citable_content · 1점) — FAIL 80/84 (95%)  «#33 Definition Paragraph»
+      ·  80건: 정의문 N건 — N건 이상 필요 [측정 0]
+  - ai_summary_box (#35 · citable_content · 1점) — FAIL 80/84 (95%)  «#35 Summary Box (콘텐츠)»
+      ·  80건: 요약 블록(헤딩 문구·selector)을 찾지 못했습니다.
   - seo_meta_desc (#14 · seo · 1점) — FAIL 79/84 (94%)  «#14 Meta Description»
       ·  79건: 'meta[name='description' i]' 요소를 찾을 수 없습니다.
   - ai_citable (#36 · citable_content · 1점) — FAIL 71/84 (85%)  «#36 Citable Sentence ≥ 5개»
@@ -485,25 +492,25 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   1건: 서술적 파일명 N/N (N%) — N% 이상 필요 [측정 13]
 
 ### [microsite] 마이크로사이트/캠페인 — 68건  (감점 항목 15개)
+  - seo_sitemap (#19 · seo · 1점) — FAIL 68/68 (100%)  «#19 Sitemap (1개월 내)»
+      ·  68건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 68/68 (100%)  «#26 Schema: ImageObject»
       ·  68건: @type='ImageObject' 노드 없음
-  - ai_summary_box (#35 · citable_content · 1점) — FAIL 68/68 (100%)  «#35 Summary Box (콘텐츠)»
-      ·  68건: 요약 블록(헤딩 문구·selector)을 찾지 못했습니다.
   - ai_schema_video (#27 · schema_markup · 1점) — FAIL 21/21 (100%)  «#27 Schema: VideoObject»
       ·  17건: 필수 필드 누락: url
       ·   4건: @type='VideoObject' 노드 없음
   - ai_schema_article (#29 · schema_markup · 1점) — FAIL 5/5 (100%)  «#29 Schema: Article»
       ·   5건: @type='Article' 노드 없음
-  - ai_faq_block (#32 · citable_content · 1점) — FAIL 64/68 (94%)  «#32 FAQ Block (콘텐츠)»
-      ·  64건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
-  - ai_definition (#33 · citable_content · 1점) — FAIL 61/68 (90%)  «#33 Definition Paragraph»
-      ·  61건: 정의문 N건 — N건 이상 필요 [측정 0]
+  - ai_summary_box (#35 · citable_content · 1점) — FAIL 65/68 (96%)  «#35 Summary Box (콘텐츠)»
+      ·  65건: 요약 블록(헤딩 문구·selector)을 찾지 못했습니다.
   - seo_h1 (#16 · seo · 1점) — FAIL 56/68 (82%)  «#16 H1 정확히 1개»
       ·  56건: 'hN' N개 — == N 필요 [측정 1]
   - seo_meta_desc (#14 · seo · 1점) — FAIL 53/68 (78%)  «#14 Meta Description»
       ·  53건: 'meta[name='description' i]' 요소를 찾을 수 없습니다.
-  - ai_citable (#36 · citable_content · 1점) — FAIL 36/68 (53%)  «#36 Citable Sentence ≥ 5개»
-      ·  36건: 인용 가능 문장 N개 — N개 이상 필요 [측정 0~4]
+  - ai_definition (#33 · citable_content · 1점) — FAIL 43/68 (63%)  «#33 Definition Paragraph»
+      ·  43건: 정의문 N건 — N건 이상 필요 [측정 0]
+  - ai_citable (#36 · citable_content · 1점) — FAIL 34/68 (50%)  «#36 Citable Sentence ≥ 5개»
+      ·  34건: 인용 가능 문장 N개 — N개 이상 필요 [측정 0~4]
   - seo_open_graph (#18 · seo · 1점) — FAIL 19/68 (28%)  «#18 Open Graph (title+image)»
       ·  17건: 누락: title
       ·   2건: 누락: image
@@ -519,7 +526,9 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
   - ai_image_filename (#40 · ai_crawlability · 1점) — FAIL 2/68 (3%)  «#40 Image File Name 브랜드 포함»
       ·   2건: 서술적 파일명 N/N (N%) — N% 이상 필요 [측정 42~43]
 
-### [plp] 제품 카테고리 (PLP) — 42건  (감점 항목 15개)
+### [plp] 제품 카테고리 (PLP) — 42건  (감점 항목 16개)
+  - seo_sitemap (#19 · seo · 1점) — FAIL 42/42 (100%)  «#19 Sitemap (1개월 내)»
+      ·  42건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 42/42 (100%)  «#26 Schema: ImageObject»
       ·  42건: @type='ImageObject' 노드 없음
   - ai_schema_video (#27 · schema_markup · 1점) — FAIL 4/4 (100%)  «#27 Schema: VideoObject»
@@ -528,12 +537,10 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   2건: @type='FAQPage' 노드 없음
   - ai_summary_box (#35 · citable_content · 1점) — FAIL 41/42 (98%)  «#35 Summary Box (콘텐츠)»
       ·  41건: 요약 블록(헤딩 문구·selector)을 찾지 못했습니다.
-  - ai_faq_block (#32 · citable_content · 1점) — FAIL 39/42 (93%)  «#32 FAQ Block (콘텐츠)»
-      ·  39건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
-  - ai_definition (#33 · citable_content · 1점) — FAIL 39/42 (93%)  «#33 Definition Paragraph»
-      ·  39건: 정의문 N건 — N건 이상 필요 [측정 0]
-  - ai_citable (#36 · citable_content · 1점) — FAIL 36/42 (86%)  «#36 Citable Sentence ≥ 5개»
-      ·  36건: 인용 가능 문장 N개 — N개 이상 필요 [측정 0~4]
+  - ai_definition (#33 · citable_content · 1점) — FAIL 40/42 (95%)  «#33 Definition Paragraph»
+      ·  40건: 정의문 N건 — N건 이상 필요 [측정 0]
+  - ai_citable (#36 · citable_content · 1점) — FAIL 37/42 (88%)  «#36 Citable Sentence ≥ 5개»
+      ·  37건: 인용 가능 문장 N개 — N개 이상 필요 [측정 0~4]
   - a11y_heading_hier (a11y#11 · accessibility · 1점) — FAIL 23/42 (55%)  «#11 Heading Hierarchy»
       ·  13건: 본문 영역에 헤딩 태그가 없습니다.
       ·  10건: 헤딩 역순 N건 — 첫 헤딩(hN)보다 상위 레벨이 뒤에 등장 [측정 1]
@@ -551,10 +558,14 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   3건: 누락: title
   - ai_schema_breadcrumb (#21 · schema_markup · 1점) — FAIL 3/42 (7%)  «#21 Schema: BreadcrumbList»
       ·   3건: @type='BreadcrumbList' 노드 없음
+  - ai_faq_block (#32 · citable_content · 1점) — FAIL 1/42 (2%)  «#32 FAQ Block (콘텐츠)»
+      ·   1건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
   - ai_image_filename (#40 · ai_crawlability · 1점) — FAIL 1/42 (2%)  «#40 Image File Name 브랜드 포함»
       ·   1건: 로고·아이콘을 제외하면 판정할 img 가 없습니다.
 
 ### [buying_guide] 구매 가이드 — 20건  (감점 항목 12개)
+  - seo_sitemap (#19 · seo · 1점) — FAIL 20/20 (100%)  «#19 Sitemap (1개월 내)»
+      ·  20건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 20/20 (100%)  «#26 Schema: ImageObject»
       ·  20건: @type='ImageObject' 노드 없음
   - ai_schema_video (#27 · schema_markup · 1점) — FAIL 13/13 (100%)  «#27 Schema: VideoObject»
@@ -562,13 +573,9 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   1건: 필수 필드 누락: url
   - ai_summary_box (#35 · citable_content · 1점) — FAIL 18/20 (90%)  «#35 Summary Box (콘텐츠)»
       ·  18건: 요약 블록(헤딩 문구·selector)을 찾지 못했습니다.
-  - ai_faq_block (#32 · citable_content · 1점) — FAIL 16/20 (80%)  «#32 FAQ Block (콘텐츠)»
-      ·  16건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
   - seo_open_graph (#18 · seo · 1점) — FAIL 10/20 (50%)  «#18 Open Graph (title+image)»
       ·   9건: 누락: image
       ·   1건: 누락: title
-  - ai_definition (#33 · citable_content · 1점) — FAIL 9/20 (45%)  «#33 Definition Paragraph»
-      ·   9건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_citable (#36 · citable_content · 1점) — FAIL 6/20 (30%)  «#36 Citable Sentence ≥ 5개»
       ·   6건: 인용 가능 문장 N개 — N개 이상 필요 [측정 0~4]
   - ai_image_filename (#40 · ai_crawlability · 1점) — FAIL 5/20 (25%)  «#40 Image File Name 브랜드 포함»
@@ -582,33 +589,35 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   3건: 헤딩 N + 랜드마크 N = N — 의미 구조 N+ 필요 [측정 0]
   - seo_meta_desc (#14 · seo · 1점) — FAIL 3/20 (15%)  «#14 Meta Description»
       ·   3건: 'meta[name='description' i]' 요소를 찾을 수 없습니다.
+  - ai_definition (#33 · citable_content · 1점) — FAIL 3/20 (15%)  «#33 Definition Paragraph»
+      ·   3건: 정의문 N건 — N건 이상 필요 [측정 0]
 
-### [home] 홈페이지 — 1건  (감점 항목 7개)
+### [home] 홈페이지 — 1건  (감점 항목 6개)
   - a11y_heading_hier (a11y#11 · accessibility · 1점) — FAIL 1/1 (100%)  «#11 Heading Hierarchy»
       ·   1건: 헤딩 역순 N건 — 첫 헤딩(hN)보다 상위 레벨이 뒤에 등장 [측정 2]
   - seo_h1 (#16 · seo · 1점) — FAIL 1/1 (100%)  «#16 H1 정확히 1개»
       ·   1건: 'hN' N개 — == N 필요 [측정 1]
+  - seo_sitemap (#19 · seo · 1점) — FAIL 1/1 (100%)  «#19 Sitemap (1개월 내)»
+      ·   1건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 1/1 (100%)  «#26 Schema: ImageObject»
       ·   1건: @type='ImageObject' 노드 없음
-  - ai_faq_block (#32 · citable_content · 1점) — FAIL 1/1 (100%)  «#32 FAQ Block (콘텐츠)»
-      ·   1건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
   - ai_definition (#33 · citable_content · 1점) — FAIL 1/1 (100%)  «#33 Definition Paragraph»
       ·   1건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_summary_box (#35 · citable_content · 1점) — FAIL 1/1 (100%)  «#35 Summary Box (콘텐츠)»
       ·   1건: 요약 블록(헤딩 문구·selector)을 찾지 못했습니다.
-  - ai_citable (#36 · citable_content · 1점) — FAIL 1/1 (100%)  «#36 Citable Sentence ≥ 5개»
-      ·   1건: 인용 가능 문장 N개 — N개 이상 필요 [측정 3]
 
 ##############################################################################
 ## BR   run=br_2026-09-24_run_0da0a651efd2.json
    URL 1270건 · 감사성공 1064 · [config] 신(2026-06-17 재배포)
-   등급(성공 기준): Good 443 / Need Improvement 597 / Poor 24
+   등급(성공 기준): Good 333 / Need Improvement 707 / Poor 24
    ⚠ 감사 불가(fetch 실패) 206건 — 아래 감점 집계에서 제외:
         · 152건: HTTP 404 — 200 기대
         · 54건: status code 없음
 ##############################################################################
 
 ### [pdp] 제품 상세 (PDP) — 409건  (감점 항목 13개)
+  - seo_sitemap (#19 · seo · 1점) — FAIL 409/409 (100%)  «#19 Sitemap (1개월 내)»
+      · 409건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_product (#25 · schema_markup · 1점) — FAIL 409/409 (100%)  «#25 Schema: Product 풀세트 (PDP)»
       · 295건: 필수 필드 누락: sku
       · 114건: 필수 필드 누락: sku, offers.price, offers.availability
@@ -628,8 +637,6 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       · 231건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_schema_offer (#43 · schema_markup · 1점) — FAIL 114/409 (28%)  «#43 Schema: Offer»
       · 114건: @type='Offer' 노드 없음
-  - seo_sitemap (#19 · seo · 1점) — FAIL 82/409 (20%)  «#19 Sitemap (1개월 내)»
-      ·  82건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
   - a11y_image_alt (a11y#9 · accessibility · 1점) — FAIL 52/409 (13%)  «#9 Image Alt 누락 0»
       ·  52건: N개 요소에 'alt' 속성이 없습니다. [측정 1~9]
   - ai_citable (#36 · citable_content · 1점) — FAIL 47/409 (11%)  «#36 Citable Sentence ≥ 5개»
@@ -641,7 +648,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 
 ### [support_troubleshoot] 지원 - 트러블슈팅 — 164건  (감점 항목 11개)
   - seo_sitemap (#19 · seo · 1점) — FAIL 164/164 (100%)  «#19 Sitemap (1개월 내)»
-      · 164건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
+      · 164건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 164/164 (100%)  «#26 Schema: ImageObject»
       · 164건: @type='ImageObject' 노드 없음
   - ai_schema_howto (#28 · schema_markup · 1점) — FAIL 164/164 (100%)  «#28 Schema: HowTo»
@@ -665,7 +672,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 
 ### [business] B2B (사업자) — 100건  (감점 항목 16개)
   - seo_sitemap (#19 · seo · 1점) — FAIL 100/100 (100%)  «#19 Sitemap (1개월 내)»
-      · 100건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
+      · 100건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_product (#25 · schema_markup · 1점) — FAIL 100/100 (100%)  «#25 Schema: Product 풀세트 (PDP)»
       ·  63건: 필수 필드 누락: sku, offers.price, offers.availability
       ·  37건: @type='Product/ProductGroup' 노드 없음
@@ -701,7 +708,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 
 ### [plp] 제품 카테고리 (PLP) — 100건  (감점 항목 22개)
   - seo_sitemap (#19 · seo · 1점) — FAIL 100/100 (100%)  «#19 Sitemap (1개월 내)»
-      · 100건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
+      · 100건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 100/100 (100%)  «#26 Schema: ImageObject»
       · 100건: @type='ImageObject' 노드 없음
   - ai_schema_video (#27 · schema_markup · 1점) — FAIL 18/18 (100%)  «#27 Schema: VideoObject»
@@ -753,7 +760,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 
 ### [press_media] 프레스앤미디어 — 100건  (감점 항목 10개)
   - seo_sitemap (#19 · seo · 1점) — FAIL 100/100 (100%)  «#19 Sitemap (1개월 내)»
-      · 100건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
+      · 100건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 100/100 (100%)  «#26 Schema: ImageObject»
       · 100건: @type='ImageObject' 노드 없음
   - ai_summary_box (#35 · citable_content · 1점) — FAIL 96/100 (96%)  «#35 Summary Box (콘텐츠)»
@@ -774,14 +781,14 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   1건: JSON-LD author 또는 (datePublished+publisher) 조합 없음
 
 ### [promotion] 프로모션/약관 — 85건  (감점 항목 14개)
+  - seo_sitemap (#19 · seo · 1점) — FAIL 85/85 (100%)  «#19 Sitemap (1개월 내)»
+      ·  85건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 85/85 (100%)  «#26 Schema: ImageObject»
       ·  84건: @type='ImageObject' 노드 없음
       ·   1건: 필수 필드 누락: url, uploadDate
   - ai_schema_video (#27 · schema_markup · 1점) — FAIL 14/14 (100%)  «#27 Schema: VideoObject»
       ·  11건: 필수 필드 누락: url
       ·   3건: @type='VideoObject' 노드 없음
-  - seo_sitemap (#19 · seo · 1점) — FAIL 83/85 (98%)  «#19 Sitemap (1개월 내)»
-      ·  83건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
   - ai_definition (#33 · citable_content · 1점) — FAIL 68/85 (80%)  «#33 Definition Paragraph»
       ·  68건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_schema_offer (#43 · schema_markup · 1점) — FAIL 53/85 (62%)  «#43 Schema: Offer»
@@ -809,7 +816,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 
 ### [experience] 익스피어리언스 — 60건  (감점 항목 12개)
   - seo_sitemap (#19 · seo · 1점) — FAIL 60/60 (100%)  «#19 Sitemap (1개월 내)»
-      ·  60건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
+      ·  60건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 60/60 (100%)  «#26 Schema: ImageObject»
       ·  60건: @type='ImageObject' 노드 없음
   - ai_summary_box (#35 · citable_content · 1점) — FAIL 60/60 (100%)  «#35 Summary Box (콘텐츠)»
@@ -835,7 +842,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 
 ### [buying_guide] 구매 가이드 — 26건  (감점 항목 9개)
   - seo_sitemap (#19 · seo · 1점) — FAIL 26/26 (100%)  «#19 Sitemap (1개월 내)»
-      ·  26건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
+      ·  26건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 26/26 (100%)  «#26 Schema: ImageObject»
       ·  26건: @type='ImageObject' 노드 없음
   - ai_schema_video (#27 · schema_markup · 1점) — FAIL 17/17 (100%)  «#27 Schema: VideoObject»
@@ -856,7 +863,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 
 ### [microsite] 마이크로사이트/캠페인 — 18건  (감점 항목 13개)
   - seo_sitemap (#19 · seo · 1점) — FAIL 18/18 (100%)  «#19 Sitemap (1개월 내)»
-      ·  18건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
+      ·  18건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 18/18 (100%)  «#26 Schema: ImageObject»
       ·  18건: @type='ImageObject' 노드 없음
   - ai_summary_box (#35 · citable_content · 1점) — FAIL 18/18 (100%)  «#35 Summary Box (콘텐츠)»
@@ -888,6 +895,8 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 ### [home] 홈페이지 — 2건  (감점 항목 12개)
   - a11y_heading_hier (a11y#11 · accessibility · 1점) — FAIL 2/2 (100%)  «#11 Heading Hierarchy»
       ·   2건: 헤딩 역순 N건 — 첫 헤딩(hN)보다 상위 레벨이 뒤에 등장 [측정 1]
+  - seo_sitemap (#19 · seo · 1점) — FAIL 2/2 (100%)  «#19 Sitemap (1개월 내)»
+      ·   2건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 2/2 (100%)  «#26 Schema: ImageObject»
       ·   2건: @type='ImageObject' 노드 없음
   - ai_summary_box (#35 · citable_content · 1점) — FAIL 2/2 (100%)  «#35 Summary Box (콘텐츠)»
@@ -904,8 +913,6 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   1건: 누락 N% — N% 미만 필요 [측정 22.3]
   - seo_h1 (#16 · seo · 1점) — FAIL 1/2 (50%)  «#16 H1 정확히 1개»
       ·   1건: 'hN' N개 — == N 필요 [측정 1]
-  - seo_sitemap (#19 · seo · 1점) — FAIL 1/2 (50%)  «#19 Sitemap (1개월 내)»
-      ·   1건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
   - ai_schema_breadcrumb (#21 · schema_markup · 1점) — FAIL 1/2 (50%)  «#21 Schema: BreadcrumbList»
       ·   1건: @type='BreadcrumbList' 노드 없음
   - ai_definition (#33 · citable_content · 1점) — FAIL 1/2 (50%)  «#33 Definition Paragraph»
@@ -914,13 +921,15 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 ##############################################################################
 ## CA   run=ca_2026-09-24_run_47180eceecfc.json
    URL 1049건 · 감사성공 930 · [config] 신(2026-06-17 재배포)
-   등급(성공 기준): Good 357 / Need Improvement 553 / Poor 20
+   등급(성공 기준): Good 265 / Need Improvement 645 / Poor 20
    ⚠ 감사 불가(fetch 실패) 119건 — 아래 감점 집계에서 제외:
         · 67건: status code 없음
         · 52건: HTTP 404 — 200 기대
 ##############################################################################
 
 ### [pdp] 제품 상세 (PDP) — 398건  (감점 항목 13개)
+  - seo_sitemap (#19 · seo · 1점) — FAIL 398/398 (100%)  «#19 Sitemap (1개월 내)»
+      · 398건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_product (#25 · schema_markup · 1점) — FAIL 398/398 (100%)  «#25 Schema: Product 풀세트 (PDP)»
       · 280건: 필수 필드 누락: sku
       · 118건: 필수 필드 누락: sku, offers.price, offers.availability
@@ -943,8 +952,6 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·  79건: 정의문 N건 — N건 이상 필요 [측정 0]
   - a11y_image_alt (a11y#9 · accessibility · 1점) — FAIL 76/398 (19%)  «#9 Image Alt 누락 0»
       ·  76건: N개 요소에 'alt' 속성이 없습니다. [측정 1~15]
-  - seo_sitemap (#19 · seo · 1점) — FAIL 59/398 (15%)  «#19 Sitemap (1개월 내)»
-      ·  59건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
   - ai_citable (#36 · citable_content · 1점) — FAIL 23/398 (6%)  «#36 Citable Sentence ≥ 5개»
       ·  23건: 인용 가능 문장 N개 — N개 이상 필요 [측정 2~4]
   - seo_h1 (#16 · seo · 1점) — FAIL 9/398 (2%)  «#16 H1 정확히 1개»
@@ -954,7 +961,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 
 ### [support_troubleshoot] 지원 - 트러블슈팅 — 202건  (감점 항목 9개)
   - seo_sitemap (#19 · seo · 1점) — FAIL 202/202 (100%)  «#19 Sitemap (1개월 내)»
-      · 202건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
+      · 202건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 202/202 (100%)  «#26 Schema: ImageObject»
       · 202건: @type='ImageObject' 노드 없음
   - ai_schema_howto (#28 · schema_markup · 1점) — FAIL 202/202 (100%)  «#28 Schema: HowTo»
@@ -974,7 +981,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 
 ### [business] B2B (사업자) — 99건  (감점 항목 15개)
   - seo_sitemap (#19 · seo · 1점) — FAIL 99/99 (100%)  «#19 Sitemap (1개월 내)»
-      ·  99건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
+      ·  99건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_product (#25 · schema_markup · 1점) — FAIL 99/99 (100%)  «#25 Schema: Product 풀세트 (PDP)»
       ·  76건: @type='Product/ProductGroup' 노드 없음
       ·  23건: 필수 필드 누락: sku, offers.price, offers.availability
@@ -1007,7 +1014,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 
 ### [plp] 제품 카테고리 (PLP) — 94건  (감점 항목 20개)
   - seo_sitemap (#19 · seo · 1점) — FAIL 94/94 (100%)  «#19 Sitemap (1개월 내)»
-      ·  94건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
+      ·  94건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 94/94 (100%)  «#26 Schema: ImageObject»
       ·  94건: @type='ImageObject' 노드 없음
   - ai_schema_video (#27 · schema_markup · 1점) — FAIL 16/16 (100%)  «#27 Schema: VideoObject»
@@ -1055,7 +1062,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 
 ### [experience] 익스피어리언스 — 48건  (감점 항목 16개)
   - seo_sitemap (#19 · seo · 1점) — FAIL 48/48 (100%)  «#19 Sitemap (1개월 내)»
-      ·  48건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
+      ·  48건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 48/48 (100%)  «#26 Schema: ImageObject»
       ·  47건: @type='ImageObject' 노드 없음
       ·   1건: 필수 필드 누락: url, uploadDate
@@ -1090,7 +1097,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 
 ### [microsite] 마이크로사이트/캠페인 — 37건  (감점 항목 21개)
   - seo_sitemap (#19 · seo · 1점) — FAIL 37/37 (100%)  «#19 Sitemap (1개월 내)»
-      ·  37건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
+      ·  37건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 37/37 (100%)  «#26 Schema: ImageObject»
       ·  34건: @type='ImageObject' 노드 없음
       ·   3건: 필수 필드 누락: url, uploadDate
@@ -1138,7 +1145,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 
 ### [press_media] 프레스앤미디어 — 25건  (감점 항목 11개)
   - seo_sitemap (#19 · seo · 1점) — FAIL 25/25 (100%)  «#19 Sitemap (1개월 내)»
-      ·  25건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
+      ·  25건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 25/25 (100%)  «#26 Schema: ImageObject»
       ·  25건: @type='ImageObject' 노드 없음
   - ai_image_filename (#40 · ai_crawlability · 1점) — FAIL 25/25 (100%)  «#40 Image File Name 브랜드 포함»
@@ -1162,7 +1169,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 
 ### [buying_guide] 구매 가이드 — 22건  (감점 항목 14개)
   - seo_sitemap (#19 · seo · 1점) — FAIL 22/22 (100%)  «#19 Sitemap (1개월 내)»
-      ·  22건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
+      ·  22건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 22/22 (100%)  «#26 Schema: ImageObject»
       ·  22건: @type='ImageObject' 노드 없음
   - ai_schema_video (#27 · schema_markup · 1점) — FAIL 16/16 (100%)  «#27 Schema: VideoObject»
@@ -1196,7 +1203,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
   - seo_h1 (#16 · seo · 1점) — FAIL 2/2 (100%)  «#16 H1 정확히 1개»
       ·   2건: 'hN' N개 — == N 필요 [측정 1]
   - seo_sitemap (#19 · seo · 1점) — FAIL 2/2 (100%)  «#19 Sitemap (1개월 내)»
-      ·   2건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
+      ·   2건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_offer (#43 · schema_markup · 1점) — FAIL 2/2 (100%)  «#43 Schema: Offer»
       ·   2건: @type='Offer' 노드 없음
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 2/2 (100%)  «#26 Schema: ImageObject»
@@ -1220,7 +1227,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 
 ### [support] 지원/Support — 2건  (감점 항목 9개)
   - seo_sitemap (#19 · seo · 1점) — FAIL 2/2 (100%)  «#19 Sitemap (1개월 내)»
-      ·   2건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
+      ·   2건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 2/2 (100%)  «#26 Schema: ImageObject»
       ·   2건: @type='ImageObject' 노드 없음
   - ai_schema_howto (#28 · schema_markup · 1점) — FAIL 2/2 (100%)  «#28 Schema: HowTo»
@@ -1238,9 +1245,11 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
   - ai_image_filename (#40 · ai_crawlability · 1점) — FAIL 2/2 (100%)  «#40 Image File Name 브랜드 포함»
       ·   2건: 서술적 파일명 N/N (N%) — N% 이상 필요 [측정 46]
 
-### [home] 홈페이지 — 1건  (감점 항목 6개)
+### [home] 홈페이지 — 1건  (감점 항목 7개)
   - seo_h1 (#16 · seo · 1점) — FAIL 1/1 (100%)  «#16 H1 정확히 1개»
       ·   1건: 'hN' N개 — == N 필요 [측정 1]
+  - seo_sitemap (#19 · seo · 1점) — FAIL 1/1 (100%)  «#19 Sitemap (1개월 내)»
+      ·   1건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 1/1 (100%)  «#26 Schema: ImageObject»
       ·   1건: @type='ImageObject' 노드 없음
   - ai_schema_video (#27 · schema_markup · 1점) — FAIL 1/1 (100%)  «#27 Schema: VideoObject»
@@ -1255,13 +1264,15 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 ##############################################################################
 ## DE   run=de_2026-09-24_run_3c89984d66bd.json
    URL 1209건 · 감사성공 1110 · [config] 신(2026-06-17 재배포)
-   등급(성공 기준): Good 462 / Need Improvement 647 / Poor 1
+   등급(성공 기준): Good 401 / Need Improvement 708 / Poor 1
    ⚠ 감사 불가(fetch 실패) 99건 — 아래 감점 집계에서 제외:
         · 55건: HTTP 404 — 200 기대
         · 44건: status code 없음
 ##############################################################################
 
 ### [pdp] 제품 상세 (PDP) — 417건  (감점 항목 14개)
+  - seo_sitemap (#19 · seo · 1점) — FAIL 417/417 (100%)  «#19 Sitemap (1개월 내)»
+      · 417건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_product (#25 · schema_markup · 1점) — FAIL 417/417 (100%)  «#25 Schema: Product 풀세트 (PDP)»
       · 262건: 필수 필드 누락: sku
       · 153건: 필수 필드 누락: sku, offers.price, offers.availability
@@ -1281,8 +1292,6 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
   - ai_schema_offer (#43 · schema_markup · 1점) — FAIL 155/417 (37%)  «#43 Schema: Offer»
       · 153건: @type='Offer' 노드 없음
       ·   2건: 필수 필드 누락: availability
-  - seo_sitemap (#19 · seo · 1점) — FAIL 119/417 (29%)  «#19 Sitemap (1개월 내)»
-      · 119건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
   - a11y_image_alt (a11y#9 · accessibility · 1점) — FAIL 115/417 (28%)  «#9 Image Alt 누락 0»
       · 115건: N개 요소에 'alt' 속성이 없습니다. [측정 1~19]
   - ai_citable (#36 · citable_content · 1점) — FAIL 60/417 (14%)  «#36 Citable Sentence ≥ 5개»
@@ -1298,7 +1307,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 
 ### [plp] 제품 카테고리 (PLP) — 235건  (감점 항목 19개)
   - seo_sitemap (#19 · seo · 1점) — FAIL 235/235 (100%)  «#19 Sitemap (1개월 내)»
-      · 235건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
+      · 235건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 235/235 (100%)  «#26 Schema: ImageObject»
       · 234건: @type='ImageObject' 노드 없음
       ·   1건: 필수 필드 누락: name, description, uploadDate
@@ -1343,7 +1352,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 
 ### [support_troubleshoot] 지원 - 트러블슈팅 — 128건  (감점 항목 7개)
   - seo_sitemap (#19 · seo · 1점) — FAIL 128/128 (100%)  «#19 Sitemap (1개월 내)»
-      · 128건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
+      · 128건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 128/128 (100%)  «#26 Schema: ImageObject»
       · 128건: @type='ImageObject' 노드 없음
   - ai_schema_howto (#28 · schema_markup · 1점) — FAIL 128/128 (100%)  «#28 Schema: HowTo»
@@ -1359,7 +1368,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 
 ### [press_media] 프레스앤미디어 — 100건  (감점 항목 11개)
   - seo_sitemap (#19 · seo · 1점) — FAIL 100/100 (100%)  «#19 Sitemap (1개월 내)»
-      · 100건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
+      · 100건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 100/100 (100%)  «#26 Schema: ImageObject»
       · 100건: @type='ImageObject' 노드 없음
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 100/100 (100%)  «#32 FAQ Block (콘텐츠)»
@@ -1383,7 +1392,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 
 ### [promotion] 프로모션/약관 — 99건  (감점 항목 15개)
   - seo_sitemap (#19 · seo · 1점) — FAIL 99/99 (100%)  «#19 Sitemap (1개월 내)»
-      ·  99건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
+      ·  99건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 99/99 (100%)  «#26 Schema: ImageObject»
       ·  99건: @type='ImageObject' 노드 없음
   - ai_schema_offer (#43 · schema_markup · 1점) — FAIL 94/94 (100%)  «#43 Schema: Offer»
@@ -1419,7 +1428,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 
 ### [business] B2B (사업자) — 96건  (감점 항목 13개)
   - seo_sitemap (#19 · seo · 1점) — FAIL 96/96 (100%)  «#19 Sitemap (1개월 내)»
-      ·  96건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
+      ·  96건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_product (#25 · schema_markup · 1점) — FAIL 96/96 (100%)  «#25 Schema: Product 풀세트 (PDP)»
       ·  88건: 필수 필드 누락: sku, offers.price, offers.availability
       ·   8건: @type='Product/ProductGroup' 노드 없음
@@ -1448,7 +1457,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 
 ### [buying_guide] 구매 가이드 — 24건  (감점 항목 12개)
   - seo_sitemap (#19 · seo · 1점) — FAIL 24/24 (100%)  «#19 Sitemap (1개월 내)»
-      ·  24건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
+      ·  24건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 24/24 (100%)  «#26 Schema: ImageObject»
       ·  24건: @type='ImageObject' 노드 없음
   - ai_schema_video (#27 · schema_markup · 1점) — FAIL 11/11 (100%)  «#27 Schema: VideoObject»
@@ -1476,7 +1485,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 
 ### [microsite] 마이크로사이트/캠페인 — 5건  (감점 항목 11개)
   - seo_sitemap (#19 · seo · 1점) — FAIL 5/5 (100%)  «#19 Sitemap (1개월 내)»
-      ·   5건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
+      ·   5건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 5/5 (100%)  «#26 Schema: ImageObject»
       ·   5건: @type='ImageObject' 노드 없음
   - ai_summary_box (#35 · citable_content · 1점) — FAIL 5/5 (100%)  «#35 Summary Box (콘텐츠)»
@@ -1503,7 +1512,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
   - perf_redirect (#6 · performance · 1점) — FAIL 4/4 (100%)  «#6 Redirect ≤ 1»
       ·   4건: 리다이렉트 N회 — N회 이하 권장 [측정 2~5]
   - seo_sitemap (#19 · seo · 1점) — FAIL 4/4 (100%)  «#19 Sitemap (1개월 내)»
-      ·   4건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
+      ·   4건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 4/4 (100%)  «#26 Schema: ImageObject»
       ·   4건: @type='ImageObject' 노드 없음
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 4/4 (100%)  «#32 FAQ Block (콘텐츠)»
@@ -1512,6 +1521,8 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   4건: 정의문 N건 — N건 이상 필요 [측정 0]
 
 ### [home] 홈페이지 — 2건  (감점 항목 12개)
+  - seo_sitemap (#19 · seo · 1점) — FAIL 2/2 (100%)  «#19 Sitemap (1개월 내)»
+      ·   2건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 2/2 (100%)  «#26 Schema: ImageObject»
       ·   2건: @type='ImageObject' 노드 없음
   - ai_schema_product (#25 · schema_markup · 1점) — FAIL 1/1 (100%)  «#25 Schema: Product 풀세트 (PDP)»
@@ -1524,8 +1535,6 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   1건: 헤딩 역순 N건 — 첫 헤딩(hN)보다 상위 레벨이 뒤에 등장 [측정 1]
   - a11y_aria_labels (a11y#12 · accessibility · 1점) — FAIL 1/2 (50%)  «#12 ARIA 누락 < 10%»
       ·   1건: 누락 N% — N% 미만 필요 [측정 22.3]
-  - seo_sitemap (#19 · seo · 1점) — FAIL 1/2 (50%)  «#19 Sitemap (1개월 내)»
-      ·   1건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
   - ai_schema_breadcrumb (#21 · schema_markup · 1점) — FAIL 1/2 (50%)  «#21 Schema: BreadcrumbList»
       ·   1건: @type='BreadcrumbList' 노드 없음
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 1/2 (50%)  «#32 FAQ Block (콘텐츠)»
@@ -1540,13 +1549,15 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 ##############################################################################
 ## ES   run=es_2026-09-24_run_718807c0f407.json
    URL 1074건 · 감사성공 931 · [config] 신(2026-06-17 재배포)
-   등급(성공 기준): Good 400 / Need Improvement 492 / Poor 39
+   등급(성공 기준): Good 374 / Need Improvement 518 / Poor 39
    ⚠ 감사 불가(fetch 실패) 143건 — 아래 감점 집계에서 제외:
         · 104건: HTTP 404 — 200 기대
         · 39건: status code 없음
 ##############################################################################
 
 ### [pdp] 제품 상세 (PDP) — 387건  (감점 항목 13개)
+  - seo_sitemap (#19 · seo · 1점) — FAIL 387/387 (100%)  «#19 Sitemap (1개월 내)»
+      · 387건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 387/387 (100%)  «#26 Schema: ImageObject»
       · 349건: @type='ImageObject' 노드 없음
       ·  38건: 필수 필드 누락: url, uploadDate
@@ -1564,8 +1575,6 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
   - ai_schema_offer (#43 · schema_markup · 1점) — FAIL 84/386 (22%)  «#43 Schema: Offer»
       ·  82건: @type='Offer' 노드 없음
       ·   2건: 필수 필드 누락: availability
-  - seo_sitemap (#19 · seo · 1점) — FAIL 63/387 (16%)  «#19 Sitemap (1개월 내)»
-      ·  63건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
   - ai_citable (#36 · citable_content · 1점) — FAIL 44/387 (11%)  «#36 Citable Sentence ≥ 5개»
       ·  44건: 인용 가능 문장 N개 — N개 이상 필요 [측정 0~4]
   - ai_summary_box (#35 · citable_content · 1점) — FAIL 20/387 (5%)  «#35 Summary Box (콘텐츠)»
@@ -1581,7 +1590,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 
 ### [support_troubleshoot] 지원 - 트러블슈팅 — 212건  (감점 항목 8개)
   - seo_sitemap (#19 · seo · 1점) — FAIL 212/212 (100%)  «#19 Sitemap (1개월 내)»
-      · 212건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
+      · 212건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 212/212 (100%)  «#26 Schema: ImageObject»
       · 212건: @type='ImageObject' 노드 없음
   - ai_schema_howto (#28 · schema_markup · 1점) — FAIL 212/212 (100%)  «#28 Schema: HowTo»
@@ -1599,7 +1608,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 
 ### [business] B2B (사업자) — 100건  (감점 항목 22개)
   - seo_sitemap (#19 · seo · 1점) — FAIL 100/100 (100%)  «#19 Sitemap (1개월 내)»
-      · 100건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
+      · 100건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_product (#25 · schema_markup · 1점) — FAIL 99/99 (100%)  «#25 Schema: Product 풀세트 (PDP)»
       ·  50건: 필수 필드 누락: sku, offers.price, offers.availability
       ·  48건: @type='Product/ProductGroup' 노드 없음
@@ -1650,7 +1659,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 
 ### [plp] 제품 카테고리 (PLP) — 97건  (감점 항목 18개)
   - seo_sitemap (#19 · seo · 1점) — FAIL 97/97 (100%)  «#19 Sitemap (1개월 내)»
-      ·  97건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
+      ·  97건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 97/97 (100%)  «#26 Schema: ImageObject»
       ·  96건: @type='ImageObject' 노드 없음
       ·   1건: 필수 필드 누락: url, uploadDate
@@ -1691,7 +1700,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 
 ### [promotion] 프로모션/약관 — 91건  (감점 항목 13개)
   - seo_sitemap (#19 · seo · 1점) — FAIL 91/91 (100%)  «#19 Sitemap (1개월 내)»
-      ·  91건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
+      ·  91건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_offer (#43 · schema_markup · 1점) — FAIL 91/91 (100%)  «#43 Schema: Offer»
       ·  91건: @type='Offer' 노드 없음
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 91/91 (100%)  «#26 Schema: ImageObject»
@@ -1722,7 +1731,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 
 ### [buying_guide] 구매 가이드 — 19건  (감점 항목 12개)
   - seo_sitemap (#19 · seo · 1점) — FAIL 19/19 (100%)  «#19 Sitemap (1개월 내)»
-      ·  19건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
+      ·  19건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 19/19 (100%)  «#26 Schema: ImageObject»
       ·  19건: @type='ImageObject' 노드 없음
   - ai_schema_video (#27 · schema_markup · 1점) — FAIL 11/11 (100%)  «#27 Schema: VideoObject»
@@ -1753,7 +1762,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
   - perf_cache_control (#4 · performance · 1점) — FAIL 14/14 (100%)  «#4 Cache-Control max-age 설정»
       ·  14건: max-age 디렉티브가 없습니다.
   - seo_sitemap (#19 · seo · 1점) — FAIL 14/14 (100%)  «#19 Sitemap (1개월 내)»
-      ·  14건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
+      ·  14건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_breadcrumb (#21 · schema_markup · 1점) — FAIL 14/14 (100%)  «#21 Schema: BreadcrumbList»
       ·  14건: @type='BreadcrumbList' 노드 없음
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 14/14 (100%)  «#26 Schema: ImageObject»
@@ -1781,7 +1790,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 
 ### [microsite] 마이크로사이트/캠페인 — 9건  (감점 항목 13개)
   - seo_sitemap (#19 · seo · 1점) — FAIL 9/9 (100%)  «#19 Sitemap (1개월 내)»
-      ·   9건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
+      ·   9건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 9/9 (100%)  «#26 Schema: ImageObject»
       ·   9건: @type='ImageObject' 노드 없음
   - ai_summary_box (#35 · citable_content · 1점) — FAIL 9/9 (100%)  «#35 Summary Box (콘텐츠)»
@@ -1813,6 +1822,8 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 ### [home] 홈페이지 — 2건  (감점 항목 14개)
   - a11y_heading_hier (a11y#11 · accessibility · 1점) — FAIL 2/2 (100%)  «#11 Heading Hierarchy»
       ·   2건: 헤딩 역순 N건 — 첫 헤딩(hN)보다 상위 레벨이 뒤에 등장 [측정 1~4]
+  - seo_sitemap (#19 · seo · 1점) — FAIL 2/2 (100%)  «#19 Sitemap (1개월 내)»
+      ·   2건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 2/2 (100%)  «#26 Schema: ImageObject»
       ·   2건: @type='ImageObject' 노드 없음
   - ai_summary_box (#35 · citable_content · 1점) — FAIL 2/2 (100%)  «#35 Summary Box (콘텐츠)»
@@ -1829,8 +1840,6 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   1건: 누락 N% — N% 미만 필요 [측정 22.3]
   - seo_h1 (#16 · seo · 1점) — FAIL 1/2 (50%)  «#16 H1 정확히 1개»
       ·   1건: 'hN' N개 — == N 필요 [측정 1]
-  - seo_sitemap (#19 · seo · 1점) — FAIL 1/2 (50%)  «#19 Sitemap (1개월 내)»
-      ·   1건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
   - ai_schema_breadcrumb (#21 · schema_markup · 1점) — FAIL 1/2 (50%)  «#21 Schema: BreadcrumbList»
       ·   1건: @type='BreadcrumbList' 노드 없음
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 1/2 (50%)  «#32 FAQ Block (콘텐츠)»
@@ -1843,12 +1852,14 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 ##############################################################################
 ## IN   run=in_2026-09-24_run_f06ba3f95968.json
    URL 1208건 · 감사성공 1135 · [config] 신(2026-06-17 재배포)
-   등급(성공 기준): Good 616 / Need Improvement 509 / Poor 10
+   등급(성공 기준): Good 608 / Need Improvement 517 / Poor 10
    ⚠ 감사 불가(fetch 실패) 73건 — 아래 감점 집계에서 제외:
         · 73건: HTTP 404 — 200 기대
 ##############################################################################
 
 ### [pdp] 제품 상세 (PDP) — 435건  (감점 항목 16개)
+  - seo_sitemap (#19 · seo · 1점) — FAIL 435/435 (100%)  «#19 Sitemap (1개월 내)»
+      · 435건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 435/435 (100%)  «#26 Schema: ImageObject»
       · 429건: @type='ImageObject' 노드 없음
       ·   6건: 필수 필드 누락: url, uploadDate
@@ -1858,8 +1869,6 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
   - ai_schema_video (#27 · schema_markup · 1점) — FAIL 220/220 (100%)  «#27 Schema: VideoObject»
       · 169건: 필수 필드 누락: url
       ·  51건: @type='VideoObject' 노드 없음
-  - seo_sitemap (#19 · seo · 1점) — FAIL 286/435 (66%)  «#19 Sitemap (1개월 내)»
-      · 286건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
   - ai_image_filename (#40 · ai_crawlability · 1점) — FAIL 237/435 (54%)  «#40 Image File Name 브랜드 포함»
       · 237건: 서술적 파일명 N/N (N%) — N% 이상 필요 [측정 14~31]
   - ai_schema_offer (#43 · schema_markup · 1점) — FAIL 211/432 (49%)  «#43 Schema: Offer»
@@ -1887,7 +1896,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 
 ### [support_troubleshoot] 지원 - 트러블슈팅 — 246건  (감점 항목 7개)
   - seo_sitemap (#19 · seo · 1점) — FAIL 246/246 (100%)  «#19 Sitemap (1개월 내)»
-      · 246건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
+      · 246건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 246/246 (100%)  «#26 Schema: ImageObject»
       · 246건: @type='ImageObject' 노드 없음
   - ai_schema_howto (#28 · schema_markup · 1점) — FAIL 246/246 (100%)  «#28 Schema: HowTo»
@@ -1903,7 +1912,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 
 ### [business] B2B (사업자) — 100건  (감점 항목 23개)
   - seo_sitemap (#19 · seo · 1점) — FAIL 100/100 (100%)  «#19 Sitemap (1개월 내)»
-      · 100건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
+      · 100건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 100/100 (100%)  «#26 Schema: ImageObject»
       · 100건: @type='ImageObject' 노드 없음
   - ai_schema_product (#25 · schema_markup · 1점) — FAIL 99/99 (100%)  «#25 Schema: Product 풀세트 (PDP)»
@@ -1953,7 +1962,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 
 ### [press_media] 프레스앤미디어 — 100건  (감점 항목 10개)
   - seo_sitemap (#19 · seo · 1점) — FAIL 100/100 (100%)  «#19 Sitemap (1개월 내)»
-      · 100건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
+      · 100건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 100/100 (100%)  «#26 Schema: ImageObject»
       · 100건: @type='ImageObject' 노드 없음
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 100/100 (100%)  «#32 FAQ Block (콘텐츠)»
@@ -1975,7 +1984,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 
 ### [plp] 제품 카테고리 (PLP) — 99건  (감점 항목 19개)
   - seo_sitemap (#19 · seo · 1점) — FAIL 99/99 (100%)  «#19 Sitemap (1개월 내)»
-      ·  99건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
+      ·  99건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 99/99 (100%)  «#26 Schema: ImageObject»
       ·  99건: @type='ImageObject' 노드 없음
   - ai_schema_video (#27 · schema_markup · 1점) — FAIL 14/14 (100%)  «#27 Schema: VideoObject»
@@ -2019,7 +2028,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 
 ### [microsite] 마이크로사이트/캠페인 — 86건  (감점 항목 16개)
   - seo_sitemap (#19 · seo · 1점) — FAIL 86/86 (100%)  «#19 Sitemap (1개월 내)»
-      ·  86건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
+      ·  86건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 86/86 (100%)  «#26 Schema: ImageObject»
       ·  55건: @type='ImageObject' 노드 없음
       ·  31건: 필수 필드 누락: name, description, uploadDate
@@ -2055,7 +2064,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 
 ### [promotion] 프로모션/약관 — 52건  (감점 항목 12개)
   - seo_sitemap (#19 · seo · 1점) — FAIL 52/52 (100%)  «#19 Sitemap (1개월 내)»
-      ·  52건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
+      ·  52건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_offer (#43 · schema_markup · 1점) — FAIL 52/52 (100%)  «#43 Schema: Offer»
       ·  52건: @type='Offer' 노드 없음
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 52/52 (100%)  «#26 Schema: ImageObject»
@@ -2082,7 +2091,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 
 ### [buying_guide] 구매 가이드 — 15건  (감점 항목 12개)
   - seo_sitemap (#19 · seo · 1점) — FAIL 15/15 (100%)  «#19 Sitemap (1개월 내)»
-      ·  15건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
+      ·  15건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 15/15 (100%)  «#26 Schema: ImageObject»
       ·  15건: @type='ImageObject' 노드 없음
   - ai_schema_video (#27 · schema_markup · 1점) — FAIL 8/8 (100%)  «#27 Schema: VideoObject»
@@ -2111,7 +2120,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 
 ### [home] 홈페이지 — 2건  (감점 항목 12개)
   - seo_sitemap (#19 · seo · 1점) — FAIL 2/2 (100%)  «#19 Sitemap (1개월 내)»
-      ·   2건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
+      ·   2건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 2/2 (100%)  «#26 Schema: ImageObject»
       ·   2건: @type='ImageObject' 노드 없음
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 2/2 (100%)  «#32 FAQ Block (콘텐츠)»
@@ -2138,13 +2147,15 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 ##############################################################################
 ## MX   run=mx_2026-09-24_run_e49577aef67c.json
    URL 1215건 · 감사성공 1108 · [config] 신(2026-06-17 재배포)
-   등급(성공 기준): Good 441 / Need Improvement 657 / Poor 10
+   등급(성공 기준): Good 392 / Need Improvement 706 / Poor 10
    ⚠ 감사 불가(fetch 실패) 107건 — 아래 감점 집계에서 제외:
         · 58건: status code 없음
         · 49건: HTTP 404 — 200 기대
 ##############################################################################
 
 ### [pdp] 제품 상세 (PDP) — 406건  (감점 항목 19개)
+  - seo_sitemap (#19 · seo · 1점) — FAIL 406/406 (100%)  «#19 Sitemap (1개월 내)»
+      · 406건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_product (#25 · schema_markup · 1점) — FAIL 406/406 (100%)  «#25 Schema: Product 풀세트 (PDP)»
       · 305건: 필수 필드 누락: sku
       ·  96건: 필수 필드 누락: sku, offers.price, offers.availability
@@ -2174,8 +2185,6 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       · 225건: 요청 실패: 
   - ai_definition (#33 · citable_content · 1점) — FAIL 196/406 (48%)  «#33 Definition Paragraph»
       · 196건: 정의문 N건 — N건 이상 필요 [측정 0]
-  - seo_sitemap (#19 · seo · 1점) — FAIL 134/406 (33%)  «#19 Sitemap (1개월 내)»
-      · 134건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
   - ai_image_filename (#40 · ai_crawlability · 1점) — FAIL 132/406 (33%)  «#40 Image File Name 브랜드 포함»
       · 132건: 서술적 파일명 N/N (N%) — N% 이상 필요 [측정 14~39]
   - ai_schema_offer (#43 · schema_markup · 1점) — FAIL 101/406 (25%)  «#43 Schema: Offer»
@@ -2195,7 +2204,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 
 ### [support_troubleshoot] 지원 - 트러블슈팅 — 216건  (감점 항목 8개)
   - seo_sitemap (#19 · seo · 1점) — FAIL 216/216 (100%)  «#19 Sitemap (1개월 내)»
-      · 216건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
+      · 216건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 216/216 (100%)  «#26 Schema: ImageObject»
       · 216건: @type='ImageObject' 노드 없음
   - ai_schema_howto (#28 · schema_markup · 1점) — FAIL 216/216 (100%)  «#28 Schema: HowTo»
@@ -2213,7 +2222,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 
 ### [plp] 제품 카테고리 (PLP) — 133건  (감점 항목 14개)
   - seo_sitemap (#19 · seo · 1점) — FAIL 133/133 (100%)  «#19 Sitemap (1개월 내)»
-      · 133건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
+      · 133건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 133/133 (100%)  «#26 Schema: ImageObject»
       · 133건: @type='ImageObject' 노드 없음
   - ai_summary_box (#35 · citable_content · 1점) — FAIL 133/133 (100%)  «#35 Summary Box (콘텐츠)»
@@ -2246,7 +2255,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 
 ### [press_media] 프레스앤미디어 — 100건  (감점 항목 12개)
   - seo_sitemap (#19 · seo · 1점) — FAIL 100/100 (100%)  «#19 Sitemap (1개월 내)»
-      · 100건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
+      · 100건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 100/100 (100%)  «#26 Schema: ImageObject»
       · 100건: @type='ImageObject' 노드 없음
   - seo_meta_desc (#14 · seo · 1점) — FAIL 99/100 (99%)  «#14 Meta Description»
@@ -2273,7 +2282,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 
 ### [business] B2B (사업자) — 95건  (감점 항목 17개)
   - seo_sitemap (#19 · seo · 1점) — FAIL 95/95 (100%)  «#19 Sitemap (1개월 내)»
-      ·  95건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
+      ·  95건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_product (#25 · schema_markup · 1점) — FAIL 95/95 (100%)  «#25 Schema: Product 풀세트 (PDP)»
       ·  95건: @type='Product/ProductGroup' 노드 없음
   - ai_schema_offer (#43 · schema_markup · 1점) — FAIL 95/95 (100%)  «#43 Schema: Offer»
@@ -2311,7 +2320,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 
 ### [promotion] 프로모션/약관 — 88건  (감점 항목 13개)
   - seo_sitemap (#19 · seo · 1점) — FAIL 88/88 (100%)  «#19 Sitemap (1개월 내)»
-      ·  88건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
+      ·  88건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_offer (#43 · schema_markup · 1점) — FAIL 88/88 (100%)  «#43 Schema: Offer»
       ·  88건: @type='Offer' 노드 없음
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 88/88 (100%)  «#26 Schema: ImageObject»
@@ -2341,7 +2350,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 
 ### [experience] 익스피어리언스 — 34건  (감점 항목 13개)
   - seo_sitemap (#19 · seo · 1점) — FAIL 34/34 (100%)  «#19 Sitemap (1개월 내)»
-      ·  34건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
+      ·  34건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 34/34 (100%)  «#26 Schema: ImageObject»
       ·  34건: @type='ImageObject' 노드 없음
   - ai_schema_article (#29 · schema_markup · 1점) — FAIL 21/21 (100%)  «#29 Schema: Article»
@@ -2369,7 +2378,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 
 ### [buying_guide] 구매 가이드 — 24건  (감점 항목 12개)
   - seo_sitemap (#19 · seo · 1점) — FAIL 24/24 (100%)  «#19 Sitemap (1개월 내)»
-      ·  24건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
+      ·  24건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 24/24 (100%)  «#26 Schema: ImageObject»
       ·  24건: @type='ImageObject' 노드 없음
   - ai_schema_video (#27 · schema_markup · 1점) — FAIL 15/15 (100%)  «#27 Schema: VideoObject»
@@ -2398,7 +2407,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 
 ### [microsite] 마이크로사이트/캠페인 — 8건  (감점 항목 11개)
   - seo_sitemap (#19 · seo · 1점) — FAIL 8/8 (100%)  «#19 Sitemap (1개월 내)»
-      ·   8건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
+      ·   8건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 8/8 (100%)  «#26 Schema: ImageObject»
       ·   8건: @type='ImageObject' 노드 없음
   - ai_schema_video (#27 · schema_markup · 1점) — FAIL 5/5 (100%)  «#27 Schema: VideoObject»
@@ -2422,6 +2431,8 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   1건: 인용 가능 문장 N개 — N개 이상 필요 [측정 1]
 
 ### [home] 홈페이지 — 2건  (감점 항목 12개)
+  - seo_sitemap (#19 · seo · 1점) — FAIL 2/2 (100%)  «#19 Sitemap (1개월 내)»
+      ·   2건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 2/2 (100%)  «#26 Schema: ImageObject»
       ·   2건: @type='ImageObject' 노드 없음
   - ai_summary_box (#35 · citable_content · 1점) — FAIL 2/2 (100%)  «#35 Summary Box (콘텐츠)»
@@ -2436,8 +2447,6 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   1건: 헤딩 역순 N건 — 첫 헤딩(hN)보다 상위 레벨이 뒤에 등장 [측정 1]
   - a11y_aria_labels (a11y#12 · accessibility · 1점) — FAIL 1/2 (50%)  «#12 ARIA 누락 < 10%»
       ·   1건: 누락 N% — N% 미만 필요 [측정 22.3]
-  - seo_sitemap (#19 · seo · 1점) — FAIL 1/2 (50%)  «#19 Sitemap (1개월 내)»
-      ·   1건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
   - ai_schema_breadcrumb (#21 · schema_markup · 1점) — FAIL 1/2 (50%)  «#21 Schema: BreadcrumbList»
       ·   1건: @type='BreadcrumbList' 노드 없음
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 1/2 (50%)  «#32 FAQ Block (콘텐츠)»
@@ -2449,7 +2458,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 
 ### [support] 지원/Support — 2건  (감점 항목 8개)
   - seo_sitemap (#19 · seo · 1점) — FAIL 2/2 (100%)  «#19 Sitemap (1개월 내)»
-      ·   2건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
+      ·   2건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 2/2 (100%)  «#26 Schema: ImageObject»
       ·   2건: @type='ImageObject' 노드 없음
   - ai_schema_howto (#28 · schema_markup · 1점) — FAIL 2/2 (100%)  «#28 Schema: HowTo»
@@ -2466,85 +2475,94 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   2건: SSR 비율 N% — N% 이상 필요 [측정 21]
 
 ##############################################################################
-## NL   run=nl_2026-09-29_run_2ceadc0cf8ee.json
-   URL 1048건 · 감사성공 1004 · [config] 신(2026-06-17 재배포)
-   등급(성공 기준): Good 746 / Need Improvement 254 / Poor 4
-   ⚠ 감사 불가(fetch 실패) 44건 — 아래 감점 집계에서 제외:
-        · 31건: HTTP 404 — 200 기대
-        · 13건: status code 없음
+## NL   run=nl_2026-09-29_run_11f2fdd8c5f7.json
+   URL 1048건 · 감사성공 995 · [config] 신(2026-06-17 재배포)
+   등급(성공 기준): Good 454 / Need Improvement 527 / Poor 14
+   ⚠ 감사 불가(fetch 실패) 53건 — 아래 감점 집계에서 제외:
+        · 27건: HTTP 404 — 200 기대
+        · 26건: status code 없음
 ##############################################################################
 
-### [pdp] 제품 상세 (PDP) — 464건  (감점 항목 13개)
-  - ai_schema_product (#25 · schema_markup · 1점) — FAIL 464/464 (100%)  «#25 Schema: Product 풀세트 (PDP)»
-      · 236건: 필수 필드 누락: sku
-      · 227건: 필수 필드 누락: sku, offers.price, offers.availability
+### [pdp] 제품 상세 (PDP) — 454건  (감점 항목 14개)
+  - seo_sitemap (#19 · seo · 1점) — FAIL 454/454 (100%)  «#19 Sitemap (1개월 내)»
+      · 454건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
+  - ai_schema_product (#25 · schema_markup · 1점) — FAIL 454/454 (100%)  «#25 Schema: Product 풀세트 (PDP)»
+      · 234건: 필수 필드 누락: sku
+      · 219건: 필수 필드 누락: sku, offers.price, offers.availability
       ·   1건: 필수 필드 누락: description, sku, offers.price, offers.availability
-  - ai_schema_image (#26 · schema_markup · 1점) — FAIL 464/464 (100%)  «#26 Schema: ImageObject»
-      · 439건: @type='ImageObject' 노드 없음
-      ·  23건: 필수 필드 누락: url, uploadDate
+  - ai_schema_image (#26 · schema_markup · 1점) — FAIL 454/454 (100%)  «#26 Schema: ImageObject»
+      · 442건: @type='ImageObject' 노드 없음
+      ·  10건: 필수 필드 누락: url, uploadDate
       ·   2건: 필수 필드 누락: url, description, uploadDate
-  - ai_schema_video (#27 · schema_markup · 1점) — FAIL 335/335 (100%)  «#27 Schema: VideoObject»
-      · 265건: 필수 필드 누락: url
-      ·  70건: @type='VideoObject' 노드 없음
-  - ai_schema_faq (#23 · schema_markup · 1점) — FAIL 277/464 (60%)  «#23 Schema: FAQPage»
-      · 277건: @type='FAQPage' 노드 없음
-  - ai_definition (#33 · citable_content · 1점) — FAIL 256/464 (55%)  «#33 Definition Paragraph»
-      · 256건: 정의문 N건 — N건 이상 필요 [측정 0]
-  - ai_schema_offer (#43 · schema_markup · 1점) — FAIL 228/464 (49%)  «#43 Schema: Offer»
-      · 228건: @type='Offer' 노드 없음
-  - ai_image_filename (#40 · ai_crawlability · 1점) — FAIL 126/464 (27%)  «#40 Image File Name 브랜드 포함»
-      · 126건: 서술적 파일명 N/N (N%) — N% 이상 필요 [측정 22~35]
-  - a11y_image_alt (a11y#9 · accessibility · 1점) — FAIL 75/464 (16%)  «#9 Image Alt 누락 0»
-      ·  75건: N개 요소에 'alt' 속성이 없습니다. [측정 1~14]
-  - seo_h1 (#16 · seo · 1점) — FAIL 31/464 (7%)  «#16 H1 정확히 1개»
-      ·  31건: 'hN' N개 — == N 필요 [측정 1]
-  - ai_summary_box (#35 · citable_content · 1점) — FAIL 15/464 (3%)  «#35 Summary Box (콘텐츠)»
+  - ai_schema_video (#27 · schema_markup · 1점) — FAIL 332/332 (100%)  «#27 Schema: VideoObject»
+      · 261건: 필수 필드 누락: url
+      ·  71건: @type='VideoObject' 노드 없음
+  - ai_schema_faq (#23 · schema_markup · 1점) — FAIL 274/454 (60%)  «#23 Schema: FAQPage»
+      · 274건: @type='FAQPage' 노드 없음
+  - ai_schema_offer (#43 · schema_markup · 1점) — FAIL 220/454 (48%)  «#43 Schema: Offer»
+      · 220건: @type='Offer' 노드 없음
+  - ai_definition (#33 · citable_content · 1점) — FAIL 143/454 (31%)  «#33 Definition Paragraph»
+      · 143건: 정의문 N건 — N건 이상 필요 [측정 0]
+  - ai_image_filename (#40 · ai_crawlability · 1점) — FAIL 123/454 (27%)  «#40 Image File Name 브랜드 포함»
+      · 123건: 서술적 파일명 N/N (N%) — N% 이상 필요 [측정 22~35]
+  - a11y_image_alt (a11y#9 · accessibility · 1점) — FAIL 72/454 (16%)  «#9 Image Alt 누락 0»
+      ·  72건: N개 요소에 'alt' 속성이 없습니다. [측정 1~14]
+  - ai_citable (#36 · citable_content · 1점) — FAIL 66/454 (15%)  «#36 Citable Sentence ≥ 5개»
+      ·  66건: 인용 가능 문장 N개 — N개 이상 필요 [측정 0~4]
+  - seo_h1 (#16 · seo · 1점) — FAIL 29/454 (6%)  «#16 H1 정확히 1개»
+      ·  29건: 'hN' N개 — == N 필요 [측정 1]
+  - ai_summary_box (#35 · citable_content · 1점) — FAIL 15/454 (3%)  «#35 Summary Box (콘텐츠)»
       ·  15건: 요약 블록(헤딩 문구·selector)을 찾지 못했습니다.
-  - ai_citable (#36 · citable_content · 1점) — FAIL 6/464 (1%)  «#36 Citable Sentence ≥ 5개»
-      ·   6건: 인용 가능 문장 N개 — N개 이상 필요 [측정 4]
-  - seo_meta_desc (#14 · seo · 1점) — FAIL 1/464 (0%)  «#14 Meta Description»
+  - seo_meta_desc (#14 · seo · 1점) — FAIL 1/454 (0%)  «#14 Meta Description»
       ·   1건: 'content' 속성이 없거나 N자 미만입니다. [측정 1]
-  - seo_indexable (#17 · seo · 1점) — FAIL 1/464 (0%)  «#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)»
+  - seo_indexable (#17 · seo · 1점) — FAIL 1/454 (0%)  «#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)»
       ·   1건: 'noindex' 선언으로 색인이 차단됩니다.
 
-### [experience] 익스피어리언스 — 100건  (감점 항목 9개)
-  - ai_schema_image (#26 · schema_markup · 1점) — FAIL 100/100 (100%)  «#26 Schema: ImageObject»
-      · 100건: @type='ImageObject' 노드 없음
-  - ai_summary_box (#35 · citable_content · 1점) — FAIL 100/100 (100%)  «#35 Summary Box (콘텐츠)»
-      · 100건: 요약 블록(헤딩 문구·selector)을 찾지 못했습니다.
-  - ai_schema_article (#29 · schema_markup · 1점) — FAIL 95/95 (100%)  «#29 Schema: Article»
-      ·  95건: @type='Article' 노드 없음
-  - ai_schema_video (#27 · schema_markup · 1점) — FAIL 1/1 (100%)  «#27 Schema: VideoObject»
-      ·   1건: 필수 필드 누락: url
-  - ai_definition (#33 · citable_content · 1점) — FAIL 92/100 (92%)  «#33 Definition Paragraph»
-      ·  92건: 정의문 N건 — N건 이상 필요 [측정 0]
-  - ai_faq_block (#32 · citable_content · 1점) — FAIL 83/100 (83%)  «#32 FAQ Block (콘텐츠)»
-      ·  83건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
-  - seo_meta_desc (#14 · seo · 1점) — FAIL 7/100 (7%)  «#14 Meta Description»
-      ·   7건: 'meta[name='description' i]' 요소를 찾을 수 없습니다.
-  - a11y_image_alt (a11y#9 · accessibility · 1점) — FAIL 3/100 (3%)  «#9 Image Alt 누락 0»
-      ·   3건: N개 요소에 'alt' 속성이 없습니다. [측정 2~20]
-  - seo_h1 (#16 · seo · 1점) — FAIL 1/100 (1%)  «#16 H1 정확히 1개»
-      ·   1건: 'hN' N개 — == N 필요 [측정 1]
-
-### [support_troubleshoot] 지원 - 트러블슈팅 — 100건  (감점 항목 5개)
+### [support_troubleshoot] 지원 - 트러블슈팅 — 100건  (감점 항목 7개)
+  - seo_sitemap (#19 · seo · 1점) — FAIL 100/100 (100%)  «#19 Sitemap (1개월 내)»
+      · 100건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 100/100 (100%)  «#26 Schema: ImageObject»
       · 100건: @type='ImageObject' 노드 없음
   - ai_schema_howto (#28 · schema_markup · 1점) — FAIL 100/100 (100%)  «#28 Schema: HowTo»
       · 100건: @type='HowTo' 노드 없음
-  - ai_definition (#33 · citable_content · 1점) — FAIL 100/100 (100%)  «#33 Definition Paragraph»
-      · 100건: 정의문 N건 — N건 이상 필요 [측정 0]
   - ai_summary_box (#35 · citable_content · 1점) — FAIL 100/100 (100%)  «#35 Summary Box (콘텐츠)»
       · 100건: 요약 블록(헤딩 문구·selector)을 찾지 못했습니다.
+  - ai_citable (#36 · citable_content · 1점) — FAIL 100/100 (100%)  «#36 Citable Sentence ≥ 5개»
+      · 100건: 인용 가능 문장 N개 — N개 이상 필요 [측정 0~3]
   - ai_ssr_ratio (#37 · ai_crawlability · 1점) — FAIL 100/100 (100%)  «#37 JS HTML Text Ratio ≥ 60%»
       · 100건: SSR 비율 N% — N% 이상 필요 [측정 47]
+  - ai_definition (#33 · citable_content · 1점) — FAIL 99/100 (99%)  «#33 Definition Paragraph»
+      ·  99건: 정의문 N건 — N건 이상 필요 [측정 0]
 
-### [business] B2B (사업자) — 98건  (감점 항목 18개)
+### [experience] 익스피어리언스 — 99건  (감점 항목 11개)
+  - seo_sitemap (#19 · seo · 1점) — FAIL 99/99 (100%)  «#19 Sitemap (1개월 내)»
+      ·  99건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
+  - ai_schema_image (#26 · schema_markup · 1점) — FAIL 99/99 (100%)  «#26 Schema: ImageObject»
+      ·  99건: @type='ImageObject' 노드 없음
+  - ai_schema_article (#29 · schema_markup · 1점) — FAIL 94/94 (100%)  «#29 Schema: Article»
+      ·  94건: @type='Article' 노드 없음
+  - ai_schema_video (#27 · schema_markup · 1점) — FAIL 1/1 (100%)  «#27 Schema: VideoObject»
+      ·   1건: 필수 필드 누락: url
+  - ai_summary_box (#35 · citable_content · 1점) — FAIL 97/99 (98%)  «#35 Summary Box (콘텐츠)»
+      ·  97건: 요약 블록(헤딩 문구·selector)을 찾지 못했습니다.
+  - ai_faq_block (#32 · citable_content · 1점) — FAIL 52/99 (53%)  «#32 FAQ Block (콘텐츠)»
+      ·  52건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
+  - ai_definition (#33 · citable_content · 1점) — FAIL 47/99 (47%)  «#33 Definition Paragraph»
+      ·  47건: 정의문 N건 — N건 이상 필요 [측정 0]
+  - ai_citable (#36 · citable_content · 1점) — FAIL 40/99 (40%)  «#36 Citable Sentence ≥ 5개»
+      ·  40건: 인용 가능 문장 N개 — N개 이상 필요 [측정 0~4]
+  - seo_meta_desc (#14 · seo · 1점) — FAIL 7/99 (7%)  «#14 Meta Description»
+      ·   7건: 'meta[name='description' i]' 요소를 찾을 수 없습니다.
+  - a11y_image_alt (a11y#9 · accessibility · 1점) — FAIL 3/99 (3%)  «#9 Image Alt 누락 0»
+      ·   3건: N개 요소에 'alt' 속성이 없습니다. [측정 2~20]
+  - seo_h1 (#16 · seo · 1점) — FAIL 1/99 (1%)  «#16 H1 정확히 1개»
+      ·   1건: 'hN' N개 — == N 필요 [측정 1]
+
+### [business] B2B (사업자) — 98건  (감점 항목 19개)
   - ai_schema_product (#25 · schema_markup · 1점) — FAIL 98/98 (100%)  «#25 Schema: Product 풀세트 (PDP)»
       ·  80건: 필수 필드 누락: sku, offers.price, offers.availability
-      ·  18건: @type='Product/ProductGroup' 노드 없음
-  - ai_schema_offer (#43 · schema_markup · 1점) — FAIL 98/98 (100%)  «#43 Schema: Offer»
-      ·  98건: @type='Offer' 노드 없음
+      ·  17건: @type='Product/ProductGroup' 노드 없음
+      ·   1건: 필수 필드 누락: description, sku
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 98/98 (100%)  «#26 Schema: ImageObject»
       ·  98건: @type='ImageObject' 노드 없음
   - ai_ssr_ratio (#37 · ai_crawlability · 1점) — FAIL 98/98 (100%)  «#37 JS HTML Text Ratio ≥ 60%»
@@ -2552,20 +2570,24 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
   - ai_schema_video (#27 · schema_markup · 1점) — FAIL 26/26 (100%)  «#27 Schema: VideoObject»
       ·  24건: 필수 필드 누락: url
       ·   2건: @type='VideoObject' 노드 없음
+  - seo_sitemap (#19 · seo · 1점) — FAIL 97/98 (99%)  «#19 Sitemap (1개월 내)»
+      ·  97건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
+  - ai_schema_offer (#43 · schema_markup · 1점) — FAIL 97/98 (99%)  «#43 Schema: Offer»
+      ·  97건: @type='Offer' 노드 없음
   - ai_image_filename (#40 · ai_crawlability · 1점) — FAIL 71/98 (72%)  «#40 Image File Name 브랜드 포함»
       ·  71건: 서술적 파일명 N/N (N%) — N% 이상 필요 [측정 4~19]
-  - ai_definition (#33 · citable_content · 1점) — FAIL 56/98 (57%)  «#33 Definition Paragraph»
-      ·  56건: 정의문 N건 — N건 이상 필요 [측정 0]
+  - ai_definition (#33 · citable_content · 1점) — FAIL 53/98 (54%)  «#33 Definition Paragraph»
+      ·  53건: 정의문 N건 — N건 이상 필요 [측정 0]
+  - ai_citable (#36 · citable_content · 1점) — FAIL 40/98 (41%)  «#36 Citable Sentence ≥ 5개»
+      ·  40건: 인용 가능 문장 N개 — N개 이상 필요 [측정 0~4]
   - seo_h1 (#16 · seo · 1점) — FAIL 26/98 (27%)  «#16 H1 정확히 1개»
       ·  26건: 'hN' N개 — == N 필요 [측정 1]
-  - ai_summary_box (#35 · citable_content · 1점) — FAIL 25/98 (26%)  «#35 Summary Box (콘텐츠)»
-      ·  25건: 요약 블록(헤딩 문구·selector)을 찾지 못했습니다.
+  - ai_summary_box (#35 · citable_content · 1점) — FAIL 24/98 (24%)  «#35 Summary Box (콘텐츠)»
+      ·  24건: 요약 블록(헤딩 문구·selector)을 찾지 못했습니다.
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 17/98 (17%)  «#32 FAQ Block (콘텐츠)»
       ·  17건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
   - seo_meta_desc (#14 · seo · 1점) — FAIL 10/98 (10%)  «#14 Meta Description»
       ·  10건: 'meta[name='description' i]' 요소를 찾을 수 없습니다.
-  - ai_citable (#36 · citable_content · 1점) — FAIL 10/98 (10%)  «#36 Citable Sentence ≥ 5개»
-      ·  10건: 인용 가능 문장 N개 — N개 이상 필요 [측정 4]
   - seo_open_graph (#18 · seo · 1점) — FAIL 8/98 (8%)  «#18 Open Graph (title+image)»
       ·   8건: 누락: title
   - a11y_heading_hier (a11y#11 · accessibility · 1점) — FAIL 5/98 (5%)  «#11 Heading Hierarchy»
@@ -2580,24 +2602,28 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
   - ai_schema_breadcrumb (#21 · schema_markup · 1점) — FAIL 1/98 (1%)  «#21 Schema: BreadcrumbList»
       ·   1건: @type='BreadcrumbList' 노드 없음
 
-### [promotion] 프로모션/약관 — 93건  (감점 항목 14개)
+### [promotion] 프로모션/약관 — 93건  (감점 항목 16개)
+  - seo_sitemap (#19 · seo · 1점) — FAIL 93/93 (100%)  «#19 Sitemap (1개월 내)»
+      ·  93건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_offer (#43 · schema_markup · 1점) — FAIL 93/93 (100%)  «#43 Schema: Offer»
       ·  93건: @type='Offer' 노드 없음
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 93/93 (100%)  «#26 Schema: ImageObject»
       ·  93건: @type='ImageObject' 노드 없음
-  - ai_faq_block (#32 · citable_content · 1점) — FAIL 93/93 (100%)  «#32 FAQ Block (콘텐츠)»
-      ·  93건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
-  - ai_definition (#33 · citable_content · 1점) — FAIL 93/93 (100%)  «#33 Definition Paragraph»
-      ·  93건: 정의문 N건 — N건 이상 필요 [측정 0]
-  - ai_summary_box (#35 · citable_content · 1점) — FAIL 93/93 (100%)  «#35 Summary Box (콘텐츠)»
-      ·  93건: 요약 블록(헤딩 문구·selector)을 찾지 못했습니다.
   - ai_schema_video (#27 · schema_markup · 1점) — FAIL 5/5 (100%)  «#27 Schema: VideoObject»
       ·   3건: 필수 필드 누락: url
       ·   2건: @type='VideoObject' 노드 없음
+  - ai_summary_box (#35 · citable_content · 1점) — FAIL 90/93 (97%)  «#35 Summary Box (콘텐츠)»
+      ·  90건: 요약 블록(헤딩 문구·selector)을 찾지 못했습니다.
+  - ai_definition (#33 · citable_content · 1점) — FAIL 89/93 (96%)  «#33 Definition Paragraph»
+      ·  89건: 정의문 N건 — N건 이상 필요 [측정 0]
   - seo_meta_desc (#14 · seo · 1점) — FAIL 87/93 (94%)  «#14 Meta Description»
       ·  87건: 'meta[name='description' i]' 요소를 찾을 수 없습니다.
+  - ai_faq_block (#32 · citable_content · 1점) — FAIL 87/93 (94%)  «#32 FAQ Block (콘텐츠)»
+      ·  87건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
   - seo_h1 (#16 · seo · 1점) — FAIL 79/93 (85%)  «#16 H1 정확히 1개»
       ·  79건: 'hN' N개 — == N 필요 [측정 1]
+  - ai_citable (#36 · citable_content · 1점) — FAIL 78/93 (84%)  «#36 Citable Sentence ≥ 5개»
+      ·  78건: 인용 가능 문장 N개 — N개 이상 필요 [측정 0~4]
   - seo_open_graph (#18 · seo · 1점) — FAIL 19/93 (20%)  «#18 Open Graph (title+image)»
       ·  18건: 누락: title
       ·   1건: 누락: image
@@ -2613,73 +2639,81 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
   - seo_indexable (#17 · seo · 1점) — FAIL 3/93 (3%)  «#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)»
       ·   3건: 'noindex' 선언으로 색인이 차단됩니다.
 
-### [microsite] 마이크로사이트/캠페인 — 65건  (감점 항목 14개)
-  - ai_schema_image (#26 · schema_markup · 1점) — FAIL 65/65 (100%)  «#26 Schema: ImageObject»
-      ·  65건: @type='ImageObject' 노드 없음
-  - ai_summary_box (#35 · citable_content · 1점) — FAIL 65/65 (100%)  «#35 Summary Box (콘텐츠)»
-      ·  65건: 요약 블록(헤딩 문구·selector)을 찾지 못했습니다.
+### [microsite] 마이크로사이트/캠페인 — 66건  (감점 항목 16개)
+  - seo_sitemap (#19 · seo · 1점) — FAIL 66/66 (100%)  «#19 Sitemap (1개월 내)»
+      ·  66건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
+  - ai_schema_image (#26 · schema_markup · 1점) — FAIL 66/66 (100%)  «#26 Schema: ImageObject»
+      ·  66건: @type='ImageObject' 노드 없음
   - ai_schema_video (#27 · schema_markup · 1점) — FAIL 24/24 (100%)  «#27 Schema: VideoObject»
       ·  20건: @type='VideoObject' 노드 없음
       ·   4건: 필수 필드 누락: url
   - ai_schema_article (#29 · schema_markup · 1점) — FAIL 5/5 (100%)  «#29 Schema: Article»
       ·   5건: @type='Article' 노드 없음
-  - ai_faq_block (#32 · citable_content · 1점) — FAIL 59/65 (91%)  «#32 FAQ Block (콘텐츠)»
-      ·  59건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
-  - ai_definition (#33 · citable_content · 1점) — FAIL 57/65 (88%)  «#33 Definition Paragraph»
-      ·  57건: 정의문 N건 — N건 이상 필요 [측정 0]
-  - seo_h1 (#16 · seo · 1점) — FAIL 48/65 (74%)  «#16 H1 정확히 1개»
-      ·  48건: 'hN' N개 — == N 필요 [측정 1]
-  - seo_meta_desc (#14 · seo · 1점) — FAIL 43/65 (66%)  «#14 Meta Description»
-      ·  43건: 'meta[name='description' i]' 요소를 찾을 수 없습니다.
-  - seo_open_graph (#18 · seo · 1점) — FAIL 23/65 (35%)  «#18 Open Graph (title+image)»
+  - ai_summary_box (#35 · citable_content · 1점) — FAIL 64/66 (97%)  «#35 Summary Box (콘텐츠)»
+      ·  64건: 요약 블록(헤딩 문구·selector)을 찾지 못했습니다.
+  - ai_faq_block (#32 · citable_content · 1점) — FAIL 50/66 (76%)  «#32 FAQ Block (콘텐츠)»
+      ·  50건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
+  - seo_h1 (#16 · seo · 1점) — FAIL 49/66 (74%)  «#16 H1 정확히 1개»
+      ·  49건: 'hN' N개 — == N 필요 [측정 1]
+  - seo_meta_desc (#14 · seo · 1점) — FAIL 44/66 (67%)  «#14 Meta Description»
+      ·  44건: 'meta[name='description' i]' 요소를 찾을 수 없습니다.
+  - ai_definition (#33 · citable_content · 1점) — FAIL 41/66 (62%)  «#33 Definition Paragraph»
+      ·  41건: 정의문 N건 — N건 이상 필요 [측정 0]
+  - ai_citable (#36 · citable_content · 1점) — FAIL 30/66 (45%)  «#36 Citable Sentence ≥ 5개»
+      ·  30건: 인용 가능 문장 N개 — N개 이상 필요 [측정 0~3]
+  - seo_open_graph (#18 · seo · 1점) — FAIL 23/66 (35%)  «#18 Open Graph (title+image)»
       ·  16건: 누락: title
       ·   7건: 누락: image
   - ai_schema_faq (#23 · schema_markup · 1점) — FAIL 1/4 (25%)  «#23 Schema: FAQPage»
       ·   1건: @type='FAQPage' 노드 없음
-  - a11y_heading_hier (a11y#11 · accessibility · 1점) — FAIL 11/65 (17%)  «#11 Heading Hierarchy»
-      ·   7건: 본문 영역에 헤딩 태그가 없습니다.
+  - a11y_heading_hier (a11y#11 · accessibility · 1점) — FAIL 12/66 (18%)  «#11 Heading Hierarchy»
+      ·   8건: 본문 영역에 헤딩 태그가 없습니다.
       ·   4건: 헤딩 역순 N건 — 첫 헤딩(hN)보다 상위 레벨이 뒤에 등장 [측정 1~2]
-  - a11y_semantic (a11y#10 · accessibility · 1점) — FAIL 7/65 (11%)  «#10 Semantic HTML»
-      ·   7건: 헤딩 N + 랜드마크 N = N — 의미 구조 N+ 필요 [측정 0]
-  - a11y_image_alt (a11y#9 · accessibility · 1점) — FAIL 5/65 (8%)  «#9 Image Alt 누락 0»
+  - a11y_semantic (a11y#10 · accessibility · 1점) — FAIL 8/66 (12%)  «#10 Semantic HTML»
+      ·   8건: 헤딩 N + 랜드마크 N = N — 의미 구조 N+ 필요 [측정 0]
+  - a11y_image_alt (a11y#9 · accessibility · 1점) — FAIL 5/66 (8%)  «#9 Image Alt 누락 0»
       ·   5건: N개 요소에 'alt' 속성이 없습니다. [측정 1~6]
-  - ai_image_filename (#40 · ai_crawlability · 1점) — FAIL 2/65 (3%)  «#40 Image File Name 브랜드 포함»
+  - ai_image_filename (#40 · ai_crawlability · 1점) — FAIL 2/66 (3%)  «#40 Image File Name 브랜드 포함»
       ·   2건: 서술적 파일명 N/N (N%) — N% 이상 필요 [측정 51~52]
 
-### [plp] 제품 카테고리 (PLP) — 48건  (감점 항목 14개)
-  - ai_schema_image (#26 · schema_markup · 1점) — FAIL 48/48 (100%)  «#26 Schema: ImageObject»
-      ·  48건: @type='ImageObject' 노드 없음
+### [plp] 제품 카테고리 (PLP) — 49건  (감점 항목 15개)
+  - seo_sitemap (#19 · seo · 1점) — FAIL 49/49 (100%)  «#19 Sitemap (1개월 내)»
+      ·  49건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
+  - ai_schema_image (#26 · schema_markup · 1점) — FAIL 49/49 (100%)  «#26 Schema: ImageObject»
+      ·  49건: @type='ImageObject' 노드 없음
   - ai_schema_video (#27 · schema_markup · 1점) — FAIL 16/16 (100%)  «#27 Schema: VideoObject»
       ·  16건: @type='VideoObject' 노드 없음
-  - ai_summary_box (#35 · citable_content · 1점) — FAIL 47/48 (98%)  «#35 Summary Box (콘텐츠)»
+  - ai_summary_box (#35 · citable_content · 1점) — FAIL 47/49 (96%)  «#35 Summary Box (콘텐츠)»
       ·  47건: 요약 블록(헤딩 문구·selector)을 찾지 못했습니다.
-  - ai_faq_block (#32 · citable_content · 1점) — FAIL 37/48 (77%)  «#32 FAQ Block (콘텐츠)»
-      ·  37건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
-  - ai_definition (#33 · citable_content · 1점) — FAIL 35/48 (73%)  «#33 Definition Paragraph»
-      ·  35건: 정의문 N건 — N건 이상 필요 [측정 0]
-  - a11y_heading_hier (a11y#11 · accessibility · 1점) — FAIL 24/48 (50%)  «#11 Heading Hierarchy»
+  - ai_citable (#36 · citable_content · 1점) — FAIL 39/49 (80%)  «#36 Citable Sentence ≥ 5개»
+      ·  39건: 인용 가능 문장 N개 — N개 이상 필요 [측정 0~4]
+  - ai_faq_block (#32 · citable_content · 1점) — FAIL 38/49 (78%)  «#32 FAQ Block (콘텐츠)»
+      ·  38건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
+  - ai_definition (#33 · citable_content · 1점) — FAIL 37/49 (76%)  «#33 Definition Paragraph»
+      ·  37건: 정의문 N건 — N건 이상 필요 [측정 0]
+  - a11y_heading_hier (a11y#11 · accessibility · 1점) — FAIL 25/49 (51%)  «#11 Heading Hierarchy»
       ·  16건: 헤딩 역순 N건 — 첫 헤딩(hN)보다 상위 레벨이 뒤에 등장 [측정 1~2]
-      ·   8건: 본문 영역에 헤딩 태그가 없습니다.
-  - ai_schema_collection (#24 · schema_markup · 1점) — FAIL 17/48 (35%)  «#24 Schema: CollectionPage (PLP)»
+      ·   9건: 본문 영역에 헤딩 태그가 없습니다.
+  - ai_schema_collection (#24 · schema_markup · 1점) — FAIL 17/49 (35%)  «#24 Schema: CollectionPage (PLP)»
       ·  17건: @type='CollectionPage' 노드 없음
-  - seo_h1 (#16 · seo · 1점) — FAIL 13/48 (27%)  «#16 H1 정확히 1개»
-      ·  13건: 'hN' N개 — == N 필요 [측정 1]
-  - a11y_image_alt (a11y#9 · accessibility · 1점) — FAIL 9/48 (19%)  «#9 Image Alt 누락 0»
+  - seo_h1 (#16 · seo · 1점) — FAIL 14/49 (29%)  «#16 H1 정확히 1개»
+      ·  14건: 'hN' N개 — == N 필요 [측정 1]
+  - a11y_image_alt (a11y#9 · accessibility · 1점) — FAIL 9/49 (18%)  «#9 Image Alt 누락 0»
       ·   9건: N개 요소에 'alt' 속성이 없습니다. [측정 3~8]
-  - seo_meta_desc (#14 · seo · 1점) — FAIL 9/48 (19%)  «#14 Meta Description»
+  - a11y_semantic (a11y#10 · accessibility · 1점) — FAIL 9/49 (18%)  «#10 Semantic HTML»
+      ·   9건: 헤딩 N + 랜드마크 N = N — 의미 구조 N+ 필요 [측정 0]
+  - seo_meta_desc (#14 · seo · 1점) — FAIL 9/49 (18%)  «#14 Meta Description»
       ·   9건: 'meta[name='description' i]' 요소를 찾을 수 없습니다.
-  - a11y_semantic (a11y#10 · accessibility · 1점) — FAIL 8/48 (17%)  «#10 Semantic HTML»
-      ·   8건: 헤딩 N + 랜드마크 N = N — 의미 구조 N+ 필요 [측정 0]
-  - seo_open_graph (#18 · seo · 1점) — FAIL 7/48 (15%)  «#18 Open Graph (title+image)»
+  - seo_open_graph (#18 · seo · 1점) — FAIL 7/49 (14%)  «#18 Open Graph (title+image)»
       ·   3건: 누락: title
       ·   2건: 누락: image
       ·   2건: 누락: title, image
-  - ai_citable (#36 · citable_content · 1점) — FAIL 4/48 (8%)  «#36 Citable Sentence ≥ 5개»
-      ·   4건: 인용 가능 문장 N개 — N개 이상 필요 [측정 4]
-  - ai_image_filename (#40 · ai_crawlability · 1점) — FAIL 1/48 (2%)  «#40 Image File Name 브랜드 포함»
+  - ai_image_filename (#40 · ai_crawlability · 1점) — FAIL 1/49 (2%)  «#40 Image File Name 브랜드 포함»
       ·   1건: 로고·아이콘을 제외하면 판정할 img 가 없습니다.
 
-### [buying_guide] 구매 가이드 — 35건  (감점 항목 12개)
+### [buying_guide] 구매 가이드 — 35건  (감점 항목 14개)
+  - seo_sitemap (#19 · seo · 1점) — FAIL 35/35 (100%)  «#19 Sitemap (1개월 내)»
+      ·  35건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 35/35 (100%)  «#26 Schema: ImageObject»
       ·  35건: @type='ImageObject' 노드 없음
   - ai_schema_video (#27 · schema_markup · 1점) — FAIL 19/19 (100%)  «#27 Schema: VideoObject»
@@ -2689,10 +2723,8 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   2건: @type='Article' 노드 없음
   - ai_summary_box (#35 · citable_content · 1점) — FAIL 33/35 (94%)  «#35 Summary Box (콘텐츠)»
       ·  33건: 요약 블록(헤딩 문구·selector)을 찾지 못했습니다.
-  - ai_definition (#33 · citable_content · 1점) — FAIL 18/35 (51%)  «#33 Definition Paragraph»
-      ·  18건: 정의문 N건 — N건 이상 필요 [측정 0]
-  - ai_faq_block (#32 · citable_content · 1점) — FAIL 14/35 (40%)  «#32 FAQ Block (콘텐츠)»
-      ·  14건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
+  - ai_citable (#36 · citable_content · 1점) — FAIL 14/35 (40%)  «#36 Citable Sentence ≥ 5개»
+      ·  14건: 인용 가능 문장 N개 — N개 이상 필요 [측정 0~4]
   - seo_open_graph (#18 · seo · 1점) — FAIL 12/35 (34%)  «#18 Open Graph (title+image)»
       ·   9건: 누락: image
       ·   3건: 누락: title
@@ -2701,6 +2733,10 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
   - a11y_heading_hier (a11y#11 · accessibility · 1점) — FAIL 9/35 (26%)  «#11 Heading Hierarchy»
       ·   5건: 헤딩 역순 N건 — 첫 헤딩(hN)보다 상위 레벨이 뒤에 등장 [측정 1]
       ·   4건: 본문 영역에 헤딩 태그가 없습니다.
+  - ai_definition (#33 · citable_content · 1점) — FAIL 9/35 (26%)  «#33 Definition Paragraph»
+      ·   9건: 정의문 N건 — N건 이상 필요 [측정 0]
+  - ai_faq_block (#32 · citable_content · 1점) — FAIL 6/35 (17%)  «#32 FAQ Block (콘텐츠)»
+      ·   6건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
   - seo_meta_desc (#14 · seo · 1점) — FAIL 5/35 (14%)  «#14 Meta Description»
       ·   5건: 'meta[name='description' i]' 요소를 찾을 수 없습니다.
   - a11y_semantic (a11y#10 · accessibility · 1점) — FAIL 4/35 (11%)  «#10 Semantic HTML»
@@ -2708,11 +2744,13 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
   - a11y_image_alt (a11y#9 · accessibility · 1점) — FAIL 1/35 (3%)  «#9 Image Alt 누락 0»
       ·   1건: N개 요소에 'alt' 속성이 없습니다. [측정 5]
 
-### [home] 홈페이지 — 1건  (감점 항목 7개)
+### [home] 홈페이지 — 1건  (감점 항목 8개)
   - a11y_heading_hier (a11y#11 · accessibility · 1점) — FAIL 1/1 (100%)  «#11 Heading Hierarchy»
       ·   1건: 헤딩 역순 N건 — 첫 헤딩(hN)보다 상위 레벨이 뒤에 등장 [측정 2]
   - seo_h1 (#16 · seo · 1점) — FAIL 1/1 (100%)  «#16 H1 정확히 1개»
       ·   1건: 'hN' N개 — == N 필요 [측정 1]
+  - seo_sitemap (#19 · seo · 1점) — FAIL 1/1 (100%)  «#19 Sitemap (1개월 내)»
+      ·   1건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 1/1 (100%)  «#26 Schema: ImageObject»
       ·   1건: @type='ImageObject' 노드 없음
   - ai_schema_video (#27 · schema_markup · 1점) — FAIL 1/1 (100%)  «#27 Schema: VideoObject»
@@ -2727,7 +2765,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 ##############################################################################
 ## UK   run=uk_2026-09-24_run_511601681e9c.json
    URL 1609건 · 감사성공 1522 · [config] 신(2026-06-17 재배포)
-   등급(성공 기준): Good 1014 / Need Improvement 506 / Poor 2
+   등급(성공 기준): Good 934 / Need Improvement 586 / Poor 2
    ⚠ 감사 불가(fetch 실패) 87건 — 아래 감점 집계에서 제외:
         · 63건: status code 없음
         · 24건: HTTP 404 — 200 기대
@@ -2735,7 +2773,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 
 ### [support_troubleshoot] 지원 - 트러블슈팅 — 432건  (감점 항목 7개)
   - seo_sitemap (#19 · seo · 1점) — FAIL 432/432 (100%)  «#19 Sitemap (1개월 내)»
-      · 432건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
+      · 432건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 432/432 (100%)  «#26 Schema: ImageObject»
       · 432건: @type='ImageObject' 노드 없음
   - ai_schema_howto (#28 · schema_markup · 1점) — FAIL 432/432 (100%)  «#28 Schema: HowTo»
@@ -2750,6 +2788,8 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   2건: 누락: title
 
 ### [pdp] 제품 상세 (PDP) — 430건  (감점 항목 20개)
+  - seo_sitemap (#19 · seo · 1점) — FAIL 430/430 (100%)  «#19 Sitemap (1개월 내)»
+      · 430건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_product (#25 · schema_markup · 1점) — FAIL 430/430 (100%)  «#25 Schema: Product 풀세트 (PDP)»
       · 215건: 필수 필드 누락: sku
       · 196건: 필수 필드 누락: sku, offers.price, offers.availability
@@ -2774,8 +2814,6 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   1건: JSON-LD author 또는 (datePublished+publisher) 조합 없음
   - ai_schema_faq (#23 · schema_markup · 1점) — FAIL 309/412 (75%)  «#23 Schema: FAQPage»
       · 309건: @type='FAQPage' 노드 없음
-  - seo_sitemap (#19 · seo · 1점) — FAIL 221/430 (51%)  «#19 Sitemap (1개월 내)»
-      · 221건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
   - ai_schema_offer (#43 · schema_markup · 1점) — FAIL 215/430 (50%)  «#43 Schema: Offer»
       · 215건: @type='Offer' 노드 없음
   - ai_image_filename (#40 · ai_crawlability · 1점) — FAIL 160/430 (37%)  «#40 Image File Name 브랜드 포함»
@@ -2800,7 +2838,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 
 ### [plp] 제품 카테고리 (PLP) — 174건  (감점 항목 25개)
   - seo_sitemap (#19 · seo · 1점) — FAIL 174/174 (100%)  «#19 Sitemap (1개월 내)»
-      · 174건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
+      · 174건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 173/173 (100%)  «#26 Schema: ImageObject»
       · 173건: @type='ImageObject' 노드 없음
   - ai_schema_video (#27 · schema_markup · 1점) — FAIL 14/14 (100%)  «#27 Schema: VideoObject»
@@ -2860,7 +2898,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 
 ### [experience] 익스피어리언스 — 100건  (감점 항목 12개)
   - seo_sitemap (#19 · seo · 1점) — FAIL 100/100 (100%)  «#19 Sitemap (1개월 내)»
-      · 100건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
+      · 100건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 100/100 (100%)  «#26 Schema: ImageObject»
       · 100건: @type='ImageObject' 노드 없음
   - ai_schema_article (#29 · schema_markup · 1점) — FAIL 70/70 (100%)  «#29 Schema: Article»
@@ -2888,7 +2926,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 
 ### [press_media] 프레스앤미디어 — 100건  (감점 항목 10개)
   - seo_sitemap (#19 · seo · 1점) — FAIL 100/100 (100%)  «#19 Sitemap (1개월 내)»
-      · 100건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
+      · 100건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 100/100 (100%)  «#26 Schema: ImageObject»
       · 100건: @type='ImageObject' 노드 없음
   - ai_summary_box (#35 · citable_content · 1점) — FAIL 100/100 (100%)  «#35 Summary Box (콘텐츠)»
@@ -2910,7 +2948,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 
 ### [promotion] 프로모션/약관 — 100건  (감점 항목 13개)
   - seo_sitemap (#19 · seo · 1점) — FAIL 100/100 (100%)  «#19 Sitemap (1개월 내)»
-      · 100건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
+      · 100건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 100/100 (100%)  «#26 Schema: ImageObject»
       · 100건: @type='ImageObject' 노드 없음
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 100/100 (100%)  «#32 FAQ Block (콘텐츠)»
@@ -2942,7 +2980,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 
 ### [business] B2B (사업자) — 96건  (감점 항목 14개)
   - seo_sitemap (#19 · seo · 1점) — FAIL 96/96 (100%)  «#19 Sitemap (1개월 내)»
-      ·  96건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
+      ·  96건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_product (#25 · schema_markup · 1점) — FAIL 96/96 (100%)  «#25 Schema: Product 풀세트 (PDP)»
       ·  60건: @type='Product/ProductGroup' 노드 없음
       ·  36건: 필수 필드 누락: sku, offers.price, offers.availability
@@ -2973,7 +3011,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 
 ### [buying_guide] 구매 가이드 — 44건  (감점 항목 11개)
   - seo_sitemap (#19 · seo · 1점) — FAIL 44/44 (100%)  «#19 Sitemap (1개월 내)»
-      ·  44건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
+      ·  44건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 44/44 (100%)  «#26 Schema: ImageObject»
       ·  44건: @type='ImageObject' 노드 없음
   - ai_schema_video (#27 · schema_markup · 1점) — FAIL 23/23 (100%)  «#27 Schema: VideoObject»
@@ -2999,7 +3037,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 
 ### [microsite] 마이크로사이트/캠페인 — 44건  (감점 항목 14개)
   - seo_sitemap (#19 · seo · 1점) — FAIL 44/44 (100%)  «#19 Sitemap (1개월 내)»
-      ·  44건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
+      ·  44건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 44/44 (100%)  «#26 Schema: ImageObject»
       ·  44건: @type='ImageObject' 노드 없음
   - ai_schema_article (#29 · schema_markup · 1점) — FAIL 29/29 (100%)  «#29 Schema: Article»
@@ -3031,6 +3069,8 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   1건: 'hN' N개 — == N 필요 [측정 1]
 
 ### [home] 홈페이지 — 2건  (감점 항목 12개)
+  - seo_sitemap (#19 · seo · 1점) — FAIL 2/2 (100%)  «#19 Sitemap (1개월 내)»
+      ·   2건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 2/2 (100%)  «#26 Schema: ImageObject»
       ·   2건: @type='ImageObject' 노드 없음
   - ai_summary_box (#35 · citable_content · 1점) — FAIL 2/2 (100%)  «#35 Summary Box (콘텐츠)»
@@ -3047,8 +3087,6 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   1건: 헤딩 역순 N건 — 첫 헤딩(hN)보다 상위 레벨이 뒤에 등장 [측정 1]
   - a11y_aria_labels (a11y#12 · accessibility · 1점) — FAIL 1/2 (50%)  «#12 ARIA 누락 < 10%»
       ·   1건: 누락 N% — N% 미만 필요 [측정 22.3]
-  - seo_sitemap (#19 · seo · 1점) — FAIL 1/2 (50%)  «#19 Sitemap (1개월 내)»
-      ·   1건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
   - ai_schema_breadcrumb (#21 · schema_markup · 1점) — FAIL 1/2 (50%)  «#21 Schema: BreadcrumbList»
       ·   1건: @type='BreadcrumbList' 노드 없음
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 1/2 (50%)  «#32 FAQ Block (콘텐츠)»
@@ -3059,7 +3097,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 ##############################################################################
 ## US   run=us_2026-09-24_run_52559facf6c5.json
    URL 1298건 · 감사성공 1257 · [config] 신(2026-06-17 재배포)
-   등급(성공 기준): Good 651 / Need Improvement 591 / Poor 15
+   등급(성공 기준): Good 651 / Need Improvement 592 / Poor 14
    ⚠ 감사 불가(fetch 실패) 41건 — 아래 감점 집계에서 제외:
         · 25건: status code 없음
         · 15건: HTTP 404 — 200 기대
@@ -3205,7 +3243,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
   - seo_h1 (#16 · seo · 1점) — FAIL 1/94 (1%)  «#16 H1 정확히 1개»
       ·   1건: 'hN' N개 — == N 필요 [측정 1]
 
-### [business] B2B (사업자) — 91건  (감점 항목 27개)
+### [business] B2B (사업자) — 91건  (감점 항목 26개)
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 78/78 (100%)  «#26 Schema: ImageObject»
       ·  78건: @type='ImageObject' 노드 없음
   - ai_schema_faq (#23 · schema_markup · 1점) — FAIL 40/40 (100%)  «#23 Schema: FAQPage»
@@ -3258,8 +3296,6 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   7건: 'content' 속성이 없거나 N자 미만입니다. [측정 1]
   - perf_http_protocol (#3 · performance · 1점) — FAIL 4/91 (4%)  «#3 HTTP/2+»
       ·   4건: HTTP/N — HTTP/N 이상 필요 [측정 1.1]
-  - seo_sitemap (#19 · seo · 1점) — FAIL 4/91 (4%)  «#19 Sitemap (1개월 내)»
-      ·   4건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
   - a11y_heading_hier (a11y#11 · accessibility · 1점) — FAIL 3/91 (3%)  «#11 Heading Hierarchy»
       ·   2건: 헤딩 역순 N건 — 첫 헤딩(hN)보다 상위 레벨이 뒤에 등장 [측정 3~4]
       ·   1건: 본문 영역에 헤딩 태그가 없습니다.
@@ -3420,13 +3456,15 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 ##############################################################################
 ## VN   run=vn_2026-09-24_run_fff0d45dde2a.json
    URL 978건 · 감사성공 913 · [config] 신(2026-06-17 재배포)
-   등급(성공 기준): Good 673 / Need Improvement 240 / Poor 0
+   등급(성공 기준): Good 568 / Need Improvement 345 / Poor 0
    ⚠ 감사 불가(fetch 실패) 65건 — 아래 감점 집계에서 제외:
         · 38건: HTTP 404 — 200 기대
         · 27건: status code 없음
 ##############################################################################
 
 ### [pdp] 제품 상세 (PDP) — 454건  (감점 항목 11개)
+  - seo_sitemap (#19 · seo · 1점) — FAIL 454/454 (100%)  «#19 Sitemap (1개월 내)»
+      · 454건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_product (#25 · schema_markup · 1점) — FAIL 454/454 (100%)  «#25 Schema: Product 풀세트 (PDP)»
       · 274건: 필수 필드 누락: sku
       · 180건: 필수 필드 누락: sku, offers.price, offers.availability
@@ -3445,8 +3483,6 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       · 233건: @type='FAQPage' 노드 없음
   - ai_schema_offer (#43 · schema_markup · 1점) — FAIL 180/454 (40%)  «#43 Schema: Offer»
       · 180건: @type='Offer' 노드 없음
-  - seo_sitemap (#19 · seo · 1점) — FAIL 123/454 (27%)  «#19 Sitemap (1개월 내)»
-      · 123건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
   - a11y_image_alt (a11y#9 · accessibility · 1점) — FAIL 29/454 (6%)  «#9 Image Alt 누락 0»
       ·  29건: N개 요소에 'alt' 속성이 없습니다. [측정 2~10]
   - seo_h1 (#16 · seo · 1점) — FAIL 13/454 (3%)  «#16 H1 정확히 1개»
@@ -3456,7 +3492,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 
 ### [support_troubleshoot] 지원 - 트러블슈팅 — 160건  (감점 항목 5개)
   - seo_sitemap (#19 · seo · 1점) — FAIL 160/160 (100%)  «#19 Sitemap (1개월 내)»
-      · 160건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
+      · 160건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 160/160 (100%)  «#26 Schema: ImageObject»
       · 160건: @type='ImageObject' 노드 없음
   - ai_schema_howto (#28 · schema_markup · 1점) — FAIL 160/160 (100%)  «#28 Schema: HowTo»
@@ -3468,7 +3504,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 
 ### [plp] 제품 카테고리 (PLP) — 94건  (감점 항목 15개)
   - seo_sitemap (#19 · seo · 1점) — FAIL 94/94 (100%)  «#19 Sitemap (1개월 내)»
-      ·  94건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
+      ·  94건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 94/94 (100%)  «#26 Schema: ImageObject»
       ·  94건: @type='ImageObject' 노드 없음
   - ai_schema_video (#27 · schema_markup · 1점) — FAIL 16/16 (100%)  «#27 Schema: VideoObject»
@@ -3504,7 +3540,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 
 ### [business] B2B (사업자) — 89건  (감점 항목 13개)
   - seo_sitemap (#19 · seo · 1점) — FAIL 89/89 (100%)  «#19 Sitemap (1개월 내)»
-      ·  89건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
+      ·  89건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_product (#25 · schema_markup · 1점) — FAIL 89/89 (100%)  «#25 Schema: Product 풀세트 (PDP)»
       ·  77건: @type='Product/ProductGroup' 노드 없음
       ·  12건: 필수 필드 누락: sku, offers.price, offers.availability
@@ -3533,7 +3569,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 
 ### [experience] 익스피어리언스 — 55건  (감점 항목 11개)
   - seo_sitemap (#19 · seo · 1점) — FAIL 55/55 (100%)  «#19 Sitemap (1개월 내)»
-      ·  55건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
+      ·  55건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 55/55 (100%)  «#26 Schema: ImageObject»
       ·  55건: @type='ImageObject' 노드 없음
   - ai_summary_box (#35 · citable_content · 1점) — FAIL 55/55 (100%)  «#35 Summary Box (콘텐츠)»
@@ -3557,7 +3593,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 
 ### [promotion] 프로모션/약관 — 51건  (감점 항목 12개)
   - seo_sitemap (#19 · seo · 1점) — FAIL 51/51 (100%)  «#19 Sitemap (1개월 내)»
-      ·  51건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
+      ·  51건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 51/51 (100%)  «#26 Schema: ImageObject»
       ·  51건: @type='ImageObject' 노드 없음
   - ai_schema_offer (#43 · schema_markup · 1점) — FAIL 50/50 (100%)  «#43 Schema: Offer»
@@ -3585,7 +3621,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
   - seo_meta_desc (#14 · seo · 1점) — FAIL 5/5 (100%)  «#14 Meta Description»
       ·   5건: 'meta[name='description' i]' 요소를 찾을 수 없습니다.
   - seo_sitemap (#19 · seo · 1점) — FAIL 5/5 (100%)  «#19 Sitemap (1개월 내)»
-      ·   5건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
+      ·   5건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 5/5 (100%)  «#26 Schema: ImageObject»
       ·   5건: @type='ImageObject' 노드 없음
   - ai_summary_box (#35 · citable_content · 1점) — FAIL 5/5 (100%)  «#35 Summary Box (콘텐츠)»
@@ -3603,7 +3639,7 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
   - seo_meta_desc (#14 · seo · 1점) — FAIL 3/3 (100%)  «#14 Meta Description»
       ·   3건: 'meta[name='description' i]' 요소를 찾을 수 없습니다.
   - seo_sitemap (#19 · seo · 1점) — FAIL 3/3 (100%)  «#19 Sitemap (1개월 내)»
-      ·   3건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
+      ·   3건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 3/3 (100%)  «#26 Schema: ImageObject»
       ·   3건: @type='ImageObject' 노드 없음
   - ai_summary_box (#35 · citable_content · 1점) — FAIL 3/3 (100%)  «#35 Summary Box (콘텐츠)»
@@ -3622,6 +3658,8 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
 ### [home] 홈페이지 — 2건  (감점 항목 13개)
   - a11y_heading_hier (a11y#11 · accessibility · 1점) — FAIL 2/2 (100%)  «#11 Heading Hierarchy»
       ·   2건: 헤딩 역순 N건 — 첫 헤딩(hN)보다 상위 레벨이 뒤에 등장 [측정 1~3]
+  - seo_sitemap (#19 · seo · 1점) — FAIL 2/2 (100%)  «#19 Sitemap (1개월 내)»
+      ·   2건: 국가 sitemap 에 <lastmod> 가 없어 갱신 여부 판별 불가
   - ai_schema_image (#26 · schema_markup · 1점) — FAIL 2/2 (100%)  «#26 Schema: ImageObject»
       ·   2건: @type='ImageObject' 노드 없음
   - ai_summary_box (#35 · citable_content · 1점) — FAIL 2/2 (100%)  «#35 Summary Box (콘텐츠)»
@@ -3638,8 +3676,6 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   1건: 누락 N% — N% 미만 필요 [측정 22.3]
   - seo_h1 (#16 · seo · 1점) — FAIL 1/2 (50%)  «#16 H1 정확히 1개»
       ·   1건: 'hN' N개 — == N 필요 [측정 1]
-  - seo_sitemap (#19 · seo · 1점) — FAIL 1/2 (50%)  «#19 Sitemap (1개월 내)»
-      ·   1건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2025]
   - ai_schema_breadcrumb (#21 · schema_markup · 1점) — FAIL 1/2 (50%)  «#21 Schema: BreadcrumbList»
       ·   1건: @type='BreadcrumbList' 노드 없음
   - ai_ssr_ratio (#37 · ai_crawlability · 1점) — FAIL 1/2 (50%)  «#37 JS HTML Text Ratio ≥ 60%»
