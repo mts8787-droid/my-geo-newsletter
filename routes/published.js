@@ -27,8 +27,10 @@ const PROJECT_ROOT = join(__dirname, '..')
 // (Progress Tracker v2는 본 저장소에 통합되어 same-origin이므로 외부 frame-src 불필요)
 const PUBLISHED_CSP = [
   "default-src 'self'",
-  "style-src 'self' 'unsafe-inline' https://fonts.cdnfonts.com",
-  "font-src 'self' https://fonts.cdnfonts.com data:",
+  // fonts.googleapis/gstatic — 검수 기준 페이지(IBM Plex)가 사용. 공개 CSP 에
+  // 빠져 있어 공개본만 폰트가 풀렸다 (2026-09-30 사용자 리포트).
+  "style-src 'self' 'unsafe-inline' https://fonts.cdnfonts.com https://fonts.googleapis.com",
+  "font-src 'self' https://fonts.cdnfonts.com https://fonts.gstatic.com data:",
   "script-src 'self' 'unsafe-inline'",
   "img-src 'self' data: https:",
   "frame-src 'self'",
