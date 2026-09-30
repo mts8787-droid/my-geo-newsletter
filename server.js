@@ -166,6 +166,12 @@ app.use((req, res, next) => {
 // ─── 라우트 모듈 마운트 (C11 step3) ────────────────────────────────────────
 app.use(authRouter)
 app.use(proxyRouter)
+// 배포 커밋 확인용 (인증·IP 게이트 없음 — 커밋 해시만 노출).
+// 배포 실패로 옛 빌드가 떠 있는지 밖에서 판별할 수단이 없어 추가 (2026-09-30).
+app.get('/api/version', (req, res) => {
+  res.json({ rev: process.env.RENDER_GIT_COMMIT || 'local', at: new Date().toISOString() })
+})
+
 app.use(publishedRouter)
 app.use(snapshotsRouter)
 app.use(syncRouter)
