@@ -108,18 +108,55 @@ readabilityRouter.get('/admin/readability', (req, res) => {
   const lang = String(req.query.lang || '').toLowerCase() === 'en' ? 'en' : 'ko'
   res.set('Content-Type', 'text/html; charset=utf-8')
   let html = renderReadabilityHTML({ snapshot, index, snapshots, adminMode: true, lang })
-  if (snapshot && (snapshot.channel || 'published') === 'staging') {
-    const banner = `<div style="position:sticky;top:0;z-index:999;background:#b45309;color:#fff;` +
-      `padding:10px 16px;font:600 13px/-apple-system,sans-serif;display:flex;align-items:center;gap:12px;">` +
-      `<span>⚠ STAGING — ${snapshot.date} 테스트 어딧 (공개 대시보드에는 반영되지 않음)</span>` +
-      `<button onclick="if(confirm('${snapshot.date} 스냅샷을 공개 대시보드로 승격할까요?'))` +
-      `fetch('/admin/readability/promote/${snapshot.date}',{method:'POST'})` +
-      `.then(r=>r.json()).then(j=>{alert(j.ok?'승격 완료 — 공개 대시보드에 반영됩니다.':'실패: '+j.error);location.reload()})" ` +
-      `style="background:#fff;color:#b45309;border:0;border-radius:6px;padding:4px 12px;font-weight:700;cursor:pointer;">` +
-      `공개로 승격</button></div>`
-    html = html.replace(/(<body[^>]*>)/i, `$1${banner}`)
+  // 채널 상태 바 — 항상 표시. 승격 버튼이 '현재 스냅샷이 staging 일 때'만 뜨면
+  // 승격 직후·월 전환 시 버튼이 사라져 조작 불가 (2026-09-30 사용자 리포트).
+  // index 기준으로 staging 대기 목록 전체 + 최근 승격본의 되돌리기를 상시 노출한다.
+  const entries = (index && index.snapshots) || []
+  const stagingList = entries.filter(e => (e.channel || 'published') === 'staging')
+  const promoted = [...entries].reverse().find(e => (e.channel || 'published') === 'published')
+  const btn = (label, path, msg, color) =>
+    `<button onclick="if(confirm('${msg}'))fetch('${path}',{method:'POST'})` +
+    `.then(r=>r.json()).then(j=>{alert(j.ok?'완료':'실패: '+j.error);location.reload()})" ` +
+    `style="background:#fff;color:${color};border:0;border-radius:6px;padding:3px 10px;` +
+    `font-weight:700;cursor:pointer;margin-left:6px;">${label}</button>`
+  let inner = ''
+  if (stagingList.length) {
+    inner = `<span>⚠ STAGING 대기: </span>` + stagingList.map(e =>
+      `<span style="margin-right:4px;">${e.date} (${(e.countries || []).length}국, ${e.overallAvg})` +
+      btn('공개로 승격', `/admin/readability/promote/${e.date}`,
+          `${e.date} 스냅샷을 공개 대시보드로 승격할까요?`, '#b45309') + `</span>`).join('')
+  } else {
+    inner = `<span>스테이징 대기 스냅샷 없음 · 공개 최신: ${promoted ? promoted.date : '—'}</span>` +
+      (promoted ? btn('스테이징으로 되돌리기', `/admin/readability/demote/${promoted.date}`,
+          `${promoted.date} 를 공개에서 내리고 스테이징으로 되돌릴까요?`, '#475569') : '')
   }
+  const bg = stagingList.length ? '#b45309' : '#475569'
+  const banner = `<div style="position:sticky;top:0;z-index:999;background:${bg};color:#fff;` +
+    `padding:8px 16px;font:600 12px -apple-system,sans-serif;display:flex;align-items:center;` +
+    `gap:8px;flex-wrap:wrap;">${inner}` +
+    `<span style="opacity:.7;font-weight:400;margin-left:auto;">승격/되돌리기 후에는 로컬 저장소 커밋 필요 (Render 재배포 시 초기화)</span></div>`
+  html = html.replace(/(<body[^>]*>)/i, `$1${banner}`)
   res.send(html)
+})
+
+// 승격 취소 — channel 을 staging 으로 되돌린다 (실수 복구용).
+readabilityRouter.post('/admin/readability/demote/:date', (req, res) => {
+  const date = String(req.params.date || '')
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return res.status(400).json({ ok: false, error: '날짜 형식 오류' })
+  const snapPath = join(DATA_DIR, `${date}.json`)
+  if (!existsSync(snapPath)) return res.status(404).json({ ok: false, error: '스냅샷 없음' })
+  try {
+    const snap = JSON.parse(readFileSync(snapPath, 'utf8'))
+    snap.channel = 'staging'
+    delete snap.promotedAt
+    writeFileSync(snapPath, JSON.stringify(snap))
+    const idx = JSON.parse(readFileSync(join(DATA_DIR, 'index.json'), 'utf8'))
+    for (const e of idx.snapshots || []) if (e.date === date) e.channel = 'staging'
+    writeFileSync(join(DATA_DIR, 'index.json'), JSON.stringify(idx, null, 2))
+    res.json({ ok: true, date })
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message })
+  }
 })
 
 // staging 스냅샷 승격 — channel 을 published 로 전환 (스냅샷 파일 + index 양쪽).
