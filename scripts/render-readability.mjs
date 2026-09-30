@@ -285,14 +285,14 @@ function readabilityClient() {
     var pt = state.pt, scope = getScope(state.cc)
     var ptLabel = pt !== 'all' && RD.overall.pageTypes[pt] ? RD.overall.pageTypes[pt].label : null
     var heroScore = pt === 'all' ? scope.avgScore : (scope.pageTypes[pt] ? scope.pageTypes[pt].avgScore : null)
-    var scopeName = state.cc === 'all' ? '전체' : ccLabel(state.cc)
+    var scopeName = state.cc === 'all' ? (I.scopeAll || '전체') : ccLabel(state.cc)
     var hero = '<div class="hero"><div class="hero-top">' +
       '<span class="hero-brand">GEO Readability Audit</span>' +
-      '<span class="hero-meta">측정일 ' + esc(RD.date) + '</span></div>' +
+      '<span class="hero-meta">' + esc(I.measuredAt || '측정일') + ' ' + esc(RD.date) + '</span></div>' +
       '<div class="hero-body"><div class="hero-left">' +
-      '<div class="hero-label">' + esc(scopeName) + (ptLabel ? ' · ' + esc(ptLabel) : '') + ' 평균</div>' +
+      '<div class="hero-label">' + esc(scopeName) + (ptLabel ? ' · ' + esc(ptLabel) : '') + ' ' + esc(I.heroAvg || '평균') + '</div>' +
       '<div class="hero-score-row"><span class="hero-score" style="color:' + scoreColor(heroScore) + '">' + (heroScore == null ? '—' : heroScore) + '</span><span class="hero-pct">/ 100</span></div>' +
-      '<div class="hero-info">URL <strong>' + num(scope.urlCount) + '</strong> · 채점 <strong>' + num(scope.scoredCount) + '</strong> · 국가 <strong>' + Object.keys(RD.countries).length + '</strong></div>' +
+      '<div class="hero-info">URL <strong>' + num(scope.urlCount) + '</strong> · ' + esc(I.heroScored || '채점') + ' <strong>' + num(scope.scoredCount) + '</strong> · ' + esc(I.heroCountries || '국가') + ' <strong>' + Object.keys(RD.countries).length + '</strong></div>' +
       '</div></div></div>'
 
     var ccList = state.cc === 'all' ? Object.keys(RD.countries) : [state.cc]
@@ -302,12 +302,12 @@ function readabilityClient() {
       var cnt = pt === 'all' ? c.urlCount : (c.pageTypes[pt] ? c.pageTypes[pt].count : 0)
       return { cc: cc, name: ccLabel(cc), v: v, cnt: cnt }
     }).sort(function (a, b) { return (b.v == null ? -1 : b.v) - (a.v == null ? -1 : a.v) })
-    var bars = barHead('국가', '페이지수', '점수') + rows.map(function (r) {
+    var bars = barHead(I.thCountry || '국가', I.colPages || '페이지수', I.colScore || '점수') + rows.map(function (r) {
       return barRow(r.name, r.v == null ? 0 : r.v, 100, scoreColor(r.v), r.v == null ? '—' : String(r.v), num(r.cnt))
     }).join('')
-    var title = pt === 'all' ? '① 국가별 종합 점수 비교' : '① 국가별 점수 비교 — ' + ptLabel
+    var title = pt === 'all' ? '① ' + (I.secCountryScore || '국가별 종합 점수 비교') : '① ' + (I.secCountryScoreFiltered || '국가별 점수 비교') + ' — ' + ptLabel
     var note = pt !== 'all'
-      ? '<div class="tab-note">페이지 타입 «' + esc(ptLabel) + '» 필터가 적용된 국가별 점수입니다.</div>'
+      ? '<div class="tab-note">' + TPL('tplCcFiltered', { p: esc(ptLabel) }) + '</div>'
       : ''
     return hero + note + sectionCard(title, RED, '<div class="bars">' + bars + '</div>') + renderCategorySection(scope, '②') + renderGuideSection(scope, '③')
   }
@@ -346,7 +346,7 @@ function readabilityClient() {
           '<span class="cat-name">' + esc(name) + '</span>' + whatInline +
           '<span class="cat-avg" style="color:' + scoreColor(avg) + '">' + (avg == null ? '—' : avg) + '</span>' +
         '</div>' +
-        '<div class="cat-sub">' + checksArr.length + ' 체크 · ' + sub + '</div>' +
+        '<div class="cat-sub">' + checksArr.length + ' ' + esc(I.unitChecks || '체크') + ' · ' + sub + '</div>' +
         '<div class="bars sm">' + rows + '</div></div>'
     }
     var out = []
@@ -356,7 +356,7 @@ function readabilityClient() {
       // 지표도 '평균 통과율'(체크 단순평균) 이 아니라 다른 카테고리와 같은 '평균 points'
       // (페이지별 통과/적용 → 평균) 로 통일된다.
       var avg = scope.categories ? scope.categories[cat] : null
-      out.push(card(labels[cat] || cat, avg, '평균 points', checks, cat))
+      out.push(card(labels[cat] || cat, avg, I.avgPoints || '평균 points', checks, cat))
     })
     return out.join('')
   }
@@ -508,21 +508,21 @@ function readabilityClient() {
 
   // 체크별 통과율 섹션 — 국가 + (집계기가 nest 한 경우) 페이지타입 필터 반영
   function renderCategorySection(scope, secNo) {
-    var scopeName = state.cc === 'all' ? '전체' : ccLabel(state.cc)
+    var scopeName = state.cc === 'all' ? (I.scopeAll || '전체') : ccLabel(state.cc)
     if (state.pt !== 'all') {
       var ptSlot = scope.pageTypes && scope.pageTypes[state.pt]
       // 신규 스냅샷: pageType 슬롯에 checks nest → 페이지타입 분해 통과율
       if (ptSlot && ptSlot.checks) {
         var ptName = ptSlot.label || state.pt
-        var ptTitle = secNo + ' 체크별 통과율 (' + esc(scopeName) + ' · ' + esc(ptName) + ')'
-        var ptNote = '<div class="tab-note">표본 ' + num(ptSlot.count) + ' URL — 표본이 적은 페이지타입은 통과율 변동이 큽니다.</div>'
+        var ptTitle = secNo + ' ' + (I.secCheckRate || '체크별 통과율') + ' (' + esc(scopeName) + ' · ' + esc(ptName) + ')'
+        var ptNote = '<div class="tab-note">' + TPL('tplSample', { n: num(ptSlot.count) }) + '</div>'
         return ptNote + sectionCard(ptTitle, '#3B82F6', '<div class="cat-grid">' + renderCategoryCards(ptSlot) + '</div>')
       }
       // 구 스냅샷 호환: checks nest 없음 → 국가 필터만 반영 안내
-      var note = '<div class="tab-note">체크별 통과율은 이 스냅샷에 페이지타입 분해 데이터가 없어 «페이지 타입» 필터가 적용되지 않습니다. 국가 필터(' + esc(scopeName) + ')만 반영됩니다.</div>'
-      return note + sectionCard(secNo + ' 체크별 통과율 (' + esc(scopeName) + ')', '#3B82F6', '<div class="cat-grid">' + renderCategoryCards(scope) + '</div>')
+      var note = '<div class="tab-note">' + TPL('tplNoPtBreak', { scope: esc(scopeName) }) + '</div>'
+      return note + sectionCard(secNo + ' ' + (I.secCheckRate || '체크별 통과율') + ' (' + esc(scopeName) + ')', '#3B82F6', '<div class="cat-grid">' + renderCategoryCards(scope) + '</div>')
     }
-    return sectionCard(secNo + ' 체크별 통과율 (' + esc(scopeName) + ')', '#3B82F6', '<div class="cat-grid">' + renderCategoryCards(scope) + '</div>')
+    return sectionCard(secNo + ' ' + (I.secCheckRate || '체크별 통과율') + ' (' + esc(scopeName) + ')', '#3B82F6', '<div class="cat-grid">' + renderCategoryCards(scope) + '</div>')
   }
 
   function renderPageType() {
@@ -533,8 +533,8 @@ function readabilityClient() {
     var rowsHtml = entries.map(function (p) {
       return barRow(p.label, p.avgScore == null ? 0 : p.avgScore, 100, scoreColor(p.avgScore), p.avgScore == null ? '—' : String(p.avgScore), num(p.count))
     }).join('')
-    var bars = rowsHtml ? (barHead('페이지 타입', '페이지수', '점수') + rowsHtml) : '<div class="tab-note">해당 조건에 데이터가 없습니다.</div>'
-    var scopeName = state.cc === 'all' ? '전체' : ccLabel(state.cc)
+    var bars = rowsHtml ? (barHead(I.fPageType || '페이지 타입', I.colPages || '페이지수', I.colScore || '점수') + rowsHtml) : '<div class="tab-note">' + esc(I.noDataCond || '해당 조건에 데이터가 없습니다.') + '</div>'
+    var scopeName = state.cc === 'all' ? (I.scopeAll || '전체') : ccLabel(state.cc)
     return sectionCard('① ' + (I.secPageTypeScore || '페이지타입별 점수') + ' (' + esc(scopeName) + ')', '#059669', '<div class="bars">' + bars + '</div>') + renderCategorySection(scope, '②') + renderGuideSection(scope, '③')
   }
 
@@ -544,24 +544,24 @@ function readabilityClient() {
     // 점수 제외 전체 항목표 — 기준 문서로 읽히도록 통과율 열을 뺀 버전 (routes/readability.js)
     var src = RD.paths.criteria
     var dl = '<div class="crit-dl"><div class="crit-dl-text">' +
-      '<div class="crit-dl-title">검수 URL 다운로드</div>' +
-      '<div class="crit-dl-sub">측정일 ' + esc(RD.date) + ' 기준 어딧 대상 전체 URL (URL · 국가 · 페이지타입 · 점수)</div></div>' +
-      '<a class="crit-dl-btn" href="' + RD.paths.csv + '" download>CSV 다운로드</a></div>'
-    var frame = '<div class="crit-frame-head">검수 기준 — 6개 카테고리 41개 항목 (통과율은 위 탭에서 확인)</div>' +
+      '<div class="crit-dl-title">' + esc(I.dlTitle || '검수 URL 다운로드') + '</div>' +
+      '<div class="crit-dl-sub">' + TPL('tplDlSub', { d: esc(RD.date) }) + '</div></div>' +
+      '<a class="crit-dl-btn" href="' + RD.paths.csv + '" download>' + esc(I.dlCsv || 'CSV 다운로드') + '</a></div>'
+    var frame = '<div class="crit-frame-head">' + esc(I.tplCritHead || '검수 기준') + '</div>' +
       '<iframe class="crit-frame" src="' + src + '" loading="lazy"></iframe>'
-    return sectionCard('검수 기준 · 검수 URL 다운로드', '#7C3AED', dl + frame)
+    return sectionCard(I.secCriteria || '검수 기준 · 검수 URL 다운로드', '#7C3AED', dl + frame)
   }
 
   // ── Raw 데이터 (페이지별 전체 체크 PASS/FAIL) — 국가·페이지타입(공유 필터 바) × 항목 · 결과 조합 ──
   function renderRaw() {
     var head = '<div class="fails-bar">' +
-      '<div class="fg"><label for="rd-fcheck">항목</label><select id="rd-fcheck"><option value="all">전체 항목</option></select></div>' +
-      '<div class="fg"><label for="rd-fpf">결과</label><select id="rd-fpf"><option value="all">전체</option><option value="pass">PASS</option><option value="fail">FAIL (논패스)</option></select></div>' +
+      '<div class="fg"><label for="rd-fcheck">' + esc(I.fCheck || '항목') + '</label><select id="rd-fcheck"><option value="all">' + esc(I.allChecks || '전체 항목') + '</option></select></div>' +
+      '<div class="fg"><label for="rd-fpf">' + esc(I.fResult || '결과') + '</label><select id="rd-fpf"><option value="all">' + esc(I.allResults || '전체') + '</option><option value="pass">PASS</option><option value="fail">' + esc(I.optFail || 'FAIL (논패스)') + '</option></select></div>' +
       '<span id="rd-fails-count" class="fails-count"></span>' +
-      '<a id="rd-fails-csv" class="crit-dl-btn fails-csv" href="#">CSV 전체 다운로드</a></div>'
-    var note = '<div class="tab-note">상단 «국가 / 페이지 타입» 필터 + 여기 «항목 · 결과(PASS/FAIL)» 필터를 조합하면 해당 조건의 페이지별 체크 결과가 표로 나옵니다. 표는 상위 500건만, 전체는 CSV.</div>'
-    if (ALL && LATEST_DATE && RD.date !== LATEST_DATE) note = '<div class="tab-note">Raw 데이터(PASS/FAIL)는 최신 측정분(' + esc(LATEST_DATE) + ') 기준만 제공됩니다 — 선택한 측정 월과 무관하게 최신 데이터가 표시됩니다.</div>' + note
-    return sectionCard('Raw 데이터 (페이지별 체크 PASS/FAIL) — 국가 · 타입 · 항목 · 결과 조합', RED, note + head + '<div id="rd-fails-body" class="fails-body">불러오는 중…</div>')
+      '<a id="rd-fails-csv" class="crit-dl-btn fails-csv" href="#">' + esc(I.dlCsvAll || 'CSV 전체 다운로드') + '</a></div>'
+    var note = '<div class="tab-note">' + esc(I.rawNote || '') + '</div>'
+    if (ALL && LATEST_DATE && RD.date !== LATEST_DATE) note = '<div class="tab-note">' + TPL('tplRawLatest', { d: esc(LATEST_DATE) }) + '</div>' + note
+    return sectionCard(I.secRaw || 'Raw 데이터', RED, note + head + '<div id="rd-fails-body" class="fails-body">' + esc(I.loading || '불러오는 중…') + '</div>')
   }
   function loadRaw() {
     function afterData() {
@@ -569,7 +569,7 @@ function readabilityClient() {
       if (sel && sel.options.length <= 1) {
         var checks = _rawData.checks
         var ids = Object.keys(checks).sort(function (a, b) { return checks[a].label.localeCompare(checks[b].label, 'en', { numeric: true }) })
-        sel.innerHTML = '<option value="all">전체 항목</option>' +
+        sel.innerHTML = '<option value="all">' + esc(I.allChecks || '전체 항목') + '</option>' +
           ids.map(function (id) { return '<option value="' + id + '">' + esc(checks[id].label) + '</option>' }).join('')
         sel.value = state.fcheck || 'all'
         sel.addEventListener('change', function () { state.fcheck = sel.value; renderRawTable() })
@@ -584,7 +584,7 @@ function readabilityClient() {
     fetch(RD.paths.checks)
       .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json() })
       .then(function (d) { _rawData = d; afterData() })
-      .catch(function (e) { var b = document.getElementById('rd-fails-body'); if (b) b.textContent = 'Raw 데이터를 불러오지 못했습니다: ' + e })
+      .catch(function (e) { var b = document.getElementById('rd-fails-body'); if (b) b.textContent = (I.rawLoadFail || 'Raw 데이터를 불러오지 못했습니다: ') + e })
   }
   function filteredRawRows() {
     if (!_rawData) return []
@@ -609,8 +609,8 @@ function readabilityClient() {
     var body = document.getElementById('rd-fails-body'); if (!body) return
     var rows = filteredRawRows(), CAP = 500
     var cntEl = document.getElementById('rd-fails-count')
-    if (cntEl) cntEl.textContent = num(rows.length) + '건' + (rows.length > CAP ? ' · 상위 ' + CAP + '건 표시 (전체는 CSV)' : '')
-    if (!rows.length) { body.innerHTML = '<div class="tab-note">조건에 맞는 데이터가 없습니다.</div>'; return }
+    if (cntEl) cntEl.textContent = num(rows.length) + (I.unitRows || '건') + (rows.length > CAP ? ' · ' + TPL('tplTopShown', { n: CAP }) : '')
+    if (!rows.length) { body.innerHTML = '<div class="tab-note">' + esc(I.noData || '조건에 맞는 데이터가 없습니다.') + '</div>'; return }
     var checks = _rawData.checks, ccName = _rawData.ccName, pts = _rawData.pageTypes
     var trs = rows.slice(0, CAP).map(function (r) {
       // http(s) 만 링크로 — javascript:/data: 등 스킴은 평문 표기(admin origin 에서 실행 방지).
@@ -625,7 +625,7 @@ function readabilityClient() {
         '<td class="fails-hint">' + esc(r.hint) + '</td>' +
         '<td class="fails-score" style="color:' + scoreColor(r.score) + '">' + r.score + '</td></tr>'
     }).join('')
-    body.innerHTML = '<table class="fails-table"><thead><tr><th>국가</th><th>타입</th><th>URL</th><th>항목</th><th>결과</th><th>실패 사유</th><th>점수</th></tr></thead><tbody>' + trs + '</tbody></table>'
+    body.innerHTML = '<table class="fails-table"><thead><tr><th>' + [I.thCountry || '국가', I.thType || '타입', I.thUrl || 'URL', I.thItem || '항목', I.thResult || '결과', I.thHint || '실패 사유', I.colScore || '점수'].map(esc).join('</th><th>') + '</th></tr></thead><tbody>' + trs + '</tbody></table>'
   }
   function downloadRawCsv() {
     if (!_rawData) return
@@ -682,12 +682,12 @@ function readabilityClient() {
     var ptSel = document.getElementById('rd-pt')
     function rebuildCcPt() {
       // 선택 월의 데이터 기준으로 국가/페이지타입 옵션 재구성 (없어진 값이면 all 로 복귀)
-      ccSel.innerHTML = ['<option value="all">전체 국가</option>'].concat(
+      ccSel.innerHTML = ['<option value="all">' + esc(I.allCountries || '전체 국가') + '</option>'].concat(
         Object.keys(RD.countries).sort().map(function (cc) { return '<option value="' + cc + '">' + esc(ccLabel(cc)) + '</option>' })
       ).join('')
       if (state.cc !== 'all' && !RD.countries[state.cc]) state.cc = 'all'
       ccSel.value = state.cc
-      ptSel.innerHTML = ['<option value="all">전체 페이지 타입</option>'].concat(
+      ptSel.innerHTML = ['<option value="all">' + esc(I.allPageTypes || '전체 페이지 타입') + '</option>'].concat(
         Object.entries(RD.overall.pageTypes || {}).map(function (e) { return '<option value="' + e[0] + '">' + esc(e[1].label) + '</option>' })
       ).join('')
       if (state.pt !== 'all' && !(RD.overall.pageTypes || {})[state.pt]) state.pt = 'all'
@@ -702,8 +702,8 @@ function readabilityClient() {
     if (mWrap && mSel && mDates.length > 1) {
       mWrap.style.display = ''
       mSel.innerHTML = mDates.map(function (d) {
-        var ym = d.slice(0, 4) + '년 ' + parseInt(d.slice(5, 7), 10) + '월'
-        return '<option value="' + d + '">' + ym + ' (' + d.slice(5) + ' 측정)</option>'
+        var ym = LANG === 'en' ? d.slice(0, 7) : d.slice(0, 4) + '년 ' + parseInt(d.slice(5, 7), 10) + '월'
+        return '<option value="' + d + '">' + ym + ' (' + d.slice(5) + ' ' + esc(I.monthMeasured || '측정') + ')</option>'
       }).join('')
       mSel.value = RD.date
       mSel.addEventListener('change', function () {
