@@ -120,7 +120,7 @@ export function scoredCount(rows, cat) {
 const CRIT_T = {
   ko: {
     title: 'GEO 검수 기준', scored: (n) => `채점 ${n}개`, scoredLabel: '채점 항목',
-    tagPlan: '9월 감사부터', tagPend: '미채점 · 추후 정리',
+    tagPlan: '10월 감사부터', tagPend: '미채점 · 추후 정리',
     thNo: '번호', thItem: '항목 · 정의', thPass: 'Pass 기준', thMethod: '측정방법', thRate: '통과율',
     orphanDef: (note) => `체크리스트 문서에 행이 없는 채점 항목 — ${note}`,
     mDate: '측정일', mCountries: '대상 국가', mPages: '대상 페이지', mItems: '채점 항목', mScore: '종합 점수',
@@ -134,8 +134,8 @@ const CRIT_T = {
     h1: '검수 기준 · 전체 항목표',
     docTitle: (sc) => `GEO 검수 기준표${sc ? '' : ' (기준)'}`,
     unitCount: '개',
-    subWith: (n, d) => `6개 카테고리 ${n}개 항목으로 lg.com 글로벌 사이트의 AI 가독성을 채점합니다. 통과율은 ${d} 측정분 기준이며, 9월 감사부터 시행할 예정 항목 4개를 함께 표기했습니다.`,
-    subPlain: (n) => `6개 카테고리 ${n}개 항목의 정의와 Pass 기준입니다. 9월 감사부터 시행할 예정 항목 4개를 함께 표기했습니다.`,
+    subWith: (n, d) => `6개 카테고리 ${n}개 항목으로 lg.com 글로벌 사이트의 AI 가독성을 채점합니다. 통과율은 ${d} 측정분 기준이며, 10월 감사부터 시행할 예정 항목 4개를 함께 표기했습니다.`,
+    subPlain: (n) => `6개 카테고리 ${n}개 항목의 정의와 Pass 기준입니다. 10월 감사부터 시행할 예정 항목 4개를 함께 표기했습니다.`,
     dSrc: '검수 대상', dLogic: '판정 로직', dExcept: '예외 · 별도 조건',
     modelNote: '검수에 사용하는 LLM 모델은 <b>Claude Fable 5</b> 입니다. 아래 판정 로직의 패턴 요소(키워드·정규식·셀렉터)는 lg.com <b>실 콘텐츠 예시를 기반으로 패턴화</b>한 것입니다.',
     nx: [
@@ -164,7 +164,7 @@ const CRIT_T = {
   },
   en: {
     title: 'GEO Audit Criteria', scored: (n) => `${n} scored`, scoredLabel: 'Scored items',
-    tagPlan: 'From the September audit', tagPend: 'Not scored · to be settled',
+    tagPlan: 'From the October audit', tagPend: 'Not scored · to be settled',
     thNo: 'No.', thItem: 'Item · definition', thPass: 'Pass criteria', thMethod: 'How it is measured', thRate: 'Pass rate',
     orphanDef: (note) => `Scored item with no row in the checklist document — ${note}`,
     mDate: 'Measured', mCountries: 'Sites', mPages: 'Pages', mItems: 'Scored items', mScore: 'Overall score',
@@ -178,8 +178,8 @@ const CRIT_T = {
     h1: 'Criteria · full item list',
     docTitle: (sc) => `GEO Audit Criteria${sc ? '' : ' (definitions)'}`,
     unitCount: '',
-    subWith: (n, d) => `${n} items across 6 categories score the AI readability of lg.com sites. Pass rates are from the ${d} run, and the 4 items planned for the September audit are listed alongside.`,
-    subPlain: (n) => `Definitions and pass criteria for ${n} items across 6 categories. The 4 items planned for the September audit are listed alongside.`,
+    subWith: (n, d) => `${n} items across 6 categories score the AI readability of lg.com sites. Pass rates are from the ${d} run, and the 4 items planned for the October audit are listed alongside.`,
+    subPlain: (n) => `Definitions and pass criteria for ${n} items across 6 categories. The 4 items planned for the October audit are listed alongside.`,
     dSrc: 'Audit target', dLogic: 'Decision logic', dExcept: 'Exceptions · special conditions',
     modelNote: 'The LLM model used for the audit is <b>Claude Fable 5</b>. Pattern elements in the decision logic below (keywords, regexes, selectors) are <b>patterned from real lg.com content examples</b>.',
     nx: [
@@ -430,7 +430,7 @@ export function renderCriteriaMarkdown({ rows, generatedAt }) {
   const L = []
   L.push('# GEO Agent Readability 검수 기준')
   L.push('')
-  L.push(`> 6개 카테고리 ${CAT_ORDER.reduce((a, c) => a + scoredCount(rows, c), 0)}개 채점 항목 + 9월 감사 시행 예정 4항목.`)
+  L.push(`> 6개 카테고리 ${CAT_ORDER.reduce((a, c) => a + scoredCount(rows, c), 0)}개 채점 항목 + 10월 감사 시행 예정 4항목.`)
   L.push('> 점수·통과율은 제외한 **기준 정의 문서**입니다. 실측치는 Readability 대시보드에서 확인하세요.')
   L.push(`> 생성: \`scripts/render-criteria.mjs\` (source: \`data/readability/geo-agent-checklist.html\`) — ${generatedAt}`)
   L.push('')

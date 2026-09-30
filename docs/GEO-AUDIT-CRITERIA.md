@@ -1,8 +1,8 @@
 # GEO Agent Readability 검수 기준
 
-> 6개 카테고리 38개 채점 항목 + 9월 감사 시행 예정 4항목.
+> 6개 카테고리 38개 채점 항목 + 10월 감사 시행 예정 4항목.
 > 점수·통과율은 제외한 **기준 정의 문서**입니다. 실측치는 Readability 대시보드에서 확인하세요.
-> 생성: `scripts/render-criteria.mjs` (source: `data/readability/geo-agent-checklist.html`) — 2026-09-16
+> 생성: `scripts/render-criteria.mjs` (source: `data/readability/geo-agent-checklist.html`) — 2026-09-29
 
 ## 카테고리
 
@@ -61,25 +61,25 @@
 - **정의**: 페이지에서 가장 큰 본문 요소가 화면에 다 그려지기까지 걸리는 시간
 - **PASS**: ≤ 4,000ms
 - **측정방법**: PageSpeed Insights (Lighthouse) 측정값
-- **상태**: 9월 감사부터 추가 시행 (데이터 추출 및 검증 진행중)
+- **상태**: 10월 감사부터 추가 예정 (데이터 추출 및 검증 진행중)
 
 ### (예정) CLS (Cumulative Layout Shift)
 - **정의**: 읽는 도중 화면 요소가 밀려 이동하는 정도 — 값이 클수록 레이아웃이 흔들림
 - **PASS**: ≤ 0.25
 - **측정방법**: PageSpeed Insights (Lighthouse) 측정값
-- **상태**: 9월 감사부터 추가 시행 (데이터 추출 및 검증 진행중)
+- **상태**: 10월 감사부터 추가 예정 (데이터 추출 및 검증 진행중)
 
 ### (예정) INP (Interaction to Next Paint)
 - **정의**: 사용자가 누르거나 입력한 뒤 화면이 반응하기까지 걸리는 시간
 - **PASS**: ≤ 500ms
 - **측정방법**: PageSpeed Insights — CrUX 실사용자 데이터
-- **상태**: 9월 감사부터 추가 시행 (데이터 추출 및 검증 진행중)
+- **상태**: 10월 감사부터 추가 예정 (데이터 추출 및 검증 진행중)
 
 ### (예정) Agentic Browsing
 - **정의**: AI Agent와 상호작용하기 위해 사이트가 얼마나 잘 구성되어 있는지 평가 (구글 베타테스트 중인 요건)
 - **PASS**: 구글 정책에 따라 점수 기준점 혹은 Pass/Non Pass 유형 확정 예정
 - **측정방법**: CLS · LLMS.txt · 에이전트 접근성 항목 평가 (점수화 작업 진행 중)
-- **상태**: 9월 감사부터 추가 시행 (데이터 추출 및 검증 진행중)
+- **상태**: 10월 감사부터 추가 예정 (데이터 추출 및 검증 진행중)
 
 ---
 

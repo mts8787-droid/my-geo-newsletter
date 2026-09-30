@@ -40,7 +40,7 @@
     line-height: 1.5;
   }
 
-  /* 예정 항목 — 9월 감사부터 시행 */
+  /* 예정 항목 — 10월 감사부터 시행 예정 */
   .planned-row { background: #fffbeb; }
   .plan-note {
     display: block;
@@ -155,7 +155,7 @@
     <span class="accent">[유첨]</span> GEO Agent Readability 체크리스트 (1/2)
   </h1>
   <p class="slide-subtitle">
-    6개 카테고리 기준 <strong>41개 체크리스트</strong>를 기준으로, 자체 개발한 Agent 기반 HTTP/HTML 분석 수행 (Pass, Fail 방식)<br><span style="color:#b45309;font-weight:700">노란 행</span>은 9월 감사부터 추가 시행 예정 항목 (현재 데이터 추출 및 검증 진행중)
+    6개 카테고리 기준 <strong>41개 체크리스트</strong>를 기준으로, 자체 개발한 Agent 기반 HTTP/HTML 분석 수행 (Pass, Fail 방식)<br><span style="color:#b45309;font-weight:700">노란 행</span>은 10월 감사부터 추가 예정 항목 (현재 데이터 추출 및 검증 진행중)
   </p>
 
   <table class="check-table">
@@ -181,10 +181,10 @@
       <tr><td class="no-cell">4</td><td class="item-cell">Cache-Control<span class="item-def">브라우저가 리소스를 일정 기간 저장·재사용할 수 있도록 하는 캐시 유효기간</span></td><td class="pass-cell">max-age 설정 (0 포함)</td><td class="method-cell">Cache-Control 헤더</td></tr>
       <tr><td class="no-cell">6</td><td class="item-cell">Redirect Chain<span class="item-def">최종 페이지에 도달하기 전 거치는 URL 리다이렉트 횟수</span></td><td class="pass-cell">≤ 1회</td><td class="method-cell">redirectChain 메타데이터</td></tr>
       <tr><td class="no-cell">7</td><td class="item-cell">Mixed Content<span class="item-def">HTTPS 페이지 내 비보안(HTTP) 리소스 포함 여부</span></td><td class="pass-cell">0개</td><td class="method-cell">http://리소스 탐지</td></tr>
-      <tr class="planned-row"><td class="no-cell">예정</td><td class="item-cell">LCP (Largest Contentful Paint)<span class="item-def">페이지에서 가장 큰 본문 요소가 화면에 다 그려지기까지 걸리는 시간</span></td><td class="pass-cell">≤ 4,000ms<span class="plan-note">9월 감사부터 추가 시행 (데이터 추출 및 검증 진행중)</span></td><td class="method-cell">PageSpeed Insights (Lighthouse) 측정값</td></tr>
-      <tr class="planned-row"><td class="no-cell">예정</td><td class="item-cell">CLS (Cumulative Layout Shift)<span class="item-def">읽는 도중 화면 요소가 밀려 이동하는 정도 — 값이 클수록 레이아웃이 흔들림</span></td><td class="pass-cell">≤ 0.25<span class="plan-note">9월 감사부터 추가 시행 (데이터 추출 및 검증 진행중)</span></td><td class="method-cell">PageSpeed Insights (Lighthouse) 측정값</td></tr>
-      <tr class="planned-row"><td class="no-cell">예정</td><td class="item-cell">INP (Interaction to Next Paint)<span class="item-def">사용자가 누르거나 입력한 뒤 화면이 반응하기까지 걸리는 시간</span></td><td class="pass-cell">≤ 500ms<span class="plan-note">9월 감사부터 추가 시행 (데이터 추출 및 검증 진행중)</span></td><td class="method-cell">PageSpeed Insights — CrUX 실사용자 데이터</td></tr>
-      <tr class="planned-row"><td class="no-cell">예정</td><td class="item-cell">Agentic Browsing<span class="item-def">AI Agent와 상호작용하기 위해 사이트가 얼마나 잘 구성되어 있는지 평가 (구글 베타테스트 중인 요건)</span></td><td class="pass-cell">구글 정책에 따라 점수 기준점 혹은 Pass/Non Pass 유형 확정 예정<span class="plan-note">9월 감사부터 추가 시행 (데이터 추출 및 검증 진행중)</span></td><td class="method-cell">CLS · LLMS.txt · 에이전트 접근성 항목 평가 (점수화 작업 진행 중)</td></tr>
+      <tr class="planned-row"><td class="no-cell">예정</td><td class="item-cell">LCP (Largest Contentful Paint)<span class="item-def">페이지에서 가장 큰 본문 요소가 화면에 다 그려지기까지 걸리는 시간</span></td><td class="pass-cell">≤ 4,000ms<span class="plan-note">10월 감사부터 추가 예정 (데이터 추출 및 검증 진행중)</span></td><td class="method-cell">PageSpeed Insights (Lighthouse) 측정값</td></tr>
+      <tr class="planned-row"><td class="no-cell">예정</td><td class="item-cell">CLS (Cumulative Layout Shift)<span class="item-def">읽는 도중 화면 요소가 밀려 이동하는 정도 — 값이 클수록 레이아웃이 흔들림</span></td><td class="pass-cell">≤ 0.25<span class="plan-note">10월 감사부터 추가 예정 (데이터 추출 및 검증 진행중)</span></td><td class="method-cell">PageSpeed Insights (Lighthouse) 측정값</td></tr>
+      <tr class="planned-row"><td class="no-cell">예정</td><td class="item-cell">INP (Interaction to Next Paint)<span class="item-def">사용자가 누르거나 입력한 뒤 화면이 반응하기까지 걸리는 시간</span></td><td class="pass-cell">≤ 500ms<span class="plan-note">10월 감사부터 추가 예정 (데이터 추출 및 검증 진행중)</span></td><td class="method-cell">PageSpeed Insights — CrUX 실사용자 데이터</td></tr>
+      <tr class="planned-row"><td class="no-cell">예정</td><td class="item-cell">Agentic Browsing<span class="item-def">AI Agent와 상호작용하기 위해 사이트가 얼마나 잘 구성되어 있는지 평가 (구글 베타테스트 중인 요건)</span></td><td class="pass-cell">구글 정책에 따라 점수 기준점 혹은 Pass/Non Pass 유형 확정 예정<span class="plan-note">10월 감사부터 추가 예정 (데이터 추출 및 검증 진행중)</span></td><td class="method-cell">CLS · LLMS.txt · 에이전트 접근성 항목 평가 (점수화 작업 진행 중)</td></tr>
 
       <!-- Accessibility (C/L 4개) -->
       <tr class="cat-divider">
