@@ -169,7 +169,7 @@
 - **정의**: 회사의 이름·연락처·주소 등 기업 정보를 AI가 읽을 수 있게 표기
 - **PASS**: JSON-LD 필수요소 모두 존재, 파싱 성공
 - **측정방법**: contactPoint, address, geo, hasMap 존재
-- **상태**: 미채점 — 추후 개선항목 확인 후 정리 (scoring_config `enabled: false`)
+- **상태**: TBD — 추후 개선항목 확인 후 정리. 자가 콘텐츠 분석·기준 세분화·검수 에이전트 고도화 후 항목 추가 예정 (scoring_config `enabled: false`)
 
 ### #21 — Schema Types - BreadcrumbList
 - **정의**: 현재 페이지가 사이트 구조상 어느 위치에 있는지 알려주는 경로 정보
@@ -181,7 +181,7 @@
 - **정의**: 음성 서비스가 대신 읽어줄 수 있도록 핵심 문장 영역을 지정
 - **PASS**: JSON-LD 필수요소 모두 존재, 파싱 성공
 - **측정방법**: speakable.cssSelector 존재
-- **상태**: 미채점 — 추후 개선항목 확인 후 정리 (scoring_config `enabled: false`)
+- **상태**: TBD — 추후 개선항목 확인 후 정리. 자가 콘텐츠 분석·기준 세분화·검수 에이전트 고도화 후 항목 추가 예정 (scoring_config `enabled: false`)
 
 ### #23 — Schema Types - FAQ
 - **정의**: 자주 묻는 질문과 답변을 AI가 읽을 수 있게 표기
@@ -229,13 +229,13 @@
 - **정의**: 매뉴얼·카탈로그 등 첨부 문서의 이름·형식·주소를 AI가 읽을 수 있게 표기
 - **PASS**: JSON-LD 필수요소 모두 존재, 파싱 성공
 - **측정방법**: name, url, fileFormat, description 존재
-- **상태**: 미채점 — 추후 개선항목 확인 후 정리 (scoring_config `enabled: false`)
+- **상태**: TBD — 추후 개선항목 확인 후 정리. 자가 콘텐츠 분석·기준 세분화·검수 에이전트 고도화 후 항목 추가 예정 (scoring_config `enabled: false`)
 
 ### #31 — Schema Types - Recipe
 - **정의**: 재료와 조리 단계로 구성된 레시피 정보를 AI가 읽을 수 있게 표기
 - **PASS**: JSON-LD 필수요소 모두 존재, 파싱 성공
 - **측정방법**: Name, description, image, author, datepublihsed, recipeIngredient, recipeInstructions 존재
-- **상태**: 미채점 — 추후 개선항목 확인 후 정리 (scoring_config `enabled: false`)
+- **상태**: TBD — 추후 개선항목 확인 후 정리. 자가 콘텐츠 분석·기준 세분화·검수 에이전트 고도화 후 항목 추가 예정 (scoring_config `enabled: false`)
 
 ---
 
