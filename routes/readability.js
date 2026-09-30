@@ -56,16 +56,24 @@ export function loadLatest(channel = 'published') {
   let snapshot = null
   try { snapshot = JSON.parse(readFileSync(snapPath, 'utf8')) } catch { snapshot = null }
   if (!snapshot) return { snapshot: null, index, snapshots: [] }
-  // 월별 최신 스냅샷 목록 (측정 월 필터용) — 같은 달 복수 측정 시 그 달의 최신만
+  // 월별 최신 스냅샷 목록 (측정 월 필터용) — 같은 달 복수 측정 시 그 달의 최신만.
+  // 단, 월 dedup 은 published 끼리만 한다: staging 스냅샷(예: 9/29 베네룩스 2개국)이
+  // 같은 달의 published 확정본(9/20 11개국)을 가리면 스테이징 대시보드에서
+  // 확정본이 사라진다 (2026-09-30 실측). staging 은 별도 항목으로 추가 노출.
   const byMonth = {}
-  const dates = (channelEntries && channelEntries.length)
-    ? channelEntries.map(s => s.date)
-    : [latestDate]
-  dates.forEach(d => {
-    const m = String(d).slice(0, 7)
-    if (!byMonth[m] || byMonth[m] < d) byMonth[m] = d
-  })
-  const snapshots = Object.values(byMonth).sort().map(d => {
+  const entries = (channelEntries && channelEntries.length)
+    ? channelEntries
+    : [{ date: latestDate }]
+  entries.filter(e => (e.channel || 'published') !== 'staging')
+    .forEach(({ date: d }) => {
+      const m = String(d).slice(0, 7)
+      if (!byMonth[m] || byMonth[m] < d) byMonth[m] = d
+    })
+  const dateList = new Set(Object.values(byMonth))
+  entries.filter(e => (e.channel || 'published') === 'staging')
+    .forEach(({ date: d }) => dateList.add(d))
+  dateList.add(latestDate)
+  const snapshots = [...dateList].sort().map(d => {
     if (d === latestDate) return snapshot
     const p = join(DATA_DIR, `${d}.json`)
     if (!existsSync(p)) return null
