@@ -696,22 +696,54 @@ function readabilityClient() {
     rebuildCcPt()
     ccSel.addEventListener('change', function () { state.cc = ccSel.value; renderPanel() })
     ptSel.addEventListener('change', function () { state.pt = ptSel.value; renderPanel() })
-    // ── 측정 월 필터 — 월별 최신 스냅샷 전환 ──
+    // ── 어딧 구분(정기/비정기) 탭 + 측정 월 필터 — 구분별 스냅샷 전환 (2026-10-03) ──
     var mWrap = document.getElementById('rd-month-wrap'), mSel = document.getElementById('rd-month')
-    var mDates = ALL ? Object.keys(ALL).sort() : []
-    if (mWrap && mSel && mDates.length > 1) {
-      mWrap.style.display = ''
-      mSel.innerHTML = mDates.map(function (d) {
-        var ym = LANG === 'en' ? d.slice(0, 7) : d.slice(0, 4) + '년 ' + parseInt(d.slice(5, 7), 10) + '월'
-        return '<option value="' + d + '">' + ym + ' (' + d.slice(5) + ' ' + esc(I.monthMeasured || '측정') + ')</option>'
-      }).join('')
-      mSel.value = RD.date
-      mSel.addEventListener('change', function () {
-        RD = ALL[mSel.value] || RD
-        rebuildCcPt()
-        renderPanel()
-      })
+    var aWrap = document.getElementById('rd-atype-wrap')
+    var aBtn = { regular: document.getElementById('rd-atype-regular'), adhoc: document.getElementById('rd-atype-adhoc') }
+    var allDates = ALL ? Object.keys(ALL).sort() : []
+    function typeOf(d) { return (ALL && ALL[d] && ALL[d].auditType) || 'regular' }
+    function datesOfType(t) { return allDates.filter(function (d) { return typeOf(d) === t }) }
+    var curType = RD.auditType || 'regular'
+    function switchTo(d) {
+      RD = (ALL && ALL[d]) || RD
+      rebuildCcPt()
+      renderPanel()
     }
+    function rebuildMonth() {
+      if (!mWrap || !mSel) return
+      var mDates = datesOfType(curType)
+      if (mDates.length > 1) {
+        mWrap.style.display = ''
+        mSel.innerHTML = mDates.map(function (d) {
+          var ym = LANG === 'en' ? d.slice(0, 7) : d.slice(0, 4) + '년 ' + parseInt(d.slice(5, 7), 10) + '월'
+          return '<option value="' + d + '">' + ym + ' (' + d.slice(5) + ' ' + esc(I.monthMeasured || '측정') + ')</option>'
+        }).join('')
+        mSel.value = mDates.indexOf(RD.date) >= 0 ? RD.date : mDates[mDates.length - 1]
+      } else {
+        mWrap.style.display = 'none'
+      }
+    }
+    if (mSel) mSel.addEventListener('change', function () { switchTo(mSel.value) })
+    // 양쪽 구분이 모두 있을 때만 탭 노출 — 한쪽뿐이면 기존 월 드롭다운만
+    if (aWrap && aBtn.regular && aBtn.adhoc && datesOfType('regular').length && datesOfType('adhoc').length) {
+      aWrap.style.display = ''
+      var paint = function () {
+        aBtn.regular.className = 'atype-btn' + (curType === 'regular' ? ' active' : '')
+        aBtn.adhoc.className = 'atype-btn' + (curType === 'adhoc' ? ' active' : '')
+      }
+      ;['regular', 'adhoc'].forEach(function (t) {
+        aBtn[t].addEventListener('click', function () {
+          if (curType === t) return
+          curType = t
+          paint()
+          rebuildMonth()
+          var ds = datesOfType(t)
+          if (ds.length) switchTo(ds[ds.length - 1])
+        })
+      })
+      paint()
+    }
+    rebuildMonth()
   }
 
   buildControls()
@@ -753,6 +785,7 @@ export function renderReadabilityHTML({ snapshot, index, snapshots, adminMode = 
   // 게시본은 /p/* 공개 라우트(IP allowlist)를, 어드민은 /admin/*(세션 인증)를 fetch.
   const buildClientData = snap => ({
     date: snap.date,
+    auditType: snap.auditType || 'regular',   // 정기/비정기 탭 분리용 (2026-10-03)
     adminMode: !!adminMode,
     band: RD_BAND,           // 신호등 임계값 — 클라 짝이 서버와 같은 기준 쓰도록 주입
     bandColor: RD_BAND_COLOR,
@@ -808,6 +841,10 @@ body{background:#F1F5F9;font-family:${FONT};color:#1A1A1A;line-height:1.6}
 .filter-bar .fg{display:flex;align-items:center;gap:8px}
 .filter-bar label{font-size:13px;font-weight:700;color:#475569}
 .filter-bar select{font-family:inherit;font-size:13px;color:#1A1A1A;border:1px solid #CBD5E1;border-radius:8px;padding:6px 28px 6px 10px;background:#fff;cursor:pointer}
+.atype-tabs{display:inline-flex;border:1px solid #CBD5E1;border-radius:8px;overflow:hidden}
+.atype-btn{font-family:inherit;font-size:13px;font-weight:600;color:#475569;background:#fff;border:0;padding:6px 14px;cursor:pointer}
+.atype-btn+.atype-btn{border-left:1px solid #CBD5E1}
+.atype-btn.active{background:${RED};color:#fff}
 .tab-note{background:#FFFBEB;border:1px solid #FDE68A;border-radius:8px;padding:10px 14px;font-size:13px;color:#B45309;margin-bottom:16px}
 /* ── Hero (Visibility 다크 카드) ── */
 .hero{background:#0F172A;border-radius:16px;padding:28px 32px;margin-bottom:24px;color:#fff}
@@ -952,6 +989,7 @@ ${embed ? '' : `<div class="tab-bar">
 
   <div class="tab-nav" id="rd-tabnav"></div>
   <div class="filter-bar" id="rd-filterbar">
+    <div class="fg" id="rd-atype-wrap" style="display:none"><label>${escHtml(t.fAuditType)}</label><span class="atype-tabs"><button type="button" id="rd-atype-regular" class="atype-btn">${escHtml(t.auditRegular)}</button><button type="button" id="rd-atype-adhoc" class="atype-btn">${escHtml(t.auditAdhoc)}</button></span></div>
     <div class="fg" id="rd-month-wrap" style="display:none"><label for="rd-month">${escHtml(t.fMonth)}</label><select id="rd-month"></select></div>
     <div class="fg"><label for="rd-cc">${escHtml(t.fCountry)}</label><select id="rd-cc"></select></div>
     <div class="fg"><label for="rd-pt">${escHtml(t.fPageType)}</label><select id="rd-pt"></select></div>

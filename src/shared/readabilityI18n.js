@@ -19,6 +19,7 @@ export const T = {
     tabCountry: '국가별', tabPageType: '페이지 타입별', tabRaw: 'Raw 데이터', tabCriteria: '검수 기준',
     // ── 필터
     fMonth: '측정 월', fCountry: '국가', fPageType: '페이지 타입', fCheck: '항목', fResult: '결과',
+    fAuditType: '어딧 구분', auditRegular: '정기 어딧', auditAdhoc: '비정기 어딧',
     allCountries: '전체 국가', allPageTypes: '전체 페이지 타입', allChecks: '전체 항목', allResults: '전체',
     // ── 섹션 제목
     secCountryScore: '국가별 종합 점수 비교',
@@ -100,6 +101,7 @@ export const T = {
     htrP3: 'Teams owning a country or page type can review their own scope through the <strong>By Country / By Page Type tabs</strong>. Working through <span class="htr-step">(1) the overall score</span> <span class="htr-step">(2) scores by item</span> <span class="htr-step">(3) urgent items</span> in order shows where attention is needed and <strong>turns it into improvement tasks you can act on</strong>.',
     tabCountry: 'By Country', tabPageType: 'By Page Type', tabRaw: 'Raw Data', tabCriteria: 'Criteria',
     fMonth: 'Month', fCountry: 'Country', fPageType: 'Page Type', fCheck: 'Item', fResult: 'Result',
+    fAuditType: 'Audit type', auditRegular: 'Regular audit', auditAdhoc: 'Ad-hoc audit',
     allCountries: 'All countries', allPageTypes: 'All page types', allChecks: 'All items', allResults: 'All',
     secCountryScore: 'Overall Score by Site',
     secCountryScoreFiltered: 'Score by Site',

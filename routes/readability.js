@@ -45,7 +45,12 @@ export function loadLatest(channel = 'published') {
   let channelEntries = null
   if (index && Array.isArray(index.snapshots) && index.snapshots.length) {
     channelEntries = index.snapshots.filter(inChannel)
-    if (channelEntries.length) latestDate = channelEntries[channelEntries.length - 1].date
+    // 기본(첫 화면·뉴스레터 요약) 스냅샷은 최신 '정기' 어딧 — 비정기(adhoc)는 탭으로만.
+    // 비정기(예: 9/29 베네룩스 2국)가 최신이라는 이유로 대시보드 얼굴·요약 수치가 되면 안 된다
+    // (사용자 결정 2026-10-03). 정기가 하나도 없으면 전체 최신으로 폴백.
+    const regulars = channelEntries.filter(e => (e.auditType || 'regular') !== 'adhoc')
+    const pickFrom = regulars.length ? regulars : channelEntries
+    if (pickFrom.length) latestDate = pickFrom[pickFrom.length - 1].date
   } else {
     const files = readdirSync(DATA_DIR).filter(f => /^\d{4}-\d{2}-\d{2}\.json$/.test(f)).sort()
     if (files.length) latestDate = files[files.length - 1].replace('.json', '')
@@ -67,22 +72,29 @@ export function loadLatest(channel = 'published') {
   // dedup 키 = 월 + 커버 국가 구성. 같은 국가 구성의 재측정만 서로를 대체한다 —
   // 9/20(11국 확정본)과 9/29(베네룩스 2국)는 보완 관계라 둘 다 노출해야 한다
   // (2026-09-30: 승격 후 9/29 가 9/20 을 공개·스테이징 양쪽에서 가렸다).
+  // dedup 키에 어딧 구분(정기/비정기)도 포함 — 비정기(adhoc) 스냅샷이 같은 달
+  // 정기 확정본을 대체하지 않는다 (정기/비정기 탭 분리, 사용자 결정 2026-10-03).
   entries.filter(e => (e.channel || 'published') !== 'staging')
     .forEach(e => {
       const d = e.date
-      const k = String(d).slice(0, 7) + '|' + (Array.isArray(e.countries) ? [...e.countries].sort().join(',') : '')
+      const k = String(d).slice(0, 7) + '|' + (e.auditType || 'regular') + '|' +
+        (Array.isArray(e.countries) ? [...e.countries].sort().join(',') : '')
       if (!byMonth[k] || byMonth[k] < d) byMonth[k] = d
     })
   const dateList = new Set(Object.values(byMonth))
   entries.filter(e => (e.channel || 'published') === 'staging')
     .forEach(({ date: d }) => dateList.add(d))
   dateList.add(latestDate)
+  // 스냅샷 파일에 auditType 이 없으면 index 엔트리에서 백필 (구 스냅샷 호환)
+  const typeByDate = Object.fromEntries(entries.map(e => [e.date, e.auditType || 'regular']))
   const snapshots = [...dateList].sort().map(d => {
     if (d === latestDate) return snapshot
     const p = join(DATA_DIR, `${d}.json`)
     if (!existsSync(p)) return null
     try { return JSON.parse(readFileSync(p, 'utf8')) } catch { return null }
   }).filter(Boolean)
+  snapshots.forEach(s => { if (!s.auditType) s.auditType = typeByDate[s.date] || 'regular' })
+  if (!snapshot.auditType) snapshot.auditType = typeByDate[snapshot.date] || 'regular'
   return { snapshot, index, snapshots }
 }
 
@@ -131,12 +143,51 @@ readabilityRouter.get('/admin/readability', (req, res) => {
           `${promoted.date} 를 공개에서 내리고 스테이징으로 되돌릴까요?`, '#475569') : '')
   }
   const bg = stagingList.length ? '#b45309' : '#475569'
+  // 어딧 구분(정기/비정기) 전환 줄 — 스냅샷별 현재 구분 표시 + 반대 구분으로 전환 버튼
+  const typeRow = entries.length
+    ? `<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;flex-basis:100%;` +
+      `padding-top:6px;border-top:1px solid rgba(255,255,255,.25);">` +
+      `<span style="opacity:.85;">어딧 구분:</span>` + entries.map(e => {
+        const t = e.auditType || 'regular'
+        const to = t === 'adhoc' ? 'regular' : 'adhoc'
+        const label = t === 'adhoc' ? '비정기' : '정기'
+        const toLabel = to === 'adhoc' ? '비정기' : '정기'
+        return `<span style="background:rgba(255,255,255,.12);border-radius:6px;padding:2px 8px;">` +
+          `${e.date} <b>${label}</b>` +
+          btn(`${toLabel}로`, `/admin/readability/audit-type/${e.date}/${to}`,
+              `${e.date} 를 ${toLabel} 어딧으로 전환할까요?`, '#475569') + `</span>`
+      }).join('') + `</div>`
+    : ''
   const banner = `<div style="position:sticky;top:0;z-index:999;background:${bg};color:#fff;` +
     `padding:8px 16px;font:600 12px -apple-system,sans-serif;display:flex;align-items:center;` +
     `gap:8px;flex-wrap:wrap;">${inner}` +
-    `<span style="opacity:.7;font-weight:400;margin-left:auto;">승격/되돌리기 후에는 로컬 저장소 커밋 필요 (Render 재배포 시 초기화)</span></div>`
+    `<span style="opacity:.7;font-weight:400;margin-left:auto;">승격/되돌리기 후에는 로컬 저장소 커밋 필요 (Render 재배포 시 초기화)</span>` +
+    `${typeRow}</div>`
   html = html.replace(/(<body[^>]*>)/i, `$1${banner}`)
   res.send(html)
+})
+
+// 어딧 구분 전환 — 정기(regular) ↔ 비정기(adhoc). 스냅샷 파일 + index 양쪽 갱신.
+// 대시보드의 '정기/비정기' 탭 분리와 짝 (사용자 결정 2026-10-03).
+readabilityRouter.post('/admin/readability/audit-type/:date/:type', (req, res) => {
+  const date = String(req.params.date || '')
+  const type = String(req.params.type || '')
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return res.status(400).json({ ok: false, error: '날짜 형식 오류' })
+  if (!['regular', 'adhoc'].includes(type)) return res.status(400).json({ ok: false, error: 'type 은 regular 또는 adhoc' })
+  const snapPath = join(DATA_DIR, `${date}.json`)
+  if (!existsSync(snapPath)) return res.status(404).json({ ok: false, error: '스냅샷 없음' })
+  try {
+    const snap = JSON.parse(readFileSync(snapPath, 'utf8'))
+    snap.auditType = type
+    writeFileSync(snapPath, JSON.stringify(snap))
+    const indexPath = join(DATA_DIR, 'index.json')
+    const idx = JSON.parse(readFileSync(indexPath, 'utf8'))
+    for (const e of idx.snapshots || []) if (e.date === date) e.auditType = type
+    writeFileSync(indexPath, JSON.stringify(idx, null, 2))
+    res.json({ ok: true, date, auditType: type })
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message })
+  }
 })
 
 // 승격 취소 — channel 을 staging 으로 되돌린다 (실수 복구용).

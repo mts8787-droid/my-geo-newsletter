@@ -30,6 +30,7 @@ function parseArgs() {
     else if (a[i] === '--report') out.report = a[++i]
     else if (a[i] === '--rebuild') out.rebuild = a[++i]
     else if (a[i] === '--staging') out.staging = true
+    else if (a[i] === '--adhoc') out.adhoc = true
   }
   return out
 }
@@ -1028,8 +1029,12 @@ function main() {
   // 내부 스테이징 대시보드(/admin/readability)에만 뜬다. 승격은 어드민 버튼 또는
   // POST /admin/readability/promote/<date>.
   const channel = args.staging ? 'staging' : 'published'
+  // --adhoc: 비정기 어딧 — 대시보드의 '정기/비정기' 탭에서 분리 표시 (사용자 결정 2026-10-03).
+  // 필드 없으면 정기(regular) 취급. 사후 전환은 POST /admin/readability/audit-type/<date>/<type>.
+  const auditType = args.adhoc ? 'adhoc' : 'regular'
   const snapshot = {
     channel,
+    auditType,
     date: snapshotDate,
     generatedAt: new Date().toISOString(),
     source: basename(SRC),
@@ -1051,6 +1056,7 @@ function main() {
   const entry = {
     date: snapshotDate,
     channel,
+    auditType,
     generatedAt: snapshot.generatedAt,
     countries: Object.keys(countries).sort(),
     overallAvg: snapshot.overall.avgScore,
