@@ -16,7 +16,8 @@
         "vn"
       ],
       "overallAvg": 75.7,
-      "urlCount": 9326
+      "urlCount": 9326,
+      "auditType": "regular"
     },
     {
       "date": "2026-06-29",
@@ -34,7 +35,8 @@
         "vn"
       ],
       "overallAvg": 75.4,
-      "urlCount": 5349
+      "urlCount": 5349,
+      "auditType": "regular"
     },
     {
       "date": "2026-07-31",
@@ -52,7 +54,8 @@
         "vn"
       ],
       "overallAvg": 77.7,
-      "urlCount": 5623
+      "urlCount": 5623,
+      "auditType": "regular"
     },
     {
       "date": "2026-08-30",
@@ -71,7 +74,8 @@
         "vn"
       ],
       "overallAvg": 79.8,
-      "urlCount": 9174
+      "urlCount": 9174,
+      "auditType": "regular"
     },
     {
       "date": "2026-09-16",
@@ -90,7 +94,8 @@
         "vn"
       ],
       "overallAvg": 79.2,
-      "urlCount": 8184
+      "urlCount": 8184,
+      "auditType": "regular"
     },
     {
       "date": "2026-09-20",
@@ -110,7 +115,8 @@
         "vn"
       ],
       "overallAvg": 81.3,
-      "urlCount": 7992
+      "urlCount": 7992,
+      "auditType": "regular"
     },
     {
       "date": "2026-09-29",
@@ -121,7 +127,8 @@
         "nl"
       ],
       "overallAvg": 80.3,
-      "urlCount": 1505
+      "urlCount": 1505,
+      "auditType": "adhoc"
     }
   ]
 }
