@@ -743,12 +743,10 @@ function readabilityClient() {
       var months = monthsOfType(curType)
       if (months.length) {
         mWrap.style.display = ''
+        // 월 옵션은 년-월만 — '(09-20 측정)' 같은 날짜 꼬리표 금지 (사용자 지시 2026-10-04).
+        // 측정 날짜는 아래 '측정 날짜' 필터가 담당한다.
         mSel.innerHTML = months.map(function (ym) {
-          var ds = datesInMonth(curType, ym)
-          var suffix = ds.length > 1
-            ? ' (' + ds.length + esc(I.monthTimes || '회 측정') + ')'
-            : ' (' + ds[0].slice(5) + ' ' + esc(I.monthMeasured || '측정') + ')'
-          return '<option value="' + ym + '">' + ymLabel(ym) + suffix + '</option>'
+          return '<option value="' + ym + '">' + ymLabel(ym) + '</option>'
         }).join('')
         var curYm = (RD.date || '').slice(0, 7)
         mSel.value = months.indexOf(curYm) >= 0 ? curYm : months[months.length - 1]
