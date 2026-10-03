@@ -9,9 +9,32 @@ import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
 import { renderReadabilityHTML } from '../scripts/render-readability.mjs'
 import { renderCriteriaHTML, loadRows } from '../scripts/render-criteria.mjs'
+import { DATA_DIR as STORAGE_DIR } from '../lib/storage.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const DATA_DIR = join(__dirname, '..', 'data', 'readability')
+
+// ── 런타임 변경 영구화 (사용자 지시 2026-10-05) ─────────────────────────────
+// 승격/되돌리기/Audit 구분 전환 버튼은 리포에 커밋된 data/readability/* 를 고치는데,
+// Render 디스크는 재배포 때 git 상태로 초기화된다. 뉴스레터 저장본과 같은 방식으로
+// 영구 디스크(lib/storage DATA_DIR — 운영 /data, render.yaml 의 disk 마운트)에
+// 날짜별 오버라이드를 남기고, 읽을 때(loadLatest) 리포 값 위에 덮어쓴다.
+// 우선순위: 오버라이드 > 리포 파일. 이후 git 데이터가 같은 값으로 따라오면 중복이지만 무해.
+const OVERRIDES_FILE = join(STORAGE_DIR, 'readability-overrides.json')
+export function readOverrides() {
+  try { return JSON.parse(readFileSync(OVERRIDES_FILE, 'utf8')) } catch { return {} }
+}
+function writeOverride(date, patch) {
+  const all = readOverrides()
+  all[date] = { ...(all[date] || {}), ...patch, updatedAt: new Date().toISOString() }
+  writeFileSync(OVERRIDES_FILE, JSON.stringify(all, null, 2))
+}
+function applyOverride(obj, ov) {
+  if (!obj || !ov) return obj
+  if (ov.channel) obj.channel = ov.channel
+  if (ov.auditType) obj.auditType = ov.auditType
+  return obj
+}
 
 // DATA_DIR 에서 정규식 매칭 파일 중 사전순 마지막(=최신 날짜) 반환 — csv/checks 공용.
 function latestFile(re) {
@@ -39,6 +62,11 @@ export function loadLatest(channel = 'published') {
   if (existsSync(indexPath)) {
     try { index = JSON.parse(readFileSync(indexPath, 'utf8')) } catch { index = null }
   }
+  // 영구 디스크 오버라이드(승격/구분 전환) 를 리포 데이터 위에 덮어쓴다 — 재배포 생존
+  const overrides = readOverrides()
+  if (index && Array.isArray(index.snapshots)) {
+    index.snapshots.forEach(e => applyOverride(e, overrides[e.date]))
+  }
   const inChannel = (e) => channel === 'staging' || (e.channel || 'published') !== 'staging'
   // 최신 날짜 결정: index 우선, 없으면 디렉토리 스캔
   let latestDate = null
@@ -61,6 +89,7 @@ export function loadLatest(channel = 'published') {
   let snapshot = null
   try { snapshot = JSON.parse(readFileSync(snapPath, 'utf8')) } catch { snapshot = null }
   if (!snapshot) return { snapshot: null, index, snapshots: [] }
+  applyOverride(snapshot, overrides[snapshot.date])
   // 월별 최신 스냅샷 목록 (측정 월 필터용) — 같은 달 복수 측정 시 그 달의 최신만.
   // 단, 월 dedup 은 published 끼리만 한다: staging 스냅샷(예: 9/29 베네룩스 2개국)이
   // 같은 달의 published 확정본(9/20 11개국)을 가리면 스테이징 대시보드에서
@@ -93,6 +122,7 @@ export function loadLatest(channel = 'published') {
     if (!existsSync(p)) return null
     try { return JSON.parse(readFileSync(p, 'utf8')) } catch { return null }
   }).filter(Boolean)
+  snapshots.forEach(s => applyOverride(s, overrides[s.date]))
   snapshots.forEach(s => { if (!s.auditType) s.auditType = typeByDate[s.date] || 'regular' })
   if (!snapshot.auditType) snapshot.auditType = typeByDate[snapshot.date] || 'regular'
   return { snapshot, index, snapshots }
@@ -168,13 +198,13 @@ readabilityRouter.get('/admin/readability', (req, res) => {
     `<th style="padding:7px 10px;">측정 날짜</th><th style="padding:7px 10px;">Audit 구분</th>` +
     `<th style="padding:7px 10px;">채널</th><th style="padding:7px 10px;">규모</th></tr></thead>` +
     `<tbody>${rowsHtml}</tbody></table>` +
-    `<div style="padding:7px 10px;color:#94A3B8;font-size:11px;">구분 전환·승격·되돌리기 후에는 로컬 저장소 커밋 필요 (Render 재배포 시 초기화)</div></div>`
+    `<div style="padding:7px 10px;color:#94A3B8;font-size:11px;">구분 전환·승격·되돌리기는 영구 저장소(/data)에 저장되어 재배포 후에도 유지됩니다</div></div>`
   const banner = `<div style="position:sticky;top:0;z-index:999;background:${bg};color:#fff;` +
     `padding:8px 16px;font:600 12px -apple-system,sans-serif;display:flex;align-items:center;` +
     `gap:8px;flex-wrap:wrap;">${inner}` +
     `<button onclick="var p=document.getElementById('rd-audit-admin');p.style.display=p.style.display==='none'?'':'none'"` +
     ` style="background:#fff;color:#334155;border:0;border-radius:6px;padding:3px 12px;font-weight:700;cursor:pointer;">Audit 관리 (${entries.length})</button>` +
-    `<span style="opacity:.7;font-weight:400;margin-left:auto;">변경 후 로컬 저장소 커밋 필요</span></div>${panel}`
+    `<span style="opacity:.7;font-weight:400;margin-left:auto;">변경은 영구 저장됩니다</span></div>${panel}`
   html = html.replace(/(<body[^>]*>)/i, `$1${banner}`)
   res.send(html)
 })
@@ -189,6 +219,12 @@ readabilityRouter.post('/admin/readability/audit-type/:date/:type', (req, res) =
   const snapPath = join(DATA_DIR, `${date}.json`)
   if (!existsSync(snapPath)) return res.status(404).json({ ok: false, error: '스냅샷 없음' })
   try {
+    writeOverride(date, { auditType: type })   // 영구 디스크 — 재배포 생존 (정본)
+  } catch (e) {
+    return res.status(500).json({ ok: false, error: '영구 저장 실패: ' + e.message })
+  }
+  try {
+    // 리포 사본도 동기 — 로컬 실행 시에는 이것이 곧 git 작업본
     const snap = JSON.parse(readFileSync(snapPath, 'utf8'))
     snap.auditType = type
     writeFileSync(snapPath, JSON.stringify(snap))
@@ -196,10 +232,8 @@ readabilityRouter.post('/admin/readability/audit-type/:date/:type', (req, res) =
     const idx = JSON.parse(readFileSync(indexPath, 'utf8'))
     for (const e of idx.snapshots || []) if (e.date === date) e.auditType = type
     writeFileSync(indexPath, JSON.stringify(idx, null, 2))
-    res.json({ ok: true, date, auditType: type })
-  } catch (e) {
-    res.status(500).json({ ok: false, error: e.message })
-  }
+  } catch { /* 오버라이드가 정본 — 리포 사본 실패는 무시 */ }
+  res.json({ ok: true, date, auditType: type })
 })
 
 // 승격 취소 — channel 을 staging 으로 되돌린다 (실수 복구용).
@@ -209,6 +243,11 @@ readabilityRouter.post('/admin/readability/demote/:date', (req, res) => {
   const snapPath = join(DATA_DIR, `${date}.json`)
   if (!existsSync(snapPath)) return res.status(404).json({ ok: false, error: '스냅샷 없음' })
   try {
+    writeOverride(date, { channel: 'staging' })   // 영구 디스크 — 재배포 생존 (정본)
+  } catch (e) {
+    return res.status(500).json({ ok: false, error: '영구 저장 실패: ' + e.message })
+  }
+  try {
     const snap = JSON.parse(readFileSync(snapPath, 'utf8'))
     snap.channel = 'staging'
     delete snap.promotedAt
@@ -216,10 +255,8 @@ readabilityRouter.post('/admin/readability/demote/:date', (req, res) => {
     const idx = JSON.parse(readFileSync(join(DATA_DIR, 'index.json'), 'utf8'))
     for (const e of idx.snapshots || []) if (e.date === date) e.channel = 'staging'
     writeFileSync(join(DATA_DIR, 'index.json'), JSON.stringify(idx, null, 2))
-    res.json({ ok: true, date })
-  } catch (e) {
-    res.status(500).json({ ok: false, error: e.message })
-  }
+  } catch { /* 오버라이드가 정본 */ }
+  res.json({ ok: true, date })
 })
 
 // staging 스냅샷 승격 — channel 을 published 로 전환 (스냅샷 파일 + index 양쪽).
@@ -229,6 +266,11 @@ readabilityRouter.post('/admin/readability/promote/:date', (req, res) => {
   const snapPath = join(DATA_DIR, `${date}.json`)
   if (!existsSync(snapPath)) return res.status(404).json({ ok: false, error: '스냅샷 없음' })
   try {
+    writeOverride(date, { channel: 'published' })   // 영구 디스크 — 재배포 생존 (정본)
+  } catch (e) {
+    return res.status(500).json({ ok: false, error: '영구 저장 실패: ' + e.message })
+  }
+  try {
     const snap = JSON.parse(readFileSync(snapPath, 'utf8'))
     snap.channel = 'published'
     snap.promotedAt = new Date().toISOString()
@@ -237,10 +279,8 @@ readabilityRouter.post('/admin/readability/promote/:date', (req, res) => {
     const idx = JSON.parse(readFileSync(indexPath, 'utf8'))
     for (const e of idx.snapshots || []) if (e.date === date) { e.channel = 'published' }
     writeFileSync(indexPath, JSON.stringify(idx, null, 2))
-    res.json({ ok: true, date })
-  } catch (e) {
-    res.status(500).json({ ok: false, error: e.message })
-  }
+  } catch { /* 오버라이드가 정본 */ }
+  res.json({ ok: true, date })
 })
 
 // 뉴스레터 Highlight 섹션용 요약 — 최신 스냅샷에서 필요한 것만 추려 반환.
