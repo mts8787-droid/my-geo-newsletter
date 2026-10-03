@@ -129,6 +129,26 @@
       "overallAvg": 80.3,
       "urlCount": 1505,
       "auditType": "adhoc"
+    },
+    {
+      "date": "2026-10-03",
+      "channel": "staging",
+      "auditType": "regular",
+      "generatedAt": "2026-10-03T10:49:47.202Z",
+      "countries": [
+        "au",
+        "br",
+        "ca",
+        "de",
+        "es",
+        "in",
+        "mx",
+        "uk",
+        "us",
+        "vn"
+      ],
+      "overallAvg": 79.2,
+      "urlCount": 1945
     }
   ]
 }
