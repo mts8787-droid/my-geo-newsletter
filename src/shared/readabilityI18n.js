@@ -19,7 +19,8 @@ export const T = {
     tabCountry: '국가별', tabPageType: '페이지 타입별', tabRaw: 'Raw 데이터', tabCriteria: '검수 기준',
     // ── 필터
     fMonth: '측정 월', fCountry: '국가', fPageType: '페이지 타입', fCheck: '항목', fResult: '결과',
-    fAuditType: '어딧 구분', auditRegular: '정기 어딧', auditAdhoc: '비정기 어딧',
+    fAuditType: 'Audit 구분', auditRegular: '정기 Audit', auditAdhoc: '비정기 Audit',
+    fAuditDate: '측정 날짜', monthTimes: '회 측정',
     allCountries: '전체 국가', allPageTypes: '전체 페이지 타입', allChecks: '전체 항목', allResults: '전체',
     // ── 섹션 제목
     secCountryScore: '국가별 종합 점수 비교',
@@ -102,6 +103,7 @@ export const T = {
     tabCountry: 'By Country', tabPageType: 'By Page Type', tabRaw: 'Raw Data', tabCriteria: 'Criteria',
     fMonth: 'Month', fCountry: 'Country', fPageType: 'Page Type', fCheck: 'Item', fResult: 'Result',
     fAuditType: 'Audit type', auditRegular: 'Regular audit', auditAdhoc: 'Ad-hoc audit',
+    fAuditDate: 'Measured date', monthTimes: ' audits',
     allCountries: 'All countries', allPageTypes: 'All page types', allChecks: 'All items', allResults: 'All',
     secCountryScore: 'Overall Score by Site',
     secCountryScoreFiltered: 'Score by Site',

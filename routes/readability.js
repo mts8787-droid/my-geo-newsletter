@@ -72,17 +72,17 @@ export function loadLatest(channel = 'published') {
   // dedup 키 = 월 + 커버 국가 구성. 같은 국가 구성의 재측정만 서로를 대체한다 —
   // 9/20(11국 확정본)과 9/29(베네룩스 2국)는 보완 관계라 둘 다 노출해야 한다
   // (2026-09-30: 승격 후 9/29 가 9/20 을 공개·스테이징 양쪽에서 가렸다).
-  // dedup 키에 어딧 구분(정기/비정기)도 포함 — 비정기(adhoc) 스냅샷이 같은 달
-  // 정기 확정본을 대체하지 않는다 (정기/비정기 탭 분리, 사용자 결정 2026-10-03).
-  entries.filter(e => (e.channel || 'published') !== 'staging')
+  // 월 dedup 은 '정기(regular) + published' 끼리만. 비정기(adhoc)는 같은 달에 여러 번
+  // 돌 수 있는 수시 측정이라 날짜별로 전부 노출한다 (사용자 결정 2026-10-03).
+  entries.filter(e => (e.channel || 'published') !== 'staging' && (e.auditType || 'regular') !== 'adhoc')
     .forEach(e => {
       const d = e.date
-      const k = String(d).slice(0, 7) + '|' + (e.auditType || 'regular') + '|' +
+      const k = String(d).slice(0, 7) + '|' +
         (Array.isArray(e.countries) ? [...e.countries].sort().join(',') : '')
       if (!byMonth[k] || byMonth[k] < d) byMonth[k] = d
     })
   const dateList = new Set(Object.values(byMonth))
-  entries.filter(e => (e.channel || 'published') === 'staging')
+  entries.filter(e => (e.channel || 'published') === 'staging' || (e.auditType || 'regular') === 'adhoc')
     .forEach(({ date: d }) => dateList.add(d))
   dateList.add(latestDate)
   // 스냅샷 파일에 auditType 이 없으면 index 엔트리에서 백필 (구 스냅샷 호환)
@@ -133,36 +133,48 @@ readabilityRouter.get('/admin/readability', (req, res) => {
     `font-weight:700;cursor:pointer;margin-left:6px;">${label}</button>`
   let inner = ''
   if (stagingList.length) {
-    inner = `<span>⚠ STAGING 대기: </span>` + stagingList.map(e =>
-      `<span style="margin-right:4px;">${e.date} (${(e.countries || []).length}국, ${e.overallAvg})` +
-      btn('공개로 승격', `/admin/readability/promote/${e.date}`,
-          `${e.date} 스냅샷을 공개 대시보드로 승격할까요?`, '#b45309') + `</span>`).join('')
+    inner = `<span>⚠ STAGING 대기 ${stagingList.length}건: ${stagingList.map(e => e.date).join(', ')}</span>`
   } else {
-    inner = `<span>스테이징 대기 스냅샷 없음 · 공개 최신: ${promoted ? promoted.date : '—'}</span>` +
-      (promoted ? btn('스테이징으로 되돌리기', `/admin/readability/demote/${promoted.date}`,
-          `${promoted.date} 를 공개에서 내리고 스테이징으로 되돌릴까요?`, '#475569') : '')
+    inner = `<span>스테이징 대기 없음 · 공개 최신: ${promoted ? promoted.date : '—'}</span>`
   }
   const bg = stagingList.length ? '#b45309' : '#475569'
-  // 어딧 구분(정기/비정기) 전환 줄 — 스냅샷별 현재 구분 표시 + 반대 구분으로 전환 버튼
-  const typeRow = entries.length
-    ? `<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;flex-basis:100%;` +
-      `padding-top:6px;border-top:1px solid rgba(255,255,255,.25);">` +
-      `<span style="opacity:.85;">어딧 구분:</span>` + entries.map(e => {
-        const t = e.auditType || 'regular'
-        const to = t === 'adhoc' ? 'regular' : 'adhoc'
-        const label = t === 'adhoc' ? '비정기' : '정기'
-        const toLabel = to === 'adhoc' ? '비정기' : '정기'
-        return `<span style="background:rgba(255,255,255,.12);border-radius:6px;padding:2px 8px;">` +
-          `${e.date} <b>${label}</b>` +
-          btn(`${toLabel}로`, `/admin/readability/audit-type/${e.date}/${to}`,
-              `${e.date} 를 ${toLabel} 어딧으로 전환할까요?`, '#475569') + `</span>`
-      }).join('') + `</div>`
-    : ''
+  // ── Audit 관리 패널 — 상태 바에는 요약+버튼만, 상세는 테이블로 (사용자 기획 요청 2026-10-04).
+  // 스냅샷이 수십 개로 늘어도 한 화면: 최신순 테이블 + 스크롤, 행마다 구분 전환·승격/되돌리기.
+  const typeBadge = t => t === 'adhoc'
+    ? `<span style="background:#FEF3C7;color:#92400E;border-radius:5px;padding:1px 7px;font-weight:700;">비정기</span>`
+    : `<span style="background:#DCFCE7;color:#166534;border-radius:5px;padding:1px 7px;font-weight:700;">정기</span>`
+  const chBadge = c => c === 'staging'
+    ? `<span style="background:#FFEDD5;color:#9A3412;border-radius:5px;padding:1px 7px;font-weight:700;">STAGING</span>`
+    : `<span style="background:#E0F2FE;color:#075985;border-radius:5px;padding:1px 7px;font-weight:700;">공개</span>`
+  const rowsHtml = [...entries].reverse().map(e => {
+    const t = e.auditType || 'regular'
+    const ch = e.channel || 'published'
+    const toT = t === 'adhoc' ? 'regular' : 'adhoc'
+    const toTLabel = toT === 'adhoc' ? '비정기' : '정기'
+    const chAction = ch === 'staging'
+      ? btn('공개로 승격', `/admin/readability/promote/${e.date}`, `${e.date} 스냅샷을 공개 대시보드로 승격할까요?`, '#b45309')
+      : btn('스테이징으로', `/admin/readability/demote/${e.date}`, `${e.date} 를 공개에서 내리고 스테이징으로 되돌릴까요?`, '#475569')
+    return `<tr style="border-top:1px solid #E2E8F0;">` +
+      `<td style="padding:6px 10px;font-weight:700;white-space:nowrap;">${e.date}</td>` +
+      `<td style="padding:6px 10px;white-space:nowrap;">${typeBadge(t)}${btn(`${toTLabel}로 전환`, `/admin/readability/audit-type/${e.date}/${toT}`, `${e.date} 를 ${toTLabel} Audit 으로 전환할까요?`, '#475569')}</td>` +
+      `<td style="padding:6px 10px;white-space:nowrap;">${chBadge(ch)}${chAction}</td>` +
+      `<td style="padding:6px 10px;color:#475569;white-space:nowrap;">${(e.countries || []).length}개국 · 평균 ${e.overallAvg ?? '—'} · ${(e.urlCount || 0).toLocaleString()}p</td>` +
+      `</tr>`
+  }).join('')
+  const panel = `<div id="rd-audit-admin" style="display:none;background:#fff;color:#1A1A1A;` +
+    `border-bottom:2px solid #CBD5E1;max-height:320px;overflow:auto;font:500 12px -apple-system,sans-serif;">` +
+    `<table style="width:100%;border-collapse:collapse;">` +
+    `<thead><tr style="background:#F8FAFC;color:#64748B;font-size:11px;text-align:left;">` +
+    `<th style="padding:7px 10px;">측정 날짜</th><th style="padding:7px 10px;">Audit 구분</th>` +
+    `<th style="padding:7px 10px;">채널</th><th style="padding:7px 10px;">규모</th></tr></thead>` +
+    `<tbody>${rowsHtml}</tbody></table>` +
+    `<div style="padding:7px 10px;color:#94A3B8;font-size:11px;">구분 전환·승격·되돌리기 후에는 로컬 저장소 커밋 필요 (Render 재배포 시 초기화)</div></div>`
   const banner = `<div style="position:sticky;top:0;z-index:999;background:${bg};color:#fff;` +
     `padding:8px 16px;font:600 12px -apple-system,sans-serif;display:flex;align-items:center;` +
     `gap:8px;flex-wrap:wrap;">${inner}` +
-    `<span style="opacity:.7;font-weight:400;margin-left:auto;">승격/되돌리기 후에는 로컬 저장소 커밋 필요 (Render 재배포 시 초기화)</span>` +
-    `${typeRow}</div>`
+    `<button onclick="var p=document.getElementById('rd-audit-admin');p.style.display=p.style.display==='none'?'':'none'"` +
+    ` style="background:#fff;color:#334155;border:0;border-radius:6px;padding:3px 12px;font-weight:700;cursor:pointer;">Audit 관리 (${entries.length})</button>` +
+    `<span style="opacity:.7;font-weight:400;margin-left:auto;">변경 후 로컬 저장소 커밋 필요</span></div>${panel}`
   html = html.replace(/(<body[^>]*>)/i, `$1${banner}`)
   res.send(html)
 })

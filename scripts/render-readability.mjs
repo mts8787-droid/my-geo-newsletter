@@ -709,21 +709,60 @@ function readabilityClient() {
       rebuildCcPt()
       renderPanel()
     }
+    // 월 뎁스는 유지하고 그 아래 '측정 날짜' 필터를 추가 — 비정기는 같은 달에 여러 번
+    // 측정될 수 있어 년-월 → 날짜 2단으로 구분한다 (사용자 지시 2026-10-04).
+    var dWrap = document.getElementById('rd-day-wrap'), dSel = document.getElementById('rd-day')
+    function monthsOfType(t) {
+      var seen = {}
+      return datesOfType(t).map(function (d) { return d.slice(0, 7) })
+        .filter(function (m) { if (seen[m]) return false; seen[m] = 1; return true })
+    }
+    function datesInMonth(t, ym) {
+      return datesOfType(t).filter(function (d) { return d.slice(0, 7) === ym })
+    }
+    function ymLabel(ym) {
+      return LANG === 'en' ? ym : ym.slice(0, 4) + '년 ' + parseInt(ym.slice(5, 7), 10) + '월'
+    }
+    function rebuildDay() {
+      if (!dWrap || !dSel) return
+      var ym = mSel && mSel.value ? mSel.value : (RD.date || '').slice(0, 7)
+      var ds = datesInMonth(curType, ym)
+      // 비정기는 항상 날짜 필터 표시 (1건이어도 측정 날짜가 보이게), 정기는 같은 달 복수 측정 시만
+      if (ds.length && (curType === 'adhoc' || ds.length > 1)) {
+        dWrap.style.display = ''
+        dSel.innerHTML = ds.map(function (d) {
+          return '<option value="' + d + '">' + d + ' ' + esc(I.monthMeasured || '측정') + '</option>'
+        }).join('')
+        dSel.value = ds.indexOf(RD.date) >= 0 ? RD.date : ds[ds.length - 1]
+      } else {
+        dWrap.style.display = 'none'
+      }
+    }
     function rebuildMonth() {
       if (!mWrap || !mSel) return
-      var mDates = datesOfType(curType)
-      if (mDates.length > 1) {
+      var months = monthsOfType(curType)
+      if (months.length) {
         mWrap.style.display = ''
-        mSel.innerHTML = mDates.map(function (d) {
-          var ym = LANG === 'en' ? d.slice(0, 7) : d.slice(0, 4) + '년 ' + parseInt(d.slice(5, 7), 10) + '월'
-          return '<option value="' + d + '">' + ym + ' (' + d.slice(5) + ' ' + esc(I.monthMeasured || '측정') + ')</option>'
+        mSel.innerHTML = months.map(function (ym) {
+          var ds = datesInMonth(curType, ym)
+          var suffix = ds.length > 1
+            ? ' (' + ds.length + esc(I.monthTimes || '회 측정') + ')'
+            : ' (' + ds[0].slice(5) + ' ' + esc(I.monthMeasured || '측정') + ')'
+          return '<option value="' + ym + '">' + ymLabel(ym) + suffix + '</option>'
         }).join('')
-        mSel.value = mDates.indexOf(RD.date) >= 0 ? RD.date : mDates[mDates.length - 1]
+        var curYm = (RD.date || '').slice(0, 7)
+        mSel.value = months.indexOf(curYm) >= 0 ? curYm : months[months.length - 1]
       } else {
         mWrap.style.display = 'none'
       }
+      rebuildDay()
     }
-    if (mSel) mSel.addEventListener('change', function () { switchTo(mSel.value) })
+    if (mSel) mSel.addEventListener('change', function () {
+      var ds = datesInMonth(curType, mSel.value)
+      if (ds.length) switchTo(ds[ds.length - 1])
+      rebuildDay()
+    })
+    if (dSel) dSel.addEventListener('change', function () { switchTo(dSel.value) })
     // 양쪽 구분이 모두 있을 때만 탭 노출 — 한쪽뿐이면 기존 월 드롭다운만
     if (aWrap && aBtn.regular && aBtn.adhoc && datesOfType('regular').length && datesOfType('adhoc').length) {
       aWrap.style.display = ''
@@ -736,9 +775,9 @@ function readabilityClient() {
           if (curType === t) return
           curType = t
           paint()
-          rebuildMonth()
           var ds = datesOfType(t)
           if (ds.length) switchTo(ds[ds.length - 1])
+          rebuildMonth()   // switchTo 이후 — 드롭다운 선택값이 새 RD 날짜와 일치하게
         })
       })
       paint()
@@ -991,6 +1030,7 @@ ${embed ? '' : `<div class="tab-bar">
   <div class="filter-bar" id="rd-filterbar">
     <div class="fg" id="rd-atype-wrap" style="display:none"><label>${escHtml(t.fAuditType)}</label><span class="atype-tabs"><button type="button" id="rd-atype-regular" class="atype-btn">${escHtml(t.auditRegular)}</button><button type="button" id="rd-atype-adhoc" class="atype-btn">${escHtml(t.auditAdhoc)}</button></span></div>
     <div class="fg" id="rd-month-wrap" style="display:none"><label for="rd-month">${escHtml(t.fMonth)}</label><select id="rd-month"></select></div>
+    <div class="fg" id="rd-day-wrap" style="display:none"><label for="rd-day">${escHtml(t.fAuditDate)}</label><select id="rd-day"></select></div>
     <div class="fg"><label for="rd-cc">${escHtml(t.fCountry)}</label><select id="rd-cc"></select></div>
     <div class="fg"><label for="rd-pt">${escHtml(t.fPageType)}</label><select id="rd-pt"></select></div>
   </div>
