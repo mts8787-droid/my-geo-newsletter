@@ -1097,7 +1097,7 @@ var _meta=${JSON.stringify({
   showCitDomain: meta.showCitDomain,
   showCitCnty: meta.showCitCnty,
   showDotcom: meta.showDotcom,
-  byProductMode: meta.byProductMode || 'count',
+  byProductMode: meta.byProductMode || 'ratio',   // 제품별 수치는 비중(%)이 디폴트 (사용자 결정 2026-10-06)
 })};
 var _lang='${lang}';
 var _noDataMsg=_lang==='en'?'No data available for the selected filter.':'선택된 필터에 해당하는 데이터가 없습니다.';

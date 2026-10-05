@@ -273,14 +273,14 @@ export default function CitationSidebar({
           <div style={{ display: 'flex', gap: 6 }}>
             <button onClick={() => setMeta(m => ({ ...m, byProductMode: 'count' }))}
               style={{ flex: 1, padding: '6px 10px', borderRadius: 6, border: 'none', cursor: 'pointer', fontSize: 11, fontWeight: 700, fontFamily: FONT,
-                background: (meta.byProductMode || 'count') === 'count' ? '#CF0652' : '#1E293B',
-                color: (meta.byProductMode || 'count') === 'count' ? '#FFF' : '#64748B' }}>
+                background: (meta.byProductMode || 'ratio') === 'count' ? '#CF0652' : '#1E293B',
+                color: (meta.byProductMode || 'ratio') === 'count' ? '#FFF' : '#64748B' }}>
               실제 수치
             </button>
             <button onClick={() => setMeta(m => ({ ...m, byProductMode: 'ratio' }))}
               style={{ flex: 1, padding: '6px 10px', borderRadius: 6, border: 'none', cursor: 'pointer', fontSize: 11, fontWeight: 700, fontFamily: FONT,
-                background: meta.byProductMode === 'ratio' ? '#CF0652' : '#1E293B',
-                color: meta.byProductMode === 'ratio' ? '#FFF' : '#64748B' }}>
+                background: (meta.byProductMode || 'ratio') === 'ratio' ? '#CF0652' : '#1E293B',
+                color: (meta.byProductMode || 'ratio') === 'ratio' ? '#FFF' : '#64748B' }}>
               비중 (%)
             </button>
           </div>
