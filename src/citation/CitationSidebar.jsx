@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react'
-import { RefreshCw, Globe, Link2 } from 'lucide-react'
+import { RefreshCw, Link2 } from 'lucide-react'
 import { extractSheetId, syncFromGoogleSheets } from '../googleSheetsUtils'
 import { LG_RED, FONT } from '../shared/constants.js'
 import { inputStyle } from '../shared/components.jsx'
-import { resolveDataForLang } from '../shared/utils.js'
-import { saveSyncData, publishCombinedDashboard } from '../shared/api.js'
-import { generateDashboardHTML } from '../dashboard/dashboardTemplate.js'
+import { saveSyncData } from '../shared/api.js'
 
 export default function CitationSidebar({
   mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn,
@@ -23,7 +21,6 @@ export default function CitationSidebar({
   const [gsStatus,  setGsStatus]  = useState(null)
   const [gsMsg,     setGsMsg]     = useState('')
   const [debugLog,  setDebugLog]  = useState('')
-  const [publishMsg, setPublishMsg] = useState('')
   const [publishInfo, setPublishInfo] = useState(null)
 
   // 게시 상태 로드
@@ -324,14 +321,6 @@ export default function CitationSidebar({
           매일 00시(KST)에 자동 새로고침·게시됩니다.<br />
           편집한 텍스트는 <b style={{ color: '#CBD5E1' }}>스냅샷 저장</b> 후에 게시에 반영됩니다.
         </div>
-        {publishMsg && (
-          <div style={{ padding: '8px 10px', borderRadius: 7, fontSize: 11, fontFamily: FONT, lineHeight: 1.6,
-            background: publishMsg.startsWith('ERROR') ? '#450A0A' : '#14532D',
-            color: publishMsg.startsWith('ERROR') ? '#FCA5A5' : '#86EFAC',
-            marginBottom: 8, whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
-            {publishMsg}
-          </div>
-        )}
         {publishInfo?.published && (
           <div style={{ display: 'flex', gap: 4, marginBottom: 8 }}>
             <a href={publishInfo.urls?.ko} target="_blank" rel="noopener noreferrer"

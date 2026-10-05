@@ -332,7 +332,7 @@ const bumpColgroup = kind => kind === 'dom'
   : '<colgroup><col style="width:16%"><col span="12" style="width:7%"></colgroup>'
 
 function bumpChartSvg(names, rankings, months, maxRank, labelFn, leftFrac = BUMP_LEFT_FRAC.cat) {
-  const fixedRanks = BUMP_MAX
+  const fixedRanks = maxRank || BUMP_MAX   // 클라 짝(_bumpChartSvgJS)과 동일 — maxRank 무시 버그 수정
   const ROW_H = 52
   const EXT_L = 80
   const EXT_R = 20
@@ -458,7 +458,7 @@ function citCategoryBumpChartHtml(citTouchPointsTrend, citTrendMonths, meta, t, 
     months.forEach(m => {
       const val = citTouchPointsTrend[name]?.[m]
       const rank = rankings[name]?.[m]
-      table += `<td>${val != null ? `<span class="trend-val">${fmt(val)}</span><span class="trend-rank">#${rank}</span>` : '—'}</td>`
+      table += `<td>${val != null && val > 0 ? `<span class="trend-val">${fmt(val)}</span><span class="trend-rank">#${rank}</span>` : '—'}</td>`
     })
     table += '</tr>'
   })
@@ -517,7 +517,9 @@ function citDomainBumpChartHtml(citDomainTrend, citDomainMonths, meta, t, lang) 
     })
   })
 
-  const domains = Object.keys(rankings)
+  // 색 인덱스 기준을 표와 동일하게 topEntries 순서로 — Object.keys(rankings) 는 월 순회
+  // 첫 등장 순서라 표의 dot 색과 리본 색이 어긋났다 (코드리뷰 2026-10-06)
+  const domains = topEntries.map(e => e.domain).filter(d => rankings[d])
   if (!domains.length) return ''
   const maxRank = BUMP_MAX
 
@@ -528,13 +530,14 @@ function citDomainBumpChartHtml(citDomainTrend, citDomainMonths, meta, t, lang) 
   months.forEach(m => { table += `<th>${m}</th>` })
   table += '</tr></thead><tbody>'
   topEntries.forEach((entry, di) => {
-    const color = BUMP_COLORS[di % BUMP_COLORS.length]
+    const _ci = domains.indexOf(entry.domain)
+    const color = BUMP_COLORS[(_ci >= 0 ? _ci : di) % BUMP_COLORS.length]
     const domain = entry.domain
     table += `<tr><td class="lab"><span class="trend-dot" style="background:${color}"></span>${stripDomain(domain)}</td><td class="trend-type lab">${entry.type}</td>`
     months.forEach(m => {
       const val = entry.months[m]
       const rank = rankings[domain]?.[m]
-      table += `<td>${val != null ? `<span class="trend-val">${fmt(val)}</span><span class="trend-rank">#${rank}</span>` : '—'}</td>`
+      table += `<td>${val != null && val > 0 ? `<span class="trend-val">${fmt(val)}</span><span class="trend-rank">#${rank}</span>` : '—'}</td>`
     })
     table += '</tr>'
   })
@@ -1686,8 +1689,10 @@ function _renderCitDomTrend(enabled, allSelected, noneSelected){
       byDomain[dom][m]=(byDomain[dom][m]||0)+(val.months[m]||0);
     });
   });
-  // 전체 모드인데 TTL 데이터 없으면 country aggregated 폴백
-  if(allSelected&&Object.keys(byDomain).length===0){
+  // 전체 모드인데 TTL 데이터가 없거나 전부 0이면 country aggregated 폴백 (서버와 동일 조건)
+  var _ttlHasData=Object.keys(byDomain).some(function(d){var ms=byDomain[d];return Object.keys(ms).some(function(m){return ms[m]>0})});
+  if(allSelected&&!_ttlHasData){
+    byDomain={};typeOf={};
     Object.keys(_citDomainTrend||{}).forEach(function(key){
       var parts=key.split('|');var cnty=parts[0];if(cnty==='TTL')return;
       var val=_citDomainTrend[key]||{};var dom=val.domain;if(!dom)return;

@@ -5,7 +5,7 @@ import { INIT_META, INIT_TOTAL, INIT_PRODUCTS, INIT_DOTCOM, INIT_PRODUCTS_CNTY, 
 import { loadCache, saveCache } from '../shared/cache.js'
 import { fetchSnapshots, fetchSnapshotData, postSnapshot, updateSnapshot, deleteSnapshot, fetchSyncData } from '../shared/api.js'
 import { resolveDataForLang } from '../shared/utils.js'
-import { computeCategoryStats, computeStakeholderStats, extractMonthFromPeriod, previousMonth } from '../shared/trackerCategoryStats.js'
+import { computeCategoryStats, extractMonthFromPeriod, previousMonth } from '../shared/trackerCategoryStats.js'
 import Sidebar from '../shared/Sidebar.jsx'
 import LlmModelSelect from '../shared/LlmModelSelect.jsx'
 

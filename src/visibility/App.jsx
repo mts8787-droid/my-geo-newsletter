@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react'
 import { Save, FolderOpen, Trash2, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
-import { generateDashboardHTML, generateVisibilityHTML } from '../dashboard/dashboardTemplate.js'
+import { generateVisibilityHTML } from '../dashboard/dashboardTemplate.js'
 import { INIT_META, INIT_TOTAL, INIT_PRODUCTS, INIT_DOTCOM, INIT_PRODUCTS_CNTY, INIT_CITATIONS_CNTY, INIT_CITATIONS, FONT, LG_RED } from '../shared/constants.js'
 import { loadCache, saveCache } from '../shared/cache.js'
 import { fetchSnapshots, fetchSnapshotData, postSnapshot, updateSnapshot, deleteSnapshot, fetchSyncData } from '../shared/api.js'

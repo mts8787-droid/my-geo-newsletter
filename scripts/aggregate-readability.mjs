@@ -1028,10 +1028,18 @@ function main() {
   // --staging: 테스트 어딧 채널 — 공개 게시본(/p/*)에는 노출되지 않고
   // 내부 스테이징 대시보드(/admin/readability)에만 뜬다. 승격은 어드민 버튼 또는
   // POST /admin/readability/promote/<date>.
-  const channel = args.staging ? 'staging' : 'published'
+  // 같은 날짜 재집계(--rebuild 포함) 시 기존 index 엔트리의 channel/auditType 계승 —
+  // 플래그 없이 재집계해도 staging/adhoc 이 published/regular 로 무음 초기화되지 않게 (코드리뷰 2026-10-06).
+  // 명시 플래그(--staging/--adhoc)는 계승보다 우선.
+  let _prevEntry = null
+  try {
+    _prevEntry = (JSON.parse(readFileSync(join(OUT_DIR, 'index.json'), 'utf8')).snapshots || [])
+      .find(s => s.date === snapshotDate) || null
+  } catch { /* index 없음 — 신규 */ }
+  const channel = args.staging ? 'staging' : (_prevEntry && _prevEntry.channel) || 'published'
   // --adhoc: 비정기 어딧 — 대시보드의 '정기/비정기' 탭에서 분리 표시 (사용자 결정 2026-10-03).
   // 필드 없으면 정기(regular) 취급. 사후 전환은 POST /admin/readability/audit-type/<date>/<type>.
-  const auditType = args.adhoc ? 'adhoc' : 'regular'
+  const auditType = args.adhoc ? 'adhoc' : (_prevEntry && _prevEntry.auditType) || 'regular'
   const snapshot = {
     channel,
     auditType,

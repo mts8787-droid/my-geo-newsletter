@@ -288,7 +288,7 @@ readabilityRouter.post('/admin/readability/promote/:date', (req, res) => {
 // 전체 스냅샷(390KB)을 그대로 물리면 미리보기가 무거워지므로 수 KB 로 압축.
 readabilityRouter.get('/api/readability-summary', (req, res) => {
   const { snapshot } = loadLatest('published')
-  if (!snapshot) return res.status(404).json({ ok: false, error: 'Readability 스냅샷 없음' })
+  if (!snapshot || !snapshot.overall) return res.status(404).json({ ok: false, error: 'Readability 스냅샷 없음' })
   const o = snapshot.overall
   const rate = (scope, cid) => {
     const c = (scope.checks || {})[cid]

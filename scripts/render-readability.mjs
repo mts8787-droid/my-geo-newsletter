@@ -283,14 +283,15 @@ function readabilityClient() {
 
   function renderCountry() {
     var pt = state.pt, scope = getScope(state.cc)
-    var ptLabel = pt !== 'all' && RD.overall.pageTypes[pt] ? RD.overall.pageTypes[pt].label : null
+    // 이중언어 헬퍼 ptLabel() 를 섀도잉하지 않게 변수명 분리 + EN 라벨 사용 (코드리뷰 2026-10-06)
+    var ptLabelTxt = pt !== 'all' ? ptLabel(pt, (((RD.overall || {}).pageTypes || {})[pt] || {}).label) : null
     var heroScore = pt === 'all' ? scope.avgScore : (scope.pageTypes[pt] ? scope.pageTypes[pt].avgScore : null)
     var scopeName = state.cc === 'all' ? (I.scopeAll || '전체') : ccLabel(state.cc)
     var hero = '<div class="hero"><div class="hero-top">' +
       '<span class="hero-brand">GEO Readability Audit</span>' +
       '<span class="hero-meta">' + esc(I.measuredAt || '측정일') + ' ' + esc(RD.date) + '</span></div>' +
       '<div class="hero-body"><div class="hero-left">' +
-      '<div class="hero-label">' + esc(scopeName) + (ptLabel ? ' · ' + esc(ptLabel) : '') + ' ' + esc(I.heroAvg || '평균') + '</div>' +
+      '<div class="hero-label">' + esc(scopeName) + (ptLabelTxt ? ' · ' + esc(ptLabelTxt) : '') + ' ' + esc(I.heroAvg || '평균') + '</div>' +
       '<div class="hero-score-row"><span class="hero-score" style="color:' + scoreColor(heroScore) + '">' + (heroScore == null ? '—' : heroScore) + '</span><span class="hero-pct">/ 100</span></div>' +
       '<div class="hero-info">URL <strong>' + num(scope.urlCount) + '</strong> · ' + esc(I.heroScored || '채점') + ' <strong>' + num(scope.scoredCount) + '</strong> · ' + esc(I.heroCountries || '국가') + ' <strong>' + Object.keys(RD.countries).length + '</strong></div>' +
       '</div></div></div>'
@@ -305,9 +306,9 @@ function readabilityClient() {
     var bars = barHead(I.thCountry || '국가', I.colPages || '페이지수', I.colScore || '점수') + rows.map(function (r) {
       return barRow(r.name, r.v == null ? 0 : r.v, 100, scoreColor(r.v), r.v == null ? '—' : String(r.v), num(r.cnt))
     }).join('')
-    var title = pt === 'all' ? '① ' + (I.secCountryScore || '국가별 종합 점수 비교') : '① ' + (I.secCountryScoreFiltered || '국가별 점수 비교') + ' — ' + ptLabel
+    var title = pt === 'all' ? '① ' + (I.secCountryScore || '국가별 종합 점수 비교') : '① ' + (I.secCountryScoreFiltered || '국가별 점수 비교') + ' — ' + ptLabelTxt
     var note = pt !== 'all'
-      ? '<div class="tab-note">' + TPL('tplCcFiltered', { p: esc(ptLabel) }) + '</div>'
+      ? '<div class="tab-note">' + TPL('tplCcFiltered', { p: esc(ptLabelTxt) }) + '</div>'
       : ''
     return hero + note + sectionCard(title, RED, '<div class="bars">' + bars + '</div>') + renderCategorySection(scope, '②') + renderGuideSection(scope, '③')
   }
@@ -513,16 +514,17 @@ function readabilityClient() {
       var ptSlot = scope.pageTypes && scope.pageTypes[state.pt]
       // 신규 스냅샷: pageType 슬롯에 checks nest → 페이지타입 분해 통과율
       if (ptSlot && ptSlot.checks) {
-        var ptName = ptSlot.label || state.pt
-        var ptTitle = secNo + ' ' + (I.secCheckRate || '체크별 통과율') + ' (' + esc(scopeName) + ' · ' + esc(ptName) + ')'
+        var ptName = ptLabel(state.pt, ptSlot.label)
+        // sectionCard 가 title 을 esc 하므로 여기서 미리 이스케이프하지 않는다 (이중 이스케이프 — 코드리뷰 2026-10-06)
+        var ptTitle = secNo + ' ' + (I.secCheckRate || '체크별 통과율') + ' (' + scopeName + ' · ' + ptName + ')'
         var ptNote = '<div class="tab-note">' + TPL('tplSample', { n: num(ptSlot.count) }) + '</div>'
         return ptNote + sectionCard(ptTitle, '#3B82F6', '<div class="cat-grid">' + renderCategoryCards(ptSlot) + '</div>')
       }
       // 구 스냅샷 호환: checks nest 없음 → 국가 필터만 반영 안내
       var note = '<div class="tab-note">' + TPL('tplNoPtBreak', { scope: esc(scopeName) }) + '</div>'
-      return note + sectionCard(secNo + ' ' + (I.secCheckRate || '체크별 통과율') + ' (' + esc(scopeName) + ')', '#3B82F6', '<div class="cat-grid">' + renderCategoryCards(scope) + '</div>')
+      return note + sectionCard(secNo + ' ' + (I.secCheckRate || '체크별 통과율') + ' (' + scopeName + ')', '#3B82F6', '<div class="cat-grid">' + renderCategoryCards(scope) + '</div>')
     }
-    return sectionCard(secNo + ' ' + (I.secCheckRate || '체크별 통과율') + ' (' + esc(scopeName) + ')', '#3B82F6', '<div class="cat-grid">' + renderCategoryCards(scope) + '</div>')
+    return sectionCard(secNo + ' ' + (I.secCheckRate || '체크별 통과율') + ' (' + scopeName + ')', '#3B82F6', '<div class="cat-grid">' + renderCategoryCards(scope) + '</div>')
   }
 
   function renderPageType() {
@@ -531,11 +533,11 @@ function readabilityClient() {
     if (state.pt !== 'all') entries = entries.filter(function (p) { return p.id === state.pt })
     entries.sort(function (a, b) { return (b.avgScore == null ? -1 : b.avgScore) - (a.avgScore == null ? -1 : a.avgScore) })
     var rowsHtml = entries.map(function (p) {
-      return barRow(p.label, p.avgScore == null ? 0 : p.avgScore, 100, scoreColor(p.avgScore), p.avgScore == null ? '—' : String(p.avgScore), num(p.count))
+      return barRow(ptLabel(p.id, p.label), p.avgScore == null ? 0 : p.avgScore, 100, scoreColor(p.avgScore), p.avgScore == null ? '—' : String(p.avgScore), num(p.count))
     }).join('')
     var bars = rowsHtml ? (barHead(I.fPageType || '페이지 타입', I.colPages || '페이지수', I.colScore || '점수') + rowsHtml) : '<div class="tab-note">' + esc(I.noDataCond || '해당 조건에 데이터가 없습니다.') + '</div>'
     var scopeName = state.cc === 'all' ? (I.scopeAll || '전체') : ccLabel(state.cc)
-    return sectionCard('① ' + (I.secPageTypeScore || '페이지타입별 점수') + ' (' + esc(scopeName) + ')', '#059669', '<div class="bars">' + bars + '</div>') + renderCategorySection(scope, '②') + renderGuideSection(scope, '③')
+    return sectionCard('① ' + (I.secPageTypeScore || '페이지타입별 점수') + ' (' + scopeName + ')', '#059669', '<div class="bars">' + bars + '</div>') + renderCategorySection(scope, '②') + renderGuideSection(scope, '③')
   }
 
   // 검수 기준 + 검수 URL 다운로드 탭
@@ -688,7 +690,7 @@ function readabilityClient() {
       if (state.cc !== 'all' && !RD.countries[state.cc]) state.cc = 'all'
       ccSel.value = state.cc
       ptSel.innerHTML = ['<option value="all">' + esc(I.allPageTypes || '전체 페이지 타입') + '</option>'].concat(
-        Object.entries(RD.overall.pageTypes || {}).map(function (e) { return '<option value="' + e[0] + '">' + esc(e[1].label) + '</option>' })
+        Object.entries(RD.overall.pageTypes || {}).map(function (e) { return '<option value="' + e[0] + '">' + esc(ptLabel(e[0], e[1].label)) + '</option>' })
       ).join('')
       if (state.pt !== 'all' && !(RD.overall.pageTypes || {})[state.pt]) state.pt = 'all'
       ptSel.value = state.pt
@@ -846,9 +848,9 @@ export function renderReadabilityHTML({ snapshot, index, snapshots, adminMode = 
   monthSnaps.forEach(x => { rdAll[x.date] = buildClientData(x) })
   if (!rdAll[snapshot.date]) rdAll[snapshot.date] = clientData
 
-  return `<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">
+  return `<!DOCTYPE html><html lang="${LANG}"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Readability — GEO 어딧 대시보드</title>
+<title>${escHtml(t.pageTitle)}</title>
 <link href="https://fonts.cdnfonts.com/css/lg-smart" rel="stylesheet" />
 <style>
 ${FONT_FACE_CSS}

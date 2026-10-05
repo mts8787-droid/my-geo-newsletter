@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react'
-import { Save, FolderOpen, Trash2, Copy, Check, PanelLeftClose, PanelLeftOpen, MessageSquare, Send, X, Sparkles } from 'lucide-react'
+import { Save, FolderOpen, Trash2, Copy, Check, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
 import { generateEmailHTML, generateSemiAnnualEmailHTML } from '../emailTemplate'
 
 // 템플릿 선택 — meta.letterTemplate 기준 생성기 디스패치 (드롭인 시그니처)
