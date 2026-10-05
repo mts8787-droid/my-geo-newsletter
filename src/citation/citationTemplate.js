@@ -321,16 +321,30 @@ function monthsOrDerive(months, trendObj) {
 }
 const BUMP_MAX = 10 // 최대 표시 개수
 
-function bumpChartSvg(names, rankings, months, maxRank, labelFn) {
+// ── 범프차트 ↔ 하단 표 X 좌표 정렬 (C-24, 사용자 지시 2026-10-05) ─────────────
+// 표의 라벨 열 비율만큼 차트 좌측 여백을 주고, 12개월을 차트·표 모두 균등 분할해
+// 월 중심 X 가 위아래로 일치하게 한다. SVG 는 width:100% 비율 스케일이므로
+// viewBox 안의 '비율'이 곧 표 colgroup 의 % 와 맞아야 한다.
+// cat: 카테고리 16% / dom: 도메인 12% + Type 8% = 20%. 클라 짝(_bumpChartSvgJS 등)과 동일 유지.
+const BUMP_LEFT_FRAC = { cat: 0.16, dom: 0.20 }
+const bumpColgroup = kind => kind === 'dom'
+  ? '<colgroup><col style="width:12%"><col style="width:8%"><col span="12" style="width:6.6666%"></colgroup>'
+  : '<colgroup><col style="width:16%"><col span="12" style="width:7%"></colgroup>'
+
+function bumpChartSvg(names, rankings, months, maxRank, labelFn, leftFrac = BUMP_LEFT_FRAC.cat) {
   const fixedRanks = BUMP_MAX
   const ROW_H = 52
   const EXT_L = 80
   const EXT_R = 20
-  const W = Math.max(months.length * 200, 600) + EXT_L + EXT_R
+  // 표와 X 정렬 (C-24): 좌측 여백 = 표 라벨 열 비율(leftFrac), 월 컬럼은 균등 폭.
+  // 월 i 의 중심 X = leftPad + (i+0.5)*COL_W — 표 colgroup 의 월 컬럼 중심과 일치.
+  const COL_W = 200
+  const N = months.length
+  const W = Math.round(COL_W * N / (1 - leftFrac))
+  const leftPad = W - COL_W * N
+  const xOf = i => leftPad + (i + 0.5) * COL_W
   const padT = 0, padB = 30
   const H = fixedRanks * ROW_H + padT + padB
-  const padL = 10 + EXT_L, padR = 10 + EXT_R
-  const chartW = W - padL - padR
   const chartH = H - padT - padB
   const ribbonW = ROW_H * 0.38
   const RND = ribbonW // 둥근 끝 반지름
@@ -348,7 +362,7 @@ function bumpChartSvg(names, rankings, months, maxRank, labelFn) {
     months.forEach((m, i) => {
       const rank = rankings[name]?.[m]
       if (rank != null && rank <= fixedRanks) {
-        const x = padL + (i / Math.max(months.length - 1, 1)) * chartW
+        const x = xOf(i)
         const y = padT + ((rank - 0.5) / fixedRanks) * chartH
         points.push({ x, y, rank, month: m })
       }
@@ -387,7 +401,7 @@ function bumpChartSvg(names, rankings, months, maxRank, labelFn) {
     months.forEach((m, i) => {
       const rank = rankings[name]?.[m]
       if (rank == null || rank > fixedRanks) return
-      const x = padL + (i / Math.max(months.length - 1, 1)) * chartW
+      const x = xOf(i)
       const y = padT + ((rank - 0.5) / fixedRanks) * chartH
       svg += `<text x="${x}" y="${y + 8}" text-anchor="middle" fill="#0F172A" font-size="22" font-weight="700">${label}</text>`
     })
@@ -395,7 +409,7 @@ function bumpChartSvg(names, rankings, months, maxRank, labelFn) {
 
   // 하단 월 라벨
   months.forEach((m, i) => {
-    const x = padL + (i / Math.max(months.length - 1, 1)) * chartW
+    const x = xOf(i)
     svg += `<line x1="${x}" y1="${padT + chartH + 2}" x2="${x}" y2="${padT + chartH + 8}" stroke="#94A3B8" stroke-width="1.5"/>`
     svg += `<text x="${x}" y="${padT + chartH + 26}" text-anchor="middle" fill="#475569" font-size="26" font-weight="800">${m}</text>`
   })
@@ -432,15 +446,15 @@ function citCategoryBumpChartHtml(citTouchPointsTrend, citTrendMonths, meta, t, 
   if (!names.length) return ''
   const maxRank = BUMP_MAX
 
-  const svg = bumpChartSvg(names, rankings, months, maxRank)
+  const svg = bumpChartSvg(names, rankings, months, maxRank, null, BUMP_LEFT_FRAC.cat)
 
   // 하단 실수치 테이블
-  let table = `<table class="trend-table"><thead><tr><th>${lang === 'ko' ? '카테고리' : 'Category'}</th>`
+  let table = `<table class="trend-table">${bumpColgroup('cat')}<thead><tr><th class="lab">${lang === 'ko' ? '카테고리' : 'Category'}</th>`
   months.forEach(m => { table += `<th>${m}</th>` })
   table += '</tr></thead><tbody>'
   names.forEach((name, ni) => {
     const color = BUMP_COLORS[ni % BUMP_COLORS.length]
-    table += `<tr><td><span class="trend-dot" style="background:${color}"></span>${name}</td>`
+    table += `<tr><td class="lab"><span class="trend-dot" style="background:${color}"></span>${name}</td>`
     months.forEach(m => {
       const val = citTouchPointsTrend[name]?.[m]
       const rank = rankings[name]?.[m]
@@ -507,16 +521,16 @@ function citDomainBumpChartHtml(citDomainTrend, citDomainMonths, meta, t, lang) 
   if (!domains.length) return ''
   const maxRank = BUMP_MAX
 
-  const svg = bumpChartSvg(domains, rankings, months, maxRank, d => stripDomain(d))
+  const svg = bumpChartSvg(domains, rankings, months, maxRank, d => stripDomain(d), BUMP_LEFT_FRAC.dom)
 
   // 하단 실수치 테이블
-  let table = `<table class="trend-table"><thead><tr><th>${lang === 'ko' ? '도메인' : 'Domain'}</th><th>Type</th>`
+  let table = `<table class="trend-table">${bumpColgroup('dom')}<thead><tr><th class="lab">${lang === 'ko' ? '도메인' : 'Domain'}</th><th class="lab">Type</th>`
   months.forEach(m => { table += `<th>${m}</th>` })
   table += '</tr></thead><tbody>'
   topEntries.forEach((entry, di) => {
     const color = BUMP_COLORS[di % BUMP_COLORS.length]
     const domain = entry.domain
-    table += `<tr><td><span class="trend-dot" style="background:${color}"></span>${stripDomain(domain)}</td><td class="trend-type">${entry.type}</td>`
+    table += `<tr><td class="lab"><span class="trend-dot" style="background:${color}"></span>${stripDomain(domain)}</td><td class="trend-type lab">${entry.type}</td>`
     months.forEach(m => {
       const val = entry.months[m]
       const rank = rankings[domain]?.[m]
@@ -1023,9 +1037,10 @@ body{background:#F1F5F9;font-family:${FONT};min-width:1200px;color:#1A1A1A}
 .cit-gnb-btn.active{background:#334155;color:#fff}
 /* ── 범프차트 ── */
 .bump-chart-wrap{overflow-x:auto;padding:0;margin:0 0 20px}
-.trend-table{width:100%;border-collapse:collapse;font-size:15px;margin-top:4px}
-.trend-table th{padding:8px 10px;text-align:left;font-weight:700;color:#64748B;border-bottom:2px solid #E2E8F0;font-size:14px;white-space:nowrap}
-.trend-table td{padding:7px 10px;border-bottom:1px solid #F1F5F9;white-space:nowrap;vertical-align:middle}
+.trend-table{width:100%;border-collapse:collapse;font-size:15px;margin-top:4px;table-layout:fixed}
+.trend-table th{padding:8px 6px;text-align:center;font-weight:700;color:#64748B;border-bottom:2px solid #E2E8F0;font-size:14px;white-space:nowrap}
+.trend-table td{padding:7px 6px;border-bottom:1px solid #F1F5F9;white-space:nowrap;vertical-align:middle;text-align:center;overflow:hidden;text-overflow:ellipsis}
+.trend-table th.lab,.trend-table td.lab{text-align:left;padding-left:10px}
 .trend-table tbody tr:hover{background:#F8FAFC}
 .trend-dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:middle;flex-shrink:0}
 .trend-val{font-weight:700;color:#1A1A1A;margin-right:4px}
@@ -1727,17 +1742,18 @@ function _drawCitTrendBump(prefix, byKey, typeOf, allSelected, enabled, scopeEl)
     return;
   }
   // SVG 생성 (서버 bumpChartSvg 와 동일 알고리즘)
-  var svg=_bumpChartSvgJS(visKeys, rankings, months, _BUMP_MAX, prefix==='cit-dom'?_stripDomain:null);
+  var svg=_bumpChartSvgJS(visKeys, rankings, months, _BUMP_MAX, prefix==='cit-dom'?_stripDomain:null, prefix==='cit-dom'?0.20:0.16);
   if(svgWrap)svgWrap.innerHTML=svg;
   // 테이블
-  var tableHtml='<table class="trend-table"><thead><tr><th>'+(prefix==='cit-dom'?(_lang==='en'?'Domain':'도메인'):(_lang==='en'?'Category':'카테고리'))+'</th>';
-  if(prefix==='cit-dom')tableHtml+='<th>Type</th>';
+  var colg=prefix==='cit-dom'?'<colgroup><col style="width:12%"><col style="width:8%"><col span="12" style="width:6.6666%"></colgroup>':'<colgroup><col style="width:16%"><col span="12" style="width:7%"></colgroup>';
+  var tableHtml='<table class="trend-table">'+colg+'<thead><tr><th class="lab">'+(prefix==='cit-dom'?(_lang==='en'?'Domain':'도메인'):(_lang==='en'?'Category':'카테고리'))+'</th>';
+  if(prefix==='cit-dom')tableHtml+='<th class="lab">Type</th>';
   months.forEach(function(m){tableHtml+='<th>'+m+'</th>'});
   tableHtml+='</tr></thead><tbody>';
   visKeys.forEach(function(k,idx){
     var color=_BUMP_COLORS[idx%_BUMP_COLORS.length];
-    tableHtml+='<tr><td><span class="trend-dot" style="background:'+color+'"></span>'+(prefix==='cit-dom'?_stripDomain(k):k)+'</td>';
-    if(prefix==='cit-dom')tableHtml+='<td class="trend-type">'+(typeOf&&typeOf[k]||'')+'</td>';
+    tableHtml+='<tr><td class="lab"><span class="trend-dot" style="background:'+color+'"></span>'+(prefix==='cit-dom'?_stripDomain(k):k)+'</td>';
+    if(prefix==='cit-dom')tableHtml+='<td class="trend-type lab">'+(typeOf&&typeOf[k]||'')+'</td>';
     months.forEach(function(m){
       var val=byKey[k][m];
       var rank=rankings[k]&&rankings[k][m];
@@ -1750,15 +1766,19 @@ function _drawCitTrendBump(prefix, byKey, typeOf, allSelected, enabled, scopeEl)
 }
 
 // 서버 bumpChartSvg 와 동일 알고리즘 (path 생성)
-function _bumpChartSvgJS(names, rankings, months, maxRank, labelFn){
+function _bumpChartSvgJS(names, rankings, months, maxRank, labelFn, leftFrac){
   var fixedRanks=maxRank;
   var ROW_H=52;
   var EXT_L=80,EXT_R=20;
-  var W=Math.max(months.length*200,600)+EXT_L+EXT_R;
+  // 표와 X 정렬 (C-24, 서버 bumpChartSvg 와 동일): 좌측 여백 = 표 라벨 열 비율, 월 균등 폭
+  leftFrac=leftFrac||0.16;
+  var COL_W=200;
+  var N=months.length;
+  var W=Math.round(COL_W*N/(1-leftFrac));
+  var leftPad=W-COL_W*N;
+  var xOf=function(i){return leftPad+(i+0.5)*COL_W};
   var padT=0,padB=30;
   var H=fixedRanks*ROW_H+padT+padB;
-  var padL=10+EXT_L,padR=10+EXT_R;
-  var chartW=W-padL-padR;
   var chartH=H-padT-padB;
   var ribbonW=ROW_H*0.38;
   var RND=ribbonW;
@@ -1773,7 +1793,7 @@ function _bumpChartSvgJS(names, rankings, months, maxRank, labelFn){
     months.forEach(function(m,i){
       var rank=(rankings[name]||{})[m];
       if(rank!=null&&rank<=fixedRanks){
-        var x=padL+(i/Math.max(months.length-1,1))*chartW;
+        var x=xOf(i);
         var y=padT+((rank-0.5)/fixedRanks)*chartH;
         points.push({x:x,y:y,rank:rank,month:m});
       }
@@ -1804,13 +1824,13 @@ function _bumpChartSvgJS(names, rankings, months, maxRank, labelFn){
     months.forEach(function(m,i){
       var rank=(rankings[name]||{})[m];
       if(rank==null||rank>fixedRanks)return;
-      var x=padL+(i/Math.max(months.length-1,1))*chartW;
+      var x=xOf(i);
       var y=padT+((rank-0.5)/fixedRanks)*chartH;
       svg+='<text x="'+x+'" y="'+(y+8)+'" text-anchor="middle" fill="#0F172A" font-size="22" font-weight="700">'+label+'</text>';
     });
   });
   months.forEach(function(m,i){
-    var x=padL+(i/Math.max(months.length-1,1))*chartW;
+    var x=xOf(i);
     svg+='<line x1="'+x+'" y1="'+(padT+chartH+2)+'" x2="'+x+'" y2="'+(padT+chartH+8)+'" stroke="#94A3B8" stroke-width="1.5"/>';
     svg+='<text x="'+x+'" y="'+(padT+chartH+26)+'" text-anchor="middle" fill="#475569" font-size="26" font-weight="800">'+m+'</text>';
   });
