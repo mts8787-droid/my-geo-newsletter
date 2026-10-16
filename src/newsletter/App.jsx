@@ -655,8 +655,10 @@ export default function App() {
                 background: '#1E293B', color: '#E2E8F0', fontSize: 13, fontWeight: 700, fontStyle: 'italic', fontFamily: 'Georgia,serif' }}>I</button>
             <span style={{ width: 1, height: 18, background: '#1E293B', margin: '0 2px' }} />
             <span style={{ fontSize: 11, color: '#64748B', fontFamily: FONT }}>크기</span>
-            {[['작게', '2'], ['약간 작게', 'px:15'], ['보통', '3'], ['크게', '5'], ['특대', '6']].map(([label, val]) => (
-              <button key={val} title={`글자 ${label}`} onMouseDown={e => { e.preventDefault(); val.startsWith('px:') ? sendFormat('fontSizePx', val.slice(3)) : sendFormat('fontSize', val) }}
+            {/* execCommand fontSize 1~7 단계는 본문 디폴트(13/14px)와 안 맞음 → 전부 px 지정.
+                '본문' 은 font-size 제거(fontSizeReset) → 각 블록의 기본 크기로 정확히 복원 */}
+            {[['작게', 'px:11'], ['약간 작게', 'px:12'], ['본문', 'reset'], ['크게', 'px:18'], ['특대', 'px:24']].map(([label, val]) => (
+              <button key={val} title={val === 'reset' ? '본문 기본 크기로' : `글자 ${label}`} onMouseDown={e => { e.preventDefault(); val === 'reset' ? sendFormat('fontSizeReset') : sendFormat('fontSizePx', val.slice(3)) }}
                 style={{ height: 24, padding: '0 8px', borderRadius: 5, border: '1px solid #334155', cursor: 'pointer',
                   background: '#1E293B', color: '#94A3B8', fontSize: 11, fontWeight: 700, fontFamily: FONT }}>{label}</button>
             ))}

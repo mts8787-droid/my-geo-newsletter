@@ -377,6 +377,13 @@ function edScriptHtml() {
     el.addEventListener('keydown',function(e){
       if(e.key==='Escape'){e.preventDefault();el.innerHTML=orig;el.blur();}
     });
+    // 붙여넣기는 항상 plain text — 원본(워드/웹/다른 블록)의 서식 유입 차단.
+    // insertText 는 캐럿 위치의 기존 서식을 상속 → 붙는 문장의 서식이 그대로 적용됨.
+    el.addEventListener('paste',function(e){
+      e.preventDefault();
+      var t=(e.clipboardData||window.clipboardData).getData('text/plain');
+      if(t)document.execCommand('insertText',false,t);
+    });
     el.addEventListener('blur',function(){
       if(el.innerHTML===orig)return;
       var f=el.getAttribute('data-edit');
@@ -390,15 +397,23 @@ function edScriptHtml() {
   window.addEventListener('message',function(e){
     var d=e.data; if(!d||d.type!=='format')return;
     try{
-      if(d.cmd==='fontSizePx'){
+      if(d.cmd==='fontSizePx'||d.cmd==='fontSizeReset'){
         // 임의 px 크기 — fontSize 는 1~7 단계뿐이라 7 적용 후 px 로 치환.
+        // fontSizeReset 은 px 를 넣는 대신 font-size 를 비워 블록 기본(본문 디폴트 13/14px)로 상속.
         // 주의: styleWithCSS=true 면 <font size=7> 대신 span(font-size:xxx-large≈48px)이 생겨
         // 치환 대상을 못 찾고 특대로 깨짐 → px 적용 동안만 styleWithCSS 끔.
+        var px=d.cmd==='fontSizePx'?d.value+'px':'';
         document.execCommand('styleWithCSS',false,false);
         document.execCommand('fontSize',false,'7');
-        document.querySelectorAll('font[size="7"]').forEach(function(f){f.removeAttribute('size');f.style.fontSize=d.value+'px';});
-        // 브라우저별 방어: span(xxx-large) 형태로 생성된 경우도 px 로 치환
-        document.querySelectorAll('span[style*="xxx-large"]').forEach(function(sp){sp.style.fontSize=d.value+'px';});
+        document.querySelectorAll('font[size="7"]').forEach(function(f){
+          f.removeAttribute('size');
+          // 선택 영역 내부에 남은 기존 크기 지정 제거 — 안 지우면 새 크기가 "정확히" 안 먹음
+          f.querySelectorAll('[style*="font-size"]').forEach(function(n){n.style.fontSize='';});
+          f.querySelectorAll('font[size]').forEach(function(n){n.removeAttribute('size');});
+          f.style.fontSize=px;
+        });
+        // 브라우저별 방어: span(xxx-large) 형태로 생성된 경우도 치환
+        document.querySelectorAll('span[style*="xxx-large"]').forEach(function(sp){sp.style.fontSize=px;});
         document.execCommand('styleWithCSS',false,true);
       } else {
         document.execCommand('styleWithCSS',false,true);
