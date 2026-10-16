@@ -225,7 +225,19 @@ export default function App() {
     [products, productsCnty, citations, citationsCnty, previewLang]
   )
 
-  useEffect(() => { fetchSnapshots(MODE).then(setSnapshots); fetchBackups(MODE).then(setBackups) }, [])
+  useEffect(() => {
+    fetchSnapshots(MODE).then(list => {
+      setSnapshots(list)
+      // 새 브라우저 / 캐시 초기화 상태로 접속 시 — 가장 마지막에 작업한 저장본 자동 복원.
+      // 로컬 캐시가 있으면 그게 최신 작업(저장 안 한 편집 포함)이므로 덮어쓰지 않는다.
+      if (!cache && list.length) {
+        const latest = [...list].sort((a, b) => (b.updatedAt || b.ts) - (a.updatedAt || a.ts))[0]
+        handleSnapLoad(latest).then(ok => { if (ok) showSnapMsg(`마지막 작업 "${latest.name}" 자동 불러옴`, 5000) })
+      }
+    })
+    fetchBackups(MODE).then(setBackups)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // tracker 데이터: Google Sheets에서 직접 가져와서 categoryStats 계산
   useEffect(() => {
@@ -409,7 +421,7 @@ export default function App() {
     userLoadedSnapshot.current = true
     // 목록은 메타만 — data 는 단건 GET 으로 (대용량 목록 응답 → 서버 OOM 방지)
     const full = isBackup ? await fetchBackupData(MODE, snap.ts) : await fetchSnapshotData(MODE, snap.ts)
-    if (!full || full.data == null) { showSnapMsg('불러오기 실패 — 저장본을 찾을 수 없습니다', 4000); return }
+    if (!full || full.data == null) { showSnapMsg('불러오기 실패 — 저장본을 찾을 수 없습니다', 4000); return false }
     const d = full.data
     setMetaKo({ ...INIT_META, ...(d.metaKo || d.meta || {}) })
     setMetaEn({ ...INIT_META, ...(d.metaEn || {}) })
@@ -433,6 +445,7 @@ export default function App() {
     if (d.progressMonth !== undefined) setProgressMonth(d.progressMonth)  // 진척 월 기준(예: 6월) 저장본과 함께 복원
     setActiveSnap(snap.ts)
     showSnapMsg(`"${snap.name}" 불러옴`)
+    return true
   }
   async function handleSnapDelete(idx) {
     const snap = snapshots[idx]
