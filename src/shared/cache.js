@@ -20,7 +20,8 @@ export function loadCache(storageKey) {
 
 export function saveCache(storageKey, data) {
   try {
-    localStorage.setItem(storageKey, JSON.stringify({ ...data, _v: CACHE_VERSION }))
+    // savedAt: 접속 시 서버 저장본과 최신 비교용 (newsletter 자동 복원 가드)
+    localStorage.setItem(storageKey, JSON.stringify({ ...data, _v: CACHE_VERSION, savedAt: Date.now() }))
   } catch (e) {
     console.warn('[cache] saveCache error (localStorage full?):', e.message)
   }

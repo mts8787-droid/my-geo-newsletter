@@ -228,11 +228,13 @@ export default function App() {
   useEffect(() => {
     fetchSnapshots(MODE).then(list => {
       setSnapshots(list)
-      // 새 브라우저 / 캐시 초기화 상태로 접속 시 — 가장 마지막에 작업한 저장본 자동 복원.
-      // 로컬 캐시가 있으면 그게 최신 작업(저장 안 한 편집 포함)이므로 덮어쓰지 않는다.
-      if (!cache && list.length) {
+      // 접속 시 가장 마지막에 작업한 저장본 자동 복원 — 로컬 캐시(savedAt)와 비교해
+      // 서버 저장본이 더 최신일 때만. 캐시가 더 새로우면(저장 안 한 편집 포함) 캐시 유지.
+      if (list.length) {
         const latest = [...list].sort((a, b) => (b.updatedAt || b.ts) - (a.updatedAt || a.ts))[0]
-        handleSnapLoad(latest).then(ok => { if (ok) showSnapMsg(`마지막 작업 "${latest.name}" 자동 불러옴`, 5000) })
+        if (!cache || (cache.savedAt || 0) < (latest.updatedAt || latest.ts)) {
+          handleSnapLoad(latest).then(ok => { if (ok) showSnapMsg(`마지막 작업 "${latest.name}" 자동 불러옴`, 5000) })
+        }
       }
     })
     fetchBackups(MODE).then(setBackups)
