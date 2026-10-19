@@ -5,6 +5,7 @@ import { extractSheetId, syncFromGoogleSheets } from '../googleSheetsUtils'
 import { LG_RED, FONT, META_TEXT_KEYS } from './constants.js'
 import { inputStyle, DataFreshnessBadge } from './components.jsx'
 import { resolveDataForLang, translateTexts } from './utils.js'
+import { minifyEmailHtml } from './minifyEmailHtml.js'
 import { saveSyncData, fetchSyncData, fetchSyncMeta, publishCombinedDashboard, generateAIInsight } from './api.js'
 import { generateDashboardHTML } from '../dashboard/dashboardTemplate.js'
 import { generateProductInsight, generateProductHowToRead, generateCntyHowToRead } from './insights.js'
@@ -499,7 +500,7 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
   }
 
   async function handleCopyHtml() {
-    const html = generateHTML(meta, total, resolved.products, resolved.citations, dotcom, previewLang, resolved.productsCnty, resolved.citationsCnty)
+    const html = minifyEmailHtml(generateHTML(meta, total, resolved.products, resolved.citations, dotcom, previewLang, resolved.productsCnty, resolved.citationsCnty))
     try {
       await navigator.clipboard.writeText(html)
     } catch {
@@ -531,7 +532,8 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
       const metaEnForSend = mergeEnMeta(metaKo, metaEn)
       const htmlKo = generateHTML(metaKo, latest.total, resolvedKo.products, resolvedKo.citations, latest.dotcom, 'ko', resolvedKo.productsCnty, resolvedKo.citationsCnty, sharedOpts)
       const htmlEn = generateHTML(metaEnForSend, latest.total, resolvedEn.products, resolvedEn.citations, latest.dotcom, 'en', resolvedEn.productsCnty, resolvedEn.citationsCnty, sharedOpts)
-      const html    = mergeBilingualEmail(htmlKo, htmlEn)
+      // 발송 직전 경량화 — 줄바꿈/들여쓰기 접기 (렌더링 불변, 약 10% 감량)
+      const html    = minifyEmailHtml(mergeBilingualEmail(htmlKo, htmlEn))
       const subject = `[LG GEO] ${metaKo.title} · ${metaKo.period} (KO/EN)`
       const res = await fetch('/api/send-email', {
         method: 'POST',
