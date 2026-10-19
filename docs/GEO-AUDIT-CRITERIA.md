@@ -2,7 +2,7 @@
 
 > 6개 카테고리 38개 채점 항목 + 10월 감사 시행 예정 4항목.
 > 점수·통과율은 제외한 **기준 정의 문서**입니다. 실측치는 Readability 대시보드에서 확인하세요.
-> 생성: `scripts/render-criteria.mjs` (source: `data/readability/geo-agent-checklist.html`) — 2026-09-29
+> 생성: `scripts/render-criteria.mjs` (source: `data/readability/geo-agent-checklist.html`) — 2026-10-03
 
 ## 카테고리
 
@@ -253,7 +253,7 @@
 ### #33 — Definition Paragraph*
 - **정의**: “A는 B이다” 처럼 용어의 뜻을 풀어 설명하는 문장이 있는지
 - **PASS**: 1개 이상 존재
-- **측정방법**: "X는 Y이다", dfn, abbr 태그
+- **측정방법**: "X는 Y이다", dfn, abbr 태그 — 패턴 매칭 문장을 문장 판정 모델(geo-audit-3b)이 확인, 0건이면 본문 40문장을 모델로 탐색
 - **check id**: `ai_definition`
 - **분류**: Contents 체크 항목
 
@@ -273,7 +273,7 @@
 ### #36 — Citable Sentences*
 - **정의**: 숫자·연도·통계처럼 AI가 근거로 인용하기 좋은 문장이 충분히 있는지
 - **PASS**: 5개 이상
-- **측정방법**: 숫자·연도·통계·인증 및 검증/권위 서술(EEAT: 시험·특허·전문가 추천·임상 입증) 포함 문장
+- **측정방법**: 숫자·연도·통계·인증 및 검증/권위 서술(EEAT: 시험·특허·전문가 추천·임상 입증) 포함 문장 — 패턴 후보를 문장 판정 모델(geo-audit-3b)이 확인한 문장만 집계
 - **check id**: `ai_citable`
 - **분류**: Contents 체크 항목
 
@@ -286,7 +286,7 @@
 ### #37 — (Javascript) HTML Text Ratio
 - **정의**: 화면에 보이는 글 중 자바스크립트 없이도 읽히는 글의 비중
 - **PASS**: 밀도 ≥ 60%
-- **측정방법**: Javascript 렌더링 후 텍스트 대비 HTML Text Count 비중
+- **측정방법**: Javascript 렌더링 후 텍스트 대비 HTML Text Count 비중 — Shadow DOM SSR 본문은 분자에서 제외
 - **check id**: `ai_ssr_ratio`
 
 ### #38 — (Javascript) HTML Resource
@@ -345,6 +345,9 @@
 - **#1 TTFB** — 어딧 크롤러 자체 측정값이 동시 크롤 큐잉에 오염돼 실제보다 6~200배 크게 잡혔음(UK 크롤러 1,088ms vs PSI 11ms). PageSpeed Insights 의 `server-response-time` 을 정본으로 교체, 임계값 1800ms
 - **#4 Cache-Control** — 원래 룰이 `no-cache`/`no-store` 가 섞이면 `max-age` 값과 무관하게 즉시 FAIL 처리했음. `max-age` 디렉티브가 설정돼 있으면(0 포함) 통과로 완화
 - **#34 Author 또는 출처+날짜** — byline 은 에디토리얼에만 성립하는 개념이라 `newsroom` · `buying_guide` · `lg_experience` 에만 적용. 그 외 페이지타입은 `na` (분모 제외)
+- **#33 정의문 · #36 인용 문장 — 문장 판정 모델 결합 (2026-10-18)** — 정규식 단독 판정이 사람 기준과 크게 어긋나(#36 F1 36) 문장 판정 모델 `geo-audit-3b`(Qwen2.5-3B 미세조정, 올라마 로컬)가 패턴 후보를 최종 확인. #33 은 매칭 0건이면 본문 앞 40문장을 모델로 탐색. 모델 미연결 시 정규식 폴백(판정 근거에 표기). 평가셋 1,052문장 F1 — 인용 88.7 · 정의 89.9
+- **#33 · #36 노이즈 제외 보강 (2026-10-17)** — 할부·쿠폰·할인·보도자료 연락처·공유 버튼·JavaScript 안내·상표 고지 제외 — 사람 판정 정답 기준 정밀도 #36 41→88% · #33 20→50%. 숨은 모달/다이얼로그 문장도 본문에서 제외 (2026-10-19)
+- **#37 HTML Text Ratio — Shadow DOM SSR 분자 제외 (2026-10-05)** — `<template shadowrootmode>` 본문은 비JS 파서 다수가 읽지 않아 분자에서 제외 (보수 기준). 콘텐츠 룰(#32~#36)은 섀도 본문을 인정하되 판정 근거에 “Shadow DOM SSR — 주요 AI 크롤러 미인식 가능(일반 DOM 전환 필요)” 적시
 
 ### 문서 번호와 채점 항목이 1:1이 아닌 곳
 - **#17 Robots** — `seo_robots`(meta) 와 `seo_robots_hdr`(X-Robots-Tag) 중 **하나만 충족해도 통과** (OR). 대표 체크 `seo_robots` 하나로 채점

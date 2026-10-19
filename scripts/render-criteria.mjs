@@ -137,7 +137,7 @@ const CRIT_T = {
     subWith: (n, d) => `6개 카테고리 ${n}개 항목으로 lg.com 글로벌 사이트의 AI 가독성을 채점합니다. 통과율은 ${d} 측정분 기준이며, 10월 감사부터 시행할 예정 항목 4개를 함께 표기했습니다. 일부 항목은 TBD로 분류하였으며, 자가 콘텐츠 분석 및 기준 세분화, 검수 에이전트 기능 고도화 후 항목 추가 예정입니다.`,
     subPlain: (n) => `6개 카테고리 ${n}개 항목의 정의와 Pass 기준입니다. 10월 감사부터 시행할 예정 항목 4개를 함께 표기했습니다. 일부 항목은 TBD로 분류하였으며, 자가 콘텐츠 분석 및 기준 세분화, 검수 에이전트 기능 고도화 후 항목 추가 예정입니다.`,
     dSrc: '검수 대상', dLogic: '판정 로직', dExcept: '예외 · 별도 조건',
-    modelNote: '검수에 사용하는 LLM 모델은 <b>Claude Fable 5</b> 입니다. 아래 판정 로직의 패턴 요소(키워드·정규식·셀렉터)는 lg.com <b>실 콘텐츠 예시를 기반으로 패턴화</b>한 것입니다.',
+    modelNote: '검수에 사용하는 LLM 모델은 <b>Claude Fable 5</b> 입니다. 아래 판정 로직의 패턴 요소(키워드·정규식·셀렉터)는 lg.com <b>실 콘텐츠 예시를 기반으로 패턴화</b>한 것입니다. 2026-10-18 부터 #33 정의문·#36 인용 문장의 최종 판정은 lg.com 문장으로 미세조정한 로컬 <b>문장 판정 모델 geo-audit-3b</b>(Qwen2.5-3B)가 수행합니다 — 평가셋 1,052문장(사람 검수 268 포함) F1 인용 88.7 · 정의 89.9. DOM/셀렉터 규칙 항목에는 모델이 개입하지 않습니다.',
     nx: [
       '<b>#5 HTML &lt; 100KB</b> — 측정은 정확하나 lg.com HTML 중앙값이 1,536KB라 실질 통과율 0.0%. 통과 건의 대부분이 본문 0자인 빈 404 셸이라 지표 방향이 반대였음',
       '<b>#8 Render Blocking 0</b> — 통과율 2.3%로 변별력 없음',
@@ -156,6 +156,9 @@ const CRIT_T = {
       '<b>#1 TTFB</b> — 어딧 크롤러 자체 측정값이 동시 크롤 큐잉에 오염돼 실제보다 6~200배 크게 잡혔음. PageSpeed Insights의 server-response-time을 정본으로 교체',
       '<b>#4 Cache-Control</b> — 원래 룰이 no-cache/no-store가 섞이면 max-age 값과 무관하게 즉시 FAIL 처리했음. max-age 디렉티브가 설정돼 있으면 통과로 완화',
       '<b>#34 Author 또는 출처+날짜</b> — byline은 에디토리얼에만 성립하는 개념이라 Global Newsroom · Press &amp; Media에만 적용 (초기에는 구매 가이드 · LG Experience 포함)',
+      '<b>#33 정의문 · #36 인용 문장 — 문장 판정 모델 결합 (2026-10-18)</b> — 정규식 단독 판정이 사람 기준과 크게 어긋나(#36 F1 36) 문장 판정 모델 geo-audit-3b가 패턴 후보를 최종 확인. 모델 미연결 시 정규식 폴백(판정 근거에 표기)',
+      '<b>#33 · #36 노이즈 제외 보강 (2026-10-17)</b> — 할부·쿠폰·할인·보도자료 연락처·공유 버튼·JavaScript 안내·상표 고지를 제외해 사람 판정 정답 기준 정밀도 #36 41→88% · #33 20→50%. 숨은 모달/다이얼로그 문장도 본문에서 제외 (2026-10-19)',
+      '<b>#37 HTML Text Ratio — Shadow DOM SSR 분자 제외 (2026-10-05)</b> — 비JS 파서 다수가 본문으로 읽지 않아 보수 기준 유지. 콘텐츠 룰(#32~#36)은 섀도 본문을 인정하되 판정 근거에 “주요 AI 크롤러 미인식 가능” 적시',
     ],
     nm: [
       '<b>#17 Robots</b> — meta robots와 X-Robots-Tag 헤더 중 <b>하나만 충족해도 통과</b> (OR 조건). 대표 체크 하나로 채점',
@@ -181,7 +184,7 @@ const CRIT_T = {
     subWith: (n, d) => `${n} items across 6 categories score the AI readability of lg.com sites. Pass rates are from the ${d} run, and the 4 items planned for the October audit are listed alongside. Some items are classified as TBD and will be added after own-content analysis, finer-grained criteria, and audit-agent upgrades.`,
     subPlain: (n) => `Definitions and pass criteria for ${n} items across 6 categories. The 4 items planned for the October audit are listed alongside. Some items are classified as TBD and will be added after own-content analysis, finer-grained criteria, and audit-agent upgrades.`,
     dSrc: 'Audit target', dLogic: 'Decision logic', dExcept: 'Exceptions · special conditions',
-    modelNote: 'The LLM model used for the audit is <b>Claude Fable 5</b>. Pattern elements in the decision logic below (keywords, regexes, selectors) are <b>patterned from real lg.com content examples</b>.',
+    modelNote: 'The LLM model used for the audit is <b>Claude Fable 5</b>. Pattern elements in the decision logic below (keywords, regexes, selectors) are <b>patterned from real lg.com content examples</b>. Since 2026-10-18 the final verdict on #33 definitions and #36 citable sentences is made by the local <b>sentence-judgment model geo-audit-3b</b> (Qwen2.5-3B fine-tuned on lg.com sentences) — F1 on a 1,052-sentence eval set (268 human-verified): citable 88.7 · definition 89.9. The model does not intervene in DOM/selector-rule items.',
     nx: [
       '<b>#5 HTML &lt; 100KB</b> — measurement is accurate, but lg.com’s median HTML is 1,536KB so the real pass rate is 0.0%. Most passing cases were empty 404 shells with no body text, inverting the signal',
       '<b>#8 Render Blocking 0</b> — 2.3% pass rate, no discriminating power',
@@ -200,6 +203,9 @@ const CRIT_T = {
       '<b>#1 TTFB</b> — the crawler’s own measurement was contaminated by concurrent-crawl queuing and ran 6–200× high. Replaced with PageSpeed Insights server-response-time as the source of truth',
       '<b>#4 Cache-Control</b> — the original rule failed immediately when no-cache/no-store appeared, ignoring max-age. Relaxed to pass when a max-age directive is present',
       '<b>#34 Author or source + date</b> — a byline only makes sense for editorial content, so it applies only to Global Newsroom · Press &amp; Media (initially also Buying Guide · LG Experience)',
+      '<b>#33 definitions · #36 citable sentences — sentence-judgment model attached (2026-10-18)</b> — regex-only verdicts diverged badly from human judgment (#36 F1 36), so the geo-audit-3b model now confirms pattern candidates. Falls back to regex-only (flagged in the verdict) when the model is not connected',
+      '<b>#33 · #36 noise reinforcement (2026-10-17)</b> — financing, coupons, discounts, press contacts, share buttons, JavaScript notices, and trademark notices excluded; precision against human verdicts #36 41→88% · #33 20→50%. Hidden modal/dialog sentences also dropped from the body (2026-10-19)',
+      '<b>#37 HTML Text Ratio — Shadow DOM SSR excluded from the numerator (2026-10-05)</b> — most non-JS parsers do not read it as body text, so the conservative basis stays. Content rules (#32–#36) accept shadow body text, with “may be unrecognized by major AI crawlers” noted in the verdict',
     ],
     nm: [
       '<b>#17 Robots</b> — passes if <b>either</b> meta robots or the X-Robots-Tag header allows indexing (OR condition). Scored as a single representative check',
@@ -491,6 +497,9 @@ export function renderCriteriaMarkdown({ rows, generatedAt }) {
   L.push('- **#1 TTFB** — 어딧 크롤러 자체 측정값이 동시 크롤 큐잉에 오염돼 실제보다 6~200배 크게 잡혔음(UK 크롤러 1,088ms vs PSI 11ms). PageSpeed Insights 의 `server-response-time` 을 정본으로 교체, 임계값 1800ms')
   L.push('- **#4 Cache-Control** — 원래 룰이 `no-cache`/`no-store` 가 섞이면 `max-age` 값과 무관하게 즉시 FAIL 처리했음. `max-age` 디렉티브가 설정돼 있으면(0 포함) 통과로 완화')
   L.push('- **#34 Author 또는 출처+날짜** — byline 은 에디토리얼에만 성립하는 개념이라 `newsroom` · `buying_guide` · `lg_experience` 에만 적용. 그 외 페이지타입은 `na` (분모 제외)')
+  L.push('- **#33 정의문 · #36 인용 문장 — 문장 판정 모델 결합 (2026-10-18)** — 정규식 단독 판정이 사람 기준과 크게 어긋나(#36 F1 36) 문장 판정 모델 `geo-audit-3b`(Qwen2.5-3B 미세조정, 올라마 로컬)가 패턴 후보를 최종 확인. #33 은 매칭 0건이면 본문 앞 40문장을 모델로 탐색. 모델 미연결 시 정규식 폴백(판정 근거에 표기). 평가셋 1,052문장 F1 — 인용 88.7 · 정의 89.9')
+  L.push('- **#33 · #36 노이즈 제외 보강 (2026-10-17)** — 할부·쿠폰·할인·보도자료 연락처·공유 버튼·JavaScript 안내·상표 고지 제외 — 사람 판정 정답 기준 정밀도 #36 41→88% · #33 20→50%. 숨은 모달/다이얼로그 문장도 본문에서 제외 (2026-10-19)')
+  L.push('- **#37 HTML Text Ratio — Shadow DOM SSR 분자 제외 (2026-10-05)** — `<template shadowrootmode>` 본문은 비JS 파서 다수가 읽지 않아 분자에서 제외 (보수 기준). 콘텐츠 룰(#32~#36)은 섀도 본문을 인정하되 판정 근거에 “Shadow DOM SSR — 주요 AI 크롤러 미인식 가능(일반 DOM 전환 필요)” 적시')
   L.push('')
   L.push('### 문서 번호와 채점 항목이 1:1이 아닌 곳')
   L.push('- **#17 Robots** — `seo_robots`(meta) 와 `seo_robots_hdr`(X-Robots-Tag) 중 **하나만 충족해도 통과** (OR). 대표 체크 `seo_robots` 하나로 채점')
