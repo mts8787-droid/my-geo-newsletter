@@ -9,6 +9,7 @@ import { logFor } from '../lib/logger.js'
 
 const log = logFor('publish')
 import { CHANNELS, readMetaFile, publishChannel, injectLangBar } from '../lib/publish-core.js'
+import { mergeBilingualEmail, buildCopyPageHtml } from '../src/shared/copyPageHtml.js'
 import { runUnifiedPublish, readUnifiedPublishMeta, readPublishConfig, writePublishConfig } from '../lib/republish.mjs'
 import { schedulerHealth } from '../lib/publish-scheduler.js'
 import { enrichSnapshotI18n } from '../lib/tracker-i18n.js'
@@ -32,10 +33,13 @@ function readMonthlyMeta(metaPath) {
 function monthlyEntry(ch, month) {
   const koSlug = monthSuffix(ch.koSlug, month)
   const enSlug = monthSuffix(ch.enSlug, month)
+  // 복사용 페이지 — KO+EN 합본 + 전체 선택·복사 버튼 (메일 작성창 붙여넣기용)
+  const copySlug = monthSuffix(`${ch.koSlug.replace(/-KO$/, '')}-Copy`, month)
   return {
-    koSlug, enSlug,
+    koSlug, enSlug, copySlug,
     koPath: join(PUB_DIR, `${koSlug}.html`),
     enPath: join(PUB_DIR, `${enSlug}.html`),
+    copyPath: join(PUB_DIR, `${copySlug}.html`),
   }
 }
 
@@ -80,11 +84,19 @@ function buildMonthlyPostHandler(ch) {
       const finalEn = ch.injectLangBar ? injectLangBar(htmlEn, 'en', e.koSlug, e.enSlug) : htmlEn
       writeFileSync(e.koPath, finalKo)
       writeFileSync(e.enPath, finalEn)
+      // 복사용 페이지 — 언어바 주입 전의 원본으로 합본 (발송 메일과 동일 본문)
+      let copyOk = false
+      try {
+        writeFileSync(e.copyPath, buildCopyPageHtml(mergeBilingualEmail(htmlKo, htmlEn), title || ch.title))
+        copyOk = true
+      } catch (err) {
+        log.warn({ tag: ch.logTag, month, err: err.message }, 'copy page write failed — KO/EN 게시 자체는 진행')
+      }
       const all = readMonthlyMeta(ch.metaFile)
       all.months[month] = { title: title || ch.title, ts: Date.now() }
       writeFileSync(ch.metaFile, JSON.stringify(all, null, 2))
-      log.info({ tag: ch.logTag, month, title: all.months[month].title, koSlug: e.koSlug }, 'monthly published')
-      res.json({ ok: true, month, urls: { ko: `/p/${e.koSlug}`, en: `/p/${e.enSlug}` }, ...all.months[month] })
+      log.info({ tag: ch.logTag, month, title: all.months[month].title, koSlug: e.koSlug, copyOk }, 'monthly published')
+      res.json({ ok: true, month, urls: { ko: `/p/${e.koSlug}`, en: `/p/${e.enSlug}`, ...(copyOk ? { copy: `/p/${e.copySlug}` } : {}) }, ...all.months[month] })
     } catch (err) {
       log.error({ tag: ch.logTag, err: err.message }, 'monthly publish write failed')
       res.status(500).json({ ok: false, error: '파일 저장 실패: ' + err.message })
@@ -100,13 +112,13 @@ function buildMonthlyGetHandler(ch) {
       const e = monthlyEntry(ch, reqMonth)
       const ko = existsSync(e.koPath), en = existsSync(e.enPath)
       const meta = all.months[reqMonth] || null
-      return res.json({ month: reqMonth, published: ko && en, ko, en, ...(meta || {}), urls: { ko: `/p/${e.koSlug}`, en: `/p/${e.enSlug}` } })
+      return res.json({ month: reqMonth, published: ko && en, ko, en, ...(meta || {}), urls: { ko: `/p/${e.koSlug}`, en: `/p/${e.enSlug}`, ...(existsSync(e.copyPath) ? { copy: `/p/${e.copySlug}` } : {}) } })
     }
     const months = Object.entries(all.months || {})
       .map(([m, meta]) => {
         const e = monthlyEntry(ch, m)
         const ko = existsSync(e.koPath), en = existsSync(e.enPath)
-        return { month: m, published: ko && en, ko, en, ...meta, urls: { ko: `/p/${e.koSlug}`, en: `/p/${e.enSlug}` } }
+        return { month: m, published: ko && en, ko, en, ...meta, urls: { ko: `/p/${e.koSlug}`, en: `/p/${e.enSlug}`, ...(existsSync(e.copyPath) ? { copy: `/p/${e.copySlug}` } : {}) } }
       })
       .filter(x => x.ko || x.en)
       .sort((a, b) => b.month.localeCompare(a.month))
@@ -120,6 +132,7 @@ function buildMonthlyDeleteHandler(ch) {
     const e = monthlyEntry(ch, month)
     deleteIfExists(e.koPath, ch.logTag)
     deleteIfExists(e.enPath, ch.logTag)
+    deleteIfExists(e.copyPath, ch.logTag)
     const all = readMonthlyMeta(ch.metaFile)
     delete all.months[month]
     writeFileSync(ch.metaFile, JSON.stringify(all, null, 2))
