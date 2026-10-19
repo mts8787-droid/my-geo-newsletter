@@ -519,20 +519,77 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
     await downloadTemplate(meta, total, products, citations, dotcom)
   }
 
+  // 발송·복사 페이지 공용 — KO+EN 합본 메일 HTML (두 경로의 본문이 항상 동일하도록 한 곳에서 생성)
+  function buildBilingualMailHtml() {
+    const latest = getLatestData()
+    const resolvedKo = resolveDataForLang(latest.products, latest.productsCnty, latest.citations, latest.citationsCnty, 'ko')
+    const resolvedEn = resolveDataForLang(latest.products, latest.productsCnty, latest.citations, latest.citationsCnty, 'en')
+    const sharedOpts = { weeklyLabels, weeklyAll, categoryStats, unlaunchedMap: extra?.unlaunchedMap || {}, productCardVersion: meta.productCardVersion || 'v1', trendMode: meta.trendMode || 'weekly', assetBase: (typeof window !== "undefined" ? window.location.origin : ""), citTouchPointsTrend: extra?.citTouchPointsTrend || null, citTrendMonths: extra?.citTrendMonths || [], citDomainTrend: extra?.citDomainTrend || null, citDomainMonths: extra?.citDomainMonths || [], citTouchPointsByLlm: extra?.citTouchPointsByLlm || null, citDomainByLlm: extra?.citDomainByLlm || null, citDomainByLlmTrend: extra?.citDomainByLlmTrend || null, dotcomByLlm: extra?.dotcomByLlm || null, readability: extra?.readability || null }
+    // EN 발송 meta = KO 차트/표시 토글 기준 + EN 번역 텍스트만 덮어쓰기 (차트 불일치 방지)
+    const metaEnForSend = mergeEnMeta(metaKo, metaEn)
+    const htmlKo = generateHTML(metaKo, latest.total, resolvedKo.products, resolvedKo.citations, latest.dotcom, 'ko', resolvedKo.productsCnty, resolvedKo.citationsCnty, sharedOpts)
+    const htmlEn = generateHTML(metaEnForSend, latest.total, resolvedEn.products, resolvedEn.citations, latest.dotcom, 'en', resolvedEn.productsCnty, resolvedEn.citationsCnty, sharedOpts)
+    return { html: mergeBilingualEmail(htmlKo, htmlEn), subject: `[LG GEO] ${metaKo.title} · ${metaKo.period} (KO/EN)` }
+  }
+
+  // 복사용 페이지 — 발송 메일과 동일한 합본을 새 탭에 열고 버튼 한 번으로 본문 전체 선택+복사.
+  // 차트 <img>(/api/hl-chart)는 data: URI 로 임베드해 붙여넣은 메일에서도 수신자가 차트를 볼 수 있게 한다
+  // (SMTP 발송 경로의 CID 첨부와 같은 이유 — 외부 URL 이미지는 수신 측에서 접근 불가).
+  function handleOpenCopyPage() {
+    const { html, subject } = buildBilingualMailHtml()
+    const head = (html.match(/<head[^>]*>([\s\S]*?)<\/head>/i) || [])[1] || ''
+    const body = (html.match(/<body[^>]*>([\s\S]*)<\/body>/i) || [])[1] || html
+    const script = `(function(){
+      var btn = document.getElementById('copybtn')
+      var msg = document.getElementById('copymsg')
+      var imgs = Array.prototype.slice.call(document.querySelectorAll('#mailwrap img')).filter(function(im){
+        return (im.getAttribute('src') || '').indexOf('/api/hl-chart') !== -1
+      })
+      var left = imgs.length
+      btn.disabled = true
+      function ready(){ btn.disabled = false; msg.textContent = '버튼을 누르면 본문 전체가 선택·복사됩니다 — 메일 작성창에 붙여넣기(Ctrl+V / Cmd+V) 하세요' }
+      if (!left) ready()
+      imgs.forEach(function(im){
+        fetch(im.src).then(function(r){ return r.blob() }).then(function(b){
+          return new Promise(function(res){ var fr = new FileReader(); fr.onload = function(){ im.src = fr.result; res() }; fr.readAsDataURL(b) })
+        }).catch(function(){}).then(function(){ if (--left <= 0) ready() })
+      })
+      btn.addEventListener('click', function(){
+        var range = document.createRange()
+        range.selectNodeContents(document.getElementById('mailwrap'))
+        var sel = window.getSelection()
+        sel.removeAllRanges()
+        sel.addRange(range)
+        var ok = false
+        try { ok = document.execCommand('copy') } catch(e){}
+        if (ok) {
+          btn.textContent = '복사 완료 ✓'
+          btn.style.background = '#14532D'
+          msg.textContent = '메일 작성창 본문에 붙여넣기 하세요 — 서식 그대로 들어갑니다'
+          setTimeout(function(){ btn.textContent = '전체 선택 + 복사'; btn.style.background = '#CF0652' }, 3000)
+        } else {
+          msg.textContent = '자동 복사 실패 — 본문이 선택된 상태이니 Ctrl+C (Cmd+C) 를 눌러주세요'
+        }
+      })
+    })()`
+    const page = `<!doctype html><html><head><meta charset="utf-8"><title>${subject} — 복사용</title>${head}</head>
+<body style="margin:0;background:#E2E8F0">
+<div id="copybar" style="position:sticky;top:0;z-index:9999;background:#0F172A;padding:12px 20px;font-family:-apple-system,'Malgun Gothic',sans-serif;display:flex;align-items:center;gap:14px">
+<button id="copybtn" style="padding:10px 22px;border:none;border-radius:8px;background:#CF0652;color:#fff;font-size:14px;font-weight:700;cursor:pointer">전체 선택 + 복사</button>
+<span id="copymsg" style="color:#94A3B8;font-size:13px">차트 이미지 임베드 중...</span>
+</div>
+<div id="mailwrap">${body}</div>
+<script>${script}</script>
+</body></html>`
+    const url = URL.createObjectURL(new Blob([page], { type: 'text/html' }))
+    window.open(url, '_blank')
+  }
+
   async function handleSendMail() {
     if (mailSent === 'sending') return
     setMailSent('sending')
     try {
-      const latest = getLatestData()
-      const resolvedKo = resolveDataForLang(latest.products, latest.productsCnty, latest.citations, latest.citationsCnty, 'ko')
-      const resolvedEn = resolveDataForLang(latest.products, latest.productsCnty, latest.citations, latest.citationsCnty, 'en')
-      const sharedOpts = { weeklyLabels, weeklyAll, categoryStats, unlaunchedMap: extra?.unlaunchedMap || {}, productCardVersion: meta.productCardVersion || 'v1', trendMode: meta.trendMode || 'weekly', assetBase: (typeof window !== "undefined" ? window.location.origin : ""), citTouchPointsTrend: extra?.citTouchPointsTrend || null, citTrendMonths: extra?.citTrendMonths || [], citDomainTrend: extra?.citDomainTrend || null, citDomainMonths: extra?.citDomainMonths || [], citTouchPointsByLlm: extra?.citTouchPointsByLlm || null, citDomainByLlm: extra?.citDomainByLlm || null, citDomainByLlmTrend: extra?.citDomainByLlmTrend || null, dotcomByLlm: extra?.dotcomByLlm || null, readability: extra?.readability || null }
-      // EN 발송 meta = KO 차트/표시 토글 기준 + EN 번역 텍스트만 덮어쓰기 (차트 불일치 방지)
-      const metaEnForSend = mergeEnMeta(metaKo, metaEn)
-      const htmlKo = generateHTML(metaKo, latest.total, resolvedKo.products, resolvedKo.citations, latest.dotcom, 'ko', resolvedKo.productsCnty, resolvedKo.citationsCnty, sharedOpts)
-      const htmlEn = generateHTML(metaEnForSend, latest.total, resolvedEn.products, resolvedEn.citations, latest.dotcom, 'en', resolvedEn.productsCnty, resolvedEn.citationsCnty, sharedOpts)
-      const html    = mergeBilingualEmail(htmlKo, htmlEn)
-      const subject = `[LG GEO] ${metaKo.title} · ${metaKo.period} (KO/EN)`
+      const { html, subject } = buildBilingualMailHtml()
       const res = await fetch('/api/send-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
@@ -2180,6 +2237,19 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
             : mailSent === 'ok' ? <><Check size={12} /> 발송 완료!</>
             : mailSent === 'error' ? <><Send size={12} /> 발송 실패 — 다시 시도</>
             : <><Send size={12} /> 메일 발송 (KO + EN)</>}
+        </button>
+
+        {/* 복사용 페이지 — 발송 메일과 동일한 합본을 새 탭에서 열어 버튼 한 번으로 전체 선택+복사 */}
+        <button
+          onClick={handleOpenCopyPage}
+          style={{
+            width: '100%', padding: '9px 0', borderRadius: 8, border: '1px solid #334155',
+            cursor: 'pointer', background: 'transparent', color: '#94A3B8',
+            fontSize: 11, fontWeight: 700, fontFamily: FONT,
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5,
+            transition: 'all 0.2s', marginTop: 8,
+          }}>
+          <Globe size={12} /> 복사용 페이지 열기 (KO + EN)
         </button>
         </>)}
         </>)}
