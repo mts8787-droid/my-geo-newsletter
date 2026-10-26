@@ -80,7 +80,9 @@ describe('emailTemplate — 10월호 Exec Summary (사용자 지시 2026-10-26)'
     const a2 = idx(h, '4위와 3위로 내려갔습니다.')
     const t2 = idx(h, 'data-blk="oct2"')
     const p1 = idx(h, `<span data-pk="1" style="color:#FDA4AF;">${P1}</span>`)
-    expect(a1 < t1 && t1 < mid && mid < a2 && a2 < t2 && t2 < p1).toBe(true)
+    // 순서: 표1 → 4위·3위 문장 → 핑크 결론 → 표2(박스 맨 아래)
+    expect(a1 < t1 && t1 < mid && mid < a2 && a2 < p1 && p1 < t2).toBe(true)
+    expect(h.slice(t2, t2 + 40)).toMatch(/^data-blk="oct2" data-br="0"/)   // 결론 문장이 끝이라 삼킨 br 없음
     // 표 내용 + 제목 앞 붉은 막대 (표1./표2. 접두 없음)
     expect(h.slice(t1, t2)).toContain('Visibility 변화 – Total')
     expect(h.slice(t2)).toContain('Visibility 변화 – GPT Search')

@@ -1085,7 +1085,9 @@ function insightV3Parts(meta = {}, lang = 'ko', productsCnty = [], assetBase = '
   const fieldVal = (field, def) => (meta[field] != null && meta[field] !== '') ? sanitizeUserHtml(meta[field]) : def
   const octProc1 = (h) => {
     const t1 = insertAfterSentence(stripInserted(h), OCT_A1, octTable1, 'oct1', octWrap).html
-    const t2 = insertAfterSentence(t1, OCT_A2, octTable2, 'oct2', octWrap).html
+    // 표 2 는 박스 맨 아래 — 결론 문장(핑크) 뒤에 (사용자 지시 2026-10-26). 결론 문장이 없으면 4위·3위 문장 뒤.
+    const r2 = insertAfterSentence(t1, OCT_P1, octTable2, 'oct2', octWrap)
+    const t2 = r2.found ? r2.html : insertAfterSentence(t1, OCT_A2, octTable2, 'oct2', octWrap).html
     return colorizeSentence(t2, OCT_P1, OCT_PINK)
   }
   const pinkProc = (sentence) => (h) => colorizeSentence(stripInserted(h), sentence, OCT_PINK)
@@ -1115,7 +1117,7 @@ function insightV3Parts(meta = {}, lang = 'ko', productsCnty = [], assetBase = '
   // 기준 문장이 본문(v3Ex1B2)에 없으면(예: 영문 미편집) 표를 본문 끝에 이어 붙인다
   const slot1Src = stripInserted(fieldVal('v3Ex1B2', L(ex1Ko, ex1En)))
   const octTail = (findSentence(slot1Src, OCT_A1) ? '' : octBlk('oct1', octTable1))
-    + (findSentence(slot1Src, OCT_A2) ? '' : octBlk('oct2', octTable2))
+    + ((findSentence(slot1Src, OCT_P1) || findSentence(slot1Src, OCT_A2)) ? '' : octBlk('oct2', octTable2))
 
   const execHtml = `
                               <div style="margin:0 0 12px;font-size:13px;color:#E2E8F0;line-height:22px;font-family:${EM_FONT};letter-spacing:-0.3px;">${ed('v3ExIntro', L(introKo, introEn))}</div>
