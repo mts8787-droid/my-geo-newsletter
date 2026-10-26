@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { findSentence, insertAfterSentence, colorizeSentence, colorizeLastParagraph, stripInserted } from '../src/shared/sentenceBlocks.js'
+import { findSentence, insertAfterSentence, colorizeSentence, colorizeLastParagraph, appendBlock, stripInserted } from '../src/shared/sentenceBlocks.js'
 
 // 10월호 KO 게시본(2026-10-26) 1번 박스 본문 꼬리 — 편집기가 저장한 형태 그대로 (span/nbsp/br)
 const SLOT1 = `<span style="color: rgb(255, 255, 255); font-weight: bold;">삼성 대비로는 여전히 약 23%p 앞서 있어 기존 비교 구조에서는 상대적 하락이 두드러지지 않았으나, LG가 전월 대비 0.9%p 하락하는 동안 Daikin(-0.5%p), Mitsubishi(+0.1%p), Midea(+0.1%p)는 상대적으로 안정적인 추이를 보였습니다.</span> 특히 GPT Search(-2.7%p)와 Gemini(-3.3%p)에서 하락이 두드러졌으며, 국가별로는 영국(-2.0%p), 호주(-1.9%p), 스페인(-1.8%p), 미국(-1.4%p)에서 하락폭이 크게 나타났습니다.<br><br>특히 GPT Search에서는 주요 경쟁사 대비 LG의 하락이 더욱 두드러졌습니다. 영국과 스페인에서 LG는 전월 대비 각각 6.9%p, 6.4%p 하락한 반면, Daikin과 Mitsubishi 등 주요 경쟁사는 상대적으로 작은 변화를 보였습니다. 이에 따라 LG는 두 국가 모두 7월까지 유지하던 1위에서 8월 2위, 9월 각각 4위와 3위로 내려갔습니다.<br><br>즉, 주요 국가에서 LG의 Visibility 하락이 경쟁사 대비 크게 나타나고 있으며, 특히 GPT Search에서는 경쟁 순위 하락으로까지 이어지고 있습니다. 이에 따라 에어컨 답변 원문 및 인용 출처를 추가 분석하여 원인을 파악하고 대응 방향을 구체화할 예정입니다.`
@@ -59,6 +59,13 @@ describe('sentenceBlocks — 문장 기준 블록 삽입 / 색칠 (10월호 Exec
     expect(stripInserted(out)).toBe(src)
   })
 
+  it('appendBlock: 본문 맨 끝에 블록, 끝의 <br><br> 는 삼키고 data-br 에 기록, 열린 span 은 닫는다', () => {
+    const out = appendBlock('앞 문단.<br><br><span style="color:#fff;">마지막 문단.</span><br><br>', '<p>T</p>', 'x', ' contenteditable="false"')
+    expect(out).toBe('앞 문단.<br><br><span style="color:#fff;">마지막 문단.</span><div data-blk="x" data-br="2" contenteditable="false"><p>T</p></div>')
+    expect(stripInserted(out)).toBe('앞 문단.<br><br><span style="color:#fff;">마지막 문단.</span><br><br>')
+    expect(appendBlock('<span>열림', '<p>T</p>', 'y')).toBe('<span>열림</span><div data-blk="y" data-br="0"><p>T</p></div>')
+  })
+
   it('stripInserted: 저장본에 섞여 들어온 블록·색칠을 걷어내면 원문으로 돌아온다 (멱등)', () => {
     let h = insertAfterSentence(SLOT1, A1, '<table><tr><td>T1</td></tr></table>', 'oct1', ' contenteditable="false"').html
     h = insertAfterSentence(h, A2, '<table><tr><td>T2</td></tr></table>', 'oct2').html
@@ -84,6 +91,17 @@ describe('emailTemplate — 10월호 Exec Summary (사용자 지시 2026-10-26)'
     return generateEmailHTML({ showInsightV3: true, ...meta }, { score: 42.0 }, [], [], {}, lang, [], [], options)
   }
   const idx = (h, s) => { const i = h.indexOf(s); expect(i, `missing: ${s.slice(0, 40)}`).toBeGreaterThan(-1); return i }
+
+  it('Visibility 마지막 문단을 고쳐 저장해도 핑크 유지 + 표1 은 그 아래 (앵커 문장 회귀 재현, 2026-10-26)', async () => {
+    const edited = SLOT1.replace(P1, '즉, 결론 문구를 사용자가 수정했습니다. 다음 호에서 원인 분석을 공유할 예정입니다.')
+    const h = await render({ v3Ex1B2: edited })
+    const pk = idx(h, '<span data-pk="1" style="color:#FDA4AF;">즉, 결론 문구를 사용자가 수정했습니다. 다음 호에서 원인 분석을 공유할 예정입니다.</span>')
+    const t1 = idx(h, 'data-blk="oct1"')
+    expect(pk).toBeLessThan(t1)
+    expect(h.match(/data-blk="oct1"/g).length).toBe(1)
+    // 앞 문단은 핑크가 아니다
+    expect(h).not.toContain('<span data-pk="1" style="color:#FDA4AF;">특히 GPT Search에서는')
+  })
 
   it('표1 은 핑크 결론 문장 아래(박스 맨 아래) — 표2(GPT Search) 는 없음 (사용자 지시 2026-10-26)', async () => {
     const h = await render({ v3Ex1B2: SLOT1, v3Ex3B2: SLOT3 })

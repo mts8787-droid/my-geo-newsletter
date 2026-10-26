@@ -103,6 +103,18 @@ export function colorizeLastParagraph(html, color) {
   return body.slice(0, start) + paintRuns(body.slice(start), color) + (tail ? tail[0] : '')
 }
 
+// 본문 맨 끝에 블록 추가 — 끝의 빈 줄(<br>, 최대 2개)은 블록 여백이 대신하므로 삼키고 data-br 에 기록.
+// 문장 내용에 기대지 않으므로 사용자가 본문을 어떻게 고쳐도 블록은 항상 맨 아래에 남는다.
+// 끝에 열린 인라인 태그가 있으면 닫고 블록을 둔다 (블록을 인라인 안에 두지 않음).
+export function appendBlock(html, block, blockId, wrapAttrs = '') {
+  const src = String(html || '')
+  const m = /(?:\s|&nbsp;)*((?:<br\s*\/?>(?:\s|&nbsp;)*){0,2})$/i.exec(src)
+  const nBr = (m[1].match(/<br/gi) || []).length
+  const body = nBr ? src.slice(0, m.index) : src
+  const close = openInlineTags(body).map(t => `</${t.name}>`).reverse().join('')
+  return body + close + `<div data-blk="${blockId}" data-br="${nBr}"${wrapAttrs}>${block}</div>`
+}
+
 // 이전 렌더가 끼워 넣은 블록/색칠 span 제거 (편집기 저장본에 섞여 들어온 것 되돌리기).
 // 블록이 삼켰던 <br> 은 data-br 개수만큼 복원 — 원문과 동일하게 돌아온다.
 export function stripInserted(html) {

@@ -4,7 +4,7 @@ import { PROD_ID_TO_UL_CODE as UL_PROD_MAP, PROD_ID_TO_UL_CODE, PROD_ID_TO_KR, P
 import { rdBandColor } from './shared/readabilityBand.js'
 import { compRatioStr } from './shared/compRatio.js'
 import { parsePeriod } from './shared/reportPeriod.js'
-import { findSentence, insertAfterSentence, colorizeSentence, colorizeLastParagraph, stripInserted } from './shared/sentenceBlocks.js'
+import { appendBlock, colorizeLastParagraph, stripInserted } from './shared/sentenceBlocks.js'
 import { resolveProductsByLlm, resolveProductsCntyByLlm, resolveTotalByLlm } from './shared/llmModel.js'
 import { _logWarn } from './sheetParserUtils.js'
 import { dcColLabel } from './shared/constants.js'
@@ -1010,15 +1010,14 @@ function insightV3Parts(meta = {}, lang = 'ko', productsCnty = [], assetBase = '
 
   // ── 10월호 블록 (사용자 지시 2026-10-26) ────────────────────────────────────
   // 1번 박스의 9월호 블록(LLM 트렌드 차트 PNG + 답변 예시 카드)을 표로 교체.
-  // 표는 사용자 본문 **안의 기준 문장 바로 아래**에 끼운다 (sentenceBlocks — 문장을 못
-  // 찾으면 본문 끝에 이어 붙임). 수치는 사용자 제공 표 그대로 (에어컨 8→9월 — 하드코딩,
-  // 다음 호에서 갱신). 제목은 "표 1." 같은 번호 없이 붉은 막대만 (사용자 지시).
-  // 표 2(GPT Search) 는 사용자 지시로 삭제 (2026-10-26) — 박스 마지막은 핑크 결론 문장.
-  const OCT_A1 = '특히 GPT Search(-2.7%p)와 Gemini(-3.3%p)에서 하락이 두드러졌으며, 국가별로는 영국(-2.0%p), 호주(-1.9%p), 스페인(-1.8%p), 미국(-1.4%p)에서 하락폭이 크게 나타났습니다.'
-  // 결론/향후 방향 문장 — 박스 2 의 마지막 문장과 같은 핑크 (#FDA4AF)
-  const OCT_PINK = '#FDA4AF'
-  const OCT_P1 = '즉, 주요 국가에서 LG의 Visibility 하락이 경쟁사 대비 크게 나타나고 있으며, 특히 GPT Search에서는 경쟁 순위 하락으로까지 이어지고 있습니다. 이에 따라 에어컨 답변 원문 및 인용 출처를 추가 분석하여 원인을 파악하고 대응 방향을 구체화할 예정입니다.'
-  // 박스 3(Readability) 은 문장이 아니라 **마지막 문단** 전체를 핑크 — 문구가 바뀌어도 유지 (사용자 지시 2026-10-26)
+  // 수치는 사용자 제공 표 그대로 (에어컨 8→9월 — 하드코딩, 다음 호에서 갱신).
+  // 제목은 "표 1." 같은 번호 없이 붉은 막대만. 표 2(GPT Search) 는 삭제 (사용자 지시 2026-10-26).
+  //
+  // 배치 규칙 — 문장 내용에 기대지 않는다 (사용자가 결론 문구를 고치자 앵커 문장을 못 찾아 색이
+  // 빠지고 표가 폴백 위치로 올라간 회귀, 2026-10-26):
+  //   박스 1·3 모두 **마지막 문단 = 핑크**, 박스 1 은 그 아래(본문 맨 끝)에 표 1.
+  //   본문을 어떻게 고쳐 저장해도 마지막 문단은 핑크, 표는 항상 맨 아래.
+  const OCT_PINK = '#FDA4AF'   // 결론/향후 방향 문단 — 박스 2 의 마지막 문장과 같은 핑크
 
   // 흰 카드 표 — 제목(붉은 막대) + 부제 + 표 + (선택) 각주. 블록 안에 <div> 금지 (stripInserted 제약).
   // 컴팩트: 행 padding 4px·글자 11.5px (사용자 지시 2026-10-26 "높이는 적도록").
@@ -1065,18 +1064,9 @@ function insightV3Parts(meta = {}, lang = 'ko', productsCnty = [], assetBase = '
   // 편집 모드에서는 블록을 편집 불가 섬으로 — 저장(blur) 시 본문 HTML 에 함께 저장되더라도
   // 다음 렌더의 stripInserted 가 걷어내고 다시 끼운다 (멱등).
   const octWrap = _ED ? ' contenteditable="false"' : ''
-  const octBlk = (id, html) => `<div data-blk="${id}" data-br="0"${octWrap}>${html}</div>`
-  const fieldVal = (field, def) => (meta[field] != null && meta[field] !== '') ? sanitizeUserHtml(meta[field]) : def
-  const octProc1 = (h) => {
-    // 표 1 은 박스 맨 아래 — 핑크 결론 문장 뒤 (사용자 지시 2026-10-26). 결론 문장이 없으면 GPT Search 하락 문장 뒤.
-    // stripInserted 가 옛 저장본에 섞인 표 2(data-blk="oct2") 도 함께 걷어낸다 — 다시 끼우지 않음
-    const src = stripInserted(h)
-    const r = insertAfterSentence(src, OCT_P1, octTable1, 'oct1', octWrap)
-    const t1 = r.found ? r.html : insertAfterSentence(src, OCT_A1, octTable1, 'oct1', octWrap).html
-    return colorizeSentence(t1, OCT_P1, OCT_PINK)
-  }
-  const pinkProc = (sentence) => (h) => colorizeSentence(stripInserted(h), sentence, OCT_PINK)
+  // stripInserted 가 옛 저장본에 섞인 블록(표 2 data-blk="oct2" 포함)·색칠을 먼저 걷어낸다 (멱등)
   const pinkLastPara = (h) => colorizeLastParagraph(stripInserted(h), OCT_PINK)
+  const octProc1 = (h) => appendBlock(pinkLastPara(h), octTable1, 'oct1', octWrap)
 
   // [B] 표 아래 이어지는 본문 (선택 편집 — 본문을 표 앞/뒤로 나눠 쓸 수 있게)
   const bodyCont = (field, phKo, phEn, proc) => {
@@ -1100,14 +1090,10 @@ function insightV3Parts(meta = {}, lang = 'ko', productsCnty = [], assetBase = '
   const ex3Ko = `'26년 7월부터 Readability 평가 체계와 대시보드를 새롭게 구축해 LG.com 콘텐츠가 AI가 읽고 활용하기 좋은 상태인지 함께 점검하고자 합니다.<br/><br/>전략 10개 국가 및 글로벌 대표 사이트의 9개 주요 페이지 유형, 총 9,284개 페이지를 대상으로 AI 봇의 1) 사이트 성능, 2) 웹접근성, 3) Basic SEO, 4) 스키마마크업, 5) 고인용 콘텐츠, 6) AI Crawlability 총 6개 영역에서 첫 평가를 진행한 결과, <strong style="color:#FFFFFF;">LG.com의 전체 Readability 평균은 79.7점</strong>으로 나타났습니다.<br/><br/>영역별로는 사이트 성능 99.4점, AI Crawlability 95.4, Basic SEO 89.2점, 웹접근성 83.5점으로 기본적인 페이지 접근성과 기술 환경은 비교적 양호했습니다. 반면, <strong style="color:#FFFFFF;">스키마마크업 33.2점, 고인용 콘텐츠 56.3점</strong>은 상대적으로 낮아 개선이 필요한 영역으로 확인됐습니다.<br/><br/><span style="color:#FDA4AF;">이에 대응하여 FAQ 등 AI 답변에 적합한 콘텐츠 형식 확대, 스키마마크업 자동화, Support 및 PDP 주요 정보의 초기 제공 구조 개선(SSR)을 지속 수행하고자 합니다. 빠른 개선이 필요한 영역은 9월 Committee에 bring-up하고, Visibility 상승으로 이어질 수 있는 기반을 강화할 계획입니다.</span>`
   const ex3En = `From July 2026 we built a new Readability evaluation framework and dashboard to check whether LG.com content is in good shape for AI to read and use.<br/><br/>Across the 10 strategic countries plus the global flagship site — 9 major page types, 9,284 pages in total — the first evaluation covered six areas for AI bots: 1) Site Performance, 2) Web Accessibility, 3) Basic SEO, 4) Schema Markup, 5) Citable Content, 6) AI Crawlability. <strong style="color:#FFFFFF;">LG.com's overall Readability average was 79.7.</strong><br/><br/>By area, Site Performance 99.4, AI Crawlability 95.4, Basic SEO 89.2 and Web Accessibility 83.5 showed relatively sound page accessibility and technical environment. In contrast, <strong style="color:#FFFFFF;">Schema Markup 33.2 and Citable Content 56.3</strong> were relatively low and identified as areas needing improvement.<br/><br/><span style="color:#FDA4AF;">In response, we will continue expanding AI-answer-friendly content formats such as FAQ, automating schema markup, and improving the initial delivery structure (SSR) of key Support and PDP information. Areas needing rapid improvement will be brought up to the September Committee, strengthening the basis for Visibility gains.</span>`
 
-  // 기준 문장이 본문(v3Ex1B2)에 없으면(예: 영문 미편집) 표를 본문 끝에 이어 붙인다
-  const slot1Src = stripInserted(fieldVal('v3Ex1B2', L(ex1Ko, ex1En)))
-  const octTail = (findSentence(slot1Src, OCT_P1) || findSentence(slot1Src, OCT_A1)) ? '' : octBlk('oct1', octTable1)
-
   const execHtml = `
                               <div style="margin:0 0 12px;font-size:13px;color:#E2E8F0;line-height:22px;font-family:${EM_FONT};letter-spacing:-0.3px;">${ed('v3ExIntro', L(introKo, introEn))}</div>
                               <table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;">
-                                ${execItem('v3Ex1T2', L('1. C브랜드 Visibility 현황 분석 – TV·세탁기·냉장고를 중심으로', '1. C-brand Visibility analysis — centered on TV, Washer and Refrigerator'), 'v3Ex1B2', L(ex1Ko, ex1En), octTail + bodyCont('v3Ex1B2b', null, null, pinkProc(OCT_P1)) + bodyCont('v3Ex1B2c', null, null, pinkProc(OCT_P1)), octProc1)}
+                                ${execItem('v3Ex1T2', L('1. C브랜드 Visibility 현황 분석 – TV·세탁기·냉장고를 중심으로', '1. C-brand Visibility analysis — centered on TV, Washer and Refrigerator'), 'v3Ex1B2', L(ex1Ko, ex1En), bodyCont('v3Ex1B2b', null, null, pinkLastPara) + bodyCont('v3Ex1B2c', null, null, pinkLastPara), octProc1)}
                                 ${execItem('v3Ex2T2', L('2. 인용 출처의 변화 - 브랜드 닷컴의 인용비중 증가/PDP를 대신하여 설명형 콘텐츠(Buying Guide/Support) 인용 확대', '2. Shift in citation sources — brand dotcom share up; explanatory content (Buying Guide/Support) cited in place of PDP'), 'v3Ex2B2', L(ex2Ko, ex2En))}
                                 ${execItem('v3Ex3T2', L('3. Readabilty 평가 체계 도입 및 개선 필요 영역 보완 지속', '3. Introducing the Readability framework and continuing to close gaps'), 'v3Ex3B2', L(ex3Ko, ex3En), '', pinkLastPara)}
                               </table>`
