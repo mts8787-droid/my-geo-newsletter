@@ -564,10 +564,12 @@ describe('대시보드 탭 — # 링크', () => {
   })
   it('Readability — 복원·갱신·hashchange 가 있고 탭 id 를 화이트리스트로 검증한다', async () => {
     const s = await read('scripts/render-readability.mjs')
-    expect(s).toMatch(/TAB_IDS\.indexOf\(h0\) >= 0/)      // 복원 (유효 id 만)
-    expect(s).toMatch(/history\.replaceState\(null, '', '#' \+ id\)/)
+    // 복원 — hash '#tab' / '#scope/tab' 를 파싱하되 유효 id 만 (2026-10-26 GNB 분리 후 parseHash)
+    expect(s).toMatch(/tab: TAB_IDS\.indexOf\(tb\) >= 0 \? tb : null/)
+    expect(s).toMatch(/history\.replaceState\(null, '', '#' \+ hashOf\(\)\)/)
     expect(s).toMatch(/addEventListener\('hashchange'/)
-    // 임의 hash 로 state 가 오염되지 않아야 한다
-    expect(s).toMatch(/if \(TAB_IDS\.indexOf\(id\) < 0\) return/)
+    // 임의 hash 로 state 가 오염되지 않아야 한다 — 범위·탭 모두 화이트리스트 밖이면 기본값 유지
+    expect(s).toMatch(/state\.scope = SCOPE_IDS\.indexOf\(sc\) >= 0 \? sc : 'global'/)
+    expect(s).toMatch(/state\.tab = TAB_IDS\.indexOf\(tb\) >= 0 \? tb : state\.tab/)
   })
 })
