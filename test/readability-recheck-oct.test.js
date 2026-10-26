@@ -97,3 +97,29 @@ describe('applyScoringOverride — #26·#27 리뷰 위젯 안 미디어 제외 (
     expect(na.breakdown.schema_markup.items.ai_schema_image.pass).toBeNull()
   })
 })
+
+// ─── 상류 7438161 (2026-10-26) — 사업부 삭제 요청 URL 제외 + #42 독일어 Soft 404 오탐 ───
+import { softPhraseIs404, normalizeDeleteKey, parseDeleteUrls, applyScoringOverride as _apply42 } from '../scripts/aggregate-readability.mjs'
+describe('상류 7438161 — 삭제 요청 URL · #42 Soft 404 문구 재판정', () => {
+  it('#42: "nicht gefunden werden" 단독은 404 아님, "Seite … nicht gefunden werden" 은 404', () => {
+    expect(softPhraseIs404('nicht gefunden werden')).toBe(false)
+    expect(softPhraseIs404('Die Seite konnte nicht gefunden werden')).toBe(true)
+    expect(softPhraseIs404('Seite nicht gefunden')).toBe(true)
+    expect(softPhraseIs404('Page not found')).toBe(true)
+  })
+  it('#42: 저장 문구 FAIL 은 현재 패턴으로 재판정, 본문 길이 FAIL 은 유지', () => {
+    const mk = (value) => ({ total: 0, breakdown: { citable_content: { items: {} }, ai_crawlability: { items: { ai_soft_404: { pass: false, value, hint: 'soft 404' } } } } })
+    const a = _apply42(mk("HTTP 200 · 'nicht gefunden werden'"), { url: 'https://www.lg.com/de/x', pt: 'support_troubleshoot', upstreamGated: true })
+    const b = _apply42(mk('본문 103자'), { url: 'https://www.lg.com/de/x', pt: 'support_troubleshoot', upstreamGated: true })
+    const it42 = s => Object.values(s.breakdown).map(bd => bd.items && bd.items.ai_soft_404).find(Boolean)
+    expect(it42(a).pass).toBe(true)
+    expect(it42(b).pass).toBe(false)
+  })
+  it('삭제 요청 URL 키 — 상류 norm_key 와 동일 (www·끝 슬래시·쿼리·대소문자 무시)', () => {
+    const set = parseDeleteUrls('url,requester,date\nhttps://www.lg.com/ca_en/support/X/,a,2026-10-26\n')
+    expect(set.size).toBe(1)
+    expect(set.has(normalizeDeleteKey('https://lg.com/ca_en/support/x?utm=1#top'))).toBe(true)
+    expect(set.has(normalizeDeleteKey('https://www.lg.com/ca_en/support/y/'))).toBe(false)
+    expect(parseDeleteUrls('foo,bar\n1,2')).toBeNull()
+  })
+})

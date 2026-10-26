@@ -154,7 +154,7 @@
       "date": "2026-10-24",
       "channel": "staging",
       "auditType": "regular",
-      "generatedAt": "2026-10-26T02:34:03.230Z",
+      "generatedAt": "2026-10-26T08:53:45.955Z",
       "countries": [
         "au",
         "br",
@@ -168,7 +168,7 @@
         "us",
         "vn"
       ],
-      "overallAvg": 85.2,
+      "overallAvg": 85.3,
       "urlCount": 8397
     }
   ]

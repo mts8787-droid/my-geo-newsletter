@@ -1,11 +1,11 @@
 ==============================================================================
 LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
-생성: 2026-10-26 00:37 UTC
-대상: 12개국 최신 run / 국가별 page_type ≤100 샘플
+생성: 2026-10-26 02:56 UTC
+대상: 13개국 최신 run / 국가별 page_type ≤100 샘플
 
 [채점 기준 주의] 2026-06-17 Render 재배포로 #11(헤딩 역순)·#23(FAQ plp)·
 #34(author 스키마) 로직이 바뀌었습니다.
-전 국가(12개) 신(新) 기준으로 채점됨 — 국가 간 직접 비교 가능(각 국가 헤더 [config] 표기).
+전 국가(13개) 신(新) 기준으로 채점됨 — 국가 간 직접 비교 가능(각 국가 헤더 [config] 표기).
 ==============================================================================
 
 ##############################################################################
@@ -1710,6 +1710,198 @@ LG.com GEO / AI Readability Audit — 감점 사유 종합 리포트
       ·   1건: 'hN' N개 — == N 필요 [측정 1]
   - ai_faq_block (#32 · citable_content · 1점) — FAIL 1/19 (5%)  «#32 FAQ Block (콘텐츠)»
       ·   1건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
+
+##############################################################################
+## HS   run=hs_2026-10-24_run_e55a0341ea68.json
+   URL 595건 · 감사성공 581 · [config] 신(2026-06-17 재배포)
+   등급(성공 기준): Good 445 / Need Improvement 136 / Poor 0
+   ⚠ 감사 불가(fetch 실패) 14건 — 아래 감점 집계에서 제외:
+        · 14건: HTTP 404 — 200 기대
+##############################################################################
+
+### [microsite] 마이크로사이트/캠페인 — 239건  (감점 항목 20개)
+  - ai_schema_image (#26 · schema_markup · 1점) — FAIL 239/239 (100%)  «#26 Schema: ImageObject»
+      · 239건: @type='ImageObject' 노드 없음
+  - ai_schema_article (#29 · schema_markup · 1점) — FAIL 93/93 (100%)  «#29 Schema: Article»
+      ·  93건: @type='Article' 노드 없음
+  - ai_summary_box (#35 · citable_content · 1점) — FAIL 237/239 (99%)  «#35 Summary Box (콘텐츠)»
+      · 237건: 요약 블록(헤딩 문구·selector)을 찾지 못했습니다.
+  - ai_schema_video (#27 · schema_markup · 1점) — FAIL 69/140 (49%)  «#27 Schema: VideoObject»
+      ·  69건: @type='VideoObject' 노드 없음
+  - ai_image_filename (#40 · ai_crawlability · 1점) — FAIL 115/239 (48%)  «#40 Image File Name 브랜드 포함»
+      · 115건: 서술적 파일명 N/N (N%) — N% 이상 필요 [측정 1~24]
+  - a11y_image_alt (a11y#9 · accessibility · 1점) — FAIL 100/239 (42%)  «#9 Image Alt 누락 0»
+      · 100건: N개 요소에 'alt' 속성이 없습니다. [측정 1~11]
+  - ai_definition (#33 · citable_content · 1점) — FAIL 81/239 (34%)  «#33 Definition Paragraph»
+      ·  16건: 정의문 N건 — N건 이상 필요 [측정 0]
+      ·  15건: 정의문 N건 — N건 이상 필요 (모델 제외 사유: 질문형 제목) [측정 0]
+      ·  11건: 정의문 N건 — N건 이상 필요 (모델 제외 사유: 질문) [측정 0]
+      ·   8건: 정의문 N건 — N건 이상 필요 (모델 제외 사유: 질문, 내비게이션 나열) [측정 0]
+      · …외 사유 14종
+  - ai_faq_block (#32 · citable_content · 1점) — FAIL 70/239 (29%)  «#32 FAQ Block (콘텐츠)»
+      ·  70건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
+  - ai_citable (#36 · citable_content · 1점) — FAIL 58/239 (24%)  «#36 Citable Sentence ≥ 5개 (트러블슈팅·PLP 3개)»
+      ·  13건: 인용 가능 문장 N개 — N개 이상 필요 (모델 제외 사유: UI 텍스트, 모호한 마케팅 문구) [측정 1~2]
+      ·   6건: 인용 가능 문장 N개 — N개 이상 필요 (모델 제외 사유: UI 텍스트, 마케팅 문구) [측정 0~1]
+      ·   4건: 인용 가능 문장 N개 — N개 이상 필요 (모델 제외 사유: UI 텍스트, 행동 유도 문구) [측정 2~3]
+      ·   4건: 인용 가능 문장 N개 — N개 이상 필요 (모델 제외 사유: 모호한 마케팅 문구, 마케팅 문구) [측정 0]
+      · …외 사유 22종
+  - ai_schema_faq (#23 · schema_markup · 1점) — FAIL 31/168 (18%)  «#23 Schema: FAQPage»
+      ·  31건: @type='FAQPage' 노드 없음
+  - perf_cache_control (#4 · performance · 1점) — FAIL 34/239 (14%)  «#4 Cache-Control max-age 설정»
+      ·  34건: max-age 디렉티브가 없습니다.
+  - ai_schema_breadcrumb (#21 · schema_markup · 1점) — FAIL 34/239 (14%)  «#21 Schema: BreadcrumbList»
+      ·  34건: @type='BreadcrumbList' 노드 없음
+  - perf_redirect (#6 · performance · 1점) — FAIL 25/239 (10%)  «#6 Redirect ≤ 1»
+      ·  25건: 리다이렉트 N회 — N회 이하 권장 [측정 2]
+  - seo_h1 (#16 · seo · 1점) — FAIL 17/239 (7%)  «#16 H1 정확히 1개»
+      ·  17건: 'hN' N개 — == N 필요 [측정 1]
+  - a11y_heading_hier (a11y#11 · accessibility · 1점) — FAIL 15/239 (6%)  «#11 Heading Hierarchy»
+      ·  15건: 헤딩 역순 N건 — 첫 헤딩(hN)보다 상위 레벨이 뒤에 등장 [측정 1~6]
+  - seo_sitemap (#19 · seo · 1점) — FAIL 14/239 (6%)  «#19 Sitemap (1개월 내)»
+      ·  14건: 마지막 갱신 N-N-N — N일 이내 필요 [측정 2026]
+  - seo_open_graph (#18 · seo · 1점) — FAIL 13/239 (5%)  «#18 Open Graph (title+image)»
+      ·   8건: 누락: image
+      ·   5건: 누락: title
+  - a11y_semantic (a11y#10 · accessibility · 1점) — FAIL 6/239 (3%)  «#10 Semantic HTML»
+      ·   6건: 헤딩 N + 랜드마크 N = N — 의미 구조 N+ 필요 [측정 2]
+  - seo_meta_desc (#14 · seo · 1점) — FAIL 3/239 (1%)  «#14 Meta Description»
+      ·   3건: 'meta[name='description' i]' 요소를 찾을 수 없습니다.
+  - seo_canonical (#15 · seo · 1점) — FAIL 1/239 (0%)  «#15 Canonical (동일 host)»
+      ·   1건: canonical='https://wwwstg.lg.com/levant_en/ice-solution' — 다른 도메인을 가리킵니다
+
+### [experience] 익스피어리언스 — 149건  (감점 항목 14개)
+  - ai_schema_image (#26 · schema_markup · 1점) — FAIL 149/149 (100%)  «#26 Schema: ImageObject»
+      · 149건: @type='ImageObject' 노드 없음
+  - ai_schema_article (#29 · schema_markup · 1점) — FAIL 122/122 (100%)  «#29 Schema: Article»
+      · 122건: @type='Article' 노드 없음
+  - ai_summary_box (#35 · citable_content · 1점) — FAIL 146/149 (98%)  «#35 Summary Box (콘텐츠)»
+      · 146건: 요약 블록(헤딩 문구·selector)을 찾지 못했습니다.
+  - ai_schema_video (#27 · schema_markup · 1점) — FAIL 8/16 (50%)  «#27 Schema: VideoObject»
+      ·   8건: @type='VideoObject' 노드 없음
+  - a11y_image_alt (a11y#9 · accessibility · 1점) — FAIL 71/149 (48%)  «#9 Image Alt 누락 0»
+      ·  71건: N개 요소에 'alt' 속성이 없습니다. [측정 1~6]
+  - ai_definition (#33 · citable_content · 1점) — FAIL 64/149 (43%)  «#33 Definition Paragraph»
+      ·  20건: 정의문 N건 — N건 이상 필요 [측정 0]
+      ·   6건: 정의문 N건 — N건 이상 필요 (모델 제외 사유: 질문, 제목형 글) [측정 0]
+      ·   5건: 정의문 N건 — N건 이상 필요 (모델 제외 사유: 질문) [측정 0]
+      ·   4건: 정의문 N건 — N건 이상 필요 (모델 제외 사유: 제목형 글) [측정 0]
+      · …외 사유 23종
+  - ai_citable (#36 · citable_content · 1점) — FAIL 28/149 (19%)  «#36 Citable Sentence ≥ 5개 (트러블슈팅·PLP 3개)»
+      ·   4건: 인용 가능 문장 N개 — N개 이상 필요 (모델 제외 사유: 제품 없는 주의 문구, 대상 제품 없는 주의 문구) [측정 0~2]
+      ·   3건: 인용 가능 문장 N개 — N개 이상 필요 (모델 제외 사유: 사용 지시문, 사용 안내) [측정 1]
+      ·   3건: 인용 가능 문장 N개 — N개 이상 필요 (모델 제외 사유: UI 텍스트, 질문) [측정 3]
+      ·   2건: 인용 가능 문장 N개 — N개 이상 필요 (모델 제외 사유: 대상 제품 없는 주의 문구, 제품 없는 주의 문구) [측정 2~4]
+      · …외 사유 16종
+  - perf_cache_control (#4 · performance · 1점) — FAIL 18/149 (12%)  «#4 Cache-Control max-age 설정»
+      ·  18건: max-age 디렉티브가 없습니다.
+  - ai_schema_breadcrumb (#21 · schema_markup · 1점) — FAIL 18/149 (12%)  «#21 Schema: BreadcrumbList»
+      ·  18건: @type='BreadcrumbList' 노드 없음
+  - seo_h1 (#16 · seo · 1점) — FAIL 15/149 (10%)  «#16 H1 정확히 1개»
+      ·  15건: 'hN' N개 — == N 필요 [측정 1]
+  - ai_faq_block (#32 · citable_content · 1점) — FAIL 10/149 (7%)  «#32 FAQ Block (콘텐츠)»
+      ·  10건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
+  - ai_image_filename (#40 · ai_crawlability · 1점) — FAIL 6/149 (4%)  «#40 Image File Name 브랜드 포함»
+      ·   6건: 서술적 파일명 N/N (N%) — N% 이상 필요 [측정 6~16]
+  - a11y_heading_hier (a11y#11 · accessibility · 1점) — FAIL 5/149 (3%)  «#11 Heading Hierarchy»
+      ·   5건: 헤딩 역순 N건 — 첫 헤딩(hN)보다 상위 레벨이 뒤에 등장 [측정 1~14]
+  - seo_meta_desc (#14 · seo · 1점) — FAIL 1/149 (1%)  «#14 Meta Description»
+      ·   1건: 'meta[name='description' i]' 요소를 찾을 수 없습니다.
+
+### [buying_guide] 구매 가이드 — 128건  (감점 항목 13개)
+  - ai_schema_image (#26 · schema_markup · 1점) — FAIL 128/128 (100%)  «#26 Schema: ImageObject»
+      · 128건: @type='ImageObject' 노드 없음
+  - ai_summary_box (#35 · citable_content · 1점) — FAIL 127/128 (99%)  «#35 Summary Box (콘텐츠)»
+      · 127건: 요약 블록(헤딩 문구·selector)을 찾지 못했습니다.
+  - ai_definition (#33 · citable_content · 1점) — FAIL 60/128 (47%)  «#33 Definition Paragraph»
+      ·  27건: 정의문 N건 — N건 이상 필요 [측정 0]
+      ·  21건: 정의문 N건 — N건 이상 필요 (모델 제외 사유: 질문) [측정 0]
+      ·   7건: 정의문 N건 — N건 이상 필요 (모델 제외 사유: 내비게이션 메시지) [측정 0]
+      ·   3건: 정의문 N건 — N건 이상 필요 (모델 제외 사유: 질문, 일반론) [측정 0]
+      · …외 사유 2종
+  - ai_citable (#36 · citable_content · 1점) — FAIL 53/128 (41%)  «#36 Citable Sentence ≥ 5개 (트러블슈팅·PLP 3개)»
+      ·  10건: 인용 가능 문장 N개 — N개 이상 필요 (모델 제외 사유: UI 텍스트, 내비게이션 텍스트) [측정 0~4]
+      ·   4건: 인용 가능 문장 N개 — N개 이상 필요 (모델 제외 사유: UI 텍스트, 질문) [측정 0~4]
+      ·   3건: 인용 가능 문장 N개 — N개 이상 필요 (모델 제외 사유: UI 텍스트, UI 알림) [측정 0]
+      ·   3건: 인용 가능 문장 N개 — N개 이상 필요 (모델 제외 사유: 잘린 문장 조각, 대상 제품 없는 주의 문구) [측정 0]
+      · …외 사유 25종
+  - ai_faq_block (#32 · citable_content · 1점) — FAIL 11/128 (9%)  «#32 FAQ Block (콘텐츠)»
+      ·  11건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
+  - a11y_image_alt (a11y#9 · accessibility · 1점) — FAIL 9/128 (7%)  «#9 Image Alt 누락 0»
+      ·   9건: N개 요소에 'alt' 속성이 없습니다. [측정 1~9]
+  - seo_meta_desc (#14 · seo · 1점) — FAIL 8/128 (6%)  «#14 Meta Description»
+      ·   8건: 'meta[name='description' i]' 요소를 찾을 수 없습니다.
+  - seo_h1 (#16 · seo · 1점) — FAIL 8/128 (6%)  «#16 H1 정확히 1개»
+      ·   8건: 'hN' N개 — == N 필요 [측정 1]
+  - ai_ssr_ratio (#37 · ai_crawlability · 1점) — FAIL 7/128 (5%)  «#37 JS HTML Text Ratio ≥ 60%»
+      ·   7건: SSR 비율 N% — N% 이상 필요 [측정 48]
+  - ai_schema_video (#27 · schema_markup · 1점) — FAIL 4/75 (5%)  «#27 Schema: VideoObject»
+      ·   4건: @type='VideoObject' 노드 없음
+  - ai_image_filename (#40 · ai_crawlability · 1점) — FAIL 2/128 (2%)  «#40 Image File Name 브랜드 포함»
+      ·   2건: 서술적 파일명 N/N (N%) — N% 이상 필요 [측정 7]
+  - ai_schema_faq (#23 · schema_markup · 1점) — FAIL 1/108 (1%)  «#23 Schema: FAQPage»
+      ·   1건: @type='FAQPage' 노드 없음
+  - seo_indexable (#17 · seo · 1점) — FAIL 1/128 (1%)  «#17 Indexing 허용 (meta robots 또는 X-Robots-Tag)»
+      ·   1건: 'noindex' 선언으로 색인이 차단됩니다.
+
+### [pdp] 제품 상세 (PDP) — 34건  (감점 항목 14개)
+  - ai_schema_image (#26 · schema_markup · 1점) — FAIL 28/34 (82%)  «#26 Schema: ImageObject»
+      ·  28건: @type='ImageObject' 노드 없음
+  - ai_image_filename (#40 · ai_crawlability · 1점) — FAIL 25/34 (74%)  «#40 Image File Name 브랜드 포함»
+      ·  25건: 서술적 파일명 N/N (N%) — N% 이상 필요 [측정 3~41]
+  - ai_schema_product (#25 · schema_markup · 1점) — FAIL 20/34 (59%)  «#25 Schema: Product 풀세트 (PDP)»
+      ·  20건: 필수 필드 누락: offers.price, offers.availability
+  - ai_schema_offer (#43 · schema_markup · 1점) — FAIL 20/34 (59%)  «#43 Schema: Offer»
+      ·  20건: @type='Offer' 노드 없음
+  - ai_schema_video (#27 · schema_markup · 1점) — FAIL 7/13 (54%)  «#27 Schema: VideoObject»
+      ·   7건: @type='VideoObject' 노드 없음
+  - ai_definition (#33 · citable_content · 1점) — FAIL 15/34 (44%)  «#33 Definition Paragraph»
+      ·   9건: 정의문 N건 — N건 이상 필요 (모델 제외 사유: 인증 각주) [측정 0]
+      ·   3건: 정의문 N건 — N건 이상 필요 (모델 제외 사유: 인증 기관·기능 구체 사실) [측정 0]
+      ·   2건: 정의문 N건 — N건 이상 필요 [측정 0]
+      ·   1건: 정의문 N건 — N건 이상 필요 (모델 제외 사유: 스펙표 조각, 인증 기관·기능 구체 사실) [측정 0]
+  - ai_schema_faq (#23 · schema_markup · 1점) — FAIL 10/26 (38%)  «#23 Schema: FAQPage»
+      ·  10건: @type='FAQPage' 노드 없음
+  - ai_schema_breadcrumb (#21 · schema_markup · 1점) — FAIL 11/34 (32%)  «#21 Schema: BreadcrumbList»
+      ·  11건: @type='BreadcrumbList' 노드 없음
+  - ai_schema_rating_or_review (#44 · schema_markup · 1점) — FAIL 11/34 (32%)  «#44 Schema: AggregateRating OR Review»
+      ·  11건: types ['AggregateRating', 'Review'] 중 하나도 JSON-LD에 없음 (둘 중 하나 필요)
+  - ai_summary_box (#35 · citable_content · 1점) — FAIL 11/34 (32%)  «#35 Summary Box (콘텐츠)»
+      ·  11건: 요약 블록(헤딩 문구·selector)을 찾지 못했습니다.
+  - ai_pdp_thumbnails (#38 · ai_crawlability · 1점) — FAIL 11/34 (32%)  «#38 PDP 썸네일 3장 이상 SSR»
+      ·  11건: 'img[src*='PDPGalleryThumbnail'], [class*='Product-ImageGrid'] img, .c-summary-gallery img, .c-gallery img, .swiper-wrapper .swiper-slide img' N개 — >= N 필요 [측정 0]
+  - ai_faq_block (#32 · citable_content · 1점) — FAIL 8/34 (24%)  «#32 FAQ Block (콘텐츠)»
+      ·   8건: 키워드(faq, 자주 묻는, 자주묻는...)를 포함한 요소를 찾을 수 없습니다.
+  - ai_citable (#36 · citable_content · 1점) — FAIL 6/34 (18%)  «#36 Citable Sentence ≥ 5개 (트러블슈팅·PLP 3개)»
+      ·   2건: 인용 가능 문장 N개 — N개 이상 필요 (모델 제외 사유: UI 텍스트, 인용할 구체 사실 없음) [측정 0]
+      ·   1건: 인용 가능 문장 N개 — N개 이상 필요 (모델 제외 사유: 면책 고지, 문장 조각) [측정 2]
+      ·   1건: 인용 가능 문장 N개 — N개 이상 필요 (모델 제외 사유: 스펙표 텍스트 뭉침, 면책 고지) [측정 3]
+      ·   1건: 인용 가능 문장 N개 — N개 이상 필요 (모델 제외 사유: UI 텍스트, 문장 조각) [측정 2]
+      · …외 사유 1종
+  - a11y_image_alt (a11y#9 · accessibility · 1점) — FAIL 5/34 (15%)  «#9 Image Alt 누락 0»
+      ·   5건: N개 요소에 'alt' 속성이 없습니다. [측정 1]
+
+### [installation_guide] 설치 가이드 — 31건  (감점 항목 6개)
+  - ai_schema_image (#26 · schema_markup · 1점) — FAIL 31/31 (100%)  «#26 Schema: ImageObject»
+      ·  31건: @type='ImageObject' 노드 없음
+  - ai_summary_box (#35 · citable_content · 1점) — FAIL 31/31 (100%)  «#35 Summary Box (콘텐츠)»
+      ·  31건: 요약 블록(헤딩 문구·selector)을 찾지 못했습니다.
+  - ai_citable (#36 · citable_content · 1점) — FAIL 22/31 (71%)  «#36 Citable Sentence ≥ 5개 (트러블슈팅·PLP 3개)»
+      ·   8건: 인용 가능 문장 N개 — N개 이상 필요 (모델 제외 사유: 대상 제품 없는 주의 문구, 질문) [측정 3~4]
+      ·   4건: 인용 가능 문장 N개 — N개 이상 필요 (모델 제외 사유: 제품 없는 주의 문구, 대상 제품 없는 주의 문구) [측정 2~3]
+      ·   3건: 인용 가능 문장 N개 — N개 이상 필요 (모델 제외 사유: 대상 제품 없는 주의 문구, 제품 없는 주의 문구) [측정 4]
+      ·   2건: 인용 가능 문장 N개 — N개 이상 필요 (모델 제외 사유: 제품 없는 주의 문구, 질문) [측정 0~4]
+      · …외 사유 5종
+  - ai_definition (#33 · citable_content · 1점) — FAIL 20/31 (65%)  «#33 Definition Paragraph»
+      ·   7건: 정의문 N건 — N건 이상 필요 (모델 제외 사유: 매뉴얼 참조 안내) [측정 0]
+      ·   4건: 정의문 N건 — N건 이상 필요 (모델 제외 사유: 질문, 제목형 질문) [측정 0]
+      ·   3건: 정의문 N건 — N건 이상 필요 (모델 제외 사유: 제목형 질문) [측정 0]
+      ·   2건: 정의문 N건 — N건 이상 필요 (모델 제외 사유: 내비게이션 메시지) [측정 0]
+      · …외 사유 2종
+  - a11y_image_alt (a11y#9 · accessibility · 1점) — FAIL 18/31 (58%)  «#9 Image Alt 누락 0»
+      ·  18건: N개 요소에 'alt' 속성이 없습니다. [측정 1~4]
+  - ai_schema_video (#27 · schema_markup · 1점) — FAIL 7/31 (23%)  «#27 Schema: VideoObject»
+      ·   7건: @type='VideoObject' 노드 없음
 
 ##############################################################################
 ## IN   run=in_2026-10-24_run_5b2f657e14b3.json

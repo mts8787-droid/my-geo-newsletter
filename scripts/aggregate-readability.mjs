@@ -201,6 +201,37 @@ const EXCLUDED_PT = { unknown: 1, home: 1, business: 1, promotion: 1, about: 1, 
 const EXCLUDED_URL_RE = /\/(lg-story|lifesgood|lifes-good)(\/|$)/i
 function isExcludedUrl(url) { return EXCLUDED_URL_RE.test(String(url || '')) }
 
+// 사업부 삭제 요청 URL — 상류 reports/delete_urls.csv (시트 'Appendix.Delet URL' → delete_urls.py).
+// 상류 gen_dashboard_data.is_excluded 의 'delete_request' 와 동일하게 집계·Raw·CSV 에서 뺀다
+// (2026-10-26 사용자 지시, 첫 요청 71건 = 전부 트러블슈팅 9개국). 비교 키는 상류 norm_key 와 동일.
+export function normalizeDeleteKey(u) {
+  let s = String(u || '').trim()
+  s = s.replace(/^(?:https?|ps|ttps):?\/\//i, 'https://')
+  s = s.replace(/^https:\/\/(?:www\.)?lg\.com/i, 'https://www.lg.com')
+  s = s.split('#')[0].split('?')[0]
+  return s.replace(/\/+$/, '').toLowerCase()
+}
+export function parseDeleteUrls(csvText) {
+  const lines = String(csvText || '').replace(/^﻿/, '').split(/\r?\n/).filter(l => l.trim())
+  if (!lines.length) return null
+  const head = lines[0].split(',').map(h => h.trim().toLowerCase())
+  const ui = head.indexOf('url')
+  if (ui < 0) return null
+  const set = new Set()
+  for (const l of lines.slice(1)) { const u = (l.split(',')[ui] || '').trim(); if (/^https?:/i.test(u)) set.add(normalizeDeleteKey(u)) }
+  return set
+}
+let DELETE_KEYS = new Set()
+function loadDeleteUrls(srcDir) {
+  const p = join(srcDir || DEFAULT_SRC, '..', '..', 'reports', 'delete_urls.csv')
+  if (!existsSync(p)) { _logWarn('aggregate-readability', `삭제 요청 URL 목록 없음 — ${p} (제외 없이 집계)`); return new Set() }
+  const s = parseDeleteUrls(readFileSync(p, 'utf8'))
+  if (!s) { _logWarn('aggregate-readability', `삭제 요청 URL 헤더 인식 실패 — ${p}`); return new Set() }
+  _logInfo('aggregate-readability', `삭제 요청 URL ${s.size}건 로드 — 집계 제외`)
+  return s
+}
+function isDeleteRequested(url) { return DELETE_KEYS.has(normalizeDeleteKey(url)) }
+
 // ── 단종/비활성 PDP 제외 (사용자 지시 2026-09-21) ──────────────────────────
 // PLP 상품 API(Coveo) 활성 목록(상류 reports/plp/<cc>.txt) 밖의 PDP 는 단종·
 // 판매종료로 보고 제외. 상류 gen_dashboard_data.is_inactive_pdp_url 과 동일 판정.
@@ -500,7 +531,31 @@ function recheckSchemaFields(ctx, typeName, fields) {
 
 // ctx = { url, psi, pt, jsonldRaw } — psi 는 psi-<date>.json 의 results (url → { lab, crux, ... }),
 //       pt 는 정규화된 페이지타입 id, jsonldRaw 는 result.json_ld.raw (JSON-LD 원본 배열)
+// #42 Soft 404 문구 — 상류 rule_engine._SOFT404_PHRASES 와 동일 (2026-10-26 상류 7438161).
+// 'nicht gefunden werden' 은 'Seite' 동반 시만 — 단독으로는 DE 트러블슈팅 본문
+// ("einige Kanäle nicht gefunden werden") 까지 잡는 오탐이었다.
+const SOFT404_PHRASES = new RegExp('(?:' + [
+  "page not found|page you(?:'re| are) looking for|page (?:does ?n[o']t|cannot be) (?:exist|found)",
+  "we can(?:'t|not) find|sorry,? (?:the|this) page|404 error|error 404",
+  '페이지를 찾을 수 없|찾으시는 페이지|존재하지 않는 페이지',
+  'p[áa]gina no (?:encontrada|existe)|no se (?:encontr[óo]|ha encontrado) la p[áa]gina',
+  'seite (?:nicht gefunden|wurde nicht gefunden)|seite[^.]{0,60}nicht gefunden werden',
+  'p[áa]gina n[ãa]o (?:encontrada|existe|foi encontrada)',
+  'kh[ôo]ng t[ìi]m th[ấa]y trang|trang kh[ôo]ng t[ồo]n t[ạa]i',
+  'pagina niet gevonden|pagina (?:kan niet worden|is niet) gevonden|bestaat niet(?: meer)?',
+].join('|') + ')', 'i')
+export function softPhraseIs404(phrase) { return SOFT404_PHRASES.test(String(phrase || '')) }
+
 const RECHECK = {
+  // #42 Soft 404 — 문구로 걸린 FAIL 은 저장 문구를 현재 패턴으로 재판정 (상류 gen_dashboard_data 와 동일).
+  // value 예: "HTTP 200 · 'nicht gefunden werden'". 본문 길이 FAIL("본문 103자")은 저장값 그대로.
+  ai_soft_404(it) {
+    if (it.pass !== false) return null
+    const m = /^HTTP 200 · '(.*)'$/.exec(String(it.value == null ? '' : it.value))
+    if (!m) return null
+    const fail = softPhraseIs404(m[1])
+    return { pass: !fail, hint: fail ? it.hint : null }
+  },
   // PSI 의 server-response-time(lab) 을 정본으로 사용. 크롤러 자체 측정값(it.value)은 쓰지 않는다.
   //  - psi 파일 자체가 없으면 → null (크롤러 값 기반 원본 판정 유지, 하위 호환)
   //  - psi 는 있는데 이 URL 만 없거나 실패면 → na (채점 제외). 두 측정 체계를 섞으면
@@ -1047,6 +1102,7 @@ function main() {
   const ptLabelMap = {}
   // HS 콘텐츠 탭 — 시트 URL 키 → 레코드 (국가 run + hs 그룹 run 전부에서 수집, 상한 없음)
   const hsSheet = loadHsSheet(SRC)
+  DELETE_KEYS = loadDeleteUrls(SRC)
   const hsByKey = new Map()
   const noteHs = (summaryRow, rpt, measured) => {
     const hit = hsSheetHit(hsSheet, summaryRow)
@@ -1115,7 +1171,7 @@ function main() {
     const items = []
     // 측정이 성립하지 않은 페이지 제외 카운터 — 아래 [DETECT] 참조
     let skipNoScore = 0, skipFetchFail = 0
-    let skipExcludedUrl = 0
+    let skipExcludedUrl = 0, skipDeleteReq = 0
     const isHsGroup = meta.cc === HS_GROUP_CC
     for (const s of summary) {
       if (!s || !s.result) continue
@@ -1141,6 +1197,7 @@ function main() {
       if (rpt && rpt.excluded) continue
       // 영구 제외 URL (lg-story / lifesgood) — 집계·Raw·CSV 어디에도 넣지 않는다
       if (isExcludedUrl(url)) { skipExcludedUrl++; continue }
+      if (isDeleteRequested(url)) { skipDeleteReq++; continue }   // 사업부 삭제 요청 (상류 delete_request)
       if (!sc || typeof sc.total !== 'number') { skipNoScore++; continue }
       if (isFetchFailed(sc)) { skipFetchFail++; continue }
       items.push({ result: s.result, url, rpt })
@@ -1152,6 +1209,7 @@ function main() {
     if (skipNoScore || skipFetchFail) {
       _logInfo('aggregate-readability', `${meta.cc}: 측정 미성립 제외 — 비-200/fetch실패 ${skipFetchFail}, 미채점 ${skipNoScore}`)
     }
+    if (skipDeleteReq) _logInfo('aggregate-readability', `${meta.cc}: 사업부 삭제 요청 URL ${skipDeleteReq}건 제외`)
     if (skipExcludedUrl) {
       _logInfo('aggregate-readability', `${meta.cc}: 영구 제외 URL ${skipExcludedUrl}건 (lg-story/lifesgood)`)
     }
