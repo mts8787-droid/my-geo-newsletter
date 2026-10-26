@@ -243,8 +243,10 @@ function readabilityClient() {
   var BC = RD.bandColor || { good: '#15803D', warn: '#B45309', crit: '#BE123C', na: '#94A3B8' }
   var BAND = RD.band || { good: 80, warn: 50 }
   var LEAD = BC.good, BEHIND = BC.warn, CRIT = BC.crit, COMP = BC.na, RED = '#CF0652'
-  var state = { tab: 'country', cc: 'all', pt: 'all', fcheck: 'all', pf: 'all' }
+  var state = { tab: 'country', cc: 'all', pt: 'all', fcheck: 'all', pf: 'all', t2: 'all', pr: 'all' }
   var _rawData = null
+  // HS 콘텐츠 탭이 있는 측정분이 하나라도 있으면 탭을 노출 (없는 월에서는 안내 문구)
+  function anyHs() { if (RD.hs) return true; if (!ALL) return false; return Object.keys(ALL).some(function (d) { return !!ALL[d].hs }) }
 
   function esc(s) {
     return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
@@ -279,7 +281,7 @@ function readabilityClient() {
       '</div><div class="section-body">' + body + '</div></div>'
   }
   function getScope(cc) { return cc === 'all' ? RD.overall : (RD.countries[cc] || RD.overall) }
-  function ccLabel(cc) { return RD.ccName[cc] || cc.toUpperCase() }
+  function ccLabel(cc) { return RD.ccName[cc] || (RD.hs && RD.hs.sites && RD.hs.sites[cc]) || cc.toUpperCase() }
 
   function renderCountry() {
     var pt = state.pt, scope = getScope(state.cc)
@@ -293,7 +295,10 @@ function readabilityClient() {
       '<div class="hero-body"><div class="hero-left">' +
       '<div class="hero-label">' + esc(scopeName) + (ptLabelTxt ? ' · ' + esc(ptLabelTxt) : '') + ' ' + esc(I.heroAvg || '평균') + '</div>' +
       '<div class="hero-score-row"><span class="hero-score" style="color:' + scoreColor(heroScore) + '">' + (heroScore == null ? '—' : heroScore) + '</span><span class="hero-pct">/ 100</span></div>' +
-      '<div class="hero-info">URL <strong>' + num(scope.urlCount) + '</strong> · ' + esc(I.heroScored || '채점') + ' <strong>' + num(scope.scoredCount) + '</strong> · ' + esc(I.heroCountries || '국가') + ' <strong>' + Object.keys(RD.countries).length + '</strong></div>' +
+      '<div class="hero-info">URL <strong>' + num(scope.urlCount) + '</strong> · ' + esc(I.heroScored || '채점') + ' <strong>' + num(scope.scoredCount) + '</strong> · ' + esc(I.heroCountries || '국가') + ' <strong>' + Object.keys(RD.countries).length + '</strong>' +
+      // HS 콘텐츠 흔적 — 전체 범위일 때만 한 줄 (상세는 HS 콘텐츠 탭)
+      (RD.hs && state.cc === 'all' ? ' · ' + esc(I.tabHs || 'HS 콘텐츠') + ' <strong>' + num(RD.hs.measured) + '</strong>' + (RD.hs.avgScore != null ? ' (' + esc(I.heroAvg || '평균') + ' ' + RD.hs.avgScore + ')' : '') : '') +
+      '</div>' +
       '</div></div></div>'
 
     var ccList = state.cc === 'all' ? Object.keys(RD.countries) : [state.cc]
@@ -641,6 +646,199 @@ function readabilityClient() {
     document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(a.href)
   }
 
+  // ── HS 콘텐츠 탭 — HS 디지털컨텐츠팀 URL 시트 전수 (사용자 결정 2026-10-26) ─────────────
+  // 스냅샷 hs.urls 의 per-URL 기록(점수·미적용 체크·실패 체크)으로 모든 집계를 여기서 다시 센다.
+  // 서버가 유형×제품×사이트 조합을 미리 다 셀 수 없어서 — 필터 조합마다 같은 규칙으로 계산한다.
+  function hsRows() {
+    var H = RD.hs; if (!H) return []
+    return H.urls.filter(function (r) {
+      if (state.cc !== 'all' && r.cc !== state.cc) return false
+      if (state.pt !== 'all' && r.pt !== state.pt) return false
+      if (state.t2 !== 'all' && r.t2 !== state.t2) return false
+      if (state.pr !== 'all' && r.pr !== state.pr) return false
+      return true
+    })
+  }
+  function hsOk(rows) { return rows.filter(function (r) { return r.st === 'ok' }) }
+  function hsAvg(rows) {
+    var m = hsOk(rows); if (!m.length) return null
+    return +(m.reduce(function (s, r) { return s + r.s }, 0) / m.length).toFixed(1)
+  }
+  function hsCheckLabel(id) {
+    var d = (RD.checkDefs || {})[id]; var c = (RD.overall.checks || {})[id]
+    return stripParens((d && d.label) || (c && c.label) || id)
+  }
+  function hsCheckCat(id) { var c = (RD.overall.checks || {})[id]; return c ? c.cat : null }
+  // 체크별 적용/실패 수 — na 는 체크 인덱스 배열, f 는 실패 체크 인덱스 배열
+  function hsCheckStats(rows) {
+    var ids = RD.hs.checkIds, out = {}
+    ids.forEach(function (id) { out[id] = { app: 0, fail: 0 } })
+    hsOk(rows).forEach(function (r) {
+      var na = {}; r.na.forEach(function (i) { na[i] = 1 })
+      ids.forEach(function (id, i) { if (!na[i]) out[id].app++ })
+      r.f.forEach(function (i) { if (ids[i]) out[ids[i]].fail++ })
+    })
+    return out
+  }
+  // 영역 점수 = 페이지별(영역 내 통과/적용) 평균 — 국가·페이지타입 탭의 categories 와 같은 산식
+  function hsCatScores(rows) {
+    var ids = RD.hs.checkIds, catOfIdx = ids.map(hsCheckCat), sum = {}, cnt = {}
+    hsOk(rows).forEach(function (r) {
+      var na = {}; r.na.forEach(function (i) { na[i] = 1 })
+      var fail = {}; r.f.forEach(function (i) { fail[i] = 1 })
+      var app = {}, pass = {}
+      ids.forEach(function (id, i) {
+        var c = catOfIdx[i]; if (!c || na[i]) return
+        app[c] = (app[c] || 0) + 1; if (!fail[i]) pass[c] = (pass[c] || 0) + 1
+      })
+      Object.keys(app).forEach(function (c) { sum[c] = (sum[c] || 0) + (pass[c] || 0) / app[c] * 100; cnt[c] = (cnt[c] || 0) + 1 })
+    })
+    var out = {}; CATS.forEach(function (c) { out[c] = cnt[c] ? +(sum[c] / cnt[c]).toFixed(1) : null })
+    return out
+  }
+  function hsStLabel(st) { return st === 'ok' ? (I.hsStOk || '측정') : st === 'error' ? (I.hsStError || '응답 오류') : st === 'unscored' ? (I.hsStUnscored || '미채점') : (I.hsStUnmeasured || '미측정') }
+  function hsCountBy(rows, key) { var m = {}; rows.forEach(function (r) { var k = r[key] || ''; m[k] = (m[k] || 0) + 1 }); return m }
+  function hsSortedKeys(rows, key) { var m = hsCountBy(rows, key); return Object.keys(m).sort(function (a, b) { return m[b] - m[a] || a.localeCompare(b) }) }
+  function hsCsv(rows) {
+    var ids = RD.hs.checkIds
+    function hsCsvCell(v) { v = String(v == null ? '' : v); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v }
+    var lines = ['site,segment,content_type,product,page_type,url,live_date,status,score,failed_items']
+    rows.forEach(function (r) {
+      lines.push([hsCsvCell(ccLabel(r.cc)), hsCsvCell(r.seg), hsCsvCell(r.t2), hsCsvCell(r.pr), hsCsvCell(ptLabel(r.pt)), hsCsvCell(r.u), hsCsvCell(r.ld), hsCsvCell(hsStLabel(r.st)), hsCsvCell(r.s == null ? '' : r.s),
+        hsCsvCell(r.f.map(function (i) { return hsCheckLabel(ids[i]) }).join(' | '))].join(','))
+    })
+    var blob = new Blob(['﻿' + lines.join('\n')], { type: 'text/csv;charset=utf-8' })
+    var a = document.createElement('a'); a.href = URL.createObjectURL(blob)
+    a.download = 'geo-readability-hs-' + (RD.date || '') + '.csv'
+    document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(a.href)
+  }
+  function renderHs() {
+    var H = RD.hs
+    if (!H) return '<div class="tab-note">' + esc(I.hsNoData || '이 측정분에는 HS 콘텐츠 데이터가 없습니다.') + '</div>'
+    var rows = hsRows(), ok = hsOk(rows), avg = hsAvg(rows)
+    var allAvg = state.pt !== 'all' && RD.overall.pageTypes[state.pt] ? RD.overall.pageTypes[state.pt].avgScore : RD.overall.avgScore
+    var diff = (avg != null && allAvg != null) ? +(avg - allAvg).toFixed(1) : null
+    var diffTxt = diff == null ? '' : TPL('tplHsVsAll', { v: allAvg, d: (diff > 0 ? '+' : '') + diff })
+    var sites = {}; rows.forEach(function (r) { sites[r.cc] = 1 })
+    var unm = rows.length - ok.length
+    var scopeParts = []
+    if (state.cc !== 'all') scopeParts.push(ccLabel(state.cc))
+    if (state.pt !== 'all') scopeParts.push(ptLabel(state.pt))
+    if (state.t2 !== 'all') scopeParts.push(state.t2)
+    if (state.pr !== 'all') scopeParts.push(state.pr)
+    var hero = '<div class="hero"><div class="hero-top">' +
+      '<span class="hero-brand">' + esc(I.hsHeroBrand || 'HS 디지털컨텐츠팀 콘텐츠') + '</span>' +
+      '<span class="hero-meta">' + esc(I.measuredAt || '측정일') + ' ' + esc(RD.date) + '</span></div>' +
+      '<div class="hero-body"><div class="hero-left">' +
+      '<div class="hero-label">' + esc(I.hsHeroLabel || 'HS 콘텐츠 평균') + (scopeParts.length ? ' · ' + esc(scopeParts.join(' · ')) : '') + '</div>' +
+      '<div class="hero-score-row"><span class="hero-score" style="color:' + scoreColor(avg) + '">' + (avg == null ? '—' : avg) + '</span><span class="hero-pct">/ 100</span>' +
+      (diffTxt ? '<span class="hero-diff" style="color:' + (diff >= 0 ? LEAD : CRIT) + '">' + esc(diffTxt) + '</span>' : '') + '</div>' +
+      '<div class="hero-info">' + TPL('tplHsInfo', { t: num(rows.length), m: num(ok.length), u: num(unm), s: Object.keys(sites).length }) + '</div>' +
+      '</div></div></div>'
+    var sheetNote = '<div class="tab-note">' + TPL('tplHsSheetNote', { t: num(H.total) }) + '</div>'
+
+    // ① 콘텐츠 유형 × 제품 히트맵 — 현재 사이트·페이지타입 필터 안에서, 유형·제품 필터는 적용하지 않고 전체 격자를 보여준다
+    var base = H.urls.filter(function (r) {
+      if (state.cc !== 'all' && r.cc !== state.cc) return false
+      if (state.pt !== 'all' && r.pt !== state.pt) return false
+      return true
+    })
+    var t2s = hsSortedKeys(base, 't2'), prs = hsSortedKeys(base, 'pr')
+    function hsCellOf(t2, pr) {
+      var sub = base.filter(function (r) { return (t2 == null || r.t2 === t2) && (pr == null || r.pr === pr) })
+      return { avg: hsAvg(sub), n: hsOk(sub).length, total: sub.length }
+    }
+    function hsTd(c, t2, pr, isHead) {
+      if (!c.total) return '<td class="empty">·</td>'
+      var col = scoreColor(c.avg)
+      // 현재 유형·제품 필터와 정확히 일치하는 셀만 강조 (합계 행/열은 그 축이 '전체'일 때)
+      var sel = (t2 == null ? state.t2 === 'all' : state.t2 === t2) && (pr == null ? state.pr === 'all' : state.pr === pr) && !(t2 == null && pr == null)
+      return '<td class="' + (isHead ? 'tot' : '') + (sel ? ' sel' : '') + '" data-t2="' + esc(t2 == null ? '' : t2) + '" data-pr="' + esc(pr == null ? '' : pr) + '" style="color:' + col + ';background:' + col + '14">' +
+        (c.avg == null ? '—' : c.avg) + '<small>' + num(c.n) + (c.n !== c.total ? '/' + num(c.total) : '') + '</small></td>'
+    }
+    var matrix = '<div class="hs-matrix-wrap"><table class="hs-matrix"><thead><tr><th>' + esc(I.thType2 || '콘텐츠 유형') + ' \\ ' + esc(I.thProduct || '제품') + '</th>' +
+      prs.map(function (p) { return '<th>' + esc(p || '—') + '</th>' }).join('') + '<th class="tot">' + esc(I.scopeAll || '전체') + '</th></tr></thead><tbody>' +
+      t2s.map(function (t) {
+        return '<tr><th>' + esc(t || '—') + '</th>' + prs.map(function (p) { return hsTd(hsCellOf(t, p), t, p) }).join('') + hsTd(hsCellOf(t, null), t, null, true) + '</tr>'
+      }).join('') +
+      '<tr><th class="tot">' + esc(I.scopeAll || '전체') + '</th>' + prs.map(function (p) { return hsTd(hsCellOf(null, p), null, p, true) }).join('') + hsTd(hsCellOf(null, null), null, null, true) + '</tr>' +
+      '</tbody></table></div>'
+    var secMatrix = sectionCard('① ' + (I.hsSecMatrix || '콘텐츠 유형 × 제품 점수'), RED, '<div class="tab-note">' + esc(I.hsMatrixNote || '') + '</div>' + matrix)
+
+    // ② 6개 영역 비교 — HS(필터 적용) vs 일반(사이트 전체 또는 같은 페이지타입)
+    var hsCats = hsCatScores(rows)
+    var genCats = (state.pt !== 'all' && RD.overall.pageTypes[state.pt] && RD.overall.pageTypes[state.pt].categories) || RD.overall.categories || {}
+    var labels = RD.categoryLabels || {}
+    var catBars = CATS.map(function (c) {
+      var a = hsCats[c], b = genCats[c]
+      return barRow((labels[c] || c) + ' · ' + (I.hsLegendHs || 'HS'), a == null ? 0 : a, 100, scoreColor(a), a == null ? '—' : String(a)) +
+        barRow((labels[c] || c) + ' · ' + (I.hsLegendAll || '일반'), b == null ? 0 : b, 100, COMP, b == null ? '—' : String(b))
+    }).join('')
+    var secCats = sectionCard('② ' + (I.hsSecCats || '6개 영역 비교'), '#059669', '<div class="tab-note">' + esc(I.hsCatsNote || '') + '</div><div class="bars sm hs-cats">' + catBars + '</div>')
+
+    // ③ 개선 항목 — 체크별 통과율 낮은 순 (적용 1건 이상)
+    var stats = hsCheckStats(rows)
+    var chk = H.checkIds.map(function (id) { var s = stats[id]; return { id: id, app: s.app, fail: s.fail, rate: s.app ? +((s.app - s.fail) / s.app * 100).toFixed(1) : null } })
+      .filter(function (x) { return x.app > 0 }).sort(function (a, b) { return a.rate - b.rate })
+    var chkRows = chk.map(function (x) {
+      return barRow(hsCheckLabel(x.id), x.rate, 100, rateColor(x.rate), x.rate + '% (' + num(x.app - x.fail) + '/' + num(x.app) + ')', num(x.fail), (RD.checkDefs || {})[x.id])
+    }).join('')
+    var chkHead = '<div class="bar-row bar-head has-def"><span class="bar-label"><span class="bar-name">' + esc(I.thItem || '항목') + '</span><span class="bar-def">' + esc(I.thDef || '정의') + '</span><span class="bar-pass">' + esc(I.thPass || 'Pass 기준') + '</span></span><span class="bar-count">' + esc(I.thFails || '미통과') + '</span><div class="bar-track"></div><span class="bar-value">' + esc(I.thRate || '통과율') + '</span></div>'
+    var secChecks = sectionCard('③ ' + (I.hsSecChecks || '개선 항목'), '#B45309', '<div class="cat-card"><div class="bars sm">' + chkHead + (chkRows || '<div class="tab-note">' + esc(I.noDataCond || '') + '</div>') + '</div></div>')
+
+    // ④ 신규 콘텐츠 준수율 — 게시일(live_date) 최근 N개월 vs 이전
+    var N = 3, d = RD.date || '', cut = ''
+    if (/^\d{4}-\d{2}-\d{2}$/.test(d)) { var y = +d.slice(0, 4), m = +d.slice(5, 7) - N; while (m <= 0) { m += 12; y-- } cut = y + '-' + (m < 10 ? '0' : '') + m + d.slice(7) }
+    var grpNew = rows.filter(function (r) { return r.ld && cut && r.ld >= cut }), grpOld = rows.filter(function (r) { return r.ld && cut && r.ld < cut }), grpNone = rows.filter(function (r) { return !r.ld })
+    function hsCard(k, g) { var a = hsAvg(g); return '<div class="hs-card"><div class="k">' + esc(k) + '</div><div class="v" style="color:' + scoreColor(a) + '">' + (a == null ? '—' : a) + '</div><div class="n">' + num(hsOk(g).length) + ' / ' + num(g.length) + ' URL</div></div>' }
+    var secRecent = sectionCard('④ ' + (I.hsSecRecent || '신규 콘텐츠 준수율'), '#7C3AED', '<div class="hs-cards">' + hsCard(TPL('tplHsRecentNew', { n: N }), grpNew) + hsCard(I.hsRecentOld || '그 이전 게시', grpOld) + (grpNone.length ? hsCard(I.hsRecentNone || '게시일 없음', grpNone) : '') + '</div>')
+
+    // ⑤ 사이트별 — 감사 국가 / HS-Others 두 그룹, 전부 펼침 (사용자 결정)
+    var inScope = H.urls.filter(function (r) { return (state.pt === 'all' || r.pt === state.pt) && (state.t2 === 'all' || r.t2 === state.t2) && (state.pr === 'all' || r.pr === state.pr) })
+    var byCc = {}; inScope.forEach(function (r) { (byCc[r.cc] = byCc[r.cc] || []).push(r) })
+    var audit = {}; (H.auditCountries || []).forEach(function (c) { audit[c] = 1 })
+    function hsSiteBars(ccs) {
+      return ccs.map(function (cc) { return { cc: cc, v: hsAvg(byCc[cc]), n: hsOk(byCc[cc]).length, t: byCc[cc].length } })
+        .sort(function (a, b) { return (b.v == null ? -1 : b.v) - (a.v == null ? -1 : a.v) })
+        .map(function (r) { return barRow(ccLabel(r.cc), r.v == null ? 0 : r.v, 100, scoreColor(r.v), r.v == null ? '—' : String(r.v), num(r.n) + (r.n !== r.t ? '/' + num(r.t) : '')) }).join('')
+    }
+    var ccsA = Object.keys(byCc).filter(function (c) { return audit[c] }), ccsO = Object.keys(byCc).filter(function (c) { return !audit[c] })
+    var sitesHtml = '<div class="hs-group-title">' + esc(I.hsSitesAudit || '감사 국가') + ' (' + ccsA.length + ')</div><div class="bars">' + barHead(I.thSite || '사이트', I.colPages || '페이지수', I.colScore || '점수') + hsSiteBars(ccsA) + '</div>' +
+      (ccsO.length ? '<div class="hs-group-title">' + esc(I.hsSitesOthers || 'HS-Others') + ' (' + ccsO.length + ')</div><div class="bars">' + barHead(I.thSite || '사이트', I.colPages || '페이지수', I.colScore || '점수') + hsSiteBars(ccsO) + '</div>' : '')
+    var secSites = sectionCard('⑤ ' + (I.hsSecSites || '사이트별 점수'), '#3B82F6', sitesHtml)
+
+    // ⑥ URL 목록 — 점수 낮은 순, 미측정은 뒤로. 표는 500건, 전체는 CSV
+    var CAP = 500
+    var list = rows.slice().sort(function (a, b) { var as = a.s == null ? 1e9 : a.s, bs = b.s == null ? 1e9 : b.s; return as - bs })
+    var trs = list.slice(0, CAP).map(function (r) {
+      var urlCell = /^https?:\/\//i.test(r.u) ? '<a href="' + esc(r.u) + '" target="_blank" rel="noopener">' + esc(r.u) + '</a>' : esc(r.u)
+      var fails = r.f.map(function (i) { return hsCheckLabel(H.checkIds[i]) }).join(', ')
+      return '<tr><td>' + esc(ccLabel(r.cc)) + '</td><td>' + esc(r.t2) + '</td><td>' + esc(r.pr) + '</td><td>' + esc(ptLabel(r.pt)) + '</td>' +
+        '<td class="fails-url">' + urlCell + '</td><td>' + esc(r.ld || '—') + '</td>' +
+        '<td>' + (r.st === 'ok' ? '<span class="rd-pass">' + esc(hsStLabel(r.st)) + '</span>' : '<span class="rd-fail">' + esc(hsStLabel(r.st)) + '</span>') + '</td>' +
+        '<td class="fails-hint" title="' + esc(fails) + '">' + (r.f.length ? num(r.f.length) : (r.st === 'ok' ? '0' : '—')) + '</td>' +
+        '<td class="fails-score" style="color:' + scoreColor(r.s) + '">' + (r.s == null ? '—' : r.s) + '</td></tr>'
+    }).join('')
+    var listHead = '<div class="fails-bar"><span class="fails-count">' + num(rows.length) + (I.unitRows || '건') + (rows.length > CAP ? ' · ' + TPL('tplTopShown', { n: CAP }) : '') + '</span>' +
+      '<a id="rd-hs-csv" class="crit-dl-btn fails-csv" href="#">' + esc(I.dlCsvAll || 'CSV 전체 다운로드') + '</a></div>'
+    var table = '<div class="fails-body"><table class="fails-table"><thead><tr><th>' + [I.thSite || '사이트', I.thType2 || '콘텐츠 유형', I.thProduct || '제품', I.thType || '타입', I.thUrl || 'URL', I.thLiveDate || '게시일', I.thStatus || '상태', I.thFails || '미통과', I.colScore || '점수'].map(esc).join('</th><th>') + '</th></tr></thead><tbody>' + trs + '</tbody></table></div>'
+    var secUrls = sectionCard('⑥ ' + (I.hsSecUrls || 'URL 목록'), '#64748B', listHead + table)
+    return hero + sheetNote + secMatrix + secCats + secChecks + secRecent + secSites + secUrls
+  }
+  function wireHs() {
+    var csv = document.getElementById('rd-hs-csv')
+    if (csv) csv.addEventListener('click', function (e) { e.preventDefault(); hsCsv(hsRows()) })
+    var tbl = document.querySelector('.hs-matrix')
+    if (tbl) tbl.addEventListener('click', function (e) {
+      var td = e.target.closest('td[data-t2]'); if (!td) return
+      var t2 = td.getAttribute('data-t2'), pr = td.getAttribute('data-pr')
+      state.t2 = t2 || 'all'; state.pr = pr || 'all'
+      var s2 = document.getElementById('rd-t2'), sp = document.getElementById('rd-pr')
+      if (s2) s2.value = state.t2; if (sp) sp.value = state.pr
+      renderPanel()
+    })
+  }
+
   function renderPanel() {
     var el = document.getElementById('rd-panel')
     if (!el) return
@@ -649,6 +847,7 @@ function readabilityClient() {
     if (state.tab === 'country') el.innerHTML = renderCountry()
     else if (state.tab === 'criteria') el.innerHTML = renderCriteria()
     else if (state.tab === 'raw') { el.innerHTML = renderRaw(); loadRaw() }
+    else if (state.tab === 'hs') { el.innerHTML = renderHs(); wireHs() }
     else el.innerHTML = renderPageType()
   }
 
@@ -656,6 +855,7 @@ function readabilityClient() {
     var nav = document.getElementById('rd-tabnav')
     // raw·criteria 탭은 /admin/* 리소스를 fetch/iframe → 비인증 게시본에선 제외.
     var tabs = [['country', I.tabCountry], ['pagetype', I.tabPageType]]
+    if (anyHs()) tabs.push(['hs', I.tabHs || 'HS 콘텐츠'])   // HS 디지털컨텐츠팀 URL 시트 — 공개본에도 노출 (사용자 결정 2026-10-26)
     tabs.push(['raw', I.tabRaw], ['criteria', I.tabCriteria])   // 어드민·게시본 동일 (RD.paths 로 게이트별 URL 분기)
     var TAB_IDS = tabs.map(function (t) { return t[0] })
     // 진입 시 hash 로 탭 복원 (#raw · #criteria 등) — 링크로 특정 탭을 바로 열 수 있게
@@ -670,6 +870,7 @@ function readabilityClient() {
       Array.prototype.forEach.call(nav.querySelectorAll('button'), function (x) { x.classList.toggle('active', x.getAttribute('data-tab') === id) })
       // 주소창 hash 갱신 — 탭을 연 상태로 링크 공유 가능. replaceState 라 히스토리를 더럽히지 않는다.
       if (pushHash) { try { if (window.history && history.replaceState) history.replaceState(null, '', '#' + id); else window.location.hash = id } catch (e) {} }
+      rebuildCcPt()   // HS 탭은 사이트·타입 옵션이 다르고 유형·제품 필터가 켜진다
       renderPanel()
     }
     nav.addEventListener('click', function (e) {
@@ -682,22 +883,48 @@ function readabilityClient() {
     })
     var ccSel = document.getElementById('rd-cc')
     var ptSel = document.getElementById('rd-pt')
+    var t2Sel = document.getElementById('rd-t2'), prSel = document.getElementById('rd-pr')
+    var hsNote = document.getElementById('rd-hs-note')
+    function opts(allLabel, pairs) {
+      return ['<option value="all">' + esc(allLabel) + '</option>'].concat(pairs.map(function (p) { return '<option value="' + esc(p[0]) + '">' + esc(p[1]) + '</option>' })).join('')
+    }
     function rebuildCcPt() {
-      // 선택 월의 데이터 기준으로 국가/페이지타입 옵션 재구성 (없어진 값이면 all 로 복귀)
-      ccSel.innerHTML = ['<option value="all">' + esc(I.allCountries || '전체 국가') + '</option>'].concat(
-        Object.keys(RD.countries).sort().map(function (cc) { return '<option value="' + cc + '">' + esc(ccLabel(cc)) + '</option>' })
-      ).join('')
-      if (state.cc !== 'all' && !RD.countries[state.cc]) state.cc = 'all'
+      var H = state.tab === 'hs' ? RD.hs : null
+      if (H) {
+        // HS 탭 — 사이트 목록은 시트 전수 기준 (감사 국가 먼저, 그 다음 HS-Others), 타입·유형·제품도 HS 데이터에서
+        var audit = {}; (H.auditCountries || []).forEach(function (c) { audit[c] = 1 })
+        var ccs = Object.keys(H.sites || {}).sort(function (a, b) { return (audit[b] ? 1 : 0) - (audit[a] ? 1 : 0) || ccLabel(a).localeCompare(ccLabel(b)) })
+        ccSel.innerHTML = opts(I.allCountries || '전체 국가', ccs.map(function (c) { return [c, ccLabel(c)] }))
+        if (state.cc !== 'all' && !H.sites[state.cc]) state.cc = 'all'
+        var pts = {}; H.urls.forEach(function (r) { pts[r.pt] = (pts[r.pt] || 0) + 1 })
+        ptSel.innerHTML = opts(I.allPageTypes || '전체 페이지 타입', Object.keys(pts).sort(function (a, b) { return pts[b] - pts[a] }).map(function (p) { return [p, ptLabel(p)] }))
+        if (state.pt !== 'all' && !pts[state.pt]) state.pt = 'all'
+        var t2 = {}, pr = {}
+        H.urls.forEach(function (r) { t2[r.t2] = (t2[r.t2] || 0) + 1; pr[r.pr] = (pr[r.pr] || 0) + 1 })
+        var byCnt = function (m) { return Object.keys(m).sort(function (a, b) { return m[b] - m[a] || a.localeCompare(b) }).map(function (k) { return [k, k || '—'] }) }
+        if (t2Sel) { t2Sel.innerHTML = opts(I.allType2 || '전체 유형', byCnt(t2)); if (state.t2 !== 'all' && !t2[state.t2]) state.t2 = 'all'; t2Sel.value = state.t2; t2Sel.disabled = false }
+        if (prSel) { prSel.innerHTML = opts(I.allProducts || '전체 제품', byCnt(pr)); if (state.pr !== 'all' && !pr[state.pr]) state.pr = 'all'; prSel.value = state.pr; prSel.disabled = false }
+      } else {
+        // 선택 월의 데이터 기준으로 국가/페이지타입 옵션 재구성 (없어진 값이면 all 로 복귀)
+        ccSel.innerHTML = opts(I.allCountries || '전체 국가', Object.keys(RD.countries).sort().map(function (cc) { return [cc, ccLabel(cc)] }))
+        if (state.cc !== 'all' && !RD.countries[state.cc]) state.cc = 'all'
+        ptSel.innerHTML = opts(I.allPageTypes || '전체 페이지 타입', Object.entries(RD.overall.pageTypes || {}).map(function (e) { return [e[0], ptLabel(e[0], e[1].label)] }))
+        if (state.pt !== 'all' && !(RD.overall.pageTypes || {})[state.pt]) state.pt = 'all'
+        // 유형·제품 필터는 HS 콘텐츠 탭 전용 — 다른 탭에서는 비활성 + 참고 표시 (사용자 결정 2026-10-26)
+        state.t2 = 'all'; state.pr = 'all'
+        if (t2Sel) { t2Sel.innerHTML = opts(I.allType2 || '전체 유형', []); t2Sel.disabled = true }
+        if (prSel) { prSel.innerHTML = opts(I.allProducts || '전체 제품', []); prSel.disabled = true }
+      }
       ccSel.value = state.cc
-      ptSel.innerHTML = ['<option value="all">' + esc(I.allPageTypes || '전체 페이지 타입') + '</option>'].concat(
-        Object.entries(RD.overall.pageTypes || {}).map(function (e) { return '<option value="' + e[0] + '">' + esc(ptLabel(e[0], e[1].label)) + '</option>' })
-      ).join('')
-      if (state.pt !== 'all' && !(RD.overall.pageTypes || {})[state.pt]) state.pt = 'all'
       ptSel.value = state.pt
+      ;[t2Sel, prSel].forEach(function (s) { if (s && s.parentNode) s.parentNode.classList.toggle('fg-off', !!s.disabled) })
+      if (hsNote) hsNote.style.display = H ? 'none' : ''
     }
     rebuildCcPt()
     ccSel.addEventListener('change', function () { state.cc = ccSel.value; renderPanel() })
     ptSel.addEventListener('change', function () { state.pt = ptSel.value; renderPanel() })
+    if (t2Sel) t2Sel.addEventListener('change', function () { state.t2 = t2Sel.value; renderPanel() })
+    if (prSel) prSel.addEventListener('change', function () { state.pr = prSel.value; renderPanel() })
     // ── 어딧 구분(정기/비정기) 탭 + 측정 월 필터 — 구분별 스냅샷 전환 (2026-10-03) ──
     var mWrap = document.getElementById('rd-month-wrap'), mSel = document.getElementById('rd-month')
     var aWrap = document.getElementById('rd-atype-wrap')
@@ -840,6 +1067,7 @@ export function renderReadabilityHTML({ snapshot, index, snapshots, adminMode = 
     ccName: Object.fromEntries(Object.keys(snap.countries).map(cc => [cc, CC_NAME[cc] || cc.toUpperCase()])),
     overall: snap.overall,
     countries: snap.countries,
+    hs: snap.hs || null,     // HS 콘텐츠 탭 (시트 전수 per-URL 기록) — 없는 측정분은 null
   })
   const clientData = buildClientData(snapshot)
   // 측정 월 필터용 — 월별 최신 스냅샷 전체 임베드 (없으면 현재 1개)
@@ -885,6 +1113,29 @@ body{background:#F1F5F9;font-family:${FONT};color:#1A1A1A;line-height:1.6}
 .atype-btn+.atype-btn{border-left:1px solid #CBD5E1}
 .atype-btn.active{background:${RED};color:#fff}
 .tab-note{background:#FFFBEB;border:1px solid #FDE68A;border-radius:8px;padding:10px 14px;font-size:13px;color:#B45309;margin-bottom:16px}
+/* ── HS 콘텐츠 탭 ── */
+.filter-bar .fg.fg-off label{color:#94A3B8}
+.filter-bar .fg.fg-off select{opacity:.55;cursor:not-allowed;background:#F8FAFC}
+.hs-note{font-size:12px;color:#94A3B8;margin-left:-6px}
+.hero-diff{font-size:14px;font-weight:700;margin-left:10px}
+.hs-matrix-wrap{overflow-x:auto}
+.hs-matrix{border-collapse:collapse;font-size:12.5px;min-width:560px;width:100%}
+.hs-matrix th{background:#F8FAFC;color:#64748B;font-weight:700;font-size:11px;padding:8px 10px;border:1px solid #F1F5F9;text-align:left;white-space:nowrap}
+.hs-matrix thead th{text-align:center}
+.hs-matrix td{text-align:center;padding:6px 8px;border:1px solid #F1F5F9;font-weight:800;font-variant-numeric:tabular-nums;cursor:pointer;line-height:1.25}
+.hs-matrix td small{display:block;font-size:10px;font-weight:500;color:#94A3B8}
+.hs-matrix td.empty{color:#CBD5E1;cursor:default;font-weight:400}
+.hs-matrix td.sel{outline:2px solid ${RED};outline-offset:-2px}
+.hs-matrix th.tot,.hs-matrix td.tot{background:#FAFBFC}
+.hs-cats .bar-row:nth-child(even){margin-bottom:6px}
+.hs-cards{display:flex;gap:12px;flex-wrap:wrap}
+.hs-card{flex:1 1 180px;background:#F8FAFC;border:1px solid #E8EDF2;border-radius:12px;padding:14px 16px}
+.hs-card .k{font-size:12px;color:#64748B;font-weight:600}
+.hs-card .v{font-size:28px;font-weight:900;letter-spacing:-1px;line-height:1.2}
+.hs-card .n{font-size:12px;color:#94A3B8}
+.hs-group-title{font-size:13px;font-weight:800;color:#475569;margin:4px 0 8px}
+.hs-group-title+.bars{margin-bottom:18px}
+@media(max-width:480px){.hs-matrix{font-size:11px}.hs-card{flex:1 1 100%}}
 /* ── Hero (Visibility 다크 카드) ── */
 .hero{background:#0F172A;border-radius:16px;padding:28px 32px;margin-bottom:24px;color:#fff}
 .hero-top{display:flex;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:8px}
@@ -1033,6 +1284,10 @@ ${embed ? '' : `<div class="tab-bar">
     <div class="fg" id="rd-day-wrap" style="display:none"><label for="rd-day">${escHtml(t.fAuditDate)}</label><select id="rd-day"></select></div>
     <div class="fg"><label for="rd-cc">${escHtml(t.fCountry)}</label><select id="rd-cc"></select></div>
     <div class="fg"><label for="rd-pt">${escHtml(t.fPageType)}</label><select id="rd-pt"></select></div>
+    <!-- 콘텐츠 유형(2뎁스)·제품 — HS 콘텐츠 탭 전용. 다른 탭에서는 비활성 + 참고 표시 (사용자 결정 2026-10-26) -->
+    <div class="fg fg-off"><label for="rd-t2">${escHtml(t.fType2)}</label><select id="rd-t2" disabled></select></div>
+    <div class="fg fg-off"><label for="rd-pr">${escHtml(t.fProduct)}</label><select id="rd-pr" disabled></select></div>
+    <span class="hs-note" id="rd-hs-note">${escHtml(t.hsFilterNote)}</span>
   </div>
   <div id="rd-panel"></div>
 

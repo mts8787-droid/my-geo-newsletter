@@ -685,6 +685,96 @@ function csvCell(v) {
   return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s
 }
 
+// ── HS(가전) 디지털컨텐츠팀 URL 시트 — 'HS 콘텐츠' 탭 모집단 (사용자 결정 2026-10-26) ──────────
+// 원본: 상류 reports/hs_contents.csv (build_hs_contents.py 가 사업부 시트 'Appendix.HS Contents URL' 을
+// 정규화한 1,015건). 컬럼: url,key,cc,seg,page_type,content_type1,content_type2,product,product_raw,live_date
+// 모집단은 표본이 아니라 팀이 관리하는 URL 목록이므로 **상한 없이 전수** 집계하고, 감사 국가 밖 40여
+// 사이트(hs 그룹 run)도 포함한다. 국가 점수·가중평균에는 넣지 않는다 (상류 NON_WEIGHTED 와 동일).
+// 매칭은 run 의 page_type.hs 태그가 아니라 시트 URL 키로 한다 — 태그 없는 71건이 실측에서 확인됨.
+const HS_GROUP_CC = 'hs'   // 감사 국가 밖 HS URL 묶음 run 의 파일 접두 (hs_<date>_run_*.json)
+export function normalizeHsKey(u) {
+  return String(u || '').split('#')[0].split('?')[0].replace(/\/+$/, '').toLowerCase().replace(/^https?:\/\/(www\.)?/, '')
+}
+// 따옴표 셀을 처리하는 최소 CSV 행 파서 (product_raw 에 쉼표가 올 수 있다)
+function parseCsvLine(line) {
+  const out = []; let cur = '', q = false
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i]
+    if (q) {
+      if (ch === '"' && line[i + 1] === '"') { cur += '"'; i++ }
+      else if (ch === '"') q = false
+      else cur += ch
+    } else if (ch === '"') q = true
+    else if (ch === ',') { out.push(cur); cur = '' }
+    else cur += ch
+  }
+  out.push(cur)
+  return out
+}
+export function parseHsSheet(csvText) {
+  const lines = String(csvText || '').replace(/^﻿/, '').split(/\r?\n/).filter(l => l.trim())
+  if (!lines.length) return null
+  const head = parseCsvLine(lines[0]).map(h => h.trim())
+  const col = Object.fromEntries(head.map((h, i) => [h, i]))
+  if (col.url == null || col.cc == null) return null
+  const byKey = new Map()
+  for (const line of lines.slice(1)) {
+    const c = parseCsvLine(line)
+    const get = k => (col[k] == null ? '' : (c[col[k]] || '').trim())
+    const key = normalizeHsKey(get('key') || get('url'))
+    if (!key || byKey.has(key)) continue
+    byKey.set(key, {
+      url: get('url'), cc: get('cc').toLowerCase(), seg: get('seg'), pt: get('page_type'),
+      t2: get('content_type2') || get('content_type1'), pr: get('product'), ld: get('live_date'),
+    })
+  }
+  return byKey
+}
+function loadHsSheet(srcDir) {
+  const p = join(srcDir || DEFAULT_SRC, '..', '..', 'reports', 'hs_contents.csv')
+  if (!existsSync(p)) { _logWarn('aggregate-readability', `HS 콘텐츠 시트 없음 — ${p} (HS 탭 데이터 생략)`); return null }
+  try {
+    const m = parseHsSheet(readFileSync(p, 'utf8'))
+    if (!m) { _logWarn('aggregate-readability', `HS 콘텐츠 시트 헤더 인식 실패 — ${p}`); return null }
+    _logInfo('aggregate-readability', `HS 콘텐츠 시트 로드 — ${m.size} URL`)
+    return m
+  } catch (e) { _logWarn('aggregate-readability', `HS 콘텐츠 시트 파싱 실패 — ${e.message}`); return null }
+}
+// run 의 한 페이지가 시트 URL 과 맞는지 — 요청 URL · 결과 URL · 리다이렉트 도착 URL 순으로 본다
+export function hsSheetHit(sheet, summaryRow) {
+  if (!sheet) return null
+  const r = summaryRow.result || {}
+  const cands = [summaryRow.url, r.url, r.redirect && r.redirect.final_url]
+  for (const u of cands) {
+    const k = normalizeHsKey(u)
+    if (k && sheet.has(k)) return { key: k, rec: sheet.get(k) }
+  }
+  return null
+}
+// 페이지 1건 → HS 레코드. 점수·적용 체크·실패 체크를 보존해 클라가 어떤 필터 조합에서도
+// 평균·통과율을 다시 계산할 수 있게 한다 (유형×제품×사이트 조합을 서버에서 미리 다 셀 수 없다).
+export function buildHsRecord(rec, result, rpt, measured) {
+  const sc = result.score || {}
+  const app = [], fail = []
+  if (measured && sc.breakdown) {
+    for (const cat of SRC_CATEGORIES) {
+      const items = (sc.breakdown[cat] && sc.breakdown[cat].items) || {}
+      for (const [id, it] of Object.entries(items)) {
+        if (!it || it.na === true || it.pass == null) continue
+        app.push(id)
+        if (it.pass === false) fail.push(id)
+      }
+    }
+  }
+  return {
+    u: rec.url, cc: rec.cc, seg: rec.seg, pt: rpt ? rpt.id : (rec.pt || 'unknown'),
+    t2: rec.t2, pr: rec.pr, ld: rec.ld,
+    st: measured ? 'ok' : (sc && typeof sc.total === 'number' ? 'error' : 'unscored'),
+    s: measured ? sc.total : null,
+    _app: app, _fail: fail,
+  }
+}
+
 // 파일명에서 사이트코드 + 날짜 + runId 추출: <cc>_<YYYY-MM-DD>_run_<id>.json
 // [a-z]{2} 로 2글자 고정이던 것을 2~10 으로 확장 — 'global_...' 이 매칭 실패로 통째 skip 되고
 // 있었다 (lg.com/global 대표 사이트 100p 가 집계에서 빠짐. 사용자 지적 2026-08-30).
@@ -955,6 +1045,16 @@ function main() {
   const checkRows = []
   const checkMeta = {}
   const ptLabelMap = {}
+  // HS 콘텐츠 탭 — 시트 URL 키 → 레코드 (국가 run + hs 그룹 run 전부에서 수집, 상한 없음)
+  const hsSheet = loadHsSheet(SRC)
+  const hsByKey = new Map()
+  const noteHs = (summaryRow, rpt, measured) => {
+    const hit = hsSheetHit(hsSheet, summaryRow)
+    if (!hit) return
+    const prev = hsByKey.get(hit.key)
+    if (prev && (prev.st === 'ok' || !measured)) return   // 측정 성립분 우선, 중복은 첫 건 유지
+    hsByKey.set(hit.key, buildHsRecord(hit.rec, summaryRow.result, rpt, measured))
+  }
 
   // 국가별 최신 run 만 선택 — run_results 에 같은 국가의 여러 날짜 run 이 공존하면
   // (예: br_2026-06-13 + br_2026-06-14) 최신 날짜 하나만 집계. 과거 run 이
@@ -1016,15 +1116,13 @@ function main() {
     // 측정이 성립하지 않은 페이지 제외 카운터 — 아래 [DETECT] 참조
     let skipNoScore = 0, skipFetchFail = 0
     let skipExcludedUrl = 0
+    const isHsGroup = meta.cc === HS_GROUP_CC
     for (const s of summary) {
       if (!s || !s.result) continue
       const url = s.url || s.result.url
       const rpt = resolvePt(s.result.page_type, url)
-      if (rpt && rpt.excluded) continue
-      // 영구 제외 URL (lg-story / lifesgood) — 집계·Raw·CSV 어디에도 넣지 않는다
-      if (isExcludedUrl(url)) { skipExcludedUrl++; continue }
       // 대시보드 채점 재정의 (TTFB 1800ms / Cache-Control 완화 / Render Blocking 제외) —
-      // checkRows(Raw 데이터) · 집계 · CSV 가 모두 같은 점수를 보도록 여기서 한 번만 적용.
+      // checkRows(Raw 데이터) · 집계 · CSV · HS 레코드가 모두 같은 점수를 보도록 여기서 한 번만 적용.
       // upstreamGated — 신포맷(6분류) 행이면 상류가 applies_to_page_types 를 이미 적용했다는 표식
       const upstreamGated = !!(s.result.score && s.result.score.breakdown && s.result.score.breakdown.citable_content)
       const jsonldRaw = s.result.json_ld && Array.isArray(s.result.json_ld.raw) ? s.result.json_ld.raw : null
@@ -1035,9 +1133,21 @@ function main() {
       //         '개선 대상'이 아니고 평균만 끌어내린다 (해당 페이지 평균 34.1점).
       //   유지: soft-404 (200 응답인데 본문이 빈 페이지) — 측정은 성립했고 실제 개선 대상이므로 채점.
       const sc = s.result.score
+      const measured = !!(sc && typeof sc.total === 'number' && !isFetchFailed(sc))
+      // HS 콘텐츠 — 제외 타입·단종 PDP 판정과 무관하게 시트 URL 이면 전부 기록 (상한 없음).
+      // 상류도 HS 지정 PDP 는 단종/악세사리 제외를 적용하지 않는다.
+      noteHs(s, rpt, measured)
+      if (isHsGroup) continue   // hs 그룹 run 은 HS 탭 전용 — 국가 점수·가중평균·CSV 에 넣지 않는다
+      if (rpt && rpt.excluded) continue
+      // 영구 제외 URL (lg-story / lifesgood) — 집계·Raw·CSV 어디에도 넣지 않는다
+      if (isExcludedUrl(url)) { skipExcludedUrl++; continue }
       if (!sc || typeof sc.total !== 'number') { skipNoScore++; continue }
       if (isFetchFailed(sc)) { skipFetchFail++; continue }
       items.push({ result: s.result, url, rpt })
+    }
+    if (isHsGroup) {
+      _logInfo('aggregate-readability', `${meta.cc} (${meta.date}): HS-Others 그룹 run ${summary.length}페이지 → HS 탭에만 반영 (${data.status || '?'})`)
+      continue
     }
     if (skipNoScore || skipFetchFail) {
       _logInfo('aggregate-readability', `${meta.cc}: 측정 미성립 제외 — 비-200/fetch실패 ${skipFetchFail}, 미채점 ${skipNoScore}`)
@@ -1119,6 +1229,35 @@ function main() {
     categoryLabels: CATEGORY_LABEL,
     countries,
     overall: finalizeAcc(overall),
+  }
+  // HS 콘텐츠 블록 — 시트 전수(미측정 포함) + 체크 id 사전. 집계값은 클라가 필터 조합마다 계산한다.
+  if (hsSheet) {
+    const checkIds = Object.keys(checkMeta).sort((a, b) => checkMeta[a].label.localeCompare(checkMeta[b].label, 'en', { numeric: true }))
+    const idx = Object.fromEntries(checkIds.map((id, i) => [id, i]))
+    const urls = []
+    for (const [key, rec] of hsSheet) {
+      const r = hsByKey.get(key)
+      if (!r) { urls.push({ u: rec.url, cc: rec.cc, seg: rec.seg, pt: rec.pt || 'unknown', t2: rec.t2, pr: rec.pr, ld: rec.ld, st: 'unmeasured', s: null, na: [], f: [] }); continue }
+      const appSet = new Set(r._app)
+      const na = r.st === 'ok' ? checkIds.filter(id => !appSet.has(id)).map(id => idx[id]) : []
+      const f = r._fail.map(id => idx[id]).filter(i => i != null)
+      urls.push({ u: r.u, cc: r.cc, seg: r.seg, pt: r.pt, t2: r.t2, pr: r.pr, ld: r.ld, st: r.st, s: r.s, na, f })
+    }
+    const measured = urls.filter(x => x.st === 'ok')
+    const sites = {}
+    urls.forEach(x => { if (!sites[x.cc]) sites[x.cc] = CC_NAME[x.cc] || x.cc.toUpperCase() })
+    snapshot.hs = {
+      sheet: 'hs_contents.csv',
+      total: urls.length,
+      measured: measured.length,
+      avgScore: measured.length ? +(measured.reduce((s, x) => s + x.s, 0) / measured.length).toFixed(1) : null,
+      auditCountries: Object.keys(countries).sort(),   // 감사 국가 — 사이트 목록에서 HS-Others 와 구분
+      sites,
+      checkIds,
+      urls,
+    }
+    const st = urls.reduce((m, x) => { m[x.st] = (m[x.st] || 0) + 1; return m }, {})
+    _logInfo('aggregate-readability', `HS 콘텐츠: ${urls.length} URL — 측정 ${measured.length}, 평균 ${snapshot.hs.avgScore}, 상태 ${JSON.stringify(st)}, 사이트 ${Object.keys(sites).length}`)
   }
 
   if (!existsSync(OUT_DIR)) mkdirSync(OUT_DIR, { recursive: true })
