@@ -4,7 +4,7 @@ import { PROD_ID_TO_UL_CODE as UL_PROD_MAP, PROD_ID_TO_UL_CODE, PROD_ID_TO_KR, P
 import { rdBandColor } from './shared/readabilityBand.js'
 import { compRatioStr } from './shared/compRatio.js'
 import { parsePeriod } from './shared/reportPeriod.js'
-import { encodeChart } from './shared/hlChart.js'
+import { findSentence, insertAfterSentence, colorizeSentence, stripInserted } from './shared/sentenceBlocks.js'
 import { resolveProductsByLlm, resolveProductsCntyByLlm, resolveTotalByLlm } from './shared/llmModel.js'
 import { _logWarn } from './sheetParserUtils.js'
 import { dcColLabel } from './shared/constants.js'
@@ -985,20 +985,22 @@ function insightV3Parts(meta = {}, lang = 'ko', productsCnty = [], assetBase = '
   const L = (ko, en) => (lang === 'en' ? en : ko)
   // 편집모드에서도 저장값(meta) 우선 — 기본문안(val)을 보여주면 편집할 때마다
   // 저장분이 원복돼 보인다 (사용자 보고 2026-08-31 "수정하면 원복됨").
-  const ed = (field, val) => {
-    const cur = (meta[field] != null && meta[field] !== '') ? sanitizeUserHtml(meta[field]) : val
+  // proc: 저장값/기본값에 렌더 시점 후처리 (10월호 — 문장 기준 표 삽입·핑크 색칠)
+  const ed = (field, val, proc) => {
+    let cur = (meta[field] != null && meta[field] !== '') ? sanitizeUserHtml(meta[field]) : val
+    if (proc) cur = proc(cur)
     return _ED ? `<span${edRich(field)}>${cur}</span>` : cur
   }
 
   // V2 의 execItem 과 동일한 짙은 남색 박스
-  const execItem = (titleF, title, bodyF, body, extra = '') => `
+  const execItem = (titleF, title, bodyF, body, extra = '', proc) => `
     <tr>
       <td style="padding-bottom:8px;">
         <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#1E293B;border:1px solid #334155;border-radius:8px;">
           <tr>
             <td style="padding:12px 16px;">
               <div style="margin:0 0 6px;font-size:13px;font-weight:800;color:#FFFFFF;line-height:20px;font-family:${EM_FONT};letter-spacing:-0.3px;">${ed(titleF, title)}</div>
-              <div style="margin:0;font-size:13px;color:#CBD5E1;line-height:21px;font-family:${EM_FONT};letter-spacing:-0.3px;">${ed(bodyF, body)}</div>
+              <div style="margin:0;font-size:13px;color:#CBD5E1;line-height:21px;font-family:${EM_FONT};letter-spacing:-0.3px;">${ed(bodyF, body, proc)}</div>
               ${extra}
             </td>
           </tr>
@@ -1006,88 +1008,85 @@ function insightV3Parts(meta = {}, lang = 'ko', productsCnty = [], assetBase = '
       </td>
     </tr>`
 
-  // ── 9월호 추가 블록 (사용자 지시 2026-09-19) ────────────────────────────────
-  // [A] LG·삼성 모델별 Visibility 트렌드 라인차트 (5~8월) — 이메일 호환 PNG (/api/hl-chart)
-  //     수치는 사용자 제공 표 그대로 (Brand Prompt 월별 — 하드코딩, 다음 호에서 갱신)
-  const LLM_TREND = {
-    months: ['May', 'Jun', 'Jul', 'Aug'],  // 한글 월 표기는 차트 PNG 폰트에서 깨짐 — 영문 고정 (사용자 지시 2026-09-18)
-    lg: { TOTAL: [44.8, 43.3, 43.4, 41.6], CHATGPT: [45.6, 45.6, 45.7, 46.7], 'GPT SEARCH': [47.1, 44.2, 45.9, 45.5], PERPLEXITY: [39.6, 30.9, 39.3, 35.2], GEMINI: [47.0, 44.6, 42.6, 39.1] },
-    ss: { TOTAL: [40.2, 38.2, 37.9, 36.6], CHATGPT: [44.7, 44.6, 44.7, 45.4], 'GPT SEARCH': [39.0, 36.6, 37.7, 38.6], PERPLEXITY: [33.4, 32.4, 32.5, 29.3], GEMINI: [43.7, 39.3, 36.6, 33.1] },
-  }
-  const LLM_COLORS = { TOTAL: EM_RED, CHATGPT: '#3B82F6', 'GPT SEARCH': '#059669', PERPLEXITY: '#D97706', GEMINI: '#7C3AED' }
-  const llmTrendChartHtml = () => {
-    // Total 은 양쪽 모두 레드 + 굵은 선 (시리즈명 'LG' 가 빌더의 굵기 트리거 — 표시엔 안 쓰임).
-    // mark:0 → 첫 월(5월)에도 값 라벨. 높이 200 — 5개 시리즈 라벨 겹침 방지 (사용자 허용).
-    const mk = (bag) => encodeChart({
-      series: Object.entries(bag).map(([k, data]) => ({
-        name: k === 'TOTAL' ? 'LG' : k,
-        color: k === 'TOTAL' ? EM_RED : LLM_COLORS[k],
-        data,
-      })),
-      labels: LLM_TREND.months, w: 380, h: 200, mark: 0, boldX: true,
-    })
-    const img = (d, alt) => `<img src="${assetBase}/api/hl-chart?d=${d}" width="380" alt="${alt}" style="display:block;width:100%;max-width:380px;height:auto;border:0;" />`
-    const legend = Object.entries(LLM_COLORS).map(([k, c]) =>
-      `<td style="padding:2px 10px 0 0;white-space:nowrap;"><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:${c};vertical-align:middle;margin-right:4px;"></span><span style="font-size:10px;font-weight:700;color:#475569;font-family:${EM_FONT};vertical-align:middle;">${k === 'TOTAL' ? 'Total' : k}</span></td>`).join('')
-    // 제목·차트·범례를 하나의 흰 카드로 — 다크 박스 위에서 뭉개지지 않게 구분 (사용자 지시 2026-09-19)
+  // ── 10월호 블록 (사용자 지시 2026-10-26) ────────────────────────────────────
+  // 1번 박스의 9월호 블록(LLM 트렌드 차트 PNG + 답변 예시 카드)을 표 2개로 교체.
+  // 표는 사용자 본문 **안의 기준 문장 바로 아래**에 끼운다 (sentenceBlocks — 문장을 못
+  // 찾으면 본문 끝에 이어 붙임). 수치는 사용자 제공 표 그대로 (Gemini 8→9월 — 하드코딩,
+  // 다음 호에서 갱신). 제목은 "표 1." 같은 번호 없이 붉은 막대만 (사용자 지시).
+  const OCT_A1 = '특히 GPT Search(-2.7%p)와 Gemini(-3.3%p)에서 하락이 두드러졌으며, 국가별로는 영국(-2.0%p), 호주(-1.9%p), 스페인(-1.8%p), 미국(-1.4%p)에서 하락폭이 크게 나타났습니다.'
+  const OCT_A2 = '이에 따라 LG는 두 국가 모두 7월까지 유지하던 1위에서 8월 2위, 9월 각각 4위와 3위로 내려갔습니다.'
+  // 결론/향후 방향 문장 — 박스 2 의 마지막 문장과 같은 핑크 (#FDA4AF)
+  const OCT_PINK = '#FDA4AF'
+  const OCT_P1 = '즉, 주요 국가에서 LG의 Visibility 하락이 경쟁사 대비 크게 나타나고 있으며, 특히 GPT Search에서는 경쟁 순위 하락으로까지 이어지고 있습니다. 이에 따라 에어컨 답변 원문 및 인용 출처를 추가 분석하여 원인을 파악하고 대응 방향을 구체화할 예정입니다.'
+  const OCT_P3 = '향후에는 자동화 적용 범위와 콘텐츠 품질을 지속 점검하고, 상대적으로 점수가 낮은 스키마 마크업 및 고인용 콘텐츠 영역을 중심으로 추가 개선을 추진할 예정입니다.'
+
+  // 흰 카드 표 — 제목(붉은 막대) + 부제 + 표 + (선택) 각주. 블록 안에 <div> 금지 (stripInserted 제약).
+  const octCard = (title, sub, cols, head, rows, note = '') => {
+    const th = (t, i) => `<th style="padding:0 6px 6px;font-size:11px;font-weight:800;color:#475569;text-align:${cols[i].align};border-bottom:2px solid #E2E8F0;font-family:${EM_FONT};letter-spacing:-0.3px;">${t}</th>`
+    const td = (c, i, last) => {
+      const v = typeof c === 'string' ? { v: c } : c
+      const color = v.tone === 'up' ? '#15803D' : v.tone === 'down' ? '#BE123C' : '#1A1A1A'
+      const weight = v.tone ? 800 : 500
+      return `<td style="padding:7px 6px;font-size:12px;font-weight:${weight};color:${color};text-align:${cols[i].align};${last ? '' : 'border-bottom:1px solid #F1F5F9;'}font-family:${EM_FONT};letter-spacing:-0.3px;${cols[i].align === 'right' ? 'font-variant-numeric:tabular-nums;' : ''}white-space:nowrap;">${v.v}</td>`
+    }
     return `
-      <table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;background:#FFFFFF;border:1px solid #E8EDF2;border-radius:10px;margin-top:12px;">
-        <tr><td style="padding:12px 14px;">
-          <table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;">
-            <tr>
-              <td width="50%" style="padding-right:6px;vertical-align:top;">
-                <p style="margin:0 0 4px;font-size:12px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-0.4px;"><span style="display:inline-block;width:3px;height:11px;background:${EM_RED};border-radius:1px;vertical-align:-1px;margin-right:6px;"></span>${ed('v3ChartT1', lang === 'en' ? 'LG Visibility by LLM Model (May\u2013Aug)' : 'LG 5-8\uC6D4 LLM \uBAA8\uB378\uBCC4 Visibility')}</p>
-                ${img(mk(LLM_TREND.lg), 'LG Visibility trend by LLM')}
-              </td>
-              <td width="50%" style="padding-left:6px;vertical-align:top;">
-                <p style="margin:0 0 4px;font-size:12px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-0.4px;"><span style="display:inline-block;width:3px;height:11px;background:${EM_RED};border-radius:1px;vertical-align:-1px;margin-right:6px;"></span>${ed('v3ChartT2', lang === 'en' ? 'Samsung Visibility by LLM Model (May\u2013Aug)' : 'Samsung 5-8\uC6D4 LLM \uBAA8\uB378\uBCC4 Visibility')}</p>
-                ${img(mk(LLM_TREND.ss), 'Samsung Visibility trend by LLM')}
-              </td>
-            </tr>
-            <tr><td colspan="2" style="padding-top:8px;border-top:1px solid #F1F5F9;"><table border="0" cellpadding="0" cellspacing="0"><tr>${legend}</tr></table></td></tr>
+      <table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;background:#FFFFFF;border:1px solid #E8EDF2;border-radius:10px;margin:12px 0 0;">
+        <tr><td style="padding:12px 14px 10px;">
+          <p style="margin:0 0 2px;font-size:13px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-0.4px;"><span style="display:inline-block;width:3px;height:12px;background:${EM_RED};border-radius:1px;vertical-align:-1px;margin-right:6px;"></span>${title}</p>
+          <p style="margin:0 0 8px;font-size:10.5px;color:#64748B;font-family:${EM_FONT};">${sub}</p>
+          <table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;border-collapse:collapse;">
+            <colgroup>${cols.map(c => `<col style="width:${c.w};"/>`).join('')}</colgroup>
+            <tr>${head.map(th).join('')}</tr>
+            ${rows.map((r, ri) => `<tr>${r.map((c, i) => td(c, i, ri === rows.length - 1)).join('')}</tr>`).join('')}
           </table>
+          ${note ? `<p style="margin:8px 0 0;font-size:10.5px;color:#64748B;line-height:1.6;font-family:${EM_FONT};">${note}</p>` : ''}
         </td></tr>
       </table>`
   }
+  const octTable1 = octCard(
+    L('Gemini 인용 채널별 비중 변화', 'Gemini citation share by channel'),
+    L('전체 제품·국가 기준 | 단위: %, %p', 'All products & countries | unit: %, %p'),
+    [{ w: '40%', align: 'left' }, { w: '20%', align: 'right' }, { w: '20%', align: 'right' }, { w: '20%', align: 'right' }],
+    [L('인용 채널', 'Channel'), L('8월', 'Aug'), L('9월', 'Sep'), L('증감', 'Change')],
+    [
+      [L('리테일', 'Retail'), '27.2', '28.8', { v: '+1.6%p', tone: 'up' }],
+      [L('비교 사이트', 'Comparison sites'), '4.3', '6.4', { v: '+2.1%p', tone: 'up' }],
+      [L('뉴스', 'News'), '11.4', '12.3', '+0.9%p'],
+      [L('리뷰', 'Review'), '22.3', '21.6', '-0.7%p'],
+      [L('제조사 공식 사이트', 'Manufacturer official site'), '17.4', '14.5', { v: '-2.9%p', tone: 'down' }],
+    ])
+  const octTable2 = octCard(
+    L('Gemini 주요 현지 도메인 Citation 변화', 'Gemini citations — key local domains'),
+    L('8월 대비 9월 인용 건수', 'Sep vs Aug citation count'),
+    [{ w: '14%', align: 'left' }, { w: '36%', align: 'left' }, { w: '16%', align: 'right' }, { w: '16%', align: 'right' }, { w: '18%', align: 'right' }],
+    [L('국가', 'Country'), L('도메인', 'Domain'), L('8월', 'Aug'), L('9월', 'Sep'), L('증감률', 'Change')],
+    [
+      [L('독일', 'Germany'), 'mediamarkt.de', '28,163', '40,238', '+42.9%'],
+      [L('베트남', 'Vietnam'), 'dienmayxanh.com', '1,686', '8,540', '+406.5%'],
+      [L('독일', 'Germany'), 'idealo.de', '613', '4,736', '+672.6%'],
+    ],
+    L('인용 건수는 Gemini의 전체 제품·브랜드 관련 Citation 기준이며, LG 제품에 대한 인용만을 의미하지 않음.',
+      'Citation counts cover all product/brand-related Gemini citations, not only citations of LG products.'))
 
-  // [B] 차트 아래 이어지는 본문 (선택 편집 — 본문을 차트 앞/뒤로 나눠 쓸 수 있게)
-  const bodyCont = (field, phKo, phEn) => {
-    const val = (meta[field] != null && meta[field] !== '') ? sanitizeUserHtml(meta[field]) : ''
-    if (!val && !_ED) return ''
-    return `<div${edRich(field)} style="margin:10px 0 0;font-size:13px;color:#CBD5E1;line-height:21px;font-family:${EM_FONT};letter-spacing:-0.3px;">${val || (lang === 'en' ? (phEn || '(continued text — click to edit)') : (phKo || '(차트 아래 이어지는 본문 — 클릭하여 입력)'))}</div>`
+  // 편집 모드에서는 블록을 편집 불가 섬으로 — 저장(blur) 시 본문 HTML 에 함께 저장되더라도
+  // 다음 렌더의 stripInserted 가 걷어내고 다시 끼운다 (멱등).
+  const octWrap = _ED ? ' contenteditable="false"' : ''
+  const octBlk = (id, html) => `<div data-blk="${id}" data-br="0"${octWrap}>${html}</div>`
+  const fieldVal = (field, def) => (meta[field] != null && meta[field] !== '') ? sanitizeUserHtml(meta[field]) : def
+  const octProc1 = (h) => {
+    const t1 = insertAfterSentence(stripInserted(h), OCT_A1, octTable1, 'oct1', octWrap).html
+    const t2 = insertAfterSentence(t1, OCT_A2, octTable2, 'oct2', octWrap).html
+    return colorizeSentence(t2, OCT_P1, OCT_PINK)
   }
+  const pinkProc = (sentence) => (h) => colorizeSentence(stripInserted(h), sentence, OCT_PINK)
 
-  // [C] 답변 예시 카드 — V2 quoteBox 양식 재사용 (흰 카드 + 좌측 컬러 보더 인용 2개)
-  const v3QuoteBox = (label, labelColor, enF, en, koF, ko) => `
-    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;margin-top:8px;">
-      <tr>
-        <td style="padding:10px 14px;background:#F8FAFC;border:1px solid #E8EDF2;border-left:3px solid ${labelColor};border-radius:8px;word-break:break-word;">
-          <div style="margin:0 0 6px;font-size:10px;font-weight:800;color:${labelColor};font-family:${EM_FONT};letter-spacing:1px;">${label}</div>
-          <div style="margin:0 0 8px;font-size:13px;color:#334155;line-height:20px;font-family:'Courier New',Courier,monospace;word-break:break-word;overflow-wrap:anywhere;">${ed(enF, en)}</div>
-          <div style="margin:0;font-size:13px;color:#64748B;line-height:20px;font-family:${EM_FONT};letter-spacing:-0.3px;">${ed(koF, ko)}</div>
-        </td>
-      </tr>
-    </table>`
-  const c1JulEn = `Prices for multi-door fridge freezers in the UK vary widely, but you can expect typical new models to range roughly from about £900 to £3,500, with many common mid-range options landing in the £1,200–£2,000 bracket. Higher-end American-style or premium brands can push above £2,500–£3,500. Premium/large-capacity models (600–900+ litres, French-door or door-in-door) commonly range £2,000–£3,500, especially when brand prestige (Samsung, LG, Smeg, AEG, Bosch) or extra features are involved.`
-  const c1JulKo = L(`영국 양문형 냉장고 가격은 매우 다양하지만, 일반적인 신제품은 대략 £900~£3,500 범위이며 흔한 중가형 옵션은 £1,200~£2,000 대에 몰려 있습니다. 고급형 미국식 또는 프리미엄 브랜드는 £2,500~£3,500 이상까지 올라갈 수 있습니다. 프리미엄/대용량 모델(600~900L 이상, 프렌치도어 또는 도어인도어)은 브랜드 프리미엄(삼성, LG, 스메그, AEG, 보쉬)이나 추가 기능이 있을 경우 일반적으로 £2,000~£3,500 범위입니다`,
-    `Interpretation: A brand-rich answer — typical price bands plus premium brand names (Samsung, LG, Smeg, AEG, Bosch) are all cited.`)
-  const c1AugEn = `The average price for a multi-door fridge freezer in the UK appears to be around £345 based on Which? data, with a typical range from roughly £265 to £1,099 depending on size and features. Example average/typical prices: £345 (average in past six months) and £265 (cheapest in past six months) for certain models.`
-  const c1AugKo = L(`영국 양문형 냉장고의 평균 가격은 Which? 데이터를 기준으로 약 £345 이며, 크기와 기능에 따라 대략 £265~£1,099 범위로 나타납니다. 예시 평균/일반 가격: 특정 모델 기준 £345(최근 6 개월 평균), £265(최근 6 개월 최저가).`,
-    `Interpretation: The August answer shrinks to a short Which?-based price summary — brand mentions drop from many to zero–one.`)
-  const v3CaseCardHtml = () => `
-    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;background:#FFFFFF;border:1px solid #E8EDF2;border-radius:10px;margin-top:12px;">
-      <tr>
-        <td style="padding:14px 16px;word-break:break-word;">
-          <div style="margin:0 0 8px;font-size:14px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-0.5px;">${ed('v3C1Title', L('[답변 예시] Perplexity, 냉장고 (영국) - "답변 길이 축소와 함께 브랜드 언급 개수의 감소(N 개→0 ~1 개)"', '[Case] Perplexity, Refrigerator (UK) - "Shorter answers with brand mentions dropping (N → 0–1)"'))}</div>
-          <div style="margin:0;font-size:13px;color:#334155;font-family:${EM_FONT};"><strong>Prompt</strong>: ${ed('v3C1Prompt', `"What's the average price for a Multi Door Fridge Freezer?"`)}</div>
-          ${v3QuoteBox(L('7월 원문 · 번역', 'JULY — ORIGINAL · INTERPRETATION'), '#64748B', 'v3C1Ben', c1JulEn, 'v3C1Bko', c1JulKo)}
-          ${v3QuoteBox(L('8월 원문 · 번역', 'AUGUST — ORIGINAL · INTERPRETATION'), EM_RED, 'v3C1Ten', c1AugEn, 'v3C1Tko', c1AugKo)}
-        </td>
-      </tr>
-    </table>`
-
-  // [D] 2번 박스 각주 — 작고 흐린 출처 표기
-  const v3Ex2NoteHtml = `<div${edRich('v3Ex2Note')} style="margin:10px 0 0;font-size:10.5px;color:#64748B;line-height:1.6;font-family:${EM_FONT};">${(meta.v3Ex2Note != null && meta.v3Ex2Note !== '') ? sanitizeUserHtml(meta.v3Ex2Note) : `1) ${lang === 'en' ? 'Source' : '출처'}: OpenAI Help Center, “Shopping with ChatGPT Search”<br/><a href="https://help.openai.com/en/articles/11128490-shopping-with-chatgpt-search" style="color:#64748B;text-decoration:underline;">https://help.openai.com/en/articles/11128490-shopping-with-chatgpt-search</a>`}</div>`
+  // [B] 표 아래 이어지는 본문 (선택 편집 — 본문을 표 앞/뒤로 나눠 쓸 수 있게)
+  const bodyCont = (field, phKo, phEn, proc) => {
+    let val = (meta[field] != null && meta[field] !== '') ? sanitizeUserHtml(meta[field]) : ''
+    if (val && proc) val = proc(val)
+    if (!val && !_ED) return ''
+    return `<div${edRich(field)} style="margin:10px 0 0;font-size:13px;color:#CBD5E1;line-height:21px;font-family:${EM_FONT};letter-spacing:-0.3px;">${val || (lang === 'en' ? (phEn || '(continued text — click to edit)') : (phKo || '(표 아래 이어지는 본문 — 클릭하여 입력)'))}</div>`
+  }
 
   // ── 7월호 Executive Summary (사용자 제공 구글 문서 원문 그대로 — 임의 다듬기 없음, 2026-08-31) ──
   // 필드 버전업 (v3Ex*T2/B2): 옛 저장본(v3Ex1T/B = 8월 2항목 구성)이 새 기본 문안을 덮지 않게.
@@ -1103,12 +1102,17 @@ function insightV3Parts(meta = {}, lang = 'ko', productsCnty = [], assetBase = '
   const ex3Ko = `'26년 7월부터 Readability 평가 체계와 대시보드를 새롭게 구축해 LG.com 콘텐츠가 AI가 읽고 활용하기 좋은 상태인지 함께 점검하고자 합니다.<br/><br/>전략 10개 국가 및 글로벌 대표 사이트의 9개 주요 페이지 유형, 총 9,284개 페이지를 대상으로 AI 봇의 1) 사이트 성능, 2) 웹접근성, 3) Basic SEO, 4) 스키마마크업, 5) 고인용 콘텐츠, 6) AI Crawlability 총 6개 영역에서 첫 평가를 진행한 결과, <strong style="color:#FFFFFF;">LG.com의 전체 Readability 평균은 79.7점</strong>으로 나타났습니다.<br/><br/>영역별로는 사이트 성능 99.4점, AI Crawlability 95.4, Basic SEO 89.2점, 웹접근성 83.5점으로 기본적인 페이지 접근성과 기술 환경은 비교적 양호했습니다. 반면, <strong style="color:#FFFFFF;">스키마마크업 33.2점, 고인용 콘텐츠 56.3점</strong>은 상대적으로 낮아 개선이 필요한 영역으로 확인됐습니다.<br/><br/><span style="color:#FDA4AF;">이에 대응하여 FAQ 등 AI 답변에 적합한 콘텐츠 형식 확대, 스키마마크업 자동화, Support 및 PDP 주요 정보의 초기 제공 구조 개선(SSR)을 지속 수행하고자 합니다. 빠른 개선이 필요한 영역은 9월 Committee에 bring-up하고, Visibility 상승으로 이어질 수 있는 기반을 강화할 계획입니다.</span>`
   const ex3En = `From July 2026 we built a new Readability evaluation framework and dashboard to check whether LG.com content is in good shape for AI to read and use.<br/><br/>Across the 10 strategic countries plus the global flagship site — 9 major page types, 9,284 pages in total — the first evaluation covered six areas for AI bots: 1) Site Performance, 2) Web Accessibility, 3) Basic SEO, 4) Schema Markup, 5) Citable Content, 6) AI Crawlability. <strong style="color:#FFFFFF;">LG.com's overall Readability average was 79.7.</strong><br/><br/>By area, Site Performance 99.4, AI Crawlability 95.4, Basic SEO 89.2 and Web Accessibility 83.5 showed relatively sound page accessibility and technical environment. In contrast, <strong style="color:#FFFFFF;">Schema Markup 33.2 and Citable Content 56.3</strong> were relatively low and identified as areas needing improvement.<br/><br/><span style="color:#FDA4AF;">In response, we will continue expanding AI-answer-friendly content formats such as FAQ, automating schema markup, and improving the initial delivery structure (SSR) of key Support and PDP information. Areas needing rapid improvement will be brought up to the September Committee, strengthening the basis for Visibility gains.</span>`
 
+  // 기준 문장이 본문(v3Ex1B2)에 없으면(예: 영문 미편집) 표를 본문 끝에 이어 붙인다
+  const slot1Src = stripInserted(fieldVal('v3Ex1B2', L(ex1Ko, ex1En)))
+  const octTail = (findSentence(slot1Src, OCT_A1) ? '' : octBlk('oct1', octTable1))
+    + (findSentence(slot1Src, OCT_A2) ? '' : octBlk('oct2', octTable2))
+
   const execHtml = `
                               <div style="margin:0 0 12px;font-size:13px;color:#E2E8F0;line-height:22px;font-family:${EM_FONT};letter-spacing:-0.3px;">${ed('v3ExIntro', L(introKo, introEn))}</div>
                               <table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;">
-                                ${execItem('v3Ex1T2', L('1. C브랜드 Visibility 현황 분석 – TV·세탁기·냉장고를 중심으로', '1. C-brand Visibility analysis — centered on TV, Washer and Refrigerator'), 'v3Ex1B2', L(ex1Ko, ex1En), llmTrendChartHtml() + bodyCont('v3Ex1B2b') + v3CaseCardHtml() + bodyCont('v3Ex1B2c', '(\uB2F5\uBCC0 \uC608\uC2DC \uC544\uB798 \uBCF8\uBB38 \u2014 \uD074\uB9AD\uD558\uC5EC \uC785\uB825)', '(text below the case card \u2014 click to edit)'))}
-                                ${execItem('v3Ex2T2', L('2. 인용 출처의 변화 - 브랜드 닷컴의 인용비중 증가/PDP를 대신하여 설명형 콘텐츠(Buying Guide/Support) 인용 확대', '2. Shift in citation sources — brand dotcom share up; explanatory content (Buying Guide/Support) cited in place of PDP'), 'v3Ex2B2', L(ex2Ko, ex2En), v3Ex2NoteHtml)}
-                                ${execItem('v3Ex3T2', L('3. Readabilty 평가 체계 도입 및 개선 필요 영역 보완 지속', '3. Introducing the Readability framework and continuing to close gaps'), 'v3Ex3B2', L(ex3Ko, ex3En))}
+                                ${execItem('v3Ex1T2', L('1. C브랜드 Visibility 현황 분석 – TV·세탁기·냉장고를 중심으로', '1. C-brand Visibility analysis — centered on TV, Washer and Refrigerator'), 'v3Ex1B2', L(ex1Ko, ex1En), octTail + bodyCont('v3Ex1B2b', null, null, pinkProc(OCT_P1)) + bodyCont('v3Ex1B2c', null, null, pinkProc(OCT_P1)), octProc1)}
+                                ${execItem('v3Ex2T2', L('2. 인용 출처의 변화 - 브랜드 닷컴의 인용비중 증가/PDP를 대신하여 설명형 콘텐츠(Buying Guide/Support) 인용 확대', '2. Shift in citation sources — brand dotcom share up; explanatory content (Buying Guide/Support) cited in place of PDP'), 'v3Ex2B2', L(ex2Ko, ex2En))}
+                                ${execItem('v3Ex3T2', L('3. Readabilty 평가 체계 도입 및 개선 필요 영역 보완 지속', '3. Introducing the Readability framework and continuing to close gaps'), 'v3Ex3B2', L(ex3Ko, ex3En), '', pinkProc(OCT_P3))}
                               </table>`
   return { execHtml }
 }
