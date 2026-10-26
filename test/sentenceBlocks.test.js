@@ -72,27 +72,33 @@ describe('emailTemplate — 10월호 Exec Summary (사용자 지시 2026-10-26)'
   }
   const idx = (h, s) => { const i = h.indexOf(s); expect(i, `missing: ${s.slice(0, 40)}`).toBeGreaterThan(-1); return i }
 
-  it('표1 은 GPT Search 하락 문장 아래, 표2 는 4위·3위 문장 아래, 결론 문장은 핑크', async () => {
+  it('표1 은 GPT Search 하락 문장 아래, 결론 문장은 핑크로 박스 마지막 — 표2(GPT Search) 는 없음 (사용자 지시 2026-10-26 삭제)', async () => {
     const h = await render({ v3Ex1B2: SLOT1, v3Ex3B2: SLOT3 })
     const a1 = idx(h, '하락폭이 크게 나타났습니다.')
     const t1 = idx(h, 'data-blk="oct1"')
     const mid = idx(h, '특히 GPT Search에서는 주요 경쟁사')
     const a2 = idx(h, '4위와 3위로 내려갔습니다.')
-    const t2 = idx(h, 'data-blk="oct2"')
     const p1 = idx(h, `<span data-pk="1" style="color:#FDA4AF;">${P1}</span>`)
-    // 순서: 표1 → 4위·3위 문장 → 핑크 결론 → 표2(박스 맨 아래)
-    expect(a1 < t1 && t1 < mid && mid < a2 && a2 < p1 && p1 < t2).toBe(true)
-    expect(h.slice(t2, t2 + 40)).toMatch(/^data-blk="oct2" data-br="0"/)   // 결론 문장이 끝이라 삼킨 br 없음
+    // 순서: 표1 → 4위·3위 문장 → 핑크 결론(박스 맨 아래)
+    expect(a1 < t1 && t1 < mid && mid < a2 && a2 < p1).toBe(true)
+    expect(h).not.toContain('data-blk="oct2"')
+    expect(h).not.toContain('Visibility 변화 – GPT Search')
+    expect(h).not.toContain('1→2→4위')
     // 표 내용 + 제목 앞 붉은 막대 (표1./표2. 접두 없음)
-    expect(h.slice(t1, t2)).toContain('Visibility 변화 – Total')
-    expect(h.slice(t2)).toContain('Visibility 변화 – GPT Search')
-    expect(h.slice(t2)).toContain('1→2→4위')
     expect(h).not.toMatch(/표\s?[12]\./)
     const t1Head = h.slice(t1, t1 + 700)
     expect(t1Head).toContain('background:#CF0652')      // 붉은 막대
     expect(t1Head).toContain('에어컨 주요 브랜드 Visibility 변화 – Total')
     // Readability 마지막 문장 핑크
     expect(h).toContain(`<span data-pk="1" style="color:#FDA4AF;">${P3}</span>`)
+  })
+
+  it('옛 저장본에 표2 블록이 섞여 있어도 다음 렌더에서 걷어내고 다시 끼우지 않는다', async () => {
+    const stale = insertAfterSentence(SLOT1, P1, '<table><tr><td>OLD T2</td></tr></table>', 'oct2').html
+    const h = await render({ v3Ex1B2: stale })
+    expect(h).not.toContain('data-blk="oct2"')
+    expect(h).not.toContain('OLD T2')
+    expect(h.match(/data-blk="oct1"/g).length).toBe(1)
   })
 
   it('기존 LLM 트렌드 차트·답변 예시 카드·Citation 출처 각주는 사라진다', async () => {
@@ -108,20 +114,21 @@ describe('emailTemplate — 10월호 Exec Summary (사용자 지시 2026-10-26)'
     // 편집기 blur 가 저장하는 것 = 편집 span 의 innerHTML (블록·핑크 포함). 그걸 다시 넣어도 중복 생성 X
     const slotStart = h.indexOf('data-edit="v3Ex1B2"')
     const innerStart = h.indexOf('>', slotStart) + 1
-    const innerEnd = h.indexOf('</span></div>', h.indexOf('data-blk="oct2"'))
+    const innerEnd = h.indexOf('</span></div>', h.indexOf('data-blk="oct1"'))
     const saved = h.slice(innerStart, innerEnd)
     expect(saved).toContain('data-blk="oct1"')
+    expect(saved).toContain('구체화할 예정입니다.')   // 슬롯 끝 = 핑크 결론 문장
     const h2 = await render({ v3Ex1B2: saved }, 'ko', { editable: true })
     expect(h2.match(/data-blk="oct1"/g).length).toBe(1)
-    expect(h2.match(/data-blk="oct2"/g).length).toBe(1)
+    expect(h2).not.toContain('data-blk="oct2"')
     expect(h2.match(new RegExp('data-pk="1" style="color:#FDA4AF;">' + '즉, 주요 국가에서', 'g')).length).toBe(1)
   })
 
-  it('EN(앵커 문장 없음): 표 2개를 본문 끝에 이어 붙인다 — 깨지지 않음', async () => {
+  it('EN(앵커 문장 없음): 표 1 을 본문 끝에 이어 붙인다 — 깨지지 않음', async () => {
     const h = await render({}, 'en')
     expect(h).toContain('data-blk="oct1"')
-    expect(h).toContain('data-blk="oct2"')
-    expect(h).toContain('GPT Search')
+    expect(h).toContain('AC Visibility change by major brand – Total')
+    expect(h).not.toContain('data-blk="oct2"')
     expect(h).not.toContain('/api/hl-chart')
   })
 })

@@ -1009,12 +1009,12 @@ function insightV3Parts(meta = {}, lang = 'ko', productsCnty = [], assetBase = '
     </tr>`
 
   // ── 10월호 블록 (사용자 지시 2026-10-26) ────────────────────────────────────
-  // 1번 박스의 9월호 블록(LLM 트렌드 차트 PNG + 답변 예시 카드)을 표 2개로 교체.
+  // 1번 박스의 9월호 블록(LLM 트렌드 차트 PNG + 답변 예시 카드)을 표로 교체.
   // 표는 사용자 본문 **안의 기준 문장 바로 아래**에 끼운다 (sentenceBlocks — 문장을 못
-  // 찾으면 본문 끝에 이어 붙임). 수치는 사용자 제공 표 그대로 (Gemini 8→9월 — 하드코딩,
+  // 찾으면 본문 끝에 이어 붙임). 수치는 사용자 제공 표 그대로 (에어컨 8→9월 — 하드코딩,
   // 다음 호에서 갱신). 제목은 "표 1." 같은 번호 없이 붉은 막대만 (사용자 지시).
+  // 표 2(GPT Search) 는 사용자 지시로 삭제 (2026-10-26) — 박스 마지막은 핑크 결론 문장.
   const OCT_A1 = '특히 GPT Search(-2.7%p)와 Gemini(-3.3%p)에서 하락이 두드러졌으며, 국가별로는 영국(-2.0%p), 호주(-1.9%p), 스페인(-1.8%p), 미국(-1.4%p)에서 하락폭이 크게 나타났습니다.'
-  const OCT_A2 = '이에 따라 LG는 두 국가 모두 7월까지 유지하던 1위에서 8월 2위, 9월 각각 4위와 3위로 내려갔습니다.'
   // 결론/향후 방향 문장 — 박스 2 의 마지막 문장과 같은 핑크 (#FDA4AF)
   const OCT_PINK = '#FDA4AF'
   const OCT_P1 = '즉, 주요 국가에서 LG의 Visibility 하락이 경쟁사 대비 크게 나타나고 있으며, 특히 GPT Search에서는 경쟁 순위 하락으로까지 이어지고 있습니다. 이에 따라 에어컨 답변 원문 및 인용 출처를 추가 분석하여 원인을 파악하고 대응 방향을 구체화할 예정입니다.'
@@ -1045,38 +1045,22 @@ function insightV3Parts(meta = {}, lang = 'ko', productsCnty = [], assetBase = '
         </td></tr>
       </table>`
   }
-  // 수치·강조는 사용자 제공 표 그대로 (에어컨 8→9월 증감 %p, LG 순위 7→8→9월)
-  // 두 표의 국가·LG·Daikin·Mitsubishi·Midea 열 위치를 일치 — 1번 표는 순위 자리(30%)를 빈 칸으로 둔다 (사용자 지시)
-  const OCT_COLS = [{ w: '14%', align: 'left' }, { w: '14%', align: 'right' }, { w: '14%', align: 'right' }, { w: '14%', align: 'right' }, { w: '14%', align: 'right' }, { w: '30%', align: 'center' }]
+  // 수치·강조는 사용자 제공 표 그대로 (에어컨 8→9월 증감 %p)
+  // 표 2 삭제 후 5개 열을 전체 너비에 재배분 — 국가 24% + 브랜드 4열 19% (사용자 지시 2026-10-26)
+  const OCT_COLS = [{ w: '24%', align: 'left' }, { w: '19%', align: 'right' }, { w: '19%', align: 'right' }, { w: '19%', align: 'right' }, { w: '19%', align: 'right' }]
   const dn = (v) => ({ v, tone: 'down' })
-  const em = (v) => ({ v, tone: 'em' })
   const octTable1 = octCard(
     L('에어컨 주요 브랜드 Visibility 변화 – Total', 'AC Visibility change by major brand – Total'),
     L('8월 대비 9월 증감 | 단위: %p', 'Sep vs Aug | unit: %p'),
     OCT_COLS,
-    [L('국가', 'Country'), 'LG', 'Daikin', 'Mitsubishi', 'Midea', ''],
+    [L('국가', 'Country'), 'LG', 'Daikin', 'Mitsubishi', 'Midea'],
     [
-      [L('전체', 'Total'), dn('-0.9'), '-0.5', '+0.1', '+0.1', ''],
-      [L('영국', 'UK'), dn('-2.0'), '-0.8', '+0.1', '-1.2', ''],
-      [L('스페인', 'Spain'), dn('-1.8'), '+0.1', '+1.5', '+0.6', ''],
-      [L('호주', 'Australia'), dn('-1.9'), '-1.5', '-0.9', '-0.2', ''],
-      [L('미국', 'US'), dn('-1.4'), '-0.7', '+1.4', '-0.4', ''],
+      [L('전체', 'Total'), dn('-0.9'), '-0.5', '+0.1', '+0.1'],
+      [L('영국', 'UK'), dn('-2.0'), '-0.8', '+0.1', '-1.2'],
+      [L('스페인', 'Spain'), dn('-1.8'), '+0.1', '+1.5', '+0.6'],
+      [L('호주', 'Australia'), dn('-1.9'), '-1.5', '-0.9', '-0.2'],
+      [L('미국', 'US'), dn('-1.4'), '-0.7', '+1.4', '-0.4'],
     ])
-  const octTable2 = octCard(
-    L('에어컨 주요 브랜드 Visibility 변화 – GPT Search', 'AC Visibility change by major brand – GPT Search'),
-    L('8월 대비 9월 증감 | 단위: %p | LG 순위는 7→8→9월', 'Sep vs Aug | unit: %p | LG rank Jul→Aug→Sep'),
-    OCT_COLS,
-    [L('국가', 'Country'), 'LG', 'Daikin', 'Mitsubishi', 'Midea', L('LG 순위 (7→8→9월)', 'LG rank (Jul→Aug→Sep)')],
-    [
-      [L('전체', 'Total'), dn('-2.7'), '-0.6', '-1.4', '-0.8', L('1→1→1위', '1→1→1')],
-      [L('영국', 'UK'), dn('-6.9'), '+1.0', '-0.2', '-3.0', em(L('1→2→4위', '1→2→4'))],
-      [L('스페인', 'Spain'), dn('-6.4'), '+0.1', '-0.8', '+0.4', em(L('1→2→3위', '1→2→3'))],
-      [L('독일', 'Germany'), '-2.9', '-1.0', '-1.7', '-1.8', L('3→5→5위', '3→5→5')],
-      [L('호주', 'Australia'), '-4.5', '-2.5', '-2.9', '-1.7', L('5→5→5위', '5→5→5')],
-      [L('미국', 'US'), '-3.7', '-1.8', '+1.1', '-0.8', L('1→1→1위', '1→1→1')],
-    ],
-    L('순위는 제공된 LG·Samsung·Daikin·Mitsubishi·Midea·Panasonic 6개 브랜드 기준. 증감은 원본의 소수점 둘째 자리 수치로 계산한 후 첫째 자리로 반올림.',
-      'Rank among the 6 brands provided (LG·Samsung·Daikin·Mitsubishi·Midea·Panasonic). Changes computed from 2-decimal source values, then rounded to 1 decimal.'))
 
   // 편집 모드에서는 블록을 편집 불가 섬으로 — 저장(blur) 시 본문 HTML 에 함께 저장되더라도
   // 다음 렌더의 stripInserted 가 걷어내고 다시 끼운다 (멱등).
@@ -1084,11 +1068,9 @@ function insightV3Parts(meta = {}, lang = 'ko', productsCnty = [], assetBase = '
   const octBlk = (id, html) => `<div data-blk="${id}" data-br="0"${octWrap}>${html}</div>`
   const fieldVal = (field, def) => (meta[field] != null && meta[field] !== '') ? sanitizeUserHtml(meta[field]) : def
   const octProc1 = (h) => {
+    // stripInserted 가 옛 저장본에 섞인 표 2(data-blk="oct2") 도 함께 걷어낸다 — 다시 끼우지 않음
     const t1 = insertAfterSentence(stripInserted(h), OCT_A1, octTable1, 'oct1', octWrap).html
-    // 표 2 는 박스 맨 아래 — 결론 문장(핑크) 뒤에 (사용자 지시 2026-10-26). 결론 문장이 없으면 4위·3위 문장 뒤.
-    const r2 = insertAfterSentence(t1, OCT_P1, octTable2, 'oct2', octWrap)
-    const t2 = r2.found ? r2.html : insertAfterSentence(t1, OCT_A2, octTable2, 'oct2', octWrap).html
-    return colorizeSentence(t2, OCT_P1, OCT_PINK)
+    return colorizeSentence(t1, OCT_P1, OCT_PINK)
   }
   const pinkProc = (sentence) => (h) => colorizeSentence(stripInserted(h), sentence, OCT_PINK)
 
@@ -1116,8 +1098,7 @@ function insightV3Parts(meta = {}, lang = 'ko', productsCnty = [], assetBase = '
 
   // 기준 문장이 본문(v3Ex1B2)에 없으면(예: 영문 미편집) 표를 본문 끝에 이어 붙인다
   const slot1Src = stripInserted(fieldVal('v3Ex1B2', L(ex1Ko, ex1En)))
-  const octTail = (findSentence(slot1Src, OCT_A1) ? '' : octBlk('oct1', octTable1))
-    + ((findSentence(slot1Src, OCT_P1) || findSentence(slot1Src, OCT_A2)) ? '' : octBlk('oct2', octTable2))
+  const octTail = findSentence(slot1Src, OCT_A1) ? '' : octBlk('oct1', octTable1)
 
   const execHtml = `
                               <div style="margin:0 0 12px;font-size:13px;color:#E2E8F0;line-height:22px;font-family:${EM_FONT};letter-spacing:-0.3px;">${ed('v3ExIntro', L(introKo, introEn))}</div>
