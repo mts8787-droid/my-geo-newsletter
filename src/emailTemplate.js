@@ -1046,24 +1046,26 @@ function insightV3Parts(meta = {}, lang = 'ko', productsCnty = [], assetBase = '
       </table>`
   }
   // 수치·강조는 사용자 제공 표 그대로 (에어컨 8→9월 증감 %p, LG 순위 7→8→9월)
+  // 두 표의 국가·LG·Daikin·Mitsubishi·Midea 열 위치를 일치 — 1번 표는 순위 자리(30%)를 빈 칸으로 둔다 (사용자 지시)
+  const OCT_COLS = [{ w: '14%', align: 'left' }, { w: '14%', align: 'right' }, { w: '14%', align: 'right' }, { w: '14%', align: 'right' }, { w: '14%', align: 'right' }, { w: '30%', align: 'center' }]
   const dn = (v) => ({ v, tone: 'down' })
   const em = (v) => ({ v, tone: 'em' })
   const octTable1 = octCard(
     L('에어컨 주요 브랜드 Visibility 변화 – Total', 'AC Visibility change by major brand – Total'),
     L('8월 대비 9월 증감 | 단위: %p', 'Sep vs Aug | unit: %p'),
-    [{ w: '24%', align: 'left' }, { w: '19%', align: 'right' }, { w: '19%', align: 'right' }, { w: '19%', align: 'right' }, { w: '19%', align: 'right' }],
-    [L('국가', 'Country'), 'LG', 'Daikin', 'Mitsubishi', 'Midea'],
+    OCT_COLS,
+    [L('국가', 'Country'), 'LG', 'Daikin', 'Mitsubishi', 'Midea', ''],
     [
-      [L('전체', 'Total'), dn('-0.9'), '-0.5', '+0.1', '+0.1'],
-      [L('영국', 'UK'), dn('-2.0'), '-0.8', '+0.1', '-1.2'],
-      [L('스페인', 'Spain'), dn('-1.8'), '+0.1', '+1.5', '+0.6'],
-      [L('호주', 'Australia'), dn('-1.9'), '-1.5', '-0.9', '-0.2'],
-      [L('미국', 'US'), dn('-1.4'), '-0.7', '+1.4', '-0.4'],
+      [L('전체', 'Total'), dn('-0.9'), '-0.5', '+0.1', '+0.1', ''],
+      [L('영국', 'UK'), dn('-2.0'), '-0.8', '+0.1', '-1.2', ''],
+      [L('스페인', 'Spain'), dn('-1.8'), '+0.1', '+1.5', '+0.6', ''],
+      [L('호주', 'Australia'), dn('-1.9'), '-1.5', '-0.9', '-0.2', ''],
+      [L('미국', 'US'), dn('-1.4'), '-0.7', '+1.4', '-0.4', ''],
     ])
   const octTable2 = octCard(
     L('에어컨 주요 브랜드 Visibility 변화 – GPT Search', 'AC Visibility change by major brand – GPT Search'),
     L('8월 대비 9월 증감 | 단위: %p | LG 순위는 7→8→9월', 'Sep vs Aug | unit: %p | LG rank Jul→Aug→Sep'),
-    [{ w: '14%', align: 'left' }, { w: '13%', align: 'right' }, { w: '14%', align: 'right' }, { w: '16%', align: 'right' }, { w: '13%', align: 'right' }, { w: '30%', align: 'left' }],
+    OCT_COLS,
     [L('국가', 'Country'), 'LG', 'Daikin', 'Mitsubishi', 'Midea', L('LG 순위 (7→8→9월)', 'LG rank (Jul→Aug→Sep)')],
     [
       [L('전체', 'Total'), dn('-2.7'), '-0.6', '-1.4', '-0.8', L('1→1→1위', '1→1→1')],
