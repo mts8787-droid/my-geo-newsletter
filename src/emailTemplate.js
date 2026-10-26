@@ -1021,52 +1021,60 @@ function insightV3Parts(meta = {}, lang = 'ko', productsCnty = [], assetBase = '
   const OCT_P3 = '향후에는 자동화 적용 범위와 콘텐츠 품질을 지속 점검하고, 상대적으로 점수가 낮은 스키마 마크업 및 고인용 콘텐츠 영역을 중심으로 추가 개선을 추진할 예정입니다.'
 
   // 흰 카드 표 — 제목(붉은 막대) + 부제 + 표 + (선택) 각주. 블록 안에 <div> 금지 (stripInserted 제약).
+  // 컴팩트: 행 padding 4px·글자 11.5px (사용자 지시 2026-10-26 "높이는 적도록").
   const octCard = (title, sub, cols, head, rows, note = '') => {
-    const th = (t, i) => `<th style="padding:0 6px 6px;font-size:11px;font-weight:800;color:#475569;text-align:${cols[i].align};border-bottom:2px solid #E2E8F0;font-family:${EM_FONT};letter-spacing:-0.3px;">${t}</th>`
+    const th = (t, i) => `<th style="padding:0 5px 4px;font-size:10.5px;font-weight:800;color:#475569;text-align:${cols[i].align};border-bottom:2px solid #E2E8F0;font-family:${EM_FONT};letter-spacing:-0.3px;white-space:nowrap;">${t}</th>`
     const td = (c, i, last) => {
       const v = typeof c === 'string' ? { v: c } : c
-      const color = v.tone === 'up' ? '#15803D' : v.tone === 'down' ? '#BE123C' : '#1A1A1A'
+      // tone: down(빨강 강조) / em(검정 강조) / 없음(보통)
+      const color = v.tone === 'down' ? '#BE123C' : '#1A1A1A'
       const weight = v.tone ? 800 : 500
-      return `<td style="padding:7px 6px;font-size:12px;font-weight:${weight};color:${color};text-align:${cols[i].align};${last ? '' : 'border-bottom:1px solid #F1F5F9;'}font-family:${EM_FONT};letter-spacing:-0.3px;${cols[i].align === 'right' ? 'font-variant-numeric:tabular-nums;' : ''}white-space:nowrap;">${v.v}</td>`
+      return `<td style="padding:4px 5px;font-size:11.5px;line-height:16px;font-weight:${weight};color:${color};text-align:${cols[i].align};${last ? '' : 'border-bottom:1px solid #F1F5F9;'}font-family:${EM_FONT};letter-spacing:-0.3px;${cols[i].align === 'right' ? 'font-variant-numeric:tabular-nums;' : ''}white-space:nowrap;">${v.v}</td>`
     }
     return `
-      <table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;background:#FFFFFF;border:1px solid #E8EDF2;border-radius:10px;margin:12px 0 0;">
-        <tr><td style="padding:12px 14px 10px;">
-          <p style="margin:0 0 2px;font-size:13px;font-weight:800;color:#1A1A1A;font-family:${EM_FONT};letter-spacing:-0.4px;"><span style="display:inline-block;width:3px;height:12px;background:${EM_RED};border-radius:1px;vertical-align:-1px;margin-right:6px;"></span>${title}</p>
-          <p style="margin:0 0 8px;font-size:10.5px;color:#64748B;font-family:${EM_FONT};">${sub}</p>
+      <table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;background:#FFFFFF;border:1px solid #E8EDF2;border-radius:10px;margin:10px 0 0;">
+        <tr><td style="padding:9px 12px 8px;">
+          <p style="margin:0 0 1px;font-size:12.5px;font-weight:800;color:#1A1A1A;line-height:18px;font-family:${EM_FONT};letter-spacing:-0.4px;"><span style="display:inline-block;width:3px;height:12px;background:${EM_RED};border-radius:1px;vertical-align:-1px;margin-right:6px;"></span>${title}</p>
+          <p style="margin:0 0 5px;font-size:10px;color:#64748B;line-height:14px;font-family:${EM_FONT};">${sub}</p>
           <table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;border-collapse:collapse;">
             <colgroup>${cols.map(c => `<col style="width:${c.w};"/>`).join('')}</colgroup>
             <tr>${head.map(th).join('')}</tr>
             ${rows.map((r, ri) => `<tr>${r.map((c, i) => td(c, i, ri === rows.length - 1)).join('')}</tr>`).join('')}
           </table>
-          ${note ? `<p style="margin:8px 0 0;font-size:10.5px;color:#64748B;line-height:1.6;font-family:${EM_FONT};">${note}</p>` : ''}
+          ${note ? `<p style="margin:6px 0 0;font-size:10px;color:#64748B;line-height:1.5;font-family:${EM_FONT};">${note}</p>` : ''}
         </td></tr>
       </table>`
   }
+  // 수치·강조는 사용자 제공 표 그대로 (에어컨 8→9월 증감 %p, LG 순위 7→8→9월)
+  const dn = (v) => ({ v, tone: 'down' })
+  const em = (v) => ({ v, tone: 'em' })
   const octTable1 = octCard(
-    L('Gemini 인용 채널별 비중 변화', 'Gemini citation share by channel'),
-    L('전체 제품·국가 기준 | 단위: %, %p', 'All products & countries | unit: %, %p'),
-    [{ w: '40%', align: 'left' }, { w: '20%', align: 'right' }, { w: '20%', align: 'right' }, { w: '20%', align: 'right' }],
-    [L('인용 채널', 'Channel'), L('8월', 'Aug'), L('9월', 'Sep'), L('증감', 'Change')],
+    L('에어컨 주요 브랜드 Visibility 변화 – Total', 'AC Visibility change by major brand – Total'),
+    L('8월 대비 9월 증감 | 단위: %p', 'Sep vs Aug | unit: %p'),
+    [{ w: '24%', align: 'left' }, { w: '19%', align: 'right' }, { w: '19%', align: 'right' }, { w: '19%', align: 'right' }, { w: '19%', align: 'right' }],
+    [L('국가', 'Country'), 'LG', 'Daikin', 'Mitsubishi', 'Midea'],
     [
-      [L('리테일', 'Retail'), '27.2', '28.8', { v: '+1.6%p', tone: 'up' }],
-      [L('비교 사이트', 'Comparison sites'), '4.3', '6.4', { v: '+2.1%p', tone: 'up' }],
-      [L('뉴스', 'News'), '11.4', '12.3', '+0.9%p'],
-      [L('리뷰', 'Review'), '22.3', '21.6', '-0.7%p'],
-      [L('제조사 공식 사이트', 'Manufacturer official site'), '17.4', '14.5', { v: '-2.9%p', tone: 'down' }],
+      [L('전체', 'Total'), dn('-0.9'), '-0.5', '+0.1', '+0.1'],
+      [L('영국', 'UK'), dn('-2.0'), '-0.8', '+0.1', '-1.2'],
+      [L('스페인', 'Spain'), dn('-1.8'), '+0.1', '+1.5', '+0.6'],
+      [L('호주', 'Australia'), dn('-1.9'), '-1.5', '-0.9', '-0.2'],
+      [L('미국', 'US'), dn('-1.4'), '-0.7', '+1.4', '-0.4'],
     ])
   const octTable2 = octCard(
-    L('Gemini 주요 현지 도메인 Citation 변화', 'Gemini citations — key local domains'),
-    L('8월 대비 9월 인용 건수', 'Sep vs Aug citation count'),
-    [{ w: '14%', align: 'left' }, { w: '36%', align: 'left' }, { w: '16%', align: 'right' }, { w: '16%', align: 'right' }, { w: '18%', align: 'right' }],
-    [L('국가', 'Country'), L('도메인', 'Domain'), L('8월', 'Aug'), L('9월', 'Sep'), L('증감률', 'Change')],
+    L('에어컨 주요 브랜드 Visibility 변화 – GPT Search', 'AC Visibility change by major brand – GPT Search'),
+    L('8월 대비 9월 증감 | 단위: %p | LG 순위는 7→8→9월', 'Sep vs Aug | unit: %p | LG rank Jul→Aug→Sep'),
+    [{ w: '14%', align: 'left' }, { w: '13%', align: 'right' }, { w: '14%', align: 'right' }, { w: '16%', align: 'right' }, { w: '13%', align: 'right' }, { w: '30%', align: 'left' }],
+    [L('국가', 'Country'), 'LG', 'Daikin', 'Mitsubishi', 'Midea', L('LG 순위 (7→8→9월)', 'LG rank (Jul→Aug→Sep)')],
     [
-      [L('독일', 'Germany'), 'mediamarkt.de', '28,163', '40,238', '+42.9%'],
-      [L('베트남', 'Vietnam'), 'dienmayxanh.com', '1,686', '8,540', '+406.5%'],
-      [L('독일', 'Germany'), 'idealo.de', '613', '4,736', '+672.6%'],
+      [L('전체', 'Total'), dn('-2.7'), '-0.6', '-1.4', '-0.8', L('1→1→1위', '1→1→1')],
+      [L('영국', 'UK'), dn('-6.9'), '+1.0', '-0.2', '-3.0', em(L('1→2→4위', '1→2→4'))],
+      [L('스페인', 'Spain'), dn('-6.4'), '+0.1', '-0.8', '+0.4', em(L('1→2→3위', '1→2→3'))],
+      [L('독일', 'Germany'), '-2.9', '-1.0', '-1.7', '-1.8', L('3→5→5위', '3→5→5')],
+      [L('호주', 'Australia'), '-4.5', '-2.5', '-2.9', '-1.7', L('5→5→5위', '5→5→5')],
+      [L('미국', 'US'), '-3.7', '-1.8', '+1.1', '-0.8', L('1→1→1위', '1→1→1')],
     ],
-    L('인용 건수는 Gemini의 전체 제품·브랜드 관련 Citation 기준이며, LG 제품에 대한 인용만을 의미하지 않음.',
-      'Citation counts cover all product/brand-related Gemini citations, not only citations of LG products.'))
+    L('순위는 제공된 LG·Samsung·Daikin·Mitsubishi·Midea·Panasonic 6개 브랜드 기준. 증감은 원본의 소수점 둘째 자리 수치로 계산한 후 첫째 자리로 반올림.',
+      'Rank among the 6 brands provided (LG·Samsung·Daikin·Mitsubishi·Midea·Panasonic). Changes computed from 2-decimal source values, then rounded to 1 decimal.'))
 
   // 편집 모드에서는 블록을 편집 불가 섬으로 — 저장(blur) 시 본문 HTML 에 함께 저장되더라도
   // 다음 렌더의 stripInserted 가 걷어내고 다시 끼운다 (멱등).
