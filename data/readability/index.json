@@ -151,10 +151,10 @@
       "urlCount": 1945
     },
     {
-      "date": "2026-10-22",
+      "date": "2026-10-24",
       "channel": "staging",
       "auditType": "regular",
-      "generatedAt": "2026-10-24T06:48:11.709Z",
+      "generatedAt": "2026-10-26T01:26:33.819Z",
       "countries": [
         "au",
         "br",
@@ -168,8 +168,8 @@
         "us",
         "vn"
       ],
-      "overallAvg": 82,
-      "urlCount": 8218
+      "overallAvg": 85.2,
+      "urlCount": 8397
     }
   ]
 }

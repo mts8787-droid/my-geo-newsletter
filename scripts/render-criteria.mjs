@@ -40,6 +40,7 @@ export const DOC_TO_CHECK = {
   '20': [], '21': ['ai_schema_breadcrumb'], '22': [], '23': ['ai_schema_faq'], '24': ['ai_schema_collection'],
   '25': ['ai_schema_product', 'ai_schema_offer'], '26': ['ai_schema_image'], '27': ['ai_schema_video'],
   '28': ['ai_schema_howto'], '29': ['ai_schema_article'], '30': [], '31': [],
+  '44': ['ai_schema_rating_or_review'],   // 2026-10-24 상류 활성 (PDP 전용) — 문서 번호는 상류 spec_id 그대로
   '32': ['ai_faq_block'], '33': ['ai_definition'], '34': ['ai_author_source'], '35': ['ai_summary_box'], '36': ['ai_citable'],
   '37': ['ai_ssr_ratio'], '38': ['ai_pdp_thumbnails'], '39': ['ai_core_element'], '40': ['ai_image_filename'],
   '41': ['ai_status_200'], '42': ['ai_soft_404'], '43': ['ai_llms_txt'],
@@ -141,7 +142,7 @@ const CRIT_T = {
     nx: [
       '<b>#5 HTML &lt; 100KB</b> — 측정은 정확하나 lg.com HTML 중앙값이 1,536KB라 실질 통과율 0.0%. 통과 건의 대부분이 본문 0자인 빈 404 셸이라 지표 방향이 반대였음',
       '<b>#8 Render Blocking 0</b> — 통과율 2.3%로 변별력 없음',
-      '<b>#44 Sitemap XML</b> — #19 Sitemap과 rule이 완전히 동일한 중복 (어딧에서도 이미 비활성)',
+      '<b>(구) Sitemap XML</b> (<code>ai_sitemap_domain</code>) — #19 Sitemap과 rule이 완전히 동일한 중복 (어딧에서도 이미 비활성). 번호 #44 는 2026-10-24 부터 AggregateRating/Review 항목이 사용',
       '<b>#20 Organization · #22 Speakable · #30 digitalDocument · #31 Recipe</b> — scoring_config에서 비활성. 문서에는 회색으로 남겨둠',
     ],
     ns: [
@@ -159,6 +160,9 @@ const CRIT_T = {
       '<b>#33 정의문 · #36 인용 문장 — 문장 판정 모델 결합 (2026-10-18)</b> — 정규식 단독 판정이 사람 기준과 크게 어긋나(#36 F1 36) 문장 판정 모델 geo-audit-3b가 패턴 후보를 최종 확인. 모델 미연결 시 정규식 폴백(판정 근거에 표기)',
       '<b>#33 · #36 노이즈 제외 보강 (2026-10-17)</b> — 할부·쿠폰·할인·보도자료 연락처·공유 버튼·JavaScript 안내·상표 고지를 제외해 사람 판정 정답 기준 정밀도 #36 41→88% · #33 20→50%. 숨은 모달/다이얼로그 문장도 본문에서 제외 (2026-10-19)',
       '<b>#37 HTML Text Ratio — Shadow DOM SSR 분자 제외 (2026-10-05)</b> — 비JS 파서 다수가 본문으로 읽지 않아 보수 기준 유지. 콘텐츠 룰(#32~#36)은 섀도 본문을 인정하되 판정 근거에 “주요 AI 크롤러 미인식 가능” 적시',
+      '<b>#36 인용 문장 — 트러블슈팅·PLP 는 3개 기준 (2026-10-26, 10월 감사부터)</b> — 5개는 긴 본문 전제. 트러블슈팅은 증상→원인→해결책 세 요소, PLP 는 카테고리 설명 몇 줄이라 콘텐츠가 있어도 떨어졌음. 후보로 못 채우면 본문 앞 40문장도 모델이 탐색 (2026-10-24)',
+      '<b>#26 ImageObject · #27 VideoObject — 리뷰 위젯 안 미디어 제외 (2026-10-26)</b> — Review·Comment 노드 하위의 고객 사진·영상 스키마를 페이지 콘텐츠로 세던 오탐 수정(10월 #26 통과 PDP 전부가 리뷰 사진). 저장된 JSON-LD 원본으로 재판정해 10월 결과에 소급',
+      '<b>#44 AggregateRating 또는 Review (PDP) — 채점 활성 (2026-10-24)</b> — LG PDP 3,147건에 Review 가 추가되어 사용자 결정으로 활성. Product 에 연결되지 않은 별도 블록이어도 인정. 활성 채점 항목 37 → 38',
     ],
     nm: [
       '<b>#17 Robots</b> — meta robots와 X-Robots-Tag 헤더 중 <b>하나만 충족해도 통과</b> (OR 조건). 대표 체크 하나로 채점',
@@ -188,7 +192,7 @@ const CRIT_T = {
     nx: [
       '<b>#5 HTML &lt; 100KB</b> — measurement is accurate, but lg.com’s median HTML is 1,536KB so the real pass rate is 0.0%. Most passing cases were empty 404 shells with no body text, inverting the signal',
       '<b>#8 Render Blocking 0</b> — 2.3% pass rate, no discriminating power',
-      '<b>#44 Sitemap XML</b> — exact rule duplicate of #19 Sitemap (already disabled upstream)',
+      '<b>(old) Sitemap XML</b> (<code>ai_sitemap_domain</code>) — exact rule duplicate of #19 Sitemap (already disabled upstream). Number #44 has been used by the AggregateRating/Review item since 2026-10-24',
       '<b>#20 Organization · #22 Speakable · #30 digitalDocument · #31 Recipe</b> — disabled in scoring_config; kept greyed out in this document',
     ],
     ns: [
@@ -206,6 +210,9 @@ const CRIT_T = {
       '<b>#33 definitions · #36 citable sentences — sentence-judgment model attached (2026-10-18)</b> — regex-only verdicts diverged badly from human judgment (#36 F1 36), so the geo-audit-3b model now confirms pattern candidates. Falls back to regex-only (flagged in the verdict) when the model is not connected',
       '<b>#33 · #36 noise reinforcement (2026-10-17)</b> — financing, coupons, discounts, press contacts, share buttons, JavaScript notices, and trademark notices excluded; precision against human verdicts #36 41→88% · #33 20→50%. Hidden modal/dialog sentences also dropped from the body (2026-10-19)',
       '<b>#37 HTML Text Ratio — Shadow DOM SSR excluded from the numerator (2026-10-05)</b> — most non-JS parsers do not read it as body text, so the conservative basis stays. Content rules (#32–#36) accept shadow body text, with “may be unrecognized by major AI crawlers” noted in the verdict',
+      '<b>#36 citable sentences — troubleshooting · PLP use a 3-sentence threshold (2026-10-26, from the October audit)</b> — 5 assumes a long body. Troubleshooting ends with symptom → cause → fix and a PLP carries only a few lines of category copy, so pages with real content were failing. If candidates fall short, the model also scans the first 40 body sentences (2026-10-24)',
+      '<b>#26 ImageObject · #27 VideoObject — media inside review widgets excluded (2026-10-26)</b> — customer photos/videos under Review/Comment nodes were being counted as page content (every passing #26 PDP in October was a review photo). Re-judged from the stored raw JSON-LD and applied retroactively to October',
+      '<b>#44 AggregateRating or Review (PDP) — scoring enabled (2026-10-24)</b> — enabled by user decision after LG added Review to 3,147 PDPs. A separate block not linked to Product also counts. Active scored items 37 → 38',
     ],
     nm: [
       '<b>#17 Robots</b> — passes if <b>either</b> meta robots or the X-Robots-Tag header allows indexing (OR condition). Scored as a single representative check',
@@ -484,7 +491,7 @@ export function renderCriteriaMarkdown({ rows, generatedAt }) {
   L.push('### 채점에서 제외된 항목')
   L.push('- **#5 HTML < 100KB** — 측정은 정확하나 lg.com HTML 중앙값이 1,536KB라 실질 통과율 0.0%. 통과 건의 대부분이 본문 0자인 빈 404 셸이라 지표 방향이 반대였음')
   L.push('- **#8 Render Blocking 0** — 통과율 2.3%로 변별력 없음')
-  L.push('- **#44 Sitemap XML** — #19 Sitemap과 rule이 완전히 동일한 중복 (`sitemap_recent` / `/sitemap.xml` / 30일). 어딧에서도 `ai_sitemap_domain` 이 이미 `enabled: false`')
+  L.push('- **(구) Sitemap XML** (`ai_sitemap_domain`) — #19 Sitemap과 rule이 완전히 동일한 중복 (`sitemap_recent` / `/sitemap.xml` / 30일). 어딧에서도 이미 `enabled: false`. 번호 #44 는 2026-10-24 부터 AggregateRating/Review 항목이 사용')
   L.push('- **#20 Organization · #22 Speakable · #30 digitalDocument · #31 Recipe** — `scoring_config` 에서 `enabled: false`')
   L.push('- **#49 Schema: WebSite · #40 Summary Content SSR** — 체크리스트 문서에 대응 행이 없어 정의·Pass 기준을 제시할 수 없으므로 채점 제외 (2026-08-27)')
   L.push('')
@@ -500,6 +507,9 @@ export function renderCriteriaMarkdown({ rows, generatedAt }) {
   L.push('- **#33 정의문 · #36 인용 문장 — 문장 판정 모델 결합 (2026-10-18)** — 정규식 단독 판정이 사람 기준과 크게 어긋나(#36 F1 36) 문장 판정 모델 `geo-audit-3b`(Qwen2.5-3B 미세조정, 올라마 로컬)가 패턴 후보를 최종 확인. #33 은 매칭 0건이면 본문 앞 40문장을 모델로 탐색. 모델 미연결 시 정규식 폴백(판정 근거에 표기). 평가셋 1,052문장 F1 — 인용 88.7 · 정의 89.9')
   L.push('- **#33 · #36 노이즈 제외 보강 (2026-10-17)** — 할부·쿠폰·할인·보도자료 연락처·공유 버튼·JavaScript 안내·상표 고지 제외 — 사람 판정 정답 기준 정밀도 #36 41→88% · #33 20→50%. 숨은 모달/다이얼로그 문장도 본문에서 제외 (2026-10-19)')
   L.push('- **#37 HTML Text Ratio — Shadow DOM SSR 분자 제외 (2026-10-05)** — `<template shadowrootmode>` 본문은 비JS 파서 다수가 읽지 않아 분자에서 제외 (보수 기준). 콘텐츠 룰(#32~#36)은 섀도 본문을 인정하되 판정 근거에 “Shadow DOM SSR — 주요 AI 크롤러 미인식 가능(일반 DOM 전환 필요)” 적시')
+  L.push('- **#36 인용 문장 — 트러블슈팅·PLP 는 3개 기준 (2026-10-26, 10월 감사부터)** — 상류 `min_count_by_type` = `support_troubleshoot:3,plp:3`. 5개는 긴 본문 전제이고 트러블슈팅은 증상→원인→해결책 세 요소, PLP 는 카테고리 설명 몇 줄이라 콘텐츠가 있어도 떨어졌음. 대시보드는 저장된 “모델 확인 N” 개수로 임계를 낮출 때만 재판정. 후보로 못 채우면 본문 앞 40문장도 모델이 탐색 (`model_scan_max`, 2026-10-24)')
+  L.push('- **#26 ImageObject · #27 VideoObject — 리뷰 위젯 안 미디어 제외 (2026-10-26)** — `Review`·`Comment` 노드 하위의 고객 사진·영상 스키마를 페이지 콘텐츠로 세던 오탐 수정 (10월 #26 통과 PDP 전부가 리뷰 사진, #27 은 TV PDP 94건이 리뷰 영상만으로 통과). 저장된 JSON-LD 원본(`json_ld.raw`)으로 재판정해 10월 결과에 소급 (`exclude_within`)')
+  L.push('- **#44 AggregateRating 또는 Review (PDP) — 채점 활성 (2026-10-24)** — `ai_schema_rating_or_review` (`schema_any_of`, PDP 전용). LG PDP 3,147건에 Review 가 추가되어 사용자 결정으로 활성. Product 에 연결되지 않은 별도 블록이어도 인정 (2026-10-26 사용자 확인). 활성 채점 항목 37 → 38')
   L.push('')
   L.push('### 문서 번호와 채점 항목이 1:1이 아닌 곳')
   L.push('- **#17 Robots** — `seo_robots`(meta) 와 `seo_robots_hdr`(X-Robots-Tag) 중 **하나만 충족해도 통과** (OR). 대표 체크 `seo_robots` 하나로 채점')

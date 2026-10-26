@@ -282,6 +282,7 @@ const PT_LABEL = {
   support_troubleshoot: 'Support - Troubleshoot',
   lg_experience: 'LG Experience',
   buying_guide: '구매 가이드',
+  installation_guide: '설치 가이드',   // 2026-10-25 상류 신설 (HS 콘텐츠 시트의 installation guide)
   pdp: '제품 상세 (PDP)',
   plp: '제품 카테고리 (PLP)',
 }
@@ -343,6 +344,12 @@ function resolvePt(pt, url) {
 //                       (ai_schema_website 은 적용 페이지도 0건이었다)
 const TTFB_MAX_MS = 600
 const CITABLE_MIN_COUNT = 5
+// #36 페이지타입별 임계 — 트러블슈팅·PLP 는 3개 (사용자 결정 2026-10-26, 10월 감사부터).
+// 5개는 PDP·에디토리얼처럼 긴 본문 전제. 트러블슈팅은 증상→원인→해결책 세 요소로 끝나고
+// PLP 는 카테고리 설명 몇 줄이 전부라 같은 잣대면 콘텐츠가 있어도 떨어진다 (3개 = 요소당 1문장).
+// 상류 scoring_config `min_count_by_type` 과 동일 집합.
+const CITABLE_MIN_COUNT_BY_PT = { support_troubleshoot: 3, plp: 3 }
+function citableMinFor(pt) { return CITABLE_MIN_COUNT_BY_PT[pt] || CITABLE_MIN_COUNT }
 // 채점 제외 체크 — na:true 로 표시해 applicable(분모)에서도 빠진다 (scoring_config 의 enabled:false 와 동등)
 // 채점 제외 (38항목 체계) — 4건 모두 사용자 결정으로 확정.
 //   perf_html_size(#5)    — 측정이 HTML DOM 크기를 반영 못함 (2026-08-26)
@@ -381,7 +388,7 @@ const ABSORBED_CHECKS = Object.fromEntries(
 // 기준이 바뀐 체크의 표시 라벨 (원본 label 은 옛 임계값 문구를 담고 있음).
 // perf_ttfb 는 실제 채점에 PSI 를 썼을 때만 '(PSI)' 를 붙인다 — 라벨과 측정 출처를 일치시킴.
 function checkLabelOverride(cid, ctx) {
-  if (cid === 'ai_citable') return `#36 Citable Sentence ≥ ${CITABLE_MIN_COUNT}개`
+  if (cid === 'ai_citable') return `#36 Citable Sentence ≥ ${CITABLE_MIN_COUNT}개 (트러블슈팅·PLP ${CITABLE_MIN_COUNT_BY_PT.plp}개)`
   // #15: 2026-09-17 경로 일치(self-ref) → host 일치로 완화. 구 스냅샷 라벨 교정.
   if (cid === 'seo_canonical') return '#15 Canonical (동일 host)'
   if (cid !== 'perf_ttfb') return null
@@ -449,7 +456,50 @@ function pyRound(x) {
 }
 
 // 체크별 재판정기 — 원측정값으로 다시 판정. null 반환 = 원본 판정 유지.
-// ctx = { url, psi } — psi 는 psi-<date>.json 의 results (url → { lab, crux, ... })
+// ── JSON-LD 재판정 헬퍼 (#26·#27) — 상류 rule_engine._walk_jsonld / _has_dotted_path 이식 ──
+// skipWithin: 이 타입 노드의 하위는 훑지 않는다 (Review·Comment 안의 리뷰 사진·영상 제외).
+const SCHEMA_SKIP_WITHIN = ['review', 'comment']
+function walkJsonld(data, typeLower, out) {
+  if (Array.isArray(data)) { for (const x of data) walkJsonld(x, typeLower, out); return }
+  if (!data || typeof data !== 'object') return
+  const t = data['@type']
+  const types = (typeof t === 'string' ? [t] : Array.isArray(t) ? t : []).map(x => String(x).toLowerCase())
+  if (types.includes(typeLower)) out.push(data)
+  if (types.some(x => SCHEMA_SKIP_WITHIN.includes(x))) return
+  for (const v of Object.values(data)) walkJsonld(v, typeLower, out)
+}
+function hasDottedPath(node, path) {
+  let cur = node
+  for (const part of path.split('.')) {
+    if (Array.isArray(cur) && cur.length) cur = cur[0]           // 배열은 첫 원소로 검사
+    if (!cur || typeof cur !== 'object' || Array.isArray(cur)) return false
+    if (!(part in cur)) return false
+    cur = cur[part]
+  }
+  if (cur == null || cur === '') return false
+  if (Array.isArray(cur) && !cur.length) return false
+  if (typeof cur === 'object' && !Array.isArray(cur) && !Object.keys(cur).length) return false
+  return true
+}
+// 'url|contentUrl' 처럼 | 로 묶인 대체 필드 중 하나라도 있으면 충족
+function hasAnyPath(node, spec) { return spec.split('|').some(p => p.trim() && hasDottedPath(node, p.trim())) }
+function recheckSchemaFields(ctx, typeName, fields) {
+  const raw = ctx && ctx.jsonldRaw
+  if (!Array.isArray(raw)) return null                            // 원본 없음 → 저장 판정 유지
+  const nodes = []
+  walkJsonld(raw, typeName.toLowerCase(), nodes)
+  if (!nodes.length) return { pass: false, hint: `@type='${typeName}' 노드 없음` }
+  let lastMissing = fields
+  for (const node of nodes) {
+    const missing = fields.filter(f => !hasAnyPath(node, f))
+    if (!missing.length) return { pass: true, hint: null }
+    lastMissing = missing
+  }
+  return { pass: false, hint: `필수 필드 누락: ${lastMissing.join(', ')}` }
+}
+
+// ctx = { url, psi, pt, jsonldRaw } — psi 는 psi-<date>.json 의 results (url → { lab, crux, ... }),
+//       pt 는 정규화된 페이지타입 id, jsonldRaw 는 result.json_ld.raw (JSON-LD 원본 배열)
 const RECHECK = {
   // PSI 의 server-response-time(lab) 을 정본으로 사용. 크롤러 자체 측정값(it.value)은 쓰지 않는다.
   //  - psi 파일 자체가 없으면 → null (크롤러 값 기반 원본 판정 유지, 하위 호환)
@@ -473,13 +523,32 @@ const RECHECK = {
   // 문서가 짧은 PLP 보다 낮게 나왔다. AI 가 인용할 문장이 몇 개 있느냐가 보려던 것이다.
   // value("6/42 (14.3%)")의 앞 숫자가 실측 개수라 재수집 없이 다시 판정한다.
   // 임계값 10개도 검토했으나 뉴스룸 92%→47%, PDP 79%→43% 로 낙폭이 커 5개로 확정.
-  ai_citable(it) {
-    const m = String(it.value == null ? '' : it.value).match(/^\s*(\d+)\s*\//)
+  // 모델 판정값("모델 확인 3/46 (정규식 후보 …)", 2026-10-18~)의 앞 숫자도 실측 개수지만, 측정 당시
+  // 임계를 채우면 조기 중단하므로 그 임계에서 잘려 있다 → 임계를 **낮출** 때(트러블슈팅·PLP 3개)만
+  // 저장 개수로 재판정하고, 그 외는 저장 pass 를 믿는다 (상류 gen_dashboard_data 와 동일 규칙).
+  ai_citable(it, ctx) {
+    const v = String(it.value == null ? '' : it.value)
+    const need = citableMinFor(ctx && ctx.pt)
+    const hintOf = (n) => `인용 가능 문장 ${n}개 — ${need}개 이상 필요`
+    const mm = v.match(/^모델 확인\s*(\d+)\s*\//)
+    if (mm) {
+      if (need >= CITABLE_MIN_COUNT) return null          // 저장 pass 유지 (잘린 개수로는 재판정 불가)
+      const n = parseInt(mm[1], 10)
+      const pass = n >= need
+      return { pass, hint: pass ? null : hintOf(n) }
+    }
+    const m = v.match(/^\s*(\d+)\s*\//)
     if (!m) return null
     const n = parseInt(m[1], 10)
-    const pass = n >= CITABLE_MIN_COUNT
-    return { pass, hint: pass ? null : `인용 가능 문장 ${n}개 — ${CITABLE_MIN_COUNT}개 이상 필요` }
+    const pass = n >= need
+    return { pass, hint: pass ? null : hintOf(n) }
   },
+  // #26 ImageObject · #27 VideoObject — 리뷰 위젯(Bazaarvoice) 오탐 수정 (상류 2026-10-26).
+  // Review/Comment 노드 안의 고객 사진·영상 스키마를 페이지 콘텐츠로 세고 있었다 (10월 #26 통과 PDP
+  // 전부가 리뷰 사진). 저장된 JSON-LD 원본(result.json_ld.raw)으로 현재 룰을 다시 돌린다 — 재감사 없음.
+  // raw 가 없는 구 run 은 저장 판정 유지. 필수 필드 집합은 상류 scoring_config 과 동일.
+  ai_schema_image(it, ctx) { return recheckSchemaFields(ctx, 'ImageObject', ['url|contentUrl', 'name|caption', 'description']) },
+  ai_schema_video(it, ctx) { return recheckSchemaFields(ctx, 'VideoObject', ['url|contentUrl|embedUrl', 'name', 'description', 'thumbnailUrl']) },
   perf_cache_control(it) {
     const m = String(it.value == null ? '' : it.value).match(/max-age\s*=\s*(\d+)/i)
     if (!m) return { pass: false, hint: 'Cache-Control 에 max-age 디렉티브가 없습니다.' }
@@ -958,7 +1027,8 @@ function main() {
       // checkRows(Raw 데이터) · 집계 · CSV 가 모두 같은 점수를 보도록 여기서 한 번만 적용.
       // upstreamGated — 신포맷(6분류) 행이면 상류가 applies_to_page_types 를 이미 적용했다는 표식
       const upstreamGated = !!(s.result.score && s.result.score.breakdown && s.result.score.breakdown.citable_content)
-      applyScoringOverride(s.result.score, { url, psi: psiResults, pt: rpt ? rpt.id : null, cc: meta.cc, ttfbMedian, upstreamGated })
+      const jsonldRaw = s.result.json_ld && Array.isArray(s.result.json_ld.raw) ? s.result.json_ld.raw : null
+      applyScoringOverride(s.result.score, { url, psi: psiResults, pt: rpt ? rpt.id : null, cc: meta.cc, ttfbMedian, upstreamGated, jsonldRaw })
       // [DETECT] 측정 성립 여부 — 여기서 걸러야 점수·통과율·페이지타입·CSV·Raw 데이터가 모두
       // 같은 모집단을 본다. 이전에는 Raw 데이터만 isFetchFailed 로 걸러 기준이 어긋나 있었다.
       //   제외: 404 / 500 / fetch 자체 실패 (ai_status_200 FAIL) — 전 체크가 cascade-FAIL 이라

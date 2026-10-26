@@ -1,8 +1,8 @@
 # GEO Agent Readability 검수 기준
 
-> 6개 카테고리 38개 채점 항목 + 10월 감사 시행 예정 4항목.
+> 6개 카테고리 39개 채점 항목 + 10월 감사 시행 예정 4항목.
 > 점수·통과율은 제외한 **기준 정의 문서**입니다. 실측치는 Readability 대시보드에서 확인하세요.
-> 생성: `scripts/render-criteria.mjs` (source: `data/readability/geo-agent-checklist.html`) — 2026-10-03
+> 생성: `scripts/render-criteria.mjs` (source: `data/readability/geo-agent-checklist.html`) — 2026-10-24
 
 ## 카테고리
 
@@ -11,7 +11,7 @@
 | 사이트 성능 | 6 | 페이지의 정보를 빠르고 안정적으로 전달하는지 |
 | 웹접근성 | 4 | 사람과 AI가 문서 구조를 읽어낼 수 있는지 |
 | Basic SEO | 7 | 페이지 제목과 설명 등 기본 정보가 잘 갖춰져 있는지 |
-| 스키마마크업 | 9 | 제품·이미지·영상·사용방법 등 정보의 종류를 AI가 구분할 수 있는지 |
+| 스키마마크업 | 10 | 제품·이미지·영상·사용방법 등 정보의 종류를 AI가 구분할 수 있는지 |
 | 고인용 콘텐츠 | 5 | AI가 답변에 인용하기 좋은 형태로 콘텐츠가 작성되어 있는지 |
 | AI Crawlability | 7 | AI 크롤러가 원문을 실제로 가져갈 수 있는지 |
 
@@ -204,13 +204,13 @@
 ### #26 — Schema Types - ImageObject
 - **정의**: 이미지의 주소·이름·설명 등 이미지 정보를 AI가 읽을 수 있게 표기
 - **PASS**: JSON-LD 필수요소 모두 존재, 파싱 성공
-- **측정방법**: url, name, description, uploadDate 존재 — 본문 콘텐츠 이미지가 있는 페이지만 평가(없으면 N/A)
+- **측정방법**: url(또는 contentUrl), name(또는 caption), description 존재 — Review·Comment 안의 리뷰 사진은 제외, 본문 콘텐츠 이미지가 있는 페이지만 평가(없으면 N/A)
 - **check id**: `ai_schema_image`
 
 ### #27 — Schema Types - VideoObject
 - **정의**: 영상의 주소·제목·썸네일 등 영상 정보를 AI가 읽을 수 있게 표기
 - **PASS**: JSON-LD 필수요소 모두 존재, 파싱 성공
-- **측정방법**: url, name, description, thumbnailUrl 존재 — 영상이 있는 페이지만 평가(없으면 N/A)
+- **측정방법**: url(또는 contentUrl·embedUrl), name, description, thumbnailUrl 존재 — Review·Comment 안의 리뷰 영상은 제외, 영상이 있는 페이지만 평가(없으면 N/A)
 - **check id**: `ai_schema_video`
 
 ### #28 — Schema Types - HowTo
@@ -236,6 +236,12 @@
 - **PASS**: JSON-LD 필수요소 모두 존재, 파싱 성공
 - **측정방법**: Name, description, image, author, datepublihsed, recipeIngredient, recipeInstructions 존재
 - **상태**: TBD — 추후 개선항목 확인 후 정리. 자가 콘텐츠 분석·기준 세분화·검수 에이전트 고도화 후 항목 추가 예정 (scoring_config `enabled: false`)
+
+### #44 — Schema Types - AggregateRating 또는 Review
+- **정의**: 제품의 평점 또는 고객 리뷰 정보를 AI가 읽을 수 있게 표기
+- **PASS**: AggregateRating·Review 중 하나라도 JSON-LD 에 존재
+- **측정방법**: @type AggregateRating 또는 Review 노드 존재 — Product 에 연결되지 않은 별도 블록이어도 인정, PDP 만 평가(그 외 N/A). 2026-10-24 채점 활성
+- **check id**: `ai_schema_rating_or_review`
 
 ---
 
@@ -272,8 +278,8 @@
 
 ### #36 — Citable Sentences*
 - **정의**: 숫자·연도·통계처럼 AI가 근거로 인용하기 좋은 문장이 충분히 있는지
-- **PASS**: 5개 이상
-- **측정방법**: 숫자·연도·통계·인증 및 검증/권위 서술(EEAT: 시험·특허·전문가 추천·임상 입증) 포함 문장 — 패턴 후보를 문장 판정 모델(geo-audit-3b)이 확인한 문장만 집계
+- **PASS**: 5개 이상 (트러블슈팅·PLP 3개)
+- **측정방법**: 숫자·연도·통계·인증 및 검증/권위 서술(EEAT: 시험·특허·전문가 추천·임상 입증) 포함 문장 — 패턴 후보를 문장 판정 모델(geo-audit-3b)이 확인한 문장만 집계, 후보로 못 채우면 본문 앞 40문장도 모델이 탐색
 - **check id**: `ai_citable`
 - **분류**: Contents 체크 항목
 
@@ -332,7 +338,7 @@
 ### 채점에서 제외된 항목
 - **#5 HTML < 100KB** — 측정은 정확하나 lg.com HTML 중앙값이 1,536KB라 실질 통과율 0.0%. 통과 건의 대부분이 본문 0자인 빈 404 셸이라 지표 방향이 반대였음
 - **#8 Render Blocking 0** — 통과율 2.3%로 변별력 없음
-- **#44 Sitemap XML** — #19 Sitemap과 rule이 완전히 동일한 중복 (`sitemap_recent` / `/sitemap.xml` / 30일). 어딧에서도 `ai_sitemap_domain` 이 이미 `enabled: false`
+- **(구) Sitemap XML** (`ai_sitemap_domain`) — #19 Sitemap과 rule이 완전히 동일한 중복 (`sitemap_recent` / `/sitemap.xml` / 30일). 어딧에서도 이미 `enabled: false`. 번호 #44 는 2026-10-24 부터 AggregateRating/Review 항목이 사용
 - **#20 Organization · #22 Speakable · #30 digitalDocument · #31 Recipe** — `scoring_config` 에서 `enabled: false`
 - **#49 Schema: WebSite · #40 Summary Content SSR** — 체크리스트 문서에 대응 행이 없어 정의·Pass 기준을 제시할 수 없으므로 채점 제외 (2026-08-27)
 
@@ -348,6 +354,9 @@
 - **#33 정의문 · #36 인용 문장 — 문장 판정 모델 결합 (2026-10-18)** — 정규식 단독 판정이 사람 기준과 크게 어긋나(#36 F1 36) 문장 판정 모델 `geo-audit-3b`(Qwen2.5-3B 미세조정, 올라마 로컬)가 패턴 후보를 최종 확인. #33 은 매칭 0건이면 본문 앞 40문장을 모델로 탐색. 모델 미연결 시 정규식 폴백(판정 근거에 표기). 평가셋 1,052문장 F1 — 인용 88.7 · 정의 89.9
 - **#33 · #36 노이즈 제외 보강 (2026-10-17)** — 할부·쿠폰·할인·보도자료 연락처·공유 버튼·JavaScript 안내·상표 고지 제외 — 사람 판정 정답 기준 정밀도 #36 41→88% · #33 20→50%. 숨은 모달/다이얼로그 문장도 본문에서 제외 (2026-10-19)
 - **#37 HTML Text Ratio — Shadow DOM SSR 분자 제외 (2026-10-05)** — `<template shadowrootmode>` 본문은 비JS 파서 다수가 읽지 않아 분자에서 제외 (보수 기준). 콘텐츠 룰(#32~#36)은 섀도 본문을 인정하되 판정 근거에 “Shadow DOM SSR — 주요 AI 크롤러 미인식 가능(일반 DOM 전환 필요)” 적시
+- **#36 인용 문장 — 트러블슈팅·PLP 는 3개 기준 (2026-10-26, 10월 감사부터)** — 상류 `min_count_by_type` = `support_troubleshoot:3,plp:3`. 5개는 긴 본문 전제이고 트러블슈팅은 증상→원인→해결책 세 요소, PLP 는 카테고리 설명 몇 줄이라 콘텐츠가 있어도 떨어졌음. 대시보드는 저장된 “모델 확인 N” 개수로 임계를 낮출 때만 재판정. 후보로 못 채우면 본문 앞 40문장도 모델이 탐색 (`model_scan_max`, 2026-10-24)
+- **#26 ImageObject · #27 VideoObject — 리뷰 위젯 안 미디어 제외 (2026-10-26)** — `Review`·`Comment` 노드 하위의 고객 사진·영상 스키마를 페이지 콘텐츠로 세던 오탐 수정 (10월 #26 통과 PDP 전부가 리뷰 사진, #27 은 TV PDP 94건이 리뷰 영상만으로 통과). 저장된 JSON-LD 원본(`json_ld.raw`)으로 재판정해 10월 결과에 소급 (`exclude_within`)
+- **#44 AggregateRating 또는 Review (PDP) — 채점 활성 (2026-10-24)** — `ai_schema_rating_or_review` (`schema_any_of`, PDP 전용). LG PDP 3,147건에 Review 가 추가되어 사용자 결정으로 활성. Product 에 연결되지 않은 별도 블록이어도 인정 (2026-10-26 사용자 확인). 활성 채점 항목 37 → 38
 
 ### 문서 번호와 채점 항목이 1:1이 아닌 곳
 - **#17 Robots** — `seo_robots`(meta) 와 `seo_robots_hdr`(X-Robots-Tag) 중 **하나만 충족해도 통과** (OR). 대표 체크 `seo_robots` 하나로 채점

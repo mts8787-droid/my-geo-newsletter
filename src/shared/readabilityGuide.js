@@ -48,6 +48,7 @@ export const PT_LABEL = {
   press_media: L('Press & Media', 'Press & Media'),
   newsroom: L('Global Newsroom', 'Global Newsroom'),
   buying_guide: L('구매 가이드', 'Buying Guide'),
+  installation_guide: L('설치 가이드', 'Installation Guide'),   // 2026-10-25 상류 신설 (HS 콘텐츠 시트)
   lg_experience: L('LG Experience', 'LG Experience'),
   microsite: L('Microsite', 'Microsite'),
 }
@@ -256,6 +257,13 @@ export const GUIDE = {
       newsroom: { where: L('기사 발행 템플릿', 'Article publishing template'), action: L('발행 템플릿에 기사 라벨을 넣어 전 기사에 일괄 적용합니다.', 'Put the article label in the publishing template so it applies to every article at once.') },
       buying_guide: { where: L('구매 가이드 템플릿', 'Buying guide template'), action: L('가이드에 글 라벨을 붙여 작성자와 발행일이 함께 나오게 합니다.', 'Label guides as articles so the author and date appear with them.') },
     },
+  },
+  ai_schema_rating_or_review: {
+    what: L('제품 페이지에 "이 제품의 평점은 이렇다" 또는 "이런 고객 리뷰가 있다" 라벨이 붙었는지 봅니다 (2026-10-24 채점 시작).', 'Whether the product page carries a label saying what the product’s rating is, or that customer reviews exist (scored since 2026-10-24).'),
+    why: L('AI가 "평이 좋은 제품" 을 고를 때 쓰는 근거입니다. 없으면 리뷰가 있어도 추천 근거로 쓰이지 않습니다.', 'It is the evidence AI uses to pick “well-reviewed” products. Without it, reviews that exist never count as a reason to recommend.'),
+    where: L('PDP 리뷰 위젯 · 스키마 자동화', 'PDP review widget · schema automation'),
+    action: L('리뷰 위젯이 내려보내는 평점·리뷰 라벨을 제품 페이지 원본 소스에 그대로 싣습니다.', 'Ship the rating and review labels the review widget emits in the product page’s source HTML.'),
+    byPt: { pdp: { where: L('PDP 리뷰 위젯 (Bazaarvoice)', 'PDP review widget (Bazaarvoice)'), action: L('리뷰가 없는 신제품은 평점 라벨만이라도 붙입니다. 제품 라벨(Product)에 연결되지 않은 별도 블록이어도 인정됩니다.', 'For new products without reviews, add at least the rating label. A separate block not linked to the Product label still counts.') } },
   },
   // ai_schema_offer 는 #25 Product 풀세트로 AND 병합됨 (2026-08-31) — 대시보드에 별도 행 없음.
   // 가격·재고 안내는 ai_schema_product 항목의 액션에 포함.
