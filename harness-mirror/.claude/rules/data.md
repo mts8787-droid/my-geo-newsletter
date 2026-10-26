@@ -744,6 +744,7 @@ NEVER  같은 헤더 동의어 정규식을 파서마다 인라인 작성 → fi
 NEVER  Readability 신호등 임계값을 화면마다 인라인 작성 → src/shared/readabilityBand.js 만 정의 (§5.13)
 NEVER  pct() 로 ratio 값 (상관계수 -1~+1, 확률 0~1) 파싱 → ×100 자동 변환 트랩, 별도 parser 필요
 NEVER  파서 throw 가 sync 전체 중단 → parseSheetRows 라우터 try/catch + _logFatal 격리 (다른 시트 계속)
+NEVER  시트의 분해 차원(PRD 등)이 TTL 을 완전히 분할한다고 가정하고 'breakdown 있으면 TTL 행 제외' → 미귀속분이 TTL 에만 있으면 합계가 깎인다 (Citation 터치포인트 PRD: 15~30% 누락, 순위 뒤집힘 2026-10-26). 분해 합 == TTL 인지 원본으로 먼저 검증하고, 아니면 합계는 TTL 행, 분해 행은 필터 전용
 ```
 
 ## 9. VERIFICATION & DEBUGGING

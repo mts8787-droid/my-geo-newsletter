@@ -349,6 +349,36 @@ describe('parseCitTouchPoints — 헤더 탐지 + 월 라벨 + citations 집계'
     expect(result.citationsByCnty?.JP).toBeDefined()
   })
 
+  it('PRD 행은 TTL 을 분할하지 않는다 — 채널 합계는 PRD=TTL 행 기준 (회귀 2026-10-26)', () => {
+    // 사용자 보고: 시트 9월 1위 브랜드/제조사 2,206,813 인데 대시보드 1,863,988 (리뷰가 1위로 뒤집힘).
+    // 실측(7월 원본): 모델·국가 분해는 TTL 과 0.04% 이내로 일치하지만 PRD 분해 합은 TTL 보다 15~30% 작다
+    // (제품에 귀속되지 않는 인용이 TTL 에만 들어 있음). 그런데 파서가 'PRD 분해가 있는 월은 PRD=TTL 행 제외'
+    // 규칙으로 제품 행만 합산해 채널 합계가 깎였다. → 채널·국가·모델 합계는 PRD=TTL 행으로, 제품 행은 PRD 필터 전용.
+    const rows = [
+      ['Model',      'PRD', 'NO', 'Country', 'Channel', 'example', 'Apr'],
+      ['TTL',        'TTL', '1',  '(TTL)',   'Brand',   '',        1000],
+      ['TTL',        'TTL', '1',  'US',      'Brand',   '',        600],
+      ['TTL',        'TTL', '1',  'UK',      'Brand',   '',        400],
+      ['search-gpt', 'TTL', '1',  'US',      'Brand',   '',        350],
+      ['perplexity', 'TTL', '1',  'US',      'Brand',   '',        250],
+      ['search-gpt', 'TTL', '1',  'UK',      'Brand',   '',        250],
+      ['perplexity', 'TTL', '1',  'UK',      'Brand',   '',        150],
+      ['TTL',        'TV',  '1',  '(TTL)',   'Brand',   '',        300],   // 제품 행 합 300 < TTL 1000 (미귀속 700)
+      ['TTL',        'TV',  '1',  'US',      'Brand',   '',        300],
+      ['search-gpt', 'TV',  '1',  'US',      'Brand',   '',        200],
+      ['perplexity', 'TV',  '1',  'US',      'Brand',   '',        100],
+    ]
+    const r = parseSheetRows(SHEET_NAMES.citTouchPoints, rows)
+    expect(r.citTouchPointsTrend.Brand?.Apr).toBe(1000)                       // 채널 합계 = 시트 TTL (이전: 300)
+    expect(r.citations.find(c => c.source === 'Brand')?.score).toBe(1000)
+    const us = (r.citationsByCnty?.US || []).find(c => c.source === 'Brand' && !c.prd)
+    expect(us?.score).toBe(600)                                                // 국가 합계도 PRD=TTL 기준 (이전: 300)
+    expect(r.citTouchPointsByLlm?.['search-gpt']?.Brand?.Apr).toBe(600)       // 모델별도 (이전: 200)
+    // PRD 필터용 제품 행은 그대로 보존 — 모델별 행이 각각 entry 로 남는다 (LLM 분해 월은 모델 TTL 행 제외) → 합 300
+    const usTv = (r.citationsByCnty?.US || []).filter(c => c.source === 'Brand' && c.prd === 'TV')
+    expect(usTv.reduce((s, c) => s + c.score, 0)).toBe(300)
+  })
+
   it('헤더 없는 시트 → best-effort + warn', () => {
     const rows = [['just', 'random', 'data'], ['x', 'y', 'z']]
     parseSheetRows(SHEET_NAMES.citTouchPoints, rows)

@@ -1349,7 +1349,8 @@ function parseCitTouchPoints(rows) {
   // groupMap[country][channel] = { ttl: monthScores|null, prds: [{prd, monthScores}] }
   // 2026-06 — 사용자 규칙 명확화:
   //   국가는 무조건 TTL 빼고 (per-country sum)
-  //   PRD 는 4월부터 (= PRD breakdown 존재하는 월) TTL 빼고
+  //   PRD 는 4월부터 (= PRD breakdown 존재하는 월) TTL 빼고  ← 2026-10-26 철회: PRD 행은 TTL 을 분할하지
+  //         않아 합계가 깎였다. 채널·국가·모델 합계는 PRD=TTL 행 기준 (아래 prdTtlPresent 주석).
   //   모델은 4월부터 (= LLM breakdown 존재하는 월) Total 빼고
   // → 월별로 breakdown 존재 여부 감지 후, 해당 월의 TTL/Total 행을 sum 에서 제외.
   // → 시트의 집계 행 (Country=TTL, PRD=TTL, LLM=Total) 을 다른 차원과 중복 합산 안 함.
@@ -1359,6 +1360,12 @@ function parseCitTouchPoints(rows) {
   const cntyBreakdown = {}  // { channel: { month: true } }
   const llmBreakdown = {}
   const prdBreakdown = {}
+  // 2026-10-26 (사용자 보고 — 시트 9월 브랜드/제조사 2,206,813 vs 대시보드 1,863,988, 1위가 리뷰로 뒤집힘):
+  // PRD(제품) 행은 TTL 을 **분할하지 않는다** — 제품에 귀속되지 않는 인용이 PRD=TTL 행에만 들어 있어
+  // 제품 행 합은 TTL 보다 15~30% 작다 (7월 원본 실측: 브랜드 2,277,857 vs 1,794,556). 모델·국가 분해는
+  // TTL 과 0.04% 이내로 일치한다. 그래서 채널·국가·모델 합계는 PRD=TTL 행으로 세고, 제품 행은 PRD 필터
+  // (citationsByPrd / groupMap) 에만 쓴다. PRD=TTL 행이 없는 (channel, month) 만 제품 행 합으로 폴백.
+  const prdTtlPresent = {}  // { channel: { month: true } } — PRD=TTL 행이 존재하는 (channel, month)
   // 괄호 표기 ('(TTL)', '(Total)' 등) 도 처리 — 괄호 제거 후 매칭.
   const stripParens = s => String(s || '').replace(/[()]/g, '').trim()
   data.forEach(r => {
@@ -1385,6 +1392,9 @@ function parseCitTouchPoints(rows) {
       if (!isPrdTtl) {
         if (!prdBreakdown[channel]) prdBreakdown[channel] = {}
         prdBreakdown[channel][label] = true
+      } else {
+        if (!prdTtlPresent[channel]) prdTtlPresent[channel] = {}
+        prdTtlPresent[channel][label] = true
       }
     })
   })
@@ -1448,11 +1458,13 @@ function parseCitTouchPoints(rows) {
       // (channel, month) 의 breakdown 존재 시 집계 행 (TTL country / Total LLM / TTL PRD) skip
       const skipCnty = isCountryTtl && cntyBreakdown[channel]?.[label]
       const skipLlm = isTotalLlm && llmBreakdown[channel]?.[label]
-      const skipPrd = isPrdTtl && prdBreakdown[channel]?.[label]
-      // LLM 별 채널 sum — 모델 비교 탭용. cnty=TTL + PRD=TTL skip (Pass 2 sum 룰과 일관).
+      // PRD: 이 (channel, month) 에 PRD=TTL 행이 있으면 제품 행을 제외 (TTL 을 분할하지 않으므로 — 위 주석),
+      //      없으면 제품 행 합으로 폴백 (구 시트 호환).
+      const skipPrd = prdTtlPresent[channel]?.[label] ? !isPrdTtl : false
+      // LLM 별 채널 sum — 모델 비교 탭용. cnty=TTL + 제품 행 skip (Pass 2 sum 룰과 일관).
       // LLM='TTL' 도 별도 'Total' 키로 보존 (모델별 + 합 모두 비교 가능).
       const llmKey = isTotalLlm ? 'Total' : llmVal
-      if (!skipCnty && !(isPrdTtl && prdBreakdown[channel]?.[label])) {
+      if (!skipCnty && !skipPrd) {
         if (!citTouchPointsByLlm[llmKey]) citTouchPointsByLlm[llmKey] = {}
         if (!citTouchPointsByLlm[llmKey][channel]) citTouchPointsByLlm[llmKey][channel] = {}
         citTouchPointsByLlm[llmKey][channel][label] = (citTouchPointsByLlm[llmKey][channel][label] || 0) + v
