@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { findSentence, insertAfterSentence, colorizeSentence, stripInserted } from '../src/shared/sentenceBlocks.js'
+import { findSentence, insertAfterSentence, colorizeSentence, colorizeLastParagraph, stripInserted } from '../src/shared/sentenceBlocks.js'
 
 // 10월호 KO 게시본(2026-10-26) 1번 박스 본문 꼬리 — 편집기가 저장한 형태 그대로 (span/nbsp/br)
 const SLOT1 = `<span style="color: rgb(255, 255, 255); font-weight: bold;">삼성 대비로는 여전히 약 23%p 앞서 있어 기존 비교 구조에서는 상대적 하락이 두드러지지 않았으나, LG가 전월 대비 0.9%p 하락하는 동안 Daikin(-0.5%p), Mitsubishi(+0.1%p), Midea(+0.1%p)는 상대적으로 안정적인 추이를 보였습니다.</span> 특히 GPT Search(-2.7%p)와 Gemini(-3.3%p)에서 하락이 두드러졌으며, 국가별로는 영국(-2.0%p), 호주(-1.9%p), 스페인(-1.8%p), 미국(-1.4%p)에서 하락폭이 크게 나타났습니다.<br><br>특히 GPT Search에서는 주요 경쟁사 대비 LG의 하락이 더욱 두드러졌습니다. 영국과 스페인에서 LG는 전월 대비 각각 6.9%p, 6.4%p 하락한 반면, Daikin과 Mitsubishi 등 주요 경쟁사는 상대적으로 작은 변화를 보였습니다. 이에 따라 LG는 두 국가 모두 7월까지 유지하던 1위에서 8월 2위, 9월 각각 4위와 3위로 내려갔습니다.<br><br>즉, 주요 국가에서 LG의 Visibility 하락이 경쟁사 대비 크게 나타나고 있으며, 특히 GPT Search에서는 경쟁 순위 하락으로까지 이어지고 있습니다. 이에 따라 에어컨 답변 원문 및 인용 출처를 추가 분석하여 원인을 파악하고 대응 방향을 구체화할 예정입니다.`
@@ -46,6 +46,19 @@ describe('sentenceBlocks — 문장 기준 블록 삽입 / 색칠 (10월호 Exec
     expect(out2.match(/data-pk="1"/g).length).toBe(2)
   })
 
+  it('colorizeLastParagraph: <br><br> 뒤 마지막 문단만 색칠, 끝의 빈 줄은 제외, 문구가 달라도 동작', () => {
+    const src = '<span style="color:#fff;">첫 문단.</span><br><br>둘째 <b>문단</b>입니다.<br><br>마지막 문단 첫 문장. 둘째 문장.<br><br>'
+    const out = colorizeLastParagraph(src, '#FDA4AF')
+    expect(out).toBe('<span style="color:#fff;">첫 문단.</span><br><br>둘째 <b>문단</b>입니다.<br><br><span data-pk="1" style="color:#FDA4AF;">마지막 문단 첫 문장. 둘째 문장.</span><br><br>')
+    // 문단 안 단일 <br> 은 경계가 아니다
+    const one = colorizeLastParagraph('A.<br><br>B 줄1<br>B 줄2', '#FDA4AF')
+    expect(one).toBe('A.<br><br><span data-pk="1" style="color:#FDA4AF;">B 줄1</span><br><span data-pk="1" style="color:#FDA4AF;">B 줄2</span>')
+    // <br> 이 전혀 없으면 전체
+    expect(colorizeLastParagraph('한 문단뿐.', '#FDA4AF')).toBe('<span data-pk="1" style="color:#FDA4AF;">한 문단뿐.</span>')
+    // 멱등 — 걷어내면 원문
+    expect(stripInserted(out)).toBe(src)
+  })
+
   it('stripInserted: 저장본에 섞여 들어온 블록·색칠을 걷어내면 원문으로 돌아온다 (멱등)', () => {
     let h = insertAfterSentence(SLOT1, A1, '<table><tr><td>T1</td></tr></table>', 'oct1', ' contenteditable="false"').html
     h = insertAfterSentence(h, A2, '<table><tr><td>T2</td></tr></table>', 'oct2').html
@@ -72,15 +85,16 @@ describe('emailTemplate — 10월호 Exec Summary (사용자 지시 2026-10-26)'
   }
   const idx = (h, s) => { const i = h.indexOf(s); expect(i, `missing: ${s.slice(0, 40)}`).toBeGreaterThan(-1); return i }
 
-  it('표1 은 GPT Search 하락 문장 아래, 결론 문장은 핑크로 박스 마지막 — 표2(GPT Search) 는 없음 (사용자 지시 2026-10-26 삭제)', async () => {
+  it('표1 은 핑크 결론 문장 아래(박스 맨 아래) — 표2(GPT Search) 는 없음 (사용자 지시 2026-10-26)', async () => {
     const h = await render({ v3Ex1B2: SLOT1, v3Ex3B2: SLOT3 })
     const a1 = idx(h, '하락폭이 크게 나타났습니다.')
-    const t1 = idx(h, 'data-blk="oct1"')
     const mid = idx(h, '특히 GPT Search에서는 주요 경쟁사')
     const a2 = idx(h, '4위와 3위로 내려갔습니다.')
     const p1 = idx(h, `<span data-pk="1" style="color:#FDA4AF;">${P1}</span>`)
-    // 순서: 표1 → 4위·3위 문장 → 핑크 결론(박스 맨 아래)
-    expect(a1 < t1 && t1 < mid && mid < a2 && a2 < p1).toBe(true)
+    const t1 = idx(h, 'data-blk="oct1"')
+    // 순서: 본문 → 4위·3위 문장 → 핑크 결론 → 표1(박스 맨 아래)
+    expect(a1 < mid && mid < a2 && a2 < p1 && p1 < t1).toBe(true)
+    expect(h.slice(t1, t1 + 40)).toMatch(/^data-blk="oct1" data-br="0"/)   // 결론 문장이 끝이라 삼킨 br 없음
     expect(h).not.toContain('data-blk="oct2"')
     expect(h).not.toContain('Visibility 변화 – GPT Search')
     expect(h).not.toContain('1→2→4위')
@@ -89,8 +103,15 @@ describe('emailTemplate — 10월호 Exec Summary (사용자 지시 2026-10-26)'
     const t1Head = h.slice(t1, t1 + 700)
     expect(t1Head).toContain('background:#CF0652')      // 붉은 막대
     expect(t1Head).toContain('에어컨 주요 브랜드 Visibility 변화 – Total')
-    // Readability 마지막 문장 핑크
+    // Readability 마지막 문단 핑크 (문장 고정이 아니라 마지막 문단)
     expect(h).toContain(`<span data-pk="1" style="color:#FDA4AF;">${P3}</span>`)
+    expect(h).not.toContain('<span data-pk="1" style="color:#FDA4AF;">국가별로는 스페인')
+  })
+
+  it('Readability 마지막 문단은 문구를 고쳐 저장해도 핑크 (문장 앵커가 아니라 문단 기준)', async () => {
+    const edited = SLOT3.replace(P3, '향후 계획은 수정된 문장입니다. 두 번째 문장도 있습니다.')
+    const h = await render({ v3Ex3B2: edited })
+    expect(h).toContain('<span data-pk="1" style="color:#FDA4AF;">향후 계획은 수정된 문장입니다. 두 번째 문장도 있습니다.</span>')
   })
 
   it('옛 저장본에 표2 블록이 섞여 있어도 다음 렌더에서 걷어내고 다시 끼우지 않는다', async () => {
@@ -110,14 +131,14 @@ describe('emailTemplate — 10월호 Exec Summary (사용자 지시 2026-10-26)'
 
   it('편집 모드: 삽입 블록은 contenteditable=false (사용자 본문 저장 시 섞여도 다음 렌더에서 걷어냄)', async () => {
     const h = await render({ v3Ex1B2: SLOT1 }, 'ko', { editable: true })
-    expect(h).toMatch(/<div data-blk="oct1" data-br="2" contenteditable="false">/)
+    expect(h).toMatch(/<div data-blk="oct1" data-br="0" contenteditable="false">/)
     // 편집기 blur 가 저장하는 것 = 편집 span 의 innerHTML (블록·핑크 포함). 그걸 다시 넣어도 중복 생성 X
     const slotStart = h.indexOf('data-edit="v3Ex1B2"')
     const innerStart = h.indexOf('>', slotStart) + 1
     const innerEnd = h.indexOf('</span></div>', h.indexOf('data-blk="oct1"'))
     const saved = h.slice(innerStart, innerEnd)
-    expect(saved).toContain('data-blk="oct1"')
-    expect(saved).toContain('구체화할 예정입니다.')   // 슬롯 끝 = 핑크 결론 문장
+    expect(saved).toContain('구체화할 예정입니다.')
+    expect(saved.indexOf('data-blk="oct1"')).toBeGreaterThan(saved.indexOf('구체화할 예정입니다.'))   // 표 1 이 슬롯 끝
     const h2 = await render({ v3Ex1B2: saved }, 'ko', { editable: true })
     expect(h2.match(/data-blk="oct1"/g).length).toBe(1)
     expect(h2).not.toContain('data-blk="oct2"')

@@ -74,10 +74,33 @@ export function colorizeSentence(html, sentence, color) {
   const src = String(html || '')
   const hit = findSentence(src, sentence)
   if (!hit) return src
-  const seg = src.slice(hit.start, hit.end)
-  const painted = seg.replace(/(^|>)([^<]+)(?=<|$)/g, (m, lead, text) =>
+  return src.slice(0, hit.start) + paintRuns(src.slice(hit.start, hit.end), color) + src.slice(hit.end)
+}
+
+// 텍스트 구간의 런마다 색칠 (colorizeSentence 와 같은 마커)
+function paintRuns(seg, color) {
+  return seg.replace(/(^|>)([^<]+)(?=<|$)/g, (m, lead, text) =>
     /^(?:\s|&nbsp;)*$/.test(text) ? m : `${lead}<span data-pk="1" style="color:${color};">${text}</span>`)
-  return src.slice(0, hit.start) + painted + src.slice(hit.end)
+}
+
+// 마지막 문단을 색칠 — 문단 경계는 <br> 2개 이상의 연속(편집기가 Enter 로 만드는 빈 줄).
+// <br><br> 가 없으면 마지막 <br> 뒤, 그것도 없으면 본문 전체. 끝의 빈 줄·공백은 문단에 넣지 않는다.
+// 문장 내용에 기대지 않으므로 사용자가 문구를 고쳐도 계속 마지막 문단이 색칠된다.
+export function colorizeLastParagraph(html, color) {
+  const src = String(html || '')
+  const tailRe = /(?:\s|&nbsp;|<br\s*\/?>)+$/i
+  const tail = tailRe.exec(src)
+  const body = tail ? src.slice(0, tail.index) : src
+  const gap = String.raw`(?:\s|&nbsp;)*`
+  const dbl = new RegExp(String.raw`(?:<br\s*\/?>${gap}){2,}`, 'gi')
+  let start = -1, m
+  while ((m = dbl.exec(body))) start = m.index + m[0].length
+  if (start < 0) {
+    const single = new RegExp(String.raw`<br\s*\/?>${gap}`, 'gi')
+    while ((m = single.exec(body))) start = m.index + m[0].length
+  }
+  if (start < 0) start = 0
+  return body.slice(0, start) + paintRuns(body.slice(start), color) + (tail ? tail[0] : '')
 }
 
 // 이전 렌더가 끼워 넣은 블록/색칠 span 제거 (편집기 저장본에 섞여 들어온 것 되돌리기).

@@ -4,7 +4,7 @@ import { PROD_ID_TO_UL_CODE as UL_PROD_MAP, PROD_ID_TO_UL_CODE, PROD_ID_TO_KR, P
 import { rdBandColor } from './shared/readabilityBand.js'
 import { compRatioStr } from './shared/compRatio.js'
 import { parsePeriod } from './shared/reportPeriod.js'
-import { findSentence, insertAfterSentence, colorizeSentence, stripInserted } from './shared/sentenceBlocks.js'
+import { findSentence, insertAfterSentence, colorizeSentence, colorizeLastParagraph, stripInserted } from './shared/sentenceBlocks.js'
 import { resolveProductsByLlm, resolveProductsCntyByLlm, resolveTotalByLlm } from './shared/llmModel.js'
 import { _logWarn } from './sheetParserUtils.js'
 import { dcColLabel } from './shared/constants.js'
@@ -1018,7 +1018,7 @@ function insightV3Parts(meta = {}, lang = 'ko', productsCnty = [], assetBase = '
   // 결론/향후 방향 문장 — 박스 2 의 마지막 문장과 같은 핑크 (#FDA4AF)
   const OCT_PINK = '#FDA4AF'
   const OCT_P1 = '즉, 주요 국가에서 LG의 Visibility 하락이 경쟁사 대비 크게 나타나고 있으며, 특히 GPT Search에서는 경쟁 순위 하락으로까지 이어지고 있습니다. 이에 따라 에어컨 답변 원문 및 인용 출처를 추가 분석하여 원인을 파악하고 대응 방향을 구체화할 예정입니다.'
-  const OCT_P3 = '향후에는 자동화 적용 범위와 콘텐츠 품질을 지속 점검하고, 상대적으로 점수가 낮은 스키마 마크업 및 고인용 콘텐츠 영역을 중심으로 추가 개선을 추진할 예정입니다.'
+  // 박스 3(Readability) 은 문장이 아니라 **마지막 문단** 전체를 핑크 — 문구가 바뀌어도 유지 (사용자 지시 2026-10-26)
 
   // 흰 카드 표 — 제목(붉은 막대) + 부제 + 표 + (선택) 각주. 블록 안에 <div> 금지 (stripInserted 제약).
   // 컴팩트: 행 padding 4px·글자 11.5px (사용자 지시 2026-10-26 "높이는 적도록").
@@ -1068,11 +1068,15 @@ function insightV3Parts(meta = {}, lang = 'ko', productsCnty = [], assetBase = '
   const octBlk = (id, html) => `<div data-blk="${id}" data-br="0"${octWrap}>${html}</div>`
   const fieldVal = (field, def) => (meta[field] != null && meta[field] !== '') ? sanitizeUserHtml(meta[field]) : def
   const octProc1 = (h) => {
+    // 표 1 은 박스 맨 아래 — 핑크 결론 문장 뒤 (사용자 지시 2026-10-26). 결론 문장이 없으면 GPT Search 하락 문장 뒤.
     // stripInserted 가 옛 저장본에 섞인 표 2(data-blk="oct2") 도 함께 걷어낸다 — 다시 끼우지 않음
-    const t1 = insertAfterSentence(stripInserted(h), OCT_A1, octTable1, 'oct1', octWrap).html
+    const src = stripInserted(h)
+    const r = insertAfterSentence(src, OCT_P1, octTable1, 'oct1', octWrap)
+    const t1 = r.found ? r.html : insertAfterSentence(src, OCT_A1, octTable1, 'oct1', octWrap).html
     return colorizeSentence(t1, OCT_P1, OCT_PINK)
   }
   const pinkProc = (sentence) => (h) => colorizeSentence(stripInserted(h), sentence, OCT_PINK)
+  const pinkLastPara = (h) => colorizeLastParagraph(stripInserted(h), OCT_PINK)
 
   // [B] 표 아래 이어지는 본문 (선택 편집 — 본문을 표 앞/뒤로 나눠 쓸 수 있게)
   const bodyCont = (field, phKo, phEn, proc) => {
@@ -1098,14 +1102,14 @@ function insightV3Parts(meta = {}, lang = 'ko', productsCnty = [], assetBase = '
 
   // 기준 문장이 본문(v3Ex1B2)에 없으면(예: 영문 미편집) 표를 본문 끝에 이어 붙인다
   const slot1Src = stripInserted(fieldVal('v3Ex1B2', L(ex1Ko, ex1En)))
-  const octTail = findSentence(slot1Src, OCT_A1) ? '' : octBlk('oct1', octTable1)
+  const octTail = (findSentence(slot1Src, OCT_P1) || findSentence(slot1Src, OCT_A1)) ? '' : octBlk('oct1', octTable1)
 
   const execHtml = `
                               <div style="margin:0 0 12px;font-size:13px;color:#E2E8F0;line-height:22px;font-family:${EM_FONT};letter-spacing:-0.3px;">${ed('v3ExIntro', L(introKo, introEn))}</div>
                               <table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;">
                                 ${execItem('v3Ex1T2', L('1. C브랜드 Visibility 현황 분석 – TV·세탁기·냉장고를 중심으로', '1. C-brand Visibility analysis — centered on TV, Washer and Refrigerator'), 'v3Ex1B2', L(ex1Ko, ex1En), octTail + bodyCont('v3Ex1B2b', null, null, pinkProc(OCT_P1)) + bodyCont('v3Ex1B2c', null, null, pinkProc(OCT_P1)), octProc1)}
                                 ${execItem('v3Ex2T2', L('2. 인용 출처의 변화 - 브랜드 닷컴의 인용비중 증가/PDP를 대신하여 설명형 콘텐츠(Buying Guide/Support) 인용 확대', '2. Shift in citation sources — brand dotcom share up; explanatory content (Buying Guide/Support) cited in place of PDP'), 'v3Ex2B2', L(ex2Ko, ex2En))}
-                                ${execItem('v3Ex3T2', L('3. Readabilty 평가 체계 도입 및 개선 필요 영역 보완 지속', '3. Introducing the Readability framework and continuing to close gaps'), 'v3Ex3B2', L(ex3Ko, ex3En), '', pinkProc(OCT_P3))}
+                                ${execItem('v3Ex3T2', L('3. Readabilty 평가 체계 도입 및 개선 필요 영역 보완 지속', '3. Introducing the Readability framework and continuing to close gaps'), 'v3Ex3B2', L(ex3Ko, ex3En), '', pinkLastPara)}
                               </table>`
   return { execHtml }
 }
