@@ -59,6 +59,13 @@ describe('sentenceBlocks — 문장 기준 블록 삽입 / 색칠 (10월호 Exec
     expect(stripInserted(out)).toBe(src)
   })
 
+  it('colorizeLastParagraph: 편집기가 Enter 를 <div> 로 저장한 본문도 마지막 문단만 (빈 <div><br></div> 는 건너뜀)', () => {
+    const src = 'A 문단.<br><br>B 문단.<div>C 문단 수정본.</div><div><br></div>'
+    const out = colorizeLastParagraph(src, '#FDA4AF')
+    expect(out).toBe('A 문단.<br><br>B 문단.<div><span data-pk="1" style="color:#FDA4AF;">C 문단 수정본.</span></div><div><br></div>')
+    expect(stripInserted(out)).toBe(src)
+  })
+
   it('appendBlock: 본문 맨 끝에 블록, 끝의 <br><br> 는 삼키고 data-br 에 기록, 열린 span 은 닫는다', () => {
     const out = appendBlock('앞 문단.<br><br><span style="color:#fff;">마지막 문단.</span><br><br>', '<p>T</p>', 'x', ' contenteditable="false"')
     expect(out).toBe('앞 문단.<br><br><span style="color:#fff;">마지막 문단.</span><div data-blk="x" data-br="2" contenteditable="false"><p>T</p></div>')
@@ -124,6 +131,15 @@ describe('emailTemplate — 10월호 Exec Summary (사용자 지시 2026-10-26)'
     // Readability 마지막 문단 핑크 (문장 고정이 아니라 마지막 문단)
     expect(h).toContain(`<span data-pk="1" style="color:#FDA4AF;">${P3}</span>`)
     expect(h).not.toContain('<span data-pk="1" style="color:#FDA4AF;">국가별로는 스페인')
+  })
+
+  it('이어쓰기 칸(v3Ex1B2b)에 글이 있으면 핑크·표1 은 그 칸 끝으로 — 본문 칸엔 핑크 없음, 표는 1개', async () => {
+    const h = await render({ v3Ex1B2: SLOT1, v3Ex1B2b: '이어쓴 결론 문단.' })
+    const pk = idx(h, '<span data-pk="1" style="color:#FDA4AF;">이어쓴 결론 문단.</span>')
+    const t1 = idx(h, 'data-blk="oct1"')
+    expect(pk).toBeLessThan(t1)
+    expect(h.match(/data-blk="oct1"/g).length).toBe(1)
+    expect(h).not.toContain(`<span data-pk="1" style="color:#FDA4AF;">${P1}</span>`)
   })
 
   it('Readability 마지막 문단은 문구를 고쳐 저장해도 핑크 (문장 앵커가 아니라 문단 기준)', async () => {

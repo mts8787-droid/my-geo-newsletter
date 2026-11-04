@@ -214,11 +214,12 @@ export function normalizeDeleteKey(u) {
 export function parseDeleteUrls(csvText) {
   const lines = String(csvText || '').replace(/^﻿/, '').split(/\r?\n/).filter(l => l.trim())
   if (!lines.length) return null
-  const head = lines[0].split(',').map(h => h.trim().toLowerCase())
+  const head = lines[0].split(',').map(h => h.trim().replace(/^"(.*)"$/, '$1').trim().toLowerCase())
   const ui = head.indexOf('url')
   if (ui < 0) return null
   const set = new Set()
-  for (const l of lines.slice(1)) { const u = (l.split(',')[ui] || '').trim(); if (/^https?:/i.test(u)) set.add(normalizeDeleteKey(u)) }
+  // 시트 내보내기가 값을 따옴표로 감싸도 읽히게 ("https://…") — URL 에는 쉼표가 없다
+  for (const l of lines.slice(1)) { const u = (l.split(',')[ui] || '').trim().replace(/^"(.*)"$/, '$1').trim(); if (/^https?:/i.test(u)) set.add(normalizeDeleteKey(u)) }
   return set
 }
 let DELETE_KEYS = new Set()
@@ -227,7 +228,8 @@ function loadDeleteUrls(srcDir) {
   if (!existsSync(p)) { _logWarn('aggregate-readability', `삭제 요청 URL 목록 없음 — ${p} (제외 없이 집계)`); return new Set() }
   const s = parseDeleteUrls(readFileSync(p, 'utf8'))
   if (!s) { _logWarn('aggregate-readability', `삭제 요청 URL 헤더 인식 실패 — ${p}`); return new Set() }
-  _logInfo('aggregate-readability', `삭제 요청 URL ${s.size}건 로드 — 집계 제외`)
+  if (!s.size) _logWarn('aggregate-readability', `삭제 요청 URL 0건 — ${p} (행 형식 확인 필요)`)
+  else _logInfo('aggregate-readability', `삭제 요청 URL ${s.size}건 로드 — 집계 제외`)
   return s
 }
 function isDeleteRequested(url) { return DELETE_KEYS.has(normalizeDeleteKey(url)) }
@@ -549,11 +551,14 @@ export function softPhraseIs404(phrase) { return SOFT404_PHRASES.test(String(phr
 const RECHECK = {
   // #42 Soft 404 — 문구로 걸린 FAIL 은 저장 문구를 현재 패턴으로 재판정 (상류 gen_dashboard_data 와 동일).
   // value 예: "HTTP 200 · 'nicht gefunden werden'". 본문 길이 FAIL("본문 103자")은 저장값 그대로.
-  ai_soft_404(it) {
+  ai_soft_404(it, ctx) {
     if (it.pass !== false) return null
     const m = /^HTTP 200 · '(.*)'$/.exec(String(it.value == null ? '' : it.value))
     if (!m) return null
     const fail = softPhraseIs404(m[1])
+    // 저장값은 매칭 조각(36자)뿐이라 진짜 404("Seite konnte nicht gefunden werden")도 조각이
+    // 'nicht gefunden werden' 이면 PASS 로 뒤집힌다 — 뒤집힌 URL 을 남겨 사람이 확인할 수 있게.
+    if (!fail) _logInfo('aggregate-readability', `#42 Soft 404 재판정 FAIL→PASS (저장 문구 '${m[1]}') — ${ctx && ctx.url}`)
     return { pass: !fail, hint: fail ? it.hint : null }
   },
   // PSI 의 server-response-time(lab) 을 정본으로 사용. 크롤러 자체 측정값(it.value)은 쓰지 않는다.
@@ -1192,12 +1197,13 @@ function main() {
       const measured = !!(sc && typeof sc.total === 'number' && !isFetchFailed(sc))
       // HS 콘텐츠 — 제외 타입·단종 PDP 판정과 무관하게 시트 URL 이면 전부 기록 (상한 없음).
       // 상류도 HS 지정 PDP 는 단종/악세사리 제외를 적용하지 않는다.
+      // 사업부 삭제 요청 — HS 탭 포함 어디에도 넣지 않는다 (상류 run_render_audit 도 HS 시트에서 뺌)
+      if (isDeleteRequested(url)) { skipDeleteReq++; continue }
       noteHs(s, rpt, measured)
       if (isHsGroup) continue   // hs 그룹 run 은 HS 탭 전용 — 국가 점수·가중평균·CSV 에 넣지 않는다
       if (rpt && rpt.excluded) continue
       // 영구 제외 URL (lg-story / lifesgood) — 집계·Raw·CSV 어디에도 넣지 않는다
       if (isExcludedUrl(url)) { skipExcludedUrl++; continue }
-      if (isDeleteRequested(url)) { skipDeleteReq++; continue }   // 사업부 삭제 요청 (상류 delete_request)
       if (!sc || typeof sc.total !== 'number') { skipNoScore++; continue }
       if (isFetchFailed(sc)) { skipFetchFail++; continue }
       items.push({ result: s.result, url, rpt })

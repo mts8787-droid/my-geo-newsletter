@@ -376,6 +376,9 @@ function edScriptHtml() {
     el.addEventListener('focus',function(){orig=el.innerHTML;});
     el.addEventListener('keydown',function(e){
       if(e.key==='Escape'){e.preventDefault();el.innerHTML=orig;el.blur();}
+      // Enter 는 <br> 줄바꿈으로 — 브라우저 기본(<div> 문단)은 기본 문안의 <br><br> 문단 체계와
+      // 섞여 '마지막 문단 핑크' 판정이 틀어진다 (sentenceBlocks.colorizeLastParagraph).
+      if(e.key==='Enter'&&!e.isComposing&&!el.hasAttribute('data-edit-plain')){e.preventDefault();document.execCommand('insertLineBreak');}
     });
     // 붙여넣기는 항상 plain text — 원본(워드/웹/다른 블록)의 서식 유입 차단.
     // insertText 는 캐럿 위치의 기존 서식을 상속 → 붙는 문장의 서식이 그대로 적용됨.
@@ -1067,6 +1070,12 @@ function insightV3Parts(meta = {}, lang = 'ko', productsCnty = [], assetBase = '
   // stripInserted 가 옛 저장본에 섞인 블록(표 2 data-blk="oct2" 포함)·색칠을 먼저 걷어낸다 (멱등)
   const pinkLastPara = (h) => colorizeLastParagraph(stripInserted(h), OCT_PINK)
   const octProc1 = (h) => appendBlock(pinkLastPara(h), octTable1, 'oct1', octWrap)
+  // 박스 1 은 본문 칸이 3개(v3Ex1B2 + 이어쓰기 b·c) — 핑크·표는 **내용이 있는 마지막 칸**에만 둔다.
+  // 칸마다 처리하면 이어쓰기 칸에 글을 쓰는 순간 표가 박스 중간으로 가고 핑크 문단이 여러 개 생긴다.
+  const hasSlotText = (f) => meta[f] != null && meta[f] !== '' &&
+    stripInserted(sanitizeUserHtml(meta[f])).replace(/<[^>]*>|&nbsp;|\s/gi, '') !== ''
+  const lastSlot1 = ['v3Ex1B2c', 'v3Ex1B2b'].find(hasSlotText) || 'v3Ex1B2'
+  const slot1Proc = (f) => (f === lastSlot1 ? octProc1 : stripInserted)
 
   // [B] 표 아래 이어지는 본문 (선택 편집 — 본문을 표 앞/뒤로 나눠 쓸 수 있게)
   const bodyCont = (field, phKo, phEn, proc) => {
@@ -1093,7 +1102,7 @@ function insightV3Parts(meta = {}, lang = 'ko', productsCnty = [], assetBase = '
   const execHtml = `
                               <div style="margin:0 0 12px;font-size:13px;color:#E2E8F0;line-height:22px;font-family:${EM_FONT};letter-spacing:-0.3px;">${ed('v3ExIntro', L(introKo, introEn))}</div>
                               <table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;">
-                                ${execItem('v3Ex1T2', L('1. C브랜드 Visibility 현황 분석 – TV·세탁기·냉장고를 중심으로', '1. C-brand Visibility analysis — centered on TV, Washer and Refrigerator'), 'v3Ex1B2', L(ex1Ko, ex1En), bodyCont('v3Ex1B2b', null, null, pinkLastPara) + bodyCont('v3Ex1B2c', null, null, pinkLastPara), octProc1)}
+                                ${execItem('v3Ex1T2', L('1. C브랜드 Visibility 현황 분석 – TV·세탁기·냉장고를 중심으로', '1. C-brand Visibility analysis — centered on TV, Washer and Refrigerator'), 'v3Ex1B2', L(ex1Ko, ex1En), bodyCont('v3Ex1B2b', null, null, slot1Proc('v3Ex1B2b')) + bodyCont('v3Ex1B2c', null, null, slot1Proc('v3Ex1B2c')), slot1Proc('v3Ex1B2'))}
                                 ${execItem('v3Ex2T2', L('2. 인용 출처의 변화 - 브랜드 닷컴의 인용비중 증가/PDP를 대신하여 설명형 콘텐츠(Buying Guide/Support) 인용 확대', '2. Shift in citation sources — brand dotcom share up; explanatory content (Buying Guide/Support) cited in place of PDP'), 'v3Ex2B2', L(ex2Ko, ex2En))}
                                 ${execItem('v3Ex3T2', L('3. Readabilty 평가 체계 도입 및 개선 필요 영역 보완 지속', '3. Introducing the Readability framework and continuing to close gaps'), 'v3Ex3B2', L(ex3Ko, ex3En), '', pinkLastPara)}
                               </table>`

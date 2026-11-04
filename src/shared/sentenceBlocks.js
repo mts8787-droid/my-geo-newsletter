@@ -83,22 +83,27 @@ function paintRuns(seg, color) {
     /^(?:\s|&nbsp;)*$/.test(text) ? m : `${lead}<span data-pk="1" style="color:${color};">${text}</span>`)
 }
 
-// 마지막 문단을 색칠 — 문단 경계는 <br> 2개 이상의 연속(편집기가 Enter 로 만드는 빈 줄).
-// <br><br> 가 없으면 마지막 <br> 뒤, 그것도 없으면 본문 전체. 끝의 빈 줄·공백은 문단에 넣지 않는다.
+// 마지막 문단을 색칠 — 문단 경계는 <br> 2개 이상의 연속(빈 줄) 또는 블록 태그 <div>/<p> 의 시작
+// (브라우저 편집기가 Enter 를 <div> 로 저장한 본문 대비). 둘 다 없으면 마지막 <br> 뒤, 그것도
+// 없으면 본문 전체. 경계 뒤에 보이는 글자가 없으면(끝의 빈 줄·빈 <div>) 그 경계는 건너뛴다.
 // 문장 내용에 기대지 않으므로 사용자가 문구를 고쳐도 계속 마지막 문단이 색칠된다.
 export function colorizeLastParagraph(html, color) {
   const src = String(html || '')
   const tailRe = /(?:\s|&nbsp;|<br\s*\/?>)+$/i
   const tail = tailRe.exec(src)
   const body = tail ? src.slice(0, tail.index) : src
-  const gap = String.raw`(?:\s|&nbsp;)*`
-  const dbl = new RegExp(String.raw`(?:<br\s*\/?>${gap}){2,}`, 'gi')
-  let start = -1, m
-  while ((m = dbl.exec(body))) start = m.index + m[0].length
-  if (start < 0) {
-    const single = new RegExp(String.raw`<br\s*\/?>${gap}`, 'gi')
-    while ((m = single.exec(body))) start = m.index + m[0].length
+  const hasText = (s) => s.replace(/<[^>]*>|&nbsp;|\s/gi, '') !== ''
+  const lastStart = (re) => {
+    let best = -1, m
+    while ((m = re.exec(body))) {
+      const at = m.index + m[0].length
+      if (hasText(body.slice(at))) best = at
+    }
+    return best
   }
+  const gap = String.raw`(?:\s|&nbsp;)*`
+  let start = lastStart(new RegExp(String.raw`(?:<br\s*\/?>${gap}){2,}|<(?:div|p)\b[^>]*>`, 'gi'))
+  if (start < 0) start = lastStart(new RegExp(String.raw`<br\s*\/?>${gap}`, 'gi'))
   if (start < 0) start = 0
   return body.slice(0, start) + paintRuns(body.slice(start), color) + (tail ? tail[0] : '')
 }

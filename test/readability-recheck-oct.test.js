@@ -122,4 +122,9 @@ describe('상류 7438161 — 삭제 요청 URL · #42 Soft 404 문구 재판정'
     expect(set.has(normalizeDeleteKey('https://www.lg.com/ca_en/support/y/'))).toBe(false)
     expect(parseDeleteUrls('foo,bar\n1,2')).toBeNull()
   })
+  it('삭제 요청 CSV — 시트 내보내기가 따옴표로 감싸도 읽는다', () => {
+    const set = parseDeleteUrls('"url","requester"\n"https://www.lg.com/de/support/A/","x"\n')
+    expect(set.size).toBe(1)
+    expect(set.has(normalizeDeleteKey('https://www.lg.com/de/support/a'))).toBe(true)
+  })
 })
