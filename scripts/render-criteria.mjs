@@ -18,7 +18,8 @@ import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs'
 import { rdBandKey } from '../src/shared/readabilityBand.js'
 import { checklistEn } from '../src/shared/readabilityChecklistEn.js'
 import { criteriaDetail } from '../src/shared/readabilityCriteriaDetail.js'
-import { CATEGORY_GUIDE, pick } from '../src/shared/readabilityGuide.js'
+import { CATEGORY_GUIDE, PT_LABEL, GUIDE, pick } from '../src/shared/readabilityGuide.js'
+import { CRITERIA_PARAMS } from '../src/shared/readabilityCriteriaParams.js'
 import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
 
@@ -138,6 +139,9 @@ const CRIT_T = {
     subWith: (n, d) => `6개 카테고리 ${n}개 항목으로 lg.com 글로벌 사이트의 AI 가독성을 채점합니다. 통과율은 ${d} 측정분 기준이며, 10월 감사부터 시행할 예정 항목 4개를 함께 표기했습니다. 일부 항목은 TBD로 분류하였으며, 자가 콘텐츠 분석 및 기준 세분화, 검수 에이전트 기능 고도화 후 항목 추가 예정입니다.`,
     subPlain: (n) => `6개 카테고리 ${n}개 항목의 정의와 Pass 기준입니다. 10월 감사부터 시행할 예정 항목 4개를 함께 표기했습니다. 일부 항목은 TBD로 분류하였으며, 자가 콘텐츠 분석 및 기준 세분화, 검수 에이전트 기능 고도화 후 항목 추가 예정입니다.`,
     dSrc: '검수 대상', dLogic: '판정 로직', dExcept: '예외 · 별도 조건',
+    dApplies: '적용 대상 · N/A', dParams: '판정 파라미터', dFail: 'FAIL 예시 · 개선',
+    apAll: '전 페이지타입 (집계 제외 타입은 빼고)', apPt: '페이지타입', apWhen: '아래 조건이 없으면 N/A (분모 제외)',
+    apHint: 'N/A 안내', pRule: '룰', fFail: 'FAIL', fFix: '개선', mdDl: 'MD 다운로드',
     modelNote: '검수에 사용하는 LLM 모델은 <b>Claude Fable 5</b> 입니다. 아래 판정 로직의 패턴 요소(키워드·정규식·셀렉터)는 lg.com <b>실 콘텐츠 예시를 기반으로 패턴화</b>한 것입니다. 2026-10-18 부터 #33 정의문·#36 인용 문장의 최종 판정은 lg.com 문장으로 미세조정한 로컬 <b>문장 판정 모델 geo-audit-3b</b>(Qwen2.5-3B)가 수행합니다 — 평가셋 1,052문장(사람 검수 268 포함) F1 인용 88.7 · 정의 89.9. DOM/셀렉터 규칙 항목에는 모델이 개입하지 않습니다.',
     nx: [
       '<b>#5 HTML &lt; 100KB</b> — 측정은 정확하나 lg.com HTML 중앙값이 1,536KB라 실질 통과율 0.0%. 통과 건의 대부분이 본문 0자인 빈 404 셸이라 지표 방향이 반대였음',
@@ -188,6 +192,9 @@ const CRIT_T = {
     subWith: (n, d) => `${n} items across 6 categories score the AI readability of lg.com sites. Pass rates are from the ${d} run, and the 4 items planned for the October audit are listed alongside. Some items are classified as TBD and will be added after own-content analysis, finer-grained criteria, and audit-agent upgrades.`,
     subPlain: (n) => `Definitions and pass criteria for ${n} items across 6 categories. The 4 items planned for the October audit are listed alongside. Some items are classified as TBD and will be added after own-content analysis, finer-grained criteria, and audit-agent upgrades.`,
     dSrc: 'Audit target', dLogic: 'Decision logic', dExcept: 'Exceptions · special conditions',
+    dApplies: 'Applies to · N/A', dParams: 'Rule parameters', dFail: 'FAIL examples · fix',
+    apAll: 'All page types (except types excluded from aggregation)', apPt: 'Page types', apWhen: 'N/A (out of the denominator) unless',
+    apHint: 'N/A note', pRule: 'Rule', fFail: 'FAIL', fFix: 'Fix', mdDl: 'Download MD',
     modelNote: 'The LLM model used for the audit is <b>Claude Fable 5</b>. Pattern elements in the decision logic below (keywords, regexes, selectors) are <b>patterned from real lg.com content examples</b>. Since 2026-10-18 the final verdict on #33 definitions and #36 citable sentences is made by the local <b>sentence-judgment model geo-audit-3b</b> (Qwen2.5-3B fine-tuned on lg.com sentences) — F1 on a 1,052-sentence eval set (268 human-verified): citable 88.7 · definition 89.9. The model does not intervene in DOM/selector-rule items.',
     nx: [
       '<b>#5 HTML &lt; 100KB</b> — measurement is accurate, but lg.com’s median HTML is 1,536KB so the real pass rate is 0.0%. Most passing cases were empty 404 shells with no body text, inverting the signal',
@@ -221,7 +228,95 @@ const CRIT_T = {
   },
 }
 
-export function renderCriteriaHTML({ rows, snapshot, withScores, lang = 'ko' }) {
+// ─── 항목 상세 — 불릿 블록 (HTML · Markdown 공용, 2026-11-05 "줄글이라 보기 힘들어") ─────────
+// 블록 순서: 검수 대상 → 판정 로직 → 적용 대상·N/A → 판정 파라미터 → 예외 → FAIL 예시·개선.
+// 적용 대상·파라미터는 상류 scoring_config 원문(readabilityCriteriaParams.js 생성 파일)에서,
+// 개선은 GUIDE[checkId].action 에서 가져온다 — 문서에 다시 적지 않는다 (single source).
+
+// 문서 행 → 상류 check id (하류 대표 id 와 다른 곳만)
+const PARAM_ID_ALIAS = { seo_robots: 'seo_indexable' }
+export function paramIdsFor(no) {
+  const ids = (DOC_TO_CHECK[no] || []).map(id => PARAM_ID_ALIAS[id] || id)
+  return ids.filter(id => CRITERIA_PARAMS[id])
+}
+
+// 파라미터 값 → 칩 목록. 쉼표 나열(키워드·셀렉터)은 낱개 칩으로 쪼갠다.
+// 칩(class="pv")은 상류 원문 그대로라 EN 페이지에서도 한글 키워드가 남는다 (테스트가 pv 는 예외로 본다).
+function paramValues(v) {
+  if (v == null) return []
+  if (Array.isArray(v)) return v.map(String)
+  if (typeof v === 'object') return [JSON.stringify(v)]
+  const s = String(v)
+  // 셀렉터 안의 쉼표(예: "figure img, article img")도 나열이므로 같이 쪼갠다
+  return s.includes(',') ? s.split(',').map(x => x.trim()).filter(Boolean) : [s]
+}
+
+// 불릿 하나 = HTML 문자열 | { li, sub: [...] } | { k, chips: [...] } (라벨 + 칩)
+function detailBlocks(no, L2) {
+  const ct = CRIT_T[L2]
+  const det = criteriaDetail(no, L2)
+  if (!det) return null
+  const ids = paramIdsFor(no)
+  const multi = ids.length > 1
+  const ptName = id => pick(PT_LABEL[id], L2) || id
+  const applies = [], params = []
+  for (const id of ids) {
+    const p = CRITERIA_PARAMS[id]
+    const pre = multi ? `<code>${esc(id)}</code> — ` : ''
+    applies.push(p.pageTypes
+      ? { k: pre + esc(ct.apPt), chips: p.pageTypes.map(ptName), plain: true }
+      : pre + esc(ct.apAll))
+    if (p.when) {
+      applies.push({ li: `${pre}${esc(ct.apWhen)}: <code>${esc(p.when.type)}</code>`,
+        sub: Object.entries(p.when.params).map(([k, v]) => ({ k: esc(k), chips: paramValues(v) })) })
+      if (p.when.naHint && L2 === 'ko') applies.push(`${pre}${esc(ct.apHint)} — ${esc(p.when.naHint)}`)
+    }
+    params.push({ li: `<code>${esc(id)}</code> · ${esc(ct.pRule)} <code>${esc(p.type)}</code>`,
+      sub: Object.entries(p.params).map(([k, v]) => ({ k: esc(k), chips: paramValues(v) })) })
+  }
+  const g = (DOC_TO_CHECK[no] || []).map(id => GUIDE[PARAM_ID_ALIAS[id] || id] || GUIDE[id]).find(Boolean)
+  const fail = (det.fail || []).map(x => typeof x === 'string' ? `<b>${esc(ct.fFail)}</b> ${x}` : x)
+  if (g && g.action) fail.push(`<b>${esc(ct.fFix)}</b> ${esc(pick(g.action, L2))}`)
+  return [
+    [ct.dSrc, det.src], [ct.dLogic, det.logic], [ct.dApplies, applies],
+    [ct.dParams, params], [ct.dExcept, det.except], [ct.dFail, fail],
+  ].filter(([, b]) => b && b.length)
+}
+
+function liHtml(b) {
+  if (typeof b === 'string') return `<li>${b}</li>`
+  if (b.chips) return `<li><span class="pk">${b.k}</span> ${b.chips.map(c => b.plain ? `<span class="pt">${esc(c)}</span>` : `<code class="pv">${esc(c)}</code>`).join(' ')}</li>`
+  return `<li>${b.li}<ul>${b.sub.map(liHtml).join('')}</ul></li>`
+}
+export function detailHtml(no, L2) {
+  const blocks = detailBlocks(no, L2)
+  if (!blocks) return ''
+  return blocks.map(([k, list]) =>
+    `<div class="d-line"><span class="d-k">${esc(k)}</span><div class="d-v"><ul class="d-ul">${list.map(liHtml).join('')}</ul></div></div>`).join('\n        ')
+}
+
+// HTML 불릿 → Markdown (code·b 만 변환, 나머지 태그 제거, 엔티티 복원)
+function mdText(h) {
+  return String(h)
+    .replace(/<code[^>]*>([\s\S]*?)<\/code>/g, (_, x) => '`' + x + '`')
+    .replace(/<b>([\s\S]*?)<\/b>/g, '**$1**')
+    .replace(/<br\s*\/?>/g, ' ')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, '&')
+}
+function liMd(b, ind) {
+  if (typeof b === 'string') return [`${ind}- ${mdText(b)}`]
+  if (b.chips) return [`${ind}- ${mdText(b.k)}: ${b.chips.map(c => b.plain ? c : '`' + c + '`').join(', ')}`]
+  return [`${ind}- ${mdText(b.li)}`, ...b.sub.flatMap(x => liMd(x, ind + '  '))]
+}
+export function detailMarkdown(no, L2) {
+  const blocks = detailBlocks(no, L2)
+  if (!blocks) return []
+  return blocks.flatMap(([k, list]) => [`- **${k}**`, ...list.flatMap(b => liMd(b, '  '))])
+}
+
+// mdHref — 있으면 머리에 'MD 다운로드' 버튼 (routes 가 언어에 맞는 .md 경로를 넘긴다)
+export function renderCriteriaHTML({ rows, snapshot, withScores, lang = 'ko', mdHref = '' }) {
   const L2 = lang === 'en' ? 'en' : 'ko'
   const ct = CRIT_T[L2]
   rows = localizeRows(rows, L2)
@@ -268,13 +363,11 @@ export function renderCriteriaHTML({ rows, snapshot, withScores, lang = 'ko' }) 
         ${withScores ? `<td class="c-rate">${r.no === '예정' || r.pendNote ? '<span class="dash">—</span>' : rateCell(DOC_TO_CHECK[r.no] || [])}</td>` : ''}
       </tr>`
       // 점수 제외(기준 문서) 버전에만 항목별 상세 — 검수 대상 소스 · 판정 로직 · 예외 (2026-09-29)
-      const det = !withScores ? criteriaDetail(r.no, L2) : null
+      const det = !withScores ? detailHtml(r.no, L2) : ''
       if (!det) return row
       return row + `
       <tr class="detail"><td></td><td colspan="3">
-        <div class="d-line"><span class="d-k">${esc(ct.dSrc)}</span><span class="d-v">${det.src}</span></div>
-        <div class="d-line"><span class="d-k">${esc(ct.dLogic)}</span><span class="d-v">${det.logic}</span></div>
-        <div class="d-line"><span class="d-k">${esc(ct.dExcept)}</span><span class="d-v">${det.except}</span></div>
+        ${det}
       </td></tr>`
     }).join('\n')
     const orphans = (ORPHAN_CHECKS[c] || []).map(o => `<tr class="orphan">
@@ -400,9 +493,17 @@ tr.detail td{padding:0 16px 15px;border-bottom:1px solid var(--rule2);background
 tr.detail td:first-child{background:var(--raise)}
 .d-line{display:flex;gap:12px;padding:7px 0;border-top:1px dashed var(--rule2)}
 .d-line:first-child{border-top:0;padding-top:10px}
-.d-k{flex:none;width:96px;font-size:11px;font-weight:600;color:var(--accent);letter-spacing:.02em;padding-top:2px}
+.d-k{flex:none;width:118px;font-size:11px;font-weight:600;color:var(--accent);letter-spacing:.02em;padding-top:2px}
 .d-v{flex:1;font-size:12.5px;color:var(--ink2);line-height:1.7;min-width:0;overflow-wrap:anywhere}
 .d-v code{font-family:'IBM Plex Mono',monospace;font-size:11px;background:var(--rule2);border-radius:4px;padding:1px 5px;color:var(--ink)}
+.d-ul{margin:0;padding-left:17px;display:flex;flex-direction:column;gap:4px}
+.d-ul ul{margin:4px 0 2px;padding-left:17px;list-style:circle;display:flex;flex-direction:column;gap:3px}
+.d-ul li::marker{color:var(--ink3)}
+.d-v code.pv{display:inline-block;margin:1px 1px;font-size:10.5px;padding:0 5px;line-height:1.7}
+.pk{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;color:var(--ink);margin-right:4px}
+.pt{display:inline-block;font-size:11px;font-weight:500;background:#FEF2F4;color:var(--accent);border-radius:4px;padding:0 6px;margin:1px 1px;line-height:1.7}
+.md-dl{align-self:flex-start;display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:#fff;background:var(--accent);border-radius:8px;padding:8px 14px;text-decoration:none}
+.md-dl:hover{opacity:.9}
 .d-v b{color:var(--ink);font-weight:600}
 .model-note{background:#FEF2F4;border:1px solid #F5CCD8;border-radius:10px;padding:12px 16px;font-size:13px;color:var(--ink2);line-height:1.65}
 .model-note b{color:var(--accent);font-weight:600}
@@ -416,13 +517,14 @@ tr.detail td:first-child{background:var(--raise)}
 .legend span{display:inline-flex;align-items:center;gap:6px}
 .dot{width:9px;height:9px;border-radius:99px;flex:none;display:inline-block}
 footer{color:var(--ink3);font-size:12px;border-top:1px solid var(--rule);padding-top:16px}
-@media (max-width:640px){.wrap{padding:34px 15px 60px;gap:32px}h1{font-size:25px}.cat-head{flex-direction:column;gap:8px}}
+@media (max-width:640px){.wrap{padding:34px 15px 60px;gap:32px}h1{font-size:25px}.cat-head{flex-direction:column;gap:8px}.d-line{flex-direction:column;gap:4px}.d-k{width:auto}}
 </style></head><body>
 <div class="wrap">
   <header class="head">
     <span class="eyebrow">GEO Agent Readability</span>
     <h1>${esc(ct.h1)}</h1>
     <p class="sub">${subtitle}</p>
+    ${mdHref ? `<a class="md-dl" href="${esc(mdHref)}" download>${esc(ct.mdDl)}</a>` : ''}
     ${modelNote}
     ${meta}
   </header>
@@ -436,86 +538,71 @@ ${notes}
 </body></html>`
 }
 
-// ─── Markdown (점수 제외 — audit 리포 반영용) ───────────────────────────
-export function renderCriteriaMarkdown({ rows, generatedAt }) {
+// ─── Markdown (점수 제외 — audit 리포 반영용 + 검수기준 'MD 다운로드') ──────────────────
+// 페이지(점수 제외 버전)와 같은 원천을 쓴다 — 항목 상세 불릿(detailMarkdown) · 예외 처리(CRIT_T.nx/ns/nc/nm).
+// 2026-11-05 이전에는 예외 처리 문단을 여기 따로 적어 페이지와 어긋나 있었다 (예: #1 TTFB 임계값).
+const MD_T = {
+  ko: {
+    h1: 'GEO Agent Readability 검수 기준',
+    intro: (n) => `6개 카테고리 ${n}개 채점 항목. 점수·통과율은 제외한 **기준 정의 문서**입니다. 실측치는 Readability 대시보드에서 확인하세요.`,
+    gen: (d) => `생성: \`scripts/render-criteria.mjs\` (source: \`data/readability/geo-agent-checklist.html\` + 상류 \`scoring_config.json\`) — ${d}`,
+    cats: '카테고리', thCat: '카테고리', thN: '채점 항목', thWhat: '무엇을 보는가',
+    def: '정의', pass: 'PASS', method: '측정방법', status: '상태', planned: '(예정)', content: '분류', contentV: 'Contents 체크 항목',
+    pend: (x) => `TBD — ${x}. 자가 콘텐츠 분석·기준 세분화·검수 에이전트 고도화 후 항목 추가 예정`,
+  },
+  en: {
+    h1: 'GEO Agent Readability audit criteria',
+    intro: (n) => `${n} scored items across 6 categories. This is the **criteria definition document** without scores or pass rates — see the Readability dashboard for measurements.`,
+    gen: (d) => `Generated by \`scripts/render-criteria.mjs\` (source: \`data/readability/geo-agent-checklist.html\` + upstream \`scoring_config.json\`) — ${d}`,
+    cats: 'Categories', thCat: 'Category', thN: 'Scored items', thWhat: 'What it checks',
+    def: 'Definition', pass: 'PASS', method: 'How it is measured', status: 'Status', planned: '(planned)', content: 'Class', contentV: 'Contents check item',
+    pend: (x) => `TBD — ${x}. To be added after own-content analysis, finer-grained criteria and audit-agent upgrades`,
+  },
+}
+
+export function renderCriteriaMarkdown({ rows, generatedAt, lang = 'ko' }) {
+  const L2 = lang === 'en' ? 'en' : 'ko'
+  const ct = CRIT_T[L2], mt = MD_T[L2]
+  rows = localizeRows(rows, L2)
   const byCat = {}
   rows.forEach(r => (byCat[r.cat] = byCat[r.cat] || []).push(r))
+  const total = CAT_ORDER.reduce((a, c) => a + scoredCount(rows, c), 0)
   const L = []
-  L.push('# GEO Agent Readability 검수 기준')
-  L.push('')
-  L.push(`> 6개 카테고리 ${CAT_ORDER.reduce((a, c) => a + scoredCount(rows, c), 0)}개 채점 항목 + 10월 감사 시행 예정 4항목.`)
-  L.push('> 점수·통과율은 제외한 **기준 정의 문서**입니다. 실측치는 Readability 대시보드에서 확인하세요.')
-  L.push(`> 생성: \`scripts/render-criteria.mjs\` (source: \`data/readability/geo-agent-checklist.html\`) — ${generatedAt}`)
-  L.push('')
-  L.push('## 카테고리')
-  L.push('')
-  L.push('| 카테고리 | 채점 항목 | 무엇을 보는가 |')
-  L.push('| :-- | :-: | :-- |')
+  L.push(`# ${mt.h1}`, '', `> ${mt.intro(total)}`, `> ${mt.gen(generatedAt)}`, '')
+  L.push(`## ${mt.cats}`, '', `| ${mt.thCat} | ${mt.thN} | ${mt.thWhat} |`, '| :-- | :-: | :-- |')
+  for (const c of CAT_ORDER) L.push(`| ${catName(c, L2)} | ${scoredCount(rows, c)} | ${catNote(c, L2)} |`)
+  L.push('', '---', '')
   for (const c of CAT_ORDER) {
-    L.push(`| ${c} | ${scoredCount(rows, c)} | ${CAT_NOTE[c]} |`)
-  }
-  L.push('')
-  L.push('---')
-  L.push('')
-  for (const c of CAT_ORDER) {
-    const list = byCat[c] || []
-    L.push(`## ${c}`)
-    L.push('')
-    L.push(`> ${CAT_NOTE[c]}`)
-    L.push('')
-    for (const r of list) {
-      const head = r.no === '예정' ? `### (예정) ${r.name}` : `### #${r.no} — ${r.name}`
-      L.push(head)
-      L.push(`- **정의**: ${r.def}`)
-      L.push(`- **PASS**: ${r.pass}`)
-      L.push(`- **측정방법**: ${r.method}`)
+    L.push(`## ${catName(c, L2)}`, '', `> ${catNote(c, L2)}`, '')
+    for (const r of (byCat[c] || [])) {
+      L.push(r.no === '예정' ? `### ${mt.planned} ${r.name}` : `### #${r.no} — ${r.name}`)
+      L.push(`- **${mt.def}**: ${r.def}`, `- **${mt.pass}**: ${r.pass}`, `- **${mt.method}**: ${r.method}`)
       const cids = DOC_TO_CHECK[r.no] || []
       if (cids.length) L.push(`- **check id**: ${cids.map(x => '`' + x + '`').join(', ')}`)
-      if (r.planNote) L.push(`- **상태**: ${r.planNote}`)
-      if (r.pendNote) L.push(`- **상태**: TBD — ${r.pendNote}. 자가 콘텐츠 분석·기준 세분화·검수 에이전트 고도화 후 항목 추가 예정 (scoring_config \`enabled: false\`)`)
-      if (r.contentCheck) L.push('- **분류**: Contents 체크 항목')
+      // 상태 메모는 체크리스트 원문(KO)이라 EN 은 페이지 태그 문구로 대신한다
+      if (r.planNote) L.push(`- **${mt.status}**: ${L2 === 'en' ? ct.tagPlan : r.planNote}`)
+      if (r.pendNote) L.push(`- **${mt.status}**: ${L2 === 'en' ? 'TBD' : mt.pend(r.pendNote)}`)
+      if (r.contentCheck) L.push(`- **${mt.content}**: ${mt.contentV}`)
+      if (r.no !== '예정') L.push(...detailMarkdown(r.no, L2))
       L.push('')
     }
-    for (const o of (ORPHAN_CHECKS[c] || [])) {
-      L.push(`### ${o.label}`)
-      L.push('- **정의**: 체크리스트 문서에 대응 행이 없는 채점 항목')
-      L.push(`- **비고**: ${o.note}`)
-      L.push(`- **check id**: \`${o.cid}\``)
-      L.push('')
-    }
-    L.push('---')
-    L.push('')
+    L.push('---', '')
   }
-  L.push('## 예외 처리')
-  L.push('')
-  L.push('### 채점에서 제외된 항목')
-  L.push('- **#5 HTML < 100KB** — 측정은 정확하나 lg.com HTML 중앙값이 1,536KB라 실질 통과율 0.0%. 통과 건의 대부분이 본문 0자인 빈 404 셸이라 지표 방향이 반대였음')
-  L.push('- **#8 Render Blocking 0** — 통과율 2.3%로 변별력 없음')
-  L.push('- **(구) Sitemap XML** (`ai_sitemap_domain`) — #19 Sitemap과 rule이 완전히 동일한 중복 (`sitemap_recent` / `/sitemap.xml` / 30일). 어딧에서도 이미 `enabled: false`. 번호 #44 는 2026-10-24 부터 AggregateRating/Review 항목이 사용')
-  L.push('- **#20 Organization · #22 Speakable · #30 digitalDocument · #31 Recipe** — `scoring_config` 에서 `enabled: false`')
-  L.push('- **#49 Schema: WebSite · #40 Summary Content SSR** — 체크리스트 문서에 대응 행이 없어 정의·Pass 기준을 제시할 수 없으므로 채점 제외 (2026-08-27)')
-  L.push('')
-  L.push('### 집계 대상에서 빠지는 페이지')
-  L.push('- **B2B(사업자) · 프로모션/약관** — GEO 대상이 아니라 점수·통과율·URL 카운트 전부에서 제외')
-  L.push('- **비-200 페이지** (404 · 500 · fetch 실패) — 전 체크가 cascade-FAIL 이라 개선 대상이 아님')
-  L.push('- **분류불가(unknown) · 홈페이지(home)** — 측정 의미 없음')
-  L.push('')
-  L.push('### 측정 기준이 바뀐 항목')
-  L.push('- **#1 TTFB** — 어딧 크롤러 자체 측정값이 동시 크롤 큐잉에 오염돼 실제보다 6~200배 크게 잡혔음(UK 크롤러 1,088ms vs PSI 11ms). PageSpeed Insights 의 `server-response-time` 을 정본으로 교체, 임계값 1800ms')
-  L.push('- **#4 Cache-Control** — 원래 룰이 `no-cache`/`no-store` 가 섞이면 `max-age` 값과 무관하게 즉시 FAIL 처리했음. `max-age` 디렉티브가 설정돼 있으면(0 포함) 통과로 완화')
-  L.push('- **#34 Author 또는 출처+날짜** — byline 은 에디토리얼에만 성립하는 개념이라 `newsroom` · `buying_guide` · `lg_experience` 에만 적용. 그 외 페이지타입은 `na` (분모 제외)')
-  L.push('- **#33 정의문 · #36 인용 문장 — 문장 판정 모델 결합 (2026-10-18)** — 정규식 단독 판정이 사람 기준과 크게 어긋나(#36 F1 36) 문장 판정 모델 `geo-audit-3b`(Qwen2.5-3B 미세조정, 올라마 로컬)가 패턴 후보를 최종 확인. #33 은 매칭 0건이면 본문 앞 40문장을 모델로 탐색. 모델 미연결 시 정규식 폴백(판정 근거에 표기). 평가셋 1,052문장 F1 — 인용 88.7 · 정의 89.9')
-  L.push('- **#33 · #36 노이즈 제외 보강 (2026-10-17)** — 할부·쿠폰·할인·보도자료 연락처·공유 버튼·JavaScript 안내·상표 고지 제외 — 사람 판정 정답 기준 정밀도 #36 41→88% · #33 20→50%. 숨은 모달/다이얼로그 문장도 본문에서 제외 (2026-10-19)')
-  L.push('- **#37 HTML Text Ratio — Shadow DOM SSR 분자 제외 (2026-10-05)** — `<template shadowrootmode>` 본문은 비JS 파서 다수가 읽지 않아 분자에서 제외 (보수 기준). 콘텐츠 룰(#32~#36)은 섀도 본문을 인정하되 판정 근거에 “Shadow DOM SSR — 주요 AI 크롤러 미인식 가능(일반 DOM 전환 필요)” 적시')
-  L.push('- **#36 인용 문장 — 트러블슈팅·PLP 는 3개 기준 (2026-10-26, 10월 감사부터)** — 상류 `min_count_by_type` = `support_troubleshoot:3,plp:3`. 5개는 긴 본문 전제이고 트러블슈팅은 증상→원인→해결책 세 요소, PLP 는 카테고리 설명 몇 줄이라 콘텐츠가 있어도 떨어졌음. 대시보드는 저장된 “모델 확인 N” 개수로 임계를 낮출 때만 재판정. 후보로 못 채우면 본문 앞 40문장도 모델이 탐색 (`model_scan_max`, 2026-10-24)')
-  L.push('- **#26 ImageObject · #27 VideoObject — 리뷰 위젯 안 미디어 제외 (2026-10-26)** — `Review`·`Comment` 노드 하위의 고객 사진·영상 스키마를 페이지 콘텐츠로 세던 오탐 수정 (10월 #26 통과 PDP 전부가 리뷰 사진, #27 은 TV PDP 94건이 리뷰 영상만으로 통과). 저장된 JSON-LD 원본(`json_ld.raw`)으로 재판정해 10월 결과에 소급 (`exclude_within`)')
-  L.push('- **#44 AggregateRating 또는 Review (PDP) — 채점 활성 (2026-10-24)** — `ai_schema_rating_or_review` (`schema_any_of`, PDP 전용). LG PDP 3,147건에 Review 가 추가되어 사용자 결정으로 활성. Product 에 연결되지 않은 별도 블록이어도 인정 (2026-10-26 사용자 확인). 활성 채점 항목 37 → 38')
-  L.push('')
-  L.push('### 문서 번호와 채점 항목이 1:1이 아닌 곳')
-  L.push('- **#17 Robots** — `seo_robots`(meta) 와 `seo_robots_hdr`(X-Robots-Tag) 중 **하나만 충족해도 통과** (OR). 대표 체크 `seo_robots` 하나로 채점')
-  L.push('- **#25 Product 풀세트** — `ai_schema_product` + `ai_schema_offer` 를 AND 병합해 한 행으로 채점 (2026-08-31)')
-  L.push('')
+  L.push(`## ${ct.notesH}`, '')
+  for (const [h, list] of [[ct.nExcluded, ct.nx], [ct.nSkipped, ct.ns], [ct.nChanged, ct.nc], [ct.nMapping, ct.nm]]) {
+    L.push(`### ${h}`, ...list.map(x => `- ${mdText(x)}`), '')
+  }
   return L.join('\n')
+}
+
+// 'MD 다운로드' 응답 — 어드민·게시본 라우트 공용. 요청 시 생성 (파일로 굽지 않음 — stale 방지).
+export function criteriaMarkdownResponse(lang) {
+  const L2 = lang === 'en' ? 'en' : 'ko'
+  const date = new Date().toISOString().slice(0, 10)
+  return {
+    filename: `GEO-Readability-Criteria-${L2.toUpperCase()}-${date}.md`,
+    body: renderCriteriaMarkdown({ rows: loadRows(), generatedAt: date, lang: L2 }),
+  }
 }
 
 export function loadRows() {

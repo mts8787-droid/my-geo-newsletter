@@ -117,3 +117,24 @@ describe('GET /p/:slug — 지난 호 리다이렉트', () => {
     expect(res.text).toContain('6월')
   })
 })
+
+describe('GET /p/GEO-Readability-Criteria.md (검수 기준 MD 다운로드, 2026-11-05)', () => {
+  it('KO — Markdown 첨부 + 항목 상세 불릿 포함, /p/:slug 에 먹히지 않음', async () => {
+    const res = await request(makeApp()).get('/p/GEO-Readability-Criteria.md')
+    expect(res.status).toBe(200)
+    expect(res.headers['content-type']).toMatch(/text\/markdown/)
+    expect(res.headers['content-disposition']).toMatch(/attachment; filename="GEO-Readability-Criteria-KO-\d{4}-\d{2}-\d{2}\.md"/)
+    expect(res.text).toContain('# GEO Agent Readability 검수 기준')
+    expect(res.text).toContain('- **판정 파라미터**')
+  })
+  it('EN — ?lang=en 이면 영문 Markdown', async () => {
+    const res = await request(makeApp()).get('/p/GEO-Readability-Criteria.md?lang=en')
+    expect(res.status).toBe(200)
+    expect(res.headers['content-disposition']).toContain('-EN-')
+    expect(res.text).toContain('# GEO Agent Readability audit criteria')
+  })
+  it('검수 기준 페이지 머리에 MD 다운로드 버튼', async () => {
+    const res = await request(makeApp()).get('/p/GEO-Readability-Criteria?lang=en')
+    expect(res.text).toContain('href="/p/GEO-Readability-Criteria.md?lang=en" download')
+  })
+})

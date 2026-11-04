@@ -72,7 +72,7 @@ const P = v => pick(v, _LANG)        // { ko, en } 쌍 → 현재 언어 문자�
 function withLang(paths, lang) {
   if (lang !== 'en') return paths
   const q = u => u + (u.includes('?') ? '&' : '?') + 'lang=en'
-  return { ...paths, csv: q(paths.csv), criteria: q(paths.criteria) }
+  return { ...paths, csv: q(paths.csv), criteria: q(paths.criteria), criteriaMd: paths.criteriaMd && q(paths.criteriaMd) }
 }
 const TT = () => UI[_LANG] || UI.ko  // UI 문구 사전
 
@@ -563,7 +563,8 @@ function readabilityClient() {
     var dl = '<div class="crit-dl"><div class="crit-dl-text">' +
       '<div class="crit-dl-title">' + esc(I.dlTitle || '검수 URL 다운로드') + '</div>' +
       '<div class="crit-dl-sub">' + TPL('tplDlSub', { d: esc(RD.date) }) + '</div></div>' +
-      '<a class="crit-dl-btn" href="' + RD.paths.csv + '" download>' + esc(I.dlCsv || 'CSV 다운로드') + '</a></div>'
+      '<div class="crit-dl-btns"><a class="crit-dl-btn" href="' + RD.paths.csv + '" download>' + esc(I.dlCsv || 'CSV 다운로드') + '</a>' +
+      (RD.paths.criteriaMd ? '<a class="crit-dl-btn" href="' + RD.paths.criteriaMd + '" download>' + esc(I.dlMd || 'MD 다운로드') + '</a>' : '') + '</div></div>'
     var frame = '<div class="crit-frame-head">' + esc(I.tplCritHead || '검수 기준') + '</div>' +
       '<iframe class="crit-frame" src="' + src + '" loading="lazy"></iframe>'
     return sectionCard(I.secCriteria || '검수 기준 · 검수 URL 다운로드', '#7C3AED', dl + frame)
@@ -1200,11 +1201,13 @@ export const ADMIN_PATHS = {
   checks: '/admin/readability/checks.json',
   csv: '/admin/readability/urls.csv',
   criteria: '/admin/readability/criteria.html',
+  criteriaMd: '/admin/readability/criteria.md',
 }
 export const PUBLIC_PATHS = {
   checks: '/p/GEO-Readability-Dashboard/checks.json',
   csv: '/p/GEO-Readability-Dashboard/urls.csv',
   criteria: '/p/GEO-Readability-Criteria',
+  criteriaMd: '/p/GEO-Readability-Criteria.md',
 }
 
 export function renderReadabilityHTML({ snapshot, index, snapshots, adminMode = false, paths, lang = 'ko', embed = false } = {}) {
@@ -1373,6 +1376,7 @@ body{background:#F1F5F9;font-family:${FONT};color:#1A1A1A;line-height:1.6}
 .crit-dl-sub{font-size:13px;color:#64748B;margin-top:2px}
 .crit-dl-btn{flex-shrink:0;background:${RED};color:#fff;text-decoration:none;font-size:14px;font-weight:700;padding:10px 20px;border-radius:8px}
 .crit-dl-btn:hover{opacity:.9}
+.crit-dl-btns{display:flex;gap:8px;flex-wrap:wrap}
 .crit-frame-head{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:14px;font-weight:700;color:#475569;margin-bottom:10px}
 .crit-frame-head a{color:${RED};text-decoration:none;font-weight:600}
 .crit-frame{width:100%;height:70vh;min-height:520px;border:1px solid #E8EDF2;border-radius:12px;background:#fff}

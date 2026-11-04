@@ -745,13 +745,13 @@ export function applyScoringOverride(score, ctx) {
       const lbl = checkLabelOverride(cid, ctx)
       if (lbl) it.label = lbl
       // 상류 사후 재판정(item_overrides) — HTML 재수집으로 확정한 판정이라 아래 재판정보다 우선
-      const ov = ctx.overrides && ctx.overrides[cid]
+      const ov = ctx && ctx.overrides && ctx.overrides[cid]
       if (ov) {
         for (const k of ['pass', 'value', 'hint']) if (k in ov) it[k] = ov[k]
         continue
       }
       // #37 baseline 주입 페이지 — 현재 baseline 값으로 재판정 (그 국가 자체 baseline 있을 때만)
-      if (cid === 'ai_ssr_ratio' && ctx.ssrBaseline != null && it.na !== true) {
+      if (cid === 'ai_ssr_ratio' && ctx && ctx.ssrBaseline != null && it.na !== true) {
         it.pass = ctx.ssrBaseline >= SSR_MIN_RATIO
         it.value = `SSR ${Math.round(ctx.ssrBaseline * 100)}%`
         if (it.pass) it.hint = null

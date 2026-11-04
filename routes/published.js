@@ -10,7 +10,7 @@ import { PUB_DIR, DATA_DIR } from '../lib/storage.js'
 import { isIpAllowed } from '../lib/network.js'
 import { CHANNELS, readMetaFile } from './publish.js'
 import { renderReadabilityPublic } from '../lib/publish-core.js'
-import { renderCriteriaHTML, loadRows } from '../scripts/render-criteria.mjs'
+import { renderCriteriaHTML, loadRows, criteriaMarkdownResponse } from '../scripts/render-criteria.mjs'
 import { renderReadabilityHTML } from '../scripts/render-readability.mjs'
 import { loadLatest, latestChecksFile, latestCsvFile, csvFileFor, checksFileFor, READABILITY_DATA_DIR } from './readability.js'
 import { logFor } from '../lib/logger.js'
@@ -234,13 +234,29 @@ publishedRouter.get('/p/GEO-Readability-Criteria', (req, res) => {
     // 스테이징(/admin/readability/criteria.html)과 완전히 동일한 렌더 —
     // 점수 결합(withScores) 분기 제거 (사용자 지시 2026-09-30: 공개 기준은
     // 스테이징 criteria 를 그대로 반영, 실측치는 대시보드 본문에서 본다).
-    const html = renderCriteriaHTML({ rows: loadRows(), snapshot: null, withScores: false, lang: readabilityLang(req) })
+    const lang = readabilityLang(req)
+    const html = renderCriteriaHTML({ rows: loadRows(), snapshot: null, withScores: false, lang, mdHref: '/p/GEO-Readability-Criteria.md' + (lang === 'en' ? '?lang=en' : '') })
     setPublishedSecurityHeaders(res)
     res.set('Content-Type', 'text/html; charset=utf-8')
     res.send(html)
   } catch (e) {
     log.warn({ err: e.message }, 'readability criteria render failed')
     res.status(500).send('검수 기준 생성 실패')
+  }
+})
+
+// 검수 기준 Markdown 다운로드 — /p/:slug 보다 먼저 등록 (사용자 요청 2026-11-05)
+publishedRouter.get('/p/GEO-Readability-Criteria.md', (req, res) => {
+  if (!isIpAllowed(req)) return send403Page(res)
+  try {
+    const { filename, body } = criteriaMarkdownResponse(readabilityLang(req))
+    setPublishedSecurityHeaders(res)
+    res.set('Content-Type', 'text/markdown; charset=utf-8')
+    res.set('Content-Disposition', `attachment; filename="${filename}"`)
+    res.send(body)
+  } catch (e) {
+    log.warn({ err: e.message }, 'readability criteria md render failed')
+    res.status(500).send('검수 기준 MD 생성 실패')
   }
 })
 

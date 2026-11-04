@@ -488,7 +488,8 @@ describe('영문본 — 한글 잔존 0', () => {
       JSON.parse(fs.readFileSync(join(root, `data/readability/${m.date}.json`), 'utf8')))
     return { idx, snaps }
   }
-  const korOf = h => h.replace(/<[^>]+>/g, ' ').match(/[^ ]*[가-힣][^ ]*/g) || []
+  // 판정 파라미터 칩(code.pv)은 상류 scoring_config 원문 그대로라 다국어 키워드(자주 묻는 등)가 남는 게 정상
+  const korOf = h => h.replace(/<code class="pv">[\s\S]*?<\/code>/g, ' ').replace(/<[^>]+>/g, ' ').match(/[^ ]*[가-힣][^ ]*/g) || []
 
   it('검수 기준 페이지 EN 에 한글이 없다', async () => {
     const { renderCriteriaHTML, loadRows } = await import('../scripts/render-criteria.mjs')
@@ -509,7 +510,7 @@ describe('영문본 — 한글 잔존 0', () => {
     const scored = loadRows().filter(r => r.no !== '예정' && (DOC_TO_CHECK[r.no] || []).length)
     const missing = scored.filter(r => {
       const d = CRITERIA_DETAIL[r.no]
-      return !d || ['ko', 'en'].some(l => !d[l] || !d[l].src || !d[l].logic || !d[l].except)
+      return !d || ['ko', 'en'].some(l => !d[l] || !d[l].src?.length || !d[l].logic?.length || !d[l].except?.length || !d[l].fail?.length)
     }).map(r => r.no)
     expect(missing).toEqual([])
   })

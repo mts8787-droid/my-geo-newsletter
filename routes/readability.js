@@ -8,7 +8,7 @@ import { readFileSync, writeFileSync, existsSync, readdirSync } from 'fs'
 import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
 import { renderReadabilityHTML } from '../scripts/render-readability.mjs'
-import { renderCriteriaHTML, loadRows } from '../scripts/render-criteria.mjs'
+import { renderCriteriaHTML, loadRows, criteriaMarkdownResponse } from '../scripts/render-criteria.mjs'
 import { DATA_DIR as STORAGE_DIR } from '../lib/storage.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
@@ -337,9 +337,22 @@ readabilityRouter.get('/admin/readability/criteria.html', (req, res) => {
   try {
     const rows = loadRows()
     res.set('Content-Type', 'text/html; charset=utf-8')
-    res.send(renderCriteriaHTML({ rows, snapshot: null, withScores: false, lang: String(req.query.lang || '').toLowerCase() === 'en' ? 'en' : 'ko' }))
+    const lang = String(req.query.lang || '').toLowerCase() === 'en' ? 'en' : 'ko'
+    res.send(renderCriteriaHTML({ rows, snapshot: null, withScores: false, lang, mdHref: '/admin/readability/criteria.md' + (lang === 'en' ? '?lang=en' : '') }))
   } catch (e) {
     res.status(404).send(`검수 기준 생성 실패 — ${e.message}`)
+  }
+})
+
+// 검수 기준 Markdown 다운로드 (사용자 요청 2026-11-05) — 페이지와 같은 원천으로 요청 시 생성
+readabilityRouter.get('/admin/readability/criteria.md', (req, res) => {
+  try {
+    const { filename, body } = criteriaMarkdownResponse(String(req.query.lang || '').toLowerCase() === 'en' ? 'en' : 'ko')
+    res.set('Content-Type', 'text/markdown; charset=utf-8')
+    res.set('Content-Disposition', `attachment; filename="${filename}"`)
+    res.send(body)
+  } catch (e) {
+    res.status(404).send(`검수 기준 MD 생성 실패 — ${e.message}`)
   }
 })
 

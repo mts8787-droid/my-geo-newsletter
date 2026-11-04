@@ -39,7 +39,7 @@ export const T = {
     // ── 다운로드
     dlTitle: '검수 URL 다운로드',
     dlSub: (d) => `측정일 ${d} 기준 어딧 대상 전체 URL (URL · 국가 · 페이지타입 · 점수)`,
-    dlCsv: 'CSV 다운로드', dlCsvAll: 'CSV 전체 다운로드',
+    dlCsv: 'CSV 다운로드', dlCsvAll: 'CSV 전체 다운로드', dlMd: '검수 기준 MD 다운로드',
     criteriaHead: (c, n) => `검수 기준 — ${c}개 카테고리 ${n}개 항목 (통과율은 위 탭에서 확인)`,
     // ── 안내 · 상태
     loading: '불러오는 중…',
@@ -147,7 +147,7 @@ export const T = {
     gNow: 'Where it stands', gNote: 'Note', gPin: 'BLOCKER', gGap: 'failing',
     dlTitle: 'Download audited URLs',
     dlSub: (d) => `All audited URLs as of ${d} (URL · country · page type · score)`,
-    dlCsv: 'Download CSV', dlCsvAll: 'Download full CSV',
+    dlCsv: 'Download CSV', dlCsvAll: 'Download full CSV', dlMd: 'Download criteria (MD)',
     criteriaHead: (c, n) => `Criteria — ${n} items across ${c} categories (pass rates on the tabs above)`,
     loading: 'Loading…',
     noData: 'No data matches these filters.',
