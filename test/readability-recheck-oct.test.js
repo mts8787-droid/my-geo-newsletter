@@ -99,7 +99,7 @@ describe('applyScoringOverride — #26·#27 리뷰 위젯 안 미디어 제외 (
 })
 
 // ─── 상류 7438161 (2026-10-26) — 사업부 삭제 요청 URL 제외 + #42 독일어 Soft 404 오탐 ───
-import { softPhraseIs404, normalizeDeleteKey, parseDeleteUrls, applyScoringOverride as _apply42 } from '../scripts/aggregate-readability.mjs'
+import { softPhraseIs404, normalizeDeleteKey, parseDeleteUrls, dedupePlpQuery, baselineRatio, applyScoringOverride as _apply42 } from '../scripts/aggregate-readability.mjs'
 describe('상류 7438161 — 삭제 요청 URL · #42 Soft 404 문구 재판정', () => {
   it('#42: "nicht gefunden werden" 단독은 404 아님, "Seite … nicht gefunden werden" 은 404', () => {
     expect(softPhraseIs404('nicht gefunden werden')).toBe(false)
@@ -121,6 +121,26 @@ describe('상류 7438161 — 삭제 요청 URL · #42 Soft 404 문구 재판정'
     expect(set.has(normalizeDeleteKey('https://lg.com/ca_en/support/x?utm=1#top'))).toBe(true)
     expect(set.has(normalizeDeleteKey('https://www.lg.com/ca_en/support/y/'))).toBe(false)
     expect(parseDeleteUrls('foo,bar\n1,2')).toBeNull()
+  })
+  it('상류 2a3dff1: PLP 필터 URL 변형은 1건만 — 쿼리 없는 원본 우선, 원본 없으면 첫 변형', () => {
+    const it = (url, id = 'plp') => ({ url, rpt: { id } })
+    const { kept, dup } = dedupePlpQuery([
+      it('https://www.lg.com/mx/tv/?ec_ft_size=55_inch'), it('https://www.lg.com/mx/tv/'),
+      it('https://www.lg.com/mx/audio?a=1'), it('https://www.lg.com/mx/audio?a=2'),
+      it('https://www.lg.com/mx/x/?q=1', 'pdp'),
+    ])
+    expect(dup).toBe(2)
+    expect(kept.map(k => k.url)).toEqual(['https://www.lg.com/mx/tv/', 'https://www.lg.com/mx/audio?a=1', 'https://www.lg.com/mx/x/?q=1'])
+  })
+  it('상류 2a3dff1·c445e19: item_overrides 가 재판정보다 우선, #37 baseline 은 자국 값으로 재판정', () => {
+    const mk = () => ({ total: 0, breakdown: { citable_content: { items: { ai_faq_block: { pass: true, value: 'old', hint: null } } }, ai_crawlability: { items: { ai_ssr_ratio: { pass: false, value: 'SSR 40%', hint: 'low' } } } } })
+    const s = applyScoringOverride(mk(), { url: 'https://www.lg.com/us/x', pt: 'pdp', upstreamGated: true,
+      overrides: { ai_faq_block: { pass: false, value: 'new', hint: 'h', note: 'n' } }, ssrBaseline: 0.72 })
+    expect(s.breakdown.citable_content.items.ai_faq_block).toMatchObject({ pass: false, value: 'new', hint: 'h' })
+    expect(s.breakdown.ai_crawlability.items.ai_ssr_ratio).toMatchObject({ pass: true, value: 'SSR 72%', hint: null })
+    const bl = { grp_lg_ca: { support_troubleshoot: { avg_ratio: 0.65 } } }
+    expect(baselineRatio(bl, 'support_troubleshoot', 'https://www.lg.com/ca_en/support/a')).toBe(0.65)
+    expect(baselineRatio(bl, 'support_troubleshoot', 'https://www.lg.com/be_nl/support/a')).toBeNull()   // 남의 baseline 은 빌리지 않음
   })
   it('삭제 요청 CSV — 시트 내보내기가 따옴표로 감싸도 읽는다', () => {
     const set = parseDeleteUrls('"url","requester"\n"https://www.lg.com/de/support/A/","x"\n')

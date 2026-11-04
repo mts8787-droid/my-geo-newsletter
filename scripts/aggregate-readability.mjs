@@ -11,7 +11,8 @@
 //         → 기존 스냅샷이 쓴 run 을 국가별 runId 로 고정해 그대로 재집계 (채점 기준 변경 시 과거 스냅샷 갱신용)
 
 import { createHash } from 'crypto'
-import { readdirSync, readFileSync, writeFileSync, mkdirSync, existsSync, copyFileSync, rmSync, statSync } from 'fs'
+import { readdirSync, readFileSync, writeFileSync, mkdirSync, existsSync, copyFileSync, rmSync, statSync, realpathSync } from 'fs'
+import { spawnSync } from 'child_process'
 import { join, dirname, basename } from 'path'
 import { fileURLToPath } from 'url'
 import { PROD_IDS } from '../src/categoryMap.js'
@@ -234,6 +235,86 @@ function loadDeleteUrls(srcDir) {
 }
 function isDeleteRequested(url) { return DELETE_KEYS.has(normalizeDeleteKey(url)) }
 
+// ── 상류 집계 기준 이식 (2026-11-05, 상류 2a3dff1 · c445e19 — 사용자 결정: 상류 분류기 전면 적용) ──
+// 상류 저장소 루트 — <src>/../../reports 심링크(필터 src) 또는 실경로(DEFAULT_SRC)에서 역산.
+function auditRootOf(srcDir) {
+  try { return dirname(realpathSync(join(srcDir || DEFAULT_SRC, '..', '..', 'reports'))) } catch { return null }
+}
+
+// 페이지타입 — 상류 gen_dashboard_data.current_page_type 과 동일하게 **현재 분류기**로 다시 판정.
+// 저장값은 감사 시점 분류라 낡는다(10/24 런 기준 저장값과 다른 URL 700여 건). 상류 page_type.py 를
+// 그대로 호출해 규칙을 복제하지 않는다. 실패하면 저장값 사용(상류 fallback 과 동일) + WARN.
+const CURRENT_PT = new Map()
+const PT_PROBE_PY = [
+  'import sys, json',
+  'sys.path.insert(0, sys.argv[1])',
+  'from page_type import detect_page_type',
+  'out = {}',
+  'for u in json.load(sys.stdin):',
+  '    try: out[u] = detect_page_type(None, u).get("id")',
+  '    except Exception: pass',
+  'print(json.dumps(out))',
+].join('\n')
+function loadCurrentPageTypes(root, urls) {
+  if (!root || !existsSync(join(root, 'page_type.py'))) {
+    _logWarn('aggregate-readability', `상류 분류기(page_type.py) 없음 — 저장된 페이지타입 사용`, { root })
+    return 0
+  }
+  const r = spawnSync('python3', ['-c', PT_PROBE_PY, root], { cwd: root, input: JSON.stringify(urls), encoding: 'utf8', maxBuffer: 256 << 20 })
+  if (r.status !== 0) {
+    _logWarn('aggregate-readability', `상류 분류기 호출 실패 — 저장된 페이지타입 사용`, { stderr: String(r.stderr || r.error || '').slice(-400) })
+    return 0
+  }
+  let n = 0
+  for (const [u, id] of Object.entries(JSON.parse(r.stdout || '{}'))) if (id) { CURRENT_PT.set(u, id); n++ }
+  return n
+}
+// 상류 원본 id (PT_MERGE 이전) — #37 baseline 조회 키
+function rawPtId(stored, url) { return (url && CURRENT_PT.get(url)) || (stored && stored.id) || null }
+
+// 사후 재판정 — 상류 data/item_overrides.json (run id → url → 항목 → {pass,value,hint,note}).
+// 저장값만으로 다시 판정할 수 없는 룰 수정(예: #32 accordion 질문 조건 — HTML 재수집)을 그 run 에 한해 반영.
+let ITEM_OVERRIDES = {}
+function loadItemOverrides(root) {
+  const p = root ? join(root, 'data', 'item_overrides.json') : null
+  if (!p || !existsSync(p)) { _logWarn('aggregate-readability', `사후 재판정 파일 없음 — ${p}`); return {} }
+  const o = JSON.parse(readFileSync(p, 'utf8'))
+  const n = Object.entries(o).filter(([k]) => k !== '_note').reduce((a, [, v]) => a + Object.keys(v || {}).length, 0)
+  _logInfo('aggregate-readability', `사후 재판정 ${n}건 로드 (item_overrides.json)`)
+  return o
+}
+
+// #37 — baseline 주입 페이지는 저장값이 아니라 **현재** csr_baseline.json 으로 재판정 (상류 c445e19).
+// 그 국가 자체 baseline 이 있을 때만 (다른 국가 평균으로 빌린 값은 재판정하지 않음).
+const SSR_MIN_RATIO = 0.6   // 상류 scoring_config.json ai_ssr_ratio ssr_text_ratio_min.min_ratio
+let CSR_BASELINE = {}
+function loadCsrBaseline(root) {
+  const p = root ? join(root, 'data', 'csr_baseline.json') : null
+  if (!p || !existsSync(p)) { _logWarn('aggregate-readability', `CSR baseline 없음 — ${p} (#37 저장값 유지)`); return {} }
+  return JSON.parse(readFileSync(p, 'utf8'))
+}
+export function baselineRatio(baseline, ptId, url) {
+  const m = /https?:\/\/[^/]+\/([a-z]{2})(?:[_-][a-z]{2})?\//.exec(String(url || ''))
+  const ent = m && ptId ? ((baseline || {})[`grp_lg_${m[1]}`] || {})[ptId] : null
+  return ent && typeof ent === 'object' && typeof ent.avg_ratio === 'number' ? ent.avg_ratio : null
+}
+
+// PLP 필터 URL 중복 — 같은 카테고리 PLP 의 ?ec_ft_… 변형은 1건만 (쿼리 없는 원본 우선, 상류 plp_query_dup)
+export function dedupePlpQuery(items) {
+  const base = u => String(u || '').split('?')[0].replace(/\/+$/, '').toLowerCase()
+  const isPlp = it => it.rpt && it.rpt.id === 'plp'
+  const seen = new Set(items.filter(it => isPlp(it) && !String(it.url).includes('?')).map(it => base(it.url)))
+  let dup = 0
+  const kept = items.filter(it => {
+    if (!isPlp(it) || !String(it.url).includes('?')) return true
+    const b = base(it.url)
+    if (seen.has(b)) { dup++; return false }
+    seen.add(b)
+    return true
+  })
+  return { kept, dup }
+}
+
 // ── 단종/비활성 PDP 제외 (사용자 지시 2026-09-21) ──────────────────────────
 // PLP 상품 API(Coveo) 활성 목록(상류 reports/plp/<cc>.txt) 밖의 PDP 는 단종·
 // 판매종료로 보고 제외. 상류 gen_dashboard_data.is_inactive_pdp_url 과 동일 판정.
@@ -322,6 +403,9 @@ const PT_LABEL = {
 
 // 페이지타입 정규화 — lg-experience 분리 + 병합 적용 + 제외 여부 판정. { id, label, excluded } 또는 null
 function resolvePt(pt, url) {
+  // 상류 현재 분류기 결과가 있으면 그것이 정본 (CURRENT_PT 참조)
+  const cur = url ? CURRENT_PT.get(url) : null
+  if (cur && (!pt || pt.id !== cur)) pt = { id: cur, label: PT_LABEL[cur] || cur }
   if (!pt || !pt.id) return null
   // 뉴스룸은 URL 로만 판정 — 저장된 page_type 을 믿지 않는다 (GLOBAL_NEWSROOM_RE 주석 참조).
   // lg-story 는 호출부 isExcludedUrl 에서 이미 걸러진다.
@@ -660,6 +744,19 @@ export function applyScoringOverride(score, ctx) {
       if (scoped && !ctx.upstreamGated && !scoped(ctx)) { it.na = true; it.hint = null; continue }
       const lbl = checkLabelOverride(cid, ctx)
       if (lbl) it.label = lbl
+      // 상류 사후 재판정(item_overrides) — HTML 재수집으로 확정한 판정이라 아래 재판정보다 우선
+      const ov = ctx.overrides && ctx.overrides[cid]
+      if (ov) {
+        for (const k of ['pass', 'value', 'hint']) if (k in ov) it[k] = ov[k]
+        continue
+      }
+      // #37 baseline 주입 페이지 — 현재 baseline 값으로 재판정 (그 국가 자체 baseline 있을 때만)
+      if (cid === 'ai_ssr_ratio' && ctx.ssrBaseline != null && it.na !== true) {
+        it.pass = ctx.ssrBaseline >= SSR_MIN_RATIO
+        it.value = `SSR ${Math.round(ctx.ssrBaseline * 100)}%`
+        if (it.pass) it.hint = null
+        continue
+      }
       // 이미 미적용(na/null)인 항목은 재판정 대상 아님 (원본 applies_when 판단 존중)
       if (it.na === true || it.pass == null) continue
       const re = RECHECK[cid]
@@ -1108,6 +1205,9 @@ function main() {
   // HS 콘텐츠 탭 — 시트 URL 키 → 레코드 (국가 run + hs 그룹 run 전부에서 수집, 상한 없음)
   const hsSheet = loadHsSheet(SRC)
   DELETE_KEYS = loadDeleteUrls(SRC)
+  const AUDIT_ROOT = auditRootOf(SRC)
+  ITEM_OVERRIDES = loadItemOverrides(AUDIT_ROOT)
+  CSR_BASELINE = loadCsrBaseline(AUDIT_ROOT)
   const hsByKey = new Map()
   const noteHs = (summaryRow, rpt, measured) => {
     const hit = hsSheetHit(hsSheet, summaryRow)
@@ -1178,16 +1278,23 @@ function main() {
     let skipNoScore = 0, skipFetchFail = 0
     let skipExcludedUrl = 0, skipDeleteReq = 0
     const isHsGroup = meta.cc === HS_GROUP_CC
+    const ptUrls = summary.map(s => s && (s.url || (s.result && s.result.url))).filter(Boolean)
+    const nCur = loadCurrentPageTypes(AUDIT_ROOT, ptUrls)
+    const nChanged = summary.filter(s => s && s.result && CURRENT_PT.get(s.url || s.result.url) && CURRENT_PT.get(s.url || s.result.url) !== (s.result.page_type || {}).id).length
+    if (nCur) _logInfo('aggregate-readability', `${meta.cc}: 상류 현재 분류기로 페이지타입 재판정 ${nCur}건 (저장값과 다름 ${nChanged})`)
+    const runOverrides = ITEM_OVERRIDES[`run_${meta.runId}`] || {}
     for (const s of summary) {
       if (!s || !s.result) continue
       const url = s.url || s.result.url
       const rpt = resolvePt(s.result.page_type, url)
+      const ssrBaseline = (s.result.csr_ratio && s.result.csr_ratio.status === 'baseline')
+        ? baselineRatio(CSR_BASELINE, rawPtId(s.result.page_type, url), url) : null
       // 대시보드 채점 재정의 (TTFB 1800ms / Cache-Control 완화 / Render Blocking 제외) —
       // checkRows(Raw 데이터) · 집계 · CSV · HS 레코드가 모두 같은 점수를 보도록 여기서 한 번만 적용.
       // upstreamGated — 신포맷(6분류) 행이면 상류가 applies_to_page_types 를 이미 적용했다는 표식
       const upstreamGated = !!(s.result.score && s.result.score.breakdown && s.result.score.breakdown.citable_content)
       const jsonldRaw = s.result.json_ld && Array.isArray(s.result.json_ld.raw) ? s.result.json_ld.raw : null
-      applyScoringOverride(s.result.score, { url, psi: psiResults, pt: rpt ? rpt.id : null, cc: meta.cc, ttfbMedian, upstreamGated, jsonldRaw })
+      applyScoringOverride(s.result.score, { url, psi: psiResults, pt: rpt ? rpt.id : null, cc: meta.cc, ttfbMedian, upstreamGated, jsonldRaw, overrides: runOverrides[url] || null, ssrBaseline })
       // [DETECT] 측정 성립 여부 — 여기서 걸러야 점수·통과율·페이지타입·CSV·Raw 데이터가 모두
       // 같은 모집단을 본다. 이전에는 Raw 데이터만 isFetchFailed 로 걸러 기준이 어긋나 있었다.
       //   제외: 404 / 500 / fetch 자체 실패 (ai_status_200 FAIL) — 전 체크가 cascade-FAIL 이라
@@ -1211,6 +1318,12 @@ function main() {
     if (isHsGroup) {
       _logInfo('aggregate-readability', `${meta.cc} (${meta.date}): HS-Others 그룹 run ${summary.length}페이지 → HS 탭에만 반영 (${data.status || '?'})`)
       continue
+    }
+    // PLP 필터 URL 중복 제거 — 타입 상한·Raw·CSV 전에 (상류 counted_results 순서와 동일)
+    const plp = dedupePlpQuery(items)
+    if (plp.dup) {
+      items.splice(0, items.length, ...plp.kept)
+      _logInfo('aggregate-readability', `${meta.cc}: PLP 필터 URL 중복 ${plp.dup}건 제외 (plp_query_dup)`)
     }
     if (skipNoScore || skipFetchFail) {
       _logInfo('aggregate-readability', `${meta.cc}: 측정 미성립 제외 — 비-200/fetch실패 ${skipFetchFail}, 미채점 ${skipNoScore}`)
