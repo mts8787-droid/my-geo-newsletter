@@ -25,3 +25,6 @@ data/readability/psi-*.json
 
 # Readability 런타임 오버라이드 (영구 디스크 정본 — 로컬 사본 커밋 금지)
 /data/readability-overrides.json
+
+# 비공개 개인 문서 (AX 과제 등록 등) — 저장소에 올리지 않음
+/private/
