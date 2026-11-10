@@ -22,6 +22,7 @@
     "dev:weekly": "vite --config vite.weekly.config.js",
     "preview": "vite preview",
     "start": "node server.js",
+    "build:geo-actions": "node scripts/build-geo-actions.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",

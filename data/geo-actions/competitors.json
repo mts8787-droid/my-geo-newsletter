@@ -1,0 +1,7 @@
+{
+  "_source": "Reference/GEO_LLM 답변분석_v1.2_변환용.pptx — 제품별 '국가 × Lv3' 표의 1순위 경쟁사 행 (2026-09-07~13, 10개국 논브랜드 답변). 엑셀에 없는 항목이므로 보고서가 바뀌면 이 파일을 함께 고친다.",
+  "TV":   {"DE":"Samsung","ES":"Samsung","UK":"Samsung","BR":"Samsung","MX":"Samsung","IN":"Samsung","VN":"Samsung","AU":"Samsung","CA":"Samsung","US":"Samsung"},
+  "냉장고": {"DE":"Bosch","ES":"Bosch","UK":"Samsung","BR":"Electrolux","MX":"Samsung","IN":"Samsung","VN":"Samsung","AU":"Samsung","CA":"Whirlpool","US":"GE"},
+  "세탁기": {"DE":"Bosch","ES":"Bosch","UK":"Bosch","BR":"Samsung","MX":"Samsung","IN":"Samsung","VN":"Samsung","AU":"Bosch","CA":"Samsung","US":"GE"},
+  "에어컨": {"DE":"Daikin","ES":"Daikin","UK":"Daikin","BR":"Midea","MX":"Midea","IN":"Daikin","VN":"Panasonic","AU":"Daikin","CA":"Midea","US":"Daikin"}
+}

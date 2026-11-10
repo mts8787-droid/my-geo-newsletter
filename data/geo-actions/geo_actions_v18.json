@@ -1,9 +1,9 @@
 {
  "meta": {
   "title": "GEO 답변분석 액션아이템 실행 대시보드",
-  "source": "Reference/2026-11-10_GEO 답변분석 4개 제품 액션아이템_v18.xlsx",
-  "sourceMtime": "2026-11-10 23:59",
-  "generatedAt": "2026-11-11 00:00",
+  "source": "data/geo-actions/source/2026-11-10_GEO 답변분석 4개 제품 액션아이템_v18.xlsx",
+  "sourceMtime": "2026-11-10 23:43",
+  "generatedAt": "2026-11-11 02:39",
   "summaryNote": "v15(205개 액션)를 점검·수정해 Activity 78개 · 세부과제 285개로 재구성하고, 국가별로 실행하는 세부과제(법인 주관·국가별 피드·국가별 측정)를 국가 수만큼 전개해 총 555개  |  Activity = 열세 주제 × 실행 축(① 원천 근거·공개 기준 ② lg.com 콘텐츠·스키마 ③ 외부 채널 근거 공급 ④ 제품·투자 환류 ⑤ 측정·환류) + 공통 Activity(P0 선행·P1 서비스·AS·P2 BP 확산)  |  ◇ 시점·목표 = 유관부서 협의 전 제안값"
  },
  "dims": {
