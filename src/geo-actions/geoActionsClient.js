@@ -26,12 +26,14 @@ const shortTopic = t => t.replace(/^([A-Z]|P\d)\.\s*/,"$1. ").replace(/\s*\(.*\)
 
 /* ── 진척 상태 ──
    서버 게시본(/admin/geo-actions): window.GEO_PROGRESS_API 가 있으면 팀 공용 진척을 서버에 저장.
-   아티팩트·내려받은 파일: 브라우저 저장(localStorage, 실패 시 메모리). 키·CSV 형식은 이전 판과 동일. */
+   아티팩트·내려받은 파일: 브라우저 저장(localStorage, 실패 시 메모리). 키·CSV 형식은 이전 판과 동일.
+   공개 게시본(/p/GEO-Action-Items): window.GEO_READONLY — 서버 진척을 보여주기만 하고 입력은 막음. */
 const API = window.GEO_PROGRESS_API || null;
-const SAVE_NOTE = API ? "팀 공용 — 서버에 저장됨" : "이 브라우저에만 저장됨";
+const RO = !!window.GEO_READONLY;
+const SAVE_NOTE = RO ? "읽기 전용 — 진척 입력은 어드민 페이지에서" : API ? "팀 공용 — 서버에 저장됨" : "이 브라우저에만 저장됨";
 const PKEY = "geo-dash-progress-v1";
 let PROG = {}, storageOk = true;
-if(API) PROG = window.GEO_PROGRESS || {};
+if(API || RO) PROG = window.GEO_PROGRESS || {};
 else { try{ PROG = JSON.parse(localStorage.getItem(PKEY)||"{}")||{}; }catch(e){ storageOk=false; PROG={}; } }
 const dirty = new Set(); let flushT = null;
 function saveProg(ids){
@@ -208,7 +210,7 @@ function card(x){
   const unlock=(DEPS[g.gkey]||[]).length;
   const gb=g.gubun==="조건부 QW"?"g-cond":"";
   return `<article class="task ${st==="완료"?"is-done":""}" data-g="${esc(g.gkey)}">
-    ${multi?`<span class="st multi s-${st}" data-tip="${rows.length}건 중 ${done}건 완료">${st==="완료"?"":done+"/"+rows.length}</span>`:`<button class="st s-${st}" data-cyc="${esc(rows[0].id)}" aria-label="진척: ${st} — 눌러서 바꾸기" data-tip="${st} · 누르면 다음 상태로"></button>`}
+    ${multi?`<span class="st multi s-${st}" data-tip="${rows.length}건 중 ${done}건 완료">${st==="완료"?"":done+"/"+rows.length}</span>`:RO?`<span class="st s-${st}" data-tip="${st}"></span>`:`<button class="st s-${st}" data-cyc="${esc(rows[0].id)}" aria-label="진척: ${st} — 눌러서 바꾸기" data-tip="${st} · 누르면 다음 상태로"></button>`}
     <div><div class="ttl">${esc(g.task)}</div>
       <div class="tmeta"><span>담당 <b>${esc(g.whos.join(" · "))}</b></span>${ctry}<span>산출물 <b>${esc(g.output||"-")}</b></span>${unlock?`<span>끝나면 <b>${unlock}개</b> 과제가 시작 가능</span>`:""}</div>
       ${needLine(g)}</div>
@@ -277,7 +279,7 @@ function exportRows(rows,name){
 function viewTrack(){
   const sbar=(label,ids,go)=>{ const t=tally(ids); return `<div class="sb" ${go?`role="button" tabindex="0" style="cursor:pointer" data-go='${esc(JSON.stringify(go))}'`:""}><span>${esc(label)}</span><span class="track"><i style="width:${t.n?t.d/t.n*100:0}%;background:var(--done)"></i><i style="width:${t.n?t.p/t.n*100:0}%;background:var(--doing)"></i></span><span class="v num"><b>${pctTxt(t)}</b> · ${fmt(t.d)}/${fmt(t.n)}</span></div>`; };
   const idsBy=fn=>D.rows.filter(fn).map(r=>r.id);
-  let h=`<section class="sec"><div class="sec-h"><span class="q">진척</span><h2>얼마나 진행됐나</h2><p>국가 실행 건 기준 완료율. <i class="dot" style="background:var(--done)"></i>완료 <i class="dot" style="background:var(--doing)"></i>진행 — 막대를 누르면 해당 할 일로 이동함. 진척은 ${API?"서버에 저장되어 같은 주소로 접속한 모든 사람에게 같게 보임":"이 브라우저에만 저장되므로 공유하려면 상단 '진척 내보내기' CSV를 전달함"}.</p></div>
+  let h=`<section class="sec"><div class="sec-h"><span class="q">진척</span><h2>얼마나 진행됐나</h2><p>국가 실행 건 기준 완료율. <i class="dot" style="background:var(--done)"></i>완료 <i class="dot" style="background:var(--doing)"></i>진행 — 막대를 누르면 해당 할 일로 이동함. 진척은 ${RO?"어드민 페이지에서 입력한 팀 공용 값을 보여줌 (이 화면은 읽기 전용)":API?"서버에 저장되어 같은 주소로 접속한 모든 사람에게 같게 보임":"이 브라우저에만 저장되므로 공유하려면 상단 '진척 내보내기' CSV를 전달함"}.</p></div>
     <div class="two"><div class="card"><h3 style="margin:0 0 10px;font-size:15px">시점별</h3><div class="sbars">${TIMINGS.map(t=>sbar(t,idsBy(r=>r.timing===t),{timing:t})).join("")}</div>
       <h3 style="margin:18px 0 10px;font-size:15px">제품별</h3><div class="sbars">${["공통",...PRODS].map(p=>sbar(p,idsBy(r=>r.product===p),{product:p})).join("")}</div></div>
     <div class="card"><h3 style="margin:0 0 10px;font-size:15px">주관 조직별</h3><div class="sbars">${DIM.ownerGroups.filter(o=>D.rows.some(r=>r.ownerGroup===o)).map(o=>sbar(o,idsBy(r=>r.ownerGroup===o),{org:"g:"+o})).join("")}</div>
@@ -326,10 +328,14 @@ function openGroup(gkey){
   if(down.length) h+=`<h4>이 과제가 끝나면 시작할 수 있는 과제 (${down.length})</h4>${down.map(lnk).join("")}`;
   if(r0.target) h+=`<h4>목표◇</h4><p>${esc(r0.target.goal)}</p><p class="hint" style="margin-top:4px">기한 ${esc(r0.target.due)} · 미달 시 ${esc(r0.target.fallback)}</p>`;
   if(g.note) h+=`<h4>비고</h4><p>${esc(g.note)}</p>`;
-  h+=`<h4>진척 입력 <span class="hint" style="font-weight:400">— ${SAVE_NOTE}</span></h4>`;
+  h+=`<h4>${RO?"진척":"진척 입력"} <span class="hint" style="font-weight:400">— ${SAVE_NOTE}</span></h4>`;
+  if(RO) h+=rows.map(r=>{ const p=PROG[r.id]||{}; const c=r.scope==="country"?r.countries[0]:"본사"; const s=stOf(r.id);
+    return `<div class="prow"><span class="pc">${esc(c)}${r.scope==="country"?`<small>${esc(CN[c]||"")}</small>`:""}</span><span class="pill" style="${s==="완료"?"background:var(--done);border-color:var(--done);color:#fff":s==="진행"?"background:var(--doing);border-color:var(--doing);color:#fff":""}">${s}</span><span class="hint">${esc(p.m||"")}${p.t?` · ${esc(p.t)}`:""}</span></div>`; }).join("");
+  else {
   if(rows.length>1) h+=`<div class="allset">한꺼번에 ${["미착수","진행","완료"].map(s=>`<button class="btn sm" data-all="${s}">모두 ${s}</button>`).join("")}</div>`;
   h+=rows.map(r=>{ const p=PROG[r.id]||{}; const c=r.scope==="country"?r.countries[0]:"본사";
     return `<div class="prow"><span class="pc">${esc(c)}${r.scope==="country"?`<small>${esc(CN[c]||"")}</small>`:""}</span>${sseg(r.id)}<input class="memo" data-memo="${esc(r.id)}" placeholder="메모" value="${esc(p.m||"")}" ${p.t?`title="갱신 ${esc(p.t)}"`:""}></div>`; }).join("");
+  }
   h+=`<p class="hint" style="margin-top:10px">${esc(r0.id)}${rows.length>1?` 외 ${rows.length-1}건`:""}${storageOk?"":" · 브라우저 저장소를 쓸 수 없어 이 창을 닫으면 사라짐"}</p>`;
   $("#dBody").innerHTML=h; $("#dBody").scrollTop=0;
   drawer.classList.add("open"); scrim.classList.add("open");
@@ -349,6 +355,7 @@ $("#progFile").onchange=e=>{ const f=e.target.files[0]; if(!f) return; const rd=
       if(s==="미착수"&&!mm) delete PROG[id]; else PROG[id]={s,m:mm,t:(iT>=0&&r[iT])||new Date().toISOString().slice(0,16).replace("T"," ")}; got.push(id); n++; });
     saveProg(got); toast(`진척 ${n}건 반영${skip?` · 원본에 없는 ID ${skip}건 제외`:""}${storageOk?"":" · 브라우저 저장소를 쓸 수 없어 이 창에서만 유지됨"}`); refresh(); };
   rd.readAsText(f,"utf-8"); e.target.value=""; };
+if(RO){ const lb=$("#progFile").closest("label"); if(lb) lb.hidden=true; }
 $("#metaLine").textContent=`원본 ${D.meta.source.split("/").pop()} · 변환 ${D.meta.generatedAt} · 시점·목표◇ = 유관부서 협의 전 제안값`;
 
 function render(){ renderNav(); ({home:viewHome,tasks:viewTasks,track:viewTrack})[S.view](); writeUrl(); }

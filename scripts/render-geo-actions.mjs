@@ -33,6 +33,7 @@ export function safeJson(v) {
  * @param {object} [opts]
  * @param {object} [opts.progress]     서버 저장 진척 { [rowId]: {s,m,t} } — 있으면 서버 모드
  * @param {string} [opts.progressApi]  진척 저장 API 경로 (서버 모드)
+ * @param {boolean} [opts.readOnly]    공개 게시본 — progress 를 보여주기만 함 (입력 UI 숨김)
  * @param {string} [opts.fontFaceCss]  @font-face 블록 대체 (아티팩트는 data URI 서브셋)
  */
 export function renderGeoActionsHTML(data, opts = {}) {
@@ -40,6 +41,7 @@ export function renderGeoActionsHTML(data, opts = {}) {
   const app = readFileSync(join(SRC, 'geoActionsClient.js'), 'utf8')
   let dataTag = `<script>window.GEO_DATA=${safeJson(data)};`
   if (opts.progressApi) dataTag += `window.GEO_PROGRESS_API=${safeJson(opts.progressApi)};window.GEO_PROGRESS=${safeJson(opts.progress || {})};`
+  else if (opts.readOnly) dataTag += `window.GEO_READONLY=true;window.GEO_PROGRESS=${safeJson(opts.progress || {})};`
   dataTag += '</script>'
   const page = shell
     .split('{{FONT}}').join(FONT)

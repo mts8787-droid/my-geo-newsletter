@@ -14,6 +14,8 @@ import { renderCriteriaHTML, loadRows, criteriaMarkdownResponse } from '../scrip
 import { renderReadabilityHTML } from '../scripts/render-readability.mjs'
 import { loadLatest, latestChecksFile, latestCsvFile, csvFileFor, checksFileFor, READABILITY_DATA_DIR } from './readability.js'
 import { logFor } from '../lib/logger.js'
+import { loadGeoActions, readProgress as readGeoActionsProgress } from './geo-actions.js'
+import { renderGeoActionsHTML } from '../scripts/render-geo-actions.mjs'
 
 const log = logFor('published')
 
@@ -193,6 +195,23 @@ const renderReadabilityPage = (req, res) => {
     res.status(500).send('Readability 대시보드 생성 실패')
   }
 }
+// ─── /p/GEO-Action-Items (GEO 액션아이템 실행 대시보드 — 요청 시 렌더, 읽기 전용) ──
+// 어드민(/admin/geo-actions)과 같은 화면·같은 진척 값. 비인증 경로라 진척 입력 UI 는 숨기고
+// (진척 PUT API 는 /api/* 인증 게이트 안), 영구 디스크의 팀 공용 진척을 그대로 보여준다.
+publishedRouter.get('/p/GEO-Action-Items', (req, res) => {
+  if (!isIpAllowed(req)) return send403Page(res)
+  try {
+    const src = loadGeoActions()
+    if (!src) return res.status(404).send('GEO 액션아이템 데이터 없음')
+    setPublishedSecurityHeaders(res)
+    res.set('Content-Type', 'text/html; charset=utf-8')
+    res.send(renderGeoActionsHTML(src.data, { readOnly: true, progress: readGeoActionsProgress() }))
+  } catch (e) {
+    log.warn({ err: e.message }, 'geo-actions public render failed')
+    res.status(500).send('GEO 액션아이템 대시보드 생성 실패')
+  }
+})
+
 publishedRouter.get('/p/GEO-Readability-Dashboard', renderReadabilityPage)
 publishedRouter.get('/p/GEO-Readability-Dashboard-EN', renderReadabilityPage)
 

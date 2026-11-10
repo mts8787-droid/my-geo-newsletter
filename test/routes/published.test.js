@@ -138,3 +138,20 @@ describe('GET /p/GEO-Readability-Criteria.md (검수 기준 MD 다운로드, 202
     expect(res.text).toContain('href="/p/GEO-Readability-Criteria.md?lang=en" download')
   })
 })
+
+describe('GET /p/GEO-Action-Items (GEO 액션아이템 — 읽기 전용 공개본)', () => {
+  it('200 + CSP + 읽기 전용 주입 (진척 API 미노출)', async () => {
+    writeFileSync(join(TMP_DATA, 'geo-actions-progress.json'), JSON.stringify({ 'CM-P01-01': { s: '완료', m: '양식 확정', t: '2026-11-11 09:00' } }))
+    const res = await request(makeApp()).get('/p/GEO-Action-Items')
+    expect(res.status).toBe(200)
+    expect(res.headers['content-security-policy']).toContain("default-src 'self'")
+    expect(res.text).toContain('window.GEO_READONLY=true')
+    expect(res.text).toContain('"CM-P01-01":{"s":"완료"')
+    expect(res.text).not.toContain('window.GEO_PROGRESS_API="')
+  })
+  it.skipIf(IP_ALLOWLIST_OFF)('IP allowlist 차단 → 403', async () => {
+    fakeAllowlist.push({ cidr: '99.99.99.99/32' })
+    const res = await request(makeApp()).get('/p/GEO-Action-Items')
+    expect(res.status).toBe(403)
+  })
+})

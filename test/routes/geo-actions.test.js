@@ -118,6 +118,17 @@ describe('렌더된 페이지 실동작 (jsdom)', () => {
     expect(JSON.parse(call.init.body).items).toEqual([{ id, s: '진행', m: '' }])
     expect(errors).toEqual([])
   })
+  it('공개본(읽기 전용): 진척 표시만, 입력 버튼·불러오기 없음', () => {
+    const progress = { [src.data.rows[0].id]: { s: '완료', m: '', t: '' } }
+    const { d, errors } = open({ readOnly: true, progress }, 'https://geo.test/p/GEO-Action-Items?view=tasks')
+    expect(d.querySelectorAll('[data-cyc]')).toHaveLength(0)
+    expect(d.querySelector('#progFile').closest('label').hidden).toBe(true)
+    expect(d.querySelectorAll('.task .st.s-완료').length).toBeGreaterThan(0)
+    d.querySelector('.task').click()
+    expect(d.querySelectorAll('#dBody .sseg')).toHaveLength(0)
+    expect(d.querySelector('#dBody').textContent).toContain('읽기 전용')
+    expect(errors).toEqual([])
+  })
   it('진척 화면: 시점·제품·조직·국가 막대 + 목표 표', () => {
     const { d, errors } = open({}, 'https://geo.test/admin/geo-actions?view=track')
     expect(d.querySelectorAll('.sb').length).toBeGreaterThan(20)
