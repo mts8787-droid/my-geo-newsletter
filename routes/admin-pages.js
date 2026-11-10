@@ -867,6 +867,10 @@ ${themeToggleButton()}
         <div class="card-title">Readability 대시보드</div>
         <div class="card-desc">GEO 어딧 결과 — 국가별 점수 · 카테고리 체크 · 페이지타입 · AI봇/SSR</div>
       </a>
+      <a class="card" href="/admin/geo-actions">
+        <div class="card-title">GEO 액션아이템 실행</div>
+        <div class="card-desc">답변분석 4개 제품 액션아이템 — 실행 순서 · 열세 주제 · 할 일 · 팀 공용 진척</div>
+      </a>
       <a class="card" href="/admin/progress-tracker-v2/">
         <div class="card-title">Progress Tracker</div>
         <div class="card-desc">GEO 과제 진행 현황 대시보드 — 카테고리별 정량/정성 KPI</div>
