@@ -234,12 +234,12 @@ function topicBrief(t){
   const tg=[]; const seen=new Set(); D.rows.forEach(r=>{ if(r.tkey===t.tkey&&r.target&&!seen.has(r.target.goal)){ seen.add(r.target.goal); tg.push({...r.target,gkey:r.gkey}); } });
   const cf=D.confirmed.filter(c=>c.tkey===t.tkey);
   const comp = D.competitors[t.product] ? (()=>{ const by={}; t.countries.forEach(c=>{ const x=D.competitors[t.product][c]; if(x)(by[x]=by[x]||[]).push(c); }); return Object.entries(by).sort((a,b)=>b[1].length-a[1].length).map(([k,v])=>`${k} (${v.length===10?"10개국":v.join("·")})`).join(", "); })() : "";
-  return `<div class="brief"><div><div class="kick">${esc(t.product)} 열세 주제</div><h3>${esc(t.topic)}</h3>
+  return `<div class="brief" ${NOGOAL?'style="grid-template-columns:1fr"':""}><div><div class="kick">${esc(t.product)} 열세 주제</div><h3>${esc(t.topic)}</h3>
     <dl>${gi.txt?`<dt>Gap</dt><dd><b style="color:var(--crit)">${esc(gi.txt)}</b></dd>`:""}<dt>원인</dt><dd>${esc(t.causeText||a.purpose)}</dd>${comp?`<dt>1위 경쟁사</dt><dd>${esc(comp)}</dd>`:""}
     <dt>대상 국가</dt><dd>${t.countries.length===10?"10개국":t.countries.join(" · ")}</dd>
     <dt>Activity</dt><dd>${t.aids.map(id=>esc(ACT[id].name.replace(/^.*—\s*/,""))).join(" → ")}</dd></dl>
     ${cf.length?`<details style="margin-top:8px"><summary class="hint" style="cursor:pointer">확인 완료(가정) 항목 ${cf.length}건</summary><ul style="margin:6px 0 0;padding-left:18px;font-size:12.5px">${cf.map(c=>`<li>${esc(c.item)} <span class="muted">→ ${esc(c.next)}</span></li>`).join("")}</ul></details>`:""}</div>
-    <div><div class="kick" style="color:var(--ink-3)">성과 목표◇</div>${tg.length?tg.map(x=>`<div class="goal">${x.current?`<span class="from num">${esc(x.current)}</span><span class="muted">→</span><span class="to num">${esc(x.target)}</span>`:`<span>${esc(x.target)}</span>`}<span class="due">${esc(x.due)}</span></div>`).join("")+`<p class="hint" style="margin-top:6px">미달 시: ${esc(tg[0].fallback)}</p>`:`<p class="hint">${NOGOAL?"목표는 실행 관리 대시보드의 월간 측정으로 관리함 (엑셀 기준 시트)":"등록된 목표 없음"}</p>`}</div></div>`; }
+    ${NOGOAL?"":`<div><div class="kick" style="color:var(--ink-3)">성과 목표◇</div>${tg.length?tg.map(x=>`<div class="goal">${x.current?`<span class="from num">${esc(x.current)}</span><span class="muted">→</span><span class="to num">${esc(x.target)}</span>`:`<span>${esc(x.target)}</span>`}<span class="due">${esc(x.due)}</span></div>`).join("")+`<p class="hint" style="margin-top:6px">미달 시: ${esc(tg[0].fallback)}</p>`:`<p class="hint">등록된 목표 없음</p>`}</div>`}</div>`; }
 function viewTasks(){
   const xs=filteredGroups(); const ids=xs.flatMap(x=>x.rows.map(r=>r.id)); const T=tally(ids);
   const orgSel=`<select class="fsel ${S.f.org?"on":""}" id="fOrg">${orgOptions()}</select>`;
@@ -305,7 +305,6 @@ function viewTrack(){
   if(goals.length) h+=`<section class="sec"><div class="sec-h"><span class="q">성과</span><h2>어떻게 측정하나</h2><p>측정·환류(S11) 과제에 붙은 목표임. 시점·목표◇는 유관부서 협의 전 제안값. 행을 누르면 측정 과제 상세를 엶.</p></div>
     <div class="tbl-wrap"><table><thead><tr><th>제품</th><th>열세 주제</th><th>현재 → 목표</th><th>목표 원문</th><th>기한</th><th>미달 시 후속</th></tr></thead><tbody>${
     goals.map(({r,t})=>`<tr class="link" data-g="${esc(r.gkey)}"><td>${esc(r.product)}</td><td>${esc(shortTopic(r.topic))}</td><td class="num" style="white-space:nowrap">${t.current?`<b style="color:var(--crit)">${esc(t.current)}</b> → <b style="color:var(--lead)">${esc(t.target)}</b>`:"-"}</td><td>${esc(t.goal)}</td><td style="white-space:nowrap">${esc(t.due)}</td><td>${esc(t.fallback)}</td></tr>`).join("")}</tbody></table></div></section>`;
-  else h+=`<section class="sec"><div class="card"><b>성과 측정</b><p class="hint" style="margin:6px 0 0">이 판 엑셀은 측정(재측정) 과제를 액션아이템에서 제외함 — 목표는 실행 관리 대시보드의 월간 측정으로 관리 (엑셀 '기준' 시트).</p></div></section>`;
   // 기준·출처
   const bad=D.checks.filter(c=>!c.ok);
   h+=`<section class="sec two"><details class="card"><summary>용어와 기준</summary><dl class="crit">${D.criteria.map(c=>`<dt>${esc(c.item)}</dt><dd>${esc(c.rule)}</dd>`).join("")}</dl></details>

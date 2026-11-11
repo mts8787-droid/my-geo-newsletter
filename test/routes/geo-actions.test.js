@@ -139,11 +139,11 @@ describe('렌더된 페이지 실동작 (jsdom)', () => {
     expect(d.querySelector('#dBody').textContent).toContain('읽기 전용')
     expect(errors).toEqual([])
   })
-  it('진척 화면: 시점·영역·제품·조직·국가 막대 (v21 은 측정 과제 제외 → 목표 표 대신 안내)', () => {
+  it('진척 화면: 시점·영역·제품·조직·국가 막대 (v21 은 측정 과제 없음 → 목표 표 없음)', () => {
     const { d, errors } = open({}, 'https://geo.test/admin/geo-actions?view=track')
     expect(d.querySelectorAll('.sb').length).toBeGreaterThan(20)
     expect(d.querySelectorAll('tr.link')).toHaveLength(0)
-    expect(d.querySelector('#main').textContent).toContain('실행 관리 대시보드')
+    expect(d.querySelector('#main').textContent).not.toContain('성과')
     expect(errors).toEqual([])
   })
 })
