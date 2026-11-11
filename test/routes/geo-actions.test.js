@@ -22,12 +22,14 @@ function makeApp() {
 const src = loadGeoActions()
 const firstId = src.data.rows[0].id
 
-describe('데이터 (엑셀 v18 변환본)', () => {
+describe('데이터 (엑셀 v21 변환본)', () => {
   it('최신 파일 로드 + 규모', () => {
     expect(src.file).toMatch(/^geo_actions_v\d+\.json$/)
-    expect(src.data.activities).toHaveLength(78)
-    expect(src.data.groups).toHaveLength(285)
-    expect(src.data.rows).toHaveLength(555)
+    expect(src.data.activities).toHaveLength(55)
+    expect(src.data.groups).toHaveLength(229)
+    expect(src.data.rows).toHaveLength(426)
+    expect(src.data.groups.reduce((n, g) => n + g.points, 0)).toBe(348) // 국가별 관리포인트
+    expect(src.data.dims.axes.map(a => a.code)).toEqual(['①', '②', '③', '④'])
   })
   it('엑셀 요약 시트 대조 항목 모두 일치', () => {
     const bad = src.data.checks.filter(c => !c.ok)
@@ -36,7 +38,7 @@ describe('데이터 (엑셀 v18 변환본)', () => {
   it('세부과제 묶음 ↔ 국가 실행 건 정합 (모든 행이 정확히 한 묶음에 속함)', () => {
     const seen = new Map()
     src.data.groups.forEach(g => g.rows.forEach(id => seen.set(id, (seen.get(id) || 0) + 1)))
-    expect(seen.size).toBe(555)
+    expect(seen.size).toBe(426)
     expect([...seen.values()].every(n => n === 1)).toBe(true)
   })
 })
@@ -95,14 +97,22 @@ describe('렌더된 페이지 실동작 (jsdom)', () => {
   }
   it('한눈에 → 주제 클릭 → 할 일 목록·브리핑', () => {
     const { d, errors } = open({})
-    expect(d.querySelectorAll('.tile')).toHaveLength(23)
+    expect(d.querySelectorAll('.tile')).toHaveLength(21)
     expect(d.querySelectorAll('.ph')).toHaveLength(4)
-    expect(d.querySelector('.say').textContent).toContain('285개 세부과제')
+    expect(d.querySelectorAll('.ax')).toHaveLength(4)
+    expect(d.querySelector('.say').textContent).toContain('229개 세부과제')
     d.querySelector('[data-go-topic="TV|B. 시청 환경 대응 성능"]').click()
     expect(d.querySelector('.brief')).not.toBeNull()
     expect(d.querySelectorAll('.task').length).toBe(src.data.groups.filter(g => g.tkey === 'TV|B. 시청 환경 대응 성능').length)
     d.querySelector('#fReset').click()
-    expect(d.querySelectorAll('.task')).toHaveLength(285)
+    expect(d.querySelectorAll('.task')).toHaveLength(229)
+    expect(errors).toEqual([])
+  })
+  it('한눈에 → 개선 영역 클릭 → 그 영역 할 일만', () => {
+    const { d, errors } = open({})
+    d.querySelector('[data-go-axis="④"]').click()
+    expect(d.querySelectorAll('.task')).toHaveLength(src.data.groups.filter(g => g.axis === '④').length)
+    expect(d.querySelector('.resbar').textContent).toContain('관리포인트')
     expect(errors).toEqual([])
   })
   it('서버 모드: 초기 진척 표시 + 상태 변경 시 PUT 호출', async () => {
@@ -129,10 +139,11 @@ describe('렌더된 페이지 실동작 (jsdom)', () => {
     expect(d.querySelector('#dBody').textContent).toContain('읽기 전용')
     expect(errors).toEqual([])
   })
-  it('진척 화면: 시점·제품·조직·국가 막대 + 목표 표', () => {
+  it('진척 화면: 시점·영역·제품·조직·국가 막대 (v21 은 측정 과제 제외 → 목표 표 대신 안내)', () => {
     const { d, errors } = open({}, 'https://geo.test/admin/geo-actions?view=track')
     expect(d.querySelectorAll('.sb').length).toBeGreaterThan(20)
-    expect(d.querySelectorAll('tr.link').length).toBeGreaterThan(20)
+    expect(d.querySelectorAll('tr.link')).toHaveLength(0)
+    expect(d.querySelector('#main').textContent).toContain('실행 관리 대시보드')
     expect(errors).toEqual([])
   })
 })

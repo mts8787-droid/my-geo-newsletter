@@ -23,14 +23,16 @@ const COUNTRIES = ['DE', 'ES', 'UK', 'BR', 'MX', 'IN', 'VN', 'AU', 'CA', 'US']
 const COUNTRY_NAMES = { DE: '독일', ES: '스페인', UK: '영국', BR: '브라질', MX: '멕시코', IN: '인도', VN: '베트남', AU: '호주', CA: '캐나다', US: '미국' }
 const REGIONS = { DE: 'EU', ES: 'EU', UK: 'EU', BR: 'LATAM', MX: 'LATAM', IN: 'ASIA', VN: 'ASIA', AU: 'ASIA', CA: 'NA', US: 'NA' }
 const PRODUCTS = ['공통', 'TV', '냉장고', '세탁기', '에어컨']
-const AXES = [['①', '원천 근거·공개 기준'], ['②', 'lg.com 콘텐츠·스키마'], ['③', '외부 채널 근거 공급'], ['④', '제품·투자 환류'], ['⑤', '측정·환류']]
+// v18 이하 실행 축 (Activity 이름 꼬리표로 판별). v19+ 는 Activity 시트 '개선 영역' 열에서 이름까지 읽음
+const AXES_LEGACY = [['①', '원천 근거·공개 기준'], ['②', 'lg.com 콘텐츠·스키마'], ['③', '외부 채널 근거 공급'], ['④', '제품·투자 환류'], ['⑤', '측정·환류']]
 const AXIS_BY_SUFFIX = {
   '원천 근거·공개 기준': '①', 'lg.com 콘텐츠·스키마': '②', 'lg.com 적용': '②',
   '외부 채널 근거 공급': '③', '외부 채널': '③', '제품·투자 환류': '④', '측정·환류': '⑤',
 }
 const COMMON_NAMES = { P0: 'P0 공통 선행', P1: 'P1 서비스·AS', P2: 'P2 BP 확산' }
 const TIMINGS = ['선행', '1차', '2차', '중장기', '상시']
-const GUBUNS = ['QW(선행)', 'QW', '조건부 QW', '중장기', '상시']
+const GUBUNS = ['QW(선행)', 'QW(즉시 정정)', 'QW', '조건부 QW', '보류(조건부)', '중장기', '상시']
+const STAGES = ['선행', '본사 공통', '국가별 채널 확산'] // v19+ '실행 단계' 열
 const OWNER_GROUPS = ['사업본부', 'D2C 마케팅담당', 'D2C플랫폼개발', '고가혁', '글로벌Comm', '법무', '플사센', '법인']
 const BIZ_SUBS = ['마케팅·콘텐츠', '상품기획', '품질·개발']
 const CORP_ROLE_ORDER = ['현지화·게시', '리뷰·PR', '이커머스', '마케팅', '서비스·마케팅', '서비스']
@@ -42,7 +44,7 @@ const COL = { // 세부과제 시트 머리글 → 키
   '영역': 'area', '대상 채널·매체': 'channel', '주관': 'owner', '협업': 'collabRaw',
   '구분': 'gubun', '선행 조건': 'precond', '시점◇': 'timing', '산출물': 'output',
   '목표·기한·미달 시 후속◇': 'targetRaw', '비고': 'note', '변경': 'change',
-  'v15 No': 'v15', '근거 (MD 장)': 'basis',
+  'v15 No': 'v15', '근거 (MD 장)': 'basis', '실행 단계': 'stage', '국가별 관리포인트': 'pointsRaw',
 }
 const REQUIRED = new Set(['세부과제 ID', 'Activity ID', '제품', '열세 주제', 'Activity', '단계', '세부과제', '대상 국가', '주관', '구분', '시점◇'])
 const REQUIRED_SHEETS = ['세부과제', 'Activity', '확인 완료(가정)', '기준', '요약']
@@ -59,10 +61,13 @@ const counter = () => new Map()
 const inc = (m, k, n = 1) => m.set(k, (m.get(k) || 0) + n)
 
 /* ── 파싱 규칙 ── */
-function parseAxis(name, aid) {
+function parseAxis(name, aid, areaCol) {
   const common = aid.startsWith('CM-P0') ? 'P0' : aid.startsWith('CM-P1') ? 'P1' : aid.startsWith('CM-P2') ? 'P2' : null
   let axis
-  if (name.includes(' — ')) {
+  if (areaCol) { // v19+: '① 제품 정보 생성·관리'
+    axis = areaCol.slice(0, 1)
+    if (!'①②③④⑤'.includes(axis)) throw new Error(`개선 영역 판별 불가: ${aid} ${areaCol}`)
+  } else if (name.includes(' — ')) {
     const suffix = name.slice(name.lastIndexOf(' — ') + 3).trim()
     axis = AXIS_BY_SUFFIX[suffix]
     if (!axis) throw new Error(`실행 축 판별 불가: ${aid} ${name}`)
@@ -129,19 +134,20 @@ export function buildGeoActions(XLSX, wb, { competitors, source, sourceMtime, ge
   // Activity 시트
   const actRows = sheetRows(XLSX, wb.Sheets['Activity'])
   const ah = actRows[0].map(s)
-  const activities = new Map()
+  const activities = new Map(), axisNames = new Map()
   for (const r of actRows.slice(1)) {
     if (!r || !r[0]) continue
     const d = Object.fromEntries(ah.map((h, i) => [h, s(r[i])]))
     const aid = d['Activity ID']
-    const [axis, common] = parseAxis(d['Activity'], aid)
+    const [axis, common] = parseAxis(d['Activity'], aid, d['개선 영역'])
+    if (d['개선 영역']) axisNames.set(axis, d['개선 영역'].slice(1).trim())
     const purpose = d['목적']
     const m = purpose.match(/\(원인:\s*([^)]*(?:\([^)]*\)[^)]*)*)\)\s*$/)
     activities.set(aid, {
       aid, product: d['제품'], topic: d['열세 주제'], name: d['Activity'],
       axis, common, purpose: m ? purpose.slice(0, m.index).trim() : purpose, cause: m ? m[1].trim() : '',
       repOwner: d['대표 주관'], timingRange: d['시점 범위◇'], gap: d['Gap'],
-      sheetCount: parseInt(d['세부과제 수'] || 0, 10) || 0,
+      sheetCount: parseInt(d['세부과제 수'] || d['세부과제 행 수'] || 0, 10) || 0,
     })
   }
 
@@ -166,6 +172,15 @@ export function buildGeoActions(XLSX, wb, { competitors, source, sourceMtime, ge
     if (!act) throw new Error(`Activity 시트에 없는 Activity ID: ${d.aid}`)
     d.axis = act.axis; d.common = act.common
     d.stepCode = stepCode(d.step)
+    // 시점 꼬리표('선행(진행 중)')는 원문을 timingRaw 로 두고, 단계 묶음은 앞부분 시점으로
+    const tb = TIMINGS.find(t => d.timing.startsWith(t))
+    if (!tb) throw new Error(`시점 판별 불가: ${d.id} ${d.timing}`)
+    d.timingRaw = d.timing; d.timing = tb
+    if (!GUBUNS.includes(d.gubun)) throw new Error(`구분 판별 불가: ${d.id} ${d.gubun}`)
+    if (d.stage && !STAGES.includes(d.stage)) throw new Error(`실행 단계 판별 불가: ${d.id} ${d.stage}`)
+    // 국가별 관리포인트(v19+): 국가별 채널 확산만 국가 수만큼, 나머지는 세부과제당 1 — 열 없으면(v18 이하) 행 = 1
+    d.points = 'pointsRaw' in idx ? (parseInt(d.pointsRaw || 0, 10) || 0) : 1
+    delete d.pointsRaw
     ;[d.scope, d.countries] = parseCountries(d.countryRaw)
     const own = parseOwner(d.owner)
     d.ownerGroup = own.group; d.ownerSub = own.sub; d.ownerCountry = own.country; d.ownerLabel = own.label
@@ -187,12 +202,12 @@ export function buildGeoActions(XLSX, wb, { competitors, source, sourceMtime, ge
     if (!g) {
       g = {
         gkey: d.gkey, gid: d.id, aid: d.aid, tkey: d.tkey, product: d.product, topic: d.topic, axis: d.axis, common: d.common,
-        task: d.taskBase, step: d.step, stepCode: d.stepCode, gubun: d.gubun, timing: d.timing, precond: d.precond,
-        area: d.area, output: d.output, note: d.note, rows: [], countries: [], owners: [], expanded: d.gkey !== d.id,
+        task: d.taskBase, step: d.step, stepCode: d.stepCode, gubun: d.gubun, timing: d.timing, timingRaw: d.timingRaw, precond: d.precond,
+        ownerGroup: d.ownerGroup, ownerSub: d.ownerSub, stage: d.stage, area: d.area, output: d.output, note: d.note, rows: [], points: 0, countries: [], owners: [], expanded: d.gkey !== d.id,
       }
       groups.set(d.gkey, g)
     }
-    g.rows.push(d.id)
+    g.rows.push(d.id); g.points += d.points
     if (d.scope === 'country') for (const c of d.countries) if (!g.countries.includes(c)) g.countries.push(c)
     if (!g.owners.includes(d.owner)) g.owners.push(d.owner)
   }
@@ -290,7 +305,8 @@ export function buildGeoActions(XLSX, wb, { competitors, source, sourceMtime, ge
   const criteria = sheetRows(XLSX, wb.Sheets['기준']).slice(1).filter(r => r && r[0]).map(r => ({ item: s(r[0]), rule: s(r[1]) }))
 
   const summaryRows = sheetRows(XLSX, wb.Sheets['요약'])
-  const checks = verify(summaryRows, rows, glist, activities)
+  const isV19 = summaryRows.some(r => r && r[0] === '제품' && r[3] === '국가별 관리포인트')
+  const checks = isV19 ? verifyV19(summaryRows, rows, glist, activities) : verify(summaryRows, rows, glist, activities)
 
   // BP 확산 분류
   for (const g of glist) {
@@ -306,11 +322,13 @@ export function buildGeoActions(XLSX, wb, { competitors, source, sourceMtime, ge
     data: {
       meta: {
         title: 'GEO 답변분석 액션아이템 실행 대시보드', source, sourceMtime, generatedAt,
-        summaryNote: s((summaryRows[1] || [])[0]),
+        summaryNote: s((summaryRows[1] || [])[0]), hasPoints: 'pointsRaw' in idx,
       },
       dims: {
         countries: COUNTRIES, countryNames: COUNTRY_NAMES, regions: REGIONS, products: PRODUCTS,
-        axes: AXES.map(([code, name]) => ({ code, name })), commonNames: COMMON_NAMES, timings: TIMINGS, gubuns: GUBUNS,
+        axes: (axisNames.size ? [...axisNames.entries()].sort() : AXES_LEGACY).map(([code, name]) => ({ code, name })),
+        commonNames: COMMON_NAMES, timings: TIMINGS, gubuns: GUBUNS.filter(x => rows.some(r => r.gubun === x)),
+        stages: STAGES.filter(x => rows.some(r => r.stage === x)),
         ownerGroups: OWNER_GROUPS, bizSubs: BIZ_SUBS, corpRoles: CORP_ROLE_ORDER, steps,
         areas: [...areaCount.entries()].sort((a, b) => b[1] - a[1]).map(([a]) => a), // 동률은 처음 나온 순서 (Python Counter.most_common 과 동일)
       },
@@ -322,7 +340,50 @@ export function buildGeoActions(XLSX, wb, { competitors, source, sourceMtime, ge
   }
 }
 
-/* ── '요약' 시트와 대조 ── */
+/* ── '요약' 시트와 대조 (v19+ 레이아웃: 제품별 · 개선 영역별 · 실행 단계별 · 주관 조직별, 단위 = 세부과제 / 국가별 관리포인트) ── */
+const SUMMARY_ORGS = { // 요약 시트 주관 조직 표기 → [그룹, 사업본부 하위]
+  'D2C 마케팅': [['D2C 마케팅담당']], 'D2C 플랫폼개발': [['D2C플랫폼개발']],
+  '사업본부 마케팅': [['사업본부', '마케팅·콘텐츠']], '사업본부 상품기획 · 개발 · 품질': [['사업본부', '상품기획'], ['사업본부', '품질·개발']],
+  '고객가치혁신 (고가혁)': [['고가혁']], '법인 (10개국)': [['법인']], '글로벌Comm · 법무 등': [['글로벌Comm'], ['법무'], ['플사센']],
+}
+function verifyV19(sheet, rows, groups, activities) {
+  const out = []
+  const chk = (name, expect, got) => out.push({ name, expect, got, ok: expect === got })
+  const acts = [...activities.values()]
+  const pts = gs => gs.reduce((n, g) => n + g.points, 0)
+  const pair = v => { const m = String(v ?? '').match(/^\s*(\d+)\s*→\s*(\d+)\s*$/); return m ? [+m[1], +m[2]] : null }
+  const cols = ['공통', 'TV', '냉장고', '세탁기', '에어컨']
+  for (const v of sheet) {
+    if (!v) continue
+    if ((PRODUCTS.includes(v[0]) || v[0] === '합계') && isNum(v[1]) && isNum(v[2]) && isNum(v[3]) && !out.some(c => c.name === `제품 ${v[0]} Activity`)) {
+      const all = v[0] === '합계', gs = groups.filter(g => all || g.product === v[0])
+      chk(`제품 ${v[0]} Activity`, v[1], all ? acts.length : acts.filter(a => a.product === v[0]).length)
+      chk(`제품 ${v[0]} 세부과제`, v[2], gs.length)
+      chk(`제품 ${v[0]} 국가별 관리포인트`, v[3], pts(gs))
+    }
+    if (typeof v[0] === 'string' && '①②③④⑤'.includes(v[0].slice(0, 1)) && pair(v[1])) {
+      const a = v[0].slice(0, 1)
+      cols.forEach((p, i) => { const e = pair(v[1 + i]); if (!e) return
+        const gs = groups.filter(g => g.axis === a && g.product === p)
+        chk(`개선 영역 ${a} ${p} 세부과제`, e[0], gs.length); chk(`개선 영역 ${a} ${p} 관리포인트`, e[1], pts(gs)) })
+    }
+    if (STAGES.includes(v[0]) && isNum(v[1]) && isNum(v[2])) {
+      const gs = groups.filter(g => g.stage === v[0])
+      chk(`실행 단계 ${v[0]} 세부과제`, v[1], gs.length); chk(`실행 단계 ${v[0]} 관리포인트`, v[2], pts(gs))
+    }
+    if (SUMMARY_ORGS[v[0]] && isNum(v[1]) && isNum(v[2])) {
+      const gs = groups.filter(g => SUMMARY_ORGS[v[0]].some(([grp, sub]) => g.ownerGroup === grp && (!sub || g.ownerSub === sub)))
+      chk(`주관 ${v[0]} 세부과제`, v[1], gs.length); chk(`주관 ${v[0]} 관리포인트`, v[2], pts(gs))
+    }
+  }
+  const note = String((sheet[1] || [])[0] ?? '')
+  for (const [re, name, got] of [[/Activity\s*([\d,]+)\s*개/, '요약 문구 Activity', activities.size], [/세부과제\s*([\d,]+)\s*개/, '요약 문구 세부과제', groups.length], [/관리포인트\s*([\d,]+)\s*개/, '요약 문구 국가별 관리포인트', pts(groups)]]) {
+    const m = note.match(re); if (m) chk(name, +m[1].replace(/,/g, ''), got)
+  }
+  return out
+}
+
+/* ── '요약' 시트와 대조 (v18 이하 레이아웃) ── */
 function verify(sheet, rows, groups, activities) {
   const out = []
   const chk = (name, expect, got) => out.push({ name, expect, got, ok: expect === got })
