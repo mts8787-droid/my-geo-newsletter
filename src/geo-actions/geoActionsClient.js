@@ -12,6 +12,8 @@ const esc = v => String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">
 const fmt = n => (n??0).toLocaleString("ko-KR");
 const DIM = D.dims, C = DIM.countries, CN = DIM.countryNames;
 const PRODS = ["TV","냉장고","세탁기","에어컨"];
+const HASCM = D.groups.some(g=>g.product==="공통");   // v23 부터 공통 Activity 없음 → 공통 줄·칩·막대 숨김
+const PRODS_ALL = HASCM ? ["공통",...PRODS] : PRODS;
 const TIMINGS = DIM.timings;                       // 선행 · 1차 · 2차 · 중장기 · 상시
 const PHASE_DESC = {"선행":"다른 과제의 전제 조건을 먼저 갖춤","1차":"자체 실행 — 원천·lg.com·피드","2차":"외부 채널 협업 — 리뷰·리테일·매체","중장기":"제품·조직·투자 변경","상시":"정기 모니터링"};
 const ACT = Object.fromEntries(D.activities.map(a=>[a.aid,a]));
@@ -134,7 +136,7 @@ function viewHome(){
   const R=62, CIRC=2*Math.PI*R, dLen=T.d/T.n*CIRC, pLen=T.p/T.n*CIRC;
   let h=`<section class="sec"><div class="intro"><div>
     <div class="kick">이 대시보드가 답하는 것</div>
-    <p class="say">AI 답변에서 LG가 경쟁사에 밀리는 <b>${PRODS.length}개 제품 · 열세 주제 ${prodTopics}개</b>와 공통 과제 ${D.topics.length-prodTopics}개를 개선하기 위해, <b>${fmt(D.groups.length)}개 세부과제</b>를 <b>${C.length}개국</b>에서 ${HASPT?`<b>국가별 관리포인트 ${fmt(ptsOf(D.groups))}개</b>로 관리함`:`<b>${fmt(D.rows.length)}건</b>으로 나눠 실행함`}.</p>
+    <p class="say">AI 답변에서 LG가 경쟁사에 밀리는 <b>${PRODS.length}개 제품 · 열세 주제 ${prodTopics}개</b>${D.topics.length>prodTopics?`와 공통 과제 ${D.topics.length-prodTopics}개`:""}를 개선하기 위해, <b>${fmt(D.groups.length)}개 세부과제</b>를 <b>${C.length}개국</b>에서 ${HASPT?`<b>국가별 관리포인트 ${fmt(ptsOf(D.groups))}개</b>로 관리함`:`<b>${fmt(D.rows.length)}건</b>으로 나눠 실행함`}.</p>
     <div class="nums"><div><b class="num">${D.activities.length}</b><span>Activity (과제 묶음)</span></div><div><b class="num">${fmt(D.groups.length)}</b><span>세부과제 (할 일)</span></div><div><b class="num">${fmt(ptsOf(D.groups))}</b><span>${HASPT?"국가별 관리포인트":"국가 실행 건"}</span></div><div><b class="num">${C.length}</b><span>대상 국가</span></div></div>
   </div><div class="ring">
     <svg viewBox="0 0 160 160" role="img" aria-label="완료율 ${pctTxt(T)}"><circle cx="80" cy="80" r="${R}" fill="none" stroke="var(--hero-line)" stroke-width="14"/>
@@ -174,7 +176,7 @@ function viewHome(){
   PRODS.forEach(p=>{ const ts=D.topics.filter(t=>t.product===p);
     h+=`<div class="trow"><div class="tlab"><b>${esc(p)}</b><span>열세 주제 ${ts.length}개</span></div><div class="tiles">${ts.map(tileOf).join("")}</div></div>`; });
   const cs=D.topics.filter(t=>t.common);
-  h+=`<div class="trow"><div class="tlab"><b>공통</b><span>4개 제품 공통</span></div><div class="tiles">${cs.map(tileOf).join("")}</div></div></div>
+  h+=`${cs.length?`<div class="trow"><div class="tlab"><b>공통</b><span>4개 제품 공통</span></div><div class="tiles">${cs.map(tileOf).join("")}</div></div>`:""}</div>
     <div class="legend"><span><i style="background:var(--crit)"></i>Gap 50%p 이상 · 부정률 열세</span><span><i style="background:var(--behind)"></i>30~50%p</span><span><i style="background:var(--ink-4)"></i>30%p 미만</span><span>Gap 표기는 엑셀 원문 그대로 (− = 경쟁사 대비 열세)</span></div></section>`;
 
   // 누가 / 어디서
@@ -244,7 +246,7 @@ function viewTasks(){
   const xs=filteredGroups(); const ids=xs.flatMap(x=>x.rows.map(r=>r.id)); const T=tally(ids);
   const orgSel=`<select class="fsel ${S.f.org?"on":""}" id="fOrg">${orgOptions()}</select>`;
   let h=`<div class="fpanel">
-    ${chipRow("제품","product",["공통",...PRODS])}
+    ${chipRow("제품","product",PRODS_ALL)}
     ${chipRow("영역","axis",DIM.axes.map(a=>a.code),v=>`${v} ${AXN[v]}`)}
     ${chipRow("시점","timing",TIMINGS.filter(t=>D.rows.some(r=>r.timing===t)))}
     ${chipRow("국가","country",C)}
@@ -297,7 +299,7 @@ function viewTrack(){
   let h=`<section class="sec"><div class="sec-h"><span class="q">진척</span><h2>얼마나 진행됐나</h2><p>국가 실행 건 기준 완료율. <i class="dot" style="background:var(--done)"></i>완료 <i class="dot" style="background:var(--doing)"></i>진행 — 막대를 누르면 해당 할 일로 이동함. 진척은 ${RO?"어드민 페이지에서 입력한 팀 공용 값을 보여줌 (이 화면은 읽기 전용)":API?"서버에 저장되어 같은 주소로 접속한 모든 사람에게 같게 보임":"이 브라우저에만 저장되므로 공유하려면 상단 '진척 내보내기' CSV를 전달함"}.</p></div>
     <div class="two"><div class="card"><h3 style="margin:0 0 10px;font-size:15px">시점별</h3><div class="sbars">${TIMINGS.filter(t=>D.rows.some(r=>r.timing===t)).map(t=>sbar(t,idsBy(r=>r.timing===t),{timing:t})).join("")}</div>
       <h3 style="margin:18px 0 10px;font-size:15px">개선 영역별</h3><div class="sbars">${DIM.axes.map(a=>sbar(`${a.code} ${a.name}`,idsBy(r=>r.axis===a.code),{axis:a.code})).join("")}</div>
-      <h3 style="margin:18px 0 10px;font-size:15px">제품별</h3><div class="sbars">${["공통",...PRODS].map(p=>sbar(p,idsBy(r=>r.product===p),{product:p})).join("")}</div></div>
+      <h3 style="margin:18px 0 10px;font-size:15px">제품별</h3><div class="sbars">${PRODS_ALL.map(p=>sbar(p,idsBy(r=>r.product===p),{product:p})).join("")}</div></div>
     <div class="card"><h3 style="margin:0 0 10px;font-size:15px">주관 조직별</h3><div class="sbars">${DIM.ownerGroups.filter(o=>D.rows.some(r=>r.ownerGroup===o)).map(o=>sbar(o,idsBy(r=>r.ownerGroup===o),{org:"g:"+o})).join("")}</div>
       <h3 style="margin:18px 0 10px;font-size:15px">국가별</h3><div class="sbars">${C.map(c=>sbar(`${c} ${CN[c]}`,idsBy(r=>r.countries.includes(c)),{country:c})).join("")}</div></div></div></section>`;
   // 목표

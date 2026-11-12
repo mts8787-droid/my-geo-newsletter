@@ -97,7 +97,7 @@ function parseOwner(owner) {
   for (const g of ['D2C 마케팅담당', 'D2C플랫폼개발', '글로벌Comm', '법무', '플사센']) {
     if (o.startsWith(g)) return { group: g, sub: '', country: null, label: o }
   }
-  if (o.includes('사업본부') || o.includes('품질') || o.includes('개발')) {
+  if (o.includes('사업본부') || o.includes('상품기획') || o.includes('품질') || o.includes('개발')) { // v23: '냉장고 상품기획'처럼 사업본부 없이 적는 경우 포함
     const sub = o.includes('상품기획') ? '상품기획' : (o.includes('품질') || o.includes('개발')) ? '품질·개발' : '마케팅·콘텐츠'
     return { group: '사업본부', sub, country: null, label: o }
   }
@@ -352,9 +352,10 @@ function verifyV19(sheet, rows, groups, activities) {
   const acts = [...activities.values()]
   const pts = gs => gs.reduce((n, g) => n + g.points, 0)
   const pair = v => { const m = String(v ?? '').match(/^\s*(\d+)\s*→\s*(\d+)\s*$/); return m ? [+m[1], +m[2]] : null }
-  const cols = ['공통', 'TV', '냉장고', '세탁기', '에어컨']
+  let cols = ['공통', 'TV', '냉장고', '세탁기', '에어컨'] // 개선 영역 표 머리행이 있으면 그 열 순서를 따름 (v23 은 '공통' 열 없음)
   for (const v of sheet) {
     if (!v) continue
+    if (v[0] === '개선 영역') { cols = v.slice(1).map(s => String(s ?? '').trim()); continue }
     if ((PRODUCTS.includes(v[0]) || v[0] === '합계') && isNum(v[1]) && isNum(v[2]) && isNum(v[3]) && !out.some(c => c.name === `제품 ${v[0]} Activity`)) {
       const all = v[0] === '합계', gs = groups.filter(g => all || g.product === v[0])
       chk(`제품 ${v[0]} Activity`, v[1], all ? acts.length : acts.filter(a => a.product === v[0]).length)
@@ -364,7 +365,7 @@ function verifyV19(sheet, rows, groups, activities) {
     if (typeof v[0] === 'string' && '①②③④⑤'.includes(v[0].slice(0, 1)) && pair(v[1])) {
       const a = v[0].slice(0, 1)
       cols.forEach((p, i) => { const e = pair(v[1 + i]); if (!e) return
-        const gs = groups.filter(g => g.axis === a && g.product === p)
+        const gs = groups.filter(g => g.axis === a && (p === '합계' || g.product === p))
         chk(`개선 영역 ${a} ${p} 세부과제`, e[0], gs.length); chk(`개선 영역 ${a} ${p} 관리포인트`, e[1], pts(gs)) })
     }
     if (STAGES.includes(v[0]) && isNum(v[1]) && isNum(v[2])) {
@@ -376,8 +377,13 @@ function verifyV19(sheet, rows, groups, activities) {
       chk(`주관 ${v[0]} 세부과제`, v[1], gs.length); chk(`주관 ${v[0]} 관리포인트`, v[2], pts(gs))
     }
   }
-  const note = String((sheet[1] || [])[0] ?? '')
-  for (const [re, name, got] of [[/Activity\s*([\d,]+)\s*개/, '요약 문구 Activity', activities.size], [/세부과제\s*([\d,]+)\s*개/, '요약 문구 세부과제', groups.length], [/관리포인트\s*([\d,]+)\s*개/, '요약 문구 국가별 관리포인트', pts(groups)]]) {
+  // 판 변경 문구('vNN 대비 Activity 54→34 · …')가 있으면 그 → 뒤 값을 기준으로 — 도입 문구는 이전 판 숫자가 남아 있을 수 있음 (v23)
+  const delta = sheet.map(r => String((r || [])[0] ?? '')).filter(s => /대비\s*Activity\s*[\d,]+\s*→/.test(s)).pop()
+  const specs = delta
+    ? [[/Activity\s*[\d,]+\s*→\s*([\d,]+)/, '판 변경 문구 Activity', activities.size], [/세부과제\s*[\d,]+\s*→\s*([\d,]+)/, '판 변경 문구 세부과제', groups.length], [/관리포인트\s*[\d,]+\s*→\s*([\d,]+)/, '판 변경 문구 국가별 관리포인트', pts(groups)]]
+    : [[/Activity\s*([\d,]+)\s*개/, '요약 문구 Activity', activities.size], [/세부과제\s*([\d,]+)\s*개/, '요약 문구 세부과제', groups.length], [/관리포인트\s*([\d,]+)\s*개/, '요약 문구 국가별 관리포인트', pts(groups)]]
+  const note = delta || String((sheet[1] || [])[0] ?? '')
+  for (const [re, name, got] of specs) {
     const m = note.match(re); if (m) chk(name, +m[1].replace(/,/g, ''), got)
   }
   return out
