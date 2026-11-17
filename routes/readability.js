@@ -4,7 +4,8 @@
 
 import { Router } from 'express'
 import { localizeUrlsCsv } from '../src/shared/readabilityCsv.js'
-import { readFileSync, writeFileSync, existsSync, readdirSync } from 'fs'
+import { localizeChecksDoc } from '../src/shared/readabilityHintEn.js'
+import { readFileSync, writeFileSync, existsSync, readdirSync, statSync } from 'fs'
 import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
 import { renderReadabilityHTML } from '../scripts/render-readability.mjs'
@@ -140,6 +141,16 @@ export const checksFileFor = (date) => {
   return existsSync(join(DATA_DIR, f)) ? f : latestChecksFile()
 }
 export { DATA_DIR as READABILITY_DATA_DIR }
+
+// checks JSON 영문본 — 파일 경로+mtime 기준 1벌 캐시 (2.5천 hint 재번역 방지). 게시본 라우트와 공용.
+let _checksEnCache = null
+export function checksDocEn(path) {
+  const mtime = statSync(path).mtimeMs
+  if (_checksEnCache && _checksEnCache.path === path && _checksEnCache.mtime === mtime) return _checksEnCache.doc
+  const doc = localizeChecksDoc(JSON.parse(readFileSync(path, 'utf8')), 'en')
+  _checksEnCache = { path, mtime, doc }
+  return doc
+}
 
 export const readabilityRouter = Router()
 
@@ -361,6 +372,8 @@ readabilityRouter.get('/admin/readability/checks.json', (req, res) => {
   const { snapshot } = loadLatest('staging')
   const file = snapshot ? checksFileFor(snapshot.date) : latestChecksFile()
   if (!file) return res.status(404).json({ error: 'raw 데이터 없음 — node scripts/aggregate-readability.mjs 실행 필요' })
+  // ?lang=en 이면 Type·항목·실패 사유를 영문으로 변환 (JSON 원본은 한국어 한 벌)
+  if (String(req.query.lang || '').toLowerCase() === 'en') return res.json(checksDocEn(join(DATA_DIR, file)))
   sendFileTyped(res, join(DATA_DIR, file), 'application/json; charset=utf-8')
 })
 

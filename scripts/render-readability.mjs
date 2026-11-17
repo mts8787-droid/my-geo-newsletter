@@ -72,7 +72,7 @@ const P = v => pick(v, _LANG)        // { ko, en } 쌍 → 현재 언어 문자�
 function withLang(paths, lang) {
   if (lang !== 'en') return paths
   const q = u => u + (u.includes('?') ? '&' : '?') + 'lang=en'
-  return { ...paths, csv: q(paths.csv), criteria: q(paths.criteria), criteriaMd: paths.criteriaMd && q(paths.criteriaMd) }
+  return { ...paths, checks: q(paths.checks), csv: q(paths.csv), criteria: q(paths.criteria), criteriaMd: paths.criteriaMd && q(paths.criteriaMd) }
 }
 const TT = () => UI[_LANG] || UI.ko  // UI 문구 사전
 

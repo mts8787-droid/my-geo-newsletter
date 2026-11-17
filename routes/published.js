@@ -12,7 +12,7 @@ import { CHANNELS, readMetaFile } from './publish.js'
 import { renderReadabilityPublic } from '../lib/publish-core.js'
 import { renderCriteriaHTML, loadRows, criteriaMarkdownResponse } from '../scripts/render-criteria.mjs'
 import { renderReadabilityHTML } from '../scripts/render-readability.mjs'
-import { loadLatest, latestChecksFile, latestCsvFile, csvFileFor, checksFileFor, READABILITY_DATA_DIR } from './readability.js'
+import { loadLatest, latestChecksFile, latestCsvFile, csvFileFor, checksFileFor, checksDocEn, READABILITY_DATA_DIR } from './readability.js'
 import { logFor } from '../lib/logger.js'
 import { loadGeoActions, readProgress as readGeoActionsProgress } from './geo-actions.js'
 import { renderGeoActionsHTML } from '../scripts/render-geo-actions.mjs'
@@ -223,6 +223,7 @@ publishedRouter.get(['/p/GEO-Readability-Dashboard/checks.json', '/p/GEO-Readabi
   const { snapshot } = loadLatest('published')
   const file = snapshot ? checksFileFor(snapshot.date) : latestChecksFile()
   if (!file) return res.status(404).json({ error: 'raw 데이터 없음' })
+  if (String(req.query.lang || '').toLowerCase() === 'en') return res.json(checksDocEn(join(READABILITY_DATA_DIR, file)))
   res.set('Content-Type', 'application/json; charset=utf-8')
   res.sendFile(join(READABILITY_DATA_DIR, file), err => { if (err && !res.headersSent) res.status(500).end() })
 })
