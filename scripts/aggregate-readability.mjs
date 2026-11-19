@@ -245,15 +245,22 @@ function auditRootOf(srcDir) {
 // 저장값은 감사 시점 분류라 낡는다(10/24 런 기준 저장값과 다른 URL 700여 건). 상류 page_type.py 를
 // 그대로 호출해 규칙을 복제하지 않는다. 실패하면 저장값 사용(상류 fallback 과 동일) + WARN.
 const CURRENT_PT = new Map()
+// PDP URL → 상류 제품군 키 (run_render_audit.pdp_category) — #37 카테고리별 baseline 조회용 (상류 96d3b8e)
+const CURRENT_PDP_CAT = new Map()
 const PT_PROBE_PY = [
   'import sys, json',
   'sys.path.insert(0, sys.argv[1])',
   'from page_type import detect_page_type',
-  'out = {}',
+  'try: from run_render_audit import pdp_category',
+  'except Exception: pdp_category = None',
+  'out = {}; cat = {}',
   'for u in json.load(sys.stdin):',
   '    try: out[u] = detect_page_type(None, u).get("id")',
   '    except Exception: pass',
-  'print(json.dumps(out))',
+  '    try:',
+  '        if pdp_category and out.get(u) == "pdp": cat[u] = pdp_category(u)',
+  '    except Exception: pass',
+  'print(json.dumps({"pt": out, "cat": cat, "catOk": bool(pdp_category)}))',
 ].join('\n')
 function loadCurrentPageTypes(root, urls) {
   if (!root || !existsSync(join(root, 'page_type.py'))) {
@@ -266,7 +273,10 @@ function loadCurrentPageTypes(root, urls) {
     return 0
   }
   let n = 0
-  for (const [u, id] of Object.entries(JSON.parse(r.stdout || '{}'))) if (id) { CURRENT_PT.set(u, id); n++ }
+  const res = JSON.parse(r.stdout || '{}')
+  for (const [u, id] of Object.entries(res.pt || {})) if (id) { CURRENT_PT.set(u, id); n++ }
+  for (const [u, c] of Object.entries(res.cat || {})) if (c) CURRENT_PDP_CAT.set(u, c)
+  if (!res.catOk) _logWarn('aggregate-readability', '상류 pdp_category 로드 실패 — #37 PDP 는 국가 baseline 으로 재판정 (카테고리별 값 미적용)')
   return n
 }
 // 상류 원본 id (PT_MERGE 이전) — #37 baseline 조회 키
@@ -293,10 +303,14 @@ function loadCsrBaseline(root) {
   if (!p || !existsSync(p)) { _logWarn('aggregate-readability', `CSR baseline 없음 — ${p} (#37 저장값 유지)`); return {} }
   return JSON.parse(readFileSync(p, 'utf8'))
 }
-export function baselineRatio(baseline, ptId, url) {
+export function baselineRatio(baseline, ptId, url, pdpCat) {
   const m = /https?:\/\/[^/]+\/([a-z]{2})(?:[_-][a-z]{2})?\//.exec(String(url || ''))
   const ent = m && ptId ? ((baseline || {})[`grp_lg_${m[1]}`] || {})[ptId] : null
-  return ent && typeof ent === 'object' && typeof ent.avg_ratio === 'number' ? ent.avg_ratio : null
+  if (!ent || typeof ent !== 'object') return null
+  // PDP 는 제품군마다 템플릿이 달라 카테고리별 baseline 이 있으면 그 값 (상류 96d3b8e)
+  const sub = ptId === 'pdp' && pdpCat && ent.by_category ? ent.by_category[pdpCat] : null
+  if (sub && typeof sub.avg_ratio === 'number') return sub.avg_ratio
+  return typeof ent.avg_ratio === 'number' ? ent.avg_ratio : null
 }
 
 // PLP 필터 URL 중복 — 같은 카테고리 PLP 의 ?ec_ft_… 변형은 1건만 (쿼리 없는 원본 우선, 상류 plp_query_dup)
@@ -1288,7 +1302,7 @@ function main() {
       const url = s.url || s.result.url
       const rpt = resolvePt(s.result.page_type, url)
       const ssrBaseline = (s.result.csr_ratio && s.result.csr_ratio.status === 'baseline')
-        ? baselineRatio(CSR_BASELINE, rawPtId(s.result.page_type, url), url) : null
+        ? baselineRatio(CSR_BASELINE, rawPtId(s.result.page_type, url), url, CURRENT_PDP_CAT.get(url)) : null
       // 대시보드 채점 재정의 (TTFB 1800ms / Cache-Control 완화 / Render Blocking 제외) —
       // checkRows(Raw 데이터) · 집계 · CSV · HS 레코드가 모두 같은 점수를 보도록 여기서 한 번만 적용.
       // upstreamGated — 신포맷(6분류) 행이면 상류가 applies_to_page_types 를 이미 적용했다는 표식

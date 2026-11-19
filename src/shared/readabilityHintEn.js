@@ -74,7 +74,7 @@ const HINT_RULES = [
   [/^요약 블록\(헤딩 문구·selector\)을 찾지 못했습니다\.$/, () => 'Summary block (heading text·selector) not found.'],
 ]
 
-// 모델 제외 사유 — 'ko|en' 한 줄 1건 (2026-09-29·10-24 스냅샷 전수 591건)
+// 모델 제외 사유 — 'ko|en' 한 줄 1건 (2026-09-29·10-24 스냅샷 전수 591건 + 2026-11-04 신규 215건, 모델 v5c)
 const REASON_LINES = `
 1,5M:1 용어 정의|1,5M:1 term definition
 1.5M:1 용어 정의+수치|1.5M:1 term definition+figure
@@ -667,6 +667,221 @@ webOS 범위·webOS 25 TV 조건 명시|webOS scope·webOS 25 TV conditions stat
 회사 홍보 문구|company promo text
 회사 홍보 발언|company promo statement
 회사 홍보 보일러플레이트|company promo boilerplate
+14인치·지시어·구체 사실|14-inch·demonstrative·specific fact
+27GM950B·5.9배·0OD|27GM950B·5.9x·0OD
+3시간 스펙|3-hour spec
+BAF 인증 기준|BAF certification criteria
+CPU 최대 4,8GHz 스펙|CPU up to 4,8GHz spec
+HDMI ARC 사양·목적 명시|HDMI ARC specs·purpose stated
+IEC 표준 기준|IEC standard criteria
+Intertek 검증 결과|Intertek verification result
+LG CineBeam가 무엇인지 설명|explains what LG CineBeam is
+PPI 수치+의미|PPI figure+meaning
+UI 편의성 서술|UI convenience description
+WELS 표기 정의|WELS label definition
+검증 사실 아님|not a verified fact
+결과 없음|no result
+관리 기간 안내|care period notice
+관리 절차 안내|care procedure notice
+관리 조언|care advice
+관리 지시문|care instruction
+구매 조건 안내|purchase conditions notice
+구성품 목록|package contents list
+구인 조건|job requirements
+구체 스펙+ErP 등급|specific spec+ErP rating
+구체 스펙+제품이 무엇인지 설명|specific spec+explains what the product is
+구체 요소 없음|no specific element
+구체 케어 목록|specific care list
+구체 항목 없는 마케팅 문구|marketing text without specific items
+구체 항목 없음|no specific items
+구체적 기술 사실|specific technical fact
+금융 법적 문구|financing legal text
+금융 약관|financing terms
+기술명+효과 설명|technology name+effect description
+기업 소개 보일러플레이트|corporate intro boilerplate
+기업 소개 서술|corporate intro description
+기업 전략 서술|corporate strategy description
+내비 텍스트|navigation text
+내비+CTA|navigation+CTA
+내비+UI|navigation+UI
+내비+UI 텍스트|navigation+UI text
+내비+네비|navigation+navigation
+내비+마케팅|navigation+marketing
+내비+마케팅 나열|navigation+marketing list
+내비+보증 기간|navigation+warranty period
+내비+슬로건|navigation+slogan
+내비+안내|navigation+notice
+내비+일반 도입문|navigation+generic intro
+내비+일반 문구|navigation+generic text
+내비+일반 소개|navigation+generic intro
+내비+일반적 도입문|navigation+generic intro
+내비+질문|navigation+question
+내비+프로모션|navigation+promotion
+내비/UI 텍스트|navigation/UI text
+네비+날짜|navigation+date
+네비+네비 UI|navigation+navigation UI
+네비+네비 연결 안내|navigation+navigation connection notice
+네비+네비 지원 안내|navigation+navigation support notice
+네비+네비 텍스트|navigation+navigation text
+네비+네비 혜택|navigation+navigation benefit
+네비+네비+네비|navigation+navigation+navigation
+네비+네비네비|navigation+navigation
+네비+마케팅|navigation+marketing
+네비+마케팅 나열|navigation+marketing list
+네비+보도자료|navigation+press release
+네비+서비스 소개|navigation+service intro
+네비+질문|navigation+question
+네비+홍보|navigation+promo
+네비+회사 소개|navigation+company intro
+뉴스레터 UI 텍스트|newsletter UI text
+다음의 instructions 참조|refers to the following instructions
+마케팅 소개|marketing intro
+마케팅 스펙+일반 소개|marketing spec+generic intro
+막연한 기술 설명|vague technology description
+막연한 마케팅 문구|vague marketing text
+막연한 혜택 서술|vague benefit description
+막연한 혜택 주장|vague benefit claim
+모델 수·용량 구체 사실|model count·capacity specific fact
+모델명+에너지 등급|model name+energy rating
+모델별 지원 기준 각주|per-model support criteria footnote
+모델별 지원 범위 구체 사실|per-model support scope specific fact
+모델이 무엇인지 설명|explains what the model is
+모드별 구체 수치|specific figures per mode
+버튼·목적 없는 기능|button·feature without purpose
+범용 점검 절차|generic check procedure
+법적 기록 서술|legal record description
+법적 상표 고지|legal trademark notice
+법적 상표 문구|legal trademark text
+법적 안내문|legal notice
+법적 용어 설명|legal term description
+법적 인용문|legal quotation
+보도자료 인용문|press release quotation
+보증 기간|warranty period
+보증 기간 홍보|warranty period promo
+보증 기간·서비스 조건|warranty period·service conditions
+비교 조건 불특정|comparison conditions unspecified
+서비스명 없는 일반 안내|generic notice without service name
+설치 안내|installation notice
+설치 안내문|installation notice
+설치 조건 안내|installation conditions notice
+설치 지시문|installation instruction
+섹션 제목 조각|section title fragment
+수치 기반 연구 방법|figure-based research method
+수치 기준 각주|figure criteria footnote
+수치 포함 스펙|spec with figures
+스펙 요약 블록|spec summary block
+스펙 표 덤프|spec table dump
+스펙 표 조각|spec table fragment
+스펙+마케팅 요약|spec+marketing summary
+스펙+제품이 무엇인지 설명|spec+explains what the product is
+스펙표 덤프|spec table dump
+스펙표+네비|spec table+navigation
+스펙표+네비 혼재|spec table+navigation mixed
+시험 방법 설명|test method description
+시험 방법·대상·결과 명시|test method·target·result stated
+시험 조건·결과 수치|test conditions·result figures
+시험 조건·모델·결과|test conditions·model·result
+시험 조건만|test conditions only
+시험기관 명시 수치|figure with testing body stated
+시험기관·표준·조건 명시|testing body·standard·conditions stated
+연결 수·제품명 구체 사실|connection count·product name specific fact
+연락처 안내|contact notice
+연락처·내비·질문|contact·navigation·question
+오류 메시지|error message
+용어 정의+수치|term definition+figure
+용어 정의+용량 구체|term definition+specific capacity
+용어 정의+용량 구체 사실|term definition+capacity specific fact
+용어 정의+용량 수치|term definition+capacity figure
+인물 인용문|person quotation
+인사 문구|greeting text
+인사 보일러플레이트|greeting boilerplate
+인용문|quotation
+인용문 발언|quoted statement
+인용문+CEO 발언|quotation+CEO statement
+인증 기관 검증|verified by certification body
+인증 기관 검증 사실|fact verified by certification body
+인증 기관 명시|certification body stated
+인증 기관 명시 사실|fact with certification body stated
+인증 기준 명시|certification criteria stated
+인증·모드·센서·스마트 LED·목적 명시|certification·mode·sensor·smart LED·purpose stated
+인증·센서·스마트 LED·노브·디자인 요약|certification·sensor·smart LED·knob·design summary
+인증기관 검증 사실|fact verified by certification body
+인증기관 명시|certification body stated
+인증기관 명시 사실|fact with certification body stated
+인증명+표준 명시|certification name+standard stated
+인증번호+면책 문구|certification number+disclaimer text
+인증번호·URL|certification number·URL
+인텔 프로세서+7단계 MIL-STD-810H|Intel processor+7-step MIL-STD-810H
+일반적 개념 설명|generic concept description
+일반적 관리 조언|generic care advice
+일반적 기술 설명|generic technology description
+일반적 기준 설명|generic criteria description
+일반적 마무리 문구|generic closing text
+일반적 마무리 문장|generic closing sentence
+일반적 시장 서술|generic market description
+일반적 치료 주장|generic treatment claim
+제목+일반 사용 안내|title+generic usage notice
+제품 무관|unrelated to product
+제품 소개 서술|product intro description
+제품 없는 범용 설정 지시|generic settings instruction without product
+제품 원료 원리 설명|product ingredient principle description
+제품군 소개|product category intro
+제품명 없는 단계|step without product name
+제품명 없는 메뉴 조작|menu operation without product name
+제품명 없는 버튼 조작|button operation without product name
+제품명 없는 범용 조치|generic action without product name
+제품명 없는 조작|operation without product name
+제품명 없음('el' 앞)|no product name (before 'el')
+제품명+구체 부품 설명|product name+specific part description
+제품명+구체 온도 스펙|product name+specific temperature spec
+제품명+재료 원리+수치|product name+material principle+figure
+제품명+제제품 원료|product name+product ingredient
+제품명+제품이 무엇인지 설명|product name+explains what the product is
+조리 지시문|cooking instruction
+증상 제목+LG 고유 정보 없음|symptom title+no LG-specific information
+증상 제목+범용 연결 안내|symptom title+generic connection notice
+증상 제목+범용 점검 절차|symptom title+generic check procedure
+지시문|instruction
+청소 지시문|cleaning instruction
+출력 용량·음향 스펙·SEER·HSPF 스펙|output capacity·audio spec·SEER·HSPF spec
+출력·효과·구체 스펙|output·effect·specific spec
+출시 기간 명시 사실|fact with release period stated
+출시 모델 정의|released model definition
+출처 명시된 상표 정의|trademark definition with source stated
+출처 없는 설문 조사 결과|survey result without source
+출처 없는 수상 프로모|award promo without source
+출처 없는 순위 조각|ranking fragment without source
+출처 없는 인물 소개|person intro without source
+출처 없는 전략 서술|strategy description without source
+출처 없는 책 소개|book intro without source
+출처 없는 회사 소개|company intro without source
+출처 있는 기록 사실|sourced record fact
+출처 있는 수상|sourced award
+출처 있는 수상 실적|sourced award record
+출처 있는 수치|sourced figure
+출처 있는 수치 사실|sourced figure fact
+출처 있는 순위 수치|sourced ranking figure
+출처 있는 스펙|sourced spec
+출처 있는 평가 항목|sourced evaluation item
+측정 기준 각주|measurement criteria footnote
+치수 구체 스펙|specific dimension spec
+카드명 없음|no card name
+파일명 조각|file name fragment
+페이지 내용 안내|page content notice
+페이지 내용 안내 리드문|page content lead sentence
+표준 시험 조건 각주|standard test conditions footnote
+프로 경기 규격|pro match standard
+프로모션 기한|promotion deadline
+프로세서·스펙 명시|processor·spec stated
+프로세서명+5.6배 수치|processor name+5.6x figure
+프로팀만|pro teams only
+필터명과 구매 조건|filter name and purchase conditions
+할부 조건|installment conditions
+행사 소개|event intro
+행사 소개·보도자료|event intro·press release
+행사 안내문|event notice
+헤드라인+날짜|headline+date
+회사 정책 서술|company policy description
 `
 export const REASON_EN = Object.fromEntries(
   REASON_LINES.split('\n').filter(l => l.includes('|')).map(l => {

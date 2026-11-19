@@ -142,6 +142,13 @@ describe('상류 7438161 — 삭제 요청 URL · #42 Soft 404 문구 재판정'
     expect(baselineRatio(bl, 'support_troubleshoot', 'https://www.lg.com/ca_en/support/a')).toBe(0.65)
     expect(baselineRatio(bl, 'support_troubleshoot', 'https://www.lg.com/be_nl/support/a')).toBeNull()   // 남의 baseline 은 빌리지 않음
   })
+  it('상류 96d3b8e: #37 PDP 는 카테고리별 baseline 이 있으면 그 값, 없으면 국가값', () => {
+    const bl = { grp_lg_us: { pdp: { avg_ratio: 0.592, by_category: { tv: { avg_ratio: 0.494 }, audio: { avg_ratio: 0.771 } } }, plp: { avg_ratio: 0.7, by_category: { tv: { avg_ratio: 0.1 } } } } }
+    expect(baselineRatio(bl, 'pdp', 'https://www.lg.com/us/tvs/x', 'tv')).toBe(0.494)
+    expect(baselineRatio(bl, 'pdp', 'https://www.lg.com/us/vacuums/x', 'vacuum')).toBe(0.592)   // 카테고리 값 없음 → 국가값
+    expect(baselineRatio(bl, 'pdp', 'https://www.lg.com/us/x/y', null)).toBe(0.592)
+    expect(baselineRatio(bl, 'plp', 'https://www.lg.com/us/tvs', 'tv')).toBe(0.7)               // PDP 전용
+  })
   it('삭제 요청 CSV — 시트 내보내기가 따옴표로 감싸도 읽는다', () => {
     const set = parseDeleteUrls('"url","requester"\n"https://www.lg.com/de/support/A/","x"\n')
     expect(set.size).toBe(1)
