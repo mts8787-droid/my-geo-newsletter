@@ -173,7 +173,7 @@
     },
     {
       "date": "2026-11-04",
-      "channel": "staging",
+      "channel": "published",
       "auditType": "regular",
       "generatedAt": "2026-11-19T20:52:33.546Z",
       "countries": [
