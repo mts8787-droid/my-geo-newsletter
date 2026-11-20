@@ -99,46 +99,33 @@ describe('emailTemplate — 10월호 Exec Summary (사용자 지시 2026-10-26)'
   }
   const idx = (h, s) => { const i = h.indexOf(s); expect(i, `missing: ${s.slice(0, 40)}`).toBeGreaterThan(-1); return i }
 
-  it('Visibility 마지막 문단을 고쳐 저장해도 핑크 유지 + 표1 은 그 아래 (앵커 문장 회귀 재현, 2026-10-26)', async () => {
+  it('Visibility 마지막 문단을 고쳐 저장해도 핑크 유지 (앵커 문장 회귀 재현, 2026-10-26)', async () => {
     const edited = SLOT1.replace(P1, '즉, 결론 문구를 사용자가 수정했습니다. 다음 호에서 원인 분석을 공유할 예정입니다.')
     const h = await render({ v3Ex1B2: edited })
-    const pk = idx(h, '<span data-pk="1" style="color:#FDA4AF;">즉, 결론 문구를 사용자가 수정했습니다. 다음 호에서 원인 분석을 공유할 예정입니다.</span>')
-    const t1 = idx(h, 'data-blk="oct1"')
-    expect(pk).toBeLessThan(t1)
-    expect(h.match(/data-blk="oct1"/g).length).toBe(1)
+    idx(h, '<span data-pk="1" style="color:#FDA4AF;">즉, 결론 문구를 사용자가 수정했습니다. 다음 호에서 원인 분석을 공유할 예정입니다.</span>')
     // 앞 문단은 핑크가 아니다
     expect(h).not.toContain('<span data-pk="1" style="color:#FDA4AF;">특히 GPT Search에서는')
   })
 
-  it('표1 은 핑크 결론 문장 아래(박스 맨 아래) — 표2(GPT Search) 는 없음 (사용자 지시 2026-10-26)', async () => {
+  it('에어컨 표(표1·표2) 는 모두 없음 — 1번 박스는 본문 + 핑크 결론만 (사용자 지시 2026-11-20)', async () => {
     const h = await render({ v3Ex1B2: SLOT1, v3Ex3B2: SLOT3 })
     const a1 = idx(h, '하락폭이 크게 나타났습니다.')
     const mid = idx(h, '특히 GPT Search에서는 주요 경쟁사')
     const a2 = idx(h, '4위와 3위로 내려갔습니다.')
     const p1 = idx(h, `<span data-pk="1" style="color:#FDA4AF;">${P1}</span>`)
-    const t1 = idx(h, 'data-blk="oct1"')
-    // 순서: 본문 → 4위·3위 문장 → 핑크 결론 → 표1(박스 맨 아래)
-    expect(a1 < mid && mid < a2 && a2 < p1 && p1 < t1).toBe(true)
-    expect(h.slice(t1, t1 + 40)).toMatch(/^data-blk="oct1" data-br="0"/)   // 결론 문장이 끝이라 삼킨 br 없음
+    expect(a1 < mid && mid < a2 && a2 < p1).toBe(true)
+    expect(h).not.toContain('data-blk="oct1"')
     expect(h).not.toContain('data-blk="oct2"')
+    expect(h).not.toContain('에어컨 주요 브랜드 Visibility 변화')
     expect(h).not.toContain('Visibility 변화 – GPT Search')
-    expect(h).not.toContain('1→2→4위')
-    // 표 내용 + 제목 앞 붉은 막대 (표1./표2. 접두 없음)
-    expect(h).not.toMatch(/표\s?[12]\./)
-    const t1Head = h.slice(t1, t1 + 700)
-    expect(t1Head).toContain('background:#CF0652')      // 붉은 막대
-    expect(t1Head).toContain('에어컨 주요 브랜드 Visibility 변화 – Total')
     // Readability 마지막 문단 핑크 (문장 고정이 아니라 마지막 문단)
     expect(h).toContain(`<span data-pk="1" style="color:#FDA4AF;">${P3}</span>`)
     expect(h).not.toContain('<span data-pk="1" style="color:#FDA4AF;">국가별로는 스페인')
   })
 
-  it('이어쓰기 칸(v3Ex1B2b)에 글이 있으면 핑크·표1 은 그 칸 끝으로 — 본문 칸엔 핑크 없음, 표는 1개', async () => {
+  it('이어쓰기 칸(v3Ex1B2b)에 글이 있으면 핑크는 그 칸 끝으로 — 본문 칸엔 핑크 없음', async () => {
     const h = await render({ v3Ex1B2: SLOT1, v3Ex1B2b: '이어쓴 결론 문단.' })
-    const pk = idx(h, '<span data-pk="1" style="color:#FDA4AF;">이어쓴 결론 문단.</span>')
-    const t1 = idx(h, 'data-blk="oct1"')
-    expect(pk).toBeLessThan(t1)
-    expect(h.match(/data-blk="oct1"/g).length).toBe(1)
+    idx(h, '<span data-pk="1" style="color:#FDA4AF;">이어쓴 결론 문단.</span>')
     expect(h).not.toContain(`<span data-pk="1" style="color:#FDA4AF;">${P1}</span>`)
   })
 
@@ -148,12 +135,14 @@ describe('emailTemplate — 10월호 Exec Summary (사용자 지시 2026-10-26)'
     expect(h).toContain('<span data-pk="1" style="color:#FDA4AF;">향후 계획은 수정된 문장입니다. 두 번째 문장도 있습니다.</span>')
   })
 
-  it('옛 저장본에 표2 블록이 섞여 있어도 다음 렌더에서 걷어내고 다시 끼우지 않는다', async () => {
-    const stale = insertAfterSentence(SLOT1, P1, '<table><tr><td>OLD T2</td></tr></table>', 'oct2').html
+  it('옛 저장본에 표1·표2 블록이 섞여 있어도 다음 렌더에서 걷어내고 다시 끼우지 않는다', async () => {
+    const stale = appendBlock(insertAfterSentence(SLOT1, P1, '<table><tr><td>OLD T2</td></tr></table>', 'oct2').html, '<table><tr><td>OLD T1</td></tr></table>', 'oct1')
     const h = await render({ v3Ex1B2: stale })
     expect(h).not.toContain('data-blk="oct2"')
+    expect(h).not.toContain('data-blk="oct1"')
     expect(h).not.toContain('OLD T2')
-    expect(h.match(/data-blk="oct1"/g).length).toBe(1)
+    expect(h).not.toContain('OLD T1')
+    expect(h).toContain(`<span data-pk="1" style="color:#FDA4AF;">${P1}</span>`)
   })
 
   it('기존 LLM 트렌드 차트·답변 예시 카드·Citation 출처 각주는 사라진다', async () => {
@@ -163,27 +152,36 @@ describe('emailTemplate — 10월호 Exec Summary (사용자 지시 2026-10-26)'
     expect(h).not.toContain('OpenAI Help Center')
   })
 
-  it('편집 모드: 삽입 블록은 contenteditable=false (사용자 본문 저장 시 섞여도 다음 렌더에서 걷어냄)', async () => {
+  it('편집 모드: 저장본을 다시 넣어도 핑크 중복 없음 + 표 없음', async () => {
     const h = await render({ v3Ex1B2: SLOT1 }, 'ko', { editable: true })
-    expect(h).toMatch(/<div data-blk="oct1" data-br="0" contenteditable="false">/)
-    // 편집기 blur 가 저장하는 것 = 편집 span 의 innerHTML (블록·핑크 포함). 그걸 다시 넣어도 중복 생성 X
+    expect(h).not.toContain('data-blk="oct1"')
     const slotStart = h.indexOf('data-edit="v3Ex1B2"')
     const innerStart = h.indexOf('>', slotStart) + 1
-    const innerEnd = h.indexOf('</span></div>', h.indexOf('data-blk="oct1"'))
+    const innerEnd = h.indexOf('</div>', h.indexOf('구체화할 예정입니다.'))
     const saved = h.slice(innerStart, innerEnd)
     expect(saved).toContain('구체화할 예정입니다.')
-    expect(saved.indexOf('data-blk="oct1"')).toBeGreaterThan(saved.indexOf('구체화할 예정입니다.'))   // 표 1 이 슬롯 끝
     const h2 = await render({ v3Ex1B2: saved }, 'ko', { editable: true })
-    expect(h2.match(/data-blk="oct1"/g).length).toBe(1)
-    expect(h2).not.toContain('data-blk="oct2"')
+    expect(h2).not.toContain('data-blk="oct1"')
     expect(h2.match(new RegExp('data-pk="1" style="color:#FDA4AF;">' + '즉, 주요 국가에서', 'g')).length).toBe(1)
   })
 
-  it('EN(앵커 문장 없음): 표 1 을 본문 끝에 이어 붙인다 — 깨지지 않음', async () => {
+  it('EN: 에어컨 표 없음 — 깨지지 않음', async () => {
     const h = await render({}, 'en')
-    expect(h).toContain('data-blk="oct1"')
-    expect(h).toContain('AC Visibility change by major brand – Total')
+    expect(h).not.toContain('data-blk="oct1"')
+    expect(h).not.toContain('AC Visibility change by major brand')
     expect(h).not.toContain('data-blk="oct2"')
     expect(h).not.toContain('/api/hl-chart')
+  })
+
+  it('헤더 우측 상단: 기본 "2026년 10월"/"Oct 2026" (Vol 없음), headerTag 로 편집 가능 (사용자 지시 2026-11-20)', async () => {
+    const ko = await render({ reportNo: 'Vol.05', period: '2026년 9월' })
+    expect(ko).toContain('>2026년 10월</span></td>')
+    expect(ko).not.toContain('Vol.05')
+    const en = await render({ reportNo: 'Vol.05', period: '2026년 9월' }, 'en')
+    expect(en).toContain('>Oct 2026</span></td>')
+    const custom = await render({ headerTag: 'Vol.08 · 2026년 10월' })
+    expect(custom).toContain('Vol.08 · 2026년 10월')
+    const ed = await render({}, 'ko', { editable: true })
+    expect(ed).toContain('data-edit="headerTag" data-edit-plain="1"')
   })
 })

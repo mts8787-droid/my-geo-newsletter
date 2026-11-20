@@ -4,7 +4,7 @@ import { PROD_ID_TO_UL_CODE as UL_PROD_MAP, PROD_ID_TO_UL_CODE, PROD_ID_TO_KR, P
 import { rdBandColor } from './shared/readabilityBand.js'
 import { compRatioStr } from './shared/compRatio.js'
 import { parsePeriod } from './shared/reportPeriod.js'
-import { appendBlock, colorizeLastParagraph, stripInserted } from './shared/sentenceBlocks.js'
+import { colorizeLastParagraph, stripInserted } from './shared/sentenceBlocks.js'
 import { resolveProductsByLlm, resolveProductsCntyByLlm, resolveTotalByLlm } from './shared/llmModel.js'
 import { _logWarn } from './sheetParserUtils.js'
 import { dcColLabel } from './shared/constants.js'
@@ -1022,54 +1022,10 @@ function insightV3Parts(meta = {}, lang = 'ko', productsCnty = [], assetBase = '
   //   본문을 어떻게 고쳐 저장해도 마지막 문단은 핑크, 표는 항상 맨 아래.
   const OCT_PINK = '#FDA4AF'   // 결론/향후 방향 문단 — 박스 2 의 마지막 문장과 같은 핑크
 
-  // 흰 카드 표 — 제목(붉은 막대) + 부제 + 표 + (선택) 각주. 블록 안에 <div> 금지 (stripInserted 제약).
-  // 컴팩트: 행 padding 4px·글자 11.5px (사용자 지시 2026-10-26 "높이는 적도록").
-  const octCard = (title, sub, cols, head, rows, note = '') => {
-    const th = (t, i) => `<th style="padding:0 5px 4px;font-size:10.5px;font-weight:800;color:#475569;text-align:${cols[i].align};border-bottom:2px solid #E2E8F0;font-family:${EM_FONT};letter-spacing:-0.3px;white-space:nowrap;">${t}</th>`
-    const td = (c, i, last) => {
-      const v = typeof c === 'string' ? { v: c } : c
-      // tone: down(빨강 강조) / em(검정 강조) / 없음(보통)
-      const color = v.tone === 'down' ? '#BE123C' : '#1A1A1A'
-      const weight = v.tone ? 800 : 500
-      return `<td style="padding:4px 5px;font-size:11.5px;line-height:16px;font-weight:${weight};color:${color};text-align:${cols[i].align};${last ? '' : 'border-bottom:1px solid #F1F5F9;'}font-family:${EM_FONT};letter-spacing:-0.3px;${cols[i].align === 'right' ? 'font-variant-numeric:tabular-nums;' : ''}white-space:nowrap;">${v.v}</td>`
-    }
-    return `
-      <table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;background:#FFFFFF;border:1px solid #E8EDF2;border-radius:10px;margin:10px 0 0;">
-        <tr><td style="padding:9px 12px 8px;">
-          <p style="margin:0 0 1px;font-size:12.5px;font-weight:800;color:#1A1A1A;line-height:18px;font-family:${EM_FONT};letter-spacing:-0.4px;"><span style="display:inline-block;width:3px;height:12px;background:${EM_RED};border-radius:1px;vertical-align:-1px;margin-right:6px;"></span>${title}</p>
-          <p style="margin:0 0 5px;font-size:10px;color:#64748B;line-height:14px;font-family:${EM_FONT};">${sub}</p>
-          <table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;border-collapse:collapse;">
-            <colgroup>${cols.map(c => `<col style="width:${c.w};"/>`).join('')}</colgroup>
-            <tr>${head.map(th).join('')}</tr>
-            ${rows.map((r, ri) => `<tr>${r.map((c, i) => td(c, i, ri === rows.length - 1)).join('')}</tr>`).join('')}
-          </table>
-          ${note ? `<p style="margin:6px 0 0;font-size:10px;color:#64748B;line-height:1.5;font-family:${EM_FONT};">${note}</p>` : ''}
-        </td></tr>
-      </table>`
-  }
-  // 수치·강조는 사용자 제공 표 그대로 (에어컨 8→9월 증감 %p)
-  // 표 2 삭제 후 5개 열을 전체 너비에 재배분 — 국가 24% + 브랜드 4열 19% (사용자 지시 2026-10-26)
-  const OCT_COLS = [{ w: '24%', align: 'left' }, { w: '19%', align: 'right' }, { w: '19%', align: 'right' }, { w: '19%', align: 'right' }, { w: '19%', align: 'right' }]
-  const dn = (v) => ({ v, tone: 'down' })
-  const octTable1 = octCard(
-    L('에어컨 주요 브랜드 Visibility 변화 – Total', 'AC Visibility change by major brand – Total'),
-    L('8월 대비 9월 증감 | 단위: %p', 'Sep vs Aug | unit: %p'),
-    OCT_COLS,
-    [L('국가', 'Country'), 'LG', 'Daikin', 'Mitsubishi', 'Midea'],
-    [
-      [L('전체', 'Total'), dn('-0.9'), '-0.5', '+0.1', '+0.1'],
-      [L('영국', 'UK'), dn('-2.0'), '-0.8', '+0.1', '-1.2'],
-      [L('스페인', 'Spain'), dn('-1.8'), '+0.1', '+1.5', '+0.6'],
-      [L('호주', 'Australia'), dn('-1.9'), '-1.5', '-0.9', '-0.2'],
-      [L('미국', 'US'), dn('-1.4'), '-0.7', '+1.4', '-0.4'],
-    ])
-
-  // 편집 모드에서는 블록을 편집 불가 섬으로 — 저장(blur) 시 본문 HTML 에 함께 저장되더라도
-  // 다음 렌더의 stripInserted 가 걷어내고 다시 끼운다 (멱등).
-  const octWrap = _ED ? ' contenteditable="false"' : ''
   // stripInserted 가 옛 저장본에 섞인 블록(표 2 data-blk="oct2" 포함)·색칠을 먼저 걷어낸다 (멱등)
   const pinkLastPara = (h) => colorizeLastParagraph(stripInserted(h), OCT_PINK)
-  const octProc1 = (h) => appendBlock(pinkLastPara(h), octTable1, 'oct1', octWrap)
+  // 표 1(에어컨) 삭제 (사용자 지시 2026-11-20) — 핑크 마지막 문단만 유지. 옛 저장본의 oct1 블록은 stripInserted 가 걷어냄.
+  const octProc1 = (h) => pinkLastPara(h)
   // 박스 1 은 본문 칸이 3개(v3Ex1B2 + 이어쓰기 b·c) — 핑크·표는 **내용이 있는 마지막 칸**에만 둔다.
   // 칸마다 처리하면 이어쓰기 칸에 글을 쓰는 순간 표가 박스 중간으로 가고 핑크 문단이 여러 개 생긴다.
   const hasSlotText = (f) => meta[f] != null && meta[f] !== '' &&
@@ -3393,7 +3349,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
             <table border="0" cellpadding="0" cellspacing="0" width="100%">
               <tr>
                 <td style="font-size:15px;font-weight:700;color:#FFCCD8;font-family:${EM_FONT};">LG ELECTRONICS</td>
-                <td align="right" style="font-size:14px;color:#FFB0C0;font-family:${EM_FONT};"><span${edAttr('reportNo', meta.reportNo)}>${escapeHtml(meta.reportNo)}</span> · <span${edAttr('period', meta.period)}>${escapeHtml(periodDisp(meta.period, lang))}</span></td>
+                <td align="right" style="font-size:14px;color:#FFB0C0;font-family:${EM_FONT};"><span${edAttr('headerTag')}>${escapeHtml(String(meta.headerTag || '').trim() || (lang === 'en' ? 'Oct 2026' : '2026년 10월'))}</span></td>
               </tr>
             </table>
           </td>

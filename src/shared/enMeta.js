@@ -28,6 +28,8 @@ const V3_TRANSLATE_FIELDS = ['v3Ex1T', 'v3Ex1B', 'v3Ex2T', 'v3Ex2B',
 EN_TEXT_FIELDS.push(...V3_TRANSLATE_FIELDS)
 // 제품별 Visibility 하단 미출시 각주 (2026-09-22) — 자동 생성 기본값 + 언어별 편집
 EN_TEXT_FIELDS.push('productUlFootnote')
+// 헤더 우측 상단 표기 (2026-11-20) — Vol·발행월 파생 대신 자유 텍스트, KO/EN 독립 편집
+EN_TEXT_FIELDS.push('headerTag')
 
 // EN meta = KO 구조(토글·레이아웃·수치) 그대로 + EN 번역 텍스트만 오버레이.
 // metaEn 을 통째로 쓰면 예전 번역 시점의 구조 스냅샷이 남아 KO 변경(신규 섹션·개정 문구)이
