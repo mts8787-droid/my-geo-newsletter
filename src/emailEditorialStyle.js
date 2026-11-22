@@ -38,7 +38,9 @@ function firstAfter(s, from, keys) {
 const EXEC_COLORS = {
   '#FFFFFF': ED_T1, 'rgb(255, 255, 255)': ED_T1, '#94A3B8': ED_T2, '#64748B': ED_TM, '#CBD5E1': ED_T2, '#E2E8F0': ED_T2,
   '#1E2433': ED_GRID, '#1E293B': '#FFFFFF', '#334155': ED_RULE, '#475569': ED_TM,
-  '#FDA4AF': ED_ACCENT, 'rgb(253, 164, 175)': ED_ACCENT, '#1E0F18': '#FFFFFF', '#3D1528': ED_RULE,
+  '#FDA4AF': ED_ACCENT, 'rgb(253, 164, 175)': ED_ACCENT,
+  // 서두+3개 박스를 감싸는 바깥 박스 — 연핑크로 흰 박스들과 구분 (사용자 요청 2026-11-23)
+  '#1E0F18': '#f9e8ed', '#3D1528': '#efc9d5',
 }
 
 const PALETTE = {
