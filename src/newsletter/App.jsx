@@ -10,6 +10,7 @@ import { INIT_META, INIT_TOTAL, INIT_PRODUCTS, INIT_DOTCOM, INIT_PRODUCTS_CNTY, 
 import { loadCache, saveCache } from '../shared/cache.js'
 import { fetchSnapshots, fetchSnapshotData, fetchBackupData, postSnapshot, updateSnapshot, deleteSnapshot, fetchSyncData, generateAIInsight, fetchBackups } from '../shared/api.js'
 import { resolveDataForLang } from '../shared/utils.js'
+import { isEditablePeriod } from '../shared/editorPeriodGate.js'
 import { computeCategoryStats, extractMonthFromPeriod } from '../shared/trackerCategoryStats.js'
 import { parseKPISheet } from '../tracker-v2/utils/sheetParser.js'
 // N2 — XLSX는 사용 시점에만 동적 로드 (~870KB)
@@ -230,9 +231,12 @@ export default function App() {
       setSnapshots(list)
       // 접속 시 가장 마지막에 작업한 저장본 자동 복원 — 로컬 캐시(savedAt)와 비교해
       // 서버 저장본이 더 최신일 때만. 캐시가 더 새로우면(저장 안 한 편집 포함) 캐시 유지.
-      if (list.length) {
-        const latest = [...list].sort((a, b) => (b.updatedAt || b.ts) - (a.updatedAt || a.ts))[0]
-        if (!cache || (cache.savedAt || 0) < (latest.updatedAt || latest.ts)) {
+      // 10월호 이전(편집 불가) 저장본은 후보에서 제외, 캐시가 9월호 이전이면 캐시도 무시 (2026-11-22)
+      const allowed = list.filter(s => isEditablePeriod(s.period))
+      const cacheLegacy = !!cache && !isEditablePeriod(cache.metaKo?.period)
+      if (allowed.length) {
+        const latest = [...allowed].sort((a, b) => (b.updatedAt || b.ts) - (a.updatedAt || a.ts))[0]
+        if (!cache || cacheLegacy || (cache.savedAt || 0) < (latest.updatedAt || latest.ts)) {
           handleSnapLoad(latest).then(ok => { if (ok) showSnapMsg(`마지막 작업 "${latest.name}" 자동 불러옴`, 5000) })
         }
       }
@@ -425,6 +429,11 @@ export default function App() {
     const full = isBackup ? await fetchBackupData(MODE, snap.ts) : await fetchSnapshotData(MODE, snap.ts)
     if (!full || full.data == null) { showSnapMsg('불러오기 실패 — 저장본을 찾을 수 없습니다', 4000); return false }
     const d = full.data
+    const period = (d.metaKo || d.meta || {}).period
+    if (!isEditablePeriod(period)) {
+      showSnapMsg(`"${snap.name}" 은(는) ${period || '기간 미상'} 저장본 — 편집기는 2026년 10월호부터만 불러올 수 있습니다`, 5000)
+      return false
+    }
     setMetaKo({ ...INIT_META, ...(d.metaKo || d.meta || {}) })
     setMetaEn({ ...INIT_META, ...(d.metaEn || {}) })
     if (d.total)     setTotal(d.total)
@@ -449,14 +458,18 @@ export default function App() {
     showSnapMsg(`"${snap.name}" 불러옴`)
     return true
   }
-  async function handleSnapDelete(idx) {
-    const snap = snapshots[idx]
+  async function handleSnapDelete(snap) {
     if (!snap) return
     const result = await deleteSnapshot(MODE, snap.ts)
     if (result) setSnapshots(result)
     if (activeSnap === snap.ts) setActiveSnap(null)
     fetchBackups(MODE).then(setBackups)  // 삭제분이 백업에 추가됨 — 목록 갱신
   }
+
+  // 편집기 불러오기 하한 — 2026년 10월호(데이터월)부터만 (에디토리얼 개편 이전 호는 구조가 달라 편집이 깨짐)
+  const editableSnaps = snapshots.filter(s => isEditablePeriod(s.period))
+  const hiddenSnapCount = snapshots.length - editableSnaps.length
+  const editableBackups = backups.filter(s => isEditablePeriod(s.period))
 
   return (
     <div style={{ display: 'flex', height: '100vh', background: '#0A0F1C', fontFamily: FONT }}>
@@ -580,16 +593,19 @@ export default function App() {
                 style={{ padding: '4px 10px', borderRadius: 6, border: 'none', cursor: 'pointer',
                   background: snapOpen ? '#334155' : '#1E293B', color: '#E2E8F0', fontSize: 11, fontWeight: 700, fontFamily: FONT,
                   display: 'flex', alignItems: 'center', gap: 4 }}>
-                <FolderOpen size={11} /> 불러오기 {snapshots.length > 0 && <span style={{ fontSize: 11, color: '#94A3B8' }}>({snapshots.length})</span>}
+                <FolderOpen size={11} /> 불러오기 {editableSnaps.length > 0 && <span style={{ fontSize: 11, color: '#94A3B8' }}>({editableSnaps.length})</span>}
               </button>
               {snapOpen && (
                 <div style={{ position: 'absolute', top: 32, right: 0, width: 320, maxHeight: 360, overflowY: 'auto',
                   background: '#1E293B', border: '1px solid #334155', borderRadius: 10, zIndex: 100, padding: 8,
                   boxShadow: '0 8px 24px rgba(0,0,0,0.4)' }}
                   onClick={e => e.stopPropagation()}>
-                  {snapshots.length === 0 ? (
+                  {hiddenSnapCount > 0 && (
+                    <p style={{ margin: '2px 6px 8px', fontSize: 10, color: '#64748B', fontFamily: FONT }}>2026년 10월호부터만 불러올 수 있어요 (이전 호 {hiddenSnapCount}개 숨김)</p>
+                  )}
+                  {editableSnaps.length === 0 ? (
                     <p style={{ margin: 0, padding: 12, fontSize: 11, color: '#64748B', fontFamily: FONT, textAlign: 'center' }}>저장된 버전이 없습니다</p>
-                  ) : snapshots.map((snap, i) => (
+                  ) : editableSnaps.map((snap) => (
                     <div key={snap.ts} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 10px',
                       borderRadius: 7, marginBottom: 2, background: activeSnap === snap.ts ? '#1E3A5F' : '#0F172A',
                       border: activeSnap === snap.ts ? '1px solid #3B82F6' : '1px solid transparent' }}>
@@ -605,7 +621,7 @@ export default function App() {
                           background: '#166534', color: '#FFFFFF', fontSize: 11, fontWeight: 700, fontFamily: FONT }}>
                         적용
                       </button>
-                      <button onClick={() => handleSnapDelete(i)}
+                      <button onClick={() => handleSnapDelete(snap)}
                         style={{ padding: '3px 5px', borderRadius: 5, border: 'none', cursor: 'pointer',
                           background: '#7F1D1D', color: '#FCA5A5', fontSize: 11, display: 'flex' }}>
                         <Trash2 size={10} />
@@ -621,7 +637,7 @@ export default function App() {
                 style={{ padding: '4px 10px', borderRadius: 6, border: 'none', cursor: 'pointer',
                   background: backupOpen ? '#334155' : '#1E293B', color: '#E2E8F0', fontSize: 11, fontWeight: 700, fontFamily: FONT,
                   display: 'flex', alignItems: 'center', gap: 4 }}>
-                <FolderOpen size={11} /> 백업 불러오기 {backups.length > 0 && <span style={{ fontSize: 11, color: '#94A3B8' }}>({backups.length})</span>}
+                <FolderOpen size={11} /> 백업 불러오기 {editableBackups.length > 0 && <span style={{ fontSize: 11, color: '#94A3B8' }}>({editableBackups.length})</span>}
               </button>
               {backupOpen && (
                 <div style={{ position: 'absolute', top: 32, right: 0, width: 320, maxHeight: 360, overflowY: 'auto',
@@ -629,9 +645,9 @@ export default function App() {
                   boxShadow: '0 8px 24px rgba(0,0,0,0.4)' }}
                   onClick={e => e.stopPropagation()}>
                   <p style={{ margin: '2px 6px 8px', fontSize: 10, color: '#64748B', fontFamily: FONT }}>삭제해도 최근 5개는 자동 백업됩니다</p>
-                  {backups.length === 0 ? (
+                  {editableBackups.length === 0 ? (
                     <p style={{ margin: 0, padding: 12, fontSize: 11, color: '#64748B', fontFamily: FONT, textAlign: 'center' }}>백업이 없습니다</p>
-                  ) : backups.map((snap) => (
+                  ) : editableBackups.map((snap) => (
                     <div key={snap.ts} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 10px',
                       borderRadius: 7, marginBottom: 2, background: '#0F172A', border: '1px solid transparent' }}>
                       <div style={{ flex: 1, minWidth: 0 }}>
