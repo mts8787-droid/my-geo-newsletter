@@ -16,6 +16,7 @@ export const ED_TM = '#86857f'
 export const ED_RULE = '#e6e5e0'
 export const ED_GRID = '#efeee9'
 export const ED_SURF = '#fcfcfb'
+export const ED_PAGE = '#f0ece4'   // 맨 뒤 페이지 배경 = LG.com 바탕 베이지 (게시본 언어 전환 바도 동일)
 
 const M = {
   exec: '<!-- ── 전체 GEO 가시성 지수 ── -->',
@@ -84,9 +85,10 @@ export function applyEditorialStyle(html) {
     return MAPPED.has(hex) ? hex : m
   })
 
-  // ── 페이지 배경 → 흰 바탕 ──
-  s = s.replace('<body style="margin:0;padding:0;background-color:#F1F5F9;', '<body style="margin:0;padding:0;background-color:#FFFFFF;')
-  s = s.replace('width="100%" style="background-color:#F1F5F9;">', 'width="100%" style="background-color:#FFFFFF;">')
+  // ── 페이지(맨 뒤) 배경 → LG.com 페이지 바탕 베이지 (lg.com/uk 실측 #f0ece4, 사용자 요청 2026-11-23) ──
+  // body 는 Gmail 등이 무시하므로 바깥 100% 표에도 같이 지정
+  s = s.replace('<body style="margin:0;padding:0;background-color:#F1F5F9;', `<body style="margin:0;padding:0;background-color:${ED_PAGE};`)
+  s = s.replace('width="100%" style="background-color:#F1F5F9;">', `width="100%" style="background-color:${ED_PAGE};">`)
   // Notice: 핑크 박스 → 연회색 + 헤어라인 (흰 바탕에서 보이도록 연회색, 사용자 요청 2026-11-23)
   s = s.replace('background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;padding:14px 20px;',
     `background:#f4f3ef;border:1px solid ${ED_RULE};border-radius:10px;padding:16px 20px;`)

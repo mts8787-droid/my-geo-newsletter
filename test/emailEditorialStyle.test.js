@@ -32,7 +32,7 @@ describe('applyEditorialStyle', () => {
     expect(out).toContain('margin:8px 0 10px;font-size:30px;color:#0b0b0b;')
     expect(out).not.toContain('#0F172A')
     expect(out).toContain('background:#fcfcfb;border:1px solid #e6e5e0;border-radius:10px;')
-    expect(out).toContain('background-color:#FFFFFF;')
+    expect(out).toContain('background-color:#f0ece4;')   // 맨 뒤 = LG.com 베이지
   })
 
   it('+2 구간의 편집 필드만 data-fsb (저장 시 -2 복원 대상)', () => {
