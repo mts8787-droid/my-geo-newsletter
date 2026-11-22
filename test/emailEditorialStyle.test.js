@@ -59,3 +59,16 @@ describe('generateEmailHTML — 에디토리얼 헤더', () => {
     }
   })
 })
+
+describe('applyEditorialStyle — 편집기 rgb 색 정규화 · Notice 연회색 (2026-11-23)', () => {
+  it('rgb(…) 로 저장된 팔레트 색도 hex 와 같은 색으로 매핑 (KPI Logic 글자색 통일)', () => {
+    const out = applyEditorialStyle('<span style="color:#475569;">a</span><span style="color: rgb(71, 85, 105);">b</span><span style="color: rgb(1, 2, 3);">c</span>')
+    expect(out).toContain('color:#52514e;">a')
+    expect(out).toContain('color: #52514e;">b')
+    expect(out).toContain('rgb(1, 2, 3)')   // 팔레트 밖 색은 그대로
+  })
+  it('Notice 박스는 연회색', () => {
+    const out = applyEditorialStyle('<td style="background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;padding:14px 20px;">')
+    expect(out).toContain('background:#f4f3ef;border:1px solid #e6e5e0;')
+  })
+})

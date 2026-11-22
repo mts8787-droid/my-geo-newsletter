@@ -75,12 +75,21 @@ export function bumpFontSizes(t) {
 export function applyEditorialStyle(html) {
   let s = String(html || '')
 
+  // 편집기가 저장한 서식은 rgb(…) 로 들어온다 (execCommand styleWithCSS) → 팔레트 대상 색이면 hex 로 정규화해
+  // 아래 색 매핑을 같이 받게 한다. 안 하면 같은 슬레이트 글자가 hex 는 웜그레이·rgb 는 슬레이트로 갈려
+  // 한 박스 안에서 글자색이 달라진다 (KPI Logic 2·3번째 줄, 사용자 보고 2026-11-23).
+  const MAPPED = new Set([...Object.keys(PALETTE), ...Object.keys(EXEC_COLORS)].map(k => k.toUpperCase()))
+  s = s.replace(/rgb\(\s*(\d{1,3}),\s*(\d{1,3}),\s*(\d{1,3})\s*\)/g, (m, r, g, b) => {
+    const hex = '#' + [r, g, b].map(n => (+n).toString(16).padStart(2, '0')).join('').toUpperCase()
+    return MAPPED.has(hex) ? hex : m
+  })
+
   // ── 페이지 배경 → 흰 바탕 ──
   s = s.replace('<body style="margin:0;padding:0;background-color:#F1F5F9;', '<body style="margin:0;padding:0;background-color:#FFFFFF;')
   s = s.replace('width="100%" style="background-color:#F1F5F9;">', 'width="100%" style="background-color:#FFFFFF;">')
-  // Notice: 핑크 박스 → surface-1 + 헤어라인
+  // Notice: 핑크 박스 → 연회색 + 헤어라인 (흰 바탕에서 보이도록 연회색, 사용자 요청 2026-11-23)
   s = s.replace('background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;padding:14px 20px;',
-    `background:${ED_SURF};border:1px solid ${ED_RULE};border-radius:10px;padding:16px 20px;`)
+    `background:#f4f3ef;border:1px solid ${ED_RULE};border-radius:10px;padding:16px 20px;`)
   // 구분선 2px 레드 → 1px 헤어라인
   s = s.replace(/<td height="2" style="background:#CF0652;font-size:0;line-height:0;">&nbsp;<\/td>/,
     `<td height="1" style="background:${ED_RULE};font-size:0;line-height:0;">&nbsp;</td>`)
