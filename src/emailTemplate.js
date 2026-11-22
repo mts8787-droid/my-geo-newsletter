@@ -9,6 +9,7 @@ import { resolveProductsByLlm, resolveProductsCntyByLlm, resolveTotalByLlm } fro
 import { _logWarn } from './sheetParserUtils.js'
 import { dcColLabel } from './shared/constants.js'
 import { mergeCitDomainRows, isTtlLlmVal } from './shared/citDomainAgg.js'
+import { applyEditorialStyle, ED_ACCENT, ED_T1, ED_T2, ED_TM, ED_RULE } from './emailEditorialStyle.js'
 
 const EM_RED  = '#CF0652'
 // Citation 차트 전용 — 짙은 녹색 계열 (LG_RED 와 구분)
@@ -392,6 +393,8 @@ function edScriptHtml() {
       var f=el.getAttribute('data-edit');
       var plain=el.hasAttribute('data-edit-plain');
       var v=plain?(el.innerText||'').replace(/\\u00a0/g,' ').trim():clean(el.innerHTML);
+      // 에디토리얼 +2px 구간(data-fsb): 화면 크기 그대로 저장하면 렌더마다 +2 누적 → 저장 전 -2 복원 (emailEditorialStyle.js)
+      if(!plain&&el.hasAttribute('data-fsb'))v=v.replace(/(font-size:\\s*|line-height:\\s*)(\\d+(?:\\.\\d+)?)px/g,function(m,p,n){n=parseFloat(n);return n>=10?p+(n-2)+'px':m;});
       try{window.parent.postMessage({type:'editMeta',field:f,value:v},'*');}catch(e){}
     });
   });
@@ -3309,7 +3312,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
   // 국가별 Citation 도메인 (내부 테이블만)
   const citationCntyInnerHtml = citationCntyTableHtml(citationsCnty, lang)
 
-  return `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+  return applyEditorialStyle(`<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
@@ -3343,33 +3346,18 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
       <!-- 메인 컨테이너 -->
       <table border="0" cellpadding="0" cellspacing="0" width="${containerWidth}" style="width:${containerWidth}px;max-width:${containerWidth}px;table-layout:fixed;background:#FFFFFF;border-radius:16px;font-family:${EM_FONT};">
 
-        <!-- ══ 헤더 상단 레드 바 ══ -->
+        <!-- ══ 헤더 (에디토리얼: 키커 + H1 + 리드 + 메타 라인, 2026-11-22) ══ -->
         <tr>
-          <td style="background:${EM_RED};padding:10px 16px;">
-            <table border="0" cellpadding="0" cellspacing="0" width="100%">
+          <td style="background:#FFFFFF;padding:36px 28px 0;">
+            <p style="margin:0;font-size:12px;letter-spacing:0.08em;color:${ED_ACCENT};font-weight:700;text-transform:uppercase;font-family:${EM_FONT};">LG ELECTRONICS &nbsp;/&nbsp; <span${edAttr('headerTag')}>${escapeHtml(String(meta.headerTag || '').trim() || (lang === 'en' ? 'Oct 2026' : '2026년 10월'))}</span></p>
+            <p style="margin:8px 0 10px;font-size:${meta.titleFontSize || 30}px;line-height:1.3;font-weight:800;letter-spacing:-0.01em;color:${meta.titleColor || ED_T1};font-family:${EM_FONT};"><span${edAttr('title', meta.title)}>${escapeHtml(meta.title || (lang === 'en' ? 'Generative AI Engine Visibility Performance Analysis' : '생성형 AI 엔진 가시성(Visibility) 성과 분석'))}</span></p>
+            <p style="margin:0 0 20px;font-size:16px;color:${ED_T2};font-family:${EM_FONT};"><span${edAttr('dateLine', meta.dateLine)}>${escapeHtml(dateLineDisp(meta.dateLine, meta.period, lang))}</span></p>
+            <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border-top:1px solid ${ED_RULE};border-bottom:1px solid ${ED_RULE};">
               <tr>
-                <td style="font-size:15px;font-weight:700;color:#FFCCD8;font-family:${EM_FONT};">LG ELECTRONICS</td>
-                <td align="right" style="font-size:14px;color:#FFB0C0;font-family:${EM_FONT};"><span${edAttr('headerTag')}>${escapeHtml(String(meta.headerTag || '').trim() || (lang === 'en' ? 'Oct 2026' : '2026년 10월'))}</span></td>
+                <td style="padding:8px 0;font-size:12px;color:${ED_TM};font-family:${EM_FONT};"><span${edAttr('reportType', meta.reportType)}>${escapeHtml(meta.reportType || (lang === 'en' ? 'GEO Monthly Performance Report' : 'GEO 월간 성과 분석 리포트'))}</span></td>
+                <td align="right" style="padding:8px 0;font-size:12px;color:${ED_TM};font-family:${EM_FONT};"><span${edAttr('team', meta.team)}>${escapeHtml(meta.team)}</span></td>
               </tr>
             </table>
-          </td>
-        </tr>
-
-        <!-- ══ 헤더 타이틀 ══ -->
-        <tr>
-          <td style="background:#FFFFFF;padding:26px 28px 16px;">
-            <table border="0" cellpadding="0" cellspacing="0" width="100%">
-              <tr>
-                <td style="font-size:14px;color:#94A3B8;font-family:${EM_FONT};font-weight:400;"><span${edAttr('reportType', meta.reportType)}>${escapeHtml(meta.reportType || (lang === 'en' ? 'GEO Monthly Performance Report' : 'GEO 월간 성과 분석 리포트'))}</span></td>
-                <td align="right" style="font-size:14px;color:#94A3B8;font-family:${EM_FONT};font-weight:400;"><span${edAttr('team', meta.team)}>${escapeHtml(meta.team)}</span></td>
-              </tr>
-            </table>
-            <p style="margin:16px 0 10px;text-align:center;line-height:1.2;">
-              <span${edAttr('title', meta.title)} style="font-size:${meta.titleFontSize || 24}px;font-weight:700;color:${meta.titleColor || '#1A1A1A'};font-family:${EM_FONT};">${escapeHtml(meta.title || (lang === 'en' ? 'Generative AI Engine Visibility Performance Analysis' : '생성형 AI 엔진 가시성(Visibility) 성과 분석'))}</span>
-            </p>
-            <p style="margin:0;text-align:center;">
-              <span${edAttr('dateLine', meta.dateLine)} style="font-size:18px;color:#475569;font-family:${EM_FONT};font-weight:400;">${escapeHtml(dateLineDisp(meta.dateLine, meta.period, lang))}</span>
-            </p>
             ${meta.showNotice && (meta.noticeText || _ED) ? `
             <table border="0" cellpadding="0" cellspacing="0" width="100%">
               <tr><td height="14" style="font-size:0;line-height:0;">&nbsp;</td></tr>
@@ -3720,5 +3708,5 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
 <script>function switchTrend(m){document.querySelectorAll('.trend-weekly').forEach(function(e){e.style.display=m==='weekly'?'':'none'});document.querySelectorAll('.trend-monthly').forEach(function(e){e.style.display=m==='monthly'?'':'none'});document.querySelectorAll('.trend-tab-btn').forEach(function(b){b.style.background=b.getAttribute('onclick').indexOf(m)>=0?'#CF0652':'transparent';b.style.color=b.getAttribute('onclick').indexOf(m)>=0?'#fff':'#64748B'})}</script>
 ${edScriptHtml()}
 </body>
-</html>`
+</html>`)
 }

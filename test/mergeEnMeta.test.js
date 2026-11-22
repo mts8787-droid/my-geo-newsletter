@@ -90,7 +90,7 @@ describe('제품 카드 V4 — 경합 표기 (경쟁비 ≤ 0.05)', () => {
   it('경쟁비 0.03 → 경합 배지 + 검은색', async () => {
     const html = await render(mk(1.2, 40.0), 'v4')
     expect(html).toContain('경합')
-    expect(html).toContain('#1A1A1A')
+    expect(html).toContain('#0b0b0b')   // #1A1A1A → 에디토리얼 텍스트색 (emailEditorialStyle 2026-11-22)
   })
   it('경계값 0.05 는 포함, 0.06 은 제외', async () => {
     expect(await render(mk(2.0, 40.0), 'v4')).toContain('경합')   // 0.050
