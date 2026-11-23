@@ -342,6 +342,12 @@ function edRich(field) {
   return _ED ? ` data-edit="${field}"` : ''
 }
 
+// KPI Logic — 저장본에 줄마다 직접 지정된 px 글자 크기가 섞여 줄마다 크기가 달랐다 → px 크기 제거해 블록 기본 크기로 통일
+// (사용자 요청 2026-11-23). 붙여넣은 평가표의 pt 크기는 유지.
+function stripPxFontSize(html) {
+  return html == null ? html : String(html).replace(/font-size:\s*\d+(?:\.\d+)?px;?\s*/gi, '')
+}
+
 // 편집 가능 텍스트 블록 — 렌더 결과를 감싸는 div (raw 없으면 placeholder). 서식 편집 → HTML 저장.
 function edBlock(field, raw, opts = {}) {
   const ph = opts.ph || (opts.lang === 'en' ? 'Click to edit...' : '클릭하여 입력...')
@@ -3049,8 +3055,10 @@ function readabilityHighlightHtml(rd, meta = {}, lang = 'ko', contentWidth = 848
   const CCN = lang === 'en' ? RD_CC_EN : RD_CC_KO
 
   // ① Readability란? — 별도 박스로 영역 구분
-  const introBox = `<table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FEF2F4;border:1px solid #FECDD3;border-radius:10px;margin:0 0 22px;">
+  // INSIGHT 박스와 같은 색 + 상단 INSIGHT 붉은 라벨 (사용자 요청 2026-11-23)
+  const introBox = `<table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#FFF4F7;border:1px solid #F5CCD8;border-radius:10px;margin:0 0 22px;">
     <tr><td style="padding:16px 20px;">
+      <p style="margin:0 0 6px;font-size:13px;font-weight:700;color:${EM_RED};font-family:${EM_FONT};letter-spacing:0.5px;">${(T[lang] || T.ko).insight}</p>
       ${rdPara(tx('intro2'), { gap: 8, field: 'rd_intro2' })}
       ${rdFootnotes(tx('introNotes'), 'rd_introNotes', { plain: true })}
     </td></tr>
@@ -3374,7 +3382,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
               <tr>
                 <td style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;padding:12px 10px;">
                   <p style="margin:0 0 6px;padding-left:6px;font-size:13px;font-weight:700;color:#64748B;font-family:${EM_FONT};letter-spacing:0.5px;">${t.kpiLogic}</p>
-                  ${edBlock('kpiLogicText', meta.kpiLogicText, { size: 14, lh: 24, color: '#475569', accent: '#64748B', lang })}
+                  ${edBlock('kpiLogicText', stripPxFontSize(meta.kpiLogicText), { size: 14, lh: 24, color: '#475569', accent: '#64748B', lang })}
                 </td>
               </tr>
             </table>` : ''}

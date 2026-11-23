@@ -16,6 +16,8 @@ export const ED_TM = '#86857f'
 export const ED_RULE = '#e6e5e0'
 export const ED_GRID = '#efeee9'
 export const ED_SURF = '#fcfcfb'
+export const ED_INSIGHT = '#f4f3ef'          // INSIGHT 박스 배경 (Notice 와 동일 연회색)
+export const ED_INSIGHT_BORDER = '#dedcd5'   // INSIGHT 박스 보더 — 헤어라인보다 한 단계 진하게
 export const ED_PAGE = '#f0ece4'   // 맨 뒤 페이지 배경 = LG.com 바탕 베이지 (게시본 언어 전환 바도 동일)
 
 const M = {
@@ -120,8 +122,11 @@ export function applyEditorialStyle(html) {
   s = s.replaceAll('background:#FAFBFC;border-bottom:1px solid #F1F5F9;', `background:#FFFFFF;border-bottom:1px solid ${ED_RULE};`)
   s = s.replace(/<td width="3" style="background:#CF0652;border-radius:2px;">&nbsp;<\/td>\s*/g, '')
   s = s.replaceAll('padding-left:8px;font-size:19px;font-weight:700;', 'padding-left:0;font-size:18px;font-weight:800;letter-spacing:-0.01em;')
-  // INSIGHT 핑크 박스 → surface-1
-  s = s.replaceAll('background:#FFF4F7;border:1px solid #F5CCD8;', `background:${ED_SURF};border:1px solid ${ED_RULE};`)
+  // INSIGHT 핑크 박스 → 연회색 (surface-1 은 모니터에서 흰색과 구분이 안 됨, 사용자 요청 2026-11-23)
+  s = s.replaceAll('background:#FFF4F7;border:1px solid #F5CCD8;', `background:${ED_INSIGHT};border:1px solid ${ED_INSIGHT_BORDER};`)
+  // 소제목 앞 빨간 세로 막대 제거 — 섹션 제목과 통일 (Readability 국가별/페이지 타입별/평가 영역별, Action Plan 소제목)
+  s = s.replace(/<td width="4" style="background:#CF0652;border-radius:2px;font-size:0;line-height:0;">&nbsp;<\/td><td([^>]*?) style="padding-left:8px;/g, '<td$1 style="padding-left:0;')
+  s = s.replace(/<span style="display:inline-block;width:3px;height:14px;background:#CF0652;border-radius:2px;vertical-align:middle;margin-right:7px;"><\/span>/g, '')
 
   // ── 전역 팔레트 ──
   s = s.replace(/#[0-9a-fA-F]{6}\b/g, m => PALETTE[m.toUpperCase()] || m)

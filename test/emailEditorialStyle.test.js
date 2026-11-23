@@ -72,3 +72,22 @@ describe('applyEditorialStyle — 편집기 rgb 색 정규화 · Notice 연회�
     expect(out).toContain('background:#f4f3ef;border:1px solid #e6e5e0;')
   })
 })
+
+describe('INSIGHT 연회색 · 소제목 빨간 막대 제거 · KPI Logic 크기 통일 (2026-11-23)', () => {
+  it('INSIGHT 박스는 연회색 + 진한 보더, 소제목 막대 제거', () => {
+    const out = applyEditorialStyle(
+      '<table style="border-radius:8px;background:#FFF4F7;border:1px solid #F5CCD8;"></table>' +
+      '<td width="4" style="background:#CF0652;border-radius:2px;font-size:0;line-height:0;">&nbsp;</td><td data-edit="rd_ccTitle" style="padding-left:8px;font-size:16px;">국가별 점수</td>' +
+      '<span style="display:inline-block;width:3px;height:14px;background:#CF0652;border-radius:2px;vertical-align:middle;margin-right:7px;"></span><span>1. 외부 채널 관리</span>')
+    expect(out).toContain('background:#f4f3ef;border:1px solid #dedcd5;')
+    expect(out).toContain('<td data-fsb="1" data-edit="rd_ccTitle" style="padding-left:0;font-size:18px;">국가별 점수')
+    expect(out).not.toContain('width:3px;height:14px')
+  })
+  it('KPI Logic 저장본의 줄별 px 크기는 제거, 평가표 pt 크기는 유지', async () => {
+    const { generateEmailHTML } = await import('../src/emailTemplate.js')
+    const h = generateEmailHTML({ showKpiLogic: true, kpiLogicText: '<b>A</b><br><span style="color: rgb(71, 85, 105); font-size: 16px;">B</span><span style="font-size:8.5pt">C</span>' },
+      { score: 40 }, [], [], {}, 'ko', [], [], {})
+    expect(h).toContain('<span style="color: #52514e; ">B</span>')
+    expect(h).toContain('font-size:8.5pt')
+  })
+})
