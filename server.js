@@ -1,5 +1,6 @@
 import express from 'express'
 import rateLimit from 'express-rate-limit'
+import compression from 'compression'
 import { fileURLToPath } from 'url'
 import { dirname } from 'path'
 import { existsSync } from 'fs'
@@ -45,6 +46,9 @@ const app = express()
 const PORT = Number(process.env.PORT) || 3000
 
 app.set('trust proxy', 1)  // trust only the first proxy (Render load balancer)
+
+// gzip — JSON(sync-data·저장본)·HTML 응답 축소 (Render 아웃바운드 대역폭 절감 2026-11-24)
+app.use(compression())
 
 // 헬퍼·storage·auth·sanitize·lock·insight-runs 는 lib/ 에서 import (C11 step1·2)
 // 글로벌 SNAP_FILE / SYNC_FILE 은 storage 모듈에서 export됨

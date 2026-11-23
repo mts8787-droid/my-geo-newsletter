@@ -7,6 +7,7 @@ export function apiPaths(mode) {
   return {
     snapshots: `/api/${mode}/snapshots`,
     syncData: `/api/${mode}/sync-data`,
+    syncMeta: `/api/${mode}/sync-meta`,
     publish: mode === 'dashboard' ? '/api/publish-dashboard' : mode === 'citation' ? '/api/publish-citation' : mode === 'monthly-report' ? '/api/publish-monthly-report' : '/api/publish',
   }
 }
@@ -102,10 +103,10 @@ export async function fetchSyncData(mode) {
   } catch (err) { console.warn('[API] fetchSyncData failed:', err.message); return null }
 }
 
-// C16 — 데이터 신선도 메타만 가벼운 응답으로 조회 (배지·자동 갱신용)
+// C16 — 데이터 신선도 메타만 가벼운 응답으로 조회 (배지·자동 갱신용) — 전용 경량 엔드포인트 (<1KB)
 export async function fetchSyncMeta(mode) {
   try {
-    const r = await fetch(apiPaths(mode).syncData)
+    const r = await fetch(apiPaths(mode).syncMeta, { cache: 'no-store' })
     if (!r.ok) return null
     const j = await r.json()
     if (!j.ok) return null

@@ -221,14 +221,17 @@ function Sidebar({ mode, meta, setMeta, metaKo, setMetaKo, metaEn, setMetaEn, to
     return `${y}년 ${parseInt(mo, 10)}월`
   }
 
-  // C16 — 데이터 신선도 메타: 진입 시 + 1분마다 갱신, 동기화/저장 시 즉시 반영
+  // C16 — 데이터 신선도 메타: 진입 시 + 5분마다 갱신, 동기화/저장 시 즉시 반영 (refreshSyncMeta)
+  // 탭이 숨겨져 있으면 폴링 중지, 탭 복귀 시 즉시 1회 갱신 (Render 대역폭 절감 2026-11-24)
   const [syncMeta, setSyncMeta] = useState(null)
   useEffect(() => {
     let alive = true
-    const tick = () => fetchSyncMeta(mode).then(m => { if (alive) setSyncMeta(m) })
+    const tick = () => { if (!document.hidden) fetchSyncMeta(mode).then(m => { if (alive) setSyncMeta(m) }) }
+    const onVis = () => { if (!document.hidden) tick() }
     tick()
-    const iv = setInterval(tick, 60_000)
-    return () => { alive = false; clearInterval(iv) }
+    const iv = setInterval(tick, 5 * 60_000)
+    document.addEventListener('visibilitychange', onVis)
+    return () => { alive = false; clearInterval(iv); document.removeEventListener('visibilitychange', onVis) }
   }, [mode])
   function refreshSyncMeta() { fetchSyncMeta(mode).then(setSyncMeta) }
 
