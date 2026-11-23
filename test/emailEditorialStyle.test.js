@@ -32,7 +32,7 @@ describe('applyEditorialStyle', () => {
     expect(out).toContain('margin:8px 0 10px;font-size:30px;color:#0b0b0b;')
     expect(out).not.toContain('#0F172A')
     expect(out).toContain('background:#fcfcfb;border:1px solid #e6e5e0;border-radius:10px;')
-    expect(out).toContain('background-color:#f0ece4;')   // 맨 뒤 = LG.com 베이지
+    expect(out).toContain('background-color:#FFFFFF;')   // 맨 뒤 = 흰색 (제일 큰 박스가 베이지)
   })
 
   it('+2 구간의 편집 필드만 data-fsb (저장 시 -2 복원 대상)', () => {
@@ -67,9 +67,14 @@ describe('applyEditorialStyle — 편집기 rgb 색 정규화 · Notice 연회�
     expect(out).toContain('color: #52514e;">b')
     expect(out).toContain('rgb(1, 2, 3)')   // 팔레트 밖 색은 그대로
   })
-  it('Notice 박스는 연회색', () => {
-    const out = applyEditorialStyle('<td style="background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;padding:14px 20px;">')
-    expect(out).toContain('background:#f4f3ef;border:1px solid #e6e5e0;')
+  it('Notice 박스는 흰 카드 (베이지 컨테이너 위), 컨테이너는 베이지', () => {
+    const out = applyEditorialStyle('<td style="background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;padding:14px 20px;"><table style="table-layout:fixed;background:#FFFFFF;border-radius:16px;">')
+    expect(out).toContain('background:#FFFFFF;border:1px solid #e6e5e0;')
+    expect(out).toContain('table-layout:fixed;background:#f0ece4;border-radius:16px;')
+  })
+  it('붙여넣기로 딸려 온 글자 배경색(rgb)은 제거', () => {
+    const out = applyEditorialStyle('<span style="font-weight:bold; background-color: rgb(255, 244, 247);">x</span>')
+    expect(out).toBe('<span style="font-weight:bold; ">x</span>')
   })
 })
 

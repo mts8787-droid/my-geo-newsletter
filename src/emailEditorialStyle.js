@@ -18,7 +18,10 @@ export const ED_GRID = '#efeee9'
 export const ED_SURF = '#fcfcfb'
 export const ED_INSIGHT = '#f4f3ef'          // INSIGHT 박스 배경 (Notice 와 동일 연회색)
 export const ED_INSIGHT_BORDER = '#dedcd5'   // INSIGHT 박스 보더 — 헤어라인보다 한 단계 진하게
-export const ED_PAGE = '#f0ece4'   // 맨 뒤 페이지 배경 = LG.com 바탕 베이지 (게시본 언어 전환 바도 동일)
+// 제일 큰 박스(940 컨테이너) = LG.com 바탕 베이지 (lg.com/uk 실측), 맨 뒤 페이지는 흰색 — 흰 카드가 베이지 위에 뜨는
+// LG.com 구성 (사용자 요청 2026-11-23). 베이지 위 구분선은 헤어라인보다 한 단계 진하게.
+export const ED_FRAME = '#f0ece4'
+export const ED_FRAME_RULE = '#d6d2c8'
 
 const M = {
   exec: '<!-- ── 전체 GEO 가시성 지수 ── -->',
@@ -81,24 +84,28 @@ export function applyEditorialStyle(html) {
   // 편집기가 저장한 서식은 rgb(…) 로 들어온다 (execCommand styleWithCSS) → 팔레트 대상 색이면 hex 로 정규화해
   // 아래 색 매핑을 같이 받게 한다. 안 하면 같은 슬레이트 글자가 hex 는 웜그레이·rgb 는 슬레이트로 갈려
   // 한 박스 안에서 글자색이 달라진다 (KPI Logic 2·3번째 줄, 사용자 보고 2026-11-23).
+  // 붙여넣기로 딸려 온 글자 배경색(rgb) 제거 — 편집기에 형광펜 기능이 없어 전부 예전 박스색 잔재.
+  // 박스색이 바뀌자 INSIGHT 박스 안 글자 뒤에 흰 띠로 보였다 (Citation·닷컴 Citation, 사용자 보고 2026-11-23)
+  s = s.replace(/background-color:\s*rgba?\([^)]*\)\s*;?\s*/gi, '')
   const MAPPED = new Set([...Object.keys(PALETTE), ...Object.keys(EXEC_COLORS)].map(k => k.toUpperCase()))
   s = s.replace(/rgb\(\s*(\d{1,3}),\s*(\d{1,3}),\s*(\d{1,3})\s*\)/g, (m, r, g, b) => {
     const hex = '#' + [r, g, b].map(n => (+n).toString(16).padStart(2, '0')).join('').toUpperCase()
     return MAPPED.has(hex) ? hex : m
   })
 
-  // ── 페이지(맨 뒤) 배경 → LG.com 페이지 바탕 베이지 (lg.com/uk 실측 #f0ece4, 사용자 요청 2026-11-23) ──
+  // ── 맨 뒤 페이지 → 흰색 / 제일 큰 박스(940 컨테이너) → 베이지 (헤더 td 는 emailTemplate.js 소스에서 베이지) ──
   // body 는 Gmail 등이 무시하므로 바깥 100% 표에도 같이 지정
-  s = s.replace('<body style="margin:0;padding:0;background-color:#F1F5F9;', `<body style="margin:0;padding:0;background-color:${ED_PAGE};`)
-  s = s.replace('width="100%" style="background-color:#F1F5F9;">', `width="100%" style="background-color:${ED_PAGE};">`)
-  // Notice: 핑크 박스 → 연회색 + 헤어라인 (흰 바탕에서 보이도록 연회색, 사용자 요청 2026-11-23)
+  s = s.replace('<body style="margin:0;padding:0;background-color:#F1F5F9;', '<body style="margin:0;padding:0;background-color:#FFFFFF;')
+  s = s.replace('width="100%" style="background-color:#F1F5F9;">', 'width="100%" style="background-color:#FFFFFF;">')
+  s = s.replace('table-layout:fixed;background:#FFFFFF;border-radius:16px;', `table-layout:fixed;background:${ED_FRAME};border-radius:16px;`)
+  s = s.replace('<td style="background:#FFFFFF;padding:24px 28px 0;">', `<td style="background:${ED_FRAME};padding:24px 28px 0;">`)   // 구분선 행
+  s = s.replace('<td style="background:#F8FAFC;padding:28px 28px;">', `<td style="background:${ED_FRAME};padding:28px 28px;">`)  // 본문
+  // Notice: 핑크 박스 → 흰 카드 (베이지 위에서 연회색은 묻힘)
   s = s.replace('background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;padding:14px 20px;',
-    `background:#f4f3ef;border:1px solid ${ED_RULE};border-radius:10px;padding:16px 20px;`)
-  // 구분선 2px 레드 → 1px 헤어라인
+    `background:#FFFFFF;border:1px solid ${ED_RULE};border-radius:10px;padding:16px 20px;`)
+  // 구분선 2px 레드 → 1px 선 (베이지 위에서 보이도록 진하게)
   s = s.replace(/<td height="2" style="background:#CF0652;font-size:0;line-height:0;">&nbsp;<\/td>/,
-    `<td height="1" style="background:${ED_RULE};font-size:0;line-height:0;">&nbsp;</td>`)
-  // 본문 회색 바탕 → 흰 바탕
-  s = s.replace('<td style="background:#F8FAFC;padding:28px 28px;">', '<td style="background:#FFFFFF;padding:28px 28px;">')
+    `<td height="1" style="background:${ED_FRAME_RULE};font-size:0;line-height:0;">&nbsp;</td>`)
 
   // ── Executive Summary: 다크 네이비 카드 → 라이트 figure 카드 ──
   const ea = s.indexOf(M.exec)
