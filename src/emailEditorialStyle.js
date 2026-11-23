@@ -119,7 +119,8 @@ export function applyEditorialStyle(html) {
 
   // ── 섹션 카드·제목: 2px 보더/16px 라운드/레드 막대 → 1px 헤어라인/10px/텍스트 H2 ──
   s = s.replaceAll('border-radius:16px;border:2px solid #E8EDF2;', `border-radius:10px;border:1px solid ${ED_RULE};`)
-  s = s.replaceAll('background:#FAFBFC;border-bottom:1px solid #F1F5F9;', `background:#FFFFFF;border-bottom:1px solid ${ED_RULE};`)
+  // 제목 줄 td 의 네모 배경이 카드의 둥근 모서리를 덮어 각져 보였다 → td 위쪽도 같은 반경으로 (2026-11-23)
+  s = s.replaceAll('background:#FAFBFC;border-bottom:1px solid #F1F5F9;', `background:#FFFFFF;border-bottom:1px solid ${ED_RULE};border-radius:10px 10px 0 0;`)
   s = s.replace(/<td width="3" style="background:#CF0652;border-radius:2px;">&nbsp;<\/td>\s*/g, '')
   s = s.replaceAll('padding-left:8px;font-size:19px;font-weight:700;', 'padding-left:0;font-size:18px;font-weight:800;letter-spacing:-0.01em;')
   // INSIGHT 핑크 박스 → 연회색 (surface-1 은 모니터에서 흰색과 구분이 안 됨, 사용자 요청 2026-11-23)

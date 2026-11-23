@@ -3356,7 +3356,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
 
         <!-- ══ 헤더 (에디토리얼: 키커 + H1 + 리드 + 메타 라인, 2026-11-22) ══ -->
         <tr>
-          <td style="background:#FFFFFF;padding:36px 28px 0;">
+          <td style="background:#FFFFFF;padding:36px 28px 0;border-radius:16px 16px 0 0;">
             <p style="margin:0;font-size:12px;letter-spacing:0.08em;color:${ED_ACCENT};font-weight:700;text-transform:uppercase;font-family:${EM_FONT};">LG ELECTRONICS &nbsp;/&nbsp; <span${edAttr('headerTag')}>${escapeHtml(String(meta.headerTag || '').trim() || (lang === 'en' ? 'Oct 2026' : '2026년 10월'))}</span></p>
             <p style="margin:8px 0 10px;font-size:${meta.titleFontSize || 30}px;line-height:1.3;font-weight:800;letter-spacing:-0.01em;color:${meta.titleColor || ED_T1};font-family:${EM_FONT};"><span${edAttr('title', meta.title)}>${escapeHtml(meta.title || (lang === 'en' ? 'Generative AI Engine Visibility Performance Analysis' : '생성형 AI 엔진 가시성(Visibility) 성과 분석'))}</span></p>
             <p style="margin:0 0 20px;font-size:16px;color:${ED_T2};font-family:${EM_FONT};"><span${edAttr('dateLine', meta.dateLine)}>${escapeHtml(dateLineDisp(meta.dateLine, meta.period, lang))}</span></p>
@@ -3692,7 +3692,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
 
         <!-- ══ 푸터 ══ -->
         <tr>
-          <td style="background:#1A1A1A;padding:16px 28px;">
+          <td style="background:#1A1A1A;padding:16px 28px;border-radius:0 0 16px 16px;">
             <table border="0" cellpadding="0" cellspacing="0" width="100%">
               <tr>
                 <td>
