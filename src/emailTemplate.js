@@ -9,7 +9,7 @@ import { resolveProductsByLlm, resolveProductsCntyByLlm, resolveTotalByLlm } fro
 import { _logWarn } from './sheetParserUtils.js'
 import { dcColLabel } from './shared/constants.js'
 import { mergeCitDomainRows, isTtlLlmVal } from './shared/citDomainAgg.js'
-import { applyEditorialStyle, ED_ACCENT, ED_T1, ED_T2, ED_TM, ED_FRAME, ED_FRAME_RULE } from './emailEditorialStyle.js'
+import { applyEditorialStyle, ED_ACCENT, ED_T1, ED_T2, ED_TM, ED_RULE } from './emailEditorialStyle.js'
 
 const EM_RED  = '#CF0652'
 // Citation 차트 전용 — 짙은 녹색 계열 (LG_RED 와 구분)
@@ -3356,11 +3356,11 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
 
         <!-- ══ 헤더 (에디토리얼: 키커 + H1 + 리드 + 메타 라인, 2026-11-22) ══ -->
         <tr>
-          <td style="background:${ED_FRAME};padding:36px 28px 0;border-radius:16px 16px 0 0;">
+          <td style="background:#FFFFFF;padding:36px 28px 0;border-radius:16px 16px 0 0;">
             <p style="margin:0;font-size:12px;letter-spacing:0.08em;color:${ED_ACCENT};font-weight:700;text-transform:uppercase;font-family:${EM_FONT};">LG ELECTRONICS &nbsp;/&nbsp; <span${edAttr('headerTag')}>${escapeHtml(String(meta.headerTag || '').trim() || (lang === 'en' ? 'Oct 2026' : '2026년 10월'))}</span></p>
             <p style="margin:8px 0 10px;font-size:${meta.titleFontSize || 30}px;line-height:1.3;font-weight:800;letter-spacing:-0.01em;color:${meta.titleColor || ED_T1};font-family:${EM_FONT};"><span${edAttr('title', meta.title)}>${escapeHtml(meta.title || (lang === 'en' ? 'Generative AI Engine Visibility Performance Analysis' : '생성형 AI 엔진 가시성(Visibility) 성과 분석'))}</span></p>
             <p style="margin:0 0 20px;font-size:16px;color:${ED_T2};font-family:${EM_FONT};"><span${edAttr('dateLine', meta.dateLine)}>${escapeHtml(dateLineDisp(meta.dateLine, meta.period, lang))}</span></p>
-            <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border-top:1px solid ${ED_FRAME_RULE};border-bottom:1px solid ${ED_FRAME_RULE};">
+            <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border-top:1px solid ${ED_RULE};border-bottom:1px solid ${ED_RULE};">
               <tr>
                 <td style="padding:8px 0;font-size:12px;color:${ED_TM};font-family:${EM_FONT};"><span${edAttr('reportType', meta.reportType)}>${escapeHtml(meta.reportType || (lang === 'en' ? 'GEO Monthly Performance Report' : 'GEO 월간 성과 분석 리포트'))}</span></td>
                 <td align="right" style="padding:8px 0;font-size:12px;color:${ED_TM};font-family:${EM_FONT};"><span${edAttr('team', meta.team)}>${escapeHtml(meta.team)}</span></td>

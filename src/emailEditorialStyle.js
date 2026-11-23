@@ -18,10 +18,6 @@ export const ED_GRID = '#efeee9'
 export const ED_SURF = '#fcfcfb'
 export const ED_INSIGHT = '#f4f3ef'          // INSIGHT 박스 배경 (Notice 와 동일 연회색)
 export const ED_INSIGHT_BORDER = '#dedcd5'   // INSIGHT 박스 보더 — 헤어라인보다 한 단계 진하게
-// 제일 큰 박스(940 컨테이너) = LG.com 바탕 베이지 (lg.com/uk 실측), 맨 뒤 페이지는 흰색 — 흰 카드가 베이지 위에 뜨는
-// LG.com 구성 (사용자 요청 2026-11-23). 베이지 위 구분선은 헤어라인보다 한 단계 진하게.
-export const ED_FRAME = '#f0ece4'
-export const ED_FRAME_RULE = '#d6d2c8'
 
 const M = {
   exec: '<!-- ── 전체 GEO 가시성 지수 ── -->',
@@ -93,19 +89,18 @@ export function applyEditorialStyle(html) {
     return MAPPED.has(hex) ? hex : m
   })
 
-  // ── 맨 뒤 페이지 → 흰색 / 제일 큰 박스(940 컨테이너) → 베이지 (헤더 td 는 emailTemplate.js 소스에서 베이지) ──
+  // ── 페이지 배경 → 흰 바탕 (베이지 시도 2026-11-23 후 사용자 결정으로 흰색 복귀) ──
   // body 는 Gmail 등이 무시하므로 바깥 100% 표에도 같이 지정
   s = s.replace('<body style="margin:0;padding:0;background-color:#F1F5F9;', '<body style="margin:0;padding:0;background-color:#FFFFFF;')
   s = s.replace('width="100%" style="background-color:#F1F5F9;">', 'width="100%" style="background-color:#FFFFFF;">')
-  s = s.replace('table-layout:fixed;background:#FFFFFF;border-radius:16px;', `table-layout:fixed;background:${ED_FRAME};border-radius:16px;`)
-  s = s.replace('<td style="background:#FFFFFF;padding:24px 28px 0;">', `<td style="background:${ED_FRAME};padding:24px 28px 0;">`)   // 구분선 행
-  s = s.replace('<td style="background:#F8FAFC;padding:28px 28px;">', `<td style="background:${ED_FRAME};padding:28px 28px;">`)  // 본문
-  // Notice: 핑크 박스 → 흰 카드 (베이지 위에서 연회색은 묻힘)
+  // Notice: 핑크 박스 → 연회색 + 헤어라인 (흰 바탕에서 보이도록, 사용자 요청 2026-11-23)
   s = s.replace('background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;padding:14px 20px;',
-    `background:#FFFFFF;border:1px solid ${ED_RULE};border-radius:10px;padding:16px 20px;`)
-  // 구분선 2px 레드 → 1px 선 (베이지 위에서 보이도록 진하게)
+    `background:#f4f3ef;border:1px solid ${ED_RULE};border-radius:10px;padding:16px 20px;`)
+  // 구분선 2px 레드 → 1px 헤어라인
   s = s.replace(/<td height="2" style="background:#CF0652;font-size:0;line-height:0;">&nbsp;<\/td>/,
-    `<td height="1" style="background:${ED_FRAME_RULE};font-size:0;line-height:0;">&nbsp;</td>`)
+    `<td height="1" style="background:${ED_RULE};font-size:0;line-height:0;">&nbsp;</td>`)
+  // 본문 회색 바탕 → 흰 바탕
+  s = s.replace('<td style="background:#F8FAFC;padding:28px 28px;">', '<td style="background:#FFFFFF;padding:28px 28px;">')
 
   // ── Executive Summary: 다크 네이비 카드 → 라이트 figure 카드 ──
   const ea = s.indexOf(M.exec)
