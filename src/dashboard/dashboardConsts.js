@@ -68,7 +68,10 @@ export const BRAND_COLORS = {
   Shark: '#6B7280', Daikin: '#2563EB', Mitsubishi: '#DC2626', Media: '#10B981',
   Panasonic: '#0D9488', Blueair: '#0284C7', Philips: '#7C3AED',
 }
-export const FALLBACK_COLORS = ['#94A3B8','#64748B','#475569','#CBD5E1','#E2E8F0']
+// 대시보드에서만 미출시로 표시할 (국가|UL_CODE) — 회색·'—' + 평균 집계 제외. 뉴스레터에는 영향 없음.
+// 인도 식기세척기: 뉴스레터는 출시(DEFAULT_LAUNCHED), 대시보드는 미출시 (사용자 지시 2026-11-25)
+export const DASHBOARD_EXTRA_UNLAUNCHED = { 'IN|DW': true }
+export const FALLBACK_COLORS =['#94A3B8','#64748B','#475569','#CBD5E1','#E2E8F0']
 
 // ─── 지역·국가 ───────────────────────────────────────────────────────────────
 export const REGIONS = {

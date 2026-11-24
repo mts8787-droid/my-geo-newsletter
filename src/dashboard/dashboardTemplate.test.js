@@ -74,3 +74,15 @@ describe('generateDashboardHTML — 회귀 방지', () => {
     expect(stmtMatches).toEqual([])
   })
 })
+
+describe('대시보드 전용 미출시 — 인도 식기세척기 (2026-11-25)', () => {
+  it('IN|DW 가 대시보드 _unlaunchedMap 에 추가되고 시트 미출시 키는 유지', () => {
+    const html = generateDashboardHTML(meta, total, products, citations, dotcom, 'ko',
+      productsCnty, citationsCnty, weeklyLabels, weeklyAll, citationsByCnty, dotcomByCnty, { monthlyVis }, extra)
+    const m = html.match(/var _unlaunchedMap=(\{[^;]*\});/)
+    expect(m).toBeTruthy()
+    const map = JSON.parse(m[1])
+    expect(map['IN|DW']).toBe(true)
+    expect(map['AU|TV']).toBe(true)
+  })
+})

@@ -4,7 +4,7 @@ import {
   FONT, RED, COMP, T,
   BRAND_COLORS, FALLBACK_COLORS, COUNTRY_FULL_NAME,
   REGIONS, ALL_10_COUNTRIES,
-  UL_PROD_MAP, DC_COLS, DC_SAM, TREND_BRAND_COL,
+  UL_PROD_MAP, DC_COLS, DC_SAM, TREND_BRAND_COL, DASHBOARD_EXTRA_UNLAUNCHED,
 } from './dashboardConsts.js'
 import { PROD_ID_TO_KR } from '../categoryMap.js'
 import { dcColLabel } from '../shared/constants.js'
@@ -1393,7 +1393,8 @@ export function generateDashboardHTML(meta, total, products, citations, dotcom, 
         </table>
       </div>`)
   }
-  const ulMap = extra?.unlaunchedMap || {}
+  // 대시보드 전용 미출시 오버라이드 — 뉴스레터는 parseUnlaunched 의 IN|DW 강제출시 그대로 (사용자 지시 2026-11-25)
+  const ulMap = { ...(extra?.unlaunchedMap || {}), ...DASHBOARD_EXTRA_UNLAUNCHED }
   // 트래커는 v2(geo-progress-tracker-v2 통합본)만 사용 — 항상 포함
   const trackerSrc = `/p/progress-tracker-v2/?lang=${lang}`
   const trackerTabContent = `<iframe id="tracker-iframe" src="${trackerSrc}" style="width:100%;min-height:calc(100vh - 60px);border:none;background:#0A0F1E" title="Progress Tracker"></iframe>`
