@@ -3382,7 +3382,7 @@ export function generateEmailHTML(meta, total, products, citations, dotcom = {},
               <tr>
                 <td style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;padding:12px 10px;">
                   <p style="margin:0 0 6px;padding-left:6px;font-size:13px;font-weight:700;color:#64748B;font-family:${EM_FONT};letter-spacing:0.5px;">${t.kpiLogic}</p>
-                  ${edBlock('kpiLogicText', stripPxFontSize(meta.kpiLogicText), { size: 14, lh: 24, color: '#475569', accent: '#64748B', lang })}
+                  ${edBlock('kpiLogicText', stripPxFontSize(meta.kpiLogicText), { size: 13, lh: 23, color: '#475569', accent: '#64748B', lang })}
                 </td>
               </tr>
             </table>` : ''}
